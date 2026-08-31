@@ -10,6 +10,7 @@ from scripts.ops.record_launch_evidence import (
     REQUIRED_SECTIONS,
     CommandEvidence,
     EvidenceDocument,
+    main,
     _markdown_escape,
     record_section,
     resolve_harness_result,
@@ -146,6 +147,127 @@ def test_record_rejects_status_verdict_contradiction(tmp_path: Path) -> None:
             "artifacts",
             CommandEvidence("pytest", 0, "passed", "pass", verdict="BLOCKED"),
         )
+
+
+def test_final_render_rejects_pass_status_with_blocked_outcomes(tmp_path: Path) -> None:
+    document = _complete_document(tmp_path)
+    outcomes = {
+        "passed": 1, "failed": 0, "errors": 1, "skipped": 0,
+        "xfailed": 0, "collection_errors": 0, "interrupted": False,
+        "return_code": 1,
+    }
+    document.record(
+        "backend-focused",
+        CommandEvidence(
+            "pytest", 0, "passed", "pass",
+            outcomes=outcomes,
+        ),
+    )
+    with pytest.raises(ValueError, match="verdict is blocked"):
+        document.render(final=True)
+
+
+def test_final_document_writes_bundle_verified_by_control_plane(tmp_path: Path) -> None:
+    from agent.control_plane.evidence import verify_bundle
+
+    document = _complete_document(tmp_path)
+    bundle_path = tmp_path / "bundle.json"
+    document.write_bundle(bundle_path)
+    result = verify_bundle(bundle_path)
+    assert result.verdict == "PASS"
+    assert result.checked_sha256
+    bundle = json.loads(bundle_path.read_text(encoding="utf-8"))
+    assert "outcomes" not in bundle
+
+
+def test_cli_unparseable_captured_output_is_unclassified_not_fabricated_pass(tmp_path: Path) -> None:
+    state_path = tmp_path / "cli-unclassified.json"
+    assert main([
+        "record", "--section", "backend-focused", "--status", "pass",
+        "--exit-code", "0", "--summary", "native", "--command", "command",
+        "--output-text", "command completed", "--environment-json", '{"os":"test"}',
+        "--head-sha", "a" * 40, "--state", str(state_path),
+    ]) == 0
+    section = json.loads(state_path.read_text(encoding="utf-8"))["sections"]["backend-focused"]
+    assert section["status"] == "skip"
+    assert section["verdict"] == "UNCLASSIFIED"
+    assert section["outcomes"] == {}
+
+
+def test_cli_parses_real_output_into_errors_and_blocked_verdict(tmp_path: Path) -> None:
+    state_path = tmp_path / "cli-state.json"
+    output = "ERROR tests/a.py - ImportError\n1 passed, 1 error in 0.1s\n"
+    assert main([
+        "record", "--section", "backend-focused", "--status", "pass",
+        "--exit-code", "1", "--summary", "native", "--command", "pytest",
+        "--output-text", output, "--environment-json", '{"os":"test"}',
+        "--head-sha", "a" * 40, "--state", str(state_path),
+    ]) == 0
+    payload = json.loads(state_path.read_text(encoding="utf-8"))
+    section = payload["sections"]["backend-focused"]
+    assert section["outcomes"]["errors"] == 1
+    assert section["verdict"] == "BLOCKED"
+    assert section["status"] == "fail"
+
+
+def test_harness_result_parses_captured_output_instead_of_fabricating_counts(tmp_path: Path) -> None:
+    state_path = tmp_path / "harness-state.json"
+    output_path = tmp_path / "compose-output.txt"
+    output_path.write_text("3 passed in 0.1s\n", encoding="utf-8")
+    assert main([
+        "harness-result", "--section", "compose-nginx-opt-in",
+        "--primary-exit", "0", "--cleanup-exit", "0",
+        "--head-sha", "a" * 40, "--environment-json", '{"os":"test"}',
+        "--output-file", str(output_path), "--state", str(state_path),
+    ]) == 0
+    payload = json.loads(state_path.read_text(encoding="utf-8"))
+    section = payload["sections"]["compose-nginx-opt-in"]
+    assert section["outcomes"]["passed"] == 3
+    assert section["verdict"] == "PASS"
+    assert section["output_sha256"]
+
+
+def test_harness_result_without_parseable_output_is_unclassified(tmp_path: Path) -> None:
+    state_path = tmp_path / "harness-unclassified.json"
+    output_path = tmp_path / "compose-output.txt"
+    output_path.write_text("docker compose completed\n", encoding="utf-8")
+    assert main([
+        "harness-result", "--section", "compose-nginx-opt-in",
+        "--primary-exit", "0", "--cleanup-exit", "0",
+        "--head-sha", "a" * 40, "--environment-json", '{"os":"test"}',
+        "--output-file", str(output_path), "--state", str(state_path),
+    ]) == 0
+    payload = json.loads(state_path.read_text(encoding="utf-8"))
+    section = payload["sections"]["compose-nginx-opt-in"]
+    assert section["verdict"] == "UNCLASSIFIED"
+    assert section["status"] == "skip"
+
+
+def test_final_render_blocks_compose_pass_without_capture_metadata(tmp_path: Path) -> None:
+    document = _complete_document(tmp_path)
+    document.record(
+        "compose-nginx-opt-in",
+        CommandEvidence("docker compose up", 0, "passed", "pass"),
+    )
+    with pytest.raises(ValueError, match="compose-nginx-opt-in.*metadata|metadata.*compose-nginx-opt-in"):
+        document.render(final=True)
+
+
+def test_final_render_blocks_parsed_outcomes_without_output_checksum(tmp_path: Path) -> None:
+    document = _complete_document(tmp_path)
+    document.record(
+        "backend-focused",
+        CommandEvidence(
+            "pytest", 0, "passed", "pass",
+            outcomes={
+                "passed": 1, "failed": 0, "errors": 0, "skipped": 0,
+                "xfailed": 0, "collection_errors": 0, "interrupted": False,
+                "return_code": 0,
+            },
+        ),
+    )
+    with pytest.raises(ValueError, match="checksum"):
+        document.render(final=True)
 
 
 def test_command_evidence_does_not_silently_truncate_exact_command() -> None:

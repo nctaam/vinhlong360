@@ -13,6 +13,7 @@ from agent.control_plane.evidence import (
     parse_pytest_output,
     verify_bundle,
 )
+from scripts.ops.record_launch_evidence import CommandEvidence, EvidenceDocument, REQUIRED_SECTIONS
 
 
 def test_launch_evidence_exposes_versioned_hash_helpers() -> None:
@@ -114,6 +115,24 @@ def test_verify_bundle_treats_tampering_as_blocked(tmp_path: Path) -> None:
     assert result.reasons
 
 
+def test_verify_bundle_rejects_declared_pass_when_stored_output_is_failed(tmp_path: Path) -> None:
+    output = "1 failed in 0.1s\n"
+    bundle = {
+        "schema_version": "1", "artifact_id": "run", "head_sha": "a" * 40,
+        "branch": "main", "started_at": "2026-08-31T00:00:00Z", "finished_at": "2026-08-31T00:00:01Z",
+        "command": "pytest", "environment": {"os": "test"},
+        "outcomes": {"passed": 0, "failed": 0, "errors": 0, "skipped": 0, "xfailed": 0,
+                     "collection_errors": 0, "interrupted": False, "return_code": 0},
+        "allowlist": [], "verdict": "PASS", "artifacts": [], "output": output,
+        "output_sha256": sha256(output.encode()).hexdigest(),
+    }
+    path = tmp_path / "tampered.json"
+    path.write_text(json.dumps(bundle), encoding="utf-8")
+    result = verify_bundle(path)
+    assert result.verdict == "BLOCKED"
+    assert any("outcomes" in reason for reason in result.reasons)
+
+
 def test_verifier_cli_maps_verdict_to_exit_code_and_prints_reasons(
     tmp_path: Path, capsys: pytest.CaptureFixture[str]
 ) -> None:
@@ -157,3 +176,105 @@ def test_bundle_requires_nonempty_timestamps_and_metadata_types(tmp_path: Path) 
     path.write_text(json.dumps(bundle), encoding="utf-8")
     result = verify_bundle(path)
     assert result.verdict == "BLOCKED"
+
+
+def test_verify_bundle_reparses_stored_output_and_nodeids(tmp_path: Path) -> None:
+    output = "tests/a.py::test_bad FAILED\n1 failed in 0.1s\n"
+    bundle = {
+        "schema_version": "1", "artifact_id": "run", "head_sha": "a" * 40,
+        "branch": "main", "started_at": "2026-08-31T00:00:00Z", "finished_at": "2026-08-31T00:00:01Z",
+        "command": "pytest", "environment": {"os": "test"},
+        "outcomes": {"passed": 0, "failed": 1, "errors": 0, "skipped": 0, "xfailed": 0,
+                     "collection_errors": 0, "interrupted": False, "return_code": 1,
+                     "failed_nodeids": ["tests/other.py::test_bad"], "error_nodeids": []},
+        "allowlist": [], "verdict": "BLOCKED", "artifacts": [], "output": output,
+        "output_sha256": sha256(output.encode()).hexdigest(),
+    }
+    path = tmp_path / "nodeid-tampered.json"
+    path.write_text(json.dumps(bundle), encoding="utf-8")
+    result = verify_bundle(path)
+    assert result.verdict == "BLOCKED"
+    assert any("outcomes" in reason or "nodeid" in reason for reason in result.reasons)
+
+
+def test_verify_bundle_reparses_output_file_with_declared_return_code(tmp_path: Path) -> None:
+    output = "1 failed in 0.1s\n"
+    output_path = tmp_path / "pytest-output.txt"
+    output_path.write_bytes(output.encode())
+    bundle = {
+        "schema_version": "1", "artifact_id": "run", "head_sha": "a" * 40,
+        "branch": "main", "started_at": "2026-08-31T00:00:00Z", "finished_at": "2026-08-31T00:00:01Z",
+        "command": "pytest", "environment": {"os": "test"},
+        "outcomes": {"passed": 1, "failed": 0, "errors": 0, "skipped": 0, "xfailed": 0,
+                     "collection_errors": 0, "interrupted": False, "return_code": 0},
+        "allowlist": [], "verdict": "PASS", "artifacts": [],
+        "output_path": output_path.name,
+        "output_sha256": sha256(output.encode()).hexdigest(),
+    }
+    path = tmp_path / "output-file-tampered.json"
+    path.write_text(json.dumps(bundle), encoding="utf-8")
+    result = verify_bundle(path)
+    assert result.verdict == "BLOCKED"
+    assert any("outcomes" in reason for reason in result.reasons)
+
+
+def test_state_bundle_rejects_blocked_outcomes_even_when_state_checksum_matches(tmp_path: Path) -> None:
+    state = {
+        "version": 1,
+        "revision": "a" * 40,
+        "external_gates": {"H1": "blocked", "H2": "blocked", "owner": "not-authorized"},
+        "sections": {
+            "backend-focused": {
+                "command": "pytest",
+                "exit_code": 0,
+                "summary": "passed",
+                "status": "pass",
+                "outcomes": {
+                    "passed": 1, "failed": 0, "errors": 1, "skipped": 0,
+                    "xfailed": 0, "collection_errors": 0, "interrupted": False,
+                    "return_code": 1,
+                },
+                "environment": {"os": "test"},
+                "head_sha": "a" * 40,
+                "output_sha256": "b" * 64,
+                "verdict": "PASS",
+            }
+        },
+    }
+    canonical = json.dumps(state, ensure_ascii=True, sort_keys=True, separators=(",", ":"))
+    digest = sha256(canonical.encode()).hexdigest()
+    bundle = {
+        "bundle_kind": "launch-safety-state-v1",
+        "state": state,
+        "state_sha256": digest,
+        "output_sha256": digest,
+    }
+    path = tmp_path / "state-tampered.json"
+    path.write_text(json.dumps(bundle), encoding="utf-8")
+    result = verify_bundle(path)
+    assert result.verdict == "BLOCKED"
+
+
+def test_state_bundle_binds_top_level_revision_and_artifacts_to_state(tmp_path: Path) -> None:
+    document = EvidenceDocument.empty(tmp_path / "state.json")
+    document.revision = "a" * 40
+    for section in REQUIRED_SECTIONS:
+        if section == "external-gates":
+            evidence = CommandEvidence(
+                section, 0, "H1=blocked; H2=blocked; owner=not-authorized", "skip"
+            )
+        elif section in {"postgres-opt-in", "compose-nginx-opt-in", "browser-opt-in"}:
+            evidence = CommandEvidence(
+                section, 0, "docker-cli-unavailable" if section != "browser-opt-in" else "chrome-unavailable", "skip"
+            )
+        else:
+            evidence = CommandEvidence(section, 0, "passed", "pass")
+        document.record(section, evidence)
+    bundle_path = tmp_path / "bundle.json"
+    document.write_bundle(bundle_path)
+    payload = json.loads(bundle_path.read_text(encoding="utf-8"))
+    payload["head_sha"] = "b" * 40
+    bundle_path.write_text(json.dumps(payload), encoding="utf-8")
+    result = verify_bundle(bundle_path)
+    assert result.verdict == "BLOCKED"
+    assert any("head_sha" in reason for reason in result.reasons)

@@ -38,6 +38,7 @@ function Invoke-RecordedComposeHarness {
   $primaryExit = 0
   $cleanupExit = 0
   $recordExit = 0
+  $capturedOutput = [System.Text.StringBuilder]::new()
   try {
     $upArgs = @('compose', '-p', $composeProject, '-f', $ComposeFile, 'up', '-d')
     if ($Build) { $upArgs += '--build' }
@@ -45,7 +46,9 @@ function Invoke-RecordedComposeHarness {
     $priorErrorActionPreference = $ErrorActionPreference
     try {
       $ErrorActionPreference = 'Continue'
-      & docker @upArgs 2>&1 | Out-Host
+      $upOutput = (& docker @upArgs 2>&1 | Out-String)
+      [void]$capturedOutput.Append($upOutput)
+      $upOutput | Out-Host
       $primaryExit = [int]$LASTEXITCODE
     }
     finally {
@@ -55,7 +58,9 @@ function Invoke-RecordedComposeHarness {
       $priorErrorActionPreference = $ErrorActionPreference
       try {
         $ErrorActionPreference = 'Continue'
-        & $Body 2>&1 | Out-Host
+        $bodyOutput = (& $Body 2>&1 | Out-String)
+        [void]$capturedOutput.Append($bodyOutput)
+        $bodyOutput | Out-Host
       }
       finally {
         $ErrorActionPreference = $priorErrorActionPreference
@@ -74,7 +79,9 @@ function Invoke-RecordedComposeHarness {
       $priorErrorActionPreference = $ErrorActionPreference
       try {
         $ErrorActionPreference = 'Continue'
-        & docker compose -p $composeProject -f $ComposeFile down -v --remove-orphans 2>&1 | Out-Host
+        $downOutput = (& docker compose -p $composeProject -f $ComposeFile down -v --remove-orphans 2>&1 | Out-String)
+        [void]$capturedOutput.Append($downOutput)
+        $downOutput | Out-Host
         $cleanupExit = [int]$LASTEXITCODE
       }
       finally {
@@ -96,13 +103,30 @@ function Invoke-RecordedComposeHarness {
     }
   }
 
+  $root = (Resolve-Path (Join-Path $PSScriptRoot '../..')).Path
+  $outputDirectory = Join-Path $root '.tmp-launch-safety'
+  New-Item -ItemType Directory -Force -Path $outputDirectory | Out-Null
+  $outputPath = Join-Path $outputDirectory (
+    'compose-output-' + [guid]::NewGuid().ToString('N') + '.txt'
+  )
+  [System.IO.File]::WriteAllText(
+    $outputPath,
+    $capturedOutput.ToString(),
+    [System.Text.UTF8Encoding]::new($false)
+  )
+  $command = "docker compose -p $composeProject -f $ComposeFile up -d --wait"
   $recordArgs = @(
     'scripts/ops/record_launch_evidence.py',
     'harness-result',
     '--section', $Section,
     '--primary-exit', [string]$primaryExit,
-    '--cleanup-exit', [string]$cleanupExit
+    '--cleanup-exit', [string]$cleanupExit,
+    '--command', $command,
+    '--output-file', $outputPath
   )
+  $headSha = (& git -C (Resolve-Path (Join-Path $PSScriptRoot '../..')) rev-parse HEAD 2>$null | Select-Object -First 1).ToString().Trim()
+  if ($headSha) { $recordArgs += @('--head-sha', $headSha) }
+  $recordArgs += @('--environment-json', '{"os":"PowerShell","database_target":"redacted"}')
   if ($EvidenceState) { $recordArgs += @('--state', $EvidenceState) }
   $priorErrorActionPreference = $ErrorActionPreference
   try {
@@ -111,6 +135,7 @@ function Invoke-RecordedComposeHarness {
     $recordExit = [int]$LASTEXITCODE
   }
   finally {
+    Remove-Item -LiteralPath $outputPath -Force -ErrorAction SilentlyContinue
     $ErrorActionPreference = $priorErrorActionPreference
   }
 
@@ -167,4 +192,3 @@ function Resolve-LaunchSafetyBash {
   }
   return $null
 }
-

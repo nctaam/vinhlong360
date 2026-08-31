@@ -178,3 +178,13 @@ ghi ở backlog tối ưu — giảm dần, KHÔNG được tăng tiếp từ 47
 - 2026-08-31T13:11:25 SKIP R30.7 — Commit docs-only proof-first optimization plan; existing 803kB bundle debt predates this change and no frontend artifact is modified
 
 - 2026-08-31T14:23:04 SKIP R30.7 — pre-existing bundle output debt: 802kB gz exceeds 800kB baseline; unrelated to Task 1 evidence verifier
+
+- 2026-08-31T14:25:16 SKIP R30.7 — pre-existing bundle output debt: 802kB gz exceeds 800kB baseline; unrelated to Task 1 evidence verifier
+
+- 2026-08-31T14:26:55 SKIP R30.7 — pre-existing bundle output debt: 802kB gz exceeds 800kB baseline; unrelated to Task 1 evidence verifier
+
+- 2026-08-31T14:37:48 SKIP R30.7 — pre-existing bundle output debt: 802kB gz exceeds 800kB baseline; unrelated to Task 1 evidence verifier
+
+- 2026-08-31T15:15:52 SKIP R30.7 — pre-existing bundle output debt: 802kB gz exceeds 800kB baseline; unrelated to Task 1 evidence verifier
+
+- 2026-08-31T15:22:10 SKIP R30.7 — pre-existing bundle output debt: 802kB gz exceeds 800kB baseline; unrelated to Task 1 evidence verifier

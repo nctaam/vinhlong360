@@ -22,6 +22,21 @@ _FAILED_STATUS_LINE = re.compile(r"^\s*(?P<nodeid>\S+)\s+FAILED(?:\s|$)", re.IGN
 _ERROR_LINE = re.compile(r"^\s*ERROR\s+(?P<nodeid>\S+?)(?:\s+-|\s*$)", re.IGNORECASE)
 _ERROR_AT_LINE = re.compile(r"^\s*ERROR\s+at\s+setup\s+of\s+(?P<nodeid>\S+)", re.IGNORECASE)
 _COLLECTION_LINE = re.compile(r"^\s*(?:ERROR\s+)?collecting\s+(?P<nodeid>\S+)", re.IGNORECASE)
+_REQUIRED_STATE_SECTIONS = (
+    "artifacts",
+    "backend-focused",
+    "frontend-focused",
+    "postgres-opt-in",
+    "compose-nginx-opt-in",
+    "browser-opt-in",
+    "rollback-local-rehearsal",
+    "backend-full-regression",
+    "frontend-serial-regression",
+    "source-scans",
+    "known-resource-timeout",
+    "external-gates",
+)
+_DEFAULT_EXTERNAL_GATES = {"H1": "blocked", "H2": "blocked", "owner": "not-authorized"}
 
 
 @dataclass(frozen=True)
@@ -272,8 +287,8 @@ def _parse_bundle_outcome(payload: dict[str, object], reasons: list[str]) -> Par
                     raise ValueError("outcome counts cannot be negative")
                 outcome = ParsedOutcome(
                     **counts,
-                    failed_nodeids=tuple(outcomes_payload.get("failed_nodeids", ())),
-                    error_nodeids=tuple(outcomes_payload.get("error_nodeids", ())),
+                    failed_nodeids=_validated_nodeids(outcomes_payload.get("failed_nodeids", ()), "failed_nodeids"),
+                    error_nodeids=_validated_nodeids(outcomes_payload.get("error_nodeids", ()), "error_nodeids"),
                     summary_present=True,
                 )
             except (TypeError, ValueError) as exc:
@@ -282,13 +297,30 @@ def _parse_bundle_outcome(payload: dict[str, object], reasons: list[str]) -> Par
     return outcome
 
 
-def _check_bundle_output(path: Path, payload: dict[str, object], reasons: list[str]) -> str:
+def _validated_nodeids(value: object, label: str) -> tuple[str, ...]:
+    if not isinstance(value, (list, tuple)) or not all(isinstance(item, str) for item in value):
+        raise ValueError(f"{label} must be a list of strings")
+    return _ordered_unique(list(value))
+
+
+def _check_bundle_output(
+    path: Path, payload: dict[str, object], reasons: list[str]
+) -> tuple[bytes | None, str]:
     declared_digest = payload.get("output_sha256")
     output = payload.get("output")
     if output is None:
         output = payload.get("output_text")
     if output is None and isinstance(payload.get("output_path"), str):
-        output_path = Path(path).parent / payload["output_path"]
+        raw_output_path = payload["output_path"]
+        if Path(raw_output_path).is_absolute():
+            reasons.append("output_path must be relative")
+            return None, ""
+        output_path = (Path(path).parent / raw_output_path).resolve()
+        try:
+            output_path.relative_to(Path(path).parent.resolve())
+        except ValueError:
+            reasons.append("output_path escapes bundle directory")
+            return None, ""
         try:
             output = output_path.read_bytes()
         except OSError as exc:
@@ -301,25 +333,59 @@ def _check_bundle_output(path: Path, payload: dict[str, object], reasons: list[s
             checked_sha256 = sha256(output_bytes).hexdigest()
             if checked_sha256 != declared_digest:
                 reasons.append("output_sha256 mismatch")
-            return checked_sha256
+            return output_bytes, checked_sha256
     else:
         # Bundles may store output separately; an absent output is unverifiable.
         reasons.append("missing output for checksum verification")
-    return ""
+    return None, ""
 
 
-def verify_bundle(path: Path) -> VerificationResult:
-    """Verify a JSON evidence bundle and return a machine-readable verdict."""
+def _compare_output_outcome(
+    output: bytes,
+    outcome: ParsedOutcome,
+    allowlist: frozenset[str],
+    declared_verdict: object,
+    reasons: list[str],
+) -> bool:
+    try:
+        text = output.decode("utf-8")
+    except UnicodeDecodeError:
+        reasons.append("stored output is not valid UTF-8")
+        return False
+    # The native return code is part of the stored declaration; parsing with it
+    # prevents a clean-looking output from masking a failed process.
+    parsed = parse_pytest_output(text, outcome.return_code)
+    if not parsed.summary_present:
+        reasons.append("stored output has no pytest summary")
+        return False
+    fields = (
+        "passed", "failed", "errors", "skipped", "xfailed", "collection_errors",
+        "interrupted", "return_code", "failed_nodeids", "error_nodeids",
+    )
+    if any(getattr(parsed, field) != getattr(outcome, field) for field in fields):
+        reasons.append("stored output outcomes do not match declared outcomes")
+    parsed_verdict = classify_verdict(parsed, allowlist)
+    declared_outcome_verdict = classify_verdict(outcome, allowlist)
+    if parsed_verdict != declared_outcome_verdict or parsed_verdict != declared_verdict:
+        reasons.append("stored output verdict does not match declared verdict")
+    return True
 
-    payload_or_result = _load_bundle(Path(path))
-    if isinstance(payload_or_result, VerificationResult):
-        return payload_or_result
-    payload = payload_or_result
+
+def _verify_standard_bundle(path: Path, payload: dict[str, object]) -> VerificationResult:
     reasons = _validate_bundle(payload)
     if reasons:
         return VerificationResult("BLOCKED", tuple(reasons), "")
     outcome = _parse_bundle_outcome(payload, reasons)
-    checked_sha256 = _check_bundle_output(Path(path), payload, reasons)
+    output_bytes, checked_sha256 = _check_bundle_output(Path(path), payload, reasons)
+    output_parseable = True
+    if output_bytes is not None and outcome is not None and not reasons:
+        output_parseable = _compare_output_outcome(
+            output_bytes,
+            outcome,
+            frozenset(payload["allowlist"]),
+            payload["verdict"],
+            reasons,
+        )
 
     computed: Verdict | None = None
     if outcome is not None and not reasons:
@@ -330,6 +396,175 @@ def verify_bundle(path: Path) -> VerificationResult:
     if reasons:
         # A structurally valid but incomplete run is unclassified; malformed or
         # tampered bundles are blocked so callers never mistake them for PASS.
+        if output_parseable is False and reasons == ["stored output has no pytest summary"]:
+            return VerificationResult("UNCLASSIFIED", tuple(reasons), checked_sha256)
         return VerificationResult("BLOCKED", tuple(reasons), checked_sha256)
     assert computed is not None
     return VerificationResult(computed, (), checked_sha256)
+
+
+def verify_bundle(path: Path) -> VerificationResult:
+    """Verify a JSON evidence bundle and return a machine-readable verdict."""
+
+    payload_or_result = _load_bundle(Path(path))
+    if isinstance(payload_or_result, VerificationResult):
+        return payload_or_result
+    if payload_or_result.get("bundle_kind") == "launch-safety-state-v1":
+        return _verify_state_bundle(payload_or_result)
+    return _verify_standard_bundle(Path(path), payload_or_result)
+
+
+def _validate_state_outcomes(name: str, outcomes: object, verdict: object) -> list[str]:
+    if not isinstance(outcomes, dict):
+        return [f"invalid section outcomes: {name}"]
+    fields = ("passed", "failed", "errors", "skipped", "xfailed", "collection_errors", "interrupted", "return_code")
+    if any(field not in outcomes for field in fields):
+        return [f"incomplete section outcomes: {name}"]
+    try:
+        counts = {field: outcomes[field] for field in fields}
+        if any(type(counts[field]) is not int for field in fields if field != "interrupted"):
+            raise ValueError("outcome counts have invalid types")
+        if type(counts["interrupted"]) is not bool:
+            raise ValueError("interrupted must be boolean")
+        if any(counts[field] < 0 for field in fields if field != "interrupted"):
+            raise ValueError("outcome counts cannot be negative")
+        parsed = ParsedOutcome(
+            **counts,
+            failed_nodeids=_validated_nodeids(outcomes.get("failed_nodeids", ()), "failed_nodeids"),
+            error_nodeids=_validated_nodeids(outcomes.get("error_nodeids", ()), "error_nodeids"),
+            summary_present=True,
+        )
+    except (KeyError, TypeError, ValueError) as exc:
+        return [f"invalid section outcomes: {name}: {exc}"]
+    if classify_verdict(parsed, frozenset()) != verdict:
+        return [f"section outcomes/verdict mismatch: {name}"]
+    return []
+
+
+def _validate_state_section(name: str, section: object, revision: str) -> list[str]:
+    if not isinstance(section, dict):
+        return [f"invalid section: {name}"]
+    reasons: list[str] = []
+    status = section.get("status")
+    verdict = section.get("verdict")
+    if status not in {"pass", "fail", "skip"}:
+        reasons.append(f"invalid section status: {name}")
+    if verdict not in {"PASS", "BLOCKED", "UNCLASSIFIED"}:
+        reasons.append(f"invalid section verdict: {name}")
+    expected = {"pass": "PASS", "fail": "BLOCKED", "skip": "UNCLASSIFIED"}.get(status)
+    if expected is not None and verdict != expected:
+        reasons.append(f"section status/verdict mismatch: {name}")
+    reasons.extend(_validate_state_section_metadata(name, section, revision))
+    outcomes = section.get("outcomes")
+    if outcomes is not None and outcomes != {}:
+        reasons.extend(_validate_state_outcomes(name, outcomes, verdict))
+        reasons.extend(_validate_state_output_checksum(name, section))
+    if status == "fail" or verdict == "BLOCKED":
+        reasons.append(f"blocked section: {name}")
+    return reasons
+
+
+def _validate_state_section_metadata(name: str, section: dict[str, object], revision: str) -> list[str]:
+    reasons: list[str] = []
+    section_head = section.get("head_sha", "")
+    if section_head and (not isinstance(section_head, str) or section_head != revision):
+        reasons.append(f"section head revision mismatch: {name}")
+    if section.get("environment") is not None and not isinstance(section.get("environment"), dict):
+        reasons.append(f"invalid section environment: {name}")
+    return reasons
+
+
+def _validate_state_output_checksum(name: str, section: dict[str, object]) -> list[str]:
+    checksum = section.get("output_sha256")
+    if not isinstance(checksum, str) or not _SHA256.fullmatch(checksum):
+        return [f"section output checksum invalid: {name}"]
+    return []
+
+
+def _validate_state_envelope(payload: dict[str, object], state: dict[str, object]) -> list[str]:
+    required = (
+        "bundle_kind", "schema_version", "artifact_id", "head_sha", "branch",
+        "started_at", "finished_at", "command", "environment", "artifacts",
+        "state_sha256", "output_sha256", "output", "verdict",
+    )
+    reasons: list[str] = [
+        f"missing or invalid field: {field}" for field in required if field not in payload
+    ]
+    reasons.extend(_validate_state_identity(payload, state))
+    reasons.extend(_validate_state_metadata(payload))
+    return reasons
+
+
+def _validate_state_identity(payload: dict[str, object], state: dict[str, object]) -> list[str]:
+    reasons: list[str] = []
+    if payload.get("bundle_kind") != "launch-safety-state-v1":
+        reasons.append("unsupported bundle_kind")
+    if payload.get("schema_version") != "1":
+        reasons.append("unsupported schema_version")
+    revision = state.get("revision")
+    if not isinstance(revision, str) or not _HEAD_SHA.fullmatch(revision):
+        reasons.append("state revision is invalid")
+        revision = ""
+    if payload.get("head_sha") != revision:
+        reasons.append("bundle head_sha does not match state revision")
+    if payload.get("artifact_id") != f"launch-safety-{revision}":
+        reasons.append("bundle artifact_id does not match state revision")
+    if payload.get("branch") != "release-gate":
+        reasons.append("bundle branch is invalid")
+    return reasons
+
+
+def _validate_state_metadata(payload: dict[str, object]) -> list[str]:
+    reasons: list[str] = []
+    for field in ("started_at", "finished_at", "command"):
+        value = payload.get(field)
+        if not isinstance(value, str) or not value.strip():
+            reasons.append(f"bundle {field} is invalid")
+    environment = payload.get("environment")
+    if not isinstance(environment, dict) or not environment:
+        reasons.append("bundle environment is invalid")
+    if not isinstance(payload.get("artifacts"), list):
+        reasons.append("bundle artifacts are invalid")
+    return reasons
+
+
+def _validate_state_sections(payload: dict[str, object], state: dict[str, object], revision: str) -> list[str]:
+    sections = state.get("sections")
+    if not isinstance(sections, dict):
+        return ["state sections must be an object"]
+    reasons: list[str] = []
+    missing = sorted(set(_REQUIRED_STATE_SECTIONS) - set(sections))
+    if missing:
+        reasons.append("state sections missing: " + ", ".join(missing))
+    artifacts = payload.get("artifacts")
+    if isinstance(artifacts, list) and artifacts != sorted(sections):
+        reasons.append("bundle artifacts do not match state sections")
+    for name, section in sections.items():
+        reasons.extend(_validate_state_section(name, section, revision))
+    return reasons
+
+
+def _verify_state_bundle(payload: dict[str, object]) -> VerificationResult:
+    state = payload.get("state")
+    if not isinstance(state, dict):
+        return VerificationResult("BLOCKED", ("state must be a JSON object",), "")
+    reasons = _validate_state_envelope(payload, state)
+    revision = state.get("revision")
+    if not isinstance(revision, str) or not _HEAD_SHA.fullmatch(revision):
+        revision = ""
+    canonical = json.dumps(state, ensure_ascii=True, sort_keys=True, separators=(",", ":"))
+    checked = sha256(canonical.encode()).hexdigest()
+    if payload.get("state_sha256") != checked or payload.get("output_sha256") != checked:
+        reasons.append("state checksum mismatch")
+    if payload.get("output") != canonical:
+        reasons.append("canonical bundle output mismatch")
+    if payload.get("verdict") != "PASS":
+        reasons.append("canonical bundle verdict is not PASS")
+    if state.get("version") != 1:
+        reasons.append("unsupported state version")
+    if state.get("external_gates") != _DEFAULT_EXTERNAL_GATES:
+        reasons.append("state external gates are invalid")
+    reasons.extend(_validate_state_sections(payload, state, revision))
+    if reasons:
+        return VerificationResult("BLOCKED", tuple(reasons), checked)
+    return VerificationResult("PASS", (), checked)

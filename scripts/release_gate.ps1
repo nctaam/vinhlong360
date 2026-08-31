@@ -28,6 +28,7 @@ $Script:LaunchSafetyRevision = ""
 $Script:LaunchSafetyEvidenceOutputPath = ""
 $Script:LaunchSafetyEvidenceStateOwned = $false
 $Script:LaunchSafetyOptInExit = 0
+$Script:LaunchSafetyGeneratedBundle = ""
 
 if (-not $LaunchSafetyEvidenceState -and $env:LAUNCH_SAFETY_EVIDENCE_STATE) {
   $LaunchSafetyEvidenceState = $env:LAUNCH_SAFETY_EVIDENCE_STATE
@@ -143,12 +144,6 @@ function Invoke-LaunchSafetyRecord {
     "--exit-code", [string]$ExitCode, "--summary", $Summary,
     "--command", $Command
   )
-  $outcomes = @{
-    passed = if ($ExitCode -eq 0) { 1 } else { 0 }
-    failed = if ($ExitCode -eq 0) { 0 } else { 1 }
-    errors = 0; skipped = if ($Status -eq "skip") { 1 } else { 0 }
-    xfailed = 0; collection_errors = 0; interrupted = $false; return_code = $ExitCode
-  } | ConvertTo-Json -Compress
   $environment = @{
     os = [string]$PSVersionTable.OS
     powershell = [string]$PSVersionTable.PSVersion
@@ -157,9 +152,7 @@ function Invoke-LaunchSafetyRecord {
   } | ConvertTo-Json -Compress
   $recordArgs += @(
     "--head-sha", $Script:LaunchSafetyRevision,
-    "--outcomes-json", $outcomes,
     "--environment-json", $environment,
-    "--output-text", $Output,
     "--verdict", $(if ($Status -eq "pass") { "PASS" } elseif ($Status -eq "fail") { "BLOCKED" } else { "UNCLASSIFIED" })
   )
   if ($LaunchSafetyEvidenceState) {
@@ -169,7 +162,14 @@ function Invoke-LaunchSafetyRecord {
     $recordArgs += @("--revision", $Script:LaunchSafetyRevision)
   }
   Push-Location $Root
+  $outputDirectory = Join-Path $Root ".tmp-launch-safety"
+  New-Item -ItemType Directory -Force -Path $outputDirectory | Out-Null
+  $outputPath = Join-Path $outputDirectory (
+    "vinhlong360-evidence-output-" + [guid]::NewGuid().ToString("N") + ".txt"
+  )
   try {
+    [System.IO.File]::WriteAllText($outputPath, $Output, [System.Text.UTF8Encoding]::new($false))
+    $recordArgs += @("--output-file", $outputPath)
     & $Python @recordArgs
     if ($LASTEXITCODE -ne 0) {
       $recordFailure = [System.Exception]::new(
@@ -179,6 +179,7 @@ function Invoke-LaunchSafetyRecord {
       throw $recordFailure
     }
   } finally {
+    Remove-Item -LiteralPath $outputPath -Force -ErrorAction SilentlyContinue
     Pop-Location
   }
 }
@@ -455,10 +456,10 @@ function Invoke-LaunchSafetyOptIns {
         }
 
         $nginxExit = 0
-        & $Python -m pytest tests/launch_safety/integration/test_launch_matrix.py tests/launch_safety/integration/test_nginx_boundary.py tests/launch_safety/integration/test_network_boundary.py -m integration -q
+        $nginxOutput = (& $Python -m pytest tests/launch_safety/integration/test_launch_matrix.py tests/launch_safety/integration/test_nginx_boundary.py tests/launch_safety/integration/test_network_boundary.py -m integration -q 2>&1 | Out-String)
         $nginxExit = [int]$LASTEXITCODE
         $nginxStatus = if ($nginxExit -eq 0) { "pass" } else { "fail" }
-        Invoke-LaunchSafetyRecord "compose-nginx-opt-in" $nginxStatus $nginxExit "launch matrix integration" "pytest launch matrix"
+        Invoke-LaunchSafetyRecord "compose-nginx-opt-in" $nginxStatus $nginxExit "launch matrix integration" "pytest launch matrix" $nginxOutput
         if ($nginxExit -ne 0) {
           Set-LaunchSafetyOptInExit $nginxExit
           Write-Step "FAIL" "Launch Safety Nginx opt-in" "exited with code $nginxExit"
@@ -555,19 +556,28 @@ function Invoke-LaunchSafetyFinalRender {
     Pop-Location
   }
   Write-Step "OK" "Launch Safety final evidence render" $evidenceOutput
-  if ($Script:LaunchSafetyEvidenceStateOwned) {
-    Remove-Item -LiteralPath $LaunchSafetyEvidenceState -Force -ErrorAction SilentlyContinue
-  }
+  $bundleOutput = if ($LaunchSafetyEvidenceBundle) { $LaunchSafetyEvidenceBundle } else { "$evidenceOutput.json" }
+  Push-Location $Root
+  try {
+    $bundleArgs = @("scripts/ops/record_launch_evidence.py", "bundle", "--output", $bundleOutput)
+    if ($LaunchSafetyEvidenceState) { $bundleArgs += @("--state", $LaunchSafetyEvidenceState) }
+    & $Python @bundleArgs
+    if ($LASTEXITCODE -ne 0) { throw "failed to write canonical evidence bundle" }
+  } finally { Pop-Location }
+  $Script:LaunchSafetyGeneratedBundle = if ([System.IO.Path]::IsPathRooted($bundleOutput)) { $bundleOutput } else { Join-Path $Root $bundleOutput }
 }
 
 function Invoke-LaunchSafetyBundleVerification {
-  if ([string]::IsNullOrWhiteSpace($LaunchSafetyEvidenceBundle)) { return }
-  $verifyExit = Invoke-ReleaseEvidenceVerifier -Bundle $LaunchSafetyEvidenceBundle -Python $Python
+  if ([string]::IsNullOrWhiteSpace($Script:LaunchSafetyGeneratedBundle)) { return }
+  $verifyExit = Invoke-ReleaseEvidenceVerifier -Bundle $Script:LaunchSafetyGeneratedBundle -Python $Python -Root $Root
   if ($verifyExit -ne 0) {
     $Script:Failures++
     Write-Step "FAIL" "Launch Safety evidence verifier" "exited with code $verifyExit"
   } else {
-    Write-Step "OK" "Launch Safety evidence verifier" $LaunchSafetyEvidenceBundle
+    Write-Step "OK" "Launch Safety evidence verifier" $Script:LaunchSafetyGeneratedBundle
+    if ($Script:LaunchSafetyEvidenceStateOwned) {
+      Remove-Item -LiteralPath $LaunchSafetyEvidenceState -Force -ErrorAction SilentlyContinue
+    }
   }
 }
 

@@ -15,8 +15,15 @@ import json
 import os
 from pathlib import Path
 import re
+import sys
 import tempfile
 from typing import Any, Literal
+
+ROOT = Path(__file__).resolve().parents[2]
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
+
+from agent.control_plane.evidence import ParsedOutcome, classify_verdict, parse_pytest_output
 
 
 Status = Literal["pass", "fail", "skip"]
@@ -303,7 +310,16 @@ class EvidenceDocument:
 
     def save(self) -> None:
         self.path.parent.mkdir(parents=True, exist_ok=True)
-        payload = {
+        payload = self._state_payload()
+        temporary = self.path.with_suffix(self.path.suffix + ".tmp")
+        temporary.write_text(
+            json.dumps(payload, ensure_ascii=True, indent=2, sort_keys=True) + "\n",
+            encoding="utf-8",
+        )
+        os.replace(temporary, self.path)
+
+    def _state_payload(self) -> dict[str, Any]:
+        return {
             "version": STATE_VERSION,
             "revision": self.revision,
             "external_gates": self.external_gates,
@@ -312,12 +328,29 @@ class EvidenceDocument:
                 for name in sorted(self.sections)
             },
         }
-        temporary = self.path.with_suffix(self.path.suffix + ".tmp")
-        temporary.write_text(
-            json.dumps(payload, ensure_ascii=True, indent=2, sort_keys=True) + "\n",
-            encoding="utf-8",
-        )
-        os.replace(temporary, self.path)
+
+    def write_bundle(self, output_path: Path) -> None:
+        self.validate_final()
+        state = self._state_payload()
+        canonical = json.dumps(state, ensure_ascii=True, sort_keys=True, separators=(",", ":"))
+        now = datetime.now(timezone.utc).isoformat()
+        digest = sha256(canonical.encode()).hexdigest()
+        bundle = {
+            "bundle_kind": "launch-safety-state-v1",
+            "schema_version": "1",
+            "artifact_id": f"launch-safety-{self.revision}",
+            "head_sha": self.revision,
+            "branch": "release-gate",
+            "started_at": now,
+            "finished_at": now,
+            "command": "scripts/release_gate.ps1",
+            "environment": {"recorder": "record_launch_evidence.py", "database_target": "redacted"},
+            "allowlist": [], "verdict": "PASS", "artifacts": sorted(self.sections),
+            "state": state, "output": canonical, "output_sha256": digest,
+            "state_sha256": digest,
+        }
+        output_path.parent.mkdir(parents=True, exist_ok=True)
+        output_path.write_text(json.dumps(bundle, ensure_ascii=True, indent=2, sort_keys=True) + "\n", encoding="utf-8")
 
     def _validate_opt_in_sections(self) -> None:
         for name in OPT_IN_SECTIONS:
@@ -326,6 +359,17 @@ class EvidenceDocument:
                 raise ValueError(
                     f"opt-in section has invalid skip reason: {name}/{evidence.summary}"
                 )
+            if name == "compose-nginx-opt-in" and evidence.status == "pass":
+                if (
+                    not evidence.outcomes
+                    or not evidence.environment
+                    or not evidence.head_sha
+                    or not evidence.output_sha256
+                    or evidence.verdict != "PASS"
+                ):
+                    raise ValueError(
+                        "compose-nginx-opt-in pass evidence requires capture metadata"
+                    )
 
     def _validate_external_section(self) -> None:
         external = self.sections["external-gates"]
@@ -342,9 +386,7 @@ class EvidenceDocument:
             raise ValueError("final evidence revision is empty or unknown")
         if self.external_gates != DEFAULT_EXTERNAL_GATES:
             raise ValueError("external gates do not match the approved blocked state")
-        for name in FUNCTIONAL_SECTIONS:
-            if self.sections[name].status != "pass":
-                raise ValueError(f"functional section is not pass: {name}")
+        _validate_functional_sections(self.sections)
         failed = sorted(
             name for name, evidence in self.sections.items() if evidence.status == "fail"
         )
@@ -426,6 +468,35 @@ def record_section(
     document.save()
 
 
+def _validate_functional_sections(sections: dict[str, CommandEvidence]) -> None:
+    for name in FUNCTIONAL_SECTIONS:
+        evidence = sections[name]
+        if evidence.status != "pass" or evidence.verdict != "PASS":
+            raise ValueError(f"functional section is not pass: {name}")
+        outcomes = evidence.outcomes
+        if not outcomes:
+            continue
+        if _outcomes_verdict(outcomes) != "PASS":
+            raise ValueError(f"functional section verdict is blocked: {name}")
+        if not evidence.output_sha256:
+            raise ValueError(f"functional section is missing output checksum: {name}")
+
+
+def _outcomes_verdict(outcomes: dict[str, Any]) -> str:
+    try:
+        outcome = ParsedOutcome(
+            passed=outcomes["passed"], failed=outcomes["failed"],
+            errors=outcomes["errors"], skipped=outcomes["skipped"],
+            xfailed=outcomes["xfailed"], collection_errors=outcomes["collection_errors"],
+            interrupted=outcomes["interrupted"], return_code=outcomes["return_code"],
+            failed_nodeids=tuple(outcomes.get("failed_nodeids", ())),
+            error_nodeids=tuple(outcomes.get("error_nodeids", ())), summary_present=True,
+        )
+    except (KeyError, TypeError, ValueError):
+        return "BLOCKED"
+    return classify_verdict(outcome, frozenset())
+
+
 def _build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description=__doc__)
     subparsers = parser.add_subparsers(dest="action", required=True)
@@ -440,7 +511,9 @@ def _build_parser() -> argparse.ArgumentParser:
     record.add_argument("--head-sha", default="")
     record.add_argument("--outcomes-json", default="")
     record.add_argument("--environment-json", default="")
-    record.add_argument("--output-text", default=None)
+    output = record.add_mutually_exclusive_group()
+    output.add_argument("--output-text", default=None)
+    output.add_argument("--output-file", type=Path)
     record.add_argument("--output-sha256", default="")
     record.add_argument("--verdict", choices=("PASS", "BLOCKED", "UNCLASSIFIED"))
     record.add_argument("--state", type=Path, default=_default_state_path())
@@ -449,12 +522,21 @@ def _build_parser() -> argparse.ArgumentParser:
     harness.add_argument("--section", required=True, choices=REQUIRED_SECTIONS)
     harness.add_argument("--primary-exit", type=int, required=True)
     harness.add_argument("--cleanup-exit", type=int, required=True)
+    harness.add_argument("--command", default="docker compose harness")
+    harness.add_argument("--head-sha", default="")
+    harness.add_argument("--environment-json", default="")
+    output = harness.add_mutually_exclusive_group()
+    output.add_argument("--output-text", default=None)
+    output.add_argument("--output-file", type=Path)
     harness.add_argument("--state", type=Path, default=_default_state_path())
 
     render = subparsers.add_parser("render", help="render state as Markdown")
     render.add_argument("--state", type=Path, default=_default_state_path())
     render.add_argument("--output", type=Path)
     render.add_argument("--final", action="store_true")
+    bundle = subparsers.add_parser("bundle", help="write canonical verification bundle")
+    bundle.add_argument("--state", type=Path, default=_default_state_path())
+    bundle.add_argument("--output", type=Path, required=True)
     return parser
 
 
@@ -471,48 +553,114 @@ def _metadata_from_args(args: argparse.Namespace) -> tuple[dict[str, Any] | None
     return outcomes, environment
 
 
-def main(argv: list[str] | None = None) -> int:
-    args = _build_parser().parse_args(argv)
-    if args.action == "record":
-        outcomes, environment = _metadata_from_args(args)
-        if outcomes is None and args.output_text is not None:
-            try:
-                from agent.control_plane.evidence import parse_pytest_output
-                parsed = parse_pytest_output(args.output_text, args.exit_code)
-                if parsed.summary_present:
-                    outcomes = asdict(parsed)
-            except (ImportError, TypeError, ValueError):
-                outcomes = None
-        record_section(
-            args.section,
-            CommandEvidence(args.command or args.section, args.exit_code, args.summary, args.status),
-            args.state,
-            revision=args.revision,
-            outcomes=outcomes,
-            environment=environment,
-            head_sha=args.head_sha or None,
-            output=args.output_text,
-            output_sha256=args.output_sha256 or None,
-            verdict=args.verdict,
-        )
-        return 0
-    if args.action == "harness-result":
+def _record_payload(args: argparse.Namespace, outcomes: dict[str, Any] | None) -> tuple[dict[str, Any] | None, str | bytes | None, str, str | None]:
+    effective_status = args.status
+    effective_verdict = args.verdict
+    output: str | bytes | None = args.output_text
+    if args.output_file is not None:
+        try:
+            output = args.output_file.read_bytes()
+        except OSError as exc:
+            raise ValueError(f"unable to read output file: {exc}") from exc
+    output_text: str | None
+    if isinstance(output, bytes):
+        try:
+            output_text = output.decode("utf-8")
+        except UnicodeDecodeError:
+            output_text = None
+    else:
+        output_text = output
+    if outcomes is None and output is not None:
+        if output_text is None:
+            parsed = None
+        else:
+            parsed = parse_pytest_output(output_text, args.exit_code)
+        if parsed is not None and parsed.summary_present:
+            outcomes = asdict(parsed)
+            effective_verdict = classify_verdict(parsed, frozenset())
+            effective_status = {"PASS": "pass", "BLOCKED": "fail", "UNCLASSIFIED": "skip"}[effective_verdict]
+        elif parsed is None or not parsed.summary_present:
+            # A captured command without a parseable pytest summary is not a
+            # passing test run; preserve the output and classify it explicitly.
+            effective_verdict = "UNCLASSIFIED"
+            effective_status = "skip"
+    return outcomes, output, effective_status, effective_verdict
+
+
+def _handle_record(args: argparse.Namespace) -> int:
+    outcomes, environment = _metadata_from_args(args)
+    outcomes, output, effective_status, effective_verdict = _record_payload(args, outcomes)
+    record_section(
+        args.section,
+        CommandEvidence(args.command or args.section, args.exit_code, args.summary, effective_status),
+        args.state,
+        revision=args.revision,
+        outcomes=outcomes,
+        environment=environment,
+        head_sha=args.head_sha or None,
+        output=output,
+        output_sha256=args.output_sha256 or None,
+        verdict=effective_verdict,
+    )
+    return 0
+
+
+def _handle_harness(args: argparse.Namespace) -> int:
         result = resolve_harness_result(
             primary_exit=args.primary_exit, cleanup_exit=args.cleanup_exit
         )
-        status: Status = "pass" if result.exit_code == 0 else "fail"
+        output: bytes
+        if args.output_file is not None:
+            try:
+                output = args.output_file.read_bytes()
+            except OSError as exc:
+                raise ValueError(f"unable to read output file: {exc}") from exc
+        elif args.output_text is not None:
+            output = args.output_text.encode("utf-8")
+        else:
+            output = b""
+        from agent.control_plane.evidence import parse_pytest_output
+
+        try:
+            parsed = parse_pytest_output(output.decode("utf-8"), result.exit_code)
+        except UnicodeDecodeError as exc:
+            raise ValueError("captured harness output is not valid UTF-8") from exc
+        _outcomes = asdict(parsed) if parsed.summary_present else None
+        effective_verdict = classify_verdict(parsed, frozenset())
+        status: Status = {
+            "PASS": "pass", "BLOCKED": "fail", "UNCLASSIFIED": "skip",
+        }[effective_verdict]
+        _environment = {"database_target": "redacted"}
+        if args.environment_json:
+            try:
+                _environment = json.loads(args.environment_json)
+            except json.JSONDecodeError as exc:
+                raise ValueError(f"metadata must be valid JSON: {exc}") from exc
+            if not isinstance(_environment, dict):
+                raise ValueError("environment metadata must be an object")
         record_section(
             args.section,
             CommandEvidence(
-                "docker compose harness",
+                args.command,
                 result.exit_code,
                 f"primary_exit={args.primary_exit}; cleanup_exit={args.cleanup_exit}",
                 status,
             ),
             args.state,
+            outcomes=_outcomes,
+            environment=_environment,
+            head_sha=args.head_sha or None,
+            output=output,
+            verdict=effective_verdict,
         )
         return result.exit_code
+
+
+def _handle_render_or_bundle(args: argparse.Namespace) -> int:
     document = EvidenceDocument.load(args.state)
+    if args.action == "bundle":
+        document.write_bundle(args.output)
+        return 0
     rendered = document.render(final=args.final)
     if args.output:
         args.output.parent.mkdir(parents=True, exist_ok=True)
@@ -520,6 +668,15 @@ def main(argv: list[str] | None = None) -> int:
     else:
         print(rendered)
     return 0
+
+
+def main(argv: list[str] | None = None) -> int:
+    args = _build_parser().parse_args(argv)
+    if args.action == "record":
+        return _handle_record(args)
+    if args.action == "harness-result":
+        return _handle_harness(args)
+    return _handle_render_or_bundle(args)
 
 
 if __name__ == "__main__":
