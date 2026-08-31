@@ -1,5 +1,7 @@
 # BÀN GIAO DỰ ÁN vinhlong360 — Prompt tiếp quản cho Claude Code
 
+Authority: config/release-authority.json
+
 > **STATUS (2026-08-04): active — đã truth-sync.** Bản gốc 2026-06-24; đã cập nhật flow data, baseline regression, remote Git và security/CI remediation. Tranche local mới nhất hoàn tất **Plan A trust/scanner correctness**, **bound-complete pinned egress**, **P1 egress observability**, **P2 bounded consent-cookie redirects**, **crawler exact-origin pinning**, **Nominatim exact-origin pinning**, **OpenWeatherMap exact-origin pinning**, và **Ruff test-hygiene cleanup**: `attributes.verifiedAt` là authority duy nhất; scanner repo/package chỉ xét owned immutable inputs; 6 mapped GET có encoded/decoded caps, bounded gzip, four-slot DNS gate, một whole-chain deadline và real-httpcore local-socket tests; redirect crawler/geocode/weather khác origin bị chặn trước resolve/dial; security denial phát đúng một warning origin-only trên logger `security.egress`; request-scoped cookie jar có hard caps. Code/test head hiện tại là `6d2e9d8f`; focused pinned + mapped consumers + geocode + realtime đạt `359 passed`, full resilience đạt `173 passed, 1 skipped`, full-repo Ruff sạch, `run_hard.py --all` đạt `hard=0`, ratchet không tăng. Full backend run nguyên khối gần nhất vẫn còn 2 maintenance timeout và 1 xdist worker crash không tái hiện; evidence chi tiết ở `docs/ROADMAP.md`. Chưa push/deploy/production mutation; nợ thật còn lại ở §10. Mâu thuẫn với `CLAUDE.md` → CLAUDE.md thắng.
 
 > Dán toàn bộ file này làm tin nhắn đầu tiên cho phiên/tài-khoản Claude Code mới.
@@ -21,7 +23,7 @@ Bạn đang tiếp quản dự án **vinhlong360**. Hãy đọc kỹ phần dư�
 1. Đọc `CLAUDE.md` (hiến pháp thực thi — bất biến + giao thức, OVERRIDE mọi mặc định).
 2. Đọc `docs/ROADMAP.md` (sổ track dài hạn + **mục "Backlog phát sinh" ở cuối** = việc tồn đọng mới nhất). Thứ bậc nguồn việc: **chỉ đạo chủ trong phiên > spec/plan đã duyệt (`docs/superpowers/`) > ROADMAP backlog** (CLAUDE.md §3).
 3. Lướt `docs/architecture-decisions.md` (ADR — gồm quyết định UGC/auth Postgres-only #3), `docs/README.md` (bản đồ tài liệu), `docs/deployment-guide.md`, `docs/incident-runbook.md`.
-4. Chạy `python scripts/ops/run_backend_regression.py --deadline-seconds 7000` để xác lập baseline backend hiện tại (Phase A serial; chỉ `tests/launch_safety/test_closed_installer.py` ở Phase B với `-n 2`). Hiện không có fail-đã-biết; mọi failure mới phải triage như regression.
+4. Chạy `python scripts/ops/run_backend_regression.py --deadline-seconds 7000` để xác lập baseline backend hiện tại (Phase A serial; chỉ `tests/launch_safety/test_closed_installer.py` ở Phase B với `-n 2`). Authority registry ghi nhận baseline chuẩn **15 fail-đã-biết**; mọi failure ngoài roster phải triage như regression.
    > ⏱ **Ngân sách thời gian (đo 2026-08-07, đừng bị bất ngờ):** `--deadline-seconds 7000` = **tới ~1 giờ 56 phút**.
    > Lệnh ngắn hơn của CLAUDE.md §3.4 là `python -m pytest -q` = **9985 test, ~33 phút** (con số 33 phút chỉ được
    > ghi trong comment `pytest.ini`, không có trong CLAUDE.md). Không có lệnh nào cho vòng lặp "vài phút" —

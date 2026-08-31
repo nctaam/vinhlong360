@@ -1,5 +1,7 @@
 # docs/ — Bản đồ tài liệu (có trạng thái)
 
+Authority: config/release-authority.json
+
 > **STATUS (2026-08-07): active — nguồn định hướng tài liệu duy nhất.** Viết lại trong đợt truth-sync 2026-07-07 (audit đa-agent 89+6 finding); đồng bộ lại 2026-08-07 (thêm `runbooks/`, `security/`, `drafts/`, bảng quyết định, bản đồ nhánh; hạ `entity-content-model.md` xuống superseded). Quy tắc: tài liệu chỉ đạo phải có header `> STATUS:`; mọi thứ trong `archive/` là lịch sử — **KHÔNG làm theo** (CLAUDE.md §3.6). File này mâu thuẫn tài liệu khác → CLAUDE.md thắng, rồi tới file này.
 
 ---
@@ -24,7 +26,7 @@
 ## Tài liệu ACTIVE
 
 ### Tiêu chuẩn có răng (`standards/` — SP0/SP1, 2026-07-07)
-- **`standards/00-INDEX.md`** — bảng tổng 34 rule (tầng hard/ratchet/soft + module đo + baseline) & các lệnh
+- **`standards/00-INDEX.md`** — bảng tổng 38 rule (tầng hard/ratchet/soft + module đo + baseline) & các lệnh
 - `standards/10-data.md` … `70-ops.md` — chuẩn từng chiều; `90-exceptions-log.md` — ngoại lệ đã ký + SKIP-log
 - **`standards/95-ra-soat-cong.md`** (2026-08-05) — rà 28 cổng: cổng nào ĐỌC nội dung, cổng nào chỉ kiểm sự có mặt. **Đọc trước khi tin một cổng xanh.**
 - Cơ chế: `scripts/install_hooks.py` (pre-commit chặn hard+ratchet) · `scripts/scorecard.py` (điểm/chiều, không được tụt) · `scripts/checks/baseline_tool.py` (nợ chuẩn) · `pre_merge_check` bước 6-8

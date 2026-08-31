@@ -5,6 +5,8 @@
 >
 > **Branch-specific continuation:** khi đang ở branch `codex/correction-case-pilot`, đọc `docs/superpowers/handoffs/2026-08-18-claude-code-desktop-correction-case-pilot.md` trước khi hành động.
 
+Authority: config/release-authority.json
+
 ---
 
 ## 0. Bối cảnh 1 dòng

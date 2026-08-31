@@ -1,0 +1,301 @@
+"""Fail-closed release authority and evidence freshness checks."""
+
+from __future__ import annotations
+
+from dataclasses import dataclass
+from datetime import UTC, date, datetime, timedelta
+import json
+from pathlib import Path
+import re
+import subprocess
+from typing import Literal
+
+
+AuthorityStatus = Literal["PASS", "STALE", "BLOCKED"]
+_HEAD_SHA = re.compile(r"^[0-9a-fA-F]{40}$")
+_FINDING_ID = re.compile(r"F-(\d{2})")
+_RULE_ROW = re.compile(r"^\s*\|\s*(R[0-9][^|]*)\|", re.MULTILINE)
+_BASELINE_COUNT = re.compile(r"baseline(?:\s+hiện\s+tại|\s+current)?\s*[:=]\s*(\d+)\s+fail", re.IGNORECASE)
+_EXPECTED_P1 = frozenset(
+    {f"F-{index:02d}" for index in range(1, 18)}
+    | {"F-32", "F-34", "F-38", "F-40", "F-41", "F-42", "F-44", "F-47", "F-49", "F-53", "F-69"}
+)
+
+
+@dataclass(frozen=True)
+class ActiveDocument:
+    path: str
+    last_verified_at: datetime
+
+
+@dataclass(frozen=True)
+class AuthorityRegistry:
+    schema_version: str
+    authority_id: str
+    owner: str
+    branch: str
+    head_source: str
+    baseline_source: str
+    rule_index: str
+    audit_artifact: str
+    max_age_hours: int
+    p1_findings: tuple[str, ...]
+    active_documents: tuple[ActiveDocument, ...]
+    baseline_count: int = 15
+    rule_count: int = 38
+    last_verified_at: datetime | None = None
+    head_sha: str | None = None
+
+
+@dataclass(frozen=True)
+class AuthorityReport:
+    status: AuthorityStatus
+    tracked_artifacts: tuple[str, ...] = ()
+    mismatches: tuple[str, ...] = ()
+    expired_documents: tuple[str, ...] = ()
+
+
+def _parse_timestamp(value: object, *, field: str) -> datetime:
+    if not isinstance(value, str) or not value.strip():
+        raise ValueError(f"{field} must be an ISO-8601 timestamp")
+    raw = value.strip()
+    if len(raw) == 10:
+        parsed = datetime.combine(date.fromisoformat(raw), datetime.min.time(), tzinfo=UTC)
+    else:
+        parsed = datetime.fromisoformat(raw.replace("Z", "+00:00"))
+        if parsed.tzinfo is None:
+            raise ValueError(f"{field} must include timezone")
+        parsed = parsed.astimezone(UTC)
+    return parsed
+
+
+def _document_entries(raw: object) -> tuple[ActiveDocument, ...]:
+    if raw is None:
+        return ()
+    entries: list[ActiveDocument] = []
+    if isinstance(raw, dict):
+        raw = [{"path": path, "last_verified_at": value} for path, value in raw.items()]
+    if not isinstance(raw, list):
+        raise ValueError("active_documents must be a list or object")
+    for index, item in enumerate(raw):
+        if isinstance(item, str):
+            # A path-only entry is accepted for compatibility, but cannot pass
+            # freshness until it carries an explicit verification timestamp.
+            raise ValueError(f"active_documents[{index}] is missing last_verified_at")
+        if not isinstance(item, dict):
+            raise ValueError(f"active_documents[{index}] must be an object")
+        path = item.get("path")
+        if not isinstance(path, str) or not path or Path(path).is_absolute():
+            raise ValueError(f"active_documents[{index}].path is invalid")
+        entries.append(
+            ActiveDocument(
+                path=path.replace("\\", "/"),
+                last_verified_at=_parse_timestamp(
+                    item.get("last_verified_at"),
+                    field=f"active_documents[{index}].last_verified_at",
+                ),
+            )
+        )
+    return tuple(entries)
+
+
+def load_authority(path: Path) -> AuthorityRegistry:
+    """Load and validate the machine-readable release authority registry."""
+
+    payload = json.loads(Path(path).read_text(encoding="utf-8"))
+    _validate_registry_payload(payload)
+    p1 = payload.get("p1_findings", payload.get("p1_ids", ()))
+    active = payload.get("active_documents", payload.get("documents", ()))
+    raw_last_verified = payload.get("last_verified_at")
+    last_verified = _parse_timestamp(raw_last_verified, field="last_verified_at") if raw_last_verified is not None else None
+    raw_head_sha = payload.get("head_sha")
+    if raw_head_sha is not None and (not isinstance(raw_head_sha, str) or (raw_head_sha != "git:HEAD" and not _HEAD_SHA.fullmatch(raw_head_sha))):
+        raise ValueError("head_sha must be a 40-character SHA or git:HEAD")
+    return AuthorityRegistry(
+        schema_version="1",
+        authority_id=payload["authority_id"],
+        owner=payload["owner"],
+        branch=payload["branch"],
+        head_source=payload["head_source"],
+        baseline_source=payload["baseline_source"],
+        rule_index=payload["rule_index"],
+        audit_artifact=payload["audit_artifact"].replace("\\", "/"),
+        max_age_hours=payload["max_age_hours"],
+        p1_findings=tuple(p1),
+        active_documents=_document_entries(active),
+        baseline_count=int(payload.get("baseline_count", 15)),
+        rule_count=int(payload.get("rule_count", 38)),
+        last_verified_at=last_verified,
+        head_sha=raw_head_sha,
+    )
+
+
+def _validate_registry_payload(payload: object) -> None:
+    if not isinstance(payload, dict):
+        raise ValueError("authority registry must be a JSON object")
+    _require_registry_fields(payload)
+    _validate_registry_values(payload)
+    _validate_registry_lists(payload)
+
+
+def _require_registry_fields(payload: dict[str, object]) -> None:
+    required = (
+        "schema_version", "authority_id", "owner", "branch", "head_source",
+        "baseline_source", "rule_index", "audit_artifact", "max_age_hours",
+    )
+    missing = [field for field in required if field not in payload]
+    if missing:
+        raise ValueError("authority registry missing: " + ", ".join(missing))
+
+
+def _validate_registry_values(payload: dict[str, object]) -> None:
+    if payload["schema_version"] != "1":
+        raise ValueError("unsupported authority schema_version")
+    if type(payload["max_age_hours"]) is not int or payload["max_age_hours"] <= 0:
+        raise ValueError("max_age_hours must be a positive integer")
+    strings = ("authority_id", "owner", "branch", "head_source", "baseline_source", "rule_index", "audit_artifact")
+    if any(not isinstance(payload[field], str) or not payload[field].strip() for field in strings):
+        raise ValueError("authority registry string fields must be non-empty")
+
+
+def _validate_registry_lists(payload: dict[str, object]) -> None:
+    p1 = payload.get("p1_findings", payload.get("p1_ids", ()))
+    if not isinstance(p1, list) or not all(isinstance(item, str) for item in p1):
+        raise ValueError("p1_findings must be a list of strings")
+
+
+def _git(root: Path, *args: str) -> tuple[int, str]:
+    try:
+        completed = subprocess.run(
+            ["git", *args], cwd=root, text=True, capture_output=True, check=False,
+        )
+    except OSError:
+        return 127, ""
+    return completed.returncode, completed.stdout.strip()
+
+
+def _tracked(root: Path, path: str) -> bool:
+    code, _ = _git(root, "ls-files", "--error-unmatch", "--", path)
+    return code == 0
+
+
+def _read(root: Path, path: str, mismatches: list[str], label: str) -> str:
+    candidate = root / path
+    try:
+        candidate.resolve().relative_to(root.resolve())
+        return candidate.read_text(encoding="utf-8")
+    except (OSError, ValueError, UnicodeError):
+        mismatches.append(f"{label} missing or unreadable: {path}")
+        return ""
+
+
+def _check_link(root: Path, reference: str, mismatches: list[str], label: str) -> None:
+    target = reference.split("#", 1)[0]
+    if not target or not (root / target).is_file():
+        mismatches.append(f"{label} link missing: {reference}")
+
+
+def _normalize_now(now: datetime, mismatches: list[str]) -> datetime:
+    if not isinstance(now, datetime):
+        mismatches.append("now must be a datetime")
+        return datetime.now(tz=UTC)
+    if now.tzinfo is None:
+        mismatches.append("now must include timezone")
+        return now.replace(tzinfo=UTC)
+    return now.astimezone(UTC)
+
+
+def _check_identity(root: Path, registry: AuthorityRegistry, head_sha: str, mismatches: list[str]) -> None:
+    if not isinstance(head_sha, str) or not _HEAD_SHA.fullmatch(head_sha):
+        mismatches.append("HEAD shape invalid")
+    if registry.head_source != "git:HEAD":
+        mismatches.append(f"head source mismatch: expected git:HEAD, got {registry.head_source}")
+    if registry.head_sha not in (None, "git:HEAD") and registry.head_sha.lower() != head_sha.lower():
+        mismatches.append("HEAD does not match registry head_sha")
+    code, branch = _git(root, "branch", "--show-current")
+    if code != 0 or not branch:
+        mismatches.append("git branch unavailable")
+    elif branch != registry.branch:
+        mismatches.append(f"branch mismatch: expected {registry.branch}, got {branch}")
+
+
+def _check_artifacts(root: Path, registry: AuthorityRegistry, mismatches: list[str]) -> list[str]:
+    tracked: list[str] = []
+    references = (
+        ("config/release-authority.json", "registry"),
+        (registry.baseline_source.split("#", 1)[0], "baseline"),
+        (registry.rule_index, "rule index"),
+        (registry.audit_artifact, "audit artifact"),
+    ) + tuple((doc.path, "active document") for doc in registry.active_documents)
+    for path, label in references:
+        if _tracked(root, path):
+            tracked.append(path)
+        else:
+            mismatches.append(f"untracked {label}: {path}")
+        if not (root / path).is_file():
+            mismatches.append(f"missing {label}: {path}")
+    return list(dict.fromkeys(tracked))
+
+
+def _check_content(root: Path, registry: AuthorityRegistry, mismatches: list[str]) -> str:
+    _check_link(root, registry.baseline_source, mismatches, "baseline")
+    _check_link(root, registry.rule_index, mismatches, "rule index")
+    _check_link(root, registry.audit_artifact, mismatches, "audit artifact")
+    baseline_text = _read(root, registry.baseline_source.split("#", 1)[0], mismatches, "baseline")
+    counts = [int(match.group(1)) for match in _BASELINE_COUNT.finditer(baseline_text)]
+    if not counts or registry.baseline_count not in counts:
+        mismatches.append(f"baseline count mismatch: expected {registry.baseline_count}")
+    rule_text = _read(root, registry.rule_index, mismatches, "rule index")
+    rule_ids = {match.group(1).strip() for match in _RULE_ROW.finditer(rule_text)}
+    if len(rule_ids) != registry.rule_count:
+        mismatches.append(f"rule count mismatch: expected {registry.rule_count}, got {len(rule_ids)}")
+    if set(registry.p1_findings) != _EXPECTED_P1:
+        mismatches.append("P1 finding roster mismatch")
+    audit_text = _read(root, registry.audit_artifact, mismatches, "audit")
+    finding_ids = {f"F-{int(match.group(1)):02d}" for match in _FINDING_ID.finditer(audit_text)}
+    expected_findings = {f"F-{index:02d}" for index in range(1, 74)}
+    if finding_ids != expected_findings:
+        missing = sorted(expected_findings - finding_ids)
+        extra = sorted(finding_ids - expected_findings)
+        detail = f"missing={','.join(missing)}" if missing else ""
+        if extra:
+            detail += f" extra={','.join(extra)}"
+        mismatches.append("audit finding IDs mismatch: " + detail.strip())
+    return audit_text
+
+
+def _check_documents(root: Path, registry: AuthorityRegistry, now: datetime, audit_text: str, mismatches: list[str]) -> list[str]:
+    expired: list[str] = []
+    for doc in registry.active_documents:
+        if now - doc.last_verified_at > timedelta(hours=registry.max_age_hours):
+            expired.append(doc.path)
+        text = _read(root, doc.path, mismatches, "active document")
+        if "Authority: config/release-authority.json" not in text:
+            mismatches.append(f"authority link missing: {doc.path}")
+    if "Authority: config/release-authority.json" not in audit_text:
+        mismatches.append(f"authority link missing: {registry.audit_artifact}")
+    return expired
+
+
+def check_authority(root: Path, now: datetime, head_sha: str) -> AuthorityReport:
+    """Check branch, tracked evidence, consistency and document freshness."""
+
+    root = Path(root).resolve()
+    mismatches: list[str] = []
+    try:
+        registry = load_authority(root / "config/release-authority.json")
+    except (OSError, ValueError, json.JSONDecodeError) as exc:
+        return AuthorityReport("BLOCKED", (), (f"invalid authority registry: {exc}",), ())
+    now = _normalize_now(now, mismatches)
+    _check_identity(root, registry, head_sha, mismatches)
+    tracked = _check_artifacts(root, registry, mismatches)
+    audit_text = _check_content(root, registry, mismatches)
+    expired = _check_documents(root, registry, now, audit_text, mismatches)
+
+    if mismatches:
+        status: AuthorityStatus = "BLOCKED"
+    elif expired:
+        status = "STALE"
+    else:
+        status = "PASS"
+    return AuthorityReport(status, tuple(dict.fromkeys(tracked)), tuple(dict.fromkeys(mismatches)), tuple(expired))

@@ -1,4 +1,5 @@
 # 00-INDEX — Bảng tổng tiêu chuẩn vinhlong360
+Authority: config/release-authority.json
 > **STATUS (2026-07-07): active — bản 1.0 (SP0).** Nguồn máy: `baseline.json` (ratchet) + `scorecard-history.jsonl` (điểm). Cập nhật baseline CHỈ trong cùng commit với thay đổi diện-rộng có giải trình, hoặc khi ghi nhận tiến bộ (count giảm).
 
 Cơ chế: **hard** = 0 vi phạm mọi lúc · **hard-ratchet/soft-ratchet** = không được TĂNG so baseline (soft được SKIP có lý do + log) · **pending-check** = có hạn SP · **checklist/quy-trình-ký** = ngoại lệ chủ dự án ký trong 90-exceptions-log.md.

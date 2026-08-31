@@ -118,3 +118,10 @@ def test_stale_active_document_cannot_be_release_evidence(tmp_path: Path) -> Non
     )
     assert report.status == "STALE"
     assert report.expired_documents == ("docs/HANDOFF.md",)
+
+
+def test_invalid_head_shape_blocks_authority(tmp_path: Path) -> None:
+    write_registry(tmp_path)
+    report = check_authority(tmp_path, now=datetime(2026, 8, 31, tzinfo=UTC), head_sha="not-a-sha")
+    assert report.status == "BLOCKED"
+    assert "HEAD shape invalid" in report.mismatches
