@@ -54,6 +54,24 @@ export class CaseReviewConflictError extends Error {
   }
 }
 
+export interface CorrectionProblemDetail {
+  code: string
+  detail: string
+  status: number
+  field?: string
+  correlation_id?: string
+}
+
+export class CorrectionProblemError extends Error {
+  readonly problem: CorrectionProblemDetail
+
+  constructor(problem: CorrectionProblemDetail) {
+    super(problem.detail)
+    this.name = 'CorrectionProblemError'
+    this.problem = problem
+  }
+}
+
 /** Read the non-secret double-submit token, at the moment it is needed. */
 export function readCaseCsrfToken(cookieSource?: string): string {
   const jar = typeof cookieSource === 'string'
@@ -127,7 +145,12 @@ export function useCorrectionCases(fetcher = apiFetch): CorrectionCasesApi {
     return headers
   }
 
-  async function post<T>(url: string, body: unknown, idempotencyKey?: string): Promise<T> {
+  async function post<T>(
+    url: string,
+    body: unknown,
+    idempotencyKey?: string,
+    translateRefusal = true,
+  ): Promise<T> {
     try {
       return await fetcher<T>(url, {
         method: 'POST',
@@ -136,6 +159,7 @@ export function useCorrectionCases(fetcher = apiFetch): CorrectionCasesApi {
         credentials: 'include',
       })
     } catch (error) {
+      if (!translateRefusal) throw error
       return neutralise(error)
     }
   }
@@ -147,7 +171,7 @@ export function useCorrectionCases(fetcher = apiFetch): CorrectionCasesApi {
     // in agent/cases/public_api.py carries an alias and the models forbid
     // extras, so a snake_case body is not "close enough" — it is two errors per
     // field and a 422 the page would show the reporter as their mistake.
-    const receipt = await post<CaseReceipt>('/api/cases/corrections', {
+    const body = {
       reporterPrivacy: submission.reporterPrivacy,
       items: submission.items.map(item => ({
         entityId: item.entityId,
@@ -155,12 +179,27 @@ export function useCorrectionCases(fetcher = apiFetch): CorrectionCasesApi {
         reportedValue: item.reportedValue,
         proposedValue: item.proposedValue,
         baseEntityRevision: item.baseEntityRevision,
+        ...(item.reportedValueKnown === undefined
+          ? {}
+          : { reportedValueKnown: item.reportedValueKnown }),
       })),
       optionalPhone: submission.optionalPhone ?? null,
       notificationConsent: Boolean(submission.notificationConsent),
       handoffDigest: submission.handoffDigest ?? null,
       handoffConfirmed: Boolean(submission.handoffConfirmed),
-    }, idempotencyKey)
+    }
+    let receipt: CaseReceipt
+    try {
+      receipt = await post<CaseReceipt>('/api/cases/corrections', body, idempotencyKey, false)
+    } catch (error) {
+      const raw = error as { data?: CorrectionProblemDetail, statusCode?: number }
+      const problem = raw?.data
+      if (problem && typeof problem.code === 'string' && Number(raw.statusCode) === 422) {
+        // Keep the caller's draft intact while exposing precise field feedback.
+        throw new CorrectionProblemError(problem)
+      }
+      throw error
+    }
     secretState.capability = receipt.capability
     publicReference.value = receipt.publicReference
     return receipt

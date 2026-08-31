@@ -14,7 +14,7 @@ import uuid
 
 from fastapi import APIRouter, Request
 from fastapi.responses import JSONResponse, Response
-from pydantic import BaseModel, ConfigDict, Field, ValidationError
+from pydantic import AliasChoices, BaseModel, ConfigDict, Field, ValidationError, model_validator
 
 from .domain import PublicCaseStatus
 from .security import CaseCrypto
@@ -69,17 +69,30 @@ def _production() -> bool:
 
 # ── Problem details ──
 
-def _problem(status: int, code: str, detail: str, *, title: str | None = None) -> JSONResponse:
+def _problem(
+    status: int,
+    code: str,
+    detail: str,
+    *,
+    title: str | None = None,
+    field: str | None = None,
+    correlation_id: str | None = None,
+) -> JSONResponse:
     """RFC 9457 shape. Never echoes a credential, a value, or backstage state."""
+    try:
+        from control_plane.contracts import problem_detail
+    except ModuleNotFoundError:  # package import (`agent.cases`) in tooling/tests
+        from agent.control_plane.contracts import problem_detail
+
+    correlation_id = correlation_id or uuid.uuid4().hex
+    body = problem_detail(code, detail, status, field=field, correlation_id=correlation_id)
+    if title:
+        body["title"] = title
+    # Keep request_id as a compatibility alias while all new consumers use the
+    # explicit correlation_id field.
+    body["request_id"] = correlation_id
     return JSONResponse(
-        {
-            "type": f"{_PROBLEM_BASE}{code}",
-            "title": title or code.replace("_", " "),
-            "status": status,
-            "detail": detail,
-            "code": code,
-            "request_id": uuid.uuid4().hex,
-        },
+        body,
         status_code=status,
         media_type=PROBLEM_MEDIA_TYPE,
         headers=dict(_NO_STORE),
@@ -152,10 +165,45 @@ def _guard_session_mutation(request: Request) -> JSONResponse | None:
 async def _model(request: Request, model: type[BaseModel]):
     try:
         return model.model_validate(await request.json()), None
-    except ValidationError:
-        return None, _problem(422, "invalid_request", "That request body is not accepted.")
+    except ValidationError as exc:
+        errors = exc.errors()
+        loc = errors[0].get("loc", ()) if errors else ()
+        field = ".".join(str(part) for part in loc) or None
+        return None, _problem(
+            422,
+            "invalid_request",
+            "That request body is not accepted.",
+            field=field,
+            correlation_id=request.headers.get("x-request-id"),
+        )
     except (ValueError, TypeError):
         return None, _problem(400, "invalid_request", "That request body is not readable.")
+
+
+def _validate_correction_contract(items, request: Request) -> JSONResponse | None:
+    """Validate each item against the shared registry before service mutation."""
+    try:
+        try:
+            from control_plane.contracts import ContractViolation, validate_payload
+        except ModuleNotFoundError:
+            from agent.control_plane.contracts import ContractViolation, validate_payload
+        for index, item in enumerate(items):
+            validate_payload(
+                "correction-intake",
+                {
+                    "reported_value_known": item.reported_value_known,
+                    "reported_value": item.reported_value,
+                },
+            )
+    except ContractViolation as exc:
+        return _problem(
+            422,
+            exc.code,
+            exc.detail,
+            field=f"items.{index}.{exc.field}" if exc.field else f"items.{index}",
+            correlation_id=request.headers.get("x-request-id"),
+        )
+    return None
 
 
 def _rate_subject(request: Request) -> str:
@@ -191,9 +239,41 @@ class _ItemIn(BaseModel):
 
     entity_id: str = Field(alias="entityId", min_length=1, max_length=128)
     field_path: str = Field(alias="fieldPath", min_length=1, max_length=128)
-    reported_value: str = Field(alias="reportedValue", min_length=1, max_length=2000)
+    reported_value: object | None = Field(
+        default=None,
+        validation_alias=AliasChoices("reportedValue", "reported_value"),
+    )
+    reported_value_known: bool = Field(
+        default=True,
+        validation_alias=AliasChoices("reportedValueKnown", "reported_value_known"),
+    )
     proposed_value: str = Field(alias="proposedValue", min_length=1, max_length=2000)
     base_entity_revision: int = Field(alias="baseEntityRevision", ge=1)
+
+    @model_validator(mode="after")
+    def _validate_reported_value_contract(self) -> "_ItemIn":
+        try:
+            from control_plane.contracts import ContractViolation, validate_payload
+        except ModuleNotFoundError:
+            from agent.control_plane.contracts import ContractViolation, validate_payload
+
+        try:
+            validate_payload(
+                "correction-intake",
+                {
+                    "reported_value_known": self.reported_value_known,
+                    "reported_value": self.reported_value,
+                },
+            )
+        except ContractViolation as exc:
+            raise ValueError(exc.detail) from exc
+        if self.reported_value_known and (
+            type(self.reported_value) is not str
+            or not self.reported_value.strip()
+            or len(self.reported_value) > 2000
+        ):
+            raise ValueError("reported value must be a non-blank string")
+        return self
 
 
 class _CreateIn(BaseModel):
@@ -293,6 +373,9 @@ async def create_correction(request: Request):
     body, invalid = await _model(request, _CreateIn)
     if invalid is not None:
         return invalid
+    contract_error = _validate_correction_contract(body.items, request)
+    if contract_error is not None:
+        return contract_error
 
     try:
         result = _service().create_correction_from_transport(

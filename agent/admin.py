@@ -1138,8 +1138,8 @@ async def badge_counts(request: Request):
             counts["unclassified"] = db._row_to_dict(unc_row)["c"] if unc_row else 0
         try:
             import kb_curation
-            s = kb_curation.stats()
-            counts["provisional"] = s.get("pending", 0)
+            s = kb_curation.normalize_curation_summary(kb_curation.stats())
+            counts["provisional"] = s["provisional_count"]
         except Exception:
             logger.debug("Badge kb_curation stats failed", exc_info=True)
         counts["reports"] += _count_open_info_reports()
@@ -1209,8 +1209,8 @@ def _dashboard_alerts_unclassified(alerts) -> None:
 def _dashboard_alerts_provisional(alerts) -> None:
     try:
         import kb_curation
-        s = kb_curation.stats()
-        prov = s.get("pending", 0)
+        s = kb_curation.normalize_curation_summary(kb_curation.stats())
+        prov = s["provisional_count"]
         if prov:
             alerts.append({"type": "provisional", "count": prov, "label": f"{prov} entity chờ xét duyệt", "icon": "🔬", "link": "/admin/duyet-tu-hoc", "priority": 6})
     except Exception:

@@ -81,10 +81,14 @@ export interface CaseReceipt {
 export interface CorrectionItemInput {
   entityId: string
   fieldPath: string
-  reportedValue: string
+  reportedValue: string | null
+  /** Explicit discriminator; omitted only for legacy callers. */
+  reportedValueKnown?: boolean
   proposedValue: string
   baseEntityRevision: number
 }
+
+export const CORRECTION_INTAKE_CONTRACT_VERSION = '1' as const
 
 export interface CorrectionSubmission {
   reporterPrivacy: 'anonymous' | 'attributed'

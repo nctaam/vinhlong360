@@ -2633,6 +2633,7 @@ def _file_legacy_correction(entity_id: str, field: str, detail: str, request: Re
             reported_value=_legacy_value_at(entity, field_path),
             proposed_value=proposed,
             base_entity_revision=int(entity.get("revision") or 1),
+            reported_value_known=True,
         ),),
         optional_phone=None,
         notification_consent=False,

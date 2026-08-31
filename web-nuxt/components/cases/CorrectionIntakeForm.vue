@@ -45,6 +45,7 @@ const FIELD_CHOICES = [
 interface DraftItem {
   fieldPath: string
   reportedValue: string
+  reportedValueKnown: boolean
   proposedValue: string
 }
 
@@ -52,7 +53,7 @@ const initialField = FIELD_CHOICES.some(choice => choice.path === props.initialF
   ? String(props.initialFieldPath)
   : ''
 const items = reactive<DraftItem[]>([
-  { fieldPath: initialField, reportedValue: '', proposedValue: '' },
+  { fieldPath: initialField, reportedValue: '', reportedValueKnown: true, proposedValue: '' },
 ])
 const reporterPrivacy = ref<'anonymous' | 'attributed'>('anonymous')
 const optionalPhone = ref('')
@@ -72,7 +73,7 @@ const errorSummary = ref<HTMLElement | null>(null)
 const canAddItem = computed(() => items.length < 10)
 
 function addItem() {
-  if (canAddItem.value) items.push({ fieldPath: '', reportedValue: '', proposedValue: '' })
+  if (canAddItem.value) items.push({ fieldPath: '', reportedValue: '', reportedValueKnown: true, proposedValue: '' })
 }
 
 function removeItem(index: number) {
@@ -133,6 +134,7 @@ function submit() {
     entityId: props.entityId,
     fieldPath: item.fieldPath,
     reportedValue: item.reportedValue.trim(),
+    reportedValueKnown: item.reportedValueKnown,
     proposedValue: item.proposedValue.trim(),
     baseEntityRevision: props.baseEntityRevision,
   }))

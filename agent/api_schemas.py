@@ -38,6 +38,21 @@ class ApiModel(BaseModel):
     model_config = ConfigDict(extra="allow")
 
 
+class CorrectionIntakeContract(BaseModel):
+    """Shared value discriminator for correction intake payloads."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    reported_value_known: bool
+    reported_value: object | None = None
+
+    @model_validator(mode="after")
+    def _validate_discriminator(self) -> "CorrectionIntakeContract":
+        if not self.reported_value_known and self.reported_value is not None:
+            raise ValueError("reported_value must be null when current value is unknown")
+        return self
+
+
 _GALLERY_COMBINATIONS = {
     ("ai-generated", "entity-editorial", "entity-ai"),
     ("placeholder", "generated-placeholder", "entity-placeholder"),

@@ -130,9 +130,13 @@ def _reject(code: str, detail: str, status: int = 400) -> CorrectionRejected:
 class CorrectionItemInput:
     entity_id: str
     field_path: str
-    reported_value: str
+    reported_value: object | None
     proposed_value: str
     base_entity_revision: int
+    # Explicitly records when the reporter cannot know what the page currently
+    # says (for example after a value was removed).  The old callers default to
+    # the historical, known-string behavior.
+    reported_value_known: bool = True
 
 
 @dataclass(frozen=True)
@@ -374,17 +378,25 @@ class CaseService:
         seen.add(key)
 
     def _validate_item_values(self, item: CorrectionItemInput) -> None:
-        for value in (item.reported_value, item.proposed_value):
+        if type(item.reported_value_known) is not bool:
+            raise _reject("invalid_correction_value", "The current-value discriminator is invalid.")
+        if item.reported_value_known:
+            values = (item.reported_value, item.proposed_value)
+        else:
+            if item.reported_value is not None:
+                raise _reject("invalid_correction_value", "Unknown current values must be null.")
+            values = (item.proposed_value,)
+        for value in values:
             if type(value) is not str or not value.strip():
                 raise _reject("invalid_correction_value", "Both values are required.")
             if len(value) > MAX_CORRECTION_VALUE:
                 raise _reject("correction_value_too_long", "That value is too long.")
-        if item.reported_value.strip() == item.proposed_value.strip():
+        if item.reported_value_known and item.reported_value.strip() == item.proposed_value.strip():
             raise _reject("correction_value_unchanged", "The proposed value is identical.")
 
     def _route_safety(self, command: CreateCorrectionCommand) -> None:
         for item in command.items:
-            if _looks_urgent(item.reported_value) or _looks_urgent(item.proposed_value):
+            if _looks_urgent(item.reported_value or "") or _looks_urgent(item.proposed_value):
                 raise SafetyRoutingRequired(
                     CaseProblem(
                         code="correction_safety_routing",
@@ -887,6 +899,7 @@ class CaseService:
                     reported_value=item.reported_value,
                     proposed_value=item.proposed_value,
                     base_entity_revision=item.base_entity_revision,
+                    reported_value_known=getattr(item, "reported_value_known", True),
                 )
                 for item in payload.items
             ),

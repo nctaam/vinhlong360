@@ -296,3 +296,14 @@ def stats() -> dict:
         "provisional_count": len(provisional),
         "total_entities": len(kb.get("entities", [])),
     }
+
+
+def normalize_curation_summary(summary: object) -> dict[str, int]:
+    """Return the canonical provisional queue count; legacy ``pending`` is rejected."""
+    if not isinstance(summary, dict):
+        return {"provisional_count": 0}
+    count = summary.get("provisional_count")
+    # Do not silently treat the unrelated moderation word ``pending`` as this queue.
+    if type(count) is not int or count < 0:
+        count = 0
+    return {"provisional_count": count}
