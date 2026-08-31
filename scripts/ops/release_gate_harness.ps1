@@ -124,6 +124,17 @@ function Invoke-RecordedComposeHarness {
   return [int]$result
 }
 
+function Invoke-ReleaseEvidenceVerifier {
+  [OutputType([int])]
+  param(
+    [Parameter(Mandatory = $true)][string]$Bundle,
+    [string]$Python = "python"
+  )
+
+  & $Python "scripts/ops/verify_release_bundle.py" --bundle $Bundle
+  return [int]$LASTEXITCODE
+}
+
 function Resolve-LaunchSafetyBash {
   [OutputType([string])]
   param()

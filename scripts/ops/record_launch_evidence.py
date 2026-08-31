@@ -10,12 +10,13 @@ from __future__ import annotations
 import argparse
 from dataclasses import asdict, dataclass
 from datetime import datetime, timezone
+from hashlib import sha256
 import json
 import os
 from pathlib import Path
 import re
 import tempfile
-from typing import Literal
+from typing import Any, Literal
 
 
 Status = Literal["pass", "fail", "skip"]
@@ -79,6 +80,7 @@ _SECRET_ASSIGNMENT = re.compile(
     r"authorization|api[-_]?key|client[-_]?secret)\s*[=:]\s*)[^\s,;]+",
     re.IGNORECASE,
 )
+_HEAD_SHA = re.compile(r"^[0-9a-f]{40}$")
 
 
 def _redact(value: str) -> str:
@@ -115,6 +117,11 @@ class CommandEvidence:
     exit_code: int
     summary: str
     status: Status
+    outcomes: dict[str, Any] | None = None
+    environment: dict[str, Any] | None = None
+    head_sha: str = ""
+    output_sha256: str = ""
+    verdict: str | None = None
 
     def __post_init__(self) -> None:
         if self.status not in {"pass", "fail", "skip"}:
@@ -125,6 +132,18 @@ class CommandEvidence:
             raise ValueError(f"{self.status} evidence exit_code must be 0")
         object.__setattr__(self, "command", _redact(self.command))
         object.__setattr__(self, "summary", _redact(self.summary))
+        object.__setattr__(self, "outcomes", dict(self.outcomes or {}))
+        object.__setattr__(self, "environment", dict(self.environment or {}))
+        if self.head_sha and _HEAD_SHA.fullmatch(self.head_sha) is None:
+            raise ValueError("head_sha must be a lowercase 40-hex revision")
+        if self.output_sha256 and re.fullmatch(r"[0-9a-f]{64}", self.output_sha256) is None:
+            raise ValueError("output_sha256 must be a lowercase SHA-256 digest")
+        object.__setattr__(
+            self,
+            "verdict",
+            self.verdict
+            or {"pass": "PASS", "fail": "BLOCKED", "skip": "UNCLASSIFIED"}[self.status],
+        )
 
     @classmethod
     def from_mapping(cls, value: object) -> "CommandEvidence":
@@ -135,6 +154,11 @@ class CommandEvidence:
             exit_code=int(value.get("exit_code", 1)),
             summary=str(value.get("summary", "")),
             status=value.get("status", "fail"),  # type: ignore[arg-type]
+            outcomes=value.get("outcomes"),
+            environment=value.get("environment"),
+            head_sha=str(value.get("head_sha", "")),
+            output_sha256=str(value.get("output_sha256", "")),
+            verdict=value.get("verdict"),
         )
 
 
@@ -143,6 +167,43 @@ class HarnessResult:
     exit_code: int
     primary_status: Literal["pass", "fail"]
     cleanup_status: Literal["pass", "fail"]
+
+
+def _with_metadata(
+    evidence: CommandEvidence,
+    *,
+    outcomes: dict[str, Any] | None,
+    command: str | None,
+    environment: dict[str, Any] | None,
+    head_sha: str | None,
+    output: str | bytes | None,
+    output_sha256: str | None,
+    verdict: str | None,
+) -> CommandEvidence:
+    if not any(value is not None for value in (outcomes, command, environment, head_sha, output, output_sha256, verdict)):
+        return evidence
+    digest = _output_digest(output, output_sha256)
+    return CommandEvidence(
+        command=evidence.command if command is None else command,
+        exit_code=evidence.exit_code,
+        summary=evidence.summary,
+        status=evidence.status,
+        outcomes=evidence.outcomes if outcomes is None else outcomes,
+        environment=evidence.environment if environment is None else environment,
+        head_sha=evidence.head_sha if head_sha is None else head_sha,
+        output_sha256=evidence.output_sha256 if digest is None else digest,
+        verdict=evidence.verdict if verdict is None else verdict,
+    )
+
+
+def _output_digest(output: str | bytes | None, declared: str | None) -> str | None:
+    if output is None:
+        return declared
+    output_bytes = output.encode("utf-8") if isinstance(output, str) else output
+    computed = sha256(output_bytes).hexdigest()
+    if declared and declared != computed:
+        raise ValueError("output_sha256 does not match output")
+    return computed
 
 
 def resolve_harness_result(*, primary_exit: int, cleanup_exit: int) -> HarnessResult:
@@ -205,11 +266,27 @@ class EvidenceDocument:
             str(payload.get("revision", "unknown")),
         )
 
-    def record(self, name: str, evidence: CommandEvidence) -> None:
+    def record(
+        self,
+        name: str,
+        evidence: CommandEvidence,
+        *,
+        outcomes: dict[str, Any] | None = None,
+        command: str | None = None,
+        environment: dict[str, Any] | None = None,
+        head_sha: str | None = None,
+        output: str | bytes | None = None,
+        output_sha256: str | None = None,
+        verdict: str | None = None,
+    ) -> None:
         if name not in REQUIRED_SECTIONS:
             raise ValueError(f"unknown evidence section: {name}")
         if name == "external-gates" and self.external_gates != DEFAULT_EXTERNAL_GATES:
             raise ValueError("external gates do not match the approved blocked state")
+        evidence = _with_metadata(
+            evidence, outcomes=outcomes, command=command, environment=environment,
+            head_sha=head_sha, output=output, output_sha256=output_sha256, verdict=verdict,
+        )
         self.sections[name] = evidence
 
     def save(self) -> None:
@@ -303,6 +380,13 @@ def record_section(
     evidence_path: Path | None = None,
     *,
     revision: str | None = None,
+    outcomes: dict[str, Any] | None = None,
+    command: str | None = None,
+    environment: dict[str, Any] | None = None,
+    head_sha: str | None = None,
+    output: str | bytes | None = None,
+    output_sha256: str | None = None,
+    verdict: str | None = None,
 ) -> None:
     """Load, upsert, and persist a single evidence section."""
 
@@ -316,7 +400,17 @@ def record_section(
                 f"evidence revision mismatch: {document.revision} != {normalized_revision}"
             )
         document.revision = normalized_revision
-    document.record(name, evidence)
+    document.record(
+        name,
+        evidence,
+        outcomes=outcomes,
+        command=command,
+        environment=environment,
+        head_sha=head_sha,
+        output=output,
+        output_sha256=output_sha256,
+        verdict=verdict,
+    )
     document.save()
 
 
@@ -331,6 +425,12 @@ def _build_parser() -> argparse.ArgumentParser:
     record.add_argument("--summary", required=True)
     record.add_argument("--command", default="")
     record.add_argument("--revision")
+    record.add_argument("--head-sha", default="")
+    record.add_argument("--outcomes-json", default="")
+    record.add_argument("--environment-json", default="")
+    record.add_argument("--output-text", default=None)
+    record.add_argument("--output-sha256", default="")
+    record.add_argument("--verdict", choices=("PASS", "BLOCKED", "UNCLASSIFIED"))
     record.add_argument("--state", type=Path, default=_default_state_path())
 
     harness = subparsers.add_parser("harness-result", help="record compose result")
@@ -346,14 +446,34 @@ def _build_parser() -> argparse.ArgumentParser:
     return parser
 
 
+def _metadata_from_args(args: argparse.Namespace) -> tuple[dict[str, Any] | None, dict[str, Any] | None]:
+    try:
+        outcomes = json.loads(args.outcomes_json) if args.outcomes_json else None
+        environment = json.loads(args.environment_json) if args.environment_json else None
+    except json.JSONDecodeError as exc:
+        raise ValueError(f"metadata must be valid JSON: {exc}") from exc
+    if outcomes is not None and not isinstance(outcomes, dict):
+        raise ValueError("outcomes metadata must be an object")
+    if environment is not None and not isinstance(environment, dict):
+        raise ValueError("environment metadata must be an object")
+    return outcomes, environment
+
+
 def main(argv: list[str] | None = None) -> int:
     args = _build_parser().parse_args(argv)
     if args.action == "record":
+        outcomes, environment = _metadata_from_args(args)
         record_section(
             args.section,
             CommandEvidence(args.command or args.section, args.exit_code, args.summary, args.status),
             args.state,
             revision=args.revision,
+            outcomes=outcomes,
+            environment=environment,
+            head_sha=args.head_sha or None,
+            output=args.output_text,
+            output_sha256=args.output_sha256 or None,
+            verdict=args.verdict,
         )
         return 0
     if args.action == "harness-result":

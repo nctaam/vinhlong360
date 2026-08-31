@@ -114,6 +114,31 @@ def test_record_section_persists_the_clean_head_revision(tmp_path: Path) -> None
     assert "> Revision: 09510487598f50488475a3f2d62d07a3fb337938" in document.render()
 
 
+def test_record_stores_versioned_outcomes_environment_head_and_output_checksum(
+    tmp_path: Path,
+) -> None:
+    state_path = tmp_path / "metadata-state.json"
+    output = "5 passed in 0.1s\n"
+    record_section(
+        "backend-focused",
+        CommandEvidence("pytest -q", 0, "passed", "pass"),
+        state_path,
+        outcomes={"passed": 5, "failed": 0, "return_code": 0},
+        environment={"python": "3.14", "os": "Windows"},
+        head_sha="a" * 40,
+        output=output,
+        verdict="PASS",
+    )
+
+    payload = json.loads(state_path.read_text(encoding="utf-8"))
+    section = payload["sections"]["backend-focused"]
+    assert section["outcomes"]["passed"] == 5
+    assert section["environment"]["os"] == "Windows"
+    assert section["head_sha"] == "a" * 40
+    assert section["output_sha256"]
+    assert section["verdict"] == "PASS"
+
+
 def test_final_render_rejects_not_requested_opt_in_and_accepts_explicit_skip(tmp_path: Path) -> None:
     document = EvidenceDocument.empty(tmp_path / "state.json")
     document.revision = "a" * 40

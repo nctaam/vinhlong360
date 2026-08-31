@@ -12,6 +12,12 @@ import subprocess
 import sys
 import time
 
+try:
+    from agent.control_plane.evidence import ParsedOutcome, parse_pytest_output
+except ImportError:  # pragma: no cover - direct script execution from any cwd
+    ParsedOutcome = object  # type: ignore[assignment,misc]
+    parse_pytest_output = None  # type: ignore[assignment]
+
 
 ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_DEADLINE_SECONDS = 7000.0
@@ -28,6 +34,14 @@ SIGKILL = getattr(signal, "SIGKILL", 9)
 class Phase:
     name: str
     command: tuple[str, ...]
+
+
+def parse_phase_output(output: str, return_code: int) -> ParsedOutcome:
+    """Expose the shared fail-closed parser for each bounded pytest phase."""
+
+    if parse_pytest_output is None:
+        raise RuntimeError("evidence parser unavailable")
+    return parse_pytest_output(output, return_code)
 
 
 def build_phases(python: str) -> tuple[Phase, Phase]:

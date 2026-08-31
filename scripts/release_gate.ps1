@@ -11,6 +11,7 @@ param(
   [switch]$RunLaunchSafetyDockerOptIn,
   [switch]$RunLaunchSafetyBrowserOptIn,
   [switch]$RenderLaunchSafetyFinalEvidence,
+  [string]$LaunchSafetyEvidenceBundle = "",
   [string]$LaunchSafetyEvidenceState = "",
   [string]$LaunchSafetyEvidenceOutput = "",
   [string]$SmokeBaseUrl = "",
@@ -538,6 +539,17 @@ function Invoke-LaunchSafetyFinalRender {
   }
 }
 
+function Invoke-LaunchSafetyBundleVerification {
+  if ([string]::IsNullOrWhiteSpace($LaunchSafetyEvidenceBundle)) { return }
+  $verifyExit = Invoke-ReleaseEvidenceVerifier -Bundle $LaunchSafetyEvidenceBundle -Python $Python
+  if ($verifyExit -ne 0) {
+    $Script:Failures++
+    Write-Step "FAIL" "Launch Safety evidence verifier" "exited with code $verifyExit"
+  } else {
+    Write-Step "OK" "Launch Safety evidence verifier" $LaunchSafetyEvidenceBundle
+  }
+}
+
 Write-Host "VinhLong360 release gate"
 Write-Host "Root: $Root"
 Write-Host ""
@@ -671,6 +683,7 @@ try {
 }
 
 Invoke-LaunchSafetyFinalRender
+Invoke-LaunchSafetyBundleVerification
 
 Write-Host ""
 if ($Script:Failures -gt 0) {

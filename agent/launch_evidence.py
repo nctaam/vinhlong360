@@ -5,6 +5,9 @@ import re
 import unicodedata
 from dataclasses import dataclass
 from hashlib import sha256
+import os
+import platform
+import sys
 
 if __package__:
     from .ai_disclosure import load_ai_disclosure
@@ -20,6 +23,7 @@ INDEX_POLICY_REVISION = "index-policy-v1"
 RESPONSE_MATRIX_REVISION = "launch-safety-matrix-v1"
 CACHE_ISOLATION_REVISION = "launch-cache-isolation-v1"
 SITEMAP_PROTOCOL_REVISION = "pinned-sitemap-bundle-v1"
+EVIDENCE_SCHEMA_VERSION = "1"
 
 _SHA256 = re.compile(r"^[0-9a-f]{64}$")
 
@@ -112,3 +116,21 @@ def current_policy_evidence() -> PolicyEvidence:
         route_manifest_revision=route.revision,
         backend_policy_revision=INDEX_POLICY_REVISION,
     )
+
+
+def evidence_environment(*, database_target: str = "redacted") -> dict[str, object]:
+    """Return a bounded, non-secret environment descriptor for evidence."""
+
+    return {
+        "os": platform.platform(),
+        "python": sys.version.split()[0],
+        "pytest": os.environ.get("PYTEST_VERSION", "unknown"),
+        "database_target": database_target,
+    }
+
+
+def evidence_output_sha256(output: str | bytes) -> str:
+    """Hash exact command output bytes for tamper-evident release evidence."""
+
+    payload = output.encode("utf-8") if isinstance(output, str) else output
+    return sha256(payload).hexdigest()
