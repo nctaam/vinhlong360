@@ -480,6 +480,27 @@ def test_final_render_blocks_browser_pass_without_capture_metadata(tmp_path: Pat
         document.render(final=True)
 
 
+def test_final_render_blocks_browser_pass_with_blocked_parsed_outcomes(tmp_path: Path) -> None:
+    document = _complete_document(tmp_path)
+    output = "1 failed, 0 passed in 0.1s\n"
+    document.record(
+        "browser-opt-in",
+        CommandEvidence(
+            "node probe", 0, "failed", "pass",
+            outcomes={
+                "passed": 0, "failed": 1, "errors": 0, "skipped": 0,
+                "xfailed": 0, "collection_errors": 0, "interrupted": False,
+                "return_code": 0, "failed_nodeids": [], "error_nodeids": [],
+                "summary_present": True,
+            },
+            environment={"os": "test"}, head_sha=document.revision,
+            output_sha256=sha256(output.encode()).hexdigest(),
+        ),
+    )
+    with pytest.raises(ValueError, match="browser-opt-in.*metadata|verdict|blocked"):
+        document.render(final=True)
+
+
 def test_final_render_blocks_parsed_outcomes_without_output_checksum(tmp_path: Path) -> None:
     document = _complete_document(tmp_path)
     document.record(

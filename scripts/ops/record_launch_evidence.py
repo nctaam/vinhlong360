@@ -502,6 +502,8 @@ def _validate_opt_in_pass_evidence(name: str, evidence: CommandEvidence, revisio
         _validate_functional_outcomes(name, evidence, evidence.outcomes)
     except ValueError as exc:
         raise ValueError(f"{name} pass evidence requires capture metadata") from exc
+    if _outcomes_verdict(evidence.outcomes) != "PASS":
+        raise ValueError(f"{name} pass evidence has blocked outcomes")
     if _SHA256.fullmatch(evidence.output_sha256) is None:
         raise ValueError(f"{name} pass evidence requires capture metadata")
 
