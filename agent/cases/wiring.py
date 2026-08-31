@@ -115,6 +115,8 @@ def build_case_dependencies(database, settings) -> CaseDependencies:
         sms_provider=sms_provider,
     )
     object.__setattr__(bundle, "owner_ref", owner_ref)
+    object.__setattr__(bundle, "settings", settings)
+    object.__setattr__(bundle, "allowed_origin", site_origin(settings))
     if any(getattr(bundle, name, None) is None for name in (
         "database", "crypto", "policy", "sms_provider"
     )):
@@ -206,8 +208,6 @@ def wire_case_kernel(database, settings) -> bool:
         return False
     try:
         bundle = build_case_dependencies(database, settings)
-        object.__setattr__(bundle, "settings", settings)
-        object.__setattr__(bundle, "allowed_origin", site_origin(settings))
         commit_case_dependencies(bundle)
         logger.info("case kernel wired (owner=%s)", settings.CASE_SERVICE_OWNER_REF)
         return True
