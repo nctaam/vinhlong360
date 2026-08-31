@@ -105,6 +105,26 @@ describe('the intake form', () => {
     expect(form.find('#item-0-proposed').exists()).toBe(true)
   })
 
+  it('lets the reporter explicitly say the current value is unknown', async () => {
+    const form = intakeForm()
+    await form.get('#item-0-field').setValue('attributes.phone')
+    await form.get('#item-0-reported').setValue('0270 111 2222')
+    await form.get('#item-0-proposed').setValue('0270 333 4444')
+
+    const known = form.get('#item-0-reported-known')
+    expect(known.attributes('type')).toBe('checkbox')
+    await known.setValue(false)
+    await form.get('[data-role="review"]').trigger('click')
+    await form.get('form').trigger('submit')
+
+    const [submission] = form.emitted('submit')![0] as [Record<string, any>]
+    expect(submission.items[0]).toMatchObject({
+      reportedValueKnown: false,
+      reportedValue: null,
+      proposedValue: '0270 333 4444',
+    })
+  })
+
   it('never sends a phone number nobody consented to', async () => {
     const form = intakeForm()
     await form.get('#item-0-field').setValue('attributes.phone')
@@ -337,7 +357,7 @@ describe('the three pages', () => {
     expect(form.get('[data-role="server-error"]').text()).toContain('invalid_request')
     expect(form.get('[data-role="server-error"]').text()).toContain('reportedValueKnown')
     expect(form.get('[data-role="server-error"]').text()).toContain('corr-page-1')
-    expect(form.get('[data-role="server-error"] a').attributes('href')).toBe('#item-0-reported')
+    expect(form.get('[data-role="server-error"] a').attributes('href')).toBe('#item-0-reported-known')
     expect(form.find('#item-0-field').exists()).toBe(true)
   })
 

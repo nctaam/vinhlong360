@@ -29,6 +29,38 @@ def test_correction_contract_rejects_unknown_version_and_conflicting_value():
     assert missing_value.value.field == "reported_value"
 
 
+def test_correction_schema_requires_explicit_value_and_validates_known_branch():
+    from pydantic import ValidationError
+
+    from agent.api_schemas import CorrectionIntakeContract
+
+    assert CorrectionIntakeContract.model_validate(
+        {"reported_value_known": True, "reported_value": "Current text"}
+    ).reported_value == "Current text"
+    with pytest.raises(ValidationError):
+        CorrectionIntakeContract.model_validate(
+            {"reported_value_known": True, "reported_value": "   "}
+        )
+    with pytest.raises(ValidationError):
+        CorrectionIntakeContract.model_validate({"reported_value_known": True})
+
+
+def test_correction_schema_requires_explicit_null_for_unknown_branch():
+    from pydantic import ValidationError
+
+    from agent.api_schemas import CorrectionIntakeContract
+
+    assert CorrectionIntakeContract.model_validate(
+        {"reported_value_known": False, "reported_value": None}
+    ).reported_value is None
+    with pytest.raises(ValidationError):
+        CorrectionIntakeContract.model_validate({"reported_value_known": False})
+    with pytest.raises(ValidationError):
+        CorrectionIntakeContract.model_validate(
+            {"reported_value_known": False, "reported_value": "stale"}
+        )
+
+
 def test_problem_detail_keeps_field_and_correlation_id():
     # Keep the contract test paired with every Python transport consumer changed
     # in this tranche; imports are real module-boundary coverage, not a filename

@@ -44,12 +44,22 @@ class CorrectionIntakeContract(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     reported_value_known: StrictBool
-    reported_value: object | None = None
+    # Presence is part of the discriminator contract: unknown means explicit
+    # null, while known means an actual non-blank current value.
+    reported_value: object | None
 
     @model_validator(mode="after")
     def _validate_discriminator(self) -> "CorrectionIntakeContract":
-        if not self.reported_value_known and self.reported_value is not None:
-            raise ValueError("reported_value must be null when current value is unknown")
+        if not self.reported_value_known:
+            if self.reported_value is not None:
+                raise ValueError("reported_value must be null when current value is unknown")
+            return self
+        if (
+            type(self.reported_value) is not str
+            or not self.reported_value.strip()
+            or len(self.reported_value) > 2000
+        ):
+            raise ValueError("reported value must be a non-blank string")
         return self
 
 

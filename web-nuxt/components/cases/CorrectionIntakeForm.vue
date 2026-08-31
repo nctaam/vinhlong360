@@ -49,7 +49,7 @@ const FIELD_CHOICES = [
 
 interface DraftItem {
   fieldPath: string
-  reportedValue: string
+  reportedValue: string | null
   reportedValueKnown: boolean
   proposedValue: string
 }
@@ -76,7 +76,10 @@ function hasError(anchor: string): boolean {
 const serverErrorAnchor = computed(() => {
   const field = props.serverProblem?.field ?? ''
   const match = /^items\.(\d+)\.(?:reportedValue|reportedValueKnown)$/.exec(field)
-  return match ? `item-${match[1]}-reported` : null
+  if (!match) return null
+  return field.endsWith('reportedValueKnown')
+    ? `item-${match[1]}-reported-known`
+    : `item-${match[1]}-reported`
 })
 const errorSummary = ref<HTMLElement | null>(null)
 
@@ -84,6 +87,14 @@ const canAddItem = computed(() => items.length < 10)
 
 function addItem() {
   if (canAddItem.value) items.push({ fieldPath: '', reportedValue: '', reportedValueKnown: true, proposedValue: '' })
+}
+
+function updateReportedValueKnown(index: number) {
+  const item = items[index]
+  if (!item) return
+  item.reportedValue = item.reportedValueKnown
+    ? (item.reportedValue ?? '')
+    : null
 }
 
 function removeItem(index: number) {
@@ -143,7 +154,7 @@ function submit() {
   const payload: CorrectionItemInput[] = items.map(item => ({
     entityId: props.entityId,
     fieldPath: item.fieldPath,
-    reportedValue: item.reportedValue.trim(),
+    reportedValue: item.reportedValueKnown ? (item.reportedValue ?? '').trim() : null,
     reportedValueKnown: item.reportedValueKnown,
     proposedValue: item.proposedValue.trim(),
     baseEntityRevision: props.baseEntityRevision,
@@ -229,8 +240,25 @@ function submit() {
            field is wrong, so the empty form asks one question, not six. -->
       <template v-if="item.fieldPath">
         <div class="intake-field">
+          <label :for="`item-${index}-reported-known`" class="intake-consent">
+            <input
+              :id="`item-${index}-reported-known`"
+              v-model="item.reportedValueKnown"
+              type="checkbox"
+              @change="updateReportedValueKnown(index)"
+            >
+            Tôi biết trang đang ghi giá trị hiện tại
+          </label>
+        </div>
+        <div class="intake-field">
           <label :for="`item-${index}-reported`">Trang đang ghi (chép lại giúp chúng tôi)</label>
-          <textarea :id="`item-${index}-reported`" v-model="item.reportedValue" rows="2" maxlength="2000" />
+          <textarea
+            :id="`item-${index}-reported`"
+            v-model="item.reportedValue"
+            rows="2"
+            maxlength="2000"
+            :disabled="!item.reportedValueKnown"
+          />
         </div>
         <div class="intake-field">
           <label :for="`item-${index}-proposed`">Thông tin đúng là</label>
@@ -313,7 +341,9 @@ function submit() {
       <ul class="intake-review-list">
         <li v-for="(item, index) in items" :key="`review-${index}`">
           <strong>{{ FIELD_CHOICES.find(f => f.path === item.fieldPath)?.label ?? item.fieldPath }}</strong>
-          <span data-role="review-reported">Hiện tại: {{ item.reportedValue.trim() || '—' }}</span>
+          <span data-role="review-reported">
+            Hiện tại: {{ item.reportedValueKnown ? (item.reportedValue?.trim() || '—') : 'Không biết' }}
+          </span>
           <span data-role="review-proposed">Sửa thành: {{ item.proposedValue.trim() }}</span>
         </li>
       </ul>

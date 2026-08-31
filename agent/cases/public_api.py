@@ -188,14 +188,29 @@ def _validate_correction_contract(items, request: Request, *, version: str = "1"
         except ModuleNotFoundError:
             from agent.control_plane.contracts import ContractViolation, validate_payload
         for index, item in enumerate(items):
+            fields_set = set(getattr(item, "model_fields_set", ()))
+            reported_known_present = bool(
+                {"reported_value_known", "reportedValueKnown"} & fields_set
+            )
+            reported_value_present = bool(
+                {"reported_value", "reportedValue"} & fields_set
+            )
             # The versioned transport requires the discriminator explicitly;
             # header-less legacy callers retain the historical default.
-            if request.headers.get("x-correction-contract-version") is not None and (
-                "reported_value_known" not in item.model_fields_set
-            ):
+            if request.headers.get("x-correction-contract-version") is not None and not reported_known_present:
                 raise ContractViolation(
                     "missing required contract field: reported_value_known",
                     field="reportedValueKnown",
+                )
+            # `None` is meaningful only when it was sent. A defaulted value
+            # must not turn an omitted `reportedValue` into an unknown value.
+            if not reported_value_present and (
+                request.headers.get("x-correction-contract-version") is not None
+                or reported_known_present
+            ):
+                raise ContractViolation(
+                    "missing required contract field: reported_value",
+                    field="reported_value",
                 )
             validate_payload(
                 "correction-intake",

@@ -298,6 +298,23 @@ def test_create_requires_explicit_discriminator_when_version_header_is_present(c
     assert response.json()["field"] == "items.0.reportedValueKnown"
 
 
+def test_create_rejects_missing_reported_value_for_versioned_unknown_item(client):
+    body = _body()
+    body["items"][0]["reportedValueKnown"] = False
+    del body["items"][0]["reportedValue"]
+
+    response = client.post(
+        "/api/cases/corrections",
+        headers=_headers(**{"X-Correction-Contract-Version": "1"}),
+        json=body,
+    )
+
+    assert response.status_code == 422
+    assert response.json()["code"] == "CONTRACT_INVALID"
+    assert response.json()["field"] == "items.0.reportedValue"
+    assert client.service.created == []
+
+
 def test_create_rejects_missing_current_value_with_contract_error(client):
     body = _body()
     del body["items"][0]["reportedValue"]
