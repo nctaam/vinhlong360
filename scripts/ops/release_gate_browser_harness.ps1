@@ -186,12 +186,13 @@ function Invoke-LaunchSafetyBrowserSmoke {
     [string]$WorkingDirectory
   )
   $output = [System.Text.StringBuilder]::new()
+  $evidencePath = Join-Path $WorkingDirectory (".launch-safety-evidence-" + [guid]::NewGuid().ToString("N") + ".json")
   $truncated = $false
   $priorErrorActionPreference = $ErrorActionPreference
   Push-Location $WorkingDirectory
   try {
     $ErrorActionPreference = 'Continue'
-    & $Npm run smoke:launch-safety 2>&1 | ForEach-Object {
+    & $Npm run smoke:launch-safety -- --evidence $evidencePath 2>&1 | ForEach-Object {
       $line = [string]$_ + [Environment]::NewLine
       if ($line.Length -ge $MAX_LAUNCH_SAFETY_OUTPUT) {
         $truncated = $true
@@ -211,6 +212,14 @@ function Invoke-LaunchSafetyBrowserSmoke {
     } else { 1 }
   }
   finally {
+    if (Test-Path -LiteralPath $evidencePath) {
+      try {
+        $artifact = [System.IO.File]::ReadAllText($evidencePath)
+        if ($output.Length + $artifact.Length + 1 -gt $MAX_LAUNCH_SAFETY_OUTPUT) { $truncated = $true }
+        else { $null = $output.Append([Environment]::NewLine); $null = $output.Append($artifact) }
+      } catch { $truncated = $true }
+      Remove-Item -LiteralPath $evidencePath -Force -ErrorAction SilentlyContinue
+    }
     $ErrorActionPreference = $priorErrorActionPreference
     Pop-Location
   }

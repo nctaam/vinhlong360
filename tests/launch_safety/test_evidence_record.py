@@ -332,6 +332,27 @@ def test_cli_records_native_rollback_output_without_fabricating_counts(tmp_path:
     }
 
 
+def test_native_skip_preserves_unclassified_and_empty_native_pass_blocks(tmp_path: Path) -> None:
+    skip_state = tmp_path / "skip.json"
+    assert main([
+        "record", "--section", "browser-opt-in", "--status", "skip", "--exit-code", "0",
+        "--summary", "chrome-unavailable", "--command", "node probe", "--native-command",
+        "--environment-json", '{"os":"test"}', "--head-sha", "a" * 40,
+        "--revision", "a" * 40, "--state", str(skip_state),
+    ]) == 0
+    section = json.loads(skip_state.read_text(encoding="utf-8"))["sections"]["browser-opt-in"]
+    assert section["status"] == "skip" and section["verdict"] == "UNCLASSIFIED"
+    pass_state = tmp_path / "pass.json"
+    assert main([
+        "record", "--section", "browser-opt-in", "--status", "pass", "--exit-code", "0",
+        "--summary", "ok", "--command", "node probe", "--native-command",
+        "--environment-json", '{"os":"test"}', "--head-sha", "a" * 40,
+        "--revision", "a" * 40, "--state", str(pass_state),
+    ]) == 0
+    section = json.loads(pass_state.read_text(encoding="utf-8"))["sections"]["browser-opt-in"]
+    assert section["status"] == "fail" and section["verdict"] == "BLOCKED"
+
+
 def test_cli_rejects_non_utf8_native_capture_as_blocked(tmp_path: Path) -> None:
     output_path = tmp_path / "native.bin"
     output_path.write_bytes(b"rollback\xff")

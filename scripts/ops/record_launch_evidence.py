@@ -601,6 +601,10 @@ def _record_payload(args: argparse.Namespace, outcomes: dict[str, Any] | None) -
     effective_status = args.status
     effective_verdict = args.verdict
     output = _load_capture(args)
+    if getattr(args, "native_command", False) and output is None:
+        if args.status == "skip":
+            return {"evidence_kind": "native-command", "summary_present": False, "return_code": args.exit_code}, None, "skip", "UNCLASSIFIED"
+        return {"evidence_kind": "native-command", "summary_present": False, "return_code": args.exit_code}, None, "fail", "BLOCKED"
     if output is not None:
         return _classify_capture(args, outcomes, output, effective_status, effective_verdict)
     return outcomes, output, effective_status, effective_verdict
@@ -643,8 +647,7 @@ def _decode_capture(output: str | bytes) -> str | None:
 
 
 def _native_capture_result(code: int, text: str | None, output: str | bytes) -> tuple[dict[str, Any], str | bytes, str, str]:
-    valid = text is not None and code == 0
-    return {"evidence_kind": "native-command", "summary_present": text is not None, "return_code": code}, output, ("pass" if valid else "fail"), ("PASS" if valid else "BLOCKED")
+    return {"evidence_kind": "native-command", "summary_present": bool(text), "return_code": code}, output, ("pass" if code == 0 and text else "fail"), ("PASS" if code == 0 and text else "BLOCKED")
 
 
 def _handle_record(args: argparse.Namespace) -> int:

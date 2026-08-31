@@ -129,6 +129,14 @@ Status: DONE_WITH_CONCERNS
 - Browser callback accepts forwarded output; PowerShell contract coverage asserts capture/truncation wiring.
 - Focused verification: `99 passed`; `py_compile`, `ruff`, and `git diff --check` passed.
 
+## Reviewer Fix Wave V13
+
+Status: DONE_WITH_CONCERNS
+
+- Native recorder evidence now preserves requested skip/fail semantics and rejects absent, empty, or invalid-UTF8 native captures as non-PASS.
+- Browser smoke requests and captures its explicit `--evidence` artifact, appends it before returning the recorder payload, tracks truncation, and cleans up the temporary artifact.
+- Focused verification: `100 passed`; `py_compile`, `ruff`, and `git diff --check` passed.
+
 ## Reviewer Fix Wave V9
 
 Status: DONE_WITH_CONCERNS
