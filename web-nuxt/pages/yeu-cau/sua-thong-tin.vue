@@ -8,8 +8,12 @@ import { computed, ref } from 'vue'
 
 import CaseReceiptCard from '../../components/cases/CaseReceiptCard.vue'
 import CorrectionIntakeForm from '../../components/cases/CorrectionIntakeForm.vue'
-import { CaseAccessError, useCorrectionCases } from '../../composables/useCorrectionCases'
-import type { CaseReceipt, CorrectionSubmission } from '../../types/cases'
+import {
+  CaseAccessError,
+  CorrectionProblemError,
+  useCorrectionCases,
+} from '../../composables/useCorrectionCases'
+import type { CaseReceipt, CorrectionProblemDetail, CorrectionSubmission } from '../../types/cases'
 import { apiFetch } from '../../utils/apiFetch'
 import { CORRECTION_FIELD_HINTS } from '../../utils/correctionLink'
 
@@ -51,16 +55,23 @@ const { data: entity, error: entityError, refresh: refreshEntity } = await useAs
 const busy = ref(false)
 const receipt = ref<CaseReceipt | null>(null)
 const failure = ref('')
+const problem = ref<CorrectionProblemDetail | null>(null)
 
 async function submit(submission: CorrectionSubmission) {
   busy.value = true
   failure.value = ''
+  problem.value = null
   try {
     receipt.value = await cases.createCorrection(submission)
   } catch (error) {
-    failure.value = error instanceof CaseAccessError
-      ? error.message
-      : 'Chưa gửi được yêu cầu. Vui lòng thử lại sau ít phút.'
+    if (error instanceof CorrectionProblemError) {
+      problem.value = error.problem
+      failure.value = error.problem.detail
+    } else {
+      failure.value = error instanceof CaseAccessError
+        ? error.message
+        : 'Chưa gửi được yêu cầu. Vui lòng thử lại sau ít phút.'
+    }
   } finally {
     busy.value = false
   }
@@ -109,6 +120,10 @@ useSeoMeta({
 
     <template v-else>
       <p v-if="failure" class="case-failure" role="alert">{{ failure }}</p>
+      <div v-if="problem" class="case-problem" data-role="correction-problem" role="status">
+        <span v-if="problem.field">Trường cần kiểm tra: {{ problem.field }}</span>
+        <span v-if="problem.correlation_id">Mã đối soát: {{ problem.correlation_id }}</span>
+      </div>
 
       <CaseReceiptCard
         v-if="receipt"
@@ -123,6 +138,7 @@ useSeoMeta({
         :initial-field-path="fieldHint"
         :assisted-hours="assistedHours || null"
         :busy="busy"
+        :server-problem="problem"
         @submit="submit"
         @request-phone-verification="verifyPhone"
       />

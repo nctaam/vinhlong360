@@ -14,7 +14,7 @@ import uuid
 
 from fastapi import APIRouter, Request
 from fastapi.responses import JSONResponse, Response
-from pydantic import AliasChoices, BaseModel, ConfigDict, Field, ValidationError, model_validator
+from pydantic import AliasChoices, BaseModel, ConfigDict, Field, StrictBool, ValidationError, field_validator
 
 from .domain import PublicCaseStatus
 from .security import CaseCrypto
@@ -180,7 +180,7 @@ async def _model(request: Request, model: type[BaseModel]):
         return None, _problem(400, "invalid_request", "That request body is not readable.")
 
 
-def _validate_correction_contract(items, request: Request) -> JSONResponse | None:
+def _validate_correction_contract(items, request: Request, *, version: str = "1") -> JSONResponse | None:
     """Validate each item against the shared registry before service mutation."""
     try:
         try:
@@ -188,12 +188,22 @@ def _validate_correction_contract(items, request: Request) -> JSONResponse | Non
         except ModuleNotFoundError:
             from agent.control_plane.contracts import ContractViolation, validate_payload
         for index, item in enumerate(items):
+            # The versioned transport requires the discriminator explicitly;
+            # header-less legacy callers retain the historical default.
+            if request.headers.get("x-correction-contract-version") is not None and (
+                "reported_value_known" not in item.model_fields_set
+            ):
+                raise ContractViolation(
+                    "missing required contract field: reported_value_known",
+                    field="reportedValueKnown",
+                )
             validate_payload(
                 "correction-intake",
                 {
                     "reported_value_known": item.reported_value_known,
                     "reported_value": item.reported_value,
                 },
+                version=version,
             )
     except ContractViolation as exc:
         return _problem(
@@ -239,41 +249,33 @@ class _ItemIn(BaseModel):
 
     entity_id: str = Field(alias="entityId", min_length=1, max_length=128)
     field_path: str = Field(alias="fieldPath", min_length=1, max_length=128)
-    reported_value: object | None = Field(
-        default=None,
-        validation_alias=AliasChoices("reportedValue", "reported_value"),
-    )
-    reported_value_known: bool = Field(
+    reported_value_known: StrictBool = Field(
         default=True,
         validation_alias=AliasChoices("reportedValueKnown", "reported_value_known"),
+    )
+    reported_value: object | None = Field(
+        default=None,
+        validate_default=True,
+        validation_alias=AliasChoices("reportedValue", "reported_value"),
     )
     proposed_value: str = Field(alias="proposedValue", min_length=1, max_length=2000)
     base_entity_revision: int = Field(alias="baseEntityRevision", ge=1)
 
-    @model_validator(mode="after")
-    def _validate_reported_value_contract(self) -> "_ItemIn":
-        try:
-            from control_plane.contracts import ContractViolation, validate_payload
-        except ModuleNotFoundError:
-            from agent.control_plane.contracts import ContractViolation, validate_payload
-
-        try:
-            validate_payload(
-                "correction-intake",
-                {
-                    "reported_value_known": self.reported_value_known,
-                    "reported_value": self.reported_value,
-                },
-            )
-        except ContractViolation as exc:
-            raise ValueError(exc.detail) from exc
-        if self.reported_value_known and (
-            type(self.reported_value) is not str
-            or not self.reported_value.strip()
-            or len(self.reported_value) > 2000
+    @field_validator("reported_value")
+    @classmethod
+    def _validate_reported_value_contract(cls, value: object | None, info) -> object | None:
+        known = info.data.get("reported_value_known")
+        if known is False:
+            if value is not None:
+                raise ValueError("reported_value must be null when current value is unknown")
+            return value
+        if known is True and (
+            type(value) is not str
+            or not value.strip()
+            or len(value) > 2000
         ):
             raise ValueError("reported value must be a non-blank string")
-        return self
+        return value
 
 
 class _CreateIn(BaseModel):
@@ -370,10 +372,24 @@ async def create_correction(request: Request):
     idempotency_key = request.headers.get("idempotency-key")
     if not idempotency_key:
         return _problem(400, "idempotency_key_required", "Send an Idempotency-Key header.")
+    version = request.headers.get("x-correction-contract-version", "1")
+    try:
+        try:
+            from control_plane.contracts import ContractViolation, get_contract
+        except ModuleNotFoundError:
+            from agent.control_plane.contracts import ContractViolation, get_contract
+        get_contract("correction-intake", version)
+    except ContractViolation as exc:
+        return _problem(
+            422,
+            exc.code,
+            exc.detail,
+            correlation_id=request.headers.get("x-request-id"),
+        )
     body, invalid = await _model(request, _CreateIn)
     if invalid is not None:
         return invalid
-    contract_error = _validate_correction_contract(body.items, request)
+    contract_error = _validate_correction_contract(body.items, request, version=version)
     if contract_error is not None:
         return contract_error
 

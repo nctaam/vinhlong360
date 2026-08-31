@@ -90,6 +90,14 @@ export interface CorrectionItemInput {
 
 export const CORRECTION_INTAKE_CONTRACT_VERSION = '1' as const
 
+export interface CorrectionProblemDetail {
+  code: string
+  detail: string
+  status: number
+  field?: string
+  correlation_id?: string
+}
+
 export interface CorrectionSubmission {
   reporterPrivacy: 'anonymous' | 'attributed'
   items: CorrectionItemInput[]

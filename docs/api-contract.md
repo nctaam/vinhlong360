@@ -994,17 +994,27 @@ default — each one answers `404` with code `capability_unavailable` rather tha
 `403`, so a disabled capability never advertises itself. Intake additionally
 requires `CORRECTION_INTAKE_ENABLED`. All responses carry `Cache-Control:
 no-store`, and every error is an RFC 9457 problem document
-`{type,title,status,detail,code,request_id}` that never echoes a credential.
+`{type,title,status,detail,code,field,correlation_id}` that never echoes a
+credential. HTTP responses may include `request_id` as a compatibility alias;
+new clients should use `correlation_id`.
 
 `POST /api/cases/corrections` files a correction. It requires JSON content type,
 an exact allowed `Origin` with `Sec-Fetch-Site: same-origin`, and an
 `Idempotency-Key` header; a missing key is `400 idempotency_key_required`. The
-body accepts only `items[]` (`entityId`, `fieldPath`, `reportedValue`,
+body accepts only `items[]` (`entityId`, `fieldPath`, `reportedValueKnown`, `reportedValue`,
 `proposedValue`, `baseEntityRevision`), `reporterPrivacy`, and the optional
 `optionalPhone`, `notificationConsent`, `handoffDigest`, `handoffConfirmed`; any
 other field is `422 invalid_request`. Success is `201` with `publicReference`,
 the one-time `capability`, `receivedAt`, `nextUpdateAt` and `replayed`. The
 capability appears in the body once and never in a header, a URL or a cookie.
+The canonical intake contract is version `1`, carried in the
+`X-Correction-Contract-Version` header. Unsupported versions answer `422
+CONTRACT_INVALID`. Versioned clients must send `reportedValueKnown` as a JSON
+boolean: when `true`, `reportedValue` is a non-blank string; when `false`, the
+current value is explicitly unknown and `reportedValue` must be `null`. Strings
+and numbers are rejected rather than coerced. Validation failures answer `422`
+with `field` such as `items.0.reportedValueKnown` and a `correlation_id`; the
+draft remains available for correction.
 
 `POST /api/cases/access` exchanges `{publicReference, capability}` for a session.
 It answers `204` and sets `vl360_case_access` (HttpOnly, `SameSite=Lax`, path

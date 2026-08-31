@@ -29,6 +29,7 @@ class ContractViolation(ValueError):
 
 
 _REGISTRY: dict[tuple[str, str], ContractSpec] = {}
+CORRECTION_INTAKE_CONTRACT_VERSION = "1"
 
 
 def register_contract(spec: ContractSpec) -> None:
@@ -40,7 +41,7 @@ def register_contract(spec: ContractSpec) -> None:
     _REGISTRY[key] = spec
 
 
-def get_contract(name: str, version: str = "1") -> ContractSpec:
+def get_contract(name: str, version: str = CORRECTION_INTAKE_CONTRACT_VERSION) -> ContractSpec:
     try:
         return _REGISTRY[(name, version)]
     except KeyError as exc:
@@ -50,7 +51,7 @@ def get_contract(name: str, version: str = "1") -> ContractSpec:
 def validate_payload(
     name: str,
     payload: Mapping[str, object],
-    version: str = "1",
+    version: str = CORRECTION_INTAKE_CONTRACT_VERSION,
 ) -> None:
     """Validate required contract discriminators and reject ambiguous values."""
     if not isinstance(payload, Mapping):
@@ -102,7 +103,7 @@ def problem_detail(
 register_contract(
     ContractSpec(
         name="correction-intake",
-        version="1",
+        version=CORRECTION_INTAKE_CONTRACT_VERSION,
         request_fields=("reported_value_known", "reported_value"),
         response_fields=("public_reference", "received_at", "next_update_at"),
         error_codes=("CONTRACT_INVALID", "invalid_request"),
@@ -113,6 +114,7 @@ register_contract(
 __all__ = [
     "ContractSpec",
     "ContractViolation",
+    "CORRECTION_INTAKE_CONTRACT_VERSION",
     "get_contract",
     "problem_detail",
     "register_contract",

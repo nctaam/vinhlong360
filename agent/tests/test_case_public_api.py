@@ -238,6 +238,65 @@ def test_create_requires_an_idempotency_key_header(client):
     assert response.json()["code"] == "idempotency_key_required"
 
 
+@pytest.mark.parametrize("bad_value", ["false", 0, 1, "0"])
+def test_create_rejects_non_boolean_reported_value_discriminator_before_service(client, bad_value):
+    body = _body()
+    body["items"][0]["reportedValueKnown"] = bad_value
+
+    response = client.post(
+        "/api/cases/corrections",
+        headers=_headers(**{"X-Request-Id": "corr-strict-bool"}),
+        json=body,
+    )
+
+    assert response.status_code == 422
+    assert response.json()["field"] == "items.0.reportedValueKnown"
+    assert response.json()["correlation_id"] == "corr-strict-bool"
+    assert client.service.created == []
+
+
+def test_create_preserves_reported_value_field_path_for_discriminator_mismatch(client):
+    body = _body()
+    body["items"][0].update({"reportedValueKnown": False, "reportedValue": "stale"})
+
+    response = client.post(
+        "/api/cases/corrections",
+        headers=_headers(**{"X-Request-Id": "corr-field-path"}),
+        json=body,
+    )
+
+    assert response.status_code == 422
+    assert response.json()["field"] == "items.0.reportedValue"
+    assert response.json()["correlation_id"] == "corr-field-path"
+    assert client.service.created == []
+
+
+def test_create_rejects_unsupported_contract_version(client):
+    response = client.post(
+        "/api/cases/corrections",
+        headers=_headers(**{"X-Correction-Contract-Version": "999"}),
+        json=_body(),
+    )
+
+    assert response.status_code == 422
+    assert response.json()["code"] == "CONTRACT_INVALID"
+    assert client.service.created == []
+
+
+def test_create_requires_explicit_discriminator_when_version_header_is_present(client):
+    body = _body()
+
+    response = client.post(
+        "/api/cases/corrections",
+        headers=_headers(**{"X-Correction-Contract-Version": "1"}),
+        json=body,
+    )
+
+    assert response.status_code == 422
+    assert response.json()["code"] == "CONTRACT_INVALID"
+    assert response.json()["field"] == "items.0.reportedValueKnown"
+
+
 # ── Access, status, logout ──
 
 def test_access_sets_a_scoped_http_only_cookie_and_a_readable_csrf_cookie(client):

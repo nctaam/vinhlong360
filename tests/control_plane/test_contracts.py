@@ -43,6 +43,16 @@ def test_problem_detail_keeps_field_and_correlation_id():
     assert problem["correlation_id"] == "corr-1"
 
 
+def test_correction_contract_exposes_one_canonical_version():
+    from agent.control_plane.contracts import (
+        CORRECTION_INTAKE_CONTRACT_VERSION,
+        get_contract,
+    )
+
+    assert CORRECTION_INTAKE_CONTRACT_VERSION == "1"
+    assert get_contract("correction-intake", CORRECTION_INTAKE_CONTRACT_VERSION).version == "1"
+
+
 def test_provisional_badge_uses_one_canonical_count_key():
     from agent.kb_curation import normalize_curation_summary
 

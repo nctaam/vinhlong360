@@ -18,7 +18,13 @@
 import { onScopeDispose, reactive, ref, toRef, type Ref } from 'vue'
 
 import { apiFetch } from '../utils/apiFetch'
-import type { CaseReceipt, CaseStatus, CorrectionSubmission } from '../types/cases'
+import {
+  CORRECTION_INTAKE_CONTRACT_VERSION,
+  type CaseReceipt,
+  type CaseStatus,
+  type CorrectionProblemDetail,
+  type CorrectionSubmission,
+} from '../types/cases'
 
 export const CASE_CSRF_COOKIE = 'vl360_case_csrf'
 
@@ -52,14 +58,6 @@ export class CaseReviewConflictError extends Error {
     super(message)
     this.name = 'CaseReviewConflictError'
   }
-}
-
-export interface CorrectionProblemDetail {
-  code: string
-  detail: string
-  status: number
-  field?: string
-  correlation_id?: string
 }
 
 export class CorrectionProblemError extends Error {
@@ -137,11 +135,15 @@ export function useCorrectionCases(fetcher = apiFetch): CorrectionCasesApi {
     secretState.capability = ''
   }
 
-  function mutationHeaders(idempotencyKey?: string): Record<string, string> {
+  function mutationHeaders(
+    idempotencyKey?: string,
+    contractVersion?: string,
+  ): Record<string, string> {
     const headers: Record<string, string> = { 'content-type': 'application/json' }
     const token = readCaseCsrfToken()
     if (token) headers['X-Case-CSRF'] = token
     if (idempotencyKey) headers['Idempotency-Key'] = idempotencyKey
+    if (contractVersion) headers['X-Correction-Contract-Version'] = contractVersion
     return headers
   }
 
@@ -150,12 +152,13 @@ export function useCorrectionCases(fetcher = apiFetch): CorrectionCasesApi {
     body: unknown,
     idempotencyKey?: string,
     translateRefusal = true,
+    contractVersion?: string,
   ): Promise<T> {
     try {
       return await fetcher<T>(url, {
         method: 'POST',
         body,
-        headers: mutationHeaders(idempotencyKey),
+        headers: mutationHeaders(idempotencyKey, contractVersion),
         credentials: 'include',
       })
     } catch (error) {
@@ -190,7 +193,16 @@ export function useCorrectionCases(fetcher = apiFetch): CorrectionCasesApi {
     }
     let receipt: CaseReceipt
     try {
-      receipt = await post<CaseReceipt>('/api/cases/corrections', body, idempotencyKey, false)
+      const contractVersion = submission.items.every(item => item.reportedValueKnown !== undefined)
+        ? CORRECTION_INTAKE_CONTRACT_VERSION
+        : undefined
+      receipt = await post<CaseReceipt>(
+        '/api/cases/corrections',
+        body,
+        idempotencyKey,
+        false,
+        contractVersion,
+      )
     } catch (error) {
       const raw = error as { data?: CorrectionProblemDetail, statusCode?: number }
       const problem = raw?.data

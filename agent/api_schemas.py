@@ -15,7 +15,7 @@ from __future__ import annotations
 
 from typing import Literal
 
-from pydantic import BaseModel, ConfigDict, StrictInt, StrictStr, field_validator, model_validator
+from pydantic import BaseModel, ConfigDict, StrictBool, StrictInt, StrictStr, field_validator, model_validator
 
 if __package__:
     from .ai_disclosure import (
@@ -43,7 +43,7 @@ class CorrectionIntakeContract(BaseModel):
 
     model_config = ConfigDict(extra="forbid")
 
-    reported_value_known: bool
+    reported_value_known: StrictBool
     reported_value: object | None = None
 
     @model_validator(mode="after")

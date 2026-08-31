@@ -10,7 +10,11 @@
 // identity, and the checkbox says so in the reporter's language.
 import { computed, reactive, ref } from 'vue'
 
-import type { CorrectionItemInput, CorrectionSubmission } from '../../types/cases'
+import type {
+  CorrectionItemInput,
+  CorrectionProblemDetail,
+  CorrectionSubmission,
+} from '../../types/cases'
 
 const props = defineProps<{
   entityId: string
@@ -23,6 +27,7 @@ const props = defineProps<{
   /** A convenience hint from the entry link; anything unrecognised is ignored. */
   initialFieldPath?: string | null
   busy?: boolean
+  serverProblem?: CorrectionProblemDetail | null
 }>()
 
 const emit = defineEmits<{
@@ -68,6 +73,11 @@ function errorFor(anchor: string): string | undefined {
 function hasError(anchor: string): boolean {
   return errors.value.some(e => e.anchor === anchor)
 }
+const serverErrorAnchor = computed(() => {
+  const field = props.serverProblem?.field ?? ''
+  const match = /^items\.(\d+)\.(?:reportedValue|reportedValueKnown)$/.exec(field)
+  return match ? `item-${match[1]}-reported` : null
+})
 const errorSummary = ref<HTMLElement | null>(null)
 
 const canAddItem = computed(() => items.length < 10)
@@ -178,6 +188,22 @@ function submit() {
           <a :href="`#${error.anchor}`">{{ error.message }}</a>
         </li>
       </ul>
+    </div>
+
+    <div
+      v-if="serverProblem"
+      class="intake-errors"
+      role="alert"
+      data-role="server-error"
+    >
+      <h3>Máy chủ cần bạn kiểm tra lại</h3>
+      <p>{{ serverProblem.detail }}</p>
+      <a v-if="serverErrorAnchor" :href="`#${serverErrorAnchor}`">
+        Đi tới trường cần kiểm tra
+      </a>
+      <p v-if="serverProblem.correlation_id" class="intake-correlation">
+        Mã đối soát: {{ serverProblem.correlation_id }}
+      </p>
     </div>
 
     <fieldset

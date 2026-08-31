@@ -310,6 +310,36 @@ describe('the three pages', () => {
     expect(source).not.toMatch(/route\.query\.(revision|name)/)
   })
 
+  it('passes structured correction problems through to the draft form', () => {
+    const source = page('sua-thong-tin.vue')
+    expect(source).toContain('CorrectionProblemError')
+    expect(source).toContain('problem.correlation_id')
+    expect(source).toContain(':server-problem="problem"')
+    expect(source).toContain('problem.field')
+  })
+
+  it('renders a structured server problem without discarding the draft', () => {
+    const form = mount(CorrectionIntakeForm, {
+      props: {
+        entityId: 'p-quan-com',
+        entityName: 'Quán Cơm Bà Tư',
+        baseEntityRevision: 7,
+        serverProblem: {
+          code: 'invalid_request',
+          detail: 'reportedValueKnown must be a boolean',
+          status: 422,
+          field: 'items.0.reportedValueKnown',
+          correlation_id: 'corr-page-1',
+        },
+      },
+    })
+
+    expect(form.get('[data-role="server-error"]').text()).toContain('reportedValueKnown')
+    expect(form.get('[data-role="server-error"]').text()).toContain('corr-page-1')
+    expect(form.get('[data-role="server-error"] a').attributes('href')).toBe('#item-0-reported')
+    expect(form.get('#item-0-field').exists()).toBe(true)
+  })
+
   it('reflows as a single column with no fixed page width', () => {
     for (const name of ['sua-thong-tin.vue', 'tra-cuu.vue', 'trang-thai.vue']) {
       const source = page(name)

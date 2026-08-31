@@ -35,13 +35,25 @@ describe('proof-first correction contract', () => {
 
     await cases.createCorrection(submission)
 
-    const call = fetcher.mock.calls[0] as unknown as [string, { body: { items: Array<Record<string, unknown>> } }]
+    const call = fetcher.mock.calls[0] as unknown as [string, { body: { items: Array<Record<string, unknown>> }, headers: Record<string, string> }]
     const item = call[1].body.items[0]
     expect(item).toMatchObject({
       reportedValue: null,
       reportedValueKnown: false,
     })
+    expect(call[1].headers['X-Correction-Contract-Version']).toBe('1')
     scope.stop()
+  })
+
+  it('keeps legacy submissions headerless while canonical submissions carry a version', async () => {
+    const fetcher = vi.fn(async () => receipt)
+    const cases = useCorrectionCases(fetcher as any)
+    await cases.createCorrection({
+      ...submission,
+      items: [{ ...submission.items[0], reportedValueKnown: undefined }],
+    })
+    const options = fetcher.mock.calls[0]![1] as { headers: Record<string, string> }
+    expect(options.headers['X-Correction-Contract-Version']).toBeUndefined()
   })
 
   it('keeps the caller draft and exposes field-level 422 problem details', async () => {
