@@ -518,6 +518,7 @@ class CaseTransaction:
         if draft.event_id is not None:
             envelope = {
                 "event_id": draft.event_id,
+                "case_id": draft.case_id,
                 "resource_id": draft.resource_id or draft.case_id,
                 "revision": draft.revision,
                 "generation": draft.generation,

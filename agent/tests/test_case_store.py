@@ -399,6 +399,7 @@ def test_case_transaction_audit_fallback_persists_event_envelope_in_existing_jso
     audit_after = json.loads(audit_params[8])
     assert audit_after["_audit_event"] == {
         "event_id": "event-case-2",
+        "case_id": CASE_ID,
         "resource_id": CASE_ID,
         "revision": 2,
         "generation": "generation-2",
