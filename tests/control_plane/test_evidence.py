@@ -178,6 +178,30 @@ def test_bundle_requires_nonempty_timestamps_and_metadata_types(tmp_path: Path) 
     assert result.verdict == "BLOCKED"
 
 
+@pytest.mark.parametrize("raw_output_path", ["\x00pytest-output.txt", "../outside.txt", "missing.txt"])
+def test_bundle_malformed_output_path_is_blocked_without_traceback(
+    tmp_path: Path, raw_output_path: str
+) -> None:
+    bundle = {
+        "schema_version": "1", "artifact_id": "run", "head_sha": "a" * 40,
+        "branch": "main", "started_at": "2026-08-31T00:00:00Z",
+        "finished_at": "2026-08-31T00:00:01Z", "command": "pytest",
+        "environment": {"os": "test"},
+        "outcomes": {
+            "passed": 1, "failed": 0, "errors": 0, "skipped": 0,
+            "xfailed": 0, "collection_errors": 0, "interrupted": False,
+            "return_code": 0,
+        },
+        "allowlist": [], "verdict": "PASS", "artifacts": [],
+        "output_path": raw_output_path, "output_sha256": "0" * 64,
+    }
+    path = tmp_path / "bundle.json"
+    path.write_text(json.dumps(bundle), encoding="utf-8")
+    result = verify_bundle(path)
+    assert result.verdict == "BLOCKED"
+    assert result.reasons
+
+
 def test_verify_bundle_reparses_stored_output_and_nodeids(tmp_path: Path) -> None:
     output = "tests/a.py::test_bad FAILED\n1 failed in 0.1s\n"
     bundle = {

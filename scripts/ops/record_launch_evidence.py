@@ -553,6 +553,24 @@ def _metadata_from_args(args: argparse.Namespace) -> tuple[dict[str, Any] | None
     return outcomes, environment
 
 
+def _outcomes_match(parsed: ParsedOutcome, declared: dict[str, Any]) -> bool:
+    """Require explicit outcome metadata to agree with captured pytest output."""
+
+    fields = (
+        "passed", "failed", "errors", "skipped", "xfailed", "collection_errors",
+        "interrupted", "return_code", "failed_nodeids", "error_nodeids",
+    )
+    for field in fields:
+        expected = getattr(parsed, field)
+        actual = declared.get(field, () if field.endswith("nodeids") else None)
+        if field.endswith("nodeids"):
+            if not isinstance(actual, (list, tuple)) or tuple(actual) != tuple(expected):
+                return False
+        elif actual != expected:
+            return False
+    return True
+
+
 def _record_payload(args: argparse.Namespace, outcomes: dict[str, Any] | None) -> tuple[dict[str, Any] | None, str | bytes | None, str, str | None]:
     effective_status = args.status
     effective_verdict = args.verdict
@@ -570,20 +588,24 @@ def _record_payload(args: argparse.Namespace, outcomes: dict[str, Any] | None) -
             output_text = None
     else:
         output_text = output
-    if outcomes is None and output is not None:
-        if output_text is None:
-            parsed = None
-        else:
-            parsed = parse_pytest_output(output_text, args.exit_code)
-        if parsed is not None and parsed.summary_present:
-            outcomes = asdict(parsed)
-            effective_verdict = classify_verdict(parsed, frozenset())
-            effective_status = {"PASS": "pass", "BLOCKED": "fail", "UNCLASSIFIED": "skip"}[effective_verdict]
-        elif parsed is None or not parsed.summary_present:
-            # A captured command without a parseable pytest summary is not a
-            # passing test run; preserve the output and classify it explicitly.
+    if output is not None:
+        parsed = None if output_text is None else parse_pytest_output(output_text, args.exit_code)
+        if parsed is None or not parsed.summary_present:
+            # Captured output without a pytest summary cannot support declared
+            # counts, so discard them and preserve an explicit unclassified run.
+            outcomes = None
             effective_verdict = "UNCLASSIFIED"
             effective_status = "skip"
+        else:
+            if outcomes is not None and not _outcomes_match(parsed, outcomes):
+                # A mismatch is evidence of tampering or a stale declaration;
+                # record the parsed run as blocked instead of trusting metadata.
+                effective_verdict = "BLOCKED"
+                effective_status = "fail"
+            else:
+                effective_verdict = classify_verdict(parsed, frozenset())
+                effective_status = {"PASS": "pass", "BLOCKED": "fail", "UNCLASSIFIED": "skip"}[effective_verdict]
+            outcomes = asdict(parsed)
     return outcomes, output, effective_status, effective_verdict
 
 

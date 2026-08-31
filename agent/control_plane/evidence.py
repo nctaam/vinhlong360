@@ -312,18 +312,22 @@ def _check_bundle_output(
         output = payload.get("output_text")
     if output is None and isinstance(payload.get("output_path"), str):
         raw_output_path = payload["output_path"]
-        if Path(raw_output_path).is_absolute():
-            reasons.append("output_path must be relative")
-            return None, ""
-        output_path = (Path(path).parent / raw_output_path).resolve()
         try:
-            output_path.relative_to(Path(path).parent.resolve())
-        except ValueError:
-            reasons.append("output_path escapes bundle directory")
-            return None, ""
-        try:
+            if Path(raw_output_path).is_absolute():
+                reasons.append("output_path must be relative")
+                return None, ""
+            bundle_dir = Path(path).parent.resolve()
+            output_path = (bundle_dir / raw_output_path).resolve()
+            try:
+                output_path.relative_to(bundle_dir)
+            except ValueError:
+                reasons.append("output_path escapes bundle directory")
+                return None, ""
             output = output_path.read_bytes()
-        except OSError as exc:
+        except ValueError:
+            reasons.append("invalid output_path")
+            return None, ""
+        except (OSError, RuntimeError) as exc:
             reasons.append(f"unable to read output: {type(exc).__name__}")
     if output is not None:
         if not isinstance(output, (str, bytes)):

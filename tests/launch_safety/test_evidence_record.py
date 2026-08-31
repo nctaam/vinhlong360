@@ -194,6 +194,38 @@ def test_cli_unparseable_captured_output_is_unclassified_not_fabricated_pass(tmp
     assert section["outcomes"] == {}
 
 
+def test_cli_unparseable_output_overrides_fabricated_outcomes_and_blocks_final(
+    tmp_path: Path,
+) -> None:
+    state_path = tmp_path / "cli-fabricated.json"
+    document = _complete_document(tmp_path)
+    document.path = state_path
+    document.save()
+    fabricated = {
+        "passed": 1,
+        "failed": 0,
+        "errors": 0,
+        "skipped": 0,
+        "xfailed": 0,
+        "collection_errors": 0,
+        "interrupted": False,
+        "return_code": 0,
+    }
+    assert main([
+        "record", "--section", "backend-focused", "--status", "pass",
+        "--exit-code", "0", "--summary", "native", "--command", "pytest",
+        "--output-text", "command completed", "--outcomes-json", json.dumps(fabricated),
+        "--environment-json", '{"os":"test"}', "--head-sha", "a" * 40,
+        "--revision", "a" * 40, "--state", str(state_path),
+    ]) == 0
+    section = json.loads(state_path.read_text(encoding="utf-8"))["sections"]["backend-focused"]
+    assert section["status"] == "skip"
+    assert section["verdict"] == "UNCLASSIFIED"
+    assert section["outcomes"] == {}
+    with pytest.raises(ValueError, match="functional section"):
+        EvidenceDocument.load(state_path).render(final=True)
+
+
 def test_cli_parses_real_output_into_errors_and_blocked_verdict(tmp_path: Path) -> None:
     state_path = tmp_path / "cli-state.json"
     output = "ERROR tests/a.py - ImportError\n1 passed, 1 error in 0.1s\n"
