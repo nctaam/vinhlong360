@@ -36,3 +36,6 @@ exit 0
 ```
 
 The pre-existing `docs/standards/90-exceptions-log.md` user change was not included in this commit.
+
+Follow-up hardening commit: `c84897ab` adds strict registry validation for the
+known-current string and covers missing-value/missing-discriminator paths.
