@@ -170,3 +170,9 @@ ghi ở backlog tối ưu — giảm dần, KHÔNG được tăng tiếp từ 47
 - 2026-08-31T06:59:57 SKIP R30.7 — Goi JS 803/800 la muc 1 ho so chu-quyet; commit nay docs-only
 
 - 2026-08-31T07:13:03 SKIP R30.7 — Goi JS 803/800 la muc 1 ho so chu-quyet; commit nay docs-only
+
+- 2026-08-31T07:37:16 SKIP R30.7 — Goi JS 803/800 la muc 1 ho so chu-quyet; commit nay docs-only
+
+- 2026-08-31T12:30:43 SKIP R30.7 — Commit docs-only proof-first optimization design; bundle debt pre-exists and this commit changes no frontend artifacts
+
+- 2026-08-31T13:11:25 SKIP R30.7 — Commit docs-only proof-first optimization plan; existing 803kB bundle debt predates this change and no frontend artifact is modified
