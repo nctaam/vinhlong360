@@ -17,19 +17,37 @@ HEAD `d05024eb`. Tất cả đã commit. Không có patch treo, không có file 
 | §5 ba cổng | thêm cả ba | `b9dbb1f6` | xong, kèm §5d |
 | §1 trần bundle | giữ trần, mở đợt giảm cân | `f831f5f6` | **đo xong bước một → trả về câu hỏi** |
 
-## MẢNH DUY NHẤT CÒN THIẾU
+## Con số full-suite — ĐÃ CÓ, và nó xác nhận phần chính
 
-**Con số full-suite chốt sổ.** Lượt đo cuối đang chạy nền lúc phiên bị cắt:
+Lượt đo chạy xong sau khi viết mục này. Trên máy đã có dung lượng:
 
-    scratchpad/fullsuite.py   (đã gắn đồng hồ đĩa hai đầu theo §5c-bis)
-    output: .../tasks/b3p3a0fbl.output
+    DIA TRUOC: 12,79 GB
+    15 failed, 12.359 passed, 138 skipped, 552 deselected, 1 xfailed, 12 errors
+    So fail: 15 | trong danh sach: 15 | MOI: (rong) | MAT: (rong) | HET-DIFF
+    DIA SAU  : 12,75 GB  (luot nay chi tieu 0,04 GB)
 
-Nếu file đó có kết quả, đọc nó. Nếu không, chạy lại — **nhớ đo dung lượng trống
-trước** (§5c-bis; dưới 5 GB thì đừng chạy, script tự dừng).
+**Xác nhận hai điều:** (a) 15 fail đúng nguyên danh sách, 0 mới 0 mất — ba bản vá
+sạch; (b) hai "fail mới" hôm qua đúng là nhiễu đĩa cạn, nay hết chỗ cạn thì hết luôn.
+Đĩa gần như không nhúc nhích trong suốt lượt chạy, đối lập hẳn với lượt hôm qua.
 
-Kỳ vọng: **15 fail đúng danh sách, HẾT-DIFF**. Ba bản vá đã được nghiệm thu bằng
-suite riêng lúc còn dung lượng (79 erasure · 504 nhóm liên quan · 186 cổng chuẩn ·
-130 file frontend), nên full-suite chỉ là xác nhận, không phải điều kiện.
+### ⚠ NHƯNG: 12 `errors` chưa được giải thích — và công cụ đo của tôi MÙ với chúng
+
+Dòng "HẾT-DIFF" ở trên **chỉ so `FAILED`, không so `ERRORS`**. `scratchpad/fullsuite.py`
+chỉ bắt regex `^FAILED (\S+)`, nên 12 error kia lọt qua phép đối chiếu mà vẫn in ra
+"HẾT-DIFF". Đó là lỗi của công cụ, không phải bằng chứng suite sạch.
+
+Số liệu để so: các lượt full-suite trước trong phiên đều **0 error** (16/11.680 và
+15/12.364), còn lượt đĩa-cạn có **88 error**. Nay 12 — ít hơn hẳn 88 nhưng nhiều hơn
+0, và `passed` tụt 12.364 → 12.359 (−5).
+
+**Việc đầu tiên của phiên sau:**
+1. Sửa `fullsuite.py` để đối chiếu CẢ `ERROR` lẫn `FAILED` (regex `^ERROR (\S+)`),
+   nếu không thì "HẾT-DIFF" còn tiếp tục nói dối.
+2. Chạy lại, lấy danh sách 12 error đó và phân loại: môi trường hay thật.
+3. Nếu là thật → bổ sung vào danh sách fail-đã-biết ở ROADMAP hoặc vá.
+
+Ba bản vá của đợt KHÔNG phụ thuộc kết quả này — chúng đã được nghiệm thu bằng suite
+riêng (79 erasure · 504 nhóm liên quan · 186 cổng chuẩn · 130 file frontend).
 
 ## Việc tiếp theo, theo thứ tự đáng làm
 
