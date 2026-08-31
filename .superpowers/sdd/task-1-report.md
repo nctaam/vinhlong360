@@ -95,3 +95,11 @@ Status: DONE_WITH_CONCERNS
 - Captured output paths reject dual sources, NUL/malformed paths, traversal, and unreadable files without traceback.
 - Recorder persists nonzero unparseable record/harness failures as `BLOCKED`; canonical functional sections require complete parsed outcomes, capture checksum, command, environment, and matching revision.
 - Focused verification: `python -m pytest tests/control_plane/test_evidence.py tests/launch_safety/test_evidence_record.py tests/test_release_quality_gates.py -q` -> `89 passed`; `py_compile`, `ruff`, and `git diff --check` passed.
+
+## Reviewer Fix Wave V8
+
+Status: DONE_WITH_CONCERNS
+
+- Commit: `ecd704f6` (`fix: close evidence verdict and bundle validation gaps`).
+- State validation now requires summary-present parsed outcomes and complete capture metadata for every functional section; output source paths reject dual/invalid sources.
+- Focused verification remains `89 passed`; `py_compile`, `ruff`, and `git diff --check` pass.
