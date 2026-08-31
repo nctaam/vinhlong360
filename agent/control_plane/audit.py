@@ -58,8 +58,12 @@ def write_audit_and_outbox(transaction, event: AuditEvent, payload: Mapping[str,
     elif hasattr(transaction, "write_audit_event"):
         transaction.write_audit_event(event)
     else:
-        from cases.audit import CaseAuditDraft
-        from cases.domain import Channel
+        try:
+            from cases.audit import CaseAuditDraft
+            from cases.domain import Channel
+        except ModuleNotFoundError:
+            from agent.cases.audit import CaseAuditDraft
+            from agent.cases.domain import Channel
 
         transaction.append_audit(
             CaseAuditDraft(
@@ -81,7 +85,10 @@ def write_audit_and_outbox(transaction, event: AuditEvent, payload: Mapping[str,
     elif hasattr(transaction, "write_outbox_event"):
         transaction.write_outbox_event(envelope)
     else:
-        from cases.store import OutboxDraft
+        try:
+            from cases.store import OutboxDraft
+        except ModuleNotFoundError:
+            from agent.cases.store import OutboxDraft
 
         topic = str(envelope.get("topic") or event.action)
         key = str(envelope.get("idempotency_key") or event.event_id)
