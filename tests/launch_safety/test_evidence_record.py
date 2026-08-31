@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+from hashlib import sha256
 from pathlib import Path
 
 import pytest
@@ -35,7 +36,29 @@ def _complete_document(tmp_path: Path, *, revision: str = "a" * 40) -> EvidenceD
         elif section == "known-resource-timeout":
             evidence = CommandEvidence(section, 0, "not observed", "skip")
         else:
-            evidence = CommandEvidence(section, 0, "passed", "pass")
+            output = "1 passed in 0.1s\n"
+            evidence = CommandEvidence(
+                section,
+                0,
+                "passed",
+                "pass",
+                outcomes={
+                    "passed": 1,
+                    "failed": 0,
+                    "errors": 0,
+                    "skipped": 0,
+                    "xfailed": 0,
+                    "collection_errors": 0,
+                    "interrupted": False,
+                    "return_code": 0,
+                    "failed_nodeids": [],
+                    "error_nodeids": [],
+                    "summary_present": True,
+                },
+                environment={"os": "test"},
+                head_sha=revision if len(revision) == 40 and revision == revision.lower() else "",
+                output_sha256=sha256(output.encode()).hexdigest(),
+            )
         document.record(section, evidence)
     return document
 
@@ -155,16 +178,36 @@ def test_final_render_rejects_pass_status_with_blocked_outcomes(tmp_path: Path) 
         "passed": 1, "failed": 0, "errors": 1, "skipped": 0,
         "xfailed": 0, "collection_errors": 0, "interrupted": False,
         "return_code": 1,
+        "failed_nodeids": [], "error_nodeids": [], "summary_present": True,
     }
     document.record(
         "backend-focused",
         CommandEvidence(
             "pytest", 0, "passed", "pass",
             outcomes=outcomes,
+            environment={"os": "test"},
+            head_sha=document.revision,
         ),
     )
     with pytest.raises(ValueError, match="verdict is blocked"):
         document.render(final=True)
+
+
+def test_final_render_and_bundle_reject_functional_pass_without_parsed_outcomes(
+    tmp_path: Path,
+) -> None:
+    document = _complete_document(tmp_path)
+    document.record(
+        "backend-focused",
+        CommandEvidence(
+            "pytest", 0, "passed", "pass",
+            environment={"os": "test"}, head_sha=document.revision,
+        ),
+    )
+    with pytest.raises(ValueError, match="missing parsed outcomes"):
+        document.render(final=True)
+    with pytest.raises(ValueError, match="missing parsed outcomes"):
+        document.write_bundle(tmp_path / "bundle.json")
 
 
 def test_final_document_writes_bundle_verified_by_control_plane(tmp_path: Path) -> None:
@@ -191,6 +234,23 @@ def test_cli_unparseable_captured_output_is_unclassified_not_fabricated_pass(tmp
     section = json.loads(state_path.read_text(encoding="utf-8"))["sections"]["backend-focused"]
     assert section["status"] == "skip"
     assert section["verdict"] == "UNCLASSIFIED"
+    assert section["outcomes"] == {}
+
+
+def test_cli_unparseable_output_with_nonzero_exit_persists_blocked_failure(
+    tmp_path: Path,
+) -> None:
+    state_path = tmp_path / "cli-unparseable-failure.json"
+    assert main([
+        "record", "--section", "backend-focused", "--status", "fail",
+        "--exit-code", "7", "--summary", "native failure", "--command", "pytest",
+        "--output-text", "command failed before pytest summary", "--environment-json", '{"os":"test"}',
+        "--head-sha", "a" * 40, "--revision", "a" * 40, "--state", str(state_path),
+    ]) == 0
+    section = json.loads(state_path.read_text(encoding="utf-8"))["sections"]["backend-focused"]
+    assert section["status"] == "fail"
+    assert section["verdict"] == "BLOCKED"
+    assert section["exit_code"] == 7
     assert section["outcomes"] == {}
 
 
@@ -275,6 +335,25 @@ def test_harness_result_without_parseable_output_is_unclassified(tmp_path: Path)
     assert section["status"] == "skip"
 
 
+def test_harness_result_unparseable_nonzero_exit_persists_blocked_failure(
+    tmp_path: Path,
+) -> None:
+    state_path = tmp_path / "harness-unparseable-failure.json"
+    output_path = tmp_path / "compose-output.txt"
+    output_path.write_text("docker compose failed\n", encoding="utf-8")
+    assert main([
+        "harness-result", "--section", "compose-nginx-opt-in",
+        "--primary-exit", "7", "--cleanup-exit", "0",
+        "--head-sha", "a" * 40, "--environment-json", '{"os":"test"}',
+        "--output-file", str(output_path), "--state", str(state_path),
+    ]) == 7
+    section = json.loads(state_path.read_text(encoding="utf-8"))["sections"]["compose-nginx-opt-in"]
+    assert section["status"] == "fail"
+    assert section["verdict"] == "BLOCKED"
+    assert section["exit_code"] == 7
+    assert section["outcomes"] == {}
+
+
 def test_final_render_blocks_compose_pass_without_capture_metadata(tmp_path: Path) -> None:
     document = _complete_document(tmp_path)
     document.record(
@@ -295,7 +374,10 @@ def test_final_render_blocks_parsed_outcomes_without_output_checksum(tmp_path: P
                 "passed": 1, "failed": 0, "errors": 0, "skipped": 0,
                 "xfailed": 0, "collection_errors": 0, "interrupted": False,
                 "return_code": 0,
+                "failed_nodeids": [], "error_nodeids": [], "summary_present": True,
             },
+            environment={"os": "test"},
+            head_sha=document.revision,
         ),
     )
     with pytest.raises(ValueError, match="checksum"):
@@ -319,7 +401,22 @@ def test_final_render_rejects_not_requested_opt_in_and_accepts_explicit_skip(tmp
         elif section in {"postgres-opt-in", "compose-nginx-opt-in", "browser-opt-in"}:
             evidence = CommandEvidence("not requested", 0, "not-requested", "skip")
         else:
-            evidence = CommandEvidence(section, 0, "passed", "pass")
+            output = "1 passed in 0.1s\n"
+            evidence = CommandEvidence(
+                section,
+                0,
+                "passed",
+                "pass",
+                outcomes={
+                    "passed": 1, "failed": 0, "errors": 0, "skipped": 0,
+                    "xfailed": 0, "collection_errors": 0, "interrupted": False,
+                    "return_code": 0,
+                    "failed_nodeids": [], "error_nodeids": [], "summary_present": True,
+                },
+                environment={"os": "test"},
+                head_sha=document.revision,
+                output_sha256=sha256(output.encode()).hexdigest(),
+            )
         document.record(section, evidence)
 
     with pytest.raises(ValueError, match="not-requested"):

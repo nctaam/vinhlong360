@@ -40,6 +40,16 @@ def test_error_and_nonzero_return_code_block_even_without_failed_lines() -> None
     assert classify_verdict(outcome, frozenset()) == "BLOCKED"
 
 
+def test_error_nodeid_blocks_when_summary_under_reports_zero_errors() -> None:
+    outcome = parse_pytest_output(
+        "ERROR at setup of tests/a.py\n1 passed, 0 errors in 0.1s\n",
+        return_code=0,
+    )
+    assert outcome.error_nodeids == ("tests/a.py",)
+    assert outcome.errors == 1
+    assert classify_verdict(outcome, frozenset()) == "BLOCKED"
+
+
 def test_clean_allowlisted_failure_is_pass_but_collection_error_is_not() -> None:
     clean = parse_pytest_output("1 failed, 4 passed in 0.1s\n", return_code=1)
     assert classify_verdict(clean, frozenset({"tests/known.py::test_old"})) == "BLOCKED"
@@ -202,6 +212,29 @@ def test_bundle_malformed_output_path_is_blocked_without_traceback(
     assert result.reasons
 
 
+def test_bundle_rejects_inline_output_with_secondary_output_path(tmp_path: Path) -> None:
+    output = "1 passed in 0.1s\n"
+    bundle = {
+        "schema_version": "1", "artifact_id": "run", "head_sha": "a" * 40,
+        "branch": "main", "started_at": "2026-08-31T00:00:00Z",
+        "finished_at": "2026-08-31T00:00:01Z", "command": "pytest",
+        "environment": {"os": "test"},
+        "outcomes": {
+            "passed": 1, "failed": 0, "errors": 0, "skipped": 0,
+            "xfailed": 0, "collection_errors": 0, "interrupted": False,
+            "return_code": 0,
+        },
+        "allowlist": [], "verdict": "PASS", "artifacts": [],
+        "output": output, "output_path": "../outside.txt",
+        "output_sha256": sha256(output.encode()).hexdigest(),
+    }
+    path = tmp_path / "bundle.json"
+    path.write_text(json.dumps(bundle), encoding="utf-8")
+    result = verify_bundle(path)
+    assert result.verdict == "BLOCKED"
+    assert any("both inline output" in reason for reason in result.reasons)
+
+
 def test_verify_bundle_reparses_stored_output_and_nodeids(tmp_path: Path) -> None:
     output = "tests/a.py::test_bad FAILED\n1 failed in 0.1s\n"
     bundle = {
@@ -292,7 +325,23 @@ def test_state_bundle_binds_top_level_revision_and_artifacts_to_state(tmp_path: 
                 section, 0, "docker-cli-unavailable" if section != "browser-opt-in" else "chrome-unavailable", "skip"
             )
         else:
-            evidence = CommandEvidence(section, 0, "passed", "pass")
+            output = "1 passed in 0.1s\n"
+            evidence = CommandEvidence(
+                section,
+                0,
+                "passed",
+                "pass",
+                outcomes={
+                    "passed": 1, "failed": 0, "errors": 0, "skipped": 0,
+                    "xfailed": 0, "collection_errors": 0, "interrupted": False,
+                    "return_code": 0,
+                    "failed_nodeids": [], "error_nodeids": [],
+                    "summary_present": True,
+                },
+                environment={"os": "test"},
+                head_sha="a" * 40,
+                output_sha256=sha256(output.encode()).hexdigest(),
+            )
         document.record(section, evidence)
     bundle_path = tmp_path / "bundle.json"
     document.write_bundle(bundle_path)

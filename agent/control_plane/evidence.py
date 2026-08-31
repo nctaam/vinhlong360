@@ -36,6 +36,15 @@ _REQUIRED_STATE_SECTIONS = (
     "known-resource-timeout",
     "external-gates",
 )
+_FUNCTIONAL_STATE_SECTIONS = frozenset({
+    "artifacts",
+    "backend-focused",
+    "frontend-focused",
+    "rollback-local-rehearsal",
+    "backend-full-regression",
+    "frontend-serial-regression",
+    "source-scans",
+})
 _DEFAULT_EXTERNAL_GATES = {"H1": "blocked", "H2": "blocked", "owner": "not-authorized"}
 
 
@@ -104,7 +113,10 @@ def _parse_nodes(text: str) -> tuple[tuple[str, ...], tuple[str, ...], int]:
         if failed_match is None:
             failed_match = _FAILED_STATUS_LINE.match(line)
         if failed_match:
-            failed_nodeids.append(failed_match.group("nodeid").rstrip(":,"))
+            nodeid = failed_match.group("nodeid").rstrip(":,")
+            # A summary such as ``1 failed in 0.1s`` is not a node-level line.
+            if not nodeid.isdigit():
+                failed_nodeids.append(nodeid)
             continue
         error_match = _ERROR_LINE.match(line) or _ERROR_AT_LINE.match(line)
         if error_match:
@@ -132,7 +144,9 @@ def parse_pytest_output(text: str, return_code: int) -> ParsedOutcome:
         r"keyboardinterrupt|keyboard interrupt|interrupted|^!.*interrupt",
         text, re.IGNORECASE | re.MULTILINE,
     ))
-    errors = summary_counts.get("errors", len(error_nodeids))
+    # Node-level errors remain blockers even when a malformed/native summary
+    # under-reports the aggregate error count.
+    errors = max(summary_counts.get("errors", 0), len(error_nodeids))
     # Collection errors are a subset of pytest's error count but are kept as a
     # separate blocker for callers that need to distinguish import failures.
     collection_errors = max(collection_errors, 0)
@@ -165,18 +179,23 @@ def classify_verdict(outcome: ParsedOutcome, allowlist: frozenset[str]) -> Verdi
     if not isinstance(outcome, ParsedOutcome):
         raise TypeError("outcome must be ParsedOutcome")
     unexpected = _unexpected_failures(outcome, allowlist)
-    if (
-        not outcome.summary_present
-        or outcome.return_code != 0
-        or outcome.errors
-        or outcome.collection_errors
-        or outcome.interrupted
-        or unexpected
-    ):
+    if _has_blocking_outcome(outcome, unexpected):
         return "BLOCKED" if outcome.summary_present else "UNCLASSIFIED"
     if not outcome.failed and not outcome.errors and not outcome.collection_errors:
         return "PASS"
     return "UNCLASSIFIED"
+
+
+def _has_blocking_outcome(outcome: ParsedOutcome, unexpected: set[str]) -> bool:
+    return any((
+        not outcome.summary_present,
+        outcome.return_code != 0,
+        bool(outcome.errors),
+        bool(outcome.error_nodeids),
+        bool(outcome.collection_errors),
+        outcome.interrupted,
+        bool(unexpected),
+    ))
 
 
 def _reason_for_field(name: str) -> str:
@@ -307,28 +326,15 @@ def _check_bundle_output(
     path: Path, payload: dict[str, object], reasons: list[str]
 ) -> tuple[bytes | None, str]:
     declared_digest = payload.get("output_sha256")
+    has_inline_output = payload.get("output") is not None or payload.get("output_text") is not None
+    if has_inline_output and "output_path" in payload:
+        reasons.append("bundle cannot contain both inline output and output_path")
+        return None, ""
     output = payload.get("output")
     if output is None:
         output = payload.get("output_text")
     if output is None and isinstance(payload.get("output_path"), str):
-        raw_output_path = payload["output_path"]
-        try:
-            if Path(raw_output_path).is_absolute():
-                reasons.append("output_path must be relative")
-                return None, ""
-            bundle_dir = Path(path).parent.resolve()
-            output_path = (bundle_dir / raw_output_path).resolve()
-            try:
-                output_path.relative_to(bundle_dir)
-            except ValueError:
-                reasons.append("output_path escapes bundle directory")
-                return None, ""
-            output = output_path.read_bytes()
-        except ValueError:
-            reasons.append("invalid output_path")
-            return None, ""
-        except (OSError, RuntimeError) as exc:
-            reasons.append(f"unable to read output: {type(exc).__name__}")
+        output = _read_output_path(path, payload["output_path"], reasons)
     if output is not None:
         if not isinstance(output, (str, bytes)):
             reasons.append("output must be text")
@@ -342,6 +348,24 @@ def _check_bundle_output(
         # Bundles may store output separately; an absent output is unverifiable.
         reasons.append("missing output for checksum verification")
     return None, ""
+
+
+def _read_output_path(path: Path, raw_output_path: object, reasons: list[str]) -> bytes | None:
+    try:
+        if not isinstance(raw_output_path, str) or "\x00" in raw_output_path:
+            raise ValueError("invalid output_path")
+        if Path(raw_output_path).is_absolute():
+            reasons.append("output_path must be relative")
+            return None
+        bundle_dir = Path(path).parent.resolve()
+        output_path = (bundle_dir / raw_output_path).resolve()
+        output_path.relative_to(bundle_dir)
+        return output_path.read_bytes()
+    except ValueError as exc:
+        reasons.append(str(exc) or "invalid output_path")
+    except (OSError, RuntimeError) as exc:
+        reasons.append(f"unable to read output: {type(exc).__name__}")
+    return None
 
 
 def _compare_output_outcome(
@@ -421,19 +445,17 @@ def verify_bundle(path: Path) -> VerificationResult:
 def _validate_state_outcomes(name: str, outcomes: object, verdict: object) -> list[str]:
     if not isinstance(outcomes, dict):
         return [f"invalid section outcomes: {name}"]
-    fields = ("passed", "failed", "errors", "skipped", "xfailed", "collection_errors", "interrupted", "return_code")
+    fields = (
+        "passed", "failed", "errors", "skipped", "xfailed", "collection_errors",
+        "interrupted", "return_code", "summary_present",
+    )
     if any(field not in outcomes for field in fields):
         return [f"incomplete section outcomes: {name}"]
     try:
         counts = {field: outcomes[field] for field in fields}
-        if any(type(counts[field]) is not int for field in fields if field != "interrupted"):
-            raise ValueError("outcome counts have invalid types")
-        if type(counts["interrupted"]) is not bool:
-            raise ValueError("interrupted must be boolean")
-        if any(counts[field] < 0 for field in fields if field != "interrupted"):
-            raise ValueError("outcome counts cannot be negative")
+        _validate_state_count_values(counts)
         parsed = ParsedOutcome(
-            **counts,
+            **{field: value for field, value in counts.items() if field != "summary_present"},
             failed_nodeids=_validated_nodeids(outcomes.get("failed_nodeids", ()), "failed_nodeids"),
             error_nodeids=_validated_nodeids(outcomes.get("error_nodeids", ()), "error_nodeids"),
             summary_present=True,
@@ -443,6 +465,18 @@ def _validate_state_outcomes(name: str, outcomes: object, verdict: object) -> li
     if classify_verdict(parsed, frozenset()) != verdict:
         return [f"section outcomes/verdict mismatch: {name}"]
     return []
+
+
+def _validate_state_count_values(counts: dict[str, object]) -> None:
+    if counts["summary_present"] is not True:
+        raise ValueError("summary_present must be true")
+    numeric = [k for k in counts if k not in {"interrupted", "summary_present"}]
+    if any(type(counts[k]) is not int for k in numeric):
+        raise ValueError("outcome counts have invalid types")
+    if type(counts["interrupted"]) is not bool:
+        raise ValueError("interrupted must be boolean")
+    if any(counts[k] < 0 for k in numeric):
+        raise ValueError("outcome counts cannot be negative")
 
 
 def _validate_state_section(name: str, section: object, revision: str) -> list[str]:
@@ -459,12 +493,37 @@ def _validate_state_section(name: str, section: object, revision: str) -> list[s
     if expected is not None and verdict != expected:
         reasons.append(f"section status/verdict mismatch: {name}")
     reasons.extend(_validate_state_section_metadata(name, section, revision))
+    if name in _FUNCTIONAL_STATE_SECTIONS:
+        reasons.extend(_validate_functional_state_section(name, section, revision))
     outcomes = section.get("outcomes")
     if outcomes is not None and outcomes != {}:
         reasons.extend(_validate_state_outcomes(name, outcomes, verdict))
         reasons.extend(_validate_state_output_checksum(name, section))
     if status == "fail" or verdict == "BLOCKED":
         reasons.append(f"blocked section: {name}")
+    return reasons
+
+
+def _validate_functional_state_section(
+    name: str, section: dict[str, object], revision: str
+) -> list[str]:
+    reasons: list[str] = []
+    command = section.get("command")
+    if not isinstance(command, str) or not command.strip():
+        reasons.append(f"functional section command invalid: {name}")
+    environment = section.get("environment")
+    if not isinstance(environment, dict) or not environment:
+        reasons.append(f"functional section environment invalid: {name}")
+    if section.get("head_sha") != revision:
+        reasons.append(f"functional section head revision mismatch: {name}")
+    outcomes = section.get("outcomes")
+    if not isinstance(outcomes, dict) or not outcomes:
+        reasons.append(f"functional section outcomes missing: {name}")
+    elif outcomes.get("summary_present") is not True:
+        reasons.append(f"functional section summary missing: {name}")
+    checksum = section.get("output_sha256")
+    if not isinstance(checksum, str) or not _SHA256.fullmatch(checksum):
+        reasons.append(f"functional section output checksum invalid: {name}")
     return reasons
 
 

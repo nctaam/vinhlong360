@@ -86,3 +86,12 @@ Status: DONE_WITH_CONCERNS
 - Bundle output-path validation catches malformed, NUL, traversal, and read failures as `BLOCKED` without traceback.
 - Focused verification: `python -m pytest tests/control_plane/test_evidence.py tests/launch_safety/test_evidence_record.py tests/test_release_quality_gates.py -q` -> `84 passed`; `py_compile`, `ruff`, and `git diff --check` passed.
 - Commit hook used documented `SKIP_CHECKS=R30.7` / `SKIP_REASON`; only pre-existing 802kB bundle debt remains.
+
+## Reviewer Fix Wave V7
+
+Status: DONE_WITH_CONCERNS
+
+- Error nodeids now force `BLOCKED`, and parser error counts cannot under-report a captured `ERROR at setup` line.
+- Captured output paths reject dual sources, NUL/malformed paths, traversal, and unreadable files without traceback.
+- Recorder persists nonzero unparseable record/harness failures as `BLOCKED`; canonical functional sections require complete parsed outcomes, capture checksum, command, environment, and matching revision.
+- Focused verification: `python -m pytest tests/control_plane/test_evidence.py tests/launch_safety/test_evidence_record.py tests/test_release_quality_gates.py -q` -> `89 passed`; `py_compile`, `ruff`, and `git diff --check` passed.

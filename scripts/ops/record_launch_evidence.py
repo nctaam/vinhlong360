@@ -88,6 +88,7 @@ _SECRET_ASSIGNMENT = re.compile(
     re.IGNORECASE,
 )
 _HEAD_SHA = re.compile(r"^[0-9a-f]{40}$")
+_SHA256 = re.compile(r"^[0-9a-f]{64}$")
 
 
 def _validate_command_evidence(status: str, exit_code: int, command: str) -> None:
@@ -386,7 +387,7 @@ class EvidenceDocument:
             raise ValueError("final evidence revision is empty or unknown")
         if self.external_gates != DEFAULT_EXTERNAL_GATES:
             raise ValueError("external gates do not match the approved blocked state")
-        _validate_functional_sections(self.sections)
+        _validate_functional_sections(self.sections, self.revision)
         failed = sorted(
             name for name, evidence in self.sections.items() if evidence.status == "fail"
         )
@@ -468,18 +469,36 @@ def record_section(
     document.save()
 
 
-def _validate_functional_sections(sections: dict[str, CommandEvidence]) -> None:
+def _validate_functional_sections(sections: dict[str, CommandEvidence], revision: str) -> None:
     for name in FUNCTIONAL_SECTIONS:
         evidence = sections[name]
-        if evidence.status != "pass" or evidence.verdict != "PASS":
-            raise ValueError(f"functional section is not pass: {name}")
+        _validate_functional_identity(name, evidence, revision)
         outcomes = evidence.outcomes
-        if not outcomes:
-            continue
+        _validate_functional_outcomes(name, evidence, outcomes)
         if _outcomes_verdict(outcomes) != "PASS":
             raise ValueError(f"functional section verdict is blocked: {name}")
-        if not evidence.output_sha256:
+        if _SHA256.fullmatch(evidence.output_sha256) is None:
             raise ValueError(f"functional section is missing output checksum: {name}")
+
+
+def _validate_functional_identity(name: str, evidence: CommandEvidence, revision: str) -> None:
+    if evidence.status != "pass" or evidence.verdict != "PASS":
+        raise ValueError(f"functional section is not pass: {name}")
+    if not evidence.command.strip():
+        raise ValueError(f"functional section is missing command: {name}")
+    if not evidence.environment:
+        raise ValueError(f"functional section is missing environment: {name}")
+    if evidence.head_sha != revision:
+        raise ValueError(f"functional section head revision mismatch: {name}")
+
+
+def _validate_functional_outcomes(name: str, evidence: CommandEvidence, outcomes: dict[str, Any]) -> None:
+    required = (
+        "passed", "failed", "errors", "skipped", "xfailed", "collection_errors",
+        "interrupted", "return_code", "failed_nodeids", "error_nodeids", "summary_present",
+    )
+    if not outcomes or any(field not in outcomes for field in required) or outcomes.get("summary_present") is not True:
+        raise ValueError(f"functional section is missing parsed outcomes: {name}")
 
 
 def _outcomes_verdict(outcomes: dict[str, Any]) -> str:
@@ -594,8 +613,12 @@ def _record_payload(args: argparse.Namespace, outcomes: dict[str, Any] | None) -
             # Captured output without a pytest summary cannot support declared
             # counts, so discard them and preserve an explicit unclassified run.
             outcomes = None
-            effective_verdict = "UNCLASSIFIED"
-            effective_status = "skip"
+            if args.exit_code:
+                effective_verdict = "BLOCKED"
+                effective_status = "fail"
+            else:
+                effective_verdict = "UNCLASSIFIED"
+                effective_status = "skip"
         else:
             if outcomes is not None and not _outcomes_match(parsed, outcomes):
                 # A mismatch is evidence of tampering or a stale declaration;
@@ -649,6 +672,8 @@ def _handle_harness(args: argparse.Namespace) -> int:
             raise ValueError("captured harness output is not valid UTF-8") from exc
         _outcomes = asdict(parsed) if parsed.summary_present else None
         effective_verdict = classify_verdict(parsed, frozenset())
+        if result.exit_code and effective_verdict == "UNCLASSIFIED":
+            effective_verdict = "BLOCKED"
         status: Status = {
             "PASS": "pass", "BLOCKED": "fail", "UNCLASSIFIED": "skip",
         }[effective_verdict]
