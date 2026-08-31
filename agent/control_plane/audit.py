@@ -33,6 +33,8 @@ class AuditEvent:
             raise ValueError("invalid_audit_event")
         if self.generation is not None and (type(self.generation) is not str or not self.generation):
             raise ValueError("invalid_audit_event")
+        if self.generation is None:
+            object.__setattr__(self, "generation", str(self.revision))
 
 
 def _envelope(event: AuditEvent, payload: Mapping[str, object]) -> dict[str, object]:
