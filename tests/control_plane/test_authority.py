@@ -171,6 +171,59 @@ def test_baseline_fragment_accepts_github_slug_for_diacritic_heading(tmp_path: P
     assert report.status == "PASS"
 
 
+def test_baseline_count_is_scoped_to_selected_fragment_section(tmp_path: Path) -> None:
+    path = write_registry(tmp_path)
+    (tmp_path / "docs/ROADMAP.md").write_text(
+        "## Other\n"
+        "Baseline hiện tại: 15 fail\n"
+        "\n"
+        "<a id=\"fail-da-biet\"></a>\n"
+        "## Fail-da-biet\n"
+        "Baseline hiện tại: 99 fail\n"
+        "Authority: config/release-authority.json\n",
+        encoding="utf-8",
+    )
+
+    report = check_authority(
+        tmp_path,
+        now=datetime(2026, 8, 31, tzinfo=UTC),
+        head_sha=_head_sha(tmp_path),
+    )
+
+    assert report.status == "BLOCKED"
+    assert any("baseline count mismatch" in mismatch for mismatch in report.mismatches)
+
+
+def test_baseline_without_fragment_blocks_closed(tmp_path: Path) -> None:
+    path = write_registry(tmp_path)
+    payload = json.loads(path.read_text(encoding="utf-8"))
+    payload["baseline_source"] = "docs/ROADMAP.md"
+    path.write_text(json.dumps(payload), encoding="utf-8")
+
+    report = check_authority(
+        tmp_path,
+        now=datetime(2026, 8, 31, tzinfo=UTC),
+        head_sha=_head_sha(tmp_path),
+    )
+
+    assert report.status == "BLOCKED"
+    assert any("baseline fragment missing" in mismatch for mismatch in report.mismatches)
+
+
+def test_unreadable_baseline_link_returns_blocked_report(tmp_path: Path) -> None:
+    write_registry(tmp_path)
+    (tmp_path / "docs/ROADMAP.md").write_bytes(b"## Fail-da-biet\nBaseline: \xff fail\n")
+
+    report = check_authority(
+        tmp_path,
+        now=datetime(2026, 8, 31, tzinfo=UTC),
+        head_sha=_head_sha(tmp_path),
+    )
+
+    assert report.status == "BLOCKED"
+    assert any("baseline link unreadable" in mismatch for mismatch in report.mismatches)
+
+
 def test_audit_p1_roster_must_match_registry(tmp_path: Path) -> None:
     path = write_registry(tmp_path)
     audit_path = tmp_path / "docs/audit.md"

@@ -219,15 +219,83 @@ def _markdown_anchors(markdown: str) -> set[str]:
     return anchors
 
 
-def _check_link(root: Path, reference: str, mismatches: list[str], label: str) -> None:
+def _read_link(root: Path, reference: str, mismatches: list[str], label: str) -> str | None:
+    """Read a referenced document while keeping link failures in the report."""
+
     target, separator, fragment = reference.partition("#")
-    if not target or not (root / target).is_file():
+    candidate = root / target
+    if not target or not candidate.is_file():
         mismatches.append(f"{label} link missing: {reference}")
-        return
+        return None
+    try:
+        markdown = candidate.read_text(encoding="utf-8")
+    except (OSError, UnicodeError):
+        mismatches.append(f"{label} link unreadable: {reference}")
+        return None
     if separator:
         fragment = unquote(fragment).strip().lower()
-        if not fragment or fragment not in _markdown_anchors((root / target).read_text(encoding="utf-8")):
+        if not fragment or fragment not in _markdown_anchors(markdown):
             mismatches.append(f"{label} anchor missing: {reference}")
+    return markdown
+
+
+def _check_link(root: Path, reference: str, mismatches: list[str], label: str) -> None:
+    _read_link(root, reference, mismatches, label)
+
+
+def _baseline_section(markdown: str, reference: str, mismatches: list[str]) -> str | None:
+    """Return only the heading section selected by the baseline fragment."""
+
+    _target, separator, fragment = reference.partition("#")
+    if not separator:
+        mismatches.append(f"baseline fragment missing: {reference}")
+        return None
+    fragment = unquote(fragment).strip().lower()
+    lines = markdown.splitlines()
+    headings: list[tuple[int, int, str]] = []
+    seen: dict[str, int] = {}
+    explicit_anchor_lines: list[int] = []
+    for index, line in enumerate(lines):
+        for anchor in _HTML_ANCHOR.finditer(line):
+            if anchor.group(1).strip().lower() == fragment:
+                explicit_anchor_lines.append(index)
+        heading = _MARKDOWN_HEADING.match(line)
+        if not heading:
+            continue
+        title = heading.group(2).strip().rstrip("#").rstrip()
+        slug = _github_slug(title)
+        if not slug:
+            continue
+        suffix = seen.get(slug, 0)
+        resolved = f"{slug}-{suffix}" if suffix else slug
+        seen[slug] = suffix + 1
+        headings.append((index, len(heading.group(1)), resolved))
+
+    matching_heading = next((item for item in headings if item[2] == fragment), None)
+    if matching_heading is not None:
+        start, level, _ = matching_heading
+    elif explicit_anchor_lines:
+        anchor_line = explicit_anchor_lines[0]
+        next_heading = next((item for item in headings if item[0] > anchor_line), None)
+        previous_heading = next((item for item in reversed(headings) if item[0] <= anchor_line), None)
+        # An explicit anchor immediately before a heading names that heading;
+        # anchors embedded in body text remain in their current section.
+        between = lines[anchor_line + 1 : next_heading[0]] if next_heading else ()
+        if next_heading is not None and all(not line.strip() or _HTML_ANCHOR.search(line) for line in between):
+            start, level, _ = next_heading
+        elif previous_heading is not None:
+            start, level, _ = previous_heading
+        else:
+            start, level = anchor_line, 1
+    else:
+        return None
+
+    end = len(lines)
+    for heading_line, heading_level, _ in headings:
+        if heading_line > start and heading_level <= level:
+            end = heading_line
+            break
+    return "\n".join(lines[start:end])
 
 
 def _normalize_now(now: datetime, mismatches: list[str]) -> datetime:
@@ -289,15 +357,18 @@ def _check_artifacts(root: Path, registry: AuthorityRegistry, mismatches: list[s
 
 
 def _check_content(root: Path, registry: AuthorityRegistry, mismatches: list[str]) -> str:
-    _check_link(root, registry.baseline_source, mismatches, "baseline")
-    _check_link(root, registry.rule_index, mismatches, "rule index")
-    _check_link(root, registry.audit_artifact, mismatches, "audit artifact")
-    baseline_text = _read(root, registry.baseline_source.split("#", 1)[0], mismatches, "baseline")
-    _check_baseline_count(baseline_text, registry.baseline_count, mismatches)
-    rule_text = _read(root, registry.rule_index, mismatches, "rule index")
-    _check_rule_count(rule_text, registry.rule_count, mismatches)
+    baseline_text = _read_link(root, registry.baseline_source, mismatches, "baseline")
+    if baseline_text is not None:
+        baseline_section = _baseline_section(baseline_text, registry.baseline_source, mismatches)
+        if baseline_section is not None:
+            _check_baseline_count(baseline_section, registry.baseline_count, mismatches)
+    rule_text = _read_link(root, registry.rule_index, mismatches, "rule index")
+    if rule_text is not None:
+        _check_rule_count(rule_text, registry.rule_count, mismatches)
     registry_p1 = _normalized_p1(registry.p1_findings, mismatches)
-    audit_text = _read(root, registry.audit_artifact, mismatches, "audit")
+    audit_text = _read_link(root, registry.audit_artifact, mismatches, "audit artifact")
+    if audit_text is None:
+        return ""
     _check_audit_findings(audit_text, mismatches)
     _check_p1_parity(audit_text, registry_p1, mismatches)
     return audit_text
