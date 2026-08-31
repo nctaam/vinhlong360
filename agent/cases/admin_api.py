@@ -474,7 +474,9 @@ async def apply_change_set_route(request: Request, body: ChangeSetBody):
         raise _fail(error) from error
     return {"change_set_id": result.change_set_id, "state": str(result.state),
             "entity_revision": result.entity_revision,
-            "applied_fields": list(result.applied_fields)}
+            "applied_fields": list(result.applied_fields),
+            "revision": result.revision,
+            "outbox_event_id": result.outbox_event_id}
 
 
 @case_admin_router.post("/change-sets/rollback", dependencies=[_guard("changeset.rollback")])
@@ -492,7 +494,9 @@ async def rollback_change_set_route(request: Request, body: ChangeSetBody):
     except Exception as error:  # noqa: BLE001
         raise _fail(error) from error
     return {"change_set_id": result.change_set_id, "state": str(result.state),
-            "entity_revision": result.entity_revision}
+            "entity_revision": result.entity_revision,
+            "revision": result.revision,
+            "outbox_event_id": result.outbox_event_id}
 
 
 # ── Guided intake ──
@@ -729,7 +733,9 @@ async def decide_case_item(request: Request, body: DecisionBody):
     _metrics.observe("decided", channel="web", risk_class=str(stored.risk_class),
                      case_id=body.case_id)
     return {"item_id": outcome.item_id, "outcome_code": str(outcome.outcome_code),
-            "reason_code": outcome.reason_code}
+            "reason_code": outcome.reason_code,
+            "revision": outcome.revision,
+            "outbox_event_id": outcome.outbox_event_id}
 
 
 class BuildChangeSetBody(BaseModel):
@@ -761,7 +767,9 @@ async def build_case_change_set(request: Request, body: BuildChangeSetBody):
     except Exception as error:  # noqa: BLE001
         raise _fail(error) from error
     return {"case_id": draft.case_id, "entity_id": draft.entity_id,
-            "risk_class": draft.risk_class, "apply_status": draft.apply_status}
+            "risk_class": draft.risk_class, "apply_status": draft.apply_status,
+            "revision": draft.revision,
+            "outbox_event_id": draft.outbox_event_id}
 
 
 class VerifyBody(BaseModel):

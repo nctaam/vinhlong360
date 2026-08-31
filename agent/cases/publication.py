@@ -131,6 +131,8 @@ class PublicationResult:
     entity_revision: int
     state: PublicationState
     applied_fields: tuple[str, ...]
+    revision: int | None = None
+    outbox_event_id: str | None = None
 
 
 def _entity_patch(after_patch: dict, stored_attributes) -> dict:
@@ -246,16 +248,11 @@ def apply_change_set(command: ApplyChangeSetCommand, *, now: datetime) -> Public
                 waiting=None,
             )
         )
-        transaction.append_audit(_audit(command, snapshot, updated, actor_ref,
-                                        reason_code="change_set_applied", now=now))
-        transaction.enqueue_outbox(
-            OutboxDraft(
-                case_id=command.case_id,
-                idempotency_key=f"notify:{command.change_set_id}:applied",
-                topic="correction.updated",
-                descriptor={"reason": "applied", "policy_revision": _policy_revision()},
-                available_at=now,
-            )
+        _write_audit_outbox(
+            transaction, command, snapshot, updated, actor_ref,
+            reason_code="change_set_applied",
+            event_id=f"notify:{command.change_set_id}:applied",
+            topic="correction.updated", now=now,
         )
     from . import metrics as _metrics
 
@@ -268,6 +265,8 @@ def apply_change_set(command: ApplyChangeSetCommand, *, now: datetime) -> Public
         entity_revision=write.revision,
         state=PublicationState.APPLIED,
         applied_fields=tuple(sorted(after_patch)),
+        revision=updated.current_revision,
+        outbox_event_id=f"notify:{command.change_set_id}:applied",
     )
 
 
@@ -287,6 +286,8 @@ class VerificationResult:
     verified: bool
     mismatches: tuple[str, ...]
     next_update_at: datetime | None = None
+    revision: int | None = None
+    outbox_event_id: str | None = None
 
 
 def _read_path(projection: dict, path: str):
@@ -391,18 +392,13 @@ def _record_verification_success(transaction, command, snapshot, actor_ref: str,
             waiting=None,
         )
     )
-    transaction.append_audit(_audit(command, snapshot, updated, actor_ref,
-                                    reason_code="projection_verified", now=now))
-    transaction.complete_work_item_of_kind(command.case_id, "publication", now=now)
-    transaction.enqueue_outbox(
-        OutboxDraft(
-            case_id=command.case_id,
-            idempotency_key=f"notify:{command.change_set_id}:verified",
-            topic="correction.updated",
-            descriptor={"reason": "verified", "policy_revision": _policy_revision()},
-            available_at=now,
-        )
+    _write_audit_outbox(
+        transaction, command, snapshot, updated, actor_ref,
+        reason_code="projection_verified",
+        event_id=f"notify:{command.change_set_id}:verified",
+        topic="correction.updated", now=now,
     )
+    transaction.complete_work_item_of_kind(command.case_id, "publication", now=now)
     from . import metrics as _metrics
 
     # Two facts on purpose: the projection checked out, and the case finished.
@@ -417,6 +413,8 @@ def _record_verification_success(transaction, command, snapshot, actor_ref: str,
         state=PublicationState.VERIFIED,
         verified=True,
         mismatches=(),
+        revision=updated.current_revision,
+        outbox_event_id=f"notify:{command.change_set_id}:verified",
     )
 
 
@@ -428,23 +426,12 @@ def _record_verification_failure(transaction, command, snapshot, actor_ref: str,
     transaction.set_promise_health(
         command.case_id, PromiseHealth.RECOVERY.value, observed_at=now
     )
-    transaction.append_audit(
-        _audit(command, snapshot, snapshot, actor_ref,
-               reason_code="projection_verification_failed", now=now)
-    )
-    transaction.enqueue_outbox(
-        OutboxDraft(
-            case_id=command.case_id,
-            idempotency_key=f"notify:{command.change_set_id}:verification_failed:{now.isoformat()}",
-            topic="correction.updated",
-            descriptor={
-                "reason": "verification_failed",
-                "policy_revision": _policy_revision(),
-                # Field names only: what disagreed, never the values themselves.
-                "mismatched": list(mismatches),
-            },
-            available_at=next_update_at,
-        )
+    _write_audit_outbox(
+        transaction, command, snapshot, snapshot, actor_ref,
+        reason_code="projection_verification_failed",
+        event_id=f"notify:{command.change_set_id}:verification_failed:{now.isoformat()}",
+        topic="correction.updated", now=next_update_at,
+        descriptor={"mismatched": list(mismatches)},
     )
     from . import metrics as _metrics
 
@@ -456,6 +443,8 @@ def _record_verification_failure(transaction, command, snapshot, actor_ref: str,
         verified=False,
         mismatches=mismatches,
         next_update_at=next_update_at,
+        revision=snapshot.current_revision,
+        outbox_event_id=f"notify:{command.change_set_id}:verification_failed:{now.isoformat()}",
     )
 
 
@@ -475,6 +464,8 @@ class RollbackResult:
     entity_id: str
     entity_revision: int
     state: PublicationState
+    revision: int | None = None
+    outbox_event_id: str | None = None
 
 
 def rollback_change_set(command: RollbackChangeSetCommand, *,
@@ -556,22 +547,19 @@ def _undo(transaction, command, row, snapshot, entity, entity_id: str, actor_ref
             waiting=None,
         )
     )
-    transaction.append_audit(_audit(command, snapshot, reopened, actor_ref,
-                                    reason_code="change_set_rolled_back", now=now))
-    transaction.enqueue_outbox(
-        OutboxDraft(
-            case_id=command.case_id,
-            idempotency_key=f"notify:{command.change_set_id}:rolled_back",
-            topic="correction.updated",
-            descriptor={"reason": "rolled_back", "policy_revision": _policy_revision()},
-            available_at=now,
-        )
+    _write_audit_outbox(
+        transaction, command, snapshot, reopened, actor_ref,
+        reason_code="change_set_rolled_back",
+        event_id=f"notify:{command.change_set_id}:rolled_back",
+        topic="correction.updated", now=now,
     )
     return RollbackResult(
         change_set_id=command.change_set_id,
         entity_id=entity_id,
         entity_revision=write.revision,
         state=PublicationState.ROLLED_BACK,
+        revision=reopened.current_revision,
+        outbox_event_id=f"notify:{command.change_set_id}:rolled_back",
     )
 
 
@@ -580,18 +568,11 @@ def _record_rollback_refusal(transaction, command, snapshot, actor_ref: str, *,
     transaction.set_promise_health(
         command.case_id, PromiseHealth.RECOVERY.value, observed_at=now
     )
-    transaction.append_audit(
-        _audit(command, snapshot, snapshot, actor_ref,
-               reason_code="rollback_refused_entity_drift", now=now)
-    )
-    transaction.enqueue_outbox(
-        OutboxDraft(
-            case_id=command.case_id,
-            idempotency_key=f"escalate:{command.change_set_id}:drift:{now.isoformat()}",
-            topic="correction.escalated",
-            descriptor={"reason": "rollback_refused", "policy_revision": _policy_revision()},
-            available_at=now,
-        )
+    _write_audit_outbox(
+        transaction, command, snapshot, snapshot, actor_ref,
+        reason_code="rollback_refused_entity_drift",
+        event_id=f"escalate:{command.change_set_id}:drift:{now.isoformat()}",
+        topic="correction.escalated", now=now,
     )
 
 
@@ -608,4 +589,40 @@ def _audit(command, before, after, actor_ref: str, *, reason_code: str,
         before_snapshot=safe_case_projection(before),
         after_snapshot=safe_case_projection(after),
         occurred_at=now,
+    )
+
+
+def _write_audit_outbox(transaction, command, before, after, actor_ref: str, *,
+                        reason_code: str, event_id: str, topic: str,
+                        now: datetime, descriptor: dict | None = None) -> None:
+    try:
+        from control_plane.audit import AuditEvent, write_audit_and_outbox
+    except ModuleNotFoundError:
+        from agent.control_plane.audit import AuditEvent, write_audit_and_outbox
+
+    revision = int(after.current_revision)
+    write_audit_and_outbox(
+        transaction,
+        AuditEvent(
+            event_id=event_id,
+            actor_id=actor_ref,
+            action=reason_code,
+            resource_type="case",
+            resource_id=command.case_id,
+            reason=reason_code,
+            before=safe_case_projection(before),
+            after=safe_case_projection(after),
+            correlation_id=getattr(command.actor, "correlation_id", "publication"),
+            revision=revision,
+            generation=str(revision),
+            occurred_at=now,
+        ),
+        {
+            "topic": topic,
+            "idempotency_key": event_id,
+            "available_at": now,
+            "reason": reason_code,
+            "policy_revision": _policy_revision(),
+            **(descriptor or {}),
+        },
     )

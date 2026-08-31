@@ -86,13 +86,29 @@ class EvidenceRecord:
 def usable_evidence(
     records: tuple[EvidenceRecord, ...], *, now: datetime, required_scope: str
 ) -> tuple[EvidenceRecord, ...]:
-    """In scope, unexpired, and observed before the decision — nothing about level."""
+    """In scope, effective, observed and unexpired at the decision boundary."""
+    if type(now) is not datetime or now.tzinfo is None:
+        raise ValueError("evidence_timestamp_timezone_required")
+
+    def usable(record: EvidenceRecord) -> bool:
+        try:
+            return bool(
+                record.source_scope == required_scope
+                and record.observed_at.tzinfo is not None
+                and record.effective_at.tzinfo is not None
+                and record.observed_at <= now
+                and record.effective_at <= now
+                and (record.expires_at is None or (
+                    record.expires_at.tzinfo is not None and record.expires_at > now
+                ))
+            )
+        except (AttributeError, TypeError):
+            return False
+
     return tuple(
         record
         for record in records
-        if record.source_scope == required_scope
-        and record.observed_at <= now
-        and (record.expires_at is None or record.expires_at > now)
+        if usable(record)
     )
 
 
@@ -162,6 +178,7 @@ class DecideItemCommand:
     actor: object
     reviewer_ref: str | None = None
     duplicate_of: str | None = None
+    required_scope: str | None = None
 
 
 @dataclass(frozen=True)
@@ -174,6 +191,8 @@ class DecisionOutcome:
     decision_maker_ref: str
     reviewer_ref: str | None
     duplicate_of: str | None
+    revision: int | None = None
+    outbox_event_id: str | None = None
 
 
 _EVIDENCE_BEARING = frozenset({CorrectionOutcome.CORRECTED, CorrectionOutcome.CONFIRMED_CURRENT})
@@ -217,9 +236,21 @@ def _require_decision_support(command: DecideItemCommand, maker: str) -> None:
         raise _reject("maker_checker_required", "This risk class needs a second person.")
 
 
-def validate_decision(command: DecideItemCommand, *, now: datetime) -> DecisionOutcome:
+def validate_decision(
+    command: DecideItemCommand, *, now: datetime, required_scope: str | None = None
+) -> DecisionOutcome:
     reason = _require_decision_basics(command)
     maker = getattr(command.actor, "actor_ref", "unknown")
+    if command.outcome_code in _EVIDENCE_BEARING and command.evidence:
+        scope = required_scope or command.required_scope
+        if scope is None and command.evidence:
+            # Legacy callers did not carry an explicit scope; preserve their
+            # behavior while still applying the single usability gate.
+            scope = command.evidence[0].source_scope
+        if not scope:
+            raise _reject("evidence_scope_required", "A decision needs an evidence scope.", status=400)
+        usable = usable_evidence(tuple(command.evidence), now=now, required_scope=scope)
+        command = replace(command, evidence=usable)
     _require_decision_support(command, maker)
 
     return DecisionOutcome(
@@ -256,6 +287,8 @@ class ChangeSetDraft:
     evidence_refs: tuple[str, ...]
     reviewer_ref: str | None = None
     apply_status: str = "pending"
+    revision: int | None = None
+    outbox_event_id: str | None = None
 
 
 # The plan's locked type name for an immutable change bundle.
@@ -377,6 +410,7 @@ class AddEvidenceCommand:
     effective_at: datetime
     expires_at: datetime | None = None
     asserted_value: str | None = None
+    required_scope: str | None = None
 
 
 def _evidence_descriptor(command: AddEvidenceCommand) -> dict:
@@ -435,8 +469,25 @@ def add_evidence(command: AddEvidenceCommand, *, now: datetime) -> EvidenceRecor
         raise _reject("invalid_evidence_level", "That evidence level is not offered.")
     if type(command.source_scope) is not str or not command.source_scope.strip():
         raise _reject("evidence_scope_required", "Evidence needs a source scope.", status=400)
+    if command.required_scope is not None and command.source_scope != command.required_scope:
+        raise _reject("evidence_scope_mismatch", "Evidence is outside the required scope.", status=400)
+    if (
+        type(command.observed_at) is not datetime
+        or type(command.effective_at) is not datetime
+        or command.observed_at.tzinfo is None
+        or command.effective_at.tzinfo is None
+        or any(value is not None and (type(value) is not datetime or value.tzinfo is None)
+               for value in (command.expires_at, now))
+    ):
+        raise _reject("evidence_timestamp_timezone_required", "Evidence timestamps need a timezone.", status=400)
     if command.observed_at > now:
         raise _reject("evidence_not_yet_observed", "Evidence cannot come from the future.")
+    if command.effective_at > now:
+        raise _reject("evidence_effective_at_future", "Evidence cannot become effective in the future.")
+    if command.expires_at is not None and command.expires_at < command.effective_at:
+        raise _reject("evidence_expiry_order_invalid", "Evidence expiry precedes effectiveness.", status=400)
+    if command.expires_at is not None and command.expires_at <= now:
+        raise _reject("evidence_expired", "Evidence has already expired.", status=400)
 
     crypto = _crypto()
     store = _store()
@@ -493,7 +544,41 @@ def decide_item(command: DecideItemCommand, *, now: datetime) -> DecisionOutcome
             policy_revision=_policy_revision(),
             decided_at=now,
         )
-    return decision
+        snapshot = transaction.load_case(command.case_id, for_update=True)
+        # Decisions are item-level records; the case revision advances when a
+        # case transition occurs (for example, building a change set).
+        updated = snapshot
+        try:
+            from control_plane.audit import AuditEvent, write_audit_and_outbox
+        except ModuleNotFoundError:
+            from agent.control_plane.audit import AuditEvent, write_audit_and_outbox
+
+        event_id = f"decision:{command.case_id}:{command.item_id}:{updated.current_revision}"
+        write_audit_and_outbox(
+            transaction,
+            AuditEvent(
+                event_id=event_id,
+                actor_id=decision.decision_maker_ref,
+                action="item_decided",
+                resource_type="case",
+                resource_id=command.case_id,
+                reason=decision.reason_code,
+                before=safe_case_projection(snapshot),
+                after=safe_case_projection(updated),
+                correlation_id=getattr(command.actor, "correlation_id", "correction"),
+                revision=updated.current_revision,
+                generation=str(updated.current_revision),
+                occurred_at=now,
+            ),
+            {
+                "topic": "correction.updated",
+                "idempotency_key": event_id,
+                "available_at": now,
+                "reason": "decided",
+                "policy_revision": _policy_revision(),
+            },
+        )
+    return replace(decision, revision=updated.current_revision, outbox_event_id=event_id)
 
 
 def build_change_set(
@@ -625,27 +710,39 @@ def build_change_set(
                 ),
             )
         )
-        transaction.append_audit(
-            CaseAuditDraft(
-                case_id=case_id,
-                actor_ref=actor_ref,
-                actor_scopes=tuple(sorted(set(getattr(actor, "scopes", ()) or ()))),
-                channel=getattr(actor, "channel", Channel.WEB),
-                reason_code="change_set_built",
-                policy_revision=_policy_revision(),
+        try:
+            from control_plane.audit import AuditEvent, write_audit_and_outbox
+        except ModuleNotFoundError:
+            from agent.control_plane.audit import AuditEvent, write_audit_and_outbox
+
+        event_id = f"notify:{change_set_id}:decided"
+        write_audit_and_outbox(
+            transaction,
+            AuditEvent(
+                event_id=event_id,
+                actor_id=actor_ref,
+                action="change_set_built",
+                resource_type="case",
+                resource_id=case_id,
+                reason="change_set_built",
+                before=safe_case_projection(snapshot),
+                after=safe_case_projection(updated),
                 correlation_id=getattr(actor, "correlation_id", "correction"),
-                before_snapshot=safe_case_projection(snapshot),
-                after_snapshot=safe_case_projection(updated),
+                revision=updated.current_revision,
+                generation=str(updated.current_revision),
                 occurred_at=now,
-            )
+            ),
+            {
+                "topic": "correction.updated",
+                "idempotency_key": event_id,
+                "available_at": now,
+                "reason": "decided",
+                "policy_revision": _policy_revision(),
+            },
         )
-        transaction.enqueue_outbox(
-            OutboxDraft(
-                case_id=case_id,
-                idempotency_key=f"notify:{change_set_id}:decided",
-                topic="correction.updated",
-                descriptor={"reason": "decided", "policy_revision": _policy_revision()},
-                available_at=now,
-            )
-        )
-    return replace(draft, apply_status="pending")
+    return replace(
+        draft,
+        apply_status="pending",
+        revision=updated.current_revision,
+        outbox_event_id=event_id,
+    )
