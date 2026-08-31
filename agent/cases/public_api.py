@@ -446,14 +446,21 @@ async def create_correction(request: Request):
         from . import metrics as _metrics
 
         _metrics.observe("received", channel="web", case_id=result.case_id)
+    response_payload = {
+        "publicReference": result.public_reference,
+        "capability": result.capability,
+        "receivedAt": result.received_at.isoformat(),
+        "nextUpdateAt": result.next_update_at.isoformat(),
+        "replayed": result.replayed,
+    }
+    # Mutation adapters may expose the committed receipt metadata; never claim
+    # success with a pre-commit placeholder when the adapter does not provide it.
+    if getattr(result, "revision", None) is not None:
+        response_payload["revision"] = result.revision
+    if getattr(result, "outbox_event_id", None) is not None:
+        response_payload["outboxEventId"] = result.outbox_event_id
     return JSONResponse(
-        {
-            "publicReference": result.public_reference,
-            "capability": result.capability,
-            "receivedAt": result.received_at.isoformat(),
-            "nextUpdateAt": result.next_update_at.isoformat(),
-            "replayed": result.replayed,
-        },
+        response_payload,
         status_code=201,
         headers=dict(_NO_STORE),
     )
