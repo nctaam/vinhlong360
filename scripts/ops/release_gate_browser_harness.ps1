@@ -186,6 +186,7 @@ function Invoke-LaunchSafetyBrowserSmoke {
     [string]$WorkingDirectory
   )
   $output = [System.Text.StringBuilder]::new()
+  $truncated = $false
   $priorErrorActionPreference = $ErrorActionPreference
   Push-Location $WorkingDirectory
   try {
@@ -193,11 +194,12 @@ function Invoke-LaunchSafetyBrowserSmoke {
     & $Npm run smoke:launch-safety 2>&1 | ForEach-Object {
       $line = [string]$_ + [Environment]::NewLine
       if ($line.Length -ge $MAX_LAUNCH_SAFETY_OUTPUT) {
+        $truncated = $true
         $null = $output.Clear()
         $null = $output.Append($line.Substring($line.Length - $MAX_LAUNCH_SAFETY_OUTPUT))
       } else {
         $overflow = ($output.Length + $line.Length) - $MAX_LAUNCH_SAFETY_OUTPUT
-        if ($overflow -gt 0) { $null = $output.Remove(0, $overflow) }
+        if ($overflow -gt 0) { $truncated = $true; $null = $output.Remove(0, $overflow) }
         $null = $output.Append($line)
       }
     }
@@ -213,7 +215,11 @@ function Invoke-LaunchSafetyBrowserSmoke {
     Pop-Location
   }
   if ($output.Length -gt 0) { Write-Host $output.ToString().TrimEnd() }
-  return [int]$exitCode
+  [pscustomobject]@{
+    ExitCode = [int]$exitCode
+    Output = $output.ToString()
+    Truncated = $truncated
+  }
 }
 
 function Stop-LaunchSafetyPreviewProcess {
@@ -310,6 +316,8 @@ function Invoke-LaunchSafetyBrowserHarness {
   $primaryExit = 0
   $cleanupExit = 0
   $recorderExit = 0
+  $smokeOutput = ''
+  $smokeTruncated = $false
   $previewProcess = $null
   $summary = 'controlled Chrome launch-safety smoke'
   try {
@@ -351,7 +359,11 @@ function Invoke-LaunchSafetyBrowserHarness {
     }
     if ($started) {
       $env:SMOKE_BASE_URL = $baseUrl
-      $primaryExit = [int](& $RunSmoke $webDirectory)
+      $smokeResult = & $RunSmoke $webDirectory
+      $primaryExit = if ($smokeResult -is [int]) { [int]$smokeResult } else { [int]$smokeResult.ExitCode }
+      $smokeOutput = if ($smokeResult -is [int]) { "" } else { [string]$smokeResult.Output }
+      $smokeTruncated = $smokeResult -isnot [int] -and [bool]$smokeResult.Truncated
+      if ($smokeTruncated -and $primaryExit -eq 0) { $primaryExit = 1; $summary = 'browser smoke output truncated' }
       if ($primaryExit -ne 0) { $summary = "browser smoke failed with exit $primaryExit" }
     } elseif ($cleanupExit -eq 0) {
       $primaryExit = 1
@@ -381,7 +393,7 @@ function Invoke-LaunchSafetyBrowserHarness {
   $evidenceExit = Resolve-LaunchSafetyBrowserResult $primaryExit $cleanupExit 0
   $status = if ($evidenceExit -eq 0) { 'pass' } else { 'fail' }
   try {
-    $recorderExit = [int](& $RecordEvidence $status $evidenceExit $summary 'npm run smoke:launch-safety')
+    $recorderExit = [int](& $RecordEvidence $status $evidenceExit $summary 'npm run smoke:launch-safety' $smokeOutput)
   }
   catch {
     $recorderExit = if ($_.Exception.Data.Contains('ExitCode')) {

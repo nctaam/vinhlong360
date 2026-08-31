@@ -398,10 +398,11 @@ try {
         return [int]$case.Cleanup
       } `
       -RecordEvidence {
-        param($Status, $ExitCode, $Summary, $Command)
+        param($Status, $ExitCode, $Summary, $Command, $Output)
         $null = $events.Add('record')
         $observed.RecordStatus = $Status
         $observed.RecordExit = $ExitCode
+        $observed.RecordOutput = $Output
         return [int]$case.Recorder
       })
 

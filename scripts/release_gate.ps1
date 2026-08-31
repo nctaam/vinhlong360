@@ -504,8 +504,8 @@ function Invoke-LaunchSafetyOptIns {
         -Node $Node `
         -Npm "npm" `
         -RecordEvidence {
-          param($Status, $ExitCode, $Summary, $Command)
-          Invoke-LaunchSafetyRecord "browser-opt-in" $Status $ExitCode $Summary $Command
+          param($Status, $ExitCode, $Summary, $Command, $Output)
+          Invoke-LaunchSafetyRecord "browser-opt-in" $Status $ExitCode $Summary $Command $Output
           return 0
         }
       )

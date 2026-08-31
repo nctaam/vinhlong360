@@ -121,6 +121,14 @@ Status: DONE_WITH_CONCERNS
 - Rollback and browser operational captures use explicit native-command evidence with output checksums, zero-exit PASS only, and invalid UTF-8 blocked; state validation binds section exit codes to outcomes.
 - Focused verification: `99 passed`; `py_compile`, `ruff`, and `git diff --check` passed; R20.8 staged check is clean.
 
+## Reviewer Fix Wave V12
+
+Status: DONE_WITH_CONCERNS
+
+- Browser smoke harness now forwards exact captured output to the recorder and tracks rolling-buffer truncation; truncated output forces a failing evidence exit instead of silent PASS.
+- Browser callback accepts forwarded output; PowerShell contract coverage asserts capture/truncation wiring.
+- Focused verification: `99 passed`; `py_compile`, `ruff`, and `git diff --check` passed.
+
 ## Reviewer Fix Wave V9
 
 Status: DONE_WITH_CONCERNS

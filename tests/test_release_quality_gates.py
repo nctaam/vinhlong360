@@ -338,6 +338,8 @@ def test_release_gate_captures_real_output_and_records_metadata():
     assert 'WriteAllText($outputPath, $Output' in gate
     assert '"--output-text", $Output' not in gate
     assert '$Section -in @("rollback-local-rehearsal", "browser-opt-in")' in gate
+    assert 'param($Status, $ExitCode, $Summary, $Command, $Output)' in gate
+    assert 'Invoke-LaunchSafetyRecord "browser-opt-in" $Status $ExitCode $Summary $Command $Output' in gate
     assert 'ROOT = Path(__file__).resolve().parents[2]' in runner
     assert 'sys.path.insert(0, str(ROOT))' in runner
 
@@ -349,3 +351,6 @@ def test_compose_harness_records_captured_output_file_and_command_metadata():
     assert "'--output-text'" not in harness
     assert "'--command', $command" in harness
     assert "WriteAllText" in harness
+    browser_harness = (ROOT / "scripts" / "ops" / "release_gate_browser_harness.ps1").read_text(encoding="utf-8")
+    assert "$truncated = $false" in browser_harness
+    assert "Truncated = $truncated" in browser_harness
