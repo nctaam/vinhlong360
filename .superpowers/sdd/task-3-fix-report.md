@@ -92,7 +92,7 @@ GREEN:
 python -m pytest agent/tests/test_case_public_api.py::test_create_invokes_the_shared_correction_schema_before_service agent/tests/test_legacy_correction_adapter.py::test_legacy_correction_invokes_the_shared_schema_before_service agent/tests/test_legacy_correction_adapter.py::test_legacy_invalid_generated_current_value_is_rejected_before_service -q --basetemp .tmp-task-3-shared-green
 3 passed, 1 warning in 4.61s
 
-python -m pytest tests/control_plane/test_contracts.py agent/tests/test_case_public_api.py agent/tests/test_legacy_correction_adapter.py agent/tests/test_case_payload_contract.py agent/tests/test_case_wiring.py agent/tests/test_case_domain.py -q --basetemp .tmp-task-3-shared-focused
+python -m pytest tests/control_plane/test_contracts.py agent/tests/test_case_public_api.py agent/tests/test_legacy_correction_adapter.py agent/tests/test_case_payload_contract.py agent/tests/test_case_wiring.py agent/tests/test_case_domain.py -q --basetemp .tmp-task-3-shared-focused-2
 95 passed, 13 skipped, 1 warning in 6.33s
 
 cd web-nuxt
@@ -103,8 +103,7 @@ npm run typecheck
 exit 0
 ```
 
-Files changed in this follow-up: `agent/api_schemas.py` (production consumer
-now imported), `agent/cases/public_api.py`, `agent/public_api.py`,
+Files changed in this follow-up: `agent/cases/public_api.py`, `agent/public_api.py`,
 `agent/tests/test_case_public_api.py`, `agent/tests/test_legacy_correction_adapter.py`,
 and this report. The pre-existing user change in
 `docs/standards/90-exceptions-log.md` remains untouched.
