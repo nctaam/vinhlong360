@@ -2,7 +2,7 @@
 
 Status: GREEN (review remediation)
 
-Commit SHAs (inclusive): `594aebf2`, `eae82e22`, `52de64f9`, `cf3127de`, `30bba3c7`, `6a37ae9b`, `b679c4cc`, `62c1f8ef`, `9c33118c`, `763a9651`, `e22ab2e7`, `a9f7462c`, `f523b580`, `e331ec64`, `e3bbe0c9`, `6cf852dc`, `a46d0d57`, `11cb0a0b`, `46fd7b33`, `10a70738`, `9508fb49`, `e9ec4424`, `b774be79`, `ce29719e` (replay fail-closed source/tests), and `0fbcfc16` (verification receipt gate).
+Commit SHAs (inclusive): Task 4 source/review history runs from `594aebf2` through `71a6a195`, including replay and evidence hardening commits `ce29719e`, `0fbcfc16`, `2d73d09f`, `46b598f8`, `abae3bf0`, `d1b34de6`, `9c17b14a`, `04a3bf89`, and `899f4ec1`; report-only commits include `52b6fe64`, `0f015f4c`, `281694f8`, `46b598f8`, `59f2567e`, `8b7b94a6`, and `71a6a195`.
 
 Files changed:
 
@@ -123,7 +123,7 @@ Fresh dormant-kernel verification: `python -m pytest agent/tests/test_case_wirin
 
 The committed readiness guard makes both public and admin route predicates require the complete composition-root readiness bit; failed or reset wiring therefore stays dormant even when feature flags are enabled. The final controller rerun of the same guard suites remained `79 passed, 14 skipped`.
 
-The original Task 4 implementation history ran inclusively from `594aebf2` through `0fbcfc16`. Subsequent replay hardening commits are `2d73d09f`, `46b598f8`, `abae3bf0`, and `d1b34de6`; report-only commits `52b6fe64` and `0f015f4c` record earlier evidence. Changed test files include `test_correction_changesets.py`, `test_correction_publication.py`, `test_correction_publication_failure.py`, and `test_correction_rollback.py`. The backend-only commits used approved `--no-verify` where the known R30.7 generated frontend-bundle debt blocked the hook; no frontend files changed.
+The Task 4 implementation history runs inclusively from `594aebf2` through `71a6a195`; the latest source hardening is `04a3bf89` plus compatibility follow-up `899f4ec1`, with report updates through `71a6a195`. Changed test files include `test_correction_changesets.py`, `test_correction_publication.py`, `test_correction_publication_failure.py`, and `test_correction_rollback.py`. The backend-only commits used approved `--no-verify` where the known R30.7 generated frontend-bundle debt blocked the hook; no frontend files changed.
 
 ## Replay fail-closed remediation
 
