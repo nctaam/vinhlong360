@@ -213,3 +213,22 @@ TDD and verification evidence:
 - Controller gate: `python -m pytest agent/tests/test_case_proof_first.py agent/tests/test_correction_decisions.py agent/tests/test_correction_publication.py agent/tests/test_correction_publication_failure.py agent/tests/test_correction_create.py agent/tests/test_case_store.py agent/tests/test_case_audit.py agent/tests/test_case_outbox.py agent/tests/test_case_admin_api.py agent/tests/test_case_public_api.py agent/tests/test_correction_admin_http.py agent/tests/test_case_wiring.py agent/tests/test_case_domain.py agent/tests/test_case_idempotency_postgres.py -q --basetemp .tmp-task4-normalize-controller` -> 263 passed, 95 skipped, 1 existing Starlette deprecation warning.
 - Disposable PostgreSQL: `powershell -ExecutionPolicy Bypass -File .tmp-task4-pg-run.ps1` -> 80 passed in 27.28s after schema 82; the loopback-only database was dropped and verified absent, then the temporary cluster was removed. The new PostgreSQL regression remains skipped in the default environment without `VL360_TEST_DATABASE_URL`.
 - `git diff --check` -> clean before the implementation commit.
+
+## Decision retry expiry remediation
+
+Implementation commit: `04a3bf89` (following `9c17b14a`; report commit `59f2567e`).
+
+Findings fixed:
+
+- Retries inspect the committed receipt before applying current-time evidence normalization, so evidence that expires after the first commit does not turn a valid replay into `evidence_not_usable`.
+- Decision digests bind both the raw command evidence IDs and the normalized persisted evidence refs; omitted, added, or reordered command evidence remains an idempotency conflict or malformed receipt rather than silently replaying.
+- Receipt refs must be nonempty for evidence-bearing outcomes and must be drawn from the raw command evidence sequence, while normalized subsets remain replayable.
+
+TDD and verification evidence:
+
+- RED: `python -m pytest agent/tests/test_case_proof_first.py::test_decision_retry_replays_when_persisted_evidence_expires_after_first_attempt -q --basetemp .tmp-task4-expiry-red` -> failed with `evidence_not_usable` before the fix.
+- GREEN: expiry replay plus existing exact-reference checks -> 6 passed.
+- Focused: `python -m pytest agent/tests/test_case_proof_first.py agent/tests/test_correction_decisions.py -q --basetemp .tmp-task4-expiry-focused` -> 54 passed, 5 skipped.
+- Controller gate: `python -m pytest agent/tests/test_case_proof_first.py agent/tests/test_correction_decisions.py agent/tests/test_correction_publication.py agent/tests/test_correction_publication_failure.py agent/tests/test_correction_create.py agent/tests/test_case_store.py agent/tests/test_case_audit.py agent/tests/test_case_outbox.py agent/tests/test_case_admin_api.py agent/tests/test_case_public_api.py agent/tests/test_correction_admin_http.py agent/tests/test_case_wiring.py agent/tests/test_case_domain.py agent/tests/test_case_idempotency_postgres.py -q --basetemp .tmp-task4-expiry-controller` -> 264 passed, 96 skipped, 1 existing Starlette deprecation warning.
+- Disposable PostgreSQL: `powershell -ExecutionPolicy Bypass -File .tmp-task4-pg-run.ps1` -> 80 passed in 27.18s after schema 82; the loopback-only database was dropped and verified absent, then the temporary cluster was removed.
+- `git diff --check` -> clean before the implementation commit.
