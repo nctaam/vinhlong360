@@ -18,12 +18,22 @@ import json
 import logging
 import math
 import re
+import sys
 import time
 from collections import Counter
 from pathlib import Path
 from threading import Lock
 
 logger = logging.getLogger(__name__)
+
+# The application historically imports this module both as ``vector_search``
+# and ``agent.vector_search``. Register one object under both names so the
+# embedding singleton cannot split across retrieval callers.
+_module = sys.modules[__name__]
+if __name__ == "vector_search":
+    sys.modules.setdefault("agent.vector_search", _module)
+elif __name__ == "agent.vector_search":
+    sys.modules.setdefault("vector_search", _module)
 
 # ── Config ──
 

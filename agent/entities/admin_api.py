@@ -1040,8 +1040,17 @@ async def stale_mark_reviewed(entity_id: str):
         if not e:
             raise HTTPException(404, detail="Entity không tồn tại")
         attrs = e.get("attributes") or {}
+        e["attributes"] = attrs
         attrs["stale_reviewed_at"] = datetime.now(timezone.utc).isoformat()
-        db.update_entity(entity_id, {"attributes": attrs})
+        # Route all entity writes through the audited canonical writer; Database
+        # intentionally has no ad-hoc ``update_entity`` method.
+        db.upsert_entity(
+            e,
+            actor_id="admin",
+            reason="stale_reviewed",
+            correlation_id=f"stale-review:{entity_id}",
+        )
+        _sync_kb()
         return {"ok": True, "entity_id": entity_id, "stale_reviewed_at": attrs["stale_reviewed_at"]}
     return await asyncio.to_thread(_query)
 
@@ -1071,15 +1080,25 @@ async def completeness_overview():
                 has_place += 1
             if e.get("summary"):
                 has_summary += 1
-        def pct(n):
-            return round(n / total * 100, 1) if total else 0
+        def metric(count):
+            if not total:
+                return {"count": count, "pct": None, "status": "not_applicable"}
+            return {"count": count, "pct": round(count / total * 100, 1), "status": "measured"}
+
+        overall = (
+            {"pct": None, "status": "not_applicable"}
+            if not total
+            else {"pct": round((has_source + has_images + has_place + has_summary) / (4 * total) * 100, 1),
+                  "status": "measured"}
+        )
         return {
             "total_entities": total,
-            "source": {"count": has_source, "pct": pct(has_source)},
-            "images": {"count": has_images, "pct": pct(has_images)},
-            "place_id": {"count": has_place, "pct": pct(has_place)},
-            "summary": {"count": has_summary, "pct": pct(has_summary)},
-            "overall_pct": pct(has_source + has_images + has_place + has_summary) / 4 * total if total else 0,
+            "source": metric(has_source),
+            "images": metric(has_images),
+            "place_id": metric(has_place),
+            "summary": metric(has_summary),
+            "overall_pct": overall["pct"],
+            "overall_status": overall["status"],
         }
     return await asyncio.to_thread(_query)
 

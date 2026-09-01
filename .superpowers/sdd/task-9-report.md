@@ -34,6 +34,23 @@
   merges concurrent puts, and carries explicit deletion tombstones through
   invalidation and TTL expiry so removed entries cannot be resurrected.
 
+### Independent review findings (F-45, F-28, F-54, F-56, F-60, F-62)
+
+- Added `tests/test_task9_review_fixes.py` with red/green regressions for zero-
+  denominator completeness, bounded overall percentages, source-only SQLite
+  search, missing-manifest semantic-cache refresh, geocode mtime refresh/metric,
+  vector module identity, and stale-queue mutation.
+- `python -m pytest -q tests/test_task9_review_fixes.py --basetemp=.tmp-task9-review-green2`
+  -> `7 passed`.
+- `python -m pytest -q agent/tests/test_geocode.py tests/test_semantic_cache.py tests/test_database_filters.py tests/test_search_contract.py tests/test_pagination_truth.py tests/test_task9_review_fixes.py --basetemp=.tmp-task9-review-suite1`
+  -> `96 passed`.
+- `python -m pytest -q agent/tests/test_admin_mutations.py -k 'stale or completeness' --basetemp=.tmp-task9-admin-suite1`
+  -> `2 passed, 50 deselected, 1 warning`.
+- `python scripts/validate_data.py --json` -> exit `0`; catalog `1746` entities,
+  `12060` relationships, `33` itineraries.
+- `python scripts/deep_audit.py --json` -> exit `0`; no relationship deletion
+  candidates; five exact-normalized duplicate-name groups remain for curation.
+
 ## Changes
 
 - Added `agent/search_contract.py` with NFKD accent folding, case/whitespace

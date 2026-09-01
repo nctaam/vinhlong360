@@ -364,7 +364,7 @@ class MultiTierCache:
         with self._lock:
             self._load_l2()
             current_mtime = ENTRIES_FILE.stat().st_mtime_ns if ENTRIES_FILE.exists() else None
-            if self._l2_mtime_ns is not None and current_mtime != self._l2_mtime_ns:
+            if self._l2_loaded_from_disk and current_mtime != self._l2_mtime_ns:
                 self._load_l2(force=True)
             self.total_queries += 1
             key = _make_key(query, owner_key=owner_key, entity_id=entity_id, generation=generation)

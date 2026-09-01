@@ -59,7 +59,13 @@ _cache = None
 
 
 _cache_lock = Lock()
-_cache_stats = {"cache_hits": 0, "duplicate_writes": 0, "lost_update_prevented": 0}
+_cache_mtime_ns: int | None = None
+_cache_stats = {
+    "cache_hits": 0,
+    "duplicate_writes": 0,
+    "lost_update_prevented": 0,
+    "cache_refreshes": 0,
+}
 
 
 @contextmanager
@@ -90,12 +96,22 @@ def _interprocess_file_lock(path: Path):
 
 
 def _load_cache() -> dict:
-    global _cache
-    if _cache is not None:
+    global _cache, _cache_mtime_ns
+    try:
+        current_mtime = CACHE_FILE.stat().st_mtime_ns
+    except FileNotFoundError:
+        current_mtime = None
+    if _cache is not None and current_mtime == _cache_mtime_ns:
         return _cache
     with _cache_lock:
-        if _cache is not None:
+        try:
+            current_mtime = CACHE_FILE.stat().st_mtime_ns
+        except FileNotFoundError:
+            current_mtime = None
+        if _cache is not None and current_mtime == _cache_mtime_ns:
             return _cache
+        if _cache is not None and current_mtime != _cache_mtime_ns:
+            _cache_stats["cache_refreshes"] += 1
         if CACHE_FILE.exists():
             try:
                 _cache = json.loads(CACHE_FILE.read_text(encoding="utf-8"))
@@ -104,10 +120,12 @@ def _load_cache() -> dict:
                 _cache = {}
         else:
             _cache = {}
+        _cache_mtime_ns = current_mtime
         return _cache
 
 
 def _save_cache():
+    global _cache_mtime_ns
     try:
         with _interprocess_file_lock(CACHE_FILE):
             disk_cache = {}
@@ -127,6 +145,7 @@ def _save_cache():
             tmp = CACHE_FILE.with_suffix(".tmp")
             tmp.write_text(json.dumps(_cache, ensure_ascii=False, indent=2), encoding="utf-8")
             tmp.replace(CACHE_FILE)
+            _cache_mtime_ns = CACHE_FILE.stat().st_mtime_ns
     except Exception as exc:
         logger.warning("Failed to save geocode cache: %s", exc)
 
@@ -210,6 +229,7 @@ def stats() -> dict:
         "cache_hits": _cache_stats["cache_hits"],
         "duplicate_writes": _cache_stats["duplicate_writes"],
         "lost_update_prevented": _cache_stats["lost_update_prevented"],
+        "cache_refreshes": _cache_stats["cache_refreshes"],
         "bbox": {"lat": [LAT_MIN, LAT_MAX], "lon": [LON_MIN, LON_MAX]},
     }
 

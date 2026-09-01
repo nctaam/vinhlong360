@@ -833,13 +833,13 @@ def _append_q_filter(conditions: list, params: list, ph: str,
                      use_pg: bool, q: str) -> None:
     if use_pg:
         # không phân-biệt-dấu (f_unaccent + functional GIN trgm index, migration 015)
-        conditions.append(f"(f_unaccent(lower(e.name)) LIKE f_unaccent({ph}) ESCAPE '\\' OR f_unaccent(lower(e.summary)) LIKE f_unaccent({ph}) ESCAPE '\\')")
+        conditions.append(f"(f_unaccent(lower(e.name)) LIKE f_unaccent({ph}) ESCAPE '\\' OR f_unaccent(lower(e.summary)) LIKE f_unaccent({ph}) ESCAPE '\\' OR f_unaccent(lower(e.source)) LIKE f_unaccent({ph}) ESCAPE '\\')")
         q_esc = escape_like(q.lower())
-        params.extend([f"%{q_esc}%", f"%{q_esc}%"])
+        params.extend([f"%{q_esc}%", f"%{q_esc}%", f"%{q_esc}%"])
     else:
-        conditions.append(f"(f_unaccent(e.name) LIKE f_unaccent({ph}) ESCAPE '\\' OR f_unaccent(e.summary) LIKE f_unaccent({ph}) ESCAPE '\\')")
+        conditions.append(f"(f_unaccent(e.name) LIKE f_unaccent({ph}) ESCAPE '\\' OR f_unaccent(e.summary) LIKE f_unaccent({ph}) ESCAPE '\\' OR f_unaccent(e.source) LIKE f_unaccent({ph}) ESCAPE '\\')")
         q_esc = escape_like(q)
-        params.extend([f"%{q_esc}%", f"%{q_esc}%"])
+        params.extend([f"%{q_esc}%", f"%{q_esc}%", f"%{q_esc}%"])
 
 
 _ATTR_ALIASES = {
