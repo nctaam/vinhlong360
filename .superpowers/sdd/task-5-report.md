@@ -35,6 +35,9 @@ additive-first and keeps provider actions bounded and idempotent.
   manifest with explicit adapter metadata; provider enumeration remains a
   deployment-specific integration concern.
 
-## Commit
+## Commits
 
-Pending commit for this work; parent task will receive the resulting SHA.
+- `db5ecc3` — lifecycle registry, export/erasure proof, cleanup and media/browser adapters.
+- `f75f232` — reconcile export queries with shipped migration schemas.
+- `76b6ae9` — align lifecycle classifications with the existing policy taxonomy.
+- `4b55cda` — expose the lifecycle erasure facade from `erasure.py`.
