@@ -69,6 +69,7 @@ class _KernelDouble:
 def legacy(tmp_path, monkeypatch):
     """Flags on, kernel doubled, JSONL redirected to a fresh temp file."""
     from config import settings
+    from cases import wiring
 
     reports = tmp_path / "reports.jsonl"
     monkeypatch.setattr(public_api, "REPORTS_FILE", reports)
@@ -82,6 +83,9 @@ def legacy(tmp_path, monkeypatch):
     )
     monkeypatch.setattr(settings, "CASE_KERNEL_ENABLED", True, raising=False)
     monkeypatch.setattr(settings, "CORRECTION_INTAKE_ENABLED", True, raising=False)
+    # The adapter fixture supplies a transport double instead of running the
+    # full composition root; isolate it from the production readiness latch.
+    monkeypatch.setattr(wiring, "case_kernel_wiring_attempted", lambda: False)
     kernel = _KernelDouble()
     configure_case_public_api(service=kernel)
     yield kernel, reports

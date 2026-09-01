@@ -120,7 +120,12 @@ def _flags(**overrides):
 
 
 @pytest.fixture
-def client(request):
+def client(request, monkeypatch):
+    # These transport tests inject only the public collaborator; bypass the
+    # composition-root latch so they can exercise validation independently.
+    from cases import wiring
+
+    monkeypatch.setattr(wiring, "case_kernel_wiring_attempted", lambda: False)
     service = _ServiceDouble()
     flags = getattr(request, "param", None) or _flags()
     configure_case_public_api(service=service, settings=flags, allowed_origin=ORIGIN)

@@ -62,8 +62,10 @@ def _require_kernel() -> None:
     from fastapi import HTTPException
 
     from config import settings
+    from .wiring import case_kernel_ready, case_kernel_wiring_attempted
 
-    if not getattr(settings, "CASE_KERNEL_ENABLED", False):
+    if (not getattr(settings, "CASE_KERNEL_ENABLED", False)
+            or (case_kernel_wiring_attempted() and not case_kernel_ready())):
         raise HTTPException(404, detail={"code": "capability_unavailable",
                                          "detail": "This capability is not available."})
 

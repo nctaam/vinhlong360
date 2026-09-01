@@ -160,3 +160,34 @@ def test_the_real_settings_object_survives_the_composition_root():
 
     assert origin is None or isinstance(origin, str)
     assert not callable(type(settings).cors_origins_list.__get__(settings))
+
+
+def test_failed_commit_cannot_be_reactivated_by_public_configuration(monkeypatch):
+    """A failed commit keeps every HTTP surface dormant despite enabled flags."""
+    from cases import admin_api, public_api
+
+    bundle = wiring.build_case_dependencies(object(), _settings())
+
+    def fail(**kwargs):
+        raise RuntimeError("injected commit failure")
+
+    monkeypatch.setattr(admin_api, "configure_case_admin_api", fail)
+    with pytest.raises(RuntimeError, match="injected commit failure"):
+        wiring.commit_case_dependencies(bundle)
+
+    public_api.configure_case_public_api(
+        service=object(), settings=_settings(CASE_KERNEL_ENABLED=True),
+        allowed_origin="https://vinhlong360.vn",
+    )
+
+    assert wiring.case_kernel_ready() is False
+    assert public_api._kernel_ready() is False
+
+    from fastapi import HTTPException
+    from config import settings
+
+    monkeypatch.setattr(settings, "CASE_KERNEL_ENABLED", True, raising=False)
+    with pytest.raises(HTTPException) as excinfo:
+        admin_api._require_kernel()
+    assert excinfo.value.status_code == 404
+    assert excinfo.value.detail["code"] == "capability_unavailable"

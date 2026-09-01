@@ -36,10 +36,14 @@ class _AdminDouble:
 @pytest.fixture
 def admin_double(monkeypatch):
     from config import settings
+    from cases import wiring
 
     double = _AdminDouble()
     monkeypatch.setitem(sys.modules, "admin", double)
     monkeypatch.setattr(settings, "CASE_KERNEL_ENABLED", True, raising=False)
+    # These guard unit tests deliberately inject only AdminCP, not the full
+    # composition root; keep the wiring latch out of that isolated contract.
+    monkeypatch.setattr(wiring, "case_kernel_wiring_attempted", lambda: False)
     return double
 
 

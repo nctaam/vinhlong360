@@ -17,6 +17,30 @@ from dataclasses import dataclass
 
 logger = logging.getLogger("cases.wiring")
 
+# The route guards read this committed state instead of inferring readiness from
+# one module's dependency slots.  The attempted bit preserves lightweight unit
+# tests that configure one transport directly while production startup is still
+# before the composition root; once wiring starts, routes honor the fail-closed
+# readiness bit until a complete commit succeeds.
+_CASE_KERNEL_READY = False
+_CASE_KERNEL_WIRING_ATTEMPTED = False
+
+
+def case_kernel_ready() -> bool:
+    """Whether the complete dependency bundle was committed successfully."""
+    return _CASE_KERNEL_READY
+
+
+def case_kernel_wiring_attempted() -> bool:
+    """Whether route guards must enforce the committed readiness state."""
+    return _CASE_KERNEL_WIRING_ATTEMPTED
+
+
+def _begin_case_kernel_wiring() -> None:
+    global _CASE_KERNEL_READY, _CASE_KERNEL_WIRING_ATTEMPTED
+    _CASE_KERNEL_READY = False
+    _CASE_KERNEL_WIRING_ATTEMPTED = True
+
 
 @dataclass(frozen=True)
 class CaseDependencies:
@@ -126,24 +150,25 @@ def build_case_dependencies(database, settings) -> CaseDependencies:
 
 def commit_case_dependencies(bundle: CaseDependencies) -> None:
     """Publish a validated bundle to every case module in one guarded step."""
-    if not isinstance(bundle, CaseDependencies):
-        raise TypeError("invalid_case_dependencies")
-    if any(getattr(bundle, name, None) is None for name in (
-        "database", "crypto", "policy", "sms_provider"
-    )):
-        raise ValueError("incomplete_case_dependencies")
-    from .admin_api import configure_case_admin_api
-    from .contact import configure_case_contact
-    from .correction import configure_case_correction
-    from .metrics import configure_case_metrics
-    from .outbox import configure_case_outbox
-    from .public_api import configure_case_public_api
-    from .publication import configure_case_publication
-    from .service import CaseService
-    from .store import PostgresCaseStore
-    from .work_control import configure_case_work_control
-
+    _begin_case_kernel_wiring()
     try:
+        if not isinstance(bundle, CaseDependencies):
+            raise TypeError("invalid_case_dependencies")
+        if any(getattr(bundle, name, None) is None for name in (
+            "database", "crypto", "policy", "sms_provider"
+        )):
+            raise ValueError("incomplete_case_dependencies")
+        from .admin_api import configure_case_admin_api
+        from .contact import configure_case_contact
+        from .correction import configure_case_correction
+        from .metrics import configure_case_metrics
+        from .outbox import configure_case_outbox
+        from .public_api import configure_case_public_api
+        from .publication import configure_case_publication
+        from .service import CaseService
+        from .store import PostgresCaseStore
+        from .work_control import configure_case_work_control
+
         service = CaseService(
             PostgresCaseStore(bundle.database), bundle.crypto, bundle.policy,
             owner_ref=getattr(bundle, "owner_ref", "person:case-owner"),
@@ -169,6 +194,8 @@ def commit_case_dependencies(bundle: CaseDependencies) -> None:
         configure_case_outbox(database=bundle.database, crypto=bundle.crypto,
                               provider=bundle.sms_provider)
         configure_case_metrics(database=bundle.database)
+        global _CASE_KERNEL_READY
+        _CASE_KERNEL_READY = True
     except Exception:
         reset_case_dependencies()
         raise
@@ -176,6 +203,9 @@ def commit_case_dependencies(bundle: CaseDependencies) -> None:
 
 def reset_case_dependencies() -> None:
     """Return every case module to its dormant, fail-closed state."""
+    global _CASE_KERNEL_READY, _CASE_KERNEL_WIRING_ATTEMPTED
+    _CASE_KERNEL_READY = False
+    _CASE_KERNEL_WIRING_ATTEMPTED = True
     from . import admin_api, contact, correction, metrics, outbox, public_api, publication, work_control
 
     # Assign the module slots directly so reset remains reliable even when a
