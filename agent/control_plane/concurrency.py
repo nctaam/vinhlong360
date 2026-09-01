@@ -128,7 +128,7 @@ def _column_names(db, conn, table: str) -> set[str]:
 
 
 def ensure_state_schema(transaction, table: str = "posts") -> None:
-    """Add lease/revision fields without requiring a destructive migration."""
+    """Verify the migrated state schema; only SQLite may add compatibility fields."""
     table = _table_name(table)
     db, conn = _ctx(transaction)
     columns = _column_names(db, conn, table)
@@ -136,24 +136,30 @@ def ensure_state_schema(transaction, table: str = "posts") -> None:
         "revision": "BIGINT NOT NULL DEFAULT 1" if getattr(db, "_use_pg", False) else "INTEGER NOT NULL DEFAULT 1",
         "claimed_by": "TEXT",
         "claim_expires_at": "TIMESTAMPTZ" if getattr(db, "_use_pg", False) else "TEXT",
-        "publish_attempts": "INTEGER NOT NULL DEFAULT 0",
         "last_error_code": "TEXT",
     }
+    if table == "posts":
+        additions["publish_attempts"] = "INTEGER NOT NULL DEFAULT 0"
+    if getattr(db, "_use_pg", False):
+        missing = sorted(set(additions) - columns)
+        if missing:
+            raise RuntimeError(f"community_state_schema_missing:{table}:{','.join(missing)}")
+        if table == "posts":
+            stable = db._fetchone(
+                conn,
+                "SELECT pg_get_constraintdef(oid) AS definition FROM pg_constraint "
+                "WHERE conrelid='posts'::regclass AND conname='posts_moderation_status_check' "
+                "AND contype='c'",
+                (),
+            )
+            definition = str(_row_value(stable, "definition") or "")
+            if stable is None or "publish_failed" not in definition:
+                raise RuntimeError("community_state_schema_constraint_missing:posts_moderation_status_check")
+        return
     for name, definition in additions.items():
         if name not in columns:
             ddl = f"ALTER TABLE {table} ADD COLUMN IF NOT EXISTS {name} {definition}" if getattr(db, "_use_pg", False) else f"ALTER TABLE {table} ADD COLUMN {name} {definition}"
             db._execute(conn, ddl, ())
-    if getattr(db, "_use_pg", False) and table == "posts":
-        # Older deployments constrain moderation_status to the original four states.
-        # Extend that check additively so a visible publish_failed state is durable.
-        rows = db._fetchall(conn, "SELECT conname FROM pg_constraint WHERE conrelid='posts'::regclass AND contype='c' AND pg_get_constraintdef(oid) ILIKE %s", ("%moderation_status%",))
-        for row in rows:
-            name = _row_value(row, "conname")
-            if name:
-                db._execute(conn, f"ALTER TABLE posts DROP CONSTRAINT IF EXISTS {_table_name(str(name))}", ())
-        exists = db._fetchone(conn, "SELECT 1 FROM pg_constraint WHERE conname='posts_moderation_status_check' AND conrelid='posts'::regclass", ())
-        if exists is None:
-            db._execute(conn, "ALTER TABLE posts ADD CONSTRAINT posts_moderation_status_check CHECK (moderation_status IN ('pending','approved','rejected','flagged','publish_failed'))", ())
 
 
 def _idempotency_storage_key(key: IdempotencyKey | str) -> str:
@@ -278,9 +284,11 @@ def claim_due(transaction, table: str, *, due_before: datetime, worker_id: str,
     id_col = "id" if "id" in columns else "case_id"
     status_col = "moderation_status" if "moderation_status" in columns else ("status" if "status" in columns else None)
     status_expr = f", target.{status_col} AS state_status" if status_col else ""
-    due_predicate = f" AND {status_col} IN ('pending','flagged')" if status_col else ""
+    due_predicate = f" AND {status_col} IN ('pending','flagged','publish_failed')" if status_col else ""
     draft_predicate = " AND (is_draft = FALSE OR is_draft IS NULL)" if "is_draft" in columns else ""
-    expires = due_before + timedelta(seconds=lease_seconds)
+    # The schedule cutoff can be intentionally stale after a restart; leases
+    # must begin at the worker's actual clock time so they do not expire early.
+    expires = datetime.now(timezone.utc) + timedelta(seconds=lease_seconds)
     ph = db._ph
     if getattr(db, "_use_pg", False):
         row = db._fetchone(conn, f"WITH candidate AS (SELECT {id_col} FROM {table} WHERE scheduled_at IS NOT NULL AND scheduled_at <= {ph} AND (claim_expires_at IS NULL OR claim_expires_at <= {ph}){draft_predicate}{due_predicate} ORDER BY scheduled_at, {id_col} LIMIT 1 FOR UPDATE SKIP LOCKED) UPDATE {table} AS target SET claimed_by={ph}, claim_expires_at={ph}, revision=target.revision+1 FROM candidate WHERE target.{id_col}=candidate.{id_col} RETURNING target.{id_col} AS row_id, target.revision{status_expr}", (due_before, due_before, worker_id, expires))

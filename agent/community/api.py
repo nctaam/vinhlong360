@@ -74,8 +74,10 @@ def _community_idempotency(request: Request | None, user: dict, command: str, pa
         claim = claim_idempotency(_Tx, IdempotencyKey(command, str(user["id"]), raw), digest)
         if claim.conflict:
             raise HTTPException(409, "Idempotency-Key đã được dùng cho nội dung khác")
-        if claim.replayed and claim.receipt is not None:
-            return claim, claim.receipt
+        if claim.replayed:
+            if claim.receipt is not None:
+                return claim, claim.receipt
+            raise HTTPException(409, "idempotency_in_progress")
     return claim, None
 
 

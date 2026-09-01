@@ -10,7 +10,7 @@
 - Regression: `python -m pytest agent/tests/test_auth_security_hardening.py -q --basetemp .tmp-task7-final` -> `91 passed`.
 
 ## PostgreSQL evidence
-A disposable loopback PostgreSQL 16 cluster was initialized on `127.0.0.1:55437`, migrations applied through schema 83, and dropped/stopped in the same script. Readiness reported `ok=True`, schema 83, no missing tables/columns/triggers. Real threaded PG proof reported `1 passed, 10 deselected` for leased due-row CAS; teardown reported `database after drop: None`.
+A disposable loopback PostgreSQL 16 cluster was initialized on `127.0.0.1:55437`, migrations applied through schema 84, and dropped/stopped in the same script. Readiness reported `ok=True`, schema 84, no missing tables/columns/triggers. Real threaded PG proof reported `1 passed, 10 deselected` for leased due-row CAS; teardown reported `database after drop: None`.
 
 ## Changes
 - `agent/control_plane/concurrency.py`: idempotency claim/replay/conflict, status+revision CAS (deterministic HTTP 409), leased due-row claim with PostgreSQL `FOR UPDATE SKIP LOCKED`, additive state schema helpers.
@@ -54,3 +54,30 @@ A disposable loopback PostgreSQL 16 cluster was initialized on `127.0.0.1:55437`
 - Idempotency claim and receipt recording use separate transactions from the post insert; a process crash between them can leave a claimed key without a receipt. Exact successful retries are replay-safe, but full command/receipt atomicity needs a future transaction boundary refactor.
 - Other community write routes still use the legacy validation-only `require_idempotency` dependency; `create_post` is the route wired to the shared receipt implementation in this review wave.
 - The existing correction publication/rollback contention failures and `test_gap_fixes.py` source-shape failures remain unrelated baseline concerns noted above.
+
+## Review Fix Wave 2
+
+### RED
+- `test_pg_schema_verification_never_runs_hot_path_ddl` caught runtime `DROP CONSTRAINT` DDL.
+- `test_idempotency_pending_retry_returns_in_progress_without_duplicate` showed a claimed key with no receipt could be retried without a deterministic response.
+- `test_scheduler_missing_moderation_availability_fails_closed` published a result missing `moderation_available`.
+- `test_due_claim_lease_expiry_uses_current_time_not_due_cutoff` produced a lease expiring from the stale schedule cutoff.
+- `test_publish_failed_post_is_automatically_retryable` could not reclaim `publish_failed` rows.
+- Disposable PostgreSQL verification initially found migration 084 retained the legacy four-state check under the same constraint name.
+
+### GREEN
+- Command: `python -m pytest agent/tests/test_state_cas.py agent/tests/test_case_contention_postgres.py agent/tests/test_scheduler.py agent/tests/test_moderation*.py agent/tests/test_migration_chain.py agent/tests/test_database.py agent/tests/test_migration_readiness_postgres.py agent/tests/test_auth_security_hardening.py tests/test_check_migration_gate.py tests/test_release_quality_gates.py -q --basetemp .tmp-task7-review-v2-green/full`
+- Result: `431 passed, 8 skipped, 1 xfailed in 25.54s`.
+- Blocker-specific crash, schema, scheduler, lease, and retry tests pass; `python -m py_compile ...` and `git diff --check` pass.
+
+### PostgreSQL fix evidence
+- Disposable loopback run: `powershell -NoProfile -ExecutionPolicy Bypass -File .tmp-task7-pg-run.ps1`.
+- Migrations applied through `084_community_state_cas.sql` (schema 84); readiness `ok=True` with no missing tables, columns, triggers, or issues.
+- Real concurrent proof: `1 passed, 21 deselected in 4.29s`; teardown reported `database after drop: None`, server stopped, and cluster removed.
+
+### Review Fix Wave 2 changes
+- `ensure_state_schema()` now performs PostgreSQL read/verify only and fails closed when CAS columns or the stable moderation constraint are absent; SQLite retains compatibility additions.
+- Migration 084 replaces any legacy moderation-status check with the durable `publish_failed`-aware constraint.
+- Idempotency retries with a claimed key and no receipt return deterministic `409 idempotency_in_progress`; an injected crash after insert proves no second insert occurs.
+- Scheduler publishes only when moderation status is terminal and `moderation_available is True`; missing/unknown availability is persisted as `publish_failed`.
+- Due leases expire from the worker's actual current time, and `publish_failed` rows are explicitly retryable.

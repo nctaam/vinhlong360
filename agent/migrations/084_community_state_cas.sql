@@ -12,10 +12,24 @@ ALTER TABLE moderation_appeals ADD COLUMN IF NOT EXISTS last_error_code TEXT;
 CREATE INDEX IF NOT EXISTS idx_posts_due_state_cas
     ON posts(scheduled_at, revision)
     WHERE scheduled_at IS NOT NULL AND is_draft = FALSE
-      AND moderation_status IN ('pending', 'flagged');
+      AND moderation_status IN ('pending', 'flagged', 'publish_failed');
 
 DO $$
+DECLARE
+    old_constraint TEXT;
 BEGIN
+    FOR old_constraint IN
+        SELECT conname
+        FROM pg_constraint
+        WHERE conrelid = 'posts'::regclass
+          AND contype = 'c'
+          AND pg_get_constraintdef(oid) ILIKE '%moderation_status%'
+    LOOP
+        EXECUTE format('ALTER TABLE posts DROP CONSTRAINT IF EXISTS %I', old_constraint);
+    END LOOP;
+    ALTER TABLE posts
+        ADD CONSTRAINT posts_moderation_status_check
+        CHECK (moderation_status IN ('pending', 'approved', 'rejected', 'flagged', 'publish_failed'));
     IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'posts_revision_positive') THEN
         ALTER TABLE posts ADD CONSTRAINT posts_revision_positive CHECK (revision >= 1);
     END IF;
