@@ -419,6 +419,74 @@ def _build_command_digest(
     return hashlib.sha256(encoded).hexdigest()
 
 
+def _replay_receipt_payload(
+    existing: dict | None, event_id: str, *, required: tuple[str, ...]
+) -> dict:
+    """Read only a complete committed outbox receipt for a replay."""
+    if existing is None:
+        raise _reject(
+            "publication_receipt_missing",
+            f"The committed receipt {event_id} is missing.",
+        )
+    if type(existing) is not dict:
+        raise _reject(
+            "publication_receipt_invalid",
+            f"The committed receipt {event_id} is malformed.",
+        )
+    payload = existing.get("payload")
+    if type(payload) is not dict or any(key not in payload for key in required):
+        raise _reject(
+            "publication_receipt_invalid",
+            f"The committed receipt {event_id} is incomplete.",
+        )
+    return dict(payload)
+
+
+def _require_receipt_text(payload: dict, key: str, event_id: str) -> str:
+    value = payload.get(key)
+    if type(value) is not str or not value:
+        raise _reject(
+            "publication_receipt_invalid",
+            f"The committed receipt {event_id} has an invalid {key}.",
+        )
+    return value
+
+
+def _require_receipt_revision(payload: dict, event_id: str) -> int:
+    revision = payload.get("revision")
+    if type(revision) is not int or revision < 1:
+        raise _reject(
+            "publication_receipt_invalid",
+            f"The committed receipt {event_id} has an invalid revision.",
+        )
+    return revision
+
+
+def _require_replay_mapping(payload: dict, key: str, event_id: str) -> dict:
+    value = payload.get(key)
+    if type(value) is not dict:
+        raise _reject(
+            "publication_receipt_invalid",
+            f"The committed receipt {event_id} has an invalid {key}.",
+        )
+    return value
+
+
+def _require_replay_refs(payload: dict, key: str, event_id: str) -> tuple[str, ...]:
+    value = payload.get(key)
+    if type(value) not in (list, tuple) or not value:
+        raise _reject(
+            "publication_receipt_invalid",
+            f"The committed receipt {event_id} has invalid {key}.",
+        )
+    if any(type(ref) is not str or not ref for ref in value):
+        raise _reject(
+            "publication_receipt_invalid",
+            f"The committed receipt {event_id} has invalid {key}.",
+        )
+    return tuple(value)
+
+
 def _require_decided_payloads(payloads: tuple[dict, ...]) -> None:
     unruled = tuple(
         str(row["item_id"]) for row in payloads
@@ -561,23 +629,114 @@ def decide_item(command: DecideItemCommand, *, now: datetime) -> DecisionOutcome
         event_id = f"decision:{command.case_id}:{command.item_id}"
         existing = transaction.load_outbox_by_idempotency_key(event_id)
         if existing is not None:
-            payload = dict(existing.get("payload") or {})
-            if payload.get("decision_digest") != _decision_command_digest(command):
+            payload = _replay_receipt_payload(
+                existing,
+                event_id,
+                required=(
+                    "event_id", "case_id", "revision", "generation",
+                    "correlation_id", "decision_digest", "ruling",
+                ),
+            )
+            if payload["event_id"] != event_id or payload["case_id"] != command.case_id:
+                raise _reject(
+                    "publication_receipt_invalid",
+                    f"The committed receipt {event_id} identifies another decision.",
+                )
+            _require_receipt_text(payload, "generation", event_id)
+            _require_receipt_text(payload, "correlation_id", event_id)
+            revision = _require_receipt_revision(payload, event_id)
+            decision_digest = _require_receipt_text(payload, "decision_digest", event_id)
+            if decision_digest != _decision_command_digest(command):
                 raise _reject(
                     "decision_idempotency_conflict",
                     "That item already has a different persisted ruling.",
                 )
-            ruling = dict(payload.get("ruling") or {})
-            revision = int(payload.get("revision", snapshot.current_revision))
+            ruling = payload["ruling"]
+            if type(ruling) is not dict:
+                raise _reject(
+                    "publication_receipt_invalid",
+                    f"The committed receipt {event_id} has an invalid ruling.",
+                )
+            ruling_required = (
+                "case_id", "item_id", "outcome_code", "reason_code", "refs",
+                "decision_maker_ref", "reviewer_ref", "duplicate_of",
+            )
+            if any(key not in ruling for key in ruling_required):
+                raise _reject(
+                    "publication_receipt_invalid",
+                    f"The committed receipt {event_id} has an incomplete ruling.",
+                )
+            if (
+                type(ruling["case_id"]) is not str
+                or ruling["case_id"] != command.case_id
+                or type(ruling["item_id"]) is not str
+                or ruling["item_id"] != command.item_id
+            ):
+                raise _reject(
+                    "publication_receipt_invalid",
+                    f"The committed receipt {event_id} identifies another item.",
+                )
+            try:
+                outcome_code = CorrectionOutcome(ruling["outcome_code"])
+            except (TypeError, ValueError):
+                raise _reject(
+                    "publication_receipt_invalid",
+                    f"The committed receipt {event_id} has an invalid outcome.",
+                )
+            if outcome_code is not command.outcome_code:
+                raise _reject(
+                    "publication_receipt_invalid",
+                    f"The committed receipt {event_id} disagrees with the command.",
+                )
+            reason_code = ruling["reason_code"]
+            refs = ruling["refs"]
+            maker = ruling["decision_maker_ref"]
+            reviewer = ruling["reviewer_ref"]
+            duplicate_of = ruling["duplicate_of"]
+            if (
+                type(reason_code) is not str
+                or not reason_code.strip()
+                or len(reason_code) > MAX_REASON_LENGTH
+                or type(refs) not in (list, tuple)
+                or any(type(ref) is not str or not ref for ref in refs)
+                or type(maker) is not str
+                or not maker
+                or (reviewer is not None and (type(reviewer) is not str or not reviewer))
+                or (duplicate_of is not None and (type(duplicate_of) is not str or not duplicate_of))
+            ):
+                raise _reject(
+                    "publication_receipt_invalid",
+                    f"The committed receipt {event_id} has malformed ruling fields.",
+                )
+            command_actor = getattr(command.actor, "actor_ref", None)
+            if (
+                reason_code.strip() != command.reason_code.strip()
+                or maker != command_actor
+                or reviewer != command.reviewer_ref
+                or duplicate_of != command.duplicate_of
+            ):
+                raise _reject(
+                    "publication_receipt_invalid",
+                    f"The committed receipt {event_id} disagrees with the command.",
+                )
+            command_refs = tuple(
+                record.evidence_id for record in command.evidence
+                if type(getattr(record, "evidence_id", None)) is str
+            )
+            if any(ref not in command_refs for ref in refs):
+                raise _reject(
+                    "publication_receipt_invalid",
+                    f"The committed receipt {event_id} has unrelated evidence.",
+                )
             return DecisionOutcome(
-                case_id=str(ruling.get("case_id", command.case_id)),
-                item_id=str(ruling.get("item_id", command.item_id)),
-                outcome_code=CorrectionOutcome(str(ruling.get("outcome_code", command.outcome_code.value))),
-                reason_code=str(ruling.get("reason_code", command.reason_code).strip()),
-                evidence_refs=tuple(str(ref) for ref in ruling.get("refs", ())),
-                decision_maker_ref=str(ruling.get("decision_maker_ref", getattr(command.actor, "actor_ref", "unknown"))),
-                reviewer_ref=ruling.get("reviewer_ref"),
-                duplicate_of=ruling.get("duplicate_of"),
+                case_id=ruling["case_id"],
+                item_id=ruling["item_id"],
+                outcome_code=outcome_code,
+                reason_code=reason_code.strip(),
+                evidence_refs=tuple(refs),
+                decision_maker_ref=maker,
+                reviewer_ref=reviewer,
+                duplicate_of=duplicate_of,
                 revision=revision,
                 outbox_event_id=event_id,
             )
@@ -648,48 +807,146 @@ def _replay_existing_change_set(transaction, case_id: str, item_ids: tuple[str, 
                                 actor, expected_revision: int,
                                 evidence_refs: tuple[str, ...], snapshot) -> ChangeSetDraft | None:
     existing = transaction.load_change_set_for_items(case_id, item_ids)
-    if not existing or str(existing["apply_status"]) not in {"pending", "applied"}:
+    if existing is not None and type(existing) is not dict:
+        raise _reject(
+            "publication_receipt_invalid",
+            "The persisted change set marker is malformed.",
+        )
+    if not existing or str(existing.get("apply_status")) not in {"pending", "applied"}:
         return None
-    event_id = f"notify:{existing['change_set_id']}:decided"
+    change_set_id = existing.get("change_set_id")
+    if type(change_set_id) is not str or not change_set_id:
+        raise _reject(
+            "publication_receipt_invalid",
+            "The persisted change set marker is malformed.",
+        )
+    event_id = f"notify:{change_set_id}:decided"
     receipt = transaction.load_outbox_by_idempotency_key(event_id)
-    payload = dict(receipt.get("payload") or {}) if receipt else {}
+    payload = _replay_receipt_payload(
+        receipt,
+        event_id,
+        required=(
+            "event_id", "case_id", "revision", "generation", "correlation_id",
+            "change_set_id", "item_ids", "build_digest",
+        ),
+    )
+    if payload["event_id"] != event_id or payload["case_id"] != case_id:
+        raise _reject(
+            "publication_receipt_invalid",
+            f"The committed receipt {event_id} identifies another case.",
+        )
+    _require_receipt_text(payload, "generation", event_id)
+    _require_receipt_text(payload, "correlation_id", event_id)
+    revision = _require_receipt_revision(payload, event_id)
+    if payload["change_set_id"] != change_set_id:
+        raise _reject(
+            "publication_receipt_invalid",
+            f"The committed receipt {event_id} identifies another change set.",
+        )
+    receipt_item_ids = payload["item_ids"]
+    if (
+        type(receipt_item_ids) not in (list, tuple)
+        or any(type(item_id) is not str or not item_id for item_id in receipt_item_ids)
+        or tuple(sorted(receipt_item_ids)) != tuple(sorted(item_ids))
+    ):
+        raise _reject(
+            "publication_receipt_invalid",
+            f"The committed receipt {event_id} has invalid item linkage.",
+        )
     expected_digest = _build_command_digest(
         case_id, item_ids, actor, expected_revision, evidence_refs,
     )
-    persisted_digest = payload.get("build_digest")
-    if persisted_digest is not None and persisted_digest != expected_digest:
+    persisted_digest = _require_receipt_text(payload, "build_digest", event_id)
+    if persisted_digest != expected_digest:
         raise _reject(
             "change_set_idempotency_conflict",
             "That item selection already has a different persisted change set.",
         )
-    entity_id, linked_item_ids = transaction.load_change_set_target(existing["change_set_id"])
-    before_patch = dict(existing.get("before_patch") or {})
-    after_patch = dict(existing.get("after_patch") or {})
-    fields_by_item = {
-        str(item["item_id"]): str(item["field_path"])
-        for item in transaction.load_correction_item_payloads(case_id, linked_item_ids)
-    }
+    persisted_case_id = existing.get("case_id")
+    if type(persisted_case_id) is not str or persisted_case_id != case_id:
+        raise _reject(
+            "publication_receipt_invalid",
+            f"The persisted change set {change_set_id} identifies another case.",
+        )
+    base_entity_revision = existing.get("base_entity_revision")
+    if type(base_entity_revision) is not int or base_entity_revision < 1:
+        raise _reject(
+            "publication_receipt_invalid",
+            f"The persisted change set {change_set_id} has an invalid base revision.",
+        )
+    before_patch = _require_replay_mapping(existing, "before_patch", event_id)
+    after_patch = _require_replay_mapping(existing, "after_patch", event_id)
+    risk_class = _require_receipt_text(existing, "risk_class", event_id)
+    decision_maker_ref = _require_receipt_text(existing, "decision_maker_ref", event_id)
+    persisted_evidence_refs = _require_replay_refs(existing, "evidence_refs", event_id)
+    reviewer_ref = existing.get("reviewer_ref")
+    if reviewer_ref is not None and (type(reviewer_ref) is not str or not reviewer_ref):
+        raise _reject(
+            "publication_receipt_invalid",
+            f"The persisted change set {change_set_id} has an invalid reviewer.",
+        )
+    try:
+        entity_id, linked_item_ids = transaction.load_change_set_target(change_set_id)
+    except (KeyError, TypeError, ValueError):
+        raise _reject(
+            "publication_receipt_invalid",
+            f"The persisted change set {change_set_id} target is malformed.",
+        )
+    if (
+        type(entity_id) is not str or not entity_id
+        or type(linked_item_ids) is not tuple
+        or any(type(item_id) is not str or not item_id for item_id in linked_item_ids)
+        or tuple(sorted(linked_item_ids)) != tuple(sorted(item_ids))
+    ):
+        raise _reject(
+            "publication_receipt_invalid",
+            f"The persisted change set {change_set_id} target is malformed.",
+        )
+    fields_by_item = {}
+    for item in transaction.load_correction_item_payloads(case_id, linked_item_ids):
+        if type(item) is not dict:
+            raise _reject(
+                "publication_receipt_invalid",
+                f"The persisted change set {change_set_id} item payload is malformed.",
+            )
+        item_id = item.get("item_id")
+        field_path = item.get("field_path")
+        if type(item_id) is not str or not item_id or type(field_path) is not str or not field_path:
+            raise _reject(
+                "publication_receipt_invalid",
+                f"The persisted change set {change_set_id} item payload is malformed.",
+            )
+        fields_by_item[item_id] = field_path
+    if set(fields_by_item) != set(linked_item_ids):
+        raise _reject(
+            "publication_receipt_invalid",
+            f"The persisted change set {change_set_id} item linkage is incomplete.",
+        )
+    if set(before_patch) != set(fields_by_item.values()) or set(after_patch) != set(fields_by_item.values()):
+        raise _reject(
+            "publication_receipt_invalid",
+            f"The persisted change set {change_set_id} patches are incomplete.",
+        )
     changes = tuple(
         ProposedChange(
             item_id=item_id,
             entity_id=entity_id,
             field_path=fields_by_item[item_id],
-            before_value=before_patch.get(field_path),
-            after_value=after_patch.get(field_path),
+            before_value=before_patch[field_path],
+            after_value=after_patch[field_path],
         )
         for item_id in linked_item_ids
         for field_path in (fields_by_item[item_id],)
     )
-    revision = int(payload.get("revision", snapshot.current_revision))
     return ChangeSetDraft(
         case_id=case_id,
         entity_id=entity_id,
-        base_entity_revision=int(existing["base_entity_revision"]),
+        base_entity_revision=base_entity_revision,
         changes=changes,
-        risk_class=str(existing["risk_class"]),
-        decision_maker_ref=str(existing["decision_maker_ref"]),
-        evidence_refs=tuple(str(ref) for ref in (existing.get("evidence_refs") or evidence_refs)),
-        reviewer_ref=existing.get("reviewer_ref"),
+        risk_class=risk_class,
+        decision_maker_ref=decision_maker_ref,
+        evidence_refs=persisted_evidence_refs,
+        reviewer_ref=reviewer_ref,
         apply_status=str(existing["apply_status"]),
         revision=revision,
         outbox_event_id=event_id,

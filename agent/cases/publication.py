@@ -282,15 +282,18 @@ def _replay_apply(transaction, command, row: dict, snapshot) -> PublicationResul
         event_id,
         required=("revision", "entity_revision", "applied_fields"),
     )
+    _require_replay_case(payload, command.case_id, event_id)
     entity_id, _ = transaction.load_change_set_target(command.change_set_id)
+    entity_revision = _require_replay_int(payload, "entity_revision", event_id)
+    applied_fields = _require_replay_text_sequence(payload, "applied_fields", event_id)
     return PublicationResult(
         change_set_id=command.change_set_id,
         case_id=command.case_id,
         entity_id=entity_id,
-        entity_revision=int(payload["entity_revision"]),
+        entity_revision=entity_revision,
         state=PublicationState.APPLIED,
-        applied_fields=tuple(payload["applied_fields"]),
-        revision=int(payload["revision"]),
+        applied_fields=applied_fields,
+        revision=payload["revision"],
         outbox_event_id=event_id,
     )
 
@@ -352,8 +355,13 @@ def _compare_projection(projection, entity_id: str, after_patch: dict,
 
 def _replay_verification_failure(transaction, command, snapshot, existing) -> VerificationResult:
     event_id = f"notify:{command.change_set_id}:verification_failed"
-    payload = _replay_payload(existing, event_id, required=("revision", "mismatched"))
-    raw_mismatches = payload["mismatched"]
+    payload = _replay_payload(
+        existing,
+        event_id,
+        required=("revision", "mismatched", "next_update_at"),
+    )
+    _require_replay_case(payload, command.case_id, event_id)
+    raw_mismatches = _require_replay_text_sequence(payload, "mismatched", event_id)
     available_at = _verification_retry_at(existing)
     if available_at is None:
         raise _reject(
@@ -364,20 +372,29 @@ def _replay_verification_failure(transaction, command, snapshot, existing) -> Ve
         change_set_id=command.change_set_id,
         state=PublicationState.APPLIED,
         verified=False,
-        mismatches=tuple(str(item) for item in raw_mismatches),
+        mismatches=raw_mismatches,
         next_update_at=available_at,
-        revision=int(payload["revision"]),
+        revision=payload["revision"],
         outbox_event_id=event_id,
     )
 
 
 def _verification_retry_at(existing: dict | None) -> datetime | None:
-    if existing is None:
+    if existing is None or type(existing) is not dict:
         return None
     payload = existing.get("payload")
-    if isinstance(payload, dict) and payload.get("next_update_at"):
-        return datetime.fromisoformat(str(payload["next_update_at"]))
-    return existing.get("available_at")
+    if type(payload) is not dict:
+        return None
+    raw_deadline = payload.get("next_update_at")
+    if type(raw_deadline) is not str or not raw_deadline:
+        return None
+    try:
+        deadline = datetime.fromisoformat(raw_deadline)
+    except (TypeError, ValueError):
+        return None
+    if deadline.tzinfo is None:
+        return None
+    return deadline
 
 
 def _replay_payload(existing: dict | None, event_id: str, *, required: tuple[str, ...]) -> dict:
@@ -387,13 +404,71 @@ def _replay_payload(existing: dict | None, event_id: str, *, required: tuple[str
             "publication_receipt_missing",
             f"The committed publication receipt {event_id} is missing.",
         )
+    if type(existing) is not dict:
+        raise _reject(
+            "publication_receipt_invalid",
+            f"The committed publication receipt {event_id} is malformed.",
+        )
     payload = existing.get("payload")
-    if not isinstance(payload, dict) or any(key not in payload for key in required):
+    required_keys = (
+        "event_id", "case_id", "generation", "correlation_id", *required,
+    )
+    if (
+        type(existing.get("idempotency_key")) is not str
+        or existing["idempotency_key"] != event_id
+        or type(payload) is not dict
+        or any(key not in payload for key in required_keys)
+    ):
         raise _reject(
             "publication_receipt_invalid",
             f"The committed publication receipt {event_id} is incomplete.",
         )
+    if payload["event_id"] != event_id:
+        raise _reject(
+            "publication_receipt_invalid",
+            f"The committed publication receipt {event_id} identifies another event.",
+        )
+    for key in ("case_id", "generation", "correlation_id"):
+        if type(payload[key]) is not str or not payload[key]:
+            raise _reject(
+                "publication_receipt_invalid",
+                f"The committed publication receipt {event_id} has an invalid {key}.",
+            )
+    revision = payload["revision"]
+    if type(revision) is not int or revision < 1:
+        raise _reject(
+            "publication_receipt_invalid",
+            f"The committed publication receipt {event_id} has an invalid revision.",
+        )
     return dict(payload)
+
+
+def _require_replay_case(payload: dict, case_id: str, event_id: str) -> None:
+    if payload["case_id"] != case_id:
+        raise _reject(
+            "publication_receipt_invalid",
+            f"The committed publication receipt {event_id} identifies another case.",
+        )
+
+
+def _require_replay_int(payload: dict, key: str, event_id: str) -> int:
+    value = payload.get(key)
+    if type(value) is not int or value < 1:
+        raise _reject(
+            "publication_receipt_invalid",
+            f"The committed publication receipt {event_id} has an invalid {key}.",
+        )
+    return value
+
+
+def _require_replay_text_sequence(payload: dict, key: str, event_id: str) -> tuple[str, ...]:
+    value = payload.get(key)
+    if type(value) not in (list, tuple) or any(type(item) is not str or not item for item in value):
+        raise _reject(
+            "publication_receipt_invalid",
+            f"The committed publication receipt {event_id} has an invalid {key}.",
+        )
+    return tuple(value)
 
 
 def verify_public_projection(command: VerifyProjectionCommand, fetcher, *,
@@ -414,7 +489,8 @@ def verify_public_projection(command: VerifyProjectionCommand, fetcher, *,
             event_id = f"notify:{command.change_set_id}:verified"
             existing = transaction.load_outbox_by_idempotency_key(event_id)
             payload = _replay_payload(existing, event_id, required=("revision",))
-            revision = int(payload["revision"])
+            _require_replay_case(payload, command.case_id, event_id)
+            revision = payload["revision"]
             return VerificationResult(
                 change_set_id=command.change_set_id,
                 state=PublicationState.VERIFIED,
@@ -675,13 +751,15 @@ def _replay_rollback(transaction, command, row: dict, snapshot) -> RollbackResul
     event_id = f"notify:{command.change_set_id}:rolled_back"
     existing = transaction.load_outbox_by_idempotency_key(event_id)
     payload = _replay_payload(existing, event_id, required=("revision", "entity_revision"))
+    _require_replay_case(payload, command.case_id, event_id)
     entity_id, _ = transaction.load_change_set_target(command.change_set_id)
+    entity_revision = _require_replay_int(payload, "entity_revision", event_id)
     return RollbackResult(
         change_set_id=command.change_set_id,
         entity_id=entity_id,
-        entity_revision=int(payload["entity_revision"]),
+        entity_revision=entity_revision,
         state=PublicationState.ROLLED_BACK,
-        revision=int(payload["revision"]),
+        revision=payload["revision"],
         outbox_event_id=event_id,
     )
 
