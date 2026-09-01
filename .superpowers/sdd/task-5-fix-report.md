@@ -2,8 +2,9 @@
 
 ## Scope
 
-Closed the remaining lifecycle export pagination blockers in the legacy
-`/auth/export-data` compatibility payload:
+Closed the remaining lifecycle review blockers across export, erasure, browser,
+media, and scheduled cleanup. The final follow-up in this patch addresses the
+legacy `/auth/export-data` compatibility payload:
 
 - Page manifests now report the number of rows actually returned, excluding
   the `limit + 1` probe row used to detect continuation.
@@ -12,6 +13,20 @@ Closed the remaining lifecycle export pagination blockers in the legacy
   endpoint and verified by the existing cursor provenance checks.
 - Legacy payload slices and manifest metadata are built from the same bounded
   page contract.
+
+The supporting P1 controls in the lifecycle modules are also covered by the
+focused suite:
+
+- External erasure adapters return explicit `unavailable`/`retained` outcomes;
+  these outcomes are excluded from `ErasureReport.verified` instead of being
+  treated as successful deletion.
+- Browser deletion issues the complete shipped-key inventory (including the
+  journey-thread key), and the Nuxt consumer removes each key once.
+- Media deletion records an idempotent `(subject, object, generation)` receipt,
+  serializes provider calls, runs object and CDN attempts independently, and
+  keeps failed or unavailable receipts retryable/unverified.
+- Scheduler expiry cleanup invokes the bounded `limit=500` worker under its
+  process lease rather than issuing an unbounded delete.
 
 ## TDD Evidence
 
