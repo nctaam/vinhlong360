@@ -2,7 +2,7 @@
 
 Status: GREEN (review remediation)
 
-Commit SHAs: `594aebf2..HEAD` (including `eae82e22`, `52de64f9`, `cf3127de`, `30bba3c7`, `6a37ae9b`, `b679c4cc`, `62c1f8ef`, `9c33118c`, `763a9651`, `e22ab2e7`, `a9f7462c`, `f523b580`, `e331ec64`, `e3bbe0c9`, `6cf852dc`, `a46d0d57`, `11cb0a0b`, `46fd7b33`, and `10a70738`).
+Commit SHAs: `594aebf2..HEAD` (including `eae82e22`, `52de64f9`, `cf3127de`, `30bba3c7`, `6a37ae9b`, `b679c4cc`, `62c1f8ef`, `9c33118c`, `763a9651`, `e22ab2e7`, `a9f7462c`, `f523b580`, `e331ec64`, `e3bbe0c9`, `6cf852dc`, `a46d0d57`, `11cb0a0b`, `46fd7b33`, `10a70738`, `9508fb49`, and `e9ec4424`).
 
 Files changed:
 
@@ -119,5 +119,7 @@ Fresh focused verification: `python -m pytest agent/tests/test_case_proof_first.
 Disposable PostgreSQL verification: `powershell -ExecutionPolicy Bypass -File .tmp-task4-pg-run.ps1` created a loopback-only cluster on `127.0.0.1:5433`, applied migrations through schema 82, then ran `agent/tests/test_case_idempotency_postgres.py`, `agent/tests/test_correction_changesets.py`, `agent/tests/test_correction_publication.py`, `agent/tests/test_correction_publication_failure.py`, and `agent/tests/test_correction_rollback.py`. It reported `79 passed in 27.70s`; the follow-up recovery-deadline regression reported `80 passed in 27.60s`. Each run dropped the disposable database and confirmed `database after drop: None`.
 
 Fresh dormant-kernel verification: `python -m pytest agent/tests/test_case_wiring.py agent/tests/test_case_proof_first.py agent/tests/test_case_public_api.py agent/tests/test_correction_admin_http.py -q --basetemp .tmp-task4-dormant-controller` -> `79 passed, 14 skipped, 1 existing Starlette deprecation warning`.
+
+The committed readiness guard makes both public and admin route predicates require the complete composition-root readiness bit; failed or reset wiring therefore stays dormant even when feature flags are enabled. The final controller rerun of the same guard suites remained `79 passed, 14 skipped`.
 
 The final Task 4 commit range is `594aebf2..HEAD`; changed test files include `test_correction_changesets.py`, `test_correction_publication.py`, `test_correction_publication_failure.py`, and `test_correction_rollback.py`. The backend-only commits used approved `--no-verify` where the known R30.7 generated frontend-bundle debt blocked the hook; no frontend files changed.
