@@ -101,3 +101,13 @@ Focused TDD evidence:
 - Covering: `python -m pytest agent/tests/test_case_proof_first.py agent/tests/test_correction_decisions.py agent/tests/test_correction_publication.py agent/tests/test_correction_publication_failure.py agent/tests/test_correction_create.py agent/tests/test_case_store.py agent/tests/test_case_audit.py agent/tests/test_case_outbox.py agent/tests/test_case_admin_api.py agent/tests/test_case_public_api.py agent/tests/test_correction_admin_http.py -q --basetemp .tmp-task4-covering-no-pg2` -> 218 passed, 82 skipped, 1 existing Starlette deprecation warning.
 - Required final gate: `python -m pytest agent/tests/test_case_proof_first.py agent/tests/test_correction_decisions.py agent/tests/test_correction_publication.py agent/tests/test_correction_publication_failure.py agent/tests/test_correction_create.py agent/tests/test_case_store.py agent/tests/test_case_audit.py agent/tests/test_case_outbox.py agent/tests/test_case_admin_api.py agent/tests/test_case_public_api.py agent/tests/test_correction_admin_http.py agent/tests/test_case_wiring.py agent/tests/test_case_domain.py agent/tests/test_case_idempotency_postgres.py -q --basetemp .tmp-task4-required-final` -> 240 passed, 90 skipped, 1 existing Starlette deprecation warning.
 - PostgreSQL retry tests are included in `test_correction_changesets.py`, `test_correction_publication.py`, `test_correction_publication_failure.py` and `test_correction_rollback.py`; this workspace has no `VL360_TEST_DATABASE_URL`, so those tests skip under the loopback-only guard.
+
+## Recovery/reason final remediation
+
+- Verification failure receipts replay during the promised retry window but permit a new projection check at the recovery deadline; a recovered projection can now complete exactly once.
+- Rollback preserves the caller-provided `reason_code` (for example `source_retracted`) while retaining the stable audit action `change_set_rolled_back`.
+- Replay helpers fail closed with `publication_receipt_missing` or `publication_receipt_invalid` when a committed state marker has no complete outbox receipt; they never fabricate revision/event metadata.
+
+Fresh focused verification: `python -m pytest agent/tests/test_case_proof_first.py agent/tests/test_correction_changesets.py agent/tests/test_correction_publication.py agent/tests/test_correction_publication_failure.py agent/tests/test_correction_rollback.py -q --basetemp .tmp-task4-recovery-controller` -> `30 passed, 60 skipped in 5.05s`.
+
+The final Task 4 commit range is `594aebf2..HEAD` including `e3bbe0c9`, `6cf852dc`, and the recovery/reason patch; changed test files include `test_correction_changesets.py`, `test_correction_publication.py`, and `test_correction_rollback.py`.

@@ -277,17 +277,21 @@ def apply_change_set(command: ApplyChangeSetCommand, *, now: datetime) -> Public
 def _replay_apply(transaction, command, row: dict, snapshot) -> PublicationResult:
     event_id = f"notify:{command.change_set_id}:applied"
     existing = transaction.load_outbox_by_idempotency_key(event_id)
-    payload = dict(existing.get("payload") or {}) if existing else {}
+    payload = _replay_payload(
+        existing,
+        event_id,
+        required=("revision", "entity_revision", "applied_fields"),
+    )
     entity_id, _ = transaction.load_change_set_target(command.change_set_id)
     after_patch = dict(row.get("after_patch") or {})
     return PublicationResult(
         change_set_id=command.change_set_id,
         case_id=command.case_id,
         entity_id=entity_id,
-        entity_revision=int(payload.get("entity_revision", int(row["base_entity_revision"]) + 1)),
+        entity_revision=int(payload["entity_revision"]),
         state=PublicationState.APPLIED,
-        applied_fields=tuple(payload.get("applied_fields") or sorted(after_patch)),
-        revision=int(payload.get("revision", snapshot.current_revision)),
+        applied_fields=tuple(payload["applied_fields"]),
+        revision=int(payload["revision"]),
         outbox_event_id=event_id,
     )
 
@@ -348,20 +352,54 @@ def _compare_projection(projection, entity_id: str, after_patch: dict,
 
 
 def _replay_verification_failure(transaction, command, snapshot, existing) -> VerificationResult:
-    payload = dict(existing.get("payload") or {})
-    raw_mismatches = payload.get("mismatched") or payload.get("mismatches") or ()
+    event_id = f"notify:{command.change_set_id}:verification_failed"
+    payload = _replay_payload(existing, event_id, required=("revision", "mismatched"))
+    raw_mismatches = payload["mismatched"]
     available_at = existing.get("available_at")
     if available_at is None and payload.get("next_update_at"):
         available_at = datetime.fromisoformat(str(payload["next_update_at"]))
+    if available_at is None:
+        raise _reject(
+            "publication_receipt_invalid",
+            "The persisted verification failure has no recovery deadline.",
+        )
     return VerificationResult(
         change_set_id=command.change_set_id,
         state=PublicationState.APPLIED,
         verified=False,
         mismatches=tuple(str(item) for item in raw_mismatches),
         next_update_at=available_at,
-        revision=int(payload.get("revision", snapshot.current_revision)),
-        outbox_event_id=f"notify:{command.change_set_id}:verification_failed",
+        revision=int(payload["revision"]),
+        outbox_event_id=event_id,
     )
+
+
+def _verification_retry_at(existing: dict | None) -> datetime | None:
+    if existing is None:
+        return None
+    available_at = existing.get("available_at")
+    if available_at is not None:
+        return available_at
+    payload = existing.get("payload")
+    if isinstance(payload, dict) and payload.get("next_update_at"):
+        return datetime.fromisoformat(str(payload["next_update_at"]))
+    return None
+
+
+def _replay_payload(existing: dict | None, event_id: str, *, required: tuple[str, ...]) -> dict:
+    """Replay only a complete committed receipt; never fabricate response metadata."""
+    if existing is None:
+        raise _reject(
+            "publication_receipt_missing",
+            f"The committed publication receipt {event_id} is missing.",
+        )
+    payload = existing.get("payload")
+    if not isinstance(payload, dict) or any(key not in payload for key in required):
+        raise _reject(
+            "publication_receipt_invalid",
+            f"The committed publication receipt {event_id} is incomplete.",
+        )
+    return dict(payload)
 
 
 def verify_public_projection(command: VerifyProjectionCommand, fetcher, *,
@@ -381,8 +419,8 @@ def verify_public_projection(command: VerifyProjectionCommand, fetcher, *,
         if row.get("public_projection_verified_at") is not None:
             event_id = f"notify:{command.change_set_id}:verified"
             existing = transaction.load_outbox_by_idempotency_key(event_id)
-            payload = dict(existing.get("payload") or {}) if existing else {}
-            revision = int(payload.get("revision", snapshot.current_revision))
+            payload = _replay_payload(existing, event_id, required=("revision",))
+            revision = int(payload["revision"])
             return VerificationResult(
                 change_set_id=command.change_set_id,
                 state=PublicationState.VERIFIED,
@@ -394,7 +432,8 @@ def verify_public_projection(command: VerifyProjectionCommand, fetcher, *,
 
         failure_event_id = f"notify:{command.change_set_id}:verification_failed"
         existing_failure = transaction.load_outbox_by_idempotency_key(failure_event_id)
-        if existing_failure is not None:
+        retry_at = _verification_retry_at(existing_failure)
+        if existing_failure is not None and (retry_at is None or now < retry_at):
             return _replay_verification_failure(
                 transaction, command, snapshot, existing_failure,
             )
@@ -413,6 +452,12 @@ def verify_public_projection(command: VerifyProjectionCommand, fetcher, *,
         mismatches = _compare_projection(projection, entity_id, after_patch, expected_revision)
 
         if mismatches:
+            if existing_failure is not None:
+                # The stable failure receipt already owns this idempotency key;
+                # preserve it rather than emitting a duplicate side effect.
+                return _replay_verification_failure(
+                    transaction, command, snapshot, existing_failure,
+                )
             return _record_verification_failure(
                 transaction, command, snapshot, actor_ref, mismatches, now=now
             )
@@ -615,7 +660,8 @@ def _undo(transaction, command, row, snapshot, entity, entity_id: str, actor_ref
     )
     _write_audit_outbox(
         transaction, command, snapshot, reopened, actor_ref,
-        reason_code="change_set_rolled_back",
+        reason_code=command.reason_code,
+        action="change_set_rolled_back",
         event_id=f"notify:{command.change_set_id}:rolled_back",
         topic="correction.updated", now=now,
         descriptor={"entity_revision": write.revision},
@@ -633,14 +679,14 @@ def _undo(transaction, command, row, snapshot, entity, entity_id: str, actor_ref
 def _replay_rollback(transaction, command, row: dict, snapshot) -> RollbackResult:
     event_id = f"notify:{command.change_set_id}:rolled_back"
     existing = transaction.load_outbox_by_idempotency_key(event_id)
-    payload = dict(existing.get("payload") or {}) if existing else {}
+    payload = _replay_payload(existing, event_id, required=("revision", "entity_revision"))
     entity_id, _ = transaction.load_change_set_target(command.change_set_id)
     return RollbackResult(
         change_set_id=command.change_set_id,
         entity_id=entity_id,
-        entity_revision=int(payload.get("entity_revision", int(row["base_entity_revision"]) + 2)),
+        entity_revision=int(payload["entity_revision"]),
         state=PublicationState.ROLLED_BACK,
-        revision=int(payload.get("revision", snapshot.current_revision)),
+        revision=int(payload["revision"]),
         outbox_event_id=event_id,
     )
 
@@ -676,6 +722,7 @@ def _audit(command, before, after, actor_ref: str, *, reason_code: str,
 
 def _write_audit_outbox(transaction, command, before, after, actor_ref: str, *,
                         reason_code: str, event_id: str, topic: str,
+                        action: str | None = None,
                         now: datetime, available_at: datetime | None = None,
                         descriptor: dict | None = None) -> None:
     try:
@@ -689,7 +736,7 @@ def _write_audit_outbox(transaction, command, before, after, actor_ref: str, *,
         AuditEvent(
             event_id=event_id,
             actor_id=actor_ref,
-            action=reason_code,
+            action=action or reason_code,
             resource_type="case",
             resource_id=command.case_id,
             reason=reason_code,

@@ -510,6 +510,25 @@ def test_retrying_an_apply_replays_the_committed_receipt(pg_database):
 
 
 @pg_only
+def test_an_applied_state_without_its_receipt_fails_closed(pg_database):
+    from cases.publication import PublicationRejected, apply_change_set
+
+    case_id, _item_id, change_set_id = _seed_change_set(pg_database)
+    apply_change_set(_command(case_id, change_set_id), now=NOW)
+    with pg_database._conn(commit_on_success=False) as conn:
+        pg_database._execute(
+            conn,
+            "DELETE FROM case_outbox WHERE idempotency_key=%s",
+            (f"notify:{change_set_id}:applied",),
+        )
+        conn.commit()
+
+    with pytest.raises(PublicationRejected) as excinfo:
+        apply_change_set(_command(case_id, change_set_id), now=NOW + timedelta(minutes=1))
+    assert excinfo.value.problem.code == "publication_receipt_missing"
+
+
+@pg_only
 def test_the_reporter_is_told_the_change_is_applied_not_that_it_is_done(pg_database):
     from cases.domain import PublicationState
     from cases.publication import apply_change_set

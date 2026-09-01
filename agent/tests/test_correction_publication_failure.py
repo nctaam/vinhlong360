@@ -391,6 +391,55 @@ def test_retrying_a_failed_check_replays_one_receipt_without_a_new_timestamp_key
 
 
 @pg_only
+def test_a_failed_check_can_recover_after_the_promised_retry_window(pg_database):
+    case_id, change_set_id = _applied_case(pg_database)
+    from cases.publication import VerifyProjectionCommand, verify_public_projection
+
+    first = verify_public_projection(
+        VerifyProjectionCommand(case_id, change_set_id, _actor()),
+        lambda _entity_id: _projection(revision=7),
+        now=LATER,
+    )
+
+    # Recovery is a new publication attempt, so the operator renews the lease
+    # before the promised retry window opens.
+    with pg_database._conn(commit_on_success=False) as conn:
+        pg_database._execute(
+            conn,
+            "UPDATE case_work_items SET lease_expires_at=%s"
+            " WHERE case_id=%s AND kind='publication'",
+            (first.next_update_at + timedelta(hours=1), case_id),
+        )
+        conn.commit()
+
+    fetches = []
+
+    def recovered(entity_id):
+        fetches.append(entity_id)
+        return _projection()
+
+    second = verify_public_projection(
+        VerifyProjectionCommand(case_id, change_set_id, _actor()),
+        recovered,
+        now=first.next_update_at,
+    )
+
+    assert second.verified is True
+    assert second.state is PublicationState.VERIFIED
+    assert fetches == [ENTITY_ID]
+    assert _count(
+        pg_database,
+        "SELECT count(*) AS n FROM case_transitions WHERE case_id=%s"
+        " AND reason_code='projection_verified'", (case_id,)
+    ) == 1
+    assert _count(
+        pg_database,
+        "SELECT count(*) AS n FROM case_outbox WHERE case_id=%s",
+        (case_id,),
+    ) == 4
+
+
+@pg_only
 def test_a_page_that_cannot_be_fetched_at_all_is_a_failure_not_a_pass(pg_database):
     from cases.publication import VerifyProjectionCommand, verify_public_projection
 
@@ -509,10 +558,19 @@ def test_verification_outcomes_leave_their_own_capacity_traces(pg_database, monk
     case_id, change_set_id = _applied_case(pg_database)
     events.clear()  # the apply above already traced itself
 
-    _verify(case_id, change_set_id, _projection(revision=7))
+    first = _verify(case_id, change_set_id, _projection(revision=7))
     assert events == ["recovery"], "a failed check is recovery, never completion"
 
+    with pg_database._conn(commit_on_success=False) as conn:
+        pg_database._execute(
+            conn,
+            "UPDATE case_work_items SET lease_expires_at=%s"
+            " WHERE case_id=%s AND kind='publication'",
+            (first.next_update_at + timedelta(hours=1), case_id),
+        )
+        conn.commit()
+
     events.clear()
-    _verify(case_id, change_set_id)
+    _verify(case_id, change_set_id, now=first.next_update_at)
     # Two facts on purpose: the page checked out, and the case finished.
     assert events == ["verified", "completed"]

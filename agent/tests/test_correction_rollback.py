@@ -283,8 +283,16 @@ def test_a_rollback_is_recorded_where_the_case_can_be_read(pg_database):
     assert _count(
         pg_database,
         "SELECT count(*) AS n FROM case_audit_events WHERE case_id=%s"
-        " AND reason_code='change_set_rolled_back'", (case_id,)
+        " AND reason_code='source_retracted'", (case_id,)
     ) == 1
+    with pg_database._conn(commit_on_success=False) as conn:
+        outbox = pg_database._fetchone(
+            conn,
+            "SELECT payload::text AS payload FROM case_outbox WHERE idempotency_key=%s",
+            (f"notify:{change_set_id}:rolled_back",),
+        )
+    assert '"action": "change_set_rolled_back"' in outbox["payload"]
+    assert '"reason": "source_retracted"' in outbox["payload"]
     assert _count(
         pg_database,
         "SELECT count(*) AS n FROM entity_changes WHERE entity_id=%s", (ENTITY_ID,)
@@ -308,7 +316,7 @@ def test_retrying_a_rollback_replays_the_committed_receipt(pg_database):
     assert _count(
         pg_database,
         "SELECT count(*) AS n FROM case_audit_events WHERE case_id=%s"
-        " AND reason_code='change_set_rolled_back'", (case_id,)
+        " AND reason_code='source_retracted'", (case_id,)
     ) == 1
 
 
@@ -362,16 +370,11 @@ def test_a_refused_rollback_still_raises_the_alarm(pg_database):
 # ── Authority and order ──
 
 @pg_only
-def test_a_change_set_that_was_never_applied_cannot_be_rolled_back(pg_database):
-    from cases.publication import PublicationRejected
-
+def test_retrying_a_rollback_after_it_landed_replays_the_receipt(pg_database):
     case_id, change_set_id = _applied_case(pg_database)
-    _rollback(case_id, change_set_id)
-
-    with pytest.raises(PublicationRejected) as excinfo:
-        _rollback(case_id, change_set_id, now=LATER + timedelta(minutes=1))
-
-    assert excinfo.value.problem.code == "change_set_not_applied"
+    first = _rollback(case_id, change_set_id)
+    second = _rollback(case_id, change_set_id, now=LATER + timedelta(minutes=1))
+    assert second == first
 
 
 @pg_only
