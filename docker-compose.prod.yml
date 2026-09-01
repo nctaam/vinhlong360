@@ -41,6 +41,7 @@ services:
       LLM_API_KEY: ${LLM_API_KEY:?LLM_API_KEY is required}
       ADMIN_API_KEY: ${ADMIN_API_KEY:?ADMIN_API_KEY is required}
       JWT_SECRET: ${JWT_SECRET:?JWT_SECRET is required}
+      CSRF_SECRET: ${CSRF_SECRET:?CSRF_SECRET is required}
       ENTITY_DETAILS_TABLES: "true"
       BUILD_SEARCH_INDEXES: "true"
       BACKGROUND_INDEX_BUILD: "true"
@@ -111,6 +112,8 @@ services:
         max-file: "3"
 
   grafana:
+    environment:
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD:?GRAFANA_ADMIN_PASSWORD is required}
     deploy:
       resources:
         limits:

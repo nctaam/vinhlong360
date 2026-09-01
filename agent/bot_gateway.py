@@ -399,7 +399,7 @@ class BotGateway:
                             "suggestions": [],
                         }
                     if resp.status_code >= 400:
-                        _bot_logger.error("Agent returned %d: %s", resp.status_code, resp.text[:200])
+                        _bot_logger.error("Agent returned %d: output=%s", resp.status_code, resp.text[:200])
                         return {
                             "reply": "Xin lỗi, yêu cầu không hợp lệ. Vui lòng thử lại.",
                             "suggestions": [],
@@ -407,7 +407,7 @@ class BotGateway:
                     try:
                         data = resp.json()
                     except (json.JSONDecodeError, ValueError) as je:
-                        _bot_logger.error("Agent returned invalid JSON: %s, body=%s", je, resp.text[:200])
+                        _bot_logger.error("Agent returned invalid JSON: error=%s, output=%s", je, resp.text[:200])
                         return {
                             "reply": "Xin lỗi, hệ thống trả lời không hợp lệ. Vui lòng thử lại.",
                             "suggestions": [],
@@ -653,7 +653,7 @@ class BotGateway:
             )
             return
 
-        _bot_logger.info("TG message from %s: %s", update.effective_user.first_name, text[:80])
+        _bot_logger.info("TG message user=%s message=%s", update.effective_user.first_name, text[:80])
 
         # Record user message
         _add_message("telegram", user_id, "user", text)
@@ -715,7 +715,7 @@ class BotGateway:
             )
             return
 
-        _bot_logger.info("TG callback from %s: %s", query.from_user.first_name, text[:64])
+        _bot_logger.info("TG callback user=%s message=%s", query.from_user.first_name, text[:64])
 
         _add_message("telegram", user_id, "user", text)
         result = await self.send_to_agent(text, user_key)
@@ -819,7 +819,7 @@ class BotGateway:
                 )
                 return {"status": "rate_limited"}
 
-            _bot_logger.info("Zalo message from %s: %s", user_id, text[:80])
+            _bot_logger.info("Zalo message user=%s message=%s", user_id, text[:80])
 
             _add_message("zalo", user_id, "user", text)
             result = await self.send_to_agent(text, user_key)

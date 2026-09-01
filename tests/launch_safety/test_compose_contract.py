@@ -233,6 +233,14 @@ def test_production_compose_source_removes_non_nginx_host_publications():
     assert '"443:443"' in nginx
 
 
+def test_production_compose_requires_non_default_operational_secrets():
+    compose = (ROOT / "docker-compose.prod.yml").read_text(encoding="utf-8")
+    assert "${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required}" in compose
+    assert "${CSRF_SECRET:?CSRF_SECRET is required}" in compose
+    assert "${GRAFANA_ADMIN_PASSWORD:?GRAFANA_ADMIN_PASSWORD is required}" in compose
+    assert "${GRAFANA_ADMIN_PASSWORD:-admin}" not in compose
+
+
 def test_nuxt_and_nginx_compose_dependencies_are_backend_independent():
     compose = (ROOT / "docker-compose.yml").read_text(encoding="utf-8")
     nuxt = _service_block(compose, "nuxt", "nginx")

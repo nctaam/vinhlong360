@@ -2714,7 +2714,8 @@ async def report_comment(comment_id: str, body: ReportCommentBody, request: Requ
         "ip_hash": _hashlib.sha256(get_client_ip(request).encode()).hexdigest()[:16],
         "status": "open",
     }
-    from public_api import _jsonl_lock, _maybe_rotate_jsonl
+    from jsonl_store import jsonl_lock as _jsonl_lock
+    from jsonl_store import maybe_rotate_jsonl as _maybe_rotate_jsonl
     def _write():
         with _jsonl_lock:
             reports_file.parent.mkdir(exist_ok=True)

@@ -344,7 +344,7 @@ def learn_from_gaps(max_gaps: int = 5, dry_run: bool = False) -> dict:
     for gap in gaps[:max_gaps]:
         query = gap["query"]
         count = gap["count"]
-        _logger.info("Learning from gap: '%s' (asked %dx)", query, count)
+        _logger.info("Learning from gap query=%s (asked %dx)", query, count)
         processed += 1
 
         results = _web_search_light(query)
@@ -486,7 +486,7 @@ def process_feedback_batch() -> dict:
     # Query bị negative >= 3 lần → đánh dấu là knowledge gap
     for query, count in neg_queries.most_common(10):
         if count >= 3:
-            _logger.info("Frequent negative query: '%s' (%dx) → priority gap", query, count)
+            _logger.info("Frequent negative query=%s (%dx) → priority gap", query, count)
 
     total = len(feedback)
     negative = sum(1 for fb in feedback if fb["rating"] == 0)

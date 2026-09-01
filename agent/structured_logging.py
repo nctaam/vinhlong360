@@ -92,14 +92,13 @@ def log_user_event(event: Mapping[str, object], *, level: int = logging.INFO, lo
     """Emit a redacted JSON event and return the exact safe payload."""
     safe = redact_event(event)
     target = logger or logging.getLogger("vinhlong360.user")
-    # Operational events must remain observable even after an application
-    # logger config raises the named logger threshold; never disable parent
-    # capture/handlers for this privacy boundary.
+    # Keep the privacy-boundary logger observable when it inherits a stricter
+    # application threshold, without overriding an explicit per-logger policy.
     target.disabled = False
     target.propagate = True
     # ``NOTSET`` inherits the application logger's threshold, so inspect the
     # effective level rather than only the logger's explicitly configured one.
-    if not target.isEnabledFor(level):
+    if target.level == logging.NOTSET and not target.isEnabledFor(level):
         target.setLevel(level)
     target.log(level, json.dumps(safe, ensure_ascii=False, sort_keys=True))
     return safe

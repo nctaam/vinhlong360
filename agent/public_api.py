@@ -42,6 +42,8 @@ from api_schemas import (  # W6.3: response_model (extra="allow" — không stri
     # SiteSettingsResponse sang siteops/api.py cung route cua no (2026-08-29, lat 3)
 )
 import lunar_calendar
+from jsonl_store import jsonl_lock as _jsonl_lock
+from jsonl_store import maybe_rotate_jsonl as _maybe_rotate_jsonl
 from config import settings  # noqa: F401  (be mat va cua test — mien entity sang goi rieng 2026-08-28)
 from database import db
 from search_contract import SearchFilters, coerce_query_int, search_public_entities, normalize_search_text
@@ -211,7 +213,6 @@ router = APIRouter(prefix="/api", tags=["public"])
 
 
 
-import threading as _threading
 
 
 # Perf-P0: cache payload /homepage (endpoint nóng nhất) — trước đây scan toàn bảng entity
@@ -274,26 +275,6 @@ def _itinerary_coverage_areas(itinerary: dict) -> set[str]:
 REPORTS_FILE = Path(__file__).resolve().parent / "data" / "reports.jsonl"
 SEARCH_LOG_FILE = Path(__file__).resolve().parent / "data" / "search_queries.jsonl"
 _VALID_TARGET_TYPES = {"facility", "entity", "post", "comment", "other"}
-
-_JSONL_MAX_LINES = 5000
-_jsonl_lock = _threading.Lock()
-
-
-def _maybe_rotate_jsonl(filepath: Path) -> None:
-    try:
-        if not filepath.exists():
-            return
-        lines = filepath.read_text(encoding="utf-8").splitlines()
-        if len(lines) <= _JSONL_MAX_LINES:
-            return
-        archive = filepath.with_suffix(f".{datetime.now(timezone.utc).strftime('%Y%m%d%H%M%S')}.jsonl")
-        archive.write_text("\n".join(lines[:-_JSONL_MAX_LINES]) + "\n", encoding="utf-8")
-        tmp = filepath.with_suffix(".tmp")
-        tmp.write_text("\n".join(lines[-_JSONL_MAX_LINES:]) + "\n", encoding="utf-8")
-        tmp.replace(filepath)
-    except Exception:
-        logger.exception("JSONL rotation failed for %s", filepath)
-
 
 def _log_search_query(q: str, entity_type: str | None, area: str | None, total: int) -> None:
     try:

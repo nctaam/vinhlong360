@@ -8,7 +8,7 @@ Usage:
 """
 
 from pathlib import Path
-from urllib.parse import urlparse
+from urllib.parse import unquote, urlparse
 
 from dotenv import load_dotenv
 from pydantic import model_validator
@@ -58,6 +58,8 @@ class Settings(BaseSettings):
     ADMIN_API_KEY: str = ""
     CORS_ORIGINS: str = "http://localhost:8360,http://localhost:3000,https://vinhlong360.vn"
     JWT_SECRET: str = ""
+    CSRF_SECRET: str = ""
+    CHAT_OWNER_SECRET: str = ""
 
     # ── SMS (eSMS) ──
     ESMS_API_KEY: str = ""
@@ -211,6 +213,8 @@ class Settings(BaseSettings):
             missing.append("LLM_BASE_URL")
         if not self.ADMIN_API_KEY:
             missing.append("ADMIN_API_KEY")
+        if not self.CSRF_SECRET:
+            missing.append("CSRF_SECRET")
         # JWT_SECRET: not yet used by any endpoint — skip until auth JWT is implemented
         if not self.DATABASE_URL:
             missing.append("DATABASE_URL")
@@ -287,7 +291,7 @@ def assert_production_config(settings: Settings) -> None:
         raise ValueError("ENVIRONMENT=production is required")
 
     failures: list[str] = []
-    for field in ("LLM_API_KEY", "ADMIN_API_KEY", "JWT_SECRET"):
+    for field in ("LLM_API_KEY", "ADMIN_API_KEY", "JWT_SECRET", "CSRF_SECRET"):
         if _unsafe_production_secret(getattr(settings, field, "")):
             failures.append(f"{field} must be a strong non-default secret")
 
@@ -298,6 +302,8 @@ def assert_production_config(settings: Settings) -> None:
         parsed = urlparse(database_url)
         if not parsed.hostname or not parsed.username or not parsed.password:
             failures.append("DATABASE_URL must include explicit PostgreSQL credentials")
+        elif _unsafe_production_secret(unquote(parsed.password)):
+            failures.append("DATABASE_URL password must be a strong non-default secret")
 
     if getattr(settings, "ENTITY_DETAILS_TABLES", False) is not True:
         failures.append("ENTITY_DETAILS_TABLES=true is required")
@@ -308,7 +314,10 @@ def assert_production_config(settings: Settings) -> None:
         failures.append("CORS_ORIGINS must be explicitly configured")
     elif any("localhost" in origin.lower() or "127.0.0.1" in origin for origin in origins):
         failures.append("CORS_ORIGINS must not include local origins in production")
-    elif any(urlparse(origin).scheme != "https" for origin in origins):
+    elif any(
+        urlparse(origin).scheme != "https" or not urlparse(origin).netloc
+        for origin in origins
+    ):
         failures.append("CORS_ORIGINS must use HTTPS in production")
 
     if failures:

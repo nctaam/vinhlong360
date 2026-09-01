@@ -1421,7 +1421,7 @@ _INFO_REPORTS_FILE = Path(__file__).resolve().parent / "data" / "reports.jsonl"
 # — giu import nhu TAI XUAT vi test_phase16_coverage
 # (test_admin_imports_create_notification) van soi hasattr(admin, ...).
 from notifications import create_notification  # noqa: F401
-from public_api import _jsonl_lock as _info_reports_lock
+from jsonl_store import jsonl_lock as _info_reports_lock
 
 _info_reports_cache: dict = {"mtime": 0.0, "count": 0}
 

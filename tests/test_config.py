@@ -22,6 +22,7 @@ def _production_settings(**overrides):
         "LLM_API_KEY": "k",
         "LLM_BASE_URL": "https://api.example.com",
         "ADMIN_API_KEY": "a",
+        "CSRF_SECRET": "csrf-secret-strong-1234567890",
         "DATABASE_URL": "postgresql://user:pass@localhost/db",
         "ENTITY_DETAILS_TABLES": True,
     }
@@ -145,7 +146,8 @@ class TestSettings:
         from config import Settings
         with pytest.raises(ValueError, match="LLM_API_KEY"):
             Settings(ENVIRONMENT="production", LLM_API_KEY="", LLM_BASE_URL="u",
-                     ADMIN_API_KEY="a", JWT_SECRET="j", DATABASE_URL="postgresql://x")
+                     ADMIN_API_KEY="a", JWT_SECRET="j", CSRF_SECRET="c" * 20,
+                     DATABASE_URL="postgresql://x")
 
     def test_production_reports_all_missing_keys_together(self):
         # Hợp đồng thông điệp: mọi khoá thiếu gom vào MỘT lần raise, đúng thứ tự
@@ -154,17 +156,18 @@ class TestSettings:
         with pytest.raises(
             ValueError,
             match=r"Production requires: LLM_API_KEY, LLM_BASE_URL, ADMIN_API_KEY, "
-                  r"DATABASE_URL, ENTITY_DETAILS_TABLES=true",
+                  r"CSRF_SECRET, DATABASE_URL, ENTITY_DETAILS_TABLES=true",
         ):
             Settings(_env_file=None, ENVIRONMENT="production", LLM_API_KEY="",
                      LLM_BASE_URL="", ADMIN_API_KEY="", JWT_SECRET="",
-                     DATABASE_URL="", ENTITY_DETAILS_TABLES=False)
+                     CSRF_SECRET="", DATABASE_URL="", ENTITY_DETAILS_TABLES=False)
 
     def test_production_nonpostgres_database_url_named_specially(self):
         from config import Settings
         with pytest.raises(ValueError, match=r"DATABASE_URL \(PostgreSQL required\)"):
             Settings(_env_file=None, ENVIRONMENT="production", LLM_API_KEY="k",
                      LLM_BASE_URL="u", ADMIN_API_KEY="a", JWT_SECRET="j",
+                     CSRF_SECRET="c" * 20,
                      DATABASE_URL="sqlite:///x.db", ENTITY_DETAILS_TABLES=True)
 
     def test_production_missing_jwt_secret_is_allowed(self):
@@ -182,7 +185,8 @@ class TestSettings:
         from config import Settings
         with pytest.raises(ValueError, match="DATABASE_URL"):
             Settings(ENVIRONMENT="production", LLM_API_KEY="k", LLM_BASE_URL="u",
-                     ADMIN_API_KEY="a", JWT_SECRET="j", DATABASE_URL="")
+                     ADMIN_API_KEY="a", JWT_SECRET="j", CSRF_SECRET="c" * 20,
+                     DATABASE_URL="")
 
     def test_production_rejects_privacy_policy_override(self):
         from config import Settings
@@ -193,6 +197,7 @@ class TestSettings:
                 LLM_API_KEY="k",
                 LLM_BASE_URL="u",
                 ADMIN_API_KEY="a",
+                CSRF_SECRET="c" * 20,
                 DATABASE_URL="postgresql://x",
                 ENTITY_DETAILS_TABLES=True,
                 ACCOUNT_ERASURE_DEADLINE_DAYS=20,

@@ -22,6 +22,7 @@ import re
 import time
 import base64
 import binascii
+import html
 import unicodedata
 from urllib.parse import unquote_plus
 from dataclasses import dataclass
@@ -196,7 +197,18 @@ class PromptInjectionDetector:
 def _prompt_variants(text: str) -> tuple[str, ...]:
     """Build bounded decoded/normalized variants without retaining user text."""
     normalized = unicodedata.normalize("NFKC", text).replace("\u200b", "")
-    variants = [normalized, unquote_plus(normalized)]
+    url_decoded = normalized
+    for _ in range(2):
+        decoded = unquote_plus(url_decoded)
+        if decoded == url_decoded:
+            break
+        url_decoded = decoded
+    escaped = re.sub(
+        r"\\u([0-9a-fA-F]{4})|\\x([0-9a-fA-F]{2})",
+        lambda match: chr(int(match.group(1) or match.group(2), 16)),
+        url_decoded,
+    )
+    variants = [normalized, url_decoded, html.unescape(url_decoded), escaped]
     folded = "".join(
         char for char in unicodedata.normalize("NFKD", variants[-1])
         if not unicodedata.combining(char)
@@ -217,6 +229,23 @@ def _prompt_variants(text: str) -> tuple[str, ...]:
     return tuple(dict.fromkeys(variants))
 
 
+def _is_benign_pattern_context(text: str, matched: list[str]) -> bool:
+    """Allow narrow educational/game contexts for ambiguous keyword matches."""
+    matched_set = set(matched)
+    if matched_set == {"base64_payload"}:
+        educational = re.search(
+            r"\b(?:how|what|can|why|explain|use|does)\b.*\b(?:base64|eval)\b",
+            text,
+            re.IGNORECASE | re.DOTALL,
+        )
+        return bool(educational and re.search(r"\b(?:python|security|code)\b", text, re.IGNORECASE))
+    if matched_set == {"jailbreak_keyword"}:
+        named_dan = re.search(r"\bdan\s+is\s+(?:a|the)\s+(?:vietnamese\s+)?name\b", text, re.IGNORECASE)
+        game_lock = re.search(r"\bjailbreak\s+(?:a\s+)?(?:phone\s+)?lock\b.*\bgame\b", text, re.IGNORECASE | re.DOTALL)
+        return bool(named_dan or game_lock)
+    return False
+
+
 def check_prompt_injection(text: str) -> GuardrailDecision:
     """Classify untrusted text without returning or logging its raw contents."""
     if not isinstance(text, str):
@@ -225,7 +254,10 @@ def check_prompt_injection(text: str) -> GuardrailDecision:
         return GuardrailDecision("allow", "prompt_injection_none")
     for variant in _prompt_variants(text):
         result = injection_detector.detect(variant)
-        if result["is_injection"] or result["patterns_matched"]:
+        if result["is_injection"] or (
+            result["patterns_matched"]
+            and not _is_benign_pattern_context(text, result["patterns_matched"])
+        ):
             return GuardrailDecision("block", "prompt_injection_detected")
     return GuardrailDecision("allow", "prompt_injection_none")
 

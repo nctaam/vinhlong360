@@ -637,10 +637,10 @@ def _process_result(r: dict, query: str, known: set, new_entities: list[dict]) -
 
 def learn_from_query(query: str, known: set) -> list[dict]:
     """Tìm kiếm 1 query, trích xuất entities mới."""
-    logger.info("Searching: \"%s\"", query)
+    logger.info("Searching query=%s", query)
     results = web_search(query, max_results=3)
     if not results:
-        logger.info("No results for query: %s", query)
+        logger.info("No results for query=%s", query)
         return []
 
     new_entities = []
