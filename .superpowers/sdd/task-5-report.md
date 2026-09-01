@@ -39,8 +39,8 @@ findings are addressed with bounded, explicit, retryable behavior.
 - No production PostgreSQL, object-store, CDN, or paid provider was touched.
 - The local media receipt ledger remains process-local; production should persist
   the same tuple in a durable receipt table before remote deletion.
-- Object/CDN inventories remain deployment-specific; reports JSONL is issued-only
-  for erasure until a verified owner-rewrite adapter is configured.
+- Object/CDN inventories remain deployment-specific; reports JSONL now uses an
+  atomic local owner-rewrite adapter when the file is available.
 
 ## Commits
 
