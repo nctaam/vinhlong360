@@ -398,7 +398,7 @@ def _policy_revision() -> str:
 
 
 def _decision_command_digest(
-    command: DecideItemCommand, *, normalized_evidence_refs: tuple[str, ...] | None = None,
+    command: DecideItemCommand, normalized_evidence_refs: tuple[str, ...] | None = None,
 ) -> str:
     raw_evidence_refs = tuple(record.evidence_id for record in command.evidence)
     if normalized_evidence_refs is None:
