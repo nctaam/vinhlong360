@@ -147,15 +147,15 @@ def _decode_cursor(value: str | None) -> Any:
 # its optional migration yet.
 _TABLES: dict[str, tuple[str, str, str]] = {
     "users": ("id", "id", "id, display_name, username, bio, avatar_url, role, is_active, consent_at, consent_version, created_at, updated_at"),
-    "user_plans": ("user_id", "user_id", "user_id, plan, status, started_at, expires_at, created_at"),
+    "user_plans": ("user_id", "created_at", "id, user_id, title, stops, created_at"),
     "notifications": ("user_id", "created_at", "id, type, title, body, ref_type, ref_id, is_read, created_at"),
     "reports": ("reporter_id", "created_at", "id, target_type, target_id, reason, status, created_at"),
     "login_history": ("user_id", "created_at", "id, method, success, ip, user_agent, created_at"),
     "user_privacy": ("user_id", "updated_at", "user_id, profile_visibility, show_activity, show_saved, updated_at"),
-    "consent_log": ("user_id", "created_at", "id, consent_type, state, version, created_at"),
+    "consent_log": ("user_id", "created_at", "id, user_id, version, ip, created_at"),
     "trusted_devices": ("user_id", "created_at", "id, user_id, device_name, ip, user_agent, last_used_at, expires_at, created_at"),
-    "moderation_appeals": ("user_id", "created_at", "id, user_id, reason, status, created_at, updated_at"),
-    "post_edit_history": ("editor_id", "created_at", "id, post_id, editor_id, before_content, after_content, created_at"),
+    "moderation_appeals": ("user_id", "created_at", "id, post_id, user_id, reason, status, reviewer_id, reviewer_note, reviewed_at, created_at"),
+    "post_edit_history": ("editor_id", "created_at", "id, post_id, editor_id, old_content, old_rating, edit_reason, created_at"),
     "user_collections": ("user_id", "updated_at", "id, user_id, name, description, is_public, created_at, updated_at"),
     "collection_items": ("collection_id", "added_at", "id, collection_id, post_id, added_at"),
     "posts": ("user_id", "created_at", "id, user_id, entity_id, content, images, post_type, rating, moderation_status, is_draft, scheduled_at, deleted_at, created_at, updated_at"),
@@ -173,6 +173,25 @@ def _rows_for_table(table: str, subject_id: str, cursor: str | None, limit: int)
         return [], None, False, None
     owner, order_col, columns = _TABLES[table]
     ph = getattr(db, "_ph", "%s")
+    if table == "collection_items":
+        # Items are owned through the user's collection, not by collection_id.
+        where = f"uc.user_id::text = {ph}"
+        params: list[Any] = [str(subject_id)]
+        if cursor:
+            where += f" AND ci.added_at::text < {ph}"
+            params.append(str(cursor.get("value") if isinstance(cursor, dict) else cursor))
+        sql = f"SELECT ci.id, ci.collection_id, ci.post_id, ci.added_at FROM collection_items ci JOIN user_collections uc ON uc.id = ci.collection_id WHERE {where} ORDER BY ci.added_at DESC, ci.id DESC LIMIT {ph}"
+        params.append(limit + 1)
+        try:
+            with db._conn() as conn:
+                rows = db._fetchall(conn, sql, tuple(params))
+            values = [db._row_to_dict(row) for row in rows]
+        except Exception as exc:
+            return [], None, False, type(exc).__name__
+        truncated = len(values) > limit
+        values = values[:limit]
+        next_cursor = _encode_cursor(json.dumps({"sink": table, "value": str(values[-1].get("added_at")), "id": str(values[-1].get("id"))}, separators=(",", ":"))) if truncated and values else None
+        return values, next_cursor, truncated, None
     where = f"{owner}::text = {ph}"
     params: list[Any] = [str(subject_id)]
     if cursor:
