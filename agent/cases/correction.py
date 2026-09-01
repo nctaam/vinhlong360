@@ -452,6 +452,17 @@ def _require_receipt_text(payload: dict, key: str, event_id: str) -> str:
     return value
 
 
+def _require_receipt_risk_class(payload: dict, key: str, event_id: str) -> str:
+    raw = _require_receipt_text(payload, key, event_id)
+    try:
+        return RiskClass(raw).value
+    except (TypeError, ValueError):
+        raise _reject(
+            "publication_receipt_invalid",
+            f"The committed receipt {event_id} has an invalid {key}.",
+        )
+
+
 def _require_receipt_revision(payload: dict, event_id: str) -> int:
     revision = payload.get("revision")
     if type(revision) is not int or revision < 1:
@@ -827,7 +838,7 @@ def _replay_existing_change_set(transaction, case_id: str, item_ids: tuple[str, 
         event_id,
         required=(
             "event_id", "case_id", "revision", "generation", "correlation_id",
-            "change_set_id", "item_ids", "build_digest",
+            "change_set_id", "item_ids", "build_digest", "risk_class",
         ),
     )
     if payload["event_id"] != event_id or payload["case_id"] != case_id:
@@ -876,9 +887,20 @@ def _replay_existing_change_set(transaction, case_id: str, item_ids: tuple[str, 
         )
     before_patch = _require_replay_mapping(existing, "before_patch", event_id)
     after_patch = _require_replay_mapping(existing, "after_patch", event_id)
-    risk_class = _require_receipt_text(existing, "risk_class", event_id)
+    risk_class = _require_receipt_risk_class(existing, "risk_class", event_id)
+    receipt_risk_class = _require_receipt_risk_class(payload, "risk_class", event_id)
+    if receipt_risk_class != risk_class:
+        raise _reject(
+            "publication_receipt_invalid",
+            f"The committed receipt {event_id} disagrees with the persisted risk class.",
+        )
     decision_maker_ref = _require_receipt_text(existing, "decision_maker_ref", event_id)
     persisted_evidence_refs = _require_replay_refs(existing, "evidence_refs", event_id)
+    if persisted_evidence_refs != tuple(evidence_refs):
+        raise _reject(
+            "publication_receipt_invalid",
+            f"The persisted change set {change_set_id} has unrelated evidence.",
+        )
     reviewer_ref = existing.get("reviewer_ref")
     if reviewer_ref is not None and (type(reviewer_ref) is not str or not reviewer_ref):
         raise _reject(
@@ -903,6 +925,7 @@ def _replay_existing_change_set(transaction, case_id: str, item_ids: tuple[str, 
             f"The persisted change set {change_set_id} target is malformed.",
         )
     fields_by_item = {}
+    item_risks = {}
     for item in transaction.load_correction_item_payloads(case_id, linked_item_ids):
         if type(item) is not dict:
             raise _reject(
@@ -917,10 +940,17 @@ def _replay_existing_change_set(transaction, case_id: str, item_ids: tuple[str, 
                 f"The persisted change set {change_set_id} item payload is malformed.",
             )
         fields_by_item[item_id] = field_path
+        item_risks[item_id] = _require_receipt_risk_class(item, "risk_class", event_id)
     if set(fields_by_item) != set(linked_item_ids):
         raise _reject(
             "publication_receipt_invalid",
             f"The persisted change set {change_set_id} item linkage is incomplete.",
+        )
+    expected_risk_class = max(item_risks.values(), key=lambda value: value)
+    if expected_risk_class != risk_class:
+        raise _reject(
+            "publication_receipt_invalid",
+            f"The persisted change set {change_set_id} risk class is not item-bound.",
         )
     if set(before_patch) != set(fields_by_item.values()) or set(after_patch) != set(fields_by_item.values()):
         raise _reject(
@@ -1114,6 +1144,7 @@ def build_change_set(
                 "policy_revision": _policy_revision(),
                 "change_set_id": change_set_id,
                 "item_ids": list(accepted_item_ids),
+                "risk_class": risk,
                 "build_digest": _build_command_digest(
                     case_id, tuple(sorted(set(accepted_item_ids))), actor,
                     expected_revision, evidence_refs,

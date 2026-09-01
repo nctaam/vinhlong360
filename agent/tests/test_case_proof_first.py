@@ -569,6 +569,288 @@ def test_verification_replay_requires_an_immutable_recovery_deadline():
     assert excinfo.value.problem.code == "publication_receipt_invalid"
 
 
+def test_apply_replay_rejects_an_empty_applied_fields_receipt():
+    from cases.publication import ApplyChangeSetCommand, PublicationRejected, _replay_apply
+
+    event_id = "notify:change-1:applied"
+    existing = {
+        "idempotency_key": event_id,
+        "payload": {
+            "event_id": event_id,
+            "case_id": "case-1",
+            "generation": "4",
+            "correlation_id": "corr-proof",
+            "revision": 4,
+            "entity_revision": 8,
+            "applied_fields": [],
+        },
+    }
+
+    class Tx:
+        def load_outbox_by_idempotency_key(self, _key):
+            return existing
+
+        def load_change_set_target(self, _change_set_id):
+            return "entity-1", ("item-1",)
+
+    with pytest.raises(PublicationRejected) as excinfo:
+        _replay_apply(
+            Tx(),
+            ApplyChangeSetCommand("case-1", "change-1", _actor(), 3, 7),
+            {"case_id": "case-1"},
+            SimpleNamespace(),
+        )
+    assert excinfo.value.problem.code == "publication_receipt_invalid"
+
+
+def test_verification_failure_replay_rejects_empty_mismatched_receipt():
+    from cases.publication import (
+        PublicationRejected,
+        VerifyProjectionCommand,
+        _replay_verification_failure,
+    )
+
+    event_id = "notify:change-1:verification_failed"
+    deadline = NOW + timedelta(hours=1)
+    existing = {
+        "idempotency_key": event_id,
+        "payload": {
+            "event_id": event_id,
+            "case_id": "case-1",
+            "generation": "4",
+            "correlation_id": "corr-proof",
+            "revision": 4,
+            "mismatched": [],
+            "next_update_at": deadline.isoformat(),
+        },
+    }
+
+    with pytest.raises(PublicationRejected) as excinfo:
+        _replay_verification_failure(
+            SimpleNamespace(),
+            VerifyProjectionCommand("case-1", "change-1", _actor()),
+            SimpleNamespace(),
+            existing,
+        )
+    assert excinfo.value.problem.code == "publication_receipt_invalid"
+
+
+def test_change_set_replay_rejects_persisted_evidence_refs_that_disagree_with_command():
+    from cases import correction
+    from cases.correction import _build_command_digest, _replay_existing_change_set
+
+    event_id = "notify:cs-1:decided"
+    existing = {
+        "change_set_id": "cs-1",
+        "case_id": "case-1",
+        "apply_status": "pending",
+        "base_entity_revision": 7,
+        "before_patch": {"attributes.phone": "old"},
+        "after_patch": {"attributes.phone": "new"},
+        "risk_class": "R1",
+        "decision_maker_ref": "person:maker",
+        "evidence_refs": ["e-tampered"],
+        "reviewer_ref": None,
+    }
+    digest = _build_command_digest("case-1", ("item-1",), _actor(), 7, ("e-1",))
+    payload = {
+        "event_id": event_id,
+        "case_id": "case-1",
+        "revision": 8,
+        "generation": "8",
+        "correlation_id": "corr-proof",
+        "change_set_id": "cs-1",
+        "item_ids": ["item-1"],
+        "build_digest": digest,
+        "risk_class": "R1",
+    }
+
+    class Tx:
+        def load_change_set_for_items(self, *_args, **_kwargs):
+            return existing
+
+        def load_outbox_by_idempotency_key(self, _key):
+            return {"idempotency_key": event_id, "payload": payload}
+
+        def load_change_set_target(self, _change_set_id):
+            return "entity-1", ("item-1",)
+
+        def load_correction_item_payloads(self, _case_id, _item_ids):
+            return ({
+                "item_id": "item-1",
+                "field_path": "attributes.phone",
+                "risk_class": "R1",
+            },)
+
+    with pytest.raises(correction.CorrectionRejected) as excinfo:
+        _replay_existing_change_set(
+            Tx(), "case-1", ("item-1",), _actor(), 7, ("e-1",),
+            SimpleNamespace(current_revision=8),
+        )
+    assert excinfo.value.problem.code == "publication_receipt_invalid"
+
+
+def test_change_set_replay_rejects_a_risk_class_outside_the_domain():
+    from cases import correction
+    from cases.correction import _build_command_digest, _replay_existing_change_set
+
+    event_id = "notify:cs-1:decided"
+    existing = {
+        "change_set_id": "cs-1",
+        "case_id": "case-1",
+        "apply_status": "pending",
+        "base_entity_revision": 7,
+        "before_patch": {"attributes.phone": "old"},
+        "after_patch": {"attributes.phone": "new"},
+        "risk_class": "not-a-risk",
+        "decision_maker_ref": "person:maker",
+        "evidence_refs": ["e-1"],
+        "reviewer_ref": None,
+    }
+    digest = _build_command_digest("case-1", ("item-1",), _actor(), 7, ("e-1",))
+    payload = {
+        "event_id": event_id,
+        "case_id": "case-1",
+        "revision": 8,
+        "generation": "8",
+        "correlation_id": "corr-proof",
+        "change_set_id": "cs-1",
+        "item_ids": ["item-1"],
+        "build_digest": digest,
+        "risk_class": "not-a-risk",
+    }
+
+    class Tx:
+        def load_change_set_for_items(self, *_args, **_kwargs):
+            return existing
+
+        def load_outbox_by_idempotency_key(self, _key):
+            return {"idempotency_key": event_id, "payload": payload}
+
+    with pytest.raises(correction.CorrectionRejected) as excinfo:
+        _replay_existing_change_set(
+            Tx(), "case-1", ("item-1",), _actor(), 7, ("e-1",),
+            SimpleNamespace(current_revision=8),
+        )
+    assert excinfo.value.problem.code == "publication_receipt_invalid"
+
+
+def test_change_set_replay_rejects_risk_class_not_bound_to_persisted_item():
+    from cases import correction
+    from cases.correction import _build_command_digest, _replay_existing_change_set
+
+    event_id = "notify:cs-1:decided"
+    existing = {
+        "change_set_id": "cs-1",
+        "case_id": "case-1",
+        "apply_status": "pending",
+        "base_entity_revision": 7,
+        "before_patch": {"attributes.phone": "old"},
+        "after_patch": {"attributes.phone": "new"},
+        "risk_class": "R1",
+        "decision_maker_ref": "person:maker",
+        "evidence_refs": ["e-1"],
+        "reviewer_ref": None,
+    }
+    digest = _build_command_digest("case-1", ("item-1",), _actor(), 7, ("e-1",))
+    payload = {
+        "event_id": event_id,
+        "case_id": "case-1",
+        "revision": 8,
+        "generation": "8",
+        "correlation_id": "corr-proof",
+        "change_set_id": "cs-1",
+        "item_ids": ["item-1"],
+        "build_digest": digest,
+        "risk_class": "R1",
+    }
+
+    class Tx:
+        def load_change_set_for_items(self, *_args, **_kwargs):
+            return existing
+
+        def load_outbox_by_idempotency_key(self, _key):
+            return {"idempotency_key": event_id, "payload": payload}
+
+        def load_change_set_target(self, _change_set_id):
+            return "entity-1", ("item-1",)
+
+        def load_correction_item_payloads(self, _case_id, _item_ids):
+            return ({
+                "item_id": "item-1",
+                "field_path": "attributes.phone",
+                "risk_class": "R3",
+            },)
+
+    with pytest.raises(correction.CorrectionRejected) as excinfo:
+        _replay_existing_change_set(
+            Tx(), "case-1", ("item-1",), _actor(), 7, ("e-1",),
+            SimpleNamespace(current_revision=8),
+        )
+    assert excinfo.value.problem.code == "publication_receipt_invalid"
+
+
+def test_verification_replay_rejects_bad_failure_receipt_before_post_deadline_mutation(monkeypatch):
+    from cases import publication
+    from cases.publication import PublicationRejected, VerifyProjectionCommand, verify_public_projection
+
+    event_id = "notify:change-1:verification_failed"
+    existing = {
+        "idempotency_key": event_id,
+        "payload": {
+            "event_id": event_id,
+            "case_id": "another-case",
+            "generation": "4",
+            "correlation_id": "corr-proof",
+            "revision": 4,
+            "mismatched": [],
+            "next_update_at": (NOW - timedelta(hours=1)).isoformat(),
+        },
+    }
+    calls = []
+
+    class Tx:
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *_args):
+            return False
+
+        def load_change_set(self, _change_set_id, *, for_update=False):
+            return {
+                "case_id": "case-1",
+                "apply_status": "applied",
+                "public_projection_verified_at": None,
+            }
+
+        def load_case(self, _case_id, *, for_update=False):
+            return SimpleNamespace(current_revision=3)
+
+        def load_outbox_by_idempotency_key(self, _key):
+            return existing
+
+        def actor_holds_lease(self, *_args, **_kwargs):
+            calls.append("lease")
+            raise AssertionError("malformed receipt must fail before lease acquisition")
+
+    class Store:
+        def transaction(self):
+            return Tx()
+
+    monkeypatch.setattr(publication, "_store", lambda: Store())
+    monkeypatch.setattr(publication, "_require_enabled", lambda: None)
+    monkeypatch.setattr(publication, "_require_scope", lambda *_args, **_kwargs: None)
+
+    with pytest.raises(PublicationRejected) as excinfo:
+        verify_public_projection(
+            VerifyProjectionCommand("case-1", "change-1", _actor()),
+            lambda _entity_id: (_ for _ in ()).throw(AssertionError("must not fetch")),
+            now=NOW,
+        )
+    assert excinfo.value.problem.code == "publication_receipt_invalid"
+    assert calls == []
+
+
 @pytest.mark.parametrize("deadline", ["not-a-date", "2026-09-01T10:00:00"])
 def test_verification_replay_rejects_a_malformed_recovery_deadline(deadline):
     from cases.publication import (

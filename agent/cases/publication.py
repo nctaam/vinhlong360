@@ -285,7 +285,9 @@ def _replay_apply(transaction, command, row: dict, snapshot) -> PublicationResul
     _require_replay_case(payload, command.case_id, event_id)
     entity_id, _ = transaction.load_change_set_target(command.change_set_id)
     entity_revision = _require_replay_int(payload, "entity_revision", event_id)
-    applied_fields = _require_replay_text_sequence(payload, "applied_fields", event_id)
+    applied_fields = _require_replay_text_sequence(
+        payload, "applied_fields", event_id, require_nonempty=True,
+    )
     return PublicationResult(
         change_set_id=command.change_set_id,
         case_id=command.case_id,
@@ -355,19 +357,12 @@ def _compare_projection(projection, entity_id: str, after_patch: dict,
 
 def _replay_verification_failure(transaction, command, snapshot, existing) -> VerificationResult:
     event_id = f"notify:{command.change_set_id}:verification_failed"
-    payload = _replay_payload(
-        existing,
-        event_id,
-        required=("revision", "mismatched", "next_update_at"),
+    payload, available_at = _validate_verification_failure_receipt(
+        command, existing, event_id,
     )
-    _require_replay_case(payload, command.case_id, event_id)
-    raw_mismatches = _require_replay_text_sequence(payload, "mismatched", event_id)
-    available_at = _verification_retry_at(existing)
-    if available_at is None:
-        raise _reject(
-            "publication_receipt_invalid",
-            "The persisted verification failure has no recovery deadline.",
-        )
+    raw_mismatches = _require_replay_text_sequence(
+        payload, "mismatched", event_id, require_nonempty=True,
+    )
     return VerificationResult(
         change_set_id=command.change_set_id,
         state=PublicationState.APPLIED,
@@ -377,6 +372,28 @@ def _replay_verification_failure(transaction, command, snapshot, existing) -> Ve
         revision=payload["revision"],
         outbox_event_id=event_id,
     )
+
+
+def _validate_verification_failure_receipt(
+    command: VerifyProjectionCommand, existing: dict | None, event_id: str,
+) -> tuple[dict, datetime]:
+    """Validate the committed failure before deciding whether recovery is due."""
+    payload = _replay_payload(
+        existing,
+        event_id,
+        required=("revision", "mismatched", "next_update_at"),
+    )
+    _require_replay_case(payload, command.case_id, event_id)
+    _require_replay_text_sequence(
+        payload, "mismatched", event_id, require_nonempty=True,
+    )
+    retry_at = _verification_retry_at(existing)
+    if retry_at is None:
+        raise _reject(
+            "publication_receipt_invalid",
+            "The persisted verification failure has no recovery deadline.",
+        )
+    return payload, retry_at
 
 
 def _verification_retry_at(existing: dict | None) -> datetime | None:
@@ -461,9 +478,15 @@ def _require_replay_int(payload: dict, key: str, event_id: str) -> int:
     return value
 
 
-def _require_replay_text_sequence(payload: dict, key: str, event_id: str) -> tuple[str, ...]:
+def _require_replay_text_sequence(
+    payload: dict, key: str, event_id: str, *, require_nonempty: bool = False,
+) -> tuple[str, ...]:
     value = payload.get(key)
-    if type(value) not in (list, tuple) or any(type(item) is not str or not item for item in value):
+    if (
+        type(value) not in (list, tuple)
+        or (require_nonempty and not value)
+        or any(type(item) is not str or not item for item in value)
+    ):
         raise _reject(
             "publication_receipt_invalid",
             f"The committed publication receipt {event_id} has an invalid {key}.",
@@ -505,12 +528,11 @@ def verify_public_projection(command: VerifyProjectionCommand, fetcher, *,
         if existing_failure is not None:
             # Validate the immutable receipt before deciding whether recovery is
             # due; a malformed old receipt must never unlock a fresh mutation.
-            _replay_payload(
-                existing_failure,
-                failure_event_id,
-                required=("revision", "mismatched", "next_update_at"),
+            _, retry_at = _validate_verification_failure_receipt(
+                command, existing_failure, failure_event_id,
             )
-        retry_at = _verification_retry_at(existing_failure)
+        else:
+            retry_at = None
         if existing_failure is not None and (retry_at is None or now < retry_at):
             return _replay_verification_failure(
                 transaction, command, snapshot, existing_failure,

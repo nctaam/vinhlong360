@@ -134,3 +134,25 @@ The final Task 4 implementation history runs inclusively from `594aebf2` through
 - Focused regression: `python -m pytest agent/tests/test_correction_decisions.py agent/tests/test_correction_changesets.py agent/tests/test_correction_publication.py agent/tests/test_correction_publication_failure.py agent/tests/test_correction_rollback.py -q --basetemp .tmp-task4-final-replay-focused3` -> 21 passed, 65 skipped.
 - Independent final gate: `python -m pytest agent/tests/test_case_proof_first.py agent/tests/test_correction_decisions.py agent/tests/test_correction_publication.py agent/tests/test_correction_publication_failure.py agent/tests/test_correction_create.py agent/tests/test_case_store.py agent/tests/test_case_audit.py agent/tests/test_case_outbox.py agent/tests/test_case_admin_api.py agent/tests/test_case_public_api.py agent/tests/test_correction_admin_http.py agent/tests/test_case_wiring.py agent/tests/test_case_domain.py agent/tests/test_case_idempotency_postgres.py -q --basetemp .tmp-task4-review-final` -> 249 passed, 94 skipped, 1 existing Starlette deprecation warning.
 - The final backend-only commit uses approved `--no-verify` solely for known R30.7 generated frontend-bundle debt; `docs/standards/90-exceptions-log.md` is intentionally untouched and unstaged.
+
+## Receipt semantics remediation
+
+Findings fixed:
+
+- Publication apply and verification-failure replay now require nonempty typed text sequences for the semantically required `applied_fields` and `mismatched` payloads, while retaining permissive empty-sequence handling for callers that do not require a value.
+- Build replay compares the persisted change-set `evidence_refs` exactly with the caller refs covered by the command digest, and rejects tampered or reordered persisted references.
+- Build replay validates `risk_class` through the `RiskClass` enum, records it in the committed receipt, and binds both receipt and persisted values to the linked correction-item risk domain.
+- Verification validates the failed receipt's case identity, nonempty mismatches, and immutable recovery deadline before checking whether the deadline has passed; malformed receipts cannot reach lease, fetch, or mutation.
+
+TDD evidence:
+
+- RED: `python -m pytest agent/tests/test_case_proof_first.py -q --basetemp .tmp-task4-semantics-red` -> 6 failed, 28 passed (empty typed sequences, evidence tamper, risk-domain/identity tamper, and post-deadline malformed receipt were accepted before the fix).
+- GREEN: `python -m pytest agent/tests/test_case_proof_first.py -q --basetemp .tmp-task4-semantics-green2` -> 34 passed.
+- Focused Task 4: `python -m pytest agent/tests/test_case_wiring.py agent/tests/test_case_domain.py agent/tests/test_case_audit.py agent/tests/test_case_outbox.py agent/tests/test_case_idempotency_postgres.py -q --basetemp .tmp-task4-semantics-focused` -> 44 passed, 20 skipped.
+- Replay regression: `python -m pytest agent/tests/test_case_proof_first.py agent/tests/test_correction_changesets.py agent/tests/test_correction_publication.py agent/tests/test_correction_publication_failure.py agent/tests/test_correction_rollback.py -q --basetemp .tmp-task4-semantics-regression` -> 44 passed, 62 skipped.
+- `git diff --check` -> clean.
+
+Concerns:
+
+- PostgreSQL cases skipped locally because `VL360_TEST_DATABASE_URL` is not configured; no production database or port 5432 was touched.
+- Existing user edits in `docs/standards/90-exceptions-log.md`, `docs/audit-toan-du-an-2026-08.md`, `graphify-out/`, and SDD/temp files were preserved.
