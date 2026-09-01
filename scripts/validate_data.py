@@ -1294,6 +1294,22 @@ def _compute_place_coords_pct(entities: list[Any]) -> float:
     return round(100 * place_with_coords / max(place_xa_phuong, 1), 1)
 
 
+def coverage_metric(numerator: int | float, denominator: int | float) -> dict[str, Any]:
+    """Return a truthful percentage with an explicit 0/0 status.
+
+    A zero denominator means the metric does not apply to this dataset, not that
+    coverage is perfect (or that the numerator should be divided by one).
+    """
+    try:
+        n = float(numerator)
+        d = float(denominator)
+    except (TypeError, ValueError):
+        return {"value": None, "status": "not_applicable"}
+    if d <= 0:
+        return {"value": None, "status": "not_applicable"}
+    return {"value": round(100 * n / d, 1), "status": "measured"}
+
+
 def _check_place_level_none(entities: list[Any], issues: list[Issue]) -> int:
     place_level_none = 0
     for entity in entities:
@@ -1388,6 +1404,11 @@ def validate(data: dict[str, Any], data_path: Path) -> tuple[list[Issue], dict[s
     _emit_entity_issues(acc, duplicate_ids, issues)
 
     place_coords_pct = _compute_place_coords_pct(entities)
+    place_coords_denominator = sum(
+        1 for e in entities
+        if isinstance(e, dict) and e.get("type") == "place"
+        and e.get("level") in ("xa", "phuong")
+    )
     place_level_none = _check_place_level_none(entities, issues)
 
     rel_acc = _scan_relationships(relationships, entities, entity_by_id, id_set, issues, dangling_rel_targets)
@@ -1475,6 +1496,9 @@ def validate(data: dict[str, Any], data_path: Path) -> tuple[list[Issue], dict[s
         "low_confidence": low_confidence_count,
         "empty_attributes_non_place": empty_attrs_non_place,
         "place_coords_coverage_pct": place_coords_pct,
+        "place_coords_coverage_status": coverage_metric(
+            place_coords_pct, 100
+        )["status"] if place_coords_denominator else "not_applicable",
         "near_one_way_edges": near_one_way_edges,
         "near_reciprocal_pairs": near_reciprocal_pairs,
         "coordinate_clusters": coord_clusters,
@@ -1485,6 +1509,9 @@ def validate(data: dict[str, Any], data_path: Path) -> tuple[list[Issue], dict[s
         "coordinate_clustered_entities_precise": coord_clustered_entities_precise,
         "timestamp_inversions": timestamp_inversions,
         "image_coverage_pct": image_coverage_pct,
+        "image_coverage_status": coverage_metric(
+            has_images_non_place, non_place_total
+        )["status"],
         "image_total": image_total,
         "image_missing_credit": image_missing_credit,
         "image_missing_license": image_missing_license,
@@ -1558,6 +1585,7 @@ DATA_QUALITY_KEYS = [
     "low_confidence",
     "empty_attributes_non_place",
     "place_coords_coverage_pct",
+    "place_coords_coverage_status",
     "near_one_way_edges",
     "near_reciprocal_pairs",
     "coordinate_clusters",
@@ -1568,6 +1596,7 @@ DATA_QUALITY_KEYS = [
     "coordinate_clustered_entities_precise",
     "timestamp_inversions",
     "image_coverage_pct",
+    "image_coverage_status",
     "image_total",
     "image_missing_credit",
     "image_missing_license",
@@ -1634,7 +1663,8 @@ def _print_report_seo_coverage(stats: dict[str, Any]) -> None:
         for etype, info in sorted(seo_cov.items()):
             total = info["total"]
             has = info["has_any_seo_attr"]
-            pct = round(100 * has / max(total, 1))
+            metric = coverage_metric(has, total)
+            pct = "N/A" if metric["status"] == "not_applicable" else f"{metric['value']:.0f}"
             per_attr = info.get("per_attr", {})
             attr_detail = " ".join(f"{k}={v}" for k, v in per_attr.items()) if per_attr else ""
             print(f"  {etype}: {has}/{total} ({pct}%) [{attr_detail}]")

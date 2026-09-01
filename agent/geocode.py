@@ -15,9 +15,9 @@ Safety / politeness:
 
 import json
 import logging
-import re
+from contextlib import contextmanager
+import os
 import time
-import unicodedata
 from pathlib import Path
 from threading import Lock
 from urllib.parse import urlencode
@@ -59,6 +59,34 @@ _cache = None
 
 
 _cache_lock = Lock()
+_cache_stats = {"duplicate_writes": 0, "lost_update_prevented": 0}
+
+
+@contextmanager
+def _interprocess_file_lock(path: Path):
+    """Serialize geocode manifest updates across worker processes."""
+    lock_path = path.with_suffix(path.suffix + ".lock")
+    lock_path.parent.mkdir(parents=True, exist_ok=True)
+    with lock_path.open("a+b") as handle:
+        if os.name == "nt":
+            import msvcrt
+            handle.seek(0)
+            handle.write(b"0")
+            handle.flush()
+            handle.seek(0)
+            msvcrt.locking(handle.fileno(), msvcrt.LK_LOCK, 1)
+            try:
+                yield
+            finally:
+                handle.seek(0)
+                msvcrt.locking(handle.fileno(), msvcrt.LK_UNLCK, 1)
+        else:
+            import fcntl
+            fcntl.flock(handle.fileno(), fcntl.LOCK_EX)
+            try:
+                yield
+            finally:
+                fcntl.flock(handle.fileno(), fcntl.LOCK_UN)
 
 
 def _load_cache() -> dict:
@@ -81,17 +109,31 @@ def _load_cache() -> dict:
 
 def _save_cache():
     try:
-        tmp = CACHE_FILE.with_suffix(".tmp")
-        tmp.write_text(json.dumps(_cache, ensure_ascii=False, indent=2), encoding="utf-8")
-        tmp.replace(CACHE_FILE)
+        with _interprocess_file_lock(CACHE_FILE):
+            disk_cache = {}
+            if CACHE_FILE.exists():
+                try:
+                    raw = json.loads(CACHE_FILE.read_text(encoding="utf-8"))
+                    if isinstance(raw, dict):
+                        disk_cache = raw
+                except Exception:
+                    disk_cache = {}
+            missing_from_memory = set(disk_cache) - set(_cache or {})
+            if missing_from_memory:
+                _cache_stats["lost_update_prevented"] += len(missing_from_memory)
+            merged = {**disk_cache, **(_cache or {})}
+            _cache.clear()
+            _cache.update(merged)
+            tmp = CACHE_FILE.with_suffix(".tmp")
+            tmp.write_text(json.dumps(_cache, ensure_ascii=False, indent=2), encoding="utf-8")
+            tmp.replace(CACHE_FILE)
     except Exception as exc:
         logger.warning("Failed to save geocode cache: %s", exc)
 
 
 def _norm(text: str) -> str:
-    s = unicodedata.normalize("NFD", (text or "").lower())
-    s = re.sub(r"[̀-ͯ]", "", s).replace("đ", "d")
-    return re.sub(r"\s+", " ", s).strip()
+    from search_contract import normalize_search_text
+    return normalize_search_text(text)
 
 
 def in_box(lat: float, lon: float) -> bool:
@@ -142,8 +184,10 @@ def geocode(name: str, region: str = "Vĩnh Long", use_cache: bool = True) -> li
         return None
     cache = _load_cache()
     key = _norm(f"{name}|{region}")
-    if use_cache and key in cache:
-        return cache[key]
+    if key in cache:
+        if use_cache:
+            return cache[key]
+        _cache_stats["duplicate_writes"] += 1
 
     coords = _query_nominatim(f"{name}, {region}, Việt Nam")
     if coords is None:
@@ -162,6 +206,8 @@ def stats() -> dict:
         "cached_queries": len(cache),
         "cached_hits": hits,
         "cached_misses": len(cache) - hits,
+        "duplicate_writes": _cache_stats["duplicate_writes"],
+        "lost_update_prevented": _cache_stats["lost_update_prevented"],
         "bbox": {"lat": [LAT_MIN, LAT_MAX], "lon": [LON_MIN, LON_MAX]},
     }
 

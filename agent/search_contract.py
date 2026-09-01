@@ -1,0 +1,152 @@
+"""Canonical public search contract.
+
+The database remains the source of truth for filtering, while this module owns
+the text normalization, complete-catalog ranking, and page metadata shared by
+the public search and autocomplete surfaces.
+"""
+
+from __future__ import annotations
+
+from dataclasses import dataclass
+from collections.abc import Mapping
+import re
+import unicodedata
+from typing import Any
+
+
+RANKING_VERSION = "search-v1"
+
+
+def normalize_search_text(value: str | Any) -> str:
+    """Return one accent-insensitive, case-folded, whitespace-stable string."""
+    text = unicodedata.normalize("NFKD", str(value or "")).casefold()
+    text = "".join(char for char in text if not unicodedata.combining(char))
+    text = text.replace("đ", "d")
+    return re.sub(r"\s+", " ", text).strip()
+
+
+@dataclass(frozen=True)
+class SearchFilters:
+    entity_type: str | None = None
+    area: str | None = None
+    entity_types: tuple[str, ...] = ()
+    month: int | None = None
+    public_only: bool = True
+
+
+@dataclass(frozen=True)
+class SearchPage:
+    items: list[dict[str, Any]]
+    total: int
+    offset: int
+    limit: int
+    truncated: bool = False
+    ranking_version: str = RANKING_VERSION
+
+
+def _source_text(entity: Mapping[str, Any]) -> str:
+    source = entity.get("source")
+    values: list[str] = []
+
+    def collect(value: Any) -> None:
+        if isinstance(value, Mapping):
+            for key in ("title", "name", "url"):
+                if value.get(key):
+                    values.append(str(value[key]))
+        elif isinstance(value, (list, tuple)):
+            for item in value:
+                collect(item)
+        elif value:
+            values.append(str(value))
+
+    collect(source)
+    return normalize_search_text(" ".join(values))
+
+
+def _rank(entity: Mapping[str, Any], query: str) -> tuple[float, str] | None:
+    qn = normalize_search_text(query)
+    if not qn:
+        return float(entity.get("confidence") or 0), "catalog"
+    terms = tuple(part for part in qn.split(" ") if part)
+    name = normalize_search_text(entity.get("name", ""))
+    summary = normalize_search_text(entity.get("summary", ""))
+    source = _source_text(entity)
+
+    if name == qn:
+        return 1000.0, "exact_name"
+    if name.startswith(qn):
+        return 900.0, "name_prefix"
+    if qn in name:
+        return 800.0, "name_contains"
+    if terms and all(term in name for term in terms):
+        return 750.0, "name_terms"
+    if qn in summary or (terms and all(term in summary for term in terms)):
+        return 500.0, "summary"
+    if qn in source or (terms and all(term in source for term in terms)):
+        return 300.0, "source"
+    return None
+
+
+def _db_filters(filters: SearchFilters) -> dict[str, Any]:
+    values: dict[str, Any] = {
+        "entity_type": filters.entity_type,
+        "area": filters.area,
+        "month": filters.month,
+        "public_only": filters.public_only,
+    }
+    if filters.entity_types:
+        values["entity_types"] = list(filters.entity_types)
+    return {key: value for key, value in values.items() if value is not None}
+
+
+def search_public_entities(
+    query: str,
+    *,
+    offset: int,
+    limit: int,
+    filters: SearchFilters,
+    database: Any | None = None,
+    bounded: bool = False,
+) -> SearchPage:
+    """Search the complete filtered relation, rank it, then slice one page.
+
+    ``database`` is injectable for tests and alternate read replicas. Production
+    callers use the database singleton lazily to avoid import cycles.
+    """
+    if database is None:
+        from database import db as database
+    offset = max(int(offset or 0), 0)
+    limit = max(int(limit or 1), 1)
+    db_kwargs = _db_filters(filters)
+    try:
+        relation_total = int(database.count_entities_filtered(q=None, **db_kwargs))
+    except (AttributeError, TypeError):
+        relation_total = 0
+    # Fetch all filtered rows before lexical ranking. A bounded caller must opt in
+    # and receives an honest truncation bit instead of a misleading total.
+    fetch_limit = max(relation_total, offset + limit, 1)
+    if bounded:
+        fetch_limit = min(fetch_limit, max(offset + limit, 1))
+    rows = list(database.list_entities(limit=fetch_limit, offset=0, **db_kwargs))
+    ranked: list[tuple[float, str, int, dict[str, Any]]] = []
+    for index, row in enumerate(rows):
+        score = _rank(row, query)
+        if score is None:
+            continue
+        numeric, reason = score
+        item = dict(row)
+        item["_search_meta"] = {
+            "score": round(numeric + float(row.get("confidence") or 0) * 0.01, 4),
+            "reason": reason,
+            "ranking_version": RANKING_VERSION,
+        }
+        ranked.append((numeric, str(item.get("id") or ""), index, item))
+    ranked.sort(key=lambda entry: (-entry[0], entry[1], entry[2]))
+    matched = [entry[3] for entry in ranked]
+    return SearchPage(
+        items=matched[offset:offset + limit],
+        total=len(matched),
+        offset=offset,
+        limit=limit,
+        truncated=bounded and len(rows) < relation_total,
+    )

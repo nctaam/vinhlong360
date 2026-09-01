@@ -69,6 +69,20 @@ def test_search_entities_filters_by_place_area(tmp_path, monkeypatch):
     assert [r["id"] for r in rows] == ["cake-bt"]
 
 
+def test_search_entities_is_accent_insensitive_on_sqlite(tmp_path, monkeypatch):
+    db = _make_db(tmp_path, monkeypatch)
+    db.upsert_entity({
+        "id": "coconut-product",
+        "type": "product",
+        "name": "Dừa Sáp",
+        "summary": "Đặc sản miền Tây",
+    })
+
+    rows = db.search_entities(q="dua sap", limit=10)
+
+    assert [r["id"] for r in rows] == ["coconut-product"]
+
+
 def test_count_entities_filtered_ignores_limit_semantics(tmp_path, monkeypatch):
     db = _make_db(tmp_path, monkeypatch)
 

@@ -410,15 +410,7 @@ def _apply_fixes(data, entities, rels, remap_types, fixes,
     print(f"\n  ✅ Saved to {DATA_PATH}")
 
 
-def main():
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--fix", action="store_true")
-    args = parser.parse_args()
-
-    if hasattr(sys.stdout, "reconfigure"):
-        sys.stdout.reconfigure(encoding="utf-8")
-
-    data = load()
+def _audit_data(data, *, apply_fix: bool = False):
     entities = data.get("entities", [])
     rels = data.get("relationships", [])
     itineraries = data.get("itineraries", [])
@@ -443,11 +435,37 @@ def main():
         near_no_coords, near_too_far, near_self, pi_cross, dup_rels, remap_types, fuzzy_dups
     )
 
-    if args.fix and (to_delete > 0 or remap_types):
+    if apply_fix and (to_delete > 0 or remap_types):
         _apply_fixes(data, entities, rels, remap_types, fixes,
                      near_no_coords, near_too_far, near_self, pi_cross)
-    elif args.fix:
+    elif apply_fix:
         print("\n  No fixes needed.")
+    return to_delete, remap_types
+
+
+def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--fix", action="store_true")
+    parser.add_argument("--json", action="store_true", help="emit a machine-readable report")
+    args = parser.parse_args()
+
+    if hasattr(sys.stdout, "reconfigure"):
+        sys.stdout.reconfigure(encoding="utf-8")
+
+    data = load()
+    if args.json:
+        import io
+        from contextlib import redirect_stdout
+        captured = io.StringIO()
+        with redirect_stdout(captured):
+            to_delete, remap_types = _audit_data(data, apply_fix=args.fix)
+        print(json.dumps({
+            "summary": {"total_relationships_to_delete": to_delete,
+                        "types_to_remap": sum(remap_types.values())},
+            "report": captured.getvalue(),
+        }, ensure_ascii=False))
+        return
+    _audit_data(data, apply_fix=args.fix)
 
 
 if __name__ == "__main__":

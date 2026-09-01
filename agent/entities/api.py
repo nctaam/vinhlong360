@@ -47,6 +47,7 @@ from auth_middleware import (
 import knowledge
 from data_quality import entity_quality
 from database import canonical_verified_at, db
+from search_contract import SearchFilters, search_public_entities
 from control_plane.clock import system_clock
 from features import HAS_AUTOCORRECT, HAS_RECOMMENDER, autocorrect, recommend
 from middleware import get_client_ip
@@ -316,16 +317,37 @@ async def list_entities(
     db_month = month if month else None
 
     if q:
-        results = await asyncio.to_thread(db.search_entities, q=q, entity_type=single_type, area=area, limit=limit, offset=offset, entity_types=entity_types, public_only=True, month=db_month)
-        total = await asyncio.to_thread(db.count_entities_filtered, entity_type=single_type, area=area, q=q, entity_types=entity_types, public_only=True, month=db_month)
+        page = await asyncio.to_thread(
+            search_public_entities,
+            q,
+            offset=offset,
+            limit=limit,
+            filters=SearchFilters(
+                entity_type=single_type,
+                area=area,
+                entity_types=tuple(entity_types or ()),
+                month=db_month,
+                public_only=True,
+            ),
+        )
+        results = page.items
+        total = page.total
     else:
         results = await asyncio.to_thread(db.list_entities, entity_type=single_type, area=area, limit=limit, offset=offset, entity_types=entity_types, public_only=True, sort=db_sort, month=db_month)
         total = await asyncio.to_thread(db.count_entities_filtered, entity_type=single_type, area=area, entity_types=entity_types, public_only=True, month=db_month)
+        page = None
     await asyncio.to_thread(_enrich_place, results)
     results = [_project_public_entity_media(entity) for entity in results]
     if fields == "minimal":
         results = [_to_minimal(e) for e in results]
-    return {"total": total, "entities": results}
+    return {
+        "total": total,
+        "entities": results,
+        "offset": offset,
+        "limit": limit,
+        "truncated": bool(page.truncated) if page else False,
+        "ranking_version": page.ranking_version if page else None,
+    }
 
 
 @router.get("/entities/{entity_id}/relationships",

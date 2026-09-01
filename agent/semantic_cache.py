@@ -12,10 +12,12 @@ Reuses _tokenize / _normalize_vietnamese from vector_search.py.
 """
 
 import asyncio
+from contextlib import contextmanager
 import hashlib
 import json
 import logging
 import math
+import os
 import time
 from collections import Counter, OrderedDict
 from contextvars import ContextVar
@@ -51,6 +53,33 @@ DATA_DIR.mkdir(parents=True, exist_ok=True)
 ENTRIES_FILE = DATA_DIR / "entries.json"
 
 
+@contextmanager
+def _interprocess_file_lock(path: Path):
+    """Serialize cache manifest reads/writes across worker processes."""
+    lock_path = path.with_suffix(path.suffix + ".lock")
+    lock_path.parent.mkdir(parents=True, exist_ok=True)
+    with lock_path.open("a+b") as handle:
+        if os.name == "nt":
+            import msvcrt
+            handle.seek(0)
+            handle.write(b"0")
+            handle.flush()
+            handle.seek(0)
+            msvcrt.locking(handle.fileno(), msvcrt.LK_LOCK, 1)
+            try:
+                yield
+            finally:
+                handle.seek(0)
+                msvcrt.locking(handle.fileno(), msvcrt.LK_UNLCK, 1)
+        else:
+            import fcntl
+            fcntl.flock(handle.fileno(), fcntl.LOCK_EX)
+            try:
+                yield
+            finally:
+                fcntl.flock(handle.fileno(), fcntl.LOCK_UN)
+
+
 # ══════════════════════════════════════════════════
 #  SEMANTIC MATCHER
 # ══════════════════════════════════════════════════
@@ -69,6 +98,7 @@ class SemanticMatcher:
         # token -> document frequency (number of queries containing this token)
         self._df: Counter = Counter()
         self._doc_count: int = 0
+        self.replacements: int = 0
 
     # ── vectorisation ──
 
@@ -117,6 +147,16 @@ class SemanticMatcher:
     def add(self, key: str, query: str, owner_key: str = ""):
         """Add a query to the matcher index."""
         with self._lock:
+            if key in self._vectors:
+                # Remove the old document first; otherwise every cache overwrite
+                # inflates document frequency and progressively corrupts IDF.
+                old_vec = self._vectors.pop(key)
+                for token in set(old_vec):
+                    self._df[token] = max(0, self._df.get(token, 1) - 1)
+                self._doc_count = max(0, self._doc_count - 1)
+                self.replacements += 1
+                self._texts.pop(key, None)
+                self._owners.pop(key, None)
             vec = self._vectorize(query)
             if not vec:
                 return
@@ -226,6 +266,7 @@ class MultiTierCache:
         self.hits_semantic: int = 0
         self.misses: int = 0
         self.total_queries: int = 0
+        self.replacements: int = 0
 
     # ── L2 persistence ──
 
@@ -233,31 +274,38 @@ class MultiTierCache:
         if self._l2_loaded:
             return
         try:
-            if ENTRIES_FILE.exists():
-                raw = json.loads(ENTRIES_FILE.read_text(encoding="utf-8"))
-                entries = raw if isinstance(raw, dict) else {}
-                self._l2 = OrderedDict(entries)
-                # Rebuild semantic matcher from persisted entries
-                for key, entry in self._l2.items():
-                    query_text = entry.get("query", "")
-                    if query_text:
-                        self._matcher.add(
-                            key,
-                            query_text,
-                            owner_key=entry.get("owner_key", ""),
-                        )
+            with _interprocess_file_lock(ENTRIES_FILE):
+                if ENTRIES_FILE.exists():
+                    raw = json.loads(ENTRIES_FILE.read_text(encoding="utf-8"))
+                    entries = raw if isinstance(raw, dict) else {}
+                    self._l2 = OrderedDict(entries)
+                    # Rebuild semantic matcher from persisted entries
+                    for key, entry in self._l2.items():
+                        query_text = entry.get("query", "")
+                        if query_text:
+                            self._matcher.add(
+                                key,
+                                query_text,
+                                owner_key=entry.get("owner_key", ""),
+                            )
         except Exception as exc:
             logger.warning("Failed to load L2 cache: %s", exc)
         self._l2_loaded = True
 
     def _save_l2(self):
         try:
-            tmp = ENTRIES_FILE.with_suffix(".tmp")
-            tmp.write_text(
-                json.dumps(dict(self._l2), ensure_ascii=False),
-                encoding="utf-8",
-            )
-            tmp.replace(ENTRIES_FILE)
+            with _interprocess_file_lock(ENTRIES_FILE):
+                # Merge with the latest on-disk manifest while holding the lock,
+                # preventing one worker from erasing another worker's entry.
+                merged = {}
+                if ENTRIES_FILE.exists():
+                    raw = json.loads(ENTRIES_FILE.read_text(encoding="utf-8"))
+                    if isinstance(raw, dict):
+                        merged.update(raw)
+                merged.update(self._l2)
+                tmp = ENTRIES_FILE.with_suffix(".tmp")
+                tmp.write_text(json.dumps(merged, ensure_ascii=False), encoding="utf-8")
+                tmp.replace(ENTRIES_FILE)
         except Exception as exc:
             logger.warning("Failed to save L2 cache: %s", exc)
 
@@ -382,6 +430,7 @@ class MultiTierCache:
 
             # Semantic index
             self._matcher.add(key, query, owner_key=owner_key)
+            self.replacements = self._matcher.replacements
 
             self._save_l2()
             logger.debug("Cache put: %s (ttl=%ds)", query[:60], ttl)
@@ -1078,4 +1127,5 @@ def cache_stats() -> dict:
         "l1_size": len(c._l1),
         "l2_size": len(c._l2),
         "semantic_index_size": len(semantic_matcher._vectors),
+        "cache_replacements": c.replacements,
     }

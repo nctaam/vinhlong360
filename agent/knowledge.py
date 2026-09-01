@@ -156,10 +156,8 @@ def reload():
 
 def _normalize_vn(text: str) -> str:
     """Bỏ dấu tiếng Việt để fuzzy match."""
-    s = unicodedata.normalize("NFD", text.lower())
-    s = re.sub(r"[̀-ͯ]", "", s)
-    s = s.replace("đ", "d")
-    return s
+    from search_contract import normalize_search_text
+    return normalize_search_text(text)
 
 
 # Common Vietnamese words that don't signal topical relevance

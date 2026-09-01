@@ -169,6 +169,10 @@ class AreasResponse(ApiModel):
 class EntityListResponse(ApiModel):
     entities: list = []
     total: int | None = None
+    offset: int = 0
+    limit: int | None = None
+    truncated: bool = False
+    ranking_version: str | None = None
 
 
 class FeaturedResponse(ApiModel):
@@ -221,6 +225,10 @@ class SearchResponse(ApiModel):
     results: list = []
     suggestions: list = []
     total: int | None = None
+    offset: int = 0
+    limit: int | None = None
+    truncated: bool = False
+    ranking_version: str | None = None
 
 
 # ── batch-2: endpoint shape phức tạp (đo bằng cách gọi endpoint thật) ──

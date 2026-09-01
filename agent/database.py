@@ -820,7 +820,7 @@ def _append_q_filter(conditions: list, params: list, ph: str,
         q_esc = escape_like(q.lower())
         params.extend([f"%{q_esc}%", f"%{q_esc}%"])
     else:
-        conditions.append(f"(e.name LIKE {ph} ESCAPE '\\' OR e.summary LIKE {ph} ESCAPE '\\')")
+        conditions.append(f"(f_unaccent(e.name) LIKE f_unaccent({ph}) ESCAPE '\\' OR f_unaccent(e.summary) LIKE f_unaccent({ph}) ESCAPE '\\')")
         q_esc = escape_like(q)
         params.extend([f"%{q_esc}%", f"%{q_esc}%"])
 
@@ -1163,6 +1163,12 @@ class Database:
         primary_error = None
         try:
             conn.row_factory = sqlite3.Row
+            # Keep SQLite lexical search equivalent to PostgreSQL's f_unaccent
+            # expression instead of relying on ASCII-only LIKE semantics.
+            from search_contract import normalize_search_text
+            create_function = getattr(conn, "create_function", None)
+            if create_function is not None:
+                create_function("f_unaccent", 1, normalize_search_text)
             conn.execute("PRAGMA journal_mode=WAL")
             conn.execute("PRAGMA foreign_keys=ON")
             conn.execute("PRAGMA busy_timeout=5000")
@@ -2619,7 +2625,7 @@ class Database:
         if _entity_details.reads_enabled():
             d["attributes"] = _entity_details.rebuild_attributes(
                 d.get("type") or "", d.get("attributes"), d)
-        _normalize_entity_timestamps(d)
+        normalize_entity(d)
         return d
 
     def _parse_itinerary(self, row) -> dict:
@@ -2685,6 +2691,27 @@ def canonical_verified_at(entity: Mapping[str, object]) -> str | None:
     else:
         parsed = parsed.astimezone(timezone.utc)
     return parsed.isoformat(timespec="seconds").replace("+00:00", "Z")
+
+
+def normalize_entity(entity: Mapping[str, object]) -> dict:
+    """Normalize an entity row and keep verification under its canonical namespace.
+
+    Older imports may contain a top-level ``verifiedAt``. It is migrated only when
+    the nested value is absent/empty; an existing nested value always wins. The
+    legacy top-level key is never exposed to callers.
+    """
+    d = dict(entity) if isinstance(entity, Mapping) else entity
+    if not isinstance(d, dict):
+        return d
+    attrs = d.get("attributes")
+    attrs = dict(attrs) if isinstance(attrs, Mapping) else {}
+    nested = attrs.get("verifiedAt")
+    legacy = d.get("verifiedAt")
+    if (not isinstance(nested, str) or not nested.strip()) and isinstance(legacy, str) and legacy.strip():
+        attrs["verifiedAt"] = legacy.strip()
+    d["attributes"] = attrs
+    _normalize_entity_timestamps(d)
+    return d
 
 
 def _normalize_entity_timestamps(d: dict) -> dict:

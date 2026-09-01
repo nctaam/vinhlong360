@@ -44,6 +44,7 @@ from api_schemas import (  # W6.3: response_model (extra="allow" — không stri
 import lunar_calendar
 from config import settings  # noqa: F401  (be mat va cua test — mien entity sang goi rieng 2026-08-28)
 from database import db
+from search_contract import SearchFilters, search_public_entities, normalize_search_text
 from control_plane.clock import system_clock
 from middleware import report_limiter, get_client_ip
 from auth_middleware import validate_path_id, require_pg, require_user, require_csrf, get_current_user
@@ -409,11 +410,7 @@ class LocationResolveIn(BaseModel):
 
 
 def _fold_text(value: Any) -> str:
-    text = str(value or "").strip().lower()
-    if not text:
-        return ""
-    normalized = unicodedata.normalize("NFD", text)
-    return "".join(ch for ch in normalized if unicodedata.category(ch) != "Mn")
+    return normalize_search_text(value)
 
 
 def _clean_short_text(value: Any, max_len: int = 200) -> str | None:
@@ -1539,16 +1536,17 @@ def _lexical_match_score(name: str, summary: str, qn: str, terms: list[str]) -> 
 
 
 def _rank_search_entities(items: list[dict], query: str) -> list[dict]:
-    qn = _normalize_text(query)
-    terms = [t for t in qn.split() if t]
+    from search_contract import _rank as canonical_rank
     ranked = []
     for idx, item in enumerate(items):
-        name = _normalize_text(item.get("name", ""))
-        summary = _normalize_text(item.get("summary", ""))
-        score, reason = _lexical_match_score(name, summary, qn, terms)
-        score += float(item.get("confidence") or 0) * 10
+        match = canonical_rank(item, query)
+        if match is None:
+            score, reason = 0.0, "confidence"
+        else:
+            score, reason = match
+        score += float(item.get("confidence") or 0) * 0.01
         copy = dict(item)
-        copy["_search_meta"] = {"score": round(score, 2), "reason": reason, "rank_source": "lexical"}
+        copy["_search_meta"] = {"score": round(score, 2), "reason": reason, "rank_source": "lexical", "ranking_version": "search-v1"}
         ranked.append((score, idx, copy))
     ranked.sort(key=lambda row: (-row[0], row[1]))
     return [item for _score, _idx, item in ranked]
@@ -1563,6 +1561,7 @@ async def search(
     type: Optional[str] = Query(None, max_length=50),
     area: Optional[str] = Query(None, max_length=100),
     limit: int = Query(20, ge=1, le=100),
+    offset: int = Query(0, ge=0, le=10000),
     user=Depends(get_current_user),
 ):
     """Tìm hợp nhất entity + bài viết + người dùng cho một truy vấn, kèm suggestions và totals.
@@ -1573,22 +1572,19 @@ async def search(
     from ratelimit import check_rate
     check_rate(f"search:{get_client_ip(request)}", 30, 60, "Tìm kiếm quá nhanh. Vui lòng thử lại sau.")
     entity_limit = min(limit, 100)
-    social_limit = min(max(3, limit // 3), 10)
-    # Nới POOL rồi mới cắt — không cắt trước rồi mới xếp hạng.
-    # SQL sắp theo e.confidence (database.py:1596), KHÔNG theo độ khớp; mà confidence
-    # gần như hằng số (5 bậc phủ 96% dữ liệu), nên "top theo confidence" thực chất là
-    # một lát cắt tuỳ tiện. Xếp hạng lexical chạy SAU trên đúng lát cắt đó thì không
-    # cứu được thứ đã bị bỏ ngoài: đo trên 1.746 entity, gợi ý typeahead (limit=5)
-    # trùng xếp-hạng-lý-tưởng 1,76/5 và 15/45 truy vấn mất hẳn kết quả đúng nhất —
-    # gõ "dừa sáp" không ra chính sản phẩm tên "Dừa sáp".
-    # Chat đã làm đúng từ trước ở server.py:512 (`limit=max(limit*3, 30)`); chép sang.
-    pool_limit = min(max(entity_limit * 8, 80), 400)
-    results = await asyncio.to_thread(db.search_entities, q=q, entity_type=type, area=area, limit=pool_limit, public_only=True)
-    await asyncio.to_thread(_enrich_place, results)
-    results = _rank_search_entities(results, q)[:entity_limit]
-    results = [_project_public_entity_media(entity) for entity in results]
-    total = await asyncio.to_thread(db.count_entities_filtered, entity_type=type, area=area, q=q, public_only=True)
     safe_q = re.sub(r"<[^>]+>", "", q)
+    social_limit = min(max(3, limit // 3), 10)
+    page = await asyncio.to_thread(
+        search_public_entities,
+        safe_q,
+        offset=offset,
+        limit=entity_limit,
+        filters=SearchFilters(entity_type=type, area=area, public_only=True),
+    )
+    results = page.items
+    await asyncio.to_thread(_enrich_place, results)
+    results = [_project_public_entity_media(entity) for entity in results]
+    total = page.total
     posts, post_total = await asyncio.to_thread(_search_posts_for_contract, safe_q, user, social_limit)
     users, user_total = await asyncio.to_thread(_search_users_for_contract, safe_q, user, social_limit)
     suggestions = [
@@ -1606,6 +1602,10 @@ async def search(
     return {
         "q": safe_q,
         "total": total,
+        "offset": page.offset,
+        "limit": page.limit,
+        "truncated": page.truncated,
+        "ranking_version": page.ranking_version,
         "results": results,
         "entities": results,
         "posts": posts,
@@ -1630,9 +1630,17 @@ async def autocomplete(
     from ratelimit import check_rate
     check_rate(f"autocomplete:{get_client_ip(request)}", 60, 60, "Quá nhiều yêu cầu. Vui lòng thử lại sau.")
     response.headers["Cache-Control"] = "public, max-age=30, stale-while-revalidate=60"
+    # Keep the established database seam (including public_only enforcement)
+    # while requesting the complete catalog-sized candidate set before applying
+    # the canonical lexical scorer below.
     results = await asyncio.to_thread(
-        db.search_entities, q=q, entity_type=type, limit=limit, public_only=True,
+        db.search_entities,
+        q=q,
+        entity_type=type,
+        limit=max(limit, _FULL_SCAN_LIMIT),
+        public_only=True,
     )
+    results = _rank_search_entities(results, q)[:limit]
     return {
         "suggestions": [
             {"id": e["id"], "name": e["name"], "type": e.get("type", ""),
