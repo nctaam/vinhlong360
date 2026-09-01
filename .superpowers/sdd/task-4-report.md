@@ -216,7 +216,7 @@ TDD and verification evidence:
 
 ## Decision retry expiry remediation
 
-Implementation commit: `04a3bf89` (following `9c17b14a`; report commit `59f2567e`).
+Implementation commits: `04a3bf89`, `899f4ec1` (following `9c17b14a`; report commit `59f2567e`).
 
 Findings fixed:
 
@@ -232,3 +232,4 @@ TDD and verification evidence:
 - Controller gate: `python -m pytest agent/tests/test_case_proof_first.py agent/tests/test_correction_decisions.py agent/tests/test_correction_publication.py agent/tests/test_correction_publication_failure.py agent/tests/test_correction_create.py agent/tests/test_case_store.py agent/tests/test_case_audit.py agent/tests/test_case_outbox.py agent/tests/test_case_admin_api.py agent/tests/test_case_public_api.py agent/tests/test_correction_admin_http.py agent/tests/test_case_wiring.py agent/tests/test_case_domain.py agent/tests/test_case_idempotency_postgres.py -q --basetemp .tmp-task4-expiry-controller` -> 264 passed, 96 skipped, 1 existing Starlette deprecation warning.
 - Disposable PostgreSQL: `powershell -ExecutionPolicy Bypass -File .tmp-task4-pg-run.ps1` -> 80 passed in 27.18s after schema 82; the loopback-only database was dropped and verified absent, then the temporary cluster was removed.
 - `git diff --check` -> clean before the implementation commit.
+- Follow-up signature compatibility check: `python -m pytest agent/tests/test_case_proof_first.py agent/tests/test_correction_decisions.py -q --basetemp .tmp-task4-expiry-signature` -> 54 passed, 5 skipped; `git diff --check` clean.
