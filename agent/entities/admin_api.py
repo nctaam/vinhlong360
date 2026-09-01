@@ -704,6 +704,8 @@ async def upload_entity_image(entity_id: str, file: UploadFile = File(...)):
         # The entity commit is authoritative; a cache/KB refresh can be retried
         # without deleting the now-referenced media.
         logger.exception("Entity image post-commit sync failed for %s", entity_id)
+        post_commit_effects = (*post_commit_effects,
+                               {"effect": "kb_sync", "status": "failed"})
     return {"status": "uploaded_degraded" if post_commit_effects else "uploaded",
             "url": cover, "sizes": urls, "images": images, "backend": storage.backend,
             "post_commit_effects": post_commit_effects}
