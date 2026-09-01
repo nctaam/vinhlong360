@@ -404,7 +404,27 @@ def _external_erase(name: str, subject_id: str, *, dry_run: bool) -> dict[str, A
             verified = bot_gateway.verify_subject_memory_absent(owner)
             return {"status": "deleted" if removed and verified else "already_absent" if verified else "failed", "count": removed}
         if name == "reports-jsonl":
-            return {"status": "issued", "count": 0, "error_code": "REPORTS_ADAPTER_ISSUED_ONLY"}
+            from admin import _INFO_REPORTS_FILE
+            if not _INFO_REPORTS_FILE.exists():
+                return {"status": "already_absent", "count": 0}
+            lines = _INFO_REPORTS_FILE.read_text(encoding="utf-8").splitlines()
+            kept, removed = [], 0
+            for line in lines:
+                try:
+                    item = json.loads(line)
+                except json.JSONDecodeError:
+                    kept.append(line)
+                    continue
+                owner_value = item.get("owner_key", item.get("user_id", item.get("reporter_id", "")))
+                if str(owner_value) == owner:
+                    removed += 1
+                else:
+                    kept.append(line)
+            if removed:
+                tmp = _INFO_REPORTS_FILE.with_suffix(".tmp")
+                tmp.write_text("\n".join(kept) + ("\n" if kept else ""), encoding="utf-8")
+                tmp.replace(_INFO_REPORTS_FILE)
+            return {"status": "deleted" if removed else "already_absent", "count": removed}
     except Exception as exc:
         return {"status": "failed", "count": 0, "error_code": type(exc).__name__}
     if name == "browser-storage":
