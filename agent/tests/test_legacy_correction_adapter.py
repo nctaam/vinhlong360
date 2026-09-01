@@ -85,7 +85,7 @@ def legacy(tmp_path, monkeypatch):
     monkeypatch.setattr(settings, "CORRECTION_INTAKE_ENABLED", True, raising=False)
     # The adapter fixture supplies a transport double instead of running the
     # full composition root; isolate it from the production readiness latch.
-    monkeypatch.setattr(wiring, "case_kernel_wiring_attempted", lambda: False)
+    monkeypatch.setattr(wiring, "case_kernel_ready", lambda: True)
     kernel = _KernelDouble()
     configure_case_public_api(service=kernel)
     yield kernel, reports

@@ -125,7 +125,7 @@ def client(request, monkeypatch):
     # composition-root latch so they can exercise validation independently.
     from cases import wiring
 
-    monkeypatch.setattr(wiring, "case_kernel_wiring_attempted", lambda: False)
+    monkeypatch.setattr(wiring, "case_kernel_ready", lambda: True)
     service = _ServiceDouble()
     flags = getattr(request, "param", None) or _flags()
     configure_case_public_api(service=service, settings=flags, allowed_origin=ORIGIN)
@@ -518,7 +518,7 @@ from _pg_test_database import TEST_DATABASE_URL, pg_only  # noqa: E402
 
 
 @pytest.fixture
-def live_client():
+def live_client(monkeypatch):
     if TEST_DATABASE_URL is None:
         pytest.skip("set VL360_TEST_DATABASE_URL to a disposable loopback PostgreSQL database")
     import psycopg2
@@ -529,6 +529,9 @@ def live_client():
     from cases.security import CaseCrypto
     from cases.service import CaseService
     from cases.store import PostgresCaseStore
+    from cases import wiring
+
+    monkeypatch.setattr(wiring, "case_kernel_ready", lambda: True)
 
     database.psycopg2 = psycopg2
     database.psycopg2.extras = psycopg2.extras

@@ -42,8 +42,8 @@ def admin_double(monkeypatch):
     monkeypatch.setitem(sys.modules, "admin", double)
     monkeypatch.setattr(settings, "CASE_KERNEL_ENABLED", True, raising=False)
     # These guard unit tests deliberately inject only AdminCP, not the full
-    # composition root; keep the wiring latch out of that isolated contract.
-    monkeypatch.setattr(wiring, "case_kernel_wiring_attempted", lambda: False)
+    # composition root; keep committed readiness out of that isolated contract.
+    monkeypatch.setattr(wiring, "case_kernel_ready", lambda: True)
     return double
 
 

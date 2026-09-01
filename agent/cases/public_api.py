@@ -118,12 +118,12 @@ def _unavailable() -> JSONResponse:
 # ── Guards ──
 
 def _kernel_ready(*, intake: bool = False) -> bool:
-    from .wiring import case_kernel_ready, case_kernel_wiring_attempted
+    from .wiring import case_kernel_ready
 
     settings = _settings()
     if not getattr(settings, "CASE_KERNEL_ENABLED", False):
         return False
-    if case_kernel_wiring_attempted() and not case_kernel_ready():
+    if not case_kernel_ready():
         return False
     return not intake or bool(getattr(settings, "CORRECTION_INTAKE_ENABLED", False))
 
