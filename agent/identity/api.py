@@ -211,7 +211,7 @@ def _clear_session_cookie(response: Response, request: Request) -> None:
             response.delete_cookie(key=name, path="/", secure=secure, httponly=True, samesite=samesite)
 
 
-def cleanup_expired_data() -> dict:
+def cleanup_expired_data(*, limit: int = 500, lease: str | None = None) -> dict:
     """Xoá phiên/OTP hết hạn, login_history cũ, thông báo đã đọc cũ, pending_2fa +
     trusted_devices hết hạn.
 
@@ -226,26 +226,35 @@ def cleanup_expired_data() -> dict:
     Đó là lý do bug tên cột `read` (đúng phải là `is_read`, init.sql:294) từng
     làm hàm này mất tác dụng hoàn toàn chứ không chỉ hỏng một bảng.
     """
+    if not 1 <= int(limit) <= 5000:
+        raise ValueError("limit must be between 1 and 5000")
     if not db._use_pg:
         return {"skipped": True}
     results = {}
     try:
         with db._conn() as conn:
-            r = db._execute(conn, "DELETE FROM user_sessions WHERE expires_at < NOW()", ())
+            cap = int(limit)
+            r = db._execute(conn, """DELETE FROM user_sessions WHERE id IN
+                (SELECT id FROM user_sessions WHERE expires_at < NOW() ORDER BY expires_at, id LIMIT %s)""", (cap,))
             results["expired_sessions"] = getattr(r, "rowcount", 0) if r else 0
-            r = db._execute(conn, "DELETE FROM otp_sessions WHERE expires_at < NOW()", ())
+            r = db._execute(conn, """DELETE FROM otp_sessions WHERE id IN
+                (SELECT id FROM otp_sessions WHERE expires_at < NOW() ORDER BY expires_at, id LIMIT %s)""", (cap,))
             results["expired_otps"] = getattr(r, "rowcount", 0) if r else 0
             r = db._execute(conn, """
-                DELETE FROM login_history WHERE created_at < NOW() - INTERVAL '90 days'
-            """, ())
+                DELETE FROM login_history WHERE id IN
+                (SELECT id FROM login_history WHERE created_at < NOW() - INTERVAL '90 days' ORDER BY created_at, id LIMIT %s)
+            """, (cap,))
             results["old_login_history"] = getattr(r, "rowcount", 0) if r else 0
             r = db._execute(conn, """
-                DELETE FROM notifications WHERE is_read = TRUE AND created_at < NOW() - INTERVAL '60 days'
-            """, ())
+                DELETE FROM notifications WHERE id IN
+                (SELECT id FROM notifications WHERE is_read = TRUE AND created_at < NOW() - INTERVAL '60 days' ORDER BY created_at, id LIMIT %s)
+            """, (cap,))
             results["old_read_notifications"] = getattr(r, "rowcount", 0) if r else 0
-            r = db._execute(conn, "DELETE FROM pending_2fa WHERE expires_at < NOW()", ())
+            r = db._execute(conn, """DELETE FROM pending_2fa WHERE id IN
+                (SELECT id FROM pending_2fa WHERE expires_at < NOW() ORDER BY expires_at, id LIMIT %s)""", (cap,))
             results["expired_pending_2fa"] = getattr(r, "rowcount", 0) if r else 0
-            r = db._execute(conn, "DELETE FROM trusted_devices WHERE expires_at < NOW()", ())
+            r = db._execute(conn, """DELETE FROM trusted_devices WHERE id IN
+                (SELECT id FROM trusted_devices WHERE expires_at < NOW() ORDER BY expires_at, id LIMIT %s)""", (cap,))
             results["expired_trusted_devices"] = getattr(r, "rowcount", 0) if r else 0
     except Exception as e:
         logger.warning("cleanup_expired_data error: %s", e)
@@ -1806,6 +1815,23 @@ async def export_user_data(request: Request, response: Response):
     )
     profile = _safe_user(user)
     profile["bio"] = user.get("bio", "")
+    # The legacy payload remains backwards compatible; the lifecycle manifest
+    # adds explicit sink coverage, checksums and truncation/cursor proof.
+    try:
+        from control_plane.lifecycle import export_subject
+
+        lifecycle_bundle = await asyncio.to_thread(export_subject, uid, limit=1000)
+        lifecycle_manifest = lifecycle_bundle.manifest
+    except Exception as exc:
+        lifecycle_manifest = {
+            "schema_version": "1",
+            "version": "1",
+            "truncated": False,
+            "errors": [{"sink": "lifecycle", "error": type(exc).__name__}],
+            "excluded_secrets": [],
+            "checksums": {},
+            "sinks": {},
+        }
     response.headers["Cache-Control"] = "no-store"
     return {
         "profile": profile,
@@ -1816,6 +1842,7 @@ async def export_user_data(request: Request, response: Response):
             "events": personalization_events,
             "legacy_events": legacy_events,
         },
+        "lifecycle_manifest": lifecycle_manifest,
         "exported_at": datetime.now(timezone.utc).isoformat(),
     }
 

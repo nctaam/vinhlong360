@@ -2,9 +2,15 @@ import { computed, getCurrentScope, onScopeDispose, ref, watch, type Ref } from 
 import type { AreaRef, FilterSet, Intent, MapViewport, SearchViewState } from '~/types/publicExperience'
 import { parseSearchViewState, parseSearchViewStateWithMeta, serializeSearchViewState } from '~/utils/publicStateUrl'
 
-const SESSION_KEY = 'vinhlong360:public-search-entries:v2'
+export const SEARCH_VIEW_STATE_STORAGE_KEY = 'vinhlong360:public-search-entries:v2'
+export const LIFECYCLE_CLEAR_VERSION = 'v1'
+const SESSION_KEY = SEARCH_VIEW_STATE_STORAGE_KEY
 const URL_WRITE_DELAY = 200
 const INTENTS = new Set<Intent>(['place', 'service', 'event', 'story', 'all'])
+
+export function clearSearchViewStateStorage(storage: Pick<Storage, 'removeItem'>): void {
+  storage.removeItem(SESSION_KEY)
+}
 
 export type SearchViewPanel = SearchViewState['panel']
 export type SearchViewRuntimeState = SearchViewState & { scrollKey?: string }

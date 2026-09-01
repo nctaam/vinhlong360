@@ -10,9 +10,15 @@ export interface RecentItem {
   viewedAt: number
 }
 
-const STORAGE_KEY = 'vl360_recent'
+export const RECENT_STORAGE_KEY = 'vl360_recent'
+export const LIFECYCLE_CLEAR_VERSION = 'v1'
+const STORAGE_KEY = RECENT_STORAGE_KEY
 const MAX_ITEMS = 12
 export const RECENT_CONTEXT_TTL_MS = 30 * 60 * 1_000
+
+export function clearRecentStorage(storage: Pick<Storage, 'removeItem'>): void {
+  storage.removeItem(STORAGE_KEY)
+}
 
 let loaded = false
 

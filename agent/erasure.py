@@ -60,6 +60,7 @@ class ErasureResult:
     error_code: str | None = None
     verified: bool = False
     run_id: str = field(default="", repr=False)
+    browser_clear_instruction: dict | None = None
 
     def to_dict(self) -> dict:
         return {
@@ -68,6 +69,7 @@ class ErasureResult:
             "error_code": self.error_code,
             "verified": self.verified,
             "run_id": self.run_id,
+            "browser_clear_instruction": self.browser_clear_instruction,
         }
 
 
@@ -164,8 +166,15 @@ def _validated_subject_policies():
 
 
 def _store_entry(policy, purge, verify, error_code):
+    if error_code:
+        status = "failed"
+    elif purge.removed_count:
+        status = "deleted"
+    else:
+        status = "already_absent"
     return {
         "store_name": policy.name,
+        "status": status,
         "purged": bool(purge.complete),
         "removed_count": max(0, int(purge.removed_count)),
         "verified": bool(verify.verified),
@@ -383,11 +392,18 @@ def erase_account(user_id, *, now: datetime, run_id: str | None = None) -> Erasu
         return _failed_result(stable_run_id, _DB_ERROR, stores)
     _purge_legacy_personalization(str(user_id), stable_run_id)
     metrics.erasure_completed_total.inc()
+    try:
+        from control_plane.lifecycle import issue_browser_clear_instruction
+
+        clear_instruction = issue_browser_clear_instruction(str(user_id))
+    except Exception:
+        clear_instruction = None
     return ErasureResult(
         status="completed",
         stores=stores,
         verified=True,
         run_id=stable_run_id,
+        browser_clear_instruction=clear_instruction,
     )
 
 

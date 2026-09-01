@@ -14,7 +14,13 @@ export interface FavoriteItem {
   savedAt: string
 }
 
-const STORAGE_KEY = 'vl360_favorites'
+export const FAVORITES_STORAGE_KEY = 'vl360_favorites'
+export const LIFECYCLE_CLEAR_VERSION = 'v1'
+const STORAGE_KEY = FAVORITES_STORAGE_KEY
+
+export function clearFavoriteStorage(storage: Pick<Storage, 'removeItem'>): void {
+  storage.removeItem(STORAGE_KEY)
+}
 let loaded = false
 let syncSetup = false
 
@@ -159,7 +165,7 @@ export function useFavorites() {
   function clear() {
     const ids = favorites.value.map(f => f.id)
     favorites.value = []
-    persist()
+    if (import.meta.client) clearFavoriteStorage(localStorage)
     if (isLoggedIn.value) ids.forEach(pushRemove)
   }
 

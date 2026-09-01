@@ -204,6 +204,18 @@ def verify_owner_records_absent(owner_key: str) -> bool:
         )
 
 
+def export_owner_records(owner_key: str) -> list[dict]:
+    """Return owner-attributed analytics rows for lifecycle export."""
+    with _lock:
+        data = _load()
+        return [
+            dict(record)
+            for field in ("queries", "unanswered")
+            for record in data.get(field, [])
+            if record.get("owner_key", "") == owner_key
+        ]
+
+
 def _conversation_files() -> list[Path]:
     files = list(islice(CONVERSATIONS_DIR.glob("*.json"), _MAX_CONVERSATION_FILES + 1))
     if len(files) > _MAX_CONVERSATION_FILES:

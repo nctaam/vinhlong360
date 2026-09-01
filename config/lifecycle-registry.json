@@ -1,0 +1,32 @@
+{
+  "schema_version": "1",
+  "sinks": [
+    {"name":"postgres","owner_key":"users.id","classification":"personal","export_strategy":"table-manifest","erase_strategy":"transactional","retention_days":null,"proof_level":"strong"},
+    {"name":"users","owner_key":"id","classification":"personal","export_strategy":"row-keyset","erase_strategy":"hard-delete","retention_days":null,"proof_level":"strong"},
+    {"name":"user_plans","owner_key":"user_id","classification":"personal","export_strategy":"row-keyset","erase_strategy":"delete","retention_days":null,"proof_level":"strong"},
+    {"name":"notifications","owner_key":"user_id","classification":"personal","export_strategy":"row-keyset","erase_strategy":"delete","retention_days":90,"proof_level":"strong"},
+    {"name":"reports","owner_key":"reporter_id","classification":"personal","export_strategy":"row-keyset","erase_strategy":"unlink-or-delete","retention_days":365,"proof_level":"strong"},
+    {"name":"login_history","owner_key":"user_id","classification":"personal","export_strategy":"row-keyset","erase_strategy":"delete","retention_days":90,"proof_level":"strong"},
+    {"name":"user_privacy","owner_key":"user_id","classification":"personal","export_strategy":"row-keyset","erase_strategy":"delete","retention_days":null,"proof_level":"strong"},
+    {"name":"consent_log","owner_key":"user_id","classification":"pseudonymous","export_strategy":"row-keyset","erase_strategy":"retain-hash","retention_days":3650,"proof_level":"strong"},
+    {"name":"trusted_devices","owner_key":"user_id","classification":"secret","export_strategy":"metadata-only","erase_strategy":"delete","retention_days":null,"proof_level":"strong"},
+    {"name":"moderation_appeals","owner_key":"user_id","classification":"personal","export_strategy":"row-keyset","erase_strategy":"unlink-or-delete","retention_days":3650,"proof_level":"strong"},
+    {"name":"post_edit_history","owner_key":"editor_id","classification":"personal","export_strategy":"row-keyset","erase_strategy":"unlink-or-delete","retention_days":3650,"proof_level":"strong"},
+    {"name":"user_collections","owner_key":"user_id","classification":"personal","export_strategy":"row-keyset","erase_strategy":"delete","retention_days":null,"proof_level":"strong"},
+    {"name":"collection_items","owner_key":"collection_id","classification":"personal","export_strategy":"joined-row-keyset","erase_strategy":"cascade","retention_days":null,"proof_level":"strong"},
+    {"name":"posts","owner_key":"user_id","classification":"personal","export_strategy":"row-keyset","erase_strategy":"delete","retention_days":null,"proof_level":"strong"},
+    {"name":"comments","owner_key":"user_id","classification":"personal","export_strategy":"row-keyset","erase_strategy":"delete","retention_days":null,"proof_level":"strong"},
+    {"name":"likes","owner_key":"user_id","classification":"personal","export_strategy":"row-keyset","erase_strategy":"delete","retention_days":null,"proof_level":"strong"},
+    {"name":"saved_entities","owner_key":"user_id","classification":"personal","export_strategy":"row-keyset","erase_strategy":"delete","retention_days":null,"proof_level":"strong"},
+    {"name":"follows","owner_key":"follower_id","classification":"personal","export_strategy":"row-keyset","erase_strategy":"delete","retention_days":null,"proof_level":"strong"},
+    {"name":"user_visits","owner_key":"user_id","classification":"personal","export_strategy":"row-keyset","erase_strategy":"delete","retention_days":null,"proof_level":"strong"},
+    {"name":"post_reactions","owner_key":"user_id","classification":"personal","export_strategy":"row-keyset","erase_strategy":"delete","retention_days":null,"proof_level":"strong"},
+    {"name":"reports-jsonl","owner_key":"owner_key","classification":"personal","export_strategy":"jsonl-owner-scan","erase_strategy":"filter-rewrite","retention_days":365,"proof_level":"bounded"},
+    {"name":"analytics-jsonl","owner_key":"owner_key","classification":"personal","export_strategy":"jsonl-owner-scan","erase_strategy":"filter-rewrite","retention_days":365,"proof_level":"bounded"},
+    {"name":"bot-memory","owner_key":"platform:user_id","classification":"personal","export_strategy":"bounded-memory","erase_strategy":"evict-owner","retention_days":1,"proof_level":"bounded"},
+    {"name":"browser-storage","owner_key":"local-device","classification":"personal","export_strategy":"instruction-only","erase_strategy":"versioned-clear","retention_days":null,"proof_level":"instruction"},
+    {"name":"object-store","owner_key":"subject_id/object_key/generation","classification":"personal","export_strategy":"media-manifest","erase_strategy":"delete-receipt","retention_days":null,"proof_level":"receipt"},
+    {"name":"cdn","owner_key":"subject_id/object_key/generation","classification":"personal","export_strategy":"media-manifest","erase_strategy":"purge-receipt","retention_days":null,"proof_level":"receipt"},
+    {"name":"audit-retention","owner_key":"subject_hash","classification":"operational","export_strategy":"excluded","erase_strategy":"retain-hash","retention_days":2555,"proof_level":"hash-only"}
+  ]
+}

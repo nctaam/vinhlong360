@@ -49,6 +49,8 @@
 </template>
 
 <script setup lang="ts">
+const LIFECYCLE_CLEAR_VERSION = 'v1'
+const CHAT_STORAGE_KEY = 'chat_sid'
 import { consumeJsonSseStream } from '~/utils/sse'
 
 const route = useRoute()
@@ -144,12 +146,12 @@ const abortCtrl = ref<AbortController | null>(null)  // P1-1: cho phép dừng/t
 function stopStream() { abortCtrl.value?.abort() }
 const sessionId = ref('')
 if (import.meta.client) {
-  try { sessionId.value = sessionStorage.getItem('chat_sid') || '' } catch { /* private/disabled */ }
+  try { sessionId.value = sessionStorage.getItem(CHAT_STORAGE_KEY) || '' } catch { /* private/disabled */ }
 }
 
 function clearSessionId() {
   sessionId.value = ''
-  try { sessionStorage.removeItem('chat_sid') } catch { /* private/disabled */ }
+  try { sessionStorage.removeItem(CHAT_STORAGE_KEY) } catch { /* private/disabled */ }
 }
 
 async function openChatStream(

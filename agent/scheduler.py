@@ -1012,6 +1012,15 @@ def task_session_cleanup():
     if not db._use_pg:
         return
 
+    # Keep all expiry sinks on the same bounded worker path.  The helper owns
+    # its transaction; a failure is logged without blocking session cleanup.
+    try:
+        from identity.api import cleanup_expired_data
+
+        cleanup_expired_data(limit=500, lease="session-cleanup")
+    except Exception as exc:
+        _sched_logger.warning("Lifecycle expiry cleanup failed: %s", exc)
+
     try:
         with db._conn() as conn:
             db._execute(conn, "DELETE FROM user_sessions WHERE expires_at < NOW()", ())

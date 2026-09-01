@@ -25,6 +25,7 @@ import os
 import re
 import uuid
 from pathlib import Path
+from threading import Lock
 
 logger = logging.getLogger(__name__)
 
@@ -81,6 +82,11 @@ ALLOWED_TYPES = {"image/jpeg", "image/png", "image/webp", "image/avif", "image/g
 # Responsive WebP widths (px). Cover/detail images get all three.
 WEBP_SIZES = {"sm": 400, "md": 800, "lg": 1600}
 WEBP_QUALITY = 82
+
+# Local proof ledger for media erasure.  Production providers may additionally
+# persist this tuple, but the key is deliberately stable so retries are no-ops.
+_MEDIA_RECEIPTS: dict[tuple[str, str, str], dict] = {}
+_MEDIA_RECEIPTS_LOCK = Lock()
 
 
 def _slugify(s: str) -> str:
@@ -210,6 +216,66 @@ class Storage:
                 logger.debug("Deleted local file %s", path)
             except FileNotFoundError:
                 pass
+
+    def delete_with_receipt(
+        self,
+        subject_id: str,
+        object_key: str,
+        generation: str | int = "1",
+        *,
+        cdn_purge=None,
+    ) -> dict:
+        """Delete one object and its CDN URL exactly once.
+
+        The receipt key is ``(subject_id, object_key, generation)``.  A retry
+        returns the original receipt with ``already_absent`` and never repeats
+        a provider call.
+        """
+        key = (str(subject_id), str(object_key), str(generation))
+        with _MEDIA_RECEIPTS_LOCK:
+            existing = _MEDIA_RECEIPTS.get(key)
+            if existing is not None:
+                return {**existing, "status": "already_absent"}
+        status = "deleted"
+        error = None
+        try:
+            self.delete(str(object_key))
+            if cdn_purge is not None:
+                cdn_purge(str(object_key))
+        except Exception as exc:  # provider failures remain explicit
+            status = "failed"
+            error = type(exc).__name__
+        receipt = {
+            "subject_id": str(subject_id),
+            "object_key": str(object_key),
+            "generation": str(generation),
+            "status": status,
+            "error": error,
+        }
+        with _MEDIA_RECEIPTS_LOCK:
+            # If a concurrent worker won, return its receipt to preserve idempotency.
+            prior = _MEDIA_RECEIPTS.setdefault(key, receipt)
+            return dict(prior)
+
+
+def media_delete_receipt(subject_id: str, object_key: str, generation: str | int = "1") -> dict | None:
+    """Return a previously recorded media deletion receipt."""
+    with _MEDIA_RECEIPTS_LOCK:
+        value = _MEDIA_RECEIPTS.get((str(subject_id), str(object_key), str(generation)))
+        return dict(value) if value is not None else None
+
+
+def delete_media_with_receipt(
+    subject_id: str,
+    object_key: str,
+    generation: str | int = "1",
+    *,
+    cdn_purge=None,
+) -> dict:
+    """Module-level lifecycle adapter used by erasure workers and tests."""
+    return storage.delete_with_receipt(
+        subject_id, object_key, generation, cdn_purge=cdn_purge
+    )
 
 
 storage = Storage()

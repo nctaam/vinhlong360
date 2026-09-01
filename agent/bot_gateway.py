@@ -299,6 +299,24 @@ def _cleanup_stale_sessions():
         _bot_logger.info("Cleaned up %d stale bot sessions", len(stale))
 
 
+def purge_subject_memory(subject_id: str) -> int:
+    """Evict all bounded bot sessions for a subject; retries are idempotent."""
+    needle = str(subject_id)
+    removed = 0
+    with _sessions_lock:
+        for key in list(_sessions):
+            if key.rsplit(":", 1)[-1] == needle:
+                _sessions.pop(key, None)
+                removed += 1
+    return removed
+
+
+def verify_subject_memory_absent(subject_id: str) -> bool:
+    needle = str(subject_id)
+    with _sessions_lock:
+        return not any(key.rsplit(":", 1)[-1] == needle for key in _sessions)
+
+
 # ======================================================================
 #  BotGateway
 # ======================================================================

@@ -1,8 +1,14 @@
 interface RecentEntry { q: string; t: number }
 
-const RECENT_KEY = 'vl360_recent_searches'
+export const SEARCH_RECENTS_STORAGE_KEY = 'vl360_recent_searches'
+export const LIFECYCLE_CLEAR_VERSION = 'v1'
+const RECENT_KEY = SEARCH_RECENTS_STORAGE_KEY
 const MAX_RECENTS = 5
 const RECENT_TTL = 14 * 24 * 60 * 60 * 1000
+
+export function clearSearchRecentsStorage(storage: Pick<Storage, 'removeItem'>): void {
+  storage.removeItem(RECENT_KEY)
+}
 
 export function useSearchRecents() {
   const recentSearches = ref<string[]>([])
@@ -57,7 +63,7 @@ export function useSearchRecents() {
 
   function clearRecents() {
     recentSearches.value = []
-    try { localStorage.removeItem(RECENT_KEY) } catch {}
+    try { clearSearchRecentsStorage(localStorage) } catch {}
   }
 
   return { recentSearches, loadRecents, saveRecent, removeRecent, clearRecents }
