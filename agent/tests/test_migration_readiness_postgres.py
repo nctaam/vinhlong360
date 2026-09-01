@@ -154,9 +154,9 @@ def fresh_migrated_database():
 def test_fresh_migration_chain_reaches_release_readiness(fresh_migrated_database):
     adapter, applied = fresh_migrated_database
 
-    # Migration 081 chủ duyệt (commit 834a8d25); 082 unicode-digit CHECK (§48.4,
-    # Migration 083 adds the shared entity snapshot generation table.
-    assert [migration.version for migration in applied][-3:] == [81, 82, 83]
+    # Migration 082 adds the unicode-digit CHECK, 083 adds shared entity
+    # snapshot generation, and 084 closes community state with CAS fields.
+    assert [migration.version for migration in applied][-3:] == [82, 83, 84]
     adapter._dsn = _validate_test_database_url(adapter._dsn)
     with adapter._conn(commit_on_success=False) as conn:
         adapter._verify_pg_schema(conn)

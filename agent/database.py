@@ -57,6 +57,7 @@ PG_REQUIRED_TABLES = {
     "itineraries",
     "users",
     "posts",
+    "moderation_appeals",
     "comments",
     "saved_entities",
     "site_settings",

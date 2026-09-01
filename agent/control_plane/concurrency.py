@@ -271,11 +271,15 @@ def cas_transition(transaction, table: str, row_id: str, *, expected_status: str
 
 
 def claim_due(transaction, table: str, *, due_before: datetime, worker_id: str,
-              lease_seconds: int) -> Lease | None:
+              lease_seconds: int, now: datetime | None = None) -> Lease | None:
     """Claim one due row; PostgreSQL uses SKIP LOCKED for multi-worker safety."""
     table = _table_name(table)
     if not isinstance(due_before, datetime) or due_before.tzinfo is None or not isinstance(worker_id, str) or not worker_id or lease_seconds <= 0:
         raise ValueError("invalid_due_claim")
+    if now is None:
+        now = datetime.now(timezone.utc)
+    if not isinstance(now, datetime) or now.tzinfo is None:
+        raise ValueError("invalid_due_claim_now")
     db, conn = _ctx(transaction)
     ensure_state_schema(transaction, table)
     columns = _column_names(db, conn, table)
@@ -286,15 +290,15 @@ def claim_due(transaction, table: str, *, due_before: datetime, worker_id: str,
     status_expr = f", target.{status_col} AS state_status" if status_col else ""
     due_predicate = f" AND {status_col} IN ('pending','flagged','publish_failed')" if status_col else ""
     draft_predicate = " AND (is_draft = FALSE OR is_draft IS NULL)" if "is_draft" in columns else ""
-    # The schedule cutoff can be intentionally stale after a restart; leases
-    # must begin at the worker's actual clock time so they do not expire early.
-    expires = datetime.now(timezone.utc) + timedelta(seconds=lease_seconds)
+    # The schedule cutoff can be intentionally stale after a restart. Lease
+    # expiry and reclamation use the worker clock, never that cutoff.
+    expires = now + timedelta(seconds=lease_seconds)
     ph = db._ph
     if getattr(db, "_use_pg", False):
-        row = db._fetchone(conn, f"WITH candidate AS (SELECT {id_col} FROM {table} WHERE scheduled_at IS NOT NULL AND scheduled_at <= {ph} AND (claim_expires_at IS NULL OR claim_expires_at <= {ph}){draft_predicate}{due_predicate} ORDER BY scheduled_at, {id_col} LIMIT 1 FOR UPDATE SKIP LOCKED) UPDATE {table} AS target SET claimed_by={ph}, claim_expires_at={ph}, revision=target.revision+1 FROM candidate WHERE target.{id_col}=candidate.{id_col} RETURNING target.{id_col} AS row_id, target.revision{status_expr}", (due_before, due_before, worker_id, expires))
+        row = db._fetchone(conn, f"WITH candidate AS (SELECT {id_col} FROM {table} WHERE scheduled_at IS NOT NULL AND scheduled_at <= {ph} AND (claim_expires_at IS NULL OR claim_expires_at <= {ph}){draft_predicate}{due_predicate} ORDER BY scheduled_at, {id_col} LIMIT 1 FOR UPDATE SKIP LOCKED) UPDATE {table} AS target SET claimed_by={ph}, claim_expires_at={ph}, revision=target.revision+1 FROM candidate WHERE target.{id_col}=candidate.{id_col} RETURNING target.{id_col} AS row_id, target.revision{status_expr}", (due_before, now, worker_id, expires))
     else:
         sqlite_status_expr = f", {status_col} AS state_status" if status_col else ""
-        row = db._fetchone(conn, f"UPDATE {table} SET claimed_by={ph}, claim_expires_at={ph}, revision=revision+1 WHERE {id_col} = (SELECT {id_col} FROM {table} WHERE scheduled_at IS NOT NULL AND scheduled_at <= {ph} AND (claim_expires_at IS NULL OR claim_expires_at <= {ph}){draft_predicate}{due_predicate} ORDER BY scheduled_at, {id_col} LIMIT 1) RETURNING {id_col} AS row_id, revision{sqlite_status_expr}", (worker_id, expires.isoformat(), due_before.isoformat(), due_before.isoformat()))
+        row = db._fetchone(conn, f"UPDATE {table} SET claimed_by={ph}, claim_expires_at={ph}, revision=revision+1 WHERE {id_col} = (SELECT {id_col} FROM {table} WHERE scheduled_at IS NOT NULL AND scheduled_at <= {ph} AND (claim_expires_at IS NULL OR claim_expires_at <= {ph}){draft_predicate}{due_predicate} ORDER BY scheduled_at, {id_col} LIMIT 1) RETURNING {id_col} AS row_id, revision{sqlite_status_expr}", (worker_id, expires.isoformat(), due_before.isoformat(), now.isoformat()))
     if row is None:
         return None
     status = _row_value(row, "state_status") if status_col else None

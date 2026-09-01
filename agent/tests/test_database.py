@@ -100,6 +100,7 @@ def test_pg_schema_contract_tracks_latest_release_tables():
     # 82 CHECK vị-trí nhận chữ số Unicode (§48.4).
     assert PG_REQUIRED_SCHEMA_VERSION == 84
     assert {"schema_version", "admin_audit_events", "shared_rate_limits", "request_idempotency_keys"} <= PG_REQUIRED_TABLES
+    assert "moderation_appeals" in PG_REQUIRED_TABLES
     assert {"feedback_receipts", "feedback_daily_rollups"} <= PG_REQUIRED_TABLES
     assert {"entity_changes", "site_settings_history"} <= PG_REQUIRED_TABLES
     assert {
@@ -383,6 +384,13 @@ def test_pg_startup_rejects_schema_version_72():
         RuntimeError, match=rf"schema_version agent=72, expected >= {expected}"
     ):
         database._verify_pg_schema(_release_schema(version=72))
+
+
+def test_pg_startup_rejects_missing_moderation_appeals_table():
+    database = Database.__new__(Database)
+
+    with pytest.raises(RuntimeError, match=r"missing tables:.*moderation_appeals"):
+        database._verify_pg_schema(_release_schema(missing_table="moderation_appeals"))
 
 
 @pytest.mark.parametrize("table", sorted(_NP1_REQUIRED_COLUMNS))

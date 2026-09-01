@@ -364,6 +364,26 @@ def test_due_claim_lease_expiry_uses_current_time_not_due_cutoff():
     assert lease.claim_expires_at > datetime.now(UTC) - timedelta(seconds=5)
 
 
+def test_due_claim_reclaims_expired_lease_using_actual_now():
+    from control_plane.concurrency import claim_due
+
+    db = _SqliteDatabase()
+    stale_schedule = datetime(2020, 1, 1, tzinfo=UTC)
+    expired_lease = datetime.now(UTC) - timedelta(minutes=1)
+    db.conn.execute(
+        "INSERT INTO posts(id, moderation_status, scheduled_at, claimed_by, claim_expires_at) VALUES ('post-expired', 'pending', ?, 'old-worker', ?)",
+        (stale_schedule.isoformat(), expired_lease.isoformat()),
+    )
+    worker_now = datetime.now(UTC)
+    lease = claim_due(
+        _Tx(db), "posts", due_before=stale_schedule,
+        worker_id="new-worker", lease_seconds=60, now=worker_now,
+    )
+    assert lease is not None
+    assert lease.worker_id == "new-worker"
+    assert lease.claim_expires_at == worker_now + timedelta(seconds=60)
+
+
 def test_publish_failed_post_is_automatically_retryable(monkeypatch):
     import database
     import scheduler
@@ -387,3 +407,29 @@ def test_publish_failed_post_is_automatically_retryable(monkeypatch):
     assert result.published == 1
     assert row["moderation_status"] == "approved"
     assert row["scheduled_at"] is None
+
+
+def test_failed_due_rows_back_off_so_batch_does_not_starve_other_posts(monkeypatch):
+    import database
+    import scheduler
+
+    db = _SqliteDatabase()
+    due = datetime.now(UTC) - timedelta(minutes=1)
+    for post_id in ("post-fail-first", "post-fail-second"):
+        db.conn.execute(
+            "INSERT INTO posts(id, user_id, content, images, moderation_status, scheduled_at) VALUES (?, 'user-batch', 'Retry batch', '[]', 'pending', ?)",
+            (post_id, due.isoformat()),
+        )
+    monkeypatch.setattr(database, "db", db)
+
+    async def unavailable(*_args, **_kwargs):
+        return {"status": "pending", "moderation_available": False}
+
+    monkeypatch.setattr("moderation.moderate_content_enhanced", unavailable)
+    result = scheduler.task_publish_due_posts(now=datetime.now(UTC), worker_id="worker-batch", limit=2)
+    rows = db.conn.execute("SELECT id, moderation_status, scheduled_at, publish_attempts FROM posts ORDER BY id").fetchall()
+    assert result.claimed == 2
+    assert result.failed == 2
+    assert [row["moderation_status"] for row in rows] == ["publish_failed", "publish_failed"]
+    assert all(row["scheduled_at"] is not None for row in rows)
+    assert all(row["publish_attempts"] == 1 for row in rows)

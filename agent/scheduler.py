@@ -1173,7 +1173,7 @@ def task_publish_due_posts(now: datetime | None = None, worker_id: str | None = 
         with db._conn(commit_on_success=False) as conn:
             tx = _Tx(conn)
             ensure_state_schema(tx, "posts")
-            lease = claim_due(tx, "posts", due_before=now, worker_id=worker_id, lease_seconds=300)
+            lease = claim_due(tx, "posts", due_before=now, worker_id=worker_id, lease_seconds=300, now=now)
             if lease is None:
                 conn.rollback()
                 break
@@ -1210,7 +1210,9 @@ def task_publish_due_posts(now: datetime | None = None, worker_id: str | None = 
         with db._conn() as conn:
             id_expr = "id::text" if getattr(db, "_use_pg", False) else "id"
             if status == "publish_failed":
-                settled = db._fetchone(conn, f"UPDATE posts SET moderation_status='publish_failed', publish_attempts=COALESCE(publish_attempts,0)+1, last_error_code={ph}, claimed_by=NULL, claim_expires_at=NULL, revision=revision+1 WHERE {id_expr}={ph} AND claimed_by={ph} AND revision={ph} RETURNING id", (error_code or "publish_failed", lease.row_id, worker_id, lease.revision))
+                retry_at = now + timedelta(minutes=5)
+                retry_at_value = retry_at if getattr(db, "_use_pg", False) else retry_at.isoformat()
+                settled = db._fetchone(conn, f"UPDATE posts SET moderation_status='publish_failed', publish_attempts=COALESCE(publish_attempts,0)+1, last_error_code={ph}, scheduled_at={ph}, claimed_by=NULL, claim_expires_at=NULL, revision=revision+1 WHERE {id_expr}={ph} AND claimed_by={ph} AND revision={ph} RETURNING id", (error_code or "publish_failed", retry_at_value, lease.row_id, worker_id, lease.revision))
                 if settled:
                     failed += 1
                 else:

@@ -81,3 +81,22 @@ A disposable loopback PostgreSQL 16 cluster was initialized on `127.0.0.1:55437`
 - Idempotency retries with a claimed key and no receipt return deterministic `409 idempotency_in_progress`; an injected crash after insert proves no second insert occurs.
 - Scheduler publishes only when moderation status is terminal and `moderation_available is True`; missing/unknown availability is persisted as `publish_failed`.
 - Due leases expire from the worker's actual current time, and `publish_failed` rows are explicitly retryable.
+
+## Migration/Retry Alignment Wave
+
+### RED
+- The PostgreSQL readiness tail assertion still expected `[81, 82, 83]`; the contract check reported the stale tail after migration 084 was added.
+- `test_due_claim_reclaims_expired_lease_using_actual_now` initially returned no lease because expiration was compared to the stale `due_before` cutoff.
+- `test_pg_startup_rejects_missing_moderation_appeals_table` initially could not model the missing table because it was absent from `PG_REQUIRED_TABLES`.
+- `test_failed_due_rows_back_off_so_batch_does_not_starve_other_posts` initially left the second row pending after the first failure was immediately reclaimed.
+
+### GREEN
+- Focused command: `python -m pytest agent/tests/test_state_cas.py agent/tests/test_case_contention_postgres.py agent/tests/test_scheduler.py agent/tests/test_moderation*.py agent/tests/test_migration_chain.py agent/tests/test_database.py agent/tests/test_migration_readiness_postgres.py agent/tests/test_auth_security_hardening.py tests/test_check_migration_gate.py tests/test_release_quality_gates.py -q --basetemp .tmp-task7-review-v2-independent/final/full`
+- Result: `434 passed, 8 skipped, 1 xfailed in 24.45s`.
+- Migration/readiness-only command: `python -m pytest agent/tests/test_migration_readiness_postgres.py -q --basetemp .tmp-task7-review-v2-independent/readiness` -> `12 passed, 3 skipped in 4.25s`.
+- Final state tests: `python -m pytest agent/tests/test_state_cas.py -q --basetemp .tmp-task7-review-v2-green/state-final` -> `16 passed in 4.23s`; `git diff --check` and targeted `py_compile` passed.
+
+### Alignment changes
+- Readiness now pins the applied migration tail to `[82, 83, 84]` and requires `moderation_appeals` as a PostgreSQL table, not only a column contract.
+- `claim_due(..., now=...)` uses the explicit worker clock for lease expiration/reclamation while retaining `due_before` solely for schedule eligibility.
+- Failed scheduled posts receive a five-minute `scheduled_at` retry backoff; a bounded batch processes distinct failures without starvation, while successful retries still clear the schedule.
