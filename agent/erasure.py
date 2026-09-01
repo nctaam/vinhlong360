@@ -472,3 +472,10 @@ def erase_due_accounts(
         overdue_count=overdue,
         results=results,
     )
+
+
+def erase_subject(subject_id: str, *, dry_run: bool = True):
+    """Public lifecycle facade retained alongside the due-account worker."""
+    from control_plane.lifecycle import erase_subject as _erase_subject
+
+    return _erase_subject(subject_id, dry_run=dry_run)
