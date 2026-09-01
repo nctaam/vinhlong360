@@ -47,7 +47,9 @@ class TransactionOutcomeUnknown(RuntimeError):
     commit_outcome_unknown = True
 
     def __init__(self, cause: BaseException) -> None:
-        super().__init__("transaction_commit_outcome_unknown")
+        # Preserve the original commit error text for callers/logs while
+        # exposing the machine-readable uncertainty marker above.
+        super().__init__(str(cause))
         self.cause = cause
 
 # ── Config ──
