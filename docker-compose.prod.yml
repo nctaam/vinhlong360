@@ -111,6 +111,34 @@ services:
         max-size: "10m"
         max-file: "3"
 
+  alertmanager:
+    deploy:
+      resources:
+        limits:
+          memory: 128M
+          cpus: "0.25"
+    logging:
+      driver: json-file
+      options:
+        max-size: "5m"
+        max-file: "3"
+
+  backup-status-exporter:
+    volumes:
+      - /opt/vinhlong360/backups:/backups:ro
+    deploy:
+      resources:
+        limits:
+          memory: 64M
+          cpus: "0.10"
+
+  node-exporter:
+    deploy:
+      resources:
+        limits:
+          memory: 64M
+          cpus: "0.10"
+
   grafana:
     environment:
       GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD:?GRAFANA_ADMIN_PASSWORD is required}

@@ -106,27 +106,47 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
-      - name: Verify data backup exists (informational)
-        continue-on-error: true
+      - name: Verify data backup exists
         run: |
-          echo "::notice::Checking for recent backups..."
-          if [ -f scripts/backup_data.py ]; then
-            python scripts/backup_data.py
-            echo "Backup created/verified successfully."
-          else
-            echo "::warning::scripts/backup_data.py not found — skipping backup check."
-          fi
+          test -f scripts/backup_data.py
+          mkdir -p "$RUNNER_TEMP/vl360-backups"
+          python scripts/backup_data.py --target local --out-dir "$RUNNER_TEMP/vl360-backups"
 
-      - name: Run health check script (informational)
-        continue-on-error: true
+      - name: Run health check script
         run: |
-          if [ -f scripts/health_check.py ]; then
-            echo "::notice::Running health_check.py against production..."
-            python scripts/health_check.py --url https://vinhlong360.vn || \
-              echo "::warning::Health check failed or server unreachable (may be expected for first deploy)."
-          else
-            echo "::notice::scripts/health_check.py not found — skipping health check."
-          fi
+          test -f scripts/health_check.py
+          python scripts/health_check.py --url "${HEALTHCHECK_URL:-https://vinhlong360.vn}"
+
+  staging-rollout-rehearsal:
+    name: Staging-only rollout and rollback rehearsal
+    runs-on: ubuntu-latest
+    needs: pre-deploy-checks
+    if: github.event_name == 'workflow_dispatch'
+    environment: staging
+    steps:
+      - uses: actions/checkout@v4
+      - name: Require immutable release authority
+        env:
+          DEPLOY_ENVIRONMENT: ${{ vars.DEPLOY_ENVIRONMENT }}
+          IMMUTABLE_IMAGE_ID: ${{ vars.IMMUTABLE_IMAGE_ID }}
+          MIGRATION_GATE_COMMAND: ${{ vars.MIGRATION_GATE_COMMAND }}
+          SMOKE_PROBE_COMMAND: ${{ vars.SMOKE_PROBE_COMMAND }}
+          ROLLBACK_COMMAND: ${{ vars.ROLLBACK_COMMAND }}
+          EVIDENCE_URL: ${{ vars.EVIDENCE_URL }}
+        run: |
+          set -euo pipefail
+          test "$DEPLOY_ENVIRONMENT" = staging
+          test -n "$IMMUTABLE_IMAGE_ID"
+          test -n "$MIGRATION_GATE_COMMAND"
+          test -n "$SMOKE_PROBE_COMMAND"
+          test -n "$ROLLBACK_COMMAND"
+          test -n "$EVIDENCE_URL"
+          bash -lc "$MIGRATION_GATE_COMMAND"
+          bash -lc "$SMOKE_PROBE_COMMAND"
+          bash -lc "$ROLLBACK_COMMAND"
+          mkdir -p "$RUNNER_TEMP/staging-evidence"
+          printf '%s\n' "$IMMUTABLE_IMAGE_ID" > "$RUNNER_TEMP/staging-evidence/immutable-image-id"
+          printf '%s\n' "$EVIDENCE_URL" > "$RUNNER_TEMP/staging-evidence/evidence-url"
 
   # ── 3. Create GitHub Release ───────────────────────────────
   release:

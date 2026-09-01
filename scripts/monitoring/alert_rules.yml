@@ -1,0 +1,19 @@
+groups:
+  - name: vinhlong360-backup
+    rules:
+      - alert: Vinhlong360BackupStale
+        expr: vl360_backup_stale == 1 or up{job="backup-status"} == 0
+        for: 15m
+        labels:
+          severity: critical
+        annotations:
+          summary: "vinhlong360 backup is stale"
+          description: "No successful backup has been observed for more than 24 hours."
+      - alert: Vinhlong360BackupFailure
+        expr: vl360_backup_last_failure_timestamp_seconds > 0
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "vinhlong360 backup failed"
+          description: "The most recent backup attempt failed after the last success."

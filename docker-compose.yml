@@ -143,6 +143,7 @@ services:
       - "9090"
     volumes:
       - ./scripts/monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - ./scripts/monitoring/alert_rules.yml:/etc/prometheus/alert_rules.yml:ro
       - prometheus-data:/prometheus
     command:
       - '--config.file=/etc/prometheus/prometheus.yml'
@@ -151,6 +152,41 @@ services:
     restart: unless-stopped
     depends_on:
       - agent
+
+  alertmanager:
+    image: prom/alertmanager:latest
+    expose:
+      - "9093"
+    volumes:
+      - ./scripts/monitoring/alertmanager.yml:/etc/alertmanager/alertmanager.yml:ro
+      - alertmanager-data:/alertmanager
+    command:
+      - '--config.file=/etc/alertmanager/alertmanager.yml'
+      - '--storage.path=/alertmanager'
+      - '--config.expand-env'
+    environment:
+      VL360_ALERT_WEBHOOK_URL: ${VL360_ALERT_WEBHOOK_URL:-http://host.docker.internal:8360/internal/alerts}
+    restart: unless-stopped
+    depends_on:
+      - agent
+
+  backup-status-exporter:
+    image: python:3.12-slim
+    command: ["python", "/app/scripts/monitoring/backup_status_exporter.py"]
+    expose:
+      - "9105"
+    volumes:
+      - ./:/app:ro
+      - ${VL360_BACKUP_DIR:-./scratch/backups}:/backups:ro
+    environment:
+      BACKUP_DIR: /backups
+    restart: unless-stopped
+
+  node-exporter:
+    image: prom/node-exporter:latest
+    expose:
+      - "9100"
+    restart: unless-stopped
 
   grafana:
     image: grafana/grafana:latest
@@ -194,3 +230,4 @@ volumes:
   prometheus-data:
   grafana-data:
   loki-data:
+  alertmanager-data:

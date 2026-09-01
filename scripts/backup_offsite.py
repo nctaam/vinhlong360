@@ -21,11 +21,17 @@ Usage:
 from __future__ import annotations
 
 import argparse
+import json
 import os
 import shutil
 import subprocess
 import sys
 from pathlib import Path
+
+try:
+    from .backup_manifest import find_latest_manifest, load_manifest, validate_manifest_artifact
+except ImportError:
+    from backup_manifest import find_latest_manifest, load_manifest, validate_manifest_artifact
 
 ROOT = Path(__file__).resolve().parent.parent
 
@@ -44,6 +50,24 @@ def _find_latest_backup(backup_dir: Path) -> Path | None:
     if not backup_dir.is_dir():
         return None
 
+    # Prefer the normalized, checksum-verified manifest envelope. Legacy
+    # tarballs remain a compatibility fallback until all producers migrate.
+    normalized = find_latest_manifest(backup_dir)
+    if normalized is not None:
+        location, manifest = normalized
+        manifest_path = location / "manifest.json"
+        if not manifest_path.is_file():
+            sidecars = sorted(location.glob("*.manifest.json"), key=lambda p: p.stat().st_mtime, reverse=True)
+            manifest_path = sidecars[0] if sidecars else manifest_path
+        try:
+            raw = json.loads(manifest_path.read_text(encoding="utf-8"))
+            declared = (raw.get("artifact") or {}).get("path") or raw.get("artifact_path")
+            if declared and (location / str(declared)).is_file():
+                return location / str(declared)
+        except (OSError, TypeError, ValueError, json.JSONDecodeError):
+            pass
+        return location
+
     candidates: list[Path] = []
     # Look for tarball files first (deploy.sh creates .tar.gz backups)
     for ext in ("*.tar.gz", "*.zip", "*.sql"):
@@ -54,6 +78,28 @@ def _find_latest_backup(backup_dir: Path) -> Path | None:
     if not candidates:
         return None
     return max(candidates, key=lambda p: p.stat().st_mtime)
+
+
+def _manifest_for_backup(path: Path):
+    manifest_path = path / "manifest.json" if path.is_dir() else path.with_name(path.name + ".manifest.json")
+    if not manifest_path.is_file() and path.is_dir():
+        sidecars = sorted(path.glob("*.manifest.json"), key=lambda p: p.stat().st_mtime, reverse=True)
+        manifest_path = sidecars[0] if sidecars else manifest_path
+    if not manifest_path.is_file():
+        return None
+    try:
+        manifest = load_manifest(manifest_path)
+        artifact = path
+        if path.is_dir():
+            raw = json.loads(manifest_path.read_text(encoding="utf-8"))
+            declared = (raw.get("artifact") or {}).get("path") or raw.get("artifact_path")
+            if not isinstance(declared, str):
+                return None
+            artifact = path / declared
+        validate_manifest_artifact(manifest, artifact)
+        return manifest
+    except (OSError, ValueError, json.JSONDecodeError):
+        return None
 
 
 def _check_aws_cli() -> str | None:
@@ -129,6 +175,23 @@ def _upload(
         return False
 
 
+def _upload_bundle(
+    aws_cli: str,
+    artifact: Path,
+    manifest: Path,
+    bucket: str,
+    prefix: str,
+    endpoint: str | None,
+    env: dict[str, str],
+    dry_run: bool,
+) -> bool:
+    """Upload artifact and its integrity manifest as an atomic logical pair."""
+    if not manifest.is_file():
+        print(f"[offsite] ERROR: manifest not found: {manifest}", file=sys.stderr)
+        return False
+    return _upload(aws_cli, artifact, bucket, prefix, endpoint, env, dry_run) and _upload(
+        aws_cli, manifest, bucket, prefix, endpoint, env, dry_run
+    )
 def main() -> int:
     parser = argparse.ArgumentParser(
         description="Upload latest local backup to S3-compatible storage."
@@ -228,7 +291,21 @@ def main() -> int:
 
     # --- upload ---
     env = _build_env(endpoint, access_key, secret_key, args.region)
-    ok = _upload(aws_cli, latest, bucket, args.prefix, endpoint, env, args.dry_run)
+    manifest_path = latest / "manifest.json" if latest.is_dir() else latest.with_name(latest.name + ".manifest.json")
+    if not manifest_path.is_file() and latest.is_dir():
+        sidecars = sorted(latest.glob("*.manifest.json"), key=lambda p: p.stat().st_mtime, reverse=True)
+        manifest_path = sidecars[0] if sidecars else manifest_path
+    if manifest_path.is_file():
+        manifest = load_manifest(manifest_path)
+        artifact = latest
+        if latest.is_dir():
+            raw = json.loads(manifest_path.read_text(encoding="utf-8"))
+            artifact = latest / str((raw.get("artifact") or {}).get("path"))
+        validate_manifest_artifact(manifest, artifact)
+        ok = _upload_bundle(aws_cli, artifact, manifest_path, bucket, args.prefix, endpoint, env, args.dry_run)
+    else:
+        print(f"[offsite] ERROR: integrity manifest missing for {latest}", file=sys.stderr)
+        ok = False
     return 0 if ok else 1
 
 

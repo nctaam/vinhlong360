@@ -25,13 +25,14 @@ Mount qua `admin.router.include_router(...)` TRƯỚC `_fix_admin_route_order()`
 from __future__ import annotations
 
 import asyncio
+import hashlib
 import json
 import logging
 import os
 import re
 import subprocess
 import sys
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Optional
 
@@ -45,6 +46,12 @@ from admin_common import _require_admin_actor_id, _safe, _sync_kb
 from auth_middleware import require_pg, validate_path_id
 from config import settings as _cfg
 from database import db
+
+from control_plane.concurrency import IdempotencyKey, claim_idempotency, record_idempotency_receipt
+try:
+    from backup_manifest import find_latest_manifest
+except ImportError:
+    from scripts.backup_manifest import find_latest_manifest
 
 logger = logging.getLogger("admin")
 
@@ -267,13 +274,47 @@ def _format_uptime(seconds: int) -> str:
 def _latest_backup_info() -> dict:
     backup_dir = ROOT / "scratch" / "backups"
     if not backup_dir.exists():
-        return {"ready": False, "latest": None, "count": 0, "size_mb": 0}
+        return {"ready": False, "latest": None, "count": 0, "size_mb": 0,
+                "state": "missing", "last_success": None, "last_failure": None,
+                "artifact_id": None, "stale": True}
     dirs = sorted([p for p in backup_dir.iterdir() if p.is_dir()], key=lambda p: p.name, reverse=True)
     if not dirs:
-        return {"ready": False, "latest": None, "count": 0, "size_mb": 0}
+        return {"ready": False, "latest": None, "count": 0, "size_mb": 0,
+                "state": "missing", "last_success": None, "last_failure": None,
+                "artifact_id": None, "stale": True}
     latest = dirs[0]
     size_mb = round(sum(f.stat().st_size for f in latest.rglob("*") if f.is_file()) / 1048576, 1)
-    return {"ready": True, "latest": latest.name, "count": len(dirs), "size_mb": size_mb}
+    manifest = {}
+    try:
+        manifest = json.loads((latest / "manifest.json").read_text(encoding="utf-8"))
+    except (OSError, ValueError, TypeError):
+        manifest = {}
+    created_at = manifest.get("created_at") or manifest.get("completed_at")
+    artifact_id = manifest.get("artifact_id") or latest.name
+    valid = False
+    try:
+        normalized = find_latest_manifest(backup_dir)
+        valid = normalized is not None and normalized[0] == latest
+    except Exception:
+        valid = False
+    if not valid:
+        return {
+            "ready": False, "latest": latest.name, "count": len(dirs), "size_mb": size_mb,
+            "state": "failure", "last_success": None, "last_failure": created_at,
+            "artifact_id": artifact_id, "stale": True,
+        }
+    stale = True
+    if created_at:
+        try:
+            parsed = datetime.fromisoformat(str(created_at).replace("Z", "+00:00"))
+            stale = (datetime.now(timezone.utc) - parsed).total_seconds() > 86400
+        except ValueError:
+            stale = True
+    return {
+        "ready": True, "latest": latest.name, "count": len(dirs), "size_mb": size_mb,
+        "state": "stale" if stale else "success", "last_success": created_at, "last_failure": None,
+        "artifact_id": artifact_id, "stale": stale,
+    }
 
 
 @router.get("/backup-status",
@@ -281,7 +322,8 @@ def _latest_backup_info() -> dict:
             description="Returns a thin snapshot of the latest local backup (readiness, name, count, size) — same info already surfaced inside /admin/stats and /admin/ops-summary, exposed standalone for lightweight polling.")
 async def backup_status():
     """B5c: route mỏng bọc _latest_backup_info() — không thêm logic mới."""
-    return {"backup": await asyncio.to_thread(_latest_backup_info)}
+    status = await asyncio.to_thread(_latest_backup_info)
+    return {"backup": status, **status}
 
 
 def _data_quality_ops_snapshot() -> dict:
@@ -570,7 +612,7 @@ _BACKUP_COOLDOWN = _cfg.BACKUP_COOLDOWN
 @router.post("/backup-trigger",
              summary="Trigger data backup",
              description="Initiates a manual backup of the database. Returns the backup file path, size, and status. Rate-limited by a cooldown period.")
-async def trigger_backup():
+async def trigger_backup(request: Request = None):
     """B5c: trigger manual backup from admin UI."""
     import time as _time
     global _last_backup_time
@@ -578,7 +620,6 @@ async def trigger_backup():
     if now - _last_backup_time < _BACKUP_COOLDOWN:
         remaining = int(_BACKUP_COOLDOWN - (now - _last_backup_time))
         raise HTTPException(429, f"Backup đã chạy gần đây. Thử lại sau {remaining} giây.")
-    _last_backup_time = now
     # Chỉnh máy móc DUY NHẤT trong handler B1 này khi đổi nhà admin.py → siteops/:
     # parent.parent cũ (agent/admin.py → gốc repo) nay là ROOT (= parents[2]).
     # Luồng subprocess giữ NGUYÊN VĂN, không refactor.
@@ -586,17 +627,119 @@ async def trigger_backup():
     if not script.exists():
         raise HTTPException(500, "Không tìm thấy script backup_data.py")
     def _run():
+        global _last_backup_time
+        nonlocal now
+        idem_key = request.headers.get("Idempotency-Key") if request is not None else None
+        actor = "admin"
+        if request is not None:
+            actor_data = getattr(request.state, "admin_user", None)
+            if isinstance(actor_data, dict):
+                actor = str(actor_data.get("id") or actor)
+
+        class _Transaction:
+            def __init__(self, connection):
+                self._db = db
+                self._conn = connection
+
+        def _check_shared_cooldown(transaction: _Transaction) -> None:
+            if not getattr(db, "_use_pg", False):
+                return
+            # Serialize the first-run case as well as existing sentinel rows;
+            # SELECT ... FOR UPDATE cannot lock a row that does not exist.
+            db._execute(
+                transaction._conn,
+                "SELECT pg_advisory_xact_lock(hashtext('vinhlong360:backup-trigger'))",
+                (),
+            )
+            row = db._fetchone(
+                transaction._conn,
+                "SELECT meta FROM request_idempotency_keys WHERE key=%s FOR UPDATE",
+                ("backup-trigger:__cooldown__",),
+            )
+            if row is None:
+                return
+            meta = row.get("meta") if isinstance(row, dict) else row[0]
+            if isinstance(meta, str):
+                try:
+                    meta = json.loads(meta)
+                except (TypeError, ValueError, json.JSONDecodeError):
+                    meta = {}
+            completed = meta.get("completed_at") if isinstance(meta, dict) else None
+            try:
+                elapsed = datetime.now(timezone.utc).timestamp() - float(completed)
+            except (TypeError, ValueError):
+                return
+            if elapsed < _BACKUP_COOLDOWN:
+                raise HTTPException(429, f"Backup đã chạy gần đây. Thử lại sau {int(_BACKUP_COOLDOWN - elapsed)} giây.")
+
+        def _record_shared_cooldown(transaction: _Transaction) -> None:
+            if not getattr(db, "_use_pg", False):
+                return
+            expires = datetime.now(timezone.utc) + timedelta(hours=24)
+            meta = json.dumps({"completed_at": datetime.now(timezone.utc).timestamp()})
+            db._execute(
+                transaction._conn,
+                "INSERT INTO request_idempotency_keys(key, expires_at, meta) VALUES (%s,%s,%s::jsonb) "
+                "ON CONFLICT (key) DO UPDATE SET expires_at=EXCLUDED.expires_at, meta=EXCLUDED.meta",
+                ("backup-trigger:__cooldown__", expires, meta),
+            )
+
+        # PostgreSQL workers share both the cooldown lock and idempotency row.
+        # Holding the transaction through the backup prevents concurrent runs;
+        # failures roll back the cooldown so a retry remains possible.
+        if getattr(db, "_use_pg", False):
+            with db._conn() as conn:
+                transaction = _Transaction(conn)
+                claim = None
+                if idem_key:
+                    request_hash = hashlib.sha256(f"backup:{actor}:{idem_key}".encode()).hexdigest()
+                    claim = claim_idempotency(transaction, IdempotencyKey("backup-trigger", actor, idem_key), request_hash)
+                    if claim.replayed:
+                        return claim.receipt
+                    if claim.conflict:
+                        raise HTTPException(409, "Idempotency-Key đã dùng cho yêu cầu khác")
+                _check_shared_cooldown(transaction)
+                result = _run_backup_process(script)
+                if claim is not None:
+                    record_idempotency_receipt(transaction, claim, result)
+                _record_shared_cooldown(transaction)
+                _last_backup_time = now
+                return result
+
+        # SQLite/legacy callers retain the process-local fallback, while an
+        # explicit idempotency key still prevents duplicate work in that store.
+        if idem_key:
+            with db._conn() as conn:
+                request_hash = hashlib.sha256(f"backup:{actor}:{idem_key}".encode()).hexdigest()
+                transaction = _Transaction(conn)
+                claim = claim_idempotency(transaction, IdempotencyKey("backup-trigger", actor, idem_key), request_hash)
+                if claim.replayed:
+                    return claim.receipt
+                if claim.conflict:
+                    raise HTTPException(409, "Idempotency-Key đã dùng cho yêu cầu khác")
+                result = _run_backup_process(script)
+                record_idempotency_receipt(transaction, claim, result)
+                _last_backup_time = now
+                return result
+        result = _run_backup_process(script)
+        _last_backup_time = now
+        return result
+
+    def _run_backup_process(script_path: Path):
         try:
             result = subprocess.run(
-                [sys.executable, str(script), "--label", "admin-manual"],
+                [sys.executable, str(script_path), "--label", "admin-manual"],
                 capture_output=True, text=True, timeout=30,
             )
             if result.returncode != 0:
                 logger.error("Backup script failed: %s", result.stderr)
                 raise HTTPException(500, "Backup thất bại. Kiểm tra log server.")
             backup_dir = ROOT / "scratch" / "backups"  # chỉnh máy móc cùng lý do dòng script ở trên
-            dirs = sorted(backup_dir.iterdir(), key=lambda p: p.name, reverse=True)
+            dirs = sorted((p for p in backup_dir.iterdir() if p.is_dir()), key=lambda p: p.name, reverse=True)
             latest = dirs[0] if dirs else None
+            normalized = find_latest_manifest(backup_dir)
+            if latest is None or normalized is None or normalized[0] != latest:
+                raise HTTPException(500, "Backup không tạo manifest/checksum hợp lệ")
             size_mb = round(sum(f.stat().st_size for f in latest.rglob("*") if f.is_file()) / 1048576, 1) if latest else 0
             return {
                 "success": True,

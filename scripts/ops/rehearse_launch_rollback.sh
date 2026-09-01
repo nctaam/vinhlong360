@@ -17,6 +17,14 @@ ROLLBACK_RELEASE_ID="${ROLLBACK_RELEASE_ID:?rollback release id is required}"
 ENVIRONMENT_AUTHORITY="${ENVIRONMENT_AUTHORITY:?external environment authority is required}"
 RUNTIME_AUTHORITY="${RUNTIME_AUTHORITY:?external runtime authority is required}"
 MOUNT_AUTHORITY="${MOUNT_AUTHORITY:-}"
+# Immutable release identity and proof commands travel with every rehearsal.
+# Host execution is staging-only; production requires a separately authorized
+# deployment path and is rejected here by design.
+IMMUTABLE_ARCHIVE_ID="${IMMUTABLE_ARCHIVE_ID:-$KNOWN_GOOD_CLOSED}"
+MIGRATION_GATE_COMMAND="${MIGRATION_GATE_COMMAND:-python scripts/check_migration_gate.py --db-check}"
+SMOKE_PROBE_COMMAND="${SMOKE_PROBE_COMMAND:-curl --fail http://127.0.0.1:8360/health}"
+ROLLBACK_COMMAND="${ROLLBACK_COMMAND:-known-good-closed-restore}"
+EVIDENCE_URL="${EVIDENCE_URL:-local://$EVIDENCE_DIR}"
 STARTED_AT="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
 STARTED_EPOCH="$(date +%s)"
 CURRENT_PHASE=initialization
@@ -38,6 +46,10 @@ case "$MODE" in
     ;;
   --execute-on-host)
     [ "${ACKNOWLEDGE_MAINTENANCE:-}" = "launch-safety-rollback" ] || exit 64
+    [ "${DEPLOY_ENVIRONMENT:-}" = "staging" ] || {
+      printf 'production rollout is refused; staging authority is required\n' >&2
+      exit 64
+    }
     RELEASE_ROOT="${RELEASE_ROOT:-/opt/vinhlong360}"
     [ -n "$MOUNT_AUTHORITY" ] || { printf 'live mount authority is required\n' >&2; exit 64; }
     [ -f "$ENVIRONMENT_AUTHORITY" ] || exit 64
@@ -48,6 +60,34 @@ case "$MODE" in
     exit 64
     ;;
 esac
+
+[ -n "$IMMUTABLE_ARCHIVE_ID" ] || { printf 'immutable archive/image id is required\n' >&2; exit 64; }
+[ -n "$MIGRATION_GATE_COMMAND" ] || exit 64
+[ -n "$SMOKE_PROBE_COMMAND" ] || exit 64
+[ -n "$ROLLBACK_COMMAND" ] || exit 64
+[ -n "$EVIDENCE_URL" ] || exit 64
+
+# Persist the authority inputs so the rehearsal evidence proves which
+# immutable release and verification commands were admitted.
+python - "$EVIDENCE_DIR/rollout-contract.json" "$IMMUTABLE_ARCHIVE_ID" \
+  "$MIGRATION_GATE_COMMAND" "$SMOKE_PROBE_COMMAND" "$ROLLBACK_COMMAND" "$EVIDENCE_URL" <<'PY'
+import json
+import sys
+from pathlib import Path
+
+destination, archive_id, migration, smoke, rollback, evidence_url = sys.argv[1:]
+path = Path(destination)
+path.parent.mkdir(parents=True, exist_ok=True)
+path.write_text(json.dumps({
+    "schema_version": 1,
+    "environment": "staging",
+    "immutable_archive_id": archive_id,
+    "migration_gate_command": migration,
+    "smoke_probe_command": smoke,
+    "rollback_command": rollback,
+    "evidence_url": evidence_url,
+}, ensure_ascii=True, indent=2) + "\n", encoding="utf-8")
+PY
 
 record_phase() {
   local status="$1"

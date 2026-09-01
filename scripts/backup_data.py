@@ -17,6 +17,11 @@ from datetime import UTC, datetime
 from pathlib import Path
 
 try:
+    from .backup_manifest import BackupManifest
+except ImportError:
+    from backup_manifest import BackupManifest
+
+try:
     from .postgres_target import (
         IDENTITY_KEYS as IDENTITY_KEYS,
         canonical_target_identity,
@@ -426,6 +431,25 @@ def _create_local_backup(destination: Path, timestamp: str) -> tuple[Path, dict]
         manifest["copied"].append("agent/data/vinhlong360.db")
         manifest["sizes"]["vinhlong360.db"] = _file_size_human(database_artifact)
 
+    # Keep the historical fields above for old tooling while publishing the
+    # normalized manifest consumed by offsite upload and restore drill.
+    primary = destination / ("data.json" if (destination / "data.json").is_file() else "vinhlong360.db")
+    if primary.is_file():
+        checksum = sha256_file(primary)
+        shared = BackupManifest(
+            artifact_id=destination.name,
+            format="json+sqlite",
+            source_identity={"target": "local", "repository": "vinhlong360"},
+            row_counts={key: value for key, value in manifest["counts"].items() if type(value) is int},
+            checksum=checksum,
+            created_at=f"{timestamp[:8]}T{timestamp[9:11]}:{timestamp[11:13]}:{timestamp[13:15]}Z",
+        )
+        manifest.update({key: value for key, value in shared.to_dict().items() if key != "schema"})
+        manifest["manifest_schema"] = shared.to_dict()["schema"]
+        manifest["artifact"] = {"path": primary.name, "sha256": checksum}
+
+    # write_exclusive is retained for the cleanup ownership contract; shared
+    # fields make this manifest consumable by every backup path.
     with (destination / "manifest.json").open("w", encoding="utf-8") as stream:
         json.dump(manifest, stream, ensure_ascii=False, indent=2)
     return destination, manifest
@@ -503,6 +527,7 @@ def create_postgres_backup(
         if table not in listed_tables:
             raise RuntimeError(f"PostgreSQL backup is missing required table: {table}")
 
+    checksum = sha256_file(artifact)
     manifest = {
         "schema": "vinhlong360-pg-backup-v1",
         "target": "pg",
@@ -515,7 +540,7 @@ def create_postgres_backup(
         "artifact": {
             "path": artifact.name,
             "size": artifact.stat().st_size,
-            "sha256": sha256_file(artifact),
+            "sha256": checksum,
         },
         "validation": {
             "pg_restore_list": True,
@@ -524,6 +549,16 @@ def create_postgres_backup(
         },
         "policy_revision": "published-v1",
     }
+    shared = BackupManifest(
+        artifact_id=destination.name,
+        format="postgres.custom",
+        source_identity=database_identity,
+        row_counts={},
+        checksum=checksum,
+        created_at=manifest["completed_at"],
+    )
+    manifest.update({key: value for key, value in shared.to_dict().items() if key != "schema"})
+    manifest["manifest_schema"] = shared.to_dict()["schema"]
     return write_exclusive(destination / "manifest.json", manifest)
 
 

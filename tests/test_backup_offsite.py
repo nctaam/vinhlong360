@@ -8,6 +8,20 @@ ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
 
 from scripts.backup_offsite import _find_latest_backup, _file_size_human
+from scripts.backup_offsite import _upload_bundle
+
+
+def test_upload_bundle_includes_manifest_sidecar(tmp_path: Path, monkeypatch) -> None:
+    artifact = tmp_path / "backup.sql.gz"
+    artifact.write_bytes(b"dump")
+    manifest = artifact.with_name(artifact.name + ".manifest.json")
+    manifest.write_text("{}", encoding="utf-8")
+    commands = []
+    monkeypatch.setattr("scripts.backup_offsite.subprocess.run", lambda args, **kwargs: commands.append(args) or type("R", (), {"returncode": 0, "stdout": "", "stderr": ""})())
+    assert _upload_bundle("aws", artifact, manifest, "bucket", "prefix", None, {}, False)
+    assert len(commands) == 2
+    assert str(artifact) in commands[0]
+    assert str(manifest) in commands[1]
 
 
 class TestFindLatestBackup:

@@ -10,10 +10,10 @@ Task 4: complete (commits 417f654f..71a6a195, review clean; final controller 264
 Task 5: complete (commits 71a6a195..6e9f28f2, review clean; focused lifecycle/account 19 passed, frontend lifecycle/settings/chat 46 passed, disposable PostgreSQL schema 82 lifecycle/erasure 27 passed and database-after-drop None)
 Task 6: complete (commits a88464f3..dee72e5f, review clean; schema/publication fixes approved, focused 28 passed, disposable PostgreSQL schema 83/generation/teardown verified)
 Task 7: complete (commits 1b4eebbd..017e175b, review clean; focused 434 passed/8 skipped/1 xfailed, migration gates 24 passed, disposable PostgreSQL schema 84/CAS/lease/teardown verified)
-Task 8: pending
-Task 9: pending
-Task 10: pending
-Task 11: pending
+Task 8: complete (commits 33f7ca76..d4e9b320, independent review clean; focused mutation/search/media suites passed, disposable PostgreSQL mutation/compensation evidence verified)
+Task 9: complete (commits 59b704f0..9e273c40, independent review clean; cross-worker generation/cache consistency and invalidation suites passed)
+Task 10: pending (implementation/remediation complete; final independent verdict and commit still pending)
+Task 11: complete (implementation + second review remediation; 148 focused tests passed/1 skipped, package suite 49 passed/3 skipped, compileall/Ruff/diff-check green; PostgreSQL/Docker runtime evidence unavailable on this host)
 Task 12: pending
 Task 13: pending
 Task 14: pending

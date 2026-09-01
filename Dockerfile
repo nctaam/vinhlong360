@@ -42,6 +42,10 @@ ENV PATH="/opt/venv/bin:$PATH"
 COPY agent/ ./agent/
 COPY web/ ./web/
 COPY config/ ./config/
+# Site-ops backup routes execute these shared manifest/backup helpers in the
+# runtime image; keep them versioned with the application rather than relying
+# on the repository checkout being mounted in production.
+COPY scripts/ ./scripts/
 
 # Data directory for logs, memory, analytics
 RUN mkdir -p agent/data data/memory
