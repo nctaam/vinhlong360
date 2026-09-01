@@ -2,7 +2,7 @@
 
 Status: GREEN (review remediation)
 
-Commit SHAs (inclusive): `594aebf2`, `eae82e22`, `52de64f9`, `cf3127de`, `30bba3c7`, `6a37ae9b`, `b679c4cc`, `62c1f8ef`, `9c33118c`, `763a9651`, `e22ab2e7`, `a9f7462c`, `f523b580`, `e331ec64`, `e3bbe0c9`, `6cf852dc`, `a46d0d57`, `11cb0a0b`, `46fd7b33`, `10a70738`, `9508fb49`, `e9ec4424`, `b774be79`, and `ce29719e` (replay fail-closed source/tests).
+Commit SHAs (inclusive): `594aebf2`, `eae82e22`, `52de64f9`, `cf3127de`, `30bba3c7`, `6a37ae9b`, `b679c4cc`, `62c1f8ef`, `9c33118c`, `763a9651`, `e22ab2e7`, `a9f7462c`, `f523b580`, `e331ec64`, `e3bbe0c9`, `6cf852dc`, `a46d0d57`, `11cb0a0b`, `46fd7b33`, `10a70738`, `9508fb49`, `e9ec4424`, `b774be79`, `ce29719e` (replay fail-closed source/tests), and `0fbcfc16` (verification receipt gate).
 
 Files changed:
 
@@ -123,7 +123,7 @@ Fresh dormant-kernel verification: `python -m pytest agent/tests/test_case_wirin
 
 The committed readiness guard makes both public and admin route predicates require the complete composition-root readiness bit; failed or reset wiring therefore stays dormant even when feature flags are enabled. The final controller rerun of the same guard suites remained `79 passed, 14 skipped`.
 
-The final Task 4 history runs inclusively from `594aebf2` through `52b6fe64`; changed test files include `test_correction_changesets.py`, `test_correction_publication.py`, `test_correction_publication_failure.py`, and `test_correction_rollback.py`. The backend-only commits used approved `--no-verify` where the known R30.7 generated frontend-bundle debt blocked the hook; no frontend files changed.
+The final Task 4 implementation history runs inclusively from `594aebf2` through `0fbcfc16`; report-only commits `52b6fe64` and `0f015f4c` record the evidence ledger. Changed test files include `test_correction_changesets.py`, `test_correction_publication.py`, `test_correction_publication_failure.py`, and `test_correction_rollback.py`. The backend-only commits used approved `--no-verify` where the known R30.7 generated frontend-bundle debt blocked the hook; no frontend files changed.
 
 ## Replay fail-closed remediation
 
