@@ -11,6 +11,7 @@ from __future__ import annotations
 import base64
 import hashlib
 import json
+import uuid
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from pathlib import Path
@@ -152,6 +153,12 @@ def _subject_hash(subject_id: str) -> str:
     return hashlib.sha256(str(subject_id).encode("utf-8")).hexdigest()
 
 
+def _canonical_owner(subject_id: str) -> str:
+    """Use one owner namespace across analytics, reports and erasure adapters."""
+    value = str(subject_id)
+    return value if value.startswith("user:") else f"user:{value}"
+
+
 def _encode_cursor(value: str) -> str:
     return base64.urlsafe_b64encode(value.encode("utf-8")).decode("ascii").rstrip("=")
 
@@ -201,12 +208,29 @@ _TABLES: dict[str, tuple[str, str, str]] = {
     "user_2fa": ("user_id", "user_id", "user_id, enabled, created_at, updated_at"),
     "user_2fa_recovery_codes": ("user_id", "created_at", "id, user_id, used, created_at"),
     "pending_2fa": ("user_id", "created_at", "id, user_id, expires_at, created_at"),
+    # Secondary account-owned tables from optional feature migrations. Keep
+    # these explicit so export and erasure cannot silently diverge.
+    "event_rsvp": ("user_id", "created_at", "user_id, entity_id, created_at"),
+    "notification_preferences": ("user_id", "updated_at", "user_id, pref_like, pref_comment, pref_mention, pref_follow, pref_system, updated_at"),
+    "comment_likes": ("user_id", "created_at", "user_id, comment_id, created_at"),
+    "user_hidden_posts": ("user_id", "created_at", "user_id, post_id, created_at"),
+    "user_achievements": ("user_id", "unlocked_at", "user_id, achievement_id, unlocked_at"),
+    "profile_views": ("viewer_id", "created_at", "id, viewer_id, viewed_id, viewed_date, created_at"),
+    "user_preferences": ("user_id", "updated_at", "user_id, region_id, region_label, region_scope, location_source, location_accuracy, location_consent_state, location_enabled, personalization_enabled, explicit_interests, recommendation_reset_at, consent_version, revision, location_reconfirm_required, location_provenance_version, created_at, updated_at"),
+    "user_preference_consents": ("user_id", "created_at", "id, user_id, consent_type, state, version, created_at"),
+    "user_personalization_events": ("user_id", "occurred_at", "id, user_id, event_type, context, entity_id, entity_type, area_id, interest_keys, occurred_at, expires_at"),
+    "personalization_legacy_purge_queue": ("user_id", "created_at", "user_id, created_at, attempt_count, next_attempt_at, last_error"),
 }
 _TABLE_TIES = {
     "likes": ("post_id",), "follows": ("target_type", "target_id"),
     "user_visits": ("visited_at", "entity_id", "status"),
     "post_reactions": ("post_id", "reaction_type"), "user_2fa": ("enabled",),
     "blocks": ("blocked_id",), "user_mutes": ("muted_id",),
+    "event_rsvp": ("entity_id",), "comment_likes": ("comment_id",),
+    "user_hidden_posts": ("post_id",), "user_achievements": ("achievement_id",),
+    "user_preference_consents": ("consent_type",),
+    "user_personalization_events": ("event_type", "id"),
+    "personalization_legacy_purge_queue": ("user_id",),
 }
 
 
@@ -238,8 +262,14 @@ def _rows_for_table(table: str, subject_id: str, cursor: str | None, limit: int)
         values = values[:limit]
         next_cursor = _encode_cursor(json.dumps({"sink": table, "offset": offset + limit, "value": str(values[-1].get("added_at")), "id": str(values[-1].get("id"))}, separators=(",", ":"))) if truncated and values else None
         return values, next_cursor, truncated, None
-    where = f"{owner}::text = {ph}"
-    params: list[Any] = [str(subject_id)]
+    if table == "profile_views":
+        # A profile-view row is personal to both participants. Export it when
+        # the account is either the viewer or the viewed profile.
+        where = f"(viewer_id::text = {ph} OR viewed_id::text = {ph})"
+        params: list[Any] = [str(subject_id), str(subject_id)]
+    else:
+        where = f"{owner}::text = {ph}"
+        params = [str(subject_id)]
     if cursor and not (isinstance(cursor, dict) and "offset" in cursor):
         if isinstance(cursor, dict) and cursor.get("sink") not in (None, table):
             cursor = None
@@ -291,7 +321,7 @@ lifecycle_registry = _default_registry()
 
 def _external_export(name: str, subject_id: str, limit: int, cursor: Any = None) -> tuple[list[dict[str, Any]], str | None, bool, str | None, str]:
     """Enumerate local adapters; unavailable providers are explicit, never empty-success."""
-    owner = str(subject_id)
+    owner = _canonical_owner(subject_id)
     try:
         if name == "analytics-jsonl":
             import analytics
@@ -400,17 +430,67 @@ _BROWSER_CLEAR_KEYS = (
 _BROWSER_PROOFS: dict[str, dict[str, Any]] = {}
 
 
+def _browser_db_table() -> bool:
+    """Create the durable browser-proof table on local/test databases."""
+    try:
+        db.initialize()
+        if getattr(db, "_use_pg", False):
+            with db._conn(commit_on_success=False) as conn:
+                db._fetchone(conn, "SELECT 1 FROM browser_clear_instructions LIMIT 1", ())
+            return True
+        with db._conn() as conn:
+            db._execute(conn, """
+                CREATE TABLE IF NOT EXISTS browser_clear_instructions (
+                    issuance_id TEXT PRIMARY KEY,
+                    subject_hash TEXT NOT NULL,
+                    instruction_json TEXT NOT NULL,
+                    issued_at TEXT NOT NULL
+                )
+            """, ())
+        return True
+    except Exception:
+        return False
+
+
 def issue_browser_clear_instruction(subject_id: str) -> dict[str, Any]:
     token = _subject_hash(str(subject_id))
-    instruction = {"version": "v1", "action": "clear", "keys": list(_BROWSER_CLEAR_KEYS), "issued": True, "subject_hash": token}
-    _BROWSER_PROOFS[token] = dict(instruction)
+    issuance_id = uuid.uuid4().hex
+    instruction = {"version": "v1", "action": "clear", "keys": list(_BROWSER_CLEAR_KEYS), "issued": True, "subject_hash": token, "issuance_id": issuance_id}
+    _BROWSER_PROOFS[issuance_id] = dict(instruction)
+    if _browser_db_table():
+        try:
+            with db._conn() as conn:
+                db._execute(conn, "INSERT INTO browser_clear_instructions (issuance_id, subject_hash, instruction_json, issued_at) VALUES ({0}, {0}, {0}, {0})".format(db._ph), (issuance_id, token, json.dumps(instruction, sort_keys=True), datetime.now(timezone.utc).isoformat()))
+        except Exception:
+            pass
     return instruction
+
+
+def get_browser_clear_instruction(issuance_id: str) -> dict[str, Any] | None:
+    """Retrieve an issuance proof from durable storage after a restart."""
+    cached = _BROWSER_PROOFS.get(str(issuance_id))
+    if cached is not None:
+        return dict(cached)
+    if not _browser_db_table():
+        return None
+    try:
+        with db._conn(commit_on_success=False) as conn:
+            row = db._fetchone(conn, "SELECT instruction_json FROM browser_clear_instructions WHERE issuance_id = " + db._ph, (str(issuance_id),))
+        if row:
+            value = db._row_to_dict(row).get("instruction_json")
+            proof = json.loads(value) if isinstance(value, str) else value
+            if isinstance(proof, dict):
+                _BROWSER_PROOFS[str(issuance_id)] = dict(proof)
+                return dict(proof)
+    except Exception:
+        return None
+    return None
 
 
 def _external_erase(name: str, subject_id: str, *, dry_run: bool) -> dict[str, Any]:
     if dry_run:
         return {"status": "retained", "count": 0, "dry_run": True}
-    owner = str(subject_id)
+    owner = _canonical_owner(subject_id)
     try:
         if name == "analytics-jsonl":
             import analytics
@@ -453,6 +533,12 @@ def _external_erase(name: str, subject_id: str, *, dry_run: bool) -> dict[str, A
 _POSTGRES_EXTRA_OWNERS = {
     "blocks": "blocker_id", "user_mutes": "user_id", "user_sessions": "user_id",
     "user_2fa": "user_id", "user_2fa_recovery_codes": "user_id", "pending_2fa": "user_id",
+    "event_rsvp": "user_id", "notification_preferences": "user_id",
+    "comment_likes": "user_id", "user_hidden_posts": "user_id",
+    "user_achievements": "user_id", "user_preferences": "user_id",
+    "user_preference_consents": "user_id", "user_personalization_events": "user_id",
+    "personalization_legacy_purge_queue": "user_id",
+    "profile_views": "viewer_id",
 }
 
 
@@ -465,7 +551,10 @@ def _erase_postgres_extra(name: str, subject_id: str, *, dry_run: bool) -> dict[
     ph = getattr(db, "_ph", "%s")
     try:
         with db._conn() as conn:
-            result = db._execute(conn, f"DELETE FROM {name} WHERE {column}::text = {ph}", (str(subject_id),))
+            if name == "profile_views":
+                result = db._execute(conn, f"DELETE FROM {name} WHERE viewer_id::text = {ph} OR viewed_id::text = {ph}", (str(subject_id), str(subject_id)))
+            else:
+                result = db._execute(conn, f"DELETE FROM {name} WHERE {column}::text = {ph}", (str(subject_id),))
             removed = int(getattr(result, "rowcount", 0) or 0)
         return {"status": "deleted" if removed else "already_absent", "count": removed}
     except Exception as exc:
@@ -497,8 +586,8 @@ def erase_subject(subject_id: str, *, dry_run: bool = True) -> ErasureReport:
             outcomes[policy.name] = {"status": "failed", "count": 0, "error_code": type(exc).__name__}
     instruction = issue_browser_clear_instruction(subject_id) if not dry_run else None
     for name in ("reports-jsonl", "analytics-jsonl", "bot-memory", "object-store", "cdn"):
-        outcomes[name] = _external_erase(name, str(subject_id), dry_run=dry_run)
-    outcomes["browser-storage"] = _external_erase("browser-storage", str(subject_id), dry_run=dry_run)
+        outcomes[name] = _external_erase(name, subject, dry_run=dry_run)
+    outcomes["browser-storage"] = _external_erase("browser-storage", subject, dry_run=dry_run)
     for name in _POSTGRES_EXTRA_OWNERS:
         outcomes[name] = _erase_postgres_extra(name, str(subject_id), dry_run=dry_run)
     return ErasureReport(_subject_hash(str(subject_id)), bool(dry_run), outcomes, instruction)
@@ -507,5 +596,6 @@ def erase_subject(subject_id: str, *, dry_run: bool = True) -> ErasureReport:
 __all__ = [
     "ErasureReport", "ExportBundle", "LifecycleRegistry", "SinkSpec",
     "erase_subject", "export_subject", "issue_browser_clear_instruction",
+    "get_browser_clear_instruction",
     "lifecycle_registry", "load_lifecycle_registry",
 ]

@@ -167,6 +167,35 @@ async def test_direct_upload_compensates_when_entity_commit_fails(monkeypatch, i
 
 
 @pytest.mark.anyio
+async def test_direct_upload_compensates_partial_provider_failure(monkeypatch, isolated_sqlite_db):
+    from entities import admin_api
+    import storage as storage_module
+    from starlette.datastructures import UploadFile
+
+    class PartialUploadStorage(FakeStorage):
+        @staticmethod
+        def sniff_image_type(data):
+            return "image/jpeg" if data else None
+
+        def upload_image_set(self, data, folder="entities", slug="img"):
+            urls = super().upload_image_set(data, folder, slug)
+            failure = RuntimeError("partial_provider_failure")
+            failure.urls = urls
+            raise failure
+
+    upload_storage = PartialUploadStorage()
+    monkeypatch.setattr(admin_api, "db", isolated_sqlite_db)
+    monkeypatch.setattr(admin_api, "_reject_non_ai_media", lambda: None)
+    monkeypatch.setattr(storage_module, "storage", upload_storage)
+    isolated_sqlite_db.upsert_entity({"id": "e-partial", "name": "Entity", "type": "attraction", "images": []})
+    file = UploadFile(filename="image.jpg", file=io.BytesIO(b"jpeg-bytes"))
+
+    with pytest.raises(Exception, match="Không thể upload"):
+        await admin_api.upload_entity_image("e-partial", file)
+    assert upload_storage.objects == set()
+
+
+@pytest.mark.anyio
 async def test_direct_upload_preserves_media_when_invalidation_fails_after_commit(monkeypatch, isolated_sqlite_db):
     from entities import admin_api
     import storage as storage_module

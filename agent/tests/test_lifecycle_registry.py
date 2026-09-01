@@ -193,3 +193,73 @@ def test_export_cursor_provenance_rejects_forged_tokens():
     assert _verify_export_cursor(signed, "subject-1") == "inner"
     assert _verify_export_cursor(signed, "subject-2") is None
     assert _verify_export_cursor("ZmFrZQ", "subject-1") is None
+
+
+def test_export_inventory_declares_user_owned_secondary_sinks():
+    import control_plane.lifecycle as lifecycle
+
+    expected = {
+        "event_rsvp", "notification_preferences", "comment_likes",
+        "user_hidden_posts", "user_achievements", "profile_views",
+        "user_preferences", "user_preference_consents",
+        "user_personalization_events", "personalization_legacy_purge_queue",
+    }
+    assert expected <= set(lifecycle._TABLES)
+    assert expected <= set(lifecycle._POSTGRES_EXTRA_OWNERS) | {"profile_views"}
+
+
+def test_external_analytics_adapters_use_canonical_user_owner(monkeypatch):
+    import control_plane.lifecycle as lifecycle
+    observed = []
+
+    class Analytics:
+        @staticmethod
+        def export_owner_records(owner):
+            observed.append(("export", owner))
+            return []
+
+        @staticmethod
+        def purge_owner_records(owner):
+            observed.append(("erase", owner))
+            return 0
+
+    import sys
+    monkeypatch.setitem(sys.modules, "analytics", Analytics)
+    lifecycle._external_export("analytics-jsonl", "abc", 1)
+    lifecycle._external_erase("analytics-jsonl", "abc", dry_run=False)
+    assert observed == [("export", "user:abc"), ("erase", "user:abc")]
+
+
+def test_browser_clear_issuance_has_unique_nonce_and_survives_fresh_lookup(
+    isolated_sqlite_db, monkeypatch
+):
+    import control_plane.lifecycle as lifecycle
+
+    monkeypatch.setattr(lifecycle, "db", isolated_sqlite_db)
+    first = lifecycle.issue_browser_clear_instruction("user-1")
+    second = lifecycle.issue_browser_clear_instruction("user-1")
+    assert first["issuance_id"] != second["issuance_id"]
+    lifecycle._BROWSER_PROOFS.clear()
+    proof = lifecycle.get_browser_clear_instruction(first["issuance_id"])
+    assert proof["subject_hash"] == first["subject_hash"]
+    assert proof["issuance_id"] == first["issuance_id"]
+
+
+def test_media_receipt_is_durable_after_process_cache_loss(isolated_sqlite_db, monkeypatch):
+    import storage as storage_module
+
+    monkeypatch.setattr(storage_module, "db", isolated_sqlite_db)
+    isolated_sqlite_db.initialize()
+    storage_module._MEDIA_RECEIPTS.clear()
+    calls = []
+    monkeypatch.setattr(storage_module.storage, "delete", lambda key: calls.append(key))
+    first = storage_module.delete_media_with_receipt(
+        "subject-durable", "objects/durable.webp", cdn_purge=lambda key: None
+    )
+    storage_module._MEDIA_RECEIPTS.clear()
+    second = storage_module.delete_media_with_receipt(
+        "subject-durable", "objects/durable.webp", cdn_purge=lambda key: None
+    )
+    assert first["status"] == "deleted"
+    assert second["status"] == "deleted"
+    assert calls == ["objects/durable.webp"]

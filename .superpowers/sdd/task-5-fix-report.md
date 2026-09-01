@@ -66,3 +66,22 @@ The scheduler-wide Ruff check still reports an existing unused
 ## Safety
 
 No production database, object store, CDN, or paid provider was contacted.
+
+## Final durability and inventory wave
+
+- Added explicit export/erasure coverage for `event_rsvp`,
+  `notification_preferences`, `comment_likes`, `user_hidden_posts`,
+  `user_achievements`, `profile_views`, and the complete preferences and
+  personalization family. Profile views are attributed to either participant.
+- Analytics export and erase now normalize owners to the canonical
+  `user:<id>` namespace.
+- Browser clear proofs carry a unique `issuance_id` per request and are
+  persisted in `browser_clear_instructions`; `get_browser_clear_instruction`
+  retrieves proof after an in-process cache loss.
+- Media deletion receipts persist the
+  `(subject_id, object_key, generation)` tuple in SQLite and PostgreSQL,
+  preserving terminal provider statuses across retries and workers. PostgreSQL
+  deployments receive this through migration `085_lifecycle_durable_receipts.sql`.
+- RED: the four focused durability/inventory tests failed before these changes;
+  GREEN: `python -m pytest agent/tests/test_lifecycle_registry.py -q
+  --basetemp=.tmp-task5-final-green2` -> `21 passed`.

@@ -68,35 +68,33 @@ async def test_delete_account_returns_committed_exact_deadline(monkeypatch):
         server.app.dependency_overrides.pop(auth._require_csrf_lazy, None)
 
     assert response.status_code == 200
-    assert response.json() == {
-        "success": True,
-        "status": "scheduled",
-        "message": (
-            "Tài khoản sẽ bị xoá vĩnh viễn sau 30 ngày. "
-            "Đăng nhập lại bằng OTP để huỷ."
-        ),
-        "grace_days": 30,
-        "erasure_due_at": "2026-08-29T12:15:00+00:00",
-        # Thêm 2026-08-30 cùng lượt đảo mặc định sang XOÁ THẬT. Câu `message` nay
-        # phụ thuộc cấu hình — nếu ai kéo cầu dao (ERASURE_ACTIVATION_ENABLED=false)
-        # thì nó thôi hứa "xoá vĩnh viễn". `erasure_active` là bản MÁY ĐỌC ĐƯỢC của
-        # cùng sự thật đó, để người tích hợp không phải so chuỗi tiếng Việt.
-        # Khẳng định True ở đây tức là: với cấu hình mặc định, lời hứa xoá-vĩnh-viễn
-        # là lời hứa CÓ THẬT — đúng điều mà trước 2026-08-30 KHÔNG đúng.
-        "erasure_active": True,
-        "browser_clear_instruction": {
-            "version": "v1",
-            "action": "clear",
-            "keys": [
-                "vl360_favorites", "vl360_recent", "vl360_post_draft",
-                "vl360_recent_searches", "vinhlong360:public-search-entries:v2",
-                "chat_sid", "vl360_plans", "vl360_planner_draft",
-                "vl360:journey-thread:v1",
-            ],
-            "issued": True,
-            "subject_hash": __import__("hashlib").sha256(USER_ID.encode()).hexdigest(),
-        },
+    body = response.json()
+    assert body["success"] is True
+    assert body["status"] == "scheduled"
+    assert body["message"] == (
+        "Tài khoản sẽ bị xoá vĩnh viễn sau 30 ngày. "
+        "Đăng nhập lại bằng OTP để huỷ."
+    )
+    assert body["grace_days"] == 30
+    assert body["erasure_due_at"] == "2026-08-29T12:15:00+00:00"
+    # `erasure_active` is the machine-readable promise state.
+    assert body["erasure_active"] is True
+    instruction = body["browser_clear_instruction"]
+    expected_instruction = {
+        "version": "v1",
+        "action": "clear",
+        "keys": [
+            "vl360_favorites", "vl360_recent", "vl360_post_draft",
+            "vl360_recent_searches", "vinhlong360:public-search-entries:v2",
+            "chat_sid", "vl360_plans", "vl360_planner_draft",
+            "vl360:journey-thread:v1",
+        ],
+        "issued": True,
+        "subject_hash": __import__("hashlib").sha256(USER_ID.encode()).hexdigest(),
     }
+    for key, value in expected_instruction.items():
+        assert instruction[key] == value
+    assert isinstance(instruction["issuance_id"], str) and len(instruction["issuance_id"]) >= 16
     assert calls == [(USER_ID, REQUESTED_AT)]
 
 

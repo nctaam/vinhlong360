@@ -672,7 +672,15 @@ async def upload_entity_image(entity_id: str, file: UploadFile = File(...)):
         urls = await run_in_threadpool(storage.upload_image_set, data, "entities", entity_id)
     except ValueError:
         raise HTTPException(400, "Ảnh không hợp lệ hoặc đã hỏng")
-    except Exception:
+    except Exception as exc:
+        # upload_image_set attaches partial URLs when a provider fails after
+        # writing one or more variants; remove those objects before returning.
+        partial_urls = getattr(exc, "urls", {})
+        if isinstance(partial_urls, dict) and partial_urls:
+            from control_plane.saga import cleanup_uploaded_media
+            orphan_cleanup = cleanup_uploaded_media(storage, partial_urls)
+            if orphan_cleanup:
+                logger.error("Entity image upload compensation incomplete for %s", entity_id)
         logger.exception("Entity image upload failed for %s", entity_id)
         raise HTTPException(500, "Không thể upload ảnh, vui lòng thử lại")
 

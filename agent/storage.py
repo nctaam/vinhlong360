@@ -24,6 +24,7 @@ import logging
 import os
 import re
 import uuid
+from datetime import datetime, timezone
 from pathlib import Path
 from threading import Lock
 
@@ -87,6 +88,83 @@ WEBP_QUALITY = 82
 # persist this tuple, but the key is deliberately stable so retries are no-ops.
 _MEDIA_RECEIPTS: dict[tuple[str, str, str], dict] = {}
 _MEDIA_RECEIPTS_LOCK = Lock()
+db = None  # Lazy database binding avoids storage/database import cycles.
+
+
+def _receipt_database():
+    global db
+    if db is None:
+        from database import db as database
+        db = database
+    return db
+
+
+def _ensure_receipt_table() -> bool:
+    try:
+        database = _receipt_database()
+        database.initialize()
+        if getattr(database, "_use_pg", False):
+            with database._conn(commit_on_success=False) as conn:
+                database._fetchone(conn, "SELECT 1 FROM media_delete_receipts LIMIT 1", ())
+            return True
+        with database._conn() as conn:
+            database._execute(conn, """
+                CREATE TABLE IF NOT EXISTS media_delete_receipts (
+                    subject_id TEXT NOT NULL,
+                    object_key TEXT NOT NULL,
+                    generation TEXT NOT NULL,
+                    status TEXT NOT NULL,
+                    object_status TEXT NOT NULL,
+                    cdn_status TEXT NOT NULL,
+                    error TEXT,
+                    updated_at TEXT NOT NULL,
+                    PRIMARY KEY (subject_id, object_key, generation)
+                )
+            """, ())
+        return True
+    except Exception:
+        return False
+
+
+def _durable_receipt(key: tuple[str, str, str]) -> dict | None:
+    if not _ensure_receipt_table():
+        return None
+    database = _receipt_database()
+    try:
+        with database._conn(commit_on_success=False) as conn:
+            row = database._fetchone(
+                conn,
+                "SELECT subject_id, object_key, generation, status, object_status, cdn_status, error FROM media_delete_receipts WHERE subject_id = " + database._ph + " AND object_key = " + database._ph + " AND generation = " + database._ph,
+                key,
+            )
+        return database._row_to_dict(row) if row else None
+    except Exception:
+        return None
+
+
+def _write_durable_receipt(receipt: dict) -> None:
+    if not _ensure_receipt_table():
+        return
+    database = _receipt_database()
+    values = (
+        receipt["subject_id"], receipt["object_key"], receipt["generation"],
+        receipt["status"], receipt["object_status"], receipt["cdn_status"],
+        receipt.get("error"), datetime.now(timezone.utc).isoformat(),
+    )
+    try:
+        with database._conn() as conn:
+            ph = database._ph
+            database._execute(conn, f"""
+                INSERT INTO media_delete_receipts
+                    (subject_id, object_key, generation, status, object_status, cdn_status, error, updated_at)
+                VALUES ({ph}, {ph}, {ph}, {ph}, {ph}, {ph}, {ph}, {ph})
+                ON CONFLICT (subject_id, object_key, generation) DO UPDATE SET
+                    status = excluded.status, object_status = excluded.object_status,
+                    cdn_status = excluded.cdn_status, error = excluded.error,
+                    updated_at = excluded.updated_at
+            """, values)
+    except Exception:
+        logger.warning("Failed to persist media deletion receipt", exc_info=True)
 
 
 def _slugify(s: str) -> str:
@@ -242,9 +320,12 @@ class Storage:
         """
         key = (str(subject_id), str(object_key), str(generation))
         with _MEDIA_RECEIPTS_LOCK:
-            existing = _MEDIA_RECEIPTS.get(key)
+            existing = _MEDIA_RECEIPTS.get(key) or _durable_receipt(key)
             if existing and existing.get("status") in {"deleted", "already_absent"}:
-                return {**existing, "status": "already_absent"}
+                # Preserve provider-level terminal proof on replay. The overall
+                # status remains the historical terminal result for auditability.
+                _MEDIA_RECEIPTS[key] = dict(existing)
+                return dict(existing)
             # Serialize claim and provider calls. Failed receipts stay retryable;
             # successful object/CDN calls are independently skipped on retry.
             receipt = existing or {
@@ -254,6 +335,7 @@ class Storage:
             }
             receipt["status"] = "claimed"
             _MEDIA_RECEIPTS[key] = receipt
+            _write_durable_receipt(receipt)
             if receipt.get("object_status") not in {"deleted", "already_absent"}:
                 try:
                     self.delete(str(object_key)); receipt["object_status"] = "deleted"
@@ -275,6 +357,7 @@ class Storage:
             receipt["object"] = {"status": receipt.get("object_status")}
             receipt["cdn"] = {"status": receipt.get("cdn_status")}
             _MEDIA_RECEIPTS[key] = dict(receipt)
+            _write_durable_receipt(receipt)
             return dict(receipt)
 
 

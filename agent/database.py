@@ -107,6 +107,8 @@ PG_REQUIRED_TABLES = {
     "user_achievements",
     "profile_views",
     "entity_snapshot_generation",
+    "media_delete_receipts",
+    "browser_clear_instructions",
 }
 
 CASE_KERNEL_REQUIRED_TABLES = {
@@ -172,6 +174,8 @@ PG_REQUIRED_COLUMNS = {
     },
     "schema_version": {"component", "version", "migration", "updated_at"},
     "entity_snapshot_generation": {"entity_id", "generation", "issued_at"},
+    "media_delete_receipts": {"subject_id", "object_key", "generation", "status", "object_status", "cdn_status", "error", "updated_at"},
+    "browser_clear_instructions": {"issuance_id", "subject_hash", "instruction_json", "issued_at"},
 }
 
 CASE_KERNEL_REQUIRED_COLUMNS = {
@@ -209,7 +213,9 @@ PG_CORE_REQUIRED_COLUMNS = {
 # 82 dạy vl360_region_text_is_safe nhận chữ số Unicode (§48.4) + quarantine tồn đọng.
 # 83 adds the durable entity snapshot generation table used by cache consumers.
 # 84 closes community moderation/scheduled state with durable CAS fields.
-PG_REQUIRED_SCHEMA_VERSION = 84
+# Media/browser lifecycle receipts are part of the release readiness contract;
+# older deployments must apply migration 085 before starting this release.
+PG_REQUIRED_SCHEMA_VERSION = 85
 PG_CORE_REQUIRED_SCHEMA_VERSION = 79
 PG_REQUIRED_TRIGGERS = {
     "trg_entity_ratings": "posts",
@@ -1380,6 +1386,24 @@ class Database:
                     CREATE INDEX IF NOT EXISTS idx_entity_mutation_audit_resource
                         ON entity_mutation_audit(resource_id, id DESC);
 
+                    CREATE TABLE IF NOT EXISTS media_delete_receipts (
+                        subject_id TEXT NOT NULL,
+                        object_key TEXT NOT NULL,
+                        generation TEXT NOT NULL,
+                        status TEXT NOT NULL,
+                        object_status TEXT NOT NULL,
+                        cdn_status TEXT NOT NULL,
+                        error TEXT,
+                        updated_at TEXT NOT NULL,
+                        PRIMARY KEY (subject_id, object_key, generation)
+                    );
+                    CREATE TABLE IF NOT EXISTS browser_clear_instructions (
+                        issuance_id TEXT PRIMARY KEY,
+                        subject_hash TEXT NOT NULL,
+                        instruction_json TEXT NOT NULL,
+                        issued_at TEXT NOT NULL
+                    );
+
                     CREATE TABLE IF NOT EXISTS relationships (
                         from_id TEXT NOT NULL,
                         to_id TEXT NOT NULL,
@@ -1735,9 +1759,17 @@ class Database:
                                            before=old, after={}, revision=int(old.get("revision") or 0) + 1,
                                            conn=conn, database=self)
                 snapshot = bump_generation(conn, entity_id, "entity_delete", "database.delete_entity") if deleted else None
-            _entity_details.apply_detail_cache_mutations([mutation])
+            try:
+                _entity_details.apply_detail_cache_mutations([mutation])
+            except Exception as exc:
+                if deleted:
+                    raise PostCommitMutationError("detail_cache", exc) from exc
+                raise
             if snapshot is not None:
-                invalidate_entity(entity_id, reason="entity_delete", generation=snapshot.generation)
+                try:
+                    invalidate_entity(entity_id, reason="entity_delete", generation=snapshot.generation)
+                except Exception as exc:
+                    raise PostCommitMutationError("invalidation", exc) from exc
             return deleted
 
     def record_entity_mutation_audit(self, *, event_id: str, resource_id: str,
