@@ -17,7 +17,7 @@ from __future__ import annotations
 
 import asyncio
 
-from fastapi import APIRouter, HTTPException, Query, Request
+from fastapi import APIRouter, Depends, HTTPException, Query, Request
 from pydantic import BaseModel, Field
 
 import analytics
@@ -81,7 +81,69 @@ from features import (
     semantic_cache_stats,
 )
 
-router = APIRouter()
+_ADMIN_PREFIXES = (
+    "/analytics", "/system", "/checkpoints", "/vectors", "/freshness",
+    "/ab-testing", "/prompt-cache", "/confirmations", "/confirm/", "/reject/",
+    "/image/",
+)
+_SCOPED_PATHS = {"/system/learning/run", "/system/client-errors", "/vectors/build",
+                 "/vectors/search", "/system/dynamic-agents/create", "/image/recognize"}
+
+
+async def _llmops_require_admin(request: Request) -> None:
+    """Route dependency for admin auth; mark the request for handler reuse."""
+    from admin import require_admin
+
+    await require_admin(request)
+    request.state._llmops_auth_applied = True
+
+
+async def _llmops_require_admin_scope(request: Request) -> None:
+    """Route dependency for the shared deployment scope."""
+    from admin import require_admin_scope
+
+    await require_admin_scope(request, "ops.deploy")
+    request.state._llmops_auth_applied = True
+
+
+async def _require_admin_once(request: Request, scope: str | None = None) -> None:
+    """Keep direct handler calls safe without repeating dependency side effects."""
+    if getattr(getattr(request, "state", None), "_llmops_auth_applied", False):
+        return
+    if scope:
+        from admin import require_admin_scope
+
+        await require_admin_scope(request, scope)
+    else:
+        from admin import require_admin
+
+        await require_admin(request)
+    if hasattr(request, "state"):
+        request.state._llmops_auth_applied = True
+
+
+class _AdminMetadataRouter(APIRouter):
+    """Attach auth dependencies and machine-readable metadata to admin routes."""
+
+    def add_api_route(self, path: str, endpoint, **kwargs):
+        if path.startswith(_ADMIN_PREFIXES):
+            extra = dict(kwargs.pop("openapi_extra", {}) or {})
+            methods = kwargs.get("methods") or set()
+            is_mutation = any(method in methods for method in ("POST", "PUT", "PATCH", "DELETE"))
+            extra.update({"x-auth": "admin-key", "x-csrf": is_mutation})
+            if path in _SCOPED_PATHS:
+                extra["x-scope"] = "ops.deploy"
+            kwargs["openapi_extra"] = extra
+            dependencies = list(kwargs.pop("dependencies", []) or [])
+            auth_dependency = (
+                _llmops_require_admin_scope if path in _SCOPED_PATHS
+                else _llmops_require_admin
+            )
+            kwargs["dependencies"] = [Depends(auth_dependency), *dependencies]
+        return super().add_api_route(path, endpoint, **kwargs)
+
+
+router = _AdminMetadataRouter()
 
 
 class CheckpointSaveRequest(BaseModel):
@@ -117,8 +179,7 @@ class SemanticCacheInvalidateRequest(BaseModel):
 
 @router.get("/analytics/summary")
 async def analytics_summary(request: Request):
-    from admin import require_admin
-    await require_admin(request)
+    await _require_admin_once(request)
     try:
         return await asyncio.to_thread(analytics.get_summary)
     except Exception:
@@ -127,65 +188,56 @@ async def analytics_summary(request: Request):
 
 @router.get("/analytics/popular")
 async def analytics_popular(request: Request, limit: int = Query(20, ge=1, le=200)):
-    from admin import require_admin
-    await require_admin(request)
+    await _require_admin_once(request)
     return {"popular_queries": await asyncio.to_thread(analytics.get_popular_queries, limit)}
 
 
 @router.get("/analytics/gaps")
 async def analytics_gaps(request: Request, limit: int = Query(20, ge=1, le=200)):
-    from admin import require_admin
-    await require_admin(request)
+    await _require_admin_once(request)
     return {"knowledge_gaps": await asyncio.to_thread(analytics.get_knowledge_gaps, limit)}
 
 
 @router.get("/analytics/daily")
 async def analytics_daily(request: Request, days: int = Query(30, ge=1, le=365)):
-    from admin import require_admin
-    await require_admin(request)
+    await _require_admin_once(request)
     return {"daily_stats": await asyncio.to_thread(analytics.get_daily_stats, days)}
 
 
 @router.get("/analytics/top-entities")
 async def analytics_top_entities(request: Request, limit: int = Query(20, ge=1, le=200)):
-    from admin import require_admin
-    await require_admin(request)
+    await _require_admin_once(request)
     return {"top_entities": await asyncio.to_thread(analytics.get_top_entities, limit)}
 
 
 @router.get("/system/logs")
 async def system_logs(request: Request, limit: int = Query(50, ge=1, le=500), level: str = None):
-    from admin import require_admin
-    await require_admin(request)
+    await _require_admin_once(request)
     return {"logs": logger.recent(limit, level)}
 
 
 @router.get("/system/errors")
 async def system_errors(request: Request, limit: int = Query(20, ge=1, le=200)):
-    from admin import require_admin
-    await require_admin(request)
+    await _require_admin_once(request)
     return {"errors": error_tracker.recent_errors(limit), **error_tracker.stats()}
 
 
 @router.get("/system/response-times")
 async def system_response_times(request: Request):
-    from admin import require_admin
-    await require_admin(request)
+    await _require_admin_once(request)
     return response_tracker.stats()
 
 
 @router.get("/system/scheduler")
 async def system_scheduler(request: Request):
-    from admin import require_admin
-    await require_admin(request)
+    await _require_admin_once(request)
     return scheduler_status()
 
 
 @router.get("/system/learning", tags=["System"])
 async def system_learning(request: Request):
     """Trạng thái vòng lặp tự học. Admin-only."""
-    from admin import require_admin
-    await require_admin(request)
+    await _require_admin_once(request)
     try:
         from learn_loop import learning_status
         return learning_status()
@@ -196,8 +248,7 @@ async def system_learning(request: Request):
 @router.post("/system/learning/run", tags=["System"])
 async def trigger_learning(request: Request):
     """Trigger 1 vòng lặp tự học SAU cổng fitness (admin only, eval-gated)."""
-    from admin import require_admin_scope
-    await require_admin_scope(request, "ops.deploy")
+    await _require_admin_once(request, "ops.deploy")
     try:
         from self_evolve import guarded_evolve
         from learn_loop import run_full_cycle
@@ -212,8 +263,7 @@ async def trigger_learning(request: Request):
 @router.get("/system/self-evolution", tags=["System"])
 async def system_self_evolution(request: Request):
     """Trạng thái cơ chế tự tiến hoá. Admin-only."""
-    from admin import require_admin
-    await require_admin(request)
+    await _require_admin_once(request)
     out = {}
     try:
         import self_evolve
@@ -250,16 +300,14 @@ async def system_self_evolution(request: Request):
 
 @router.get("/system/memory")
 async def system_memory(request: Request):
-    from admin import require_admin
-    await require_admin(request)
+    await _require_admin_once(request)
     return memory_manager.stats()
 
 
 @router.get("/system/traces", tags=["System"])
 async def system_traces(request: Request, limit: int = Query(50, ge=1, le=500)):
     """OpenTelemetry trace data. Admin-only."""
-    from admin import require_admin
-    await require_admin(request)
+    await _require_admin_once(request)
     if not HAS_TRACING:
         return {"available": False}
     return {
@@ -272,8 +320,7 @@ async def system_traces(request: Request, limit: int = Query(50, ge=1, le=500)):
 @router.get("/system/handoffs", tags=["System"])
 async def system_handoffs(request: Request, limit: int = Query(50, ge=1, le=200)):
     """Multi-agent orchestrator handoff log. Admin-only."""
-    from admin import require_admin
-    await require_admin(request)
+    await _require_admin_once(request)
     if not HAS_ORCHESTRATOR:
         return {"available": False}
     from dataclasses import asdict
@@ -288,8 +335,7 @@ async def system_handoffs(request: Request, limit: int = Query(50, ge=1, le=200)
 @router.get("/system/memory-graph", tags=["System"])
 async def system_memory_graph(request: Request):
     """Memory graph statistics. Admin-only."""
-    from admin import require_admin
-    await require_admin(request)
+    await _require_admin_once(request)
     if not HAS_MEMORY_GRAPH:
         return {"available": False}
     graph_stats = memory_graph.stats()
@@ -303,8 +349,7 @@ async def system_memory_graph(request: Request):
 @router.get("/checkpoints/{session_id}", tags=["System"])
 async def list_checkpoints(session_id: str, request: Request):
     """List conversation checkpoints. Admin-only."""
-    from admin import require_admin
-    await require_admin(request)
+    await _require_admin_once(request)
     if not HAS_CHECKPOINTS:
         return {"available": False}
     return {"checkpoints": checkpoint_manager.list_checkpoints(session_id)}
@@ -313,8 +358,7 @@ async def list_checkpoints(session_id: str, request: Request):
 @router.post("/checkpoints", tags=["System"])
 async def save_checkpoint(req: CheckpointSaveRequest, request: Request):
     """Save a conversation checkpoint. Admin-only."""
-    from admin import require_admin
-    await require_admin(request)
+    await _require_admin_once(request)
     if not HAS_CHECKPOINTS:
         return _error_response(501, "Checkpoints not available")
     cp_id = checkpoint_manager.save_checkpoint(
@@ -330,8 +374,7 @@ async def save_checkpoint(req: CheckpointSaveRequest, request: Request):
 @router.post("/checkpoints/{checkpoint_id}/resume", tags=["System"])
 async def resume_checkpoint(checkpoint_id: str, request: Request):
     """Resume from a conversation checkpoint. Admin-only."""
-    from admin import require_admin
-    await require_admin(request)
+    await _require_admin_once(request)
     if not HAS_CHECKPOINTS:
         return _error_response(501, "Checkpoints not available")
     result = checkpoint_manager.resume_from(checkpoint_id)
@@ -343,8 +386,7 @@ async def resume_checkpoint(checkpoint_id: str, request: Request):
 
 @router.get("/system/quality")
 async def system_quality(request: Request):
-    from admin import require_admin
-    await require_admin(request)
+    await _require_admin_once(request)
     return {
         "quality": quality_tracker.stats(),
         "reflexion": reflexion_engine.stats(),
@@ -355,8 +397,7 @@ async def system_quality(request: Request):
 async def system_client_errors(request: Request, limit: int = Query(50, ge=1, le=500)):
     """Admin xem lỗi frontend gần đây (lọc source=client từ StructuredLogger).
     Gate bằng admin key (giống các /system/* khác ở production)."""
-    from admin import require_admin_scope
-    await require_admin_scope(request, "ops.deploy")
+    await _require_admin_once(request, "ops.deploy")
     limit = max(1, min(limit, 200))
     rows = logger.recent(limit * 4, level="error")
     client_rows = [r for r in rows if r.get("source") == "client"]
@@ -367,8 +408,7 @@ async def system_client_errors(request: Request, limit: int = Query(50, ge=1, le
 async def build_vectors(request: Request):
     """Build/rebuild vector embeddings index."""
     # GĐ4.2: rebuild nặng -> chỉ admin (chống DoS compute ẩn danh).
-    from admin import require_admin_scope
-    await require_admin_scope(request, "ops.deploy")
+    await _require_admin_once(request, "ops.deploy")
     if not HAS_VECTOR:
         return _error_response(501, "Vector search module not available")
     def _build():
@@ -379,8 +419,7 @@ async def build_vectors(request: Request):
 
 @router.get("/vectors/stats")
 async def vector_stats(request: Request):
-    from admin import require_admin
-    await require_admin(request)
+    await _require_admin_once(request)
     if not HAS_VECTOR:
         return {"available": False}
     return {"available": True, **embedding_store.stats()}
@@ -388,8 +427,7 @@ async def vector_stats(request: Request):
 
 @router.get("/vectors/search")
 async def vector_search_endpoint(request: Request, q: str = Query(..., max_length=200), limit: int = Query(10, ge=1, le=100)):
-    from admin import require_admin_scope
-    await require_admin_scope(request, "ops.deploy")
+    await _require_admin_once(request, "ops.deploy")
     if not HAS_VECTOR:
         raise HTTPException(503, detail="Vector search not available")
     def _search():
@@ -449,8 +487,7 @@ async def enhanced_search(q: str = Query(..., max_length=200), limit: int = Quer
 
 @router.get("/freshness/check")
 async def freshness_check_endpoint(request: Request):
-    from admin import require_admin
-    await require_admin(request)
+    await _require_admin_once(request)
     if not HAS_FRESHNESS:
         raise HTTPException(503, detail="Freshness module not available")
     def _check():
@@ -461,8 +498,7 @@ async def freshness_check_endpoint(request: Request):
 
 @router.get("/freshness/report")
 async def freshness_report_endpoint(request: Request):
-    from admin import require_admin
-    await require_admin(request)
+    await _require_admin_once(request)
     if not HAS_FRESHNESS:
         raise HTTPException(503, detail="Freshness module not available")
     def _report():
@@ -473,8 +509,7 @@ async def freshness_report_endpoint(request: Request):
 
 @router.get("/freshness/candidates")
 async def freshness_candidates_endpoint(request: Request, limit: int = Query(20, ge=1, le=200)):
-    from admin import require_admin
-    await require_admin(request)
+    await _require_admin_once(request)
     if not HAS_FRESHNESS:
         raise HTTPException(503, detail="Freshness module not available")
     def _candidates():
@@ -485,8 +520,7 @@ async def freshness_candidates_endpoint(request: Request, limit: int = Query(20,
 
 @router.get("/system/circuit-breakers")
 async def circuit_breaker_stats(request: Request):
-    from admin import require_admin
-    await require_admin(request)
+    await _require_admin_once(request)
     if not HAS_CIRCUIT_BREAKER:
         return {"available": False}
     return {"available": True, **all_breaker_stats()}
@@ -494,8 +528,7 @@ async def circuit_breaker_stats(request: Request):
 
 @router.get("/system/guardrails", tags=["Level6"])
 async def guardrails_status(request: Request):
-    from admin import require_admin
-    await require_admin(request)
+    await _require_admin_once(request)
     if not HAS_GUARDRAILS:
         return {"available": False}
     return {
@@ -507,8 +540,7 @@ async def guardrails_status(request: Request):
 
 @router.post("/system/guardrails/check-input", tags=["Level6"])
 async def guardrails_check_input(req: GuardrailCheckRequest, request: Request):
-    from admin import require_admin
-    await require_admin(request)
+    await _require_admin_once(request)
     if not HAS_GUARDRAILS:
         raise HTTPException(503, detail="Guardrails not available")
     return check_input(req.message, req.session_id)
@@ -516,8 +548,7 @@ async def guardrails_check_input(req: GuardrailCheckRequest, request: Request):
 
 @router.get("/system/costs", tags=["Level6"])
 async def cost_tracker_report(request: Request):
-    from admin import require_admin
-    await require_admin(request)
+    await _require_admin_once(request)
     if not HAS_COST_TRACKER:
         return {"available": False}
     return {"available": True, **get_cost_report()}
@@ -525,8 +556,7 @@ async def cost_tracker_report(request: Request):
 
 @router.get("/system/costs/session/{session_id}", tags=["Level6"])
 async def cost_tracker_session(session_id: str, request: Request):
-    from admin import require_admin
-    await require_admin(request)
+    await _require_admin_once(request)
     if not HAS_COST_TRACKER:
         raise HTTPException(503, detail="Cost tracker not available")
     return cost_attribution.get_session_cost(session_id)
@@ -534,8 +564,7 @@ async def cost_tracker_session(session_id: str, request: Request):
 
 @router.get("/system/costs/budget", tags=["Level6"])
 async def cost_budget_status(request: Request):
-    from admin import require_admin
-    await require_admin(request)
+    await _require_admin_once(request)
     if not HAS_COST_TRACKER:
         raise HTTPException(503, detail="Cost tracker not available")
     return {
@@ -546,8 +575,7 @@ async def cost_budget_status(request: Request):
 
 @router.get("/system/eval/latest", tags=["Level6"])
 async def eval_latest(request: Request):
-    from admin import require_admin
-    await require_admin(request)
+    await _require_admin_once(request)
     if not HAS_EVAL:
         return {"available": False}
     report = get_latest_report()
@@ -556,8 +584,7 @@ async def eval_latest(request: Request):
 
 @router.get("/system/eval/history", tags=["Level6"])
 async def eval_history(request: Request, limit: int = Query(10, ge=1, le=100)):
-    from admin import require_admin
-    await require_admin(request)
+    await _require_admin_once(request)
     if not HAS_EVAL:
         return {"available": False}
     return {"available": True, "reports": get_report_history(limit)}
@@ -565,8 +592,7 @@ async def eval_history(request: Request, limit: int = Query(10, ge=1, le=100)):
 
 @router.get("/system/optimizer", tags=["Level6"])
 async def optimizer_report(request: Request):
-    from admin import require_admin
-    await require_admin(request)
+    await _require_admin_once(request)
     if not HAS_OPTIMIZER:
         return {"available": False}
     return {"available": True, **get_optimization_report()}
@@ -574,8 +600,7 @@ async def optimizer_report(request: Request):
 
 @router.get("/system/semantic-cache", tags=["Level6"])
 async def semantic_cache_status(request: Request):
-    from admin import require_admin
-    await require_admin(request)
+    await _require_admin_once(request)
     if not HAS_SEMANTIC_CACHE:
         return {"available": False}
     return {"available": True, **semantic_cache_stats()}
@@ -583,8 +608,7 @@ async def semantic_cache_status(request: Request):
 
 @router.post("/system/semantic-cache/invalidate", tags=["Level6"])
 async def semantic_cache_invalidate(req: SemanticCacheInvalidateRequest, request: Request):
-    from admin import require_admin
-    await require_admin(request)
+    await _require_admin_once(request)
     if not HAS_SEMANTIC_CACHE:
         raise HTTPException(503, detail="Semantic cache not available")
     if req.entity_id:
@@ -598,8 +622,7 @@ async def semantic_cache_invalidate(req: SemanticCacheInvalidateRequest, request
 
 @router.get("/system/judge", tags=["Level7"])
 async def judge_report(request: Request):
-    from admin import require_admin
-    await require_admin(request)
+    await _require_admin_once(request)
     if not HAS_LLM_JUDGE:
         return {"available": False}
     return {"available": True, **get_judge_report()}
@@ -607,8 +630,7 @@ async def judge_report(request: Request):
 
 @router.post("/system/judge/evaluate", tags=["Level7"])
 async def judge_evaluate(req: JudgeEvaluateRequest, request: Request):
-    from admin import require_admin
-    await require_admin(request)
+    await _require_admin_once(request)
     if not HAS_LLM_JUDGE:
         raise HTTPException(503, detail="LLM Judge not available")
     result = judge(req.query, req.reply)
@@ -617,8 +639,7 @@ async def judge_evaluate(req: JudgeEvaluateRequest, request: Request):
 
 @router.get("/system/dynamic-agents", tags=["Level7"])
 async def dynamic_agents_report(request: Request):
-    from admin import require_admin
-    await require_admin(request)
+    await _require_admin_once(request)
     if not HAS_DYNAMIC_AGENTS:
         return {"available": False}
     return {"available": True, **get_agent_report()}
@@ -628,8 +649,7 @@ async def dynamic_agents_report(request: Request):
 async def dynamic_agents_create(req: DynamicAgentCreateRequest, request: Request):
     # P0-12: chặn tạo agent không-auth (system_prompt_addon + tool_whitelist do client kiểm
     # soát → prompt-injection/đốt LLM budget nếu mở). Bắt buộc X-Admin-Key.
-    from admin import require_admin_scope
-    await require_admin_scope(request, "ops.deploy")
+    await _require_admin_once(request, "ops.deploy")
     if not HAS_DYNAMIC_AGENTS:
         raise HTTPException(503, detail="Dynamic agents not available")
     spec = agent_factory.create_agent(
@@ -648,8 +668,7 @@ async def dynamic_agents_create(req: DynamicAgentCreateRequest, request: Request
 @router.get("/ab-testing/experiments", tags=["System"])
 async def ab_experiments(request: Request):
     """List all A/B testing experiments. Admin-only."""
-    from admin import require_admin
-    await require_admin(request)
+    await _require_admin_once(request)
     if not HAS_AB_TESTING:
         raise HTTPException(503, detail="A/B testing not available")
     return {"experiments": ab_manager.list_experiments()}
@@ -657,8 +676,7 @@ async def ab_experiments(request: Request):
 @router.get("/ab-testing/results/{experiment_name}", tags=["System"])
 async def ab_results(experiment_name: str, request: Request):
     """Get A/B test results with statistics. Admin-only."""
-    from admin import require_admin
-    await require_admin(request)
+    await _require_admin_once(request)
     if not HAS_AB_TESTING:
         raise HTTPException(503, detail="A/B testing not available")
     results = ab_manager.get_results(experiment_name)
@@ -668,8 +686,7 @@ async def ab_results(experiment_name: str, request: Request):
 @router.get("/prompt-cache/stats", tags=["System"])
 async def prompt_cache_stats(request: Request):
     """Get prompt cache statistics. Admin-only."""
-    from admin import require_admin
-    await require_admin(request)
+    await _require_admin_once(request)
     if not HAS_PROMPT_CACHE:
         return {"available": False}
     return {"available": True, **prompt_cache.stats()}
@@ -681,8 +698,7 @@ async def prompt_cache_stats(request: Request):
 @router.get("/confirmations/{session_id}", tags=["System"])
 async def pending_confirmations(session_id: str, request: Request):
     """List pending confirmations. Admin-only."""
-    from admin import require_admin
-    await require_admin(request)
+    await _require_admin_once(request)
     if not HAS_CHECKPOINTS:
         return {"available": False}
     pending = confirmation_manager.get_pending(session_id)
@@ -694,8 +710,7 @@ async def pending_confirmations(session_id: str, request: Request):
 @router.post("/confirm/{confirmation_id}", tags=["System"])
 async def confirm_action(confirmation_id: str, request: Request):
     """Confirm a pending action. Admin-only."""
-    from admin import require_admin
-    await require_admin(request)
+    await _require_admin_once(request)
     if not HAS_CHECKPOINTS:
         return _error_response(501, "Checkpoints not available")
     params = confirmation_manager.confirm(confirmation_id)
@@ -707,8 +722,7 @@ async def confirm_action(confirmation_id: str, request: Request):
 @router.post("/reject/{confirmation_id}", tags=["System"])
 async def reject_action(confirmation_id: str, request: Request):
     """Reject a pending action. Admin-only."""
-    from admin import require_admin
-    await require_admin(request)
+    await _require_admin_once(request)
     if not HAS_CHECKPOINTS:
         return _error_response(501, "Checkpoints not available")
     body = await request.json() if request.headers.get("content-type") == "application/json" else {}
@@ -724,8 +738,7 @@ async def reject_action(confirmation_id: str, request: Request):
 async def image_recognize_endpoint(request: Request):
     # GĐ4.2: mỗi call là 1 lượt LLM vision (tốn tiền) -> chỉ admin để chặn drain ví ẩn danh.
     # (Frontend hiện không dùng. Mở cho user đã xác thực + rate-limit khi cần — Backlog.)
-    from admin import require_admin_scope
-    await require_admin_scope(request, "ops.deploy")
+    await _require_admin_once(request, "ops.deploy")
     if not HAS_IMAGE_RECOGNITION:
         return _error_response(501, "Image recognition not available")
     content_type = request.headers.get("content-type", "")

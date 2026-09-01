@@ -92,3 +92,57 @@ def test_khong_con_route_llmops_o_server():
         r'@app\.(?:get|post|put|delete)\(\s*["\'](/(?:system|checkpoints|vectors|freshness|analytics|search/enhanced|ab-testing|prompt-cache|confirmations|confirm/|reject/|image/)[^"\']*)',
         src)
     assert not con, f"server.py vẫn còn route llmops: {con}"
+
+
+def test_admin_routes_expose_auth_metadata():
+    for route in llmops_api.router.routes:
+        path = getattr(route, "path", "")
+        if path.startswith(("/system", "/analytics", "/vectors", "/freshness", "/checkpoints", "/ab-testing", "/prompt-cache", "/confirm", "/reject", "/image/")):
+            extra = route.openapi_extra or {}
+            assert extra.get("x-auth") == "admin-key", path
+            assert "x-csrf" in extra, path
+    scoped = {route.path: route for route in llmops_api.router.routes if route.path in {"/vectors/build", "/image/recognize"}}
+    assert all((route.openapi_extra or {}).get("x-scope") == "ops.deploy" for route in scoped.values())
+
+
+def test_admin_routes_expose_runtime_auth_dependencies():
+    protected = ("/system", "/analytics", "/vectors", "/freshness", "/checkpoints",
+                 "/ab-testing", "/prompt-cache", "/confirm", "/reject", "/image/")
+    for route in llmops_api.router.routes:
+        path = getattr(route, "path", "")
+        if path.startswith(protected):
+            names = {getattr(dep.call, "__name__", "") for dep in route.dependant.dependencies}
+            assert any("require_admin" in name for name in names), (path, names)
+            methods = set(getattr(route, "methods", set()))
+            assert (route.openapi_extra or {}).get("x-csrf") == bool(
+                methods & {"POST", "PUT", "PATCH", "DELETE"}
+            ), (path, methods)
+    scoped = {route.path: route for route in llmops_api.router.routes if route.path in llmops_api._SCOPED_PATHS}
+    for path, route in scoped.items():
+        names = {getattr(dep.call, "__name__", "") for dep in route.dependant.dependencies}
+        assert any("require_admin_scope" in name for name in names), (path, names)
+
+
+def test_llmops_dependency_prevents_handler_double_auth(monkeypatch):
+    import asyncio
+    import admin
+    from types import SimpleNamespace
+
+    calls = []
+
+    async def fake_require_admin(request):
+        calls.append(request)
+
+    monkeypatch.setattr(admin, "require_admin", fake_require_admin)
+    monkeypatch.setattr(llmops_api.analytics, "get_summary", lambda: {"ok": True})
+    request = SimpleNamespace(
+        state=SimpleNamespace(),
+        method="GET",
+        url=SimpleNamespace(path="/analytics/summary"),
+        headers={},
+        cookies={},
+    )
+    asyncio.run(llmops_api._llmops_require_admin(request))
+    result = asyncio.run(llmops_api.analytics_summary(request))
+    assert calls == [request]
+    assert result == {"ok": True}
