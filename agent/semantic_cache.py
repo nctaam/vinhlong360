@@ -277,6 +277,12 @@ class MultiTierCache:
         # cache loaded to intentionally avoid disk I/O.
         self._l2_loaded_from_disk = False
         self._l2_mtime_ns: int | None = None
+        # Deletions are persisted as records so an older worker cannot
+        # resurrect a value after another worker invalidates it.
+        self._tombstones: dict[str, dict] = {}
+        self._known_versions: dict[str, int] = {}
+        self._dirty_keys: set[str] = set()
+        self._version_counter = time.time_ns()
 
         # Stats
         self.hits_l1: int = 0
@@ -296,10 +302,32 @@ class MultiTierCache:
             with _interprocess_file_lock(ENTRIES_FILE):
                 if ENTRIES_FILE.exists():
                     raw = json.loads(ENTRIES_FILE.read_text(encoding="utf-8"))
-                    entries = raw if isinstance(raw, dict) else {}
+                    records = raw if isinstance(raw, dict) else {}
                 else:
-                    entries = {}
+                    records = {}
+                entries = {
+                    key: value
+                    for key, value in records.items()
+                    if isinstance(value, dict) and not value.get("deleted")
+                }
+                self._tombstones = {
+                    key: value
+                    for key, value in records.items()
+                    if isinstance(value, dict) and value.get("deleted")
+                }
+                self._known_versions = {
+                    key: int(value.get("version", 0) or 0)
+                    for key, value in records.items()
+                    if isinstance(value, dict)
+                }
                 self._l2 = OrderedDict(entries)
+                # A forced manifest refresh must invalidate any L1 snapshot
+                # that is absent or older than the disk record.
+                if force and self._l1:
+                    for key, entry in list(self._l1.items()):
+                        current = entries.get(key)
+                        if current is None or current != entry:
+                            self._l1.pop(key, None)
                 # Rebuild semantic state for both populated and deleted manifests.
                 self._matcher.rebuild(self._l2)
                 self._l2_mtime_ns = ENTRIES_FILE.stat().st_mtime_ns if ENTRIES_FILE.exists() else None
@@ -307,25 +335,84 @@ class MultiTierCache:
             logger.warning("Failed to load L2 cache: %s", exc)
         self._l2_loaded = True
 
+    def _next_version(self) -> int:
+        self._version_counter = max(self._version_counter + 1, time.time_ns())
+        return self._version_counter
+
     def _save_l2(self, *, merge_disk: bool = True, deleted_keys: set[str] | None = None):
         try:
             with _interprocess_file_lock(ENTRIES_FILE):
                 # Merge with the latest on-disk manifest while holding the lock,
                 # preventing one worker from erasing another worker's entry.
-                merged = {}
+                merged: dict[str, dict] = {}
                 if merge_disk and self._l2_loaded_from_disk and ENTRIES_FILE.exists():
                     raw = json.loads(ENTRIES_FILE.read_text(encoding="utf-8"))
                     if isinstance(raw, dict):
-                        merged.update(raw)
-                merged.update(self._l2)
+                        merged.update({k: v for k, v in raw.items() if isinstance(v, dict)})
+                elif not self._l2_loaded_from_disk:
+                    # Test/local-only caches intentionally bypass disk; retain
+                    # their complete in-memory manifest across saves.
+                    merged.update(self._l2)
+                    merged.update(self._tombstones)
+
+                local_records = dict(self._l2)
+                local_records.update(self._tombstones)
                 for key in deleted_keys or ():
-                    merged.pop(key, None)
-                self._l2 = OrderedDict(merged)
+                    local_records[key] = self._tombstones.get(key, {"deleted": True, "version": self._next_version()})
+
+                # Compare dirty writes against the version observed when this
+                # worker loaded the manifest.  A changed remote record wins.
+                for key in self._dirty_keys | set(deleted_keys or ()):
+                    local = local_records.get(key)
+                    remote = merged.get(key)
+                    expected = self._known_versions.get(key, 0)
+                    remote_version = int(remote.get("version", 0) or 0) if isinstance(remote, dict) else 0
+                    if remote_version != expected and (remote is not None or expected != 0):
+                        if remote is None or remote.get("deleted"):
+                            self._l2.pop(key, None)
+                            if remote is None:
+                                self._tombstones[key] = {"deleted": True, "version": remote_version}
+                            else:
+                                self._tombstones[key] = remote
+                            self._l1.pop(key, None)
+                            self._matcher.remove(key)
+                        else:
+                            self._l2[key] = remote
+                            self._tombstones.pop(key, None)
+                            self._promote_to_l1(key, remote)
+                            self._matcher.rebuild(self._l2)
+                        continue
+                    if local is not None:
+                        if "version" not in local:
+                            local = {**local, "version": self._next_version()}
+                            if local.get("deleted"):
+                                self._tombstones[key] = local
+                            else:
+                                self._l2[key] = local
+                        merged[key] = local
+
+                self._l2 = OrderedDict(
+                    (key, value)
+                    for key, value in merged.items()
+                    if isinstance(value, dict) and not value.get("deleted")
+                )
+                self._tombstones = {
+                    key: value for key, value in merged.items()
+                    if isinstance(value, dict) and value.get("deleted")
+                }
                 self._matcher.rebuild(self._l2)
                 tmp = ENTRIES_FILE.with_suffix(".tmp")
-                tmp.write_text(json.dumps(dict(self._l2), ensure_ascii=False), encoding="utf-8")
+                records = dict(self._l2)
+                records.update(self._tombstones)
+                tmp.write_text(json.dumps(records, ensure_ascii=False), encoding="utf-8")
                 tmp.replace(ENTRIES_FILE)
                 self._l2_mtime_ns = ENTRIES_FILE.stat().st_mtime_ns
+                self._known_versions = {
+                    key: int(value.get("version", 0) or 0)
+                    for key, value in records.items()
+                    if isinstance(value, dict)
+                }
+                self._dirty_keys.clear()
         except Exception as exc:
             logger.warning("Failed to save L2 cache: %s", exc)
 
@@ -439,7 +526,13 @@ class MultiTierCache:
                 "response": response,
                 "timestamp": time.time(),
                 "ttl": ttl,
+                "version": self._next_version(),
             }
+
+            # A tombstone or newer remote value observed by _save_l2 wins over
+            # this worker's stale write; mark the key so the merge performs CAS.
+            self._tombstones.pop(key, None)
+            self._dirty_keys.add(key)
 
             # L1
             self._l1[key] = entry
@@ -464,10 +557,11 @@ class MultiTierCache:
             self._load_l2()
             key = _make_key(query, owner_key=owner_key)
             self._l1.pop(key, None)
-            removed = self._l2.pop(key, None)
+            self._l2.pop(key, None)
+            self._tombstones[key] = {"deleted": True, "version": self._next_version()}
+            self._dirty_keys.add(key)
             self._matcher.remove(key)
-            if removed:
-                self._save_l2(deleted_keys={key})
+            self._save_l2(deleted_keys={key})
             logger.debug("Cache invalidate: %s", query[:60])
 
     def purge_owner(self, owner_key: str) -> int:
@@ -492,8 +586,10 @@ class MultiTierCache:
                 self._l1.pop(key, None)
                 if self._l2.pop(key, None) is not None:
                     removed_l2 = True
+                self._tombstones[key] = {"deleted": True, "version": self._next_version()}
+                self._dirty_keys.add(key)
                 self._matcher.remove(key)
-            if removed_l2:
+            if removed_l2 or keys:
                 self._save_l2(deleted_keys=keys)
             return len(keys)
 
@@ -538,9 +634,11 @@ class MultiTierCache:
                 self._l1.pop(key, None)
                 if self._l2.pop(key, None) is not None:
                     removed_l2 = True
+                self._tombstones[key] = {"deleted": True, "version": self._next_version()}
+                self._dirty_keys.add(key)
                 self._matcher.remove(key)
 
-            if removed_l2:
+            if removed_l2 or keys_to_remove:
                 self._save_l2(deleted_keys=keys_to_remove)
             logger.debug(
                 "Cache invalidated across %d namespaces: %s",
@@ -563,6 +661,8 @@ class MultiTierCache:
             for key in to_remove:
                 self._l1.pop(key, None)
                 self._l2.pop(key, None)
+                self._tombstones[key] = {"deleted": True, "version": self._next_version()}
+                self._dirty_keys.add(key)
                 self._matcher.remove(key)
 
             if to_remove:

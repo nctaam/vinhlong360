@@ -14,6 +14,7 @@ Safety / politeness:
 """
 
 import json
+import copy
 import logging
 from contextlib import contextmanager
 import os
@@ -60,6 +61,7 @@ _cache = None
 
 _cache_lock = Lock()
 _cache_mtime_ns: int | None = None
+_cache_snapshot: dict | None = None
 _cache_stats = {
     "cache_hits": 0,
     "duplicate_writes": 0,
@@ -96,7 +98,7 @@ def _interprocess_file_lock(path: Path):
 
 
 def _load_cache() -> dict:
-    global _cache, _cache_mtime_ns
+    global _cache, _cache_mtime_ns, _cache_snapshot
     try:
         current_mtime = CACHE_FILE.stat().st_mtime_ns
     except FileNotFoundError:
@@ -121,11 +123,12 @@ def _load_cache() -> dict:
         else:
             _cache = {}
         _cache_mtime_ns = current_mtime
+        _cache_snapshot = copy.deepcopy(_cache)
         return _cache
 
 
 def _save_cache():
-    global _cache_mtime_ns
+    global _cache_mtime_ns, _cache_snapshot
     try:
         with _interprocess_file_lock(CACHE_FILE):
             disk_cache = {}
@@ -136,12 +139,32 @@ def _save_cache():
                         disk_cache = raw
                 except Exception:
                     disk_cache = {}
-            missing_from_memory = set(disk_cache) - set(_cache or {})
+            memory_cache = dict(_cache or {})
+            snapshot = _cache_snapshot or {}
+            changed_keys = {
+                key for key in set(memory_cache) | set(snapshot)
+                if memory_cache.get(key) != snapshot.get(key)
+                or (key in memory_cache) != (key in snapshot)
+            }
+            merged = dict(disk_cache)
+            for key, value in memory_cache.items():
+                if key not in changed_keys:
+                    continue
+                # If another worker changed the same key since this worker's
+                # snapshot, preserve the remote value and record the conflict.
+                if key in disk_cache and key in snapshot and disk_cache[key] != snapshot[key]:
+                    _cache_stats["lost_update_prevented"] += 1
+                    continue
+                if key in disk_cache and key not in snapshot:
+                    _cache_stats["lost_update_prevented"] += 1
+                    continue
+                merged[key] = value
+            missing_from_memory = set(disk_cache) - set(memory_cache)
             if missing_from_memory:
                 _cache_stats["lost_update_prevented"] += len(missing_from_memory)
-            merged = {**disk_cache, **(_cache or {})}
             _cache.clear()
             _cache.update(merged)
+            _cache_snapshot = copy.deepcopy(merged)
             tmp = CACHE_FILE.with_suffix(".tmp")
             tmp.write_text(json.dumps(_cache, ensure_ascii=False, indent=2), encoding="utf-8")
             tmp.replace(CACHE_FILE)

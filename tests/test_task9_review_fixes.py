@@ -63,6 +63,18 @@ def test_sqlite_search_matches_source_only_entity(tmp_path, monkeypatch):
     assert [row["id"] for row in rows] == ["source-only"]
 
 
+def test_postgres_source_search_casts_jsonb_to_text():
+    import database
+
+    conditions: list[str] = []
+    params: list[str] = []
+    database._append_q_filter(conditions, params, "%s", True, "dua sap")
+
+    clause = conditions[0]
+    assert "CAST(e.source AS TEXT)" in clause
+    assert "lower(CAST(e.source AS TEXT))" in clause
+
+
 def test_semantic_cache_refreshes_worker_loaded_before_manifest_exists(tmp_path, monkeypatch):
     import semantic_cache as cache_module
 
@@ -75,6 +87,52 @@ def test_semantic_cache_refreshes_worker_loaded_before_manifest_exists(tmp_path,
     first.put("written later", {"worker": 1})
 
     assert second.get("written later") == {"worker": 1}
+
+
+def test_semantic_cache_external_invalidate_evicts_stale_l1(tmp_path, monkeypatch):
+    import semantic_cache as cache_module
+
+    manifest = tmp_path / "entries.json"
+    monkeypatch.setattr(cache_module, "ENTRIES_FILE", manifest)
+    first = cache_module.MultiTierCache(cache_module.SemanticMatcher())
+    second = cache_module.MultiTierCache(cache_module.SemanticMatcher())
+    first.put("cross worker delete", {"version": 1})
+    assert first.get("cross worker delete") == {"version": 1}
+    second.invalidate("cross worker delete")
+
+    assert first.get("cross worker delete") is None
+
+
+def test_semantic_cache_stale_put_cannot_resurrect_tombstone(tmp_path, monkeypatch):
+    import semantic_cache as cache_module
+
+    manifest = tmp_path / "entries.json"
+    monkeypatch.setattr(cache_module, "ENTRIES_FILE", manifest)
+    first = cache_module.MultiTierCache(cache_module.SemanticMatcher())
+    second = cache_module.MultiTierCache(cache_module.SemanticMatcher())
+    first.put("tombstone race", {"version": 1})
+    second.get("tombstone race")
+    second.invalidate("tombstone race")
+    first.put("tombstone race", {"version": "stale"})
+
+    assert second.get("tombstone race") is None
+    assert first.get("tombstone race") is None
+
+
+def test_semantic_cache_stale_same_key_put_preserves_newer_worker_value(tmp_path, monkeypatch):
+    import semantic_cache as cache_module
+
+    manifest = tmp_path / "entries.json"
+    monkeypatch.setattr(cache_module, "ENTRIES_FILE", manifest)
+    first = cache_module.MultiTierCache(cache_module.SemanticMatcher())
+    second = cache_module.MultiTierCache(cache_module.SemanticMatcher())
+    first.put("same key race", {"version": 1})
+    second.get("same key race")
+    second.put("same key race", {"version": 2})
+    first.put("same key race", {"version": "stale"})
+
+    assert first.get("same key race") == {"version": 2}
+    assert second.get("same key race") == {"version": 2}
 
 
 def test_geocode_cache_refreshes_after_external_worker_write(tmp_path, monkeypatch):
@@ -96,6 +154,31 @@ def test_geocode_cache_refreshes_after_external_worker_write(tmp_path, monkeypat
 
     assert geocode._load_cache()["external-key"] == [10.1, 106.1]
     assert geocode.stats()["cache_refreshes"] >= 1
+
+
+def test_geocode_save_does_not_overwrite_external_same_key_write(tmp_path, monkeypatch):
+    import geocode
+
+    cache_file = tmp_path / "geocode.json"
+    monkeypatch.setattr(geocode, "CACHE_FILE", cache_file)
+    monkeypatch.setattr(geocode, "_cache", None)
+    monkeypatch.setattr(geocode, "_cache_mtime_ns", None, raising=False)
+    monkeypatch.setattr(geocode, "_cache_snapshot", None, raising=False)
+    monkeypatch.setattr(geocode, "_cache_stats", {
+        "cache_hits": 0,
+        "duplicate_writes": 0,
+        "lost_update_prevented": 0,
+        "cache_refreshes": 0,
+    })
+
+    geocode._load_cache()["same-place"] = [10.1, 106.1]
+    geocode._save_cache()
+    geocode._load_cache()["same-place"] = [10.2, 106.2]
+    cache_file.write_text(json.dumps({"same-place": [10.3, 106.3]}), encoding="utf-8")
+    geocode._save_cache()
+
+    assert json.loads(cache_file.read_text(encoding="utf-8"))["same-place"] == [10.3, 106.3]
+    assert geocode.stats()["lost_update_prevented"] >= 1
 
 
 def test_vector_search_namespace_aliases_share_module_identity():

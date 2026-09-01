@@ -833,7 +833,9 @@ def _append_q_filter(conditions: list, params: list, ph: str,
                      use_pg: bool, q: str) -> None:
     if use_pg:
         # không phân-biệt-dấu (f_unaccent + functional GIN trgm index, migration 015)
-        conditions.append(f"(f_unaccent(lower(e.name)) LIKE f_unaccent({ph}) ESCAPE '\\' OR f_unaccent(lower(e.summary)) LIKE f_unaccent({ph}) ESCAPE '\\' OR f_unaccent(lower(e.source)) LIKE f_unaccent({ph}) ESCAPE '\\')")
+        # ``source`` is JSONB on PostgreSQL; cast before applying text
+        # functions so source-only searches do not fail at execution time.
+        conditions.append(f"(f_unaccent(lower(e.name)) LIKE f_unaccent(lower({ph})) ESCAPE '\\' OR f_unaccent(lower(e.summary)) LIKE f_unaccent(lower({ph})) ESCAPE '\\' OR f_unaccent(lower(CAST(e.source AS TEXT))) LIKE f_unaccent(lower({ph})) ESCAPE '\\')")
         q_esc = escape_like(q.lower())
         params.extend([f"%{q_esc}%", f"%{q_esc}%", f"%{q_esc}%"])
     else:

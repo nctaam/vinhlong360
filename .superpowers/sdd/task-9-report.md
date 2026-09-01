@@ -74,6 +74,21 @@
 - `0a2f8249 fix: make search data quality and pagination truthful`
 - Review remediation commit: `fix: close search review findings`.
 
+## Cross-worker re-review remediation
+
+- PostgreSQL source search now casts JSONB to text before `lower()`/`f_unaccent()`;
+  SQLite and PostgreSQL source-only search contracts are covered.
+- Semantic cache manifests persist versioned tombstones, merge under the
+  inter-process lock, reject stale same-key writes, and evict L1 entries when a
+  worker observes an external invalidate or replacement.
+- Geocode cache writes compare an immutable loaded snapshot with the locked
+  manifest, preserve newer same-key worker values, and increment the existing
+  lost-update metric when a conflict is prevented.
+- RED/GREEN evidence: `python -m pytest -q tests/test_task9_review_fixes.py
+  tests/test_database_filters_pg.py tests/test_semantic_cache.py
+  agent/tests/test_geocode.py --basetemp=.tmp-task9-cross-final` -> `85 passed,
+  8 skipped`; `py_compile`, Ruff, and `git diff --check` pass.
+
 ## PostgreSQL / remaining concerns
 
 - The parent Task 8 disposable PostgreSQL proof owns the active local cluster; I did
