@@ -33,6 +33,7 @@ from .queue_policy import WorkItemDraft
 from .transitions import TransitionDraft
 
 import entity_write as _entity_write
+from control_plane.snapshot import bump_generation, invalidate_entity
 
 
 class CaseNotFound(LookupError):
@@ -267,6 +268,7 @@ class CaseTransaction:
         self._db = database
         self._conn = conn
         self._active = True
+        self._after_commit: list[callable] = []
 
     def _require_active(self) -> None:
         if not self._active:
@@ -274,6 +276,29 @@ class CaseTransaction:
 
     def _close(self) -> None:
         self._active = False
+
+    def on_commit(self, callback) -> None:
+        """Register a best-effort callback that runs only after commit."""
+        self._require_active()
+        if not callable(callback):
+            raise TypeError("commit callback must be callable")
+        self._after_commit.append(callback)
+
+    def _run_after_commit(self) -> None:
+        callbacks = tuple(self._after_commit)
+        self._after_commit.clear()
+        for callback in callbacks:
+            try:
+                callback()
+            except Exception:
+                import logging
+                logging.getLogger(__name__).warning(
+                    "post-commit callback failed", exc_info=True
+                )
+
+    def _discard_after_commit(self) -> None:
+        """Drop deferred cache work when this transaction does not commit."""
+        self._after_commit.clear()
 
     def insert_case(self, snapshot: CaseSnapshot) -> CaseSnapshot:
         self._require_active()
@@ -1290,7 +1315,7 @@ class CaseTransaction:
         return _entity_write.EntityWriteService(self._db).load_for_update(self._conn, entity_id)
 
     def apply_entity_patch(self, entity_id: str, patch: dict, *, expected_revision: int,
-                           actor: str, provenance: str):
+                           actor: str, provenance: str, correlation_id: str | None = None):
         """The only door from a case to a live entry, and it opens on THIS transaction.
 
         Routing through the writer keeps the entity row, its change audit and every
@@ -1303,6 +1328,18 @@ class CaseTransaction:
             actor=actor, provenance=provenance,
         )
         writer.write_change_audit(self._conn, result, actor=actor, provenance=provenance)
+        if result.changed_fields:
+            ref = bump_generation(
+                self._conn,
+                entity_id,
+                provenance,
+                correlation_id or actor,
+            )
+            self.on_commit(
+                lambda: invalidate_entity(
+                    entity_id, reason=provenance, generation=ref.generation
+                )
+            )
         return result
 
     def link_change_set_items(self, change_set_id: str, item_ids: tuple[str, ...]) -> None:
@@ -1459,6 +1496,10 @@ class PostgresCaseStore:
             try:
                 yield transaction
                 conn.commit()
+                transaction._run_after_commit()
+            except BaseException:
+                transaction._discard_after_commit()
+                raise
             finally:
                 transaction._close()
 

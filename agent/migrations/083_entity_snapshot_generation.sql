@@ -8,7 +8,7 @@ CREATE TABLE IF NOT EXISTS entity_snapshot_generation (
 ALTER TABLE entity_snapshot_generation OWNER TO vl360;
 
 INSERT INTO schema_version (component, version, migration, updated_at)
-VALUES ('agent', 83, '083_entity_snapshot_generation', NOW())
+VALUES ('agent', 83, '083_entity_snapshot_generation.sql', NOW())
 ON CONFLICT (component) DO UPDATE
 SET version = GREATEST(schema_version.version, EXCLUDED.version),
     migration = CASE WHEN EXCLUDED.version >= schema_version.version

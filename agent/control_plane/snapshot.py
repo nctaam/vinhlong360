@@ -85,14 +85,35 @@ def current_generation(entity_id: str) -> int:
     return 0
 
 
+def _postgres_backend(transaction) -> tuple[bool, str]:
+    """Resolve PG-ness and placeholder style through adapters, not module names."""
+    candidates = [transaction]
+    connection = getattr(transaction, "_conn", None)
+    if connection is not None:
+        candidates.append(connection)
+    database = getattr(transaction, "_db", None)
+    if database is not None:
+        candidates.append(database)
+    for candidate in candidates:
+        if candidate is None:
+            continue
+        if getattr(candidate, "_use_pg", False):
+            return True, str(getattr(candidate, "_ph", "%s"))
+        ph = getattr(candidate, "_ph", None)
+        if ph in {"%s", "%(name)s"}:
+            return True, str(ph)
+        module = str(getattr(candidate.__class__, "__module__", ""))
+        if module.startswith(("psycopg2", "psycopg")):
+            return True, "%s"
+        paramstyle = str(getattr(candidate, "paramstyle", ""))
+        if paramstyle in {"pyformat", "format"}:
+            return True, "%s"
+    return False, "?"
+
+
 def _sql_bump(transaction, entity_id: str):
     """Try the shared SQL adapter; return ``(generation, issued_at)`` or None."""
-    is_pg_connection = (
-        hasattr(transaction, "cursor")
-        and transaction.__class__.__module__.startswith("psycopg2")
-    )
-    use_pg = bool(getattr(transaction, "_use_pg", False)) or is_pg_connection
-    ph = "%s" if use_pg else "?"
+    use_pg, ph = _postgres_backend(transaction)
     now = system_clock.now_utc()
     stored_now = now.isoformat()
     try:
@@ -118,7 +139,7 @@ def _sql_bump(transaction, entity_id: str):
             generation, issued_at = row[0], row[1]
         return int(generation), issued_at or now
     except Exception:
-        if is_pg_connection:
+        if use_pg:
             raise
         return None
 

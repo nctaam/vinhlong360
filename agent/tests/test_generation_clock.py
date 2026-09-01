@@ -118,6 +118,41 @@ def test_raw_postgres_connection_uses_percent_placeholders():
     assert all("%s" in sql and "?" not in sql for sql in connection.cursor_instance.sql)
 
 
+def test_wrapped_postgres_adapter_uses_backend_placeholder_and_fails_closed():
+    from control_plane.snapshot import bump_generation
+
+    class PgCursor:
+        def __init__(self, fail=False):
+            self.sql = []
+            self.fail = fail
+
+        def execute(self, sql, params):
+            self.sql.append(sql)
+            if self.fail:
+                raise RuntimeError("postgres statement failed")
+
+        def fetchone(self):
+            return (9, datetime(2026, 9, 1, tzinfo=timezone.utc))
+
+    class WrappedAdapter:
+        _ph = "%s"
+        _use_pg = True
+
+        def __init__(self, fail=False):
+            self.cursor_instance = PgCursor(fail=fail)
+
+        def cursor(self):
+            return self.cursor_instance
+
+    wrapped = WrappedAdapter()
+    ref = bump_generation(wrapped, "e-wrapped", "test", "corr-wrapped")
+    assert ref.generation == 9
+    assert all("%s" in sql and "?" not in sql for sql in wrapped.cursor_instance.sql)
+
+    with pytest.raises(RuntimeError, match="postgres statement failed"):
+        bump_generation(WrappedAdapter(fail=True), "e-wrapped", "test", "corr-wrapped")
+
+
 def test_default_registry_covers_all_cache_consumers():
     assert {
         "l1", "l2", "redis", "review_stats", "similar", "kb_context", "place", "homepage",

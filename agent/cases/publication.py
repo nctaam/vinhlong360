@@ -39,6 +39,7 @@ from .domain import (
     PublicationState,
 )
 from .transitions import TransitionDraft
+from control_plane.snapshot import bump_generation, invalidate_entity
 
 APPLY_SCOPE = "publication.apply"
 VERIFY_SCOPE = "publication.verify"
@@ -69,6 +70,19 @@ def configure_case_publication(*, database=None, crypto=None, policy=None) -> No
     _DATABASE = database
     _CRYPTO = crypto
     _POLICY = policy
+
+
+def _advance_entity_generation(transaction, entity_id: str, *, reason: str,
+                               correlation_id: str):
+    """Advance the live snapshot inside the case transaction, then notify readers."""
+    connection = getattr(transaction, "_conn", transaction)
+    ref = bump_generation(connection, entity_id, reason, correlation_id)
+    transaction.on_commit(
+        lambda: invalidate_entity(
+            entity_id, reason=reason, generation=ref.generation
+        )
+    )
+    return ref
 
 
 def _store():
@@ -226,6 +240,7 @@ def apply_change_set(command: ApplyChangeSetCommand, *, now: datetime) -> Public
             expected_revision=entity.revision,
             actor=actor_ref,
             provenance="correction-apply",
+            correlation_id=getattr(command.actor, "correlation_id", "publication"),
         )
         transaction.set_change_set_apply_status(
             command.change_set_id, expected_status="pending", status="applied",
@@ -746,6 +761,7 @@ def _undo(transaction, command, row, snapshot, entity, entity_id: str, actor_ref
         expected_revision=entity.revision,
         actor=actor_ref,
         provenance="correction-rollback",
+        correlation_id=getattr(command.actor, "correlation_id", "publication"),
     )
     transaction.set_change_set_apply_status(
         command.change_set_id, expected_status="applied", status="rolled_back",

@@ -24,8 +24,8 @@ MIGRATIONS = ROOT / "agent" / "migrations"
 #   3. tests/test_release_quality_gates.py LATEST_MIGRATION / LATEST_SCHEMA_VERSION
 #   4. tests/test_release_quality_gates.py bản kê chuỗi sau LEGACY_BASELINE
 #   5. tests/test_release_quality_gates.py token PG_REQUIRED_SCHEMA_VERSION
-LATEST_MIGRATION = "082_unicode_digit_region_safety.sql"
-LATEST_SCHEMA_VERSION = 82
+LATEST_MIGRATION = "083_entity_snapshot_generation.sql"
+LATEST_SCHEMA_VERSION = 83
 
 
 def _complexity(node: ast.AST) -> int:
@@ -166,7 +166,7 @@ class _FakeCursor:
                 79: "079_user_plans_revision.sql",
                 80: "080_correction_case_kernel.sql",
                 81: "081_change_set_lifecycle.sql",
-                82: "082_unicode_digit_region_safety.sql",
+                83: "083_entity_snapshot_generation.sql",
             }.get(self.observed_version, f"{self.observed_version:03d}_observed.sql")
             return (
                 self.observed_version,
