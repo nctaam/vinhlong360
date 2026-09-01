@@ -28,6 +28,17 @@ from config import is_postgresql_url
 
 logger = logging.getLogger(__name__)
 
+
+class PostCommitMutationError(RuntimeError):
+    """A mutation committed, but a best-effort post-commit effect failed."""
+
+    committed = True
+
+    def __init__(self, effect: str, cause: Exception) -> None:
+        super().__init__(f"post_commit_{effect}_failed")
+        self.effect = effect
+        self.cause = cause
+
 # ── Config ──
 
 DB_DIR = Path(__file__).resolve().parent / "data"
@@ -1495,8 +1506,14 @@ class Database:
                                        revision=current_revision, conn=conn, database=self)
                 snapshot = bump_generation(conn, entity["id"], "entity_upsert", "database.upsert_entity")
             # Only now: the transaction closed cleanly, so the change is real.
-            _entity_details.apply_detail_cache_mutations(list(mutations))
-        invalidate_entity(entity["id"], reason="entity_upsert", generation=snapshot.generation)
+            try:
+                _entity_details.apply_detail_cache_mutations(list(mutations))
+            except Exception as exc:
+                raise PostCommitMutationError("detail_cache", exc) from exc
+        try:
+            invalidate_entity(entity["id"], reason="entity_upsert", generation=snapshot.generation)
+        except Exception as exc:
+            raise PostCommitMutationError("invalidation", exc) from exc
 
     def upsert_entity_with_audit(self, entity: dict, old: dict | None = None, *,
                                  actor: str = "admin", provenance: str = "admin-editor",
@@ -1538,8 +1555,14 @@ class Database:
                                        before=old or {}, after=entity,
                                        revision=current_revision, conn=conn, database=self)
                 snapshot = bump_generation(conn, entity["id"], "entity_upsert", f"{actor}|{provenance}")
-            _entity_details.apply_detail_cache_mutations(list(mutations))
-        invalidate_entity(entity["id"], reason="entity_upsert", generation=snapshot.generation)
+            try:
+                _entity_details.apply_detail_cache_mutations(list(mutations))
+            except Exception as exc:
+                raise PostCommitMutationError("detail_cache", exc) from exc
+        try:
+            invalidate_entity(entity["id"], reason="entity_upsert", generation=snapshot.generation)
+        except Exception as exc:
+            raise PostCommitMutationError("invalidation", exc) from exc
 
     def _write_entity_row(self, conn, entity, season_val, attrs_store,
                           source_val, images_val, coords_val, updated) -> None:

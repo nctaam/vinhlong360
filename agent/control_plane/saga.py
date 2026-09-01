@@ -31,6 +31,7 @@ class SagaStep:
     name: str
     run: Callable[[], Any]
     compensate: Callable[[Any], None]
+    metadata: Mapping[str, Any] | None = None
 
 
 @dataclass(frozen=True)
@@ -64,6 +65,13 @@ class SagaReceipt:
 
 _SAGA_RECEIPTS: dict[str, SagaReceipt] = {}
 _SAGA_LOCK = threading.RLock()
+_ENTITY_APPROVAL_LOCKS: dict[str, threading.Lock] = {}
+_ENTITY_APPROVAL_LOCKS_GUARD = threading.Lock()
+
+
+def _entity_approval_lock(entity_id: str) -> threading.Lock:
+    with _ENTITY_APPROVAL_LOCKS_GUARD:
+        return _ENTITY_APPROVAL_LOCKS.setdefault(str(entity_id), threading.Lock())
 
 
 def _ensure_idempotency_schema() -> None:
@@ -148,15 +156,19 @@ def _store_receipt(key: str, receipt: SagaReceipt, claim: ClaimResult | None = N
     return receipt
 
 
-def run_saga(steps: Sequence[SagaStep], *, idempotency_key: str) -> SagaReceipt:
+def run_saga(steps: Sequence[SagaStep], *, idempotency_key: str,
+             request_hash: str | None = None) -> SagaReceipt:
     """Run steps in order; compensate completed steps in reverse on failure."""
     if not isinstance(idempotency_key, str) or not idempotency_key.strip():
         raise ValueError("invalid_idempotency_key")
     key = idempotency_key.strip()
-    request_hash = hashlib.sha256(
-        json.dumps([step.name for step in steps], separators=(",", ":"), ensure_ascii=True).encode()
+    command_hash = request_hash or hashlib.sha256(
+        json.dumps({
+            "idempotency_key": key,
+            "steps": [{"name": step.name, "metadata": step.metadata or {}} for step in steps],
+        }, separators=(",", ":"), sort_keys=True, ensure_ascii=True, default=str).encode()
     ).hexdigest()
-    claim, durable_replay = _claim_generic_command(key, request_hash)
+    claim, durable_replay = _claim_generic_command(key, command_hash)
     if durable_replay is not None:
         return durable_replay
     completed: list[tuple[SagaStep, Any]] = []
@@ -340,11 +352,6 @@ def approve_image_suggestion(suggestion_id: str, actor_id: str, *, idempotency_k
             result = _suggestion_receipt(suggestion_id, actor_id, key, "not_found")
             _release_suggestion_claim(suggestion_id, claim_marker)
             return _store_receipt(key, result, claim)
-        images = list(entity.get("images") or [])
-        if len(images) >= 10:
-            result = _suggestion_receipt(suggestion_id, actor_id, key, "failed_compensated", error="image_limit")
-            _release_suggestion_claim(suggestion_id, claim_marker)
-            return _store_receipt(key, result, claim)
         try:
             uploaded = storage.upload_image_set(
                 _image_data if _image_data is not None else fetch_image_data(suggestion),
@@ -360,27 +367,40 @@ def approve_image_suggestion(suggestion_id: str, actor_id: str, *, idempotency_k
             _release_suggestion_claim(suggestion_id, claim_marker)
             return _store_receipt(key, result, claim)
         cover = uploaded.get("md") or uploaded.get("lg") or uploaded.get("sm")
-        if cover and cover not in images:
-            images.append(cover)
-        before = copy.deepcopy(entity)
-        entity["images"] = images
-        attrs = entity.get("attributes") if isinstance(entity.get("attributes"), dict) else {}
-        credits = list(attrs.get("image_credits") or [])
-        credits.append({"url": cover, "license": suggestion.get("license") or "", "author": suggestion.get("author") or "", "source": suggestion.get("source") or "", "source_url": suggestion.get("candidate_url") or "", "wp_title": suggestion.get("wp_title") or ""})
-        attrs["image_credits"] = credits
-        entity["attributes"] = attrs
-        entity["updatedAt"] = datetime.now(timezone.utc).strftime("%Y-%m-%d")
-        with db._conn() as conn:
-            if hasattr(db, "_entity_writer"):
-                db._entity_writer().upsert(conn, entity)
-            if hasattr(db, "_bump_sqlite_entity_revision"):
-                db._bump_sqlite_entity_revision(conn, before, entity)
-            revision_row = db._fetchone(conn, f"SELECT revision FROM entities WHERE id = {db._ph}", (suggestion["entity_id"],))
-            revision = int((db._row_to_dict(revision_row) or {}).get("revision") or 1)
-            record_entity_mutation(suggestion["entity_id"], actor_id=actor_id, reason="image_approval", correlation_id=key, before=before, after=entity, revision=revision, conn=conn, database=db)
-            if not _imgq.mark_status(suggestion_id, "approved", approved_by=actor_id, conn=conn):
-                raise RuntimeError("suggestion_not_pending")
-            snapshot = bump_generation(conn, suggestion["entity_id"], "image_approval", key)
+        with _entity_approval_lock(suggestion["entity_id"]):
+            with db._conn() as conn:
+                ph = db._ph
+                lock_clause = " FOR UPDATE" if getattr(db, "_use_pg", False) else ""
+                current_row = db._fetchone(
+                    conn, f"SELECT * FROM entities WHERE id = {ph}{lock_clause}",
+                    (suggestion["entity_id"],),
+                )
+                if not current_row:
+                    raise RuntimeError("entity_not_found")
+                before = db._parse_entity(current_row) if hasattr(db, "_parse_entity") else copy.deepcopy(entity)
+                images = list(before.get("images") or [])
+                if len(images) >= 10:
+                    raise RuntimeError("image_limit")
+                entity = copy.deepcopy(before)
+                if cover and cover not in images:
+                    images.append(cover)
+                entity["images"] = images
+                attrs = entity.get("attributes") if isinstance(entity.get("attributes"), dict) else {}
+                credits = list(attrs.get("image_credits") or [])
+                credits.append({"url": cover, "license": suggestion.get("license") or "", "author": suggestion.get("author") or "", "source": suggestion.get("source") or "", "source_url": suggestion.get("candidate_url") or "", "wp_title": suggestion.get("wp_title") or ""})
+                attrs["image_credits"] = credits
+                entity["attributes"] = attrs
+                entity["updatedAt"] = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+                if hasattr(db, "_entity_writer"):
+                    db._entity_writer().upsert(conn, entity)
+                if hasattr(db, "_bump_sqlite_entity_revision"):
+                    db._bump_sqlite_entity_revision(conn, before, entity)
+                revision_row = db._fetchone(conn, f"SELECT revision FROM entities WHERE id = {db._ph}", (suggestion["entity_id"],))
+                revision = int((db._row_to_dict(revision_row) or {}).get("revision") or 1)
+                record_entity_mutation(suggestion["entity_id"], actor_id=actor_id, reason="image_approval", correlation_id=key, before=before, after=entity, revision=revision, conn=conn, database=db)
+                if not _imgq.mark_status(suggestion_id, "approved", approved_by=actor_id, conn=conn):
+                    raise RuntimeError("suggestion_not_pending")
+                snapshot = bump_generation(conn, suggestion["entity_id"], "image_approval", key)
         try:
             invalidate_entity(suggestion["entity_id"], reason="image_approval", generation=snapshot.generation)
             post_commit_effects = ({"effect": "invalidation", "status": "applied"},)

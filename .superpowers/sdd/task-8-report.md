@@ -55,3 +55,10 @@
 
 - Generic un_saga receipts remain process-local; image approval itself uses durable shared idempotency/CAS. Claim/provisional JSON and DB are separate stores, with compensating rollback on DB failure but no single physical cross-store transaction.
 
+## Re-review Remediation
+
+- Direct uploads now distinguish pre-commit DB failures from committed-but-degraded post-commit effects; committed media is preserved and returned with `uploaded_degraded` plus effect metadata.
+- Generic saga keys now hash the idempotency key and deterministic step metadata; reused keys with a different step set return a durable idempotency conflict.
+- Image approval locks the entity row on PostgreSQL and serializes local approvals while merging against the latest entity snapshot, preventing lost images/credits.
+- Provisional promotion writes JSON under CAS before DB sync and reports `reconciliation_required` for uncertain committed effects; rejection rollback restores only an unchanged post-delete version.
+- Focused remediation evidence: `python -m pytest agent/tests/test_media_saga.py agent/tests/test_kb_curation.py agent/tests/test_entities_admin_api_boundary.py agent/tests/test_entity_write_transaction.py agent/tests/test_entity_write_compatibility.py -q` -> `47 passed, 23 skipped`.

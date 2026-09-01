@@ -59,6 +59,8 @@ def _db_upsert(entity: dict, *, actor_id: str = "system", reason: str = "entity_
         return True
     except Exception as e:  # noqa: BLE001 - không để lỗi DB làm hỏng thao tác (data.json vẫn ghi)
         logger.exception("DB upsert failed for %s: %s", entity.get("id"), e)
+        if getattr(e, "committed", False):
+            return {"ok": False, "committed": True, "error": "post_commit_effect_failed"}
         if strict:
             raise
         return False
@@ -115,22 +117,15 @@ def _rollback_promotion(entity_id: str, original: dict, promoted: dict) -> bool:
     return bool(mutate_json(DATA_JSON, revert))
 
 
-def _rollback_rejection(entity: dict, relationships: list[dict]) -> bool:
+def _rollback_rejection(entity: dict, relationships: list[dict], expected_after: dict, expected_version: str) -> bool:
     """Restore only a rejected entity and its removed edges under the JSON lock."""
-    entity_id = entity.get("id")
-
-    def revert(data: dict):
-        entities = data.setdefault("entities", [])
-        if any(item.get("id") == entity_id for item in entities):
-            return False, False
-        entities.append(copy.deepcopy(entity))
-        current = data.setdefault("relationships", [])
-        for relationship in relationships:
-            if relationship not in current:
-                current.append(copy.deepcopy(relationship))
-        return True, True
-
-    return bool(mutate_json(DATA_JSON, revert))
+    current, version = load_json_versioned(DATA_JSON)
+    if version != expected_version or current != expected_after:
+        return False
+    restored = copy.deepcopy(expected_after)
+    restored.setdefault("entities", []).append(copy.deepcopy(entity))
+    restored.setdefault("relationships", []).extend(copy.deepcopy(relationships))
+    return bool(compare_and_swap_json(DATA_JSON, expected_version, restored))
 
 
 def list_provisional() -> list:
@@ -194,14 +189,19 @@ def reject(entity_id: str) -> dict:
     kb["relationships"] = [r for r in kb.get("relationships", []) if r.get("from") != entity_id and r.get("to") != entity_id]
     if not compare_and_swap_json(DATA_JSON, version, kb):
         return {"ok": False, "error": "stale_review"}
+    _, post_delete_version = load_json_versioned(DATA_JSON)
+    post_delete_snapshot = copy.deepcopy(kb)
     try:
         _PROVISIONAL_AUDIT_CONTEXT[entity_id] = ("admin", "provisional_reject")
         db_result = _db_delete(entity_id)
         if db_result is False:
             raise RuntimeError("db_write_failed")
     except Exception:
-        _rollback_rejection(removed_target, removed_relationships)
-        return {"ok": False, "error": "db_write_failed"}
+        rolled_back = _rollback_rejection(removed_target, removed_relationships,
+                                           post_delete_snapshot, post_delete_version)
+        return {"ok": False, "error": "db_write_failed"} if rolled_back else {
+            "ok": False, "error": "db_write_failed", "reconciliation_required": True,
+        }
     result = {"ok": True, "id": entity_id, "removed": before - len(kb["entities"])}
     _reload()
     return result
@@ -337,20 +337,6 @@ def auto_promote_pass(min_hits: int = 3, dry_run: bool = False) -> dict:
         promoted["verified"] = True
         promoted_pairs.append((original, promoted))
 
-    persisted: list[tuple[dict, dict]] = []
-    for original, promoted in promoted_pairs:
-        try:
-            if _db_upsert(promoted) is False:
-                raise RuntimeError("db_write_failed")
-        except Exception:
-            for previous, _ in persisted:
-                try:
-                    _db_upsert(previous)
-                except Exception:
-                    logger.error("Auto-promotion DB compensation failed for %s", previous.get("id"))
-            return {"candidates": candidates, "promoted": [], "error": "db_write_failed"}
-        persisted.append((original, promoted))
-
     def apply_promotions(kb: dict) -> tuple[bool, dict]:
         entities = kb.get("entities", [])
         locations = {str(entity.get("id")): entity for entity in entities}
@@ -362,15 +348,38 @@ def auto_promote_pass(min_hits: int = 3, dry_run: bool = False) -> dict:
         return bool(promoted_pairs), {"candidates": candidates, "promoted": [e["id"] for _, e in promoted_pairs]}
 
     result = mutate_json(DATA_JSON, apply_promotions)
-    if result.get("error"):
-        for original, _ in persisted:
-            try:
-                _db_upsert(original)
-            except Exception:
-                logger.error("Auto-promotion stale compensation failed for %s", original.get("id"))
+    if result.get("error") or not promoted_pairs:
         return result
-    if persisted:
-        _reload()
+
+    persisted: list[tuple[dict, dict]] = []
+    degraded: list[str] = []
+    for original, promoted in promoted_pairs:
+        try:
+            db_result = _db_upsert(promoted)
+            if db_result is False:
+                raise RuntimeError("db_write_failed")
+            persisted.append((original, promoted))
+            if isinstance(db_result, dict) and db_result.get("committed"):
+                degraded.append(str(promoted.get("id")))
+        except Exception:
+            # Only roll back rows whose DB outcome is known; committed-but-
+            # degraded writes stay promoted and are explicitly reconciled.
+            for previous, previous_promoted in persisted:
+                if str(previous.get("id")) in degraded:
+                    continue
+                try:
+                    _db_upsert(previous)
+                    _rollback_promotion(previous.get("id"), previous, previous_promoted)
+                except Exception:
+                    logger.error("Auto-promotion compensation failed for %s", previous.get("id"))
+            if str(promoted.get("id")) not in degraded:
+                _rollback_promotion(promoted.get("id"), original, promoted)
+            return {"candidates": candidates, "promoted": [], "error": "db_write_failed",
+                    **({"reconciliation_required": degraded} if degraded else {})}
+    _reload()
+    if degraded:
+        result["degraded"] = True
+        result["reconciliation_required"] = degraded
     return result
 
 

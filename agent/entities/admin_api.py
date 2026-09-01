@@ -682,22 +682,31 @@ async def upload_entity_image(entity_id: str, file: UploadFile = File(...)):
         images.append(cover)
     entity["images"] = images
     entity["updatedAt"] = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+    post_commit_effects = ()
     try:
         db.upsert_entity(entity, actor_id="admin", reason="image_upload",
                          correlation_id=f"image-upload:{entity_id}")
-    except Exception:
-        from control_plane.saga import cleanup_uploaded_media
-        orphan_cleanup = cleanup_uploaded_media(storage, urls)
-        if orphan_cleanup:
-            logger.error("Entity image upload compensation incomplete for %s", entity_id)
-        raise
+    except Exception as exc:
+        if getattr(exc, "committed", False):
+            post_commit_effects = ({"effect": getattr(exc, "effect", "unknown"),
+                                    "status": "failed"},)
+        else:
+            from control_plane.saga import cleanup_uploaded_media
+            orphan_cleanup = cleanup_uploaded_media(storage, urls)
+            if orphan_cleanup:
+                logger.error("Entity image upload compensation incomplete for %s", entity_id)
+            raise
+    if post_commit_effects:
+        logger.error("Entity image upload committed but post-commit effect failed for %s", entity_id)
     try:
         _sync_kb()
     except Exception:
         # The entity commit is authoritative; a cache/KB refresh can be retried
         # without deleting the now-referenced media.
         logger.exception("Entity image post-commit sync failed for %s", entity_id)
-    return {"status": "uploaded", "url": cover, "sizes": urls, "images": images, "backend": storage.backend}
+    return {"status": "uploaded_degraded" if post_commit_effects else "uploaded",
+            "url": cover, "sizes": urls, "images": images, "backend": storage.backend,
+            "post_commit_effects": post_commit_effects}
 
 
 @router.delete("/entities/{entity_id}/images/{idx}",

@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import io
 import json
+import threading
 
 import pytest
 
@@ -61,6 +62,22 @@ def test_run_saga_replays_durable_receipt_after_process_cache_loss(monkeypatch, 
     assert first.status == "committed"
     assert second == first
     assert calls == ["run"]
+
+
+def test_run_saga_conflicts_when_same_key_has_different_steps(monkeypatch, isolated_sqlite_db):
+    from control_plane.saga import SagaStep, run_saga
+    import control_plane.saga as saga
+
+    monkeypatch.setattr(saga, "db", isolated_sqlite_db)
+    saga._SAGA_RECEIPTS.clear()
+    calls = []
+    first = run_saga([SagaStep("one", lambda: calls.append("one"), lambda _: None)],
+                     idempotency_key="generic-conflict")
+    second = run_saga([SagaStep("two", lambda: calls.append("two"), lambda _: None)],
+                      idempotency_key="generic-conflict")
+    assert first.status == "committed"
+    assert second.status == "idempotency_conflict"
+    assert calls == ["one"]
 
 
 def test_claim_decision_uses_nullable_reviewer_for_api_key_actor(monkeypatch):
@@ -147,6 +164,32 @@ async def test_direct_upload_compensates_when_entity_commit_fails(monkeypatch, i
     with pytest.raises(RuntimeError, match="db_failure"):
         await admin_api.upload_entity_image("e-direct", file)
     assert upload_storage.objects == set()
+
+
+@pytest.mark.anyio
+async def test_direct_upload_preserves_media_when_invalidation_fails_after_commit(monkeypatch, isolated_sqlite_db):
+    from entities import admin_api
+    import storage as storage_module
+    import database as database_module
+    from starlette.datastructures import UploadFile
+
+    class UploadStorage(FakeStorage):
+        @staticmethod
+        def sniff_image_type(data):
+            return "image/jpeg" if data else None
+
+    upload_storage = UploadStorage()
+    monkeypatch.setattr(admin_api, "db", isolated_sqlite_db)
+    monkeypatch.setattr(admin_api, "_reject_non_ai_media", lambda: None)
+    monkeypatch.setattr(admin_api, "_sync_kb", lambda: None)
+    isolated_sqlite_db.upsert_entity({"id": "e-direct-post", "name": "Entity", "type": "attraction", "images": []})
+    monkeypatch.setattr(storage_module, "storage", upload_storage)
+    monkeypatch.setattr(database_module, "invalidate_entity", lambda *args, **kwargs: (_ for _ in ()).throw(RuntimeError("cache_down")))
+    file = UploadFile(filename="image.jpg", file=io.BytesIO(b"jpeg-bytes"))
+    result = await admin_api.upload_entity_image("e-direct-post", file)
+    assert result["status"] == "uploaded_degraded"
+    assert upload_storage.objects
+    assert isolated_sqlite_db.get_entity("e-direct-post")["images"]
 
 
 def test_bulk_place_records_per_item_upsert_failure(monkeypatch):
@@ -276,6 +319,46 @@ def test_image_approval_commits_entity_credit_status_and_audit(monkeypatch, isol
     assert entity["images"]
     assert entity["attributes"]["image_credits"][0]["license"] == "CC0"
     assert isolated_sqlite_db.get_entity_audit("e-3")[0]["reason"] == "image_approval"
+
+
+def test_image_approval_merges_concurrent_suggestions_without_lost_images(monkeypatch, isolated_sqlite_db):
+    import image_suggestions
+    import control_plane.saga as saga
+
+    monkeypatch.setattr(saga, "db", isolated_sqlite_db)
+    monkeypatch.setattr(image_suggestions, "db", isolated_sqlite_db)
+    image_suggestions._table_ready = False
+    isolated_sqlite_db.upsert_entity({"id": "e-race", "name": "Entity", "type": "attraction", "images": []})
+    ids = image_suggestions.create_batch([
+        {"entity_id": "e-race", "candidate_url": "https://example.test/a.jpg"},
+        {"entity_id": "e-race", "candidate_url": "https://example.test/b.jpg"},
+    ]) ["ids"]
+
+    class ConcurrentStorage(FakeStorage):
+        def __init__(self):
+            super().__init__()
+            self.ready = threading.Barrier(2)
+
+        def upload_image_set(self, data, folder="entities", slug="img"):
+            self.ready.wait(timeout=5)
+            return super().upload_image_set(data, folder, slug)
+
+    storage = ConcurrentStorage()
+    monkeypatch.setattr(saga, "storage", storage)
+    monkeypatch.setattr(saga, "fetch_image_data", lambda suggestion: b"bytes")
+    results = []
+
+    def approve(sid):
+        results.append(saga.approve_image_suggestion(sid, "admin-1", idempotency_key=f"race-{sid}"))
+
+    threads = [threading.Thread(target=approve, args=(sid,)) for sid in ids]
+    for thread in threads:
+        thread.start()
+    for thread in threads:
+        thread.join(timeout=10)
+    assert all(result.status == "committed" for result in results)
+    assert len(isolated_sqlite_db.get_entity("e-race")["images"]) == 2
+    assert len(isolated_sqlite_db.get_entity("e-race")["attributes"]["image_credits"]) == 2
 
 
 def test_claim_decision_writes_before_after_audit_in_its_transaction(monkeypatch):

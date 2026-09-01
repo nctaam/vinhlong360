@@ -241,9 +241,9 @@ class TestReject:
 
         monkeypatch.setattr(kb_curation, "_db_delete", fail_after_concurrent_delete)
         result = kb_curation.reject("prov-1")
-        assert result == {"ok": False, "error": "db_write_failed"}
+        assert result == {"ok": False, "error": "db_write_failed", "reconciliation_required": True}
         persisted = json.loads(kb_with_provisional.read_text(encoding="utf-8"))
-        assert any(item["id"] == "prov-1" for item in persisted["entities"])
+        assert all(item["id"] != "prov-1" for item in persisted["entities"])
         assert next(item for item in persisted["entities"] if item["id"] == "prov-2")["summary"] == "concurrent edit"
 
 
@@ -312,3 +312,15 @@ class TestAutoPromote:
         data = json.loads(kb_with_provisional.read_text(encoding="utf-8"))
         entity = next(x for x in data["entities"] if x["id"] == "prov-1")
         assert entity["verified"] is False
+
+    def test_post_commit_db_effect_is_reported_without_json_rollback(self, kb_with_provisional, monkeypatch):
+        monkeypatch.setattr(kb_curation, "_db_upsert", lambda entity: {
+            "ok": False, "committed": True, "error": "post_commit_effect_failed"
+        })
+        result = kb_curation.auto_promote_pass(min_hits=3)
+        assert result["promoted"] == ["prov-1"]
+        assert result["degraded"] is True
+        assert result["reconciliation_required"] == ["prov-1"]
+        data = json.loads(kb_with_provisional.read_text(encoding="utf-8"))
+        entity = next(x for x in data["entities"] if x["id"] == "prov-1")
+        assert entity["verified"] is True

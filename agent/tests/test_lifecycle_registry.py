@@ -173,6 +173,20 @@ def test_legacy_export_cursor_decodes_per_dataset():
     assert _legacy_cursor_offsets(token, "comments") == 0
 
 
+def test_legacy_manifest_counts_page_rows_and_signs_next_cursor(monkeypatch):
+    from identity import api
+
+    monkeypatch.setattr(api, "_EXPORT_CURSOR_SECRET", b"test-export-secret")
+    raw = {"posts": [{"id": str(i)} for i in range(3)], "comments": []}
+    manifest = api._build_legacy_manifest(raw, None, 2, "user-1")
+    assert manifest["posts"]["count"] == 2
+    assert manifest["posts"]["truncated"] is True
+    signed = manifest["posts"]["next_cursor"]
+    inner = api._verify_export_cursor(signed, "user-1")
+    assert inner is not None
+    assert api._legacy_cursor_offsets(inner, "posts") == 2
+
+
 def test_export_cursor_provenance_rejects_forged_tokens():
     from identity.api import _verify_export_cursor, _sign_export_cursor
     signed = _sign_export_cursor("inner", "subject-1")

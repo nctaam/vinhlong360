@@ -1802,6 +1802,26 @@ def _legacy_next_cursor(sink: str, offset: int, has_more: bool) -> str | None:
     raw = json.dumps({"sink": sink, "offset": offset}, separators=(",", ":")).encode("utf-8")
     return base64.urlsafe_b64encode(raw).decode("ascii").rstrip("=")
 
+
+def _build_legacy_manifest(
+    raw: dict[str, list[dict]],
+    cursor: str | None,
+    page_limit: int,
+    subject_id: str,
+) -> dict[str, dict]:
+    """Describe only the returned page and issue a signed continuation token."""
+    manifest: dict[str, dict] = {}
+    for name, rows in raw.items():
+        offset = _legacy_cursor_offsets(cursor, name)
+        has_more = len(rows) > page_limit
+        inner_next = _legacy_next_cursor(name, offset + page_limit, has_more)
+        manifest[name] = {
+            "count": min(len(rows), page_limit),
+            "truncated": has_more,
+            "next_cursor": _sign_export_cursor(inner_next, subject_id) if inner_next else None,
+        }
+    return manifest
+
 @router.get("/export-data",
             summary="Export all user data",
             description="Exports all data associated with the authenticated user for GDPR compliance. Includes profile, posts, comments, likes, bookmarks, follows, visits, reactions, collections, blocks, and mutes.")
@@ -1901,15 +1921,8 @@ async def export_user_data(request: Request, response: Response, cursor: str | N
             "blocks": _rows_to_dicts(blocks),
             "mutes": _rows_to_dicts(mutes),
         }
-        payload = {}
-        legacy_meta = {}
-        for name, rows in raw.items():
-            values = rows
-            offset = _legacy_cursor_offsets(inner_cursor, name)
-            next_cursor = _legacy_next_cursor(name, offset + page_limit, len(rows) > page_limit)
-            legacy_meta[name] = {"count": len(values), "truncated": len(rows) > page_limit,
-                                 "next_cursor": _sign_export_cursor(next_cursor, uid) if next_cursor else None}
-            payload[name] = values[:page_limit]
+        payload = {name: rows[:page_limit] for name, rows in raw.items()}
+        legacy_meta = _build_legacy_manifest(raw, inner_cursor, page_limit, uid)
         return payload, legacy_meta
 
     ugc, legacy_manifest = await asyncio.to_thread(_query)
