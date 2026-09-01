@@ -142,13 +142,7 @@ def ensure_state_schema(transaction, table: str = "posts") -> None:
     for name, definition in additions.items():
         if name not in columns:
             ddl = f"ALTER TABLE {table} ADD COLUMN IF NOT EXISTS {name} {definition}" if getattr(db, "_use_pg", False) else f"ALTER TABLE {table} ADD COLUMN {name} {definition}"
-            try:
-                db._execute(conn, ddl, ())
-            except Exception:
-                # Another worker may have added the same column between the
-                # information-schema read and this DDL statement.
-                if not getattr(db, "_use_pg", False):
-                    raise
+            db._execute(conn, ddl, ())
     if getattr(db, "_use_pg", False) and table == "posts":
         # Older deployments constrain moderation_status to the original four states.
         # Extend that check additively so a visible publish_failed state is durable.
@@ -284,14 +278,16 @@ def claim_due(transaction, table: str, *, due_before: datetime, worker_id: str,
     id_col = "id" if "id" in columns else "case_id"
     status_col = "moderation_status" if "moderation_status" in columns else ("status" if "status" in columns else None)
     status_expr = f", target.{status_col} AS state_status" if status_col else ""
+    due_predicate = f" AND {status_col} IN ('pending','flagged')" if status_col else ""
+    draft_predicate = " AND (is_draft = FALSE OR is_draft IS NULL)" if "is_draft" in columns else ""
     expires = due_before + timedelta(seconds=lease_seconds)
     ph = db._ph
     if getattr(db, "_use_pg", False):
-        row = db._fetchone(conn, f"WITH candidate AS (SELECT {id_col} FROM {table} WHERE scheduled_at IS NOT NULL AND scheduled_at <= {ph} AND (claim_expires_at IS NULL OR claim_expires_at <= {ph}) ORDER BY scheduled_at, {id_col} LIMIT 1 FOR UPDATE SKIP LOCKED) UPDATE {table} AS target SET claimed_by={ph}, claim_expires_at={ph}, revision=target.revision+1 FROM candidate WHERE target.{id_col}=candidate.{id_col} RETURNING target.{id_col} AS row_id, target.revision{status_expr}", (due_before, due_before, worker_id, expires))
+        row = db._fetchone(conn, f"WITH candidate AS (SELECT {id_col} FROM {table} WHERE scheduled_at IS NOT NULL AND scheduled_at <= {ph} AND (claim_expires_at IS NULL OR claim_expires_at <= {ph}){draft_predicate}{due_predicate} ORDER BY scheduled_at, {id_col} LIMIT 1 FOR UPDATE SKIP LOCKED) UPDATE {table} AS target SET claimed_by={ph}, claim_expires_at={ph}, revision=target.revision+1 FROM candidate WHERE target.{id_col}=candidate.{id_col} RETURNING target.{id_col} AS row_id, target.revision{status_expr}", (due_before, due_before, worker_id, expires))
     else:
         sqlite_status_expr = f", {status_col} AS state_status" if status_col else ""
-        row = db._fetchone(conn, f"UPDATE {table} SET claimed_by={ph}, claim_expires_at={ph}, revision=revision+1 WHERE {id_col} = (SELECT {id_col} FROM {table} WHERE scheduled_at IS NOT NULL AND scheduled_at <= {ph} AND (claim_expires_at IS NULL OR claim_expires_at <= {ph}) ORDER BY scheduled_at, {id_col} LIMIT 1) RETURNING {id_col} AS row_id, revision{sqlite_status_expr}", (worker_id, expires.isoformat(), due_before.isoformat(), due_before.isoformat()))
+        row = db._fetchone(conn, f"UPDATE {table} SET claimed_by={ph}, claim_expires_at={ph}, revision=revision+1 WHERE {id_col} = (SELECT {id_col} FROM {table} WHERE scheduled_at IS NOT NULL AND scheduled_at <= {ph} AND (claim_expires_at IS NULL OR claim_expires_at <= {ph}){draft_predicate}{due_predicate} ORDER BY scheduled_at, {id_col} LIMIT 1) RETURNING {id_col} AS row_id, revision{sqlite_status_expr}", (worker_id, expires.isoformat(), due_before.isoformat(), due_before.isoformat()))
     if row is None:
         return None
-    status = _row_value(row, status_col) if status_col else None
+    status = _row_value(row, "state_status") if status_col else None
     return Lease(table, str(_row_value(row, "row_id")), worker_id, expires, int(_row_value(row, "revision") or 1), status)

@@ -163,8 +163,8 @@ def test_fresh_migration_chain_reaches_release_readiness(fresh_migrated_database
     status = adapter.pg_schema_status()
     assert status["backend"] == "postgresql"
     assert status["ok"] is True
-    assert status["schema_version"] == 83
-    assert status["required_schema_version"] == 83
+    assert status["schema_version"] == 84
+    assert status["required_schema_version"] == 84
     assert status["missing_tables"] == []
     assert status["missing_columns"] == []
     assert status["missing_triggers"] == []

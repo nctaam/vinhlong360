@@ -98,7 +98,7 @@ def test_pg_schema_contract_tracks_latest_release_tables():
     # 75 index đường nóng; 76-78 là NP-1 identity/location/trust; 79 planner revision;
     # 80 Case Kernel; 81 mở hai cột vòng đời của change set (xuất bản đính chính);
     # 82 CHECK vị-trí nhận chữ số Unicode (§48.4).
-    assert PG_REQUIRED_SCHEMA_VERSION == 83
+    assert PG_REQUIRED_SCHEMA_VERSION == 84
     assert {"schema_version", "admin_audit_events", "shared_rate_limits", "request_idempotency_keys"} <= PG_REQUIRED_TABLES
     assert {"feedback_receipts", "feedback_daily_rollups"} <= PG_REQUIRED_TABLES
     assert {"entity_changes", "site_settings_history"} <= PG_REQUIRED_TABLES

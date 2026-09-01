@@ -23,6 +23,7 @@ lát chat: shim KHÔNG cứu được monkeypatch — handler đọc globals c�
 thật). Hồ sơ 4 trục + fixture-db: ROADMAP §46.3, dossier 2026-08-28.
 """
 import asyncio
+import hashlib
 import json
 import logging
 import re
@@ -39,6 +40,7 @@ from moderation import moderate_content, moderate_content_enhanced, log_moderati
 from notifications import create_notification
 from storage import storage
 from ratelimit import check_rate, check_rate_ip
+from control_plane.concurrency import IdempotencyKey, claim_idempotency, record_idempotency_receipt
 from text_utils import normalize_name
 from media_policy import AI_ONLY_MEDIA_DETAIL
 from profile_access import (
@@ -55,6 +57,36 @@ RL_COMMENT_LIMIT, RL_COMMENT_WINDOW = _cfg.RL_COMMENT_LIMIT, _cfg.RL_COMMENT_WIN
 RL_UPLOAD_LIMIT, RL_UPLOAD_WINDOW = 40, 600    # 40 ảnh / 10 phút
 RL_LIKE_LIMIT, RL_LIKE_WINDOW = _cfg.RL_LIKE_LIMIT, _cfg.RL_LIKE_WINDOW
 RL_DELETE_LIMIT, RL_DELETE_WINDOW = 10, 300     # 10 xóa / 5 phút
+
+
+def _community_idempotency(request: Request | None, user: dict, command: str, payload: object):
+    """Claim a community write key and return a stored response on exact retry."""
+    if request is None:
+        return None, None
+    raw = request.headers.get("Idempotency-Key", "").strip()
+    if not raw:
+        return None, None
+    digest = hashlib.sha256(json.dumps(payload, ensure_ascii=False, sort_keys=True, default=str).encode()).hexdigest()
+    with db._conn() as conn:
+        class _Tx:
+            _db = db
+            _conn = conn
+        claim = claim_idempotency(_Tx, IdempotencyKey(command, str(user["id"]), raw), digest)
+        if claim.conflict:
+            raise HTTPException(409, "Idempotency-Key đã được dùng cho nội dung khác")
+        if claim.replayed and claim.receipt is not None:
+            return claim, claim.receipt
+    return claim, None
+
+
+def _community_idempotency_record(claim, receipt):
+    if claim is None or not claim.claimed:
+        return
+    with db._conn() as conn:
+        class _Tx:
+            _db = db
+            _conn = conn
+        record_idempotency_receipt(_Tx, claim, receipt)
 
 
 from auth_middleware import require_pg as _require_pg
@@ -459,7 +491,10 @@ def _notify_new_post(mentions, user, post_id, content, entity_id, orig_author_id
 @router.post("/posts", status_code=201,
              summary="Create a post",
              description="Create a community post (review, share, question, tip, or repost). Runs content moderation, extracts hashtags/mentions, and sends notifications to tagged users.")
-async def create_post(body: CreatePost, user=Depends(require_user), _csrf=Depends(require_csrf), _idem=Depends(require_idempotency)):
+async def create_post(body: CreatePost, request: Request = None, user=Depends(require_user), _csrf=Depends(require_csrf)):
+    claim, replay = _community_idempotency(request, user, "create_post", body.model_dump())
+    if replay is not None:
+        return replay
     _reject_social_images(body.images)
     check_rate(f"post:{user['id']}", RL_POST_LIMIT, RL_POST_WINDOW,
                "Bạn đăng bài quá nhanh. Vui lòng đợi ít phút rồi thử lại.")
@@ -509,7 +544,9 @@ async def create_post(body: CreatePost, user=Depends(require_user), _csrf=Depend
     if status != "approved":
         result["moderation_notice"] = _moderation_notice(status)
 
-    return {"post": result}
+    response = {"post": result}
+    _community_idempotency_record(claim, response)
+    return response
 
 
 # ── Draft Posts ──

@@ -109,7 +109,7 @@ def test_due_claim_is_leased_once_until_expiry():
     db = _SqliteDatabase()
     due = datetime.now(UTC) - timedelta(minutes=1)
     db.conn.execute(
-        "INSERT INTO posts(id, status, scheduled_at) VALUES ('post-1', 'pending', ?)",
+        "INSERT INTO posts(id, moderation_status, scheduled_at) VALUES ('post-1', 'pending', ?)",
         (due.isoformat(),),
     )
     tx = _Tx(db)
@@ -173,3 +173,49 @@ def test_publish_failure_remains_visible_with_retry_metadata(monkeypatch):
     assert row["scheduled_at"] is not None
     assert row["publish_attempts"] == 1
     assert row["last_error_code"] == "RuntimeError"
+
+
+def test_pending_unavailable_moderation_does_not_reject(monkeypatch):
+    import database
+    import scheduler
+    db = _SqliteDatabase()
+    due = datetime.now(UTC) - timedelta(minutes=1)
+    db.conn.execute("INSERT INTO posts(id, user_id, content, images, moderation_status, scheduled_at) VALUES ('post-3','user-3','Pending provider','[]','pending',?)", (due.isoformat(),))
+    monkeypatch.setattr(database, "db", db)
+    async def unavailable(*_args, **_kwargs):
+        return {"status": "pending", "moderation_available": False}
+    monkeypatch.setattr("moderation.moderate_content_enhanced", unavailable)
+    result = scheduler.task_publish_due_posts(now=datetime.now(UTC), worker_id="worker-3", limit=1)
+    row = db.conn.execute("SELECT moderation_status, scheduled_at, publish_attempts FROM posts WHERE id='post-3'").fetchone()
+    assert result.failed == 1
+    assert row["moderation_status"] == "publish_failed"
+    assert row["scheduled_at"] is not None
+
+
+def test_due_claim_skips_draft_and_non_pending_rows():
+    from control_plane.concurrency import claim_due
+    db = _SqliteDatabase()
+    due = datetime.now(UTC) - timedelta(minutes=1)
+    db.conn.execute("INSERT INTO posts(id, moderation_status, scheduled_at) VALUES ('draft','approved',?)", (due.isoformat(),))
+    db.conn.execute("INSERT INTO posts(id, moderation_status, scheduled_at) VALUES ('pending','pending',?)", (due.isoformat(),))
+    tx = _Tx(db)
+    lease = claim_due(tx, "posts", due_before=datetime.now(UTC), worker_id="w", lease_seconds=60)
+    assert lease is not None and lease.row_id == "pending"
+
+
+def test_production_alias_prd_fails_closed(monkeypatch):
+    import ratelimit
+    monkeypatch.setenv("ENVIRONMENT", "prd")
+    monkeypatch.setattr(ratelimit, "_check_rate_pg", lambda *_args, **_kwargs: False)
+    with pytest.raises(Exception) as exc:
+        ratelimit.check_rate("prd-key", 10, 60)
+    assert getattr(exc.value, "status_code", None) == 503
+
+
+def test_community_create_post_uses_shared_idempotency_claim():
+    from pathlib import Path
+    source = (Path(__file__).parents[1] / "community" / "api.py").read_text(encoding="utf-8")
+    block = source[source.index("async def create_post"):source.index("# ── Draft Posts ──")]
+    assert "_community_idempotency(" in block
+    assert "_community_idempotency_record" in block
+    assert "require_idempotency" not in block

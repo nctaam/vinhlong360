@@ -1199,9 +1199,10 @@ def task_publish_due_posts(now: datetime | None = None, worker_id: str | None = 
                 except (TypeError, ValueError, json.JSONDecodeError):
                     images = []
             result = asyncio.run(moderate_content_enhanced(content, user_id=str(post["user_id"]), image_urls=images))
-            status = str(result.get("status") or "rejected")
-            if status not in {"approved", "rejected"}:
-                status = "rejected"
+            status = str(result.get("status") or "pending")
+            if status not in {"approved", "rejected"} or result.get("moderation_available") is False:
+                status = "publish_failed"
+                error_code = "MODERATION_UNAVAILABLE"
         except Exception as exc:  # noqa: BLE001 - failure is persisted for retry
             error_code = type(exc).__name__[:80]
 

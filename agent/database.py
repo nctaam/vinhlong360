@@ -111,7 +111,8 @@ PG_REQUIRED_COLUMNS = {
     "entities": {"id", "type", "name", "status", "verified", "coordinates", "attributes", "images"},
     "itineraries": {"id", "title", "area", "areas", "stops"},
     "users": {"id", "phone", "password_hash", "username", "role", "is_active"},
-    "posts": {"id", "user_id", "entity_id", "content", "moderation_status", "deleted_at", "is_draft"},
+    "posts": {"id", "user_id", "entity_id", "content", "moderation_status", "deleted_at", "is_draft", "revision", "claimed_by", "claim_expires_at", "publish_attempts", "last_error_code"},
+    "moderation_appeals": {"id", "post_id", "user_id", "status", "revision", "claimed_by", "claim_expires_at", "last_error_code"},
     "saved_entities": {"id", "user_id", "entity_id", "kind", "snapshot", "created_at"},
     "admin_audit_events": {"actor", "actor_scopes", "request_id", "before_json", "after_json"},
     "shared_rate_limits": {"key", "hits", "expires_at", "updated_at"},
@@ -195,7 +196,8 @@ PG_CORE_REQUIRED_COLUMNS = {
 # 80 adds the PostgreSQL-only Correction Case Kernel and entity revision guard.
 # 82 dạy vl360_region_text_is_safe nhận chữ số Unicode (§48.4) + quarantine tồn đọng.
 # 83 adds the durable entity snapshot generation table used by cache consumers.
-PG_REQUIRED_SCHEMA_VERSION = 83
+# 84 closes community moderation/scheduled state with durable CAS fields.
+PG_REQUIRED_SCHEMA_VERSION = 84
 PG_CORE_REQUIRED_SCHEMA_VERSION = 79
 PG_REQUIRED_TRIGGERS = {
     "trg_entity_ratings": "posts",

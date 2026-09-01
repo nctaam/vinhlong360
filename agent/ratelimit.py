@@ -133,7 +133,7 @@ def check_rate(key: str, limit: int, window: int,
     # A production deployment must not silently fan a shared limit out across
     # worker-local dictionaries while PostgreSQL is unavailable.  Keep the
     # historical in-memory fallback for local development and tests.
-    if os.environ.get("ENVIRONMENT", "").strip().lower() in {"production", "prod"} and os.environ.get("VL360_SHARED_RATE_FAIL_CLOSED", "true").strip().lower() not in {"0", "false", "no", "off"}:
+    if os.environ.get("ENVIRONMENT", "").strip().lower() in {"production", "prod", "prd"} and os.environ.get("VL360_SHARED_RATE_FAIL_CLOSED", "true").strip().lower() not in {"0", "false", "no", "off"}:
         raise HTTPException(503, "Rate-limit backend unavailable")
     now = _now()
     with _rl_lock:
