@@ -9,7 +9,7 @@
     {"name":"login_history","owner_key":"user_id","classification":"personal","export_strategy":"row-keyset","erase_strategy":"delete","retention_days":90,"proof_level":"strong"},
     {"name":"user_privacy","owner_key":"user_id","classification":"personal","export_strategy":"row-keyset","erase_strategy":"delete","retention_days":null,"proof_level":"strong"},
     {"name":"consent_log","owner_key":"user_id","classification":"pseudonymous","export_strategy":"row-keyset","erase_strategy":"retain-hash","retention_days":3650,"proof_level":"strong"},
-    {"name":"trusted_devices","owner_key":"user_id","classification":"secret","export_strategy":"metadata-only","erase_strategy":"delete","retention_days":null,"proof_level":"strong"},
+    {"name":"trusted_devices","owner_key":"user_id","classification":"personal","export_strategy":"metadata-only","erase_strategy":"delete","retention_days":null,"proof_level":"strong"},
     {"name":"moderation_appeals","owner_key":"user_id","classification":"personal","export_strategy":"row-keyset","erase_strategy":"unlink-or-delete","retention_days":3650,"proof_level":"strong"},
     {"name":"post_edit_history","owner_key":"editor_id","classification":"personal","export_strategy":"row-keyset","erase_strategy":"unlink-or-delete","retention_days":3650,"proof_level":"strong"},
     {"name":"user_collections","owner_key":"user_id","classification":"personal","export_strategy":"row-keyset","erase_strategy":"delete","retention_days":null,"proof_level":"strong"},

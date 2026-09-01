@@ -44,7 +44,7 @@ class SinkSpec:
     def __post_init__(self) -> None:
         if not self.name or not self.owner_key:
             raise ValueError("sink name and owner_key are required")
-        if self.classification not in {"personal", "pseudonymous", "aggregate", "operational", "secret"}:
+        if self.classification not in {"personal", "pseudonymous", "aggregate", "operational"}:
             raise ValueError(f"invalid sink classification: {self.name}")
         if self.retention_days is not None and int(self.retention_days) < 0:
             raise ValueError("retention_days must be non-negative or null")
