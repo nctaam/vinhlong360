@@ -52,6 +52,7 @@
 const LIFECYCLE_CLEAR_VERSION = 'v1'
 const CHAT_STORAGE_KEY = 'chat_sid'
 import { consumeJsonSseStream } from '~/utils/sse'
+import { consumeLifecycleClearInstruction } from '~/composables/useLifecycleClear'
 
 const route = useRoute()
 // declutter-2 A4: ẩn FAB trên trang chi tiết entity — nơi đã có AITravelTips +
@@ -82,6 +83,7 @@ function syncSheetMode(event: MediaQueryList | MediaQueryListEvent) {
   isMobileSheet.value = event.matches
 }
 onMounted(() => {
+  consumeLifecycleClearInstruction()
   if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') return
   sheetQuery = window.matchMedia(MOBILE_SHEET_QUERY)
   syncSheetMode(sheetQuery)

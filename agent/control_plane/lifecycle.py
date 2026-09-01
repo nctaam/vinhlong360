@@ -21,6 +21,17 @@ from database import db
 
 _VERSION = "1"
 _MAX_LIMIT = 1000
+_EXPORT_STRATEGIES = {
+    "postgres", "table-manifest", "row-keyset", "joined-row-keyset",
+    "metadata-only", "jsonl-owner-scan", "bounded-memory", "instruction-only",
+    "media-manifest", "excluded", "unavailable",
+}
+_ERASE_STRATEGIES = {
+    "transactional", "hard-delete", "delete", "unlink-or-delete", "retain-hash",
+    "cascade", "filter-rewrite", "evict-owner", "versioned-clear", "delete-receipt",
+    "purge-receipt", "issued-only", "unavailable",
+}
+_PROOF_LEVELS = {"strong", "bounded", "instruction", "receipt", "hash-only", "unavailable"}
 _SECRET_EXCLUSIONS = (
     {"field": "users.password_hash", "reason": "credential material is never exported"},
     {"field": "user_2fa.secret_enc", "reason": "encrypted TOTP secret is authentication material"},
@@ -48,6 +59,12 @@ class SinkSpec:
             raise ValueError(f"invalid sink classification: {self.name}")
         if self.retention_days is not None and int(self.retention_days) < 0:
             raise ValueError("retention_days must be non-negative or null")
+        if self.export_strategy not in _EXPORT_STRATEGIES:
+            raise ValueError(f"invalid export_strategy: {self.name}")
+        if self.erase_strategy not in _ERASE_STRATEGIES:
+            raise ValueError(f"invalid erase_strategy: {self.name}")
+        if self.proof_level not in _PROOF_LEVELS:
+            raise ValueError(f"invalid proof_level: {self.name}")
 
 
 class LifecycleRegistry:
@@ -81,6 +98,9 @@ def load_lifecycle_registry(path: Path) -> LifecycleRegistry:
     for item in raw:
         if not isinstance(item, dict) or not required <= set(item):
             raise ValueError("incomplete lifecycle sink specification")
+        unknown = set(item) - required
+        if unknown:
+            raise ValueError(f"unknown lifecycle sink keys: {sorted(unknown)}")
         specs.append(SinkSpec(**{key: item[key] for key in required}))
     return LifecycleRegistry(specs)
 
@@ -108,6 +128,16 @@ class ErasureReport:
     @property
     def statuses(self) -> dict[str, str]:
         return {name: str(item.get("status")) for name, item in self.sinks.items()}
+
+    @property
+    def verified(self) -> bool:
+        if self.dry_run:
+            return False
+        return all(status in {"deleted", "already_absent"} for status in self.statuses.values())
+
+    @property
+    def success(self) -> bool:
+        return self.verified
 
     def to_dict(self) -> dict[str, Any]:
         return {
@@ -165,6 +195,12 @@ _TABLES: dict[str, tuple[str, str, str]] = {
     "follows": ("follower_id", "created_at", "target_type, target_id, created_at"),
     "user_visits": ("user_id", "created_at", "entity_id, status, visited_at, created_at"),
     "post_reactions": ("user_id", "created_at", "post_id, reaction_type, created_at"),
+    "blocks": ("blocker_id", "created_at", "blocked_id, created_at"),
+    "user_mutes": ("user_id", "created_at", "muted_id, created_at"),
+    "user_sessions": ("user_id", "created_at", "id, user_id, expires_at, created_at"),
+    "user_2fa": ("user_id", "user_id", "user_id, enabled, created_at, updated_at"),
+    "user_2fa_recovery_codes": ("user_id", "created_at", "id, user_id, used, created_at"),
+    "pending_2fa": ("user_id", "created_at", "id, user_id, expires_at, created_at"),
 }
 
 
@@ -241,6 +277,41 @@ def _default_registry() -> LifecycleRegistry:
 lifecycle_registry = _default_registry()
 
 
+def _external_export(name: str, subject_id: str, limit: int, cursor: Any = None) -> tuple[list[dict[str, Any]], str | None, bool, str | None, str]:
+    """Enumerate local adapters; unavailable providers are explicit, never empty-success."""
+    owner = str(subject_id)
+    try:
+        if name == "analytics-jsonl":
+            import analytics
+            rows = analytics.export_owner_records(owner)
+            offset = int(cursor) if isinstance(cursor, str) and cursor.isdigit() else 0
+            page = rows[offset:offset + limit]
+            return page, _encode_cursor(str(offset + limit)) if offset + limit < len(rows) else None, offset + limit < len(rows), None, "analytics"
+        if name == "bot-memory":
+            import bot_gateway
+            rows = bot_gateway.export_subject_memory(owner) if hasattr(bot_gateway, "export_subject_memory") else []
+            offset = int(cursor) if isinstance(cursor, str) and cursor.isdigit() else 0
+            page = rows[offset:offset + limit]
+            return page, _encode_cursor(str(offset + limit)) if offset + limit < len(rows) else None, offset + limit < len(rows), None if hasattr(bot_gateway, "export_subject_memory") else "ADAPTER_UNAVAILABLE", "bot"
+        if name == "reports-jsonl":
+            from admin import _INFO_REPORTS_FILE
+            rows = []
+            if _INFO_REPORTS_FILE.exists():
+                for line in _INFO_REPORTS_FILE.read_text(encoding="utf-8").splitlines():
+                    try:
+                        item = json.loads(line)
+                    except json.JSONDecodeError:
+                        continue
+                    if str(item.get("owner_key", item.get("user_id", item.get("reporter_id", "")))) == owner:
+                        rows.append(item)
+            offset = int(cursor) if isinstance(cursor, str) and cursor.isdigit() else 0
+            page = rows[offset:offset + limit]
+            return page, _encode_cursor(str(offset + limit)) if offset + limit < len(rows) else None, offset + limit < len(rows), None, "reports"
+    except Exception as exc:
+        return [], None, False, type(exc).__name__, "local"
+    return [], None, False, "ADAPTER_UNAVAILABLE", "unavailable"
+
+
 def export_subject(subject_id: str, *, cursor: str | None = None, limit: int = _MAX_LIMIT) -> ExportBundle:
     if not str(subject_id).strip():
         raise ValueError("subject_id is required")
@@ -265,10 +336,18 @@ def export_subject(subject_id: str, *, cursor: str | None = None, limit: int = _
     # External sinks are represented explicitly even when no local adapter can
     # enumerate them; this makes omissions visible to auditors.
     for name in ("reports-jsonl", "analytics-jsonl", "bot-memory", "browser-storage", "object-store", "cdn"):
-        data.setdefault(name, [])
-        digest = hashlib.sha256(b"[]").hexdigest()
+        if name in {"reports-jsonl", "analytics-jsonl", "bot-memory"}:
+            ext_cursor = decoded if isinstance(decoded, str) else None
+            rows, next_cursor, truncated, error, adapter = _external_export(name, str(subject_id), int(limit), ext_cursor)
+        else:
+            rows, next_cursor, truncated, error, adapter = [], None, False, "ADAPTER_UNAVAILABLE", "unavailable"
+        data[name] = rows
+        digest = hashlib.sha256(json.dumps(rows, ensure_ascii=True, sort_keys=True, default=str, separators=(",", ":")).encode("utf-8")).hexdigest()
         checksums[name] = digest
-        sink_manifest[name] = {"count": 0, "next_cursor": None, "truncated": False, "checksum": digest, "adapter": "declared-only"}
+        sink_manifest[name] = {"count": len(rows), "next_cursor": next_cursor, "truncated": truncated, "checksum": digest, "adapter": adapter, "status": "error" if error else "available"}
+        any_truncated = any_truncated or truncated
+        if error:
+            errors.append({"sink": name, "error": error})
     postgres_payload = {name: data[name] for name in _TABLES}
     postgres_canonical = json.dumps(postgres_payload, ensure_ascii=True, sort_keys=True, default=str, separators=(",", ":"))
     postgres_digest = hashlib.sha256(postgres_canonical.encode("utf-8")).hexdigest()
@@ -277,6 +356,7 @@ def export_subject(subject_id: str, *, cursor: str | None = None, limit: int = _
         "count": sum(item["count"] for name, item in sink_manifest.items() if name in _TABLES),
         "next_cursor": None,
         "truncated": any_truncated,
+        "degraded": bool(errors),
         "checksum": postgres_digest,
     }
     manifest = {
@@ -294,21 +374,64 @@ def export_subject(subject_id: str, *, cursor: str | None = None, limit: int = _
 
 
 _BROWSER_CLEAR_KEYS = (
-    "vl360:favorites:v1",
-    "vl360:recently-viewed:v1",
-    "vl360:drafts:v1",
-    "vl360:search-recents:v1",
-    "vl360:search-view-state:v1",
-    "vl360:chat-session:v1",
+    "vl360_favorites", "vl360_recent", "vl360_post_draft", "vl360_recent_searches",
+    "vinhlong360:public-search-entries:v2", "chat_sid", "vl360_plans", "vl360_planner_draft",
 )
 _BROWSER_PROOFS: dict[str, dict[str, Any]] = {}
 
 
 def issue_browser_clear_instruction(subject_id: str) -> dict[str, Any]:
     token = _subject_hash(str(subject_id))
-    instruction = {"version": "v1", "action": "clear", "keys": list(_BROWSER_CLEAR_KEYS), "issued": True}
+    instruction = {"version": "v1", "action": "clear", "keys": list(_BROWSER_CLEAR_KEYS), "issued": True, "subject_hash": token}
     _BROWSER_PROOFS[token] = dict(instruction)
     return instruction
+
+
+def _external_erase(name: str, subject_id: str, *, dry_run: bool) -> dict[str, Any]:
+    if dry_run:
+        return {"status": "retained", "count": 0, "dry_run": True}
+    owner = str(subject_id)
+    try:
+        if name == "analytics-jsonl":
+            import analytics
+            removed = analytics.purge_owner_records(owner)
+            return {"status": "deleted" if removed else "already_absent", "count": removed}
+        if name == "bot-memory":
+            import bot_gateway
+            if not hasattr(bot_gateway, "purge_subject_memory"):
+                return {"status": "unavailable", "count": 0, "error_code": "ADAPTER_UNAVAILABLE"}
+            removed = bot_gateway.purge_subject_memory(owner)
+            verified = bot_gateway.verify_subject_memory_absent(owner)
+            return {"status": "deleted" if removed and verified else "already_absent" if verified else "failed", "count": removed}
+        if name == "reports-jsonl":
+            return {"status": "issued", "count": 0, "error_code": "REPORTS_ADAPTER_ISSUED_ONLY"}
+    except Exception as exc:
+        return {"status": "failed", "count": 0, "error_code": type(exc).__name__}
+    if name == "browser-storage":
+        return {"status": "issued", "count": 0, "error_code": "BROWSER_CLIENT_ACTION_REQUIRED"}
+    return {"status": "retained", "count": 0, "error_code": "ADAPTER_UNAVAILABLE"}
+
+
+_POSTGRES_EXTRA_OWNERS = {
+    "blocks": "blocker_id", "user_mutes": "user_id", "user_sessions": "user_id",
+    "user_2fa": "user_id", "user_2fa_recovery_codes": "user_id", "pending_2fa": "user_id",
+}
+
+
+def _erase_postgres_extra(name: str, subject_id: str, *, dry_run: bool) -> dict[str, Any]:
+    if dry_run:
+        return {"status": "retained", "count": 0, "dry_run": True}
+    if not getattr(db, "_use_pg", False):
+        return {"status": "unavailable", "count": 0, "error_code": "DB_UNAVAILABLE"}
+    column = _POSTGRES_EXTRA_OWNERS[name]
+    ph = getattr(db, "_ph", "%s")
+    try:
+        with db._conn() as conn:
+            result = db._execute(conn, f"DELETE FROM {name} WHERE {column}::text = {ph}", (str(subject_id),))
+            removed = int(getattr(result, "rowcount", 0) or 0)
+        return {"status": "deleted" if removed else "already_absent", "count": removed}
+    except Exception as exc:
+        return {"status": "failed", "count": 0, "error_code": type(exc).__name__}
 
 
 def erase_subject(subject_id: str, *, dry_run: bool = True) -> ErasureReport:
@@ -335,11 +458,11 @@ def erase_subject(subject_id: str, *, dry_run: bool = True) -> ErasureReport:
         except Exception as exc:
             outcomes[policy.name] = {"status": "failed", "count": 0, "error_code": type(exc).__name__}
     instruction = issue_browser_clear_instruction(subject_id) if not dry_run else None
-    outcomes.setdefault("browser-storage", {"status": "already_absent" if dry_run else "deleted", "count": 0})
-    # Declared remote sinks remain explicit even when no object inventory is
-    # available locally; omission would make a successful report misleading.
     for name in ("reports-jsonl", "analytics-jsonl", "bot-memory", "object-store", "cdn"):
-        outcomes.setdefault(name, {"status": "already_absent" if dry_run else "deleted", "count": 0})
+        outcomes[name] = _external_erase(name, str(subject_id), dry_run=dry_run)
+    outcomes["browser-storage"] = _external_erase("browser-storage", str(subject_id), dry_run=dry_run)
+    for name in _POSTGRES_EXTRA_OWNERS:
+        outcomes[name] = _erase_postgres_extra(name, str(subject_id), dry_run=dry_run)
     return ErasureReport(_subject_hash(str(subject_id)), bool(dry_run), outcomes, instruction)
 
 

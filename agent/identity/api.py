@@ -35,6 +35,7 @@ import os
 import re
 import secrets
 import time
+from threading import Lock
 from datetime import datetime, timedelta, timezone
 
 logger = logging.getLogger("auth")
@@ -118,6 +119,8 @@ OTP_VERIFY_PHONE_WINDOW = 300
 _otp_verify_phone_rate: dict[str, list[float]] = {}
 
 ACCOUNT_DELETE_GRACE_DAYS = _cfg.ACCOUNT_DELETE_GRACE_DAYS
+_CLEANUP_LEASES: dict[str, Lock] = {}
+_CLEANUP_LEASES_GUARD = Lock()
 
 
 def _utc_now() -> datetime:
@@ -211,7 +214,7 @@ def _clear_session_cookie(response: Response, request: Request) -> None:
             response.delete_cookie(key=name, path="/", secure=secure, httponly=True, samesite=samesite)
 
 
-def cleanup_expired_data(*, limit: int = 500, lease: str | None = None) -> dict:
+def _cleanup_expired_data_impl(*, limit: int = 500) -> dict:
     """Xoá phiên/OTP hết hạn, login_history cũ, thông báo đã đọc cũ, pending_2fa +
     trusted_devices hết hạn.
 
@@ -260,6 +263,23 @@ def cleanup_expired_data(*, limit: int = 500, lease: str | None = None) -> dict:
         logger.warning("cleanup_expired_data error: %s", e)
         results["error"] = str(e)
     return results
+
+
+def cleanup_expired_data(*, limit: int = 500, lease: str | None = None) -> dict:
+    """Run one bounded expiry batch under a process lease."""
+    lease_name = str(lease or "cleanup-expired-data").strip()
+    if not lease_name:
+        raise ValueError("lease must not be empty")
+    with _CLEANUP_LEASES_GUARD:
+        lock = _CLEANUP_LEASES.setdefault(lease_name, Lock())
+    if not lock.acquire(blocking=False):
+        return {"skipped": True, "lease": lease_name, "reason": "lease-held"}
+    try:
+        result = _cleanup_expired_data_impl(limit=limit)
+        result["lease"] = lease_name
+        return result
+    finally:
+        lock.release()
 
 
 def _rows_to_dicts(rows) -> list:
@@ -1722,7 +1742,7 @@ async def update_privacy(body: PrivacyUpdate, request: Request, _csrf=Depends(_r
 @router.get("/export-data",
             summary="Export all user data",
             description="Exports all data associated with the authenticated user for GDPR compliance. Includes profile, posts, comments, likes, bookmarks, follows, visits, reactions, collections, blocks, and mutes.")
-async def export_user_data(request: Request, response: Response):
+async def export_user_data(request: Request, response: Response, cursor: str | None = Query(None), limit: int = Query(1000, ge=1, le=1000)):
     user = await _get_current_user_or_none(request)
     if not user:
         raise HTTPException(401, "Chưa đăng nhập")
@@ -1730,10 +1750,11 @@ async def export_user_data(request: Request, response: Response):
     check_rate(f"export-data:{user['id']}", 2, 86400, "Chỉ được xuất dữ liệu 2 lần/ngày.")
     uid = str(user["id"])
     ph = db._ph
+    page_limit = int(limit)
 
     def _query():
         with db._conn() as conn:
-            _EXPORT_CAP = 5000
+            _EXPORT_CAP = page_limit + 1
             posts = db._fetchall(conn, f"""
                 SELECT p.id, p.content, p.post_type, p.rating, p.entity_id,
                        e.name as entity_name,
@@ -1788,7 +1809,7 @@ async def export_user_data(request: Request, response: Response):
                 FROM user_mutes WHERE user_id = {ph}::uuid
                 ORDER BY created_at DESC LIMIT {_EXPORT_CAP}
             """, (uid,))
-        return {
+        raw = {
             "posts": _rows_to_dicts(posts),
             "comments": _rows_to_dicts(comments),
             "likes": _rows_to_dicts(likes),
@@ -1800,8 +1821,15 @@ async def export_user_data(request: Request, response: Response):
             "blocks": _rows_to_dicts(blocks),
             "mutes": _rows_to_dicts(mutes),
         }
+        payload = {}
+        legacy_meta = {}
+        for name, rows in raw.items():
+            values = rows
+            legacy_meta[name] = {"count": min(len(values), page_limit), "truncated": len(values) > page_limit}
+            payload[name] = values[:page_limit]
+        return payload, legacy_meta
 
-    ugc = await asyncio.to_thread(_query)
+    ugc, legacy_manifest = await asyncio.to_thread(_query)
     preferences = await asyncio.to_thread(load_preferences, uid)
     preference_consents = await asyncio.to_thread(load_preference_consents, uid)
     personalization_events = await asyncio.to_thread(
@@ -1820,18 +1848,22 @@ async def export_user_data(request: Request, response: Response):
     try:
         from control_plane.lifecycle import export_subject
 
-        lifecycle_bundle = await asyncio.to_thread(export_subject, uid, limit=1000)
+        lifecycle_bundle = await asyncio.to_thread(export_subject, uid, cursor=cursor, limit=page_limit)
         lifecycle_manifest = lifecycle_bundle.manifest
+        lifecycle_data = lifecycle_bundle.data
+        lifecycle_manifest.setdefault("legacy", legacy_manifest)
     except Exception as exc:
         lifecycle_manifest = {
             "schema_version": "1",
             "version": "1",
-            "truncated": False,
+            "truncated": True,
+            "degraded": True,
             "errors": [{"sink": "lifecycle", "error": type(exc).__name__}],
             "excluded_secrets": [],
             "checksums": {},
             "sinks": {},
         }
+        lifecycle_data = {}
     response.headers["Cache-Control"] = "no-store"
     return {
         "profile": profile,
@@ -1843,6 +1875,8 @@ async def export_user_data(request: Request, response: Response):
             "legacy_events": legacy_events,
         },
         "lifecycle_manifest": lifecycle_manifest,
+        "lifecycle_data": lifecycle_data,
+        "cursor": cursor,
         "exported_at": datetime.now(timezone.utc).isoformat(),
     }
 

@@ -1023,16 +1023,6 @@ def task_session_cleanup():
 
     try:
         with db._conn() as conn:
-            db._execute(conn, "DELETE FROM user_sessions WHERE expires_at < NOW()", ())
-            db._execute(conn, "DELETE FROM otp_sessions WHERE expires_at < NOW()", ())
-
-            try:
-                r = db._execute(conn, "DELETE FROM login_history WHERE created_at < NOW() - INTERVAL '90 days'", ())
-                old_logins = getattr(r, 'rowcount', 0) if r else 0
-                if old_logins:
-                    _sched_logger.info("Session cleanup: purged %d old login_history entries", old_logins)
-            except Exception:
-                _sched_logger.warning("login_history cleanup failed", exc_info=True)
             _hard_delete_stale_posts(db, conn)
         _sched_logger.info("Session cleanup: purged expired sessions and OTPs")
     except Exception as exc:

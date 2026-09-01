@@ -317,6 +317,18 @@ def verify_subject_memory_absent(subject_id: str) -> bool:
         return not any(key.rsplit(":", 1)[-1] == needle for key in _sessions)
 
 
+def export_subject_memory(subject_id: str) -> list[dict]:
+    """Return a bounded, non-secret snapshot of bot memory for export."""
+    needle = str(subject_id)
+    with _sessions_lock:
+        return [
+            {"platform": key.split(":", 1)[0], "messages": list(value.get("messages", [])),
+             "last_active": value.get("last_active")}
+            for key, value in _sessions.items()
+            if key.rsplit(":", 1)[-1] == needle
+        ]
+
+
 # ======================================================================
 #  BotGateway
 # ======================================================================
