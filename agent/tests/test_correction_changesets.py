@@ -313,6 +313,33 @@ def test_building_a_change_set_commits_the_whole_fulfilment_step_at_once(pg_data
 
 
 @pg_only
+def test_retrying_a_build_replays_one_change_set_and_receipt(pg_database):
+    from cases.correction import build_change_set
+
+    case_id, item_id = _seed_case_with_item(pg_database)
+    first = build_change_set(
+        case_id, (item_id,), _decider(), expected_revision=1,
+        evidence_refs=("e-1",), now=NOW,
+    )
+    second = build_change_set(
+        case_id, (item_id,), _decider(), expected_revision=1,
+        evidence_refs=("e-1",), now=NOW + timedelta(minutes=1),
+    )
+
+    assert second == first
+    with pg_database._conn(commit_on_success=False) as conn:
+        counts = dict(pg_database._fetchone(
+            conn,
+            "SELECT (SELECT count(*) FROM correction_change_sets WHERE case_id=%s) AS sets,"
+            " (SELECT count(*) FROM case_outbox WHERE case_id=%s) AS outbox,"
+            " (SELECT count(*) FROM case_audit_events WHERE case_id=%s"
+            "  AND reason_code='change_set_built') AS audits",
+            (case_id, case_id, case_id),
+        ))
+    assert counts == {"sets": 1, "outbox": 1, "audits": 1}
+
+
+@pg_only
 def test_a_change_set_is_refused_when_the_entity_moved_since_intake(pg_database):
     from cases.correction import CorrectionRejected as Refused
     from cases.correction import build_change_set

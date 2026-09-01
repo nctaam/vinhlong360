@@ -488,21 +488,25 @@ def test_the_switch_stops_publishing_without_stopping_intake_or_receipts(pg_data
 
 
 @pg_only
-def test_a_change_set_cannot_be_applied_twice(pg_database):
-    from cases.publication import PublicationRejected, apply_change_set
+def test_retrying_an_apply_replays_the_committed_receipt(pg_database):
+    from cases.publication import apply_change_set
 
     case_id, item_id, change_set_id = _seed_change_set(pg_database)
-    apply_change_set(_command(case_id, change_set_id), now=NOW)
+    first = apply_change_set(_command(case_id, change_set_id), now=NOW)
+    second = apply_change_set(_command(case_id, change_set_id), now=NOW + timedelta(minutes=1))
 
-    with pytest.raises(PublicationRejected) as excinfo:
-        apply_change_set(
-            _command(case_id, change_set_id, expected_case_revision=3,
-                     expected_entity_revision=8),
-            now=NOW,
-        )
-
-    assert excinfo.value.problem.code == "change_set_not_pending"
+    assert second == first
     assert _entity(pg_database)["revision"] == 8
+    assert _count(
+        pg_database,
+        "SELECT count(*) AS n FROM case_transitions WHERE case_id=%s"
+        " AND reason_code='change_set_applied'", (case_id,)
+    ) == 1
+    assert _count(
+        pg_database,
+        "SELECT count(*) AS n FROM case_audit_events WHERE case_id=%s"
+        " AND reason_code='change_set_applied'", (case_id,)
+    ) == 1
 
 
 @pg_only

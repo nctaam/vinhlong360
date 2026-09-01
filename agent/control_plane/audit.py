@@ -57,6 +57,12 @@ class AuditEvent:
             raise ValueError("invalid_audit_event")
         if not all(type(scope) is str and scope for scope in self.actor_scopes):
             raise ValueError("invalid_audit_event")
+        try:
+            from cases.domain import Channel
+        except ModuleNotFoundError:
+            from agent.cases.domain import Channel
+        if type(self.channel) is not Channel:
+            raise ValueError("invalid_audit_event")
         if type(self.policy_revision) is not str or not self.policy_revision:
             raise ValueError("invalid_audit_event")
 
@@ -65,11 +71,17 @@ def _envelope(event: AuditEvent, payload: Mapping[str, object]) -> dict[str, obj
     result = dict(payload)
     result.update({
         "event_id": event.event_id,
+        "action": event.action,
+        "reason": event.reason,
+        "resource_type": event.resource_type,
         "case_id": event.resource_id,
         "resource_id": event.resource_id,
         "revision": event.revision,
         "generation": event.generation or result.get("generation", str(event.revision)),
         "correlation_id": event.correlation_id,
+        "actor_scopes": list(event.actor_scopes),
+        "channel": event.channel.value,
+        "policy_revision": event.policy_revision,
     })
     return result
 
@@ -96,20 +108,19 @@ def _write_audit(transaction, event: AuditEvent) -> None:
         return
     try:
         from cases.audit import CaseAuditDraft
-        from cases.domain import Channel
     except ModuleNotFoundError:
         from agent.cases.audit import CaseAuditDraft
-        from agent.cases.domain import Channel
     transaction.append_audit(CaseAuditDraft(
         case_id=event.resource_id, actor_ref=event.actor_id,
         actor_scopes=event.actor_scopes,
-        channel=event.channel if isinstance(event.channel, Channel) else Channel.WEB,
-        reason_code=event.action,
+        channel=event.channel,
+        reason_code=event.reason,
         policy_revision=event.policy_revision, correlation_id=event.correlation_id,
         before_snapshot=event.before, after_snapshot=event.after,
         occurred_at=event.occurred_at, event_id=event.event_id,
         resource_id=event.resource_id, revision=event.revision,
-        generation=event.generation,
+        generation=event.generation, resource_type=event.resource_type,
+        action=event.action,
     ))
 
 

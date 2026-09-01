@@ -32,7 +32,6 @@ from .audit import CaseAuditDraft, safe_case_projection
 from .domain import (
     CaseProblem,
     CasePhase,
-    Channel,
     CorrectionOutcome,
     DispositionFamily,
     PromiseHealth,
@@ -196,15 +195,17 @@ def apply_change_set(command: ApplyChangeSetCommand, *, now: datetime) -> Public
                    "Applying a correction needs the publication scope.")
     store = _store()
     with store.transaction() as transaction:
-        actor_ref = _require_lease(transaction, command.case_id, command.actor, now=now)
         row = transaction.load_change_set(command.change_set_id, for_update=True)
         if str(row["case_id"]) != command.case_id:
             raise _reject("change_set_not_on_case", "That change set belongs to another case.")
+        snapshot = transaction.load_case(command.case_id, for_update=True)
+        if str(row["apply_status"]) == "applied":
+            return _replay_apply(transaction, command, row, snapshot)
         if str(row["apply_status"]) != "pending":
             raise _reject("change_set_not_pending", "That change set was already decided.")
+        actor_ref = _require_lease(transaction, command.case_id, command.actor, now=now)
         _require_independent_review(transaction, row, command.case_id, actor_ref)
 
-        snapshot = transaction.load_case(command.case_id, for_update=True)
         if snapshot.current_revision != command.expected_case_revision:
             raise _reject("case_revision_conflict", "This case changed; reload it.")
 
@@ -252,6 +253,10 @@ def apply_change_set(command: ApplyChangeSetCommand, *, now: datetime) -> Public
             reason_code="change_set_applied",
             event_id=f"notify:{command.change_set_id}:applied",
             topic="correction.updated", now=now,
+            descriptor={
+                "entity_revision": write.revision,
+                "applied_fields": list(sorted(after_patch)),
+            },
         )
     from . import metrics as _metrics
 
@@ -266,6 +271,24 @@ def apply_change_set(command: ApplyChangeSetCommand, *, now: datetime) -> Public
         applied_fields=tuple(sorted(after_patch)),
         revision=updated.current_revision,
         outbox_event_id=f"notify:{command.change_set_id}:applied",
+    )
+
+
+def _replay_apply(transaction, command, row: dict, snapshot) -> PublicationResult:
+    event_id = f"notify:{command.change_set_id}:applied"
+    existing = transaction.load_outbox_by_idempotency_key(event_id)
+    payload = dict(existing.get("payload") or {}) if existing else {}
+    entity_id, _ = transaction.load_change_set_target(command.change_set_id)
+    after_patch = dict(row.get("after_patch") or {})
+    return PublicationResult(
+        change_set_id=command.change_set_id,
+        case_id=command.case_id,
+        entity_id=entity_id,
+        entity_revision=int(payload.get("entity_revision", int(row["base_entity_revision"]) + 1)),
+        state=PublicationState.APPLIED,
+        applied_fields=tuple(payload.get("applied_fields") or sorted(after_patch)),
+        revision=int(payload.get("revision", snapshot.current_revision)),
+        outbox_event_id=event_id,
     )
 
 
@@ -324,6 +347,23 @@ def _compare_projection(projection, entity_id: str, after_patch: dict,
     return tuple(mismatches)
 
 
+def _replay_verification_failure(transaction, command, snapshot, existing) -> VerificationResult:
+    payload = dict(existing.get("payload") or {})
+    raw_mismatches = payload.get("mismatched") or payload.get("mismatches") or ()
+    available_at = existing.get("available_at")
+    if available_at is None and payload.get("next_update_at"):
+        available_at = datetime.fromisoformat(str(payload["next_update_at"]))
+    return VerificationResult(
+        change_set_id=command.change_set_id,
+        state=PublicationState.APPLIED,
+        verified=False,
+        mismatches=tuple(str(item) for item in raw_mismatches),
+        next_update_at=available_at,
+        revision=int(payload.get("revision", snapshot.current_revision)),
+        outbox_event_id=f"notify:{command.change_set_id}:verification_failed",
+    )
+
+
 def verify_public_projection(command: VerifyProjectionCommand, fetcher, *,
                              now: datetime) -> VerificationResult:
     _require_enabled()
@@ -350,6 +390,13 @@ def verify_public_projection(command: VerifyProjectionCommand, fetcher, *,
                 mismatches=(),
                 revision=revision,
                 outbox_event_id=event_id,
+            )
+
+        failure_event_id = f"notify:{command.change_set_id}:verification_failed"
+        existing_failure = transaction.load_outbox_by_idempotency_key(failure_event_id)
+        if existing_failure is not None:
+            return _replay_verification_failure(
+                transaction, command, snapshot, existing_failure,
             )
 
         actor_ref = _require_lease(transaction, command.case_id, command.actor, now=now)
@@ -443,9 +490,12 @@ def _record_verification_failure(transaction, command, snapshot, actor_ref: str,
     _write_audit_outbox(
         transaction, command, snapshot, snapshot, actor_ref,
         reason_code="projection_verification_failed",
-        event_id=f"notify:{command.change_set_id}:verification_failed:{now.isoformat()}",
+        event_id=f"notify:{command.change_set_id}:verification_failed",
         topic="correction.updated", now=now, available_at=next_update_at,
-        descriptor={"mismatched": list(mismatches)},
+        descriptor={
+            "mismatched": list(mismatches),
+            "next_update_at": next_update_at.isoformat(),
+        },
     )
     from . import metrics as _metrics
 
@@ -458,7 +508,7 @@ def _record_verification_failure(transaction, command, snapshot, actor_ref: str,
         mismatches=mismatches,
         next_update_at=next_update_at,
         revision=snapshot.current_revision,
-        outbox_event_id=f"notify:{command.change_set_id}:verification_failed:{now.isoformat()}",
+        outbox_event_id=f"notify:{command.change_set_id}:verification_failed",
     )
 
 
@@ -490,17 +540,19 @@ def rollback_change_set(command: RollbackChangeSetCommand, *,
     store = _store()
     drifted = False
     with store.transaction() as transaction:
-        actor_ref = _require_lease(transaction, command.case_id, command.actor, now=now)
         row = transaction.load_change_set(command.change_set_id, for_update=True)
         if str(row["case_id"]) != command.case_id:
             raise _reject("change_set_not_on_case", "That change set belongs to another case.")
+        snapshot = transaction.load_case(command.case_id, for_update=True)
+        if str(row["apply_status"]) == "rolled_back":
+            return _replay_rollback(transaction, command, row, snapshot)
         if str(row["apply_status"]) != "applied":
             raise _reject("change_set_not_applied", "That change set is not on the entry.")
+        actor_ref = _require_lease(transaction, command.case_id, command.actor, now=now)
 
         entity_id, _items = transaction.load_change_set_target(command.change_set_id)
         entity = transaction.load_entity_for_update(entity_id)
         applied_revision = int(row["base_entity_revision"]) + 1
-        snapshot = transaction.load_case(command.case_id, for_update=True)
 
         if entity.revision != applied_revision:
             # Somebody edited the entry after this correction landed. Replaying
@@ -566,6 +618,7 @@ def _undo(transaction, command, row, snapshot, entity, entity_id: str, actor_ref
         reason_code="change_set_rolled_back",
         event_id=f"notify:{command.change_set_id}:rolled_back",
         topic="correction.updated", now=now,
+        descriptor={"entity_revision": write.revision},
     )
     return RollbackResult(
         change_set_id=command.change_set_id,
@@ -574,6 +627,21 @@ def _undo(transaction, command, row, snapshot, entity, entity_id: str, actor_ref
         state=PublicationState.ROLLED_BACK,
         revision=reopened.current_revision,
         outbox_event_id=f"notify:{command.change_set_id}:rolled_back",
+    )
+
+
+def _replay_rollback(transaction, command, row: dict, snapshot) -> RollbackResult:
+    event_id = f"notify:{command.change_set_id}:rolled_back"
+    existing = transaction.load_outbox_by_idempotency_key(event_id)
+    payload = dict(existing.get("payload") or {}) if existing else {}
+    entity_id, _ = transaction.load_change_set_target(command.change_set_id)
+    return RollbackResult(
+        change_set_id=command.change_set_id,
+        entity_id=entity_id,
+        entity_revision=int(payload.get("entity_revision", int(row["base_entity_revision"]) + 2)),
+        state=PublicationState.ROLLED_BACK,
+        revision=int(payload.get("revision", snapshot.current_revision)),
+        outbox_event_id=event_id,
     )
 
 
@@ -596,7 +664,7 @@ def _audit(command, before, after, actor_ref: str, *, reason_code: str,
         case_id=command.case_id,
         actor_ref=actor_ref,
         actor_scopes=tuple(sorted(set(getattr(command.actor, "scopes", ()) or ()))),
-        channel=getattr(command.actor, "channel", Channel.WEB),
+        channel=getattr(command.actor, "channel", None),
         reason_code=reason_code,
         policy_revision=_policy_revision(),
         correlation_id=getattr(command.actor, "correlation_id", "publication"),

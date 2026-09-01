@@ -404,6 +404,21 @@ def _decision_command_digest(command: DecideItemCommand) -> str:
     return hashlib.sha256(encoded).hexdigest()
 
 
+def _build_command_digest(
+    case_id: str, item_ids: tuple[str, ...], actor, expected_revision: int,
+    evidence_refs: tuple[str, ...],
+) -> str:
+    value = {
+        "case_id": case_id,
+        "item_ids": sorted(str(item_id) for item_id in item_ids),
+        "actor_ref": getattr(actor, "actor_ref", "unknown"),
+        "expected_revision": expected_revision,
+        "evidence_refs": list(evidence_refs),
+    }
+    encoded = json.dumps(value, sort_keys=True, separators=(",", ":")).encode("utf-8")
+    return hashlib.sha256(encoded).hexdigest()
+
+
 def _require_decided_payloads(payloads: tuple[dict, ...]) -> None:
     unruled = tuple(
         str(row["item_id"]) for row in payloads
@@ -629,6 +644,58 @@ def decide_item(command: DecideItemCommand, *, now: datetime) -> DecisionOutcome
     return replace(decision, revision=updated.current_revision, outbox_event_id=event_id)
 
 
+def _replay_existing_change_set(transaction, case_id: str, item_ids: tuple[str, ...],
+                                actor, expected_revision: int,
+                                evidence_refs: tuple[str, ...], snapshot) -> ChangeSetDraft | None:
+    existing = transaction.load_change_set_for_items(case_id, item_ids)
+    if not existing or str(existing["apply_status"]) not in {"pending", "applied"}:
+        return None
+    event_id = f"notify:{existing['change_set_id']}:decided"
+    receipt = transaction.load_outbox_by_idempotency_key(event_id)
+    payload = dict(receipt.get("payload") or {}) if receipt else {}
+    expected_digest = _build_command_digest(
+        case_id, item_ids, actor, expected_revision, evidence_refs,
+    )
+    persisted_digest = payload.get("build_digest")
+    if persisted_digest is not None and persisted_digest != expected_digest:
+        raise _reject(
+            "change_set_idempotency_conflict",
+            "That item selection already has a different persisted change set.",
+        )
+    entity_id, linked_item_ids = transaction.load_change_set_target(existing["change_set_id"])
+    before_patch = dict(existing.get("before_patch") or {})
+    after_patch = dict(existing.get("after_patch") or {})
+    fields_by_item = {
+        str(item["item_id"]): str(item["field_path"])
+        for item in transaction.load_correction_item_payloads(case_id, linked_item_ids)
+    }
+    changes = tuple(
+        ProposedChange(
+            item_id=item_id,
+            entity_id=entity_id,
+            field_path=fields_by_item[item_id],
+            before_value=before_patch.get(field_path),
+            after_value=after_patch.get(field_path),
+        )
+        for item_id in linked_item_ids
+        for field_path in (fields_by_item[item_id],)
+    )
+    revision = int(payload.get("revision", snapshot.current_revision))
+    return ChangeSetDraft(
+        case_id=case_id,
+        entity_id=entity_id,
+        base_entity_revision=int(existing["base_entity_revision"]),
+        changes=changes,
+        risk_class=str(existing["risk_class"]),
+        decision_maker_ref=str(existing["decision_maker_ref"]),
+        evidence_refs=tuple(str(ref) for ref in (existing.get("evidence_refs") or evidence_refs)),
+        reviewer_ref=existing.get("reviewer_ref"),
+        apply_status=str(existing["apply_status"]),
+        revision=revision,
+        outbox_event_id=event_id,
+    )
+
+
 def build_change_set(
     case_id: str,
     accepted_item_ids: tuple[str, ...],
@@ -648,8 +715,15 @@ def build_change_set(
     crypto = _crypto()
     store = _store()
     with store.transaction() as transaction:
-        actor_ref = _require_lease(transaction, case_id, actor, now=now)
         snapshot = transaction.load_case(case_id, for_update=True)
+        requested_item_ids = tuple(sorted(set(str(item_id) for item_id in accepted_item_ids)))
+        replay = _replay_existing_change_set(
+            transaction, case_id, requested_item_ids, actor, expected_revision,
+            evidence_refs, snapshot,
+        )
+        if replay is not None:
+            return replay
+        actor_ref = _require_lease(transaction, case_id, actor, now=now)
         if snapshot.current_revision != expected_revision:
             raise _reject("case_revision_conflict", "This case changed; reload it.")
 
@@ -781,6 +855,12 @@ def build_change_set(
                 "available_at": now,
                 "reason": "decided",
                 "policy_revision": _policy_revision(),
+                "change_set_id": change_set_id,
+                "item_ids": list(accepted_item_ids),
+                "build_digest": _build_command_digest(
+                    case_id, tuple(sorted(set(accepted_item_ids))), actor,
+                    expected_revision, evidence_refs,
+                ),
             },
         )
     return replace(

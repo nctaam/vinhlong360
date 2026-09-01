@@ -123,6 +123,8 @@ class CaseAuditDraft:
     resource_id: str | None = None
     revision: int | None = None
     generation: str | None = None
+    resource_type: str | None = None
+    action: str | None = None
 
     def _identity_fields_valid(self) -> bool:
         return not (
@@ -168,6 +170,12 @@ class CaseAuditDraft:
         if self.event_id is None:
             return
         object.__setattr__(self, "resource_id", self.resource_id or self.case_id)
+        object.__setattr__(self, "resource_type", self.resource_type or "case")
+        object.__setattr__(self, "action", self.action or self.reason_code)
+        if type(self.resource_type) is not str or not self.resource_type:
+            raise ValueError("invalid_case_audit")
+        if type(self.action) is not str or not self.action:
+            raise ValueError("invalid_case_audit")
         revision = self._event_revision()
         object.__setattr__(self, "revision", revision)
         generation = self.generation or str(revision)
@@ -181,7 +189,10 @@ class CaseAuditDraft:
         ):
             raise ValueError("invalid_case_audit")
         if self.event_id is None:
-            if any(value is not None for value in (self.resource_id, self.revision, self.generation)):
+            if any(value is not None for value in (
+                self.resource_id, self.revision, self.generation,
+                self.resource_type, self.action,
+            )):
                 raise ValueError("invalid_case_audit")
             return
         if type(self.event_id) is not str or not self.event_id:

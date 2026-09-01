@@ -251,6 +251,32 @@ def test_audit_and_outbox_fallback_uses_case_transaction_compatible_methods():
     assert tx.audit.actor_scopes == ("cases:decide", "cases:work")
     assert tx.audit.channel is Channel.WEB
     assert tx.audit.policy_revision == "policy-proof-v2"
+    assert tx.audit.reason_code == "source_confirms_change"
+    assert tx.outbox.descriptor["reason"] == "source_confirms_change"
+    assert tx.outbox.descriptor["resource_type"] == "case"
+
+
+@pytest.mark.parametrize("channel", [None, "web", object()])
+def test_audit_event_rejects_invalid_channel_instead_of_defaulting_to_web(channel):
+    from control_plane.audit import AuditEvent
+
+    with pytest.raises(ValueError, match="invalid_audit_event"):
+        AuditEvent(
+            event_id="event-invalid-channel",
+            actor_id="person:maker",
+            action="case.decided",
+            resource_type="case",
+            resource_id="case-1",
+            reason="source_confirms_change",
+            before={"case_id": "case-1", "current_revision": 1},
+            after={"case_id": "case-1", "current_revision": 2},
+            correlation_id="corr-proof",
+            revision=2,
+            occurred_at=NOW,
+            actor_scopes=("cases:decide",),
+            channel=channel,
+            policy_revision="policy-proof-v2",
+        )
 
 
 def test_delayed_outbox_keeps_the_audit_at_the_actual_occurrence_time(monkeypatch):

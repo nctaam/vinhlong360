@@ -362,6 +362,35 @@ def test_a_failed_check_records_an_escalation_and_promises_a_next_update(pg_data
 
 
 @pg_only
+def test_retrying_a_failed_check_replays_one_receipt_without_a_new_timestamp_key(pg_database):
+    case_id, change_set_id = _applied_case(pg_database)
+    from cases.publication import VerifyProjectionCommand, verify_public_projection
+
+    first = verify_public_projection(
+        VerifyProjectionCommand(case_id, change_set_id, _actor()),
+        lambda _entity_id: _projection(revision=7),
+        now=LATER,
+    )
+
+    def should_not_fetch(_entity_id):
+        raise AssertionError("a lost-response retry must replay the persisted failure")
+
+    second = verify_public_projection(
+        VerifyProjectionCommand(case_id, change_set_id, _actor()),
+        should_not_fetch,
+        now=LATER + timedelta(minutes=1),
+    )
+
+    assert second == first
+    assert second.outbox_event_id == f"notify:{change_set_id}:verification_failed"
+    assert _count(
+        pg_database,
+        "SELECT count(*) AS n FROM case_outbox WHERE case_id=%s"
+        " AND idempotency_key=%s", (case_id, second.outbox_event_id)
+    ) == 1
+
+
+@pg_only
 def test_a_page_that_cannot_be_fetched_at_all_is_a_failure_not_a_pass(pg_database):
     from cases.publication import VerifyProjectionCommand, verify_public_projection
 

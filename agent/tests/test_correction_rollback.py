@@ -291,6 +291,27 @@ def test_a_rollback_is_recorded_where_the_case_can_be_read(pg_database):
     ) == 2
 
 
+@pg_only
+def test_retrying_a_rollback_replays_the_committed_receipt(pg_database):
+    case_id, change_set_id = _applied_case(pg_database)
+
+    first = _rollback(case_id, change_set_id)
+    second = _rollback(case_id, change_set_id, now=LATER + timedelta(minutes=1))
+
+    assert second == first
+    assert _entity(pg_database)["revision"] == 9
+    assert _count(
+        pg_database,
+        "SELECT count(*) AS n FROM case_transitions WHERE case_id=%s"
+        " AND reason_code='change_set_rolled_back'", (case_id,)
+    ) == 1
+    assert _count(
+        pg_database,
+        "SELECT count(*) AS n FROM case_audit_events WHERE case_id=%s"
+        " AND reason_code='change_set_rolled_back'", (case_id,)
+    ) == 1
+
+
 # ── When the entry moved underneath ──
 
 @pg_only

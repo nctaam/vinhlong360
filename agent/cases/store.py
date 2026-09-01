@@ -518,6 +518,9 @@ class CaseTransaction:
         if draft.event_id is not None:
             envelope = {
                 "event_id": draft.event_id,
+                "action": draft.action or draft.reason_code,
+                "reason": draft.reason_code,
+                "resource_type": draft.resource_type or "case",
                 "case_id": draft.case_id,
                 "resource_id": draft.resource_id or draft.case_id,
                 "revision": draft.revision,
@@ -582,7 +585,7 @@ class CaseTransaction:
         self._require_active()
         row = self._db._fetchone(
             self._conn,
-            "SELECT case_id, idempotency_key, payload FROM case_outbox "
+            "SELECT case_id, idempotency_key, payload, available_at FROM case_outbox "
             "WHERE idempotency_key = %s",
             (idempotency_key,),
         )
@@ -816,6 +819,45 @@ class CaseTransaction:
         if row is None:
             raise ChangeSetNotFound(change_set_id)
         return _row_dict(self._db, row)
+
+    def load_change_set_for_items(
+        self, case_id: str, item_ids: tuple[str, ...], *, for_update: bool = False
+    ) -> dict | None:
+        """Find a prior build for the same case/item selection for replay."""
+        self._require_active()
+        if type(item_ids) is not tuple or not item_ids:
+            raise ValueError("invalid_correction_item_selection")
+        lock = " FOR UPDATE" if for_update else ""
+        rows = self._db._fetchall(
+            self._conn,
+            f"""
+            SELECT c.change_set_id, c.case_id, c.base_entity_revision,
+                   c.before_patch, c.after_patch, c.inverse_patch,
+                   c.evidence_refs, c.policy_revision, c.risk_class,
+                   c.decision_maker_ref, c.reviewer_ref, c.apply_status,
+                   c.public_projection_verified_at, c.created_at,
+                   link.item_id::text AS linked_item_id
+            FROM correction_change_sets c
+            JOIN correction_change_set_items link
+              ON link.change_set_id = c.change_set_id
+            WHERE c.case_id = %s{lock}
+            ORDER BY c.created_at DESC, c.change_set_id DESC
+            """,
+            (case_id,),
+        )
+        requested = set(str(item_id) for item_id in item_ids)
+        grouped: dict[str, list[dict]] = {}
+        for raw in rows:
+            item = _row_dict(self._db, raw)
+            grouped.setdefault(str(item["change_set_id"]), []).append(item)
+        for change_set_id, grouped_rows in grouped.items():
+            linked = {str(item["linked_item_id"]) for item in grouped_rows}
+            if linked != requested:
+                continue
+            result = dict(grouped_rows[0])
+            result["item_ids"] = tuple(sorted(linked))
+            return result
+        return None
 
     def load_change_set_target(self, change_set_id: str) -> tuple[str, tuple[str, ...]]:
         """The one entry a change set touches, and the items that asked for it."""
