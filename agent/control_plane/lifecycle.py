@@ -202,6 +202,12 @@ _TABLES: dict[str, tuple[str, str, str]] = {
     "user_2fa_recovery_codes": ("user_id", "created_at", "id, user_id, used, created_at"),
     "pending_2fa": ("user_id", "created_at", "id, user_id, expires_at, created_at"),
 }
+_TABLE_TIES = {
+    "likes": ("post_id",), "follows": ("target_type", "target_id"),
+    "user_visits": ("visited_at", "entity_id", "status"),
+    "post_reactions": ("post_id", "reaction_type"), "user_2fa": ("enabled",),
+    "blocks": ("blocked_id",), "user_mutes": ("muted_id",),
+}
 
 
 def _rows_for_table(table: str, subject_id: str, cursor: str | None, limit: int) -> tuple[list[dict[str, Any]], str | None, bool, str | None]:
@@ -250,7 +256,7 @@ def _rows_for_table(table: str, subject_id: str, cursor: str | None, limit: int)
             where += f" AND {order_col}::text < {ph}"
             params.append(str(cursor))
     has_id = "id" in {part.strip() for part in columns.split(",")}
-    order_sql = f"{order_col} DESC, id DESC" if has_id else f"{order_col} DESC, ctid DESC"
+    order_sql = f"{order_col} DESC, id DESC" if has_id else ", ".join([f"{order_col} DESC", *[f"{col} DESC" for col in _TABLE_TIES.get(table, ())]])
     sql = f"SELECT {columns} FROM {table} WHERE {where} ORDER BY {order_sql} LIMIT {ph} OFFSET {ph}"
     params.extend([limit + 1, offset])
     try:
@@ -335,7 +341,9 @@ def export_subject(subject_id: str, *, cursor: str | None = None, limit: int = _
         canonical = json.dumps(rows, ensure_ascii=True, sort_keys=True, default=str, separators=(",", ":"))
         digest = hashlib.sha256(canonical.encode("utf-8")).hexdigest()
         checksums[table] = digest
-        sink_manifest[table] = {"count": len(rows), "next_cursor": next_cursor, "truncated": truncated, "checksum": digest}
+        sink_manifest[table] = {"count": len(rows), "next_cursor": next_cursor, "truncated": truncated, "checksum": digest,
+                                "pagination": "stable-offset" if table in _TABLE_TIES or "id" not in {part.strip() for part in _TABLES[table][2].split(",")} else "keyset",
+                                "consistency": "snapshot-at-request; concurrent mutations may shift offset pages"}
         any_truncated = any_truncated or truncated
         if error:
             errors.append({"sink": table, "error": error})
@@ -387,6 +395,7 @@ def export_subject(subject_id: str, *, cursor: str | None = None, limit: int = _
 _BROWSER_CLEAR_KEYS = (
     "vl360_favorites", "vl360_recent", "vl360_post_draft", "vl360_recent_searches",
     "vinhlong360:public-search-entries:v2", "chat_sid", "vl360_plans", "vl360_planner_draft",
+    "vl360:journey-thread:v1",
 )
 _BROWSER_PROOFS: dict[str, dict[str, Any]] = {}
 

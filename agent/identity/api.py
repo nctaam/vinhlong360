@@ -1824,6 +1824,15 @@ async def export_user_data(request: Request, response: Response, cursor: str | N
     def _query():
         with db._conn() as conn:
             _EXPORT_CAP = page_limit + 1
+            orderings = {
+                "posts": "p.created_at DESC, p.id DESC", "comments": "created_at DESC, id DESC",
+                "likes": "created_at DESC, post_id DESC", "bookmarks": "created_at DESC, entity_id DESC",
+                "follows": "created_at DESC, target_type DESC, target_id DESC",
+                "visits": "created_at DESC, visited_at DESC, entity_id DESC, status DESC",
+                "reactions": "created_at DESC, post_id DESC, reaction_type DESC",
+                "collections": "created_at DESC, id DESC", "blocks": "created_at DESC, blocked_id DESC",
+                "mutes": "created_at DESC, muted_id DESC",
+            }
             def _legacy_limit(name: str) -> str:
                 return f"LIMIT {_EXPORT_CAP} OFFSET {_legacy_cursor_offsets(inner_cursor, name)}"
             posts = db._fetchall(conn, f"""
@@ -1833,52 +1842,52 @@ async def export_user_data(request: Request, response: Response, cursor: str | N
                 FROM posts p
                 LEFT JOIN entities e ON e.id = p.entity_id
                 WHERE p.user_id = {ph}::uuid
-                ORDER BY p.created_at DESC {_legacy_limit("posts")}
+                ORDER BY {orderings["posts"]} {_legacy_limit("posts")}
             """, (uid,))
             comments = db._fetchall(conn, f"""
                 SELECT id, post_id, content, parent_id, created_at
                 FROM comments WHERE user_id = {ph}::uuid
-                ORDER BY created_at DESC {_legacy_limit("comments")}
+                ORDER BY {orderings["comments"]} {_legacy_limit("comments")}
             """, (uid,))
             likes = db._fetchall(conn, f"""
                 SELECT post_id, created_at
                 FROM likes WHERE user_id = {ph}::uuid
-                ORDER BY created_at DESC {_legacy_limit("likes")}
+                ORDER BY {orderings["likes"]} {_legacy_limit("likes")}
             """, (uid,))
             bookmarks = db._fetchall(conn, f"""
                 SELECT entity_id, created_at
                 FROM saved_entities WHERE user_id = {ph}::uuid
-                ORDER BY created_at DESC {_legacy_limit("bookmarks")}
+                ORDER BY {orderings["bookmarks"]} {_legacy_limit("bookmarks")}
             """, (uid,))
             follows = db._fetchall(conn, f"""
                 SELECT target_type, target_id, created_at
                 FROM follows WHERE follower_id = {ph}::uuid
-                ORDER BY created_at DESC {_legacy_limit("follows")}
+                ORDER BY {orderings["follows"]} {_legacy_limit("follows")}
             """, (uid,))
             visits = db._fetchall(conn, f"""
                 SELECT entity_id, status, visited_at, created_at
                 FROM user_visits WHERE user_id = {ph}::uuid
-                ORDER BY created_at DESC {_legacy_limit("visits")}
+                ORDER BY {orderings["visits"]} {_legacy_limit("visits")}
             """, (uid,))
             reactions = db._fetchall(conn, f"""
                 SELECT post_id, reaction_type, created_at
                 FROM post_reactions WHERE user_id = {ph}::uuid
-                ORDER BY created_at DESC {_legacy_limit("reactions")}
+                ORDER BY {orderings["reactions"]} {_legacy_limit("reactions")}
             """, (uid,))
             collections = db._fetchall(conn, f"""
                 SELECT id, name, description, is_public, created_at
                 FROM user_collections WHERE user_id = {ph}::uuid
-                ORDER BY created_at DESC {_legacy_limit("collections")}
+                ORDER BY {orderings["collections"]} {_legacy_limit("collections")}
             """, (uid,))
             blocks = db._fetchall(conn, f"""
                 SELECT blocked_id, created_at
                 FROM blocks WHERE blocker_id = {ph}::uuid
-                ORDER BY created_at DESC {_legacy_limit("blocks")}
+                ORDER BY {orderings["blocks"]} {_legacy_limit("blocks")}
             """, (uid,))
             mutes = db._fetchall(conn, f"""
                 SELECT muted_id, created_at
                 FROM user_mutes WHERE user_id = {ph}::uuid
-                ORDER BY created_at DESC {_legacy_limit("mutes")}
+                ORDER BY {orderings["mutes"]} {_legacy_limit("mutes")}
             """, (uid,))
         raw = {
             "posts": _rows_to_dicts(posts),

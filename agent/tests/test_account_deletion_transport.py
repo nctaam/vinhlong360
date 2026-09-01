@@ -91,6 +91,7 @@ async def test_delete_account_returns_committed_exact_deadline(monkeypatch):
                 "vl360_favorites", "vl360_recent", "vl360_post_draft",
                 "vl360_recent_searches", "vinhlong360:public-search-entries:v2",
                 "chat_sid", "vl360_plans", "vl360_planner_draft",
+                "vl360:journey-thread:v1",
             ],
             "issued": True,
             "subject_hash": __import__("hashlib").sha256(USER_ID.encode()).hexdigest(),

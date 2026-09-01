@@ -253,7 +253,7 @@ class Storage:
                 except Exception as exc:
                     receipt["object_status"] = "failed"; receipt["error"] = type(exc).__name__
             if cdn_purge is None:
-                receipt["cdn_status"] = "already_absent"
+                receipt["cdn_status"] = "unavailable"
             elif receipt.get("cdn_status") not in {"deleted", "already_absent"}:
                 try:
                     cdn_purge(str(object_key)); receipt["cdn_status"] = "deleted"
@@ -262,7 +262,7 @@ class Storage:
                 except Exception as exc:
                     receipt["cdn_status"] = "failed"; receipt["error"] = type(exc).__name__
             failed = [v for v in (receipt.get("object_status"), receipt.get("cdn_status")) if v == "failed"]
-            receipt["status"] = "failed" if failed else ("deleted" if receipt.get("object_status") == "deleted" or receipt.get("cdn_status") == "deleted" else "already_absent")
+            receipt["status"] = "failed" if failed or receipt.get("cdn_status") == "unavailable" else ("deleted" if receipt.get("object_status") == "deleted" or receipt.get("cdn_status") == "deleted" else "already_absent")
             receipt["object"] = {"status": receipt.get("object_status")}
             receipt["cdn"] = {"status": receipt.get("cdn_status")}
             _MEDIA_RECEIPTS[key] = dict(receipt)

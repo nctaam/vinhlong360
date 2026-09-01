@@ -51,8 +51,8 @@ def test_media_delete_receipt_is_keyed_and_idempotent(monkeypatch):
     monkeypatch.setattr(storage.storage, "delete", lambda key: calls.append(key))
     first = storage.delete_media_with_receipt("subject", "objects/a.webp", "7")
     second = storage.delete_media_with_receipt("subject", "objects/a.webp", "7")
-    assert first["status"] == "deleted"
-    assert second["status"] == "already_absent"
+    assert first["status"] == "failed"
+    assert second["status"] == "failed"
     assert calls == ["objects/a.webp"]
 
 
@@ -84,8 +84,8 @@ def test_failed_media_receipt_can_retry(monkeypatch):
         if len(calls) == 1:
             raise RuntimeError("temporary")
     monkeypatch.setattr(storage.storage, "delete", fail_once)
-    first = storage.delete_media_with_receipt("subject-retry", "objects/retry.webp")
-    second = storage.delete_media_with_receipt("subject-retry", "objects/retry.webp")
+    first = storage.delete_media_with_receipt("subject-retry", "objects/retry.webp", cdn_purge=lambda key: None)
+    second = storage.delete_media_with_receipt("subject-retry", "objects/retry.webp", cdn_purge=lambda key: None)
     assert first["status"] == "failed"
     assert second["status"] == "deleted"
     assert len(calls) == 2
@@ -107,6 +107,20 @@ def test_media_object_failure_still_runs_cdn_and_retries(monkeypatch):
     assert result["status"] == "failed" and result["cdn_status"] == "deleted" and calls == ["k"]
 
 
+def test_browser_inventory_includes_journey_thread():
+    from control_plane.lifecycle import issue_browser_clear_instruction
+    assert "vl360:journey-thread:v1" in issue_browser_clear_instruction("u")["keys"]
+
+
+def test_media_without_cdn_adapter_is_not_verified(monkeypatch):
+    import storage
+    storage._MEDIA_RECEIPTS.clear()
+    monkeypatch.setattr(storage.storage, "delete", lambda key: None)
+    receipt = storage.delete_media_with_receipt("u-no-cdn", "k")
+    assert receipt["cdn_status"] == "unavailable"
+    assert receipt["status"] == "failed"
+
+
 def test_export_keyset_cursor_includes_tie_breaker(monkeypatch):
     import control_plane.lifecycle as lifecycle
     class FakeDB:
@@ -120,6 +134,14 @@ def test_export_keyset_cursor_includes_tie_breaker(monkeypatch):
         _row_to_dict = staticmethod(lambda row: row)
     monkeypatch.setattr(lifecycle, "db", FakeDB())
     lifecycle._rows_for_table("posts", "u", None, 1)
+
+
+def test_legacy_orderings_include_ties_for_posts_blocks_and_mutes():
+    from identity import api
+    source = __import__("inspect").getsource(api.export_user_data)
+    assert "p.created_at DESC, p.id DESC" in source
+    assert "created_at DESC, blocked_id DESC" in source
+    assert "created_at DESC, muted_id DESC" in source
 
 
 def test_export_cursor_offset_is_scoped_to_its_sink(monkeypatch):

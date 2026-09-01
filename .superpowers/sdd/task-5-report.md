@@ -37,6 +37,7 @@ findings are addressed with bounded, explicit, retryable behavior.
 ## Evidence and Concerns
 
 - No production PostgreSQL, object-store, CDN, or paid provider was touched.
+- Disposable PostgreSQL verification (controller rerun): `powershell -NoProfile -ExecutionPolicy Bypass -File .tmp-task5-pg-run.ps1` provisioned loopback `127.0.0.1:5433`, applied migrations through schema `82`, ran `agent/tests/test_lifecycle_registry.py agent/tests/test_erasure_constraints_postgres.py agent/tests/test_erasure_lifecycle_postgres.py agent/tests/test_erasure_orchestrator_postgres.py`, and finished `27 passed in 6.72s`; schema query returned `(82,)`, database-after-drop returned `None`, and the cluster was removed. The broader probe also ran `agent/tests/test_case_lifecycle.py` and exposed 5 unrelated Task 4 fixture failures; those are not counted as Task 5 evidence.
 - The local media receipt ledger remains process-local; production should persist
   the same tuple in a durable receipt table before remote deletion.
 - Object/CDN inventories remain deployment-specific; reports JSONL now uses an
@@ -56,7 +57,7 @@ findings are addressed with bounded, explicit, retryable behavior.
 - Frontend GREEN: `npm test -- --run tests/lifecycle-clear.test.ts tests/personalization-preferences.test.ts tests/chat-stale-session.test.ts` -> `2 passed, 1 failed` initially due test requiring arbitrary version; corrected consumer to version-aware markers, then lifecycle-clear isolated test passes.
 - `python -m ruff check agent/control_plane/lifecycle.py agent/storage.py agent/identity/api.py` and `git diff --check` -> passed.
 
-Concerns: PostgreSQL keyset behavior is covered by SQL contract tests only; no disposable loopback database was provisioned. Object/CDN provider inventories remain deployment-specific.
+Concerns: the first review pass had SQL-contract-only pagination coverage; the controller later added the disposable PostgreSQL run recorded above. Object/CDN provider inventories remain deployment-specific.
 
 ## Review v9 Cursor Fix Wave
 
@@ -66,7 +67,7 @@ Concerns: PostgreSQL keyset behavior is covered by SQL contract tests only; no d
 - Frontend GREEN: `npm test -- --run tests/lifecycle-clear.test.ts tests/personalization-preferences.test.ts tests/chat-stale-session.test.ts` -> `46 passed` (Nuxt duplicate-import warnings only).
 - `python -m ruff check agent/control_plane/lifecycle.py agent/identity/api.py agent/storage.py`, `python -m py_compile ...`, and `git diff --check` -> passed.
 
-Fixes: cursors now apply offsets only to their matching sink; every legacy export dataset honors a cursor-scoped offset and emits a next cursor in manifest metadata. No disposable PostgreSQL database was available, so no fresh PG evidence is claimed.
+Fixes: cursors now apply offsets only to their matching sink; every legacy export dataset honors a cursor-scoped offset and emits a next cursor in manifest metadata. The controller subsequently verified the PostgreSQL erasure/lifecycle suite against schema 82 on loopback; provider inventories remain deployment-specific.
 
 ## Review v9 Rate-Limit Provenance Fix
 
@@ -74,3 +75,20 @@ Fixes: cursors now apply offsets only to their matching sink; every legacy expor
 - GREEN: `python -m pytest agent/tests/test_lifecycle_registry.py -q --basetemp=.tmp-task5-secret-green` -> `13 passed`.
 - Export continuation cursors are now HMAC-bound to the subject and rejected when fabricated or signed for another subject. Secret derives from `EXPORT_CURSOR_SECRET`, `JWT_SECRET`, or `ADMIN_API_KEY`; production fails closed if none is configured, while development uses an ephemeral process secret.
 - `python -m py_compile agent/identity/api.py` and Ruff -> passed.
+
+## Review v11 Final Fix Wave
+
+- RED: focused cursor/media/browser tests reproduced missing journey key and
+  incorrect no-CDN proof; cursor tests also verified sink scoping.
+- GREEN: `python -m pytest agent/tests/test_lifecycle_registry.py agent/tests/test_account_deletion_transport.py -q --basetemp=.tmp-task5-v11-final2` -> `19 passed`.
+- `python -m py_compile agent/control_plane/lifecycle.py agent/identity/api.py agent/storage.py`, Ruff, and `git diff --check` -> passed.
+- Legacy exports now use deterministic tie columns (`id` where available,
+  selected-field ties otherwise) and every cursor page is explicitly labeled
+  as a bounded snapshot-at-request offset contract; no `ctid` is used.
+- Browser clear inventory includes `vl360:journey-thread:v1`.
+- Media receipts mark missing CDN adapter as `unavailable`, keeping overall
+  status failed/retryable rather than falsely proving CDN deletion.
+
+Concern: concurrent inserts/updates can shift stable-offset pages; this is
+reported explicitly in the manifest consistency field. No disposable PostgreSQL
+database was provisioned, so no fresh PG proof is claimed.
