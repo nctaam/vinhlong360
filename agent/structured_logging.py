@@ -83,6 +83,13 @@ def _redact(value: object, key: str | None = None) -> object:
 
 def _redact_log_argument(value: object, key: str | None) -> object:
     """Treat unlabelled interpolated strings as untrusted log content."""
+    if isinstance(value, Mapping):
+        return {
+            str(item_key): _redact_log_argument(item_value, str(item_key))
+            for item_key, item_value in value.items()
+        }
+    if isinstance(value, (list, tuple)):
+        return [_redact_log_argument(item, key) for item in value]
     if isinstance(value, str) and not _category(key, value):
         return _digest(value, "text")
     return _redact(value, key)
@@ -121,7 +128,7 @@ class RedactingLogFilter(logging.Filter):
             if isinstance(args, Mapping):
                 items = list(args.items())
                 record.args = {
-                    str(key): _redact(value, str(key)) for key, value in items
+                    str(key): _redact_log_argument(value, str(key)) for key, value in items
                 }
                 return True
             if not args:
