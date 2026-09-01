@@ -1325,6 +1325,8 @@ async def delete_account(request: Request, response: Response, _csrf=Depends(_re
     from config import erasure_is_audit_only
 
     chi_dem = erasure_is_audit_only()
+    from control_plane.lifecycle import issue_browser_clear_instruction
+    clear_instruction = issue_browser_clear_instruction(uid)
     return {
         "success": True,
         "status": "scheduled",
@@ -1340,6 +1342,7 @@ async def delete_account(request: Request, response: Response, _csrf=Depends(_re
         "erasure_due_at": state.erasure_due_at.isoformat(),
         # Máy đọc được: người tích hợp / vận hành biết ngay lời hứa nào đang hiệu lực.
         "erasure_active": not chi_dem,
+        "browser_clear_instruction": clear_instruction,
     }
 
 
@@ -1747,7 +1750,8 @@ async def export_user_data(request: Request, response: Response, cursor: str | N
     if not user:
         raise HTTPException(401, "Chưa đăng nhập")
     from ratelimit import check_rate
-    check_rate(f"export-data:{user['id']}", 2, 86400, "Chỉ được xuất dữ liệu 2 lần/ngày.")
+    if cursor is None:
+        check_rate(f"export-data:{user['id']}", 2, 86400, "Chỉ được bắt đầu xuất dữ liệu 2 lần/ngày.")
     uid = str(user["id"])
     ph = db._ph
     page_limit = int(limit)

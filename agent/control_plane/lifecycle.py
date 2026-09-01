@@ -209,15 +209,17 @@ def _rows_for_table(table: str, subject_id: str, cursor: str | None, limit: int)
         return [], None, False, None
     owner, order_col, columns = _TABLES[table]
     ph = getattr(db, "_ph", "%s")
+    offset = int(cursor.get("offset", 0)) if isinstance(cursor, dict) and str(cursor.get("offset", "0")).isdigit() else 0
     if table == "collection_items":
         # Items are owned through the user's collection, not by collection_id.
         where = f"uc.user_id::text = {ph}"
         params: list[Any] = [str(subject_id)]
-        if cursor:
-            where += f" AND ci.added_at::text < {ph}"
-            params.append(str(cursor.get("value") if isinstance(cursor, dict) else cursor))
-        sql = f"SELECT ci.id, ci.collection_id, ci.post_id, ci.added_at FROM collection_items ci JOIN user_collections uc ON uc.id = ci.collection_id WHERE {where} ORDER BY ci.added_at DESC, ci.id DESC LIMIT {ph}"
-        params.append(limit + 1)
+        if cursor and not (isinstance(cursor, dict) and "offset" in cursor):
+            if not offset:
+                where += f" AND (ci.added_at::text, ci.id::text) < ({ph}, {ph})"
+                params.extend([str(cursor.get("value")), str(cursor.get("id"))])
+        sql = f"SELECT ci.id, ci.collection_id, ci.post_id, ci.added_at FROM collection_items ci JOIN user_collections uc ON uc.id = ci.collection_id WHERE {where} ORDER BY ci.added_at DESC, ci.id DESC LIMIT {ph} OFFSET {ph}"
+        params.extend([limit + 1, offset])
         try:
             with db._conn() as conn:
                 rows = db._fetchall(conn, sql, tuple(params))
@@ -226,11 +228,11 @@ def _rows_for_table(table: str, subject_id: str, cursor: str | None, limit: int)
             return [], None, False, type(exc).__name__
         truncated = len(values) > limit
         values = values[:limit]
-        next_cursor = _encode_cursor(json.dumps({"sink": table, "value": str(values[-1].get("added_at")), "id": str(values[-1].get("id"))}, separators=(",", ":"))) if truncated and values else None
+        next_cursor = _encode_cursor(json.dumps({"sink": table, "offset": offset + limit, "value": str(values[-1].get("added_at")), "id": str(values[-1].get("id"))}, separators=(",", ":"))) if truncated and values else None
         return values, next_cursor, truncated, None
     where = f"{owner}::text = {ph}"
     params: list[Any] = [str(subject_id)]
-    if cursor:
+    if cursor and not (isinstance(cursor, dict) and "offset" in cursor):
         if isinstance(cursor, dict) and cursor.get("sink") not in (None, table):
             cursor = None
         if isinstance(cursor, dict) and cursor.get("value") is not None:
@@ -245,8 +247,10 @@ def _rows_for_table(table: str, subject_id: str, cursor: str | None, limit: int)
         else:
             where += f" AND {order_col}::text < {ph}"
             params.append(str(cursor))
-    sql = f"SELECT {columns} FROM {table} WHERE {where} ORDER BY {order_col} DESC LIMIT {ph}"
-    params.append(limit + 1)
+    has_id = "id" in {part.strip() for part in columns.split(",")}
+    order_sql = f"{order_col} DESC, id DESC" if has_id else f"{order_col} DESC, ctid DESC"
+    sql = f"SELECT {columns} FROM {table} WHERE {where} ORDER BY {order_sql} LIMIT {ph} OFFSET {ph}"
+    params.extend([limit + 1, offset])
     try:
         with db._conn() as conn:
             rows = db._fetchall(conn, sql, tuple(params))
@@ -259,7 +263,7 @@ def _rows_for_table(table: str, subject_id: str, cursor: str | None, limit: int)
     next_cursor = None
     if truncated and values:
         last = values[-1]
-        next_cursor = _encode_cursor(json.dumps({"sink": table, "value": str(last.get(order_col)), "id": str(last.get("id")) if last.get("id") is not None else None}, separators=(",", ":")))
+        next_cursor = _encode_cursor(json.dumps({"sink": table, "offset": offset + limit, "value": str(last.get(order_col)), "id": str(last.get("id")) if last.get("id") is not None else None}, separators=(",", ":")))
     return values, next_cursor, truncated, None
 
 
@@ -365,6 +369,7 @@ def export_subject(subject_id: str, *, cursor: str | None = None, limit: int = _
         "subject_hash": _subject_hash(str(subject_id)),
         "sinks": sink_manifest,
         "truncated": any_truncated,
+        "degraded": bool(errors) or any(bool(item.get("degraded")) for item in sink_manifest.values()),
         "excluded_secrets": list(_SECRET_EXCLUSIONS),
         "checksums": checksums,
         "errors": errors,
@@ -404,27 +409,25 @@ def _external_erase(name: str, subject_id: str, *, dry_run: bool) -> dict[str, A
             verified = bot_gateway.verify_subject_memory_absent(owner)
             return {"status": "deleted" if removed and verified else "already_absent" if verified else "failed", "count": removed}
         if name == "reports-jsonl":
-            from admin import _INFO_REPORTS_FILE
-            if not _INFO_REPORTS_FILE.exists():
-                return {"status": "already_absent", "count": 0}
-            lines = _INFO_REPORTS_FILE.read_text(encoding="utf-8").splitlines()
-            kept, removed = [], 0
-            for line in lines:
-                try:
-                    item = json.loads(line)
-                except json.JSONDecodeError:
-                    kept.append(line)
-                    continue
-                owner_value = item.get("owner_key", item.get("user_id", item.get("reporter_id", "")))
-                if str(owner_value) == owner:
-                    removed += 1
-                else:
-                    kept.append(line)
-            if removed:
-                tmp = _INFO_REPORTS_FILE.with_suffix(".tmp")
-                tmp.write_text("\n".join(kept) + ("\n" if kept else ""), encoding="utf-8")
-                tmp.replace(_INFO_REPORTS_FILE)
-            return {"status": "deleted" if removed else "already_absent", "count": removed}
+            from admin import _INFO_REPORTS_FILE, _info_reports_lock
+            with _info_reports_lock:
+                if not _INFO_REPORTS_FILE.exists():
+                    return {"status": "already_absent", "count": 0}
+                lines = _INFO_REPORTS_FILE.read_text(encoding="utf-8").splitlines()
+                kept, removed = [], 0
+                for line in lines:
+                    try:
+                        item = json.loads(line)
+                    except json.JSONDecodeError:
+                        kept.append(line); continue
+                    owner_value = item.get("owner_key", item.get("user_id", item.get("reporter_id", "")))
+                    if str(owner_value) == owner: removed += 1
+                    else: kept.append(line)
+                if removed:
+                    tmp = _INFO_REPORTS_FILE.with_suffix(".tmp")
+                    tmp.write_text("\n".join(kept) + ("\n" if kept else ""), encoding="utf-8")
+                    tmp.replace(_INFO_REPORTS_FILE)
+                return {"status": "deleted" if removed else "already_absent", "count": removed}
     except Exception as exc:
         return {"status": "failed", "count": 0, "error_code": type(exc).__name__}
     if name == "browser-storage":

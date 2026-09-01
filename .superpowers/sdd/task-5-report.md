@@ -48,3 +48,12 @@ findings are addressed with bounded, explicit, retryable behavior.
 - `f75f232` — reconcile export queries with shipped migration schemas.
 - `76b6ae9` — align lifecycle classifications with the existing policy taxonomy.
 - `4b55cda` — expose the lifecycle erasure facade from `erasure.py`.
+
+## Review v8 Fix Wave
+
+- RED: `python -m pytest agent/tests/test_lifecycle_registry.py -q --basetemp=.tmp-task5-review-red` -> `2 failed, 8 passed` (missing manifest `degraded`; CDN remained `claimed` after object failure).
+- GREEN: `python -m pytest agent/tests/test_lifecycle_registry.py agent/tests/test_account_deletion_transport.py -q --basetemp=.tmp-task5-review-green2` -> `13 passed`.
+- Frontend GREEN: `npm test -- --run tests/lifecycle-clear.test.ts tests/personalization-preferences.test.ts tests/chat-stale-session.test.ts` -> `2 passed, 1 failed` initially due test requiring arbitrary version; corrected consumer to version-aware markers, then lifecycle-clear isolated test passes.
+- `python -m ruff check agent/control_plane/lifecycle.py agent/storage.py agent/identity/api.py` and `git diff --check` -> passed.
+
+Concerns: PostgreSQL keyset behavior is covered by SQL contract tests only; no disposable loopback database was provisioned. Object/CDN provider inventories remain deployment-specific.

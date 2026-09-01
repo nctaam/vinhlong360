@@ -84,6 +84,17 @@ async def test_delete_account_returns_committed_exact_deadline(monkeypatch):
         # Khẳng định True ở đây tức là: với cấu hình mặc định, lời hứa xoá-vĩnh-viễn
         # là lời hứa CÓ THẬT — đúng điều mà trước 2026-08-30 KHÔNG đúng.
         "erasure_active": True,
+        "browser_clear_instruction": {
+            "version": "v1",
+            "action": "clear",
+            "keys": [
+                "vl360_favorites", "vl360_recent", "vl360_post_draft",
+                "vl360_recent_searches", "vinhlong360:public-search-entries:v2",
+                "chat_sid", "vl360_plans", "vl360_planner_draft",
+            ],
+            "issued": True,
+            "subject_hash": __import__("hashlib").sha256(USER_ID.encode()).hexdigest(),
+        },
     }
     assert calls == [(USER_ID, REQUESTED_AT)]
 

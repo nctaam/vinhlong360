@@ -89,3 +89,34 @@ def test_failed_media_receipt_can_retry(monkeypatch):
     assert first["status"] == "failed"
     assert second["status"] == "deleted"
     assert len(calls) == 2
+
+
+def test_manifest_marks_degraded_when_external_adapter_unavailable(monkeypatch):
+    import control_plane.lifecycle as lifecycle
+    class EmptyDB: _use_pg = False
+    monkeypatch.setattr(lifecycle, "db", EmptyDB())
+    bundle = lifecycle.export_subject("u", limit=1)
+    assert bundle.manifest["degraded"] is True
+
+
+def test_media_object_failure_still_runs_cdn_and_retries(monkeypatch):
+    import storage
+    calls = []
+    monkeypatch.setattr(storage.storage, "delete", lambda key: (_ for _ in ()).throw(RuntimeError("object")))
+    result = storage.delete_media_with_receipt("u-cdn", "k", cdn_purge=lambda key: calls.append(key))
+    assert result["status"] == "failed" and result["cdn_status"] == "deleted" and calls == ["k"]
+
+
+def test_export_keyset_cursor_includes_tie_breaker(monkeypatch):
+    import control_plane.lifecycle as lifecycle
+    class FakeDB:
+        _use_pg = True; _ph = "%s"
+        def _conn(self):
+            from contextlib import nullcontext
+            return nullcontext(object())
+        def _fetchall(self, _conn, sql, _params):
+            assert "ORDER BY created_at DESC, id DESC" in sql
+            return []
+        _row_to_dict = staticmethod(lambda row: row)
+    monkeypatch.setattr(lifecycle, "db", FakeDB())
+    lifecycle._rows_for_table("posts", "u", None, 1)

@@ -648,6 +648,7 @@ import type { HideablePost } from '~/composables/useHiddenPosts'
 import { usePersonalizationPreferences } from '~/composables/usePersonalizationPreferences'
 import type { AccessibilityTheme } from '~/types/accessibility'
 import type { PreferencePatch, PreferenceRegionChoice, PreferenceSnapshot } from '~/types/personalization'
+import { consumeLifecycleClearInstruction } from '~/composables/useLifecycleClear'
 
 const { user, isLoggedIn, authHeaders, fetchMe, handleSessionExpired } = useAuth()
 const { enabled: ff } = useFeature()
@@ -1385,7 +1386,7 @@ const { confirmDialog: confirm } = useConfirm()
 // ── Data & legal ──
 const exportLoading = ref(false)
 type ConsentHistoryItem = { id: string; version: string | null; created_at: string }
-type DeleteAccountResponse = { status: string; message: string; grace_days: number }
+type DeleteAccountResponse = { status: string; message: string; grace_days: number; browser_clear_instruction?: unknown }
 
 const consentHistory = ref<ConsentHistoryItem[]>([])
 const consentLoaded = ref(false)
@@ -1451,6 +1452,10 @@ async function deleteAccount() {
   accountStatus.value = ''
   try {
     const result = await $fetch<DeleteAccountResponse>('/auth/account', { method: 'DELETE', headers: authHeaders() })
+    if (result.browser_clear_instruction) {
+      try { localStorage.setItem('vl360_erasure_clear_instruction', JSON.stringify(result.browser_clear_instruction)) } catch { /* storage unavailable */ }
+      consumeLifecycleClearInstruction(result.browser_clear_instruction)
+    }
     const gracePhrase = `${result.grace_days} ngày`
     const messageIncludesGrace = result.message
       .toLocaleLowerCase('vi-VN')
