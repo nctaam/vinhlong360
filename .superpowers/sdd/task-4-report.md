@@ -158,3 +158,20 @@ Concerns:
 
 - PostgreSQL cases skipped locally because `VL360_TEST_DATABASE_URL` is not configured; no production database or port 5432 was touched.
 - Existing user edits in `docs/standards/90-exceptions-log.md`, `docs/audit-toan-du-an-2026-08.md`, `graphify-out/`, and SDD/temp files were preserved.
+
+## PostgreSQL mapping-row remediation
+
+Findings fixed:
+
+- Receipt and persisted change-set replay validators now accept `Mapping` rows such as psycopg2 `RealDictRow`, normalize them to plain dictionaries, and retain fail-closed malformed/required-field checks.
+- Verification retry-deadline parsing accepts mapping rows as well, so post-deadline recovery does not silently treat a valid receipt as absent.
+
+TDD and PostgreSQL evidence:
+
+- RED: `python -m pytest agent/tests/test_case_proof_first.py::test_replay_receipt_validators_accept_mapping_rows_from_postgres -q --basetemp .tmp-task4-mapping-red` -> 1 failed because exact-type receipt guards rejected `UserDict`/`RealDictRow`-like mappings.
+- GREEN: `python -m pytest agent/tests/test_case_proof_first.py::test_replay_receipt_validators_accept_mapping_rows_from_postgres -q --basetemp .tmp-task4-mapping-green` -> 1 passed.
+- Focused: `python -m pytest agent/tests/test_case_proof_first.py agent/tests/test_case_wiring.py agent/tests/test_case_domain.py agent/tests/test_case_audit.py agent/tests/test_case_outbox.py agent/tests/test_case_idempotency_postgres.py -q --basetemp .tmp-task4-mapping-focused` -> 79 passed, 20 skipped.
+- Prior disposable run exposed 10 retry failures from `RealDictRow` exact-type rejection in `powershell -ExecutionPolicy Bypass -File .tmp-task4-pg-run.ps1`.
+- Fixed disposable run: `powershell -ExecutionPolicy Bypass -File .tmp-task4-pg-run.ps1` -> 80 passed in 27.31s; schema 82 applied, database dropped and verified absent, loopback cluster removed.
+
+Implementation is recorded in the follow-up commit after this report update.

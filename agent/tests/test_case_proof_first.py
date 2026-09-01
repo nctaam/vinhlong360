@@ -569,6 +569,37 @@ def test_verification_replay_requires_an_immutable_recovery_deadline():
     assert excinfo.value.problem.code == "publication_receipt_invalid"
 
 
+def test_replay_receipt_validators_accept_mapping_rows_from_postgres():
+    from collections import UserDict
+
+    from cases.correction import _replay_receipt_payload
+    from cases.publication import _replay_payload
+
+    correction_payload = UserDict({"event_id": "decision:case-1:item-1"})
+    correction_row = UserDict({"payload": correction_payload})
+    assert _replay_receipt_payload(
+        correction_row,
+        "decision:case-1:item-1",
+        required=("event_id",),
+    ) == {"event_id": "decision:case-1:item-1"}
+
+    publication_event = "notify:change-1:applied"
+    publication_payload = UserDict({
+        "event_id": publication_event,
+        "case_id": "case-1",
+        "generation": "4",
+        "correlation_id": "corr-proof",
+        "revision": 4,
+    })
+    publication_row = UserDict({
+        "idempotency_key": publication_event,
+        "payload": publication_payload,
+    })
+    assert _replay_payload(
+        publication_row, publication_event, required=("revision",),
+    ) == dict(publication_payload)
+
+
 def test_apply_replay_rejects_an_empty_applied_fields_receipt():
     from cases.publication import ApplyChangeSetCommand, PublicationRejected, _replay_apply
 

@@ -18,6 +18,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+from collections.abc import Mapping
 from dataclasses import dataclass, replace
 from datetime import datetime
 
@@ -428,13 +429,32 @@ def _replay_receipt_payload(
             "publication_receipt_missing",
             f"The committed receipt {event_id} is missing.",
         )
-    if type(existing) is not dict:
+    if not isinstance(existing, Mapping):
         raise _reject(
             "publication_receipt_invalid",
             f"The committed receipt {event_id} is malformed.",
         )
-    payload = existing.get("payload")
-    if type(payload) is not dict or any(key not in payload for key in required):
+    try:
+        receipt = dict(existing)
+    except (TypeError, ValueError):
+        raise _reject(
+            "publication_receipt_invalid",
+            f"The committed receipt {event_id} is malformed.",
+        )
+    payload = receipt.get("payload")
+    if not isinstance(payload, Mapping):
+        raise _reject(
+            "publication_receipt_invalid",
+            f"The committed receipt {event_id} is incomplete.",
+        )
+    try:
+        payload = dict(payload)
+    except (TypeError, ValueError):
+        raise _reject(
+            "publication_receipt_invalid",
+            f"The committed receipt {event_id} is malformed.",
+        )
+    if any(key not in payload for key in required):
         raise _reject(
             "publication_receipt_invalid",
             f"The committed receipt {event_id} is incomplete.",
@@ -818,11 +838,19 @@ def _replay_existing_change_set(transaction, case_id: str, item_ids: tuple[str, 
                                 actor, expected_revision: int,
                                 evidence_refs: tuple[str, ...], snapshot) -> ChangeSetDraft | None:
     existing = transaction.load_change_set_for_items(case_id, item_ids)
-    if existing is not None and type(existing) is not dict:
-        raise _reject(
-            "publication_receipt_invalid",
-            "The persisted change set marker is malformed.",
-        )
+    if existing is not None:
+        if not isinstance(existing, Mapping):
+            raise _reject(
+                "publication_receipt_invalid",
+                "The persisted change set marker is malformed.",
+            )
+        try:
+            existing = dict(existing)
+        except (TypeError, ValueError):
+            raise _reject(
+                "publication_receipt_invalid",
+                "The persisted change set marker is malformed.",
+            )
     if not existing or str(existing.get("apply_status")) not in {"pending", "applied"}:
         return None
     change_set_id = existing.get("change_set_id")

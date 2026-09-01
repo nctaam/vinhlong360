@@ -25,6 +25,7 @@ carries that authority — never as a side effect of correcting a phone number.
 """
 from __future__ import annotations
 
+from collections.abc import Mapping
 from dataclasses import dataclass, replace
 from datetime import datetime, timedelta
 
@@ -397,10 +398,10 @@ def _validate_verification_failure_receipt(
 
 
 def _verification_retry_at(existing: dict | None) -> datetime | None:
-    if existing is None or type(existing) is not dict:
+    if existing is None or not isinstance(existing, Mapping):
         return None
     payload = existing.get("payload")
-    if type(payload) is not dict:
+    if not isinstance(payload, Mapping):
         return None
     raw_deadline = payload.get("next_update_at")
     if type(raw_deadline) is not str or not raw_deadline:
@@ -421,19 +422,37 @@ def _replay_payload(existing: dict | None, event_id: str, *, required: tuple[str
             "publication_receipt_missing",
             f"The committed publication receipt {event_id} is missing.",
         )
-    if type(existing) is not dict:
+    if not isinstance(existing, Mapping):
         raise _reject(
             "publication_receipt_invalid",
             f"The committed publication receipt {event_id} is malformed.",
         )
-    payload = existing.get("payload")
+    try:
+        receipt = dict(existing)
+    except (TypeError, ValueError):
+        raise _reject(
+            "publication_receipt_invalid",
+            f"The committed publication receipt {event_id} is malformed.",
+        )
+    payload = receipt.get("payload")
+    if not isinstance(payload, Mapping):
+        raise _reject(
+            "publication_receipt_invalid",
+            f"The committed publication receipt {event_id} is incomplete.",
+        )
+    try:
+        payload = dict(payload)
+    except (TypeError, ValueError):
+        raise _reject(
+            "publication_receipt_invalid",
+            f"The committed publication receipt {event_id} is malformed.",
+        )
     required_keys = (
         "event_id", "case_id", "generation", "correlation_id", *required,
     )
     if (
-        type(existing.get("idempotency_key")) is not str
-        or existing["idempotency_key"] != event_id
-        or type(payload) is not dict
+        type(receipt.get("idempotency_key")) is not str
+        or receipt["idempotency_key"] != event_id
         or any(key not in payload for key in required_keys)
     ):
         raise _reject(
@@ -457,7 +476,7 @@ def _replay_payload(existing: dict | None, event_id: str, *, required: tuple[str
             "publication_receipt_invalid",
             f"The committed publication receipt {event_id} has an invalid revision.",
         )
-    return dict(payload)
+    return payload
 
 
 def _require_replay_case(payload: dict, case_id: str, event_id: str) -> None:
