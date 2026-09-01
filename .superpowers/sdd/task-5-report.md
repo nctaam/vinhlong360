@@ -90,5 +90,7 @@ Fixes: cursors now apply offsets only to their matching sink; every legacy expor
   status failed/retryable rather than falsely proving CDN deletion.
 
 Concern: concurrent inserts/updates can shift stable-offset pages; this is
-reported explicitly in the manifest consistency field. No disposable PostgreSQL
-database was provisioned, so no fresh PG proof is claimed.
+reported explicitly in the manifest consistency field. The controller also ran
+the disposable PostgreSQL lifecycle/erasure suite against schema 82 (27 passed,
+database-after-drop None); provider inventories and the process-local receipt
+ledger remain deployment-specific.
