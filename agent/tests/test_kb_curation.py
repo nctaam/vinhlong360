@@ -213,6 +213,22 @@ class TestPromote:
         assert prov1["status"] == "provisional" and prov1["verified"] is False
         assert prov2["summary"] == "concurrent edit"
 
+    def test_post_commit_db_failure_reports_reconciliation_without_promote_rollback(self, kb_with_provisional, monkeypatch):
+        review = next(x for x in kb_curation.list_provisional() if x["id"] == "prov-1")
+
+        def committed_degraded(_entity):
+            return {"ok": False, "committed": True, "error": "post_commit_effect_failed"}
+
+        monkeypatch.setattr(kb_curation, "_db_upsert", committed_degraded)
+        result = kb_curation.promote("prov-1", review["review_token"])
+        assert result == {
+            "ok": False, "error": "db_write_failed", "degraded": True,
+            "reconciliation_required": True,
+        }
+        persisted = json.loads(kb_with_provisional.read_text(encoding="utf-8"))
+        promoted = next(item for item in persisted["entities"] if item["id"] == "prov-1")
+        assert promoted["status"] == "verified" and promoted["verified"] is True
+
 
 class TestReject:
     def test_reject_removes_entity(self, kb_with_provisional):
@@ -245,6 +261,18 @@ class TestReject:
         persisted = json.loads(kb_with_provisional.read_text(encoding="utf-8"))
         assert all(item["id"] != "prov-1" for item in persisted["entities"])
         assert next(item for item in persisted["entities"] if item["id"] == "prov-2")["summary"] == "concurrent edit"
+
+    def test_post_commit_db_delete_failure_does_not_restore_json_entity(self, kb_with_provisional, monkeypatch):
+        monkeypatch.setattr(kb_curation, "_db_delete", lambda _entity_id: {
+            "ok": False, "committed": True, "error": "post_commit_effect_failed"
+        })
+        result = kb_curation.reject("prov-1")
+        assert result == {
+            "ok": False, "error": "db_write_failed", "degraded": True,
+            "reconciliation_required": True,
+        }
+        persisted = json.loads(kb_with_provisional.read_text(encoding="utf-8"))
+        assert all(item["id"] != "prov-1" for item in persisted["entities"])
 
 
 class TestNearDuplicate:

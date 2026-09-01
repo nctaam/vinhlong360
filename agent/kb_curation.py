@@ -75,6 +75,8 @@ def _db_delete(entity_id: str, *, actor_id: str = "system", reason: str = "entit
         return True
     except Exception as e:  # noqa: BLE001
         logger.warning("DB delete failed for %s: %s", entity_id, e)
+        if getattr(e, "committed", False):
+            return {"ok": False, "committed": True, "error": "post_commit_effect_failed"}
         if strict:
             raise
         return False
@@ -168,6 +170,10 @@ def promote(entity_id: str, review_token: str) -> dict:
             except Exception:
                 _rollback_promotion(entity_id, before, promoted)
                 return {"ok": False, "error": "db_write_failed"}
+            if isinstance(db_result, dict) and db_result.get("committed"):
+                _reload()
+                return {"ok": False, "error": "db_write_failed", "degraded": True,
+                        "reconciliation_required": True}
             _reload()
             return {"ok": True, "id": entity_id, "status": "verified"}
     return {"ok": False, "error": "not found"}
@@ -202,6 +208,10 @@ def reject(entity_id: str) -> dict:
         return {"ok": False, "error": "db_write_failed"} if rolled_back else {
             "ok": False, "error": "db_write_failed", "reconciliation_required": True,
         }
+    if isinstance(db_result, dict) and db_result.get("committed"):
+        _reload()
+        return {"ok": False, "error": "db_write_failed", "degraded": True,
+                "reconciliation_required": True}
     result = {"ok": True, "id": entity_id, "removed": before - len(kb["entities"])}
     _reload()
     return result

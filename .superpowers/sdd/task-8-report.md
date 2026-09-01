@@ -62,3 +62,8 @@
 - Image approval locks the entity row on PostgreSQL and serializes local approvals while merging against the latest entity snapshot, preventing lost images/credits.
 - Provisional promotion writes JSON under CAS before DB sync and reports `reconciliation_required` for uncertain committed effects; rejection rollback restores only an unchanged post-delete version.
 - Focused remediation evidence: `python -m pytest agent/tests/test_media_saga.py agent/tests/test_kb_curation.py agent/tests/test_entities_admin_api_boundary.py agent/tests/test_entity_write_transaction.py agent/tests/test_entity_write_compatibility.py -q` -> `47 passed, 23 skipped`.
+
+## Final Curation Remediation
+
+- Committed-but-degraded DB deletes now retain the JSON rejection and return `degraded` plus `reconciliation_required`; they never restore an entity that the DB may already have deleted.
+- Manual provisional promotion now likewise retains its committed JSON state and returns an explicit degraded reconciliation result when the DB mutation committed but a post-commit effect failed.
