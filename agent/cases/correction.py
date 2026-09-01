@@ -243,12 +243,12 @@ def validate_decision(
 ) -> DecisionOutcome:
     reason = _require_decision_basics(command)
     maker = getattr(command.actor, "actor_ref", "unknown")
-    if command.outcome_code in _EVIDENCE_BEARING and command.evidence:
+    if command.evidence:
         scope = required_scope if required_scope is not None else command.required_scope
         if not scope:
             raise _reject("evidence_scope_required", "A decision needs an evidence scope.", status=400)
         usable = usable_evidence(tuple(command.evidence), now=now, required_scope=scope)
-        if not usable:
+        if command.outcome_code in _EVIDENCE_BEARING and not usable:
             raise _reject(
                 "evidence_not_usable",
                 "No evidence matches the required scope and decision time window.",
@@ -754,10 +754,13 @@ def decide_item(command: DecideItemCommand, *, now: datetime) -> DecisionOutcome
                 record.evidence_id for record in command.evidence
                 if type(getattr(record, "evidence_id", None)) is str
             )
-            if any(ref not in command_refs for ref in refs):
+            if (
+                outcome_code in _EVIDENCE_BEARING and not refs
+                or tuple(refs) != command_refs
+            ):
                 raise _reject(
                     "publication_receipt_invalid",
-                    f"The committed receipt {event_id} has unrelated evidence.",
+                    f"The committed receipt {event_id} disagrees with command evidence.",
                 )
             return DecisionOutcome(
                 case_id=ruling["case_id"],

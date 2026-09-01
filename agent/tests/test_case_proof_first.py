@@ -435,6 +435,84 @@ def test_decision_replay_rejects_malformed_receipt_types(monkeypatch):
     assert excinfo.value.problem.code == "publication_receipt_invalid"
 
 
+@pytest.mark.parametrize("refs", [None, [], ["e-1"], ["e-2", "e-1"]])
+def test_decision_replay_requires_exact_nonempty_evidence_identity(refs, monkeypatch):
+    from cases import correction
+    from cases.correction import _decision_command_digest, decide_item
+
+    command = DecideItemCommand(
+        case_id="case-1",
+        item_id="item-1",
+        outcome_code=CorrectionOutcome.CORRECTED,
+        reason_code="source_confirms_change",
+        evidence=(_record(), _record(evidence_id="e-2", source_ref="source:b")),
+        risk_class=RiskClass.R1,
+        actor=_actor(),
+        required_scope="place.contact",
+    )
+    ruling = {
+        "case_id": "case-1",
+        "item_id": "item-1",
+        "outcome_code": "corrected",
+        "reason_code": "source_confirms_change",
+        "decision_maker_ref": "person:maker",
+        "reviewer_ref": None,
+        "duplicate_of": None,
+    }
+    if refs is not None:
+        ruling["refs"] = refs
+    payload = {
+        "event_id": "decision:case-1:item-1",
+        "case_id": "case-1",
+        "revision": 7,
+        "generation": "7",
+        "correlation_id": "corr-proof",
+        "decision_digest": _decision_command_digest(command),
+        "ruling": ruling,
+    }
+
+    class Tx:
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *_):
+            return False
+
+        def load_case(self, *_args, **_kwargs):
+            return SimpleNamespace(current_revision=7)
+
+        def load_outbox_by_idempotency_key(self, _key):
+            return {"payload": payload}
+
+    class Store:
+        def transaction(self):
+            return Tx()
+
+    monkeypatch.setattr(correction, "_store", lambda: Store())
+    with pytest.raises(correction.CorrectionRejected) as excinfo:
+        decide_item(command, now=NOW)
+    assert excinfo.value.problem.code == "publication_receipt_invalid"
+
+
+def test_non_evidence_decision_filters_unusable_evidence_before_persisting():
+    stale = _record(evidence_id="e-stale", expires_at=NOW - timedelta(seconds=1))
+    wrong_scope = _record(evidence_id="e-wrong", source_scope="place.opening_hours")
+    decision = validate_decision(
+        DecideItemCommand(
+            case_id="case-1",
+            item_id="item-1",
+            outcome_code=CorrectionOutcome.INSUFFICIENT_EVIDENCE,
+            reason_code="no_independent_source",
+            evidence=(stale, wrong_scope),
+            risk_class=RiskClass.R1,
+            actor=_actor(),
+            required_scope="place.contact",
+        ),
+        now=NOW,
+    )
+    assert decision.evidence_refs == ()
+
+
 def test_change_set_replay_rejects_a_missing_receipt(monkeypatch):
     from cases import correction
     from cases.correction import _replay_existing_change_set
