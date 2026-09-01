@@ -577,6 +577,17 @@ class CaseTransaction:
             ),
         )
 
+    def load_outbox_by_idempotency_key(self, idempotency_key: str) -> dict | None:
+        """Read a committed intent so a retried command can replay its receipt."""
+        self._require_active()
+        row = self._db._fetchone(
+            self._conn,
+            "SELECT case_id, idempotency_key, payload FROM case_outbox "
+            "WHERE idempotency_key = %s",
+            (idempotency_key,),
+        )
+        return None if row is None else _row_dict(self._db, row)
+
     def load_correction_items(self, case_id: str) -> tuple[CorrectionItem, ...]:
         """Public-projection view: identifiers and classification, never values."""
         self._require_active()

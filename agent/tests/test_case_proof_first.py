@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import sys
+import importlib
 from dataclasses import FrozenInstanceError
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
@@ -83,20 +84,51 @@ def test_case_dependencies_are_frozen_and_commit_is_all_or_nothing(monkeypatch):
     assert public_api._SERVICE is None
 
 
-def test_failed_dependency_commit_resets_every_module(monkeypatch):
+def _dependency_slots():
+    from cases import admin_api, contact, correction, metrics, outbox, public_api, publication, work_control
+
+    return (
+        (public_api, ("_SERVICE", "_SETTINGS", "_ALLOWED_ORIGIN")),
+        (correction, ("_DATABASE", "_CRYPTO", "_POLICY")),
+        (publication, ("_DATABASE", "_CRYPTO", "_POLICY")),
+        (work_control, ("_DATABASE", "_POLICY")),
+        (admin_api, ("_DATABASE", "_CRYPTO", "_PROJECTION_FETCHER", "_SERVICE")),
+        (contact, ("_DATABASE", "_CRYPTO", "_PROVIDER", "_CODE_SOURCE")),
+        (outbox, ("_DATABASE", "_CRYPTO", "_PROVIDER", "_CONTACT_LOOKUP")),
+        (metrics, ("_DATABASE",)),
+    )
+
+
+@pytest.mark.parametrize(
+    "module_name, configure_name",
+    (
+        ("cases.public_api", "configure_case_public_api"),
+        ("cases.correction", "configure_case_correction"),
+        ("cases.publication", "configure_case_publication"),
+        ("cases.work_control", "configure_case_work_control"),
+        ("cases.admin_api", "configure_case_admin_api"),
+        ("cases.contact", "configure_case_contact"),
+        ("cases.outbox", "configure_case_outbox"),
+        ("cases.metrics", "configure_case_metrics"),
+    ),
+)
+def test_failed_dependency_commit_resets_every_module_global(
+    monkeypatch, module_name, configure_name
+):
     bundle = wiring.build_case_dependencies(object(), _settings())
-    import cases.contact as contact
-    import cases.public_api as public_api
+    module = importlib.import_module(module_name)
 
     def fail(**kwargs):
         raise RuntimeError("injected commit failure")
 
-    monkeypatch.setattr(contact, "configure_case_contact", fail)
+    monkeypatch.setattr(module, configure_name, fail)
     with pytest.raises(RuntimeError, match="injected commit failure"):
         wiring.commit_case_dependencies(bundle)
-    assert public_api._SERVICE is None
-    assert contact._DATABASE is None
-    wiring.reset_case_dependencies()
+    assert all(
+        getattr(dependency_module, name) is None
+        for dependency_module, names in _dependency_slots()
+        for name in names
+    )
 
 
 @pytest.mark.parametrize(
@@ -206,6 +238,9 @@ def test_audit_and_outbox_fallback_uses_case_transaction_compatible_methods():
         correlation_id="corr-proof",
         revision=2,
         occurred_at=NOW,
+        actor_scopes=("cases:decide", "cases:work"),
+        channel=Channel.WEB,
+        policy_revision="policy-proof-v2",
     )
     write_audit_and_outbox(tx, event, {"topic": "correction.updated", "generation": "g-2"})
     assert tx.audit.event_id == tx.outbox.descriptor["event_id"] == "event-1"
@@ -213,3 +248,67 @@ def test_audit_and_outbox_fallback_uses_case_transaction_compatible_methods():
     assert tx.audit.revision == tx.outbox.descriptor["revision"] == 2
     assert tx.audit.generation == tx.outbox.descriptor["generation"] == "g-2"
     assert tx.audit.correlation_id == tx.outbox.descriptor["correlation_id"] == "corr-proof"
+    assert tx.audit.actor_scopes == ("cases:decide", "cases:work")
+    assert tx.audit.channel is Channel.WEB
+    assert tx.audit.policy_revision == "policy-proof-v2"
+
+
+def test_delayed_outbox_keeps_the_audit_at_the_actual_occurrence_time(monkeypatch):
+    from cases.domain import (
+        CaseActivity,
+        CasePhase,
+        CaseSnapshot,
+        DispositionFamily,
+        PromiseHealth,
+        ServiceKind,
+    )
+    from cases.publication import VerifyProjectionCommand, _write_audit_outbox
+
+    class Tx:
+        def __init__(self):
+            self.audit = None
+            self.outbox = None
+
+        def append_audit(self, draft):
+            self.audit = draft
+
+        def enqueue_outbox(self, draft):
+            self.outbox = draft
+
+    snapshot = CaseSnapshot(
+        case_id="case-1",
+        service_kind=ServiceKind.CORRECTION,
+        category="correction",
+        phase=CasePhase.FULFILLMENT,
+        activity=CaseActivity.ACTIVE,
+        disposition_family=DispositionFamily.UNDETERMINED,
+        domain_outcome=None,
+        severity=None,
+        reporter_privacy="anonymous",
+        owner_ref="person:owner",
+        current_revision=3,
+        promise_policy_ref="policy-proof-v2",
+        created_at=NOW - timedelta(days=2),
+        updated_at=NOW,
+        closed_at=None,
+        promise_health=PromiseHealth.RECOVERY,
+    )
+    command = VerifyProjectionCommand("case-1", "change-1", _actor())
+    available_at = NOW + timedelta(hours=24)
+    tx = Tx()
+
+    _write_audit_outbox(
+        tx,
+        command,
+        snapshot,
+        snapshot,
+        _actor().actor_ref,
+        reason_code="projection_verification_failed",
+        event_id="notify:change-1:verification_failed",
+        topic="correction.updated",
+        now=NOW,
+        available_at=available_at,
+    )
+
+    assert tx.audit.occurred_at == NOW
+    assert tx.outbox.available_at == available_at

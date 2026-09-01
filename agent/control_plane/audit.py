@@ -20,21 +20,45 @@ class AuditEvent:
     revision: int
     occurred_at: datetime
     generation: str | None = field(default=None, compare=True)
+    actor_scopes: tuple[str, ...] = ()
+    channel: object | None = None
+    policy_revision: str = "correction-pilot-v1"
 
     def __post_init__(self) -> None:
+        self._validate_identity()
+        self._validate_revision()
+        self._validate_time()
+        self._validate_generation()
+        self._validate_actor_metadata()
+
+    def _validate_identity(self) -> None:
         if not all(type(value) is str and value for value in (
             self.event_id, self.actor_id, self.action, self.resource_type,
             self.resource_id, self.reason, self.correlation_id,
         )):
             raise ValueError("invalid_audit_event")
+
+    def _validate_revision(self) -> None:
         if type(self.revision) is not int or self.revision < 1:
             raise ValueError("invalid_audit_event")
+
+    def _validate_time(self) -> None:
         if type(self.occurred_at) is not datetime or self.occurred_at.tzinfo is None:
             raise ValueError("invalid_audit_event")
+
+    def _validate_generation(self) -> None:
         if self.generation is not None and (type(self.generation) is not str or not self.generation):
             raise ValueError("invalid_audit_event")
         if self.generation is None:
             object.__setattr__(self, "generation", str(self.revision))
+
+    def _validate_actor_metadata(self) -> None:
+        if type(self.actor_scopes) is not tuple or tuple(sorted(set(self.actor_scopes))) != self.actor_scopes:
+            raise ValueError("invalid_audit_event")
+        if not all(type(scope) is str and scope for scope in self.actor_scopes):
+            raise ValueError("invalid_audit_event")
+        if type(self.policy_revision) is not str or not self.policy_revision:
+            raise ValueError("invalid_audit_event")
 
 
 def _envelope(event: AuditEvent, payload: Mapping[str, object]) -> dict[str, object]:
@@ -77,9 +101,11 @@ def _write_audit(transaction, event: AuditEvent) -> None:
         from agent.cases.audit import CaseAuditDraft
         from agent.cases.domain import Channel
     transaction.append_audit(CaseAuditDraft(
-        case_id=event.resource_id, actor_ref=event.actor_id, actor_scopes=(),
-        channel=Channel.WEB, reason_code=event.action,
-        policy_revision="correction-pilot-v1", correlation_id=event.correlation_id,
+        case_id=event.resource_id, actor_ref=event.actor_id,
+        actor_scopes=event.actor_scopes,
+        channel=event.channel if isinstance(event.channel, Channel) else Channel.WEB,
+        reason_code=event.action,
+        policy_revision=event.policy_revision, correlation_id=event.correlation_id,
         before_snapshot=event.before, after_snapshot=event.after,
         occurred_at=event.occurred_at, event_id=event.event_id,
         resource_id=event.resource_id, revision=event.revision,

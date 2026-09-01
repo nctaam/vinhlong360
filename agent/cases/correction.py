@@ -16,6 +16,8 @@ patch carries its own inverse so a rollback needs no guesswork.
 """
 from __future__ import annotations
 
+import hashlib
+import json
 from dataclasses import dataclass, replace
 from datetime import datetime
 
@@ -385,6 +387,35 @@ def _policy_revision() -> str:
     return getattr(_POLICY, "revision", "correction-pilot-v1")
 
 
+def _decision_command_digest(command: DecideItemCommand) -> str:
+    value = {
+        "case_id": command.case_id,
+        "item_id": command.item_id,
+        "outcome_code": getattr(command.outcome_code, "value", command.outcome_code),
+        "reason_code": command.reason_code,
+        "evidence_ids": [record.evidence_id for record in command.evidence],
+        "risk_class": getattr(command.risk_class, "value", command.risk_class),
+        "actor_ref": getattr(command.actor, "actor_ref", "unknown"),
+        "reviewer_ref": command.reviewer_ref,
+        "duplicate_of": command.duplicate_of,
+        "required_scope": command.required_scope,
+    }
+    encoded = json.dumps(value, sort_keys=True, separators=(",", ":")).encode("utf-8")
+    return hashlib.sha256(encoded).hexdigest()
+
+
+def _require_decided_payloads(payloads: tuple[dict, ...]) -> None:
+    unruled = tuple(
+        str(row["item_id"]) for row in payloads
+        if row.get("outcome_code") != CorrectionOutcome.CORRECTED.value
+    )
+    if unruled:
+        raise _reject(
+            "correction_item_not_decided",
+            "Every item in a change set needs a recorded ruling of 'corrected'.",
+        )
+
+
 def _require_lease(transaction, case_id: str, actor, *, now: datetime) -> str:
     """An action is only allowed while its author is holding the work."""
     actor_ref = getattr(actor, "actor_ref", "unknown")
@@ -508,9 +539,35 @@ def add_evidence(command: AddEvidenceCommand, *, now: datetime) -> EvidenceRecor
 
 def decide_item(command: DecideItemCommand, *, now: datetime) -> DecisionOutcome:
     """Validate the ruling first; a refused decision writes nothing at all."""
-    decision = validate_decision(command, now=now)
+    _require_decision_basics(command)
     store = _store()
     with store.transaction() as transaction:
+        snapshot = transaction.load_case(command.case_id, for_update=True)
+        event_id = f"decision:{command.case_id}:{command.item_id}"
+        existing = transaction.load_outbox_by_idempotency_key(event_id)
+        if existing is not None:
+            payload = dict(existing.get("payload") or {})
+            if payload.get("decision_digest") != _decision_command_digest(command):
+                raise _reject(
+                    "decision_idempotency_conflict",
+                    "That item already has a different persisted ruling.",
+                )
+            ruling = dict(payload.get("ruling") or {})
+            revision = int(payload.get("revision", snapshot.current_revision))
+            return DecisionOutcome(
+                case_id=str(ruling.get("case_id", command.case_id)),
+                item_id=str(ruling.get("item_id", command.item_id)),
+                outcome_code=CorrectionOutcome(str(ruling.get("outcome_code", command.outcome_code.value))),
+                reason_code=str(ruling.get("reason_code", command.reason_code).strip()),
+                evidence_refs=tuple(str(ref) for ref in ruling.get("refs", ())),
+                decision_maker_ref=str(ruling.get("decision_maker_ref", getattr(command.actor, "actor_ref", "unknown"))),
+                reviewer_ref=ruling.get("reviewer_ref"),
+                duplicate_of=ruling.get("duplicate_of"),
+                revision=revision,
+                outbox_event_id=event_id,
+            )
+
+        decision = validate_decision(command, now=now)
         _require_lease(transaction, command.case_id, command.actor, now=now)
         transaction.insert_decision(
             case_id=decision.case_id,
@@ -523,7 +580,6 @@ def decide_item(command: DecideItemCommand, *, now: datetime) -> DecisionOutcome
             policy_revision=_policy_revision(),
             decided_at=now,
         )
-        snapshot = transaction.load_case(command.case_id, for_update=True)
         # Decisions are item-level records; the case revision advances when a
         # case transition occurs (for example, building a change set).
         updated = snapshot
@@ -532,7 +588,6 @@ def decide_item(command: DecideItemCommand, *, now: datetime) -> DecisionOutcome
         except ModuleNotFoundError:
             from agent.control_plane.audit import AuditEvent, write_audit_and_outbox
 
-        event_id = f"decision:{command.case_id}:{command.item_id}:{updated.current_revision}"
         write_audit_and_outbox(
             transaction,
             AuditEvent(
@@ -548,6 +603,9 @@ def decide_item(command: DecideItemCommand, *, now: datetime) -> DecisionOutcome
                 revision=updated.current_revision,
                 generation=str(updated.current_revision),
                 occurred_at=now,
+                actor_scopes=tuple(sorted(set(getattr(command.actor, "scopes", ()) or ()))),
+                channel=getattr(command.actor, "channel", None),
+                policy_revision=_policy_revision(),
             ),
             {
                 "topic": "correction.updated",
@@ -555,6 +613,17 @@ def decide_item(command: DecideItemCommand, *, now: datetime) -> DecisionOutcome
                 "available_at": now,
                 "reason": "decided",
                 "policy_revision": _policy_revision(),
+                "decision_digest": _decision_command_digest(command),
+                "ruling": {
+                    "case_id": decision.case_id,
+                    "item_id": decision.item_id,
+                    "outcome_code": decision.outcome_code.value,
+                    "reason_code": decision.reason_code,
+                    "refs": list(decision.evidence_refs),
+                    "decision_maker_ref": decision.decision_maker_ref,
+                    "reviewer_ref": decision.reviewer_ref,
+                    "duplicate_of": decision.duplicate_of,
+                },
             },
         )
     return replace(decision, revision=updated.current_revision, outbox_event_id=event_id)
@@ -592,15 +661,7 @@ def build_change_set(
         # decide path weighs evidence, risk and recusal; without this check the
         # build path simply walked around all of it, and verification then
         # closed the case as a properly answered correction.
-        unruled = tuple(
-            str(row["item_id"]) for row in payloads
-            if row.get("outcome_code") != CorrectionOutcome.CORRECTED.value
-        )
-        if unruled:
-            raise _reject(
-                "correction_item_not_decided",
-                "Every item in a change set needs a recorded ruling of 'corrected'.",
-            )
+        _require_decided_payloads(payloads)
 
         entity_ids = {str(row["entity_id"]) for row in payloads}
         if len(entity_ids) != 1:
@@ -710,6 +771,9 @@ def build_change_set(
                 revision=updated.current_revision,
                 generation=str(updated.current_revision),
                 occurred_at=now,
+                actor_scopes=tuple(sorted(set(getattr(actor, "scopes", ()) or ()))),
+                channel=getattr(actor, "channel", None),
+                policy_revision=_policy_revision(),
             ),
             {
                 "topic": "correction.updated",

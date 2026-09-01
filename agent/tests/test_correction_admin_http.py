@@ -147,8 +147,11 @@ def _seed(adapter, *, risk="R2"):
             conn,
             "INSERT INTO correction_evidence (case_id, item_id, evidence_level,"
             " source_ref, descriptor, content_enc, created_by_ref, created_at)"
-            " VALUES (%s,%s,'E3','https://a.example','{}'::jsonb,NULL,'user:7',%s)",
-            (case_id, item_id, now),
+            " VALUES (%s,%s,'E3','https://a.example',%s::jsonb,NULL,'user:7',%s)",
+            (case_id, item_id, '{"source_scope":"place.contact",'
+             '"observed_at":"' + now.isoformat() + '",'
+             '"effective_at":"' + now.isoformat() + '",'
+             '"expires_at":"' + (now + timedelta(days=1)).isoformat() + '"}', now),
         )
         conn.commit()
     return case_id, item_id

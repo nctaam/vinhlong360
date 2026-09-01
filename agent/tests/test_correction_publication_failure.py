@@ -239,6 +239,38 @@ def test_a_matching_projection_is_what_finally_marks_the_case_corrected(pg_datab
 
 
 @pg_only
+def test_retrying_a_verified_projection_replays_without_another_transition_or_outbox(
+    pg_database,
+):
+    case_id, change_set_id = _applied_case(pg_database)
+    first = _verify(case_id, change_set_id)
+
+    def should_not_fetch(_entity_id):
+        raise AssertionError("an already verified retry must not fetch or mutate again")
+
+    from cases.publication import VerifyProjectionCommand, verify_public_projection
+
+    second = verify_public_projection(
+        VerifyProjectionCommand(case_id, change_set_id, _actor()),
+        should_not_fetch,
+        now=LATER + timedelta(minutes=1),
+    )
+
+    assert second == first
+    with pg_database._conn(commit_on_success=False) as conn:
+        counts = dict(pg_database._fetchone(
+            conn,
+            "SELECT (SELECT count(*) FROM case_transitions WHERE case_id=%s"
+            "  AND reason_code='projection_verified') AS transitions,"
+            " (SELECT count(*) FROM case_audit_events WHERE case_id=%s"
+            "  AND reason_code='projection_verified') AS audits,"
+            " (SELECT count(*) FROM case_outbox WHERE idempotency_key=%s) AS outbox",
+            (case_id, case_id, first.outbox_event_id),
+        ))
+    assert counts == {"transitions": 1, "audits": 1, "outbox": 1}
+
+
+@pg_only
 def test_verifying_completes_the_publication_work(pg_database):
     case_id, change_set_id = _applied_case(pg_database)
 
@@ -310,6 +342,18 @@ def test_a_failed_check_records_an_escalation_and_promises_a_next_update(pg_data
         "SELECT count(*) AS n FROM case_audit_events WHERE case_id=%s"
         " AND reason_code='projection_verification_failed'", (case_id,)
     ) == 1
+
+    with pg_database._conn(commit_on_success=False) as conn:
+        timestamps = dict(pg_database._fetchone(
+            conn,
+            "SELECT a.created_at AS occurred_at, o.available_at"
+            " FROM case_audit_events a JOIN case_outbox o ON o.case_id = a.case_id"
+            " WHERE a.case_id=%s AND a.reason_code='projection_verification_failed'"
+            " AND o.idempotency_key=%s",
+            (case_id, result.outbox_event_id),
+        ))
+    assert timestamps["occurred_at"] == LATER
+    assert timestamps["available_at"] == result.next_update_at
     assert _count(
         pg_database,
         "SELECT count(*) AS n FROM case_outbox WHERE case_id=%s AND idempotency_key LIKE %s",

@@ -242,6 +242,8 @@ class CreateCorrectionResult:
     received_at: datetime
     next_update_at: datetime
     replayed: bool = False
+    revision: int | None = None
+    outbox_event_id: str | None = None
 
 
 def _fold(value: str) -> str:
@@ -524,6 +526,8 @@ class CaseService:
             received_at=datetime.fromisoformat(payload["received_at"]),
             next_update_at=datetime.fromisoformat(payload["next_update_at"]),
             replayed=True,
+            revision=payload.get("revision"),
+            outbox_event_id=payload.get("outbox_event_id"),
         )
 
     # ── Create ──
@@ -619,6 +623,8 @@ class CaseService:
                         "capability": result.capability,
                         "received_at": result.received_at.isoformat(),
                         "next_update_at": result.next_update_at.isoformat(),
+                        "revision": result.revision,
+                        "outbox_event_id": result.outbox_event_id,
                     },
                     now=now,
                 ),
@@ -803,6 +809,8 @@ class CaseService:
             received_at=now,
             next_update_at=now + timedelta(seconds=policy.update_target_seconds),
             replayed=False,
+            revision=stored.current_revision,
+            outbox_event_id=f"notify:{case_id}:received",
         )
 
 

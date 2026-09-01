@@ -300,6 +300,8 @@ def test_anonymous_create_commits_the_whole_case_atomically(pg_database):
     assert len(result.capability) == 43
     assert result.received_at == NOW
     assert result.next_update_at == NOW + timedelta(seconds=259200)
+    assert result.revision == 1
+    assert result.outbox_event_id == f"notify:{result.case_id}:received"
 
     with pg_database._conn(commit_on_success=False) as conn:
         counts = {

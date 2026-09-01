@@ -38,7 +38,6 @@ from .domain import (
     PromiseHealth,
     PublicationState,
 )
-from .store import OutboxDraft
 from .transitions import TransitionDraft
 
 APPLY_SCOPE = "publication.apply"
@@ -332,12 +331,28 @@ def verify_public_projection(command: VerifyProjectionCommand, fetcher, *,
                    "Checking the public copy needs the verification scope.")
     store = _store()
     with store.transaction() as transaction:
-        actor_ref = _require_lease(transaction, command.case_id, command.actor, now=now)
         row = transaction.load_change_set(command.change_set_id, for_update=True)
         if str(row["case_id"]) != command.case_id:
             raise _reject("change_set_not_on_case", "That change set belongs to another case.")
         if str(row["apply_status"]) != "applied":
             raise _reject("change_set_not_applied", "That change set has not been applied.")
+
+        snapshot = transaction.load_case(command.case_id, for_update=True)
+        if row.get("public_projection_verified_at") is not None:
+            event_id = f"notify:{command.change_set_id}:verified"
+            existing = transaction.load_outbox_by_idempotency_key(event_id)
+            payload = dict(existing.get("payload") or {}) if existing else {}
+            revision = int(payload.get("revision", snapshot.current_revision))
+            return VerificationResult(
+                change_set_id=command.change_set_id,
+                state=PublicationState.VERIFIED,
+                verified=True,
+                mismatches=(),
+                revision=revision,
+                outbox_event_id=event_id,
+            )
+
+        actor_ref = _require_lease(transaction, command.case_id, command.actor, now=now)
 
         entity_id, _items = transaction.load_change_set_target(command.change_set_id)
         after_patch = dict(row["after_patch"] or {})
@@ -350,7 +365,6 @@ def verify_public_projection(command: VerifyProjectionCommand, fetcher, *,
             projection = None
         mismatches = _compare_projection(projection, entity_id, after_patch, expected_revision)
 
-        snapshot = transaction.load_case(command.case_id, for_update=True)
         if mismatches:
             return _record_verification_failure(
                 transaction, command, snapshot, actor_ref, mismatches, now=now
@@ -430,7 +444,7 @@ def _record_verification_failure(transaction, command, snapshot, actor_ref: str,
         transaction, command, snapshot, snapshot, actor_ref,
         reason_code="projection_verification_failed",
         event_id=f"notify:{command.change_set_id}:verification_failed:{now.isoformat()}",
-        topic="correction.updated", now=next_update_at,
+        topic="correction.updated", now=now, available_at=next_update_at,
         descriptor={"mismatched": list(mismatches)},
     )
     from . import metrics as _metrics
@@ -594,7 +608,8 @@ def _audit(command, before, after, actor_ref: str, *, reason_code: str,
 
 def _write_audit_outbox(transaction, command, before, after, actor_ref: str, *,
                         reason_code: str, event_id: str, topic: str,
-                        now: datetime, descriptor: dict | None = None) -> None:
+                        now: datetime, available_at: datetime | None = None,
+                        descriptor: dict | None = None) -> None:
     try:
         from control_plane.audit import AuditEvent, write_audit_and_outbox
     except ModuleNotFoundError:
@@ -616,11 +631,14 @@ def _write_audit_outbox(transaction, command, before, after, actor_ref: str, *,
             revision=revision,
             generation=str(revision),
             occurred_at=now,
+            actor_scopes=tuple(sorted(set(getattr(command.actor, "scopes", ()) or ()))),
+            channel=getattr(command.actor, "channel", None),
+            policy_revision=_policy_revision(),
         ),
         {
             "topic": topic,
             "idempotency_key": event_id,
-            "available_at": now,
+            "available_at": available_at or now,
             "reason": reason_code,
             "policy_revision": _policy_revision(),
             **(descriptor or {}),

@@ -283,6 +283,38 @@ def test_decide_item_records_lineage_and_the_deciding_pair(pg_database):
 
 
 @pg_only
+def test_retrying_the_same_decision_replays_one_persisted_outcome(pg_database):
+    from cases.correction import decide_item
+
+    case_id, item_id = _seed_case_with_item(pg_database)
+    command = DecideItemCommand(
+        case_id=case_id,
+        item_id=item_id,
+        outcome_code=CorrectionOutcome.CORRECTED,
+        reason_code="authoritative_source_confirms",
+        evidence=(_evidence(evidence_id="e-retry"),),
+        risk_class=RiskClass.R1,
+        actor=_decider(),
+        required_scope="place.contact",
+    )
+
+    first = decide_item(command, now=NOW)
+    second = decide_item(command, now=NOW + timedelta(minutes=1))
+
+    assert second == first
+    with pg_database._conn(commit_on_success=False) as conn:
+        counts = dict(pg_database._fetchone(
+            conn,
+            "SELECT (SELECT count(*) FROM case_decisions WHERE item_id=%s) AS decisions,"
+            " (SELECT count(*) FROM case_outbox WHERE idempotency_key=%s) AS outbox,"
+            " (SELECT count(*) FROM case_audit_events WHERE case_id=%s"
+            "  AND reason_code='item_decided') AS audits",
+            (item_id, first.outbox_event_id, case_id),
+        ))
+    assert counts == {"decisions": 1, "outbox": 1, "audits": 1}
+
+
+@pg_only
 def test_a_refused_decision_writes_nothing(pg_database):
     from cases.correction import decide_item
 

@@ -51,6 +51,8 @@ class _ServiceDouble:
             received_at=NOW,
             next_update_at=NOW + timedelta(days=3),
             replayed=False,
+            revision=1,
+            outbox_event_id="notify:11111111-1111-1111-1111-111111111111:received",
         )
 
     def exchange_receipt(self, **kwargs):
@@ -198,6 +200,8 @@ def test_create_returns_the_one_time_capability_and_never_caches_it(client):
     assert payload["publicReference"] == REFERENCE
     assert payload["capability"] == CAPABILITY
     assert payload["replayed"] is False
+    assert payload["revision"] == 1
+    assert payload["outboxEventId"].endswith(":received")
     # The capability must never be handed back through a URL or a cookie.
     assert CAPABILITY not in str(response.headers)
 
@@ -564,6 +568,8 @@ def test_a_reporter_can_file_then_read_their_own_status(live_client):
     )
     assert created.status_code == 201, created.text
     payload = created.json()
+    assert payload["revision"] == 1
+    assert payload["outboxEventId"].endswith(":received")
 
     opened = live_client.post(
         "/api/cases/access",
