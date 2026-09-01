@@ -47,7 +47,7 @@ from auth_middleware import (
 import knowledge
 from data_quality import entity_quality
 from database import canonical_verified_at, db
-from search_contract import SearchFilters, search_public_entities
+from search_contract import SearchFilters, coerce_query_int, rank_public_entity_catalog, search_public_entities
 from control_plane.clock import system_clock
 from features import HAS_AUTOCORRECT, HAS_RECOMMENDER, autocorrect, recommend
 from middleware import get_client_ip
@@ -1590,17 +1590,22 @@ async def entity_search(
     from ratelimit import check_rate
     check_rate(f"esearch:{get_client_ip(request)}", 30, 60,
                "Tìm kiếm quá nhanh. Vui lòng thử lại sau.")
+    page = coerce_query_int(page, 1)
+    limit = coerce_query_int(limit, 20)
     offset = (page - 1) * limit
-    all_entities = await asyncio.to_thread(
-        db.search_entities, q=q or None, entity_type=entity_type, area=area,
-        limit=500, public_only=True
+    # Fetch the complete filtered catalog before applying image/sort/page
+    # predicates; the old fixed 500-row pool made later pages unreachable.
+    all_entities, catalog_truncated = await asyncio.to_thread(
+        rank_public_entity_catalog,
+        q or "",
+        filters=SearchFilters(entity_type=entity_type, area=area, public_only=True),
     )
     if has_image is True:
         all_entities = [e for e in all_entities if _public_entity_has_media(e)]
     elif has_image is False:
         all_entities = [e for e in all_entities if not _public_entity_has_media(e)]
     if sort == "name":
-        all_entities.sort(key=lambda e: e.get("name", "").lower())
+        all_entities.sort(key=lambda e: str(e.get("name", "")).casefold())
     elif sort == "newest":
         all_entities.sort(key=lambda e: str(e.get("updatedAt", "")), reverse=True)
     total = len(all_entities)
@@ -1611,6 +1616,8 @@ async def entity_search(
     return {
         "entities": page_items, "total": total,
         "page": page, "has_more": offset + limit < total,
+        "offset": offset, "limit": limit, "truncated": catalog_truncated,
+        "ranking_version": "search-v1",
         "filters": {
             "entity_type": entity_type, "area": area,
             "has_image": has_image, "sort": sort,

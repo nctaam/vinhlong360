@@ -17,6 +17,19 @@ from typing import Any
 RANKING_VERSION = "search-v1"
 
 
+def coerce_query_int(value: Any, default: int) -> int:
+    """Coerce FastAPI ``Query`` defaults for direct Python endpoint calls."""
+    if isinstance(value, bool):
+        return int(value)
+    if isinstance(value, int):
+        return value
+    raw = getattr(value, "default", value)
+    try:
+        return int(raw)
+    except (TypeError, ValueError):
+        return default
+
+
 def normalize_search_text(value: str | Any) -> str:
     """Return one accent-insensitive, case-folded, whitespace-stable string."""
     text = unicodedata.normalize("NFKD", str(value or "")).casefold()
@@ -117,17 +130,50 @@ def search_public_entities(
         from database import db as database
     offset = max(int(offset or 0), 0)
     limit = max(int(limit or 1), 1)
+    matched, truncated = rank_public_entity_catalog(
+        query, filters=filters, database=database, bounded=bounded,
+        fetch_limit=(offset + limit) if bounded else None,
+    )
+    return SearchPage(
+        items=matched[offset:offset + limit],
+        total=len(matched),
+        offset=offset,
+        limit=limit,
+        truncated=truncated,
+    )
+
+
+def rank_public_entity_catalog(
+    query: str,
+    *,
+    filters: SearchFilters,
+    database: Any | None = None,
+    bounded: bool = False,
+    fetch_limit: int | None = None,
+) -> tuple[list[dict[str, Any]], bool]:
+    """Return the complete ranked public catalog before page slicing.
+
+    Advanced consumers that apply a second predicate (for example media
+    presence or a non-relevance sort) must use this relation-level result;
+    slicing first would make later pages and totals dishonest.
+    """
+    if database is None:
+        from database import db as database
     db_kwargs = _db_filters(filters)
+    count_query = query or None
     try:
-        relation_total = int(database.count_entities_filtered(q=None, **db_kwargs))
+        relation_total = int(database.count_entities_filtered(q=count_query, **db_kwargs))
     except (AttributeError, TypeError):
         relation_total = 0
     # Fetch all filtered rows before lexical ranking. A bounded caller must opt in
     # and receives an honest truncation bit instead of a misleading total.
-    fetch_limit = max(relation_total, offset + limit, 1)
+    fetch_size = max(relation_total, 1)
     if bounded:
-        fetch_limit = min(fetch_limit, max(offset + limit, 1))
-    rows = list(database.list_entities(limit=fetch_limit, offset=0, **db_kwargs))
+        fetch_size = min(fetch_size, max(fetch_limit or 1, 1))
+    if hasattr(database, "search_entities"):
+        rows = list(database.search_entities(q=query or None, limit=fetch_size, offset=0, **db_kwargs))
+    else:
+        rows = list(database.list_entities(limit=fetch_size, offset=0, **db_kwargs))
     ranked: list[tuple[float, str, int, dict[str, Any]]] = []
     for index, row in enumerate(rows):
         score = _rank(row, query)
@@ -143,10 +189,4 @@ def search_public_entities(
         ranked.append((numeric, str(item.get("id") or ""), index, item))
     ranked.sort(key=lambda entry: (-entry[0], entry[1], entry[2]))
     matched = [entry[3] for entry in ranked]
-    return SearchPage(
-        items=matched[offset:offset + limit],
-        total=len(matched),
-        offset=offset,
-        limit=limit,
-        truncated=bounded and len(rows) < relation_total,
-    )
+    return matched, bounded and len(rows) < relation_total

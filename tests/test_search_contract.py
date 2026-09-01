@@ -4,10 +4,8 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-import pytest
-
 from database import normalize_entity
-from search_contract import SearchFilters, normalize_search_text, search_public_entities
+from search_contract import SearchFilters, coerce_query_int, normalize_search_text, search_public_entities
 from semantic_cache import SemanticMatcher
 
 
@@ -25,6 +23,13 @@ class _Catalog:
 
 def test_normalize_search_text_folds_accents_case_and_whitespace():
     assert normalize_search_text("  DỪA\u00a0   Sáp ") == "dua sap"
+
+
+def test_coerce_query_int_accepts_fastapi_query_default_for_direct_calls():
+    from fastapi import Query
+
+    assert coerce_query_int(Query(0), 0) == 0
+    assert coerce_query_int(Query(20), 20) == 20
 
 
 def test_search_ranks_exact_name_before_summary_and_source_matches():
@@ -83,3 +88,28 @@ def test_replacing_semantic_cache_document_does_not_inflate_document_frequency()
     assert matcher._df["dua"] == 0
     assert matcher._df["cam"] == 1
     assert matcher.replacements == 1
+
+
+def test_zero_denominator_catalog_metrics_are_null_and_not_applicable():
+    from scripts.validate_data import validate
+
+    _issues, stats = validate({"entities": [], "relationships": [], "itineraries": []}, None)
+
+    assert stats["image_coverage_pct"] is None
+    assert stats["image_coverage_status"] == "not_applicable"
+    assert stats["place_coords_coverage_pct"] is None
+    assert stats["place_coords_coverage_status"] == "not_applicable"
+
+
+def test_semantic_cache_refreshes_an_existing_worker_after_another_worker_writes(tmp_path, monkeypatch):
+    import semantic_cache as cache_module
+
+    manifest = tmp_path / "entries.json"
+    monkeypatch.setattr(cache_module, "ENTRIES_FILE", manifest)
+    first = cache_module.MultiTierCache(cache_module.SemanticMatcher())
+    second = cache_module.MultiTierCache(cache_module.SemanticMatcher())
+    first.put("first query", {"worker": 1})
+    assert second.get("first query") == {"worker": 1}
+    second.put("second query", {"worker": 2})
+    assert first.get("second query") == {"worker": 2}
+    assert first._matcher._texts

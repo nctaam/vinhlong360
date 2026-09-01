@@ -214,6 +214,11 @@ class PopularResponse(ApiModel):
 
 class AutocompleteResponse(ApiModel):
     suggestions: list = []
+    total: int | None = None
+    offset: int = 0
+    limit: int | None = None
+    truncated: bool = False
+    ranking_version: str | None = None
 
 
 # ── search (đa mảng) ─────────────────────────────────────────────────

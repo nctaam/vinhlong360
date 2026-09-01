@@ -59,7 +59,7 @@ _cache = None
 
 
 _cache_lock = Lock()
-_cache_stats = {"duplicate_writes": 0, "lost_update_prevented": 0}
+_cache_stats = {"cache_hits": 0, "duplicate_writes": 0, "lost_update_prevented": 0}
 
 
 @contextmanager
@@ -186,6 +186,7 @@ def geocode(name: str, region: str = "Vĩnh Long", use_cache: bool = True) -> li
     key = _norm(f"{name}|{region}")
     if key in cache:
         if use_cache:
+            _cache_stats["cache_hits"] += 1
             return cache[key]
         _cache_stats["duplicate_writes"] += 1
 
@@ -206,6 +207,7 @@ def stats() -> dict:
         "cached_queries": len(cache),
         "cached_hits": hits,
         "cached_misses": len(cache) - hits,
+        "cache_hits": _cache_stats["cache_hits"],
         "duplicate_writes": _cache_stats["duplicate_writes"],
         "lost_update_prevented": _cache_stats["lost_update_prevented"],
         "bbox": {"lat": [LAT_MIN, LAT_MAX], "lon": [LON_MIN, LON_MAX]},

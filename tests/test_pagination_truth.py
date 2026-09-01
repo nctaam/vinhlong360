@@ -25,3 +25,16 @@ def test_page_reports_truncated_only_for_explicit_bounded_mode():
     assert page.total == 4
     assert page.truncated is False
 
+
+def test_canonical_page_can_filter_a_catalog_larger_than_500_before_slicing():
+    rows = [
+        {"id": f"entity-{i:04d}", "type": "dish", "name": "Dừa Sáp" if i == 599 else f"Dish {i}"}
+        for i in range(600)
+    ]
+    catalog = _Catalog(rows)
+
+    page = search_public_entities("dua sap", offset=0, limit=5, filters=SearchFilters(), database=catalog)
+
+    assert page.items[0]["id"] == "entity-0599"
+    assert page.total == 1
+    assert page.truncated is False

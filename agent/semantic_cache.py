@@ -20,9 +20,10 @@ import math
 import os
 import time
 from collections import Counter, OrderedDict
+from collections.abc import Mapping
 from contextvars import ContextVar
 from pathlib import Path
-from threading import Event, Lock
+from threading import Event, Lock, RLock
 
 from owner_write_gate import owner_write_gate
 
@@ -88,7 +89,7 @@ class SemanticMatcher:
     """TF-IDF sparse-vector matcher for cached queries."""
 
     def __init__(self):
-        self._lock = Lock()
+        self._lock = RLock()
         # query_key -> sparse vector
         self._vectors: dict[str, dict[str, float]] = {}
         # query_key -> original query text
@@ -179,6 +180,19 @@ class SemanticMatcher:
                     self._df[token] = max(0, self._df.get(token, 1) - 1)
                 self._doc_count = max(0, self._doc_count - 1)
 
+    def rebuild(self, entries: Mapping[str, dict]) -> None:
+        """Replace the in-memory index with a merged disk manifest."""
+        with self._lock:
+            self._vectors.clear()
+            self._texts.clear()
+            self._owners.clear()
+            self._df.clear()
+            self._doc_count = 0
+            for key, entry in entries.items():
+                query_text = entry.get("query", "") if isinstance(entry, dict) else ""
+                if query_text:
+                    self.add(key, query_text, owner_key=entry.get("owner_key", ""))
+
     def find_similar(
         self,
         query: str,
@@ -259,6 +273,10 @@ class MultiTierCache:
         # L2: disk-backed
         self._l2: OrderedDict[str, dict] = OrderedDict()
         self._l2_loaded = False
+        # Distinguish a real manifest load from tests/callers that mark the
+        # cache loaded to intentionally avoid disk I/O.
+        self._l2_loaded_from_disk = False
+        self._l2_mtime_ns: int | None = None
 
         # Stats
         self.hits_l1: int = 0
@@ -270,42 +288,44 @@ class MultiTierCache:
 
     # ── L2 persistence ──
 
-    def _load_l2(self):
-        if self._l2_loaded:
+    def _load_l2(self, *, force: bool = False):
+        if self._l2_loaded and not force:
             return
+        self._l2_loaded_from_disk = True
         try:
             with _interprocess_file_lock(ENTRIES_FILE):
                 if ENTRIES_FILE.exists():
                     raw = json.loads(ENTRIES_FILE.read_text(encoding="utf-8"))
                     entries = raw if isinstance(raw, dict) else {}
-                    self._l2 = OrderedDict(entries)
-                    # Rebuild semantic matcher from persisted entries
-                    for key, entry in self._l2.items():
-                        query_text = entry.get("query", "")
-                        if query_text:
-                            self._matcher.add(
-                                key,
-                                query_text,
-                                owner_key=entry.get("owner_key", ""),
-                            )
+                else:
+                    entries = {}
+                self._l2 = OrderedDict(entries)
+                # Rebuild semantic state for both populated and deleted manifests.
+                self._matcher.rebuild(self._l2)
+                self._l2_mtime_ns = ENTRIES_FILE.stat().st_mtime_ns if ENTRIES_FILE.exists() else None
         except Exception as exc:
             logger.warning("Failed to load L2 cache: %s", exc)
         self._l2_loaded = True
 
-    def _save_l2(self):
+    def _save_l2(self, *, merge_disk: bool = True, deleted_keys: set[str] | None = None):
         try:
             with _interprocess_file_lock(ENTRIES_FILE):
                 # Merge with the latest on-disk manifest while holding the lock,
                 # preventing one worker from erasing another worker's entry.
                 merged = {}
-                if ENTRIES_FILE.exists():
+                if merge_disk and self._l2_loaded_from_disk and ENTRIES_FILE.exists():
                     raw = json.loads(ENTRIES_FILE.read_text(encoding="utf-8"))
                     if isinstance(raw, dict):
                         merged.update(raw)
                 merged.update(self._l2)
+                for key in deleted_keys or ():
+                    merged.pop(key, None)
+                self._l2 = OrderedDict(merged)
+                self._matcher.rebuild(self._l2)
                 tmp = ENTRIES_FILE.with_suffix(".tmp")
-                tmp.write_text(json.dumps(merged, ensure_ascii=False), encoding="utf-8")
+                tmp.write_text(json.dumps(dict(self._l2), ensure_ascii=False), encoding="utf-8")
                 tmp.replace(ENTRIES_FILE)
+                self._l2_mtime_ns = ENTRIES_FILE.stat().st_mtime_ns
         except Exception as exc:
             logger.warning("Failed to save L2 cache: %s", exc)
 
@@ -343,6 +363,9 @@ class MultiTierCache:
         """
         with self._lock:
             self._load_l2()
+            current_mtime = ENTRIES_FILE.stat().st_mtime_ns if ENTRIES_FILE.exists() else None
+            if self._l2_mtime_ns is not None and current_mtime != self._l2_mtime_ns:
+                self._load_l2(force=True)
             self.total_queries += 1
             key = _make_key(query, owner_key=owner_key, entity_id=entity_id, generation=generation)
 
@@ -363,7 +386,7 @@ class MultiTierCache:
                 if self._is_expired(entry):
                     self._l2.pop(key, None)
                     self._matcher.remove(key)
-                    self._save_l2()
+                    self._save_l2(deleted_keys={key})
                 else:
                     self._promote_to_l1(key, entry)
                     self.hits_l2 += 1
@@ -444,7 +467,7 @@ class MultiTierCache:
             removed = self._l2.pop(key, None)
             self._matcher.remove(key)
             if removed:
-                self._save_l2()
+                self._save_l2(deleted_keys={key})
             logger.debug("Cache invalidate: %s", query[:60])
 
     def purge_owner(self, owner_key: str) -> int:
@@ -471,7 +494,7 @@ class MultiTierCache:
                     removed_l2 = True
                 self._matcher.remove(key)
             if removed_l2:
-                self._save_l2()
+                self._save_l2(deleted_keys=keys)
             return len(keys)
 
     def verify_owner_absent(self, owner_key: str) -> bool:
@@ -518,7 +541,7 @@ class MultiTierCache:
                 self._matcher.remove(key)
 
             if removed_l2:
-                self._save_l2()
+                self._save_l2(deleted_keys=keys_to_remove)
             logger.debug(
                 "Cache invalidated across %d namespaces: %s",
                 len(keys_to_remove),
@@ -543,7 +566,7 @@ class MultiTierCache:
                 self._matcher.remove(key)
 
             if to_remove:
-                self._save_l2()
+                self._save_l2(deleted_keys=set(to_remove))
                 logger.info(
                     "Invalidated %d cache entries for entity %s",
                     len(to_remove),

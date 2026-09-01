@@ -1148,6 +1148,10 @@ def _compute_seo_coverage(entities: list[Any]) -> dict[str, dict[str, Any]]:
         for k in req:
             if attrs.get(k):
                 type_coverage[etype]["per_attr"][k] += 1
+    for info in type_coverage.values():
+        metric = coverage_metric(info["has_any_seo_attr"], info["total"])
+        info["pct"] = metric["value"]
+        info["status"] = metric["status"]
     return type_coverage
 
 
@@ -1279,7 +1283,7 @@ def _check_xa_phuong_count(entities: list[Any], issues: list[Issue]) -> None:
             f"Expected {EXPECTED_XA_PHUONG} xã/phường, found {xa_phuong_count}"))
 
 
-def _compute_place_coords_pct(entities: list[Any]) -> float:
+def _compute_place_coords_pct(entities: list[Any]) -> float | None:
     place_with_coords = sum(
         1 for e in entities
         if isinstance(e, dict) and e.get("type") == "place"
@@ -1291,7 +1295,9 @@ def _compute_place_coords_pct(entities: list[Any]) -> float:
         if isinstance(e, dict) and e.get("type") == "place"
         and e.get("level") in ("xa", "phuong")
     )
-    return round(100 * place_with_coords / max(place_xa_phuong, 1), 1)
+    if place_xa_phuong == 0:
+        return None
+    return round(100 * place_with_coords / place_xa_phuong, 1)
 
 
 def coverage_metric(numerator: int | float, denominator: int | float) -> dict[str, Any]:
@@ -1459,7 +1465,8 @@ def validate(data: dict[str, Any], data_path: Path) -> tuple[list[Issue], dict[s
 
     entity_types_dist = dict(Counter(e.get("type") for e in entities if isinstance(e, dict)).most_common())
     non_place_total = sum(1 for e in entities if isinstance(e, dict) and e.get("type") != "place")
-    image_coverage_pct = round(100 * has_images_non_place / max(non_place_total, 1), 1)
+    image_metric = coverage_metric(has_images_non_place, non_place_total)
+    image_coverage_pct = image_metric["value"]
     duplicate_source_urls = sum(1 for c in source_url_reuse.values() if c > 1)
 
     stats = {
@@ -1496,9 +1503,7 @@ def validate(data: dict[str, Any], data_path: Path) -> tuple[list[Issue], dict[s
         "low_confidence": low_confidence_count,
         "empty_attributes_non_place": empty_attrs_non_place,
         "place_coords_coverage_pct": place_coords_pct,
-        "place_coords_coverage_status": coverage_metric(
-            place_coords_pct, 100
-        )["status"] if place_coords_denominator else "not_applicable",
+        "place_coords_coverage_status": "measured" if place_coords_denominator else "not_applicable",
         "near_one_way_edges": near_one_way_edges,
         "near_reciprocal_pairs": near_reciprocal_pairs,
         "coordinate_clusters": coord_clusters,
@@ -1509,9 +1514,7 @@ def validate(data: dict[str, Any], data_path: Path) -> tuple[list[Issue], dict[s
         "coordinate_clustered_entities_precise": coord_clustered_entities_precise,
         "timestamp_inversions": timestamp_inversions,
         "image_coverage_pct": image_coverage_pct,
-        "image_coverage_status": coverage_metric(
-            has_images_non_place, non_place_total
-        )["status"],
+        "image_coverage_status": image_metric["status"],
         "image_total": image_total,
         "image_missing_credit": image_missing_credit,
         "image_missing_license": image_missing_license,

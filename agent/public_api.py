@@ -44,7 +44,7 @@ from api_schemas import (  # W6.3: response_model (extra="allow" — không stri
 import lunar_calendar
 from config import settings  # noqa: F401  (be mat va cua test — mien entity sang goi rieng 2026-08-28)
 from database import db
-from search_contract import SearchFilters, search_public_entities, normalize_search_text
+from search_contract import SearchFilters, coerce_query_int, search_public_entities, normalize_search_text
 from control_plane.clock import system_clock
 from middleware import report_limiter, get_client_ip
 from auth_middleware import validate_path_id, require_pg, require_user, require_csrf, get_current_user
@@ -1571,6 +1571,8 @@ async def search(
     """
     from ratelimit import check_rate
     check_rate(f"search:{get_client_ip(request)}", 30, 60, "Tìm kiếm quá nhanh. Vui lòng thử lại sau.")
+    offset = coerce_query_int(offset, 0)
+    limit = coerce_query_int(limit, 20)
     entity_limit = min(limit, 100)
     safe_q = re.sub(r"<[^>]+>", "", q)
     social_limit = min(max(3, limit // 3), 10)
@@ -1629,24 +1631,43 @@ async def autocomplete(
     """Lightweight typeahead for entity name search."""
     from ratelimit import check_rate
     check_rate(f"autocomplete:{get_client_ip(request)}", 60, 60, "Quá nhiều yêu cầu. Vui lòng thử lại sau.")
+    limit = coerce_query_int(limit, 8)
     response.headers["Cache-Control"] = "public, max-age=30, stale-while-revalidate=60"
-    # Keep the established database seam (including public_only enforcement)
-    # while requesting the complete catalog-sized candidate set before applying
-    # the canonical lexical scorer below.
-    results = await asyncio.to_thread(
-        db.search_entities,
-        q=q,
-        entity_type=type,
-        limit=max(limit, _FULL_SCAN_LIMIT),
-        public_only=True,
+    class _AutocompleteCatalog:
+        def list_entities(self, **kwargs):
+            return db.search_entities(
+                q=q,
+                entity_type=type,
+                limit=kwargs.get("limit", limit),
+                offset=0,
+                public_only=True,
+            )
+
+        def count_entities_filtered(self, **kwargs):
+            return db.count_entities_filtered(
+                q=q, entity_type=type, public_only=True,
+            )
+
+    page = await asyncio.to_thread(
+        search_public_entities,
+        q,
+        offset=0,
+        limit=limit,
+        filters=SearchFilters(entity_type=type, public_only=True),
+        database=_AutocompleteCatalog(),
     )
-    results = _rank_search_entities(results, q)[:limit]
+    results = page.items
     return {
         "suggestions": [
             {"id": e["id"], "name": e["name"], "type": e.get("type", ""),
              "place": e.get("place", "")}
             for e in results
         ],
+        "total": page.total,
+        "offset": page.offset,
+        "limit": page.limit,
+        "truncated": page.truncated,
+        "ranking_version": page.ranking_version,
     }
 
 
