@@ -137,6 +137,8 @@ The final Task 4 implementation history runs inclusively from `594aebf2` through
 
 ## Receipt semantics remediation
 
+Implementation commit: `2d73d09f`.
+
 Findings fixed:
 
 - Publication apply and verification-failure replay now require nonempty typed text sequences for the semantically required `applied_fields` and `mismatched` payloads, while retaining permissive empty-sequence handling for callers that do not require a value.
