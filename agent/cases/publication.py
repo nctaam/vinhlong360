@@ -447,10 +447,9 @@ def verify_public_projection(command: VerifyProjectionCommand, fetcher, *,
 
         if mismatches:
             if existing_failure is not None:
-                # The stable failure receipt already owns this idempotency key;
-                # preserve it rather than emitting a duplicate side effect.
-                return _replay_verification_failure(
-                    transaction, command, snapshot, existing_failure,
+                return _record_verification_failure(
+                    transaction, command, snapshot, actor_ref, mismatches,
+                    now=now, existing_failure=existing_failure,
                 )
             return _record_verification_failure(
                 transaction, command, snapshot, actor_ref, mismatches, now=now
@@ -520,7 +519,8 @@ def _record_verification_success(transaction, command, snapshot, actor_ref: str,
 
 def _record_verification_failure(transaction, command, snapshot, actor_ref: str,
                                  mismatches: tuple[str, ...], *,
-                                 now: datetime) -> VerificationResult:
+                                 now: datetime,
+                                 existing_failure: dict | None = None) -> VerificationResult:
     """Nothing terminal. The case keeps its promise and someone is told."""
     next_update_at = now + RECOVERY_NEXT_UPDATE
     transaction.set_promise_health(
@@ -531,6 +531,7 @@ def _record_verification_failure(transaction, command, snapshot, actor_ref: str,
         reason_code="projection_verification_failed",
         event_id=f"notify:{command.change_set_id}:verification_failed",
         topic="correction.updated", now=now, available_at=next_update_at,
+        update_existing=existing_failure is not None,
         descriptor={
             "mismatched": list(mismatches),
             "next_update_at": next_update_at.isoformat(),
@@ -717,6 +718,7 @@ def _audit(command, before, after, actor_ref: str, *, reason_code: str,
 def _write_audit_outbox(transaction, command, before, after, actor_ref: str, *,
                         reason_code: str, event_id: str, topic: str,
                         action: str | None = None,
+                        update_existing: bool = False,
                         now: datetime, available_at: datetime | None = None,
                         descriptor: dict | None = None) -> None:
     try:
@@ -752,4 +754,5 @@ def _write_audit_outbox(transaction, command, before, after, actor_ref: str, *,
             "policy_revision": _policy_revision(),
             **(descriptor or {}),
         },
+        update_existing=update_existing,
     )

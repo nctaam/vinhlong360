@@ -2,7 +2,7 @@
 
 Status: GREEN (review remediation)
 
-Commit SHAs: `594aebf2`, `eae82e22`, `52de64f9`, `30bba3c7`, `b679c4cc`, `9c33118c`, `e22ab2e7`, `e3bbe0c9`
+Commit SHAs: `594aebf2..HEAD` (including `eae82e22`, `52de64f9`, `cf3127de`, `30bba3c7`, `6a37ae9b`, `b679c4cc`, `62c1f8ef`, `9c33118c`, `763a9651`, `e22ab2e7`, `a9f7462c`, `f523b580`, `e331ec64`, `e3bbe0c9`, `6cf852dc`, `a46d0d57`, and `11cb0a0b`).
 
 Files changed:
 
@@ -22,7 +22,10 @@ Files changed:
 - `agent/tests/test_case_public_api.py`
 - `agent/tests/test_correction_admin_http.py`
 - `agent/tests/test_correction_create.py`
+- `agent/tests/test_correction_changesets.py`
+- `agent/tests/test_correction_publication.py`
 - `agent/tests/test_correction_publication_failure.py`
+- `agent/tests/test_correction_rollback.py`
 
 TDD evidence:
 
@@ -110,4 +113,6 @@ Focused TDD evidence:
 
 Fresh focused verification: `python -m pytest agent/tests/test_case_proof_first.py agent/tests/test_correction_changesets.py agent/tests/test_correction_publication.py agent/tests/test_correction_publication_failure.py agent/tests/test_correction_rollback.py -q --basetemp .tmp-task4-recovery-controller` -> `30 passed, 60 skipped in 5.05s`.
 
-The final Task 4 commit range is `594aebf2..HEAD` including `e3bbe0c9`, `6cf852dc`, and the recovery/reason patch; changed test files include `test_correction_changesets.py`, `test_correction_publication.py`, and `test_correction_rollback.py`.
+Disposable PostgreSQL verification: `powershell -ExecutionPolicy Bypass -File .tmp-task4-pg-run.ps1` created a loopback-only cluster on `127.0.0.1:5433`, applied migrations through schema 82, then ran `agent/tests/test_case_idempotency_postgres.py`, `agent/tests/test_correction_changesets.py`, `agent/tests/test_correction_publication.py`, `agent/tests/test_correction_publication_failure.py`, and `agent/tests/test_correction_rollback.py`. It reported `79 passed in 27.70s`; the follow-up recovery-deadline regression reported `80 passed in 27.60s`. Each run dropped the disposable database and confirmed `database after drop: None`.
+
+The final Task 4 commit range is `594aebf2..HEAD`; changed test files include `test_correction_changesets.py`, `test_correction_publication.py`, `test_correction_publication_failure.py`, and `test_correction_rollback.py`. The backend-only commits used approved `--no-verify` where the known R30.7 generated frontend-bundle debt blocked the hook; no frontend files changed.

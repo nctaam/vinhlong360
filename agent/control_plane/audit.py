@@ -86,7 +86,8 @@ def _envelope(event: AuditEvent, payload: Mapping[str, object]) -> dict[str, obj
     return result
 
 
-def write_audit_and_outbox(transaction, event: AuditEvent, payload: Mapping[str, object]) -> None:
+def write_audit_and_outbox(transaction, event: AuditEvent, payload: Mapping[str, object], *,
+                           update_existing: bool = False) -> None:
     """Write audit intent and outbox intent on the caller's open transaction."""
     if not isinstance(event, AuditEvent) or not isinstance(payload, Mapping):
         raise TypeError("invalid_audit_envelope")
@@ -96,7 +97,7 @@ def write_audit_and_outbox(transaction, event: AuditEvent, payload: Mapping[str,
     envelope = _envelope(event, payload)
 
     _write_audit(transaction, event)
-    _write_outbox(transaction, event, envelope)
+    _write_outbox(transaction, event, envelope, update_existing=update_existing)
 
 
 def _write_audit(transaction, event: AuditEvent) -> None:
@@ -124,7 +125,13 @@ def _write_audit(transaction, event: AuditEvent) -> None:
     ))
 
 
-def _write_outbox(transaction, event: AuditEvent, envelope: Mapping[str, object]) -> None:
+def _write_outbox(transaction, event: AuditEvent, envelope: Mapping[str, object], *,
+                  update_existing: bool = False) -> None:
+    if update_existing:
+        if not hasattr(transaction, "update_outbox_event"):
+            raise ValueError("publication_receipt_update_unsupported")
+        transaction.update_outbox_event(envelope)
+        return
     if hasattr(transaction, "enqueue_outbox_event"):
         transaction.enqueue_outbox_event(envelope)
         return

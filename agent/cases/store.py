@@ -580,6 +580,39 @@ class CaseTransaction:
             ),
         )
 
+    def update_outbox_event(self, envelope: Mapping[str, object]) -> None:
+        """Refresh one stable intent after a later retry, without inserting a duplicate."""
+        self._require_active()
+        if not isinstance(envelope, Mapping):
+            raise ValueError("invalid_outbox_envelope")
+        key = envelope.get("idempotency_key")
+        topic = envelope.get("topic")
+        available_at = envelope.get("available_at")
+        if (
+            type(key) is not str
+            or not key
+            or type(topic) is not str
+            or not topic
+            or type(available_at) is not datetime
+            or available_at.tzinfo is None
+        ):
+            raise ValueError("invalid_outbox_envelope")
+        descriptor = dict(envelope)
+        descriptor.pop("topic", None)
+        descriptor.pop("idempotency_key", None)
+        descriptor.pop("available_at", None)
+        frozen = _freeze_json(descriptor)
+        _validate_descriptor(frozen)
+        row = self._db._fetchone(
+            self._conn,
+            "UPDATE case_outbox SET topic=%s, payload=%s::jsonb, status='pending',"
+            " last_error_code=NULL, available_at=%s"
+            " WHERE idempotency_key=%s RETURNING outbox_id",
+            (topic, json.dumps(_plain_json(frozen), sort_keys=True), available_at, key),
+        )
+        if row is None:
+            raise ValueError("publication_receipt_missing")
+
     def load_outbox_by_idempotency_key(self, idempotency_key: str) -> dict | None:
         """Read a committed intent so a retried command can replay its receipt."""
         self._require_active()

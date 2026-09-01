@@ -469,6 +469,48 @@ def test_a_failed_check_can_recover_after_the_promised_retry_window(pg_database)
 
 
 @pg_only
+def test_a_failed_recovery_attempt_schedules_another_deadline(pg_database):
+    case_id, change_set_id = _applied_case(pg_database)
+    from cases.publication import VerifyProjectionCommand, verify_public_projection
+
+    first = verify_public_projection(
+        VerifyProjectionCommand(case_id, change_set_id, _actor()),
+        lambda _entity_id: _projection(revision=7),
+        now=LATER,
+    )
+    with pg_database._conn(commit_on_success=False) as conn:
+        pg_database._execute(
+            conn,
+            "UPDATE case_work_items SET lease_expires_at=%s"
+            " WHERE case_id=%s AND kind='publication'",
+            (first.next_update_at + timedelta(hours=1), case_id),
+        )
+        conn.commit()
+
+    second = verify_public_projection(
+        VerifyProjectionCommand(case_id, change_set_id, _actor()),
+        lambda _entity_id: _projection(revision=7),
+        now=first.next_update_at,
+    )
+
+    assert second.verified is False
+    assert second.next_update_at is not None
+    assert second.next_update_at > first.next_update_at
+    with pg_database._conn(commit_on_success=False) as conn:
+        payload = pg_database._fetchone(
+            conn,
+            "SELECT payload FROM case_outbox WHERE idempotency_key=%s",
+            (second.outbox_event_id,),
+        )["payload"]
+    assert payload["next_update_at"] == second.next_update_at.isoformat()
+    assert _count(
+        pg_database,
+        "SELECT count(*) AS n FROM case_outbox WHERE idempotency_key=%s",
+        (second.outbox_event_id,),
+    ) == 1
+
+
+@pg_only
 def test_a_page_that_cannot_be_fetched_at_all_is_a_failure_not_a_pass(pg_database):
     from cases.publication import VerifyProjectionCommand, verify_public_projection
 
