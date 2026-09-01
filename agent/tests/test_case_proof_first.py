@@ -176,6 +176,90 @@ def test_validate_decision_uses_only_evidence_in_required_scope_and_time_window(
     assert decision.evidence_refs == ("e-1",)
 
 
+def test_decision_command_normalization_is_the_digest_and_replay_evidence_set():
+    from cases.correction import _normalize_decision_command
+
+    stale = _record(evidence_id="e-stale", expires_at=NOW - timedelta(seconds=1))
+    valid = _record(evidence_id="e-valid")
+    normalized = _normalize_decision_command(
+        DecideItemCommand(
+            case_id="case-1",
+            item_id="item-1",
+            outcome_code=CorrectionOutcome.CORRECTED,
+            reason_code="source_confirms_change",
+            evidence=(stale, valid),
+            risk_class=RiskClass.R1,
+            actor=_actor(),
+            required_scope="place.contact",
+        ),
+        now=NOW,
+    )
+    assert tuple(record.evidence_id for record in normalized.evidence) == ("e-valid",)
+
+
+def test_decision_retry_replays_the_same_normalized_evidence_receipt(monkeypatch):
+    from cases import correction
+    from cases.correction import decide_item
+
+    class Tx:
+        receipt = None
+        inserts = []
+
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *_args):
+            return False
+
+        def load_case(self, *_args, **_kwargs):
+            return SimpleNamespace(current_revision=7)
+
+        def load_outbox_by_idempotency_key(self, _key):
+            return self.receipt
+
+        def actor_holds_lease(self, *_args, **_kwargs):
+            return True
+
+        def insert_decision(self, **kwargs):
+            self.inserts.append(kwargs)
+
+        def append_audit_event(self, _event):
+            return None
+
+        def enqueue_outbox_event(self, payload):
+            self.receipt = {"payload": dict(payload)}
+
+    class Store:
+        tx = Tx()
+
+        def transaction(self):
+            return self.tx
+
+    monkeypatch.setattr(correction, "_store", lambda: Store())
+    monkeypatch.setattr(correction, "safe_case_projection", lambda _snapshot: {})
+    command = DecideItemCommand(
+        case_id="case-1",
+        item_id="item-1",
+        outcome_code=CorrectionOutcome.CORRECTED,
+        reason_code="source_confirms_change",
+        evidence=(
+            _record(evidence_id="e-reporter", level=EvidenceLevel.E0,
+                    expires_at=NOW - timedelta(seconds=1)),
+            _record(evidence_id="e-valid", source_ref="source:valid"),
+        ),
+        risk_class=RiskClass.R1,
+        actor=_actor(),
+        required_scope="place.contact",
+    )
+
+    first = decide_item(command, now=NOW)
+    second = decide_item(command, now=NOW + timedelta(minutes=1))
+
+    assert second == first
+    assert first.evidence_refs == ("e-valid",)
+    assert len(Store.tx.inserts) == 1
+
+
 def test_validate_decision_never_infers_required_scope_from_the_first_record():
     command = DecideItemCommand(
         case_id="case-1",

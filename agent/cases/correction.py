@@ -238,10 +238,10 @@ def _require_decision_support(command: DecideItemCommand, maker: str) -> None:
         raise _reject("maker_checker_required", "This risk class needs a second person.")
 
 
-def validate_decision(
-    command: DecideItemCommand, *, now: datetime, required_scope: str | None = None
-) -> DecisionOutcome:
-    reason = _require_decision_basics(command)
+def _normalize_decision_command(
+    command: DecideItemCommand, *, now: datetime, required_scope: str | None = None,
+) -> DecideItemCommand:
+    _require_decision_basics(command)
     maker = getattr(command.actor, "actor_ref", "unknown")
     if command.evidence:
         scope = required_scope if required_scope is not None else command.required_scope
@@ -256,6 +256,15 @@ def validate_decision(
             )
         command = replace(command, evidence=usable)
     _require_decision_support(command, maker)
+    return command
+
+
+def validate_decision(
+    command: DecideItemCommand, *, now: datetime, required_scope: str | None = None
+) -> DecisionOutcome:
+    command = _normalize_decision_command(command, now=now, required_scope=required_scope)
+    reason = command.reason_code
+    maker = getattr(command.actor, "actor_ref", "unknown")
 
     return DecisionOutcome(
         case_id=command.case_id,
@@ -653,7 +662,9 @@ def add_evidence(command: AddEvidenceCommand, *, now: datetime) -> EvidenceRecor
 
 def decide_item(command: DecideItemCommand, *, now: datetime) -> DecisionOutcome:
     """Validate the ruling first; a refused decision writes nothing at all."""
-    _require_decision_basics(command)
+    # Normalize once before deriving the idempotency digest. The receipt and a
+    # lost-response retry must bind to the same usable evidence set.
+    command = _normalize_decision_command(command, now=now)
     store = _store()
     with store.transaction() as transaction:
         snapshot = transaction.load_case(command.case_id, for_update=True)
