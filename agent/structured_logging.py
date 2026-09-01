@@ -21,23 +21,24 @@ _SENSITIVE_KEY_HINTS = (
     "phone", "email", "token", "secret", "password", "authorization",
     "message", "prompt", "query", "input", "output", "content",
 )
+_KEY_CATEGORY_HINTS = (
+    ("message", ("message", "prompt", "query", "input", "output", "content")),
+    ("token", ("token", "secret", "password", "authorization", "api_key")),
+    ("email", ("email",)),
+    ("phone", ("phone",)),
+)
 
 
 def _category(key: str | None, value: str) -> str | None:
     key_name = (key or "").lower().replace("-", "_")
     # Preserve the semantic category of named event fields even when their
     # text contains another sensitive value (for example, a phone in message).
-    if any(hint in key_name for hint in ("message", "prompt", "query", "input", "output", "content")):
-        return "message"
-    if any(hint in key_name for hint in ("token", "secret", "password", "authorization", "api_key")):
-        return "token"
-    if "email" in key_name:
+    for category, hints in _KEY_CATEGORY_HINTS:
+        if any(hint in key_name for hint in hints):
+            return category
+    if _EMAIL.search(value):
         return "email"
-    if "phone" in key_name:
-        return "phone"
-    if "email" in key_name or _EMAIL.search(value):
-        return "email"
-    if "phone" in key_name or _PHONE.search(value):
+    if _PHONE.search(value):
         return "phone"
     if _TOKEN.search(value):
         return "token"
@@ -53,17 +54,29 @@ def _digest(value: object, category: str) -> dict[str, object]:
     }
 
 
+def _redact_string(value: str, key: str | None) -> object:
+    category = _category(key, value)
+    return _digest(value, category) if category else value
+
+
+def _has_sensitive_key(key: str | None) -> bool:
+    return any(hint in (key or "").lower() for hint in _SENSITIVE_KEY_HINTS)
+
+
+def _is_scalar(value: object) -> bool:
+    return value is None or isinstance(value, (bool, int, float))
+
+
 def _redact(value: object, key: str | None = None) -> object:
     if isinstance(value, Mapping):
         return {str(k): _redact(v, str(k)) for k, v in value.items()}
     if isinstance(value, (list, tuple)):
         return [_redact(item, key) for item in value]
     if isinstance(value, str):
-        category = _category(key, value)
-        return _digest(value, category) if category else value
-    if key and any(hint in key.lower() for hint in _SENSITIVE_KEY_HINTS):
+        return _redact_string(value, key)
+    if _has_sensitive_key(key):
         return _digest(value, _category(key, str(value)) or "message")
-    if value is None or isinstance(value, (bool, int, float)):
+    if _is_scalar(value):
         return value
     return _digest(value, "message")
 
@@ -79,6 +92,15 @@ def log_user_event(event: Mapping[str, object], *, level: int = logging.INFO, lo
     """Emit a redacted JSON event and return the exact safe payload."""
     safe = redact_event(event)
     target = logger or logging.getLogger("vinhlong360.user")
+    # Operational events must remain observable even after an application
+    # logger config raises the named logger threshold; never disable parent
+    # capture/handlers for this privacy boundary.
+    target.disabled = False
+    target.propagate = True
+    # ``NOTSET`` inherits the application logger's threshold, so inspect the
+    # effective level rather than only the logger's explicitly configured one.
+    if not target.isEnabledFor(level):
+        target.setLevel(level)
     target.log(level, json.dumps(safe, ensure_ascii=False, sort_keys=True))
     return safe
 

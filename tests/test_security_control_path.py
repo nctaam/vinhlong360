@@ -41,6 +41,13 @@ def test_logger_never_emits_raw_phone_secret_or_prompt(caplog):
     assert "digest" in output
 
 
+def test_logger_observes_events_when_parent_logger_is_more_restrictive(caplog, monkeypatch):
+    monkeypatch.setattr(logging.getLogger("vinhlong360"), "level", logging.WARNING)
+    with caplog.at_level(logging.INFO):
+        log_user_event({"message": "phone 0901234567"})
+    assert "digest" in " ".join(record.getMessage() for record in caplog.records)
+
+
 def test_redacting_filter_keeps_static_context_while_hiding_sensitive_args(caplog):
     logger = logging.getLogger("task10.filter")
     install_redaction_filter(logger)
