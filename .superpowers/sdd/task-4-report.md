@@ -123,7 +123,7 @@ Fresh dormant-kernel verification: `python -m pytest agent/tests/test_case_wirin
 
 The committed readiness guard makes both public and admin route predicates require the complete composition-root readiness bit; failed or reset wiring therefore stays dormant even when feature flags are enabled. The final controller rerun of the same guard suites remained `79 passed, 14 skipped`.
 
-The final Task 4 implementation history runs inclusively from `594aebf2` through `0fbcfc16`; report-only commits `52b6fe64` and `0f015f4c` record the evidence ledger. Changed test files include `test_correction_changesets.py`, `test_correction_publication.py`, `test_correction_publication_failure.py`, and `test_correction_rollback.py`. The backend-only commits used approved `--no-verify` where the known R30.7 generated frontend-bundle debt blocked the hook; no frontend files changed.
+The original Task 4 implementation history ran inclusively from `594aebf2` through `0fbcfc16`. Subsequent replay hardening commits are `2d73d09f`, `46b598f8`, `abae3bf0`, and `d1b34de6`; report-only commits `52b6fe64` and `0f015f4c` record earlier evidence. Changed test files include `test_correction_changesets.py`, `test_correction_publication.py`, `test_correction_publication_failure.py`, and `test_correction_rollback.py`. The backend-only commits used approved `--no-verify` where the known R30.7 generated frontend-bundle debt blocked the hook; no frontend files changed.
 
 ## Replay fail-closed remediation
 
@@ -174,4 +174,23 @@ TDD and PostgreSQL evidence:
 - Prior disposable run exposed 10 retry failures from `RealDictRow` exact-type rejection in `powershell -ExecutionPolicy Bypass -File .tmp-task4-pg-run.ps1`.
 - Fixed disposable run: `powershell -ExecutionPolicy Bypass -File .tmp-task4-pg-run.ps1` -> 80 passed in 27.31s; schema 82 applied, database dropped and verified absent, loopback cluster removed.
 
-Implementation is recorded in the follow-up commit after this report update.
+Implementation commit: `abae3bf0`.
+
+## Decision evidence-identity remediation
+
+Implementation commit: `d1b34de6`.
+
+Findings fixed:
+
+- Decision replay now requires the receipt ruling's evidence references to match the command evidence sequence exactly. Omitted, empty, subset, reordered, or unrelated references fail closed; evidence-bearing outcomes cannot replay an empty evidence receipt.
+- Every decision that supplies evidence now filters through `usable_evidence()` before persistence. Non-evidence outcomes retain only in-scope, current evidence references and cannot persist stale or wrong-scope lineage.
+
+TDD and verification evidence:
+
+- RED: `python -m pytest agent/tests/test_case_proof_first.py -q --basetemp .tmp-task4-evidence-red` -> 4 failed, 36 passed (empty/subset/reordered replay refs and non-evidence stale/wrong-scope evidence were accepted; the omitted-ref case was already rejected).
+- GREEN: `python -m pytest agent/tests/test_case_proof_first.py -q --basetemp .tmp-task4-evidence-green` -> 40 passed.
+- Decision domain regression: `python -m pytest agent/tests/test_correction_decisions.py -q --basetemp .tmp-task4-evidence-domain` -> 11 passed, 3 skipped.
+- Final-review controller ledger before this wave: `256 passed, 94 skipped`.
+- Current controller gate: `python -m pytest agent/tests/test_case_proof_first.py agent/tests/test_correction_decisions.py agent/tests/test_correction_publication.py agent/tests/test_correction_publication_failure.py agent/tests/test_correction_create.py agent/tests/test_case_store.py agent/tests/test_case_audit.py agent/tests/test_case_outbox.py agent/tests/test_case_admin_api.py agent/tests/test_case_public_api.py agent/tests/test_correction_admin_http.py agent/tests/test_case_wiring.py agent/tests/test_case_domain.py agent/tests/test_case_idempotency_postgres.py -q --basetemp .tmp-task4-evidence-controller` -> 261 passed, 94 skipped, 1 existing Starlette deprecation warning.
+- Disposable PostgreSQL: `powershell -ExecutionPolicy Bypass -File .tmp-task4-pg-run.ps1` -> 80 passed in 28.83s after schema 82; the loopback-only database was dropped and verified absent, then the temporary cluster was removed.
+- `git diff --check` -> clean before commit.
