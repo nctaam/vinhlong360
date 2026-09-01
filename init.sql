@@ -41,6 +41,12 @@ CREATE TABLE IF NOT EXISTS entities (
     created_at  TIMESTAMPTZ DEFAULT NOW(),
     revision    INTEGER NOT NULL DEFAULT 1
 );
+
+CREATE TABLE IF NOT EXISTS entity_snapshot_generation (
+    entity_id TEXT PRIMARY KEY,
+    generation BIGINT NOT NULL DEFAULT 0,
+    issued_at TIMESTAMPTZ NOT NULL
+);
 DO $$
 BEGIN
     IF NOT EXISTS (

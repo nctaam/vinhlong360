@@ -20,7 +20,6 @@ from __future__ import annotations
 import hashlib
 import os
 from contextvars import ContextVar
-from datetime import datetime, timezone
 from dataclasses import dataclass
 from functools import partial, wraps
 from typing import Literal
@@ -77,6 +76,7 @@ from reflexion import quality_tracker, reflexion_engine
 from tools import SYSTEM_PROMPT, TOOLS
 
 from features import _env_bool  # noqa: F401
+from control_plane.clock import system_clock
 from http_errors import _error_response
 from itineraries.itinerary_gen import generate_itinerary
 from ocop import is_ocop_certified, ocop_display_label, ocop_tier
@@ -563,7 +563,7 @@ def _tool_seasonal_now(args: dict) -> str:
     try:
         raw_month = max(1, min(12, int(raw_month)))
     except (TypeError, ValueError):
-        raw_month = datetime.now(timezone.utc).month
+        raw_month = system_clock.now_utc().month
     result = knowledge.seasonal_now(raw_month)
     def _seasonal_card(e):
         attrs = e.get("attributes") or {}
@@ -1111,7 +1111,7 @@ def _assemble_manual_messages(
     """Fallback ráp tay (khi không có prompt-cache): system + history + user message. Trả messages."""
     system_parts = [
         base_prompt,
-        f"\nHôm nay: {datetime.now(timezone.utc).strftime('%d/%m/%Y')}. Tháng hiện tại: {current_month}.",
+        f"\nHôm nay: {system_clock.now_vietnam().strftime('%d/%m/%Y')}. Tháng hiện tại: {current_month}.",
     ]
     if pieces["proactive"]:
         system_parts.append(f"\n{pieces['proactive']}")
@@ -1171,7 +1171,7 @@ def _build_messages(
 
     Returns: (messages, build_info) where build_info includes cache/AB stats
     """
-    current_month = datetime.now(timezone.utc).month
+    current_month = system_clock.now_vietnam().month
     effective_history = history[-20:]
     if session_id:
         session = memory_manager.require_session(owner_key, session_id)

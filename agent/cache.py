@@ -80,6 +80,8 @@ def _normalize_key(
     *,
     owner_key: str | None = None,
     namespace: str | None = None,
+    entity_id: str | None = None,
+    generation: int | None = None,
 ) -> str:
     """Normalize a query into the legacy or explicitly selected namespace."""
     text = message.lower().strip()
@@ -91,7 +93,11 @@ def _normalize_key(
         selected_namespace = owner_key
     if namespace is not None:
         selected_namespace = namespace
+    if namespace == "personalized" and not (owner_key or session_id):
+        raise ValueError("personalized cache entries require an owner namespace")
     key_input = text if not selected_namespace else f"{selected_namespace}:{text}"
+    if entity_id is not None:
+        key_input = f"entity:{entity_id}:generation:{generation if generation is not None else 0}:{key_input}"
     return hashlib.md5(key_input.encode("utf-8")).hexdigest()
 
 
@@ -100,10 +106,13 @@ def get(
     owner_key: str = "",
     *,
     namespace: str | None = None,
+    entity_id: str | None = None,
+    generation: int | None = None,
 ) -> dict | None:
     """Lấy cached response. Trả về None nếu miss."""
     _ensure_redis()
-    key = _normalize_key(message, owner_key=owner_key, namespace=namespace)
+    key = _normalize_key(message, owner_key=owner_key, namespace=namespace,
+                          entity_id=entity_id, generation=generation)
 
     if _use_redis:
         return _redis_get(key)
@@ -131,10 +140,13 @@ def put(
     owner_key: str = "",
     *,
     namespace: str | None = None,
+    entity_id: str | None = None,
+    generation: int | None = None,
 ):
     """Lưu response vào cache."""
     _ensure_redis()
-    key = _normalize_key(message, owner_key=owner_key, namespace=namespace)
+    key = _normalize_key(message, owner_key=owner_key, namespace=namespace,
+                          entity_id=entity_id, generation=generation)
 
     if _use_redis:
         _redis_put(key, response, message, ttl)

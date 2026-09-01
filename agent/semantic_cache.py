@@ -178,10 +178,18 @@ class SemanticMatcher:
 #  MULTI-TIER CACHE
 # ══════════════════════════════════════════════════
 
-def _make_key(query: str, owner_key: str = "") -> str:
+def _make_key(
+    query: str,
+    owner_key: str = "",
+    *,
+    entity_id: str | None = None,
+    generation: int | None = None,
+) -> str:
     """Deterministic cache key from normalised query text."""
     text = _normalize_vietnamese(query).strip().rstrip("?!.").strip()
     key_input = text if not owner_key else f"{owner_key}:{text}"
+    if entity_id is not None:
+        key_input = f"entity:{entity_id}:generation:{generation if generation is not None else 0}:{key_input}"
     return hashlib.md5(key_input.encode("utf-8")).hexdigest()
 
 
@@ -278,7 +286,8 @@ class MultiTierCache:
 
     # ── public API ──
 
-    def get(self, query: str, owner_key: str = "") -> dict | None:
+    def get(self, query: str, owner_key: str = "", *, entity_id: str | None = None,
+            generation: int | None = None) -> dict | None:
         """
         Lookup *query* across L1 -> L2 -> semantic match.
 
@@ -287,7 +296,7 @@ class MultiTierCache:
         with self._lock:
             self._load_l2()
             self.total_queries += 1
-            key = _make_key(query, owner_key=owner_key)
+            key = _make_key(query, owner_key=owner_key, entity_id=entity_id, generation=generation)
 
             # --- L1 ---
             if key in self._l1:
@@ -341,16 +350,21 @@ class MultiTierCache:
         response: dict,
         ttl: int = 3600,
         owner_key: str = "",
+        *,
+        entity_id: str | None = None,
+        generation: int | None = None,
     ):
         """Store *response* for *query* in both L1 and L2."""
         owner_write_gate.assert_writable(owner_key)
         with self._lock:
             self._load_l2()
-            key = _make_key(query, owner_key=owner_key)
+            key = _make_key(query, owner_key=owner_key, entity_id=entity_id, generation=generation)
 
             entry = {
                 "query": query,
                 "owner_key": owner_key,
+                "entity_id": entity_id,
+                "generation": generation,
                 "response": response,
                 "timestamp": time.time(),
                 "ttl": ttl,

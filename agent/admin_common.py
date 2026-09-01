@@ -35,6 +35,7 @@ from typing import Any
 from fastapi import HTTPException, Request
 
 import knowledge
+from control_plane.snapshot import invalidate_all
 
 logger = logging.getLogger("admin")
 
@@ -79,6 +80,7 @@ def _sync_kb():
     except Exception:
         logger.warning("KB context invalidation failed after KB sync")
     _invalidate_admin_caches()
+    invalidate_all(reason="kb_sync")
 
 
 def _mask(phone: str) -> str:

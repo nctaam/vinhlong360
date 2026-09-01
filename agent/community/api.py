@@ -26,7 +26,8 @@ import asyncio
 import json
 import logging
 import re
-from datetime import datetime, timezone
+from datetime import datetime
+from control_plane.clock import system_clock
 from typing import Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Request, Response, UploadFile, File
@@ -1055,7 +1056,7 @@ async def get_feed(
     where = " AND ".join(conditions)
     where_params = list(params)
 
-    month = datetime.now(timezone.utc).month
+    month = system_clock.now_vietnam().month
     month_str = str(month)
 
     query_params = where_params + [month_str, month_str, limit, offset]
@@ -2572,7 +2573,7 @@ async def edit_comment(comment_id: str, body: EditComment, user=Depends(require_
                 created = datetime.fromisoformat(created)
             if created.tzinfo is None:
                 created = created.replace(tzinfo=timezone.utc)
-            if datetime.now(timezone.utc) - created > timedelta(hours=COMMENT_EDIT_WINDOW_HOURS):
+            if system_clock.now_utc() - created > timedelta(hours=COMMENT_EDIT_WINDOW_HOURS):
                 raise HTTPException(400, "Chỉ có thể sửa bình luận trong 24 giờ đầu")
     await asyncio.to_thread(_check)
     mod_result = await moderate_content_enhanced(body.content, user_id=uid)

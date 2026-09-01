@@ -20,7 +20,8 @@ import logging
 import re
 import time
 from threading import Lock
-from datetime import datetime, timezone
+
+from control_plane.clock import Clock, system_clock
 
 logger = logging.getLogger(__name__)
 
@@ -231,7 +232,8 @@ class PromptCache:
     STATIC_TTL = 86400    # 24 hours (base prompt, tools)
     PROACTIVE_TTL = 3600  # 1 hour (seasonal, trending, time-of-day)
 
-    def __init__(self):
+    def __init__(self, clock: Clock | None = None):
+        self._clock = clock or system_clock
         self._lock = Lock()
         self._static_cache: _CacheEntry | None = None
         self._proactive_cache: dict[str, _CacheEntry] = {}  # keyed by hour-hash
@@ -248,7 +250,7 @@ class PromptCache:
 
     def _build_static_content(self, system_prompt: str) -> str:
         """Build the static part of the system prompt (base + date)."""
-        now = datetime.now(timezone.utc)
+        now = self._clock.now_vietnam()
         return (
             system_prompt
             + f"\nHôm nay: {now.strftime('%d/%m/%Y')}. Tháng hiện tại: {now.month}."

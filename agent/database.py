@@ -49,6 +49,7 @@ RELATIONSHIP_TYPE_PRIORITY = {
 
 import entity_details as _entity_details
 import entity_write as _entity_write
+from control_plane.snapshot import bump_generation, invalidate_entity
 
 PG_REQUIRED_TABLES = {
     "entities",
@@ -93,6 +94,7 @@ PG_REQUIRED_TABLES = {
     "achievements",
     "user_achievements",
     "profile_views",
+    "entity_snapshot_generation",
 }
 
 CASE_KERNEL_REQUIRED_TABLES = {
@@ -156,6 +158,7 @@ PG_REQUIRED_COLUMNS = {
         "user_id", "created_at", "attempt_count", "next_attempt_at", "last_error",
     },
     "schema_version": {"component", "version", "migration", "updated_at"},
+    "entity_snapshot_generation": {"entity_id", "generation", "issued_at"},
 }
 
 CASE_KERNEL_REQUIRED_COLUMNS = {
@@ -1321,6 +1324,12 @@ class Database:
                         created_at TEXT DEFAULT (datetime('now'))
                     );
 
+                    CREATE TABLE IF NOT EXISTS entity_snapshot_generation (
+                        entity_id TEXT PRIMARY KEY,
+                        generation INTEGER NOT NULL DEFAULT 0,
+                        issued_at TEXT NOT NULL
+                    );
+
                     CREATE TABLE IF NOT EXISTS entity_changes (
                         id INTEGER PRIMARY KEY AUTOINCREMENT,
                         entity_id TEXT NOT NULL,
@@ -1427,8 +1436,10 @@ class Database:
         with _entity_details.detail_cache_write_scope():
             with self._conn() as conn:
                 mutations = self._entity_writer().upsert(conn, entity)
+                snapshot = bump_generation(conn, entity["id"], "entity_upsert", "database.upsert_entity")
             # Only now: the transaction closed cleanly, so the change is real.
             _entity_details.apply_detail_cache_mutations(list(mutations))
+        invalidate_entity(entity["id"], reason="entity_upsert", generation=snapshot.generation)
 
     def upsert_entity_with_audit(self, entity: dict, old: dict | None = None, *,
                                  actor: str = "admin", provenance: str = "admin-editor"):
@@ -1444,7 +1455,9 @@ class Database:
                 mutations = self._entity_writer().upsert(conn, entity)
                 self.log_entity_changes(entity.get("id", ""), old or {}, entity,
                                         f"{actor}|{provenance}", conn=conn)
+                snapshot = bump_generation(conn, entity["id"], "entity_upsert", f"{actor}|{provenance}")
             _entity_details.apply_detail_cache_mutations(list(mutations))
+        invalidate_entity(entity["id"], reason="entity_upsert", generation=snapshot.generation)
 
     def _write_entity_row(self, conn, entity, season_val, attrs_store,
                           source_val, images_val, coords_val, updated) -> None:
@@ -1567,6 +1580,8 @@ class Database:
         ph = self._ph
         with self._conn() as conn:
             self._execute(conn, f"UPDATE entities SET description = {ph} WHERE id = {ph}", (description, entity_id))
+            snapshot = bump_generation(conn, entity_id, "description_update", "database.update_description")
+        invalidate_entity(entity_id, reason="description_update", generation=snapshot.generation)
 
     def get_entity(self, entity_id: str) -> dict | None:
         """Get single entity by ID."""
@@ -1605,7 +1620,10 @@ class Database:
                     except sqlite3.OperationalError:
                         logger.debug("FTS5 delete skipped for entity %s", entity_id)
                 deleted = cur.rowcount > 0
+                snapshot = bump_generation(conn, entity_id, "entity_delete", "database.delete_entity") if deleted else None
             _entity_details.apply_detail_cache_mutations([mutation])
+            if snapshot is not None:
+                invalidate_entity(entity_id, reason="entity_delete", generation=snapshot.generation)
             return deleted
 
     def search_entities(self, q: str = None, entity_type: str = None,

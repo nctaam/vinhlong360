@@ -44,6 +44,7 @@ from api_schemas import (  # W6.3: response_model (extra="allow" — không stri
 import lunar_calendar
 from config import settings  # noqa: F401  (be mat va cua test — mien entity sang goi rieng 2026-08-28)
 from database import db
+from control_plane.clock import system_clock
 from middleware import report_limiter, get_client_ip
 from auth_middleware import validate_path_id, require_pg, require_user, require_csrf, get_current_user
 from user_preferences import (
@@ -2219,7 +2220,7 @@ def _today_vietnam() -> datetime:
     31/08 23:00 UTC đã là 01/09 giờ VN, mà payload vẫn dựng mùa vụ tháng 8. Cùng
     lớp lỗi với măng-sét frontend — chốt một nguồn giờ cho cả hai đầu.
     """
-    return datetime.now(_TZ_VIETNAM)
+    return system_clock.now_vietnam()
 
 
 def _lunar_phrase(day: int, month: int, year: int) -> str:

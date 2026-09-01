@@ -23,7 +23,7 @@ import time
 import traceback
 import asyncio
 import threading
-from datetime import datetime, timezone
+from datetime import datetime
 from pathlib import Path
 
 os.environ.setdefault("PYTHONIOENCODING", "utf-8")
@@ -43,6 +43,7 @@ from pydantic import BaseModel
 load_dotenv(Path(__file__).resolve().parent.parent / ".env")
 
 from runtime_ports import resolve_port
+from control_plane.clock import system_clock
 
 BIND_HOST = os.environ.get("BIND_HOST", "127.0.0.1")
 # Cổng lắng nghe: mặc định 8360 = y hệt trước khi tham số hoá. Env chỉ cần khi
@@ -360,7 +361,7 @@ def start_search_index_build(background: bool = True):
     def _run():
         with _index_build_lock:
             _index_build_state.update({
-                "started_at": datetime.now(timezone.utc).isoformat(),
+                "started_at": system_clock.now_utc().isoformat(),
                 "finished_at": None,
                 "last_error": None,
             })
@@ -375,7 +376,7 @@ def start_search_index_build(background: bool = True):
         finally:
             with _index_build_lock:
                 _index_build_state["running"] = False
-                _index_build_state["finished_at"] = datetime.now(timezone.utc).isoformat()
+                _index_build_state["finished_at"] = system_clock.now_utc().isoformat()
 
     if background:
         thread = threading.Thread(target=_run, daemon=True, name="search-index-build")
@@ -1111,7 +1112,7 @@ async def health():
     overall, _, _ = await asyncio.to_thread(_health_core)
     return {
         "status": overall,
-        "time": datetime.now(timezone.utc).isoformat(),
+        "time": system_clock.now_utc().isoformat(),
         "entities": len(knowledge._entities),
     }
 
@@ -1180,7 +1181,7 @@ async def _health_detail() -> dict:
         "scheduler": scheduler_status(),
         "search_index": dict(_index_build_state),
         **_health_features(),
-        "time": datetime.now(timezone.utc).isoformat(),
+        "time": system_clock.now_utc().isoformat(),
     }
 
 

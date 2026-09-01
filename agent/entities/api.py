@@ -47,6 +47,7 @@ from auth_middleware import (
 import knowledge
 from data_quality import entity_quality
 from database import canonical_verified_at, db
+from control_plane.clock import system_clock
 from features import HAS_AUTOCORRECT, HAS_RECOMMENDER, autocorrect, recommend
 from middleware import get_client_ip
 
@@ -1622,7 +1623,7 @@ async def recommend_endpoint(
         if month:
             ctx["month"] = month
         else:
-            ctx["month"] = datetime.now(timezone.utc).month
+            ctx["month"] = system_clock.now_vietnam().month
         if weather:
             ctx["weather"] = weather
         if time_of_day:
