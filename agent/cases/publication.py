@@ -502,6 +502,14 @@ def verify_public_projection(command: VerifyProjectionCommand, fetcher, *,
 
         failure_event_id = f"notify:{command.change_set_id}:verification_failed"
         existing_failure = transaction.load_outbox_by_idempotency_key(failure_event_id)
+        if existing_failure is not None:
+            # Validate the immutable receipt before deciding whether recovery is
+            # due; a malformed old receipt must never unlock a fresh mutation.
+            _replay_payload(
+                existing_failure,
+                failure_event_id,
+                required=("revision", "mismatched", "next_update_at"),
+            )
         retry_at = _verification_retry_at(existing_failure)
         if existing_failure is not None and (retry_at is None or now < retry_at):
             return _replay_verification_failure(
