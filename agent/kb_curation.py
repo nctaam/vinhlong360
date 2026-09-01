@@ -130,6 +130,23 @@ def _rollback_rejection(entity: dict, relationships: list[dict], expected_after:
     return bool(compare_and_swap_json(DATA_JSON, expected_version, restored))
 
 
+def _db_compensation_succeeded(result: object) -> bool:
+    """Accept only an explicit successful DB restore outcome.
+
+    A compensation boundary may return a structured failure even when the
+    original write was not committed. Treat unknown or false-y outcomes as
+    uncertain so JSON is retained for reconciliation instead of being rolled
+    back against a still-verified DB row.
+    """
+    if result is True:
+        return True
+    return (
+        isinstance(result, dict)
+        and result.get("ok") is True
+        and not result.get("committed")
+    )
+
+
 def list_provisional() -> list:
     """Return all provisional (unverified, auto-learned) entities."""
     kb = _load_kb()
@@ -374,18 +391,40 @@ def auto_promote_pass(min_hits: int = 3, dry_run: bool = False) -> dict:
         except Exception:
             # Only roll back rows whose DB outcome is known; committed-but-
             # degraded writes stay promoted and are explicitly reconciled.
+            reconciliation: list[str] = list(degraded)
             for previous, previous_promoted in persisted:
                 if str(previous.get("id")) in degraded:
                     continue
                 try:
-                    _db_upsert(previous)
-                    _rollback_promotion(previous.get("id"), previous, previous_promoted)
+                    restore_result = _db_upsert(previous)
+                    if not _db_compensation_succeeded(restore_result):
+                        # The DB may still contain the promoted row, so never
+                        # roll JSON back to provisional after compensation loss.
+                        reconciliation.append(str(previous.get("id")))
+                        continue
+                    if not _rollback_promotion(previous.get("id"), previous, previous_promoted):
+                        reconciliation.append(str(previous.get("id")))
                 except Exception:
                     logger.error("Auto-promotion compensation failed for %s", previous.get("id"))
+                    reconciliation.append(str(previous.get("id")))
             if str(promoted.get("id")) not in degraded:
                 _rollback_promotion(promoted.get("id"), original, promoted)
-            return {"candidates": candidates, "promoted": [], "error": "db_write_failed",
-                    **({"reconciliation_required": degraded} if degraded else {})}
+            # Preserve the JSON state for any promotion whose DB compensation
+            # is uncertain; callers receive an explicit reconciliation signal.
+            retained = [
+                str(entity.get("id"))
+                for _, entity in promoted_pairs
+                if str(entity.get("id")) in reconciliation
+            ]
+            response = {
+                "candidates": candidates,
+                "promoted": retained,
+                "error": "db_write_failed",
+            }
+            if reconciliation:
+                response["degraded"] = True
+                response["reconciliation_required"] = retained
+            return response
     _reload()
     if degraded:
         result["degraded"] = True

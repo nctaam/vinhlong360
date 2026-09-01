@@ -67,3 +67,10 @@
 
 - Committed-but-degraded DB deletes now retain the JSON rejection and return `degraded` plus `reconciliation_required`; they never restore an entity that the DB may already have deleted.
 - Manual provisional promotion now likewise retains its committed JSON state and returns an explicit degraded reconciliation result when the DB mutation committed but a post-commit effect failed.
+
+## Auto-Promotion Compensation Remediation
+
+- Auto-promotion now inspects compensation `_db_upsert` results instead of ignoring them.
+- If a later promotion fails and restoring an earlier DB row fails or is uncertain, the matching JSON promotion is retained and the response includes `degraded: true` with `reconciliation_required` IDs; it never silently leaves DB-verified/JSON-provisional state.
+- Regression evidence: `python -m pytest agent/tests/test_kb_curation.py -q --basetemp .tmp-task8-p1-focused` -> `24 passed in 4.43s`.
+- Follow-up regression covers structured unsuccessful compensation results (`{"ok": false}`), which are now treated as uncertain; focused curation/media evidence: `python -m pytest agent/tests/test_kb_curation.py agent/tests/test_media_saga.py agent/tests/test_media_gallery.py -q` -> `48 passed`.

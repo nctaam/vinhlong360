@@ -352,3 +352,67 @@ class TestAutoPromote:
         data = json.loads(kb_with_provisional.read_text(encoding="utf-8"))
         entity = next(x for x in data["entities"] if x["id"] == "prov-1")
         assert entity["verified"] is True
+
+    def test_failed_db_compensation_keeps_matching_json_promoted(
+        self, kb_with_provisional, monkeypatch
+    ):
+        calls = []
+
+        def fail_later_promotion_and_restore(entity):
+            calls.append((entity["id"], entity.get("verified")))
+            if calls == [("prov-1", True)]:
+                return True
+            return False
+
+        monkeypatch.setattr(kb_curation, "_db_upsert", fail_later_promotion_and_restore)
+
+        result = kb_curation.auto_promote_pass(min_hits=1)
+
+        assert calls == [("prov-1", True), ("prov-2", True), ("prov-1", False)]
+        assert result == {
+            "candidates": 2,
+            "promoted": ["prov-1"],
+            "error": "db_write_failed",
+            "degraded": True,
+            "reconciliation_required": ["prov-1"],
+        }
+        data = json.loads(kb_with_provisional.read_text(encoding="utf-8"))
+        prov1 = next(x for x in data["entities"] if x["id"] == "prov-1")
+        prov2 = next(x for x in data["entities"] if x["id"] == "prov-2")
+        assert prov1["status"] == "verified" and prov1["verified"] is True
+        assert prov2["status"] == "provisional" and prov2["verified"] is False
+
+    def test_structured_failed_db_compensation_keeps_matching_json_promoted(
+        self, kb_with_provisional, monkeypatch
+    ):
+        calls = []
+
+        def fail_later_promotion_and_restore(entity):
+            calls.append((entity["id"], entity.get("verified")))
+            if calls == [("prov-1", True)]:
+                return True
+            if calls == [("prov-1", True), ("prov-2", True)]:
+                return False
+            return {"ok": False, "committed": False, "error": "db_write_failed"}
+
+        monkeypatch.setattr(kb_curation, "_db_upsert", fail_later_promotion_and_restore)
+
+        result = kb_curation.auto_promote_pass(min_hits=1)
+
+        assert calls == [
+            ("prov-1", True),
+            ("prov-2", True),
+            ("prov-1", False),
+        ]
+        assert result == {
+            "candidates": 2,
+            "promoted": ["prov-1"],
+            "error": "db_write_failed",
+            "degraded": True,
+            "reconciliation_required": ["prov-1"],
+        }
+        data = json.loads(kb_with_provisional.read_text(encoding="utf-8"))
+        prov1 = next(x for x in data["entities"] if x["id"] == "prov-1")
+        prov2 = next(x for x in data["entities"] if x["id"] == "prov-2")
+        assert prov1["status"] == "verified" and prov1["verified"] is True
+        assert prov2["status"] == "provisional" and prov2["verified"] is False
