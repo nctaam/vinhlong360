@@ -24,12 +24,21 @@ def _env_bool(name: str, default: bool) -> bool:
     return value.strip().lower() in {"1", "true", "yes", "on"}
 
 try:
-    from vector_search import embedding_store, hybrid_search  # noqa: F401 (feature-probe try-import — HAS_* dùng runtime)
+    # Import the package-qualified module first so all feature consumers share
+    # one embedding singleton; vector_search.py aliases the legacy name.
+    from agent.vector_search import embedding_store, hybrid_search  # noqa: F401 (feature-probe try-import — HAS_* dùng runtime)
+except ImportError:
+    try:
+        from vector_search import embedding_store, hybrid_search  # noqa: F401 (legacy direct execution fallback)
+    except ImportError:
+        HAS_VECTOR = False
+        logger.info("Vector search disabled (optional dependency)")
+    else:
+        HAS_VECTOR = True
+        logger.info("Vector search enabled")
+else:
     HAS_VECTOR = True
     logger.info("Vector search enabled")
-except ImportError:
-    HAS_VECTOR = False
-    logger.info("Vector search disabled (optional dependency)")
 
 try:
     from realtime import get_realtime_context, get_weather, get_all_weather, get_upcoming_events, weather_for_llm  # noqa: F401  (dò tính năng — tái xuất cho server/chat)
