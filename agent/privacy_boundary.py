@@ -1,6 +1,7 @@
 """Mandatory source-aware privacy boundary for chat content."""
 
 from dataclasses import dataclass
+import hashlib
 from typing import Any, Literal, Mapping, Sequence
 
 from guardrails import (
@@ -10,6 +11,7 @@ from guardrails import (
     PIISpan,
     check_input,
     check_output,
+    check_prompt_injection_silent,
     pii_masker,
 )
 from metrics import track_privacy_boundary_failure, track_privacy_redaction
@@ -70,6 +72,11 @@ class SafeText:
 
 
 _REDACTION_FAILED = "[REDACTION_FAILED]"
+
+
+def _prompt_injection_digest(value: str) -> str:
+    digest = hashlib.sha256(value.encode("utf-8")).hexdigest()
+    return f"[PROMPT_INJECTION length={len(value)} digest={digest}]"
 
 
 def _validate_source(source: PrivacySource) -> None:
@@ -144,6 +151,8 @@ def redact_log_value(value):
     if isinstance(value, str):
         try:
             safe = redact_text(value, source="log")
+            if check_prompt_injection_silent(value).action == "block":
+                return _prompt_injection_digest(value)
         except Exception:
             track_privacy_boundary_failure("log")
             return _REDACTION_FAILED

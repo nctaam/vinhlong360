@@ -151,7 +151,7 @@ class PromptInjectionDetector:
         logger.info("PromptInjectionDetector initialized: %d patterns, threshold=%.2f",
                      len(self._patterns), self.block_threshold)
 
-    def detect(self, text: str) -> dict:
+    def detect(self, text: str, *, emit_log: bool = True) -> dict:
         """
         Kiem tra text co chua prompt injection khong.
 
@@ -183,7 +183,7 @@ class PromptInjectionDetector:
 
         is_injection = score >= self.block_threshold
 
-        if matched:
+        if matched and emit_log:
             logger.warning("Injection patterns detected: %s (score=%.3f, blocked=%s)",
                            matched, score, is_injection)
 
@@ -246,20 +246,30 @@ def _is_benign_pattern_context(text: str, matched: list[str]) -> bool:
     return False
 
 
-def check_prompt_injection(text: str) -> GuardrailDecision:
-    """Classify untrusted text without returning or logging its raw contents."""
+def _check_prompt_injection(text: str, *, emit_log: bool) -> GuardrailDecision:
+    """Classify untrusted text, optionally suppressing detector diagnostics."""
     if not isinstance(text, str):
         return GuardrailDecision("block", "prompt_injection_invalid_input")
     if not text.strip():
         return GuardrailDecision("allow", "prompt_injection_none")
     for variant in _prompt_variants(text):
-        result = injection_detector.detect(variant)
+        result = injection_detector.detect(variant, emit_log=emit_log)
         if result["is_injection"] or (
             result["patterns_matched"]
             and not _is_benign_pattern_context(text, result["patterns_matched"])
         ):
             return GuardrailDecision("block", "prompt_injection_detected")
     return GuardrailDecision("allow", "prompt_injection_none")
+
+
+def check_prompt_injection(text: str) -> GuardrailDecision:
+    """Classify untrusted text without returning or logging its raw contents."""
+    return _check_prompt_injection(text, emit_log=True)
+
+
+def check_prompt_injection_silent(text: str) -> GuardrailDecision:
+    """Classify text without emitting detector logs (safe for logger boundaries)."""
+    return _check_prompt_injection(text, emit_log=False)
 
 
 # ══════════════════════════════════════════════════

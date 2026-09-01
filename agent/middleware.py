@@ -604,7 +604,12 @@ class SecurityEventLogger:
             "ts": datetime.now(timezone.utc).isoformat(),
             **details,
         }
-        safe_entry = self._mask_pii(entry)
+        safe_entry = _safe_log_value(self._mask_pii(entry))
+        if not isinstance(safe_entry, dict):
+            safe_entry = {
+                "event": event_type,
+                "redaction": _REDACTION_FAILED,
+            }
         self._log.log("security", f"[SEC] {event_type}", **safe_entry)
         with self._lock:
             self._recent_events.append(safe_entry)
