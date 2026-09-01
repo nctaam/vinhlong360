@@ -36,6 +36,7 @@ from admin_common import (
 from auth_middleware import require_pg, validate_path_id
 from database import db, escape_like as _escape_like  # alias như admin.py
 from notifications import create_notification
+from control_plane.concurrency import StateConflict, cas_transition, ensure_state_schema
 
 logger = logging.getLogger("admin")   # giữ NGUYÊN kênh log admin
 router = APIRouter(tags=["admin-community"])
@@ -446,27 +447,71 @@ async def moderation_queue(
 @router.post("/moderation/{post_id}/approve",
              summary="Approve moderated post",
              description="Approves a post pending moderation and notifies the author.")
-async def approve_post(post_id: str):
+def _moderate_post(post_id: str, new_status: str, actor_id: str, reason: str | None = None):
+    """Run one moderation decision as a status+revision CAS."""
+    ph = db._ph
+    with db._conn() as conn:
+        class _Tx:
+            _db = db
+            _conn = conn
+        ensure_state_schema(_Tx, "posts")
+        id_expr = "id::text" if getattr(db, "_use_pg", False) else "id"
+        row = db._fetchone(conn, f"SELECT id, user_id, moderation_status FROM posts WHERE {id_expr} = {ph}", (post_id,))
+        if not row:
+            raise HTTPException(404, "Bài viết không tồn tại")
+        current = db._row_to_dict(row)
+        if current.get("moderation_status") not in {"pending", "flagged"}:
+            raise StateConflict()
+        cas_transition(_Tx, "posts", post_id, expected_status=current["moderation_status"], new_status=new_status,
+                       actor_id=actor_id, reason=reason or new_status, correlation_id=f"moderation:{post_id}")
+    return str(current["user_id"])
+
+
+def _decide_appeal(appeal_id: str, target_status: str, admin_id: str, note: str):
+    """CAS the appeal and, on approval, CAS the rejected post restoration."""
+    ph = db._ph
+    with db._conn() as conn:
+        class _Tx:
+            _db = db
+            _conn = conn
+        ensure_state_schema(_Tx, "moderation_appeals")
+        row = db._fetchone(conn, f"SELECT id, post_id, user_id, status FROM moderation_appeals WHERE id::text = {ph}", (appeal_id,))
+        if not row:
+            raise HTTPException(404, "Khiếu nại không tồn tại")
+        data = db._row_to_dict(row)
+        if data.get("status") != "pending":
+            raise StateConflict()
+        cas_transition(_Tx, "moderation_appeals", appeal_id, expected_status="pending", new_status=target_status,
+                       actor_id=admin_id, reason=note or target_status, correlation_id=f"appeal:{appeal_id}")
+        if target_status == "approved":
+            post_expr = "id::text" if getattr(db, "_use_pg", False) else "id"
+            post = db._fetchone(conn, f"SELECT moderation_status FROM posts WHERE {post_expr}={ph}", (str(data["post_id"]),))
+            if not post:
+                raise HTTPException(404, "Bài viết không tồn tại")
+            post_status = db._row_to_dict(post).get("moderation_status")
+            if post_status not in {"rejected", "flagged"}:
+                raise StateConflict()
+            cas_transition(_Tx, "posts", str(data["post_id"]), expected_status=post_status, new_status="approved",
+                           actor_id=admin_id, reason=note or "appeal_approved", correlation_id=f"appeal:{appeal_id}")
+        # Keep reviewer metadata coupled to the winning appeal CAS.
+        db._execute(conn, f"UPDATE moderation_appeals SET reviewer_note={ph}, reviewer_id={ph}::uuid, reviewed_at=NOW() WHERE id::text={ph}", (note or None, admin_id, appeal_id))
+        return str(data["post_id"]), str(data["user_id"])
+
+
+async def approve_post(post_id: str, request: Request = None):
     require_pg()
     post_id = validate_path_id(post_id, "post_id")
+    actor_id = str((getattr(request.state, "admin_user", None) or {}).get("id")) if request else "admin"
     def _query():
-        ph = db._ph
-        with db._conn() as conn:
-            row = db._fetchone(conn, f"""
-                UPDATE posts SET moderation_status = 'approved' WHERE id::text = {ph}
-                RETURNING user_id
-            """, (post_id,))
-            if not row:
-                raise HTTPException(404, "Bài viết không tồn tại")
-            author_id = str(db._row_to_dict(row)["user_id"])
-        _log_mod_action("post", post_id, "approved")
-        try:
-            create_notification(author_id, "moderation",
-                                "Bài viết của bạn đã được duyệt",
-                                ref_type="post", ref_id=post_id)
-        except Exception:
-            logger.exception("Failed to notify post approval %s", post_id)
-    await asyncio.to_thread(_query)
+        return _moderate_post(post_id, "approved", actor_id)
+    author_id = await asyncio.to_thread(_query)
+    _log_mod_action("post", post_id, "approved")
+    try:
+        create_notification(author_id, "moderation",
+                            "Bài viết của bạn đã được duyệt",
+                            ref_type="post", ref_id=post_id)
+    except Exception:
+        logger.exception("Failed to notify post approval %s", post_id)
     return {"success": True}
 
 
@@ -477,30 +522,21 @@ class RejectBody(BaseModel):
 @router.post("/moderation/{post_id}/reject",
              summary="Reject moderated post",
              description="Rejects a post pending moderation with an optional reason. Notifies the author.")
-async def reject_post(post_id: str, body: RejectBody = RejectBody()):
+async def reject_post(post_id: str, body: RejectBody = RejectBody(), request: Request = None):
     require_pg()
     post_id = validate_path_id(post_id, "post_id")
     reason = (body.reason or "").strip() or None
-    def _query():
-        ph = db._ph
-        with db._conn() as conn:
-            row = db._fetchone(conn, f"""
-                UPDATE posts SET moderation_status = 'rejected' WHERE id::text = {ph}
-                RETURNING user_id
-            """, (post_id,))
-            if not row:
-                raise HTTPException(404, "Bài viết không tồn tại")
-            author_id = str(db._row_to_dict(row)["user_id"])
-        _log_mod_action("post", post_id, "rejected", reason)
-        try:
-            notif_body = f"Lý do: {reason}" if reason else None
-            create_notification(author_id, "moderation",
-                                "Bài viết của bạn đã bị từ chối",
-                                body=notif_body,
-                                ref_type="post", ref_id=post_id)
-        except Exception:
-            logger.exception("Failed to notify post rejection %s", post_id)
-    await asyncio.to_thread(_query)
+    actor_id = str((getattr(request.state, "admin_user", None) or {}).get("id")) if request else "admin"
+    author_id = await asyncio.to_thread(_moderate_post, post_id, "rejected", actor_id, reason)
+    _log_mod_action("post", post_id, "rejected", reason)
+    try:
+        notif_body = f"Lý do: {reason}" if reason else None
+        create_notification(author_id, "moderation",
+                            "Bài viết của bạn đã bị từ chối",
+                            body=notif_body,
+                            ref_type="post", ref_id=post_id)
+    except Exception:
+        logger.exception("Failed to notify post rejection %s", post_id)
     return {"success": True}
 
 
@@ -546,17 +582,30 @@ async def batch_moderation(body: BatchModerationBody, request: Request):
     status = "approved" if body.action == "approve" else "rejected"
     reason = body.reason.strip() or None
     def _query():
+        rows = []
         ph = db._ph
-        placeholders = ", ".join(ph for _ in body.post_ids)
-        params = [status] + list(body.post_ids)
         with db._conn() as conn:
-            rows = db._fetchall(conn, f"""
-                UPDATE posts SET moderation_status = {ph}
-                WHERE id::text IN ({placeholders})
-                RETURNING id, user_id
-            """, tuple(params))
+            class _Tx:
+                _db = db
+                _conn = conn
+            ensure_state_schema(_Tx, "posts")
+            id_expr = "id::text" if getattr(db, "_use_pg", False) else "id"
+            for pid in body.post_ids:
+                existing = db._fetchone(conn, f"SELECT id, user_id, moderation_status FROM posts WHERE {id_expr}={ph}", (pid,))
+                if not existing:
+                    continue
+                current = db._row_to_dict(existing)
+                if current.get("moderation_status") not in {"pending", "flagged"}:
+                    continue
+                try:
+                    cas_transition(_Tx, "posts", pid, expected_status=current["moderation_status"], new_status=status,
+                                   actor_id="batch", reason=reason or status, correlation_id=f"moderation:{pid}")
+                except StateConflict:
+                    continue
+                rows.append(existing)
             updated = len(rows)
-        for pid in body.post_ids:
+        for row in rows:
+            pid = str(db._row_to_dict(row)["id"])
             _log_mod_action("post", pid, status, reason)
         _batch_mod_notify(rows, status, reason)
         return updated
@@ -929,34 +978,15 @@ async def approve_appeal(appeal_id: str, body: AppealDecisionBody = AppealDecisi
     require_pg()
     appeal_id = validate_path_id(appeal_id, "appeal_id")
     admin_id = _require_admin_actor_id(request)
-    def _query():
-        ph = db._ph
-        with db._conn() as conn:
-            row = db._fetchone(conn, f"""
-                SELECT post_id, user_id, status FROM moderation_appeals WHERE id::text = {ph}
-            """, (appeal_id,))
-            if not row:
-                raise HTTPException(404, "Khiếu nại không tồn tại")
-            rd = db._row_to_dict(row)
-            if rd["status"] != "pending":
-                raise HTTPException(400, f"Khiếu nại đã {rd['status']}")
-            db._execute(conn, f"""
-                UPDATE moderation_appeals
-                SET status = 'approved', reviewer_note = {ph},
-                    reviewer_id = {ph}::uuid, reviewed_at = NOW()
-                WHERE id::text = {ph}
-            """, (body.note.strip() or None, admin_id, appeal_id))
-            db._execute(conn, f"""
-                UPDATE posts SET moderation_status = 'approved' WHERE id::text = {ph}
-            """, (str(rd["post_id"]),))
-        _log_mod_action("appeal", appeal_id, "approved", body.note.strip() or None)
-        try:
-            create_notification(str(rd["user_id"]), "moderation",
-                                "Khiếu nại được chấp nhận — bài viết đã được duyệt lại",
-                                ref_type="post", ref_id=str(rd["post_id"]))
-        except Exception:
-            logger.exception("Failed to notify appeal approval %s", appeal_id)
-    await asyncio.to_thread(_query)
+    note = body.note.strip()
+    post_id, user_id = await asyncio.to_thread(_decide_appeal, appeal_id, "approved", admin_id, note)
+    _log_mod_action("appeal", appeal_id, "approved", note or None)
+    try:
+        create_notification(user_id, "moderation",
+                            "Khiếu nại được chấp nhận — bài viết đã được duyệt lại",
+                            ref_type="post", ref_id=post_id)
+    except Exception:
+        logger.exception("Failed to notify appeal approval %s", appeal_id)
     return {"success": True}
 
 
@@ -967,32 +997,17 @@ async def reject_appeal(appeal_id: str, body: AppealDecisionBody = AppealDecisio
     require_pg()
     appeal_id = validate_path_id(appeal_id, "appeal_id")
     admin_id = _require_admin_actor_id(request)
-    def _query():
-        ph = db._ph
-        with db._conn() as conn:
-            row = db._fetchone(conn, f"""
-                SELECT post_id, user_id, status FROM moderation_appeals WHERE id::text = {ph}
-            """, (appeal_id,))
-            if not row:
-                raise HTTPException(404, "Khiếu nại không tồn tại")
-            rd = db._row_to_dict(row)
-            if rd["status"] != "pending":
-                raise HTTPException(400, f"Khiếu nại đã {rd['status']}")
-            db._execute(conn, f"""
-                UPDATE moderation_appeals
-                SET status = 'rejected', reviewer_note = {ph},
-                    reviewer_id = {ph}::uuid, reviewed_at = NOW()
-                WHERE id::text = {ph}
-            """, (body.note.strip() or None, admin_id, appeal_id))
-        _log_mod_action("appeal", appeal_id, "rejected", body.note.strip() or None)
-        try:
-            note_msg = f" Lý do: {body.note.strip()}" if body.note.strip() else ""
-            create_notification(str(rd["user_id"]), "moderation",
-                                f"Khiếu nại không được chấp nhận.{note_msg}",
-                                ref_type="post", ref_id=str(rd["post_id"]))
-        except Exception:
-            logger.exception("Failed to notify appeal rejection %s", appeal_id)
-    await asyncio.to_thread(_query)
+    note = body.note.strip()
+    # _decide_appeal writes reviewer_id atomically with the CAS.
+    post_id, user_id = await asyncio.to_thread(_decide_appeal, appeal_id, "rejected", admin_id, note)
+    _log_mod_action("appeal", appeal_id, "rejected", note or None)
+    try:
+        note_msg = f" Lý do: {note}" if note else ""
+        create_notification(user_id, "moderation",
+                            f"Khiếu nại không được chấp nhận.{note_msg}",
+                            ref_type="post", ref_id=post_id)
+    except Exception:
+        logger.exception("Failed to notify appeal rejection %s", appeal_id)
     return {"success": True}
 
 

@@ -22,6 +22,7 @@ _rl_lock = threading.Lock()
 _buckets: dict[str, list[float]] = {}
 _SHARED_PG_FAIL_UNTIL = 0.0
 _SHARED_PG_GC_LAST = 0.0
+_SHARED_PG_FAILURES = 0
 _SHARED_PG_FAIL_LOCK = threading.Lock()
 _MAX_KEYS = 50_000  # chặn phình bộ nhớ vô hạn (đủ lớn cho <10k user × vài loại key)
 
@@ -36,9 +37,10 @@ def _shared_rate_pg_enabled() -> bool:
 
 
 def _mark_shared_pg_failed(exc: Exception) -> None:
-    global _SHARED_PG_FAIL_UNTIL
+    global _SHARED_PG_FAIL_UNTIL, _SHARED_PG_FAILURES
     with _SHARED_PG_FAIL_LOCK:
         _SHARED_PG_FAIL_UNTIL = time.time() + 60
+        _SHARED_PG_FAILURES += 1
     logger.debug("Shared PG rate limit disabled briefly: %s", exc, exc_info=True)
 
 
@@ -128,6 +130,11 @@ def check_rate(key: str, limit: int, window: int,
     """Ghi nhận 1 lượt cho `key`; raise HTTPException(429) nếu đã đạt `limit` trong `window` giây."""
     if _check_rate_pg(key, limit, window, msg):
         return
+    # A production deployment must not silently fan a shared limit out across
+    # worker-local dictionaries while PostgreSQL is unavailable.  Keep the
+    # historical in-memory fallback for local development and tests.
+    if os.environ.get("ENVIRONMENT", "").strip().lower() in {"production", "prod"} and os.environ.get("VL360_SHARED_RATE_FAIL_CLOSED", "true").strip().lower() not in {"0", "false", "no", "off"}:
+        raise HTTPException(503, "Rate-limit backend unavailable")
     now = _now()
     with _rl_lock:
         hits = [t for t in _buckets.get(key, []) if now - t < window]
@@ -554,7 +561,7 @@ def gc_all() -> dict:
 
 def _reset() -> None:
     """Chỉ dùng trong test."""
-    global _load_multiplier, _SHARED_PG_FAIL_UNTIL, _SHARED_PG_GC_LAST
+    global _load_multiplier, _SHARED_PG_FAIL_UNTIL, _SHARED_PG_GC_LAST, _SHARED_PG_FAILURES
     _buckets.clear()
     _violations.clear()
     _ip_global.clear()
@@ -570,6 +577,7 @@ def _reset() -> None:
     _rl_callbacks.clear()
     _SHARED_PG_FAIL_UNTIL = 0.0
     _SHARED_PG_GC_LAST = 0.0
+    _SHARED_PG_FAILURES = 0
     # Test-only: xoá cả shared_rate_limits (PG) — state in-memory clear ở trên chỉ đủ cho
     # SQLite; dưới PG check_rate ghi vào bảng này nên phải xoá để mỗi test bắt đầu sạch.
     try:
@@ -579,6 +587,19 @@ def _reset() -> None:
                 db._execute(conn, "DELETE FROM shared_rate_limits")
     except Exception:
         pass
+
+
+def shared_rate_limit_health() -> dict:
+    """Expose shared-store health for metrics and deployment probes."""
+    with _SHARED_PG_FAIL_LOCK:
+        fail_until = _SHARED_PG_FAIL_UNTIL
+        failures = _SHARED_PG_FAILURES
+    return {
+        "backend": "postgresql" if _shared_pg_db() is not None else "local",
+        "degraded": fail_until > time.time(),
+        "failure_count": failures,
+        "fail_until": fail_until,
+    }
 
 
 # ── Penalty box (temporary IP ban after severe violations) ──

@@ -35,6 +35,52 @@ def _now():
     return datetime.now(UTC)
 
 
+@pg_only
+def test_community_cas_and_due_lease_have_one_winner(pg):
+    """Real PG proof for the community state primitives (not a SQL-text check)."""
+    from control_plane.concurrency import StateConflict, cas_transition, claim_due
+
+    with pg._conn() as conn:
+        user = pg._fetchone(conn, "INSERT INTO users(phone,password_hash,username,role,is_active) VALUES (%s,%s,%s,'user',true) RETURNING id", ("090" + uuid.uuid4().hex[:8], "x", "cas-" + uuid.uuid4().hex[:8]))
+        post = pg._fetchone(conn, "INSERT INTO posts(user_id,content,post_type,moderation_status,scheduled_at) VALUES (%s,%s,'share','pending',%s) RETURNING id", (str(user["id"]), "community CAS proof", _now() - timedelta(minutes=1)))
+        post_id = str(post["id"])
+
+    class Tx:
+        _db = pg
+        def __init__(self, conn): self._conn = conn
+
+    barrier = threading.Barrier(2)
+    leases = []
+    def claim(index):
+        with pg._conn(commit_on_success=False) as conn:
+            barrier.wait()
+            leases.append(claim_due(Tx(conn), "posts", due_before=_now(), worker_id=f"community-{index}", lease_seconds=30))
+            conn.commit()
+    threads = [threading.Thread(target=claim, args=(i,)) for i in range(2)]
+    for t in threads: t.start()
+    for t in threads: t.join(timeout=30)
+    assert sum(lease is not None for lease in leases) == 1
+
+    with pg._conn() as conn:
+        pg._execute(conn, "UPDATE posts SET claim_expires_at=NULL, claimed_by=NULL WHERE id=%s", (post_id,))
+    outcomes = []
+    def decide(index):
+        with pg._conn(commit_on_success=False) as conn:
+            try:
+                outcomes.append(cas_transition(Tx(conn), "posts", post_id, expected_status="pending", new_status="approved", actor_id=f"mod-{index}", reason="proof", correlation_id=f"proof-{index}"))
+            except StateConflict as exc:
+                outcomes.append(exc)
+            conn.commit()
+    threads = [threading.Thread(target=decide, args=(i,)) for i in range(2)]
+    for t in threads: t.start()
+    for t in threads: t.join(timeout=30)
+    assert sum(not isinstance(item, Exception) for item in outcomes) == 1
+    assert sum(isinstance(item, StateConflict) and item.status_code == 409 for item in outcomes) == 1
+    with pg._conn() as conn:
+        pg._execute(conn, "DELETE FROM posts WHERE id=%s", (post_id,))
+        pg._execute(conn, "DELETE FROM users WHERE id=%s", (str(user["id"]),))
+
+
 @pytest.fixture
 def pg():
     if TEST_DATABASE_URL is None:

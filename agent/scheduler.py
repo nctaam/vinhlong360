@@ -11,6 +11,7 @@ Chạy: python agent/scheduler.py
 Hoặc import và gọi start_scheduler() từ server.
 """
 
+import asyncio
 import json
 import logging
 import os
@@ -19,6 +20,7 @@ import sys
 import time
 import threading
 import traceback
+from dataclasses import dataclass
 from datetime import datetime, timedelta, timezone
 
 from config import settings
@@ -118,6 +120,19 @@ _QUARANTINE_STATUS = {
     "last_run_at": None,
     "last_result": None,
 }
+
+
+@dataclass(frozen=True)
+class BatchResult:
+    claimed: int = 0
+    published: int = 0
+    rejected: int = 0
+    failed: int = 0
+    conflicts: int = 0
+
+    @property
+    def processed(self) -> int:
+        return self.published + self.rejected + self.failed
 
 
 def _utc_now() -> datetime:
@@ -1129,6 +1144,99 @@ def task_moderation_auto_escalation():
         _sched_logger.error("Moderation auto-escalation error: %s", e)
 
 
+def task_publish_due_posts(now: datetime | None = None, worker_id: str | None = None,
+                           limit: int = 100):
+    """Publish scheduled posts with a bounded, restart-safe lease.
+
+    Claiming and settling are separate short transactions so a crashed worker
+    leaves the row visible for the next run.  Moderation is rechecked after the
+    claim and notifications are emitted only after the winning CAS commits.
+    """
+    from control_plane.concurrency import claim_due, ensure_state_schema
+    from database import db
+
+    if limit <= 0:
+        return BatchResult()
+    if now is None:
+        now = _utc_now()
+    if now.tzinfo is None:
+        now = now.replace(tzinfo=timezone.utc)
+    worker_id = worker_id or f"scheduler:{os.getpid()}:{threading.get_ident()}"
+    claimed = published = rejected = failed = conflicts = 0
+
+    class _Tx:
+        def __init__(self, connection):
+            self._db = db
+            self._conn = connection
+
+    while claimed < limit:
+        with db._conn(commit_on_success=False) as conn:
+            tx = _Tx(conn)
+            ensure_state_schema(tx, "posts")
+            lease = claim_due(tx, "posts", due_before=now, worker_id=worker_id, lease_seconds=300)
+            if lease is None:
+                conn.rollback()
+                break
+            id_expr = "id::text" if getattr(db, "_use_pg", False) else "id"
+            row = db._fetchone(conn, f"SELECT id, user_id, content, images, moderation_status, revision FROM posts WHERE {id_expr} = {db._ph}", (lease.row_id,))
+            conn.commit()
+        claimed += 1
+        if row is None:
+            continue
+        post = db._row_to_dict(row)
+        status = "publish_failed"
+        error_code = None
+        try:
+            from moderation import moderate_content_enhanced
+            from moderation import log_moderation
+            from notifications import create_notification
+
+            content = post.get("content") or ""
+            images = post.get("images") or []
+            if isinstance(images, str):
+                try:
+                    images = json.loads(images)
+                except (TypeError, ValueError, json.JSONDecodeError):
+                    images = []
+            result = asyncio.run(moderate_content_enhanced(content, user_id=str(post["user_id"]), image_urls=images))
+            status = str(result.get("status") or "rejected")
+            if status not in {"approved", "rejected"}:
+                status = "rejected"
+        except Exception as exc:  # noqa: BLE001 - failure is persisted for retry
+            error_code = type(exc).__name__[:80]
+
+        ph = db._ph
+        with db._conn() as conn:
+            id_expr = "id::text" if getattr(db, "_use_pg", False) else "id"
+            if status == "publish_failed":
+                settled = db._fetchone(conn, f"UPDATE posts SET moderation_status='publish_failed', publish_attempts=COALESCE(publish_attempts,0)+1, last_error_code={ph}, claimed_by=NULL, claim_expires_at=NULL, revision=revision+1 WHERE {id_expr}={ph} AND claimed_by={ph} AND revision={ph} RETURNING id", (error_code or "publish_failed", lease.row_id, worker_id, lease.revision))
+                if settled:
+                    failed += 1
+                else:
+                    conflicts += 1
+                continue
+            updated_expr = "updated_at=NOW()" if getattr(db, "_use_pg", False) else "updated_at=datetime('now')"
+            settled = db._fetchone(conn, f"UPDATE posts SET moderation_status={ph}, scheduled_at=NULL, claimed_by=NULL, claim_expires_at=NULL, publish_attempts=COALESCE(publish_attempts,0), last_error_code=NULL, revision=revision+1, {updated_expr} WHERE {id_expr}={ph} AND claimed_by={ph} AND revision={ph} RETURNING id, user_id", (status, lease.row_id, worker_id, lease.revision))
+            if not settled:
+                conflicts += 1
+                continue
+            if status == "approved":
+                published += 1
+            else:
+                rejected += 1
+        # These side effects follow the committed CAS, so a racing worker cannot
+        # duplicate the audit/notification outcome.
+        try:
+            from admin_common import _log_mod_action
+            from notifications import create_notification
+            _log_mod_action("post", lease.row_id, status)
+            title = "Bài viết của bạn đã được duyệt" if status == "approved" else "Bài viết của bạn đã bị từ chối"
+            create_notification(str(post["user_id"]), "moderation", title, ref_type="post", ref_id=lease.row_id)
+        except Exception:
+            _sched_logger.warning("scheduled post side effect failed: %s", lease.row_id, exc_info=True)
+    return BatchResult(claimed, published, rejected, failed, conflicts)
+
+
 def task_ratelimit_gc():
     """Periodic GC for all in-memory rate-limit dicts to prevent memory leaks."""
     try:
@@ -1328,6 +1436,7 @@ TASKS = [
     ScheduledTask("auto-learn",     task_auto_learn,            interval_seconds=AUTO_LEARN_INTERVAL, enabled=AUTONOMOUS_TASKS_ENABLED, run_immediately=SCHEDULER_RUN_STARTUP_TASKS),   # 3h (env)
     ScheduledTask("relationships",  task_relationship_discovery, interval_seconds=12 * 3600, enabled=AUTONOMOUS_TASKS_ENABLED, run_immediately=SCHEDULER_RUN_STARTUP_TASKS),  # 12h
     ScheduledTask("case-outbox",    task_case_outbox,            interval_seconds=60),          # 1m, inert while the case flags are off
+    ScheduledTask("publish-due-posts", task_publish_due_posts, interval_seconds=60),          # 1m, bounded leased consumer
     ScheduledTask("analytics-cleanup", task_cleanup_analytics,   interval_seconds=24 * 3600, run_immediately=SCHEDULER_RUN_STARTUP_TASKS),  # 24h
     ScheduledTask("feedback-receipt-cleanup", task_cleanup_feedback_receipts, interval_seconds=3600, run_immediately=SCHEDULER_RUN_STARTUP_TASKS),  # 1h
     ScheduledTask("case-promise-watch", task_case_promise_watch, interval_seconds=600),  # 10m, inert while the case flags are off
