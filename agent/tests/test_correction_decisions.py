@@ -353,6 +353,40 @@ def test_retrying_mixed_usable_and_unusable_evidence_replays_normalized_receipt(
 
 
 @pg_only
+def test_retrying_mixed_evidence_replays_after_refs_expire(pg_database):
+    from cases.correction import decide_item
+
+    case_id, item_id = _seed_case_with_item(pg_database)
+    reporter_assertion = _evidence(
+        evidence_id="e-reporter",
+        level=EvidenceLevel.E0,
+        author_ref="anonymous",
+        expires_at=NOW + timedelta(seconds=30),
+    )
+    valid = _evidence(
+        evidence_id="e-valid",
+        source_ref="https://valid.example",
+        expires_at=NOW + timedelta(seconds=30),
+    )
+    command = DecideItemCommand(
+        case_id=case_id,
+        item_id=item_id,
+        outcome_code=CorrectionOutcome.CORRECTED,
+        reason_code="authoritative_source_confirms",
+        evidence=(reporter_assertion, valid),
+        risk_class=RiskClass.R1,
+        actor=_decider(),
+        required_scope="place.contact",
+    )
+
+    first = decide_item(command, now=NOW)
+    second = decide_item(command, now=NOW + timedelta(minutes=1))
+
+    assert second == first
+    assert first.evidence_refs == ("e-reporter", "e-valid")
+
+
+@pg_only
 def test_a_refused_decision_writes_nothing(pg_database):
     from cases.correction import decide_item
 

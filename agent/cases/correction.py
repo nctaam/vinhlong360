@@ -397,13 +397,19 @@ def _policy_revision() -> str:
     return getattr(_POLICY, "revision", "correction-pilot-v1")
 
 
-def _decision_command_digest(command: DecideItemCommand) -> str:
+def _decision_command_digest(
+    command: DecideItemCommand, *, normalized_evidence_refs: tuple[str, ...] | None = None,
+) -> str:
+    raw_evidence_refs = tuple(record.evidence_id for record in command.evidence)
+    if normalized_evidence_refs is None:
+        normalized_evidence_refs = raw_evidence_refs
     value = {
         "case_id": command.case_id,
         "item_id": command.item_id,
         "outcome_code": getattr(command.outcome_code, "value", command.outcome_code),
         "reason_code": command.reason_code,
-        "evidence_ids": [record.evidence_id for record in command.evidence],
+        "evidence_ids": list(raw_evidence_refs),
+        "normalized_evidence_ids": list(normalized_evidence_refs),
         "risk_class": getattr(command.risk_class, "value", command.risk_class),
         "actor_ref": getattr(command.actor, "actor_ref", "unknown"),
         "reviewer_ref": command.reviewer_ref,
@@ -662,13 +668,12 @@ def add_evidence(command: AddEvidenceCommand, *, now: datetime) -> EvidenceRecor
 
 def decide_item(command: DecideItemCommand, *, now: datetime) -> DecisionOutcome:
     """Validate the ruling first; a refused decision writes nothing at all."""
-    # Normalize once before deriving the idempotency digest. The receipt and a
-    # lost-response retry must bind to the same usable evidence set.
-    command = _normalize_decision_command(command, now=now)
+    raw_command = command
+    _require_decision_basics(raw_command)
     store = _store()
     with store.transaction() as transaction:
-        snapshot = transaction.load_case(command.case_id, for_update=True)
-        event_id = f"decision:{command.case_id}:{command.item_id}"
+        snapshot = transaction.load_case(raw_command.case_id, for_update=True)
+        event_id = f"decision:{raw_command.case_id}:{raw_command.item_id}"
         existing = transaction.load_outbox_by_idempotency_key(event_id)
         if existing is not None:
             payload = _replay_receipt_payload(
@@ -679,7 +684,7 @@ def decide_item(command: DecideItemCommand, *, now: datetime) -> DecisionOutcome
                     "correlation_id", "decision_digest", "ruling",
                 ),
             )
-            if payload["event_id"] != event_id or payload["case_id"] != command.case_id:
+            if payload["event_id"] != event_id or payload["case_id"] != raw_command.case_id:
                 raise _reject(
                     "publication_receipt_invalid",
                     f"The committed receipt {event_id} identifies another decision.",
@@ -688,11 +693,6 @@ def decide_item(command: DecideItemCommand, *, now: datetime) -> DecisionOutcome
             _require_receipt_text(payload, "correlation_id", event_id)
             revision = _require_receipt_revision(payload, event_id)
             decision_digest = _require_receipt_text(payload, "decision_digest", event_id)
-            if decision_digest != _decision_command_digest(command):
-                raise _reject(
-                    "decision_idempotency_conflict",
-                    "That item already has a different persisted ruling.",
-                )
             ruling = payload["ruling"]
             if type(ruling) is not dict:
                 raise _reject(
@@ -710,9 +710,9 @@ def decide_item(command: DecideItemCommand, *, now: datetime) -> DecisionOutcome
                 )
             if (
                 type(ruling["case_id"]) is not str
-                or ruling["case_id"] != command.case_id
+                or ruling["case_id"] != raw_command.case_id
                 or type(ruling["item_id"]) is not str
-                or ruling["item_id"] != command.item_id
+                or ruling["item_id"] != raw_command.item_id
             ):
                 raise _reject(
                     "publication_receipt_invalid",
@@ -725,7 +725,7 @@ def decide_item(command: DecideItemCommand, *, now: datetime) -> DecisionOutcome
                     "publication_receipt_invalid",
                     f"The committed receipt {event_id} has an invalid outcome.",
                 )
-            if outcome_code is not command.outcome_code:
+            if outcome_code is not raw_command.outcome_code:
                 raise _reject(
                     "publication_receipt_invalid",
                     f"The committed receipt {event_id} disagrees with the command.",
@@ -750,28 +750,43 @@ def decide_item(command: DecideItemCommand, *, now: datetime) -> DecisionOutcome
                     "publication_receipt_invalid",
                     f"The committed receipt {event_id} has malformed ruling fields.",
                 )
-            command_actor = getattr(command.actor, "actor_ref", None)
+            command_actor = getattr(raw_command.actor, "actor_ref", None)
             if (
-                reason_code.strip() != command.reason_code.strip()
+                reason_code.strip() != raw_command.reason_code.strip()
                 or maker != command_actor
-                or reviewer != command.reviewer_ref
-                or duplicate_of != command.duplicate_of
+                or reviewer != raw_command.reviewer_ref
+                or duplicate_of != raw_command.duplicate_of
             ):
                 raise _reject(
                     "publication_receipt_invalid",
                     f"The committed receipt {event_id} disagrees with the command.",
                 )
             command_refs = tuple(
-                record.evidence_id for record in command.evidence
+                record.evidence_id for record in raw_command.evidence
                 if type(getattr(record, "evidence_id", None)) is str
             )
             if (
                 outcome_code in _EVIDENCE_BEARING and not refs
-                or tuple(refs) != command_refs
+                or any(ref not in command_refs for ref in refs)
             ):
                 raise _reject(
                     "publication_receipt_invalid",
                     f"The committed receipt {event_id} disagrees with command evidence.",
+                )
+            expected_digest = _decision_command_digest(
+                raw_command, normalized_evidence_refs=tuple(refs)
+            )
+            if decision_digest != expected_digest:
+                code = (
+                    "publication_receipt_invalid"
+                    if tuple(refs) != command_refs
+                    else "decision_idempotency_conflict"
+                )
+                raise _reject(
+                    code,
+                    "That item already has a different persisted ruling."
+                    if code == "decision_idempotency_conflict"
+                    else f"The committed receipt {event_id} disagrees with command evidence.",
                 )
             return DecisionOutcome(
                 case_id=ruling["case_id"],
@@ -786,8 +801,12 @@ def decide_item(command: DecideItemCommand, *, now: datetime) -> DecisionOutcome
                 outbox_event_id=event_id,
             )
 
-        decision = validate_decision(command, now=now)
-        _require_lease(transaction, command.case_id, command.actor, now=now)
+        # Normalize only when creating the first receipt. Replays bind to the
+        # raw command IDs plus the persisted normalized refs, even if evidence
+        # expires after the initial commit.
+        normalized_command = _normalize_decision_command(raw_command, now=now)
+        decision = validate_decision(normalized_command, now=now)
+        _require_lease(transaction, normalized_command.case_id, normalized_command.actor, now=now)
         transaction.insert_decision(
             case_id=decision.case_id,
             item_id=decision.item_id,
@@ -814,16 +833,16 @@ def decide_item(command: DecideItemCommand, *, now: datetime) -> DecisionOutcome
                 actor_id=decision.decision_maker_ref,
                 action="item_decided",
                 resource_type="case",
-                resource_id=command.case_id,
+                resource_id=normalized_command.case_id,
                 reason=decision.reason_code,
                 before=safe_case_projection(snapshot),
                 after=safe_case_projection(updated),
-                correlation_id=getattr(command.actor, "correlation_id", "correction"),
+                correlation_id=getattr(normalized_command.actor, "correlation_id", "correction"),
                 revision=updated.current_revision,
                 generation=str(updated.current_revision),
                 occurred_at=now,
-                actor_scopes=tuple(sorted(set(getattr(command.actor, "scopes", ()) or ()))),
-                channel=getattr(command.actor, "channel", None),
+                actor_scopes=tuple(sorted(set(getattr(normalized_command.actor, "scopes", ()) or ()))),
+                channel=getattr(normalized_command.actor, "channel", None),
                 policy_revision=_policy_revision(),
             ),
             {
@@ -832,7 +851,9 @@ def decide_item(command: DecideItemCommand, *, now: datetime) -> DecisionOutcome
                 "available_at": now,
                 "reason": "decided",
                 "policy_revision": _policy_revision(),
-                "decision_digest": _decision_command_digest(command),
+                "decision_digest": _decision_command_digest(
+                    raw_command, normalized_evidence_refs=decision.evidence_refs
+                ),
                 "ruling": {
                     "case_id": decision.case_id,
                     "item_id": decision.item_id,
