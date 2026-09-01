@@ -391,6 +391,35 @@ def test_retrying_a_failed_check_replays_one_receipt_without_a_new_timestamp_key
 
 
 @pg_only
+def test_outbox_delivery_time_cannot_shortcut_the_recovery_deadline(pg_database):
+    case_id, change_set_id = _applied_case(pg_database)
+    from cases.publication import VerifyProjectionCommand, verify_public_projection
+
+    first = verify_public_projection(
+        VerifyProjectionCommand(case_id, change_set_id, _actor()),
+        lambda _entity_id: _projection(revision=7),
+        now=LATER,
+    )
+    with pg_database._conn(commit_on_success=False) as conn:
+        pg_database._execute(
+            conn,
+            "UPDATE case_outbox SET available_at=%s WHERE idempotency_key=%s",
+            (LATER, first.outbox_event_id),
+        )
+        conn.commit()
+
+    def should_not_fetch(_entity_id):
+        raise AssertionError("delivery retry metadata must not unlock verification")
+
+    second = verify_public_projection(
+        VerifyProjectionCommand(case_id, change_set_id, _actor()),
+        should_not_fetch,
+        now=LATER + timedelta(minutes=1),
+    )
+    assert second == first
+
+
+@pg_only
 def test_a_failed_check_can_recover_after_the_promised_retry_window(pg_database):
     case_id, change_set_id = _applied_case(pg_database)
     from cases.publication import VerifyProjectionCommand, verify_public_projection

@@ -283,7 +283,6 @@ def _replay_apply(transaction, command, row: dict, snapshot) -> PublicationResul
         required=("revision", "entity_revision", "applied_fields"),
     )
     entity_id, _ = transaction.load_change_set_target(command.change_set_id)
-    after_patch = dict(row.get("after_patch") or {})
     return PublicationResult(
         change_set_id=command.change_set_id,
         case_id=command.case_id,
@@ -355,9 +354,7 @@ def _replay_verification_failure(transaction, command, snapshot, existing) -> Ve
     event_id = f"notify:{command.change_set_id}:verification_failed"
     payload = _replay_payload(existing, event_id, required=("revision", "mismatched"))
     raw_mismatches = payload["mismatched"]
-    available_at = existing.get("available_at")
-    if available_at is None and payload.get("next_update_at"):
-        available_at = datetime.fromisoformat(str(payload["next_update_at"]))
+    available_at = _verification_retry_at(existing)
     if available_at is None:
         raise _reject(
             "publication_receipt_invalid",
@@ -377,13 +374,10 @@ def _replay_verification_failure(transaction, command, snapshot, existing) -> Ve
 def _verification_retry_at(existing: dict | None) -> datetime | None:
     if existing is None:
         return None
-    available_at = existing.get("available_at")
-    if available_at is not None:
-        return available_at
     payload = existing.get("payload")
     if isinstance(payload, dict) and payload.get("next_update_at"):
         return datetime.fromisoformat(str(payload["next_update_at"]))
-    return None
+    return existing.get("available_at")
 
 
 def _replay_payload(existing: dict | None, event_id: str, *, required: tuple[str, ...]) -> dict:
