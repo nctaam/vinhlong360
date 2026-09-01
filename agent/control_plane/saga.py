@@ -12,7 +12,7 @@ import json
 import logging
 import threading
 import uuid
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from datetime import datetime, timezone
 from typing import Any, Callable, Mapping, Sequence
 from types import SimpleNamespace
@@ -59,6 +59,7 @@ class SagaReceipt:
     error: str | None = None
     orphan_cleanup_pending: bool = False
     durability_error: str | None = None
+    post_commit_effects: tuple[Mapping[str, Any], ...] = ()
 
 
 _SAGA_RECEIPTS: dict[str, SagaReceipt] = {}
@@ -82,6 +83,7 @@ def _receipt_data(receipt: SagaReceipt) -> dict[str, Any]:
         "steps": [dict(item) for item in receipt.steps], "error": receipt.error,
         "orphan_cleanup_pending": receipt.orphan_cleanup_pending,
         "durability_error": receipt.durability_error,
+        "post_commit_effects": [dict(item) for item in receipt.post_commit_effects],
     }
 
 
@@ -92,6 +94,7 @@ def _receipt_from_data(value: Any) -> SagaReceipt | None:
         str(value["status"]), str(value.get("idempotency_key") or ""),
         tuple(value.get("steps") or ()), value.get("error"),
         bool(value.get("orphan_cleanup_pending")), value.get("durability_error"),
+        tuple(value.get("post_commit_effects") or ()),
     )
 
 
@@ -139,7 +142,7 @@ def _store_receipt(key: str, receipt: SagaReceipt, claim: ClaimResult | None = N
             logger.error("saga receipt persistence failed for %s: %s", key, exc)
             receipt = SagaReceipt(receipt.status, receipt.idempotency_key, receipt.steps,
                                   receipt.error, receipt.orphan_cleanup_pending,
-                                  type(exc).__name__)
+                                  type(exc).__name__, receipt.post_commit_effects)
             with _SAGA_LOCK:
                 _SAGA_RECEIPTS[key] = receipt
     return receipt
@@ -150,10 +153,12 @@ def run_saga(steps: Sequence[SagaStep], *, idempotency_key: str) -> SagaReceipt:
     if not isinstance(idempotency_key, str) or not idempotency_key.strip():
         raise ValueError("invalid_idempotency_key")
     key = idempotency_key.strip()
-    with _SAGA_LOCK:
-        previous = _SAGA_RECEIPTS.get(key)
-        if previous is not None:
-            return previous
+    request_hash = hashlib.sha256(
+        json.dumps([step.name for step in steps], separators=(",", ":"), ensure_ascii=True).encode()
+    ).hexdigest()
+    claim, durable_replay = _claim_generic_command(key, request_hash)
+    if durable_replay is not None:
+        return durable_replay
     completed: list[tuple[SagaStep, Any]] = []
     receipts: list[Mapping[str, Any]] = []
     try:
@@ -175,13 +180,27 @@ def run_saga(steps: Sequence[SagaStep], *, idempotency_key: str) -> SagaReceipt:
             type(exc).__name__,
             orphan,
         )
-        with _SAGA_LOCK:
-            _SAGA_RECEIPTS[key] = result
-        return result
+        return _store_receipt(key, result, claim)
     result = SagaReceipt("committed", key, tuple(receipts))
-    with _SAGA_LOCK:
-        _SAGA_RECEIPTS[key] = result
-    return result
+    return _store_receipt(key, result, claim)
+
+
+def _claim_generic_command(key: str, request_hash: str) -> tuple[ClaimResult | None, SagaReceipt | None]:
+    """Claim a generic saga command in the same durable ledger as API sagas."""
+    try:
+        _ensure_idempotency_schema()
+        with db._conn() as conn:
+            claim = claim_idempotency(SimpleNamespace(_db=db, _conn=conn), key, request_hash)
+        if claim.replayed:
+            receipt = _receipt_from_data(claim.receipt)
+            return claim, receipt or SagaReceipt("in_progress", key, error="idempotency_in_progress")
+        if claim.conflict:
+            return claim, SagaReceipt("idempotency_conflict", key, error="idempotency_key_reused")
+        return claim, None
+    except Exception as exc:
+        # A saga cannot safely claim durable idempotency if its ledger is down.
+        logger.error("generic saga idempotency unavailable for %s: %s", key, exc)
+        return None, SagaReceipt("failed", key, error="idempotency_unavailable")
 
 
 def _json(value: Any) -> str | None:
@@ -231,8 +250,10 @@ def fetch_image_data(suggestion: Mapping[str, Any]) -> bytes:
 
 def _suggestion_receipt(suggestion_id: str, actor_id: str, key: str, status: str, **extra) -> SagaReceipt:
     orphan = bool(extra.pop("orphan_cleanup_pending", False))
+    post_commit_effects = tuple(extra.pop("post_commit_effects", ()) or ())
     payload = {"suggestion_id": suggestion_id, "actor_id": actor_id, **extra}
-    return SagaReceipt(status, key, (payload,), extra.get("error"), orphan)
+    return SagaReceipt(status, key, (payload,), extra.get("error"), orphan,
+                       post_commit_effects=post_commit_effects)
 
 
 def _cleanup_uploaded(storage_obj, suggestion_id: str, uploaded: Mapping[str, Any] | None = None) -> bool:
@@ -240,6 +261,17 @@ def _cleanup_uploaded(storage_obj, suggestion_id: str, uploaded: Mapping[str, An
     values = list((uploaded or {}).values())
     values.extend(v for v in list(getattr(storage_obj, "objects", ())) if suggestion_id in str(v))
     for value in dict.fromkeys(str(v) for v in values if v):
+        try:
+            storage_obj.delete(value)
+        except Exception:
+            failed = True
+    return failed
+
+
+def cleanup_uploaded_media(storage_obj, uploaded: Mapping[str, Any] | None = None) -> bool:
+    """Compensate provider objects before an entity mutation has committed."""
+    failed = False
+    for value in dict.fromkeys(str(v) for v in (uploaded or {}).values() if v):
         try:
             storage_obj.delete(value)
         except Exception:
@@ -349,8 +381,17 @@ def approve_image_suggestion(suggestion_id: str, actor_id: str, *, idempotency_k
             if not _imgq.mark_status(suggestion_id, "approved", approved_by=actor_id, conn=conn):
                 raise RuntimeError("suggestion_not_pending")
             snapshot = bump_generation(conn, suggestion["entity_id"], "image_approval", key)
-        invalidate_entity(suggestion["entity_id"], reason="image_approval", generation=snapshot.generation)
-        result = _suggestion_receipt(suggestion_id, actor_id, key, "committed", url=cover, sizes=uploaded)
+        try:
+            invalidate_entity(suggestion["entity_id"], reason="image_approval", generation=snapshot.generation)
+            post_commit_effects = ({"effect": "invalidation", "status": "applied"},)
+        except Exception as invalidation_error:
+            # The entity transaction is already committed; cache invalidation is
+            # retryable observation and must never delete committed media.
+            logger.error("entity invalidation failed after image approval: %s", invalidation_error)
+            post_commit_effects = ({"effect": "invalidation", "status": "failed",
+                                    "error": type(invalidation_error).__name__},)
+        result = _suggestion_receipt(suggestion_id, actor_id, key, "committed", url=cover, sizes=uploaded,
+                                     post_commit_effects=post_commit_effects)
         return _store_receipt(key, result, claim)
     except Exception as exc:
         orphan = _cleanup_uploaded(storage, suggestion_id, uploaded)
@@ -360,5 +401,5 @@ def approve_image_suggestion(suggestion_id: str, actor_id: str, *, idempotency_k
         _release_suggestion_claim(suggestion_id, claim_marker)
         return _store_receipt(key, result, claim)
 __all__ = ["SagaStep", "SagaReceipt", "MutationAuditEnvelope", "AuditEnvelope",
-           "run_saga", "approve_image_suggestion", "peek_approval_receipt",
+           "run_saga", "approve_image_suggestion", "peek_approval_receipt", "cleanup_uploaded_media",
            "record_entity_mutation"]

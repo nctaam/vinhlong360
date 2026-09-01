@@ -192,6 +192,27 @@ class TestPromote:
         result = kb_curation.promote("nope", "0" * 64)
         assert result["ok"] is False
 
+    def test_db_failure_does_not_restore_over_concurrent_json_writer(self, kb_with_provisional, monkeypatch):
+        review = next(x for x in kb_curation.list_provisional() if x["id"] == "prov-1")
+        from versioned_json_store import mutate_json
+
+        def fail_after_concurrent_write(entity):
+            def write_other_entity(data):
+                target = next(item for item in data["entities"] if item["id"] == "prov-2")
+                target["summary"] = "concurrent edit"
+                return True, None
+            mutate_json(kb_curation.DATA_JSON, write_other_entity)
+            return False
+
+        monkeypatch.setattr(kb_curation, "_db_upsert", fail_after_concurrent_write)
+        result = kb_curation.promote("prov-1", review["review_token"])
+        assert result == {"ok": False, "error": "db_write_failed"}
+        persisted = json.loads(kb_with_provisional.read_text(encoding="utf-8"))
+        prov1 = next(item for item in persisted["entities"] if item["id"] == "prov-1")
+        prov2 = next(item for item in persisted["entities"] if item["id"] == "prov-2")
+        assert prov1["status"] == "provisional" and prov1["verified"] is False
+        assert prov2["summary"] == "concurrent edit"
+
 
 class TestReject:
     def test_reject_removes_entity(self, kb_with_provisional):
@@ -206,6 +227,24 @@ class TestReject:
     def test_reject_refuses_verified(self, kb_with_provisional):
         result = kb_curation.reject("verified-1")
         assert result["ok"] is False
+
+    def test_db_failure_does_not_restore_over_concurrent_json_writer(self, kb_with_provisional, monkeypatch):
+        from versioned_json_store import mutate_json
+
+        def fail_after_concurrent_delete(entity_id):
+            def write_other_entity(data):
+                target = next(item for item in data["entities"] if item["id"] == "prov-2")
+                target["summary"] = "concurrent edit"
+                return True, None
+            mutate_json(kb_curation.DATA_JSON, write_other_entity)
+            return False
+
+        monkeypatch.setattr(kb_curation, "_db_delete", fail_after_concurrent_delete)
+        result = kb_curation.reject("prov-1")
+        assert result == {"ok": False, "error": "db_write_failed"}
+        persisted = json.loads(kb_with_provisional.read_text(encoding="utf-8"))
+        assert any(item["id"] == "prov-1" for item in persisted["entities"])
+        assert next(item for item in persisted["entities"] if item["id"] == "prov-2")["summary"] == "concurrent edit"
 
 
 class TestNearDuplicate:
@@ -264,3 +303,12 @@ class TestAutoPromote:
         data = json.loads(kb_with_provisional.read_text(encoding="utf-8"))
         e = next(x for x in data["entities"] if x["id"] == "prov-1")
         assert e["verified"] is False  # unchanged
+
+    def test_db_failure_is_not_reported_as_success(self, kb_with_provisional, monkeypatch):
+        monkeypatch.setattr(kb_curation, "_db_upsert", lambda entity: False)
+        result = kb_curation.auto_promote_pass(min_hits=3)
+        assert result["promoted"] == []
+        assert result["error"] == "db_write_failed"
+        data = json.loads(kb_with_provisional.read_text(encoding="utf-8"))
+        entity = next(x for x in data["entities"] if x["id"] == "prov-1")
+        assert entity["verified"] is False

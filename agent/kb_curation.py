@@ -100,6 +100,39 @@ def _review_token(snapshot: dict) -> str:
     return hashlib.sha256(canonical.encode("utf-8")).hexdigest()
 
 
+def _rollback_promotion(entity_id: str, original: dict, promoted: dict) -> bool:
+    """Undo only our exact promotion, preserving unrelated concurrent edits."""
+    def revert(data: dict):
+        for index, entity in enumerate(data.get("entities", [])):
+            if entity.get("id") != entity_id:
+                continue
+            if entity != promoted:
+                return False, False
+            data["entities"][index] = copy.deepcopy(original)
+            return True, True
+        return False, False
+
+    return bool(mutate_json(DATA_JSON, revert))
+
+
+def _rollback_rejection(entity: dict, relationships: list[dict]) -> bool:
+    """Restore only a rejected entity and its removed edges under the JSON lock."""
+    entity_id = entity.get("id")
+
+    def revert(data: dict):
+        entities = data.setdefault("entities", [])
+        if any(item.get("id") == entity_id for item in entities):
+            return False, False
+        entities.append(copy.deepcopy(entity))
+        current = data.setdefault("relationships", [])
+        for relationship in relationships:
+            if relationship not in current:
+                current.append(copy.deepcopy(relationship))
+        return True, True
+
+    return bool(mutate_json(DATA_JSON, revert))
+
+
 def list_provisional() -> list:
     """Return all provisional (unverified, auto-learned) entities."""
     kb = _load_kb()
@@ -119,7 +152,6 @@ def list_provisional() -> list:
 def promote(entity_id: str, review_token: str) -> dict:
     """Promote a provisional entity to verified (trusted)."""
     kb, version = load_json_versioned(DATA_JSON)
-    original = copy.deepcopy(kb)
     for e in kb["entities"]:
         if e["id"] == entity_id:
             if not _is_provisional(e):
@@ -127,6 +159,7 @@ def promote(entity_id: str, review_token: str) -> dict:
             current_token = _review_token(_review_snapshot(e))
             if not isinstance(review_token, str) or not hmac.compare_digest(current_token, review_token):
                 return {"ok": False, "error": "stale_review"}
+            before = copy.deepcopy(e)
             e["status"] = "verified"
             e["verified"] = True
             promoted = copy.deepcopy(e)
@@ -138,8 +171,7 @@ def promote(entity_id: str, review_token: str) -> dict:
                 if db_result is False:
                     raise RuntimeError("db_write_failed")
             except Exception:
-                current, current_version = load_json_versioned(DATA_JSON)
-                compare_and_swap_json(DATA_JSON, current_version, original)
+                _rollback_promotion(entity_id, before, promoted)
                 return {"ok": False, "error": "db_write_failed"}
             _reload()
             return {"ok": True, "id": entity_id, "status": "verified"}
@@ -149,13 +181,15 @@ def promote(entity_id: str, review_token: str) -> dict:
 def reject(entity_id: str) -> dict:
     """Remove a provisional entity from the KB (rejected in review)."""
     kb, version = load_json_versioned(DATA_JSON)
-    original = copy.deepcopy(kb)
     before = len(kb["entities"])
     target = next((e for e in kb["entities"] if e["id"] == entity_id), None)
     if target is None:
         return {"ok": False, "error": "not found"}
     if not _is_provisional(target):
         return {"ok": False, "error": "refusing to delete a verified entity via reject"}
+    removed_target = copy.deepcopy(target)
+    removed_relationships = [copy.deepcopy(r) for r in kb.get("relationships", [])
+                             if r.get("from") == entity_id or r.get("to") == entity_id]
     kb["entities"] = [e for e in kb["entities"] if e["id"] != entity_id]
     kb["relationships"] = [r for r in kb.get("relationships", []) if r.get("from") != entity_id and r.get("to") != entity_id]
     if not compare_and_swap_json(DATA_JSON, version, kb):
@@ -166,8 +200,7 @@ def reject(entity_id: str) -> dict:
         if db_result is False:
             raise RuntimeError("db_write_failed")
     except Exception:
-        current, current_version = load_json_versioned(DATA_JSON)
-        compare_and_swap_json(DATA_JSON, current_version, original)
+        _rollback_rejection(removed_target, removed_relationships)
         return {"ok": False, "error": "db_write_failed"}
     result = {"ok": True, "id": entity_id, "removed": before - len(kb["entities"])}
     _reload()
@@ -290,27 +323,53 @@ def auto_promote_pass(min_hits: int = 3, dry_run: bool = False) -> dict:
     Returns {candidates, promoted: [ids]}.
     """
     hits = _entity_hits()
-    promoted_entities = []
+    source = _load_kb()
+    provisional = [copy.deepcopy(e) for e in source.get("entities", []) if _is_provisional(e)]
+    candidates = len(provisional)
+    selected = [e for e in provisional if hits.get(e.get("id"), 0) >= min_hits]
+    if dry_run:
+        return {"candidates": candidates, "promoted": [e["id"] for e in selected]}
+
+    promoted_pairs = []
+    for original in selected:
+        promoted = copy.deepcopy(original)
+        promoted["status"] = "verified"
+        promoted["verified"] = True
+        promoted_pairs.append((original, promoted))
+
+    persisted: list[tuple[dict, dict]] = []
+    for original, promoted in promoted_pairs:
+        try:
+            if _db_upsert(promoted) is False:
+                raise RuntimeError("db_write_failed")
+        except Exception:
+            for previous, _ in persisted:
+                try:
+                    _db_upsert(previous)
+                except Exception:
+                    logger.error("Auto-promotion DB compensation failed for %s", previous.get("id"))
+            return {"candidates": candidates, "promoted": [], "error": "db_write_failed"}
+        persisted.append((original, promoted))
 
     def apply_promotions(kb: dict) -> tuple[bool, dict]:
-        promoted = []
-        candidates = 0
-        for e in kb["entities"]:
-            if not _is_provisional(e):
-                continue
-            candidates += 1
-            if hits.get(e["id"], 0) >= min_hits:
-                if not dry_run:
-                    e["status"] = "verified"
-                    e["verified"] = True
-                    promoted_entities.append(copy.deepcopy(e))
-                promoted.append(e["id"])
-        return bool(promoted and not dry_run), {"candidates": candidates, "promoted": promoted}
+        entities = kb.get("entities", [])
+        locations = {str(entity.get("id")): entity for entity in entities}
+        if any(locations.get(str(original.get("id"))) != original for original, _ in promoted_pairs):
+            return False, {"candidates": candidates, "promoted": [], "error": "stale_review"}
+        for original, promoted in promoted_pairs:
+            index = next(i for i, entity in enumerate(entities) if entity.get("id") == original.get("id"))
+            entities[index] = copy.deepcopy(promoted)
+        return bool(promoted_pairs), {"candidates": candidates, "promoted": [e["id"] for _, e in promoted_pairs]}
 
     result = mutate_json(DATA_JSON, apply_promotions)
-    if promoted_entities:
-        for entity in promoted_entities:
-            _db_upsert(entity)
+    if result.get("error"):
+        for original, _ in persisted:
+            try:
+                _db_upsert(original)
+            except Exception:
+                logger.error("Auto-promotion stale compensation failed for %s", original.get("id"))
+        return result
+    if persisted:
         _reload()
     return result
 

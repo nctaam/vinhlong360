@@ -682,9 +682,21 @@ async def upload_entity_image(entity_id: str, file: UploadFile = File(...)):
         images.append(cover)
     entity["images"] = images
     entity["updatedAt"] = datetime.now(timezone.utc).strftime("%Y-%m-%d")
-    db.upsert_entity(entity, actor_id="admin", reason="image_upload",
-                      correlation_id=f"image-upload:{entity_id}")
-    _sync_kb()
+    try:
+        db.upsert_entity(entity, actor_id="admin", reason="image_upload",
+                         correlation_id=f"image-upload:{entity_id}")
+    except Exception:
+        from control_plane.saga import cleanup_uploaded_media
+        orphan_cleanup = cleanup_uploaded_media(storage, urls)
+        if orphan_cleanup:
+            logger.error("Entity image upload compensation incomplete for %s", entity_id)
+        raise
+    try:
+        _sync_kb()
+    except Exception:
+        # The entity commit is authoritative; a cache/KB refresh can be retried
+        # without deleting the now-referenced media.
+        logger.exception("Entity image post-commit sync failed for %s", entity_id)
     return {"status": "uploaded", "url": cover, "sizes": urls, "images": images, "backend": storage.backend}
 
 
@@ -793,8 +805,13 @@ def _bulk_assign_entities(ids, pid, place, *, actor_id: str = "admin", reason: s
             entity["area"] = place.get("area") or entity.get("area")
         entity["placeId"] = pid
         entity["updatedAt"] = datetime.now(timezone.utc).strftime("%Y-%m-%d")
-        db.upsert_entity(entity, actor_id=actor_id, reason=reason,
-                          correlation_id=f"{reason}:{entity_id}")
+        try:
+            db.upsert_entity(entity, actor_id=actor_id, reason=reason,
+                             correlation_id=f"{reason}:{entity_id}")
+        except Exception:
+            errors.append({"id": entity_id, "error": "Không thể cập nhật entity"})
+            outcomes.append({"id": entity_id, "ok": False, "error": "Không thể cập nhật entity"})
+            continue
         assigned.append(entity_id)
         outcomes.append({"id": entity_id, "ok": True})
     return assigned, errors, outcomes
@@ -804,8 +821,15 @@ def _bulk_assign_entities(ids, pid, place, *, actor_id: str = "admin", reason: s
              summary="Bulk assign place to entities",
              description="Assigns or removes a commune/ward placeId for many entities in one admin action.")
 async def bulk_assign_place(body: BulkAssignPlaceRequest):
-    ids = [validate_path_id(entity_id, "entity_id") for entity_id in body.entity_ids]
+    raw_ids = list(body.entity_ids)
     def _query():
+        ids = []
+        invalid: dict[str, dict[str, object]] = {}
+        for raw_id in raw_ids:
+            try:
+                ids.append(validate_path_id(raw_id, "entity_id"))
+            except HTTPException:
+                invalid[raw_id] = {"id": raw_id, "ok": False, "error": "Entity không hợp lệ"}
         pid = body.place_id or None
         place = None
         if pid:
@@ -816,8 +840,18 @@ async def bulk_assign_place(body: BulkAssignPlaceRequest):
                                                            actor_id="admin", reason="bulk_place_assign")
         if assigned:
             _sync_kb()
+        by_id: dict[str, list[dict[str, object]]] = {}
+        for outcome in outcomes:
+            by_id.setdefault(str(outcome["id"]), []).append(outcome)
+        ordered_outcomes = []
+        for raw_id in raw_ids:
+            if raw_id in invalid:
+                ordered_outcomes.append(invalid[raw_id])
+            elif by_id.get(raw_id):
+                ordered_outcomes.append(by_id[raw_id].pop(0))
+        errors = list(errors) + [{"id": raw_id, "error": item["error"]} for raw_id, item in invalid.items()]
         return {"success": True, "assigned": len(assigned), "assigned_ids": assigned,
-                "errors": errors, "outcomes": outcomes}
+                "errors": errors, "outcomes": ordered_outcomes}
     return await asyncio.to_thread(_query)
 
 
@@ -878,6 +912,8 @@ async def add_relationships_bulk(body: RelationshipBulkCreate):
             to_id = p.to_id.strip()
             rel_type = p.type
             if not to_id:
+                errors.append({"to_id": to_id, "error": "ID đích trống"})
+                outcomes.append({"to_id": to_id, "type": rel_type, "ok": False, "error": "ID đích trống"})
                 continue
             try:
                 db.add_relationship(body.from_id, to_id, rel_type,
@@ -1102,8 +1138,14 @@ async def bulk_delete(body: BulkDeleteRequest):
         deleted = 0
         outcomes = []
         for eid in body.entity_ids:
-            if db.delete_entity(eid, actor_id="admin", reason="bulk_entity_delete",
-                                correlation_id=f"bulk-delete:{eid}"):
+            try:
+                eid = validate_path_id(eid, "entity_id")
+                removed = db.delete_entity(eid, actor_id="admin", reason="bulk_entity_delete",
+                                            correlation_id=f"bulk-delete:{eid}")
+            except Exception:
+                outcomes.append({"id": eid, "ok": False, "error": "Không thể xóa entity"})
+                continue
+            if removed:
                 invalidate_entity_cache(eid)
                 deleted += 1
                 outcomes.append({"id": eid, "ok": True})
@@ -1785,7 +1827,8 @@ class ClaimDecisionBody(BaseModel):
     reason: str = Field("", max_length=1000)
 
 
-def _apply_claim_decision(conn, claim_id: str, status: str, actor_id: str, reason: str) -> dict:
+def _apply_claim_decision(conn, claim_id: str, status: str, actor_id: str, reason: str,
+                          *, reviewer_id: str | None = None) -> dict:
     """CAS a pending claim and append its immutable audit on the same connection."""
     if status not in {"approved", "rejected"}:
         raise ValueError("invalid_claim_status")
@@ -1798,14 +1841,15 @@ def _apply_claim_decision(conn, claim_id: str, status: str, actor_id: str, reaso
     before = dict(db._row_to_dict(row))
     if before.get("status") != "pending":
         return {"error": "not_pending", "current_status": before.get("status")}
-    after = {**before, "status": status, "reviewer_id": actor_id,
+    persisted_reviewer = actor_id if reviewer_id is None and db._use_pg is False else reviewer_id
+    after = {**before, "status": status, "reviewer_id": persisted_reviewer,
              "rejection_reason": reason if status == "rejected" else ""}
     if status == "approved":
         sql = f"UPDATE entity_claims SET status='approved', reviewer_id={ph}{cast}, reviewed_at=NOW() WHERE id={ph}{cast} AND status='pending'"
-        params = (actor_id, claim_id)
+        params = (persisted_reviewer, claim_id)
     else:
         sql = f"UPDATE entity_claims SET status='rejected', reviewer_id={ph}{cast}, reviewed_at=NOW(), rejection_reason={ph} WHERE id={ph}{cast} AND status='pending'"
-        params = (actor_id, reason, claim_id)
+        params = (persisted_reviewer, reason, claim_id)
     updated = db._execute(conn, sql, params)
     if getattr(updated, "rowcount", 1) == 0:
         return {"error": "not_pending", "current_status": "pending"}
@@ -1826,13 +1870,13 @@ async def approve_claim(claim_id: str, request: Request):
     """U-30: Approve an entity claim."""
     require_pg()
     claim_id = validate_path_id(claim_id, "claim_id")
-    ph = db._ph
     admin_user = getattr(request.state, "admin_user", None)
 
     def _approve():
         with db._conn() as conn:
             reviewer_id = str(admin_user["id"]) if admin_user else None
-            return _apply_claim_decision(conn, claim_id, "approved", reviewer_id or "admin", "claim_approved")
+            return _apply_claim_decision(conn, claim_id, "approved", reviewer_id or "api-key-admin", "claim_approved",
+                                         reviewer_id=reviewer_id)
 
     result = await asyncio.to_thread(_approve)
     if "error" in result:
@@ -1858,13 +1902,13 @@ async def reject_claim(claim_id: str, body: ClaimDecisionBody, request: Request)
     """U-30: Reject an entity claim with optional reason."""
     require_pg()
     claim_id = validate_path_id(claim_id, "claim_id")
-    ph = db._ph
     admin_user = getattr(request.state, "admin_user", None)
 
     def _reject():
         with db._conn() as conn:
             reviewer_id = str(admin_user["id"]) if admin_user else None
-            return _apply_claim_decision(conn, claim_id, "rejected", reviewer_id or "admin", body.reason or "claim_rejected")
+            return _apply_claim_decision(conn, claim_id, "rejected", reviewer_id or "api-key-admin", body.reason or "claim_rejected",
+                                         reviewer_id=reviewer_id)
 
     result = await asyncio.to_thread(_reject)
     if "error" in result:

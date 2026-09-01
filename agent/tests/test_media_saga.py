@@ -1,6 +1,9 @@
 from __future__ import annotations
 
+import io
 import json
+
+import pytest
 
 
 class FakeStorage:
@@ -23,8 +26,12 @@ class FakeStorage:
         self.objects.discard(key)
 
 
-def test_run_saga_compensates_completed_steps_and_is_idempotent():
+def test_run_saga_compensates_completed_steps_and_is_idempotent(monkeypatch, isolated_sqlite_db):
     from control_plane.saga import SagaStep, run_saga
+    import control_plane.saga as saga
+
+    monkeypatch.setattr(saga, "db", isolated_sqlite_db)
+    saga._SAGA_RECEIPTS.clear()
 
     state: list[str] = []
     steps = [
@@ -38,6 +45,174 @@ def test_run_saga_compensates_completed_steps_and_is_idempotent():
     assert first.status == "failed_compensated"
     assert second == first
     assert state == ["run-1", "undo-1"]
+
+
+def test_run_saga_replays_durable_receipt_after_process_cache_loss(monkeypatch, isolated_sqlite_db):
+    from control_plane.saga import SagaStep, run_saga
+    import control_plane.saga as saga
+
+    monkeypatch.setattr(saga, "db", isolated_sqlite_db)
+    saga._SAGA_RECEIPTS.clear()
+    calls = []
+    steps = [SagaStep("one", lambda: calls.append("run") or {"ok": True}, lambda _: None)]
+    first = run_saga(steps, idempotency_key="durable-generic-1")
+    saga._SAGA_RECEIPTS.clear()
+    second = run_saga(steps, idempotency_key="durable-generic-1")
+    assert first.status == "committed"
+    assert second == first
+    assert calls == ["run"]
+
+
+def test_claim_decision_uses_nullable_reviewer_for_api_key_actor(monkeypatch):
+    from entities import admin_api
+    import control_plane.saga as saga
+
+    captured = []
+
+    class FakeDatabase:
+        _ph = "%s"
+        _use_pg = True
+
+        def _fetchone(self, conn, sql, params):
+            if sql.startswith("SELECT"):
+                return {"id": "claim-uuid", "status": "pending", "claimant_id": "person-1",
+                        "entity_id": "entity-1", "reviewer_id": None, "reviewed_at": None,
+                        "rejection_reason": ""}
+            return {"id": "claim-uuid"}
+
+        @staticmethod
+        def _row_to_dict(row):
+            return dict(row)
+
+        @staticmethod
+        def _execute(conn, sql, params):
+            assert params[0] is None
+            return type("Result", (), {"rowcount": 1})()
+
+        def record_entity_mutation_audit(self, **event):
+            captured.append(event)
+
+    fake_db = FakeDatabase()
+    monkeypatch.setattr(admin_api, "db", fake_db)
+    monkeypatch.setattr(saga, "db", fake_db)
+    result = admin_api._apply_claim_decision(
+        "conn", "claim-uuid", "approved", "api-key-admin", "claim_approved",
+        reviewer_id=None,
+    )
+    assert result["ok"] is True
+    assert captured[0]["actor_id"] == "api-key-admin"
+    assert captured[0]["after"]["reviewer_id"] is None
+
+
+def test_image_approval_invalidation_failure_keeps_committed_media(monkeypatch, isolated_sqlite_db):
+    import image_suggestions
+    import control_plane.saga as saga
+
+    monkeypatch.setattr(saga, "db", isolated_sqlite_db)
+    monkeypatch.setattr(image_suggestions, "db", isolated_sqlite_db)
+    image_suggestions._table_ready = False
+    isolated_sqlite_db.upsert_entity({"id": "e-post", "name": "Entity", "type": "attraction", "images": []})
+    sid = image_suggestions.create_batch([{"entity_id": "e-post", "candidate_url": "https://example.test/a.jpg"}])["ids"][0]
+    storage = FakeStorage()
+    monkeypatch.setattr(saga, "storage", storage)
+    monkeypatch.setattr(saga, "fetch_image_data", lambda suggestion: b"bytes")
+    monkeypatch.setattr(saga, "invalidate_entity", lambda *args, **kwargs: (_ for _ in ()).throw(RuntimeError("cache_down")))
+
+    result = saga.approve_image_suggestion(sid, "admin-1", idempotency_key="k-post")
+    assert result.status == "committed"
+    assert result.post_commit_effects[0]["status"] == "failed"
+    assert storage.objects
+    assert image_suggestions.get_suggestion(sid)["status"] == "approved"
+
+
+@pytest.mark.anyio
+async def test_direct_upload_compensates_when_entity_commit_fails(monkeypatch, isolated_sqlite_db):
+    from entities import admin_api
+    import storage as storage_module
+    from starlette.datastructures import UploadFile
+
+    class UploadStorage(FakeStorage):
+        @staticmethod
+        def sniff_image_type(data):
+            return "image/jpeg" if data else None
+
+    upload_storage = UploadStorage()
+    monkeypatch.setattr(admin_api, "db", isolated_sqlite_db)
+    monkeypatch.setattr(admin_api, "_reject_non_ai_media", lambda: None)
+    monkeypatch.setattr(admin_api, "_sync_kb", lambda: None)
+    isolated_sqlite_db.upsert_entity({"id": "e-direct", "name": "Entity", "type": "attraction", "images": []})
+    monkeypatch.setattr(isolated_sqlite_db, "upsert_entity", lambda *args, **kwargs: (_ for _ in ()).throw(RuntimeError("db_failure")))
+    monkeypatch.setattr(storage_module, "storage", upload_storage)
+    file = UploadFile(filename="image.jpg", file=io.BytesIO(b"jpeg-bytes"))
+    with pytest.raises(RuntimeError, match="db_failure"):
+        await admin_api.upload_entity_image("e-direct", file)
+    assert upload_storage.objects == set()
+
+
+def test_bulk_place_records_per_item_upsert_failure(monkeypatch):
+    from entities import admin_api
+
+    class FakeDatabase:
+        def get_entities_batch(self, ids):
+            return {eid: {"id": eid, "name": eid, "type": "attraction", "images": []} for eid in ids}
+
+        def upsert_entity(self, entity, **kwargs):
+            if entity["id"] == "boom":
+                raise RuntimeError("write_failure")
+
+    monkeypatch.setattr(admin_api, "db", FakeDatabase())
+    assigned, errors, outcomes = admin_api._bulk_assign_entities(["ok", "boom"], None, None)
+    assert assigned == ["ok"]
+    assert errors == [{"id": "boom", "error": "Không thể cập nhật entity"}]
+    assert outcomes[-1]["ok"] is False
+
+
+@pytest.mark.anyio
+async def test_bulk_relationship_blank_id_has_explicit_failed_outcome(monkeypatch):
+    from entities import admin_api
+
+    body = admin_api.RelationshipBulkCreate(
+        from_id="source-1",
+        pairs=[admin_api.RelationshipBulkPair(to_id="   ", type="near")],
+    )
+    result = await admin_api.add_relationships_bulk(body)
+    assert result["added"] == 0
+    assert result["outcomes"] == [{"to_id": "", "type": "near", "ok": False, "error": "ID đích trống"}]
+
+
+@pytest.mark.anyio
+async def test_bulk_place_invalid_id_has_explicit_failed_outcome(monkeypatch):
+    from entities import admin_api
+
+    class FakeDatabase:
+        def get_entities_batch(self, ids):
+            return {eid: {"id": eid, "name": eid, "type": "attraction", "images": []} for eid in ids}
+
+        def upsert_entity(self, entity, **kwargs):
+            return None
+
+    monkeypatch.setattr(admin_api, "db", FakeDatabase())
+    result = await admin_api.bulk_assign_place(
+        admin_api.BulkAssignPlaceRequest(entity_ids=["ok", "   "], place_id=None)
+    )
+    assert result["assigned"] == 1
+    assert result["outcomes"][-1]["ok"] is False
+
+
+@pytest.mark.anyio
+async def test_bulk_delete_records_per_item_exception(monkeypatch):
+    from entities import admin_api
+
+    class FakeDatabase:
+        def delete_entity(self, entity_id, **kwargs):
+            if entity_id == "boom":
+                raise RuntimeError("delete_failure")
+            return entity_id == "ok"
+
+    monkeypatch.setattr(admin_api, "db", FakeDatabase())
+    result = await admin_api.bulk_delete(admin_api.BulkDeleteRequest(entity_ids=["ok", "boom"]))
+    assert result["count"] == 1
+    assert result["outcomes"][-1] == {"id": "boom", "ok": False, "error": "Không thể xóa entity"}
 
 
 def test_image_upload_failure_compensates_object_and_retry_is_idempotent(monkeypatch, isolated_sqlite_db):
