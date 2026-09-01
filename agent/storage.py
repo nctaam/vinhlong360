@@ -178,9 +178,18 @@ class Storage:
         base = f"{_slugify(slug)}-{uuid.uuid4().hex[:8]}"
         urls = {}
         for size, width in WEBP_SIZES.items():
-            webp = _to_webp(data, width)
-            key = f"{folder}/{base}-{width}.webp"
-            urls[size] = self._put(webp, key, "image/webp")
+            try:
+                webp = _to_webp(data, width)
+                key = f"{folder}/{base}-{width}.webp"
+                urls[size] = self._put(webp, key, "image/webp")
+            except Exception as exc:
+                # Preserve keys already written so a compensating saga can
+                # remove partial provider state after a late upload failure.
+                try:
+                    exc.urls = dict(urls)
+                except Exception:
+                    pass
+                raise
         return urls
 
     # ── single image (legacy: posts/reviews already WebP-encoded client side) ─

@@ -19,6 +19,7 @@ import asyncio
 import html as _html
 import json
 import re as _re
+import uuid
 from datetime import datetime, timezone
 from typing import Optional
 
@@ -533,7 +534,8 @@ async def update_entity(entity_id: str, update: EntityUpdate):
         # One transaction for the row and its audit: an edit that cannot be
         # recorded must not land, or nobody can answer for it later.
         db.upsert_entity_with_audit(existing, old_snapshot,
-                                    actor="admin", provenance="admin-editor")
+                                    actor="admin", provenance="admin-editor",
+                                    reason="entity_update", correlation_id=f"entity-update:{entity_id}")
         _sync_kb()
         from entity_read import invalidate_entity_cache, invalidate_place_cache
         invalidate_entity_cache(entity_id)
@@ -581,7 +583,8 @@ async def create_entity(entity: EntityCreate):
             "source": src,
             "updatedAt": datetime.now(timezone.utc).strftime("%Y-%m-%d"),
         }
-        db.upsert_entity(new_entity)
+        db.upsert_entity(new_entity, actor_id="admin", reason="entity_create",
+                          correlation_id=f"entity-create:{new_entity['id']}")
         _sync_kb()
         return {"status": "created", "entity": new_entity, "warnings": warnings}
     return await asyncio.to_thread(_query)
@@ -597,7 +600,8 @@ async def delete_entity(entity_id: str):
         entity = db.get_entity(entity_id)
         if not entity:
             raise HTTPException(404, "Entity không tồn tại")
-        db.delete_entity(entity_id)
+        db.delete_entity(entity_id, actor_id="admin", reason="entity_delete",
+                         correlation_id=f"entity-delete:{entity_id}")
         _sync_kb()
         from entity_read import invalidate_entity_cache, invalidate_place_cache
         invalidate_entity_cache(entity_id)
@@ -635,7 +639,8 @@ async def add_entity_image_url(entity_id: str, body: _EntityImageURL):
             images.append(url)
         entity["images"] = images
         entity["updatedAt"] = datetime.now(timezone.utc).strftime("%Y-%m-%d")
-        db.upsert_entity(entity)
+        db.upsert_entity(entity, actor_id="admin", reason="image_add",
+                          correlation_id=f"image-add:{entity_id}")
         _sync_kb()
         return {"status": "added", "images": images}
     return await asyncio.to_thread(_query)
@@ -677,7 +682,8 @@ async def upload_entity_image(entity_id: str, file: UploadFile = File(...)):
         images.append(cover)
     entity["images"] = images
     entity["updatedAt"] = datetime.now(timezone.utc).strftime("%Y-%m-%d")
-    db.upsert_entity(entity)
+    db.upsert_entity(entity, actor_id="admin", reason="image_upload",
+                      correlation_id=f"image-upload:{entity_id}")
     _sync_kb()
     return {"status": "uploaded", "url": cover, "sizes": urls, "images": images, "backend": storage.backend}
 
@@ -698,7 +704,8 @@ async def remove_entity_image(entity_id: str, idx: int = PathParam(..., ge=0)):
         images.pop(idx)
         entity["images"] = images
         entity["updatedAt"] = datetime.now(timezone.utc).strftime("%Y-%m-%d")
-        db.upsert_entity(entity)
+        db.upsert_entity(entity, actor_id="admin", reason="image_remove",
+                          correlation_id=f"image-remove:{entity_id}:{idx}")
         _sync_kb()
         return {"status": "removed", "images": images}
     return await asyncio.to_thread(_query)
@@ -763,29 +770,34 @@ async def assign_place(entity_id: str, body: AssignPlaceRequest):
             e["area"] = p.get("area") or e.get("area")
         e["placeId"] = pid
         e["updatedAt"] = datetime.now(timezone.utc).strftime("%Y-%m-%d")
-        db.upsert_entity(e)
+        db.upsert_entity(e, actor_id="admin", reason="place_assign",
+                          correlation_id=f"place-assign:{entity_id}")
         _sync_kb()
         return {"success": True, "id": entity_id, "placeId": pid}
     return await asyncio.to_thread(_query)
 
 
-def _bulk_assign_entities(ids, pid, place):
+def _bulk_assign_entities(ids, pid, place, *, actor_id: str = "admin", reason: str = "bulk_place_assign"):
     """Assign pid to each id in ids; return (assigned_ids, errors)."""
     assigned: list[str] = []
     errors: list[dict[str, str]] = []
+    outcomes: list[dict[str, object]] = []
     entities_map = db.get_entities_batch(ids) if ids else {}
     for entity_id in ids:
         entity = entities_map.get(entity_id)
         if not entity:
             errors.append({"id": entity_id, "error": "Entity không tồn tại"})
+            outcomes.append({"id": entity_id, "ok": False, "error": "Entity không tồn tại"})
             continue
         if pid and place:
             entity["area"] = place.get("area") or entity.get("area")
         entity["placeId"] = pid
         entity["updatedAt"] = datetime.now(timezone.utc).strftime("%Y-%m-%d")
-        db.upsert_entity(entity)
+        db.upsert_entity(entity, actor_id=actor_id, reason=reason,
+                          correlation_id=f"{reason}:{entity_id}")
         assigned.append(entity_id)
-    return assigned, errors
+        outcomes.append({"id": entity_id, "ok": True})
+    return assigned, errors, outcomes
 
 
 @router.post("/entities/bulk-place",
@@ -800,10 +812,12 @@ async def bulk_assign_place(body: BulkAssignPlaceRequest):
             place = db.get_entity(pid)
             if not place or place.get("type") != "place":
                 raise HTTPException(400, "place_id không phải xã/phường hợp lệ")
-        assigned, errors = _bulk_assign_entities(ids, pid, place)
+        assigned, errors, outcomes = _bulk_assign_entities(ids, pid, place,
+                                                           actor_id="admin", reason="bulk_place_assign")
         if assigned:
             _sync_kb()
-        return {"success": True, "assigned": len(assigned), "assigned_ids": assigned, "errors": errors}
+        return {"success": True, "assigned": len(assigned), "assigned_ids": assigned,
+                "errors": errors, "outcomes": outcomes}
     return await asyncio.to_thread(_query)
 
 
@@ -829,7 +843,9 @@ class RelationshipBulkCreate(BaseModel):
 async def add_relationship(body: RelationshipCreate):
     validate_path_id(body.from_id, "from_id")
     validate_path_id(body.to_id, "to_id")
-    await asyncio.to_thread(db.add_relationship, body.from_id, body.to_id, body.type)
+    await asyncio.to_thread(db.add_relationship, body.from_id, body.to_id, body.type,
+                            actor_id="admin", reason="relationship_add",
+                            correlation_id=f"relationship-add:{body.from_id}:{body.to_id}:{body.type}")
     return {"status": "created"}
 
 
@@ -840,13 +856,10 @@ async def delete_relationship(from_id: str, to_id: str, type: str = Query(..., m
     validate_path_id(from_id, "from_id")
     validate_path_id(to_id, "to_id")
     def _query():
-        db.initialize()
-        ph = db._ph
-        with db._conn() as conn:
-            cur = db._execute(conn, f"DELETE FROM relationships WHERE from_id={ph} AND to_id={ph} AND type={ph}",
-                              (from_id, to_id, type))
-            if cur.rowcount == 0:
-                raise HTTPException(404, "Mối quan hệ không tồn tại")
+        if not db.delete_relationship(from_id, to_id, type, actor_id="admin",
+                                      reason="relationship_delete",
+                                      correlation_id=f"relationship-delete:{from_id}:{to_id}:{type}"):
+            raise HTTPException(404, "Mối quan hệ không tồn tại")
     await asyncio.to_thread(_query)
     return {"success": True}
 
@@ -860,18 +873,24 @@ async def add_relationships_bulk(body: RelationshipBulkCreate):
     def _query():
         added = 0
         errors = []
+        outcomes = []
         for p in body.pairs:
             to_id = p.to_id.strip()
             rel_type = p.type
             if not to_id:
                 continue
             try:
-                db.add_relationship(body.from_id, to_id, rel_type)
+                db.add_relationship(body.from_id, to_id, rel_type,
+                                    actor_id="admin", reason="bulk_relationship_add",
+                                    correlation_id=f"bulk-relationship:{body.from_id}:{to_id}:{rel_type}")
                 added += 1
+                outcomes.append({"to_id": to_id, "type": rel_type, "ok": True})
             except Exception as e:
                 logger.warning("Bulk relationship add failed for %s→%s: %s", body.from_id, to_id, e)
                 errors.append({"to_id": to_id, "error": "Không thể thêm quan hệ"})
-        return {"added": added, "errors": errors}
+                outcomes.append({"to_id": to_id, "type": rel_type, "ok": False,
+                                 "error": "Không thể thêm quan hệ"})
+        return {"added": added, "errors": errors, "outcomes": outcomes}
     return await asyncio.to_thread(_query)
 
 
@@ -1081,15 +1100,20 @@ async def bulk_delete(body: BulkDeleteRequest):
     def _query():
         from entity_read import invalidate_entity_cache
         deleted = 0
+        outcomes = []
         for eid in body.entity_ids:
-            if db.delete_entity(eid):
+            if db.delete_entity(eid, actor_id="admin", reason="bulk_entity_delete",
+                                correlation_id=f"bulk-delete:{eid}"):
                 invalidate_entity_cache(eid)
                 deleted += 1
+                outcomes.append({"id": eid, "ok": True})
+            else:
+                outcomes.append({"id": eid, "ok": False, "error": "Entity không tồn tại"})
         if deleted:
             _sync_kb()
-        return deleted
-    deleted = await asyncio.to_thread(_query)
-    return {"success": True, "count": deleted}
+        return deleted, outcomes
+    deleted, outcomes = await asyncio.to_thread(_query)
+    return {"success": True, "count": deleted, "outcomes": outcomes}
 
 
 class ImageSuggestionItem(BaseModel):
@@ -1238,17 +1262,26 @@ def _approve_attach_credits(entity, cover, s, candidate_url):
 @router.post("/image-suggestions/{suggestion_id}/approve",
              summary="Approve an image suggestion",
              description="Approves a pending image suggestion: downloads, re-encodes to WebP, uploads to storage, and attaches to the entity with license credits.")
-async def approve_image_suggestion(suggestion_id: str):
+async def approve_image_suggestion(suggestion_id: str, request: Request):
     """Duyệt 1 ứng viên: tải ảnh → WebP 3 cỡ → R2 → gắn vào entity.images + lưu
     license/author/source vào attributes.image_credits (B6). Chỉ xử lý khi đang 'pending'."""
     validate_path_id(suggestion_id, "suggestion_id")
     _reject_non_ai_media()
     from fastapi.concurrency import run_in_threadpool
-    from storage import storage, MAX_IMAGE_SIZE
+    from storage import MAX_IMAGE_SIZE
+    from control_plane import saga as media_saga
+    key = request.headers.get("Idempotency-Key") or request.headers.get("X-Request-ID") or uuid.uuid4().hex
 
     s = _imgq.get_suggestion(suggestion_id)
     if not s:
         raise HTTPException(404, "Đề xuất không tồn tại")
+    prior = media_saga.peek_approval_receipt(key, suggestion_id, "admin")
+    if prior is not None:
+        payload = dict(prior.steps[0].get("receipt", {})) if prior.steps else {}
+        return {"status": prior.status, "url": payload.get("url"),
+                "sizes": payload.get("sizes") or {}, "error": prior.error,
+                "orphan_cleanup_pending": prior.orphan_cleanup_pending,
+                "durability_error": prior.durability_error}
     if s.get("status") != "pending":
         raise HTTPException(400, f"Suggestion đã ở trạng thái '{s.get('status')}' — không thể duyệt lại")
 
@@ -1268,27 +1301,24 @@ async def approve_image_suggestion(suggestion_id: str):
         MAX_IMAGE_SIZE,
     )
 
-    try:
-        urls = await run_in_threadpool(storage.upload_image_set, data, "entities", s["entity_id"])
-    except Exception:
-        logger.exception("Suggestion image upload failed for %s", s.get("entity_id"))
-        raise HTTPException(500, "Không thể upload ảnh, vui lòng thử lại")
-
-    cover = urls.get("md") or urls.get("lg") or urls.get("sm")
-    if cover and cover not in images:
-        images.append(cover)
-    entity["images"] = images
-
-    # B6: persist license + author + source alongside the uploaded URL.
-    credits = _approve_attach_credits(entity, cover, s, candidate_url)
-    entity["updatedAt"] = datetime.now(timezone.utc).strftime("%Y-%m-%d")
-    db.upsert_entity(entity)
-
-    # require_admin already authenticated; record a generic approver marker for audit.
-    _imgq.mark_status(suggestion_id, "approved", approved_by="admin")
-    _sync_kb()
-    return {"status": "approved", "url": cover, "sizes": urls, "images": images,
-            "backend": storage.backend, "credits": credits[-1]}
+    receipt = await run_in_threadpool(
+        media_saga.approve_image_suggestion,
+        suggestion_id,
+        "admin",
+        idempotency_key=key,
+        _image_data=data,
+    )
+    if receipt.status == "committed":
+        payload = dict(receipt.steps[0].get("receipt", {})) if receipt.steps else {}
+        sizes = payload.get("sizes") or {}
+        cover = payload.get("url")
+        saved = db.get_entity(s["entity_id"]) or entity
+        credits = ((saved.get("attributes") or {}).get("image_credits") or [])
+        return {"status": "approved", "url": cover, "sizes": sizes,
+                "images": saved.get("images") or [], "backend": getattr(media_saga.storage, "backend", ""),
+                "credits": credits[-1] if credits else {}}
+    return {"status": receipt.status, "error": receipt.error,
+            "orphan_cleanup_pending": receipt.orphan_cleanup_pending}
 
 
 @router.post("/image-suggestions/{suggestion_id}/reject",
@@ -1356,12 +1386,22 @@ async def toggle_featured(entity_id: str, request: Request):
             """, (entity_id,))
             if existing:
                 db._execute(conn, f"DELETE FROM featured_entities WHERE entity_id = {ph}", (entity_id,))
+                from control_plane.saga import record_entity_mutation
+                record_entity_mutation(entity_id, actor_id=str(admin_user["id"]) if admin_user else "admin",
+                                       reason="featured_toggle", correlation_id=f"featured:{entity_id}",
+                                       before={"featured": True}, after={"featured": False}, revision=1,
+                                       resource_type="featured", conn=conn)
                 return False
             added_by = str(admin_user["id"]) if admin_user else None
             db._execute(conn, f"""
                 INSERT INTO featured_entities (entity_id, added_by, sort_order)
                 VALUES ({ph}, {ph}::uuid, (SELECT COALESCE(MAX(sort_order), 0) + 1 FROM featured_entities))
             """, (entity_id, added_by))
+            from control_plane.saga import record_entity_mutation
+            record_entity_mutation(entity_id, actor_id=added_by or "admin",
+                                   reason="featured_toggle", correlation_id=f"featured:{entity_id}",
+                                   before={"featured": False}, after={"featured": True}, revision=1,
+                                   resource_type="featured", conn=conn)
             return True
     is_featured = await asyncio.to_thread(_query)
     return {"entity_id": entity_id, "featured": is_featured}
@@ -1633,6 +1673,18 @@ class ProvisionalDecisionBody(BaseModel):
     review_token: str = Field(..., min_length=64, max_length=64, pattern=r"^[0-9a-f]{64}$")
 
 
+def _record_provisional_decision(entity_id: str, actor_id: str, decision: str,
+                                 before: dict, after: dict) -> None:
+    from control_plane.saga import record_entity_mutation
+    record_entity_mutation(
+        entity_id, actor_id=actor_id, reason=f"provisional_{decision}",
+        correlation_id=f"provisional:{decision}:{entity_id}",
+        before=before, after=after,
+        revision=int(before.get("revision") or 1) + 1,
+        resource_type="entity", database=db,
+    )
+
+
 @router.get("/provisional",
             summary="List provisional entities",
             description="Returns auto-learned entities pending verification, along with queue statistics.")
@@ -1733,6 +1785,40 @@ class ClaimDecisionBody(BaseModel):
     reason: str = Field("", max_length=1000)
 
 
+def _apply_claim_decision(conn, claim_id: str, status: str, actor_id: str, reason: str) -> dict:
+    """CAS a pending claim and append its immutable audit on the same connection."""
+    if status not in {"approved", "rejected"}:
+        raise ValueError("invalid_claim_status")
+    ph = db._ph
+    lock = " FOR UPDATE" if db._use_pg else ""
+    cast = "::uuid" if db._use_pg else ""
+    row = db._fetchone(conn, f"SELECT * FROM entity_claims WHERE id = {ph}{cast}{lock}", (claim_id,))
+    if not row:
+        return {"error": "not_found"}
+    before = dict(db._row_to_dict(row))
+    if before.get("status") != "pending":
+        return {"error": "not_pending", "current_status": before.get("status")}
+    after = {**before, "status": status, "reviewer_id": actor_id,
+             "rejection_reason": reason if status == "rejected" else ""}
+    if status == "approved":
+        sql = f"UPDATE entity_claims SET status='approved', reviewer_id={ph}{cast}, reviewed_at=NOW() WHERE id={ph}{cast} AND status='pending'"
+        params = (actor_id, claim_id)
+    else:
+        sql = f"UPDATE entity_claims SET status='rejected', reviewer_id={ph}{cast}, reviewed_at=NOW(), rejection_reason={ph} WHERE id={ph}{cast} AND status='pending'"
+        params = (actor_id, reason, claim_id)
+    updated = db._execute(conn, sql, params)
+    if getattr(updated, "rowcount", 1) == 0:
+        return {"error": "not_pending", "current_status": "pending"}
+    from control_plane.saga import record_entity_mutation
+    record_entity_mutation(
+        claim_id, actor_id=actor_id, reason=reason or f"claim_{status}",
+        correlation_id=f"claim:{claim_id}", before=before, after=after,
+        revision=int(before.get("revision") or 1) + 1,
+        resource_type="entity_claim", conn=conn, database=db,
+    )
+    return {"ok": True, "claimant_id": str(before.get("claimant_id")), "entity_id": before.get("entity_id")}
+
+
 @router.post("/claims/{claim_id}/approve",
              summary="Approve an entity ownership claim",
              description="Approve a pending entity ownership claim. Notifies the claimant upon approval.")
@@ -1745,18 +1831,8 @@ async def approve_claim(claim_id: str, request: Request):
 
     def _approve():
         with db._conn() as conn:
-            row = db._fetchone(conn, f"SELECT id, status, claimant_id, entity_id FROM entity_claims WHERE id = {ph}::uuid", (claim_id,))
-            if not row:
-                return {"error": "not_found"}
-            claim = db._row_to_dict(row)
-            if claim["status"] != "pending":
-                return {"error": "not_pending", "current_status": claim["status"]}
             reviewer_id = str(admin_user["id"]) if admin_user else None
-            db._execute(conn, f"""
-                UPDATE entity_claims SET status = 'approved', reviewer_id = {ph}::uuid, reviewed_at = NOW()
-                WHERE id = {ph}::uuid
-            """, (reviewer_id, claim_id))
-        return {"ok": True, "claimant_id": str(claim["claimant_id"]), "entity_id": claim.get("entity_id")}
+            return _apply_claim_decision(conn, claim_id, "approved", reviewer_id or "admin", "claim_approved")
 
     result = await asyncio.to_thread(_approve)
     if "error" in result:
@@ -1787,19 +1863,8 @@ async def reject_claim(claim_id: str, body: ClaimDecisionBody, request: Request)
 
     def _reject():
         with db._conn() as conn:
-            row = db._fetchone(conn, f"SELECT id, status, claimant_id, entity_id FROM entity_claims WHERE id = {ph}::uuid", (claim_id,))
-            if not row:
-                return {"error": "not_found"}
-            claim = db._row_to_dict(row)
-            if claim["status"] != "pending":
-                return {"error": "not_pending", "current_status": claim["status"]}
             reviewer_id = str(admin_user["id"]) if admin_user else None
-            db._execute(conn, f"""
-                UPDATE entity_claims SET status = 'rejected', reviewer_id = {ph}::uuid,
-                    reviewed_at = NOW(), rejection_reason = {ph}
-                WHERE id = {ph}::uuid
-            """, (reviewer_id, body.reason, claim_id))
-        return {"ok": True, "claimant_id": str(claim["claimant_id"]), "entity_id": claim.get("entity_id")}
+            return _apply_claim_decision(conn, claim_id, "rejected", reviewer_id or "admin", body.reason or "claim_rejected")
 
     result = await asyncio.to_thread(_reject)
     if "error" in result:
@@ -1818,4 +1883,3 @@ async def reject_claim(claim_id: str, body: ClaimDecisionBody, request: Request)
     return {"ok": True}
 
 _admin_volatile_caches.append(_media_cache)
-

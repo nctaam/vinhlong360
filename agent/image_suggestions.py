@@ -254,7 +254,7 @@ def status_counts() -> dict:
 
 
 def mark_status(suggestion_id: str, status: str, approved_by: str = "",
-                rejection_reason: str = "") -> bool:
+                rejection_reason: str = "", *, conn=None) -> bool:
     """Transition a suggestion to approved/rejected. Returns False if not found.
 
     Guards against re-processing: caller should check current status == 'pending'
@@ -264,19 +264,18 @@ def mark_status(suggestion_id: str, status: str, approved_by: str = "",
         raise ValueError(f"status must be one of {VALID_STATUSES}")
     _ensure_table()
     ph = db._ph
-    with db._conn() as conn:
-        cur = db._execute(
-            conn,
-            f"""UPDATE image_suggestions
-                SET status = {ph}, approved_by = {ph}, rejection_reason = {ph}, approved_at = {ph}
-                WHERE id = {ph}""",
-            (status, approved_by or "", rejection_reason or "", _now_iso(), suggestion_id),
-        )
-        try:
-            affected = cur.rowcount
-        except Exception:
-            affected = None
-    if affected is None:
-        # SQLite path returns a cursor with rowcount; fall back to existence check.
-        return get_suggestion(suggestion_id) is not None
-    return affected > 0
+    if conn is None:
+        with db._conn() as own_conn:
+            return mark_status(suggestion_id, status, approved_by, rejection_reason, conn=own_conn)
+    cur = db._execute(
+        conn,
+        f"""UPDATE image_suggestions
+            SET status = {ph}, approved_by = {ph}, rejection_reason = {ph}, approved_at = {ph}
+            WHERE id = {ph} AND status = 'pending'""",
+        (status, approved_by or "", rejection_reason or "", _now_iso(), suggestion_id),
+    )
+    try:
+        affected = cur.rowcount
+    except Exception:
+        affected = None
+    return bool(affected)

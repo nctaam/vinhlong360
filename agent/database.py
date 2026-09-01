@@ -422,6 +422,8 @@ def _normalize_itinerary_areas(value) -> list[str]:
 
 def _coords_in_region(c) -> bool:
     """True nếu [lat, lng] nằm trong bbox vùng phục vụ. Ngoài vùng = geocode sai → loại."""
+    if isinstance(c, dict):
+        c = [c.get("lat", c.get("latitude")), c.get("lng", c.get("lon", c.get("longitude")))]
     try:
         lat, lng = float(c[0]), float(c[1])
     except (TypeError, IndexError, ValueError):
@@ -1324,6 +1326,7 @@ class Database:
                         level TEXT,
                         parentId TEXT,
                         legacyArea TEXT,
+                        revision INTEGER NOT NULL DEFAULT 1,
                         updatedAt TEXT,
                         created_at TEXT DEFAULT (datetime('now'))
                     );
@@ -1343,6 +1346,22 @@ class Database:
                         actor TEXT DEFAULT 'admin',
                         created_at TEXT DEFAULT (datetime('now'))
                     );
+
+                    CREATE TABLE IF NOT EXISTS entity_mutation_audit (
+                        id INTEGER PRIMARY KEY AUTOINCREMENT,
+                        event_id TEXT NOT NULL UNIQUE,
+                        resource_id TEXT NOT NULL,
+                        resource_type TEXT NOT NULL,
+                        actor_id TEXT NOT NULL,
+                        reason TEXT NOT NULL,
+                        correlation_id TEXT NOT NULL,
+                        revision INTEGER NOT NULL,
+                        before_json TEXT,
+                        after_json TEXT,
+                        created_at TEXT NOT NULL DEFAULT (datetime('now'))
+                    );
+                    CREATE INDEX IF NOT EXISTS idx_entity_mutation_audit_resource
+                        ON entity_mutation_audit(resource_id, id DESC);
 
                     CREATE TABLE IF NOT EXISTS relationships (
                         from_id TEXT NOT NULL,
@@ -1405,7 +1424,7 @@ class Database:
             logger.debug("FTS5 not available, full-text search disabled")
 
         if not self._use_pg:
-            for col in ("status TEXT", "verified INTEGER DEFAULT 1"):
+            for col in ("status TEXT", "verified INTEGER DEFAULT 1", "revision INTEGER NOT NULL DEFAULT 1"):
                 try:
                     conn.execute(f"ALTER TABLE entities ADD COLUMN {col}")
                 except sqlite3.OperationalError:
@@ -1434,19 +1453,49 @@ class Database:
     def _entity_writer(self):
         return _entity_write.EntityWriteService(self)
 
-    def upsert_entity(self, entity: dict):
+    def _bump_sqlite_entity_revision(self, conn, before: dict | None, entity: dict) -> None:
+        """Mirror PostgreSQL content-diff revision semantics on SQLite."""
+        if self._use_pg or before is None:
+            return
+        defaults = {"summary": "", "description": "", "placeId": None,
+                    "confidence": 1.0, "season": None, "attributes": {},
+                    "images": [], "coordinates": None, "area": None}
+        tracked = ("name", "type", "summary", "description", "placeId",
+                   "confidence", "season", "attributes", "images",
+                   "coordinates", "area")
+        def value(source, name):
+            current = source.get(name, defaults.get(name))
+            return defaults[name] if current is None and name in {"attributes", "images"} else current
+        if any(value(before, name) != value(entity, name) for name in tracked):
+            self._execute(conn, "UPDATE entities SET revision = revision + 1 WHERE id = ?", (entity["id"],))
+
+    def upsert_entity(self, entity: dict, *, actor_id: str = "system",
+                      reason: str = "entity_upsert", correlation_id: str | None = None):
         """Insert or update an entity. Owns one transaction, delegates the writing."""
         self.initialize()
+        correlation_id = correlation_id or f"{reason}:{entity.get('id', '')}"
         with _entity_details.detail_cache_write_scope():
             with self._conn() as conn:
+                existing_row = self._fetchone(conn, f"SELECT * FROM entities WHERE id = {self._ph}", (entity["id"],))
+                old = self._parse_entity(existing_row) if existing_row else {}
                 mutations = self._entity_writer().upsert(conn, entity)
+                self._bump_sqlite_entity_revision(conn, old if existing_row else None, entity)
+                revision_row = self._fetchone(conn, f"SELECT revision FROM entities WHERE id = {self._ph}", (entity["id"],))
+                current_revision = int((self._row_to_dict(revision_row) or {}).get("revision") or 1)
+                from control_plane.saga import record_entity_mutation
+                record_entity_mutation(entity["id"], actor_id=actor_id, reason=reason,
+                                       correlation_id=correlation_id,
+                                       before=old, after=entity,
+                                       revision=current_revision, conn=conn, database=self)
                 snapshot = bump_generation(conn, entity["id"], "entity_upsert", "database.upsert_entity")
             # Only now: the transaction closed cleanly, so the change is real.
             _entity_details.apply_detail_cache_mutations(list(mutations))
         invalidate_entity(entity["id"], reason="entity_upsert", generation=snapshot.generation)
 
     def upsert_entity_with_audit(self, entity: dict, old: dict | None = None, *,
-                                 actor: str = "admin", provenance: str = "admin-editor"):
+                                 actor: str = "admin", provenance: str = "admin-editor",
+                                 reason: str | None = None, correlation_id: str | None = None,
+                                 conn=None):
         """Entity row, detail mirror and change audit under ONE transaction.
 
         Split across two, a failure between them leaves an edited entry with no
@@ -1454,11 +1503,34 @@ class Database:
         edit answerable afterwards.
         """
         self.initialize()
+        if conn is not None:
+            mutations = self._entity_writer().upsert(conn, entity)
+            self._bump_sqlite_entity_revision(conn, old if old else None, entity)
+            revision_row = self._fetchone(conn, f"SELECT revision FROM entities WHERE id = {self._ph}", (entity["id"],))
+            current_revision = int((self._row_to_dict(revision_row) or {}).get("revision") or 1)
+            self.log_entity_changes(entity.get("id", ""), old or {}, entity,
+                                    f"{actor}|{provenance}", conn=conn)
+            from control_plane.saga import record_entity_mutation
+            record_entity_mutation(entity.get("id", ""), actor_id=actor,
+                                   reason=reason or provenance,
+                                   correlation_id=correlation_id or actor,
+                                   before=old or {}, after=entity,
+                                   revision=current_revision, conn=conn, database=self)
+            return mutations
         with _entity_details.detail_cache_write_scope():
             with self._conn() as conn:
                 mutations = self._entity_writer().upsert(conn, entity)
+                self._bump_sqlite_entity_revision(conn, old if old else None, entity)
+                revision_row = self._fetchone(conn, f"SELECT revision FROM entities WHERE id = {self._ph}", (entity["id"],))
+                current_revision = int((self._row_to_dict(revision_row) or {}).get("revision") or 1)
                 self.log_entity_changes(entity.get("id", ""), old or {}, entity,
                                         f"{actor}|{provenance}", conn=conn)
+                from control_plane.saga import record_entity_mutation
+                record_entity_mutation(entity.get("id", ""), actor_id=actor,
+                                       reason=reason or provenance,
+                                       correlation_id=correlation_id or actor,
+                                       before=old or {}, after=entity,
+                                       revision=current_revision, conn=conn, database=self)
                 snapshot = bump_generation(conn, entity["id"], "entity_upsert", f"{actor}|{provenance}")
             _entity_details.apply_detail_cache_mutations(list(mutations))
         invalidate_entity(entity["id"], reason="entity_upsert", generation=snapshot.generation)
@@ -1607,12 +1679,15 @@ class Database:
             rows = self._fetchall(conn, f"SELECT * FROM entities WHERE id IN ({placeholders})", tuple(unique_ids))
         return {e["id"]: e for row in rows if (e := self._parse_entity(row))}
 
-    def delete_entity(self, entity_id: str) -> bool:
+    def delete_entity(self, entity_id: str, *, actor_id: str = "system",
+                      reason: str = "entity_delete", correlation_id: str | None = None) -> bool:
         """Delete entity and its relationships."""
         self.initialize()
         ph = self._ph
         with _entity_details.detail_cache_write_scope():
             with self._conn() as conn:
+                existing_row = self._fetchone(conn, f"SELECT * FROM entities WHERE id = {ph}", (entity_id,))
+                old = self._parse_entity(existing_row) if existing_row else {}
                 cur = self._execute(conn, f"DELETE FROM entities WHERE id = {ph}", (entity_id,))
                 self._execute(conn, f"DELETE FROM relationships WHERE from_id = {ph} OR to_id = {ph}",
                               (entity_id, entity_id))
@@ -1624,11 +1699,74 @@ class Database:
                     except sqlite3.OperationalError:
                         logger.debug("FTS5 delete skipped for entity %s", entity_id)
                 deleted = cur.rowcount > 0
+                if deleted:
+                    from control_plane.saga import record_entity_mutation
+                    record_entity_mutation(entity_id, actor_id=actor_id, reason=reason,
+                                           correlation_id=correlation_id or f"{reason}:{entity_id}",
+                                           before=old, after={}, revision=int(old.get("revision") or 0) + 1,
+                                           conn=conn, database=self)
                 snapshot = bump_generation(conn, entity_id, "entity_delete", "database.delete_entity") if deleted else None
             _entity_details.apply_detail_cache_mutations([mutation])
             if snapshot is not None:
                 invalidate_entity(entity_id, reason="entity_delete", generation=snapshot.generation)
             return deleted
+
+    def record_entity_mutation_audit(self, *, event_id: str, resource_id: str,
+                                     resource_type: str, actor_id: str, reason: str,
+                                     correlation_id: str, revision: int,
+                                     before: dict | None, after: dict | None,
+                                     occurred_at: str | None = None, conn=None, **_kwargs):
+        """Write an immutable envelope on the caller's transaction."""
+        self.initialize()
+        own = conn is None
+        manager = self._conn() if own else None
+        if own:
+            with manager as local:
+                return self.record_entity_mutation_audit(
+                    event_id=event_id, resource_id=resource_id,
+                    resource_type=resource_type, actor_id=actor_id,
+                    reason=reason, correlation_id=correlation_id,
+                    revision=revision, before=before, after=after,
+                    occurred_at=occurred_at, conn=local)
+        if not self._use_pg:
+            self._execute(conn, """INSERT INTO entity_mutation_audit
+                (event_id, resource_id, resource_type, actor_id, reason,
+                 correlation_id, revision, before_json, after_json, created_at)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, COALESCE(?, datetime('now')))""",
+                (event_id, resource_id, resource_type, actor_id, reason,
+                 correlation_id, revision,
+                 json.dumps(before, ensure_ascii=False, sort_keys=True, default=str) if before is not None else None,
+                 json.dumps(after, ensure_ascii=False, sort_keys=True, default=str) if after is not None else None,
+                 occurred_at))
+            return
+        # PostgreSQL already has the append-only admin audit table in schema 84;
+        # keep the envelope in its JSON metadata without runtime DDL.
+        self._execute(conn, """INSERT INTO admin_audit_events
+            (actor, method, path, request_id, reason, before_json, after_json, meta)
+            VALUES (%s, %s, %s, %s, %s, %s::jsonb, %s::jsonb, %s::jsonb)""",
+            (actor_id, "MUTATION", f"/{resource_type}/{resource_id}",
+             correlation_id, reason,
+             json.dumps(before, ensure_ascii=False, default=str) if before is not None else None,
+             json.dumps(after, ensure_ascii=False, default=str) if after is not None else None,
+             json.dumps({"event_id": event_id, "resource_id": resource_id,
+                         "resource_type": resource_type, "revision": revision,
+                         "correlation_id": correlation_id}, ensure_ascii=False)))
+
+    def get_entity_audit(self, resource_id: str | None = None, limit: int = 200) -> list[dict]:
+        self.initialize()
+        if self._use_pg:
+            ph = self._ph
+            where = f"WHERE method = 'MUTATION' AND meta->>'resource_id' = {ph}" if resource_id else "WHERE method = 'MUTATION'"
+            params = (resource_id, limit) if resource_id else (limit,)
+            with self._conn() as conn:
+                rows = self._fetchall(conn, f"SELECT actor AS actor_id, reason, request_id AS correlation_id, before_json, after_json, NULLIF(meta->>'revision', '')::integer AS revision, meta->>'event_id' AS event_id FROM admin_audit_events {where} ORDER BY created_at DESC LIMIT {ph}", params)
+            return [self._row_to_dict(r) for r in rows]
+        ph = self._ph
+        where = f"WHERE resource_id = {ph}" if resource_id else ""
+        params = (resource_id, limit) if resource_id else (limit,)
+        with self._conn() as conn:
+            rows = self._fetchall(conn, f"SELECT * FROM entity_mutation_audit {where} ORDER BY id DESC LIMIT {ph}", params)
+        return [self._row_to_dict(r) for r in rows]
 
     def search_entities(self, q: str = None, entity_type: str = None,
                         area: str = None, limit: int = 20, offset: int = 0,
@@ -1801,25 +1939,49 @@ class Database:
 
     # ── Relationships ──
 
-    def add_relationship(self, from_id: str, to_id: str, rel_type: str):
+    def add_relationship(self, from_id: str, to_id: str, rel_type: str, *,
+                         actor_id: str = "system", reason: str = "relationship_add",
+                         correlation_id: str | None = None):
         self.initialize()
         ph = self._ph
         with self._conn() as conn:
             if self._use_pg:
-                self._execute(conn, f"""
+                cur = self._execute(conn, f"""
                     INSERT INTO relationships (from_id, to_id, type) VALUES ({ph}, {ph}, {ph})
                     ON CONFLICT DO NOTHING
                 """, (from_id, to_id, rel_type))
             else:
-                conn.execute(
+                cur = conn.execute(
                     "INSERT OR IGNORE INTO relationships (from_id, to_id, type) VALUES (?, ?, ?)",
                     (from_id, to_id, rel_type))
+            if cur.rowcount:
+                from control_plane.saga import record_entity_mutation
+                record_entity_mutation(f"{from_id}:{to_id}:{rel_type}", actor_id=actor_id,
+                                       reason=reason, correlation_id=correlation_id or f"relationship:{from_id}:{to_id}:{rel_type}",
+                                       before={}, after={"from_id": from_id, "to_id": to_id, "type": rel_type},
+                                       revision=1, resource_type="relationship", conn=conn, database=self)
         try:
             from public_api import invalidate_entity_cache
             invalidate_entity_cache(from_id)
             invalidate_entity_cache(to_id)
         except Exception:
             logger.warning("Cache invalidation failed for %s / %s", from_id, to_id, exc_info=True)
+
+    def delete_relationship(self, from_id: str, to_id: str, rel_type: str, *,
+                            actor_id: str = "system", reason: str = "relationship_delete",
+                            correlation_id: str | None = None) -> bool:
+        self.initialize()
+        ph = self._ph
+        with self._conn() as conn:
+            cur = self._execute(conn, f"DELETE FROM relationships WHERE from_id={ph} AND to_id={ph} AND type={ph}", (from_id, to_id, rel_type))
+            if not cur.rowcount:
+                return False
+            from control_plane.saga import record_entity_mutation
+            record_entity_mutation(f"{from_id}:{to_id}:{rel_type}", actor_id=actor_id,
+                                   reason=reason, correlation_id=correlation_id or f"relationship:{from_id}:{to_id}:{rel_type}",
+                                   before={"from_id": from_id, "to_id": to_id, "type": rel_type}, after={},
+                                   revision=1, resource_type="relationship", conn=conn, database=self)
+        return True
 
     def _parse_coordinates(self, value) -> list[float] | None:
         current = _coord_decode_str(value)

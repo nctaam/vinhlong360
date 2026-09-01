@@ -33,6 +33,7 @@ AGENT_DIR = Path(__file__).resolve().parent
 PROJECT_DIR = AGENT_DIR.parent
 DATA_JSON = PROJECT_DIR / "web" / "data.json"
 ANALYTICS_FILE = AGENT_DIR / "data" / "analytics.json"
+_PROVISIONAL_AUDIT_CONTEXT: dict[str, tuple[str, str]] = {}
 
 
 def _load_kb() -> dict:
@@ -49,20 +50,32 @@ def _reload():
 
 # GĐ-audit (B1): DB là nguồn sự thật cho chat (knowledge.reload đọc DB). Mọi mutate KB
 # PHẢI ghi DB, không chỉ data.json (nếu chỉ data.json thì chat không thấy + bị export ghi đè).
-def _db_upsert(entity: dict):
+def _db_upsert(entity: dict, *, actor_id: str = "system", reason: str = "entity_upsert", strict: bool = False):
+    actor_id, reason = _PROVISIONAL_AUDIT_CONTEXT.pop(entity.get("id"), (actor_id, reason))
     try:
         from database import db
-        db.upsert_entity(entity)
+        db.upsert_entity(entity, actor_id=actor_id, reason=reason,
+                         correlation_id=f"{reason}:{entity.get('id', '')}")
+        return True
     except Exception as e:  # noqa: BLE001 - không để lỗi DB làm hỏng thao tác (data.json vẫn ghi)
-        logger.warning("DB upsert failed for %s: %s", entity.get("id"), e)
+        logger.exception("DB upsert failed for %s: %s", entity.get("id"), e)
+        if strict:
+            raise
+        return False
 
 
-def _db_delete(entity_id: str):
+def _db_delete(entity_id: str, *, actor_id: str = "system", reason: str = "entity_delete", strict: bool = False):
+    actor_id, reason = _PROVISIONAL_AUDIT_CONTEXT.pop(entity_id, (actor_id, reason))
     try:
         from database import db
-        db.delete_entity(entity_id)  # cascade xoá cả relationships + FTS
+        db.delete_entity(entity_id, actor_id=actor_id, reason=reason,
+                         correlation_id=f"{reason}:{entity_id}")
+        return True
     except Exception as e:  # noqa: BLE001
         logger.warning("DB delete failed for %s: %s", entity_id, e)
+        if strict:
+            raise
+        return False
 
 
 def _is_provisional(e: dict) -> bool:
@@ -106,6 +119,7 @@ def list_provisional() -> list:
 def promote(entity_id: str, review_token: str) -> dict:
     """Promote a provisional entity to verified (trusted)."""
     kb, version = load_json_versioned(DATA_JSON)
+    original = copy.deepcopy(kb)
     for e in kb["entities"]:
         if e["id"] == entity_id:
             if not _is_provisional(e):
@@ -118,7 +132,15 @@ def promote(entity_id: str, review_token: str) -> dict:
             promoted = copy.deepcopy(e)
             if not compare_and_swap_json(DATA_JSON, version, kb):
                 return {"ok": False, "error": "stale_review"}
-            _db_upsert(promoted)   # B1: ghi DB để chat thấy
+            _PROVISIONAL_AUDIT_CONTEXT[entity_id] = ("admin", "provisional_approve")
+            try:
+                db_result = _db_upsert(promoted)
+                if db_result is False:
+                    raise RuntimeError("db_write_failed")
+            except Exception:
+                current, current_version = load_json_versioned(DATA_JSON)
+                compare_and_swap_json(DATA_JSON, current_version, original)
+                return {"ok": False, "error": "db_write_failed"}
             _reload()
             return {"ok": True, "id": entity_id, "status": "verified"}
     return {"ok": False, "error": "not found"}
@@ -126,24 +148,28 @@ def promote(entity_id: str, review_token: str) -> dict:
 
 def reject(entity_id: str) -> dict:
     """Remove a provisional entity from the KB (rejected in review)."""
-    def apply_rejection(kb: dict) -> tuple[bool, dict]:
-        before = len(kb["entities"])
-        target = next((e for e in kb["entities"] if e["id"] == entity_id), None)
-        if target is None:
-            return False, {"ok": False, "error": "not found"}
-        if not _is_provisional(target):
-            return False, {"ok": False, "error": "refusing to delete a verified entity via reject"}
-        kb["entities"] = [e for e in kb["entities"] if e["id"] != entity_id]
-        kb["relationships"] = [
-            r for r in kb.get("relationships", [])
-            if r.get("from") != entity_id and r.get("to") != entity_id
-        ]
-        return True, {"ok": True, "id": entity_id, "removed": before - len(kb["entities"])}
-
-    result = mutate_json(DATA_JSON, apply_rejection)
-    if not result.get("ok"):
-        return result
-    _db_delete(entity_id)   # B1: xoá khỏi DB (cascade rels) để chat thấy
+    kb, version = load_json_versioned(DATA_JSON)
+    original = copy.deepcopy(kb)
+    before = len(kb["entities"])
+    target = next((e for e in kb["entities"] if e["id"] == entity_id), None)
+    if target is None:
+        return {"ok": False, "error": "not found"}
+    if not _is_provisional(target):
+        return {"ok": False, "error": "refusing to delete a verified entity via reject"}
+    kb["entities"] = [e for e in kb["entities"] if e["id"] != entity_id]
+    kb["relationships"] = [r for r in kb.get("relationships", []) if r.get("from") != entity_id and r.get("to") != entity_id]
+    if not compare_and_swap_json(DATA_JSON, version, kb):
+        return {"ok": False, "error": "stale_review"}
+    try:
+        _PROVISIONAL_AUDIT_CONTEXT[entity_id] = ("admin", "provisional_reject")
+        db_result = _db_delete(entity_id)
+        if db_result is False:
+            raise RuntimeError("db_write_failed")
+    except Exception:
+        current, current_version = load_json_versioned(DATA_JSON)
+        compare_and_swap_json(DATA_JSON, current_version, original)
+        return {"ok": False, "error": "db_write_failed"}
+    result = {"ok": True, "id": entity_id, "removed": before - len(kb["entities"])}
     _reload()
     return result
 
