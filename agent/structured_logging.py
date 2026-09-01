@@ -81,6 +81,13 @@ def _redact(value: object, key: str | None = None) -> object:
     return _digest(value, "message")
 
 
+def _redact_log_argument(value: object, key: str | None) -> object:
+    """Treat unlabelled interpolated strings as untrusted log content."""
+    if isinstance(value, str) and not _category(key, value):
+        return _digest(value, "text")
+    return _redact(value, key)
+
+
 def redact_event(event: Mapping[str, object]) -> dict[str, object]:
     """Return a JSON-safe event with sensitive values irreversibly summarized."""
     if not isinstance(event, Mapping):
@@ -130,7 +137,7 @@ class RedactingLogFilter(logging.Filter):
                 prefix = template[cursor:marker] if marker >= 0 else ""
                 match = re.search(r"([A-Za-z][A-Za-z0-9_-]*)\s*=\s*$", prefix)
                 key = match.group(1) if match else None
-                safe_args.append(_redact(value, key))
+                safe_args.append(_redact_log_argument(value, key))
                 cursor = marker + 1 if marker >= 0 else len(template)
             record.args = tuple(safe_args)
         except Exception:

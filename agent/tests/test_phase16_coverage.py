@@ -1691,8 +1691,12 @@ class TestDeepScanBatch5:
 
     def test_jsonl_rotation_atomic_write(self):
         """JSONL rotation must use atomic temp-rename for main file."""
-        src = _public_src()
+        # Rotation is a shared leaf used by public/community/admin writers;
+        # inspect the owner module rather than a consumer import statement.
+        src = (Path(__file__).resolve().parent.parent / "jsonl_store.py").read_text(encoding="utf-8")
         idx = src.find("_maybe_rotate_jsonl")
+        if idx < 0:
+            idx = src.find("def maybe_rotate_jsonl")
         assert idx > 0
         block = src[idx:idx+600]
         assert ".tmp" in block, "JSONL rotation must use temp file for atomic write"
