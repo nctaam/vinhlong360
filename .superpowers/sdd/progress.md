@@ -9,7 +9,7 @@ Task 3: complete (commits 6375bbb7..417f654f, review clean; final focused Python
 Task 4: complete (commits 417f654f..71a6a195, review clean; final controller 264 passed/96 skipped, disposable PostgreSQL 80 passed/schema 82/drop verified)
 Task 5: complete (commits 71a6a195..6e9f28f2, review clean; focused lifecycle/account 19 passed, frontend lifecycle/settings/chat 46 passed, disposable PostgreSQL schema 82 lifecycle/erasure 27 passed and database-after-drop None)
 Task 6: complete (commits a88464f3..dee72e5f, review clean; schema/publication fixes approved, focused 28 passed, disposable PostgreSQL schema 83/generation/teardown verified)
-Task 7: pending
+Task 7: complete (commits 1b4eebbd..017e175b, review clean; focused 434 passed/8 skipped/1 xfailed, migration gates 24 passed, disposable PostgreSQL schema 84/CAS/lease/teardown verified)
 Task 8: pending
 Task 9: pending
 Task 10: pending
