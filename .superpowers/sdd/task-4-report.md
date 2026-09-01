@@ -194,3 +194,22 @@ TDD and verification evidence:
 - Current controller gate: `python -m pytest agent/tests/test_case_proof_first.py agent/tests/test_correction_decisions.py agent/tests/test_correction_publication.py agent/tests/test_correction_publication_failure.py agent/tests/test_correction_create.py agent/tests/test_case_store.py agent/tests/test_case_audit.py agent/tests/test_case_outbox.py agent/tests/test_case_admin_api.py agent/tests/test_case_public_api.py agent/tests/test_correction_admin_http.py agent/tests/test_case_wiring.py agent/tests/test_case_domain.py agent/tests/test_case_idempotency_postgres.py -q --basetemp .tmp-task4-evidence-controller` -> 261 passed, 94 skipped, 1 existing Starlette deprecation warning.
 - Disposable PostgreSQL: `powershell -ExecutionPolicy Bypass -File .tmp-task4-pg-run.ps1` -> 80 passed in 28.83s after schema 82; the loopback-only database was dropped and verified absent, then the temporary cluster was removed.
 - `git diff --check` -> clean before commit.
+
+## Decision retry evidence normalization
+
+Implementation commit: `9c17b14a`.
+
+Findings fixed:
+
+- Decision commands now normalize supplied evidence through `usable_evidence()` before validation, idempotency digest generation, persistence, and replay.
+- Mixed retries with stale reporter evidence and valid evidence replay the original normalized receipt instead of binding the retry to a different evidence sequence.
+- Non-evidence outcomes retain only usable evidence lineage when evidence is supplied; evidence-bearing outcomes still reject when normalization leaves no usable evidence.
+
+TDD and verification evidence:
+
+- RED: `python -m pytest agent/tests/test_case_proof_first.py::test_decision_command_normalization_is_the_digest_and_replay_evidence_set -q --basetemp .tmp-task4-normalize-red` -> failed as expected before the normalization helper existed.
+- GREEN: the normalization unit test passed after implementation.
+- Focused: `python -m pytest agent/tests/test_case_proof_first.py agent/tests/test_correction_decisions.py -q --basetemp .tmp-task4-normalize-final` -> 53 passed, 4 skipped.
+- Controller gate: `python -m pytest agent/tests/test_case_proof_first.py agent/tests/test_correction_decisions.py agent/tests/test_correction_publication.py agent/tests/test_correction_publication_failure.py agent/tests/test_correction_create.py agent/tests/test_case_store.py agent/tests/test_case_audit.py agent/tests/test_case_outbox.py agent/tests/test_case_admin_api.py agent/tests/test_case_public_api.py agent/tests/test_correction_admin_http.py agent/tests/test_case_wiring.py agent/tests/test_case_domain.py agent/tests/test_case_idempotency_postgres.py -q --basetemp .tmp-task4-normalize-controller` -> 263 passed, 95 skipped, 1 existing Starlette deprecation warning.
+- Disposable PostgreSQL: `powershell -ExecutionPolicy Bypass -File .tmp-task4-pg-run.ps1` -> 80 passed in 27.28s after schema 82; the loopback-only database was dropped and verified absent, then the temporary cluster was removed. The new PostgreSQL regression remains skipped in the default environment without `VL360_TEST_DATABASE_URL`.
+- `git diff --check` -> clean before the implementation commit.
