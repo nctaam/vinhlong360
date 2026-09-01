@@ -520,3 +520,99 @@ def test_image_approval_db_failure_compensates_uploaded_objects(monkeypatch, iso
     assert storage.objects == set()
     assert image_suggestions.get_suggestion(sid)["status"] == "pending"
     assert isolated_sqlite_db.get_entity("e-fail")["images"] == []
+
+
+def test_cached_approval_receipt_is_not_replayed_for_a_different_request(monkeypatch, isolated_sqlite_db):
+    import control_plane.saga as saga
+
+    monkeypatch.setattr(saga, "db", isolated_sqlite_db)
+    saga._SAGA_RECEIPTS.clear()
+    saga._SAGA_RECEIPT_HASHES.clear()
+    saga._SAGA_RECEIPTS["same-key"] = saga.SagaReceipt("committed", "same-key")
+    saga._SAGA_RECEIPT_HASHES["same-key"] = "hash-for-another-suggestion"
+    assert saga.peek_approval_receipt("same-key", "s-1", "admin-1") is None
+
+
+def test_sqlite_idempotency_claim_has_one_winner_across_workers(monkeypatch, isolated_sqlite_db):
+    import control_plane.saga as saga
+    import image_suggestions
+
+    monkeypatch.setattr(saga, "db", isolated_sqlite_db)
+    monkeypatch.setattr(image_suggestions, "db", isolated_sqlite_db)
+    image_suggestions._table_ready = False
+    isolated_sqlite_db.upsert_entity({"id": "e-atomic", "name": "Entity", "type": "attraction", "images": []})
+    sid = image_suggestions.create_batch([{"entity_id": "e-atomic", "candidate_url": "https://example.test/a.jpg"}])["ids"][0]
+    outcomes = []
+
+    def worker():
+        outcomes.append(saga._claim_command("atomic-key", sid, "admin-1")[0])
+
+    threads = [threading.Thread(target=worker) for _ in range(2)]
+    for thread in threads:
+        thread.start()
+    for thread in threads:
+        thread.join(timeout=5)
+    assert sum(result.claimed for result in outcomes) == 1
+    assert sum(result.replayed for result in outcomes) == 1
+
+
+def test_database_commit_failure_is_marked_unknown_not_ordinary_rollback(isolated_sqlite_db, monkeypatch):
+    from database import TransactionOutcomeUnknown
+
+    monkeypatch.setattr(isolated_sqlite_db, "_finalize_connection", staticmethod(lambda conn, commit: (_ for _ in ()).throw(RuntimeError("commit_ack_lost"))))
+    with pytest.raises(TransactionOutcomeUnknown) as exc_info:
+        with isolated_sqlite_db._conn() as conn:
+            conn.execute("SELECT 1")
+    assert exc_info.value.commit_outcome_unknown is True
+
+
+def test_receipt_write_failure_is_visible_and_replays_across_workers(monkeypatch, isolated_sqlite_db):
+    from control_plane.saga import SagaStep, run_saga
+    import control_plane.saga as saga
+
+    monkeypatch.setattr(saga, "db", isolated_sqlite_db)
+    saga._SAGA_RECEIPTS.clear()
+    calls = []
+    original = saga.record_idempotency_receipt
+    monkeypatch.setattr(saga, "record_idempotency_receipt", lambda *args, **kwargs: (_ for _ in ()).throw(RuntimeError("ledger_down")))
+    first = run_saga([SagaStep("one", lambda: calls.append("run") or {"ok": True}, lambda _: None)], idempotency_key="receipt-fail")
+    assert first.durability_error == "RuntimeError"
+    saga._SAGA_RECEIPTS.clear()
+    monkeypatch.setattr(saga, "record_idempotency_receipt", original)
+    second = run_saga([SagaStep("one", lambda: calls.append("duplicate") or {"ok": True}, lambda _: None)], idempotency_key="receipt-fail")
+    assert second == first
+    assert calls == ["run"]
+
+
+def test_provider_empty_cover_is_compensated_and_stays_pending(monkeypatch, isolated_sqlite_db):
+    import image_suggestions
+    import control_plane.saga as saga
+
+    monkeypatch.setattr(saga, "db", isolated_sqlite_db)
+    monkeypatch.setattr(image_suggestions, "db", isolated_sqlite_db)
+    image_suggestions._table_ready = False
+    isolated_sqlite_db.upsert_entity({"id": "e-empty", "name": "Entity", "type": "attraction", "images": []})
+    sid = image_suggestions.create_batch([{"entity_id": "e-empty", "candidate_url": "https://example.test/a.jpg"}])["ids"][0]
+
+    class EmptyStorage(FakeStorage):
+        def upload_image_set(self, data, folder="entities", slug="img"):
+            del data, folder, slug
+            return {}
+
+    monkeypatch.setattr(saga, "storage", EmptyStorage())
+    monkeypatch.setattr(saga, "fetch_image_data", lambda suggestion: b"bytes")
+    result = saga.approve_image_suggestion(sid, "admin-1", idempotency_key="empty-cover")
+    assert result.status == "failed_compensated"
+    assert image_suggestions.get_suggestion(sid)["status"] == "pending"
+
+
+def test_update_description_and_cascade_relationship_delete_are_audited(isolated_sqlite_db):
+    isolated_sqlite_db.upsert_entity({"id": "audit-a", "name": "A", "type": "attraction", "images": []})
+    isolated_sqlite_db.upsert_entity({"id": "audit-b", "name": "B", "type": "attraction", "images": []})
+    isolated_sqlite_db.add_relationship("audit-a", "audit-b", "related_to", actor_id="admin-1")
+    assert isolated_sqlite_db.update_description("audit-a", "new", actor_id="admin-1", reason="correction")
+    assert isolated_sqlite_db.get_entity("audit-a")["revision"] == 2
+    isolated_sqlite_db.delete_entity("audit-a", actor_id="admin-1", reason="correction")
+    events = isolated_sqlite_db.get_entity_audit()
+    assert any(e["reason"] == "correction" and e["before_json"] and e["after_json"] for e in events)
+    assert any(e["reason"] == "relationship_cascade_delete" and e["before_json"] for e in events)

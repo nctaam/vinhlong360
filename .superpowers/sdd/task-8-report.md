@@ -74,3 +74,21 @@
 - If a later promotion fails and restoring an earlier DB row fails or is uncertain, the matching JSON promotion is retained and the response includes `degraded: true` with `reconciliation_required` IDs; it never silently leaves DB-verified/JSON-provisional state.
 - Regression evidence: `python -m pytest agent/tests/test_kb_curation.py -q --basetemp .tmp-task8-p1-focused` -> `24 passed in 4.43s`.
 - Follow-up regression covers structured unsuccessful compensation results (`{"ok": false}`), which are now treated as uncertain; focused curation/media evidence: `python -m pytest agent/tests/test_kb_curation.py agent/tests/test_media_saga.py agent/tests/test_media_gallery.py -q` -> `48 passed`.
+
+## Final Fix Wave
+
+- Database commit exceptions are wrapped as `TransactionOutcomeUnknown`; media
+  uploads are retained and returned as `commit_unknown` for reconciliation rather
+  than being compensated as pre-commit failures.
+- Cached saga receipts are replayed only after request-hash validation; SQLite
+  idempotency claims use atomic `INSERT OR IGNORE` ownership.
+- Receipt persistence failures are surfaced via `durability_error` and a direct
+  durable fallback write, allowing another worker to replay the exact receipt.
+- Provisional promotion reports `reconciliation_required` when its JSON CAS
+  rollback loses; description updates and cascaded relationship deletes now
+  carry before/after audit envelopes and revisions.
+- Image approvals reject empty, malformed, or explicitly missing provider cover /
+  credit responses before mutating the entity.
+
+Regression evidence: `python -m pytest agent/tests/test_media_saga.py
+agent/tests/test_kb_curation.py -q --basetemp=.tmp-task8-wave3` -> `54 passed`.

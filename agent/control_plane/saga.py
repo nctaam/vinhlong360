@@ -64,6 +64,7 @@ class SagaReceipt:
 
 
 _SAGA_RECEIPTS: dict[str, SagaReceipt] = {}
+_SAGA_RECEIPT_HASHES: dict[str, str] = {}
 _SAGA_LOCK = threading.RLock()
 _ENTITY_APPROVAL_LOCKS: dict[str, threading.Lock] = {}
 _ENTITY_APPROVAL_LOCKS_GUARD = threading.Lock()
@@ -123,9 +124,12 @@ def peek_approval_receipt(key: str, suggestion_id: str, actor_id: str) -> SagaRe
     """Read a durable approval receipt without claiming or running providers."""
     _ensure_idempotency_schema()
     request_hash = hashlib.sha256(f"image-approval:{suggestion_id}:{actor_id}".encode()).hexdigest()
+    normalized_key = str(key).strip()
     with _SAGA_LOCK:
-        cached = _SAGA_RECEIPTS.get(str(key).strip())
-    if cached is not None:
+        cached = _SAGA_RECEIPTS.get(normalized_key)
+        cached_hash = _SAGA_RECEIPT_HASHES.get(normalized_key)
+    # Validate the request hash before replaying any process-local receipt.
+    if cached is not None and cached_hash == request_hash:
         return cached
     with db._conn() as conn:
         ph = db._ph
@@ -136,12 +140,14 @@ def peek_approval_receipt(key: str, suggestion_id: str, actor_id: str) -> SagaRe
     meta = raw if isinstance(raw, dict) else json.loads(raw or "{}")
     if meta.get("request_hash") != request_hash:
         return SagaReceipt("idempotency_conflict", str(key).strip(), error="idempotency_key_reused")
-    return _receipt_from_data(meta.get("receipt")) or SagaReceipt("in_progress", str(key).strip(), error="idempotency_in_progress")
+    return _receipt_from_data(meta.get("receipt")) or SagaReceipt("in_progress", normalized_key, error="idempotency_in_progress")
 
 
 def _store_receipt(key: str, receipt: SagaReceipt, claim: ClaimResult | None = None) -> SagaReceipt:
     with _SAGA_LOCK:
         _SAGA_RECEIPTS[key] = receipt
+        if claim is not None and claim.request_hash:
+            _SAGA_RECEIPT_HASHES[key] = claim.request_hash
     if claim is not None and claim.claimed:
         try:
             with db._conn() as conn:
@@ -151,6 +157,17 @@ def _store_receipt(key: str, receipt: SagaReceipt, claim: ClaimResult | None = N
             receipt = SagaReceipt(receipt.status, receipt.idempotency_key, receipt.steps,
                                   receipt.error, receipt.orphan_cleanup_pending,
                                   type(exc).__name__, receipt.post_commit_effects)
+            # Keep the receipt durable even when the shared helper is
+            # unavailable (for example, a transient worker-local failure).
+            # A second worker can then replay the exact outcome instead of
+            # being stuck at an indistinguishable in-progress claim.
+            try:
+                with db._conn() as conn:
+                    ph = db._ph
+                    meta = json.dumps({"request_hash": claim.request_hash, "receipt": _receipt_data(receipt)})
+                    db._execute(conn, f"UPDATE request_idempotency_keys SET meta={ph} WHERE key={ph}", (meta, claim.key))
+            except Exception:
+                logger.error("saga receipt fallback persistence failed for %s", key, exc_info=True)
             with _SAGA_LOCK:
                 _SAGA_RECEIPTS[key] = receipt
     return receipt
@@ -366,7 +383,14 @@ def approve_image_suggestion(suggestion_id: str, actor_id: str, *, idempotency_k
                                          error=type(exc).__name__, orphan_cleanup_pending=orphan)
             _release_suggestion_claim(suggestion_id, claim_marker)
             return _store_receipt(key, result, claim)
-        cover = uploaded.get("md") or uploaded.get("lg") or uploaded.get("sm")
+        if not isinstance(uploaded, Mapping):
+            raise RuntimeError("provider_invalid_response")
+        if "credit" in uploaded and not uploaded.get("credit"):
+            raise RuntimeError("provider_missing_credit")
+        cover = next((uploaded.get(size) for size in ("md", "lg", "sm")
+                      if isinstance(uploaded.get(size), str) and uploaded.get(size).strip()), None)
+        if not cover or not (cover.startswith("/") or cover.startswith(("http://", "https://"))):
+            raise RuntimeError("provider_missing_cover")
         with _entity_approval_lock(suggestion["entity_id"]):
             with db._conn() as conn:
                 ph = db._ph
@@ -414,6 +438,14 @@ def approve_image_suggestion(suggestion_id: str, actor_id: str, *, idempotency_k
                                      post_commit_effects=post_commit_effects)
         return _store_receipt(key, result, claim)
     except Exception as exc:
+        if getattr(exc, "commit_outcome_unknown", False):
+            # The database may have committed. Never delete provider objects
+            # or release the claim as if this were a pre-commit failure.
+            result = _suggestion_receipt(
+                suggestion_id, actor_id, key, "commit_unknown",
+                error=type(exc).__name__, reconciliation_required=True,
+            )
+            return _store_receipt(key, result, claim)
         orphan = _cleanup_uploaded(storage, suggestion_id, uploaded)
         result = _suggestion_receipt(suggestion_id, actor_id, key,
                                      "failed_orphaned" if orphan else "failed_compensated",

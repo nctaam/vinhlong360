@@ -61,6 +61,8 @@ def _db_upsert(entity: dict, *, actor_id: str = "system", reason: str = "entity_
         logger.exception("DB upsert failed for %s: %s", entity.get("id"), e)
         if getattr(e, "committed", False):
             return {"ok": False, "committed": True, "error": "post_commit_effect_failed"}
+        if getattr(e, "commit_outcome_unknown", False):
+            return {"ok": False, "committed": "unknown", "error": "commit_outcome_unknown"}
         if strict:
             raise
         return False
@@ -77,6 +79,8 @@ def _db_delete(entity_id: str, *, actor_id: str = "system", reason: str = "entit
         logger.warning("DB delete failed for %s: %s", entity_id, e)
         if getattr(e, "committed", False):
             return {"ok": False, "committed": True, "error": "post_commit_effect_failed"}
+        if getattr(e, "commit_outcome_unknown", False):
+            return {"ok": False, "committed": "unknown", "error": "commit_outcome_unknown"}
         if strict:
             raise
         return False
@@ -185,8 +189,11 @@ def promote(entity_id: str, review_token: str) -> dict:
                 if db_result is False:
                     raise RuntimeError("db_write_failed")
             except Exception:
-                _rollback_promotion(entity_id, before, promoted)
-                return {"ok": False, "error": "db_write_failed"}
+                rolled_back = _rollback_promotion(entity_id, before, promoted)
+                return {"ok": False, "error": "db_write_failed"} if rolled_back else {
+                    "ok": False, "error": "db_write_failed", "degraded": True,
+                    "reconciliation_required": [entity_id],
+                }
             if isinstance(db_result, dict) and db_result.get("committed"):
                 _reload()
                 return {"ok": False, "error": "db_write_failed", "degraded": True,

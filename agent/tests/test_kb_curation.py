@@ -416,3 +416,11 @@ class TestAutoPromote:
         prov2 = next(x for x in data["entities"] if x["id"] == "prov-2")
         assert prov1["status"] == "verified" and prov1["verified"] is True
         assert prov2["status"] == "provisional" and prov2["verified"] is False
+
+    def test_promote_reports_reconciliation_when_json_rollback_cas_loses(self, kb_with_provisional, monkeypatch):
+        review = next(x for x in kb_curation.list_provisional() if x["id"] == "prov-1")
+        monkeypatch.setattr(kb_curation, "_db_upsert", lambda entity: (_ for _ in ()).throw(RuntimeError("db_down")))
+        monkeypatch.setattr(kb_curation, "_rollback_promotion", lambda *args: False)
+        result = kb_curation.promote("prov-1", review["review_token"])
+        assert result["degraded"] is True
+        assert result["reconciliation_required"] == ["prov-1"]

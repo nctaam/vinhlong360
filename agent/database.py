@@ -12,6 +12,7 @@ Usage:
   db.upsert_entity({...})
 """
 
+import copy
 import json
 import logging
 import math
@@ -37,6 +38,16 @@ class PostCommitMutationError(RuntimeError):
     def __init__(self, effect: str, cause: Exception) -> None:
         super().__init__(f"post_commit_{effect}_failed")
         self.effect = effect
+        self.cause = cause
+
+
+class TransactionOutcomeUnknown(RuntimeError):
+    """Commit raised after the server may have applied the transaction."""
+
+    commit_outcome_unknown = True
+
+    def __init__(self, cause: BaseException) -> None:
+        super().__init__("transaction_commit_outcome_unknown")
         self.cause = cause
 
 # ── Config ──
@@ -1152,7 +1163,12 @@ class Database:
         try:
             conn.autocommit = False
             yield conn
-            self._finalize_connection(conn, commit_on_success)
+            try:
+                self._finalize_connection(conn, commit_on_success)
+            except BaseException as exc:
+                if commit_on_success:
+                    raise TransactionOutcomeUnknown(exc) from exc
+                raise
             reusable = True
             committed_transaction = commit_on_success
         except BaseException as exc:
@@ -1192,7 +1208,12 @@ class Database:
             conn.execute("PRAGMA foreign_keys=ON")
             conn.execute("PRAGMA busy_timeout=5000")
             yield conn
-            self._finalize_connection(conn, commit_on_success)
+            try:
+                self._finalize_connection(conn, commit_on_success)
+            except BaseException as exc:
+                if commit_on_success:
+                    raise TransactionOutcomeUnknown(exc) from exc
+                raise
             committed_transaction = commit_on_success
         except BaseException as exc:
             primary_error = exc
@@ -1705,14 +1726,29 @@ class Database:
             with self._conn() as conn:
                 return _entity_details.load_detail_cache(conn, self._use_pg)
 
-    def update_description(self, entity_id: str, description: str):
-        """Update only the description field (won't be overwritten by upsert_entity)."""
+    def update_description(self, entity_id: str, description: str, *, actor_id: str = "system",
+                           reason: str = "description_update", correlation_id: str | None = None):
+        """Update description with revision and immutable before/after audit."""
         self.initialize()
         ph = self._ph
         with self._conn() as conn:
-            self._execute(conn, f"UPDATE entities SET description = {ph} WHERE id = {ph}", (description, entity_id))
+            existing_row = self._fetchone(conn, f"SELECT * FROM entities WHERE id = {ph}", (entity_id,))
+            if not existing_row:
+                return False
+            before = self._parse_entity(existing_row)
+            after = copy.deepcopy(before)
+            after["description"] = description
+            self._execute(conn, f"UPDATE entities SET description = {ph}, revision = revision + 1 WHERE id = {ph}", (description, entity_id))
+            revision_row = self._fetchone(conn, f"SELECT revision FROM entities WHERE id = {ph}", (entity_id,))
+            revision = int((self._row_to_dict(revision_row) or {}).get("revision") or int(before.get("revision") or 1) + 1)
+            from control_plane.saga import record_entity_mutation
+            record_entity_mutation(entity_id, actor_id=actor_id, reason=reason,
+                                   correlation_id=correlation_id or f"{reason}:{entity_id}",
+                                   before=before, after=after, revision=revision,
+                                   conn=conn, database=self)
             snapshot = bump_generation(conn, entity_id, "description_update", "database.update_description")
         invalidate_entity(entity_id, reason="description_update", generation=snapshot.generation)
+        return True
 
     def get_entity(self, entity_id: str) -> dict | None:
         """Get single entity by ID."""
@@ -1743,6 +1779,11 @@ class Database:
             with self._conn() as conn:
                 existing_row = self._fetchone(conn, f"SELECT * FROM entities WHERE id = {ph}", (entity_id,))
                 old = self._parse_entity(existing_row) if existing_row else {}
+                relationship_rows = self._fetchall(
+                    conn,
+                    f"SELECT from_id, to_id, type FROM relationships WHERE from_id = {ph} OR to_id = {ph}",
+                    (entity_id, entity_id),
+                )
                 cur = self._execute(conn, f"DELETE FROM entities WHERE id = {ph}", (entity_id,))
                 self._execute(conn, f"DELETE FROM relationships WHERE from_id = {ph} OR to_id = {ph}",
                               (entity_id, entity_id))
@@ -1760,6 +1801,17 @@ class Database:
                                            correlation_id=correlation_id or f"{reason}:{entity_id}",
                                            before=old, after={}, revision=int(old.get("revision") or 0) + 1,
                                            conn=conn, database=self)
+                    for rel_row in relationship_rows:
+                        rel = self._row_to_dict(rel_row) or {}
+                        rel_id = f"{rel.get('from_id')}:{rel.get('to_id')}:{rel.get('type')}"
+                        record_entity_mutation(
+                            rel_id,
+                            actor_id=actor_id,
+                            reason="relationship_cascade_delete",
+                            correlation_id=correlation_id or f"{reason}:{entity_id}:relationship",
+                            before={"from_id": rel.get("from_id"), "to_id": rel.get("to_id"), "type": rel.get("type")},
+                            after={}, revision=1, resource_type="relationship", conn=conn, database=self,
+                        )
                 snapshot = bump_generation(conn, entity_id, "entity_delete", "database.delete_entity") if deleted else None
             try:
                 _entity_details.apply_detail_cache_mutations([mutation])

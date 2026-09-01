@@ -196,10 +196,16 @@ def claim_idempotency(transaction, key: IdempotencyKey | str, request_hash: str)
             return ClaimResult(storage_key, claimed=True, request_hash=request_hash)
         row = db._fetchone(conn, "SELECT expires_at, meta FROM request_idempotency_keys WHERE key=%s FOR UPDATE", (storage_key,))
     else:
-        row = db._fetchone(conn, "SELECT expires_at, meta FROM request_idempotency_keys WHERE key=?", (storage_key,))
-        if row is None:
-            db._execute(conn, "INSERT INTO request_idempotency_keys(key, first_seen_at, expires_at, meta) VALUES (?,?,?,?)", (storage_key, now.isoformat(), expires.isoformat(), json.dumps({"request_hash": request_hash})))
+        # INSERT OR IGNORE is the claim itself; a preceding SELECT allows two
+        # SQLite workers to both observe an absent key and race into execution.
+        inserted = db._execute(
+            conn,
+            "INSERT OR IGNORE INTO request_idempotency_keys(key, first_seen_at, expires_at, meta) VALUES (?,?,?,?)",
+            (storage_key, now.isoformat(), expires.isoformat(), json.dumps({"request_hash": request_hash})),
+        )
+        if getattr(inserted, "rowcount", 0) == 1:
             return ClaimResult(storage_key, claimed=True, request_hash=request_hash)
+        row = db._fetchone(conn, "SELECT expires_at, meta FROM request_idempotency_keys WHERE key=?", (storage_key,))
     if row is None:
         return ClaimResult(storage_key, claimed=True, request_hash=request_hash)
     expiry = _row_value(row, "expires_at")

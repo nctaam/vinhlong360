@@ -685,19 +685,25 @@ async def upload_entity_image(entity_id: str, file: UploadFile = File(...)):
         raise HTTPException(500, "Không thể upload ảnh, vui lòng thử lại")
 
     cover = urls.get("md") or urls.get("lg")
+    if not isinstance(cover, str) or not cover.strip() or not (cover.startswith("/") or cover.startswith(("http://", "https://"))):
+        from control_plane.saga import cleanup_uploaded_media
+        cleanup_uploaded_media(storage, urls)
+        raise HTTPException(502, "Storage trả về URL ảnh không hợp lệ")
     images = list(entity.get("images") or [])
     if cover and cover not in images:
         images.append(cover)
     entity["images"] = images
     entity["updatedAt"] = datetime.now(timezone.utc).strftime("%Y-%m-%d")
     post_commit_effects = ()
+    commit_outcome_unknown = False
     try:
         db.upsert_entity(entity, actor_id="admin", reason="image_upload",
                          correlation_id=f"image-upload:{entity_id}")
     except Exception as exc:
-        if getattr(exc, "committed", False):
+        if getattr(exc, "committed", False) or getattr(exc, "commit_outcome_unknown", False):
+            commit_outcome_unknown = bool(getattr(exc, "commit_outcome_unknown", False))
             post_commit_effects = ({"effect": getattr(exc, "effect", "unknown"),
-                                    "status": "failed"},)
+                                    "status": "failed" if getattr(exc, "committed", False) else "unknown"},)
         else:
             from control_plane.saga import cleanup_uploaded_media
             orphan_cleanup = cleanup_uploaded_media(storage, urls)
@@ -714,7 +720,7 @@ async def upload_entity_image(entity_id: str, file: UploadFile = File(...)):
         logger.exception("Entity image post-commit sync failed for %s", entity_id)
         post_commit_effects = (*post_commit_effects,
                                {"effect": "kb_sync", "status": "failed"})
-    return {"status": "uploaded_degraded" if post_commit_effects else "uploaded",
+    return {"status": "commit_unknown" if commit_outcome_unknown else ("uploaded_degraded" if post_commit_effects else "uploaded"),
             "url": cover, "sizes": urls, "images": images, "backend": storage.backend,
             "post_commit_effects": post_commit_effects}
 
