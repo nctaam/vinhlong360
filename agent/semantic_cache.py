@@ -367,7 +367,17 @@ class MultiTierCache:
                     remote = merged.get(key)
                     expected = self._known_versions.get(key, 0)
                     remote_version = int(remote.get("version", 0) or 0) if isinstance(remote, dict) else 0
-                    if remote_version != expected and (remote is not None or expected != 0):
+                    # An explicit delete must win when this worker observed
+                    # the key as absent, even if another worker created it
+                    # before the delete reached the manifest.
+                    local_delete_of_unknown_key = bool(
+                        local and local.get("deleted") and expected == 0
+                    )
+                    if (
+                        remote_version != expected
+                        and (remote is not None or expected != 0)
+                        and not local_delete_of_unknown_key
+                    ):
                         if remote is None or remote.get("deleted"):
                             self._l2.pop(key, None)
                             if remote is None:

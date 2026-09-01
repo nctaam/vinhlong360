@@ -103,6 +103,28 @@ def test_semantic_cache_external_invalidate_evicts_stale_l1(tmp_path, monkeypatc
     assert first.get("cross worker delete") is None
 
 
+def test_semantic_cache_invalidate_after_missing_manifest_load_wins_over_remote_put(
+    tmp_path, monkeypatch
+):
+    import semantic_cache as cache_module
+
+    manifest = tmp_path / "entries.json"
+    monkeypatch.setattr(cache_module, "ENTRIES_FILE", manifest)
+    first = cache_module.MultiTierCache(cache_module.SemanticMatcher())
+    second = cache_module.MultiTierCache(cache_module.SemanticMatcher())
+
+    # Worker B snapshots an empty manifest before worker A creates the file.
+    assert second.get("missing manifest race") is None
+    first.put("missing manifest race", {"worker": "a"})
+
+    second.invalidate("missing manifest race")
+
+    assert first.get("missing manifest race") is None
+    key = cache_module._make_key("missing manifest race")
+    records = json.loads(manifest.read_text(encoding="utf-8"))
+    assert records[key]["deleted"] is True
+
+
 def test_semantic_cache_stale_put_cannot_resurrect_tombstone(tmp_path, monkeypatch):
     import semantic_cache as cache_module
 

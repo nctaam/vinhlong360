@@ -102,3 +102,14 @@
   compatibility and requests the catalog scan ceiling (`_FULL_SCAN_LIMIT`); it is
   still bounded if a future catalog exceeds that ceiling and should then expose a
   bounded-mode flag or move to the canonical relation API.
+
+## Final cross-worker invalidation regression
+
+- Added a regression for a worker that loaded a missing manifest before another
+  worker populated the key; an explicit invalidation now wins over that remote
+  value when the local expected version is zero, preserving the tombstone CAS
+  contract.
+- RED: `test_semantic_cache_invalidate_after_missing_manifest_load_wins_over_remote_put`
+  failed because the remote active value replaced the local tombstone.
+- GREEN: the focused regression and Task 9 cache suite pass after the deletion
+  conflict rule was narrowed to unknown-key tombstones.
