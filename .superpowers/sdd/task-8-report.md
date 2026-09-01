@@ -92,3 +92,16 @@
 
 Regression evidence: `python -m pytest agent/tests/test_media_saga.py
 agent/tests/test_kb_curation.py -q --basetemp=.tmp-task8-wave3` -> `54 passed`.
+
+## Malformed Provider / PostgreSQL Remediation
+
+- Provider upload responses are normalized defensively for compensation; list,
+  tuple, set, string, and object-shaped values cannot mask the saga receipt or
+  leave a pending claim marker behind when the response is invalid.
+- Cover size fields are validated individually and malformed credit fields are
+  rejected before entity mutation; invalid responses return
+  `failed_compensated` or `failed_orphaned` receipts and remain pending.
+- The PostgreSQL receipt fallback now casts the serialized metadata parameter to
+  `jsonb`, matching `record_idempotency_receipt`.
+- Regression evidence: malformed upload/cover/credit and PG fallback tests pass
+  in `agent/tests/test_media_saga.py`.

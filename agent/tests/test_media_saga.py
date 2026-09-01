@@ -606,6 +606,114 @@ def test_provider_empty_cover_is_compensated_and_stays_pending(monkeypatch, isol
     assert image_suggestions.get_suggestion(sid)["status"] == "pending"
 
 
+def test_provider_non_mapping_upload_is_compensated_releases_claim_and_replays(
+    monkeypatch, isolated_sqlite_db
+):
+    import image_suggestions
+    import control_plane.saga as saga
+
+    monkeypatch.setattr(saga, "db", isolated_sqlite_db)
+    monkeypatch.setattr(image_suggestions, "db", isolated_sqlite_db)
+    image_suggestions._table_ready = False
+    isolated_sqlite_db.upsert_entity({"id": "e-malformed", "name": "Entity", "type": "attraction", "images": []})
+    sid = image_suggestions.create_batch(
+        [{"entity_id": "e-malformed", "candidate_url": "https://example.test/a.jpg"}]
+    )["ids"][0]
+
+    class ListStorage(FakeStorage):
+        def upload_image_set(self, data, folder="entities", slug="img"):
+            urls = super().upload_image_set(data, folder, slug)
+            return list(urls.values())
+
+    upload_storage = ListStorage()
+    monkeypatch.setattr(saga, "storage", upload_storage)
+    monkeypatch.setattr(saga, "fetch_image_data", lambda suggestion: b"bytes")
+
+    first = saga.approve_image_suggestion(sid, "admin-1", idempotency_key="malformed-upload")
+
+    assert first.status == "failed_compensated"
+    assert first.error == "RuntimeError"
+    assert first.orphan_cleanup_pending is False
+    assert upload_storage.objects == set()
+    suggestion = image_suggestions.get_suggestion(sid)
+    assert suggestion["status"] == "pending"
+    assert suggestion.get("approved_by") in (None, "")
+    assert saga.approve_image_suggestion(sid, "admin-1", idempotency_key="malformed-upload") == first
+
+
+@pytest.mark.parametrize(
+    "provider_response",
+    [
+        {"md": {"url": "/media/entities/object-md.webp"}, "lg": "/media/entities/object-lg.webp"},
+        {"md": "/media/entities/object-md.webp", "credit": {"author": "bad"}},
+    ],
+)
+def test_provider_malformed_cover_or_credit_is_rejected_before_entity_mutation(
+    monkeypatch, isolated_sqlite_db, provider_response
+):
+    import image_suggestions
+    import control_plane.saga as saga
+
+    monkeypatch.setattr(saga, "db", isolated_sqlite_db)
+    monkeypatch.setattr(image_suggestions, "db", isolated_sqlite_db)
+    image_suggestions._table_ready = False
+    isolated_sqlite_db.upsert_entity({"id": "e-malformed-fields", "name": "Entity", "type": "attraction", "images": []})
+    sid = image_suggestions.create_batch(
+        [{"entity_id": "e-malformed-fields", "candidate_url": "https://example.test/a.jpg"}]
+    )["ids"][0]
+
+    class MalformedFieldStorage(FakeStorage):
+        def upload_image_set(self, data, folder="entities", slug="img"):
+            del data, folder, slug
+            return provider_response
+
+    monkeypatch.setattr(saga, "storage", MalformedFieldStorage())
+    monkeypatch.setattr(saga, "fetch_image_data", lambda suggestion: b"bytes")
+
+    result = saga.approve_image_suggestion(sid, "admin-1", idempotency_key=f"malformed-field-{sid}")
+
+    assert result.status == "failed_compensated"
+    assert isolated_sqlite_db.get_entity("e-malformed-fields")["images"] == []
+    suggestion = image_suggestions.get_suggestion(sid)
+    assert suggestion["status"] == "pending"
+    assert suggestion.get("approved_by") in (None, "")
+
+
+def test_store_receipt_pg_fallback_casts_meta_to_jsonb(monkeypatch):
+    import control_plane.saga as saga
+    from control_plane.concurrency import ClaimResult
+
+    class _Connection:
+        def __enter__(self):
+            return self
+
+        def __exit__(self, exc_type, exc, tb):
+            return False
+
+    class FakePG:
+        _use_pg = True
+        _ph = "%s"
+
+        def _conn(self):
+            return _Connection()
+
+        def _execute(self, conn, sql, params):
+            self.sql = sql
+            self.params = params
+
+    fake_db = FakePG()
+    monkeypatch.setattr(saga, "db", fake_db)
+    monkeypatch.setattr(saga, "record_idempotency_receipt", lambda *args, **kwargs: (_ for _ in ()).throw(RuntimeError("ledger_down")))
+    claim = ClaimResult("receipt-pg", claimed=True, request_hash="hash")
+    receipt = saga.SagaReceipt("committed", "receipt-pg")
+
+    stored = saga._store_receipt("receipt-pg", receipt, claim)
+
+    assert stored.durability_error == "RuntimeError"
+    assert "meta=%s::jsonb" in fake_db.sql
+    assert fake_db.params[1] == "receipt-pg"
+
+
 def test_update_description_and_cascade_relationship_delete_are_audited(isolated_sqlite_db):
     isolated_sqlite_db.upsert_entity({"id": "audit-a", "name": "A", "type": "attraction", "images": []})
     isolated_sqlite_db.upsert_entity({"id": "audit-b", "name": "B", "type": "attraction", "images": []})

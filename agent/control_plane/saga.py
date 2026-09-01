@@ -165,7 +165,8 @@ def _store_receipt(key: str, receipt: SagaReceipt, claim: ClaimResult | None = N
                 with db._conn() as conn:
                     ph = db._ph
                     meta = json.dumps({"request_hash": claim.request_hash, "receipt": _receipt_data(receipt)})
-                    db._execute(conn, f"UPDATE request_idempotency_keys SET meta={ph} WHERE key={ph}", (meta, claim.key))
+                    cast = "::jsonb" if getattr(db, "_use_pg", False) else ""
+                    db._execute(conn, f"UPDATE request_idempotency_keys SET meta={ph}{cast} WHERE key={ph}", (meta, claim.key))
             except Exception:
                 logger.error("saga receipt fallback persistence failed for %s", key, exc_info=True)
             with _SAGA_LOCK:
@@ -285,10 +286,46 @@ def _suggestion_receipt(suggestion_id: str, actor_id: str, key: str, status: str
                        post_commit_effects=post_commit_effects)
 
 
-def _cleanup_uploaded(storage_obj, suggestion_id: str, uploaded: Mapping[str, Any] | None = None) -> bool:
+def _uploaded_values(uploaded: Any) -> list[Any]:
+    """Extract candidate object keys without trusting a provider response shape."""
+    if isinstance(uploaded, Mapping):
+        values: list[Any] = []
+        for value in uploaded.values():
+            if isinstance(value, Mapping):
+                for field in ("url", "key", "path"):
+                    nested = value.get(field)
+                    if nested:
+                        values.append(nested)
+            else:
+                values.append(value)
+        return values
+    if isinstance(uploaded, (list, tuple, set, frozenset)):
+        return list(uploaded)
+    if isinstance(uploaded, str):
+        return [uploaded]
+    urls = getattr(uploaded, "urls", None)
+    if isinstance(urls, Mapping):
+        return list(urls.values())
+    if isinstance(urls, (list, tuple, set, frozenset)):
+        return list(urls)
+    values = getattr(uploaded, "values", None)
+    if callable(values):
+        try:
+            return list(values())
+        except Exception:
+            return []
+    return []
+
+
+def _cleanup_uploaded(storage_obj, suggestion_id: str, uploaded: Any = None) -> bool:
     failed = False
-    values = list((uploaded or {}).values())
-    values.extend(v for v in list(getattr(storage_obj, "objects", ())) if suggestion_id in str(v))
+    values = _uploaded_values(uploaded)
+    try:
+        existing = list(getattr(storage_obj, "objects", ()))
+    except Exception:
+        existing = []
+        failed = True
+    values.extend(v for v in existing if suggestion_id in str(v))
     for value in dict.fromkeys(str(v) for v in values if v):
         try:
             storage_obj.delete(value)
@@ -297,10 +334,10 @@ def _cleanup_uploaded(storage_obj, suggestion_id: str, uploaded: Mapping[str, An
     return failed
 
 
-def cleanup_uploaded_media(storage_obj, uploaded: Mapping[str, Any] | None = None) -> bool:
+def cleanup_uploaded_media(storage_obj, uploaded: Any = None) -> bool:
     """Compensate provider objects before an entity mutation has committed."""
     failed = False
-    for value in dict.fromkeys(str(v) for v in (uploaded or {}).values() if v):
+    for value in dict.fromkeys(str(v) for v in _uploaded_values(uploaded) if v):
         try:
             storage_obj.delete(value)
         except Exception:
@@ -377,7 +414,11 @@ def approve_image_suggestion(suggestion_id: str, actor_id: str, *, idempotency_k
         except Exception as exc:
             # Providers can fail after creating objects; clean up any URLs they
             # exposed on the exception or partial return path.
-            orphan = _cleanup_uploaded(storage, suggestion_id, getattr(exc, "urls", {}))
+            try:
+                orphan = _cleanup_uploaded(storage, suggestion_id, getattr(exc, "urls", {}))
+            except Exception:
+                logger.error("media compensation failed for %s", suggestion_id, exc_info=True)
+                orphan = True
             result = _suggestion_receipt(suggestion_id, actor_id, key,
                                          "failed_orphaned" if orphan else "failed_compensated",
                                          error=type(exc).__name__, orphan_cleanup_pending=orphan)
@@ -385,12 +426,27 @@ def approve_image_suggestion(suggestion_id: str, actor_id: str, *, idempotency_k
             return _store_receipt(key, result, claim)
         if not isinstance(uploaded, Mapping):
             raise RuntimeError("provider_invalid_response")
-        if "credit" in uploaded and not uploaded.get("credit"):
-            raise RuntimeError("provider_missing_credit")
-        cover = next((uploaded.get(size) for size in ("md", "lg", "sm")
-                      if isinstance(uploaded.get(size), str) and uploaded.get(size).strip()), None)
-        if not cover or not (cover.startswith("/") or cover.startswith(("http://", "https://"))):
+        # Every returned size must be a usable URL/path; accepting one valid
+        # size while silently ignoring a malformed sibling can hide provider
+        # corruption and leave an incomplete media set.
+        normalized_uploaded: dict[str, str] = {}
+        for size in ("sm", "md", "lg"):
+            if size not in uploaded:
+                continue
+            value = uploaded.get(size)
+            if not isinstance(value, str) or not value.strip() or not (
+                value.strip().startswith("/") or value.strip().startswith(("http://", "https://"))
+            ):
+                raise RuntimeError("provider_malformed_cover")
+            normalized_uploaded[size] = value.strip()
+        if not normalized_uploaded:
             raise RuntimeError("provider_missing_cover")
+        if "credit" in uploaded:
+            credit = uploaded.get("credit")
+            if not isinstance(credit, str) or not credit.strip():
+                raise RuntimeError("provider_malformed_credit")
+        uploaded = normalized_uploaded
+        cover = uploaded.get("md") or uploaded.get("lg") or uploaded.get("sm")
         with _entity_approval_lock(suggestion["entity_id"]):
             with db._conn() as conn:
                 ph = db._ph
@@ -446,7 +502,13 @@ def approve_image_suggestion(suggestion_id: str, actor_id: str, *, idempotency_k
                 error=type(exc).__name__, reconciliation_required=True,
             )
             return _store_receipt(key, result, claim)
-        orphan = _cleanup_uploaded(storage, suggestion_id, uploaded)
+        try:
+            orphan = _cleanup_uploaded(storage, suggestion_id, uploaded)
+        except Exception:
+            # A malformed provider object must not mask the saga receipt or
+            # prevent releasing the pending-row claim.
+            logger.error("media compensation failed for %s", suggestion_id, exc_info=True)
+            orphan = True
         result = _suggestion_receipt(suggestion_id, actor_id, key,
                                      "failed_orphaned" if orphan else "failed_compensated",
                                      error=type(exc).__name__, orphan_cleanup_pending=orphan)
