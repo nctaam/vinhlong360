@@ -122,6 +122,46 @@ _otp_verify_phone_rate: dict[str, list[float]] = {}
 ACCOUNT_DELETE_GRACE_DAYS = _cfg.ACCOUNT_DELETE_GRACE_DAYS
 _CLEANUP_LEASES: dict[str, Lock] = {}
 _CLEANUP_LEASES_GUARD = Lock()
+_EXPORT_CURSOR_SECRET: bytes | None = None
+
+
+def _export_cursor_secret() -> bytes:
+    """Use deployment auth material; only development gets an ephemeral secret."""
+    global _EXPORT_CURSOR_SECRET
+    if _EXPORT_CURSOR_SECRET is not None:
+        return _EXPORT_CURSOR_SECRET
+    configured = os.getenv("EXPORT_CURSOR_SECRET") or _cfg.JWT_SECRET or _cfg.ADMIN_API_KEY
+    if configured:
+        _EXPORT_CURSOR_SECRET = str(configured).encode("utf-8")
+        return _EXPORT_CURSOR_SECRET
+    if _cfg.is_production:
+        raise RuntimeError("EXPORT_CURSOR_SECRET is required in production")
+    _EXPORT_CURSOR_SECRET = secrets.token_bytes(32)
+    return _EXPORT_CURSOR_SECRET
+
+
+def _sign_export_cursor(inner: str, subject_id: str) -> str:
+    payload = json.dumps({"subject": hashlib.sha256(str(subject_id).encode()).hexdigest(), "cursor": str(inner)}, separators=(",", ":")).encode()
+    body = base64.urlsafe_b64encode(payload).decode().rstrip("=")
+    sig = hmac.new(_export_cursor_secret(), body.encode(), hashlib.sha256).hexdigest()
+    return f"{body}.{sig}"
+
+
+def _verify_export_cursor(token: str | None, subject_id: str) -> str | None:
+    if not token or "." not in token:
+        return None
+    body, sig = token.rsplit(".", 1)
+    expected = hmac.new(_export_cursor_secret(), body.encode(), hashlib.sha256).hexdigest()
+    if not hmac.compare_digest(sig, expected):
+        return None
+    try:
+        padded = body + "=" * (-len(body) % 4)
+        payload = json.loads(base64.urlsafe_b64decode(padded.encode()).decode())
+        if payload.get("subject") != hashlib.sha256(str(subject_id).encode()).hexdigest():
+            return None
+        return str(payload["cursor"])
+    except Exception:
+        return None
 
 
 def _utc_now() -> datetime:
@@ -1773,6 +1813,11 @@ async def export_user_data(request: Request, response: Response, cursor: str | N
     if cursor is None:
         check_rate(f"export-data:{user['id']}", 2, 86400, "Chỉ được bắt đầu xuất dữ liệu 2 lần/ngày.")
     uid = str(user["id"])
+    inner_cursor = None
+    if cursor is not None:
+        inner_cursor = _verify_export_cursor(cursor, uid)
+        if inner_cursor is None:
+            raise HTTPException(400, "Cursor xuất dữ liệu không hợp lệ hoặc đã hết hạn.")
     ph = db._ph
     page_limit = int(limit)
 
@@ -1780,7 +1825,7 @@ async def export_user_data(request: Request, response: Response, cursor: str | N
         with db._conn() as conn:
             _EXPORT_CAP = page_limit + 1
             def _legacy_limit(name: str) -> str:
-                return f"LIMIT {_EXPORT_CAP} OFFSET {_legacy_cursor_offsets(cursor, name)}"
+                return f"LIMIT {_EXPORT_CAP} OFFSET {_legacy_cursor_offsets(inner_cursor, name)}"
             posts = db._fetchall(conn, f"""
                 SELECT p.id, p.content, p.post_type, p.rating, p.entity_id,
                        e.name as entity_name,
@@ -1851,9 +1896,10 @@ async def export_user_data(request: Request, response: Response, cursor: str | N
         legacy_meta = {}
         for name, rows in raw.items():
             values = rows
-            offset = _legacy_cursor_offsets(cursor, name)
+            offset = _legacy_cursor_offsets(inner_cursor, name)
+            next_cursor = _legacy_next_cursor(name, offset + page_limit, len(rows) > page_limit)
             legacy_meta[name] = {"count": len(values), "truncated": len(rows) > page_limit,
-                                 "next_cursor": _legacy_next_cursor(name, offset + page_limit, len(rows) > page_limit)}
+                                 "next_cursor": _sign_export_cursor(next_cursor, uid) if next_cursor else None}
             payload[name] = values[:page_limit]
         return payload, legacy_meta
 
@@ -1876,10 +1922,13 @@ async def export_user_data(request: Request, response: Response, cursor: str | N
     try:
         from control_plane.lifecycle import export_subject
 
-        lifecycle_bundle = await asyncio.to_thread(export_subject, uid, cursor=cursor, limit=page_limit)
+        lifecycle_bundle = await asyncio.to_thread(export_subject, uid, cursor=inner_cursor, limit=page_limit)
         lifecycle_manifest = lifecycle_bundle.manifest
         lifecycle_data = lifecycle_bundle.data
         lifecycle_manifest.setdefault("legacy", legacy_manifest)
+        for sink in lifecycle_manifest.get("sinks", {}).values():
+            if sink.get("next_cursor"):
+                sink["next_cursor"] = _sign_export_cursor(sink["next_cursor"], uid)
     except Exception as exc:
         lifecycle_manifest = {
             "schema_version": "1",

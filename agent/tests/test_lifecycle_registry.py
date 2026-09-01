@@ -149,3 +149,11 @@ def test_legacy_export_cursor_decodes_per_dataset():
     token = lifecycle._encode_cursor('{"sink":"posts","offset":3}')
     assert _legacy_cursor_offsets(token, "posts") == 3
     assert _legacy_cursor_offsets(token, "comments") == 0
+
+
+def test_export_cursor_provenance_rejects_forged_tokens():
+    from identity.api import _verify_export_cursor, _sign_export_cursor
+    signed = _sign_export_cursor("inner", "subject-1")
+    assert _verify_export_cursor(signed, "subject-1") == "inner"
+    assert _verify_export_cursor(signed, "subject-2") is None
+    assert _verify_export_cursor("ZmFrZQ", "subject-1") is None

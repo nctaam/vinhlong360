@@ -67,3 +67,10 @@ Concerns: PostgreSQL keyset behavior is covered by SQL contract tests only; no d
 - `python -m ruff check agent/control_plane/lifecycle.py agent/identity/api.py agent/storage.py`, `python -m py_compile ...`, and `git diff --check` -> passed.
 
 Fixes: cursors now apply offsets only to their matching sink; every legacy export dataset honors a cursor-scoped offset and emits a next cursor in manifest metadata. No disposable PostgreSQL database was available, so no fresh PG evidence is claimed.
+
+## Review v9 Rate-Limit Provenance Fix
+
+- RED: `python -m pytest agent/tests/test_lifecycle_registry.py::test_export_cursor_provenance_rejects_forged_tokens -q --basetemp=.tmp-task5-rate-red` -> import failure because cursor signing helpers were absent.
+- GREEN: `python -m pytest agent/tests/test_lifecycle_registry.py -q --basetemp=.tmp-task5-secret-green` -> `13 passed`.
+- Export continuation cursors are now HMAC-bound to the subject and rejected when fabricated or signed for another subject. Secret derives from `EXPORT_CURSOR_SECRET`, `JWT_SECRET`, or `ADMIN_API_KEY`; production fails closed if none is configured, while development uses an ephemeral process secret.
+- `python -m py_compile agent/identity/api.py` and Ruff -> passed.
