@@ -26,8 +26,10 @@ import logging
 from pathlib import Path
 
 from versioned_json_store import compare_and_swap_json, load_json, load_json_versioned, mutate_json
+from structured_logging import install_redaction_filter
 
 logger = logging.getLogger(__name__)
+install_redaction_filter(logger)
 
 AGENT_DIR = Path(__file__).resolve().parent
 PROJECT_DIR = AGENT_DIR.parent

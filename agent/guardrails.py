@@ -20,6 +20,10 @@ import logging
 import os
 import re
 import time
+import base64
+import binascii
+import unicodedata
+from urllib.parse import unquote_plus
 from dataclasses import dataclass
 from pathlib import Path
 from threading import Lock
@@ -27,6 +31,17 @@ from threading import Lock
 from owner_write_gate import owner_write_gate
 
 logger = logging.getLogger(__name__)
+
+
+@dataclass(frozen=True)
+class GuardrailDecision:
+    """Stable, non-sensitive result for prompt trust decisions."""
+
+    action: str
+    reason_code: str
+
+    def __repr__(self) -> str:
+        return f"GuardrailDecision(action={self.action!r}, reason_code={self.reason_code!r})"
 
 DATA_DIR = Path(__file__).resolve().parent / "data"
 DATA_DIR.mkdir(exist_ok=True)
@@ -67,11 +82,14 @@ class PromptInjectionDetector:
             ("pretend_you",
              re.compile(r"pretend\s+(you\s+are|to\s+be|you'?re)\s+", re.IGNORECASE)),
             ("jailbreak_keyword",
-             re.compile(r"\b(jailbreak|DAN|do\s+anything\s+now|bypass\s+filters?)\b", re.IGNORECASE)),
+             re.compile(
+                 r"\b(?:jailbreak|do\s+anything\s+now|bypass\s+filters?)\b|"
+                 r"(?<![A-Za-z])(?-i:DAN)(?![A-Za-z])",
+                 re.IGNORECASE)),
             ("role_injection_markdown",
              re.compile(r"(###\s*(System|Assistant|User)\s*:|```\s*system)", re.IGNORECASE)),
             ("prompt_leaking_repeat",
-             re.compile(r"(repeat|show|print|display|reveal|output)\s+(your\s+)?(system\s+)?(prompt|instructions?|rules?|initial\s+message)",
+             re.compile(r"(repeat|show|print|display|reveal|output)\s+(?:(?:me|us)\s+)?(your\s+)?(system\s+)?(prompt|instructions?|rules?|initial\s+message)",
                         re.IGNORECASE)),
             ("prompt_leaking_what",
              re.compile(r"what\s+(are|is)\s+your\s+(system\s+)?(prompt|instructions?|rules?|initial\s+message)",
@@ -91,8 +109,13 @@ class PromptInjectionDetector:
             # --- Aggressive combined patterns ---
             ("ignore_instructions_phrase",
              re.compile(r"ignore\s+.*?(previous|above|instructions?)", re.IGNORECASE)),
+            ("ignore_previous_compact",
+             re.compile(r"ignorepreviousinstructions?", re.IGNORECASE)),
             ("role_hijack",
              re.compile(r"(you\s+are\s+now|act\s+as)\s+.{0,30}(hacker|admin|root|assistant|bot|AI|agent)",
+                        re.IGNORECASE)),
+            ("vn_unrestricted_role",
+             re.compile(r"dong\s+vai\s+tro\s+.{0,40}(khong\s+gioi\s+han|unrestricted|tu\s+do)",
                         re.IGNORECASE)),
 
             # --- Vietnamese injection ---
@@ -168,6 +191,43 @@ class PromptInjectionDetector:
             "score": round(score, 4),
             "patterns_matched": matched,
         }
+
+
+def _prompt_variants(text: str) -> tuple[str, ...]:
+    """Build bounded decoded/normalized variants without retaining user text."""
+    normalized = unicodedata.normalize("NFKC", text).replace("\u200b", "")
+    variants = [normalized, unquote_plus(normalized)]
+    folded = "".join(
+        char for char in unicodedata.normalize("NFKD", variants[-1])
+        if not unicodedata.combining(char)
+    )
+    variants.append(re.sub(r"[^a-z0-9]+", " ", folded.lower()))
+    compact = re.sub(r"[^a-z0-9]", "", folded.lower())
+    if compact:
+        variants.append(compact)
+    candidate = variants[1].strip()
+    if len(candidate) <= 2048 and re.fullmatch(r"[A-Za-z0-9+/=_-]{20,}", candidate):
+        try:
+            decoded = base64.b64decode(candidate + "=" * (-len(candidate) % 4), validate=False)
+            decoded_text = decoded.decode("utf-8", errors="ignore")
+            if decoded_text:
+                variants.append(decoded_text)
+        except (binascii.Error, ValueError):
+            pass
+    return tuple(dict.fromkeys(variants))
+
+
+def check_prompt_injection(text: str) -> GuardrailDecision:
+    """Classify untrusted text without returning or logging its raw contents."""
+    if not isinstance(text, str):
+        return GuardrailDecision("block", "prompt_injection_invalid_input")
+    if not text.strip():
+        return GuardrailDecision("allow", "prompt_injection_none")
+    for variant in _prompt_variants(text):
+        result = injection_detector.detect(variant)
+        if result["is_injection"] or result["patterns_matched"]:
+            return GuardrailDecision("block", "prompt_injection_detected")
+    return GuardrailDecision("allow", "prompt_injection_none")
 
 
 # ══════════════════════════════════════════════════

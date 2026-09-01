@@ -628,7 +628,12 @@ app.include_router(case_admin_router)
 # case route stays a clean 404. With it on, every case module is configured
 # against the live database — or none are, and the reason is in the log.
 from cases.wiring import wire_case_kernel  # noqa: E402
-from config import settings as _case_settings  # noqa: E402
+from config import assert_production_config, settings as _case_settings  # noqa: E402
+
+# Validate the complete production contract before constructing the app. This
+# keeps unsafe secrets, database URLs, and CORS from reaching application code.
+if _case_settings.is_production:
+    assert_production_config(_case_settings)
 from database import db as _case_db  # noqa: E402
 
 wire_case_kernel(_case_db, _case_settings)

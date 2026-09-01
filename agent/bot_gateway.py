@@ -50,6 +50,7 @@ from fastapi import FastAPI, HTTPException, Request
 load_dotenv(Path(__file__).resolve().parent.parent / ".env")
 
 from runtime_ports import resolve_port
+from structured_logging import install_redaction_filter
 
 BIND_HOST = os.environ.get("BIND_HOST", "127.0.0.1")
 # Cổng lắng nghe: mặc định 8361 = y hệt trước khi tham số hoá. Biến RIÊNG, không
@@ -64,6 +65,7 @@ if not _bot_logger.handlers:
     _handler.setFormatter(logging.Formatter("%(asctime)s [%(levelname)s] %(message)s"))
     _bot_logger.addHandler(_handler)
     _bot_logger.setLevel(getattr(logging, os.environ.get("LOG_LEVEL", "INFO")))
+install_redaction_filter(_bot_logger)
 
 # ── Optional dependencies ──
 
@@ -967,12 +969,22 @@ def create_bot_app() -> FastAPI:
     if ZALO_OA_ID and ZALO_OA_SECRET:
         gw.start_zalo(oa_id=ZALO_OA_ID, oa_secret=ZALO_OA_SECRET)
 
-    @bot_app.get("/")
+    @bot_app.get(
+        "/",
+        openapi_extra={"x-auth": "none", "x-scope": "bot:status", "x-csrf": False},
+    )
     async def home():
         """Gateway status page."""
         return _home_status(gw)
 
-    @bot_app.post("/webhook/zalo")
+    @bot_app.post(
+        "/webhook/zalo",
+        openapi_extra={
+            "x-auth": "hmac",
+            "x-scope": "bot:webhook",
+            "x-csrf": False,
+        },
+    )
     async def zalo_webhook(request: Request):
         """Receive and process Zalo OA webhook events.
 
@@ -1000,7 +1012,10 @@ def create_bot_app() -> FastAPI:
             raise HTTPException(400, detail="Invalid JSON body")
         return await gw.handle_zalo_event(body)
 
-    @bot_app.get("/stats")
+    @bot_app.get(
+        "/stats",
+        openapi_extra={"x-auth": "none", "x-scope": "bot:stats", "x-csrf": False},
+    )
     async def gateway_stats():
         """Session statistics by platform."""
         with _sessions_lock:

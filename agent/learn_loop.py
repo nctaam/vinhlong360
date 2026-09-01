@@ -41,6 +41,7 @@ if sys.stdout.encoding != "utf-8":
 from dotenv import load_dotenv
 
 from versioned_json_store import load_json, mutate_json
+from structured_logging import install_redaction_filter
 
 load_dotenv(Path(__file__).resolve().parent.parent / ".env")
 
@@ -59,6 +60,7 @@ if not _logger.handlers:
     _h.setFormatter(logging.Formatter("%(asctime)s [%(levelname)s] %(message)s"))
     _logger.addHandler(_h)
     _logger.setLevel(getattr(logging, os.environ.get("LOG_LEVEL", "INFO")))
+install_redaction_filter(_logger)
 
 
 # ══════════════════════════════════════════════════

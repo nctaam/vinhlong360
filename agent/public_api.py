@@ -1675,14 +1675,29 @@ async def autocomplete(
 # Bản trùng từng nằm ở đây thắng thứ tự đăng ký nhưng lại không có guard đó,
 # nên chế độ SQLite ném 500 thay vì 503, và payload của nó không khớp client.
 
+PUBLIC_STATS_FIELDS = (
+    "entities",
+    "places",
+    "relationships",
+    "itineraries",
+    "feedback_entries",
+    "query_log_entries",
+)
+
 
 @router.get("/stats", response_model=StatsResponse,
             summary="Get public stats",
-            description="Returns aggregate platform statistics including entity counts, user counts, and other summary metrics. Cached for 5 minutes.")
+            description="Returns aggregate platform statistics. Cached for 5 minutes.",
+            openapi_extra={
+                "x-auth": "none",
+                "x-scope": "public:read",
+                "x-csrf": False,
+            })
 async def public_stats(response: Response):
-    """Trả nguyên vẹn kết quả db.stats() làm thống kê tổng hợp công khai, cache 5 phút."""
+    """Return only the stable public aggregate projection; never expose topology."""
     response.headers["Cache-Control"] = "public, max-age=300, stale-while-revalidate=600"
-    return await asyncio.to_thread(db.stats)
+    stats = await asyncio.to_thread(db.stats)
+    return {key: stats.get(key, 0) for key in PUBLIC_STATS_FIELDS}
 
 
 # ── Homepage curated feed ──────────────────────────────────────────

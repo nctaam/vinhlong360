@@ -35,6 +35,13 @@ services:
         max-size: "20m"
         max-file: "5"
     environment:
+      ENVIRONMENT: production
+      DATABASE_URL: postgresql://vl360:${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required}@postgres:5432/vinhlong360
+      CORS_ORIGINS: ${CORS_ORIGINS:?CORS_ORIGINS is required}
+      LLM_API_KEY: ${LLM_API_KEY:?LLM_API_KEY is required}
+      ADMIN_API_KEY: ${ADMIN_API_KEY:?ADMIN_API_KEY is required}
+      JWT_SECRET: ${JWT_SECRET:?JWT_SECRET is required}
+      ENTITY_DETAILS_TABLES: "true"
       BUILD_SEARCH_INDEXES: "true"
       BACKGROUND_INDEX_BUILD: "true"
       SCHEDULER_ENABLED: "true"
@@ -50,6 +57,9 @@ services:
       options:
         max-size: "10m"
         max-file: "3"
+    environment:
+      ENVIRONMENT: production
+      CORS_ORIGINS: ${CORS_ORIGINS:?CORS_ORIGINS is required}
 
   nuxt:
     deploy:

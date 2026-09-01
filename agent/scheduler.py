@@ -30,6 +30,7 @@ from pathlib import Path
 
 from erasure import erase_due_accounts
 from quarantine import retry_pending_quarantines
+from structured_logging import install_redaction_filter
 
 os.environ.setdefault("PYTHONIOENCODING", "utf-8")
 if sys.stdout.encoding != "utf-8":
@@ -46,6 +47,7 @@ if not _sched_logger.handlers:
     _h.setFormatter(logging.Formatter("%(asctime)s [%(levelname)s] %(message)s"))
     _sched_logger.addHandler(_h)
     _sched_logger.setLevel(getattr(logging, os.environ.get("LOG_LEVEL", "INFO")))
+install_redaction_filter(_sched_logger)
 
 
 # ── Learning cadence (seconds) — override via .env, floor 5 phút ──
@@ -1188,7 +1190,6 @@ def task_publish_due_posts(now: datetime | None = None, worker_id: str | None = 
         error_code = None
         try:
             from moderation import moderate_content_enhanced
-            from moderation import log_moderation
             from notifications import create_notification
 
             content = post.get("content") or ""

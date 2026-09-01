@@ -8,6 +8,7 @@ Usage:
 """
 
 from pathlib import Path
+from urllib.parse import urlparse
 
 from dotenv import load_dotenv
 from pydantic import model_validator
@@ -257,6 +258,61 @@ class Settings(BaseSettings):
                     "Production privacy policy mismatch: " + ", ".join(mismatched)
                 )
         return self
+
+
+_PRODUCTION_PLACEHOLDERS = frozenset(
+    {
+        "", "change-me", "changeme", "secret", "password", "admin",
+        "test", "test-key", "test-admin-key", "vl360_dev_password",
+    }
+)
+
+
+def _unsafe_production_secret(value: object) -> bool:
+    if not isinstance(value, str):
+        return True
+    normalized = value.strip().lower()
+    return (
+        len(value.strip()) < 20
+        or normalized in _PRODUCTION_PLACEHOLDERS
+        or any(marker in normalized for marker in ("<your-", "replace-me", "example-secret", "dev_password"))
+    )
+
+
+def assert_production_config(settings: Settings) -> None:
+    """Fail closed before startup when a production contract is unsafe."""
+    if not isinstance(settings, Settings):
+        raise ValueError("production_settings_required")
+    if not settings.is_production:
+        raise ValueError("ENVIRONMENT=production is required")
+
+    failures: list[str] = []
+    for field in ("LLM_API_KEY", "ADMIN_API_KEY", "JWT_SECRET"):
+        if _unsafe_production_secret(getattr(settings, field, "")):
+            failures.append(f"{field} must be a strong non-default secret")
+
+    database_url = str(getattr(settings, "DATABASE_URL", "") or "").strip()
+    if not is_postgresql_url(database_url):
+        failures.append("DATABASE_URL must use PostgreSQL")
+    else:
+        parsed = urlparse(database_url)
+        if not parsed.hostname or not parsed.username or not parsed.password:
+            failures.append("DATABASE_URL must include explicit PostgreSQL credentials")
+
+    if getattr(settings, "ENTITY_DETAILS_TABLES", False) is not True:
+        failures.append("ENTITY_DETAILS_TABLES=true is required")
+
+    origins = getattr(settings, "cors_origins_list", [])
+    raw_origins = str(getattr(settings, "CORS_ORIGINS", "") or "").strip()
+    if not raw_origins or not origins:
+        failures.append("CORS_ORIGINS must be explicitly configured")
+    elif any("localhost" in origin.lower() or "127.0.0.1" in origin for origin in origins):
+        failures.append("CORS_ORIGINS must not include local origins in production")
+    elif any(urlparse(origin).scheme != "https" for origin in origins):
+        failures.append("CORS_ORIGINS must use HTTPS in production")
+
+    if failures:
+        raise ValueError("Unsafe production configuration: " + "; ".join(failures))
 
 
 settings = Settings()

@@ -284,9 +284,6 @@ class StatsResponse(ApiModel):
     itineraries: int | None = None
     feedback_entries: int | None = None
     query_log_entries: int | None = None
-    backend: str | None = None
-    db_size_kb: float | None = None
-    db_path: str | None = None
 
 
 class SiteSettingsResponse(ApiModel):
