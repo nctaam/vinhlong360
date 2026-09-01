@@ -273,6 +273,8 @@ class Storage:
                     receipt["object_status"] = "failed"
                 elif receipt.get("cdn_status") == "claimed":
                     receipt["cdn_status"] = "failed"
+            receipt["object"] = {"status": receipt.get("object_status")}
+            receipt["cdn"] = {"status": receipt.get("cdn_status")}
             _MEDIA_RECEIPTS[key] = dict(receipt)
             return dict(receipt)
 
