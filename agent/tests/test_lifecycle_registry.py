@@ -120,3 +120,32 @@ def test_export_keyset_cursor_includes_tie_breaker(monkeypatch):
         _row_to_dict = staticmethod(lambda row: row)
     monkeypatch.setattr(lifecycle, "db", FakeDB())
     lifecycle._rows_for_table("posts", "u", None, 1)
+
+
+def test_export_cursor_offset_is_scoped_to_its_sink(monkeypatch):
+    import control_plane.lifecycle as lifecycle
+    class FakeDB:
+        _use_pg = True; _ph = "%s"
+        def _conn(self):
+            from contextlib import nullcontext
+            return nullcontext(object())
+        def _fetchall(self, _conn, sql, _params):
+            if "FROM posts" in sql:
+                assert _params[-1] == 2
+            if "FROM comments" in sql:
+                assert _params[-1] == 0
+            return []
+        _row_to_dict = staticmethod(lambda row: row)
+    monkeypatch.setattr(lifecycle, "db", FakeDB())
+    cursor = lifecycle._encode_cursor('{"sink":"posts","offset":2}')
+    decoded = lifecycle._decode_cursor(cursor)
+    lifecycle._rows_for_table("posts", "u", decoded, 1)
+    lifecycle._rows_for_table("comments", "u", decoded, 1)
+
+
+def test_legacy_export_cursor_decodes_per_dataset():
+    from identity.api import _legacy_cursor_offsets
+    import control_plane.lifecycle as lifecycle
+    token = lifecycle._encode_cursor('{"sink":"posts","offset":3}')
+    assert _legacy_cursor_offsets(token, "posts") == 3
+    assert _legacy_cursor_offsets(token, "comments") == 0

@@ -25,6 +25,7 @@ sự cố B1 lớn nhất chương trình. Checklist §46.3 bắt buộc: đếm
 TRƯỚC/SAU lượt đo đầu, mọi đích vá đổi CÙNG ĐỢT với cú đổi nhà.
 """
 import html as _html
+import json
 
 import asyncio
 import base64
@@ -1742,6 +1743,25 @@ async def update_privacy(body: PrivacyUpdate, request: Request, _csrf=Depends(_r
 
 # ── Data export (GDPR / privacy compliance) ──
 
+def _legacy_cursor_offsets(cursor: str | None, sink: str) -> int:
+    if not cursor:
+        return 0
+    try:
+        padded = cursor + "=" * (-len(cursor) % 4)
+        payload = json.loads(base64.urlsafe_b64decode(padded.encode("ascii")).decode("utf-8"))
+        if not isinstance(payload, dict) or payload.get("sink") not in (None, sink):
+            return 0
+        return max(0, int(payload.get("offset", 0)))
+    except Exception:
+        return 0
+
+
+def _legacy_next_cursor(sink: str, offset: int, has_more: bool) -> str | None:
+    if not has_more:
+        return None
+    raw = json.dumps({"sink": sink, "offset": offset}, separators=(",", ":")).encode("utf-8")
+    return base64.urlsafe_b64encode(raw).decode("ascii").rstrip("=")
+
 @router.get("/export-data",
             summary="Export all user data",
             description="Exports all data associated with the authenticated user for GDPR compliance. Includes profile, posts, comments, likes, bookmarks, follows, visits, reactions, collections, blocks, and mutes.")
@@ -1759,6 +1779,8 @@ async def export_user_data(request: Request, response: Response, cursor: str | N
     def _query():
         with db._conn() as conn:
             _EXPORT_CAP = page_limit + 1
+            def _legacy_limit(name: str) -> str:
+                return f"LIMIT {_EXPORT_CAP} OFFSET {_legacy_cursor_offsets(cursor, name)}"
             posts = db._fetchall(conn, f"""
                 SELECT p.id, p.content, p.post_type, p.rating, p.entity_id,
                        e.name as entity_name,
@@ -1766,52 +1788,52 @@ async def export_user_data(request: Request, response: Response, cursor: str | N
                 FROM posts p
                 LEFT JOIN entities e ON e.id = p.entity_id
                 WHERE p.user_id = {ph}::uuid
-                ORDER BY p.created_at DESC LIMIT {_EXPORT_CAP}
+                ORDER BY p.created_at DESC {_legacy_limit("posts")}
             """, (uid,))
             comments = db._fetchall(conn, f"""
                 SELECT id, post_id, content, parent_id, created_at
                 FROM comments WHERE user_id = {ph}::uuid
-                ORDER BY created_at DESC LIMIT {_EXPORT_CAP}
+                ORDER BY created_at DESC {_legacy_limit("comments")}
             """, (uid,))
             likes = db._fetchall(conn, f"""
                 SELECT post_id, created_at
                 FROM likes WHERE user_id = {ph}::uuid
-                ORDER BY created_at DESC LIMIT {_EXPORT_CAP}
+                ORDER BY created_at DESC {_legacy_limit("likes")}
             """, (uid,))
             bookmarks = db._fetchall(conn, f"""
                 SELECT entity_id, created_at
                 FROM saved_entities WHERE user_id = {ph}::uuid
-                ORDER BY created_at DESC LIMIT {_EXPORT_CAP}
+                ORDER BY created_at DESC {_legacy_limit("bookmarks")}
             """, (uid,))
             follows = db._fetchall(conn, f"""
                 SELECT target_type, target_id, created_at
                 FROM follows WHERE follower_id = {ph}::uuid
-                ORDER BY created_at DESC LIMIT {_EXPORT_CAP}
+                ORDER BY created_at DESC {_legacy_limit("follows")}
             """, (uid,))
             visits = db._fetchall(conn, f"""
                 SELECT entity_id, status, visited_at, created_at
                 FROM user_visits WHERE user_id = {ph}::uuid
-                ORDER BY created_at DESC LIMIT {_EXPORT_CAP}
+                ORDER BY created_at DESC {_legacy_limit("visits")}
             """, (uid,))
             reactions = db._fetchall(conn, f"""
                 SELECT post_id, reaction_type, created_at
                 FROM post_reactions WHERE user_id = {ph}::uuid
-                ORDER BY created_at DESC LIMIT {_EXPORT_CAP}
+                ORDER BY created_at DESC {_legacy_limit("reactions")}
             """, (uid,))
             collections = db._fetchall(conn, f"""
                 SELECT id, name, description, is_public, created_at
                 FROM user_collections WHERE user_id = {ph}::uuid
-                ORDER BY created_at DESC LIMIT {_EXPORT_CAP}
+                ORDER BY created_at DESC {_legacy_limit("collections")}
             """, (uid,))
             blocks = db._fetchall(conn, f"""
                 SELECT blocked_id, created_at
                 FROM blocks WHERE blocker_id = {ph}::uuid
-                ORDER BY created_at DESC LIMIT {_EXPORT_CAP}
+                ORDER BY created_at DESC {_legacy_limit("blocks")}
             """, (uid,))
             mutes = db._fetchall(conn, f"""
                 SELECT muted_id, created_at
                 FROM user_mutes WHERE user_id = {ph}::uuid
-                ORDER BY created_at DESC LIMIT {_EXPORT_CAP}
+                ORDER BY created_at DESC {_legacy_limit("mutes")}
             """, (uid,))
         raw = {
             "posts": _rows_to_dicts(posts),
@@ -1829,7 +1851,9 @@ async def export_user_data(request: Request, response: Response, cursor: str | N
         legacy_meta = {}
         for name, rows in raw.items():
             values = rows
-            legacy_meta[name] = {"count": min(len(values), page_limit), "truncated": len(values) > page_limit}
+            offset = _legacy_cursor_offsets(cursor, name)
+            legacy_meta[name] = {"count": len(values), "truncated": len(rows) > page_limit,
+                                 "next_cursor": _legacy_next_cursor(name, offset + page_limit, len(rows) > page_limit)}
             payload[name] = values[:page_limit]
         return payload, legacy_meta
 

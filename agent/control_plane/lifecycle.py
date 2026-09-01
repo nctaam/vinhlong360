@@ -209,7 +209,9 @@ def _rows_for_table(table: str, subject_id: str, cursor: str | None, limit: int)
         return [], None, False, None
     owner, order_col, columns = _TABLES[table]
     ph = getattr(db, "_ph", "%s")
-    offset = int(cursor.get("offset", 0)) if isinstance(cursor, dict) and str(cursor.get("offset", "0")).isdigit() else 0
+    offset = 0
+    if isinstance(cursor, dict) and cursor.get("sink") in (None, table) and str(cursor.get("offset", "0")).isdigit():
+        offset = int(cursor.get("offset", 0))
     if table == "collection_items":
         # Items are owned through the user's collection, not by collection_id.
         where = f"uc.user_id::text = {ph}"
@@ -341,7 +343,11 @@ def export_subject(subject_id: str, *, cursor: str | None = None, limit: int = _
     # enumerate them; this makes omissions visible to auditors.
     for name in ("reports-jsonl", "analytics-jsonl", "bot-memory", "browser-storage", "object-store", "cdn"):
         if name in {"reports-jsonl", "analytics-jsonl", "bot-memory"}:
-            ext_cursor = decoded if isinstance(decoded, str) else None
+            ext_cursor = None
+            if isinstance(decoded, dict) and decoded.get("sink") == name:
+                ext_cursor = str(decoded.get("offset", 0))
+            elif isinstance(decoded, str):
+                ext_cursor = decoded
             rows, next_cursor, truncated, error, adapter = _external_export(name, str(subject_id), int(limit), ext_cursor)
         else:
             rows, next_cursor, truncated, error, adapter = [], None, False, "ADAPTER_UNAVAILABLE", "unavailable"

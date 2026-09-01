@@ -57,3 +57,13 @@ findings are addressed with bounded, explicit, retryable behavior.
 - `python -m ruff check agent/control_plane/lifecycle.py agent/storage.py agent/identity/api.py` and `git diff --check` -> passed.
 
 Concerns: PostgreSQL keyset behavior is covered by SQL contract tests only; no disposable loopback database was provisioned. Object/CDN provider inventories remain deployment-specific.
+
+## Review v9 Cursor Fix Wave
+
+- RED: `python -m pytest agent/tests/test_lifecycle_registry.py::test_export_cursor_offset_is_scoped_to_its_sink agent/tests/test_lifecycle_registry.py::test_legacy_export_cursor_decodes_per_dataset -q --basetemp=.tmp-task5-cursor-red` -> `1 failed, 1 passed`; failure confirmed missing `_legacy_cursor_offsets` and exposed the need for sink-scoped offsets.
+- GREEN focused: `python -m pytest agent/tests/test_lifecycle_registry.py agent/tests/test_account_deletion_transport.py -q --basetemp=.tmp-task5-cursor-green` -> `12 passed`; deletion transport -> `3 passed`.
+- Covering GREEN: `python -m pytest agent/tests/test_lifecycle_registry.py agent/tests/test_data_lifecycle_registry.py agent/tests/test_external_store_erasure.py agent/tests/test_erasure_lifecycle_integration.py -q --basetemp=.tmp-task5-cover-final` -> `43 passed`.
+- Frontend GREEN: `npm test -- --run tests/lifecycle-clear.test.ts tests/personalization-preferences.test.ts tests/chat-stale-session.test.ts` -> `46 passed` (Nuxt duplicate-import warnings only).
+- `python -m ruff check agent/control_plane/lifecycle.py agent/identity/api.py agent/storage.py`, `python -m py_compile ...`, and `git diff --check` -> passed.
+
+Fixes: cursors now apply offsets only to their matching sink; every legacy export dataset honors a cursor-scoped offset and emits a next cursor in manifest metadata. No disposable PostgreSQL database was available, so no fresh PG evidence is claimed.
