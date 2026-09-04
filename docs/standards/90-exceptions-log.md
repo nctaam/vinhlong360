@@ -259,3 +259,5 @@ ghi ở backlog tối ưu — giảm dần, KHÔNG được tăng tiếp từ 47
 - 2026-09-04T08:48:57 SKIP R20.8,R30.7 — Checkpoint bundles the already-reviewed correction-case and release-evidence modules; R20.8 complexity debt is pre-existing/documented and R30.7 809kB bundle debt is pre-existing, with no new baseline or claim of release readiness.
 
 - 2026-09-04T09:40:42 SKIP R20.8,R30.7 — docs-only status marker; no backend or frontend artifact changes
+
+- 2026-09-04T09:44:19 SKIP R20.8,R30.7 — backend R20.8 remediation tranche; frontend bundle optimization remains separate worktree
