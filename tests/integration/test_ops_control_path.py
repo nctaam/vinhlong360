@@ -111,12 +111,15 @@ class _HealthConnection:
 class _HealthDatabase:
     _use_pg = True
 
-    def __init__(self, *, fail_active_sessions=False, fail_size=False):
+    def __init__(self, *, fail_active_sessions=False, fail_size=False, fail_connection=False):
         self.queries = []
         self.fail_active_sessions = fail_active_sessions
         self.fail_size = fail_size
+        self.fail_connection = fail_connection
 
     def _conn(self):
+        if self.fail_connection:
+            raise RuntimeError("database connection unavailable")
         return _HealthConnection()
 
     def _fetchone(self, _conn, sql, _params):
@@ -181,6 +184,24 @@ def test_system_health_names_size_degradation(monkeypatch) -> None:
 
     assert result["postgres"]["size_mb"] == -1
     assert "database_size" in result["postgres"]["degraded_checks"]
+
+
+def test_system_health_connection_failure_is_degraded(monkeypatch) -> None:
+    from siteops import admin_api
+
+    fake_db = _HealthDatabase(fail_connection=True)
+    monkeypatch.setattr(admin_api, "db", fake_db)
+    result = {"postgres": {}}
+
+    admin_api._system_health_pg(result)
+
+    postgres = result["postgres"]
+    assert postgres["tables"] == {}
+    assert postgres["size_mb"] == -1
+    assert postgres["active_sessions"] == -1
+    assert postgres["pending_moderation"] == -1
+    assert postgres["open_reports"] == -1
+    assert postgres["degraded_checks"] == ["connection"]
 
 
 def test_homepage_rebuild_is_single_flight(monkeypatch) -> None:

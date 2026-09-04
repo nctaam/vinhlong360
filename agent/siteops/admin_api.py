@@ -195,54 +195,75 @@ def _system_health_server(result, os, _t) -> None:
         result["server"]["memory_mb"] = -1
 
 
+def _system_health_pg_connection_degraded(result) -> None:
+    """Keep health reporting useful when PostgreSQL cannot be opened."""
+    result["postgres"].update({
+        "tables": {},
+        "size_mb": -1,
+        "active_sessions": -1,
+        "pending_moderation": -1,
+        "open_reports": -1,
+        "degraded_checks": ["connection"],
+    })
+
+
 def _system_health_pg(result) -> None:
-    with db._conn() as conn:
-        # Keep the legacy response key while querying the schema's authority
-        # table.  The identity subsystem owns ``user_sessions``; ``sessions``
-        # is not a PostgreSQL table in this deployment.
-        tables = ["users", "posts", "comments", "likes", "follows",
-                  "notifications", "blocks", ("sessions", "user_sessions"),
-                  "user_visits", "reports", "saved_entities", "announcements"]
-        pg_tables = {}
-        degraded_checks = []
-        for entry in tables:
-            display_name, table_name = (entry if isinstance(entry, tuple)
-                                        else (entry, entry))
-            try:
-                row = db._fetchone(conn, f"SELECT COUNT(*) as c FROM {table_name}", ())
-                pg_tables[display_name] = db._row_to_dict(row)["c"] if row else 0
-            except Exception:
-                pg_tables[display_name] = -1
-                degraded_checks.append(f"table:{display_name}")
-        result["postgres"]["tables"] = pg_tables
+    try:
+        with db._conn() as conn:
+            _system_health_pg_queries(result, conn)
+    except Exception:
+        # A health endpoint must report an unavailable database, not become
+        # unavailable itself because opening the diagnostic connection failed.
+        _system_health_pg_connection_degraded(result)
+
+
+def _system_health_pg_queries(result, conn) -> None:
+    # Keep the legacy response key while querying the schema's authority table.
+    # The identity subsystem owns ``user_sessions``; ``sessions`` is not a
+    # PostgreSQL table in this deployment.
+    tables = ["users", "posts", "comments", "likes", "follows",
+              "notifications", "blocks", ("sessions", "user_sessions"),
+              "user_visits", "reports", "saved_entities", "announcements"]
+    pg_tables = {}
+    degraded_checks = []
+    for entry in tables:
+        display_name, table_name = (entry if isinstance(entry, tuple)
+                                    else (entry, entry))
         try:
-            size_row = db._fetchone(conn, """
-                SELECT pg_database_size(current_database()) as s
-            """, ())
-            result["postgres"]["size_mb"] = round(db._row_to_dict(size_row)["s"] / 1024 / 1024, 2) if size_row else 0
+            row = db._fetchone(conn, f"SELECT COUNT(*) as c FROM {table_name}", ())
+            pg_tables[display_name] = db._row_to_dict(row)["c"] if row else 0
         except Exception:
-            result["postgres"]["size_mb"] = -1
-            degraded_checks.append("database_size")
-        for metric_name, query in (
-            ("active_sessions", """
-                SELECT COUNT(*) as c FROM user_sessions WHERE expires_at > NOW()
-            """),
-            ("pending_moderation", """
-                SELECT COUNT(*) as c FROM posts WHERE moderation_status = 'pending'
-            """),
-            ("open_reports", """
-                SELECT COUNT(*) as c FROM reports WHERE status = 'pending'
-            """),
-        ):
-            try:
-                row = db._fetchone(conn, query, ())
-                result["postgres"][metric_name] = db._row_to_dict(row)["c"] if row else 0
-            except Exception:
-                # One optional metric must not turn the entire health endpoint
-                # into a 500; -1 plus a named degradation is explicit.
-                result["postgres"][metric_name] = -1
-                degraded_checks.append(metric_name)
-        result["postgres"]["degraded_checks"] = sorted(set(degraded_checks))
+            pg_tables[display_name] = -1
+            degraded_checks.append(f"table:{display_name}")
+    result["postgres"]["tables"] = pg_tables
+    try:
+        size_row = db._fetchone(conn, """
+            SELECT pg_database_size(current_database()) as s
+        """, ())
+        result["postgres"]["size_mb"] = round(db._row_to_dict(size_row)["s"] / 1024 / 1024, 2) if size_row else 0
+    except Exception:
+        result["postgres"]["size_mb"] = -1
+        degraded_checks.append("database_size")
+    for metric_name, query in (
+        ("active_sessions", """
+            SELECT COUNT(*) as c FROM user_sessions WHERE expires_at > NOW()
+        """),
+        ("pending_moderation", """
+            SELECT COUNT(*) as c FROM posts WHERE moderation_status = 'pending'
+        """),
+        ("open_reports", """
+            SELECT COUNT(*) as c FROM reports WHERE status = 'pending'
+        """),
+    ):
+        try:
+            row = db._fetchone(conn, query, ())
+            result["postgres"][metric_name] = db._row_to_dict(row)["c"] if row else 0
+        except Exception:
+            # One optional metric must not turn the entire health endpoint
+            # into a 500; -1 plus a named degradation is explicit.
+            result["postgres"][metric_name] = -1
+            degraded_checks.append(metric_name)
+    result["postgres"]["degraded_checks"] = sorted(set(degraded_checks))
 
 
 @router.get("/system-health",
