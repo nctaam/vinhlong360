@@ -70,7 +70,7 @@
                   :aria-selected="mi === mentionActive"
                   @mousedown.prevent="pickMention(m)"
                 >
-                  <span class="mention-ic" aria-hidden="true">{{ m.type === 'user' ? '👤' : '📍' }}</span>
+                  <span class="mention-ic" aria-hidden="true"><IconLine :name="m.type === 'user' ? 'user' : 'pin'" /></span>
                   <span class="mention-label">{{ m.label }}</span>
                   <span class="mention-sub">{{ m.sub }}</span>
                 </li>
@@ -300,7 +300,7 @@
     <!-- Save momentum cue — keeps bookmarking from dead-ending -->
     <Transition name="momentum-fade">
       <div v-if="showBookmarkMomentum && !hiddenNotice" class="bookmark-momentum" role="status">
-        <span class="bm-icon" aria-hidden="true">🔖</span>
+        <span class="bm-icon" aria-hidden="true"><IconLine name="bookmark" /></span>
         <button type="button" class="bm-link" @click="setTab('bookmarks'); bookmarkBannerDismissed = true">Xem mục đã lưu</button>
         <button type="button" class="bm-dismiss" aria-label="Đóng" @click="bookmarkBannerDismissed = true">&times;</button>
       </div>
@@ -1023,7 +1023,7 @@ async function submitPost() {
     })
     const wasQuote = !!quotingPost.value
     resetComposer()
-    showToast(wasQuote ? 'Đã đăng trích dẫn 🔁' : 'Đã đăng bài viết', 'success')
+    showToast(wasQuote ? 'Đã đăng trích dẫn' : 'Đã đăng bài viết', 'success')
     activeTab.value = 'latest'
     await fetchFeed(true)
   } catch (e: unknown) {

@@ -1,4 +1,4 @@
-﻿<template>
+<template>
   <section class="page">
     <Breadcrumb :items="[{ label: 'Trang chủ', to: '/' }, { label: 'Lưu trú' }]" :json-ld="true" />
 
@@ -140,7 +140,7 @@
       <h2>Khám phá thêm</h2>
       <div class="cross-links">
         <NuxtLink v-for="c in relatedCatalogs" :key="c.to" :to="c.to" :no-prefetch="c.noPrefetch" class="cross-card">
-          <span class="cross-icon" aria-hidden="true">{{ c.icon }}</span>
+          <span class="cross-icon" aria-hidden="true"><IconLine :name="c.icon" /></span>
           <div><strong>{{ c.label }}</strong><p>{{ c.desc }}</p></div>
         </NuxtLink>
       </div>
@@ -284,9 +284,9 @@ function scrollToGrid() {
 
 // declutter-2 A1: cross-links 3 card script-driven (bỏ Du-lịch — trùng interstitial links + nav).
 const relatedCatalogs = [
-  { to: '/lich-trinh', icon: '🗓️', label: 'Lịch trình', desc: 'Ghép lưu trú vào kế hoạch đi' },
-  { to: '/ban-do', icon: '🗺️', label: 'Bản đồ', desc: 'Xem trên bản đồ', noPrefetch: true },
-  { to: '/san-pham', icon: '🍊', label: 'Đặc sản', desc: 'Mua quà Vĩnh Long' },
+  { to: '/lich-trinh', icon: 'calendar', label: 'Lịch trình', desc: 'Ghép lưu trú vào kế hoạch đi' },
+  { to: '/ban-do', icon: 'map', label: 'Bản đồ', desc: 'Xem trên bản đồ', noPrefetch: true },
+  { to: '/san-pham', icon: 'fruit', label: 'Đặc sản', desc: 'Mua quà Vĩnh Long' },
 ]
 
 const filtered = computed(() => {

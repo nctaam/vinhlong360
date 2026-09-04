@@ -61,7 +61,7 @@
       </div>
       <p class="section-desc">Bậc cao nhất, hiếm nhất — sản phẩm đã chứng minh được cả chất lượng lẫn khả năng vươn xa.</p>
       <div class="honor-banner">
-        <span class="honor-banner-icon" aria-hidden="true">👑</span>
+        <span class="honor-banner-icon" aria-hidden="true"><IconLine name="trophy" /></span>
         <span class="honor-banner-text">Danh sách vinh dự</span>
       </div>
       <div class="scroll-row honor-roll" role="region" aria-label="Sản phẩm OCOP 5 sao" tabindex="0">
@@ -202,7 +202,7 @@
       <h2>Khám phá thêm</h2>
       <div class="cross-links">
         <NuxtLink v-for="c in relatedCatalogs" :key="c.to" :to="c.to" class="cross-card">
-          <span class="cross-icon" aria-hidden="true">{{ c.icon }}</span>
+          <span class="cross-icon" aria-hidden="true"><IconLine :name="c.icon" /></span>
           <div><strong>{{ c.label }}</strong><p>{{ c.desc }}</p></div>
         </NuxtLink>
       </div>
@@ -287,9 +287,9 @@ const otherProductsCount = computed(() => {
 
 // declutter-2 A1: cross-links 3 card script-driven (bỏ Theo-mùa — trùng interstitial links).
 const relatedCatalogs = computed(() => [
-  { to: '/san-pham', icon: '🍊', label: 'Đặc sản', desc: `Còn ${otherProductsCount.value} đặc sản khác chưa có sao` },
-  { to: '/du-lich', icon: '🌿', label: 'Du lịch', desc: 'Trải nghiệm miệt vườn' },
-  { to: '/kham-pha/am-thuc', icon: '🍲', label: 'Ẩm thực', desc: 'Món ngon Vĩnh Long' },
+  { to: '/san-pham', icon: 'fruit', label: 'Đặc sản', desc: `Còn ${otherProductsCount.value} đặc sản khác chưa có sao` },
+  { to: '/du-lich', icon: 'leaf', label: 'Du lịch', desc: 'Trải nghiệm miệt vườn' },
+  { to: '/kham-pha/am-thuc', icon: 'bowl', label: 'Ẩm thực', desc: 'Món ngon Vĩnh Long' },
 ])
 
 // `parseInt(attributes.ocop)` cũ trả 0 cho gần như mọi sản phẩm: `ocop` là văn

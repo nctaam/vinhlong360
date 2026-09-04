@@ -5,7 +5,7 @@
     <!-- Hero -->
     <section class="catalog-hero cat-directory">
       <div class="catalog-hero-inner">
-        <span class="catalog-hero-icon" aria-hidden="true">🏛️</span>
+        <span class="catalog-hero-icon" aria-hidden="true"><IconLine name="landmark" /></span>
         <div>
           <h1>{{ pc('hero_title') }}</h1>
           <p>{{ pc('hero_subtitle') }}</p>
@@ -65,7 +65,7 @@
     <p class="dir-report-link"><NuxtLink to="/lien-he">Báo thông tin sai</NuxtLink>.</p>
 
     <div v-if="!wardId" class="empty-hint">
-      <span class="empty-hint-halo" aria-hidden="true"><span class="empty-hint-icon">🏘️</span></span>
+      <span class="empty-hint-halo" aria-hidden="true"><span class="empty-hint-icon"><IconLine name="building" /></span></span>
       <h3 class="empty-hint-title">Chọn một xã/phường</h3>
       <p>Chọn khu vực rồi chọn xã/phường ở trên để xem danh bạ cơ quan hành chính.</p>
     </div>
@@ -115,19 +115,19 @@
       <h2>Khám phá thêm</h2>
       <div class="cross-links">
         <NuxtLink to="/du-lich" class="cross-card">
-          <span class="cross-icon" aria-hidden="true">🌿</span>
+          <span class="cross-icon" aria-hidden="true"><IconLine name="leaf" /></span>
           <div><strong>Du lịch</strong><p>Trải nghiệm miệt vườn</p></div>
         </NuxtLink>
         <NuxtLink to="/ban-do" class="cross-card" no-prefetch>
-          <span class="cross-icon" aria-hidden="true">🗺️</span>
+          <span class="cross-icon" aria-hidden="true"><IconLine name="map" /></span>
           <div><strong>Bản đồ</strong><p>Xem trên bản đồ</p></div>
         </NuxtLink>
         <NuxtLink to="/lich-trinh" class="cross-card">
-          <span class="cross-icon" aria-hidden="true">🗓️</span>
+          <span class="cross-icon" aria-hidden="true"><IconLine name="calendar" /></span>
           <div><strong>Lịch trình</strong><p>Tuyến đi sẵn</p></div>
         </NuxtLink>
         <NuxtLink to="/lien-he" class="cross-card">
-          <span class="cross-icon" aria-hidden="true">📩</span>
+          <span class="cross-icon" aria-hidden="true"><IconLine name="message" /></span>
           <div><strong>Liên hệ</strong><p>Góp ý & báo sai</p></div>
         </NuxtLink>
       </div>

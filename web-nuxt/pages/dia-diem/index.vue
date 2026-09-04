@@ -67,7 +67,7 @@
           :aria-pressed="typeFilter === t.value"
           @click="pickType(t.value)"
         >
-          <span class="dd-type-icon">{{ t.emoji }}</span>
+          <span class="dd-type-icon"><IconLine :name="t.icon" /></span>
           <span class="dd-type-label">{{ t.label }}</span>
         </button>
       </div>
@@ -185,7 +185,12 @@ const areaFilter = ref<string>(typeof route.query.area === 'string' ? route.quer
 const qApplied = ref<string>(typeof route.query.q === 'string' ? route.query.q : '')
 const qInput = ref<string>(qApplied.value)
 
-const typeChips = CARD_TYPES.map(t => ({ value: t, emoji: TYPE_META[t]?.emoji || '📍', label: TYPE_META[t]?.label || t }))
+const typeChips = CARD_TYPES.map(t => ({
+  value: t,
+  emoji: TYPE_META[t]?.emoji || '📍',
+  icon: TYPE_META[t]?.icon || 'pin',
+  label: TYPE_META[t]?.label || t,
+}))
 
 function buildUrl(offset: number) {
   const p = new URLSearchParams({ limit: String(PAGE), offset: String(offset) })

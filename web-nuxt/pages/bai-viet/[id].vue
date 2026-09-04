@@ -63,7 +63,7 @@
                   :aria-selected="mi === mentionActive"
                   @mousedown.prevent="pickMention(m)"
                 >
-                  <span class="mention-ic" aria-hidden="true">{{ m.type === 'user' ? '👤' : '📍' }}</span>
+                  <span class="mention-ic" aria-hidden="true"><IconLine :name="m.type === 'user' ? 'user' : 'pin'" /></span>
                   <span class="mention-label">{{ m.label }}</span>
                   <span class="mention-sub">{{ m.sub }}</span>
                 </li>

@@ -1,4 +1,4 @@
-﻿<template>
+<template>
   <div class="page">
     <Breadcrumb :items="[{ label: 'Trang chủ', to: '/' }, { label: 'Sản phẩm' }]" />
 
@@ -6,7 +6,7 @@
     <section class="catalog-hero cat-product market-hero" aria-label="Giới thiệu sản phẩm">
       <div class="woven-texture" aria-hidden="true"></div>
       <div class="catalog-hero-inner">
-        <span class="catalog-hero-icon" aria-hidden="true">🍊</span>
+        <span class="catalog-hero-icon" aria-hidden="true"><IconLine name="fruit" /></span>
         <div>
           <p class="market-kicker">Phiên chợ · Tháng {{ currentMonth }}</p>
           <h1>{{ pc('hero_title') }}</h1>
@@ -35,7 +35,7 @@
     <!-- Đang vào mùa — promoted above OCOP teaser: season is this page's spine -->
     <section v-if="seasonalHighlights.length" class="block band reveal market-shelf">
       <div class="seasonal-banner seasonal-banner-live">
-        <span class="seasonal-banner-icon" aria-hidden="true">🔥</span>
+        <span class="seasonal-banner-icon" aria-hidden="true"><IconLine name="flame" /></span>
         <div>
           <!-- h2 chứ không phải strong: đây LÀ tiêu đề của khối, và khối này chứa
                bốn thẻ sản phẩm mang h3. Dùng strong thì cây tiêu đề nhảy thẳng
@@ -55,7 +55,7 @@
     <!-- OCOP teaser — slim signpost outward to /ocop, not a competing deep-dive -->
     <section v-if="ocopCount" class="block reveal ocop-teaser-strip">
       <NuxtLink to="/ocop" class="ocop-teaser-link">
-        <span class="ocop-teaser-icon" aria-hidden="true">⭐</span>
+        <span class="ocop-teaser-icon" aria-hidden="true"><IconLine name="star" /></span>
         <span class="ocop-teaser-copy">
           Trong {{ allEntities.length }} đặc sản này, <strong>{{ ocopCount }} món</strong> đã có sao OCOP — xem sổ vàng
         </span>
@@ -169,7 +169,7 @@
       <h2>Khám phá thêm</h2>
       <div class="cross-links">
         <NuxtLink v-for="c in relatedCatalogs" :key="c.to" :to="c.to" class="cross-card">
-          <span class="cross-icon" aria-hidden="true">{{ c.icon }}</span>
+          <span class="cross-icon" aria-hidden="true"><IconLine :name="c.icon" /></span>
           <div><strong>{{ c.label }}</strong><p>{{ c.desc }}</p></div>
         </NuxtLink>
       </div>
@@ -195,7 +195,7 @@ const ocopOnly = ref(false)
 const seasonFilterOptions = computed(() => [
   { key: 'all', label: 'Tất cả' },
   ...Array.from({ length: 12 }, (_, i) => ({ key: String(i + 1), label: `T${i + 1}` })),
-  { key: 'flood', label: 'Mùa nước nổi', icon: '🌊' },
+  { key: 'flood', label: 'Mùa nước nổi', iconName: 'droplet' },
 ])
 const sortBy = ref('relevant')
 const sortLabels: Record<string, string> = { popular: 'Phổ biến', newest: 'Mới nhất', name: 'Tên A-Z' }
@@ -233,9 +233,9 @@ const ocopCount = computed(() => allEntities.value.filter((e: Entity) => isOcopC
 // declutter-2 A1: cross-links 3 card script-driven (bỏ OCOP — teaser-strip trên trang
 // đã là tham chiếu OCOP nổi bật hơn).
 const relatedCatalogs = [
-  { to: '/theo-mua', icon: '📅', label: 'Theo mùa', desc: 'Lịch mùa vụ' },
-  { to: '/du-lich', icon: '🌿', label: 'Du lịch', desc: 'Trải nghiệm miệt vườn' },
-  { to: '/kham-pha/am-thuc', icon: '🍲', label: 'Ẩm thực', desc: 'Món ngon Vĩnh Long' },
+  { to: '/theo-mua', icon: 'calendar', label: 'Theo mùa', desc: 'Lịch mùa vụ' },
+  { to: '/du-lich', icon: 'leaf', label: 'Du lịch', desc: 'Trải nghiệm miệt vườn' },
+  { to: '/kham-pha/am-thuc', icon: 'bowl', label: 'Ẩm thực', desc: 'Món ngon Vĩnh Long' },
 ]
 const inSeasonCount = computed(() => allEntities.value.filter((e: Entity) => inSeason(e, String(currentMonth))).length)
 

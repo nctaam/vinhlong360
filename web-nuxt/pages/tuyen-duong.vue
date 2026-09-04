@@ -1,11 +1,11 @@
-﻿<template>
+<template>
   <section class="page">
     <Breadcrumb :items="[{ label: 'Trang chủ', to: '/' }, { label: 'Tuyến đường gợi ý' }]" />
 
     <!-- Hero -->
     <section class="catalog-hero cat-route">
       <div class="catalog-hero-inner">
-        <span class="catalog-hero-icon" aria-hidden="true">🛤️</span>
+        <span class="catalog-hero-icon" aria-hidden="true"><IconLine name="route" /></span>
         <div>
           <h1>{{ pc('hero_title') }}</h1>
           <p>{{ pc('hero_subtitle') }}</p>
@@ -97,7 +97,7 @@
 
           <!-- "Tuyến này hợp mùa nào?" — cross-link tying the road to the almanac. -->
           <NuxtLink v-if="routeSeasonTag(r)" :to="`/theo-mua?mua=${routeSeasonTag(r)!.month}`" class="route-season-tag">
-            <span aria-hidden="true">📅</span> Hợp mùa: {{ routeSeasonTag(r)!.label }}
+            <span aria-hidden="true"><IconLine name="calendar" /></span> Hợp mùa: {{ routeSeasonTag(r)!.label }}
           </NuxtLink>
 
           <h3 class="route-stops-head">Điểm dừng chân</h3>
@@ -146,19 +146,19 @@
       <p class="cross-sub">Tiếp tục hành trình Vĩnh Long của bạn</p>
       <div class="cross-links">
         <NuxtLink to="/ban-do" class="cross-card" no-prefetch>
-          <span class="cross-icon" aria-hidden="true">🗺️</span>
+          <span class="cross-icon" aria-hidden="true"><IconLine name="map" /></span>
           <div><strong>Bản đồ</strong><p>Xem trên bản đồ</p></div>
         </NuxtLink>
         <NuxtLink to="/lich-trinh" class="cross-card">
-          <span class="cross-icon" aria-hidden="true">🗓️</span>
+          <span class="cross-icon" aria-hidden="true"><IconLine name="calendar" /></span>
           <div><strong>Lịch trình</strong><p>Tuyến đi sẵn</p></div>
         </NuxtLink>
         <NuxtLink to="/du-lich" class="cross-card">
-          <span class="cross-icon" aria-hidden="true">🌿</span>
+          <span class="cross-icon" aria-hidden="true"><IconLine name="leaf" /></span>
           <div><strong>Du lịch</strong><p>Trải nghiệm miệt vườn</p></div>
         </NuxtLink>
         <NuxtLink to="/luu-tru" class="cross-card">
-          <span class="cross-icon" aria-hidden="true">🏡</span>
+          <span class="cross-icon" aria-hidden="true"><IconLine name="home" /></span>
           <div><strong>Lưu trú</strong><p>Homestay, nhà vườn</p></div>
         </NuxtLink>
       </div>
