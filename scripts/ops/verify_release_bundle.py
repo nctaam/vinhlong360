@@ -322,7 +322,7 @@ def _decision_authority(root: Path) -> tuple[dict, list]:
 
 
 def _signed_decision_reasons(
-    root: Path, key: str, entry: dict, record_path: Path, allowed_signers: dict
+    key: str, entry: dict, record_path: Path, allowed_signers: dict
 ) -> list[str]:
     reasons: list[str] = []
     declared = entry.get("record_sha256")
@@ -365,7 +365,7 @@ def _required_decision_reasons(
     if entry.get("state") != "signed":
         reasons.append(f"decision {key}: state is {entry.get('state')!r}, not signed")
         return reasons
-    reasons.extend(_signed_decision_reasons(root, key, entry, record_path, allowed_signers))
+    reasons.extend(_signed_decision_reasons(key, entry, record_path, allowed_signers))
     return reasons
 
 
