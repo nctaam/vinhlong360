@@ -345,3 +345,7 @@ ghi ở backlog tối ưu — giảm dần, KHÔNG được tăng tiếp từ 47
 - 2026-09-04T15:36:39 SKIP R30.7 — Backend acceptance evaluator decomposition and helper refactor; frontend bundle unchanged and existing R30.7 debt is unrelated.
 
 - 2026-09-04T15:37:24 SKIP R30.7 — Backend acceptance evaluator decomposition and helper refactor; frontend bundle unchanged and existing R30.7 debt is unrelated.
+
+- 2026-09-04T15:46:34 SKIP R30.7 — Backend media saga decomposition; frontend bundle unchanged and existing R30.7 debt is unrelated.
+
+- 2026-09-04T15:47:37 SKIP R30.7 — Backend media saga decomposition; frontend bundle unchanged and existing R30.7 debt is unrelated.
