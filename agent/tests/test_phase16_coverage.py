@@ -2113,10 +2113,14 @@ class TestModerationNotifications:
         import inspect
         from community import admin_api as admin_mod
         # The per-post create_notification fan-out was extracted into the _batch_mod_notify
-        # helper (complexity refactor); batch_moderation still wires it and keeps the
-        # RETURNING id, user_id fetch. Combine both sources for the assertions.
-        block = inspect.getsource(admin_mod.batch_moderation) + inspect.getsource(admin_mod._batch_mod_notify)
-        assert "_batch_mod_notify" in inspect.getsource(admin_mod.batch_moderation)  # wiring
+        # Helpers keep the endpoint thin while preserving the DB fetch and notification contract.
+        block = (
+            inspect.getsource(admin_mod.batch_moderation)
+            + inspect.getsource(admin_mod._batch_mod_collect)
+            + inspect.getsource(admin_mod._batch_mod_transition)
+            + inspect.getsource(admin_mod._batch_mod_notify)
+        )
+        assert "_batch_mod_query" in inspect.getsource(admin_mod.batch_moderation)  # wiring
         assert "create_notification(" in block, \
             "batch_moderation must call create_notification for each affected post"
         assert "SELECT id, user_id, moderation_status" in block, \

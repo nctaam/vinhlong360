@@ -564,6 +564,60 @@ def _batch_mod_notify(rows, status, reason) -> None:
             logger.exception("Failed to notify batch moderation %s", rd["id"])
 
 
+def _batch_mod_transition(conn, tx, id_expr, placeholder, post_id, status, reason):
+    existing = db._fetchone(
+        conn,
+        f"SELECT id, user_id, moderation_status FROM posts WHERE {id_expr}={placeholder}",
+        (post_id,),
+    )
+    if not existing:
+        return None
+    current = db._row_to_dict(existing)
+    if current.get("moderation_status") not in {"pending", "flagged"}:
+        return None
+    try:
+        cas_transition(
+            tx,
+            "posts",
+            post_id,
+            expected_status=current["moderation_status"],
+            new_status=status,
+            actor_id="batch",
+            reason=reason or status,
+            correlation_id=f"moderation:{post_id}",
+        )
+    except StateConflict:
+        return None
+    return existing
+
+
+def _batch_mod_collect(conn, post_ids, status, reason):
+    placeholder = db._ph
+    id_expr = "id::text" if getattr(db, "_use_pg", False) else "id"
+
+    class _Tx:
+        _db = db
+        _conn = conn
+
+    ensure_state_schema(_Tx, "posts")
+    rows = []
+    for post_id in post_ids:
+        row = _batch_mod_transition(conn, _Tx, id_expr, placeholder, post_id, status, reason)
+        if row is not None:
+            rows.append(row)
+    return rows
+
+
+def _batch_mod_query(post_ids, status, reason) -> int:
+    with db._conn() as conn:
+        rows = _batch_mod_collect(conn, post_ids, status, reason)
+    for row in rows:
+        post_id = str(db._row_to_dict(row)["id"])
+        _log_mod_action("post", post_id, status, reason)
+    _batch_mod_notify(rows, status, reason)
+    return len(rows)
+
+
 @router.post("/moderation/batch",
              summary="Batch moderate multiple posts",
              description="Approve or reject multiple posts at once. Notifies each author and logs moderation actions.")
@@ -581,35 +635,7 @@ async def batch_moderation(body: BatchModerationBody, request: Request):
         raise HTTPException(400, "post_ids: 1-100 items")
     status = "approved" if body.action == "approve" else "rejected"
     reason = body.reason.strip() or None
-    def _query():
-        rows = []
-        ph = db._ph
-        with db._conn() as conn:
-            class _Tx:
-                _db = db
-                _conn = conn
-            ensure_state_schema(_Tx, "posts")
-            id_expr = "id::text" if getattr(db, "_use_pg", False) else "id"
-            for pid in body.post_ids:
-                existing = db._fetchone(conn, f"SELECT id, user_id, moderation_status FROM posts WHERE {id_expr}={ph}", (pid,))
-                if not existing:
-                    continue
-                current = db._row_to_dict(existing)
-                if current.get("moderation_status") not in {"pending", "flagged"}:
-                    continue
-                try:
-                    cas_transition(_Tx, "posts", pid, expected_status=current["moderation_status"], new_status=status,
-                                   actor_id="batch", reason=reason or status, correlation_id=f"moderation:{pid}")
-                except StateConflict:
-                    continue
-                rows.append(existing)
-            updated = len(rows)
-        for row in rows:
-            pid = str(db._row_to_dict(row)["id"])
-            _log_mod_action("post", pid, status, reason)
-        _batch_mod_notify(rows, status, reason)
-        return updated
-    updated = await asyncio.to_thread(_query)
+    updated = await asyncio.to_thread(_batch_mod_query, body.post_ids, status, reason)
     return {"success": True, "updated": updated, "requested": len(body.post_ids)}
 
 

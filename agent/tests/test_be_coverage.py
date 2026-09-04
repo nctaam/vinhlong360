@@ -554,12 +554,12 @@ class TestBE12BatchModeration:
     def test_batch_moderation_sends_notifications(self):
         # Notification fan-out extracted into _batch_mod_notify (complexity refactor);
         # batch_moderation still wires it.
-        assert "_batch_mod_notify" in inspect.getsource(admin.batch_moderation)  # wiring
-        src = inspect.getsource(admin.batch_moderation) + inspect.getsource(admin._batch_mod_notify)
+        assert "_batch_mod_query" in inspect.getsource(admin.batch_moderation)  # wiring
+        src = inspect.getsource(admin._batch_mod_query) + inspect.getsource(admin._batch_mod_notify)
         assert "create_notification" in src
 
     def test_batch_moderation_logs_mod_action(self):
-        src = inspect.getsource(admin.batch_moderation)
+        src = inspect.getsource(admin.batch_moderation) + inspect.getsource(admin._batch_mod_query)
         assert "_log_mod_action" in src
 
     def test_batch_moderation_returns_count(self):
