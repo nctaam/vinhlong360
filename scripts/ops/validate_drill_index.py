@@ -63,13 +63,10 @@ def _sha256(path: Path) -> str:
     return hashlib.sha256(path.read_bytes()).hexdigest()
 
 
-def _validate_entry(entry: dict[str, Any], root: Path) -> list[str]:
+def _validate_entry_identity(entry: dict[str, Any], entry_id: str) -> list[str]:
     problems: list[str] = []
-    entry_id = entry.get("id") or "<no id>"
-
     if not entry.get("id"):
         problems.append("entry has no id")
-
     status = entry.get("status")
     if not status:
         problems.append(f"{entry_id}: no status")
@@ -77,41 +74,31 @@ def _validate_entry(entry: dict[str, Any], root: Path) -> list[str]:
         problems.append(
             f"{entry_id}: status {status!r} is not one of {sorted(ALLOWED_STATUSES)}"
         )
+    return problems
 
-    # An executed drill must say how far its claim reaches.  An UNAVAILABLE one
-    # never ran, so demanding a scope would only invite an invented string.
-    if status != STATUS_WITHOUT_EVIDENCE:
-        scope = entry.get("scope")
-        if not scope:
-            problems.append(f"{entry_id}: executed entry has no scope")
-        else:
-            upper = str(scope).upper()
-            for token in FORBIDDEN_SCOPE_TOKENS:
-                if token in upper:
-                    problems.append(
-                        f"{entry_id}: scope {scope!r} claims {token} reach; "
-                        "drill evidence here is local-only"
-                    )
-            if not upper.startswith("LOCAL"):
-                problems.append(
-                    f"{entry_id}: scope {scope!r} does not start with LOCAL"
-                )
 
-    # Every entry must carry a stated limit, whatever its shape.
-    if not any(entry.get(field) for field in ("limitations", "missing", "reason")):
-        problems.append(
-            f"{entry_id}: carries none of limitations/missing/reason — "
-            "an entry must state what it does not prove"
-        )
+def _validate_entry_scope(entry: dict[str, Any], entry_id: str) -> list[str]:
+    if entry.get("status") == STATUS_WITHOUT_EVIDENCE:
+        return []
+    scope = entry.get("scope")
+    if not scope:
+        return [f"{entry_id}: executed entry has no scope"]
+    upper = str(scope).upper()
+    problems = [
+        f"{entry_id}: scope {scope!r} claims {token} reach; drill evidence here is local-only"
+        for token in FORBIDDEN_SCOPE_TOKENS
+        if token in upper
+    ]
+    if not upper.startswith("LOCAL"):
+        problems.append(f"{entry_id}: scope {scope!r} does not start with LOCAL")
+    return problems
 
+
+def _validate_entry_evidence(entry: dict[str, Any], entry_id: str, root: Path) -> list[str]:
     evidence = entry.get("evidence") or []
-    if status != STATUS_WITHOUT_EVIDENCE and not evidence:
+    problems: list[str] = []
+    if entry.get("status") != STATUS_WITHOUT_EVIDENCE and not evidence:
         problems.append(f"{entry_id}: executed entry lists no evidence path")
-
-    # Keyed by (basename, digest), not digest alone.  A before/after pair is
-    # SUPPOSED to be byte-identical when nothing changed — that is the proof,
-    # not a defect.  What inflates apparent breadth is the SAME document reached
-    # by two paths, which shows up as an equal basename AND an equal digest.
     seen: dict[tuple[str, str], str] = {}
     for rel in evidence:
         path = root / rel
@@ -121,13 +108,66 @@ def _validate_entry(entry: dict[str, Any], root: Path) -> list[str]:
         key = (path.name, _sha256(path))
         if key in seen:
             problems.append(
-                f"{entry_id}: evidence {rel} is the same document as "
-                f"{seen[key]} — the entry lists more documents than it has"
+                f"{entry_id}: evidence {rel} is the same document as {seen[key]} — "
+                "the entry lists more documents than it has"
             )
         else:
             seen[key] = rel
-
     return problems
+
+
+def _validate_entry(entry: dict[str, Any], root: Path) -> list[str]:
+    entry_id = entry.get("id") or "<no id>"
+    problems = _validate_entry_identity(entry, entry_id)
+    problems.extend(_validate_entry_scope(entry, entry_id))
+
+    # Every entry must carry a stated limit, whatever its shape.
+    if not any(entry.get(field) for field in ("limitations", "missing", "reason")):
+        problems.append(
+            f"{entry_id}: carries none of limitations/missing/reason — "
+            "an entry must state what it does not prove"
+        )
+
+    problems.extend(_validate_entry_evidence(entry, entry_id, root))
+    return problems
+
+
+def _validate_entries(entries: list[dict[str, Any]], root: Path) -> list[str]:
+    problems: list[str] = []
+    seen_ids: set[str] = set()
+    for entry in entries:
+        entry_id = entry.get("id")
+        if entry_id in seen_ids:
+            problems.append(f"duplicate entry id: {entry_id}")
+        seen_ids.add(entry_id)
+        problems.extend(_validate_entry(entry, root))
+    return problems
+
+
+def _validate_evidence_freshness(entries: list[dict[str, Any]], root: Path,
+                                 generated_at: datetime | None, raw_generated: str) -> list[str]:
+    if generated_at is None:
+        return ["generated_at is missing or not an ISO-8601 timestamp"]
+    problems: list[str] = []
+    for entry in entries:
+        for rel in entry.get("evidence") or []:
+            path = root / rel
+            if path.is_file() and datetime.fromtimestamp(path.stat().st_mtime, timezone.utc) > generated_at:
+                problems.append(
+                    f"{entry.get('id')}: evidence {rel} is newer than the index generated_at ({raw_generated})"
+                )
+    return problems
+
+
+def _orphan_drills(entries: list[dict[str, Any]], drills: Path) -> tuple[list[str], list[str]]:
+    referenced = {
+        Path(rel).parts[2]
+        for entry in entries
+        for rel in entry.get("evidence") or []
+        if len(Path(rel).parts) >= 3
+    }
+    orphans = sorted(child.name for child in drills.iterdir() if child.is_dir() and child.name not in referenced)
+    return orphans, [f"drill directory referenced by no entry: {name}" for name in orphans]
 
 
 def validate(root: Path) -> dict[str, Any]:
@@ -141,54 +181,14 @@ def validate(root: Path) -> dict[str, Any]:
         }
 
     index = json.loads(index_path.read_text(encoding="utf-8"))
-    problems: list[str] = []
     entries = index.get("entries") or []
-    if not entries:
-        problems.append("index declares no entries")
-
-    seen_ids: set[str] = set()
-    for entry in entries:
-        entry_id = entry.get("id")
-        if entry_id in seen_ids:
-            problems.append(f"duplicate entry id: {entry_id}")
-        seen_ids.add(entry_id)
-        problems.extend(_validate_entry(entry, root))
-
-    # The index must not claim to be older than the evidence it cites: a
-    # generated_at left behind after a hand edit is how an index silently stops
-    # describing the run it names.
-    generated_at = _iso(str(index.get("generated_at", "")))
-    if generated_at is None:
-        problems.append("generated_at is missing or not an ISO-8601 timestamp")
-    else:
-        for entry in entries:
-            for rel in entry.get("evidence") or []:
-                path = root / rel
-                if not path.is_file():
-                    continue
-                mtime = datetime.fromtimestamp(path.stat().st_mtime, timezone.utc)
-                if mtime > generated_at:
-                    problems.append(
-                        f"{entry.get('id')}: evidence {rel} is newer than the "
-                        f"index generated_at ({index.get('generated_at')})"
-                    )
-
-    # A drill directory nobody references is an unrecorded run.  Report it —
-    # never delete it; those directories are the only trace of earlier attempts.
     drills = root / "artifacts" / "runtime-drills"
-    referenced: set[str] = set()
-    for entry in entries:
-        for rel in entry.get("evidence") or []:
-            parts = Path(rel).parts
-            if len(parts) >= 3:
-                referenced.add(parts[2])
-    orphans = sorted(
-        child.name
-        for child in drills.iterdir()
-        if child.is_dir() and child.name not in referenced
-    )
-    for name in orphans:
-        problems.append(f"drill directory referenced by no entry: {name}")
+    problems = (["index declares no entries"] if not entries else [])
+    problems.extend(_validate_entries(entries, root))
+    raw_generated = str(index.get("generated_at", ""))
+    problems.extend(_validate_evidence_freshness(entries, root, _iso(raw_generated), raw_generated))
+    orphans, orphan_problems = _orphan_drills(entries, drills)
+    problems.extend(orphan_problems)
 
     return {
         "index": str(index_path),
