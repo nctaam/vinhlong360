@@ -9,6 +9,7 @@ then drops the temporary database unless --keep-db is passed.
 from __future__ import annotations
 
 import argparse
+from functools import partial
 import gzip
 import os
 import shutil
@@ -56,6 +57,36 @@ def _database_url_for(database_url: str, db_name: str) -> str:
     parsed = urlparse(database_url)
     return urlunparse(parsed._replace(path=f"/{db_name}"))
 
+
+def _manifest_path_for_directory(directory: Path) -> Path:
+    manifest_path = directory / "manifest.json"
+    if manifest_path.is_file():
+        return manifest_path
+    sidecars = sorted(directory.glob("*.manifest.json"), key=lambda p: p.stat().st_mtime, reverse=True)
+    return sidecars[0] if sidecars else manifest_path
+
+
+def _declared_manifest_dump(directory: Path) -> Path | None:
+    manifest_path = _manifest_path_for_directory(directory)
+    try:
+        raw = __import__("json").loads(manifest_path.read_text(encoding="utf-8"))
+        declared = (raw.get("artifact") or {}).get("path") or raw.get("artifact_path")
+        if isinstance(declared, str) and declared:
+            candidate = directory / declared
+            if candidate.is_file():
+                return candidate
+    except (OSError, TypeError, ValueError):
+        pass
+    return None
+
+
+def _legacy_dump_candidates(backup_dir: Path) -> list[Path]:
+    candidates: list[Path] = []
+    for pattern in ("db-pre-deploy-*.dump", "*.dump", "*.backup", "*.sql", "*.sql.gz"):
+        candidates.extend(backup_dir.glob(pattern))
+    return candidates
+
+
 def _find_latest_dump(backup_dir: Path) -> Path | None:
     if not backup_dir.is_dir():
         return None
@@ -69,26 +100,13 @@ def _find_latest_dump(backup_dir: Path) -> Path | None:
         if not manifest.format.startswith("postgres."):
             # Local JSON/SQLite snapshots are not valid PostgreSQL restore inputs.
             return None
-        try:
-            manifest_path = directory / "manifest.json"
-            if not manifest_path.is_file():
-                sidecars = sorted(directory.glob("*.manifest.json"), key=lambda p: p.stat().st_mtime, reverse=True)
-                manifest_path = sidecars[0] if sidecars else manifest_path
-            raw = __import__("json").loads(manifest_path.read_text(encoding="utf-8"))
-            declared = (raw.get("artifact") or {}).get("path") or raw.get("artifact_path")
-            if declared:
-                candidate = directory / str(declared)
-                if candidate.is_file():
-                    return candidate
-        except (OSError, TypeError, ValueError):
-            pass
-        for fallback in ("postgres.dump",):
-            candidate = directory / fallback
-            if candidate.is_file():
-                return candidate
-    candidates: list[Path] = []
-    for pattern in ("db-pre-deploy-*.dump", "*.dump", "*.backup", "*.sql", "*.sql.gz"):
-        candidates.extend(backup_dir.glob(pattern))
+        artifact = _declared_manifest_dump(directory)
+        if artifact is not None:
+            return artifact
+        fallback = directory / "postgres.dump"
+        if fallback.is_file():
+            return fallback
+    candidates = _legacy_dump_candidates(backup_dir)
     return max(candidates, key=lambda path: path.stat().st_mtime) if candidates else None
 
 
@@ -312,6 +330,67 @@ def _read_postgres_identity(database_url: str) -> dict[str, object]:
         with conn.cursor() as cur:
             return read_target_identity(cur)
 
+
+def _restore_target(*, artifact: Path, manifest: BackupManifest, database_url: str,
+                    db_name: str, restore_url: str, skip_migration_gate: bool):
+    _run_restore(database_url, db_name, artifact)
+    if not skip_migration_gate:
+        _run_migration_gate(restore_url)
+    return _sanity_check(restore_url)
+
+
+def _write_restore_evidence(path: Path, report: RestoreReport) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(
+        __import__("json").dumps(
+            {"success": report.success, "artifact_id": report.artifact_id,
+             "row_counts": report.row_counts, "evidence": report.evidence},
+            ensure_ascii=False,
+            indent=2,
+        ) + "\n",
+        encoding="utf-8",
+    )
+
+
+def _execute_restore(args, manifest: BackupManifest, dump: Path,
+                     database_url: str, db_name: str, restore_url: str) -> int:
+    created = False
+    try:
+        source_identity = {"target": "pg", **_read_postgres_identity(database_url)}
+        validate_source_identity(manifest, source_identity)
+        _create_database(database_url, db_name)
+        created = True
+        target = partial(
+            _restore_target,
+            database_url=database_url,
+            db_name=db_name,
+            restore_url=restore_url,
+            skip_migration_gate=args.skip_migration_gate,
+        )
+        report = restore_backup(manifest, target, artifact=dump)
+        sanity = report.row_counts
+        print(
+            "[restore-drill] OK "
+            f"entities={sanity['entities']} relationships={sanity['relationships']} "
+            f"schema_version={sanity['schema_version']}"
+        )
+        if args.evidence is not None:
+            _write_restore_evidence(args.evidence, report)
+        return 0
+    except Exception as exc:  # noqa: BLE001 - CLI emits a safe contract error
+        print(f"[restore-drill] FAIL: {exc}", file=sys.stderr)
+        return 1
+    finally:
+        if created and not args.keep_db:
+            try:
+                _drop_database(database_url, db_name)
+                print(f"[restore-drill] dropped temp_db={db_name}")
+            except Exception as exc:  # noqa: BLE001 - best-effort cleanup
+                print(f"[restore-drill] WARN: could not drop temp_db={db_name}: {exc}", file=sys.stderr)
+        elif created:
+            print(f"[restore-drill] kept temp_db={db_name}")
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--database-url", default=os.getenv("DATABASE_URL", ""))
@@ -352,51 +431,7 @@ def main() -> int:
 
     print(f"[restore-drill] dump={dump}")
     print(f"[restore-drill] temp_db={db_name}")
-    created = False
-    try:
-        # The disposable target necessarily receives a new OID/system identity;
-        # compare the manifest with the source database before creating it.
-        source_identity = {"target": "pg", **_read_postgres_identity(database_url)}
-        validate_source_identity(manifest, source_identity)
-        _create_database(database_url, db_name)
-        created = True
-        def _restore_target(*, artifact: Path, manifest: BackupManifest):
-            _run_restore(database_url, db_name, artifact)
-            if not args.skip_migration_gate:
-                _run_migration_gate(restore_url)
-            return _sanity_check(restore_url)
-
-        report = restore_backup(manifest, _restore_target, artifact=dump)
-        sanity = report.row_counts
-        print(
-            "[restore-drill] OK "
-            f"entities={sanity['entities']} relationships={sanity['relationships']} "
-            f"schema_version={sanity['schema_version']}"
-        )
-        if args.evidence is not None:
-            args.evidence.parent.mkdir(parents=True, exist_ok=True)
-            args.evidence.write_text(
-                __import__("json").dumps(
-                    {"success": report.success, "artifact_id": report.artifact_id,
-                     "row_counts": report.row_counts, "evidence": report.evidence},
-                    ensure_ascii=False,
-                    indent=2,
-                ) + "\n",
-                encoding="utf-8",
-            )
-        return 0
-    except Exception as exc:  # noqa: BLE001
-        print(f"[restore-drill] FAIL: {exc}", file=sys.stderr)
-        return 1
-    finally:
-        if created and not args.keep_db:
-            try:
-                _drop_database(database_url, db_name)
-                print(f"[restore-drill] dropped temp_db={db_name}")
-            except Exception as exc:  # noqa: BLE001
-                print(f"[restore-drill] WARN: could not drop temp_db={db_name}: {exc}", file=sys.stderr)
-        elif created:
-            print(f"[restore-drill] kept temp_db={db_name}")
+    return _execute_restore(args, manifest, dump, database_url, db_name, restore_url)
 
 if __name__ == "__main__":
     raise SystemExit(main())
