@@ -19,8 +19,10 @@ import logging
 import math
 import time
 from collections import defaultdict
-from datetime import datetime, timezone
+from datetime import datetime
 from threading import Lock
+
+from control_plane.clock import system_clock
 
 logger = logging.getLogger(__name__)
 
@@ -759,7 +761,7 @@ def _apply_contextual(
 
 def _apply_contextual_fallback(entities: dict, limit: int) -> list[dict]:
     """Fallback: contextual with the current month/hour bucket."""
-    now = datetime.now(timezone.utc)
+    now = system_clock.now_vietnam()
     hour = now.hour
     if hour < 12:
         tod = "morning"

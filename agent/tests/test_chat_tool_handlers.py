@@ -401,6 +401,29 @@ def test_tool_seasonal_thang_khong_parse_duoc_rot_ve_thang_hien_tai(kb):
     assert "trai-cay-quanh-nam" in ids
 
 
+def test_tool_seasonal_invalid_month_uses_vietnam_local_month(kb, monkeypatch):
+    class _BoundaryClock:
+        @staticmethod
+        def now_utc():
+            return __import__("datetime").datetime(2026, 8, 31, 17, 30)
+
+        @staticmethod
+        def now_vietnam():
+            return __import__("datetime").datetime(2026, 9, 1, 0, 30)
+
+    captured = {}
+
+    def _seasonal(month):
+        captured["month"] = month
+        return []
+
+    monkeypatch.setattr(chat_api, "system_clock", _BoundaryClock)
+    monkeypatch.setattr(chat_api.knowledge, "seasonal_now", _seasonal)
+
+    assert json.loads(chat_api._tool_seasonal_now({"month": None})) == []
+    assert captured["month"] == 9
+
+
 # ── _tool_list_itineraries ────────────────────────────────────────────────────
 
 def test_tool_list_itineraries_tat_ca(kb):

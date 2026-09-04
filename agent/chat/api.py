@@ -566,7 +566,7 @@ def _tool_seasonal_now(args: dict) -> str:
     try:
         raw_month = max(1, min(12, int(raw_month)))
     except (TypeError, ValueError):
-        raw_month = system_clock.now_utc().month
+        raw_month = system_clock.now_vietnam().month
     result = knowledge.seasonal_now(raw_month)
     def _seasonal_card(e):
         attrs = e.get("attributes") or {}

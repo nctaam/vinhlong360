@@ -380,6 +380,31 @@ def test_recommend_contextual_skips_types_out_of_all_context():
     assert "h" not in ids      # history fits neither sunny nor evening -> continue
 
 
+def test_contextual_fallback_uses_vietnam_local_date_at_utc_boundary(monkeypatch):
+    class _BoundaryClock:
+        @staticmethod
+        def now_utc():
+            return datetime(2026, 8, 31, 17, 30, tzinfo=timezone.utc)
+
+        @staticmethod
+        def now_vietnam():
+            return datetime(2026, 9, 1, 0, 30, tzinfo=timezone.utc)
+
+    captured = {}
+
+    def _contextual(month, time_of_day, weather, entities, limit):
+        captured.update(month=month, time_of_day=time_of_day, weather=weather,
+                        entities=entities, limit=limit)
+        return []
+
+    monkeypatch.setattr(rec, "system_clock", _BoundaryClock)
+    monkeypatch.setattr(rec, "recommend_contextual", _contextual)
+
+    assert rec._apply_contextual_fallback({"entity": {}}, 4) == []
+    assert captured["month"] == 9
+    assert captured["time_of_day"] == "morning"
+
+
 def test_recommend_contextual_peak_season_beats_in_season(corpus):
     # nat-1 season months [1,2,3], peak [2].
     peak_out = rec.recommend_contextual(2, "morning", "sunny", corpus)
