@@ -453,6 +453,13 @@ def test_safe_error_timestamp_retains_valid_epoch_values(value):
     assert safe_error_timestamp(value) == expected
 
 
+def test_safe_error_timestamp_rejects_empty_and_non_string_values():
+    from agent.llmops.api import safe_error_timestamp
+
+    assert safe_error_timestamp("   ") == "unknown"
+    assert safe_error_timestamp(None) == "unknown"
+
+
 def test_bot_runtime_zalo_secret_strips_whitespace():
     import agent.bot_gateway as bot_gateway
 

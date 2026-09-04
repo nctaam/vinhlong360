@@ -113,26 +113,15 @@ def _looks_like_phone_numeric(candidate: str) -> bool:
     )
 
 
-def safe_error_timestamp(value: object) -> int | float | str:
-    """Keep only finite numeric or ISO-8601 timestamps in telemetry responses."""
-    if isinstance(value, bool):
+def _bounded_error_epoch(value: int | float | str) -> int | float | str:
+    try:
+        numeric = float(value)
+    except (OverflowError, ValueError):
         return "unknown"
-    if isinstance(value, (int, float)):
-        try:
-            numeric = float(value)
-            return (
-                value
-                if math.isfinite(numeric) and _MIN_ERROR_EPOCH <= numeric <= _MAX_ERROR_EPOCH
-                else "unknown"
-            )
-        except (OverflowError, ValueError):
-            return "unknown"
-    if not isinstance(value, str):
-        return "unknown"
-    candidate = value.strip()
-    if not candidate:
-        return "unknown"
-    # Phone-shaped strings must not be reinterpreted as legacy epoch values.
+    return value if math.isfinite(numeric) and _MIN_ERROR_EPOCH <= numeric <= _MAX_ERROR_EPOCH else "unknown"
+
+
+def _string_error_timestamp(candidate: str) -> int | float | str:
     if re.fullmatch(r"0\d{9}", candidate) or _looks_like_phone_numeric(candidate):
         return "unknown"
     if re.fullmatch(r"[+-]?(?:\d+(?:\.\d*)?|\.\d+)(?:[eE][+-]?\d+)?", candidate):
@@ -140,16 +129,27 @@ def safe_error_timestamp(value: object) -> int | float | str:
             numeric = float(candidate)
         except (OverflowError, ValueError):
             return "unknown"
-        return (
-            numeric
-            if math.isfinite(numeric) and _MIN_ERROR_EPOCH <= numeric <= _MAX_ERROR_EPOCH
-            else "unknown"
-        )
+        return numeric if math.isfinite(numeric) and _MIN_ERROR_EPOCH <= numeric <= _MAX_ERROR_EPOCH else "unknown"
     try:
         datetime.fromisoformat(candidate.replace("Z", "+00:00"))
     except (TypeError, ValueError, OverflowError):
         return "unknown"
     return candidate
+
+
+def safe_error_timestamp(value: object) -> int | float | str:
+    """Keep only finite numeric or ISO-8601 timestamps in telemetry responses."""
+    if isinstance(value, bool):
+        return "unknown"
+    if isinstance(value, (int, float)):
+        return _bounded_error_epoch(value)
+    if not isinstance(value, str):
+        return "unknown"
+    candidate = value.strip()
+    if not candidate:
+        return "unknown"
+    # Phone-shaped strings must not be reinterpreted as legacy epoch values.
+    return _string_error_timestamp(candidate)
 
 
 async def _llmops_require_admin(request: Request) -> None:
