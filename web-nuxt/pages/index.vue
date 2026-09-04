@@ -888,7 +888,7 @@ html.js .home .hero-enter h1::after { animation: hero-underline-draw .8s var(--e
   border: .5px solid rgba(var(--white-rgb),.30);
   border-radius: calc(var(--radius-surface) + var(--space-1));
   box-shadow: 0 8px 30px rgba(var(--black-rgb),.18), 0 2px 8px rgba(var(--black-rgb),.12);
-  transition: box-shadow .35s var(--ease-out-expo), border-color .3s var(--ease-out), transform .35s var(--ease-spring-gentle);
+  transition: box-shadow .35s var(--ease-out-expo), border-color .3s var(--ease-out), transform .35s var(--ease-out-expo);
 }
 .home .hero .hero-ac::before {
   content: "";
@@ -1015,7 +1015,7 @@ html.js .home .hero-enter h1::after { animation: hero-underline-draw .8s var(--e
 /* declutter-3 T16 (B1-2): event-hero + .eh-* đã xoá; minis đứng riêng thành hàng 3 cột */
 .happening-rest { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--space-2); }
 @media (max-width: 760px) { .happening-rest { grid-template-columns: 1fr; } }
-.event-mini { display: flex; align-items: center; gap: var(--space-3); padding: var(--space-2) var(--space-3); min-height: 48px; background: var(--card); border: .5px solid var(--line); border-radius: var(--radius); text-decoration: none; color: var(--ink); transition: border-color .25s var(--ease-out), transform .25s var(--ease-spring-gentle); }
+.event-mini { display: flex; align-items: center; gap: var(--space-3); padding: var(--space-2) var(--space-3); min-height: 48px; background: var(--card); border: .5px solid var(--line); border-radius: var(--radius); text-decoration: none; color: var(--ink); transition: border-color .25s var(--ease-out), transform .25s var(--ease-out-expo); }
 .event-mini:hover { border-color: var(--color-action-border); transform: translateX(2px); }
 .ec-date-sm { min-width: 46px; padding: var(--space-2); }
 .ec-date { display: flex; flex-direction: column; align-items: center; justify-content: center; min-width: 52px; padding: var(--space-2); background: var(--home-color-amber-surface); border-radius: var(--radius-control); color: var(--home-color-amber-text); }
@@ -1060,7 +1060,7 @@ html.js .home .hero-enter h1::after { animation: hero-underline-draw .8s var(--e
 .home-leaders-teaser a { color: var(--color-action); text-decoration: none; }
 .home-leaders-teaser a:hover { text-decoration: underline; }
 
-.cm-card { display: flex; flex-direction: column; background: var(--card); border: .5px solid var(--line); border-radius: var(--radius); overflow: hidden; box-shadow: var(--shadow-xs); text-decoration: none; color: var(--ink); transition: transform .35s var(--ease-spring-gentle), box-shadow .35s var(--ease-out-expo), border-color .3s var(--ease-out); }
+.cm-card { display: flex; flex-direction: column; background: var(--card); border: .5px solid var(--line); border-radius: var(--radius); overflow: hidden; box-shadow: var(--shadow-xs); text-decoration: none; color: var(--ink); transition: transform .35s var(--ease-out-expo), box-shadow .35s var(--ease-out-expo), border-color .3s var(--ease-out); }
 .cm-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-md); border-color: var(--border); }
 .cm-card:active { transform: scale(.98); transition-duration: .1s; }
 .cm-card:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 3px; }
@@ -1189,7 +1189,7 @@ html.js .home .hero-enter h1::after { animation: hero-underline-draw .8s var(--e
   padding: var(--space-3); min-height: 48px;
   background: var(--card); border: .5px solid var(--line); border-radius: var(--radius);
   text-decoration: none; color: var(--ink);
-  transition: transform .25s var(--ease-spring-gentle), box-shadow .25s var(--ease-out), border-color .25s var(--ease-out);
+  transition: transform .25s var(--ease-out-expo), box-shadow .25s var(--ease-out), border-color .25s var(--ease-out);
 }
 .fy-chip:hover { transform: translateY(-3px); box-shadow: var(--shadow-sm); border-color: var(--border); }
 .fy-chip:active { transform: translateY(-1px) scale(.98); transition-duration: .1s; }

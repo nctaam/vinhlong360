@@ -45,6 +45,7 @@
           :data-material-accent="resolveRegionalAccent(result.type)"
           data-result-role="list"
           @focusin="selectFromList(result.id)"
+          @click="selectFromList(result.id)"
         >
           <slot name="result" :result="result">
             <div class="map-result-row__copy">
@@ -98,6 +99,7 @@
           data-search-area
           @click="commitSearchArea"
         >
+          <IconLine name="locate" aria-hidden="true" />
           Tìm trong khu vực này
         </button>
       </div>
@@ -252,7 +254,8 @@ function popupHTML(result: MapListResult) {
 
 function selectFromMarker(result: MapListResult, coordinates: [number, number]) {
   emit('select', result.id)
-  rowElements.get(result.id)?.scrollIntoView?.({ block: 'nearest' })
+  const prefersReduced = typeof window !== 'undefined' && window.matchMedia?.('(prefers-reduced-motion: reduce)').matches
+  rowElements.get(result.id)?.scrollIntoView?.({ block: 'nearest', behavior: prefersReduced ? 'auto' : 'smooth' })
   if (maplibregl?.Popup && map) {
     new maplibregl.Popup({ offset: 18 })
       .setLngLat([coordinates[1], coordinates[0]])

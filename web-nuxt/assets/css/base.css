@@ -392,6 +392,13 @@ html.js .reveal { opacity: 0; transform: translateY(30px) scale(.985); }
   background: var(--accent);
   box-shadow: 0 0 0 4px color-mix(in srgb, var(--accent) 26%, transparent), 0 7px 20px rgba(var(--black-rgb), .34);
 }
+.map-locator-marker:hover:not(.is-selected) {
+  transform: rotate(-45deg) scale(1.12);
+  box-shadow: 0 7px 18px rgba(var(--black-rgb), .36);
+}
+.map-locator-marker:active {
+  transform: rotate(-45deg) scale(1.05);
+}
 .dark .map-locator-marker {
   border-color: var(--color-surface-raised, var(--card));
 }

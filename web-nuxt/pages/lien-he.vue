@@ -1,4 +1,4 @@
-﻿<template>
+<template>
   <div class="page contact-page">
     <Breadcrumb :items="[{ label: 'Trang chủ', to: '/' }, { label: 'Liên hệ' }]" />
 
@@ -197,7 +197,7 @@ useHead({
   border-radius: var(--radius-sheet);
   padding: var(--space-6);
   box-shadow: var(--shadow-xs);
-  transition: transform .35s var(--ease-spring-gentle), box-shadow .35s var(--ease-out-expo), border-color .3s var(--ease-out);
+  transition: transform .35s var(--ease-out-expo), box-shadow .35s var(--ease-out-expo), border-color .3s var(--ease-out);
 }
 .contact-card:hover {
   transform: translateY(-3px);
@@ -231,7 +231,7 @@ useHead({
   background: var(--bg-warm);
   margin-bottom: var(--space-3);
   overflow: clip;
-  transition: transform .35s var(--ease-spring-gentle), border-color .3s var(--ease-out);
+  transition: transform .35s var(--ease-out-expo), border-color .3s var(--ease-out);
 }
 .card-icon::before {
   content: "";
@@ -299,7 +299,7 @@ useHead({
 
 /* Focus & accessibility */
 .contact-card a:focus-visible, .card-action .btn:focus-visible { outline: 2px solid var(--primary); outline-offset: 3px; border-radius: var(--radius-control); }
-.card-action .btn { transition: transform .35s var(--ease-spring-gentle), box-shadow .35s var(--ease-out-expo), background .3s var(--ease-out); }
+.card-action .btn { transition: transform .35s var(--ease-out-expo), box-shadow .35s var(--ease-out-expo), background .3s var(--ease-out); }
 .card-action .btn:hover { transform: translateY(-1px); box-shadow: var(--shadow-sm); }
 .card-action .btn:active { transform: scale(.96); transition-duration: .08s; }
 

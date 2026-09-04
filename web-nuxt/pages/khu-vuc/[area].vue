@@ -416,7 +416,7 @@ if (areaMeta) {
 }
 .area-stats .stat-num {
   display: inline-block;
-  transition: color .3s var(--ease-out), transform .25s var(--ease-spring-gentle);
+  transition: color .3s var(--ease-out), transform .25s var(--ease-out-expo);
 }
 /* mobile: stats become a tidy 2-up grid so they never orphan on a line */
 @media (max-width: 640px) {

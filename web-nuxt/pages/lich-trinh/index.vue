@@ -384,7 +384,7 @@ useHead(() => ({
   padding: var(--space-2) var(--space-4); border-radius: var(--radius-full);
   border: .5px solid var(--line); background: var(--card); color: var(--ink);
   font-size: var(--text-sm); font-weight: var(--weight-medium); cursor: pointer;
-  transition: transform .3s var(--ease-spring-gentle), background .25s var(--ease-out), border-color .25s var(--ease-out), box-shadow .25s var(--ease-out);
+  transition: transform .3s var(--ease-out-expo), background .25s var(--ease-out), border-color .25s var(--ease-out), box-shadow .25s var(--ease-out);
 }
 .pace-chip-glyph { font-size: var(--text-base); line-height: 1; }
 .pace-chip-count { font-size: var(--text-2xs); color: var(--muted); font-variant-numeric: tabular-nums; }
@@ -417,12 +417,12 @@ useHead(() => ({
 .saved-cta { text-align: center; margin-top: var(--space-4); }
 .saved-cta .btn:active { transform: scale(.97); transition-duration: .08s; }
 .saved-row { margin-top: var(--space-3); }
-.saved-row .card { transition: transform .35s var(--ease-spring-gentle), box-shadow .35s var(--ease-out-expo); }
+.saved-row .card { transition: transform .35s var(--ease-out-expo), box-shadow .35s var(--ease-out-expo); }
 .saved-row .card:hover { transform: translateY(-5px); box-shadow: var(--shadow-lg); }
 .saved-row .card:active { transform: translateY(-1px) scale(.98); transition-duration: .08s; }
 
 .journey-stats { display: flex; flex-wrap: wrap; gap: var(--space-3); margin-top: var(--space-3); }
-.js-item { display: flex; align-items: center; gap: var(--space-1); padding: var(--space-2) var(--space-3); background: var(--bg-alt); border-radius: var(--radius-surface); font-size: var(--text-sm); transition: background .3s var(--ease-out), transform .35s var(--ease-spring-gentle), box-shadow .3s var(--ease-out); }
+.js-item { display: flex; align-items: center; gap: var(--space-1); padding: var(--space-2) var(--space-3); background: var(--bg-alt); border-radius: var(--radius-surface); font-size: var(--text-sm); transition: background .3s var(--ease-out), transform .35s var(--ease-out-expo), box-shadow .3s var(--ease-out); }
 .js-item:hover { background: var(--card); transform: translateY(-2px); box-shadow: var(--shadow-xs); }
 .js-item:active { transform: scale(.97); transition-duration: .08s; }
 .js-emoji { font-size: var(--text-lg); }

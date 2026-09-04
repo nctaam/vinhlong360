@@ -352,7 +352,7 @@ useHead(() => ({
   background: rgba(var(--river-rgb, var(--primary-rgb)), .1);
   border: .5px solid rgba(var(--river-rgb, var(--primary-rgb)), .2);
   font-size: var(--text-xs);
-  transition: background .3s var(--ease-out), transform .3s var(--ease-spring-gentle);
+  transition: background .3s var(--ease-out), transform .3s var(--ease-out-expo);
 }
 .type-pill:hover { transform: translateY(-1px); background: rgba(var(--river-rgb, var(--primary-rgb)), .16); }
 .type-count { font-weight: var(--weight-bold); color: var(--tertiary, var(--primary-fg)); }
@@ -480,7 +480,7 @@ useHead(() => ({
   border-radius: var(--radius-sheet);
   background: var(--card);
   border: .5px solid var(--line);
-  transition: transform .35s var(--ease-spring-gentle), box-shadow .3s var(--ease-out-expo), border-color .2s var(--ease-out);
+  transition: transform .35s var(--ease-out-expo), box-shadow .3s var(--ease-out-expo), border-color .2s var(--ease-out);
 }
 .stay-tile:hover { transform: translateY(-4px); box-shadow: var(--shadow-md); border-color: var(--border); }
 .stay-tile-motif {
@@ -545,7 +545,7 @@ useHead(() => ({
   padding: var(--space-5); border-radius: var(--radius-sheet);
   background: var(--card); border: .5px solid var(--line);
   cursor: pointer; min-height: 44px;
-  transition: transform .3s var(--ease-spring-gentle), box-shadow .3s var(--ease-out-expo), border-color .2s var(--ease-out);
+  transition: transform .3s var(--ease-out-expo), box-shadow .3s var(--ease-out-expo), border-color .2s var(--ease-out);
 }
 .region-window:hover { transform: translateY(-3px); box-shadow: var(--shadow-md); border-color: rgba(var(--river-rgb, var(--primary-rgb)), .4); }
 .region-window:active { transform: scale(.98); transition-duration: .08s; }
@@ -562,7 +562,7 @@ useHead(() => ({
 .dark .region-window.active::after {
   background: linear-gradient(90deg, var(--river-legacy-dark) 0%, var(--amber-500) 52%, var(--clay-400) 100%);
 }
-.rw-motif { font-size: 1.6rem; transition: transform .35s var(--ease-spring-gentle); }
+.rw-motif { font-size: 1.6rem; transition: transform .35s var(--ease-out-expo); }
 .region-window:hover .rw-motif { transform: scale(1.12); }
 .rw-name {
   font-family: var(--font-editorial); font-weight: 600;

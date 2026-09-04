@@ -990,7 +990,7 @@ useSeoMeta({
 .cover-scrim { position: absolute; inset: 0; pointer-events: none; background: linear-gradient(to bottom, transparent 40%, rgba(var(--black-rgb),.18)); }
 .dark .cover-scrim { background: linear-gradient(to bottom, transparent 30%, rgba(var(--black-rgb),.45)); }
 .profile-avatar-wrap { position: absolute; bottom: calc(-1 * var(--space-6)); left: var(--space-5); z-index: 1; }
-.profile-avatar-wrap .avatar { border: 6px solid var(--card); box-shadow: 0 0 0 2px var(--line), 0 8px 28px rgba(var(--black-rgb),.12); transition: transform .35s var(--ease-spring-gentle); }
+.profile-avatar-wrap .avatar { border: 6px solid var(--card); box-shadow: 0 0 0 2px var(--line), 0 8px 28px rgba(var(--black-rgb),.12); transition: transform .35s var(--ease-out-expo); }
 .profile-avatar-wrap .avatar:hover { transform: scale(1.05); }
 .profile-avatar-wrap .avatar:active { transform: scale(.98); transition-duration: .08s; }
 
@@ -1034,7 +1034,7 @@ useSeoMeta({
 .dark .hairline-phusa { background: linear-gradient(90deg, transparent 0%, var(--river-legacy-dark) 15%, var(--amber-500) 50%, var(--clay-400) 85%, transparent 100%); }
 
 .profile-stats { display: flex; gap: var(--space-6); margin-top: var(--space-4); }
-.stat-item { display: flex; flex-direction: column; align-items: center; gap: var(--space-1); padding: var(--space-2) var(--space-3); background: var(--bg-warm); border: .5px solid var(--line); border-radius: var(--radius-surface); transition: background .3s var(--ease-out), transform .35s var(--ease-spring-gentle), box-shadow .3s var(--ease-out), border-color .3s var(--ease-out); }
+.stat-item { display: flex; flex-direction: column; align-items: center; gap: var(--space-1); padding: var(--space-2) var(--space-3); background: var(--bg-warm); border: .5px solid var(--line); border-radius: var(--radius-surface); transition: background .3s var(--ease-out), transform .35s var(--ease-out-expo), box-shadow .3s var(--ease-out), border-color .3s var(--ease-out); }
 .stat-item:hover { background: var(--card); transform: translateY(-1px); box-shadow: var(--shadow-sm); border-color: var(--border, var(--line)); }
 .stat-item:active { transform: scale(.95); transition-duration: .08s; }
 .stat-item:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
@@ -1067,15 +1067,15 @@ useSeoMeta({
 .fm-empty { text-align: center; color: var(--muted); padding: var(--space-5); font-size: var(--text-sm); }
 
 .profile-tabs { display: flex; gap: var(--space-2); margin: var(--space-5) 0 var(--space-4); border-bottom: .5px solid var(--line); padding-bottom: var(--space-3); }
-.profile-tabs .chip { min-height: 44px; transition: transform .35s var(--ease-spring-gentle), background .3s var(--ease-out), color .3s var(--ease-out), border-color .3s var(--ease-out); }
+.profile-tabs .chip { min-height: 44px; transition: transform .35s var(--ease-out-expo), background .3s var(--ease-out), color .3s var(--ease-out), border-color .3s var(--ease-out); }
 .profile-tabs .chip:active { transform: scale(.95); transition-duration: .08s; }
 
 /* Post list transitions */
-.post-list-enter-active { transition: opacity .35s var(--ease-out), transform .4s var(--ease-spring-gentle); }
+.post-list-enter-active { transition: opacity .35s var(--ease-out), transform .4s var(--ease-out-expo); }
 .post-list-leave-active { transition: opacity .2s var(--ease-out), transform .2s var(--ease-out); }
 .post-list-enter-from { opacity: 0; transform: translateY(8px); }
 .post-list-leave-to { opacity: 0; transform: translateY(-4px); }
-.post-list-move { transition: transform .35s var(--ease-spring-gentle); }
+.post-list-move { transition: transform .35s var(--ease-out-expo); }
 
 /* Fade */
 .fade-enter-active { transition: opacity .3s var(--ease-out); }
@@ -1083,7 +1083,7 @@ useSeoMeta({
 .fade-enter-from, .fade-leave-to { opacity: 0; }
 
 /* Follow button spring */
-.profile-name-row .btn { transition: transform .35s var(--ease-spring-gentle), background .3s var(--ease-out), color .3s var(--ease-out), border-color .3s var(--ease-out); }
+.profile-name-row .btn { transition: transform .35s var(--ease-out-expo), background .3s var(--ease-out), color .3s var(--ease-out), border-color .3s var(--ease-out); }
 .profile-name-row .btn:active { transform: scale(.92); transition-duration: .08s; }
 .profile-name-row .btn[aria-busy="true"] { pointer-events: none; }
 /* Spinner contrast inside filled primary follow button */

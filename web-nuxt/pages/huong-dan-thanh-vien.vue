@@ -196,7 +196,7 @@ useHead({
   display: flex; align-items: center; gap: var(--space-3);
   padding: var(--space-4); border-radius: var(--radius-sheet);
   border: .5px solid var(--line); background: var(--card);
-  transition: transform .25s var(--ease-spring-gentle), border-color .25s var(--ease-out);
+  transition: transform .25s var(--ease-out-expo), border-color .25s var(--ease-out);
 }
 .level-card:hover { transform: translateY(-2px); border-color: var(--primary-fg); }
 .lv-icon { font-size: 1.75rem; flex-shrink: 0; }
@@ -233,7 +233,7 @@ useHead({
   display: flex; align-items: center; gap: var(--space-3);
   padding: var(--space-3) var(--space-4); border-radius: var(--radius-sheet);
   border: .5px solid var(--line); background: var(--card);
-  transition: transform .2s var(--ease-spring-gentle);
+  transition: transform .2s var(--ease-out-expo);
 }
 .badge-card:hover { transform: translateY(-1px); }
 .badge-icon { font-size: 1.5rem; flex-shrink: 0; }

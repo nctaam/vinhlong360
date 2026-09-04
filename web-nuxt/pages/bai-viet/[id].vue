@@ -763,7 +763,7 @@ useHead({
 .related-card {
   display: flex; flex-direction: column; background: var(--card); border: .5px solid var(--line);
   border-radius: var(--radius-sheet); overflow: hidden; text-decoration: none; color: var(--ink);
-  transition: border-color .2s, transform .2s var(--ease-spring-gentle);
+  transition: border-color .2s, transform .2s var(--ease-out-expo);
 }
 .related-card:hover { border-color: var(--primary-fg); transform: translateY(-1px); }
 .related-body { padding: var(--space-2) var(--space-3); display: flex; flex-direction: column; gap: .2rem; }

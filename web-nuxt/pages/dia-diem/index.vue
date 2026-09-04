@@ -423,7 +423,7 @@ useHead({
     100% 100%, 0% 100%
   );
   border-radius: 0 0 var(--radius-sheet) var(--radius-sheet);
-  transition: transform .35s var(--ease-spring-gentle), box-shadow .3s var(--ease-out-expo), border-color .2s var(--ease-out);
+  transition: transform .35s var(--ease-out-expo), box-shadow .3s var(--ease-out-expo), border-color .2s var(--ease-out);
   transform: rotate(-1deg);
 }
 .province-stamp:nth-child(2n) { transform: rotate(.6deg); }

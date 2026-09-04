@@ -542,7 +542,7 @@ if (itinerary.value && !itinerary.value.error) {
   font-size: var(--text-2xs); font-weight: var(--weight-bold); font-variant-numeric: tabular-nums;
   cursor: default;
   animation: dayArcDotIn .4s var(--ease-out) both;
-  transition: transform .25s var(--ease-spring-gentle);
+  transition: transform .25s var(--ease-out-expo);
 }
 .day-arc-dot:hover { transform: translateX(-50%) scale(1.18); }
 .day-arc-dot:nth-child(2) { animation-delay: .18s; }
@@ -560,7 +560,7 @@ if (itinerary.value && !itinerary.value.error) {
 .dark .day-arc-dot { background: var(--card); box-shadow: 0 0 0 2px var(--primary-fg) inset, 0 1px 3px rgba(var(--black-rgb),.4); }
 
 .itin-actions { display: flex; gap: var(--space-2); flex-wrap: wrap; margin: var(--space-4) 0; }
-.itin-actions .btn { transition: transform .35s var(--ease-spring-gentle), box-shadow .35s var(--ease-out-expo); }
+.itin-actions .btn { transition: transform .35s var(--ease-out-expo), box-shadow .35s var(--ease-out-expo); }
 .itin-actions .btn:hover { transform: translateY(-1px); box-shadow: var(--shadow-xs); }
 .itin-actions .btn:active { transform: scale(.95); transition-duration: .08s; }
 
@@ -580,7 +580,7 @@ if (itinerary.value && !itinerary.value.error) {
   min-height: 56px;
 }
 .dark .transport-mode-spaced { background: rgba(var(--white-rgb),.03); border-color: var(--line); }
-.transport-mode .chip { transition: transform .35s var(--ease-spring-gentle), box-shadow .3s var(--ease-out), background .3s var(--ease-out), border-color .3s var(--ease-out); }
+.transport-mode .chip { transition: transform .35s var(--ease-out-expo), box-shadow .3s var(--ease-out), background .3s var(--ease-out), border-color .3s var(--ease-out); }
 .transport-mode .chip:hover { transform: translateY(-1px); box-shadow: var(--shadow-xs); }
 .transport-mode .chip:active { transform: scale(.95); transition-duration: .08s; }
 
@@ -631,10 +631,10 @@ if (itinerary.value && !itinerary.value.error) {
   box-shadow: 0 0 0 3px var(--bg);
   z-index: 1;
 }
-.step-card { display: flex; gap: var(--space-3); align-items: flex-start; padding: var(--space-4); background: var(--card); border: .5px solid var(--line); border-radius: var(--radius-sheet); box-shadow: var(--shadow-xs); transition: transform .35s var(--ease-spring-gentle), box-shadow .35s var(--ease-out-expo), border-color .3s var(--ease-out); }
+.step-card { display: flex; gap: var(--space-3); align-items: flex-start; padding: var(--space-4); background: var(--card); border: .5px solid var(--line); border-radius: var(--radius-sheet); box-shadow: var(--shadow-xs); transition: transform .35s var(--ease-out-expo), box-shadow .35s var(--ease-out-expo), border-color .3s var(--ease-out); }
 .step-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); border-color: var(--border); }
 .step-card:active { transform: scale(.97); transition-duration: .08s; }
-.step-emoji { font-size: 1.6rem; line-height: 1; transition: transform .35s var(--ease-spring-gentle); }
+.step-emoji { font-size: 1.6rem; line-height: 1; transition: transform .35s var(--ease-out-expo); }
 .step-card:hover .step-emoji { transform: scale(1.1) rotate(-3deg); }
 .stop-link { color: var(--ink); font-weight: var(--weight-semibold); transition: color .3s var(--ease-out); border-radius: var(--radius-control); }
 .stop-link:hover { color: var(--primary-fg); }

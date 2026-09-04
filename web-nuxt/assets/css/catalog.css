@@ -850,11 +850,23 @@
   background: transparent;
   border: 1px solid transparent;
   border-radius: var(--radius-full);
+  font-weight: var(--weight-medium);
+  transition: background .18s var(--ease-out-expo), color .18s var(--ease-out-expo), border-color .18s var(--ease-out-expo), transform .18s var(--ease-out-expo);
+}
+.map-list-surface__toggle button:hover:not([aria-pressed='true']),
+.map-list-surface__mobile-close:hover {
+  background: var(--bg-alt);
+  border-color: var(--line);
+}
+.map-list-surface__toggle button:active,
+.map-list-surface__mobile-close:active {
+  transform: scale(0.96);
 }
 .map-list-surface__toggle button[aria-pressed='true'] {
   color: var(--color-action);
   background: var(--bg-warm);
   border-color: var(--color-action-border);
+  box-shadow: var(--shadow-xs);
 }
 
 .map-list-surface__body {
@@ -885,7 +897,12 @@
   padding: var(--space-4);
   border-bottom: 1px solid var(--line);
   background: color-mix(in srgb, var(--card) 96%, transparent);
-  transition: background .18s var(--ease-out), border-color .18s var(--ease-out);
+  cursor: pointer;
+  transition: background .2s var(--ease-out-expo), border-color .2s var(--ease-out-expo), box-shadow .2s var(--ease-out-expo);
+}
+.map-result-row:hover:not(.is-selected) {
+  background: color-mix(in srgb, var(--bg-warm) 50%, var(--card));
+  box-shadow: inset 3px 0 0 color-mix(in srgb, var(--color-action) 45%, transparent);
 }
 /* :focus-within chứ không :focus-visible — hàng không còn tabindex nên tự nó
    không bao giờ nhận tiêu điểm; cái nhận là link (hoặc nội dung slot) bên
@@ -923,6 +940,8 @@
   flex: none;
   padding: var(--space-1) var(--space-2);
   color: var(--color-action);
+  background: color-mix(in srgb, var(--color-action) 10%, transparent);
+  border-radius: var(--radius-control);
   font-size: var(--text-2xs);
   font-weight: var(--weight-bold);
   text-transform: uppercase;
@@ -936,10 +955,38 @@
   top: var(--space-3);
   left: 50%;
   z-index: 3;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
   min-height: 44px;
   transform: translateX(-50%);
   box-shadow: var(--shadow-md);
   white-space: nowrap;
+  animation: search-area-pop 240ms var(--ease-out-expo);
+  transition: transform .15s var(--ease-out-expo), box-shadow .15s var(--ease-out-expo);
+}
+.map-list-surface__search-area:hover {
+  transform: translateX(-50%) translateY(-1px);
+  box-shadow: var(--shadow-lg);
+}
+.map-list-surface__search-area:active {
+  transform: translateX(-50%) translateY(1px);
+  box-shadow: var(--shadow-sm);
+}
+@keyframes search-area-pop {
+  from {
+    opacity: 0;
+    transform: translateX(-50%) translateY(-8px) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0) scale(1);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .map-list-surface__search-area {
+    animation: none;
+  }
 }
 .map-list-surface__mobile-close { display: none; }
 
@@ -988,7 +1035,7 @@
     border-bottom: 0;
     border-radius: var(--radius-sheet) var(--radius-sheet) 0 0;
     box-shadow: 0 -20px 60px rgba(var(--black-rgb), .28);
-    animation: map-sheet-slide-up 260ms cubic-bezier(0.16, 1, 0.3, 1);
+    animation: map-sheet-slide-up 280ms var(--ease-out-expo);
   }
   @keyframes map-sheet-slide-up {
     from {

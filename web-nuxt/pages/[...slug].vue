@@ -99,7 +99,7 @@ function onSearch() {
   font-weight: var(--weight-semibold);
   cursor: pointer;
   min-height: 44px;
-  transition: background .3s var(--ease-out), transform .35s var(--ease-spring-gentle), box-shadow .3s var(--ease-out);
+  transition: background .3s var(--ease-out), transform .35s var(--ease-out-expo), box-shadow .3s var(--ease-out);
 }
 
 .nf-search button:hover { background: var(--accent-dark); }
@@ -122,7 +122,7 @@ function onSearch() {
   text-decoration: none;
   cursor: pointer;
   min-height: 44px;
-  transition: background .3s var(--ease-out), transform .35s var(--ease-spring-gentle), box-shadow .35s var(--ease-out-expo);
+  transition: background .3s var(--ease-out), transform .35s var(--ease-out-expo), box-shadow .35s var(--ease-out-expo);
 }
 
 .nf-btn:active { transform: scale(.97); }

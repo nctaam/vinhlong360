@@ -683,7 +683,7 @@ useHead(() => ({
   display: flex; align-items: flex-end; justify-content: center; padding-bottom: 4px;
   color: var(--ink); font-size: var(--text-2xs); font-weight: var(--weight-semibold);
   font-variant-numeric: tabular-nums;
-  transition: filter .2s var(--ease-out), transform .2s var(--ease-spring-gentle);
+  transition: filter .2s var(--ease-out), transform .2s var(--ease-out-expo);
 }
 .stl-cell.q-spring  { background: var(--secondary); }
 .stl-cell.q-bloom   { background: color-mix(in srgb, var(--accent) 60%, var(--secondary)); }

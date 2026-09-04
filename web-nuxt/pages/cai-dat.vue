@@ -1228,7 +1228,7 @@ onUnmounted(() => {
 .settings-tab.active { color: var(--accent, var(--primary)); border-bottom-color: var(--accent, var(--primary)); font-weight: 600; }
 .settings-tab.active .settings-tab-icon { transform: scale(1.15); }
 .settings-tab:focus-visible { outline: 2px solid var(--accent, var(--primary)); outline-offset: -2px; border-radius: 4px; }
-.settings-tab-icon { font-size: 1rem; transition: transform .25s var(--ease-spring-gentle); }
+.settings-tab-icon { font-size: 1rem; transition: transform .25s var(--ease-out-expo); }
 .settings-form { display: flex; flex-direction: column; gap: 1.25rem; }
 .sf-field { display: flex; flex-direction: column; gap: .4rem; }
 .sf-label { font-weight: 600; font-size: var(--text-sm); }

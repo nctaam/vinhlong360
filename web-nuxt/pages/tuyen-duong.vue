@@ -256,7 +256,7 @@ useHead(() => ({
 
 <style scoped>
 .route-grid { display: flex; flex-direction: column; gap: var(--space-6); }
-.route-card { position: relative; background: var(--card); border: .5px solid var(--line); border-radius: var(--radius); overflow: hidden; box-shadow: var(--shadow-sm); transition: transform .35s var(--ease-spring-gentle), box-shadow .35s var(--ease-out-expo), border-color .3s var(--ease-out); }
+.route-card { position: relative; background: var(--card); border: .5px solid var(--line); border-radius: var(--radius); overflow: hidden; box-shadow: var(--shadow-sm); transition: transform .35s var(--ease-out-expo), box-shadow .35s var(--ease-out-expo), border-color .3s var(--ease-out); }
 /* glassy top-sheen, revealed on hover for an Apple-style finish */
 .route-card::before { content: ""; position: absolute; inset: 0 0 auto 0; height: 40%; pointer-events: none; opacity: 0; background: linear-gradient(180deg, rgba(var(--white-rgb),.18), transparent); transition: opacity .35s var(--ease-out); z-index: 2; }
 .route-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-lg), 0 0 0 1px rgba(var(--primary-rgb), .14), 0 18px 40px -18px rgba(var(--primary-rgb), .35); border-color: var(--border); }
@@ -338,7 +338,7 @@ useHead(() => ({
   font-size: var(--text-2xs); font-weight: var(--weight-bold); font-variant-numeric: tabular-nums;
   background: var(--card); color: var(--rail-tone, var(--primary));
   box-shadow: 0 0 0 2px var(--rail-tone, var(--primary)) inset, var(--shadow-xs);
-  transition: transform .3s var(--ease-spring-gentle), background .25s var(--ease-out), color .25s var(--ease-out);
+  transition: transform .3s var(--ease-out-expo), background .25s var(--ease-out), color .25s var(--ease-out);
 }
 .rail-text strong { color: var(--ink); transition: color .25s var(--ease-out); }
 .rail-text span { color: var(--muted); font-size: var(--text-sm); }
@@ -375,7 +375,7 @@ useHead(() => ({
 .route-grid > .route-card:nth-child(n+6) { animation-delay: .22s; }
 .cross-sub { margin: calc(var(--space-3) * -1) 0 var(--space-4); color: var(--muted); font-size: var(--text-sm); }
 .route-links { display: flex; gap: var(--space-2); flex-wrap: wrap; }
-.route-links .btn { transition: transform .35s var(--ease-spring-gentle), box-shadow .35s var(--ease-out-expo); }
+.route-links .btn { transition: transform .35s var(--ease-out-expo), box-shadow .35s var(--ease-out-expo); }
 .route-links .btn:active { transform: scale(.95); transition-duration: .08s; }
 .dark .route-card { background: var(--card); border-color: var(--line); }
 .dark .route-card::before { background: linear-gradient(180deg, rgba(var(--white-rgb),.07), transparent); }

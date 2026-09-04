@@ -398,7 +398,7 @@ useHead(() => ({
    page-local interest-nav and stagger between the two filter rows.)
    ============================================================ */
 .interest-nav { display: flex; flex-wrap: wrap; gap: var(--space-2); margin-bottom: var(--space-5); }
-.interest-nav .chip { transition: transform .35s var(--ease-spring-gentle), box-shadow .3s var(--ease-out), background .3s var(--ease-out), border-color .3s var(--ease-out); }
+.interest-nav .chip { transition: transform .35s var(--ease-out-expo), box-shadow .3s var(--ease-out), background .3s var(--ease-out), border-color .3s var(--ease-out); }
 .interest-nav .chip:hover { transform: translateY(-1px); box-shadow: var(--shadow-xs); }
 .interest-nav .chip:active { transform: scale(.95); transition-duration: .08s; }
 .interest-nav .chip.active { box-shadow: var(--shadow-sm); }
@@ -421,7 +421,7 @@ useHead(() => ({
    underline draws in on hover/focus, evoking flipping through
    indexed photo negatives.
    ============================================================ */
-.int-filmstrip-chip { position: relative; overflow: hidden; transition: font-size .3s var(--ease-out), transform .35s var(--ease-spring-gentle), box-shadow .3s var(--ease-out), background .3s var(--ease-out), border-color .3s var(--ease-out); }
+.int-filmstrip-chip { position: relative; overflow: hidden; transition: font-size .3s var(--ease-out), transform .35s var(--ease-out-expo), box-shadow .3s var(--ease-out), background .3s var(--ease-out), border-color .3s var(--ease-out); }
 .int-filmstrip-chip.int-chip-deep { font-size: calc(var(--text-sm) * 1.08); font-weight: var(--weight-bold); }
 .int-filmstrip-chip::after {
   content: ""; position: absolute; left: var(--space-4); right: var(--space-4); bottom: 5px;

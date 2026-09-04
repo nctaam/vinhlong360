@@ -519,7 +519,7 @@ useHead(() => ({
   background: linear-gradient(90deg, rgba(var(--secondary-rgb), .06), transparent);
   text-decoration: none;
   color: var(--ink);
-  transition: border-color .25s var(--ease-out), box-shadow .25s var(--ease-out), transform .2s var(--ease-spring-gentle);
+  transition: border-color .25s var(--ease-out), box-shadow .25s var(--ease-out), transform .2s var(--ease-out-expo);
 }
 .ocop-teaser-link:hover {
   border-color: rgba(var(--secondary-rgb), .5);

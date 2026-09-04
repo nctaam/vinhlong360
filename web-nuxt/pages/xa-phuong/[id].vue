@@ -729,7 +729,7 @@ watch(mapEl, async (el) => {
 .wp-map-container { width: 100%; height: 380px; border-radius: var(--radius-sheet); overflow: hidden; border: .5px solid var(--line); box-shadow: var(--shadow-sm); transition: box-shadow .35s var(--ease-out-expo); }
 .wp-map-loading { background: linear-gradient(100deg, var(--bg-warm) 30%, var(--line) 50%, var(--bg-warm) 70%); background-size: 200% 100%; animation: wp-shimmer 1.4s var(--ease-out) infinite; }
 @keyframes wp-shimmer { from { background-position: 200% 0; } to { background-position: -200% 0; } }
-:deep(.wp-marker) { width: 1rem; height: 1rem; cursor: pointer; background: var(--primary); border: 2px solid var(--text-on-dark, var(--white)); border-radius: 50% 50% 50% 0; box-shadow: 0 1px 3px rgba(var(--black-rgb),.4); transform: rotate(-45deg); transition: transform .35s var(--ease-spring-gentle); }
+:deep(.wp-marker) { width: 1rem; height: 1rem; cursor: pointer; background: var(--primary); border: 2px solid var(--text-on-dark, var(--white)); border-radius: 50% 50% 50% 0; box-shadow: 0 1px 3px rgba(var(--black-rgb),.4); transform: rotate(-45deg); transition: transform .35s var(--ease-out-expo); }
 :deep(.wp-marker:hover) { transform: rotate(-45deg) scale(1.25); }
 
 /* Body layout */
@@ -806,7 +806,7 @@ watch(mapEl, async (el) => {
 }
 .ward-primary-action:hover { background: var(--color-action-hover); }
 .ward-primary-action:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 3px; }
-.wp-card { position: relative; background: var(--card); border: .5px solid var(--line); border-radius: var(--radius-sheet); padding: var(--space-5); box-shadow: var(--shadow-sm); transition: transform .35s var(--ease-spring-gentle), box-shadow .35s var(--ease-out-expo); }
+.wp-card { position: relative; background: var(--card); border: .5px solid var(--line); border-radius: var(--radius-sheet); padding: var(--space-5); box-shadow: var(--shadow-sm); transition: transform .35s var(--ease-out-expo), box-shadow .35s var(--ease-out-expo); }
 .wp-card::before {
   content: ''; position: absolute; inset: 0; border-radius: inherit; pointer-events: none;
   background: linear-gradient(180deg, rgba(var(--white-rgb),.6) 0%, transparent 55%);
@@ -841,7 +841,7 @@ watch(mapEl, async (el) => {
 
 /* Facilities */
 .wp-fac-list { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: var(--space-3); }
-.wp-fac { padding: var(--space-2) var(--space-2); border-bottom: .5px solid var(--line); transition: background .3s var(--ease-out), transform .35s var(--ease-spring-gentle); border-radius: var(--radius-control); margin: 0 calc(var(--space-2) * -1); }
+.wp-fac { padding: var(--space-2) var(--space-2); border-bottom: .5px solid var(--line); transition: background .3s var(--ease-out), transform .35s var(--ease-out-expo); border-radius: var(--radius-control); margin: 0 calc(var(--space-2) * -1); }
 .wp-fac:hover { background: rgba(var(--primary-rgb), .04); transform: translateX(2px); }
 .wp-fac:last-child { border-bottom: none; }
 .wp-fac-kind { font-size: var(--text-xs); color: var(--primary-fg); display: inline-flex; align-items: center; gap: var(--space-1); margin-bottom: 2px; }
@@ -851,7 +851,7 @@ watch(mapEl, async (el) => {
 .wp-fac-row a:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
 
 /* Map button */
-.wp-map-btn { display: flex; align-items: center; justify-content: center; gap: var(--space-2); padding: var(--space-3); border-radius: var(--radius-sheet); background: var(--bg-warm); border: .5px solid var(--line); font-weight: var(--weight-bold); font-size: var(--text-sm); color: var(--ink); min-height: 44px; transition: background .3s var(--ease-out), transform .35s var(--ease-spring-gentle), box-shadow .3s var(--ease-out); }
+.wp-map-btn { display: flex; align-items: center; justify-content: center; gap: var(--space-2); padding: var(--space-3); border-radius: var(--radius-sheet); background: var(--bg-warm); border: .5px solid var(--line); font-weight: var(--weight-bold); font-size: var(--text-sm); color: var(--ink); min-height: 44px; transition: background .3s var(--ease-out), transform .35s var(--ease-out-expo), box-shadow .3s var(--ease-out); }
 .wp-map-btn:hover { background: var(--line); transform: translateY(-1px); box-shadow: var(--shadow-xs); }
 .wp-map-btn:active { transform: scale(.97); transition-duration: .08s; }
 .wp-map-btn:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
