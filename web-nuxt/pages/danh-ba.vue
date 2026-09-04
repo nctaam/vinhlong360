@@ -71,7 +71,7 @@
     </div>
     <template v-else>
       <p class="ward-hub-link">
-        <NuxtLink :to="`/xa-phuong/${wardId}`"><IconLine name="home" /> Xem trang đầy đủ xã/phường này (du lịch · lưu trú · đặc sản) →</NuxtLink>
+        <NuxtLink :to="`/xa-phuong/${wardId}`"><IconLine name="home" /> Xem trang đầy đủ xã/phường này (du lịch · lưu trú · đặc sản) <IconLine name="arrow-right" class="danhba-arrow" /></NuxtLink>
       </p>
       <div v-if="loading" class="fac-skeleton" role="status" aria-label="Đang tải dữ liệu" aria-busy="true">
         <div v-for="i in 3" :key="i" class="fac-sk-item">
@@ -277,18 +277,34 @@ const jsonLd = computed(() => facilities.value
     ...(attr(f, 'hours') ? { openingHours: attr(f, 'hours') } : {}),
   })))
 
+const directorySchema = computed(() => ({
+  '@context': 'https://schema.org',
+  '@type': 'CollectionPage',
+  name: pc('seo_title') || 'Danh bạ hành chính — vinhlong360',
+  description: pc('seo_description') || 'Danh bạ xã/phường, cơ quan hành chính Vĩnh Long, Bến Tre, Trà Vinh.',
+  url: canonicalUrl('/danh-ba'),
+  inLanguage: 'vi',
+  mainEntity: {
+    '@type': 'ItemList',
+    numberOfItems: totalWards.value,
+  },
+}))
+
 useSeoMeta({
   ogType: 'website',
   title: () => pc('seo_title') || 'Danh bạ hành chính — vinhlong360',
   description: () => pc('seo_description') || 'Danh bạ xã/phường, cơ quan hành chính Vĩnh Long, Bến Tre, Trà Vinh.',
   ogTitle: () => pc('og_title') || 'Danh bạ — vinhlong360',
   ogDescription: () => pc('og_description') || 'Tra cứu thông tin hành chính địa phương.',
+  ogUrl: () => canonicalUrl('/danh-ba'),
+  twitterCard: 'summary_large_image',
 })
 useHead(() => ({
   link: [{ rel: 'canonical', href: canonicalUrl('/danh-ba') }],
-  script: jsonLd.value.length
-    ? [{ type: 'application/ld+json', innerHTML: safeJsonLd(jsonLd.value) }]
-    : [],
+  script: [
+    { type: 'application/ld+json', innerHTML: safeJsonLd(directorySchema.value) },
+    ...(jsonLd.value.length ? [{ type: 'application/ld+json', innerHTML: safeJsonLd(jsonLd.value) }] : []),
+  ],
 }))
 </script>
 
@@ -335,8 +351,10 @@ useHead(() => ({
 .fac-src a:hover { color: var(--primary-fg); }
 .fac-verified { display: inline-flex; align-items: center; justify-content: center; width: 16px; height: 16px; margin-right: 2px; border-radius: 50%; background: rgba(var(--secondary-rgb), .14); color: var(--success); font-weight: var(--weight-bold); font-size: .65rem; vertical-align: middle; }
 .ward-hub-link { margin: 0 0 var(--space-4); }
-.ward-hub-link a { color: var(--primary-fg); font-weight: var(--weight-semibold); transition: opacity .3s var(--ease-out); }
+.ward-hub-link a { display: inline-flex; align-items: center; gap: var(--space-1); color: var(--primary-fg); font-weight: var(--weight-semibold); transition: opacity .3s var(--ease-out); }
 .ward-hub-link a:active { opacity: .7; }
+.danhba-arrow { display: inline-flex; transition: transform .3s var(--ease-out-expo); }
+.ward-hub-link a:hover .danhba-arrow { transform: translateX(3px); }
 .fac-report { margin-top: var(--space-2); background: none; border: none; padding: var(--space-2) var(--space-3); margin-left: calc(-1 * var(--space-3)); color: var(--muted); font-size: var(--text-xs); cursor: pointer; text-decoration: underline; transition: color .3s var(--ease-out), background .3s var(--ease-out); min-height: 44px; border-radius: var(--radius-control); display: inline-flex; align-items: center; }
 .fac-report:hover:not(:disabled) { color: var(--primary-fg); background: rgba(var(--primary-rgb), .06); }
 .fac-report:active:not(:disabled) { transform: scale(.97); }

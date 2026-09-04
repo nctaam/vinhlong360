@@ -96,7 +96,7 @@
       <div class="dd-search">
         <svg class="dd-search-ic" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
         <input v-model="qInput" type="search" enterkeyhint="search" class="dd-search-input" placeholder="Tìm địa điểm, đặc sản, làng nghề…" aria-label="Tìm địa điểm" @keyup.enter="applyQuery" />
-        <button v-if="qApplied" type="button" class="dd-search-clear" aria-label="Xoá tìm" @click="clearQuery">&times;</button>
+        <button v-if="qApplied" type="button" class="dd-search-clear" aria-label="Xoá tìm" @click="clearQuery"><IconLine name="x" /></button>
         <button type="button" class="btn btn-primary btn-sm" @click="applyQuery">Tìm</button>
       </div>
     </div>
@@ -363,7 +363,7 @@ useHead(() => ({
 .dd-search-input { flex: 1; min-width: 0; border: none; background: none; outline: none; color: var(--ink); font-size: var(--text-sm); padding: .4rem 0; }
 .dd-search-input:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
 .dd-search-input::placeholder { color: var(--muted); }
-.dd-search-clear { border: none; background: none; color: var(--muted); font-size: 1.3rem; line-height: 1; cursor: pointer; padding: 0 .25rem; }
+.dd-search-clear { border: none; background: none; color: var(--muted); font-size: 1rem; line-height: 1; cursor: pointer; padding: 0 .25rem; min-width: 44px; min-height: 44px; display: inline-flex; align-items: center; justify-content: center; }
 .dd-search-clear:hover { color: var(--ink); }
 
 .dd-count { font-size: var(--text-sm); color: var(--muted); margin: 0 0 var(--space-4); }

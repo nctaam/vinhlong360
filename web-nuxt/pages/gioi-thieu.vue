@@ -1,6 +1,6 @@
 <template>
   <section class="legal-page about-page">
-    <Breadcrumb :items="[{ label: 'Trang chủ', to: '/' }, { label: 'Giới thiệu' }]" />
+    <Breadcrumb :items="[{ label: 'Trang chủ', to: '/' }, { label: 'Giới thiệu' }]" :json-ld="true" />
 
     <!-- Brand masthead — river→clay wash, unique to this page family. -->
     <section class="brand-masthead about-masthead">
@@ -112,6 +112,8 @@ useSeoMeta({
   description: () => doc.value.seo_description,
   ogTitle: () => doc.value.seo_title,
   ogDescription: () => doc.value.seo_description,
+  ogUrl: () => canonicalUrl('/gioi-thieu'),
+  twitterCard: 'summary_large_image',
 })
 
 const aboutJsonLd = {
@@ -128,23 +130,12 @@ const aboutJsonLd = {
   },
 }
 
-useHead({
+useHead(() => ({
   link: [{ rel: 'canonical', href: canonicalUrl('/gioi-thieu') }],
   script: [
-    { type: 'application/ld+json', innerHTML: JSON.stringify(aboutJsonLd) },
-    {
-      type: 'application/ld+json',
-      innerHTML: JSON.stringify({
-        '@context': 'https://schema.org',
-        '@type': 'BreadcrumbList',
-        itemListElement: [
-          { '@type': 'ListItem', position: 1, name: 'Trang chủ', item: 'https://vinhlong360.vn/' },
-          { '@type': 'ListItem', position: 2, name: 'Giới thiệu' },
-        ],
-      }),
-    },
+    { type: 'application/ld+json', innerHTML: safeJsonLd(aboutJsonLd) },
   ],
-})
+}))
 </script>
 
 <style scoped>

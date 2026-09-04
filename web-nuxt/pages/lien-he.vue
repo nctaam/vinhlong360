@@ -1,6 +1,6 @@
 <template>
   <div class="page contact-page">
-    <Breadcrumb :items="[{ label: 'Trang chủ', to: '/' }, { label: 'Liên hệ' }]" />
+    <Breadcrumb :items="[{ label: 'Trang chủ', to: '/' }, { label: 'Liên hệ' }]" :json-ld="true" />
 
     <!-- Brand masthead — same river→clay wash family as Giới thiệu. -->
     <section class="brand-masthead contact-masthead">
@@ -24,7 +24,7 @@
 
     <div class="contact-cards">
       <section v-if="isClaim" class="contact-card card-claim">
-        <div class="card-icon" aria-hidden="true"><span class="card-icon-glyph">🏷️</span></div>
+        <div class="card-icon" aria-hidden="true"><span class="card-icon-vector"><IconLine name="tag" /></span></div>
         <h2>Đăng ký quản lý trang</h2>
         <p>Bạn là chủ cơ sở kinh doanh, homestay, nhà vườn, hoặc điểm du lịch? Đăng ký để cập nhật thông tin, ảnh, giờ mở cửa và nhận đánh giá từ khách.</p>
         <div class="card-action">
@@ -34,7 +34,7 @@
       </section>
 
       <section class="contact-card card-correction">
-        <div class="card-icon" aria-hidden="true"><span class="card-icon-glyph">📝</span></div>
+        <div class="card-icon" aria-hidden="true"><span class="card-icon-vector"><IconLine name="pencil" /></span></div>
         <h2>Sửa thông tin chưa đúng</h2>
         <p>Số điện thoại, địa chỉ, giờ mở cửa… hiển thị sai? Gửi yêu cầu có mã tra cứu — bạn theo dõi được từng bước và biết trước khi nào có cập nhật.</p>
         <div class="card-action">
@@ -44,7 +44,7 @@
       </section>
 
       <section class="contact-card card-general">
-        <div class="card-icon" aria-hidden="true"><span class="card-icon-glyph">📬</span></div>
+        <div class="card-icon" aria-hidden="true"><span class="card-icon-vector"><IconLine name="message" /></span></div>
         <h2>Gửi yêu cầu khác</h2>
         <p>Dữ liệu cá nhân, khiếu nại bản quyền, hoặc việc chưa có kênh riêng. Khiếu nại nội dung và khôi phục tài khoản hiện xử lý qua email — chưa có trang theo dõi trực tuyến.</p>
         <div class="card-action">
@@ -53,7 +53,7 @@
       </section>
 
       <section class="contact-card card-partner">
-        <div class="card-icon" aria-hidden="true"><span class="card-icon-glyph">🤝</span></div>
+        <div class="card-icon" aria-hidden="true"><span class="card-icon-vector"><IconLine name="users" /></span></div>
         <h2>Hợp tác quảng bá</h2>
         <p>Đối tác du lịch, OCOP, cơ quan địa phương muốn giới thiệu sản phẩm, điểm đến trên vinhlong360.</p>
         <div class="card-action">
@@ -62,13 +62,13 @@
       </section>
 
       <section class="contact-card card-report">
-        <div class="card-icon" aria-hidden="true"><span class="card-icon-glyph">🛡️</span></div>
+        <div class="card-icon" aria-hidden="true"><span class="card-icon-vector"><IconLine name="flag" /></span></div>
         <h2>Báo cáo vi phạm</h2>
         <p>Dùng nút <strong>Báo cáo</strong> ngay trên mỗi bài đăng/bình luận. Đội kiểm duyệt xem xét theo thứ tự tiếp nhận.</p>
       </section>
 
       <section class="contact-card card-privacy">
-        <div class="card-icon" aria-hidden="true"><span class="card-icon-glyph">🔒</span></div>
+        <div class="card-icon" aria-hidden="true"><span class="card-icon-vector"><IconLine name="shield-check" /></span></div>
         <h2>Dữ liệu cá nhân</h2>
         <p>Theo <NuxtLink to="/chinh-sach-bao-mat">Chính sách bảo mật</NuxtLink>: truy cập/chỉnh sửa (10 ngày), rút đồng ý (15 ngày), xoá dữ liệu ({{ accountErasureDeadlineDays }} ngày). Bạn cũng có thể tự xoá tài khoản trong phần tài khoản.</p>
       </section>
@@ -105,30 +105,24 @@ useSeoMeta({
   description: () => pc('seo_description'),
   ogTitle: () => pc('og_title'),
   ogDescription: () => pc('og_description'),
+  ogUrl: () => canonicalUrl('/lien-he'),
+  twitterCard: 'summary_large_image',
 })
-useHead({
+
+const contactJsonLd = computed(() => ({
+  '@context': 'https://schema.org',
+  '@type': 'ContactPage',
+  name: 'Liên hệ vinhlong360',
+  description: 'Liên hệ vinhlong360.vn: yêu cầu, báo cáo, hợp tác.',
+  url: canonicalUrl('/lien-he'),
+}))
+
+useHead(() => ({
   link: [{ rel: 'canonical', href: canonicalUrl('/lien-he') }],
-  script: [{
-    type: 'application/ld+json',
-    innerHTML: JSON.stringify({
-      '@context': 'https://schema.org',
-      '@type': 'ContactPage',
-      name: 'Liên hệ vinhlong360',
-      description: 'Liên hệ vinhlong360.vn: yêu cầu, báo cáo, hợp tác.',
-      url: canonicalUrl('/lien-he'),
-    }),
-  }, {
-    type: 'application/ld+json',
-    innerHTML: JSON.stringify({
-      '@context': 'https://schema.org',
-      '@type': 'BreadcrumbList',
-      itemListElement: [
-        { '@type': 'ListItem', position: 1, name: 'Trang chủ', item: 'https://vinhlong360.vn/' },
-        { '@type': 'ListItem', position: 2, name: 'Liên hệ' },
-      ],
-    }),
-  }],
-})
+  script: [
+    { type: 'application/ld+json', innerHTML: safeJsonLd(contactJsonLd.value) },
+  ],
+}))
 </script>
 
 <style scoped>
@@ -240,11 +234,16 @@ useHead({
   background: linear-gradient(180deg, var(--river-600), var(--clay-600));
   opacity: .7;
 }
-.card-icon-glyph {
-  font-size: var(--text-xl);
-  line-height: 1;
-  opacity: .68;
-  transform: translate(3px, 2px);
+.card-icon-vector {
+  display: inline-flex;
+  font-size: 1.4rem;
+  color: var(--primary-fg);
+  opacity: .85;
+  transform: translate(2px, 2px);
+  transition: transform .35s var(--ease-out-expo), color .3s var(--ease-out);
+}
+.contact-card:hover .card-icon-vector {
+  transform: translate(3px, 1px) scale(1.05);
 }
 .contact-card:hover .card-icon { transform: translateY(-2px); border-color: var(--border); }
 .card-report:hover, .card-report:hover .card-icon, .card-privacy:hover, .card-privacy:hover .card-icon { transform: none; }

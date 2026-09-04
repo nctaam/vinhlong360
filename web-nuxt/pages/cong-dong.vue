@@ -46,7 +46,7 @@
                 <span class="qp-head"><IconLine name="file-text" /> Trích dẫn <strong>{{ quotingPost.author || quotingPost.display_name || 'Người dùng' }}</strong></span>
                 <span class="qp-content">{{ quotingPost.content || '(bài viết)' }}</span>
               </div>
-              <button type="button" class="qp-remove" aria-label="Bỏ trích dẫn" @click="cancelQuote">&times;</button>
+              <button type="button" class="qp-remove" aria-label="Bỏ trích dẫn" @click="cancelQuote"><IconLine name="x" /></button>
             </div>
 
             <div class="compose-mention-wrap">
@@ -89,7 +89,7 @@
                   <img :src="row.descriptor.url" :alt="row.descriptor.alt" :aria-describedby="communityUploadDisclosureId(row.rawIndex)" width="120" height="120" loading="lazy" decoding="async" @error="(e: Event) => ((e.target as HTMLImageElement).style.opacity = '.15')" />
                 </div>
                 <p v-else class="img-preview-invalid" role="status">{{ row.auditText }}</p>
-                <button type="button" class="remove" :aria-label="`Xóa ảnh ${row.rawIndex + 1}`" @click="removeImage(row.rawIndex)">&times;</button>
+                <button type="button" class="remove" :aria-label="`Xóa ảnh ${row.rawIndex + 1}`" @click="removeImage(row.rawIndex)"><IconLine name="x" /></button>
                 <ImageDisclosure v-if="row.descriptor" :id="communityUploadDisclosureId(row.rawIndex)" :descriptor="row.descriptor" presentation="short" />
               </figure>
             </div>
@@ -302,7 +302,7 @@
       <div v-if="showBookmarkMomentum && !hiddenNotice" class="bookmark-momentum" role="status">
         <span class="bm-icon" aria-hidden="true"><IconLine name="bookmark" /></span>
         <button type="button" class="bm-link" @click="setTab('bookmarks'); bookmarkBannerDismissed = true">Xem mục đã lưu</button>
-        <button type="button" class="bm-dismiss" aria-label="Đóng" @click="bookmarkBannerDismissed = true">&times;</button>
+        <button type="button" class="bm-dismiss" aria-label="Đóng" @click="bookmarkBannerDismissed = true"><IconLine name="x" /></button>
       </div>
     </Transition>
 
@@ -314,7 +314,7 @@
         <span class="bm-icon" aria-hidden="true"><IconLine name="eye-off" /></span>
         <span class="hu-text">Đã ẩn bài này khỏi bảng tin của bạn.</span>
         <button type="button" class="bm-link" data-post-action="undo-hide" :disabled="undoingHide" @click="undoHide">Hoàn tác</button>
-        <button type="button" class="bm-dismiss" aria-label="Đóng" @click="dismissHiddenNotice">&times;</button>
+        <button type="button" class="bm-dismiss" aria-label="Đóng" @click="dismissHiddenNotice"><IconLine name="x" /></button>
       </div>
     </Transition>
 

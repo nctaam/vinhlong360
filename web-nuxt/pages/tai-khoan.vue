@@ -1,6 +1,6 @@
 <template>
   <section class="page cp-page">
-    <Breadcrumb :items="[{ label: 'Trang chủ', to: '/' }, { label: 'Tài khoản' }]" />
+    <Breadcrumb :items="[{ label: 'Trang chủ', to: '/' }, { label: 'Tài khoản' }]" :json-ld="true" />
 
     <div v-if="!isLoggedIn" class="cp-guest card">
       <p class="dateline-eyebrow">HỒ SƠ HÀNH TRÌNH</p>
@@ -54,7 +54,9 @@
           <div class="cp-progress" role="progressbar" aria-label="Tiến độ hoàn thiện hồ sơ" :aria-valuenow="profileCompletion" aria-valuemin="0" aria-valuemax="100"><span :style="{ width: profileCompletion + '%' }"></span></div>
           <div class="cp-checks">
             <NuxtLink v-for="item in profileChecks" :key="item.key" :to="item.to" :class="['cp-check', { done: item.done }]">
-              <span aria-hidden="true">{{ item.done ? '✓' : '•' }}</span>{{ item.label }}
+              <IconLine v-if="item.done" name="check" class="cp-check-icon" aria-hidden="true" />
+              <span v-else class="cp-check-dot" aria-hidden="true"></span>
+              {{ item.label }}
             </NuxtLink>
           </div>
         </article>
@@ -69,7 +71,9 @@
           </div>
           <div class="cp-checks">
             <span v-for="item in securityChecks" :key="item.key" :class="['cp-check', { done: item.done }]">
-              <span aria-hidden="true">{{ item.done ? '✓' : '•' }}</span>{{ item.label }}
+              <IconLine v-if="item.done" name="check" class="cp-check-icon" aria-hidden="true" />
+              <span v-else class="cp-check-dot" aria-hidden="true"></span>
+              {{ item.label }}
             </span>
           </div>
         </article>
@@ -230,7 +234,7 @@ const nextActions = computed(() => {
   if ((counts.value.bookmarks ?? 0) === 0) actions.push({ icon: '📍', label: 'Lưu địa điểm muốn đi', to: '/du-lich' })
   return actions.slice(0, 4)
 })
-const primaryAction = computed(() => nextActions.value[0] || { icon: '✓', label: 'Xem hồ sơ', to: profileUrl.value })
+const primaryAction = computed(() => nextActions.value[0] || { icon: 'check', label: 'Xem hồ sơ', to: profileUrl.value })
 let accountLoadSeq = 0
 
 function resetAccountData() {
@@ -343,6 +347,20 @@ function actionLabel(a: ActivityItem) {
   }
   return label
 }
+
+useSeoMeta({
+  title: 'Tài khoản — Trung tâm tài khoản — vinhlong360',
+  description: 'Quản lý tài khoản, tiến độ hoàn thiện hồ sơ, hoạt động và đóng góp trên vinhlong360.',
+  ogTitle: 'Tài khoản — vinhlong360',
+  ogDescription: 'Trung tâm tài khoản trên vinhlong360.',
+  ogUrl: () => canonicalUrl('/tai-khoan'),
+  twitterCard: 'summary_large_image',
+  robots: 'noindex, nofollow',
+})
+
+useHead(() => ({
+  link: [{ rel: 'canonical', href: canonicalUrl('/tai-khoan') }],
+}))
 </script>
 
 <style scoped>
@@ -404,7 +422,8 @@ function actionLabel(a: ActivityItem) {
 .cp-check:hover { color: var(--ink); }
 .cp-check:focus-visible, .cp-mini-link:focus-visible, .cp-action-item:focus-visible, .cp-data-row:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
 .cp-check.done { color: var(--ink); }
-.cp-check.done span { color: var(--accent); font-weight: 800; }
+.cp-check-icon { color: var(--accent); font-size: .95rem; flex-shrink: 0; }
+.cp-check-dot { display: inline-block; width: 6px; height: 6px; margin: 0 4px; border-radius: 50%; background: var(--muted); opacity: .6; flex-shrink: 0; }
 .cp-action-item, .cp-data-row { display: flex; align-items: center; justify-content: space-between; gap: .65rem; padding: .55rem .65rem; border-radius: var(--radius-surface); text-decoration: none; color: var(--ink); background: var(--bg-alt); }
 .cp-action-item:hover, .cp-data-row:hover { background: color-mix(in oklab, var(--accent) 8%, var(--bg-alt)); }
 .cp-action-icon { font-size: 1rem; }

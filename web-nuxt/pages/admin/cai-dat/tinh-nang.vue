@@ -2,7 +2,7 @@
   <div>
     <div class="admin-head-row">
       <div>
-        <NuxtLink to="/admin/cai-dat" class="cs-back">← Cài đặt</NuxtLink>
+        <NuxtLink to="/admin/cai-dat" class="cs-back"><IconLine name="arrow-left" class="cs-back-icon" /> Cài đặt</NuxtLink>
         <h1>Tính năng</h1>
         <p class="cs-subtitle">Bật/tắt các khối nội dung trên website</p>
       </div>

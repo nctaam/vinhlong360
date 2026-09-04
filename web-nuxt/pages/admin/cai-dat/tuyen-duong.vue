@@ -2,11 +2,11 @@
   <div>
     <div class="admin-head-row">
       <div>
-        <NuxtLink to="/admin/cai-dat" class="cs-back">← Cài đặt</NuxtLink>
+        <NuxtLink to="/admin/cai-dat" class="cs-back"><IconLine name="arrow-left" class="cs-back-icon" /> Cài đặt</NuxtLink>
         <h1>Tuyến đường gợi ý</h1>
         <p class="cs-subtitle">
           Dữ liệu các tuyến đường tự khám phá
-          <a href="/tuyen-duong" target="_blank" rel="noopener" class="cs-view">/tuyen-duong ↗</a>
+          <a href="/tuyen-duong" target="_blank" rel="noopener" class="cs-view">/tuyen-duong <IconLine name="arrow-up" class="cs-view-icon" /></a>
         </p>
       </div>
     </div>

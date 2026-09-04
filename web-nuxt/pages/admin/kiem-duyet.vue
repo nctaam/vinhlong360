@@ -137,12 +137,12 @@
         <tr v-if="!queue.length">
           <td colspan="7">
             <div class="admin-empty-state">
-              <div class="admin-empty-state-icon">{{ emptyState.icon }}</div>
+              <div class="admin-empty-state-icon"><IconLine :name="emptyState.icon" /></div>
               <div class="admin-empty-state-text">{{ emptyState.text }}</div>
               <button
                 v-if="status !== 'review'" type="button" class="mod-empty-action"
                 @click="setStatus('review')"
-              >Về hàng đợi cần duyệt &rarr;</button>
+              >Về hàng đợi cần duyệt <IconLine name="arrow-right" /></button>
             </div>
           </td>
         </tr>
@@ -288,13 +288,13 @@ const hasMore = computed(() => queue.value.length < total.value)
 function badgeOf(s: string) { return BADGES[s] || { label: s, cls: 'mb-pending' } }
 
 const EMPTY_STATES: Record<string, { icon: string; text: string }> = {
-  review: { icon: '🎉', text: 'Hàng đợi đã sạch. Tốt lắm!' },
-  pending: { icon: '🎉', text: 'Không có bài nào đang chờ duyệt.' },
-  flagged: { icon: '✓', text: 'Không có bài nào bị gắn cờ.' },
-  approved: { icon: '📭', text: 'Chưa có bài viết nào đã duyệt.' },
-  rejected: { icon: '📭', text: 'Chưa có bài viết nào bị từ chối.' },
+  review: { icon: 'sparkles', text: 'Hàng đợi đã sạch. Tốt lắm!' },
+  pending: { icon: 'sparkles', text: 'Không có bài nào đang chờ duyệt.' },
+  flagged: { icon: 'check', text: 'Không có bài nào bị gắn cờ.' },
+  approved: { icon: 'file-text', text: 'Chưa có bài viết nào đã duyệt.' },
+  rejected: { icon: 'file-text', text: 'Chưa có bài viết nào bị từ chối.' },
 }
-const emptyState = computed(() => EMPTY_STATES[status.value] || { icon: '📭', text: 'Không có bài nào.' })
+const emptyState = computed(() => EMPTY_STATES[status.value] || { icon: 'file-text', text: 'Không có bài nào.' })
 
 function tabCount(key: string): number | null {
   if (key === 'review') return (modStats.value.pending || 0) + (modStats.value.flagged || 0)

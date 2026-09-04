@@ -1,6 +1,6 @@
 <template>
   <section class="page settings-page">
-    <Breadcrumb :items="[{ label: 'Trang chủ', to: '/' }, { label: 'Cài đặt' }]" />
+    <Breadcrumb :items="[{ label: 'Trang chủ', to: '/' }, { label: 'Cài đặt' }]" :json-ld="true" />
 
     <div v-if="!isLoggedIn" class="settings-guest card">
       <p class="dateline-eyebrow">QUẦY TIẾP TÂN</p>
@@ -501,10 +501,19 @@ watch(isLoggedIn, (v) => { if (!v) navigateTo('/') })
 function setColorMode(mode: AccessibilityTheme) {
   accessibility.setProfile({ theme: mode })
 }
-useHead({
+useSeoMeta({
+  title: 'Cài đặt — Quầy tiếp tân — vinhlong360',
+  description: 'Quản lý tài khoản cá nhân, bảo mật hai lớp, quyền riêng tư và tùy chỉnh giao diện trên vinhlong360.',
+  ogTitle: 'Cài đặt — vinhlong360',
+  ogDescription: 'Quản lý tài khoản cá nhân trên vinhlong360.',
+  ogUrl: () => canonicalUrl('/cai-dat'),
+  twitterCard: 'summary_large_image',
+  robots: 'noindex, nofollow',
+})
+useHead(() => ({
   title: 'Cài đặt',
   link: [{ rel: 'canonical', href: canonicalUrl('/cai-dat') }],
-})
+}))
 
 const TABS = [
   { key: 'ho-so', label: 'Hồ sơ', icon: 'user' },

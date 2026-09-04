@@ -1,6 +1,6 @@
 <template>
   <section class="page saved-page">
-    <Breadcrumb :items="[{ label: 'Trang chủ', to: '/' }, { label: 'Đã lưu' }]" />
+    <Breadcrumb :items="[{ label: 'Trang chủ', to: '/' }, { label: 'Đã lưu' }]" :json-ld="true" />
 
     <div v-if="!isLoggedIn" class="saved-guest card">
       <h1>Đã lưu</h1>
@@ -423,6 +423,20 @@ async function removeItinerary(planId: string) {
     showToast('Không thể xóa lịch trình', 'error')
   }
 }
+
+useSeoMeta({
+  title: 'Mục đã lưu — Kho cá nhân — vinhlong360',
+  description: 'Kho nội dung cá nhân: địa điểm, bài viết và lịch trình đã lưu trên vinhlong360.',
+  ogTitle: 'Mục đã lưu — vinhlong360',
+  ogDescription: 'Kho nội dung cá nhân trên vinhlong360.',
+  ogUrl: () => canonicalUrl('/da-luu'),
+  twitterCard: 'summary_large_image',
+  robots: 'noindex, nofollow',
+})
+
+useHead(() => ({
+  link: [{ rel: 'canonical', href: canonicalUrl('/da-luu') }],
+}))
 </script>
 
 <style scoped>

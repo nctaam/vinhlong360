@@ -40,7 +40,7 @@
           <div class="compose-right">
             <div v-if="replyingTo" class="reply-context">
               <span>Đang trả lời <strong>@{{ replyingTo.author?.display_name || 'Người dùng' }}</strong></span>
-              <button type="button" class="reply-context-x" aria-label="Huỷ trả lời" @click="cancelReply">&times;</button>
+              <button type="button" class="reply-context-x" aria-label="Huỷ trả lời" @click="cancelReply"><IconLine name="x" /></button>
             </div>
             <div class="comment-mention-wrap">
               <input

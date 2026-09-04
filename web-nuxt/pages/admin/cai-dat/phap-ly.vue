@@ -2,7 +2,7 @@
   <div>
     <div class="admin-head-row">
       <div>
-        <NuxtLink to="/admin/cai-dat" class="cs-back">← Cài đặt</NuxtLink>
+        <NuxtLink to="/admin/cai-dat" class="cs-back"><IconLine name="arrow-left" class="cs-back-icon" /> Cài đặt</NuxtLink>
         <h1>Trang pháp lý</h1>
         <p class="cs-subtitle">Chính sách bảo mật & Điều khoản sử dụng</p>
       </div>

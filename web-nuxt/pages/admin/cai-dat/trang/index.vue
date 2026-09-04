@@ -2,7 +2,7 @@
   <div>
     <div class="admin-head-row">
       <div>
-        <NuxtLink to="/admin/cai-dat" class="cs-back">← Cài đặt</NuxtLink>
+        <NuxtLink to="/admin/cai-dat" class="cs-back"><IconLine name="arrow-left" class="cs-back-icon" /> Cài đặt</NuxtLink>
         <h1>Nội dung trang</h1>
         <p class="cs-subtitle">Sửa tiêu đề, mô tả & SEO của từng trang</p>
       </div>
@@ -15,7 +15,7 @@
           <h3>{{ p.title }}</h3>
           <p>{{ p.route }}</p>
         </div>
-        <span class="cs-arrow" aria-hidden="true">›</span>
+        <span class="cs-arrow" aria-hidden="true"><IconLine name="chevron-right" /></span>
       </NuxtLink>
     </div>
   </div>
@@ -45,7 +45,7 @@ const pages = PAGE_MANIFEST_LIST
 .cs-card div { flex: 1; min-width: 0; }
 .cs-card h3 { margin: 0; font-size: .95rem; font-weight: 600; }
 .cs-card p { margin: var(--space-1) 0 0; font-size: .78rem; color: var(--muted); font-family: 'SF Mono', monospace; }
-.cs-arrow { font-size: 1.4rem; font-weight: 300; color: var(--muted); flex-shrink: 0; opacity: .4; transition: opacity .2s, transform .2s var(--ease-soft); }
+.cs-arrow { font-size: 1.1rem; color: var(--muted); flex-shrink: 0; opacity: .4; transition: opacity .2s, transform .2s var(--ease-soft); display: inline-flex; align-items: center; justify-content: center; }
 .cs-card:hover .cs-arrow { opacity: .8; transform: translateX(3px); }
 @keyframes cs-fade-in { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
 .dark .cs-card { background: var(--card); border-color: rgba(var(--white-rgb),.06); }

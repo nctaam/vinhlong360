@@ -46,6 +46,12 @@ describe('SEO & Editorial Craft Guardrails', () => {
       'pages/lich-trinh/[id].vue',
       'pages/bai-viet/[id].vue',
       'pages/xa-phuong/[id].vue',
+      'pages/bang-xep-hang.vue',
+      'pages/gioi-thieu.vue',
+      'pages/lien-he.vue',
+      'pages/da-luu.vue',
+      'pages/cai-dat.vue',
+      'pages/tai-khoan.vue',
     ]
 
     for (const hub of hubs) {
@@ -270,5 +276,114 @@ describe('SEO & Editorial Craft Guardrails', () => {
     expect(guide).toContain('<IconLine name="bulb" class="callout-icon"')
     expect(guide).toContain('<IconLine name="message" class="inline-chat-icon"')
   })
+
+  it('Directory hub has BreadcrumbList JSON-LD, CollectionPage schema, vector arrow, and Twitter card', () => {
+    const danhba = doc('pages/danh-ba.vue')
+    expect(danhba).toMatch(/<Breadcrumb[^>]*:json-ld="true"/)
+    expect(danhba).toContain('<IconLine name="arrow-right" class="danhba-arrow"')
+    expect(danhba).not.toContain('(du lịch · lưu trú · đặc sản) →')
+    expect(danhba).toContain("'@type': 'CollectionPage'")
+    expect(danhba).toContain('safeJsonLd(directorySchema.value)')
+    expect(danhba).toContain("ogUrl: () => canonicalUrl('/danh-ba')")
+    expect(danhba).toContain("twitterCard: 'summary_large_image'")
+  })
+
+  it('Leaderboard hub has BreadcrumbList JSON-LD, CollectionPage schema, Twitter card, and no duplicate breadcrumbs', () => {
+    const leaderboard = doc('pages/bang-xep-hang.vue')
+    expect(leaderboard).toMatch(/<Breadcrumb[^>]*:json-ld="true"/)
+    expect(leaderboard).toContain("'@type': 'CollectionPage'")
+    expect(leaderboard).toContain('safeJsonLd(leaderboardSchema.value)')
+    expect(leaderboard).not.toContain("'@type': 'BreadcrumbList'")
+    expect(leaderboard).toContain("ogUrl: () => canonicalUrl('/bang-xep-hang')")
+    expect(leaderboard).toContain("twitterCard: 'summary_large_image'")
+  })
+
+  it('Private and account hubs guard crawl budget with noindex, nofollow and use vector checkmarks', () => {
+    const saved = doc('pages/da-luu.vue')
+    expect(saved).toContain("robots: 'noindex, nofollow'")
+    expect(saved).toContain("twitterCard: 'summary_large_image'")
+    expect(saved).toContain("ogUrl: () => canonicalUrl('/da-luu')")
+
+    const settings = doc('pages/cai-dat.vue')
+    expect(settings).toContain("robots: 'noindex, nofollow'")
+    expect(settings).toContain("twitterCard: 'summary_large_image'")
+    expect(settings).toContain("ogUrl: () => canonicalUrl('/cai-dat')")
+
+    const account = doc('pages/tai-khoan.vue')
+    expect(account).toContain("robots: 'noindex, nofollow'")
+    expect(account).toContain("twitterCard: 'summary_large_image'")
+    expect(account).toContain("ogUrl: () => canonicalUrl('/tai-khoan')")
+    expect(account).toContain('<IconLine v-if="item.done" name="check" class="cp-check-icon"')
+    expect(account).toContain('<span v-else class="cp-check-dot"')
+    expect(account).not.toContain("item.done ? '✓' : '•'")
+  })
+
+  it('About and Contact hubs have safeJsonLd schema, Twitter cards, vector icons, and no duplicate breadcrumbs', () => {
+    const about = doc('pages/gioi-thieu.vue')
+    expect(about).toMatch(/<Breadcrumb[^>]*:json-ld="true"/)
+    expect(about).toContain("'@type': 'AboutPage'")
+    expect(about).toContain('safeJsonLd(aboutJsonLd)')
+    expect(about).not.toContain("'@type': 'BreadcrumbList'")
+    expect(about).toContain("ogUrl: () => canonicalUrl('/gioi-thieu')")
+    expect(about).toContain("twitterCard: 'summary_large_image'")
+
+    const contact = doc('pages/lien-he.vue')
+    expect(contact).toMatch(/<Breadcrumb[^>]*:json-ld="true"/)
+    expect(contact).toContain("'@type': 'ContactPage'")
+    expect(contact).toContain('safeJsonLd(contactJsonLd.value)')
+    expect(contact).not.toContain("'@type': 'BreadcrumbList'")
+    expect(contact).toContain("ogUrl: () => canonicalUrl('/lien-he')")
+    expect(contact).toContain("twitterCard: 'summary_large_image'")
+    expect(contact).toContain('<IconLine name="tag"')
+    expect(contact).toContain('<IconLine name="pencil"')
+    expect(contact).toContain('<IconLine name="message"')
+    expect(contact).toContain('<IconLine name="users"')
+    expect(contact).toContain('<IconLine name="flag"')
+    expect(contact).toContain('<IconLine name="shield-check"')
+    expect(contact).not.toContain('card-icon-glyph')
+  })
+
+  it('Modals, search, and admin eliminate raw times, arrows, and chevron glyphs', () => {
+    const sidebar = doc('components/community/CommunitySidebar.vue')
+    expect(sidebar).toContain('<IconLine name="arrow-right" class="sidebar-more-arrow"')
+    expect(sidebar).not.toContain('Xem quy tắc cộng đồng →')
+    expect(sidebar).not.toContain('Xem bảng xếp hạng →')
+
+    const reportModal = doc('components/ReportModal.vue')
+    expect(reportModal).toContain('<IconLine name="x"')
+    expect(reportModal).not.toContain('&times;')
+
+    const lightbox = doc('components/ImageLightbox.vue')
+    expect(lightbox).toContain('<IconLine name="x"')
+    expect(lightbox).not.toContain('&times;')
+    expect(lightbox).not.toContain('&#8249;')
+    expect(lightbox).not.toContain('&#8250;')
+
+    const onboarding = doc('components/OnboardingSheet.vue')
+    expect(onboarding).toContain('<IconLine name="x"')
+    expect(onboarding).not.toContain('&times;')
+
+    const commSearch = doc('components/community/CommunitySearchSection.vue')
+    expect(commSearch).toContain('<IconLine name="x"')
+    expect(commSearch).not.toContain('&times;')
+
+    const adminSettings = doc('components/admin/SettingsPage.vue')
+    expect(adminSettings).toContain('<IconLine name="arrow-left" class="cs-back-icon"')
+    expect(adminSettings).not.toContain('← Cài đặt')
+
+    const adminRoutes = doc('pages/admin/cai-dat/tuyen-duong.vue')
+    expect(adminRoutes).toContain('<IconLine name="arrow-up" class="cs-view-icon"')
+    expect(adminRoutes).not.toContain('>↗<')
+
+    const adminEntities = doc('pages/admin/entities.vue')
+    expect(adminEntities).not.toContain('&times;')
+    expect(adminEntities).not.toContain('&#10003;')
+    expect(adminEntities).not.toContain('&rarr;')
+
+    const adminLogs = doc('pages/admin/nhat-ky.vue')
+    expect(adminLogs).not.toContain('&larr;')
+    expect(adminLogs).not.toContain('&rarr;')
+  })
 })
+
 

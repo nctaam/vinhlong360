@@ -14,7 +14,7 @@
           <span class="stat-label">đánh giá</span>
         </div>
       </div>
-      <NuxtLink to="/huong-dan-thanh-vien" class="sidebar-more">Xem quy tắc cộng đồng →</NuxtLink>
+      <NuxtLink to="/huong-dan-thanh-vien" class="sidebar-more">Xem quy tắc cộng đồng <IconLine name="arrow-right" class="sidebar-more-arrow" /></NuxtLink>
     </div>
 
     <div v-if="recentMentions.length" class="sidebar-card reveal">
@@ -42,7 +42,7 @@
           </NuxtLink>
         </li>
       </ol>
-      <NuxtLink to="/bang-xep-hang" class="sidebar-more">Xem bảng xếp hạng →</NuxtLink>
+      <NuxtLink to="/bang-xep-hang" class="sidebar-more">Xem bảng xếp hạng <IconLine name="arrow-right" class="sidebar-more-arrow" /></NuxtLink>
     </div>
 
     <div v-if="isLoggedIn && suggestedUsers.length" class="sidebar-card reveal">
@@ -118,8 +118,10 @@ defineEmits<{
 .sidebar-stat:hover .stat-num { color: var(--primary-fg); }
 .stat-label { font-size: var(--text-xs); color: var(--muted); }
 
-.sidebar-more { display: inline-block; font-size: var(--text-sm); color: var(--primary-fg); text-decoration: none; }
+.sidebar-more { display: inline-flex; align-items: center; gap: var(--space-1); font-size: var(--text-sm); color: var(--primary-fg); text-decoration: none; }
 .sidebar-more:hover { text-decoration: underline; }
+.sidebar-more-arrow { display: inline-flex; transition: transform .3s var(--ease-out-expo); }
+.sidebar-more:hover .sidebar-more-arrow { transform: translateX(3px); }
 
 .mention-list { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: var(--space-1); }
 .mention-link {

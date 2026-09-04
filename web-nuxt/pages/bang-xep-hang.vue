@@ -1,6 +1,6 @@
 <template>
   <section class="page bxh-page">
-    <Breadcrumb :items="[{ label: 'Trang chủ', to: '/' }, { label: 'Cộng đồng', to: '/cong-dong' }, { label: 'Bảng xếp hạng' }]" />
+    <Breadcrumb :items="[{ label: 'Trang chủ', to: '/' }, { label: 'Cộng đồng', to: '/cong-dong' }, { label: 'Bảng xếp hạng' }]" :json-ld="true" />
     <header class="bxh-head">
       <p class="bxh-eyebrow">Sổ vàng cộng đồng</p>
       <h1 class="bxh-h1">Thành viên tích cực</h1>
@@ -127,22 +127,35 @@ useSeoMeta({
   description: 'Bảng xếp hạng thành viên đóng góp tích cực nhất cộng đồng vinhlong360: đánh giá, bài viết, ảnh và lượt theo dõi.',
   ogTitle: 'Bảng xếp hạng — vinhlong360',
   ogDescription: 'Thành viên đóng góp tích cực nhất cộng đồng vinhlong360.',
+  ogUrl: () => canonicalUrl('/bang-xep-hang'),
+  twitterCard: 'summary_large_image',
 })
-useHead({
+
+const leaderboardSchema = computed(() => ({
+  '@context': 'https://schema.org',
+  '@type': 'CollectionPage',
+  name: 'Thành viên tích cực — Bảng xếp hạng — vinhlong360',
+  description: 'Bảng xếp hạng thành viên đóng góp tích cực nhất cộng đồng vinhlong360.',
+  url: canonicalUrl('/bang-xep-hang'),
+  inLanguage: 'vi',
+  mainEntity: {
+    '@type': 'ItemList',
+    numberOfItems: leaders.value.length,
+    itemListElement: podium.value.map(m => ({
+      '@type': 'ListItem',
+      position: m.rank,
+      name: m.display_name,
+      url: canonicalUrl(userPath(m.username || m.id)),
+    })),
+  },
+}))
+
+useHead(() => ({
   link: [{ rel: 'canonical', href: canonicalUrl('/bang-xep-hang') }],
-  script: [{
-    type: 'application/ld+json',
-    innerHTML: JSON.stringify({
-      '@context': 'https://schema.org',
-      '@type': 'BreadcrumbList',
-      itemListElement: [
-        { '@type': 'ListItem', position: 1, name: 'Trang chủ', item: 'https://vinhlong360.vn/' },
-        { '@type': 'ListItem', position: 2, name: 'Cộng đồng', item: 'https://vinhlong360.vn/cong-dong' },
-        { '@type': 'ListItem', position: 3, name: 'Bảng xếp hạng' },
-      ],
-    }),
-  }],
-})
+  script: [
+    { type: 'application/ld+json', innerHTML: safeJsonLd(leaderboardSchema.value) },
+  ],
+}))
 </script>
 
 <style scoped>

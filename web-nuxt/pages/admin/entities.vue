@@ -13,7 +13,7 @@
     <div class="admin-toolbar">
       <div class="ent-search-wrap">
         <input v-model="search" class="input" placeholder="Tìm entity…" aria-label="Tìm entity" @input="debounceFetch" @keyup.escape="clearSearch" />
-        <button v-if="search" type="button" class="ent-search-clear" aria-label="Xóa tìm kiếm" @click="clearSearch">&times;</button>
+        <button v-if="search" type="button" class="ent-search-clear" aria-label="Xóa tìm kiếm" @click="clearSearch"><IconLine name="x" /></button>
         <span v-if="searching" class="ent-searching" aria-live="polite">Đang tìm…</span>
       </div>
       <select v-model="typeFilter" class="input admin-select-filter" aria-label="Lọc theo loại entity" @change="fetchEntities(true)">
@@ -21,7 +21,7 @@
         <option v-for="t in kindTypes" :key="t" :value="t">{{ TYPE_META[t]?.emoji || '' }} {{ TYPE_META[t]?.label || t }}</option>
       </select>
       <button type="button" class="btn btn-outline btn-sm" :class="{ 'btn-active-warn': orphansOnly }" @click="orphansOnly = !orphansOnly; fetchEntities(true)">
-        {{ orphansOnly ? '&#10003; Mồ côi' : 'Mồ côi' }}
+        <IconLine v-if="orphansOnly" name="check" /> Mồ côi
       </button>
       <button type="button" class="btn btn-primary" @click="openCreate">+ Tạo mới</button>
       <button type="button" class="btn btn-outline btn-sm" :title="`Tải JSON (${entities.length} entity trang này)`" @click="exportJSON">&#x2B73; JSON ({{ entities.length }})</button>
@@ -226,11 +226,11 @@
       </div>
 
       <nav v-if="entities.length || page > 1" class="admin-pagination" role="navigation" aria-label="Phân trang">
-        <button type="button" :disabled="page <= 1" @click="page--; fetchEntities()">← Trước</button>
+        <button type="button" :disabled="page <= 1" @click="page--; fetchEntities()"><IconLine name="arrow-left" /> Trước</button>
         <span class="admin-page-info">
           Trang {{ page }}<span v-if="totalEntities" class="ent-page-hint"> · {{ totalEntities }} entity</span><span v-if="entities.length < limit" class="ent-page-hint"> · trang cuối</span>
         </span>
-        <button type="button" :disabled="entities.length < limit" @click="page++; fetchEntities()">Sau →</button>
+        <button type="button" :disabled="entities.length < limit" @click="page++; fetchEntities()">Sau <IconLine name="arrow-right" /></button>
       </nav>
     </template>
 
@@ -442,7 +442,7 @@
             <span class="ent-history-field">{{ h.field }}</span>
             <span class="ent-history-diff">
               <del v-if="h.old_value" :title="h.old_value">{{ truncVal(h.old_value) }}</del>
-              <span class="ent-history-arrow">&rarr;</span>
+              <span class="ent-history-arrow"><IconLine name="arrow-right" /></span>
               <ins :title="h.new_value">{{ truncVal(h.new_value) }}</ins>
             </span>
             <span class="ent-history-time">{{ timeAgo(h.created_at) }}</span>

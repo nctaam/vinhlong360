@@ -198,17 +198,17 @@
         </button>
         <button type="button" class="ai-action-btn ai-action-primary" :disabled="triageLoading" @click="triage">
           <span v-if="triageLoading" class="ai-action-spinner" aria-hidden="true"></span>
-          <span v-else class="ai-action-icon">&#129302;</span>
+          <span v-else class="ai-action-icon"><IconLine name="bot" /></span>
           <span>{{ triageLoading ? 'Đang phân tích...' : 'Gợi ý ưu tiên' }}</span>
         </button>
         <button type="button" class="ai-action-btn ai-action-secondary" @click="reload">
-          <span class="ai-action-icon">&#128260;</span>
+          <span class="ai-action-icon"><IconLine name="repeat" /></span>
           <span>Reload KB</span>
         </button>
       </div>
       <p v-if="triggerResult" class="ai-trigger-result" :class="{ 'ai-result-error': triggerResultIsError }" role="status" aria-live="polite">{{ triggerResult }}</p>
       <div v-if="triageOut" class="ai-triage-box" :class="{ 'ai-triage-error': triageOutIsError }" role="status" aria-live="polite">
-        <span class="ai-triage-icon" aria-hidden="true">{{ triageOutIsError ? '⚠' : '✓' }}</span>
+        <span class="ai-triage-icon" aria-hidden="true"><IconLine :name="triageOutIsError ? 'alert-triangle' : 'check'" /></span>
         <span class="ai-triage-text">{{ triageOut }}</span>
       </div>
     </div>

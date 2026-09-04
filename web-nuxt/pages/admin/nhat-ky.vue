@@ -61,9 +61,9 @@
       </div>
 
       <nav v-if="totalPages > 1" class="admin-pagination" role="navigation" aria-label="Phân trang">
-        <button type="button" :disabled="page <= 1" @click="page--; fetchLog()">&larr; Trước</button>
+        <button type="button" :disabled="page <= 1" @click="page--; fetchLog()"><IconLine name="arrow-left" /> Trước</button>
         <span class="admin-page-info">Trang {{ page }}/{{ totalPages }}</span>
-        <button type="button" :disabled="page >= totalPages" @click="page++; fetchLog()">Sau &rarr;</button>
+        <button type="button" :disabled="page >= totalPages" @click="page++; fetchLog()">Sau <IconLine name="arrow-right" /></button>
       </nav>
     </template>
   </div>

@@ -412,8 +412,10 @@ onUnmounted(() => {
 .stat-card .stat-label { font-size: .75rem; color: var(--muted); margin-top: var(--space-1); text-transform: uppercase; letter-spacing: .5px; }
 
 /* ── Settings (shared across cai-dat pages) ── */
-.cs-back { font-size: .82rem; color: var(--muted); text-decoration: none; transition: color .15s; }
+.cs-back { display: inline-flex; align-items: center; gap: 4px; font-size: .82rem; color: var(--muted); text-decoration: none; transition: color .15s; }
 .cs-back:hover { color: var(--primary); }
+.cs-back .cs-back-icon { transition: transform .25s var(--ease-out-expo); }
+.cs-back:hover .cs-back-icon { transform: translateX(-2px); }
 .cs-subtitle { font-size: .82rem; color: var(--muted); margin-top: var(--space-1); }
 .cs-form-wrap { max-width: 640px; }
 .cs-skeleton { max-width: 640px; display: flex; flex-direction: column; gap: var(--space-5); }

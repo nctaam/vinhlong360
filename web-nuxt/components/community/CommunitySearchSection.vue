@@ -14,7 +14,7 @@
         @input="$emit('update:modelValue', ($event.target as HTMLInputElement).value)"
         @keyup.enter="$emit('search')"
       />
-      <button v-if="searchMode" type="button" class="cs-clear" aria-label="Xoá tìm kiếm" @click="$emit('clear')">&times;</button>
+      <button v-if="searchMode" type="button" class="cs-clear" aria-label="Xoá tìm kiếm" @click="$emit('clear')"><IconLine name="x" /></button>
       <button type="button" class="btn btn-primary btn-sm cs-go" @click="$emit('search')">Tìm</button>
     </div>
 

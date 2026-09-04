@@ -344,7 +344,7 @@
               <button type="button" role="tab" :class="['fm-tab', { active: followModalTab === 'followers' }]" :aria-selected="followModalTab === 'followers'" @click="followModalTab = 'followers'">Người theo dõi</button>
               <button type="button" role="tab" :class="['fm-tab', { active: followModalTab === 'following' }]" :aria-selected="followModalTab === 'following'" @click="followModalTab = 'following'">Đang theo dõi</button>
             </div>
-            <button type="button" class="fm-close" aria-label="Đóng" @click="followModalOpen = false">&times;</button>
+            <button type="button" class="fm-close" aria-label="Đóng" @click="followModalOpen = false"><IconLine name="x" /></button>
           </header>
           <div class="fm-body">
             <div v-if="followLoadingList" class="fm-loading" role="status" aria-label="Đang tải danh sách"><div class="spinner spinner-sm"></div></div>

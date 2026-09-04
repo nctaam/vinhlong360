@@ -3,7 +3,7 @@
     <Transition name="rm-fade">
       <div v-if="modal.open" class="rm-overlay" @click.self="close">
         <div class="rm-sheet" role="dialog" aria-modal="true" aria-labelledby="rm-title" ref="sheetEl">
-          <button type="button" class="rm-close" aria-label="Đóng" @click="close">&times;</button>
+          <button type="button" class="rm-close" aria-label="Đóng" @click="close"><IconLine name="x" /></button>
           <div class="rm-head">
             <h3 id="rm-title">Báo cáo nội dung</h3>
             <p class="rm-sub">Chọn lý do và mô tả ngắn. Chúng tôi xử lý theo quy định — không tự động gỡ/khoá.</p>
@@ -112,7 +112,7 @@ async function submit() {
 .rm-head { flex-shrink: 0; }
 .rm-body { flex: 1; min-height: 0; overflow-y: auto; overscroll-behavior-y: contain; }
 
-.rm-close { position: absolute; top: 10px; right: 12px; background: none; border: none; font-size: 1.6rem; line-height: 1; color: var(--muted); cursor: pointer; padding: var(--space-1) var(--space-2); border-radius: 8px; }
+.rm-close { position: absolute; top: 10px; right: 12px; background: none; border: none; font-size: 1.25rem; line-height: 1; color: var(--muted); cursor: pointer; padding: var(--space-1); border-radius: var(--radius-control); display: inline-flex; align-items: center; justify-content: center; min-width: 44px; min-height: 44px; transition: background .2s var(--ease-out), color .2s var(--ease-out); }
 .rm-close:hover { background: var(--bg-warm); color: var(--ink); }
 .rm-sheet h3 { margin: 0 0 4px; font-size: 1.1rem; font-weight: 700; }
 .rm-sub { margin: 0 0 var(--space-4); font-size: .84rem; color: var(--muted); line-height: 1.45; }

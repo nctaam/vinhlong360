@@ -113,7 +113,11 @@
           <tr v-if="confirmingId === u.id" class="usr-confirm-row">
             <td colspan="6">
               <div class="usr-confirm" role="alertdialog" :aria-label="confirmAction === 'role' ? 'Xác nhận đổi role' : confirmAction === 'ban' ? 'Xác nhận cấm user' : 'Xác nhận mở cấm user'">
-                <span class="usr-confirm-icon" aria-hidden="true">{{ confirmAction === 'ban' ? '⚠' : confirmAction === 'role' ? '🔑' : '✓' }}</span>
+                <span class="usr-confirm-icon" aria-hidden="true">
+                  <IconLine v-if="confirmAction === 'ban'" name="alert-triangle" />
+                  <IconLine v-else-if="confirmAction === 'role'" name="shield" />
+                  <IconLine v-else name="check" />
+                </span>
                 <span class="usr-confirm-text">
                   <template v-if="confirmAction === 'role'">Đổi role <strong>{{ u.display_name || u.phone }}</strong> thành <strong>{{ confirmRoleValue }}</strong>?</template>
                   <template v-else>{{ confirmAction === 'ban' ? 'Cấm' : 'Mở cấm' }} <strong>{{ u.display_name || u.phone }}</strong>?</template>
@@ -158,7 +162,7 @@
                 <span class="ud-phone">{{ detailUser.phone }}</span>
               </div>
             </div>
-            <button type="button" class="ud-close" aria-label="Đóng" @click="detailUser = null">&times;</button>
+            <button type="button" class="ud-close" aria-label="Đóng" @click="detailUser = null"><IconLine name="x" /></button>
           </header>
           <div class="ud-body">
             <div class="ud-meta">
@@ -630,7 +634,7 @@ onMounted(() => fetchUsers())
 .ud-avatar { width: 44px; height: 44px; font-size: 1rem; }
 .ud-name { font-size: var(--text-base); font-weight: var(--weight-bold); margin: 0; }
 .ud-phone { font-size: var(--text-xs); color: var(--muted); }
-.ud-close { border: none; background: none; font-size: 1.5rem; line-height: 1; cursor: pointer; color: var(--muted); padding: var(--space-2); }
+.ud-close { border: none; background: none; font-size: 1.25rem; line-height: 1; cursor: pointer; color: var(--muted); padding: var(--space-2); min-width: 44px; min-height: 44px; display: inline-flex; align-items: center; justify-content: center; }
 .ud-body { flex: 1; overflow-y: auto; padding: var(--space-4); }
 .ud-meta { display: flex; flex-direction: column; gap: var(--space-3); margin-bottom: var(--space-5); }
 .ud-meta-item { display: flex; align-items: center; justify-content: space-between; font-size: var(--text-sm); }
