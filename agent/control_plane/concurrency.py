@@ -127,11 +127,7 @@ def _column_names(db, conn, table: str) -> set[str]:
     return {str(_row_value(row, "name", 1)) for row in rows}
 
 
-def ensure_state_schema(transaction, table: str = "posts") -> None:
-    """Verify the migrated state schema; only SQLite may add compatibility fields."""
-    table = _table_name(table)
-    db, conn = _ctx(transaction)
-    columns = _column_names(db, conn, table)
+def _state_schema_additions(db, table: str) -> dict[str, str]:
     additions = {
         "revision": "BIGINT NOT NULL DEFAULT 1" if getattr(db, "_use_pg", False) else "INTEGER NOT NULL DEFAULT 1",
         "claimed_by": "TEXT",
@@ -140,26 +136,43 @@ def ensure_state_schema(transaction, table: str = "posts") -> None:
     }
     if table == "posts":
         additions["publish_attempts"] = "INTEGER NOT NULL DEFAULT 0"
-    if getattr(db, "_use_pg", False):
-        missing = sorted(set(additions) - columns)
-        if missing:
-            raise RuntimeError(f"community_state_schema_missing:{table}:{','.join(missing)}")
-        if table == "posts":
-            stable = db._fetchone(
-                conn,
-                "SELECT pg_get_constraintdef(oid) AS definition FROM pg_constraint "
-                "WHERE conrelid='posts'::regclass AND conname='posts_moderation_status_check' "
-                "AND contype='c'",
-                (),
-            )
-            definition = str(_row_value(stable, "definition") or "")
-            if stable is None or "publish_failed" not in definition:
-                raise RuntimeError("community_state_schema_constraint_missing:posts_moderation_status_check")
+    return additions
+
+
+def _verify_pg_state_schema(db, conn, table: str, columns: set[str], additions: dict[str, str]) -> None:
+    missing = sorted(set(additions) - columns)
+    if missing:
+        raise RuntimeError(f"community_state_schema_missing:{table}:{','.join(missing)}")
+    if table != "posts":
         return
+    stable = db._fetchone(
+        conn,
+        "SELECT pg_get_constraintdef(oid) AS definition FROM pg_constraint "
+        "WHERE conrelid='posts'::regclass AND conname='posts_moderation_status_check' "
+        "AND contype='c'",
+        (),
+    )
+    definition = str(_row_value(stable, "definition") or "")
+    if stable is None or "publish_failed" not in definition:
+        raise RuntimeError("community_state_schema_constraint_missing:posts_moderation_status_check")
+
+
+def _add_sqlite_state_columns(db, conn, table: str, columns: set[str], additions: dict[str, str]) -> None:
     for name, definition in additions.items():
         if name not in columns:
-            ddl = f"ALTER TABLE {table} ADD COLUMN IF NOT EXISTS {name} {definition}" if getattr(db, "_use_pg", False) else f"ALTER TABLE {table} ADD COLUMN {name} {definition}"
-            db._execute(conn, ddl, ())
+            db._execute(conn, f"ALTER TABLE {table} ADD COLUMN {name} {definition}", ())
+
+
+def ensure_state_schema(transaction, table: str = "posts") -> None:
+    """Verify the migrated state schema; only SQLite may add compatibility fields."""
+    table = _table_name(table)
+    db, conn = _ctx(transaction)
+    columns = _column_names(db, conn, table)
+    additions = _state_schema_additions(db, table)
+    if getattr(db, "_use_pg", False):
+        _verify_pg_state_schema(db, conn, table, columns, additions)
+        return
+    _add_sqlite_state_columns(db, conn, table, columns, additions)
 
 
 def _idempotency_storage_key(key: IdempotencyKey | str) -> str:
@@ -182,32 +195,38 @@ def _decode_meta(value) -> dict:
     return {}
 
 
-def claim_idempotency(transaction, key: IdempotencyKey | str, request_hash: str) -> ClaimResult:
-    """Atomically claim a command key, replaying exact retries and rejecting reuse."""
-    if not isinstance(request_hash, str) or not request_hash.strip():
-        raise ValueError("invalid_request_hash")
-    db, conn = _ctx(transaction)
-    storage_key = _idempotency_storage_key(key)
-    now = datetime.now(timezone.utc)
-    expires = now + timedelta(hours=24)
+def _insert_idempotency_claim(db, conn, storage_key: str, request_hash: str,
+                              now: datetime, expires: datetime) -> tuple[ClaimResult | None, Any]:
+    payload = json.dumps({"request_hash": request_hash})
     if getattr(db, "_use_pg", False):
-        row = db._fetchone(conn, "INSERT INTO request_idempotency_keys(key, expires_at, meta) VALUES (%s,%s,%s::jsonb) ON CONFLICT (key) DO NOTHING RETURNING key", (storage_key, expires, json.dumps({"request_hash": request_hash})))
-        if row is not None:
-            return ClaimResult(storage_key, claimed=True, request_hash=request_hash)
-        row = db._fetchone(conn, "SELECT expires_at, meta FROM request_idempotency_keys WHERE key=%s FOR UPDATE", (storage_key,))
-    else:
-        # INSERT OR IGNORE is the claim itself; a preceding SELECT allows two
-        # SQLite workers to both observe an absent key and race into execution.
-        inserted = db._execute(
+        row = db._fetchone(
             conn,
-            "INSERT OR IGNORE INTO request_idempotency_keys(key, first_seen_at, expires_at, meta) VALUES (?,?,?,?)",
-            (storage_key, now.isoformat(), expires.isoformat(), json.dumps({"request_hash": request_hash})),
+            "INSERT INTO request_idempotency_keys(key, expires_at, meta) "
+            "VALUES (%s,%s,%s::jsonb) ON CONFLICT (key) DO NOTHING RETURNING key",
+            (storage_key, expires, payload),
         )
-        if getattr(inserted, "rowcount", 0) == 1:
-            return ClaimResult(storage_key, claimed=True, request_hash=request_hash)
-        row = db._fetchone(conn, "SELECT expires_at, meta FROM request_idempotency_keys WHERE key=?", (storage_key,))
-    if row is None:
-        return ClaimResult(storage_key, claimed=True, request_hash=request_hash)
+        if row is not None:
+            return ClaimResult(storage_key, claimed=True, request_hash=request_hash), None
+        return None, db._fetchone(
+            conn,
+            "SELECT expires_at, meta FROM request_idempotency_keys WHERE key=%s FOR UPDATE",
+            (storage_key,),
+        )
+    inserted = db._execute(
+        conn,
+        "INSERT OR IGNORE INTO request_idempotency_keys(key, first_seen_at, expires_at, meta) VALUES (?,?,?,?)",
+        (storage_key, now.isoformat(), expires.isoformat(), payload),
+    )
+    if getattr(inserted, "rowcount", 0) == 1:
+        return ClaimResult(storage_key, claimed=True, request_hash=request_hash), None
+    return None, db._fetchone(
+        conn,
+        "SELECT expires_at, meta FROM request_idempotency_keys WHERE key=?",
+        (storage_key,),
+    )
+
+
+def _normalized_expiry(row: Any, now: datetime) -> datetime | None:
     expiry = _row_value(row, "expires_at")
     if isinstance(expiry, str):
         try:
@@ -216,11 +235,38 @@ def claim_idempotency(transaction, key: IdempotencyKey | str, request_hash: str)
             expiry = now
     if expiry is not None and getattr(expiry, "tzinfo", None) is None:
         expiry = expiry.replace(tzinfo=timezone.utc)
-    if expiry is not None and expiry <= now:
-        meta = json.dumps({"request_hash": request_hash})
-        values = (expires, meta, storage_key) if getattr(db, "_use_pg", False) else (expires.isoformat(), meta, storage_key)
-        db._execute(conn, "UPDATE request_idempotency_keys SET expires_at=%s, meta=%s::jsonb WHERE key=%s" if getattr(db, "_use_pg", False) else "UPDATE request_idempotency_keys SET expires_at=?, meta=? WHERE key=?", values)
+    return expiry
+
+
+def _reclaim_expired_idempotency(db, conn, storage_key: str, request_hash: str,
+                                 expires: datetime) -> ClaimResult:
+    meta = json.dumps({"request_hash": request_hash})
+    if getattr(db, "_use_pg", False):
+        values = (expires, meta, storage_key)
+        sql = "UPDATE request_idempotency_keys SET expires_at=%s, meta=%s::jsonb WHERE key=%s"
+    else:
+        values = (expires.isoformat(), meta, storage_key)
+        sql = "UPDATE request_idempotency_keys SET expires_at=?, meta=? WHERE key=?"
+    db._execute(conn, sql, values)
+    return ClaimResult(storage_key, claimed=True, request_hash=request_hash)
+
+
+def claim_idempotency(transaction, key: IdempotencyKey | str, request_hash: str) -> ClaimResult:
+    """Atomically claim a command key, replaying exact retries and rejecting reuse."""
+    if not isinstance(request_hash, str) or not request_hash.strip():
+        raise ValueError("invalid_request_hash")
+    db, conn = _ctx(transaction)
+    storage_key = _idempotency_storage_key(key)
+    now = datetime.now(timezone.utc)
+    expires = now + timedelta(hours=24)
+    claimed, row = _insert_idempotency_claim(db, conn, storage_key, request_hash, now, expires)
+    if claimed is not None:
+        return claimed
+    if row is None:
         return ClaimResult(storage_key, claimed=True, request_hash=request_hash)
+    expiry = _normalized_expiry(row, now)
+    if expiry is not None and expiry <= now:
+        return _reclaim_expired_idempotency(db, conn, storage_key, request_hash, expires)
     meta = _decode_meta(_row_value(row, "meta"))
     previous = meta.get("request_hash")
     receipt = meta.get("receipt")
@@ -276,6 +322,49 @@ def cas_transition(transaction, table: str, row_id: str, *, expected_status: str
     return TransitionResult(table, str(_row_value(updated, "row_id")), old, new_status, int(_row_value(updated, "revision") or revision + 1), actor_id, reason, correlation_id)
 
 
+def _claim_due_row(db, conn, table: str, columns: set[str], *, due_before: datetime,
+                   worker_id: str, now: datetime, expires: datetime) -> tuple[Any, str | None]:
+    id_col = "id" if "id" in columns else "case_id"
+    status_col = "moderation_status" if "moderation_status" in columns else ("status" if "status" in columns else None)
+    status_expr = f", target.{status_col} AS state_status" if status_col else ""
+    due_predicate = f" AND {status_col} IN ('pending','flagged','publish_failed')" if status_col else ""
+    draft_predicate = " AND (is_draft = FALSE OR is_draft IS NULL)" if "is_draft" in columns else ""
+    ph = db._ph
+    if getattr(db, "_use_pg", False):
+        sql = (
+            f"WITH candidate AS (SELECT {id_col} FROM {table} WHERE scheduled_at IS NOT NULL "
+            f"AND scheduled_at <= {ph} AND (claim_expires_at IS NULL OR claim_expires_at <= {ph})"
+            f"{draft_predicate}{due_predicate} ORDER BY scheduled_at, {id_col} LIMIT 1 FOR UPDATE SKIP LOCKED) "
+            f"UPDATE {table} AS target SET claimed_by={ph}, claim_expires_at={ph}, revision=target.revision+1 "
+            f"FROM candidate WHERE target.{id_col}=candidate.{id_col} RETURNING target.{id_col} AS row_id, "
+            f"target.revision{status_expr}"
+        )
+        return db._fetchone(conn, sql, (due_before, now, worker_id, expires)), status_col
+    sqlite_status_expr = f", {status_col} AS state_status" if status_col else ""
+    sql = (
+        f"UPDATE {table} SET claimed_by={ph}, claim_expires_at={ph}, revision=revision+1 WHERE {id_col} = "
+        f"(SELECT {id_col} FROM {table} WHERE scheduled_at IS NOT NULL AND scheduled_at <= {ph} "
+        f"AND (claim_expires_at IS NULL OR claim_expires_at <= {ph}){draft_predicate}{due_predicate} "
+        f"ORDER BY scheduled_at, {id_col} LIMIT 1) RETURNING {id_col} AS row_id, revision{sqlite_status_expr}"
+    )
+    return db._fetchone(conn, sql, (worker_id, expires.isoformat(), due_before.isoformat(), now.isoformat())), status_col
+
+
+def _lease_from_row(table: str, row: Any, worker_id: str, expires: datetime,
+                    status_col: str | None) -> Lease | None:
+    if row is None:
+        return None
+    status = _row_value(row, "state_status") if status_col else None
+    return Lease(
+        table,
+        str(_row_value(row, "row_id")),
+        worker_id,
+        expires,
+        int(_row_value(row, "revision") or 1),
+        status,
+    )
+
+
 def claim_due(transaction, table: str, *, due_before: datetime, worker_id: str,
               lease_seconds: int, now: datetime | None = None) -> Lease | None:
     """Claim one due row; PostgreSQL uses SKIP LOCKED for multi-worker safety."""
@@ -291,21 +380,11 @@ def claim_due(transaction, table: str, *, due_before: datetime, worker_id: str,
     columns = _column_names(db, conn, table)
     if "scheduled_at" not in columns:
         raise ValueError("scheduled_at_column_missing")
-    id_col = "id" if "id" in columns else "case_id"
-    status_col = "moderation_status" if "moderation_status" in columns else ("status" if "status" in columns else None)
-    status_expr = f", target.{status_col} AS state_status" if status_col else ""
-    due_predicate = f" AND {status_col} IN ('pending','flagged','publish_failed')" if status_col else ""
-    draft_predicate = " AND (is_draft = FALSE OR is_draft IS NULL)" if "is_draft" in columns else ""
     # The schedule cutoff can be intentionally stale after a restart. Lease
     # expiry and reclamation use the worker clock, never that cutoff.
     expires = now + timedelta(seconds=lease_seconds)
-    ph = db._ph
-    if getattr(db, "_use_pg", False):
-        row = db._fetchone(conn, f"WITH candidate AS (SELECT {id_col} FROM {table} WHERE scheduled_at IS NOT NULL AND scheduled_at <= {ph} AND (claim_expires_at IS NULL OR claim_expires_at <= {ph}){draft_predicate}{due_predicate} ORDER BY scheduled_at, {id_col} LIMIT 1 FOR UPDATE SKIP LOCKED) UPDATE {table} AS target SET claimed_by={ph}, claim_expires_at={ph}, revision=target.revision+1 FROM candidate WHERE target.{id_col}=candidate.{id_col} RETURNING target.{id_col} AS row_id, target.revision{status_expr}", (due_before, now, worker_id, expires))
-    else:
-        sqlite_status_expr = f", {status_col} AS state_status" if status_col else ""
-        row = db._fetchone(conn, f"UPDATE {table} SET claimed_by={ph}, claim_expires_at={ph}, revision=revision+1 WHERE {id_col} = (SELECT {id_col} FROM {table} WHERE scheduled_at IS NOT NULL AND scheduled_at <= {ph} AND (claim_expires_at IS NULL OR claim_expires_at <= {ph}){draft_predicate}{due_predicate} ORDER BY scheduled_at, {id_col} LIMIT 1) RETURNING {id_col} AS row_id, revision{sqlite_status_expr}", (worker_id, expires.isoformat(), due_before.isoformat(), now.isoformat()))
-    if row is None:
-        return None
-    status = _row_value(row, "state_status") if status_col else None
-    return Lease(table, str(_row_value(row, "row_id")), worker_id, expires, int(_row_value(row, "revision") or 1), status)
+    row, status_col = _claim_due_row(
+        db, conn, table, columns, due_before=due_before, worker_id=worker_id,
+        now=now, expires=expires,
+    )
+    return _lease_from_row(table, row, worker_id, expires, status_col)

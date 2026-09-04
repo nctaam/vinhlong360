@@ -274,6 +274,27 @@ def test_pg_appeal_schema_verification_requires_only_appeal_columns():
     ensure_state_schema(tx, "moderation_appeals")
 
 
+def test_sqlite_schema_adds_only_missing_compatibility_columns():
+    from control_plane.concurrency import ensure_state_schema
+
+    db = _SqliteDatabase()
+    db.conn.execute("ALTER TABLE posts DROP COLUMN publish_attempts")
+    tx = _Tx(db)
+    ensure_state_schema(tx, "posts")
+    columns = {row[1] for row in db.conn.execute("PRAGMA table_info(posts)")}
+    assert "publish_attempts" in columns
+
+
+def test_due_claim_without_status_column_returns_lease_with_no_status():
+    from control_plane.concurrency import claim_due
+
+    db = _SqliteDatabase()
+    db.conn.execute("CREATE TABLE queue (id TEXT PRIMARY KEY, scheduled_at TEXT, claimed_by TEXT, claim_expires_at TEXT, revision INTEGER NOT NULL DEFAULT 1)")
+    db.conn.execute("INSERT INTO queue(id, scheduled_at) VALUES ('q-1', ?)", ((datetime.now(UTC) - timedelta(minutes=1)).isoformat(),))
+    lease = claim_due(_Tx(db), "queue", due_before=datetime.now(UTC), worker_id="w", lease_seconds=60)
+    assert lease is not None and lease.status is None
+
+
 def test_idempotency_pending_retry_returns_in_progress_without_duplicate(monkeypatch):
     from fastapi import HTTPException, Request
     from community import api as community_api
