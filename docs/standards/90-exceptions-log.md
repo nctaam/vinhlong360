@@ -279,3 +279,15 @@ ghi ở backlog tối ưu — giảm dần, KHÔNG được tăng tiếp từ 47
 - 2026-09-04T11:03:21 SKIP R30.7 — Commit accumulated gate evidence entries; R30.7 remains real debt
 
 - 2026-09-04T11:04:55 SKIP R30.7 — Persist hard-gate observation: R20.8=49 and R30.7=2 remain unresolved
+
+- 2026-09-04T11:40:56 SKIP R30.7 — Characterization tests for restore drill complexity tranche; bundle debt unchanged
+
+- 2026-09-04T11:41:49 SKIP R30.7 — Restore dump discovery refactor reduces R20.8; bundle debt unchanged
+
+- 2026-09-04T11:44:41 SKIP R30.7 — Restore drill decomposition reduces R20.8; frontend bundle debt unchanged
+
+- 2026-09-04T11:47:52 SKIP R30.7 — Authority baseline section decomposition reduces R20.8; bundle debt unchanged
+
+- 2026-09-04T11:51:20 SKIP R30.7 — Authority baseline section refactor and characterization tests reduce R20.8; bundle debt unchanged
+
+- 2026-09-04T11:54:01 SKIP R30.7 — LLMOps timestamp parser decomposition reduces R20.8; bundle debt unchanged

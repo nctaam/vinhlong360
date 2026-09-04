@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import sys
+import asyncio
 from pathlib import Path
 
 
@@ -89,3 +90,44 @@ def test_search_catalog_preserves_none_query_for_count_contract():
     catalog = Catalog()
     search_public_entities("", offset=0, limit=10, filters=SearchFilters(), database=catalog)
     assert catalog.count_kwargs["q"] is None
+
+
+def test_entities_page_helper_preserves_search_query_contract(monkeypatch):
+    """The public entities route keeps search and list pagination semantics in one helper."""
+    from entities import api as entities_api
+
+    class Page:
+        items = [{"id": "search-1"}]
+        total = 1
+        truncated = True
+        ranking_version = "search-v1"
+
+    seen = {}
+
+    def fake_search(query, **kwargs):
+        seen["query"] = query
+        seen["filters"] = kwargs["filters"]
+        return Page()
+
+    monkeypatch.setattr(entities_api, "search_public_entities", fake_search)
+    results, total, page = asyncio.run(
+        entities_api._fetch_entities_page(
+            "dua sap",
+            single_type="dish",
+            area="vinh-long",
+            entity_types=["dish", "attraction"],
+            month=7,
+            sort="rating",
+            limit=5,
+            offset=10,
+        )
+    )
+
+    assert results == Page.items
+    assert total == 1
+    assert page is not None
+    assert seen["query"] == "dua sap"
+    assert seen["filters"].entity_type == "dish"
+    assert seen["filters"].entity_types == ("dish", "attraction")
+    assert seen["filters"].month == 7
+    assert seen["filters"].public_only is True

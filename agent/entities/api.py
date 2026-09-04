@@ -282,6 +282,58 @@ def _similar_reason_vi(reason: str) -> str:
     return "Phu hop de kham pha tiep"
 
 
+async def _fetch_entities_page(
+    q: Optional[str],
+    *,
+    single_type: Optional[str],
+    area: Optional[str],
+    entity_types: list[str] | None,
+    month: Optional[int],
+    sort: Optional[str],
+    limit: int,
+    offset: int,
+):
+    """Fetch one public entity page while keeping search/list semantics aligned."""
+    db_sort = sort if sort in ("rating", "name", "newest") else None
+    db_month = month if month else None
+    if q:
+        page = await asyncio.to_thread(
+            search_public_entities,
+            q,
+            offset=offset,
+            limit=limit,
+            filters=SearchFilters(
+                entity_type=single_type,
+                area=area,
+                entity_types=tuple(entity_types or ()),
+                month=db_month,
+                public_only=True,
+            ),
+        )
+        return page.items, page.total, page
+
+    results = await asyncio.to_thread(
+        db.list_entities,
+        entity_type=single_type,
+        area=area,
+        limit=limit,
+        offset=offset,
+        entity_types=entity_types,
+        public_only=True,
+        sort=db_sort,
+        month=db_month,
+    )
+    total = await asyncio.to_thread(
+        db.count_entities_filtered,
+        entity_type=single_type,
+        area=area,
+        entity_types=entity_types,
+        public_only=True,
+        month=db_month,
+    )
+    return results, total, None
+
+
 @router.get("/entities", response_model=EntityListResponse,
             summary="List entities",
             description="Returns a paginated list of public entities. Supports filtering by type, area, search query, month, and sorting by rating/name/newest.")
@@ -313,29 +365,16 @@ async def list_entities(
         entity_types = [t.strip() for t in type.split(",") if t.strip()][:10]
         single_type = None
 
-    db_sort = sort if sort in ("rating", "name", "newest") else None
-    db_month = month if month else None
-
-    if q:
-        page = await asyncio.to_thread(
-            search_public_entities,
-            q,
-            offset=offset,
-            limit=limit,
-            filters=SearchFilters(
-                entity_type=single_type,
-                area=area,
-                entity_types=tuple(entity_types or ()),
-                month=db_month,
-                public_only=True,
-            ),
-        )
-        results = page.items
-        total = page.total
-    else:
-        results = await asyncio.to_thread(db.list_entities, entity_type=single_type, area=area, limit=limit, offset=offset, entity_types=entity_types, public_only=True, sort=db_sort, month=db_month)
-        total = await asyncio.to_thread(db.count_entities_filtered, entity_type=single_type, area=area, entity_types=entity_types, public_only=True, month=db_month)
-        page = None
+    results, total, page = await _fetch_entities_page(
+        q,
+        single_type=single_type,
+        area=area,
+        entity_types=entity_types,
+        month=month,
+        sort=sort,
+        limit=limit,
+        offset=offset,
+    )
     await asyncio.to_thread(_enrich_place, results)
     results = [_project_public_entity_media(entity) for entity in results]
     if fields == "minimal":
