@@ -59,7 +59,7 @@ CASE_TABLES = (
     "cases", "case_interactions", "case_party_authorities", "case_work_items",
     "case_decisions", "case_promise_clocks", "case_receipts", "case_access_sessions",
     "case_admin_access_sessions", "case_transitions", "case_audit_events", "case_outbox",
-    "case_idempotency", "case_contact_challenges", "correction_items", "correction_evidence",
+    "case_idempotency", "case_contact_challenges", "case_pre_contact_challenges", "correction_items", "correction_evidence",
     "correction_change_sets", "correction_change_set_items", "legacy_intake_records", "case_capacity_events",
 )
 

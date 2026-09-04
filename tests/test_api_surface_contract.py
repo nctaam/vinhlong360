@@ -86,7 +86,7 @@ PUBLIC_WRITE_ALLOWLIST: dict[tuple[str, str], str] = {
     ("POST", "/api/cases/corrections"): "Cửa nhận đính chính — phải mở cho người không có tài khoản; chặn bằng cờ CORRECTION_INTAKE_ENABLED + same-origin + Idempotency-Key + rate-limit theo IP.",
     ("POST", "/api/cases/access"): "Đổi phiếu-năng-lực lấy phiên; người gọi phải CẦM phiếu hợp lệ mới qua, rate-limit theo IP.",
     #
-    # (2) Năm route dưới đây KHÔNG ẩn danh. Chúng đòi cookie phiên vl360_case_access
+    # (2) Legacy mutations below KHÔNG ẩn danh. They require the session cookie
     #     (cấp sau khi đổi phiếu ở trên) + CSRF double-submit + same-origin
     #     (`_guard_session_mutation`), rồi truyền chính token đó xuống service để
     #     xác minh thật. Chúng nằm ở đây chỉ vì không dùng require_user — đính chính
@@ -100,7 +100,8 @@ PUBLIC_WRITE_ALLOWLIST: dict[tuple[str, str], str] = {
     ("DELETE", "/api/cases/access"): "Đòi cookie phiên + CSRF (_guard_session_mutation), không phải tài khoản.",
     ("POST", "/api/cases/review"): "Đòi cookie phiên + CSRF (_guard_session_mutation), không phải tài khoản.",
     ("POST", "/api/cases/contact/request"): "Đòi cookie phiên + CSRF (_guard_session_mutation), không phải tài khoản.",
-    ("POST", "/api/cases/contact/verify"): "Đòi cookie phiên + CSRF (_guard_session_mutation), không phải tài khoản.",
+    ("POST", "/api/cases/contact/start"): "Pre-case OTP: same-origin JSON + intake gate, không cần cookie phiên, trả receipt OTP mờ đục.",
+    ("POST", "/api/cases/contact/verify"): "Hai lane: receipt pre-case không cookie hoặc cookie + CSRF cho legacy notification; không phải tài khoản.",
 }
 
 # Bốn tài liệu SEO gốc do Nuxt sở hữu. api-contract.md liệt kê chúng trong bảng

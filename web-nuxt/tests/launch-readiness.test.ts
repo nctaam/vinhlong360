@@ -318,4 +318,31 @@ describe('process-local launch readiness endpoint', () => {
     expect(deps.fetchAttestation).toHaveBeenCalledOnce()
     expect(deps.fetchActiveSitemap).toHaveBeenCalledOnce()
   })
+
+  // Chốt chặn cho "sửa nhầm lớp" (đo 2026-09-03).
+  //
+  // Probe biên `--require-public-internal-404` từng FAIL ở
+  // `/_internal/launch-readiness`, và cách sửa CÁM DỖ là làm route này trả 404
+  // hoặc bắt xác thực. Làm vậy là hỏng đường mở lại traffic: hợp đồng 404 thuộc
+  // LỚP BIÊN NGINX (`location ^~ /_internal/ { return 404; }`), còn origin thì
+  // CỐ Ý phục vụ readiness không cần chứng chỉ trên loopback —
+  // `scripts/ops/deploy_launch_admission.sh` curl thẳng
+  // `http://127.0.0.1:3000/_internal/launch-readiness` làm cổng BẮT BUỘC trước
+  // khi mở lại, và `tests/launch_safety/test_deploy_readiness.py` ghim đúng URL đó.
+  //
+  // Endpoint này KHÔNG "public": nó chỉ đến được qua loopback (nginx là listener
+  // duy nhất được publish) và bị biên trả 404 từ ngoài vào.
+  it('serves the loopback operator readiness authority without any credentials', async () => {
+    const deps = dependencies()
+
+    const response = await runReadiness(deps)
+
+    // Không có header uỷ quyền nào được gửi, và vẫn phải là 200.
+    expect(response.status).toBe(200)
+    expect(response.status).not.toBe(401)
+    expect(response.status).not.toBe(403)
+    expect(response.status).not.toBe(404)
+    expect(response.body).toEqual({ ok: true, state: 'closed', checks })
+    expect(response.event.node.res.getHeader('Cache-Control')).toBe('no-store')
+  })
 })

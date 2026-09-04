@@ -46,6 +46,19 @@ def test_moi_route_len_app_duoi_admin_va_co_chot_auth():
     assert not thieu_auth, f"route THIẾU chốt auth kế thừa: {thieu_auth[:5]}"
 
 
+def test_approve_route_binds_public_handler_without_query_params():
+    """The approval endpoint must expose the public handler's request shape."""
+    import server
+
+    route = next(
+        r for r in server.app.routes
+        if r.path == "/admin/moderation/{post_id}/approve" and "POST" in r.methods
+    )
+
+    assert route.endpoint is admin_api.approve_post
+    assert not route.dependant.query_params
+
+
 def test_KHONG_import_nguoc():
     # community.api KHÔNG bị cấm về nguyên tắc (cùng gói, chiều đó có sẵn ở
     # api.py), nhưng admin_api.py hiện không cần — mọi hạ tầng dùng chung đi

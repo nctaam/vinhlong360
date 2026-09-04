@@ -263,8 +263,10 @@ class TestCommentReportRotation:
         assert "_maybe_rotate_jsonl" in src
 
     def test_imports_from_public_api(self):
+        # JSONL locking/rotation now lives in the shared primitive module;
+        # keep this contract anchored to the actual dependency boundary.
         src = inspect.getsource(__import__("community.api", fromlist=["api"]).report_comment)
-        assert "from public_api import" in src
+        assert "from jsonl_store import" in src
 
 
 # ── Mute enforcement in notifications ──
@@ -1464,7 +1466,17 @@ class TestIdempotencyCoverage:
             if fn.__name__ not in self._CREATE_ENDPOINTS:
                 continue
             src = inspect.getsource(fn)
-            if "require_idempotency" not in src:
+            # create_post uses the durable community ledger so retries replay
+            # the original response; the remaining handlers use the shared
+            # dependency guard.
+            if fn.__name__ == "create_post":
+                protected = (
+                    "_community_idempotency(" in src
+                    and "_community_idempotency_record(" in src
+                )
+            else:
+                protected = "require_idempotency" in src
+            if not protected:
                 missing.append(fn.__name__)
         assert not missing, f"CREATE endpoints missing idempotency: {missing}"
 
@@ -2151,41 +2163,33 @@ class TestDataRetentionCleanup:
 
     def test_cleanup_covers_sessions(self):
         src = _auth_src()
-        # function_source: cắt theo ranh giới AST thay vì cửa sổ ký tự
-        # cố định — xem agent/tests/_source_window.py.
-        fn_src = function_source(src, "cleanup_expired_data")
+        fn_src = function_source(src, "_cleanup_expired_data_impl")
         assert "user_sessions" in fn_src
         assert "expires_at < NOW()" in fn_src
 
     def test_cleanup_covers_otps(self):
         src = _auth_src()
-        # function_source: cắt theo ranh giới AST thay vì cửa sổ ký tự
-        # cố định — xem agent/tests/_source_window.py.
-        fn_src = function_source(src, "cleanup_expired_data")
+        fn_src = function_source(src, "_cleanup_expired_data_impl")
         assert "otp_sessions" in fn_src
 
     def test_cleanup_covers_login_history(self):
         src = _auth_src()
-        # function_source: cắt theo ranh giới AST thay vì cửa sổ ký tự
-        # cố định — xem agent/tests/_source_window.py.
-        fn_src = function_source(src, "cleanup_expired_data")
+        fn_src = function_source(src, "_cleanup_expired_data_impl")
         assert "login_history" in fn_src
         assert "90 days" in fn_src
 
     def test_cleanup_covers_notifications(self):
         src = _auth_src()
-        # function_source: cắt theo ranh giới AST thay vì cửa sổ ký tự
-        # cố định — xem agent/tests/_source_window.py.
-        fn_src = function_source(src, "cleanup_expired_data")
+        fn_src = function_source(src, "_cleanup_expired_data_impl")
         assert "notifications" in fn_src
         assert "60 days" in fn_src
 
     def test_cleanup_returns_dict(self):
         src = _auth_src()
-        # function_source: cắt theo ranh giới AST thay vì cửa sổ ký tự
-        # cố định — xem agent/tests/_source_window.py.
         fn_src = function_source(src, "cleanup_expired_data")
-        assert "return results" in fn_src or "return {" in fn_src
+        assert "_cleanup_expired_data_impl" in fn_src
+        impl_src = function_source(src, "_cleanup_expired_data_impl")
+        assert "return results" in impl_src
 
 
 class TestRateLimitThreadSafety:
@@ -2338,10 +2342,12 @@ class TestSchedulerLoginHistoryCleanup:
 
     def test_session_cleanup_includes_login_history(self):
         src = (AGENT_DIR / "scheduler.py").read_text(encoding="utf-8")
-        idx = src.index("def task_session_cleanup():")
-        fn_src = src[idx:idx+1500]
-        assert "login_history" in fn_src
-        assert "90 days" in fn_src
+        fn_src = function_source(src, "task_session_cleanup")
+        assert "cleanup_expired_data" in fn_src
+        auth_src = _auth_src()
+        cleanup_src = function_source(auth_src, "_cleanup_expired_data_impl")
+        assert "login_history" in cleanup_src
+        assert "90 days" in cleanup_src
 
     def test_session_cleanup_hard_deletes_posts(self):
         # Post hard-delete block extracted to _hard_delete_stale_posts (complexity

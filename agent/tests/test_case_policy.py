@@ -134,5 +134,5 @@ def test_valid_nonproduction_case_activation_has_structural_credentials():
     from config import Settings
     configured = Settings(DATABASE_URL='postgresql://db', CASE_KERNEL_ENABLED=True,
                           CASE_SERVICE_OWNER_REF='person:alice',
-                          CASE_KERNEL_ENCRYPTION_KEY='sufficient-key-material')
+                          CASE_KERNEL_ENCRYPTION_KEY='0' * 43)
     assert configured.CASE_KERNEL_ENABLED

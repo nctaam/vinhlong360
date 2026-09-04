@@ -229,6 +229,73 @@ def _prompt_variants(text: str) -> tuple[str, ...]:
     return tuple(dict.fromkeys(variants))
 
 
+def _has_educational_ignore_context(text: str) -> bool:
+    """Recognize educational mentions after every bounded text normalization."""
+    for candidate in _prompt_variants(text):
+        folded = "".join(
+            char for char in unicodedata.normalize("NFKD", candidate)
+            if not unicodedata.combining(char)
+        )
+        readable = re.sub(r"[^a-z0-9]+", " ", folded.lower()).strip()
+        if re.fullmatch(
+            r"^(?:what does|what is|define|translate(?: the)?|"
+            r"explain(?: the)?(?: (?:phrase|term))?)\s+"
+            r"ignore previous instructions(?: mean| as a security example)?",
+            readable,
+        ):
+            return True
+        if re.fullmatch(
+            r"^is\s+ignore previous instructions\s+(?:a\s+)?"
+            r"(?:security|safety) risk",
+            readable,
+        ):
+            return True
+
+        compact = readable.replace(" ", "")
+        if re.fullmatch(
+            r"^(?:whatdoes|whatis|define|translate(?:the)?|"
+            r"explain(?:the)?(?:phrase|term)?)"
+            r"ignorepreviousinstructions"
+            r"(?:mean|asasecurityexample)?$",
+            compact,
+        ):
+            return True
+        if re.fullmatch(r"isignorepreviousinstructionsasecurityrisk", compact):
+            return True
+    return False
+
+
+def _has_educational_jailbreak_context(text: str) -> bool:
+    """Allow only complete, narrowly educational jailbreak questions."""
+    educational_topics = (
+        r"ai safety|cybersecurity|cyber security|computer security|"
+        r"information security|security research|game security"
+    )
+    for candidate in _prompt_variants(text):
+        folded = "".join(
+            char for char in unicodedata.normalize("NFKD", candidate)
+            if not unicodedata.combining(char)
+        )
+        readable = re.sub(r"[^a-z0-9]+", " ", folded.lower()).strip()
+        if re.fullmatch(r"dan is (?:a|the) (?:vietnamese )?name", readable):
+            return True
+        if re.fullmatch(r"jailbreak (?:a )?(?:phone )?lock in a game", readable):
+            return True
+        if re.fullmatch(
+            rf"(?:what is|define|explain|meaning of|learn about) "
+            rf"(?:a |the )?jailbreak(?: in (?:{educational_topics}))?",
+            readable,
+        ):
+            return True
+        if re.fullmatch(
+            rf"what does (?:a |the )?jailbreak"
+            rf"(?: in (?:{educational_topics}))? mean",
+            readable,
+        ):
+            return True
+    return False
+
+
 def _is_benign_pattern_context(text: str, matched: list[str]) -> bool:
     """Allow narrow educational/game contexts for ambiguous keyword matches."""
     matched_set = set(matched)
@@ -240,10 +307,39 @@ def _is_benign_pattern_context(text: str, matched: list[str]) -> bool:
         )
         return bool(educational and re.search(r"\b(?:python|security|code)\b", text, re.IGNORECASE))
     if matched_set == {"jailbreak_keyword"}:
-        named_dan = re.search(r"\bdan\s+is\s+(?:a|the)\s+(?:vietnamese\s+)?name\b", text, re.IGNORECASE)
-        game_lock = re.search(r"\bjailbreak\s+(?:a\s+)?(?:phone\s+)?lock\b.*\bgame\b", text, re.IGNORECASE | re.DOTALL)
-        return bool(named_dan or game_lock)
+        return _has_educational_jailbreak_context(text)
+    if matched_set.issubset(
+        {"ignore_previous", "ignore_instructions_phrase", "ignore_previous_compact"}
+    ):
+        return _has_educational_ignore_context(text)
     return False
+
+
+_HIGH_CONFIDENCE_INJECTION_PATTERNS = frozenset(
+    {
+        "ignore_previous",
+        "ignore_instructions_phrase",
+        "ignore_previous_compact",
+        "forget_instructions",
+        "override_command",
+        "prompt_leaking_repeat",
+        "prompt_leaking_what",
+        "new_instructions",
+        "disregard",
+        "do_not_follow",
+        "system_prefix",
+        "role_injection_markdown",
+        "vn_bo_qua",
+        "vn_quen_di",
+        "vn_bay_gio_ban_la",
+        "vn_gia_vo",
+        "vn_che_do_moi",
+        "vn_hien_thi_prompt",
+        "vn_vuot_qua",
+        "xml_injection",
+        "delimiter_injection",
+    }
+)
 
 
 def _check_prompt_injection(text: str, *, emit_log: bool) -> GuardrailDecision:
@@ -252,13 +348,19 @@ def _check_prompt_injection(text: str, *, emit_log: bool) -> GuardrailDecision:
         return GuardrailDecision("block", "prompt_injection_invalid_input")
     if not text.strip():
         return GuardrailDecision("allow", "prompt_injection_none")
+    saw_ambiguous = False
     for variant in _prompt_variants(text):
         result = injection_detector.detect(variant, emit_log=emit_log)
-        if result["is_injection"] or (
-            result["patterns_matched"]
-            and not _is_benign_pattern_context(text, result["patterns_matched"])
-        ):
+        matched = result["patterns_matched"]
+        if not matched:
+            continue
+        if _is_benign_pattern_context(text, matched):
+            continue
+        if result["is_injection"] or set(matched) & _HIGH_CONFIDENCE_INJECTION_PATTERNS:
             return GuardrailDecision("block", "prompt_injection_detected")
+        saw_ambiguous = True
+    if saw_ambiguous:
+        return GuardrailDecision("neutralize", "prompt_injection_ambiguous")
     return GuardrailDecision("allow", "prompt_injection_none")
 
 
@@ -946,13 +1048,13 @@ def check_input(message: str, session_id: str) -> dict:
         warnings.append("Input truncated to 50k characters")
     cleaned = message
 
-    # ── 1. Injection detection ──
-    inj = injection_detector.detect(message)
-    if inj["is_injection"]:
-        blocked_reason = (
-            f"Prompt injection detected (score={inj['score']:.2f}, "
-            f"patterns={inj['patterns_matched']})"
-        )
+    # -- 1. Injection detection --
+    # Route admission through the same bounded decoder used by the public
+    # checker. Calling the raw regex detector here would let URL/base64/
+    # escaped variants bypass the endpoint boundary.
+    decision = _check_prompt_injection(message, emit_log=True)
+    if decision.action == "block":
+        blocked_reason = f"Prompt injection detected ({decision.reason_code})"
         logger.warning("Input BLOCKED — %s", blocked_reason)
         return {
             "allowed": False,
@@ -960,11 +1062,9 @@ def check_input(message: str, session_id: str) -> dict:
             "warnings": [blocked_reason],
             "blocked_reason": blocked_reason,
         }
-
-    if inj["patterns_matched"]:
-        warnings.append(
-            f"Injection patterns (non-blocking): {inj['patterns_matched']}"
-        )
+    if decision.action == "neutralize":
+        warnings.append("Prompt neutralized (prompt_injection_ambiguous)")
+        message = "[PROMPT_NEUTRALIZED]"
 
     # ── 2. PII masking ──
     cleaned, pii_detections = pii_masker.mask(message)

@@ -27,6 +27,13 @@ from agent.control_plane.evidence import ParsedOutcome, classify_verdict, parse_
 
 
 Status = Literal["pass", "fail", "skip"]
+PILOT_ACCEPTANCE_LAYERS = {
+    "unit",
+    "postgres",
+    "multi_process",
+    "browser",
+    "external_side_effect",
+}
 
 REQUIRED_SECTIONS = (
     "artifacts",
@@ -155,6 +162,10 @@ class CommandEvidence:
     head_sha: str = ""
     output_sha256: str = ""
     verdict: str | None = None
+    nodeids: tuple[str, ...] = ()
+    layer: str = ""
+    owner: str = ""
+    rollback_note: str = ""
 
     def __post_init__(self) -> None:
         _validate_command_evidence(self.status, self.exit_code, self.command)
@@ -164,11 +175,22 @@ class CommandEvidence:
         object.__setattr__(self, "environment", dict(self.environment or {}))
         _validate_digests(self.head_sha, self.output_sha256)
         object.__setattr__(self, "verdict", _resolved_verdict(self.status, self.verdict))
+        nodeids = tuple(_redact(str(nodeid)) for nodeid in self.nodeids)
+        if any(not nodeid or len(nodeid) > MAX_TEXT for nodeid in nodeids):
+            raise ValueError("nodeids must be non-empty bounded strings")
+        object.__setattr__(self, "nodeids", nodeids)
+        if self.layer and self.layer not in PILOT_ACCEPTANCE_LAYERS:
+            raise ValueError("unknown pilot acceptance layer")
+        object.__setattr__(self, "owner", _redact(self.owner))
+        object.__setattr__(self, "rollback_note", _redact(self.rollback_note))
 
     @classmethod
     def from_mapping(cls, value: object) -> "CommandEvidence":
         if not isinstance(value, dict):
             raise ValueError("evidence entry must be an object")
+        raw_nodeids = value.get("nodeids", ())
+        if not isinstance(raw_nodeids, (list, tuple)):
+            raise ValueError("nodeids must be a list or tuple")
         return cls(
             command=str(value.get("command", "")),
             exit_code=int(value.get("exit_code", 1)),
@@ -179,6 +201,10 @@ class CommandEvidence:
             head_sha=str(value.get("head_sha", "")),
             output_sha256=str(value.get("output_sha256", "")),
             verdict=value.get("verdict"),
+            nodeids=tuple(raw_nodeids),
+            layer=str(value.get("layer", "")),
+            owner=str(value.get("owner", "")),
+            rollback_note=str(value.get("rollback_note", "")),
         )
 
 
@@ -199,8 +225,12 @@ def _with_metadata(
     output: str | bytes | None,
     output_sha256: str | None,
     verdict: str | None,
+    nodeids: tuple[str, ...] | None = None,
+    layer: str | None = None,
+    owner: str | None = None,
+    rollback_note: str | None = None,
 ) -> CommandEvidence:
-    if not any(value is not None for value in (outcomes, command, environment, head_sha, output, output_sha256, verdict)):
+    if not any(value is not None for value in (outcomes, command, environment, head_sha, output, output_sha256, verdict, nodeids, layer, owner, rollback_note)):
         return evidence
     digest = _output_digest(output, output_sha256)
     return CommandEvidence(
@@ -213,12 +243,18 @@ def _with_metadata(
         head_sha=evidence.head_sha if head_sha is None else head_sha,
         output_sha256=evidence.output_sha256 if digest is None else digest,
         verdict=evidence.verdict if verdict is None else verdict,
+        nodeids=evidence.nodeids if nodeids is None else nodeids,
+        layer=evidence.layer if layer is None else layer,
+        owner=evidence.owner if owner is None else owner,
+        rollback_note=evidence.rollback_note if rollback_note is None else rollback_note,
     )
 
 
 def _output_digest(output: str | bytes | None, declared: str | None) -> str | None:
     if output is None:
-        return declared
+        if declared is not None:
+            raise ValueError("output_sha256 requires captured output")
+        return None
     output_bytes = output.encode("utf-8") if isinstance(output, str) else output
     computed = sha256(output_bytes).hexdigest()
     if declared and declared != computed:
@@ -298,6 +334,10 @@ class EvidenceDocument:
         output: str | bytes | None = None,
         output_sha256: str | None = None,
         verdict: str | None = None,
+        nodeids: tuple[str, ...] | None = None,
+        layer: str | None = None,
+        owner: str | None = None,
+        rollback_note: str | None = None,
     ) -> None:
         if name not in REQUIRED_SECTIONS:
             raise ValueError(f"unknown evidence section: {name}")
@@ -306,6 +346,7 @@ class EvidenceDocument:
         evidence = _with_metadata(
             evidence, outcomes=outcomes, command=command, environment=environment,
             head_sha=head_sha, output=output, output_sha256=output_sha256, verdict=verdict,
+            nodeids=nodeids, layer=layer, owner=owner, rollback_note=rollback_note,
         )
         self.sections[name] = evidence
 
@@ -433,6 +474,10 @@ def record_section(
     output: str | bytes | None = None,
     output_sha256: str | None = None,
     verdict: str | None = None,
+    nodeids: tuple[str, ...] | None = None,
+    layer: str | None = None,
+    owner: str | None = None,
+    rollback_note: str | None = None,
 ) -> None:
     """Load, upsert, and persist a single evidence section."""
 
@@ -456,6 +501,10 @@ def record_section(
         output=output,
         output_sha256=output_sha256,
         verdict=verdict,
+        nodeids=nodeids,
+        layer=layer,
+        owner=owner,
+        rollback_note=rollback_note,
     )
     document.save()
 
@@ -544,6 +593,10 @@ def _build_parser() -> argparse.ArgumentParser:
     output.add_argument("--output-file", type=Path)
     record.add_argument("--output-sha256", default="")
     record.add_argument("--verdict", choices=("PASS", "BLOCKED", "UNCLASSIFIED"))
+    record.add_argument("--layer", default="")
+    record.add_argument("--nodeid", action="append", default=[])
+    record.add_argument("--owner", default="")
+    record.add_argument("--rollback-note", default="")
     record.add_argument("--native-command", action="store_true")
     record.add_argument("--state", type=Path, default=_default_state_path())
 
@@ -678,6 +731,10 @@ def _handle_record(args: argparse.Namespace) -> int:
         output=output,
         output_sha256=args.output_sha256 or None,
         verdict=effective_verdict,
+        nodeids=tuple(args.nodeid),
+        layer=args.layer or None,
+        owner=args.owner or None,
+        rollback_note=args.rollback_note or None,
     )
     return 0
 

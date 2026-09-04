@@ -98,7 +98,7 @@ def test_pg_schema_contract_tracks_latest_release_tables():
     # 75 index đường nóng; 76-78 là NP-1 identity/location/trust; 79 planner revision;
     # 80 Case Kernel; 81 mở hai cột vòng đời của change set (xuất bản đính chính);
     # 82 CHECK vị-trí nhận chữ số Unicode (§48.4).
-    assert PG_REQUIRED_SCHEMA_VERSION == 84
+    assert PG_REQUIRED_SCHEMA_VERSION == 86
     assert {"schema_version", "admin_audit_events", "shared_rate_limits", "request_idempotency_keys"} <= PG_REQUIRED_TABLES
     assert "moderation_appeals" in PG_REQUIRED_TABLES
     assert {"feedback_receipts", "feedback_daily_rollups"} <= PG_REQUIRED_TABLES
@@ -178,6 +178,7 @@ def _valid_case_catalog_rows():
         {"constraint_name": "case_receipts_expiry_order", "constraint_type": "c", "table_name": "case_receipts", "columns": ["expires_at", "created_at"], "target_table": None, "target_columns": [], "delete_action": " ", "target_schema": None, "update_action": " ", "check_expression": "(expires_at > created_at)", "validated": True, "deferrable": False, "deferred": False},
         {"constraint_name": "case_access_sessions_expiry_order", "constraint_type": "c", "table_name": "case_access_sessions", "columns": ["expires_at", "created_at"], "target_table": None, "target_columns": [], "delete_action": " ", "target_schema": None, "update_action": " ", "check_expression": "(expires_at > created_at)", "validated": True, "deferrable": False, "deferred": False},
         {"constraint_name": "case_idempotency_expiry_order", "constraint_type": "c", "table_name": "case_idempotency", "columns": ["expires_at", "created_at"], "target_table": None, "target_columns": [], "delete_action": " ", "target_schema": None, "update_action": " ", "check_expression": "(expires_at > created_at)", "validated": True, "deferrable": False, "deferred": False},
+        {"constraint_name": "case_pre_contact_challenges_expiry_order", "constraint_type": "c", "table_name": "case_pre_contact_challenges", "columns": ["expires_at", "created_at"], "target_table": None, "target_columns": [], "delete_action": " ", "target_schema": None, "update_action": " ", "check_expression": "(expires_at > created_at)", "validated": True, "deferrable": False, "deferred": False},
         {"constraint_name": "case_receipts_case_revision_unique", "constraint_type": "u", "table_name": "case_receipts", "columns": ["case_id", "receipt_revision"], "target_table": None, "target_columns": [], "delete_action": " ", "target_schema": None, "update_action": " ", "check_expression": None, "validated": True, "deferrable": False, "deferred": False},
         {"constraint_name": "case_receipts_case_receipt_unique", "constraint_type": "u", "table_name": "case_receipts", "columns": ["case_id", "receipt_id"], "target_table": None, "target_columns": [], "delete_action": " ", "target_schema": None, "update_action": " ", "check_expression": None, "validated": True, "deferrable": False, "deferred": False},
         {"constraint_name": "case_receipts_public_reference_key", "constraint_type": "u", "table_name": "case_receipts", "columns": ["public_reference"], "target_table": None, "target_columns": [], "delete_action": " ", "target_schema": None, "update_action": " ", "check_expression": None, "validated": True, "deferrable": False, "deferred": False},
@@ -191,6 +192,7 @@ def _valid_case_catalog_rows():
         {"index_name": "case_receipts_case_revision_unique", "table_name": "case_receipts", "columns": ["case_id", "receipt_revision"], "predicate": None, "unique": True, "valid": True, "ready": True, "live": True, "access_method": "btree"},
         {"index_name": "case_receipts_case_receipt_unique", "table_name": "case_receipts", "columns": ["case_id", "receipt_id"], "predicate": None, "unique": True, "valid": True, "ready": True, "live": True, "access_method": "btree"},
         {"index_name": "idx_case_access_sessions_expiry", "table_name": "case_access_sessions", "columns": ["expires_at", "access_session_id"], "predicate": "(revoked_at IS NULL)", "unique": False, "valid": True, "ready": True, "live": True, "access_method": "btree"},
+        {"index_name": "case_pre_contact_challenges_active_contact_key", "table_name": "case_pre_contact_challenges", "columns": ["contact_digest"], "predicate": "(used_at IS NULL)", "unique": True, "valid": True, "ready": True, "live": True, "access_method": "btree"},
     ]
     triggers = [
         {"trigger_name": "case_receipts_case_immutable", "table_name": "case_receipts", "function_schema": "public", "function_name": "reject_case_receipt_case_move", "trigger_type": 19, "enabled": "O", "update_columns": ["case_id"], "when_expression": None, "function_body": database_module._CASE_TRIGGER_FUNCTION_BODIES["reject_case_receipt_case_move"]},

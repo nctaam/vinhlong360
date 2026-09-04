@@ -663,7 +663,8 @@ def test_exact_cache_hit_finalizes_captured_semantic_generation(
         l2_max=20,
     )
     semantic_cache._l2_loaded = True
-    semantic_cache._save_l2 = lambda: None
+    # The production invalidation persists tombstones explicitly.
+    semantic_cache._save_l2 = lambda **_kwargs: None
     deduplicator = NoWaitDeduplicator()
 
     async def alice_owner(_request):
@@ -1440,7 +1441,8 @@ def test_admin_semantic_query_invalidation_clears_all_owner_namespaces(monkeypat
     matcher = semantic_cache_mod.SemanticMatcher()
     semantic_cache = semantic_cache_mod.MultiTierCache(matcher, l1_max=10, l2_max=20)
     semantic_cache._l2_loaded = True
-    semantic_cache._save_l2 = lambda: None
+    # Invalidation persists tombstones using the deleted_keys keyword.
+    semantic_cache._save_l2 = lambda **_kwargs: None
     query = "same admin query"
     semantic_cache.put(query, {"owner": "alice"}, owner_key="user:alice")
     semantic_cache.put(query, {"owner": "bob"}, owner_key="user:bob")

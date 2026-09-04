@@ -41,6 +41,7 @@ class _ServiceDouble:
         self.contact_requests = []
         self.contact_request_threads = []
         self.contact_verifications = []
+        self.pre_case_contact_requests = []
 
     def create_correction_from_transport(self, payload, **kwargs):
         self.created.append((payload, kwargs))
@@ -105,6 +106,10 @@ class _ServiceDouble:
 
     def verify_contact(self, **kwargs):
         self.contact_verifications.append(kwargs)
+
+    def request_pre_case_contact_verification(self, **kwargs):
+        self.pre_case_contact_requests.append(kwargs)
+        return SimpleNamespace(challenge_id="receipt-token", expires_at=NOW, delivery_key="")
 
 
 def _flags(**overrides):
@@ -807,6 +812,59 @@ def test_the_contact_route_accepts_a_withdrawal():
     # privacy policy's "rút lại đồng ý trong 15 ngày" had no route to happen on.
     assert _ContactRequestIn(phone="0901234567").consent is True
     assert _ContactRequestIn(phone="0901234567", consent=False).consent is False
+
+
+def test_anonymous_withdrawal_requires_the_opaque_receipt(client):
+    response = client.post(
+        "/api/cases/contact/start",
+        headers=_headers(),
+        json={"phone": "0901234567", "consent": False},
+    )
+
+    assert response.status_code == 401
+    assert response.json()["code"] == "invalid_case_credential"
+    assert client.service.pre_case_contact_requests == []
+
+
+def test_anonymous_withdrawal_binds_the_receipt_to_the_service(client):
+    response = client.post(
+        "/api/cases/contact/start",
+        headers=_headers(),
+        json={"phone": "0901234567", "consent": False, "receipt": "receipt-token"},
+    )
+
+    assert response.status_code == 202
+    assert len(client.service.pre_case_contact_requests) == 1
+    assert client.service.pre_case_contact_requests[0].items() >= {
+        "phone": "0901234567",
+        "consent": False,
+        "receipt": "receipt-token",
+    }.items()
+
+
+def test_opaque_pre_case_receipt_uses_public_lane_despite_stale_access_cookie(client):
+    calls = []
+
+    def verify_pre_case_contact(**kwargs):
+        calls.append(kwargs)
+        return SimpleNamespace(contact_digest="digest", verified_at=NOW), "opaque-receipt"
+
+    client.service.verify_pre_case_contact = verify_pre_case_contact
+    client.service._crypto = SimpleNamespace(
+        open_contact_receipt=lambda _receipt, now: {"expires_at": int(now.timestamp())}
+    )
+    client.cookies.set("vl360_case_access", "stale-cookie", path="/api/cases")
+
+    response = client.post(
+        "/api/cases/contact/verify",
+        headers=_headers(),
+        json={"code": "123456", "receipt": "opaque-receipt"},
+    )
+
+    assert response.status_code == 200
+    assert response.json()["verified"] is True
+    assert calls == [{"receipt": "opaque-receipt", "code": "123456"}]
+    assert client.service.contact_verifications == []
 
 
 def test_the_blocking_sms_send_never_runs_on_the_event_loop(client):

@@ -172,7 +172,7 @@ def test_baseline_fragment_accepts_github_slug_for_diacritic_heading(tmp_path: P
 
 
 def test_baseline_count_is_scoped_to_selected_fragment_section(tmp_path: Path) -> None:
-    path = write_registry(tmp_path)
+    write_registry(tmp_path)
     (tmp_path / "docs/ROADMAP.md").write_text(
         "## Other\n"
         "Baseline hiện tại: 15 fail\n"
@@ -225,7 +225,7 @@ def test_unreadable_baseline_link_returns_blocked_report(tmp_path: Path) -> None
 
 
 def test_audit_p1_roster_must_match_registry(tmp_path: Path) -> None:
-    path = write_registry(tmp_path)
+    write_registry(tmp_path)
     audit_path = tmp_path / "docs/audit.md"
     audit_path.write_text(
         audit_path.read_text(encoding="utf-8").replace("| F-01 | P1 finding |\n", ""),

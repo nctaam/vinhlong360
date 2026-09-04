@@ -16,6 +16,10 @@ Theo khuôn `agent/cases/`: gói theo MIỀN, phát `APIRouter`, server chỉ
 from __future__ import annotations
 
 import asyncio
+import hashlib
+import math
+import re
+from datetime import datetime
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Request
 from pydantic import BaseModel, Field
@@ -24,7 +28,7 @@ import analytics
 import knowledge
 from http_errors import _error_response
 from memory import memory_manager
-from middleware import error_tracker, logger, response_tracker
+from middleware import error_tracker, logger, response_tracker, safe_error_code, safe_error_endpoint
 from reflexion import quality_tracker, reflexion_engine
 from scheduler import scheduler_status
 
@@ -88,6 +92,64 @@ _ADMIN_PREFIXES = (
 )
 _SCOPED_PATHS = {"/system/learning/run", "/system/client-errors", "/vectors/build",
                  "/vectors/search", "/system/dynamic-agents/create", "/image/recognize"}
+
+_MIN_ERROR_EPOCH = 946684800  # 2000-01-01T00:00:00Z
+_MAX_ERROR_EPOCH = 4102444800  # 2100-01-01T00:00:00Z
+
+
+def _looks_like_phone_numeric(candidate: str) -> bool:
+    """Reject only strongly phone-shaped 9-digit strings, not ordinary epochs."""
+    if not re.fullmatch(r"\d{9}", candidate):
+        return False
+    if candidate.startswith("0"):
+        return True
+    # Local phone numbers often arrive without their trunk prefix. Repeated or
+    # monotonic digit patterns are unambiguous identifiers rather than dates.
+    if len(set(candidate)) <= 2:
+        return True
+    digits = [int(char) for char in candidate]
+    return all(left >= right for left, right in zip(digits, digits[1:])) or all(
+        left <= right for left, right in zip(digits, digits[1:])
+    )
+
+
+def safe_error_timestamp(value: object) -> int | float | str:
+    """Keep only finite numeric or ISO-8601 timestamps in telemetry responses."""
+    if isinstance(value, bool):
+        return "unknown"
+    if isinstance(value, (int, float)):
+        try:
+            numeric = float(value)
+            return (
+                value
+                if math.isfinite(numeric) and _MIN_ERROR_EPOCH <= numeric <= _MAX_ERROR_EPOCH
+                else "unknown"
+            )
+        except (OverflowError, ValueError):
+            return "unknown"
+    if not isinstance(value, str):
+        return "unknown"
+    candidate = value.strip()
+    if not candidate:
+        return "unknown"
+    # Phone-shaped strings must not be reinterpreted as legacy epoch values.
+    if re.fullmatch(r"0\d{9}", candidate) or _looks_like_phone_numeric(candidate):
+        return "unknown"
+    if re.fullmatch(r"[+-]?(?:\d+(?:\.\d*)?|\.\d+)(?:[eE][+-]?\d+)?", candidate):
+        try:
+            numeric = float(candidate)
+        except (OverflowError, ValueError):
+            return "unknown"
+        return (
+            numeric
+            if math.isfinite(numeric) and _MIN_ERROR_EPOCH <= numeric <= _MAX_ERROR_EPOCH
+            else "unknown"
+        )
+    try:
+        datetime.fromisoformat(candidate.replace("Z", "+00:00"))
+    except (TypeError, ValueError, OverflowError):
+        return "unknown"
+    return candidate
 
 
 async def _llmops_require_admin(request: Request) -> None:
@@ -219,7 +281,31 @@ async def system_logs(request: Request, limit: int = Query(50, ge=1, le=500), le
 @router.get("/system/errors")
 async def system_errors(request: Request, limit: int = Query(20, ge=1, le=200)):
     await _require_admin_once(request)
-    return {"errors": error_tracker.recent_errors(limit), **error_tracker.stats()}
+    rows = []
+    for row in error_tracker.recent_errors(limit):
+        if not isinstance(row, dict):
+            continue
+        endpoint = safe_error_endpoint(row.get("endpoint", "unknown"))
+        error_code = safe_error_code(row.get("error_code", "runtime_error"))
+        digest = row.get("error_digest")
+        if not isinstance(digest, str) or not re.fullmatch(r"[0-9a-f]{64}", digest):
+            # Legacy in-memory rows may still carry raw fields.  Derive only a
+            # digest and deliberately omit those fields from the response.
+            material = f"{row.get('error', '')!s}\n{row.get('details', '')!s}"
+            digest = hashlib.sha256(material.encode("utf-8", errors="replace")).hexdigest()
+        rows.append({
+            "ts": safe_error_timestamp(row.get("ts")),
+            "endpoint": endpoint,
+            "error_code": error_code,
+            "error_digest": digest,
+        })
+    raw_stats = error_tracker.stats()
+    stats = {
+        key: raw_stats[key]
+        for key in ("total_recent", "threshold", "healthy")
+        if key in raw_stats
+    }
+    return {"errors": rows, **stats}
 
 
 @router.get("/system/response-times")

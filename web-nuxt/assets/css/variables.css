@@ -45,6 +45,8 @@
   --color-text: var(--mekong-ink);
   --color-text-muted: var(--mekong-muted);
   --color-border: var(--alluvial-line);
+  --color-border-strong: var(--color-border);
+  --color-accent: var(--accent);
   --color-action-rgb: 3, 90, 105;
   --color-brand-rgb: 149, 64, 43;
   --color-success-rgb: 37, 93, 52;
@@ -129,6 +131,7 @@
   --leaf-700: #1F5C41;
   /* River (sông nước phù sa) */
   --river-600: #035A69;
+  --river-400: var(--night-river);
   /* Sand (nền ấm) + Ink (chữ) — neutral */
   --sand-50:  #FAF4E8;
   --sand-100: #F5EDD9;
@@ -143,6 +146,7 @@
   --ink-800:  #45514B; /* chữ mạnh, dưới 900 — 8.09:1 trên card sáng */
   --ink-900:  #2B2622;
   --white:    #FFFFFF;
+  --black:    #000000;
 
   /* ── TẦNG 2: SEMANTIC — alias ngữ nghĩa (giữ tên cũ để tương thích) ── */
   --primary: var(--color-brand);
@@ -155,6 +159,7 @@
      nền của footer. axe bắt .footer-logo .tld ở 19/25 trang chế độ sáng
      (2026-08-06). Giá trị mới đạt AA trên cả ba nền sáng: 4.86 / 5.26 / 5.50. */
   --accent-text: #8E5D10;  /* amber dark enough for AA when used as TEXT on light bg */
+  --accent-fg: var(--accent-text);
   --secondary: var(--color-success);
   --secondary-dark: var(--leaf-700);
   --tertiary: var(--color-action);
@@ -258,6 +263,9 @@
   --state-focus:    color-mix(in oklch, var(--state-color) 12%, transparent);
   --state-pressed:  color-mix(in oklch, var(--state-color) 10%, transparent);
   --state-dragged:  color-mix(in oklch, var(--state-color) 16%, transparent);
+  --state-disabled: color-mix(in oklch, var(--color-text-muted) 12%, transparent);
+  --state-loading: color-mix(in oklch, var(--color-action) 12%, transparent);
+  --state-error: color-mix(in oklch, var(--color-error) 12%, transparent);
 
   /* ── RGB channels (for rgba() usage without inline fallbacks) ── */
   --primary-rgb: var(--color-brand-rgb);
@@ -337,6 +345,8 @@
      research-backed (modern-font-stacks). Vietnamese-safe: Palatino Linotype / Georgia /
      Noto Serif / Times all carry full VN diacritics, and browsers do per-glyph fallback. ── */
   --font-editorial: 'Fraunces', 'Iowan Old Style', 'Palatino Linotype', Palatino, 'Book Antiqua', Georgia, 'Noto Serif', 'Times New Roman', serif;
+  --font-optical-sizing-policy: normal;
+  --typography-glyph-fixture: 'Ệ ộ Ẵ ữ Ề Ậ';
   /* Tactile grain (SVG fractalNoise, grayscale, tileable 120px) — the antidote to the
      flat "AI-gradient" look. Small tile the browser rasterizes once; overlay at low opacity. */
   --grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23g)'/%3E%3C/svg%3E");
@@ -598,12 +608,25 @@
   --z-floating: 75;
   --z-sticky: 100;
   --z-mobile-nav: 101;
+  --z-mobile-nav-backdrop: 99;
+  --z-mobile-nav-top: 102;
+  --z-command-palette: 150;
   --z-overlay: 200;
+  --z-overlay-raised: 201;
+  --z-overlay-top: 202;
+  --z-drawer: 300;
   --z-modal: 500;
-  --z-toast: 600;
-  --z-modal-high: 900;
-  --z-lightbox: 9999;
-  --z-skip-link: 10000;
+  --z-modal-high: 600;
+  --z-lightbox: 800;
+  --z-toast: 900;
+  --z-skip-link: 1000;
+
+  /* AdminCP dense-workbench compresses visual rhythm while preserving the
+     keyboard hit area required by WCAG 2.5.8. */
+  --admin-density: dense-workbench;
+  --admin-control-visual-height: 32px;
+  --admin-control-hit-area: 44px;
+  --admin-table-row-height: 40px;
 
   /* ── Badge colors ── */
   --badge-season-bg: #fbe7da;

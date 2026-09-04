@@ -81,7 +81,7 @@ describe('stale chat selector recovery', () => {
       message: 'hello',
       history: [],
     })
-    expect(wrapper.findAll('.cmsg.assistant').at(-1)?.text()).toBe('Xin chào Vĩnh Long')
+    expect(wrapper.findAll('.cmsg.assistant .cmsg-body').at(-1)?.text()).toBe('Xin chào Vĩnh Long')
     expect(sessionStorage.getItem('chat_sid')).toBe('fresh-session')
   })
 

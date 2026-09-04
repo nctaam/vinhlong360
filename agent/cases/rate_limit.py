@@ -16,6 +16,9 @@ CASE_RATE_BUCKETS = frozenset(
         "correction_create",
         "receipt_exchange",
         "contact_otp",
+        "contact_otp_requester",
+        "contact_otp_verify",
+        "contact_otp_withdraw",
         "case_review",
         "receipt_rotation",
     }

@@ -48,7 +48,6 @@ const termsVal = ref<Record<string, any>>({})
 
 const fields = [
   { key: 'title', label: 'Tiêu đề trang', input_type: 'text' },
-  { key: 'updated_date', label: 'Ngày cập nhật', input_type: 'text' },
   { key: 'seo_title', label: 'SEO title', input_type: 'text' },
   { key: 'seo_description', label: 'SEO description', input_type: 'textarea' },
   { key: 'intro', label: 'Đoạn mở đầu', input_type: 'textarea' },

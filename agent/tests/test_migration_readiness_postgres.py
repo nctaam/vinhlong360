@@ -156,15 +156,15 @@ def test_fresh_migration_chain_reaches_release_readiness(fresh_migrated_database
 
     # Migration 082 adds the unicode-digit CHECK, 083 adds shared entity
     # snapshot generation, and 084 closes community state with CAS fields.
-    assert [migration.version for migration in applied][-3:] == [83, 84, 85]
+    assert [migration.version for migration in applied][-3:] == [84, 85, 86]
     adapter._dsn = _validate_test_database_url(adapter._dsn)
     with adapter._conn(commit_on_success=False) as conn:
         adapter._verify_pg_schema(conn)
     status = adapter.pg_schema_status()
     assert status["backend"] == "postgresql"
     assert status["ok"] is True
-    assert status["schema_version"] == 85
-    assert status["required_schema_version"] == 85
+    assert status["schema_version"] == 86
+    assert status["required_schema_version"] == 86
     assert status["missing_tables"] == []
     assert status["missing_columns"] == []
     assert status["missing_triggers"] == []

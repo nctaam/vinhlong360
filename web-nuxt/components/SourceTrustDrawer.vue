@@ -193,7 +193,7 @@ useModalA11y(openState, drawerEl, { onClose: () => emit('close') })
 .trust-overlay {
   position: fixed;
   inset: 0;
-  z-index: 1200;
+  z-index: var(--z-drawer);
   display: flex;
   justify-content: flex-end;
   background: rgba(var(--black-rgb), .38);

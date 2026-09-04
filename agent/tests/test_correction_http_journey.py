@@ -68,6 +68,7 @@ def client(monkeypatch):
         monkeypatch.setattr(settings, flag, True, raising=False)
     monkeypatch.setattr(settings, "CORS_ORIGINS", ORIGIN, raising=False)
     monkeypatch.setattr(settings, "CASE_KERNEL_ENCRYPTION_KEY", MASTER_KEY, raising=False)
+    monkeypatch.setattr(settings, "CASE_SERVICE_OWNER_REF", "person:case-owner", raising=False)
 
     # Not a formality. This returning False is how the kernel refuses to wire,
     # and it has been False twice this week for reasons a caller could not see:
@@ -286,7 +287,11 @@ def test_a_wrong_capability_fails_the_same_way_as_an_unknown_reference(client):
     # response to a log line and says nothing about the case.
     assert wrong_secret.status_code == unknown_case.status_code
     def without_id(payload):
-        return {key: value for key, value in payload.items() if key != "request_id"}
+        return {
+            key: value
+            for key, value in payload.items()
+            if key not in {"request_id", "correlation_id"}
+        }
 
     assert without_id(wrong_secret.json()) == without_id(unknown_case.json())
 

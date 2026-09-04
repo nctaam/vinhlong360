@@ -24,6 +24,8 @@ import {
   type CaseStatus,
   type CorrectionProblemDetail,
   type CorrectionSubmission,
+  type VerificationError,
+  type VerificationReceipt,
 } from '../types/cases'
 
 export const CASE_CSRF_COOKIE = 'vl360_case_csrf'
@@ -113,6 +115,13 @@ export interface CorrectionCasesApi {
   loadStatus: () => Promise<CaseStatus>
   rotateReceipt: () => Promise<CaseReceipt>
   clearAccess: () => Promise<void>
+  verificationReceipt: Ref<VerificationReceipt | null>
+  phoneVerified: Ref<boolean>
+  verifiedPhone: Ref<string>
+  verificationError: Ref<VerificationError | null>
+  startPhoneVerification: (phone: string) => Promise<VerificationReceipt>
+  verifyPhone: (code: string) => Promise<VerificationReceipt>
+  clearPhoneVerification: () => void
   requestContactVerification: (phone: string) => Promise<void>
   verifyContact: (code: string) => Promise<void>
   requestReview: (reason: string) => Promise<void>
@@ -130,6 +139,12 @@ export function useCorrectionCases(fetcher = apiFetch): CorrectionCasesApi {
   const capability = toRef(secretState, 'capability')
   const publicReference = ref('')
   const status = ref<CaseStatus | null>(null)
+  const verificationReceipt = ref<VerificationReceipt | null>(null)
+  const phoneVerified = ref(false)
+  const verifiedPhone = ref('')
+  const verificationPhone = ref('')
+  let verificationAttempt = 0
+  const verificationError = ref<VerificationError | null>(null)
 
   function forgetCapability() {
     secretState.capability = ''
@@ -188,6 +203,7 @@ export function useCorrectionCases(fetcher = apiFetch): CorrectionCasesApi {
       })),
       optionalPhone: submission.optionalPhone ?? null,
       notificationConsent: Boolean(submission.notificationConsent),
+      contactReceipt: submission.contactReceipt ?? null,
       handoffDigest: submission.handoffDigest ?? null,
       handoffConfirmed: Boolean(submission.handoffConfirmed),
     }
@@ -258,12 +274,115 @@ export function useCorrectionCases(fetcher = apiFetch): CorrectionCasesApi {
     }
   }
 
+  function parseVerificationReceipt(value: unknown, fallback?: VerificationReceipt): VerificationReceipt {
+    const raw = (value && typeof value === 'object') ? value as Record<string, unknown> : {}
+    return {
+      receipt: String(raw.receipt ?? raw.challenge_id ?? fallback?.receipt ?? ''),
+      expiresAt: String(raw.expiresAt ?? raw.expires_at ?? fallback?.expiresAt ?? ''),
+      retryAfter: Number(raw.retryAfter ?? raw.retry_after ?? fallback?.retryAfter ?? 60),
+      verified: Boolean(raw.verified ?? fallback?.verified ?? false),
+    }
+  }
+
+  function problemFrom(error: unknown): VerificationError | null {
+    const raw = error as { data?: CorrectionProblemDetail, statusCode?: number }
+    const problem = raw?.data
+    if (!problem || typeof problem.code !== 'string') return null
+    return {
+      ...problem,
+      field: problem.field ?? 'code',
+      retry_after: Number(problem.retry_after ?? 0),
+    }
+  }
+
+  function safeVerificationProblem(error: unknown, fallbackDetail: string): VerificationError {
+    const structured = problemFrom(error)
+    if (structured) return structured
+    return {
+      code: 'verification_unavailable',
+      detail: fallbackDetail,
+      status: 503,
+      field: 'code',
+      retry_after: 30,
+    }
+  }
+
+  async function startPhoneVerification(phone: string): Promise<VerificationReceipt> {
+    const attempt = ++verificationAttempt
+    verificationError.value = null
+    phoneVerified.value = false
+    verifiedPhone.value = ''
+    // A new destination invalidates every prior receipt, including when the
+    // new request fails. Never let a stale receipt unlock the new phone.
+    verificationReceipt.value = null
+    verificationPhone.value = phone.trim()
+    try {
+      const result = await post<unknown>('/api/cases/contact/start', { phone }, undefined, false)
+      const receipt = parseVerificationReceipt(result)
+      if (!receipt.receipt) throw new Error('verification_receipt_missing')
+      if (attempt !== verificationAttempt) return receipt
+      verificationReceipt.value = receipt
+      return receipt
+    } catch (error) {
+      if (attempt !== verificationAttempt) throw error
+      const problem = safeVerificationProblem(error, 'Chưa gửi được mã xác nhận. Vui lòng thử lại sau ít phút.')
+      verificationError.value = problem
+      throw new CorrectionProblemError(problem)
+    }
+  }
+
+  async function verifyPhone(code: string): Promise<VerificationReceipt> {
+    const attempt = verificationAttempt
+    verificationError.value = null
+    const context = verificationReceipt.value
+    if (!context?.receipt) {
+      const problem: VerificationError = {
+        code: 'verification_context_required',
+        detail: 'Hãy yêu cầu mã xác nhận trước.',
+        status: 422,
+        field: 'code',
+        retry_after: 0,
+      }
+      verificationError.value = problem
+      throw new CorrectionProblemError(problem)
+    }
+    try {
+      const result = await post<unknown>(
+        '/api/cases/contact/verify',
+        { code, receipt: context.receipt },
+        undefined,
+        false,
+      )
+      const receipt = parseVerificationReceipt(result, { ...context, verified: true })
+      receipt.verified = true
+      if (attempt !== verificationAttempt) return receipt
+      verificationReceipt.value = receipt
+      phoneVerified.value = true
+      verifiedPhone.value = verificationPhone.value
+      return receipt
+    } catch (error) {
+      if (attempt !== verificationAttempt) throw error
+      const problem = safeVerificationProblem(error, 'Chưa kiểm tra được mã xác nhận. Vui lòng thử lại sau ít phút.')
+      verificationError.value = problem
+      throw new CorrectionProblemError(problem)
+    }
+  }
+
+  function clearPhoneVerification() {
+    verificationAttempt += 1
+    verificationReceipt.value = null
+    phoneVerified.value = false
+    verifiedPhone.value = ''
+    verificationError.value = null
+    verificationPhone.value = ''
+  }
+
   async function requestContactVerification(phone: string): Promise<void> {
-    await post<unknown>('/api/cases/contact/request', { phone })
+    await startPhoneVerification(phone)
   }
 
   async function verifyContact(code: string): Promise<void> {
-    await post<unknown>('/api/cases/contact/verify', { code })
+    await verifyPhone(code)
   }
 
   async function requestReview(reason: string): Promise<void> {
@@ -298,6 +417,11 @@ export function useCorrectionCases(fetcher = apiFetch): CorrectionCasesApi {
 
   // Leaving the page takes the key with it.
   onScopeDispose(forgetCapability)
+  onScopeDispose(() => {
+    verificationReceipt.value = null
+    phoneVerified.value = false
+    verificationError.value = null
+  })
 
   return {
     capability,
@@ -308,6 +432,13 @@ export function useCorrectionCases(fetcher = apiFetch): CorrectionCasesApi {
     loadStatus,
     rotateReceipt,
     clearAccess,
+    verificationReceipt,
+    phoneVerified,
+    verifiedPhone,
+    verificationError,
+    startPhoneVerification,
+    verifyPhone,
+    clearPhoneVerification,
     requestContactVerification,
     verifyContact,
     requestReview,

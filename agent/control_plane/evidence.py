@@ -26,11 +26,27 @@ _VITEST_COUNT = re.compile(
 )
 _FAILED_LINE = re.compile(r"^\s*FAILED\s+(?P<nodeid>\S+)", re.IGNORECASE)
 _FAILED_STATUS_LINE = re.compile(r"^\s*(?P<nodeid>\S+)\s+FAILED(?:\s|$)", re.IGNORECASE)
+# Verbose (``-v``) runs report per-test outcomes as ``<nodeid> ERROR``.  Without
+# this counterpart to ``_FAILED_STATUS_LINE`` an errored run keeps its aggregate
+# count but loses every node id, so the errors cannot be triaged individually.
+_ERROR_STATUS_LINE = re.compile(r"^\s*(?P<nodeid>\S+)\s+ERROR(?:\s|$)", re.IGNORECASE)
 _ERROR_LINE = re.compile(r"^\s*ERROR\s+(?P<nodeid>\S+?)(?:\s+-|\s*$)", re.IGNORECASE)
-_ERROR_AT_LINE = re.compile(r"^\s*ERROR\s+at\s+setup\s+of\s+(?P<nodeid>\S+)", re.IGNORECASE)
+# pytest pads its section headers with underscores/equals signs, so these two
+# patterns must tolerate that run-in prefix; anchoring on ``\s*`` alone never
+# matched real output and left ``collection_errors`` structurally zero.
+_ERROR_AT_LINE = re.compile(r"^[\s_=]*ERROR\s+at\s+setup\s+of\s+(?P<nodeid>\S+)", re.IGNORECASE)
 # Normal pytest progress starts with ``collecting ...``; only the explicit
 # ``ERROR collecting`` form denotes a collection failure.
-_COLLECTION_LINE = re.compile(r"^\s*ERROR\s+collecting\s+(?P<nodeid>\S+)", re.IGNORECASE)
+_COLLECTION_LINE = re.compile(r"^[\s_=]*ERROR\s+collecting\s+(?P<nodeid>\S+)", re.IGNORECASE)
+# The ``ERRORS`` banner proves at least one error even when a malformed or
+# absent tally would otherwise report none.
+_ERRORS_SECTION = re.compile(r"^[\s=_]*ERRORS[\s=_]*$", re.IGNORECASE)
+# A pytest tally always states its duration; requiring that shape stops an
+# arbitrary line of captured text from being read as the run summary.
+_SUMMARY_DURATION = re.compile(r"\bin\s+\d+(?:\.\d+)?\s*s\b", re.IGNORECASE)
+# Counts that must never be lowered by a later line: under-reporting a failure
+# or an error is the one direction that could turn a red run green.
+_MONOTONIC_SUMMARY_KEYS = ("failed", "errors")
 _REQUIRED_STATE_SECTIONS = (
     "artifacts",
     "backend-focused",
@@ -94,7 +110,10 @@ def _parse_summary(text: str) -> tuple[dict[str, int], bool]:
     summary_present = False
     for line in text.splitlines():
         matches = list(_SUMMARY_TOKEN.finditer(line))
-        if matches and (" in " in line.lower() or line.lstrip().startswith(tuple(str(i) for i in range(10)))):
+        if matches and _SUMMARY_DURATION.search(line):
+            # Keep the last summary so a nested invocation cannot double-count,
+            # but never let it lower an already-observed failure/error count.
+            carried = {key: summary_counts[key] for key in _MONOTONIC_SUMMARY_KEYS if key in summary_counts}
             summary_counts = {}
             for match in matches:
                 label = match.group("label").lower()
@@ -108,16 +127,22 @@ def _parse_summary(text: str) -> tuple[dict[str, int], bool]:
                     "xpassed": "xpassed",
                 }[label]
                 summary_counts[key] = int(match.group("count"))
+            for key, value in carried.items():
+                summary_counts[key] = max(summary_counts.get(key, 0), value)
             summary_present = True
 
     return summary_counts, summary_present
 
 
-def _parse_nodes(text: str) -> tuple[tuple[str, ...], tuple[str, ...], int]:
+def _parse_nodes(text: str) -> tuple[tuple[str, ...], tuple[str, ...], int, bool]:
     failed_nodeids: list[str] = []
     error_nodeids: list[str] = []
     collection_errors = 0
+    errors_section = False
     for line in text.splitlines():
+        if _ERRORS_SECTION.match(line):
+            errors_section = True
+            continue
         failed_match = _FAILED_LINE.match(line)
         if failed_match is None:
             failed_match = _FAILED_STATUS_LINE.match(line)
@@ -127,15 +152,23 @@ def _parse_nodes(text: str) -> tuple[tuple[str, ...], tuple[str, ...], int]:
             if not nodeid.isdigit():
                 failed_nodeids.append(nodeid)
             continue
-        error_match = _ERROR_LINE.match(line) or _ERROR_AT_LINE.match(line)
-        if error_match:
-            error_nodeids.append(error_match.group("nodeid").rstrip(":,"))
-            continue
+        # ``ERROR collecting`` is a strict subset of the at-setup/short forms, so
+        # it must be tested before them or a collection failure reads as a plain
+        # node error and stops being counted separately.
         collection_match = _COLLECTION_LINE.match(line)
         if collection_match:
             collection_errors += 1
+            error_nodeids.append(collection_match.group("nodeid").rstrip(":,"))
+            continue
+        error_match = _ERROR_AT_LINE.match(line) or _ERROR_LINE.match(line) or _ERROR_STATUS_LINE.match(line)
+        if error_match:
+            nodeid = error_match.group("nodeid").rstrip(":,")
+            # ``1 error in 0.1s`` is a tally, not a node id.
+            if not nodeid.isdigit():
+                error_nodeids.append(nodeid)
+            continue
 
-    return _ordered_unique(failed_nodeids), _ordered_unique(error_nodeids), collection_errors
+    return _ordered_unique(failed_nodeids), _ordered_unique(error_nodeids), collection_errors, errors_section
 
 
 def parse_pytest_output(text: str, return_code: int) -> ParsedOutcome:
@@ -148,14 +181,15 @@ def parse_pytest_output(text: str, return_code: int) -> ParsedOutcome:
     except (TypeError, ValueError) as exc:
         raise TypeError("return_code must be an integer") from exc
     summary_counts, summary_present = _parse_summary(text)
-    failed_nodeids, error_nodeids, collection_errors = _parse_nodes(text)
+    failed_nodeids, error_nodeids, collection_errors, errors_section = _parse_nodes(text)
     interrupted = bool(re.search(
         r"keyboardinterrupt|keyboard interrupt|interrupted|^!.*interrupt",
         text, re.IGNORECASE | re.MULTILINE,
     ))
     # Node-level errors remain blockers even when a malformed/native summary
-    # under-reports the aggregate error count.
-    errors = max(summary_counts.get("errors", 0), len(error_nodeids))
+    # under-reports the aggregate error count.  An ``ERRORS`` banner proves at
+    # least one error even when no node id survived the report format.
+    errors = max(summary_counts.get("errors", 0), len(error_nodeids), 1 if errors_section else 0)
     # Collection errors are a subset of pytest's error count but are kept as a
     # separate blocker for callers that need to distinguish import failures.
     collection_errors = max(collection_errors, 0)
@@ -183,11 +217,16 @@ def parse_test_output(text: str, return_code: int) -> ParsedOutcome:
     counts, saw_vitest, inconsistent = _parse_vitest_summaries(text)
     if not saw_vitest:
         return pytest_outcome
-    failed_nodeids, error_nodeids, collection_errors = _parse_nodes(text)
+    failed_nodeids, error_nodeids, collection_errors, errors_section = _parse_nodes(text)
     return ParsedOutcome(
         passed=counts.get("passed", 0),
         failed=counts.get("failed", 0),
-        errors=max(pytest_outcome.errors, len(error_nodeids), 1 if inconsistent else 0),
+        errors=max(
+            pytest_outcome.errors,
+            len(error_nodeids),
+            1 if inconsistent else 0,
+            1 if errors_section else 0,
+        ),
         skipped=counts.get("skipped", 0) + counts.get("todo", 0) + counts.get("pending", 0),
         xfailed=0,
         collection_errors=collection_errors,

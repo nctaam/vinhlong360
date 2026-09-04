@@ -12,6 +12,18 @@ from control_plane.lifecycle import (
 import storage
 
 
+def _reset_media_receipts() -> None:
+    """Keep durable receipt tests isolated from the ignored local DB file."""
+    storage._MEDIA_RECEIPTS.clear()
+    try:
+        database = storage._receipt_database()
+        database.initialize()
+        with database._conn() as conn:
+            database._execute(conn, "DELETE FROM media_delete_receipts", ())
+    except Exception:
+        pass
+
+
 def test_registry_covers_every_known_sink():
     registry = load_lifecycle_registry(Path("config/lifecycle-registry.json"))
     assert {
@@ -47,6 +59,7 @@ def test_export_manifest_declares_cursor_and_checksums(monkeypatch):
 
 
 def test_media_delete_receipt_is_keyed_and_idempotent(monkeypatch):
+    _reset_media_receipts()
     calls = []
     monkeypatch.setattr(storage.storage, "delete", lambda key: calls.append(key))
     first = storage.delete_media_with_receipt("subject", "objects/a.webp", "7")
@@ -78,6 +91,7 @@ def test_browser_instruction_lists_shipped_keys():
 
 
 def test_failed_media_receipt_can_retry(monkeypatch):
+    _reset_media_receipts()
     calls = []
     def fail_once(key):
         calls.append(key)
@@ -100,6 +114,7 @@ def test_manifest_marks_degraded_when_external_adapter_unavailable(monkeypatch):
 
 
 def test_media_object_failure_still_runs_cdn_and_retries(monkeypatch):
+    _reset_media_receipts()
     import storage
     calls = []
     monkeypatch.setattr(storage.storage, "delete", lambda key: (_ for _ in ()).throw(RuntimeError("object")))
@@ -114,7 +129,7 @@ def test_browser_inventory_includes_journey_thread():
 
 def test_media_without_cdn_adapter_is_not_verified(monkeypatch):
     import storage
-    storage._MEDIA_RECEIPTS.clear()
+    _reset_media_receipts()
     monkeypatch.setattr(storage.storage, "delete", lambda key: None)
     receipt = storage.delete_media_with_receipt("u-no-cdn", "k")
     assert receipt["cdn_status"] == "unavailable"

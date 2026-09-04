@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import FrozenInstanceError
+import json
 import importlib.util
 from pathlib import Path
 import subprocess
@@ -636,3 +637,89 @@ def test_cli_rejects_nonpositive_or_nonfinite_deadline(
         runner.main(["--deadline-seconds", value])
 
     assert exc_info.value.code == 2
+
+
+def test_classify_phase_reports_errors_that_a_clean_tally_would_hide(runner):
+    """The F-69 shape: a passing tally alongside a real error is not clean."""
+
+    output = (
+        "tests/x.py::test_alpha ERROR                                     [ 50%]\n"
+        "tests/x.py::test_beta PASSED                                     [100%]\n"
+        "1 passed, 1 error in 0.30s\n"
+    )
+    record = runner.classify_phase("A", output, 0)
+
+    assert record["errors"] == 1
+    assert record["error_nodeids"] == ["tests/x.py::test_alpha"]
+    assert record["clean"] is False
+
+
+def test_classify_phase_counts_collection_errors_separately(runner):
+    """An import failure is an error group of its own, not an invisible one."""
+
+    output = (
+        "_______________ ERROR collecting tests/x.py _______________\n"
+        "ImportError: boom\n"
+        "1 error in 0.10s\n"
+    )
+    record = runner.classify_phase("A", output, 2)
+
+    assert record["collection_errors"] == 1
+    assert record["clean"] is False
+
+
+def test_classify_phase_accepts_a_genuinely_clean_run(runner):
+    """A real green run must still be reported as clean."""
+
+    record = runner.classify_phase("A", "140 passed in 117.05s\n", 0)
+
+    assert record["clean"] is True
+    assert record["passed"] == 140
+    assert record["failed_nodeids"] == []
+
+
+def test_classify_phase_refuses_output_with_no_summary_at_all(runner):
+    """Absent evidence of a summary is not evidence of success."""
+
+    record = runner.classify_phase("A", "some text\n", 0)
+
+    assert record["summary_present"] is False
+    assert record["clean"] is False
+
+
+def test_the_report_marks_a_run_unclean_when_any_phase_is_unclean(runner, tmp_path, monkeypatch):
+    """One dirty phase makes the whole report dirty, and lists its node ids."""
+
+    outputs = iter([
+        ("140 passed in 10.00s\n", 0),
+        ("tests/y.py::test_z FAILED  [100%]\n1 failed in 0.20s\n", 1),
+    ])
+
+    def fake_capture(phase, deadline):
+        output, code = next(outputs)
+        return runner.classify_phase(phase.name, output, code)
+
+    monkeypatch.setattr(runner, "_capture_phase", fake_capture)
+    report_path = tmp_path / "report.json"
+    exit_code = runner._run_with_report("python", 1e12, report_path)
+
+    report = json.loads(report_path.read_text(encoding="utf-8"))
+    assert exit_code != 0
+    assert report["clean"] is False
+    assert report["unclassified_nodeids"] == ["tests/y.py::test_z"]
+    assert len(report["phases"]) == 2
+
+
+def test_the_report_records_the_disk_space_the_run_had(runner, tmp_path, monkeypatch):
+    """A run made on a full disk cannot be read as a trustworthy measurement."""
+
+    monkeypatch.setattr(
+        runner, "_capture_phase",
+        lambda phase, deadline: runner.classify_phase(phase.name, "1 passed in 0.1s\n", 0),
+    )
+    report_path = tmp_path / "report.json"
+    runner._run_with_report("python", 1e12, report_path)
+
+    environment = json.loads(report_path.read_text(encoding="utf-8"))["environment"]
+    assert "disk_free_gb" in environment
+    assert isinstance(environment["disk_free_bytes"], int)

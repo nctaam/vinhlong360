@@ -10,6 +10,7 @@ Bao gồm:
 """
 
 import contextvars
+import hashlib
 import hmac
 import ipaddress
 import json
@@ -20,6 +21,7 @@ import secrets
 import time
 import threading
 import uuid
+from urllib.parse import urlsplit
 from collections import defaultdict
 from datetime import datetime, timezone
 from threading import Lock
@@ -400,6 +402,51 @@ response_tracker = ResponseTimeTracker()
 #  ERROR RECOVERY
 # ══════════════════════════════════════════════════
 
+# Error telemetry is an operational projection, not an access log.  Keep the
+# vocabulary deliberately small so legacy rows cannot reintroduce user input.
+_ERROR_ENDPOINTS = frozenset({
+    "/", "/health", "/metrics", "/chat", "/chat/stream", "/test",
+    "/system/errors", "/system/logs", "/system/response-times",
+    "/system/scheduler", "/api/stats",
+})
+_ERROR_CODES = frozenset({
+    "runtime_error", "timeout", "connection_error", "validation_error",
+    "database_error", "http_error", "rate_limited", "internal_error",
+})
+
+
+def safe_error_code(error: object) -> str:
+    """Map arbitrary exception/legacy values to a stable enum."""
+    if isinstance(error, TimeoutError):
+        return "timeout"
+    if isinstance(error, (ConnectionError, OSError)):
+        return "connection_error"
+    if isinstance(error, (ValueError, TypeError)):
+        return "validation_error"
+    if isinstance(error, (PermissionError,)):
+        return "http_error"
+    if isinstance(error, BaseException):
+        name = type(error).__name__.lower()
+        if "database" in name or name in {"operationalerror", "integrityerror"}:
+            return "database_error"
+        if name in {"ratelimiterror", "toomanyrequestserror"}:
+            return "rate_limited"
+        if name in {"httperror", "http_exception"}:
+            return "http_error"
+    value = str(error).strip().lower()
+    return value if value in _ERROR_CODES else "runtime_error"
+
+
+def safe_error_endpoint(endpoint: object) -> str:
+    """Project arbitrary endpoint text to the fixed telemetry route enum."""
+    value = str(endpoint).strip()
+    try:
+        path = urlsplit(value).path
+    except ValueError:
+        return "unknown"
+    path = path.rstrip("/") or "/"
+    return path if path in _ERROR_ENDPOINTS else "unknown"
+
 class ErrorTracker:
     """Track errors for circuit-breaking."""
 
@@ -409,19 +456,39 @@ class ErrorTracker:
         self._errors: list[dict] = []
         self._lock = Lock()
 
-    def record_error(self, endpoint: str, error: str, details: str = ""):
+    @staticmethod
+    def _safe_endpoint(endpoint: object) -> str:
+        """Project an endpoint onto a fixed, lossy route vocabulary."""
+        return safe_error_endpoint(endpoint)
+
+    @staticmethod
+    def _error_metadata(error: object, details: object) -> tuple[str, str]:
+        """Return a non-sensitive code and digest for an arbitrary failure."""
+        error_code = safe_error_code(error)
+        material = f"{type(error).__name__}:{error!s}\n{details!s}"
+        digest = hashlib.sha256(material.encode("utf-8", errors="replace")).hexdigest()
+        return error_code[:80], digest
+
+    def record_error(self, endpoint: str, error: object, details: object = ""):
+        endpoint_path = self._safe_endpoint(endpoint)
+        error_code, error_digest = self._error_metadata(error, details)
         with self._lock:
             self._errors.append({
                 "ts": time.time(),
-                "endpoint": endpoint,
-                "error": error,
-                "details": details[:200],
+                "endpoint": endpoint_path,
+                "error_code": error_code,
+                "error_digest": error_digest,
             })
             # Trim old
             cutoff = time.time() - self.window
             self._errors = [e for e in self._errors if e["ts"] > cutoff]
 
-        logger.error("Endpoint error: " + endpoint, error=error, details=details[:200])
+        logger.error(
+            "Endpoint error",
+            endpoint=endpoint_path,
+            error_code=error_code,
+            error_digest=error_digest,
+        )
 
     def is_healthy(self) -> bool:
         """Check if error rate is acceptable."""

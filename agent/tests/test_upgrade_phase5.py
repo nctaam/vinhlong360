@@ -191,26 +191,42 @@ class TestEntityClaimsAdmin:
         assert "validate_path_id" in src
 
     def test_approve_checks_pending_status(self):
-        src = inspect.getsource(__import__("admin").approve_claim)
+        from entities import admin_api as entity_admin
+        handler_src = inspect.getsource(entity_admin.approve_claim)
+        src = inspect.getsource(entity_admin._apply_claim_decision)
+        assert "_apply_claim_decision(" in handler_src
         assert "not_pending" in src
         assert "pending" in src
+        assert "FOR UPDATE" in src
+        assert "AND status='pending'" in src
 
     def test_approve_sets_reviewer(self):
-        src = inspect.getsource(__import__("admin").approve_claim)
+        from entities import admin_api as entity_admin
+        handler_src = inspect.getsource(entity_admin.approve_claim)
+        src = inspect.getsource(entity_admin._apply_claim_decision)
+        assert "_apply_claim_decision(" in handler_src
         assert "reviewer_id" in src
         assert "reviewed_at" in src
+        assert "FOR UPDATE" in src
 
     def test_reject_validates_path_id(self):
         src = inspect.getsource(__import__("admin").reject_claim)
         assert "validate_path_id" in src
 
     def test_reject_saves_reason(self):
-        src = inspect.getsource(__import__("admin").reject_claim)
+        from entities import admin_api as entity_admin
+        handler_src = inspect.getsource(entity_admin.reject_claim)
+        src = inspect.getsource(entity_admin._apply_claim_decision)
+        assert "_apply_claim_decision(" in handler_src
         assert "rejection_reason" in src
         assert "reason" in src
+        assert "FOR UPDATE" in src
 
     def test_reject_checks_pending_status(self):
-        src = inspect.getsource(__import__("admin").reject_claim)
+        from entities import admin_api as entity_admin
+        handler_src = inspect.getsource(entity_admin.reject_claim)
+        src = inspect.getsource(entity_admin._apply_claim_decision)
+        assert "_apply_claim_decision(" in handler_src
         assert "not_pending" in src
 
     def test_claim_decision_model(self):

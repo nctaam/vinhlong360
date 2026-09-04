@@ -207,6 +207,7 @@ class CreateCorrectionCommand:
     items: tuple[CorrectionItemInput, ...]
     optional_phone: str | None = None
     notification_consent: bool = False
+    contact_receipt: str | None = None
     authenticated_user_ref: str | None = None
     handoff: ZaloHandoff | None = None
     assisted: AssistedIntake | None = None
@@ -566,6 +567,20 @@ class CaseService:
             raise _reject("invalid_command_clock", "An aware timestamp is required.")
         self._validate_actor(command, session_user_ref)
         self._validate_privacy(command)
+        if (
+            command.optional_phone
+            and command.assisted is None
+            and command.notification_consent
+            and not command.contact_receipt
+        ):
+            # Consent authorises notification, but only a verified receipt
+            # proves the caller controls the destination and binds the case to
+            # the exact number they verified.
+            raise _reject(
+                "phone_verification_required",
+                "Xác nhận số điện thoại trước khi gửi yêu cầu.",
+                status=422,
+            )
         self._validate_handoff(command)
         self._validate_items(command)
         self._route_safety(command)
@@ -698,6 +713,44 @@ class CaseService:
                 created_at=now,
             )
         )
+
+        if command.optional_phone and command.contact_receipt and command.assisted is None:
+            from .contact import contact_digest
+            try:
+                proof = self._crypto.open_contact_receipt(command.contact_receipt, now=now)
+                if not proof.get("verified"):
+                    raise ValueError
+                challenge_id = str(uuid.UUID(str(proof["challenge_id"])))
+                if not hmac.compare_digest(
+                    str(proof["contact_digest"]),
+                    contact_digest(command.optional_phone, crypto=crypto),
+                ):
+                    raise ValueError
+            except Exception as exc:  # noqa: BLE001 - fail closed before SQL
+                raise _reject(
+                    "phone_verification_required",
+                    "Xác nhận số điện thoại trước khi gửi yêu cầu.",
+                    status=422,
+                ) from exc
+            proof = transaction.consume_pre_contact_challenge(
+                receipt=challenge_id,
+                contact_digest=str(proof["contact_digest"]),
+                challenge_digest=str(proof["challenge_digest"]),
+                now=now,
+            )
+            if proof is None:
+                raise _reject(
+                    "phone_verification_required",
+                    "Xác nhận số điện thoại trước khi gửi yêu cầu.",
+                    status=422,
+                )
+            transaction.insert_verified_contact(
+                case_id=case_id,
+                contact_digest=str(proof["contact_digest"]),
+                challenge_digest=str(proof["challenge_digest"]),
+                expires_at=datetime.fromtimestamp(int(proof["expires_at"]), tz=timezone.utc),
+                verified_at=now,
+            )
 
         authority = self.party_authority_draft_for(command, case_id=case_id, now=now)
         if authority is not None:
@@ -936,9 +989,16 @@ class CaseService:
             ),
             optional_phone=payload.optional_phone,
             notification_consent=payload.notification_consent,
+            contact_receipt=getattr(payload, "contact_receipt", None),
             authenticated_user_ref=session_user_ref,
             handoff=handoff,
         )
+        if command.optional_phone and command.notification_consent and command.assisted is None and not command.contact_receipt:
+            raise _reject(
+                "phone_verification_required",
+                "Xác nhận số điện thoại trước khi gửi yêu cầu.",
+                status=422,
+            )
         return self.create_correction(
             command,
             now=self._now(now),
@@ -1160,11 +1220,28 @@ class CaseService:
         )
         return _request(access, phone, consent, now=now)
 
+    def request_pre_case_contact_verification(
+        self,
+        *,
+        phone: str,
+        consent: bool,
+        receipt: str | None = None,
+        requester_subject: str | None = None,
+        now: datetime | None = None,
+    ):
+        from .contact import request_pre_case_contact_verification as _request
+
+        return _request(
+            phone, consent, now=self._now(now), requester_subject=requester_subject,
+            receipt=receipt,
+        )
+
     def verify_contact(
         self,
         *,
         access_token: str,
         code: str,
+        receipt: str | None = None,
         session_user_ref: str | None = None,
         now: datetime | None = None,
     ):
@@ -1174,7 +1251,44 @@ class CaseService:
         access = self._store.validate_access(
             access_token, self._crypto, now=now, current_user_id=session_user_ref
         )
-        return _verify(access, code, now=now)
+        return _verify(access, code, now=now, receipt=receipt)
+
+    def verify_pre_case_contact(
+        self,
+        *,
+        receipt: str,
+        code: str,
+        now: datetime | None = None,
+    ):
+        from .contact import verify_pre_case_contact as _verify
+
+        return _verify(receipt, code, now=self._now(now))
+
+    def validate_contact_receipt(
+        self,
+        *,
+        phone: str,
+        receipt: str,
+        now: datetime,
+    ) -> dict:
+        """Ensure a public create binds its phone to a verified OTP proof."""
+        from .contact import contact_digest, normalize_phone
+
+        try:
+            payload = self._crypto.open_contact_receipt(receipt, now=now)
+            if not payload.get("verified"):
+                raise ValueError
+            uuid.UUID(str(payload["challenge_id"]))
+            expected = contact_digest(normalize_phone(phone), crypto=self._crypto)
+            if not hmac.compare_digest(str(payload.get("contact_digest")), expected):
+                raise ValueError
+            return payload
+        except Exception as exc:  # noqa: BLE001 - one safe public failure
+            raise _reject(
+                "phone_verification_required",
+                "Xác nhận số điện thoại trước khi gửi yêu cầu.",
+                status=422,
+            ) from exc
 
 
 # ── Public status projection ──

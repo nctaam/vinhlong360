@@ -76,6 +76,10 @@ export interface CaseReceipt {
   receivedAt: string
   nextUpdateAt: string
   replayed: boolean
+  /** Committed case revision returned by PostgreSQL-backed mutation adapters. */
+  revision?: number
+  /** Stable notification intent id for post-commit tracing. */
+  outboxEventId?: string
 }
 
 export interface CorrectionItemInput {
@@ -96,6 +100,20 @@ export interface CorrectionProblemDetail {
   status: number
   field?: string
   correlation_id?: string
+  retry_after?: number
+}
+
+/** Opaque, short-lived context returned when a reporter starts phone proof. */
+export interface VerificationReceipt {
+  receipt: string
+  expiresAt: string
+  retryAfter: number
+  verified: boolean
+}
+
+export interface VerificationError extends CorrectionProblemDetail {
+  field: string
+  retry_after: number
 }
 
 export interface CorrectionSubmission {
@@ -103,6 +121,7 @@ export interface CorrectionSubmission {
   items: CorrectionItemInput[]
   optionalPhone?: string | null
   notificationConsent?: boolean
+  contactReceipt?: string | null
   handoffDigest?: string | null
   handoffConfirmed?: boolean
 }

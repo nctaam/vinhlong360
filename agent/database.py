@@ -128,7 +128,7 @@ CASE_KERNEL_REQUIRED_TABLES = {
     "cases", "case_interactions", "case_party_authorities", "case_work_items",
     "case_decisions", "case_promise_clocks", "case_receipts", "case_access_sessions",
     "case_admin_access_sessions", "case_transitions", "case_audit_events", "case_outbox",
-    "case_idempotency", "case_contact_challenges", "correction_items", "correction_evidence",
+    "case_idempotency", "case_contact_challenges", "case_pre_contact_challenges", "correction_items", "correction_evidence",
     "correction_change_sets", "correction_change_set_items", "legacy_intake_records", "case_capacity_events",
 }
 PG_REQUIRED_TABLES |= CASE_KERNEL_REQUIRED_TABLES
@@ -207,6 +207,7 @@ CASE_KERNEL_REQUIRED_COLUMNS = {
     "case_outbox": {"outbox_id", "case_id", "idempotency_key", "topic", "payload", "status", "available_at", "attempts", "last_error_code", "created_at"},
     "case_idempotency": {"idempotency_id", "idempotency_key", "actor_ref", "request_digest", "response_enc", "response_key_version", "expires_at", "created_at"},
     "case_contact_challenges": {"challenge_id", "case_id", "contact_digest", "challenge_digest", "channel", "expires_at", "verified_at", "created_at"},
+    "case_pre_contact_challenges": {"challenge_id", "contact_digest", "challenge_digest", "expires_at", "verified_at", "used_at", "created_at"},
     "correction_items": {"item_id", "case_id", "entity_id", "field_path", "reported_value_enc", "proposed_value_enc", "base_entity_revision", "risk_class", "evidence_level", "created_at"},
     "correction_evidence": {"evidence_id", "case_id", "item_id", "evidence_level", "source_ref", "descriptor", "content_enc", "created_by_ref", "created_at"},
     "correction_change_sets": {"change_set_id", "case_id", "base_entity_revision", "before_patch", "after_patch", "inverse_patch", "evidence_refs", "policy_revision", "risk_class", "decision_maker_ref", "reviewer_ref", "apply_status", "public_projection_verified_at", "created_at"},
@@ -226,9 +227,9 @@ PG_CORE_REQUIRED_COLUMNS = {
 # 82 dạy vl360_region_text_is_safe nhận chữ số Unicode (§48.4) + quarantine tồn đọng.
 # 83 adds the durable entity snapshot generation table used by cache consumers.
 # 84 closes community moderation/scheduled state with durable CAS fields.
-# Media/browser lifecycle receipts are part of the release readiness contract;
-# older deployments must apply migration 085 before starting this release.
-PG_REQUIRED_SCHEMA_VERSION = 85
+# Pre-case OTP challenges are durable and single-use; older deployments must
+# apply migration 086 before starting this release.
+PG_REQUIRED_SCHEMA_VERSION = 86
 PG_CORE_REQUIRED_SCHEMA_VERSION = 79
 PG_REQUIRED_TRIGGERS = {
     "trg_entity_ratings": "posts",
@@ -238,6 +239,7 @@ CASE_REQUIRED_INDEXES = {
     "case_receipts_case_revision_unique",
     "case_receipts_case_receipt_unique",
     "idx_case_access_sessions_expiry",
+    "case_pre_contact_challenges_active_contact_key",
 }
 CASE_REQUIRED_FKS = {
     "case_access_sessions_case_receipt_fkey",
@@ -256,9 +258,20 @@ CASE_REQUIRED_COLUMN_META = {
     ("case_access_sessions", "session_digest"): ("text", "NO", None),
     ("case_access_sessions", "session_key_version"): ("text", "NO", "v1"),
     ("case_idempotency", "response_key_version"): ("text", "NO", "v1"),
+    ("case_pre_contact_challenges", "challenge_id"): ("uuid", "NO", "uuid_generate_v4"),
+    ("case_pre_contact_challenges", "contact_digest"): ("text", "NO", None),
+    ("case_pre_contact_challenges", "challenge_digest"): ("text", "NO", None),
+    ("case_pre_contact_challenges", "expires_at"): ("timestamp with time zone", "NO", None),
+    ("case_pre_contact_challenges", "verified_at"): ("timestamp with time zone", "YES", None),
+    ("case_pre_contact_challenges", "used_at"): ("timestamp with time zone", "YES", None),
+    ("case_pre_contact_challenges", "created_at"): ("timestamp with time zone", "NO", "now()"),
 }
 
 _CASE_REQUIRED_CONSTRAINT_DEFINITIONS = {
+    "case_pre_contact_challenges_expiry_order": {
+        "constraint_type": "c", "table_name": "case_pre_contact_challenges",
+        "check_expression": "(expires_at>created_at)",
+    },
     "case_receipts_receipt_revision_positive": {
         "constraint_type": "c", "table_name": "case_receipts",
         "check_expression": "(receipt_revision>=1)",
@@ -335,6 +348,10 @@ _CASE_REQUIRED_INDEX_DEFINITIONS = {
     "idx_case_access_sessions_expiry": {
         "table_name": "case_access_sessions", "columns": ("expires_at", "access_session_id"),
         "predicate": "(revoked_atisnull)", "unique": False,
+    },
+    "case_pre_contact_challenges_active_contact_key": {
+        "table_name": "case_pre_contact_challenges", "columns": ("contact_digest",),
+        "predicate": "(used_at IS NULL)", "unique": True,
     },
 }
 # Trigger identity is not the trigger row alone: a matching name can be paired

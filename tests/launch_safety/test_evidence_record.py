@@ -15,6 +15,7 @@ from scripts.ops.record_launch_evidence import (
     _markdown_escape,
     record_section,
     resolve_harness_result,
+    _output_digest,
 )
 
 
@@ -163,6 +164,54 @@ def test_record_stores_versioned_outcomes_environment_head_and_output_checksum(
     assert section["verdict"] == "PASS"
 
 
+def test_command_evidence_keeps_layered_pilot_provenance_without_raw_subject_data() -> None:
+    evidence = CommandEvidence(
+        "python -m pytest tests/integration/test_cross_boundary_proof.py -q",
+        0,
+        "local fixture passed",
+        "pass",
+        nodeids=("tests/integration/test_cross_boundary_proof.py::test_gate",),
+        layer="multi_process",
+        owner="qa/release",
+        rollback_note="No production mutation; fixture is disposable.",
+    )
+
+    assert evidence.layer == "multi_process"
+    assert evidence.owner == "qa/release"
+    assert evidence.nodeids == ("tests/integration/test_cross_boundary_proof.py::test_gate",)
+
+
+def test_record_metadata_round_trip_preserves_layered_pilot_provenance(tmp_path: Path) -> None:
+    state_path = tmp_path / "pilot-provenance.json"
+    evidence = CommandEvidence(
+        "python -m pytest tests/integration/test_cross_boundary_proof.py -q",
+        0,
+        "local fixture passed",
+        "pass",
+        nodeids=("tests/integration/test_cross_boundary_proof.py::test_gate",),
+        layer="multi_process",
+        owner="qa/release",
+        rollback_note="No production mutation; fixture is disposable.",
+    )
+    document = EvidenceDocument.empty(state_path)
+    document.record(
+        "backend-focused",
+        evidence,
+        outcomes={"passed": 1, "failed": 0, "return_code": 0},
+        environment={"os": "Windows"},
+        head_sha="a" * 40,
+        output="1 passed in 0.1s\n",
+        verdict="PASS",
+    )
+    document.save()
+
+    restored = EvidenceDocument.load(state_path).sections["backend-focused"]
+    assert restored.layer == "multi_process"
+    assert restored.nodeids == ("tests/integration/test_cross_boundary_proof.py::test_gate",)
+    assert restored.owner == "qa/release"
+    assert restored.rollback_note == "No production mutation; fixture is disposable."
+
+
 def test_record_rejects_status_verdict_contradiction(tmp_path: Path) -> None:
     document = EvidenceDocument.empty(tmp_path / "state.json")
     with pytest.raises(ValueError, match="status.*verdict|verdict.*status"):
@@ -170,6 +219,11 @@ def test_record_rejects_status_verdict_contradiction(tmp_path: Path) -> None:
             "artifacts",
             CommandEvidence("pytest", 0, "passed", "pass", verdict="BLOCKED"),
         )
+
+
+def test_output_digest_rejects_declared_hash_without_captured_bytes() -> None:
+    with pytest.raises(ValueError, match="captured output"):
+        _output_digest(None, "a" * 64)
 
 
 def test_final_render_rejects_pass_status_with_blocked_outcomes(tmp_path: Path) -> None:

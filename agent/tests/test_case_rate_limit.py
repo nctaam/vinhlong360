@@ -23,6 +23,7 @@ NOW = datetime(2026, 8, 18, 9, 0, tzinfo=UTC)
 def test_every_credential_command_named_by_the_plan_has_a_bucket():
     assert CASE_RATE_BUCKETS == {
         "correction_create", "receipt_exchange", "contact_otp",
+        "contact_otp_requester", "contact_otp_verify", "contact_otp_withdraw",
         "case_review", "receipt_rotation",
     }
 

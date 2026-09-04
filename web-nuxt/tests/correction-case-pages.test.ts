@@ -333,7 +333,7 @@ describe('the three pages', () => {
   it('passes structured correction problems through to the draft form', () => {
     const source = page('sua-thong-tin.vue')
     expect(source).toContain('CorrectionProblemError')
-    expect(source).toContain('problem.correlation_id')
+    expect(source).not.toContain('problem.correlation_id')
     expect(source).toContain(':server-problem="problem"')
     expect(source).toContain('problem.field')
   })
@@ -356,7 +356,7 @@ describe('the three pages', () => {
 
     expect(form.get('[data-role="server-error"]').text()).toContain('invalid_request')
     expect(form.get('[data-role="server-error"]').text()).toContain('reportedValueKnown')
-    expect(form.get('[data-role="server-error"]').text()).toContain('corr-page-1')
+    expect(form.get('[data-role="server-error"]').text()).not.toContain('corr-page-1')
     expect(form.get('[data-role="server-error"] a').attributes('href')).toBe('#item-0-reported-known')
     expect(form.find('#item-0-field').exists()).toBe(true)
   })

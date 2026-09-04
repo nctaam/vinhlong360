@@ -19,6 +19,7 @@ from __future__ import annotations
 
 import hashlib
 import os
+import uuid
 from contextvars import ContextVar
 from dataclasses import dataclass
 from functools import partial, wraps
@@ -77,6 +78,7 @@ from tools import SYSTEM_PROMPT, TOOLS
 
 from features import _env_bool  # noqa: F401
 from control_plane.clock import system_clock
+from control_plane.snapshot import current_generation
 from http_errors import _error_response
 from itineraries.itinerary_gen import generate_itinerary
 from ocop import is_ocop_certified, ocop_display_label, ocop_tier
@@ -150,6 +152,7 @@ _semantic_route_lease: ContextVar[tuple[str, str, str] | None] = ContextVar(
     "semantic_route_lease",
     default=None,
 )
+_stream_turn_id: ContextVar[str | None] = ContextVar("stream_turn_id", default=None)
 
 
 def _finalize_semantic_route_lease(func):
@@ -848,6 +851,10 @@ class ChatResponse(BaseModel):
     session_id: str = ""
     cached: bool = False
     feedback_receipt: str | None = None
+    created_at: str = Field(default_factory=lambda: system_clock.now_utc().isoformat())
+    display_timezone: Literal["Asia/Ho_Chi_Minh"] = "Asia/Ho_Chi_Minh"
+    generation: int = 0
+    failed: bool = False
 
 
 _FEEDBACK_MODEL_VARIANTS = {
@@ -1452,6 +1459,84 @@ def _safe_sse_event(payload: dict, verified_public_contacts: set[str]) -> dict:
         source="verified_public_contact",
         verified_public_contacts=tuple(verified_public_contacts),
     )
+
+
+_SSE_FORBIDDEN_KEYS = frozenset(
+    {
+        "owner_key",
+        "correlation_id",
+        "session_id",
+        "raw_prompt",
+        "raw_secret",
+        "prompt",
+        "secret",
+    }
+)
+
+
+def _strip_sse_forbidden(value, *, top_level: bool = False):
+    """Remove server-only context recursively at the final SSE boundary."""
+    if isinstance(value, dict):
+        return {
+            key: _strip_sse_forbidden(item)
+            for key, item in value.items()
+            if not (
+                isinstance(key, str)
+                and key in _SSE_FORBIDDEN_KEYS
+                and not (top_level and key == "session_id")
+            )
+        }
+    if isinstance(value, list):
+        return [_strip_sse_forbidden(item) for item in value]
+    if isinstance(value, tuple):
+        return tuple(_strip_sse_forbidden(item) for item in value)
+    return value
+
+
+def _stream_event(payload: dict) -> dict:
+    """Add safe chronology facts to every stream frame before serialization.
+
+    The browser receives a display policy, never an owner key or correlation
+    identifier. A deterministic opaque event id lets a reconnect ignore a
+    repeated frame while retaining the timestamp it first rendered.
+    """
+    # These belong to server operation context, not the public conversation.
+    event = _strip_sse_forbidden(dict(payload), top_level=True)
+    event_type = str(event.get("type", "event"))
+    args = event.get("args")
+    entity_id = event.get("entity_id")
+    if not isinstance(entity_id, str) and isinstance(args, dict):
+        entity_id = args.get("entity_id")
+    generation = 0
+    if isinstance(entity_id, str) and entity_id:
+        try:
+            generation = int(current_generation(entity_id))
+        except Exception:
+            generation = 0
+    turn_id = _stream_turn_id.get()
+    stable = {
+        key: value for key, value in event.items()
+        if key not in {"created_at", "feedback_receipt"}
+    }
+    if turn_id:
+        stable["_turn_id"] = turn_id
+    digest = hashlib.sha256(
+        json.dumps(stable, ensure_ascii=False, sort_keys=True, default=str).encode("utf-8")
+    ).hexdigest()[:24]
+    # Chronology is server authority; never trust provider-supplied timestamps.
+    event["created_at"] = system_clock.now_utc().isoformat()
+    event["display_timezone"] = "Asia/Ho_Chi_Minh"
+    event["generation"] = generation
+    event["failed"] = bool(event.get("failed", event_type == "error"))
+    # The digest is stable across reconnect/replay. A random nonce would make
+    # replay deduplication impossible.
+    event.setdefault("message_id", f"chat-{turn_id + '-' if turn_id else ''}{digest}")
+    return event
+
+
+def _sse_frame(payload: dict) -> str:
+    """Serialize one publicly safe SSE event with chronology metadata."""
+    return f"data: {json.dumps(_stream_event(payload), ensure_ascii=False)}\n\n"
 
 
 def _safe_cached_reply(reply: str) -> SafeText:
@@ -2619,7 +2704,12 @@ def _stream_failure_frames(
     fallback_ready = fallback is not None
     if fallback is None:
         fallback = SAFE_PRIVACY_FAILURE_REPLY
-    frames = [f"data: {json.dumps({'type': 'text', 'content': fallback}, ensure_ascii=False)}\n\n"]
+    frames = [_sse_frame({
+        'type': 'error',
+        'content': fallback,
+        'failed': True,
+        'error': 'stream_failed',
+    })]
     if fallback_ready:
         _persist_stream_fallback(ctx, fallback)
     feedback_receipt = (
@@ -2633,7 +2723,10 @@ def _stream_failure_frames(
         if fallback_ready
         else None
     )
-    frames.append(f"data: {json.dumps({'type': 'done', 'tools': tools_used, 'suggestions': [], 'session_id': ctx.sid, 'feedback_receipt': feedback_receipt}, ensure_ascii=False)}\n\n")
+    frames.append(_sse_frame({
+        'type': 'done', 'tools': tools_used, 'suggestions': [], 'session_id': ctx.sid,
+        'feedback_receipt': feedback_receipt, 'failed': True,
+    }))
     return frames
 
 
@@ -2661,10 +2754,10 @@ async def _run_stream_tool_round(
             "args": fn_args,
         })
         if tool_start_event is None:
-            yield f"data: {json.dumps({'type': 'error', 'content': SAFE_PRIVACY_FAILURE_REPLY}, ensure_ascii=False)}\n\n"
+            yield _sse_frame({'type': 'error', 'content': SAFE_PRIVACY_FAILURE_REPLY})
             round_state["abort"] = True
             return
-        yield f"data: {json.dumps(tool_start_event, ensure_ascii=False)}\n\n"
+        yield _sse_frame(tool_start_event)
 
         t0 = time.time()
         result = await _await_chat_worker(
@@ -2683,10 +2776,10 @@ async def _run_stream_tool_round(
             "preview": result_preview,
         })
         if tool_done_event is None:
-            yield f"data: {json.dumps({'type': 'error', 'content': SAFE_PRIVACY_FAILURE_REPLY}, ensure_ascii=False)}\n\n"
+            yield _sse_frame({'type': 'error', 'content': SAFE_PRIVACY_FAILURE_REPLY})
             round_state["abort"] = True
             return
-        yield f"data: {json.dumps(tool_done_event, ensure_ascii=False)}\n\n"
+        yield _sse_frame(tool_done_event)
 
         # Track entity discussions in memory
         if fn_name in ("entity_detail", "nearby_entities") and "entity_id" in fn_args:
@@ -2905,7 +2998,7 @@ async def _stream_final_answer(ctx: "_StreamContext", tools_used: list, suggesti
             redactor,
         ):
             _chunks.append(safe_chunk)
-            yield f"data: {json.dumps({'type': 'text', 'content': safe_chunk}, ensure_ascii=False)}\n\n"
+            yield _sse_frame({'type': 'text', 'content': safe_chunk})
     except (asyncio.CancelledError, GeneratorExit):
         _cancelled.set()
         redactor.abort()
@@ -2917,11 +3010,11 @@ async def _stream_final_answer(ctx: "_StreamContext", tools_used: list, suggesti
         )
         ctx.settlement_blocked = True
         redactor.abort()
-        yield f"data: {json.dumps({'type': 'error', 'content': SAFE_PRIVACY_FAILURE_REPLY}, ensure_ascii=False)}\n\n"
+        yield _sse_frame({'type': 'error', 'content': SAFE_PRIVACY_FAILURE_REPLY})
         return
     except Exception:
         redactor.abort()
-        yield f"data: {json.dumps({'type': 'error', 'content': 'Xin lỗi, không thể hoàn tất câu trả lời. Vui lòng thử lại.'}, ensure_ascii=False)}\n\n"
+        yield _sse_frame({'type': 'error', 'content': 'Xin lỗi, không thể hoàn tất câu trả lời. Vui lòng thử lại.'})
         return
     finally:
         _cancelled.set()
@@ -2948,8 +3041,8 @@ async def _stream_final_answer(ctx: "_StreamContext", tools_used: list, suggesti
             code=exc.code,
         )
         ctx.settlement_blocked = True
-        yield f"data: {json.dumps({'type': 'text', 'content': SAFE_PRIVACY_FAILURE_REPLY}, ensure_ascii=False)}\n\n"
-        yield f"data: {json.dumps({'type': 'done', 'tools': [], 'suggestions': [], 'session_id': ctx.sid}, ensure_ascii=False)}\n\n"
+        yield _sse_frame({'type': 'error', 'content': SAFE_PRIVACY_FAILURE_REPLY, 'failed': True})
+        yield _sse_frame({'type': 'done', 'tools': [], 'suggestions': [], 'session_id': ctx.sid, 'failed': True})
         return
     except Exception:
         logger.warning(
@@ -2957,8 +3050,8 @@ async def _stream_final_answer(ctx: "_StreamContext", tools_used: list, suggesti
             code="UNEXPECTED_PRIVACY_OUTPUT_ERROR",
         )
         ctx.settlement_blocked = True
-        yield f"data: {json.dumps({'type': 'text', 'content': SAFE_PRIVACY_FAILURE_REPLY}, ensure_ascii=False)}\n\n"
-        yield f"data: {json.dumps({'type': 'done', 'tools': [], 'suggestions': [], 'session_id': ctx.sid}, ensure_ascii=False)}\n\n"
+        yield _sse_frame({'type': 'error', 'content': SAFE_PRIVACY_FAILURE_REPLY, 'failed': True})
+        yield _sse_frame({'type': 'done', 'tools': [], 'suggestions': [], 'session_id': ctx.sid, 'failed': True})
         return
 
     full_text = safe_reply.text
@@ -2974,7 +3067,7 @@ async def _stream_final_answer(ctx: "_StreamContext", tools_used: list, suggesti
         ctx.stream_model,
         tools_used,
     )
-    yield f"data: {json.dumps({'type': 'done', 'tools': tools_used, 'suggestions': suggestions, 'session_id': ctx.sid, 'quality': evaluation['score'], 'feedback_receipt': feedback_receipt}, ensure_ascii=False)}\n\n"
+    yield _sse_frame({'type': 'done', 'tools': tools_used, 'suggestions': suggestions, 'session_id': ctx.sid, 'quality': evaluation['score'], 'feedback_receipt': feedback_receipt})
     return
 
 
@@ -3013,7 +3106,7 @@ async def _synthesize_after_rounds(ctx: "_StreamContext", tools_used: list, sugg
                 synth_redactor,
             ):
                 synth_chunks.append(safe_chunk)
-                yield f"data: {json.dumps({'type': 'text', 'content': safe_chunk}, ensure_ascii=False)}\n\n"
+                yield _sse_frame({'type': 'text', 'content': safe_chunk})
         except (asyncio.CancelledError, GeneratorExit):
             synth_redactor.abort()
             raise
@@ -3024,7 +3117,7 @@ async def _synthesize_after_rounds(ctx: "_StreamContext", tools_used: list, sugg
             )
             ctx.settlement_blocked = True
             synth_redactor.abort()
-            yield f"data: {json.dumps({'type': 'error', 'content': SAFE_PRIVACY_FAILURE_REPLY}, ensure_ascii=False)}\n\n"
+            yield _sse_frame({'type': 'error', 'content': SAFE_PRIVACY_FAILURE_REPLY})
             return
         finally:
             _synth_cancelled.set()  # generator đóng (disconnect/hoàn tất) → báo thread produce dừng
@@ -3085,7 +3178,7 @@ async def _synthesize_after_rounds(ctx: "_StreamContext", tools_used: list, sugg
         if delivered_synth
         else None
     )
-    yield f"data: {json.dumps({'type': 'done', 'tools': tools_used, 'suggestions': suggestions, 'session_id': ctx.sid, 'feedback_receipt': feedback_receipt}, ensure_ascii=False)}\n\n"
+    yield _sse_frame({'type': 'done', 'tools': tools_used, 'suggestions': suggestions, 'session_id': ctx.sid, 'feedback_receipt': feedback_receipt})
 
 
 async def _cached_stream_gen(owner_key: str, sid: str, cache_query: str, message: str, safe_cached: dict, hit_name: str):
@@ -3099,7 +3192,7 @@ async def _cached_stream_gen(owner_key: str, sid: str, cache_query: str, message
             if index > 0:
                 chunk = " " + chunk
             emitted.append(chunk)
-            yield f"data: {json.dumps({'type': 'text', 'content': chunk}, ensure_ascii=False)}\n\n"
+            yield _sse_frame({'type': 'text', 'content': chunk})
 
         delivered = "".join(emitted)
         safe_cached["reply"] = delivered
@@ -3119,12 +3212,12 @@ async def _cached_stream_gen(owner_key: str, sid: str, cache_query: str, message
             "cache",
             safe_cached.get("tool_calls", []),
         )
-        yield f"data: {json.dumps({'type': 'done', 'tools': [hit_name], 'suggestions': safe_cached.get('suggestions', []), 'session_id': sid, 'feedback_receipt': feedback_receipt}, ensure_ascii=False)}\n\n"
+        yield _sse_frame({'type': 'done', 'tools': [hit_name], 'suggestions': safe_cached.get('suggestions', []), 'session_id': sid, 'feedback_receipt': feedback_receipt})
     except (asyncio.CancelledError, GeneratorExit):
         return
     except Exception:
         logger.debug("Legacy cache stream delivery failed", exc_info=True)
-        yield f"data: {json.dumps({'type': 'error', 'content': SAFE_PRIVACY_FAILURE_REPLY}, ensure_ascii=False)}\n\n"
+        yield _sse_frame({'type': 'error', 'content': SAFE_PRIVACY_FAILURE_REPLY})
 
 
 def _apply_stream_prompt_parity(messages: list, message: str) -> None:
@@ -3296,12 +3389,12 @@ def _open_stream_session(request: Request, owner_context, requested_session_id: 
 
 
 async def _stream_error_gen(msg: str):
-    yield f"data: {json.dumps({'type': 'error', 'content': msg}, ensure_ascii=False)}\n\n"
+    yield _sse_frame({'type': 'error', 'content': msg})
 
 
 async def _safe_block_stream_gen(sid: str, msg: str):
-    yield f"data: {json.dumps({'type': 'text', 'content': msg}, ensure_ascii=False)}\n\n"
-    yield f"data: {json.dumps({'type': 'done', 'tools': [], 'suggestions': [], 'session_id': sid}, ensure_ascii=False)}\n\n"
+    yield _sse_frame({'type': 'error', 'content': msg, 'failed': True})
+    yield _sse_frame({'type': 'done', 'tools': [], 'suggestions': [], 'session_id': sid, 'failed': True})
 
 
 def _prepared_stream_input(req: "ChatRequest", owner_key: str, sid: str):
@@ -3339,7 +3432,7 @@ def _prepared_stream_input(req: "ChatRequest", owner_key: str, sid: str):
 async def _event_stream_body(ctx: "_StreamContext"):
     # Send autocorrect info if corrected
     if HAS_AUTOCORRECT and ctx.message != ctx.cache_query:
-        yield f"data: {json.dumps({'type': 'autocorrect', 'original': ctx.cache_query, 'corrected': ctx.message}, ensure_ascii=False)}\n\n"
+        yield _sse_frame({'type': 'autocorrect', 'original': ctx.cache_query, 'corrected': ctx.message})
     tools_used = []
     suggestions = []
     max_rounds = ctx.stream_rounds
@@ -3412,9 +3505,30 @@ async def chat_stream(req: ChatRequest, request: Request):
     session = None
     requested_session_id = req.session_id or ""
     sid = requested_session_id
+    turn_id = uuid.uuid4().hex if not sid else hashlib.sha256(
+        json.dumps(
+            {"sid": sid, "message": req.message, "history": [item.model_dump() for item in req.history]},
+            ensure_ascii=False, sort_keys=True, default=str,
+        ).encode("utf-8")
+    ).hexdigest()[:24]
     def _stream_response(generator, semantic_lease=None):
+        async def contextual_generator():
+            token = _stream_turn_id.set(turn_id)
+            try:
+                async for event in generator:
+                    yield event
+            finally:
+                # A response body may be closed by a different asyncio task
+                # (for example when a client disconnects while a nested
+                # provider call is still settling).  ContextVar tokens are
+                # context-bound, so resetting one from that task raises
+                # ValueError and masks the original cancellation outcome.
+                try:
+                    _stream_turn_id.reset(token)
+                except ValueError:
+                    pass
         stream_response = _SemanticLeaseStreamingResponse(
-            generator,
+            contextual_generator(),
             media_type="text/event-stream",
             semantic_lease=semantic_lease,
         )

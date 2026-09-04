@@ -11,6 +11,25 @@
   "baseline_count": 15,
   "rule_count": 38,
   "last_verified_at": "2026-08-31T00:00:00Z",
+  "pilot_acceptance": {
+    "runner": "scripts/ops/run_pilot_acceptance.py",
+    "bundle": "artifacts/pilot-acceptance.json",
+    "owner": "service-owner",
+    "required_layers": ["unit", "postgres", "multi_process", "browser", "external_side_effect"],
+    "max_age_hours": 24,
+    "owner_signoff_required": true,
+    "closed_pilot_verdict": "GO_CONDITIONAL",
+    "public_launch_verdict": "NO_GO",
+    "decision_required_items": ["legal", "provider", "residency", "public_indexing"],
+    "external_policy": "sandbox-only-no-provider-calls",
+    "attestation_schemes": ["hmac-sha256"],
+    "attestation_keys": [
+      {"key_id": "runner-local", "role": "runner", "custody": "environment:PILOT_ATTEST_RUNNER_KEY"},
+      {"key_id": "owner-offline", "role": "owner", "custody": "offline-owner:/etc/vinhlong360/pilot-owner-signing.key"},
+      {"key_id": "countersign-local", "role": "countersign", "custody": "environment:PILOT_ATTEST_COUNTERSIGN_KEY"},
+      {"key_id": "ci-hosted", "role": "ci", "custody": "ci-secret:PILOT_ATTEST_CI_KEY"}
+    ]
+  },
   "p1_findings": ["F-01", "F-02", "F-03", "F-04", "F-05", "F-06", "F-07", "F-08", "F-09", "F-10", "F-11", "F-12", "F-13", "F-14", "F-15", "F-16", "F-17", "F-32", "F-34", "F-38", "F-40", "F-41", "F-42", "F-44", "F-47", "F-49", "F-53", "F-69"],
   "active_documents": [
     {"path": "CLAUDE.md", "last_verified_at": "2026-08-31T00:00:00Z"},

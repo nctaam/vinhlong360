@@ -107,6 +107,32 @@ def _sse_frames(wire_text):
     ]
 
 
+def test_sse_boundary_removes_nested_server_context_fields():
+    wire = chat_api._sse_frame(
+        {
+            "type": "done",
+            "session_id": "public-session",
+            "args": {
+                "owner_key": "user:private",
+                "nested": [
+                    {
+                        "correlation_id": "corr-private",
+                        "session_id": "nested-session",
+                        "raw_prompt": "system secret prompt",
+                        "safe": "kept",
+                    }
+                ],
+            },
+            "preview": {"owner_key": "user:private", "secret": "provider-secret"},
+        }
+    )
+    frame = _sse_frames(wire)[0]
+
+    assert frame["session_id"] == "public-session"
+    assert frame["args"] == {"nested": [{"safe": "kept"}]}
+    assert frame["preview"] == {}
+
+
 def _capture_receipts(monkeypatch, token="test-feedback-receipt"):
     calls = []
 

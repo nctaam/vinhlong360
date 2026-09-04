@@ -1,0 +1,1617 @@
+{
+  "version": 1,
+  "description": "Endpoint families consumed by the Nuxt application. source_match is the literal source prefix used to validate the inventory.",
+  "entries": [
+    {
+      "method": "GET",
+      "path": "/api/entities",
+      "source_match": "/api/entities",
+      "auth": "public",
+      "domain": "catalog"
+    },
+    {
+      "method": "GET",
+      "path": "/api/entities/{id}",
+      "source_match": "/api/entities/",
+      "auth": "public",
+      "domain": "catalog"
+    },
+    {
+      "method": "GET",
+      "path": "/api/entities/{id}/feed",
+      "source_match": "/api/entities/${encodedEntityId.value}/feed",
+      "auth": "public",
+      "domain": "community"
+    },
+    {
+      "method": "GET",
+      "path": "/api/entities/{id}/relationships",
+      "source_match": "/api/entities/${id}/relationships",
+      "auth": "session",
+      "domain": "catalog"
+    },
+    {
+      "method": "GET",
+      "path": "/api/entities/{id}/similar",
+      "source_match": "/api/entities/${encodePathId(entityId)}/similar",
+      "auth": "public",
+      "domain": "catalog"
+    },
+    {
+      "method": "GET",
+      "path": "/api/entities/popular",
+      "source_match": "/api/entities/popular",
+      "auth": "public",
+      "domain": "catalog"
+    },
+    {
+      "method": "GET",
+      "path": "/api/places",
+      "source_match": "/api/places",
+      "auth": "public",
+      "domain": "catalog"
+    },
+    {
+      "method": "GET",
+      "path": "/api/places/{id}/overview",
+      "source_match": "/api/places/${encodedId.value}/overview",
+      "auth": "public",
+      "domain": "catalog"
+    },
+    {
+      "method": "GET",
+      "path": "/api/facilities",
+      "source_match": "/api/facilities",
+      "auth": "public",
+      "domain": "catalog"
+    },
+    {
+      "method": "GET",
+      "path": "/api/search",
+      "source_match": "/api/search?",
+      "auth": "public",
+      "domain": "search"
+    },
+    {
+      "method": "GET",
+      "path": "/api/homepage",
+      "source_match": "/api/homepage",
+      "auth": "public",
+      "domain": "catalog"
+    },
+    {
+      "method": "GET",
+      "path": "/api/events",
+      "source_match": "/api/events?limit=200",
+      "auth": "public",
+      "domain": "catalog"
+    },
+    {
+      "method": "GET",
+      "path": "/api/itineraries/{id}",
+      "source_match": "/api/itineraries/${encodedId}",
+      "auth": "public",
+      "domain": "itineraries"
+    },
+    {
+      "method": "GET",
+      "path": "/api/shared-plans/{id}",
+      "source_match": "/api/shared-plans/${encodedPlanId}",
+      "auth": "public",
+      "domain": "itineraries"
+    },
+    {
+      "method": "GET",
+      "path": "/api/site-settings",
+      "source_match": "/api/site-settings",
+      "auth": "public",
+      "domain": "siteops"
+    },
+    {
+      "method": "GET",
+      "path": "/weather",
+      "source_match": "/weather?area=",
+      "auth": "public",
+      "domain": "weather"
+    },
+    {
+      "method": "POST",
+      "path": "/chat/stream",
+      "source_match": "/chat/stream",
+      "auth": "session",
+      "domain": "chat"
+    },
+    {
+      "method": "POST",
+      "path": "/recommend",
+      "source_match": "/recommend?",
+      "auth": "public",
+      "domain": "recommendations"
+    },
+    {
+      "method": "POST",
+      "path": "/api/report",
+      "source_match": "/api/report",
+      "auth": "public",
+      "domain": "moderation"
+    },
+    {
+      "method": "POST",
+      "path": "/api/client-error",
+      "source_match": "/api/client-error",
+      "auth": "public",
+      "domain": "observability"
+    },
+    {
+      "method": "GET",
+      "path": "/auth/csrf",
+      "source_match": "/auth/csrf",
+      "auth": "session",
+      "domain": "identity"
+    },
+    {
+      "method": "GET",
+      "path": "/auth/me",
+      "source_match": "/auth/me",
+      "auth": "session",
+      "domain": "identity"
+    },
+    {
+      "method": "POST",
+      "path": "/auth/request-otp",
+      "source_match": "/auth/request-otp",
+      "auth": "public",
+      "domain": "identity"
+    },
+    {
+      "method": "POST",
+      "path": "/auth/verify-otp",
+      "source_match": "/auth/verify-otp",
+      "auth": "public",
+      "domain": "identity"
+    },
+    {
+      "method": "POST",
+      "path": "/auth/check-phone",
+      "source_match": "/auth/check-phone",
+      "auth": "public",
+      "domain": "identity"
+    },
+    {
+      "method": "POST",
+      "path": "/auth/login",
+      "source_match": "/auth/login",
+      "auth": "public",
+      "domain": "identity"
+    },
+    {
+      "method": "POST",
+      "path": "/auth/2fa/verify",
+      "source_match": "/auth/2fa/verify",
+      "auth": "public",
+      "domain": "identity"
+    },
+    {
+      "method": "POST",
+      "path": "/auth/set-password",
+      "source_match": "/auth/set-password",
+      "auth": "session",
+      "domain": "identity"
+    },
+    {
+      "method": "POST",
+      "path": "/auth/logout",
+      "source_match": "/auth/logout",
+      "auth": "session",
+      "domain": "identity"
+    },
+    {
+      "method": "GET",
+      "path": "/auth/sessions",
+      "source_match": "/auth/sessions",
+      "auth": "session",
+      "domain": "identity"
+    },
+    {
+      "method": "GET",
+      "path": "/auth/2fa/status",
+      "source_match": "/auth/2fa/status",
+      "auth": "session",
+      "domain": "identity"
+    },
+    {
+      "method": "GET",
+      "path": "/auth/trusted-devices",
+      "source_match": "/auth/trusted-devices",
+      "auth": "session",
+      "domain": "identity"
+    },
+    {
+      "method": "GET",
+      "path": "/api/cases/status",
+      "source_match": "/api/cases/status",
+      "auth": "case-capability",
+      "domain": "correction_cases"
+    },
+    {
+      "method": "POST",
+      "path": "/api/cases/corrections",
+      "source_match": "/api/cases/corrections",
+      "auth": "public",
+      "domain": "correction_cases"
+    },
+    {
+      "method": "POST",
+      "path": "/api/cases/access",
+      "source_match": "/api/cases/access",
+      "auth": "case-capability",
+      "domain": "correction_cases"
+    },
+    {
+      "method": "POST",
+      "path": "/api/cases/contact/start",
+      "source_match": "/api/cases/contact/start",
+      "auth": "public",
+      "domain": "correction_cases"
+    },
+    {
+      "method": "POST",
+      "path": "/api/cases/contact/verify",
+      "source_match": "/api/cases/contact/verify",
+      "auth": "public",
+      "domain": "correction_cases"
+    },
+    {
+      "method": "POST",
+      "path": "/api/cases/review",
+      "source_match": "/api/cases/review",
+      "auth": "case-capability",
+      "domain": "correction_cases"
+    },
+    {
+      "method": "GET",
+      "path": "/api/feed",
+      "source_match": "/api/feed?limit=10",
+      "auth": "public",
+      "domain": "community"
+    },
+    {
+      "method": "GET",
+      "path": "/api/community/stats",
+      "source_match": "/api/community/stats",
+      "auth": "public",
+      "domain": "community"
+    },
+    {
+      "method": "GET",
+      "path": "/api/community/leaderboard",
+      "source_match": "/api/community/leaderboard?",
+      "auth": "public",
+      "domain": "community"
+    },
+    {
+      "method": "GET",
+      "path": "/api/community/trending-tags",
+      "source_match": "/api/community/trending-tags?limit=8",
+      "auth": "public",
+      "domain": "community"
+    },
+    {
+      "method": "GET",
+      "path": "/api/notifications",
+      "source_match": "/api/notifications?",
+      "auth": "session",
+      "domain": "community"
+    },
+    {
+      "method": "POST",
+      "path": "/api/notifications/read-all",
+      "source_match": "/api/notifications/read-all",
+      "auth": "session",
+      "domain": "community"
+    },
+    {
+      "method": "POST",
+      "path": "/api/posts",
+      "source_match": "/api/posts",
+      "auth": "session",
+      "domain": "community"
+    },
+    {
+      "method": "POST",
+      "path": "/api/posts/{id}/like",
+      "source_match": "/api/posts/${reviewId}/like",
+      "auth": "session",
+      "domain": "community"
+    },
+    {
+      "method": "GET",
+      "path": "/api/me/preferences",
+      "source_match": "/api/me/preferences",
+      "auth": "session",
+      "domain": "identity"
+    },
+    {
+      "method": "PATCH",
+      "path": "/api/me/preferences",
+      "source_match": "/api/me/preferences",
+      "auth": "session",
+      "domain": "identity"
+    },
+    {
+      "method": "GET",
+      "path": "/api/me/activity",
+      "source_match": "/api/me/activity?limit=",
+      "auth": "session",
+      "domain": "identity"
+    },
+    {
+      "method": "GET",
+      "path": "/api/me/bookmarks",
+      "source_match": "/api/me/bookmarks?",
+      "auth": "session",
+      "domain": "community"
+    },
+    {
+      "method": "GET",
+      "path": "/api/my-plans",
+      "source_match": "/api/my-plans",
+      "auth": "session",
+      "domain": "itineraries"
+    },
+    {
+      "method": "POST",
+      "path": "/api/my-plans/{id}/publish",
+      "source_match": "/api/my-plans/${plan.id}/publish",
+      "auth": "session",
+      "domain": "itineraries"
+    },
+    {
+      "method": "GET",
+      "path": "/admin-api/stats",
+      "source_match": "/admin-api/stats",
+      "auth": "admin",
+      "domain": "siteops"
+    },
+    {
+      "method": "GET",
+      "path": "/admin-api/dashboard-alerts",
+      "source_match": "/admin-api/dashboard-alerts",
+      "auth": "admin",
+      "domain": "siteops"
+    },
+    {
+      "method": "GET",
+      "path": "/admin-api/audit-log",
+      "source_match": "/admin-api/audit-log?",
+      "auth": "admin",
+      "domain": "siteops"
+    },
+    {
+      "method": "GET",
+      "path": "/admin-api/entities",
+      "source_match": "/admin-api/entities",
+      "auth": "admin",
+      "domain": "catalog"
+    },
+    {
+      "method": "POST",
+      "path": "/admin-api/entities",
+      "source_match": "/admin-api/entities",
+      "auth": "admin",
+      "domain": "catalog"
+    },
+    {
+      "method": "PUT",
+      "path": "/admin-api/entities/{id}",
+      "source_match": "/admin-api/entities/${id}",
+      "auth": "admin",
+      "domain": "catalog"
+    },
+    {
+      "method": "DELETE",
+      "path": "/admin-api/entities/{id}",
+      "source_match": "/admin-api/entities/${id}",
+      "auth": "admin",
+      "domain": "catalog"
+    },
+    {
+      "method": "GET",
+      "path": "/admin-api/moderation/queue",
+      "source_match": "/admin-api/moderation/queue?",
+      "auth": "admin",
+      "domain": "moderation"
+    },
+    {
+      "method": "POST",
+      "path": "/admin-api/moderation/batch",
+      "source_match": "/admin-api/moderation/batch",
+      "auth": "admin",
+      "domain": "moderation"
+    },
+    {
+      "method": "GET",
+      "path": "/admin-api/site-settings/{category}",
+      "source_match": "/admin-api/site-settings/${props.category}",
+      "auth": "admin",
+      "domain": "siteops"
+    },
+    {
+      "method": "POST",
+      "path": "/admin-api/backup-trigger",
+      "source_match": "/admin-api/backup-trigger",
+      "auth": "admin",
+      "domain": "siteops"
+    },
+    {
+      "method": "DELETE",
+      "path": "/admin-api/itineraries/{id}",
+      "source_match": "/admin-api/itineraries/${id}",
+      "auth": "admin",
+      "domain": "siteops"
+    },
+    {
+      "method": "DELETE",
+      "path": "/admin-api/relationships",
+      "source_match": "/admin-api/relationships?${params}",
+      "auth": "admin",
+      "domain": "siteops"
+    },
+    {
+      "method": "DELETE",
+      "path": "/api/cases/access",
+      "source_match": "/api/cases/access",
+      "auth": "case-capability",
+      "domain": "correction_cases"
+    },
+    {
+      "method": "DELETE",
+      "path": "/api/comments/{id}",
+      "source_match": "/api/comments/${encoded}",
+      "auth": "session",
+      "domain": "community"
+    },
+    {
+      "method": "DELETE",
+      "path": "/api/me/collections/{id}/items/{id}",
+      "source_match": "/api/me/collections/${encodeURIComponent(collectionId)}/items/${encodeURIComponent(postId)}",
+      "auth": "session",
+      "domain": "identity"
+    },
+    {
+      "method": "DELETE",
+      "path": "/api/me/visits/{id}",
+      "source_match": "/api/me/visits/${encodeURIComponent(id.value)}",
+      "auth": "session",
+      "domain": "identity"
+    },
+    {
+      "method": "DELETE",
+      "path": "/api/my-plans/{id}",
+      "source_match": "/api/my-plans/${encodePathId(planId)}",
+      "auth": "session",
+      "domain": "itineraries"
+    },
+    {
+      "method": "DELETE",
+      "path": "/api/notifications/{id}",
+      "source_match": "/api/notifications/${encodePathId(n.id)}",
+      "auth": "session",
+      "domain": "community"
+    },
+    {
+      "method": "DELETE",
+      "path": "/api/posts/{id}/bookmark",
+      "source_match": "/api/posts/${encodePathId(postId)}/bookmark",
+      "auth": "session",
+      "domain": "community"
+    },
+    {
+      "method": "DELETE",
+      "path": "/api/saved/{id}",
+      "source_match": "/api/saved/${encodeURIComponent(id)}",
+      "auth": "session",
+      "domain": "community"
+    },
+    {
+      "method": "DELETE",
+      "path": "/api/scheduled/{id}",
+      "source_match": "/api/scheduled/${encodePathId(id)}",
+      "auth": "session",
+      "domain": "community"
+    },
+    {
+      "method": "DELETE",
+      "path": "/auth/account",
+      "source_match": "/auth/account",
+      "auth": "session",
+      "domain": "identity"
+    },
+    {
+      "method": "DELETE",
+      "path": "/auth/sessions/{id}",
+      "source_match": "/auth/sessions/${id}",
+      "auth": "session",
+      "domain": "identity"
+    },
+    {
+      "method": "DELETE",
+      "path": "/auth/trusted-devices/{id}",
+      "source_match": "/auth/trusted-devices/${encodeURIComponent(id)}",
+      "auth": "session",
+      "domain": "identity"
+    },
+    {
+      "method": "GET",
+      "path": "/admin-api/analytics-overview",
+      "source_match": "/admin-api/analytics-overview${params}",
+      "auth": "admin",
+      "domain": "siteops"
+    },
+    {
+      "method": "GET",
+      "path": "/admin-api/cost-overview",
+      "source_match": "/admin-api/cost-overview",
+      "auth": "admin",
+      "domain": "siteops"
+    },
+    {
+      "method": "GET",
+      "path": "/admin-api/data-quality/history",
+      "source_match": "/admin-api/data-quality/history",
+      "auth": "admin",
+      "domain": "siteops"
+    },
+    {
+      "method": "GET",
+      "path": "/admin-api/data-quality/review",
+      "source_match": "/admin-api/data-quality/review",
+      "auth": "admin",
+      "domain": "siteops"
+    },
+    {
+      "method": "GET",
+      "path": "/admin-api/data-quality/summary",
+      "source_match": "/admin-api/data-quality/summary",
+      "auth": "admin",
+      "domain": "siteops"
+    },
+    {
+      "method": "GET",
+      "path": "/admin-api/entity-completeness",
+      "source_match": "/admin-api/entity-completeness?kind=${encodeURIComponent(props.kind)}",
+      "auth": "admin",
+      "domain": "siteops"
+    },
+    {
+      "method": "GET",
+      "path": "/admin-api/entity-kinds",
+      "source_match": "/admin-api/entity-kinds",
+      "auth": "admin",
+      "domain": "siteops"
+    },
+    {
+      "method": "GET",
+      "path": "/admin-api/image-suggestions",
+      "source_match": "/admin-api/image-suggestions?status=${status.value}&limit=${limit}&offset=${offset.value}",
+      "auth": "admin",
+      "domain": "siteops"
+    },
+    {
+      "method": "GET",
+      "path": "/admin-api/info-reports",
+      "source_match": "/admin-api/info-reports?limit=200",
+      "auth": "admin",
+      "domain": "siteops"
+    },
+    {
+      "method": "GET",
+      "path": "/admin-api/itineraries",
+      "source_match": "/admin-api/itineraries",
+      "auth": "admin",
+      "domain": "siteops"
+    },
+    {
+      "method": "GET",
+      "path": "/admin-api/media",
+      "source_match": "/admin-api/media?page=${page.value}&limit=50&filter=${filter.value}",
+      "auth": "admin",
+      "domain": "siteops"
+    },
+    {
+      "method": "GET",
+      "path": "/admin-api/moderation/stats",
+      "source_match": "/admin-api/moderation/stats",
+      "auth": "admin",
+      "domain": "siteops"
+    },
+    {
+      "method": "GET",
+      "path": "/admin-api/ops-summary",
+      "source_match": "/admin-api/ops-summary",
+      "auth": "admin",
+      "domain": "siteops"
+    },
+    {
+      "method": "GET",
+      "path": "/admin-api/provisional",
+      "source_match": "/admin-api/provisional",
+      "auth": "admin",
+      "domain": "siteops"
+    },
+    {
+      "method": "GET",
+      "path": "/admin-api/reports",
+      "source_match": "/admin-api/reports?status=all&limit=200",
+      "auth": "admin",
+      "domain": "siteops"
+    },
+    {
+      "method": "GET",
+      "path": "/admin-api/site-settings-history",
+      "source_match": "/admin-api/site-settings-history?${params}",
+      "auth": "admin",
+      "domain": "siteops"
+    },
+    {
+      "method": "GET",
+      "path": "/admin-api/site-settings/ai",
+      "source_match": "/admin-api/site-settings/ai",
+      "auth": "admin",
+      "domain": "siteops"
+    },
+    {
+      "method": "GET",
+      "path": "/admin-api/site-settings/categories",
+      "source_match": "/admin-api/site-settings/categories",
+      "auth": "admin",
+      "domain": "siteops"
+    },
+    {
+      "method": "GET",
+      "path": "/admin-api/site-settings/chat",
+      "source_match": "/admin-api/site-settings/chat",
+      "auth": "admin",
+      "domain": "siteops"
+    },
+    {
+      "method": "GET",
+      "path": "/admin-api/site-settings/features",
+      "source_match": "/admin-api/site-settings/features",
+      "auth": "admin",
+      "domain": "siteops"
+    },
+    {
+      "method": "GET",
+      "path": "/admin-api/site-settings/footer",
+      "source_match": "/admin-api/site-settings/footer",
+      "auth": "admin",
+      "domain": "siteops"
+    },
+    {
+      "method": "GET",
+      "path": "/admin-api/site-settings/legal",
+      "source_match": "/admin-api/site-settings/legal",
+      "auth": "admin",
+      "domain": "siteops"
+    },
+    {
+      "method": "GET",
+      "path": "/admin-api/site-settings/navigation",
+      "source_match": "/admin-api/site-settings/navigation",
+      "auth": "admin",
+      "domain": "siteops"
+    },
+    {
+      "method": "GET",
+      "path": "/admin-api/site-settings/onboarding",
+      "source_match": "/admin-api/site-settings/onboarding",
+      "auth": "admin",
+      "domain": "siteops"
+    },
+    {
+      "method": "GET",
+      "path": "/admin-api/site-settings/page",
+      "source_match": "/admin-api/site-settings/page",
+      "auth": "admin",
+      "domain": "siteops"
+    },
+    {
+      "method": "GET",
+      "path": "/admin-api/users",
+      "source_match": "/admin-api/users?${params}",
+      "auth": "admin",
+      "domain": "siteops"
+    },
+    {
+      "method": "GET",
+      "path": "/api/blocked-users",
+      "source_match": "/api/blocked-users",
+      "auth": "session",
+      "domain": "identity"
+    },
+    {
+      "method": "GET",
+      "path": "/api/community/suggested-follows",
+      "source_match": "/api/community/suggested-follows?limit=5",
+      "auth": "public",
+      "domain": "catalog"
+    },
+    {
+      "method": "GET",
+      "path": "/api/events/{id}/rsvp",
+      "source_match": "/api/events/${encodeURIComponent(id.value)}/rsvp",
+      "auth": "public",
+      "domain": "catalog"
+    },
+    {
+      "method": "GET",
+      "path": "/api/follow/check/user/{id}",
+      "source_match": "/api/follow/check/user/${encodedProfileId.value}",
+      "auth": "session",
+      "domain": "community"
+    },
+    {
+      "method": "GET",
+      "path": "/api/following",
+      "source_match": "/api/following",
+      "auth": "session",
+      "domain": "community"
+    },
+    {
+      "method": "GET",
+      "path": "/api/me/achievements",
+      "source_match": "/api/me/achievements",
+      "auth": "session",
+      "domain": "identity"
+    },
+    {
+      "method": "GET",
+      "path": "/api/me/collections",
+      "source_match": "/api/me/collections",
+      "auth": "session",
+      "domain": "identity"
+    },
+    {
+      "method": "GET",
+      "path": "/api/me/recommendations/contextual",
+      "source_match": "/api/me/recommendations/contextual?${params}",
+      "auth": "session",
+      "domain": "identity"
+    },
+    {
+      "method": "GET",
+      "path": "/api/me/visits/check/{id}",
+      "source_match": "/api/me/visits/check/${encodeURIComponent(id.value)}",
+      "auth": "session",
+      "domain": "identity"
+    },
+    {
+      "method": "GET",
+      "path": "/api/mentions",
+      "source_match": "/api/mentions?q=${encodeURIComponent(q)}",
+      "auth": "public",
+      "domain": "catalog"
+    },
+    {
+      "method": "GET",
+      "path": "/api/muted-users",
+      "source_match": "/api/muted-users",
+      "auth": "session",
+      "domain": "identity"
+    },
+    {
+      "method": "GET",
+      "path": "/api/posts/{id}",
+      "source_match": "/api/posts/${encodePathId(postId)}",
+      "auth": "session",
+      "domain": "community"
+    },
+    {
+      "method": "GET",
+      "path": "/api/saved",
+      "source_match": "/api/saved",
+      "auth": "session",
+      "domain": "community"
+    },
+    {
+      "method": "GET",
+      "path": "/api/scheduled",
+      "source_match": "/api/scheduled",
+      "auth": "session",
+      "domain": "community"
+    },
+    {
+      "method": "GET",
+      "path": "/api/search/posts",
+      "source_match": "/api/search/posts?q=${encodeURIComponent(searchQuery.value)}&page=${searchPage.value}",
+      "auth": "public",
+      "domain": "community"
+    },
+    {
+      "method": "GET",
+      "path": "/api/search/users",
+      "source_match": "/api/search/users",
+      "auth": "public",
+      "domain": "identity"
+    },
+    {
+      "method": "GET",
+      "path": "/api/users/{id}/{id}",
+      "source_match": "/api/users/${encodedProfileId.value}/${which}",
+      "auth": "public",
+      "domain": "identity"
+    },
+    {
+      "method": "GET",
+      "path": "/api/users/{id}/activity-heatmap",
+      "source_match": "/api/users/${encodedProfileId.value}/activity-heatmap",
+      "auth": "public",
+      "domain": "identity"
+    },
+    {
+      "method": "GET",
+      "path": "/api/users/{id}/timeline",
+      "source_match": "/api/users/${encodedProfileId.value}/timeline",
+      "auth": "public",
+      "domain": "identity"
+    },
+    {
+      "method": "GET",
+      "path": "/api/users/{id}/posts",
+      "source_match": "/api/users/${u.id}/posts?limit=10",
+      "auth": "public",
+      "domain": "community"
+    },
+    {
+      "method": "GET",
+      "path": "/auth/check-username/{id}",
+      "source_match": "/auth/check-username/${encodeURIComponent(uname)}",
+      "auth": "public",
+      "domain": "identity"
+    },
+    {
+      "method": "GET",
+      "path": "/auth/consent-history",
+      "source_match": "/auth/consent-history",
+      "auth": "session",
+      "domain": "identity"
+    },
+    {
+      "method": "GET",
+      "path": "/auth/login-history",
+      "source_match": "/auth/login-history",
+      "auth": "session",
+      "domain": "identity"
+    },
+    {
+      "method": "GET",
+      "path": "/recommend",
+      "source_match": "/recommend?${params}",
+      "auth": "public",
+      "domain": "recommendations"
+    },
+    {
+      "method": "PATCH",
+      "path": "/api/posts/{id}",
+      "source_match": "/api/posts/${encodedPostId.value}",
+      "auth": "session",
+      "domain": "community"
+    },
+    {
+      "method": "POST",
+      "path": "/admin-api/ai/triage",
+      "source_match": "/admin-api/ai/triage",
+      "auth": "admin",
+      "domain": "siteops"
+    },
+    {
+      "method": "POST",
+      "path": "/admin-api/data-quality/apply",
+      "source_match": "/admin-api/data-quality/apply",
+      "auth": "admin",
+      "domain": "siteops"
+    },
+    {
+      "method": "POST",
+      "path": "/admin-api/data-quality/decision",
+      "source_match": "/admin-api/data-quality/decision",
+      "auth": "admin",
+      "domain": "siteops"
+    },
+    {
+      "method": "POST",
+      "path": "/admin-api/data-quality/rollback/{id}",
+      "source_match": "/admin-api/data-quality/rollback/${encodeURIComponent(batchId)}",
+      "auth": "admin",
+      "domain": "siteops"
+    },
+    {
+      "method": "POST",
+      "path": "/admin-api/image-suggestions/{id}/approve",
+      "source_match": "/admin-api/image-suggestions/${id}/approve",
+      "auth": "admin",
+      "domain": "siteops"
+    },
+    {
+      "method": "POST",
+      "path": "/admin-api/image-suggestions/{id}/reject",
+      "source_match": "/admin-api/image-suggestions/${id}/reject",
+      "auth": "admin",
+      "domain": "siteops"
+    },
+    {
+      "method": "POST",
+      "path": "/admin-api/info-reports/action",
+      "source_match": "/admin-api/info-reports/action",
+      "auth": "admin",
+      "domain": "siteops"
+    },
+    {
+      "method": "POST",
+      "path": "/admin-api/itineraries",
+      "source_match": "/admin-api/itineraries",
+      "auth": "admin",
+      "domain": "siteops"
+    },
+    {
+      "method": "POST",
+      "path": "/admin-api/moderation/{id}/approve",
+      "source_match": "/admin-api/moderation/${id}/approve",
+      "auth": "admin",
+      "domain": "siteops"
+    },
+    {
+      "method": "POST",
+      "path": "/admin-api/moderation/{id}/reject",
+      "source_match": "/admin-api/moderation/${id}/reject",
+      "auth": "admin",
+      "domain": "siteops"
+    },
+    {
+      "method": "POST",
+      "path": "/admin-api/moderation/{id}/note",
+      "source_match": "/admin-api/moderation/${postId}/note",
+      "auth": "admin",
+      "domain": "siteops"
+    },
+    {
+      "method": "POST",
+      "path": "/admin-api/provisional/{id}/approve",
+      "source_match": "/admin-api/provisional/${e.id}/approve",
+      "auth": "admin",
+      "domain": "siteops"
+    },
+    {
+      "method": "POST",
+      "path": "/admin-api/provisional/{id}/reject",
+      "source_match": "/admin-api/provisional/${e.id}/reject",
+      "auth": "admin",
+      "domain": "siteops"
+    },
+    {
+      "method": "POST",
+      "path": "/admin-api/relationships",
+      "source_match": "/admin-api/relationships",
+      "auth": "admin",
+      "domain": "siteops"
+    },
+    {
+      "method": "POST",
+      "path": "/admin-api/reports/{id}/dismiss",
+      "source_match": "/admin-api/reports/${id}/dismiss",
+      "auth": "admin",
+      "domain": "siteops"
+    },
+    {
+      "method": "POST",
+      "path": "/admin-api/reports/{id}/resolve",
+      "source_match": "/admin-api/reports/${id}/resolve",
+      "auth": "admin",
+      "domain": "siteops"
+    },
+    {
+      "method": "POST",
+      "path": "/admin-api/reports/bulk",
+      "source_match": "/admin-api/reports/bulk",
+      "auth": "admin",
+      "domain": "siteops"
+    },
+    {
+      "method": "POST",
+      "path": "/admin-api/site-settings-history/{id}/rollback",
+      "source_match": "/admin-api/site-settings-history/${id}/rollback",
+      "auth": "admin",
+      "domain": "siteops"
+    },
+    {
+      "method": "POST",
+      "path": "/admin-api/site-settings/bulk",
+      "source_match": "/admin-api/site-settings/bulk",
+      "auth": "admin",
+      "domain": "siteops"
+    },
+    {
+      "method": "POST",
+      "path": "/admin-api/site-settings/reset/{id}",
+      "source_match": "/admin-api/site-settings/reset/${props.category}",
+      "auth": "admin",
+      "domain": "siteops"
+    },
+    {
+      "method": "POST",
+      "path": "/admin-api/site-settings/reset/navigation",
+      "source_match": "/admin-api/site-settings/reset/navigation",
+      "auth": "admin",
+      "domain": "siteops"
+    },
+    {
+      "method": "POST",
+      "path": "/admin-api/trigger-learn",
+      "source_match": "/admin-api/trigger-learn",
+      "auth": "admin",
+      "domain": "siteops"
+    },
+    {
+      "method": "POST",
+      "path": "/admin-api/users/{id}/ban",
+      "source_match": "/admin-api/users/${id}/ban",
+      "auth": "admin",
+      "domain": "siteops"
+    },
+    {
+      "method": "POST",
+      "path": "/admin-api/users/{id}/role",
+      "source_match": "/admin-api/users/${id}/role",
+      "auth": "admin",
+      "domain": "siteops"
+    },
+    {
+      "method": "POST",
+      "path": "/admin-api/users/{id}/unban",
+      "source_match": "/admin-api/users/${id}/unban",
+      "auth": "admin",
+      "domain": "siteops"
+    },
+    {
+      "method": "POST",
+      "path": "/api/block/{id}",
+      "source_match": "/api/block/${encodedProfileId.value}",
+      "auth": "session",
+      "domain": "identity"
+    },
+    {
+      "method": "POST",
+      "path": "/api/cases/receipts/rotate",
+      "source_match": "/api/cases/receipts/rotate",
+      "auth": "case-capability",
+      "domain": "correction_cases"
+    },
+    {
+      "method": "POST",
+      "path": "/api/drafts",
+      "source_match": "/api/drafts",
+      "auth": "session",
+      "domain": "itineraries"
+    },
+    {
+      "method": "POST",
+      "path": "/api/events/{id}/rsvp",
+      "source_match": "/api/events/${encodeURIComponent(id.value)}/rsvp",
+      "auth": "session",
+      "domain": "catalog"
+    },
+    {
+      "method": "POST",
+      "path": "/api/follow/entity/{id}",
+      "source_match": "/api/follow/entity/${encodeURIComponent(id.value)}",
+      "auth": "session",
+      "domain": "community"
+    },
+    {
+      "method": "POST",
+      "path": "/api/follow/user/{id}",
+      "source_match": "/api/follow/user/${encodedProfileId.value}",
+      "auth": "session",
+      "domain": "community"
+    },
+    {
+      "method": "POST",
+      "path": "/api/itineraries/optimize-order",
+      "source_match": "/api/itineraries/optimize-order",
+      "auth": "public",
+      "domain": "itineraries"
+    },
+    {
+      "method": "POST",
+      "path": "/api/me/collections",
+      "source_match": "/api/me/collections",
+      "auth": "session",
+      "domain": "identity"
+    },
+    {
+      "method": "POST",
+      "path": "/api/me/events",
+      "source_match": "/api/me/events",
+      "auth": "session",
+      "domain": "identity"
+    },
+    {
+      "method": "POST",
+      "path": "/api/me/location/resolve",
+      "source_match": "/api/me/location/resolve",
+      "auth": "session",
+      "domain": "identity"
+    },
+    {
+      "method": "POST",
+      "path": "/api/me/recommendations/reset",
+      "source_match": "/api/me/recommendations/reset",
+      "auth": "session",
+      "domain": "identity"
+    },
+    {
+      "method": "POST",
+      "path": "/api/me/visits",
+      "source_match": "/api/me/visits",
+      "auth": "session",
+      "domain": "identity"
+    },
+    {
+      "method": "POST",
+      "path": "/api/mute/{id}",
+      "source_match": "/api/mute/${encodeURIComponent(id)}",
+      "auth": "session",
+      "domain": "identity"
+    },
+    {
+      "method": "POST",
+      "path": "/api/my-plans/merge",
+      "source_match": "/api/my-plans/merge",
+      "auth": "session",
+      "domain": "itineraries"
+    },
+    {
+      "method": "POST",
+      "path": "/api/notifications/{id}/read",
+      "source_match": "/api/notifications/${encodePathId(id)}/read",
+      "auth": "session",
+      "domain": "community"
+    },
+    {
+      "method": "POST",
+      "path": "/api/notifications/block/{id}",
+      "source_match": "/api/notifications/block/${id}",
+      "auth": "session",
+      "domain": "community"
+    },
+    {
+      "method": "POST",
+      "path": "/api/saved",
+      "source_match": "/api/saved",
+      "auth": "session",
+      "domain": "community"
+    },
+    {
+      "method": "POST",
+      "path": "/api/upload/image",
+      "source_match": "/api/upload/image",
+      "auth": "session",
+      "domain": "catalog"
+    },
+    {
+      "method": "POST",
+      "path": "/auth/2fa/disable",
+      "source_match": "/auth/2fa/disable",
+      "auth": "session",
+      "domain": "identity"
+    },
+    {
+      "method": "POST",
+      "path": "/auth/2fa/setup",
+      "source_match": "/auth/2fa/setup",
+      "auth": "session",
+      "domain": "identity"
+    },
+    {
+      "method": "POST",
+      "path": "/auth/avatar",
+      "source_match": "/auth/avatar",
+      "auth": "session",
+      "domain": "identity"
+    },
+    {
+      "method": "POST",
+      "path": "/auth/cover",
+      "source_match": "/auth/cover",
+      "auth": "session",
+      "domain": "identity"
+    },
+    {
+      "method": "POST",
+      "path": "/auth/deactivate",
+      "source_match": "/auth/deactivate",
+      "auth": "session",
+      "domain": "identity"
+    },
+    {
+      "method": "PUT",
+      "path": "/admin-api/itineraries/{id}",
+      "source_match": "/admin-api/itineraries/${form.value.id}",
+      "auth": "admin",
+      "domain": "siteops"
+    },
+    {
+      "method": "PUT",
+      "path": "/admin-api/site-settings/{id}",
+      "source_match": "/admin-api/site-settings/${props.objectKey}",
+      "auth": "admin",
+      "domain": "siteops"
+    },
+    {
+      "method": "PUT",
+      "path": "/admin-api/site-settings/features.flags",
+      "source_match": "/admin-api/site-settings/features.flags",
+      "auth": "admin",
+      "domain": "siteops"
+    },
+    {
+      "method": "PUT",
+      "path": "/admin-api/site-settings/footer.columns",
+      "source_match": "/admin-api/site-settings/footer.columns",
+      "auth": "admin",
+      "domain": "siteops"
+    },
+    {
+      "method": "PUT",
+      "path": "/admin-api/site-settings/footer.legal_links",
+      "source_match": "/admin-api/site-settings/footer.legal_links",
+      "auth": "admin",
+      "domain": "siteops"
+    },
+    {
+      "method": "PUT",
+      "path": "/admin-api/site-settings/navigation.nav_groups",
+      "source_match": "/admin-api/site-settings/navigation.nav_groups",
+      "auth": "admin",
+      "domain": "siteops"
+    },
+    {
+      "method": "PUT",
+      "path": "/admin-api/site-settings/social.links",
+      "source_match": "/admin-api/site-settings/social.links",
+      "auth": "admin",
+      "domain": "siteops"
+    },
+    {
+      "method": "PUT",
+      "path": "/api/comments/{id}",
+      "source_match": "/api/comments/${encoded}",
+      "auth": "session",
+      "domain": "community"
+    },
+    {
+      "method": "PUT",
+      "path": "/api/my-plans/{id}",
+      "source_match": "/api/my-plans/${request.activeServerPlanId}",
+      "auth": "session",
+      "domain": "itineraries"
+    },
+    {
+      "method": "PUT",
+      "path": "/api/notification-preferences",
+      "source_match": "/api/notification-preferences",
+      "auth": "session",
+      "domain": "catalog"
+    },
+    {
+      "method": "PUT",
+      "path": "/auth/privacy",
+      "source_match": "/auth/privacy",
+      "auth": "session",
+      "domain": "identity"
+    },
+    {
+      "method": "PUT",
+      "path": "/auth/profile",
+      "source_match": "/auth/profile",
+      "auth": "session",
+      "domain": "identity"
+    },
+    {
+      "method": "DELETE",
+      "path": "/admin-api/entities/{id}/images/{id}",
+      "source_match": "/admin-api/entities/${form.value.id}/images/${idx}",
+      "auth": "admin",
+      "domain": "siteops"
+    },
+    {
+      "method": "DELETE",
+      "path": "/api/me/collections/{id}",
+      "source_match": "/api/me/collections/${encodeURIComponent(id)}",
+      "auth": "session",
+      "domain": "identity"
+    },
+    {
+      "method": "DELETE",
+      "path": "/api/posts/{id}",
+      "source_match": "/api/posts/${encodedPostId}",
+      "auth": "session",
+      "domain": "community"
+    },
+    {
+      "method": "GET",
+      "path": "/admin-api/entities/{id}",
+      "source_match": "/admin-api/entities/${id}",
+      "auth": "admin",
+      "domain": "siteops"
+    },
+    {
+      "method": "GET",
+      "path": "/admin-api/entities/{id}/history",
+      "source_match": "/admin-api/entities/${id}/history",
+      "auth": "admin",
+      "domain": "siteops"
+    },
+    {
+      "method": "GET",
+      "path": "/admin-api/entities/check-duplicate",
+      "source_match": "/admin-api/entities/check-duplicate?name=${encodeURIComponent(name)}",
+      "auth": "admin",
+      "domain": "siteops"
+    },
+    {
+      "method": "GET",
+      "path": "/admin-api/entities/places",
+      "source_match": "/admin-api/entities/places",
+      "auth": "admin",
+      "domain": "siteops"
+    },
+    {
+      "method": "GET",
+      "path": "/api/entities/{id}/gallery",
+      "source_match": "/api/entities/${encodedId.value}/gallery",
+      "auth": "public",
+      "domain": "catalog"
+    },
+    {
+      "method": "GET",
+      "path": "/api/itineraries",
+      "source_match": "/api/itineraries",
+      "auth": "public",
+      "domain": "itineraries"
+    },
+    {
+      "method": "GET",
+      "path": "/api/notifications/stream",
+      "source_match": "/api/notifications/stream",
+      "auth": "session",
+      "domain": "community"
+    },
+    {
+      "method": "GET",
+      "path": "/api/posts/{id}/comments",
+      "source_match": "/api/posts/${encodedPostId.value}/comments",
+      "auth": "session",
+      "domain": "community"
+    },
+    {
+      "method": "GET",
+      "path": "/api/posts/{id}/related",
+      "source_match": "/api/posts/${encodedPostId.value}/related?${params}",
+      "auth": "session",
+      "domain": "community"
+    },
+    {
+      "method": "GET",
+      "path": "/api/users/{id}",
+      "source_match": "/api/users/${u.id}",
+      "auth": "public",
+      "domain": "identity"
+    },
+    {
+      "method": "POST",
+      "path": "/admin-api/entities/{id}/place",
+      "source_match": "/admin-api/entities/${e.id}/place",
+      "auth": "admin",
+      "domain": "siteops"
+    },
+    {
+      "method": "POST",
+      "path": "/admin-api/entities/{id}/images",
+      "source_match": "/admin-api/entities/${form.value.id}/images",
+      "auth": "admin",
+      "domain": "siteops"
+    },
+    {
+      "method": "POST",
+      "path": "/admin-api/entities/bulk-place",
+      "source_match": "/admin-api/entities/bulk-place",
+      "auth": "admin",
+      "domain": "siteops"
+    },
+    {
+      "method": "POST",
+      "path": "/admin-api/relationships/bulk",
+      "source_match": "/admin-api/relationships/bulk",
+      "auth": "admin",
+      "domain": "siteops"
+    },
+    {
+      "method": "POST",
+      "path": "/api/drafts/{id}/schedule",
+      "source_match": "/api/drafts/${encodePathId(draft.id)}/schedule?scheduled_at=${encodeURIComponent(isoScheduledAt)}",
+      "auth": "session",
+      "domain": "itineraries"
+    },
+    {
+      "method": "POST",
+      "path": "/api/me/collections/{id}/items",
+      "source_match": "/api/me/collections/${encodeURIComponent(collectionId)}/items",
+      "auth": "session",
+      "domain": "identity"
+    },
+    {
+      "method": "POST",
+      "path": "/api/my-plans",
+      "source_match": "/api/my-plans",
+      "auth": "session",
+      "domain": "itineraries"
+    },
+    {
+      "method": "POST",
+      "path": "/api/posts/{id}/best-answer",
+      "source_match": "/api/posts/${encodedPostId.value}/best-answer",
+      "auth": "session",
+      "domain": "community"
+    },
+    {
+      "method": "POST",
+      "path": "/api/posts/{id}/comments",
+      "source_match": "/api/posts/${encodedPostId.value}/comments",
+      "auth": "session",
+      "domain": "community"
+    },
+    {
+      "method": "POST",
+      "path": "/api/posts/{id}/bookmark",
+      "source_match": "/api/posts/${encodedPostId}/bookmark",
+      "auth": "session",
+      "domain": "community"
+    },
+    {
+      "method": "POST",
+      "path": "/api/posts/{id}/hide",
+      "source_match": "/api/posts/${encodedPostId}/hide",
+      "auth": "session",
+      "domain": "community"
+    },
+    {
+      "method": "POST",
+      "path": "/api/posts/{id}/unhide",
+      "source_match": "/api/posts/${encodedPostId}/unhide",
+      "auth": "session",
+      "domain": "community"
+    },
+    {
+      "method": "POST",
+      "path": "/api/saved/merge",
+      "source_match": "/api/saved/merge",
+      "auth": "session",
+      "domain": "community"
+    },
+    {
+      "method": "POST",
+      "path": "/auth/2fa/verify-setup",
+      "source_match": "/auth/2fa/verify-setup",
+      "auth": "public",
+      "domain": "identity"
+    },
+   {
+     "method": "POST",
+     "path": "/chat",
+     "source_match": "/chat",
+     "auth": "session",
+     "domain": "chat"
+   }
+    ,{
+      "method": "GET",
+      "path": "/admin-api/badge-counts",
+      "source_match": "/admin-api/badge-counts",
+      "auth": "admin",
+      "domain": "siteops"
+    },
+    {
+      "method": "GET",
+      "path": "/admin-api/entity-schema",
+      "source_match": "/admin-api/entity-schema",
+      "auth": "admin",
+      "domain": "siteops"
+    },
+    {
+      "method": "POST",
+      "path": "/admin-api/export",
+      "source_match": "/admin-api/export",
+      "auth": "admin",
+      "domain": "siteops"
+    },
+    {
+      "method": "GET",
+      "path": "/admin-api/sources",
+      "source_match": "/admin-api/sources",
+      "auth": "admin",
+      "domain": "siteops"
+    },
+    {
+      "method": "GET",
+      "path": "/admin-api/unclassified",
+      "source_match": "/admin-api/unclassified?limit=200&q=${encodeURIComponent(q.value)}",
+      "auth": "admin",
+      "domain": "siteops"
+    },
+    {
+      "method": "GET",
+      "path": "/api/me/counts",
+      "source_match": "/api/me/counts",
+      "auth": "session",
+      "domain": "identity"
+    },
+    {
+      "method": "GET",
+      "path": "/api/me/stats",
+      "source_match": "/api/me/stats",
+      "auth": "session",
+      "domain": "identity"
+    },
+    {
+      "method": "GET",
+      "path": "/api/notification-preferences",
+      "source_match": "/api/notification-preferences",
+      "auth": "session",
+      "domain": "catalog"
+    },
+    {
+      "method": "GET",
+      "path": "/api/posts/hidden",
+      "source_match": "/api/posts/hidden?${params}",
+      "auth": "session",
+      "domain": "community"
+    },
+    {
+      "method": "GET",
+      "path": "/auth/export-data",
+      "source_match": "/auth/export-data",
+      "auth": "session",
+      "domain": "identity"
+    },
+    {
+      "method": "GET",
+      "path": "/auth/privacy",
+      "source_match": "/auth/privacy",
+      "auth": "session",
+      "domain": "identity"
+    }
+ ],
+ "direct_transport_exceptions": [
+    {
+      "source_match": "/admin/cases",
+      "reason": "Admin case workbench calls internal admin routes directly; these are platform operations, not product API."
+    },
+    {
+      "source_match": "/health",
+      "reason": "Admin AI health probe is an internal readiness route."
+    },
+    {
+      "source_match": "/health/internal",
+      "reason": "Admin dashboard health probe is an internal readiness route."
+    },
+    {
+      "source_match": "/reload",
+      "reason": "Admin AI reload is an internal operations route."
+    },
+    {
+      "source_match": "/seo/jsonld/",
+      "reason": "SEO JSON-LD is served by the Nuxt/SEO surface, not the backend product API."
+    }
+  ]
+}

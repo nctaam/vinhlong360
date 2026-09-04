@@ -8,12 +8,14 @@
 //
 // A phone number is optional and consent-gated: it is a reply address, not an
 // identity, and the checkbox says so in the reporter's language.
-import { computed, reactive, ref } from 'vue'
+import { computed, onUnmounted, reactive, ref, watch } from 'vue'
 
 import type {
   CorrectionItemInput,
   CorrectionProblemDetail,
   CorrectionSubmission,
+  VerificationError,
+  VerificationReceipt,
 } from '../../types/cases'
 
 const props = defineProps<{
@@ -28,11 +30,18 @@ const props = defineProps<{
   initialFieldPath?: string | null
   busy?: boolean
   serverProblem?: CorrectionProblemDetail | null
+  verificationReceipt?: VerificationReceipt | null
+  phoneVerified?: boolean
+  verifiedPhone?: string
+  verificationError?: VerificationError | null
+  verificationBusy?: boolean
 }>()
 
 const emit = defineEmits<{
   (event: 'submit', submission: CorrectionSubmission): void
   (event: 'request-phone-verification', phone: string): void
+  (event: 'verify-phone', code: string): void
+  (event: 'phone-consent-changed', consent: boolean): void
 }>()
 
 // The fields the kernel accepts, in the reporter's words.
@@ -82,6 +91,36 @@ const serverErrorAnchor = computed(() => {
     : `item-${match[1]}-reported`
 })
 const errorSummary = ref<HTMLElement | null>(null)
+const verificationCode = ref('')
+const resendIn = ref(0)
+let resendTimer: ReturnType<typeof setInterval> | null = null
+
+const phoneNeedsVerification = computed(() => Boolean(optionalPhone.value.trim() && phoneConsent.value))
+const isCurrentPhoneVerified = computed(() => props.phoneVerified === true && props.verifiedPhone === optionalPhone.value.trim())
+const canSubmit = computed(() => !phoneNeedsVerification.value || (
+  props.phoneVerified === true && props.verifiedPhone === optionalPhone.value.trim()
+))
+
+function startResendCountdown(seconds: number) {
+  if (resendTimer) clearInterval(resendTimer)
+  resendIn.value = Math.max(0, Math.ceil(seconds))
+  if (!resendIn.value) return
+  resendTimer = setInterval(() => {
+    resendIn.value = Math.max(0, resendIn.value - 1)
+    if (!resendIn.value && resendTimer) {
+      clearInterval(resendTimer)
+      resendTimer = null
+    }
+  }, 1000)
+}
+
+watch(() => props.verificationReceipt, receipt => {
+  if (receipt) startResendCountdown(receipt.retryAfter)
+}, { immediate: true })
+watch(optionalPhone, () => {
+  verificationCode.value = ''
+})
+onUnmounted(() => { if (resendTimer) clearInterval(resendTimer) })
 
 const canAddItem = computed(() => items.length < 10)
 
@@ -151,6 +190,7 @@ function requestReview() {
 
 function submit() {
   if (!validate()) return
+  if (!canSubmit.value) return
   const payload: CorrectionItemInput[] = items.map(item => ({
     entityId: props.entityId,
     fieldPath: item.fieldPath,
@@ -166,6 +206,9 @@ function submit() {
       ? optionalPhone.value.trim()
       : null,
     notificationConsent: phoneConsent.value && Boolean(optionalPhone.value.trim()),
+    contactReceipt: phoneConsent.value && optionalPhone.value.trim() && props.verificationReceipt?.verified
+      ? props.verificationReceipt.receipt
+      : null,
     handoffDigest: props.handoffDigest ?? null,
     handoffConfirmed: props.handoffDigest ? handoffConfirmed.value : false,
   })
@@ -213,9 +256,6 @@ function submit() {
       <a v-if="serverErrorAnchor" :href="`#${serverErrorAnchor}`">
         Đi tới trường cần kiểm tra
       </a>
-      <p v-if="serverProblem.correlation_id" class="intake-correlation">
-        Mã đối soát: {{ serverProblem.correlation_id }}
-      </p>
     </div>
 
     <fieldset
@@ -309,17 +349,62 @@ function submit() {
         <input id="optional-phone" v-model="optionalPhone" type="tel" inputmode="tel" maxlength="32">
       </div>
       <label v-if="optionalPhone.trim()" id="phone-consent" class="intake-consent">
-        <input v-model="phoneConsent" type="checkbox">
+        <input v-model="phoneConsent" type="checkbox" @change="emit('phone-consent-changed', phoneConsent)">
         Tôi đồng ý cho vinhlong360 dùng số này để báo kết quả yêu cầu, và chỉ việc đó.
       </label>
       <button
         v-if="optionalPhone.trim() && phoneConsent"
         type="button"
         data-role="verify-phone"
+        :disabled="verificationBusy"
         @click="emit('request-phone-verification', optionalPhone.trim())"
       >
-        Gửi mã xác nhận số điện thoại
+        {{ isCurrentPhoneVerified ? 'Xác nhận lại số điện thoại' : 'Gửi mã xác nhận số điện thoại' }}
       </button>
+      <div v-if="phoneNeedsVerification" class="intake-phone-verification" data-role="phone-verification">
+        <p v-if="isCurrentPhoneVerified" class="intake-verification-success" data-role="verification-success" role="status" aria-live="polite">
+          Số điện thoại đã được xác nhận. Mã và nút gửi lại đã được ẩn; hãy bấm “Xác nhận lại số điện thoại” nếu bạn muốn bắt đầu một lần xác nhận mới.
+        </p>
+        <template v-else>
+          <p v-if="verificationReceipt" class="intake-verification-hint">
+            Mã có hiệu lực trong thời gian giới hạn. Bạn còn có thể gửi lại sau
+            <span data-role="resend-countdown">{{ resendIn }} giây</span>.
+          </p>
+          <label for="verification-code">Mã xác nhận số điện thoại</label>
+          <input
+            id="verification-code"
+            v-model="verificationCode"
+            data-role="verification-code"
+            type="text"
+            inputmode="numeric"
+            autocomplete="one-time-code"
+            maxlength="16"
+            :disabled="verificationBusy || !verificationReceipt"
+          >
+          <button
+            type="button"
+            data-role="verify-code"
+            :disabled="verificationBusy || !verificationReceipt || !verificationCode.trim()"
+            @click="emit('verify-phone', verificationCode.trim())"
+          >
+            {{ verificationBusy ? 'Đang kiểm tra…' : 'Xác nhận mã' }}
+          </button>
+          <button
+            type="button"
+            data-role="resend-code"
+            :disabled="verificationBusy || resendIn > 0"
+            @click="emit('request-phone-verification', optionalPhone.trim())"
+          >
+            {{ resendIn > 0 ? `Gửi lại mã sau ${resendIn} giây` : 'Gửi lại mã' }}
+          </button>
+          <p v-if="verificationError" class="intake-field-error" data-role="verification-error" role="alert">
+            {{ verificationError.detail }}
+          </p>
+          <p v-if="phoneNeedsVerification && !isCurrentPhoneVerified" class="intake-field-error" data-role="verification-required">
+            Hãy xác nhận số điện thoại trước khi gửi yêu cầu.
+          </p>
+        </template>
+      </div>
     </fieldset>
 
     <fieldset v-if="handoffDigest" class="intake-handoff" data-role="handoff">
@@ -368,7 +453,7 @@ function submit() {
       >
         Xem lại trước khi gửi
       </button>
-      <button v-else type="submit" :disabled="busy" data-role="submit">
+      <button v-else type="submit" :disabled="busy || !canSubmit" data-role="submit">
         {{ busy ? 'Đang gửi…' : 'Xác nhận gửi yêu cầu' }}
       </button>
       <p class="intake-promise-note">

@@ -72,13 +72,13 @@ a.hl-action[href^="https://zalo"]:hover { background: var(--brand-zalo-hover); b
 .lb-close { position: absolute; top: var(--space-4); right: var(--space-5); font-size: 1.6rem; color: var(--text-on-dark); background: rgba(255,255,255,.1); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border: .5px solid rgba(255,255,255,.15); cursor: pointer; line-height: 1; width: 44px; height: 44px; border-radius: 50%; display: flex; align-items: center; justify-content: center; transition: background .3s var(--ease-out), transform .3s var(--ease-spring-gentle); }
 .lb-close:hover { background: rgba(255,255,255,.22); transform: scale(1.08); }
 .lb-close:active { transform: scale(.9); transition-duration: .08s; }
-.lb-close:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
+.lb-close:focus-visible { outline: 2px solid var(--text-on-dark); outline-offset: 2px; }
 .lb-prev, .lb-next { position: absolute; top: 50%; transform: translateY(-50%); font-size: 1.6rem; color: var(--text-on-dark); background: rgba(255,255,255,.08); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border: .5px solid rgba(255,255,255,.12); cursor: pointer; width: 48px; height: 48px; border-radius: 50%; display: flex; align-items: center; justify-content: center; transition: background .3s var(--ease-out), transform .3s var(--ease-spring-gentle); }
 .lb-prev { left: var(--space-4); }
 .lb-next { right: var(--space-4); }
 .lb-prev:hover, .lb-next:hover { background: rgba(255,255,255,.2); transform: translateY(-50%) scale(1.08); }
 .lb-prev:active, .lb-next:active { transform: translateY(-50%) scale(.92); }
-.lb-prev:focus-visible, .lb-next:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
+.lb-prev:focus-visible, .lb-next:focus-visible { outline: 2px solid var(--text-on-dark); outline-offset: 2px; }
 .lb-counter { position: absolute; bottom: var(--space-5); left: 50%; transform: translateX(-50%); color: var(--text-on-dark); font-size: var(--text-sm); font-weight: var(--weight-semibold); background: rgba(0,0,0,.45); backdrop-filter: var(--glass); -webkit-backdrop-filter: var(--glass); padding: var(--space-1) var(--space-4); border-radius: var(--radius-full); letter-spacing: .02em; border: .5px solid rgba(255,255,255,.12); }
 
 /* Map (trang ban-do) */

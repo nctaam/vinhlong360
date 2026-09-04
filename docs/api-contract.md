@@ -7,6 +7,13 @@ Status: Baseline endpoints reflect production; the Phase 2A schedule contract is
 
 This contract defines the data shapes and API endpoints shared between the FastAPI backend (`agent/`) and the Nuxt frontend (`web-nuxt/`).
 
+> **Machine-readable contract:** the canonical export is
+> `contracts/openapi/backend-openapi.json`. Shared error and pagination schemas
+> live under `contracts/schemas/`; see `contracts/README.md` for generation,
+> compatibility and frontend handoff rules. This Markdown file explains
+> business semantics and migration context; it is not the only source of API
+> shape truth.
+
 ## Data Shapes
 
 ### Entity
@@ -1030,13 +1037,23 @@ demands back as `expectedRevision`; until 2026-08-30 this contract required that
 field while publishing it nowhere, so every review request answered `422`.
 
 `POST /api/cases/receipts/rotate`, `DELETE /api/cases/access`,
-`POST /api/cases/review`, `POST /api/cases/contact/request` and
-`POST /api/cases/contact/verify` are cookie-authenticated mutations. Each
-requires the access cookie, a same-origin request, and an `X-Case-CSRF` header
-matching the CSRF cookie; a missing or mismatched token is `403
-invalid_case_credential`. Rotation returns a fresh `publicReference` and
-`capability`. `DELETE /api/cases/access` answers `204` and expires both cookies.
-`POST /api/cases/review` takes `{reason, expectedRevision}` and answers `201`
-with the linked review case's reference and capability; it never reopens the
-original. The two contact routes enforce the same transport contract and answer
-`503 contact_verification_unavailable` until phone verification ships.
+`POST /api/cases/review` and the legacy `POST /api/cases/contact/request` are
+cookie-authenticated mutations. Each requires the access cookie, a same-origin
+request, and an `X-Case-CSRF` header matching the CSRF cookie; a missing or
+mismatched token is `403 invalid_case_credential`. Rotation returns a fresh
+`publicReference` and `capability`. `DELETE /api/cases/access` answers `204`
+and expires both cookies. `POST /api/cases/review` takes `{reason,
+expectedRevision}` and answers `201` with the linked review case's reference
+and capability; it never reopens the original.
+
+The pre-case OTP lane is intentionally separate: `POST /api/cases/contact/start`
+requires same-origin JSON and correction intake readiness, but no access cookie;
+with `consent=true` it returns `202` with an opaque, short-lived `receipt`.
+Withdrawing consent (`consent=false`) must include that opaque `receipt` in the
+same body; phone alone is never sufficient to select or delete a pending
+challenge, and a stale receipt can only invalidate its own challenge. `POST
+/api/cases/contact/verify` accepts that receipt and code without an access cookie
+and returns a verified receipt with its expiry. With an access cookie, the same
+verify route remains the legacy notification mutation and answers `204`.
+Provider refusal is surfaced as `503 contact_verification_unavailable`; no
+receipt is considered deliverable when the provider reports `delivered=false`.

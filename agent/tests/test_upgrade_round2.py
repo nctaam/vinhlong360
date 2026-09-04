@@ -1097,26 +1097,41 @@ class TestAdminAppeals:
         assert "all" in src
 
     def test_approve_appeal_updates_post(self):
-        src = inspect.getsource(__import__("admin").approve_appeal)
-        assert "moderation_status = 'approved'" in src
+        from community import admin_api as community_admin
+        handler_src = inspect.getsource(community_admin.approve_appeal)
+        src = inspect.getsource(community_admin._decide_appeal)
+        assert "_decide_appeal," in handler_src
+        assert 'target_status == "approved"' in src
+        assert 'new_status="approved"' in src
+        assert "cas_transition(" in src
+        assert 'expected_status="pending"' in src
 
     def test_approve_appeal_notifies_user(self):
         src = inspect.getsource(__import__("admin").approve_appeal)
+        assert "_decide_appeal," in src
         assert "create_notification" in src
 
     def test_reject_appeal_notifies_user(self):
         src = inspect.getsource(__import__("admin").reject_appeal)
+        assert "_decide_appeal," in src
         assert "create_notification" in src
 
     def test_appeal_status_check(self):
-        src = inspect.getsource(__import__("admin").approve_appeal)
+        from community import admin_api as community_admin
+        handler_src = inspect.getsource(community_admin.approve_appeal)
+        src = inspect.getsource(community_admin._decide_appeal)
+        assert "_decide_appeal," in handler_src
         assert '"pending"' in src
-        assert "400" in src
+        assert "StateConflict" in src
+        assert "cas_transition(" in src
 
     def test_appeal_parameterized(self):
-        src = inspect.getsource(__import__("admin").approve_appeal)
-        assert "db._ph" in src
-        assert "validate_path_id" in src
+        from community import admin_api as community_admin
+        handler_src = inspect.getsource(community_admin.approve_appeal)
+        helper_src = inspect.getsource(community_admin._decide_appeal)
+        assert "_decide_appeal," in handler_src
+        assert "db._ph" in helper_src
+        assert "validate_path_id" in handler_src
 
 
 # ── Search query logging & analytics ──
@@ -1452,24 +1467,40 @@ class TestAdminClaims:
         assert "all" in src
 
     def test_approve_claim_updates_status(self):
-        src = inspect.getsource(__import__("admin").approve_claim)
+        from entities import admin_api as entity_admin
+        handler_src = inspect.getsource(entity_admin.approve_claim)
+        src = inspect.getsource(entity_admin._apply_claim_decision)
+        assert "_apply_claim_decision(" in handler_src
         assert "'approved'" in src
         assert "UPDATE" in src
+        assert "FOR UPDATE" in src
+        assert "AND status='pending'" in src
 
     def test_reject_claim_uses_reason(self):
-        src = inspect.getsource(__import__("admin").reject_claim)
-        assert "body.reason" in src
+        from entities import admin_api as entity_admin
+        handler_src = inspect.getsource(entity_admin.reject_claim)
+        src = inspect.getsource(entity_admin._apply_claim_decision)
+        assert "_apply_claim_decision(" in handler_src
+        assert "body.reason" in handler_src
         assert "'rejected'" in src
 
     def test_claim_status_check(self):
-        src = inspect.getsource(__import__("admin").approve_claim)
+        from entities import admin_api as entity_admin
+        handler_src = inspect.getsource(entity_admin.approve_claim)
+        src = inspect.getsource(entity_admin._apply_claim_decision)
+        assert "_apply_claim_decision(" in handler_src
         assert '"pending"' in src
-        assert "409" in src or "not_pending" in src
+        assert "not_pending" in src
+        assert "FOR UPDATE" in src
+        assert "AND status='pending'" in src
 
     def test_claim_parameterized(self):
-        src = inspect.getsource(__import__("admin").approve_claim)
-        assert "db._ph" in src
-        assert "validate_path_id" in src
+        from entities import admin_api as entity_admin
+        helper_src = inspect.getsource(entity_admin._apply_claim_decision)
+        handler_src = inspect.getsource(entity_admin.approve_claim)
+        assert "_apply_claim_decision(" in handler_src
+        assert "db._ph" in helper_src
+        assert "validate_path_id" in handler_src
 
 
 # ── Pinned posts migration ──

@@ -11,7 +11,7 @@ export interface RecentItem {
 }
 
 export const RECENT_STORAGE_KEY = 'vl360_recent'
-export const LIFECYCLE_CLEAR_VERSION = 'v1'
+const LIFECYCLE_CLEAR_VERSION = 'v1'
 const STORAGE_KEY = RECENT_STORAGE_KEY
 const MAX_ITEMS = 12
 export const RECENT_CONTEXT_TTL_MS = 30 * 60 * 1_000

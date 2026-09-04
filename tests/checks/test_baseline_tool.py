@@ -46,7 +46,6 @@ def test_no_write_does_not_touch_disk(tmp_path):
 # người đọc bảng để biết còn nợ bao nhiêu, rồi lập kế hoạch trên con số sai. Rào
 # này bắt lệch ngay lần commit sau chứ không đợi ai đó tình cờ đối chiếu.
 
-import json  # noqa: E402
 import re as _re  # noqa: E402
 from pathlib import Path as _Path  # noqa: E402
 

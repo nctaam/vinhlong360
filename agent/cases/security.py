@@ -169,6 +169,58 @@ class CaseCrypto:
         except (InvalidToken, KeyError, TypeError, ValueError, UnicodeError, json.JSONDecodeError) as exc:
             raise CaseSecurityError(_PUBLIC_ERROR) from exc
 
+    def issue_contact_receipt(
+        self,
+        *,
+        contact_digest: str,
+        challenge_digest: str,
+        challenge_id: str | None = None,
+        expires_at: datetime,
+        now: datetime,
+        verified: bool = False,
+    ) -> str:
+        """Issue an opaque, restart-safe OTP receipt with no raw contact data."""
+        expiry = _utc(expires_at)
+        current = _utc(now)
+        if expiry <= current or any(
+            type(value) is not str or not value
+            for value in (contact_digest, challenge_digest)
+        ):
+            raise CaseSecurityError(_PUBLIC_ERROR)
+        return self.encrypt_replay(
+            {
+                "typ": "contact_verification",
+                "contact_digest": contact_digest,
+                "challenge_digest": challenge_digest,
+                "challenge_id": challenge_id or "",
+                "expires_at": int(expiry.timestamp()),
+                "verified": bool(verified),
+            },
+            now=current,
+        )
+
+    def open_contact_receipt(self, receipt: str, *, now: datetime) -> dict:
+        """Authenticate and expiry-check a pre-case OTP receipt."""
+        try:
+            payload = self.decrypt_replay(receipt, now=now)
+            if payload.get("typ") != "contact_verification":
+                raise ValueError
+            expiry = int(payload["expires_at"])
+            if expiry <= int(_utc(now).timestamp()):
+                raise ValueError
+            if not all(
+                type(payload.get(key)) is str and payload[key]
+                for key in ("contact_digest", "challenge_digest")
+            ):
+                raise ValueError
+            if type(payload.get("verified")) is not bool:
+                raise ValueError
+            if type(payload.get("challenge_id")) is not str or not payload["challenge_id"]:
+                raise ValueError
+            return payload
+        except (CaseSecurityError, KeyError, TypeError, ValueError, OverflowError) as exc:
+            raise CaseSecurityError(_PUBLIC_ERROR) from exc
+
     def make_access(self, case_id: str, receipt_id: str, receipt_revision: int, session_digest: str, current_user_id: str | None) -> CaseAccess:
         return CaseAccess(case_id, receipt_id, receipt_revision, session_digest, current_user_id)
 

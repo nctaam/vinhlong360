@@ -122,12 +122,13 @@
   transition: background .3s var(--ease-out), transform .2s var(--ease-spring-gentle), opacity .3s, box-shadow .2s var(--ease-out);
   min-height: 44px; min-width: 44px; letter-spacing: .01em;
 }
-.btn:hover:not(:disabled) { transform: translateY(-1px); }
-.btn:active:not(:disabled) { transform: scale(.96) translateY(0); }
-.btn:focus-visible { outline: 2px solid var(--primary); outline-offset: 3px; }
-.btn:disabled { opacity: var(--opacity-disabled); cursor: not-allowed; filter: grayscale(.3); }
+.btn:hover:not(:disabled) { transform: translateY(-1px); box-shadow: inset 0 0 0 999px var(--state-hover), var(--shadow-sm); }
+.btn:active:not(:disabled) { transform: scale(.96) translateY(0); box-shadow: inset 0 0 0 999px var(--state-pressed); }
+.btn:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 3px; box-shadow: 0 0 0 4px var(--state-focus); }
+.btn:disabled { opacity: var(--opacity-disabled); cursor: not-allowed; filter: grayscale(.3); background-image: linear-gradient(var(--state-disabled), var(--state-disabled)); }
+.btn[aria-busy="true"] { cursor: progress; background-image: linear-gradient(var(--state-loading), var(--state-loading)); }
 
-.btn-primary { background: linear-gradient(135deg, var(--primary) 0%, color-mix(in srgb, var(--primary) 85%, #000) 100%); color: var(--text-on-dark); }
+.btn-primary { background: linear-gradient(135deg, var(--primary) 0%, color-mix(in srgb, var(--primary) 85%, var(--color-canvas)) 100%); color: var(--text-on-dark); }
 .btn-primary:hover:not(:disabled) { box-shadow: 0 4px 16px rgba(var(--primary-rgb), .35); }
 .btn-primary:active:not(:disabled) { box-shadow: inset 0 2px 6px rgba(0,0,0,.25); }
 
@@ -164,7 +165,7 @@
   box-shadow: var(--focus-ring), var(--shadow-xs); border-width: 1px;
 }
 .input::placeholder { color: var(--muted); }
-.input.error, .textarea.error { border-color: var(--error); box-shadow: 0 0 0 3px var(--error-bg); animation: inputShake .4s var(--ease-out); }
+.input.error, .textarea.error { border-color: var(--color-error); box-shadow: 0 0 0 3px var(--state-error); animation: inputShake .4s var(--ease-out); }
 .input.success, .textarea.success { border-color: var(--secondary); box-shadow: 0 0 0 3px rgba(var(--secondary-rgb), .12); }
 @keyframes inputShake { 0%, 100% { transform: translateX(0); } 20%, 60% { transform: translateX(-4px); } 40%, 80% { transform: translateX(4px); } }
 .input:required:not(:placeholder-shown):valid { border-color: var(--secondary); }
@@ -172,7 +173,7 @@
 .textarea { resize: vertical; min-height: 80px; }
 .input:disabled, .textarea:disabled, .select:disabled {
   background: var(--bg-warm); border-color: var(--line); color: var(--muted);
-  cursor: not-allowed; opacity: var(--opacity-disabled-content);
+  cursor: not-allowed; opacity: var(--opacity-disabled-content); background-image: linear-gradient(var(--state-disabled), var(--state-disabled));
 }
 .input:read-only, .textarea:read-only {
   background: var(--bg-warm); border-color: var(--line);

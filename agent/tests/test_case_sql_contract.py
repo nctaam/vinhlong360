@@ -93,8 +93,8 @@ def collect_statements() -> tuple[list[tuple[str, int, str]], list[tuple[str, in
                     first = node.values[0]
                     if isinstance(first, ast.Constant) and isinstance(first.value, str):
                         head = first.value.strip()
-                if head.upper().startswith(VERBS):
-                    skipped.append((path.name, node.lineno))
+                        if re.match(r"^(?:SELECT|INSERT|UPDATE|DELETE|WITH)\b", head, re.IGNORECASE):
+                            skipped.append((path.name, node.lineno))
                 continue
             text = text.strip()
             if text.upper().startswith(VERBS) and len(text) >= MIN_LENGTH:

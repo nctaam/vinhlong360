@@ -680,12 +680,12 @@ onUnmounted(() => {
 /* Hero */
 .wp-hero { border-radius: var(--radius-sheet); padding: var(--space-8) var(--space-6); margin-top: var(--space-2); color: var(--text-on-dark, var(--white)); position: relative; overflow: hidden; }
 .wp-hero.area-vinh-long { background: linear-gradient(135deg, var(--clay-600) 0%, color-mix(in srgb, var(--clay-600), var(--clay-400)) 50%, var(--clay-400) 100%); }
-.wp-hero.area-ben-tre { background: linear-gradient(135deg, var(--leaf-700) 0%, var(--leaf-600) 50%, color-mix(in srgb, var(--leaf-600) 65%, white) 100%); }
-.wp-hero.area-tra-vinh { background: linear-gradient(135deg, color-mix(in srgb, var(--river-600) 80%, black) 0%, var(--river-600) 50%, color-mix(in srgb, var(--river-600) 65%, white) 100%); }
+.wp-hero.area-ben-tre { background: linear-gradient(135deg, var(--leaf-700) 0%, var(--leaf-600) 50%, color-mix(in srgb, var(--leaf-600) 65%, var(--white)) 100%); }
+.wp-hero.area-tra-vinh { background: linear-gradient(135deg, color-mix(in srgb, var(--river-600) 80%, var(--black)) 0%, var(--river-600) 50%, color-mix(in srgb, var(--river-600) 65%, var(--white)) 100%); }
 /* Dark mode: darken bottom stop for 4.5:1 AA on white text */
-.dark .wp-hero.area-vinh-long { background: linear-gradient(135deg, color-mix(in srgb, var(--clay-600) 75%, black) 0%, var(--clay-700) 50%, color-mix(in srgb, var(--clay-700) 88%, black) 100%); }
-.dark .wp-hero.area-ben-tre { background: linear-gradient(135deg, color-mix(in srgb, var(--leaf-700) 70%, black) 0%, color-mix(in srgb, var(--leaf-700) 85%, black) 50%, color-mix(in srgb, var(--leaf-700) 72%, black) 100%); }
-.dark .wp-hero.area-tra-vinh { background: linear-gradient(135deg, color-mix(in srgb, var(--river-600) 55%, black) 0%, color-mix(in srgb, var(--river-600) 70%, black) 50%, color-mix(in srgb, var(--river-600) 58%, black) 100%); }
+.dark .wp-hero.area-vinh-long { background: linear-gradient(135deg, color-mix(in srgb, var(--clay-600) 75%, var(--black)) 0%, var(--clay-700) 50%, color-mix(in srgb, var(--clay-700) 88%, var(--black)) 100%); }
+.dark .wp-hero.area-ben-tre { background: linear-gradient(135deg, color-mix(in srgb, var(--leaf-700) 70%, var(--black)) 0%, color-mix(in srgb, var(--leaf-700) 85%, var(--black)) 50%, color-mix(in srgb, var(--leaf-700) 72%, var(--black)) 100%); }
+.dark .wp-hero.area-tra-vinh { background: linear-gradient(135deg, color-mix(in srgb, var(--river-600) 55%, var(--black)) 0%, color-mix(in srgb, var(--river-600) 70%, var(--black)) 50%, color-mix(in srgb, var(--river-600) 58%, var(--black)) 100%); }
 
 /* Cinematic scrim: lift text legibility + add owned-by-region radial glow */
 .wp-hero::before {

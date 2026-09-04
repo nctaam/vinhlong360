@@ -1,0 +1,65 @@
+{
+  "schema_version": 1,
+  "decisions": [
+    {
+      "decision_key": "service_owner",
+      "record": "docs/decisions/QD-01-chu-so-huu-dich-vu.md",
+      "state": "unsigned",
+      "chosen_option": null,
+      "signed_by": null,
+      "signed_at": null,
+      "record_sha256": null,
+      "signature": null
+    },
+    {
+      "decision_key": "legal",
+      "record": "docs/decisions/QD-02-phap-ly-dpo.md",
+      "state": "unsigned",
+      "chosen_option": null,
+      "signed_by": null,
+      "signed_at": null,
+      "record_sha256": null,
+      "signature": null
+    },
+    {
+      "decision_key": "provider",
+      "record": "docs/decisions/QD-03-idempotency-nha-cung-cap.md",
+      "state": "unsigned",
+      "chosen_option": null,
+      "signed_by": null,
+      "signed_at": null,
+      "record_sha256": null,
+      "signature": null
+    },
+    {
+      "decision_key": "residency",
+      "record": "docs/decisions/QD-04-noi-luu-tru-du-lieu.md",
+      "state": "unsigned",
+      "chosen_option": null,
+      "signed_by": null,
+      "signed_at": null,
+      "record_sha256": null,
+      "signature": null
+    },
+    {
+      "decision_key": "public_indexing",
+      "record": "docs/decisions/QD-05-lap-chi-muc-cong-khai.md",
+      "state": "unsigned",
+      "chosen_option": null,
+      "signed_by": null,
+      "signed_at": null,
+      "record_sha256": null,
+      "signature": null
+    },
+    {
+      "decision_key": "release_owner",
+      "record": "docs/decisions/QD-06-chu-so-huu-staging-phat-hanh.md",
+      "state": "unsigned",
+      "chosen_option": null,
+      "signed_by": null,
+      "signed_at": null,
+      "record_sha256": null,
+      "signature": null
+    }
+  ]
+}

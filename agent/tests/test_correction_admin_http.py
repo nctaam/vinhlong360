@@ -79,6 +79,7 @@ def operator(monkeypatch):
                  "CORRECTION_PUBLICATION_ENABLED"):
         monkeypatch.setattr(settings, flag, True, raising=False)
     monkeypatch.setattr(settings, "CASE_KERNEL_ENCRYPTION_KEY", MASTER_KEY, raising=False)
+    monkeypatch.setattr(settings, "CASE_SERVICE_OWNER_REF", "person:case-owner", raising=False)
     assert wiring.wire_case_kernel(adapter, settings) is True
 
     app = FastAPI()

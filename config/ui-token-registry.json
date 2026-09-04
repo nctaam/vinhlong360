@@ -1,0 +1,83 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "version": 1,
+  "canonical_semantic_prefix": "--color-",
+  "semantic_authority": {
+    "owner": "design-platform",
+    "source": "web-nuxt/assets/css/variables.css",
+    "rule": "New semantic UI colors must reference a --color-* token; primitive and scene values are classified separately.",
+    "primitive_suffix": "-primitive"
+  },
+  "compatibility_aliases": [
+    { "alias": "--catalog-legacy-primary", "canonical": "--primary", "owner": "design-platform", "expiry": "2027-03-31", "allowed_files": ["web-nuxt/assets/css/tri-region-color.css"] },
+    { "alias": "--catalog-legacy-primary-rgb", "canonical": "--primary-rgb", "owner": "design-platform", "expiry": "2027-03-31", "allowed_files": ["web-nuxt/assets/css/tri-region-color.css"] },
+    { "alias": "--catalog-legacy-primary-fg", "canonical": "--primary-fg", "owner": "design-platform", "expiry": "2027-03-31", "allowed_files": ["web-nuxt/assets/css/tri-region-color.css"] },
+    { "alias": "--catalog-legacy-primary-fg-strong", "canonical": "--primary-fg-strong", "owner": "design-platform", "expiry": "2027-03-31", "allowed_files": ["web-nuxt/assets/css/tri-region-color.css"] },
+    { "alias": "--primary", "canonical": "--color-brand", "owner": "design-platform", "expiry": "2027-03-31", "allowed_files": ["web-nuxt/assets/css/tri-region-color.css", "web-nuxt/assets/css/catalog.css", "web-nuxt/assets/css/detail.css", "web-nuxt/layouts/admin.vue"] },
+    { "alias": "--primary-fg", "canonical": "--color-brand", "owner": "design-platform", "expiry": "2027-03-03", "allowed_files": ["web-nuxt/assets/css/tri-region-color.css", "web-nuxt/assets/css/catalog.css", "web-nuxt/assets/css/detail.css", "web-nuxt/layouts/admin.vue"] },
+    { "alias": "--bg", "canonical": "--color-canvas", "owner": "design-platform", "expiry": "2027-06-30", "allowed_files": ["web-nuxt/assets/css", "web-nuxt/layouts/admin.vue", "web-nuxt/pages/admin"] },
+    { "alias": "--card", "canonical": "--color-surface", "owner": "design-platform", "expiry": "2027-06-30", "allowed_files": ["web-nuxt/assets/css", "web-nuxt/layouts/admin.vue", "web-nuxt/pages/admin"] }
+  ],
+  "state_tokens": {
+    "hover": "--state-hover",
+    "focus_visible": "--state-focus",
+    "pressed": "--state-pressed",
+    "disabled": "--state-disabled",
+    "loading": "--state-loading",
+    "error": "--state-error"
+  },
+  "admin_density": "dense-workbench",
+  "admin_density_recipe": {
+    "visual_control_height": "32px",
+    "keyboard_hit_area": "44px",
+    "table_row_height": "40px",
+    "scope": "AdminCP controls only; visual compression must not reduce the focusable hit area."
+  },
+  "typography": {
+    "interface": "Be Vietnam Pro",
+    "editorial": "Fraunces",
+    "font_optical_sizing": "normal",
+    "glyph_fixture": "Ệ ộ Ẵ ữ Ề Ậ"
+  },
+  "z_layers": {
+    "base": 0,
+    "rel": 1,
+    "dropdown": 50,
+    "floating": 75,
+    "sticky": 100,
+    "mobile_nav": 101,
+    "mobile_nav_backdrop": 99,
+    "mobile_nav_top": 102,
+    "nav": 100,
+    "command_palette": 150,
+    "overlay": 200,
+    "overlay_raised": 201,
+    "overlay_top": 202,
+    "drawer": 300,
+    "modal": 500,
+    "modal_high": 600,
+    "lightbox": 800,
+    "toast": 900,
+    "skip_link": 1000
+  },
+  "z_layer_order": ["base", "rel", "dropdown", "floating", "mobile_nav_backdrop", "sticky", "nav", "mobile_nav", "mobile_nav_top", "command_palette", "overlay", "overlay_raised", "overlay_top", "drawer", "modal", "modal_high", "lightbox", "toast", "skip_link"],
+  "z_index_exemptions": [
+    { "path": "web-nuxt", "values": [-1, 0, 1, 2, 3, 4, 10, 20, 30], "type": "decorative-scene", "reason": "local stacking inside an isolated component" }
+  ],
+  "exemptions": ["semantic-ui", "decorative-scene", "media-scrim", "SVG/data-uri", "forced-colors", "fallback"]
+  ,"semantic_value_exemptions": [
+    { "path": "assets/css/cards.css", "type": "decorative-scene", "reason": "legacy card imagery and scrim colors" },
+    { "path": "assets/css/base.css", "type": "media-scrim", "reason": "legacy shared shell scrims" },
+    { "path": "assets/css/catalog.css", "type": "decorative-scene", "reason": "catalog scene and media treatments" },
+    { "path": "assets/css/components.css", "type": "media-scrim", "reason": "shared component scrims and shadows" },
+    { "path": "assets/css/dark-overrides.css", "type": "forced-colors", "reason": "dark/forced contrast compatibility" },
+    { "path": "assets/css/detail-shared.css", "type": "media-scrim", "reason": "detail media overlays" },
+    { "path": "assets/css/detail.css", "type": "media-scrim", "reason": "detail hero overlays" },
+    { "path": "assets/css/legal.css", "type": "media-scrim", "reason": "legal page atmospheric overlays" },
+    { "path": "assets/css/events.css", "type": "decorative-scene", "reason": "event timeline decoration" },
+    { "path": "pages/kham-pha/[interest].vue", "type": "decorative-scene", "reason": "explore scene treatment" },
+    { "path": "pages/lich-van-nien.vue", "type": "decorative-scene", "reason": "calendar state colors" },
+    { "path": "pages/luu-tru.vue", "type": "decorative-scene", "reason": "lodging scene treatment" }
+    ,{ "path": "pages/admin/lich-trinh.vue", "type": "semantic-ui", "reason": "admin calendar compatibility states" }
+  ]
+}

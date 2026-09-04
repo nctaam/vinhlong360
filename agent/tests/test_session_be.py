@@ -987,7 +987,9 @@ def test_jsonl_rotation_under_limit(tmp_path):
 def test_jsonl_rotation_over_limit(tmp_path, monkeypatch):
     """File over limit should be split: archive old, keep newest."""
     import public_api
-    monkeypatch.setattr(public_api, "_JSONL_MAX_LINES", 3)
+    import jsonl_store
+    # Rotation policy lives in the shared jsonl_store module after extraction.
+    monkeypatch.setattr(jsonl_store, "JSONL_MAX_LINES", 3)
     log_file = tmp_path / "test.jsonl"
     log_file.write_text("old1\nold2\nnew1\nnew2\nnew3\n", encoding="utf-8")
     public_api._maybe_rotate_jsonl(log_file)
@@ -1364,8 +1366,11 @@ class TestPhase8SessionCleanup:
         """task_session_cleanup purges expired sessions."""
         import inspect
         import scheduler
-        src = inspect.getsource(scheduler.task_session_cleanup)
+        from identity import api as identity_api
+        src = inspect.getsource(identity_api._cleanup_expired_data_impl)
+        task = inspect.getsource(scheduler.task_session_cleanup)
         assert "expires_at < NOW()" in src
+        assert "cleanup_expired_data" in task
 
     def test_account_erasure_is_separate_from_session_cleanup(self):
         """Account deletion runs only through the verified erasure lifecycle."""
@@ -1475,9 +1480,9 @@ class TestPhase9ErrorInfoLeaks:
 
     def test_backup_error_no_stderr(self):
         """Backup endpoint does not expose result.stderr in HTTP response."""
-        src = self._get_admin_src()
-        idx = src.find("def trigger_backup")
-        block = src[idx:idx + 1500]
+        import inspect
+        from siteops import admin_api
+        block = inspect.getsource(admin_api.trigger_backup)
         assert "result.stderr" not in block or "logger" in block
         assert "Kiểm tra log server" in block
 
@@ -2172,9 +2177,9 @@ class TestPhase12DependencySecurity:
 
     def test_esms_uses_https(self):
         """eSMS API must use HTTPS, not HTTP."""
-        src = _auth_src()
-        assert "https://rest.esms.vn/" in src
-        assert "http://rest.esms.vn/" not in src
+        from sms_provider import ESMS_ENDPOINT
+        assert ESMS_ENDPOINT.startswith("https://rest.esms.vn/")
+        assert not ESMS_ENDPOINT.startswith("http://rest.esms.vn/")
 
 
 # ═══════════════════════════════════════════════════════════════════════
@@ -2349,8 +2354,9 @@ class TestPhase15Idempotency:
     def test_create_post_has_idempotency(self):
         import inspect
         from community import api as social
-        sig = inspect.signature(social.create_post)
-        assert "_idem" in sig.parameters
+        src = inspect.getsource(social.create_post)
+        assert "_community_idempotency(" in src
+        assert "_community_idempotency_record(" in src
 
     def test_create_comment_has_idempotency(self):
         import inspect

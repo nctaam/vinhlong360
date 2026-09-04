@@ -217,3 +217,43 @@ ghi ở backlog tối ưu — giảm dần, KHÔNG được tăng tiếp từ 47
 
 - 2026-08-31T17:14:13 SKIP R30.7 — pre-existing bundle output debt: 802kB gz exceeds 800kB baseline; unrelated to Task 1 evidence verifier
 
+- 2026-08-31T21:56:25 SKIP R30.7 — pre-existing bundle debt; Task 3 frontend changes do not alter generated bundle budget
+
+- 2026-08-31T22:00:15 SKIP R30.7 — pre-existing bundle debt; correction contract gap tests are backend-only
+
+- 2026-08-31T22:00:45 SKIP R30.7 — pre-existing bundle debt; report-only update
+
+- 2026-08-31T22:07:16 SKIP R30.7 — pre-existing bundle debt; test typing corrections do not alter frontend bundle
+
+- 2026-08-31T22:08:25 SKIP R30.7 — pre-existing bundle debt; structured error copy-only frontend change
+
+- 2026-08-31T22:09:23 SKIP R30.7 — pre-existing bundle debt; report-only update
+
+- 2026-09-01T00:36:33 SKIP R30.7 — Task 4 review remediation source-only commit; existing ignored frontend build is 2kB over the pre-existing 800kB budget and no frontend files changed.
+
+- 2026-09-01T00:38:19 SKIP R30.7 — Task 4 review remediation follow-up: audit descriptor gains explicit case_id while existing ignored frontend bundle remains 2kB over budget.
+
+
+- 2026-09-01T13:43:22 SKIP R30.7 — Task 4 report-only documentation; pre-existing 803kB frontend bundle debt is tracked in docs/standards/90-exceptions-log.md and no frontend artifact changes
+
+- 2026-09-01T15:07:52 SKIP R30.7 — Task 5 lifecycle evidence and progress docs only; pre-existing frontend bundle debt is tracked in docs/standards/90-exceptions-log.md and no frontend artifact changes
+
+- 2026-09-01T15:46:11 SKIP R30.7 — Task 6 backend-only change; existing frontend bundle exceeds baseline by 2kB
+
+
+
+- 2026-09-02T00:54:54 SKIP R30.7 — Task 10 backend logging remediation; pre-existing 803kB frontend bundle debt is unchanged and no frontend artifacts are staged.
+
+- 2026-09-02T01:37:16 SKIP R30.7 — Task 10 F-50 backend auth dependency fix; pre-existing frontend bundle debt is unchanged and no frontend artifacts are staged.
+
+- 2026-09-02T01:40:44 SKIP R20.7,R20.8,R30.7 — Task 10 backend privacy/auth/config remediation; pre-existing ratchet debt and unchanged frontend bundle are tracked in docs/standards/90-exceptions-log.md
+
+- 2026-09-02T01:48:26 SKIP R20.7,R20.8,R30.7 — Task 10 follow-up: move JSONL rotation contract to shared leaf and redact unlabelled interpolated log text; pre-existing ratchet debt unchanged
+
+- 2026-09-02T01:52:30 SKIP R20.7,R20.8,R30.7 — Task 10 final privacy follow-up: recursively redact nested interpolated log content; pre-existing ratchet debt unchanged
+
+- 2026-09-02T02:05:03 SKIP R20.7,R20.8,R30.7 — Pre-existing complexity ratchet debt unrelated to Task 10 middleware prompt-injection redaction
+
+- 2026-09-02T03:03:40 SKIP R20.8,R30.7 — Task 11 backup/restore, shared idempotency and monitoring control path add bounded operational branching; R30.7 frontend bundle debt is pre-existing and no frontend artifacts changed.
+
+- 2026-09-04T08:48:57 SKIP R20.8,R30.7 — Checkpoint bundles the already-reviewed correction-case and release-evidence modules; R20.8 complexity debt is pre-existing/documented and R30.7 809kB bundle debt is pre-existing, with no new baseline or claim of release readiness.

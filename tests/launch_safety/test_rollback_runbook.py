@@ -818,12 +818,38 @@ def _find_bash() -> Path:
         r"C:\Program Files\Git\bin\bash.exe",
     )
     for candidate in candidates:
-        if candidate and Path(candidate).is_file():
-            return Path(candidate)
+        if candidate:
+            path = Path(candidate)
+            if path.is_file() and not _is_wsl_launcher(path):
+                return path
     return Path("bash-unavailable")
 
 
+def _is_wsl_launcher(path: Path) -> bool:
+    normalized = str(path).replace("/", "\\").lower()
+    return normalized.endswith("\\windows\\system32\\bash.exe") or "\\windowsapps\\bash.exe" in normalized
+
+
+def _require_native_symlink_support(tmp_path: Path) -> None:
+    target = tmp_path / ".symlink-target"
+    link = tmp_path / ".symlink-probe"
+    target.write_text("probe\n", encoding="ascii")
+    try:
+        os.symlink(target.name, link)
+    except OSError as exc:
+        pytest.skip(f"native symlink creation unavailable: {exc}")
+    finally:
+        link.unlink(missing_ok=True)
+        target.unlink(missing_ok=True)
+
+
 BASH = _find_bash()
+
+
+def test_wsl_bash_launcher_is_not_treated_as_git_bash():
+    assert _is_wsl_launcher(Path(r"C:\Windows\System32\bash.exe"))
+    assert _is_wsl_launcher(Path(r"C:\Users\runner\AppData\Local\Microsoft\WindowsApps\bash.exe"))
+    assert not _is_wsl_launcher(Path(r"C:\Program Files\Git\bin\bash.exe"))
 
 
 def test_bash_discovery_uses_path_fallback(
@@ -1277,6 +1303,7 @@ def test_local_rehearsal_failure_injection_preserves_status_and_records_recovery
 ):
     if not BASH.is_file():
         pytest.skip("Git Bash is unavailable")
+    _require_native_symlink_support(tmp_path)
 
     package = _build_closed_package(tmp_path / "package")
     later_skips = {

@@ -27,7 +27,10 @@ const ROOT = process.cwd()
 // duyệt. (2) Bẫy tự-quy-chiếu đã cắn ngay lượt chạy đầu: chú thích của CHÍNH file
 // này viết `var(--surface-alt)` làm ví dụ, và bộ quét bắt luôn nó — đúng lớp bẫy
 // CLAUDE.md §5c ghi ("checker so chuỗi bắt luôn cái test đang cấm điều đó").
-const BO_QUA = new Set(['node_modules', '.nuxt', '.output', 'dist', '.git', 'tests'])
+// Build-time scripts are not browser-delivered styles. Several scanner scripts
+// intentionally contain hostile `var(--token)` fixtures, so including them
+// would make this production CSS audit self-report its own test data.
+const BO_QUA = new Set(['node_modules', '.nuxt', '.output', 'dist', '.git', 'tests', 'scripts'])
 const DUOI = /\.(css|vue|ts|js|mjs)$/
 
 function quetFile(thuMuc: string, ra: string[] = []): string[] {

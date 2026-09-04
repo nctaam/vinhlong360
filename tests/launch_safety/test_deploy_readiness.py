@@ -1124,3 +1124,85 @@ def test_shell_scripts_are_syntax_valid():
             env=os.environ.copy(),
         )
         assert result.returncode == 0, result.stderr
+
+
+# --- Chĩa probe vào NHẦM BỀ MẶT (đo 2026-09-03) -----------------------------
+#
+# `--require-public-internal-404` là hợp đồng của LỚP BIÊN NGINX
+# (`location ^~ /_internal/ { return 404; }` ở nginx.conf / nginx-ssl.conf).
+# Origin Nuxt thì CỐ Ý phục vụ `/_internal/launch-readiness` với HTTP 200 và
+# không xác thực — `deploy_launch_admission.sh` curl thẳng vào đó làm cổng bắt
+# buộc trước khi mở lại traffic.
+#
+# Trước đây phần bao phủ local-rehearsal chỉ stub TOÀN BỘ đường dẫn là 404, tức
+# chỉ có nhánh hạnh phúc. Nên việc runbook chĩa `NGINX_OPERATOR_PROBE_URL` vào
+# cổng origin `3100` không có test nào bắt được, và nó đã sinh ra một artifact
+# `fail` trông y như lỗi sản phẩm.
+
+
+def test_app_origin_surface_is_a_failure_of_the_public_internal_contract(
+    tmp_path: Path,
+):
+    """Origin trả 200 ở /_internal/launch-readiness phải làm probe THẤT BẠI.
+
+    Đây là chốt chặn cho "đo nhầm bề mặt": nếu ai đó lại chĩa probe biên vào
+    cổng ứng dụng, mode này phải kêu — chứ không phải im lặng pass.
+    """
+    probe = _load_probe()
+    responses = _closed_responses(probe)
+    # Đúng hình dạng của một origin Nuxt: chỉ launch-readiness tồn tại (200),
+    # hai đường dẫn kia là route của agent nên origin Nuxt trả 404.
+    for path in probe._PUBLIC_INTERNAL_PATHS:
+        status = 200 if path == "/_internal/launch-readiness" else 404
+        responses[path] = probe.HttpResponse(
+            path=path, status=status, headers={}, body=b""
+        )
+    evidence = tmp_path / "wrong-surface.json"
+
+    result = probe.main(
+        [
+            "--expect",
+            "closed",
+            "--require-public-post-reopen-matrix",
+            "--require-public-internal-404",
+            "--local-rehearsal-base-url",
+            "--base-url",
+            "http://127.0.0.1:3100",
+            "--evidence",
+            str(evidence),
+        ],
+        requester=lambda path, _timeout: responses[path],
+    )
+
+    assert result != 0, "probe phải thất bại khi bề mặt là origin ứng dụng"
+    payload = json.loads(evidence.read_text(encoding="utf-8"))
+    assert payload["verdict"] == "fail"
+    assert "public-internal-route-exposed" in payload["errors"]
+
+
+def test_rollback_runbook_operator_probe_url_is_an_edge_not_an_origin_port():
+    """Runbook không được dạy người ta chĩa probe biên vào cổng origin.
+
+    Giá trị cũ là `http://127.0.0.1:3100`; `3100` nằm trong
+    `PROHIBITED_PUBLIC_PORTS`, tức một cổng dịch vụ không bao giờ được publish
+    ra ngoài — nó không thể là "operator source" của hợp đồng biên.
+    """
+    import re
+
+    runbook = ROOT / "docs" / "runbooks" / "launch-safety-rollback.md"
+    text = runbook.read_text(encoding="utf-8")
+    socket_probe = _load_socket_probe()
+
+    assigned = re.findall(
+        r"NGINX_(?:OPERATOR_)?PROBE_URL=https?://[^\s:/]+:(\d+)", text
+    )
+    assert assigned, "runbook phải có ví dụ đặt NGINX_OPERATOR_PROBE_URL"
+
+    offenders = [
+        port for port in assigned if int(port) in socket_probe.PROHIBITED_PUBLIC_PORTS
+    ]
+    assert not offenders, (
+        f"runbook đặt NGINX_OPERATOR_PROBE_URL vào cổng bị cấm publish {offenders}; "
+        "biến này phải trỏ vào reverse proxy (biên nginx loopback là 18080), "
+        "không phải cổng origin của ứng dụng."
+    )

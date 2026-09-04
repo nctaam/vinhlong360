@@ -444,9 +444,6 @@ async def moderation_queue(
     return await asyncio.to_thread(_query)
 
 
-@router.post("/moderation/{post_id}/approve",
-             summary="Approve moderated post",
-             description="Approves a post pending moderation and notifies the author.")
 def _moderate_post(post_id: str, new_status: str, actor_id: str, reason: str | None = None):
     """Run one moderation decision as a status+revision CAS."""
     ph = db._ph
@@ -498,6 +495,9 @@ def _decide_appeal(appeal_id: str, target_status: str, admin_id: str, note: str)
         return str(data["post_id"]), str(data["user_id"])
 
 
+@router.post("/moderation/{post_id}/approve",
+             summary="Approve moderated post",
+             description="Approves a post pending moderation and notifies the author.")
 async def approve_post(post_id: str, request: Request = None):
     require_pg()
     post_id = validate_path_id(post_id, "post_id")

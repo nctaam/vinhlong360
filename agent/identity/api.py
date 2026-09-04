@@ -130,7 +130,7 @@ def _export_cursor_secret() -> bytes:
     global _EXPORT_CURSOR_SECRET
     if _EXPORT_CURSOR_SECRET is not None:
         return _EXPORT_CURSOR_SECRET
-    configured = os.getenv("EXPORT_CURSOR_SECRET") or _cfg.JWT_SECRET or _cfg.ADMIN_API_KEY
+    configured = _cfg.EXPORT_CURSOR_SECRET or _cfg.JWT_SECRET or _cfg.ADMIN_API_KEY
     if configured:
         _EXPORT_CURSOR_SECRET = str(configured).encode("utf-8")
         return _EXPORT_CURSOR_SECRET

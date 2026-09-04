@@ -17,8 +17,8 @@ ROOT = Path(__file__).resolve().parents[1]
 #   3. tests/test_release_quality_gates.py LATEST_MIGRATION / LATEST_SCHEMA_VERSION
 #   4. tests/test_release_quality_gates.py bản kê chuỗi sau LEGACY_BASELINE
 #   5. tests/test_release_quality_gates.py token PG_REQUIRED_SCHEMA_VERSION
-LATEST_MIGRATION = "085_lifecycle_durable_receipts.sql"
-LATEST_SCHEMA_VERSION = 85
+LATEST_MIGRATION = "086_pre_case_contact_challenges.sql"
+LATEST_SCHEMA_VERSION = 86
 
 
 def load_script(name: str):
@@ -319,6 +319,7 @@ def test_apply_migrations_runner_uses_legacy_baseline_and_latest_plan():
         "083_entity_snapshot_generation.sql",
         "084_community_state_cas.sql",
         "085_lifecycle_durable_receipts.sql",
+        "086_pre_case_contact_challenges.sql",
     ]
 
 def test_chrome_smoke_redacts_sensitive_urls():

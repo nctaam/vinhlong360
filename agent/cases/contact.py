@@ -13,6 +13,7 @@ from __future__ import annotations
 import hmac
 import re
 import secrets
+import uuid
 from dataclasses import dataclass
 from datetime import datetime, timedelta
 
@@ -31,6 +32,14 @@ _DATABASE = None
 _CRYPTO = None
 _PROVIDER = None
 _CODE_SOURCE = None
+
+
+class ContactDeliveryUnavailable(RuntimeError):
+    """The OTP provider did not accept the message; never mint a success claim."""
+
+    def __init__(self, code: str = "contact_verification_unavailable") -> None:
+        self.code = code
+        super().__init__(code)
 
 
 @dataclass(frozen=True)
@@ -173,13 +182,183 @@ def request_contact_verification(access, phone: str, consent: bool, *, now: date
         conn.commit()
 
     key = delivery_key(challenge_id)
-    _PROVIDER.send(number, _MESSAGE.format(code=code), delivery_key=key)
+    result = _PROVIDER.send(number, _MESSAGE.format(code=code), delivery_key=key)
+    if not bool(getattr(result, "delivered", False)):
+        with database._conn(commit_on_success=False) as conn:
+            database._execute(conn, "DELETE FROM case_contact_challenges WHERE challenge_id = %s", (challenge_id,))
+            conn.commit()
+        raise ContactDeliveryUnavailable(str(getattr(result, "error_code", None) or "contact_verification_unavailable"))
     return ContactChallenge(
         challenge_id=challenge_id, case_id=case_id, expires_at=expires_at, delivery_key=key
     )
 
 
-def verify_contact(access, code: str, *, now: datetime) -> VerifiedContact:
+def request_pre_case_contact_verification(
+    phone: str, consent: bool, *, now: datetime, requester_subject: str | None = None,
+    receipt: str | None = None,
+) -> ContactChallenge:
+    """Send a durable, opaque proof receipt before a case access session exists."""
+    if type(now) is not datetime or now.tzinfo is None:
+        raise ValueError("invalid_contact_clock")
+    database = _database()
+    if not database._use_pg:
+        raise RuntimeError("case_postgresql_required")
+    crypto = _crypto()
+    number = normalize_phone(phone)
+    digest = contact_digest(number, crypto=crypto)
+    if not consent:
+        if not receipt:
+            raise CaseSecurityError(_PUBLIC_ERROR)
+        try:
+            payload = crypto.open_contact_receipt(receipt, now=now)
+            challenge_id = str(uuid.UUID(str(payload["challenge_id"])))
+            if not hmac.compare_digest(str(payload["contact_digest"]), digest):
+                raise ValueError
+        except (CaseSecurityError, ValueError, TypeError, KeyError, AttributeError) as exc:
+            raise CaseSecurityError(_PUBLIC_ERROR) from exc
+        withdraw_subject = rate_subject_digest(
+            f"withdraw:{challenge_id}",
+            master_key=crypto.digest_capability("case-contact-subject"),
+        )
+        if not check_case_rate_limit(
+            "contact_otp_withdraw", withdraw_subject, limit=VERIFY_ATTEMPT_LIMIT,
+            window=VERIFY_ATTEMPT_WINDOW, now=now, database=database,
+        ):
+            raise CaseSecurityError(_PUBLIC_ERROR)
+        with database._conn(commit_on_success=False) as conn:
+            database._execute(
+                conn,
+                "DELETE FROM case_pre_contact_challenges "
+                "WHERE challenge_id = %s AND contact_digest = %s AND used_at IS NULL",
+                (challenge_id, digest),
+            )
+            conn.commit()
+        return ContactChallenge(challenge_id="", case_id="", expires_at=now, delivery_key="")
+    destination = rate_subject_digest(
+        f"dest:{number}",
+        master_key=crypto.digest_capability("case-contact-subject"),
+    )
+    if not check_case_rate_limit(
+        "contact_otp", destination, limit=VERIFY_ATTEMPT_LIMIT,
+        window=VERIFY_ATTEMPT_WINDOW, now=now, database=database,
+    ):
+        raise CaseSecurityError(_PUBLIC_ERROR)
+    if requester_subject:
+        requester = rate_subject_digest(
+            f"requester:{requester_subject}",
+            master_key=crypto.digest_capability("case-contact-subject"),
+        )
+        if not check_case_rate_limit(
+            "contact_otp_requester", requester, limit=VERIFY_ATTEMPT_LIMIT,
+            window=VERIFY_ATTEMPT_WINDOW, now=now, database=database,
+        ):
+            raise CaseSecurityError(_PUBLIC_ERROR)
+    code = _new_code()
+    expires_at = now + timedelta(seconds=CHALLENGE_TTL_SECONDS)
+    challenge_digest = crypto.digest_capability(f"case-pre-otp:{digest}:{code}")
+    with database._conn(commit_on_success=False) as conn:
+        # One current receipt per destination. The row is also the durable,
+        # single-use authority consumed atomically when a case is created.
+        row = database._fetchone(
+            conn,
+            """
+            INSERT INTO case_pre_contact_challenges (
+                challenge_id, contact_digest, challenge_digest, expires_at, created_at
+            ) VALUES (uuid_generate_v4(), %s, %s, %s, %s)
+            ON CONFLICT (contact_digest) WHERE used_at IS NULL DO UPDATE SET
+                challenge_id = EXCLUDED.challenge_id,
+                challenge_digest = EXCLUDED.challenge_digest,
+                expires_at = EXCLUDED.expires_at,
+                created_at = EXCLUDED.created_at,
+                verified_at = NULL,
+                used_at = NULL
+            RETURNING challenge_id
+            """,
+            (digest, challenge_digest, expires_at, now),
+        )
+        challenge_id = str(database._row_to_dict(row)["challenge_id"])
+        receipt = crypto.issue_contact_receipt(
+            contact_digest=digest,
+            challenge_digest=challenge_digest,
+            challenge_id=challenge_id,
+            expires_at=expires_at,
+            now=now,
+        )
+        conn.commit()
+    key = delivery_key(challenge_id)
+    result = _PROVIDER.send(number, _MESSAGE.format(code=code), delivery_key=key)
+    if not bool(getattr(result, "delivered", False)):
+        with database._conn(commit_on_success=False) as conn:
+            database._execute(conn, "DELETE FROM case_pre_contact_challenges WHERE challenge_id = %s", (challenge_id,))
+            conn.commit()
+        raise ContactDeliveryUnavailable(str(getattr(result, "error_code", None) or "contact_verification_unavailable"))
+    return ContactChallenge(
+        challenge_id=receipt, case_id="", expires_at=expires_at, delivery_key=key
+    )
+
+
+def verify_pre_case_contact(receipt: str, code: str, *, now: datetime) -> tuple[VerifiedContact, str]:
+    """Verify a restart-safe pre-case receipt without creating a case."""
+    if type(now) is not datetime or now.tzinfo is None:
+        raise ValueError("invalid_contact_clock")
+    database = _database()
+    if not database._use_pg:
+        raise RuntimeError("case_postgresql_required")
+    crypto = _crypto()
+    payload = crypto.open_contact_receipt(receipt, now=now)
+    try:
+        challenge_id = str(uuid.UUID(str(payload["challenge_id"])))
+    except (ValueError, TypeError, AttributeError) as exc:
+        raise CaseSecurityError(_PUBLIC_ERROR) from exc
+    verify_subject = rate_subject_digest(
+        f"pre-verify:{challenge_id}",
+        master_key=crypto.digest_capability("case-contact-subject"),
+    )
+    if not check_case_rate_limit(
+        "contact_otp_verify", verify_subject, limit=VERIFY_ATTEMPT_LIMIT,
+        window=VERIFY_ATTEMPT_WINDOW, now=now, database=database,
+    ):
+        raise CaseSecurityError(_PUBLIC_ERROR)
+    with database._conn(commit_on_success=False) as conn:
+        row = database._fetchone(
+            conn,
+            """
+            SELECT contact_digest, challenge_digest, expires_at
+            FROM case_pre_contact_challenges
+            WHERE challenge_id = %s AND verified_at IS NULL AND used_at IS NULL AND expires_at > %s
+            FOR UPDATE
+            """,
+            (challenge_id, now),
+        )
+        if row is None:
+            raise CaseSecurityError(_PUBLIC_ERROR)
+        item = database._row_to_dict(row)
+        if not hmac.compare_digest(str(payload.get("contact_digest", "")), str(item["contact_digest"])):
+            raise CaseSecurityError(_PUBLIC_ERROR)
+        if not hmac.compare_digest(str(payload.get("challenge_digest", "")), str(item["challenge_digest"])):
+            raise CaseSecurityError(_PUBLIC_ERROR)
+        expected = crypto.digest_capability(
+            f"case-pre-otp:{item['contact_digest']}:{code}"
+        ) if type(code) is str else ""
+        if not hmac.compare_digest(str(item["challenge_digest"]), expected):
+            raise CaseSecurityError(_PUBLIC_ERROR)
+        database._execute(
+            conn,
+            "UPDATE case_pre_contact_challenges SET verified_at = %s WHERE challenge_id = %s",
+            (now, challenge_id),
+        )
+        conn.commit()
+    return VerifiedContact(case_id="", contact_digest=str(item["contact_digest"]), verified_at=now), crypto.issue_contact_receipt(
+        contact_digest=str(item["contact_digest"]),
+        challenge_digest=str(item["challenge_digest"]),
+        challenge_id=challenge_id,
+        expires_at=item["expires_at"],
+        now=now,
+        verified=True,
+    )
+
+
+def verify_contact(access, code: str, *, now: datetime, receipt: str | None = None) -> VerifiedContact:
     if type(now) is not datetime or now.tzinfo is None:
         raise ValueError("invalid_contact_clock")
     database = _database()
@@ -203,10 +382,11 @@ def verify_contact(access, code: str, *, now: datetime) -> VerifiedContact:
             SELECT challenge_id, contact_digest, challenge_digest
             FROM case_contact_challenges
             WHERE case_id = %s AND verified_at IS NULL AND expires_at > %s
+              AND (%s IS NULL OR challenge_id = %s)
             ORDER BY created_at DESC LIMIT 1
             FOR UPDATE
             """,
-            (case_id, now),
+            (case_id, now, receipt, receipt),
         )
         if row is None:
             raise CaseSecurityError(_PUBLIC_ERROR)

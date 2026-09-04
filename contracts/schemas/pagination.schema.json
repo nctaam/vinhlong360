@@ -1,0 +1,32 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://vinhlong360.vn/contracts/schemas/pagination.schema.json",
+  "title": "Pagination Metadata",
+  "description": "Optional pagination metadata interoperable across list responses.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "limit": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "Maximum number of items requested for the page."
+    },
+    "offset": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Zero-based item offset for offset pagination."
+    },
+    "nextCursor": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "minLength": 1,
+      "description": "Opaque cursor for the next page, or null when there is no next page."
+    },
+    "hasMore": {
+      "type": "boolean",
+      "description": "Whether another page is available."
+    }
+  }
+}

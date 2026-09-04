@@ -69,6 +69,12 @@ def test_problem_detail_keeps_field_and_correlation_id():
     from agent.cases import public_api as _case_public_api, service as _service
     from agent.control_plane.contracts import problem_detail
 
+    # Importing these modules is part of the boundary contract; reference the
+    # bindings explicitly so Ruff cannot mistake the coverage for dead code.
+    assert all(module is not None for module in (
+        _admin, _api_schemas, _public_api, _case_public_api, _service,
+    ))
+
     problem = problem_detail(
         "invalid_request", "Body is invalid", 422,
         field="items.0.reported_value", correlation_id="corr-1",

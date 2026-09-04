@@ -4,6 +4,21 @@ Authority: config/release-authority.json
 
 > **STATUS (2026-08-04): active — đã truth-sync.** Bản gốc 2026-06-24; đã cập nhật flow data, baseline regression, remote Git và security/CI remediation. Tranche local mới nhất hoàn tất **Plan A trust/scanner correctness**, **bound-complete pinned egress**, **P1 egress observability**, **P2 bounded consent-cookie redirects**, **crawler exact-origin pinning**, **Nominatim exact-origin pinning**, **OpenWeatherMap exact-origin pinning**, và **Ruff test-hygiene cleanup**: `attributes.verifiedAt` là authority duy nhất; scanner repo/package chỉ xét owned immutable inputs; 6 mapped GET có encoded/decoded caps, bounded gzip, four-slot DNS gate, một whole-chain deadline và real-httpcore local-socket tests; redirect crawler/geocode/weather khác origin bị chặn trước resolve/dial; security denial phát đúng một warning origin-only trên logger `security.egress`; request-scoped cookie jar có hard caps. Code/test head hiện tại là `6d2e9d8f`; focused pinned + mapped consumers + geocode + realtime đạt `359 passed`, full resilience đạt `173 passed, 1 skipped`, full-repo Ruff sạch, `run_hard.py --all` đạt `hard=0`, ratchet không tăng. Full backend run nguyên khối gần nhất vẫn còn 2 maintenance timeout và 1 xdist worker crash không tái hiện; evidence chi tiết ở `docs/ROADMAP.md`. Chưa push/deploy/production mutation; nợ thật còn lại ở §10. Mâu thuẫn với `CLAUDE.md` → CLAUDE.md thắng.
 
+> ⚠️ **CẮM MỐC TƯƠI 2026-09-02 — đọc trước khi tin bất kỳ con số nào bên dưới.**
+> Khối STATUS 2026-08-04 ở trên mô tả code/test head `6d2e9d8f`. HEAD thực tế hiện là
+> **`7bd85e772843ac5ab3c7db656a1b0766aed8ede3`** trên branch **`codex/correction-case-pilot`**,
+> **đi trước 973 commit** (đo: `git rev-list --left-right --count 6d2e9d8f...HEAD` → `0 973`).
+> Mọi baseline test, danh sách backlog và kết luận "ĐÃ GIẢI local" bên dưới là
+> **số liệu lịch sử của 2026-08-04**, giữ lại làm bằng chứng — không được dùng làm
+> baseline nghiệm thu cho phiên hôm nay. Đo lại bằng lệnh trong `CLAUDE.md` §5/§5d.
+>
+> **CỔNG PHÁT HÀNH ĐANG ĐÓNG:** pilot acceptance gate = **NO_GO**, release verifier =
+> **BLOCKED**. Đây là kết quả đúng và phải giữ nguyên. Chỉ 3/28 P1 có bằng chứng
+> PostgreSQL thật (F-42, F-49, F-53); 25 P1 còn lại mang gap có tên. Khóa attestation
+> **cố ý vắng mặt** theo quyết định của chủ dự án. Chi tiết:
+> `.superpowers/sdd/progress.md` (khối 2026-09-02) và
+> `docs/runbooks/proof-first-pilot-acceptance.md`.
+
 > Dán toàn bộ file này làm tin nhắn đầu tiên cho phiên/tài-khoản Claude Code mới.
 > Cập nhật lần cuối: 2026-08-04. `origin` đã cấu hình. Tranche hiện tại chưa push/deploy và không tái-xác minh health prod.
 >
@@ -146,6 +161,7 @@ const { data } = await useAsyncData('key', () => apiFetch('/api/...'))
 - **[Nội-dung, giá-trị cao] ~42 entity mô-tả mỏng (<120 ký-tự)** (đã giảm từ 341 → 42; 41 place + 1 product) — cần chủ bổ sung nội dung thật, KHÔNG bịa fact HC/địa-chỉ (dùng skill `viet-content-optimizer` nếu có).
 - **[Ảnh] phần lớn entity chưa có ảnh** — sinh bằng `scripts/gen_image.py` (**CHỈ AI-gen**, xem B6), duyệt qua cổng người `/admin/duyệt-ảnh`.
 - **[Test baseline] Không còn fail-đã-biết từ nhóm cost-tracker/SEO cũ.** Fresh pre-merge coverage ở long-gate candidate `8e4bf9be` đạt `8726 passed, 66 skipped, 26 deselected, 1 xfailed`; official bounded backend đạt Phase A `8649 passed, 58 skipped, 111 deselected, 1 xfailed` và Phase B `284 passed, 19 skipped`. Assertion-only review head `15f7124a` đạt focused `319 passed` và `hard=0`. Dùng runner ở §0/§4 và triage mọi failure mới như regression.
+  - > ⚠️ **SỬA 2026-09-02 (không xóa dòng trên — dòng trên là số đo lịch sử):** các con số `8726 passed` / `8649 passed` / `319 passed` đo ở `8e4bf9be` và `15f7124a`, đều là tổ tiên cách HEAD `7bd85e77` **973 commit**. Chúng **không còn là baseline nghiệm thu**; đọc `CLAUDE.md` §3.4 (roster **15 fail-đã-biết**) và §5d (ba cổng `npx vitest run`, `npm run typecheck`, `pytest tests/ agent/tests/` chạy chung) làm nguồn hiện hành. Phiên 2026-09-02 **không đo lại full-suite**, nên trạng thái test ở HEAD là **chưa đo**, không phải “xanh”.
 - **[ĐÃ GIẢI local] P1 egress observability:** `PinnedHTTPClient.get()` phát đúng một warning đã sanitize trên `security.egress` cho blocked address, peer mismatch và redirect-policy denial; context cố định là `admin_image_review`, `auto_learn`, `crawler`, `geocode`, `quality_burst`, `realtime_weather`. Không log path/query/fragment/raw exception, không đổi HTTP/return behavior. Production log behavior chưa được quan sát vì chưa deploy.
 - **[ĐÃ GIẢI local] P2 cookie-gate:** `PinnedHTTPClient` giữ jar cookie bounded chỉ trong một GET chain, replay `Set-Cookie` cho redirect về cùng URL và vẫn fail-closed với loop không có cookie state mới. Cookie được scope theo host/domain, path và `Secure`; tên/giá trị/header/số lượng đều có cap, không log raw cookie. Regression suite `tests/test_pinned_http.py` đạt `251 passed`; production behavior chưa quan sát.
 - **[ĐÃ GIẢI local] Crawler authority escape:** `fetch_page()` không còn nối `BASE_URL + path`; target do LLM sinh được join/canonicalize và kiểm exact origin trước request. Crawler dùng pinned client với caps/deadline, còn `allowed_origins` chặn redirect off-origin trước resolve/dial. Focused crawler+pinned+registry đạt `264 passed`.

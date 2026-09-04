@@ -30,6 +30,14 @@ function streamResponse(sessionId = 'fresh-session') {
   return new Response(payload, { status: 200 })
 }
 
+function streamErrorResponse(content: string, messageId = 'error-1') {
+  const payload = [
+    `data: ${JSON.stringify({ type: 'error', content, message_id: messageId, created_at: '2026-09-03T10:00:00Z' })}\n\n`,
+    `data: ${JSON.stringify({ type: 'done', failed: true, message_id: 'terminal-1', created_at: '2026-09-03T10:00:01Z' })}\n\n`,
+  ].join('')
+  return new Response(payload, { status: 200 })
+}
+
 async function flushUi() {
   await new Promise(resolve => setTimeout(resolve, 0))
   await nextTick()
@@ -133,7 +141,7 @@ describe('chat streaming transport security', () => {
     await flushUi()
     await flushUi()
 
-    expect(wrapper.findAll('.cmsg.assistant').at(-1)?.text()).toBe('Xin chào Vĩnh Long')
+    expect(wrapper.findAll('.cmsg.assistant .cmsg-body').at(-1)?.text()).toBe('Xin chào Vĩnh Long')
     expect(sessionStorage.getItem('chat_sid')).toBe('widget-session')
     expect(wrapper.findAll('.csuggestions button').map(button => button.text())).toContain('Khám phá tiếp')
   })
@@ -171,7 +179,7 @@ describe('chat streaming transport security', () => {
 
       expect(cancel).toHaveBeenCalledTimes(1)
       expect(stream?.locked).toBe(false)
-      expect(wrapper.findAll('.cmsg.assistant').at(-1)?.text()).toBe('Đã dừng hoặc quá thời gian chờ.')
+      expect(wrapper.findAll('.cmsg.error .cmsg-body').at(-1)?.text()).toBe('Đã dừng hoặc quá thời gian chờ.')
       expect(wrapper.get('input').attributes('disabled')).toBeUndefined()
       expect(unhandled).toEqual([])
     } finally {
@@ -199,9 +207,76 @@ describe('chat streaming transport security', () => {
     await flushUi()
     await flushUi()
 
-    expect(wrapper.findAll('.cmsg.assistant').at(-1)?.text()).toBe('complete')
+    expect(wrapper.findAll('.cmsg.assistant .cmsg-body').at(-1)?.text()).toBe('complete')
     expect(cancel).not.toHaveBeenCalled()
     expect(stream.locked).toBe(false)
+  })
+
+  it('ChatWidget preserves the first SSE error content when a failed done frame follows', async () => {
+    mocks.fetch.mockResolvedValue(streamErrorResponse('Backend rejected this turn'))
+    const wrapper = await mountSuspended(ChatWidget, {
+      global: { stubs: { ClientOnly: false, IconLine: true } },
+    })
+
+    await wrapper.get('input').setValue('show the error')
+    await wrapper.get('input').trigger('keyup.enter')
+    await flushUi()
+    await flushUi()
+
+    expect(wrapper.find('.cmsg.error .cmsg-body').text()).toBe('Backend rejected this turn')
+  })
+
+  it('ChatWidget retries without the failed turn in history and removes linked error bubbles', async () => {
+    mocks.fetch
+      .mockResolvedValueOnce(streamErrorResponse('Try again'))
+      .mockResolvedValueOnce(streamResponse('retry-session'))
+    const wrapper = await mountSuspended(ChatWidget, {
+      global: { stubs: { ClientOnly: false, IconLine: true } },
+    })
+
+    await wrapper.get('input').setValue('retry this')
+    await wrapper.get('input').trigger('keyup.enter')
+    await flushUi()
+    await flushUi()
+    await wrapper.get('.cmsg.user .cmsg-retry').trigger('click')
+    await flushUi()
+    await flushUi()
+
+    expect(JSON.parse(String(mocks.fetch.mock.calls[1]?.[1]?.body))).toMatchObject({
+      message: 'retry this',
+      history: [],
+    })
+    expect(wrapper.findAll('.cmsg.error')).toHaveLength(0)
+    expect(wrapper.find('.cmsg.assistant .cmsg-body').text()).toBe('ok')
+  })
+
+  it('ChatWidget allows repeated retries when the server reuses an error message id', async () => {
+    mocks.fetch
+      .mockResolvedValueOnce(streamErrorResponse('First failure', 'reused-error'))
+      .mockResolvedValueOnce(streamErrorResponse('Second failure', 'reused-error'))
+      .mockResolvedValueOnce(streamResponse('recovered-session'))
+    const wrapper = await mountSuspended(ChatWidget, {
+      global: { stubs: { ClientOnly: false, IconLine: true } },
+    })
+
+    await wrapper.get('input').setValue('retry twice')
+    await wrapper.get('input').trigger('keyup.enter')
+    await flushUi()
+    await flushUi()
+    await wrapper.get('.cmsg.error .cmsg-retry').trigger('click')
+    await flushUi()
+    await flushUi()
+
+    expect(wrapper.findAll('.cmsg.error')).toHaveLength(1)
+    expect(wrapper.find('.cmsg.error .cmsg-body').text()).toBe('Second failure')
+
+    await wrapper.get('.cmsg.error .cmsg-retry').trigger('click')
+    await flushUi()
+    await flushUi()
+
+    expect(mocks.fetch).toHaveBeenCalledTimes(3)
+    expect(wrapper.findAll('.cmsg.error')).toHaveLength(0)
+    expect(wrapper.find('.cmsg.assistant .cmsg-body').text()).toBe('ok')
   })
 
   it('useAI accumulates fragmented UTF-8 SSE text and forwards the EOF done event', async () => {

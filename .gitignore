@@ -9,7 +9,18 @@ agent/data/
 ssl/
 data/
 !web-nuxt/public/data/
+
+# Vật liệu bí mật — KHÔNG BAO GIỜ commit.
+# `.key` trần chỉ khớp file TÊN đúng là ".key" (pattern không có "/" là khớp
+# basename), nên nó KHÔNG che *.key. Đo 2026-09-03: `git check-ignore` không
+# khớp foo.key, agent/foo.key, và cả secrets/pilot-owner-signing.key — đúng
+# đường dẫn khoá owner khai ở config/release-authority.json.
 .key
+*.key
+*.pem
+*.p12
+*.pfx
+secrets/
 
 # Build artifacts
 .nuxt/
@@ -27,6 +38,12 @@ scripts/_*.json
 *.sqlite
 *.sqlite3
 temp_analysis.txt
+
+# Local verification scratch (regenerable; keep out of the source tree)
+.tmp-*
+.tmp-*/
+.pytest-tmp-*
+.pytest-tmp-*/
 
 # Worktrees (parallel sessions)
 vl360-*/

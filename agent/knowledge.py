@@ -11,7 +11,6 @@ import os
 import re
 from ocop import is_ocop_certified
 import threading
-import unicodedata
 from pathlib import Path
 
 logger = logging.getLogger(__name__)

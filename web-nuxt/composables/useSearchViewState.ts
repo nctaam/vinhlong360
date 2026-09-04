@@ -3,7 +3,7 @@ import type { AreaRef, FilterSet, Intent, MapViewport, SearchViewState } from '~
 import { parseSearchViewState, parseSearchViewStateWithMeta, serializeSearchViewState } from '~/utils/publicStateUrl'
 
 export const SEARCH_VIEW_STATE_STORAGE_KEY = 'vinhlong360:public-search-entries:v2'
-export const LIFECYCLE_CLEAR_VERSION = 'v1'
+const LIFECYCLE_CLEAR_VERSION = 'v1'
 const SESSION_KEY = SEARCH_VIEW_STATE_STORAGE_KEY
 const URL_WRITE_DELAY = 200
 const INTENTS = new Set<Intent>(['place', 'service', 'event', 'story', 'all'])

@@ -12,10 +12,25 @@ import json
 import logging
 import re
 from collections.abc import Mapping
+from urllib.parse import unquote_plus
 
 _EMAIL = re.compile(r"[A-Z0-9._%+\-]+@[A-Z0-9.\-]+\.[A-Z]{2,}", re.I)
 _PHONE = re.compile(r"(?:\+84|0084|0[1-9])[\d\s().-]{7,14}\d")
-_TOKEN = re.compile(r"\b(?:sk-[A-Z0-9_-]{8,}|(?:token|secret|password|api[_-]?key)\s*[:=]\s*\S+)", re.I)
+_TOKEN = re.compile(
+    r"\b(?:Bearer\s+[A-Z0-9_-]+(?:\.[A-Z0-9_-]+){2}|"
+    r"eyJ[A-Z0-9_-]{8,}(?:\.[A-Z0-9_-]+){2}|"
+    r"sk-[A-Z0-9_-]{8,}|(?:token|secret|password|api[_-]?key)\s*[:=]\s*\S+|"
+    r"(?:token|secret|password)[_-][A-Z0-9][A-Z0-9._-]{3,})\b",
+    re.I,
+)
+_PROMPT_SIGNAL = re.compile(
+    r"\b(?:ignore\s+(?:all\s+)?(?:previous|prior|above)\s+(?:instructions?|prompts?|rules?|context)|"
+    r"(?:reveal|show|repeat|print|display)\s+(?:the\s+)?(?:system\s+)?prompt|"
+    r"system\s*:\s*override|(?:forget|disregard)\s+(?:all\s+)?(?:your\s+|the\s+|previous\s+|prior\s+)?(?:instructions?|rules?|guidelines?)|"
+    r"(?:jailbreak|do\s+anything\s+now|bypass\s+filters?))\b|"
+    r"(?<![A-Za-z])DAN(?![A-Za-z])|(?:base64|eval|exec)\s*\(",
+    re.I,
+)
 
 _SENSITIVE_KEY_HINTS = (
     "phone", "email", "token", "secret", "password", "authorization",
@@ -57,6 +72,22 @@ def _digest(value: object, category: str) -> dict[str, object]:
 def _redact_string(value: str, key: str | None) -> object:
     category = _category(key, value)
     return _digest(value, category) if category else value
+
+
+def _contains_prompt_signal(value: str) -> bool:
+    """Recognize direct and compact injection text at the final log boundary."""
+    if _PROMPT_SIGNAL.search(value):
+        return True
+    compact = re.sub(r"[^a-z0-9]", "", unquote_plus(value).lower())
+    return bool(
+        re.search(
+            r"(?:ignore(?:all)?(?:previous|prior|above)(?:instructions?|prompts?|rules?)|"
+            r"forget(?:all)?(?:your|the|previous|prior)?(?:instructions?|rules?|guidelines?)|"
+            r"jailbreak|donothingnow|bypassfilters|base64(?:payload)?|eval(?:payload)?|exec(?:payload)?)|"
+            r"(?<![a-z])dan(?![a-z])",
+            compact,
+        )
+    )
 
 
 def _has_sensitive_key(key: str | None) -> bool:
@@ -123,6 +154,25 @@ class RedactingLogFilter(logging.Filter):
 
     def filter(self, record: logging.LogRecord) -> bool:
         try:
+            # ``exc_info`` is a traceback object and therefore bypasses normal
+            # argument redaction.  Drop it before handlers format the record;
+            # retain only a stable exception type plus a one-way digest.
+            if record.exc_info:
+                exc_type, exc_value, _traceback = record.exc_info
+                exception_type = getattr(exc_type, "__qualname__", "Exception")
+                exception_text = str(exc_value)
+                safe_exception = _digest(exception_text, "exception")
+                record.exc_info = None
+                record.exc_text = (
+                    f"exception_type={exception_type} "
+                    f"length={safe_exception['length']} "
+                    f"digest={safe_exception['digest']}"
+                )
+            elif record.exc_text:
+                record.exc_text = str(_redact_log_argument(record.exc_text, "exception"))
+            # Stack text can contain interpolated request data as well.
+            record.stack_info = None
+
             template = str(record.msg)
             args = record.args
             if isinstance(args, Mapping):
@@ -132,6 +182,15 @@ class RedactingLogFilter(logging.Filter):
                 }
                 return True
             if not args:
+                # Literal messages can still contain interpolated user data
+                # (for example ``logger.error(f"phone={phone}")``).
+                safe_literal = _redact_string(template, None)
+                if safe_literal != template:
+                    record.msg = "event=%s"
+                    record.args = (safe_literal,)
+                elif _contains_prompt_signal(template):
+                    record.msg = "event=%s"
+                    record.args = (_digest(template, "message"),)
                 return True
 
             # Keep stable operational context while replacing interpolated

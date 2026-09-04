@@ -10,7 +10,9 @@ from __future__ import annotations
 
 import asyncio
 import hmac
+import re
 import uuid
+from datetime import datetime, timezone
 
 from fastapi import APIRouter, Request
 from fastapi.responses import JSONResponse, Response
@@ -24,7 +26,7 @@ else:
     from api_schemas import CorrectionIntakeContract
 
 from .domain import PublicCaseStatus
-from .security import CaseCrypto
+from .security import CaseCrypto, CaseSecurityError
 
 # Deliberately not named `router`: the standards resolver matches an imported
 # alias by its original symbol name, so a second module exporting `router`
@@ -36,10 +38,19 @@ CSRF_COOKIE = "vl360_case_csrf"
 PROBLEM_MEDIA_TYPE = "application/problem+json"
 _PROBLEM_BASE = "https://vinhlong360.vn/problems/"
 _NO_STORE = {"Cache-Control": "no-store"}
+_CONTACT_RECEIPT_RE = re.compile(r"^[A-Za-z0-9_-]{8,512}={0,2}$")
 
 _SERVICE = None
 _SETTINGS = None
 _ALLOWED_ORIGIN = None
+
+
+def _uuid_receipt(value: str) -> str | None:
+    """Legacy case-bound challenges are UUIDs; reject junk before PostgreSQL."""
+    try:
+        return str(uuid.UUID(value))
+    except (AttributeError, ValueError, TypeError):
+        return None
 
 
 def configure_case_public_api(*, service=None, settings=None, allowed_origin=None) -> None:
@@ -84,6 +95,7 @@ def _problem(
     title: str | None = None,
     field: str | None = None,
     correlation_id: str | None = None,
+    retry_after: int | None = None,
 ) -> JSONResponse:
     """RFC 9457 shape. Never echoes a credential, a value, or backstage state."""
     try:
@@ -98,6 +110,8 @@ def _problem(
     # Keep request_id as a compatibility alias while all new consumers use the
     # explicit correlation_id field.
     body["request_id"] = correlation_id
+    if retry_after is not None:
+        body["retry_after"] = max(0, int(retry_after))
     return JSONResponse(
         body,
         status_code=status,
@@ -280,6 +294,7 @@ def _rate_subject(request: Request) -> str:
 def _map_domain_error(exc: Exception) -> JSONResponse | None:
     """Domain failures become problem documents, never tracebacks or 500s."""
     from .security import CaseSecurityError
+    from .contact import ContactDeliveryUnavailable
     from .service import CorrectionRejected, IdempotencyConflict, SafetyRoutingRequired
     from .store import CaseNotFound
 
@@ -293,6 +308,8 @@ def _map_domain_error(exc: Exception) -> JSONResponse | None:
         # One shape for invalid, expired, revoked and unknown alike: a reporter
         # must not be able to probe which case references exist.
         return _problem(403, *_CREDENTIAL)
+    if isinstance(exc, ContactDeliveryUnavailable):
+        return _problem(503, "contact_verification_unavailable", "Chưa gửi được mã xác nhận. Vui lòng thử lại sau ít phút.", retry_after=30)
     if isinstance(exc, CaseNotFound):
         return _problem(404, *_CREDENTIAL)
     return None
@@ -325,6 +342,7 @@ class _CreateIn(BaseModel):
     reporter_privacy: str = Field(alias="reporterPrivacy", pattern="^(anonymous|attributed)$")
     optional_phone: str | None = Field(default=None, alias="optionalPhone", max_length=32)
     notification_consent: bool = Field(default=False, alias="notificationConsent")
+    contact_receipt: str | None = Field(default=None, alias="contactReceipt", max_length=512)
     handoff_digest: str | None = Field(
         default=None, alias="handoffDigest", min_length=64, max_length=64
     )
@@ -355,12 +373,16 @@ class _ContactRequestIn(BaseModel):
     # so a reporter who had given their number had no way to take it back.
     # The privacy policy promises exactly that within 15 days.
     consent: bool = True
+    # Pre-case withdrawal must present the opaque receipt issued by /start;
+    # phone alone is not an ownership proof.
+    receipt: str | None = Field(default=None, max_length=512)
 
 
 class _ContactVerifyIn(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     code: str = Field(min_length=1, max_length=16)
+    receipt: str | None = Field(default=None, max_length=512)
 
 
 # ── Response shaping ──
@@ -402,6 +424,19 @@ def _set_session_cookies(response: Response, access_token: str, csrf_token: str)
     response.set_cookie(**CaseCrypto.case_csrf_cookie(csrf_token, production=production))
 
 
+def _clear_session_cookies(response: Response) -> None:
+    """Expire case cookies with the same path and security flags used on issue."""
+    production = _production()
+    for name, httponly in ((ACCESS_COOKIE, True), (CSRF_COOKIE, False)):
+        response.delete_cookie(
+            key=name,
+            path="/api/cases",
+            secure=production,
+            httponly=httponly,
+            samesite="lax",
+        )
+
+
 # ── Routes ──
 
 @case_public_router.post("/corrections")
@@ -432,6 +467,14 @@ async def create_correction(request: Request):
     contract_error = _validate_correction_contract(body.items, request, version=version)
     if contract_error is not None:
         return contract_error
+    if body.contact_receipt is not None and not _CONTACT_RECEIPT_RE.fullmatch(body.contact_receipt):
+        return _problem(
+            422,
+            "invalid_contact_receipt",
+            "Mã xác nhận không hợp lệ hoặc đã hết hạn.",
+            field="contactReceipt",
+            retry_after=0,
+        )
 
     try:
         result = _service().create_correction_from_transport(
@@ -441,6 +484,15 @@ async def create_correction(request: Request):
             rate_subject=_rate_subject(request),
         )
     except Exception as exc:  # noqa: BLE001 - mapped or re-raised below
+        if getattr(exc, "problem", None) is not None and exc.problem.code == "phone_verification_required":
+            return _problem(
+                422,
+                exc.problem.code,
+                exc.problem.detail,
+                field="optionalPhone",
+                retry_after=0,
+                correlation_id=request.headers.get("x-request-id"),
+            )
         mapped = _map_domain_error(exc)
         if mapped is None:
             raise
@@ -546,8 +598,7 @@ async def revoke_access(request: Request):
             raise
         return mapped
     response = Response(status_code=204, headers=dict(_NO_STORE))
-    for name in (ACCESS_COOKIE, CSRF_COOKIE):
-        response.set_cookie(key=name, value="", max_age=0, path="/api/cases", samesite="lax")
+    _clear_session_cookies(response)
     return response
 
 
@@ -579,14 +630,28 @@ async def open_review(request: Request):
     )
 
 
-@case_public_router.post("/contact/request")
-async def request_contact_verification(request: Request):
-    blocked = _guard_session_mutation(request)
+async def _start_contact_verification(request: Request, *, pre_case: bool | None = None):
+    # The new start route is always anonymous/pre-case. Do not let a stale or
+    # attacker-supplied access cookie change its authentication lane.
+    has_access = bool(request.cookies.get(ACCESS_COOKIE)) if pre_case is None else not pre_case
+    blocked = _guard_session_mutation(request) if has_access else _guard_public_post(request, intake=True)
     if blocked is not None:
         return blocked
     body, invalid = await _model(request, _ContactRequestIn)
     if invalid is not None:
         return invalid
+    if body.receipt is not None and not _CONTACT_RECEIPT_RE.fullmatch(body.receipt):
+        return _problem(
+            422,
+            "invalid_contact_receipt",
+            "Mã xác nhận không hợp lệ hoặc đã hết hạn.",
+            field="receipt",
+            retry_after=0,
+        )
+    if pre_case and not body.consent and not body.receipt:
+        # A phone number is not enough to identify which pending challenge the
+        # caller owns. Require the opaque proof before touching any row.
+        return _problem(401, *_CREDENTIAL)
     try:
         # Ra khỏi event loop. Route này là route công khai DUY NHẤT gọi ra
         # ngoài mạng: EsmsProvider.send thử 3 lần, mỗi lần total_timeout 20s,
@@ -595,41 +660,145 @@ async def request_contact_verification(request: Request):
         # luồng đính chính. sms_provider.send_async đã tồn tại đúng vì lý do đó
         # ("offloaded so an event loop is never blocked on the socket"), nhưng
         # đường này đi qua contact.py vốn đồng bộ, nên offload ở đây.
-        await asyncio.to_thread(
-            _service().request_contact_verification,
-            access_token=request.cookies.get(ACCESS_COOKIE),
-            phone=body.phone,
-            consent=body.consent,
-        )
+        if has_access:
+            challenge = await asyncio.to_thread(
+                _service().request_contact_verification,
+                access_token=request.cookies.get(ACCESS_COOKIE),
+                phone=body.phone,
+                consent=body.consent,
+            )
+        else:
+            challenge = await asyncio.to_thread(
+                _service().request_pre_case_contact_verification,
+                phone=body.phone,
+                consent=body.consent,
+                receipt=body.receipt,
+                requester_subject=_rate_subject(request),
+            )
     except ValueError as exc:
         if "invalid_contact_phone" not in str(exc):
             raise
-        return _problem(400, "invalid_contact_phone", "That phone number is not usable.")
+        return _problem(400, "invalid_contact_phone", "That phone number is not usable.", field="phone")
     except Exception as exc:  # noqa: BLE001
         mapped = _map_domain_error(exc)
         if mapped is None:
             raise
         return mapped
-    # 202, not 200: a code was queued, and the answer never reveals whether the
-    # number exists or was reachable.
-    return Response(status_code=202, headers=dict(_NO_STORE))
+    # The opaque challenge receipt binds the next verify call to this start;
+    # it contains no case id, owner key, phone number or raw correlation id.
+    if challenge is None:
+        return Response(status_code=202, headers=dict(_NO_STORE))
+    expires_at = getattr(challenge, "expires_at", None)
+    return JSONResponse(
+        {
+            "receipt": str(getattr(challenge, "challenge_id", "")),
+            "expiresAt": expires_at.isoformat() if expires_at is not None else "",
+            "retryAfter": 60,
+            "verified": False,
+        },
+        status_code=202,
+        headers=dict(_NO_STORE),
+    )
+
+
+@case_public_router.post("/contact/start")
+async def start_contact_verification(request: Request):
+    return await _start_contact_verification(request, pre_case=True)
+
+
+@case_public_router.post("/contact/request")
+async def request_contact_verification(request: Request):
+    # Legacy route retained for existing clients; the new start route exposes
+    # the opaque receipt needed to bind a verify attempt to its challenge.
+    # Preserve the caller's explicit consent choice; `_start_contact_verification`
+    # passes it onward as `consent=body.consent` rather than assuming approval.
+    blocked = _guard_session_mutation(request)
+    if blocked is not None:
+        return blocked
+    result = await _start_contact_verification(request, pre_case=False)
+    if isinstance(result, JSONResponse) and result.status_code == 202:
+        return Response(status_code=202, headers=dict(_NO_STORE))
+    return result
 
 
 @case_public_router.post("/contact/verify")
 async def verify_contact(request: Request):
-    blocked = _guard_session_mutation(request)
+    has_access = bool(request.cookies.get(ACCESS_COOKIE))
+    # Check transport prerequisites before parsing the body, but defer the
+    # authentication lane until receipt shape is known. A stale access cookie
+    # must not turn an opaque pre-case receipt into a legacy UUID challenge.
+    blocked = _guard_public_post(request, intake=False)
     if blocked is not None:
         return blocked
     body, invalid = await _model(request, _ContactVerifyIn)
     if invalid is not None:
         return invalid
+    legacy_receipt = _uuid_receipt(body.receipt) if body.receipt is not None else None
+    use_access = (body.receipt is None and has_access) or legacy_receipt is not None
+    if use_access:
+        blocked = _guard_session_mutation(request)
+    else:
+        blocked = _guard_public_post(request, intake=True)
+    if blocked is not None:
+        return blocked
+    malformed_receipt = (
+        body.receipt is not None
+        and (
+            not _CONTACT_RECEIPT_RE.fullmatch(body.receipt)
+            or (use_access and legacy_receipt is None)
+        )
+    )
+    if malformed_receipt:
+        return _problem(
+            422,
+            "invalid_contact_receipt",
+            "Mã xác nhận không hợp lệ hoặc đã hết hạn.",
+            field="receipt",
+            retry_after=0,
+        )
     try:
-        _service().verify_contact(
-            access_token=request.cookies.get(ACCESS_COOKIE), code=body.code
+        if use_access:
+            verified = _service().verify_contact(
+                access_token=request.cookies.get(ACCESS_COOKIE), code=body.code,
+                receipt=body.receipt,
+            )
+            verified_receipt = body.receipt or ""
+        else:
+            if not body.receipt:
+                return _problem(401, *_CREDENTIAL)
+            verified, verified_receipt = _service().verify_pre_case_contact(
+                receipt=body.receipt, code=body.code,
+            )
+    except CaseSecurityError:
+        return _problem(
+            422,
+            "invalid_contact_code",
+            "Mã xác nhận không đúng hoặc đã hết hạn.",
+            field="code",
+            retry_after=30,
         )
     except Exception as exc:  # noqa: BLE001
         mapped = _map_domain_error(exc)
         if mapped is None:
             raise
         return mapped
-    return Response(status_code=204, headers=dict(_NO_STORE))
+    if use_access:
+        return Response(status_code=204, headers=dict(_NO_STORE))
+    try:
+        verified_payload = _service()._crypto.open_contact_receipt(
+            verified_receipt, now=datetime.now(timezone.utc)
+        )
+        expires_at = datetime.fromtimestamp(
+            int(verified_payload["expires_at"]), tz=timezone.utc
+        ).isoformat()
+    except Exception:
+        expires_at = ""
+    return JSONResponse(
+        {
+            "receipt": verified_receipt,
+            "expiresAt": expires_at,
+            "retryAfter": 0,
+            "verified": True,
+        },
+        headers=dict(_NO_STORE),
+    )

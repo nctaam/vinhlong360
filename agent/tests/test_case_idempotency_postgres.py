@@ -18,6 +18,7 @@ from cases.domain import ActorContext, Channel, CommandEnvelope  # noqa: E402
 from cases.policy import load_case_policy  # noqa: E402
 from cases.security import CaseCrypto  # noqa: E402
 from cases.service import (  # noqa: E402
+    AssistedIntake,
     CaseService,
     CorrectionItemInput,
     CreateCorrectionCommand,
@@ -247,15 +248,25 @@ def test_a_corrected_contact_under_the_same_key_conflicts(pg_database):
     """bug_004: the phone was bound as a presence bit, so an edit replayed silently."""
     service = _service(pg_database)
     key = "idem-contact-1"
+    assisted = AssistedIntake(
+        operator_ref="person:operator",
+        privacy_notice_revision="privacy-v1",
+        consent_scope="correction:notify",
+        consent_given_at=NOW,
+        read_back_confirmed=True,
+        reporter_confirmed=True,
+    )
     service.create_correction(
-        replace(_command(key), optional_phone="0270 111 2222", notification_consent=True),
+        replace(_command(key), optional_phone="0270 111 2222",
+                notification_consent=True, assisted=assisted),
         now=NOW,
         rate_subject="192.0.2.32",
     )
 
     with pytest.raises(IdempotencyConflict) as excinfo:
         service.create_correction(
-            replace(_command(key), optional_phone="0270 111 2223", notification_consent=True),
+            replace(_command(key), optional_phone="0270 111 2223",
+                    notification_consent=True, assisted=assisted),
             now=NOW,
             rate_subject="192.0.2.32",
         )

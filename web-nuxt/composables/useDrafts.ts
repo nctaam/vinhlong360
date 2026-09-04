@@ -1,5 +1,5 @@
 export const DRAFT_STORAGE_KEY = 'vl360_post_draft'
-export const LIFECYCLE_CLEAR_VERSION = 'v1'
+const LIFECYCLE_CLEAR_VERSION = 'v1'
 const STORAGE_KEY = DRAFT_STORAGE_KEY
 
 export function clearDraftStorage(storage: Pick<Storage, 'removeItem'>): void {

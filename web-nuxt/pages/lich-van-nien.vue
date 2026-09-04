@@ -742,7 +742,7 @@ useHead(() => ({
   cursor: pointer;
   transition: background var(--duration-fast) var(--ease-out);
 }
-.lvn-btn:hover { background: var(--card-hover, var(--line)); }
+.lvn-btn:hover { background: var(--state-hover); }
 .lvn-btn:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
 
 .lvn-cal-caption { margin: 0 0 var(--space-2); color: var(--ink-secondary); font-size: var(--text-sm); }

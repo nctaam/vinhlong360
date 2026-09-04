@@ -144,7 +144,10 @@ class TestTwoFactorLoginGate:
         assert "remember_device" in src or "trusted" in src
 
     def test_pending_2fa_cleanup_registered(self):
-        assert "pending_2fa" in inspect.getsource(auth.cleanup_expired_data)
+        wrapper = inspect.getsource(auth.cleanup_expired_data)
+        impl = inspect.getsource(auth._cleanup_expired_data_impl)
+        assert "_cleanup_expired_data_impl" in wrapper
+        assert "pending_2fa" in impl
 
     def test_consume_is_atomic_delete_returning(self):
         # Race-condition fix: the DELETE must be the single atomic consumption
@@ -190,7 +193,10 @@ class TestTrustedDevices:
         assert "_require_csrf_lazy" in inspect.getsource(auth.delete_trusted_device)
 
     def test_trusted_cleanup_registered(self):
-        assert "trusted_devices" in inspect.getsource(auth.cleanup_expired_data)
+        wrapper = inspect.getsource(auth.cleanup_expired_data)
+        impl = inspect.getsource(auth._cleanup_expired_data_impl)
+        assert "_cleanup_expired_data_impl" in wrapper
+        assert "trusted_devices" in impl
 
 
 class TestSuspiciousLogin:

@@ -53,9 +53,14 @@ const { data: entity, error: entityError, refresh: refreshEntity } = await useAs
 )
 
 const busy = ref(false)
+const verificationBusy = ref(false)
 const receipt = ref<CaseReceipt | null>(null)
 const failure = ref('')
 const problem = ref<CorrectionProblemDetail | null>(null)
+const verificationReceipt = cases.verificationReceipt
+const phoneVerified = cases.phoneVerified
+const verifiedPhone = cases.verifiedPhone
+const verificationError = cases.verificationError
 
 async function submit(submission: CorrectionSubmission) {
   busy.value = true
@@ -77,12 +82,33 @@ async function submit(submission: CorrectionSubmission) {
   }
 }
 
-async function verifyPhone(phone: string) {
+async function startPhoneVerification(phone: string) {
+  verificationBusy.value = true
   try {
-    await cases.requestContactVerification(phone)
-  } catch {
-    // The number is optional; a failed verification never blocks the report.
+    await cases.startPhoneVerification(phone)
+  } catch (error) {
+    // Keep the draft and expose the structured problem through the form.
+    if (error instanceof CorrectionProblemError) {
+      cases.verificationError.value = error.problem as any
+    }
+  } finally {
+    verificationBusy.value = false
   }
+}
+
+async function verifyPhoneCode(code: string) {
+  verificationBusy.value = true
+  try {
+    await cases.verifyPhone(code)
+  } catch {
+    // The composable retains code/field/correlation/retry metadata for the UI.
+  } finally {
+    verificationBusy.value = false
+  }
+}
+
+function onPhoneConsentChanged(consent: boolean) {
+  if (!consent) cases.clearPhoneVerification()
 }
 
 useSeoMeta({
@@ -123,7 +149,6 @@ useSeoMeta({
       <div v-if="problem" class="case-problem" data-role="correction-problem" role="status">
         <span>Mã lỗi: {{ problem.code }}</span>
         <span v-if="problem.field">Trường cần kiểm tra: {{ problem.field }}</span>
-        <span v-if="problem.correlation_id">Mã đối soát: {{ problem.correlation_id }}</span>
       </div>
 
       <CaseReceiptCard
@@ -140,8 +165,15 @@ useSeoMeta({
         :assisted-hours="assistedHours || null"
         :busy="busy"
         :server-problem="problem"
+        :verification-receipt="verificationReceipt"
+        :phone-verified="phoneVerified"
+        :verified-phone="verifiedPhone"
+        :verification-error="verificationError"
+        :verification-busy="verificationBusy"
         @submit="submit"
-        @request-phone-verification="verifyPhone"
+        @request-phone-verification="startPhoneVerification"
+        @verify-phone="verifyPhoneCode"
+        @phone-consent-changed="onPhoneConsentChanged"
       />
     </template>
   </section>

@@ -21,12 +21,14 @@
 
         <div ref="messagesEl" class="chat-panel-msgs" aria-live="polite">
           <div v-for="msg in renderedMessages" :key="msg._key" :class="['cmsg', msg.role, { 'cmsg-failed': msg.failed }]">
-            <span v-if="msg.role === 'assistant'" v-html="formatMd(msg.content)"></span>
-            <template v-else>{{ msg.content }}</template>
-            <button v-if="msg.failed" type="button" class="cmsg-retry" aria-label="Gửi lại" @click="resend(msg)">↻ Thử lại</button>
+            <span v-if="msg.role === 'assistant'" class="cmsg-body" v-html="formatMd(msg.content)"></span>
+            <span v-else class="cmsg-body">{{ msg.content }}</span>
+            <span v-if="msg.retryOf" class="cmsg-retry-state">Đang gửi lại</span>
+            <time class="cmsg-time" :datetime="msg.createdAt">{{ formatMessageTime(msg.createdAt) }}</time>
+            <button v-if="msg.failed && (msg.role === 'user' || msg.role === 'error')" type="button" class="cmsg-retry" aria-label="Gửi lại" @click="resend(msg)">↻ Thử lại</button>
           </div>
           <div v-if="streaming && streamText" class="cmsg assistant">
-            <span v-html="formatMd(streamText)"></span>
+            <span class="cmsg-body" v-html="formatMd(streamText)"></span>
           </div>
           <div v-else-if="streaming" class="c-typing" role="status" aria-label="Đang trả lời...">
             <span aria-hidden="true"></span><span aria-hidden="true"></span><span aria-hidden="true"></span>
@@ -66,7 +68,20 @@ const chatPlaceholder = computed(() => ss('chat.placeholder', 'Hỏi gì đó v�
 const chatDisclaimer = computed(() => ss('chat.disclaimer', 'Nội dung do AI tạo, có thể chưa chính xác — vui lòng kiểm chứng.'))
 const open = ref(false)
 const inputText = ref('')
-const messages = ref<{ role: string; content: string; failed?: boolean }[]>([])
+interface ChatMessage {
+  id: string
+  role: 'user' | 'assistant' | 'error'
+  content: string
+  createdAt: string
+  displayTimezone: 'Asia/Ho_Chi_Minh'
+  generation: number
+  failed: boolean
+  retryOf?: string
+}
+
+const messages = ref<ChatMessage[]>([])
+const seenMessageIds = new Set<string>()
+let localMessageCounter = 0
 const panelEl = ref<HTMLElement | null>(null)
 
 // Panel này CHỈ là modal thật ở màn hình hẹp. Ở `@media (max-width: 480px)`
@@ -187,6 +202,38 @@ const renderedMessages = computed(() => {
   return messages.value.slice(start).map((m, i) => ({ ...m, _key: start + i }))
 })
 
+function nextLocalMessageId() {
+  localMessageCounter += 1
+  return `local-${Date.now()}-${localMessageCounter}`
+}
+
+function messageMetadata(data: Record<string, unknown> = {}) {
+  const displayTimezone = data.display_timezone === 'Asia/Ho_Chi_Minh'
+    ? 'Asia/Ho_Chi_Minh' as const
+    : 'Asia/Ho_Chi_Minh' as const
+  return {
+    id: String(data.message_id ?? nextLocalMessageId()),
+    createdAt: String(data.created_at ?? new Date().toISOString()),
+    displayTimezone,
+    generation: Number.isSafeInteger(data.generation) ? Number(data.generation) : 0,
+  }
+}
+
+function formatMessageTime(value: string) {
+  const timestamp = Date.parse(value)
+  if (!Number.isFinite(timestamp)) return 'Thời gian không xác định'
+  return new Intl.DateTimeFormat('vi-VN', {
+    dateStyle: 'short', timeStyle: 'short', timeZone: 'Asia/Ho_Chi_Minh',
+  }).format(timestamp)
+}
+
+function appendMessage(message: ChatMessage) {
+  if (seenMessageIds.has(message.id)) return false
+  seenMessageIds.add(message.id)
+  messages.value.push(message)
+  return true
+}
+
 function sanitize(t: string) {
   return t.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
 }
@@ -196,14 +243,28 @@ function formatMd(text: string) {
   return s.replace(/\*\*(.*?)\*\*/g, (_, g) => `<strong>${g}</strong>`).replace(/\n/g, '<br>')
 }
 
-async function resend(msg: { role: string; content: string; failed?: boolean }) {
+async function resend(msg: ChatMessage) {
   if (streaming.value) return
-  const idx = messages.value.indexOf(msg)
-  if (idx === -1) return
-  messages.value.splice(idx, 1)
-  const errIdx = messages.value.findIndex((m, i) => i >= idx && m.role === 'assistant' && (m.content === 'Xin lỗi, có lỗi xảy ra.' || m.content === 'Xin lỗi, không thể kết nối. Vui lòng thử lại.'))
-  if (errIdx !== -1) messages.value.splice(errIdx, 1)
-  await sendMessage(msg.content)
+  const original = msg.role === 'user'
+    ? msg
+    : messages.value.find(candidate => candidate.id === msg.retryOf && candidate.role === 'user')
+  if (!original) return
+  original.failed = false
+  delete original.retryOf
+  // Remove every stale failure bubble linked to this turn before retrying.
+  for (const candidate of [...messages.value]) {
+    if (candidate.role === 'error' && candidate.retryOf === original.id) {
+      const idx = messages.value.indexOf(candidate)
+      if (idx !== -1) {
+        messages.value.splice(idx, 1)
+        seenMessageIds.delete(candidate.id)
+      }
+    }
+  }
+  // The original user bubble remains in the chronology; keep its identity
+  // registered while allowing removed failure IDs to be reused by the server.
+  seenMessageIds.add(original.id)
+  await sendMessage(original.content, original.id)
 }
 
 let scrollRaf: number | null = null
@@ -215,13 +276,24 @@ function scrollBottom() {
   })
 }
 
-async function sendMessage(text: string) {
+async function sendMessage(text: string, retryOf?: string) {
   if (!text.trim() || streaming.value) return
   const userMsg = text.trim()
   inputText.value = ''
   suggestions.value = []
-  const history = messages.value.slice(-10).map(m => ({ role: m.role, content: m.content }))
-  messages.value.push({ role: 'user', content: userMsg })
+  const history = messages.value.slice(-10)
+    .filter(m => m.id !== retryOf)
+    .filter((m): m is ChatMessage & { role: 'user' | 'assistant' } => m.role === 'user' || m.role === 'assistant')
+    .map(m => ({ role: m.role, content: m.content }))
+  const localUser = messageMetadata({ message_id: nextLocalMessageId() })
+  if (!retryOf) {
+    appendMessage({
+      ...localUser,
+      role: 'user',
+      content: userMsg,
+      failed: false,
+    })
+  }
   scrollBottom()
 
   streaming.value = true
@@ -233,10 +305,18 @@ async function sendMessage(text: string) {
   const timeoutId = setTimeout(() => controller.abort(), 45000)
   let reader: ReadableStreamDefaultReader<Uint8Array> | null = null
   let readerCompleted = false
+  let terminalEvent: Record<string, unknown> | null = null
+  let streamError: Record<string, unknown> | null = null
   try {
     const res = await openChatStream(userMsg, history, controller.signal)
     if (!res.ok || !res.body) {
-      messages.value.push({ role: 'assistant', content: 'Xin lỗi, không thể kết nối. Vui lòng thử lại.' })
+      const userMsg2 = messages.value.findLast(m => m.role === 'user')
+      if (userMsg2) userMsg2.failed = true
+      appendMessage({
+        ...messageMetadata(), role: 'error',
+        content: 'Xin lỗi, không thể kết nối. Vui lòng thử lại.', failed: true,
+        ...(userMsg2 ? { retryOf: userMsg2.id } : {}),
+      })
       streaming.value = false
       streamText.value = ''
       scrollBottom()
@@ -251,6 +331,11 @@ async function sendMessage(text: string) {
         streamText.value = fullText
         scrollBottom()
       } else if (data.type === 'done') {
+        terminalEvent = data
+        // A terminal frame can carry the failure itself. Record it before
+        // the post-stream fallback branch so failed completions never become
+        // a fabricated assistant reply.
+        if (data.failed === true && !streamError) streamError = data
         if (typeof data.session_id === 'string' && data.session_id) {
           sessionId.value = data.session_id
           try { sessionStorage.setItem('chat_sid', data.session_id) } catch { /* */ }
@@ -258,18 +343,37 @@ async function sendMessage(text: string) {
         if (Array.isArray(data.suggestions) && data.suggestions.length) {
           suggestions.value = data.suggestions.filter((value): value is string => typeof value === 'string')
         }
+      } else if (!streamError && (data.type === 'error' || data.failed === true)) {
+        streamError = data
       }
     })
     readerCompleted = true
 
-    messages.value.push({ role: 'assistant', content: fullText || 'Không có phản hồi.' })
+    const errorEvent = streamError as Record<string, unknown> | null
+    const metadata = messageMetadata(errorEvent ?? terminalEvent ?? {})
+    if (errorEvent) {
+      const userMsg2 = messages.value.findLast(m => m.role === 'user')
+      if (userMsg2) userMsg2.failed = true
+      appendMessage({
+        ...metadata, role: 'error', retryOf: userMsg2?.id,
+        content: String(errorEvent.content ?? 'Xin lỗi, có lỗi xảy ra.'), failed: true,
+      })
+    } else {
+      appendMessage({
+        ...metadata, role: 'assistant',
+        content: fullText || 'Không có phản hồi.', failed: false,
+      })
+    }
   } catch {
     const aborted = controller.signal.aborted
     const userMsg2 = messages.value.findLast(m => m.role === 'user')
     if (userMsg2 && !aborted) userMsg2.failed = true
-    messages.value.push({
-      role: 'assistant',
+    appendMessage({
+      ...messageMetadata(),
+      role: 'error',
       content: aborted ? 'Đã dừng hoặc quá thời gian chờ.' : 'Xin lỗi, có lỗi xảy ra.',
+      failed: true,
+      ...(userMsg2 ? { retryOf: userMsg2.id } : {}),
     })
   } finally {
     clearTimeout(timeoutId)

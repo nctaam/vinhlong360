@@ -834,6 +834,63 @@ Chỉ mở cho nhóm mời, noindex vẫn bật, không dùng claim “đã ki�
 4. Có owner/on-call, support route, correction SLA clock và incident escalation.
 5. Chạy đúng bộ test theo `CLAUDE.md`: temp-root Windows, `npx vitest run`, `npm run typecheck`, backend tests chạy chung; ghi rõ 15 known failures và không có fail mới.
 
+### Task 14 — proof-first acceptance snapshot (2026-09-02)
+
+- Runner: `scripts/ops/run_pilot_acceptance.py`; authority: `config/release-authority.json`; owner: `service-owner`.
+- Local artifact: `artifacts/pilot-acceptance.json`, ID `pilot-acceptance-20260902T020417Z`, canonical envelope digest (`output_sha256`) `f955d16598ebe1c2a74a62f20879b57ba36400e7e0a4ce58ee01ca98cdae1d63`, HEAD `7bd85e772843ac5ab3c7db656a1b0766aed8ede3`.
+- Coverage envelope contains all 28 P1 sections and the five required layers (`unit`, `postgres`, `multi_process`, `browser`, `external_side_effect`); no raw personal data, secrets, production calls, or provider calls are recorded.
+- Gate result: **NO_GO**. PostgreSQL evidence is unavailable (`postgres-integration-command-not-run`; Docker availability is never treated as PostgreSQL proof), multi-process contention evidence is unavailable (`multi-process-contention-command-not-run`), browser evidence is unavailable (`browser-base-url-not-supplied`), external provider/object retry evidence is unavailable, and owner sign-off/decision-required approvals are not recorded. The external layer is a local no-provider sandbox receipt only.
+- This snapshot is local and time-bounded (24 hours); it is not a public-launch claim. Re-run the complete matrix on a disposable PostgreSQL/browser host after the owner and legal/provider decisions are signed.
+
+#### Đính chính 2026-09-02 — artifact id/digest trên là giá trị **point-in-time**
+
+Giữ nguyên khối Task 14 phía trên làm bản ghi lịch sử. Khối này **supersedes** hai con
+số định danh trong đó.
+
+- **Artifact được sinh lại mỗi lần chạy**, nên mọi ID/digest được trích dẫn trong tài liệu
+  chỉ đúng tại thời điểm ghi. ID `pilot-acceptance-20260902T020417Z` và `output_sha256`
+  `f955d165…` ở trên **đã bị thay**; bundle hiện tại trên máy là
+  `pilot-acceptance-20260902T104323Z`, `output_sha256`
+  `b00710c1ea4aaf595a516898f023354c9525d4c18c7ace8ebf3ce54efbafa51a`, cùng HEAD
+  `7bd85e772843ac5ab3c7db656a1b0766aed8ede3`. **Không trích digest này vào tài liệu
+  khác như một hằng số** — đối chiếu trực tiếp với `artifacts/pilot-acceptance.json`.
+- **Thực tế từng lớp ở lần chạy hiện hành:**
+  - `postgres`: **PASS cho đúng 3/28 P1** — `F-42`, `F-49`, `F-53`, chạy thật trên
+    PostgreSQL disposable qua `agent/tests/test_case_contention_postgres.py`
+    (ánh xạ nodeids: `scripts/ops/run_pilot_acceptance.py:381-396`). **25 P1 còn lại
+    UNCLASSIFIED** với gap có tên `no-postgres-proof-mapped-for-finding`
+    (`scripts/ops/run_pilot_acceptance.py:1137`).
+  - `multi_process`, `browser`, `external_side_effect`: **UNCLASSIFIED cho cả 28 P1** —
+    không có host/trình duyệt/sandbox provider trên máy đơn này.
+  - `unit`: **cũng UNCLASSIFIED cho cả 28 P1**. Đính chính trong cùng ngày: một lượt
+    chạy trước đó **không kết thúc** (`return_code: 124`, `captured_output` kết ở
+    `TIMEOUT`) vì drill dùng timeout mặc định 120 giây trong khi bộ cross-boundary đã
+    dài quá hai phút. Lỗi đó **đã sửa** (timeout 1800 giây); lượt chạy hiện tại kết thúc
+    thật với `return_code: 0` và `95 passed`. Lớp này vẫn `UNCLASSIFIED` vì lý do
+    ĐÚNG: một capture gộp không phải bằng chứng riêng cho từng finding, nên
+    `_bind_evidence` hạ cấp nó. Hệ quả **không đổi**: **25/28 P1 không có lớp nào PASS**,
+    3 P1 còn lại chỉ có đúng một lớp (`postgres`). Không được đọc việc khối này chỉ liệt
+    kê ba lớp kia là ngụ ý `unit` đã xanh.
+  - Ngoài ma trận acceptance, vẫn **không có bằng chứng** cho: HA/failover,
+    backup → offsite → restore → checksum, staging rollout → smoke → rollback,
+    alert receiver thật.
+- **Lỗ hổng bundle-bía-đặt đã đóng** (lúc ghi khối Task 14 thì chưa): gate parse lại
+  `captured_output` khi chấm điểm (`scripts/ops/run_pilot_acceptance.py:138-186`,
+  dùng ở `:734-743`); bắt buộc đủ bốn vai ký `runner`/`owner`/`countersign`/`ci`
+  (`agent/control_plane/attestation.py:46`, `:257-278`); và có countersigner
+  tái-thực-thi độc lập (`scripts/ops/countersign_pilot_acceptance.py`).
+- **Countersigner đã chạy: 3/3 confirmed nhưng UNSIGNED.**
+  `artifacts/pilot-countersignature.json` ghi `complete=true`, `confirmed=3`,
+  `expected=3`, `covers=["F-42/postgres","F-49/postgres","F-53/postgres"]`,
+  `attestation.scheme="unsigned"`, `signature=""`. Khóa `PILOT_ATTEST_COUNTERSIGN_KEY`
+  **cố ý vắng mặt** theo quyết định của chủ dự án trong phiên 2026-09-02.
+- **Kết quả cổng không đổi:** acceptance = **NO_GO**, release verifier = **BLOCKED**.
+  Đây là trạng thái đúng. Không khối nào trong tài liệu này được đọc là "đủ điều kiện
+  mở closed pilot".
+- **Lưu ý custody:** `scripts/ops/run_pilot_acceptance.py`, `artifacts/pilot-acceptance.json`
+  và `docs/runbooks/proof-first-pilot-acceptance.md` hiện **UNTRACKED tại HEAD**; khối
+  `pilot_acceptance` trong `config/release-authority.json` là diff **chưa commit**.
+
 ### Public launch — No-Go hiện tại
 
 Chưa mở index/public acquisition khi còn đồng thời:

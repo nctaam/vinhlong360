@@ -168,9 +168,27 @@ OPERATOR=local-reviewer \
 OPERATOR_CIDR=127.0.0.1/32 \
 CANDIDATE_RELEASE_ID=local-candidate \
 ROLLBACK_RELEASE_ID=local-known-good \
-NGINX_OPERATOR_PROBE_URL=http://127.0.0.1:3100 \
+NGINX_OPERATOR_PROBE_URL=http://127.0.0.1:18080 \
 bash scripts/ops/rehearse_launch_rollback.sh --local-rehearsal
 ```
+
+> ⚠️ **`NGINX_OPERATOR_PROBE_URL` phải trỏ vào MỘT REVERSE PROXY, không bao giờ
+> trỏ vào cổng gốc của ứng dụng.** Ở `--local-rehearsal`, script thêm
+> `--require-public-internal-404` (`scripts/ops/rehearse_launch_rollback.sh:979-986`)
+> — đó là **hợp đồng của lớp biên nginx**, do khối
+> `location ^~ /_internal/ { return 404; }` thực thi (`nginx.conf:74-76`,
+> `nginx-ssl.conf:34-36` và `:111-113`). Origin Nuxt/agent thì **cố ý phục vụ**
+> `/_internal` không cần xác thực trên loopback: `deploy_launch_admission.sh:118-130`
+> curl thẳng `http://127.0.0.1:3000/_internal/launch-readiness` làm cổng bắt buộc
+> trước khi mở lại. Chĩa biến này vào cổng origin nên sẽ đo NHẦM BỀ MẶT và sinh ra
+> một artifact `fail` với `public-internal-route-exposed` trông rất giống lỗi thật.
+>
+> Giá trị cũ ghi trong runbook này là `http://127.0.0.1:3100` — **SAI**, và đã gây
+> đúng lỗi đó (`artifacts/runtime-drills/boundary-20260903-002100/post-reopen-closed.json`).
+> `3100` nằm trong `PROHIBITED_PUBLIC_PORTS` (`scripts/ops/socket_boundary_probe.py:19-21`);
+> biên nginx loopback duy nhất của kho là `127.0.0.1:18080`
+> (`tests/launch_safety/harness/docker-compose.yml:50-51`, khớp
+> `tests/launch_safety/powershell/test_release_gate_harness.ps1:132`).
 
 Host execution must provide separate public and operator maintenance probe
 authorities. Set `NGINX_PUBLIC_PROBE_URL` to a non-operator source that must

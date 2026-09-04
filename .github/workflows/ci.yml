@@ -80,6 +80,12 @@ jobs:
           # hai cổng hard-ratchet đó im lặng trả 0 — tức chưa từng chạy trong CI.
           pip install ruff
 
+      # The checked-in OpenAPI snapshot must stay aligned with the live FastAPI
+      # route registry. The checker sanitizes credentials and performs no I/O
+      # against production providers.
+      - name: Check OpenAPI contract drift
+        run: python scripts/check_contract_drift.py
+
       # `install_closed_release.sh` chạy live-mode (không --local-rehearsal) sẽ
       # fallback về /usr/bin/python3, và guard runtime của nó đòi `import ssl` +
       # `dotenv.parser`. `pip` ở trên cài vào Python của setup-python, KHÔNG chạm

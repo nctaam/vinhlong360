@@ -33,6 +33,7 @@ import os
 import re
 import sys
 import time
+from urllib.parse import urlparse, unquote
 from collections import defaultdict
 from pathlib import Path
 from threading import Lock
@@ -51,6 +52,7 @@ load_dotenv(Path(__file__).resolve().parent.parent / ".env")
 
 from runtime_ports import resolve_port
 from structured_logging import install_redaction_filter
+from secret_policy import is_strong_production_secret
 
 BIND_HOST = os.environ.get("BIND_HOST", "127.0.0.1")
 # Cổng lắng nghe: mặc định 8361 = y hệt trước khi tham số hoá. Biến RIÊNG, không
@@ -94,8 +96,22 @@ except ImportError:
 
 AGENT_URL = os.environ.get("AGENT_URL", "http://localhost:8360")
 TELEGRAM_TOKEN = os.environ.get("TELEGRAM_BOT_TOKEN", "")
-ZALO_OA_ID = os.environ.get("ZALO_OA_ACCESS_TOKEN", os.environ.get("ZALO_OA_ID", ""))
-ZALO_OA_SECRET = os.environ.get("ZALO_OA_SECRET", "")
+
+
+def _resolve_zalo_oa_id(env: dict[str, object] | os._Environ = os.environ) -> str:
+    """Resolve Zalo credentials using normalized non-empty precedence."""
+    access_token = str(env.get("ZALO_OA_ACCESS_TOKEN") or "").strip()
+    oa_id = str(env.get("ZALO_OA_ID") or "").strip()
+    return access_token or oa_id
+
+
+def _resolve_zalo_oa_secret(env: dict[str, object] | os._Environ = os.environ) -> str:
+    """Resolve the webhook secret after removing accidental whitespace."""
+    return str(env.get("ZALO_OA_SECRET") or "").strip()
+
+
+ZALO_OA_ID = _resolve_zalo_oa_id()
+ZALO_OA_SECRET = _resolve_zalo_oa_secret()
 
 MAP_URL = os.environ.get("MAP_URL", "https://vinhlong360.vn/map")
 
@@ -103,6 +119,90 @@ MAP_URL = os.environ.get("MAP_URL", "https://vinhlong360.vn/map")
 # Bot gọi /admin/* trên agent bằng X-Admin-Key (server-side). KHÔNG bật vòng lặp LLM nền (§B8).
 ADMIN_API_KEY = os.environ.get("ADMIN_API_KEY", "")
 ADMIN_TELEGRAM_IDS = {x.strip() for x in os.environ.get("ADMIN_TELEGRAM_IDS", "").split(",") if x.strip()}
+
+def _strong_production_secret(value: object) -> bool:
+    """Compatibility wrapper for the app-wide production secret policy."""
+    return is_strong_production_secret(value)
+
+
+def _is_exact_origin(value: object) -> bool:
+    """Accept only an explicit HTTPS origin, never a URL or wildcard."""
+    if not isinstance(value, str) or not value or any(ch.isspace() for ch in value):
+        return False
+    if "*" in value or any(ch in value for ch in "?#"):
+        return False
+    parsed = urlparse(value)
+    if parsed.scheme.lower() != "https" or not parsed.netloc or parsed.netloc.endswith(":"):
+        return False
+    if parsed.username or parsed.password or parsed.path:
+        return False
+    try:
+        _ = parsed.port
+    except ValueError:
+        return False
+    hostname = parsed.hostname or ""
+    return bool(re.fullmatch(r"(?:[A-Za-z0-9-]+\.)*[A-Za-z0-9-]+|\[[0-9A-Fa-f:.]+\]", hostname))
+
+
+def _validate_database_config(value: object) -> list[str]:
+    database_url = str(value or "").strip()
+    parsed = urlparse(database_url)
+    if parsed.scheme not in {"postgres", "postgresql"}:
+        return ["DATABASE_URL must use PostgreSQL"]
+    if not parsed.hostname or not parsed.username or not parsed.password:
+        return ["DATABASE_URL must include explicit PostgreSQL credentials"]
+    if not _strong_production_secret(unquote(parsed.password)):
+        return ["DATABASE_URL password must be a strong non-default secret"]
+    return []
+
+
+def _validate_cors_config(value: object) -> list[str]:
+    raw_origins = str(value or "").strip()
+    origins = [origin.strip() for origin in raw_origins.split(",") if origin.strip()]
+    if not origins:
+        return ["CORS_ORIGINS must be explicitly configured"]
+    for origin in origins:
+        if not _is_exact_origin(origin):
+            return ["CORS_ORIGINS must use explicit HTTPS origins"]
+        parsed = urlparse(origin)
+        if parsed.hostname and parsed.hostname.lower() in {"localhost", "127.0.0.1", "::1"}:
+            return ["CORS_ORIGINS must not include local origins in production"]
+    return []
+
+
+def _validate_zalo_config(env: dict[str, str]) -> list[str]:
+    # Runtime prefers a non-empty access token, then falls back to the OA ID alias.
+    zalo_id = _resolve_zalo_oa_id(env)
+    zalo_secret = _resolve_zalo_oa_secret(env)
+    if not zalo_id and not zalo_secret:
+        return ["ZALO_OA_ID or ZALO_OA_ACCESS_TOKEN and ZALO_OA_SECRET are required"]
+    if zalo_id and not _strong_production_secret(zalo_secret):
+        return ["ZALO_OA_SECRET must be a strong non-default webhook secret"]
+    if zalo_secret and not zalo_id:
+        return ["ZALO_OA_ID or ZALO_OA_ACCESS_TOKEN is required when ZALO_OA_SECRET is configured"]
+    return []
+
+
+def validate_standalone_config(env: dict[str, str] | None = None) -> None:
+    """Fail closed before standalone production bot startup.
+
+    The agent server validates its own settings, but ``python agent/bot_gateway.py``
+    is an independent process and must not inherit weak compose defaults.
+    """
+    source = os.environ if env is None else env
+    environment = str(source.get("ENVIRONMENT", "development")).strip().lower()
+    if environment not in {"production", "prod", "prd"}:
+        return
+
+    failures: list[str] = []
+    if not _strong_production_secret(source.get("ADMIN_API_KEY", "")):
+        failures.append("ADMIN_API_KEY must be a strong non-default secret")
+    failures.extend(_validate_database_config(source.get("DATABASE_URL")))
+    failures.extend(_validate_cors_config(source.get("CORS_ORIGINS")))
+    failures.extend(_validate_zalo_config(source))
+
+    if failures:
+        raise ValueError("Unsafe standalone bot production configuration: " + "; ".join(failures))
 
 
 async def _async_sleep(seconds: float):
@@ -764,9 +864,9 @@ class BotGateway:
             oa_id: Zalo OA application ID.
             oa_secret: Zalo OA secret for webhook signature verification.
         """
-        self._zalo_oa_id = oa_id
-        self._zalo_oa_secret = oa_secret
-        _bot_logger.info("Zalo OA registered (ID: %s...)", oa_id[:8])
+        self._zalo_oa_id = str(oa_id or "").strip()
+        self._zalo_oa_secret = str(oa_secret or "").strip()
+        _bot_logger.info("Zalo OA registered (ID: %s...)", self._zalo_oa_id[:8])
 
     def verify_zalo_signature(self, raw_body: bytes, signature: str) -> bool:
         """Verify Zalo webhook signature.
@@ -962,6 +1062,7 @@ def create_bot_app() -> FastAPI:
     Returns:
         Configured FastAPI application.
     """
+    validate_standalone_config()
     bot_app = FastAPI(title="vinhlong360 Bot Gateway")
     gw = _get_gateway()
 
@@ -1043,6 +1144,7 @@ if __name__ == "__main__":
 
     import uvicorn
 
+    validate_standalone_config()
     gw = _get_gateway()
 
     print("=" * 55)

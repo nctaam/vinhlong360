@@ -15,7 +15,7 @@ export interface FavoriteItem {
 }
 
 export const FAVORITES_STORAGE_KEY = 'vl360_favorites'
-export const LIFECYCLE_CLEAR_VERSION = 'v1'
+const LIFECYCLE_CLEAR_VERSION = 'v1'
 const STORAGE_KEY = FAVORITES_STORAGE_KEY
 
 export function clearFavoriteStorage(storage: Pick<Storage, 'removeItem'>): void {

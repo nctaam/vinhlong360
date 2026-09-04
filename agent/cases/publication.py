@@ -210,6 +210,11 @@ def apply_change_set(command: ApplyChangeSetCommand, *, now: datetime) -> Public
                    "Applying a correction needs the publication scope.")
     store = _store()
     with store.transaction() as transaction:
+        if not transaction.try_change_set_lock(command.change_set_id):
+            raise _reject(
+                "change_set_busy",
+                "Another publication command is already processing this change.",
+            )
         row = transaction.load_change_set(command.change_set_id, for_update=True)
         if str(row["case_id"]) != command.case_id:
             raise _reject("change_set_not_on_case", "That change set belongs to another case.")
@@ -720,6 +725,11 @@ def rollback_change_set(command: RollbackChangeSetCommand, *,
     store = _store()
     drifted = False
     with store.transaction() as transaction:
+        if not transaction.try_change_set_lock(command.change_set_id):
+            raise _reject(
+                "change_set_busy",
+                "Another rollback command is already processing this change.",
+            )
         row = transaction.load_change_set(command.change_set_id, for_update=True)
         if str(row["case_id"]) != command.case_id:
             raise _reject("change_set_not_on_case", "That change set belongs to another case.")

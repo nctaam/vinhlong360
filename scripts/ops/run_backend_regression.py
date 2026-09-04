@@ -4,9 +4,12 @@ from __future__ import annotations
 
 import argparse
 from dataclasses import dataclass
+import json
 import math
 import os
 from pathlib import Path
+import platform
+import shutil
 import signal
 import subprocess
 import sys
@@ -178,12 +181,18 @@ def _run_windows_job_supervisor(command: tuple[str, ...]) -> int:
     return process.wait()
 
 
-def _start_phase(phase: Phase) -> subprocess.Popen:
+def _start_phase(phase: Phase, *, capture: bool = False) -> subprocess.Popen:
     kwargs: dict[str, object] = {
         "cwd": ROOT,
-        "stdout": None,
-        "stderr": None,
+        # Capturing is opt-in because the default mode streams live to the
+        # operator's terminal; a report run trades that for a transcript the
+        # classifier can read.
+        "stdout": subprocess.PIPE if capture else None,
+        "stderr": subprocess.STDOUT if capture else None,
     }
+    if capture:
+        kwargs["text"] = True
+        kwargs["errors"] = "replace"
     if IS_WINDOWS:
         kwargs["creationflags"] = CREATE_NEW_PROCESS_GROUP
         command = _windows_job_supervisor_command(phase.command)
@@ -314,12 +323,65 @@ def _deadline_timeout(phase: Phase, process: subprocess.Popen, context: str) -> 
     return TIMEOUT_EXIT_CODE
 
 
+def classify_phase(phase_name: str, output: str, return_code: int) -> dict[str, object]:
+    """Classify one phase's transcript into a machine-readable outcome record.
+
+    Every outcome group is reported, not just failures: a run that reports zero
+    failures while carrying collection or teardown errors is not a clean run,
+    and recording only ``failed`` is what let earlier reports claim otherwise.
+    """
+
+    outcome = parse_phase_output(output, return_code)
+    clean = (
+        outcome.summary_present
+        and return_code == 0
+        and not outcome.failed
+        and not outcome.errors
+        and not outcome.collection_errors
+        and not outcome.interrupted
+    )
+    return {
+        "phase": phase_name,
+        "return_code": return_code,
+        "summary_present": outcome.summary_present,
+        "passed": outcome.passed,
+        "failed": outcome.failed,
+        "errors": outcome.errors,
+        "skipped": outcome.skipped,
+        "xfailed": outcome.xfailed,
+        "collection_errors": outcome.collection_errors,
+        "interrupted": outcome.interrupted,
+        "failed_nodeids": list(outcome.failed_nodeids),
+        "error_nodeids": list(outcome.error_nodeids),
+        "clean": clean,
+    }
+
+
+def _report_environment() -> dict[str, object]:
+    """Record the environment facts that decide whether a run is trustworthy."""
+
+    try:
+        free_bytes = int(shutil.disk_usage(ROOT).free)
+    except OSError:
+        free_bytes = 0
+    return {
+        "python": platform.python_version(),
+        "platform": platform.platform(),
+        "disk_free_bytes": free_bytes,
+        "disk_free_gb": round(free_bytes / (1024 ** 3), 2),
+        "pytest_temp_root": os.environ.get("PYTEST_DEBUG_TEMPROOT", ""),
+    }
+
+
 def run_backend_regression(
     python: str = sys.executable,
     deadline_seconds: float = DEFAULT_DEADLINE_SECONDS,
+    report_path: Path | None = None,
 ) -> int:
     """Run both phases against one absolute monotonic deadline."""
     deadline = time.monotonic() + deadline_seconds
+    if report_path is not None:
+        return _run_with_report(python, deadline, report_path)
 
     for phase in build_phases(python):
         remaining = deadline - time.monotonic()
@@ -350,6 +412,68 @@ def run_backend_regression(
     return 0
 
 
+def _capture_phase(phase: Phase, deadline: float) -> dict[str, object]:
+    """Run one phase to completion and classify its transcript."""
+
+    remaining = deadline - time.monotonic()
+    if remaining <= 0:
+        return {
+            "phase": phase.name,
+            "return_code": TIMEOUT_EXIT_CODE,
+            "summary_present": False,
+            "clean": False,
+            "reason": "deadline-exhausted-before-phase",
+            "failed_nodeids": [],
+            "error_nodeids": [],
+        }
+    process = _start_phase(phase, capture=True)
+    try:
+        output, _ = process.communicate(timeout=remaining)
+        return_code = process.returncode
+    except subprocess.TimeoutExpired:
+        _cleanup_process(process)
+        output, return_code = "", TIMEOUT_EXIT_CODE
+    sys.stdout.write(output or "")
+    sys.stdout.flush()
+    return classify_phase(phase.name, output or "", return_code)
+
+
+def _run_with_report(python: str, deadline: float, report_path: Path) -> int:
+    """Run every phase, classify each transcript, and persist one JSON report.
+
+    Phases are not short-circuited on failure here: the point of the report is
+    a complete picture, and stopping at the first red phase is what leaves the
+    remaining outcomes unclassified.
+    """
+
+    phases: list[dict[str, object]] = []
+    exit_code = 0
+    for phase in build_phases(python):
+        record = _capture_phase(phase, deadline)
+        phases.append(record)
+        if not record["clean"]:
+            exit_code = exit_code or (int(record["return_code"]) or 1)
+
+    report = {
+        "version": 1,
+        "environment": _report_environment(),
+        "phases": phases,
+        # "No regression" is only a valid claim when every outcome group in
+        # every phase is empty, so it is derived here rather than asserted.
+        "clean": all(bool(item.get("clean")) for item in phases),
+        "unclassified_nodeids": sorted({
+            nodeid
+            for item in phases
+            for key in ("failed_nodeids", "error_nodeids")
+            for nodeid in item.get(key, [])
+        }),
+    }
+    report_path.parent.mkdir(parents=True, exist_ok=True)
+    report_path.write_text(json.dumps(report, ensure_ascii=True, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    _diagnose(f"regression report written to {report_path}; clean={report['clean']}")
+    return 0 if report["clean"] else (exit_code or 1)
+
+
 def _positive_finite_seconds(value: str) -> float:
     try:
         parsed = float(value)
@@ -376,9 +500,20 @@ def main(argv: list[str] | None = None) -> int:
         type=_positive_finite_seconds,
         default=DEFAULT_DEADLINE_SECONDS,
     )
+    parser.add_argument(
+        "--report",
+        type=Path,
+        default=None,
+        help="write a JSON outcome report covering failures, errors and collection errors",
+    )
     args = parser.parse_args(arguments)
+    if args.report is None:
+        # Keep the default invocation exactly as it was: the streaming path is
+        # what CI and the runbook call, and it must not change shape because a
+        # reporting option exists.
+        return run_backend_regression(sys.executable, deadline_seconds=args.deadline_seconds)
     return run_backend_regression(
-        sys.executable, deadline_seconds=args.deadline_seconds
+        sys.executable, deadline_seconds=args.deadline_seconds, report_path=args.report
     )
 
 

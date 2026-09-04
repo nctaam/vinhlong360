@@ -8,6 +8,17 @@
 
 /* ── Shared components ── */
 
+/* State layers are semantic so hover/focus/pressed remain legible in Nocturne. */
+.dark {
+  --state-color: var(--color-text);
+  --state-hover: color-mix(in oklch, var(--state-color) 12%, transparent);
+  --state-focus: color-mix(in oklch, var(--color-focus) 28%, transparent);
+  --state-pressed: color-mix(in oklch, var(--state-color) 18%, transparent);
+  --state-disabled: color-mix(in oklch, var(--color-text-muted) 22%, transparent);
+  --state-loading: color-mix(in oklch, var(--color-action) 22%, transparent);
+  --state-error: color-mix(in oklch, var(--color-error) 24%, transparent);
+}
+
 /* ScrollToTop */
 .dark .scroll-top { background: var(--glass-bg-heavy); backdrop-filter: var(--glass); -webkit-backdrop-filter: var(--glass); border-color: var(--line); box-shadow: var(--shadow-md); color: var(--primary-fg); }
 .dark .scroll-top:hover { box-shadow: var(--shadow-lg); }
@@ -112,8 +123,8 @@
 .dark .interest-nav .chip.active { box-shadow: var(--shadow-sm); }
 
 /* ── Admin: users ── */
-.dark .status-active { background: rgba(var(--secondary-rgb), .18); color: var(--secondary-fg-strong, #34d399); }
-.dark .status-banned { background: rgba(var(--color-error-rgb), .16); color: var(--error-light, #f87171); }
+.dark .status-active { background: rgba(var(--secondary-rgb), .18); color: var(--secondary-fg); }
+.dark .status-banned { background: rgba(var(--color-error-rgb), .16); color: var(--error); }
 .dark .admin-select-inline { background: rgba(255,255,255,.05); border-color: rgba(255,255,255,.1); color: var(--ink); }
 
 /* ── Admin: stats (thong-ke) ── */
@@ -122,7 +133,7 @@
 
 /* ── Admin: reports (bao-cao) ── */
 .dark .status-pending { background: rgba(var(--accent-rgb), .18); color: var(--accent-light, #f59e0b); }
-.dark .status-resolved { background: rgba(var(--secondary-rgb), .18); color: var(--secondary-fg-strong, #34d399); }
+.dark .status-resolved { background: rgba(var(--secondary-rgb), .18); color: var(--secondary-fg); }
 .dark .status-dismissed { background: rgba(255,255,255,.06); color: rgba(255,255,255,.4); }
 
 /* ── Homepage hero + category grid ── */
@@ -158,10 +169,10 @@
 .dark .top-place { border-color: rgba(255,255,255,.10); }
 .dark .top-place:hover { background: rgba(255,255,255,.08); }
 .dark .top-place h3 { color: var(--ink); }
-.dark .top-place .tp-reviews { color: #b0b0b6; }
+.dark .top-place .tp-reviews { color: var(--muted); }
 
 /* Section subtitle */
-.dark .section-head p { color: #b8b8be; }
+.dark .section-head p { color: var(--muted); }
 
 /* ── Admin: data quality ── */
 .dark .dq-diff-item { background: rgba(255,255,255,.04); }

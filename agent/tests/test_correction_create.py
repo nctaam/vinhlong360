@@ -240,6 +240,15 @@ def test_optional_phone_is_never_treated_as_identity():
     assert service.party_authority_draft_for(command, case_id="c-1", now=NOW) is None
 
 
+def test_direct_create_requires_a_verified_phone_receipt_even_with_consent():
+    command = _command(optional_phone="0901234567", notification_consent=True)
+
+    with pytest.raises(CorrectionRejected) as excinfo:
+        _service().create_correction(command, now=NOW, rate_subject="test")
+
+    assert excinfo.value.problem.code == "phone_verification_required"
+
+
 # ── Durable rate limiting ──
 
 @pg_only

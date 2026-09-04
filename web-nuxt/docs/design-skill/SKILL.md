@@ -12,7 +12,7 @@ Guide for designing and building UI that feels cohesive, accessible, and cultura
 - **Solo dev**, budget <1M VND/month, web-first, <10k users
 - **Pure CSS + CSS custom properties** (no Tailwind, no Style Dictionary)
 - **Nuxt 4 SSR** with `@nuxtjs/color-mode` for dark mode (`.dark` class on `<html>`)
-- **Inter** font self-hosted via `@nuxt/fonts`
+- **Be Vietnam Pro** for interface/body and **Fraunces** for editorial display via `@nuxt/fonts`
 - Design tokens live in `web-nuxt/assets/css/variables.css`
 
 ## Core Principles (Apple HIG adapted)
@@ -59,7 +59,7 @@ See `references/tokens.md` for the complete table.
 
 ## Typography
 
-Font: **Inter** (self-hosted .woff2), `system-ui` fallback. `font-optical-sizing: auto` on body.
+Font: **Be Vietnam Pro** (self-hosted via `@nuxt/fonts`), `system-ui` fallback. **Fraunces** is reserved for editorial display. `font-optical-sizing: normal` is the runtime policy; do not assume an optical-size axis is available in every fallback font.
 
 ### Scale (mapped from Apple iOS Dynamic Type — verified exact values)
 
@@ -94,7 +94,7 @@ Font: **Inter** (self-hosted .woff2), `system-ui` fallback. `font-optical-sizing
 - Body default: 22pt leading on 17pt text = ~129%
 
 ### Optical sizing
-Variable font masters at: 9, 11, 17, 28, 52, 144pt. Tracking interpolation zone: 17-28pt. Inter supports `font-optical-sizing: auto`.
+Runtime fixture: `Ệ ộ Ẵ ữ Ề Ậ` at 200% text zoom. Be Vietnam Pro carries the interface diacritics; Fraunces is used only for editorial display. Optical sizing stays `normal` to keep fallback metrics predictable.
 
 ### Vietnamese considerations
 - Line-height min 1.5 for body (diacritics stack vertically)

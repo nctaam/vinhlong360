@@ -12,7 +12,7 @@ html { scroll-behavior: smooth; scroll-padding-top: 72px; font-size: var(--a11y-
    drawer…). Gỡ nó là mời tràn ngang quay lại ở một chỗ khác. */
 #main-content { overflow-x: clip; }
 html, body { margin: 0; padding: 0; }
-body { font-family: var(--font-sans); color: var(--ink); background: var(--bg); line-height: var(--leading-normal); -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; font-feature-settings: 'cv11' 1; text-rendering: optimizeLegibility; -webkit-tap-highlight-color: transparent; overflow-x: hidden; overflow-wrap: break-word; transition: background .35s var(--ease-out), color .35s var(--ease-out); }
+body { font-family: var(--font-sans); color: var(--ink); background: var(--bg); line-height: var(--leading-normal); font-optical-sizing: var(--font-optical-sizing-policy); -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; font-feature-settings: 'cv11' 1; text-rendering: optimizeLegibility; -webkit-tap-highlight-color: transparent; overflow-x: hidden; overflow-wrap: break-word; transition: background .35s var(--ease-out), color .35s var(--ease-out); }
 body { accent-color: var(--primary); }
 h1, h2, h3 { text-wrap: balance; }
 .icon-inline { vertical-align: -2px; margin-inline-end: var(--space-1); }
@@ -178,7 +178,7 @@ h4 { font-size: var(--text-lg);  line-height: var(--lh-lg);  letter-spacing: var
 /* Fallback #fff GIỮ LẠI có chủ đích: dòng này nằm trong danh sách trắng của
    scripts/check-tri-region-contrast.mjs, và danh sách đó so chuỗi nguyên văn
    giá trị khai báo. Gỡ fallback = lệch chuỗi = đỏ check, dù màu vẽ ra không đổi. */
-.hero-search button:focus-visible { outline: 2px solid var(--text-on-dark, #fff); outline-offset: 2px; }
+  .hero-search button:focus-visible { outline: 2px solid var(--text-on-dark, #fff); outline-offset: 2px; }
 
 
 /* ── Blocks / sections (Apple-style generous spacing) ── */
@@ -541,8 +541,8 @@ html.js .reveal { opacity: 0; transform: translateY(30px) scale(.985); }
 /* ── Mobile nav backdrop ── */
 .nav-backdrop { display: none; }
 @media (max-width: 820px) {
-  .nav-backdrop.show { display: block; position: fixed; inset: 0; z-index: calc(var(--z-mobile-nav) - 2); background: rgba(var(--ink-rgb),.3); animation: backdropFadeIn .2s var(--ease-out); }
-  .nav-backdrop.closing { display: block; position: fixed; inset: 0; z-index: calc(var(--z-mobile-nav) - 2); background: rgba(var(--ink-rgb),.3); animation: backdropFadeOut .25s var(--ease-out) forwards; pointer-events: none; }
+  .nav-backdrop.show { display: block; position: fixed; inset: 0; z-index: var(--z-mobile-nav-backdrop); background: rgba(var(--ink-rgb),.3); animation: backdropFadeIn .2s var(--ease-out); }
+  .nav-backdrop.closing { display: block; position: fixed; inset: 0; z-index: var(--z-mobile-nav-backdrop); background: rgba(var(--ink-rgb),.3); animation: backdropFadeOut .25s var(--ease-out) forwards; pointer-events: none; }
 }
 @keyframes backdropFadeIn { from { opacity: 0; } to { opacity: 1; } }
 @keyframes backdropFadeOut { from { opacity: 1; } to { opacity: 0; } }
@@ -575,6 +575,8 @@ html.js .reveal { opacity: 0; transform: translateY(30px) scale(.985); }
 @keyframes msgSlideIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
 .chat-panel-msgs .cmsg.user { align-self: flex-end; background: var(--primary); color: var(--text-on-dark); border-bottom-right-radius: 4px; }
 .chat-panel-msgs .cmsg.assistant { align-self: flex-start; background: var(--card); border: .5px solid var(--line); border-bottom-left-radius: 4px; }
+.chat-panel-msgs .cmsg.error { align-self: flex-start; background: var(--error-bg); color: var(--ink); border: 1px solid var(--error-border); border-bottom-left-radius: 4px; }
+.chat-panel-msgs .cmsg.error .cmsg-retry { color: var(--error); }
 .chat-panel-msgs .cmsg.assistant strong { color: var(--primary-fg); }
 .chat-panel-msgs .cmsg.assistant ul,.chat-panel-msgs .cmsg.assistant ol { margin: var(--space-1) 0; padding-inline-start: 18px; }
 .chat-panel-msgs .cmsg.assistant p { margin: var(--space-1) 0; }
@@ -1063,13 +1065,13 @@ html[data-high-contrast="true"] :where(.card, .step-card, .route-card, .cross-ca
 
 /* ── Print ── */
 @media print {
-  body { background: #fff; color: #000; }
+  body { background: var(--color-canvas); color: var(--color-text); }
   .topbar, .site-footer, .skip-link, .scroll-top, .chat-widget,
   .hero-search, .hero-pills, .auth-area, .feed-sidebar, .nav-toggle,
   .admin-sidebar, .thread-actions, .scroll-row,
   .journey-bar, .notif-bell, .onboarding-sheet, .toast-container { display: none !important; }
-  .page, .detail-cover, .card, .modal-overlay { box-shadow: none !important; border-color: #ccc !important; }
-  a[href]::after { content: " (" attr(href) ")"; font-size: .8em; color: #666; }
+  .page, .detail-cover, .card, .modal-overlay { box-shadow: none !important; border-color: var(--color-border) !important; }
+  a[href]::after { content: " (" attr(href) ")"; font-size: .8em; color: var(--color-text-muted); }
   a[href^="/"]::after, a[href^="#"]::after { content: none; }
   img { max-width: 100% !important; page-break-inside: avoid; }
   h1, h2, h3, h4 { page-break-after: avoid; }

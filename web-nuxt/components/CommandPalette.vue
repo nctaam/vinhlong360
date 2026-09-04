@@ -156,7 +156,7 @@ defineExpose({ open })
 </script>
 
 <style scoped>
-.cmd-overlay { position: fixed; inset: 0; z-index: var(--z-lightbox); background: rgba(var(--black-rgb),.4); display: flex; align-items: flex-start; justify-content: center; padding-top: 15vh; }
+.cmd-overlay { position: fixed; inset: 0; z-index: var(--z-command-palette); background: rgba(var(--black-rgb),.4); display: flex; align-items: flex-start; justify-content: center; padding-top: 15vh; }
 .cmd-palette {
   width: min(540px, 90vw);
   background: var(--bg, var(--white));

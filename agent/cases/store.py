@@ -284,6 +284,25 @@ class CaseTransaction:
             raise TypeError("commit callback must be callable")
         self._after_commit.append(callback)
 
+    def try_change_set_lock(self, change_set_id: str) -> bool:
+        """Take a non-blocking transaction lock for a publication command.
+
+        Row locks correctly serialize the writers, but a waiter cannot tell
+        whether it was a genuine retry or a second command that raced the
+        first one.  A transaction-scoped advisory lock lets the loser fail
+        closed immediately while a later, committed retry can still replay the
+        durable receipt.
+        """
+        self._require_active()
+        if type(change_set_id) is not str or not change_set_id:
+            raise ValueError("invalid_change_set_id")
+        row = self._db._fetchone(
+            self._conn,
+            "SELECT pg_try_advisory_xact_lock(hashtextextended(%s, 0)) AS acquired",
+            (change_set_id,),
+        )
+        return bool(_row_dict(self._db, row)["acquired"])
+
     def _run_after_commit(self) -> None:
         callbacks = tuple(self._after_commit)
         self._after_commit.clear()
@@ -605,6 +624,65 @@ class CaseTransaction:
             ),
         )
 
+    def insert_verified_contact(
+        self,
+        *,
+        case_id: str,
+        contact_digest: str,
+        challenge_digest: str,
+        expires_at: datetime,
+        verified_at: datetime,
+    ) -> None:
+        """Attach a pre-case proof to its newly created case atomically."""
+        self._require_active()
+        if (
+            not all(type(value) is str and value for value in (case_id, contact_digest, challenge_digest))
+            or type(expires_at) is not datetime
+            or expires_at.tzinfo is None
+            or type(verified_at) is not datetime
+            or verified_at.tzinfo is None
+        ):
+            raise ValueError("invalid_verified_contact")
+        self._db._execute(
+            self._conn,
+            """
+            INSERT INTO case_contact_challenges (
+                case_id, contact_digest, challenge_digest, channel, expires_at, verified_at, created_at
+            ) VALUES (%s, %s, %s, 'phone', %s, %s, %s)
+            """,
+            (case_id, contact_digest, challenge_digest, expires_at, verified_at, verified_at),
+        )
+
+    def consume_pre_contact_challenge(
+        self, *, receipt: str, contact_digest: str, challenge_digest: str, now: datetime
+    ) -> dict | None:
+        """Atomically consume one verified pre-case proof."""
+        self._require_active()
+        row = self._db._fetchone(
+            self._conn,
+            """
+            SELECT contact_digest, challenge_digest, expires_at
+            FROM case_pre_contact_challenges
+            WHERE challenge_id = %s
+              AND contact_digest = %s
+              AND challenge_digest = %s
+              AND verified_at IS NOT NULL
+              AND used_at IS NULL
+              AND expires_at > %s
+            FOR UPDATE
+            """,
+            (receipt, contact_digest, challenge_digest, now),
+        )
+        if row is None:
+            return None
+        item = _row_dict(self._db, row)
+        self._db._execute(
+            self._conn,
+            "UPDATE case_pre_contact_challenges SET used_at = %s WHERE challenge_id = %s",
+            (now, receipt),
+        )
+        return item
+
     def update_outbox_event(self, envelope: Mapping[str, object]) -> None:
         """Refresh one stable intent after a later retry, without inserting a duplicate."""
         self._require_active()
@@ -863,15 +941,23 @@ class CaseTransaction:
 
     def load_change_set(self, change_set_id: str, *, for_update: bool = False) -> dict:
         self._require_active()
-        lock = " FOR UPDATE" if for_update else ""
-        row = self._db._fetchone(
-            self._conn,
-            f"""
+        if for_update:
+            sql = """
             SELECT change_set_id, case_id, base_entity_revision, before_patch, after_patch,
                    inverse_patch, policy_revision, risk_class, decision_maker_ref,
                    reviewer_ref, apply_status, public_projection_verified_at
-            FROM correction_change_sets WHERE change_set_id = %s{lock}
-            """,
+            FROM correction_change_sets WHERE change_set_id = %s FOR UPDATE
+            """
+        else:
+            sql = """
+            SELECT change_set_id, case_id, base_entity_revision, before_patch, after_patch,
+                   inverse_patch, policy_revision, risk_class, decision_maker_ref,
+                   reviewer_ref, apply_status, public_projection_verified_at
+            FROM correction_change_sets WHERE change_set_id = %s
+            """
+        row = self._db._fetchone(
+            self._conn,
+            sql,
             (change_set_id,),
         )
         if row is None:
@@ -885,10 +971,7 @@ class CaseTransaction:
         self._require_active()
         if type(item_ids) is not tuple or not item_ids:
             raise ValueError("invalid_correction_item_selection")
-        lock = " FOR UPDATE" if for_update else ""
-        rows = self._db._fetchall(
-            self._conn,
-            f"""
+        sql = """
             SELECT c.change_set_id, c.case_id, c.base_entity_revision,
                    c.before_patch, c.after_patch, c.inverse_patch,
                    c.evidence_refs, c.policy_revision, c.risk_class,
@@ -898,9 +981,27 @@ class CaseTransaction:
             FROM correction_change_sets c
             JOIN correction_change_set_items link
               ON link.change_set_id = c.change_set_id
-            WHERE c.case_id = %s{lock}
+            WHERE c.case_id = %s
             ORDER BY c.created_at DESC, c.change_set_id DESC
-            """,
+        """
+        if for_update:
+            sql = """
+            SELECT c.change_set_id, c.case_id, c.base_entity_revision,
+                   c.before_patch, c.after_patch, c.inverse_patch,
+                   c.evidence_refs, c.policy_revision, c.risk_class,
+                   c.decision_maker_ref, c.reviewer_ref, c.apply_status,
+                   c.public_projection_verified_at, c.created_at,
+                   link.item_id::text AS linked_item_id
+            FROM correction_change_sets c
+            JOIN correction_change_set_items link
+              ON link.change_set_id = c.change_set_id
+            WHERE c.case_id = %s
+            ORDER BY c.created_at DESC, c.change_set_id DESC
+            FOR UPDATE OF c
+            """
+        rows = self._db._fetchall(
+            self._conn,
+            sql,
             (case_id,),
         )
         requested = set(str(item_id) for item_id in item_ids)
@@ -1152,6 +1253,13 @@ class CaseTransaction:
         return self._count_execute(
             "DELETE FROM case_contact_challenges"
             " WHERE expires_at < %s AND verified_at IS NULL",
+            (now,),
+        )
+
+    def purge_expired_pre_contact_challenges(self, *, now: datetime) -> int:
+        self._require_active()
+        return self._count_execute(
+            "DELETE FROM case_pre_contact_challenges WHERE expires_at < %s OR used_at IS NOT NULL",
             (now,),
         )
 
@@ -1409,10 +1517,13 @@ class CaseTransaction:
 
     def load_case(self, case_id: str, *, for_update: bool = False) -> CaseSnapshot:
         self._require_active()
-        lock = " FOR UPDATE" if for_update else ""
+        if for_update:
+            sql = f"SELECT {_CASE_COLUMNS} FROM cases WHERE case_id = %s FOR UPDATE"
+        else:
+            sql = f"SELECT {_CASE_COLUMNS} FROM cases WHERE case_id = %s"
         row = self._db._fetchone(
             self._conn,
-            f"SELECT {_CASE_COLUMNS} FROM cases WHERE case_id = %s{lock}",
+            sql,
             (case_id,),
         )
         if row is None:

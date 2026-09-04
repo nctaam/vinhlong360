@@ -49,7 +49,10 @@ def cleanup_case_data(transaction, *, now: datetime | None = None,
 
     expired_access = transaction.purge_expired_access_sessions(now=now)
     expired_idempotency = transaction.purge_expired_idempotency(now=now)
-    expired_challenges = transaction.purge_expired_contact_challenges(now=now)
+    expired_challenges = (
+        transaction.purge_expired_contact_challenges(now=now)
+        + transaction.purge_expired_pre_contact_challenges(now=now)
+    )
 
     contacts = transaction.redact_closed_case_contacts(
         closed_before=now - CONTACT_RETENTION

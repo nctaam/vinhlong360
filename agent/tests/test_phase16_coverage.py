@@ -377,17 +377,26 @@ class TestPhase17SecurityChecks:
             SetPassword(password="12345678")
 
     def test_esms_uses_https(self):
-        src = _auth_src()
-        assert "https://rest.esms.vn/" in src
+        # SMS transport was extracted from identity/api.py; inspect the
+        # shared provider so this security contract follows the real owner.
+        from sms_provider import ESMS_ENDPOINT
+        assert ESMS_ENDPOINT.startswith("https://rest.esms.vn/")
 
     def test_token_hashing_uses_sha256(self):
         src = _auth_src()
         assert "sha256" in src
 
     def test_session_cleanup_purges_expired(self):
-        src = (Path(__file__).resolve().parent.parent / "scheduler.py").read_text(encoding="utf-8")
-        assert "DELETE FROM user_sessions WHERE expires_at < NOW()" in src
-        assert "DELETE FROM otp_sessions WHERE expires_at < NOW()" in src
+        # Expiry SQL lives in identity.api; scheduler delegates to the
+        # bounded helper under a lease.
+        import inspect
+        import scheduler
+        from identity import api as identity_api
+        helper = inspect.getsource(identity_api._cleanup_expired_data_impl)
+        task = inspect.getsource(scheduler.task_session_cleanup)
+        assert "DELETE FROM user_sessions" in helper and "expires_at < NOW()" in helper
+        assert "DELETE FROM otp_sessions" in helper and "expires_at < NOW()" in helper
+        assert "cleanup_expired_data" in task
 
 
 # ═══════════════════════════════════════════════════════════════════════
@@ -824,10 +833,21 @@ class TestSecurityPosture:
         assert not unvalidated, f"server.py has unvalidated limit params: {unvalidated}"
 
     def test_query_param_bounds_in_auth(self):
-        src = _auth_src()
-        for line in src.split("\n"):
-            if "limit: int = " in line and "def " in line:
-                assert "Query(" in line, f"auth.py unvalidated limit: {line.strip()}"
+        # Only HTTP route parameters are query parameters.  Internal helpers
+        # such as cleanup_expired_data intentionally accept a plain int.
+        import inspect
+        from fastapi.params import Query as QueryParam
+        from identity import api as auth
+        for route in auth.router.routes:
+            endpoint = getattr(route, "endpoint", None)
+            if endpoint is None:
+                continue
+            parameter = inspect.signature(endpoint).parameters.get("limit")
+            if parameter is None:
+                continue
+            assert isinstance(parameter.default, QueryParam), endpoint.__name__
+            metadata = getattr(parameter.default, "metadata", ())
+            assert any(getattr(item, "le", None) is not None for item in metadata), endpoint.__name__
 
     def test_query_param_bounds_in_plans(self):
         src = (Path(__file__).resolve().parent.parent / "plans.py").read_text(encoding="utf-8")
@@ -2058,24 +2078,28 @@ class TestModerationNotifications:
         assert hasattr(admin_mod, "create_notification")
 
     def test_approve_post_calls_notification(self):
-        src = _admin_src()
+        import inspect
+        from community import admin_api
         # function_source: cắt theo ranh giới AST thay vì cửa sổ ký tự
         # cố định — xem agent/tests/_source_window.py.
-        block = function_source(src, "approve_post")
+        block = inspect.getsource(admin_api.approve_post)
+        helper = inspect.getsource(admin_api._moderate_post)
         assert "create_notification(" in block, \
             "approve_post must call create_notification to inform the author"
-        assert "RETURNING user_id" in block, \
-            "approve_post must fetch user_id via RETURNING to identify the author"
+        assert "_moderate_post" in block
+        assert "SELECT id, user_id" in helper and "current[\"user_id\"]" in helper
 
     def test_reject_post_calls_notification(self):
-        src = _admin_src()
+        import inspect
+        from community import admin_api
         # function_source: cắt theo ranh giới AST thay vì cửa sổ ký tự
         # cố định — xem agent/tests/_source_window.py.
-        block = function_source(src, "reject_post")
+        block = inspect.getsource(admin_api.reject_post)
+        helper = inspect.getsource(admin_api._moderate_post)
         assert "create_notification(" in block, \
             "reject_post must call create_notification to inform the author"
-        assert "RETURNING user_id" in block, \
-            "reject_post must fetch user_id via RETURNING to identify the author"
+        assert "_moderate_post" in block
+        assert "SELECT id, user_id" in helper and "current[\"user_id\"]" in helper
 
     def test_reject_notification_includes_reason(self):
         src = _admin_src()
@@ -2087,7 +2111,7 @@ class TestModerationNotifications:
 
     def test_batch_moderation_calls_notification(self):
         import inspect
-        import admin as admin_mod
+        from community import admin_api as admin_mod
         # The per-post create_notification fan-out was extracted into the _batch_mod_notify
         # helper (complexity refactor); batch_moderation still wires it and keeps the
         # RETURNING id, user_id fetch. Combine both sources for the assertions.
@@ -2095,8 +2119,8 @@ class TestModerationNotifications:
         assert "_batch_mod_notify" in inspect.getsource(admin_mod.batch_moderation)  # wiring
         assert "create_notification(" in block, \
             "batch_moderation must call create_notification for each affected post"
-        assert "RETURNING id, user_id" in block, \
-            "batch_moderation must fetch user_ids via RETURNING"
+        assert "SELECT id, user_id, moderation_status" in block, \
+            "batch_moderation must fetch user_ids before the CAS transition"
 
 
 class TestDeleteRowcountChecks:
@@ -2111,27 +2135,31 @@ class TestDeleteRowcountChecks:
             "delete_itinerary must check rowcount to return 404 on missing itinerary"
 
     def test_delete_relationship_checks_rowcount(self):
-        src = _admin_src()
+        import inspect
+        from entities import admin_api
         # function_source: cắt theo ranh giới AST thay vì cửa sổ ký tự
         # cố định — xem agent/tests/_source_window.py.
-        block = function_source(src, "delete_relationship")
-        assert "rowcount" in block, \
-            "delete_relationship must check rowcount to return 404 on missing relationship"
+        block = inspect.getsource(admin_api.delete_relationship)
+        assert "db.delete_relationship" in block
+        assert "HTTPException(404" in block, \
+            "delete_relationship must return 404 on missing relationship"
 
     def test_approve_post_checks_existence(self):
-        src = _admin_src()
+        import inspect
+        from community import admin_api
         # function_source: cắt theo ranh giới AST thay vì cửa sổ ký tự
         # cố định — xem agent/tests/_source_window.py.
-        block = function_source(src, "approve_post")
-        assert "if not row" in block or "rowcount" in block, \
+        block = inspect.getsource(admin_api._moderate_post)
+        assert "if not row" in block, \
             "approve_post must verify the post exists"
 
     def test_reject_post_checks_existence(self):
-        src = _admin_src()
+        import inspect
+        from community import admin_api
         # function_source: cắt theo ranh giới AST thay vì cửa sổ ký tự
         # cố định — xem agent/tests/_source_window.py.
-        block = function_source(src, "reject_post")
-        assert "if not row" in block or "rowcount" in block, \
+        block = inspect.getsource(admin_api._moderate_post)
+        assert "if not row" in block, \
             "reject_post must verify the post exists"
 
 

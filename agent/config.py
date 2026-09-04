@@ -8,17 +8,39 @@ Usage:
 """
 
 from pathlib import Path
+import re
 from urllib.parse import unquote, urlparse
 
 from dotenv import load_dotenv
 from pydantic import model_validator
 from pydantic_settings import BaseSettings
+from secret_policy import is_strong_production_secret
 
 POSTGRES_URL_PREFIXES = ("postgres://", "postgresql://")
 
 
 def is_postgresql_url(value: str) -> bool:
     return value.strip().lower().startswith(POSTGRES_URL_PREFIXES)
+
+
+def is_exact_origin(value: object, *, require_https: bool = True) -> bool:
+    """Validate a CORS origin (scheme + authority only, never a URL)."""
+    if not isinstance(value, str) or not value or any(ch.isspace() for ch in value):
+        return False
+    if "*" in value or any(ch in value for ch in "?#"):
+        return False
+    parsed = urlparse(value)
+    allowed_schemes = {"https"} if require_https else {"http", "https"}
+    if parsed.scheme.lower() not in allowed_schemes:
+        return False
+    if not parsed.netloc or parsed.username or parsed.password or parsed.path or parsed.netloc.endswith(":"):
+        return False
+    try:
+        _ = parsed.port
+    except ValueError:
+        return False
+    hostname = parsed.hostname or ""
+    return bool(re.fullmatch(r"(?:[A-Za-z0-9-]+\.)*[A-Za-z0-9-]+|\[[0-9A-Fa-f:.]+\]", hostname))
 
 
 def _is_individual_actor_ref(value: str) -> bool:
@@ -60,6 +82,7 @@ class Settings(BaseSettings):
     JWT_SECRET: str = ""
     CSRF_SECRET: str = ""
     CHAT_OWNER_SECRET: str = ""
+    EXPORT_CURSOR_SECRET: str = ""
 
     # ── SMS (eSMS) ──
     ESMS_API_KEY: str = ""
@@ -264,23 +287,8 @@ class Settings(BaseSettings):
         return self
 
 
-_PRODUCTION_PLACEHOLDERS = frozenset(
-    {
-        "", "change-me", "changeme", "secret", "password", "admin",
-        "test", "test-key", "test-admin-key", "vl360_dev_password",
-    }
-)
-
-
 def _unsafe_production_secret(value: object) -> bool:
-    if not isinstance(value, str):
-        return True
-    normalized = value.strip().lower()
-    return (
-        len(value.strip()) < 20
-        or normalized in _PRODUCTION_PLACEHOLDERS
-        or any(marker in normalized for marker in ("<your-", "replace-me", "example-secret", "dev_password"))
-    )
+    return not is_strong_production_secret(value)
 
 
 def assert_production_config(settings: Settings) -> None:
@@ -314,10 +322,7 @@ def assert_production_config(settings: Settings) -> None:
         failures.append("CORS_ORIGINS must be explicitly configured")
     elif any("localhost" in origin.lower() or "127.0.0.1" in origin for origin in origins):
         failures.append("CORS_ORIGINS must not include local origins in production")
-    elif any(
-        urlparse(origin).scheme != "https" or not urlparse(origin).netloc
-        for origin in origins
-    ):
+    elif any(not is_exact_origin(origin, require_https=True) for origin in origins):
         failures.append("CORS_ORIGINS must use HTTPS in production")
 
     if failures:

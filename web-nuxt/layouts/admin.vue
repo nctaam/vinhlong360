@@ -1,5 +1,5 @@
 <template>
-  <div class="admin-shell">
+  <div class="admin-shell dense-workbench" data-admin-density="dense-workbench">
     <a href="#admin-main" class="skip-link">Chuyển đến nội dung chính</a>
     <button
       v-if="mobileSidebarOpen"
@@ -220,6 +220,15 @@ onUnmounted(() => {
 
 <style>
 .admin-shell { display: flex; min-height: 100vh; }
+.dense-workbench :is(button, [role="button"], input, select, textarea) {
+  /* Dense visuals use tighter padding/rows; focusable controls retain a 44px
+     keyboard target even when their content is visually compact. */
+  min-block-size: var(--admin-control-hit-area);
+}
+.dense-workbench :is(input, select) {
+  line-height: var(--admin-control-visual-height);
+  padding-block: calc((var(--admin-control-hit-area) - var(--admin-control-visual-height)) / 2);
+}
 
 /* ── Sidebar ── */
 .admin-sidebar {
@@ -449,7 +458,7 @@ onUnmounted(() => {
   border: .5px solid var(--line);
 }
 .admin-table { width: 100%; border-collapse: collapse; background: var(--bg); min-width: 600px; }
-.admin-table th {
+.dense-workbench .admin-table th {
   text-align: left; padding: var(--space-3) var(--space-4);
   background: var(--bg-alt); font-size: .75rem; font-weight: 600;
   color: var(--muted); border-bottom: .5px solid var(--line);
@@ -457,7 +466,7 @@ onUnmounted(() => {
   position: sticky; top: 0; z-index: 2;
   box-shadow: 0 2px 4px rgba(var(--black-rgb),.03);
 }
-.admin-table td { padding: var(--space-3) var(--space-4); border-bottom: .5px solid var(--line); font-size: .88rem; }
+.dense-workbench .admin-table td { min-height: var(--admin-table-row-height); padding: var(--space-2) var(--space-3); border-bottom: .5px solid var(--line); font-size: .88rem; }
 .admin-table tbody tr { transition: background .25s var(--ease-standard); }
 .admin-table tbody tr:hover td { background: rgba(var(--black-rgb),.02); }
 .admin-table tbody tr.row-selected td { background: rgba(var(--primary-rgb), .06); }
@@ -469,11 +478,13 @@ onUnmounted(() => {
 
 /* ── Actions ── */
 .admin-actions { display: flex; gap: var(--space-2); }
-.admin-actions button {
+.dense-workbench .admin-actions button {
   padding: 6px var(--space-3); font-size: .8rem; border-radius: 8px;
   border: .5px solid var(--line); background: var(--bg); cursor: pointer;
   transition: background .25s, color .25s, border-color .25s, transform .35s var(--ease-soft), box-shadow .25s;
-  font-weight: 500; min-height: 44px;
+  font-weight: 500; min-height: var(--admin-control-hit-area);
+  line-height: var(--admin-control-visual-height);
+  padding-block: calc((var(--admin-control-hit-area) - var(--admin-control-visual-height)) / 2);
 }
 .admin-actions button:hover { background: var(--bg-alt); }
 .admin-actions button:active { transform: scale(.95); transition-duration: .08s; }
@@ -485,10 +496,12 @@ onUnmounted(() => {
 
 /* ── Pagination ── */
 .admin-pagination { display: flex; gap: var(--space-2); justify-content: center; margin-top: var(--space-4); }
-.admin-pagination button {
+.dense-workbench .admin-pagination button {
   padding: var(--space-2) var(--space-4); border: .5px solid var(--line);
   border-radius: 8px; background: var(--bg); cursor: pointer;
-  font-size: .85rem; font-weight: 500; min-height: 36px;
+  font-size: .85rem; font-weight: 500; min-height: var(--admin-control-hit-area);
+  line-height: var(--admin-control-visual-height);
+  padding-block: calc((var(--admin-control-hit-area) - var(--admin-control-visual-height)) / 2);
   transition: background .25s, color .25s, border-color .25s, transform .35s var(--ease-soft), box-shadow .25s;
 }
 .admin-pagination button:hover:not(:disabled) { border-color: var(--primary); color: var(--primary); transform: translateY(-1px); }
@@ -506,10 +519,12 @@ onUnmounted(() => {
 }
 @keyframes admin-spin { to { transform: rotate(360deg); } }
 
-.admin-refresh {
+.dense-workbench .admin-refresh {
   background: none; border: .5px solid var(--line); border-radius: 8px;
-  padding: var(--space-2) var(--space-3); cursor: pointer; font-size: .82rem;
-  color: var(--muted); font-weight: 500; min-height: 36px;
+  padding: var(--space-1) var(--space-3); cursor: pointer; font-size: .82rem;
+  color: var(--muted); font-weight: 500; min-height: var(--admin-control-hit-area);
+  line-height: var(--admin-control-visual-height);
+  padding-block: calc((var(--admin-control-hit-area) - var(--admin-control-visual-height)) / 2);
   transition: border-color .25s, color .25s, background .25s, transform .35s var(--ease-soft);
 }
 .admin-refresh:hover { border-color: var(--primary); color: var(--primary); background: rgba(var(--primary-rgb),.04); }
@@ -537,7 +552,13 @@ onUnmounted(() => {
 .admin-form-col { display: flex; flex-direction: column; gap: var(--space-3); margin-top: var(--space-4); }
 .admin-modal-actions { display: flex; gap: var(--space-3); justify-content: flex-end; margin-top: var(--space-4); }
 .admin-modal-md { max-width: 600px; }
-.admin-select-inline { padding: var(--space-1) var(--space-2); min-height: auto; font-size: .82rem; }
+.dense-workbench .admin-select-inline {
+  padding-block: calc((var(--admin-control-hit-area) - var(--admin-control-visual-height)) / 2);
+  padding-inline: var(--space-2);
+  min-height: var(--admin-control-hit-area);
+  line-height: var(--admin-control-visual-height);
+  font-size: .82rem;
+}
 .admin-select-filter { flex: 0 0 160px; }
 .admin-page-info { padding: var(--space-2) var(--space-3); font-size: .85rem; color: var(--muted); }
 .admin-textarea { resize: vertical; }

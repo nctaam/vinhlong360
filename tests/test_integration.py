@@ -546,7 +546,6 @@ def test_chat_stream_concurrent_non_blocking():
              patch("server.start_scheduler", MagicMock()), \
              patch("server.stop_scheduler", MagicMock()), \
              patch.object(chat_api.stream_limiter, "is_allowed", lambda ip: (True, {})):
-            import server
             from server import app
             async with app.router.lifespan_context(app):
                 transport = ASGITransport(app=app)
