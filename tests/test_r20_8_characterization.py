@@ -131,3 +131,24 @@ def test_entities_page_helper_preserves_search_query_contract(monkeypatch):
     assert seen["filters"].entity_types == ("dish", "attraction")
     assert seen["filters"].month == 7
     assert seen["filters"].public_only is True
+
+
+def test_seo_coverage_parts_keep_required_type_and_safe_attributes():
+    """SEO coverage ignores unknown shapes without changing recognized values."""
+    from scripts import validate_data
+
+    assert validate_data._seo_coverage_parts(None) is None
+    assert validate_data._seo_coverage_parts({"type": "organization"}) is None
+
+    etype, required, attrs = validate_data._seo_coverage_parts(
+        {"type": "restaurant", "attributes": {"phone": "0909123456"}}
+    )
+    assert etype == "restaurant"
+    assert "phone" in required
+    assert attrs == {"phone": "0909123456"}
+
+    etype, _required, attrs = validate_data._seo_coverage_parts(
+        {"type": "restaurant", "attributes": []}
+    )
+    assert etype == "restaurant"
+    assert attrs == {}

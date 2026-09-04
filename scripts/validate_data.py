@@ -1130,29 +1130,59 @@ def _emit_mixed_warning_issues(
     _emit_warnings_chunk_c(acc, issues)
 
 
-def _compute_seo_coverage(entities: list[Any]) -> dict[str, dict[str, Any]]:
-    type_coverage: dict[str, dict[str, Any]] = {}
-    for e in entities:
-        if not isinstance(e, dict):
-            continue
-        etype = e.get("type")
-        req = SEO_REQUIRED.get(str(etype)) if etype else None
-        if not req:
-            continue
-        attrs = e.get("attributes") if isinstance(e.get("attributes"), dict) else {}
-        if etype not in type_coverage:
-            type_coverage[etype] = {"total": 0, "has_any_seo_attr": 0, "per_attr": {k: 0 for k in req}}
-        type_coverage[etype]["total"] += 1
-        if any(attrs.get(k) for k in req):
-            type_coverage[etype]["has_any_seo_attr"] += 1
-        for k in req:
-            if attrs.get(k):
-                type_coverage[etype]["per_attr"][k] += 1
+def _seo_coverage_parts(
+    entity: Any,
+) -> tuple[Any, list[str], dict[str, Any]] | None:
+    if not isinstance(entity, dict):
+        return None
+    etype = entity.get("type")
+    required = SEO_REQUIRED.get(str(etype)) if etype else None
+    if not required:
+        return None
+    attrs = entity.get("attributes") if isinstance(entity.get("attributes"), dict) else {}
+    return etype, required, attrs
+
+
+def _update_seo_coverage(
+    type_coverage: dict[str, dict[str, Any]],
+    etype: Any,
+    required: list[str],
+    attrs: dict[str, Any],
+) -> None:
+    if etype not in type_coverage:
+        type_coverage[etype] = {
+            "total": 0,
+            "has_any_seo_attr": 0,
+            "per_attr": {key: 0 for key in required},
+        }
+    info = type_coverage[etype]
+    info["total"] += 1
+    if any(attrs.get(key) for key in required):
+        info["has_any_seo_attr"] += 1
+    for key in required:
+        if attrs.get(key):
+            info["per_attr"][key] += 1
+
+
+def _finalize_seo_coverage(
+    type_coverage: dict[str, dict[str, Any]],
+) -> dict[str, dict[str, Any]]:
     for info in type_coverage.values():
         metric = coverage_metric(info["has_any_seo_attr"], info["total"])
         info["pct"] = metric["value"]
         info["status"] = metric["status"]
     return type_coverage
+
+
+def _compute_seo_coverage(entities: list[Any]) -> dict[str, dict[str, Any]]:
+    type_coverage: dict[str, dict[str, Any]] = {}
+    for entity in entities:
+        parts = _seo_coverage_parts(entity)
+        if parts is None:
+            continue
+        etype, required, attrs = parts
+        _update_seo_coverage(type_coverage, etype, required, attrs)
+    return _finalize_seo_coverage(type_coverage)
 
 
 def _compute_entities_by_area(entities: list[Any]) -> dict[str, int]:
