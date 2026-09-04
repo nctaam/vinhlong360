@@ -455,3 +455,50 @@ def test_the_live_decision_corpus_is_currently_unsigned_and_untracked() -> None:
     reasons = module.decision_reasons(ROOT, {})
     assert reasons, "hồ sơ quyết định hiện chưa ký nên phải có lý do chặn"
     assert any("not signed" in r for r in reasons), reasons
+
+
+def test_countersignature_reason_order_is_characterized(tmp_path: Path) -> None:
+    """Các lý do đối chứng giữ thứ tự binding -> completeness -> coverage -> attestation."""
+
+    module = _load()
+    bundle_path = _write(
+        tmp_path,
+        _receipt(
+            bundle_output_sha256="x" * 64,
+            bundle_artifact_id="other-bundle",
+            head_sha="h" * 40,
+            complete=False,
+            expected=["record-a", "record-a"],
+            confirmed=["record-a"],
+            results=[{"record": "record-a", "verdict": "MISMATCH"}],
+            attestation={"scheme": "unsigned", "signature": ""},
+        ),
+    )
+
+    assert module.countersignature_reasons(
+        bundle_path, BUNDLE, BUNDLE["output_sha256"]
+    ) == [
+        "countersignature does not bind this bundle's output_sha256",
+        "countersignature digest does not match the recomputed bundle digest",
+        "countersignature does not bind this bundle's artifact_id",
+        "countersignature head_sha differs from the bundle head_sha",
+        "countersignature is incomplete",
+        "countersignature expected set contains duplicate records",
+        "countersignature confirmed set does not equal its expected set",
+        "countersignature record did not match: record-a",
+        "countersignature is unsigned (no countersign key in custody)",
+    ]
+
+
+def test_decision_reason_order_is_characterized(tmp_path: Path) -> None:
+    """Decision reasons report index/tracking/state before bundle claims."""
+
+    module = _load()
+    root = _decision_root(tmp_path, state="unsigned")
+
+    assert module.decision_reasons(root, {"decision_required": {"legal": True}}) == [
+        "decision record index is not git-tracked: config/decision-records.json",
+        "decision legal: record is not git-tracked: docs/decisions/QD-02.md",
+        "decision legal: state is 'unsigned', not signed",
+        "decision legal: bundle claims approval but the record is not signed",
+    ]
