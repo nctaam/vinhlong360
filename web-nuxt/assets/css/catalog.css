@@ -262,6 +262,21 @@
   cursor: pointer;
   box-shadow: none;
   transform: none;
+  transition: background var(--duration-fast) var(--ease-out), color var(--duration-fast) var(--ease-out);
+}
+
+[data-page-recipe="discovery"] .mode-pill .line-icon {
+  font-size: var(--icon-sm);
+  color: var(--color-action);
+  transition: transform var(--duration-fast) var(--ease-out);
+}
+
+[data-page-recipe="discovery"] .mode-pill:hover .line-icon {
+  transform: scale(1.12);
+}
+
+[data-page-recipe="discovery"] .mode-pill[aria-pressed="true"] .line-icon {
+  color: var(--color-brand);
 }
 
 [data-page-recipe="discovery"] .mode-pill:is(:hover, :active) {

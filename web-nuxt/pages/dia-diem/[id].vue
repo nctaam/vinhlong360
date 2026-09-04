@@ -283,6 +283,14 @@
                   <dt class="k"><IconLine class="fact-ic" name="car" aria-hidden="true" /><span>{{ ss('labels.detail.fact_transport', 'Di chuyển') }}</span></dt>
                   <dd class="v">{{ entity.attributes.transport }}</dd>
                 </div>
+                <div v-if="entity.attributes?.vehicle_access" class="fact">
+                  <dt class="k"><IconLine class="fact-ic" name="car" aria-hidden="true" /><span>Tiếp cận xe</span></dt>
+                  <dd class="v">{{ entity.attributes.vehicle_access }}</dd>
+                </div>
+                <div v-if="entity.attributes?.parking" class="fact">
+                  <dt class="k"><IconLine class="fact-ic" name="car" aria-hidden="true" /><span>Bãi đỗ xe</span></dt>
+                  <dd class="v">{{ entity.attributes.parking }}</dd>
+                </div>
               </dl>
             </section>
 
@@ -1083,7 +1091,7 @@ function trackContact(action: ContactAction) {
   trackContactView(id.value, action)
 }
 const hasHighlights = computed(() => !!(entity.value?.attributes?.phone || zaloLink.value || entity.value?.attributes?.hours || priceText.value || addressText.value || hasCoords.value))
-const hasVisitFacts = computed(() => { const a = entity.value?.attributes; return !!(a?.hours || a?.price || a?.fee || a?.suggested_duration || a?.transport) })
+const hasVisitFacts = computed(() => { const a = entity.value?.attributes; return !!(a?.hours || a?.price || a?.fee || a?.suggested_duration || a?.transport || a?.vehicle_access || a?.parking) })
 const hasContactFacts = computed(() => { const a = entity.value?.attributes; return !!(a?.phone || a?.address || (a?.coords_approximate && hasCoords.value) || a?.website) })
 const hasFeatureFacts = computed(() => { const a = entity.value?.attributes; return !!(a?.amenities || a?.price_range || a?.atmosphere || a?.famous_for || a?.significance) })
 const practicalTips = computed(() => {
@@ -1099,6 +1107,7 @@ const practicalTips = computed(() => {
   if (a.family_friendly || a.suitable_for?.includes('family'))
     tips.push({ icon: 'users', label: 'Gia đình', value: 'Phù hợp cho gia đình có trẻ em' })
   if (a.parking) tips.push({ icon: 'pin', label: 'Đậu xe', value: a.parking })
+  if (a.vehicle_access) tips.push({ icon: 'car', label: 'Tiếp cận xe', value: a.vehicle_access })
   if (Array.isArray(a.travel_tips)) {
     for (const t of a.travel_tips.slice(0, 3)) {
       if (t) tips.push({ icon: 'bulb', label: 'Mẹo', value: t })
