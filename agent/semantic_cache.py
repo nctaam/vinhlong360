@@ -54,6 +54,29 @@ DATA_DIR.mkdir(parents=True, exist_ok=True)
 ENTRIES_FILE = DATA_DIR / "entries.json"
 
 
+def _split_l2_records(
+    records: dict[str, object],
+) -> tuple[dict[str, dict], dict[str, dict], dict[str, int]]:
+    """Separate active entries, tombstones, and observed record versions."""
+
+    entries = {
+        key: value
+        for key, value in records.items()
+        if isinstance(value, dict) and not value.get("deleted")
+    }
+    tombstones = {
+        key: value
+        for key, value in records.items()
+        if isinstance(value, dict) and value.get("deleted")
+    }
+    versions = {
+        key: int(value.get("version", 0) or 0)
+        for key, value in records.items()
+        if isinstance(value, dict)
+    }
+    return entries, tombstones, versions
+
+
 @contextmanager
 def _interprocess_file_lock(path: Path):
     """Serialize cache manifest reads/writes across worker processes."""
@@ -294,40 +317,36 @@ class MultiTierCache:
 
     # ── L2 persistence ──
 
+    @staticmethod
+    def _read_l2_records() -> dict[str, object]:
+        if ENTRIES_FILE.exists():
+            raw = json.loads(ENTRIES_FILE.read_text(encoding="utf-8"))
+            return raw if isinstance(raw, dict) else {}
+        return {}
+
+    def _refresh_l1_from_entries(self, entries: dict[str, dict], *, force: bool) -> None:
+        """Drop L1 snapshots that no longer match a forced manifest refresh."""
+        if not force or not self._l1:
+            return
+        for key, entry in list(self._l1.items()):
+            current = entries.get(key)
+            if current is None or current != entry:
+                self._l1.pop(key, None)
+
     def _load_l2(self, *, force: bool = False):
         if self._l2_loaded and not force:
             return
         self._l2_loaded_from_disk = True
         try:
             with _interprocess_file_lock(ENTRIES_FILE):
-                if ENTRIES_FILE.exists():
-                    raw = json.loads(ENTRIES_FILE.read_text(encoding="utf-8"))
-                    records = raw if isinstance(raw, dict) else {}
-                else:
-                    records = {}
-                entries = {
-                    key: value
-                    for key, value in records.items()
-                    if isinstance(value, dict) and not value.get("deleted")
-                }
-                self._tombstones = {
-                    key: value
-                    for key, value in records.items()
-                    if isinstance(value, dict) and value.get("deleted")
-                }
-                self._known_versions = {
-                    key: int(value.get("version", 0) or 0)
-                    for key, value in records.items()
-                    if isinstance(value, dict)
-                }
+                records = self._read_l2_records()
+                entries, tombstones, versions = _split_l2_records(records)
+                self._tombstones = tombstones
+                self._known_versions = versions
                 self._l2 = OrderedDict(entries)
                 # A forced manifest refresh must invalidate any L1 snapshot
                 # that is absent or older than the disk record.
-                if force and self._l1:
-                    for key, entry in list(self._l1.items()):
-                        current = entries.get(key)
-                        if current is None or current != entry:
-                            self._l1.pop(key, None)
+                self._refresh_l1_from_entries(entries, force=force)
                 # Rebuild semantic state for both populated and deleted manifests.
                 self._matcher.rebuild(self._l2)
                 self._l2_mtime_ns = ENTRIES_FILE.stat().st_mtime_ns if ENTRIES_FILE.exists() else None
@@ -339,89 +358,113 @@ class MultiTierCache:
         self._version_counter = max(self._version_counter + 1, time.time_ns())
         return self._version_counter
 
+    @staticmethod
+    def _record_version(record: object) -> int:
+        return int(record.get("version", 0) or 0) if isinstance(record, dict) else 0
+
+    def _save_merge_base(self, merge_disk: bool) -> dict[str, dict]:
+        merged: dict[str, dict] = {}
+        if merge_disk and self._l2_loaded_from_disk and ENTRIES_FILE.exists():
+            raw = json.loads(ENTRIES_FILE.read_text(encoding="utf-8"))
+            if isinstance(raw, dict):
+                merged.update({k: v for k, v in raw.items() if isinstance(v, dict)})
+        elif not self._l2_loaded_from_disk:
+            # Test/local-only caches intentionally bypass disk; retain
+            # their complete in-memory manifest across saves.
+            merged.update(self._l2)
+            merged.update(self._tombstones)
+        return merged
+
+    def _local_save_records(self, deleted_keys: set[str] | None) -> dict[str, dict]:
+        local_records = dict(self._l2)
+        local_records.update(self._tombstones)
+        for key in deleted_keys or ():
+            fallback = {"deleted": True, "version": self._next_version()}
+            local_records[key] = self._tombstones.get(key, fallback)
+        return local_records
+
+    def _remote_wins(self, local: object, remote: object, expected: int) -> bool:
+        remote_version = self._record_version(remote)
+        local_delete_of_unknown_key = bool(
+            local and isinstance(local, dict) and local.get("deleted") and expected == 0
+        )
+        return (
+            remote_version != expected
+            and (remote is not None or expected != 0)
+            and not local_delete_of_unknown_key
+        )
+
+    def _adopt_remote_record(self, key: str, remote: dict | None) -> None:
+        if remote is None or remote.get("deleted"):
+            self._l2.pop(key, None)
+            self._tombstones[key] = (
+                {"deleted": True, "version": self._record_version(remote)}
+                if remote is None
+                else remote
+            )
+            self._l1.pop(key, None)
+            self._matcher.remove(key)
+            return
+        self._l2[key] = remote
+        self._tombstones.pop(key, None)
+        self._promote_to_l1(key, remote)
+        self._matcher.rebuild(self._l2)
+
+    def _merge_dirty_record(
+        self,
+        merged: dict[str, dict],
+        local_records: dict[str, dict],
+        key: str,
+    ) -> None:
+        local = local_records.get(key)
+        remote = merged.get(key)
+        expected = self._known_versions.get(key, 0)
+        if self._remote_wins(local, remote, expected):
+            self._adopt_remote_record(key, remote)
+            return
+        if local is not None:
+            if "version" not in local:
+                local = {**local, "version": self._next_version()}
+                if local.get("deleted"):
+                    self._tombstones[key] = local
+                else:
+                    self._l2[key] = local
+            merged[key] = local
+
+    def _replace_l2_state(self, merged: dict[str, dict]) -> None:
+        self._l2 = OrderedDict(
+            (key, value)
+            for key, value in merged.items()
+            if isinstance(value, dict) and not value.get("deleted")
+        )
+        self._tombstones = {
+            key: value
+            for key, value in merged.items()
+            if isinstance(value, dict) and value.get("deleted")
+        }
+        self._matcher.rebuild(self._l2)
+
     def _save_l2(self, *, merge_disk: bool = True, deleted_keys: set[str] | None = None):
         try:
             with _interprocess_file_lock(ENTRIES_FILE):
                 # Merge with the latest on-disk manifest while holding the lock,
                 # preventing one worker from erasing another worker's entry.
-                merged: dict[str, dict] = {}
-                if merge_disk and self._l2_loaded_from_disk and ENTRIES_FILE.exists():
-                    raw = json.loads(ENTRIES_FILE.read_text(encoding="utf-8"))
-                    if isinstance(raw, dict):
-                        merged.update({k: v for k, v in raw.items() if isinstance(v, dict)})
-                elif not self._l2_loaded_from_disk:
-                    # Test/local-only caches intentionally bypass disk; retain
-                    # their complete in-memory manifest across saves.
-                    merged.update(self._l2)
-                    merged.update(self._tombstones)
-
-                local_records = dict(self._l2)
-                local_records.update(self._tombstones)
-                for key in deleted_keys or ():
-                    local_records[key] = self._tombstones.get(key, {"deleted": True, "version": self._next_version()})
+                merged = self._save_merge_base(merge_disk)
+                local_records = self._local_save_records(deleted_keys)
 
                 # Compare dirty writes against the version observed when this
                 # worker loaded the manifest.  A changed remote record wins.
                 for key in self._dirty_keys | set(deleted_keys or ()):
-                    local = local_records.get(key)
-                    remote = merged.get(key)
-                    expected = self._known_versions.get(key, 0)
-                    remote_version = int(remote.get("version", 0) or 0) if isinstance(remote, dict) else 0
-                    # An explicit delete must win when this worker observed
-                    # the key as absent, even if another worker created it
-                    # before the delete reached the manifest.
-                    local_delete_of_unknown_key = bool(
-                        local and local.get("deleted") and expected == 0
-                    )
-                    if (
-                        remote_version != expected
-                        and (remote is not None or expected != 0)
-                        and not local_delete_of_unknown_key
-                    ):
-                        if remote is None or remote.get("deleted"):
-                            self._l2.pop(key, None)
-                            if remote is None:
-                                self._tombstones[key] = {"deleted": True, "version": remote_version}
-                            else:
-                                self._tombstones[key] = remote
-                            self._l1.pop(key, None)
-                            self._matcher.remove(key)
-                        else:
-                            self._l2[key] = remote
-                            self._tombstones.pop(key, None)
-                            self._promote_to_l1(key, remote)
-                            self._matcher.rebuild(self._l2)
-                        continue
-                    if local is not None:
-                        if "version" not in local:
-                            local = {**local, "version": self._next_version()}
-                            if local.get("deleted"):
-                                self._tombstones[key] = local
-                            else:
-                                self._l2[key] = local
-                        merged[key] = local
+                    self._merge_dirty_record(merged, local_records, key)
 
-                self._l2 = OrderedDict(
-                    (key, value)
-                    for key, value in merged.items()
-                    if isinstance(value, dict) and not value.get("deleted")
-                )
-                self._tombstones = {
-                    key: value for key, value in merged.items()
-                    if isinstance(value, dict) and value.get("deleted")
-                }
-                self._matcher.rebuild(self._l2)
+                self._replace_l2_state(merged)
                 tmp = ENTRIES_FILE.with_suffix(".tmp")
                 records = dict(self._l2)
                 records.update(self._tombstones)
                 tmp.write_text(json.dumps(records, ensure_ascii=False), encoding="utf-8")
                 tmp.replace(ENTRIES_FILE)
                 self._l2_mtime_ns = ENTRIES_FILE.stat().st_mtime_ns
-                self._known_versions = {
-                    key: int(value.get("version", 0) or 0)
-                    for key, value in records.items()
-                    if isinstance(value, dict)
-                }
+                self._known_versions = _split_l2_records(records)[2]
                 self._dirty_keys.clear()
         except Exception as exc:
             logger.warning("Failed to save L2 cache: %s", exc)
@@ -449,6 +492,54 @@ class MultiTierCache:
         self._l1.move_to_end(key)
         self._evict_l1()
 
+    def _refresh_l2_if_changed(self) -> None:
+        current_mtime = ENTRIES_FILE.stat().st_mtime_ns if ENTRIES_FILE.exists() else None
+        if self._l2_loaded_from_disk and current_mtime != self._l2_mtime_ns:
+            self._load_l2(force=True)
+
+    def _get_l1_response(self, key: str, query: str) -> dict | None:
+        entry = self._l1.get(key)
+        if entry is None:
+            return None
+        if self._is_expired(entry):
+            self._l1.pop(key, None)
+            return None
+        self._l1.move_to_end(key)
+        self.hits_l1 += 1
+        logger.debug("Cache L1 hit: %s", query[:60])
+        return entry.get("response")
+
+    def _get_l2_response(self, key: str, query: str) -> dict | None:
+        entry = self._l2.get(key)
+        if entry is None:
+            return None
+        if self._is_expired(entry):
+            self._l2.pop(key, None)
+            self._matcher.remove(key)
+            self._save_l2(deleted_keys={key})
+            return None
+        self._promote_to_l1(key, entry)
+        self.hits_l2 += 1
+        logger.debug("Cache L2 hit (promoted): %s", query[:60])
+        return entry.get("response")
+
+    def _get_semantic_response(self, query: str, owner_key: str) -> dict | None:
+        matched_key, sim = self._matcher.find_similar(query, owner_key=owner_key)
+        if matched_key is None:
+            return None
+        entry = self._l1.get(matched_key) or self._l2.get(matched_key)
+        if entry is None or self._is_expired(entry):
+            return None
+        self._promote_to_l1(matched_key, entry)
+        self.hits_semantic += 1
+        logger.debug(
+            "Cache semantic hit (%.2f): %s -> %s",
+            sim,
+            query[:40],
+            entry.get("query", "")[:40],
+        )
+        return entry.get("response")
+
     # ── public API ──
 
     def get(self, query: str, owner_key: str = "", *, entity_id: str | None = None,
@@ -460,54 +551,18 @@ class MultiTierCache:
         """
         with self._lock:
             self._load_l2()
-            current_mtime = ENTRIES_FILE.stat().st_mtime_ns if ENTRIES_FILE.exists() else None
-            if self._l2_loaded_from_disk and current_mtime != self._l2_mtime_ns:
-                self._load_l2(force=True)
+            self._refresh_l2_if_changed()
             self.total_queries += 1
             key = _make_key(query, owner_key=owner_key, entity_id=entity_id, generation=generation)
 
-            # --- L1 ---
-            if key in self._l1:
-                entry = self._l1[key]
-                if self._is_expired(entry):
-                    self._l1.pop(key, None)
-                else:
-                    self._l1.move_to_end(key)
-                    self.hits_l1 += 1
-                    logger.debug("Cache L1 hit: %s", query[:60])
-                    return entry.get("response")
-
-            # --- L2 ---
-            if key in self._l2:
-                entry = self._l2[key]
-                if self._is_expired(entry):
-                    self._l2.pop(key, None)
-                    self._matcher.remove(key)
-                    self._save_l2(deleted_keys={key})
-                else:
-                    self._promote_to_l1(key, entry)
-                    self.hits_l2 += 1
-                    logger.debug("Cache L2 hit (promoted): %s", query[:60])
-                    return entry.get("response")
-
-            # --- Semantic match ---
-            matched_key, sim = self._matcher.find_similar(
-                query,
-                owner_key=owner_key,
-            )
-            if matched_key is not None:
-                # Try L1 first, then L2
-                entry = self._l1.get(matched_key) or self._l2.get(matched_key)
-                if entry and not self._is_expired(entry):
-                    self._promote_to_l1(matched_key, entry)
-                    self.hits_semantic += 1
-                    logger.debug(
-                        "Cache semantic hit (%.2f): %s -> %s",
-                        sim,
-                        query[:40],
-                        entry.get("query", "")[:40],
-                    )
-                    return entry.get("response")
+            for lookup in (
+                lambda: self._get_l1_response(key, query),
+                lambda: self._get_l2_response(key, query),
+                lambda: self._get_semantic_response(query, owner_key),
+            ):
+                response = lookup()
+                if response is not None:
+                    return response
 
             self.misses += 1
             return None

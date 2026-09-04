@@ -260,6 +260,21 @@ class TestMultiTierCache(unittest.TestCase):
         self.assertEqual(self.cache.hits_l2, 1)
         self.assertIn(key, self.cache._l1)
 
+    def test_l2_manifest_split_preserves_entries_tombstones_and_versions(self):
+        from semantic_cache import _split_l2_records
+
+        entries, tombstones, versions = _split_l2_records(
+            {
+                "live": {"response": {"ok": True}, "version": 7},
+                "deleted": {"deleted": True, "version": 8},
+                "invalid": "ignored",
+            }
+        )
+
+        self.assertEqual(entries, {"live": {"response": {"ok": True}, "version": 7}})
+        self.assertEqual(tombstones, {"deleted": {"deleted": True, "version": 8}})
+        self.assertEqual(versions, {"live": 7, "deleted": 8})
+
 
 # ---- RequestDeduplicator ----
 
