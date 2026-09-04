@@ -204,6 +204,23 @@ def test_system_health_connection_failure_is_degraded(monkeypatch) -> None:
     assert postgres["degraded_checks"] == ["connection"]
 
 
+def test_system_health_connection_degraded_shape_is_stable() -> None:
+    from siteops import admin_api
+
+    result = {"postgres": {"stale": "value"}}
+
+    admin_api._system_health_pg_connection_degraded(result)
+
+    assert result["postgres"] == {
+        "tables": {},
+        "size_mb": -1,
+        "active_sessions": -1,
+        "pending_moderation": -1,
+        "open_reports": -1,
+        "degraded_checks": ["connection"],
+    }
+
+
 def test_homepage_rebuild_is_single_flight(monkeypatch) -> None:
     import public_api
 

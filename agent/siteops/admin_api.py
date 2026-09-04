@@ -197,6 +197,7 @@ def _system_health_server(result, os, _t) -> None:
 
 def _system_health_pg_connection_degraded(result) -> None:
     """Keep health reporting useful when PostgreSQL cannot be opened."""
+    result["postgres"].clear()
     result["postgres"].update({
         "tables": {},
         "size_mb": -1,
@@ -208,6 +209,7 @@ def _system_health_pg_connection_degraded(result) -> None:
 
 
 def _system_health_pg(result) -> None:
+    """Populate PostgreSQL ``tables`` and metric health, degrading safely."""
     try:
         with db._conn() as conn:
             _system_health_pg_queries(result, conn)
