@@ -493,13 +493,13 @@
   .sticky-cta-bar a:active { transform: scale(.93); transition-duration: .08s; }
   .sticky-cta-bar a:focus-visible { outline: 2px solid var(--text-on-dark); outline-offset: 2px; }
   /* Add bottom padding to body so sticky bar doesn't cover content */
-  .detail-body { padding-bottom: 80px; }
+  .detail-body { padding-bottom: calc(80px + env(safe-area-inset-bottom, 0px)); }
 }
 /* ≤480px: reserve extra room for sticky CTA + journey bar + toast so the last
    sections (Liên kết, AI gợi ý…) aren't clipped/overlapped by floating bottom UI.
    Placed after the 840px rule above so it wins on narrow viewports. */
 @media (max-width: 480px) {
-  .detail-body { padding-bottom: 120px; }
+  .detail-body { padding-bottom: calc(120px + env(safe-area-inset-bottom, 0px)); }
 }
 
 /* ── Skeleton fallbacks for ClientOnly ── */
