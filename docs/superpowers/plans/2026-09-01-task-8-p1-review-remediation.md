@@ -1,5 +1,7 @@
 # Task 8 P1 Review Remediation Implementation Plan
 
+> STATUS: complete
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Make Task 8 entity/media mutations durable, truthful after commit, compensating before commit, and safe under partial or concurrent failure.
