@@ -1,13 +1,8 @@
 <template>
   <button type="button" class="share-btn" @click="share" :title="copied ? 'Đã sao chép!' : 'Chia sẻ'" :aria-label="copied ? 'Đã sao chép link' : 'Chia sẻ link'">
-    <svg v-if="!copied" class="share-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-      <circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/>
-      <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
-    </svg>
-    <svg v-else class="share-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-      <polyline points="20 6 9 17 4 12"/>
-    </svg>
-    {{ copied ? 'Đã sao chép' : 'Chia sẻ' }}
+    <IconLine v-if="!copied" name="share" class="share-icon" aria-hidden="true" />
+    <IconLine v-else name="check" class="share-icon" aria-hidden="true" />
+    <span>{{ copied ? 'Đã sao chép' : 'Chia sẻ' }}</span>
   </button>
 </template>
 
@@ -60,7 +55,7 @@ async function share() {
 .share-btn:hover { background: var(--bg-warm); border-color: var(--primary-light); transform: translateY(-1px); box-shadow: var(--shadow-xs); }
 .share-btn:active { transform: scale(.92); transition-duration: .08s; }
 .share-btn:focus-visible { outline: 2px solid var(--primary); outline-offset: 3px; }
-.share-icon { flex-shrink: 0; transition: transform .35s var(--ease-out-expo); }
+.share-icon { font-size: 1rem; flex-shrink: 0; transition: transform .35s var(--ease-out-expo); }
 .share-btn:hover .share-icon { transform: scale(1.08); }
 @media (prefers-reduced-motion: reduce) {
   .share-btn { transition: none; }

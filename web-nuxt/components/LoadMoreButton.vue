@@ -10,7 +10,7 @@
     <span v-if="loading" class="spinner lm-spin" aria-hidden="true"></span>
     <span class="lm-label">{{ loading ? loadingText : label }}</span>
     <span v-if="remaining && !loading" class="lm-count">— còn {{ remaining }}</span>
-    <span v-if="!loading" class="lm-arrow" aria-hidden="true">→</span>
+    <IconLine v-if="!loading" name="arrow-right" class="lm-arrow" aria-hidden="true" />
   </button>
 </template>
 
@@ -72,7 +72,7 @@ watch(() => props.loading, (now, prev) => {
   font-weight: 400;
   font-variant-numeric: tabular-nums;
 }
-.lm-arrow { display: inline-block; transition: transform .3s var(--ease-out); }
+.lm-arrow { display: inline-flex; vertical-align: middle; transition: transform .3s var(--ease-out-expo); }
 .lm-spin { width: 1em; height: 1em; }
 @media (prefers-reduced-motion: reduce) {
   .lm-btn, .lm-btn:active, .lm-arrow { transition: none; transform: none; }

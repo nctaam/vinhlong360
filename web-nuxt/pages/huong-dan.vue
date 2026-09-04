@@ -144,17 +144,17 @@
 
             <!-- Tips -->
             <div v-if="t.tips?.length" class="tip-box">
-              <p v-for="(tip, i) in t.tips" :key="i" class="tip-line"><span aria-hidden="true">💡</span> {{ tip }}</p>
+              <p v-for="(tip, i) in t.tips" :key="i" class="tip-line"><IconLine name="bulb" class="callout-icon" aria-hidden="true" /> {{ tip }}</p>
             </div>
 
             <!-- Warnings -->
             <div v-if="t.warnings?.length" class="warn-box">
-              <p v-for="(w, i) in t.warnings" :key="i" class="warn-line"><span aria-hidden="true">⚠️</span> {{ w }}</p>
+              <p v-for="(w, i) in t.warnings" :key="i" class="warn-line"><IconLine name="alert-triangle" class="callout-icon" aria-hidden="true" /> {{ w }}</p>
             </div>
 
             <!-- Did-you-know -->
             <div v-if="t.didYouKnow" class="dyk-box">
-              <p><span aria-hidden="true">🎓</span> <strong>Bạn có biết?</strong> {{ t.didYouKnow }}</p>
+              <p><IconLine name="info" class="callout-icon" aria-hidden="true" /> <strong>Bạn có biết?</strong> {{ t.didYouKnow }}</p>
             </div>
 
             <!-- Cross-refs -->
@@ -1078,6 +1078,10 @@ useHead({ link: [{ rel: 'canonical', href: canonicalUrl('/huong-dan') }] })
 .tip-line, .warn-line { margin: 0; line-height: var(--leading-relaxed); color: var(--ink); }
 .tip-line + .tip-line, .warn-line + .warn-line { margin-top: var(--space-2); }
 .dyk-box p { margin: 0; line-height: var(--leading-relaxed); }
+.callout-icon { margin-right: var(--space-1); vertical-align: -0.15em; font-size: 1.1em; }
+.tip-box .callout-icon { color: var(--color-material-amber); }
+.warn-box .callout-icon { color: var(--color-material-clay); }
+.dyk-box .callout-icon { color: var(--color-material-river); }
 
 .see-also { margin-top: var(--space-3); display: flex; flex-wrap: wrap; gap: var(--space-2); align-items: center; font-size: var(--text-xs); }
 .see-also-label { color: var(--muted); font-weight: var(--weight-semibold); }

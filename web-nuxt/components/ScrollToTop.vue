@@ -1,9 +1,7 @@
 <template>
   <Transition name="fade">
     <button type="button" v-show="visible" class="scroll-top" aria-label="Lên đầu trang" @click="scrollUp">
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-        <path d="M18 15l-6-6-6 6"/>
-      </svg>
+      <IconLine name="chevron-up" class="scroll-top-icon" aria-hidden="true" />
     </button>
   </Transition>
 </template>
@@ -47,6 +45,7 @@ onUnmounted(() => window.removeEventListener('scroll', onScroll))
   justify-content: center;
   transition: transform .35s var(--ease-out-expo), box-shadow .35s var(--ease-out-expo), color .3s var(--ease-out);
 }
+.scroll-top-icon { font-size: 1.25rem; flex-shrink: 0; }
 /* Quiet at rest; on interaction only, the icon warms from clay toward amber —
    a one-pixel nod to the river→amber→clay motif, not a loud rebrand of a
    utility control that lives on every page. */

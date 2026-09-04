@@ -1,7 +1,7 @@
 <template>
   <div class="notif-bell" v-if="isLoggedIn">
     <button type="button" ref="triggerRef" class="notif-trigger" @click="toggle" :aria-label="unreadCount > 0 ? `${unreadCount} thông báo chưa đọc` : 'Thông báo'" :aria-expanded="open">
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+      <IconLine name="bell" aria-hidden="true" />
       <span v-if="unreadCount > 0" class="notif-badge">{{ unreadCount > 9 ? '9+' : unreadCount }}</span>
     </button>
 
@@ -35,9 +35,9 @@
             <span class="notif-loading-text">Đang tải thông báo…</span>
           </div>
           <div v-else-if="fetchError && !notifications.length" class="notif-error" role="alert">
-            <span class="notif-error-icon" aria-hidden="true">⚠️</span>
+            <span class="notif-error-icon" aria-hidden="true"><IconLine name="alert-triangle" /></span>
             <p>Không thể tải thông báo</p>
-            <button type="button" class="notif-retry" :disabled="retrying" @click="retryFetch">{{ retrying ? 'Đang thử…' : 'Thử lại' }}</button>
+            <button type="button" class="notif-retry" :disabled="retrying" @click="retryFetch"><IconLine name="repeat" aria-hidden="true" /> {{ retrying ? 'Đang thử…' : 'Thử lại' }}</button>
           </div>
           <div v-else-if="!notifications.length" class="notif-empty">
             <IconLine name="bell" class="notif-empty-icon" />
