@@ -988,6 +988,22 @@
     border-bottom: 0;
     border-radius: var(--radius-sheet) var(--radius-sheet) 0 0;
     box-shadow: 0 -20px 60px rgba(var(--black-rgb), .28);
+    animation: map-sheet-slide-up 260ms cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  @keyframes map-sheet-slide-up {
+    from {
+      transform: translateY(100%);
+      opacity: 0.7;
+    }
+    to {
+      transform: translateY(0);
+      opacity: 1;
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .map-list-surface[data-panel='map'] .map-list-surface__map-pane {
+      animation: none;
+    }
   }
   .map-list-surface__mobile-close {
     position: absolute;

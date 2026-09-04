@@ -179,6 +179,14 @@
                   <div class="stop-card-info">
                     <strong>{{ stop.name }}</strong>
                     <small>{{ stop.place_name || '' }} · {{ getTypeMeta(stop.type).label }}</small>
+                    <span
+                      v-if="stopAccessFact(stop)"
+                      :class="['stop-access-fact', { 'is-restricted': isVehicleAccessRestricted(stop) }]"
+                      :title="stopAccessFact(stop)!"
+                    >
+                      <IconLine :name="isVehicleAccessRestricted(stop) ? 'alert-triangle' : 'car'" aria-hidden="true" />
+                      {{ stopAccessFact(stop) }}
+                    </span>
                   </div>
                   <div class="stop-card-actions">
                     <button type="button" v-if="idx > 0" class="btn-icon-sm move" title="Lên" aria-label="Di chuyển lên" @click="moveStop(idx, -1)"><IconLine name="arrow-up" aria-hidden="true" /></button>
@@ -787,11 +795,19 @@ async function addStop(entity: Entity) {
   addingId.value = entity.id
   if (addingTimer) clearTimeout(addingTimer)
   addingTimer = setTimeout(() => { addingId.value = null }, 300)
+  if (entity.attributes?.vehicle_access || entity.attributes?.road_access) {
+    const access = String(entity.attributes.vehicle_access || entity.attributes.road_access).trim()
+    if (access) stopAccessFactsMap.set(entity.id, access)
+  }
   // P0-19: saved items (favorites) carry no coordinates → fetch detail so the
   // stop can be routed/mapped. Falls back silently (stop still listed) on error.
   if ((!stop.coords || !stop.sourceFreshness) && entity.id) {
     try {
       const detail = await publicApi.getEntity(entity.id)
+      if (detail?.attributes?.vehicle_access || detail?.attributes?.road_access) {
+        const access = String(detail.attributes.vehicle_access || detail.attributes.road_access).trim()
+        if (access) stopAccessFactsMap.set(stop.id, access)
+      }
       await enrichPlannerStopFromDetail({
         stop,
         fetchDetail: () => Promise.resolve(detail),
@@ -940,6 +956,29 @@ function invalidatePlannerSchedule() {
 function scheduledIntervalForStop(stop: PlanStop): string {
   void plannerInputState.version
   return formatScheduledInterval(plannerScheduleMetadata.get(stop)?.placement)
+}
+
+const stopAccessFactsMap = reactive(new Map<string, string>())
+
+function stopAccessFact(stop: PlanStop): string | null {
+  if (stopAccessFactsMap.has(stop.id)) {
+    return stopAccessFactsMap.get(stop.id) || null
+  }
+  const match = (allEntities.value as Entity[]).find(e => e.id === stop.id)
+    || ((favList.value || []) as any[]).find(e => e.id === stop.id)
+  const access = match?.attributes?.vehicle_access || match?.attributes?.road_access
+  if (access && typeof access === 'string') {
+    const trimmed = access.trim()
+    stopAccessFactsMap.set(stop.id, trimmed)
+    return trimmed
+  }
+  return null
+}
+
+function isVehicleAccessRestricted(stop: PlanStop): boolean {
+  if (transportMode.value !== 'driving') return false
+  const fact = (stopAccessFact(stop) || '').toLowerCase()
+  return fact.includes('chỉ xe máy') || fact.includes('không vào được ô tô') || fact.includes('hẹp')
 }
 
 async function announceOptimization(message: string) {
@@ -1290,6 +1329,38 @@ useHead({
 .stop-card-info { flex: 1; min-width: 0; }
 .stop-card-info strong { display: block; font-size: var(--text-sm); }
 .stop-card-info small { color: var(--muted); font-size: var(--text-xs); }
+.stop-access-fact {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  font-size: var(--text-2xs);
+  color: var(--color-material-river);
+  background: color-mix(in srgb, var(--color-material-river) 10%, transparent);
+  border: 1px solid color-mix(in srgb, var(--color-material-river) 22%, transparent);
+  border-radius: var(--radius-full);
+  padding: 1px var(--space-2);
+  margin-top: var(--space-1);
+  max-width: 100%;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.stop-access-fact.is-restricted {
+  color: var(--color-warning);
+  background: color-mix(in srgb, var(--color-warning) 12%, transparent);
+  border-color: color-mix(in srgb, var(--color-warning) 30%, transparent);
+  font-weight: var(--weight-semibold);
+}
+.dark .stop-access-fact {
+  color: var(--night-river);
+  background: color-mix(in srgb, var(--night-river) 14%, transparent);
+  border-color: color-mix(in srgb, var(--night-river) 25%, transparent);
+}
+.dark .stop-access-fact.is-restricted {
+  color: var(--night-amber);
+  background: color-mix(in srgb, var(--night-amber) 16%, transparent);
+  border-color: color-mix(in srgb, var(--night-amber) 32%, transparent);
+}
 .scheduled-interval { display: block; margin-top: var(--space-2); color: var(--primary-fg); font-size: var(--text-xs); font-weight: var(--weight-semibold); }
 .stop-card-actions { display: flex; gap: var(--space-1); }
 .stop-list { margin-bottom: var(--space-4); }

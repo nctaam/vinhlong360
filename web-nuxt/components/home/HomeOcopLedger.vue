@@ -23,7 +23,7 @@
       <h2 id="home-ocop-title" class="home-ocop__title">Sổ vàng OCOP</h2>
 
       <ul class="home-ocop__tiers">
-        <li v-for="tier in TIERS" :key="tier.stars" class="home-ocop__tier">
+        <li v-for="tier in TIERS" :key="tier.stars" class="home-ocop__tier" :data-tier="tier.stars">
           <span class="home-ocop__stars" :aria-label="`Hạng ${tier.stars} sao`">
             <IconLine v-for="n in tier.stars" :key="n" name="star" aria-hidden="true" />
           </span>

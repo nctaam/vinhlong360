@@ -283,6 +283,7 @@ function syncMarkers() {
     element.className = 'map-locator-marker'
     element.dataset.resultId = result.id
     element.dataset.resultRole = 'marker'
+    element.dataset.materialAccent = resolveRegionalAccent(result.type)
     element.setAttribute('aria-label', `Chọn ${result.name}`)
     element.addEventListener('click', () => selectFromMarker(result, coordinates))
     const marker = new maplibregl.Marker({ element, anchor: 'center' })

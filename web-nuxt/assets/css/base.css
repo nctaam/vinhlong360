@@ -369,12 +369,17 @@ html.js .reveal { opacity: 0; transform: translateY(30px) scale(.985); }
   padding: 0;
   border: 3px solid var(--card);
   border-radius: 50% 50% 50% 12%;
-  background: var(--primary);
+  background: var(--color-material-river, var(--primary));
   box-shadow: 0 5px 16px rgba(var(--black-rgb), .3);
   cursor: pointer;
   transform: rotate(-45deg);
-  transition: width .16s var(--ease-out), height .16s var(--ease-out), background .16s var(--ease-out);
+  transition: width .16s var(--ease-out), height .16s var(--ease-out), background .16s var(--ease-out), box-shadow .16s var(--ease-out);
 }
+.map-locator-marker[data-material-accent="clay"] { background: var(--color-material-clay); }
+.map-locator-marker[data-material-accent="leaf"] { background: var(--color-material-leaf); }
+.map-locator-marker[data-material-accent="river"] { background: var(--color-material-river); }
+.map-locator-marker[data-material-accent="amber"] { background: var(--color-material-amber); }
+.map-locator-marker[data-material-accent="neutral"] { background: var(--color-material-neutral); }
 .map-locator-marker::after {
   content: '';
   position: absolute;
@@ -388,6 +393,17 @@ html.js .reveal { opacity: 0; transform: translateY(30px) scale(.985); }
   background: var(--accent);
   box-shadow: 0 0 0 4px color-mix(in srgb, var(--accent) 26%, transparent), 0 7px 20px rgba(var(--black-rgb), .34);
 }
+.dark .map-locator-marker {
+  border-color: var(--color-surface-raised, var(--card));
+}
+.dark .map-locator-marker::after {
+  background: var(--color-surface-raised, var(--card));
+}
+.dark .map-locator-marker[data-material-accent="clay"] { background: var(--night-clay); }
+.dark .map-locator-marker[data-material-accent="leaf"] { background: var(--night-leaf); }
+.dark .map-locator-marker[data-material-accent="river"] { background: var(--night-river); }
+.dark .map-locator-marker[data-material-accent="amber"] { background: var(--night-amber); }
+.dark .map-locator-marker[data-material-accent="neutral"] { background: var(--night-muted); }
 .map-locator-marker:focus-visible { outline: 3px solid var(--focus-ring, var(--primary)); outline-offset: 4px; }
 .search-row-spaced { margin-bottom: var(--space-4); }
 .chip-row-spaced { margin-bottom: var(--space-3); }

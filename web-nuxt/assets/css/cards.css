@@ -93,8 +93,28 @@
   color: var(--secondary-fg);
   border-color: rgba(var(--secondary-rgb), .4);
 }
-.card-meta { display: none; }
-.cm-item { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 140px; }
+.card-meta {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+  font-size: var(--text-2xs);
+  color: var(--color-text-muted, var(--muted));
+  margin-top: var(--space-1);
+}
+.cm-item {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 150px;
+}
+.cm-item .line-icon {
+  font-size: 0.88em;
+  opacity: 0.85;
+}
 .badges { display: flex; gap: var(--space-1); flex-wrap: wrap; margin-top: auto; padding-top: var(--space-1); }
 .badge { font-size: var(--text-2xs); padding: var(--space-1) var(--space-3); border-radius: var(--radius-full); font-weight: var(--weight-medium); transition: transform .3s var(--ease-spring-gentle), opacity .3s var(--ease-out); }
 .card:hover .badge { transform: translateY(-1px); }
@@ -104,15 +124,15 @@
 /* star-tier colour coding for OCOP badges (opt-in via .ocop-5/4/3).
    Falls back to the plain .ocop style above when no tier class is set. */
 .badge.ocop-5 {
-  background: linear-gradient(135deg, var(--secondary), var(--secondary-dark));
+  background: linear-gradient(135deg, var(--secondary-dark), var(--color-success), var(--color-material-amber));
   color: var(--text-on-dark);
-  border-color: transparent;
-  box-shadow: 0 0 0 2px rgba(var(--secondary-rgb), .2);
+  border: 1px solid color-mix(in srgb, var(--color-material-amber) 75%, transparent);
+  box-shadow: 0 0 0 1px var(--color-material-amber), 0 2px 8px color-mix(in srgb, var(--color-material-amber) 28%, transparent);
 }
 .badge.ocop-4 {
   background: rgba(var(--secondary-rgb), .15);
   color: var(--secondary-dark);
-  border-color: rgba(var(--secondary-rgb), .3);
+  border: 1px solid color-mix(in srgb, var(--color-material-amber) 55%, var(--secondary));
 }
 .badge.ocop-3 { background: var(--badge-ocop-bg); color: var(--secondary-dark); }
 .badge.year { background: var(--badge-year-bg); color: var(--muted); }
@@ -147,8 +167,13 @@
 .dark .badge.season { background: var(--badge-season-bg); color: var(--primary-fg-strong); }
 .dark .badge.peak { color: var(--on-accent); }
 .dark .badge.ocop { color: var(--secondary-fg); border-color: rgba(75, 169, 125, .3); }
-.dark .badge.ocop-5 { color: var(--text-on-dark); box-shadow: 0 0 0 2px rgba(var(--secondary-rgb), .3); }
-.dark .badge.ocop-4 { background: rgba(var(--secondary-rgb), .22); color: var(--secondary-fg); border-color: rgba(var(--secondary-rgb), .4); }
+.dark .badge.ocop-5 {
+  background: linear-gradient(135deg, color-mix(in srgb, var(--night-surface) 80%, var(--secondary-dark)), var(--color-surface-raised));
+  color: var(--night-amber);
+  border-color: var(--night-amber);
+  box-shadow: 0 0 0 1px var(--night-amber), 0 2px 8px color-mix(in srgb, var(--night-amber) 30%, transparent);
+}
+.dark .badge.ocop-4 { background: rgba(var(--secondary-rgb), .22); color: var(--secondary-fg); border-color: color-mix(in srgb, var(--night-amber) 35%, var(--secondary)); }
 .dark .badge.ocop-3 { color: var(--secondary-fg); border-color: rgba(75, 169, 125, .3); }
 .dark .badge.year { background: rgba(255,255,255,.08); color: var(--muted); }
 
@@ -231,7 +256,7 @@
 }
 .badge.season, .badge.ocop, .badge.year { box-shadow: var(--shadow-xs); }
 /* re-assert the 5-star tier glow over the shared .badge.ocop shadow above */
-.badge.ocop-5 { box-shadow: 0 0 0 2px rgba(var(--secondary-rgb), .2); }
+.badge.ocop-5 { box-shadow: 0 0 0 1px var(--color-material-amber), 0 2px 8px color-mix(in srgb, var(--color-material-amber) 28%, transparent); }
 /* card-type label: tiny brand dot for scannable category hierarchy */
 .card-type::before {
   content: "";
