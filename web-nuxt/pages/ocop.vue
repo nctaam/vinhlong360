@@ -57,7 +57,7 @@
     <section v-if="fiveStarHighlights.length" class="block reveal ocop-band ocop-band--5" data-stagger="0">
       <div class="section-head sediment-head">
         <h2><IconLine name="star" /> Bậc 5 sao</h2>
-        <button type="button" class="see-all" @click="starFilter = 5; scrollToGrid()">Xem tất cả →</button>
+        <button type="button" class="see-all" @click="starFilter = 5; scrollToGrid()">Xem tất cả <IconLine name="arrow-right" class="see-all-arrow" /></button>
       </div>
       <p class="section-desc">Bậc cao nhất, hiếm nhất — sản phẩm đã chứng minh được cả chất lượng lẫn khả năng vươn xa.</p>
       <div class="honor-banner">
@@ -72,7 +72,7 @@
     <section v-if="fourStarHighlights.length" class="block reveal ocop-band ocop-band--4" data-stagger="1">
       <div class="section-head sediment-head">
         <h2>Bậc 4 sao</h2>
-        <button type="button" class="see-all" @click="starFilter = 4; scrollToGrid()">Xem tất cả →</button>
+        <button type="button" class="see-all" @click="starFilter = 4; scrollToGrid()">Xem tất cả <IconLine name="arrow-right" class="see-all-arrow" /></button>
       </div>
       <p class="section-desc">Chất lượng cao, bao bì chuyên nghiệp — đã có câu chuyện sản phẩm rõ ràng.</p>
       <div class="scroll-row" role="region" aria-label="Sản phẩm OCOP 4 sao" tabindex="0">
@@ -83,7 +83,7 @@
     <section v-if="threeStarHighlights.length" class="block reveal ocop-band ocop-band--3" data-stagger="2">
       <div class="section-head sediment-head">
         <h2>Bậc 3 sao</h2>
-        <button type="button" class="see-all" @click="starFilter = 3; scrollToGrid()">Xem tất cả →</button>
+        <button type="button" class="see-all" @click="starFilter = 3; scrollToGrid()">Xem tất cả <IconLine name="arrow-right" class="see-all-arrow" /></button>
       </div>
       <p class="section-desc">Mức cơ bản — đạt tiêu chuẩn an toàn thực phẩm, nhãn mác rõ ràng.</p>
       <div class="scroll-row" role="region" aria-label="Sản phẩm OCOP 3 sao" tabindex="0">

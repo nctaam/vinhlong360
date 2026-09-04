@@ -70,12 +70,20 @@ onMounted(refresh)
 useSeoMeta({
   title: 'Trạng thái yêu cầu — vinhlong360',
   description: 'Theo dõi tiến trình xử lý yêu cầu sửa thông tin trên vinhlong360.',
+  robots: 'noindex, nofollow',
+  ogTitle: 'Trạng thái yêu cầu — vinhlong360',
+  ogUrl: () => canonicalUrl('/yeu-cau/trang-thai'),
+  twitterCard: 'summary_large_image',
 })
+
+useHead(() => ({
+  link: [{ rel: 'canonical', href: canonicalUrl('/yeu-cau/trang-thai') }],
+}))
 </script>
 
 <template>
   <section class="case-page">
-    <Breadcrumb :items="[{ label: 'Trang chủ', to: '/' }, { label: 'Trạng thái yêu cầu' }]" />
+    <Breadcrumb :items="[{ label: 'Trang chủ', to: '/' }, { label: 'Trạng thái yêu cầu' }]" :json-ld="true" />
 
     <p v-if="loading" aria-live="polite">Đang tải trạng thái…</p>
 

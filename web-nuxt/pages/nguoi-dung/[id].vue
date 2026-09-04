@@ -1,6 +1,6 @@
 <template>
   <section class="page user-profile-page">
-    <Breadcrumb :items="[{ label: 'Trang chủ', to: '/' }, { label: 'Cộng đồng', to: '/cong-dong' }, { label: profile?.display_name || 'Người dùng' }]" />
+    <Breadcrumb :items="[{ label: 'Trang chủ', to: '/' }, { label: 'Cộng đồng', to: '/cong-dong' }, { label: profile?.display_name || 'Người dùng' }]" :json-ld="true" />
 
     <div v-if="profile" class="user-profile reveal">
       <div class="profile-cover">
@@ -31,17 +31,17 @@
             <span v-else class="spinner spinner-sm" aria-label="Đang xử lý"></span>
           </button>
           <div v-if="isLoggedIn && !isSelf" class="profile-more-wrap" @keydown.escape="showMoreMenu = false">
-            <button type="button" class="btn btn-ghost btn-sm btn-icon" aria-label="Thêm" aria-haspopup="true" :aria-expanded="showMoreMenu" @click="showMoreMenu = !showMoreMenu">&#8226;&#8226;&#8226;</button>
+            <button type="button" class="btn btn-ghost btn-sm btn-icon" aria-label="Thêm" aria-haspopup="true" :aria-expanded="showMoreMenu" @click="showMoreMenu = !showMoreMenu"><IconLine name="more-horizontal" /></button>
             <div v-if="showMoreMenu" class="profile-more-menu" @click.self="showMoreMenu = false">
               <button type="button" class="pm-item" @click="toggleBlock">{{ isBlocked ? 'Bỏ chặn' : 'Chặn người này' }}</button>
               <button type="button" class="pm-item pm-danger" @click="reportUser">Báo cáo</button>
             </div>
           </div>
           <NuxtLink v-if="isSelf" to="/cai-dat" class="btn btn-ghost btn-sm">
-            <svg class="icon-inline" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>Sửa hồ sơ
+            <IconLine name="pencil" class="icon-inline" /> Sửa hồ sơ
           </NuxtLink>
           <button type="button" class="btn btn-ghost btn-sm btn-icon" aria-label="Chia sẻ hồ sơ" @click="shareProfile">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>
+            <IconLine name="share" />
           </button>
         </div>
         <div class="profile-meta-row" aria-label="Thông tin nhanh">
@@ -521,9 +521,41 @@ await profileAsyncData
 
 if (import.meta.server && profileNotFound.value) setResponseStatus(404)
 
-useHead({
-  link: computed(() => [{ rel: 'canonical', href: canonicalUrl(publicProfilePath.value) }]),
+const profileSchema = computed(() => {
+  if (!profile.value || profile.value.is_private) return null
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'ProfilePage',
+    '@id': canonicalUrl(publicProfilePath.value) + '#webpage',
+    url: canonicalUrl(publicProfilePath.value),
+    name: `${profile.value.display_name || 'Người dùng'} — Hồ sơ thành viên`,
+    mainEntity: {
+      '@type': 'Person',
+      name: profile.value.display_name || profile.value.username || 'Thành viên vinhlong360',
+      description: profile.value.bio || undefined,
+      image: profile.value.avatar || undefined,
+      url: canonicalUrl(publicProfilePath.value),
+    },
+  }
 })
+
+useSeoMeta({
+  title: () => `${profile.value?.display_name || 'Người dùng'} — Cộng đồng vinhlong360`,
+  description: () => profile.value?.bio || `Hồ sơ thành viên ${profile.value?.display_name || ''} trên vinhlong360.`,
+  robots: () => (profile.value?.is_private || profileNotFound.value) ? 'noindex, nofollow' : 'index, follow',
+  ogTitle: () => `${profile.value?.display_name || 'Người dùng'} — vinhlong360`,
+  ogDescription: () => profile.value?.bio || `Khám phá bài viết và đánh giá của ${profile.value?.display_name || 'thành viên'} trên vinhlong360.`,
+  ogUrl: () => canonicalUrl(publicProfilePath.value),
+  twitterCard: 'summary_large_image',
+})
+
+useHead(() => ({
+  link: [{ rel: 'canonical', href: canonicalUrl(publicProfilePath.value) }],
+  script: profileSchema.value ? [{
+    type: 'application/ld+json',
+    innerHTML: safeJsonLd(profileSchema.value),
+  }] : [],
+}))
 const displayFollowerCount = computed(() => followerCount.value ?? profile.value?.follower_count ?? 0)
 const profileHandle = computed(() => profile.value?.username ? `@${profile.value.username}` : '')
 const totalContributions = computed(() => (profile.value?.post_count || 0) + (profile.value?.review_count || 0))

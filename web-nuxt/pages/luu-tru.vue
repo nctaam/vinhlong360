@@ -63,7 +63,7 @@
           :aria-pressed="areaFilter === key"
           @click="toggleAreaAndScroll(key as string)"
         >
-          <span class="rw-motif" :class="`rw-${key}`" aria-hidden="true">{{ meta.emoji }}</span>
+          <span class="rw-motif" :class="`rw-${key}`" aria-hidden="true"><IconLine :name="meta.icon || 'pin'" /></span>
           <span class="rw-name">{{ meta.name }}</span>
           <span class="rw-count">{{ countByArea(key as string) }} chỗ ở</span>
           <span class="rw-blurb">{{ meta.blurb }}</span>
@@ -236,8 +236,8 @@ function countByArea(key: string) {
 
 // FilterChips options for the grid's area filter (single-select, mirrors du-lich.vue's typeFilterOptions pattern)
 const areaFilterOptions = computed(() => [
-  { key: 'all', label: 'Tất cả' },
-  ...Object.entries(AREA_META).map(([key, meta]) => ({ key, label: `${meta.emoji} ${meta.name}` })),
+  { key: 'all', label: 'Tất cả khu vực' },
+  ...Object.entries(AREA_META).map(([key, meta]) => ({ key, label: meta.name })),
 ])
 
 // Data-driven accommodation type breakdown for hero confidence (no fabricated values):
@@ -314,6 +314,8 @@ useSeoMeta({
   description: () => pc('seo_description') || 'Homestay, nhà vườn, khách sạn và nơi nghỉ ở Vĩnh Long.',
   ogTitle: () => pc('og_title') || 'Lưu trú — vinhlong360',
   ogDescription: () => pc('og_description') || 'Tìm chỗ ở phù hợp cho chuyến đi Vĩnh Long.',
+  ogUrl: () => canonicalUrl('/luu-tru'),
+  twitterCard: 'summary_large_image',
 })
 
 useHead(() => ({
@@ -562,7 +564,18 @@ useHead(() => ({
 .dark .region-window.active::after {
   background: linear-gradient(90deg, var(--river-legacy-dark) 0%, var(--amber-500) 52%, var(--clay-400) 100%);
 }
-.rw-motif { font-size: 1.6rem; transition: transform .35s var(--ease-out-expo); }
+.rw-motif {
+  font-size: 1.6rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--primary-fg);
+  transition: transform .35s var(--ease-out-expo);
+}
+.rw-vinh-long { color: var(--clay-600, var(--primary-fg)); }
+.rw-ben-tre { color: var(--leaf-600, var(--secondary-fg)); }
+.rw-tra-vinh { color: var(--amber-600, var(--tertiary-fg)); }
+.rw-lien-vung { color: var(--river-600, var(--accent-text)); }
 .region-window:hover .rw-motif { transform: scale(1.12); }
 .rw-name {
   font-family: var(--font-editorial); font-weight: 600;

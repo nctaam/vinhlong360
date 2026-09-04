@@ -1,6 +1,6 @@
 <template>
   <div class="page lvn-page" data-color-system="tri-region-v1">
-    <Breadcrumb :items="[{ label: 'Trang chủ', to: '/' }, { label: 'Lịch vạn niên' }]" />
+    <Breadcrumb :items="[{ label: 'Trang chủ', to: '/' }, { label: 'Lịch vạn niên' }]" :json-ld="true" />
 
     <header class="lvn-head">
       <p class="lvn-eyebrow"><IconLine name="calendar" /><span>Công cụ tra cứu</span></p>
@@ -38,7 +38,7 @@
                   type="button" class="lvn-nav lvn-nav-next" data-lvn-next
                   :disabled="!canStep(1)" aria-label="Tháng sau"
                   @click="stepMonth(1)"
-                ><IconLine name="arrow-left" /></button>
+                ><IconLine name="arrow-right" /></button>
               </div>
 
               <div class="lvn-picker">
@@ -641,25 +641,30 @@ function goToConverted(which: 'solar' | 'lunar') {
   void focusSelected()
 }
 
+const lvnSchema = computed(() => ({
+  '@context': 'https://schema.org',
+  '@type': 'WebApplication',
+  name: pc('seo_title', 'Lịch vạn niên — âm lịch, can chi, tiết khí | vinhlong360'),
+  description: pc('seo_description', 'Đối chiếu dương lịch và âm lịch Việt Nam (múi giờ UTC+7), can chi và tiết khí.'),
+  applicationCategory: 'UtilitiesApplication',
+  operatingSystem: 'All',
+  url: canonicalUrl('/lich-van-nien'),
+}))
+
 // --- SEO -------------------------------------------------------------------
 useSeoMeta({
   title: () => pc('seo_title', 'Lịch vạn niên — âm lịch, can chi, tiết khí | vinhlong360'),
   description: () => pc('seo_description'),
   ogTitle: () => pc('og_title'),
   ogDescription: () => pc('og_description'),
+  ogUrl: () => canonicalUrl('/lich-van-nien'),
+  twitterCard: 'summary_large_image',
 })
 useHead(() => ({
   link: [{ rel: 'canonical', href: canonicalUrl('/lich-van-nien') }],
   script: [{
     type: 'application/ld+json',
-    innerHTML: JSON.stringify({
-      '@context': 'https://schema.org',
-      '@type': 'BreadcrumbList',
-      itemListElement: [
-        { '@type': 'ListItem', position: 1, name: 'Trang chủ', item: 'https://vinhlong360.vn/' },
-        { '@type': 'ListItem', position: 2, name: 'Lịch vạn niên' },
-      ],
-    }),
+    innerHTML: safeJsonLd(lvnSchema.value),
   }],
 }))
 </script>
@@ -717,7 +722,6 @@ useHead(() => ({
   background: var(--bg); color: var(--ink); cursor: pointer;
   transition: background var(--duration-fast) var(--ease-out);
 }
-.lvn-nav-next { transform: rotate(180deg); }
 .lvn-nav:hover:not(:disabled) { background: var(--bg-alt); }
 .lvn-nav:disabled { opacity: var(--opacity-disabled); cursor: not-allowed; }
 .lvn-nav:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }

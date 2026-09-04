@@ -103,6 +103,9 @@ const ICONS: Record<string, string> = {
   haze: W('<path d="m5.2 6.2 1.4 1.4"/><path d="M2 13h2"/><path d="M20 13h2"/><path d="m17.4 7.6 1.4-1.4"/><path d="M22 17H2"/><path d="M22 21H2"/><path d="M16 13a4 4 0 0 0-8 0"/><path d="M12 5V2.5"/>'),
   droplet: W('<path d="M12 22a7 7 0 0 0 7-7c0-2-1-3.9-3-5.5S12.5 5.5 12 3c-.5 2.5-2 4.9-4 6.5C6 11.1 5 13 5 15a7 7 0 0 0 7 7Z"/>'),
   wind: W('<path d="M12.8 19.6A2 2 0 1 0 14 16H2"/><path d="M17.5 8a2.5 2.5 0 1 1 2 4H2"/><path d="M9.8 4.4A2 2 0 1 1 11 8H2"/>'),
+  plus: W('<path d="M5 12h14"/><path d="M12 5v14"/>'),
+  'more-horizontal': W('<circle cx="12" cy="12" r="1.5"/><circle cx="19" cy="12" r="1.5"/><circle cx="5" cy="12" r="1.5"/>'),
+  award: W('<circle cx="12" cy="8" r="6"/><path d="m15.4 12.5 2.6 9-6-3.5-6 3.5 2.6-9"/>'),
 }
 
 const resolvedName = computed(() => ICONS[props.name] ? props.name : 'circle-help')

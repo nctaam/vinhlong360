@@ -1,6 +1,6 @@
 <template>
   <section class="page" data-page-recipe="planner">
-    <Breadcrumb :items="[{ label: 'Trang chủ', to: '/' }, { label: 'Lịch trình', to: '/lich-trinh' }, { label: 'Tạo lịch trình' }]" />
+    <Breadcrumb :items="[{ label: 'Trang chủ', to: '/' }, { label: 'Lịch trình', to: '/lich-trinh' }, { label: 'Tạo lịch trình' }]" :json-ld="true" />
 
     <!-- Hero: chrome-only CE pass — masthead eyebrow + serif H1, builder/picker logic untouched -->
     <section class="catalog-hero cat-itinerary">
@@ -51,7 +51,7 @@
               <strong :title="e.name">{{ e.name }}</strong>
               <small>{{ e.place_name || '' }} · {{ getTypeMeta(e.type).label }}</small>
             </div>
-            <span class="btn btn-sm btn-ghost" aria-hidden="true">+</span>
+            <span class="btn btn-sm btn-ghost" aria-hidden="true"><IconLine name="plus" /></span>
           </button>
           <p v-if="status === 'pending' && !pickerResults.length" class="empty picker-empty" data-picker-state="loading" role="status">Đang tải danh sách điểm đến…</p>
           <p v-else-if="fetchError" class="empty picker-empty"><IconLine name="alert-triangle" aria-hidden="true" /> Không thể tải danh sách. <button type="button" class="btn btn-outline btn-sm" @click="refreshPicker()">Thử lại</button></p>
@@ -356,6 +356,40 @@ const route = useRoute()
 const router = useRouter()
 const runtimeConfig = useRuntimeConfig()
 const itineraryScheduleV2 = runtimeConfig.public.itineraryScheduleV2 === true
+
+const plannerSchema = computed(() => ({
+  '@context': 'https://schema.org',
+  '@type': 'WebApplication',
+  '@id': canonicalUrl('/tao-lich-trinh') + '#webapp',
+  url: canonicalUrl('/tao-lich-trinh'),
+  name: 'Tạo lịch trình khám phá — vinhlong360',
+  applicationCategory: 'TravelApplication',
+  operatingSystem: 'All',
+  description: 'Công cụ lập kế hoạch và tối ưu lộ trình du lịch tự túc tại Vĩnh Long, Bến Tre và Trà Vinh.',
+  publisher: {
+    '@type': 'Organization',
+    name: 'vinhlong360',
+    url: 'https://vinhlong360.vn',
+  },
+}))
+
+useSeoMeta({
+  title: 'Tạo lịch trình — vinhlong360',
+  description: 'Công cụ lập kế hoạch chuyến đi tự túc tại Vĩnh Long, Bến Tre và Trà Vinh.',
+  robots: 'noindex, nofollow',
+  ogTitle: 'Tạo lịch trình — vinhlong360',
+  ogDescription: 'Lập kế hoạch chuyến đi của bạn — chọn điểm đến, sắp xếp thứ tự và lưu lại.',
+  ogUrl: () => canonicalUrl('/tao-lich-trinh'),
+  twitterCard: 'summary_large_image',
+})
+
+useHead(() => ({
+  link: [{ rel: 'canonical', href: canonicalUrl('/tao-lich-trinh') }],
+  script: [{
+    type: 'application/ld+json',
+    innerHTML: safeJsonLd(plannerSchema.value),
+  }],
+}))
 
 const { favorites: favList, count: favCount } = useFavorites()
 const { confirmDialog } = useConfirm()

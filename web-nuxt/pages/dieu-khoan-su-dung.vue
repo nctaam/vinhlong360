@@ -1,6 +1,6 @@
 <template>
   <section class="legal-page about-page">
-    <Breadcrumb :items="[{ label: 'Trang chủ', to: '/' }, { label: 'Điều khoản sử dụng' }]" />
+    <Breadcrumb :items="[{ label: 'Trang chủ', to: '/' }, { label: 'Điều khoản sử dụng' }]" :json-ld="true" />
     <!-- Hero — brand-masthead dùng chung (declutter-3 T1: thống nhất với gioi-thieu,
          bỏ catalog-hero cat-org lai tạp trên trang pháp lý) -->
     <section class="brand-masthead about-masthead">
@@ -82,26 +82,30 @@ const introHtml = computed(() => mdLite(doc.value.intro))
 // already shows the order, so strip the inline number to avoid duplicates.
 const stripNum = (h: string) => (h || '').replace(/^\s*\d+\.\s*/, '')
 
+const termsSchema = computed(() => ({
+  '@context': 'https://schema.org',
+  '@type': 'WebPage',
+  name: doc.value.title || 'Điều khoản sử dụng — vinhlong360',
+  description: doc.value.seo_description || 'Điều khoản sử dụng và quy định dịch vụ trên vinhlong360.',
+  url: canonicalUrl('/dieu-khoan-su-dung'),
+  inLanguage: 'vi',
+}))
+
 useSeoMeta({
   title: () => doc.value.seo_title,
   description: () => doc.value.seo_description,
   ogTitle: () => doc.value.seo_title,
   ogDescription: () => doc.value.seo_description,
+  ogUrl: () => canonicalUrl('/dieu-khoan-su-dung'),
+  twitterCard: 'summary_large_image',
 })
-useHead({
+
+useHead(() => ({
   link: [{ rel: 'canonical', href: canonicalUrl('/dieu-khoan-su-dung') }],
-  script: [{
-    type: 'application/ld+json',
-    innerHTML: JSON.stringify({
-      '@context': 'https://schema.org',
-      '@type': 'BreadcrumbList',
-      itemListElement: [
-        { '@type': 'ListItem', position: 1, name: 'Trang chủ', item: 'https://vinhlong360.vn/' },
-        { '@type': 'ListItem', position: 2, name: 'Điều khoản sử dụng' },
-      ],
-    }),
-  }],
-})
+  script: [
+    { type: 'application/ld+json', innerHTML: safeJsonLd(termsSchema.value) },
+  ],
+}))
 </script>
 
 <style src="~/assets/css/legal.css"></style>

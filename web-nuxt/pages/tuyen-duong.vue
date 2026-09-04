@@ -51,7 +51,7 @@
           :class="['chip', 'chip-area', `area-${key}`, { active: areaFilter === key }]"
           :aria-pressed="areaFilter === key"
           @click="areaFilter = key as string"
-        >{{ meta.emoji }} {{ meta.name }}</button>
+        ><IconLine :name="meta.icon || 'pin'" class="chip-area-icon" /> {{ meta.name }}</button>
       </div>
     </div>
     </div>
@@ -78,7 +78,7 @@
     <div v-if="filtered.length" class="route-grid">
       <article v-for="r in filtered" :key="r.id" class="route-card" :class="`area-${r.area}`" :aria-label="r.name + ' — ' + r.duration">
         <div :class="['route-header', `area-${r.area}`]">
-          <span class="route-emoji">{{ r.emoji }}</span>
+          <span class="route-emoji" aria-hidden="true"><IconLine :name="routeIcon(r)" /></span>
           <div>
             <h3 class="route-name">{{ r.name }}</h3>
             <span class="route-meta">{{ r.duration }} · {{ r.distance }}</span>
@@ -221,12 +221,22 @@ function routeSeasonTag(r: RouteDef) {
   return ROUTE_SEASON[r.id] || null
 }
 
+function routeIcon(r: RouteDef): string {
+  if (r.emoji === '🍊') return 'fruit'
+  if (r.emoji === '🥥') return 'leaf'
+  if (r.emoji === '🛕') return 'landmark'
+  if (r.emoji === '🌊' || r.emoji === '🛶') return 'compass'
+  return AREA_META[r.area]?.icon || 'route'
+}
+
 useSeoMeta({
   ogType: 'website',
   title: () => pc('seo_title') || 'Tuyến đường gợi ý Vĩnh Long — vinhlong360',
   description: () => pc('seo_description') || 'Các tuyến đường tự khám phá qua miệt vườn, làng nghề và văn hóa Vĩnh Long, Bến Tre, Trà Vinh.',
   ogTitle: () => pc('og_title') || 'Tuyến đường gợi ý — vinhlong360',
   ogDescription: () => pc('og_description') || 'Tự khám phá Vĩnh Long bằng xe máy hoặc ô tô.',
+  ogUrl: () => canonicalUrl('/tuyen-duong'),
+  twitterCard: 'summary_large_image',
 })
 
 useHead(() => ({
@@ -265,7 +275,8 @@ useHead(() => ({
 .route-header { display: flex; gap: var(--space-3); align-items: center; padding: var(--space-5) var(--space-6); color: var(--text-on-dark, var(--white)); box-shadow: inset 0 1px 0 rgba(var(--white-rgb),.15), 0 1px 2px rgba(var(--black-rgb),.1); transition: background .3s var(--ease-out); }
 .route-header h3 { margin: 0; font-size: var(--text-lg); font-weight: var(--weight-bold); letter-spacing: var(--tracking-tight); text-shadow: var(--shadow-text); overflow-wrap: break-word; word-break: break-word; }
 .route-meta { font-size: var(--text-sm); opacity: .9; }
-.route-emoji { font-size: var(--text-3xl); text-shadow: var(--shadow-text); }
+.route-emoji { font-size: var(--text-2xl); display: inline-flex; align-items: center; justify-content: center; color: currentColor; }
+.chip-area-icon { margin-right: .25rem; font-size: .95em; }
 .route-header.area-vinh-long { background: var(--cat-experience); }
 .route-header.area-ben-tre { background: var(--cat-product); }
 .route-header.area-tra-vinh { background: var(--cat-attraction); }

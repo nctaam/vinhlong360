@@ -52,6 +52,17 @@ describe('SEO & Editorial Craft Guardrails', () => {
       'pages/da-luu.vue',
       'pages/cai-dat.vue',
       'pages/tai-khoan.vue',
+      'pages/lich-trinh/index.vue',
+      'pages/lich-van-nien.vue',
+      'pages/chinh-sach-bao-mat.vue',
+      'pages/dieu-khoan-su-dung.vue',
+      'pages/huong-dan-thanh-vien.vue',
+      'pages/thong-bao.vue',
+      'pages/tao-lich-trinh.vue',
+      'pages/yeu-cau/sua-thong-tin.vue',
+      'pages/yeu-cau/tra-cuu.vue',
+      'pages/yeu-cau/trang-thai.vue',
+      'pages/nguoi-dung/[id].vue',
     ]
 
     for (const hub of hubs) {
@@ -383,6 +394,180 @@ describe('SEO & Editorial Craft Guardrails', () => {
     const adminLogs = doc('pages/admin/nhat-ky.vue')
     expect(adminLogs).not.toContain('&larr;')
     expect(adminLogs).not.toContain('&rarr;')
+  })
+
+  it('OCOP hub uses vector see-all-arrow and eliminates raw unicode arrows in section links', () => {
+    const ocop = doc('pages/ocop.vue')
+    expect(ocop).toContain('<IconLine name="arrow-right" class="see-all-arrow"')
+    expect(ocop).not.toContain('Xem tất cả →')
+  })
+
+  it('Seasonal hub uses vector icons for B2B callout, calendar, and cross-links without raw emojis', () => {
+    const season = doc('pages/theo-mua.vue')
+    expect(season).toContain('<IconLine name="users"')
+    expect(season).toContain('<IconLine name="arrow-right" class="b2b-arrow"')
+    expect(season).toContain('<IconLine name="calendar" class="season-when-icon"')
+    expect(season).toContain('<IconLine name="fruit"')
+    expect(season).toContain('<IconLine name="star"')
+    expect(season).toContain('<IconLine name="leaf"')
+    expect(season).toContain('<IconLine name="bowl"')
+    expect(season).not.toContain('b2b-callout-icon">🤝')
+    expect(season).not.toContain('b2b-callout-link">Liên hệ hợp tác →')
+  })
+
+  it('Itinerary index hub has CollectionPage schema with safeJsonLd, IconLine plus, vector cross-links, and no duplicate breadcrumbs', () => {
+    const itinerary = doc('pages/lich-trinh/index.vue')
+    expect(itinerary).toMatch(/<Breadcrumb[^>]*:json-ld="true"/)
+    expect(itinerary).toContain('<IconLine name="plus"')
+    expect(itinerary).not.toContain('+ Tự tạo lịch trình')
+    expect(itinerary).toContain('<IconLine name="leaf"')
+    expect(itinerary).toContain('<IconLine name="home"')
+    expect(itinerary).toContain('<IconLine name="map"')
+    expect(itinerary).toContain('<IconLine name="fruit"')
+    expect(itinerary).toContain("'@type': 'CollectionPage'")
+    expect(itinerary).toContain('safeJsonLd(itineraryCollectionSchema.value)')
+    expect(itinerary).not.toContain("'@type': 'BreadcrumbList'")
+    expect(itinerary).toContain("ogUrl: () => canonicalUrl('/lich-trinh')")
+    expect(itinerary).toContain("twitterCard: 'summary_large_image'")
+  })
+
+  it('Perpetual calendar hub has WebApplication schema with safeJsonLd, arrow-right vector, and no duplicate breadcrumbs', () => {
+    const lvn = doc('pages/lich-van-nien.vue')
+    expect(lvn).toMatch(/<Breadcrumb[^>]*:json-ld="true"/)
+    expect(lvn).toContain('data-lvn-next')
+    expect(lvn).toContain('name="arrow-right"')
+    expect(lvn).not.toContain('transform: rotate(180deg)')
+    expect(lvn).toContain("'@type': 'WebApplication'")
+    expect(lvn).toContain('safeJsonLd(lvnSchema.value)')
+    expect(lvn).not.toContain("'@type': 'BreadcrumbList'")
+    expect(lvn).toContain("ogUrl: () => canonicalUrl('/lich-van-nien')")
+    expect(lvn).toContain("twitterCard: 'summary_large_image'")
+  })
+
+  it('Privacy and Terms hubs have WebPage schema with safeJsonLd, Twitter card, and no duplicate breadcrumbs', () => {
+    const privacy = doc('pages/chinh-sach-bao-mat.vue')
+    expect(privacy).toMatch(/<Breadcrumb[^>]*:json-ld="true"/)
+    expect(privacy).toContain("'@type': 'WebPage'")
+    expect(privacy).toContain('safeJsonLd(privacySchema.value)')
+    expect(privacy).not.toContain("'@type': 'BreadcrumbList'")
+    expect(privacy).toContain("ogUrl: () => canonicalUrl('/chinh-sach-bao-mat')")
+    expect(privacy).toContain("twitterCard: 'summary_large_image'")
+
+    const terms = doc('pages/dieu-khoan-su-dung.vue')
+    expect(terms).toMatch(/<Breadcrumb[^>]*:json-ld="true"/)
+    expect(terms).toContain("'@type': 'WebPage'")
+    expect(terms).toContain('safeJsonLd(termsSchema.value)')
+    expect(terms).not.toContain("'@type': 'BreadcrumbList'")
+    expect(terms).toContain("ogUrl: () => canonicalUrl('/dieu-khoan-su-dung')")
+    expect(terms).toContain("twitterCard: 'summary_large_image'")
+  })
+
+  it('Member guide hub has WebPage schema with safeJsonLd, vector award hero, vector categories/badges, and no duplicate breadcrumbs', () => {
+    const guide = doc('pages/huong-dan-thanh-vien.vue')
+    expect(guide).toMatch(/<Breadcrumb[^>]*:json-ld="true"/)
+    expect(guide).toContain('<span class="guide-hero-icon" aria-hidden="true"><IconLine name="award" /></span>')
+    expect(guide).toContain("icon: 'sprout'")
+    expect(guide).toContain("icon: 'users'")
+    expect(guide).toContain("icon: 'star'")
+    expect(guide).toContain("icon: 'pencil'")
+    expect(guide).toContain("icon: 'file-text'")
+    expect(guide).toContain("icon: 'camera'")
+    expect(guide).toContain("icon: 'pin'")
+    expect(guide).toContain("icon: 'heart'")
+    expect(guide).toContain("icon: 'trophy'")
+    expect(guide).toContain("'@type': 'WebPage'")
+    expect(guide).toContain('safeJsonLd(guideSchema.value)')
+    expect(guide).not.toContain("'@type': 'BreadcrumbList'")
+    expect(guide).toContain("ogUrl: () => canonicalUrl('/huong-dan-thanh-vien')")
+    expect(guide).toContain("twitterCard: 'summary_large_image'")
+  })
+
+  it('Notification hub guards crawl budget with noindex, uses vector icons in filters and item chips', () => {
+    const notif = doc('pages/thong-bao.vue')
+    expect(notif).toMatch(/<Breadcrumb[^>]*:json-ld="true"/)
+    expect(notif).toContain("robots: 'noindex, nofollow'")
+    expect(notif).toContain("ogUrl: () => canonicalUrl('/thong-bao')")
+    expect(notif).toContain("twitterCard: 'summary_large_image'")
+    expect(notif).toContain("<IconLine :name=\"f.icon\" class=\"tb-filter-icon\" />")
+    expect(notif).toContain("<span class=\"tb-icon-chip\" aria-hidden=\"true\"><IconLine :name=\"icon(n)\" /></span>")
+    expect(notif).not.toContain("{{ f.icon }} {{ f.label }}")
+  })
+
+  it('Itinerary planner guards crawl budget with noindex, has WebApplication schema, and vector plus icon', () => {
+    const planner = doc('pages/tao-lich-trinh.vue')
+    expect(planner).toMatch(/<Breadcrumb[^>]*:json-ld="true"/)
+    expect(planner).toContain("robots: 'noindex, nofollow'")
+    expect(planner).toContain("ogUrl: () => canonicalUrl('/tao-lich-trinh')")
+    expect(planner).toContain("twitterCard: 'summary_large_image'")
+    expect(planner).toContain("'@type': 'WebApplication'")
+    expect(planner).toContain('safeJsonLd(plannerSchema.value)')
+    expect(planner).toContain('<span class="btn btn-sm btn-ghost" aria-hidden="true"><IconLine name="plus" /></span>')
+    expect(planner).not.toContain('<span class="btn btn-sm btn-ghost" aria-hidden="true">+</span>')
+  })
+
+  it('Correction intake and status hubs guard crawl budget with noindex and enable json-ld on Breadcrumb', () => {
+    const intake = doc('pages/yeu-cau/sua-thong-tin.vue')
+    expect(intake).toMatch(/<Breadcrumb[^>]*:json-ld="true"/)
+    expect(intake).toContain("robots: 'noindex, nofollow'")
+    expect(intake).toContain("ogUrl: () => canonicalUrl('/yeu-cau/sua-thong-tin')")
+    expect(intake).toContain("twitterCard: 'summary_large_image'")
+
+    const lookup = doc('pages/yeu-cau/tra-cuu.vue')
+    expect(lookup).toMatch(/<Breadcrumb[^>]*:json-ld="true"/)
+    expect(lookup).toContain("robots: 'noindex, nofollow'")
+    expect(lookup).toContain("ogUrl: () => canonicalUrl('/yeu-cau/tra-cuu')")
+    expect(lookup).toContain("twitterCard: 'summary_large_image'")
+
+    const status = doc('pages/yeu-cau/trang-thai.vue')
+    expect(status).toMatch(/<Breadcrumb[^>]*:json-ld="true"/)
+    expect(status).toContain("robots: 'noindex, nofollow'")
+    expect(status).toContain("ogUrl: () => canonicalUrl('/yeu-cau/trang-thai')")
+    expect(status).toContain("twitterCard: 'summary_large_image'")
+  })
+
+  it('User profile hub has dynamic robots guarding private profiles, ProfilePage schema, and vector icons', () => {
+    const profile = doc('pages/nguoi-dung/[id].vue')
+    expect(profile).toMatch(/<Breadcrumb[^>]*:json-ld="true"/)
+    expect(profile).toContain("robots: () => (profile.value?.is_private || profileNotFound.value) ? 'noindex, nofollow' : 'index, follow'")
+    expect(profile).toContain("ogUrl: () => canonicalUrl(publicProfilePath.value)")
+    expect(profile).toContain("twitterCard: 'summary_large_image'")
+    expect(profile).toContain("'@type': 'ProfilePage'")
+    expect(profile).toContain('safeJsonLd(profileSchema.value)')
+    expect(profile).toContain('<IconLine name="more-horizontal" />')
+    expect(profile).not.toContain('&#8226;&#8226;&#8226;')
+    expect(profile).toContain('<IconLine name="pencil" class="icon-inline" /> Sửa hồ sơ')
+    expect(profile).toContain('<IconLine name="share" />')
+  })
+
+  it('Accommodation and Events hubs have ogUrl, twitterCard, and clean vector icons without raw emojis', () => {
+    const luuTru = doc('pages/luu-tru.vue')
+    expect(luuTru).toMatch(/<Breadcrumb[^>]*:json-ld="true"/)
+    expect(luuTru).toContain("ogUrl: () => canonicalUrl('/luu-tru')")
+    expect(luuTru).toContain("twitterCard: 'summary_large_image'")
+    expect(luuTru).toContain('<span class="rw-motif" :class="`rw-${key}`" aria-hidden="true"><IconLine :name="meta.icon || \'pin\'" /></span>')
+    expect(luuTru).not.toContain('<span class="rw-motif" :class="`rw-${key}`" aria-hidden="true">{{ meta.emoji }}</span>')
+
+    const suKien = doc('pages/su-kien.vue')
+    expect(suKien).toMatch(/<Breadcrumb[^>]*:json-ld="true"/)
+    expect(suKien).toContain("ogUrl: () => canonicalUrl('/su-kien')")
+    expect(suKien).toContain("twitterCard: 'summary_large_image'")
+    expect(suKien).toContain('<span class="quick-pick-icon"><IconLine :name="meta.icon || \'pin\'" /></span>')
+    expect(suKien).not.toContain('<span class="quick-pick-icon">{{ meta.emoji }}</span>')
+    expect(suKien).toContain('<IconLine name="lantern" />')
+    expect(suKien).toContain('<IconLine name="leaf" />')
+    expect(suKien).toContain('<IconLine name="calendar" />')
+    expect(suKien).toContain('<IconLine name="map" />')
+    expect(suKien).not.toContain('<span class="cross-icon" aria-hidden="true">🗓️</span>')
+  })
+
+  it('Routes hub has ogUrl, twitterCard, routeIcon vector rendering, and clean area chips', () => {
+    const routes = doc('pages/tuyen-duong.vue')
+    expect(routes).toMatch(/<Breadcrumb[^>]*:json-ld="true"/)
+    expect(routes).toContain("ogUrl: () => canonicalUrl('/tuyen-duong')")
+    expect(routes).toContain("twitterCard: 'summary_large_image'")
+    expect(routes).toContain('<span class="route-emoji" aria-hidden="true"><IconLine :name="routeIcon(r)" /></span>')
+    expect(routes).not.toContain('<span class="route-emoji">{{ r.emoji }}</span>')
+    expect(routes).toContain('<IconLine :name="meta.icon || \'pin\'" class="chip-area-icon" /> {{ meta.name }}')
   })
 })
 

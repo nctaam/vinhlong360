@@ -38,12 +38,20 @@ async function open() {
 useSeoMeta({
   title: 'Tra cứu yêu cầu — vinhlong360',
   description: 'Tra cứu tiến trình xử lý yêu cầu sửa thông tin bằng mã trên biên nhận.',
+  robots: 'noindex, nofollow',
+  ogTitle: 'Tra cứu yêu cầu — vinhlong360',
+  ogUrl: () => canonicalUrl('/yeu-cau/tra-cuu'),
+  twitterCard: 'summary_large_image',
 })
+
+useHead(() => ({
+  link: [{ rel: 'canonical', href: canonicalUrl('/yeu-cau/tra-cuu') }],
+}))
 </script>
 
 <template>
   <section class="case-page">
-    <Breadcrumb :items="[{ label: 'Trang chủ', to: '/' }, { label: 'Tra cứu yêu cầu' }]" />
+    <Breadcrumb :items="[{ label: 'Trang chủ', to: '/' }, { label: 'Tra cứu yêu cầu' }]" :json-ld="true" />
 
     <header class="case-header">
       <h1>Tra cứu yêu cầu</h1>

@@ -93,6 +93,7 @@
       @click="visibleCount += PAGE_SIZE"
     >
       {{ loadMoreLabel }}
+      <IconLine name="arrow-down" class="int-more-icon" />
     </button>
     </section>
 
@@ -104,19 +105,19 @@
       <p class="int-cross-sub">Khám phá theo hình thức khác</p>
       <div class="cross-links int-cross">
         <NuxtLink v-if="interestMeta.relatedRoutes?.length" to="/tuyen-duong" class="cross-card">
-          <span class="cross-icon" aria-hidden="true">🛤️</span>
+          <span class="cross-icon" aria-hidden="true"><IconLine name="map" /></span>
           <div><strong>Tuyến đường</strong><p>Vòng {{ interestMeta.label.toLowerCase() }} gợi ý sẵn</p></div>
         </NuxtLink>
         <NuxtLink to="/ban-do" class="cross-card" no-prefetch>
-          <span class="cross-icon" aria-hidden="true">🗺️</span>
+          <span class="cross-icon" aria-hidden="true"><IconLine name="compass" /></span>
           <div><strong>Bản đồ</strong><p>Vị trí thật của từng nơi trong chuyên mục này</p></div>
         </NuxtLink>
         <NuxtLink to="/lich-trinh" class="cross-card">
-          <span class="cross-icon" aria-hidden="true">🗓️</span>
+          <span class="cross-icon" aria-hidden="true"><IconLine name="calendar" /></span>
           <div><strong>Lịch trình</strong><p>Ghép {{ interestMeta.label.toLowerCase() }} vào một tuyến đi</p></div>
         </NuxtLink>
         <NuxtLink to="/ocop" class="cross-card">
-          <span class="cross-icon" aria-hidden="true">⭐</span>
+          <span class="cross-icon" aria-hidden="true"><IconLine name="star" /></span>
           <div><strong>OCOP</strong><p>Sản phẩm đã qua kiểm định sao</p></div>
         </NuxtLink>
       </div>
@@ -255,7 +256,7 @@ const loadMoreLabel = computed(() => {
   if (remaining <= 0) return ''
   const last = visible.value[visible.value.length - 1]
   const teaseName = (last as any)?.placeName || (last as any)?.place_name || last?.name
-  if (teaseName) return `Xem thêm — còn ${remaining} mục nữa, kể cả gần ${teaseName} →`
+  if (teaseName) return `Xem thêm — còn ${remaining} mục nữa, kể cả gần ${teaseName}`
   return `Xem thêm (${remaining} còn lại)`
 })
 
@@ -293,16 +294,15 @@ useSeoMeta({
   description: interestMeta.value.description,
   ogTitle: `${interestMeta.value.label} — vinhlong360`,
   ogDescription: interestMeta.value.description,
-})
-
-useHead({
-  link: [{ rel: 'canonical', href: canonicalUrl(`/kham-pha/${interest}`) }],
+  ogUrl: () => canonicalUrl(`/kham-pha/${interest}`),
+  twitterCard: 'summary_large_image',
 })
 
 useHead(() => ({
+  link: [{ rel: 'canonical', href: canonicalUrl(`/kham-pha/${interest}`) }],
   script: [{
     type: 'application/ld+json',
-    innerHTML: JSON.stringify(itemListJsonLd(
+    innerHTML: safeJsonLd(itemListJsonLd(
       `${interestMeta.value.label} — Khám phá Vĩnh Long`,
       interestMeta.value.description,
       `/kham-pha/${interest}`,
@@ -476,5 +476,16 @@ useHead(() => ({
   .int-hero-icon { animation: none; }
   .int-filmstrip-chip { transition: none; }
   .int-filmstrip-chip::after { transition: none; }
+  .catalog-more:hover .int-more-icon { transform: none; }
+}
+
+.int-more-icon {
+  display: inline-block;
+  margin-left: var(--space-1);
+  font-size: .95rem;
+  transition: transform var(--transition-fast) var(--ease-out-expo);
+}
+.catalog-more:hover .int-more-icon {
+  transform: translateY(2px);
 }
 </style>

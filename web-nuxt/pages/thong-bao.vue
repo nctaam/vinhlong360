@@ -1,6 +1,6 @@
 <template>
   <section class="page tb-page">
-    <Breadcrumb :items="[{ label: 'Trang chủ', to: '/' }, { label: 'Thông báo' }]" />
+    <Breadcrumb :items="[{ label: 'Trang chủ', to: '/' }, { label: 'Thông báo' }]" :json-ld="true" />
     <header class="tb-head">
       <div class="tb-head-text">
         <p class="dateline-eyebrow">HỘP THƯ · SỔ TAY CỦA BẠN</p>
@@ -23,7 +23,7 @@
           :class="['chip', { active: filter === f.key }]"
           :aria-selected="filter === f.key"
           @click="filter = f.key"
-        >{{ f.icon }} {{ f.label }}</button>
+        ><IconLine :name="f.icon" class="tb-filter-icon" /> {{ f.label }}</button>
       </div>
 
       <SkeletonList v-if="loading && !items.length" :count="6" />
@@ -40,7 +40,7 @@
               class="tb-item-link"
               @click="markReadOnOpen(n)"
             >
-              <span class="tb-icon-chip" aria-hidden="true">{{ icon(n) }}</span>
+              <span class="tb-icon-chip" aria-hidden="true"><IconLine :name="icon(n)" /></span>
               <span class="tb-body">
                 <span class="tb-item-title">{{ n.title }}<span v-if="n.group_count > 1" class="tb-group"> +{{ n.group_count - 1 }}</span></span>
                 <span v-if="n.body" class="tb-sub">{{ n.body }}</span>
@@ -57,7 +57,7 @@
               @keydown.enter.prevent="open(n)"
               @keydown.space.prevent="open(n)"
             >
-              <span class="tb-icon-chip" aria-hidden="true">{{ icon(n) }}</span>
+              <span class="tb-icon-chip" aria-hidden="true"><IconLine :name="icon(n)" /></span>
               <span class="tb-body">
                 <span class="tb-item-title">{{ n.title }}<span v-if="n.group_count > 1" class="tb-group"> +{{ n.group_count - 1 }}</span></span>
                 <span v-if="n.body" class="tb-sub">{{ n.body }}</span>
@@ -80,11 +80,11 @@ const { openAuth } = useAuthModal()
 const { timeAgo } = useTimeAgo()
 
 const FILTERS = [
-  { key: 'all', label: 'Tất cả', icon: '🔔' },
-  { key: 'like', label: 'Thích', icon: '❤️' },
-  { key: 'comment', label: 'Bình luận', icon: '💬' },
-  { key: 'follow', label: 'Theo dõi', icon: '👤' },
-  { key: 'mention', label: 'Nhắc đến', icon: '📣' },
+  { key: 'all', label: 'Tất cả', icon: 'bell' },
+  { key: 'like', label: 'Thích', icon: 'heart' },
+  { key: 'comment', label: 'Bình luận', icon: 'message' },
+  { key: 'follow', label: 'Theo dõi', icon: 'user' },
+  { key: 'mention', label: 'Nhắc đến', icon: 'megaphone' },
 ] as const
 type FilterKey = typeof FILTERS[number]['key']
 
@@ -139,12 +139,12 @@ async function loadMore() {
 }
 
 function icon(n: any): string {
-  if (n.type === 'like') return '❤️'
-  if (n.type === 'comment') return '💬'
-  if (n.type === 'follow') return '👤'
-  if (n.type === 'mention') return '📣'
-  if (n.type === 'repost') return '🔁'
-  return '🔔'
+  if (n.type === 'like') return 'heart'
+  if (n.type === 'comment') return 'message'
+  if (n.type === 'follow') return 'user'
+  if (n.type === 'mention') return 'megaphone'
+  if (n.type === 'repost') return 'repeat'
+  return 'bell'
 }
 
 async function markReadOnOpen(n: any) {
@@ -201,10 +201,18 @@ watch(isLoggedIn, (loggedIn) => {
   }
 })
 
-useHead({
+useSeoMeta({
   title: 'Thông báo — vinhlong360',
-  link: [{ rel: 'canonical', href: canonicalUrl('/thong-bao') }],
+  description: 'Hộp thư thông báo tương tác và hoạt động của bạn trên vinhlong360.',
+  robots: 'noindex, nofollow',
+  ogTitle: 'Thông báo — vinhlong360',
+  ogUrl: () => canonicalUrl('/thong-bao'),
+  twitterCard: 'summary_large_image',
 })
+
+useHead(() => ({
+  link: [{ rel: 'canonical', href: canonicalUrl('/thong-bao') }],
+}))
 </script>
 
 <style scoped>
@@ -247,7 +255,7 @@ useHead({
   width: 34px; height: 34px; flex-shrink: 0; border-radius: 50%;
   font-size: 1.05rem; line-height: 1; background: var(--bg-alt);
 }
-.tb-item.unread .tb-icon-chip { background: rgba(var(--primary-rgb), .12); }
+.tb-item.unread .tb-icon-chip { background: rgba(var(--primary-rgb), .12); color: var(--primary-fg); }
 .tb-body { display: flex; flex-direction: column; gap: .15rem; flex: 1; min-width: 0; }
 .tb-item-title { font-size: var(--text-sm); font-family: var(--font-editorial); font-weight: 600; color: var(--ink); }
 .tb-group { font-size: .72rem; font-weight: 700; color: var(--primary); background: rgba(var(--primary-rgb), .1); padding: 1px 6px; border-radius: 100px; margin-left: var(--space-1); }
@@ -266,7 +274,8 @@ useHead({
 .tb-guest { margin-top: var(--space-6); }
 .tb-filters { display: flex; gap: var(--space-2); margin-bottom: var(--space-4); overflow-x: auto; padding-bottom: var(--space-1); scrollbar-width: none; }
 .tb-filters::-webkit-scrollbar { display: none; }
-.tb-filters .chip { white-space: nowrap; }
+.tb-filters .chip { white-space: nowrap; display: inline-flex; align-items: center; gap: .35rem; }
+.tb-filter-icon { font-size: 1em; flex-shrink: 0; }
 
 /* ── Dark mode ── */
 .dark .tb-item { background: var(--bg-alt); border-color: var(--line); }

@@ -114,12 +114,20 @@ function onPhoneConsentChanged(consent: boolean) {
 useSeoMeta({
   title: 'Yêu cầu sửa thông tin — vinhlong360',
   description: 'Báo thông tin chưa đúng trên vinhlong360 và nhận mã tra cứu tiến trình xử lý.',
+  robots: 'noindex, nofollow',
+  ogTitle: 'Yêu cầu sửa thông tin — vinhlong360',
+  ogUrl: () => canonicalUrl('/yeu-cau/sua-thong-tin'),
+  twitterCard: 'summary_large_image',
 })
+
+useHead(() => ({
+  link: [{ rel: 'canonical', href: canonicalUrl('/yeu-cau/sua-thong-tin') }],
+}))
 </script>
 
 <template>
   <section class="case-page">
-    <Breadcrumb :items="[{ label: 'Trang chủ', to: '/' }, { label: 'Yêu cầu sửa thông tin' }]" />
+    <Breadcrumb :items="[{ label: 'Trang chủ', to: '/' }, { label: 'Yêu cầu sửa thông tin' }]" :json-ld="true" />
 
     <header class="case-header">
       <h1>Yêu cầu sửa thông tin</h1>

@@ -197,6 +197,11 @@ h4 { font-size: var(--text-lg);  line-height: var(--lh-lg);  letter-spacing: var
 .see-all:hover { color: var(--primary-fg-strong, var(--primary-fg)); text-decoration: underline; text-underline-offset: 3px; transform: translateX(3px); }
 .see-all:active { transform: translateX(1px); transition-duration: .08s; }
 .see-all:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+.see-all .see-all-arrow { display: inline-block; margin-left: var(--space-1); font-size: .95rem; transition: transform var(--transition-fast) var(--ease-out-expo); }
+.see-all:hover .see-all-arrow { transform: translateX(3px); }
+@media (prefers-reduced-motion: reduce) {
+  .see-all:hover .see-all-arrow { transform: none; }
+}
 
 /* ── Region-first tiles (trang chủ) ── */
 .regions { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--space-4); }

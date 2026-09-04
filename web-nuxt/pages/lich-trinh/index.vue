@@ -1,6 +1,6 @@
 <template>
   <div class="page" data-color-system="tri-region-v1">
-    <Breadcrumb :items="[{ label: 'Trang chủ', to: '/' }, { label: 'Lịch trình' }]" />
+    <Breadcrumb :items="[{ label: 'Trang chủ', to: '/' }, { label: 'Lịch trình' }]" :json-ld="true" />
 
     <!-- Hero -->
     <section class="catalog-hero cat-itinerary">
@@ -156,7 +156,7 @@
       </div>
 
       <div class="block-cta">
-        <NuxtLink to="/tao-lich-trinh" no-prefetch class="btn btn-primary">+ Tự tạo lịch trình</NuxtLink>
+        <NuxtLink to="/tao-lich-trinh" no-prefetch class="btn btn-primary"><IconLine name="plus" /> Tự tạo lịch trình</NuxtLink>
       </div>
     </section>
 
@@ -165,19 +165,19 @@
       <h2>Khám phá thêm</h2>
       <div class="cross-links">
         <NuxtLink to="/du-lich" class="cross-card">
-          <span class="cross-icon" aria-hidden="true">🌿</span>
+          <span class="cross-icon" aria-hidden="true"><IconLine name="leaf" /></span>
           <div><strong>Du lịch</strong><p>Trải nghiệm miệt vườn</p></div>
         </NuxtLink>
         <NuxtLink to="/luu-tru" class="cross-card">
-          <span class="cross-icon" aria-hidden="true">🏡</span>
+          <span class="cross-icon" aria-hidden="true"><IconLine name="home" /></span>
           <div><strong>Lưu trú</strong><p>Homestay, nhà vườn</p></div>
         </NuxtLink>
         <NuxtLink to="/ban-do" class="cross-card" no-prefetch>
-          <span class="cross-icon" aria-hidden="true">🗺️</span>
+          <span class="cross-icon" aria-hidden="true"><IconLine name="map" /></span>
           <div><strong>Bản đồ</strong><p>Xem trên bản đồ</p></div>
         </NuxtLink>
         <NuxtLink to="/san-pham" class="cross-card">
-          <span class="cross-icon" aria-hidden="true">🍊</span>
+          <span class="cross-icon" aria-hidden="true"><IconLine name="fruit" /></span>
           <div><strong>Đặc sản</strong><p>Mua quà Vĩnh Long</p></div>
         </NuxtLink>
       </div>
@@ -288,50 +288,42 @@ const emptyMessage = computed(() => {
   return `${regionName} chưa có lịch trình gợi ý, nhưng các vùng khác đang chờ bạn khám phá — hoặc tự tạo một lịch trình riêng theo sở thích.`
 })
 
+const itineraryCollectionSchema = computed(() => ({
+  '@context': 'https://schema.org',
+  '@type': 'CollectionPage',
+  name: 'Lịch trình gợi ý — vinhlong360',
+  description: 'Tuyến tham quan Vĩnh Long, Bến Tre, Trà Vinh được thiết kế sẵn.',
+  url: canonicalUrl('/lich-trinh'),
+  inLanguage: 'vi',
+}))
+
 useSeoMeta({
   title: 'Lịch trình — vinhlong360',
   description: 'Tuyến tham quan Vĩnh Long, Bến Tre, Trà Vinh được thiết kế sẵn — chỉ cần chọn và đi. Hoặc tự tạo lịch trình cá nhân theo sở thích.',
   ogTitle: 'Lịch trình — vinhlong360',
   ogDescription: 'Tuyến tham quan Vĩnh Long được thiết kế sẵn — chỉ cần chọn và đi.',
   ogImage: '/icons/icon-512.png',
+  ogUrl: () => canonicalUrl('/lich-trinh'),
+  twitterCard: 'summary_large_image',
 })
-useHead({
+
+useHead(() => ({
   link: [{ rel: 'canonical', href: canonicalUrl('/lich-trinh') }],
   script: [
     {
       type: 'application/ld+json',
-      innerHTML: JSON.stringify({
-        '@context': 'https://schema.org',
-        '@type': 'CollectionPage',
-        name: 'Lịch trình gợi ý',
-        description: 'Tuyến tham quan Vĩnh Long, Bến Tre, Trà Vinh được thiết kế sẵn.',
-        url: 'https://vinhlong360.vn/lich-trinh',
-      }),
+      innerHTML: safeJsonLd(itineraryCollectionSchema.value),
     },
     {
       type: 'application/ld+json',
-      innerHTML: JSON.stringify({
-        '@context': 'https://schema.org',
-        '@type': 'BreadcrumbList',
-        itemListElement: [
-          { '@type': 'ListItem', position: 1, name: 'Trang chủ', item: 'https://vinhlong360.vn/' },
-          { '@type': 'ListItem', position: 2, name: 'Lịch trình' },
-        ],
-      }),
+      innerHTML: safeJsonLd(itineraryItemListJsonLd(
+        'Lịch trình gợi ý',
+        'Tuyến tham quan Vĩnh Long, Bến Tre, Trà Vinh được thiết kế sẵn.',
+        '/lich-trinh',
+        filtered.value,
+      )),
     },
   ],
-})
-
-useHead(() => ({
-  script: [{
-    type: 'application/ld+json',
-    innerHTML: JSON.stringify(itineraryItemListJsonLd(
-      'Lịch trình gợi ý',
-      'Tuyến tham quan Vĩnh Long, Bến Tre, Trà Vinh được thiết kế sẵn.',
-      '/lich-trinh',
-      filtered.value,
-    )),
-  }],
 }))
 </script>
 

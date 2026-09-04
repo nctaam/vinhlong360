@@ -143,12 +143,12 @@
 
     <!-- B2B callout (§1.4: liên hệ/hỏi-giá only, no order form) -->
     <aside class="b2b-callout">
-      <span class="b2b-callout-icon" aria-hidden="true">🤝</span>
+      <span class="b2b-callout-icon" aria-hidden="true"><IconLine name="users" /></span>
       <div class="b2b-callout-text">
         Cần <strong>mua sỉ nông sản theo mùa</strong> hoặc kết nối HTX / nhà vườn?
         Liên hệ trực tiếp cơ sở ở mỗi mục.
       </div>
-      <NuxtLink to="/lien-he" class="b2b-callout-link">Gửi yêu cầu <span aria-hidden="true">→</span></NuxtLink>
+      <NuxtLink to="/lien-he" class="b2b-callout-link">Gửi yêu cầu <IconLine name="arrow-right" class="b2b-arrow" /></NuxtLink>
     </aside>
 
     <!-- Editorial -->
@@ -217,7 +217,7 @@
           <span v-if="isPeak(e)" class="season-badge peak">Cao điểm</span>
           <span v-else-if="isInSeason(e)" class="season-badge">Đang mùa</span>
           <EntityCard :entity="e" />
-          <small class="season-when"><span aria-hidden="true">📅</span>{{ seasonText(e.season) }}</small>
+          <small class="season-when"><IconLine name="calendar" class="season-when-icon" />{{ seasonText(e.season) }}</small>
         </div>
       </div>
       <button
@@ -247,19 +247,19 @@
       <h2>Khám phá thêm</h2>
       <div class="cross-links">
         <NuxtLink to="/san-pham" class="cross-card">
-          <span class="cross-icon" aria-hidden="true">🍊</span>
+          <span class="cross-icon" aria-hidden="true"><IconLine name="fruit" /></span>
           <div><strong>Đặc sản</strong><p>Tất cả sản phẩm</p></div>
         </NuxtLink>
         <NuxtLink to="/ocop" class="cross-card">
-          <span class="cross-icon" aria-hidden="true">⭐</span>
+          <span class="cross-icon" aria-hidden="true"><IconLine name="star" /></span>
           <div><strong>OCOP</strong><p>Sản phẩm đạt chuẩn</p></div>
         </NuxtLink>
         <NuxtLink to="/du-lich" class="cross-card">
-          <span class="cross-icon" aria-hidden="true">🌿</span>
+          <span class="cross-icon" aria-hidden="true"><IconLine name="leaf" /></span>
           <div><strong>Du lịch</strong><p>Trải nghiệm miệt vườn</p></div>
         </NuxtLink>
         <NuxtLink to="/kham-pha/am-thuc" class="cross-card">
-          <span class="cross-icon" aria-hidden="true">🍲</span>
+          <span class="cross-icon" aria-hidden="true"><IconLine name="bowl" /></span>
           <div><strong>Ẩm thực</strong><p>Món ngon Vĩnh Long</p></div>
         </NuxtLink>
       </div>
@@ -648,6 +648,19 @@ useHead(() => ({
 }
 .b2b-callout-link:hover { background: var(--secondary-dark); transform: translateX(2px); }
 .b2b-callout-link:focus-visible { outline: 2px solid var(--secondary); outline-offset: 3px; }
+.b2b-arrow {
+  display: inline-block;
+  margin-left: var(--space-1);
+  font-size: .95rem;
+  transition: transform var(--transition-fast) var(--ease-out-expo);
+}
+.b2b-callout-link:hover .b2b-arrow {
+  transform: translateX(3px);
+}
+.season-when-icon {
+  margin-right: 4px;
+  vertical-align: -0.1em;
+}
 
 .see-all-count { font-size: var(--text-sm); color: var(--muted); }
 
