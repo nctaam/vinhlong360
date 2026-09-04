@@ -36,6 +36,20 @@ except ImportError:
 ROOT = Path(__file__).resolve().parent.parent
 
 
+def _manifest_backup_artifact(location: Path) -> Path | None:
+    manifest_path = location / "manifest.json"
+    if not manifest_path.is_file():
+        sidecars = sorted(location.glob("*.manifest.json"), key=lambda p: p.stat().st_mtime, reverse=True)
+        manifest_path = sidecars[0] if sidecars else manifest_path
+    try:
+        raw = json.loads(manifest_path.read_text(encoding="utf-8"))
+        declared = (raw.get("artifact") or {}).get("path") or raw.get("artifact_path")
+        candidate = location / str(declared) if declared else None
+        return candidate if candidate and candidate.is_file() else None
+    except (OSError, TypeError, ValueError, json.JSONDecodeError):
+        return None
+
+
 def _file_size_human(path: Path) -> str:
     size = path.stat().st_size
     for unit in ("B", "KB", "MB", "GB"):
@@ -55,17 +69,9 @@ def _find_latest_backup(backup_dir: Path) -> Path | None:
     normalized = find_latest_manifest(backup_dir)
     if normalized is not None:
         location, manifest = normalized
-        manifest_path = location / "manifest.json"
-        if not manifest_path.is_file():
-            sidecars = sorted(location.glob("*.manifest.json"), key=lambda p: p.stat().st_mtime, reverse=True)
-            manifest_path = sidecars[0] if sidecars else manifest_path
-        try:
-            raw = json.loads(manifest_path.read_text(encoding="utf-8"))
-            declared = (raw.get("artifact") or {}).get("path") or raw.get("artifact_path")
-            if declared and (location / str(declared)).is_file():
-                return location / str(declared)
-        except (OSError, TypeError, ValueError, json.JSONDecodeError):
-            pass
+        artifact = _manifest_backup_artifact(location)
+        if artifact is not None:
+            return artifact
         return location
 
     candidates: list[Path] = []
@@ -192,41 +198,39 @@ def _upload_bundle(
     return _upload(aws_cli, artifact, bucket, prefix, endpoint, env, dry_run) and _upload(
         aws_cli, manifest, bucket, prefix, endpoint, env, dry_run
     )
+
+
+def _parse_args(argv: list[str] | None = None):
+    parser = argparse.ArgumentParser(description="Upload latest local backup to S3-compatible storage.")
+    parser.add_argument("--backup-dir", default=str(ROOT / "backups"))
+    parser.add_argument("--bucket", default=os.environ.get("S3_BUCKET", ""))
+    parser.add_argument("--prefix", default="vl360-backups/")
+    parser.add_argument("--endpoint", default=os.environ.get("S3_ENDPOINT", ""))
+    parser.add_argument("--region", default=os.environ.get("S3_REGION", "auto"))
+    parser.add_argument("--dry-run", action="store_true")
+    return parser.parse_args(argv)
+
+
+def _resolve_backup_manifest(latest: Path):
+    manifest_path = latest / "manifest.json" if latest.is_dir() else latest.with_name(latest.name + ".manifest.json")
+    if not manifest_path.is_file() and latest.is_dir():
+        sidecars = sorted(latest.glob("*.manifest.json"), key=lambda p: p.stat().st_mtime, reverse=True)
+        manifest_path = sidecars[0] if sidecars else manifest_path
+    if not manifest_path.is_file():
+        return None
+    manifest = load_manifest(manifest_path)
+    artifact = latest
+    if latest.is_dir():
+        candidate = _manifest_backup_artifact(latest)
+        if candidate is None:
+            return None
+        artifact = candidate
+    validate_manifest_artifact(manifest, artifact)
+    return artifact, manifest_path
+
+
 def main() -> int:
-    parser = argparse.ArgumentParser(
-        description="Upload latest local backup to S3-compatible storage."
-    )
-    parser.add_argument(
-        "--backup-dir",
-        default=str(ROOT / "backups"),
-        help="directory containing backups (default: backups/)",
-    )
-    parser.add_argument(
-        "--bucket",
-        default=os.environ.get("S3_BUCKET", ""),
-        help="S3 bucket name (default: $S3_BUCKET)",
-    )
-    parser.add_argument(
-        "--prefix",
-        default="vl360-backups/",
-        help="S3 key prefix (default: vl360-backups/)",
-    )
-    parser.add_argument(
-        "--endpoint",
-        default=os.environ.get("S3_ENDPOINT", ""),
-        help="S3-compatible endpoint URL (default: $S3_ENDPOINT)",
-    )
-    parser.add_argument(
-        "--region",
-        default=os.environ.get("S3_REGION", "auto"),
-        help="AWS region (default: $S3_REGION or 'auto')",
-    )
-    parser.add_argument(
-        "--dry-run",
-        action="store_true",
-        help="show what would be uploaded without actually uploading",
-    )
-    args = parser.parse_args()
+    args = _parse_args()
 
     # --- check aws CLI ---
     aws_cli = _check_aws_cli()
@@ -291,17 +295,9 @@ def main() -> int:
 
     # --- upload ---
     env = _build_env(endpoint, access_key, secret_key, args.region)
-    manifest_path = latest / "manifest.json" if latest.is_dir() else latest.with_name(latest.name + ".manifest.json")
-    if not manifest_path.is_file() and latest.is_dir():
-        sidecars = sorted(latest.glob("*.manifest.json"), key=lambda p: p.stat().st_mtime, reverse=True)
-        manifest_path = sidecars[0] if sidecars else manifest_path
-    if manifest_path.is_file():
-        manifest = load_manifest(manifest_path)
-        artifact = latest
-        if latest.is_dir():
-            raw = json.loads(manifest_path.read_text(encoding="utf-8"))
-            artifact = latest / str((raw.get("artifact") or {}).get("path"))
-        validate_manifest_artifact(manifest, artifact)
+    resolved = _resolve_backup_manifest(latest)
+    if resolved is not None:
+        artifact, manifest_path = resolved
         ok = _upload_bundle(aws_cli, artifact, manifest_path, bucket, args.prefix, endpoint, env, args.dry_run)
     else:
         print(f"[offsite] ERROR: integrity manifest missing for {latest}", file=sys.stderr)
