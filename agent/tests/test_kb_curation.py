@@ -231,6 +231,17 @@ class TestPromote:
 
 
 class TestReject:
+    def test_rejection_plan_removes_entity_and_relationships(self, kb_with_provisional):
+        source = json.loads(kb_with_provisional.read_text(encoding="utf-8"))
+
+        plan = kb_curation._prepare_rejection(source, "prov-1")
+
+        assert plan["removed_target"]["id"] == "prov-1"
+        assert plan["removed_relationships"] == [
+            {"from": "prov-1", "to": "verified-1", "type": "near"}
+        ]
+        assert all(entity["id"] != "prov-1" for entity in source["entities"])
+
     def test_reject_removes_entity(self, kb_with_provisional):
         result = kb_curation.reject("prov-1")
         assert result["ok"] is True
@@ -318,6 +329,16 @@ class TestNearDuplicate:
 
 
 class TestAutoPromote:
+    def test_promotion_pairs_select_only_entities_reaching_hit_threshold(self, kb_with_provisional):
+        source = json.loads(kb_with_provisional.read_text(encoding="utf-8"))
+        provisional = [entity for entity in source["entities"] if entity.get("status") == "provisional"]
+
+        pairs = kb_curation._promotion_pairs(provisional, {"prov-1": 3, "prov-2": 2}, 3)
+
+        assert [original["id"] for original, _ in pairs] == ["prov-1"]
+        assert pairs[0][1]["status"] == "verified"
+        assert pairs[0][1]["verified"] is True
+
     def test_promotes_useful_entities(self, kb_with_provisional):
         # prov-1 has 5 hits (>= 3), prov-2 has 1 (< 3)
         result = kb_curation.auto_promote_pass(min_hits=3)

@@ -205,20 +205,50 @@ def promote(entity_id: str, review_token: str) -> dict:
     return {"ok": False, "error": "not found"}
 
 
+def _prepare_rejection(kb: dict, entity_id: str) -> dict:
+    target = next((e for e in kb["entities"] if e["id"] == entity_id), None)
+    if target is None:
+        return {"error": "not_found"}
+    if not _is_provisional(target):
+        return {"error": "verified"}
+    removed_target = copy.deepcopy(target)
+    removed_relationships = [
+        copy.deepcopy(r)
+        for r in kb.get("relationships", [])
+        if r.get("from") == entity_id or r.get("to") == entity_id
+    ]
+    kb["entities"] = [e for e in kb["entities"] if e["id"] != entity_id]
+    kb["relationships"] = [
+        r for r in kb.get("relationships", [])
+        if r.get("from") != entity_id and r.get("to") != entity_id
+    ]
+    return {
+        "before": len(kb["entities"]) + 1,
+        "removed_target": removed_target,
+        "removed_relationships": removed_relationships,
+    }
+
+
+def _rejection_db_failure(plan: dict, post_delete_snapshot: dict, post_delete_version: int) -> dict:
+    rolled_back = _rollback_rejection(
+        plan["removed_target"],
+        plan["removed_relationships"],
+        post_delete_snapshot,
+        post_delete_version,
+    )
+    if rolled_back:
+        return {"ok": False, "error": "db_write_failed"}
+    return {"ok": False, "error": "db_write_failed", "reconciliation_required": True}
+
+
 def reject(entity_id: str) -> dict:
     """Remove a provisional entity from the KB (rejected in review)."""
     kb, version = load_json_versioned(DATA_JSON)
-    before = len(kb["entities"])
-    target = next((e for e in kb["entities"] if e["id"] == entity_id), None)
-    if target is None:
+    plan = _prepare_rejection(kb, entity_id)
+    if plan.get("error") == "not_found":
         return {"ok": False, "error": "not found"}
-    if not _is_provisional(target):
+    if plan.get("error") == "verified":
         return {"ok": False, "error": "refusing to delete a verified entity via reject"}
-    removed_target = copy.deepcopy(target)
-    removed_relationships = [copy.deepcopy(r) for r in kb.get("relationships", [])
-                             if r.get("from") == entity_id or r.get("to") == entity_id]
-    kb["entities"] = [e for e in kb["entities"] if e["id"] != entity_id]
-    kb["relationships"] = [r for r in kb.get("relationships", []) if r.get("from") != entity_id and r.get("to") != entity_id]
     if not compare_and_swap_json(DATA_JSON, version, kb):
         return {"ok": False, "error": "stale_review"}
     _, post_delete_version = load_json_versioned(DATA_JSON)
@@ -229,16 +259,12 @@ def reject(entity_id: str) -> dict:
         if db_result is False:
             raise RuntimeError("db_write_failed")
     except Exception:
-        rolled_back = _rollback_rejection(removed_target, removed_relationships,
-                                           post_delete_snapshot, post_delete_version)
-        return {"ok": False, "error": "db_write_failed"} if rolled_back else {
-            "ok": False, "error": "db_write_failed", "reconciliation_required": True,
-        }
+        return _rejection_db_failure(plan, post_delete_snapshot, post_delete_version)
     if isinstance(db_result, dict) and db_result.get("committed"):
         _reload()
         return {"ok": False, "error": "db_write_failed", "degraded": True,
                 "reconciliation_required": True}
-    result = {"ok": True, "id": entity_id, "removed": before - len(kb["entities"])}
+    result = {"ok": True, "id": entity_id, "removed": plan["before"] - len(kb["entities"])}
     _reload()
     return result
 
@@ -348,6 +374,76 @@ def _entity_hits() -> dict:
         return {}
 
 
+def _promotion_pairs(provisional: list[dict], hits: dict, min_hits: int):
+    selected = [e for e in provisional if hits.get(e.get("id"), 0) >= min_hits]
+    return [
+        (original, {**copy.deepcopy(original), "status": "verified", "verified": True})
+        for original in selected
+    ]
+
+
+def _apply_promotions(kb: dict, promoted_pairs, candidates: int) -> tuple[bool, dict]:
+    entities = kb.get("entities", [])
+    locations = {str(entity.get("id")): entity for entity in entities}
+    if any(locations.get(str(original.get("id"))) != original for original, _ in promoted_pairs):
+        return False, {"candidates": candidates, "promoted": [], "error": "stale_review"}
+    for original, promoted in promoted_pairs:
+        index = next(i for i, entity in enumerate(entities) if entity.get("id") == original.get("id"))
+        entities[index] = copy.deepcopy(promoted)
+    return bool(promoted_pairs), {
+        "candidates": candidates,
+        "promoted": [e["id"] for _, e in promoted_pairs],
+    }
+
+
+def _rollback_failed_promotions(promoted_pairs, persisted, degraded):
+    reconciliation: list[str] = list(degraded)
+    for previous, previous_promoted in persisted:
+        if str(previous.get("id")) in degraded:
+            continue
+        try:
+            restore_result = _db_upsert(previous)
+            if not _db_compensation_succeeded(restore_result):
+                reconciliation.append(str(previous.get("id")))
+                continue
+            if not _rollback_promotion(previous.get("id"), previous, previous_promoted):
+                reconciliation.append(str(previous.get("id")))
+        except Exception:
+            logger.error("Auto-promotion compensation failed for %s", previous.get("id"))
+            reconciliation.append(str(previous.get("id")))
+    return reconciliation
+
+
+def _persist_promotions(promoted_pairs, candidates):
+    persisted: list[tuple[dict, dict]] = []
+    degraded: list[str] = []
+    for original, promoted in promoted_pairs:
+        try:
+            db_result = _db_upsert(promoted)
+            if db_result is False:
+                raise RuntimeError("db_write_failed")
+            persisted.append((original, promoted))
+            if isinstance(db_result, dict) and db_result.get("committed"):
+                degraded.append(str(promoted.get("id")))
+        except Exception:
+            reconciliation = _rollback_failed_promotions(
+                promoted_pairs, persisted, degraded
+            )
+            if str(promoted.get("id")) not in degraded:
+                _rollback_promotion(promoted.get("id"), original, promoted)
+            retained = [
+                str(entity.get("id"))
+                for _, entity in promoted_pairs
+                if str(entity.get("id")) in reconciliation
+            ]
+            response = {"candidates": candidates, "promoted": retained, "error": "db_write_failed"}
+            if reconciliation:
+                response["degraded"] = True
+                response["reconciliation_required"] = retained
+            return response, None
+    return None, degraded
+
+
 def auto_promote_pass(min_hits: int = 3, dry_run: bool = False) -> dict:
     """Promote provisional entities that have PROVEN useful in real queries.
 
@@ -362,78 +458,17 @@ def auto_promote_pass(min_hits: int = 3, dry_run: bool = False) -> dict:
     source = _load_kb()
     provisional = [copy.deepcopy(e) for e in source.get("entities", []) if _is_provisional(e)]
     candidates = len(provisional)
-    selected = [e for e in provisional if hits.get(e.get("id"), 0) >= min_hits]
+    promoted_pairs = _promotion_pairs(provisional, hits, min_hits)
     if dry_run:
-        return {"candidates": candidates, "promoted": [e["id"] for e in selected]}
+        return {"candidates": candidates, "promoted": [e["id"] for _, e in promoted_pairs]}
 
-    promoted_pairs = []
-    for original in selected:
-        promoted = copy.deepcopy(original)
-        promoted["status"] = "verified"
-        promoted["verified"] = True
-        promoted_pairs.append((original, promoted))
-
-    def apply_promotions(kb: dict) -> tuple[bool, dict]:
-        entities = kb.get("entities", [])
-        locations = {str(entity.get("id")): entity for entity in entities}
-        if any(locations.get(str(original.get("id"))) != original for original, _ in promoted_pairs):
-            return False, {"candidates": candidates, "promoted": [], "error": "stale_review"}
-        for original, promoted in promoted_pairs:
-            index = next(i for i, entity in enumerate(entities) if entity.get("id") == original.get("id"))
-            entities[index] = copy.deepcopy(promoted)
-        return bool(promoted_pairs), {"candidates": candidates, "promoted": [e["id"] for _, e in promoted_pairs]}
-
-    result = mutate_json(DATA_JSON, apply_promotions)
+    result = mutate_json(DATA_JSON, lambda kb: _apply_promotions(kb, promoted_pairs, candidates))
     if result.get("error") or not promoted_pairs:
         return result
 
-    persisted: list[tuple[dict, dict]] = []
-    degraded: list[str] = []
-    for original, promoted in promoted_pairs:
-        try:
-            db_result = _db_upsert(promoted)
-            if db_result is False:
-                raise RuntimeError("db_write_failed")
-            persisted.append((original, promoted))
-            if isinstance(db_result, dict) and db_result.get("committed"):
-                degraded.append(str(promoted.get("id")))
-        except Exception:
-            # Only roll back rows whose DB outcome is known; committed-but-
-            # degraded writes stay promoted and are explicitly reconciled.
-            reconciliation: list[str] = list(degraded)
-            for previous, previous_promoted in persisted:
-                if str(previous.get("id")) in degraded:
-                    continue
-                try:
-                    restore_result = _db_upsert(previous)
-                    if not _db_compensation_succeeded(restore_result):
-                        # The DB may still contain the promoted row, so never
-                        # roll JSON back to provisional after compensation loss.
-                        reconciliation.append(str(previous.get("id")))
-                        continue
-                    if not _rollback_promotion(previous.get("id"), previous, previous_promoted):
-                        reconciliation.append(str(previous.get("id")))
-                except Exception:
-                    logger.error("Auto-promotion compensation failed for %s", previous.get("id"))
-                    reconciliation.append(str(previous.get("id")))
-            if str(promoted.get("id")) not in degraded:
-                _rollback_promotion(promoted.get("id"), original, promoted)
-            # Preserve the JSON state for any promotion whose DB compensation
-            # is uncertain; callers receive an explicit reconciliation signal.
-            retained = [
-                str(entity.get("id"))
-                for _, entity in promoted_pairs
-                if str(entity.get("id")) in reconciliation
-            ]
-            response = {
-                "candidates": candidates,
-                "promoted": retained,
-                "error": "db_write_failed",
-            }
-            if reconciliation:
-                response["degraded"] = True
-                response["reconciliation_required"] = retained
-            return response
+    persist_error, degraded = _persist_promotions(promoted_pairs, candidates)
+    if persist_error is not None:
+        return persist_error
     _reload()
     if degraded:
         result["degraded"] = True
