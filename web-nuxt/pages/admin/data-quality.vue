@@ -768,8 +768,8 @@ onMounted(() => refreshAll())
   transition: transform .25s var(--ease-soft), box-shadow .25s, border-color .25s;
 }
 .dq-history-card:hover { transform: translateY(-1px); box-shadow: 0 4px 16px rgba(var(--black-rgb),.06); }
-.dq-history-card--apply { border-left: 3px solid var(--primary); }
-.dq-history-card--rollback { border-left: 3px solid var(--warning); }
+.dq-history-card--apply { border-color: color-mix(in srgb, var(--primary) 32%, var(--line)); }
+.dq-history-card--rollback { border-color: color-mix(in srgb, var(--warning) 36%, var(--line)); }
 .dq-history-card-head { display: flex; justify-content: space-between; gap: var(--space-3); align-items: flex-start; }
 .dq-history-card-head strong { display: block; word-break: break-word; margin-top: var(--space-1); }
 .dq-status-badge { margin-bottom: 2px; }

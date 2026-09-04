@@ -765,7 +765,7 @@ html[data-reduced-motion="true"] .public-shell-catalog-button .line-icon {
   border-right: 1px solid color-mix(in srgb, var(--color-action) 32%, transparent);
   background: var(--color-admin-chrome);
   color: var(--color-admin-text);
-  transition: width var(--duration-normal) var(--ease-out), transform var(--duration-normal) var(--ease-out);
+  transition: transform var(--duration-normal) var(--ease-out);
 }
 
 .admin-shell .admin-sidebar.collapsed {

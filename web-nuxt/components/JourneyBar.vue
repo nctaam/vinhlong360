@@ -64,10 +64,10 @@ onUnmounted(() => { if (popTimer) clearTimeout(popTimer) })
   }
 }
 
-.jb-count-pop { animation: jbPop .4s var(--ease-spring-gentle); }
-@keyframes jbPop { 0% { transform: scale(1); } 30% { transform: scale(1.3); } 100% { transform: scale(1); } }
+.jb-count-pop { animation: jbPop .35s var(--ease-out-expo); }
+@keyframes jbPop { 0% { transform: scale(1); } 40% { transform: scale(1.15); } 100% { transform: scale(1); } }
 
-.jb-slide-enter-active { transition: transform .35s var(--ease-spring-gentle), opacity .25s var(--ease-out); }
+.jb-slide-enter-active { transition: transform .35s var(--ease-out-expo), opacity .25s var(--ease-out); }
 .jb-slide-leave-active { transition: transform .2s var(--ease-out), opacity .15s var(--ease-out); }
 .jb-slide-enter-from { transform: translateY(100%); opacity: 0; }
 .jb-slide-leave-to { transform: translateY(100%); opacity: 0; }

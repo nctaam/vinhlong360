@@ -234,7 +234,6 @@ onUnmounted(() => {
 .admin-sidebar {
   width: 240px; background: var(--ink); color: var(--text-on-dark, var(--white));
   display: flex; flex-direction: column; flex-shrink: 0;
-  transition: width .35s var(--ease-soft);
   border-right: .5px solid rgba(var(--white-rgb),.06);
   position: sticky; top: 0; height: 100vh; height: 100dvh;
   overflow: hidden;
@@ -407,14 +406,7 @@ onUnmounted(() => {
   font-size: 1.15rem; flex-shrink: 0;
   transition: transform .25s var(--ease-soft);
 }
-.stat-card:hover .stat-icon { transform: scale(1.08); }
-.stat-card::before {
-  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
-  background: linear-gradient(90deg, var(--primary) 0%, var(--accent, var(--primary)) 100%);
-  opacity: 0; transition: opacity .3s var(--ease-out);
-}
-.stat-card:hover::before { opacity: 1; }
-.stat-card:hover { transform: translateY(-3px); box-shadow: 0 6px 20px rgba(var(--black-rgb),.08); border-color: var(--border, rgba(var(--black-rgb),.08)); }
+.stat-card:hover { transform: translateY(-3px); box-shadow: 0 6px 20px rgba(var(--black-rgb),.08); border-color: color-mix(in srgb, var(--primary) 40%, var(--line)); }
 .stat-card:active { transform: translateY(-1px) scale(.98); transition-duration: .08s; }
 .stat-card .stat-value { font-size: var(--text-2xl); font-weight: 800; color: var(--primary); transition: color .3s; font-variant-numeric: tabular-nums; }
 .stat-card .stat-label { font-size: .75rem; color: var(--muted); margin-top: var(--space-1); text-transform: uppercase; letter-spacing: .5px; }
@@ -684,9 +676,9 @@ onUnmounted(() => {
   font-size: .88rem; color: var(--ink);
   animation: toastIn .25s var(--ease-out);
 }
-.admin-toast.success { border-left: 4px solid var(--secondary); }
-.admin-toast.error { border-left: 4px solid var(--error); }
-.admin-toast.warning { border-left: 4px solid var(--warning); }
+.admin-toast.success { border-color: var(--secondary); background: color-mix(in srgb, var(--secondary) 8%, var(--bg, var(--white))); }
+.admin-toast.error { border-color: var(--error); background: color-mix(in srgb, var(--error) 8%, var(--bg, var(--white))); }
+.admin-toast.warning { border-color: var(--warning); background: color-mix(in srgb, var(--warning) 8%, var(--bg, var(--white))); }
 @keyframes toastIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
 .dark .admin-toast { background: var(--card); border-color: rgba(var(--white-rgb),.08); }
 @media (prefers-reduced-motion: reduce) {

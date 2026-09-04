@@ -76,7 +76,7 @@ watch(() => props.kind, load, { immediate: true })
 .kc-pct.kc-mid { color: rgb(var(--accent-rgb)); }
 .kc-pct.kc-high { color: rgb(var(--success-rgb)); }
 .kc-bar { grid-column: 1 / -1; height: 4px; border-radius: 2px; background: color-mix(in srgb, var(--line) 60%, transparent); overflow: hidden; }
-.kc-bar i { display: block; height: 100%; border-radius: 2px; transition: width .3s; }
+.kc-bar i { display: block; height: 100%; border-radius: 2px; }
 .kc-bar i.kc-low { background: rgb(var(--danger-rgb)); }
 .kc-bar i.kc-mid { background: rgb(var(--accent-rgb)); }
 .kc-bar i.kc-high { background: rgb(var(--sys-green-rgb)); }

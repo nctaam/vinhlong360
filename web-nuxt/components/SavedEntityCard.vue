@@ -24,7 +24,7 @@
 // .card-rule, grain overlay on the no-photo cover. Consolidates the 3 bespoke
 // copies that had drifted (da-luu, lich-trinh/index, nguoi-dung/[id]) into one
 // component so all three render consistently AND all get NuxtImg optimization
-// (the previous nguoi-dung plain-<img> was the drift point).
+// (the previous nguoi-dung plain img element was the drift point).
 //
 // Deliberately NOT built on EntityCard: EntityCard expects a full entity object
 // (images[], attributes, season, updatedAt) to drive its carousel/badges/rating/

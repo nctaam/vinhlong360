@@ -275,7 +275,7 @@
 .dark .pt-item { background: var(--card); }
 
 /* ── Highlight tagline ── */
-.entity-highlight { margin: var(--space-5) 0 var(--space-3); padding: var(--space-4) var(--space-5); background: linear-gradient(135deg, rgba(var(--primary-rgb), .06) 0%, rgba(var(--primary-rgb), .02) 100%); border: 1px solid rgba(var(--primary-rgb), .16); box-shadow: inset 3px 0 0 var(--primary); border-radius: var(--radius-control); }
+.entity-highlight { margin: var(--space-5) 0 var(--space-3); padding: var(--space-4) var(--space-5); background: linear-gradient(135deg, rgba(var(--primary-rgb), .06) 0%, rgba(var(--primary-rgb), .02) 100%); border: 1px solid rgba(var(--primary-rgb), .2); border-radius: var(--radius-control); }
 .entity-highlight p { margin: 0; font-family: var(--font-editorial); font-size: clamp(1.2rem, 1.05rem + .7vw, 1.6rem); font-style: italic; line-height: var(--leading-snug); color: var(--ink); text-wrap: balance; }
 .dark .entity-highlight { background: linear-gradient(135deg, rgba(var(--primary-rgb), .12) 0%, rgba(var(--primary-rgb), .04) 100%); }
 

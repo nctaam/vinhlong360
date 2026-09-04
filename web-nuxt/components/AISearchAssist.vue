@@ -131,16 +131,16 @@ watch(() => props.query, () => {
 .ai-search-h3::before {
   content: "";
   position: absolute; left: 0; top: 50%; transform: translateY(-50%);
-  width: 4px; height: 1.05em; border-radius: var(--radius-full);
+  width: 2px; height: 1.05em; border-radius: var(--radius-full);
   background: linear-gradient(180deg, var(--river-600) 0%, var(--amber-600) 52%, var(--clay-600) 100%);
 }
 .dark .ai-search-h3::before {
   background: linear-gradient(180deg, var(--river-legacy-dark) 0%, var(--amber-500) 52%, var(--clay-400) 100%);
 }
 .ai-search-assist[data-color-recipe='tri-region-v1'] .ai-search-h3 {
-  border-left: 4px solid var(--color-material-neutral);
+  border-left: 2px solid var(--color-material-neutral);
 }
-.ai-search-assist[data-color-recipe='tri-region-v1'] .ai-search-h3::before { content: none; }
+.ai-search-assist[data-color-recipe='tri-region-v1'] .ai-search-h3::before { content: none; background-image: none; }
 /* Quiet "AI-assisted" label — hairline tag, not a decorative badge; overrides
    the shared bold-span styling since this is a secondary meta label. */
 .ai-label {

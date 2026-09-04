@@ -400,16 +400,16 @@ onBeforeUnmount(() => {
 </script>
 
 <style scoped>
-.preference-card { border-top: 3px solid var(--primary); }
+.preference-card { border: 1px solid var(--line); }
 .preference-heading { display: flex; align-items: flex-start; justify-content: space-between; gap: var(--space-3); }
 .preference-heading .preference-kicker { margin: 0 0 .25rem; color: var(--ink-700); font-size: var(--text-2xs); font-weight: 700; letter-spacing: .08em; }
 .preference-heading h2 { margin: 0; padding: 0; border: 0; font-family: var(--font-editorial); font-size: var(--text-lg); }
 .preference-revision { flex-shrink: 0; padding: .25rem .55rem; border: 1px solid var(--line); border-radius: var(--radius-full); color: var(--ink-700); font-size: var(--text-xs); }
 .preference-intro { max-width: 68ch; margin: .55rem 0 var(--space-4); line-height: var(--leading-relaxed); }
-.preference-banner { display: flex; align-items: center; justify-content: space-between; gap: var(--space-3); margin-bottom: var(--space-4); padding: .8rem .9rem; border: 1px solid var(--line); border-left: 3px solid var(--amber-600); border-radius: var(--radius-surface); background: var(--bg-warm); }
+.preference-banner { display: flex; align-items: center; justify-content: space-between; gap: var(--space-3); margin-bottom: var(--space-4); padding: .8rem .9rem; border: 1px solid color-mix(in srgb, var(--amber-600) 30%, var(--line)); border-radius: var(--radius-surface); background: color-mix(in srgb, var(--amber-600) 6%, var(--bg-warm)); }
 .preference-banner .btn { min-height: 44px; }
 .preference-banner p { margin: .15rem 0 0; color: var(--ink-700); font-size: var(--text-xs); line-height: 1.45; }
-.preference-conflict { border-left-color: var(--danger); }
+.preference-conflict { border-color: color-mix(in srgb, var(--danger) 40%, var(--line)); background: color-mix(in srgb, var(--danger) 6%, var(--bg-warm)); }
 .preference-notice { margin: 0 0 var(--space-4); padding: .7rem .8rem; border-radius: var(--radius-surface); background: var(--bg-alt); color: var(--ink-700); font-size: var(--text-sm); }
 .preference-summary { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); margin: 0; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
 .preference-summary > div { display: grid; grid-template-columns: minmax(120px, .8fr) minmax(0, 1.2fr); gap: var(--space-2); padding: .75rem 0; }
@@ -417,7 +417,7 @@ onBeforeUnmount(() => {
 .preference-summary > div:nth-child(even) { padding-left: var(--space-4); border-left: 1px solid var(--line); }
 .preference-summary dt { color: var(--ink-700); font-size: var(--text-xs); }
 .preference-summary dd { margin: 0; font-size: var(--text-sm); font-weight: 650; }
-.preference-state-copy { margin: var(--space-3) 0 0; padding-left: .75rem; border-left: 2px solid var(--primary); color: var(--ink-700); font-size: var(--text-sm); line-height: 1.5; }
+.preference-state-copy { margin: var(--space-3) 0 0; padding: .6rem .85rem; border: 1px solid color-mix(in srgb, var(--primary) 25%, var(--line)); border-radius: var(--radius-surface); background: color-mix(in srgb, var(--primary) 4%, var(--bg-alt)); color: var(--ink-700); font-size: var(--text-sm); line-height: 1.5; }
 .preference-section { margin-top: var(--space-5); padding-top: var(--space-4); border-top: 1px solid var(--line); }
 .preference-section-head h3 { margin: 0 0 .2rem; font-size: var(--text-base); }
 .preference-section-head p { margin: 0; color: var(--ink-700); font-size: var(--text-xs); }

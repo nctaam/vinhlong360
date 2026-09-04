@@ -111,7 +111,7 @@ defineExpose({
 .planner-conflict-diff__stops h3 { margin: 0 0 var(--space-2); color: var(--ink); font-size: var(--text-sm); }
 .planner-conflict-diff__stops p { margin: 0; color: var(--muted); font-size: var(--text-sm); }
 .planner-conflict-diff__stops ul { display: grid; gap: var(--space-2); margin: 0; padding: 0; list-style: none; }
-.planner-conflict-diff__stops li { display: flex; justify-content: space-between; gap: var(--space-3); padding: var(--space-2) var(--space-3); border-inline-start: 3px solid var(--warning); background: var(--bg-alt); }
+.planner-conflict-diff__stops li { display: flex; justify-content: space-between; gap: var(--space-3); padding: var(--space-2) var(--space-3); border: 1px solid color-mix(in srgb, var(--warning) 35%, var(--line)); border-radius: var(--radius-control); background: color-mix(in srgb, var(--warning) 6%, var(--bg-alt)); }
 .planner-conflict-diff__stops li span { color: var(--muted); font-size: var(--text-sm); text-align: end; }
 .planner-conflict-diff__actions { display: flex; flex-wrap: wrap; gap: var(--space-2); margin-top: var(--space-4); }
 

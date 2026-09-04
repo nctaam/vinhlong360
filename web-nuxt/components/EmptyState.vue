@@ -60,7 +60,7 @@ const recipeDecorationColor = computed(() => props.colorRecipe === 'tri-region-v
 </script>
 
 <style scoped>
-.empty-state { animation: emptyIn .5s var(--ease-spring-gentle); }
+.empty-state { animation: emptyIn .5s var(--ease-out-expo); }
 @keyframes emptyIn { from { opacity: 0; transform: translateY(12px) scale(.96); } }
 
 /* Editorial title — a moment worth a serif line, not a form-validation label. */
@@ -94,12 +94,12 @@ const recipeDecorationColor = computed(() => props.colorRecipe === 'tri-region-v
 
 /* Optional contextual hint line below the message — used e.g. for region/star context on OCOP empty results. */
 .empty-hint { font-size: var(--text-sm); color: var(--muted); margin: var(--space-3) 0 var(--space-4); }
-.empty-icon { display: block; transition: transform .4s var(--ease-spring-gentle); }
+.empty-icon { display: block; transition: transform .4s var(--ease-out-expo); }
 /* IconLine kế thừa cỡ chữ của .empty-icon (SVG là 1em), nên biểu tượng có cùng
    kích thước với emoji nó thay thế — không cần chỉnh riêng. */
 .empty-icon .line-icon { font-size: inherit; }
 .empty-state:hover .empty-icon { transform: scale(1.1) rotate(-4deg); }
-.empty-illust { transition: transform .4s var(--ease-spring-gentle); }
+.empty-illust { transition: transform .4s var(--ease-out-expo); }
 .empty-state:hover .empty-illust { transform: scale(1.04); }
 
 /* Error tone keeps the same editorial chrome but nudges the rule toward clay —

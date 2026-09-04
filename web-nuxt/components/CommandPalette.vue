@@ -213,7 +213,7 @@ defineExpose({ open })
 @media (forced-colors: active) {
   .cmd-palette { border: 2px solid CanvasText; background: Canvas; }
   .cmd-input { border-bottom: 1px solid CanvasText; }
-  .cmd-item.active { border-left: 3px solid Highlight; }
+  .cmd-item.active { outline: 2px solid Highlight; outline-offset: -2px; }
   .cmd-footer kbd { border: 1px solid GrayText; background: Canvas; }
 }
 </style>

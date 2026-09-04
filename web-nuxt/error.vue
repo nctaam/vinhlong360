@@ -123,7 +123,7 @@ useSeoMeta({ title: `${props.error?.statusCode || 'Lỗi'} — vinhlong360` })
   justify-content: center;
   padding: var(--space-10) var(--space-5);
 }
-.error-content { text-align: center; max-width: 460px; animation: errorIn .6s var(--ease-spring-gentle) both; }
+.error-content { text-align: center; max-width: 460px; animation: errorIn .6s var(--ease-out-expo) both; }
 @keyframes errorIn { from { opacity: 0; transform: translateY(16px) scale(.96); } to { opacity: 1; transform: translateY(0) scale(1); } }
 @keyframes errorPartIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 @keyframes sparkTwinkle { 0%, 100% { opacity: .25; transform: scale(.9); } 50% { opacity: .7; transform: scale(1.05); } }
@@ -142,8 +142,7 @@ useSeoMeta({ title: `${props.error?.statusCode || 'Lỗi'} — vinhlong360` })
   line-height: 1;
   font-weight: var(--weight-extrabold);
   letter-spacing: var(--tracking-tighter);
-  background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
-  -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+  color: var(--primary);
   animation: errorPartIn .5s var(--ease-out-expo) .1s both;
 }
 .error-msg {
@@ -186,7 +185,7 @@ useSeoMeta({ title: `${props.error?.statusCode || 'Lỗi'} — vinhlong360` })
   font-size: var(--text-sm);
   font-weight: var(--weight-semibold);
   text-decoration: none;
-  transition: transform .35s var(--ease-spring-gentle), border-color .3s var(--ease-out), background .3s var(--ease-out), box-shadow .3s var(--ease-out);
+  transition: transform .35s var(--ease-out-expo), border-color .3s var(--ease-out), background .3s var(--ease-out), box-shadow .3s var(--ease-out);
 }
 .error-link-pill:hover { transform: translateY(-1px); border-color: var(--primary); box-shadow: var(--shadow-sm); }
 .error-link-pill:active { transform: scale(.96); }
@@ -200,12 +199,12 @@ useSeoMeta({ title: `${props.error?.statusCode || 'Lỗi'} — vinhlong360` })
   margin-top: var(--space-6);
   animation: errorPartIn .5s var(--ease-out-expo) .4s both;
 }
-.error-actions .btn { transition: transform .35s var(--ease-spring-gentle), box-shadow .35s var(--ease-out-expo); }
+.error-actions .btn { transition: transform .35s var(--ease-out-expo), box-shadow .35s var(--ease-out-expo); }
 .error-actions .btn:hover { transform: translateY(-1px); box-shadow: var(--shadow-md); }
 .error-actions .btn:active { transform: scale(.95); transition-duration: .08s; }
 
-/* Dark mode: gradient text + SVG legibility */
-.dark .error-code { background: linear-gradient(135deg, var(--primary-light) 0%, var(--accent) 100%); -webkit-background-clip: text; background-clip: text; }
+/* Dark mode: solid primary pigment + SVG legibility */
+.dark .error-code { color: var(--primary-light); }
 .dark .illust-halo { opacity: .9; }
 .dark .illust-face { stroke-opacity: 1; }
 .dark .error-link-pill { background: var(--bg-alt, var(--bg-warm)); border-color: var(--border); }

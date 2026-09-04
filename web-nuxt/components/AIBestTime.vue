@@ -113,10 +113,10 @@ function retry() {
 .ai-error { display: flex; align-items: center; gap: var(--space-2); padding: var(--space-2) 0; font-size: var(--text-sm); color: var(--muted); }
 .ai-retry-btn { font-size: var(--text-xs); font-weight: var(--weight-semibold); color: var(--primary-fg); background: none; border: none; cursor: pointer; text-decoration: underline; text-underline-offset: 2px; padding: var(--space-1); min-height: 44px; }
 .ai-loading { display: flex; gap: var(--space-1); padding: var(--space-2) 0; }
-.ai-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--primary-fg); animation: aiBounce .6s infinite alternate; }
+.ai-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--primary-fg); animation: aiPulse .6s infinite alternate; }
 .ai-dot:nth-child(2) { animation-delay: .2s; }
 .ai-dot:nth-child(3) { animation-delay: .4s; }
-@keyframes aiBounce { to { opacity: .25; transform: translateY(-4px); } }
+@keyframes aiPulse { to { opacity: .25; transform: translateY(-3px); } }
 @media (prefers-reduced-motion: reduce) { .ai-dot { animation: none; } }
 @media (pointer: coarse) { .ai-retry-btn { min-height: 44px; } }
 </style>

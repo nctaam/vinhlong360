@@ -630,8 +630,8 @@ function onOtpPaste(e: ClipboardEvent) {
 .consent-checkbox { margin-top: 3px; width: 18px; height: 18px; accent-color: var(--primary); flex-shrink: 0; }
 .btn-full { width: 100%; }
 .otp-done { text-align: center; }
-.otp-done h3 { animation: successPop .45s var(--ease-spring-gentle); }
-@keyframes successPop { 0% { transform: scale(.85); opacity: 0; } 60% { transform: scale(1.06); } 100% { transform: scale(1); opacity: 1; } }
+.otp-done h3 { animation: successPop .45s var(--ease-out-expo); }
+@keyframes successPop { from { transform: scale(.94); opacity: 0; } to { transform: scale(1); opacity: 1; } }
 .otp-step { animation: stepSlideIn .35s var(--ease-out-expo); }
 @keyframes stepSlideIn { from { opacity: 0; transform: translateX(14px); } to { opacity: 1; transform: translateX(0); } }
 .form-label { display: block; font-size: var(--text-sm); font-weight: 600; margin-bottom: var(--space-1); color: var(--ink-secondary); }

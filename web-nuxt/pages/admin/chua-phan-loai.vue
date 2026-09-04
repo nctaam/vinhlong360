@@ -358,7 +358,6 @@ await placesAsyncData
 .cpl-bulk-progress {
   position: absolute; left: 0; bottom: 0; height: 2px;
   background: rgba(var(--white-rgb),.85); border-radius: 0 1px 1px 0;
-  transition: width .2s var(--ease-soft);
 }
 
 /* ── Checkboxes ── */
@@ -391,7 +390,6 @@ await placesAsyncData
 }
 .cpl-loadmore-fill {
   height: 100%; border-radius: 100px; background: var(--primary);
-  transition: width .25s var(--ease-soft);
 }
 .cpl-loadmore-info { font-size: .8rem; color: var(--muted); }
 

@@ -406,7 +406,7 @@ onBeforeUnmount(() => {
   color: var(--text-muted, var(--muted));
   text-align: center;
 }
-.cmsg-failed { opacity: .7; border-left: 2px solid var(--error); }
+.cmsg-failed { opacity: .85; border: 1px solid var(--error-border, color-mix(in srgb, var(--error) 40%, transparent)); background: color-mix(in srgb, var(--error) 6%, transparent); border-radius: var(--radius-control); padding: var(--space-2); }
 .cmsg-retry { display: inline-block; margin-top: var(--space-1); font-size: var(--text-2xs); color: var(--primary-fg); background: none; border: none; cursor: pointer; text-decoration: underline; padding: 2px 4px; min-height: 44px; border-radius: var(--radius-control); }
 .cmsg-retry:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
 .csuggestions button { min-height: 44px; }

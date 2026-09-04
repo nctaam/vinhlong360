@@ -51,10 +51,6 @@ function openAllowedArea() {
   min-height: min(72vh, 760px);
   padding: clamp(var(--space-8), 8vw, var(--space-16)) var(--page-gutter, var(--space-4));
   place-items: center;
-  background:
-    linear-gradient(var(--line) 1px, transparent 1px),
-    linear-gradient(90deg, var(--line) 1px, transparent 1px),
-    var(--bg);
-  background-size: 48px 48px;
+  background: var(--bg);
 }
 </style>

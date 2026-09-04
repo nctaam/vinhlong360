@@ -411,8 +411,7 @@ onMounted(() => { fetchHealth(); fetchCost() })
   margin-bottom: var(--space-6);
   position: relative;
   background: var(--card, var(--white));
-  border: .5px solid var(--line);
-  border-left: 4px solid var(--primary);
+  border: 1px solid var(--line);
   border-radius: 14px;
   padding: var(--space-5);
   box-shadow: 0 1px 3px rgba(var(--black-rgb),.04);
@@ -476,13 +475,12 @@ onMounted(() => { fetchHealth(); fetchCost() })
   margin-right: 6px; vertical-align: middle;
 }
 .ai-near-cap {
-  border-color: var(--warning); background: rgba(var(--warning-rgb),.04);
-  border-left-width: 4px; border-left-style: dashed;
-  animation: ai-near-cap-pulse 2s var(--ease-in-out) infinite;
+  border: 1px solid var(--warning); background: color-mix(in srgb, var(--warning) 8%, var(--card, var(--white)));
+  animation: ai-near-cap-pulse 2.5s var(--ease-out-expo) infinite alternate;
 }
 @keyframes ai-near-cap-pulse {
-  0%, 100% { border-left-color: var(--warning); }
-  50% { border-left-color: transparent; }
+  from { opacity: 1; }
+  to { opacity: .75; }
 }
 
 /* ── Subsystems grid ── */
@@ -556,14 +554,14 @@ onMounted(() => { fetchHealth(); fetchCost() })
 .ai-triage-box {
   display: flex; align-items: flex-start; gap: var(--space-2);
   margin-top: var(--space-3); padding: var(--space-4);
-  border: .5px solid rgba(var(--primary-rgb),.2); border-left: 3px solid var(--secondary); border-radius: 12px;
+  border: 1px solid color-mix(in srgb, var(--secondary) 30%, var(--line)); border-radius: 12px;
   font-size: .85rem; line-height: 1.6;
   background: rgba(var(--primary-rgb),.05);
 }
 .ai-triage-box .ai-triage-text { white-space: pre-wrap; flex: 1; min-width: 0; }
 .ai-triage-icon { font-weight: 800; color: var(--secondary); flex-shrink: 0; line-height: 1.6; }
 .ai-triage-box.ai-triage-error {
-  background: rgba(var(--danger-rgb),.08); border-color: var(--error); border-left-color: var(--error);
+  background: rgba(var(--danger-rgb),.08); border-color: var(--error);
 }
 .ai-triage-box.ai-triage-error .ai-triage-icon { color: var(--error); }
 
