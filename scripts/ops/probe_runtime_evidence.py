@@ -80,16 +80,31 @@ def _second_host_available() -> bool:
     return bool(os.environ.get("VL360_SECOND_NODE_HOST", "").strip())
 
 
-def _browser_check() -> dict[str, Any]:
+def _env_configured(name: str) -> bool:
+    """Report whether a non-empty external prerequisite is configured."""
+
+    return bool(os.environ.get(name, "").strip())
+
+
+def _browser_check(file_exists=None) -> dict[str, Any]:
     """Report readiness of the browser and reverse-proxy end-to-end proof."""
 
-    ready = _tool("node") and _file("scripts/launch_safety_browser_e2e.mjs")
+    file_exists = file_exists or _file
+    # The checked-in browser runner has no nginx/base-URL option yet, so this
+    # combined proof remains unavailable even when the browser script exists.
+    ready = False
+    missing = []
+    if not _tool("node"):
+        missing.append("node")
+    if not file_exists("scripts/launch_safety_browser_e2e.mjs"):
+        missing.append("scripts/launch_safety_browser_e2e.mjs")
+    missing.append("nginx harness base URL support")
     return {
         "id": "browser-proxy-e2e",
         "title": "Browser and reverse-proxy end-to-end",
         "status": AVAILABLE if ready else UNAVAILABLE,
         "command": "node scripts/launch_safety_browser_e2e.mjs --probe-browser",
-        "missing": [] if _tool("node") else ["node"],
+        "missing": missing,
         "note": (
             "A browser harness exists, but it is pinned to the application port; driving the browser "
             "THROUGH the nginx harness needs a base-URL parameter the harness does not yet expose. "
@@ -98,16 +113,22 @@ def _browser_check() -> dict[str, Any]:
     }
 
 
-def _multi_process_check(postgres_up: bool) -> dict[str, Any]:
+def _multi_process_check(postgres_up: bool, file_exists=None) -> dict[str, Any]:
     """Report readiness of the multi-process contention proof."""
 
-    ready = postgres_up and _file("agent/tests/test_case_contention_postgres.py")
+    file_exists = file_exists or _file
+    ready = postgres_up and file_exists("agent/tests/test_case_contention_postgres.py")
     return {
         "id": "multi-process-contention",
         "title": "Multi-process contention",
         "status": AVAILABLE if ready else UNAVAILABLE,
         "command": "python -m pytest agent/tests/test_case_contention_postgres.py -v",
-        "missing": [] if postgres_up else ["disposable PostgreSQL on 127.0.0.1:55432"],
+        "missing": (
+            []
+            if ready
+            else (["disposable PostgreSQL on 127.0.0.1:55432"] if not postgres_up
+                  else ["agent/tests/test_case_contention_postgres.py"])
+        ),
         "note": (
             "Genuine multi-process contention against one disposable PostgreSQL is reachable here. "
             "Multi-NODE contention is not: it needs a second host."
@@ -121,7 +142,10 @@ def _ha_check() -> dict[str, Any]:
     return {
         "id": "ha-failover",
         "title": "High availability and failover",
-        "status": AVAILABLE if _second_host_available() else UNAVAILABLE,
+        # A hostname is only an input to an HA drill.  Until a replica,
+        # promoter, and rerouting path are also present, this proof is not
+        # runnable and must remain explicitly unavailable.
+        "status": UNAVAILABLE,
         "command": "",
         "missing": ["PostgreSQL replica", "failover promoter", "proxy or VIP that reroutes", "second host"],
         "note": (
@@ -132,17 +156,32 @@ def _ha_check() -> dict[str, Any]:
     }
 
 
-def _backup_check(docker: bool) -> dict[str, Any]:
+def _backup_check(docker: bool, file_exists=None) -> dict[str, Any]:
     """Report readiness of the backup, offsite, restore and checksum proof."""
 
-    ready = _file("scripts/backup_data.py") and _file("scripts/restore_drill.py") and docker
-    missing = [name for name in ("pg_dump", "pg_restore", "aws") if not _tool(name)]
+    file_exists = file_exists or _file
+    missing = []
+    if not file_exists("scripts/backup_data.py"):
+        missing.append("scripts/backup_data.py")
+    if not file_exists("scripts/restore_drill.py"):
+        missing.append("scripts/restore_drill.py")
+    if not docker:
+        missing.append("Docker daemon")
+    missing.extend(f"{name} on PATH" for name in ("pg_dump", "pg_restore", "aws") if not _tool(name))
+    if not _env_configured("VL360_OFFSITE_BACKUP_TARGET"):
+        missing.append("an offsite destination")
+    ready = (
+        file_exists("scripts/backup_data.py")
+        and file_exists("scripts/restore_drill.py")
+        and docker
+        and not missing
+    )
     return {
         "id": "backup-offsite-restore-checksum",
         "title": "Backup, offsite copy, restore, checksum",
         "status": AVAILABLE if ready else UNAVAILABLE,
         "command": "python scripts/backup_data.py --target local --out-dir <dir>",
-        "missing": [f"{name} on PATH" for name in missing] + ["an offsite destination"],
+        "missing": missing,
         "note": (
             "Backup and checksum are reachable. The restore leg needs PostgreSQL client tools, absent "
             "from PATH on this host; they do exist inside the postgres container, so a container-mediated "
@@ -152,15 +191,24 @@ def _backup_check(docker: bool) -> dict[str, Any]:
     }
 
 
-def _staging_check() -> dict[str, Any]:
+def _staging_check(file_exists=None) -> dict[str, Any]:
     """Report readiness of the staging rollout, smoke and rollback proof."""
 
+    file_exists = file_exists or _file
+    missing = []
+    if not file_exists("scripts/ops/rehearse_launch_rollback.sh"):
+        missing.append("scripts/ops/rehearse_launch_rollback.sh")
+    if not _env_configured("VL360_STAGING_HOST"):
+        missing.append("a second Linux host with systemd and nginx")
+    if not _env_configured("VL360_STAGING_ENVIRONMENT"):
+        missing.append("a staging environment")
+    ready = file_exists("scripts/ops/rehearse_launch_rollback.sh") and not missing
     return {
         "id": "staging-rollout-smoke-rollback",
         "title": "Staging rollout, smoke test, rollback",
-        "status": AVAILABLE if _file("scripts/ops/rehearse_launch_rollback.sh") else UNAVAILABLE,
+        "status": AVAILABLE if ready else UNAVAILABLE,
         "command": "bash scripts/ops/rehearse_launch_rollback.sh --local-rehearsal",
-        "missing": ["a second Linux host with systemd and nginx", "a staging environment"],
+        "missing": missing,
         "note": (
             "A local rehearsal against a command stub is reachable and must be reported as a rehearsal, "
             "never as 'rollback verified'. A real staging receipt needs a host this project does not have."
@@ -171,12 +219,13 @@ def _staging_check() -> dict[str, Any]:
 def _monitoring_check(docker: bool) -> dict[str, Any]:
     """Report readiness of the monitoring alert delivery proof."""
 
+    missing = [] if _env_configured("VL360_ALERT_RECEIVER_URL") else ["an alert receiver endpoint"]
     return {
         "id": "monitoring-alert-receiver",
         "title": "Monitoring alert reaching a receiver",
-        "status": AVAILABLE if docker else UNAVAILABLE,
+        "status": AVAILABLE if docker and not missing else UNAVAILABLE,
         "command": "docker compose up -d prometheus alertmanager backup-status-exporter",
-        "missing": ["an alert receiver endpoint"],
+        "missing": missing,
         "note": (
             "The monitoring stack starts and the alert rule loads, but the alert has nowhere to land: no "
             "receiver route exists. Until a sink accepts the payload, the only evidence is a set of string "
@@ -206,14 +255,19 @@ def _provider_check() -> dict[str, Any]:
 def probe(root: Path = ROOT) -> dict[str, Any]:
     """Return one measured receipt-readiness record per operational proof."""
 
+    root = Path(root).resolve()
+
+    def file_exists(relative: str) -> bool:
+        return (root / relative).exists()
+
     docker = _docker_running()
     postgres_up = _loopback_port_open(55432)
     checks = [
-        _browser_check(),
-        _multi_process_check(postgres_up),
+        _browser_check(file_exists),
+        _multi_process_check(postgres_up, file_exists),
         _ha_check(),
-        _backup_check(docker),
-        _staging_check(),
+        _backup_check(docker, file_exists),
+        _staging_check(file_exists),
         _monitoring_check(docker),
         _provider_check(),
     ]
