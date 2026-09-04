@@ -1146,6 +1146,98 @@ def task_moderation_auto_escalation():
         _sched_logger.error("Moderation auto-escalation error: %s", e)
 
 
+def _claim_scheduled_post(db, now, worker_id):
+    from control_plane.concurrency import claim_due, ensure_state_schema
+
+    class _Tx:
+        def __init__(self, connection):
+            self._db = db
+            self._conn = connection
+
+    with db._conn(commit_on_success=False) as conn:
+        tx = _Tx(conn)
+        ensure_state_schema(tx, "posts")
+        lease = claim_due(
+            tx,
+            "posts",
+            due_before=now,
+            worker_id=worker_id,
+            lease_seconds=300,
+            now=now,
+        )
+        if lease is None:
+            conn.rollback()
+            return None, None
+        id_expr = "id::text" if getattr(db, "_use_pg", False) else "id"
+        row = db._fetchone(
+            conn,
+            f"SELECT id, user_id, content, images, moderation_status, revision FROM posts WHERE {id_expr} = {db._ph}",
+            (lease.row_id,),
+        )
+        conn.commit()
+    return lease, row
+
+
+def _moderate_scheduled_post(post):
+    try:
+        from moderation import moderate_content_enhanced
+
+        images = post.get("images") or []
+        if isinstance(images, str):
+            try:
+                images = json.loads(images)
+            except (TypeError, ValueError, json.JSONDecodeError):
+                images = []
+        result = asyncio.run(
+            moderate_content_enhanced(
+                post.get("content") or "",
+                user_id=str(post["user_id"]),
+                image_urls=images,
+            )
+        )
+        status = str(result.get("status") or "pending")
+        if status not in {"approved", "rejected"} or result.get("moderation_available") is not True:
+            return "publish_failed", "MODERATION_UNAVAILABLE"
+        return status, None
+    except Exception as exc:  # noqa: BLE001 - failure is persisted for retry
+        return "publish_failed", type(exc).__name__[:80]
+
+
+def _settle_scheduled_post(db, now, worker_id, lease, status, error_code):
+    ph = db._ph
+    id_expr = "id::text" if getattr(db, "_use_pg", False) else "id"
+    with db._conn() as conn:
+        if status == "publish_failed":
+            retry_at = now + timedelta(minutes=5)
+            retry_at_value = retry_at if getattr(db, "_use_pg", False) else retry_at.isoformat()
+            settled = db._fetchone(
+                conn,
+                f"UPDATE posts SET moderation_status='publish_failed', publish_attempts=COALESCE(publish_attempts,0)+1, last_error_code={ph}, scheduled_at={ph}, claimed_by=NULL, claim_expires_at=NULL, revision=revision+1 WHERE {id_expr}={ph} AND claimed_by={ph} AND revision={ph} RETURNING id",
+                (error_code or "publish_failed", retry_at_value, lease.row_id, worker_id, lease.revision),
+            )
+            return "failed" if settled else "conflict"
+        updated_expr = "updated_at=NOW()" if getattr(db, "_use_pg", False) else "updated_at=datetime('now')"
+        settled = db._fetchone(
+            conn,
+            f"UPDATE posts SET moderation_status={ph}, scheduled_at=NULL, claimed_by=NULL, claim_expires_at=NULL, publish_attempts=COALESCE(publish_attempts,0), last_error_code=NULL, revision=revision+1, {updated_expr} WHERE {id_expr}={ph} AND claimed_by={ph} AND revision={ph} RETURNING id, user_id",
+            (status, lease.row_id, worker_id, lease.revision),
+        )
+        if not settled:
+            return "conflict"
+        return status
+
+
+def _notify_scheduled_post(lease, post, status):
+    try:
+        from admin_common import _log_mod_action
+        from notifications import create_notification
+        _log_mod_action("post", lease.row_id, status)
+        title = "Bài viết của bạn đã được duyệt" if status == "approved" else "Bài viết của bạn đã bị từ chối"
+        create_notification(str(post["user_id"]), "moderation", title, ref_type="post", ref_id=lease.row_id)
+    except Exception:
+        _sched_logger.warning("scheduled post side effect failed: %s", lease.row_id, exc_info=True)
+
+
 def task_publish_due_posts(now: datetime | None = None, worker_id: str | None = None,
                            limit: int = 100):
     """Publish scheduled posts with a bounded, restart-safe lease.
@@ -1154,7 +1246,6 @@ def task_publish_due_posts(now: datetime | None = None, worker_id: str | None = 
     leaves the row visible for the next run.  Moderation is rechecked after the
     claim and notifications are emitted only after the winning CAS commits.
     """
-    from control_plane.concurrency import claim_due, ensure_state_schema
     from database import db
 
     if limit <= 0:
@@ -1166,78 +1257,26 @@ def task_publish_due_posts(now: datetime | None = None, worker_id: str | None = 
     worker_id = worker_id or f"scheduler:{os.getpid()}:{threading.get_ident()}"
     claimed = published = rejected = failed = conflicts = 0
 
-    class _Tx:
-        def __init__(self, connection):
-            self._db = db
-            self._conn = connection
-
     while claimed < limit:
-        with db._conn(commit_on_success=False) as conn:
-            tx = _Tx(conn)
-            ensure_state_schema(tx, "posts")
-            lease = claim_due(tx, "posts", due_before=now, worker_id=worker_id, lease_seconds=300, now=now)
-            if lease is None:
-                conn.rollback()
-                break
-            id_expr = "id::text" if getattr(db, "_use_pg", False) else "id"
-            row = db._fetchone(conn, f"SELECT id, user_id, content, images, moderation_status, revision FROM posts WHERE {id_expr} = {db._ph}", (lease.row_id,))
-            conn.commit()
+        lease, row = _claim_scheduled_post(db, now, worker_id)
+        if lease is None:
+            break
         claimed += 1
         if row is None:
             continue
         post = db._row_to_dict(row)
-        status = "publish_failed"
-        error_code = None
-        try:
-            from moderation import moderate_content_enhanced
-            from notifications import create_notification
-
-            content = post.get("content") or ""
-            images = post.get("images") or []
-            if isinstance(images, str):
-                try:
-                    images = json.loads(images)
-                except (TypeError, ValueError, json.JSONDecodeError):
-                    images = []
-            result = asyncio.run(moderate_content_enhanced(content, user_id=str(post["user_id"]), image_urls=images))
-            status = str(result.get("status") or "pending")
-            if status not in {"approved", "rejected"} or result.get("moderation_available") is not True:
-                status = "publish_failed"
-                error_code = "MODERATION_UNAVAILABLE"
-        except Exception as exc:  # noqa: BLE001 - failure is persisted for retry
-            error_code = type(exc).__name__[:80]
-
-        ph = db._ph
-        with db._conn() as conn:
-            id_expr = "id::text" if getattr(db, "_use_pg", False) else "id"
-            if status == "publish_failed":
-                retry_at = now + timedelta(minutes=5)
-                retry_at_value = retry_at if getattr(db, "_use_pg", False) else retry_at.isoformat()
-                settled = db._fetchone(conn, f"UPDATE posts SET moderation_status='publish_failed', publish_attempts=COALESCE(publish_attempts,0)+1, last_error_code={ph}, scheduled_at={ph}, claimed_by=NULL, claim_expires_at=NULL, revision=revision+1 WHERE {id_expr}={ph} AND claimed_by={ph} AND revision={ph} RETURNING id", (error_code or "publish_failed", retry_at_value, lease.row_id, worker_id, lease.revision))
-                if settled:
-                    failed += 1
-                else:
-                    conflicts += 1
-                continue
-            updated_expr = "updated_at=NOW()" if getattr(db, "_use_pg", False) else "updated_at=datetime('now')"
-            settled = db._fetchone(conn, f"UPDATE posts SET moderation_status={ph}, scheduled_at=NULL, claimed_by=NULL, claim_expires_at=NULL, publish_attempts=COALESCE(publish_attempts,0), last_error_code=NULL, revision=revision+1, {updated_expr} WHERE {id_expr}={ph} AND claimed_by={ph} AND revision={ph} RETURNING id, user_id", (status, lease.row_id, worker_id, lease.revision))
-            if not settled:
-                conflicts += 1
-                continue
-            if status == "approved":
-                published += 1
-            else:
-                rejected += 1
-        # These side effects follow the committed CAS, so a racing worker cannot
-        # duplicate the audit/notification outcome.
-        try:
-            from admin_common import _log_mod_action
-            from notifications import create_notification
-            _log_mod_action("post", lease.row_id, status)
-            title = "Bài viết của bạn đã được duyệt" if status == "approved" else "Bài viết của bạn đã bị từ chối"
-            create_notification(str(post["user_id"]), "moderation", title, ref_type="post", ref_id=lease.row_id)
-        except Exception:
-            _sched_logger.warning("scheduled post side effect failed: %s", lease.row_id, exc_info=True)
+        status, error_code = _moderate_scheduled_post(post)
+        settled = _settle_scheduled_post(db, now, worker_id, lease, status, error_code)
+        if settled == "failed":
+            failed += 1
+        elif settled == "conflict":
+            conflicts += 1
+        elif settled == "approved":
+            published += 1
+            _notify_scheduled_post(lease, post, status)
+        elif settled == "rejected":
+            rejected += 1
+            _notify_scheduled_post(lease, post, status)
     return BatchResult(claimed, published, rejected, failed, conflicts)
 
 

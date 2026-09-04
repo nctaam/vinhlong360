@@ -17,6 +17,20 @@ from scheduler import (
 )
 
 
+def test_scheduled_post_moderation_helper_fails_closed_when_unavailable(monkeypatch):
+    import scheduler
+
+    async def unavailable(*_args, **_kwargs):
+        return {"status": "pending", "moderation_available": False}
+
+    monkeypatch.setattr("moderation.moderate_content_enhanced", unavailable)
+
+    assert scheduler._moderate_scheduled_post({"user_id": "user-1", "content": "x", "images": []}) == (
+        "publish_failed",
+        "MODERATION_UNAVAILABLE",
+    )
+
+
 class TestScheduledTask:
     """Test individual scheduled task behavior."""
 
