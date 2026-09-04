@@ -310,7 +310,10 @@ function onSubmit() {
   navigateTo(`/tim-kiem?q=${encodeURIComponent(q)}`)
 }
 
-function focusInput() { inputEl.value?.focus() }
+function focusInput() {
+  inputEl.value?.focus()
+  inputEl.value?.select()
+}
 defineExpose({ focusInput })
 
 if (import.meta.client) {
@@ -322,6 +325,9 @@ if (import.meta.client) {
   }
   const onGlobalKey = (e: KeyboardEvent) => {
     if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+      e.preventDefault()
+      focusInput()
+    } else if (e.key === '/' && !['INPUT', 'TEXTAREA', 'SELECT'].includes((e.target as HTMLElement)?.tagName) && !(e.target as HTMLElement)?.isContentEditable) {
       e.preventDefault()
       focusInput()
     }
