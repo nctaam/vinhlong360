@@ -168,6 +168,23 @@ def _body():
     }
 
 
+def test_contact_verify_lane_rejects_access_cookie_with_opaque_receipt(client):
+    from cases import public_api
+
+    request = client.build_request(
+        "POST",
+        "/api/cases/contact/verify",
+        headers=_headers(),
+        cookies={public_api.ACCESS_COOKIE: "access-token"},
+    )
+    body = public_api._ContactVerifyIn(receipt="opaque-receipt", code="123456")
+
+    use_access, blocked = public_api._contact_verify_lane(request, body, has_access=True)
+
+    assert use_access is False
+    assert blocked is None
+
+
 # ── Flag gating ──
 
 ROUTES = [

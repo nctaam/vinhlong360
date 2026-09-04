@@ -439,6 +439,67 @@ def _clear_session_cookies(response: Response) -> None:
 
 # ── Routes ──
 
+async def _parse_correction_intake(request: Request, version: str):
+    body, invalid = await _model(request, _CreateIn)
+    if invalid is not None:
+        return None, invalid
+    contract_error = _validate_correction_contract(body.items, request, version=version)
+    if contract_error is not None:
+        return None, contract_error
+    if body.contact_receipt is not None and not _CONTACT_RECEIPT_RE.fullmatch(body.contact_receipt):
+        return None, _problem(
+            422,
+            "invalid_contact_receipt",
+            "Mã xác nhận không hợp lệ hoặc đã hết hạn.",
+            field="contactReceipt",
+            retry_after=0,
+        )
+    return body, None
+
+
+def _create_correction_service_result(request: Request, body, idempotency_key: str):
+    try:
+        return _service().create_correction_from_transport(
+            body,
+            idempotency_key=idempotency_key,
+            correlation_id=request.headers.get("x-request-id") or uuid.uuid4().hex,
+            rate_subject=_rate_subject(request),
+        ), None
+    except Exception as exc:  # noqa: BLE001 - mapped or re-raised below
+        if getattr(exc, "problem", None) is not None and exc.problem.code == "phone_verification_required":
+            return None, _problem(
+                422,
+                exc.problem.code,
+                exc.problem.detail,
+                field="optionalPhone",
+                retry_after=0,
+                correlation_id=request.headers.get("x-request-id"),
+            )
+        mapped = _map_domain_error(exc)
+        if mapped is None:
+            raise
+        return None, mapped
+
+
+def _correction_response(result):
+    from . import metrics as _metrics
+
+    if not result.replayed:
+        _metrics.observe("received", channel="web", case_id=result.case_id)
+    response_payload = {
+        "publicReference": result.public_reference,
+        "capability": result.capability,
+        "receivedAt": result.received_at.isoformat(),
+        "nextUpdateAt": result.next_update_at.isoformat(),
+        "replayed": result.replayed,
+    }
+    if getattr(result, "revision", None) is not None:
+        response_payload["revision"] = result.revision
+    if getattr(result, "outbox_event_id", None) is not None:
+        response_payload["outboxEventId"] = result.outbox_event_id
+    return JSONResponse(response_payload, status_code=201, headers=dict(_NO_STORE))
+
+
 @case_public_router.post("/corrections")
 async def create_correction(request: Request):
     blocked = _guard_public_post(request, intake=True)
@@ -455,71 +516,14 @@ async def create_correction(request: Request):
             from agent.control_plane.contracts import ContractViolation, get_contract
         get_contract("correction-intake", version)
     except ContractViolation as exc:
-        return _problem(
-            422,
-            exc.code,
-            exc.detail,
-            correlation_id=request.headers.get("x-request-id"),
-        )
-    body, invalid = await _model(request, _CreateIn)
+        return _problem(422, exc.code, exc.detail, correlation_id=request.headers.get("x-request-id"))
+    body, invalid = await _parse_correction_intake(request, version)
     if invalid is not None:
         return invalid
-    contract_error = _validate_correction_contract(body.items, request, version=version)
-    if contract_error is not None:
-        return contract_error
-    if body.contact_receipt is not None and not _CONTACT_RECEIPT_RE.fullmatch(body.contact_receipt):
-        return _problem(
-            422,
-            "invalid_contact_receipt",
-            "Mã xác nhận không hợp lệ hoặc đã hết hạn.",
-            field="contactReceipt",
-            retry_after=0,
-        )
-
-    try:
-        result = _service().create_correction_from_transport(
-            body,
-            idempotency_key=idempotency_key,
-            correlation_id=request.headers.get("x-request-id") or uuid.uuid4().hex,
-            rate_subject=_rate_subject(request),
-        )
-    except Exception as exc:  # noqa: BLE001 - mapped or re-raised below
-        if getattr(exc, "problem", None) is not None and exc.problem.code == "phone_verification_required":
-            return _problem(
-                422,
-                exc.problem.code,
-                exc.problem.detail,
-                field="optionalPhone",
-                retry_after=0,
-                correlation_id=request.headers.get("x-request-id"),
-            )
-        mapped = _map_domain_error(exc)
-        if mapped is None:
-            raise
+    result, mapped = _create_correction_service_result(request, body, idempotency_key)
+    if mapped is not None:
         return mapped
-    if not result.replayed:
-        # A replay is the same arrival answered twice, not a second arrival.
-        from . import metrics as _metrics
-
-        _metrics.observe("received", channel="web", case_id=result.case_id)
-    response_payload = {
-        "publicReference": result.public_reference,
-        "capability": result.capability,
-        "receivedAt": result.received_at.isoformat(),
-        "nextUpdateAt": result.next_update_at.isoformat(),
-        "replayed": result.replayed,
-    }
-    # Mutation adapters may expose the committed receipt metadata; never claim
-    # success with a pre-commit placeholder when the adapter does not provide it.
-    if getattr(result, "revision", None) is not None:
-        response_payload["revision"] = result.revision
-    if getattr(result, "outbox_event_id", None) is not None:
-        response_payload["outboxEventId"] = result.outbox_event_id
-    return JSONResponse(
-        response_payload,
-        status_code=201,
-        headers=dict(_NO_STORE),
-    )
+    return _correction_response(result)
 
 
 @case_public_router.post("/access")
@@ -652,6 +656,13 @@ async def _start_contact_verification(request: Request, *, pre_case: bool | None
         # A phone number is not enough to identify which pending challenge the
         # caller owns. Require the opaque proof before touching any row.
         return _problem(401, *_CREDENTIAL)
+    challenge, error = await _request_contact_challenge(request, body, has_access)
+    if error is not None:
+        return error
+    return _contact_challenge_response(challenge)
+
+
+async def _request_contact_challenge(request: Request, body, has_access: bool):
     try:
         # Ra khỏi event loop. Route này là route công khai DUY NHẤT gọi ra
         # ngoài mạng: EsmsProvider.send thử 3 lần, mỗi lần total_timeout 20s,
@@ -678,12 +689,16 @@ async def _start_contact_verification(request: Request, *, pre_case: bool | None
     except ValueError as exc:
         if "invalid_contact_phone" not in str(exc):
             raise
-        return _problem(400, "invalid_contact_phone", "That phone number is not usable.", field="phone")
+        return None, _problem(400, "invalid_contact_phone", "That phone number is not usable.", field="phone")
     except Exception as exc:  # noqa: BLE001
         mapped = _map_domain_error(exc)
         if mapped is None:
             raise
-        return mapped
+        return None, mapped
+    return challenge, None
+
+
+def _contact_challenge_response(challenge):
     # The opaque challenge receipt binds the next verify call to this start;
     # it contains no case id, owner key, phone number or raw correlation id.
     if challenge is None:
@@ -733,29 +748,37 @@ async def verify_contact(request: Request):
     body, invalid = await _model(request, _ContactVerifyIn)
     if invalid is not None:
         return invalid
-    legacy_receipt = _uuid_receipt(body.receipt) if body.receipt is not None else None
-    use_access = (body.receipt is None and has_access) or legacy_receipt is not None
-    if use_access:
-        blocked = _guard_session_mutation(request)
-    else:
-        blocked = _guard_public_post(request, intake=True)
+    use_access, blocked = _contact_verify_lane(request, body, has_access)
     if blocked is not None:
         return blocked
-    malformed_receipt = (
-        body.receipt is not None
-        and (
-            not _CONTACT_RECEIPT_RE.fullmatch(body.receipt)
-            or (use_access and legacy_receipt is None)
-        )
+    verified, verified_receipt, error = _perform_contact_verification(request, body, use_access)
+    if error is not None:
+        return error
+    return _verified_contact_response(use_access, verified_receipt)
+
+
+def _contact_verify_lane(request: Request, body, has_access: bool):
+    legacy_receipt = _uuid_receipt(body.receipt) if body.receipt is not None else None
+    use_access = (body.receipt is None and has_access) or legacy_receipt is not None
+    blocked = _guard_session_mutation(request) if use_access else _guard_public_post(request, intake=True)
+    if blocked is not None:
+        return use_access, blocked
+    malformed = body.receipt is not None and (
+        not _CONTACT_RECEIPT_RE.fullmatch(body.receipt)
+        or (use_access and legacy_receipt is None)
     )
-    if malformed_receipt:
-        return _problem(
+    if malformed:
+        return use_access, _problem(
             422,
             "invalid_contact_receipt",
             "Mã xác nhận không hợp lệ hoặc đã hết hạn.",
             field="receipt",
             retry_after=0,
         )
+    return use_access, None
+
+
+def _perform_contact_verification(request: Request, body, use_access: bool):
     try:
         if use_access:
             verified = _service().verify_contact(
@@ -765,12 +788,12 @@ async def verify_contact(request: Request):
             verified_receipt = body.receipt or ""
         else:
             if not body.receipt:
-                return _problem(401, *_CREDENTIAL)
+                return None, None, _problem(401, *_CREDENTIAL)
             verified, verified_receipt = _service().verify_pre_case_contact(
                 receipt=body.receipt, code=body.code,
             )
     except CaseSecurityError:
-        return _problem(
+        return None, None, _problem(
             422,
             "invalid_contact_code",
             "Mã xác nhận không đúng hoặc đã hết hạn.",
@@ -781,7 +804,11 @@ async def verify_contact(request: Request):
         mapped = _map_domain_error(exc)
         if mapped is None:
             raise
-        return mapped
+        return None, None, mapped
+    return verified, verified_receipt, None
+
+
+def _verified_contact_response(use_access: bool, verified_receipt: str):
     if use_access:
         return Response(status_code=204, headers=dict(_NO_STORE))
     try:
