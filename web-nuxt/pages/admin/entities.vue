@@ -114,10 +114,10 @@
         <thead>
           <tr>
             <th scope="col" class="admin-th-check"><input type="checkbox" :checked="allSelected" @change="toggleAll" aria-label="Chọn tất cả" /></th>
-            <th scope="col" class="ent-sortable" :aria-sort="sortKey === 'id' ? (sortDir === 'asc' ? 'ascending' : 'descending') : 'none'"><button type="button" class="ent-sort-btn" @click="toggleSort('id')">ID <span class="ent-sort-arrow" aria-hidden="true">{{ sortArrow('id') }}</span></button></th>
-            <th scope="col" class="ent-sortable" :aria-sort="sortKey === 'name' ? (sortDir === 'asc' ? 'ascending' : 'descending') : 'none'"><button type="button" class="ent-sort-btn" @click="toggleSort('name')">Tên <span class="ent-sort-arrow" aria-hidden="true">{{ sortArrow('name') }}</span></button></th>
-            <th scope="col" class="ent-sortable" :aria-sort="sortKey === 'type' ? (sortDir === 'asc' ? 'ascending' : 'descending') : 'none'"><button type="button" class="ent-sort-btn" @click="toggleSort('type')">Loại <span class="ent-sort-arrow" aria-hidden="true">{{ sortArrow('type') }}</span></button></th>
-            <th scope="col" class="ent-sortable" :aria-sort="sortKey === 'place_name' ? (sortDir === 'asc' ? 'ascending' : 'descending') : 'none'"><button type="button" class="ent-sort-btn" @click="toggleSort('place_name')">Địa điểm <span class="ent-sort-arrow" aria-hidden="true">{{ sortArrow('place_name') }}</span></button></th>
+            <th scope="col" class="ent-sortable" :aria-sort="sortKey === 'id' ? (sortDir === 'asc' ? 'ascending' : 'descending') : 'none'"><button type="button" class="ent-sort-btn" @click="toggleSort('id')">ID <span class="ent-sort-arrow" aria-hidden="true"><IconLine v-if="sortIcon('id')" :name="sortIcon('id')" /></span></button></th>
+            <th scope="col" class="ent-sortable" :aria-sort="sortKey === 'name' ? (sortDir === 'asc' ? 'ascending' : 'descending') : 'none'"><button type="button" class="ent-sort-btn" @click="toggleSort('name')">Tên <span class="ent-sort-arrow" aria-hidden="true"><IconLine v-if="sortIcon('name')" :name="sortIcon('name')" /></span></button></th>
+            <th scope="col" class="ent-sortable" :aria-sort="sortKey === 'type' ? (sortDir === 'asc' ? 'ascending' : 'descending') : 'none'"><button type="button" class="ent-sort-btn" @click="toggleSort('type')">Loại <span class="ent-sort-arrow" aria-hidden="true"><IconLine v-if="sortIcon('type')" :name="sortIcon('type')" /></span></button></th>
+            <th scope="col" class="ent-sortable" :aria-sort="sortKey === 'place_name' ? (sortDir === 'asc' ? 'ascending' : 'descending') : 'none'"><button type="button" class="ent-sort-btn" @click="toggleSort('place_name')">Địa điểm <span class="ent-sort-arrow" aria-hidden="true"><IconLine v-if="sortIcon('place_name')" :name="sortIcon('place_name')" /></span></button></th>
             <th scope="col">Place ID</th>
             <th v-for="c in currentKind?.columns || []" :key="c.key" scope="col">{{ c.label }}</th>
             <th scope="col"><span title="Tóm tắt / Ảnh / Địa điểm">Chất lượng</span><span class="admin-help" data-tip="● xanh = có, ● đỏ = thiếu. Thứ tự: Tóm tắt · Ảnh · Địa điểm" tabindex="0" role="img" aria-label="Giải thích chất lượng">?</span></th>
@@ -779,9 +779,9 @@ function toggleSort(key: string) {
     sortDir.value = 'asc'
   }
 }
-function sortArrow(key: string): string {
+function sortIcon(key: string): string {
   if (sortKey.value !== key) return ''
-  return sortDir.value === 'asc' ? '▲' : '▼'
+  return sortDir.value === 'asc' ? 'chevron-up' : 'chevron-down'
 }
 const sortedEntities = computed(() => {
   if (!sortKey.value) return chipFiltered.value
@@ -1577,7 +1577,7 @@ onUnmounted(() => window.removeEventListener('keydown', onKeydown))
 .ent-sort-btn { background: none; border: none; padding: 0; font: inherit; color: inherit; cursor: pointer; user-select: none; }
 .ent-sort-btn:hover { color: var(--primary); }
 .ent-sort-btn:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; border-radius: var(--radius-control); }
-.ent-sort-arrow { font-size: .65rem; opacity: .7; margin-left: 2px; }
+.ent-sort-arrow { display: inline-flex; align-items: center; font-size: .75rem; opacity: .75; margin-left: 3px; vertical-align: middle; }
 
 .ent-char-count { font-weight: 400; font-size: .78rem; color: var(--muted); transition: color .2s; }
 .ent-char-warn { color: var(--warning); font-weight: 600; }

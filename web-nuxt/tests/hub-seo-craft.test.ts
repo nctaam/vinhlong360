@@ -58,4 +58,38 @@ describe('SEO & Editorial Craft Guardrails', () => {
     expect(assist).toContain('var(--radius-control)')
     expect(assist).not.toContain('var(--radius-sm)')
   })
+
+  it('AI best-time and travel-tips panels eliminate raw glyphs and use purpose-driven radius-control', () => {
+    const bestTime = doc('components/AIBestTime.vue')
+    expect(bestTime).toContain('<IconLine name="sparkles" class="btn-sparkle"')
+    expect(bestTime).toContain('<IconLine name="alert-triangle"')
+    expect(bestTime).toContain('<IconLine name="repeat"')
+    expect(bestTime).toContain('var(--radius-control)')
+
+    const tips = doc('components/AITravelTips.vue')
+    expect(tips).toContain('<IconLine :name="expanded ? \'chevron-up\' : \'chevron-down\'"')
+    expect(tips).not.toContain('{{ expanded ? \'▲\' : \'▼\' }}')
+    expect(tips).toContain('<IconLine name="alert-triangle"')
+    expect(tips).toContain('<IconLine name="repeat"')
+    expect(tips).toContain('var(--radius-control)')
+  })
+
+  it('Home local briefing uses IconLine vector for season link with hover micro-interaction', () => {
+    const briefing = doc('components/home/HomeLocalBriefing.vue')
+    expect(briefing).toContain('<IconLine name="arrow-right" class="hlb-arrow"')
+    expect(briefing).not.toContain('Lịch mùa vụ tháng {{ currentMonth }} →')
+  })
+
+  it('Admin sortable controls use stroke-consistent vector chevrons instead of raw triangle glyphs', () => {
+    const sortable = doc('components/admin/SortableList.vue')
+    expect(sortable).toContain('<IconLine name="chevron-up"')
+    expect(sortable).toContain('<IconLine name="chevron-down"')
+    expect(sortable).not.toContain('>▲</button>')
+    expect(sortable).not.toContain('>▼</button>')
+
+    const entities = doc('pages/admin/entities.vue')
+    expect(entities).toContain('<IconLine v-if="sortIcon(\'id\')" :name="sortIcon(\'id\')"')
+    expect(entities).not.toContain("return sortDir.value === 'asc' ? '▲' : '▼'")
+  })
 })
+

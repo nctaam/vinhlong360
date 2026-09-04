@@ -1,13 +1,20 @@
 <template>
   <div class="ai-besttime">
     <div class="ai-besttime-head sediment-head"><h3>Thời điểm tốt nhất</h3><span class="ai-label"><IconLine name="sparkles" class="emoji-chip" /> AI gợi ý</span></div>
-    <button type="button" v-if="!result && !loading && !errored" class="ai-toggle-btn" @click="load">Xem gợi ý AI</button>
+    <button type="button" v-if="!result && !loading && !errored" class="ai-toggle-btn" @click="load">
+      <IconLine name="sparkles" class="btn-sparkle" aria-hidden="true" />
+      <span>Xem gợi ý AI</span>
+    </button>
     <div v-else-if="loading" class="ai-loading" role="status" aria-label="Đang tải">
       <span class="ai-dot"></span><span class="ai-dot"></span><span class="ai-dot"></span>
     </div>
     <div v-else-if="errored" class="ai-error" role="status">
+      <IconLine name="alert-triangle" class="ai-error-icon" aria-hidden="true" />
       <small>Không tải được gợi ý.</small>
-      <button type="button" class="ai-retry-btn" @click="retry">Thử lại</button>
+      <button type="button" class="ai-retry-btn" @click="retry">
+        <IconLine name="repeat" class="retry-icon" aria-hidden="true" />
+        <span>Thử lại</span>
+      </button>
     </div>
     <template v-else>
       <p class="ai-besttime-text editorial-body">{{ result }}</p>
@@ -109,9 +116,30 @@ function retry() {
   color: var(--muted);
   white-space: nowrap;
 }
+.btn-sparkle { width: 14px; height: 14px; flex-shrink: 0; }
 .ai-disclaimer { margin: var(--space-1) 0 0; font-size: .75rem; color: var(--text-muted); }
 .ai-error { display: flex; align-items: center; gap: var(--space-2); padding: var(--space-2) 0; font-size: var(--text-sm); color: var(--muted); }
-.ai-retry-btn { font-size: var(--text-xs); font-weight: var(--weight-semibold); color: var(--primary-fg); background: none; border: none; cursor: pointer; text-decoration: underline; text-underline-offset: 2px; padding: var(--space-1); min-height: 44px; }
+.ai-error-icon { width: 16px; height: 16px; color: var(--color-material-clay); flex-shrink: 0; }
+.ai-retry-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  font-size: var(--text-xs);
+  font-weight: var(--weight-semibold);
+  color: var(--primary-fg);
+  background: none;
+  border: none;
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  padding: var(--space-1) var(--space-2);
+  min-height: 44px;
+  border-radius: var(--radius-control);
+  transition: opacity .2s var(--ease-out-expo), transform .15s var(--ease-out-expo);
+}
+.ai-retry-btn:hover { opacity: .85; }
+.ai-retry-btn:active { transform: scale(.96); }
+.retry-icon { width: 13px; height: 13px; flex-shrink: 0; }
 .ai-loading { display: flex; gap: var(--space-1); padding: var(--space-2) 0; }
 .ai-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--primary-fg); animation: aiPulse .6s infinite alternate; }
 .ai-dot:nth-child(2) { animation-delay: .2s; }

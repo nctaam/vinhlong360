@@ -27,8 +27,8 @@
             </template>
           </div>
           <div class="sl-actions">
-            <button type="button" class="sl-btn" :disabled="i === 0" @click="moveUp(i)" title="Lên" :aria-label="`Di chuyển mục ${i + 1} lên`">▲</button>
-            <button type="button" class="sl-btn" :disabled="i === localItems.length - 1" @click="moveDown(i)" title="Xuống" :aria-label="`Di chuyển mục ${i + 1} xuống`">▼</button>
+            <button type="button" class="sl-btn" :disabled="i === 0" @click="moveUp(i)" title="Lên" :aria-label="`Di chuyển mục ${i + 1} lên`"><IconLine name="chevron-up" aria-hidden="true" /></button>
+            <button type="button" class="sl-btn" :disabled="i === localItems.length - 1" @click="moveDown(i)" title="Xuống" :aria-label="`Di chuyển mục ${i + 1} xuống`"><IconLine name="chevron-down" aria-hidden="true" /></button>
             <button type="button" class="sl-btn sl-btn-edit" @click="toggleEdit(i)" :title="editingIndex === i ? 'Đóng' : 'Sửa'" :aria-label="editingIndex === i ? 'Đóng chỉnh sửa' : 'Sửa mục'">
               <IconLine :name="editingIndex === i ? 'check' : 'pencil'" />
             </button>
