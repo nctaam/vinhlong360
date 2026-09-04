@@ -71,3 +71,27 @@ def test_trigger_backup_failure_does_not_persist_cooldown(monkeypatch) -> None:
     with __import__("pytest").raises(Exception):
         asyncio.run(admin_api.trigger_backup())
     assert admin_api._last_backup_time == 0
+
+
+def test_backup_missing_status_helper_has_stable_contract() -> None:
+    """The extracted missing-backup branch keeps the endpoint's exact shape."""
+    from siteops import admin_api
+
+    assert admin_api._backup_missing_info() == {
+        "ready": False,
+        "latest": None,
+        "count": 0,
+        "size_mb": 0,
+        "state": "missing",
+        "last_success": None,
+        "last_failure": None,
+        "artifact_id": None,
+        "stale": True,
+    }
+
+
+def test_backup_request_context_helper_preserves_legacy_defaults() -> None:
+    """No request remains an anonymous admin operation without an idempotency key."""
+    from siteops import admin_api
+
+    assert admin_api._backup_request_context(None) == (None, "admin")
