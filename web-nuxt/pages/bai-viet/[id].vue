@@ -189,7 +189,7 @@ useReveal()
 const route = useRoute()
 const postId = computed(() => normalizeRouteParam(route.params.id))
 const encodedPostId = computed(() => encodePathId(postId.value))
-const { isLoggedIn, authHeaders, user, handleSessionExpired } = useAuth()
+const { isLoggedIn, authHeaders, user, handleSessionExpired, authFetch } = useAuth()
 const { openAuth } = useAuthModal()
 
 const { repost, quote } = useRepost()
@@ -246,11 +246,11 @@ async function setBestAnswer(commentId: string) {
   const prev = bestAnswerId.value
   bestAnswerId.value = commentId
   try {
-    await $fetch(`/api/posts/${encodedPostId.value}/best-answer`, { method: 'POST', headers: authHeaders(), body: { comment_id: commentId } })
+    await authFetch(`/api/posts/${encodedPostId.value}/best-answer`, { method: 'POST', body: { comment_id: commentId } })
     showToast('Đã chọn câu trả lời hay', 'success')
   } catch (e: unknown) {
     bestAnswerId.value = prev
-    if (getStatusCode(e) === 401) { handleSessionExpired(); return }
+    if (getStatusCode(e) === 401) { return }
     showToast('Không thể chọn, thử lại', 'error')
   }
 }
@@ -282,8 +282,8 @@ async function saveEdit() {
   if (editContent.value.trim().length < 10 || editSaving.value) return
   editSaving.value = true
   try {
-    const res = await $fetch<any>(`/api/posts/${encodedPostId.value}`, {
-      method: 'PATCH', headers: authHeaders(), body: { content: editContent.value.trim() },
+    const res = await authFetch<any>(`/api/posts/${encodedPostId.value}`, {
+      method: 'PATCH', body: { content: editContent.value.trim() },
     })
     if (post.value && res.post) {
       post.value.content = res.post.content
@@ -293,7 +293,7 @@ async function saveEdit() {
     editing.value = false
     showToast(res.moderation_status === 'pending' ? 'Đã lưu — đang chờ duyệt lại' : 'Đã cập nhật bài viết', 'success')
   } catch (e: unknown) {
-    if (getStatusCode(e) === 401) { handleSessionExpired(); return }
+    if (getStatusCode(e) === 401) { return }
     showToast(extractErrorMessage(e, 'Không thể lưu bài viết'), 'error')
   } finally {
     editSaving.value = false
@@ -327,7 +327,7 @@ async function fetchRelated() {
   try {
     // declutter-3 T3: 4→2 — related là engagement-driver nhưng 4 card đè phần bình luận
     const params = new URLSearchParams({ limit: '2' })
-    const res = await $fetch<any>(`/api/posts/${encodedPostId.value}/related?${params}`)
+    const res = await apiFetch<any>(`/api/posts/${encodedPostId.value}/related?${params}`)
     relatedPosts.value = res.posts || []
   } catch { /* non-critical */ }
 }
@@ -344,27 +344,15 @@ function onBeforeUnload(e: BeforeUnloadEvent) {
   }
 }
 
-const postAsyncData = useAsyncData(`post-${postId.value}`, async (): Promise<Post | null> => {
-  try {
-    postFetchFailed.value = false
-    postFetchStatusCode.value = null
-    const res = await apiFetch<PostDetailResponse | Post>(`/api/posts/${encodedPostId.value}`, { headers: authHeaders() })
-    return (res as PostDetailResponse).post || (res as Post)
-  } catch (e: unknown) {
-    const status = getStatusCode(e)
-    postFetchStatusCode.value = status ?? 500
-    if (status === 401) handleSessionExpired()
-    postFetchFailed.value = true
-    return null
-  }
-})
-const post = postAsyncData.data
-const pending = postAsyncData.pending
-const refreshPost = postAsyncData.refresh
+const unsubs: Array<() => void> = []
 
 onMounted(() => {
-  document.addEventListener('click', onClickOutsideMention)
-  if (import.meta.client) window.addEventListener('beforeunload', onBeforeUnload)
+  if (import.meta.client) {
+    document.addEventListener('click', onClickOutsideMention)
+    window.addEventListener('beforeunload', onBeforeUnload)
+    unsubs.push(() => document.removeEventListener('click', onClickOutsideMention))
+    unsubs.push(() => window.removeEventListener('beforeunload', onBeforeUnload))
+  }
   fetchComments()
   fetchRelated()
   trackCurrentPost()
@@ -376,11 +364,57 @@ onMounted(() => {
 })
 
 onUnmounted(() => {
-  document.removeEventListener('click', onClickOutsideMention)
-  if (import.meta.client) window.removeEventListener('beforeunload', onBeforeUnload)
+  for (const unsub of unsubs) unsub()
 })
 
-await postAsyncData
+const {
+  data: postAsyncPayload,
+  error: postAsyncError,
+  pending,
+  refresh: refreshPost,
+} = useAsyncData(`post-detail-${postId.value}`, async () => {
+  if (!postId.value) return null
+  try {
+    const res = await apiFetch<PostDetailResponse | Post>(`/api/posts/${encodedPostId.value}`, { headers: authHeaders() })
+    postFetchFailed.value = false
+    postFetchStatusCode.value = null
+    return (res as PostDetailResponse).post || (res as Post)
+  } catch (err: unknown) {
+    postFetchFailed.value = true
+    postFetchStatusCode.value = getStatusCode(err) || 500
+    throw err
+  }
+})
+
+await postAsyncPayload
+
+const post = computed<Post | null>({
+  get: () => (postAsyncPayload.value as Post | null) || null,
+  set: (val) => {
+    postAsyncPayload.value = val
+  },
+})
+
+watch(
+  postAsyncError,
+  (err) => {
+    if (err) {
+      postFetchFailed.value = true
+      postFetchStatusCode.value = getStatusCode(err) || 500
+    }
+  },
+  { immediate: true },
+)
+
+watch(
+  postId,
+  async (newId) => {
+    if (!newId) return
+    await fetchComments()
+    fetchRelated()
+  },
+  { immediate: true },
+)
 
 if (import.meta.server && !post.value && !postFetchFailed.value) {
   throw createError({ statusCode: 404, statusMessage: 'Không tìm thấy bài viết' })
@@ -404,7 +438,7 @@ async function fetchComments(): Promise<boolean> {
   loading.value = true
   commentError.value = false
   try {
-    const res = await $fetch<CommentsResponse | ThreadComment[]>(`/api/posts/${encodedPostId.value}/comments`)
+    const res = await apiFetch<CommentsResponse | ThreadComment[]>(`/api/posts/${encodedPostId.value}/comments`)
     comments.value = Array.isArray(res) ? res : (res.comments || [])
     return true
   } catch {
@@ -488,9 +522,8 @@ async function submitComment() {
       }
     }
     if (mentions.length) body.mentions = mentions
-    await $fetch(`/api/posts/${encodedPostId.value}/comments`, {
+    await authFetch(`/api/posts/${encodedPostId.value}/comments`, {
       method: 'POST',
-      headers: authHeaders(),
       body,
     })
     commentText.value = ''
@@ -500,7 +533,7 @@ async function submitComment() {
     if (post.value) post.value.comments_count = (post.value.comments_count || 0) + 1
     await fetchComments()
   } catch (e: unknown) {
-    if (getStatusCode(e) === 401) { handleSessionExpired(); return }
+    if (getStatusCode(e) === 401) { return }
     showToast(extractErrorMessage(e, 'Gửi bình luận thất bại — vui lòng thử lại'), 'error')
   } finally {
     submitting.value = false
