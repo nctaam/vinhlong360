@@ -639,6 +639,38 @@ def test_add_to_collection_inserts_item_and_bumps_updated_at(pg_db):
     assert exc.value.status_code == 404
 
 
+def test_add_to_collection_rejects_missing_pending_and_deleted_posts(pg_db):
+    owner = _seed_user(pg_db)
+    collection_id = _seed_collection(pg_db, owner)
+    pending_post = _seed_post(pg_db, owner, moderation_status="pending")
+    deleted_post = _seed_post(pg_db, owner)
+    with pg_db._conn() as conn:
+        pg_db._execute(
+            conn,
+            "UPDATE posts SET deleted_at = NOW() WHERE id = %s::uuid",
+            (deleted_post,),
+        )
+
+    for post_id in (pending_post, deleted_post, str(uuid.uuid4())):
+        with pytest.raises(HTTPException) as exc:
+            asyncio.run(
+                community_api.add_to_collection(
+                    collection_id,
+                    post_id=post_id,
+                    user=_user(owner),
+                    _csrf=None,
+                    _idem=None,
+                )
+            )
+        assert exc.value.status_code == 404
+
+    assert _count(
+        pg_db,
+        "SELECT COUNT(*) AS c FROM collection_items WHERE collection_id = %s::uuid",
+        (collection_id,),
+    ) == 0
+
+
 def test_add_to_collection_full_returns_400(pg_db):
     owner = _seed_user(pg_db)
     collection_id = _seed_collection(pg_db, owner)

@@ -3395,6 +3395,14 @@ async def add_to_collection(collection_id: str, post_id: str = Query(..., max_le
             coll = db._fetchone(conn, f"SELECT id FROM user_collections WHERE id = {ph}::uuid AND user_id = {ph}::uuid", (collection_id, uid))
             if not coll:
                 raise HTTPException(404, "Danh sách không tồn tại")
+            post = db._fetchone(conn, f"""
+                SELECT id FROM posts
+                WHERE id = {ph}::uuid
+                  AND moderation_status = 'approved'
+                  AND deleted_at IS NULL
+            """, (post_id,))
+            if not post:
+                raise HTTPException(404, "Bài viết không tồn tại")
             db._fetchone(conn, f"SELECT pg_advisory_xact_lock(hashtext({ph}))", (collection_id,))
             cnt = db._fetchone(conn, f"SELECT COUNT(*) as c FROM collection_items WHERE collection_id = {ph}::uuid", (collection_id,))
             if cnt and db._row_to_dict(cnt)["c"] >= _MAX_ITEMS_PER_COLLECTION:
