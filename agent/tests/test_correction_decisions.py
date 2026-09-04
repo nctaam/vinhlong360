@@ -308,10 +308,17 @@ def test_retrying_the_same_decision_replays_one_persisted_outcome(pg_database):
             "SELECT (SELECT count(*) FROM case_decisions WHERE item_id=%s) AS decisions,"
             " (SELECT count(*) FROM case_outbox WHERE idempotency_key=%s) AS outbox,"
             " (SELECT count(*) FROM case_audit_events WHERE case_id=%s"
-            "  AND reason_code='item_decided') AS audits",
-            (item_id, first.outbox_event_id, case_id),
+            "  AND reason_code='item_decided') AS audits,"
+            " (SELECT payload->'ruling'->>'reason_code' FROM case_outbox"
+            "  WHERE idempotency_key=%s) AS ruling_reason",
+            (item_id, first.outbox_event_id, case_id, first.outbox_event_id),
         ))
-    assert counts == {"decisions": 1, "outbox": 1, "audits": 1}
+    assert counts == {
+        "decisions": 1,
+        "outbox": 1,
+        "audits": 1,
+        "ruling_reason": "authoritative_source_confirms",
+    }
 
 
 @pg_only

@@ -881,7 +881,9 @@ def _persist_decision(transaction, decision: DecisionOutcome, command: DecideIte
             action="item_decided",
             resource_type="case",
             resource_id=command.case_id,
-            reason=decision.reason_code,
+            # Keep the audit reason at the event level; the ruling retains the
+            # operator's semantic reason_code for decision-specific provenance.
+            reason="item_decided",
             before=safe_case_projection(snapshot),
             after=safe_case_projection(updated),
             correlation_id=getattr(command.actor, "correlation_id", "correction"),
