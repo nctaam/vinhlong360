@@ -230,3 +230,54 @@ def test_replay_mapping_copy_accepts_database_mapping_rows():
     assert _copy_replay_mapping(UserDict({"event_id": "e-1"}), "e-1") == {
         "event_id": "e-1"
     }
+
+
+def test_case_service_validation_pipeline_accepts_a_valid_command():
+    """Create validation remains callable as one ordered, side-effect-free stage."""
+    from cases.domain import ActorContext, Channel, CommandEnvelope
+    from cases.service import (
+        CaseService,
+        CorrectionItemInput,
+        CreateCorrectionCommand,
+    )
+
+    service = CaseService(store=None, crypto=None, policy=None, owner_ref="person:owner")
+    command = CreateCorrectionCommand(
+        envelope=CommandEnvelope(
+            idempotency_key="validation-1",
+            expected_revision=None,
+            actor=ActorContext(
+                actor_ref="anonymous",
+                channel=Channel.WEB,
+                scopes=frozenset(),
+                correlation_id="corr-1",
+            ),
+        ),
+        reporter_privacy="anonymous",
+        items=(CorrectionItemInput(
+            entity_id="entity-1",
+            field_path="attributes.phone",
+            reported_value="old",
+            proposed_value="new",
+            base_entity_revision=1,
+        ),),
+    )
+    assert service._validate_create_request(
+        command, now=datetime(2026, 9, 4, tzinfo=timezone.utc), session_user_ref=None
+    ) is None
+
+
+def test_contact_receipt_requirement_requires_phone_consent_without_assisted_flow():
+    """Self-service phone notifications require a verified receipt; assisted intake does not."""
+    from types import SimpleNamespace
+
+    from cases.service import _requires_contact_receipt
+
+    assert _requires_contact_receipt(SimpleNamespace(
+        optional_phone="0909123456", assisted=None,
+        notification_consent=True, contact_receipt=None,
+    )) is True
+    assert _requires_contact_receipt(SimpleNamespace(
+        optional_phone="0909123456", assisted=object(),
+        notification_consent=True, contact_receipt=None,
+    )) is False

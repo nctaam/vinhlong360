@@ -261,6 +261,15 @@ def _looks_urgent(text: str) -> bool:
     return _URGENT_FOLDED_PATTERN.search(_fold(text)) is not None
 
 
+def _requires_contact_receipt(command: CreateCorrectionCommand) -> bool:
+    return bool(
+        command.optional_phone
+        and command.assisted is None
+        and command.notification_consent
+        and not command.contact_receipt
+    )
+
+
 class CaseService:
     create_rate_limit = 5
     create_rate_window = 3600
@@ -553,26 +562,20 @@ class CaseService:
             for kind, seconds in targets
         )
 
-    def create_correction(
+    def _validate_create_request(
         self,
         command: CreateCorrectionCommand,
         *,
         now: datetime,
-        rate_subject: str,
-        session_user_ref: str | None = None,
-    ) -> CreateCorrectionResult:
+        session_user_ref: str | None,
+    ) -> None:
         if type(command) is not CreateCorrectionCommand:
             raise _reject("invalid_command", "A create-correction command is required.")
         if type(now) is not datetime or now.tzinfo is None:
             raise _reject("invalid_command_clock", "An aware timestamp is required.")
         self._validate_actor(command, session_user_ref)
         self._validate_privacy(command)
-        if (
-            command.optional_phone
-            and command.assisted is None
-            and command.notification_consent
-            and not command.contact_receipt
-        ):
+        if _requires_contact_receipt(command):
             # Consent authorises notification, but only a verified receipt
             # proves the caller controls the destination and binds the case to
             # the exact number they verified.
@@ -584,6 +587,18 @@ class CaseService:
         self._validate_handoff(command)
         self._validate_items(command)
         self._route_safety(command)
+
+    def create_correction(
+        self,
+        command: CreateCorrectionCommand,
+        *,
+        now: datetime,
+        rate_subject: str,
+        session_user_ref: str | None = None,
+    ) -> CreateCorrectionResult:
+        self._validate_create_request(
+            command, now=now, session_user_ref=session_user_ref,
+        )
 
         actor_ref = self._idempotency_actor(command, session_user_ref=session_user_ref)
         key = f"create:{command.envelope.idempotency_key}"
@@ -651,6 +666,53 @@ class CaseService:
         """Bucket subjects are keyed, so the digest never reveals the raw address."""
         return self._crypto.digest_capability("case-rate-subject")
 
+    def _consume_verified_contact(
+        self,
+        transaction,
+        command: CreateCorrectionCommand,
+        *,
+        case_id: str,
+        crypto,
+        now: datetime,
+    ) -> None:
+        from .contact import contact_digest
+
+        try:
+            proof = self._crypto.open_contact_receipt(command.contact_receipt, now=now)
+            if not proof.get("verified"):
+                raise ValueError
+            challenge_id = str(uuid.UUID(str(proof["challenge_id"])))
+            if not hmac.compare_digest(
+                str(proof["contact_digest"]),
+                contact_digest(command.optional_phone, crypto=crypto),
+            ):
+                raise ValueError
+        except Exception as exc:  # noqa: BLE001 - fail closed before SQL
+            raise _reject(
+                "phone_verification_required",
+                "Xác nhận số điện thoại trước khi gửi yêu cầu.",
+                status=422,
+            ) from exc
+        proof = transaction.consume_pre_contact_challenge(
+            receipt=challenge_id,
+            contact_digest=str(proof["contact_digest"]),
+            challenge_digest=str(proof["challenge_digest"]),
+            now=now,
+        )
+        if proof is None:
+            raise _reject(
+                "phone_verification_required",
+                "Xác nhận số điện thoại trước khi gửi yêu cầu.",
+                status=422,
+            )
+        transaction.insert_verified_contact(
+            case_id=case_id,
+            contact_digest=str(proof["contact_digest"]),
+            challenge_digest=str(proof["challenge_digest"]),
+            expires_at=datetime.fromtimestamp(int(proof["expires_at"]), tz=timezone.utc),
+            verified_at=now,
+        )
+
     def _commit_case(
         self,
         transaction,
@@ -715,41 +777,8 @@ class CaseService:
         )
 
         if command.optional_phone and command.contact_receipt and command.assisted is None:
-            from .contact import contact_digest
-            try:
-                proof = self._crypto.open_contact_receipt(command.contact_receipt, now=now)
-                if not proof.get("verified"):
-                    raise ValueError
-                challenge_id = str(uuid.UUID(str(proof["challenge_id"])))
-                if not hmac.compare_digest(
-                    str(proof["contact_digest"]),
-                    contact_digest(command.optional_phone, crypto=crypto),
-                ):
-                    raise ValueError
-            except Exception as exc:  # noqa: BLE001 - fail closed before SQL
-                raise _reject(
-                    "phone_verification_required",
-                    "Xác nhận số điện thoại trước khi gửi yêu cầu.",
-                    status=422,
-                ) from exc
-            proof = transaction.consume_pre_contact_challenge(
-                receipt=challenge_id,
-                contact_digest=str(proof["contact_digest"]),
-                challenge_digest=str(proof["challenge_digest"]),
-                now=now,
-            )
-            if proof is None:
-                raise _reject(
-                    "phone_verification_required",
-                    "Xác nhận số điện thoại trước khi gửi yêu cầu.",
-                    status=422,
-                )
-            transaction.insert_verified_contact(
-                case_id=case_id,
-                contact_digest=str(proof["contact_digest"]),
-                challenge_digest=str(proof["challenge_digest"]),
-                expires_at=datetime.fromtimestamp(int(proof["expires_at"]), tz=timezone.utc),
-                verified_at=now,
+            self._consume_verified_contact(
+                transaction, command, case_id=case_id, crypto=crypto, now=now,
             )
 
         authority = self.party_authority_draft_for(command, case_id=case_id, now=now)
