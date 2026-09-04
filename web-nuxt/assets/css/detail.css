@@ -370,7 +370,7 @@
 @media (max-width: 840px) {
   .detail-body { grid-template-columns: 1fr; grid-template-areas: "aside" "main"; }
   .detail-aside { position: static; max-height: none; overflow-y: visible; margin-top: 0; padding-top: var(--space-5); border-top: .5px solid var(--line); }
-  .detail-action-dock[data-detail-action-safe-area] { padding-bottom: max(var(--space-3), env(safe-area-inset-bottom, 0px)); }
+  .detail-action-dock[data-detail-action-safe-area] { padding-bottom: max(var(--space-4), calc(var(--space-2) + env(safe-area-inset-bottom, 0px))); }
 }
 @media (max-width: 768px) {
   .detail-cover h1 { font-size: var(--text-2xl); }

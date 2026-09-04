@@ -41,6 +41,7 @@
       <div v-if="cardMeta" class="card-meta">
         <span v-if="cardMeta.price" class="cm-item"><IconLine name="tag" /> {{ cardMeta.price }}</span>
         <span v-if="cardMeta.hours" class="cm-item"><IconLine name="clock" /> {{ cardMeta.hours }}</span>
+        <span v-if="cardMeta.access" class="cm-item"><IconLine name="car" /> {{ cardMeta.access }}</span>
       </div>
       <div v-if="ratingDisplay" class="card-rating">
         <span class="cr-stars">{{ ratingDisplay.stars }}</span>
@@ -137,11 +138,10 @@ const dateline = computed(() => entityDateline(props.entity, typeMeta.value.labe
 const cardMeta = computed(() => {
   const a = props.entity.attributes
   if (!a) return null
-  const t = props.entity.type
-  if (t !== 'product' && t !== 'dish' && t !== 'experience') return null
-  const price = a.price || a.fee || null
-  const hours = a.hours || null
-  return (price || hours) ? { price, hours } : null
+  const price = a.price || a.fee || a.ticket_price || null
+  const hours = a.hours || a.opening_hours || null
+  const access = a.vehicle_access || a.road_access || null
+  return (price || hours || access) ? { price, hours, access } : null
 })
 const allAmenities = computed(() => {
   const badges = props.entity.attributes?.amenity_badges

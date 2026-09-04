@@ -73,9 +73,13 @@ export function generateCategoryPlaceholder(entityId: string | number, category:
     `<stop offset="0" stop-color="rgba(255,255,255,0.22)"/>` +
     `<stop offset="0.55" stop-color="rgba(255,255,255,0)"/>` +
     `</radialGradient>` +
+    `<pattern id="grain" width="40" height="6" patternUnits="userSpaceOnUse">` +
+    `<line x1="0" y1="3" x2="40" y2="3" stroke="rgba(255,255,255,0.05)" stroke-width="1"/>` +
+    `</pattern>` +
     `</defs>` +
     `<rect width="400" height="240" fill="url(#g)"/>` +
     `<rect width="400" height="240" fill="url(#hl)"/>` +
+    `<rect width="400" height="240" fill="url(#grain)"/>` +
     `</svg>`
 
   // Single quotes inside the url(): the value lands in a double-quoted SSR
@@ -90,70 +94,78 @@ export function generateCategoryPlaceholder(entityId: string | number, category:
 // white so the glyph reads as a watermark over the gradient; stroke uses
 // currentColor so callers can tint it. viewBox 0 0 48 48 to match CategoryIcon.vue.
 const ICONS: Record<string, string> = {
-  // Attraction: mái chùa / núi
+  // Attraction: Mái đình Tiên Châu / Chùa cổ uốn cong di sản Nam Bộ
   attraction:
-    `<rect x="14" y="24" width="20" height="18" rx="2" fill="rgba(255,255,255,.25)"/>` +
-    `<path d="M10 24 L24 10 L38 24Z" fill="rgba(255,255,255,.35)"/>` +
-    `<path d="M16 24 L24 14 L32 24Z" fill="rgba(255,255,255,.18)"/>` +
-    `<rect x="21" y="30" width="6" height="12" rx="3" fill="rgba(255,255,255,.22)"/>` +
-    `<circle cx="24" cy="18" r="2.5" fill="rgba(255,255,255,.5)"/>`,
-  // Dish: đĩa / bát có khói
+    `<path d="M6 22 C12 21 18 17 24 11 C30 17 36 21 42 22 C39 23 35 24 24 17 C13 24 9 23 6 22 Z" fill="rgba(255,255,255,.38)" stroke="currentColor" stroke-width="1.4"/>` +
+    `<path d="M10 28 C16 27 20 25 24 21 C28 25 32 27 38 28 C35 29 32 30 24 25 C16 30 13 29 10 28 Z" fill="rgba(255,255,255,.25)"/>` +
+    `<rect x="14" y="28" width="3" height="14" rx=".5" fill="rgba(255,255,255,.3)"/>` +
+    `<rect x="31" y="28" width="3" height="14" rx=".5" fill="rgba(255,255,255,.3)"/>` +
+    `<path d="M20 42 V31 H28 V42" stroke="currentColor" stroke-width="1.2" fill="none"/>` +
+    `<line x1="8" y1="42" x2="40" y2="42" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>` +
+    `<circle cx="24" cy="9" r="2" fill="rgba(255,255,255,.6)"/>`,
+  // Dish: Nồi đất kho tiêu Nam Bộ bốc khói mộc mạc
   dish:
-    `<ellipse cx="24" cy="30" rx="16" ry="6" fill="rgba(255,255,255,.3)"/>` +
-    `<path d="M8 28 Q8 20 24 20 Q40 20 40 28" fill="rgba(255,255,255,.18)"/>` +
-    `<path d="M16 18 Q18 12 20 14" stroke="currentColor" stroke-width="1.5" fill="none" stroke-linecap="round"/>` +
-    `<path d="M24 16 Q26 10 28 12" stroke="currentColor" stroke-width="1.5" fill="none" stroke-linecap="round"/>` +
-    `<path d="M32 18 Q34 12 36 14" stroke="currentColor" stroke-width="1.5" fill="none" stroke-linecap="round"/>` +
-    `<line x1="8" y1="36" x2="40" y2="36" stroke="rgba(255,255,255,.25)" stroke-width="2"/>`,
-  // Product: trái cây tròn
+    `<ellipse cx="24" cy="31" rx="16" ry="7" fill="rgba(255,255,255,.35)"/>` +
+    `<path d="M8 31 C8 39 15 42 24 42 C33 42 40 39 40 31" fill="rgba(255,255,255,.22)" stroke="currentColor" stroke-width="1.4"/>` +
+    `<path d="M5 29 C4 31 5 33 8 33" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round"/>` +
+    `<path d="M43 29 C44 31 43 33 40 33" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round"/>` +
+    `<path d="M18 22 C16 16 20 13 18 8" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linecap="round"/>` +
+    `<path d="M24 20 C22 14 26 11 24 6" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round"/>` +
+    `<path d="M30 22 C28 16 32 13 30 8" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linecap="round"/>`,
+  // Product: Bưởi Năm Roi Bình Minh tròn mọng & Cành lá cù lao
   product:
-    `<circle cx="24" cy="26" r="14" fill="rgba(255,255,255,.3)"/>` +
-    `<circle cx="24" cy="26" r="10" fill="rgba(255,255,255,.2)"/>` +
-    `<path d="M24 12 Q26 6 30 8" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round"/>` +
-    `<path d="M24 12 Q22 7 18 9" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round"/>` +
-    `<ellipse cx="20" cy="24" rx="3" ry="4" fill="rgba(255,255,255,.18)" transform="rotate(-15 20 24)"/>`,
-  // Accommodation: nhà
+    `<ellipse cx="24" cy="27" rx="14" ry="15" fill="rgba(255,255,255,.3)" stroke="currentColor" stroke-width="1.5"/>` +
+    `<ellipse cx="21" cy="23" rx="4" ry="6" fill="rgba(255,255,255,.18)" transform="rotate(-15 21 23)"/>` +
+    `<path d="M24 12 C24 8 26 6 28 5" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round"/>` +
+    `<path d="M24 10 C29 10 33 7 35 4 C31 4 26 6 24 10 Z" fill="rgba(255,255,255,.45)" stroke="currentColor" stroke-width="1"/>` +
+    `<circle cx="24" cy="41" r="1.5" fill="currentColor"/>`,
+  // Accommodation: Nhà rường Nam Bộ homestay cù lao ven sông
   accommodation:
-    `<rect x="12" y="22" width="24" height="18" rx="2" fill="rgba(255,255,255,.28)"/>` +
-    `<path d="M8 22 L24 10 L40 22" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>` +
-    `<rect x="20" y="30" width="8" height="10" rx="1" fill="rgba(255,255,255,.22)"/>` +
-    `<rect x="15" y="26" width="5" height="5" rx=".5" fill="rgba(255,255,255,.18)"/>` +
-    `<rect x="28" y="26" width="5" height="5" rx=".5" fill="rgba(255,255,255,.18)"/>`,
-  // Craft: gốm / bình
+    `<path d="M7 23 L24 10 L41 23 L37 25 L24 15 L11 25 Z" fill="rgba(255,255,255,.4)" stroke="currentColor" stroke-width="1.4"/>` +
+    `<rect x="12" y="24" width="24" height="15" fill="rgba(255,255,255,.22)" stroke="currentColor" stroke-width="1.4"/>` +
+    `<rect x="21" y="29" width="6" height="10" fill="rgba(255,255,255,.35)"/>` +
+    `<line x1="16" y1="28" x2="16" y2="33" stroke="currentColor" stroke-width="1.2"/>` +
+    `<line x1="32" y1="28" x2="32" y2="33" stroke="currentColor" stroke-width="1.2"/>` +
+    `<line x1="5" y1="41" x2="43" y2="41" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>` +
+    `<line x1="10" y1="39" x2="10" y2="43" stroke="currentColor" stroke-width="1.5"/>` +
+    `<line x1="38" y1="39" x2="38" y2="43" stroke="currentColor" stroke-width="1.5"/>`,
+  // Craft: Lò gạch nung gốm đỏ Mang Thít hình vòm cổ kính
   craft:
-    `<path d="M18 38 Q16 30 17 24 Q18 18 22 16 Q24 15 26 16 Q30 18 31 24 Q32 30 30 38Z" fill="rgba(255,255,255,.3)"/>` +
-    `<path d="M20 16 Q22 12 24 12 Q26 12 28 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>` +
-    `<line x1="20" y1="26" x2="28" y2="26" stroke="rgba(255,255,255,.3)" stroke-width="1.5"/>` +
-    `<line x1="19" y1="30" x2="29" y2="30" stroke="rgba(255,255,255,.3)" stroke-width="1.5"/>` +
-    `<line x1="18" y1="34" x2="30" y2="34" stroke="rgba(255,255,255,.3)" stroke-width="1.5"/>`,
-  // Nature: lá
+    `<path d="M16 42 L18 20 C18 14 22 10 24 10 C26 10 30 14 32 20 L34 42 Z" fill="rgba(255,255,255,.28)" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/>` +
+    `<path d="M21 42 V32 C21 30 22.5 28 24 28 C25.5 28 27 30 27 32 V42 Z" fill="rgba(255,255,255,.45)"/>` +
+    `<path d="M19 24 H29 M18 30 H30 M17 36 H31" stroke="rgba(255,255,255,.3)" stroke-width="1.2" stroke-linecap="round"/>` +
+    `<path d="M24 8 C23 5 25 3 24 1" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" fill="none"/>` +
+    `<path d="M27 9 C28 6 26 4 27 2" stroke="rgba(255,255,255,.4)" stroke-width="1.2" stroke-linecap="round" fill="none"/>`,
+  // Nature: Hoa lục bình tím & sóng nước phù sa Cổ Chiên
   nature:
-    `<path d="M14 34 Q14 16 34 14 Q36 32 18 36 Q16 36 14 34Z" fill="rgba(255,255,255,.3)"/>` +
-    `<path d="M16 34 Q26 24 34 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>` +
-    `<path d="M22 30 Q24 26 28 26" fill="none" stroke="rgba(255,255,255,.35)" stroke-width="1.4" stroke-linecap="round"/>` +
-    `<path d="M20 26 Q22 22 26 22" fill="none" stroke="rgba(255,255,255,.35)" stroke-width="1.4" stroke-linecap="round"/>`,
-  // Experience: lúa / lá đôi
+    `<path d="M24 8 C20 16 16 22 24 30 C32 22 28 16 24 8 Z" fill="rgba(255,255,255,.4)" stroke="currentColor" stroke-width="1.4"/>` +
+    `<path d="M12 20 C18 20 22 24 24 30 C18 30 14 26 12 20 Z" fill="rgba(255,255,255,.28)" stroke="currentColor" stroke-width="1.2"/>` +
+    `<path d="M36 20 C30 20 26 24 24 30 C30 30 34 26 36 20 Z" fill="rgba(255,255,255,.28)" stroke="currentColor" stroke-width="1.2"/>` +
+    `<circle cx="24" cy="18" r="2.5" fill="rgba(255,255,255,.7)"/>` +
+    `<path d="M6 38 C12 36 16 40 22 38 C28 36 32 40 42 38" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round"/>` +
+    `<path d="M10 42 C15 41 18 43 24 42 C30 41 34 43 38 42" stroke="rgba(255,255,255,.3)" stroke-width="1.4" fill="none" stroke-linecap="round"/>`,
+  // Experience: Ghe tam bản Nam Bộ & Mái chèo sông Tiền
   experience:
-    `<path d="M24 42 Q24 28 18 18 Q14 12 10 10" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round"/>` +
-    `<path d="M24 42 Q24 26 30 16 Q34 10 38 8" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round"/>` +
-    `<path d="M18 18 Q14 16 8 18" stroke="rgba(255,255,255,.4)" stroke-width="2" fill="none" stroke-linecap="round"/>` +
-    `<path d="M20 24 Q16 22 10 24" stroke="rgba(255,255,255,.4)" stroke-width="2" fill="none" stroke-linecap="round"/>` +
-    `<path d="M30 16 Q34 14 40 16" stroke="rgba(255,255,255,.4)" stroke-width="2" fill="none" stroke-linecap="round"/>` +
-    `<path d="M28 22 Q32 20 38 22" stroke="rgba(255,255,255,.4)" stroke-width="2" fill="none" stroke-linecap="round"/>`,
-  // Itinerary: tuyến đường
+    `<path d="M4 27 C12 32 28 32 44 24 C38 34 16 38 4 27 Z" fill="rgba(255,255,255,.38)" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/>` +
+    `<path d="M8 28 C16 26 28 26 38 23" stroke="rgba(255,255,255,.3)" stroke-width="1.2"/>` +
+    `<path d="M16 28 C17 21 25 20 28 26" fill="rgba(255,255,255,.25)" stroke="currentColor" stroke-width="1.4"/>` +
+    `<line x1="32" y1="12" x2="22" y2="38" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>` +
+    `<path d="M22 38 L19 44 L24 43 Z" fill="rgba(255,255,255,.6)"/>` +
+    `<path d="M38 28 C41 29 44 28 46 29" stroke="rgba(255,255,255,.4)" stroke-width="1.5" fill="none" stroke-linecap="round"/>`,
+  // Itinerary: Dòng Cổ Chiên uốn lượn & Trạm dừng chân cù lao
   itinerary:
-    `<circle cx="14" cy="14" r="4" fill="rgba(255,255,255,.4)"/>` +
-    `<circle cx="34" cy="34" r="4" fill="rgba(255,255,255,.4)"/>` +
-    `<path d="M14 18 Q14 30 24 30 Q34 30 34 30" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-dasharray="1 5"/>` +
-    `<path d="M14 18 Q14 30 26 30 L34 30" fill="none" stroke="rgba(255,255,255,.3)" stroke-width="2.4" stroke-linecap="round"/>`,
-  // Event: lồng đèn
+    `<path d="M8 12 C18 12 16 28 28 28 C36 28 36 38 42 40" stroke="rgba(255,255,255,.35)" stroke-width="6" fill="none" stroke-linecap="round"/>` +
+    `<path d="M8 12 C18 12 16 28 28 28 C36 28 36 38 42 40" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-dasharray="3 3"/>` +
+    `<circle cx="12" cy="12" r="3.5" fill="rgba(255,255,255,.6)" stroke="currentColor" stroke-width="1.5"/>` +
+    `<circle cx="28" cy="28" r="3.5" fill="rgba(255,255,255,.6)" stroke="currentColor" stroke-width="1.5"/>` +
+    `<circle cx="39" cy="38" r="3.5" fill="rgba(255,255,255,.6)" stroke="currentColor" stroke-width="1.5"/>`,
+  // Event: Đầu rồng ghe Ngo & Tiếng trống hội giục giã
   event:
-    `<line x1="24" y1="6" x2="24" y2="12" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>` +
-    `<rect x="20" y="11" width="8" height="3" rx="1" fill="rgba(255,255,255,.35)"/>` +
-    `<path d="M16 16 Q24 12 32 16 Q34 26 32 34 Q24 38 16 34 Q14 26 16 16Z" fill="rgba(255,255,255,.3)"/>` +
-    `<line x1="22" y1="15" x2="22" y2="35" stroke="rgba(255,255,255,.3)" stroke-width="1.2"/>` +
-    `<line x1="26" y1="15" x2="26" y2="35" stroke="rgba(255,255,255,.3)" stroke-width="1.2"/>` +
-    `<line x1="24" y1="36" x2="24" y2="42" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>`,
+    `<path d="M12 36 C18 36 28 32 38 25 C40 23 42 20 40 18 C37 16 35 19 32 23 C24 28 16 30 10 32" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round"/>` +
+    `<path d="M38 18 C41 14 45 13 46 16 C45 20 40 22 38 18 Z" fill="rgba(255,255,255,.5)"/>` +
+    `<ellipse cx="20" cy="22" rx="7" ry="10" fill="rgba(255,255,255,.35)" stroke="currentColor" stroke-width="1.4"/>` +
+    `<path d="M20 12 C24 12 27 16 27 22 C27 28 24 32 20 32" fill="none" stroke="rgba(255,255,255,.4)" stroke-width="1.2"/>` +
+    `<line x1="16" y1="14" x2="26" y2="30" stroke="currentColor" stroke-width="1.5"/>`,
 }
 
 // Aliases — categories that share a motif.

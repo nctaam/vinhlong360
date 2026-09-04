@@ -282,6 +282,23 @@
           <template #actions>
             <NuxtLink to="/cong-dong" class="btn btn-outline"><IconLine name="message" /> Tham gia cộng đồng</NuxtLink>
           </template>
+          <div class="community-seed-prompts" aria-label="Gợi ý chủ đề chia sẻ">
+            <p class="community-seed-label">Gợi ý chủ đề người Vĩnh Long đang quan tâm:</p>
+            <div class="community-seed-grid">
+              <NuxtLink to="/cong-dong" class="community-seed-card">
+                <strong>Chèo SUP ngắm bình minh</strong>
+                <span>Khúc sông Cổ Chiên buổi sáng sớm</span>
+              </NuxtLink>
+              <NuxtLink to="/cong-dong" class="community-seed-card">
+                <strong>Sầu riêng chín cây An Bình</strong>
+                <span>Nhận biết sầu riêng rụng không nhúng thuốc</span>
+              </NuxtLink>
+              <NuxtLink to="/cong-dong" class="community-seed-card">
+                <strong>Lò gạch Thầy Kay hoàng hôn</strong>
+                <span>Góc chụp ánh sáng xuyên vòm gốm đỏ</span>
+              </NuxtLink>
+            </div>
+          </div>
         </EmptyState>
       </section>
     </ClientOnly>
@@ -1067,6 +1084,58 @@ html.js .home .hero-enter h1::after { animation: hero-underline-draw .8s var(--e
 .community-join .btn { flex-shrink: 0; }
 @media (max-width: 480px) { .community-join { flex-direction: column; text-align: center; gap: var(--space-3); } }
 .dark .community-join { background: var(--bg-alt); }
+
+.community-seed-prompts {
+  margin-top: var(--space-5);
+  padding-top: var(--space-4);
+  border-top: 1px dashed var(--line);
+  width: min(100%, 720px);
+  margin-inline: auto;
+}
+.community-seed-label {
+  font-size: var(--text-xs);
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: .05em;
+  font-weight: var(--weight-semibold);
+  margin-bottom: var(--space-3);
+  text-align: center;
+}
+.community-seed-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--space-3);
+  text-align: left;
+}
+.community-seed-card {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius);
+  border: 1px solid var(--line);
+  background: var(--bg-card);
+  color: var(--color-text);
+  text-decoration: none;
+  font-size: var(--text-xs);
+  transition: transform .18s var(--ease-out), border-color .18s var(--ease-out);
+}
+.community-seed-card:hover {
+  border-color: var(--color-action);
+  transform: translateY(-2px);
+}
+.community-seed-card strong {
+  color: var(--color-text);
+  font-size: var(--text-xs);
+  font-weight: var(--weight-semibold);
+}
+.community-seed-card span {
+  color: var(--muted);
+  line-height: 1.35;
+}
+@media (max-width: 640px) {
+  .community-seed-grid { grid-template-columns: 1fr; }
+}
 
 /* ═══════════════════════════════════════════════════
    SKELETON + MISC

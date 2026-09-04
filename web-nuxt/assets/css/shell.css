@@ -33,7 +33,8 @@
 
 .public-context-inner {
   width: min(100% - 32px, 1280px);
-  min-height: 44px;
+  min-height: 32px;
+  padding-block: 2px;
   margin-inline: auto;
   display: flex;
   align-items: center;
@@ -72,16 +73,16 @@
   flex: 0 0 auto;
   display: inline-flex;
   align-items: center;
-  min-height: 44px;
+  min-height: 32px;
 }
 
 .public-context-control select {
-  min-height: 44px;
+  min-height: 32px;
   max-width: 250px;
   appearance: none;
   border: 0;
   border-radius: var(--radius-control);
-  padding: 4px 28px 4px 8px;
+  padding: 2px 28px 2px 8px;
   background: transparent;
   color: var(--color-action);
   font: 600 .78rem/1.4 var(--font-sans);
@@ -129,7 +130,7 @@
 }
 
 .public-shell-command-row {
-  min-height: 62px;
+  min-height: 52px;
   display: flex;
   align-items: center;
   gap: var(--space-5);
@@ -235,7 +236,7 @@
 }
 
 .public-shell-task-row {
-  min-height: 44px;
+  min-height: 38px;
   display: flex;
   align-items: stretch;
   justify-content: space-between;
@@ -251,7 +252,7 @@
 .public-shell-task-nav a,
 .public-shell-catalog-button {
   position: relative;
-  min-height: 44px;
+  min-height: 38px;
   display: inline-flex;
   align-items: center;
   border: 0;

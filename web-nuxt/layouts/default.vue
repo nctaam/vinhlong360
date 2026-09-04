@@ -139,8 +139,10 @@ const mobileNav = ref(false)
 const clientReady = ref(false)
 // A3a declutter: beta-banner đã bỏ — OnboardingSheet là kênh truyền thông beta duy nhất
 // (hết 2 interrupt chồng nhau lần đầu vào). CMS key announcements.* không còn bề mặt render.
+const { applySolarThemeIfUnset } = useAdaptiveTheme()
 onMounted(() => {
   clientReady.value = true
+  applySolarThemeIfUnset()
   if (route.query.login === 'admin') showAuth.value = true
 })
 
