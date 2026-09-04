@@ -3,21 +3,12 @@
     <Breadcrumb :items="[{ label: 'Trang chủ', to: '/' }, { label: 'Cộng đồng' }]" />
 
     <!-- Sổ tay hôm nay — masthead sống, không phải catalog-hero -->
-    <section class="almanac-masthead" aria-label="Cộng đồng vinhlong360">
-      <p class="almanac-eyebrow">
-        <span v-if="hasFreshPost" class="almanac-pulse" aria-hidden="true"></span>
-        CỘNG ĐỒNG · SỔ TAY VĨNH LONG HÔM NAY · {{ todayLabel }}
-      </p>
-      <h1 class="almanac-title">{{ pc('hero_title', almanacHeadline) }}</h1>
-      <p v-if="communityStats" class="almanac-stats">
-        <CountUp :value="communityStats.posts" class="almanac-num" />&nbsp;CHUYỆN ĐÃ KỂ
-        <span class="almanac-dot" aria-hidden="true">·</span>
-        <CountUp :value="communityStats.reviews" class="almanac-num" />&nbsp;ĐÁNH GIÁ THẬT
-        <span class="almanac-dot" aria-hidden="true">·</span>
-        <CountUp :value="communityStats.members" class="almanac-num" />&nbsp;NGƯỜI VĨNH LONG
-      </p>
-      <div class="sediment-divider" aria-hidden="true"></div>
-    </section>
+    <CommunityAlmanacMasthead
+      :has-fresh-post="hasFreshPost"
+      :today-label="todayLabel"
+      :title="pc('hero_title', almanacHeadline)"
+      :stats="communityStats"
+    />
 
     <div class="threads-layout">
       <div class="threads-feed">
@@ -32,34 +23,7 @@
         >Vừa có chuyện mới — cuộn lên xem ↑</button>
 
         <!-- Report entity (if from ?report=id) -->
-        <div v-if="reportEntityId" class="report-entity-card">
-          <div>
-            <p class="report-kicker">Báo sai dữ liệu</p>
-            <h2>{{ reportEntity?.name || reportEntityId }}</h2>
-            <p>{{ isLoggedIn ? 'Mô tả ngắn điểm sai để admin kiểm tra.' : 'Đăng nhập để gửi báo cáo.' }}</p>
-          </div>
-          <div v-if="isLoggedIn" class="report-form-inline">
-            <div class="report-reasons">
-              <button type="button"
-                v-for="reason in reportReasons"
-                :key="reason"
-                :class="['chip', { active: reportReason === reason }]"
-                :aria-pressed="reportReason === reason"
-                @click="reportReason = reason"
-              >{{ reason }}</button>
-            </div>
-            <textarea
-              v-model="reportReason"
-              class="textarea"
-              rows="3"
-              placeholder="Ví dụ: địa chỉ sai, thiếu nguồn, tọa độ không đúng…"
-              aria-label="Mô tả báo cáo"
-            ></textarea>
-            <button type="button" class="btn btn-primary" :disabled="reportSubmitting || reportReason.trim().length < 5" @click="submitEntityReport">
-              {{ reportSubmitting ? 'Đang gửi…' : 'Gửi báo cáo' }}
-            </button>
-          </div>
-        </div>
+        <CommunityReportCard />
 
         <!-- Create post (Threads style) -->
         <div v-if="isLoggedIn && !ugcUnavailable" id="compose" ref="composeEl" class="threads-compose" role="form" aria-label="Viết bài mới">
@@ -176,55 +140,22 @@
         </div>
 
         <!-- Bài đã lên lịch -->
-        <details v-if="isLoggedIn && scheduledPosts.length" class="scheduled-section">
-          <summary class="scheduled-summary"><IconLine name="calendar" /> Bài đã lên lịch ({{ scheduledPosts.length }})</summary>
-          <div class="scheduled-list">
-            <div v-for="sp in scheduledPosts" :key="sp.id" class="scheduled-item">
-              <p>{{ sp.content?.slice(0, 100) }}{{ (sp.content?.length || 0) > 100 ? '...' : '' }}</p>
-              <div class="scheduled-meta">
-                <time :datetime="sp.scheduled_at">{{ new Date(sp.scheduled_at).toLocaleString('vi-VN') }}</time>
-                <button type="button" class="btn btn-ghost btn-sm scheduled-cancel" @click="cancelScheduled(sp.id)">Hủy</button>
-              </div>
-            </div>
-          </div>
-        </details>
+        <CommunityScheduledPosts
+          v-if="isLoggedIn && scheduledPosts.length"
+          :posts="scheduledPosts"
+          @cancel="cancelScheduled"
+        />
 
-        <!-- Tìm bài viết -->
-        <div v-if="!ugcUnavailable" class="community-search" role="search">
-          <svg class="cs-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
-          <input
-            v-model="searchInput"
-            class="cs-input"
-            type="search"
-            enterkeyhint="search"
-            maxlength="100"
-            placeholder="Tìm bài viết trong cộng đồng…"
-            aria-label="Tìm bài viết trong cộng đồng"
-            @keyup.enter="runSearch"
-          />
-          <button v-if="searchMode" type="button" class="cs-clear" aria-label="Xoá tìm kiếm" @click="clearSearch">&times;</button>
-          <button type="button" class="btn btn-primary btn-sm cs-go" @click="runSearch">Tìm</button>
-        </div>
-
-        <!-- Đang xem kết quả tìm -->
-        <div v-if="searchMode" class="tag-banner" role="status">
-          <span><strong>{{ displayPosts.length }}</strong> kết quả cho <strong>&ldquo;{{ searchQuery }}&rdquo;</strong></span>
-          <button type="button" class="tag-clear" @click="clearSearch"><IconLine name="x" /> Bỏ tìm</button>
-        </div>
-
-        <!-- Người dùng tìm thấy -->
-        <div v-if="searchUsers.length && searchQuery" class="search-users-section">
-          <h3 class="section-label">Người dùng</h3>
-          <div class="search-users-grid">
-            <NuxtLink v-for="u in searchUsers" :key="u.id" :to="userPath(u.username || u.id)" class="search-user-card card">
-              <AvatarPlaceholder :initial="(u.display_name || '?').charAt(0)" :src="u.avatar_url" :size="40" />
-              <div class="suc-info">
-                <strong>{{ u.display_name }}</strong>
-                <span class="suc-meta">{{ u.post_count }} bài viết</span>
-              </div>
-            </NuxtLink>
-          </div>
-        </div>
+        <CommunitySearchSection
+          v-model="searchInput"
+          :search-mode="searchMode"
+          :search-query="searchQuery"
+          :display-posts-count="displayPosts.length"
+          :search-users="searchUsers"
+          :ugc-unavailable="ugcUnavailable"
+          @search="runSearch"
+          @clear="clearSearch"
+        />
 
         <!-- Main tabs -->
         <div v-if="!searchMode && !ugcUnavailable" class="threads-filter-bar">
@@ -249,33 +180,11 @@
         </div>
 
         <!-- Mobile discovery strip (sidebar content for small screens) -->
-        <div v-if="(topMembers.length || trendingTags.length) && !searchMode" class="mobile-discovery">
-          <div v-if="trendingTags.length" class="md-section">
-            <span class="md-label">Thịnh hành</span>
-            <div class="md-scroll">
-              <NuxtLink
-                v-for="t in trendingTags.slice(0, 6)"
-                :key="t.tag"
-                :to="{ path: '/cong-dong', query: { tag: t.tag } }"
-                class="md-tag"
-              >#{{ t.tag }}</NuxtLink>
-            </div>
-          </div>
-          <div v-if="topMembers.length" class="md-section">
-            <span class="md-label">Top</span>
-            <div class="md-scroll">
-              <NuxtLink
-                v-for="m in topMembers.slice(0, 5)"
-                :key="m.id"
-                :to="userPath(m.username || m.id)"
-                class="md-member"
-              >
-                <span class="avatar avatar-xs">{{ (m.display_name || '?').charAt(0).toUpperCase() }}</span>
-                <span class="md-name">{{ m.display_name }}</span>
-              </NuxtLink>
-            </div>
-          </div>
-        </div>
+        <CommunityMobileDiscovery
+          :top-members="topMembers"
+          :trending-tags="trendingTags"
+          :search-mode="searchMode"
+        />
 
         <!-- Đang lọc theo hashtag -->
         <div v-if="activeTag" class="tag-banner" role="status">
@@ -377,84 +286,15 @@
         <div v-if="(loading && posts.length) || bookmarksLoading || (searchLoading && searchResults.length)" class="feed-loading" role="status" aria-live="polite" aria-label="Đang tải bài viết"><div class="spinner"></div></div>
       </div>
 
-      <aside class="threads-sidebar">
-        <div class="sidebar-card sidebar-about reveal">
-          <p class="sidebar-kicker">Đôi lời</p>
-          <h2 class="sediment-head">Cộng đồng vinhlong360</h2>
-          <p>Nơi chia sẻ trải nghiệm du lịch, đánh giá đặc sản và kết nối với cộng đồng yêu Vĩnh Long.</p>
-          <div class="sidebar-stats">
-            <div class="sidebar-stat">
-              <span class="stat-num">{{ feedStats.postCount }}</span>
-              <span class="stat-label">bài viết</span>
-            </div>
-            <div class="sidebar-stat">
-              <span class="stat-num">{{ feedStats.reviewCount }}</span>
-              <span class="stat-label">đánh giá</span>
-            </div>
-          </div>
-          <!-- declutter-1 T9: card "Quy tắc cộng đồng" (duplicate nguyên văn
-               /huong-dan-thanh-vien) → 1 link tại đây -->
-          <NuxtLink to="/huong-dan-thanh-vien" class="sidebar-more">Xem quy tắc cộng đồng →</NuxtLink>
-        </div>
-
-        <div v-if="recentMentions.length" class="sidebar-card reveal">
-          <p class="sidebar-kicker">Đang được nhắc tới</p>
-          <h2 class="sediment-head">Nhắc tới gần đây</h2>
-          <ul class="mention-list">
-            <li v-for="m in recentMentions" :key="m.entity_id">
-              <NuxtLink :to="entityPath(m.entity_id)" class="mention-link">
-                {{ m.entity_name }}<span class="mention-count">{{ m.count }} lượt kể</span>
-              </NuxtLink>
-            </li>
-          </ul>
-        </div>
-
-        <div v-if="topMembers.length" class="sidebar-card reveal">
-          <p class="sidebar-kicker">Bảng xếp hạng</p>
-          <h2 class="sediment-head">Thành viên tích cực</h2>
-          <ol class="leaderboard-list">
-            <li v-for="(m, i) in topMembers" :key="m.id">
-              <NuxtLink :to="userPath(m.username || m.id)" class="lb-row">
-                <span class="lb-rank" :class="`lb-rank-${i + 1}`">{{ i + 1 }}</span>
-                <span class="avatar lb-avatar">{{ (m.display_name || '?').charAt(0).toUpperCase() }}</span>
-                <span class="lb-name">{{ m.display_name }}</span>
-                <span class="lb-points">{{ m.points }}đ</span>
-              </NuxtLink>
-            </li>
-          </ol>
-          <NuxtLink to="/bang-xep-hang" class="sidebar-more">Xem bảng xếp hạng →</NuxtLink>
-        </div>
-
-        <div v-if="isLoggedIn && suggestedUsers.length" class="sidebar-card reveal">
-          <p class="sidebar-kicker">Gợi ý kết bạn</p>
-          <h2 class="sediment-head">Có thể bạn quan tâm</h2>
-          <ul class="suggest-list">
-            <li v-for="s in suggestedUsers" :key="s.id" class="suggest-row">
-              <NuxtLink :to="userPath(s.username || s.id)" class="suggest-user">
-                <span class="avatar suggest-avatar">{{ (s.display_name || '?').charAt(0).toUpperCase() }}</span>
-                <span class="suggest-name">{{ s.display_name }}</span>
-              </NuxtLink>
-              <button type="button" class="btn btn-outline btn-sm suggest-follow" :disabled="s._following" @click="followSuggested(s)">
-                {{ s._following ? 'Đã theo dõi' : 'Theo dõi' }}
-              </button>
-            </li>
-          </ul>
-        </div>
-
-        <div v-if="trendingTags.length" class="sidebar-card reveal">
-          <p class="sidebar-kicker">Chủ đề đang bàn</p>
-          <h2 class="sediment-head">Hashtag thịnh hành</h2>
-          <div class="trending-tags">
-            <NuxtLink
-              v-for="t in trendingTags"
-              :key="t.tag"
-              :to="{ path: '/cong-dong', query: { tag: t.tag } }"
-              class="trending-tag"
-            >#{{ t.tag }}<span class="tt-count">{{ t.count }}</span></NuxtLink>
-          </div>
-        </div>
-
-      </aside>
+      <CommunitySidebar
+        :feed-stats="feedStats"
+        :recent-mentions="recentMentions"
+        :top-members="topMembers"
+        :suggested-users="suggestedUsers"
+        :trending-tags="trendingTags"
+        :is-logged-in="isLoggedIn"
+        @follow="followSuggested"
+      />
     </div>
 
     <!-- Save momentum cue — keeps bookmarking from dead-ending -->
@@ -614,33 +454,14 @@ const charRatio = computed(() => newContent.value.length / MAX_CHARS)
 const quotingPost = ref<Record<string, any> | null>(null)
 
 // ── Lên lịch đăng bài ──
-const schedulePost = ref(false)
-const scheduledAt = ref('')
-const minScheduleDate = computed(() => {
-  const d = new Date()
-  d.setMinutes(d.getMinutes() + 10)
-  return d.toISOString().slice(0, 16)
-})
-const scheduledPosts = ref<any[]>([])
-
-async function loadScheduledPosts() {
-  if (!isLoggedIn.value) return
-  try {
-    const res = await $fetch<{ scheduled: any[] }>('/api/scheduled', { headers: authHeaders() })
-    scheduledPosts.value = res.scheduled || []
-  } catch { /* im lặng — mục lên lịch không quan trọng bằng bảng tin chính */ }
-}
-
-async function cancelScheduled(id: string) {
-  try {
-    await $fetch(`/api/scheduled/${encodePathId(id)}`, { method: 'DELETE', headers: authHeaders() })
-    scheduledPosts.value = scheduledPosts.value.filter(s => s.id !== id)
-    showToast('Đã hủy lịch đăng', 'success')
-  } catch (e: unknown) {
-    if (getStatusCode(e) === 401) { handleSessionExpired(); return }
-    showToast('Không thể hủy lịch đăng', 'error')
-  }
-}
+const {
+  schedulePost,
+  scheduledAt,
+  minScheduleDate,
+  scheduledPosts,
+  loadScheduledPosts,
+  cancelScheduled,
+} = useCommunityScheduledPosts()
 
 // ── Bookmarks ──
 const bookmarks = ref<Post[]>([])
@@ -655,89 +476,27 @@ const showBookmarkMomentum = computed(() =>
   sessionBookmarked.value && !bookmarkBannerDismissed.value && activeTab.value !== 'bookmarks'
 )
 
-type PostListResponse = {
-  posts?: Post[]
-  bookmarks?: Post[]
-  has_more?: boolean
-}
-const { filterCommunityPosts, mergeCommunityPosts } = useCommunityPostFilters<Post>()
+type PostListResponse = import('~/composables/useCommunityPostFilters').PostListResponse<Post>
+const {
+  filterCommunityPosts,
+  mergeCommunityPosts,
+  extractPostArray,
+  responseHasMore,
+} = useCommunityPostFilters<Post>()
 
-function extractPostArray(res: unknown, preferredKey: 'posts' | 'bookmarks' = 'posts') {
-  const payload = res as PostListResponse | Post[] | null | undefined
-  if (Array.isArray(payload)) return payload
-  if (Array.isArray(payload?.[preferredKey])) return payload[preferredKey] || []
-  if (Array.isArray((payload as PostListResponse | undefined)?.posts)) return (payload as PostListResponse).posts || []
-  return []
-}
-
-function responseHasMore(res: unknown, rawPosts: Post[]) {
-  const hasMoreValue = (res as PostListResponse | undefined)?.has_more
-  return typeof hasMoreValue === 'boolean' ? hasMoreValue : rawPosts.length === 20
-}
-
-// ── Feed stats: số THẬT từ server (không phải đếm 20 bài đã tải) ──
-const communityStats = ref<{ posts: number; reviews: number; members: number } | null>(null)
-const feedStats = computed(() => ({
-  postCount: communityStats.value?.posts ?? '—',
-  reviewCount: communityStats.value?.reviews ?? '—',
-}))
-async function loadCommunityStats() {
-  try { communityStats.value = await $fetch<{ posts: number; reviews: number; members: number }>('/api/community/stats' as string) } catch { /* giữ '—' */ }
-}
-
-// ── Hashtag thịnh hành (sidebar khám phá) ──
-const trendingTags = ref<{ tag: string; count: number }[]>([])
-async function loadTrendingTags() {
-  try {
-    const res = await $fetch<{ tags: { tag: string; count: number }[] }>('/api/community/trending-tags')
-    trendingTags.value = res.tags || []
-  } catch { /* ẩn card nếu lỗi */ }
-}
-
-// ── Bảng xếp hạng đóng góp (sidebar top 5) ──
-const topMembers = ref<{ id: string; display_name: string; points: number; username?: string }[]>([])
-async function loadLeaderboard() {
-  try {
-    const res = await $fetch<{ leaders: any[] }>('/api/community/leaderboard?limit=5')
-    topMembers.value = res.leaders || []
-  } catch { /* ẩn card nếu lỗi */ }
-}
-
-// ── Gợi ý người để theo dõi (logged-in) ──
-const suggestedUsers = ref<any[]>([])
-function normalizeSuggestedUsers(users: any[]) {
-  const seen = new Set<string>()
-  const selfId = String(user.value?.id || '')
-  return users.filter((item) => {
-    const id = String(item?.id || '')
-    if (!id || id === selfId || seen.has(id) || item.is_following || item._following) return false
-    seen.add(id)
-    return true
-  })
-}
-async function loadSuggested() {
-  if (!isLoggedIn.value) { suggestedUsers.value = []; return }
-  try {
-    const res = await $fetch<{ users: any[] }>('/api/community/suggested-follows?limit=5', { headers: authHeaders() })
-    suggestedUsers.value = normalizeSuggestedUsers(res.users || [])
-  } catch (e: unknown) {
-    if (getStatusCode(e) === 401) handleSessionExpired()
-  }
-}
-async function followSuggested(s: any) {
-  if (!isLoggedIn.value) { openAuth(); return }
-  if (s._following) return
-  s._following = true
-  try {
-    await $fetch(`/api/follow/user/${s.id}`, { method: 'POST', headers: authHeaders() })
-    suggestedUsers.value = suggestedUsers.value.filter(item => item.id !== s.id)
-    showToast(`Đã theo dõi ${s.display_name}`, 'success')
-  } catch (e: unknown) {
-    s._following = false
-    if (getStatusCode(e) === 401) { handleSessionExpired(); return }
-    showToast('Không thể theo dõi', 'error')
-  }
-}
+// ── Community discovery (stats, leaderboard, trending tags, suggested follows) ──
+const {
+  communityStats,
+  feedStats,
+  loadCommunityStats,
+  trendingTags,
+  loadTrendingTags,
+  topMembers,
+  loadLeaderboard,
+  suggestedUsers,
+  loadSuggested,
+  followSuggested,
+} = useCommunityDiscovery({ openAuth })
 
 // ── Display posts (with type filter) ──
 const displayPosts = computed(() => {
@@ -811,13 +570,10 @@ const canLoadMore = computed(() => {
   return hasMore.value && !loading.value
 })
 
-// ── Report entity ──
+// ── Báo sai dữ liệu địa điểm (?report=<id>) ──
 const reportEntityId = computed(() => firstQueryValue(route.query.report).trim())
-type ReportEntity = Entity & { quality?: Entity['quality'] & { has_source?: boolean } }
-const reportEntity = ref<ReportEntity | null>(null)
-const reportReason = ref('')
-const reportSubmitting = ref(false)
-const reportReasons = ['Thiếu nguồn xác minh', 'Tọa độ chưa đúng', 'Sai địa chỉ/khu vực', 'Nội dung cần cập nhật']
+const reportEntityApiPath = computed(() => reportEntityId.value ? `/api/entities/${encodeURIComponent(reportEntityId.value)}` : '')
+
 
 const typePlaceholder = computed(() => {
   const map: Record<string, string> = {
@@ -1278,43 +1034,7 @@ async function submitPost() {
   }
 }
 
-async function fetchReportEntity() {
-  reportEntity.value = null
-  if (!reportEntityId.value) return
-  try {
-    reportEntity.value = await $fetch<Entity>(`/api/entities/${encodeURIComponent(reportEntityId.value)}`)
-    if (!reportReason.value) {
-      reportReason.value = reportEntity.value?.quality?.has_source ? 'Nội dung cần cập nhật' : 'Thiếu nguồn xác minh'
-    }
-  } catch {
-    reportEntity.value = { id: reportEntityId.value, type: 'unknown', name: reportEntityId.value } as ReportEntity
-  }
-}
 
-async function submitEntityReport() {
-  if (!isLoggedIn.value || !reportEntityId.value || reportReason.value.trim().length < 5) return
-  reportSubmitting.value = true
-  try {
-    await $fetch('/api/report', {
-      method: 'POST',
-      headers: authHeaders(),
-      body: {
-        target_type: 'entity',
-        target_id: reportEntityId.value,
-        reason: reportReason.value.trim(),
-      },
-    })
-    showToast('Đã gửi báo cáo. Cảm ơn bạn!', 'success')
-    reportReason.value = ''
-    const nextQuery = { ...route.query }
-    delete nextQuery.report
-    router.replace({ query: nextQuery })
-  } catch (e: unknown) {
-    if (getStatusCode(e) === 401) { handleSessionExpired(); return }
-    showToast(extractErrorMessage(e, 'Không thể gửi báo cáo'), 'error')
-  }
-  reportSubmitting.value = false
-}
 
 const { reportPost } = useReport()
 
@@ -1389,8 +1109,6 @@ function goToPost(postId: string) {
   navigateTo(postPath(postId))
 }
 
-watch(reportEntityId, () => fetchReportEntity())
-
 let draftTimer: ReturnType<typeof setTimeout> | null = null
 watch(newContent, (v) => {
   if (draftTimer) clearTimeout(draftTimer)
@@ -1419,7 +1137,6 @@ onMounted(() => {
   if (draft && draft.content) { newContent.value = draft.content; newType.value = draft.postType }
   applyRouteSearchQuery()
   focusComposerFromRoute()
-  fetchReportEntity()
   normalizeCommunityRouteState()
   refreshFeed()
   // Vào thẳng ?tab=following (link chia sẻ, back/forward) — activeTab đã là
@@ -1477,71 +1194,7 @@ useHead({
 </script>
 
 <style scoped>
-/* ═══════════════════════════════════════════════════════════════════════
-   "Sổ tay hôm nay" — masthead (thay catalog-hero.cat-community)
-   Editorial dateline + H1 động + dòng số liệu serif "phát hành" + tick phù sa.
-   Không Ken Burns/parallax (không có ảnh hero) — chuyển động duy nhất là
-   pulse-dot "vừa có bài mới", một nhịp, không loop-mãi.
-   ═══════════════════════════════════════════════════════════════════════ */
-.almanac-masthead { padding-top: var(--space-2); padding-bottom: var(--space-5); }
-.almanac-eyebrow {
-  display: flex; align-items: center; gap: var(--space-2);
-  margin: 0 0 var(--space-3);
-  font-family: var(--font-sans); font-size: var(--text-2xs); font-weight: 700;
-  text-transform: uppercase; letter-spacing: var(--tracking-caps);
-  color: var(--muted);
-}
-/* Micro-signal "có bài mới" — dot tĩnh mặc định, chỉ nảy một nhịp ngắn khi bài
-   trong feed thực sự mới (<10 phút), không phải banner, không loop vô tận. */
-.almanac-pulse {
-  width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0;
-  background: var(--leaf-600);
-  animation: almanac-pulse-once 1.6s var(--ease-out-expo) 1;
-}
-@keyframes almanac-pulse-once {
-  0% { box-shadow: 0 0 0 0 rgba(var(--secondary-rgb), .5); }
-  70% { box-shadow: 0 0 0 6px rgba(var(--secondary-rgb), 0); }
-  100% { box-shadow: 0 0 0 0 rgba(var(--secondary-rgb), 0); }
-}
-.dark .almanac-pulse { background: var(--secondary); }
-.almanac-title {
-  font-family: var(--font-editorial); font-weight: 600;
-  font-size: var(--text-3xl); line-height: var(--leading-tight);
-  letter-spacing: var(--tracking-tight); text-wrap: balance;
-  margin: 0 0 var(--space-4); color: var(--ink);
-  max-width: 42ch;
-}
-/* Dòng "phát hành" — serif oldstyle numerals, hairline · phân cách, KHÔNG box/pill/card. */
-.almanac-stats {
-  margin: 0; display: flex; flex-wrap: wrap; align-items: baseline; gap: .1em .5em;
-  font-family: var(--font-sans); font-size: var(--text-sm); font-weight: 600;
-  letter-spacing: .03em; text-transform: uppercase; color: var(--muted);
-}
-.almanac-num {
-  font-family: var(--font-editorial); font-variant-numeric: oldstyle-nums tabular-nums;
-  font-size: var(--text-lg); font-weight: 600; letter-spacing: 0; text-transform: none;
-  color: var(--ink);
-}
-.almanac-dot { color: var(--clay-600); font-weight: 700; }
-.dark .almanac-dot { color: var(--clay-400); }
-/* Tick phù sa dưới masthead — ranh giới "biên tập" / "cộng đồng sống" bên dưới.
-   Reuse chính xác pattern .home .block + .block::before (3-hairline river→amber→clay). */
-.sediment-divider {
-  position: relative; margin-top: var(--space-5); height: 7px;
-  background:
-    linear-gradient(90deg, transparent, var(--river-600) 26%, var(--river-600) 74%, transparent) top/100% 1px no-repeat,
-    linear-gradient(90deg, transparent, var(--amber-600) 30%, var(--amber-600) 70%, transparent) center/100% 1px no-repeat,
-    linear-gradient(90deg, transparent, var(--clay-600) 26%, var(--clay-600) 74%, transparent) bottom/100% 1.5px no-repeat;
-  opacity: .5;
-}
-.dark .sediment-divider { opacity: .62; }
-@media (prefers-reduced-motion: reduce) {
-  .almanac-pulse { animation: none; box-shadow: none; }
-}
-@media (max-width: 640px) {
-  .almanac-title { font-size: var(--text-2xl); }
-  .almanac-stats { font-size: var(--text-xs); }
-}
+
 
 /* ── Vệt phù sa mới — hairline river→amber, click-to-scroll, session-only ── */
 .new-post-thread-hint {
@@ -1566,71 +1219,9 @@ useHead({
 
 /* ── Section rhythm — khoảng thở giữa compose/search/tabs và feed bên dưới ── */
 .threads-filter-bar { margin-bottom: var(--space-2); }
-.mobile-discovery,
 .type-filter-row { margin-top: var(--space-2); }
 .threads-compose,
 .threads-compose-guest { margin-bottom: var(--space-2); }
-
-/* ── Sidebar kicker — serif-italic, đọc như "được biên tập" chứ không tự sinh ──
-   (selector .sidebar-card p.sidebar-kicker: thắng specificity so với .sidebar-card p) */
-.sidebar-card p.sidebar-kicker {
-  margin: 0 0 var(--space-1); font-family: var(--font-editorial); font-style: italic;
-  font-weight: 600; font-size: var(--text-2xs); letter-spacing: var(--tracking-caps);
-  text-transform: uppercase; color: var(--muted);
-}
-
-/* ── Nhắc tới gần đây — cầu nối UGC → catalog, tally client-side từ posts đã tải ── */
-.mention-list { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: var(--space-1); }
-.mention-link {
-  display: flex; align-items: baseline; justify-content: space-between; gap: var(--space-2);
-  padding: var(--space-1) var(--space-2); border-radius: var(--radius-surface);
-  text-decoration: none; color: var(--ink); font-size: var(--text-sm); font-weight: 500;
-  transition: background .2s var(--ease-out);
-}
-.mention-link:hover { background: var(--bg-alt); }
-.mention-count { flex-shrink: 0; font-size: var(--text-2xs); color: var(--muted); white-space: nowrap; }
-.dark .mention-link:hover { background: rgba(var(--white-rgb),.04); }
-
-/* @-mention dropdown: styles dùng chung đã chuyển sang assets/css/components.css */
-.community-search { display: flex; align-items: center; gap: var(--space-2); margin-bottom: var(--space-3); padding: .35rem .5rem .35rem .75rem; background: var(--card); border: 1px solid var(--border); border-radius: var(--radius-full); }
-.community-search:focus-within { border-color: var(--primary); }
-.cs-icon { color: var(--muted); flex-shrink: 0; }
-.cs-input { flex: 1; min-width: 0; border: none; background: none; outline: none; color: var(--ink); font-size: var(--text-sm); padding: .35rem 0; }
-.cs-input:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
-.cs-input::placeholder { color: var(--muted); }
-.cs-clear { border: none; background: none; color: var(--muted); font-size: 1.3rem; line-height: 1; cursor: pointer; padding: 0 .25rem; min-width: 44px; display: inline-flex; align-items: center; justify-content: center; }
-.cs-clear:hover { color: var(--ink); }
-.cs-go { flex-shrink: 0; }
-.leaderboard-list { list-style: none; padding: 0; margin: 0 0 var(--space-2); display: flex; flex-direction: column; gap: var(--space-1); }
-.lb-row { display: flex; align-items: center; gap: var(--space-2); padding: var(--space-1) var(--space-2); border-radius: var(--radius-surface); text-decoration: none; color: var(--ink); transition: background .2s var(--ease-out); }
-.lb-row:hover { background: var(--bg-alt); }
-.lb-rank { flex-shrink: 0; width: 18px; text-align: center; font-size: var(--text-xs); font-weight: var(--weight-bold); color: var(--muted); }
-/* Cùng khuôn huy hiệu với /bang-xep-hang — xem chú thích ở đó. */
-.lb-rank-1, .lb-rank-2, .lb-rank-3 {
-  display: inline-flex; align-items: center; justify-content: center;
-  width: 20px; height: 20px; border-radius: 50%;
-  font-size: var(--text-2xs); color: var(--medal-ink);
-}
-.lb-rank-1 { background: var(--medal-gold); }
-.lb-rank-2 { background: var(--medal-silver); }
-.lb-rank-3 { background: var(--medal-bronze); }
-.lb-avatar { width: 26px; height: 26px; display: inline-flex; align-items: center; justify-content: center; border-radius: 50%; background: var(--primary); color: var(--primary-fg, var(--white)); font-size: var(--text-2xs); font-weight: var(--weight-semibold); flex-shrink: 0; }
-.lb-name { flex: 1; min-width: 0; font-size: var(--text-sm); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.lb-points { flex-shrink: 0; font-size: var(--text-xs); font-weight: var(--weight-semibold); color: var(--primary-fg); }
-.sidebar-more { display: inline-block; font-size: var(--text-sm); color: var(--primary-fg); text-decoration: none; }
-.sidebar-more:hover { text-decoration: underline; }
-.suggest-list { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: var(--space-2); }
-.suggest-row { display: flex; align-items: center; gap: var(--space-2); }
-.suggest-user { display: flex; align-items: center; gap: var(--space-2); flex: 1; min-width: 0; text-decoration: none; color: var(--ink); }
-.suggest-avatar { width: 30px; height: 30px; display: inline-flex; align-items: center; justify-content: center; border-radius: 50%; background: var(--primary); color: var(--primary-fg, var(--white)); font-size: var(--text-xs); font-weight: var(--weight-semibold); flex-shrink: 0; }
-.suggest-name { font-size: var(--text-sm); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.suggest-follow { flex-shrink: 0; padding: .2rem .6rem; }
-.trending-tags { display: flex; flex-wrap: wrap; gap: var(--space-2); }
-.trending-tag { display: inline-flex; align-items: center; gap: .35rem; padding: .25rem .6rem; background: var(--bg-alt); border: .5px solid var(--line); border-radius: var(--radius-full); font-size: var(--text-sm); color: var(--primary-fg); text-decoration: none; transition: border-color .25s var(--ease-out), background .25s var(--ease-out); }
-.trending-tag:hover { border-color: var(--primary-fg); background: rgba(var(--primary-rgb), .06); }
-.tt-count { font-size: var(--text-xs); color: var(--muted); }
-.tag-banner { display: flex; align-items: center; justify-content: space-between; gap: .5rem; padding: .5rem .75rem; margin-bottom: var(--space-3); background: color-mix(in srgb, var(--accent) 10%, var(--bg-alt)); border-radius: var(--radius-surface); font-size: var(--text-sm); }
-.tag-clear { border: none; background: none; color: var(--primary-fg); cursor: pointer; font-size: var(--text-sm); }
 .threads-page { max-width: 960px; margin: 0 auto; }
 .threads-layout { display: grid; grid-template-columns: 1fr 280px; gap: var(--space-6); align-items: start; }
 /* min-width: 0 — grid items default to min-width:auto, which floors this track at its
@@ -1771,45 +1362,7 @@ useHead({
 /* Section rhythm — quiet divider between compose and feed */
 .type-filter-row + .post-list-container { margin-top: var(--space-1); }
 
-/* ── Sidebar ── */
-.threads-sidebar { position: sticky; top: 78px; display: flex; flex-direction: column; gap: var(--space-4); }
-.sidebar-card {
-  background: var(--card); border: .5px solid var(--line);
-  border-radius: var(--radius-sheet); padding: var(--space-4);
-  box-shadow: var(--shadow-xs);
-  transition: transform .35s var(--ease-spring-gentle), box-shadow .35s var(--ease-out-expo), border-color .3s var(--ease-out);
-}
-.sidebar-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); border-color: var(--border, var(--ink)); }
-.sidebar-card:focus-within { border-color: var(--border, var(--ink)); }
-.sidebar-card h2 { margin: 0 0 var(--space-3); font-size: var(--text-sm); font-weight: var(--weight-bold); }
-.sidebar-card p { margin: 0; font-size: var(--text-sm); color: var(--muted); line-height: var(--leading-relaxed); }
 
-.sidebar-stats { display: flex; gap: var(--space-4); margin-top: var(--space-3); padding-top: var(--space-3); border-top: .5px solid var(--line); }
-.sidebar-stat { display: flex; flex-direction: column; gap: 2px; padding: var(--space-2) var(--space-3); border-radius: var(--radius-control); transition: background .3s var(--ease-out); cursor: default; }
-.sidebar-stat:hover { background: var(--overlay-subtle); }
-.stat-num { font-size: var(--text-lg); font-weight: var(--weight-bold); color: var(--ink); font-variant-numeric: tabular-nums; transition: color .3s var(--ease-out); }
-.sidebar-stat:hover .stat-num { color: var(--primary-fg); }
-.stat-label { font-size: var(--text-xs); color: var(--muted); }
-
-
-/* ── Report card ── */
-.report-entity-card {
-  display: grid; gap: var(--space-3); margin-bottom: 0;
-  padding: var(--space-5) var(--space-4) var(--space-4);
-  border: .5px solid rgba(var(--accent-rgb), .2); border-radius: var(--radius-sheet);
-  background: rgba(var(--accent-rgb), .06); box-shadow: var(--shadow-xs);
-  animation: slideDown .35s var(--ease-spring-gentle);
-  transition: border-color .3s var(--ease-out), box-shadow .35s var(--ease-out-expo);
-}
-.report-entity-card:focus-within { border-color: var(--accent-dark); box-shadow: 0 0 0 4px rgba(var(--accent-rgb), .1), var(--shadow-sm); }
-.report-entity-card:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
-@keyframes slideDown { from { opacity: 0; transform: translateY(-8px) scale(.99); } }
-.report-entity-card h2 { margin: 2px 0 var(--space-1); font-size: var(--text-base); font-weight: var(--weight-semibold); }
-.report-entity-card p { margin: 0; color: var(--muted); font-size: var(--text-sm); }
-.report-kicker { font-size: var(--text-xs); text-transform: uppercase; letter-spacing: .04em; font-weight: var(--weight-extrabold); color: var(--accent-dark); }
-.report-form-inline { display: grid; gap: var(--space-3); }
-.report-reasons { display: flex; flex-wrap: wrap; gap: var(--space-2); }
-.report-form-inline .btn { justify-self: start; }
 
 .img-preview-row { display: flex; gap: var(--space-2); flex-wrap: wrap; animation: fadeIn .25s var(--ease-out); }
 .img-preview-item { position: relative; width: 120px; margin: 0; display: flex; flex-direction: column; gap: var(--space-1); transition: transform .35s var(--ease-spring-gentle), box-shadow .3s var(--ease-out); }
@@ -1868,29 +1421,14 @@ useHead({
 .momentum-fade-leave-to { opacity: 0; transform: translate(-50%, 8px); }
 
 /* ── Dark mode ── */
-.dark .sidebar-card { background: var(--card); border-color: var(--line); }
-.dark .sidebar-card:hover { box-shadow: var(--shadow-sm); border-color: rgba(var(--white-rgb),.14); }
 .dark .chip-filter { background: var(--bg-alt); border-color: var(--line); }
 .dark .chip-filter.active { background: var(--ink); color: var(--bg); border-color: var(--ink); }
 .dark .bookmark-momentum { background: var(--card); border-color: rgba(var(--white-rgb),.1); box-shadow: 0 8px 32px rgba(var(--black-rgb),.5); }
 .dark .bm-dismiss:hover { background: rgba(var(--white-rgb),.08); }
-.dark .sidebar-stat:hover { background: rgba(var(--white-rgb),.03); }
-.dark .report-entity-card { background: rgba(var(--accent-rgb),.08); border-color: rgba(var(--accent-rgb),.22); }
 .dark .compose-attach:hover { background: rgba(var(--white-rgb),.08); }
 .dark .threads-compose { background: rgba(var(--accent-rgb),.06); }
 .dark .threads-compose:focus-within { background: rgba(var(--accent-rgb),.1); }
 .dark .threads-filter-bar { background: var(--surface-translucent, rgba(var(--black-rgb),.72)); }
-
-.mobile-discovery { display: none; }
-
-/* ── User search results ── */
-.search-users-section { margin-bottom: var(--space-4); }
-.search-users-grid { display: flex; gap: var(--space-2); overflow-x: auto; padding-bottom: var(--space-1); }
-.search-user-card { display: flex; align-items: center; gap: var(--space-2); padding: var(--space-2) var(--space-3); min-width: 180px; flex-shrink: 0; text-decoration: none; }
-.suc-info { min-width: 0; }
-.suc-info strong { display: block; font-size: 0.875rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: var(--ink); }
-.suc-meta { font-size: 0.75rem; color: var(--muted); }
-.section-label { font-size: var(--text-sm); font-weight: var(--weight-semibold); color: var(--muted); margin: 0 0 var(--space-2); text-transform: uppercase; letter-spacing: 0.04em; }
 
 /* ── Bạn bè: hoạt động gần đây (tab "Đang theo dõi") ── */
 
@@ -1904,32 +1442,16 @@ useHead({
   /* --text-sm clamps to ~14px under ~640px viewport — below the 16px iOS auto-zoom
      threshold. Force 16px on mobile only for the two real text inputs that use it
      (community search box, schedule datetime picker); desktop keeps --text-sm as-is. */
-  .cs-input, .cd-input { font-size: 16px; }
-  .mobile-discovery { display: flex; flex-direction: column; gap: var(--space-2); padding: var(--space-2) var(--space-3); }
-  .md-section { display: flex; align-items: center; gap: var(--space-2); }
-  .md-label { font-size: .7rem; font-weight: 600; text-transform: uppercase; letter-spacing: .04em; color: var(--muted); white-space: nowrap; min-width: 52px; }
-  .md-scroll { display: flex; gap: var(--space-2); overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: none; padding-block: 2px; }
-  .md-scroll::-webkit-scrollbar { display: none; }
-  .md-tag { font-size: .8rem; padding: var(--space-1) 10px; border-radius: var(--radius-full); background: var(--surface-2); color: var(--accent); white-space: nowrap; text-decoration: none; font-weight: 500; }
-  .md-tag:hover { background: var(--accent); color: var(--text-on-dark, var(--white)); }
-  .md-member { display: flex; align-items: center; gap: var(--space-1); padding: var(--space-1) var(--space-2); border-radius: var(--radius-full); background: var(--surface-2); text-decoration: none; white-space: nowrap; }
-  /* Không cần .dark override: --ink-800 nay có giá trị chế-độ-tối riêng
-     8.02:1 trên card tối). */
-  .md-name { font-size: .78rem; color: var(--ink-800); }
-  .dark .md-tag { background: var(--surface-3); }
-  .dark .md-member { background: var(--surface-3); }
+  .cd-input { font-size: 16px; }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .report-entity-card { animation: none; }
   .img-preview-row { animation: none; }
   .post-list-enter-active,
   .post-list-leave-active,
   .post-list-move,
   .fab-fade-enter-active,
   .fab-fade-leave-active { transition: none; }
-  .sidebar-card { transition: none; }
-  .sidebar-card:hover { transform: none; }
   .img-preview-item:hover { transform: none; }
   .compose-attach:hover { transform: none; }
   .compose-attach:active { transform: none; }
@@ -1962,16 +1484,7 @@ useHead({
 .cd-input:focus-visible { outline: none; border-color: var(--accent, var(--primary)); box-shadow: 0 0 0 3px rgba(var(--accent-rgb), .15); }
 .cd-hint { font-size: var(--text-xs); color: var(--muted); }
 
-.scheduled-section { margin-bottom: var(--space-4); }
-.scheduled-summary { cursor: pointer; font-weight: var(--weight-semibold); color: var(--primary-fg); padding: var(--space-2) 0; list-style: none; }
-.scheduled-summary::-webkit-details-marker { display: none; }
-.scheduled-summary:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; border-radius: var(--radius-control); }
-.scheduled-list { display: flex; flex-direction: column; gap: var(--space-2); padding-top: var(--space-2); }
-.scheduled-item { padding: var(--space-3); background: var(--card); border: .5px solid var(--line); border-radius: var(--radius-surface); }
-.scheduled-item p { margin: 0; font-size: var(--text-sm); line-height: var(--leading-relaxed); overflow-wrap: anywhere; }
-.scheduled-meta { display: flex; justify-content: space-between; align-items: center; margin-top: var(--space-2); font-size: var(--text-xs); color: var(--muted); }
-.scheduled-cancel { color: var(--error); padding: var(--space-1) var(--space-2); min-height: 32px; }
-.scheduled-cancel:hover { background: rgba(var(--color-error-rgb), .08); }
+
 
 @media (prefers-reduced-motion: reduce) {
   .cd-toggle, .cd-toggle::after { transition: none; }

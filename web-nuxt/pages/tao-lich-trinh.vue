@@ -12,19 +12,7 @@
     </section>
 
     <!-- Guided flow indicator -->
-    <ol class="planner-steps" aria-label="Các bước tạo lịch trình">
-      <li :class="['planner-step', { active: !stops.length, done: stops.length > 0 }]">
-        <span class="step-dot">1</span><span class="step-label">Chọn điểm</span>
-      </li>
-      <li class="planner-step-sep" aria-hidden="true"></li>
-      <li :class="['planner-step', { active: stops.length > 0 && stops.length < 2, done: stops.length >= 2 }]">
-        <span class="step-dot">2</span><span class="step-label">Sắp xếp</span>
-      </li>
-      <li class="planner-step-sep" aria-hidden="true"></li>
-      <li :class="['planner-step', { active: stops.length >= 2 }]">
-        <span class="step-dot">3</span><span class="step-label">Xem & lưu</span>
-      </li>
-    </ol>
+    <PlannerSteps :stop-count="stops.length" />
 
     <div class="planner-layout">
       <!-- Left: Entity picker -->
@@ -145,51 +133,15 @@
           />
         </div>
 
-        <section
+        <PlannerConflictDiff
           v-if="plannerRevisionConflict"
           ref="plannerConflictEl"
-          class="planner-conflict-diff"
-          data-planner-conflict-diff
-          role="alert"
-          aria-labelledby="planner-conflict-title"
-          tabindex="-1"
-        >
-          <div class="planner-conflict-diff__head">
-            <div>
-              <span class="planner-conflict-diff__eyebrow">Cần bạn quyết định</span>
-              <h2 id="planner-conflict-title">Lịch trình đã thay đổi trên thiết bị khác</h2>
-            </div>
-            <span class="planner-conflict-diff__revision">Bản máy chủ {{ plannerRevisionConflict.revision }}</span>
-          </div>
-          <p id="planner-publish-conflict-reason" class="planner-conflict-diff__freshness">
-            Cập nhật {{ formatDate(plannerRevisionConflict.updatedAt) }}. Bản cục bộ vẫn được giữ nguyên để bạn đối chiếu. Hãy xử lý xung đột trước khi đổi trạng thái công khai.
-          </p>
-          <dl class="planner-conflict-diff__titles">
-            <div>
-              <dt>Bản cục bộ</dt>
-              <dd>{{ planTitle.trim() || 'Lịch trình chưa đặt tên' }}</dd>
-            </div>
-            <div>
-              <dt>Máy chủ</dt>
-              <dd>{{ plannerRevisionConflict.title }}</dd>
-            </div>
-          </dl>
-          <div class="planner-conflict-diff__stops">
-            <h3>Khác biệt theo điểm dừng</h3>
-            <p v-if="!plannerConflictDifferences.length">Các điểm dừng giống nhau; chỉ tiêu đề hoặc thời điểm cập nhật khác.</p>
-            <ul v-else>
-              <li v-for="difference in plannerConflictDifferences" :key="difference.key">
-                <strong>{{ difference.name }}</strong>
-                <span>{{ difference.detail }}</span>
-              </li>
-            </ul>
-          </div>
-          <div class="planner-conflict-diff__actions" aria-label="Cách xử lý xung đột">
-            <button type="button" class="btn btn-sm btn-outline" data-conflict-local :disabled="saving" @click="choosePlannerConflict('local')">Giữ bản cục bộ</button>
-            <button type="button" class="btn btn-sm btn-ghost" data-conflict-server :disabled="saving" @click="choosePlannerConflict('server')">Dùng bản máy chủ</button>
-            <button type="button" class="btn btn-sm btn-ghost" data-conflict-manual :disabled="saving" @click="choosePlannerConflict('manual')">So sánh thủ công</button>
-          </div>
-        </section>
+          :conflict="plannerRevisionConflict"
+          :plan-title="planTitle"
+          :differences="plannerConflictDifferences"
+          :saving="saving"
+          @choose="choosePlannerConflict"
+        />
 
         <PlannerOptimizationPreview
           v-if="optimizationPreview"
@@ -268,29 +220,12 @@
         </div>
 
         <!-- Route map -->
-        <div class="planner-map-column" data-planner-map-column>
-        <button
-          v-if="stops.length >= 2"
-          type="button"
-          class="btn btn-outline planner-map-sheet-toggle"
-          :aria-expanded="mapSheetOpen"
-          aria-controls="planner-map-sheet"
-          @click="mapSheetOpen = !mapSheetOpen"
-        >
-          {{ mapSheetOpen ? 'Đóng bản đồ' : 'Mở bản đồ' }}
-        </button>
-        <ClientOnly>
-          <div v-if="stops.length >= 2" id="planner-map-sheet" class="route-map-section" :class="{ 'is-open': mapSheetOpen }">
-            <h2 class="sediment-head">Bản đồ lộ trình</h2>
-            <div v-show="mapState !== 'error'" ref="routeMapEl" class="route-map" :data-map-state="mapState"></div>
-            <div v-if="mapState === 'error'" class="planner-map-fallback" data-map-fallback role="status">
-              <strong>Bản đồ chưa khả dụng</strong>
-              <p>Timeline vẫn giữ nguyên thứ tự và chỉnh sửa thủ công được.</p>
-              <button type="button" class="btn btn-sm btn-outline" @click="retryMap">Thử lại bản đồ</button>
-            </div>
-          </div>
-        </ClientOnly>
-        </div>
+        <PlannerRouteMap
+          ref="plannerRouteMapRef"
+          :stops="stops"
+          :route-result="routeResult"
+          :is-active="isPlannerLifecycleActive"
+        />
 
         <button
           type="button"
@@ -321,29 +256,16 @@
         </ActionDock>
 
         <!-- Saved itineraries -->
-        <div v-if="savedPlans.length" class="saved-plans">
-          <h2 class="sediment-head">Lịch trình đã lưu</h2>
-          <div v-for="(plan, pi) in savedPlans" :key="pi" class="saved-plan-item">
-            <button type="button" class="saved-plan-info saved-plan-btn" :disabled="saving" @click="loadPlan(pi)">
-              <strong>{{ plan.title || 'Lịch trình chưa đặt tên' }}</strong>
-              <small>{{ plan.stops.length }} điểm · Lưu {{ formatDate(plan.savedAt) }}</small>
-            </button>
-            <div class="saved-plan-actions">
-              <button
-                v-if="plan.id"
-                type="button"
-                :class="['btn btn-sm', plan.is_public ? 'btn-outline' : 'btn-ghost']"
-                :disabled="saving || planBusy === pi || publishBlockedByConflict(plan)"
-                :aria-describedby="publishBlockedByConflict(plan) ? 'planner-publish-conflict-reason' : undefined"
-                @click="publishPlan(pi)"
-              >
-                {{ planBusy === pi ? 'Đang cập nhật' : plan.is_public ? 'Công khai' : 'Riêng tư' }}
-              </button>
-              <button type="button" class="btn btn-sm btn-ghost" :disabled="planBusy === pi" @click="sharePlan(pi)">Chia sẻ</button>
-              <button type="button" class="btn btn-sm btn-ghost danger" :disabled="saving || planBusy === pi" @click="deletePlan(pi)">Xóa</button>
-            </div>
-          </div>
-        </div>
+        <PlannerSavedPlans
+          :saved-plans="savedPlans"
+          :saving="saving"
+          :plan-busy="planBusy"
+          :publish-blocked-by-conflict="publishBlockedByConflict"
+          @load="loadPlan"
+          @publish="publishPlan"
+          @share="sharePlan"
+          @delete="deletePlan"
+        />
       </div>
     </div>
   </section>
@@ -388,54 +310,35 @@ import PlannerFrictionNotice from '~/components/planner/PlannerFrictionNotice.vu
 import PlannerOptimizationPreview from '~/components/planner/PlannerOptimizationPreview.vue'
 import PlannerSummary from '~/components/planner/PlannerSummary.vue'
 import ActionDock from '~/components/public/ActionDock.vue'
+import {
+  type PlanStop,
+  type SavedPlan,
+  type PlanSnapshot,
+  type PlannerConflictDifference,
+  type OpeningHourConflict,
+  positiveRevision,
+  plannerStopFromDraft,
+  normalizePlanSnapshot,
+  conflictSnapshot,
+  diffPlannerPlanStops,
+} from '~/utils/plannerSnapshots'
+import {
+  optimizationTradeoffs,
+  openingHourConflictsFor,
+} from '~/utils/plannerTradeoffs'
+import {
+  usePlannerServerPlans,
+  LS_PLANS,
+} from '~/composables/usePlannerServerPlans'
 
-const LS_PLANS = 'vl360_plans'
 const route = useRoute()
 const router = useRouter()
 const runtimeConfig = useRuntimeConfig()
 const itineraryScheduleV2 = runtimeConfig.public.itineraryScheduleV2 === true
 
-interface PlanStop {
-  id: string
-  name: string
-  type: string
-  place_name?: string
-  coords: [number, number] | null
-  time: string
-  notes: string
-  sourceFreshness?: PlannerStopFreshnessEvidence
-}
-
-interface SavedPlan {
-  id?: string          // có khi đồng-bộ tài-khoản (server); thiếu = plan local (khách)
-  title: string
-  stops: PlanStop[]
-  savedAt: string
-  is_public?: boolean
-  revision?: number
-  updatedAt?: string
-}
-
-interface PlanSnapshot extends SavedPlan {
-  id: string
-  revision: number
-  updatedAt: string
-}
-
-interface PlannerConflictDifference {
-  key: string
-  name: string
-  detail: string
-}
-
-type OpeningHourConflict = {
-  stopId: string
-  requestedTime?: string | null
-  openingHours?: string | null
-}
-
 const { favorites: favList, count: favCount } = useFavorites()
 const { confirmDialog } = useConfirm()
+const { show: showToast } = useToast()
 const { user, isLoggedIn, authHeaders } = useAuth()
 const { capabilityMode } = useFeature()
 const optimizerEnabled = computed(() => capabilityMode('optimizer') === 'enhanced')
@@ -489,7 +392,6 @@ const routeLoading = ref(false)
 const optimizing = ref(false)
 const optimizationMessage = ref('')
 const summaryDrawerOpen = ref(false)
-const mapSheetOpen = ref(false)
 const optimizationPreview = ref<PlannerPreviewTransaction<PlanStop> | null>(null)
 let pendingOptimization: {
   result: CurrentPlannerOptimizationResult<PlanStop>
@@ -499,7 +401,11 @@ const suspendAutoRoute = ref(false)
 let latestAutoRouteRequest: number | null = null
 const plannerInputState = reactive<PlannerInputState>({ version: 0 })
 const plannerScheduleMetadata = new WeakMap<object, PlannerScheduleMetadata>()
-const routeMapEl = ref<HTMLElement | null>(null)
+const plannerRouteMapRef = ref<{ updateMap: (route: RouteResult | null) => Promise<void>; retryMap: () => Promise<void> } | null>(null)
+
+async function updateMap(result: RouteResult | null = routeResult.value) {
+  await plannerRouteMapRef.value?.updateMap(result)
+}
 const addingId = ref<string | null>(null)
 let addingTimer: ReturnType<typeof setTimeout> | null = null
 const savePulse = ref(false)
@@ -515,7 +421,7 @@ const activeServerPlanId = ref<string | null>(null)
 const baseServerRevision = ref<number | null>(null)
 const plannerRevisionConflict = ref<PlanSnapshot | null>(null)
 const plannerDraftGeneration = ref(0)
-const plannerConflictEl = ref<HTMLElement | null>(null)
+const plannerConflictEl = ref<{ focus: () => void } | null>(null)
 const travelBudgetMinutes = ref<number | null>(null)
 const candidateOpeningHourConflicts = ref<OpeningHourConflict[]>([])
 const confirmedOpeningHourConflicts = ref<OpeningHourConflict[]>([])
@@ -600,11 +506,6 @@ const plannerTotalDuration = computed<number | null>(() => {
     ? (visitDuration > 0 ? visitDuration : null)
     : travelDuration + visitDuration
 })
-const { createMap: createNDAMap } = useNDAMap()
-let mapInstance: any = null
-let maplibre: any = null
-let markers: any[] = []
-const mapState = ref<'idle' | 'loading' | 'ready' | 'error'>('idle')
 
 const plannerQueryKey = computed(() => [
   sourceTab.value,
@@ -695,47 +596,6 @@ function clearPendingOptimizationPreview() {
   candidateOpeningHourConflicts.value = []
 }
 
-function plannerStopFromDraft(stop: PlanStop): PlanStop {
-  const serialized = serializePlanStops([stop])[0] as PlanStop
-  return stop.sourceFreshness
-    ? { ...serialized, sourceFreshness: { ...stop.sourceFreshness } }
-    : serialized
-}
-
-function positiveRevision(value: unknown): value is number {
-  return typeof value === 'number' && Number.isInteger(value) && value > 0
-}
-
-function normalizePlanSnapshot(value: unknown): PlanSnapshot | null {
-  if (!value || typeof value !== 'object' || Array.isArray(value)) return null
-  const candidate = value as Record<string, unknown>
-  if (typeof candidate.id !== 'string' || !candidate.id.trim()
-    || typeof candidate.title !== 'string'
-    || !Array.isArray(candidate.stops)
-    || typeof candidate.savedAt !== 'string'
-    || !positiveRevision(candidate.revision)
-    || typeof candidate.updatedAt !== 'string'
-    || !candidate.updatedAt.trim()) return null
-  return {
-    id: candidate.id,
-    title: candidate.title,
-    stops: serializePlanStops(candidate.stops as PlanStop[]) as PlanStop[],
-    savedAt: candidate.savedAt,
-    revision: candidate.revision,
-    updatedAt: candidate.updatedAt,
-    ...(typeof candidate.is_public === 'boolean' ? { is_public: candidate.is_public } : {}),
-  }
-}
-
-function replaceSavedServerPlan(snapshot: PlanSnapshot) {
-  const index = savedPlans.value.findIndex(plan => plan.id === snapshot.id)
-  if (index < 0) return
-  const currentRevision = savedPlans.value[index]?.revision
-  if (!positiveRevision(currentRevision) || snapshot.revision >= currentRevision) {
-    savedPlans.value.splice(index, 1, snapshot)
-  }
-}
-
 function advancePlannerDraftGeneration() {
   plannerDraftGeneration.value += 1
 }
@@ -747,63 +607,48 @@ function clearActiveServerPlan() {
   plannerRevisionConflict.value = null
 }
 
-function acceptServerComparisonBase(snapshot: PlanSnapshot) {
-  advancePlannerDraftGeneration()
-  replaceSavedServerPlan(snapshot)
-  activeServerPlanId.value = snapshot.id
-  baseServerRevision.value = snapshot.revision
-  draftSource.value = 'server'
-}
-
-function conflictSnapshot(error: unknown, expectedPlanId = activeServerPlanId.value): PlanSnapshot | null {
-  if (getStatusCode(error) !== 409) return null
-  const failure = error as {
-    response?: { _data?: Record<string, unknown> }
-    data?: Record<string, unknown>
-  }
-  const payload = failure.response?._data ?? failure.data
-  if (payload?.code !== 'plan_revision_conflict') return null
-  const snapshot = normalizePlanSnapshot(payload.current)
-  return snapshot?.id === expectedPlanId ? snapshot : null
-}
-
-function diffPlannerPlanStops(local: PlanStop[], server: PlanStop[]): PlannerConflictDifference[] {
-  const indexStops = (items: PlanStop[]) => {
-    const occurrences = new Map<string, number>()
-    const indexed = new Map<string, { stop: PlanStop; index: number }>()
-    items.forEach((stop, index) => {
-      const occurrence = occurrences.get(stop.id) ?? 0
-      occurrences.set(stop.id, occurrence + 1)
-      indexed.set(`${stop.id}:${occurrence}`, { stop, index })
-    })
-    return indexed
-  }
-  const localStops = indexStops(local)
-  const serverStops = indexStops(server)
-  const keys = [...new Set([...localStops.keys(), ...serverStops.keys()])]
-  const labels: Record<string, string> = {
-    name: 'Tên điểm',
-    place_name: 'Khu vực',
-    type: 'Loại điểm',
-    coords: 'Tọa độ',
-    time: 'Thời gian',
-    notes: 'Ghi chú',
-  }
-  return keys.flatMap((key) => {
-    const localEntry = localStops.get(key)
-    const serverEntry = serverStops.get(key)
-    const localStop = localEntry?.stop
-    const serverStop = serverEntry?.stop
-    const name = localStop?.name || serverStop?.name || key
-    if (!localStop) return [{ key, name, detail: 'Chỉ có trên máy chủ' }]
-    if (!serverStop) return [{ key, name, detail: 'Chỉ có trong bản cục bộ' }]
-    const changed = Object.keys(labels).filter(field => (
-      JSON.stringify(localStop[field as keyof PlanStop]) !== JSON.stringify(serverStop[field as keyof PlanStop])
-    )).map(field => labels[field])
-    if (localEntry.index !== serverEntry.index) changed.unshift('Thứ tự')
-    return changed.length ? [{ key, name, detail: changed.join(', ') }] : []
-  })
-}
+const {
+  savePlan,
+  loadPlan,
+  deletePlan,
+  publishPlan,
+  sharePlan,
+  publishBlockedByConflict,
+  replaceSavedServerPlan,
+  acceptServerComparisonBase,
+  persistLocal,
+} = usePlannerServerPlans({
+  planTitle,
+  stops,
+  savedPlans,
+  saving,
+  planBusy,
+  savePulse,
+  activeServerPlanId,
+  baseServerRevision,
+  localDraftRevision,
+  draftSource,
+  localDirty,
+  plannerRevisionConflict,
+  plannerDraftGeneration,
+  revisionSafeSaveEnabled,
+  plannerConflictEl,
+  plannerScheduleMetadata,
+  routeResult,
+  optimizationMessage,
+  isDraftPersistenceReady: () => draftPersistenceReady,
+  setDraftPersistenceReady: (ready: boolean) => { draftPersistenceReady = ready },
+  persistPlannerDraft,
+  invalidatePlannerSchedule,
+  refreshPlannerStopEvidence,
+  plannerMetadataForLoadedStop,
+  clearActiveServerPlan,
+  advancePlannerDraftGeneration,
+  showToast,
+  confirmDialog,
+  isLoggedIn,
+  authHeaders,
+})
 
 async function choosePlannerConflict(choice: 'local' | 'server' | 'manual') {
   if (saving.value) return
@@ -1023,198 +868,6 @@ async function clearPlan() {
   clearActiveServerPlan()
   journeyThread.clear()
 }
-
-async function savePlan() {
-  if (!stops.value.length || saving.value) return
-  saving.value = true
-  try { await _doSave() } finally { saving.value = false }
-}
-async function _doSave() {
-  const request = {
-    title: planTitle.value.trim() || 'Lịch trình chưa đặt tên',
-    stops: serializePlanStops(stops.value),
-    savedAt: new Date().toISOString(),
-    activeServerPlanId: activeServerPlanId.value,
-    baseServerRevision: baseServerRevision.value,
-    draftRevision: localDraftRevision.value,
-    draftSource: draftSource.value,
-    conflict: plannerRevisionConflict.value,
-    draftGeneration: plannerDraftGeneration.value,
-  }
-  const identityStillMatches = () => (
-    activeServerPlanId.value === request.activeServerPlanId
-    && baseServerRevision.value === request.baseServerRevision
-    && draftSource.value === request.draftSource
-    && plannerRevisionConflict.value === request.conflict
-    && plannerDraftGeneration.value === request.draftGeneration
-  )
-  const discardStaleResult = () => {
-    showToast('Kết quả lưu cũ đã được bỏ qua vì lịch trình đang mở đã thay đổi.', 'warning')
-  }
-  let plan: SavedPlan = {
-    title: request.title,
-    stops: request.stops,
-    savedAt: request.savedAt,
-  }
-  if (isLoggedIn.value) {
-    // Đồng-bộ tài-khoản (cross-device)
-    try {
-      if (revisionSafeSaveEnabled.value && request.activeServerPlanId) {
-        if (!positiveRevision(request.baseServerRevision)) {
-          showToast('Không thể xác định phiên bản máy chủ. Hãy tải lại lịch trình đã lưu.', 'error')
-          return
-        }
-        const res = await $fetch<{ plan: unknown }>(`/api/my-plans/${request.activeServerPlanId}`, {
-          method: 'PUT', headers: authHeaders(),
-          body: {
-            title: request.title,
-            stops: request.stops,
-            expected_revision: request.baseServerRevision,
-          },
-        })
-        if (!identityStillMatches()) {
-          discardStaleResult()
-          return
-        }
-        const snapshot = normalizePlanSnapshot(res.plan)
-        if (!snapshot || snapshot.id !== request.activeServerPlanId) {
-          showToast('Phản hồi lưu lịch trình không hợp lệ. Hãy tải lại trước khi tiếp tục.', 'error')
-          return
-        }
-        acceptServerComparisonBase(snapshot)
-        plannerRevisionConflict.value = null
-        localDirty.value = localDraftRevision.value !== request.draftRevision
-        persistPlannerDraft()
-        finishSaveFeedback(snapshot.title)
-        return
-      }
-      if (revisionSafeSaveEnabled.value && request.draftSource === 'server') {
-        showToast('Bản nháp máy chủ thiếu thông tin phiên bản. Hãy tải lại lịch trình đã lưu trước khi lưu.', 'error')
-        return
-      }
-      const res = await $fetch<{ id: string; revision?: number; updatedAt?: string; plan?: unknown }>('/api/my-plans', {
-        method: 'POST', headers: authHeaders(),
-        body: { title: request.title, stops: request.stops },
-      })
-      if (!identityStillMatches()) {
-        discardStaleResult()
-        return
-      }
-      const snapshot = normalizePlanSnapshot(res.plan)
-      plan = snapshot || {
-        ...plan,
-        id: res.id,
-        ...(positiveRevision(res.revision) ? { revision: res.revision } : {}),
-        ...(typeof res.updatedAt === 'string' ? { updatedAt: res.updatedAt } : {}),
-      }
-    } catch (e: unknown) {
-      if (!identityStillMatches()) {
-        discardStaleResult()
-        return
-      }
-      const snapshot = conflictSnapshot(e, request.activeServerPlanId)
-      if (snapshot) {
-        plannerRevisionConflict.value = snapshot
-        await nextTick()
-        plannerConflictEl.value?.focus()
-        showToast('Bản máy chủ mới hơn cần được đối chiếu trước khi lưu.', 'warning')
-        return
-      }
-      showToast(extractErrorMessage(e, 'Không thể lưu lên tài khoản'), 'error')
-      return
-    }
-  } else {
-    persistLocal([plan, ...savedPlans.value])
-  }
-  if (plan.id) {
-    advancePlannerDraftGeneration()
-    draftSource.value = 'server'
-    activeServerPlanId.value = plan.id
-    baseServerRevision.value = positiveRevision(plan.revision) ? plan.revision : null
-    plannerRevisionConflict.value = null
-    localDirty.value = localDraftRevision.value !== request.draftRevision
-  } else {
-    draftSource.value = 'local'
-    clearActiveServerPlan()
-    localDirty.value = false
-  }
-  persistPlannerDraft()
-  savedPlans.value.unshift(plan)
-  finishSaveFeedback(plan.title)
-}
-
-function finishSaveFeedback(title: string) {
-  // brief spring feedback on the button to reinforce the save toast
-  savePulse.value = true
-  if (savePulseTimer) clearTimeout(savePulseTimer)
-  savePulseTimer = setTimeout(() => { savePulse.value = false }, 220)
-  showToast(`Đã lưu "${title}"${isLoggedIn.value ? ' (đồng bộ tài khoản)' : ''}`, 'success')
-}
-
-function persistLocal(plans: SavedPlan[]) {
-  if (import.meta.client) {
-    try { localStorage.setItem(LS_PLANS, JSON.stringify(plans.filter(p => !p.id))) } catch {}
-  }
-}
-
-async function loadPlan(idx: number) {
-  if (saving.value) return
-  if (stops.value.length && !await confirmDialog('Thay thế lịch trình đang tạo bằng bản đã lưu?', { confirmText: 'Thay thế' })) return
-  if (saving.value) return
-  const plan = savedPlans.value[idx]
-  if (!plan) return
-  const persistenceWasReady = draftPersistenceReady
-  draftPersistenceReady = false
-  planTitle.value = plan.title
-  invalidatePlannerSchedule()
-  stops.value = serializePlanStops(plan.stops)
-  stops.value.forEach((stop) => {
-    plannerScheduleMetadata.set(stop, plannerMetadataForLoadedStop(stop.type))
-  })
-  draftSource.value = plan.id ? 'server' : 'local'
-  localDraftRevision.value += 1
-  localDirty.value = false
-  if (plan.id) {
-    advancePlannerDraftGeneration()
-    activeServerPlanId.value = plan.id
-    baseServerRevision.value = positiveRevision(plan.revision) ? plan.revision : null
-    plannerRevisionConflict.value = null
-  } else {
-    clearActiveServerPlan()
-  }
-  optimizationMessage.value = ''
-  await nextTick()
-  draftPersistenceReady = persistenceWasReady
-  persistPlannerDraft()
-  void Promise.all(stops.value
-    .filter(stop => !stop.sourceFreshness)
-    .map(stop => refreshPlannerStopEvidence(stop.id)))
-}
-
-async function deletePlan(idx: number) {
-  if (saving.value) return
-  const plan = savedPlans.value[idx]
-  if (!await confirmDialog(`Xóa lịch trình "${plan?.title || 'chưa đặt tên'}"?`, { danger: true, confirmText: 'Xóa' })) return
-  if (saving.value) return
-  planBusy.value = idx
-  try {
-    if (plan?.id && isLoggedIn.value) {
-      await $fetch(`/api/my-plans/${plan.id}`, { method: 'DELETE', headers: authHeaders() })
-    }
-    savedPlans.value.splice(idx, 1)
-    if (plan?.id === activeServerPlanId.value) {
-      draftSource.value = 'local'
-      clearActiveServerPlan()
-      persistPlannerDraft()
-    }
-    persistLocal(savedPlans.value)
-    showToast('Đã xóa lịch trình', 'success')
-  } catch (e: unknown) {
-    showToast(extractErrorMessage(e, 'Không thể xoá trên tài khoản'), 'error')
-  } finally { planBusy.value = -1 }
-}
-
-const { show: showToast } = useToast()
 const pendingAddId = ref(normalizeRouteParam(route.query.add as any))
 const autoAddedFromQuery = ref(false)
 
@@ -1264,99 +917,6 @@ watch([allEntities, pendingAddId], async () => {
   clearPlannerAddQuery()
   showToast(`Đã thêm "${entity.name}" vào lịch trình`, 'success')
 }, { immediate: true })
-
-function publishBlockedByConflict(plan: SavedPlan): boolean {
-  return Boolean(
-    plannerRevisionConflict.value
-    && plan.id
-    && plan.id === activeServerPlanId.value,
-  )
-}
-
-async function publishPlan(idx: number) {
-  if (saving.value) return
-  const plan = savedPlans.value[idx]
-  if (!plan?.id) return
-  if (publishBlockedByConflict(plan)) return
-  if (!positiveRevision(plan.revision)) {
-    showToast('Không thể xác định phiên bản máy chủ. Hãy tải lại lịch trình đã lưu.', 'error')
-    return
-  }
-  const planId = plan.id
-  const expectedRevision = plan.revision
-  const conflictAtStart = plannerRevisionConflict.value
-  planBusy.value = idx
-  const next = !plan.is_public
-  try {
-    const res = await $fetch<{ is_public?: boolean; revision?: number; plan?: unknown }>(`/api/my-plans/${plan.id}/publish`, {
-      method: 'POST', headers: authHeaders(), body: { is_public: next, expected_revision: expectedRevision },
-    })
-    const snapshot = normalizePlanSnapshot(res.plan)
-    if (!snapshot || snapshot.id !== planId || snapshot.revision !== expectedRevision + 1) {
-      showToast('Phản hồi đổi trạng thái không hợp lệ. Hãy tải lại trước khi tiếp tục.', 'error')
-      return
-    }
-    replaceSavedServerPlan(snapshot)
-    if (planId === activeServerPlanId.value
-      && baseServerRevision.value === expectedRevision
-      && plannerRevisionConflict.value === conflictAtStart) {
-      advancePlannerDraftGeneration()
-      baseServerRevision.value = snapshot.revision
-      persistPlannerDraft()
-    }
-    if (snapshot.is_public && import.meta.client) {
-      const link = `${location.origin}/lich-trinh-chia-se/${planId}`
-      try { await navigator.clipboard?.writeText(link); showToast('Đã công khai — link đã sao chép', 'success') }
-      catch { showToast('Đã công khai', 'success') }
-    } else {
-      showToast('Đã chuyển về riêng tư', 'success')
-    }
-  } catch (e: unknown) {
-    const snapshot = conflictSnapshot(e, planId)
-    if (snapshot) {
-      if (activeServerPlanId.value === planId
-        && baseServerRevision.value === expectedRevision
-        && plannerRevisionConflict.value === conflictAtStart) {
-        plannerRevisionConflict.value = snapshot
-        await nextTick()
-        plannerConflictEl.value?.focus()
-        showToast('Bản máy chủ mới hơn cần được đối chiếu trước khi đổi trạng thái.', 'warning')
-      } else {
-        replaceSavedServerPlan(snapshot)
-        showToast('Lịch trình đã thay đổi trên thiết bị khác. Hãy tải lại rồi thử lại.', 'warning')
-      }
-      return
-    }
-    showToast(extractErrorMessage(e, 'Không thể đổi trạng thái'), 'error')
-  }
-  finally { planBusy.value = -1 }
-}
-
-function sharePlan(idx: number) {
-  const plan = savedPlans.value[idx]
-  if (!plan) return
-  const legs = routeResult.value?.legs || []
-  const text = `${plan.title}\n\n` + plan.stops.map((s, i) => {
-    let line = `${i + 1}. ${s.name}${s.time ? ` (${s.time})` : ''}${s.notes ? ` — ${s.notes}` : ''}`
-    if (i < plan.stops.length - 1 && legs[i]) {
-      line += `\n   → ${formatDistance(legs[i].distance)}, ${formatDuration(legs[i].duration)}`
-    }
-    return line
-  }).join('\n')
-
-  if (navigator.share) {
-    navigator.share({ title: plan.title, text }).catch(() => {})
-  } else if (navigator.clipboard?.writeText) {
-    navigator.clipboard.writeText(text).then(() => {
-      showToast('Đã sao chép lịch trình vào clipboard', 'success')
-    }).catch(() => {
-      showToast('Không thể sao chép', 'error')
-    })
-  } else {
-    showToast('Trình duyệt không hỗ trợ sao chép', 'error')
-  }
-}
-
 const formatDate = formatDateVN
 
 function plannerRouteLeg(stopIndex: number) {
@@ -1380,82 +940,6 @@ function invalidatePlannerSchedule() {
 function scheduledIntervalForStop(stop: PlanStop): string {
   void plannerInputState.version
   return formatScheduledInterval(plannerScheduleMetadata.get(stop)?.placement)
-}
-
-function routedStopName(routed: typeof currentRoutableStops.value, key: string): string {
-  return routed.find(item => item.key === key)?.stop.name || key
-}
-
-function plannerWarningMessage(
-  warning: string,
-  routed: typeof currentRoutableStops.value,
-): string {
-  const separator = warning.indexOf(':')
-  const code = separator >= 0 ? warning.slice(0, separator) : warning
-  const key = separator >= 0 ? warning.slice(separator + 1) : ''
-  const name = key ? routedStopName(routed, key) : ''
-  if (code === 'opening-hours-unknown') {
-    return `Chưa rõ giờ mở cửa của "${name}"; lịch không áp dụng ràng buộc giờ mở cửa.`
-  }
-  if (code === 'opening-hours-invalid') {
-    return `Giờ mở cửa của "${name}" không theo định dạng hỗ trợ nên không được dùng để lập lịch.`
-  }
-  if (code === 'requested-time-invalid') {
-    return `Khung giờ đã nhập cho "${name}" được giữ nguyên nhưng không dùng để lập lịch vì sai định dạng khoảng giờ.`
-  }
-  if (code === 'route-table-unavailable') {
-    return 'Không lấy được ma trận thời gian OSRM; yêu cầu đã bỏ ma trận để máy chủ dùng dự phòng Haversine.'
-  }
-  if (code === 'schedule-fallback-order-only') {
-    return 'Bộ lập lịch gặp lỗi; máy chủ chỉ tối ưu thứ tự tuyến.'
-  }
-  return warning
-}
-
-function optimizationTradeoffs(
-  result: CurrentPlannerOptimizationResult<PlanStop>,
-  routed: RoutableStop<PlanStop>[],
-): string[] {
-  const messages: string[] = []
-  const { outcome } = result
-  if (outcome.optimization.saved_distance_km > 0.05) {
-    messages.push(`Giảm khoảng ${formatDistance(outcome.optimization.saved_distance_km * 1000)} theo ước tính hình học.`)
-  } else {
-    messages.push('Ước tính khoảng cách không giảm đáng kể.')
-  }
-  const missingCoordinates = stops.value.length - routed.length
-  if (missingCoordinates > 0) messages.push(`${missingCoordinates} điểm thiếu tọa độ được giữ nguyên vị trí.`)
-  if (outcome.route && !outcome.unresolvedUturn) messages.push('Không phát hiện thao tác quay đầu trên tuyến ứng viên.')
-  if (outcome.unresolvedUturn) messages.push('Tuyến ứng viên vẫn có rủi ro quay đầu; hãy kiểm tra thủ công.')
-  messages.push(...result.scheduleWarnings.map(warning => plannerWarningMessage(warning, routed)))
-  messages.push(...outcome.warnings.map(warning => plannerWarningMessage(warning, routed)))
-  const schedule = outcome.optimization.schedule
-  if (itineraryScheduleV2 && !schedule) messages.push('Không có khung giờ đề xuất; ứng viên chỉ đổi thứ tự tuyến.')
-  if (schedule?.matrix_source === 'haversine-fallback') {
-    messages.push('Thời gian di chuyển dùng ước tính Haversine vì ma trận OSRM không khả dụng.')
-  }
-  if (schedule && schedule.overtime_minutes > 0) {
-    messages.push(`Ứng viên vượt cuối ngày ${Math.round(schedule.overtime_minutes)} phút.`)
-  }
-  return [...new Set(messages)]
-}
-
-function openingHourConflictsFor(
-  result: CurrentPlannerOptimizationResult<PlanStop>,
-  routed: RoutableStop<PlanStop>[],
-): OpeningHourConflict[] {
-  const schedule = result.outcome.optimization.schedule
-  return (schedule?.skipped || [])
-    .filter(item => item.reason.toLowerCase().includes('opening'))
-    .map((item) => {
-      const routedStop = routed.find(candidate => candidate.key === item.stop_id)
-      const metadata = routedStop ? plannerScheduleMetadata.get(routedStop.stop) : undefined
-      return {
-        stopId: routedStop?.stop.name || item.stop_id,
-        requestedTime: routedStop?.stop.time || null,
-        openingHours: metadata?.openingHours || null,
-      }
-    })
 }
 
 async function announceOptimization(message: string) {
@@ -1502,11 +986,11 @@ async function optimizePlanRoute() {
       plannerResult.outcome.ordered.map(item => item.key),
     )
     pendingOptimization = { result: plannerResult, routed }
-    candidateOpeningHourConflicts.value = openingHourConflictsFor(plannerResult, routed)
+    candidateOpeningHourConflicts.value = openingHourConflictsFor(plannerResult, routed, plannerScheduleMetadata)
     optimizationPreview.value = await createPlannerOptimizationPreview(
       stops.value,
       candidateStops,
-      { tradeoffs: optimizationTradeoffs(plannerResult, routed) },
+      { tradeoffs: optimizationTradeoffs(plannerResult, routed, stops.value.length, itineraryScheduleV2) },
     )
     await announceOptimization('Đã tạo bản xem trước. Thứ tự hiện tại chưa thay đổi.')
   } catch (error: unknown) {
@@ -1579,7 +1063,7 @@ async function confirmOptimizationPreview() {
     })
     if (!committedResult || !isPlannerLifecycleActive()) return
     autoRouteScheduler.discardPending(optimizerWatcherRequest)
-    const message = optimizationTradeoffs(committedResult, transaction.routed).join(' ')
+    const message = optimizationTradeoffs(committedResult, transaction.routed, stops.value.length, itineraryScheduleV2).join(' ')
     confirmedOpeningHourConflicts.value = candidateOpeningHourConflicts.value.map(conflict => ({ ...conflict }))
     clearPendingOptimizationPreview()
     await announceOptimization(message || 'Đã áp dụng thứ tự đề xuất.')
@@ -1625,139 +1109,6 @@ function scheduleRouteCalc() {
   latestAutoRouteRequest = autoRouteScheduler.request()
 }
 
-let pendingUpdate = false
-let lastRouteResult: RouteResult | null = null
-let updatingMap = false
-
-type IndexedStopWithCoords = PlanStop & { idx: number; coords: [number, number] }
-
-function hasCoords(stop: PlanStop & { idx: number }): stop is IndexedStopWithCoords {
-  return Array.isArray(stop.coords) &&
-    Number.isFinite(stop.coords[0]) &&
-    Number.isFinite(stop.coords[1])
-}
-
-function fitMapToCoords(coords: [number, number][]) {
-  const first = coords[0]
-  if (!first || !mapInstance || !maplibre) return
-  const bounds = coords
-    .slice(1)
-    .reduce((b: any, c) => b.extend(c), new maplibre.LngLatBounds(first, first))
-  mapInstance.fitBounds(bounds, { padding: 40 })
-}
-
-async function updateMap(result: RouteResult | null) {
-  if (!import.meta.client || !isPlannerLifecycleActive()) return
-  lastRouteResult = result
-  if (updatingMap) { pendingUpdate = true; return }
-
-  if (!routeMapEl.value) {
-    pendingUpdate = true
-    return
-  }
-
-  updatingMap = true
-  mapState.value = 'loading'
-  try {
-
-  if (!mapInstance) {
-    const res = await createNDAMap(routeMapEl.value, { isActive: isPlannerLifecycleActive })
-    if (!isPlannerLifecycleActive()) {
-      if (res?.map && typeof (res.map as any).remove === 'function') (res.map as any).remove()
-      return
-    }
-    if (!res) {
-      mapState.value = 'error'
-      return
-    }
-    mapInstance = res.map
-    maplibre = res.maplibregl
-    mapInstance.on('styleimagemissing', (e: any) => {
-      if (!mapInstance.hasImage(e.id)) mapInstance.addImage(e.id, { width: 1, height: 1, data: new Uint8Array(4) })
-    })
-    await new Promise<void>(r => mapInstance.on('load', r))
-    if (!isPlannerLifecycleActive()) return
-  }
-
-  markers.forEach(m => m.remove())
-  markers = []
-
-  if (mapInstance.getSource('route')) {
-    mapInstance.removeLayer('route-line')
-    mapInstance.removeSource('route')
-  }
-
-  const stopsWithCoords = stops.value
-    .map((s, i) => ({ ...s, idx: i }))
-    .filter(hasCoords)
-  if (!stopsWithCoords.length) {
-    mapState.value = 'error'
-    return
-  }
-
-  stopsWithCoords.forEach((s) => {
-    const num = s.idx + 1
-    const el = document.createElement('div')
-    el.className = 'route-marker'
-    el.innerHTML = `<div class="rm-num">${num}</div>`
-    const marker = new maplibre.Marker({ element: el })
-      .setLngLat([s.coords[1], s.coords[0]])
-      .setPopup(new maplibre.Popup({ offset: 25 }).setHTML(`<strong>${num}. ${escapeHtml(s.name)}</strong>`))
-      .addTo(mapInstance)
-    markers.push(marker)
-  })
-
-  if (result?.geometry?.length) {
-    const coords = result.geometry
-      .map((p: [number, number]) => [p[1], p[0]] as [number, number])
-      .filter(([lng, lat]) => Number.isFinite(lng) && Number.isFinite(lat))
-    mapInstance.addSource('route', {
-      type: 'geojson',
-      data: { type: 'Feature', properties: {}, geometry: { type: 'LineString', coordinates: coords } },
-    })
-    mapInstance.addLayer({
-      id: 'route-line',
-      type: 'line',
-      source: 'route',
-      paint: { 'line-color': 'rgb(var(--blue-rgb))', 'line-width': 4, 'line-opacity': 0.8 },
-    })
-    fitMapToCoords(coords)
-  } else {
-    const coords = stopsWithCoords.map(s => [s.coords[1], s.coords[0]] as [number, number])
-    fitMapToCoords(coords)
-  }
-
-  mapState.value = 'ready'
-  } catch {
-    mapState.value = 'error'
-  } finally {
-    updatingMap = false
-    if (pendingUpdate && mapState.value !== 'error') {
-      pendingUpdate = false
-      void updateMap(lastRouteResult)
-    }
-  }
-}
-
-async function retryMap() {
-  mapState.value = 'loading'
-  await nextTick()
-  await updateMap(lastRouteResult)
-}
-
-watch(routeMapEl, (el) => {
-  if (el && pendingUpdate) {
-    pendingUpdate = false
-    updateMap(lastRouteResult)
-  }
-})
-
-watch(mapSheetOpen, async (open) => {
-  if (!open) return
-  await nextTick()
-  if (mapInstance && typeof mapInstance.resize === 'function') mapInstance.resize()
-  await updateMap(lastRouteResult)
-})
 
 // Chỉ tính lại route khi TOẠ-ĐỘ/THỨ-TỰ stop hoặc phương-tiện đổi — KHÔNG khi sửa giờ/ghi-chú.
 watch(
@@ -1830,9 +1181,6 @@ onBeforeUnmount(() => {
   autoRouteScheduler.dispose()
   if (addingTimer) clearTimeout(addingTimer)
   if (savePulseTimer) clearTimeout(savePulseTimer)
-  if (mapInstance && typeof (mapInstance as any).remove === 'function') (mapInstance as any).remove()
-  mapInstance = null
-  markers = []
 })
 
 await plannerAsyncData
@@ -1945,7 +1293,6 @@ useHead({
 .scheduled-interval { display: block; margin-top: var(--space-2); color: var(--primary-fg); font-size: var(--text-xs); font-weight: var(--weight-semibold); }
 .stop-card-actions { display: flex; gap: var(--space-1); }
 .stop-list { margin-bottom: var(--space-4); }
-.route-map { height: 300px; border-radius: var(--radius-sheet); overflow: hidden; border: .5px solid var(--line); box-shadow: var(--shadow-sm); }
 .stop-card-actions button { min-height: 44px; min-width: 44px; display: inline-flex; align-items: center; justify-content: center; border-radius: var(--radius-control); transition: background .3s var(--ease-out), transform .35s var(--ease-spring-gentle); }
 .stop-card-actions button:hover { background: var(--bg-warm); }
 .stop-card-actions button:active { transform: scale(.88); transition-duration: .08s; }
@@ -1957,35 +1304,10 @@ useHead({
 .dark .stop-connector { background: var(--primary-fg); }
 .dark .picker-list::-webkit-scrollbar-thumb { background: var(--glass-medium); }
 .dark .picker-list::-webkit-scrollbar-thumb:hover { background: rgba(var(--white-rgb),.2); }
-.dark .saved-plan-item { background: var(--bg-alt); border-color: var(--line); }
-.dark .saved-plan-item:hover { border-color: rgba(var(--white-rgb),.1); }
-.dark .route-map { border-color: var(--line); }
 .dark .route-leg-info { background: rgba(var(--white-rgb),.04); }
 .dark .route-total { background: rgba(var(--white-rgb),.04); }
 .dark .builder-title { background: var(--bg-alt); border-color: var(--line); color: var(--ink); }
 .dark .stop-time-input, .dark .stop-note-input { background: var(--bg-alt); border-color: var(--line); color: var(--ink); }
-
-/* ── Guided flow step indicator ───────────────────────────── */
-.planner-steps {
-  list-style: none; margin: 0 0 var(--space-5); padding: 0;
-  display: flex; align-items: center; gap: var(--space-2);
-  flex-wrap: wrap;
-}
-.planner-step { display: inline-flex; align-items: center; gap: var(--space-2); color: var(--muted); font-size: var(--text-sm); transition: color .3s var(--ease-out); }
-.planner-step .step-dot {
-  width: 26px; height: 26px; border-radius: 50%;
-  display: inline-flex; align-items: center; justify-content: center;
-  font-size: var(--text-xs); font-weight: var(--weight-bold);
-  background: var(--bg-alt); color: var(--muted);
-  border: .5px solid var(--line);
-  transition: background .3s var(--ease-out), color .3s var(--ease-out), border-color .3s var(--ease-out), box-shadow .3s var(--ease-out-expo), transform .35s var(--ease-spring-gentle);
-}
-.planner-step.active { color: var(--ink); font-weight: var(--weight-semibold); }
-.planner-step.active .step-dot { background: var(--primary); color: var(--text-on-dark, var(--white)); border-color: var(--primary); box-shadow: 0 0 0 4px rgba(var(--primary-rgb), .12); transform: scale(1.05); }
-.planner-step.done .step-dot { background: rgba(var(--secondary-rgb), .14); color: var(--secondary-fg); border-color: rgba(var(--secondary-rgb), .3); }
-.planner-step.done .step-label { color: var(--ink); }
-.planner-step-sep { flex: 1 1 18px; min-width: 18px; max-width: 48px; height: 2px; border-radius: 1px; background: var(--line); }
-.dark .planner-step .step-dot { background: var(--bg-alt); border-color: var(--line); }
 
 /* ── Premium picker empty state surface ───────────────────── */
 .premium-empty-state {
@@ -2028,48 +1350,6 @@ useHead({
 .route-loading { animation: route-loading-pulse 1.2s var(--ease-out) infinite; }
 @keyframes route-loading-pulse { 0%, 100% { opacity: 1; } 50% { opacity: .45; } }
 
-.planner-conflict-diff {
-  margin: 0 0 var(--space-5);
-  padding: var(--space-5);
-  border: 1px solid var(--warning-border);
-  border-radius: var(--radius-sheet);
-  background:
-    linear-gradient(135deg, rgba(var(--warning-rgb), .1), transparent 58%),
-    var(--card);
-  box-shadow: var(--shadow-sm);
-}
-.planner-conflict-diff:focus-visible { outline: 3px solid var(--primary); outline-offset: 3px; }
-.planner-conflict-diff__head { display: flex; align-items: flex-start; justify-content: space-between; gap: var(--space-4); }
-.planner-conflict-diff__eyebrow {
-  display: block; margin-bottom: var(--space-1); color: var(--warning);
-  font-size: var(--text-2xs); font-weight: var(--weight-bold); letter-spacing: var(--tracking-caps); text-transform: uppercase;
-}
-.planner-conflict-diff h2 { margin: 0; color: var(--ink); font-family: var(--font-editorial); font-size: var(--text-xl); line-height: 1.2; }
-.planner-conflict-diff__revision {
-  flex: 0 0 auto; padding: var(--space-2) var(--space-3); border: 1px solid var(--warning-border);
-  border-radius: var(--radius-full); color: var(--ink); background: var(--bg-alt); font-size: var(--text-xs); font-weight: var(--weight-bold);
-}
-.planner-conflict-diff__freshness { margin: var(--space-3) 0; color: var(--muted); font-size: var(--text-sm); }
-.planner-conflict-diff__titles { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-3); margin: 0; }
-.planner-conflict-diff__titles > div { padding: var(--space-3); border: .5px solid var(--line); border-radius: var(--radius-surface); background: var(--bg-alt); }
-.planner-conflict-diff__titles dt { color: var(--muted); font-size: var(--text-xs); font-weight: var(--weight-semibold); }
-.planner-conflict-diff__titles dd { margin: var(--space-1) 0 0; color: var(--ink); font-weight: var(--weight-semibold); overflow-wrap: anywhere; }
-.planner-conflict-diff__stops { margin-top: var(--space-4); }
-.planner-conflict-diff__stops h3 { margin: 0 0 var(--space-2); color: var(--ink); font-size: var(--text-sm); }
-.planner-conflict-diff__stops p { margin: 0; color: var(--muted); font-size: var(--text-sm); }
-.planner-conflict-diff__stops ul { display: grid; gap: var(--space-2); margin: 0; padding: 0; list-style: none; }
-.planner-conflict-diff__stops li { display: flex; justify-content: space-between; gap: var(--space-3); padding: var(--space-2) var(--space-3); border-inline-start: 3px solid var(--warning); background: var(--bg-alt); }
-.planner-conflict-diff__stops li span { color: var(--muted); font-size: var(--text-sm); text-align: end; }
-.planner-conflict-diff__actions { display: flex; flex-wrap: wrap; gap: var(--space-2); margin-top: var(--space-4); }
-
-@media (max-width: 640px) {
-  .planner-conflict-diff { padding: var(--space-4); }
-  .planner-conflict-diff__head { flex-direction: column; }
-  .planner-conflict-diff__titles { grid-template-columns: 1fr; }
-  .planner-conflict-diff__stops li { flex-direction: column; gap: var(--space-1); }
-  .planner-conflict-diff__stops li span { text-align: start; }
-  .planner-conflict-diff__actions .btn { width: 100%; }
-}
 
 /* Reduced motion */
 @media (prefers-reduced-motion: reduce) {
@@ -2078,7 +1358,6 @@ useHead({
   .picker-item.adding { transform: none; }
   .stop-card:hover { transform: none; }
   .stop-item { animation: none; }
-  .planner-step.active .step-dot { transform: none; }
   .save-pulse { animation: none; }
   .route-loading { animation: none; opacity: .7; }
 }

@@ -50,6 +50,25 @@ function isProductionTestPost(post: CommunityPostLike) {
   return productionTestPostPhrases.some(phrase => content.includes(normalizeCommunityText(phrase)))
 }
 
+export type PostListResponse<T = Post> = {
+  posts?: T[]
+  bookmarks?: T[]
+  has_more?: boolean
+}
+
+export function extractPostArray<T = Post>(res: unknown, preferredKey: 'posts' | 'bookmarks' = 'posts'): T[] {
+  const payload = res as PostListResponse<T> | T[] | null | undefined
+  if (Array.isArray(payload)) return payload
+  if (Array.isArray(payload?.[preferredKey])) return payload[preferredKey] || []
+  if (Array.isArray((payload as PostListResponse<T> | undefined)?.posts)) return (payload as PostListResponse<T>).posts || []
+  return []
+}
+
+export function responseHasMore<T = Post>(res: unknown, rawPosts: T[]): boolean {
+  const hasMoreValue = (res as PostListResponse<T> | undefined)?.has_more
+  return typeof hasMoreValue === 'boolean' ? hasMoreValue : rawPosts.length === 20
+}
+
 export function useCommunityPostFilters<T extends Partial<Post> = Post>() {
   function filterCommunityPosts(rawPosts: T[]) {
     const seen = new Set<string>()
@@ -71,5 +90,7 @@ export function useCommunityPostFilters<T extends Partial<Post> = Post>() {
     filterCommunityPosts,
     isProductionTestPost,
     mergeCommunityPosts,
+    extractPostArray,
+    responseHasMore,
   }
 }
