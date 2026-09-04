@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "nuxt dev",
+    "predev": "node scripts/copy-maplibre-worker.mjs",
     "prebuild": "node scripts/copy-maplibre-worker.mjs",
     "build": "nuxt build && node scripts/generate-launch-readiness-manifest.mjs",
     "preview": "nuxt preview",
