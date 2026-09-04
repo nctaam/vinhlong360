@@ -158,6 +158,13 @@ def test_ci_custody_is_refused_outside_ci(references, monkeypatch):
     assert resolve_key("ci-secret:TEST_CI_KEY") is None
 
 
+def test_resolve_key_dispatch_preserves_file_and_environment_custody(references, tmp_path, monkeypatch):
+    key = tmp_path / "runner.key"
+    key.write_bytes(b"runner-key-material-0123456789abcdefghij")
+    assert resolve_key(f"file:{key}") == key.read_bytes()
+    assert resolve_key("environment:TEST_RUNNER_KEY") == b"runner-key-material-0123456789abcdefghij"
+
+
 def test_two_roles_may_not_share_one_key_identity(references):
     attestations = _full_set(references)
     runner_attestation = next(item for item in attestations if item["role"] == "runner")

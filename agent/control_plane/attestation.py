@@ -168,6 +168,33 @@ def _has_coherent_ci_provenance(env: Mapping[str, str]) -> bool:
     return all(pattern.match(env.get(name, "") or "") for name, pattern in checks)
 
 
+def _resolve_environment_key(reference: str, *, ci: bool) -> bytes:
+    if ci and not _has_coherent_ci_provenance(os.environ):
+        return b""
+    raw = os.environ.get(reference, "")
+    return raw.encode("utf-8") if raw else b""
+
+
+def _resolve_file_key(reference: str, root: Path | None) -> bytes:
+    path = Path(reference)
+    if not path.is_absolute():
+        path = (Path(root).resolve() if root is not None else _REPO_ROOT) / path
+    try:
+        return path.resolve().read_bytes().strip()
+    except OSError:
+        return b""
+
+
+def _resolve_offline_owner_key(reference: str, root: Path | None) -> bytes:
+    path = _resolved_offline_owner_path(reference, root=root)
+    if path is None:
+        return b""
+    try:
+        return path.read_bytes().strip()
+    except OSError:
+        return b""
+
+
 def resolve_key(custody: str, *, root: Path | None = None) -> bytes | None:
     """Resolve key material for one custody reference, or ``None`` when absent.
 
@@ -182,30 +209,16 @@ def resolve_key(custody: str, *, root: Path | None = None) -> bytes | None:
     if not reference:
         return None
     if scheme in {"environment", "ci-secret"}:
-        if scheme == "ci-secret" and not _has_coherent_ci_provenance(os.environ):
-            # A CI-custody key presented outside CI is not CI custody.
+        material = _resolve_environment_key(reference, ci=scheme == "ci-secret")
+        if scheme == "ci-secret" and not material:
             return None
-        raw = os.environ.get(reference, "")
-        material = raw.encode("utf-8") if raw else b""
     elif scheme == "file":
         # Anchor to the repository, never to the process working directory:
         # a relative reference otherwise resolves to a different file depending
         # on where the interpreter happened to be started.
-        path = Path(reference)
-        if not path.is_absolute():
-            path = (Path(root).resolve() if root is not None else _REPO_ROOT) / path
-        try:
-            material = path.resolve().read_bytes().strip()
-        except OSError:
-            return None
+        material = _resolve_file_key(reference, root)
     elif scheme == "offline-owner":
-        path = _resolved_offline_owner_path(reference, root=root)
-        if path is None:
-            return None
-        try:
-            material = path.read_bytes().strip()
-        except OSError:
-            return None
+        material = _resolve_offline_owner_key(reference, root)
     else:
         return None
     return material if len(material) >= _MINIMUM_KEY_BYTES else None
