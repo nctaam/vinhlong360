@@ -569,6 +569,44 @@ describe('SEO & Editorial Craft Guardrails', () => {
     expect(routes).not.toContain('<span class="route-emoji">{{ r.emoji }}</span>')
     expect(routes).toContain('<IconLine :name="meta.icon || \'pin\'" class="chip-area-icon" /> {{ meta.name }}')
   })
+
+  it('Error, 403, and fallback 404 routes strictly guard crawl budget with noindex and provide empathetic discovery vectors', () => {
+    const p403 = doc('pages/403.vue')
+    expect(p403).toContain("robots: 'noindex, nofollow'")
+    expect(p403).toContain("ogTitle: 'Không đủ quyền truy cập — vinhlong360'")
+    expect(p403).toContain("twitterCard: 'summary_large_image'")
+
+    const fallback404 = doc('pages/[...slug].vue')
+    expect(fallback404).toContain("robots: 'noindex, nofollow'")
+    expect(fallback404).toContain("twitterCard: 'summary_large_image'")
+    expect(fallback404).toContain('discoveryLinks')
+    expect(fallback404).toContain('<IconLine :name="item.icon" class="nf-pill__icon" />')
+    expect(fallback404).not.toContain('→')
+
+    const errorPage = doc('error.vue')
+    expect(errorPage).toContain("robots: 'noindex, nofollow'")
+    expect(errorPage).toContain("twitterCard: 'summary_large_image'")
+    expect(errorPage).toContain('<IconLine v-if="l.icon" :name="l.icon" class="error-link-pill__icon" />')
+    expect(errorPage).not.toContain('🌿')
+  })
+
+  it('Shared itinerary hub and HomeProductLead feature clean vector arrows, Breadcrumb JSON-LD, and TouristTrip Schema.org', () => {
+    const productLead = doc('components/home/HomeProductLead.vue')
+    expect(productLead).toContain('<IconLine name="arrow-right" class="home-product-lead__arrow" aria-hidden="true" />')
+    expect(productLead).not.toContain('<span class="home-product-lead__arrow" aria-hidden="true">→</span>')
+
+    const sharedPlan = doc('pages/lich-trinh-chia-se/[id].vue')
+    expect(sharedPlan).toMatch(/<Breadcrumb[^>]*:json-ld="true"/)
+    expect(sharedPlan).toContain("ogUrl: () => canonicalUrl(`/lich-trinh-chia-se/${encodedPlanId}`)")
+    expect(sharedPlan).toContain("twitterCard: 'summary_large_image'")
+    expect(sharedPlan).toContain("'@type': 'ItemPage'")
+    expect(sharedPlan).toContain("'@type': 'TouristTrip'")
+    expect(sharedPlan).toContain('safeJsonLd(s)')
+    expect(sharedPlan).toContain('copyShareLink')
+    expect(sharedPlan).not.toContain('--on-primary')
+    expect(sharedPlan).not.toContain('--ink-700')
+    expect(sharedPlan).not.toContain('--ink-900')
+  })
 })
 
 

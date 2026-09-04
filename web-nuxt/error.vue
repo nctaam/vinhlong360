@@ -45,7 +45,10 @@
           <button type="button" class="btn btn-primary error-search-btn" @click="goSearch">Tìm</button>
         </div>
         <nav class="error-links" aria-label="Liên kết phổ biến">
-          <NuxtLink v-for="l in popularLinks" :key="l.to" :to="l.to" class="error-link-pill">{{ l.label }}</NuxtLink>
+          <NuxtLink v-for="l in popularLinks" :key="l.to" :to="l.to" class="error-link-pill">
+            <IconLine v-if="l.icon" :name="l.icon" class="error-link-pill__icon" />
+            <span>{{ l.label }}</span>
+          </NuxtLink>
         </nav>
       </div>
 
@@ -65,10 +68,10 @@ const is404 = computed(() => props.error?.statusCode === 404)
 
 const q = ref('')
 const popularLinks = [
-  { label: 'Du lịch', to: '/du-lich' },
-  { label: 'Ẩm thực', to: '/san-pham' },
-  { label: 'Sự kiện', to: '/su-kien' },
-  { label: 'OCOP', to: '/ocop' },
+  { label: 'Du lịch', to: '/du-lich', icon: 'compass' },
+  { label: 'Ẩm thực', to: '/san-pham', icon: 'bowl' },
+  { label: 'Sự kiện', to: '/su-kien', icon: 'calendar' },
+  { label: 'OCOP', to: '/ocop', icon: 'gift' },
 ]
 
 function goSearch() {
@@ -96,7 +99,7 @@ onMounted(() => {
 
 const message = computed(() => {
   const code = props.error?.statusCode
-  if (code === 404) return 'Hmm, trang này có vẻ đã chuyển đi rồi. 🌿 Bạn thử tìm lại hoặc quay về trang chủ nhé!'
+  if (code === 404) return 'Trang bạn tìm kiếm hiện không còn ở địa chỉ này. Bạn thử tìm kiếm lại hoặc quay về trang chủ nhé!'
   if (code === 403) return 'Bạn chưa có quyền vào đây. Liên hệ hỗ trợ nếu cần nha.'
   return 'Có lỗi gì đó trên máy chủ. Chúng tôi đang sửa chữa, bạn thử lại trong tý nhé!'
 })
@@ -112,7 +115,12 @@ function retry() {
   navigateTo(url, { replace: true })
 }
 
-useSeoMeta({ title: `${props.error?.statusCode || 'Lỗi'} — vinhlong360` })
+useSeoMeta({
+  title: `${props.error?.statusCode || 'Lỗi'} — vinhlong360`,
+  robots: 'noindex, nofollow',
+  ogTitle: `${props.error?.statusCode || 'Lỗi'} — vinhlong360`,
+  twitterCard: 'summary_large_image',
+})
 </script>
 
 <style scoped>
@@ -176,6 +184,7 @@ useSeoMeta({ title: `${props.error?.statusCode || 'Lỗi'} — vinhlong360` })
 .error-link-pill {
   display: inline-flex;
   align-items: center;
+  gap: var(--space-2);
   min-height: 44px;
   padding: var(--space-2) var(--space-4);
   border: .5px solid var(--line);
@@ -186,6 +195,10 @@ useSeoMeta({ title: `${props.error?.statusCode || 'Lỗi'} — vinhlong360` })
   font-weight: var(--weight-semibold);
   text-decoration: none;
   transition: transform .35s var(--ease-out-expo), border-color .3s var(--ease-out), background .3s var(--ease-out), box-shadow .3s var(--ease-out);
+}
+.error-link-pill__icon {
+  font-size: 1.05em;
+  color: var(--accent);
 }
 .error-link-pill:hover { transform: translateY(-1px); border-color: var(--primary); box-shadow: var(--shadow-sm); }
 .error-link-pill:active { transform: scale(.96); }

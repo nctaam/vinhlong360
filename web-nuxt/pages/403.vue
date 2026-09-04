@@ -23,6 +23,14 @@ useHead({
   title: 'Không đủ quyền truy cập',
 })
 
+useSeoMeta({
+  title: 'Không đủ quyền truy cập — vinhlong360',
+  description: 'Tài khoản hiện tại không có phạm vi cần thiết để mở màn hình này.',
+  robots: 'noindex, nofollow',
+  ogTitle: 'Không đủ quyền truy cập — vinhlong360',
+  twitterCard: 'summary_large_image',
+})
+
 const scopes = computed(() => resolveAdminScopes(user.value))
 const landing = computed(() => firstAdminRoute(scopes.value))
 const requestedPath = computed(() => {

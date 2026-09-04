@@ -63,7 +63,7 @@
         <p v-if="summary" class="home-product-lead__summary">{{ summary }}</p>
         <p v-if="region" class="home-product-lead__region">{{ region }}</p>
         <NuxtLink :to="detailTo" class="home-product-lead__cta" data-home-product-lead-cta>
-          Đọc câu chuyện <span class="home-product-lead__arrow" aria-hidden="true">→</span>
+          Đọc câu chuyện <IconLine name="arrow-right" class="home-product-lead__arrow" aria-hidden="true" />
         </NuxtLink>
       </div>
     </div>
