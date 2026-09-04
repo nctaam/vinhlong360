@@ -7,7 +7,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
 
-from scripts.backup_offsite import _find_latest_backup, _file_size_human
+from scripts.backup_offsite import _find_latest_backup, _file_size_human, _manifest_backup_artifact
 from scripts.backup_offsite import _upload_bundle
 
 
@@ -25,6 +25,12 @@ def test_upload_bundle_includes_manifest_sidecar(tmp_path: Path, monkeypatch) ->
 
 
 class TestFindLatestBackup:
+    def test_manifest_artifact_path_is_resolved(self, tmp_path):
+        artifact = tmp_path / "backup.dump"
+        artifact.write_bytes(b"dump")
+        (tmp_path / "manifest.json").write_text('{"artifact": {"path": "backup.dump"}}', encoding="utf-8")
+        assert _manifest_backup_artifact(tmp_path) == artifact
+
     def test_finds_latest_tarball(self, tmp_path):
         old = tmp_path / "backup_old.tar.gz"
         old.write_text("old")

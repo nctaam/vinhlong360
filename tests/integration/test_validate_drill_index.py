@@ -74,6 +74,14 @@ def test_a_well_formed_index_validates(tmp_path: Path) -> None:
     assert module.validate(tmp_path)["problems"] == []
 
 
+def test_entry_validation_helpers_keep_scope_and_status_errors(tmp_path: Path) -> None:
+    module = _load()
+    entry = {"id": "x", "status": "PASS_LIMITED", "scope": "STAGING"}
+    problems = module._validate_entry(entry, tmp_path)
+    assert any("claims STAGING reach" in problem for problem in problems)
+    assert any("lists no evidence path" in problem for problem in problems)
+
+
 def test_missing_evidence_path_fails(tmp_path: Path) -> None:
     module = _load()
     entry = _good_entry(tmp_path)
