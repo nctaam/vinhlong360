@@ -89,6 +89,117 @@ def _read_countersignature(receipt_path: Path) -> tuple[dict | None, list[str]]:
     return receipt, []
 
 
+def _countersignature_binding_reasons(
+    receipt: dict, payload: dict, checked_sha256: str
+) -> list[str]:
+    declared_digest = receipt.get("bundle_output_sha256")
+    reasons: list[str] = []
+    if declared_digest != payload.get("output_sha256"):
+        reasons.append("countersignature does not bind this bundle's output_sha256")
+    if declared_digest != checked_sha256:
+        reasons.append("countersignature digest does not match the recomputed bundle digest")
+    if receipt.get("bundle_artifact_id") != payload.get("artifact_id"):
+        reasons.append("countersignature does not bind this bundle's artifact_id")
+    if receipt.get("head_sha") != payload.get("head_sha"):
+        reasons.append("countersignature head_sha differs from the bundle head_sha")
+    return reasons
+
+
+def _countersignature_set_validation(receipt: dict) -> tuple[list[str], list[str], list[str]]:
+    expected = receipt.get("expected")
+    confirmed = receipt.get("confirmed")
+    if not isinstance(expected, list) or not isinstance(confirmed, list):
+        return [], [], ["countersignature expected/confirmed sets are malformed"]
+    expected_keys, expected_malformed = _countersignature_record_keys(expected)
+    confirmed_keys, confirmed_malformed = _countersignature_record_keys(confirmed)
+    reasons: list[str] = []
+    if expected_malformed or confirmed_malformed:
+        reasons.append("countersignature expected/confirmed sets are malformed")
+    if not expected_keys:
+        reasons.append("countersignature expected set is empty")
+    if len(set(expected_keys)) != len(expected_keys):
+        reasons.append("countersignature expected set contains duplicate records")
+    if len(set(confirmed_keys)) != len(confirmed_keys):
+        reasons.append("countersignature confirmed set contains duplicate records")
+    if sorted(confirmed_keys) != sorted(expected_keys):
+        reasons.append("countersignature confirmed set does not equal its expected set")
+    return expected_keys, confirmed_keys, reasons
+
+
+def _countersignature_record_keys(value: list[object]) -> tuple[list[str], bool]:
+    keys = [item for item in value if isinstance(item, str) and item]
+    return keys, len(keys) != len(value)
+
+
+def _countersignature_result_entry_reasons(
+    entry: object, expected_set: set[str], seen_result_keys: set[str]
+) -> tuple[str | None, list[str]]:
+    if not isinstance(entry, dict):
+        return None, ["countersignature results contain a malformed record"]
+    record = entry.get("record")
+    if not isinstance(record, str) or not record:
+        return None, ["countersignature results contain a malformed record key"]
+    reasons: list[str] = []
+    if record in seen_result_keys:
+        reasons.append(f"countersignature results contain duplicate record: {record}")
+    seen_result_keys.add(record)
+    if record not in expected_set:
+        reasons.append(f"countersignature results contain unknown record: {record}")
+    if entry.get("verdict") != "MATCH":
+        reasons.append(f"countersignature record did not match: {record}")
+    return record, reasons
+
+
+def _countersignature_result_coverage_reasons(
+    expected_set: set[str], seen_result_keys: set[str]
+) -> list[str]:
+    if not expected_set:
+        return []
+    reasons: list[str] = []
+    missing = sorted(expected_set - seen_result_keys)
+    if missing:
+        reasons.append(
+            "countersignature results are missing expected record(s): "
+            + ", ".join(missing)
+        )
+    unknown = sorted(seen_result_keys - expected_set)
+    if unknown:
+        reasons.append(
+            "countersignature results contain unknown record(s): "
+            + ", ".join(unknown)
+        )
+    return reasons
+
+
+def _countersignature_result_reasons(receipt: dict, expected_keys: list[str]) -> list[str]:
+    results = receipt.get("results")
+    if not isinstance(results, list):
+        return ["countersignature results are malformed"]
+    reasons: list[str] = []
+    expected_set = set(expected_keys)
+    seen_result_keys: set[str] = set()
+    for entry in results:
+        _record, entry_reasons = _countersignature_result_entry_reasons(
+            entry, expected_set, seen_result_keys
+        )
+        reasons.extend(entry_reasons)
+    if any("unknown record" in reason for reason in reasons):
+        return reasons
+    reasons.extend(_countersignature_result_coverage_reasons(expected_set, seen_result_keys))
+    return reasons
+
+
+def _countersignature_attestation_presence_reasons(receipt: dict) -> list[str]:
+    attestation = receipt.get("attestation")
+    if not isinstance(attestation, dict):
+        return ["countersignature carries no attestation"]
+    if attestation.get("scheme") == "unsigned" or not attestation.get("signature"):
+        # Deliberate on this machine: the key is absent by owner decision.
+        # Recorded as a reason rather than ignored, so it stays visible.
+        return ["countersignature is unsigned (no countersign key in custody)"]
+    return []
+
+
 def countersignature_reasons(
     bundle_path: Path,
     payload: dict,
@@ -106,83 +217,14 @@ def countersignature_reasons(
         return reasons
 
     reasons = list(reasons)
-    # Binding first: a receipt that does not name THIS bundle proves nothing
-    # about it, however complete it looks on its own.
-    declared_digest = receipt.get("bundle_output_sha256")
-    if declared_digest != payload.get("output_sha256"):
-        reasons.append("countersignature does not bind this bundle's output_sha256")
-    if declared_digest != checked_sha256:
-        reasons.append("countersignature digest does not match the recomputed bundle digest")
-    if receipt.get("bundle_artifact_id") != payload.get("artifact_id"):
-        reasons.append("countersignature does not bind this bundle's artifact_id")
-    if receipt.get("head_sha") != payload.get("head_sha"):
-        reasons.append("countersignature head_sha differs from the bundle head_sha")
-
+    # Keep reason groups ordered: binding, completeness, coverage, attestation.
+    reasons.extend(_countersignature_binding_reasons(receipt, payload, checked_sha256))
     if receipt.get("complete") is not True:
         reasons.append("countersignature is incomplete")
-    expected = receipt.get("expected")
-    confirmed = receipt.get("confirmed")
-    expected_keys: list[str] = []
-    confirmed_keys: list[str] = []
-    if not isinstance(expected, list) or not isinstance(confirmed, list):
-        reasons.append("countersignature expected/confirmed sets are malformed")
-    else:
-        if any(not isinstance(item, str) or not item for item in expected + confirmed):
-            reasons.append("countersignature expected/confirmed sets are malformed")
-        expected_keys = [item for item in expected if isinstance(item, str) and item]
-        confirmed_keys = [item for item in confirmed if isinstance(item, str) and item]
-        if not expected_keys:
-            reasons.append("countersignature expected set is empty")
-        if len(set(expected_keys)) != len(expected_keys):
-            reasons.append("countersignature expected set contains duplicate records")
-        if len(set(confirmed_keys)) != len(confirmed_keys):
-            reasons.append("countersignature confirmed set contains duplicate records")
-    if sorted(confirmed_keys) != sorted(expected_keys):
-        reasons.append("countersignature confirmed set does not equal its expected set")
-    expected_set = set(expected_keys)
-    results = receipt.get("results")
-    if not isinstance(results, list):
-        reasons.append("countersignature results are malformed")
-        results = []
-    result_keys: list[str] = []
-    seen_result_keys: set[str] = set()
-    for entry in results:
-        if not isinstance(entry, dict):
-            reasons.append("countersignature results contain a malformed record")
-            continue
-        record = entry.get("record")
-        if not isinstance(record, str) or not record:
-            reasons.append("countersignature results contain a malformed record key")
-            continue
-        result_keys.append(record)
-        if record in seen_result_keys:
-            reasons.append(f"countersignature results contain duplicate record: {record}")
-        seen_result_keys.add(record)
-        if record not in expected_set:
-            reasons.append(f"countersignature results contain unknown record: {record}")
-        if entry.get("verdict") != "MATCH":
-            reasons.append(f"countersignature record did not match: {record}")
-    if expected_set:
-        missing = sorted(expected_set - seen_result_keys)
-        if missing:
-            reasons.append(
-                "countersignature results are missing expected record(s): "
-                + ", ".join(missing)
-            )
-        unknown = sorted(seen_result_keys - expected_set)
-        if unknown and not any("unknown record" in reason for reason in reasons):
-            reasons.append(
-                "countersignature results contain unknown record(s): "
-                + ", ".join(unknown)
-            )
-
-    attestation = receipt.get("attestation")
-    if not isinstance(attestation, dict):
-        reasons.append("countersignature carries no attestation")
-    elif attestation.get("scheme") == "unsigned" or not attestation.get("signature"):
-        # Deliberate on this machine: the key is absent by owner decision.
-        # Recorded as a reason rather than ignored, so it stays visible.
-        reasons.append("countersignature is unsigned (no countersign key in custody)")
+    expected_keys, _confirmed_keys, set_reasons = _countersignature_set_validation(receipt)
+    reasons.extend(set_reasons)
+    reasons.extend(_countersignature_result_reasons(receipt, expected_keys))
+    reasons.extend(_countersignature_attestation_presence_reasons(receipt))
     return reasons
 
 
@@ -262,6 +304,82 @@ def _is_tracked(root: Path, rel: str) -> bool:
     return result.returncode == 0
 
 
+def _decision_index_entries(index: dict) -> dict[str, dict]:
+    return {
+        entry.get("decision_key"): entry
+        for entry in (index.get("decisions") or [])
+        if isinstance(entry, dict)
+    }
+
+
+def _decision_authority(root: Path) -> tuple[dict, list]:
+    try:
+        authority = json.loads((root / "config/release-authority.json").read_text(encoding="utf-8"))
+    except (OSError, UnicodeDecodeError, json.JSONDecodeError):
+        authority = {}
+    pilot = authority.get("pilot_acceptance") or {}
+    return pilot.get("decision_signers") or {}, pilot.get("decision_required_items") or []
+
+
+def _signed_decision_reasons(
+    root: Path, key: str, entry: dict, record_path: Path, allowed_signers: dict
+) -> list[str]:
+    reasons: list[str] = []
+    declared = entry.get("record_sha256")
+    actual = hashlib.sha256(record_path.read_bytes()).hexdigest()
+    if declared != actual:
+        reasons.append(
+            f"decision {key}: record_sha256 does not match {entry['record']} "
+            "(the signature does not bind the text that was decided)"
+        )
+    if not entry.get("chosen_option"):
+        reasons.append(f"decision {key}: signed with no chosen_option")
+    if not entry.get("signature"):
+        reasons.append(f"decision {key}: signed state carries no signature")
+    signer = entry.get("signed_by")
+    permitted = allowed_signers.get(key)
+    if not permitted:
+        reasons.append(
+            f"decision {key}: authority declares no allowed signer, so a "
+            "signature cannot be credited"
+        )
+    elif signer not in permitted:
+        reasons.append(f"decision {key}: signer {signer!r} is not an allowed signer")
+    return reasons
+
+
+def _required_decision_reasons(
+    root: Path, key: str, entry: dict | None, allowed_signers: dict
+) -> list[str]:
+    if entry is None:
+        return [f"decision record missing for required item: {key}"]
+    record_rel = entry.get("record")
+    if not isinstance(record_rel, str) or not record_rel:
+        return [f"decision {key}: names no record file"]
+    record_path = root / record_rel
+    if not record_path.is_file():
+        return [f"decision {key}: record file missing: {record_rel}"]
+    reasons: list[str] = []
+    if not _is_tracked(root, record_rel):
+        reasons.append(f"decision {key}: record is not git-tracked: {record_rel}")
+    if entry.get("state") != "signed":
+        reasons.append(f"decision {key}: state is {entry.get('state')!r}, not signed")
+        return reasons
+    reasons.extend(_signed_decision_reasons(root, key, entry, record_path, allowed_signers))
+    return reasons
+
+
+def _claimed_decision_reasons(payload: dict, decisions: dict[str, dict]) -> list[str]:
+    reasons: list[str] = []
+    for key, claimed in (payload.get("decision_required") or {}).items():
+        entry = decisions.get(key) or {}
+        if claimed is True and entry.get("state") != "signed":
+            reasons.append(
+                f"decision {key}: bundle claims approval but the record is not signed"
+            )
+    return reasons
+
+
 def decision_reasons(root: Path, payload: dict) -> list[str]:
     """Report why the four required decisions do not stand.
 
@@ -290,72 +408,12 @@ def decision_reasons(root: Path, payload: dict) -> list[str]:
     except (OSError, UnicodeDecodeError, json.JSONDecodeError) as exc:
         return reasons + [f"decision record index unreadable: {type(exc).__name__}"]
 
-    decisions = {
-        entry.get("decision_key"): entry
-        for entry in (index.get("decisions") or [])
-        if isinstance(entry, dict)
-    }
-
-    # An allowed-signer list does not exist in the authority.  Rather than
-    # inventing one here — which would be this tool deciding who may approve a
-    # release — a signed record is refused until the authority declares it.
-    try:
-        authority = json.loads((root / "config/release-authority.json").read_text(encoding="utf-8"))
-    except (OSError, UnicodeDecodeError, json.JSONDecodeError):
-        authority = {}
-    pilot = authority.get("pilot_acceptance") or {}
-    allowed_signers = pilot.get("decision_signers") or {}
-    required = pilot.get("decision_required_items") or []
+    decisions = _decision_index_entries(index)
+    allowed_signers, required = _decision_authority(root)
 
     for key in required:
-        entry = decisions.get(key)
-        if entry is None:
-            reasons.append(f"decision record missing for required item: {key}")
-            continue
-        record_rel = entry.get("record")
-        if not isinstance(record_rel, str) or not record_rel:
-            reasons.append(f"decision {key}: names no record file")
-            continue
-        record_path = root / record_rel
-        if not record_path.is_file():
-            reasons.append(f"decision {key}: record file missing: {record_rel}")
-            continue
-        if not _is_tracked(root, record_rel):
-            reasons.append(f"decision {key}: record is not git-tracked: {record_rel}")
-
-        if entry.get("state") != "signed":
-            reasons.append(f"decision {key}: state is {entry.get('state')!r}, not signed")
-            continue
-
-        # From here the record CLAIMS to be signed, so every binding must hold.
-        declared = entry.get("record_sha256")
-        actual = hashlib.sha256(record_path.read_bytes()).hexdigest()
-        if declared != actual:
-            reasons.append(
-                f"decision {key}: record_sha256 does not match {record_rel} "
-                "(the signature does not bind the text that was decided)"
-            )
-        if not entry.get("chosen_option"):
-            reasons.append(f"decision {key}: signed with no chosen_option")
-        if not entry.get("signature"):
-            reasons.append(f"decision {key}: signed state carries no signature")
-        signer = entry.get("signed_by")
-        permitted = allowed_signers.get(key)
-        if not permitted:
-            reasons.append(
-                f"decision {key}: authority declares no allowed signer, so a "
-                "signature cannot be credited"
-            )
-        elif signer not in permitted:
-            reasons.append(f"decision {key}: signer {signer!r} is not an allowed signer")
-
-    # The bundle must not assert approval that the records do not carry.
-    for key, claimed in (payload.get("decision_required") or {}).items():
-        entry = decisions.get(key) or {}
-        if claimed is True and entry.get("state") != "signed":
-            reasons.append(
-                f"decision {key}: bundle claims approval but the record is not signed"
-            )
+        reasons.extend(_required_decision_reasons(root, key, decisions.get(key), allowed_signers))
+    reasons.extend(_claimed_decision_reasons(payload, decisions))
     return reasons
 
 
@@ -371,7 +429,7 @@ def authority_reasons(root: Path) -> list[str]:
     return reasons
 
 
-def main(argv: list[str] | None = None) -> int:
+def _parse_verifier_args(argv: list[str] | None) -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--bundle", type=Path, required=True)
     parser.add_argument("--root", type=Path, default=ROOT)
@@ -381,53 +439,91 @@ def main(argv: list[str] | None = None) -> int:
         default=None,
         help="explicit countersignature sidecar; required only when the bundle has no inline countersignature",
     )
-    args = parser.parse_args(argv)
-    root = args.root.resolve()
-    bundle_path = args.bundle if args.bundle.is_absolute() else root / args.bundle
+    return parser.parse_args(argv)
+
+
+def _read_payload(bundle_path: Path) -> dict | None:
     try:
         payload = json.loads(bundle_path.read_text(encoding="utf-8"))
     except (OSError, UnicodeDecodeError, json.JSONDecodeError):
-        payload = None
+        return None
+    return payload if isinstance(payload, dict) else payload
+
+
+def _apply_countersignature_overlay(
+    root: Path,
+    payload: dict,
+    receipt: dict,
+    reasons: list[str],
+    verdict: str,
+) -> tuple[str, list[str]]:
+    overlay, overlay_reasons = overlay_countersignature(payload, receipt)
+    reasons.extend(overlay_reasons)
+    if overlay is None or overlay_reasons:
+        return verdict, reasons
+    try:
+        overlay_gate = evaluate_pilot_gate(AcceptanceBundle.from_dict(overlay), root=root)
+    except (TypeError, ValueError, KeyError, AttributeError, OverflowError):
+        overlay_gate = "NO_GO"
+    if overlay_gate == "GO_CONDITIONAL":
+        reasons[:] = [reason for reason in reasons if reason != "pilot acceptance gate is NO_GO"]
+        return "PASS", reasons
+    reasons.append("countersignature overlay does not satisfy pilot acceptance gate")
+    return verdict, reasons
+
+
+def _apply_countersignature(
+    bundle_path: Path,
+    root: Path,
+    payload: dict,
+    checked_sha256: str,
+    explicit_path: Path | None,
+    verdict: str,
+    reasons: list[str],
+) -> tuple[str, list[str]]:
+    receipt_path = _countersignature_path(bundle_path, explicit_path)
+    has_inline = _has_inline_countersignature(payload)
+    if has_inline and explicit_path is None:
+        return verdict, reasons
+    receipt, sidecar_reasons = _read_countersignature(receipt_path)
+    if receipt is not None:
+        sidecar_reasons.extend(
+            countersignature_reasons(bundle_path, payload, checked_sha256, receipt_path)
+        )
+    reasons.extend(sidecar_reasons)
+    if receipt is None or sidecar_reasons or has_inline:
+        return verdict, reasons
+    reasons.extend(countersignature_attestation_reasons(root, payload, receipt))
+    if reasons and reasons != ["pilot acceptance gate is NO_GO"]:
+        return verdict, reasons
+    return _apply_countersignature_overlay(root, payload, receipt, reasons, verdict)
+
+
+def _pilot_verification(bundle_path: Path, root: Path, payload: dict, explicit_path: Path | None):
+    verdict, initial_reasons, checked_sha256 = verify_pilot_bundle(bundle_path, root=root)
+    reasons = list(initial_reasons)
+    verdict, reasons = _apply_countersignature(
+        bundle_path, root, payload, checked_sha256, explicit_path, verdict, reasons
+    )
+    reasons.extend(decision_reasons(root, payload))
+    reasons.extend(authority_reasons(root))
+    # Fail closed: no branch here can raise a verdict already lowered by the gate.
+    if reasons:
+        verdict = "BLOCKED"
+    return type(
+        "PilotVerification",
+        (),
+        {"verdict": verdict, "reasons": tuple(reasons), "checked_sha256": checked_sha256},
+    )()
+
+
+def main(argv: list[str] | None = None) -> int:
+    args = _parse_verifier_args(argv)
+    root = args.root.resolve()
+    bundle_path = args.bundle if args.bundle.is_absolute() else root / args.bundle
+    payload = _read_payload(bundle_path)
     if isinstance(payload, dict) and payload.get("bundle_kind") == "pilot-acceptance-v1":
-        verdict, reasons, checked_sha256 = verify_pilot_bundle(bundle_path, root=root)
-        reasons = list(reasons)
-        receipt_path = _countersignature_path(bundle_path, args.countersignature)
-        has_inline = _has_inline_countersignature(payload)
-        # A finalized bundle carries its countersignature in the immutable
-        # envelope.  Otherwise an explicit/adjacent sidecar is validated and
-        # overlaid in memory; the issued source file is never rewritten.
-        if not has_inline or args.countersignature is not None:
-            receipt, countersign_reasons = _read_countersignature(receipt_path)
-            sidecar_reasons = countersign_reasons
-            if receipt is not None:
-                sidecar_reasons.extend(countersignature_reasons(bundle_path, payload, checked_sha256, receipt_path))
-            reasons.extend(sidecar_reasons)
-            if receipt is not None and not sidecar_reasons and not has_inline:
-                reasons.extend(countersignature_attestation_reasons(root, payload, receipt))
-                if not reasons or reasons == ["pilot acceptance gate is NO_GO"]:
-                    overlay, overlay_reasons = overlay_countersignature(payload, receipt)
-                    reasons.extend(overlay_reasons)
-                    if overlay is not None and not overlay_reasons:
-                        try:
-                            overlay_gate = evaluate_pilot_gate(AcceptanceBundle.from_dict(overlay), root=root)
-                        except (TypeError, ValueError, KeyError, AttributeError, OverflowError):
-                            overlay_gate = "NO_GO"
-                        if overlay_gate == "GO_CONDITIONAL":
-                            reasons = [reason for reason in reasons if reason != "pilot acceptance gate is NO_GO"]
-                            verdict = "PASS"
-                        else:
-                            reasons.append("countersignature overlay does not satisfy pilot acceptance gate")
-        reasons.extend(decision_reasons(root, payload))
-        reasons.extend(authority_reasons(root))
-        # Fail closed: any reason at all blocks, and no branch here can raise a
-        # verdict that verify_pilot_bundle already lowered.
-        if reasons:
-            verdict = "BLOCKED"
-        result = type(
-            "PilotVerification",
-            (),
-            {"verdict": verdict, "reasons": tuple(reasons), "checked_sha256": checked_sha256},
-        )()
+        result = _pilot_verification(bundle_path, root, payload, args.countersignature)
     else:
         result = verify_bundle(bundle_path)
     print(
