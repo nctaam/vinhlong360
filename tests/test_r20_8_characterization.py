@@ -2,8 +2,9 @@
 
 from __future__ import annotations
 
-import sys
 import asyncio
+import sys
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 
@@ -152,3 +153,80 @@ def test_seo_coverage_parts_keep_required_type_and_safe_attributes():
     )
     assert etype == "restaurant"
     assert attrs == {}
+
+
+def test_verified_projection_replay_uses_persisted_revision():
+    """A verified retry replays its immutable receipt without fetching the entity."""
+    from cases.publication import (
+        VerifyProjectionCommand,
+        _replay_verified_projection,
+    )
+
+    event_id = "notify:change-1:verified"
+
+    class Transaction:
+        def load_outbox_by_idempotency_key(self, key):
+            assert key == event_id
+            return {
+                "idempotency_key": event_id,
+                "payload": {
+                    "event_id": event_id,
+                    "case_id": "case-1",
+                    "generation": "8",
+                    "correlation_id": "corr-1",
+                    "revision": 9,
+                },
+            }
+
+    result = _replay_verified_projection(
+        Transaction(), VerifyProjectionCommand("case-1", "change-1", object())
+    )
+
+    assert result.verified is True
+    assert result.revision == 9
+    assert result.outbox_event_id == event_id
+
+
+def test_verification_failure_loader_replays_before_deadline():
+    """A persisted failure is replayed until its own recovery deadline."""
+    from cases.publication import VerifyProjectionCommand, _load_verification_failure
+
+    now = datetime(2026, 9, 4, tzinfo=timezone.utc)
+    event_id = "notify:change-1:verification_failed"
+    existing = {
+        "idempotency_key": event_id,
+        "payload": {
+            "event_id": event_id,
+            "case_id": "case-1",
+            "generation": "8",
+            "correlation_id": "corr-1",
+            "revision": 9,
+            "mismatched": ["revision"],
+            "next_update_at": (now + timedelta(hours=1)).isoformat(),
+        },
+    }
+
+    class Transaction:
+        def load_outbox_by_idempotency_key(self, key):
+            assert key == event_id
+            return existing
+
+    previous = _load_verification_failure(
+        Transaction(), VerifyProjectionCommand("case-1", "change-1", object()),
+        object(), now,
+    )
+
+    assert previous[0] is existing
+    assert previous[1] is not None
+    assert previous[2] == now + timedelta(hours=1)
+
+
+def test_replay_mapping_copy_accepts_database_mapping_rows():
+    """Replay validation can normalize mapping rows returned by a database adapter."""
+    from collections import UserDict
+
+    from cases.publication import _copy_replay_mapping
+
+    assert _copy_replay_mapping(UserDict({"event_id": "e-1"}), "e-1") == {
+        "event_id": "e-1"
+    }

@@ -435,38 +435,25 @@ def _verification_retry_at(existing: dict | None) -> datetime | None:
     return deadline
 
 
-def _replay_payload(existing: dict | None, event_id: str, *, required: tuple[str, ...]) -> dict:
-    """Replay only a complete committed receipt; never fabricate response metadata."""
-    if existing is None:
-        raise _reject(
-            "publication_receipt_missing",
-            f"The committed publication receipt {event_id} is missing.",
-        )
-    if not isinstance(existing, Mapping):
+def _copy_replay_mapping(value, event_id: str, *, incomplete: bool = False) -> dict:
+    if not isinstance(value, Mapping):
+        detail = "incomplete" if incomplete else "malformed"
         raise _reject(
             "publication_receipt_invalid",
-            f"The committed publication receipt {event_id} is malformed.",
+            f"The committed publication receipt {event_id} is {detail}.",
         )
     try:
-        receipt = dict(existing)
+        return dict(value)
     except (TypeError, ValueError):
         raise _reject(
             "publication_receipt_invalid",
             f"The committed publication receipt {event_id} is malformed.",
         )
-    payload = receipt.get("payload")
-    if not isinstance(payload, Mapping):
-        raise _reject(
-            "publication_receipt_invalid",
-            f"The committed publication receipt {event_id} is incomplete.",
-        )
-    try:
-        payload = dict(payload)
-    except (TypeError, ValueError):
-        raise _reject(
-            "publication_receipt_invalid",
-            f"The committed publication receipt {event_id} is malformed.",
-        )
+
+
+def _validate_replay_payload(
+    receipt: dict, payload: dict, event_id: str, required: tuple[str, ...],
+) -> dict:
     required_keys = (
         "event_id", "case_id", "generation", "correlation_id", *required,
     )
@@ -497,6 +484,20 @@ def _replay_payload(existing: dict | None, event_id: str, *, required: tuple[str
             f"The committed publication receipt {event_id} has an invalid revision.",
         )
     return payload
+
+
+def _replay_payload(existing: dict | None, event_id: str, *, required: tuple[str, ...]) -> dict:
+    """Replay only a complete committed receipt; never fabricate response metadata."""
+    if existing is None:
+        raise _reject(
+            "publication_receipt_missing",
+            f"The committed publication receipt {event_id} is missing.",
+        )
+    receipt = _copy_replay_mapping(existing, event_id)
+    payload = _copy_replay_mapping(
+        receipt.get("payload"), event_id, incomplete=True,
+    )
+    return _validate_replay_payload(receipt, payload, event_id, required)
 
 
 def _require_replay_case(payload: dict, case_id: str, event_id: str) -> None:
@@ -533,6 +534,43 @@ def _require_replay_text_sequence(
     return tuple(value)
 
 
+def _replay_verified_projection(transaction, command: VerifyProjectionCommand) -> VerificationResult:
+    event_id = f"notify:{command.change_set_id}:verified"
+    existing = transaction.load_outbox_by_idempotency_key(event_id)
+    payload = _replay_payload(existing, event_id, required=("revision",))
+    _require_replay_case(payload, command.case_id, event_id)
+    return VerificationResult(
+        change_set_id=command.change_set_id,
+        state=PublicationState.VERIFIED,
+        verified=True,
+        mismatches=(),
+        revision=payload["revision"],
+        outbox_event_id=event_id,
+    )
+
+
+def _load_verification_failure(
+    transaction,
+    command: VerifyProjectionCommand,
+    snapshot,
+    now: datetime,
+) -> tuple[dict | None, VerificationResult | None, datetime | None]:
+    """Load and, while still inside its deadline, replay a prior failure receipt."""
+    failure_event_id = f"notify:{command.change_set_id}:verification_failed"
+    existing_failure = transaction.load_outbox_by_idempotency_key(failure_event_id)
+    if existing_failure is None:
+        return None, None, None
+    _, retry_at = _validate_verification_failure_receipt(
+        command, existing_failure, failure_event_id,
+    )
+    if retry_at is None or now < retry_at:
+        replay = _replay_verification_failure(
+            transaction, command, snapshot, existing_failure,
+        )
+        return existing_failure, replay, retry_at
+    return existing_failure, None, retry_at
+
+
 def verify_public_projection(command: VerifyProjectionCommand, fetcher, *,
                              now: datetime) -> VerificationResult:
     _require_enabled()
@@ -548,34 +586,13 @@ def verify_public_projection(command: VerifyProjectionCommand, fetcher, *,
 
         snapshot = transaction.load_case(command.case_id, for_update=True)
         if row.get("public_projection_verified_at") is not None:
-            event_id = f"notify:{command.change_set_id}:verified"
-            existing = transaction.load_outbox_by_idempotency_key(event_id)
-            payload = _replay_payload(existing, event_id, required=("revision",))
-            _require_replay_case(payload, command.case_id, event_id)
-            revision = payload["revision"]
-            return VerificationResult(
-                change_set_id=command.change_set_id,
-                state=PublicationState.VERIFIED,
-                verified=True,
-                mismatches=(),
-                revision=revision,
-                outbox_event_id=event_id,
-            )
+            return _replay_verified_projection(transaction, command)
 
-        failure_event_id = f"notify:{command.change_set_id}:verification_failed"
-        existing_failure = transaction.load_outbox_by_idempotency_key(failure_event_id)
-        if existing_failure is not None:
-            # Validate the immutable receipt before deciding whether recovery is
-            # due; a malformed old receipt must never unlock a fresh mutation.
-            _, retry_at = _validate_verification_failure_receipt(
-                command, existing_failure, failure_event_id,
-            )
-        else:
-            retry_at = None
-        if existing_failure is not None and (retry_at is None or now < retry_at):
-            return _replay_verification_failure(
-                transaction, command, snapshot, existing_failure,
-            )
+        existing_failure, replay, _retry_at = _load_verification_failure(
+            transaction, command, snapshot, now,
+        )
+        if replay is not None:
+            return replay
 
         actor_ref = _require_lease(transaction, command.case_id, command.actor, now=now)
 
