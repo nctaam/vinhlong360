@@ -33,7 +33,7 @@ defineProps<{
   font-size: var(--text-xs); font-weight: var(--weight-bold);
   background: var(--bg-alt); color: var(--muted);
   border: .5px solid var(--line);
-  transition: background .3s var(--ease-out), color .3s var(--ease-out), border-color .3s var(--ease-out), box-shadow .3s var(--ease-out-expo), transform .35s var(--ease-spring-gentle);
+  transition: background .3s var(--ease-out), color .3s var(--ease-out), border-color .3s var(--ease-out), box-shadow .3s var(--ease-out-expo), transform .35s var(--ease-out-expo);
 }
 .planner-step.active { color: var(--ink); font-weight: var(--weight-semibold); }
 .planner-step.active .step-dot { background: var(--primary); color: var(--text-on-dark, var(--white)); border-color: var(--primary); box-shadow: 0 0 0 4px rgba(var(--primary-rgb), .12); transform: scale(1.05); }

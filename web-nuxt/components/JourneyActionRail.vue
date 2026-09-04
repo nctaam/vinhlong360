@@ -72,7 +72,7 @@ withDefaults(defineProps<{
   background: var(--card);
   color: var(--ink);
   text-decoration: none;
-  transition: border-color .2s var(--ease-out), background .2s var(--ease-out), transform .25s var(--ease-spring-gentle), box-shadow .2s var(--ease-out);
+  transition: border-color .2s var(--ease-out), background .2s var(--ease-out), transform .25s var(--ease-out-expo), box-shadow .2s var(--ease-out);
 }
 .journey-action:hover {
   transform: translateY(-1px);

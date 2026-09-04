@@ -407,7 +407,7 @@ if (import.meta.client) {
   border-radius: var(--radius-full); color: var(--ink);
   font-size: var(--text-sm); font-weight: var(--weight-medium);
   text-decoration: none; cursor: pointer;
-  transition: background .25s var(--ease-out), border-color .25s var(--ease-out), transform .25s var(--ease-spring-gentle);
+  transition: background .25s var(--ease-out), border-color .25s var(--ease-out), transform .25s var(--ease-out-expo);
 }
 .ac-chip:hover { background: var(--card); border-color: var(--primary-fg); transform: translateY(-1px); }
 .ac-chip:active { transform: scale(.97); transition-duration: .08s; }

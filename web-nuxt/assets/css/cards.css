@@ -54,7 +54,7 @@
   border-radius: var(--radius-full);
   letter-spacing: .01em;
   white-space: nowrap;
-  transition: transform .35s var(--ease-spring-gentle), box-shadow .35s var(--ease-out-expo);
+  transition: transform .35s var(--ease-out-expo), box-shadow .35s var(--ease-out-expo);
 }
 /* Duration: warm amber gradient. Text uses --ink (dark) for ≥4.5:1
    contrast over the light gradient (not --primary-fg, which is clay-red
@@ -116,7 +116,7 @@
   opacity: 0.85;
 }
 .badges { display: flex; gap: var(--space-1); flex-wrap: wrap; margin-top: auto; padding-top: var(--space-1); }
-.badge { font-size: var(--text-2xs); padding: var(--space-1) var(--space-3); border-radius: var(--radius-full); font-weight: var(--weight-medium); transition: transform .3s var(--ease-spring-gentle), opacity .3s var(--ease-out); }
+.badge { font-size: var(--text-2xs); padding: var(--space-1) var(--space-3); border-radius: var(--radius-full); font-weight: var(--weight-medium); transition: transform .3s var(--ease-out-expo), opacity .3s var(--ease-out); }
 .card:hover .badge { transform: translateY(-1px); }
 .badge.season { background: var(--badge-season-bg); color: var(--primary-fg); }
 .badge.peak { background: var(--accent); color: var(--ink); }
@@ -200,7 +200,7 @@
 /* keep the tag + save button above the new scrim */
 .card .cover-tag, .card .card-save { z-index: 2; }
 /* lift the generated-icon a touch and add a gentle inner glow on hover */
-.cover-generated .cover-svg-icon { transition: transform .5s var(--ease-spring-gentle), opacity .5s var(--ease-out-expo); }
+.cover-generated .cover-svg-icon { transition: transform .5s var(--ease-out-expo), opacity .5s var(--ease-out-expo); }
 .card:hover .cover-generated .cover-svg-icon { transform: translate(-50%, -50%) scale(1.08); opacity: .8; }
 
 /* 2 ── Hover-glow ring + deeper lift. A second box-shadow layer
@@ -265,7 +265,7 @@
 }
 
 /* 5 ── Cover-tag gains a subtle slide-up on card hover (life) */
-.card .cover-tag { transition: transform .4s var(--ease-spring-gentle), background .3s var(--ease-out); }
+.card .cover-tag { transition: transform .4s var(--ease-out-expo), background .3s var(--ease-out); }
 .card:hover .cover-tag { transform: translateY(-2px); }
 
 /* 6 ── Signature staggered grid reveal: cards rise+fade in sequence

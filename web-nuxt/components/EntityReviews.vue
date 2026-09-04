@@ -426,7 +426,7 @@ onMounted(() => fetchReviews())
 .review-form .btn:active { transform: scale(.95); transition-duration: .08s; }
 
 .review-list { display: flex; flex-direction: column; gap: var(--space-4); }
-.review-item { border-bottom: .5px solid var(--line); padding: var(--space-3) var(--space-3) var(--space-4); margin: 0 calc(var(--space-3) * -1); transition: background .3s var(--ease-out), transform .35s var(--ease-spring-gentle); border-radius: var(--radius-control); }
+.review-item { border-bottom: .5px solid var(--line); padding: var(--space-3) var(--space-3) var(--space-4); margin: 0 calc(var(--space-3) * -1); transition: background .3s var(--ease-out), transform .35s var(--ease-out-expo); border-radius: var(--radius-control); }
 .review-item:hover { background: var(--overlay-subtle); transform: translateX(2px); }
 .review-item:last-child { border-bottom: none; }
 .ri-head { display: flex; align-items: center; gap: var(--space-3); flex-wrap: wrap; margin-bottom: var(--space-2); }
@@ -438,7 +438,7 @@ onMounted(() => fetchReviews())
 .ri-content { margin: 0; font-size: var(--text-sm); line-height: var(--leading-relaxed); }
 .ri-images { display: flex; gap: var(--space-2); margin-top: var(--space-2); overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: none; scroll-snap-type: x proximity; overscroll-behavior-x: contain; }
 .ri-images::-webkit-scrollbar { display: none; }
-.ri-images img { width: 120px; height: 90px; object-fit: cover; border-radius: var(--radius-control); flex-shrink: 0; cursor: pointer; scroll-snap-align: start; transition: transform .35s var(--ease-spring-gentle), box-shadow .3s var(--ease-out); }
+.ri-images img { width: 120px; height: 90px; object-fit: cover; border-radius: var(--radius-control); flex-shrink: 0; cursor: pointer; scroll-snap-align: start; transition: transform .35s var(--ease-out-expo), box-shadow .3s var(--ease-out); }
 .ri-images img:hover { transform: scale(var(--img-hover-scale)); box-shadow: var(--shadow-md); }
 .ri-images img:active { transform: scale(.96); transition-duration: .08s; }
 @media (prefers-reduced-motion: reduce) {

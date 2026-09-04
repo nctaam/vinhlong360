@@ -98,7 +98,7 @@ onMounted(async () => {
   display: flex; gap: var(--space-3); padding: var(--space-3);
   background: var(--card); border: .5px solid var(--line); border-radius: var(--radius-sheet);
   text-decoration: none; color: var(--ink);
-  transition: border-color .25s var(--ease-out), transform .2s var(--ease-spring-gentle);
+  transition: border-color .25s var(--ease-out), transform .2s var(--ease-out-expo);
 }
 .ef-link:hover { border-color: var(--primary-fg); transform: translateY(-1px); }
 .ef-avatar {

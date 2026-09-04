@@ -55,12 +55,12 @@ async function share() {
   color: var(--primary);
   cursor: pointer;
   min-height: 44px;
-  transition: background .3s var(--ease-out), border-color .3s var(--ease-out), transform .35s var(--ease-spring-gentle), box-shadow .3s var(--ease-out);
+  transition: background .3s var(--ease-out), border-color .3s var(--ease-out), transform .35s var(--ease-out-expo), box-shadow .3s var(--ease-out);
 }
 .share-btn:hover { background: var(--bg-warm); border-color: var(--primary-light); transform: translateY(-1px); box-shadow: var(--shadow-xs); }
 .share-btn:active { transform: scale(.92); transition-duration: .08s; }
 .share-btn:focus-visible { outline: 2px solid var(--primary); outline-offset: 3px; }
-.share-icon { flex-shrink: 0; transition: transform .35s var(--ease-spring-gentle); }
+.share-icon { flex-shrink: 0; transition: transform .35s var(--ease-out-expo); }
 .share-btn:hover .share-icon { transform: scale(1.08); }
 @media (prefers-reduced-motion: reduce) {
   .share-btn { transition: none; }

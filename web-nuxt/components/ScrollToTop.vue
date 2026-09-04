@@ -45,7 +45,7 @@ onUnmounted(() => window.removeEventListener('scroll', onScroll))
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: transform .35s var(--ease-spring-gentle), box-shadow .35s var(--ease-out-expo), color .3s var(--ease-out);
+  transition: transform .35s var(--ease-out-expo), box-shadow .35s var(--ease-out-expo), color .3s var(--ease-out);
 }
 /* Quiet at rest; on interaction only, the icon warms from clay toward amber —
    a one-pixel nod to the river→amber→clay motif, not a loud rebrand of a
@@ -53,7 +53,7 @@ onUnmounted(() => window.removeEventListener('scroll', onScroll))
 .scroll-top:hover { transform: translateY(-3px); box-shadow: var(--shadow-md); color: var(--accent-dark); }
 .scroll-top:active { transform: scale(.9); transition-duration: .08s; }
 .scroll-top:focus-visible { outline: 2px solid var(--primary); outline-offset: 3px; }
-.fade-enter-active, .fade-leave-active { transition: opacity .3s var(--ease-out-expo), transform .3s var(--ease-spring-gentle); }
+.fade-enter-active, .fade-leave-active { transition: opacity .3s var(--ease-out-expo), transform .3s var(--ease-out-expo); }
 .fade-enter-from { opacity: 0; transform: translateY(8px) scale(.9); }
 .fade-leave-to { opacity: 0; transform: translateY(4px) scale(.95); }
 

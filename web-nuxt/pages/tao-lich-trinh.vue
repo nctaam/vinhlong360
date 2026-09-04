@@ -163,17 +163,29 @@
           <template v-for="(stop, idx) in stops" :key="stop.id + '-' + idx">
             <div
               class="stop-item"
+              :class="{
+                'is-dragging': draggedStopIndex === idx,
+                'drag-over': dragOverStopIndex === idx && draggedStopIndex !== idx
+              }"
               :style="{ animationDelay: `${idx * 50}ms` }"
               draggable="true"
               :data-stop-index="idx"
               @dragstart="beginStopDrag(idx, $event)"
-              @dragover.prevent
+              @dragover="handleStopDragOver(idx, $event)"
+              @dragleave="handleStopDragLeave(idx)"
               @drop="dropStop(idx)"
-              @dragend="draggedStopIndex = null"
+              @dragend="endStopDrag"
             >
               <div class="stop-num">{{ idx + 1 }}</div>
               <div class="stop-connector" v-if="idx < stops.length - 1"></div>
-              <div class="stop-card">
+              <div
+                class="stop-card"
+                tabindex="0"
+                role="group"
+                :aria-label="`Điểm dừng ${idx + 1}: ${stop.name}. Nhấn Alt+Lên hoặc Alt+Xuống để đổi vị trí.`"
+                @keydown.alt.up.prevent="moveStop(idx, -1)"
+                @keydown.alt.down.prevent="moveStop(idx, 1)"
+              >
                 <div class="stop-card-head">
                   <IconLine class="stop-emoji" :name="getTypeMeta(stop.type).icon" aria-hidden="true" />
                   <div class="stop-card-info">
@@ -189,8 +201,8 @@
                     </span>
                   </div>
                   <div class="stop-card-actions">
-                    <button type="button" v-if="idx > 0" class="btn-icon-sm move" title="Lên" aria-label="Di chuyển lên" @click="moveStop(idx, -1)"><IconLine name="arrow-up" aria-hidden="true" /></button>
-                    <button type="button" v-if="idx < stops.length - 1" class="btn-icon-sm move" title="Xuống" aria-label="Di chuyển xuống" @click="moveStop(idx, 1)"><IconLine name="arrow-down" aria-hidden="true" /></button>
+                    <button type="button" v-if="idx > 0" class="btn-icon-sm move" title="Lên (Alt+↑)" aria-label="Di chuyển lên" @click="moveStop(idx, -1)"><IconLine name="arrow-up" aria-hidden="true" /></button>
+                    <button type="button" v-if="idx < stops.length - 1" class="btn-icon-sm move" title="Xuống (Alt+↓)" aria-label="Di chuyển xuống" @click="moveStop(idx, 1)"><IconLine name="arrow-down" aria-hidden="true" /></button>
                     <button type="button" class="btn-icon-sm danger" title="Xóa" aria-label="Xóa điểm dừng" @click="removeStop(idx)"><IconLine name="trash" aria-hidden="true" /></button>
                   </div>
                 </div>
@@ -421,6 +433,7 @@ const savePulse = ref(false)
 const saving = ref(false)
 const stopAnnounce = ref('')
 const draggedStopIndex = ref<number | null>(null)
+const dragOverStopIndex = ref<number | null>(null)
 const plannerOnline = ref(true)
 const draftSavedAt = ref<string | null>(null)
 const draftSource = ref<'local' | 'server'>('local')
@@ -852,15 +865,30 @@ function moveStop(idx: number, dir: number) {
 
 function beginStopDrag(index: number, event: DragEvent) {
   draggedStopIndex.value = index
+  dragOverStopIndex.value = null
   if (event.dataTransfer) {
     event.dataTransfer.effectAllowed = 'move'
     event.dataTransfer.setData('text/plain', String(index))
   }
 }
 
+function handleStopDragOver(index: number, event: DragEvent) {
+  event.preventDefault()
+  if (draggedStopIndex.value !== null && draggedStopIndex.value !== index) {
+    dragOverStopIndex.value = index
+  }
+}
+
+function handleStopDragLeave(index: number) {
+  if (dragOverStopIndex.value === index) {
+    dragOverStopIndex.value = null
+  }
+}
+
 function dropStop(targetIndex: number) {
   const sourceIndex = draggedStopIndex.value
   draggedStopIndex.value = null
+  dragOverStopIndex.value = null
   if (sourceIndex === null || sourceIndex === targetIndex) return
   const stop = stops.value[sourceIndex]
   if (!stop) return
@@ -870,6 +898,11 @@ function dropStop(targetIndex: number) {
   optimizationMessage.value = ''
   stopAnnounce.value = ''
   nextTick(() => { stopAnnounce.value = `${stop.name} chuyển sang vị trí ${targetIndex + 1}.` })
+}
+
+function endStopDrag() {
+  draggedStopIndex.value = null
+  dragOverStopIndex.value = null
 }
 
 async function clearPlan() {
@@ -1296,7 +1329,7 @@ useHead({
   display: flex; align-items: center; gap: var(--space-3);
   padding: var(--space-3); border-radius: var(--radius-control);
   cursor: pointer;
-  transition: background .3s var(--ease-out), transform .35s var(--ease-spring-gentle);
+  transition: background .3s var(--ease-out), transform .35s var(--ease-out-expo);
 }
 .picker-item:hover { background: var(--bg-warm); }
 .picker-item:active { transform: scale(.98); transition-duration: .08s; }
@@ -1308,7 +1341,19 @@ useHead({
 .picker-empty { text-align: center; padding: var(--space-5); color: var(--muted); font-size: var(--text-sm); }
 .builder-header { display: flex; flex-wrap: wrap; gap: var(--space-3); align-items: center; margin-bottom: var(--space-4); }
 .builder-actions { display: flex; gap: var(--space-2); }
-.stop-item { display: flex; gap: var(--space-3); position: relative; animation: stopIn .3s var(--ease-out) both; }
+.stop-item {
+  display: flex; gap: var(--space-3); position: relative; animation: stopIn .3s var(--ease-out) both;
+  transition: opacity .2s var(--ease-out), transform .2s var(--ease-out);
+}
+.stop-item.is-dragging {
+  opacity: .45;
+  transform: scale(.985);
+}
+.stop-item.drag-over .stop-card {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 2px rgba(var(--primary-rgb), .25), var(--shadow-sm);
+  background: color-mix(in srgb, var(--primary) 3%, var(--card));
+}
 @keyframes stopIn { from { opacity: 0; transform: translateY(6px); } }
 .stop-num {
   width: 28px; height: 28px; border-radius: 50%;
@@ -1322,9 +1367,10 @@ useHead({
   flex: 1; background: var(--card); border: .5px solid var(--line);
   border-radius: var(--radius-sheet); padding: var(--space-3) var(--space-4);
   margin-bottom: var(--space-3);
-  transition: border-color .3s var(--ease-out), box-shadow .35s var(--ease-out-expo), transform .35s var(--ease-spring-gentle);
+  transition: border-color .3s var(--ease-out), box-shadow .35s var(--ease-out-expo), transform .35s var(--ease-out-expo);
 }
 .stop-card:hover { border-color: var(--border); box-shadow: var(--shadow-sm); }
+.stop-card:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
 .stop-card-head { display: flex; align-items: center; gap: var(--space-3); }
 .stop-emoji { font-size: var(--text-lg); }
 .stop-card-info { flex: 1; min-width: 0; }
@@ -1365,7 +1411,7 @@ useHead({
 .scheduled-interval { display: block; margin-top: var(--space-2); color: var(--primary-fg); font-size: var(--text-xs); font-weight: var(--weight-semibold); }
 .stop-card-actions { display: flex; gap: var(--space-1); }
 .stop-list { margin-bottom: var(--space-4); }
-.stop-card-actions button { min-height: 44px; min-width: 44px; display: inline-flex; align-items: center; justify-content: center; border-radius: var(--radius-control); transition: background .3s var(--ease-out), transform .35s var(--ease-spring-gentle); }
+.stop-card-actions button { min-height: 44px; min-width: 44px; display: inline-flex; align-items: center; justify-content: center; border-radius: var(--radius-control); transition: background .3s var(--ease-out), transform .35s var(--ease-out-expo); }
 .stop-card-actions button:hover { background: var(--bg-warm); }
 .stop-card-actions button:active { transform: scale(.88); transition-duration: .08s; }
 .stop-card-actions button:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }

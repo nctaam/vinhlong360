@@ -569,7 +569,7 @@
 .stat-item:hover .stat-num { color: var(--primary-fg-strong, var(--primary-fg)); }
 .stat-label { font-size: var(--text-xs); color: var(--muted); text-transform: uppercase; letter-spacing: var(--tracking-caps); font-weight: var(--weight-semibold); }
 /* visual star glyphs inside a stat-item — turns a dry count into visible proof */
-.stat-stars { font-size: 1rem; letter-spacing: .04em; line-height: 1; transition: transform .3s var(--ease-spring-gentle); }
+.stat-stars { font-size: 1rem; letter-spacing: .04em; line-height: 1; transition: transform .3s var(--ease-out-expo); }
 .stat-item:hover .stat-stars { transform: scale(1.15); }
 
 /* ── Section desc ── */
@@ -666,12 +666,12 @@
   display: flex; align-items: center; gap: var(--space-3);
   padding: var(--space-4); border-radius: var(--radius-sheet);
   background: var(--card); border: .5px solid var(--line);
-  transition: transform .3s var(--ease-spring-gentle), box-shadow .3s var(--ease-out-expo), border-color .2s var(--ease-out);
+  transition: transform .3s var(--ease-out-expo), box-shadow .3s var(--ease-out-expo), border-color .2s var(--ease-out);
 }
 .cross-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-md); border-color: var(--border); }
 .cross-card:active { transform: scale(.97); transition-duration: .08s; }
 .cross-card:focus-visible { outline: 2px solid var(--primary); outline-offset: 3px; }
-.cross-icon { font-size: 1.6rem; flex-shrink: 0; transition: transform .35s var(--ease-spring-gentle), text-shadow .35s var(--ease-spring-gentle); }
+.cross-icon { font-size: 1.6rem; flex-shrink: 0; transition: transform .35s var(--ease-out-expo), text-shadow .35s var(--ease-out-expo); }
 .cross-card:hover .cross-icon { transform: scale(1.12); }
 .cross-card strong { display: block; font-size: var(--text-sm); }
 .cross-card p { margin: 0; font-size: var(--text-xs); color: var(--muted); }
@@ -715,14 +715,14 @@
   display: flex; flex-direction: column; align-items: center; gap: var(--space-2);
   padding: var(--space-5) var(--space-3); border-radius: var(--radius-sheet);
   background: var(--card); border: .5px solid var(--line);
-  transition: transform .3s var(--ease-spring-gentle), box-shadow .3s var(--ease-out-expo), border-color .2s var(--ease-out);
+  transition: transform .3s var(--ease-out-expo), box-shadow .3s var(--ease-out-expo), border-color .2s var(--ease-out);
   text-align: center; min-height: 44px; cursor: pointer;
 }
 .quick-pick:hover { transform: translateY(-3px); box-shadow: var(--shadow-md); border-color: var(--primary-fg); }
 .quick-pick:active { transform: scale(.96); transition-duration: .08s; }
 .quick-pick:focus-visible { outline: 2px solid var(--primary); outline-offset: 3px; }
 .quick-pick.active { border-color: var(--primary); background: rgba(var(--primary-rgb), .06); }
-.quick-pick-icon { font-size: 1.6rem; transition: transform .4s var(--ease-spring-gentle); }
+.quick-pick-icon { font-size: 1.6rem; transition: transform .4s var(--ease-out-expo); }
 .quick-pick:hover .quick-pick-icon { transform: scale(1.15); }
 .quick-pick-label { font-size: var(--text-sm); font-weight: var(--weight-semibold); }
 .quick-pick-count { font-size: var(--text-xs); color: var(--muted); }
@@ -1299,7 +1299,7 @@
   padding: var(--space-4) var(--space-3); border-radius: var(--radius-sheet);
   background: var(--card); border: .5px solid var(--line);
   text-align: center;
-  transition: transform .35s var(--ease-spring-gentle), box-shadow .3s var(--ease-out-expo), border-color .3s var(--ease-out);
+  transition: transform .35s var(--ease-out-expo), box-shadow .3s var(--ease-out-expo), border-color .3s var(--ease-out);
 }
 .stat-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); border-color: var(--border); }
 .stat-card-value { font-size: var(--text-xl); font-weight: var(--weight-bold); color: var(--ink); }

@@ -99,7 +99,7 @@ defineEmits<{
   background: var(--card); border: .5px solid var(--line);
   border-radius: var(--radius-sheet); padding: var(--space-4);
   box-shadow: var(--shadow-xs);
-  transition: transform .35s var(--ease-spring-gentle), box-shadow .35s var(--ease-out-expo), border-color .3s var(--ease-out);
+  transition: transform .35s var(--ease-out-expo), box-shadow .35s var(--ease-out-expo), border-color .3s var(--ease-out);
 }
 .sidebar-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); border-color: var(--border, var(--ink)); }
 .sidebar-card:focus-within { border-color: var(--border, var(--ink)); }

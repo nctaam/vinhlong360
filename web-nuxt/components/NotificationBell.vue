@@ -125,7 +125,7 @@ onUnmounted(() => stopPolling())
   border: .5px solid var(--line); border-radius: var(--radius-full);
   background: var(--card); color: var(--ink); cursor: pointer;
   font-size: var(--text-sm); font-weight: var(--weight-semibold);
-  transition: background .25s var(--ease-out), transform .25s var(--ease-spring-gentle), border-color .25s var(--ease-out);
+  transition: background .25s var(--ease-out), transform .25s var(--ease-out-expo), border-color .25s var(--ease-out);
 }
 .notif-retry:hover { background: var(--bg-alt); border-color: var(--ink); }
 .notif-retry:active { transform: scale(.96); transition-duration: .08s; }

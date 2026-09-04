@@ -171,7 +171,7 @@ onUnmounted(() => { if (copyTimer) clearTimeout(copyTimer) })
   color: var(--success);
   opacity: 0;
   transform: scale(.5);
-  transition: opacity .2s, transform .25s var(--ease-spring-gentle);
+  transition: opacity .2s, transform .25s var(--ease-out-expo);
 }
 .cw-copyable.copied .cw-check { opacity: 1; transform: scale(1); }
 .cw-copyable.copied .cw-icon { opacity: .4; }

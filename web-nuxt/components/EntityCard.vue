@@ -232,7 +232,7 @@ const ratingDisplay = computed(() => {
   line-height: 1;
   cursor: pointer;
   opacity: 0;
-  transition: opacity 200ms var(--ease-out), transform 200ms var(--ease-spring-gentle);
+  transition: opacity 200ms var(--ease-out), transform 200ms var(--ease-out-expo);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -259,7 +259,7 @@ const ratingDisplay = computed(() => {
   height: 6px;
   border-radius: 50%;
   background: rgba(var(--white-rgb), 0.6);
-  transition: background 200ms var(--ease-out), transform 200ms var(--ease-spring-gentle);
+  transition: background 200ms var(--ease-out), transform 200ms var(--ease-out-expo);
 }
 .card-dot.active {
   background: var(--text-on-dark, var(--white));

@@ -93,11 +93,11 @@ function iconFor(type?: string) {
 .toast { position: relative; overflow: hidden; }
 
 /* ── Transitions ── */
-.toast-enter-active { transition: transform .35s var(--ease-spring-gentle), opacity .25s var(--ease-out); will-change: transform, opacity; }
+.toast-enter-active { transition: transform .35s var(--ease-out-expo), opacity .25s var(--ease-out); will-change: transform, opacity; }
 .toast-leave-active { transition: transform .2s var(--ease-out), opacity .15s var(--ease-out); will-change: transform, opacity; }
 .toast-enter-from { transform: translateX(100%) scale(.95); opacity: 0; }
 .toast-leave-to { transform: translateX(40px) scale(.95); opacity: 0; }
-.toast-move { transition: transform .3s var(--ease-spring-gentle); }
+.toast-move { transition: transform .3s var(--ease-out-expo); }
 
 /* ── Dark ── */
 .dark .toast { background: var(--card); border-color: rgba(var(--text-on-dark-rgb),.1); box-shadow: 0 8px 32px rgba(var(--black-rgb),.5); }
