@@ -90,48 +90,76 @@ _CANONICAL_EVIDENCE_FIELDS = (
 )
 
 
-def _execution_receipt(evidence: dict[str, Any]) -> dict[str, Any] | None:
-    """Validate the runner receipt binding one capture to its execution context."""
+def _receipt_fields(receipt: Any) -> set[str] | None:
+    """Return the exact receipt schema when the value is a mapping."""
 
-    receipt = evidence.get("execution_receipt")
-    if not isinstance(receipt, dict):
-        return None
     required = {
         "version", "issuer", "finding_id", "layer", "command_sha256",
         "output_sha256", "return_code", "head_sha", "working_tree_digest",
     }
-    if set(receipt) != required:
+    if not isinstance(receipt, dict) or set(receipt) != required:
         return None
+    return required
+
+
+def _receipt_binding_matches(receipt: dict[str, Any], evidence: dict[str, Any]) -> bool:
+    """Check receipt version, issuer, and finding/layer binding."""
+
     if type(receipt.get("version")) is not int or receipt["version"] != 1 or receipt.get("issuer") != "run_pilot_acceptance":
-        return None
-    if receipt.get("finding_id") != evidence.get("finding_id") or receipt.get("layer") != evidence.get("layer"):
-        return None
+        return False
+    return receipt.get("finding_id") == evidence.get("finding_id") and receipt.get("layer") == evidence.get("layer")
+
+
+def _receipt_capture_matches(receipt: dict[str, Any], evidence: dict[str, Any]) -> bool:
+    """Check receipt hashes and return code against the captured evidence."""
+
     command = evidence.get("command")
     if not isinstance(command, str) or sha256(command.encode("utf-8")).hexdigest() != receipt.get("command_sha256"):
-        return None
-    if receipt.get("output_sha256") != evidence.get("output_sha256"):
-        return None
-    if receipt.get("return_code") != evidence.get("return_code"):
-        return None
+        return False
+    return receipt.get("output_sha256") == evidence.get("output_sha256") and receipt.get("return_code") == evidence.get("return_code")
+
+
+def _receipt_environment_matches(receipt: dict[str, Any], evidence: dict[str, Any]) -> bool:
+    """Check receipt checkout identity against the evidence environment."""
+
     environment = evidence.get("environment")
     if not isinstance(environment, dict):
-        return None
-    if receipt.get("head_sha") != environment.get("head_sha") or receipt.get("working_tree_digest") != environment.get("working_tree_digest"):
-        return None
-    if not isinstance(receipt.get("command_sha256"), str) or not _SHA256.fullmatch(receipt["command_sha256"]):
-        return None
-    if not isinstance(receipt.get("output_sha256"), str) or not _SHA256.fullmatch(receipt["output_sha256"]):
-        return None
+        return False
+    return receipt.get("head_sha") == environment.get("head_sha") and receipt.get("working_tree_digest") == environment.get("working_tree_digest")
+
+
+def _receipt_hashes_are_valid(receipt: dict[str, Any]) -> bool:
+    """Check the two digest fields carried by a receipt."""
+
+    for field_name in ("command_sha256", "output_sha256"):
+        value = receipt.get(field_name)
+        if not isinstance(value, str) or _SHA256.fullmatch(value) is None:
+            return False
+    return True
+
+
+def _receipt_identity_is_valid(receipt: dict[str, Any], evidence: dict[str, Any]) -> bool:
+    """Validate receipt identity format for the declared outcome."""
+
     head_value = receipt.get("head_sha")
     tree_value = receipt.get("working_tree_digest")
     if evidence.get("outcome") == "PASS":
-        if not isinstance(head_value, str) or not _HEAD_SHA.fullmatch(head_value):
-            return None
-        if not isinstance(tree_value, str) or not _SHA256.fullmatch(tree_value):
-            return None
-    elif not isinstance(head_value, str) or not head_value.strip() or not isinstance(tree_value, str) or not tree_value.strip():
+        return isinstance(head_value, str) and _HEAD_SHA.fullmatch(head_value) is not None and isinstance(tree_value, str) and _SHA256.fullmatch(tree_value) is not None
+    return isinstance(head_value, str) and bool(head_value.strip()) and isinstance(tree_value, str) and bool(tree_value.strip())
+
+
+def _execution_receipt(evidence: dict[str, Any]) -> dict[str, Any] | None:
+    """Validate the runner receipt binding one capture to its execution context."""
+
+    receipt = evidence.get("execution_receipt")
+    required = _receipt_fields(receipt)
+    if required is None:
         return None
-    if type(receipt.get("return_code")) is not int:
+    if not _receipt_binding_matches(receipt, evidence) or not _receipt_capture_matches(receipt, evidence):
+        return None
+    if not _receipt_environment_matches(receipt, evidence) or not _receipt_hashes_are_valid(receipt):
+        return None
+    if not _receipt_identity_is_valid(receipt, evidence) or type(receipt.get("return_code")) is not int:
         return None
     return {key: receipt[key] for key in sorted(required)}
 
@@ -175,32 +203,47 @@ def _transcript_names_its_own_work(evidence: dict[str, Any], captured_output: An
     return all(isinstance(nodeid, str) and nodeid and nodeid in captured_output for nodeid in nodeids)
 
 
-def _canonical_evidence_payload(evidence: dict[str, Any]) -> dict[str, Any] | None:
-    """Return only the signed, deterministic fields of one evidence record."""
+def _canonical_metadata_is_valid(evidence: dict[str, Any]) -> bool:
+    """Validate the non-digest metadata included in the canonical payload."""
 
-    summary = evidence.get("summary", {})
-    if not isinstance(summary, dict):
-        return None
-    proof_id = evidence.get("proof_id", "")
-    if not isinstance(proof_id, str):
-        return None
+    return isinstance(evidence.get("summary", {}), dict) and isinstance(evidence.get("proof_id", ""), str)
+
+
+def _captured_output_digest_is_valid(evidence: dict[str, Any]) -> bool:
+    """Validate the captured output type, digest format, and byte binding."""
+
     output_sha256 = evidence.get("output_sha256")
-    if not isinstance(output_sha256, str) or _SHA256.fullmatch(output_sha256) is None:
-        return None
     captured_output = evidence.get("captured_output")
+    if not isinstance(output_sha256, str) or _SHA256.fullmatch(output_sha256) is None:
+        return False
     if not isinstance(captured_output, str):
-        return None
-    if sha256(captured_output.encode("utf-8")).hexdigest() != output_sha256:
-        return None
+        return False
+    return sha256(captured_output.encode("utf-8")).hexdigest() == output_sha256
+
+
+def _canonical_provenance(evidence: dict[str, Any]) -> dict[str, str] | None:
+    """Return provenance fields in their deterministic order and types."""
+
     provenance = evidence.get("provenance")
     if not isinstance(provenance, dict) or set(provenance) != set(_PROVENANCE_FIELDS):
         return None
-    canonical_provenance = {}
+    canonical = {}
     for key in _PROVENANCE_FIELDS:
         value = provenance.get(key, "")
         if not isinstance(value, str):
             return None
-        canonical_provenance[key] = value
+        canonical[key] = value
+    return canonical
+
+
+def _canonical_evidence_payload(evidence: dict[str, Any]) -> dict[str, Any] | None:
+    """Return only the signed, deterministic fields of one evidence record."""
+
+    if not _canonical_metadata_is_valid(evidence) or not _captured_output_digest_is_valid(evidence):
+        return None
+    canonical_provenance = _canonical_provenance(evidence)
+    if canonical_provenance is None:
+        return None
     canonical_receipt = _execution_receipt(evidence)
     if canonical_receipt is None:
         return None
@@ -356,6 +399,45 @@ def _attestation_references(root: Path | None = None) -> dict[str, Any] | None:
         return None
 
 
+def _authority_identity_is_valid(payload: dict[str, Any]) -> bool:
+    """Check the release authority identity and checkout source contract."""
+
+    if payload.get("authority_id") != "release-control" or payload.get("owner") != "service-owner":
+        return False
+    return payload.get("head_source") == "git:HEAD" and payload.get("max_age_hours") == 24
+
+
+def _pilot_static_contract_is_valid(pilot: dict[str, Any]) -> bool:
+    """Check static pilot fields that bind the runner to its authority."""
+
+    expected = {
+        "runner": "scripts/ops/run_pilot_acceptance.py",
+        "bundle": "artifacts/pilot-acceptance.json",
+        "owner": "service-owner",
+        "owner_signoff_required": True,
+        "required_layers": list(ACCEPTANCE_LAYERS),
+        "closed_pilot_verdict": "GO_CONDITIONAL",
+        "external_policy": "sandbox-only-no-provider-calls",
+    }
+    return all(pilot.get(key) == value for key, value in expected.items())
+
+
+def _decision_items_are_valid(items: Any) -> bool:
+    """Check the authority's required decision item names."""
+
+    return (
+        isinstance(items, list)
+        and all(isinstance(item, str) and item for item in items)
+        and set(items) == set(DECISION_REQUIRED_ITEMS)
+    )
+
+
+def _authority_limits_are_valid(public: Any, max_age_hours: Any) -> bool:
+    """Check public verdict and freshness limit types."""
+
+    return isinstance(public, str) and type(max_age_hours) is int and max_age_hours > 0
+
+
 def _authority_contract(root: Path | None = None) -> tuple[set[str], str, int, str] | None:
     """Read the decision/public gate contract used by the release authority."""
 
@@ -363,32 +445,12 @@ def _authority_contract(root: Path | None = None) -> tuple[set[str], str, int, s
         checked_root = Path(root).resolve() if root is not None else ROOT
         payload = json.loads((checked_root / "config" / "release-authority.json").read_text(encoding="utf-8"))
         pilot = payload["pilot_acceptance"]
-        if payload.get("authority_id") != "release-control" or payload.get("owner") != "service-owner":
-            return None
-        if payload.get("head_source") != "git:HEAD" or payload.get("max_age_hours") != 24:
+        if not _authority_identity_is_valid(payload) or not _pilot_static_contract_is_valid(pilot):
             return None
         items = pilot["decision_required_items"]
         public = pilot["public_launch_verdict"]
         max_age_hours = pilot["max_age_hours"]
-        if pilot.get("runner") != "scripts/ops/run_pilot_acceptance.py":
-            return None
-        if pilot.get("bundle") != "artifacts/pilot-acceptance.json":
-            return None
-        if pilot.get("owner") != "service-owner" or pilot.get("owner_signoff_required") is not True:
-            return None
-        if pilot.get("required_layers") != list(ACCEPTANCE_LAYERS):
-            return None
-        if pilot.get("closed_pilot_verdict") != "GO_CONDITIONAL":
-            return None
-        if pilot.get("external_policy") != "sandbox-only-no-provider-calls":
-            return None
-        if not isinstance(items, list) or not all(isinstance(item, str) and item for item in items):
-            return None
-        if not isinstance(public, str):
-            return None
-        if type(max_age_hours) is not int or max_age_hours <= 0:
-            return None
-        if set(items) != set(DECISION_REQUIRED_ITEMS):
+        if not _decision_items_are_valid(items) or not _authority_limits_are_valid(public, max_age_hours):
             return None
         return set(items), public, max_age_hours, "service-owner"
     except (OSError, UnicodeDecodeError, json.JSONDecodeError, KeyError, TypeError, ValueError):
@@ -601,67 +663,337 @@ def _countersignature_covers_every_passing_record(bundle: AcceptanceBundle) -> b
     return expected.issubset(set(covers)) and bool(expected)
 
 
+def _validate_bundle_shape(bundle: Any) -> bool:
+    """Validate top-level bundle type and identity fields."""
+
+    if not isinstance(bundle, AcceptanceBundle) or set(bundle.sections) != set(P1_FINDINGS):
+        return False
+    if type(bundle.stale) is not bool or bundle.stale:
+        return False
+    if not isinstance(bundle.artifact_id, str) or not bundle.artifact_id.strip():
+        return False
+    return isinstance(bundle.head_sha, str) and _HEAD_SHA.fullmatch(bundle.head_sha) is not None
+
+
+def _bundle_timestamp(bundle: AcceptanceBundle) -> datetime | None:
+    """Validate envelope freshness and return the shared current time."""
+
+    if not isinstance(bundle.generated_at, str) or not bundle.generated_at.strip():
+        return None
+    if type(bundle.max_age_hours) is not int or bundle.max_age_hours <= 0:
+        return None
+    now = datetime.now(timezone.utc)
+    observed = datetime.fromisoformat(bundle.generated_at.replace("Z", "+00:00"))
+    if observed.tzinfo is None or observed.astimezone(timezone.utc) > now:
+        return None
+    if (now - observed.astimezone(timezone.utc)).total_seconds() > bundle.max_age_hours * 3600:
+        return None
+    return now
+
+
+def _validate_authority_fields(bundle: AcceptanceBundle, checked_root: Path) -> tuple[set[str], str, int, str] | None:
+    """Validate public verdict, authority contract, owner, and rollback note."""
+
+    if bundle.public_launch_gate != PUBLIC_LAUNCH_VERDICT:
+        return None
+    contract = _authority_contract(checked_root)
+    if contract is None:
+        return None
+    required_decisions, public_verdict, authority_max_age_hours, authority_owner = contract
+    if public_verdict != PUBLIC_LAUNCH_VERDICT or bundle.public_launch_gate != public_verdict:
+        return None
+    if bundle.max_age_hours != authority_max_age_hours:
+        return None
+    if type(bundle.owner) is not str or bundle.owner != authority_owner:
+        return None
+    if type(bundle.rollback_note) is not str or not bundle.rollback_note.strip():
+        return None
+    return contract
+
+
+def _validate_bundle_environment(bundle: AcceptanceBundle, checked_root: Path) -> str | None:
+    """Bind envelope environment and safety controls to the current checkout."""
+
+    if not isinstance(bundle.environment, dict) or not bundle.environment:
+        return None
+    if bundle.environment.get("head_sha") != bundle.head_sha:
+        return None
+    working_tree_digest = bundle.environment.get("working_tree_digest")
+    current_working_tree_digest = _working_tree_digest(checked_root)
+    if not isinstance(working_tree_digest, str) or not _SHA256.fullmatch(working_tree_digest):
+        return None
+    if current_working_tree_digest == "unknown" or working_tree_digest != current_working_tree_digest:
+        return None
+    for safety_key in ("production_calls", "secrets_collected", "raw_personal_data"):
+        if bundle.environment.get(safety_key) is not False:
+            return None
+    if bundle.owner_signoff is not True or bundle.cross_boundary_proof is not True:
+        return None
+    return working_tree_digest
+
+
+def _gate_identity_valid(bundle: Any, checked_root: Path) -> tuple[datetime, str, tuple[set[str], str, int, str]] | None:
+    """Run the ordered envelope, authority, and checkout identity checks."""
+
+    if not _validate_bundle_shape(bundle):
+        return None
+    current_head = _head_sha(checked_root)
+    if current_head == "unknown" or bundle.head_sha != current_head:
+        return None
+    now = _bundle_timestamp(bundle)
+    if now is None:
+        return None
+    contract = _validate_authority_fields(bundle, checked_root)
+    if contract is None:
+        return None
+    working_tree_digest = _validate_bundle_environment(bundle, checked_root)
+    if working_tree_digest is None:
+        return None
+    return now, working_tree_digest, contract
+
+
+def _section_flags_are_valid(section: EvidenceSection) -> bool:
+    """Validate section field types and the passing control flags."""
+
+    if type(section.outcome) is not str or type(section.stale) is not bool:
+        return False
+    if type(section.cross_boundary_proof) is not bool or type(section.decision_required) is not bool:
+        return False
+    if type(section.owner_signoff) is not bool or type(section.finding_id) is not str:
+        return False
+    return section.stale is False and section.outcome == "PASS" and section.cross_boundary_proof is True
+
+
+def _validate_section_header(section: Any, finding: str) -> bool:
+    """Validate one P1 section's outcome and control flags."""
+
+    if not isinstance(section, EvidenceSection) or not _section_flags_are_valid(section):
+        return False
+    if section.finding_id != finding:
+        return False
+    return not section.decision_required or section.owner_signoff is True
+
+
+def _validate_layer_identity(evidence: dict[str, Any], finding: str, layer: str) -> bool:
+    """Validate a layer's finding, freshness flag, kind, and outcome."""
+
+    if evidence.get("finding_id") != finding or evidence.get("layer") != layer:
+        return False
+    if evidence.get("stale") is not False or evidence.get("outcome") != "PASS":
+        return False
+    kind = evidence.get("evidence_kind")
+    return isinstance(kind, str) and kind in _EVIDENCE_KINDS[layer]
+
+
+def _validate_layer_metadata(evidence: dict[str, Any], bundle: AcceptanceBundle) -> bool:
+    """Validate required command, owner, and rollback metadata."""
+
+    required = ("command", "environment", "nodeids", "return_code", "checksum", "owner", "rollback_note")
+    if any(key not in evidence or not evidence[key] for key in required if key != "return_code"):
+        return False
+    if type(evidence["command"]) is not str or not evidence["command"].strip():
+        return False
+    if type(evidence["owner"]) is not str or not evidence["owner"].strip() or evidence["owner"] != bundle.owner:
+        return False
+    if type(evidence["rollback_note"]) is not str or not evidence["rollback_note"].strip():
+        return False
+    return True
+
+
+def _validate_layer_environment(evidence: dict[str, Any], bundle: AcceptanceBundle, working_tree_digest: str) -> bool:
+    """Validate checkout identity and safety controls for one layer."""
+
+    environment = evidence["environment"]
+    if not isinstance(environment, dict) or not environment:
+        return False
+    if environment.get("head_sha") != bundle.head_sha or environment.get("working_tree_digest") != working_tree_digest:
+        return False
+    for safety_key in ("production_calls", "secrets_collected", "raw_personal_data"):
+        if environment.get(safety_key) is not False:
+            return False
+    return True
+
+
+def _validate_nodeids_and_return_code(evidence: dict[str, Any]) -> bool:
+    """Validate node IDs and successful command completion."""
+
+    nodeids = evidence["nodeids"]
+    if not isinstance(nodeids, list) or not nodeids or any(not isinstance(item, str) or not item for item in nodeids):
+        return False
+    if type(evidence["return_code"]) is not int or evidence["return_code"] != 0:
+        return False
+    return True
+
+
+def _validate_capture_hashes(evidence: dict[str, Any]) -> bool:
+    """Validate checksum fields and bind the digest to captured bytes."""
+
+    checksum = evidence.get("checksum")
+    output_sha256 = evidence.get("output_sha256")
+    if not isinstance(checksum, str) or _SHA256.fullmatch(checksum) is None:
+        return False
+    if not isinstance(output_sha256, str) or _SHA256.fullmatch(output_sha256) is None:
+        return False
+    captured_output = evidence.get("captured_output")
+    return isinstance(captured_output, str) and sha256(captured_output.encode("utf-8")).hexdigest() == output_sha256
+
+
+def _validate_layer_capture(evidence: dict[str, Any]) -> bool:
+    """Validate node IDs, return code, and captured output digest."""
+
+    return _validate_nodeids_and_return_code(evidence) and _validate_capture_hashes(evidence)
+
+
+def _validate_layer_execution(evidence: dict[str, Any], bundle: AcceptanceBundle, working_tree_digest: str) -> bool:
+    """Validate command, environment, node IDs, return code, and output hashes."""
+
+    return (
+        _validate_layer_metadata(evidence, bundle)
+        and _validate_layer_environment(evidence, bundle, working_tree_digest)
+        and _validate_layer_capture(evidence)
+    )
+
+
+def _validate_provenance_metadata(evidence: dict[str, Any], finding: str, layer: str) -> str | None:
+    """Validate the provenance mapping and return its capture ID."""
+
+    provenance = evidence.get("provenance")
+    if not isinstance(provenance, dict):
+        return None
+    capture_id = provenance.get("capture_id")
+    source = provenance.get("source")
+    if not isinstance(capture_id, str) or not capture_id.strip() or not isinstance(source, str) or not source.strip():
+        return None
+    if provenance.get("finding_id") != finding or provenance.get("layer") != layer:
+        return None
+    return capture_id
+
+
+def _validate_layer_provenance(evidence: dict[str, Any], finding: str, layer: str, seen_capture_ids: set[str]) -> bool:
+    """Validate transcript support and reserve a unique capture identity."""
+
+    if not _captured_output_supports_outcome(evidence) or evidence.get("checksum_verified") is not True:
+        return False
+    if "summary" in evidence and not isinstance(evidence["summary"], dict):
+        return False
+    capture_id = _validate_provenance_metadata(evidence, finding, layer)
+    if capture_id is None or capture_id in seen_capture_ids:
+        return False
+    seen_capture_ids.add(capture_id)
+    return True
+
+
+def _fingerprint_evidence(evidence: dict[str, Any]) -> str:
+    """Return the duplicate-detection fingerprint for one evidence record."""
+
+    return json.dumps(
+        {
+            key: evidence.get(key)
+            for key in (
+                "command", "environment", "nodeids", "return_code", "owner",
+                "rollback_note", "outcome", "evidence_kind",
+                "availability_gap", "drill_steps", "checksum_verified", "stale",
+                "output_sha256",
+            )
+        },
+        ensure_ascii=True,
+        sort_keys=True,
+        separators=(",", ":"),
+        allow_nan=False,
+    )
+
+
+def _validate_layer_fingerprint(
+    evidence: dict[str, Any],
+    layer: str,
+    seen_fingerprints: dict[str, set[str]],
+    seen_capture_fingerprints: set[str],
+) -> bool:
+    """Validate canonical checksum and reject duplicate captured records."""
+
+    proof_id = evidence.get("proof_id", "")
+    summary = evidence.get("summary", {})
+    if not isinstance(proof_id, str) or (not proof_id.strip() and not summary):
+        return False
+    if evidence.get("checksum") != _evidence_digest(evidence):
+        return False
+    capture_fingerprint = evidence["output_sha256"]
+    if capture_fingerprint in seen_capture_fingerprints:
+        return False
+    seen_capture_fingerprints.add(capture_fingerprint)
+    fingerprint = _fingerprint_evidence(evidence)
+    prior = seen_fingerprints.setdefault(layer, set())
+    if fingerprint in prior:
+        return False
+    prior.add(fingerprint)
+    return True
+
+
+def _validate_layer_evidence(
+    bundle: AcceptanceBundle,
+    finding: str,
+    layer: str,
+    evidence: Any,
+    now: datetime,
+    working_tree_digest: str,
+    seen_fingerprints: dict[str, set[str]],
+    seen_capture_fingerprints: set[str],
+    seen_capture_ids: set[str],
+) -> bool:
+    """Validate one layer while preserving the original check ordering."""
+
+    if not isinstance(evidence, dict) or not _validate_layer_identity(evidence, finding, layer):
+        return False
+    observed_at = evidence.get("observed_at")
+    if not isinstance(observed_at, str) or not observed_at.strip():
+        return False
+    observed_layer = datetime.fromisoformat(observed_at.replace("Z", "+00:00"))
+    if observed_layer.tzinfo is None or observed_layer.astimezone(timezone.utc) > now:
+        return False
+    if (now - observed_layer.astimezone(timezone.utc)).total_seconds() > bundle.max_age_hours * 3600:
+        return False
+    if not _validate_layer_execution(evidence, bundle, working_tree_digest):
+        return False
+    if not _validate_layer_provenance(evidence, finding, layer, seen_capture_ids):
+        return False
+    return _validate_layer_fingerprint(evidence, layer, seen_fingerprints, seen_capture_fingerprints)
+
+
+def _validate_sections(
+    bundle: AcceptanceBundle,
+    now: datetime,
+    working_tree_digest: str,
+) -> bool:
+    """Validate every P1 section and its distinct layered evidence records."""
+
+    seen_fingerprints: dict[str, set[str]] = {}
+    seen_capture_fingerprints: set[str] = set()
+    seen_capture_ids: set[str] = set()
+    for finding in P1_FINDINGS:
+        section = bundle.sections.get(finding)
+        if not _validate_section_header(section, finding):
+            return False
+        layers = _layer_values(section)
+        if set(layers) != set(ACCEPTANCE_LAYERS):
+            return False
+        for layer in ACCEPTANCE_LAYERS:
+            if not _validate_layer_evidence(
+                bundle, finding, layer, layers.get(layer), now, working_tree_digest,
+                seen_fingerprints, seen_capture_fingerprints, seen_capture_ids,
+            ):
+                return False
+    return True
+
+
 def _evaluate_pilot_gate_contents(bundle: AcceptanceBundle, root: Path | None = None) -> GateVerdict:
     """Compute the closed-pilot decision from the evidence contents."""
     try:
         checked_root = Path(root).resolve() if root is not None else Path.cwd().resolve()
-        if not isinstance(bundle, AcceptanceBundle):
+        identity = _gate_identity_valid(bundle, checked_root)
+        if identity is None:
             return "NO_GO"
-        if set(bundle.sections) != set(P1_FINDINGS):
-            return "NO_GO"
-        if type(bundle.stale) is not bool or bundle.stale:
-            return "NO_GO"
-        if not isinstance(bundle.artifact_id, str) or not bundle.artifact_id.strip():
-            return "NO_GO"
-        if not isinstance(bundle.head_sha, str) or _HEAD_SHA.fullmatch(bundle.head_sha) is None:
-            return "NO_GO"
-        # A syntactically valid revision is not enough: acceptance evidence
-        # must be bound to the checkout that is being evaluated.
-        current_head = _head_sha(checked_root)
-        if current_head == "unknown" or bundle.head_sha != current_head:
-            return "NO_GO"
-        if not isinstance(bundle.generated_at, str) or not bundle.generated_at.strip():
-            return "NO_GO"
-        if type(bundle.max_age_hours) is not int or bundle.max_age_hours <= 0:
-            return "NO_GO"
-        now = datetime.now(timezone.utc)
-        observed = datetime.fromisoformat(bundle.generated_at.replace("Z", "+00:00"))
-        if observed.tzinfo is None or observed.astimezone(timezone.utc) > now:
-            return "NO_GO"
-        if (now - observed.astimezone(timezone.utc)).total_seconds() > bundle.max_age_hours * 3600:
-            return "NO_GO"
-        if bundle.public_launch_gate != PUBLIC_LAUNCH_VERDICT:
-            return "NO_GO"
-        contract = _authority_contract(checked_root)
-        if contract is None:
-            return "NO_GO"
-        required_decisions, public_verdict, authority_max_age_hours, authority_owner = contract
-        if public_verdict != PUBLIC_LAUNCH_VERDICT or bundle.public_launch_gate != public_verdict:
-            return "NO_GO"
-        if bundle.max_age_hours != authority_max_age_hours:
-            return "NO_GO"
-        if type(bundle.owner) is not str or bundle.owner != authority_owner:
-            return "NO_GO"
-        if type(bundle.rollback_note) is not str or not bundle.rollback_note.strip():
-            return "NO_GO"
-        if not isinstance(bundle.environment, dict) or not bundle.environment:
-            return "NO_GO"
-        if bundle.environment.get("head_sha") != bundle.head_sha:
-            return "NO_GO"
-        working_tree_digest = bundle.environment.get("working_tree_digest")
-        current_working_tree_digest = _working_tree_digest(checked_root)
-        if (
-            not isinstance(working_tree_digest, str)
-            or not _SHA256.fullmatch(working_tree_digest)
-            or current_working_tree_digest == "unknown"
-            or working_tree_digest != current_working_tree_digest
-        ):
-            return "NO_GO"
-        for safety_key in ("production_calls", "secrets_collected", "raw_personal_data"):
-            if bundle.environment.get(safety_key) is not False:
-                return "NO_GO"
-        if bundle.owner_signoff is not True or bundle.cross_boundary_proof is not True:
-            return "NO_GO"
+        now, working_tree_digest, contract = identity
+        required_decisions, _public_verdict, authority_max_age_hours, authority_owner = contract
         # The owner_signoff boolean above stays an AND-condition rather than
         # being replaced: absence already fails closed, and a signature the
         # same actor can mint is not a reason to drop a second control.
@@ -685,143 +1017,7 @@ def _evaluate_pilot_gate_contents(bundle: AcceptanceBundle, root: Path | None = 
             return "NO_GO"
         if any(value is not True for value in bundle.decision_required.values()):
             return "NO_GO"
-        seen_fingerprints: dict[str, set[str]] = {}
-        seen_capture_fingerprints: set[str] = set()
-        seen_capture_ids: set[str] = set()
-        for finding in P1_FINDINGS:
-            section = bundle.sections.get(finding)
-            if not isinstance(section, EvidenceSection):
-                return "NO_GO"
-            if type(section.outcome) is not str or type(section.stale) is not bool:
-                return "NO_GO"
-            if type(section.cross_boundary_proof) is not bool or type(section.decision_required) is not bool:
-                return "NO_GO"
-            if type(section.owner_signoff) is not bool or type(section.finding_id) is not str:
-                return "NO_GO"
-            if section.finding_id != finding:
-                return "NO_GO"
-            if section.stale is not False or section.outcome != "PASS" or section.cross_boundary_proof is not True:
-                return "NO_GO"
-            if section.decision_required and section.owner_signoff is not True:
-                return "NO_GO"
-            layers = _layer_values(section)
-            if set(layers) != set(ACCEPTANCE_LAYERS):
-                return "NO_GO"
-            for layer in ACCEPTANCE_LAYERS:
-                evidence = layers.get(layer)
-                if not isinstance(evidence, dict):
-                    return "NO_GO"
-                if evidence.get("finding_id") != finding or evidence.get("layer") != layer:
-                    return "NO_GO"
-                if evidence.get("stale") is not False:
-                    return "NO_GO"
-                kind = evidence.get("evidence_kind")
-                if not isinstance(kind, str) or kind not in _EVIDENCE_KINDS[layer]:
-                    return "NO_GO"
-                if evidence.get("outcome") != "PASS":
-                    return "NO_GO"
-                observed_at = evidence.get("observed_at")
-                if not isinstance(observed_at, str) or not observed_at.strip():
-                    return "NO_GO"
-                observed_layer = datetime.fromisoformat(observed_at.replace("Z", "+00:00"))
-                if observed_layer.tzinfo is None or observed_layer.astimezone(timezone.utc) > now:
-                    return "NO_GO"
-                if (now - observed_layer.astimezone(timezone.utc)).total_seconds() > bundle.max_age_hours * 3600:
-                    return "NO_GO"
-                required = ("command", "environment", "nodeids", "return_code", "checksum", "owner", "rollback_note")
-                if any(key not in evidence or not evidence[key] for key in required if key != "return_code"):
-                    return "NO_GO"
-                if type(evidence["command"]) is not str or not evidence["command"].strip():
-                    return "NO_GO"
-                if type(evidence["owner"]) is not str or not evidence["owner"].strip():
-                    return "NO_GO"
-                if evidence["owner"] != bundle.owner:
-                    return "NO_GO"
-                if type(evidence["rollback_note"]) is not str or not evidence["rollback_note"].strip():
-                    return "NO_GO"
-                if not isinstance(evidence["environment"], dict) or not evidence["environment"]:
-                    return "NO_GO"
-                if evidence["environment"].get("head_sha") != bundle.head_sha:
-                    return "NO_GO"
-                if evidence["environment"].get("working_tree_digest") != working_tree_digest:
-                    return "NO_GO"
-                for safety_key in ("production_calls", "secrets_collected", "raw_personal_data"):
-                    if evidence["environment"].get(safety_key) is not False:
-                        return "NO_GO"
-                if not isinstance(evidence["nodeids"], list):
-                    return "NO_GO"
-                if not evidence["nodeids"] or any(not isinstance(item, str) or not item for item in evidence["nodeids"]):
-                    return "NO_GO"
-                if type(evidence["return_code"]) is not int or evidence["return_code"] != 0:
-                    return "NO_GO"
-                checksum = evidence.get("checksum")
-                if not isinstance(checksum, str) or _SHA256.fullmatch(checksum) is None:
-                    return "NO_GO"
-                output_sha256 = evidence.get("output_sha256")
-                if not isinstance(output_sha256, str) or _SHA256.fullmatch(output_sha256) is None:
-                    return "NO_GO"
-                captured_output = evidence.get("captured_output")
-                if not isinstance(captured_output, str):
-                    return "NO_GO"
-                if sha256(captured_output.encode("utf-8")).hexdigest() != output_sha256:
-                    return "NO_GO"
-                # The captured bytes must themselves support the declared
-                # verdict.  Without this the bundle only proves that its own
-                # hashes are self-consistent, never that the text says what the
-                # record claims it says.
-                if not _captured_output_supports_outcome(evidence):
-                    return "NO_GO"
-                if evidence.get("checksum_verified") is not True:
-                    return "NO_GO"
-                if "summary" in evidence and not isinstance(evidence["summary"], dict):
-                    return "NO_GO"
-                provenance = evidence.get("provenance")
-                if not isinstance(provenance, dict):
-                    return "NO_GO"
-                capture_id = provenance.get("capture_id")
-                source = provenance.get("source")
-                if (
-                    not isinstance(capture_id, str)
-                    or not capture_id.strip()
-                    or not isinstance(source, str)
-                    or not source.strip()
-                    or provenance.get("finding_id") != finding
-                    or provenance.get("layer") != layer
-                ):
-                    return "NO_GO"
-                if capture_id in seen_capture_ids:
-                    return "NO_GO"
-                seen_capture_ids.add(capture_id)
-                proof_id = evidence.get("proof_id", "")
-                summary = evidence.get("summary", {})
-                if not isinstance(proof_id, str) or (not proof_id.strip() and not summary):
-                    return "NO_GO"
-                if checksum != _evidence_digest(evidence):
-                    return "NO_GO"
-                capture_fingerprint = output_sha256
-                if capture_fingerprint in seen_capture_fingerprints:
-                    return "NO_GO"
-                seen_capture_fingerprints.add(capture_fingerprint)
-                fingerprint = json.dumps(
-                    {
-                        key: evidence.get(key)
-                        for key in (
-                            "command", "environment", "nodeids", "return_code", "owner",
-                            "rollback_note", "outcome", "evidence_kind",
-                            "availability_gap", "drill_steps", "checksum_verified", "stale",
-                            "output_sha256",
-                        )
-                    },
-                    ensure_ascii=True,
-                    sort_keys=True,
-                    separators=(",", ":"),
-                    allow_nan=False,
-                )
-                prior = seen_fingerprints.setdefault(layer, set())
-                if fingerprint in prior:
-                    return "NO_GO"
-                prior.add(fingerprint)
-        return "GO_CONDITIONAL"
+        return "GO_CONDITIONAL" if _validate_sections(bundle, now, working_tree_digest) else "NO_GO"
     except (TypeError, ValueError, KeyError, AttributeError, OverflowError):
         return "NO_GO"
 
@@ -1109,19 +1305,11 @@ def _postgres_layers(
     return layers
 
 
-def _bind_evidence(evidence: dict[str, Any], finding: str, layer: str) -> dict[str, Any]:
-    """Bind one captured result to exactly one finding/layer pair.
+def _has_bound_provenance(evidence: dict[str, Any], finding: str, layer: str) -> bool:
+    """Return whether a capture names the exact finding and layer."""
 
-    Aggregate runner output is not proof for every P1. Unless the capture
-    explicitly identifies this finding/layer, keep the bound record
-    unclassified so a shared placeholder cannot produce a green gate.
-    """
-
-    bound = dict(evidence)
-    bound["finding_id"] = finding
-    bound["layer"] = layer
     provenance = evidence.get("provenance")
-    valid_provenance = (
+    return (
         isinstance(provenance, dict)
         and provenance.get("finding_id") == finding
         and provenance.get("layer") == layer
@@ -1130,38 +1318,62 @@ def _bind_evidence(evidence: dict[str, Any], finding: str, layer: str) -> dict[s
         and isinstance(provenance.get("source"), str)
         and bool(provenance.get("source", "").strip())
     )
-    if valid_provenance and not bound.get("proof_id"):
-        bound["proof_id"] = provenance["capture_id"]
-    if not valid_provenance:
-        bound["provenance"] = {
-            "capture_id": "",
-            "source": "",
-            "finding_id": finding,
-            "layer": layer,
-        }
-        bound["outcome"] = "UNCLASSIFIED"
-        bound["evidence_kind"] = "unclassified-shared-result"
-        bound["checksum_verified"] = False
-        bound["unclassified_reason"] = "capture lacks per-finding/per-layer provenance"
-    # The receipt is generated by the runner after the finding/layer binding is
-    # known; it ties the attestation to the exact command and bytes. Unclassified
-    # captures receive one too so their checksum remains diagnostic, but they
-    # still cannot satisfy the gate without valid per-finding provenance.
+
+
+def _mark_unclassified(bound: dict[str, Any], finding: str, layer: str) -> None:
+    """Prevent a shared aggregate capture from becoming passing evidence."""
+
+    bound["provenance"] = {
+        "capture_id": "",
+        "source": "",
+        "finding_id": finding,
+        "layer": layer,
+    }
+    bound["outcome"] = "UNCLASSIFIED"
+    bound["evidence_kind"] = "unclassified-shared-result"
+    bound["checksum_verified"] = False
+    bound["unclassified_reason"] = "capture lacks per-finding/per-layer provenance"
+
+
+def _execution_receipt_for_bound_evidence(bound: dict[str, Any], finding: str, layer: str) -> dict[str, Any] | None:
+    """Build the diagnostic receipt after finding/layer binding is known."""
+
     command = bound.get("command")
     output = bound.get("output_sha256")
     environment = bound.get("environment")
-    if isinstance(command, str) and isinstance(output, str) and isinstance(environment, dict):
-        bound["execution_receipt"] = {
-            "version": 1,
-            "issuer": "run_pilot_acceptance",
-            "finding_id": finding,
-            "layer": layer,
-            "command_sha256": sha256(command.encode("utf-8")).hexdigest(),
-            "output_sha256": output,
-            "return_code": bound.get("return_code"),
-            "head_sha": environment.get("head_sha"),
-            "working_tree_digest": environment.get("working_tree_digest"),
-        }
+    if not isinstance(command, str) or not isinstance(output, str) or not isinstance(environment, dict):
+        return None
+    return {
+        "version": 1,
+        "issuer": "run_pilot_acceptance",
+        "finding_id": finding,
+        "layer": layer,
+        "command_sha256": sha256(command.encode("utf-8")).hexdigest(),
+        "output_sha256": output,
+        "return_code": bound.get("return_code"),
+        "head_sha": environment.get("head_sha"),
+        "working_tree_digest": environment.get("working_tree_digest"),
+    }
+
+
+def _attach_execution_receipt(bound: dict[str, Any], finding: str, layer: str) -> None:
+    """Attach a receipt when the captured fields are complete enough to bind."""
+
+    receipt = _execution_receipt_for_bound_evidence(bound, finding, layer)
+    if receipt is not None:
+        bound["execution_receipt"] = receipt
+
+
+def _bind_evidence(evidence: dict[str, Any], finding: str, layer: str) -> dict[str, Any]:
+    """Bind one captured result to exactly one finding/layer pair."""
+
+    bound = {**evidence, "finding_id": finding, "layer": layer}
+    valid_provenance = _has_bound_provenance(evidence, finding, layer)
+    if valid_provenance and not bound.get("proof_id"):
+        bound["proof_id"] = evidence["provenance"]["capture_id"]
+    if not valid_provenance:
+        _mark_unclassified(bound, finding, layer)
+    _attach_execution_receipt(bound, finding, layer)
     bound["checksum"] = _evidence_digest(bound)
     return bound
 

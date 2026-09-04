@@ -337,3 +337,9 @@ ghi ở backlog tối ưu — giảm dần, KHÔNG được tăng tiếp từ 47
 - 2026-09-04T14:37:32 SKIP R30.7 — Persist ratchet evidence for backend-only refactor tranches; frontend bundle debt remains unchanged.
 
 - 2026-09-04T14:58:03 SKIP R30.7 — Lifecycle export/erase backend refactor; frontend bundle unchanged and existing R30.7 debt is unrelated.
+
+- 2026-09-04T15:10:13 SKIP R30.7 — Semantic cache L2 concurrency refactor; frontend bundle unchanged and existing R30.7 debt is unrelated.
+
+- 2026-09-04T15:12:06 SKIP R30.7 — Backend acceptance evidence helper refactor; frontend bundle unchanged and existing R30.7 debt is unrelated.
+
+- 2026-09-04T15:36:39 SKIP R30.7 — Backend acceptance evaluator decomposition and helper refactor; frontend bundle unchanged and existing R30.7 debt is unrelated.
