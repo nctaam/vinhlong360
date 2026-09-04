@@ -7,6 +7,8 @@ import sys
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
+import pytest
+
 
 AGENT_DIR = Path(__file__).resolve().parents[1] / "agent"
 if str(AGENT_DIR) not in sys.path:
@@ -301,3 +303,35 @@ def test_redacting_log_filter_sanitizes_exception_context_before_formatting():
     assert record.exc_info is None
     assert record.stack_info is None
     assert "0909123456" not in (record.exc_text or "")
+
+
+def test_pre_case_contact_withdrawal_receipt_binds_uuid_and_digest():
+    """Withdrawal validation returns only the opaque challenge id after digest binding."""
+    from cases.contact import _open_withdrawal_receipt
+
+    class Crypto:
+        def open_contact_receipt(self, receipt, *, now):
+            assert receipt == "receipt"
+            return {
+                "challenge_id": "12345678-1234-5678-1234-567812345678",
+                "contact_digest": "digest",
+            }
+
+    assert _open_withdrawal_receipt("receipt", "digest", Crypto(), now=object()) == (
+        "12345678-1234-5678-1234-567812345678"
+    )
+
+
+def test_contact_rate_limit_helper_fails_closed():
+    """Every pre-case contact bucket uses the shared fail-closed rejection."""
+    from cases import contact
+
+    original = contact.check_case_rate_limit
+    try:
+        contact.check_case_rate_limit = lambda *_args, **_kwargs: False
+        with pytest.raises(contact.CaseSecurityError):
+            contact._enforce_contact_rate_limit(
+                "contact_otp", "subject", database=object(), now=object()
+            )
+    finally:
+        contact.check_case_rate_limit = original

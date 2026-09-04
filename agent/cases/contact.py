@@ -96,6 +96,35 @@ def contact_digest(phone: str, *, crypto) -> str:
     return crypto.digest_capability(f"case-contact:{normalize_phone(phone)}")
 
 
+def _open_withdrawal_receipt(receipt: str, digest: str, crypto, *, now: datetime) -> str:
+    try:
+        payload = crypto.open_contact_receipt(receipt, now=now)
+        challenge_id = str(uuid.UUID(str(payload["challenge_id"])))
+        if not hmac.compare_digest(str(payload["contact_digest"]), digest):
+            raise ValueError
+    except (CaseSecurityError, ValueError, TypeError, KeyError, AttributeError) as exc:
+        raise CaseSecurityError(_PUBLIC_ERROR) from exc
+    return challenge_id
+
+
+def _enforce_contact_rate_limit(
+    bucket: str,
+    subject: str,
+    *,
+    database,
+    now: datetime,
+) -> None:
+    if not check_case_rate_limit(
+        bucket,
+        subject,
+        limit=VERIFY_ATTEMPT_LIMIT,
+        window=VERIFY_ATTEMPT_WINDOW,
+        now=now,
+        database=database,
+    ):
+        raise CaseSecurityError(_PUBLIC_ERROR)
+
+
 def _challenge_digest(code: str, *, crypto, case_id: str) -> str:
     return crypto.digest_capability(f"case-otp:{case_id}:{code}")
 
@@ -126,19 +155,19 @@ def request_contact_verification(access, phone: str, consent: bool, *, now: date
     # Đánh đổi có ý thức: kẻ tấn công đốt được ngân sách của một số, nên chủ số
     # đó phải chờ hết cửa sổ mới xác thực được. Chờ 15 phút là cái giá nhỏ hơn
     # nhiều so với bị dội tin không giới hạn.
-    if not check_case_rate_limit(
+    subject_key = crypto.digest_capability("case-contact-subject")
+    _enforce_contact_rate_limit(
         "contact_otp_dest",
-        rate_subject_digest(f"dest:{number}", master_key=crypto.digest_capability("case-contact-subject")),
-        limit=VERIFY_ATTEMPT_LIMIT, window=VERIFY_ATTEMPT_WINDOW, now=now, database=database,
-    ):
-        raise CaseSecurityError(_PUBLIC_ERROR)
-
-    if not check_case_rate_limit(
+        rate_subject_digest(f"dest:{number}", master_key=subject_key),
+        database=database,
+        now=now,
+    )
+    _enforce_contact_rate_limit(
         "contact_otp",
-        rate_subject_digest(f"request:{case_id}", master_key=crypto.digest_capability("case-contact-subject")),
-        limit=VERIFY_ATTEMPT_LIMIT, window=VERIFY_ATTEMPT_WINDOW, now=now, database=database,
-    ):
-        raise CaseSecurityError(_PUBLIC_ERROR)
+        rate_subject_digest(f"request:{case_id}", master_key=subject_key),
+        database=database,
+        now=now,
+    )
 
     code = _new_code()
     expires_at = now + timedelta(seconds=CHALLENGE_TTL_SECONDS)
@@ -209,22 +238,14 @@ def request_pre_case_contact_verification(
     if not consent:
         if not receipt:
             raise CaseSecurityError(_PUBLIC_ERROR)
-        try:
-            payload = crypto.open_contact_receipt(receipt, now=now)
-            challenge_id = str(uuid.UUID(str(payload["challenge_id"])))
-            if not hmac.compare_digest(str(payload["contact_digest"]), digest):
-                raise ValueError
-        except (CaseSecurityError, ValueError, TypeError, KeyError, AttributeError) as exc:
-            raise CaseSecurityError(_PUBLIC_ERROR) from exc
+        challenge_id = _open_withdrawal_receipt(receipt, digest, crypto, now=now)
         withdraw_subject = rate_subject_digest(
             f"withdraw:{challenge_id}",
             master_key=crypto.digest_capability("case-contact-subject"),
         )
-        if not check_case_rate_limit(
-            "contact_otp_withdraw", withdraw_subject, limit=VERIFY_ATTEMPT_LIMIT,
-            window=VERIFY_ATTEMPT_WINDOW, now=now, database=database,
-        ):
-            raise CaseSecurityError(_PUBLIC_ERROR)
+        _enforce_contact_rate_limit(
+            "contact_otp_withdraw", withdraw_subject, database=database, now=now,
+        )
         with database._conn(commit_on_success=False) as conn:
             database._execute(
                 conn,
@@ -238,21 +259,17 @@ def request_pre_case_contact_verification(
         f"dest:{number}",
         master_key=crypto.digest_capability("case-contact-subject"),
     )
-    if not check_case_rate_limit(
-        "contact_otp", destination, limit=VERIFY_ATTEMPT_LIMIT,
-        window=VERIFY_ATTEMPT_WINDOW, now=now, database=database,
-    ):
-        raise CaseSecurityError(_PUBLIC_ERROR)
+    _enforce_contact_rate_limit(
+        "contact_otp", destination, database=database, now=now,
+    )
     if requester_subject:
         requester = rate_subject_digest(
             f"requester:{requester_subject}",
             master_key=crypto.digest_capability("case-contact-subject"),
         )
-        if not check_case_rate_limit(
-            "contact_otp_requester", requester, limit=VERIFY_ATTEMPT_LIMIT,
-            window=VERIFY_ATTEMPT_WINDOW, now=now, database=database,
-        ):
-            raise CaseSecurityError(_PUBLIC_ERROR)
+        _enforce_contact_rate_limit(
+            "contact_otp_requester", requester, database=database, now=now,
+        )
     code = _new_code()
     expires_at = now + timedelta(seconds=CHALLENGE_TTL_SECONDS)
     challenge_digest = crypto.digest_capability(f"case-pre-otp:{digest}:{code}")
