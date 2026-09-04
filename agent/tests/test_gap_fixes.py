@@ -2392,8 +2392,8 @@ class TestSecurityFixes:
         src = _admin_src()
         # function_source: cắt theo ranh giới AST thay vì cửa sổ ký tự
         # cố định — xem agent/tests/_source_window.py.
-        fn_src = function_source(src, "upload_entity_image")
-        assert "file.read(MAX_IMAGE_SIZE" in fn_src
+        fn_src = function_source(src, "upload_entity_image") + function_source(src, "_read_entity_upload")
+        assert "file.read(max_image_size + 1" in fn_src
 
     def test_dashboard_alerts_connection_safety(self):
         # The appeals query (which opens its own conn3) was extracted into the

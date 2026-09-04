@@ -271,6 +271,26 @@ async def test_bulk_place_invalid_id_has_explicit_failed_outcome(monkeypatch):
     assert result["outcomes"][-1]["ok"] is False
 
 
+def test_bulk_place_outcomes_preserve_request_order_after_decomposition():
+    from entities import admin_api
+
+    outcomes = [
+        {"id": "entity-b", "ok": True},
+        {"id": "entity-a", "ok": True},
+    ]
+    invalid = {"bad": {"id": "bad", "ok": False, "error": "Entity không hợp lệ"}}
+
+    ordered = admin_api._order_bulk_place_outcomes(
+        ["entity-a", "bad", "entity-b"], invalid, outcomes
+    )
+
+    assert ordered == [
+        {"id": "entity-a", "ok": True},
+        {"id": "bad", "ok": False, "error": "Entity không hợp lệ"},
+        {"id": "entity-b", "ok": True},
+    ]
+
+
 @pytest.mark.anyio
 async def test_bulk_delete_records_per_item_exception(monkeypatch):
     from entities import admin_api

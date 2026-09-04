@@ -646,6 +646,79 @@ async def add_entity_image_url(entity_id: str, body: _EntityImageURL):
     return await asyncio.to_thread(_query)
 
 
+async def _read_entity_upload(file: UploadFile, storage, max_image_size: int) -> bytes:
+    data = await file.read(max_image_size + 1)
+    if len(data) > max_image_size:
+        raise HTTPException(413, f"Ảnh quá lớn (tối đa {max_image_size // 1024 // 1024}MB)")
+    if not storage.sniff_image_type(data):
+        raise HTTPException(400, "File không phải ảnh hợp lệ (JPEG/PNG/GIF/WebP)")
+    return data
+
+
+async def _upload_entity_image_set(storage, run_in_threadpool, data, entity_id):
+    try:
+        return await run_in_threadpool(storage.upload_image_set, data, "entities", entity_id)
+    except ValueError as exc:
+        raise HTTPException(400, "Ảnh không hợp lệ hoặc đã hỏng") from exc
+    except Exception as exc:
+        partial_urls = getattr(exc, "urls", {})
+        if isinstance(partial_urls, dict) and partial_urls:
+            from control_plane.saga import cleanup_uploaded_media
+            orphan_cleanup = cleanup_uploaded_media(storage, partial_urls)
+            if orphan_cleanup:
+                logger.error("Entity image upload compensation incomplete for %s", entity_id)
+        logger.exception("Entity image upload failed for %s", entity_id)
+        raise HTTPException(500, "Không thể upload ảnh, vui lòng thử lại") from exc
+
+
+def _validate_entity_upload_cover(storage, urls):
+    cover = urls.get("md") or urls.get("lg")
+    if isinstance(cover, str) and cover.strip() and (
+        cover.startswith("/") or cover.startswith(("http://", "https://"))
+    ):
+        return cover
+    from control_plane.saga import cleanup_uploaded_media
+    cleanup_uploaded_media(storage, urls)
+    raise HTTPException(502, "Storage trả về URL ảnh không hợp lệ")
+
+
+def _prepare_entity_upload(entity, cover):
+    images = list(entity.get("images") or [])
+    if cover not in images:
+        images.append(cover)
+    entity["images"] = images
+    entity["updatedAt"] = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+    return images
+
+
+def _persist_entity_upload(entity, storage, urls, entity_id):
+    post_commit_effects = ()
+    commit_outcome_unknown = False
+    try:
+        db.upsert_entity(
+            entity,
+            actor_id="admin",
+            reason="image_upload",
+            correlation_id=f"image-upload:{entity_id}",
+        )
+    except Exception as exc:
+        if getattr(exc, "committed", False) or getattr(exc, "commit_outcome_unknown", False):
+            commit_outcome_unknown = bool(getattr(exc, "commit_outcome_unknown", False))
+            post_commit_effects = ({
+                "effect": getattr(exc, "effect", "unknown"),
+                "status": "failed" if getattr(exc, "committed", False) else "unknown",
+            },)
+        else:
+            from control_plane.saga import cleanup_uploaded_media
+            orphan_cleanup = cleanup_uploaded_media(storage, urls)
+            if orphan_cleanup:
+                logger.error("Entity image upload compensation incomplete for %s", entity_id)
+            raise
+    if post_commit_effects:
+        logger.error("Entity image upload committed but post-commit effect failed for %s", entity_id)
+    return commit_outcome_unknown, post_commit_effects
+
+
 @router.post("/entities/{entity_id}/images/upload",
              summary="Upload image file for entity",
              description="Uploads an image file, converts to WebP in 3 sizes (sm/md/lg), and adds to the entity. Maximum 10 images per entity.")
@@ -660,58 +733,13 @@ async def upload_entity_image(entity_id: str, file: UploadFile = File(...)):
     entity = db.get_entity(entity_id)
     if not entity:
         raise HTTPException(404, "Entity không tồn tại")
-    data = await file.read(MAX_IMAGE_SIZE + 1)
-    if len(data) > MAX_IMAGE_SIZE:
-        del data
-        raise HTTPException(413, f"Ảnh quá lớn (tối đa {MAX_IMAGE_SIZE // 1024 // 1024}MB)")
-    if not storage.sniff_image_type(data):
-        raise HTTPException(400, "File không phải ảnh hợp lệ (JPEG/PNG/GIF/WebP)")
+    data = await _read_entity_upload(file, storage, MAX_IMAGE_SIZE)
     if len(entity.get("images") or []) >= 10:
         raise HTTPException(400, "Tối đa 10 ảnh mỗi entity")
-    try:
-        urls = await run_in_threadpool(storage.upload_image_set, data, "entities", entity_id)
-    except ValueError:
-        raise HTTPException(400, "Ảnh không hợp lệ hoặc đã hỏng")
-    except Exception as exc:
-        # upload_image_set attaches partial URLs when a provider fails after
-        # writing one or more variants; remove those objects before returning.
-        partial_urls = getattr(exc, "urls", {})
-        if isinstance(partial_urls, dict) and partial_urls:
-            from control_plane.saga import cleanup_uploaded_media
-            orphan_cleanup = cleanup_uploaded_media(storage, partial_urls)
-            if orphan_cleanup:
-                logger.error("Entity image upload compensation incomplete for %s", entity_id)
-        logger.exception("Entity image upload failed for %s", entity_id)
-        raise HTTPException(500, "Không thể upload ảnh, vui lòng thử lại")
-
-    cover = urls.get("md") or urls.get("lg")
-    if not isinstance(cover, str) or not cover.strip() or not (cover.startswith("/") or cover.startswith(("http://", "https://"))):
-        from control_plane.saga import cleanup_uploaded_media
-        cleanup_uploaded_media(storage, urls)
-        raise HTTPException(502, "Storage trả về URL ảnh không hợp lệ")
-    images = list(entity.get("images") or [])
-    if cover and cover not in images:
-        images.append(cover)
-    entity["images"] = images
-    entity["updatedAt"] = datetime.now(timezone.utc).strftime("%Y-%m-%d")
-    post_commit_effects = ()
-    commit_outcome_unknown = False
-    try:
-        db.upsert_entity(entity, actor_id="admin", reason="image_upload",
-                         correlation_id=f"image-upload:{entity_id}")
-    except Exception as exc:
-        if getattr(exc, "committed", False) or getattr(exc, "commit_outcome_unknown", False):
-            commit_outcome_unknown = bool(getattr(exc, "commit_outcome_unknown", False))
-            post_commit_effects = ({"effect": getattr(exc, "effect", "unknown"),
-                                    "status": "failed" if getattr(exc, "committed", False) else "unknown"},)
-        else:
-            from control_plane.saga import cleanup_uploaded_media
-            orphan_cleanup = cleanup_uploaded_media(storage, urls)
-            if orphan_cleanup:
-                logger.error("Entity image upload compensation incomplete for %s", entity_id)
-            raise
-    if post_commit_effects:
-        logger.error("Entity image upload committed but post-commit effect failed for %s", entity_id)
+    urls = await _upload_entity_image_set(storage, run_in_threadpool, data, entity_id)
+    cover = _validate_entity_upload_cover(storage, urls)
+    images = _prepare_entity_upload(entity, cover)
+    commit_outcome_unknown, post_commit_effects = _persist_entity_upload(entity, storage, urls, entity_id)
     try:
         _sync_kb()
     except Exception:
@@ -842,42 +870,71 @@ def _bulk_assign_entities(ids, pid, place, *, actor_id: str = "admin", reason: s
     return assigned, errors, outcomes
 
 
+def _normalize_bulk_place_ids(raw_ids):
+    ids = []
+    invalid: dict[str, dict[str, object]] = {}
+    for raw_id in raw_ids:
+        try:
+            ids.append(validate_path_id(raw_id, "entity_id"))
+        except HTTPException:
+            invalid[raw_id] = {"id": raw_id, "ok": False, "error": "Entity không hợp lệ"}
+    return ids, invalid
+
+
+def _resolve_bulk_place(place_id):
+    if not place_id:
+        return None
+    place = db.get_entity(place_id)
+    if not place or place.get("type") != "place":
+        raise HTTPException(400, "place_id không phải xã/phường hợp lệ")
+    return place
+
+
+def _order_bulk_place_outcomes(raw_ids, invalid, outcomes):
+    by_id: dict[str, list[dict[str, object]]] = {}
+    for outcome in outcomes:
+        by_id.setdefault(str(outcome["id"]), []).append(outcome)
+    ordered_outcomes = []
+    for raw_id in raw_ids:
+        if raw_id in invalid:
+            ordered_outcomes.append(invalid[raw_id])
+        elif by_id.get(raw_id):
+            ordered_outcomes.append(by_id[raw_id].pop(0))
+    return ordered_outcomes
+
+
+def _bulk_assign_query(raw_ids, place_id):
+    ids, invalid = _normalize_bulk_place_ids(raw_ids)
+    place = _resolve_bulk_place(place_id)
+    assigned, errors, outcomes = _bulk_assign_entities(
+        ids,
+        place_id,
+        place,
+        actor_id="admin",
+        reason="bulk_place_assign",
+    )
+    if assigned:
+        _sync_kb()
+    ordered_outcomes = _order_bulk_place_outcomes(raw_ids, invalid, outcomes)
+    errors = list(errors) + [
+        {"id": raw_id, "error": item["error"]}
+        for raw_id, item in invalid.items()
+    ]
+    return {
+        "success": True,
+        "assigned": len(assigned),
+        "assigned_ids": assigned,
+        "errors": errors,
+        "outcomes": ordered_outcomes,
+    }
+
+
 @router.post("/entities/bulk-place",
              summary="Bulk assign place to entities",
              description="Assigns or removes a commune/ward placeId for many entities in one admin action.")
 async def bulk_assign_place(body: BulkAssignPlaceRequest):
     raw_ids = list(body.entity_ids)
-    def _query():
-        ids = []
-        invalid: dict[str, dict[str, object]] = {}
-        for raw_id in raw_ids:
-            try:
-                ids.append(validate_path_id(raw_id, "entity_id"))
-            except HTTPException:
-                invalid[raw_id] = {"id": raw_id, "ok": False, "error": "Entity không hợp lệ"}
-        pid = body.place_id or None
-        place = None
-        if pid:
-            place = db.get_entity(pid)
-            if not place or place.get("type") != "place":
-                raise HTTPException(400, "place_id không phải xã/phường hợp lệ")
-        assigned, errors, outcomes = _bulk_assign_entities(ids, pid, place,
-                                                           actor_id="admin", reason="bulk_place_assign")
-        if assigned:
-            _sync_kb()
-        by_id: dict[str, list[dict[str, object]]] = {}
-        for outcome in outcomes:
-            by_id.setdefault(str(outcome["id"]), []).append(outcome)
-        ordered_outcomes = []
-        for raw_id in raw_ids:
-            if raw_id in invalid:
-                ordered_outcomes.append(invalid[raw_id])
-            elif by_id.get(raw_id):
-                ordered_outcomes.append(by_id[raw_id].pop(0))
-        errors = list(errors) + [{"id": raw_id, "error": item["error"]} for raw_id, item in invalid.items()]
-        return {"success": True, "assigned": len(assigned), "assigned_ids": assigned,
-                "errors": errors, "outcomes": ordered_outcomes}
-    return await asyncio.to_thread(_query)
+    return await asyncio.to_thread(_bulk_assign_query, raw_ids, body.place_id or None)
 
 
 class RelationshipCreate(BaseModel):
@@ -1345,6 +1402,38 @@ def _approve_attach_credits(entity, cover, s, candidate_url):
     return credits
 
 
+def _approval_receipt_response(receipt):
+    payload = dict(receipt.steps[0].get("receipt", {})) if receipt.steps else {}
+    return {
+        "status": receipt.status,
+        "url": payload.get("url"),
+        "sizes": payload.get("sizes") or {},
+        "error": receipt.error,
+        "orphan_cleanup_pending": receipt.orphan_cleanup_pending,
+        "durability_error": receipt.durability_error,
+    }
+
+
+def _approved_image_response(receipt, suggestion, entity, media_saga):
+    if receipt.status != "committed":
+        return {
+            "status": receipt.status,
+            "error": receipt.error,
+            "orphan_cleanup_pending": receipt.orphan_cleanup_pending,
+        }
+    payload = dict(receipt.steps[0].get("receipt", {})) if receipt.steps else {}
+    saved = db.get_entity(suggestion["entity_id"]) or entity
+    credits = ((saved.get("attributes") or {}).get("image_credits") or [])
+    return {
+        "status": "approved",
+        "url": payload.get("url"),
+        "sizes": payload.get("sizes") or {},
+        "images": saved.get("images") or [],
+        "backend": getattr(media_saga.storage, "backend", ""),
+        "credits": credits[-1] if credits else {},
+    }
+
+
 @router.post("/image-suggestions/{suggestion_id}/approve",
              summary="Approve an image suggestion",
              description="Approves a pending image suggestion: downloads, re-encodes to WebP, uploads to storage, and attaches to the entity with license credits.")
@@ -1363,11 +1452,7 @@ async def approve_image_suggestion(suggestion_id: str, request: Request):
         raise HTTPException(404, "Đề xuất không tồn tại")
     prior = media_saga.peek_approval_receipt(key, suggestion_id, "admin")
     if prior is not None:
-        payload = dict(prior.steps[0].get("receipt", {})) if prior.steps else {}
-        return {"status": prior.status, "url": payload.get("url"),
-                "sizes": payload.get("sizes") or {}, "error": prior.error,
-                "orphan_cleanup_pending": prior.orphan_cleanup_pending,
-                "durability_error": prior.durability_error}
+        return _approval_receipt_response(prior)
     if s.get("status") != "pending":
         raise HTTPException(400, f"Suggestion đã ở trạng thái '{s.get('status')}' — không thể duyệt lại")
 
@@ -1394,17 +1479,7 @@ async def approve_image_suggestion(suggestion_id: str, request: Request):
         idempotency_key=key,
         _image_data=data,
     )
-    if receipt.status == "committed":
-        payload = dict(receipt.steps[0].get("receipt", {})) if receipt.steps else {}
-        sizes = payload.get("sizes") or {}
-        cover = payload.get("url")
-        saved = db.get_entity(s["entity_id"]) or entity
-        credits = ((saved.get("attributes") or {}).get("image_credits") or [])
-        return {"status": "approved", "url": cover, "sizes": sizes,
-                "images": saved.get("images") or [], "backend": getattr(media_saga.storage, "backend", ""),
-                "credits": credits[-1] if credits else {}}
-    return {"status": receipt.status, "error": receipt.error,
-            "orphan_cleanup_pending": receipt.orphan_cleanup_pending}
+    return _approved_image_response(receipt, s, entity, media_saga)
 
 
 @router.post("/image-suggestions/{suggestion_id}/reject",
@@ -1871,6 +1946,28 @@ class ClaimDecisionBody(BaseModel):
     reason: str = Field("", max_length=1000)
 
 
+def _claim_update_statement(status, placeholder, cast):
+    if status == "approved":
+        return (
+            f"UPDATE entity_claims SET status='approved', reviewer_id={placeholder}{cast}, reviewed_at=NOW() "
+            f"WHERE id={placeholder}{cast} AND status='pending'",
+            "approved",
+        )
+    return (
+        f"UPDATE entity_claims SET status='rejected', reviewer_id={placeholder}{cast}, reviewed_at=NOW(), "
+        f"rejection_reason={placeholder} WHERE id={placeholder}{cast} AND status='pending'",
+        "rejected",
+    )
+
+
+def _claim_update_params(status, persisted_reviewer, reason, claim_id):
+    return (
+        (persisted_reviewer, claim_id)
+        if status == "approved"
+        else (persisted_reviewer, reason, claim_id)
+    )
+
+
 def _apply_claim_decision(conn, claim_id: str, status: str, actor_id: str, reason: str,
                           *, reviewer_id: str | None = None) -> dict:
     """CAS a pending claim and append its immutable audit on the same connection."""
@@ -1888,12 +1985,8 @@ def _apply_claim_decision(conn, claim_id: str, status: str, actor_id: str, reaso
     persisted_reviewer = actor_id if reviewer_id is None and db._use_pg is False else reviewer_id
     after = {**before, "status": status, "reviewer_id": persisted_reviewer,
              "rejection_reason": reason if status == "rejected" else ""}
-    if status == "approved":
-        sql = f"UPDATE entity_claims SET status='approved', reviewer_id={ph}{cast}, reviewed_at=NOW() WHERE id={ph}{cast} AND status='pending'"
-        params = (persisted_reviewer, claim_id)
-    else:
-        sql = f"UPDATE entity_claims SET status='rejected', reviewer_id={ph}{cast}, reviewed_at=NOW(), rejection_reason={ph} WHERE id={ph}{cast} AND status='pending'"
-        params = (persisted_reviewer, reason, claim_id)
+    sql, _ = _claim_update_statement(status, ph, cast)
+    params = _claim_update_params(status, persisted_reviewer, reason, claim_id)
     updated = db._execute(conn, sql, params)
     if getattr(updated, "rowcount", 1) == 0:
         return {"error": "not_pending", "current_status": "pending"}
