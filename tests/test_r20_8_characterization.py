@@ -17,6 +17,8 @@ def test_is_exact_origin_accepts_only_origin_authority_shapes():
 
     assert is_exact_origin("https://vinhlong360.vn") is True
     assert _is_exact_origin("https://vinhlong360.vn") is True
+    # Preserve the pre-refactor parser's treatment of an empty userinfo field.
+    assert is_exact_origin("https://@vinhlong360.vn") is True
     assert is_exact_origin("http://localhost:3000", require_https=False) is True
     for value in (
         "",

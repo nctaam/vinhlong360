@@ -41,8 +41,8 @@ def _origin_scheme_is_allowed(parsed, *, require_https: bool) -> bool:
 def _origin_has_authority_only(parsed) -> bool:
     return (
         not parsed.netloc
-        or parsed.username is not None
-        or parsed.password is not None
+        or parsed.username
+        or parsed.password
         or bool(parsed.path)
         or parsed.netloc.endswith(":")
     )
