@@ -5,7 +5,7 @@ import subprocess
 from datetime import UTC, datetime
 from pathlib import Path
 
-from agent.control_plane.authority import check_authority, load_authority
+from agent.control_plane.authority import _baseline_section, check_authority, load_authority
 
 
 P1_FIXTURE_IDS = [
@@ -22,6 +22,26 @@ P1_FIXTURE_IDS = [
     "F-53",
     "F-69",
 ]
+
+
+def test_baseline_section_preserves_nested_headings_until_same_level() -> None:
+    mismatches: list[str] = []
+    markdown = "## Target\nvalue\n### Child\nchild value\n## Next\nnext value\n"
+
+    section = _baseline_section(markdown, "ROADMAP.md#target", mismatches)
+
+    assert section == "## Target\nvalue\n### Child\nchild value"
+    assert mismatches == []
+
+
+def test_baseline_section_resolves_matching_explicit_anchor() -> None:
+    mismatches: list[str] = []
+    markdown = "<a id=\"target\"></a>\n\n## Target\nvalue\n## Next\nnext value\n"
+
+    section = _baseline_section(markdown, "ROADMAP.md#target", mismatches)
+
+    assert section == "## Target\nvalue"
+    assert mismatches == []
 
 
 def _git(root: Path, *args: str) -> None:

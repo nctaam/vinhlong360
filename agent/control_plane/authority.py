@@ -243,18 +243,12 @@ def _check_link(root: Path, reference: str, mismatches: list[str], label: str) -
     _read_link(root, reference, mismatches, label)
 
 
-def _baseline_section(markdown: str, reference: str, mismatches: list[str]) -> str | None:
-    """Return only the heading section selected by the baseline fragment."""
-
-    _target, separator, fragment = reference.partition("#")
-    if not separator:
-        mismatches.append(f"baseline fragment missing: {reference}")
-        return None
-    fragment = unquote(fragment).strip().lower()
-    lines = markdown.splitlines()
+def _baseline_headings(
+    lines: list[str], fragment: str,
+) -> tuple[list[tuple[int, int, str]], list[int]]:
     headings: list[tuple[int, int, str]] = []
-    seen: dict[str, int] = {}
     explicit_anchor_lines: list[int] = []
+    seen: dict[str, int] = {}
     for index, line in enumerate(lines):
         for anchor in _HTML_ANCHOR.finditer(line):
             if anchor.group(1).strip().lower() == fragment:
@@ -270,31 +264,58 @@ def _baseline_section(markdown: str, reference: str, mismatches: list[str]) -> s
         resolved = f"{slug}-{suffix}" if suffix else slug
         seen[slug] = suffix + 1
         headings.append((index, len(heading.group(1)), resolved))
+    return headings, explicit_anchor_lines
 
+
+def _baseline_start(
+    lines: list[str],
+    headings: list[tuple[int, int, str]],
+    explicit_anchor_lines: list[int],
+    fragment: str,
+) -> tuple[int, int] | None:
     matching_heading = next((item for item in headings if item[2] == fragment), None)
     if matching_heading is not None:
-        start, level, _ = matching_heading
-    elif explicit_anchor_lines:
-        anchor_line = explicit_anchor_lines[0]
-        next_heading = next((item for item in headings if item[0] > anchor_line), None)
-        previous_heading = next((item for item in reversed(headings) if item[0] <= anchor_line), None)
-        # An explicit anchor immediately before a heading names that heading;
-        # anchors embedded in body text remain in their current section.
-        between = lines[anchor_line + 1 : next_heading[0]] if next_heading else ()
-        if next_heading is not None and all(not line.strip() or _HTML_ANCHOR.search(line) for line in between):
-            start, level, _ = next_heading
-        elif previous_heading is not None:
-            start, level, _ = previous_heading
-        else:
-            start, level = anchor_line, 1
-    else:
+        return matching_heading[0], matching_heading[1]
+    if not explicit_anchor_lines:
         return None
+    anchor_line = explicit_anchor_lines[0]
+    next_heading = next((item for item in headings if item[0] > anchor_line), None)
+    previous_heading = next((item for item in reversed(headings) if item[0] <= anchor_line), None)
+    between = lines[anchor_line + 1 : next_heading[0]] if next_heading else ()
+    if next_heading is not None and all(not line.strip() or _HTML_ANCHOR.search(line) for line in between):
+        return next_heading[0], next_heading[1]
+    if previous_heading is not None:
+        return previous_heading[0], previous_heading[1]
+    return anchor_line, 1
 
-    end = len(lines)
+
+def _baseline_section_end(
+    lines: list[str],
+    start: int,
+    level: int,
+    headings: list[tuple[int, int, str]],
+) -> int:
     for heading_line, heading_level, _ in headings:
         if heading_line > start and heading_level <= level:
-            end = heading_line
-            break
+            return heading_line
+    return len(lines)
+
+
+def _baseline_section(markdown: str, reference: str, mismatches: list[str]) -> str | None:
+    """Return only the heading section selected by the baseline fragment."""
+
+    _target, separator, fragment = reference.partition("#")
+    if not separator:
+        mismatches.append(f"baseline fragment missing: {reference}")
+        return None
+    fragment = unquote(fragment).strip().lower()
+    lines = markdown.splitlines()
+    headings, explicit_anchor_lines = _baseline_headings(lines, fragment)
+    selected = _baseline_start(lines, headings, explicit_anchor_lines, fragment)
+    if selected is None:
+        return None
+    start, level = selected
+    end = _baseline_section_end(lines, start, level, headings)
     return "\n".join(lines[start:end])
 
 
