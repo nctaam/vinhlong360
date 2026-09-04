@@ -3494,7 +3494,47 @@ async def _event_stream_body(ctx: "_StreamContext"):
         async for frame in synth:
             yield frame
     finally:
-        await synth.aclose()
+            await synth.aclose()
+
+
+def _make_stream_turn_id(session_id: str, message: str, history: list[dict]) -> str:
+    """Create a retry-stable turn id for an existing session."""
+    if not session_id:
+        return uuid.uuid4().hex
+    payload = {"sid": session_id, "message": message, "history": history}
+    return hashlib.sha256(
+        json.dumps(payload, ensure_ascii=False, sort_keys=True, default=str).encode("utf-8")
+    ).hexdigest()[:24]
+
+
+def _stream_semantic_lease(
+    cache_query: str, owner_key: str, dedup_key: str | None
+) -> tuple[str, str, str] | None:
+    return (cache_query, owner_key, dedup_key) if dedup_key is not None else None
+
+
+def _streaming_chat_response(generator, owner_context, turn_id: str, semantic_lease=None):
+    """Wrap an SSE generator with turn context, cookie, and lease ownership."""
+    async def contextual_generator():
+        token = _stream_turn_id.set(turn_id)
+        try:
+            async for event in generator:
+                yield event
+        finally:
+            # A response body may be closed by another task after disconnect.
+            # ContextVar tokens belong to their creating context.
+            try:
+                _stream_turn_id.reset(token)
+            except ValueError:
+                pass
+
+    response = _SemanticLeaseStreamingResponse(
+        contextual_generator(),
+        media_type="text/event-stream",
+        semantic_lease=semantic_lease,
+    )
+    set_chat_owner_cookie(response, owner_context)
+    return response
 
 
 @router.post("/chat/stream")
@@ -3505,35 +3545,8 @@ async def chat_stream(req: ChatRequest, request: Request):
     session = None
     requested_session_id = req.session_id or ""
     sid = requested_session_id
-    turn_id = uuid.uuid4().hex if not sid else hashlib.sha256(
-        json.dumps(
-            {"sid": sid, "message": req.message, "history": [item.model_dump() for item in req.history]},
-            ensure_ascii=False, sort_keys=True, default=str,
-        ).encode("utf-8")
-    ).hexdigest()[:24]
-    def _stream_response(generator, semantic_lease=None):
-        async def contextual_generator():
-            token = _stream_turn_id.set(turn_id)
-            try:
-                async for event in generator:
-                    yield event
-            finally:
-                # A response body may be closed by a different asyncio task
-                # (for example when a client disconnects while a nested
-                # provider call is still settling).  ContextVar tokens are
-                # context-bound, so resetting one from that task raises
-                # ValueError and masks the original cancellation outcome.
-                try:
-                    _stream_turn_id.reset(token)
-                except ValueError:
-                    pass
-        stream_response = _SemanticLeaseStreamingResponse(
-            contextual_generator(),
-            media_type="text/event-stream",
-            semantic_lease=semantic_lease,
-        )
-        set_chat_owner_cookie(stream_response, owner_context)
-        return stream_response
+    request_history = [item.model_dump() for item in req.history]
+    turn_id = _make_stream_turn_id(sid, req.message, request_history)
 
     session, gate_response = _open_stream_session(
         request, owner_context, requested_session_id
@@ -3543,7 +3556,7 @@ async def chat_stream(req: ChatRequest, request: Request):
 
     safe_input, block_msg = _prepared_stream_input(req, owner_key, sid)
     if block_msg is not None:
-        return _stream_response(_safe_block_stream_gen(sid, block_msg))
+        return _streaming_chat_response(_safe_block_stream_gen(sid, block_msg), owner_context, turn_id)
 
     _privacy_input_boundary_marker = True
     message = safe_input.message
@@ -3553,7 +3566,7 @@ async def chat_stream(req: ChatRequest, request: Request):
     ]
 
     if not message:
-        return _stream_response(_stream_error_gen("Tin nhắn trống."))
+        return _streaming_chat_response(_stream_error_gen("Tin nhắn trống."), owner_context, turn_id)
 
     if session is None:
         session = memory_manager.create_session(owner_key)
@@ -3569,13 +3582,13 @@ async def chat_stream(req: ChatRequest, request: Request):
         cache_eligible, cache_query, message, owner_key, sid
     )
     if cached_gen is not None:
-        return _stream_response(cached_gen)
+        return _streaming_chat_response(cached_gen, owner_context, turn_id)
     if cache_eligible:
         exact_gen = _stream_exact_lookup(
             cache_query, message, owner_key, sid, semantic_dedup_key
         )
         if exact_gen is not None:
-            return _stream_response(exact_gen)
+            return _streaming_chat_response(exact_gen, owner_context, turn_id)
 
     usage_accumulator = UsageAccumulator()
     verified_public_contacts: set[str] = set()
@@ -3605,10 +3618,10 @@ async def chat_stream(req: ChatRequest, request: Request):
         stream_rounds=_stream_rounds,
     )
 
-    semantic_lease = None
-    if semantic_dedup_key is not None:
-        semantic_lease = (cache_query, owner_key, semantic_dedup_key)
-    response = _stream_response(_stream_with_settlement(ctx), semantic_lease=semantic_lease)
+    semantic_lease = _stream_semantic_lease(cache_query, owner_key, semantic_dedup_key)
+    response = _streaming_chat_response(
+        _stream_with_settlement(ctx), owner_context, turn_id, semantic_lease=semantic_lease
+    )
     _transfer_semantic_route_lease()
     return response
 

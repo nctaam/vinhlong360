@@ -135,6 +135,50 @@ def test_stream_get_transport_is_not_available(client_mocked):
     assert r.status_code == 405
 
 
+def test_stream_turn_id_is_stable_for_retries_and_unique_for_new_sessions():
+    history = [{"role": "user", "content": "Tôi thích bảo tàng."}]
+
+    first = chat_api._make_stream_turn_id("session-1", "Đi đâu?", history)
+    retry = chat_api._make_stream_turn_id("session-1", "Đi đâu?", history)
+    new_session_a = chat_api._make_stream_turn_id("", "Đi đâu?", history)
+    new_session_b = chat_api._make_stream_turn_id("", "Đi đâu?", history)
+
+    assert first == retry
+    assert len(first) == 24
+    assert new_session_a != new_session_b
+    assert len(new_session_a) == len(new_session_b) == 32
+    assert chat_api._stream_semantic_lease("q", "owner", None) is None
+    assert chat_api._stream_semantic_lease("q", "owner", "lease") == (
+        "q", "owner", "lease"
+    )
+
+
+@pytest.mark.anyio
+async def test_streaming_response_scopes_turn_id_and_sets_owner_cookie(monkeypatch):
+    observed = []
+    owner_context = SimpleNamespace(owner_key="owner-1")
+    cookie_calls = []
+
+    async def generator():
+        observed.append(chat_api._stream_turn_id.get())
+        yield "data: {}\n\n"
+
+    monkeypatch.setattr(
+        chat_api,
+        "set_chat_owner_cookie",
+        lambda response, owner: cookie_calls.append((response, owner)),
+    )
+    response = chat_api._streaming_chat_response(
+        generator(), owner_context, "turn-1"
+    )
+    chunks = [chunk async for chunk in response.body_iterator]
+
+    assert chunks
+    assert observed == ["turn-1"]
+    assert chat_api._stream_turn_id.get() is None
+    assert cookie_calls == [(response, owner_context)]
+
+
 def test_builtin_chat_page_uses_post_body_for_stream_payload(client_mocked):
     r = client_mocked.get("/")
 
