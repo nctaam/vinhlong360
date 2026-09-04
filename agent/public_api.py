@@ -2399,11 +2399,14 @@ async def homepage_curated(response: Response):
         if cache_fresh:
             return _homepage_cache["data"]
         _homepage_rebuilding = True
-
-    result = await _build_homepage_payload(month)
-    _homepage_cache.update(month=month, data=result, ts=_time.time())
-    _homepage_rebuilding = False
-    return result
+        try:
+            # Keep the lock through the expensive build so cache misses are
+            # single-flight instead of stampeding the database and providers.
+            result = await _build_homepage_payload(month)
+            _homepage_cache.update(month=month, data=result, ts=_time.time())
+            return result
+        finally:
+            _homepage_rebuilding = False
 
 
 # ── Map pins (lightweight endpoint for MapListView) ──────────────────

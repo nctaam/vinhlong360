@@ -98,3 +98,118 @@ def test_backup_request_context_helper_preserves_legacy_defaults() -> None:
     assert admin_api._backup_request_hash("admin", "request-1") == admin_api._backup_request_hash(
         "admin", "request-1"
     )
+
+
+class _HealthConnection:
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc, tb):
+        return False
+
+
+class _HealthDatabase:
+    _use_pg = True
+
+    def __init__(self, *, fail_active_sessions=False, fail_size=False):
+        self.queries = []
+        self.fail_active_sessions = fail_active_sessions
+        self.fail_size = fail_size
+
+    def _conn(self):
+        return _HealthConnection()
+
+    def _fetchone(self, _conn, sql, _params):
+        self.queries.append(sql)
+        if self.fail_size and "pg_database_size" in sql:
+            raise RuntimeError("database size unavailable")
+        if self.fail_active_sessions and "FROM user_sessions WHERE expires_at" in sql:
+            raise RuntimeError("session metric unavailable")
+        if "pg_database_size" in sql:
+            return {"s": 1024 * 1024}
+        if "FROM user_sessions WHERE expires_at" in sql:
+            return {"c": 3}
+        if "FROM posts WHERE moderation_status" in sql:
+            return {"c": 2}
+        if "FROM reports WHERE status" in sql:
+            return {"c": 1}
+        return {"c": 0}
+
+    @staticmethod
+    def _row_to_dict(row):
+        return row
+
+
+def test_system_health_uses_authority_session_table(monkeypatch) -> None:
+    from siteops import admin_api
+
+    fake_db = _HealthDatabase()
+    monkeypatch.setattr(admin_api, "db", fake_db)
+    result = {"postgres": {}}
+
+    admin_api._system_health_pg(result)
+
+    assert result["postgres"]["active_sessions"] == 3
+    assert result["postgres"]["tables"]["sessions"] == 0
+    assert any("FROM user_sessions WHERE expires_at" in sql for sql in fake_db.queries)
+    assert not any("FROM sessions WHERE expires_at" in sql for sql in fake_db.queries)
+
+
+def test_system_health_isolates_metric_failure(monkeypatch) -> None:
+    from siteops import admin_api
+
+    fake_db = _HealthDatabase(fail_active_sessions=True)
+    monkeypatch.setattr(admin_api, "db", fake_db)
+    result = {"postgres": {}}
+
+    admin_api._system_health_pg(result)
+
+    assert result["postgres"]["active_sessions"] == -1
+    assert "active_sessions" in result["postgres"]["degraded_checks"]
+    assert result["postgres"]["pending_moderation"] == 2
+    assert result["postgres"]["open_reports"] == 1
+
+
+def test_system_health_names_size_degradation(monkeypatch) -> None:
+    from siteops import admin_api
+
+    fake_db = _HealthDatabase(fail_size=True)
+    monkeypatch.setattr(admin_api, "db", fake_db)
+    result = {"postgres": {}}
+
+    admin_api._system_health_pg(result)
+
+    assert result["postgres"]["size_mb"] == -1
+    assert "database_size" in result["postgres"]["degraded_checks"]
+
+
+def test_homepage_rebuild_is_single_flight(monkeypatch) -> None:
+    import public_api
+
+    builds = 0
+    release = asyncio.Event()
+
+    async def _build(_month):
+        nonlocal builds
+        builds += 1
+        await release.wait()
+        return {"build": builds}
+
+    async def _run():
+        first = asyncio.create_task(public_api.homepage_curated(__import__("fastapi").Response()))
+        await asyncio.sleep(0)
+        second = asyncio.create_task(public_api.homepage_curated(__import__("fastapi").Response()))
+        await asyncio.sleep(0)
+        assert builds == 1
+        release.set()
+        return await asyncio.gather(first, second)
+
+    monkeypatch.setattr(public_api, "_today_vietnam", lambda: __import__("datetime").datetime(2026, 9, 4))
+    monkeypatch.setattr(public_api, "_build_homepage_payload", _build)
+    monkeypatch.setattr(public_api, "_homepage_cache", {"month": None, "data": None, "ts": 0})
+    monkeypatch.setattr(public_api, "_homepage_lock", asyncio.Lock())
+    monkeypatch.setattr(public_api, "_homepage_rebuilding", False)
+
+    results = asyncio.run(_run())
+
+    assert results == [{"build": 1}, {"build": 1}]
