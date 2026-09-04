@@ -269,3 +269,5 @@ ghi ở backlog tối ưu — giảm dần, KHÔNG được tăng tiếp từ 47
 
 
 - 2026-09-04T10:45:02 SKIP R30.7 — SSE/runtime evidence hardening commit; frontend bundle debt is being remediated in parallel
+
+- 2026-09-04T10:47:20 SKIP R30.7 — SSE/runtime evidence hardening commit; corrected frontend bundle debt remains explicitly tracked
