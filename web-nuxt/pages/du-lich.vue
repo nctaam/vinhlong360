@@ -95,9 +95,9 @@
         </div>
       </div>
       <SkeletonGrid v-if="status === 'pending' && !allEntities.length" :count="6" />
-      <EmptyState v-else-if="fetchError && !allEntities.length" title="Không thể tải dữ liệu" message="Mạng có thể đang chập chờn. Thử tải lại nhé.">
+      <EmptyState v-else-if="fetchError && !allEntities.length" icon-name="alert-triangle" tone="error" title="Không thể tải dữ liệu" message="Mạng có thể đang chập chờn. Thử tải lại nhé.">
         <template #actions>
-          <button type="button" class="btn btn-outline" @click="refreshCatalog">Thử lại</button>
+          <button type="button" class="btn btn-outline" @click="refreshCatalog"><IconLine name="repeat" aria-hidden="true" /> Thử lại</button>
         </template>
       </EmptyState>
       <PageState
@@ -128,9 +128,9 @@
           <EntityCard :entity="e" :season-filter="seasonFilter" color-recipe="tri-region-v1" />
         </div>
       </div>
-      <EmptyState v-else title="Không tìm thấy kết quả" message="Thử thay đổi bộ lọc hoặc từ khóa tìm kiếm.">
+      <EmptyState v-else icon-name="search" title="Không tìm thấy kết quả" message="Thử thay đổi bộ lọc hoặc từ khóa tìm kiếm.">
         <template #actions>
-          <button type="button" class="btn btn-outline" @click="clearFilters">Xóa bộ lọc</button>
+          <button type="button" class="btn btn-outline" @click="clearFilters"><IconLine name="x" aria-hidden="true" /> Xóa bộ lọc</button>
           <NuxtLink to="/theo-mua" class="btn btn-outline"><IconLine name="calendar" aria-hidden="true" /> Xem theo mùa</NuxtLink>
           <NuxtLink to="/san-pham" class="btn btn-outline"><IconLine name="gift" aria-hidden="true" /> Đặc sản</NuxtLink>
           <NuxtLink to="/le-hoi" class="btn btn-outline"><IconLine name="flag" aria-hidden="true" /> Lễ hội</NuxtLink>

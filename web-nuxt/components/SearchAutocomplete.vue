@@ -21,7 +21,7 @@
         @keydown.escape="close"
       />
       <button type="button" v-if="query" class="ac-clear" aria-label="Xóa tìm kiếm" @click="clearQuery">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        <IconLine name="x" aria-hidden="true" />
       </button>
     </form>
     <span class="sr-only" aria-live="polite" aria-atomic="true">{{ suggestions.length ? `${suggestions.length} kết quả` : '' }}</span>
@@ -63,7 +63,7 @@
             <span class="ac-info"><span class="ac-name">{{ term }}</span></span>
           </div>
           <button type="button" class="ac-remove-recent" @mousedown.stop.prevent="removeRecent(i)" aria-label="Xóa khỏi lịch sử">
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            <IconLine name="x" aria-hidden="true" />
           </button>
         </div>
       </div>
@@ -122,7 +122,8 @@
           </NuxtLink>
         </div>
         <NuxtLink :to="`/tim-kiem?q=${encodeURIComponent(query.trim())}`" class="ac-empty-all" @mousedown.prevent="onSubmit">
-          Xem tất cả kết quả →
+          <span>Xem tất cả kết quả</span>
+          <IconLine name="arrow-right" class="ac-empty-arrow" aria-hidden="true" />
         </NuxtLink>
       </div>
 
@@ -423,8 +424,16 @@ if (import.meta.client) {
   margin-top: var(--space-2); font-size: var(--text-sm);
   font-weight: var(--weight-semibold); color: var(--primary-fg);
   text-decoration: none; min-height: 44px; display: inline-flex; align-items: center;
+  gap: var(--space-1);
+  transition: color .2s var(--ease-out);
 }
-.ac-empty-all:hover { text-decoration: underline; }
+.ac-empty-all:hover { text-decoration: none; color: var(--primary-fg); }
+.ac-empty-all .ac-empty-arrow {
+  transition: transform .25s var(--ease-out-expo);
+}
+.ac-empty-all:hover .ac-empty-arrow {
+  transform: translateX(3px);
+}
 .ac-empty-all:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; border-radius: var(--radius-control); }
 
 /* dark overrides for .ac-chip / .ac-empty-title in dark-overrides.css */
@@ -435,6 +444,8 @@ if (import.meta.client) {
   .ac-loading { animation: none; }
   .ac-chip:hover { transform: none; }
   .ac-chip:active { transform: none; }
+  .ac-empty-all .ac-empty-arrow,
+  .ac-empty-all:hover .ac-empty-arrow { transform: none; }
 }
 @media (forced-colors: active) {
   .ac-dropdown { border: 1px solid CanvasText; background: Canvas; }

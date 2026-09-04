@@ -133,13 +133,13 @@
       <div class="result-bar">
         <p class="result-meta" aria-live="polite">{{ filtered.length }} kết quả{{ sortBy !== 'relevant' ? ` · ${sortLabels[sortBy]}` : '' }}</p>
         <div class="view-toggle" role="group" aria-label="Chế độ hiển thị">
-          <button type="button" :class="['vt-btn', { active: viewMode === 'grid' }]" :aria-pressed="viewMode === 'grid'" @click="viewMode = 'grid'" title="Dạng lưới" aria-label="Dạng lưới">⊞</button>
-          <button type="button" :class="['vt-btn', { active: viewMode === 'list' }]" :aria-pressed="viewMode === 'list'" @click="viewMode = 'list'" title="Dạng danh sách" aria-label="Dạng danh sách"><IconLine name="list" /></button>
+          <button type="button" :class="['vt-btn', { active: viewMode === 'grid' }]" :aria-pressed="viewMode === 'grid'" @click="viewMode = 'grid'" title="Dạng lưới" aria-label="Dạng lưới"><IconLine name="layout-dashboard" aria-hidden="true" /></button>
+          <button type="button" :class="['vt-btn', { active: viewMode === 'list' }]" :aria-pressed="viewMode === 'list'" @click="viewMode = 'list'" title="Dạng danh sách" aria-label="Dạng danh sách"><IconLine name="list" aria-hidden="true" /></button>
         </div>
       </div>
       <EmptyState v-if="fetchError" icon-name="alert-triangle" title="Không thể tải dữ liệu" message="Lỗi kết nối. Thử tải lại nhé.">
         <template #actions>
-          <button type="button" class="btn btn-outline" @click="refreshNuxtData('catalog-products')">Thử lại</button>
+          <button type="button" class="btn btn-outline" @click="refreshNuxtData('catalog-products')"><IconLine name="repeat" aria-hidden="true" /> Thử lại</button>
         </template>
       </EmptyState>
       <SkeletonGrid v-else-if="!data" :count="6" />
@@ -148,7 +148,7 @@
       </div>
       <EmptyState v-else icon-name="fruit" title="Không tìm thấy sản phẩm" message="Thử chọn tháng khác hoặc bỏ bộ lọc OCOP.">
         <template #actions>
-          <button type="button" class="btn btn-outline" @click="clearFilters">Xóa bộ lọc</button>
+          <button type="button" class="btn btn-outline" @click="clearFilters"><IconLine name="x" aria-hidden="true" /> Xóa bộ lọc</button>
           <NuxtLink to="/ocop" class="btn btn-outline"><IconLine name="star" /> OCOP</NuxtLink>
           <NuxtLink to="/du-lich" class="btn btn-outline"><IconLine name="leaf" /> Du lịch</NuxtLink>
           <NuxtLink to="/theo-mua" class="btn btn-outline"><IconLine name="calendar" /> Theo mùa</NuxtLink>

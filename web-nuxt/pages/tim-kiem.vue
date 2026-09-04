@@ -22,11 +22,14 @@
           <Transition name="sug-fade">
             <ul v-if="showSuggestions && suggestions.length" id="search-suggestions" class="search-suggestions" role="listbox" aria-label="Gợi ý tìm kiếm">
               <li v-for="(s, i) in suggestions" :key="s.id" :id="`sug-${s.id}`" role="option" :aria-selected="i === sugIdx" :class="['sug-item', `sug-cat-${TYPE_META[s.type]?.cat || 'place'}`, { active: i === sugIdx }]" @mousedown.prevent="goToSuggestion(s)">
-                <span class="sug-name">{{ s.name }}</span>
+                <span class="sug-icon" aria-hidden="true"><IconLine :name="typeIcon(s.type)" /></span>
+                <span class="sug-name" v-html="highlightMatch(s.name)"></span>
                 <span v-if="s.place_name" class="sug-place">{{ s.place_name }}</span>
               </li>
               <li id="sug-search-all" class="sug-item sug-all" role="option" :aria-selected="sugIdx === suggestions.length" :class="{ active: sugIdx === suggestions.length }" @mousedown.prevent="doSearch">
-                Tìm tất cả „{{ searchInput.trim() }}"
+                <span class="sug-icon" aria-hidden="true"><IconLine name="search" /></span>
+                <span class="sug-all-label">Tìm tất cả „{{ searchInput.trim() }}"</span>
+                <IconLine name="arrow-right" class="sug-all-arrow" aria-hidden="true" />
               </li>
             </ul>
           </Transition>
@@ -54,12 +57,13 @@
       title="Lỗi tìm kiếm"
       message="Không thể tìm kiếm lúc này. Vui lòng thử lại."
       tone="error"
+      icon-name="alert-triangle"
       color-recipe="tri-region-v1"
       role="alert"
       data-color-role="status-error"
     >
       <template #actions>
-        <button type="button" class="btn btn-outline btn-sm" @click="refreshSearch">Thử lại</button>
+        <button type="button" class="btn btn-outline btn-sm" @click="refreshSearch"><IconLine name="repeat" aria-hidden="true" /> Thử lại</button>
       </template>
     </EmptyState>
     <PageState v-else-if="q" :state="searchSurfaceState" :retry="refreshSearch">
@@ -264,6 +268,7 @@ import { describeEntityPlaceholder } from '~/utils/imageDescriptors'
 import { normalizeCoords } from '~/composables/useCoords'
 import { viewportTileBounds } from '~/utils/publicStateUrl'
 import { resolveFreshnessStatus } from '~/utils/regionalColor'
+import { escapeHtml } from '~/utils/safe'
 useReveal()
 const { f: pc } = usePageContent('tim_kiem')
 const { recentItems } = useRecentlyViewed()
@@ -530,6 +535,22 @@ const activeSuggestionId = computed(() => {
   return undefined
 })
 
+function typeIcon(type?: string): string {
+  return (type && TYPE_META[type]?.icon) || 'pin'
+}
+
+function highlightMatch(name: string): string {
+  const q = searchInput.value.trim()
+  const safe = escapeHtml(name)
+  if (!q) return safe
+  const idx = name.toLowerCase().indexOf(q.toLowerCase())
+  if (idx === -1) return safe
+  const before = escapeHtml(name.slice(0, idx))
+  const match = escapeHtml(name.slice(idx, idx + q.length))
+  const after = escapeHtml(name.slice(idx + q.length))
+  return `${before}<mark class="sug-mark">${match}</mark>${after}`
+}
+
 function onTypeahead() {
   const term = searchInput.value.trim()
   if (sugTimer) clearTimeout(sugTimer)
@@ -698,23 +719,57 @@ useHead({
 }
 .sug-item {
   display: flex; align-items: center; gap: var(--space-2);
+  min-height: 44px;
   padding: var(--space-2) var(--space-3); border-radius: var(--radius-surface);
   cursor: pointer; font-size: var(--text-sm); color: var(--ink);
   border-left: 3px solid transparent;
-  transition: background .15s, border-color .15s;
+  transition: background .2s var(--ease-out), border-color .2s var(--ease-out);
 }
 .sug-item:hover, .sug-item.active { background: var(--bg-alt); }
 /* Keyboard selection stays explicit in structure and gains one restrained Clay marker. */
 .sug-item[aria-selected="true"] { border-left-color: var(--color-material-clay); background: var(--color-brand-surface); }
-.sug-name { font-weight: var(--weight-medium); }
+.sug-icon {
+  display: inline-flex; align-items: center; justify-content: center;
+  font-size: var(--text-base); color: var(--muted); flex-shrink: 0;
+  transition: color .2s var(--ease-out);
+}
+.sug-item:hover .sug-icon, .sug-item.active .sug-icon, .sug-item[aria-selected="true"] .sug-icon {
+  color: var(--color-action);
+}
+.sug-name { font-weight: var(--weight-medium); flex: 1; min-width: 0; }
+:deep(.sug-mark) {
+  background: var(--color-action-surface, var(--color-brand-surface));
+  color: var(--color-action);
+  font-weight: var(--weight-bold);
+  border-radius: 2px;
+  padding: 0 1px;
+}
 .sug-place { color: var(--muted); font-size: var(--text-xs); margin-left: auto; flex-shrink: 0; }
-.sug-all { color: var(--color-action); font-weight: var(--weight-semibold); border-top: .5px solid var(--line); margin-top: var(--space-1); padding-top: var(--space-2); }
+.sug-all {
+  color: var(--color-action); font-weight: var(--weight-semibold);
+  border-top: .5px solid var(--line); margin-top: var(--space-1); padding-top: var(--space-2);
+  display: flex; align-items: center; gap: var(--space-2);
+}
+.sug-all-label { flex: 1; min-width: 0; }
+.sug-all-arrow {
+  flex-shrink: 0; margin-left: auto;
+  transition: transform .25s var(--ease-out-expo);
+}
+.sug-all:hover .sug-all-arrow, .sug-all.active .sug-all-arrow, .sug-all[aria-selected="true"] .sug-all-arrow {
+  transform: translateX(3px);
+}
 .sug-fade-enter-active { transition: opacity .15s, transform .15s; }
 .sug-fade-leave-active { transition: opacity .1s; }
 .sug-fade-enter-from { opacity: 0; transform: translateY(-4px); }
 .sug-fade-leave-to { opacity: 0; }
 .dark .search-suggestions { background: var(--card); border-color: rgba(var(--white-rgb),.1); }
 .dark .sug-item:hover, .dark .sug-item.active { background: rgba(var(--white-rgb),.06); }
+@media (prefers-reduced-motion: reduce) {
+  .sug-all-arrow,
+  .sug-all:hover .sug-all-arrow,
+  .sug-all.active .sug-all-arrow,
+  .sug-all[aria-selected="true"] .sug-all-arrow { transform: none; }
+}
 
 /* Search input polish */
 .search-row-spaced input {
