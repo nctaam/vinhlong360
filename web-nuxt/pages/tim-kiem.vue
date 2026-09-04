@@ -1,4 +1,4 @@
-﻿<template>
+<template>
   <div
     class="page"
     data-color-system="tri-region-v1"
@@ -377,7 +377,7 @@ const emptySearchData = () => ({ entities: [], posts: [], users: [], totals: { e
 type SearchData = Awaited<ReturnType<typeof searchAll>>
 type SearchDataCarrier = { readonly key: string; readonly data: SearchData }
 
-const { data, error: searchError, status, refresh } = await useAsyncData<SearchDataCarrier>(
+const searchAsyncData = useAsyncData<SearchDataCarrier>(
   'search-results',
   async () => {
     const key = q.value
@@ -386,6 +386,7 @@ const { data, error: searchError, status, refresh } = await useAsyncData<SearchD
   },
   { watch: [q] }
 )
+const { data, error: searchError, status, refresh } = searchAsyncData
 const lastSuccessfulSearchData = ref<SearchDataCarrier | null>(null)
 watch(data, (value) => {
   if (value) lastSuccessfulSearchData.value = value
@@ -578,6 +579,8 @@ onBeforeUnmount(() => {
   window.removeEventListener('online', updateNetworkState)
   window.removeEventListener('offline', updateNetworkState)
 })
+
+await searchAsyncData
 
 useSeoMeta({
   title: () => q.value.trim() ? `"${q.value.trim()}" — Tìm kiếm — vinhlong360` : pc('seo_title'),

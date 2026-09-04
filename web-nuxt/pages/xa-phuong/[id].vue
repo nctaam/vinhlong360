@@ -278,6 +278,14 @@ watch(() => route.fullPath, (next, previous) => {
 
 const goBack = () => goBackOr('/danh-ba')
 
+let mapInstance: any = null
+let mapLoadTimer: ReturnType<typeof setTimeout> | undefined
+
+onUnmounted(() => {
+  if (mapLoadTimer) clearTimeout(mapLoadTimer)
+  if (mapInstance) { mapInstance.remove(); mapInstance = null }
+})
+
 const {
   data: wardOverviewResult,
   error: wardOverviewError,
@@ -604,8 +612,6 @@ const { createMap } = useNDAMap()
 
 const mapLoadError = ref(false)
 const mapReady = ref(false)
-let mapInstance: any = null
-let mapLoadTimer: ReturnType<typeof setTimeout> | undefined
 watch(mapEl, async (el) => {
   const center = normalizeCoords(data.value?.place?.coordinates)
   if (!el || !center) return
@@ -662,11 +668,6 @@ watch(mapEl, async (el) => {
     map.fitBounds(bounds, { padding: 60, maxZoom: 16 })
   }
 }, { once: true })
-
-onUnmounted(() => {
-  if (mapLoadTimer) clearTimeout(mapLoadTimer)
-  if (mapInstance) { mapInstance.remove(); mapInstance = null }
-})
 </script>
 
 <!-- detail.css nạp theo route (bỏ khỏi global entry.css; phần dùng-chung ở detail-shared.css) -->

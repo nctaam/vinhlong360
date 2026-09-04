@@ -615,7 +615,7 @@ const plannerQueryKey = computed(() => [
 const emptyEntityList = (): EntityListResponse => ({ total: 0, entities: [] })
 type PickerDataCarrier = { readonly key: string; readonly data: EntityListResponse; readonly resolved: boolean }
 
-const { data, error: fetchError, status, refresh: refreshPicker } = await useAsyncData<PickerDataCarrier>('planner-entities', async () => {
+const plannerAsyncData = useAsyncData<PickerDataCarrier>('planner-entities', async () => {
   const key = plannerQueryKey.value
   const value = sourceTab.value !== 'all'
     ? emptyEntityList()
@@ -631,6 +631,7 @@ const { data, error: fetchError, status, refresh: refreshPicker } = await useAsy
   watch: [plannerQueryKey],
   default: () => ({ key: plannerQueryKey.value, data: emptyEntityList(), resolved: false }),
 })
+const { data, error: fetchError, status, refresh: refreshPicker } = plannerAsyncData
 
 const lastSuccessfulPickerData = ref<PickerDataCarrier | null>(null)
 watch(data, (value) => {
@@ -1833,6 +1834,8 @@ onBeforeUnmount(() => {
   mapInstance = null
   markers = []
 })
+
+await plannerAsyncData
 
 useSeoMeta({
   title: 'Tạo lịch trình — vinhlong360',

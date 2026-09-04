@@ -1,4 +1,4 @@
-﻿<template>
+<template>
   <div
     class="page"
     data-color-system="tri-region-v1"
@@ -303,9 +303,10 @@ onMounted(() => {
   onUnmounted(() => document.removeEventListener('keydown', h))
 })
 
-const { data, error: fetchError, status, refresh } = await useAsyncData('catalog-tourism', () =>
+const catalogAsyncData = useAsyncData('catalog-tourism', () =>
   apiFetch<{ entities: Entity[]; total: number }>(`/api/entities?type=${TYPES.join(',')}&limit=500`)
 )
+const { data, error: fetchError, status, refresh } = catalogAsyncData
 
 const catalogOnline = ref(true)
 const lastSuccessfulCatalog = ref<Entity[]>([])
@@ -343,6 +344,8 @@ onBeforeUnmount(() => {
   window.removeEventListener('online', updateCatalogConnectivity)
   window.removeEventListener('offline', updateCatalogConnectivity)
 })
+
+await catalogAsyncData
 
 const activeFilterCount = computed(() => {
   let n = 0

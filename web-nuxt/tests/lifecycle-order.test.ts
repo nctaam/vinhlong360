@@ -84,11 +84,10 @@ describe('Vue 3 Lifecycle Order Contract', () => {
     expect(targetViolations).toEqual([])
   })
 
-  // Hard ratchet on legacy backlog: baseline established at 19 violations across 12 legacy files.
-  // No new violations may ever be added; ratchets downward as Phase 2 refactoring proceeds.
-  it('enforces hard ratchet on legacy lifecycle order violations (must not exceed baseline 19)', () => {
+  // Hard ratchet on lifecycle order: all 19 legacy violations remediated down to 0.
+  // Enforces zero violations across all pages and components.
+  it('enforces zero lifecycle order violations across all pages and components', () => {
     const violations = findViolations()
-    const MAX_ALLOWED_LEGACY_VIOLATIONS = 19
-    expect(violations.length).toBeLessThanOrEqual(MAX_ALLOWED_LEGACY_VIOLATIONS)
+    expect(violations).toEqual([])
   })
 })

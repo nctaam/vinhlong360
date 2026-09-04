@@ -148,7 +148,8 @@ const bulkPick = ref('')
 const bulkBusy = ref(false)
 const bulkProgress = ref({ done: 0, total: 0 })
 
-const { data: places } = await useAsyncData('cpl-places', () => apiFetch<Entity[]>('/api/places').catch((err) => { showToast?.('Không tải được danh sách xã/phường', 'error'); console.error('[chua-phan-loai] places fetch failed', err); return [] }))
+const placesAsyncData = useAsyncData('cpl-places', () => apiFetch<Entity[]>('/api/places').catch((err) => { showToast?.('Không tải được danh sách xã/phường', 'error'); console.error('[chua-phan-loai] places fetch failed', err); return [] }))
+const { data: places } = placesAsyncData
 const wardGroups = computed(() => {
   const wards = (places.value || []).filter(p => ADMIN_LEVELS.includes(p.level || ''))
   return Object.keys(AREA_META).map(area => {
@@ -295,6 +296,7 @@ function removeItem(id: string) {
 }
 
 onMounted(load)
+await placesAsyncData
 </script>
 
 <style scoped>

@@ -153,15 +153,12 @@ const goBack = () => goBackOr('/lich-trinh')
 
 const { openReport } = useReport()
 
-const { data: itinerary, error: fetchError, status } = await useAsyncData(`itinerary-${id}`, () =>
+const itineraryAsyncData = useAsyncData(`itinerary-${id}`, () =>
   apiFetch<Itinerary>(`/api/itineraries/${encodedId}`)
 )
+const { data: itinerary, error: fetchError, status } = itineraryAsyncData
 const pending = computed(() => status.value === 'pending')
 const itineraryTitle = computed(() => itinerary.value?.title || itinerary.value?.name || 'Lịch trình')
-
-if (import.meta.server && fetchError.value) {
-  throw createError({ statusCode: 404, statusMessage: 'Không tìm thấy lịch trình' })
-}
 
 const areaMeta = computed(() => {
   const area = itinerary.value?.area
@@ -439,6 +436,12 @@ onBeforeUnmount(() => {
   if (mapInstance && typeof (mapInstance as any).remove === 'function') (mapInstance as any).remove()
   mapInstance = null
 })
+
+await itineraryAsyncData
+
+if (import.meta.server && fetchError.value) {
+  throw createError({ statusCode: 404, statusMessage: 'Không tìm thấy lịch trình' })
+}
 
 // --- SEO ---
 if (itinerary.value && !itinerary.value.error) {

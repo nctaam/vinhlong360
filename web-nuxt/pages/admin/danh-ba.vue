@@ -147,7 +147,8 @@ function validate(): boolean {
   return Object.keys(errs).length === 0
 }
 
-const { data: places } = await useAsyncData('adb-places', () => apiFetch<Entity[]>('/api/places').catch((err) => { showToast?.('Không tải được danh sách xã/phường', 'error'); console.error('[danh-ba] places fetch failed', err); return [] }))
+const placesAsyncData = useAsyncData('adb-places', () => apiFetch<Entity[]>('/api/places').catch((err) => { showToast?.('Không tải được danh sách xã/phường', 'error'); console.error('[danh-ba] places fetch failed', err); return [] }))
+const { data: places } = placesAsyncData
 const placeById = computed<Record<string, Entity>>(() => Object.fromEntries((places.value || []).map(p => [p.id, p])))
 const wardGroups = computed(() => {
   const wards = (places.value || []).filter(p => ADMIN_LEVELS.includes(p.level || ''))
@@ -223,6 +224,7 @@ async function del(e: Entity) {
 }
 
 onMounted(loadFacilities)
+await placesAsyncData
 </script>
 
 <style scoped>

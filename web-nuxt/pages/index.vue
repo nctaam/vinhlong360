@@ -415,10 +415,11 @@ if (import.meta.client) {
 }
 const getFavTypeMeta = getTypeMeta
 
-const { data: homeData, error: homeError, pending: homePending, refresh: refreshHome } = await useAsyncData('homepage',
+const homeAsyncData = useAsyncData('homepage',
   () => apiFetch<any>('/api/homepage'))
+const { data: homeData, error: homeError, pending: homePending, refresh: refreshHome } = homeAsyncData
 
-const { data: communityData } = await useAsyncData('home-community', async () => {
+const communityAsyncData = useAsyncData('home-community', async () => {
   const [feed, cstats, lb, tags] = await Promise.all([
     apiFetch<any>('/api/feed?limit=10').catch(() => ({ posts: [] })),
     apiFetch<any>('/api/community/stats').catch(() => null),
@@ -430,6 +431,7 @@ const { data: communityData } = await useAsyncData('home-community', async () =>
     .slice(0, 6)
   return { posts, stats: cstats, leaders: lb.leaders || [], tags: tags.tags || [] }
 }, { lazy: true })
+const { data: communityData } = communityAsyncData
 const communityPosts = computed(() => communityData.value?.posts || [])
 const communityStats = computed(() => communityData.value?.stats || null)
 const topMembers = computed(() => communityData.value?.leaders || [])
@@ -578,6 +580,7 @@ const hasHomepageContent = computed(() => !!(upcomingEvents.value.length || seas
 const homeFailed = computed(() => !homePending.value && (!!homeError.value || (!!homeData.value && !hasHomepageContent.value)))
 const homeLoadingSkeleton = computed(() => !hasHomepageContent.value && !homeFailed.value)
 onMounted(() => { if (homeError.value || !hasHomepageContent.value) refreshHome() })
+await homeAsyncData
 
 function formatEventDay(ev: any) {
   const ds = ev.attributes?.date_start

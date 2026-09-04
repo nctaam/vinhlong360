@@ -146,11 +146,12 @@ const mapPinApiPath = computed(() => {
   return `/api/map-pins${query ? `?${query}` : ''}`
 })
 
-const { data, error: fetchError, status, refresh } = await useAsyncData(
+const mapAsyncData = useAsyncData(
   computed(() => `map-pins-${activeTypeQuery.value || 'all'}-${areaQuery.value || 'all'}`),
   () => apiFetch<MapPin[]>(mapPinApiPath.value),
   { watch: [mapPinApiPath] },
 )
+const { data, error: fetchError, status, refresh } = mapAsyncData
 const retryData = () => refresh()
 
 const lastSuccessfulMapPins = ref<MapPin[]>([])
@@ -220,6 +221,8 @@ onBeforeUnmount(() => {
   window.removeEventListener('online', updateNetworkState)
   window.removeEventListener('offline', updateNetworkState)
 })
+
+await mapAsyncData
 
 useReveal()
 

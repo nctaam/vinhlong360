@@ -1,4 +1,4 @@
-﻿<template>
+<template>
   <div class="page" data-color-system="tri-region-v1">
     <Breadcrumb :items="[{ label: 'Trang chủ', to: '/' }, { label: 'Sản phẩm', to: '/san-pham' }, { label: 'OCOP' }]" />
 
@@ -263,9 +263,10 @@ onMounted(() => {
   onUnmounted(() => document.removeEventListener('keydown', h))
 })
 
-const { data, error: fetchError } = await useAsyncData('catalog-ocop', () =>
+const ocopAsyncData = useAsyncData('catalog-ocop', () =>
   apiFetch<{ entities: Entity[] }>('/api/entities?type=product&limit=200')
 )
+const { data, error: fetchError } = ocopAsyncData
 
 const allOcop = computed(() => {
   const raw = data.value
@@ -341,6 +342,7 @@ watch(starFilter, () => {
   })
 })
 onUnmounted(() => clearTimeout(starFlashTimer))
+await ocopAsyncData
 
 const activeFilterCount = computed(() => {
   let n = 0

@@ -951,7 +951,15 @@ const savedContactInfo = ref(contactInfo.value)
 const saving = ref(false)
 // Guard security-tab action buttons against double-submit while an async op runs.
 const securityBusy = ref(false)
-async function withBusy(fn: () => unknown) { if (securityBusy.value) return; securityBusy.value = true; try { await fn() } finally { securityBusy.value = false } }
+async function withBusy(fn: () => unknown) {
+  if (securityBusy.value) return
+  securityBusy.value = true
+  try {
+    await fn()
+  } finally {
+    securityBusy.value = false
+  }
+}
 const nameError = ref('')
 
 const uploadingAvatar = ref(false)

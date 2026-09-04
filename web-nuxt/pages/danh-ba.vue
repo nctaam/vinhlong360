@@ -1,4 +1,4 @@
-﻿<template>
+<template>
   <section class="page dir-page" data-color-system="tri-region-v1">
     <Breadcrumb :items="[{ label: 'Trang chủ', to: '/' }, { label: 'Danh bạ' }]" />
 
@@ -155,7 +155,8 @@ const { show: showToast } = useToast()
 const ADMIN_LEVELS = ['phuong', 'xa']  // danh-bạ chỉ xã/phường (124), KHÔNG gộp cấp tỉnh
 const route = useRoute()
 
-const { data: places, error: placesError } = await useAsyncData('dir-places', () => apiFetch<Entity[]>('/api/places'))
+const placesAsyncData = useAsyncData('dir-places', () => apiFetch<Entity[]>('/api/places'))
+const { data: places, error: placesError } = placesAsyncData
 
 const areaFromQuery = computed(() => {
   const a = route.query.area as string
@@ -241,6 +242,8 @@ let facilitiesAbort: AbortController | null = null
 onBeforeUnmount(() => {
   facilitiesAbort?.abort()
 })
+
+await placesAsyncData
 
 async function loadFacilities() {
   if (facilitiesAbort) facilitiesAbort.abort()
