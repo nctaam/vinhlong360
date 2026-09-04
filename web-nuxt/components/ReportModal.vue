@@ -45,7 +45,7 @@
 import type { ReportModalState } from '~/composables/useReport'
 
 const modal = useState<ReportModalState>('report-modal', () => ({ open: false, targetType: 'post', targetId: '' }))
-const { authHeaders } = useAuth()
+const { authFetch } = useAuth()
 const { show: showToast } = useToast()
 
 const REASONS = ['Spam/quảng cáo', 'Sai sự thật', 'Xúc phạm/quấy rối', 'Nội dung không phù hợp', 'Vi phạm bản quyền', 'Khác']
@@ -76,9 +76,8 @@ async function submit() {
   if (combined.value.length < 5) return
   submitting.value = true
   try {
-    await $fetch('/api/report', {
+    await authFetch('/api/report', {
       method: 'POST',
-      headers: authHeaders(),
       body: { target_type: modal.value.targetType, target_id: modal.value.targetId, reason: combined.value },
     })
     showToast('Đã gửi báo cáo. Cảm ơn bạn!', 'success')

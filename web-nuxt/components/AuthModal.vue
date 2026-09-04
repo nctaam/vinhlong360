@@ -395,7 +395,7 @@ async function checkUsernameAvail() {
   }
   usernameStatus.value = 'checking'
   try {
-    const res = await $fetch<{ available: boolean }>(`/auth/check-username/${encodeURIComponent(uname)}`)
+    const res = await apiFetch<{ available: boolean }>(`/auth/check-username/${encodeURIComponent(uname)}`)
     usernameStatus.value = res.available ? 'available' : 'taken'
   } catch {
     usernameStatus.value = 'idle'

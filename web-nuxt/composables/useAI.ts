@@ -20,7 +20,7 @@ export function useAI() {
   async function aiChat(message: string, history: ChatMessage[] = []): Promise<ChatResponse> {
     for (let attempt = 0; attempt < 2; attempt++) {
       try {
-        const res = await $fetch<ChatResponse & { session_id?: string }>('/chat', {
+        const res = await apiFetch<ChatResponse & { session_id?: string }>('/chat', {
           method: 'POST',
           body: chatBody(message, history),
         })
@@ -109,12 +109,12 @@ export function useAI() {
       if (opts.month) params.set('month', String(opts.month))
       if (opts.weather) params.set('weather', opts.weather)
       if (opts.limit) params.set('limit', String(opts.limit))
-      return await $fetch<any>(`/recommend?${params}`)
+      return await apiFetch<any>(`/recommend?${params}`)
     } catch { return null }
   }
 
   async function aiHealth() {
-    try { return await $fetch<Record<string, unknown>>('/health') } catch { return null }
+    try { return await apiFetch<Record<string, unknown>>('/health') } catch { return null }
   }
 
   async function aiSmartSearch(query: string): Promise<{ reply: string; entities: Entity[]; suggestions: string[] }> {

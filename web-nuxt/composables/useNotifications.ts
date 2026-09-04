@@ -14,7 +14,7 @@ export function useNotifications() {
   const unreadCount = useState('unread-count', () => 0)
   const loading = useState('notif-loading', () => true)
   const fetchError = useState('notif-fetch-error', () => false)
-  const { isLoggedIn, authHeaders, handleSessionExpired } = useAuth()
+  const { isLoggedIn, authFetch, handleSessionExpired } = useAuth()
 
   function resetNotificationState() {
     notifications.value = []
@@ -31,14 +31,13 @@ export function useNotifications() {
     loading.value = true
     try {
       const params = new URLSearchParams({ limit: '20' })
-      const res = await $fetch<{ notifications: Notification[]; unread_count?: number }>(`/api/notifications?${params}`, { headers: authHeaders() })
+      const res = await authFetch<{ notifications: Notification[]; unread_count?: number }>(`/api/notifications?${params}`)
       notifications.value = res.notifications || []
       unreadCount.value = res.unread_count ?? 0
       fetchError.value = false
       pollInterval = 30_000
     } catch (e: unknown) {
       if (getStatusCode(e) === 401) {
-        handleSessionExpired()
         resetNotificationState()
         return
       }
@@ -52,13 +51,12 @@ export function useNotifications() {
     const previous = notifications.value.map(n => ({ n, is_read: n.is_read }))
     const previousUnread = unreadCount.value
     try {
-      await $fetch('/api/notifications/read-all', { method: 'POST', headers: authHeaders() })
+      await authFetch('/api/notifications/read-all', { method: 'POST' })
       unreadCount.value = 0
       notifications.value.forEach(n => n.is_read = true)
-    } catch (e: unknown) {
+    } catch {
       previous.forEach(p => { p.n.is_read = p.is_read })
       unreadCount.value = previousUnread
-      if (getStatusCode(e) === 401) handleSessionExpired()
     }
   }
 
@@ -71,11 +69,10 @@ export function useNotifications() {
     ;n.is_read = true
     unreadCount.value = Math.max(0, unreadCount.value - 1)
     try {
-      await $fetch(`/api/notifications/${encodePathId(id)}/read`, { method: 'POST', headers: authHeaders() })
-    } catch (e: unknown) {
+      await authFetch(`/api/notifications/${encodePathId(id)}/read`, { method: 'POST' })
+    } catch {
       ;n.is_read = previousRead
       unreadCount.value = previousUnread
-      if (getStatusCode(e) === 401) handleSessionExpired()
     }
   }
 

@@ -47,14 +47,13 @@ function entityPayload(entity: Pick<Entity, 'id' | 'type' | 'name' | 'area' | 'p
 }
 
 export function useUserEvents() {
-  const { isLoggedIn, authHeaders, fetchCsrf } = useAuth()
+  const { isLoggedIn, authFetch, fetchCsrf } = useAuth()
   const lastSent = useState<Record<string, number>>('user-event-dedupe', () => ({}))
 
   async function send(eventType: UserEventType, payload: UserEventPayload) {
     await fetchCsrf()
-    await $fetch('/api/me/events', {
+    await authFetch('/api/me/events', {
       method: 'POST',
-      headers: authHeaders(),
       body: {
         event_type: eventType,
         context: payload.context,

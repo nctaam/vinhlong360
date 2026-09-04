@@ -136,7 +136,7 @@ import {
 import { resolveAdminScopes } from '~/utils/adminAccess'
 
 const route = useRoute()
-const { user, fetchMe, authHeaders } = useAuth()
+const { user, fetchMe, authFetch } = useAuth()
 const { prefs, setPref } = useAdminPrefs()
 const mobileSidebarOpen = ref(false)
 const mobileSidebar = ref<HTMLElement | null>(null)
@@ -168,7 +168,7 @@ const visibleBadgeKeys = computed(() => new Set<AdminBadgeKey>(
 async function loadBadges() {
   if (!visibleBadgeKeys.value.size) return
   try {
-    const data = await $fetch<Record<string, number>>('/admin-api/badge-counts', { headers: authHeaders() })
+    const data = await authFetch<Record<string, number>>('/admin-api/badge-counts')
     for (const key of visibleBadgeKeys.value) badges.value[key] = data[key] || 0
   } catch { /* ignore */ }
 }

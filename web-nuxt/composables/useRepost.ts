@@ -1,6 +1,6 @@
 // Threads-style repost dùng chung (cong-dong/nguoi-dung/bai-viet).
 export function useRepost() {
-  const { isLoggedIn, authHeaders } = useAuth()
+  const { isLoggedIn, authFetch } = useAuth()
   const { openAuth } = useAuthModal()
   const { confirmDialog } = useConfirm()
   const { show: showToast } = useToast()
@@ -9,7 +9,7 @@ export function useRepost() {
     if (!isLoggedIn.value) { openAuth(() => { if (isLoggedIn.value) repost(postId, onDone) }); return false }
     if (!await confirmDialog('Đăng lại bài này lên trang của bạn?', { confirmText: 'Đăng lại' })) return false
     try {
-      await $fetch('/api/posts', { method: 'POST', headers: authHeaders(), body: { repost_of: postId, content: '' } })
+      await authFetch('/api/posts', { method: 'POST', body: { repost_of: postId, content: '' } })
       showToast('Đã đăng lại 🔁', 'success')
       onDone?.()
       return true
