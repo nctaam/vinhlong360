@@ -95,3 +95,6 @@ def test_backup_request_context_helper_preserves_legacy_defaults() -> None:
     from siteops import admin_api
 
     assert admin_api._backup_request_context(None) == (None, "admin")
+    assert admin_api._backup_request_hash("admin", "request-1") == admin_api._backup_request_hash(
+        "admin", "request-1"
+    )

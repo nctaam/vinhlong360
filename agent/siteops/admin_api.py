@@ -271,49 +271,99 @@ def _format_uptime(seconds: int) -> str:
 
 # ── Backup status + ops cockpit ──
 
+def _backup_missing_info() -> dict:
+    return {
+        "ready": False,
+        "latest": None,
+        "count": 0,
+        "size_mb": 0,
+        "state": "missing",
+        "last_success": None,
+        "last_failure": None,
+        "artifact_id": None,
+        "stale": True,
+    }
+
+
+def _backup_dirs(backup_dir: Path) -> list[Path]:
+    return sorted(
+        [path for path in backup_dir.iterdir() if path.is_dir()],
+        key=lambda path: path.name,
+        reverse=True,
+    )
+
+
+def _backup_size_mb(path: Path) -> float:
+    return round(sum(file.stat().st_size for file in path.rglob("*") if file.is_file()) / 1048576, 1)
+
+
+def _backup_manifest(path: Path) -> dict:
+    try:
+        value = json.loads((path / "manifest.json").read_text(encoding="utf-8"))
+    except (OSError, ValueError, TypeError):
+        return {}
+    return value if isinstance(value, dict) else {}
+
+
+def _backup_is_latest(backup_dir: Path, latest: Path) -> bool:
+    try:
+        normalized = find_latest_manifest(backup_dir)
+    except Exception:
+        return False
+    return normalized is not None and normalized[0] == latest
+
+
+def _backup_is_stale(created_at: object) -> bool:
+    if not created_at:
+        return True
+    try:
+        parsed = datetime.fromisoformat(str(created_at).replace("Z", "+00:00"))
+    except ValueError:
+        return True
+    return (datetime.now(timezone.utc) - parsed).total_seconds() > 86400
+
+
+def _backup_failure_info(
+    latest: Path, count: int, size_mb: float, created_at: object, artifact_id: str
+) -> dict:
+    return {
+        "ready": False,
+        "latest": latest.name,
+        "count": count,
+        "size_mb": size_mb,
+        "state": "failure",
+        "last_success": None,
+        "last_failure": created_at,
+        "artifact_id": artifact_id,
+        "stale": True,
+    }
+
+
 def _latest_backup_info() -> dict:
     backup_dir = ROOT / "scratch" / "backups"
     if not backup_dir.exists():
-        return {"ready": False, "latest": None, "count": 0, "size_mb": 0,
-                "state": "missing", "last_success": None, "last_failure": None,
-                "artifact_id": None, "stale": True}
-    dirs = sorted([p for p in backup_dir.iterdir() if p.is_dir()], key=lambda p: p.name, reverse=True)
+        return _backup_missing_info()
+    dirs = _backup_dirs(backup_dir)
     if not dirs:
-        return {"ready": False, "latest": None, "count": 0, "size_mb": 0,
-                "state": "missing", "last_success": None, "last_failure": None,
-                "artifact_id": None, "stale": True}
+        return _backup_missing_info()
     latest = dirs[0]
-    size_mb = round(sum(f.stat().st_size for f in latest.rglob("*") if f.is_file()) / 1048576, 1)
-    manifest = {}
-    try:
-        manifest = json.loads((latest / "manifest.json").read_text(encoding="utf-8"))
-    except (OSError, ValueError, TypeError):
-        manifest = {}
+    size_mb = _backup_size_mb(latest)
+    manifest = _backup_manifest(latest)
     created_at = manifest.get("created_at") or manifest.get("completed_at")
     artifact_id = manifest.get("artifact_id") or latest.name
-    valid = False
-    try:
-        normalized = find_latest_manifest(backup_dir)
-        valid = normalized is not None and normalized[0] == latest
-    except Exception:
-        valid = False
-    if not valid:
-        return {
-            "ready": False, "latest": latest.name, "count": len(dirs), "size_mb": size_mb,
-            "state": "failure", "last_success": None, "last_failure": created_at,
-            "artifact_id": artifact_id, "stale": True,
-        }
-    stale = True
-    if created_at:
-        try:
-            parsed = datetime.fromisoformat(str(created_at).replace("Z", "+00:00"))
-            stale = (datetime.now(timezone.utc) - parsed).total_seconds() > 86400
-        except ValueError:
-            stale = True
+    if not _backup_is_latest(backup_dir, latest):
+        return _backup_failure_info(latest, len(dirs), size_mb, created_at, artifact_id)
+    stale = _backup_is_stale(created_at)
     return {
-        "ready": True, "latest": latest.name, "count": len(dirs), "size_mb": size_mb,
-        "state": "stale" if stale else "success", "last_success": created_at, "last_failure": None,
-        "artifact_id": artifact_id, "stale": stale,
+        "ready": True,
+        "latest": latest.name,
+        "count": len(dirs),
+        "size_mb": size_mb,
+        "state": "stale" if stale else "success",
+        "last_success": created_at,
+        "last_failure": None,
+        "artifact_id": artifact_id,
+        "stale": stale,
     }
 
 
@@ -609,11 +659,158 @@ async def ops_summary():
 _last_backup_time: float = 0
 _BACKUP_COOLDOWN = _cfg.BACKUP_COOLDOWN
 
+
+class _BackupTransaction:
+    def __init__(self, connection):
+        self._db = db
+        self._conn = connection
+
+
+def _backup_request_context(request: Request | None) -> tuple[str | None, str]:
+    idem_key = request.headers.get("Idempotency-Key") if request is not None else None
+    actor = "admin"
+    if request is not None:
+        actor_data = getattr(request.state, "admin_user", None)
+        if isinstance(actor_data, dict):
+            actor = str(actor_data.get("id") or actor)
+    return idem_key, actor
+
+
+def _check_shared_backup_cooldown(transaction: _BackupTransaction) -> None:
+    if not getattr(db, "_use_pg", False):
+        return
+    # Serialize the first-run case as well as existing sentinel rows;
+    # SELECT ... FOR UPDATE cannot lock a row that does not exist.
+    db._execute(
+        transaction._conn,
+        "SELECT pg_advisory_xact_lock(hashtext('vinhlong360:backup-trigger'))",
+        (),
+    )
+    row = db._fetchone(
+        transaction._conn,
+        "SELECT meta FROM request_idempotency_keys WHERE key=%s FOR UPDATE",
+        ("backup-trigger:__cooldown__",),
+    )
+    if row is None:
+        return
+    meta = row.get("meta") if isinstance(row, dict) else row[0]
+    if isinstance(meta, str):
+        try:
+            meta = json.loads(meta)
+        except (TypeError, ValueError, json.JSONDecodeError):
+            meta = {}
+    completed = meta.get("completed_at") if isinstance(meta, dict) else None
+    try:
+        elapsed = datetime.now(timezone.utc).timestamp() - float(completed)
+    except (TypeError, ValueError):
+        return
+    if elapsed < _BACKUP_COOLDOWN:
+        raise HTTPException(429, f"Backup đã chạy gần đây. Thử lại sau {int(_BACKUP_COOLDOWN - elapsed)} giây.")
+
+
+def _record_shared_backup_cooldown(transaction: _BackupTransaction) -> None:
+    if not getattr(db, "_use_pg", False):
+        return
+    expires = datetime.now(timezone.utc) + timedelta(hours=24)
+    meta = json.dumps({"completed_at": datetime.now(timezone.utc).timestamp()})
+    db._execute(
+        transaction._conn,
+        "INSERT INTO request_idempotency_keys(key, expires_at, meta) VALUES (%s,%s,%s::jsonb) "
+        "ON CONFLICT (key) DO UPDATE SET expires_at=EXCLUDED.expires_at, meta=EXCLUDED.meta",
+        ("backup-trigger:__cooldown__", expires, meta),
+    )
+
+
+def _backup_request_hash(actor: str, idem_key: str) -> str:
+    return hashlib.sha256(f"backup:{actor}:{idem_key}".encode()).hexdigest()
+
+
+def _run_backup_process(script_path: Path):
+    try:
+        result = subprocess.run(
+            [sys.executable, str(script_path), "--label", "admin-manual"],
+            capture_output=True,
+            text=True,
+            timeout=30,
+        )
+        if result.returncode != 0:
+            logger.error("Backup script failed: %s", result.stderr)
+            raise HTTPException(500, "Backup thất bại. Kiểm tra log server.")
+        backup_dir = ROOT / "scratch" / "backups"  # chỉnh máy móc cùng lý do dòng script ở trên
+        dirs = _backup_dirs(backup_dir)
+        latest = dirs[0] if dirs else None
+        normalized = find_latest_manifest(backup_dir)
+        if latest is None or normalized is None or normalized[0] != latest:
+            raise HTTPException(500, "Backup không tạo manifest/checksum hợp lệ")
+        return {
+            "success": True,
+            "backup_name": latest.name if latest else None,
+            "size_mb": _backup_size_mb(latest) if latest else 0,
+            "output": result.stdout.strip(),
+        }
+    except subprocess.TimeoutExpired:
+        raise HTTPException(504, "Backup timed out")
+    except HTTPException:
+        raise
+    except Exception:
+        logger.exception("Backup failed")
+        raise HTTPException(500, "Backup thất bại. Kiểm tra log server.")
+
+
+def _run_pg_backup(script: Path, actor: str, idem_key: str | None, now: float):
+    global _last_backup_time
+    with db._conn() as conn:
+        transaction = _BackupTransaction(conn)
+        claim = None
+        if idem_key:
+            request_hash = _backup_request_hash(actor, idem_key)
+            claim = claim_idempotency(transaction, IdempotencyKey("backup-trigger", actor, idem_key), request_hash)
+            if claim.replayed:
+                return claim.receipt
+            if claim.conflict:
+                raise HTTPException(409, "Idempotency-Key đã dùng cho yêu cầu khác")
+        _check_shared_backup_cooldown(transaction)
+        result = _run_backup_process(script)
+        if claim is not None:
+            record_idempotency_receipt(transaction, claim, result)
+        _record_shared_backup_cooldown(transaction)
+        _last_backup_time = now
+        return result
+
+
+def _run_sqlite_idempotent_backup(script: Path, actor: str, idem_key: str, now: float):
+    global _last_backup_time
+    with db._conn() as conn:
+        request_hash = _backup_request_hash(actor, idem_key)
+        transaction = _BackupTransaction(conn)
+        claim = claim_idempotency(transaction, IdempotencyKey("backup-trigger", actor, idem_key), request_hash)
+        if claim.replayed:
+            return claim.receipt
+        if claim.conflict:
+            raise HTTPException(409, "Idempotency-Key đã dùng cho yêu cầu khác")
+        result = _run_backup_process(script)
+        record_idempotency_receipt(transaction, claim, result)
+        _last_backup_time = now
+        return result
+
+
+def _run_backup_workflow(script: Path, request: Request | None, now: float):
+    idem_key, actor = _backup_request_context(request)
+    if getattr(db, "_use_pg", False):
+        return _run_pg_backup(script, actor, idem_key, now)
+    if idem_key:
+        return _run_sqlite_idempotent_backup(script, actor, idem_key, now)
+    result = _run_backup_process(script)
+    global _last_backup_time
+    _last_backup_time = now
+    return result
+
+
 @router.post("/backup-trigger",
              summary="Trigger data backup",
              description="Initiates a manual backup of the database. Returns the backup file path, size, and status. Rate-limited by a cooldown period.")
 async def trigger_backup(request: Request = None):
-    """B5c: trigger manual backup from admin UI."""
+    """B5c: trigger manual backup; failures remain ``Kiểm tra log server`` only."""
     import time as _time
     global _last_backup_time
     now = _time.monotonic()
@@ -626,135 +823,7 @@ async def trigger_backup(request: Request = None):
     script = ROOT / "scripts" / "backup_data.py"  # noqa: ASYNC240 (dựng path rẻ; I/O thật bọc asyncio.to_thread bên dưới)
     if not script.exists():
         raise HTTPException(500, "Không tìm thấy script backup_data.py")
-    def _run():
-        global _last_backup_time
-        nonlocal now
-        idem_key = request.headers.get("Idempotency-Key") if request is not None else None
-        actor = "admin"
-        if request is not None:
-            actor_data = getattr(request.state, "admin_user", None)
-            if isinstance(actor_data, dict):
-                actor = str(actor_data.get("id") or actor)
-
-        class _Transaction:
-            def __init__(self, connection):
-                self._db = db
-                self._conn = connection
-
-        def _check_shared_cooldown(transaction: _Transaction) -> None:
-            if not getattr(db, "_use_pg", False):
-                return
-            # Serialize the first-run case as well as existing sentinel rows;
-            # SELECT ... FOR UPDATE cannot lock a row that does not exist.
-            db._execute(
-                transaction._conn,
-                "SELECT pg_advisory_xact_lock(hashtext('vinhlong360:backup-trigger'))",
-                (),
-            )
-            row = db._fetchone(
-                transaction._conn,
-                "SELECT meta FROM request_idempotency_keys WHERE key=%s FOR UPDATE",
-                ("backup-trigger:__cooldown__",),
-            )
-            if row is None:
-                return
-            meta = row.get("meta") if isinstance(row, dict) else row[0]
-            if isinstance(meta, str):
-                try:
-                    meta = json.loads(meta)
-                except (TypeError, ValueError, json.JSONDecodeError):
-                    meta = {}
-            completed = meta.get("completed_at") if isinstance(meta, dict) else None
-            try:
-                elapsed = datetime.now(timezone.utc).timestamp() - float(completed)
-            except (TypeError, ValueError):
-                return
-            if elapsed < _BACKUP_COOLDOWN:
-                raise HTTPException(429, f"Backup đã chạy gần đây. Thử lại sau {int(_BACKUP_COOLDOWN - elapsed)} giây.")
-
-        def _record_shared_cooldown(transaction: _Transaction) -> None:
-            if not getattr(db, "_use_pg", False):
-                return
-            expires = datetime.now(timezone.utc) + timedelta(hours=24)
-            meta = json.dumps({"completed_at": datetime.now(timezone.utc).timestamp()})
-            db._execute(
-                transaction._conn,
-                "INSERT INTO request_idempotency_keys(key, expires_at, meta) VALUES (%s,%s,%s::jsonb) "
-                "ON CONFLICT (key) DO UPDATE SET expires_at=EXCLUDED.expires_at, meta=EXCLUDED.meta",
-                ("backup-trigger:__cooldown__", expires, meta),
-            )
-
-        # PostgreSQL workers share both the cooldown lock and idempotency row.
-        # Holding the transaction through the backup prevents concurrent runs;
-        # failures roll back the cooldown so a retry remains possible.
-        if getattr(db, "_use_pg", False):
-            with db._conn() as conn:
-                transaction = _Transaction(conn)
-                claim = None
-                if idem_key:
-                    request_hash = hashlib.sha256(f"backup:{actor}:{idem_key}".encode()).hexdigest()
-                    claim = claim_idempotency(transaction, IdempotencyKey("backup-trigger", actor, idem_key), request_hash)
-                    if claim.replayed:
-                        return claim.receipt
-                    if claim.conflict:
-                        raise HTTPException(409, "Idempotency-Key đã dùng cho yêu cầu khác")
-                _check_shared_cooldown(transaction)
-                result = _run_backup_process(script)
-                if claim is not None:
-                    record_idempotency_receipt(transaction, claim, result)
-                _record_shared_cooldown(transaction)
-                _last_backup_time = now
-                return result
-
-        # SQLite/legacy callers retain the process-local fallback, while an
-        # explicit idempotency key still prevents duplicate work in that store.
-        if idem_key:
-            with db._conn() as conn:
-                request_hash = hashlib.sha256(f"backup:{actor}:{idem_key}".encode()).hexdigest()
-                transaction = _Transaction(conn)
-                claim = claim_idempotency(transaction, IdempotencyKey("backup-trigger", actor, idem_key), request_hash)
-                if claim.replayed:
-                    return claim.receipt
-                if claim.conflict:
-                    raise HTTPException(409, "Idempotency-Key đã dùng cho yêu cầu khác")
-                result = _run_backup_process(script)
-                record_idempotency_receipt(transaction, claim, result)
-                _last_backup_time = now
-                return result
-        result = _run_backup_process(script)
-        _last_backup_time = now
-        return result
-
-    def _run_backup_process(script_path: Path):
-        try:
-            result = subprocess.run(
-                [sys.executable, str(script_path), "--label", "admin-manual"],
-                capture_output=True, text=True, timeout=30,
-            )
-            if result.returncode != 0:
-                logger.error("Backup script failed: %s", result.stderr)
-                raise HTTPException(500, "Backup thất bại. Kiểm tra log server.")
-            backup_dir = ROOT / "scratch" / "backups"  # chỉnh máy móc cùng lý do dòng script ở trên
-            dirs = sorted((p for p in backup_dir.iterdir() if p.is_dir()), key=lambda p: p.name, reverse=True)
-            latest = dirs[0] if dirs else None
-            normalized = find_latest_manifest(backup_dir)
-            if latest is None or normalized is None or normalized[0] != latest:
-                raise HTTPException(500, "Backup không tạo manifest/checksum hợp lệ")
-            size_mb = round(sum(f.stat().st_size for f in latest.rglob("*") if f.is_file()) / 1048576, 1) if latest else 0
-            return {
-                "success": True,
-                "backup_name": latest.name if latest else None,
-                "size_mb": size_mb,
-                "output": result.stdout.strip(),
-            }
-        except subprocess.TimeoutExpired:
-            raise HTTPException(504, "Backup timed out")
-        except HTTPException:
-            raise
-        except Exception:
-            logger.exception("Backup failed")
-            raise HTTPException(500, "Backup thất bại. Kiểm tra log server.")
-    return await asyncio.to_thread(_run)
+    return await asyncio.to_thread(_run_backup_workflow, script, request, now)
 
 
 # ── Export toàn-DB ──
