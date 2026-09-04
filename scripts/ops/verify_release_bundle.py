@@ -447,7 +447,7 @@ def _read_payload(bundle_path: Path) -> dict | None:
         payload = json.loads(bundle_path.read_text(encoding="utf-8"))
     except (OSError, UnicodeDecodeError, json.JSONDecodeError):
         return None
-    return payload if isinstance(payload, dict) else payload
+    return payload if isinstance(payload, dict) else None
 
 
 def _apply_countersignature_overlay(
