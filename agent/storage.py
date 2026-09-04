@@ -167,6 +167,47 @@ def _write_durable_receipt(receipt: dict) -> None:
         logger.warning("Failed to persist media deletion receipt", exc_info=True)
 
 
+def _delete_media_object(storage, receipt: dict, object_key: str) -> None:
+    if receipt.get("object_status") in {"deleted", "already_absent"}:
+        return
+    try:
+        storage.delete(object_key)
+        receipt["object_status"] = "deleted"
+    except FileNotFoundError:
+        receipt["object_status"] = "already_absent"
+    except Exception as exc:
+        receipt["object_status"] = "failed"
+        receipt["error"] = type(exc).__name__
+
+
+def _delete_media_cdn(receipt: dict, object_key: str, cdn_purge) -> None:
+    if cdn_purge is None:
+        receipt["cdn_status"] = "unavailable"
+        return
+    if receipt.get("cdn_status") in {"deleted", "already_absent"}:
+        return
+    try:
+        cdn_purge(object_key)
+        receipt["cdn_status"] = "deleted"
+    except FileNotFoundError:
+        receipt["cdn_status"] = "already_absent"
+    except Exception as exc:
+        receipt["cdn_status"] = "failed"
+        receipt["error"] = type(exc).__name__
+
+
+def _terminal_media_receipt_status(receipt: dict) -> str:
+    failed = [
+        value for value in (receipt.get("object_status"), receipt.get("cdn_status"))
+        if value == "failed"
+    ]
+    if failed or receipt.get("cdn_status") == "unavailable":
+        return "failed"
+    if receipt.get("object_status") == "deleted" or receipt.get("cdn_status") == "deleted":
+        return "deleted"
+    return "already_absent"
+
+
 def _slugify(s: str) -> str:
     s = (s or "img").lower().strip()
     s = re.sub(r"[^a-z0-9]+", "-", s).strip("-")
@@ -336,24 +377,9 @@ class Storage:
             receipt["status"] = "claimed"
             _MEDIA_RECEIPTS[key] = receipt
             _write_durable_receipt(receipt)
-            if receipt.get("object_status") not in {"deleted", "already_absent"}:
-                try:
-                    self.delete(str(object_key)); receipt["object_status"] = "deleted"
-                except FileNotFoundError:
-                    receipt["object_status"] = "already_absent"
-                except Exception as exc:
-                    receipt["object_status"] = "failed"; receipt["error"] = type(exc).__name__
-            if cdn_purge is None:
-                receipt["cdn_status"] = "unavailable"
-            elif receipt.get("cdn_status") not in {"deleted", "already_absent"}:
-                try:
-                    cdn_purge(str(object_key)); receipt["cdn_status"] = "deleted"
-                except FileNotFoundError:
-                    receipt["cdn_status"] = "already_absent"
-                except Exception as exc:
-                    receipt["cdn_status"] = "failed"; receipt["error"] = type(exc).__name__
-            failed = [v for v in (receipt.get("object_status"), receipt.get("cdn_status")) if v == "failed"]
-            receipt["status"] = "failed" if failed or receipt.get("cdn_status") == "unavailable" else ("deleted" if receipt.get("object_status") == "deleted" or receipt.get("cdn_status") == "deleted" else "already_absent")
+            _delete_media_object(self, receipt, str(object_key))
+            _delete_media_cdn(receipt, str(object_key), cdn_purge)
+            receipt["status"] = _terminal_media_receipt_status(receipt)
             receipt["object"] = {"status": receipt.get("object_status")}
             receipt["cdn"] = {"status": receipt.get("cdn_status")}
             _MEDIA_RECEIPTS[key] = dict(receipt)

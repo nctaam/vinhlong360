@@ -335,3 +335,18 @@ def test_contact_rate_limit_helper_fails_closed():
             )
     finally:
         contact.check_case_rate_limit = original
+
+
+def test_media_receipt_terminal_status_is_fail_closed():
+    """A missing CDN proof keeps a deletion receipt failed, never falsely verified."""
+    from storage import _terminal_media_receipt_status
+
+    assert _terminal_media_receipt_status({
+        "object_status": "deleted", "cdn_status": "unavailable"
+    }) == "failed"
+    assert _terminal_media_receipt_status({
+        "object_status": "deleted", "cdn_status": "deleted"
+    }) == "deleted"
+    assert _terminal_media_receipt_status({
+        "object_status": "already_absent", "cdn_status": "already_absent"
+    }) == "already_absent"
