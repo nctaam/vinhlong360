@@ -565,7 +565,11 @@ async def read_status(request: Request):
         if mapped is None:
             raise
         return mapped
-    return JSONResponse(status_payload(status), headers=dict(_NO_STORE))
+    payload = CaseStatusResponse.model_validate(status_payload(status))
+    return JSONResponse(
+        payload.model_dump(mode="json", by_alias=True),
+        headers=dict(_NO_STORE),
+    )
 
 
 @case_public_router.post("/receipts/rotate")

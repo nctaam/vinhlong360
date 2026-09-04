@@ -453,6 +453,26 @@ def test_status_payload_matches_the_strict_public_response_contract(client):
         CaseStatusResponse.model_validate({**payload, "undocumented": "nope"})
 
 
+def test_status_rejects_an_invalid_internal_projection(client, monkeypatch):
+    from cases import public_api
+    from pydantic import ValidationError
+
+    original = public_api.status_payload
+    monkeypatch.setattr(
+        public_api,
+        "status_payload",
+        lambda status: {**original(status), "undocumented": "nope"},
+    )
+
+    client.post(
+        "/api/cases/access",
+        headers=_headers(),
+        json={"publicReference": REFERENCE, "capability": CAPABILITY},
+    )
+    with pytest.raises(ValidationError):
+        client.get("/api/cases/status")
+
+
 def test_logout_clears_both_cookies(client):
     client.post(
         "/api/cases/access",

@@ -78,6 +78,8 @@ strict `CaseStatusResponse` with the 11 required camelCase fields consumed by
 Nuxt, enum/nullable/revision constraints, and no undocumented top-level fields,
 instead of an OpenAPI `{}` response schema. RED reproduced the missing reference
 and the permissive extra-field policy; GREEN export/contract coverage passed `17`,
-with Ruff, compileall, `git diff --check`, and `run_hard.py --all` clean. Runtime
-behavior is unchanged: the route still returns its existing `JSONResponse`; this
-patch closes the machine-readable contract gap only.
+with Ruff, compileall, `git diff --check`, and `run_hard.py --all` clean. The
+route still returns its existing `JSONResponse`, but now validates the shaped
+payload through `CaseStatusResponse` before serialization so internal contract
+drift fails closed. RED reproduced the previous bypass; GREEN passed the focused
+runtime regression and preserved the valid HTTP journey.
