@@ -20,8 +20,12 @@
         </NuxtLink>
       </template>
       <template v-if="allDescriptors.length > 1">
-        <button v-if="activeSlide > 0" type="button" class="card-arrow card-arrow-prev" aria-label="Ảnh trước" @click.prevent="activeSlide--">‹</button>
-        <button v-if="activeSlide < allDescriptors.length - 1" type="button" class="card-arrow card-arrow-next" aria-label="Ảnh sau" @click.prevent="activeSlide++">›</button>
+        <button v-if="activeSlide > 0" type="button" class="card-arrow card-arrow-prev" aria-label="Ảnh trước" @click.prevent="activeSlide--">
+          <IconLine name="chevron-left" aria-hidden="true" />
+        </button>
+        <button v-if="activeSlide < allDescriptors.length - 1" type="button" class="card-arrow card-arrow-next" aria-label="Ảnh sau" @click.prevent="activeSlide++">
+          <IconLine name="chevron-right" aria-hidden="true" />
+        </button>
         <div class="card-dots" aria-hidden="true">
           <span v-for="(_, i) in allDescriptors.slice(0, 5)" :key="i" :class="['card-dot', { active: i === activeSlide }]" />
         </div>
