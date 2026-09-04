@@ -168,19 +168,23 @@ def _backup_check(docker: bool, file_exists=None) -> dict[str, Any]:
     if not docker:
         missing.append("Docker daemon")
     missing.extend(f"{name} on PATH" for name in ("pg_dump", "pg_restore", "aws") if not _tool(name))
-    if not _env_configured("VL360_OFFSITE_BACKUP_TARGET"):
+    if not _env_configured("S3_ENDPOINT"):
+        missing.append("S3_ENDPOINT")
+    if not _env_configured("S3_BUCKET"):
+        missing.append("S3_BUCKET")
+    if "S3_ENDPOINT" in missing or "S3_BUCKET" in missing:
         missing.append("an offsite destination")
-    ready = (
-        file_exists("scripts/backup_data.py")
-        and file_exists("scripts/restore_drill.py")
-        and docker
-        and not missing
-    )
+    if not _env_configured("DATABASE_URL"):
+        missing.append("a restore database target")
+    # This read-only probe cannot execute the upload and destructive restore
+    # legs.  Configuration alone is never promoted to composite-drill proof.
+    missing.append("backup/offsite/restore execution receipt")
+    ready = False
     return {
         "id": "backup-offsite-restore-checksum",
         "title": "Backup, offsite copy, restore, checksum",
         "status": AVAILABLE if ready else UNAVAILABLE,
-        "command": "python scripts/backup_data.py --target local --out-dir <dir>",
+        "command": "backup_data.py + backup_offsite.py + restore_drill.py (external execution required)",
         "missing": missing,
         "note": (
             "Backup and checksum are reachable. The restore leg needs PostgreSQL client tools, absent "
@@ -202,12 +206,15 @@ def _staging_check(file_exists=None) -> dict[str, Any]:
         missing.append("a second Linux host with systemd and nginx")
     if not _env_configured("VL360_STAGING_ENVIRONMENT"):
         missing.append("a staging environment")
-    ready = file_exists("scripts/ops/rehearse_launch_rollback.sh") and not missing
+    # A local rehearsal command is not a staging rollout receipt.  The probe
+    # stays fail-closed until an external staging execution produces evidence.
+    missing.append("staging rollout execution receipt")
+    ready = False
     return {
         "id": "staging-rollout-smoke-rollback",
         "title": "Staging rollout, smoke test, rollback",
         "status": AVAILABLE if ready else UNAVAILABLE,
-        "command": "bash scripts/ops/rehearse_launch_rollback.sh --local-rehearsal",
+        "command": "staging rollout + smoke + rollback (external execution required)",
         "missing": missing,
         "note": (
             "A local rehearsal against a command stub is reachable and must be reported as a rehearsal, "
@@ -216,15 +223,29 @@ def _staging_check(file_exists=None) -> dict[str, Any]:
     }
 
 
-def _monitoring_check(docker: bool) -> dict[str, Any]:
+def _monitoring_check(docker: bool, file_exists=None) -> dict[str, Any]:
     """Report readiness of the monitoring alert delivery proof."""
 
-    missing = [] if _env_configured("VL360_ALERT_RECEIVER_URL") else ["an alert receiver endpoint"]
+    file_exists = file_exists or _file
+    missing = []
+    for path in (
+        "docker-compose.yml",
+        "scripts/monitoring/prometheus.yml",
+        "scripts/monitoring/alert_rules.yml",
+        "scripts/monitoring/alertmanager.yml",
+    ):
+        if not file_exists(path):
+            missing.append(path)
+    if not _env_configured("VL360_ALERT_WEBHOOK_URL"):
+        missing.append("an alert receiver endpoint")
+    # Starting containers and configuring a webhook cannot prove that an
+    # alert was delivered and acknowledged by the receiver.
+    missing.append("alert delivery receipt")
     return {
         "id": "monitoring-alert-receiver",
         "title": "Monitoring alert reaching a receiver",
-        "status": AVAILABLE if docker and not missing else UNAVAILABLE,
-        "command": "docker compose up -d prometheus alertmanager backup-status-exporter",
+        "status": UNAVAILABLE,
+        "command": "docker compose + alert injection + receiver acknowledgement (external execution required)",
         "missing": missing,
         "note": (
             "The monitoring stack starts and the alert rule loads, but the alert has nowhere to land: no "
@@ -268,9 +289,11 @@ def probe(root: Path = ROOT) -> dict[str, Any]:
         _ha_check(),
         _backup_check(docker, file_exists),
         _staging_check(file_exists),
-        _monitoring_check(docker),
+        _monitoring_check(docker, file_exists),
         _provider_check(),
     ]
+    for check in checks:
+        check["working_directory"] = str(root)
     return {
         "version": 1,
         "observed_at": datetime.now(timezone.utc).isoformat(),

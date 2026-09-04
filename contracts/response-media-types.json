@@ -9,6 +9,15 @@
       "schema": {
         "type": "string"
       }
+    },
+    {
+      "method": "get",
+      "path": "/api/notifications/stream",
+      "status": "200",
+      "media_type": "text/event-stream",
+      "schema": {
+        "type": "string"
+      }
     }
   ]
 }

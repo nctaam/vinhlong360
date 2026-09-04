@@ -6,6 +6,10 @@ import subprocess
 import sys
 from pathlib import Path
 
+import pytest
+
+import scripts.export_openapi as exporter
+
 
 ROOT = Path(__file__).resolve().parents[2]
 EXPORTER = ROOT / "scripts" / "export_openapi.py"
@@ -51,6 +55,36 @@ def test_export_openapi_describes_streaming_chat_response(tmp_path: Path) -> Non
     response = document["paths"]["/chat/stream"]["post"]["responses"]["200"]
     assert "text/event-stream" in response["content"]
     assert "application/json" not in response["content"]
+
+
+def test_export_openapi_describes_streaming_notifications_response(tmp_path: Path) -> None:
+    output = tmp_path / "openapi.json"
+    result = run_export(output)
+
+    assert result.returncode == 0, result.stderr
+    document = json.loads(output.read_text(encoding="utf-8"))
+    response = document["paths"]["/api/notifications/stream"]["get"]["responses"]["200"]
+    assert response["content"] == {"text/event-stream": {"schema": {"type": "string"}}}
+
+
+def test_response_media_registry_rejects_empty_or_duplicate_entries(tmp_path: Path, monkeypatch) -> None:
+    registry = tmp_path / "response-media-types.json"
+    monkeypatch.setattr(exporter, "RESPONSE_MEDIA_TYPES", registry)
+    document = {"paths": {"/stream": {"get": {"responses": {"200": {}}}}}}
+
+    registry.write_text('{"schema_version":"1","responses":[]}', encoding="utf-8")
+    with pytest.raises(RuntimeError, match="at least one"):
+        exporter._apply_response_media_types(document)
+
+    registry.write_text(json.dumps({
+        "schema_version": "1",
+        "responses": [
+            {"method": "get", "path": "/stream", "status": "200", "media_type": "text/plain", "schema": {"type": "string"}},
+            {"method": "GET", "path": "/stream", "status": "200", "media_type": "text/event-stream", "schema": {"type": "string"}},
+        ],
+    }), encoding="utf-8")
+    with pytest.raises(RuntimeError, match="duplicate"):
+        exporter._apply_response_media_types(document)
 
 
 def test_export_openapi_is_byte_deterministic_and_credential_free(tmp_path: Path) -> None:

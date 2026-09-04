@@ -126,6 +126,28 @@ def test_combined_backup_proof_is_unavailable_without_restore_and_offsite_prereq
     assert "an offsite destination" in backup["missing"]
 
 
+def test_backup_probe_does_not_promote_configuration_to_execution_readiness(monkeypatch):
+    """Credentials and binaries alone cannot prove the composite drill is runnable."""
+
+    monkeypatch.setattr(probe_module, "_tool", lambda _name: True)
+    monkeypatch.setattr(probe_module, "_file", lambda _relative: True)
+    monkeypatch.setattr(probe_module, "_docker_running", lambda: True)
+    for name, value in {
+        "S3_ENDPOINT": "https://example.invalid",
+        "S3_ACCESS_KEY": "placeholder-access",
+        "S3_SECRET_KEY": "placeholder-secret",
+        "S3_BUCKET": "placeholder-bucket",
+    }.items():
+        monkeypatch.setenv(name, value)
+
+    report = probe()
+    backup = next(item for item in report["checks"] if item["id"] == "backup-offsite-restore-checksum")
+
+    assert backup["status"] == UNAVAILABLE
+    assert "backup/offsite/restore execution receipt" in backup["missing"]
+    assert "backup_data.py --target local" not in backup["command"]
+
+
 def test_monitoring_delivery_proof_is_unavailable_without_alert_receiver(monkeypatch):
     """A running monitoring stack does not prove delivery to an external sink."""
 
@@ -138,6 +160,21 @@ def test_monitoring_delivery_proof_is_unavailable_without_alert_receiver(monkeyp
     assert "an alert receiver endpoint" in monitoring["missing"]
 
 
+def test_monitoring_probe_uses_runtime_webhook_and_requires_delivery_receipt(monkeypatch):
+    """An arbitrary receiver URL must not become monitoring delivery evidence."""
+
+    monkeypatch.setattr(probe_module, "_docker_running", lambda: True)
+    monkeypatch.setattr(probe_module, "_file", lambda _relative: True)
+    monkeypatch.setenv("VL360_ALERT_RECEIVER_URL", "https://wrong.example")
+    monkeypatch.setenv("VL360_ALERT_WEBHOOK_URL", "https://placeholder.example")
+
+    report = probe()
+    monitoring = next(item for item in report["checks"] if item["id"] == "monitoring-alert-receiver")
+
+    assert monitoring["status"] == UNAVAILABLE
+    assert "alert delivery receipt" in monitoring["missing"]
+
+
 def test_staging_combined_proof_is_unavailable_without_real_staging_host(monkeypatch):
     """A local rollback rehearsal is not a staging rollout receipt."""
 
@@ -148,3 +185,33 @@ def test_staging_combined_proof_is_unavailable_without_real_staging_host(monkeyp
 
     assert staging["status"] == UNAVAILABLE
     assert "a staging environment" in staging["missing"]
+
+
+def test_staging_probe_does_not_treat_host_strings_as_a_rollout_receipt(monkeypatch):
+    """Host/environment strings cannot turn the local rehearsal command into staging proof."""
+
+    monkeypatch.setattr(probe_module, "_file", lambda _relative: True)
+    monkeypatch.setenv("VL360_STAGING_HOST", "placeholder.example")
+    monkeypatch.setenv("VL360_STAGING_ENVIRONMENT", "staging")
+    monkeypatch.setenv("DEPLOY_ENVIRONMENT", "staging")
+
+    report = probe()
+    staging = next(item for item in report["checks"] if item["id"] == "staging-rollout-smoke-rollback")
+
+    assert staging["status"] == UNAVAILABLE
+    assert "staging rollout execution receipt" in staging["missing"]
+    assert "--local-rehearsal" not in staging["command"]
+
+
+def test_monitoring_probe_scopes_repository_files_to_supplied_root(monkeypatch, tmp_path):
+    """An empty alternate checkout cannot inherit monitoring readiness from this checkout."""
+
+    monkeypatch.setattr(probe_module, "_docker_running", lambda: True)
+    monkeypatch.setattr(probe_module, "_file", lambda _relative: True)
+    monkeypatch.setenv("VL360_ALERT_WEBHOOK_URL", "https://placeholder.example")
+
+    report = probe(tmp_path)
+    monitoring = next(item for item in report["checks"] if item["id"] == "monitoring-alert-receiver")
+
+    assert monitoring["status"] == UNAVAILABLE
+    assert "docker-compose.yml" in monitoring["missing"]

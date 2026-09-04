@@ -15,9 +15,10 @@ Python source code.
 - `frontend-endpoints.json` records the endpoint surface currently consumed by
   the Nuxt application.
 - `response-media-types.json` records runtime response media types that cannot
-  be inferred reliably from FastAPI's return annotation (currently the SSE
-  `/chat/stream` response); the exporter validates every override against a
-  live route before applying it.
+  be inferred reliably from FastAPI's return annotation (the SSE
+  `/chat/stream` and `/api/notifications/stream` responses); the exporter
+  validates every override against a live route and rejects empty or duplicate
+  entries before applying them.
 - `docs/api-contract.md` remains the human-readable business and migration
   guide; it is not a substitute for the machine-readable schemas.
 
