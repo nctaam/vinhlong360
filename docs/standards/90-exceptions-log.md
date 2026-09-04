@@ -257,3 +257,5 @@ ghi ở backlog tối ưu — giảm dần, KHÔNG được tăng tiếp từ 47
 - 2026-09-02T03:03:40 SKIP R20.8,R30.7 — Task 11 backup/restore, shared idempotency and monitoring control path add bounded operational branching; R30.7 frontend bundle debt is pre-existing and no frontend artifacts changed.
 
 - 2026-09-04T08:48:57 SKIP R20.8,R30.7 — Checkpoint bundles the already-reviewed correction-case and release-evidence modules; R20.8 complexity debt is pre-existing/documented and R30.7 809kB bundle debt is pre-existing, with no new baseline or claim of release readiness.
+
+- 2026-09-04T09:40:42 SKIP R20.8,R30.7 — docs-only status marker; no backend or frontend artifact changes
