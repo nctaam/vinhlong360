@@ -342,6 +342,7 @@ def test_cleanup_expired_data_xoa_dung_hang_het_han(pg_db):
         "old_read_notifications": 1,
         "expired_pending_2fa": 1,
         "expired_trusted_devices": 1,
+        "lease": "cleanup-expired-data",
     }
     assert _db_one(pg_db, "SELECT COUNT(*) AS n FROM user_sessions")["n"] == 1
     assert _db_one(pg_db, "SELECT COUNT(*) AS n FROM otp_sessions")["n"] == 1
@@ -357,12 +358,15 @@ def test_cleanup_expired_data_tra_error_khi_db_no(pg_db, monkeypatch):
 
     monkeypatch.setattr(pg_db, "_execute", boom)
     results = identity_api.cleanup_expired_data()
-    assert results == {"error": "boom"}
+    assert results == {"error": "boom", "lease": "cleanup-expired-data"}
 
 
 def test_cleanup_expired_data_skip_khi_khong_pg(pg_db, monkeypatch):
     monkeypatch.setattr(pg_db, "_use_pg", False)
-    assert identity_api.cleanup_expired_data() == {"skipped": True}
+    assert identity_api.cleanup_expired_data() == {
+        "skipped": True,
+        "lease": "cleanup-expired-data",
+    }
 
 
 # ── CheckPhone.validate_phone ──

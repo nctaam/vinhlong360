@@ -135,7 +135,7 @@ def test_case_transaction_discards_callbacks_when_commit_fails():
         def commit(self):
             raise RuntimeError("commit failed")
 
-    class Database:
+    class FakeDatabase:
         _use_pg = True
 
         @contextmanager
@@ -143,7 +143,7 @@ def test_case_transaction_discards_callbacks_when_commit_fails():
             yield Connection()
 
     with pytest.raises(RuntimeError, match="commit failed"):
-        with store.PostgresCaseStore(Database()).transaction() as transaction:
+        with store.PostgresCaseStore(FakeDatabase()).transaction() as transaction:
             transaction.on_commit(lambda: seen.append("ran"))
             retained = transaction
 

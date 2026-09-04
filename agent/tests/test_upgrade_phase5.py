@@ -194,6 +194,7 @@ class TestEntityClaimsAdmin:
         from entities import admin_api as entity_admin
         handler_src = inspect.getsource(entity_admin.approve_claim)
         src = inspect.getsource(entity_admin._apply_claim_decision)
+        src += inspect.getsource(entity_admin._claim_update_statement)
         assert "_apply_claim_decision(" in handler_src
         assert "not_pending" in src
         assert "pending" in src
@@ -204,6 +205,7 @@ class TestEntityClaimsAdmin:
         from entities import admin_api as entity_admin
         handler_src = inspect.getsource(entity_admin.approve_claim)
         src = inspect.getsource(entity_admin._apply_claim_decision)
+        src += inspect.getsource(entity_admin._claim_update_statement)
         assert "_apply_claim_decision(" in handler_src
         assert "reviewer_id" in src
         assert "reviewed_at" in src
@@ -217,6 +219,7 @@ class TestEntityClaimsAdmin:
         from entities import admin_api as entity_admin
         handler_src = inspect.getsource(entity_admin.reject_claim)
         src = inspect.getsource(entity_admin._apply_claim_decision)
+        src += inspect.getsource(entity_admin._claim_update_statement)
         assert "_apply_claim_decision(" in handler_src
         assert "rejection_reason" in src
         assert "reason" in src
@@ -226,6 +229,7 @@ class TestEntityClaimsAdmin:
         from entities import admin_api as entity_admin
         handler_src = inspect.getsource(entity_admin.reject_claim)
         src = inspect.getsource(entity_admin._apply_claim_decision)
+        src += inspect.getsource(entity_admin._claim_update_statement)
         assert "_apply_claim_decision(" in handler_src
         assert "not_pending" in src
 

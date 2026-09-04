@@ -1432,6 +1432,7 @@ class TestCanhBaoVaDonDep:
             "old_read_notifications": 1,
             "expired_pending_2fa": 1,
             "expired_trusted_devices": 1,
+            "lease": "cleanup-expired-data",
         }
         # Phần chưa hết hạn / chưa đọc phải còn nguyên.
         assert api.count("user_sessions") == 1
@@ -1455,7 +1456,10 @@ class TestCanhBaoVaDonDep:
                 raise AssertionError("không được mở kết nối khi không có Postgres")
 
         monkeypatch.setattr(auth, "db", _KhongPhaiPg())
-        assert auth.cleanup_expired_data() == {"skipped": True}
+        assert auth.cleanup_expired_data() == {
+            "skipped": True,
+            "lease": "cleanup-expired-data",
+        }
 
 
 # ──────────────────────────────────────────────────────────────────────────

@@ -637,7 +637,10 @@ def pg_identity_roles():
             options="-c statement_timeout=5000 -c lock_timeout=1000",
         )
         admin.autocommit = True
-        valid_until = datetime.now(UTC) + timedelta(minutes=15)
+        # `VALID UNTIL` is DDL syntax and does not accept psycopg2's typed
+        # timestamptz parameter adaptation (`'...'::timestamptz`) in this
+        # position; pass the same instant as a plain SQL timestamp literal.
+        valid_until = (datetime.now(UTC) + timedelta(minutes=15)).isoformat()
         with admin.cursor() as cursor:
             cursor.execute("SELECT current_database()")
             database_name = cursor.fetchone()[0]

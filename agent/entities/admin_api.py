@@ -20,6 +20,7 @@ import html as _html
 import json
 import re as _re
 import uuid
+from collections.abc import Mapping
 from datetime import datetime, timezone
 from typing import Optional
 
@@ -1402,8 +1403,17 @@ def _approve_attach_credits(entity, cover, s, candidate_url):
     return credits
 
 
+def _receipt_payload(receipt) -> dict:
+    """Normalize generic saga steps and media-specific flat receipts."""
+    if not receipt.steps or not isinstance(receipt.steps[0], Mapping):
+        return {}
+    step = receipt.steps[0]
+    nested = step.get("receipt")
+    return dict(nested) if isinstance(nested, Mapping) else dict(step)
+
+
 def _approval_receipt_response(receipt):
-    payload = dict(receipt.steps[0].get("receipt", {})) if receipt.steps else {}
+    payload = _receipt_payload(receipt)
     return {
         "status": receipt.status,
         "url": payload.get("url"),
@@ -1421,7 +1431,7 @@ def _approved_image_response(receipt, suggestion, entity, media_saga):
             "error": receipt.error,
             "orphan_cleanup_pending": receipt.orphan_cleanup_pending,
         }
-    payload = dict(receipt.steps[0].get("receipt", {})) if receipt.steps else {}
+    payload = _receipt_payload(receipt)
     saved = db.get_entity(suggestion["entity_id"]) or entity
     credits = ((saved.get("attributes") or {}).get("image_credits") or [])
     return {

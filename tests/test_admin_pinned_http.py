@@ -3,6 +3,7 @@ from __future__ import annotations
 import asyncio
 import copy
 import logging
+from types import SimpleNamespace
 
 import pytest
 from fastapi import HTTPException
@@ -153,15 +154,22 @@ class RecordingDB:
     def __init__(self, entity: dict) -> None:
         self.entity = copy.deepcopy(entity)
         self.upserts: list[dict] = []
+        self.upsert_kwargs: list[dict] = []
 
     def get_entity(self, entity_id: str) -> dict:
         assert entity_id == self.entity["id"]
         return copy.deepcopy(self.entity)
 
-    def upsert_entity(self, entity: dict) -> None:
+    def upsert_entity(self, entity: dict, **audit_kwargs) -> None:
         saved = copy.deepcopy(entity)
         self.upserts.append(saved)
+        self.upsert_kwargs.append(dict(audit_kwargs))
         self.entity = saved
+
+
+def _request(headers: dict[str, str] | None = None) -> SimpleNamespace:
+    """Minimal request shape for direct handler tests without HTTP transport."""
+    return SimpleNamespace(headers=headers or {})
 
 
 @pytest.mark.parametrize(
@@ -218,6 +226,11 @@ def test_add_entity_image_url_validates_without_fetching(
     assert validations == [url]
     assert result == {"status": "added", "images": [url]}
     assert database.upserts[0]["images"] == [url]
+    assert database.upsert_kwargs == [{
+        "actor_id": "admin",
+        "reason": "image_add",
+        "correlation_id": "image-add:entity-1",
+    }]
 
 
 def test_admin_fetch_executes_pinned_get_inside_threadpool(
@@ -323,7 +336,7 @@ def test_approval_fetch_failures_leave_all_state_untouched(
     )
 
     with pytest.raises(HTTPException) as caught:
-        asyncio.run(admin.approve_image_suggestion("suggestion-1"))
+        asyncio.run(admin.approve_image_suggestion("suggestion-1", _request()))
     assert caught.value.status_code == expected_status
     assert database.entity == original_entity
     assert database.upserts == []
@@ -333,9 +346,11 @@ def test_approval_fetch_failures_leave_all_state_untouched(
     assert suggestion["status"] == "pending"
 
 
-def test_approval_keeps_original_candidate_url_in_redirected_credit(
+def test_approval_endpoint_commits_entity_and_preserves_candidate_credit(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
+    from control_plane import saga as media_saga
+
     candidate_url = "https://licensed.example/original.webp"
     suggestion = {
         "id": "suggestion-1",
@@ -347,45 +362,81 @@ def test_approval_keeps_original_candidate_url_in_redirected_credit(
         "source": "wikipedia-vi",
         "wp_title": "File:Original.webp",
     }
-    database = RecordingDB({
+    entity = {
         "id": "entity-1",
         "name": "Entity",
         "type": "attraction",
         "images": [],
         "attributes": {},
-    })
-    status_changes: list[tuple] = []
-
+    }
+    database = RecordingDB(entity)
+    status_changes: list[tuple[str, str, dict]] = []
+    monkeypatch.setattr(entities_admin, "db", database)
     monkeypatch.setattr(entities_admin, "_reject_non_ai_media", lambda: None)
     monkeypatch.setattr(
-        entities_admin,
-        "_validate_public_image_url",
-        lambda _url: pytest.fail("separate validation called before pinned fetch"),
-    )
-    monkeypatch.setattr(entities_admin, "db", database)
-    monkeypatch.setattr(entities_admin._imgq, "get_suggestion", lambda _id: copy.deepcopy(suggestion))
-    monkeypatch.setattr(
         entities_admin._imgq,
-        "mark_status",
-        lambda *args, **kwargs: status_changes.append((args, kwargs)),
+        "get_suggestion",
+        lambda _id: copy.deepcopy(suggestion),
     )
-    monkeypatch.setattr(entities_admin, "_sync_kb", lambda: None)
-    monkeypatch.setattr(
-        admin._PINNED_HTTP,
-        "get",
-        lambda *_args, **_kwargs: _response(content=b"image"),
-    )
-    monkeypatch.setattr(storage, "MAX_IMAGE_SIZE", 1024)
-    monkeypatch.setattr(
-        storage.storage,
-        "upload_image_set",
-        lambda *_args: {"md": "/img/entities/entity-1.webp"},
-    )
+    monkeypatch.setattr(media_saga, "peek_approval_receipt", lambda *_args: None)
 
-    result = asyncio.run(admin.approve_image_suggestion("suggestion-1"))
-    saved_credit = database.upserts[0]["attributes"]["image_credits"][-1]
+    async def fake_fetch(url, _run_in_threadpool, _max_image_size):
+        assert url == candidate_url
+        return b"image"
+
+    monkeypatch.setattr(entities_admin, "_approve_fetch_image_data", fake_fetch)
+
+    def mark_status(suggestion_id, status, **kwargs):
+        status_changes.append((suggestion_id, status, kwargs))
+        suggestion["status"] = status
+        return True
+
+    monkeypatch.setattr(entities_admin._imgq, "mark_status", mark_status)
+
+    def approve(suggestion_id, actor_id, *, idempotency_key, _image_data):
+        assert (suggestion_id, actor_id, idempotency_key, _image_data) == (
+            "suggestion-1", "admin", "approval-key", b"image"
+        )
+        sizes = {
+            "sm": "/img/entities/entity-1-sm.webp",
+            "md": "/img/entities/entity-1-md.webp",
+            "lg": "/img/entities/entity-1-lg.webp",
+        }
+        approved = media_saga._compose_approved_entity(entity, suggestion, sizes["md"])
+        database.upsert_entity(approved, actor_id=actor_id,
+                               reason="image_approval", correlation_id=idempotency_key)
+        assert entities_admin._imgq.mark_status(
+            suggestion_id, "approved", approved_by=actor_id
+        )
+        return SimpleNamespace(
+            status="committed",
+            steps=({"url": sizes["md"], "sizes": sizes},),
+            error=None,
+            orphan_cleanup_pending=False,
+            durability_error=None,
+        )
+
+    monkeypatch.setattr(media_saga, "approve_image_suggestion", approve)
+
+    result = asyncio.run(
+        entities_admin.approve_image_suggestion(
+            "suggestion-1", _request({"Idempotency-Key": "approval-key"})
+        )
+    )
+    assert result["status"] == "approved"
+    assert result["url"] == "/img/entities/entity-1-md.webp"
+    assert result["sizes"] == {
+        "sm": "/img/entities/entity-1-sm.webp",
+        "md": "/img/entities/entity-1-md.webp",
+        "lg": "/img/entities/entity-1-lg.webp",
+    }
     assert result["credits"]["source_url"] == candidate_url
-    assert saved_credit["source_url"] == candidate_url
-    assert status_changes == [
-        (("suggestion-1", "approved"), {"approved_by": "admin"}),
-    ]
+    assert database.entity["images"] == [result["url"]]
+    assert database.entity["attributes"]["image_credits"][-1]["source_url"] == candidate_url
+    assert suggestion["status"] == "approved"
+    assert status_changes == [("suggestion-1", "approved", {"approved_by": "admin"})]
+    assert database.upsert_kwargs == [{
+        "actor_id": "admin",
+        "reason": "image_approval",
+        "correlation_id": "approval-key",
+    }]

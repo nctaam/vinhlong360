@@ -1532,7 +1532,10 @@ def test_event_purge_targets_only_expired_or_matching_user(pg_db, users):
 
 def test_migration_077_queue_contract_survives_schema_078_fixture(pg_db):
     # Renumber b95a4897: nhánh NP-1 đánh số 072/073, trunk đã dùng tới 075 nên
-    # merge đổi thành 077/078 và schema_version chốt ở 78.
+    # merge đổi thành 077/078.  The disposable target may already carry newer
+    # migrations, so the ledger row is checked for a coherent current version
+    # while the 078-specific functions and constraints prove that migration's
+    # contract is present.
     with pg_db._conn(commit_on_success=False) as conn:
         columns = pg_db._fetchall(
             conn,
@@ -1552,6 +1555,24 @@ def test_migration_077_queue_contract_survives_schema_078_fixture(pg_db):
             "SELECT indexname FROM pg_indexes WHERE schemaname = 'public' "
             "AND tablename = 'personalization_legacy_purge_queue'",
         )
+        preference_constraints = pg_db._fetchall(
+            conn,
+            "SELECT conname FROM pg_constraint c "
+            "JOIN pg_class t ON t.oid = c.conrelid "
+            "JOIN pg_namespace n ON n.oid = t.relnamespace "
+            "WHERE n.nspname = 'public' AND t.relname = 'user_preferences' "
+            "AND c.conname = ANY(%s)",
+            (list(_LOCATION_PREFERENCE_CONSTRAINTS),),
+        )
+        functions = pg_db._fetchall(
+            conn,
+            "SELECT p.proname, pg_get_function_identity_arguments(p.oid) AS args "
+            "FROM pg_proc p "
+            "JOIN pg_namespace n ON n.oid = p.pronamespace "
+            "WHERE n.nspname = 'public' "
+            "AND p.proname IN ('vl360_region_text_is_safe', "
+            "'vl360_resolver_region_is_normalized')",
+        )
         version = pg_db._fetchone(
             conn,
             "SELECT version, migration FROM schema_version "
@@ -1570,8 +1591,22 @@ def test_migration_077_queue_contract_survives_schema_078_fixture(pg_db):
         "personalization_legacy_purge_queue_pkey",
         "idx_personalization_legacy_purge_queue_due",
     } <= {row["indexname"] for row in indexes}
-    assert version["version"] == 78
-    assert version["migration"] == "078_location_preference_remediation.sql"
+    assert set(row["conname"] for row in preference_constraints) == set(
+        _LOCATION_PREFERENCE_CONSTRAINTS
+    )
+    assert {
+        ("vl360_region_text_is_safe", "value text"),
+        ("vl360_resolver_region_is_normalized", "resolver_region_id text, resolver_region_label text"),
+    } <= {(row["proname"], row["args"]) for row in functions}
+
+    ledger_version = int(version["version"])
+    ledger_migration = str(version["migration"])
+    assert ledger_version >= 78
+    if ledger_version == 78:
+        assert ledger_migration == "078_location_preference_remediation.sql"
+    else:
+        assert ledger_migration.startswith(f"{ledger_version:03d}_")
+        assert ledger_migration.endswith(".sql")
 
 
 def test_legacy_reader_applies_cutoff_deadline_and_safe_projection(
@@ -2234,8 +2269,8 @@ def test_scoring_reset_excludes_old_events_saved_and_visit_signals(pg_db, users)
         )
         pg_db._execute(
             conn,
-            "INSERT INTO user_visits (user_id, entity_id, created_at) "
-            "VALUES (%s::uuid, 'old-craft', %s)",
+            "INSERT INTO user_visits (user_id, entity_id, status, created_at) "
+            "VALUES (%s::uuid, 'old-craft', 'visited', %s)",
             (owner, cutoff - timedelta(hours=1)),
         )
     write_personalization_event(
