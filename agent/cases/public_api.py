@@ -19,11 +19,11 @@ from fastapi.responses import JSONResponse, Response
 from pydantic import AliasChoices, BaseModel, ConfigDict, Field, StrictBool, ValidationError
 
 if __package__ and __package__.startswith("agent."):
-    from ..api_schemas import CorrectionIntakeContract
+    from ..api_schemas import CaseStatusResponse, CorrectionIntakeContract
 else:
     # The service is deployed with `agent/` on sys.path, so this is the
     # top-level spelling used by the production server and legacy adapter.
-    from api_schemas import CorrectionIntakeContract
+    from api_schemas import CaseStatusResponse, CorrectionIntakeContract
 
 from .domain import PublicCaseStatus
 from .security import CaseCrypto, CaseSecurityError
@@ -551,7 +551,7 @@ async def exchange_receipt(request: Request):
     return response
 
 
-@case_public_router.get("/status")
+@case_public_router.get("/status", response_model=CaseStatusResponse)
 async def read_status(request: Request):
     if not _kernel_ready():
         return _unavailable()

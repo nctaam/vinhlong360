@@ -72,3 +72,12 @@ Contract foundation follow-up (2026-09-03): OpenAPI export, shared schemas, gove
 P1 review remediation (2026-09-04): frontend inventory expanded to 216 endpoint families with reverse source scanning and corrected anonymous pre-case contact auth; acceptance/verifier/countersigner now honor explicit `--root`; PostgreSQL proof requires both a loopback DSN and an exact disposable marker. Fresh verification: contract suite `15 passed`, acceptance/attestation/countersigner `140 passed`, verifier `22 passed`, full backend unchanged at `8761 passed`, frontend `2201 passed`, and release verifier remains `BLOCKED` with exit `2`.
 
 Second P1/P2 remediation (2026-09-04): inventory expanded to 227 endpoint families, user-owned route auth metadata corrected to `session`, nested TypeScript generic calls are now scanned, relative bundle paths resolve beneath `--root`, successful pytest nodeids are retained, and countersignature `results` must exactly cover `expected`. Focused verification: contracts `17 passed`, receipt/verifier/evidence `71 passed`, attestation `35 passed`; full backend/frontend remain green from the immediately preceding regression run.
+
+Case status contract follow-up (2026-09-04): `GET /api/cases/status` now has a
+strict `CaseStatusResponse` with the 11 required camelCase fields consumed by
+Nuxt, enum/nullable/revision constraints, and no undocumented top-level fields,
+instead of an OpenAPI `{}` response schema. RED reproduced the missing reference
+and the permissive extra-field policy; GREEN export/contract coverage passed `17`,
+with Ruff, compileall, `git diff --check`, and `run_hard.py --all` clean. Runtime
+behavior is unchanged: the route still returns its existing `JSONResponse`; this
+patch closes the machine-readable contract gap only.

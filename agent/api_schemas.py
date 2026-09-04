@@ -15,7 +15,7 @@ from __future__ import annotations
 
 from typing import Literal
 
-from pydantic import BaseModel, ConfigDict, StrictBool, StrictInt, StrictStr, field_validator, model_validator
+from pydantic import BaseModel, ConfigDict, Field, StrictBool, StrictInt, StrictStr, field_validator, model_validator
 
 if __package__:
     from .ai_disclosure import (
@@ -234,6 +234,29 @@ class SearchResponse(ApiModel):
     limit: int | None = None
     truncated: bool = False
     ranking_version: str | None = None
+
+
+class CaseStatusResponse(BaseModel):
+    """Public correction status projection consumed by the Nuxt client.
+
+    Nested item projections intentionally remain open dictionaries: their
+    domain vocabulary is owned by the correction-case contract, while this
+    model pins the complete public top-level envelope in generated OpenAPI.
+    """
+
+    model_config = ConfigDict(extra="forbid", populate_by_name=True)
+
+    public_reference: StrictStr = Field(alias="publicReference")
+    received_at: StrictStr = Field(alias="receivedAt")
+    current_step: StrictStr = Field(alias="currentStep")
+    waiting_for: StrictStr | None = Field(alias="waitingFor")
+    next_action: StrictStr = Field(alias="nextAction")
+    next_update_at: StrictStr = Field(alias="nextUpdateAt")
+    promise_health: Literal["on_track", "at_risk", "breached", "recovery"] = Field(alias="promiseHealth")
+    item_decisions: list[dict] = Field(alias="itemDecisions")
+    item_publication_states: list[dict] = Field(alias="itemPublicationStates")
+    review_path: StrictStr = Field(alias="reviewPath")
+    current_revision: StrictInt = Field(alias="currentRevision", ge=1)
 
 
 # ── batch-2: endpoint shape phức tạp (đo bằng cách gọi endpoint thật) ──

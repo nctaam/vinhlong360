@@ -435,6 +435,24 @@ def test_status_publishes_only_safe_fields(client):
         assert forbidden not in rendered
 
 
+def test_status_payload_matches_the_strict_public_response_contract(client):
+    from api_schemas import CaseStatusResponse
+    from pydantic import ValidationError
+
+    client.post(
+        "/api/cases/access",
+        headers=_headers(),
+        json={"publicReference": REFERENCE, "capability": CAPABILITY},
+    )
+    payload = client.get("/api/cases/status").json()
+
+    parsed = CaseStatusResponse.model_validate(payload)
+    assert parsed.model_dump(by_alias=True) == payload
+
+    with pytest.raises(ValidationError):
+        CaseStatusResponse.model_validate({**payload, "undocumented": "nope"})
+
+
 def test_logout_clears_both_cookies(client):
     client.post(
         "/api/cases/access",

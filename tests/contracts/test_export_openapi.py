@@ -8,6 +8,8 @@ from pathlib import Path
 
 import pytest
 
+from agent.api_schemas import CaseStatusResponse
+from agent.cases.public_api import case_public_router
 import scripts.export_openapi as exporter
 
 
@@ -65,6 +67,35 @@ def test_export_openapi_describes_streaming_notifications_response(tmp_path: Pat
     document = json.loads(output.read_text(encoding="utf-8"))
     response = document["paths"]["/api/notifications/stream"]["get"]["responses"]["200"]
     assert response["content"] == {"text/event-stream": {"schema": {"type": "string"}}}
+
+
+def test_export_openapi_describes_case_status_response_contract(tmp_path: Path) -> None:
+    output = tmp_path / "openapi.json"
+    result = run_export(output)
+
+    assert result.returncode == 0, result.stderr
+    document = json.loads(output.read_text(encoding="utf-8"))
+    response = document["paths"]["/api/cases/status"]["get"]["responses"]["200"]
+    schema = response["content"]["application/json"]["schema"]
+    assert schema == {"$ref": "#/components/schemas/CaseStatusResponse"}
+
+    required = set(document["components"]["schemas"]["CaseStatusResponse"]["required"])
+    assert required == {
+        "publicReference", "receivedAt", "currentStep", "waitingFor",
+        "nextAction", "nextUpdateAt", "promiseHealth", "itemDecisions",
+        "itemPublicationStates", "reviewPath", "currentRevision",
+    }
+    status_schema = document["components"]["schemas"]["CaseStatusResponse"]
+    assert status_schema["additionalProperties"] is False
+    assert status_schema["properties"]["promiseHealth"]["enum"] == [
+        "on_track", "at_risk", "breached", "recovery",
+    ]
+    assert status_schema["properties"]["currentRevision"]["minimum"] == 1.0
+    assert status_schema["properties"]["waitingFor"]["anyOf"] == [
+        {"type": "string"}, {"type": "null"},
+    ]
+    status_route = next(r for r in case_public_router.routes if getattr(r, "path", None) == "/api/cases/status")
+    assert status_route.response_model is CaseStatusResponse
 
 
 def test_response_media_registry_rejects_empty_or_duplicate_entries(tmp_path: Path, monkeypatch) -> None:

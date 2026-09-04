@@ -805,6 +805,93 @@
         "title": "BulkUserAction",
         "type": "object"
       },
+      "CaseStatusResponse": {
+        "additionalProperties": false,
+        "description": "Public correction status projection consumed by the Nuxt client.\n\nNested item projections intentionally remain open dictionaries: their\ndomain vocabulary is owned by the correction-case contract, while this\nmodel pins the complete public top-level envelope in generated OpenAPI.",
+        "properties": {
+          "currentRevision": {
+            "minimum": 1.0,
+            "title": "Currentrevision",
+            "type": "integer"
+          },
+          "currentStep": {
+            "title": "Currentstep",
+            "type": "string"
+          },
+          "itemDecisions": {
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "title": "Itemdecisions",
+            "type": "array"
+          },
+          "itemPublicationStates": {
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "title": "Itempublicationstates",
+            "type": "array"
+          },
+          "nextAction": {
+            "title": "Nextaction",
+            "type": "string"
+          },
+          "nextUpdateAt": {
+            "title": "Nextupdateat",
+            "type": "string"
+          },
+          "promiseHealth": {
+            "enum": [
+              "on_track",
+              "at_risk",
+              "breached",
+              "recovery"
+            ],
+            "title": "Promisehealth",
+            "type": "string"
+          },
+          "publicReference": {
+            "title": "Publicreference",
+            "type": "string"
+          },
+          "receivedAt": {
+            "title": "Receivedat",
+            "type": "string"
+          },
+          "reviewPath": {
+            "title": "Reviewpath",
+            "type": "string"
+          },
+          "waitingFor": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Waitingfor"
+          }
+        },
+        "required": [
+          "publicReference",
+          "receivedAt",
+          "currentStep",
+          "waitingFor",
+          "nextAction",
+          "nextUpdateAt",
+          "promiseHealth",
+          "itemDecisions",
+          "itemPublicationStates",
+          "reviewPath",
+          "currentRevision"
+        ],
+        "title": "CaseStatusResponse",
+        "type": "object"
+      },
       "ChangeSetBody": {
         "additionalProperties": false,
         "properties": {
@@ -16353,7 +16440,9 @@
           "200": {
             "content": {
               "application/json": {
-                "schema": {}
+                "schema": {
+                  "$ref": "#/components/schemas/CaseStatusResponse"
+                }
               }
             },
             "description": "Successful Response"
