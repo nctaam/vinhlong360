@@ -139,5 +139,47 @@ describe('SEO & Editorial Craft Guardrails', () => {
     expect(assisted).toContain('“chỉ dùng để xử lý yêu cầu sửa”')
     expect(assisted).not.toContain('«chỉ dùng để xử lý yêu cầu sửa»')
   })
+
+  it('Itinerary detail page has BreadcrumbList JSON-LD, vector transport modes, safeJsonLd, and Twitter card', () => {
+    const itinerary = doc('pages/lich-trinh/[id].vue')
+    expect(itinerary).toMatch(/<Breadcrumb[^>]*:json-ld="true"/)
+    expect(itinerary).toContain("icon: 'car'")
+    expect(itinerary).toContain("icon: 'bike'")
+    expect(itinerary).toContain("icon: 'foot'")
+    expect(itinerary).not.toContain("icon: '🚗'")
+    expect(itinerary).toContain('<IconLine name="bulb" class="tnc-icon"')
+    expect(itinerary).toContain('<IconLine name="arrow-right" class="rl-arrow"')
+    expect(itinerary).toContain("twitterCard: 'summary_large_image'")
+    expect(itinerary).toContain("ogUrl: () => itineraryUrl(String(it.id || id))")
+    expect(itinerary).toContain('safeJsonLd(ld)')
+  })
+
+  it('Post detail page has BreadcrumbList JSON-LD, IconLine replies-icon, ogType article, and Twitter card', () => {
+    const post = doc('pages/bai-viet/[id].vue')
+    expect(post).toContain('<Breadcrumb :items="breadcrumbItems" :json-ld="true" />')
+    expect(post).toContain('<IconLine name="message" class="replies-icon"')
+    expect(post).not.toContain('svg class="replies-icon"')
+    expect(post).toContain("ogType: 'article'")
+    expect(post).toContain("twitterCard: 'summary_large_image'")
+    expect(post).toContain("ogUrl: () => canonicalUrl(postPath(postId.value))")
+    expect(post).toContain('safeJsonLd(articleLd)')
+  })
+
+  it('Ward detail page has BreadcrumbList JSON-LD, AdministrativeArea schema with hasMap, and Twitter card', () => {
+    const ward = doc('pages/xa-phuong/[id].vue')
+    expect(ward).toContain('<Breadcrumb :items="breadcrumbItems" :json-ld="true">')
+    expect(ward).toContain("twitterCard: 'summary_large_image'")
+    expect(ward).toContain("'@type': 'AdministrativeArea'")
+    expect(ward).toContain('schema.hasMap = `https://www.google.com/maps/search/?api=1&query=${c[0]},${c[1]}`')
+  })
+
+  it('OCOP hub has BreadcrumbList JSON-LD, Twitter card, safeJsonLd, and no duplicate BreadcrumbList schema', () => {
+    const ocop = doc('pages/ocop.vue')
+    expect(ocop).toMatch(/<Breadcrumb[^>]*:json-ld="true"/)
+    expect(ocop).toContain("twitterCard: 'summary_large_image'")
+    expect(ocop).toContain("ogUrl: () => canonicalUrl('/ocop')")
+    expect(ocop).toContain('safeJsonLd({')
+    expect(ocop).not.toContain("'@type': 'BreadcrumbList',\n        itemListElement: [")
+  })
 })
 

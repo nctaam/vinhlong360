@@ -5,7 +5,7 @@
     data-source-class="user-uploaded"
     data-entity-image-policy="no-image-invariant"
   >
-    <Breadcrumb :items="[{ label: 'Trang chủ', to: '/' }, { label: 'Cộng đồng', to: '/cong-dong' }, { label: 'Bài viết' }]" />
+    <Breadcrumb :items="breadcrumbItems" :json-ld="true" />
     <h1 class="sr-only">{{ post?.display_name ? `Bài viết của ${post.display_name}` : 'Bài viết' }}</h1>
     <div
       v-if="post"
@@ -27,7 +27,7 @@
       <!-- Comment thread -->
       <div class="thread-comments">
         <div class="replies-header">
-          <svg class="replies-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>
+          <IconLine name="message" class="replies-icon" aria-hidden="true" />
           <span class="replies-label">Trả lời</span>
           <span v-if="comments.length" class="replies-count" :class="{ 'replies-count--active': comments.length > 0 }">{{ comments.length }}</span>
         </div>
@@ -198,6 +198,12 @@ const { repost, quote } = useRepost()
 const { reportPost } = useReport()
 const { show: showToast } = useToast()
 const { trackEvent } = useUserEvents()
+
+const breadcrumbItems = computed(() => [
+  { label: 'Trang chủ', to: '/' },
+  { label: 'Cộng đồng', to: '/cong-dong' },
+  { label: post.value?.display_name ? `Bài viết của ${post.value.display_name}` : 'Bài viết' },
+])
 
 const commentText = ref('')
 
@@ -571,10 +577,13 @@ useHead({
 })
 
 useSeoMeta({
+  ogType: 'article',
   title: () => `${post.value?.display_name || 'Bài viết'} — vinhlong360`,
   description: () => (post.value?.content || '').substring(0, 160),
   ogTitle: () => `${post.value?.display_name || 'Bài viết'} — vinhlong360`,
   ogDescription: () => (post.value?.content || '').substring(0, 160),
+  ogUrl: () => canonicalUrl(postPath(postId.value)),
+  twitterCard: 'summary_large_image',
 })
 
 useHead({
@@ -586,12 +595,14 @@ useHead({
     const articleLd: Record<string, any> = {
       '@context': 'https://schema.org',
       '@type': p.post_type === 'review' ? 'Review' : 'Article',
-      headline: postTitle, description: postDesc,
+      headline: postTitle,
+      description: postDesc,
       url: `https://vinhlong360.vn${postPath(postId.value)}`,
       datePublished: p.created_at,
       dateModified: p.updated_at || p.created_at,
       author: {
-        '@type': 'Person', name: p.display_name || 'Người dùng',
+        '@type': 'Person',
+        name: p.display_name || 'Người dùng',
         ...(p.user_id ? { url: `https://vinhlong360.vn${userPath(p.user_id)}` } : {}),
       },
       publisher: { '@type': 'Organization', name: 'vinhlong360', url: 'https://vinhlong360.vn' },
@@ -599,17 +610,8 @@ useHead({
     if (p.post_type === 'review' && p.rating) {
       articleLd.reviewRating = { '@type': 'Rating', ratingValue: p.rating, bestRating: 5 }
     }
-    const breadcrumb = {
-      '@context': 'https://schema.org', '@type': 'BreadcrumbList',
-      itemListElement: [
-        { '@type': 'ListItem', position: 1, name: 'Trang chủ', item: 'https://vinhlong360.vn/' },
-        { '@type': 'ListItem', position: 2, name: 'Cộng đồng', item: 'https://vinhlong360.vn/cong-dong' },
-        { '@type': 'ListItem', position: 3, name: postTitle },
-      ],
-    }
     return [
-      { type: 'application/ld+json', innerHTML: JSON.stringify(articleLd) },
-      { type: 'application/ld+json', innerHTML: JSON.stringify(breadcrumb) },
+      { type: 'application/ld+json', innerHTML: safeJsonLd(articleLd) },
     ]
   }),
 })

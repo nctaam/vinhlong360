@@ -1,6 +1,6 @@
 <template>
   <div class="page" data-color-system="tri-region-v1">
-    <Breadcrumb :items="[{ label: 'Trang chủ', to: '/' }, { label: 'Sản phẩm', to: '/san-pham' }, { label: 'OCOP' }]" />
+    <Breadcrumb :items="[{ label: 'Trang chủ', to: '/' }, { label: 'Sản phẩm', to: '/san-pham' }, { label: 'OCOP' }]" :json-ld="true" />
 
     <!-- Hero — "Sổ vàng" (the ledger opens; calmer/formal, structurally distinct
          from san-pham's market hero — kills the twin-collision, concept §2) -->
@@ -418,6 +418,8 @@ useSeoMeta({
   description: () => pc('seo_description'),
   ogTitle: () => pc('og_title'),
   ogDescription: () => pc('og_description'),
+  ogUrl: () => canonicalUrl('/ocop'),
+  twitterCard: 'summary_large_image',
 })
 
 useHead({
@@ -425,25 +427,13 @@ useHead({
   script: [
     {
       type: 'application/ld+json',
-      innerHTML: JSON.stringify({
+      innerHTML: safeJsonLd({
         '@context': 'https://schema.org',
         '@type': 'CollectionPage',
         name: 'Sản phẩm OCOP Vĩnh Long',
         description: 'Sản phẩm đạt chuẩn OCOP từ Vĩnh Long, Bến Tre, Trà Vinh.',
-        url: 'https://vinhlong360.vn/ocop',
+        url: canonicalUrl('/ocop'),
         numberOfItems: allOcop.value.length,
-      }),
-    },
-    {
-      type: 'application/ld+json',
-      innerHTML: JSON.stringify({
-        '@context': 'https://schema.org',
-        '@type': 'BreadcrumbList',
-        itemListElement: [
-          { '@type': 'ListItem', position: 1, name: 'Trang chủ', item: 'https://vinhlong360.vn/' },
-          { '@type': 'ListItem', position: 2, name: 'Sản phẩm', item: 'https://vinhlong360.vn/san-pham' },
-          { '@type': 'ListItem', position: 3, name: 'OCOP' },
-        ],
       }),
     },
   ],
@@ -452,7 +442,7 @@ useHead({
 useHead(() => ({
   script: [{
     type: 'application/ld+json',
-    innerHTML: JSON.stringify(itemListJsonLd(
+    innerHTML: safeJsonLd(itemListJsonLd(
       'Sản phẩm OCOP Vĩnh Long, Bến Tre, Trà Vinh',
       'Sản phẩm đạt chuẩn OCOP từ Vĩnh Long, Bến Tre và Trà Vinh.',
       '/ocop',

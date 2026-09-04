@@ -31,16 +31,13 @@
 
   <section v-else-if="data?.place" class="wp ce-ward">
     <!-- Breadcrumb -->
-    <nav class="breadcrumb" aria-label="Breadcrumb">
-      <button type="button" class="bc-back" aria-label="Quay lại" @click="goBack">
-        <IconLine name="arrow-left" aria-hidden="true" />
-      </button>
-      <ol>
-        <li><NuxtLink to="/">Trang chủ</NuxtLink></li>
-        <li v-if="data.place.area"><NuxtLink :to="`/khu-vuc/${data.place.area}`">{{ areaMeta.name }}</NuxtLink></li>
-        <li aria-current="page">{{ data.place.name }}</li>
-      </ol>
-    </nav>
+    <Breadcrumb :items="breadcrumbItems" :json-ld="true">
+      <template #before>
+        <button type="button" class="bc-back" aria-label="Quay lại" @click="goBack">
+          <IconLine name="arrow-left" aria-hidden="true" />
+        </button>
+      </template>
+    </Breadcrumb>
 
     <!-- Hero -->
     <header class="wp-hero" data-detail-region="identity" :class="`area-${data.place.area}`">
@@ -668,6 +665,50 @@ watch(mapEl, async (el) => {
     map.fitBounds(bounds, { padding: 60, maxZoom: 16 })
   }
 }, { once: true })
+
+const breadcrumbItems = computed(() => [
+  { label: 'Trang chủ', to: '/' },
+  ...(data.value?.place?.area ? [{ label: areaMeta.value.name, to: `/khu-vuc/${data.value.place.area}` }] : []),
+  { label: data.value?.place?.name || 'Xã/phường' },
+])
+
+useSeoMeta({
+  title: () => data.value?.place?.name ? `${data.value.place.name} — ${areaMeta.value.name} — vinhlong360` : 'Xã phường — vinhlong360',
+  description: () => data.value?.place?.summary || `${data.value?.place?.name || 'Xã/phường'} thuộc ${areaMeta.value.name}, tỉnh Vĩnh Long — thông tin hành chính, địa điểm du lịch, đặc sản OCOP.`,
+  ogTitle: () => data.value?.place?.name ? `${data.value.place.name} — ${areaMeta.value.name} — vinhlong360` : 'Xã phường — vinhlong360',
+  ogDescription: () => data.value?.place?.summary || '',
+  ogUrl: () => canonicalUrl(`/xa-phuong/${encodeURIComponent(route.params.id as string)}`),
+  twitterCard: 'summary_large_image',
+})
+
+const placeJsonLd = computed(() => {
+  const p = data.value?.place
+  if (!p) return []
+  const placeUrl = canonicalUrl(`/xa-phuong/${encodeURIComponent(route.params.id as string)}`)
+  const schema: Record<string, any> = {
+    '@context': 'https://schema.org',
+    '@type': 'AdministrativeArea',
+    '@id': placeUrl,
+    name: p.name,
+    description: p.summary || '',
+    url: placeUrl,
+    containedInPlace: {
+      '@type': 'AdministrativeArea',
+      name: areaMeta.value.name,
+    },
+  }
+  const c = normalizeCoords(p.coordinates)
+  if (c) {
+    schema.geo = { '@type': 'GeoCoordinates', latitude: c[0], longitude: c[1] }
+    schema.hasMap = `https://www.google.com/maps/search/?api=1&query=${c[0]},${c[1]}`
+  }
+  return [{ type: 'application/ld+json', innerHTML: safeJsonLd(schema) }]
+})
+
+useHead({
+  link: [{ rel: 'canonical', href: () => canonicalUrl(`/xa-phuong/${encodeURIComponent(route.params.id as string)}`) }],
+  script: placeJsonLd,
+})
 </script>
 
 <!-- detail.css nạp theo route (bỏ khỏi global entry.css; phần dùng-chung ở detail-shared.css) -->

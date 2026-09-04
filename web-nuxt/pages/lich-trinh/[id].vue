@@ -1,6 +1,6 @@
 <template>
   <section v-if="itinerary" class="page">
-    <Breadcrumb :items="[{ label: 'Trang chủ', to: '/' }, { label: 'Lịch trình', to: '/lich-trinh' }, { label: itineraryTitle }]">
+    <Breadcrumb :items="[{ label: 'Trang chủ', to: '/' }, { label: 'Lịch trình', to: '/lich-trinh' }, { label: itineraryTitle }]" :json-ld="true">
       <template #before>
         <button type="button" class="bc-back" aria-label="Quay lại" @click="goBack">
           <IconLine name="arrow-left" aria-hidden="true" />
@@ -49,7 +49,8 @@
       <div v-if="stopsWithCoords.length >= 2" class="transport-mode transport-mode-spaced">
         <span class="tm-label">Phương tiện:</span>
         <button type="button" v-for="m in transportModes" :key="m.value" :class="['chip', { active: transportMode === m.value }]" :aria-pressed="transportMode === m.value" @click="switchMode(m.value)">
-          {{ m.icon }} {{ m.label }}
+          <IconLine :name="m.icon" aria-hidden="true" />
+          <span>{{ m.label }}</span>
         </button>
       </div>
     </ClientOnly>
@@ -77,7 +78,7 @@
               </h3>
               <span v-if="stop.type" class="step-type-label">{{ typeLabel(stop.type) }}</span>
               <p v-if="stop.summary" class="summary">{{ stop.summary }}</p>
-              <p v-if="stop.note" class="step-note-callout"><span class="tnc-glyph" aria-hidden="true">☞</span>{{ stop.note }}</p>
+              <p v-if="stop.note" class="step-note-callout"><IconLine name="bulb" class="tnc-icon" aria-hidden="true" /><span>{{ stop.note }}</span></p>
             </div>
           </div>
         </li>
@@ -88,7 +89,7 @@
           <div class="route-leg-line"></div>
           <div class="route-leg-info">
             {{ formatDistance(routeLegs[idx].distance) }} · {{ formatDuration(routeLegs[idx].duration) }}
-            <span v-if="nextStopName(idx)" class="route-leg-next"> → tới {{ nextStopName(idx) }}</span>
+            <span v-if="nextStopName(idx)" class="route-leg-next"><IconLine name="arrow-right" class="rl-arrow" aria-hidden="true" /> tới {{ nextStopName(idx) }}</span>
           </div>
         </li>
       </template>
@@ -270,9 +271,9 @@ const nextStopName = (idx: number) => {
 
 // --- Route map & routing ---
 const transportModes = [
-  { value: 'driving' as TransportMode, icon: '🚗', label: 'Ô tô' },
-  { value: 'cycling' as TransportMode, icon: '🚲', label: 'Xe đạp' },
-  { value: 'foot' as TransportMode, icon: '🚶', label: 'Đi bộ' },
+  { value: 'driving' as TransportMode, icon: 'car', label: 'Ô tô' },
+  { value: 'cycling' as TransportMode, icon: 'bike', label: 'Xe đạp' },
+  { value: 'foot' as TransportMode, icon: 'foot', label: 'Đi bộ' },
 ]
 
 const routeMapEl = ref<HTMLElement | null>(null)
@@ -453,6 +454,8 @@ if (itinerary.value && !itinerary.value.error) {
     description: itDesc,
     ogTitle: `${itTitle} — vinhlong360`,
     ogDescription: itDesc,
+    ogUrl: () => itineraryUrl(String(it.id || id)),
+    twitterCard: 'summary_large_image',
   })
 
   const ld: Record<string, any> = {
@@ -470,28 +473,18 @@ if (itinerary.value && !itinerary.value.error) {
         const item: Record<string, any> = {
           '@type': 'ListItem',
           position: i + 1,
-          name: s.name || stopId || `Diem dung ${i + 1}`,
+          name: s.name || stopId || `Điểm dừng ${i + 1}`,
         }
         if (stopId) item.item = canonicalUrl(entityPath(stopId))
         return item
       }),
     }
   }
-  const breadcrumb = {
-    '@context': 'https://schema.org',
-    '@type': 'BreadcrumbList',
-    itemListElement: [
-      { '@type': 'ListItem', position: 1, name: 'Trang chủ', item: 'https://vinhlong360.vn/' },
-      { '@type': 'ListItem', position: 2, name: 'Lịch trình', item: 'https://vinhlong360.vn/lich-trinh' },
-      { '@type': 'ListItem', position: 3, name: itTitle },
-    ],
-  }
 
   useHead({
     link: [{ rel: 'canonical', href: itineraryUrl(String(it.id || id)) }],
     script: [
-      { type: 'application/ld+json', innerHTML: JSON.stringify(ld) },
-      { type: 'application/ld+json', innerHTML: JSON.stringify(breadcrumb) },
+      { type: 'application/ld+json', innerHTML: safeJsonLd(ld) },
     ],
   })
 }
@@ -665,9 +658,12 @@ if (itinerary.value && !itinerary.value.error) {
   border-radius: var(--radius-control); font-size: var(--text-sm); line-height: var(--leading-normal);
   color: var(--ink);
 }
-.tnc-glyph { flex-shrink: 0; color: var(--amber-600); font-size: var(--text-sm); line-height: 1.4; }
+.tnc-icon { flex-shrink: 0; color: var(--amber-600); font-size: 1.1em; line-height: 1.4; }
 .dark .step-note-callout { background: color-mix(in srgb, var(--amber-500) 14%, transparent); border-color: color-mix(in srgb, var(--amber-500) 25%, transparent); box-shadow: inset 2px 0 0 color-mix(in srgb, var(--amber-500) 55%, transparent); }
-.dark .tnc-glyph { color: var(--amber-500); }
+.dark .tnc-icon { color: var(--amber-500); }
+
+.transport-mode-spaced .chip { display: inline-flex; align-items: center; gap: var(--space-1); }
+.transport-mode-spaced .chip .line-icon { font-size: 1.05em; }
 
 .route-leg { display: flex; align-items: center; gap: var(--space-2); padding: var(--space-2) 0 var(--space-2) var(--space-6); }
 .route-leg-line { width: 2px; height: 20px; background: var(--line); border-radius: 1px; transition: background .3s var(--ease-out); }
@@ -675,6 +671,7 @@ if (itinerary.value && !itinerary.value.error) {
 /* Narrative bridge — the next stop's name whispered inline, so a distance
    stat becomes a handoff between two moments in the day (§5/§7). */
 .route-leg-next { color: var(--primary-fg); font-weight: var(--weight-medium); }
+.rl-arrow { font-size: .85em; vertical-align: -.05em; margin: 0 var(--space-1); }
 
 .route-map-section { margin-top: var(--space-6); }
 /* Branded accent on the map section title */
