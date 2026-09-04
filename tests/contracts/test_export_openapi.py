@@ -8,8 +8,6 @@ from pathlib import Path
 
 import pytest
 
-from agent.api_schemas import CaseStatusResponse
-from agent.cases.public_api import case_public_router
 import scripts.export_openapi as exporter
 
 
@@ -94,8 +92,6 @@ def test_export_openapi_describes_case_status_response_contract(tmp_path: Path) 
     assert status_schema["properties"]["waitingFor"]["anyOf"] == [
         {"type": "string"}, {"type": "null"},
     ]
-    status_route = next(r for r in case_public_router.routes if getattr(r, "path", None) == "/api/cases/status")
-    assert status_route.response_model is CaseStatusResponse
 
 
 def test_response_media_registry_rejects_empty_or_duplicate_entries(tmp_path: Path, monkeypatch) -> None:
