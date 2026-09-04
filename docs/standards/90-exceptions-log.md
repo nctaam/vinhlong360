@@ -264,4 +264,8 @@ ghi ở backlog tối ưu — giảm dần, KHÔNG được tăng tiếp từ 47
 
 - 2026-09-04T09:44:19 SKIP R20.8,R30.7 — backend R20.8 remediation tranche; frontend bundle optimization remains separate worktree
 
+- 2026-09-04T10:32:00 SKIP R30.7 — measurement-correction review: aggregate gzip is now summed in bytes before KiB conversion (Python checker and browser gate), with fractional-KiB regression coverage. The previous 782kB JS / 166kB CSS evidence was a per-file-floor undercount; the corrected current artifact is 877kB JS / 222kB CSS, so R30.7 remains a real release debt (2 violations), not a pass. The stable `/maplibre-gl-csp-worker.js` path is explicitly `no-cache, must-revalidate` and remains outside the service-worker asset cache to prevent main/worker version skew.
 
+
+
+- 2026-09-04T10:45:02 SKIP R30.7 — SSE/runtime evidence hardening commit; frontend bundle debt is being remediated in parallel

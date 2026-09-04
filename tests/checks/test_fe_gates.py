@@ -2,6 +2,7 @@
 """SP4 — R30.7 bundle + R30.6 axe (pending-check kích hoạt, graceful-skip)."""
 import json
 import os
+import random
 import sys
 from pathlib import Path
 
@@ -42,6 +43,24 @@ def test_bundle_passes_under_budget(tmp_path):
         json.dumps({"total_gz_kb": 800, "max_chunk_gz_kb": 280, "entry_target_gz_kb": 200}),
         encoding="utf-8")
     assert BundleCheck(root=tmp_path).run()["count"] == 0
+
+
+def test_bundle_aggregates_fractional_kib_before_comparing_budget(tmp_path):
+    """Several sub-KiB chunks must still count toward the aggregate budget."""
+    d = tmp_path / "web-nuxt" / ".output" / "public" / "_nuxt"
+    d.mkdir(parents=True, exist_ok=True)
+    payload = random.Random(12345).randbytes(700)
+    (d / "one.js").write_bytes(payload)
+    (d / "two.js").write_bytes(payload)
+    budget = tmp_path / "docs" / "standards"
+    budget.mkdir(parents=True)
+    (budget / "bundle-budget.json").write_text(
+        '{"total_gz_kb": 1, "max_chunk_gz_kb": 280, "entry_target_gz_kb": 200, "total_css_gz_kb": 190}',
+        encoding="utf-8")
+
+    result = BundleCheck(root=tmp_path).run()
+
+    assert any("bundle total" in violation["msg"] for violation in result["violations"])
 
 
 # ── R30.6 axe ─────────────────────────────────────────────────────────

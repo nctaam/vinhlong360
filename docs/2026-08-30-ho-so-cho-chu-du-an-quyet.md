@@ -5,6 +5,13 @@
 > (đổi tiêu chuẩn, đổi diện mạo, pháp lý, chi phí) chứ không vì thiếu năng lực
 > hay thiếu thời gian.
 
+> **ĐÍNH CHÍNH ĐO BUNDLE (2026-09-04):** Các số 802/803 kB JS và 165/166 kB CSS
+> trong các mục lịch sử bên dưới dùng phép cộng `floor(từng file gzip / 1024)`;
+> đó là phép đo thiếu. Checker nay cộng tổng byte gzip trước rồi mới đổi sang KiB.
+> Build hiện tại đo đúng **877 kB JS / 222 kB CSS**, nên R30.7 vẫn là nợ thật và
+> không được ghi nhận là đã pass. Quyết định giảm cân/giữ trần vẫn còn hiệu lực;
+> chỉ số cần dùng cho quyết định mới là số đo corrected này.
+
 ## 0. Bảng điểm trước → sau đợt
 
 | Chiều | Trước (2026-08-29) | Sau | Nợ còn |

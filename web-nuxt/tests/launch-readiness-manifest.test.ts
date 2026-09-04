@@ -248,6 +248,7 @@ describe('launch readiness manifest', () => {
     expect(generator.auditCompiledRouteRules({
       '/dia-diem/**': { swr: false, isr: false, prerender: false, cache: false },
       '/_nuxt/**': { headers: { 'cache-control': 'public, max-age=31536000, immutable' } },
+      '/maplibre-gl-csp-worker.js': { headers: { 'cache-control': 'no-cache, must-revalidate' } },
       '/**': { headers: { 'X-Content-Type-Options': 'nosniff' } },
     })).toEqual([])
 

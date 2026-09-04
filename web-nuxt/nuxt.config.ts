@@ -237,6 +237,9 @@ export default defineNuxtConfig({
     },
     routeRules: {
       '/_nuxt/**': { headers: { 'cache-control': 'public, max-age=31536000, immutable' } },
+      // The worker URL is intentionally stable, so force revalidation whenever
+      // MapLibre changes instead of allowing stale main/worker version pairs.
+      '/maplibre-gl-csp-worker.js': { headers: { 'cache-control': 'no-cache, must-revalidate' } },
       '/**': {
         headers: {
           'X-Content-Type-Options': 'nosniff',

@@ -140,10 +140,12 @@ export function auditCompiledRouteRules(routeRules) {
 
     const cacheControl = cacheControlHeader(rule.headers)
     if (cacheControl !== undefined) {
+      const isWorkerRevalidation = path === '/maplibre-gl-csp-worker.js'
+        && cacheControl === 'no-cache, must-revalidate'
       if (
-        !isReviewedAssetRule(path)
+        (!isReviewedAssetRule(path) && !isWorkerRevalidation)
         || typeof cacheControl !== 'string'
-        || !/^public,\s*max-age=\d+,\s*immutable$/iu.test(cacheControl)
+        || (!isWorkerRevalidation && !/^public,\s*max-age=\d+,\s*immutable$/iu.test(cacheControl))
       ) {
         throw new Error(`compiled cache rule is unsafe: ${path}`)
       }

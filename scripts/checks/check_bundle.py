@@ -11,6 +11,7 @@ from __future__ import annotations
 
 import gzip
 import json
+import math
 from pathlib import Path
 
 from .common import repo_root
@@ -24,8 +25,13 @@ DEFAULTS = {"total_gz_kb": 800, "max_chunk_gz_kb": 280, "entry_target_gz_kb": 20
             "total_css_gz_kb": 190}
 
 
-def _gz_kb(p: Path) -> int:
-    return len(gzip.compress(p.read_bytes())) // 1024
+def _gz_bytes(p: Path) -> int:
+    return len(gzip.compress(p.read_bytes()))
+
+
+def _ceil_kib(size_bytes: int) -> int:
+    """Round up only after aggregation so sub-KiB chunks cannot disappear."""
+    return math.ceil(size_bytes / 1024)
 
 
 class BundleCheck:
@@ -53,20 +59,23 @@ class BundleCheck:
         if not js:
             return self._result([])  # chưa build → skip
         budget = self._budget()
-        sizes = [(_gz_kb(f), f.name) for f in js]
-        total = sum(s for s, _ in sizes)
-        max_chunk, max_name = max(sizes)
+        sizes = [(_gz_bytes(f), f.name) for f in js]
+        total_bytes = sum(s for s, _ in sizes)
+        total = _ceil_kib(total_bytes)
+        max_chunk_bytes, max_name = max(sizes)
+        max_chunk = _ceil_kib(max_chunk_bytes)
         violations = []
-        if total > budget["total_gz_kb"]:
+        if total_bytes > budget["total_gz_kb"] * 1024:
             violations.append({"file": NUXT_DIR, "line": 0, "rule": self.rule,
                                "msg": f"bundle total {total}kB gz > {budget['total_gz_kb']}kB"})
-        if max_chunk > budget["max_chunk_gz_kb"]:
+        if max_chunk_bytes > budget["max_chunk_gz_kb"] * 1024:
             violations.append({"file": f"{NUXT_DIR}/{max_name}", "line": 0, "rule": self.rule,
                                "msg": f"chunk lớn nhất {max_chunk}kB gz > {budget['max_chunk_gz_kb']}kB "
                                       f"(đích entry {budget['entry_target_gz_kb']}kB)"})
 
-        css_total = sum(_gz_kb(f) for f in nuxt.rglob("*.css"))
-        if css_total > budget["total_css_gz_kb"]:
+        css_total_bytes = sum(_gz_bytes(f) for f in nuxt.rglob("*.css"))
+        css_total = _ceil_kib(css_total_bytes)
+        if css_total_bytes > budget["total_css_gz_kb"] * 1024:
             violations.append({"file": NUXT_DIR, "line": 0, "rule": self.rule,
                                "msg": f"CSS total {css_total}kB gz > {budget['total_css_gz_kb']}kB"})
         return self._result(violations)

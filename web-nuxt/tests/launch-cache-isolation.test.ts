@@ -27,7 +27,10 @@ function auditLaunchOutput(input: LaunchOutputAuditInput): void {
     const headers = rule.headers as Readonly<Record<string, unknown>> | undefined
     if (
       headers?.['cache-control'] !== undefined
-      && (path !== '/_nuxt/**' || headers['cache-control'] !== 'public, max-age=31536000, immutable')
+      && !(
+        (path === '/_nuxt/**' && headers['cache-control'] === 'public, max-age=31536000, immutable')
+        || (path === '/maplibre-gl-csp-worker.js' && headers['cache-control'] === 'no-cache, must-revalidate')
+      )
     ) {
       throw new Error(`launch build emitted a policy-bearing cache rule: ${path}`)
     }
@@ -58,6 +61,8 @@ describe('launch cache isolation', () => {
     const nitroRules = config.slice(config.indexOf('    routeRules:', config.indexOf('  nitro:')))
 
     expect(nitroRules).toContain("'/_nuxt/**'")
+    expect(nitroRules).toContain("'/maplibre-gl-csp-worker.js'")
+    expect(nitroRules).toContain("'no-cache, must-revalidate'")
     expect(nitroRules).toContain("'/**'")
     expect(nitroRules).toContain('immutable')
     expect(nitroRules).not.toContain('swr')

@@ -1,11 +1,12 @@
 import { EventEmitter } from 'node:events'
-import { readFile } from 'node:fs/promises'
-import { resolve } from 'node:path'
+import { mkdtemp, mkdir, readFile, rm, writeFile } from 'node:fs/promises'
+import { join, resolve } from 'node:path'
+import { tmpdir } from 'node:os'
 import { describe, expect, it } from 'vitest'
 
 import * as publicAccessibilityGate from '../scripts/check-public-accessibility.mjs'
 
-const { evaluatePublicAccessibilitySnapshot, launchChrome } = publicAccessibilityGate
+const { bundleSnapshot, evaluatePublicAccessibilitySnapshot, launchChrome } = publicAccessibilityGate
 
 function workflowStep(workflow, name) {
   workflow = workflow.replaceAll('\r\n', '\n')
@@ -59,6 +60,35 @@ const passingSnapshot = {
 }
 
 describe('public accessibility browser gate', () => {
+  it('aggregates fractional KiB chunks before comparing the bundle budget', async () => {
+    const root = await mkdtemp(join(tmpdir(), 'vl360-bundle-gate-'))
+    try {
+      const outputRoot = join(root, '_nuxt')
+      await mkdir(outputRoot, { recursive: true })
+      let state = 0x12345678
+      const payload = Buffer.alloc(700)
+      for (let index = 0; index < payload.length; index += 1) {
+        state ^= state << 13
+        state ^= state >>> 17
+        state ^= state << 5
+        payload[index] = state & 0xff
+      }
+      await writeFile(join(outputRoot, 'one.js'), payload)
+      await writeFile(join(outputRoot, 'two.js'), payload)
+
+      const snapshot = bundleSnapshot(outputRoot, {
+        total_gz_kb: 1,
+        max_chunk_gz_kb: 280,
+        total_css_gz_kb: 190,
+      })
+
+      expect(snapshot.bundleViolations).toBe(1)
+      expect(snapshot.bundleTotalGzKb).toBeGreaterThan(1)
+    } finally {
+      await rm(root, { recursive: true, force: true })
+    }
+  })
+
   it('is wired through the frontend package and blocking CI verification path', async () => {
     const packageJson = JSON.parse(await readFile(resolve(import.meta.dirname, '../package.json'), 'utf8'))
     const ci = await readFile(resolve(import.meta.dirname, '../../.github/workflows/ci.yml'), 'utf8')

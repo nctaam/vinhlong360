@@ -220,7 +220,7 @@ describe('service worker policy', () => {
     expect(cache?.put).toHaveBeenCalledTimes(1)
   })
 
-  it.each(['/data/entities.json', '/events/list', '/recommendations', '/plain.css', '/some-page'])('does not intercept unreviewed path %s', (path) => {
+  it.each(['/data/entities.json', '/events/list', '/recommendations', '/plain.css', '/some-page', '/maplibre-gl-csp-worker.js'])('does not intercept unreviewed path %s', (path) => {
     const { respondWith } = dispatchFetch(new FakeRequest(`https://vinhlong360.vn${path}`))
     expect(respondWith).not.toHaveBeenCalled()
   })

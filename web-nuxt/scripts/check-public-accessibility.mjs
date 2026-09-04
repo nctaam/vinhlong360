@@ -242,24 +242,29 @@ function allFiles(root) {
   })
 }
 
-function bundleSnapshot() {
-  const outputRoot = resolve(webRoot, '.output', 'public', '_nuxt')
+export function bundleSnapshot(outputRoot = resolve(webRoot, '.output', 'public', '_nuxt'), budgetOverride = null) {
   if (!existsSync(outputRoot)) return { bundleAuditAvailable: false, bundleViolations: 1 }
   let budget = { total_gz_kb: 800, max_chunk_gz_kb: 280, total_css_gz_kb: 190 }
-  try { budget = { ...budget, ...JSON.parse(readFileSync(bundleBudgetPath, 'utf8')) } } catch { /* fail below */ }
+  if (budgetOverride) budget = { ...budget, ...budgetOverride }
+  else {
+    try { budget = { ...budget, ...JSON.parse(readFileSync(bundleBudgetPath, 'utf8')) } } catch { /* fail below */ }
+  }
   const js = readdirSync(outputRoot, { withFileTypes: true })
     .filter(entry => entry.isFile() && entry.name.endsWith('.js'))
     .map(entry => join(outputRoot, entry.name))
   const css = allFiles(outputRoot).filter(path => path.endsWith('.css'))
   if (!js.length) return { bundleAuditAvailable: false, bundleViolations: 1 }
-  const gzKb = path => Math.floor(gzipSync(readFileSync(path)).length / 1024)
-  const jsSizes = js.map(path => ({ path, kb: gzKb(path) }))
-  const totalJs = jsSizes.reduce((sum, item) => sum + item.kb, 0)
-  const maxJs = Math.max(...jsSizes.map(item => item.kb))
-  const totalCss = css.reduce((sum, path) => sum + gzKb(path), 0)
-  const bundleViolations = Number(totalJs > budget.total_gz_kb)
-    + Number(maxJs > budget.max_chunk_gz_kb)
-    + Number(totalCss > budget.total_css_gz_kb)
+  const gzBytes = path => gzipSync(readFileSync(path)).length
+  const ceilKiB = bytes => Math.ceil(bytes / 1024)
+  const jsSizes = js.map(path => ({ path, bytes: gzBytes(path) }))
+  const totalJsBytes = jsSizes.reduce((sum, item) => sum + item.bytes, 0)
+  const totalJs = ceilKiB(totalJsBytes)
+  const maxJs = ceilKiB(Math.max(...jsSizes.map(item => item.bytes)))
+  const totalCssBytes = css.reduce((sum, path) => sum + gzBytes(path), 0)
+  const totalCss = ceilKiB(totalCssBytes)
+  const bundleViolations = Number(totalJsBytes > budget.total_gz_kb * 1024)
+    + Number(Math.max(...jsSizes.map(item => item.bytes)) > budget.max_chunk_gz_kb * 1024)
+    + Number(totalCssBytes > budget.total_css_gz_kb * 1024)
   return { bundleAuditAvailable: true, bundleViolations, bundleTotalGzKb: totalJs, bundleMaxGzKb: maxJs, bundleCssGzKb: totalCss }
 }
 
