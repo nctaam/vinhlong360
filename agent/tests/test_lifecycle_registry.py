@@ -180,6 +180,51 @@ def test_export_cursor_offset_is_scoped_to_its_sink(monkeypatch):
     lifecycle._rows_for_table("comments", "u", decoded, 1)
 
 
+def test_collection_items_export_uses_collection_owner_and_stable_page(monkeypatch):
+    import control_plane.lifecycle as lifecycle
+
+    class FakeDB:
+        _use_pg = True
+        _ph = "%s"
+
+        def _conn(self):
+            from contextlib import nullcontext
+            return nullcontext(object())
+
+        def _fetchall(self, _conn, sql, _params):
+            assert "JOIN user_collections uc" in sql
+            assert "ORDER BY ci.added_at DESC, ci.id DESC" in sql
+            return [
+                {"id": "2", "collection_id": "c", "post_id": "p2", "added_at": "2026-01-02"},
+                {"id": "1", "collection_id": "c", "post_id": "p1", "added_at": "2026-01-01"},
+            ]
+
+        _row_to_dict = staticmethod(lambda row: row)
+
+    monkeypatch.setattr(lifecycle, "db", FakeDB())
+    rows, next_cursor, truncated, error = lifecycle._rows_for_table("collection_items", "u", None, 1)
+    assert rows == [{"id": "2", "collection_id": "c", "post_id": "p2", "added_at": "2026-01-02"}]
+    assert truncated is True and error is None
+    assert lifecycle._decode_cursor(next_cursor)["sink"] == "collection_items"
+
+
+def test_external_export_cursor_pages_local_adapter(monkeypatch):
+    import sys
+    import control_plane.lifecycle as lifecycle
+
+    class Analytics:
+        @staticmethod
+        def export_owner_records(owner):
+            assert owner == "user:u"
+            return [{"id": "1"}, {"id": "2"}, {"id": "3"}]
+
+    monkeypatch.setitem(sys.modules, "analytics", Analytics)
+    rows, next_cursor, truncated, error, adapter = lifecycle._external_export("analytics-jsonl", "u", 1, "1")
+    assert rows == [{"id": "2"}]
+    assert lifecycle._decode_cursor(next_cursor) == 2
+    assert truncated is True and error is None and adapter == "analytics"
+
+
 def test_legacy_export_cursor_decodes_per_dataset():
     from identity.api import _legacy_cursor_offsets
     import control_plane.lifecycle as lifecycle

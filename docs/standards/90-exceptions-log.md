@@ -335,3 +335,5 @@ ghi ở backlog tối ưu — giảm dần, KHÔNG được tăng tiếp từ 47
 - 2026-09-04T14:31:19 SKIP R30.7 — Backend-only correction public transport decomposition with contact lane characterization coverage; pre-existing frontend bundle debt is unchanged.
 
 - 2026-09-04T14:37:32 SKIP R30.7 — Persist ratchet evidence for backend-only refactor tranches; frontend bundle debt remains unchanged.
+
+- 2026-09-04T14:58:03 SKIP R30.7 — Lifecycle export/erase backend refactor; frontend bundle unchanged and existing R30.7 debt is unrelated.

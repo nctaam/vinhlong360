@@ -234,75 +234,103 @@ _TABLE_TIES = {
 }
 
 
-def _rows_for_table(table: str, subject_id: str, cursor: str | None, limit: int) -> tuple[list[dict[str, Any]], str | None, bool, str | None]:
-    if not getattr(db, "_use_pg", False):
-        return [], None, False, None
-    owner, order_col, columns = _TABLES[table]
-    ph = getattr(db, "_ph", "%s")
-    offset = 0
+def _cursor_offset(cursor: Any, table: str) -> int:
     if isinstance(cursor, dict) and cursor.get("sink") in (None, table) and str(cursor.get("offset", "0")).isdigit():
-        offset = int(cursor.get("offset", 0))
-    if table == "collection_items":
-        # Items are owned through the user's collection, not by collection_id.
-        where = f"uc.user_id::text = {ph}"
-        params: list[Any] = [str(subject_id)]
-        if cursor and not (isinstance(cursor, dict) and "offset" in cursor):
-            if not offset:
-                where += f" AND (ci.added_at::text, ci.id::text) < ({ph}, {ph})"
-                params.extend([str(cursor.get("value")), str(cursor.get("id"))])
-        sql = f"SELECT ci.id, ci.collection_id, ci.post_id, ci.added_at FROM collection_items ci JOIN user_collections uc ON uc.id = ci.collection_id WHERE {where} ORDER BY ci.added_at DESC, ci.id DESC LIMIT {ph} OFFSET {ph}"
-        params.extend([limit + 1, offset])
-        try:
-            with db._conn() as conn:
-                rows = db._fetchall(conn, sql, tuple(params))
-            values = [db._row_to_dict(row) for row in rows]
-        except Exception as exc:
-            return [], None, False, type(exc).__name__
-        truncated = len(values) > limit
-        values = values[:limit]
-        next_cursor = _encode_cursor(json.dumps({"sink": table, "offset": offset + limit, "value": str(values[-1].get("added_at")), "id": str(values[-1].get("id"))}, separators=(",", ":"))) if truncated and values else None
-        return values, next_cursor, truncated, None
+        return int(cursor.get("offset", 0))
+    return 0
+
+
+def _query_page(sql: str, params: list[Any], limit: int) -> tuple[list[dict[str, Any]], str | None]:
+    try:
+        with db._conn() as conn:
+            rows = db._fetchall(conn, sql, tuple(params))
+        return [db._row_to_dict(row) for row in rows], None
+    except Exception as exc:
+        return [], type(exc).__name__
+
+
+def _page_cursor(table: str, values: list[dict[str, Any]], order_col: str, offset: int, limit: int, truncated: bool) -> str | None:
+    if not truncated or not values:
+        return None
+    last = values[-1]
+    payload = {
+        "sink": table,
+        "offset": offset + limit,
+        "value": str(last.get(order_col)),
+        "id": str(last.get("id")) if last.get("id") is not None else None,
+    }
+    return _encode_cursor(json.dumps(payload, separators=(",", ":")))
+
+
+def _collection_items_page(subject_id: str, cursor: Any, limit: int, offset: int, ph: str) -> tuple[list[dict[str, Any]], str | None, bool, str | None]:
+    # Items are owned through the user's collection, not by collection_id.
+    where = f"uc.user_id::text = {ph}"
+    params: list[Any] = [str(subject_id)]
+    if cursor and not (isinstance(cursor, dict) and "offset" in cursor) and not offset:
+        where += f" AND (ci.added_at::text, ci.id::text) < ({ph}, {ph})"
+        params.extend([str(cursor.get("value")), str(cursor.get("id"))])
+    sql = (
+        "SELECT ci.id, ci.collection_id, ci.post_id, ci.added_at "
+        f"FROM collection_items ci JOIN user_collections uc ON uc.id = ci.collection_id WHERE {where} "
+        f"ORDER BY ci.added_at DESC, ci.id DESC LIMIT {ph} OFFSET {ph}"
+    )
+    params.extend([limit + 1, offset])
+    values, error = _query_page(sql, params, limit)
+    truncated = len(values) > limit
+    values = values[:limit]
+    return values, _page_cursor("collection_items", values, "added_at", offset, limit, truncated), truncated, error
+
+
+def _table_filter(table: str, subject_id: str, cursor: Any, owner: str, order_col: str, columns: str, ph: str) -> tuple[str, list[Any]]:
     if table == "profile_views":
-        # A profile-view row is personal to both participants. Export it when
-        # the account is either the viewer or the viewed profile.
+        # A profile-view row is personal to both participants.
         where = f"(viewer_id::text = {ph} OR viewed_id::text = {ph})"
         params: list[Any] = [str(subject_id), str(subject_id)]
     else:
         where = f"{owner}::text = {ph}"
         params = [str(subject_id)]
-    if cursor and not (isinstance(cursor, dict) and "offset" in cursor):
-        if isinstance(cursor, dict) and cursor.get("sink") not in (None, table):
-            cursor = None
-        if isinstance(cursor, dict) and cursor.get("value") is not None:
-            value = cursor["value"]
-            tie_id = cursor.get("id")
-            if tie_id and "id" in {part.strip() for part in columns.split(",")}:
-                where += f" AND ({order_col} < {ph} OR ({order_col} = {ph} AND id < {ph}))"
-                params.extend([value, value, tie_id])
-            else:
-                where += f" AND {order_col}::text < {ph}"
-                params.append(value)
-        else:
-            where += f" AND {order_col}::text < {ph}"
-            params.append(str(cursor))
-    has_id = "id" in {part.strip() for part in columns.split(",")}
-    order_sql = f"{order_col} DESC, id DESC" if has_id else ", ".join([f"{order_col} DESC", *[f"{col} DESC" for col in _TABLE_TIES.get(table, ())]])
-    sql = f"SELECT {columns} FROM {table} WHERE {where} ORDER BY {order_sql} LIMIT {ph} OFFSET {ph}"
+    if not cursor or (isinstance(cursor, dict) and "offset" in cursor):
+        return where, params
+    if isinstance(cursor, dict) and cursor.get("sink") not in (None, table):
+        cursor = None
+    if isinstance(cursor, dict) and cursor.get("value") is not None:
+        value = cursor["value"]
+        tie_id = cursor.get("id")
+        has_id = "id" in {part.strip() for part in columns.split(",")}
+        if tie_id and has_id:
+            where += f" AND ({order_col} < {ph} OR ({order_col} = {ph} AND id < {ph}))"
+            params.extend([value, value, tie_id])
+            return where, params
+        where += f" AND {order_col}::text < {ph}"
+        params.append(value)
+        return where, params
+    where += f" AND {order_col}::text < {ph}"
+    params.append(str(cursor))
+    return where, params
+
+
+def _table_order(table: str, order_col: str, columns: str) -> str:
+    if "id" in {part.strip() for part in columns.split(",")}:
+        return f"{order_col} DESC, id DESC"
+    ties = _TABLE_TIES.get(table, ())
+    return ", ".join([f"{order_col} DESC", *[f"{col} DESC" for col in ties]])
+
+
+def _rows_for_table(table: str, subject_id: str, cursor: str | None, limit: int) -> tuple[list[dict[str, Any]], str | None, bool, str | None]:
+    if not getattr(db, "_use_pg", False):
+        return [], None, False, None
+    owner, order_col, columns = _TABLES[table]
+    ph = getattr(db, "_ph", "%s")
+    offset = _cursor_offset(cursor, table)
+    if table == "collection_items":
+        return _collection_items_page(subject_id, cursor, limit, offset, ph)
+    where, params = _table_filter(table, subject_id, cursor, owner, order_col, columns, ph)
+    sql = f"SELECT {columns} FROM {table} WHERE {where} ORDER BY {_table_order(table, order_col, columns)} LIMIT {ph} OFFSET {ph}"
     params.extend([limit + 1, offset])
-    try:
-        with db._conn() as conn:
-            rows = db._fetchall(conn, sql, tuple(params))
-        values = [db._row_to_dict(row) for row in rows]
-    except Exception as exc:
-        return [], None, False, type(exc).__name__
+    values, error = _query_page(sql, params, limit)
     truncated = len(values) > limit
-    if truncated:
-        values = values[:limit]
-    next_cursor = None
-    if truncated and values:
-        last = values[-1]
-        next_cursor = _encode_cursor(json.dumps({"sink": table, "offset": offset + limit, "value": str(last.get(order_col)), "id": str(last.get("id")) if last.get("id") is not None else None}, separators=(",", ":")))
-    return values, next_cursor, truncated, None
+    values = values[:limit]
+    return values, _page_cursor(table, values, order_col, offset, limit, truncated), truncated, error
 
 
 def _default_registry() -> LifecycleRegistry:
@@ -319,39 +347,98 @@ def _default_registry() -> LifecycleRegistry:
 lifecycle_registry = _default_registry()
 
 
+def _external_rows(name: str, owner: str) -> tuple[list[dict[str, Any]], str | None, str]:
+    if name == "analytics-jsonl":
+        import analytics
+        return analytics.export_owner_records(owner), None, "analytics"
+    if name == "bot-memory":
+        import bot_gateway
+        if not hasattr(bot_gateway, "export_subject_memory"):
+            return [], "ADAPTER_UNAVAILABLE", "bot"
+        return bot_gateway.export_subject_memory(owner), None, "bot"
+    if name == "reports-jsonl":
+        from admin import _INFO_REPORTS_FILE
+        rows = []
+        if _INFO_REPORTS_FILE.exists():
+            for line in _INFO_REPORTS_FILE.read_text(encoding="utf-8").splitlines():
+                try:
+                    item = json.loads(line)
+                except json.JSONDecodeError:
+                    continue
+                if str(item.get("owner_key", item.get("user_id", item.get("reporter_id", "")))) == owner:
+                    rows.append(item)
+        return rows, None, "reports"
+    return [], "ADAPTER_UNAVAILABLE", "unavailable"
+
+
+def _external_page(rows: list[dict[str, Any]], limit: int, cursor: Any) -> tuple[list[dict[str, Any]], str | None, bool]:
+    offset = int(cursor) if isinstance(cursor, str) and cursor.isdigit() else 0
+    page = rows[offset:offset + limit]
+    truncated = offset + limit < len(rows)
+    next_cursor = _encode_cursor(str(offset + limit)) if truncated else None
+    return page, next_cursor, truncated
+
+
 def _external_export(name: str, subject_id: str, limit: int, cursor: Any = None) -> tuple[list[dict[str, Any]], str | None, bool, str | None, str]:
     """Enumerate local adapters; unavailable providers are explicit, never empty-success."""
     owner = _canonical_owner(subject_id)
     try:
-        if name == "analytics-jsonl":
-            import analytics
-            rows = analytics.export_owner_records(owner)
-            offset = int(cursor) if isinstance(cursor, str) and cursor.isdigit() else 0
-            page = rows[offset:offset + limit]
-            return page, _encode_cursor(str(offset + limit)) if offset + limit < len(rows) else None, offset + limit < len(rows), None, "analytics"
-        if name == "bot-memory":
-            import bot_gateway
-            rows = bot_gateway.export_subject_memory(owner) if hasattr(bot_gateway, "export_subject_memory") else []
-            offset = int(cursor) if isinstance(cursor, str) and cursor.isdigit() else 0
-            page = rows[offset:offset + limit]
-            return page, _encode_cursor(str(offset + limit)) if offset + limit < len(rows) else None, offset + limit < len(rows), None if hasattr(bot_gateway, "export_subject_memory") else "ADAPTER_UNAVAILABLE", "bot"
-        if name == "reports-jsonl":
-            from admin import _INFO_REPORTS_FILE
-            rows = []
-            if _INFO_REPORTS_FILE.exists():
-                for line in _INFO_REPORTS_FILE.read_text(encoding="utf-8").splitlines():
-                    try:
-                        item = json.loads(line)
-                    except json.JSONDecodeError:
-                        continue
-                    if str(item.get("owner_key", item.get("user_id", item.get("reporter_id", "")))) == owner:
-                        rows.append(item)
-            offset = int(cursor) if isinstance(cursor, str) and cursor.isdigit() else 0
-            page = rows[offset:offset + limit]
-            return page, _encode_cursor(str(offset + limit)) if offset + limit < len(rows) else None, offset + limit < len(rows), None, "reports"
+        rows, error, adapter = _external_rows(name, owner)
+        page, next_cursor, truncated = _external_page(rows, limit, cursor)
+        return page, next_cursor, truncated, error, adapter
     except Exception as exc:
         return [], None, False, type(exc).__name__, "local"
-    return [], None, False, "ADAPTER_UNAVAILABLE", "unavailable"
+
+
+def _digest_rows(payload: Any) -> str:
+    canonical = json.dumps(payload, ensure_ascii=True, sort_keys=True, default=str, separators=(",", ":"))
+    return hashlib.sha256(canonical.encode("utf-8")).hexdigest()
+
+
+def _table_export_entry(table: str, subject_id: str, decoded: Any, limit: int) -> tuple[list[dict[str, Any]], dict[str, Any], str, bool, str | None]:
+    rows, next_cursor, truncated, error = _rows_for_table(table, subject_id, decoded, limit)
+    digest = _digest_rows(rows)
+    columns = _TABLES[table][2]
+    has_id = "id" in {part.strip() for part in columns.split(",")}
+    manifest = {
+        "count": len(rows),
+        "next_cursor": next_cursor,
+        "truncated": truncated,
+        "checksum": digest,
+        "pagination": "stable-offset" if table in _TABLE_TIES or not has_id else "keyset",
+        "consistency": "snapshot-at-request; concurrent mutations may shift offset pages",
+    }
+    return rows, manifest, digest, truncated, error
+
+
+def _external_cursor(decoded: Any, name: str) -> Any:
+    if isinstance(decoded, dict) and decoded.get("sink") == name:
+        return str(decoded.get("offset", 0))
+    return decoded if isinstance(decoded, str) else None
+
+
+def _external_sink_entry(name: str, subject_id: str, decoded: Any, limit: int) -> tuple[list[dict[str, Any]], dict[str, Any], str, bool, str | None]:
+    adapters = {"reports-jsonl", "analytics-jsonl", "bot-memory"}
+    if name in adapters:
+        rows, next_cursor, truncated, error, adapter = _external_export(name, subject_id, limit, _external_cursor(decoded, name))
+    else:
+        rows, next_cursor, truncated, error, adapter = [], None, False, "ADAPTER_UNAVAILABLE", "unavailable"
+    digest = _digest_rows(rows)
+    manifest = {"count": len(rows), "next_cursor": next_cursor, "truncated": truncated, "checksum": digest, "adapter": adapter, "status": "error" if error else "available"}
+    return rows, manifest, digest, truncated, error
+
+
+def _postgres_manifest(data: dict[str, Any], sink_manifest: dict[str, Any], checksums: dict[str, str], truncated: bool, errors: list[dict[str, str]]) -> None:
+    payload = {name: data[name] for name in _TABLES}
+    digest = _digest_rows(payload)
+    checksums["postgres"] = digest
+    sink_manifest["postgres"] = {
+        "count": sum(item["count"] for name, item in sink_manifest.items() if name in _TABLES),
+        "next_cursor": None,
+        "truncated": truncated,
+        "degraded": bool(errors),
+        "checksum": digest,
+    }
 
 
 def export_subject(subject_id: str, *, cursor: str | None = None, limit: int = _MAX_LIMIT) -> ExportBundle:
@@ -359,6 +446,7 @@ def export_subject(subject_id: str, *, cursor: str | None = None, limit: int = _
         raise ValueError("subject_id is required")
     if not 1 <= int(limit) <= _MAX_LIMIT:
         raise ValueError(f"limit must be between 1 and {_MAX_LIMIT}")
+    subject = str(subject_id)
     decoded = _decode_cursor(cursor)
     data: dict[str, Any] = {}
     sink_manifest: dict[str, Any] = {}
@@ -366,51 +454,22 @@ def export_subject(subject_id: str, *, cursor: str | None = None, limit: int = _
     any_truncated = False
     errors: list[dict[str, str]] = []
     for table in _TABLES:
-        rows, next_cursor, truncated, error = _rows_for_table(table, str(subject_id), decoded, int(limit))
-        data[table] = rows
-        canonical = json.dumps(rows, ensure_ascii=True, sort_keys=True, default=str, separators=(",", ":"))
-        digest = hashlib.sha256(canonical.encode("utf-8")).hexdigest()
-        checksums[table] = digest
-        sink_manifest[table] = {"count": len(rows), "next_cursor": next_cursor, "truncated": truncated, "checksum": digest,
-                                "pagination": "stable-offset" if table in _TABLE_TIES or "id" not in {part.strip() for part in _TABLES[table][2].split(",")} else "keyset",
-                                "consistency": "snapshot-at-request; concurrent mutations may shift offset pages"}
+        rows, entry, digest, truncated, error = _table_export_entry(table, subject, decoded, int(limit))
+        data[table], sink_manifest[table], checksums[table] = rows, entry, digest
         any_truncated = any_truncated or truncated
         if error:
             errors.append({"sink": table, "error": error})
-    # External sinks are represented explicitly even when no local adapter can
-    # enumerate them; this makes omissions visible to auditors.
     for name in ("reports-jsonl", "analytics-jsonl", "bot-memory", "browser-storage", "object-store", "cdn"):
-        if name in {"reports-jsonl", "analytics-jsonl", "bot-memory"}:
-            ext_cursor = None
-            if isinstance(decoded, dict) and decoded.get("sink") == name:
-                ext_cursor = str(decoded.get("offset", 0))
-            elif isinstance(decoded, str):
-                ext_cursor = decoded
-            rows, next_cursor, truncated, error, adapter = _external_export(name, str(subject_id), int(limit), ext_cursor)
-        else:
-            rows, next_cursor, truncated, error, adapter = [], None, False, "ADAPTER_UNAVAILABLE", "unavailable"
-        data[name] = rows
-        digest = hashlib.sha256(json.dumps(rows, ensure_ascii=True, sort_keys=True, default=str, separators=(",", ":")).encode("utf-8")).hexdigest()
-        checksums[name] = digest
-        sink_manifest[name] = {"count": len(rows), "next_cursor": next_cursor, "truncated": truncated, "checksum": digest, "adapter": adapter, "status": "error" if error else "available"}
+        rows, entry, digest, truncated, error = _external_sink_entry(name, subject, decoded, int(limit))
+        data[name], sink_manifest[name], checksums[name] = rows, entry, digest
         any_truncated = any_truncated or truncated
         if error:
             errors.append({"sink": name, "error": error})
-    postgres_payload = {name: data[name] for name in _TABLES}
-    postgres_canonical = json.dumps(postgres_payload, ensure_ascii=True, sort_keys=True, default=str, separators=(",", ":"))
-    postgres_digest = hashlib.sha256(postgres_canonical.encode("utf-8")).hexdigest()
-    checksums["postgres"] = postgres_digest
-    sink_manifest["postgres"] = {
-        "count": sum(item["count"] for name, item in sink_manifest.items() if name in _TABLES),
-        "next_cursor": None,
-        "truncated": any_truncated,
-        "degraded": bool(errors),
-        "checksum": postgres_digest,
-    }
+    _postgres_manifest(data, sink_manifest, checksums, any_truncated, errors)
     manifest = {
         "schema_version": _VERSION,
         "version": _VERSION,
-        "subject_hash": _subject_hash(str(subject_id)),
+        "subject_hash": _subject_hash(subject),
         "sinks": sink_manifest,
         "truncated": any_truncated,
         "degraded": bool(errors) or any(bool(item.get("degraded")) for item in sink_manifest.values()),
@@ -487,42 +546,65 @@ def get_browser_clear_instruction(issuance_id: str) -> dict[str, Any] | None:
     return None
 
 
+def _erase_analytics(owner: str) -> dict[str, Any]:
+    import analytics
+    removed = analytics.purge_owner_records(owner)
+    return {"status": "deleted" if removed else "already_absent", "count": removed}
+
+
+def _erase_bot(owner: str) -> dict[str, Any]:
+    import bot_gateway
+    if not hasattr(bot_gateway, "purge_subject_memory"):
+        return {"status": "unavailable", "count": 0, "error_code": "ADAPTER_UNAVAILABLE"}
+    removed = bot_gateway.purge_subject_memory(owner)
+    verified = bot_gateway.verify_subject_memory_absent(owner)
+    status = "deleted" if removed and verified else "already_absent" if verified else "failed"
+    return {"status": status, "count": removed}
+
+
+def _erase_reports(owner: str) -> dict[str, Any]:
+    from admin import _INFO_REPORTS_FILE, _info_reports_lock
+    with _info_reports_lock:
+        if not _INFO_REPORTS_FILE.exists():
+            return {"status": "already_absent", "count": 0}
+        lines = _INFO_REPORTS_FILE.read_text(encoding="utf-8").splitlines()
+        kept, removed = [], 0
+        for line in lines:
+            try:
+                item = json.loads(line)
+            except json.JSONDecodeError:
+                kept.append(line)
+                continue
+            owner_value = item.get("owner_key", item.get("user_id", item.get("reporter_id", "")))
+            if str(owner_value) == owner:
+                removed += 1
+            else:
+                kept.append(line)
+        if removed:
+            tmp = _INFO_REPORTS_FILE.with_suffix(".tmp")
+            tmp.write_text("\n".join(kept) + ("\n" if kept else ""), encoding="utf-8")
+            tmp.replace(_INFO_REPORTS_FILE)
+        return {"status": "deleted" if removed else "already_absent", "count": removed}
+
+
+def _named_external_erase(name: str, owner: str) -> dict[str, Any] | None:
+    handlers = {
+        "analytics-jsonl": _erase_analytics,
+        "bot-memory": _erase_bot,
+        "reports-jsonl": _erase_reports,
+    }
+    handler = handlers.get(name)
+    return handler(owner) if handler else None
+
+
 def _external_erase(name: str, subject_id: str, *, dry_run: bool) -> dict[str, Any]:
     if dry_run:
         return {"status": "retained", "count": 0, "dry_run": True}
     owner = _canonical_owner(subject_id)
     try:
-        if name == "analytics-jsonl":
-            import analytics
-            removed = analytics.purge_owner_records(owner)
-            return {"status": "deleted" if removed else "already_absent", "count": removed}
-        if name == "bot-memory":
-            import bot_gateway
-            if not hasattr(bot_gateway, "purge_subject_memory"):
-                return {"status": "unavailable", "count": 0, "error_code": "ADAPTER_UNAVAILABLE"}
-            removed = bot_gateway.purge_subject_memory(owner)
-            verified = bot_gateway.verify_subject_memory_absent(owner)
-            return {"status": "deleted" if removed and verified else "already_absent" if verified else "failed", "count": removed}
-        if name == "reports-jsonl":
-            from admin import _INFO_REPORTS_FILE, _info_reports_lock
-            with _info_reports_lock:
-                if not _INFO_REPORTS_FILE.exists():
-                    return {"status": "already_absent", "count": 0}
-                lines = _INFO_REPORTS_FILE.read_text(encoding="utf-8").splitlines()
-                kept, removed = [], 0
-                for line in lines:
-                    try:
-                        item = json.loads(line)
-                    except json.JSONDecodeError:
-                        kept.append(line); continue
-                    owner_value = item.get("owner_key", item.get("user_id", item.get("reporter_id", "")))
-                    if str(owner_value) == owner: removed += 1
-                    else: kept.append(line)
-                if removed:
-                    tmp = _INFO_REPORTS_FILE.with_suffix(".tmp")
-                    tmp.write_text("\n".join(kept) + ("\n" if kept else ""), encoding="utf-8")
-                    tmp.replace(_INFO_REPORTS_FILE)
-                return {"status": "deleted" if removed else "already_absent", "count": removed}
+        result = _named_external_erase(name, owner)
+        if result is not None:
+            return result
     except Exception as exc:
         return {"status": "failed", "count": 0, "error_code": type(exc).__name__}
     if name == "browser-storage":
