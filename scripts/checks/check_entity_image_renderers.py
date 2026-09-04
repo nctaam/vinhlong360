@@ -54,7 +54,9 @@ SOURCE_ROOTS = frozenset(
     }
 )
 SOURCE_SUFFIXES = frozenset({".vue", ".ts", ".js", ".mjs"})
-IGNORED_SOURCE_DIRS = frozenset({"node_modules", ".nuxt", "build", ".output", "dist", "coverage", "tests"})
+IGNORED_SOURCE_DIRS = frozenset(
+    {"node_modules", ".nuxt", "build", ".output", "dist", "coverage", "tests", "public"}
+)
 CANONICAL_PRODUCERS = (
     "describeEntityImages",
     "describeEntityPlaceholder",

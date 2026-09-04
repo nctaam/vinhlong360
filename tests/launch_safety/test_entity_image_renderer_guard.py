@@ -65,6 +65,12 @@ def test_unregistered_raw_entity_image_access_fails(tmp_path: Path):
     assert "RAW_DESCRIPTOR_BYPASS" in _codes(findings)
 
 
+def test_generated_public_dependencies_are_not_scanned_as_application_source(tmp_path: Path):
+    _mk(tmp_path, "public/vendor-worker.js", "const image = r.image")
+
+    assert scan_entity_image_renderers(tmp_path, registry=[]) == []
+
+
 def test_registration_does_not_exempt_a_raw_renderer(tmp_path: Path):
     _mk(tmp_path, "pages/registered.vue", '<NuxtImg :src="entity.images[0]" />')
     findings = scan_entity_image_renderers(tmp_path, [_entry()])
