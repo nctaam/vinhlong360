@@ -18,7 +18,11 @@ from __future__ import annotations
 
 import ast
 import sys
+import time
 from pathlib import Path
+
+import pytest
+from fastapi import HTTPException
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
@@ -174,3 +178,16 @@ def test_tai_xuat_cung_object_o_nha_cu():
     import admin_common
     assert admin.__dict__["_safe"] is admin_common._safe
     assert admin_api.__dict__["_safe"] is admin_common._safe
+
+
+def test_backup_missing_script_is_not_masked_by_cooldown(monkeypatch, tmp_path):
+    """A missing executable must remain an actionable 500, not a false 429."""
+    monkeypatch.setattr(admin_api, "ROOT", tmp_path)
+    monkeypatch.setattr(admin_api, "_last_backup_time", time.monotonic())
+
+    with pytest.raises(HTTPException) as exc:
+        import asyncio
+
+        asyncio.run(admin_api.trigger_backup(None))
+
+    assert exc.value.status_code == 500

@@ -48,7 +48,10 @@ async def get_site_settings(response: Response):
             description="Returns currently active announcements sorted by priority. Only shows announcements within their active date range. Requires Postgres.")
 async def list_active_announcements(response: Response, limit: int = Query(10, ge=1, le=50)):
     """Active announcements for display to users."""
-    response.headers["Cache-Control"] = "public, max-age=60, stale-while-revalidate=120"
+    # Incident/maintenance notices must reflect the latest admin mutation;
+    # there is no shared purge bus in this deployment, so never serve a stale
+    # proxy or browser copy.
+    response.headers["Cache-Control"] = "no-store"
     require_pg()
     ph = db._ph
 

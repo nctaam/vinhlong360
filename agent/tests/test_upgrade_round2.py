@@ -2157,6 +2157,10 @@ class TestPublicAnnouncements:
         src = inspect.getsource(__import__("public_api").list_active_announcements)
         assert "LIMIT" in src
 
+    def test_incident_announcements_are_not_cached(self):
+        src = inspect.getsource(__import__("public_api").list_active_announcements)
+        assert 'Cache-Control"] = "no-store"' in src
+
 
 # ══════════════════════════════════════════════════════════════════════════
 # Entity Map Search (bounding box)

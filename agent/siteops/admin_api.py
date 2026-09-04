@@ -852,16 +852,16 @@ async def trigger_backup(request: Request = None):
     """B5c: trigger manual backup; failures remain ``Kiểm tra log server`` only."""
     import time as _time
     global _last_backup_time
+    # Validate the executable before applying cooldown. A broken installation
+    # must be observable and fixable instead of being hidden behind a false
+    # rate-limit response.
+    script = ROOT / "scripts" / "backup_data.py"  # noqa: ASYNC240 (dựng path rẻ; I/O thật bọc asyncio.to_thread bên dưới)
+    if not script.exists():
+        raise HTTPException(500, "Không tìm thấy script backup_data.py")
     now = _time.monotonic()
     if now - _last_backup_time < _BACKUP_COOLDOWN:
         remaining = int(_BACKUP_COOLDOWN - (now - _last_backup_time))
         raise HTTPException(429, f"Backup đã chạy gần đây. Thử lại sau {remaining} giây.")
-    # Chỉnh máy móc DUY NHẤT trong handler B1 này khi đổi nhà admin.py → siteops/:
-    # parent.parent cũ (agent/admin.py → gốc repo) nay là ROOT (= parents[2]).
-    # Luồng subprocess giữ NGUYÊN VĂN, không refactor.
-    script = ROOT / "scripts" / "backup_data.py"  # noqa: ASYNC240 (dựng path rẻ; I/O thật bọc asyncio.to_thread bên dưới)
-    if not script.exists():
-        raise HTTPException(500, "Không tìm thấy script backup_data.py")
     return await asyncio.to_thread(_run_backup_workflow, script, request, now)
 
 
