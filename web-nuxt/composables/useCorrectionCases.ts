@@ -15,7 +15,7 @@
 // never-existed all produce one recovery message, because telling somebody which
 // of those they hit tells a guesser the same thing.
 
-import { onScopeDispose, reactive, ref, toRef, type Ref } from 'vue'
+import { getCurrentScope, onScopeDispose, reactive, ref, toRef, type Ref } from 'vue'
 
 import { apiFetch } from '../utils/apiFetch'
 import {
@@ -416,12 +416,14 @@ export function useCorrectionCases(fetcher = apiFetch): CorrectionCasesApi {
   }
 
   // Leaving the page takes the key with it.
-  onScopeDispose(forgetCapability)
-  onScopeDispose(() => {
-    verificationReceipt.value = null
-    phoneVerified.value = false
-    verificationError.value = null
-  })
+  if (getCurrentScope()) {
+    onScopeDispose(forgetCapability)
+    onScopeDispose(() => {
+      verificationReceipt.value = null
+      phoneVerified.value = false
+      verificationError.value = null
+    })
+  }
 
   return {
     capability,

@@ -464,7 +464,7 @@ function mapProfileView(u: Record<string, any>): ProfileView {
   }
 }
 
-const { data: profileState, refresh: refreshProfile } = await useAsyncData<ProfilePayload>(`public-user-${userId.value}`, async () => {
+const profileAsyncData = useAsyncData<ProfilePayload>(`public-user-${userId.value}`, async () => {
   const lookup = userId.value.trim()
   if (!lookup) return { profile: null, status: 'not-found' }
   try {
@@ -478,29 +478,52 @@ const { data: profileState, refresh: refreshProfile } = await useAsyncData<Profi
 }, {
   default: (): ProfilePayload => ({ profile: null, status: 'error' }),
 })
+const profileState = profileAsyncData.data
+const refreshProfile = profileAsyncData.refresh
 
 const profilePayload = computed(() => profileState.value as ProfilePayload | null | undefined)
 const profile = computed(() => profilePayload.value?.profile ?? null)
 const profileLoadStatus = computed(() => profilePayload.value?.status ?? 'error')
 const profileFetchFailed = computed(() => profileLoadStatus.value === 'error')
 const profileNotFound = computed(() => profileLoadStatus.value === 'not-found')
-if (import.meta.server && profileNotFound.value) setResponseStatus(404)
 
 const profileSlug = computed(() => profile.value?.username || userId.value)
 const publicProfilePath = computed(() => `/nguoi-dung/${encodeURIComponent(profileSlug.value)}`)
-
-useHead({
-  link: computed(() => [{ rel: 'canonical', href: canonicalUrl(publicProfilePath.value) }]),
-})
-
+const profileId = computed(() => String(profile.value?.id || userId.value))
+const encodedProfileId = computed(() => encodeURIComponent(profileId.value))
 const isSelf = computed(() => {
   const me = currentUser.value
   if (!me) return false
   const profileUsername = profile.value?.username
   return String(me.id) === profileId.value || (!!profileUsername && me.username === profileUsername) || me.username === userId.value
 })
-const profileId = computed(() => String(profile.value?.id || userId.value))
-const encodedProfileId = computed(() => encodeURIComponent(profileId.value))
+
+const showMoreMenu = ref(false)
+function onClickOutsideMore(e: MouseEvent) {
+  const wrap = (e.target as HTMLElement)?.closest('.profile-more-wrap')
+  if (!wrap) showMoreMenu.value = false
+}
+
+onMounted(() => {
+  fetchPosts()
+  checkFollowing()
+  checkBlocked()
+  loadHeatmap()
+  if (isSelf.value) { loadAchievements() }
+  if (tab.value === 'collections' && isSelf.value) fetchCollections()
+})
+
+onUnmounted(() => {
+  document.removeEventListener('click', onClickOutsideMore)
+})
+
+await profileAsyncData
+
+if (import.meta.server && profileNotFound.value) setResponseStatus(404)
+
+useHead({
+  link: computed(() => [{ rel: 'canonical', href: canonicalUrl(publicProfilePath.value) }]),
+})
 const displayFollowerCount = computed(() => followerCount.value ?? profile.value?.follower_count ?? 0)
 const profileHandle = computed(() => profile.value?.username ? `@${profile.value.username}` : '')
 const totalContributions = computed(() => (profile.value?.post_count || 0) + (profile.value?.review_count || 0))
@@ -811,7 +834,6 @@ async function toggleFollow() {
 }
 
 // ── Block / Report ──
-const showMoreMenu = ref(false)
 const isBlocked = ref(false)
 const { confirmDialog } = useConfirm()
 
@@ -824,17 +846,12 @@ function syncViewerRelationship(p: ProfileView | null) {
 
 watch(profile, syncViewerRelationship, { immediate: true })
 
-function onClickOutsideMore(e: MouseEvent) {
-  const wrap = (e.target as HTMLElement)?.closest('.profile-more-wrap')
-  if (!wrap) showMoreMenu.value = false
-}
 watch(showMoreMenu, (v) => {
   if (import.meta.client) {
     if (v) setTimeout(() => document.addEventListener('click', onClickOutsideMore), 0)
     else document.removeEventListener('click', onClickOutsideMore)
   }
 })
-onUnmounted(() => document.removeEventListener('click', onClickOutsideMore))
 
 async function checkBlocked() {
   if (!isLoggedIn.value || isSelf.value || !profile.value) return
@@ -895,15 +912,6 @@ async function shareProfile() {
     } catch { showToast('Không thể sao chép', 'error') }
   }
 }
-
-onMounted(() => {
-  fetchPosts()
-  checkFollowing()
-  checkBlocked()
-  loadHeatmap()
-  if (isSelf.value) { loadAchievements() }
-  if (tab.value === 'collections' && isSelf.value) fetchCollections()
-})
 
 watch(userId, async () => {
   tab.value = 'posts'

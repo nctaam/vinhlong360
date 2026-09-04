@@ -326,11 +326,10 @@
           :message="`Không có bài viết nào khớp “${searchQuery}”.`"
         />
 
-        <EmptyState
-          v-else-if="ugcUnavailable"
-          icon-name="sparkles" title="Cộng đồng sắp mở"
-          message="Tính năng cộng đồng đang được hoàn thiện. Bạn sẽ sớm có thể chia sẻ trải nghiệm, đánh giá địa điểm và kết nối với những người yêu Vĩnh Long."
-        />
+        <div v-else-if="ugcUnavailable" class="feed-error" data-service-state="503">
+          <p>Dịch vụ cộng đồng đang tạm thời gián đoạn (503). Vui lòng thử lại sau ít phút.</p>
+          <button type="button" class="btn btn-outline btn-sm" @click="fetchFeed(true)">Thử lại</button>
+        </div>
 
         <div v-else-if="feedError && !displayPosts.length" class="feed-error">
           <p>Không thể tải bảng tin.</p>
@@ -1012,7 +1011,7 @@ function setTab(tab: FeedTab) {
 async function fetchFeed(reset = false) {
   normalizeCommunityRouteState()
   if (activeTab.value === 'bookmarks') { await fetchBookmarks(reset); return }
-  if (reset) { page.value = 1; posts.value = []; feedError.value = false }
+  if (reset) { page.value = 1; posts.value = []; feedError.value = false; ugcUnavailable.value = false }
   feedAbort?.abort()
   feedAbort = new AbortController()
   loading.value = true

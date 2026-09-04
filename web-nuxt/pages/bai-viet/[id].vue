@@ -170,7 +170,7 @@
     </div>
 
     <div v-else class="empty-state-wrap">
-      <EmptyState v-if="postFetchFailed" icon-name="alert-triangle" title="Không thể tải bài viết" message="Lỗi kết nối. Vui lòng thử lại.">
+      <EmptyState v-if="postFetchFailed" icon-name="alert-triangle" title="Không thể tải bài viết" :message="postErrorMessage">
         <button type="button" class="btn btn-outline btn-sm" @click="refreshPost()">Thử lại</button>
       </EmptyState>
       <EmptyState v-else icon-name="search" title="Không tìm thấy bài viết" message="Bài viết có thể đã bị xoá hoặc đường dẫn không đúng.">
@@ -314,17 +314,74 @@ const userInitial = computed(() => {
 })
 
 const postFetchFailed = ref(false)
-const { data: post, pending, refresh: refreshPost } = await useAsyncData(`post-${postId.value}`, async (): Promise<Post | null> => {
+const postFetchStatusCode = ref<number | null>(null)
+const postErrorMessage = computed(() => {
+  if (postFetchStatusCode.value === 429) return 'Hệ thống đang bận (429). Vui lòng đợi trong giây lát rồi thử lại.'
+  if (postFetchStatusCode.value === 503) return 'Dịch vụ đang tạm thời gián đoạn (503). Vui lòng thử lại sau.'
+  if (postFetchStatusCode.value === 404) return 'Không tìm thấy bài viết này.'
+  return 'Lỗi kết nối máy chủ. Vui lòng thử lại.'
+})
+
+const relatedPosts = ref<any[]>([])
+async function fetchRelated() {
+  try {
+    // declutter-3 T3: 4→2 — related là engagement-driver nhưng 4 card đè phần bình luận
+    const params = new URLSearchParams({ limit: '2' })
+    const res = await $fetch<any>(`/api/posts/${encodedPostId.value}/related?${params}`)
+    relatedPosts.value = res.posts || []
+  } catch { /* non-critical */ }
+}
+
+function onClickOutsideMention(e: MouseEvent) {
+  if (mentionOpen.value && !(e.target as HTMLElement)?.closest('.comment-mention-wrap')) {
+    closeMentionComment()
+  }
+}
+
+function onBeforeUnload(e: BeforeUnloadEvent) {
+  if (editing.value && editContent.value !== (post.value?.content || '')) {
+    e.preventDefault()
+  }
+}
+
+const postAsyncData = useAsyncData(`post-${postId.value}`, async (): Promise<Post | null> => {
   try {
     postFetchFailed.value = false
+    postFetchStatusCode.value = null
     const res = await apiFetch<PostDetailResponse | Post>(`/api/posts/${encodedPostId.value}`, { headers: authHeaders() })
     return (res as PostDetailResponse).post || (res as Post)
   } catch (e: unknown) {
-    if (getStatusCode(e) === 401) handleSessionExpired()
+    const status = getStatusCode(e)
+    postFetchStatusCode.value = status ?? 500
+    if (status === 401) handleSessionExpired()
     postFetchFailed.value = true
     return null
   }
 })
+const post = postAsyncData.data
+const pending = postAsyncData.pending
+const refreshPost = postAsyncData.refresh
+
+onMounted(() => {
+  document.addEventListener('click', onClickOutsideMention)
+  if (import.meta.client) window.addEventListener('beforeunload', onBeforeUnload)
+  fetchComments()
+  fetchRelated()
+  trackCurrentPost()
+  // mở editor khi điều hướng từ trang khác: /bai-viet/{id}?edit=1 (chủ bài)
+  if (route.query.edit === '1' && isLoggedIn.value && post.value
+      && String((post.value as any).user_id) === String(user.value?.id)) {
+    startEdit()
+  }
+})
+
+onUnmounted(() => {
+  document.removeEventListener('click', onClickOutsideMention)
+  if (import.meta.client) window.removeEventListener('beforeunload', onBeforeUnload)
+})
+
+await postAsyncData
+
 if (import.meta.server && !post.value && !postFetchFailed.value) {
   throw createError({ statusCode: 404, statusMessage: 'Không tìm thấy bài viết' })
 }
@@ -460,46 +517,6 @@ function toggleBookmark(id: string) {
 }
 
 const { timeAgo } = useTimeAgo()
-
-const relatedPosts = ref<any[]>([])
-async function fetchRelated() {
-  try {
-    // declutter-3 T3: 4→2 — related là engagement-driver nhưng 4 card đè phần bình luận
-    const params = new URLSearchParams({ limit: '2' })
-    const res = await $fetch<any>(`/api/posts/${encodedPostId.value}/related?${params}`)
-    relatedPosts.value = res.posts || []
-  } catch { /* non-critical */ }
-}
-
-function onClickOutsideMention(e: MouseEvent) {
-  if (mentionOpen.value && !(e.target as HTMLElement)?.closest('.comment-mention-wrap')) {
-    closeMentionComment()
-  }
-}
-
-function onBeforeUnload(e: BeforeUnloadEvent) {
-  if (editing.value && editContent.value !== (post.value?.content || '')) {
-    e.preventDefault()
-  }
-}
-
-onMounted(() => {
-  document.addEventListener('click', onClickOutsideMention)
-  if (import.meta.client) window.addEventListener('beforeunload', onBeforeUnload)
-  fetchComments()
-  fetchRelated()
-  trackCurrentPost()
-  // mở editor khi điều hướng từ trang khác: /bai-viet/{id}?edit=1 (chủ bài)
-  if (route.query.edit === '1' && isLoggedIn.value && post.value
-      && String((post.value as any).user_id) === String(user.value?.id)) {
-    startEdit()
-  }
-})
-
-onUnmounted(() => {
-  document.removeEventListener('click', onClickOutsideMention)
-  if (import.meta.client) window.removeEventListener('beforeunload', onBeforeUnload)
-})
 
 watch(postId, async () => {
   comments.value = []
