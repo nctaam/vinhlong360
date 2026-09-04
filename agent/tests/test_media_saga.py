@@ -699,6 +699,17 @@ def test_provider_malformed_cover_or_credit_is_rejected_before_entity_mutation(
     assert suggestion.get("approved_by") in (None, "")
 
 
+def test_approval_upload_normalization_keeps_supported_sizes_only():
+    import control_plane.saga as saga
+
+    normalized = saga._normalize_approval_upload(
+        {"sm": " /media/sm.webp ", "md": "/media/md.webp", "credit": "CC0", "extra": "ignored"}
+    )
+
+    assert normalized == {"sm": "/media/sm.webp", "md": "/media/md.webp"}
+    assert saga._approval_cover(normalized) == "/media/md.webp"
+
+
 def test_store_receipt_pg_fallback_casts_meta_to_jsonb(monkeypatch):
     import control_plane.saga as saga
     from control_plane.concurrency import ClaimResult

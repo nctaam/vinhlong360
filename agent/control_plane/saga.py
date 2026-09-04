@@ -376,24 +376,192 @@ def _release_suggestion_claim(suggestion_id: str, marker: str | None) -> None:
         pass
 
 
+def _prepare_image_approval(
+    suggestion_id: str, actor_id: str, key: str
+) -> tuple[ClaimResult, SagaReceipt | None, Mapping[str, Any] | None]:
+    """Resolve durable replay/conflict and load a still-pending suggestion."""
+    claim, replay = _claim_command(key, suggestion_id, actor_id)
+    if replay is not None:
+        return claim, replay, None
+    if claim.conflict:
+        result = SagaReceipt("idempotency_conflict", key, error="idempotency_key_reused")
+        return claim, _store_receipt(key, result, None), None
+    with _SAGA_LOCK:
+        previous = _SAGA_RECEIPTS.get(key)
+    if previous is not None:
+        return claim, previous, None
+    suggestion = _imgq.get_suggestion(suggestion_id)
+    if not suggestion:
+        result = _suggestion_receipt(suggestion_id, actor_id, key, "not_found")
+        return claim, _store_receipt(key, result, claim), None
+    if suggestion.get("status") != "pending":
+        result = _suggestion_receipt(
+            suggestion_id, actor_id, key, "not_pending",
+            current_status=suggestion.get("status"),
+        )
+        return claim, _store_receipt(key, result, claim), None
+    return claim, None, suggestion
+
+
+def _normalize_approval_upload(uploaded: Any) -> dict[str, str]:
+    """Validate provider output before any entity mutation."""
+    if not isinstance(uploaded, Mapping):
+        raise RuntimeError("provider_invalid_response")
+    normalized: dict[str, str] = {}
+    for size in ("sm", "md", "lg"):
+        if size not in uploaded:
+            continue
+        value = uploaded.get(size)
+        if not isinstance(value, str) or not value.strip() or not (
+            value.strip().startswith("/")
+            or value.strip().startswith(("http://", "https://"))
+        ):
+            raise RuntimeError("provider_malformed_cover")
+        normalized[size] = value.strip()
+    if not normalized:
+        raise RuntimeError("provider_missing_cover")
+    if "credit" in uploaded:
+        credit = uploaded.get("credit")
+        if not isinstance(credit, str) or not credit.strip():
+            raise RuntimeError("provider_malformed_credit")
+    return normalized
+
+
+def _approval_cover(uploaded: Mapping[str, str]) -> str:
+    return uploaded.get("md") or uploaded.get("lg") or uploaded.get("sm") or ""
+
+
+def _upload_approval_media(
+    suggestion: Mapping[str, Any], actor_id: str, key: str, image_data: bytes | None
+) -> tuple[dict[str, str] | None, SagaReceipt | None]:
+    """Upload media and compensate provider objects on an exposed failure."""
+    try:
+        uploaded = storage.upload_image_set(
+            image_data if image_data is not None else fetch_image_data(suggestion),
+            "entities", f"{suggestion['entity_id']}-{suggestion['id']}",
+        )
+        return _normalize_approval_upload(uploaded), None
+    except Exception as exc:
+        try:
+            orphan = _cleanup_uploaded(storage, str(suggestion["id"]), getattr(exc, "urls", {}))
+        except Exception:
+            logger.error("media compensation failed for %s", suggestion["id"], exc_info=True)
+            orphan = True
+        result = _suggestion_receipt(
+            str(suggestion["id"]), actor_id, key,
+            "failed_orphaned" if orphan else "failed_compensated",
+            error=type(exc).__name__, orphan_cleanup_pending=orphan,
+        )
+        return None, result
+
+
+def _compose_approved_entity(
+    before: Mapping[str, Any], suggestion: Mapping[str, Any], cover: str
+) -> dict[str, Any]:
+    """Merge the approved cover and attribution into the latest entity row."""
+    images = list(before.get("images") or [])
+    if len(images) >= 10:
+        raise RuntimeError("image_limit")
+    if cover and cover not in images:
+        images.append(cover)
+    entity = copy.deepcopy(before)
+    entity["images"] = images
+    attrs = entity.get("attributes") if isinstance(entity.get("attributes"), dict) else {}
+    credits = list(attrs.get("image_credits") or [])
+    credits.append({
+        "url": cover,
+        "license": suggestion.get("license") or "",
+        "author": suggestion.get("author") or "",
+        "source": suggestion.get("source") or "",
+        "source_url": suggestion.get("candidate_url") or "",
+        "wp_title": suggestion.get("wp_title") or "",
+    })
+    attrs["image_credits"] = credits
+    entity["attributes"] = attrs
+    entity["updatedAt"] = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+    return entity
+
+
+def _commit_image_approval(
+    suggestion: Mapping[str, Any], actor_id: str, key: str,
+    uploaded: Mapping[str, str], fallback_entity: Mapping[str, Any],
+) -> Any:
+    """Commit entity, audit, suggestion status, and generation atomically."""
+    cover = _approval_cover(uploaded)
+    with _entity_approval_lock(str(suggestion["entity_id"])):
+        with db._conn() as conn:
+            ph = db._ph
+            lock_clause = " FOR UPDATE" if getattr(db, "_use_pg", False) else ""
+            current_row = db._fetchone(
+                conn, f"SELECT * FROM entities WHERE id = {ph}{lock_clause}",
+                (suggestion["entity_id"],),
+            )
+            if not current_row:
+                raise RuntimeError("entity_not_found")
+            before = db._parse_entity(current_row) if hasattr(db, "_parse_entity") else copy.deepcopy(fallback_entity)
+            entity = _compose_approved_entity(before, suggestion, cover)
+            if hasattr(db, "_entity_writer"):
+                db._entity_writer().upsert(conn, entity)
+            if hasattr(db, "_bump_sqlite_entity_revision"):
+                db._bump_sqlite_entity_revision(conn, before, entity)
+            revision_row = db._fetchone(
+                conn, f"SELECT revision FROM entities WHERE id = {db._ph}",
+                (suggestion["entity_id"],),
+            )
+            revision = int((db._row_to_dict(revision_row) or {}).get("revision") or 1)
+            record_entity_mutation(
+                suggestion["entity_id"], actor_id=actor_id, reason="image_approval",
+                correlation_id=key, before=before, after=entity, revision=revision,
+                conn=conn, database=db,
+            )
+            if not _imgq.mark_status(suggestion["id"], "approved", approved_by=actor_id, conn=conn):
+                raise RuntimeError("suggestion_not_pending")
+            return bump_generation(conn, suggestion["entity_id"], "image_approval", key)
+
+
+def _invalidate_approved_entity(entity_id: str, generation: Any) -> tuple[Mapping[str, Any], ...]:
+    """Invalidate caches after commit without turning a committed write into failure."""
+    try:
+        invalidate_entity(entity_id, reason="image_approval", generation=generation.generation)
+        return ({"effect": "invalidation", "status": "applied"},)
+    except Exception as exc:
+        logger.error("entity invalidation failed after image approval: %s", exc)
+        return ({"effect": "invalidation", "status": "failed", "error": type(exc).__name__},)
+
+
+def _approval_failure(
+    suggestion_id: str, actor_id: str, key: str, marker: str,
+    uploaded: Any, exc: Exception, claim: ClaimResult,
+) -> SagaReceipt:
+    """Turn a pre-commit failure into a receipt and release the pending claim."""
+    if getattr(exc, "commit_outcome_unknown", False):
+        result = _suggestion_receipt(
+            suggestion_id, actor_id, key, "commit_unknown",
+            error=type(exc).__name__, reconciliation_required=True,
+        )
+        return _store_receipt(key, result, claim)
+    try:
+        orphan = _cleanup_uploaded(storage, suggestion_id, uploaded)
+    except Exception:
+        logger.error("media compensation failed for %s", suggestion_id, exc_info=True)
+        orphan = True
+    result = _suggestion_receipt(
+        suggestion_id, actor_id, key,
+        "failed_orphaned" if orphan else "failed_compensated",
+        error=type(exc).__name__, orphan_cleanup_pending=orphan,
+    )
+    _release_suggestion_claim(suggestion_id, marker)
+    return _store_receipt(key, result, claim)
+
+
 def approve_image_suggestion(suggestion_id: str, actor_id: str, *, idempotency_key: str,
                              _image_data: bytes | None = None) -> SagaReceipt:
     """Approve a pending suggestion with upload compensation and exact retries."""
     key = str(idempotency_key).strip()
-    claim, replay = _claim_command(key, suggestion_id, actor_id)
-    if replay is not None:
-        return replay
-    if claim.conflict:
-        return _store_receipt(key, SagaReceipt("idempotency_conflict", key, error="idempotency_key_reused"), None)
-    with _SAGA_LOCK:
-        previous = _SAGA_RECEIPTS.get(key)
-        if previous is not None:
-            return previous
-    suggestion = _imgq.get_suggestion(suggestion_id)
-    if not suggestion:
-        return _store_receipt(key, _suggestion_receipt(suggestion_id, actor_id, key, "not_found"), claim)
-    if suggestion.get("status") != "pending":
-        return _store_receipt(key, _suggestion_receipt(suggestion_id, actor_id, key, "not_pending", current_status=suggestion.get("status")), claim)
+    claim, immediate, suggestion = _prepare_image_approval(suggestion_id, actor_id, key)
+    if immediate is not None:
+        return immediate
+    assert suggestion is not None
     claimed, claim_error = _claim_suggestion(suggestion_id, actor_id, key)
     if not claimed:
         return _store_receipt(key, _suggestion_receipt(suggestion_id, actor_id, key, claim_error or "in_progress"), claim)
@@ -406,114 +574,19 @@ def approve_image_suggestion(suggestion_id: str, actor_id: str, *, idempotency_k
             result = _suggestion_receipt(suggestion_id, actor_id, key, "not_found")
             _release_suggestion_claim(suggestion_id, claim_marker)
             return _store_receipt(key, result, claim)
-        try:
-            uploaded = storage.upload_image_set(
-                _image_data if _image_data is not None else fetch_image_data(suggestion),
-                "entities", f"{suggestion['entity_id']}-{suggestion_id}"
-            )
-        except Exception as exc:
-            # Providers can fail after creating objects; clean up any URLs they
-            # exposed on the exception or partial return path.
-            try:
-                orphan = _cleanup_uploaded(storage, suggestion_id, getattr(exc, "urls", {}))
-            except Exception:
-                logger.error("media compensation failed for %s", suggestion_id, exc_info=True)
-                orphan = True
-            result = _suggestion_receipt(suggestion_id, actor_id, key,
-                                         "failed_orphaned" if orphan else "failed_compensated",
-                                         error=type(exc).__name__, orphan_cleanup_pending=orphan)
+        uploaded, upload_failure = _upload_approval_media(suggestion, actor_id, key, _image_data)
+        if upload_failure is not None:
             _release_suggestion_claim(suggestion_id, claim_marker)
-            return _store_receipt(key, result, claim)
-        if not isinstance(uploaded, Mapping):
-            raise RuntimeError("provider_invalid_response")
-        # Every returned size must be a usable URL/path; accepting one valid
-        # size while silently ignoring a malformed sibling can hide provider
-        # corruption and leave an incomplete media set.
-        normalized_uploaded: dict[str, str] = {}
-        for size in ("sm", "md", "lg"):
-            if size not in uploaded:
-                continue
-            value = uploaded.get(size)
-            if not isinstance(value, str) or not value.strip() or not (
-                value.strip().startswith("/") or value.strip().startswith(("http://", "https://"))
-            ):
-                raise RuntimeError("provider_malformed_cover")
-            normalized_uploaded[size] = value.strip()
-        if not normalized_uploaded:
-            raise RuntimeError("provider_missing_cover")
-        if "credit" in uploaded:
-            credit = uploaded.get("credit")
-            if not isinstance(credit, str) or not credit.strip():
-                raise RuntimeError("provider_malformed_credit")
-        uploaded = normalized_uploaded
-        cover = uploaded.get("md") or uploaded.get("lg") or uploaded.get("sm")
-        with _entity_approval_lock(suggestion["entity_id"]):
-            with db._conn() as conn:
-                ph = db._ph
-                lock_clause = " FOR UPDATE" if getattr(db, "_use_pg", False) else ""
-                current_row = db._fetchone(
-                    conn, f"SELECT * FROM entities WHERE id = {ph}{lock_clause}",
-                    (suggestion["entity_id"],),
-                )
-                if not current_row:
-                    raise RuntimeError("entity_not_found")
-                before = db._parse_entity(current_row) if hasattr(db, "_parse_entity") else copy.deepcopy(entity)
-                images = list(before.get("images") or [])
-                if len(images) >= 10:
-                    raise RuntimeError("image_limit")
-                entity = copy.deepcopy(before)
-                if cover and cover not in images:
-                    images.append(cover)
-                entity["images"] = images
-                attrs = entity.get("attributes") if isinstance(entity.get("attributes"), dict) else {}
-                credits = list(attrs.get("image_credits") or [])
-                credits.append({"url": cover, "license": suggestion.get("license") or "", "author": suggestion.get("author") or "", "source": suggestion.get("source") or "", "source_url": suggestion.get("candidate_url") or "", "wp_title": suggestion.get("wp_title") or ""})
-                attrs["image_credits"] = credits
-                entity["attributes"] = attrs
-                entity["updatedAt"] = datetime.now(timezone.utc).strftime("%Y-%m-%d")
-                if hasattr(db, "_entity_writer"):
-                    db._entity_writer().upsert(conn, entity)
-                if hasattr(db, "_bump_sqlite_entity_revision"):
-                    db._bump_sqlite_entity_revision(conn, before, entity)
-                revision_row = db._fetchone(conn, f"SELECT revision FROM entities WHERE id = {db._ph}", (suggestion["entity_id"],))
-                revision = int((db._row_to_dict(revision_row) or {}).get("revision") or 1)
-                record_entity_mutation(suggestion["entity_id"], actor_id=actor_id, reason="image_approval", correlation_id=key, before=before, after=entity, revision=revision, conn=conn, database=db)
-                if not _imgq.mark_status(suggestion_id, "approved", approved_by=actor_id, conn=conn):
-                    raise RuntimeError("suggestion_not_pending")
-                snapshot = bump_generation(conn, suggestion["entity_id"], "image_approval", key)
-        try:
-            invalidate_entity(suggestion["entity_id"], reason="image_approval", generation=snapshot.generation)
-            post_commit_effects = ({"effect": "invalidation", "status": "applied"},)
-        except Exception as invalidation_error:
-            # The entity transaction is already committed; cache invalidation is
-            # retryable observation and must never delete committed media.
-            logger.error("entity invalidation failed after image approval: %s", invalidation_error)
-            post_commit_effects = ({"effect": "invalidation", "status": "failed",
-                                    "error": type(invalidation_error).__name__},)
+            return _store_receipt(key, upload_failure, claim)
+        assert uploaded is not None
+        snapshot = _commit_image_approval(suggestion, actor_id, key, uploaded, entity)
+        post_commit_effects = _invalidate_approved_entity(suggestion["entity_id"], snapshot)
+        cover = _approval_cover(uploaded)
         result = _suggestion_receipt(suggestion_id, actor_id, key, "committed", url=cover, sizes=uploaded,
                                      post_commit_effects=post_commit_effects)
         return _store_receipt(key, result, claim)
     except Exception as exc:
-        if getattr(exc, "commit_outcome_unknown", False):
-            # The database may have committed. Never delete provider objects
-            # or release the claim as if this were a pre-commit failure.
-            result = _suggestion_receipt(
-                suggestion_id, actor_id, key, "commit_unknown",
-                error=type(exc).__name__, reconciliation_required=True,
-            )
-            return _store_receipt(key, result, claim)
-        try:
-            orphan = _cleanup_uploaded(storage, suggestion_id, uploaded)
-        except Exception:
-            # A malformed provider object must not mask the saga receipt or
-            # prevent releasing the pending-row claim.
-            logger.error("media compensation failed for %s", suggestion_id, exc_info=True)
-            orphan = True
-        result = _suggestion_receipt(suggestion_id, actor_id, key,
-                                     "failed_orphaned" if orphan else "failed_compensated",
-                                     error=type(exc).__name__, orphan_cleanup_pending=orphan)
-        _release_suggestion_claim(suggestion_id, claim_marker)
-        return _store_receipt(key, result, claim)
+        return _approval_failure(suggestion_id, actor_id, key, claim_marker, uploaded, exc, claim)
 __all__ = ["SagaStep", "SagaReceipt", "MutationAuditEnvelope", "AuditEnvelope",
            "run_saga", "approve_image_suggestion", "peek_approval_receipt", "cleanup_uploaded_media",
            "record_entity_mutation"]
