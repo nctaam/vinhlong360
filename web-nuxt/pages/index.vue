@@ -237,7 +237,7 @@
             <h2>Từ <em class="ac-neutral">cộng đồng</em></h2>
             <p class="sh-sub">Trải nghiệm thật, mẹo hay từ người đi trước</p>
           </div>
-          <NuxtLink class="see-all" to="/cong-dong">Đọc thêm chuyện người đi trước →</NuxtLink>
+          <NuxtLink class="see-all" to="/cong-dong">Đọc thêm chuyện người đi trước <IconLine name="arrow-right" class="inline-arrow" aria-hidden="true" /></NuxtLink>
         </div>
         <template v-if="communityPosts.length">
           <p v-if="communityStats && (communityStats.posts || communityStats.reviews || communityStats.members)" class="community-stats-line">
@@ -251,7 +251,7 @@
           </div>
           <!-- declutter-3 T16 (B1-6): dàn chip leaderboard → 1 link teaser (đích /bang-xep-hang) -->
           <p v-if="topMembers.length" class="home-leaders-teaser">
-            <IconLine name="trophy" /> <NuxtLink to="/bang-xep-hang">Xem thành viên tích cực →</NuxtLink>
+            <IconLine name="trophy" /> <NuxtLink to="/bang-xep-hang">Xem thành viên tích cực <IconLine name="arrow-right" class="inline-arrow" aria-hidden="true" /></NuxtLink>
           </p>
           <div class="scroll-row" role="region" aria-label="Bài viết cộng đồng mới" tabindex="0">
             <NuxtLink v-for="p in communityPosts" :key="p.id" :to="postPath(p.id)" class="cm-card">
@@ -1061,10 +1061,28 @@ html.js .home .hero-enter h1::after { animation: hero-underline-draw .8s var(--e
 .dark .tt-chip { background: rgba(var(--white-rgb),.06); border-color: rgba(var(--white-rgb),.1); }
 .dark .tt-chip:hover { background: rgba(var(--white-rgb),.1); }
 
-/* declutter-3 T16 (B1-6): dàn chip leaderboard → 1 dòng teaser */
 .home-leaders-teaser { display: flex; align-items: center; gap: var(--space-2); margin: 0 0 var(--space-4); font-size: var(--text-sm); font-weight: var(--weight-semibold); }
 .home-leaders-teaser a { color: var(--color-action); text-decoration: none; }
 .home-leaders-teaser a:hover { text-decoration: underline; }
+.see-all .inline-arrow,
+.home-leaders-teaser a .inline-arrow {
+  display: inline-block;
+  vertical-align: middle;
+  width: 15px;
+  height: 15px;
+  margin-left: var(--space-1);
+  transition: transform .2s var(--ease-out-expo);
+}
+.see-all:hover .inline-arrow,
+.home-leaders-teaser a:hover .inline-arrow {
+  transform: translateX(3px);
+}
+@media (prefers-reduced-motion: reduce) {
+  .see-all:hover .inline-arrow,
+  .home-leaders-teaser a:hover .inline-arrow {
+    transform: none;
+  }
+}
 
 .cm-card { display: flex; flex-direction: column; background: var(--card); border: .5px solid var(--line); border-radius: var(--radius); overflow: hidden; box-shadow: var(--shadow-xs); text-decoration: none; color: var(--ink); transition: transform .35s var(--ease-out-expo), box-shadow .35s var(--ease-out-expo), border-color .3s var(--ease-out); }
 .cm-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-md); border-color: var(--border); }

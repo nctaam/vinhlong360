@@ -1,6 +1,6 @@
 <template>
   <section class="page ce-area">
-    <Breadcrumb :items="[{ label: 'Trang chủ', to: '/' }, { label: areaMeta?.name || 'Khu vực' }]" />
+    <Breadcrumb :items="breadcrumbItems" :json-ld="true" />
 
     <!-- Hero -->
     <section v-if="areaMeta" class="catalog-hero area-hero" :class="'cat-area-' + areaKey" :style="areaTint">
@@ -126,15 +126,15 @@
       <h2>Khám phá thêm {{ areaMeta.name }}</h2>
       <div class="cross-links">
         <NuxtLink :to="`/du-lich?type=experience&mua=all`" class="cross-card">
-          <span class="cross-icon" aria-hidden="true">🌾</span>
+          <span class="cross-icon" aria-hidden="true"><IconLine name="sprout" /></span>
           <div><strong>Trải nghiệm</strong><p>Miệt vườn sông nước</p></div>
         </NuxtLink>
         <NuxtLink to="/san-pham" class="cross-card">
-          <span class="cross-icon" aria-hidden="true">🍊</span>
+          <span class="cross-icon" aria-hidden="true"><IconLine name="fruit" /></span>
           <div><strong>Sản phẩm</strong><p>Đặc sản địa phương</p></div>
         </NuxtLink>
         <NuxtLink to="/luu-tru" class="cross-card">
-          <span class="cross-icon" aria-hidden="true">🏡</span>
+          <span class="cross-icon" aria-hidden="true"><IconLine name="home" /></span>
           <div><strong>Lưu trú</strong><p>Homestay, nhà vườn</p></div>
         </NuxtLink>
       </div>
@@ -258,13 +258,20 @@ function toggleExpand(type: string) {
   expanded[type] = !expanded[type]
 }
 
+const breadcrumbItems = computed(() => [
+  { label: 'Trang chủ', to: '/' },
+  { label: areaMeta?.name || 'Khu vực' },
+])
+
 if (areaMeta) {
   useSeoMeta({
     ogType: 'article',
     title: `Khu vực ${areaMeta.name} — vinhlong360`,
     description: areaMeta.blurb,
-    ogTitle: `${areaMeta.emoji} ${areaMeta.name} — vinhlong360`,
+    ogTitle: `Khu vực ${areaMeta.name} — vinhlong360`,
     ogDescription: areaMeta.blurb,
+    ogUrl: canonicalUrl(`/khu-vuc/${areaKey}`),
+    twitterCard: 'summary_large_image',
     ogImage: () => featuredImageMeta.value.ogImage,
     ogImageAlt: () => featuredImageMeta.value.ogImageAlt,
     twitterImage: () => featuredImageMeta.value.twitterImage,
@@ -273,29 +280,27 @@ if (areaMeta) {
 
   useHead(() => ({
     link: [{ rel: 'canonical', href: canonicalUrl(`/khu-vuc/${areaKey}`) }],
-    script: [{
-      type: 'application/ld+json',
-      innerHTML: safeJsonLd({
-        '@context': 'https://schema.org',
-        '@type': 'BreadcrumbList',
-        itemListElement: [
-          { '@type': 'ListItem', position: 1, name: 'Trang chủ', item: 'https://vinhlong360.vn/' },
-          { '@type': 'ListItem', position: 2, name: areaMeta.name, item: `https://vinhlong360.vn/khu-vuc/${areaKey}` },
-        ],
-      }),
-    }],
-  }))
-
-  useHead(() => ({
-    script: [{
-      type: 'application/ld+json',
-      innerHTML: safeJsonLd(itemListJsonLd(
-        `Khu vực ${areaMeta.name}`,
-        areaMeta.blurb,
-        `/khu-vuc/${areaKey}`,
-        entities.value,
-      )),
-    }],
+    script: [
+      {
+        type: 'application/ld+json',
+        innerHTML: safeJsonLd({
+          '@context': 'https://schema.org',
+          '@type': 'AdministrativeArea',
+          name: areaMeta.name,
+          description: areaMeta.blurb,
+          url: canonicalUrl(`/khu-vuc/${areaKey}`),
+        }),
+      },
+      {
+        type: 'application/ld+json',
+        innerHTML: safeJsonLd(itemListJsonLd(
+          `Khu vực ${areaMeta.name}`,
+          areaMeta.blurb,
+          `/khu-vuc/${areaKey}`,
+          entities.value,
+        )),
+      },
+    ],
   }))
 }
 </script>

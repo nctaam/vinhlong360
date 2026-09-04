@@ -5,7 +5,7 @@
     data-page-recipe="discovery"
     :data-material-accent="activeMode.accent"
   >
-    <Breadcrumb :items="[{ label: 'Trang chủ', to: '/' }, { label: 'Du lịch' }]" />
+    <Breadcrumb :items="[{ label: 'Trang chủ', to: '/' }, { label: 'Du lịch' }]" :json-ld="true" />
 
     <section
       class="atlas-hero"
@@ -466,45 +466,33 @@ useSeoMeta({
   description: () => pc('seo_description'),
   ogTitle: () => pc('og_title'),
   ogDescription: () => pc('og_description'),
+  ogUrl: canonicalUrl('/du-lich'),
+  twitterCard: 'summary_large_image',
 })
 
-useHead({
+useHead(() => ({
   link: [{ rel: 'canonical', href: canonicalUrl('/du-lich') }],
   script: [
     {
       type: 'application/ld+json',
-      innerHTML: JSON.stringify({
+      innerHTML: safeJsonLd({
         '@context': 'https://schema.org',
         '@type': 'CollectionPage',
         name: 'Du lịch Vĩnh Long',
         description: 'Trải nghiệm bản địa, điểm tham quan, lưu trú, làng nghề và ẩm thực khắp Vĩnh Long.',
-        url: 'https://vinhlong360.vn/du-lich',
+        url: canonicalUrl('/du-lich'),
         numberOfItems: allEntities.value.length,
       }),
     },
     {
       type: 'application/ld+json',
-      innerHTML: JSON.stringify({
-        '@context': 'https://schema.org',
-        '@type': 'BreadcrumbList',
-        itemListElement: [
-          { '@type': 'ListItem', position: 1, name: 'Trang chủ', item: 'https://vinhlong360.vn/' },
-          { '@type': 'ListItem', position: 2, name: 'Du lịch' },
-        ],
-      }),
+      innerHTML: safeJsonLd(itemListJsonLd(
+        'Du lịch Vĩnh Long, Bến Tre, Trà Vinh',
+        'Trải nghiệm bản địa, điểm tham quan, lưu trú, làng nghề và ẩm thực Vĩnh Long.',
+        '/du-lich',
+        filtered.value,
+      )),
     },
   ],
-})
-
-useHead(() => ({
-  script: [{
-    type: 'application/ld+json',
-    innerHTML: JSON.stringify(itemListJsonLd(
-      'Du lịch Vĩnh Long, Bến Tre, Trà Vinh',
-      'Trải nghiệm bản địa, điểm tham quan, lưu trú, làng nghề và ẩm thực Vĩnh Long.',
-      '/du-lich',
-      filtered.value,
-    )),
-  }],
 }))
 </script>

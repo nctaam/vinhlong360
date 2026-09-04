@@ -103,7 +103,7 @@
           </li>
         </ol>
         <div class="tip-box">
-          <p class="tip-line"><span aria-hidden="true">💡</span> Nhấn nút 💬 góc phải dưới bất kỳ trang nào để hỏi trợ lý AI — trả lời ngay về ẩm thực, du lịch, mùa vụ.</p>
+          <p class="tip-line"><IconLine name="bulb" class="callout-icon" aria-hidden="true" /> Nhấn nút <IconLine name="message" class="inline-chat-icon" aria-hidden="true" /> góc phải dưới bất kỳ trang nào để hỏi trợ lý AI — trả lời ngay về ẩm thực, du lịch, mùa vụ.</p>
         </div>
       </section>
 
@@ -117,7 +117,7 @@
           <summary class="topic-summary">
             <span class="topic-icon" aria-hidden="true">{{ t.icon }}</span>
             <span class="topic-title">{{ t.title }}</span>
-            <span class="topic-chevron" aria-hidden="true">▾</span>
+            <IconLine name="chevron-down" class="topic-chevron" aria-hidden="true" />
           </summary>
 
           <div class="topic-body">
@@ -137,7 +137,7 @@
                   <li v-for="(step, i) in sub.steps" :key="i">{{ step }}</li>
                 </ol>
                 <div v-if="sub.tips?.length" class="tip-box">
-                  <p v-for="(tip, i) in sub.tips" :key="i" class="tip-line"><span aria-hidden="true">💡</span> {{ tip }}</p>
+                  <p v-for="(tip, i) in sub.tips" :key="i" class="tip-line"><IconLine name="bulb" class="callout-icon" aria-hidden="true" /> {{ tip }}</p>
                 </div>
               </div>
             </div>
@@ -165,7 +165,8 @@
 
             <!-- Link -->
             <NuxtLink v-if="t.link" :to="t.link" class="topic-link">
-              {{ t.linkLabel || 'Đi tới trang' }} →
+              <span>{{ t.linkLabel || 'Đi tới trang' }}</span>
+              <IconLine name="arrow-right" class="topic-link-icon" aria-hidden="true" />
             </NuxtLink>
           </div>
         </details>
@@ -196,7 +197,7 @@
           <summary class="topic-summary">
             <span class="topic-icon" aria-hidden="true">{{ issue.icon }}</span>
             <span class="topic-title">{{ issue.title }}</span>
-            <span class="topic-chevron" aria-hidden="true">▾</span>
+            <IconLine name="chevron-down" class="topic-chevron" aria-hidden="true" />
           </summary>
           <div class="topic-body">
             <div v-for="(item, i) in issue.items" :key="i" class="troubleshoot-item">
@@ -1027,7 +1028,7 @@ useHead({ link: [{ rel: 'canonical', href: canonicalUrl('/huong-dan') }] })
 .topic-summary::-webkit-details-marker { display: none; }
 .topic-icon { font-size: 1.3rem; flex-shrink: 0; }
 .topic-title { flex: 1; }
-.topic-chevron { font-size: .75rem; color: var(--muted); transition: transform .2s; }
+.topic-chevron { width: 14px; height: 14px; color: var(--muted); transition: transform .2s var(--ease-out-expo); flex-shrink: 0; }
 .guide-topic[open] > .topic-summary .topic-chevron { transform: rotate(180deg); }
 .topic-body { padding: 0 var(--space-4) var(--space-4); }
 .topic-desc { color: var(--muted); font-size: var(--text-sm); line-height: var(--leading-relaxed); margin: 0 0 var(--space-3); }
@@ -1083,17 +1084,24 @@ useHead({ link: [{ rel: 'canonical', href: canonicalUrl('/huong-dan') }] })
 .warn-box .callout-icon { color: var(--color-material-clay); }
 .dyk-box .callout-icon { color: var(--color-material-river); }
 
+.inline-chat-icon { width: 15px; height: 15px; vertical-align: -0.15em; color: var(--primary-fg); margin: 0 2px; }
+
 .see-also { margin-top: var(--space-3); display: flex; flex-wrap: wrap; gap: var(--space-2); align-items: center; font-size: var(--text-xs); }
 .see-also-label { color: var(--muted); font-weight: var(--weight-semibold); }
 .see-also-link { color: var(--primary-fg); text-decoration: none; padding: 2px var(--space-2); background: rgba(var(--primary-rgb), .06); border-radius: var(--radius-control); }
 .see-also-link:hover { text-decoration: underline; }
 
 .topic-link {
-  display: inline-block; margin-top: var(--space-3);
+  display: inline-flex; align-items: center; gap: var(--space-1); margin-top: var(--space-3);
   font-size: var(--text-sm); font-weight: var(--weight-semibold);
   color: var(--primary-fg); text-decoration: none;
 }
 .topic-link:hover { text-decoration: underline; }
+.topic-link-icon { width: 14px; height: 14px; transition: transform .2s var(--ease-out-expo); }
+.topic-link:hover .topic-link-icon { transform: translateX(3px); }
+@media (prefers-reduced-motion: reduce) {
+  .topic-link:hover .topic-link-icon { transform: none; }
+}
 
 /* FAQ */
 .faq-block { margin-top: var(--space-4); }

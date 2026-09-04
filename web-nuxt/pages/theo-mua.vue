@@ -1,6 +1,6 @@
 <template>
   <div class="page">
-    <Breadcrumb :items="[{ label: 'Trang chủ', to: '/' }, { label: 'Theo mùa' }]" />
+    <Breadcrumb :items="[{ label: 'Trang chủ', to: '/' }, { label: 'Theo mùa' }]" :json-ld="true" />
 
     <!-- Hero — retints per quarter (class q-* on the section itself) so
          scrubbing the ring changes the whole hero's color temperature. -->
@@ -427,28 +427,20 @@ useSeoMeta({
   description: () => pc('seo_description'),
   ogTitle: () => pc('og_title'),
   ogDescription: () => pc('og_description'),
+  ogUrl: canonicalUrl('/theo-mua'),
+  twitterCard: 'summary_large_image',
 })
 useHead(() => ({
   link: [{ rel: 'canonical', href: canonicalUrl('/theo-mua') }],
   script: [{
     type: 'application/ld+json',
-    innerHTML: JSON.stringify({
+    innerHTML: safeJsonLd({
       '@context': 'https://schema.org',
       '@type': 'CollectionPage',
       name: `Tháng ${month.value}: đi đâu, ăn gì ở Vĩnh Long`,
       description: `Những mục đang mùa, ngon nhất vào tháng ${month.value} — trái cây, nông sản, ẩm thực, trải nghiệm miệt vườn.`,
       url: canonicalUrl('/theo-mua'),
       numberOfItems: wedge.value.length,
-    }),
-  }, {
-    type: 'application/ld+json',
-    innerHTML: JSON.stringify({
-      '@context': 'https://schema.org',
-      '@type': 'BreadcrumbList',
-      itemListElement: [
-        { '@type': 'ListItem', position: 1, name: 'Trang chủ', item: 'https://vinhlong360.vn/' },
-        { '@type': 'ListItem', position: 2, name: 'Theo mùa' },
-      ],
     }),
   }],
 }))

@@ -1,6 +1,6 @@
 <template>
   <div class="page events-page">
-    <Breadcrumb :items="[{ label: 'Trang chủ', to: '/' }, { label: 'Lễ hội' }]" />
+    <Breadcrumb :items="[{ label: 'Trang chủ', to: '/' }, { label: 'Lễ hội' }]" :json-ld="true" />
 
     <!-- Hero: "Đất này giữ lịch riêng" — lunar-first, time-aware -->
     <section class="catalog-hero cat-festival register-le-hoi">
@@ -566,6 +566,8 @@ useSeoMeta({
   description: () => pc('seo_description'),
   ogTitle: () => pc('og_title'),
   ogDescription: () => pc('og_description'),
+  ogUrl: canonicalUrl('/le-hoi'),
+  twitterCard: 'summary_large_image',
 })
 
 const festivalListSchema = computed(() => {
@@ -583,7 +585,7 @@ const festivalListSchema = computed(() => {
     },
   }))
   if (!items.length) return ''
-  return JSON.stringify({
+  return safeJsonLd({
     '@context': 'https://schema.org',
     '@type': 'ItemList',
     name: 'Lễ hội truyền thống',
@@ -593,34 +595,23 @@ const festivalListSchema = computed(() => {
   })
 })
 
-useHead({
+useHead(() => ({
   link: [{ rel: 'canonical', href: canonicalUrl('/le-hoi') }],
   script: [
     {
       type: 'application/ld+json',
-      innerHTML: JSON.stringify({
+      innerHTML: safeJsonLd({
         '@context': 'https://schema.org',
         '@type': 'CollectionPage',
         name: 'Lễ hội truyền thống',
         description: 'Lễ hội đình miếu, lễ Khmer, Nghinh Ông, giỗ danh nhân — truyền thống văn hóa Vĩnh Long, Bến Tre, Trà Vinh.',
-        url: 'https://vinhlong360.vn/le-hoi',
+        url: canonicalUrl('/le-hoi'),
         numberOfItems: allEvents.value.length,
-      }),
-    },
-    {
-      type: 'application/ld+json',
-      innerHTML: JSON.stringify({
-        '@context': 'https://schema.org',
-        '@type': 'BreadcrumbList',
-        itemListElement: [
-          { '@type': 'ListItem', position: 1, name: 'Trang chủ', item: 'https://vinhlong360.vn/' },
-          { '@type': 'ListItem', position: 2, name: 'Lễ hội' },
-        ],
       }),
     },
     ...(festivalListSchema.value ? [{ type: 'application/ld+json' as const, innerHTML: festivalListSchema.value }] : []),
   ],
-})
+}))
 </script>
 
 <!-- events.css nạp theo route (bỏ khỏi global entry.css) — dùng .event-*/.cal-*/.toggle-btn -->

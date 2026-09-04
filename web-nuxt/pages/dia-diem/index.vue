@@ -143,6 +143,7 @@
       <p v-if="loadMoreError" class="dd-load-error" role="alert">Không tải thêm được. <button type="button" class="btn-text" @click="loadMore">Thử lại</button></p>
       <button v-if="hasMore" type="button" class="btn btn-ghost dd-more" :disabled="loadingMore" @click="loadMore">
         {{ loadingMore ? 'Đang tải…' : loadMoreLabel }}
+        <IconLine v-if="!loadingMore" name="arrow-down" class="dd-more-icon" aria-hidden="true" />
       </button>
     </template>
     <!-- declutter-3 T14 (A3c): JourneyBar page-level — trang thuộc luồng lập-kế-hoạch -->
@@ -294,7 +295,7 @@ const loadMoreLabel = computed(() => {
   if (remaining <= 0) return ''
   const last = items.value[items.value.length - 1]
   const teaseName = last?.placeName || last?.place_name || last?.name
-  if (teaseName) return `Xem thêm — còn ${remaining} nơi nữa, kể cả gần ${teaseName} →`
+  if (teaseName) return `Xem thêm — còn ${remaining} nơi nữa, kể cả gần ${teaseName}`
   return `Xem thêm (còn ${remaining})`
 })
 
@@ -305,6 +306,8 @@ useSeoMeta({
   description: () => 'Khám phá toàn bộ điểm đến, đặc sản OCOP, làng nghề, lưu trú và di tích của Vĩnh Long, Bến Tre, Trà Vinh. Lọc theo loại hình và khu vực.',
   ogTitle: 'Danh bạ địa điểm — vinhlong360',
   ogDescription: 'Điểm đến, đặc sản, làng nghề, lưu trú và di tích Vĩnh Long — tìm theo loại và khu vực.',
+  ogUrl: canonicalUrl('/dia-diem'),
+  twitterCard: 'summary_large_image',
 })
 
 // JSON-LD: ItemList structured data for search engines
@@ -316,10 +319,26 @@ const listJsonLd = computed(() => {
     firstPage.value,
   )
 })
-useHead({
+useHead(() => ({
   link: [{ rel: 'canonical', href: canonicalUrl('/dia-diem') }],
-  script: [{ type: 'application/ld+json', innerHTML: () => JSON.stringify(listJsonLd.value) }],
-})
+  script: [
+    {
+      type: 'application/ld+json',
+      innerHTML: safeJsonLd({
+        '@context': 'https://schema.org',
+        '@type': 'CollectionPage',
+        name: 'Danh bạ địa điểm Vĩnh Long, Bến Tre, Trà Vinh',
+        description: 'Tất cả điểm đến, đặc sản, làng nghề, lưu trú và di tích của Vĩnh Long, Bến Tre, Trà Vinh.',
+        url: canonicalUrl('/dia-diem'),
+        numberOfItems: total.value,
+      }),
+    },
+    {
+      type: 'application/ld+json',
+      innerHTML: safeJsonLd(listJsonLd.value),
+    },
+  ],
+}))
 </script>
 
 <style scoped>
@@ -350,8 +369,12 @@ useHead({
 .dd-count { font-size: var(--text-sm); color: var(--muted); margin: 0 0 var(--space-4); }
 .dd-count strong { color: var(--ink); }
 
-.dd-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: var(--space-4); }
-.dd-more { display: block; margin: var(--space-5) auto 0; }
+.dd-more { display: inline-flex; align-items: center; justify-content: center; margin: var(--space-5) auto 0; gap: var(--space-1); }
+.dd-more-icon { width: 16px; height: 16px; transition: transform .2s var(--ease-out-expo); }
+.dd-more:hover .dd-more-icon { transform: translateY(2px); }
+@media (prefers-reduced-motion: reduce) {
+  .dd-more:hover .dd-more-icon { transform: none; }
+}
 .dd-load-error { text-align: center; color: var(--danger); font-size: var(--text-sm); margin: var(--space-3) 0; }
 .dd-load-error .btn-text { color: var(--primary-fg); font-weight: var(--weight-semibold); background: none; border: none; cursor: pointer; text-decoration: underline; }
 

@@ -1,6 +1,6 @@
 <template>
   <div class="page">
-    <Breadcrumb :items="[{ label: 'Trang chủ', to: '/' }, { label: 'Sản phẩm' }]" />
+    <Breadcrumb :items="[{ label: 'Trang chủ', to: '/' }, { label: 'Sản phẩm' }]" :json-ld="true" />
 
     <!-- Hero — "Phiên chợ đang họp" (month-alive market masthead; signature moment) -->
     <section class="catalog-hero cat-product market-hero" aria-label="Giới thiệu sản phẩm">
@@ -59,7 +59,7 @@
         <span class="ocop-teaser-copy">
           Trong {{ allEntities.length }} đặc sản này, <strong>{{ ocopCount }} món</strong> đã có sao OCOP — xem sổ vàng
         </span>
-        <span class="ocop-teaser-arrow" aria-hidden="true">→</span>
+        <IconLine name="arrow-right" class="ocop-teaser-arrow" aria-hidden="true" />
       </NuxtLink>
     </section>
 
@@ -319,46 +319,34 @@ useSeoMeta({
   description: () => pc('seo_description'),
   ogTitle: () => pc('og_title'),
   ogDescription: () => pc('og_description'),
+  ogUrl: canonicalUrl('/san-pham'),
+  twitterCard: 'summary_large_image',
 })
 
-useHead({
+useHead(() => ({
   link: [{ rel: 'canonical', href: canonicalUrl('/san-pham') }],
   script: [
     {
       type: 'application/ld+json',
-      innerHTML: JSON.stringify({
+      innerHTML: safeJsonLd({
         '@context': 'https://schema.org',
         '@type': 'CollectionPage',
         name: 'Sản phẩm địa phương Vĩnh Long',
         description: 'Đặc sản & sản phẩm OCOP Vĩnh Long theo mùa.',
-        url: 'https://vinhlong360.vn/san-pham',
+        url: canonicalUrl('/san-pham'),
         numberOfItems: allEntities.value.length,
       }),
     },
     {
       type: 'application/ld+json',
-      innerHTML: JSON.stringify({
-        '@context': 'https://schema.org',
-        '@type': 'BreadcrumbList',
-        itemListElement: [
-          { '@type': 'ListItem', position: 1, name: 'Trang chủ', item: 'https://vinhlong360.vn/' },
-          { '@type': 'ListItem', position: 2, name: 'Sản phẩm' },
-        ],
-      }),
+      innerHTML: safeJsonLd(itemListJsonLd(
+        'Sản phẩm địa phương Vĩnh Long',
+        'Đặc sản và sản phẩm OCOP Vĩnh Long theo mùa.',
+        '/san-pham',
+        filtered.value,
+      )),
     },
   ],
-})
-
-useHead(() => ({
-  script: [{
-    type: 'application/ld+json',
-    innerHTML: JSON.stringify(itemListJsonLd(
-      'Sản phẩm địa phương Vĩnh Long',
-      'Đặc sản và sản phẩm OCOP Vĩnh Long theo mùa.',
-      '/san-pham',
-      filtered.value,
-    )),
-  }],
 }))
 </script>
 
@@ -529,12 +517,23 @@ useHead(() => ({
 .ocop-teaser-icon { font-size: 1.3rem; flex-shrink: 0; }
 .ocop-teaser-copy { flex: 1; font-size: var(--text-sm); color: var(--muted); }
 .ocop-teaser-copy strong { color: var(--ink); font-weight: var(--weight-semibold); }
-.ocop-teaser-arrow { color: var(--secondary-fg, var(--secondary)); font-weight: var(--weight-semibold); flex-shrink: 0; }
+.ocop-teaser-arrow {
+  color: var(--secondary-fg, var(--secondary));
+  flex-shrink: 0;
+  width: 18px;
+  height: 18px;
+  transition: transform .2s var(--ease-out-expo);
+}
+.ocop-teaser-link:hover .ocop-teaser-arrow {
+  transform: translateX(3px);
+}
 .dark .ocop-teaser-link { background: linear-gradient(90deg, rgba(var(--secondary-rgb), .1), transparent); }
 
 @media (prefers-reduced-motion: reduce) {
+  .seasonal-banner-live .seasonal-banner-icon { animation: none; }
   .season-reset-chip:active { transform: none; }
   .ocop-teaser-link:hover { transform: none; }
+  .ocop-teaser-link:hover .ocop-teaser-arrow { transform: none; }
 }
 
 @media (max-width: 640px) {
