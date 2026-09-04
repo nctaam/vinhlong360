@@ -42,6 +42,17 @@ def test_export_openapi_writes_live_route_document(tmp_path: Path) -> None:
     assert document["info"]["title"]
 
 
+def test_export_openapi_describes_streaming_chat_response(tmp_path: Path) -> None:
+    output = tmp_path / "openapi.json"
+    result = run_export(output)
+
+    assert result.returncode == 0, result.stderr
+    document = json.loads(output.read_text(encoding="utf-8"))
+    response = document["paths"]["/chat/stream"]["post"]["responses"]["200"]
+    assert "text/event-stream" in response["content"]
+    assert "application/json" not in response["content"]
+
+
 def test_export_openapi_is_byte_deterministic_and_credential_free(tmp_path: Path) -> None:
     first = tmp_path / "first.json"
     second = tmp_path / "second.json"

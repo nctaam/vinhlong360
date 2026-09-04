@@ -14,6 +14,10 @@ Python source code.
 - `schemas/pagination.schema.json` defines interoperable pagination metadata.
 - `frontend-endpoints.json` records the endpoint surface currently consumed by
   the Nuxt application.
+- `response-media-types.json` records runtime response media types that cannot
+  be inferred reliably from FastAPI's return annotation (currently the SSE
+  `/chat/stream` response); the exporter validates every override against a
+  live route before applying it.
 - `docs/api-contract.md` remains the human-readable business and migration
   guide; it is not a substitute for the machine-readable schemas.
 
