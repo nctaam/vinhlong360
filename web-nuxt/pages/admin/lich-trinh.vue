@@ -555,10 +555,9 @@ tr:hover .lt-stops-badge { transform: scale(1.1); }
   transition: border-color .2s, background .2s;
 }
 .lt-stop-row:hover { border-color: rgba(var(--blue-rgb),.28); background: rgba(var(--blue-rgb),.03); }
-/* Status colour-coding: a left accent bar for quick scanning. */
-.lt-stop-row { border-left-width: 3px; }
-.lt-stop-ok { border-left-color: rgba(var(--primary-rgb),.5); }
-.lt-stop-warn { border-left-color: rgba(var(--warning-rgb),.55); }
+/* Status colour-coding: a subtle accent for quick scanning. */
+.lt-stop-ok { border-color: rgba(var(--primary-rgb),.25); }
+.lt-stop-warn { border-color: rgba(var(--warning-rgb),.35); background: rgba(var(--warning-rgb),.03); }
 
 .lt-stop-order { display: flex; flex-direction: column; align-items: center; gap: 2px; flex: 0 0 auto; padding-top: 2px; }
 .lt-stop-num {

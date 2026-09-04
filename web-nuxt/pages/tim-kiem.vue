@@ -762,8 +762,8 @@ useHead({
 }
 .search-row-hero::before {
   content: "";
-  position: absolute; left: 0; top: 2px; bottom: 2px;
-  width: 4px; border-radius: var(--radius-full);
+  position: absolute; left: 0; top: 6px; bottom: 6px;
+  width: 2px; border-radius: var(--radius-full);
   background: var(--color-material-clay);
 }
 .search-row-hero .search-input-wrap input {

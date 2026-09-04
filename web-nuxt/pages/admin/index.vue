@@ -647,7 +647,7 @@ onMounted(fetchDashboard)
 .dash-comp-seg { display: grid; grid-template-columns: 72px 1fr 56px; align-items: center; gap: var(--space-2); margin-top: var(--space-1); }
 .dcs-label { font-size: var(--text-xs); color: var(--muted); }
 .dcs-bar { height: 8px; background: var(--line); border-radius: var(--radius-full); overflow: hidden; }
-.dcs-fill { height: 100%; border-radius: var(--radius-full); transition: width .4s var(--ease-out); }
+.dcs-fill { height: 100%; border-radius: var(--radius-full); }
 .dcs-val { font-size: var(--text-2xs); color: var(--muted); text-align: right; }
 .dash-comp-details { display: flex; gap: var(--space-4); margin-top: var(--space-3); font-size: .78rem; color: var(--muted); }
 .dash-orphan-link { color: inherit; text-decoration: none; border-bottom: 1px dashed rgb(var(--warning-rgb)); }

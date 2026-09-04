@@ -1114,7 +1114,7 @@ html.js .home .hero-enter h1::after { animation: hero-underline-draw .8s var(--e
   padding: var(--space-3) var(--space-4);
   border-radius: var(--radius);
   border: 1px solid var(--line);
-  background: var(--bg-card);
+  background: var(--card);
   color: var(--color-text);
   text-decoration: none;
   font-size: var(--text-xs);

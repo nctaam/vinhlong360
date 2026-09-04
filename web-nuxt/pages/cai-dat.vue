@@ -1283,7 +1283,7 @@ onUnmounted(() => {
 .recovery-list code { font-size: var(--text-sm); letter-spacing: 0.05em; }
 .rc-actions { display: flex; gap: var(--space-2); flex-wrap: wrap; }
 .qr-img { display: block; margin: var(--space-2) 0; border-radius: var(--radius-control); background: var(--white); padding: var(--space-2); }
-.settings-danger { border-color: rgba(var(--danger-rgb), .2); border-left: 3px solid var(--error); }
+.settings-danger { border: 1px solid rgba(var(--danger-rgb), .2); box-shadow: inset 3px 0 0 var(--error); }
 .danger-actions { display: flex; flex-direction: column; gap: .75rem; }
 .danger-item { display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
 .danger-item p { margin: 0; }
@@ -1296,7 +1296,7 @@ onUnmounted(() => {
 .notif-pref-info strong { display: block; font-size: var(--text-sm); }
 .notif-pref-info .sf-hint { display: block; margin-top: .1rem; }
 .toggle { appearance: none; width: 40px; height: 22px; background: var(--muted); border-radius: 11px; position: relative; cursor: pointer; transition: background .25s var(--ease-out); flex-shrink: 0; min-height: 44px; padding: 11px 0; box-sizing: content-box; }
-.toggle::after { content: ''; position: absolute; top: 2px; left: 2px; width: 18px; height: 18px; background: var(--white, var(--white)); border-radius: 50%; transition: transform .3s var(--ease-spring-gentle); box-shadow: 0 1px 3px rgba(var(--black-rgb),.15); }
+.toggle::after { content: ''; position: absolute; top: 2px; left: 2px; width: 18px; height: 18px; background: var(--white, var(--white)); border-radius: 50%; transition: transform .25s var(--ease-out-expo); box-shadow: 0 1px 3px rgba(var(--black-rgb),.15); }
 .toggle:checked { background: var(--accent, var(--primary)); }
 .toggle:checked::after { transform: translateX(18px); }
 .toggle:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
@@ -1328,7 +1328,7 @@ onUnmounted(() => {
 .delete-confirm p { margin: .2rem 0 0; color: var(--ink-700); font-size: var(--text-xs); }
 .delete-confirm-actions { display: flex; gap: var(--space-2); flex-shrink: 0; }
 .delete-confirm .btn { min-height: 44px; }
-.account-status { margin: var(--space-3) 0 0; padding: .75rem .85rem; border-left: 3px solid var(--primary); border-radius: var(--radius-control); background: var(--bg-alt); color: var(--ink-700); font-size: var(--text-sm); }
+.account-status { margin: var(--space-3) 0 0; padding: .75rem .85rem; border: 1px solid var(--border); box-shadow: inset 3px 0 0 var(--primary); border-radius: var(--radius-control); background: var(--bg-alt); color: var(--ink-700); font-size: var(--text-sm); }
 
 .login-fail { border-color: rgba(var(--danger-rgb), .3) !important; }
 .login-ok { color: var(--accent); font-weight: 600; font-size: var(--text-base); }

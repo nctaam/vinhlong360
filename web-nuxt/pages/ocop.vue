@@ -496,7 +496,8 @@ useHead(() => ({
   gap: var(--space-2);
   padding: var(--space-4);
   margin-bottom: var(--space-4);
-  border-left: 3px solid var(--secondary);
+  border: 1px solid color-mix(in srgb, var(--secondary) 25%, transparent);
+  box-shadow: inset 3px 0 0 var(--secondary);
   border-radius: var(--radius-control);
   background: linear-gradient(90deg, rgba(var(--secondary-rgb), .08), transparent);
 }
@@ -591,7 +592,7 @@ useHead(() => ({
     8% 48%, 0% 38%, 4% 28%, 5% 15%, 18% 13%, 26% 3%, 39% 7%
   );
   box-shadow: inset 0 2px 6px rgba(var(--black-rgb), .28), 0 4px 14px -6px rgba(var(--primary-rgb), .5);
-  animation: seal-stamp .4s var(--ease-spring-gentle) both;
+  animation: seal-stamp .4s var(--ease-out-expo) both;
 }
 .wax-seal-notches {
   position: absolute;

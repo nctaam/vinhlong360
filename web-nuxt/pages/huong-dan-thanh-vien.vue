@@ -205,10 +205,10 @@ useHead({
 .lv-req { font-size: var(--text-xs); color: var(--muted); }
 .lv-tag { font-size: var(--text-xs); font-weight: var(--weight-semibold); color: var(--primary-fg); background: rgba(var(--primary-rgb), .1); padding: .15rem .5rem; border-radius: var(--radius-full); white-space: nowrap; }
 
-.level-1 { --level-color: var(--leaf-600); border-left: 3px solid var(--level-color); }
-.level-2 { --level-color: var(--river-600); border-left: 3px solid var(--level-color); }
-.level-3 { --level-color: var(--amber-500); border-left: 3px solid var(--level-color); }
-.level-4 { --level-color: var(--amber-700); border-left: 3px solid var(--level-color); }
+.level-1 { --level-color: var(--leaf-600); box-shadow: inset 3px 0 0 var(--level-color); }
+.level-2 { --level-color: var(--river-600); box-shadow: inset 3px 0 0 var(--level-color); }
+.level-3 { --level-color: var(--amber-500); box-shadow: inset 3px 0 0 var(--level-color); }
+.level-4 { --level-color: var(--amber-700); box-shadow: inset 3px 0 0 var(--level-color); }
 
 /* Points table */
 .points-table-wrap { overflow-x: auto; margin-bottom: var(--space-4); }

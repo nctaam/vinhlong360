@@ -144,9 +144,9 @@ function onSearch() {
 
 .nf-btn-outline:hover { background: var(--accent); color: var(--text-on-dark, var(--white)); }
 
-.nf-inner { animation: nfIn .5s var(--ease-spring-gentle); }
+.nf-inner { animation: nfIn .5s var(--ease-out-expo); }
 @keyframes nfIn { from { opacity: 0; transform: translateY(16px) scale(.96); } to { opacity: 1; transform: translateY(0) scale(1); } }
-.nf-emoji { transition: transform .35s var(--ease-spring-gentle); }
+.nf-emoji { transition: transform .35s var(--ease-out-expo); }
 .nf-inner:hover .nf-emoji { transform: scale(1.1) rotate(-5deg); }
 .nf-btn:hover { transform: translateY(-1px); box-shadow: var(--shadow-md); }
 .nf-search button:active { transform: scale(.95); transition-duration: .08s; }

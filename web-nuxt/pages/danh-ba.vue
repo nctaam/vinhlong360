@@ -313,9 +313,9 @@ useHead(() => ({
    as .sediment-head's h2 tick / .region-window.active), replacing the flat
    single-tone border-left so each office entry reads as a considered
    directory record, not a generic list row. */
-.fac { position: relative; overflow: hidden; border: .5px solid var(--line); border-radius: var(--radius-sheet); padding: var(--space-5); background: linear-gradient(180deg, rgba(var(--primary-rgb), .04), transparent 60%), var(--card); box-shadow: var(--shadow-sm); transition: transform .35s var(--ease-spring-gentle), box-shadow .35s var(--ease-out-expo), border-color .3s var(--ease-out); }
+.fac { position: relative; overflow: hidden; border: .5px solid var(--line); border-radius: var(--radius-sheet); padding: var(--space-5); background: linear-gradient(180deg, rgba(var(--primary-rgb), .04), transparent 60%), var(--card); box-shadow: var(--shadow-sm); transition: transform .35s var(--ease-out-expo), box-shadow .35s var(--ease-out-expo), border-color .3s var(--ease-out); }
 .fac::before {
-  content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 4px;
+  content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 2px;
   background: linear-gradient(180deg, var(--river-600) 0%, var(--amber-600) 52%, var(--clay-600) 100%);
 }
 .dark .fac::before { background: linear-gradient(180deg, var(--river-legacy-dark) 0%, var(--amber-500) 52%, var(--clay-400) 100%); }
@@ -342,7 +342,7 @@ useHead(() => ({
 .fac-report:active:not(:disabled) { transform: scale(.97); }
 .fac-report:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
 .fac-skeleton { display: grid; gap: var(--space-3); }
-.fac-sk-item { border: .5px solid var(--line); border-left: 4px solid var(--secondary-fg); border-radius: var(--radius-sheet); padding: var(--space-5); background: var(--card); display: flex; flex-direction: column; gap: var(--space-2); }
+.fac-sk-item { border: 1px solid var(--line); box-shadow: inset 3px 0 0 var(--secondary-fg); border-radius: var(--radius-sheet); padding: var(--space-5); background: var(--card); display: flex; flex-direction: column; gap: var(--space-2); }
 .sk-bar {
   position: relative;
   height: 10px;

@@ -217,7 +217,7 @@
   display: flex; flex-direction: column;
   max-height: min(90vh, calc(100vh - 40px));
   overflow: hidden;
-  animation: modalIn .4s var(--ease-spring-gentle);
+  animation: modalIn .4s var(--ease-out-expo);
   border: .5px solid var(--line);
 }
 @keyframes modalIn { from { opacity: 0; transform: translateY(20px) scale(.95); } }
@@ -225,7 +225,7 @@
 /* Vue <Transition name="modal-fade"> */
 .modal-fade-enter-active .modal-overlay,
 .modal-fade-enter-active { animation: overlayFadeIn .2s var(--ease-out); }
-.modal-fade-enter-active .modal { animation: modalIn .4s var(--ease-spring-gentle); }
+.modal-fade-enter-active .modal { animation: modalIn .4s var(--ease-out-expo); }
 .modal-fade-leave-active .modal-overlay,
 .modal-fade-leave-active { animation: overlayFadeIn .2s var(--ease-out) reverse; }
 .modal-fade-leave-active .modal { animation: modalIn .25s var(--ease-out) reverse; }
@@ -255,7 +255,7 @@
   font-size: var(--text-sm); font-weight: var(--weight-semibold);
   box-shadow: var(--shadow-xl);
   pointer-events: auto;
-  animation: toastIn .35s var(--ease-spring-gentle), toastOut .35s var(--ease-out) 3s forwards;
+  animation: toastIn .35s var(--ease-out-expo), toastOut .35s var(--ease-out) 3s forwards;
   backdrop-filter: saturate(180%) blur(12px); -webkit-backdrop-filter: saturate(180%) blur(12px);
 }
 .toast.success { background: var(--secondary); }
@@ -354,7 +354,7 @@ a.tag:hover, button.tag:hover, .tag[role="button"]:hover { filter: brightness(.9
 .otp-resend:disabled { color: var(--muted); cursor: not-allowed; opacity: 1; }
 .otp-resend:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
 
-.quote-preview { display: flex; align-items: flex-start; gap: var(--space-2); margin: var(--space-2) 0; padding: var(--space-2) var(--space-3); border: 1px solid var(--border); border-left: 3px solid var(--primary); border-radius: var(--radius-surface); background: var(--bg-alt); }
+.quote-preview { display: flex; align-items: flex-start; gap: var(--space-2); margin: var(--space-2) 0; padding: var(--space-2) var(--space-3); border: 1px solid var(--border); box-shadow: inset 3px 0 0 var(--primary); border-radius: var(--radius-surface); background: var(--bg-alt); }
 .quote-preview-body { display: flex; flex-direction: column; gap: .15rem; min-width: 0; flex: 1; }
 .qp-head { font-size: var(--text-sm); color: var(--ink-700); }
 .qp-content { font-size: var(--text-sm); color: var(--ink); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
@@ -433,7 +433,7 @@ a.tag:hover, button.tag:hover, .tag[role="button"]:hover { filter: brightness(.9
   display: none; z-index: var(--z-dropdown);
 }
 .dark .dropdown-menu { border-color: rgba(255,255,255,.1); }
-.dropdown-menu.show { display: block; animation: dropdownIn .25s var(--ease-spring-gentle); }
+.dropdown-menu.show { display: block; animation: dropdownIn .25s var(--ease-out-expo); }
 @keyframes dropdownIn { from { opacity: 0; transform: translateY(-6px) scale(.97); } }
 .dropdown-item {
   display: flex; align-items: center; gap: var(--space-2);
@@ -526,9 +526,9 @@ a.tag:hover, button.tag:hover, .tag[role="button"]:hover { filter: brightness(.9
 .save-btn-sm.saved:hover { background: var(--white); }
 
 /* SVG heart icon */
-.save-icon { width: 20px; height: 20px; flex-shrink: 0; display: block; transition: transform .35s var(--ease-spring-gentle); }
+.save-icon { width: 20px; height: 20px; flex-shrink: 0; display: block; transition: transform .35s var(--ease-out-expo); }
 .save-btn-sm .save-icon { width: 18px; height: 18px; }
-.save-btn.saved .save-icon { animation: savePop .4s var(--ease-bounce); }
+.save-btn.saved .save-icon { animation: savePop .4s var(--ease-out-expo); }
 @keyframes savePop { 0% { transform: scale(1); } 30% { transform: scale(1.3); } 60% { transform: scale(.9); } 100% { transform: scale(1); } }
 @keyframes reactionPop { 0% { transform: scale(0); opacity: 0; } 50% { transform: scale(1.3); opacity: 1; } 100% { transform: scale(1); opacity: 1; } }
 @keyframes heartBeat { 0% { transform: scale(1); } 15% { transform: scale(1.25); } 30% { transform: scale(1); } 45% { transform: scale(1.15); } 60% { transform: scale(1); } }

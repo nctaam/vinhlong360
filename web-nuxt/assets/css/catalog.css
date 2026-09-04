@@ -287,9 +287,9 @@
 }
 
 [data-page-recipe="discovery"] .mode-pill[aria-pressed="true"] {
-  border-inline-start: 3px solid var(--color-brand);
+  border-color: var(--color-brand);
   background: var(--color-brand-surface);
-  box-shadow: none;
+  box-shadow: inset 0 0 0 1px var(--color-brand);
 }
 
 [data-page-recipe="discovery"] .mode-pill:focus-visible,
@@ -733,7 +733,7 @@
 /* optional star glyphs inside a quick-pick gently twinkle on hover
    (opt-in via .quick-pick-stars; existing quick-picks unaffected) */
 .quick-pick-stars { font-size: 1rem; letter-spacing: .04em; line-height: 1; }
-.quick-pick:hover .quick-pick-stars { animation: star-twinkle 1.2s var(--ease-spring) infinite; }
+.quick-pick:hover .quick-pick-stars { animation: star-twinkle 1.2s var(--ease-in-out) infinite; }
 @keyframes star-twinkle {
   0%, 100% { opacity: 1; }
   50%      { opacity: .4; }
@@ -1062,14 +1062,14 @@
 .timeline { list-style: none; margin: var(--space-5) 0 0; padding: 0 0 0 4px; }
 .step { display: grid; grid-template-columns: 120px 1fr; gap: var(--space-4); padding-bottom: var(--space-5); position: relative; }
 .step-time { font-weight: var(--weight-bold); color: var(--primary-fg-strong); font-size: var(--text-sm); padding-top: var(--space-4); }
-.step-card { display: flex; gap: var(--space-3); background: var(--card); border: .5px solid var(--line); border-left: 5px solid var(--secondary); border-radius: var(--radius-surface); padding: var(--space-4); box-shadow: var(--shadow-sm); transition: transform .35s var(--ease-spring-gentle), box-shadow .3s; }
-.step-card:hover { transform: translateX(3px); box-shadow: var(--shadow-md); }
+.step-card { display: flex; gap: var(--space-3); background: var(--card); border: 1px solid var(--line); border-radius: var(--radius-surface); padding: var(--space-4); box-shadow: var(--shadow-sm); transition: transform .35s var(--ease-out-expo), box-shadow .3s; }
+.step-card:hover { transform: translateX(3px); box-shadow: var(--shadow-md); border-color: var(--step-accent, var(--border)); }
 .step-card:active { transform: translateX(1px) scale(.98); transition-duration: .1s; }
-.step-card.cat-product { border-left-color: var(--accent); }
-.step-card.cat-attraction { border-left-color: var(--cat-attraction-accent); }
-.step-card.cat-dish { border-left-color: var(--cat-dish-accent); }
-.step-card.cat-craft { border-left-color: var(--cat-craft-accent); }
-.step-card.cat-accommodation { border-left-color: var(--cat-accommodation-accent); }
+.step-card.cat-product { --step-accent: var(--accent); }
+.step-card.cat-attraction { --step-accent: var(--cat-attraction-accent); }
+.step-card.cat-dish { --step-accent: var(--cat-dish-accent); }
+.step-card.cat-craft { --step-accent: var(--cat-craft-accent); }
+.step-card.cat-accommodation { --step-accent: var(--cat-accommodation-accent); }
 .step-emoji { font-size: 1.8rem; }
 .step-card h3 { margin: 2px 0; font-size: var(--text-base); }
 .stop-link { color: inherit; }
@@ -1427,10 +1427,10 @@
 }
 
 [data-color-system="tri-region-v1"][data-page-recipe="discovery"] .mode-pill[aria-pressed="true"] {
-  border-inline-start: 3px solid var(--color-brand);
+  border-color: var(--color-brand);
   background: var(--color-brand-surface);
   color: var(--color-text);
-  box-shadow: none;
+  box-shadow: inset 0 0 0 1px var(--color-brand);
 }
 
 /* Planner task surface: timeline remains usable when routing or map rendering fails. */
@@ -1470,14 +1470,13 @@
   gap: var(--space-3);
   align-items: center;
   padding: var(--space-3);
-  border: 1px solid var(--color-border);
-  border-inline-start-width: 3px;
+  border: 1px solid var(--friction-border, var(--color-border));
   border-radius: var(--radius-control);
-  background: var(--color-surface);
+  background: var(--friction-surface, var(--color-surface));
 }
-.planner-friction-notice--info { border-inline-start-color: var(--color-action); }
-.planner-friction-notice--warning { border-inline-start-color: var(--color-warning); }
-.planner-friction-notice--error { border-inline-start-color: var(--color-error); }
+.planner-friction-notice--info { --friction-border: color-mix(in srgb, var(--color-action) 35%, transparent); --friction-surface: color-mix(in srgb, var(--color-action) 6%, var(--color-surface)); }
+.planner-friction-notice--warning { --friction-border: color-mix(in srgb, var(--color-warning) 35%, transparent); --friction-surface: color-mix(in srgb, var(--color-warning) 6%, var(--color-surface)); }
+.planner-friction-notice--error { --friction-border: color-mix(in srgb, var(--color-error) 35%, transparent); --friction-surface: color-mix(in srgb, var(--color-error) 6%, var(--color-surface)); }
 .planner-friction-notice__body { min-width: 0; }
 .planner-friction-notice__label { display: block; margin-bottom: var(--space-1); font-size: var(--text-xs); font-weight: var(--weight-bold); letter-spacing: var(--tracking-caps); text-transform: uppercase; }
 .planner-friction-notice__body p { margin: 0; color: var(--color-text-muted); font-size: var(--text-sm); }

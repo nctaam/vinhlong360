@@ -31,8 +31,8 @@
   line-height: var(--leading-snug);
   font-weight: 500;
   color: var(--ink);
-  border-left: 3px solid var(--primary);
-  padding-left: var(--space-5);
+  padding: var(--space-4) 0;
+  border-block: 1px solid var(--line);
   margin: var(--space-editorial) 0;
   text-wrap: balance;
 }

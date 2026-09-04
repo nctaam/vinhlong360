@@ -368,7 +368,7 @@ onUnmounted(() => window.removeEventListener('keydown', onKeydown))
 
 /* ── Confidence bar (additive visual of match_confidence) ── */
 .img-conf-bar { height: 4px; border-radius: 100px; background: rgba(var(--gray-rgb),.18); overflow: hidden; }
-.img-conf-fill { display: block; height: 100%; border-radius: 100px; background: var(--muted); transition: width .3s var(--ease-soft); }
+.img-conf-fill { display: block; height: 100%; border-radius: 100px; background: var(--muted); }
 .img-conf-bar.conf-high .img-conf-fill { background: var(--secondary-fg); }
 .img-conf-bar.conf-mid .img-conf-fill { background: var(--warning); }
 .img-conf-bar.conf-low .img-conf-fill { background: var(--error); }

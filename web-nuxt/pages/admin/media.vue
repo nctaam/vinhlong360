@@ -320,7 +320,7 @@ onMounted(fetchMedia)
 .media-preview-url code { font-size: .75rem; background: var(--bg-alt); padding: 2px 6px; border-radius: 4px; }
 .media-preview-actions { display: flex; gap: var(--space-2); margin-top: var(--space-3); padding-top: var(--space-3); border-top: .5px solid var(--line); }
 
-.stat-card.status-warn { border-left: 4px solid var(--warning); }
+.stat-card.status-warn { box-shadow: inset 3px 0 0 var(--warning); }
 .dark .media-card { background: var(--card); border-color: rgba(var(--white-rgb),.06); }
 .dark .media-tab { background: var(--card); border-color: rgba(var(--white-rgb),.06); }
 @media (max-width: 640px) { .media-grid { grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); } }

@@ -1057,9 +1057,10 @@ useHead({ link: [{ rel: 'canonical', href: canonicalUrl('/huong-dan') }] })
 .subtopics { margin: var(--space-3) 0; }
 .subtopic {
   padding: var(--space-3) var(--space-4);
-  border-left: 3px solid var(--primary-fg);
   margin-bottom: var(--space-3); background: var(--bg-warm);
-  border-radius: 0 var(--radius-surface) var(--radius-surface) 0;
+  border: 1px solid var(--line);
+  box-shadow: inset 3px 0 0 var(--primary-fg);
+  border-radius: var(--radius-surface);
 }
 /* WCAG 1.3.1 fix: was h4, skipping h3 under the section's h2 — bumped to h3
    (font-size/weight/margin unchanged, so no visual difference from the level bump). */

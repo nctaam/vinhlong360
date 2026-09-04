@@ -1,4 +1,4 @@
-﻿<template>
+<template>
   <div class="page" data-color-system="tri-region-v1">
     <Breadcrumb :items="[{ label: 'Trang chủ', to: '/' }, { label: 'Lịch trình' }]" />
 
@@ -430,9 +430,10 @@ useHead(() => ({
 /* Premium hero stat-items: brand-tinted surface + accent border */
 .catalog-hero .stat-item {
   background: rgba(var(--secondary-rgb), .04);
-  border-left: 3px solid var(--secondary);
+  border: 1px solid rgba(var(--secondary-rgb), .16);
+  box-shadow: inset 3px 0 0 var(--secondary);
   border-radius: var(--radius-control);
-  transition: background .3s var(--ease-out), transform .35s var(--ease-spring-gentle);
+  transition: background .3s var(--ease-out), transform .35s var(--ease-out-expo);
 }
 .catalog-hero .stat-item:hover {
   background: rgba(var(--secondary-rgb), .08);

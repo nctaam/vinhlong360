@@ -250,7 +250,9 @@ useHead({
 
 /* Section 1 — Mission emphasis (pull-quote spread lives inside). */
 .mission-section {
-  border-left: 4px solid var(--secondary-fg);
+  border: 1px solid rgba(var(--secondary-rgb), .2);
+  box-shadow: inset 3px 0 0 var(--secondary-fg);
+  border-radius: var(--radius-sheet);
   background: rgba(var(--secondary-rgb), .08);
 }
 .about-mission-quote { margin: var(--space-4) 0 var(--space-5); }

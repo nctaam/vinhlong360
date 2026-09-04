@@ -660,12 +660,13 @@ if (itinerary.value && !itinerary.value.error) {
   display: flex; align-items: flex-start; gap: var(--space-2);
   margin: var(--space-2) 0 0; padding: var(--space-2) var(--space-3);
   background: color-mix(in srgb, var(--amber-600) 10%, transparent);
-  border-left: 2px solid color-mix(in srgb, var(--amber-600) 55%, transparent);
+  border: 1px solid color-mix(in srgb, var(--amber-600) 25%, transparent);
+  box-shadow: inset 2px 0 0 color-mix(in srgb, var(--amber-600) 55%, transparent);
   border-radius: var(--radius-control); font-size: var(--text-sm); line-height: var(--leading-normal);
   color: var(--ink);
 }
 .tnc-glyph { flex-shrink: 0; color: var(--amber-600); font-size: var(--text-sm); line-height: 1.4; }
-.dark .step-note-callout { background: color-mix(in srgb, var(--amber-500) 14%, transparent); border-left-color: color-mix(in srgb, var(--amber-500) 55%, transparent); }
+.dark .step-note-callout { background: color-mix(in srgb, var(--amber-500) 14%, transparent); border-color: color-mix(in srgb, var(--amber-500) 25%, transparent); box-shadow: inset 2px 0 0 color-mix(in srgb, var(--amber-500) 55%, transparent); }
 .dark .tnc-glyph { color: var(--amber-500); }
 
 .route-leg { display: flex; align-items: center; gap: var(--space-2); padding: var(--space-2) 0 var(--space-2) var(--space-6); }
@@ -678,11 +679,10 @@ if (itinerary.value && !itinerary.value.error) {
 .route-map-section { margin-top: var(--space-6); }
 /* Branded accent on the map section title */
 .route-map-section h3 {
+  font-family: var(--font-editorial);
   font-size: var(--text-lg);
   font-weight: var(--weight-semibold);
   margin-bottom: var(--space-3);
-  padding-left: var(--space-3);
-  border-left: 3px solid var(--secondary);
 }
 .route-map { height: clamp(240px, 50vh, 400px); border-radius: var(--radius-sheet); overflow: hidden; border: .5px solid var(--line); box-shadow: var(--shadow-sm); transition: box-shadow .35s var(--ease-out-expo); }
 .route-map-wrap { position: relative; }

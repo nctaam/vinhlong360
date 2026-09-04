@@ -1,4 +1,4 @@
-﻿<template>
+<template>
   <div class="page">
     <Breadcrumb :items="[{ label: 'Trang chủ', to: '/' }, { label: 'Theo mùa' }]" />
 
@@ -528,14 +528,15 @@ useHead(() => ({
 }
 .ring-notch-tick {
   position: absolute; left: 50%; top: 2px; width: 2px; height: 9px;
-  transform: translateX(-50%);
+  transform: translateX(-50%) scaleY(1);
+  transform-origin: top center;
   background: rgba(var(--white-rgb), .55);
   border-radius: var(--radius-full);
-  transition: height .2s var(--ease-out), background .2s var(--ease-out);
+  transition: transform .2s var(--ease-out-expo), background .2s var(--ease-out);
 }
 .ring-notch:hover .ring-notch-tick,
-.ring-notch:focus-visible .ring-notch-tick { height: 13px; background: var(--white); }
-.ring-notch.is-current .ring-notch-tick { height: 13px; width: 3px; background: var(--card); box-shadow: 0 0 0 1px rgba(var(--black-rgb), .12); }
+.ring-notch:focus-visible .ring-notch-tick { transform: translateX(-50%) scaleY(1.44); background: var(--white); }
+.ring-notch.is-current .ring-notch-tick { transform: translateX(-50%) scaleY(1.44) scaleX(1.5); background: var(--card); box-shadow: 0 0 0 1px rgba(var(--black-rgb), .12); }
 .ring-notch:focus-visible { outline: 2px solid var(--card); outline-offset: 1px; }
 
 .season-moment-text strong { display: block; font-size: var(--text-base); font-weight: var(--weight-semibold); color: var(--ink); }

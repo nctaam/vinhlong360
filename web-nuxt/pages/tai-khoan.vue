@@ -398,7 +398,7 @@ function actionLabel(a: ActivityItem) {
 .cp-panel-head small { display: block; color: var(--ink-700); font-size: .78rem; margin-top: .15rem; }
 .cp-mini-link { color: var(--accent); text-decoration: none; font-weight: 600; font-size: .82rem; white-space: nowrap; }
 .cp-progress { height: 8px; border-radius: var(--radius-full); overflow: hidden; background: var(--bg-alt); margin-bottom: .75rem; }
-.cp-progress span { display: block; height: 100%; border-radius: inherit; background: var(--accent); transition: width .35s var(--ease-out); }
+.cp-progress span { display: block; height: 100%; border-radius: inherit; background: var(--accent); }
 .cp-checks, .cp-action-list, .cp-data-list { display: flex; flex-direction: column; gap: .45rem; }
 .cp-check { display: flex; align-items: center; gap: .45rem; color: var(--ink-700); font-size: .84rem; text-decoration: none; border-radius: var(--radius-control); }
 .cp-check:hover { color: var(--ink); }

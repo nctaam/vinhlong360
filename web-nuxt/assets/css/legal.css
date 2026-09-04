@@ -46,7 +46,9 @@
 .legal-metadata {
   margin: 0 0 var(--space-6);
   padding: var(--space-3) var(--space-4);
-  border-inline-start: 3px solid var(--color-action);
+  border: 1px solid var(--color-border);
+  box-shadow: inset 3px 0 0 var(--color-action);
+  border-radius: var(--radius-surface);
   background: var(--color-surface-subtle);
 }
 .legal-metadata dl { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-2) var(--space-5); margin: 0; }

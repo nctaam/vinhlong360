@@ -336,12 +336,12 @@
   margin: var(--space-4) 0 0;
   padding: var(--space-4) var(--space-5);
   background: rgba(var(--secondary-rgb), .07);
-  border-left: 3px solid rgba(var(--secondary-rgb), .4);
+  border: 1px solid rgba(var(--secondary-rgb), .2);
   border-radius: var(--radius-surface);
 }
 .etiquette-box p { margin: 0; font-size: var(--text-sm); line-height: var(--leading-relaxed); color: var(--ink-secondary); }
 .etiquette-box strong { color: var(--ink); }
-.dark .etiquette-box { background: rgba(var(--secondary-rgb), .12); border-left-color: rgba(var(--secondary-rgb), .5); }
+.dark .etiquette-box { background: rgba(var(--secondary-rgb), .12); border-color: rgba(var(--secondary-rgb), .3); }
 
 /* ── ical bulk-subscribe button ── */
 .ical-bulk-btn {
@@ -707,13 +707,13 @@
   background: var(--date-badge-bg);
   color: var(--date-badge-ink);
   border-radius: 3px;
-  border-inline-start: 3px solid var(--secondary-fg, var(--secondary));
-  box-shadow: var(--shadow-xs);
+  border: 1px solid color-mix(in srgb, var(--secondary-fg, var(--secondary)) 35%, transparent);
+  box-shadow: inset 2px 0 0 var(--secondary-fg, var(--secondary)), var(--shadow-xs);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
-.cal-event-dot { transition: opacity .3s var(--ease-out), transform .3s var(--ease-spring-gentle); }
+.cal-event-dot { transition: opacity .3s var(--ease-out), transform .3s var(--ease-out-expo); }
 .cal-event-dot:hover { opacity: .85; transform: scale(1.04); }
 .cal-event-dot:active { transform: scale(.93); }
 .cal-more {

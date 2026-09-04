@@ -44,17 +44,15 @@ function iconFor(type?: string) {
 .toast {
   display: flex; align-items: center; gap: var(--space-3);
   padding: var(--space-3) var(--space-4);
-  padding-left: calc(var(--space-4) + 3px);
   border-radius: var(--radius-sheet);
   background: var(--card);
-  border: .5px solid var(--line);
-  border-left: 3px solid var(--toast-accent, var(--line));
+  border: 1px solid var(--line);
   box-shadow: var(--shadow-lg);
   backdrop-filter: var(--glass);
   -webkit-backdrop-filter: var(--glass);
   pointer-events: auto;
 }
-.toast.success { --toast-accent: var(--success); }
+.toast.success { --toast-accent: var(--secondary); }
 .toast.error { --toast-accent: var(--error); }
 .toast.warning { --toast-accent: var(--accent-dark); }
 .toast.info { --toast-accent: var(--primary); }
@@ -64,7 +62,7 @@ function iconFor(type?: string) {
   display: flex; align-items: center; justify-content: center;
   border-radius: var(--radius-full);
   font-size: var(--text-xs); font-weight: var(--weight-bold);
-  animation: toastIconPop .35s var(--ease-spring-gentle) .15s both;
+  animation: toastIconPop .35s var(--ease-out-expo) .1s both;
 }
 @keyframes toastIconPop { from { transform: scale(0); opacity: 0; } to { transform: scale(1); opacity: 1; } }
 .toast.success .toast-icon { background: rgba(var(--secondary-rgb), .12); color: var(--secondary); }

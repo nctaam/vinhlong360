@@ -1,4 +1,4 @@
-﻿<template>
+<template>
   <div class="page events-page">
     <Breadcrumb :items="[{ label: 'Trang chủ', to: '/' }, { label: 'Lễ hội' }]" />
 
@@ -686,10 +686,10 @@ useHead({
   color: var(--ink-tertiary, var(--muted));
   background: rgba(var(--accent-rgb), .08);
   border-radius: var(--radius-surface);
-  border-left: 3px solid rgba(var(--accent-rgb), .35);
+  border: 1px solid rgba(var(--accent-rgb), .2);
 }
 
-.dark .lehoi-offseason { background: rgba(var(--accent-rgb), .12); border-left-color: rgba(var(--accent-rgb), .5); }
+.dark .lehoi-offseason { background: rgba(var(--accent-rgb), .12); border-color: rgba(var(--accent-rgb), .3); }
 
 /* Thumbnail placeholder colour if image fails / while loading */
 .event-thumb { background: var(--bg-alt); }
