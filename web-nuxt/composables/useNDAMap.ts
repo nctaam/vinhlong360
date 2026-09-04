@@ -77,9 +77,12 @@ export function useNDAMap() {
       // constructor Map" thay vì "có khoá default không". Đọc `.default` trước
       // sẽ ném trên namespace giả của vitest khi mock không khai default —
       // tests/use-nda-map-lifecycle.test.ts:57 mock đúng như vậy.
-      const mod = await import('maplibre-gl') as unknown as
+      const mod = await import('maplibre-gl/dist/maplibre-gl-csp.js') as unknown as
         MapLibreModule & { default?: MapLibreModule }
       maplibregl = (typeof mod.Map === 'function' ? mod : mod.default) as MapLibreModule
+      // CSP build keeps the worker in a separately cached asset instead of
+      // embedding it as a 100KB+ inline string in the client chunk.
+      maplibregl.setWorkerUrl?.('/maplibre-gl-csp-worker.js')
     } catch (error) {
       mapOptions.onStateChange?.('error')
       throw error

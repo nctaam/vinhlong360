@@ -19,13 +19,14 @@ const mocks = vi.hoisted(() => {
     remove() {}
   }
 
-  return { constructMap, FakeMap }
+  return { constructMap, FakeMap, setWorkerUrl: vi.fn() }
 })
 
-vi.mock('maplibre-gl', () => ({
+vi.mock('maplibre-gl/dist/maplibre-gl-csp.js', () => ({
   AttributionControl: class {},
   Map: mocks.FakeMap,
   NavigationControl: class {},
+  setWorkerUrl: mocks.setWorkerUrl,
 }))
 vi.mock('maplibre-gl/dist/maplibre-gl.css', () => ({}))
 

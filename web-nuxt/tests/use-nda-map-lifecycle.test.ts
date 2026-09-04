@@ -9,6 +9,7 @@ const mocks = vi.hoisted(() => {
   const addControl = vi.fn()
   const addListener = vi.fn()
   const removeMap = vi.fn()
+  const setWorkerUrl = vi.fn()
   let afterConstruct: (() => void) | null = null
 
   class FakeMap {
@@ -45,6 +46,7 @@ const mocks = vi.hoisted(() => {
     importReady,
     releaseImport,
     removeMap,
+    setWorkerUrl,
     get afterConstruct() {
       return afterConstruct
     },
@@ -54,12 +56,13 @@ const mocks = vi.hoisted(() => {
   }
 })
 
-vi.mock('maplibre-gl', async () => {
+vi.mock('maplibre-gl/dist/maplibre-gl-csp.js', async () => {
   await mocks.importReady
   return {
     AttributionControl: mocks.FakeAttributionControl,
     Map: mocks.FakeMap,
     NavigationControl: mocks.FakeNavigationControl,
+    setWorkerUrl: mocks.setWorkerUrl,
   }
 })
 vi.mock('maplibre-gl/dist/maplibre-gl.css', () => ({}))
@@ -70,6 +73,7 @@ beforeEach(() => {
   mocks.constructMap.mockClear()
   mocks.addListener.mockClear()
   mocks.addControl.mockClear()
+  mocks.setWorkerUrl.mockClear()
   mocks.removeMap.mockClear()
   mocks.afterConstruct = null
 })
@@ -119,6 +123,7 @@ describe('useNDAMap lifecycle boundary', () => {
       isActive: () => true,
       onStateChange,
     })
+    expect(mocks.setWorkerUrl).toHaveBeenCalledWith('/maplibre-gl-csp-worker.js')
     const errorHandler = mocks.addListener.mock.calls.find(call => call[0] === 'error')?.[1] as ((event: { error?: unknown }) => void) | undefined
     errorHandler?.({ error: new Error('WebGL context lost') })
 
