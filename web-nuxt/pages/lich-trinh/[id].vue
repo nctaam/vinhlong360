@@ -3,14 +3,14 @@
     <Breadcrumb :items="[{ label: 'Trang chủ', to: '/' }, { label: 'Lịch trình', to: '/lich-trinh' }, { label: itineraryTitle }]">
       <template #before>
         <button type="button" class="bc-back" aria-label="Quay lại" @click="goBack">
-          <span aria-hidden="true">←</span>
+          <IconLine name="arrow-left" aria-hidden="true" />
         </button>
       </template>
     </Breadcrumb>
 
     <section class="catalog-hero cat-itinerary">
       <div class="catalog-hero-inner">
-        <span class="catalog-hero-icon" aria-hidden="true">🗓️</span>
+        <span class="catalog-hero-icon" aria-hidden="true"><IconLine name="calendar" /></span>
         <div>
           <span class="itin-eyebrow"><IconLine :name="areaMeta.icon" /> {{ areaMeta.name }} · {{ itinerary.duration }}</span>
           <h1>{{ itineraryTitle }}</h1>

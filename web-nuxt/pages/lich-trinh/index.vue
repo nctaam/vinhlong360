@@ -5,7 +5,7 @@
     <!-- Hero -->
     <section class="catalog-hero cat-itinerary">
       <div class="catalog-hero-inner">
-        <span class="catalog-hero-icon" aria-hidden="true">🗓️</span>
+        <span class="catalog-hero-icon" aria-hidden="true"><IconLine name="calendar" /></span>
         <div>
           <span class="itin-eyebrow">Lịch trình gợi ý · 3 khu vực</span>
           <h1 class="day-arc-title">Chọn một ngày ở Vĩnh Long</h1>

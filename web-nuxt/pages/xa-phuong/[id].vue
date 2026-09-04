@@ -33,7 +33,7 @@
     <!-- Breadcrumb -->
     <nav class="breadcrumb" aria-label="Breadcrumb">
       <button type="button" class="bc-back" aria-label="Quay lại" @click="goBack">
-        <span aria-hidden="true">←</span>
+        <IconLine name="arrow-left" aria-hidden="true" />
       </button>
       <ol>
         <li><NuxtLink to="/">Trang chủ</NuxtLink></li>

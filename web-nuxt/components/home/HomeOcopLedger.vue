@@ -36,7 +36,7 @@
       </p>
 
       <NuxtLink to="/ocop" class="home-ocop__cta" data-home-ocop-cta>
-        Xem sổ vàng <span class="home-ocop__arrow" aria-hidden="true">→</span>
+        Xem sổ vàng <span class="home-ocop__arrow" aria-hidden="true"><IconLine name="arrow-right" /></span>
       </NuxtLink>
     </div>
   </section>

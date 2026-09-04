@@ -8,7 +8,7 @@
         HÔM NAY · <strong>{{ todayGregorianLabel }}</strong> · ÂM LỊCH <span class="lunar-label">{{ todayLunarLabel }}</span>
       </p>
       <div class="catalog-hero-inner">
-        <span class="catalog-hero-icon" aria-hidden="true">🎋</span>
+        <span class="catalog-hero-icon" aria-hidden="true"><IconLine name="lantern" /></span>
         <div>
           <h1>{{ pc('hero_title') }}</h1>
           <p>{{ pc('hero_subtitle') }}</p>

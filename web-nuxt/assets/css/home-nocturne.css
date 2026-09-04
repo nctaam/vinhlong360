@@ -322,7 +322,10 @@
 }
 
 [data-home-pilot="nocturne-b1"] .home-decision-ledger__arrow {
-  transition: transform var(--duration-fast) var(--ease-out), color var(--duration-fast) var(--ease-out);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform var(--duration-fast) var(--ease-out-expo), color var(--duration-fast) var(--ease-out);
 }
 
 [data-home-pilot="nocturne-b1"] .home-decision-ledger__link:hover .home-decision-ledger__arrow {
@@ -1323,7 +1326,10 @@
 }
 
 [data-home-pilot="nocturne-b1"] .home-ocop__arrow {
-  transition: transform 160ms ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 160ms var(--ease-out-expo);
 }
 
 @media (prefers-reduced-motion: reduce) {

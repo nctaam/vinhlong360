@@ -550,7 +550,19 @@
 .catalog-hero-inner {
   display: flex; align-items: flex-start; gap: var(--space-5);
 }
-.catalog-hero-icon { font-size: clamp(2rem, 8vw, 2.8rem); flex-shrink: 0; }
+.catalog-hero-icon {
+  font-size: clamp(2rem, 8vw, 2.8rem);
+  flex-shrink: 0;
+  color: var(--color-action);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.cat-itinerary .catalog-hero-icon { color: var(--color-material-amber); }
+.cat-festival .catalog-hero-icon { color: var(--color-material-clay); }
+.cat-product .catalog-hero-icon { color: var(--color-material-amber); }
+.cat-route .catalog-hero-icon { color: var(--color-material-river); }
+.cat-map .catalog-hero-icon { color: var(--color-material-river); }
 @media (max-width: 640px) {
   .catalog-hero-icon { font-size: 1.8rem; }
 }

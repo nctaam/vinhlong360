@@ -4,9 +4,12 @@
 
     <section class="catalog-hero cat-map">
       <div class="catalog-hero-inner map-hero-inner">
-        <span class="dateline-eyebrow">Bản đồ sống · Vĩnh Long · Bến Tre · Trà Vinh</span>
-        <h1>Bản đồ</h1>
-        <p>So sánh vị trí bằng bản đồ, đối chiếu bằng danh sách và địa chỉ ngay cả khi tile không tải.</p>
+        <span class="catalog-hero-icon" aria-hidden="true"><IconLine name="map" /></span>
+        <div>
+          <span class="dateline-eyebrow">Bản đồ sống · Vĩnh Long · Bến Tre · Trà Vinh</span>
+          <h1>Bản đồ</h1>
+          <p>So sánh vị trí bằng bản đồ, đối chiếu bằng danh sách và địa chỉ ngay cả khi tile không tải.</p>
+        </div>
       </div>
     </section>
 
