@@ -327,7 +327,7 @@ async function fetchRelated() {
   try {
     // declutter-3 T3: 4→2 — related là engagement-driver nhưng 4 card đè phần bình luận
     const params = new URLSearchParams({ limit: '2' })
-    const res = await apiFetch<any>(`/api/posts/${encodedPostId.value}/related?${params}`)
+    const res = await $fetch<any>(`/api/posts/${encodedPostId.value}/related?${params}`)
     relatedPosts.value = res.posts || []
   } catch { /* non-critical */ }
 }
@@ -438,7 +438,7 @@ async function fetchComments(): Promise<boolean> {
   loading.value = true
   commentError.value = false
   try {
-    const res = await apiFetch<CommentsResponse | ThreadComment[]>(`/api/posts/${encodedPostId.value}/comments`)
+    const res = await $fetch<CommentsResponse | ThreadComment[]>(`/api/posts/${encodedPostId.value}/comments`)
     comments.value = Array.isArray(res) ? res : (res.comments || [])
     return true
   } catch {
