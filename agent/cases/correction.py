@@ -1228,8 +1228,8 @@ def build_change_set(
         if snapshot.current_revision != expected_revision:
             raise _reject("case_revision_conflict", "This case changed; reload it.")
 
-        payloads = transaction.load_correction_item_payloads(case_id, tuple(accepted_item_ids))
-        if len(payloads) != len(set(accepted_item_ids)):
+        payloads = transaction.load_correction_item_payloads(case_id, requested_item_ids)
+        if len(payloads) != len(requested_item_ids):
             raise _reject("correction_item_not_found", "One of those items is not on this case.")
 
         # Nothing reaches the public entry without a ruling that says so. The
@@ -1290,7 +1290,7 @@ def build_change_set(
             reviewer_ref=draft.reviewer_ref,
             created_at=now,
         )
-        transaction.link_change_set_items(change_set_id, tuple(accepted_item_ids))
+        transaction.link_change_set_items(change_set_id, requested_item_ids)
 
         updated = transaction.update_case(
             snapshot.current_revision,
@@ -1357,10 +1357,10 @@ def build_change_set(
                 "reason": "decided",
                 "policy_revision": _policy_revision(),
                 "change_set_id": change_set_id,
-                "item_ids": list(accepted_item_ids),
+                "item_ids": list(requested_item_ids),
                 "risk_class": risk,
                 "build_digest": _build_command_digest(
-                    case_id, tuple(sorted(set(accepted_item_ids))), actor,
+                    case_id, requested_item_ids, actor,
                     expected_revision, evidence_refs,
                 ),
             },
