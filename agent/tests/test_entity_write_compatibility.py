@@ -162,6 +162,26 @@ def test_upsert_entity_still_opens_exactly_one_transaction(pg_database, monkeypa
 
 
 @pg_only
+def test_upsert_entity_with_audit_transaction_helper_preserves_audit_shape(pg_database):
+    pg_database.upsert_entity(_entity())
+    old = pg_database.get_entity(ENTITY_ID)
+
+    with pg_database._conn() as conn:
+        mutations = pg_database._upsert_entity_audit_tx(
+            conn,
+            _edited(old),
+            old,
+            "admin",
+            "admin-editor",
+            None,
+            None,
+        )
+
+    assert mutations is not None
+    assert _audits(pg_database)[0]["field"] == "summary"
+
+
+@pg_only
 def test_log_entity_changes_on_its_own_still_records_every_changed_field(pg_database):
     pg_database.upsert_entity(_entity())
 

@@ -1593,33 +1593,14 @@ class Database:
         """
         self.initialize()
         if conn is not None:
-            mutations = self._entity_writer().upsert(conn, entity)
-            self._bump_sqlite_entity_revision(conn, old if old else None, entity)
-            revision_row = self._fetchone(conn, f"SELECT revision FROM entities WHERE id = {self._ph}", (entity["id"],))
-            current_revision = int((self._row_to_dict(revision_row) or {}).get("revision") or 1)
-            self.log_entity_changes(entity.get("id", ""), old or {}, entity,
-                                    f"{actor}|{provenance}", conn=conn)
-            from control_plane.saga import record_entity_mutation
-            record_entity_mutation(entity.get("id", ""), actor_id=actor,
-                                   reason=reason or provenance,
-                                   correlation_id=correlation_id or actor,
-                                   before=old or {}, after=entity,
-                                   revision=current_revision, conn=conn, database=self)
-            return mutations
+            return self._upsert_entity_audit_tx(
+                conn, entity, old, actor, provenance, reason, correlation_id
+            )
         with _entity_details.detail_cache_write_scope():
             with self._conn() as conn:
-                mutations = self._entity_writer().upsert(conn, entity)
-                self._bump_sqlite_entity_revision(conn, old if old else None, entity)
-                revision_row = self._fetchone(conn, f"SELECT revision FROM entities WHERE id = {self._ph}", (entity["id"],))
-                current_revision = int((self._row_to_dict(revision_row) or {}).get("revision") or 1)
-                self.log_entity_changes(entity.get("id", ""), old or {}, entity,
-                                        f"{actor}|{provenance}", conn=conn)
-                from control_plane.saga import record_entity_mutation
-                record_entity_mutation(entity.get("id", ""), actor_id=actor,
-                                       reason=reason or provenance,
-                                       correlation_id=correlation_id or actor,
-                                       before=old or {}, after=entity,
-                                       revision=current_revision, conn=conn, database=self)
+                mutations = self._upsert_entity_audit_tx(
+                    conn, entity, old, actor, provenance, reason, correlation_id
+                )
                 snapshot = bump_generation(conn, entity["id"], "entity_upsert", f"{actor}|{provenance}")
             try:
                 _entity_details.apply_detail_cache_mutations(list(mutations))
@@ -1629,6 +1610,32 @@ class Database:
             invalidate_entity(entity["id"], reason="entity_upsert", generation=snapshot.generation)
         except Exception as exc:
             raise PostCommitMutationError("invalidation", exc) from exc
+
+    def _upsert_entity_audit_tx(self, conn, entity, old, actor, provenance, reason, correlation_id):
+        mutations = self._entity_writer().upsert(conn, entity)
+        self._bump_sqlite_entity_revision(conn, old if old else None, entity)
+        revision_row = self._fetchone(
+            conn,
+            f"SELECT revision FROM entities WHERE id = {self._ph}",
+            (entity["id"],),
+        )
+        current_revision = int((self._row_to_dict(revision_row) or {}).get("revision") or 1)
+        self.log_entity_changes(
+            entity.get("id", ""), old or {}, entity, f"{actor}|{provenance}", conn=conn
+        )
+        from control_plane.saga import record_entity_mutation
+        record_entity_mutation(
+            entity.get("id", ""),
+            actor_id=actor,
+            reason=reason or provenance,
+            correlation_id=correlation_id or actor,
+            before=old or {},
+            after=entity,
+            revision=current_revision,
+            conn=conn,
+            database=self,
+        )
+        return mutations
 
     def _write_entity_row(self, conn, entity, season_val, attrs_store,
                           source_val, images_val, coords_val, updated) -> None:
@@ -1793,45 +1800,11 @@ class Database:
                       reason: str = "entity_delete", correlation_id: str | None = None) -> bool:
         """Delete entity and its relationships."""
         self.initialize()
-        ph = self._ph
         with _entity_details.detail_cache_write_scope():
             with self._conn() as conn:
-                existing_row = self._fetchone(conn, f"SELECT * FROM entities WHERE id = {ph}", (entity_id,))
-                old = self._parse_entity(existing_row) if existing_row else {}
-                relationship_rows = self._fetchall(
-                    conn,
-                    f"SELECT from_id, to_id, type FROM relationships WHERE from_id = {ph} OR to_id = {ph}",
-                    (entity_id, entity_id),
+                deleted, mutation, snapshot = self._delete_entity_tx(
+                    conn, entity_id, actor_id, reason, correlation_id
                 )
-                cur = self._execute(conn, f"DELETE FROM entities WHERE id = {ph}", (entity_id,))
-                self._execute(conn, f"DELETE FROM relationships WHERE from_id = {ph} OR to_id = {ph}",
-                              (entity_id, entity_id))
-                # GĐ-C: dọn detail rows (PG có FK CASCADE; SQLite dev thường không bật pragma FK)
-                mutation = _entity_details.delete_entity_details(conn, self._use_pg, entity_id)
-                if not self._use_pg:
-                    try:
-                        conn.execute("DELETE FROM entities_fts WHERE id = ?", (entity_id,))
-                    except sqlite3.OperationalError:
-                        logger.debug("FTS5 delete skipped for entity %s", entity_id)
-                deleted = cur.rowcount > 0
-                if deleted:
-                    from control_plane.saga import record_entity_mutation
-                    record_entity_mutation(entity_id, actor_id=actor_id, reason=reason,
-                                           correlation_id=correlation_id or f"{reason}:{entity_id}",
-                                           before=old, after={}, revision=int(old.get("revision") or 0) + 1,
-                                           conn=conn, database=self)
-                    for rel_row in relationship_rows:
-                        rel = self._row_to_dict(rel_row) or {}
-                        rel_id = f"{rel.get('from_id')}:{rel.get('to_id')}:{rel.get('type')}"
-                        record_entity_mutation(
-                            rel_id,
-                            actor_id=actor_id,
-                            reason="relationship_cascade_delete",
-                            correlation_id=correlation_id or f"{reason}:{entity_id}:relationship",
-                            before={"from_id": rel.get("from_id"), "to_id": rel.get("to_id"), "type": rel.get("type")},
-                            after={}, revision=1, resource_type="relationship", conn=conn, database=self,
-                        )
-                snapshot = bump_generation(conn, entity_id, "entity_delete", "database.delete_entity") if deleted else None
             try:
                 _entity_details.apply_detail_cache_mutations([mutation])
             except Exception as exc:
@@ -1844,6 +1817,65 @@ class Database:
                 except Exception as exc:
                     raise PostCommitMutationError("invalidation", exc) from exc
             return deleted
+
+    def _delete_entity_tx(self, conn, entity_id, actor_id, reason, correlation_id):
+        ph = self._ph
+        existing_row = self._fetchone(conn, f"SELECT * FROM entities WHERE id = {ph}", (entity_id,))
+        old = self._parse_entity(existing_row) if existing_row else {}
+        relationship_rows = self._fetchall(
+            conn,
+            f"SELECT from_id, to_id, type FROM relationships WHERE from_id = {ph} OR to_id = {ph}",
+            (entity_id, entity_id),
+        )
+        cur = self._execute(conn, f"DELETE FROM entities WHERE id = {ph}", (entity_id,))
+        self._execute(
+            conn,
+            f"DELETE FROM relationships WHERE from_id = {ph} OR to_id = {ph}",
+            (entity_id, entity_id),
+        )
+        mutation = _entity_details.delete_entity_details(conn, self._use_pg, entity_id)
+        if not self._use_pg:
+            try:
+                conn.execute("DELETE FROM entities_fts WHERE id = ?", (entity_id,))
+            except sqlite3.OperationalError:
+                logger.debug("FTS5 delete skipped for entity %s", entity_id)
+        deleted = cur.rowcount > 0
+        if deleted:
+            self._record_entity_delete_audit(
+                conn, entity_id, old, relationship_rows, actor_id, reason, correlation_id
+            )
+        snapshot = bump_generation(conn, entity_id, "entity_delete", "database.delete_entity") if deleted else None
+        return deleted, mutation, snapshot
+
+    def _record_entity_delete_audit(self, conn, entity_id, old, relationship_rows,
+                                    actor_id, reason, correlation_id):
+        from control_plane.saga import record_entity_mutation
+        record_entity_mutation(
+            entity_id,
+            actor_id=actor_id,
+            reason=reason,
+            correlation_id=correlation_id or f"{reason}:{entity_id}",
+            before=old,
+            after={},
+            revision=int(old.get("revision") or 0) + 1,
+            conn=conn,
+            database=self,
+        )
+        for rel_row in relationship_rows:
+            rel = self._row_to_dict(rel_row) or {}
+            rel_id = f"{rel.get('from_id')}:{rel.get('to_id')}:{rel.get('type')}"
+            record_entity_mutation(
+                rel_id,
+                actor_id=actor_id,
+                reason="relationship_cascade_delete",
+                correlation_id=correlation_id or f"{reason}:{entity_id}:relationship",
+                before={"from_id": rel.get("from_id"), "to_id": rel.get("to_id"), "type": rel.get("type")},
+                after={},
+                revision=1,
+                resource_type="relationship",
+                conn=conn,
+                database=self,
+            )
 
     def record_entity_mutation_audit(self, *, event_id: str, resource_id: str,
                                      resource_type: str, actor_id: str, reason: str,
