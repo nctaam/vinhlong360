@@ -19,6 +19,18 @@ from scripts.ops.record_launch_evidence import (
 )
 
 
+def test_record_section_metadata_override_preserves_unspecified_fields(tmp_path: Path) -> None:
+    document = EvidenceDocument.empty(tmp_path / "state.json")
+    original = CommandEvidence("pytest", 0, "passed", "pass", environment={"os": "test"})
+    document.record("artifacts", original, command="pytest -q", verdict="PASS")
+
+    recorded = document.sections["artifacts"]
+    assert recorded.command == "pytest -q"
+    assert recorded.verdict == "PASS"
+    assert recorded.environment == {"os": "test"}
+    assert recorded.exit_code == 0
+
+
 def _complete_document(tmp_path: Path, *, revision: str = "a" * 40) -> EvidenceDocument:
     document = EvidenceDocument.empty(tmp_path / "state.json")
     document.revision = revision

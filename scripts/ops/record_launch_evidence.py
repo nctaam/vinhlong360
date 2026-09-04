@@ -215,6 +215,53 @@ class HarnessResult:
     cleanup_status: Literal["pass", "fail"]
 
 
+def _merged_evidence_fields(
+    evidence: CommandEvidence,
+    *,
+    outcomes: dict[str, Any] | None,
+    command: str | None,
+    environment: dict[str, Any] | None,
+    head_sha: str | None,
+    output_sha256: str | None,
+    verdict: str | None,
+    nodeids: tuple[str, ...] | None,
+    layer: str | None,
+    owner: str | None,
+    rollback_note: str | None,
+) -> dict[str, Any]:
+    fields = {
+        "command": evidence.command,
+        "exit_code": evidence.exit_code,
+        "summary": evidence.summary,
+        "status": evidence.status,
+        "outcomes": evidence.outcomes,
+        "environment": evidence.environment,
+        "head_sha": evidence.head_sha,
+        "output_sha256": evidence.output_sha256,
+        "verdict": evidence.verdict,
+        "nodeids": evidence.nodeids,
+        "layer": evidence.layer,
+        "owner": evidence.owner,
+        "rollback_note": evidence.rollback_note,
+    }
+    updates = {
+        "outcomes": outcomes,
+        "command": command,
+        "environment": environment,
+        "head_sha": head_sha,
+        "output_sha256": output_sha256,
+        "verdict": verdict,
+        "nodeids": nodeids,
+        "layer": layer,
+        "owner": owner,
+        "rollback_note": rollback_note,
+    }
+    for key, value in updates.items():
+        if value is not None:
+            fields[key] = value
+    return fields
+
+
 def _with_metadata(
     evidence: CommandEvidence,
     *,
@@ -233,21 +280,20 @@ def _with_metadata(
     if not any(value is not None for value in (outcomes, command, environment, head_sha, output, output_sha256, verdict, nodeids, layer, owner, rollback_note)):
         return evidence
     digest = _output_digest(output, output_sha256)
-    return CommandEvidence(
-        command=evidence.command if command is None else command,
-        exit_code=evidence.exit_code,
-        summary=evidence.summary,
-        status=evidence.status,
-        outcomes=evidence.outcomes if outcomes is None else outcomes,
-        environment=evidence.environment if environment is None else environment,
-        head_sha=evidence.head_sha if head_sha is None else head_sha,
-        output_sha256=evidence.output_sha256 if digest is None else digest,
-        verdict=evidence.verdict if verdict is None else verdict,
-        nodeids=evidence.nodeids if nodeids is None else nodeids,
-        layer=evidence.layer if layer is None else layer,
-        owner=evidence.owner if owner is None else owner,
-        rollback_note=evidence.rollback_note if rollback_note is None else rollback_note,
+    fields = _merged_evidence_fields(
+        evidence,
+        outcomes=outcomes,
+        command=command,
+        environment=environment,
+        head_sha=head_sha,
+        output_sha256=digest,
+        verdict=verdict,
+        nodeids=nodeids,
+        layer=layer,
+        owner=owner,
+        rollback_note=rollback_note,
     )
+    return CommandEvidence(**fields)
 
 
 def _output_digest(output: str | bytes | None, declared: str | None) -> str | None:
