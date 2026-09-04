@@ -1414,9 +1414,9 @@ useHead({
 /* ── Move buttons: draggable affordance on hover ──────────── */
 .stop-card-actions button.move:hover { background: var(--bg-warm); border-radius: var(--radius-full); }
 
-/* ── Save button: spring feedback on save ─────────────────── */
-.save-pulse { animation: save-pop .22s var(--ease-spring-gentle); }
-@keyframes save-pop { 0% { transform: scale(1); } 40% { transform: scale(.96); } 100% { transform: scale(1); } }
+/* ── Save button: smooth deceleration feedback on save ─────── */
+.save-pulse { animation: save-pop .24s var(--ease-out-expo); }
+@keyframes save-pop { 0% { transform: scale(1); } 40% { transform: scale(.97); } 100% { transform: scale(1); } }
 
 /* ── Route loading: pulsing text while computing ──────────── */
 .route-loading { animation: route-loading-pulse 1.2s var(--ease-out) infinite; }

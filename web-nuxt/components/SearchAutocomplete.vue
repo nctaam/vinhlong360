@@ -345,12 +345,8 @@ if (import.meta.client) {
    section-heads elsewhere, at zero added motion/latency. */
 .ac-dropdown :deep(.ac-item) { min-height: 44px; }
 .ac-dropdown :deep(.ac-item.highlighted) {
-  border-left: 3px solid;
-  border-image: linear-gradient(180deg, var(--river-600) 0%, var(--amber-600) 52%, var(--clay-600) 100%) 1;
-  padding-left: calc(var(--space-4) - 3px);
-}
-.dark .ac-dropdown :deep(.ac-item.highlighted) {
-  border-image: linear-gradient(180deg, var(--river-legacy-dark) 0%, var(--amber-500) 52%, var(--clay-400) 100%) 1;
+  background: var(--color-action-surface, var(--bg-alt));
+  box-shadow: inset 2px 0 0 var(--color-action);
 }
 .ac-recent-row {
   display: flex;
