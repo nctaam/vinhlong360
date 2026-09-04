@@ -73,3 +73,19 @@ def test_search_rank_reason_order_is_stable():
     assert _rank(entity, "dac san") == (500.0, "summary")
     assert _rank(entity, "nguon") == (300.0, "source")
     assert _rank(entity, "khong co") is None
+
+
+def test_search_catalog_preserves_none_query_for_count_contract():
+    from search_contract import SearchFilters, search_public_entities
+
+    class Catalog:
+        def count_entities_filtered(self, **kwargs):
+            self.count_kwargs = kwargs
+            return 0
+
+        def list_entities(self, **kwargs):
+            return []
+
+    catalog = Catalog()
+    search_public_entities("", offset=0, limit=10, filters=SearchFilters(), database=catalog)
+    assert catalog.count_kwargs["q"] is None

@@ -151,7 +151,7 @@ def search_public_entities(
     )
 
 
-def _catalog_rows(database: Any, query: str, db_kwargs: dict[str, Any], *, bounded: bool,
+def _catalog_rows(database: Any, query: str | None, db_kwargs: dict[str, Any], *, bounded: bool,
                   fetch_limit: int | None) -> tuple[list[dict[str, Any]], int]:
     try:
         relation_total = int(database.count_entities_filtered(q=query or None, **db_kwargs))
@@ -204,7 +204,7 @@ def rank_public_entity_catalog(
     db_kwargs = _db_filters(filters)
     count_query = query or None
     rows, relation_total = _catalog_rows(
-        database, count_query or "", db_kwargs, bounded=bounded, fetch_limit=fetch_limit,
+        database, count_query, db_kwargs, bounded=bounded, fetch_limit=fetch_limit,
     )
     matched = _rank_catalog_rows(rows, query)
     return matched, bounded and len(rows) < relation_total
