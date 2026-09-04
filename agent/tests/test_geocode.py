@@ -44,6 +44,18 @@ def _pinned_response(content: bytes) -> ph.PinnedResponse:
 def _isolate(tmp_path, monkeypatch):
     monkeypatch.setattr(geocode, "CACHE_FILE", tmp_path / "geo_cache.json")
     monkeypatch.setattr(geocode, "_cache", None)
+    monkeypatch.setattr(geocode, "_cache_snapshot", None)
+    monkeypatch.setattr(geocode, "_cache_mtime_ns", None)
+    monkeypatch.setattr(
+        geocode,
+        "_cache_stats",
+        {
+            "cache_hits": 0,
+            "duplicate_writes": 0,
+            "lost_update_prevented": 0,
+            "cache_refreshes": 0,
+        },
+    )
     monkeypatch.setattr(geocode, "_last_request", [0.0])
     yield
 
@@ -102,6 +114,45 @@ class TestGeocode:
             ),
         )
         assert geocode._query_nominatim("anything") is None
+
+
+class TestCachePersistence:
+    def test_save_cache_merges_remote_entries_without_losing_local_change(self):
+        geocode.CACHE_FILE.write_text('{"remote": [10.1, 106.1]}', encoding="utf-8")
+        geocode._cache = {"local": [10.2, 106.2]}
+        geocode._cache_snapshot = {}
+
+        geocode._save_cache()
+
+        assert geocode._cache == {
+            "remote": [10.1, 106.1],
+            "local": [10.2, 106.2],
+        }
+        assert geocode.json.loads(geocode.CACHE_FILE.read_text(encoding="utf-8")) == geocode._cache
+
+    def test_save_cache_preserves_concurrent_same_key_update(self):
+        geocode.CACHE_FILE.write_text('{"query": [10.3, 106.3]}', encoding="utf-8")
+        geocode._cache = {"query": [10.4, 106.4]}
+        geocode._cache_snapshot = {"query": [10.2, 106.2]}
+
+        geocode._save_cache()
+
+        assert geocode._cache["query"] == [10.3, 106.3]
+        assert geocode._cache_stats["lost_update_prevented"] == 1
+
+    def test_save_cache_does_not_delete_remote_entries(self):
+        geocode.CACHE_FILE.write_text(
+            '{"kept": [10.5, 106.5], "local": [10.6, 106.6]}',
+            encoding="utf-8",
+        )
+        geocode._cache = {"local": [10.7, 106.7]}
+        geocode._cache_snapshot = {"local": [10.6, 106.6], "kept": [10.5, 106.5]}
+
+        geocode._save_cache()
+
+        assert geocode._cache["kept"] == [10.5, 106.5]
+        assert geocode._cache["local"] == [10.7, 106.7]
+        assert geocode._cache_stats["lost_update_prevented"] == 1
 
 
 class TestQueryValidation:

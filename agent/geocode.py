@@ -127,48 +127,72 @@ def _load_cache() -> dict:
         return _cache
 
 
+def _read_disk_cache() -> dict:
+    """Read the latest on-disk cache, treating malformed data as empty."""
+    if not CACHE_FILE.exists():
+        return {}
+    try:
+        raw = json.loads(CACHE_FILE.read_text(encoding="utf-8"))
+    except Exception:
+        return {}
+    return raw if isinstance(raw, dict) else {}
+
+
+def _changed_cache_keys(memory_cache: dict, snapshot: dict) -> set:
+    return {
+        key
+        for key in set(memory_cache) | set(snapshot)
+        if memory_cache.get(key) != snapshot.get(key)
+        or (key in memory_cache) != (key in snapshot)
+    }
+
+
+def _merge_cache_updates(
+    disk_cache: dict,
+    memory_cache: dict,
+    snapshot: dict,
+) -> tuple[dict, int]:
+    """Merge local changes while preserving concurrent remote updates."""
+    changed_keys = _changed_cache_keys(memory_cache, snapshot)
+    merged = dict(disk_cache)
+    conflicts = 0
+    for key, value in memory_cache.items():
+        if key not in changed_keys:
+            continue
+        # If another worker changed the same key since this worker's snapshot,
+        # preserve the remote value and record the conflict.
+        if key in disk_cache and key in snapshot and disk_cache[key] != snapshot[key]:
+            conflicts += 1
+            continue
+        if key in disk_cache and key not in snapshot:
+            conflicts += 1
+            continue
+        merged[key] = value
+    missing_from_memory = set(disk_cache) - set(memory_cache)
+    conflicts += len(missing_from_memory)
+    return merged, conflicts
+
+
+def _write_cache(cache: dict) -> int:
+    tmp = CACHE_FILE.with_suffix(".tmp")
+    tmp.write_text(json.dumps(cache, ensure_ascii=False, indent=2), encoding="utf-8")
+    tmp.replace(CACHE_FILE)
+    return CACHE_FILE.stat().st_mtime_ns
+
+
 def _save_cache():
     global _cache_mtime_ns, _cache_snapshot
     try:
         with _interprocess_file_lock(CACHE_FILE):
-            disk_cache = {}
-            if CACHE_FILE.exists():
-                try:
-                    raw = json.loads(CACHE_FILE.read_text(encoding="utf-8"))
-                    if isinstance(raw, dict):
-                        disk_cache = raw
-                except Exception:
-                    disk_cache = {}
+            disk_cache = _read_disk_cache()
             memory_cache = dict(_cache or {})
             snapshot = _cache_snapshot or {}
-            changed_keys = {
-                key for key in set(memory_cache) | set(snapshot)
-                if memory_cache.get(key) != snapshot.get(key)
-                or (key in memory_cache) != (key in snapshot)
-            }
-            merged = dict(disk_cache)
-            for key, value in memory_cache.items():
-                if key not in changed_keys:
-                    continue
-                # If another worker changed the same key since this worker's
-                # snapshot, preserve the remote value and record the conflict.
-                if key in disk_cache and key in snapshot and disk_cache[key] != snapshot[key]:
-                    _cache_stats["lost_update_prevented"] += 1
-                    continue
-                if key in disk_cache and key not in snapshot:
-                    _cache_stats["lost_update_prevented"] += 1
-                    continue
-                merged[key] = value
-            missing_from_memory = set(disk_cache) - set(memory_cache)
-            if missing_from_memory:
-                _cache_stats["lost_update_prevented"] += len(missing_from_memory)
+            merged, conflicts = _merge_cache_updates(disk_cache, memory_cache, snapshot)
+            _cache_stats["lost_update_prevented"] += conflicts
             _cache.clear()
             _cache.update(merged)
             _cache_snapshot = copy.deepcopy(merged)
-            tmp = CACHE_FILE.with_suffix(".tmp")
-            tmp.write_text(json.dumps(_cache, ensure_ascii=False, indent=2), encoding="utf-8")
-            tmp.replace(CACHE_FILE)
-            _cache_mtime_ns = CACHE_FILE.stat().st_mtime_ns
+            _cache_mtime_ns = _write_cache(_cache)
     except Exception as exc:
         logger.warning("Failed to save geocode cache: %s", exc)
 
