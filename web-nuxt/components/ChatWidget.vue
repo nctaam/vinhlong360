@@ -25,7 +25,10 @@
             <span v-else class="cmsg-body">{{ msg.content }}</span>
             <span v-if="msg.retryOf" class="cmsg-retry-state">Đang gửi lại</span>
             <time class="cmsg-time" :datetime="msg.createdAt">{{ formatMessageTime(msg.createdAt) }}</time>
-            <button v-if="msg.failed && (msg.role === 'user' || msg.role === 'error')" type="button" class="cmsg-retry" aria-label="Gửi lại" @click="resend(msg)">↻ Thử lại</button>
+            <button v-if="msg.failed && (msg.role === 'user' || msg.role === 'error')" type="button" class="cmsg-retry" aria-label="Gửi lại" @click="resend(msg)">
+              <IconLine name="repeat" class="retry-icon" aria-hidden="true" />
+              <span>Thử lại</span>
+            </button>
           </div>
           <div v-if="streaming && streamText" class="cmsg assistant">
             <span class="cmsg-body" v-html="formatMd(streamText)"></span>
@@ -40,8 +43,14 @@
 
         <div class="chat-panel-input">
           <input v-model="inputText" :placeholder="chatPlaceholder" aria-label="Nhập câu hỏi" enterkeyhint="send" :disabled="streaming" maxlength="500" @keyup.enter="sendMessage(inputText)" />
-          <button v-if="streaming" type="button" aria-label="Dừng trả lời" @click="stopStream">Dừng</button>
-          <button v-else type="button" aria-label="Gửi tin nhắn" :disabled="!inputText.trim()" @click="sendMessage(inputText)">Gửi</button>
+          <button v-if="streaming" type="button" class="cp-btn-stop" aria-label="Dừng trả lời" @click="stopStream">
+            <IconLine name="square" aria-hidden="true" />
+            <span>Dừng</span>
+          </button>
+          <button v-else type="button" class="cp-btn-send" aria-label="Gửi tin nhắn" :disabled="!inputText.trim()" @click="sendMessage(inputText)">
+            <IconLine name="arrow-up" aria-hidden="true" />
+            <span>Gửi</span>
+          </button>
         </div>
 
         <p v-if="chatDisclaimer" class="chat-disclaimer">{{ chatDisclaimer }}</p>
@@ -407,8 +416,47 @@ onBeforeUnmount(() => {
   text-align: center;
 }
 .cmsg-failed { opacity: .85; border: 1px solid var(--error-border, color-mix(in srgb, var(--error) 40%, transparent)); background: color-mix(in srgb, var(--error) 6%, transparent); border-radius: var(--radius-control); padding: var(--space-2); }
-.cmsg-retry { display: inline-block; margin-top: var(--space-1); font-size: var(--text-2xs); color: var(--primary-fg); background: none; border: none; cursor: pointer; text-decoration: underline; padding: 2px 4px; min-height: 44px; border-radius: var(--radius-control); }
+.cmsg-retry {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  margin-top: var(--space-1);
+  font-size: var(--text-2xs);
+  color: var(--primary-fg);
+  background: none;
+  border: none;
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  padding: 2px 4px;
+  min-height: 44px;
+  border-radius: var(--radius-control);
+  transition: opacity .2s, color .2s;
+}
+.cmsg-retry .retry-icon {
+  font-size: 1.1em;
+  transition: transform .4s var(--ease-out-expo);
+}
+.cmsg-retry:hover .retry-icon {
+  transform: rotate(180deg);
+}
 .cmsg-retry:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
 .csuggestions button { min-height: 44px; }
-.chat-panel-input button { min-height: 44px; }
+.chat-panel-input button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-1);
+  min-height: 44px;
+}
+.chat-panel-input button .line-icon {
+  font-size: 1.05em;
+  transition: transform .25s var(--ease-out-expo);
+}
+.cp-btn-send:not(:disabled):hover .line-icon {
+  transform: translateY(-1.5px);
+}
+.cp-btn-stop:hover .line-icon {
+  transform: scale(1.12);
+}
 </style>

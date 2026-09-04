@@ -3,9 +3,13 @@
     <div class="toast-container" aria-label="Thông báo" role="region" aria-live="polite">
       <TransitionGroup name="toast">
         <div v-for="t in toasts" :key="t.id" :class="['toast', t.type]" :role="t.type === 'error' || t.type === 'warning' ? 'alert' : 'status'" :aria-live="t.type === 'error' || t.type === 'warning' ? 'assertive' : 'polite'">
-          <span class="toast-icon" aria-hidden="true">{{ iconFor(t.type) }}</span>
+          <span class="toast-icon" aria-hidden="true">
+            <IconLine :name="iconNameFor(t.type)" />
+          </span>
           <span class="toast-msg">{{ t.message }}</span>
-          <button type="button" class="toast-dismiss" aria-label="Đóng" @click="dismiss(t.id)">&times;</button>
+          <button type="button" class="toast-dismiss" aria-label="Đóng" @click="dismiss(t.id)">
+            <IconLine name="x" aria-hidden="true" />
+          </button>
           <span v-if="(t.duration ?? 3000) > 0" class="toast-progress" aria-hidden="true" :style="{ animationDuration: (t.duration ?? 3000) / 1000 + 's' }" />
         </div>
       </TransitionGroup>
@@ -25,11 +29,11 @@ function onEscDismiss(e: KeyboardEvent) {
 onMounted(() => document.addEventListener('keydown', onEscDismiss))
 onUnmounted(() => document.removeEventListener('keydown', onEscDismiss))
 
-function iconFor(type?: string) {
-  if (type === 'success') return '✓'
-  if (type === 'error') return '✕'
-  if (type === 'warning') return '⚠'
-  return 'ℹ'
+function iconNameFor(type?: string) {
+  if (type === 'success') return 'check'
+  if (type === 'error') return 'x'
+  if (type === 'warning') return 'alert-triangle'
+  return 'info'
 }
 </script>
 
@@ -64,6 +68,9 @@ function iconFor(type?: string) {
   font-size: var(--text-xs); font-weight: var(--weight-bold);
   animation: toastIconPop .35s var(--ease-out-expo) .1s both;
 }
+.toast-icon .line-icon {
+  font-size: 14px;
+}
 @keyframes toastIconPop { from { transform: scale(0); opacity: 0; } to { transform: scale(1); opacity: 1; } }
 .toast.success .toast-icon { background: rgba(var(--secondary-rgb), .12); color: var(--secondary); }
 .toast.error .toast-icon { background: rgba(var(--color-error-rgb), .12); color: var(--error); }
@@ -79,7 +86,12 @@ function iconFor(type?: string) {
   color: var(--muted); cursor: pointer; font-size: var(--text-base);
   transition: background .2s, color .2s;
 }
+.toast-dismiss .line-icon {
+  font-size: 16px;
+  transition: transform .2s var(--ease-out-expo);
+}
 .toast-dismiss:hover { background: var(--bg-alt); color: var(--ink); }
+.toast-dismiss:hover .line-icon { transform: scale(1.15); }
 
 .toast-progress {
   position: absolute; bottom: 0; left: 0; right: 0; height: 2px;

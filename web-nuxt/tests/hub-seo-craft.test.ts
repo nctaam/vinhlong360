@@ -91,5 +91,53 @@ describe('SEO & Editorial Craft Guardrails', () => {
     expect(entities).toContain('<IconLine v-if="sortIcon(\'id\')" :name="sortIcon(\'id\')"')
     expect(entities).not.toContain("return sortDir.value === 'asc' ? '▲' : '▼'")
   })
+
+  it('ChatWidget uses vector repeat and send/stop icons without raw unicode glyphs', () => {
+    const chat = doc('components/ChatWidget.vue')
+    expect(chat).toContain('<IconLine name="repeat" class="retry-icon"')
+    expect(chat).not.toContain('↻ Thử lại')
+    expect(chat).toContain('<IconLine name="square"')
+    expect(chat).toContain('<IconLine name="arrow-up"')
+  })
+
+  it('ToastContainer uses stroke-consistent IconLine vectors for all status levels and dismiss', () => {
+    const toast = doc('components/ToastContainer.vue')
+    expect(toast).toContain('<IconLine :name="iconNameFor(t.type)"')
+    expect(toast).toContain('<IconLine name="x" aria-hidden="true"')
+    expect(toast).not.toContain('&times;')
+    expect(toast).not.toContain("'✓'")
+    expect(toast).not.toContain("'✕'")
+    expect(toast).not.toContain("'⚠'")
+  })
+
+  it('Admin itinerary editor uses stroke-consistent vectors and purpose-driven radius tokens', () => {
+    const itinerary = doc('pages/admin/lich-trinh.vue')
+    expect(itinerary).not.toContain('&#128205;')
+    expect(itinerary).not.toContain('&#9650;')
+    expect(itinerary).not.toContain('&#9660;')
+    expect(itinerary).not.toContain('&#10005;')
+    expect(itinerary).toContain('<IconLine name="pin" class="lt-stops-empty-icon"')
+    expect(itinerary).toContain('<IconLine name="chevron-up"')
+    expect(itinerary).toContain('<IconLine name="chevron-down"')
+    expect(itinerary).toContain('var(--radius-control)')
+    expect(itinerary).toContain('var(--radius-surface)')
+  })
+
+  it('Entity detail page includes full OpenGraph metadata, Twitter card, and Schema.org hasMap', () => {
+    const detail = doc('pages/dia-diem/[id].vue')
+    expect(detail).toContain("twitterCard: 'summary_large_image'")
+    expect(detail).toContain("ogUrl: () => entity.value ? entityDetailUrl(entity.value.id) : canonicalUrl('/dia-diem')")
+    expect(detail).toContain("ld.hasMap = `https://www.google.com/maps/search/?api=1&query=${geoCoords[0]},${geoCoords[1]}`")
+  })
+
+  it('Public forms and helpers use standard Vietnamese typographic curly quotes', () => {
+    const correction = doc('pages/yeu-cau/sua-thong-tin.vue')
+    expect(correction).toContain('“Báo thông tin chưa đúng”')
+    expect(correction).not.toContain('«Báo thông tin chưa đúng»')
+
+    const assisted = doc('components/admin/cases/AssistedCorrectionForm.vue')
+    expect(assisted).toContain('“chỉ dùng để xử lý yêu cầu sửa”')
+    expect(assisted).not.toContain('«chỉ dùng để xử lý yêu cầu sửa»')
+  })
 })
 

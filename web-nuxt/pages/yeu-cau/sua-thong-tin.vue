@@ -138,7 +138,7 @@ useSeoMeta({
 
     <div v-else-if="!entityId || !entity" class="case-missing" aria-live="polite">
       <p>
-        Hãy mở trang của địa điểm cần sửa và bấm «Báo thông tin chưa đúng» để bắt đầu —
+        Hãy mở trang của địa điểm cần sửa và bấm “Báo thông tin chưa đúng” để bắt đầu —
         như vậy yêu cầu gắn đúng vào trang đó.
       </p>
       <NuxtLink to="/danh-ba">Tìm địa điểm trong danh bạ</NuxtLink>

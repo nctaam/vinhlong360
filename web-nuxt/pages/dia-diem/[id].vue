@@ -1326,6 +1326,8 @@ useSeoMeta({
   description: () => seoDesc.value,
   ogTitle: () => entity.value ? `${entity.value.name} — vinhlong360` : 'Địa điểm — vinhlong360',
   ogDescription: () => seoDesc.value,
+  ogUrl: () => entity.value ? entityDetailUrl(entity.value.id) : canonicalUrl('/dia-diem'),
+  twitterCard: 'summary_large_image',
   ogImage: () => heroImageMeta.value.ogImage,
   ogImageAlt: () => heroImageMeta.value.ogImageAlt,
   twitterImage: () => heroImageMeta.value.twitterImage,
@@ -1370,6 +1372,7 @@ const fallbackJsonLdScripts = computed(() => {
   const geoCoords = normalizeCoords(e.coordinates)
   if (geoCoords) {
     ld.geo = { '@type': 'GeoCoordinates', latitude: geoCoords[0], longitude: geoCoords[1] }
+    ld.hasMap = `https://www.google.com/maps/search/?api=1&query=${geoCoords[0]},${geoCoords[1]}`
   }
   if (e.attributes?.hours) ld.openingHours = e.attributes.hours
 
