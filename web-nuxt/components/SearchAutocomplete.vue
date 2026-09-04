@@ -106,14 +106,14 @@
 
       <!-- Fetch error -->
       <div v-if="fetchFailed && !loading && query.trim()" class="ac-empty" role="status">
-        <span class="ac-empty-icon" aria-hidden="true">⚠️</span>
+        <span class="ac-empty-icon" aria-hidden="true"><IconLine name="alert-triangle" /></span>
         <p class="ac-empty-title">Lỗi kết nối</p>
         <p class="ac-empty-hint">Không thể tải gợi ý. Thử nhập lại hoặc tìm theo danh mục.</p>
       </div>
 
       <!-- Empty state -->
       <div v-if="query.trim() && !suggestions.length && !loading && !fetchFailed" class="ac-empty">
-        <span class="ac-empty-icon" aria-hidden="true">🔍</span>
+        <span class="ac-empty-icon" aria-hidden="true"><IconLine name="search" /></span>
         <p class="ac-empty-title">Chưa tìm thấy nơi nào khớp</p>
         <p class="ac-empty-hint">Thử từ khóa khác, hoặc xem gợi ý theo danh mục:</p>
         <div class="ac-chips ac-empty-chips">

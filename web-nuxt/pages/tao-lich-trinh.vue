@@ -220,7 +220,8 @@
             <div v-if="idx < stops.length - 1 && plannerRouteLeg(idx)" class="route-leg">
               <div class="route-leg-line"></div>
               <div class="route-leg-info">
-                {{ formatDistance(plannerRouteLeg(idx)?.distance || 0) }} · {{ formatDuration(plannerRouteLeg(idx)?.duration || 0) }}
+                <IconLine :name="transportMode === 'driving' ? 'car' : transportMode === 'cycling' ? 'bike' : 'foot'" aria-hidden="true" />
+                <span>{{ formatDistance(plannerRouteLeg(idx)?.distance || 0) }} · {{ formatDuration(plannerRouteLeg(idx)?.duration || 0) }}</span>
               </div>
             </div>
           </template>
