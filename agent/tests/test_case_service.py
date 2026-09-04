@@ -754,3 +754,112 @@ def test_the_public_status_publishes_the_health_the_clocks_justify():
     # case was on track, beside an update date that had already passed.
     assert status.promise_health is PromiseHealth.BREACHED
     assert status.next_update_at == overdue.due_at
+
+
+def test_commit_case_delegates_without_changing_transaction_order(monkeypatch):
+    """Characterize the commit phases and their durable side-effect order."""
+    from cases.policy import load_case_policy
+    from cases.security import CaseCrypto, ReceiptGrant
+
+    class RecordingTransaction:
+        def __init__(self):
+            self.calls = []
+
+        def require_entities(self, entity_ids):
+            self.calls.append("require_entities")
+
+        def insert_case(self, snapshot):
+            self.calls.append("insert_case")
+            return snapshot
+
+        def insert_interaction(self, draft):
+            self.calls.append("insert_interaction")
+
+        def insert_correction_items(self, case_id, drafts):
+            self.calls.append("insert_correction_items")
+            return tuple(f"item-{index}" for index, _ in enumerate(drafts, start=1))
+
+        def insert_correction_evidence(self, drafts):
+            self.calls.append("insert_correction_evidence")
+
+        def insert_promise_clocks(self, case_id, clocks):
+            self.calls.append("insert_promise_clocks")
+
+        def insert_work_items(self, drafts):
+            self.calls.append("insert_work_items")
+
+        def append_transition(self, draft):
+            self.calls.append("append_transition")
+
+        def append_audit(self, draft):
+            self.calls.append("append_audit")
+
+        def issue_receipt(self, case_id, crypto, *, now, current_user_id):
+            self.calls.append("issue_receipt")
+            return ReceiptGrant(
+                receipt_id="receipt-1",
+                case_id=case_id,
+                public_reference="VL-COR-TEST",
+                capability="c" * 43,
+                expires_at=now,
+                current_user_id=current_user_id,
+            )
+
+        def enqueue_outbox(self, draft):
+            self.calls.append("enqueue_outbox")
+
+    class RecordingCrypto(CaseCrypto):
+        def encrypt_private_payload(self, payload):
+            return "encrypted"
+
+    helper_calls = []
+    for name in (
+        "_build_case_snapshot",
+        "_persist_case_intake",
+        "_issue_case_receipt_and_outbox",
+    ):
+        original = getattr(CaseService, name, None)
+
+        def wrapper(self, *args, _name=name, _original=original, **kwargs):
+            helper_calls.append(_name)
+            assert _original is not None
+            return _original(self, *args, **kwargs)
+
+        monkeypatch.setattr(CaseService, name, wrapper, raising=False)
+
+    policy = load_case_policy()
+    service = CaseService(
+        store=None,
+        crypto=RecordingCrypto("0" * 43),
+        policy=policy,
+        owner_ref="person:owner",
+    )
+    transaction = RecordingTransaction()
+
+    result = service._commit_case(
+        transaction,
+        _command(),
+        now=NOW,
+        session_user_ref=None,
+    )
+
+    assert helper_calls == [
+        "_build_case_snapshot",
+        "_persist_case_intake",
+        "_issue_case_receipt_and_outbox",
+    ]
+    assert transaction.calls == [
+        "require_entities",
+        "insert_case",
+        "insert_interaction",
+        "insert_correction_items",
+        "insert_correction_evidence",
+        "insert_promise_clocks",
+        "insert_work_items",
+        "append_transition",
+        "append_audit",
+        "issue_receipt",
+        "enqueue_outbox",
+    ]
+    assert result.public_reference == "VL-COR-TEST"
+    assert result.outbox_event_id == f"notify:{result.case_id}:received"

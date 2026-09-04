@@ -713,18 +713,14 @@ class CaseService:
             verified_at=now,
         )
 
-    def _commit_case(
+    def _build_case_snapshot(
         self,
-        transaction,
         command: CreateCorrectionCommand,
         *,
+        case_id: str,
         now: datetime,
-        session_user_ref: str | None,
-    ) -> CreateCorrectionResult:
-        crypto = self._crypto
-        policy = self._policy
-        actor = command.envelope.actor
-        case_id = str(uuid.uuid4())
+        policy,
+    ) -> tuple[CaseSnapshot, RiskClass]:
         risk = max(
             (CORRECTABLE_FIELD_PATHS[item.field_path] for item in command.items),
             key=lambda value: value.value,
@@ -746,6 +742,21 @@ class CaseService:
             updated_at=now,
             closed_at=None,
         )
+        return snapshot, risk
+
+    def _persist_case_intake(
+        self,
+        transaction,
+        command: CreateCorrectionCommand,
+        *,
+        case_id: str,
+        now: datetime,
+        crypto,
+        policy,
+        actor: ActorContext,
+        snapshot: CaseSnapshot,
+        risk: RiskClass,
+    ) -> CaseSnapshot:
         # correction_items carries a real foreign key to entities; check it here
         # so an unknown target is a stable problem rather than a driver error.
         try:
@@ -861,7 +872,18 @@ class CaseService:
                 occurred_at=now,
             )
         )
+        return stored
 
+    def _issue_case_receipt_and_outbox(
+        self,
+        transaction,
+        command: CreateCorrectionCommand,
+        *,
+        case_id: str,
+        now: datetime,
+        crypto,
+        policy,
+    ):
         # Bind the receipt to the account only when the reporter opted in.
         # Using the session here would silently lock a signed-in reporter who
         # filed anonymously out of their own capability after logging out.
@@ -874,14 +896,51 @@ class CaseService:
 
         # Intent only: the dispatcher re-checks consent, verification and
         # revocation immediately before delivery, and never carries a secret.
+        outbox_event_id = f"notify:{case_id}:received"
         transaction.enqueue_outbox(
             OutboxDraft(
                 case_id=case_id,
-                idempotency_key=f"notify:{case_id}:received",
+                idempotency_key=outbox_event_id,
                 topic="correction.received",
                 descriptor={"reason": "received", "policy_revision": policy.revision},
                 available_at=now,
             )
+        )
+        return grant, outbox_event_id
+
+    def _commit_case(
+        self,
+        transaction,
+        command: CreateCorrectionCommand,
+        *,
+        now: datetime,
+        session_user_ref: str | None,
+    ) -> CreateCorrectionResult:
+        crypto = self._crypto
+        policy = self._policy
+        actor = command.envelope.actor
+        case_id = str(uuid.uuid4())
+        snapshot, risk = self._build_case_snapshot(
+            command, case_id=case_id, now=now, policy=policy,
+        )
+        stored = self._persist_case_intake(
+            transaction,
+            command,
+            case_id=case_id,
+            now=now,
+            crypto=crypto,
+            policy=policy,
+            actor=actor,
+            snapshot=snapshot,
+            risk=risk,
+        )
+        grant, outbox_event_id = self._issue_case_receipt_and_outbox(
+            transaction,
+            command,
+            case_id=case_id,
+            now=now,
+            crypto=crypto,
+            policy=policy,
         )
 
         return CreateCorrectionResult(
@@ -892,7 +951,7 @@ class CaseService:
             next_update_at=now + timedelta(seconds=policy.update_target_seconds),
             replayed=False,
             revision=stored.current_revision,
-            outbox_event_id=f"notify:{case_id}:received",
+            outbox_event_id=outbox_event_id,
         )
 
 
