@@ -281,3 +281,23 @@ def test_contact_receipt_requirement_requires_phone_consent_without_assisted_flo
         optional_phone="0909123456", assisted=object(),
         notification_consent=True, contact_receipt=None,
     )) is False
+
+
+def test_redacting_log_filter_sanitizes_exception_context_before_formatting():
+    """Exception text and traceback objects never reach downstream handlers raw."""
+    import logging
+
+    from structured_logging import _sanitize_record_exception
+
+    try:
+        raise RuntimeError("phone=0909123456")
+    except RuntimeError:
+        record = logging.LogRecord("test", logging.ERROR, __file__, 1, "failed", (), None)
+        record.exc_info = sys.exc_info()
+        record.stack_info = "raw request"
+
+    _sanitize_record_exception(record)
+
+    assert record.exc_info is None
+    assert record.stack_info is None
+    assert "0909123456" not in (record.exc_text or "")

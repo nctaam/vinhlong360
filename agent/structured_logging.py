@@ -149,6 +149,24 @@ def log_user_event(event: Mapping[str, object], *, level: int = logging.INFO, lo
     return safe
 
 
+def _sanitize_record_exception(record: logging.LogRecord) -> None:
+    """Remove raw exception and stack details before a handler formats a record."""
+    if record.exc_info:
+        exc_type, exc_value, _traceback = record.exc_info
+        exception_type = getattr(exc_type, "__qualname__", "Exception")
+        exception_text = str(exc_value)
+        safe_exception = _digest(exception_text, "exception")
+        record.exc_info = None
+        record.exc_text = (
+            f"exception_type={exception_type} "
+            f"length={safe_exception['length']} "
+            f"digest={safe_exception['digest']}"
+        )
+    elif record.exc_text:
+        record.exc_text = str(_redact_log_argument(record.exc_text, "exception"))
+    record.stack_info = None
+
+
 class RedactingLogFilter(logging.Filter):
     """Replace a formatted LogRecord before any handler can observe raw args."""
 
@@ -157,21 +175,7 @@ class RedactingLogFilter(logging.Filter):
             # ``exc_info`` is a traceback object and therefore bypasses normal
             # argument redaction.  Drop it before handlers format the record;
             # retain only a stable exception type plus a one-way digest.
-            if record.exc_info:
-                exc_type, exc_value, _traceback = record.exc_info
-                exception_type = getattr(exc_type, "__qualname__", "Exception")
-                exception_text = str(exc_value)
-                safe_exception = _digest(exception_text, "exception")
-                record.exc_info = None
-                record.exc_text = (
-                    f"exception_type={exception_type} "
-                    f"length={safe_exception['length']} "
-                    f"digest={safe_exception['digest']}"
-                )
-            elif record.exc_text:
-                record.exc_text = str(_redact_log_argument(record.exc_text, "exception"))
-            # Stack text can contain interpolated request data as well.
-            record.stack_info = None
+            _sanitize_record_exception(record)
 
             template = str(record.msg)
             args = record.args
