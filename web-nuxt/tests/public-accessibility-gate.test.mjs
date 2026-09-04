@@ -89,6 +89,35 @@ describe('public accessibility browser gate', () => {
     }
   })
 
+  it('uses the same gzip level as the Python bundle checker', async () => {
+    const root = await mkdtemp(join(tmpdir(), 'vl360-bundle-level-'))
+    try {
+      const outputRoot = join(root, '_nuxt')
+      await mkdir(outputRoot, { recursive: true })
+      let state = 1
+      const lines = []
+      for (let index = 0; index < 2000; index += 1) {
+        state ^= state << 13
+        state ^= state >>> 17
+        state ^= state << 5
+        const value = (state >>> 0).toString(36)
+        lines.push(`${index % 5 === 0 ? 'COMMON-PREFIX-ALPHA-' : ''}${value}${index % 7 === 0 ? '-COMMON-SUFFIX-BETA' : ''}\n`)
+      }
+      const payload = Buffer.from(lines.join(''))
+      await Promise.all(Array.from({ length: 20 }, (_, index) => writeFile(join(outputRoot, `${index}.js`), payload)))
+
+      const snapshot = bundleSnapshot(outputRoot, {
+        total_gz_kb: 207,
+        max_chunk_gz_kb: 280,
+        total_css_gz_kb: 190,
+      })
+
+      expect(snapshot.bundleViolations).toBe(0)
+    } finally {
+      await rm(root, { recursive: true, force: true })
+    }
+  })
+
   it('is wired through the frontend package and blocking CI verification path', async () => {
     const packageJson = JSON.parse(await readFile(resolve(import.meta.dirname, '../package.json'), 'utf8'))
     const ci = await readFile(resolve(import.meta.dirname, '../../.github/workflows/ci.yml'), 'utf8')

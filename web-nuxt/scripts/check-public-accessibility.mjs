@@ -254,7 +254,9 @@ export function bundleSnapshot(outputRoot = resolve(webRoot, '.output', 'public'
     .map(entry => join(outputRoot, entry.name))
   const css = allFiles(outputRoot).filter(path => path.endsWith('.css'))
   if (!js.length) return { bundleAuditAvailable: false, bundleViolations: 1 }
-  const gzBytes = path => gzipSync(readFileSync(path)).length
+  // Match the Python R30.7 checker (gzip level 9) so both gates verdict the
+  // same artifact identically instead of drifting by compression level.
+  const gzBytes = path => gzipSync(readFileSync(path), { level: 9 }).length
   const ceilKiB = bytes => Math.ceil(bytes / 1024)
   const jsSizes = js.map(path => ({ path, bytes: gzBytes(path) }))
   const totalJsBytes = jsSizes.reduce((sum, item) => sum + item.bytes, 0)
