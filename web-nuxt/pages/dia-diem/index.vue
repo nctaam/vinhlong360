@@ -1,7 +1,7 @@
 <template>
   <section class="page dd-page">
     <span class="almanac-progress" aria-hidden="true"><span class="almanac-progress-fill" :style="{ transform: `scaleY(${scrollProgress})` }"></span></span>
-    <Breadcrumb :items="[{ label: 'Trang chủ', to: '/' }, { label: 'Địa điểm' }]" />
+    <Breadcrumb :items="[{ label: 'Trang chủ', to: '/' }, { label: 'Địa điểm' }]" :json-ld="true" />
 
     <!-- Almanac hero — bến đò signboard: horizon wash + hand-drawn route line -->
     <section class="catalog-hero cat-directory almanac-hero" aria-label="Danh bạ địa điểm">

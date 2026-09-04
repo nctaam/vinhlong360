@@ -1,6 +1,6 @@
 <template>
   <section class="page threads-page" data-color-system="tri-region-v1">
-    <Breadcrumb :items="[{ label: 'Trang chủ', to: '/' }, { label: 'Cộng đồng' }]" />
+    <Breadcrumb :items="[{ label: 'Trang chủ', to: '/' }, { label: 'Cộng đồng' }]" :json-ld="true" />
 
     <!-- Sổ tay hôm nay — masthead sống, không phải catalog-hero -->
     <CommunityAlmanacMasthead

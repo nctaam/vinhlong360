@@ -689,6 +689,9 @@ useSeoMeta({
   ogTitle: ss('seo.default_title', 'vinhlong360 — Du lịch & Sản phẩm địa phương'),
   ogDescription: ss('seo.default_description', 'Cổng du lịch và sản phẩm địa phương Vĩnh Long: trải nghiệm miệt vườn, đặc sản theo mùa, OCOP, làng nghề và lịch trình gợi ý.'),
   ogImage: ss('branding.og_image', 'https://vinhlong360.vn/img/og-default.jpg'),
+  ogType: 'website',
+  ogUrl: 'https://vinhlong360.vn/',
+  twitterCard: 'summary_large_image',
 })
 
 const eventListSchema = computed(() => {
@@ -731,7 +734,10 @@ useHead({
         inLanguage: 'vi-VN',
         potentialAction: {
           '@type': 'SearchAction',
-          target: 'https://vinhlong360.vn/tim-kiem?q={search_term_string}',
+          target: {
+            '@type': 'EntryPoint',
+            urlTemplate: 'https://vinhlong360.vn/tim-kiem?q={search_term_string}',
+          },
           'query-input': 'required name=search_term_string',
         },
       }),

@@ -21,7 +21,7 @@
 
     <!-- Main content -->
     <section class="guide-main">
-      <Breadcrumb :items="[{ label: 'Trang chủ', to: '/' }, { label: 'Hướng dẫn sử dụng' }]" />
+      <Breadcrumb :items="[{ label: 'Trang chủ', to: '/' }, { label: 'Hướng dẫn sử dụng' }]" :json-ld="true" />
 
       <header class="brand-masthead guide-hero">
         <div class="bm-inner">

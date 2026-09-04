@@ -5,7 +5,7 @@
     data-page-recipe="search"
     data-material-accent="neutral"
   >
-    <Breadcrumb :items="[{ label: 'Trang chủ', to: '/' }, { label: 'Tìm kiếm' }]" />
+    <Breadcrumb :items="[{ label: 'Trang chủ', to: '/' }, { label: 'Tìm kiếm' }]" :json-ld="true" />
 
     <!-- Hero: masthead + hero-scale input, with one Clay editorial tick. -->
     <section class="catalog-hero cat-search search-hero">
@@ -621,6 +621,7 @@ useSeoMeta({
   description: () => q.value.trim() ? `Kết quả tìm kiếm cho "${q.value.trim()}" trên vinhlong360.` : pc('seo_description'),
   ogTitle: () => q.value.trim() ? `"${q.value.trim()}" — vinhlong360` : pc('og_title'),
   ogDescription: () => pc('og_description'),
+  robots: () => q.value.trim() ? 'noindex, follow' : 'index, follow',
 })
 useHead({
   link: [{ rel: 'canonical', href: canonicalUrl('/tim-kiem') }],

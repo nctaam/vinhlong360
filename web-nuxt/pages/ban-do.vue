@@ -1,6 +1,6 @@
 <template>
   <section class="page" data-color-system="tri-region-v1" data-page-recipe="map">
-    <Breadcrumb :items="[{ label: 'Trang chủ', to: '/' }, { label: 'Bản đồ' }]" />
+    <Breadcrumb :items="[{ label: 'Trang chủ', to: '/' }, { label: 'Bản đồ' }]" :json-ld="true" />
 
     <section class="catalog-hero cat-map">
       <div class="catalog-hero-inner map-hero-inner">

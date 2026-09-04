@@ -1,6 +1,6 @@
 <template>
   <section class="page" :style="{ '--int-rgb': interestTintRgb }">
-    <Breadcrumb :items="breadcrumbItems" />
+    <Breadcrumb :items="breadcrumbItems" :json-ld="true" />
 
     <!-- Hero — "Một góc nhìn, một người kể": lens hero with per-interest halo shape -->
     <section class="catalog-hero cat-interest">
@@ -289,7 +289,7 @@ watch([areaFilter, typeFilter], () => {
 })
 
 useSeoMeta({
-  title: `${interestMeta.value.emoji} ${interestMeta.value.label} — Khám phá Vĩnh Long — vinhlong360`,
+  title: `${interestMeta.value.label} — Khám phá Vĩnh Long — vinhlong360`,
   description: interestMeta.value.description,
   ogTitle: `${interestMeta.value.label} — vinhlong360`,
   ogDescription: interestMeta.value.description,

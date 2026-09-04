@@ -1,6 +1,6 @@
 <template>
   <section class="page dir-page" data-color-system="tri-region-v1">
-    <Breadcrumb :items="[{ label: 'Trang chủ', to: '/' }, { label: 'Danh bạ' }]" />
+    <Breadcrumb :items="[{ label: 'Trang chủ', to: '/' }, { label: 'Danh bạ' }]" :json-ld="true" />
 
     <!-- Hero -->
     <section class="catalog-hero cat-directory">

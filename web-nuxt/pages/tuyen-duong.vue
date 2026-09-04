@@ -1,6 +1,6 @@
 <template>
   <section class="page">
-    <Breadcrumb :items="[{ label: 'Trang chủ', to: '/' }, { label: 'Tuyến đường gợi ý' }]" />
+    <Breadcrumb :items="[{ label: 'Trang chủ', to: '/' }, { label: 'Tuyến đường gợi ý' }]" :json-ld="true" />
 
     <!-- Hero -->
     <section class="catalog-hero cat-route">
