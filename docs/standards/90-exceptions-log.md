@@ -291,3 +291,45 @@ ghi ở backlog tối ưu — giảm dần, KHÔNG được tăng tiếp từ 47
 - 2026-09-04T11:51:20 SKIP R30.7 — Authority baseline section refactor and characterization tests reduce R20.8; bundle debt unchanged
 
 - 2026-09-04T11:54:01 SKIP R30.7 — LLMOps timestamp parser decomposition reduces R20.8; bundle debt unchanged
+
+- 2026-09-04T12:02:40 SKIP R30.7 — Backend-only public entity listing refactor; pre-existing frontend bundle debt is unchanged.
+
+- 2026-09-04T12:05:24 SKIP R30.7 — Backend-only SEO coverage decomposition; pre-existing frontend bundle debt is unchanged.
+
+- 2026-09-04T12:09:46 SKIP R30.7 — Backend-only publication verification refactor; pre-existing frontend bundle debt is unchanged.
+
+- 2026-09-04T12:12:58 SKIP R30.7 — Backend-only publication receipt and verification decomposition; pre-existing frontend bundle debt is unchanged.
+
+- 2026-09-04T12:16:14 SKIP R30.7 — Backend-only change-set ID normalization helper; pre-existing frontend bundle debt is unchanged.
+
+- 2026-09-04T12:16:30 SKIP R30.7 — diagnostic
+
+- 2026-09-04T12:33:33 SKIP R30.7 — Backend-only create-correction validation decomposition; pre-existing frontend bundle debt is unchanged.
+
+- 2026-09-04T12:36:14 SKIP R30.7 — Backend-only create-correction validation and contact proof decomposition; pre-existing frontend bundle debt is unchanged.
+
+- 2026-09-04T12:38:25 SKIP R30.7 — Backend-only structured logging filter decomposition; pre-existing frontend bundle debt is unchanged.
+
+- 2026-09-04T12:46:33 SKIP R30.7 — Backend-only pre-case contact validation and rate-limit decomposition; pre-existing frontend bundle debt is unchanged.
+
+- 2026-09-04T12:49:31 SKIP R30.7 — Backend-only media deletion receipt decomposition; pre-existing frontend bundle debt is unchanged.
+
+- 2026-09-04T13:00:33 SKIP R30.7 — Backend-only geocode cache decomposition; pre-existing frontend bundle debt is unchanged.
+
+- 2026-09-04T13:06:05 SKIP R30.7 — Backend-only batch moderation decomposition; pre-existing frontend bundle debt is unchanged.
+
+- 2026-09-04T13:08:15 SKIP R30.7 — Backend-only bulk place workflow decomposition; pre-existing frontend bundle debt is unchanged.
+
+- 2026-09-04T13:09:22 SKIP R30.7 — Backend-only bulk place workflow decomposition with paired regression test; pre-existing frontend bundle debt is unchanged.
+
+- 2026-09-04T13:25:39 SKIP R30.7 — Backend-only entity image and claim workflow decomposition with paired regression coverage; pre-existing frontend bundle debt is unchanged.
+
+- 2026-09-04T13:45:58 SKIP R30.7 — Backend-only KB curation decomposition with characterization coverage; pre-existing frontend bundle debt is unchanged.
+
+- 2026-09-04T13:59:45 SKIP R30.7 — Backend-only database entity audit/delete transaction decomposition with compatibility coverage; pre-existing frontend bundle debt is unchanged.
+
+- 2026-09-04T14:23:59 SKIP R30.7 — Backend-only scheduled post publishing decomposition with CAS regression coverage; pre-existing frontend bundle debt is unchanged.
+
+- 2026-09-04T14:26:24 SKIP R30.7 — Backend-only scheduled post publishing decomposition with fail-closed moderation coverage; pre-existing frontend bundle debt is unchanged.
+
+- 2026-09-04T14:31:19 SKIP R30.7 — Backend-only correction public transport decomposition with contact lane characterization coverage; pre-existing frontend bundle debt is unchanged.
