@@ -130,6 +130,14 @@ def test_a_change_set_needs_the_evidence_it_rests_on():
     assert excinfo.value.problem.code == "evidence_lineage_required"
 
 
+def test_change_set_item_selection_is_sorted_and_deduplicated_for_replay():
+    from cases.correction import _normalize_change_set_item_ids
+
+    assert _normalize_change_set_item_ids(("item-b", "item-a", "item-b")) == (
+        "item-a", "item-b"
+    )
+
+
 def test_building_a_change_set_never_reaches_the_entity_writer():
     import inspect
 

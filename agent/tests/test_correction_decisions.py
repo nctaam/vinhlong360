@@ -446,3 +446,14 @@ def test_reject_order_is_a_contract_outcome_before_scope_before_reason():
     with pytest.raises(Exception) as err:
         validate_decision(_command(reason_code="", evidence=()), now=NOW)
     assert "decision_reason_required" in str(err.value)
+
+
+def test_decision_replay_ref_extraction_preserves_raw_command_order():
+    """Replay digest input keeps the caller's raw evidence ids unchanged."""
+    from cases.correction import _decision_command_evidence_refs
+
+    command = _command(
+        evidence=(_evidence(evidence_id="raw-a"), _evidence(evidence_id="raw-b")),
+    )
+
+    assert _decision_command_evidence_refs(command) == ("raw-a", "raw-b")
