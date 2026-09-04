@@ -202,12 +202,12 @@ def _upload_bundle(
 
 def _parse_args(argv: list[str] | None = None):
     parser = argparse.ArgumentParser(description="Upload latest local backup to S3-compatible storage.")
-    parser.add_argument("--backup-dir", default=str(ROOT / "backups"))
-    parser.add_argument("--bucket", default=os.environ.get("S3_BUCKET", ""))
-    parser.add_argument("--prefix", default="vl360-backups/")
-    parser.add_argument("--endpoint", default=os.environ.get("S3_ENDPOINT", ""))
-    parser.add_argument("--region", default=os.environ.get("S3_REGION", "auto"))
-    parser.add_argument("--dry-run", action="store_true")
+    parser.add_argument("--backup-dir", default=str(ROOT / "backups"), help="directory containing backups (default: backups/)")
+    parser.add_argument("--bucket", default=os.environ.get("S3_BUCKET", ""), help="S3 bucket name (default: $S3_BUCKET)")
+    parser.add_argument("--prefix", default="vl360-backups/", help="S3 key prefix (default: vl360-backups/)")
+    parser.add_argument("--endpoint", default=os.environ.get("S3_ENDPOINT", ""), help="S3-compatible endpoint URL (default: $S3_ENDPOINT)")
+    parser.add_argument("--region", default=os.environ.get("S3_REGION", "auto"), help="AWS region (default: $S3_REGION or 'auto')")
+    parser.add_argument("--dry-run", action="store_true", help="show what would be uploaded without actually uploading")
     return parser.parse_args(argv)
 
 
