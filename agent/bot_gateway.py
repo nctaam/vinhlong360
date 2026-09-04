@@ -125,23 +125,44 @@ def _strong_production_secret(value: object) -> bool:
     return is_strong_production_secret(value)
 
 
-def _is_exact_origin(value: object) -> bool:
-    """Accept only an explicit HTTPS origin, never a URL or wildcard."""
-    if not isinstance(value, str) or not value or any(ch.isspace() for ch in value):
-        return False
-    if "*" in value or any(ch in value for ch in "?#"):
-        return False
-    parsed = urlparse(value)
-    if parsed.scheme.lower() != "https" or not parsed.netloc or parsed.netloc.endswith(":"):
+def _origin_text_is_valid(value: object) -> bool:
+    return (
+        isinstance(value, str)
+        and bool(value)
+        and not any(ch.isspace() for ch in value)
+        and "*" not in value
+        and not any(ch in value for ch in "?#")
+    )
+
+
+def _origin_authority_is_valid(parsed) -> bool:
+    if not parsed.netloc or parsed.netloc.endswith(":"):
         return False
     if parsed.username or parsed.password or parsed.path:
         return False
     try:
-        _ = parsed.port
+        parsed.port
     except ValueError:
         return False
+    return True
+
+
+def _origin_hostname_is_valid(parsed) -> bool:
     hostname = parsed.hostname or ""
-    return bool(re.fullmatch(r"(?:[A-Za-z0-9-]+\.)*[A-Za-z0-9-]+|\[[0-9A-Fa-f:.]+\]", hostname))
+    pattern = r"(?:[A-Za-z0-9-]+\.)*[A-Za-z0-9-]+|\[[0-9A-Fa-f:.]+\]"
+    return bool(re.fullmatch(pattern, hostname))
+
+
+def _is_exact_origin(value: object) -> bool:
+    """Accept only an explicit HTTPS origin, never a URL or wildcard."""
+    if not _origin_text_is_valid(value):
+        return False
+    parsed = urlparse(value)
+    if parsed.scheme.lower() != "https":
+        return False
+    if not _origin_authority_is_valid(parsed):
+        return False
+    return _origin_hostname_is_valid(parsed)
 
 
 def _validate_database_config(value: object) -> list[str]:

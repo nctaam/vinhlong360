@@ -23,24 +23,57 @@ def is_postgresql_url(value: str) -> bool:
     return value.strip().lower().startswith(POSTGRES_URL_PREFIXES)
 
 
-def is_exact_origin(value: object, *, require_https: bool = True) -> bool:
-    """Validate a CORS origin (scheme + authority only, never a URL)."""
-    if not isinstance(value, str) or not value or any(ch.isspace() for ch in value):
-        return False
-    if "*" in value or any(ch in value for ch in "?#"):
-        return False
-    parsed = urlparse(value)
+def _origin_text_is_valid(value: object) -> bool:
+    return (
+        isinstance(value, str)
+        and bool(value)
+        and not any(ch.isspace() for ch in value)
+        and "*" not in value
+        and not any(ch in value for ch in "?#")
+    )
+
+
+def _origin_scheme_is_allowed(parsed, *, require_https: bool) -> bool:
     allowed_schemes = {"https"} if require_https else {"http", "https"}
-    if parsed.scheme.lower() not in allowed_schemes:
-        return False
-    if not parsed.netloc or parsed.username or parsed.password or parsed.path or parsed.netloc.endswith(":"):
-        return False
+    return parsed.scheme.lower() in allowed_schemes
+
+
+def _origin_has_authority_only(parsed) -> bool:
+    return (
+        not parsed.netloc
+        or parsed.username is not None
+        or parsed.password is not None
+        or bool(parsed.path)
+        or parsed.netloc.endswith(":")
+    )
+
+
+def _origin_has_valid_port(parsed) -> bool:
     try:
-        _ = parsed.port
+        parsed.port
     except ValueError:
         return False
+    return True
+
+
+def _origin_hostname_is_valid(parsed) -> bool:
     hostname = parsed.hostname or ""
-    return bool(re.fullmatch(r"(?:[A-Za-z0-9-]+\.)*[A-Za-z0-9-]+|\[[0-9A-Fa-f:.]+\]", hostname))
+    pattern = r"(?:[A-Za-z0-9-]+\.)*[A-Za-z0-9-]+|\[[0-9A-Fa-f:.]+\]"
+    return bool(re.fullmatch(pattern, hostname))
+
+
+def is_exact_origin(value: object, *, require_https: bool = True) -> bool:
+    """Validate a CORS origin (scheme + authority only, never a URL)."""
+    if not _origin_text_is_valid(value):
+        return False
+    parsed = urlparse(value)
+    if not _origin_scheme_is_allowed(parsed, require_https=require_https):
+        return False
+    if _origin_has_authority_only(parsed):
+        return False
+    if not _origin_has_valid_port(parsed):
+        return False
+    return _origin_hostname_is_valid(parsed)
 
 
 def _is_individual_actor_ref(value: str) -> bool:
@@ -291,6 +324,38 @@ def _unsafe_production_secret(value: object) -> bool:
     return not is_strong_production_secret(value)
 
 
+def _production_secret_failures(settings: Settings) -> list[str]:
+    return [
+        f"{field} must be a strong non-default secret"
+        for field in ("LLM_API_KEY", "ADMIN_API_KEY", "JWT_SECRET", "CSRF_SECRET")
+        if _unsafe_production_secret(getattr(settings, field, ""))
+    ]
+
+
+def _production_database_failures(settings: Settings) -> list[str]:
+    database_url = str(getattr(settings, "DATABASE_URL", "") or "").strip()
+    if not is_postgresql_url(database_url):
+        return ["DATABASE_URL must use PostgreSQL"]
+    parsed = urlparse(database_url)
+    if not parsed.hostname or not parsed.username or not parsed.password:
+        return ["DATABASE_URL must include explicit PostgreSQL credentials"]
+    if _unsafe_production_secret(unquote(parsed.password)):
+        return ["DATABASE_URL password must be a strong non-default secret"]
+    return []
+
+
+def _production_cors_failures(settings: Settings) -> list[str]:
+    origins = getattr(settings, "cors_origins_list", [])
+    raw_origins = str(getattr(settings, "CORS_ORIGINS", "") or "").strip()
+    if not raw_origins or not origins:
+        return ["CORS_ORIGINS must be explicitly configured"]
+    if any("localhost" in origin.lower() or "127.0.0.1" in origin for origin in origins):
+        return ["CORS_ORIGINS must not include local origins in production"]
+    if any(not is_exact_origin(origin, require_https=True) for origin in origins):
+        return ["CORS_ORIGINS must use HTTPS in production"]
+    return []
+
+
 def assert_production_config(settings: Settings) -> None:
     """Fail closed before startup when a production contract is unsafe."""
     if not isinstance(settings, Settings):
@@ -298,32 +363,11 @@ def assert_production_config(settings: Settings) -> None:
     if not settings.is_production:
         raise ValueError("ENVIRONMENT=production is required")
 
-    failures: list[str] = []
-    for field in ("LLM_API_KEY", "ADMIN_API_KEY", "JWT_SECRET", "CSRF_SECRET"):
-        if _unsafe_production_secret(getattr(settings, field, "")):
-            failures.append(f"{field} must be a strong non-default secret")
-
-    database_url = str(getattr(settings, "DATABASE_URL", "") or "").strip()
-    if not is_postgresql_url(database_url):
-        failures.append("DATABASE_URL must use PostgreSQL")
-    else:
-        parsed = urlparse(database_url)
-        if not parsed.hostname or not parsed.username or not parsed.password:
-            failures.append("DATABASE_URL must include explicit PostgreSQL credentials")
-        elif _unsafe_production_secret(unquote(parsed.password)):
-            failures.append("DATABASE_URL password must be a strong non-default secret")
-
+    failures: list[str] = _production_secret_failures(settings)
+    failures.extend(_production_database_failures(settings))
     if getattr(settings, "ENTITY_DETAILS_TABLES", False) is not True:
         failures.append("ENTITY_DETAILS_TABLES=true is required")
-
-    origins = getattr(settings, "cors_origins_list", [])
-    raw_origins = str(getattr(settings, "CORS_ORIGINS", "") or "").strip()
-    if not raw_origins or not origins:
-        failures.append("CORS_ORIGINS must be explicitly configured")
-    elif any("localhost" in origin.lower() or "127.0.0.1" in origin for origin in origins):
-        failures.append("CORS_ORIGINS must not include local origins in production")
-    elif any(not is_exact_origin(origin, require_https=True) for origin in origins):
-        failures.append("CORS_ORIGINS must use HTTPS in production")
+    failures.extend(_production_cors_failures(settings))
 
     if failures:
         raise ValueError("Unsafe production configuration: " + "; ".join(failures))

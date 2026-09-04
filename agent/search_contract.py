@@ -76,6 +76,14 @@ def _source_text(entity: Mapping[str, Any]) -> str:
     return normalize_search_text(" ".join(values))
 
 
+def _contains_all_terms(text: str, terms: tuple[str, ...]) -> bool:
+    return bool(terms) and all(term in text for term in terms)
+
+
+def _matches_text(query: str, text: str, terms: tuple[str, ...]) -> bool:
+    return query in text or _contains_all_terms(text, terms)
+
+
 def _rank(entity: Mapping[str, Any], query: str) -> tuple[float, str] | None:
     qn = normalize_search_text(query)
     if not qn:
@@ -91,11 +99,11 @@ def _rank(entity: Mapping[str, Any], query: str) -> tuple[float, str] | None:
         return 900.0, "name_prefix"
     if qn in name:
         return 800.0, "name_contains"
-    if terms and all(term in name for term in terms):
+    if _contains_all_terms(name, terms):
         return 750.0, "name_terms"
-    if qn in summary or (terms and all(term in summary for term in terms)):
+    if _matches_text(qn, summary, terms):
         return 500.0, "summary"
-    if qn in source or (terms and all(term in source for term in terms)):
+    if _matches_text(qn, source, terms):
         return 300.0, "source"
     return None
 
@@ -143,6 +151,40 @@ def search_public_entities(
     )
 
 
+def _catalog_rows(database: Any, query: str, db_kwargs: dict[str, Any], *, bounded: bool,
+                  fetch_limit: int | None) -> tuple[list[dict[str, Any]], int]:
+    try:
+        relation_total = int(database.count_entities_filtered(q=query or None, **db_kwargs))
+    except (AttributeError, TypeError):
+        relation_total = 0
+    fetch_size = max(relation_total, 1)
+    if bounded:
+        fetch_size = min(fetch_size, max(fetch_limit or 1, 1))
+    if hasattr(database, "search_entities"):
+        rows = database.search_entities(q=query or None, limit=fetch_size, offset=0, **db_kwargs)
+    else:
+        rows = database.list_entities(limit=fetch_size, offset=0, **db_kwargs)
+    return list(rows), relation_total
+
+
+def _rank_catalog_rows(rows: list[dict[str, Any]], query: str) -> list[dict[str, Any]]:
+    ranked: list[tuple[float, str, int, dict[str, Any]]] = []
+    for index, row in enumerate(rows):
+        score = _rank(row, query)
+        if score is None:
+            continue
+        numeric, reason = score
+        item = dict(row)
+        item["_search_meta"] = {
+            "score": round(numeric + float(row.get("confidence") or 0) * 0.01, 4),
+            "reason": reason,
+            "ranking_version": RANKING_VERSION,
+        }
+        ranked.append((numeric, str(item.get("id") or ""), index, item))
+    ranked.sort(key=lambda entry: (-entry[0], entry[1], entry[2]))
+    return [entry[3] for entry in ranked]
+
+
 def rank_public_entity_catalog(
     query: str,
     *,
@@ -161,32 +203,8 @@ def rank_public_entity_catalog(
         from database import db as database
     db_kwargs = _db_filters(filters)
     count_query = query or None
-    try:
-        relation_total = int(database.count_entities_filtered(q=count_query, **db_kwargs))
-    except (AttributeError, TypeError):
-        relation_total = 0
-    # Fetch all filtered rows before lexical ranking. A bounded caller must opt in
-    # and receives an honest truncation bit instead of a misleading total.
-    fetch_size = max(relation_total, 1)
-    if bounded:
-        fetch_size = min(fetch_size, max(fetch_limit or 1, 1))
-    if hasattr(database, "search_entities"):
-        rows = list(database.search_entities(q=query or None, limit=fetch_size, offset=0, **db_kwargs))
-    else:
-        rows = list(database.list_entities(limit=fetch_size, offset=0, **db_kwargs))
-    ranked: list[tuple[float, str, int, dict[str, Any]]] = []
-    for index, row in enumerate(rows):
-        score = _rank(row, query)
-        if score is None:
-            continue
-        numeric, reason = score
-        item = dict(row)
-        item["_search_meta"] = {
-            "score": round(numeric + float(row.get("confidence") or 0) * 0.01, 4),
-            "reason": reason,
-            "ranking_version": RANKING_VERSION,
-        }
-        ranked.append((numeric, str(item.get("id") or ""), index, item))
-    ranked.sort(key=lambda entry: (-entry[0], entry[1], entry[2]))
-    matched = [entry[3] for entry in ranked]
+    rows, relation_total = _catalog_rows(
+        database, count_query or "", db_kwargs, bounded=bounded, fetch_limit=fetch_limit,
+    )
+    matched = _rank_catalog_rows(rows, query)
     return matched, bounded and len(rows) < relation_total

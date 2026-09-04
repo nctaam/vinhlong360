@@ -20,29 +20,19 @@ PRODUCTION_SECRET_PLACEHOLDERS = frozenset(
 )
 
 
-def is_strong_production_secret(value: object) -> bool:
-    """Return whether a value meets the shared production secret policy."""
-    if not isinstance(value, str):
-        return False
-    normalized = value.strip().lower()
-    if (
-        len(normalized) < 20
-        or normalized in PRODUCTION_SECRET_PLACEHOLDERS
-        or any(
-            marker in normalized
-            for marker in (
-                "<your-",
-                "replace-me",
-                "example-secret",
-                "dev_password",
-                "change_me",
-            )
-        )
-    ):
-        return False
+def _contains_placeholder_marker(normalized: str) -> bool:
+    markers = (
+        "<your-",
+        "replace-me",
+        "example-secret",
+        "dev_password",
+        "change_me",
+    )
+    return any(marker in normalized for marker in markers)
 
-    # Use the prefix function to reject any repeated cycle, including units
-    # longer than the old 16-character cap.
+
+def _is_repeated_cycle(normalized: str) -> bool:
+    """Reject any repeated cycle using the KMP prefix table."""
     prefix = [0] * len(normalized)
     for index in range(1, len(normalized)):
         candidate = prefix[index - 1]
@@ -52,10 +42,10 @@ def is_strong_production_secret(value: object) -> bool:
             candidate += 1
         prefix[index] = candidate
     period = len(normalized) - prefix[-1]
-    if prefix[-1] and len(normalized) % period == 0:
-        return False
+    return bool(prefix[-1] and len(normalized) % period == 0)
 
-    # Reject low-entropy canaries even when they are not periodic.
+
+def _has_sufficient_entropy(normalized: str) -> bool:
     if len(set(normalized)) < 5:
         return False
     length = len(normalized)
@@ -64,3 +54,20 @@ def is_strong_production_secret(value: object) -> bool:
         for count in Counter(normalized).values()
     )
     return entropy > 2.0
+
+
+def is_strong_production_secret(value: object) -> bool:
+    """Return whether a value meets the shared production secret policy."""
+    if not isinstance(value, str):
+        return False
+    normalized = value.strip().lower()
+    if (
+        len(normalized) < 20
+        or normalized in PRODUCTION_SECRET_PLACEHOLDERS
+        or _contains_placeholder_marker(normalized)
+    ):
+        return False
+
+    if _is_repeated_cycle(normalized):
+        return False
+    return _has_sufficient_entropy(normalized)

@@ -147,22 +147,30 @@ def redact_text(
         raise PrivacyBoundaryUnavailable("TEXT_REDACTION_FAILED") from exc
 
 
+def _redact_log_string(value: str):
+    try:
+        safe = redact_text(value, source="log")
+        if check_prompt_injection_silent(value).action == "block":
+            return _prompt_injection_digest(value)
+    except Exception:
+        track_privacy_boundary_failure("log")
+        return _REDACTION_FAILED
+    return safe.text
+
+
+def _redact_log_mapping(value: Mapping):
+    try:
+        return {key: redact_log_value(item) for key, item in value.items()}
+    except Exception:
+        track_privacy_boundary_failure("log")
+        return _REDACTION_FAILED
+
+
 def redact_log_value(value):
     if isinstance(value, str):
-        try:
-            safe = redact_text(value, source="log")
-            if check_prompt_injection_silent(value).action == "block":
-                return _prompt_injection_digest(value)
-        except Exception:
-            track_privacy_boundary_failure("log")
-            return _REDACTION_FAILED
-        return safe.text
+        return _redact_log_string(value)
     if isinstance(value, Mapping):
-        try:
-            return {key: redact_log_value(item) for key, item in value.items()}
-        except Exception:
-            track_privacy_boundary_failure("log")
-            return _REDACTION_FAILED
+        return _redact_log_mapping(value)
     if isinstance(value, list):
         return [redact_log_value(item) for item in value]
     if isinstance(value, tuple):
