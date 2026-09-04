@@ -277,3 +277,5 @@ ghi ở backlog tối ưu — giảm dần, KHÔNG được tăng tiếp từ 47
 - 2026-09-04T11:02:48 SKIP R30.7 — Pin TypeScript to Nuxt-compatible exact version; bundle debt remains separately tracked
 
 - 2026-09-04T11:03:21 SKIP R30.7 — Commit accumulated gate evidence entries; R30.7 remains real debt
+
+- 2026-09-04T11:04:55 SKIP R30.7 — Persist hard-gate observation: R20.8=49 and R30.7=2 remain unresolved
