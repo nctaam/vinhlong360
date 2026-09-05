@@ -71,6 +71,15 @@ const dateline = computed(() => {
 .saved-entity-link {
   display: flex; align-items: center; gap: .75rem; flex: 1; min-width: 0;
   text-decoration: none; color: var(--ink);
+  border-radius: var(--radius-surface);
+  transition: transform .15s var(--ease-out);
+}
+.saved-entity-link:active {
+  transform: scale(.985);
+}
+.saved-entity-link:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 2px;
 }
 .saved-entity-cover { position: relative; display: block; flex-shrink: 0; width: 80px; height: 56px; border-radius: var(--radius-surface); overflow: hidden; }
 .saved-entity-img { display: block; width: 80px; height: 56px; border-radius: var(--radius-surface); object-fit: cover; flex-shrink: 0; }
@@ -104,5 +113,10 @@ const dateline = computed(() => {
 /* Mobile */
 @media (max-width: 600px) {
   .saved-entity-cover, .saved-entity-img { width: 60px; height: 42px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .saved-entity-link { transition: none; }
+  .saved-entity-link:active { transform: none; }
 }
 </style>
