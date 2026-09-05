@@ -1,5 +1,5 @@
 <template>
-  <section class="page dd-page">
+  <section class="page dd-page" data-color-system="tri-region-v1">
     <span class="almanac-progress" aria-hidden="true"><span class="almanac-progress-fill" :style="{ transform: `scaleY(${scrollProgress})` }"></span></span>
     <Breadcrumb :items="[{ label: 'Trang chủ', to: '/' }, { label: 'Địa điểm' }]" :json-ld="true" />
 

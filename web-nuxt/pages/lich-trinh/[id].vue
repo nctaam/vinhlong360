@@ -1,5 +1,5 @@
 <template>
-  <section v-if="itinerary" class="page">
+  <section v-if="itinerary" class="page" data-color-system="tri-region-v1">
     <Breadcrumb :items="[{ label: 'Trang chủ', to: '/' }, { label: 'Lịch trình', to: '/lich-trinh' }, { label: itineraryTitle }]" :json-ld="true">
       <template #before>
         <button type="button" class="bc-back" aria-label="Quay lại" @click="goBack">
@@ -125,15 +125,15 @@
       </NuxtErrorBoundary>
     </div>
   </section>
-  <div v-else-if="pending" class="page">
+  <div v-else-if="pending" class="page" data-color-system="tri-region-v1">
     <SkeletonList :count="4" />
   </div>
-  <div v-else-if="fetchError" class="page">
+  <div v-else-if="fetchError" class="page" data-color-system="tri-region-v1">
     <EmptyState icon-name="alert-triangle" tone="error" title="Không thể tải lịch trình" message="Lỗi kết nối. Vui lòng thử lại.">
       <template #actions><NuxtLink to="/lich-trinh" class="btn btn-outline btn-sm">Về danh sách</NuxtLink></template>
     </EmptyState>
   </div>
-  <div v-else class="page">
+  <div v-else class="page" data-color-system="tri-region-v1">
     <EmptyState message="Không tìm thấy lịch trình." />
   </div>
 

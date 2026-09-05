@@ -126,7 +126,7 @@ useHead(() => ({
 </script>
 
 <template>
-  <section class="case-page">
+  <section class="case-page" data-color-system="tri-region-v1">
     <Breadcrumb :items="[{ label: 'Trang chủ', to: '/' }, { label: 'Yêu cầu sửa thông tin' }]" :json-ld="true" />
 
     <header class="case-header">

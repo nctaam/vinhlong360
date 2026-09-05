@@ -1,5 +1,5 @@
 <template>
-  <section class="guide-page">
+  <section class="guide-page" data-color-system="tri-region-v1">
     <Breadcrumb :items="[{ label: 'Trang chủ', to: '/' }, { label: 'Cộng đồng', to: '/cong-dong' }, { label: 'Hướng dẫn thành viên' }]" :json-ld="true" />
 
     <header class="guide-hero">

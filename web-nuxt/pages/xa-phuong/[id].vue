@@ -1,5 +1,5 @@
 <template>
-  <section v-if="wardFetchResolution?.kind === 'not_found'" class="page">
+  <section v-if="wardFetchResolution?.kind === 'not_found'" class="page" data-color-system="tri-region-v1">
     <EmptyState title="Không tìm thấy xã/phường" message="Có thể đơn vị hành chính đã được sắp xếp lại hoặc đường dẫn chưa đúng.">
       <template #actions>
         <NuxtLink to="/danh-ba" class="btn btn-primary">Danh bạ hành chính</NuxtLink>
@@ -8,7 +8,7 @@
     </EmptyState>
   </section>
 
-  <section v-else-if="wardFetchResolution?.kind === 'hidden'" class="page">
+  <section v-else-if="wardFetchResolution?.kind === 'hidden'" class="page" data-color-system="tri-region-v1">
     <EmptyState title="Nội dung chưa công khai" message="Đơn vị này hiện không có trên bề mặt công khai.">
       <template #actions>
         <button type="button" class="btn btn-primary" @click="goBack">Quay lại</button>
@@ -17,7 +17,7 @@
     </EmptyState>
   </section>
 
-  <section v-else-if="wardFetchResolution?.kind === 'error'" class="page ward-recovery-page">
+  <section v-else-if="wardFetchResolution?.kind === 'error'" class="page ward-recovery-page" data-color-system="tri-region-v1">
     <PageState
       :state="{ kind: 'error', retry: { label: 'Thử lại' } }"
       title="Không thể tải trang"
@@ -29,7 +29,7 @@
     </nav>
   </section>
 
-  <section v-else-if="data?.place" class="wp ce-ward">
+  <section v-else-if="data?.place" class="wp ce-ward" data-color-system="tri-region-v1">
     <!-- Breadcrumb -->
     <Breadcrumb :items="breadcrumbItems" :json-ld="true">
       <template #before>

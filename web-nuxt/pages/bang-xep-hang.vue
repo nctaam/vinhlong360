@@ -1,5 +1,5 @@
 <template>
-  <section class="page bxh-page">
+  <section class="page bxh-page" data-color-system="tri-region-v1">
     <Breadcrumb :items="[{ label: 'Trang chủ', to: '/' }, { label: 'Cộng đồng', to: '/cong-dong' }, { label: 'Bảng xếp hạng' }]" :json-ld="true" />
     <header class="bxh-head">
       <p class="bxh-eyebrow">Sổ vàng cộng đồng</p>

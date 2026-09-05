@@ -50,7 +50,7 @@ useHead(() => ({
 </script>
 
 <template>
-  <section class="case-page">
+  <section class="case-page" data-color-system="tri-region-v1">
     <Breadcrumb :items="[{ label: 'Trang chủ', to: '/' }, { label: 'Tra cứu yêu cầu' }]" :json-ld="true" />
 
     <header class="case-header">

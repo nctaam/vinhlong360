@@ -1,5 +1,5 @@
 <template>
-  <div class="page events-page">
+  <div class="page events-page" data-color-system="tri-region-v1">
     <Breadcrumb :items="[{ label: 'Trang chủ', to: '/' }, { label: 'Lễ hội' }]" :json-ld="true" />
 
     <!-- Hero: "Đất này giữ lịch riêng" — lunar-first, time-aware -->

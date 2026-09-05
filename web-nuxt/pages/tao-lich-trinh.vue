@@ -1,5 +1,5 @@
 <template>
-  <section class="page" data-page-recipe="planner">
+  <section class="page" data-color-system="tri-region-v1" data-page-recipe="planner">
     <Breadcrumb :items="[{ label: 'Trang chủ', to: '/' }, { label: 'Lịch trình', to: '/lich-trinh' }, { label: 'Tạo lịch trình' }]" :json-ld="true" />
 
     <!-- Hero: chrome-only CE pass — masthead eyebrow + serif H1, builder/picker logic untouched -->

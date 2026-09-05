@@ -1,5 +1,5 @@
 <template>
-  <div class="guide-layout">
+  <div class="guide-layout" data-color-system="tri-region-v1">
     <!-- Sidebar TOC (desktop sticky) -->
     <aside class="guide-sidebar" aria-label="Điều hướng hướng dẫn">
       <div class="sidebar-inner">

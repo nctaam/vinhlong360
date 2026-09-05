@@ -1,5 +1,5 @@
 <template>
-  <section class="page">
+  <section class="page" data-color-system="tri-region-v1">
     <Breadcrumb :items="[{ label: 'Trang chủ', to: '/' }, { label: 'Lưu trú' }]" :json-ld="true" />
 
     <!-- Hero — "wake-up" thesis: sell the morning, not the mattress -->

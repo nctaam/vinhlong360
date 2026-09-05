@@ -82,7 +82,7 @@ useHead(() => ({
 </script>
 
 <template>
-  <section class="case-page">
+  <section class="case-page" data-color-system="tri-region-v1">
     <Breadcrumb :items="[{ label: 'Trang chủ', to: '/' }, { label: 'Trạng thái yêu cầu' }]" :json-ld="true" />
 
     <p v-if="loading" aria-live="polite">Đang tải trạng thái…</p>

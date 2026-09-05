@@ -1,5 +1,5 @@
 <template>
-  <section class="page cp-page">
+  <section class="page cp-page" data-color-system="tri-region-v1">
     <Breadcrumb :items="[{ label: 'Trang chủ', to: '/' }, { label: 'Tài khoản' }]" :json-ld="true" />
 
     <div v-if="!isLoggedIn" class="cp-guest">

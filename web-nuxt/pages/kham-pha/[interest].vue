@@ -1,5 +1,5 @@
 <template>
-  <section class="page" :style="{ '--int-rgb': interestTintRgb }">
+  <section class="page" data-color-system="tri-region-v1" :style="{ '--int-rgb': interestTintRgb }">
     <Breadcrumb :items="breadcrumbItems" :json-ld="true" />
 
     <!-- Hero — "Một góc nhìn, một người kể": lens hero with per-interest halo shape -->

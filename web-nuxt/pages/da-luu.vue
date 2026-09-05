@@ -1,5 +1,5 @@
 <template>
-  <section class="page saved-page">
+  <section class="page saved-page" data-color-system="tri-region-v1">
     <Breadcrumb :items="[{ label: 'Trang chủ', to: '/' }, { label: 'Đã lưu' }]" :json-ld="true" />
 
     <div v-if="!isLoggedIn" class="saved-guest">

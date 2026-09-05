@@ -1,5 +1,5 @@
 <template>
-  <section class="page user-profile-page">
+  <section class="page user-profile-page" data-color-system="tri-region-v1">
     <Breadcrumb :items="[{ label: 'Trang chủ', to: '/' }, { label: 'Cộng đồng', to: '/cong-dong' }, { label: profile?.display_name || 'Người dùng' }]" :json-ld="true" />
 
     <div v-if="profile" class="user-profile reveal">

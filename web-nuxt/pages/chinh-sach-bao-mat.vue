@@ -1,5 +1,5 @@
 <template>
-  <section class="legal-page about-page">
+  <section class="legal-page about-page" data-color-system="tri-region-v1">
     <Breadcrumb :items="[{ label: 'Trang chủ', to: '/' }, { label: 'Chính sách bảo mật' }]" :json-ld="true" />
     <!-- Hero — brand-masthead dùng chung (declutter-3 T1: thống nhất với gioi-thieu,
          bỏ catalog-hero cat-org lai tạp trên trang pháp lý) -->

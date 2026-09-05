@@ -1,5 +1,5 @@
 <template>
-  <section class="page tb-page">
+  <section class="page tb-page" data-color-system="tri-region-v1">
     <Breadcrumb :items="[{ label: 'Trang chủ', to: '/' }, { label: 'Thông báo' }]" :json-ld="true" />
     <header class="tb-head">
       <div class="tb-head-text">

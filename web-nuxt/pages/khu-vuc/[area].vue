@@ -1,5 +1,5 @@
 <template>
-  <section class="page ce-area">
+  <section class="page ce-area" data-color-system="tri-region-v1">
     <Breadcrumb :items="breadcrumbItems" :json-ld="true" />
 
     <!-- Hero -->

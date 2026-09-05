@@ -1,6 +1,7 @@
 <template>
   <section
     class="page thread-detail-page"
+    data-color-system="tri-region-v1"
     data-image-surface="post-metadata"
     data-source-class="user-uploaded"
     data-entity-image-policy="no-image-invariant"

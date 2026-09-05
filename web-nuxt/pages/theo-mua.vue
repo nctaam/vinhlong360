@@ -1,5 +1,5 @@
 <template>
-  <div class="page">
+  <div class="page" data-color-system="tri-region-v1">
     <Breadcrumb :items="[{ label: 'Trang chủ', to: '/' }, { label: 'Theo mùa' }]" :json-ld="true" />
 
     <!-- Hero — retints per quarter (class q-* on the section itself) so

@@ -1,5 +1,5 @@
 <template>
-  <div class="page">
+  <div class="page" data-color-system="tri-region-v1">
     <Breadcrumb :items="[{ label: 'Trang chủ', to: '/' }, { label: 'Sản phẩm' }]" :json-ld="true" />
 
     <!-- Hero — "Phiên chợ đang họp" (month-alive market masthead; signature moment) -->

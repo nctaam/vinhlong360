@@ -1,5 +1,5 @@
 <template>
-  <section class="legal-page about-page">
+  <section class="legal-page about-page" data-color-system="tri-region-v1">
     <Breadcrumb :items="[{ label: 'Trang chủ', to: '/' }, { label: 'Giới thiệu' }]" :json-ld="true" />
 
     <!-- Brand masthead — river→clay wash, unique to this page family. -->

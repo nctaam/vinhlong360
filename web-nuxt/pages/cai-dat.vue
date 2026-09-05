@@ -1,5 +1,5 @@
 <template>
-  <section class="page settings-page">
+  <section class="page settings-page" data-color-system="tri-region-v1">
     <Breadcrumb :items="[{ label: 'Trang chủ', to: '/' }, { label: 'Cài đặt' }]" :json-ld="true" />
 
     <div v-if="!isLoggedIn" class="settings-guest card">

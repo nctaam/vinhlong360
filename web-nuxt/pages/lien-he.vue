@@ -1,5 +1,5 @@
 <template>
-  <div class="page contact-page">
+  <div class="page contact-page" data-color-system="tri-region-v1">
     <Breadcrumb :items="[{ label: 'Trang chủ', to: '/' }, { label: 'Liên hệ' }]" :json-ld="true" />
 
     <!-- Brand masthead — same river→clay wash family as Giới thiệu. -->
