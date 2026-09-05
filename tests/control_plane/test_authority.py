@@ -89,6 +89,8 @@ def write_registry(
         + "\nAuthority: config/release-authority.json\n",
         encoding="utf-8",
     )
+    (root / ".superpowers/sdd/progress.md").parent.mkdir(parents=True, exist_ok=True)
+    (root / ".superpowers/sdd/progress.md").write_text("current execution ledger\n", encoding="utf-8")
     payload = {
         "schema_version": "1",
         "authority_id": "release-control",
@@ -98,6 +100,7 @@ def write_registry(
         "baseline_source": "docs/ROADMAP.md#fail-da-biet",
         "rule_index": "docs/standards/00-INDEX.md",
         "audit_artifact": audit_artifact,
+        "progress_artifact": ".superpowers/sdd/progress.md",
         "max_age_hours": max_age_hours,
         "p1_findings": P1_FIXTURE_IDS,
         "active_documents": [
@@ -119,6 +122,7 @@ def write_registry(
         "docs/standards/00-INDEX.md",
         "docs/HANDOFF.md",
         audit_artifact,
+        ".superpowers/sdd/progress.md",
     )
     _git(root, "commit", "-qm", "seed")
     _git(root, "branch", "-M", "codex/correction-case-pilot")
@@ -152,8 +156,8 @@ def test_untracked_current_progress_artifact_blocks_authority(tmp_path: Path) ->
     payload["progress_artifact"] = ".superpowers/sdd/progress.md"
     path.write_text(json.dumps(payload), encoding="utf-8")
     progress = tmp_path / ".superpowers/sdd/progress.md"
-    progress.parent.mkdir(parents=True)
-    progress.write_text("current execution ledger\n", encoding="utf-8")
+    _git(tmp_path, "rm", "--cached", ".superpowers/sdd/progress.md", "-q")
+    _git(tmp_path, "commit", "-qm", "make progress untracked")
 
     report = check_authority(
         tmp_path,

@@ -19,7 +19,7 @@
     "required_layers": ["unit", "postgres", "multi_process", "browser", "external_side_effect"],
     "max_age_hours": 24,
     "owner_signoff_required": true,
-    "closed_pilot_verdict": "NO_GO",
+    "closed_pilot_verdict": "GO_CONDITIONAL",
     "public_launch_verdict": "NO_GO",
     "decision_required_items": ["legal", "provider", "residency", "public_indexing"],
     "external_policy": "sandbox-only-no-provider-calls",

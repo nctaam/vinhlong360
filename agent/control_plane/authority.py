@@ -123,11 +123,7 @@ def load_authority(path: Path) -> AuthorityRegistry:
         baseline_source=payload["baseline_source"],
         rule_index=payload["rule_index"],
         audit_artifact=payload["audit_artifact"].replace("\\", "/"),
-        progress_artifact=(
-            payload["progress_artifact"].replace("\\", "/")
-            if isinstance(payload.get("progress_artifact"), str)
-            else None
-        ),
+        progress_artifact=payload["progress_artifact"].replace("\\", "/"),
         max_age_hours=payload["max_age_hours"],
         p1_findings=tuple(p1),
         active_documents=_document_entries(active),
@@ -149,7 +145,7 @@ def _validate_registry_payload(payload: object) -> None:
 def _require_registry_fields(payload: dict[str, object]) -> None:
     required = (
         "schema_version", "authority_id", "owner", "branch", "head_source",
-        "baseline_source", "rule_index", "audit_artifact", "max_age_hours",
+        "baseline_source", "rule_index", "audit_artifact", "progress_artifact", "max_age_hours",
     )
     missing = [field for field in required if field not in payload]
     if missing:
@@ -161,7 +157,7 @@ def _validate_registry_values(payload: dict[str, object]) -> None:
         raise ValueError("unsupported authority schema_version")
     if type(payload["max_age_hours"]) is not int or payload["max_age_hours"] <= 0:
         raise ValueError("max_age_hours must be a positive integer")
-    strings = ("authority_id", "owner", "branch", "head_source", "baseline_source", "rule_index", "audit_artifact")
+    strings = ("authority_id", "owner", "branch", "head_source", "baseline_source", "rule_index", "audit_artifact", "progress_artifact")
     if any(not isinstance(payload[field], str) or not payload[field].strip() for field in strings):
         raise ValueError("authority registry string fields must be non-empty")
 
