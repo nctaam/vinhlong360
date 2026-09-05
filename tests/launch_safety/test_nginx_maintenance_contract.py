@@ -54,12 +54,13 @@ def test_real_nginx_configs_wire_maintenance_includes_exactly_once_per_context(
 
 
 def _bash() -> str:
+    if os.name == "nt":
+        git_bash = Path(r"C:\Program Files\Git\bin\bash.exe")
+        if git_bash.is_file():
+            return str(git_bash)
     discovered = shutil.which("bash")
     if discovered:
         return discovered
-    git_bash = Path(r"C:\Program Files\Git\bin\bash.exe")
-    if git_bash.is_file():
-        return str(git_bash)
     pytest.skip("Bash is unavailable")
 
 
