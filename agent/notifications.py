@@ -13,6 +13,7 @@ Endpoints:
 """
 
 import asyncio
+import hashlib
 import json
 import logging
 import os
@@ -715,38 +716,53 @@ async def get_follower_count(target_type: str, target_id: str):
 
 # ── Report ──
 
-# P0-20: đổi path để KHÔNG đụng `POST /api/report` của public_api (báo-sai ẩn danh → JSONL).
-# Endpoint authed này ghi PG reports table; FE hiện dùng public JSONL, giữ cả hai tách bạch.
+# P0-20: đổi path để không đụng `POST /api/report` của public_api.
+# Cả hai endpoint đều dùng canonical reports authority; JSONL chỉ là legacy history.
 RL_REPORT_LIMIT = 10
 RL_REPORT_WINDOW = 3600
 
 @router.post("/report-ugc",
              summary="Report user-generated content",
-             description="Submits a moderation report for a post, comment, or user. Duplicate pending reports for the same target are rejected.")
-async def create_report(body: ReportRequest, user=Depends(require_user), _csrf=Depends(require_csrf)):
-    """Ghi một báo cáo kiểm duyệt vào bảng reports cho target post/comment/user/entity.
-
-    Ném 400 nếu người báo cáo đã có report status='pending' cho đúng target đó. Giới hạn
-    10 báo cáo/3600 giây. Đường dẫn /api/report-ugc tách biệt với POST /api/report ẩn danh
-    của public_api (ghi JSONL).
-    """
+             description="Submits a moderation report for a post, comment, or user through the canonical reports authority. Retries are idempotent.")
+async def create_report(body: ReportRequest, request: Request, user=Depends(require_user), _csrf=Depends(require_csrf)):
+    """Create an authenticated report through the canonical report authority."""
     check_rate(f"report:{user['id']}", RL_REPORT_LIMIT, RL_REPORT_WINDOW, "Bạn đã gửi quá nhiều báo cáo. Vui lòng thử lại sau.")
-    ph = db._ph
-    def _query():
-        with db._conn() as conn:
-            existing = db._fetchone(conn, f"""
-                SELECT 1 FROM reports
-                WHERE reporter_id = {ph}::uuid AND target_type = {ph} AND target_id = {ph}
-                    AND status = 'pending'
-            """, (str(user["id"]), body.target_type, body.target_id))
-            if existing:
-                raise HTTPException(400, "Bạn đã báo cáo nội dung này rồi")
-            db._execute(conn, f"""
-                INSERT INTO reports (reporter_id, target_type, target_id, reason)
-                VALUES ({ph}::uuid, {ph}, {ph}, {ph})
-            """, (str(user["id"]), body.target_type, body.target_id, body.reason))
-    await asyncio.to_thread(_query)
-    return {"success": True, "message": "Báo cáo đã được gửi. Cảm ơn bạn!"}
+    from reports.models import ReportActor, ReportCreate
+    from reports.service import ReportError, ReportService, ReportTargetNotFound
+
+    target_id = body.target_id.strip()
+    reason = body.reason.strip()
+    supplied_key = request.headers.get("idempotency-key", "").strip()
+    # A deterministic fallback preserves the old duplicate-pending behavior while
+    # allowing clients to opt into an explicit idempotency key for retries.
+    idempotency_key = supplied_key or "ugc:" + hashlib.sha256(
+        f"{body.target_type}:{target_id}:{reason}".encode("utf-8")
+    ).hexdigest()
+    correlation_id = request.headers.get("x-request-id", "").strip() or f"ugc:{idempotency_key}"
+    actor = ReportActor(
+        actor_scope=f"user:{user['id']}",
+        reporter_id=str(user["id"]),
+        source_channel="community",
+    )
+    try:
+        record = await asyncio.to_thread(
+            ReportService(database=db).create,
+            ReportCreate(target_id=target_id, target_type=body.target_type, reason=reason),
+            actor=actor,
+            idempotency_key=idempotency_key,
+            correlation_id=correlation_id,
+        )
+    except ReportTargetNotFound as exc:
+        raise HTTPException(exc.status, exc.code) from exc
+    except ReportError as exc:
+        raise HTTPException(exc.status, exc.code) from exc
+    return {
+        "success": True,
+        "report_id": record.report_id,
+        "revision": record.revision,
+        "replayed": record.replayed,
+        "message": "Báo cáo đã được gửi. Cảm ơn bạn!",
+    }
 
 
 # ── Block ──

@@ -5,6 +5,7 @@ These tests intentionally start red: the report package is introduced by Task 1.
 from __future__ import annotations
 
 from dataclasses import replace
+from pathlib import Path
 
 import pytest
 
@@ -16,11 +17,12 @@ from community import admin_api as _community_admin_module  # noqa: F401,E402
 from control_plane import lifecycle as _lifecycle_module  # noqa: F401,E402
 import database as _database_module  # noqa: F401,E402
 import erasure as _erasure_module  # noqa: F401,E402
+import notifications as _notifications_module  # noqa: F401,E402
 import public_api as _public_api_module  # noqa: F401,E402
 import structured_references as _structured_references_module  # noqa: F401,E402
 from reports import repository as _report_repository_module  # noqa: F401,E402
 from reports.models import ReportActor, ReportCreate, ReportTargetType
-from reports.service import ReportService, ReportTargetNotFound, InvalidReportTargetType
+from reports.service import ReportError, ReportService, ReportTargetNotFound, InvalidReportTargetType
 
 
 def request(**overrides):
@@ -84,3 +86,30 @@ def test_transition_uses_revision_cas(isolated_sqlite_db):
             actor=actor(actor_scope="admin:two"),
             reason="race",
         )
+
+
+def test_transition_rejects_invalid_actor(isolated_sqlite_db):
+    isolated_sqlite_db.upsert_entity({"id": "entity-1", "type": "facility", "name": "Trụ sở"})
+    service = ReportService(database=isolated_sqlite_db)
+    created = service.create(request(), actor=actor(), idempotency_key="r-actor", correlation_id="c")
+    with pytest.raises(ReportError) as excinfo:
+        service.transition(created.report_id, expected_revision=1, status="resolved", actor={"actor_scope": "bad"}, reason="x")
+    assert str(excinfo.value) == "invalid_report_actor"
+
+
+def test_report_writers_use_canonical_service_only():
+    """No runtime module may create a second reports write authority."""
+    agent_root = Path(__file__).resolve().parents[1]
+    direct_writers = []
+    for path in agent_root.rglob("*.py"):
+        if "tests" in path.parts or path.name == "repository.py":
+            continue
+        if "INSERT INTO reports" in path.read_text(encoding="utf-8"):
+            direct_writers.append(path.relative_to(agent_root).as_posix())
+    assert direct_writers == []
+
+
+def test_legacy_jsonl_report_actions_are_read_import_only():
+    source = (Path(__file__).resolve().parents[1] / "admin.py").read_text(encoding="utf-8")
+    assert "legacy_report_mutation_disabled" in source
+    assert "tmp.replace(_INFO_REPORTS_FILE)" not in source

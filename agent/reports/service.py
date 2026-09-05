@@ -84,6 +84,8 @@ class ReportService:
     def transition(self, report_id: str, *, expected_revision: int, status: ReportStatus | str, actor: ReportActor, reason: str) -> ReportRecord:
         if type(report_id) is not str or not report_id.strip():
             raise ReportNotFound("report_not_found")
+        if type(actor) is not ReportActor:
+            raise ReportError("invalid_report_actor")
         try:
             status = status if isinstance(status, ReportStatus) else ReportStatus(str(status))
         except (TypeError, ValueError) as exc:

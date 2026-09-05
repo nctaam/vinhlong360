@@ -1424,7 +1424,9 @@ _INFO_REPORTS_FILE = Path(__file__).resolve().parent / "data" / "reports.jsonl"
 # — giu import nhu TAI XUAT vi test_phase16_coverage
 # (test_admin_imports_create_notification) van soi hasattr(admin, ...).
 from notifications import create_notification  # noqa: F401
-from jsonl_store import jsonl_lock as _info_reports_lock
+# Kept as an exported lock for the legacy lifecycle erasure adapter; report
+# status mutations no longer use the JSONL file.
+from jsonl_store import jsonl_lock as _info_reports_lock  # noqa: F401
 
 _info_reports_cache: dict = {"mtime": 0.0, "count": 0}
 
@@ -1581,37 +1583,18 @@ async def _transition_canonical_report(body: ReportActionRequest):
 
 @router.post("/info-reports/action",
              summary="Update information report status",
-             description="Change the status of an info-correction report to open, resolved, or dismissed. Writes atomically to the JSONL store.")
+             description="Change the status of a canonical information report to open, resolved, or dismissed. Legacy JSONL rows are read/import-only.")
 async def info_report_action(body: ReportActionRequest):
-    """Transition a canonical report; retain timestamp JSONL handling for history."""
+    """Transition a canonical report; legacy JSONL is not a mutable store."""
     if body.report_id:
         return await _transition_canonical_report(body)
     if not body.ts:
         raise HTTPException(422, "report_id or ts is required")
-    def _query():
-        with _info_reports_lock:
-            if not _INFO_REPORTS_FILE.exists():
-                raise HTTPException(404, "Không có báo cáo")
-            records, found = [], False
-            for line in _INFO_REPORTS_FILE.read_text(encoding="utf-8").splitlines():
-                line = line.strip()
-                if not line:
-                    continue
-                try:
-                    r = json.loads(line)
-                except json.JSONDecodeError:
-                    continue
-                if r.get("ts") == body.ts:
-                    r["status"] = body.status
-                    found = True
-                records.append(r)
-            if not found:
-                raise HTTPException(404, f"Không tìm thấy báo cáo ts={body.ts}")
-            tmp = _INFO_REPORTS_FILE.with_suffix(".tmp")
-            tmp.write_text("\n".join(json.dumps(r, ensure_ascii=False) for r in records) + "\n", encoding="utf-8")
-            tmp.replace(_INFO_REPORTS_FILE)
-    await asyncio.to_thread(_query)
-    return {"success": True, "ts": body.ts, "new_status": body.status}
+    raise HTTPException(
+        410,
+        "legacy_report_mutation_disabled",
+        headers={"X-Report-Legacy-Mode": "read_import_only"},
+    )
 
 
 @router.get("/cost-overview",

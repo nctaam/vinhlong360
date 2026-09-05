@@ -270,8 +270,8 @@ def _itinerary_coverage_areas(itinerary: dict) -> set[str]:
 # invalidate_place_cache: sang entity_read (2026-08-28). Phan viec CUA FILE NAY
 # (refresh homepage-cache) dang ky qua listener — xem cuoi file.
 
-# GĐ13.6f: báo cáo thông tin sai / nội dung vi phạm — lưu JSONL nhẹ (free-tier),
-# admin xem qua /admin/reports để xử lý (takedown/sửa). KHÔNG dùng DB/dịch vụ trả phí.
+# GĐ13.6f: báo cáo thông tin sai / nội dung vi phạm — canonical PostgreSQL
+# authority; reports.jsonl remains a read/import-only legacy history adapter.
 REPORTS_FILE = Path(__file__).resolve().parent / "data" / "reports.jsonl"
 SEARCH_LOG_FILE = Path(__file__).resolve().parent / "data" / "search_queries.jsonl"
 _VALID_TARGET_TYPES = {"facility", "entity", "post", "comment", "user", "stale_field"}
@@ -2723,7 +2723,7 @@ def _legacy_correction_closed() -> JSONResponse | None:
 
 @router.post("/report",
              summary="Submit a report",
-             description="Submits a report for incorrect information or policy-violating content. Stored in JSONL for admin review. Rate-limited per IP.")
+             description="Submits a report for incorrect information or policy-violating content. Stored in the canonical reports authority. Rate-limited per IP.")
 async def submit_report(payload: ReportIn, request: Request):
     """Create a report through the canonical database authority."""
     ip = get_client_ip(request)
