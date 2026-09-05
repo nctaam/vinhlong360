@@ -1,5 +1,6 @@
 # vinhlong360 — ROADMAP thực thi tự động
 Authority: config/release-authority.json
+> TRUTH-SYNC 2026-09-05: backend completion closure đang chạy trên `codex/correction-case-pilot` tại HEAD `26ea29ca4595368ba659a5f3e56bb628e56e2c75`. Kế hoạch sống: `docs/superpowers/plans/2026-09-05-backend-completion-closure.md`. Không dùng baseline lịch sử nếu chưa có receipt mới trên HEAD này; pilot vẫn `NO_GO`, verifier vẫn `BLOCKED`.
 > STATUS (2026-08-07): active — sổ track dài hạn + backlog thực thi. Security/CI remediation tranche hoàn tất local qua `4d2c96b4`; đợt 13 commit 2026-08-07 (`c5379506`…`10d9bb69`) trên `codex/tri-region-color` ghi ở mục "Đợt 2026-08-07" cuối file. **Trunk thực tế hiện là `codex/tri-region-color`** (0 commit sau `main`) — xem `HANDOFF-BRANCHES.md`.
 
 
