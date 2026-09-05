@@ -74,6 +74,9 @@ def _ensure_table() -> None:
                     ON image_suggestions(status, created_at DESC);
                 CREATE INDEX IF NOT EXISTS idx_image_suggestions_entity
                     ON image_suggestions(entity_id);
+                CREATE UNIQUE INDEX IF NOT EXISTS uq_image_suggestions_pending_candidate
+                    ON image_suggestions(entity_id, candidate_url)
+                    WHERE status = 'pending';
                 """
             )
     _table_ready = True
@@ -125,7 +128,7 @@ def _pending_exists(conn, entity_id: str, candidate_url: str) -> bool:
     return bool(existing)
 
 
-def _insert_suggestion(conn, s: dict, entity_id: str, candidate_url: str) -> str:
+def _insert_suggestion(conn, s: dict, entity_id: str, candidate_url: str) -> Optional[str]:
     """Insert one validated suggestion (status=pending); return its new id.
 
     Verbatim extraction of the sid/conf/INSERT block from create_batch's loop.
@@ -136,11 +139,12 @@ def _insert_suggestion(conn, s: dict, entity_id: str, candidate_url: str) -> str
         conf = float(s.get("match_confidence", 0.7))
     except (TypeError, ValueError):
         conf = 0.7
-    db._execute(
+    cur = db._execute(
         conn,
         f"""INSERT INTO image_suggestions
             (id, entity_id, candidate_url, wp_title, license, author, source, match_confidence, status)
-            VALUES ({ph},{ph},{ph},{ph},{ph},{ph},{ph},{ph},'pending')""",
+            VALUES ({ph},{ph},{ph},{ph},{ph},{ph},{ph},{ph},'pending')
+            ON CONFLICT DO NOTHING""",
         (
             sid, entity_id, candidate_url,
             (s.get("wp_title") or "")[:200],
@@ -150,7 +154,7 @@ def _insert_suggestion(conn, s: dict, entity_id: str, candidate_url: str) -> str
             conf,
         ),
     )
-    return sid
+    return sid if int(getattr(cur, "rowcount", 0) or 0) == 1 else None
 
 
 def _process_one_suggestion(conn, s) -> Optional[str]:
