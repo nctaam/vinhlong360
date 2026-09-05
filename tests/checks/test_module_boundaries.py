@@ -4,8 +4,8 @@ from pathlib import Path
 # Static import markers keep the staged test-pairing gate honest without
 # importing the full application during collection.
 if False:  # pragma: no cover
-    import community.api as community_api
-    import public_api as public_api_module
+    import community.api as community_api  # noqa: F401
+    import public_api as public_api_module  # noqa: F401
 
 
 def test_public_api_does_not_import_private_community_symbols():

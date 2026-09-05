@@ -155,7 +155,6 @@ def test_untracked_current_progress_artifact_blocks_authority(tmp_path: Path) ->
     payload = json.loads(path.read_text(encoding="utf-8"))
     payload["progress_artifact"] = ".superpowers/sdd/progress.md"
     path.write_text(json.dumps(payload), encoding="utf-8")
-    progress = tmp_path / ".superpowers/sdd/progress.md"
     _git(tmp_path, "rm", "--cached", ".superpowers/sdd/progress.md", "-q")
     _git(tmp_path, "commit", "-qm", "make progress untracked")
 
