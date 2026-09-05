@@ -164,6 +164,9 @@
   outline: none; border-color: var(--primary-fg); background: var(--card);
   box-shadow: var(--focus-ring), var(--shadow-xs); border-width: 1px;
 }
+.input:focus-visible, .textarea:focus-visible, .select:focus-visible {
+  outline: 2px solid var(--color-focus); outline-offset: 2px;
+}
 .input::placeholder { color: var(--muted); }
 .input.error, .textarea.error { border-color: var(--color-error); box-shadow: 0 0 0 3px var(--state-error); animation: inputShake .4s var(--ease-out); }
 .input.success, .textarea.success { border-color: var(--secondary); box-shadow: 0 0 0 3px rgba(var(--secondary-rgb), .12); }

@@ -527,6 +527,7 @@ onUnmounted(() => window.removeEventListener('keydown', onKeydown))
 .mod-reason-chip.active { background: rgba(var(--danger-rgb),.12); border-color: var(--error); color: var(--error); font-weight: 600; }
 .mod-reason-input { flex: 1; min-width: 200px; padding: 9px var(--space-3); border: .5px solid var(--line); border-radius: 10px; font-size: .85rem; background: var(--bg); color: var(--ink); min-height: 40px; }
 .mod-reason-input:focus { outline: none; border-color: var(--error); box-shadow: 0 0 0 3px rgba(var(--danger-rgb),.1); }
+.mod-reason-input:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
 .mod-batch-reason {
   flex: 1;
   min-width: 220px;
@@ -542,6 +543,7 @@ onUnmounted(() => window.removeEventListener('keydown', onKeydown))
   border-color: var(--error);
   box-shadow: 0 0 0 3px rgba(var(--danger-rgb),.1);
 }
+.mod-batch-reason:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
 .btn-ghost-sm { background: none; border: none; color: var(--muted); font-size: .82rem; cursor: pointer; padding: var(--space-2) var(--space-3); border-radius: 8px; }
 .btn-ghost-sm:hover { background: var(--bg-alt); color: var(--ink); }
 
@@ -581,6 +583,7 @@ onUnmounted(() => window.removeEventListener('keydown', onKeydown))
 .mod-note-add { display: flex; gap: var(--space-2); }
 .mod-note-input { flex: 1; padding: 7px 12px; border: .5px solid var(--line); border-radius: 8px; font-size: .82rem; background: var(--bg); color: var(--ink); }
 .mod-note-input:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(var(--primary-rgb),.1); }
+.mod-note-input:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
 
 @media (max-width: 520px) {
   .mod-tabs { gap: var(--space-1); }

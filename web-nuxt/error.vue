@@ -179,6 +179,7 @@ useSeoMeta({
   transition: border-color .25s var(--ease-out), box-shadow .3s var(--ease-out-expo);
 }
 .error-search-input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px rgba(var(--accent-rgb), .25); }
+.error-search-input:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 1px; }
 .error-search-btn { flex: 0 0 auto; padding: 0 var(--space-5); min-height: 44px; }
 .error-links { display: flex; flex-wrap: wrap; gap: var(--space-2); justify-content: center; }
 .error-link-pill {

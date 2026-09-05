@@ -1305,7 +1305,7 @@ useSeoMeta({
   background: var(--bg-alt); color: var(--ink); font: inherit; font-size: var(--text-sm); resize: vertical;
   transition: border-color .2s var(--ease-out), background .2s var(--ease-out);
 }
-.sf-input:focus-visible { outline: none; border-color: var(--primary); background: var(--card); box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary) 15%, transparent); }
+.sf-input:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; border-color: var(--primary); background: var(--card); box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary) 15%, transparent); }
 .sf-actions { display: flex; justify-content: flex-end; gap: var(--space-3); margin-top: var(--space-2); }
 /* --text-sm clamps to ~14px under ~640px viewport — below the 16px iOS auto-zoom
    threshold. Force 16px on mobile only for these real form fields (create-collection

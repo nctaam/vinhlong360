@@ -173,6 +173,7 @@ h4 { font-size: var(--text-lg);  line-height: var(--lh-lg);  letter-spacing: var
 .hero-search { display: flex; gap: var(--space-3); margin: var(--space-6) 0 0; max-width: 560px; }
 .hero-search input { flex: 1; padding: var(--space-4) var(--space-5) var(--space-4) 44px; border: 2px solid transparent; border-radius: var(--radius-surface); font-size: 1rem; transition: border-color .3s, box-shadow .3s; }
 .hero-search input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 2px rgba(var(--accent-rgb), .4), inset 0 0 0 1.5px rgba(var(--accent-rgb), .2); }
+.hero-search input:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
 .hero-search button { padding: 0 28px; border: none; border-radius: var(--radius-surface); background: var(--accent); color: var(--ink); font-weight: 700; font-size: var(--text-base); cursor: pointer; transition: background .25s var(--ease-out), transform .25s var(--ease-spring), box-shadow .25s var(--ease-out); min-height: 48px; }
 .hero-search button:hover { will-change: transform; background: var(--accent-dark); color: var(--ink); box-shadow: 0 4px 20px rgba(var(--accent-rgb), .45); transform: translateY(-1px); }
 .hero-search button:active { transform: scale(.94) translateY(0); transition-duration: .08s; box-shadow: 0 2px 8px rgba(var(--accent-rgb), .3); }
@@ -629,6 +630,7 @@ html.js .reveal { opacity: 0; transform: translateY(30px) scale(.985); }
 .chat-panel-input { display: flex; gap: var(--space-2); padding: var(--space-3); border-top: .5px solid var(--line); background: var(--card); flex-shrink: 0; }
 .chat-panel-input input { flex: 1; padding: var(--space-2) var(--space-3); border: .5px solid var(--border-input); border-radius: var(--radius-control); font-size: var(--text-sm); outline: none; transition: border-color .25s var(--ease-out), box-shadow .25s var(--ease-out); }
 .chat-panel-input input:focus { border-color: var(--primary-fg); box-shadow: var(--focus-ring); }
+.chat-panel-input input:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 1px; }
 .chat-panel-input button { padding: 0 var(--space-4); border: none; border-radius: var(--radius-control); background: var(--primary); color: var(--on-primary); font-weight: var(--weight-bold); cursor: pointer; min-height: 44px; transition: opacity .3s, transform .35s var(--ease-out-expo), background .3s; }
 .chat-panel-input button:not(:disabled):hover { background: var(--primary-dark, var(--primary)); }
 .chat-panel-input button:not(:disabled):active { transform: scale(.93); transition-duration: .08s; }

@@ -107,7 +107,8 @@ const discoveryLinks = [
 }
 
 .nf-search input:focus-visible {
-  outline: none;
+  outline: 2px solid var(--color-focus);
+  outline-offset: 1px;
   border-color: var(--accent);
   box-shadow: 0 0 0 3px rgba(var(--primary-rgb), .1);
 }
@@ -127,7 +128,7 @@ const discoveryLinks = [
 
 .nf-search button:hover { background: var(--accent-dark); }
 .nf-search button:active { transform: scale(.95); transition-duration: .08s; }
-.nf-search button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.nf-search button:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
 
 .nf-actions {
   display: flex;

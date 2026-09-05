@@ -945,6 +945,7 @@ useHead({ link: [{ rel: 'canonical', href: canonicalUrl('/huong-dan') }] })
   outline: none; transition: border-color .15s;
 }
 .search-input:focus { border-color: var(--primary-fg); }
+.search-input:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 1px; }
 .sidebar-nav { display: flex; flex-direction: column; gap: 1px; }
 .snav-link {
   display: block; padding: var(--space-2) var(--space-3);
@@ -953,6 +954,7 @@ useHead({ link: [{ rel: 'canonical', href: canonicalUrl('/huong-dan') }] })
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
 .snav-link:hover { background: var(--bg-warm); color: var(--ink); }
+.snav-link:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
 .snav-link.active { background: rgba(var(--primary-rgb), .1); color: var(--primary-fg); font-weight: var(--weight-semibold); }
 .sidebar-empty { font-size: var(--text-xs); color: var(--muted); padding: var(--space-2) var(--space-3); }
 
