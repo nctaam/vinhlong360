@@ -260,7 +260,7 @@ useHead(() => ({
   text-transform: uppercase; letter-spacing: .06em; color: var(--ink-700);
   margin: 0 0 .25rem;
 }
-.dateline-eyebrow::before { content: ""; width: 14px; height: 1.5px; background: var(--primary); flex-shrink: 0; }
+.dateline-eyebrow::before { content: ""; width: 14px; height: 1.5px; background: var(--color-brand); flex-shrink: 0; }
 .tb-list { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: var(--space-1); }
 /* .tb-item is the card (li) — .tb-item-link is the inner "open notification"
    affordance (NuxtLink or role=button div). Kept as siblings, not nested,
@@ -270,7 +270,7 @@ useHead(() => ({
    button out avoids invalid nesting and any native-navigation ambiguity. */
 .tb-item { position: relative; display: flex; align-items: flex-start; gap: var(--space-3); width: 100%; padding: var(--space-3); background: var(--card); border: .5px solid var(--line); border-radius: var(--radius-sheet); transition: background .2s var(--ease-out), border-color .2s var(--ease-out); }
 .tb-item:hover { background: var(--bg-alt); }
-.tb-item.unread { border-color: var(--primary); background: rgba(var(--primary-rgb), .04); }
+.tb-item.unread { border-color: var(--color-action); background: var(--color-action-surface); }
 /* Tri-province sediment tick — left-edge hairline echo of the site-wide
    river→amber→clay thread (same recipe as EntityCard .card-rule / PostCard
    .thread-rule), so the notification list ties into the shared system. */
@@ -292,13 +292,13 @@ useHead(() => ({
   font-size: 1.05rem; line-height: 1; background: var(--bg-alt);
   transition: transform var(--duration-fast) var(--ease-out);
 }
-.tb-item.unread .tb-icon-chip { background: rgba(var(--primary-rgb), .12); color: var(--primary-fg); }
+.tb-item.unread .tb-icon-chip { background: rgba(var(--color-action-rgb), .12); color: var(--color-action); }
 .tb-body { display: flex; flex-direction: column; gap: .15rem; flex: 1; min-width: 0; }
 .tb-item-title { font-size: var(--text-sm); font-family: var(--font-editorial); font-weight: 600; color: var(--ink); }
-.tb-group { font-size: .72rem; font-weight: 700; color: var(--primary); background: rgba(var(--primary-rgb), .1); padding: 1px 6px; border-radius: 100px; margin-left: var(--space-1); }
+.tb-group { font-size: .72rem; font-weight: 700; color: var(--color-action); background: rgba(var(--color-action-rgb), .1); padding: 1px 6px; border-radius: 100px; margin-left: var(--space-1); }
 .tb-sub { font-size: var(--text-sm); color: var(--ink-700); }
 .tb-time { font-size: var(--text-xs); color: var(--muted); }
-.tb-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--primary); flex-shrink: 0; margin-top: .35rem; }
+.tb-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--color-action); flex-shrink: 0; margin-top: .35rem; }
 .tb-dismiss {
   flex-shrink: 0; min-width: 44px; min-height: 44px; border: none; background: none;
   color: var(--ink-700); cursor: pointer; font-size: .75rem; border-radius: var(--radius-full);
@@ -327,10 +327,10 @@ useHead(() => ({
 /* ── Dark mode ── */
 .dark .tb-item { background: var(--bg-alt); border-color: var(--line); }
 .dark .tb-item:hover { background: color-mix(in srgb, var(--bg-alt) 80%, var(--ink) 5%); }
-.dark .tb-item.unread { background: color-mix(in srgb, var(--primary) 8%, var(--bg-alt)); border-color: var(--primary); }
+.dark .tb-item.unread { background: var(--color-action-surface); border-color: var(--color-action); }
 .dark .tb-item::before { background: linear-gradient(180deg, var(--river-legacy-dark) 0%, var(--amber-500) 52%, var(--clay-400) 100%); }
 .dark .tb-icon-chip { background: rgba(var(--white-rgb),.06); }
-.dark .tb-item.unread .tb-icon-chip { background: color-mix(in srgb, var(--primary) 18%, transparent); }
+.dark .tb-item.unread .tb-icon-chip { background: rgba(var(--color-action-rgb), .18); }
 
 /* ── Mobile & Reduced Motion ── */
 @media (max-width: 600px) {

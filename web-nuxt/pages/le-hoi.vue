@@ -649,12 +649,12 @@ useHead(() => ({
 
 <style>
 .lehoi-badge {
-  background: var(--primary-dark);
+  background: var(--color-brand);
 }
-/* Không cần bản .dark riêng: --primary-dark đã đậm ở cả hai chế độ nên chữ
+/* Không cần bản .dark riêng: --color-brand đã đậm ở cả hai chế độ nên chữ
    trắng đạt 10.12:1, và ranh giới do vòng viền ở .dark .event-date-badge lo. */
 .lehoi-dot {
-  background: var(--primary-dark);
+  background: var(--color-brand);
 }
 
 /* Hero depth & cultural warmth: layered scrim over the festival gradient */
@@ -662,7 +662,7 @@ useHead(() => ({
   position: relative;
   background:
     radial-gradient(120% 90% at 12% 0%, rgba(var(--accent-rgb), .07) 0%, transparent 55%),
-    linear-gradient(135deg, rgba(var(--primary-rgb), .06) 0%, rgba(var(--accent-rgb), .08) 100%);
+    linear-gradient(135deg, rgba(var(--color-brand-rgb), .06) 0%, rgba(var(--accent-rgb), .08) 100%);
 }
 .dark .catalog-hero.cat-festival {
   background:

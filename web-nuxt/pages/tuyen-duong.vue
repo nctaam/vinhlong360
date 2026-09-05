@@ -280,7 +280,7 @@ useHead(() => ({
 .route-card { position: relative; background: var(--card); border: .5px solid var(--line); border-radius: var(--radius); overflow: hidden; box-shadow: var(--shadow-sm); transition: transform .35s var(--ease-out-expo), box-shadow .35s var(--ease-out-expo), border-color .3s var(--ease-out); }
 /* glassy top-sheen, revealed on hover for an Apple-style finish */
 .route-card::before { content: ""; position: absolute; inset: 0 0 auto 0; height: 40%; pointer-events: none; opacity: 0; background: linear-gradient(180deg, rgba(var(--white-rgb),.18), transparent); transition: opacity .35s var(--ease-out); z-index: 2; }
-.route-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-lg), 0 0 0 1px rgba(var(--primary-rgb), .14), 0 18px 40px -18px rgba(var(--primary-rgb), .35); border-color: var(--border); }
+.route-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-lg), 0 0 0 1px rgba(var(--color-action-rgb), .14), 0 18px 40px -18px rgba(var(--color-action-rgb), .25); border-color: var(--border); }
 .route-card:hover::before { opacity: .9; }
 .route-card:active { transform: translateY(0) scale(.99); transition-duration: .08s; }
 .route-header { display: flex; gap: var(--space-3); align-items: center; padding: var(--space-5) var(--space-6); color: var(--text-on-dark, var(--white)); box-shadow: inset 0 1px 0 rgba(var(--white-rgb),.15), 0 1px 2px rgba(var(--black-rgb),.1); transition: background .3s var(--ease-out); }
@@ -305,7 +305,7 @@ useHead(() => ({
   padding: var(--space-3) 0; border-top: .5px solid var(--line); border-bottom: .5px solid var(--line);
 }
 .rstat { display: flex; flex-direction: column; gap: 1px; flex: 1 1 0; min-width: 0; }
-.rstat-num { font-size: var(--text-lg); font-weight: var(--weight-extrabold); color: var(--primary-fg); letter-spacing: var(--tracking-tight); font-variant-numeric: tabular-nums; line-height: 1.2; overflow-wrap: break-word; }
+.rstat-num { font-size: var(--text-lg); font-weight: var(--weight-extrabold); color: var(--color-action); letter-spacing: var(--tracking-tight); font-variant-numeric: tabular-nums; line-height: 1.2; overflow-wrap: break-word; }
 .rstat-label { font-size: var(--text-2xs); color: var(--muted); text-transform: uppercase; letter-spacing: var(--tracking-caps); font-weight: var(--weight-semibold); }
 
 /* ── Season cross-tag → /theo-mua (§2.5 highest-leverage cross-link) ── */
@@ -327,7 +327,7 @@ useHead(() => ({
 .route-rail { position: relative; list-style: none; margin: 0 0 var(--space-4); padding: 0 0 0 32px; }
 .route-rail::before {
   content: ""; position: absolute; left: 11px; top: 6px; bottom: 6px; width: 2px;
-  background: linear-gradient(180deg, var(--rail-tone, var(--primary)) 0%, color-mix(in srgb, var(--rail-tone, var(--primary)) 35%, transparent) 100%);
+  background: linear-gradient(180deg, var(--rail-tone, var(--color-action)) 0%, color-mix(in srgb, var(--rail-tone, var(--color-action)) 35%, transparent) 100%);
   border-radius: var(--radius-full);
 }
 .route-card.area-vinh-long .route-rail { --rail-tone: var(--secondary); }
@@ -358,34 +358,34 @@ useHead(() => ({
   width: 22px; height: 22px; border-radius: 50%; flex-shrink: 0;
   display: flex; align-items: center; justify-content: center;
   font-size: var(--text-2xs); font-weight: var(--weight-bold); font-variant-numeric: tabular-nums;
-  background: var(--card); color: var(--rail-tone, var(--primary));
-  box-shadow: 0 0 0 2px var(--rail-tone, var(--primary)) inset, var(--shadow-xs);
+  background: var(--card); color: var(--rail-tone, var(--color-action));
+  box-shadow: 0 0 0 2px var(--rail-tone, var(--color-action)) inset, var(--shadow-xs);
   transition: transform .3s var(--ease-out-expo), background .25s var(--ease-out), color .25s var(--ease-out);
 }
 .rail-text strong { color: var(--ink); transition: color .25s var(--ease-out); }
 .rail-text span { color: var(--muted); font-size: var(--text-sm); }
 .rail-stop:hover { transform: translateX(2px); background: var(--overlay-subtle); }
-.rail-stop:hover .rail-dot { transform: scale(1.1); background: var(--rail-tone, var(--primary)); color: var(--text-on-dark, var(--white)); }
-.rail-stop:hover .rail-text strong { color: var(--primary-fg); }
+.rail-stop:hover .rail-dot { transform: scale(1.1); background: var(--rail-tone, var(--color-action)); color: var(--color-on-action); }
+.rail-stop:hover .rail-text strong { color: var(--color-action); }
 /* hovering a dot nudges the connecting line's tone brighter — "this is a path" */
 .route-rail:has(.rail-stop:hover)::before { filter: saturate(1.3) brightness(1.08); }
 
 .route-tips {
   background: var(--badge-season-bg); padding: var(--space-3) var(--space-4); border-radius: var(--radius-control);
   font-size: var(--text-sm); margin-bottom: var(--space-3); line-height: var(--leading-normal);
-  border: .5px solid rgba(var(--primary-rgb), .15); box-shadow: 0 1px 2px rgba(var(--primary-rgb), .2);
+  border: .5px solid rgba(var(--color-action-rgb), .15); box-shadow: 0 1px 2px rgba(var(--color-action-rgb), .15);
   transition: box-shadow .3s var(--ease-out);
 }
 .route-tips-eyebrow {
   display: block; font-size: var(--text-2xs); font-weight: var(--weight-bold);
-  text-transform: uppercase; letter-spacing: var(--tracking-caps); color: var(--primary-fg);
+  text-transform: uppercase; letter-spacing: var(--tracking-caps); color: var(--color-brand);
   margin-bottom: 2px;
 }
 /* subtle breathing pulse when the card is hovered, to draw the eye to the tip */
 .route-card:hover .route-tips { animation: tips-pulse 2.4s var(--ease-out) infinite; }
 @keyframes tips-pulse {
-  0%, 100% { box-shadow: 0 1px 2px rgba(var(--primary-rgb), .2); }
-  50%      { box-shadow: 0 1px 8px rgba(var(--primary-rgb), .32); }
+  0%, 100% { box-shadow: 0 1px 2px rgba(var(--color-action-rgb), .15); }
+  50%      { box-shadow: 0 1px 8px rgba(var(--color-action-rgb), .25); }
 }
 /* staggered entrance for route cards, tying into the batch signature rhythm */
 .route-grid > .route-card { animation: card-rise .55s var(--ease-out-expo) both; }
@@ -401,14 +401,14 @@ useHead(() => ({
 .route-links .btn:active { transform: scale(.95); transition-duration: .08s; }
 .dark .route-card { background: var(--card); border-color: var(--line); }
 .dark .route-card::before { background: linear-gradient(180deg, rgba(var(--white-rgb),.07), transparent); }
-.dark .route-card:hover { box-shadow: var(--shadow-lg), 0 0 0 1px rgba(var(--primary-rgb), .22), 0 18px 44px -18px rgba(var(--black-rgb),.6); border-color: var(--border); }
+.dark .route-card:hover { box-shadow: var(--shadow-lg), 0 0 0 1px rgba(var(--color-action-rgb), .22), 0 18px 44px -18px rgba(var(--black-rgb),.6); border-color: var(--border); }
 .dark .route-tips { background: rgba(var(--white-rgb),.06); border-color: rgba(var(--white-rgb),.1); }
 .dark .route-body p { color: rgba(var(--white-rgb),.85); }
-.dark .rail-stop:hover .rail-text strong { color: var(--primary); }
+.dark .rail-stop:hover .rail-text strong { color: var(--color-action); }
 .dark .rail-text span { color: rgba(var(--white-rgb),.55); }
-.dark .rail-dot { background: var(--card); box-shadow: 0 0 0 2px var(--rail-tone, var(--primary)) inset, 0 1px 3px rgba(var(--black-rgb),.4); }
+.dark .rail-dot { background: var(--card); box-shadow: 0 0 0 2px var(--rail-tone, var(--color-action)) inset, 0 1px 3px rgba(var(--black-rgb),.4); }
 .dark .route-stat-trio { border-color: var(--line); }
-.dark .rstat-num { color: var(--primary); }
+.dark .rstat-num { color: var(--color-action); }
 .dark .route-season-tag { background: rgba(var(--secondary-rgb), .16); border-color: rgba(var(--secondary-rgb), .3); }
 .dark .route-season-tag:hover { background: rgba(var(--secondary-rgb), .24); }
 .dark .route-header.area-lien-vung { background: linear-gradient(135deg, var(--river-legacy-dark), var(--amber-500) 55%, var(--clay-400)); }
@@ -434,7 +434,7 @@ useHead(() => ({
   .route-links .btn:active { transform: none; }
   .route-grid > .route-card { animation: none; }
   .rail-stop { animation: none; }
-  .route-card:hover .route-tips { animation: none; box-shadow: 0 1px 8px rgba(var(--primary-rgb), .28); }
+  .route-card:hover .route-tips { animation: none; box-shadow: 0 1px 8px rgba(var(--color-action-rgb), .25); }
 }
 
 /* ── Editorial essay heading — sediment-head sits inside .page-article, so

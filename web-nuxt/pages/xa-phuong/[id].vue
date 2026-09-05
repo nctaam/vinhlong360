@@ -770,7 +770,7 @@ useHead({
 .wp-map-container { width: 100%; height: 380px; border-radius: var(--radius-sheet); overflow: hidden; border: .5px solid var(--line); box-shadow: var(--shadow-sm); transition: box-shadow .35s var(--ease-out-expo); }
 .wp-map-loading { background: linear-gradient(100deg, var(--bg-warm) 30%, var(--line) 50%, var(--bg-warm) 70%); background-size: 200% 100%; animation: wp-shimmer 1.4s var(--ease-out) infinite; }
 @keyframes wp-shimmer { from { background-position: 200% 0; } to { background-position: -200% 0; } }
-:deep(.wp-marker) { width: 1rem; height: 1rem; cursor: pointer; background: var(--primary); border: 2px solid var(--text-on-dark, var(--white)); border-radius: 50% 50% 50% 0; box-shadow: 0 1px 3px rgba(var(--black-rgb),.4); transform: rotate(-45deg); transition: transform .35s var(--ease-out-expo); }
+:deep(.wp-marker) { width: 1rem; height: 1rem; cursor: pointer; background: var(--color-brand); border: 2px solid var(--text-on-dark, var(--white)); border-radius: 50% 50% 50% 0; box-shadow: 0 1px 3px rgba(var(--black-rgb),.4); transform: rotate(-45deg); transition: transform .35s var(--ease-out-expo); }
 :deep(.wp-marker:hover) { transform: rotate(-45deg) scale(1.25); }
 
 /* Body layout */
@@ -788,10 +788,10 @@ useHead({
 /* Sections */
 .wp-sec { margin-bottom: var(--space-6); }
 .wp-divider { height: 0; border-top: .5px dashed var(--line); margin: var(--space-8) 0 var(--space-6); }
-.wp-eyebrow { font-size: var(--text-xs); font-weight: var(--weight-semibold); text-transform: uppercase; letter-spacing: var(--tracking-caps); color: var(--primary-fg); margin: 0 0 var(--space-1); }
+.wp-eyebrow { font-size: var(--text-xs); font-weight: var(--weight-semibold); text-transform: uppercase; letter-spacing: var(--tracking-caps); color: var(--color-brand); margin: 0 0 var(--space-1); }
 .wp-sec h2 { font-family: var(--font-editorial); font-size: var(--text-lg); font-weight: 600; letter-spacing: var(--tracking-tight); margin: 0 0 var(--space-4); display: flex; align-items: center; gap: var(--space-2); }
-.cnt { color: rgba(var(--primary-rgb), .6); font-weight: var(--weight-medium); font-size: var(--text-sm); }
-.dark .cnt { color: rgba(var(--primary-rgb), .85); }
+.cnt { color: rgba(var(--color-action-rgb), .7); font-weight: var(--weight-medium); font-size: var(--text-sm); }
+.dark .cnt { color: rgba(var(--color-action-rgb), .85); }
 /* ── CE3: unify the ward page under the phù-sa editorial voice (scoped .ce-ward) ── */
 /* Section heads already use the serif; add the vertical "sediment core" tick (river→amber→clay). */
 .ce-ward .wp-sec h2::before {
@@ -809,19 +809,19 @@ useHead({
   background: var(--card); border: .5px solid var(--line);
   border-radius: var(--radius-sheet); padding: var(--space-10) var(--space-6) var(--space-8);
   margin-top: var(--space-2);
-  background-image: radial-gradient(circle at 50% 0%, rgba(var(--primary-rgb), .06), transparent 60%);
+  background-image: radial-gradient(circle at 50% 0%, rgba(var(--color-brand-rgb), .06), transparent 60%);
 }
 .wp-empty-motif {
   position: absolute; inset: auto 0 0 0; height: 60px; pointer-events: none; opacity: .06;
   background:
-    radial-gradient(circle at 20% 100%, var(--primary) 0 2px, transparent 3px),
-    radial-gradient(circle at 50% 100%, var(--primary) 0 2px, transparent 3px),
-    radial-gradient(circle at 80% 100%, var(--primary) 0 2px, transparent 3px);
+    radial-gradient(circle at 20% 100%, var(--color-brand) 0 2px, transparent 3px),
+    radial-gradient(circle at 50% 100%, var(--color-brand) 0 2px, transparent 3px),
+    radial-gradient(circle at 80% 100%, var(--color-brand) 0 2px, transparent 3px);
 }
 .wp-empty-icon {
   display: inline-flex; align-items: center; justify-content: center;
   width: 72px; height: 72px; font-size: 2.2rem; border-radius: 50%;
-  background: radial-gradient(circle, rgba(var(--primary-rgb), .12), rgba(var(--primary-rgb), .04) 70%, transparent);
+  background: radial-gradient(circle, rgba(var(--color-brand-rgb), .12), rgba(var(--color-brand-rgb), .04) 70%, transparent);
   margin-bottom: var(--space-3); position: relative; z-index: 1;
 }
 .wp-empty-title { font-size: var(--text-lg); font-weight: var(--weight-bold); color: var(--ink); margin: 0 0 var(--space-2); position: relative; z-index: 1; }
@@ -854,7 +854,7 @@ useHead({
   background: linear-gradient(180deg, rgba(var(--white-rgb),.6) 0%, transparent 55%);
   mix-blend-mode: overlay; opacity: 0; transition: opacity .35s var(--ease-out-expo);
 }
-.wp-card:hover { transform: translateY(-2px); box-shadow: 0 0 0 1px rgba(var(--primary-rgb), .14), 0 18px 40px -18px rgba(var(--primary-rgb), .35); }
+.wp-card:hover { transform: translateY(-2px); box-shadow: 0 0 0 1px rgba(var(--color-action-rgb), .14), 0 18px 40px -18px rgba(var(--color-action-rgb), .25); }
 .wp-card:hover::before { opacity: .9; }
 .dark .wp-card::before { background: linear-gradient(180deg, rgba(var(--white-rgb),.08) 0%, transparent 55%); }
 .dark .wp-card:hover::before { opacity: .5; }
@@ -875,21 +875,21 @@ useHead({
 .wp-contact { display: flex; flex-direction: column; gap: var(--space-3); }
 .wp-contact-item { display: flex; flex-direction: column; gap: 2px; padding: var(--space-2) 0; border-bottom: .5px solid var(--line); }
 .wp-contact-item:last-child { border-bottom: none; padding-bottom: 0; }
-.wp-contact-main { background: linear-gradient(90deg, rgba(var(--primary-rgb), .07) 0%, rgba(var(--accent-rgb), .07) 100%); border-radius: var(--radius-surface); padding: var(--space-3); border-bottom: none; margin-bottom: 2px; }
+.wp-contact-main { background: linear-gradient(90deg, rgba(var(--color-action-rgb), .07) 0%, rgba(var(--accent-rgb), .07) 100%); border-radius: var(--radius-surface); padding: var(--space-3); border-bottom: none; margin-bottom: 2px; }
 .wp-contact-label { font-size: var(--text-xs); color: var(--muted); }
-.wp-phone { font-size: var(--text-base); font-weight: var(--weight-bold); color: var(--primary-fg); min-height: 44px; padding: var(--space-2) var(--space-3); margin-inline-start: calc(var(--space-3) * -1); display: inline-flex; align-items: center; border-radius: var(--radius-control); }
+.wp-phone { font-size: var(--text-base); font-weight: var(--weight-bold); color: var(--color-action); min-height: 44px; padding: var(--space-2) var(--space-3); margin-inline-start: calc(var(--space-3) * -1); display: inline-flex; align-items: center; border-radius: var(--radius-control); }
 .wp-phone:hover { text-decoration: underline; }
 .wp-phone:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 3px; }
 
 /* Facilities */
 .wp-fac-list { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: var(--space-3); }
 .wp-fac { padding: var(--space-2) var(--space-2); border-bottom: .5px solid var(--line); transition: background .3s var(--ease-out), transform .35s var(--ease-out-expo); border-radius: var(--radius-control); margin: 0 calc(var(--space-2) * -1); }
-.wp-fac:hover { background: rgba(var(--primary-rgb), .04); transform: translateX(2px); }
+.wp-fac:hover { background: rgba(var(--color-action-rgb), .05); transform: translateX(2px); }
 .wp-fac:last-child { border-bottom: none; }
-.wp-fac-kind { font-size: var(--text-xs); color: var(--primary-fg); display: inline-flex; align-items: center; gap: var(--space-1); margin-bottom: 2px; }
+.wp-fac-kind { font-size: var(--text-xs); color: var(--color-action); display: inline-flex; align-items: center; gap: var(--space-1); margin-bottom: 2px; }
 .wp-fac-icon { font-size: 1.1rem; line-height: 1; flex-shrink: 0; }
 .wp-fac-row { font-size: var(--text-sm); color: var(--muted); margin-top: 2px; }
-.wp-fac-row a { color: var(--primary-fg); }
+.wp-fac-row a { color: var(--color-action); }
 .wp-fac-row a:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; border-radius: var(--radius-control); }
 
 /* Map button */
@@ -920,15 +920,15 @@ useHead({
 
 /* Dark mode */
 .dark .wp-card { background: var(--card); border-color: var(--line); }
-.dark .wp-card:hover { box-shadow: 0 0 0 1px rgba(var(--primary-rgb), .22), 0 18px 40px -18px rgba(var(--black-rgb),.6); }
-.dark .wp-contact-main { background: linear-gradient(90deg, rgba(var(--primary-rgb), .12) 0%, rgba(var(--accent-rgb), .10) 100%); }
-.dark .wp-phone { color: var(--primary-fg); }
+.dark .wp-card:hover { box-shadow: 0 0 0 1px rgba(var(--color-action-rgb), .22), 0 18px 40px -18px rgba(var(--black-rgb),.6); }
+.dark .wp-contact-main { background: linear-gradient(90deg, rgba(var(--color-action-rgb), .12) 0%, rgba(var(--accent-rgb), .10) 100%); }
+.dark .wp-phone { color: var(--color-action); }
 .dark .wp-fac:hover { background: var(--glass-subtle); }
-.dark .wp-fac-kind { color: var(--primary-fg); }
-.dark .wp-fac-row a { color: var(--primary-fg); }
+.dark .wp-fac-kind { color: var(--color-action); }
+.dark .wp-fac-row a { color: var(--color-action); }
 .dark .wp-map-btn { background: var(--glass-subtle); border-color: var(--line); color: var(--ink); }
 .dark .wp-map-btn:hover { background: var(--glass-light); }
-.dark .wp-empty-card { background-image: radial-gradient(circle at 50% 0%, rgba(var(--primary-rgb), .10), transparent 60%); }
+.dark .wp-empty-card { background-image: radial-gradient(circle at 50% 0%, rgba(var(--color-brand-rgb), .10), transparent 60%); }
 
 /* Reduced motion */
 @media (prefers-reduced-motion: reduce) {

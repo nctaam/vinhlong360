@@ -449,9 +449,9 @@ useHead(() => ({
 
 <style scoped>
 .month-grid { position: relative; display: grid; grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: var(--space-2); }
-.month-grid .quick-pick { border-left: 2px solid color-mix(in srgb, var(--month-tone, var(--primary)) 55%, transparent); }
+.month-grid .quick-pick { border-left: 2px solid color-mix(in srgb, var(--month-tone, var(--color-brand)) 55%, transparent); }
 .month-grid .quick-pick.active {
-  box-shadow: 0 2px 8px rgba(var(--primary-rgb), .28), inset 0 1px 0 rgba(var(--white-rgb), .15);
+  box-shadow: 0 2px 8px rgba(var(--color-action-rgb), .22), inset 0 1px 0 rgba(var(--white-rgb), .15);
 }
 .quick-pick-count { color: var(--muted); font-size: var(--text-xs); }
 
@@ -466,7 +466,7 @@ useHead(() => ({
   display: grid; grid-template-columns: auto 1fr auto; gap: var(--space-4);
   align-items: center;
   margin-top: var(--space-4); padding-top: var(--space-4);
-  border-top: .5px solid rgba(var(--primary-rgb), .15);
+  border-top: .5px solid rgba(var(--color-brand-rgb), .15);
 }
 .season-ring-wrap { flex-shrink: 0; }
 /* Signature: the ring IS the month-picker — a 12-notch annular instrument,
@@ -476,7 +476,7 @@ useHead(() => ({
 .season-ring {
   width: 108px; height: 108px; border-radius: 50%;
   position: relative; display: flex; align-items: center; justify-content: center;
-  box-shadow: inset 0 0 0 1px rgba(var(--primary-rgb), .12);
+  box-shadow: inset 0 0 0 1px rgba(var(--color-brand-rgb), .12);
 }
 .season-ring::after {
   content: ''; position: absolute; inset: 13px; border-radius: 50%;
@@ -533,7 +533,7 @@ useHead(() => ({
 .ring-notch:focus-visible { outline: 2px solid var(--card); outline-offset: 1px; }
 
 .season-moment-text strong { display: block; font-size: var(--text-base); font-weight: var(--weight-semibold); color: var(--ink); }
-.season-moment-text strong em { font-family: var(--font-editorial); font-style: italic; font-weight: 500; color: var(--primary-fg); }
+.season-moment-text strong em { font-family: var(--font-editorial); font-style: italic; font-weight: 500; color: var(--color-brand); }
 .season-moment-text p { margin: var(--space-1) 0 0; font-size: var(--text-sm); color: var(--muted); line-height: var(--leading-relaxed); }
 
 /* Hero retinting per quarter (§1.2) — scrubbing the ring changes the whole
