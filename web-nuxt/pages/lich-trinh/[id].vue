@@ -41,7 +41,7 @@
         <ShareButton :title="itineraryTitle" :text="itinerary.summary || itinerary.description" />
         <button type="button" class="btn btn-ghost btn-sm" aria-label="Báo cáo lịch trình" @click="openReport('entity', id)"><IconLine name="flag" /> Báo cáo</button>
       </ClientOnly>
-        <NuxtLink to="/tao-lich-trinh" no-prefetch class="btn btn-outline btn-sm">+ Tự tạo lịch trình</NuxtLink>
+        <NuxtLink to="/tao-lich-trinh" no-prefetch class="btn btn-outline btn-sm"><IconLine name="plus" aria-hidden="true" /> Tự tạo lịch trình</NuxtLink>
     </div>
 
     <!-- Transport mode + total -->

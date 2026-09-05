@@ -175,6 +175,8 @@ describe('SEO & Editorial Craft Guardrails', () => {
     expect(itinerary).not.toContain("icon: '🚗'")
     expect(itinerary).toContain('<IconLine name="bulb" class="tnc-icon"')
     expect(itinerary).toContain('<IconLine name="arrow-right" class="rl-arrow"')
+    expect(itinerary).toContain('<IconLine name="plus"')
+    expect(itinerary).not.toContain('+ Tự tạo lịch trình')
     expect(itinerary).toContain("twitterCard: 'summary_large_image'")
     expect(itinerary).toContain("ogUrl: () => itineraryUrl(String(it.id || id))")
     expect(itinerary).toContain('safeJsonLd(ld)')
