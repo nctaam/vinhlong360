@@ -102,6 +102,23 @@
         <button v-if="qApplied" type="button" class="dd-search-clear" aria-label="Xoá tìm" @click="clearQuery"><IconLine name="x" /></button>
         <button type="button" class="btn btn-primary btn-sm" @click="applyQuery">Tìm</button>
       </div>
+
+      <div v-if="hasActiveFilters" class="dd-active-filters" role="region" aria-label="Bộ lọc đang áp dụng">
+        <span class="dd-af-label">Đang lọc:</span>
+        <button v-if="areaFilter !== 'all'" type="button" class="dd-af-chip" :aria-label="`Bỏ lọc khu vực ${activeAreaName}`" @click="pickArea(areaFilter)">
+          <span>{{ activeAreaName }}</span>
+          <IconLine name="x" aria-hidden="true" />
+        </button>
+        <button v-if="typeFilter !== 'all'" type="button" class="dd-af-chip" :aria-label="`Bỏ lọc loại hình ${activeTypeLabel}`" @click="pickType(typeFilter)">
+          <span>{{ activeTypeLabel }}</span>
+          <IconLine name="x" aria-hidden="true" />
+        </button>
+        <button v-if="qApplied" type="button" class="dd-af-chip" :aria-label="`Bỏ tìm kiếm ${qApplied}`" @click="clearQuery">
+          <span>“{{ qApplied }}”</span>
+          <IconLine name="x" aria-hidden="true" />
+        </button>
+        <button type="button" class="dd-af-clear" @click="resetAll">Xóa tất cả</button>
+      </div>
     </div>
 
     <p v-if="!pending && qApplied" class="dd-count" aria-live="polite">
@@ -261,6 +278,7 @@ watch(qInput, (val) => {
 // data proves exists: other areas when a type+area combo is empty).
 const activeTypeLabel = computed(() => typeFilter.value === 'all' ? '' : (TYPE_META[typeFilter.value]?.label || ''))
 const activeAreaName = computed(() => areaFilter.value === 'all' ? '' : (AREA_META[areaFilter.value]?.name || ''))
+const hasActiveFilters = computed(() => typeFilter.value !== 'all' || areaFilter.value !== 'all' || !!qApplied.value)
 const emptyTitle = 'Chưa có trong danh bạ'
 const emptyMessage = computed(() => {
   if (activeTypeLabel.value && activeAreaName.value) {
@@ -538,6 +556,56 @@ useHead(() => ({
 }
 .dd-refine .dd-search { margin-bottom: 0; }
 .dark .dd-refine { background: var(--surface-translucent); border-color: var(--line); }
+
+.dd-active-filters {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin-top: var(--space-2);
+  padding-top: var(--space-2);
+  border-top: .5px solid var(--color-border);
+}
+.dd-af-label {
+  font-size: var(--text-xs);
+  color: var(--color-text-muted);
+  font-weight: var(--weight-medium);
+}
+.dd-af-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  min-height: 32px;
+  padding: 4px 10px;
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--color-action-border);
+  background: var(--color-action-surface);
+  color: var(--color-action);
+  font-size: var(--text-xs);
+  font-weight: var(--weight-semibold);
+  cursor: pointer;
+  transition: background .2s var(--ease-out);
+}
+.dd-af-chip:hover {
+  background: var(--color-action-surface-hover);
+}
+.dd-af-clear {
+  margin-left: auto;
+  min-height: 32px;
+  background: none;
+  border: none;
+  color: var(--color-text-muted);
+  font-size: var(--text-xs);
+  font-weight: var(--weight-medium);
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: var(--radius-control);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.dd-af-clear:hover {
+  color: var(--color-action);
+}
 
 /* ============================================================
    EMPTY-STATE RECOVERY — near-match chips before the generic reset.
