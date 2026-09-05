@@ -373,7 +373,8 @@ useHead(() => ({
   min-width: 100px; flex-shrink: 0;
 }
 .dd-type-card:hover { border-color: var(--primary); box-shadow: 0 2px 8px rgba(var(--black-rgb),.06); }
-.dd-type-card:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+.dd-type-card:active { transform: scale(.96); transition-duration: .08s; }
+.dd-type-card:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
 .dd-type-card.active { border-color: var(--primary); background: rgba(var(--primary-rgb), .06); }
 .dd-type-icon { font-size: 1.6rem; }
 .dd-type-label { font-size: var(--text-sm); font-weight: var(--weight-semibold); color: var(--ink); white-space: nowrap; }
@@ -382,7 +383,7 @@ useHead(() => ({
 .dd-search:focus-within { border-color: var(--primary); }
 .dd-search-ic { color: var(--muted); flex-shrink: 0; }
 .dd-search-input { flex: 1; min-width: 0; border: none; background: none; outline: none; color: var(--ink); font-size: var(--text-sm); padding: .4rem 0; }
-.dd-search-input:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+.dd-search-input:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
 .dd-search-input::placeholder { color: var(--muted); }
 .dd-search-clear { border: none; background: none; color: var(--muted); font-size: 1rem; line-height: 1; cursor: pointer; padding: 0 .25rem; min-width: 44px; min-height: 44px; display: inline-flex; align-items: center; justify-content: center; }
 .dd-search-clear:hover { color: var(--ink); }
@@ -478,7 +479,7 @@ useHead(() => ({
   border-color: rgba(var(--stamp-rgb), .4);
 }
 .province-stamp:active { transform: rotate(0deg) scale(.98); transition-duration: .08s; }
-.province-stamp:focus-visible { outline: 2px solid var(--primary); outline-offset: 3px; }
+.province-stamp:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 3px; }
 .province-stamp.active {
   border-color: rgba(var(--stamp-rgb), .5);
   background: linear-gradient(160deg, rgba(var(--stamp-rgb), .14) 0%, var(--card) 55%);
@@ -518,6 +519,8 @@ useHead(() => ({
   .province-stamp, .province-stamp:nth-child(2n), .province-stamp:nth-child(3n) { transform: none; }
   .province-stamp:hover, .province-stamp:focus-visible { transform: none; }
   .province-stamp:active { transform: none; }
+  .dd-type-card:active { transform: none; }
+  .dd-af-chip:active, .dd-af-clear:active { transform: none; }
 }
 @media (max-width: 640px) {
   .province-stamps { grid-template-columns: repeat(2, 1fr); }
@@ -584,11 +587,13 @@ useHead(() => ({
   font-size: var(--text-xs);
   font-weight: var(--weight-semibold);
   cursor: pointer;
-  transition: background .2s var(--ease-out);
+  transition: background .2s var(--ease-out), transform .2s var(--ease-out-expo);
 }
 .dd-af-chip:hover {
   background: var(--color-action-surface-hover);
 }
+.dd-af-chip:active { transform: scale(.95); transition-duration: .08s; }
+.dd-af-chip:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
 .dd-af-clear {
   margin-left: auto;
   min-height: 32px;
@@ -602,10 +607,13 @@ useHead(() => ({
   border-radius: var(--radius-control);
   text-decoration: underline;
   text-underline-offset: 2px;
+  transition: color .2s var(--ease-out), transform .2s var(--ease-out-expo);
 }
 .dd-af-clear:hover {
   color: var(--color-action);
 }
+.dd-af-clear:active { transform: scale(.95); transition-duration: .08s; }
+.dd-af-clear:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
 
 /* ============================================================
    EMPTY-STATE RECOVERY — near-match chips before the generic reset.
