@@ -87,4 +87,4 @@ runtime regression and preserved the valid HTTP journey.
 
 ## Backend Completion Closure (2026-09-05)
 
-Task 0: review remediation in progress (initial commit `05ed0999`, authority binding commit `b143dcd1`; focused authority/release tests `31 passed` using workspace basetemp; default pytest temp root was blocked by Windows `WinError 5`; static `closed_pilot_verdict=GO_CONDITIONAL` preserved for acceptance contract while evaluated pilot remains `NO_GO`, verifier remains `BLOCKED`).
+Task 0: complete (commits `05ed0999..85f30a1e`, review approved; focused authority/release + alternate-root acceptance `32 passed`; authority `PASS tracked=8 stale=0 mismatches=0`; hard gate clean; default pytest temp root remains blocked by Windows `WinError 5`, so workspace basetemp was used; static `closed_pilot_verdict=GO_CONDITIONAL` preserved for acceptance contract while evaluated pilot remains `NO_GO`, verifier remains `BLOCKED`).
