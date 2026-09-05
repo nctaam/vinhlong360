@@ -24,12 +24,14 @@ def _env_bool(name: str, default: bool) -> bool:
     return value.strip().lower() in {"1", "true", "yes", "on"}
 
 try:
-    # Import the package-qualified module first so all feature consumers share
-    # one embedding singleton; vector_search.py aliases the legacy name.
-    from agent.vector_search import embedding_store, hybrid_search  # noqa: F401 (feature-probe try-import — HAS_* dùng runtime)
+    # The package-qualified module is canonical.  The flat import is retained
+    # only for direct ``python agent/server.py`` compatibility.
+    from agent.vector_search import embedding_store, hybrid_search  # noqa: F401
 except ImportError:
+    if __package__:
+        raise
     try:
-        from vector_search import embedding_store, hybrid_search  # noqa: F401 (legacy direct execution fallback)
+        from vector_search import embedding_store, hybrid_search  # noqa: F401
     except ImportError:
         HAS_VECTOR = False
         logger.info("Vector search disabled (optional dependency)")

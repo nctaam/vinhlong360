@@ -1328,10 +1328,18 @@ def _search_posts_for_contract(q: str, user: dict | None, limit: int) -> tuple[l
     if not db._use_pg or len((q or "").strip()) < 2:
         return [], 0
     from database import escape_like
-    from community.api import (
-        _POST_COLS, _block_sql, _mute_sql, _prod_seed_post_filter,
-        _format_post, _enrich_all,
+    from community.contracts import (
+        POST_COLS, block_sql, mute_sql, prod_seed_post_filter,
+        format_post, enrich_all,
     )
+    # Compatibility aliases keep the existing query code and source-level
+    # contracts stable while the implementation boundary is public.
+    _POST_COLS = POST_COLS
+    _block_sql = block_sql
+    _mute_sql = mute_sql
+    _prod_seed_post_filter = prod_seed_post_filter
+    _format_post = format_post
+    _enrich_all = enrich_all
     stripped = q.strip()
     ph = db._ph
     pattern = "%" + escape_like(stripped.lower()) + "%"
@@ -1369,7 +1377,9 @@ def _search_users_for_contract(q: str, user: dict | None, limit: int) -> tuple[l
     if not db._use_pg or len((q or "").strip()) < 2:
         return [], 0
     from database import escape_like
-    from community.api import _block_sql, _mute_sql
+    from community.contracts import block_sql, mute_sql
+    _block_sql = block_sql
+    _mute_sql = mute_sql
     stripped = q.strip()
     ph = db._ph
     pattern = "%" + escape_like(stripped.lower()) + "%"
@@ -2945,7 +2955,11 @@ async def track_contact_view(
 # (lát 4 đợt hoàn-thiện-sâu 2026-08-29; trên SQLite nay trả 503 theo §1.3 —
 # behavior change có duyệt). Tái xuất 2 ký hiệu vì test soi nguồn qua
 # public_api.<tên> (inspect.getsource đi theo object nên vẫn đúng nhà thật).
-from community.api import _collect_new_entities, feed_new_since  # noqa: F401, E402
+from community.contracts import collect_new_entities, feed_new_since  # noqa: F401, E402
+
+# Legacy attribute names remain available to callers while imports flow through
+# the stable contract facade.
+_collect_new_entities = collect_new_entities
 
 
 # ── Collections (U-28, public read-only): sang entities/api.py cạnh cụm

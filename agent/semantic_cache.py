@@ -29,12 +29,24 @@ from owner_write_gate import owner_write_gate
 
 logger = logging.getLogger(__name__)
 
-# ── Try importing tokenizer from vector_search ──
+# ── Import the canonical vector module ──
 try:
-    from agent.vector_search import tokenize as _tokenize, normalize_vietnamese as _normalize_vietnamese
+    from agent.vector_search import (
+        embedding_store,
+        hybrid_search,
+        tokenize as _tokenize,
+        normalize_vietnamese as _normalize_vietnamese,
+    )
 except ImportError:
+    if __package__:
+        raise
     try:
-        from vector_search import tokenize as _tokenize, normalize_vietnamese as _normalize_vietnamese
+        from vector_search import (
+            embedding_store,
+            hybrid_search,
+            tokenize as _tokenize,
+            normalize_vietnamese as _normalize_vietnamese,
+        )
     except ImportError:
         logger.info("vector_search not available — using simple tokenizer fallback")
 
@@ -47,6 +59,10 @@ except ImportError:
             for i in range(len(tokens) - 1):
                 tokens.append(f"{tokens[i]}_{tokens[i + 1]}")
             return tokens
+
+# These names are intentionally re-exported so semantic-cache callers can
+# assert and reuse the same vector singleton as feature detection.
+__all__ = ["embedding_store", "hybrid_search"]
 
 # ── Paths ──
 DATA_DIR = Path(__file__).resolve().parent / "data" / "semantic_cache"

@@ -1424,7 +1424,7 @@ async def explore_feed(
 # TRONG thân handler: fixture pg_sql_recorder vá singleton db mới còn trúng.
 
 
-def _collect_new_entities(entities: dict, since_dt, limit: int) -> list[dict]:
+def _collect_new_entities(entities: dict, since, limit: int = 100) -> list[dict]:
     new_entities = []
     for eid, e in entities.items():
         if e.get("type") == "place" or not _is_public(e):
@@ -1436,7 +1436,7 @@ def _collect_new_entities(entities: dict, since_dt, limit: int) -> list[dict]:
             dt = datetime.fromisoformat(str(updated).replace("Z", "+00:00"))
         except (ValueError, TypeError):
             continue
-        if dt >= since_dt:
+        if dt >= since:
             new_entities.append({
                 "id": eid, "name": e.get("name"), "type": e.get("type"),
                 "area": e.get("area"), "updated_at": str(updated),
