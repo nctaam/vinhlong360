@@ -31,6 +31,18 @@
     </EmptyState>
 
     <EmptyState
+      v-else-if="!leaders.length && q.trim()"
+      icon-name="search" title="Không tìm thấy thành viên"
+      :message="`Không có thành viên nào khớp với từ khóa “${q.trim()}”.`"
+    >
+      <template #actions>
+        <button type="button" class="btn btn-outline btn-sm" @click="q = ''">
+          <IconLine name="repeat" class="icon-inline" /> Xóa tìm kiếm
+        </button>
+      </template>
+    </EmptyState>
+
+    <EmptyState
       v-else-if="!leaders.length"
       icon-name="trophy" title="Chưa có dữ liệu xếp hạng"
       message="Hãy chia sẻ và đánh giá để trở thành thành viên tích cực đầu tiên!"
@@ -163,16 +175,37 @@ useHead(() => ({
 .bxh-head { margin-bottom: var(--space-5); }
 .bxh-head h1 { margin: 0 0 var(--space-2); }
 .bxh-head p { color: var(--muted); margin: 0; }
-.bxh-guide-link { color: var(--primary-fg); font-weight: var(--weight-medium); text-decoration: underline; text-decoration-color: transparent; text-underline-offset: 2px; transition: text-decoration-color .2s; }
+.bxh-guide-link {
+  color: var(--primary-fg);
+  font-weight: var(--weight-medium);
+  text-decoration: underline;
+  text-decoration-color: transparent;
+  text-underline-offset: 2px;
+  border-radius: var(--radius-control);
+  transition: text-decoration-color .2s var(--ease-out);
+}
 .bxh-guide-link:hover { text-decoration-color: var(--primary-fg); }
+.bxh-guide-link:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
 .bxh-filters { display: flex; flex-wrap: wrap; gap: var(--space-2); margin-bottom: var(--space-3); }
-.bxh-search { flex: 1 1 200px; padding: var(--space-2) var(--space-3); border: 1px solid var(--border-input); border-radius: var(--radius-control); background: var(--surface); color: var(--ink); }
+.bxh-search {
+  flex: 1 1 200px;
+  min-height: 44px;
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--border-input);
+  border-radius: var(--radius-control);
+  background: var(--surface);
+  color: var(--ink);
+  font: inherit;
+  font-size: var(--text-sm);
+  transition: border-color .2s var(--ease-out);
+}
+.bxh-search:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
 .bxh-self { padding: var(--space-2) var(--space-3); background: color-mix(in srgb, var(--primary) 8%, transparent); border-radius: var(--radius-control); margin-bottom: var(--space-2); font-size: var(--text-sm); }
 .bxh-list { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: var(--space-2); }
-.bxh-list li.is-self .bxh-row { outline: 2px solid var(--primary); outline-offset: -1px; }
+.bxh-list li.is-self .bxh-row { outline: 2px solid var(--color-focus); outline-offset: -1px; }
 .bxh-row { display: flex; align-items: center; gap: var(--space-3); padding: var(--space-3); min-height: 56px; background: var(--card); border: .5px solid var(--line); border-radius: var(--radius-sheet); text-decoration: none; color: var(--ink); transition: border-color .25s var(--ease-out), transform .25s var(--ease-out-expo); }
 .bxh-row:hover { border-color: var(--primary-fg); transform: translateY(-1px); }
-.bxh-row:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+.bxh-row:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
 .bxh-row:active { transform: scale(.98); transition-duration: .08s; }
 .bxh-rank { flex-shrink: 0; width: 28px; text-align: center; font-size: var(--text-lg); font-weight: var(--weight-bold); color: var(--muted); }
 /* Hạng 1–3 là huy hiệu tròn tô đầy, chữ đọc bằng --medal-ink.
@@ -198,10 +231,6 @@ useHead(() => ({
   .bxh-row { padding: var(--space-3) var(--space-2); gap: var(--space-2); }
   .bxh-name { font-size: var(--text-sm); }
 }
-@media (prefers-reduced-motion: reduce) {
-  .bxh-row:hover { transform: none; }
-  .bxh-row:active { transform: none; }
-}
 
 /* ── Masthead eyebrow — "Sổ vàng cộng đồng" ─────────────────────────────────
    Small-caps dateline above <h1>, echoes .cine-kicker tracking without
@@ -226,7 +255,7 @@ useHead(() => ({
   transition: border-color .25s var(--ease-out), transform .25s var(--ease-out-expo), box-shadow .25s var(--ease-out);
 }
 .podium-link:hover { border-color: var(--primary-fg); transform: translateY(-2px); box-shadow: var(--shadow-sm); }
-.podium-link:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+.podium-link:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
 .podium-link:active { transform: scale(.98); transition-duration: .08s; }
 /* Huy chương giữa (rank #1) nhô cao hơn — cả desktop lẫn mobile so le */
 .podium-1 { order: 2; }
@@ -274,7 +303,7 @@ useHead(() => ({
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .podium-link:hover { transform: none; }
-  .podium-link:active { transform: none; }
+  .bxh-row:hover, .bxh-row:active { transform: none; }
+  .podium-link:hover, .podium-link:active { transform: none; }
 }
 </style>
