@@ -397,29 +397,10 @@
         </div>
 
         <!-- Lưu ý thực tế — Scenarios 2,3,6,9: practical tips for food/family/OCOP/delegation -->
-        <div v-if="practicalTips.length" class="practical-tips reveal">
-          <h2 class="section-subtitle sediment-head"><IconLine name="clipboard-list" aria-hidden="true" /> {{ ss('labels.detail.practical_tips_heading', 'Lưu ý thực tế') }}</h2>
-          <ul class="pt-list">
-            <li v-for="tip in practicalTips" :key="tip.icon" class="pt-item">
-              <IconLine class="pt-icon" :name="tip.icon" aria-hidden="true" />
-              <div class="pt-content">
-                <strong>{{ tip.label }}</strong>
-                <span>{{ tip.value }}</span>
-              </div>
-            </li>
-          </ul>
-        </div>
-
-        <!-- Best time callout -->
-        <!-- declutter-1 T6: best_time chỉ render 1 chỗ (callout này); đã bỏ khỏi practicalTips
-             nên guard chống-trùng cũ không cần nữa. -->
-        <div v-if="bestTimeText" class="best-time-callout reveal">
-          <IconLine class="btc-icon" name="clock" aria-hidden="true" />
-          <div class="btc-body">
-            <strong>Thời điểm lý tưởng</strong>
-            <span>{{ bestTimeText }}</span>
-          </div>
-        </div>
+        <DetailPracticalTips
+          :entity="entity"
+          :tips-heading="ss('labels.detail.practical_tips_heading', 'Lưu ý thực tế')"
+        />
 
         <!-- Know Before You Go -->
         <KnowBeforeYouGo
@@ -432,18 +413,7 @@
         />
 
         <!-- Food specialties (dish/product only) -->
-        <div v-if="foodSpecialties.length" class="food-specialties reveal">
-          <h2 class="section-subtitle sediment-head"><IconLine name="bowl" aria-hidden="true" /> Nên thử</h2>
-          <ul class="fs-list">
-            <li v-for="item in foodSpecialties" :key="item.label" class="fs-item">
-              <IconLine class="fs-icon" :name="item.icon" aria-hidden="true" />
-              <div class="fs-content">
-                <strong>{{ item.label }}</strong>
-                <span>{{ item.value }}</span>
-              </div>
-            </li>
-          </ul>
-        </div>
+        <DetailFoodSpecialties :entity="entity" />
 
         <!-- Month strip -->
         <div v-if="entity.season?.months" class="season-block reveal">
@@ -1094,43 +1064,6 @@ const hasHighlights = computed(() => !!(entity.value?.attributes?.phone || zaloL
 const hasVisitFacts = computed(() => { const a = entity.value?.attributes; return !!(a?.hours || a?.price || a?.fee || a?.suggested_duration || a?.transport || a?.vehicle_access || a?.parking) })
 const hasContactFacts = computed(() => { const a = entity.value?.attributes; return !!(a?.phone || a?.address || (a?.coords_approximate && hasCoords.value) || a?.website) })
 const hasFeatureFacts = computed(() => { const a = entity.value?.attributes; return !!(a?.amenities || a?.price_range || a?.atmosphere || a?.famous_for || a?.significance) })
-const practicalTips = computed(() => {
-  const a = entity.value?.attributes
-  if (!a) return []
-  const tips: { icon: string; label: string; value: string }[] = []
-  if (a.highlight) tips.push({ icon: 'sparkles', label: 'Điểm nhấn', value: a.highlight })
-  if (a.booking_note) tips.push({ icon: 'clipboard-list', label: 'Đặt trước', value: a.booking_note })
-  if (a.transport) tips.push({ icon: 'car', label: 'Di chuyển', value: a.transport })
-  if (a.fee) tips.push({ icon: 'tag', label: 'Phí vào cửa', value: a.fee })
-  // declutter-3 T17 (A8 thu-scope D5): amenities 1 nguồn duy nhất = facts-card "Tiện ích"
-  // (bảng tham chiếu) — bỏ dòng lặp trong practical-tips.
-  if (a.family_friendly || a.suitable_for?.includes('family'))
-    tips.push({ icon: 'users', label: 'Gia đình', value: 'Phù hợp cho gia đình có trẻ em' })
-  if (a.parking) tips.push({ icon: 'pin', label: 'Đậu xe', value: a.parking })
-  if (a.vehicle_access) tips.push({ icon: 'car', label: 'Tiếp cận xe', value: a.vehicle_access })
-  if (Array.isArray(a.travel_tips)) {
-    for (const t of a.travel_tips.slice(0, 3)) {
-      if (t) tips.push({ icon: 'bulb', label: 'Mẹo', value: t })
-    }
-  }
-  return tips
-})
-
-const bestTimeText = computed(() => entity.value?.attributes?.best_time || '')
-
-const foodSpecialties = computed(() => {
-  const a = entity.value?.attributes
-  const t = entity.value?.type
-  if (!a || (t !== 'dish' && t !== 'product' && t !== 'craft_village')) return []
-  const items: { icon: string; label: string; value: string }[] = []
-  if (a.must_order) items.push({ icon: 'star', label: 'Phải thử', value: Array.isArray(a.must_order) ? a.must_order.join(', ') : a.must_order })
-  if (a.signature_dish) items.push({ icon: 'bowl', label: 'Món đặc trưng', value: a.signature_dish })
-  if (a.best_dish) items.push({ icon: 'trophy', label: 'Món hay gọi nhất', value: a.best_dish })
-  if (a.specialty) items.push({ icon: 'gift', label: 'Đặc sản', value: Array.isArray(a.specialty) ? a.specialty.join(', ') : a.specialty })
-  if (a.ingredients) items.push({ icon: 'bowl', label: 'Nguyên liệu', value: Array.isArray(a.ingredients) ? a.ingredients.join(', ') : a.ingredients })
-  if (a.what_to_buy) items.push({ icon: 'gift', label: 'Nên mua', value: Array.isArray(a.what_to_buy) ? a.what_to_buy.join(', ') : a.what_to_buy })
-  return items
-})
 
 // The trust CTA files a correction against this entry. It used to drop the
 // reader into a community search, which records nothing and promises less.
@@ -1529,170 +1462,3 @@ useHead({
 <!-- detail.css nạp theo route (bỏ khỏi global entry.css; phần dùng-chung ở detail-shared.css) -->
 <style src="~/assets/css/detail.css"></style>
 
-<style scoped>
-/* PhotoGallery placement below hero */
-.detail-gallery {
-  max-width: var(--maxw);
-  margin: var(--space-4) auto;
-  padding: 0 var(--space-5);
-}
-
-/* ContactWidget: let the component handle its own sticky/positioning,
-   but override width inside the sidebar context */
-.detail-contact-widget {
-  width: 100%;
-  position: static;
-  margin-bottom: var(--space-5);
-}
-
-.fact-copy {
-  display: inline-flex; align-items: center; justify-content: center;
-  width: 28px; height: 28px; margin-left: var(--space-1); vertical-align: middle;
-  border: none; border-radius: var(--radius-control); background: transparent;
-  color: var(--muted); cursor: pointer; transition: color .2s, background .2s;
-}
-.fact-copy:hover { color: var(--color-action); background: var(--color-action-surface); }
-.fact-copy:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 1px; }
-
-/* P0-5: editorial byline — subtle, honest "Who" line above the trust card. */
-.entity-byline {
-  display: flex;
-  align-items: center;
-  gap: .5em;
-  margin: var(--space-4) 0 var(--space-2);
-  font-size: var(--text-xs);
-  line-height: var(--leading-snug);
-  color: var(--muted);
-}
-.entity-byline .line-icon { font-size: 1.1em; color: var(--muted); flex: 0 0 auto; }
-.entity-byline strong { font-weight: var(--weight-semibold); color: var(--ink); }
-.entity-byline a { color: var(--color-action); text-decoration: underline; text-underline-offset: 2px; }
-
-.trust-card {
-  margin: var(--space-4) 0;
-  padding: var(--space-4);
-  border: 1px solid var(--line);
-  border-radius: var(--radius-control);
-  background: var(--surface);
-}
-.trust-card-head {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: var(--space-3);
-  margin-bottom: var(--space-3);
-}
-.trust-card h2 {
-  margin: 0;
-  font-size: var(--text-base);
-}
-.trust-status {
-  flex: 0 0 auto;
-  padding: 3px 8px;
-  border-radius: 999px;
-  font-size: var(--text-xs);
-  font-weight: var(--weight-semibold);
-  border: 1px solid var(--line);
-}
-.trust-status.fresh { color: var(--success); background: var(--success-bg); border-color: var(--success-border); }
-.trust-status.aging { color: var(--warning); background: var(--warning-bg); border-color: var(--warning-border); }
-.trust-status.stale,
-.trust-status.conflict { color: var(--error); background: var(--error-bg); border-color: var(--error-border); }
-.trust-status.unknown { color: var(--muted); background: var(--bg-warm); }
-.trust-source { display: flex; align-items: flex-start; gap: var(--space-2); margin: 0; color: var(--muted); font-size: var(--text-sm); line-height: var(--leading-snug); }
-.trust-source .line-icon { margin-top: .12rem; color: var(--color-action); }
-.trust-open { display: flex; align-items: center; justify-content: space-between; gap: var(--space-3); width: 100%; min-height: 44px; margin-top: var(--space-3); padding: 0 var(--space-3); border: .5px solid var(--line); border-radius: var(--radius-control); color: var(--color-action); background: var(--bg-warm); cursor: pointer; font: inherit; font-size: var(--text-sm); font-weight: var(--weight-semibold); text-align: left; }
-.trust-open:hover { border-color: var(--color-action); background: var(--bg-alt); }
-.trust-open:focus-visible { outline: 2px solid var(--color-action); outline-offset: 2px; }
-
-/* declutter-3 T17 (B5d): Save/Share dời từ hero về sidebar — 2 nút chia đều hàng.
-   Sidebar stack dưới article trên mobile nên mọi viewport đều với tới. */
-.aside-actions { display: flex; gap: var(--space-2); margin: var(--space-3) 0 var(--space-4); }
-.aside-actions > * { flex: 1; }
-
-
-/* On mobile, hide the desktop ContactWidget (it renders its own fixed bottom bar) */
-@media (max-width: 767px) {
-  /* Hide existing sticky-cta-bar since ContactWidget provides mobile bottom bar */
-  .sticky-cta-bar { display: none; }
-}
-
-/* ── Cover-story hero layer (Wave 2): dateline eyebrow + hook + phù-sa no-photo hero ── */
-.detail-cover .dc-eyebrow {
-  display: inline-block; margin-bottom: var(--space-2);
-  font-family: var(--font-sans); font-size: var(--text-2xs); font-weight: 700;
-  letter-spacing: .12em; text-transform: uppercase;
-  color: rgba(var(--white-rgb), .92); padding-bottom: 4px;
-  border-bottom: 1px solid rgba(var(--white-rgb), .38);
-}
-.detail-cover .dc-hook {
-  margin: var(--space-2) 0 var(--space-1); max-width: 42ch;
-  font-family: var(--font-editorial); font-style: italic; font-weight: 500;
-  font-size: var(--text-lg); line-height: 1.4; color: rgba(var(--white-rgb), .95);
-  text-shadow: 0 1px 10px rgba(var(--black-rgb), .38);
-  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
-}
-/* No-photo entities: the per-entity gradient (inline bg) fills the hero; grain adds print texture */
-.detail-cover:not(.has-cover-img) { background-size: cover; background-position: center; }
-.detail-cover:not(.has-cover-img)::after {
-  content: ""; position: absolute; inset: 0; z-index: 0; pointer-events: none;
-  background-image: var(--grain); background-size: 168px 168px; opacity: .09;
-}
-.detail-cover:not(.has-cover-img) .dc-inner { position: relative; z-index: 2; }
-.dc-nophoto-note {
-  position: absolute; right: var(--space-4); bottom: var(--space-3); z-index: 2;
-  font-size: var(--text-2xs); color: rgba(var(--white-rgb), .82);
-  /* Cùng rủi ro với .dc-disclosure ở trên, và ghi chú này CHỈ hiện đúng lúc
-     hero là gradient (entity không ảnh) — tức luôn ở đúng trường hợp nguy hiểm. */
-  background: rgba(var(--black-rgb), .62);
-  border-radius: var(--radius-control);
-  padding: 2px 6px;
-  text-shadow: 0 1px 3px rgba(var(--black-rgb), .5); max-width: 58%; text-align: right; line-height: 1.3;
-}
-.detail-cover .dc-placeholder {
-  position: absolute;
-  inset: 0;
-  z-index: 0;
-}
-.detail-cover .dc-disclosure {
-  position: absolute;
-  left: var(--space-4);
-  bottom: var(--space-3);
-  z-index: 3;
-  color: rgba(var(--white-rgb), .9);
-  /* Nền che BẮT BUỘC, không chỉ text-shadow. Chữ trắng ở đây được thiết kế để
-     nằm đè ẢNH bìa, nhưng entity KHÔNG có ảnh thì hero là gradient riêng theo
-     entity — và gradient đó có thể SÁNG. Đo thật trên hai trang không-ảnh:
-     trắng .9 trên gradient nhạt chỉ đạt 1.32:1. (Không viết mã màu ra đây:
-     check-tri-region-color-debt.mjs đếm cả hex trong chú thích.)
-     Bóng chữ không cứu nổi mức đó. Lớp che .62 cho 7.39 trên nền đo được và
-     vẫn còn 6.04 ở trường hợp xấu nhất tuyệt đối (nền trắng tinh).
-     Cùng lối giải đã dùng sẵn cho nhãn thumbnail ở .dc-thumb-btn bên dưới. */
-  background: rgba(var(--black-rgb), .62);
-  border-radius: var(--radius-control);
-  padding: 2px 6px;
-  text-shadow: 0 1px 3px rgba(var(--black-rgb), .45);
-}
-.dc-thumb-btn { position: relative; }
-.dc-thumb-btn :deep(.image-disclosure) {
-  position: absolute;
-  inset: auto 0 0;
-  padding: 2px 3px;
-  color: var(--text-on-dark);
-  background: rgba(var(--black-rgb), .58);
-  pointer-events: none;
-}
-/* Oversized off-centre category motif watermark (no-photo hero only) — same visual
-   language as EntityHeroPlaceholder.vue's .ehp-motif. Sits behind .dc-inner (z-index 2)
-   and the existing .dc-overlay/.dc-vignette scrim, so hero text stays fully legible. */
-.dc-motif {
-  position: absolute; right: -4%; bottom: -10%; z-index: 1; pointer-events: none;
-  width: 42%; max-width: 300px; color: rgba(var(--white-rgb), .5); opacity: .45;
-}
-.dc-motif :deep(svg) { width: 100%; height: auto; display: block; }
-@media (max-width: 640px) {
-  .detail-cover .dc-hook { font-size: var(--text-base); max-width: 100%; }
-  .dc-nophoto-note { max-width: 72%; }
-  .dc-motif { width: 56%; opacity: .3; }
-}
-</style>
