@@ -422,7 +422,7 @@ onBeforeUnmount(() => {
   gap: var(--space-1);
   margin-top: var(--space-1);
   font-size: var(--text-2xs);
-  color: var(--primary-fg);
+  color: var(--color-action);
   background: none;
   border: none;
   cursor: pointer;

@@ -83,7 +83,7 @@ const iconName = computed(() => STATE_META[props.kind].icon)
   position: absolute;
   inset: 0 auto 0 0;
   width: 5px;
-  background: var(--primary);
+  background: var(--color-brand);
 }
 
 .system-state-node {
@@ -94,7 +94,7 @@ const iconName = computed(() => STATE_META[props.kind].icon)
   height: 11px;
   border: 2px solid var(--card);
   border-radius: 50%;
-  background: var(--primary);
+  background: var(--color-brand);
   transform: translate(-50%, -50%);
 }
 
@@ -105,7 +105,7 @@ const iconName = computed(() => STATE_META[props.kind].icon)
   height: 48px;
   border: 1px solid var(--line);
   border-radius: var(--radius-surface);
-  color: var(--primary);
+  color: var(--color-action);
   background: var(--bg-alt);
   font-size: 1.5rem;
 }

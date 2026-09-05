@@ -69,7 +69,7 @@ defineEmits<{
 
 <style scoped>
 .community-search { display: flex; align-items: center; gap: var(--space-2); margin-bottom: var(--space-3); padding: .35rem .5rem .35rem .75rem; background: var(--card); border: 1px solid var(--border); border-radius: var(--radius-full); }
-.community-search:focus-within { border-color: var(--primary); }
+.community-search:focus-within { border-color: var(--color-action); }
 .cs-icon { color: var(--muted); flex-shrink: 0; }
 .cs-input { flex: 1; min-width: 0; border: none; background: none; outline: none; color: var(--ink); font-size: var(--text-sm); padding: .35rem 0; }
 .cs-input:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
@@ -79,7 +79,7 @@ defineEmits<{
 .cs-go { flex-shrink: 0; }
 
 .tag-banner { display: flex; align-items: center; justify-content: space-between; gap: .5rem; padding: .5rem .75rem; margin-bottom: var(--space-3); background: color-mix(in srgb, var(--accent) 10%, var(--bg-alt)); border-radius: var(--radius-surface); font-size: var(--text-sm); }
-.tag-clear { border: none; background: none; color: var(--primary-fg); cursor: pointer; font-size: var(--text-sm); }
+.tag-clear { border: none; background: none; color: var(--color-action); cursor: pointer; font-size: var(--text-sm); }
 
 .search-users-section { margin-bottom: var(--space-4); }
 .search-users-grid { display: flex; gap: var(--space-2); overflow-x: auto; padding-bottom: var(--space-1); }

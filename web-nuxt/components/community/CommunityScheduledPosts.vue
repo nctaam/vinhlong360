@@ -25,7 +25,7 @@ defineEmits<{
 
 <style scoped>
 .scheduled-section { margin-bottom: var(--space-4); }
-.scheduled-summary { cursor: pointer; font-weight: var(--weight-semibold); color: var(--primary-fg); padding: var(--space-2) 0; }
+.scheduled-summary { cursor: pointer; font-weight: var(--weight-semibold); color: var(--color-action); padding: var(--space-2) 0; }
 .scheduled-summary::-webkit-details-marker { display: none; }
 .scheduled-summary:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; border-radius: var(--radius-control); }
 .scheduled-list { display: flex; flex-direction: column; gap: var(--space-2); padding-top: var(--space-2); }

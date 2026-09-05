@@ -91,7 +91,7 @@ defineExpose({
     var(--card);
   box-shadow: var(--shadow-sm);
 }
-.planner-conflict-diff:focus-visible { outline: 3px solid var(--primary); outline-offset: 3px; }
+.planner-conflict-diff:focus-visible { outline: 3px solid var(--color-focus); outline-offset: 3px; }
 .planner-conflict-diff__head { display: flex; align-items: flex-start; justify-content: space-between; gap: var(--space-4); }
 .planner-conflict-diff__eyebrow {
   display: block; margin-bottom: var(--space-1); color: var(--warning);

@@ -417,14 +417,14 @@ onBeforeUnmount(() => {
 .preference-summary > div:nth-child(even) { padding-left: var(--space-4); border-left: 1px solid var(--line); }
 .preference-summary dt { color: var(--ink-700); font-size: var(--text-xs); }
 .preference-summary dd { margin: 0; font-size: var(--text-sm); font-weight: 650; }
-.preference-state-copy { margin: var(--space-3) 0 0; padding: .6rem .85rem; border: 1px solid color-mix(in srgb, var(--primary) 25%, var(--line)); border-radius: var(--radius-surface); background: color-mix(in srgb, var(--primary) 4%, var(--bg-alt)); color: var(--ink-700); font-size: var(--text-sm); line-height: 1.5; }
+.preference-state-copy { margin: var(--space-3) 0 0; padding: .6rem .85rem; border: 1px solid var(--color-action-border); border-radius: var(--radius-surface); background: var(--color-action-surface); color: var(--ink-700); font-size: var(--text-sm); line-height: 1.5; }
 .preference-section { margin-top: var(--space-5); padding-top: var(--space-4); border-top: 1px solid var(--line); }
 .preference-section-head h3 { margin: 0 0 .2rem; font-size: var(--text-base); }
 .preference-section-head p { margin: 0; color: var(--ink-700); font-size: var(--text-xs); }
 .preference-options { display: flex; flex-wrap: wrap; gap: var(--space-2); margin-top: var(--space-3); }
 .preference-option { min-height: 44px; padding: .55rem .85rem; border: 1px solid var(--border-input); border-radius: var(--radius-full); background: var(--bg); color: var(--ink-700); font: inherit; font-size: var(--text-sm); cursor: pointer; transition: border-color .2s, background .2s, color .2s; }
 .preference-option:hover:not(:disabled) { border-color: var(--muted); color: var(--ink); }
-.preference-option.selected { border-color: var(--primary); background: color-mix(in oklab, var(--primary) 9%, transparent); color: var(--ink); font-weight: 650; }
+.preference-option.selected { border-color: var(--color-action); background: var(--color-action-surface); color: var(--ink); font-weight: 650; }
 .preference-option:focus-visible, .preference-banner .btn:focus-visible, .preference-reset .btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 .preference-option:disabled { cursor: not-allowed; opacity: .55; }
 .preference-chips { display: flex; flex-wrap: wrap; gap: var(--space-2); margin-top: var(--space-3); }
