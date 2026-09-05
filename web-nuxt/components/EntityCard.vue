@@ -202,11 +202,8 @@ const ratingDisplay = computed(() => {
 }
 .card .card-cover-link:focus-visible,
 .card .card-body-link:focus-visible {
-  outline: 2px solid var(--catalog-legacy-primary);
+  outline: 2px solid var(--color-focus);
   outline-offset: -2px;
-}
-.card[data-color-recipe='tri-region-v1'] :is(.card-cover-link, .card-body-link):focus-visible {
-  outline-color: var(--color-focus);
 }
 .card-body-link {
   color: inherit;
@@ -245,8 +242,7 @@ const ratingDisplay = computed(() => {
 .card-arrow-prev { left: var(--space-2); }
 .card-arrow-next { right: var(--space-2); }
 .card-arrow:hover { transform: translateY(-50%) scale(1.1); }
-.card .card-arrow:focus-visible { outline: 2px solid var(--catalog-legacy-primary); outline-offset: 1px; opacity: 1; }
-.card[data-color-recipe='tri-region-v1'] .card-arrow:focus-visible { outline-color: var(--color-focus); }
+.card .card-arrow:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 1px; opacity: 1; }
 :deep(.card:hover) .card-arrow { opacity: 1; }
 /* Carousel dots */
 .card-dots {
@@ -272,7 +268,7 @@ const ratingDisplay = computed(() => {
 .card-amenities { display: none; }
 /* ── Story Card (Wave 1 keystone) — editorial treatment on every grid card ── */
 .card-type { display: none; }
-.card-name { font-family: var(--font-editorial); font-weight: 600; letter-spacing: -.01em; line-height: var(--leading-snug, 1.25); word-break: break-word; overflow-wrap: anywhere; }
+.card-name { font-family: var(--font-editorial); font-weight: 600; letter-spacing: -.01em; line-height: var(--leading-snug, 1.25); word-break: break-word; overflow-wrap: anywhere; hyphens: auto; }
 /* dateline eyebrow — small-caps, hairline accent, NOT a solid pill */
 .card-dateline {
   display: inline-block; margin-bottom: 2px;
