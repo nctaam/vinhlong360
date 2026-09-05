@@ -463,7 +463,7 @@ git commit -m "test: add production-boundary backend evidence probes"
 - Hard gate: python scripts/checks/run_hard.py --all.
 - Release verifier: python scripts/ops/verify_release_bundle.py --bundle artifacts/pilot-acceptance.json.
 
-- [ ] Step 1: Chạy full suite trên cây đứng yên.
+- [x] Step 1: Chạy full suite trên cây đứng yên.
 
 Đo disk free và lưu git rev-parse HEAD trước khi chạy; nếu working tree đổi giữa các phase, hủy verdict và chạy lại. Lưu stdout/stderr riêng, checksum từng output.
 
@@ -475,15 +475,19 @@ python scripts/checks/run_hard.py --all
 
 Expected: failure ngoài allowlist là regression; không dùng số lịch sử 8761 passed làm baseline mới nếu chưa có receipt của HEAD hiện tại.
 
-- [ ] Step 2: Kiểm tra evidence matrix.
+Kết quả HEAD `edd9c07a`: Phase A hoàn tất với `12448 passed, 65 failed, 822 skipped, 249 deselected, 1 xfailed`. Đây là failure set cần triage, chưa được chấp nhận làm baseline/allowlist mới; full decision vẫn BLOCKED.
+
+- [!] Step 2: Kiểm tra evidence matrix.
 
 Phải có PostgreSQL schema/migration, report race, scheduler multiprocess, provider ambiguity, image suggestion race, browser/proxy, backup-restore-checksum, rollback, alert receiver và lifecycle/erasure; mỗi dòng có command, environment, SHA, verdict, owner.
 
-- [ ] Step 3: Truth-sync tài liệu.
+Matrix hiện còn thiếu production-equivalent browser/proxy, live PostgreSQL multiprocess, backup/restore row-checksum, provider/object reconciliation, staging rollback và alert receiver; local deterministic evidence không được thay thế các dòng này.
+
+- [x] Step 3: Truth-sync tài liệu.
 
 Mỗi finding là closed with local proof, staging proof, unproven hoặc decision required; last_verified_at chỉ cập nhật sau command thật trên HEAD. Giữ NO_GO/BLOCKED nếu P1 hoặc evidence custody còn thiếu.
 
-- [ ] Step 4: Final verifier.
+- [x] Step 4: Final verifier.
 
 ~~~powershell
 python scripts/ops/run_pilot_acceptance.py --root . --evidence-dir artifacts/pilot-acceptance
@@ -493,7 +497,7 @@ python scripts/ops/verify_release_bundle.py --bundle artifacts/pilot-acceptance.
 
 Expected: trên laptop hiện tại verdict trung thực vẫn NO_GO/exit 2 nếu thiếu staging, custody key hoặc human sign-off; đó là kết quả đúng.
 
-- [ ] Step 5: Commit docs-only truth-sync.
+- [x] Step 5: Commit docs-only truth-sync.
 
 ~~~powershell
 git add docs/HANDOFF.md docs/ROADMAP.md docs/audit-toan-du-an-2026-08.md config/release-authority.json .superpowers/sdd/progress.md

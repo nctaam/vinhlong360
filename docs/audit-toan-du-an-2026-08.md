@@ -2,7 +2,7 @@
 
 Authority: config/release-authority.json
 
-> STATUS: active — báo cáo audit evidence-first, supersedes the working conclusions in `docs/2026-08-21-danh-gia-toan-du-an.md` where the evidence below is newer.
+> STATUS: active — truth-sync `2026-09-05T09:48Z`, HEAD `edd9c07a954f7dc6ae88e983f51b8cbd0b106af2`. Báo cáo audit evidence-first này supersedes the working conclusions in `docs/2026-08-21-danh-gia-toan-du-an.md` where the evidence below is newer. Acceptance thực tế vẫn `NO_GO`, release verifier vẫn `BLOCKED`; không coi local deterministic probes là staging/production proof.
 >
 > Phạm vi: toàn repo ở branch `codex/correction-case-pilot`, gồm backend FastAPI, frontend Nuxt, dữ liệu catalogue, correction kernel, UGC/identity, AI/guardrails, storage, CI/CD, backup/restore, monitoring, legal copy và governance.
 >
