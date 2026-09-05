@@ -44,8 +44,8 @@ const approvedBudgets = {
   'components/ImageDisclosure.vue': { rawHex: 0, legacyPrimary: 0 },
   'components/EntityHeroPlaceholder.vue': { rawHex: 0, legacyPrimary: 0 },
   'assets/css/tri-region-color.css': { rawHex: 0, legacyPrimary: 0 },
-  'assets/css/catalog.css': { rawHex: 5, legacyPrimary: 51 },
-  'assets/css/detail.css': { rawHex: 20, legacyPrimary: 39 },
+  'assets/css/catalog.css': { rawHex: 5, legacyPrimary: 44 },
+  'assets/css/detail.css': { rawHex: 20, legacyPrimary: 28 },
 }
 
 const requiredPaths = Object.keys(approvedBudgets)

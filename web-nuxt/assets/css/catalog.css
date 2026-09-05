@@ -693,7 +693,7 @@
   .cross-links { grid-template-columns: repeat(2, 1fr); }
 }
 /* dark mode: the cross-icon picks up a soft glow on hover */
-.dark .cross-card:hover .cross-icon { text-shadow: 0 0 12px rgba(var(--primary-rgb), .15); }
+.dark .cross-card:hover .cross-icon { text-shadow: 0 0 12px rgba(var(--color-brand-rgb), .15); }
 
 /* ── Seasonal highlight (banner) ── */
 .seasonal-banner {
@@ -715,10 +715,10 @@
   z-index: -1;
   border-radius: 50%;
   pointer-events: none;
-  background: radial-gradient(circle at 50% 50%, rgba(var(--primary-rgb), .2), transparent 70%);
+  background: radial-gradient(circle at 50% 50%, rgba(var(--color-brand-rgb), .2), transparent 70%);
   transition: opacity .35s var(--ease-out-expo);
 }
-.seasonal-banner:hover .seasonal-banner-icon { filter: drop-shadow(0 2px 6px rgba(var(--primary-rgb), .25)); }
+.seasonal-banner:hover .seasonal-banner-icon { filter: drop-shadow(0 2px 6px rgba(var(--color-brand-rgb), .25)); }
 .seasonal-banner strong { font-size: var(--text-base); }
 .seasonal-banner p { margin: 0; font-size: var(--text-sm); color: var(--muted); }
 
@@ -1266,7 +1266,7 @@
    .block so other pages' bare empties are untouched.) */
 .block .empty-state {
   background:
-    radial-gradient(120% 90% at 50% -10%, rgba(var(--primary-rgb), .06), transparent 60%),
+    radial-gradient(120% 90% at 50% -10%, rgba(var(--color-brand-rgb), .06), transparent 60%),
     var(--card);
   border: .5px solid var(--line);
   border-radius: var(--radius-sheet);
@@ -1290,7 +1290,7 @@
 }
 .dark .block .empty-state {
   background:
-    radial-gradient(120% 90% at 50% -10%, rgba(var(--primary-rgb), .08), transparent 60%),
+    radial-gradient(120% 90% at 50% -10%, rgba(var(--color-brand-rgb), .08), transparent 60%),
     var(--card);
 }
 .dark .block .empty-state::before {
@@ -1305,7 +1305,7 @@
   margin: 0 auto var(--space-4);
   border-radius: 50%;
   font-size: 2.6rem;
-  background: radial-gradient(circle at 50% 40%, rgba(var(--primary-rgb), .12), rgba(var(--primary-rgb), .04) 70%);
+  background: radial-gradient(circle at 50% 40%, rgba(var(--color-brand-rgb), .12), rgba(var(--color-brand-rgb), .04) 70%);
 }
 /* optional contextual hint line below an empty-state (e.g. region/star filter
    context) — makes a no-result moment feel intentional, not blank */
