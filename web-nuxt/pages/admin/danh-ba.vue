@@ -236,7 +236,7 @@ await placesAsyncData
   padding: var(--space-5); margin-bottom: var(--space-6);
   transition: box-shadow .3s var(--ease-soft), border-color .3s;
 }
-.db-form:focus-within { box-shadow: 0 4px 20px rgba(var(--black-rgb),.06); border-color: rgba(var(--primary-rgb),.2); }
+.db-form:focus-within { box-shadow: 0 4px 20px rgba(var(--black-rgb),.06); border-color: rgba(var(--color-action-rgb),.2); }
 .db-form-title { font-size: .95rem; font-weight: 600; margin: 0 0 var(--space-4); }
 .db-form-grid {
   display: grid; grid-template-columns: 1fr 1fr;
@@ -247,7 +247,7 @@ await placesAsyncData
   font-size: .78rem; font-weight: 600; color: var(--muted);
   transition: color .2s;
 }
-.db-field:focus-within .db-field-label { color: var(--primary); }
+.db-field:focus-within .db-field-label { color: var(--color-action); }
 .db-field-full { grid-column: 1 / -1; }
 
 /* ── Inline validation ── */
@@ -259,7 +259,7 @@ await placesAsyncData
 .db-field-hint { font-size: .74rem; color: var(--muted); }
 .db-input-error { border-color: var(--error) !important; }
 .db-input-error:focus { box-shadow: 0 0 0 3px rgba(var(--danger-rgb),.12); }
-.db-input-ok { border-color: rgba(var(--primary-rgb),.5); }
+.db-input-ok { border-color: rgba(var(--color-action-rgb),.5); }
 
 /* ── Form actions ── */
 .db-form-actions { display: flex; align-items: center; gap: var(--space-3); flex-wrap: wrap; }
@@ -297,15 +297,15 @@ await placesAsyncData
 .sf-dirty-badge {
   display: inline-flex; align-items: center;
   padding: var(--space-1) 10px; border-radius: 999px;
-  font-size: .72rem; font-weight: 600; color: var(--primary);
-  background: rgba(var(--primary-rgb),.1); border: .5px solid rgba(var(--primary-rgb),.25);
+  font-size: .72rem; font-weight: 600; color: var(--color-action);
+  background: rgba(var(--color-action-rgb),.1); border: .5px solid rgba(var(--color-action-rgb),.25);
 }
 
 /* ── Dark ── */
 .dark .db-form { background: var(--card); border-color: rgba(var(--white-rgb),.06); }
-.dark .db-form:focus-within { box-shadow: 0 4px 20px rgba(var(--black-rgb),.3); border-color: rgba(var(--primary-rgb),.3); }
+.dark .db-form:focus-within { box-shadow: 0 4px 20px rgba(var(--black-rgb),.3); border-color: rgba(var(--color-action-rgb),.3); }
 .dark .db-count-badge { background: rgba(var(--blue-rgb),.12); }
-.dark .sf-dirty-badge { color: rgb(var(--success-rgb)); background: rgba(var(--primary-rgb),.18); border-color: rgba(var(--success-rgb),.3); }
+.dark .sf-dirty-badge { color: rgb(var(--success-rgb)); background: rgba(var(--color-action-rgb),.18); border-color: rgba(var(--success-rgb),.3); }
 .dark .db-input-ok { border-color: rgba(var(--success-rgb),.45); }
 
 @media (max-width: 640px) {
