@@ -25,6 +25,22 @@
           aria-label="Lọc theo loại địa điểm"
           @update:model-value="onTypeFilterChange"
         />
+        <div v-if="hasActiveFilters" class="active-filter-ledger" role="region" aria-label="Bộ lọc đang áp dụng">
+          <span class="afl-heading">Đang lọc:</span>
+          <div class="afl-chips">
+            <span v-if="savedMode" class="afl-chip">
+              <span class="afl-text">Đã lưu</span>
+              <button type="button" class="afl-remove" aria-label="Bỏ lọc điểm đã lưu" @click="clearSavedMode"><IconLine name="x" aria-hidden="true" /></button>
+            </span>
+            <template v-if="!activeTypeArray.includes('all')">
+              <span v-for="t in activeTypeArray" :key="t" class="afl-chip">
+                <span class="afl-text">{{ getTypeLabel(t) }}</span>
+                <button type="button" class="afl-remove" :aria-label="`Bỏ lọc ${getTypeLabel(t)}`" @click="removeTypeFilter(t)"><IconLine name="x" aria-hidden="true" /></button>
+              </span>
+            </template>
+            <button type="button" class="afl-clear-all" aria-label="Xóa tất cả bộ lọc" @click="clearAllFilters">Xóa tất cả</button>
+          </div>
+        </div>
         <p class="result-meta" aria-live="polite">{{ visibleLabel }}</p>
       </div>
     </ClientOnly>
@@ -139,6 +155,30 @@ function onTypeFilterChange(values: string[]) {
   }
   const filtered = values.filter(value => value !== 'all' && allowedTypes.has(value))
   searchView.setFilter('type', filtered.length ? filtered : undefined)
+}
+
+const hasActiveFilters = computed(() => savedMode.value || !activeTypeArray.value.includes('all'))
+
+function clearSavedMode() {
+  const query = { ...route.query }
+  delete query.source
+  router.push({ path: '/ban-do', query })
+}
+
+function removeTypeFilter(typeToRemove: string) {
+  const remaining = activeTypeArray.value.filter(t => t !== typeToRemove && t !== 'all')
+  searchView.setFilter('type', remaining.length ? remaining : undefined)
+}
+
+function clearAllFilters() {
+  searchView.setFilter('type', undefined)
+  if (savedMode.value) {
+    clearSavedMode()
+  }
+}
+
+function getTypeLabel(type: string): string {
+  return typeFilters.find(f => f.value === type)?.label || type
 }
 
 const mapPinApiPath = computed(() => {

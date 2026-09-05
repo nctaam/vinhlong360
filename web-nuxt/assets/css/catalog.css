@@ -875,11 +875,22 @@
 .map-list-surface__mobile-close:active {
   transform: scale(0.96);
 }
+.map-list-surface__toggle button:focus-visible,
+.map-list-surface__mobile-close:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 2px;
+}
 .map-list-surface__toggle button[aria-pressed='true'] {
   color: var(--color-action);
   background: var(--bg-warm);
   border-color: var(--color-action-border);
   box-shadow: var(--shadow-xs);
+}
+@media (prefers-reduced-motion: reduce) {
+  .map-list-surface__toggle button:active,
+  .map-list-surface__mobile-close:active {
+    transform: none;
+  }
 }
 
 .map-list-surface__body {
