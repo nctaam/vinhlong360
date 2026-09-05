@@ -271,7 +271,7 @@ await placesAsyncData
 
 /* ── Delete button: touch target + focus-visible ── */
 .db-del-btn { border: none; min-height: 44px; }
-.db-del-btn:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+.db-del-btn:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
 
 /* ── Screen-reader-only ── */
 .db-sr-only {

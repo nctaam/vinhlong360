@@ -113,7 +113,7 @@ onMounted(reload)
 }
 .sf-save:hover:not(:disabled) { transform: scale(1.02); box-shadow: 0 4px 12px rgba(var(--primary-rgb),.2); }
 .sf-save:active:not(:disabled) { transform: scale(.97); }
-.sf-save:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+.sf-save:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
 .sf-save:disabled { opacity: var(--opacity-disabled); cursor: not-allowed; }
 .sf-reset {
   padding: var(--space-3) var(--space-5); border-radius: 12px; font-size: .85rem; font-weight: 500;

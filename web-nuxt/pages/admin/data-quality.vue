@@ -737,7 +737,7 @@ onMounted(() => refreshAll())
 .dq-mono { font-family: var(--font-mono); font-size: .76rem; word-break: break-all; }
 .dq-copy-btn { font-size: .72rem; padding: 2px 8px; min-height: 44px; border: .5px solid var(--line); border-radius: 6px; background: transparent; color: var(--muted); cursor: pointer; }
 .dq-copy-btn:hover { color: var(--primary); border-color: var(--primary); }
-.dq-copy-btn:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+.dq-copy-btn:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
 .dq-table-wrap { margin-top: var(--space-3); }
 .dq-table td { vertical-align: top; }
 .dq-table td small { display: block; color: var(--muted); margin-top: 3px; }

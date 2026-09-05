@@ -304,7 +304,7 @@ onUnmounted(() => window.removeEventListener('keydown', onKeydown))
 .img-tab:hover { border-color: var(--primary); color: var(--ink); }
 .img-tab:active { transform: scale(.97); }
 .img-tab.active { background: var(--primary); color: var(--text-on-dark); border-color: var(--primary); }
-.img-tab:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+.img-tab:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
 .img-tab-count { font-size: .72rem; font-weight: 700; padding: 0 6px; border-radius: 10px; background: rgba(var(--ink-rgb),.08); }
 .img-tab.active .img-tab-count { background: rgba(var(--white-rgb),.25); }
 
@@ -355,7 +355,7 @@ onUnmounted(() => window.removeEventListener('keydown', onKeydown))
 .img-reject-btns .btn-danger { flex: 1; }
 .btn-ghost-sm { background: none; border: none; color: var(--muted); font-size: .82rem; cursor: pointer; padding: var(--space-2) var(--space-3); border-radius: 8px; }
 .btn-ghost-sm:hover { background: var(--bg-alt); color: var(--ink); }
-.btn-ghost-sm:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+.btn-ghost-sm:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
 
 .img-load-more { margin-top: var(--space-5); }
 

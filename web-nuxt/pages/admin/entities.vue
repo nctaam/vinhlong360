@@ -1408,7 +1408,7 @@ onUnmounted(() => window.removeEventListener('keydown', onKeydown))
   border-radius: 50%; display: flex; align-items: center; justify-content: center;
 }
 .ent-search-clear:hover { background: var(--bg-alt); color: var(--ink); }
-.ent-search-clear:focus-visible { outline: 2px solid var(--primary); outline-offset: 1px; }
+.ent-search-clear:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 1px; }
 .ent-searching {
   position: absolute; left: 0; top: calc(100% + 2px);
   font-size: .72rem; color: var(--muted); opacity: .8;
@@ -1490,13 +1490,13 @@ onUnmounted(() => window.removeEventListener('keydown', onKeydown))
 /* ── Row action buttons: consistent sizing + 44px touch + focus ── */
 .admin-actions { display: flex; gap: var(--space-1); align-items: center; }
 .admin-actions button { min-height: 44px; }
-.admin-actions button:focus-visible { outline: 2px solid var(--primary); outline-offset: 1px; }
+.admin-actions button:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 1px; }
 @media (max-width: 768px) {
   .admin-actions button { min-height: 44px; }
   .ent-typed-grid { grid-template-columns: 1fr; }
   .admin-toolbar { flex-direction: column; align-items: stretch; }
   .ent-search-wrap { flex-basis: 100%; }
-  .ent-inline-label:focus-visible { outline: 1px dashed var(--primary); outline-offset: 2px; border-radius: 4px; }
+  .ent-inline-label:focus-visible { outline: 1px dashed var(--color-focus); outline-offset: 2px; border-radius: 4px; }
 }
 @media (max-width: 520px) {
   .ent-season-grid { grid-template-columns: repeat(3, 1fr); }
@@ -1533,7 +1533,7 @@ onUnmounted(() => window.removeEventListener('keydown', onKeydown))
 .dark .img-thumb { border-color: rgba(var(--white-rgb),.1); }
 .dark .ent-search-clear:hover { background: rgba(var(--white-rgb),.08); color: var(--ink); }
 .dark .admin-actions button:focus-visible,
-.dark .ent-search-clear:focus-visible { outline-color: var(--primary-fg); }
+.dark .ent-search-clear:focus-visible { outline-color: var(--color-focus); }
 /* ── Bulk relationship add ── */
 .bulk-rel-details { margin-top: var(--space-2); }
 .bulk-rel-details summary { cursor: pointer; font-size: .82rem; }
@@ -1576,7 +1576,7 @@ onUnmounted(() => window.removeEventListener('keydown', onKeydown))
 .ent-sortable { white-space: nowrap; }
 .ent-sort-btn { background: none; border: none; padding: 0; font: inherit; color: inherit; cursor: pointer; user-select: none; }
 .ent-sort-btn:hover { color: var(--primary); }
-.ent-sort-btn:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; border-radius: var(--radius-control); }
+.ent-sort-btn:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; border-radius: var(--radius-control); }
 .ent-sort-arrow { display: inline-flex; align-items: center; font-size: .75rem; opacity: .75; margin-left: 3px; vertical-align: middle; }
 
 .ent-char-count { font-weight: 400; font-size: .78rem; color: var(--muted); transition: color .2s; }

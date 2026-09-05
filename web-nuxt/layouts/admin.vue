@@ -384,7 +384,7 @@ useSeoMeta({
 .admin-crumbs { display: flex; align-items: center; gap: var(--space-2); flex-wrap: wrap; font-size: .82rem; }
 .admin-crumb-root { color: var(--muted); text-decoration: none; font-weight: 600; transition: color .2s; }
 .admin-crumb-root:hover { color: var(--primary); }
-.admin-crumb-root:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; border-radius: 4px; }
+.admin-crumb-root:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; border-radius: 4px; }
 .admin-crumb-sep { color: var(--muted); opacity: .5; }
 .admin-crumb-current { color: var(--ink); font-weight: 600; }
 
@@ -486,7 +486,7 @@ useSeoMeta({
 }
 .admin-actions button:hover { background: var(--bg-alt); }
 .admin-actions button:active { transform: scale(.95); transition-duration: .08s; }
-.admin-actions button:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+.admin-actions button:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
 .admin-actions .btn-danger { color: var(--error); border-color: var(--error); }
 .admin-actions .btn-danger:hover { background: var(--error); color: var(--on-error); box-shadow: 0 2px 8px rgba(var(--danger-rgb),.2); }
 .admin-actions .btn-success { color: var(--primary); border-color: var(--primary); }
@@ -504,7 +504,7 @@ useSeoMeta({
 }
 .admin-pagination button:hover:not(:disabled) { border-color: var(--primary); color: var(--primary); transform: translateY(-1px); }
 .admin-pagination button:active:not(:disabled) { transform: scale(.95); transition-duration: .08s; }
-.admin-pagination button:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+.admin-pagination button:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
 .admin-pagination button:disabled { opacity: var(--opacity-disabled); cursor: default; }
 .admin-pagination button.active { background: var(--primary); color: var(--on-primary); border-color: var(--primary); box-shadow: 0 2px 8px rgba(var(--primary-rgb),.2); }
 
@@ -527,7 +527,7 @@ useSeoMeta({
 }
 .admin-refresh:hover { border-color: var(--primary); color: var(--primary); background: rgba(var(--primary-rgb),.04); }
 .admin-refresh:active { transform: scale(.95); transition-duration: .08s; }
-.admin-refresh:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+.admin-refresh:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
 .admin-refresh:disabled { opacity: var(--opacity-disabled); cursor: default; }
 .refresh-spin { display: inline-block; animation: admin-spin .6s linear infinite; }
 

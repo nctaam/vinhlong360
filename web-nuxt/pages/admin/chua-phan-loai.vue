@@ -340,7 +340,7 @@ await placesAsyncData
   transition: border-color .2s var(--ease-soft), box-shadow .2s;
 }
 .cpl-place-select:focus { border-color: var(--primary); outline: none; box-shadow: 0 0 0 2px rgba(var(--primary-rgb),.1); }
-.cpl-place-select:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; box-shadow: none; }
+.cpl-place-select:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; box-shadow: none; }
 
 /* ── Bulk bar ── */
 .cpl-bulk-bar {
@@ -367,7 +367,7 @@ await placesAsyncData
   /* expand hit area to WCAG 2.5.5 (44px) without growing the visual box */
   padding: 13px; margin: -13px; box-sizing: content-box;
 }
-.cpl-checkbox:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; border-radius: 3px; }
+.cpl-checkbox:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; border-radius: 3px; }
 .cpl-row-selected { background: rgba(var(--primary-rgb),.05); }
 
 /* ── Row density + scan-friendly hover (page-scoped; does not touch shared .admin-table rules) ── */

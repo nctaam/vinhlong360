@@ -486,7 +486,7 @@ onMounted(() => fetchUsers())
   cursor: pointer; transition: border-color .2s var(--ease-soft), box-shadow .2s;
 }
 .usr-filter-select:focus { border-color: var(--primary); outline: none; box-shadow: 0 0 0 2px rgba(var(--primary-rgb),.1); }
-.usr-filter-select:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; box-shadow: none; }
+.usr-filter-select:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; box-shadow: none; }
 
 /* ── Sortable column headers ── */
 .usr-sort-th {
@@ -498,7 +498,7 @@ onMounted(() => fetchUsers())
   transition: background .2s var(--ease-soft), color .2s;
 }
 .usr-sort-th:hover { background: var(--primary-light, rgba(var(--primary-rgb),.08)); color: var(--primary); }
-.usr-sort-th:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+.usr-sort-th:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
 .usr-sort-th.usr-sort-active { color: var(--primary); }
 .usr-sort-arrow {
   display: inline-block; min-width: .7em; font-size: .8em;
@@ -528,7 +528,7 @@ onMounted(() => fetchUsers())
   cursor: pointer; transition: border-color .2s var(--ease-soft), box-shadow .2s;
 }
 .usr-role-select:focus { border-color: var(--primary); outline: none; box-shadow: 0 0 0 2px rgba(var(--primary-rgb),.1); }
-.usr-role-select:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; box-shadow: none; }
+.usr-role-select:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; box-shadow: none; }
 
 /* ── Status badges with dot ── */
 .usr-status {
@@ -560,7 +560,7 @@ onMounted(() => fetchUsers())
   transition: border-color .2s var(--ease-soft), color .2s, background .2s;
 }
 .usr-rolecount:hover { border-color: var(--primary); color: var(--primary); }
-.usr-rolecount:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+.usr-rolecount:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
 .usr-rolecount.active { border-color: var(--primary); color: var(--primary); background: var(--primary-light, rgba(var(--primary-rgb),.08)); }
 .usr-rolecount-n {
   display: inline-flex; align-items: center; justify-content: center;
@@ -586,7 +586,7 @@ onMounted(() => fetchUsers())
   transition: background .25s, color .25s, border-color .25s, transform .35s var(--ease-soft), box-shadow .25s;
 }
 .usr-confirm-actions button:active { transform: scale(.95); transition-duration: .08s; }
-.usr-confirm-actions button:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+.usr-confirm-actions button:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
 .usr-confirm-actions button:disabled { opacity: var(--opacity-disabled); cursor: default; }
 .usr-confirm-actions .btn-danger { color: var(--error); border-color: var(--error); }
 .usr-confirm-actions .btn-danger:hover { background: var(--error); color: var(--on-error); box-shadow: 0 2px 8px rgba(var(--danger-rgb),.2); }

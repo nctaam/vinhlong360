@@ -486,7 +486,7 @@ onMounted(() => fetchAll())
   animation: rpt-dot-in .25s var(--ease-soft);
 }
 @keyframes rpt-dot-in { from { opacity: 0; transform: translate(-50%, -3px); } to { opacity: 1; transform: translate(-50%, 0); } }
-.rpt-chip:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+.rpt-chip:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
 .rpt-chip-count {
   display: inline-flex; align-items: center; justify-content: center;
   min-width: 18px; height: 18px; padding: 0 5px;
@@ -517,12 +517,12 @@ onMounted(() => fetchAll())
   transition: color .2s;
 }
 .rpt-bulk-clear:hover { color: var(--text); }
-.rpt-bulk-clear:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+.rpt-bulk-clear:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
 
 /* ── Checkboxes / selected row ── */
 .rpt-th-check, .rpt-td-check { width: 36px; text-align: center; }
 .rpt-checkbox { width: 17px; height: 17px; cursor: pointer; accent-color: var(--primary); padding: 13px; margin: -13px; box-sizing: content-box; }
-.rpt-checkbox:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+.rpt-checkbox:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
 .rpt-row-selected { background: rgba(var(--link-blue-rgb), .05); }
 
 /* ── Expandable reason ── */
@@ -533,7 +533,7 @@ onMounted(() => fetchAll())
   color: var(--primary); font-size: .72rem; font-weight: 600; cursor: pointer;
 }
 .rpt-reason-toggle:hover { text-decoration: underline; }
-.rpt-reason-toggle:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; border-radius: 4px; }
+.rpt-reason-toggle:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; border-radius: 4px; }
 .rpt-reason-chevron { font-size: .8rem; line-height: 1; margin-left: 2px; }
 
 /* ── Pager ── */
@@ -551,7 +551,7 @@ onMounted(() => fetchAll())
 }
 .rpt-loadmore:hover { border-color: var(--primary); }
 .rpt-loadmore:active { transform: scale(.97); }
-.rpt-loadmore:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+.rpt-loadmore:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
 
 /* ── Reduced motion ── */
 @media (prefers-reduced-motion: reduce) {

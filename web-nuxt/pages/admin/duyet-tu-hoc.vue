@@ -439,7 +439,7 @@ onMounted(loadProvisional)
 }
 .dth-tool-card:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 4px 16px rgba(var(--black-rgb),.06); border-color: var(--primary); }
 .dth-tool-card:active:not(:disabled) { transform: scale(.97); }
-.dth-tool-card:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+.dth-tool-card:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
 .dth-tool-card:disabled { opacity: var(--opacity-disabled); cursor: not-allowed; }
 .dth-tool-icon { font-size: 1.6rem; }
 .dth-tool-spinner {

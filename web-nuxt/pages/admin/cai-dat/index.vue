@@ -179,7 +179,7 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKeydown))
 }
 .cs-chip:hover { border-color: var(--primary); color: var(--primary); transform: translateY(-1px); }
 .cs-chip:active { transform: scale(.96); transition-duration: .08s; }
-.cs-chip:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+.cs-chip:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
 
 /* ── Search row ── */
 .cs-search-row { margin-bottom: var(--space-5); }
@@ -238,7 +238,7 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKeydown))
 }
 .cs-card:active { transform: scale(.98); }
 .cs-card:focus-visible {
-  outline: 2px solid var(--primary); outline-offset: 2px;
+  outline: 2px solid var(--color-focus); outline-offset: 2px;
   box-shadow: 0 0 0 5px color-mix(in oklab, var(--primary) 14%, transparent);
 }
 .cs-icon { font-size: 1.8rem; flex-shrink: 0; width: 40px; text-align: center; }

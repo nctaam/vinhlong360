@@ -464,7 +464,7 @@ onMounted(fetchData)
 }
 .tk-chip:hover { border-color: var(--primary); color: var(--ink); }
 .tk-chip.active { background: var(--primary); color: var(--text-on-dark); border-color: var(--primary); }
-.tk-chip:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+.tk-chip:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
 .dark .tk-chip.active { background: var(--primary); }
 
 .tk-gap-action { text-decoration: none; font-size: .8rem; opacity: .4; transition: opacity .15s; margin-left: 2px; }

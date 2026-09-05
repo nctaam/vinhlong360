@@ -185,7 +185,7 @@ function addChild(parentIdx: number) {
   transition: opacity .2s;
 }
 .sl-item:hover .sl-handle { opacity: 1; }
-.sl-handle:focus-visible { opacity: 1; outline: 2px solid var(--primary); outline-offset: 2px; }
+.sl-handle:focus-visible { opacity: 1; outline: 2px solid var(--color-focus); outline-offset: 2px; }
 
 .sl-empty {
   text-align: center; padding: var(--space-5) var(--space-3);
@@ -206,7 +206,7 @@ function addChild(parentIdx: number) {
 }
 .sl-btn:hover:not(:disabled) { background: rgba(var(--primary-rgb), .06); color: var(--primary-fg); }
 .sl-btn:active:not(:disabled) { transform: scale(.9); }
-.sl-btn:focus-visible { outline: 2px solid var(--primary); outline-offset: 1px; }
+.sl-btn:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 1px; }
 .sl-btn:disabled { opacity: .25; cursor: not-allowed; }
 .sl-btn-edit:hover:not(:disabled) { background: rgba(var(--primary-rgb), .06); color: var(--primary); }
 .sl-btn-remove:hover:not(:disabled) { background: rgba(var(--danger-rgb), .06); color: var(--danger); }
@@ -223,6 +223,10 @@ function addChild(parentIdx: number) {
 .sl-edit-input:focus {
   outline: none; border-color: var(--primary);
   box-shadow: 0 0 0 3px rgba(var(--primary-rgb),.1);
+}
+.sl-edit-input:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 1px;
 }
 
 .sl-children {
@@ -244,7 +248,7 @@ function addChild(parentIdx: number) {
 }
 .sl-add-child:hover { background: rgba(var(--primary-rgb), .1); }
 .sl-add-child:active { transform: scale(.97); }
-.sl-add-child:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+.sl-add-child:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
 
 .sl-add {
   padding: 14px; border-radius: 12px;
@@ -255,7 +259,7 @@ function addChild(parentIdx: number) {
 }
 .sl-add:hover { background: rgba(var(--primary-rgb),.04); border-color: var(--primary); }
 .sl-add:active { transform: scale(.98); }
-.sl-add:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+.sl-add:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
 
 /* ── List transitions ── */
 .sl-list-enter-active { transition: opacity .3s var(--ease-soft), transform .3s var(--ease-soft); }

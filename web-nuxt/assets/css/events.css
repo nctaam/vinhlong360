@@ -685,7 +685,7 @@
     repeating-linear-gradient(45deg, rgba(var(--primary-rgb), .03) 0 2px, transparent 2px 7px),
     rgba(var(--primary-rgb), .06);
 }
-.cal-cell:focus-visible { outline: 2px solid var(--primary-fg); outline-offset: -2px; border-radius: var(--radius-control); }
+.cal-cell:focus-visible { outline: 2px solid var(--color-focus); outline-offset: -2px; border-radius: var(--radius-control); }
 .cal-empty { visibility: hidden; }
 .cal-num {
   font-size: var(--text-xs);

@@ -618,7 +618,7 @@ tr:hover .lt-stops-badge { transform: scale(1.1); }
 
 /* Table-row action buttons: comfortable touch target + clear focus ring. */
 .lt-row-btn { min-height: 44px; }
-.lt-row-btn:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+.lt-row-btn:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
 
 /* Duration cell: isolate the clock glyph so it can be tuned per theme. */
 .lt-duration-icon { opacity: .65; }

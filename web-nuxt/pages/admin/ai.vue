@@ -516,7 +516,7 @@ onMounted(() => { fetchHealth(); fetchCost() })
 }
 .ai-action-btn:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(var(--black-rgb),.06); border-color: var(--primary); }
 .ai-action-btn:active:not(:disabled) { transform: scale(.97); }
-.ai-action-btn:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+.ai-action-btn:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
 .ai-action-btn:disabled { opacity: var(--opacity-disabled); cursor: not-allowed; }
 .ai-action-icon { font-size: 1.4rem; }
 

@@ -202,7 +202,7 @@ useSeoMeta({
 }
 .error-link-pill:hover { transform: translateY(-1px); border-color: var(--primary); box-shadow: var(--shadow-sm); }
 .error-link-pill:active { transform: scale(.96); }
-.error-link-pill:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+.error-link-pill:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
 
 .error-actions {
   display: flex;

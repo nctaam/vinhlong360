@@ -475,7 +475,7 @@ onUnmounted(() => window.removeEventListener('keydown', onKeydown))
 .mod-tab:hover { border-color: var(--primary); color: var(--ink); }
 .mod-tab:active { transform: scale(.97); }
 .mod-tab.active { background: var(--primary); color: var(--text-on-dark); border-color: var(--primary); }
-.mod-tab:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+.mod-tab:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
 .mod-tab-count { font-size: .72rem; font-weight: 700; padding: 0 6px; border-radius: 100px; background: var(--line); color: var(--muted); }
 .mod-tab.active .mod-tab-count { background: rgba(var(--white-rgb),.2); color: var(--text-on-dark); }
 
@@ -495,7 +495,7 @@ onUnmounted(() => window.removeEventListener('keydown', onKeydown))
 .mod-content-truncate { display: -webkit-box; -webkit-line-clamp: 2; line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
 .mod-expand { display: inline-block; margin-top: var(--space-1); background: none; border: none; padding: 0; color: var(--primary-fg); font-size: .76rem; font-weight: 600; cursor: pointer; }
 .mod-expand:hover { text-decoration: underline; }
-.mod-expand:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; border-radius: 4px; }
+.mod-expand:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; border-radius: 4px; }
 
 /* Keyboard affordance: highlight the row whose action button is focused (mirrors tr:hover) */
 .admin-table tbody tr:focus-within td { background: rgba(var(--black-rgb),.04); }
@@ -553,7 +553,7 @@ onUnmounted(() => window.removeEventListener('keydown', onKeydown))
 }
 .mod-empty-action:hover { border-color: var(--primary); background: rgba(var(--primary-rgb),.04); }
 .mod-empty-action:active { transform: scale(.96); }
-.mod-empty-action:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+.mod-empty-action:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
 @media (prefers-reduced-motion: reduce) { .mod-empty-action:active { transform: none; } }
 
 @media (prefers-reduced-motion: reduce) {

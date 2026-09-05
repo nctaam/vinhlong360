@@ -667,7 +667,7 @@ onMounted(fetchDashboard)
 }
 .dash-action:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(var(--black-rgb),.06); border-color: var(--primary); background: color-mix(in oklab, var(--primary) 6%, var(--bg)); }
 .dash-action:active { transform: scale(.97); }
-.dash-action:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+.dash-action:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
 .dash-action-icon { font-size: 1.5rem; }
 
 /* ── Charts ── */

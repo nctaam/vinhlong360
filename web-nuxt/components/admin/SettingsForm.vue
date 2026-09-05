@@ -379,6 +379,10 @@ const formatDate = formatDateVN
   outline: none; border-color: var(--primary);
   box-shadow: 0 0 0 3px rgba(var(--primary-rgb), .1);
 }
+.sf-input:focus-visible, .sf-textarea:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 1px;
+}
 .sf-input::placeholder, .sf-textarea::placeholder { color: var(--muted); opacity: .6; }
 .sf-textarea { resize: vertical; min-height: 88px; font-family: inherit; line-height: 1.5; }
 .sf-json { font-family: 'SF Mono', 'Cascadia Code', 'Fira Code', monospace; font-size: .8rem; min-height: 160px; line-height: 1.5; tab-size: 2; }
@@ -397,6 +401,7 @@ const formatDate = formatDateVN
   transition: border-color .2s, box-shadow .2s;
 }
 .sf-rep-input:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(var(--primary-rgb), .1); }
+.sf-rep-input:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 1px; }
 .dark .sf-rep-input { background: rgba(var(--white-rgb),.04); border-color: rgba(var(--white-rgb),.08); }
 
 /* ── Color ── */
@@ -407,6 +412,7 @@ const formatDate = formatDateVN
   transition: box-shadow .2s;
 }
 .sf-color-picker:focus { outline: none; box-shadow: 0 0 0 3px rgba(var(--primary-rgb), .15); }
+.sf-color-picker:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
 .sf-color-hex {
   width: 110px; padding: 10px var(--space-3); border: .5px solid var(--line); border-radius: 10px;
   font-size: .85rem; font-family: 'SF Mono', 'Cascadia Code', monospace;
@@ -414,6 +420,7 @@ const formatDate = formatDateVN
   transition: border-color .2s, box-shadow .2s;
 }
 .sf-color-hex:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(var(--primary-rgb), .1); }
+.sf-color-hex:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 1px; }
 .sf-color-clear {
   padding: var(--space-2) 14px; border: .5px solid var(--line); border-radius: 10px; background: var(--bg);
   cursor: pointer; font-size: .78rem; color: var(--muted);
@@ -426,7 +433,7 @@ const formatDate = formatDateVN
 /* ── Toggle ── */
 .sf-toggle { display: flex; align-items: center; gap: var(--space-3); cursor: pointer; min-height: 44px; }
 .sf-toggle input { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; }
-.sf-toggle input:focus-visible + .sf-toggle-track { outline: 2px solid var(--primary); outline-offset: 2px; }
+.sf-toggle input:focus-visible + .sf-toggle-track { outline: 2px solid var(--color-focus); outline-offset: 2px; }
 .sf-toggle-track {
   width: 51px; height: 31px; border-radius: 16px;
   background: rgba(var(--gray-rgb),.3); position: relative; flex-shrink: 0;
@@ -464,7 +471,7 @@ const formatDate = formatDateVN
 }
 .sf-save:hover:not(:disabled) { transform: scale(1.02); box-shadow: 0 4px 12px rgba(var(--primary-rgb), .2); }
 .sf-save:active:not(:disabled) { transform: scale(.97); }
-.sf-save:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+.sf-save:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
 .sf-save:disabled { opacity: var(--opacity-disabled); cursor: not-allowed; }
 .sf-reset {
   padding: var(--space-3) var(--space-5); border-radius: 12px; font-size: .85rem; font-weight: 500;
