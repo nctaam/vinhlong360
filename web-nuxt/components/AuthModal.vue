@@ -627,7 +627,7 @@ function onOtpPaste(e: ClipboardEvent) {
 }
 .consent-row { display: flex; gap: var(--space-3); align-items: flex-start; margin: var(--space-3) 0; font-size: var(--text-sm); line-height: var(--leading-relaxed); cursor: pointer; padding: var(--space-3); border-radius: var(--radius-surface); transition: background .3s var(--ease-out); }
 .consent-row:hover { background: var(--bg-alt); }
-.consent-checkbox { margin-top: 3px; width: 18px; height: 18px; accent-color: var(--primary); flex-shrink: 0; }
+.consent-checkbox { margin-top: 3px; width: 18px; height: 18px; accent-color: var(--color-action); flex-shrink: 0; }
 .btn-full { width: 100%; }
 .otp-done { text-align: center; }
 .otp-done h3 { animation: successPop .45s var(--ease-out-expo); }

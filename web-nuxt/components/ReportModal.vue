@@ -123,9 +123,9 @@ async function submit() {
   border: .5px solid var(--line); background: var(--bg); color: var(--ink); cursor: pointer;
   transition: background .2s, border-color .2s, color .2s, transform .15s var(--ease-soft);
 }
-.rm-chip:hover { border-color: var(--primary); }
+.rm-chip:hover { border-color: var(--color-action); }
 .rm-chip:active { transform: scale(.96); }
-.rm-chip.active { background: var(--primary); color: var(--on-primary); border-color: var(--primary); }
+.rm-chip.active { background: var(--color-action); color: var(--color-on-action); border-color: var(--color-action); }
 .rm-chip:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
 
 .rm-textarea {
@@ -133,7 +133,7 @@ async function submit() {
   border-radius: 12px; font: inherit; font-size: .9rem; background: var(--bg); color: var(--ink);
   resize: vertical; min-height: 72px; transition: border-color .2s, box-shadow .2s;
 }
-.rm-textarea:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 1px; border-color: var(--color-focus); box-shadow: 0 0 0 3px rgba(var(--primary-rgb),.1); }
+.rm-textarea:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 1px; border-color: var(--color-focus); box-shadow: 0 0 0 3px rgba(var(--color-action-rgb),.18); }
 
 .rm-actions { display: flex; justify-content: flex-end; gap: var(--space-3); margin-top: var(--space-4); flex-shrink: 0; }
 .rm-actions .btn { min-height: 44px; }
