@@ -14,19 +14,19 @@
 /* Visible back button — wires the orphaned goBack(); discoverable return path */
 .bc-back { position: relative; flex: 0 0 auto; display: inline-flex; align-items: center; justify-content: center; width: 44px; height: 44px; min-width: 44px; min-height: 44px; border-radius: var(--radius-full); border: .5px solid var(--line); background: var(--card); color: var(--ink); font-size: 1.15rem; line-height: 1; cursor: pointer; transition: background .3s var(--ease-out), border-color .3s var(--ease-out), transform .35s var(--ease-out-expo), box-shadow .3s var(--ease-out); }
 .bc-back::after { content: ''; position: absolute; inset: -2px; min-width: 48px; min-height: 48px; pointer-events: auto; }
-.bc-back:hover { background: var(--bg-warm); border-color: var(--primary-fg); transform: translateX(-2px); box-shadow: var(--shadow-xs); }
+.bc-back:hover { background: var(--bg-warm); border-color: var(--color-action); transform: translateX(-2px); box-shadow: var(--shadow-xs); }
 .bc-back:active { transform: scale(.93); transition-duration: .08s; }
 .bc-back:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
 .dark .bc-back { background: var(--card); border-color: var(--line); }
 .dark .bc-back:hover { background: rgba(255,255,255,.06); }
-.breadcrumb ol { flex: 1; min-width: 0; list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: nowrap; gap: var(--space-1); font-size: var(--text-xs); color: var(--muted); overflow-x: auto; overscroll-behavior-x: contain; scrollbar-width: none; -webkit-overflow-scrolling: touch; mask-image: linear-gradient(to right, #000 85%, transparent); -webkit-mask-image: linear-gradient(to right, #000 85%, transparent); }
+.breadcrumb ol { flex: 1; min-width: 0; list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: nowrap; gap: var(--space-1); font-size: var(--text-xs); color: var(--muted); overflow-x: auto; overscroll-behavior-x: contain; scrollbar-width: none; -webkit-overflow-scrolling: touch; mask-image: linear-gradient(to right, black 85%, transparent); -webkit-mask-image: linear-gradient(to right, black 85%, transparent); }
 .breadcrumb ol::-webkit-scrollbar { display: none; }
 .breadcrumb li { white-space: nowrap; flex-shrink: 0; }
 .breadcrumb li::after { content: '/'; margin-inline-start: var(--space-2); opacity: .4; font-weight: 300; }
 .breadcrumb li:last-child::after { display: none; }
 .breadcrumb li:last-child { color: var(--ink); font-weight: var(--weight-semibold); }
-.breadcrumb a { color: var(--primary-fg); transition: color .3s var(--ease-out), text-decoration-color .25s var(--ease-out); min-height: 44px; display: inline-flex; align-items: center; padding: var(--space-2) var(--space-1); text-decoration-line: underline; text-decoration-color: transparent; text-underline-offset: 3px; text-decoration-thickness: 1px; }
-.breadcrumb a:hover { text-decoration-color: var(--primary-fg); }
+.breadcrumb a { color: var(--color-action); transition: color .3s var(--ease-out), text-decoration-color .25s var(--ease-out); min-height: 44px; display: inline-flex; align-items: center; padding: var(--space-2) var(--space-1); text-decoration-line: underline; text-decoration-color: transparent; text-underline-offset: 3px; text-decoration-thickness: 1px; }
+.breadcrumb a:hover { text-decoration-color: var(--color-action); }
 .breadcrumb a:active { opacity: .7; }
 .breadcrumb a:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
 
@@ -35,10 +35,10 @@
 .hl { display: inline-flex; align-items: center; gap: var(--space-2); padding: var(--space-2) var(--space-4); border-radius: var(--radius-full); font-size: var(--text-sm); font-weight: var(--weight-semibold); min-height: 44px; line-height: 1.2; flex-shrink: 0; max-width: 100%; overflow-wrap: break-word; word-break: break-word; }
 .hl:not(a) { background: var(--bg-warm); color: var(--ink); border: .5px solid var(--line); transition: transform .3s var(--ease-out-expo), box-shadow .3s var(--ease-out), background .3s var(--ease-out), border-color .3s var(--ease-out); }
 .hl:not(a):hover { transform: translateY(-1px); box-shadow: var(--shadow-xs); background: var(--card); border-color: var(--border); }
-a.hl { background: var(--primary); color: var(--on-primary); min-height: 44px; box-shadow: 0 2px 8px rgba(var(--primary-rgb), .28), inset 0 1px 0 rgba(255,255,255,.16); transition: background .3s var(--ease-out), transform .3s var(--ease-out-expo), box-shadow .3s var(--ease-out-expo); }
-a.hl:hover { background: var(--primary-dark); transform: translateY(-2px); box-shadow: 0 6px 18px rgba(var(--primary-rgb), .36), inset 0 1px 0 rgba(255,255,255,.2); }
+a.hl { background: var(--color-action); color: var(--color-on-action); min-height: 44px; box-shadow: 0 2px 8px rgba(var(--color-action-rgb), .28), inset 0 1px 0 rgba(255,255,255,.16); transition: background .3s var(--ease-out), transform .3s var(--ease-out-expo), box-shadow .3s var(--ease-out-expo); }
+a.hl:hover { background: var(--color-action-hover); transform: translateY(-2px); box-shadow: 0 6px 18px rgba(var(--color-action-rgb), .36), inset 0 1px 0 rgba(255,255,255,.2); }
 a.hl:active { transform: scale(.96); transition-duration: .08s; }
-a.hl:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+a.hl:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
 a.hl-action[href^="https://zalo"] { background: var(--brand-zalo); box-shadow: 0 2px 8px color-mix(in srgb, var(--brand-zalo) 30%, transparent), inset 0 1px 0 rgba(255,255,255,.18); }
 a.hl-action[href^="https://zalo"]:hover { background: var(--brand-zalo-hover); box-shadow: 0 6px 18px color-mix(in srgb, var(--brand-zalo) 38%, transparent), inset 0 1px 0 rgba(255,255,255,.22); }
 
