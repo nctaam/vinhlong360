@@ -51,7 +51,7 @@
 }
 .lunar-ribbon-moon circle.moon-base { fill: var(--bg-alt); }
 .lunar-ribbon-moon path.moon-lit { fill: var(--accent-dark); }
-.dark .lunar-ribbon-moon circle.moon-base { fill: rgba(255,255,255,.08); }
+.dark .lunar-ribbon-moon circle.moon-base { fill: rgba(var(--white-rgb), .08); }
 .dark .lunar-ribbon-moon path.moon-lit { fill: var(--amber-500); }
 
 .lunar-ribbon-label {
@@ -328,7 +328,7 @@
    --accent-text mới là token dành cho chữ và có bản riêng mỗi chế độ. */
 .register-toggle-tab.is-active.tone-amber { color: var(--accent-text); }
 .register-toggle-tab:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
-.dark .register-toggle { background: rgba(255,255,255,.05); }
+.dark .register-toggle { background: rgba(var(--white-rgb), .05); }
 .dark .register-toggle-tab.is-active { background: var(--card); }
 
 /* ── Etiquette callout ("Đi lễ hội — cần biết gì?") ── */
@@ -456,12 +456,12 @@
   padding: var(--space-1) var(--space-2);
   line-height: 1.2;
   /* Depth treatment: soft inner border + bottom inset scrim so the badge reads as a folded date tab. */
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .18), inset 0 -2px 4px rgba(0, 0, 0, .14), var(--shadow-xs);
+  box-shadow: inset 0 1px 0 rgba(var(--white-rgb), .18), inset 0 -2px 4px rgba(var(--black-rgb), .14), var(--shadow-xs);
   transition: transform .35s var(--ease-out-expo), box-shadow .35s var(--ease-out-expo);
 }
 .event-row:hover .event-date-badge {
   transform: translateY(-1px) scale(1.03);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .22), inset 0 -2px 4px rgba(0, 0, 0, .16), var(--shadow-sm);
+  box-shadow: inset 0 1px 0 rgba(var(--white-rgb), .22), inset 0 -2px 4px rgba(var(--black-rgb), .16), var(--shadow-sm);
 }
 .edb-month {
   display: block;
@@ -764,13 +764,13 @@
 
 /* ── Dark mode (events) ── */
 .dark .event-row { border-color: var(--line); }
-.dark .event-row:hover { box-shadow: var(--shadow-lg); border-color: rgba(255,255,255,.1); }
+.dark .event-row:hover { box-shadow: var(--shadow-lg); border-color: rgba(var(--white-rgb), .1); }
 .dark .toggle-btn { background: var(--bg-alt); border-color: var(--line); }
 /* Stronger focus ring contrast on dark backgrounds for the view-toggle. */
 .dark .toggle-btn:focus-visible { outline-color: var(--color-focus); }
 .dark .calendar { border-color: var(--line); }
 .dark .cal-nav { border-color: var(--line); background: var(--bg-alt); }
-.dark .cal-nav:hover { background: rgba(255,255,255,.08); }
+.dark .cal-nav:hover { background: rgba(var(--white-rgb), .08); }
 .dark .cat-mua { background: rgba(var(--secondary-rgb), .18); color: var(--secondary-fg); }
 /* Calendar has-events cells need a stronger tint to stay visible on the dark card. */
 .dark .cal-cell.cal-has-events {
@@ -784,11 +784,11 @@
   /* Vòng ngoài 1px thay cho việc làm sáng nền: chip đậm giữ được chữ trắng
      10.12:1, còn ranh giới thành phần do viền gánh (#d98a6f trên card tối
      = 6.43, thừa ngưỡng 3.0). box-shadow chứ không border: không đổi kích thước. */
-  box-shadow: 0 0 0 1px var(--date-badge-ring), inset 0 1px 0 rgba(255, 255, 255, .12), inset 0 -2px 4px rgba(0, 0, 0, .28), var(--shadow-xs);
+  box-shadow: 0 0 0 1px var(--date-badge-ring), inset 0 1px 0 rgba(var(--white-rgb), .12), inset 0 -2px 4px rgba(var(--black-rgb), .28), var(--shadow-xs);
 }
 .dark .lunar-ribbon { background: var(--card); border-color: var(--line); }
 .dark .ledger-row { border-color: var(--line); }
-.dark .ledger-row:hover { box-shadow: var(--shadow-lg); border-color: rgba(255,255,255,.1); }
+.dark .ledger-row:hover { box-shadow: var(--shadow-lg); border-color: rgba(var(--white-rgb), .1); }
 
 /* ── Responsive: tablet ── */
 @media (min-width: 769px) and (max-width: 1024px) {
