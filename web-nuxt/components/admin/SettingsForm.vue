@@ -376,8 +376,8 @@ const formatDate = formatDateVN
   transition: border-color .2s var(--ease-soft), box-shadow .2s var(--ease-soft);
 }
 .sf-input:focus, .sf-textarea:focus {
-  outline: none; border-color: var(--primary);
-  box-shadow: 0 0 0 3px rgba(var(--primary-rgb), .1);
+  outline: none; border-color: var(--color-action);
+  box-shadow: 0 0 0 3px rgba(var(--color-action-rgb), .18);
 }
 .sf-input:focus-visible, .sf-textarea:focus-visible {
   outline: 2px solid var(--color-focus);
@@ -400,7 +400,7 @@ const formatDate = formatDateVN
   font-family: inherit; resize: vertical;
   transition: border-color .2s, box-shadow .2s;
 }
-.sf-rep-input:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(var(--primary-rgb), .1); }
+.sf-rep-input:focus { outline: none; border-color: var(--color-action); box-shadow: 0 0 0 3px rgba(var(--color-action-rgb), .18); }
 .sf-rep-input:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 1px; }
 .dark .sf-rep-input { background: rgba(var(--white-rgb),.04); border-color: rgba(var(--white-rgb),.08); }
 
@@ -411,7 +411,7 @@ const formatDate = formatDateVN
   padding: 2px; cursor: pointer; background: var(--bg);
   transition: box-shadow .2s;
 }
-.sf-color-picker:focus { outline: none; box-shadow: 0 0 0 3px rgba(var(--primary-rgb), .15); }
+.sf-color-picker:focus { outline: none; box-shadow: 0 0 0 3px rgba(var(--color-action-rgb), .18); }
 .sf-color-picker:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
 .sf-color-hex {
   width: 110px; padding: 10px var(--space-3); border: .5px solid var(--line); border-radius: 10px;
@@ -419,7 +419,7 @@ const formatDate = formatDateVN
   min-height: 44px; box-sizing: border-box; background: var(--bg); color: var(--ink);
   transition: border-color .2s, box-shadow .2s;
 }
-.sf-color-hex:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(var(--primary-rgb), .1); }
+.sf-color-hex:focus { outline: none; border-color: var(--color-action); box-shadow: 0 0 0 3px rgba(var(--color-action-rgb), .18); }
 .sf-color-hex:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 1px; }
 .sf-color-clear {
   padding: var(--space-2) 14px; border: .5px solid var(--line); border-radius: 10px; background: var(--bg);
@@ -439,7 +439,7 @@ const formatDate = formatDateVN
   background: rgba(var(--gray-rgb),.3); position: relative; flex-shrink: 0;
   transition: background .25s var(--ease-soft);
 }
-.sf-toggle input:checked + .sf-toggle-track { background: var(--primary); }
+.sf-toggle input:checked + .sf-toggle-track { background: var(--color-action); }
 .sf-toggle-thumb {
   position: absolute; top: 2px; left: 2px;
   width: 27px; height: 27px; border-radius: 50%;
@@ -465,11 +465,11 @@ const formatDate = formatDateVN
 }
 .sf-save {
   padding: var(--space-3) 28px; border-radius: 12px; font-weight: 600; font-size: .88rem;
-  background: var(--primary); color: var(--text-on-dark, var(--white)); border: none; cursor: pointer;
+  background: var(--color-action); color: var(--color-on-action); border: none; cursor: pointer;
   min-height: 44px;
   transition: transform .2s var(--ease-soft), opacity .2s, box-shadow .2s;
 }
-.sf-save:hover:not(:disabled) { transform: scale(1.02); box-shadow: 0 4px 12px rgba(var(--primary-rgb), .2); }
+.sf-save:hover:not(:disabled) { transform: scale(1.02); box-shadow: 0 4px 12px rgba(var(--color-action-rgb), .25); }
 .sf-save:active:not(:disabled) { transform: scale(.97); }
 .sf-save:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
 .sf-save:disabled { opacity: var(--opacity-disabled); cursor: not-allowed; }
@@ -493,12 +493,12 @@ const formatDate = formatDateVN
 @keyframes sf-spin { to { transform: rotate(360deg); } }
 
 /* ── Dirty / unsaved indicator ── */
-.sf-actions-dirty { border-top-color: var(--primary); }
+.sf-actions-dirty { border-top-color: var(--color-action); }
 .sf-dirty-badge {
   display: inline-flex; align-items: center; align-self: center;
   padding: var(--space-1) 10px; border-radius: 999px;
-  font-size: .72rem; font-weight: 600; color: var(--primary);
-  background: rgba(var(--primary-rgb), .1); border: .5px solid rgba(var(--primary-rgb), .25);
+  font-size: .72rem; font-weight: 600; color: var(--color-action);
+  background: rgba(var(--color-action-rgb), .1); border: .5px solid rgba(var(--color-action-rgb), .25);
 }
 .sf-history {
   display: grid; gap: var(--space-2);
@@ -526,7 +526,7 @@ const formatDate = formatDateVN
 .dark .sf-color-clear { background: var(--card); border-color: rgba(var(--white-rgb),.08); }
 .dark .sf-toggle-track { background: rgba(var(--white-rgb),.15); }
 .dark .sf-toggle-thumb { box-shadow: 0 1px 4px rgba(var(--black-rgb),.35); }
-.dark .sf-dirty-badge { color: rgb(var(--success-rgb)); background: rgba(var(--primary-rgb),.18); border-color: rgba(var(--success-rgb),.3); }
+.dark .sf-dirty-badge { color: rgb(var(--success-rgb)); background: rgba(var(--color-action-rgb),.18); border-color: rgba(var(--success-rgb),.3); }
 .dark .sf-history { background: rgba(var(--white-rgb),.03); border-color: rgba(var(--white-rgb),.08); }
 
 /* ── Reduced motion ── */

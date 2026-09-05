@@ -202,8 +202,11 @@ const ratingDisplay = computed(() => {
 }
 .card .card-cover-link:focus-visible,
 .card .card-body-link:focus-visible {
-  outline: 2px solid var(--color-focus);
+  outline: 2px solid var(--catalog-legacy-primary);
   outline-offset: -2px;
+}
+.card[data-color-recipe='tri-region-v1'] :is(.card-cover-link, .card-body-link):focus-visible {
+  outline-color: var(--color-focus);
 }
 .card-body-link {
   color: inherit;

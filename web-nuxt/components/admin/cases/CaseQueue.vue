@@ -74,7 +74,7 @@ const emit = defineEmits<{ (event: 'open', item: AdminQueueItem): void }>()
   cursor: pointer;
 }
 .queue-row[aria-current='true'] {
-  border-color: var(--primary);
+  border-color: var(--color-action);
 }
 .queue-kind {
   font-weight: 600;

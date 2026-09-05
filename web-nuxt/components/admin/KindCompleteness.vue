@@ -83,7 +83,7 @@ watch(() => props.kind, load, { immediate: true })
 .kc-worst { border-top: 1px dashed var(--line); padding-top: var(--space-2); }
 .kc-worst h4 { margin: 0 0 var(--space-2); font-size: .84rem; }
 .kc-worst-item { display: flex; gap: var(--space-2); align-items: baseline; width: 100%; text-align: left; background: none; border: 0; padding: 4px 6px; border-radius: 6px; cursor: pointer; font-size: .82rem; color: var(--ink); }
-.kc-worst-item:hover { background: color-mix(in srgb, var(--primary) 8%, transparent); }
+.kc-worst-item:hover { background: var(--color-action-surface); }
 .kc-worst-n { color: rgb(var(--danger-rgb)); font-weight: 600; white-space: nowrap; }
 .kc-worst-keys { color: var(--ink-700); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 </style>
