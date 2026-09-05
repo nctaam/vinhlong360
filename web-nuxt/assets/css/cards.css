@@ -12,7 +12,7 @@
 .card { background: var(--card); border: .5px solid var(--line); border-radius: var(--radius); overflow: hidden; box-shadow: var(--shadow-sm); transition: var(--transition-card); display: flex; flex-direction: column; }
 .card:hover { transform: translateY(-6px); box-shadow: var(--shadow-lg); border-color: var(--border); will-change: transform; }
 .card:active { transform: translateY(-1px) scale(.97); transition-duration: .1s; }
-.card:focus-visible { outline: 2px solid var(--primary); outline-offset: 3px; transform: translateY(-6px); }
+.card:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 3px; transform: translateY(-6px); }
 @media (max-width: 820px) {
   .card { border: 1px solid var(--color-border-strong); }
 }

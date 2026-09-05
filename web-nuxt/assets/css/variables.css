@@ -311,7 +311,7 @@
   --fill-gray-rgb: 120, 120, 128;  /* systemFill base */
   --gray-rgb: 142, 142, 147;   /* Apple systemGray — theme-invariant neutral */
   --focus-ring: 0 0 0 4px rgba(var(--primary-rgb), .12);
-  --focus-outline: var(--primary);
+  --focus-outline: var(--color-focus);
   --shadow: 0 1px 3px rgba(0, 0, 0, .04), 0 6px 20px rgba(0, 0, 0, .06);
 
   /* ── Overlay / scrim tokens ── */
@@ -846,7 +846,7 @@
   --teal-rgb: 50, 220, 210;
   --red-rgb: 255, 100, 90;
   --focus-ring: 0 0 0 3px rgba(196, 105, 78, .25);
-  --focus-outline: var(--primary-fg);
+  --focus-outline: var(--color-focus);
   --overlay-dark: rgba(0,0,0,.40);
   --overlay-light: rgba(255,255,255,.14);
   --overlay-subtle: rgba(255,255,255,.08);

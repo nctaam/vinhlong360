@@ -118,7 +118,7 @@
   transition: text-decoration-color .3s var(--ease-out), color .3s var(--ease-out);
 }
 .legal-toc-link:hover { text-decoration-color: var(--primary-fg); }
-.legal-toc-link:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; border-radius: var(--radius-control); }
+.legal-toc-link:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; border-radius: var(--radius-control); }
 .dark .legal-toc { background: var(--bg-alt); border-color: var(--line); }
 
 /* ── Section rhythm: number badge + content zone ──────────────────── */
@@ -163,7 +163,7 @@
 .legal-page li { margin: var(--space-2) 0; color: var(--ink-secondary, var(--ink)); }
 .legal-page a { color: var(--primary-fg); font-weight: var(--weight-semibold); text-decoration-line: underline; text-decoration-color: transparent; text-underline-offset: 3px; transition: text-decoration-color .3s var(--ease-out), color .3s var(--ease-out); }
 .legal-page a:hover { text-decoration-color: var(--primary-fg); }
-.legal-page a:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+.legal-page a:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
 
 /* ── Responsive scale-up ──────────────────────────────────────────── */
 @media (min-width: 640px) {
