@@ -68,6 +68,22 @@
           ><IconLine :name="t.icon" /> {{ t.label }} ({{ t.count }})</button>
         </div>
       </template>
+
+      <!-- Active filter ledger: shows applied area and type filters with 1-tap dismiss -->
+      <div v-if="activeFilterCount > 0" class="active-filter-ledger" role="region" aria-label="Bộ lọc đang áp dụng">
+        <span class="afl-heading">Đang lọc:</span>
+        <div class="afl-chips">
+          <span v-if="areaFilter !== 'all'" class="afl-chip">
+            <span class="afl-text">{{ activeAreaLabel }}</span>
+            <button type="button" class="afl-remove" :aria-label="`Bỏ lọc khu vực ${activeAreaLabel}`" @click="areaFilter = 'all'"><IconLine name="x" aria-hidden="true" /></button>
+          </span>
+          <span v-if="typeFilter !== 'all'" class="afl-chip">
+            <span class="afl-text">{{ activeTypeLabel }}</span>
+            <button type="button" class="afl-remove" :aria-label="`Bỏ lọc loại hình ${activeTypeLabel}`" @click="typeFilter = 'all'"><IconLine name="x" aria-hidden="true" /></button>
+          </span>
+          <button type="button" class="afl-clear-all" aria-label="Xóa tất cả bộ lọc" @click="clearFilters">Xóa tất cả</button>
+        </div>
+      </div>
     </div>
 
     <p class="result-meta" aria-live="polite">{{ filtered.length }} kết quả</p>
@@ -85,7 +101,17 @@
         <EntityCard :entity="e" />
       </template>
     </div>
-    <EmptyState v-else :message="emptyMessage" />
+    <EmptyState v-else :message="emptyMessage">
+      <template v-if="activeFilterCount > 0" #actions>
+        <button
+          type="button"
+          class="btn btn-outline"
+          @click="clearFilters"
+        >
+          <IconLine name="repeat" aria-hidden="true" /> Xóa bộ lọc
+        </button>
+      </template>
+    </EmptyState>
     <button
       v-if="filtered.length && visibleCount < filtered.length"
       type="button"
@@ -191,6 +217,23 @@ const breadcrumbItems = computed(() => [
 const areaFilter = ref('all')
 const typeFilter = ref('all')
 useFilterUrl({ vung: areaFilter, loai: typeFilter }, { vung: 'all', loai: 'all' })
+
+const activeFilterCount = computed(() => (areaFilter.value !== 'all' ? 1 : 0) + (typeFilter.value !== 'all' ? 1 : 0))
+
+const activeAreaLabel = computed(() => {
+  if (areaFilter.value === 'all') return ''
+  return AREA_META[areaFilter.value]?.name || areaFilter.value
+})
+
+const activeTypeLabel = computed(() => {
+  if (typeFilter.value === 'all') return ''
+  return TYPE_META[typeFilter.value]?.label || typeFilter.value
+})
+
+function clearFilters() {
+  areaFilter.value = 'all'
+  typeFilter.value = 'all'
+}
 
 const interestTypes = resolvedInterestMeta.types
 
@@ -483,7 +526,7 @@ useHead(() => ({
   display: inline-block;
   margin-left: var(--space-1);
   font-size: .95rem;
-  transition: transform var(--transition-fast) var(--ease-out-expo);
+  transition: transform var(--duration-fast) var(--ease-out-expo);
 }
 .catalog-more:hover .int-more-icon {
   transform: translateY(2px);

@@ -577,7 +577,7 @@ useHead(() => ({
   gap: 4px;
   min-height: 32px;
   padding: 4px 10px;
-  border-radius: var(--radius-pill);
+  border-radius: var(--radius-full);
   border: 1px solid var(--color-action-border);
   background: var(--color-action-surface);
   color: var(--color-action);

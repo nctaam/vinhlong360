@@ -653,7 +653,7 @@ useHead(() => ({
   display: inline-block;
   margin-left: var(--space-1);
   font-size: .95rem;
-  transition: transform var(--transition-fast) var(--ease-out-expo);
+  transition: transform var(--duration-fast) var(--ease-out-expo);
 }
 .b2b-callout-link:hover .b2b-arrow {
   transform: translateX(3px);

@@ -96,7 +96,9 @@
          /xa-phuong/* trong DOM cho crawler (SEO-caution, không xoá) -->
     <section v-if="wards.length" class="block band reveal">
       <details class="wards-fold">
-        <summary class="wards-summary"><h2>Xã / phường ({{ wards.length }})</h2></summary>
+        <summary class="wards-summary">
+          <h2><IconLine name="chevron-right" class="wards-chevron" aria-hidden="true" /> Xã / phường ({{ wards.length }})</h2>
+        </summary>
         <p class="section-desc">Mỗi xã/phường có trang riêng: du lịch · lưu trú · đặc sản · danh bạ hành chính.</p>
         <div class="chip-row wrap-mobile area-wards">
           <NuxtLink v-for="w in wards" :key="w.id" :to="`/xa-phuong/${w.id}`" class="chip">{{ w.name }}</NuxtLink>
@@ -463,11 +465,21 @@ if (areaMeta) {
 .see-all-toggle:focus-visible { outline: 2px solid var(--primary); outline-offset: 3px; }
 
 /* declutter-3 T12: wards thu gọn sau <details> — link vẫn trong DOM, đỡ nhiễu thị giác */
-.wards-summary { cursor: pointer; list-style: none; }
+.wards-summary { cursor: pointer; list-style: none; user-select: none; }
 .wards-summary::-webkit-details-marker { display: none; }
-.wards-summary::before { content: "▸ "; color: var(--muted); }
-details[open] > .wards-summary::before { content: "▾ "; }
-.wards-summary h2 { display: inline; }
+.wards-chevron {
+  display: inline-block;
+  margin-inline-end: var(--space-2);
+  color: var(--muted);
+  font-size: var(--icon-sm);
+  vertical-align: middle;
+  transition: transform .25s var(--ease-out-expo), color .2s var(--ease-out);
+}
+details[open] .wards-chevron {
+  transform: rotate(90deg);
+  color: var(--primary-fg);
+}
+.wards-summary h2 { display: inline-flex; align-items: center; }
 .wards-fold[open] .wards-summary { margin-bottom: var(--space-3); }
 
 /* ── POLISH: Ward chips wrap to a tap-friendly grid on mobile ─────────────
@@ -498,5 +510,6 @@ details[open] > .wards-summary::before { content: "▾ "; }
 @media (prefers-reduced-motion: reduce) {
   .area-stats .stat-item:hover .stat-num { transform: none; }
   .see-all-toggle:active { transform: none; }
+  .wards-chevron { transition: none; }
 }
 </style>
