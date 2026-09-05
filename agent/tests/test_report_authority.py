@@ -8,6 +8,8 @@ from dataclasses import replace
 from pathlib import Path
 
 import pytest
+from fastapi import FastAPI
+from fastapi.testclient import TestClient
 
 # Pair the boundary modules touched by this authority migration for the
 # repository's staged test-pairing gate. Imports are intentionally lightweight.
@@ -113,3 +115,17 @@ def test_legacy_jsonl_report_actions_are_read_import_only():
     source = (Path(__file__).resolve().parents[1] / "admin.py").read_text(encoding="utf-8")
     assert "legacy_report_mutation_disabled" in source
     assert "tmp.replace(_INFO_REPORTS_FILE)" not in source
+
+
+def test_report_endpoint_uses_detail_error_envelope_for_invalid_target():
+    """Canonical report errors must not bypass the shared detail envelope."""
+    app = FastAPI()
+    app.include_router(_public_api_module.router)
+    response = TestClient(app).post(
+        "/api/report",
+        json={"target_id": "entity-1", "target_type": "bogus", "reason": "spam"},
+    )
+    assert response.status_code == 422
+    body = response.json()
+    assert body["detail"] == "invalid_target_type"
+    assert "error" not in body

@@ -2657,10 +2657,8 @@ def _file_legacy_correction(entity_id: str, field: str, detail: str, request: Re
         # A correction is a claim about what the page should say; with nothing
         # proposed there is nothing to decide, and downgrading to the old lane
         # would fork the record by the reporter's punctuation.
-        return JSONResponse(status_code=422, content={
-            "error": "proposed_value_required",
-            "message": "Hãy ghi thông tin đúng để chúng tôi sửa theo.",
-        })
+        return _err(422, "proposed_value_required",
+                    message="Hãy ghi thông tin đúng để chúng tôi sửa theo.")
     payload = SimpleNamespace(
         reporter_privacy="anonymous",
         items=(SimpleNamespace(
@@ -2692,10 +2690,7 @@ def _file_legacy_correction(entity_id: str, field: str, detail: str, request: Re
             code, message = "correction_value_too_long", "That value is too long."
         else:
             code, message = "invalid_correction_value", "Both values are required."
-        return JSONResponse(status_code=400, content={
-            "error": code,
-            "message": message,
-        })
+        return _err(400, code, message=message)
     try:
         result = _case_service().create_correction_from_transport(
             payload,
@@ -2704,9 +2699,7 @@ def _file_legacy_correction(entity_id: str, field: str, detail: str, request: Re
             rate_subject=get_client_ip(request),
         )
     except CorrectionRejected as exc:
-        return JSONResponse(status_code=exc.problem.status, content={
-            "error": exc.problem.code, "message": exc.problem.detail,
-        })
+        return _err(exc.problem.status, exc.problem.code, message=exc.problem.detail)
     # The kernel now owns corrections; record that durably before answering.
     marker = _correction_cutover_marker()
     if not marker.exists():
@@ -2724,10 +2717,8 @@ def _file_legacy_correction(entity_id: str, field: str, detail: str, request: Re
 def _legacy_correction_closed() -> JSONResponse | None:
     """After cutover, the JSONL lane for corrections stays closed, flag or not."""
     if _correction_cutover_marker().exists():
-        return JSONResponse(status_code=503, content={
-            "error": "correction_intake_paused",
-            "message": "Kênh sửa thông tin đang tạm dừng. Vui lòng quay lại sau.",
-        })
+        return _err(503, "correction_intake_paused",
+                    message="Kênh sửa thông tin đang tạm dừng. Vui lòng quay lại sau.")
     return None
 
 
@@ -2776,11 +2767,11 @@ async def submit_report(payload: ReportIn, request: Request):
             "message": "Đã ghi nhận. Cảm ơn bạn đã góp ý — chúng tôi sẽ kiểm tra.",
         }
     except InvalidReportTargetType:
-        return JSONResponse(status_code=422, content={"error": "invalid_target_type"})
+        return _err(422, "invalid_target_type")
     except ReportTargetNotFound:
-        return JSONResponse(status_code=404, content={"error": "target_not_found"})
+        return _err(404, "target_not_found")
     except ReportError as exc:
-        return JSONResponse(status_code=exc.status, content={"error": exc.code})
+        return _err(exc.status, exc.code)
 
 
 # ── Report stale field (U-02: field-level freshness reports) ─────────
@@ -2800,10 +2791,7 @@ async def report_stale_field(entity_id: str, payload: ReportStaleIn, request: Re
     """U-02: Report a specific field as stale/incorrect on an entity."""
     validate_path_id(entity_id, "entity_id")
     if payload.field not in _STALE_FIELDS:
-        return JSONResponse(status_code=422, content={
-            "error": "invalid_field",
-            "valid_fields": sorted(_STALE_FIELDS),
-        })
+        return _err(422, "invalid_field", valid_fields=sorted(_STALE_FIELDS))
     ip = get_client_ip(request)
     allowed, info = report_limiter.is_allowed(ip)
     if not allowed:
@@ -2834,9 +2822,9 @@ async def report_stale_field(entity_id: str, payload: ReportStaleIn, request: Re
             "message": "Đã ghi nhận — chúng tôi sẽ kiểm tra và cập nhật.",
         }
     except ReportTargetNotFound:
-        return JSONResponse(status_code=404, content={"error": "target_not_found"})
+        return _err(404, "target_not_found")
     except ReportError as exc:
-        return JSONResponse(status_code=exc.status, content={"error": exc.code})
+        return _err(exc.status, exc.code)
 
 
 # ── Entity gallery (entity images + review images) ───────────────────
