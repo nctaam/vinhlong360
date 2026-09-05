@@ -55,6 +55,20 @@ _PROBE_RECEIPT_FILES = {
     "backup-restore-checksum": "backup-restore-receipt.json",
     "rollback-local-rehearsal": "rollback-rehearsal-receipt.json",
 }
+_PROBE_ENVIRONMENTS = {
+    "multiprocess-scheduler": "local-disposable-postgres",
+    "provider-sandbox": "local-deterministic-provider-sandbox",
+    "proxy-contract": "local-loopback-proxy",
+    "backup-restore-checksum": "local-disposable-postgres",
+    "rollback-local-rehearsal": "local-rollback-rehearsal",
+}
+_PROBE_COMMAND_MARKERS = {
+    "multiprocess-scheduler": ("probe_multiprocess_scheduler.py", "--workers", "--slots"),
+    "provider-sandbox": ("probe_provider_sandbox.py", "--mode", "deterministic"),
+    "proxy-contract": ("probe_proxy_contract.py", "--base-url"),
+    "backup-restore-checksum": ("scripts/ops/restore_drill.py", "--backup"),
+    "rollback-local-rehearsal": ("probe_rollback.py",),
+}
 _HEAD_SHA = re.compile(r"^[0-9a-f]{40}$")
 _SHA256 = re.compile(r"^[0-9a-f]{64}$")
 _PYTEST_SUCCESS_LINE = re.compile(
@@ -97,7 +111,11 @@ _CANONICAL_EVIDENCE_FIELDS = (
 )
 
 
-def load_probe_receipts(evidence_dir: Path | None) -> dict[str, dict[str, Any]]:
+def load_probe_receipts(
+    evidence_dir: Path | None,
+    *,
+    expected_head_sha: str | None = None,
+) -> dict[str, dict[str, Any]]:
     """Load only the fixed probe receipt set, treating absence as unavailable."""
 
     directory = Path(evidence_dir).resolve() if evidence_dir is not None else None
@@ -105,35 +123,62 @@ def load_probe_receipts(evidence_dir: Path | None) -> dict[str, dict[str, Any]]:
     for probe_id, filename in _PROBE_RECEIPT_FILES.items():
         path = directory / filename if directory is not None else None
         if path is None or not path.is_file():
-            statuses[probe_id] = {
-                "verdict": "UNAVAILABLE",
-                "reasons": ["probe receipt missing"],
-            }
+            statuses[probe_id] = _missing_probe_status()
             continue
-        try:
-            payload = json.loads(path.read_text(encoding="utf-8"))
-        except (OSError, UnicodeDecodeError, json.JSONDecodeError) as exc:
-            statuses[probe_id] = {
-                "verdict": "BLOCKED",
-                "reasons": [f"unable to read probe receipt: {type(exc).__name__}"],
-            }
+        payload, read_status = _read_probe_receipt(path)
+        if read_status is not None:
+            statuses[probe_id] = read_status
             continue
         verification = verify_probe_receipt(payload)
-        reasons = list(verification.reasons)
-        if isinstance(payload, dict) and payload.get("probe_id") != probe_id:
-            reasons.append("probe_id does not match expected slot")
+        reasons = [*verification.reasons, *_probe_slot_reasons(probe_id, payload, expected_head_sha)]
         statuses[probe_id] = {
             "verdict": "BLOCKED" if reasons else verification.verdict,
             "reasons": reasons,
+            "receipt": payload,
         }
     return statuses
 
 
+def _missing_probe_status() -> dict[str, Any]:
+    return {"verdict": "UNAVAILABLE", "reasons": ["probe receipt missing"]}
+
+
+def _read_probe_receipt(path: Path) -> tuple[dict[str, Any] | None, dict[str, Any] | None]:
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, UnicodeDecodeError, json.JSONDecodeError) as exc:
+        return None, {
+            "verdict": "BLOCKED",
+            "reasons": [f"unable to read probe receipt: {type(exc).__name__}"],
+        }
+    if not isinstance(payload, dict):
+        return None, {"verdict": "BLOCKED", "reasons": ["probe receipt must be a JSON object"]}
+    return payload, None
+
+
+def _probe_slot_reasons(probe_id: str, payload: dict[str, Any], expected_head_sha: str | None) -> list[str]:
+    reasons: list[str] = []
+    if payload.get("probe_id") != probe_id:
+        reasons.append("probe_id does not match expected slot")
+    if payload.get("environment_id") != _PROBE_ENVIRONMENTS[probe_id]:
+        reasons.append("environment_id does not match expected probe environment")
+    command = payload.get("command")
+    markers = _PROBE_COMMAND_MARKERS[probe_id]
+    normalized_command = command.replace("\\", "/").lower() if isinstance(command, str) else ""
+    if not normalized_command or not all(marker.lower() in normalized_command for marker in markers):
+        reasons.append("command does not match expected probe identity")
+    if probe_id == "backup-restore-checksum" and "--target-dsn" in str(command):
+        reasons.append("restore probe must not carry DSN in command arguments")
+    if expected_head_sha and payload.get("head_sha") != expected_head_sha:
+        reasons.append("head_sha does not match checked-out HEAD")
+    return reasons
+
+
 def _load_checkout_probe_receipts(root: Path, evidence_dir: Path | None) -> dict[str, dict[str, Any]]:
     if evidence_dir is None:
-        return load_probe_receipts(None)
+        return load_probe_receipts(None, expected_head_sha=_head_sha(root))
     resolved = evidence_dir if evidence_dir.is_absolute() else root / evidence_dir
-    return load_probe_receipts(resolved)
+    return load_probe_receipts(resolved, expected_head_sha=_head_sha(root))
 
 
 def _receipt_fields(receipt: Any) -> set[str] | None:
@@ -1034,18 +1079,25 @@ def _validate_sections(
 def _required_probe_receipts_pass(bundle: AcceptanceBundle) -> bool:
     probe_receipts = bundle.environment.get("probe_receipts")
     if probe_receipts is None:
-        return True
+        return False
     required = (
         "multiprocess-scheduler",
         "provider-sandbox",
         "proxy-contract",
         "backup-restore-checksum",
     )
-    return isinstance(probe_receipts, dict) and all(
-        isinstance(probe_receipts.get(probe_id), dict)
-        and probe_receipts[probe_id].get("verdict") == "PASS"
-        for probe_id in required
-    )
+    if not isinstance(probe_receipts, dict):
+        return False
+    for probe_id in required:
+        status = probe_receipts.get(probe_id)
+        if not isinstance(status, dict) or status.get("verdict") != "PASS":
+            return False
+        receipt = status.get("receipt")
+        if not isinstance(receipt, dict) or verify_probe_receipt(receipt).verdict != "PASS":
+            return False
+        if _probe_slot_reasons(probe_id, receipt, bundle.head_sha):
+            return False
+    return True
 
 
 def _pilot_attestation_checks(bundle: AcceptanceBundle, root: Path) -> bool:

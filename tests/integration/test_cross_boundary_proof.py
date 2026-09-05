@@ -225,12 +225,54 @@ def complete_fixture_bundle_for_p1() -> AcceptanceBundle:
         owner_signoff=True,
         rollback_note="No mutation; local disposable fixture only.",
         owner="service-owner",
-        environment={"runner": "pytest", "target": "disposable", "head_sha": head, "working_tree_digest": tree, "production_calls": False, "secrets_collected": False, "raw_personal_data": False},
+        environment={
+            "runner": "pytest", "target": "disposable", "head_sha": head,
+            "working_tree_digest": tree, "production_calls": False,
+            "secrets_collected": False, "raw_personal_data": False,
+            "probe_receipts": _valid_probe_receipts(head),
+        },
         decision_required={"legal": True, "provider": True, "residency": True, "public_indexing": True},
         cross_boundary_proof=True,
         gate="GO_CONDITIONAL",
     )
     return _sign_bundle(bundle)
+
+
+def _valid_probe_receipts(head: str) -> dict[str, dict[str, object]]:
+    environments = {
+        "multiprocess-scheduler": "local-disposable-postgres",
+        "provider-sandbox": "local-deterministic-provider-sandbox",
+        "proxy-contract": "local-loopback-proxy",
+        "backup-restore-checksum": "local-disposable-postgres",
+    }
+    commands = {
+        "multiprocess-scheduler": "python scripts/ops/probe_multiprocess_scheduler.py --workers 2 --slots 1",
+        "provider-sandbox": "python scripts/ops/probe_provider_sandbox.py --mode deterministic",
+        "proxy-contract": "python scripts/ops/probe_proxy_contract.py --base-url http://127.0.0.1:8360",
+        "backup-restore-checksum": "python scripts/ops/restore_drill.py --backup fixture.dump --execute",
+    }
+    output = '{"status":"pass"}\n'
+    started = datetime.now(timezone.utc)
+    return {
+        probe_id: {
+            "verdict": "PASS",
+            "reasons": [],
+            "receipt": {
+                "probe_id": probe_id,
+                "head_sha": head,
+                "environment_id": environment,
+                "started_at": started.isoformat(),
+                "finished_at": (started + timedelta(seconds=1)).isoformat(),
+                "command": commands[probe_id],
+                "exit_code": 0,
+                "output_sha256": sha256(output.encode("utf-8")).hexdigest(),
+                "captured_output": output,
+                "test_nodeids": [f"{probe_id}::proof"],
+                "verdict": "PASS",
+            },
+        }
+        for probe_id, environment in environments.items()
+    }
 
 
 def test_gate_rejects_missing_p1_and_unclassified_evidence():

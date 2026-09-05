@@ -12,10 +12,20 @@ import subprocess
 import sys
 from urllib.error import HTTPError, URLError
 from urllib.parse import urlsplit, urlunsplit
-from urllib.request import Request, urlopen
+from urllib.request import HTTPRedirectHandler, Request, build_opener
 
 ROOT = Path(__file__).resolve().parents[2]
 _LOOPBACK_HOSTS = frozenset({"127.0.0.1", "localhost", "::1"})
+
+
+class _RejectRedirects(HTTPRedirectHandler):
+    """Keep a loopback probe from following a redirect to an unvalidated host."""
+
+    def redirect_request(self, *_args, **_kwargs):
+        return None
+
+
+_LOOPBACK_OPENER = build_opener(_RejectRedirects)
 
 
 def validate_base_url(raw: str) -> tuple[bool, str]:
@@ -47,7 +57,7 @@ def _fetch(base_url: str, path: str) -> dict[str, object]:
     url = f"{base_url}{path}"
     request = Request(url, headers={"Accept": "application/json,text/html;q=0.9"})
     try:
-        with urlopen(request, timeout=5) as response:  # noqa: S310 - URL is loopback-validated
+        with _LOOPBACK_OPENER.open(request, timeout=5) as response:  # noqa: S310 - URL is loopback-validated
             return {
                 "status": response.status,
                 "headers": {key.lower(): value for key, value in response.headers.items()},

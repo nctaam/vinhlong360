@@ -148,6 +148,11 @@ def _probe_output_reasons(receipt: dict[str, object]) -> list[str]:
     if not isinstance(output_sha256, str) or not _SHA256.fullmatch(output_sha256):
         reasons.append("missing or invalid field: output_sha256")
     captured_output = receipt.get("captured_output")
+    # A PASS receipt without the transcript it hashes is only a self-attested
+    # claim: the digest format alone cannot prove what was executed.  Block it
+    # until a signed external custody format exists.
+    if receipt.get("verdict") == "PASS" and not isinstance(captured_output, str):
+        reasons.append("PASS receipt requires captured_output")
     if captured_output is not None:
         if not isinstance(captured_output, str):
             reasons.append("captured_output must be text")
