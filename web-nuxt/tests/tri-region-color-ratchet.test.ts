@@ -27,8 +27,8 @@ const approvedBudgets = {
   'components/ImageDisclosure.vue': { rawHex: 0, legacyPrimary: 0 },
   'components/EntityHeroPlaceholder.vue': { rawHex: 0, legacyPrimary: 0 },
   'assets/css/tri-region-color.css': { rawHex: 0, legacyPrimary: 0 },
-  'assets/css/catalog.css': { rawHex: 5, legacyPrimary: 44 },
-  'assets/css/detail.css': { rawHex: 20, legacyPrimary: 28 },
+  'assets/css/catalog.css': { rawHex: 5, legacyPrimary: 14 },
+  'assets/css/detail.css': { rawHex: 20, legacyPrimary: 3 },
 }
 
 type Manifest = Record<string, { rawHex?: unknown, legacyPrimary?: unknown }>
@@ -51,8 +51,8 @@ const approvedCompatibilityAliases = `
 
 const baselineSources = () => ({
   'assets/css/tri-region-color.css': approvedCompatibilityAliases,
-  'assets/css/catalog.css': `${repeatedLegacyConsumers(43)}\n:root {\n  --AREA-rgb: var(--primary-rgb);\n}\n`,
-  'assets/css/detail.css': repeatedLegacyConsumers(28),
+  'assets/css/catalog.css': `${repeatedLegacyConsumers(13)}\n:root {\n  --AREA-rgb: var(--primary-rgb);\n}\n`,
+  'assets/css/detail.css': repeatedLegacyConsumers(3),
 })
 
 const createFixture = ({
@@ -104,8 +104,8 @@ describe('tri-region color debt ratchet', () => {
     const result = runChecker(createFixture())
 
     expect(result.status).toBe(0)
-    expect(result.stdout).toContain('assets/css/catalog.css: rawHex 0/5, legacyPrimary 44/44')
-    expect(result.stdout).toContain('shared catalog.css + detail.css: rawHex 0/25, legacyPrimary 72/72')
+    expect(result.stdout).toContain('assets/css/catalog.css: rawHex 0/5, legacyPrimary 14/14')
+    expect(result.stdout).toContain('shared catalog.css + detail.css: rawHex 0/25, legacyPrimary 17/17')
   })
 
   it('rejects one new shared legacy-primary consumer above the exact baseline', () => {
@@ -130,7 +130,7 @@ describe('tri-region color debt ratchet', () => {
 
   it('rejects a manifest ceiling increase even when the measured source remains below it', () => {
     const manifest = cloneManifest()
-    manifest['assets/css/catalog.css']!.legacyPrimary = 45
+    manifest['assets/css/catalog.css']!.legacyPrimary = 15
     const result = runChecker(createFixture({ manifest }))
 
     expect(result.status).not.toBe(0)
