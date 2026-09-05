@@ -43,6 +43,7 @@ from ratelimit import check_rate, check_rate_ip
 from control_plane.concurrency import IdempotencyKey, claim_idempotency, record_idempotency_receipt
 from text_utils import normalize_name
 from media_policy import AI_ONLY_MEDIA_DETAIL
+from jsonl_store import append_jsonl as _append_jsonl
 from profile_access import (
     can_view_profile_audience as _profile_can_view_full,
     resolve_profile_access,
@@ -2697,7 +2698,6 @@ async def report_comment(comment_id: str, body: ReportCommentBody, request: Requ
             if str(rd["user_id"]) == uid:
                 raise HTTPException(400, "Không thể báo cáo bình luận của chính mình")
     await asyncio.to_thread(_check)
-    import json as _json
     from pathlib import Path as _Path
     import hashlib as _hashlib
     from datetime import datetime as _dt, timezone as _tz
@@ -2714,16 +2714,9 @@ async def report_comment(comment_id: str, body: ReportCommentBody, request: Requ
         "ip_hash": _hashlib.sha256(get_client_ip(request).encode()).hexdigest()[:16],
         "status": "open",
     }
-    from jsonl_store import jsonl_lock as _jsonl_lock
-    from jsonl_store import maybe_rotate_jsonl as _maybe_rotate_jsonl
-    def _write():
-        with _jsonl_lock:
-            reports_file.parent.mkdir(exist_ok=True)
-            with open(reports_file, "a", encoding="utf-8") as f:
-                f.write(_json.dumps(record, ensure_ascii=False) + "\n")
-            _maybe_rotate_jsonl(reports_file)
+    # `from jsonl_store import` provides _jsonl_lock and _maybe_rotate_jsonl via the writer.
     try:
-        await asyncio.to_thread(_write)
+        await asyncio.to_thread(_append_jsonl, reports_file, record)
     except OSError:
         logger.exception("Failed to write comment report")
         raise HTTPException(500, "Lỗi lưu báo cáo")

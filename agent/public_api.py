@@ -42,6 +42,7 @@ from api_schemas import (  # W6.3: response_model (extra="allow" — không stri
     # SiteSettingsResponse sang siteops/api.py cung route cua no (2026-08-29, lat 3)
 )
 import lunar_calendar
+from jsonl_store import append_jsonl as _append_jsonl
 from jsonl_store import jsonl_lock as _jsonl_lock
 from jsonl_store import maybe_rotate_jsonl as _maybe_rotate_jsonl
 from config import settings  # noqa: F401  (be mat va cua test — mien entity sang goi rieng 2026-08-28)
@@ -2758,14 +2759,9 @@ async def submit_report(payload: ReportIn, request: Request):
         "ip_hash": hashlib.sha256(ip.encode()).hexdigest()[:16],
         "status": "open",
     }
-    def _write():
-        with _jsonl_lock:
-            REPORTS_FILE.parent.mkdir(exist_ok=True)
-            with open(REPORTS_FILE, "a", encoding="utf-8") as f:
-                f.write(json.dumps(record, ensure_ascii=False) + "\n")
-            _maybe_rotate_jsonl(REPORTS_FILE)
+    # The shared writer owns the imported _jsonl_lock and rotation boundary.
     try:
-        await asyncio.to_thread(_write)
+        await asyncio.to_thread(_append_jsonl, REPORTS_FILE, record)
     except OSError:
         logger.exception("Failed to write report to %s", REPORTS_FILE)
         return _err(500, "store_failed")
@@ -2813,14 +2809,9 @@ async def report_stale_field(entity_id: str, payload: ReportStaleIn, request: Re
         "ip_hash": hashlib.sha256(ip.encode()).hexdigest()[:16],
         "status": "open",
     }
-    def _write():
-        with _jsonl_lock:
-            REPORTS_FILE.parent.mkdir(exist_ok=True)
-            with open(REPORTS_FILE, "a", encoding="utf-8") as f:
-                f.write(json.dumps(record, ensure_ascii=False) + "\n")
-            _maybe_rotate_jsonl(REPORTS_FILE)
+    # The shared writer owns the imported _jsonl_lock and rotation boundary.
     try:
-        await asyncio.to_thread(_write)
+        await asyncio.to_thread(_append_jsonl, REPORTS_FILE, record)
     except OSError:
         logger.exception("Failed to write stale report")
         return _err(500, "store_failed")

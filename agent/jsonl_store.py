@@ -2,8 +2,10 @@
 
 from __future__ import annotations
 
+import json
 import logging
 import threading
+from collections.abc import Mapping
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -11,6 +13,15 @@ logger = logging.getLogger(__name__)
 
 JSONL_MAX_LINES = 5000
 jsonl_lock = threading.Lock()
+
+
+def append_jsonl(filepath: Path, record: Mapping[str, object]) -> None:
+    """Append one JSON record under the shared lock, then apply rotation."""
+    with jsonl_lock:
+        filepath.parent.mkdir(exist_ok=True)
+        with open(filepath, "a", encoding="utf-8") as file:
+            file.write(json.dumps(record, ensure_ascii=False) + "\n")
+        maybe_rotate_jsonl(filepath)
 
 
 def maybe_rotate_jsonl(filepath: Path) -> None:
