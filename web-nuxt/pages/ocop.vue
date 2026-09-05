@@ -493,7 +493,7 @@ useHead(() => ({
   font-weight: var(--weight-semibold);
   text-transform: uppercase;
   letter-spacing: .03em;
-  color: var(--primary-fg);
+  color: var(--color-brand);
 }
 .hero-cred-seal em { font-style: normal; color: var(--muted); text-transform: none; letter-spacing: 0; }
 
@@ -537,10 +537,10 @@ useHead(() => ({
   width: 3px;
   height: .85em;
   border-radius: 2px;
-  background: var(--primary-fg);
+  background: var(--color-brand);
 }
 
-.dark .hero-cred-seal { color: var(--primary-fg); }
+.dark .hero-cred-seal { color: var(--color-brand); }
 .dark .honor-banner { background: linear-gradient(90deg, rgba(var(--secondary-rgb), .12), transparent); }
 
 @media (prefers-reduced-motion: reduce) {
@@ -592,14 +592,14 @@ useHead(() => ({
   display: flex;
   align-items: center;
   justify-content: center;
-  background: radial-gradient(circle at 34% 30%, rgba(var(--secondary-rgb), .95), rgba(var(--primary-rgb), .9) 72%);
+  background: radial-gradient(circle at 34% 30%, rgba(var(--secondary-rgb), .95), rgba(var(--color-brand-rgb), .9) 72%);
   clip-path: polygon(
     50% 0%, 61% 7%, 74% 3%, 82% 13%, 95% 15%, 96% 28%, 100% 38%,
     92% 48%, 100% 58%, 96% 68%, 95% 81%, 82% 83%, 74% 93%, 61% 89%,
     50% 100%, 39% 89%, 26% 93%, 18% 83%, 5% 81%, 4% 68%, 0% 58%,
     8% 48%, 0% 38%, 4% 28%, 5% 15%, 18% 13%, 26% 3%, 39% 7%
   );
-  box-shadow: inset 0 2px 6px rgba(var(--black-rgb), .28), 0 4px 14px -6px rgba(var(--primary-rgb), .5);
+  box-shadow: inset 0 2px 6px rgba(var(--black-rgb), .28), 0 4px 14px -6px rgba(var(--color-brand-rgb), .5);
   animation: seal-stamp .4s var(--ease-out-expo) both;
 }
 .wax-seal-notches {
@@ -622,7 +622,7 @@ useHead(() => ({
   0% { transform: scale(.9); opacity: 0; }
   100% { transform: scale(1); opacity: 1; }
 }
-.dark .wax-seal { box-shadow: inset 0 2px 6px rgba(var(--black-rgb), .4), 0 4px 14px -6px rgba(var(--primary-rgb), .35); }
+.dark .wax-seal { box-shadow: inset 0 2px 6px rgba(var(--black-rgb), .4), 0 4px 14px -6px rgba(var(--color-brand-rgb), .35); }
 
 /* Kicker / dek — calmer, more formal register than san-pham's market voice */
 .catalog-hero-inner p.ledger-kicker {
@@ -674,8 +674,8 @@ useHead(() => ({
   font-size: var(--text-xs);
   transition: border-color .2s var(--ease-out), background .2s var(--ease-out);
 }
-.star-jump-btn:hover { border-color: var(--primary-fg); }
-.star-jump-btn.active { border-color: var(--primary); background: rgba(var(--primary-rgb), .06); }
+.star-jump-btn:hover { border-color: var(--color-action); }
+.star-jump-btn.active { border-color: var(--color-action); background: rgba(var(--color-action-rgb), .06); }
 .star-jump-btn .quick-pick-icon { font-size: .85rem; }
 .star-jump-btn .quick-pick-count { color: var(--muted); font-size: var(--text-xs); }
 

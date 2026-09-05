@@ -377,13 +377,13 @@ useHead(() => ({
   gap: var(--space-1);
   padding: var(--space-1) var(--space-3);
   border-radius: var(--radius-full);
-  background: rgba(var(--river-rgb, var(--primary-rgb)), .1);
-  border: .5px solid rgba(var(--river-rgb, var(--primary-rgb)), .2);
+  background: rgba(var(--color-action-rgb), .1);
+  border: .5px solid rgba(var(--color-action-rgb), .2);
   font-size: var(--text-xs);
   transition: background .3s var(--ease-out), transform .3s var(--ease-out-expo);
 }
-.type-pill:hover { transform: translateY(-1px); background: rgba(var(--river-rgb, var(--primary-rgb)), .16); }
-.type-count { font-weight: var(--weight-bold); color: var(--tertiary, var(--primary-fg)); }
+.type-pill:hover { transform: translateY(-1px); background: rgba(var(--color-action-rgb), .16); }
+.type-count { font-weight: var(--weight-bold); color: var(--tertiary, var(--color-brand)); }
 .type-name { color: var(--muted); font-weight: var(--weight-medium); }
 /* dark overrides for .type-pill in dark-overrides.css */
 
@@ -513,7 +513,7 @@ useHead(() => ({
 .stay-tile:hover { transform: translateY(-4px); box-shadow: var(--shadow-md); border-color: var(--border); }
 .stay-tile-motif {
   position: absolute; right: -10%; bottom: -12%; z-index: 0;
-  width: 96px; height: 96px; opacity: .1; color: var(--primary);
+  width: 96px; height: 96px; opacity: .1; color: var(--color-brand);
   pointer-events: none;
 }
 .stay-tile.stay-resort .stay-tile-motif { color: var(--secondary); }
@@ -575,12 +575,12 @@ useHead(() => ({
   cursor: pointer; min-height: 44px;
   transition: transform .3s var(--ease-out-expo), box-shadow .3s var(--ease-out-expo), border-color .2s var(--ease-out);
 }
-.region-window:hover { transform: translateY(-3px); box-shadow: var(--shadow-md); border-color: rgba(var(--river-rgb, var(--primary-rgb)), .4); }
+.region-window:hover { transform: translateY(-3px); box-shadow: var(--shadow-md); border-color: rgba(var(--color-action-rgb), .4); }
 .region-window:active { transform: scale(.98); transition-duration: .08s; }
 .region-window:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 3px; }
 /* Active state = tri-province gradient underline (river→amber→clay), matching
    FilterChips.vue's ::after treatment, instead of a flat single-tone border. */
-.region-window.active { border-color: transparent; background: rgba(var(--river-rgb, var(--primary-rgb)), .06); }
+.region-window.active { border-color: transparent; background: rgba(var(--color-action-rgb), .06); }
 .region-window.active::after {
   content: "";
   position: absolute; left: var(--space-5); right: var(--space-5); bottom: 0;
@@ -595,10 +595,10 @@ useHead(() => ({
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  color: var(--primary-fg);
+  color: var(--color-brand);
   transition: transform .35s var(--ease-out-expo);
 }
-.rw-vinh-long { color: var(--clay-600, var(--primary-fg)); }
+.rw-vinh-long { color: var(--clay-600, var(--color-brand)); }
 .rw-ben-tre { color: var(--leaf-600, var(--secondary-fg)); }
 .rw-tra-vinh { color: var(--amber-600, var(--tertiary-fg)); }
 .rw-lien-vung { color: var(--river-600, var(--accent-text)); }
@@ -609,7 +609,7 @@ useHead(() => ({
 }
 .rw-count {
   font-size: var(--text-xs); font-weight: var(--weight-semibold);
-  color: var(--tertiary, var(--primary-fg));
+  color: var(--tertiary, var(--color-brand));
   font-variant-numeric: tabular-nums;
 }
 .rw-blurb {
@@ -617,7 +617,7 @@ useHead(() => ({
   font-size: var(--text-xs); color: var(--muted); line-height: var(--leading-relaxed);
 }
 .dark .region-window { background: var(--card); border-color: var(--line); }
-.dark .region-window.active { background: rgba(var(--river-rgb, var(--primary-rgb)), .12); }
+.dark .region-window.active { background: rgba(var(--color-action-rgb), .12); }
 @media (prefers-reduced-motion: reduce) {
   .region-window:hover,
   .region-window:active { transform: none; }

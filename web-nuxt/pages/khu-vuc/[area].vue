@@ -160,11 +160,11 @@ if (!areaMeta) throw createError({ statusCode: 404, statusMessage: 'Không tìm 
 // Per-region accent binding — feeds the scoped hero bloom + stat tint so each
 // area "owns" its colour. Falls back to brand primary for unknown areas.
 const AREA_RGB: Record<string, string> = {
-  'vinh-long': 'var(--primary-rgb)',
+  'vinh-long': 'var(--color-brand-rgb)',
   'ben-tre': 'var(--secondary-rgb)',
   'tra-vinh': 'var(--river-rgb)',
 }
-const areaTint = { '--AREA-rgb': AREA_RGB[areaKey] || 'var(--primary-rgb)' }
+const areaTint = { '--AREA-rgb': AREA_RGB[areaKey] || 'var(--color-brand-rgb)' }
 
 const [{ data, error: fetchError }, { data: placesData }] = await Promise.all([
   useAsyncData(`area-${areaKey}`, () =>
@@ -317,7 +317,7 @@ if (areaMeta) {
    feels "owned" by its colour without overwriting the global motif layer.
    Sits below the text/stats (catalog-hero-inner / catalog-stats are z-index 1
    per catalog.css). Decorative only. */
-.area-hero { --AREA-rgb: var(--primary-rgb); }
+.area-hero { --AREA-rgb: var(--color-brand-rgb); }
 /* CE2 editorial hero refinement (scoped to region hero only — does NOT touch the shared
    .catalog-hero used by /kham-pha): drop the emoji glyph — it's redundant decoration on a
    real cinematic photo and reads app-y (an AI-slop tell) — and set the region name in the
@@ -349,7 +349,7 @@ if (areaMeta) {
 }
 .ce-area .page-article p:first-of-type::first-letter {
   font-family: var(--font-editorial); font-weight: 600;
-  float: left; font-size: 3.1em; line-height: .82; padding: .04em .12em 0 0; color: var(--primary);
+  float: left; font-size: 3.1em; line-height: .82; padding: .04em .12em 0 0; color: var(--color-brand);
 }
 /* Section heads: editorial serif + the vertical "sediment core" tick (river→amber→clay) — the same
    phù-sa signature the homepage uses, so the region page speaks one voice. */
@@ -418,7 +418,7 @@ if (areaMeta) {
   background: rgba(var(--AREA-rgb), .1);
 }
 .area-stats .stat-item:hover .stat-num {
-  color: var(--primary-fg-strong, var(--primary-fg));
+  color: var(--color-action-hover);
   transform: scale(1.08);
 }
 .area-stats .stat-num {
@@ -446,7 +446,7 @@ if (areaMeta) {
 .see-all-toggle {
   font-size: var(--text-sm);
   font-weight: var(--weight-semibold);
-  color: var(--primary-fg);
+  color: var(--color-action);
   background: transparent;
   border: .5px solid transparent;
   border-radius: var(--radius-full);
@@ -458,8 +458,8 @@ if (areaMeta) {
   transition: background .25s var(--ease-out), color .25s var(--ease-out), transform .15s var(--ease-spring);
 }
 .see-all-toggle:hover {
-  background: rgba(var(--primary-rgb), .08);
-  border-color: rgba(var(--primary-rgb), .2);
+  background: rgba(var(--color-action-rgb), .08);
+  border-color: rgba(var(--color-action-rgb), .2);
 }
 .see-all-toggle:active { transform: scale(.96); transition-duration: .08s; }
 .see-all-toggle:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 3px; }
@@ -478,7 +478,7 @@ if (areaMeta) {
 }
 details[open] .wards-chevron {
   transform: rotate(90deg);
-  color: var(--primary-fg);
+  color: var(--color-action);
 }
 .wards-summary h2 { display: inline-flex; align-items: center; }
 .wards-fold[open] .wards-summary { margin-bottom: var(--space-3); }

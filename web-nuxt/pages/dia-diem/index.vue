@@ -44,7 +44,7 @@
         <button type="button"
           v-for="(meta, key) in AREA_META" :key="key"
           :class="['province-stamp', { active: areaFilter === key }]"
-          :style="{ '--stamp-rgb': STAMP_RGB[key as string] || 'var(--primary-rgb)' }"
+          :style="{ '--stamp-rgb': STAMP_RGB[key as string] || 'var(--color-brand-rgb)' }"
           :aria-pressed="areaFilter === key"
           @click="pickArea(key as string)"
         >
@@ -181,7 +181,7 @@ const COMPASS_SVG = `<svg viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg"
 
 // Province-stamp tint per area — reuses existing brand RGB tokens (no new colours).
 const STAMP_RGB: Record<string, string> = {
-  'vinh-long': 'var(--primary-rgb)',
+  'vinh-long': 'var(--color-brand-rgb)',
   'ben-tre': 'var(--secondary-rgb)',
   'tra-vinh': 'var(--river-rgb)',
   'lien-vung': 'var(--accent-rgb)',
@@ -372,15 +372,15 @@ useHead(() => ({
   cursor: pointer; transition: border-color .2s, box-shadow .2s;
   min-width: 100px; flex-shrink: 0;
 }
-.dd-type-card:hover { border-color: var(--primary); box-shadow: 0 2px 8px rgba(var(--black-rgb),.06); }
+.dd-type-card:hover { border-color: var(--color-action); box-shadow: 0 2px 8px rgba(var(--black-rgb),.06); }
 .dd-type-card:active { transform: scale(.96); transition-duration: .08s; }
 .dd-type-card:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
-.dd-type-card.active { border-color: var(--primary); background: rgba(var(--primary-rgb), .06); }
+.dd-type-card.active { border-color: var(--color-action); background: rgba(var(--color-action-rgb), .06); }
 .dd-type-icon { font-size: 1.6rem; }
 .dd-type-label { font-size: var(--text-sm); font-weight: var(--weight-semibold); color: var(--ink); white-space: nowrap; }
 
 .dd-search { display: flex; align-items: center; gap: var(--space-2); padding: .35rem .5rem .35rem .75rem; background: var(--card); border: 1px solid var(--border); border-radius: var(--radius-full); margin-bottom: var(--space-3); }
-.dd-search:focus-within { border-color: var(--primary); }
+.dd-search:focus-within { border-color: var(--color-action); }
 .dd-search-ic { color: var(--muted); flex-shrink: 0; }
 .dd-search-input { flex: 1; min-width: 0; border: none; background: none; outline: none; color: var(--ink); font-size: var(--text-sm); padding: .4rem 0; }
 .dd-search-input:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
@@ -398,7 +398,7 @@ useHead(() => ({
   .dd-more:hover .dd-more-icon { transform: none; }
 }
 .dd-load-error { text-align: center; color: var(--danger); font-size: var(--text-sm); margin: var(--space-3) 0; }
-.dd-load-error .btn-text { color: var(--primary-fg); font-weight: var(--weight-semibold); background: none; border: none; cursor: pointer; text-decoration: underline; }
+.dd-load-error .btn-text { color: var(--color-action); font-weight: var(--weight-semibold); background: none; border: none; cursor: pointer; text-decoration: underline; }
 
 /* ============================================================
    ALMANAC HERO — bến đò signboard: horizon wash + hand-drawn
@@ -418,7 +418,7 @@ useHead(() => ({
 }
 .almanac-compass { color: var(--clay-600); display: inline-flex; }
 .almanac-compass :deep(svg) { width: 2.2rem; height: 2.2rem; }
-.dark .almanac-compass { color: var(--primary-fg); }
+.dark .almanac-compass { color: var(--color-brand); }
 @media (max-width: 640px) { .almanac-compass :deep(svg) { width: 1.7rem; height: 1.7rem; } }
 
 /* Stat hover-gloss — a second poetic line reveals under the count on hover/focus,
@@ -427,14 +427,14 @@ useHead(() => ({
 .almanac-gloss {
   position: absolute; left: var(--space-3); top: 100%; margin-top: 2px;
   font-family: var(--font-editorial); font-style: italic; font-size: var(--text-xs);
-  color: var(--primary-fg); white-space: nowrap;
+  color: var(--color-brand); white-space: nowrap;
   opacity: 0; transform: translateY(-2px);
   transition: opacity .3s var(--ease-out), transform .3s var(--ease-out);
   pointer-events: none;
 }
 .almanac-stat:hover .almanac-gloss,
 .almanac-stat:focus-visible .almanac-gloss { opacity: 1; transform: translateY(0); }
-.dark .almanac-gloss { color: var(--primary-fg-strong); }
+.dark .almanac-gloss { color: var(--color-brand); }
 @media (prefers-reduced-motion: reduce) {
   .almanac-gloss { transition: opacity .01s linear; transform: none; }
 }
@@ -453,7 +453,7 @@ useHead(() => ({
   gap: var(--space-4); margin-bottom: var(--space-2);
 }
 .province-stamp {
-  --stamp-rgb: var(--primary-rgb);
+  --stamp-rgb: var(--color-brand-rgb);
   position: relative; text-align: left; cursor: pointer;
   display: flex; flex-direction: column; gap: var(--space-2);
   padding: var(--space-5) var(--space-4) var(--space-4);

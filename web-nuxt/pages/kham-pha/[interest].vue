@@ -176,11 +176,11 @@ const interestMeta = computed(() => resolvedInterestMeta)
 const INTEREST_TINT: Record<string, string> = {
   'am-thuc': 'var(--accent-rgb)',
   'thien-nhien': 'var(--secondary-rgb)',
-  'van-hoa': 'var(--primary-rgb)',
+  'van-hoa': 'var(--color-brand-rgb)',
   'lang-nghe': 'var(--accent-rgb)',
-  'mua-sam': 'var(--primary-rgb)',
+  'mua-sam': 'var(--color-brand-rgb)',
 }
-const interestTintRgb = computed(() => INTEREST_TINT[interest] || 'var(--primary-rgb)')
+const interestTintRgb = computed(() => INTEREST_TINT[interest] || 'var(--color-brand-rgb)')
 
 // Lens hero icon — the interest's own motif glyph, reusing the same
 // generateCategoryIcon() system already powering EntityCard placeholders so
@@ -364,12 +364,12 @@ useHead(() => ({
    ============================================================ */
 /* the interest tint (--int-rgb) is set inline on the root .page element and
    cascades into every page-local element below, so hero + intro + ribbon all
-   share one cohesive per-interest colour. Falls back to --primary-rgb. */
+   share one cohesive per-interest colour. Falls back to --color-brand-rgb. */
 .catalog-hero.cat-interest {
   /* lift the local hero with a soft brand wash keyed to the interest tone */
   background:
-    radial-gradient(140% 120% at 0% 0%, rgba(var(--int-rgb, var(--primary-rgb)), .12), transparent 62%),
-    linear-gradient(135deg, rgba(var(--int-rgb, var(--primary-rgb)), .07) 0%, rgba(var(--secondary-rgb), .04) 100%);
+    radial-gradient(140% 120% at 0% 0%, rgba(var(--int-rgb, var(--color-brand-rgb)), .12), transparent 62%),
+    linear-gradient(135deg, rgba(var(--int-rgb, var(--color-brand-rgb)), .07) 0%, rgba(var(--secondary-rgb), .04) 100%);
 }
 
 /* animated interest icon: gentle scale + fade reveal on mount, with a soft
@@ -388,7 +388,7 @@ useHead(() => ({
   inset: -28%;
   z-index: -1;
   border-radius: 50%;
-  background: radial-gradient(circle at 50% 45%, rgba(var(--int-rgb, var(--primary-rgb)), .18), transparent 70%);
+  background: radial-gradient(circle at 50% 45%, rgba(var(--int-rgb, var(--color-brand-rgb)), .18), transparent 70%);
   pointer-events: none;
 }
 @keyframes int-icon-reveal {
@@ -397,7 +397,7 @@ useHead(() => ({
 }
 /* the motif glyph now lives in the icon slot (v-html svg) — size + tint it to
    match the hero's visual weight, replacing the old bare-emoji font-size rule */
-.int-hero-icon :deep(svg) { width: 2.6rem; height: 2.6rem; color: rgba(var(--int-rgb, var(--primary-rgb)), .9); }
+.int-hero-icon :deep(svg) { width: 2.6rem; height: 2.6rem; color: rgba(var(--int-rgb, var(--color-brand-rgb)), .9); }
 @media (max-width: 640px) { .int-hero-icon :deep(svg) { width: 2rem; height: 2rem; } }
 
 /* Per-interest halo shape — the halo behind the icon (::before) takes a
@@ -503,13 +503,13 @@ useHead(() => ({
 /* Dark mode */
 .dark .catalog-hero.cat-interest {
   background:
-    radial-gradient(140% 120% at 0% 0%, rgba(var(--int-rgb, var(--primary-rgb)), .16), transparent 62%),
-    linear-gradient(135deg, rgba(var(--int-rgb, var(--primary-rgb)), .1) 0%, rgba(var(--secondary-rgb), .05) 100%);
+    radial-gradient(140% 120% at 0% 0%, rgba(var(--int-rgb, var(--color-brand-rgb)), .16), transparent 62%),
+    linear-gradient(135deg, rgba(var(--int-rgb, var(--color-brand-rgb)), .1) 0%, rgba(var(--secondary-rgb), .05) 100%);
 }
 .dark .int-byline { color: var(--ink-tertiary) !important; border-top-color: var(--line); }
 .dark .interest-nav .chip { background: var(--bg-alt); border-color: var(--line); }
 .dark .interest-nav .chip:hover { border-color: rgba(var(--white-rgb),.15); }
-.dark .interest-nav .chip.active { background: rgba(var(--primary-rgb), .12); border-color: var(--primary-fg); }
+.dark .interest-nav .chip.active { background: rgba(var(--color-action-rgb), .12); border-color: var(--color-action); }
 .dark .result-meta { color: var(--ink-tertiary); }
 
 /* Reduced motion — drop every page-local transform/animation */
