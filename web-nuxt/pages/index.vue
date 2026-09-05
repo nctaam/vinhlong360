@@ -710,7 +710,7 @@ const eventListSchema = computed(() => {
     },
   }))
   if (!events.length) return ''
-  return JSON.stringify({
+  return safeJsonLd({
     '@context': 'https://schema.org',
     '@type': 'ItemList',
     name: 'Sự kiện sắp tới tại Vĩnh Long',
@@ -725,7 +725,7 @@ useHead({
   script: [
     {
       type: 'application/ld+json',
-      innerHTML: JSON.stringify({
+      innerHTML: safeJsonLd({
         '@context': 'https://schema.org',
         '@type': 'WebSite',
         name: 'vinhlong360',
@@ -744,7 +744,7 @@ useHead({
     },
     {
       type: 'application/ld+json',
-      innerHTML: JSON.stringify({
+      innerHTML: safeJsonLd({
         '@context': 'https://schema.org',
         '@type': 'Organization',
         name: 'vinhlong360',

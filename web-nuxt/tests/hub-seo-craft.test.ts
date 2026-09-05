@@ -607,6 +607,51 @@ describe('SEO & Editorial Craft Guardrails', () => {
     expect(sharedPlan).not.toContain('--ink-700')
     expect(sharedPlan).not.toContain('--ink-900')
   })
+
+  it('Admin shell layout protects all admin pages with noindex; account hub uses vector icons and authFetch without legacy ink-700', () => {
+    const adminLayout = doc('layouts/admin.vue')
+    expect(adminLayout).toContain("robots: 'noindex, nofollow'")
+
+    const account = doc('pages/tai-khoan.vue')
+    expect(account).toContain("robots: 'noindex, nofollow'")
+    expect(account).toContain('authFetch')
+    expect(account).toContain('<IconLine :name="item.icon" />')
+    expect(account).toContain('<IconLine :name="actionIcon(a.action)" />')
+    expect(account).not.toContain("post: '✍️'")
+    expect(account).not.toContain("like: '❤️'")
+    expect(account).not.toContain("icon: '🔒'")
+    expect(account).not.toContain('--ink-700')
+  })
+
+  it('Saved items, map, search, community, and home hubs strictly enforce safeJsonLd, ogUrl, and authFetch', () => {
+    const saved = doc('pages/da-luu.vue')
+    expect(saved).toContain("robots: 'noindex, nofollow'")
+    expect(saved).toContain('authFetch')
+    expect(saved).not.toContain('--ink-700')
+
+    const map = doc('pages/ban-do.vue')
+    expect(map).toContain('safeJsonLd({')
+    expect(map).toContain("ogUrl: () => canonicalUrl('/ban-do')")
+    expect(map).toContain("twitterCard: 'summary_large_image'")
+
+    const community = doc('pages/cong-dong.vue')
+    expect(community).toContain('safeJsonLd({')
+    expect(community).toContain("ogUrl: () => canonicalUrl('/cong-dong')")
+    expect(community).toContain("twitterCard: 'summary_large_image'")
+
+    const search = doc('pages/tim-kiem.vue')
+    expect(search).toContain('safeJsonLd({')
+    expect(search).toContain("ogUrl: () => canonicalUrl('/tim-kiem')")
+    expect(search).toContain("twitterCard: 'summary_large_image'")
+
+    const home = doc('pages/index.vue')
+    expect(home).toContain('safeJsonLd({')
+    expect(home).not.toContain('innerHTML: JSON.stringify({')
+
+    const planner = doc('pages/tao-lich-trinh.vue')
+    const plannerLines = planner.split('\n').length
+    expect(plannerLines).toBeLessThan(1500)
+  })
 })
 
 

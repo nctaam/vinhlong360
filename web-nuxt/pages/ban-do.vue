@@ -234,13 +234,15 @@ useSeoMeta({
   description: 'Bản đồ và danh sách địa chỉ điểm du lịch, đặc sản, lưu trú, làng nghề tại Vĩnh Long, Bến Tre, Trà Vinh.',
   ogTitle: 'Bản đồ du lịch — vinhlong360',
   ogDescription: 'Khám phá vị trí và đối chiếu địa chỉ trên danh sách luôn khả dụng.',
+  ogUrl: () => canonicalUrl('/ban-do'),
+  twitterCard: 'summary_large_image',
 })
 
 useHead({
   link: [{ rel: 'canonical', href: canonicalUrl('/ban-do') }],
   script: [{
     type: 'application/ld+json',
-    innerHTML: JSON.stringify({
+    innerHTML: safeJsonLd({
       '@context': 'https://schema.org',
       '@type': 'WebPage',
       name: 'Bản đồ du lịch vinhlong360',

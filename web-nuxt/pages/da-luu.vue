@@ -150,7 +150,7 @@
 <script setup lang="ts">
 import { useJourneyActions } from '~/composables/useJourneyActions'
 
-const { isLoggedIn, authHeaders, handleSessionExpired } = useAuth()
+const { isLoggedIn, authFetch, handleSessionExpired } = useAuth()
 const { openAuth } = useAuthModal()
 const { timeAgo } = useTimeAgo()
 const { favorites, remove: removeFavoriteLocal } = useFavorites()
@@ -159,11 +159,6 @@ const { trackSave } = useUserEvents()
 const { savedWorkspaceActions } = useJourneyActions()
 const route = useRoute()
 const router = useRouter()
-
-useHead({
-  title: 'Đã lưu',
-  link: [{ rel: 'canonical', href: canonicalUrl('/da-luu') }],
-})
 
 type SavedTab = 'entities' | 'posts' | 'itineraries'
 
@@ -326,7 +321,7 @@ async function loadEntities() {
   entitiesLoading.value = true
   entitiesError.value = false
   try {
-    const res = await $fetch<{ items: any[] }>('/api/saved', { headers: authHeaders() })
+    const res = await authFetch<{ items: any[] }>('/api/saved')
     savedEntities.value = res.items || []
   } catch (e: unknown) {
     if (getStatusCode(e) === 401) { handleSessionExpired(); return }
@@ -344,7 +339,7 @@ async function loadPosts() {
   postsError.value = false
   try {
     const params = new URLSearchParams({ page: '1', limit: '20' })
-    const res = await $fetch<{ items: any[]; total: number }>(`/api/me/bookmarks?${params}`, { headers: authHeaders() })
+    const res = await authFetch<{ items: any[]; total: number }>(`/api/me/bookmarks?${params}`)
     bookmarkedPosts.value = res.items || []
     postsHasMore.value = (res.total || 0) > bookmarkedPosts.value.length
     postsPage.value = 1
@@ -362,7 +357,7 @@ async function loadMorePosts() {
   postsLoading.value = true
   try {
     const params = new URLSearchParams({ page: String(postsPage.value), limit: '20' })
-    const res = await $fetch<{ items: any[]; total: number }>(`/api/me/bookmarks?${params}`, { headers: authHeaders() })
+    const res = await authFetch<{ items: any[]; total: number }>(`/api/me/bookmarks?${params}`)
     const existing = new Set(bookmarkedPosts.value.map(post => String(post.id || '')))
     bookmarkedPosts.value.push(...(res.items || []).filter(post => !existing.has(String(post.id || ''))))
     postsHasMore.value = (res.total || 0) > bookmarkedPosts.value.length
@@ -379,7 +374,7 @@ async function loadItineraries() {
   itinerariesLoading.value = true
   itinerariesError.value = false
   try {
-    const res = await $fetch<{ plans: any[] }>('/api/my-plans', { headers: authHeaders() })
+    const res = await authFetch<{ plans: any[] }>('/api/my-plans')
     itineraries.value = res.plans || []
   } catch (e: unknown) {
     if (getStatusCode(e) === 401) { handleSessionExpired(); return }
@@ -402,7 +397,7 @@ async function removeBookmark(postId: string) {
   const prev = [...bookmarkedPosts.value]
   bookmarkedPosts.value = bookmarkedPosts.value.filter(p => p.id !== postId)
   try {
-    await $fetch(`/api/posts/${encodePathId(postId)}/bookmark`, { method: 'DELETE', headers: authHeaders() })
+    await authFetch(`/api/posts/${encodePathId(postId)}/bookmark`, { method: 'DELETE' })
     showToast('Đã bỏ lưu bài viết', 'success')
   } catch (e: unknown) {
     bookmarkedPosts.value = prev
@@ -415,7 +410,7 @@ async function removeItinerary(planId: string) {
   const prev = [...itineraries.value]
   itineraries.value = itineraries.value.filter(p => p.id !== planId)
   try {
-    await $fetch(`/api/my-plans/${encodePathId(planId)}`, { method: 'DELETE', headers: authHeaders() })
+    await authFetch(`/api/my-plans/${encodePathId(planId)}`, { method: 'DELETE' })
     showToast('Đã xóa lịch trình', 'success')
   } catch (e: unknown) {
     itineraries.value = prev
@@ -443,9 +438,9 @@ useHead(() => ({
 .saved-page { max-width: 920px; margin: 0 auto; }
 .saved-guest { padding: 2rem; text-align: center; }
 .saved-guest h1 { margin: 0 0 1rem; font-size: 1.5rem; }
-.saved-guest p { color: var(--ink-700); margin-bottom: 1rem; }
+.saved-guest p { color: var(--muted); margin-bottom: 1rem; }
 .saved-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 1rem; margin-bottom: 1rem; }
-.saved-kicker { margin: 0 0 .2rem; color: var(--ink-700); font-size: .8rem; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; }
+.saved-kicker { margin: 0 0 .2rem; color: var(--muted); font-size: .8rem; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; }
 .saved-title { font-size: 1.5rem; margin: 0; }
 .saved-overview {
   display: grid; grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -455,7 +450,7 @@ useHead(() => ({
   min-height: 88px; padding: .85rem 1rem; border: 1px solid var(--line);
   border-radius: var(--radius-sheet); background: var(--card); display: flex; flex-direction: column; justify-content: space-between;
 }
-.saved-overview-item span { color: var(--ink-700); font-size: .78rem; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; }
+.saved-overview-item span { color: var(--muted); font-size: .78rem; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; }
 .saved-overview-item strong { font-size: 1.25rem; line-height: 1.1; }
 .saved-tools { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: .75rem; align-items: center; margin-bottom: 1rem; }
 .saved-search input {
@@ -472,7 +467,7 @@ useHead(() => ({
 }
 .saved-tab {
   padding: .5rem 1rem; background: none; border: none; cursor: pointer;
-  font-weight: 500; font-size: .9rem; color: var(--ink-700);
+  font-weight: 500; font-size: .9rem; color: var(--muted);
   border-bottom: 2px solid transparent; margin-bottom: -2px;
   transition: color .15s, border-color .15s;
 }
@@ -482,7 +477,7 @@ useHead(() => ({
 .saved-tab-count {
   display: inline-block; margin-left: .35rem;
   background: var(--bg-alt); padding: 0 5px; border-radius: var(--radius-full);
-  font-size: .75rem; font-weight: 600; color: var(--ink-700);
+  font-size: .75rem; font-weight: 600; color: var(--muted);
 }
 .saved-tab.active .saved-tab-count { background: var(--primary-light); color: var(--primary); }
 
@@ -492,7 +487,7 @@ useHead(() => ({
 .saved-grid { display: flex; flex-direction: column; gap: .5rem; }
 .saved-remove {
   flex-shrink: 0; width: 28px; height: 28px; border: none; background: none;
-  color: var(--ink-700); cursor: pointer; font-size: .85rem;
+  color: var(--muted); cursor: pointer; font-size: .85rem;
   border-radius: var(--radius-full); transition: background .15s;
 }
 .saved-remove:hover { background: var(--bg-alt); color: var(--error); }
@@ -502,18 +497,18 @@ useHead(() => ({
 .saved-post { padding: .75rem 1rem; display: flex; align-items: center; gap: .5rem; }
 .saved-post-link { text-decoration: none; color: var(--ink); display: block; flex: 1; min-width: 0; }
 .saved-post-title { display: block; font-weight: 500; font-size: .92rem; line-height: 1.4; }
-.saved-post-meta { display: block; font-size: .78rem; color: var(--ink-700); margin-top: .2rem; }
+.saved-post-meta { display: block; font-size: .78rem; color: var(--muted); margin-top: .2rem; }
 .saved-load-more { margin-top: .75rem; width: 100%; }
 .saved-inline-warning {
   margin-bottom: .75rem; padding: .65rem .75rem; border-radius: var(--radius-surface);
   background: color-mix(in oklab, var(--accent-container) 72%, var(--card));
-  color: var(--ink-700); font-size: .85rem; line-height: 1.4;
+  color: var(--muted); font-size: .85rem; line-height: 1.4;
 }
 
 /* Skeletons & empty */
 .saved-skeletons { display: flex; flex-direction: column; gap: .5rem; }
 .saved-card-skel { height: 64px; border-radius: var(--radius-surface); }
-.saved-empty { color: var(--ink-700); font-size: .9rem; text-align: center; padding: 2rem 1rem; display: flex; flex-direction: column; align-items: center; gap: .75rem; }
+.saved-empty { color: var(--muted); font-size: .9rem; text-align: center; padding: 2rem 1rem; display: flex; flex-direction: column; align-items: center; gap: .75rem; }
 .saved-empty p { margin: 0; }
 
 /* Dark */

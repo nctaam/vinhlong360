@@ -216,6 +216,10 @@ onUnmounted(() => {
   if (badgeInterval) clearInterval(badgeInterval)
   document.removeEventListener('visibilitychange', _onVisChange)
 })
+
+useSeoMeta({
+  robots: 'noindex, nofollow',
+})
 </script>
 
 <style>

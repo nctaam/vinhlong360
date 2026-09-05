@@ -1291,26 +1291,6 @@ onBeforeUnmount(() => {
 })
 
 await plannerAsyncData
-
-useSeoMeta({
-  title: 'Tạo lịch trình — vinhlong360',
-  description: 'Lập kế hoạch chuyến đi Vĩnh Long: chọn điểm đến, sắp xếp thứ tự và lưu lịch trình cá nhân.',
-})
-
-useHead({
-  link: [{ rel: 'canonical', href: canonicalUrl('/tao-lich-trinh') }],
-  script: [{
-    type: 'application/ld+json',
-    innerHTML: JSON.stringify({
-      '@context': 'https://schema.org',
-      '@type': 'WebApplication',
-      name: 'Công cụ tạo lịch trình vinhlong360',
-      applicationCategory: 'TravelApplication',
-      operatingSystem: 'Web',
-      url: canonicalUrl('/tao-lich-trinh'),
-    }),
-  }],
-})
 </script>
 
 <style scoped>

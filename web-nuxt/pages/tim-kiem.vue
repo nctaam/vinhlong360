@@ -621,13 +621,15 @@ useSeoMeta({
   description: () => q.value.trim() ? `Kết quả tìm kiếm cho "${q.value.trim()}" trên vinhlong360.` : pc('seo_description'),
   ogTitle: () => q.value.trim() ? `"${q.value.trim()}" — vinhlong360` : pc('og_title'),
   ogDescription: () => pc('og_description'),
+  ogUrl: () => canonicalUrl('/tim-kiem'),
+  twitterCard: 'summary_large_image',
   robots: () => q.value.trim() ? 'noindex, follow' : 'index, follow',
 })
 useHead({
   link: [{ rel: 'canonical', href: canonicalUrl('/tim-kiem') }],
   script: [{
     type: 'application/ld+json',
-    innerHTML: JSON.stringify({
+    innerHTML: safeJsonLd({
       '@context': 'https://schema.org',
       '@type': 'WebSite',
       name: 'vinhlong360',
