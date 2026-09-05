@@ -574,7 +574,7 @@ html[data-density="compact"] .public-bottom-nav-item {
     grid-template-columns: repeat(5, minmax(0, 1fr));
     padding: 5px 6px max(5px, env(safe-area-inset-bottom, 0px));
     border-top: 1px solid var(--color-border);
-    background: color-mix(in srgb, var(--color-surface) 94%, transparent);
+    background: color-mix(in srgb, var(--color-surface) 98%, transparent);
     -webkit-backdrop-filter: saturate(1.1) blur(14px);
     backdrop-filter: saturate(1.1) blur(14px);
   }

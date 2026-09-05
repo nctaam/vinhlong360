@@ -301,6 +301,17 @@
           </div>
         </EmptyState>
       </section>
+      <template #fallback>
+        <section class="block reveal" aria-hidden="true" data-home-section="community" style="min-height: 240px;">
+          <div class="section-head">
+            <div class="sh-text">
+              <h2>Từ <em class="ac-neutral">cộng đồng</em></h2>
+              <p class="sh-sub">Trải nghiệm thật, mẹo hay từ người đi trước</p>
+            </div>
+          </div>
+          <SkeletonGrid :count="2" />
+        </section>
+      </template>
     </ClientOnly>
 
     <!-- 6. Dành cho bạn — one merged, image-tolerant personalization strip (client-only) -->
@@ -354,6 +365,9 @@
           aria-label="Gợi ý hành trình trên trang chủ"
           compact
         />
+        <template #fallback>
+          <div class="home-continuation-rail-fallback" aria-hidden="true" style="min-height: 64px;"></div>
+        </template>
       </ClientOnly>
       <nav class="home-continuation__links" aria-label="Bước tiếp theo">
         <NuxtLink to="/ban-do">Mở bản đồ</NuxtLink>

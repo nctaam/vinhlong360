@@ -18,9 +18,11 @@
   --harvest-700: #855A16;
   --coral-error: #BD413F;
   --alluvial-line: #DBD7CD;
+  --alluvial-line-strong: #BFB8A8;
   --night-canvas: #071210;
   --night-surface: #111D1B;
   --night-raised: #1D2927;
+  --night-line-strong: #364643;
   --night-text: #EDEBE5;
   --night-muted: #A4B1AE;
   --night-river: #7DAEBA;
@@ -45,7 +47,7 @@
   --color-text: var(--mekong-ink);
   --color-text-muted: var(--mekong-muted);
   --color-border: var(--alluvial-line);
-  --color-border-strong: var(--color-border);
+  --color-border-strong: var(--alluvial-line-strong);
   --color-accent: var(--accent);
   --color-action-rgb: 3, 90, 105;
   --color-brand-rgb: 149, 64, 43;
@@ -789,6 +791,7 @@
   --color-text: var(--night-text);
   --color-text-muted: var(--night-muted);
   --color-border: color-mix(in srgb, var(--night-text) 18%, transparent);
+  --color-border-strong: var(--night-line-strong);
   --color-action-rgb: 125, 174, 186;
   --color-brand-rgb: 199, 133, 117;
   --color-success-rgb: 124, 164, 131;

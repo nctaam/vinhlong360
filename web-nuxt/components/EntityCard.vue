@@ -59,8 +59,8 @@
       <div class="badges">
         <span v-if="isNew" class="badge new-badge">Mới</span>
         <span v-if="isPeak" class="badge peak"><span class="peak-dot" aria-hidden="true"></span> Đang mùa {{ peakLabel }}</span>
-        <span v-if="isYearRoundSeason" class="badge year">Quanh năm</span>
-        <span v-else class="badge season">{{ seasonLabel }}</span>
+        <span v-else-if="isYearRoundSeason" class="badge year">Quanh năm</span>
+        <span v-else-if="seasonLabel" class="badge season">{{ seasonLabel }}</span>
         <span v-if="ocopBadge" :class="['badge', 'ocop', { 'ocop-5': ocopTier === 5, 'ocop-4': ocopTier === 4, 'ocop-3': ocopTier === 3 }]"><IconLine name="star" /> {{ ocopBadge }}</span>
       </div>
     </NuxtLink>
@@ -272,7 +272,7 @@ const ratingDisplay = computed(() => {
 .card-amenities { display: none; }
 /* ── Story Card (Wave 1 keystone) — editorial treatment on every grid card ── */
 .card-type { display: none; }
-.card-name { font-family: var(--font-editorial); font-weight: 600; letter-spacing: -.01em; }
+.card-name { font-family: var(--font-editorial); font-weight: 600; letter-spacing: -.01em; line-height: var(--leading-snug, 1.25); word-break: break-word; overflow-wrap: anywhere; }
 /* dateline eyebrow — small-caps, hairline accent, NOT a solid pill */
 .card-dateline {
   display: inline-block; margin-bottom: 2px;
