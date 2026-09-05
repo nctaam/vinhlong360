@@ -65,7 +65,14 @@
               </span>
               <span v-if="!n.is_read" class="tb-dot" role="status" aria-label="Chưa đọc" title="Chưa đọc"></span>
             </div>
-            <button type="button" class="tb-dismiss" aria-label="Xóa thông báo" @click.stop="dismiss(n)"><IconLine name="x" /></button>
+            <button
+              type="button"
+              class="tb-dismiss"
+              :aria-label="`Xóa thông báo: ${n.title}`"
+              @click.stop="dismiss(n)"
+            >
+              <IconLine name="x" />
+            </button>
           </li>
         </ul>
         <LoadMoreButton v-if="hasMore" :loading="loadingMore" @load="loadMore" />
@@ -248,12 +255,18 @@ useHead(() => ({
   width: 3px; height: 22px; border-radius: var(--radius-full);
   background: linear-gradient(180deg, var(--river-600) 0%, var(--amber-600) 52%, var(--clay-600) 100%);
 }
-.tb-item-link { display: flex; align-items: flex-start; gap: var(--space-3); flex: 1; min-width: 0; text-align: left; text-decoration: none; color: inherit; cursor: pointer; border-radius: var(--radius-control); }
-.tb-item-link:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+.tb-item-link {
+  display: flex; align-items: flex-start; gap: var(--space-3); flex: 1; min-width: 0;
+  text-align: left; text-decoration: none; color: inherit; cursor: pointer;
+  border-radius: var(--radius-control);
+  transition: opacity var(--duration-fast) var(--ease-out);
+}
+.tb-item-link:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
 .tb-icon-chip {
   display: flex; align-items: center; justify-content: center;
   width: 34px; height: 34px; flex-shrink: 0; border-radius: 50%;
   font-size: 1.05rem; line-height: 1; background: var(--bg-alt);
+  transition: transform var(--duration-fast) var(--ease-out);
 }
 .tb-item.unread .tb-icon-chip { background: rgba(var(--primary-rgb), .12); color: var(--primary-fg); }
 .tb-body { display: flex; flex-direction: column; gap: .15rem; flex: 1; min-width: 0; }
@@ -265,16 +278,26 @@ useHead(() => ({
 .tb-dismiss {
   flex-shrink: 0; min-width: 44px; min-height: 44px; border: none; background: none;
   color: var(--ink-700); cursor: pointer; font-size: .75rem; border-radius: var(--radius-full);
-  opacity: 0; transition: opacity .15s, background .15s, color .15s;
+  opacity: 0;
+  transition: opacity var(--duration-fast),
+              background var(--duration-fast),
+              color var(--duration-fast),
+              transform var(--duration-fast) var(--ease-out);
   display: flex; align-items: center; justify-content: center; align-self: center;
 }
 .tb-item:hover .tb-dismiss, .tb-dismiss:focus-visible { opacity: 1; }
 .tb-dismiss:hover { background: var(--bg-alt); color: var(--error); }
-.tb-dismiss:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+.tb-dismiss:active { transform: scale(.92); }
+.tb-dismiss:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
 .tb-guest { margin-top: var(--space-6); }
 .tb-filters { display: flex; gap: var(--space-2); margin-bottom: var(--space-4); overflow-x: auto; padding-bottom: var(--space-1); scrollbar-width: none; }
 .tb-filters::-webkit-scrollbar { display: none; }
-.tb-filters .chip { white-space: nowrap; display: inline-flex; align-items: center; gap: .35rem; }
+.tb-filters .chip {
+  white-space: nowrap; display: inline-flex; align-items: center; gap: .35rem;
+  transition: transform var(--duration-fast) var(--ease-out), background-color var(--duration-fast), border-color var(--duration-fast);
+}
+.tb-filters .chip:active { transform: scale(.96); }
+.tb-filters .chip:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
 .tb-filter-icon { font-size: 1em; flex-shrink: 0; }
 
 /* ── Dark mode ── */
@@ -285,12 +308,26 @@ useHead(() => ({
 .dark .tb-icon-chip { background: rgba(var(--white-rgb),.06); }
 .dark .tb-item.unread .tb-icon-chip { background: color-mix(in srgb, var(--primary) 18%, transparent); }
 
-/* ── Mobile ── */
+/* ── Mobile & Reduced Motion ── */
 @media (max-width: 600px) {
   .tb-page { padding: var(--space-4) var(--space-3); }
   .tb-item { padding: var(--space-2) var(--space-3); gap: var(--space-2); }
   .tb-item-link { gap: var(--space-2); }
   .tb-item::before { left: 2px; width: 2px; height: 18px; }
   .tb-item-title { font-size: var(--text-xs); }
+}
+@media (hover: none), (max-width: 860px) {
+  .tb-dismiss { opacity: .65; }
+  .tb-dismiss:active { opacity: 1; transform: scale(.92); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .tb-item,
+  .tb-item-link,
+  .tb-icon-chip,
+  .tb-dismiss,
+  .tb-filters .chip {
+    transition: none !important;
+    transform: none !important;
+  }
 }
 </style>
