@@ -303,6 +303,15 @@ useHead(() => ({
   display: flex; gap: var(--space-3); justify-content: center; flex-wrap: wrap;
   padding-bottom: var(--space-4);
 }
+.about-cta .btn {
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform .2s var(--ease-out), box-shadow .2s var(--ease-out);
+}
+.about-cta .btn:active { transform: scale(.97); }
+.about-cta .btn:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
 
 /* ── Body typography ──────────────────────────────────────────────── */
 .legal-page :deep(p) { font-size: var(--text-sm); color: var(--ink-secondary, var(--ink)); }
@@ -315,7 +324,7 @@ useHead(() => ({
 .legal-page :deep(a) { color: var(--primary-fg); font-weight: var(--weight-semibold); text-decoration-line: underline; text-decoration-color: transparent; text-underline-offset: 3px; transition: text-decoration-color .3s var(--ease-out), color .3s var(--ease-out); }
 .legal-page :deep(a:hover) { text-decoration-color: var(--primary-fg); }
 .legal-page :deep(a:visited) { color: var(--primary-fg); opacity: .85; }
-.legal-page :deep(a:focus-visible) { outline: 2px solid var(--primary); outline-offset: 2px; }
+.legal-page :deep(a:focus-visible) { outline: 2px solid var(--color-focus); outline-offset: 2px; }
 
 /* ── Responsive scale-up ──────────────────────────────────────────── */
 @media (min-width: 640px) {
@@ -345,6 +354,7 @@ useHead(() => ({
 /* ── Reduced motion ───────────────────────────────────────────────── */
 @media (prefers-reduced-motion: reduce) {
   .bm-river, .bm-river--2 { animation: none; stroke-dasharray: none; }
+  .about-cta .btn:active { transform: none; }
 }
 
 /* Reveal stagger + reduced-motion fallback are provided by the global
