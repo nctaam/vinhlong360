@@ -15,6 +15,7 @@ import asyncio
 import logging
 import time
 from dataclasses import dataclass
+from typing import Literal, TypedDict
 
 from pinned_http import EgressPolicy, PinnedHTTPClient
 
@@ -61,6 +62,27 @@ class SmsDeliveryResult:
     delivered: bool
     error_code: str | None = None
     retryable: bool = False
+    state: Literal["accepted", "rejected", "ambiguous", "unknown"] | None = None
+    provider_reference: str | None = None
+    observed_at: str | None = None
+
+    def __post_init__(self) -> None:
+        if self.state is None:
+            inferred = "accepted" if self.delivered else "unknown" if self.retryable else "rejected"
+            object.__setattr__(self, "state", inferred)
+
+
+class ProviderCapabilities(TypedDict):
+    idempotency: bool
+    reconciliation: bool
+
+
+class ProviderReceipt(TypedDict):
+    operation_id: str
+    provider: str
+    state: Literal["accepted", "rejected", "ambiguous", "unknown"]
+    provider_reference: str | None
+    observed_at: str
 
 
 def mask_phone(phone: str) -> str:
@@ -91,8 +113,9 @@ def classify_provider_result(payload: object) -> SmsDeliveryResult:
         return SmsDeliveryResult(False, "provider_unavailable", True)
     code = payload.get("CodeResult")
     if code == ESMS_SUCCESS_CODE:
-        return SmsDeliveryResult(True, None, False)
-    return SmsDeliveryResult(False, f"provider_code_{code}", False)
+        reference = payload.get("TransactionId") or payload.get("ReferenceNo") or payload.get("RefNo")
+        return SmsDeliveryResult(True, None, False, state="accepted", provider_reference=str(reference) if reference else None)
+    return SmsDeliveryResult(False, f"provider_code_{code}", False, state="rejected")
 
 
 def backoff_seconds(attempt: int) -> float:
@@ -110,6 +133,11 @@ class EsmsProvider:
     @property
     def configured(self) -> bool:
         return bool(self._api_key)
+
+    @property
+    def capabilities(self) -> ProviderCapabilities:
+        # eSMS has no verified request idempotency or reconciliation contract.
+        return {"idempotency": False, "reconciliation": False}
 
     def _payload(self, phone: str, message: str) -> dict:
         return build_payload(
@@ -153,6 +181,15 @@ class EsmsProvider:
                 logger.warning(
                     "SMS attempt %d exception for %s", attempt + 1, mask_phone(phone)
                 )
+                # A request timeout can happen after the provider accepted the
+                # message. Without provider idempotency/reconciliation, retrying
+                # an outbox delivery key would risk sending a duplicate SMS.
+                if delivery_key:
+                    return SmsDeliveryResult(
+                        False, "provider_ambiguous", False, state="ambiguous"
+                    )
+                # OTP callers have historically retried transport errors; keep
+                # that behavior for calls that do not carry an outbox key.
                 outcome = SmsDeliveryResult(False, "provider_unavailable", True)
             if outcome.delivered:
                 return outcome

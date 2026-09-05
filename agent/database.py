@@ -212,7 +212,7 @@ CASE_KERNEL_REQUIRED_COLUMNS = {
     "case_admin_access_sessions": {"admin_access_session_id", "case_id", "actor_ref", "scope", "session_digest", "expires_at", "revoked_at", "created_at"},
     "case_transitions": {"transition_id", "case_id", "from_phase", "to_phase", "from_revision", "to_revision", "actor_ref", "reason_code", "policy_revision", "correlation_id", "created_at"},
     "case_audit_events": {"audit_event_id", "case_id", "actor_ref", "actor_scopes", "channel", "reason_code", "policy_revision", "correlation_id", "before_snapshot", "after_snapshot", "created_at"},
-    "case_outbox": {"outbox_id", "case_id", "idempotency_key", "topic", "payload", "status", "available_at", "attempts", "last_error_code", "created_at"},
+    "case_outbox": {"outbox_id", "case_id", "idempotency_key", "topic", "payload", "status", "available_at", "attempts", "last_error_code", "created_at", "provider_state", "provider_reference", "provider_receipt", "provider_observed_at"},
     "case_idempotency": {"idempotency_id", "idempotency_key", "actor_ref", "request_digest", "response_enc", "response_key_version", "expires_at", "created_at"},
     "case_contact_challenges": {"challenge_id", "case_id", "contact_digest", "challenge_digest", "channel", "expires_at", "verified_at", "created_at"},
     "case_pre_contact_challenges": {"challenge_id", "contact_digest", "challenge_digest", "expires_at", "verified_at", "used_at", "created_at"},

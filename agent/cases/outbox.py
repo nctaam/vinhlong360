@@ -11,6 +11,7 @@ proposed value, no phone echoed back, and never a bearer secret.
 from __future__ import annotations
 
 import hashlib
+import json
 from dataclasses import dataclass
 from datetime import datetime, timedelta
 
@@ -62,6 +63,7 @@ class DispatchSummary:
     retried: int = 0
     suppressed: int = 0
     dead_lettered: int = 0
+    ambiguous: int = 0
 
 
 def configure_case_outbox(*, database=None, crypto=None, provider=None, contact_lookup=None) -> None:
@@ -164,15 +166,22 @@ def _public_reference(database, conn, case_id: str) -> str | None:
 
 
 def _settle(database, conn, outbox_id: str, *, status: str, attempts: int,
-            error_code: str | None, available_at: datetime) -> None:
+            error_code: str | None, available_at: datetime,
+            provider_state: str | None = None,
+            provider_reference: str | None = None,
+            provider_receipt: dict | None = None) -> None:
     database._execute(
         conn,
         """
         UPDATE case_outbox
-        SET status = %s, attempts = %s, last_error_code = %s, available_at = %s
+        SET status = %s, attempts = %s, last_error_code = %s, available_at = %s,
+            provider_state = %s, provider_reference = %s, provider_receipt = %s::jsonb,
+            provider_observed_at = NOW()
         WHERE outbox_id = %s
         """,
-        (status, attempts, error_code, available_at, outbox_id),
+        (status, attempts, error_code, available_at, provider_state, provider_reference,
+         json.dumps(provider_receipt, ensure_ascii=True, sort_keys=True) if provider_receipt is not None else None,
+         outbox_id),
     )
 
 
@@ -188,9 +197,15 @@ def _deliver_one(database, conn, item, *, now: datetime) -> str:
     case_id = str(item["case_id"])
     attempts = int(item["attempts"]) + 1
 
-    def settle(status: str, *, error_code: str | None, available_at: datetime) -> None:
+    def settle(status: str, *, error_code: str | None, available_at: datetime,
+               provider_state: str | None = None,
+               provider_reference: str | None = None,
+               provider_receipt: dict | None = None) -> None:
         _settle(database, conn, outbox_id, status=status, attempts=attempts,
-                error_code=error_code, available_at=available_at)
+                error_code=error_code, available_at=available_at,
+                provider_state=provider_state,
+                provider_reference=provider_reference,
+                provider_receipt=provider_receipt)
         conn.commit()
 
     # Authority is re-read here, not trusted from enqueue time: consent
@@ -211,11 +226,27 @@ def _deliver_one(database, conn, item, *, now: datetime) -> str:
         return "dead"
 
     result = _PROVIDER.send(contact, message, delivery_key=delivery_key(outbox_id))
+    provider_state = getattr(result, "state", None)
+    provider_reference = getattr(result, "provider_reference", None)
+    if provider_state == "ambiguous" or result.error_code == "provider_ambiguous":
+        receipt = {
+            "operation_id": delivery_key(outbox_id),
+            "provider": type(_PROVIDER).__name__,
+            "state": "ambiguous",
+            "provider_reference": provider_reference,
+            "observed_at": now.isoformat(),
+        }
+        settle("ambiguous", error_code="provider_ambiguous", available_at=now,
+               provider_state="ambiguous", provider_reference=provider_reference,
+               provider_receipt=receipt)
+        return "ambiguous"
     if result.delivered:
         from . import metrics as _metrics
 
         _metrics.observe("updated", channel="sms", case_id=case_id, now=now)
-        settle("sent", error_code=None, available_at=now)
+        settle("sent", error_code=None, available_at=now,
+               provider_state=provider_state or "accepted",
+               provider_reference=provider_reference)
         return "sent"
 
     _observe_provider_failure(case_id, now)
@@ -224,7 +255,9 @@ def _deliver_one(database, conn, item, *, now: datetime) -> str:
         settle("pending", error_code=result.error_code,
                available_at=now + timedelta(seconds=backoff))
         return "retried"
-    settle("failed", error_code=result.error_code, available_at=now)
+    settle("failed", error_code=result.error_code, available_at=now,
+           provider_state=provider_state or "rejected",
+           provider_reference=provider_reference)
     return "dead"
 
 
@@ -245,7 +278,7 @@ def dispatch_case_outbox(*, now: datetime, limit: int = 100) -> DispatchSummary:
         due = _claim(database, conn, now, limit)
         conn.commit()
 
-    tally = {"sent": 0, "retried": 0, "suppressed": 0, "dead": 0}
+    tally = {"sent": 0, "retried": 0, "suppressed": 0, "dead": 0, "ambiguous": 0}
     with database._conn(commit_on_success=False) as conn:
         for item in due:
             tally[_deliver_one(database, conn, item, now=now)] += 1
@@ -253,4 +286,5 @@ def dispatch_case_outbox(*, now: datetime, limit: int = 100) -> DispatchSummary:
     return DispatchSummary(
         claimed=len(due), sent=tally["sent"], retried=tally["retried"],
         suppressed=tally["suppressed"], dead_lettered=tally["dead"],
+        ambiguous=tally["ambiguous"],
     )
