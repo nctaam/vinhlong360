@@ -68,9 +68,12 @@
           <span class="tc-label">{{ CHAPTER_LABEL[stopChapters[idx]!] }}</span>
         </li>
         <li class="step">
-          <span class="step-time">{{ stop.time || '' }}</span>
+          <div class="step-time">
+            <span class="step-index">#{{ idx + 1 }}</span>
+            <span v-if="stop.time" class="step-time-val">{{ stop.time }}</span>
+          </div>
           <div :class="['step-card', stop.type ? `cat-${catClass(stop.type)}` : '']">
-            <span class="step-emoji" aria-hidden="true">{{ typeEmoji(stop.type) }}</span>
+            <span class="step-emoji" aria-hidden="true"><IconLine :name="typeIcon(stop.type)" /></span>
             <div class="step-content">
               <h3>
                 <NuxtLink v-if="stopIdentity(stop)" :to="entityPath(stopIdentity(stop))" class="stop-link">{{ stop.name || stopIdentity(stop) }}</NuxtLink>
@@ -173,6 +176,11 @@ const itinerarySaveShape = computed(() => ({
   summary: itinerary.value?.summary || itinerary.value?.description || '',
   images: [] as string[],
 }))
+
+function typeIcon(type?: string) {
+  if (!type) return 'pin'
+  return TYPE_META[type]?.icon || 'pin'
+}
 
 function typeEmoji(type?: string) {
   if (!type) return '📍'

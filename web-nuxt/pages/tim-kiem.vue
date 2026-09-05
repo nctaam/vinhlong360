@@ -150,6 +150,21 @@
             </button>
           </template>
         </EmptyState>
+        <div class="zero-result-curated-wrap" aria-label="Gợi ý tìm kiếm phổ biến">
+          <p class="zero-result-curated-label"><IconLine name="sparkles" aria-hidden="true" /> Gợi ý chủ đề phổ biến:</p>
+          <div class="scroll-row trending-row">
+            <button
+              v-for="(chip, i) in trendingChips"
+              :key="'zr-' + i"
+              type="button"
+              class="trending-chip"
+              @click="goTrending(chip)"
+            >
+              <span class="trending-dot" aria-hidden="true"></span>
+              <span>{{ chip }}</span>
+            </button>
+          </div>
+        </div>
         <NuxtErrorBoundary>
           <ClientOnly>
             <LazySmartRecommendations context="search" :query="q" title="Có phải bạn muốn tìm…" :limit="6" color-recipe="tri-region-v1" />
@@ -892,6 +907,34 @@ useHead({
 }
 .dark .trending-chip { background: var(--bg-alt); border-color: var(--line); }
 .dark .trending-chip:hover { border-color: var(--color-action); background: var(--color-action-surface); }
+
+/* Curated recovery chips in zero-result state */
+.zero-result-curated-wrap {
+  margin-top: var(--space-4);
+  margin-bottom: var(--space-4);
+  padding: var(--space-4);
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-surface);
+}
+.zero-result-curated-label {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin: 0 0 var(--space-3);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-semibold);
+  color: var(--muted);
+}
+.zero-result-curated-label :deep(svg) {
+  width: 16px;
+  height: 16px;
+  color: var(--color-action);
+}
+.dark .zero-result-curated-wrap {
+  background: var(--bg-alt);
+  border-color: var(--line);
+}
 
 /* Grid results stagger */
 .grid { animation: fadeInGrid .4s var(--ease-out) both; }

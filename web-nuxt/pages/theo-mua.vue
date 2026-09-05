@@ -6,7 +6,7 @@
          scrubbing the ring changes the whole hero's color temperature. -->
     <section class="catalog-hero cat-season" :class="'q-' + seasonQuarter.key">
       <div class="catalog-hero-inner">
-        <span class="catalog-hero-icon" :key="seasonEmoji" aria-hidden="true">{{ seasonEmoji }}</span>
+        <span class="catalog-hero-icon" :key="seasonIcon" aria-hidden="true"><IconLine :name="seasonIcon" /></span>
         <div>
           <h1>{{ pc('hero_title', 'Tháng ' + month + ' — đi đâu, ăn gì?') }}</h1>
           <p>{{ pc('hero_subtitle', heroSubtitle) }}</p>
@@ -28,7 +28,7 @@
               :aria-label="'Tháng ' + m"
               @click="month = m"
             ><span class="ring-notch-tick" aria-hidden="true" /></button>
-            <span class="season-ring-emoji" aria-hidden="true">{{ seasonEmoji }}</span>
+            <span class="season-ring-emoji" aria-hidden="true"><IconLine :name="seasonIcon" /></span>
           </div>
         </div>
         <div class="season-moment-text">
@@ -281,7 +281,7 @@ const TYPE_EYEBROW: Record<string, string> = {
   product: 'Nông sản',
   dish: 'Ẩm thực',
 }
-const SEASON_EMOJIS = ['💧', '🌿', '🌿', '🌻', '🌻', '🌞', '🌞', '🌞', '🌾', '🌾', '💧', '💧']
+const SEASON_ICONS = ['droplet', 'leaf', 'leaf', 'sprout', 'sprout', 'sun', 'sun', 'sun', 'fruit', 'fruit', 'droplet', 'droplet']
 </script>
 
 <script setup lang="ts">
@@ -316,7 +316,8 @@ watch(month, (m) => {
   nextTick(() => resultsSection.value?.scrollIntoView({ behavior: 'smooth', block: 'start' }))
 })
 
-const seasonEmoji = computed(() => SEASON_EMOJIS[month.value - 1] || '📅')
+const seasonIcon = computed(() => SEASON_ICONS[month.value - 1] || 'calendar')
+const seasonEmoji = seasonIcon
 
 /* Mekong quarters → mood label + note (evocative, not factual claims).
    Extracted to a pure fn so both the hero ring (current month) and the
