@@ -88,3 +88,4 @@ runtime regression and preserved the valid HTTP journey.
 ## Backend Completion Closure (2026-09-05)
 
 Task 0: complete (commits `05ed0999..85f30a1e`, review approved; focused authority/release + alternate-root acceptance `32 passed`; authority `PASS tracked=8 stale=0 mismatches=0`; hard gate clean; default pytest temp root remains blocked by Windows `WinError 5`, so workspace basetemp was used; static `closed_pilot_verdict=GO_CONDITIONAL` preserved for acceptance contract while evaluated pilot remains `NO_GO`, verifier remains `BLOCKED`).
+Task 1: complete (commits `1efe000d..61a10742`, independent review approved after remediation; canonical report authority, strict target registry, idempotency/revision CAS, authenticated UGC cutover, and legacy JSONL read/import-only boundary verified; focused report/notification suite `62 passed`; hard gate and diff-check clean; PostgreSQL concurrency test remains explicitly skipped without approved disposable loopback DSN).
