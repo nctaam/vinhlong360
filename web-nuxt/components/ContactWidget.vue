@@ -285,4 +285,24 @@ onUnmounted(() => { if (copyTimer) clearTimeout(copyTimer) })
   .cw-btn:active:not(:disabled) { transform: none; }
   .cw-check { transition: none; }
 }
+
+.dark .cw {
+  border-color: rgba(var(--white-rgb), .12);
+}
+
+@media (forced-colors: active) {
+  .cw {
+    border: 1px solid CanvasText;
+  }
+  .cw-btn-primary {
+    background: Highlight;
+    color: HighlightText;
+    border-color: Highlight;
+  }
+  .cw-btn-secondary {
+    background: ButtonFace;
+    color: ButtonText;
+    border-color: ButtonText;
+  }
+}
 </style>

@@ -403,8 +403,8 @@ a.tag:hover, button.tag:hover, .tag[role="button"]:hover { filter: brightness(.9
 .img-preview-item:hover .remove { opacity: 1; }
 .img-preview-item .remove:hover { background: rgba(0,0,0,.8); transform: scale(1.1); }
 .img-preview-item .remove:active { transform: scale(.9); }
-.dark .img-preview-item .remove { background: rgba(255,255,255,.2); }
-.dark .img-preview-item .remove:hover { background: rgba(255,255,255,.35); }
+.dark .img-preview-item .remove { background: rgba(var(--white-rgb), .2); }
+.dark .img-preview-item .remove:hover { background: rgba(var(--white-rgb), .35); }
 
 /* ── Loading / Skeleton (Apple shimmer) ── */
 .skeleton {
@@ -439,7 +439,7 @@ a.tag:hover, button.tag:hover, .tag[role="button"]:hover { filter: brightness(.9
   min-width: 200px; padding: 6px;
   display: none; z-index: var(--z-dropdown);
 }
-.dark .dropdown-menu { border-color: rgba(255,255,255,.1); }
+.dark .dropdown-menu { border-color: rgba(var(--white-rgb), .1); }
 .dropdown-menu.show { display: block; animation: dropdownIn .25s var(--ease-out-expo); }
 @keyframes dropdownIn { from { opacity: 0; transform: translateY(-6px) scale(.97); } }
 .dropdown-item {
@@ -572,8 +572,8 @@ a.tag:hover, button.tag:hover, .tag[role="button"]:hover { filter: brightness(.9
      translucent bg (esp. .save-btn-sm's rgba(255,255,255,.18), which
      reads as see-through with the blur now gone). Re-assert opacity here. */
   .dark .save-btn:not(.save-btn-sm):not(.saved) { background: var(--card); }
-  .dark .save-btn-sm:not(.saved) { background: rgba(0, 0, 0, .6); }
-  .dark .save-btn-sm:not(.saved):hover { background: rgba(0, 0, 0, .72); }
+  .dark .save-btn-sm:not(.saved) { background: rgba(var(--black-rgb), .6); }
+  .dark .save-btn-sm:not(.saved):hover { background: rgba(var(--black-rgb), .72); }
 }
 
 /* ── Search Autocomplete ── */
@@ -629,39 +629,39 @@ a.tag:hover, button.tag:hover, .tag[role="button"]:hover { filter: brightness(.9
 /* ── Dark mode (components) ── */
 .dark .save-btn:not(.save-btn-sm) { background: rgba(28, 28, 30, .88); border-color: var(--line); }
 .dark .save-btn:not(.save-btn-sm):hover { background: var(--card); }
-.dark .save-btn-sm { background: rgba(255, 255, 255, .18); }
-.dark .save-btn-sm:hover { background: rgba(255, 255, 255, .28); }
+.dark .save-btn-sm { background: rgba(var(--white-rgb), .18); }
+.dark .save-btn-sm:hover { background: rgba(var(--white-rgb), .28); }
 .dark .save-btn-sm.saved { background: rgba(28, 28, 30, .9); }
 
-.dark .input, .dark .textarea, .dark .select { background: rgba(255,255,255,.05); border-color: rgba(255,255,255,.1); color: var(--ink); }
+.dark .input, .dark .textarea, .dark .select { background: rgba(var(--white-rgb), .05); border-color: rgba(var(--white-rgb), .1); color: var(--ink); }
 .dark .input:focus, .dark .textarea:focus, .dark .select:focus { background: var(--card); border-color: var(--color-action); box-shadow: 0 0 0 3px rgba(var(--color-action-rgb), .15); }
-.dark .input::placeholder { color: rgba(255,255,255,.35); }
+.dark .input::placeholder { color: rgba(var(--white-rgb), .35); }
 
-.dark .modal { box-shadow: 0 24px 80px rgba(0,0,0,.55); border-color: rgba(255,255,255,.08); }
-.dark .modal-overlay { background: rgba(0, 0, 0, .65); }
-.dark .modal-close:hover { background: rgba(255,255,255,.08); }
+.dark .modal { box-shadow: 0 24px 80px rgba(var(--black-rgb), .55); border-color: rgba(var(--white-rgb), .08); }
+.dark .modal-overlay { background: rgba(var(--black-rgb), .65); }
+.dark .modal-close:hover { background: rgba(var(--white-rgb), .08); }
 .dark .otp-input input { background: var(--bg-alt); border-color: var(--line); color: var(--ink); }
 .dark .otp-input input:focus { box-shadow: 0 0 0 3px rgba(var(--color-action-rgb), .2); }
 .dark .notif-badge { border-color: var(--card); }
-.dark .notif-dropdown { background: var(--card); border-color: var(--line); box-shadow: 0 8px 32px rgba(0,0,0,.4); }
-.dark .notif-item:hover { background: rgba(255,255,255,.04); }
-.dark .notif-item:active { background: rgba(255,255,255,.07); }
+.dark .notif-dropdown { background: var(--card); border-color: var(--line); box-shadow: 0 8px 32px rgba(var(--black-rgb), .4); }
+.dark .notif-item:hover { background: rgba(var(--white-rgb), .04); }
+.dark .notif-item:active { background: rgba(var(--white-rgb), .07); }
 .dark .notif-item.unread { background: rgba(var(--color-action-rgb), .08); }
 .dark .tag-primary { background: rgba(var(--color-action-rgb), .16); }
 .dark .tag-accent { background: rgba(var(--accent-rgb), .18); }
 .dark .tag-secondary { background: rgba(var(--secondary-rgb), .16); }
 .dark .tag-tertiary { background: rgba(51, 100, 110, .16); }
-.dark .tag-muted { background: rgba(255,255,255,.06); }
-.dark .ac-dropdown { background: var(--glass-bg-heavy); border-color: rgba(255,255,255,.08); box-shadow: var(--shadow-xl); }
-.dark .ac-item:hover, .dark .ac-item.highlighted { background: rgba(255,255,255,.05); }
+.dark .tag-muted { background: rgba(var(--white-rgb), .06); }
+.dark .ac-dropdown { background: var(--glass-bg-heavy); border-color: rgba(var(--white-rgb), .08); box-shadow: var(--shadow-xl); }
+.dark .ac-item:hover, .dark .ac-item.highlighted { background: rgba(var(--white-rgb), .05); }
 .dark .ac-all { border-color: var(--line); }
-.dark .ai-tips, .dark .ai-search-assist, .dark .ai-besttime { background: rgba(255,255,255,.03); border-color: var(--line); }
+.dark .ai-tips, .dark .ai-search-assist, .dark .ai-besttime { background: rgba(var(--white-rgb), .03); border-color: var(--line); }
 .dark .ai-search-header { border-bottom-color: var(--line); }
-.dark .onboarding-overlay { background: rgba(0,0,0,.6); }
-.dark .sf-icon { background: rgba(255,255,255,.06); }
-.dark .sheet-feature:hover { background: rgba(255,255,255,.04); }
-.dark .sheet-close:hover { background: rgba(255,255,255,.08); }
-.dark .btn-ghost:hover:not(:disabled) { background: rgba(255,255,255,.06); }
+.dark .onboarding-overlay { background: rgba(var(--black-rgb), .6); }
+.dark .sf-icon { background: rgba(var(--white-rgb), .06); }
+.dark .sheet-feature:hover { background: rgba(var(--white-rgb), .04); }
+.dark .sheet-close:hover { background: rgba(var(--white-rgb), .08); }
+.dark .btn-ghost:hover:not(:disabled) { background: rgba(var(--white-rgb), .06); }
 .dark .btn-outline { border-color: var(--color-action); }
 .dark .btn-outline:hover:not(:disabled) { background: var(--color-action); color: var(--color-on-action); }
 
