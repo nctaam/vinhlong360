@@ -85,7 +85,7 @@
   height: 10px;
   border-radius: var(--radius-full);
   background: var(--card);
-  border: 2px solid var(--primary-fg);
+  border: 2px solid var(--color-brand);
   cursor: pointer;
   padding: 0;
   transition: transform .25s var(--ease-out-expo), box-shadow .25s var(--ease-out);
@@ -112,7 +112,7 @@
 .lunar-ribbon-tick:hover,
 .lunar-ribbon-tick:focus-visible {
   transform: translate(-50%, -50%) scale(1.35);
-  box-shadow: 0 0 0 4px rgba(var(--primary-rgb), .16);
+  box-shadow: 0 0 0 4px rgba(var(--color-brand-rgb), .16);
 }
 .lunar-ribbon-tick:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 3px; }
 .dark .lunar-ribbon-tick { background: var(--bg-alt); }
@@ -674,15 +674,15 @@
   border-radius: var(--radius-control);
   transition: background .3s var(--ease-out), border-color .3s var(--ease-out);
 }
-.cal-cell:not(.cal-empty):hover { background: rgba(var(--primary-rgb), .04); }
+.cal-cell:not(.cal-empty):hover { background: rgba(var(--color-action-rgb), .04); }
 .cal-cell.cal-today {
-  background: rgba(var(--primary-rgb), .08);
-  border-color: var(--primary-fg);
+  background: rgba(var(--color-action-rgb), .08);
+  border-color: var(--color-action);
 }
 .cal-cell.cal-has-events {
   background:
-    repeating-linear-gradient(45deg, rgba(var(--primary-rgb), .03) 0 2px, transparent 2px 7px),
-    rgba(var(--primary-rgb), .06);
+    repeating-linear-gradient(45deg, rgba(var(--color-action-rgb), .03) 0 2px, transparent 2px 7px),
+    rgba(var(--color-action-rgb), .06);
 }
 .cal-cell:focus-visible { outline: 2px solid var(--color-focus); outline-offset: -2px; border-radius: var(--radius-control); }
 .cal-empty { visibility: hidden; }
@@ -767,7 +767,7 @@
 .dark .event-row:hover { box-shadow: var(--shadow-lg); border-color: rgba(255,255,255,.1); }
 .dark .toggle-btn { background: var(--bg-alt); border-color: var(--line); }
 /* Stronger focus ring contrast on dark backgrounds for the view-toggle. */
-.dark .toggle-btn:focus-visible { outline-color: var(--primary-fg-strong); }
+.dark .toggle-btn:focus-visible { outline-color: var(--color-focus); }
 .dark .calendar { border-color: var(--line); }
 .dark .cal-nav { border-color: var(--line); background: var(--bg-alt); }
 .dark .cal-nav:hover { background: rgba(255,255,255,.08); }
@@ -775,8 +775,8 @@
 /* Calendar has-events cells need a stronger tint to stay visible on the dark card. */
 .dark .cal-cell.cal-has-events {
   background:
-    repeating-linear-gradient(45deg, rgba(var(--primary-rgb), .05) 0 2px, transparent 2px 7px),
-    rgba(var(--primary-rgb), .1);
+    repeating-linear-gradient(45deg, rgba(var(--color-action-rgb), .05) 0 2px, transparent 2px 7px),
+    rgba(var(--color-action-rgb), .1);
 }
 /* Festival date badge: lighten the clay tint so white month/day text keeps ≥4.5:1 in dark mode. */
 /* Soften the date-badge inset scrim on dark so it doesn't read as a hard line. */

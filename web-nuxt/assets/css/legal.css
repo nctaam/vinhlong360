@@ -19,7 +19,7 @@
   gap: var(--space-6);
   background:
     var(--grain),
-    linear-gradient(120deg, color-mix(in srgb, var(--river-600) 14%, transparent) 0%, var(--bg-warm) 55%, rgba(var(--primary-rgb), .16) 120%);
+    linear-gradient(120deg, color-mix(in srgb, var(--river-600) 14%, transparent) 0%, var(--bg-warm) 55%, rgba(var(--color-action-rgb), .16) 120%);
   background-blend-mode: overlay, normal;
 }
 .bm-inner { flex: 1 1 auto; min-width: 0; max-width: var(--measure-read); }
@@ -27,7 +27,7 @@
   display: flex; align-items: center; gap: var(--space-2);
   font-family: var(--font-sans); font-size: var(--text-2xs); font-weight: 700;
   text-transform: uppercase; letter-spacing: var(--tracking-caps);
-  color: var(--primary-fg-strong); margin: 0 0 var(--space-3);
+  color: var(--color-brand); margin: 0 0 var(--space-3);
 }
 .bm-tick { width: 14px; height: 1.5px; background: var(--accent, var(--amber-500)); flex-shrink: 0; }
 .brand-masthead h1 {
@@ -73,14 +73,14 @@
 .dark .brand-masthead {
   background:
     var(--grain),
-    linear-gradient(120deg, color-mix(in srgb, var(--river-legacy-dark) 10%, transparent) 0%, rgba(255,255,255,.02) 55%, rgba(var(--primary-rgb), .12) 120%);
+    linear-gradient(120deg, color-mix(in srgb, var(--river-legacy-dark) 10%, transparent) 0%, rgba(255,255,255,.02) 55%, rgba(var(--color-action-rgb), .12) 120%);
 }
 @media (max-width: 640px) {
   .brand-masthead { flex-direction: column; text-align: center; padding-block: var(--space-6); }
   .bm-inner { max-width: none; }
 }
 
-.legal-page h1 { font-size: var(--text-3xl); font-weight: var(--weight-bold); letter-spacing: var(--tracking-tight); color: var(--primary-fg-strong); margin-bottom: var(--space-1); }
+.legal-page h1 { font-size: var(--text-3xl); font-weight: var(--weight-bold); letter-spacing: var(--tracking-tight); color: var(--color-brand); margin-bottom: var(--space-1); }
 
 /* Local page masthead eyebrow — small-caps dateline, matches the site's
    area/ward eyebrow pattern but scoped here (not promoted global). */
@@ -92,7 +92,7 @@
 }
 .dateline-eyebrow::before {
   content: ""; position: absolute; left: 0; top: 50%; transform: translateY(-50%);
-  width: var(--space-2); height: 1.5px; background: var(--primary);
+  width: var(--space-2); height: 1.5px; background: var(--color-brand);
 }
 
 /* Legal prose gets the measured reading width + relaxed leading; the intro
@@ -113,11 +113,11 @@
   background: var(--bg-alt);
 }
 .legal-toc-link {
-  font-size: var(--text-sm); color: var(--primary-fg); font-weight: var(--weight-medium);
+  font-size: var(--text-sm); color: var(--color-action); font-weight: var(--weight-medium);
   text-decoration-line: underline; text-decoration-color: transparent; text-underline-offset: 3px;
   transition: text-decoration-color .3s var(--ease-out), color .3s var(--ease-out);
 }
-.legal-toc-link:hover { text-decoration-color: var(--primary-fg); }
+.legal-toc-link:hover { text-decoration-color: var(--color-action); }
 .legal-toc-link:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; border-radius: var(--radius-control); }
 .dark .legal-toc { background: var(--bg-alt); border-color: var(--line); }
 
@@ -161,8 +161,8 @@
 .legal-page p { color: var(--ink-secondary, var(--ink)); }
 .legal-page ul { padding-inline-start: var(--space-5); }
 .legal-page li { margin: var(--space-2) 0; color: var(--ink-secondary, var(--ink)); }
-.legal-page a { color: var(--primary-fg); font-weight: var(--weight-semibold); text-decoration-line: underline; text-decoration-color: transparent; text-underline-offset: 3px; transition: text-decoration-color .3s var(--ease-out), color .3s var(--ease-out); }
-.legal-page a:hover { text-decoration-color: var(--primary-fg); }
+.legal-page a { color: var(--color-action); font-weight: var(--weight-semibold); text-decoration-line: underline; text-decoration-color: transparent; text-underline-offset: 3px; transition: text-decoration-color .3s var(--ease-out), color .3s var(--ease-out); }
+.legal-page a:hover { text-decoration-color: var(--color-action); }
 .legal-page a:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
 
 /* ── Responsive scale-up ──────────────────────────────────────────── */
@@ -180,7 +180,7 @@
   background: linear-gradient(135deg, rgba(255,255,255,.03) 0%, rgba(255,255,255,.01) 100%);
 }
 .dark .legal-page a { text-decoration-color: transparent; }
-.dark .legal-page a:hover { text-decoration-color: var(--primary-fg); }
+.dark .legal-page a:hover { text-decoration-color: var(--color-action); }
 
 /* Reveal stagger + reduced-motion fallback are provided by the global
    .reveal infrastructure in base.css. */
