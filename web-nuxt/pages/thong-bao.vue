@@ -18,11 +18,14 @@
     </div>
 
     <template v-else>
-      <div class="tb-filters">
+      <div class="tb-filters" role="tablist" aria-label="Lọc thông báo" aria-orientation="horizontal">
         <button v-for="f in FILTERS" :key="f.key" type="button" role="tab"
+          :id="`tb-filter-${f.key}`"
           :class="['chip', { active: filter === f.key }]"
           :aria-selected="filter === f.key"
+          :tabindex="filter === f.key ? 0 : -1"
           @click="filter = f.key"
+          @keydown="onFilterKeydown"
         ><IconLine :name="f.icon" class="tb-filter-icon" /> {{ f.label }}</button>
       </div>
 
@@ -115,6 +118,27 @@ const emptyHint = computed(() => {
   }
   return hints[filter.value] || 'Khi có hoạt động mới, bạn sẽ thấy ở đây.'
 })
+
+function onFilterKeydown(e: KeyboardEvent) {
+  const currentIndex = FILTERS.findIndex(f => f.key === filter.value)
+  if (currentIndex === -1) return
+  let nextIndex = -1
+  if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
+    nextIndex = (currentIndex + 1) % FILTERS.length
+  } else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
+    nextIndex = (currentIndex - 1 + FILTERS.length) % FILTERS.length
+  } else if (e.key === 'Home') {
+    nextIndex = 0
+  } else if (e.key === 'End') {
+    nextIndex = FILTERS.length - 1
+  }
+  if (nextIndex !== -1) {
+    e.preventDefault()
+    filter.value = FILTERS[nextIndex].key
+    const btn = document.getElementById(`tb-filter-${FILTERS[nextIndex].key}`)
+    btn?.focus()
+  }
+}
 
 async function load() {
   if (!isLoggedIn.value) { loading.value = false; return }

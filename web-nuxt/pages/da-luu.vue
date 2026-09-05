@@ -536,7 +536,7 @@ useHead(() => ({
   width: 100%; min-height: 44px; padding: .65rem .85rem; border: 1px solid var(--border-input);
   border-radius: var(--radius-surface); background: var(--card); color: var(--ink); font: inherit;
 }
-.saved-search input:focus-visible { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(var(--primary-rgb), .12); }
+.saved-search input:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 1px; }
 
 /* Tabs */
 .saved-tabs {
