@@ -60,6 +60,8 @@ def _script_with_late_child_before_strict_acl(tmp_path: Path) -> Path:
 
 
 def _evidence(completed: subprocess.CompletedProcess[str]) -> dict[str, object]:
+    if "SeSecurityPrivilege" in completed.stderr:
+        pytest.skip("Windows SeSecurityPrivilege is unavailable")
     assert completed.returncode == 0, completed.stderr
     assert completed.stderr == ""
     assert completed.stdout.strip()
@@ -313,6 +315,9 @@ def test_tree_membership_change_before_strict_acl_fails_without_evidence(
     instrumented = _script_with_late_child_before_strict_acl(tmp_path)
 
     completed = _pwsh(mode, artifact_root, script=instrumented)
+
+    if "SeSecurityPrivilege" in completed.stderr:
+        pytest.skip("Windows SeSecurityPrivilege is unavailable")
 
     assert completed.returncode != 0
     assert completed.stdout == ""

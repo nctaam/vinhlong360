@@ -27,6 +27,15 @@ def _windows_permission_error(path: Path, *, winerror: int) -> PermissionError:
     return error
 
 
+def _symlink_or_skip(link: Path, target: Path) -> None:
+    try:
+        link.symlink_to(target)
+    except OSError as exc:
+        if getattr(exc, "winerror", None) == 1314:
+            pytest.skip("Windows symlink privilege is unavailable")
+        raise
+
+
 @dataclass(frozen=True)
 class Token:
     kind: str
@@ -750,7 +759,7 @@ def test_render_file_ignores_preexisting_fixed_temp_symlink(tmp_path: Path):
     source.write_text("resolver 127.0.0.11 valid=5s ipv6=off;\n", encoding="utf-8")
     victim.write_bytes(b"victim\n")
     legacy_temp = tmp_path / "rendered.conf.tmp"
-    legacy_temp.symlink_to(victim)
+    _symlink_or_skip(legacy_temp, victim)
 
     render_file(source, destination, topology="systemd")
 
@@ -916,7 +925,7 @@ def test_render_file_rechecks_destination_symlink_before_replace_retry(
     def collide_then_link(_temporary, target):
         nonlocal attempts
         attempts += 1
-        Path(target).symlink_to(victim)
+        _symlink_or_skip(Path(target), victim)
         raise _windows_permission_error(Path(target), winerror=5)
 
     monkeypatch.setattr(renderer.os, "replace", collide_then_link)
@@ -956,7 +965,7 @@ def test_render_file_rejects_source_symlink(tmp_path: Path):
     source = tmp_path / "source.conf"
     destination = tmp_path / "rendered.conf"
     source_target.write_text("events {}\n", encoding="utf-8")
-    source.symlink_to(source_target)
+    _symlink_or_skip(source, source_target)
 
     with pytest.raises(ValueError, match="source path must not be a symlink"):
         render_file(source, destination, topology="systemd")
@@ -972,7 +981,7 @@ def test_render_file_rejects_destination_symlink_without_touching_victim(tmp_pat
     destination = tmp_path / "rendered.conf"
     source.write_text("events {}\n", encoding="utf-8")
     victim.write_bytes(b"victim\n")
-    destination.symlink_to(victim)
+    _symlink_or_skip(destination, victim)
 
     with pytest.raises(ValueError, match="destination path must not be a symlink"):
         render_file(source, destination, topology="systemd")

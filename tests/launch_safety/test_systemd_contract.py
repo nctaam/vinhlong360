@@ -169,6 +169,15 @@ def _load_probe():
     return module
 
 
+def _symlink_or_skip(link: Path, target: Path) -> None:
+    try:
+        link.symlink_to(target)
+    except OSError as exc:
+        if getattr(exc, "winerror", None) == 1314:
+            pytest.skip("Windows symlink privilege is unavailable")
+        raise
+
+
 def _run_probe_subprocess(
     tmp_path: Path,
     args: list[str],
@@ -700,7 +709,7 @@ def test_probe_rejects_final_symlink_without_touching_victim(
     victim_bytes = b"victim evidence\n"
     victim.write_bytes(victim_bytes)
     evidence_path = tmp_path / "listeners.json"
-    evidence_path.symlink_to(victim)
+    _symlink_or_skip(evidence_path, victim)
 
     code = probe.main(
         ["--expect-loopback", "8360", "--evidence", str(evidence_path)],
