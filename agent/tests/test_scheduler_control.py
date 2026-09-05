@@ -1,10 +1,12 @@
 """Deterministic scheduler lease tests (SQLite only; not production proof)."""
 
 from datetime import datetime, timedelta, timezone
+import time
 
 import pytest
 
 from scheduler_control import (
+    LeaseClaim,
     LeaseNotOwned,
     claim_task_slot,
     finish_task_slot,
@@ -111,3 +113,26 @@ def test_scheduled_task_writes_success_receipt(isolated_sqlite_db, monkeypatch):
     assert record["status"] == "finished"
     assert record["outcome"] == "success"
     assert '"status": "success"' in record["receipt_json"]
+
+
+def test_losing_shared_lease_defers_until_next_interval(monkeypatch):
+    import scheduler_control
+
+    monkeypatch.setattr(
+        scheduler_control,
+        "claim_task_slot",
+        lambda *_args, **_kwargs: LeaseClaim(
+            acquired=False,
+            lease_id="held-lease",
+            task_name="lease-loss",
+            slot_key="slot-1",
+            owner_id="other-worker",
+            lease_until=NOW + timedelta(seconds=60),
+            status="leased",
+        ),
+    )
+    task = scheduler.ScheduledTask("lease-loss", lambda: None, interval_seconds=3600, timeout=1)
+
+    task.run()
+
+    assert task.next_run_after > time.time() + 3000

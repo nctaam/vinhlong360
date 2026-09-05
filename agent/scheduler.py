@@ -353,6 +353,10 @@ class ScheduledTask:
             )
             if not claimed.acquired:
                 _sched_logger.info("Skipping task %s: slot %s owned by another worker", self.name, slot_key)
+                # A replica that loses the lease must still wait until the
+                # next interval; otherwise the scheduler loop hot-spins when
+                # the caller keeps invoking run() while the slot is owned.
+                self.next_run_after = time.time() + self.interval
                 return False
             lease = claimed
 

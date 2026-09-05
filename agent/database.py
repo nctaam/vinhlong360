@@ -237,7 +237,7 @@ PG_CORE_REQUIRED_COLUMNS = {
 # 84 closes community moderation/scheduled state with durable CAS fields.
 # Pre-case OTP challenges are durable and single-use; older deployments must
 # apply migration 086 before starting this release.
-PG_REQUIRED_SCHEMA_VERSION = 86
+PG_REQUIRED_SCHEMA_VERSION = 90
 PG_CORE_REQUIRED_SCHEMA_VERSION = 79
 PG_REQUIRED_TRIGGERS = {
     "trg_entity_ratings": "posts",
