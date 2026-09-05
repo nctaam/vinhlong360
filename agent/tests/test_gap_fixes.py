@@ -254,7 +254,7 @@ class TestAdminReportsUserFilter:
 class TestCommentReportRotation:
     """Comment report endpoint delegates to the shared JSONL leaf."""
 
-    def test_comment_report_uses_shared_lock(self):
+    def test_comment_report_uses_shared_writer(self):
         import jsonl_store
         from community import api as community_api
         assert community_api._append_jsonl is jsonl_store.append_jsonl
@@ -263,7 +263,7 @@ class TestCommentReportRotation:
         src = inspect.getsource(__import__("community.api", fromlist=["api"]).report_comment)
         assert "_append_jsonl" in src
 
-    def test_imports_from_public_api(self):
+    def test_writer_comes_from_leaf_module(self):
         from community import api as community_api
         assert community_api._append_jsonl.__module__ == "jsonl_store"
 
