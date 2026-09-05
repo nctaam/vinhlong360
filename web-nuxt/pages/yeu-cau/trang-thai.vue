@@ -100,8 +100,8 @@ useHead(() => ({
       <CaseStatusTimeline :status="cases.status.value" @request-review="requestReview" />
 
       <div class="case-session-actions">
-        <button type="button" data-role="rotate" @click="rotate">Đổi mã tra cứu mới</button>
-        <button type="button" data-role="sign-out" @click="signOut">Đóng phiên tra cứu</button>
+        <button type="button" class="btn btn-outline" data-role="rotate" @click="rotate">Đổi mã tra cứu mới</button>
+        <button type="button" class="btn btn-ghost" data-role="sign-out" @click="signOut">Đóng phiên tra cứu</button>
       </div>
     </template>
 
@@ -109,7 +109,7 @@ useHead(() => ({
       <p class="case-failure" role="alert">
         {{ failure || 'Phiên tra cứu chưa mở hoặc đã kết thúc.' }}
       </p>
-      <NuxtLink to="/yeu-cau/tra-cuu">Mở lại bằng mã trên biên nhận</NuxtLink>
+      <NuxtLink to="/yeu-cau/tra-cuu" class="btn btn-outline">Mở lại bằng mã trên biên nhận</NuxtLink>
     </div>
   </section>
 </template>
@@ -124,9 +124,12 @@ useHead(() => ({
   padding: 1rem;
 }
 .case-failure {
-  padding: 0.6rem 0.8rem;
-  border-radius: 8px;
+  padding: 0.75rem 1rem;
+  border-radius: var(--radius-control);
   border: 1px solid var(--color-error);
+  background: color-mix(in srgb, var(--color-error) 8%, transparent);
+  color: var(--ink);
+  font-size: var(--text-sm);
 }
 .case-note {
   margin: 0;
@@ -139,6 +142,10 @@ useHead(() => ({
 }
 .case-missing {
   display: grid;
-  gap: 0.5rem;
+  gap: var(--space-3);
+  padding: var(--space-5);
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-surface);
 }
 </style>

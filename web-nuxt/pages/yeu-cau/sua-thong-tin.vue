@@ -149,7 +149,7 @@ useHead(() => ({
         Hãy mở trang của địa điểm cần sửa và bấm “Báo thông tin chưa đúng” để bắt đầu —
         như vậy yêu cầu gắn đúng vào trang đó.
       </p>
-      <NuxtLink to="/danh-ba">Tìm địa điểm trong danh bạ</NuxtLink>
+      <NuxtLink to="/danh-ba" class="btn btn-outline">Tìm địa điểm trong danh bạ</NuxtLink>
     </div>
 
     <template v-else>
@@ -204,12 +204,24 @@ useHead(() => ({
   color: var(--muted);
 }
 .case-failure {
-  padding: 0.6rem 0.8rem;
-  border-radius: 8px;
+  padding: 0.75rem 1rem;
+  border-radius: var(--radius-control);
   border: 1px solid var(--color-error);
+  background: color-mix(in srgb, var(--color-error) 8%, transparent);
+  color: var(--ink);
+  font-size: var(--text-sm);
 }
 .case-missing {
   display: grid;
-  gap: 0.5rem;
+  gap: var(--space-3);
+  padding: var(--space-5);
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-surface);
+}
+.case-missing p {
+  margin: 0;
+  line-height: var(--leading-relaxed);
+  color: var(--ink-secondary);
 }
 </style>

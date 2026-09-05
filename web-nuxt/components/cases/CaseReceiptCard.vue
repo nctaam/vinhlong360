@@ -58,8 +58,8 @@ function confirmSaved() {
         chúng tôi không lưu bản gốc và không thể cấp lại mã cũ.
       </p>
       <div class="receipt-actions">
-        <button type="button" @click="copyCapability">Sao chép mã</button>
-        <button type="button" data-role="confirm-saved" @click="confirmSaved">
+        <button type="button" class="btn btn-primary btn-sm" @click="copyCapability">Sao chép mã</button>
+        <button type="button" class="btn btn-outline btn-sm" data-role="confirm-saved" @click="confirmSaved">
           Tôi đã lưu mã
         </button>
       </div>
@@ -79,7 +79,7 @@ function confirmSaved() {
 <style scoped>
 .receipt-card {
   border: 1px solid var(--border);
-  border-radius: 12px;
+  border-radius: var(--radius-surface);
   padding: 1.25rem;
   display: grid;
   gap: 0.9rem;
@@ -98,7 +98,7 @@ function confirmSaved() {
 .receipt-warning {
   margin: 0.5rem 0 0;
   padding: 0.6rem 0.8rem;
-  border-radius: 8px;
+  border-radius: var(--radius-control);
   background: var(--bg-warm);
   color: var(--color-warning);
 }
