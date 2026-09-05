@@ -59,7 +59,7 @@ watch(() => props.loading, (now, prev) => {
   cursor: pointer;
   transition: border-color .3s var(--ease-out), color .3s var(--ease-out);
 }
-.lm-btn:hover:not(:disabled) { border-color: var(--primary); color: var(--primary); }
+.lm-btn:hover:not(:disabled) { border-color: var(--color-action); color: var(--color-action); }
 .lm-btn:hover:not(:disabled) .lm-arrow { transform: translateX(3px); }
 .lm-btn:active:not(:disabled) { transform: scale(.97); }
 .lm-btn:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 4px; }

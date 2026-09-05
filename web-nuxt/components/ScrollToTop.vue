@@ -38,7 +38,7 @@ onUnmounted(() => window.removeEventListener('scroll', onScroll))
   backdrop-filter: var(--glass);
   -webkit-backdrop-filter: var(--glass);
   box-shadow: var(--shadow-sm);
-  color: var(--primary);
+  color: var(--color-brand);
   cursor: pointer;
   display: flex;
   align-items: center;

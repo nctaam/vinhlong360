@@ -65,7 +65,7 @@ if (props.jsonLd) {
   display: inline-flex;
   align-items: center;
 }
-.breadcrumb a:hover { color: var(--primary-fg-strong, var(--primary-fg)); background: rgba(var(--primary-rgb), .06); }
+.breadcrumb a:hover { color: var(--color-action-hover); background: rgba(var(--color-action-rgb), .06); }
 .breadcrumb a:active { transform: scale(.95); transition-duration: .08s; }
 .breadcrumb a:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
 /* current page — the trail's destination reads in ink, slightly heavier, not muted like ancestors */

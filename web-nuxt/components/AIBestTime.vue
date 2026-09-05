@@ -126,7 +126,7 @@ function retry() {
   gap: var(--space-1);
   font-size: var(--text-xs);
   font-weight: var(--weight-semibold);
-  color: var(--primary-fg);
+  color: var(--color-action);
   background: none;
   border: none;
   cursor: pointer;
@@ -139,9 +139,10 @@ function retry() {
 }
 .ai-retry-btn:hover { opacity: .85; }
 .ai-retry-btn:active { transform: scale(.96); }
+.ai-retry-btn:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
 .retry-icon { width: 13px; height: 13px; flex-shrink: 0; }
 .ai-loading { display: flex; gap: var(--space-1); padding: var(--space-2) 0; }
-.ai-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--primary-fg); animation: aiPulse .6s infinite alternate; }
+.ai-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--color-action); animation: aiPulse .6s infinite alternate; }
 .ai-dot:nth-child(2) { animation-delay: .2s; }
 .ai-dot:nth-child(3) { animation-delay: .4s; }
 @keyframes aiPulse { to { opacity: .25; transform: translateY(-3px); } }

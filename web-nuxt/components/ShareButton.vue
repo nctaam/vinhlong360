@@ -47,12 +47,12 @@ async function share() {
   background: var(--card);
   font-size: var(--text-sm);
   font-weight: var(--weight-semibold);
-  color: var(--primary);
+  color: var(--color-action);
   cursor: pointer;
   min-height: 44px;
   transition: background .3s var(--ease-out), border-color .3s var(--ease-out), transform .35s var(--ease-out-expo), box-shadow .3s var(--ease-out);
 }
-.share-btn:hover { background: var(--bg-warm); border-color: var(--primary-light); transform: translateY(-1px); box-shadow: var(--shadow-xs); }
+.share-btn:hover { background: var(--bg-warm); border-color: var(--color-action-border); transform: translateY(-1px); box-shadow: var(--shadow-xs); }
 .share-btn:active { transform: scale(.92); transition-duration: .08s; }
 .share-btn:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 3px; }
 .share-icon { font-size: 1rem; flex-shrink: 0; transition: transform .35s var(--ease-out-expo); }

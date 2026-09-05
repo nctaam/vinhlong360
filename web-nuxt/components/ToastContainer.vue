@@ -59,7 +59,7 @@ function iconNameFor(type?: string) {
 .toast.success { --toast-accent: var(--secondary); }
 .toast.error { --toast-accent: var(--error); }
 .toast.warning { --toast-accent: var(--accent-dark); }
-.toast.info { --toast-accent: var(--primary); }
+.toast.info { --toast-accent: var(--color-action); }
 
 .toast-icon {
   flex-shrink: 0; width: 24px; height: 24px;
@@ -75,7 +75,7 @@ function iconNameFor(type?: string) {
 .toast.success .toast-icon { background: rgba(var(--secondary-rgb), .12); color: var(--secondary); }
 .toast.error .toast-icon { background: rgba(var(--color-error-rgb), .12); color: var(--error); }
 .toast.warning .toast-icon { background: rgba(var(--accent-rgb), .12); color: var(--accent-dark); }
-.toast.info .toast-icon { background: rgba(var(--primary-rgb), .08); color: var(--primary-fg); }
+.toast.info .toast-icon { background: rgba(var(--color-action-rgb), .1); color: var(--color-action); }
 
 .toast-msg { flex: 1; font-size: var(--text-sm); font-weight: var(--weight-medium); color: var(--ink); line-height: var(--leading-snug); }
 

@@ -89,8 +89,8 @@ function toggle(key: string) {
 }
 
 .fc-chip:hover {
-  background: rgba(var(--primary-rgb), 0.06);
-  border-color: rgba(var(--primary-rgb), .3);
+  background: rgba(var(--color-action-rgb), 0.06);
+  border-color: rgba(var(--color-action-rgb), .3);
   transform: translateY(-1px);
 }
 

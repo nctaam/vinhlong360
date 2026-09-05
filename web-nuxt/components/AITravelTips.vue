@@ -126,7 +126,7 @@ function retryFetch() {
 }
 .ai-toggle { display: inline-flex; align-items: center; justify-content: center; font-size: var(--text-xs); color: var(--muted); }
 .spinner-center { margin: 0 auto; }
-:deep(.tip-bullet) { color: var(--primary); }
+:deep(.tip-bullet) { color: var(--color-brand); }
 .ai-disclaimer { margin: var(--space-2) 0 0; font-size: .75rem; color: var(--text-muted); }
 .ai-error { display: flex; align-items: center; gap: var(--space-2); padding: var(--space-3); font-size: var(--text-sm); color: var(--muted); }
 .ai-error-icon { width: 16px; height: 16px; color: var(--color-material-clay); flex-shrink: 0; }
@@ -136,7 +136,7 @@ function retryFetch() {
   gap: var(--space-1);
   font-size: var(--text-xs);
   font-weight: var(--weight-semibold);
-  color: var(--primary-fg);
+  color: var(--color-action);
   background: none;
   border: none;
   cursor: pointer;
@@ -149,6 +149,7 @@ function retryFetch() {
 }
 .ai-retry-btn:hover { opacity: .85; }
 .ai-retry-btn:active { transform: scale(.96); }
+.ai-retry-btn:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
 .retry-icon { width: 13px; height: 13px; flex-shrink: 0; }
 .ai-tips-body { animation: tipsSlideIn .35s var(--ease-out-expo); }
 @keyframes tipsSlideIn { from { opacity: 0; transform: translateY(-8px) scale(.99); } to { opacity: 1; transform: translateY(0) scale(1); } }

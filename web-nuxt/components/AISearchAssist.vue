@@ -166,7 +166,7 @@ watch(() => props.query, () => {
   gap: var(--space-1);
   font-size: var(--text-xs);
   font-weight: var(--weight-semibold);
-  color: var(--primary-fg);
+  color: var(--color-action);
   background: none;
   border: none;
   cursor: pointer;
@@ -179,6 +179,7 @@ watch(() => props.query, () => {
 }
 .ai-retry-btn:hover { opacity: .85; }
 .ai-retry-btn:active { transform: scale(.96); }
+.ai-retry-btn:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
 .retry-icon { width: 13px; height: 13px; flex-shrink: 0; }
 .spinner-center { margin: 0 auto; }
 .ai-search-body { animation: aiSlideIn .35s var(--ease-out-expo); }
