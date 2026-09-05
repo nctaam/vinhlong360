@@ -38,7 +38,7 @@
                 :class="['chip chip-sm', { active: newType === pt.value }]"
                 :aria-pressed="newType === pt.value"
                 @click="newType = pt.value"
-              >{{ pt.label }}</button>
+              ><IconLine :name="pt.icon" aria-hidden="true" /> <span>{{ pt.label }}</span></button>
             </div>
 
             <div v-if="quotingPost" class="quote-preview">
@@ -204,7 +204,7 @@
             :tabindex="filterType === pt.value ? 0 : -1"
             :data-type="pt.value || 'all'"
             @click="setFilterType(pt.value)"
-          >{{ pt.label }}</button>
+          ><IconLine v-if="pt.icon" :name="pt.icon" aria-hidden="true" /> <span>{{ pt.label }}</span></button>
         </div>
 
         <!-- Posts -->
@@ -346,10 +346,10 @@ const router = useRouter()
 const { show: showToast } = useToast()
 const { trackEvent } = useUserEvents()
 const postTypes = [
-  { value: 'share', label: '📸 Chia sẻ' },
-  { value: 'review', label: '⭐ Đánh giá' },
-  { value: 'question', label: '❓ Hỏi đáp' },
-  { value: 'recommend', label: '👍 Gợi ý' },
+  { value: 'share', label: 'Chia sẻ', icon: 'camera' },
+  { value: 'review', label: 'Đánh giá', icon: 'star' },
+  { value: 'question', label: 'Hỏi đáp', icon: 'circle-help' },
+  { value: 'recommend', label: 'Gợi ý', icon: 'thumbs-up' },
 ]
 type FeedTab = 'latest' | 'trending' | 'following' | 'bookmarks'
 type PostTypeValue = '' | 'share' | 'review' | 'question' | 'recommend'
@@ -382,9 +382,9 @@ const sort = computed(() => activeTab.value === 'trending' ? 'trending' : 'lates
 const filterType = ref<PostTypeValue>('')
 const activeTag = ref(normalizeTagQuery(route.query.tag))
 const visibleFeedTabs = computed(() => feedTabs.filter(tab => !tab.requiresAuth || isLoggedIn.value))
-const filterTypeOptions = computed<Array<{ value: PostTypeValue; label: string }>>(() => [
+const filterTypeOptions = computed<Array<{ value: PostTypeValue; label: string; icon?: string }>>(() => [
   { value: '', label: 'Tất cả' },
-  ...postTypes.map(pt => ({ value: pt.value as PostTypeValue, label: pt.label })),
+  ...postTypes.map(pt => ({ value: pt.value as PostTypeValue, label: pt.label, icon: pt.icon })),
 ])
 const { syncToUrl: syncFeedFiltersToUrl } = useFilterUrl({ tab: activeTab, type: filterType }, { tab: 'latest', type: '' })
 
@@ -1271,7 +1271,7 @@ useHead({
 .char-count { font-size: var(--text-xs); color: var(--muted); font-variant-numeric: tabular-nums; transition: color .2s; }
 .char-count.warn { color: var(--accent-dark); }
 .char-count.full { color: var(--error); font-weight: var(--weight-semibold); }
-.chip-sm { font-size: var(--text-xs); padding: var(--space-2) 10px; min-height: 44px; display: inline-flex; align-items: center; }
+.chip-sm { font-size: var(--text-xs); padding: var(--space-2) 10px; min-height: 44px; display: inline-flex; align-items: center; gap: var(--space-1); }
 
 .threads-compose-guest {
   display: flex; gap: var(--space-3); padding: var(--space-4) 0;
@@ -1336,7 +1336,7 @@ useHead({
   font-size: var(--text-xs); padding: var(--space-2) var(--space-3);
   border-radius: var(--radius-full); border: .5px solid var(--line);
   background: var(--card); color: var(--muted); cursor: pointer;
-  white-space: nowrap; min-height: 44px; display: inline-flex; align-items: center;
+  white-space: nowrap; min-height: 44px; display: inline-flex; align-items: center; gap: var(--space-1);
   transition: background .2s, color .2s, border-color .2s, transform .25s var(--ease-out-expo);
 }
 .chip-filter:hover { border-color: var(--ink); color: var(--ink); }

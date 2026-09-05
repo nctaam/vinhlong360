@@ -2,11 +2,18 @@
   <section class="page cp-page">
     <Breadcrumb :items="[{ label: 'Trang chủ', to: '/' }, { label: 'Tài khoản' }]" :json-ld="true" />
 
-    <div v-if="!isLoggedIn" class="cp-guest card">
-      <p class="dateline-eyebrow">HỒ SƠ HÀNH TRÌNH</p>
-      <h1>Tài khoản</h1>
-      <p>Đăng nhập để xem bảng điều khiển tài khoản.</p>
-      <button type="button" class="btn btn-primary" @click="openAuth()">Đăng nhập</button>
+    <div v-if="!isLoggedIn" class="cp-guest">
+      <EmptyState
+        icon-name="user"
+        title="Tài khoản — Hồ sơ hành trình"
+        message="Đăng nhập để xem bảng điều khiển tài khoản, lịch sử tương tác và cài đặt bảo mật."
+        color-recipe="tri-region-v1"
+        :heading-level="1"
+      >
+        <template #actions>
+          <button type="button" class="btn btn-primary" @click="openAuth()">Đăng nhập</button>
+        </template>
+      </EmptyState>
     </div>
 
     <template v-else>
@@ -368,10 +375,7 @@ useHead(() => ({
 
 <style scoped>
 .cp-page { max-width: 1040px; margin: 0 auto; }
-.cp-guest { padding: 2rem; text-align: center; }
-.cp-guest h1 { margin: 0 0 1rem; font-family: var(--font-editorial); font-size: 1.5rem; font-weight: 600; }
-.cp-guest p { color: var(--muted); margin-bottom: 1rem; }
-.cp-guest .dateline-eyebrow { justify-content: center; }
+.cp-guest { padding: var(--space-6) 0; }
 
 /* Local page masthead eyebrow — small-caps dateline + hairline tick, matches
    the site's area/ward eyebrow pattern but scoped here (not promoted global). */

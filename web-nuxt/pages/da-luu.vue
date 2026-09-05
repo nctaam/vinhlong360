@@ -2,10 +2,18 @@
   <section class="page saved-page">
     <Breadcrumb :items="[{ label: 'Trang chủ', to: '/' }, { label: 'Đã lưu' }]" :json-ld="true" />
 
-    <div v-if="!isLoggedIn" class="saved-guest card">
-      <h1>Đã lưu</h1>
-      <p>Đăng nhập để xem nội dung đã lưu.</p>
-      <button type="button" class="btn btn-primary" @click="openAuth()">Đăng nhập</button>
+    <div v-if="!isLoggedIn" class="saved-guest">
+      <EmptyState
+        icon-name="bookmark"
+        title="Đã lưu — Kho hành trình cá nhân"
+        message="Đăng nhập để đồng bộ và xem danh sách địa điểm, bài viết và lịch trình bạn đã lưu giữ trên mọi thiết bị."
+        color-recipe="tri-region-v1"
+        :heading-level="1"
+      >
+        <template #actions>
+          <button type="button" class="btn btn-primary" @click="openAuth()">Đăng nhập</button>
+        </template>
+      </EmptyState>
     </div>
 
     <template v-else>
@@ -469,9 +477,7 @@ useHead(() => ({
 
 <style scoped>
 .saved-page { max-width: 920px; margin: 0 auto; }
-.saved-guest { padding: 2rem; text-align: center; }
-.saved-guest h1 { margin: 0 0 1rem; font-size: 1.5rem; }
-.saved-guest p { color: var(--muted); margin-bottom: 1rem; }
+.saved-guest { padding: var(--space-6) 0; }
 .saved-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 1rem; margin-bottom: 1rem; }
 .saved-kicker { margin: 0 0 .2rem; color: var(--muted); font-size: .8rem; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; }
 .saved-title { font-size: 1.5rem; margin: 0; }
