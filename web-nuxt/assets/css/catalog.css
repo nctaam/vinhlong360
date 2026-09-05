@@ -1451,6 +1451,7 @@
   padding-left: var(--space-1);
 }
 .afl-remove {
+  position: relative;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -1463,6 +1464,15 @@
   cursor: pointer;
   padding: 0;
   transition: color .2s var(--ease-out), background .2s var(--ease-out);
+}
+.afl-remove::before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  min-width: 44px;
+  min-height: 44px;
 }
 .afl-remove:hover {
   color: var(--color-action);
@@ -1744,4 +1754,22 @@
 
 @media (prefers-reduced-motion: reduce) {
   .planner-optimization-preview { animation: none; }
+}
+
+@media (forced-colors: active) {
+  .map-list-surface__toggle button[aria-pressed='true'] {
+    border: 2px solid Highlight !important;
+    background: Highlight !important;
+    color: HighlightText !important;
+  }
+  .map-list-surface__toggle button[aria-pressed='false'] {
+    border: 1px solid ButtonText !important;
+  }
+  .afl-chip {
+    border: 1px solid CanvasText !important;
+  }
+  .afl-remove {
+    border: 1px solid ButtonText !important;
+    color: ButtonText !important;
+  }
 }

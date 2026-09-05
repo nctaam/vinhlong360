@@ -18,7 +18,7 @@
 .bc-back:active { transform: scale(.93); transition-duration: .08s; }
 .bc-back:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
 .dark .bc-back { background: var(--card); border-color: var(--line); }
-.dark .bc-back:hover { background: rgba(255,255,255,.06); }
+.dark .bc-back:hover { background: rgba(var(--white-rgb), .06); }
 .breadcrumb ol { flex: 1; min-width: 0; list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: nowrap; gap: var(--space-1); font-size: var(--text-xs); color: var(--muted); overflow-x: auto; overscroll-behavior-x: contain; scrollbar-width: none; -webkit-overflow-scrolling: touch; mask-image: linear-gradient(to right, black 85%, transparent); -webkit-mask-image: linear-gradient(to right, black 85%, transparent); }
 .breadcrumb ol::-webkit-scrollbar { display: none; }
 .breadcrumb li { white-space: nowrap; flex-shrink: 0; }
@@ -110,6 +110,11 @@ a.hl-action[href^="https://zalo"]:hover { background: var(--brand-zalo-hover); b
 }
 
 @media (forced-colors: active) {
+  .bc-back {
+    border: 1px solid ButtonText;
+    background: ButtonFace;
+    color: ButtonText;
+  }
   .lb-close, .lb-prev, .lb-next {
     border: 2px solid ButtonText;
     background: ButtonFace;

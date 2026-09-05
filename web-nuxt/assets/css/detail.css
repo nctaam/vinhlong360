@@ -278,7 +278,9 @@
 .pt-content { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
 .pt-content strong { font-size: var(--text-sm); font-weight: var(--weight-semibold); color: var(--ink); }
 .pt-content span { font-size: var(--text-sm); color: var(--muted); line-height: var(--leading-relaxed); }
-.dark .pt-item { background: var(--card); }
+.dark .pt-item,
+.dark .best-time-callout,
+.dark .fs-item { background: var(--card); border-color: var(--line); }
 
 /* ── Highlight tagline ── */
 .entity-highlight { margin: var(--space-5) 0 var(--space-3); padding: var(--space-4) var(--space-5); background: linear-gradient(135deg, rgba(var(--color-brand-rgb), .06) 0%, rgba(var(--color-brand-rgb), .02) 100%); border: 1px solid rgba(var(--color-brand-rgb), .2); border-radius: var(--radius-control); }

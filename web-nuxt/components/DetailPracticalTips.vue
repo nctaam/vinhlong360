@@ -7,7 +7,7 @@
         {{ tipsHeading || 'Lưu ý thực tế' }}
       </h2>
       <ul class="pt-list">
-        <li v-for="tip in practicalTips" :key="tip.icon" class="pt-item">
+        <li v-for="(tip, idx) in practicalTips" :key="`${tip.icon}-${idx}`" class="pt-item">
           <IconLine class="pt-icon" :name="tip.icon" aria-hidden="true" />
           <div class="pt-content">
             <strong>{{ tip.label }}</strong>
