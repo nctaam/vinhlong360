@@ -208,6 +208,7 @@ useHead(() => ({
   transition: transform .25s var(--ease-out-expo), border-color .25s var(--ease-out);
 }
 .level-card:hover { transform: translateY(-2px); border-color: var(--primary-fg); }
+.level-card:active { transform: scale(.985); }
 .lv-icon { font-size: 1.75rem; flex-shrink: 0; display: inline-flex; align-items: center; justify-content: center; color: var(--level-color, var(--primary-fg)); }
 .lv-info { flex: 1; min-width: 0; }
 .lv-name { display: block; font-weight: var(--weight-semibold); }
@@ -221,6 +222,7 @@ useHead(() => ({
 
 /* Points table */
 .points-table-wrap { overflow-x: auto; margin-bottom: var(--space-4); }
+.points-table-wrap:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; border-radius: var(--radius-surface); }
 .points-table { width: 100%; border-collapse: collapse; font-size: var(--text-sm); }
 .points-table th { text-align: left; padding: var(--space-2) var(--space-3); font-weight: var(--weight-semibold); color: var(--muted); border-bottom: 1.5px solid var(--line); font-size: var(--text-xs); text-transform: uppercase; letter-spacing: .04em; }
 .points-table td { padding: var(--space-3); border-bottom: .5px solid var(--line); }
@@ -245,6 +247,7 @@ useHead(() => ({
   transition: transform .2s var(--ease-out-expo);
 }
 .badge-card:hover { transform: translateY(-1px); }
+.badge-card:active { transform: scale(.985); }
 .badge-icon { font-size: 1.5rem; flex-shrink: 0; display: inline-flex; align-items: center; justify-content: center; color: var(--secondary-fg, var(--primary-fg)); }
 .badge-info { flex: 1; min-width: 0; }
 .badge-info strong { display: block; font-size: var(--text-sm); }
@@ -276,7 +279,7 @@ useHead(() => ({
 
 /* Reduced motion */
 @media (prefers-reduced-motion: reduce) {
-  .level-card:hover, .badge-card:hover, .tip-item:hover { transform: none; }
+  .level-card:hover, .level-card:active, .badge-card:hover, .badge-card:active, .tip-item:hover { transform: none; }
 }
 
 /* Mobile */

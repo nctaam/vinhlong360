@@ -278,7 +278,7 @@ useHead(() => ({
 }
 
 @media (min-width: 640px) {
-  /* Intentional hierarchy: primary claim full-width, then a row of
+  /* Intentional hierarchy: primary claim and correction cards full-width, then a row of
      actionable cards (general + partner), then a row of informational
      cards (report + privacy). 6-col base lets thirds & halves coexist. */
   .contact-cards {
@@ -286,7 +286,7 @@ useHead(() => ({
     grid-template-columns: repeat(6, 1fr);
     gap: var(--space-5);
   }
-  .card-claim { grid-column: 1 / -1; }
+  .card-claim, .card-correction { grid-column: 1 / -1; }
   .card-general, .card-partner { grid-column: span 3; }
   .card-report, .card-privacy { grid-column: span 3; }
 }
@@ -297,7 +297,7 @@ useHead(() => ({
 }
 
 /* Focus & accessibility */
-.contact-card a:focus-visible, .card-action .btn:focus-visible { outline: 2px solid var(--primary); outline-offset: 3px; border-radius: var(--radius-control); }
+.contact-card a:focus-visible, .card-action .btn:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 3px; border-radius: var(--radius-control); }
 .card-action .btn { transition: transform .35s var(--ease-out-expo), box-shadow .35s var(--ease-out-expo), background .3s var(--ease-out); }
 .card-action .btn:hover { transform: translateY(-1px); box-shadow: var(--shadow-sm); }
 .card-action .btn:active { transform: scale(.96); transition-duration: .08s; }
@@ -324,6 +324,7 @@ useHead(() => ({
   .contact-card:hover,
   .contact-card:active,
   .contact-card:hover .card-icon,
+  .contact-card:hover .card-icon-vector,
   .card-action .btn:hover,
   .card-action .btn:active {
     transform: none;
