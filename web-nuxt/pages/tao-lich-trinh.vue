@@ -1351,7 +1351,7 @@ await plannerAsyncData
 }
 .picker-item:hover { background: var(--bg-warm); }
 .picker-item:active { transform: scale(.98); transition-duration: .08s; }
-.picker-item:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; border-radius: var(--radius-surface); }
+.picker-item:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; border-radius: var(--radius-surface); }
 .picker-emoji { font-size: var(--text-lg); flex-shrink: 0; }
 .picker-info { flex: 1; min-width: 0; }
 .picker-info strong { display: block; font-size: var(--text-sm); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -1388,7 +1388,7 @@ await plannerAsyncData
   transition: border-color .3s var(--ease-out), box-shadow .35s var(--ease-out-expo), transform .35s var(--ease-out-expo);
 }
 .stop-card:hover { border-color: var(--border); box-shadow: var(--shadow-sm); }
-.stop-card:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+.stop-card:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
 .stop-card-head { display: flex; align-items: center; gap: var(--space-3); }
 .stop-emoji { font-size: var(--text-lg); }
 .stop-card-info { flex: 1; min-width: 0; }
@@ -1432,7 +1432,7 @@ await plannerAsyncData
 .stop-card-actions button { min-height: 44px; min-width: 44px; display: inline-flex; align-items: center; justify-content: center; border-radius: var(--radius-control); transition: background .3s var(--ease-out), transform .35s var(--ease-out-expo); }
 .stop-card-actions button:hover { background: var(--bg-warm); }
 .stop-card-actions button:active { transform: scale(.88); transition-duration: .08s; }
-.stop-card-actions button:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+.stop-card-actions button:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
 .dark .picker-item:hover { background: var(--glass-light); }
 .dark .stop-card { background: var(--card); border-color: var(--line); }
 .dark .stop-card-actions button:hover { background: rgba(var(--white-rgb),.06); }

@@ -564,6 +564,7 @@ if (itinerary.value && !itinerary.value.error) {
 .itin-actions .btn { transition: transform .35s var(--ease-out-expo), box-shadow .35s var(--ease-out-expo); }
 .itin-actions .btn:hover { transform: translateY(-1px); box-shadow: var(--shadow-xs); }
 .itin-actions .btn:active { transform: scale(.95); transition-duration: .08s; }
+.itin-actions .btn:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
 
 /* Mode selector panel: snug card-like container */
 .transport-mode-spaced {
@@ -584,6 +585,7 @@ if (itinerary.value && !itinerary.value.error) {
 .transport-mode .chip { transition: transform .35s var(--ease-out-expo), box-shadow .3s var(--ease-out), background .3s var(--ease-out), border-color .3s var(--ease-out); }
 .transport-mode .chip:hover { transform: translateY(-1px); box-shadow: var(--shadow-xs); }
 .transport-mode .chip:active { transform: scale(.95); transition-duration: .08s; }
+.transport-mode .chip:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
 
 /* Section head introducing the timeline (WCAG 1.3.1: was h1→h3, this restores h2) */
 .timeline-head { margin: var(--space-5) 0 var(--space-2); }
@@ -640,7 +642,7 @@ if (itinerary.value && !itinerary.value.error) {
 .stop-link { color: var(--ink); font-weight: var(--weight-semibold); transition: color .3s var(--ease-out); border-radius: var(--radius-control); }
 .stop-link:hover { color: var(--primary-fg); }
 .stop-link:active { opacity: .7; }
-.stop-link:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+.stop-link:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
 
 /* Type label as scannable badge pill */
 .step-type-label {

@@ -395,12 +395,14 @@ useHead(() => ({
   padding: var(--space-2) var(--space-4); border-radius: var(--radius-full);
   border: .5px solid var(--line); background: var(--card); color: var(--ink);
   font-size: var(--text-sm); font-weight: var(--weight-medium); cursor: pointer;
+  min-height: 44px;
   transition: transform .3s var(--ease-out-expo), background .25s var(--ease-out), border-color .25s var(--ease-out), box-shadow .25s var(--ease-out);
 }
 .pace-chip-glyph { font-size: var(--text-base); line-height: 1; }
 .pace-chip-count { font-size: var(--text-2xs); color: var(--muted); font-variant-numeric: tabular-nums; }
 .pace-chip:hover { transform: translateY(-1px); box-shadow: var(--shadow-xs); border-color: var(--border); }
 .pace-chip:active { transform: scale(.96); transition-duration: .08s; }
+.pace-chip:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
 /* --color-on-action thay cho chữ trắng cứng: --secondary đảo sáng-tối theo
    theme, nên ở Nocturne nền thành --night-leaf và chữ trắng chỉ đạt
    2.80:1. Đây cũng là hợp đồng mà tri-region-color.css áp cho mọi control
