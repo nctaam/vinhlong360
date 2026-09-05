@@ -110,7 +110,7 @@
             type="button"
             class="season-reset-chip"
             @click="seasonFilter = String(currentMonth)"
-          >⟲ tháng này</button>
+          ><IconLine name="repeat" aria-hidden="true" /> Tháng này</button>
         </div>
         <FilterChips
           :filters="seasonFilterOptions"
@@ -125,9 +125,23 @@
           aria-label="Lọc nâng cao"
           @update:model-value="v => ocopOnly = v.includes('ocop')"
         />
-        <div v-if="activeFilterCount > 0" class="filter-status">
-          <span class="filter-count">{{ activeFilterCount }} bộ lọc</span>
-          <button type="button" class="filter-clear" @click="clearFilters">Xóa tất cả</button>
+        <div v-if="activeFilterCount > 0" class="active-filter-ledger" role="region" aria-label="Bộ lọc đang áp dụng">
+          <span class="afl-heading">Đang lọc:</span>
+          <div class="afl-chips">
+            <span v-if="q.trim()" class="afl-chip">
+              <span class="afl-text">Tìm: "{{ q.trim() }}"</span>
+              <button type="button" class="afl-remove" aria-label="Xóa từ khóa tìm kiếm" @click="q = ''"><IconLine name="x" aria-hidden="true" /></button>
+            </span>
+            <span v-if="seasonFilter !== 'all' && seasonFilter !== String(currentMonth)" class="afl-chip">
+              <span class="afl-text">Tháng {{ seasonFilter }}</span>
+              <button type="button" class="afl-remove" aria-label="Bỏ lọc tháng, về tháng này" @click="seasonFilter = String(currentMonth)"><IconLine name="x" aria-hidden="true" /></button>
+            </span>
+            <span v-if="ocopOnly" class="afl-chip">
+              <span class="afl-text">Sản phẩm OCOP</span>
+              <button type="button" class="afl-remove" aria-label="Bỏ lọc OCOP" @click="ocopOnly = false"><IconLine name="x" aria-hidden="true" /></button>
+            </span>
+            <button type="button" class="afl-clear-all" @click="clearFilters">Xóa tất cả</button>
+          </div>
         </div>
       </div>
       <div class="result-bar">
@@ -480,6 +494,9 @@ useHead(() => ({
 .control-label-row { display: flex; align-items: center; justify-content: space-between; gap: var(--space-2); }
 .control-label-row .control-label { margin: var(--space-4) 0 var(--space-2); }
 .season-reset-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
   font-size: var(--text-2xs);
   font-weight: var(--weight-semibold);
   color: var(--accent-dark, var(--amber-600));

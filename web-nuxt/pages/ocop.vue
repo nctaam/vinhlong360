@@ -158,9 +158,27 @@
           aria-label="Lọc theo tháng"
           @update:model-value="v => seasonFilter = v[0] || 'all'"
         />
-        <div v-if="activeFilterCount > 0" class="filter-status">
-          <span class="filter-count">{{ activeFilterCount }} bộ lọc</span>
-          <button type="button" class="filter-clear" @click="clearFilters">Xóa tất cả</button>
+        <div v-if="activeFilterCount > 0" class="active-filter-ledger" role="region" aria-label="Bộ lọc đang áp dụng">
+          <span class="afl-heading">Đang lọc:</span>
+          <div class="afl-chips">
+            <span v-if="q.trim()" class="afl-chip">
+              <span class="afl-text">Tìm: "{{ q.trim() }}"</span>
+              <button type="button" class="afl-remove" aria-label="Xóa từ khóa tìm kiếm" @click="q = ''"><IconLine name="x" aria-hidden="true" /></button>
+            </span>
+            <span v-if="starFilterStr !== '0'" class="afl-chip">
+              <span class="afl-text">{{ starFilterStr }} sao</span>
+              <button type="button" class="afl-remove" aria-label="Bỏ lọc hạng sao" @click="starFilterStr = '0'"><IconLine name="x" aria-hidden="true" /></button>
+            </span>
+            <span v-if="areaFilter !== 'all'" class="afl-chip">
+              <span class="afl-text">{{ AREA_META[areaFilter]?.name || areaFilter }}</span>
+              <button type="button" class="afl-remove" aria-label="Bỏ lọc khu vực" @click="areaFilter = 'all'"><IconLine name="x" aria-hidden="true" /></button>
+            </span>
+            <span v-if="seasonFilter !== 'all'" class="afl-chip">
+              <span class="afl-text">Tháng {{ seasonFilter }}</span>
+              <button type="button" class="afl-remove" aria-label="Bỏ lọc tháng" @click="seasonFilter = 'all'"><IconLine name="x" aria-hidden="true" /></button>
+            </span>
+            <button type="button" class="afl-clear-all" @click="clearFilters">Xóa tất cả</button>
+          </div>
         </div>
       </div>
 

@@ -114,6 +114,20 @@
           aria-label="Lọc theo khu vực"
           @update:model-value="v => areaFilter = v[0] || 'all'"
         />
+        <div v-if="activeFilterCount > 0" class="active-filter-ledger" role="region" aria-label="Bộ lọc đang áp dụng">
+          <span class="afl-heading">Đang lọc:</span>
+          <div class="afl-chips">
+            <span v-if="q.trim()" class="afl-chip">
+              <span class="afl-text">Tìm: "{{ q.trim() }}"</span>
+              <button type="button" class="afl-remove" aria-label="Xóa từ khóa tìm kiếm" @click="q = ''"><IconLine name="x" aria-hidden="true" /></button>
+            </span>
+            <span v-if="areaFilter !== 'all'" class="afl-chip">
+              <span class="afl-text">{{ AREA_META[areaFilter]?.name || areaFilter }}</span>
+              <button type="button" class="afl-remove" aria-label="Bỏ lọc khu vực" @click="areaFilter = 'all'"><IconLine name="x" aria-hidden="true" /></button>
+            </span>
+            <button type="button" class="afl-clear-all" @click="clearFilters">Xóa tất cả</button>
+          </div>
+        </div>
       </div>
 
       <p class="result-meta" aria-live="polite">{{ filtered.length }} nơi lưu trú</p>
@@ -128,7 +142,7 @@
       </div>
       <EmptyState v-else icon-name="home" title="Chưa thấy nơi ở phù hợp" message="Thử đổi khu vực hoặc từ khóa khác xem sao nhé." hint="Bỏ bộ lọc khu vực để xem nơi ở khắp tỉnh — từ cù lao ven sông Tiền tới các xã ven biển.">
         <template #actions>
-          <button type="button" class="btn btn-outline" @click="areaFilter = 'all'; q = ''; scrollToGrid()">Xóa bộ lọc</button>
+          <button type="button" class="btn btn-outline" @click="clearFilters(); scrollToGrid()"><IconLine name="x" aria-hidden="true" /> Xóa bộ lọc</button>
           <NuxtLink to="/du-lich" class="btn btn-outline">Khám phá du lịch</NuxtLink>
         </template>
       </EmptyState>
@@ -280,6 +294,18 @@ const featured = computed(() => {
 
 function scrollToGrid() {
   nextTick(() => gridSection.value?.scrollIntoView({ behavior: 'smooth', block: 'start' }))
+}
+
+const activeFilterCount = computed(() => {
+  let n = 0
+  if (areaFilter.value !== 'all') n++
+  if (q.value.trim()) n++
+  return n
+})
+
+function clearFilters() {
+  areaFilter.value = 'all'
+  q.value = ''
 }
 
 // declutter-2 A1: cross-links 3 card script-driven (bỏ Du-lịch — trùng interstitial links + nav).

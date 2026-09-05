@@ -1402,6 +1402,86 @@
 .filter-clear:hover {
   background: rgba(var(--primary-rgb), .08);
 }
+/* Active filter ledger — contextual, tactile chips showing applied filters with 1-tap dismiss */
+.active-filter-ledger {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+  margin-top: var(--space-3);
+  padding-top: var(--space-3);
+  border-top: .5px solid var(--line);
+}
+.afl-heading {
+  font-size: var(--text-xs);
+  color: var(--muted);
+  font-weight: var(--weight-medium);
+}
+.afl-chips {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+}
+.afl-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: var(--space-1) var(--space-2);
+  background: var(--color-surface-raised);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-full);
+  font-size: var(--text-xs);
+  color: var(--ink);
+  min-height: 32px;
+}
+.afl-text {
+  font-weight: var(--weight-medium);
+  padding-left: var(--space-1);
+}
+.afl-remove {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: var(--radius-full);
+  border: none;
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+  padding: 0;
+  transition: color .2s var(--ease-out), background .2s var(--ease-out);
+}
+.afl-remove:hover {
+  color: var(--color-action);
+  background: var(--color-action-surface);
+}
+.afl-remove:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 1px;
+}
+.afl-clear-all {
+  font-size: var(--text-xs);
+  color: var(--color-action);
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-weight: var(--weight-semibold);
+  display: inline-flex;
+  align-items: center;
+  min-height: 32px;
+  padding: var(--space-1) var(--space-2);
+  border-radius: var(--radius-control);
+  transition: background .2s var(--ease-out);
+}
+.afl-clear-all:hover {
+  background: var(--color-action-surface);
+}
+.afl-clear-all:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 2px;
+}
 .result-bar {
   display: flex;
   align-items: center;

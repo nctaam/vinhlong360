@@ -181,8 +181,24 @@
         aria-label="Lọc theo trạng thái"
         @update:model-value="v => statusFilter = v[0] || 'all'"
       />
-      <!-- declutter-2 A5: FilterChips khu-vực đã bỏ — quick-picks blob (đầu trang, bind
-           cùng areaFilter) là 1 đường filter khu vực duy nhất. -->
+      <div v-if="activeFilterCount > 0" class="active-filter-ledger" role="region" aria-label="Bộ lọc đang áp dụng">
+        <span class="afl-heading">Đang lọc:</span>
+        <div class="afl-chips">
+          <span v-if="q.trim()" class="afl-chip">
+            <span class="afl-text">Tìm: "{{ q.trim() }}"</span>
+            <button type="button" class="afl-remove" aria-label="Xóa từ khóa tìm kiếm" @click="q = ''"><IconLine name="x" aria-hidden="true" /></button>
+          </span>
+          <span v-if="statusFilter !== 'all'" class="afl-chip">
+            <span class="afl-text">{{ STATUS_LABEL[statusFilter] || statusFilter }}</span>
+            <button type="button" class="afl-remove" aria-label="Bỏ lọc trạng thái" @click="statusFilter = 'all'"><IconLine name="x" aria-hidden="true" /></button>
+          </span>
+          <span v-if="areaFilter !== 'all'" class="afl-chip">
+            <span class="afl-text">{{ AREA_META[areaFilter]?.name || areaFilter }}</span>
+            <button type="button" class="afl-remove" aria-label="Bỏ lọc khu vực" @click="areaFilter = 'all'"><IconLine name="x" aria-hidden="true" /></button>
+          </span>
+          <button type="button" class="afl-clear-all" @click="clearFilters">Xóa tất cả</button>
+        </div>
+      </div>
     </div>
 
     <div class="view-toggle" role="group" aria-label="Chế độ hiển thị">
@@ -232,7 +248,7 @@
       </div>
       <EmptyState v-else icon-name="lantern" title="Không tìm thấy lễ hội" message="Thử thay đổi trạng thái, khu vực hoặc từ khóa tìm kiếm.">
         <template #actions>
-          <button type="button" class="btn btn-outline" @click="statusFilter = 'all'; areaFilter = 'all'; q = ''">Xóa bộ lọc</button>
+          <button type="button" class="btn btn-outline" @click="clearFilters()"><IconLine name="x" aria-hidden="true" /> Xóa bộ lọc</button>
           <button type="button" class="btn btn-outline" @click="view = 'calendar'"><IconLine name="calendar" /> Xem lịch</button>
           <NuxtLink to="/su-kien" class="btn btn-outline"><IconLine name="megaphone" /> Sự kiện</NuxtLink>
         </template>
@@ -280,19 +296,19 @@
       <h2>Khám phá thêm</h2>
       <div class="cross-links">
         <NuxtLink to="/su-kien" class="cross-card">
-          <span class="cross-icon" aria-hidden="true">🎪</span>
+          <span class="cross-icon" aria-hidden="true"><IconLine name="lantern" /></span>
           <div><strong>Sự kiện</strong><p>Festival, hội chợ</p></div>
         </NuxtLink>
         <NuxtLink to="/du-lich" class="cross-card">
-          <span class="cross-icon" aria-hidden="true">🌿</span>
+          <span class="cross-icon" aria-hidden="true"><IconLine name="leaf" /></span>
           <div><strong>Du lịch</strong><p>Trải nghiệm miệt vườn</p></div>
         </NuxtLink>
         <NuxtLink to="/lich-trinh" class="cross-card">
-          <span class="cross-icon" aria-hidden="true">🗓️</span>
+          <span class="cross-icon" aria-hidden="true"><IconLine name="calendar" /></span>
           <div><strong>Lịch trình</strong><p>Tuyến đi sẵn</p></div>
         </NuxtLink>
         <NuxtLink to="/ban-do" class="cross-card" no-prefetch>
-          <span class="cross-icon" aria-hidden="true">🗺️</span>
+          <span class="cross-icon" aria-hidden="true"><IconLine name="map" /></span>
           <div><strong>Bản đồ</strong><p>Xem trên bản đồ</p></div>
         </NuxtLink>
       </div>
@@ -328,9 +344,23 @@ useFilterUrl({ vung: areaFilter, trang_thai: statusFilter }, { vung: 'all', tran
 
 const statusFilterOptions = [
   { key: 'all', label: 'Tất cả' },
-  { key: 'now', label: 'Đang diễn ra', icon: '🔴' },
-  { key: 'soon', label: 'Sắp khai mạc', icon: '🟡' },
+  { key: 'now', label: 'Đang diễn ra', iconName: 'flame' },
+  { key: 'soon', label: 'Sắp khai mạc', iconName: 'clock' },
 ]
+
+const activeFilterCount = computed(() => {
+  let n = 0
+  if (areaFilter.value !== 'all') n++
+  if (statusFilter.value !== 'all') n++
+  if (q.value.trim()) n++
+  return n
+})
+
+function clearFilters() {
+  areaFilter.value = 'all'
+  statusFilter.value = 'all'
+  q.value = ''
+}
 
 const { data, error: fetchError } = await useAsyncData('festivals', () =>
   apiFetch<{ events: Entity[] }>('/api/events?limit=200&include_past=true')
