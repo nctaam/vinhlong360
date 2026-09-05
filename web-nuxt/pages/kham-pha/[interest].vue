@@ -447,8 +447,8 @@ useHead(() => ({
 .interest-nav .chip.active { box-shadow: var(--shadow-sm); }
 /* Polish: explicit focus-visible rings on the interest nav chips so keyboard
    focus is always visible, including on the active (filled) chip */
-.interest-nav .chip:focus-visible { outline: 2px solid var(--primary); outline-offset: 3px; }
-.interest-nav .chip.active:focus-visible { outline-color: var(--accent); outline-offset: 4px; }
+.interest-nav .chip:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 3px; }
+.interest-nav .chip.active:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 4px; }
 
 @media (max-width: 840px) { .interest-nav { flex-wrap: wrap; overflow-x: visible; } }
 /* Polish: roomier tap targets on narrow screens (>=48px, comfortable padding) */

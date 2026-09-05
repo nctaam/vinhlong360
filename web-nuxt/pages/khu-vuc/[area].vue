@@ -462,10 +462,11 @@ if (areaMeta) {
   border-color: rgba(var(--primary-rgb), .2);
 }
 .see-all-toggle:active { transform: scale(.96); transition-duration: .08s; }
-.see-all-toggle:focus-visible { outline: 2px solid var(--primary); outline-offset: 3px; }
+.see-all-toggle:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 3px; }
 
 /* declutter-3 T12: wards thu gọn sau <details> — link vẫn trong DOM, đỡ nhiễu thị giác */
 .wards-summary { cursor: pointer; list-style: none; user-select: none; }
+.wards-summary:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; border-radius: var(--radius-control); }
 .wards-summary::-webkit-details-marker { display: none; }
 .wards-chevron {
   display: inline-block;

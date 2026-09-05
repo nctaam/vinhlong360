@@ -577,7 +577,7 @@ useHead(() => ({
 }
 .region-window:hover { transform: translateY(-3px); box-shadow: var(--shadow-md); border-color: rgba(var(--river-rgb, var(--primary-rgb)), .4); }
 .region-window:active { transform: scale(.98); transition-duration: .08s; }
-.region-window:focus-visible { outline: 2px solid var(--primary); outline-offset: 3px; }
+.region-window:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 3px; }
 /* Active state = tri-province gradient underline (river→amber→clay), matching
    FilterChips.vue's ::after treatment, instead of a flat single-tone border. */
 .region-window.active { border-color: transparent; background: rgba(var(--river-rgb, var(--primary-rgb)), .06); }

@@ -879,7 +879,7 @@ useHead({
 .wp-contact-label { font-size: var(--text-xs); color: var(--muted); }
 .wp-phone { font-size: var(--text-base); font-weight: var(--weight-bold); color: var(--primary-fg); min-height: 44px; padding: var(--space-2) var(--space-3); margin-inline-start: calc(var(--space-3) * -1); display: inline-flex; align-items: center; border-radius: var(--radius-control); }
 .wp-phone:hover { text-decoration: underline; }
-.wp-phone:focus-visible { outline: 2px solid var(--primary); outline-offset: 3px; }
+.wp-phone:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 3px; }
 
 /* Facilities */
 .wp-fac-list { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: var(--space-3); }
@@ -889,14 +889,14 @@ useHead({
 .wp-fac-kind { font-size: var(--text-xs); color: var(--primary-fg); display: inline-flex; align-items: center; gap: var(--space-1); margin-bottom: 2px; }
 .wp-fac-icon { font-size: 1.1rem; line-height: 1; flex-shrink: 0; }
 .wp-fac-row { font-size: var(--text-sm); color: var(--muted); margin-top: 2px; }
-.wp-fac-row a { color: var(--primary); }
-.wp-fac-row a:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+.wp-fac-row a { color: var(--primary-fg); }
+.wp-fac-row a:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; border-radius: var(--radius-control); }
 
 /* Map button */
 .wp-map-btn { display: flex; align-items: center; justify-content: center; gap: var(--space-2); padding: var(--space-3); border-radius: var(--radius-sheet); background: var(--bg-warm); border: .5px solid var(--line); font-weight: var(--weight-bold); font-size: var(--text-sm); color: var(--ink); min-height: 44px; transition: background .3s var(--ease-out), transform .35s var(--ease-out-expo), box-shadow .3s var(--ease-out); }
 .wp-map-btn:hover { background: var(--line); transform: translateY(-1px); box-shadow: var(--shadow-xs); }
 .wp-map-btn:active { transform: scale(.97); transition-duration: .08s; }
-.wp-map-btn:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+.wp-map-btn:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
 
 /* Responsive */
 @media (max-width: 840px) {
