@@ -73,7 +73,7 @@
 .dark .brand-masthead {
   background:
     var(--grain),
-    linear-gradient(120deg, color-mix(in srgb, var(--river-legacy-dark) 10%, transparent) 0%, rgba(255,255,255,.02) 55%, rgba(var(--color-action-rgb), .12) 120%);
+    linear-gradient(120deg, color-mix(in srgb, var(--river-legacy-dark) 10%, transparent) 0%, rgba(var(--white-rgb), .02) 55%, rgba(var(--color-action-rgb), .12) 120%);
 }
 @media (max-width: 640px) {
   .brand-masthead { flex-direction: column; text-align: center; padding-block: var(--space-6); }
@@ -177,7 +177,7 @@
 
 /* ── Dark mode ────────────────────────────────────────────────────── */
 .dark .about-page .catalog-hero.cat-org {
-  background: linear-gradient(135deg, rgba(255,255,255,.03) 0%, rgba(255,255,255,.01) 100%);
+  background: linear-gradient(135deg, rgba(var(--white-rgb), .03) 0%, rgba(var(--white-rgb), .01) 100%);
 }
 .dark .legal-page a { text-decoration-color: transparent; }
 .dark .legal-page a:hover { text-decoration-color: var(--color-action); }
