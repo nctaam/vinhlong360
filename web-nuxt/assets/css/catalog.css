@@ -19,9 +19,9 @@
 /* when a chip is both active (filled brand bg) AND focused, swap the focus
    ring to accent so it stays visible against the primary-coloured fill */
 .chip.active:focus-visible { outline-color: var(--accent); outline-offset: 4px; }
-.chip.active { background: var(--primary); color: var(--text-on-dark); border-color: var(--primary); box-shadow: 0 2px 8px rgba(var(--primary-rgb), .3); }
-.chip.season.active { background: rgba(var(--primary-rgb), .88); color: var(--text-on-dark); border-color: var(--primary); }
-.dark .chip.season.active { background: rgba(var(--primary-rgb), .75); }
+.chip.active { background: var(--color-action); color: var(--color-on-action); border-color: var(--color-action); box-shadow: 0 2px 8px rgba(var(--color-action-rgb), .3); }
+.chip.season.active { background: rgba(var(--color-action-rgb), .88); color: var(--color-on-action); border-color: var(--color-action); }
+.dark .chip.season.active { background: rgba(var(--color-action-rgb), .75); }
 @media (max-width: 840px) {
   .chip-row { flex-wrap: nowrap; overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: none; padding-bottom: var(--space-1); scroll-snap-type: x proximity; overscroll-behavior-x: contain; mask-image: linear-gradient(to right, var(--color-mask-opaque) 85%, transparent); -webkit-mask-image: linear-gradient(to right, var(--color-mask-opaque) 85%, transparent); }
   .chip-row::-webkit-scrollbar { display: none; }
@@ -1212,16 +1212,16 @@
    gains a soft brand glow-ring and a tiny check-feel. Satisfying,
    cohesive — turns plain chips into a real segmented control. */
 .controls .chip.active {
-  box-shadow: 0 2px 8px -2px rgba(var(--primary-rgb), .5), 0 0 0 3px rgba(var(--primary-rgb), .12);
+  box-shadow: 0 2px 8px -2px rgba(var(--color-action-rgb), .5), 0 0 0 3px rgba(var(--color-action-rgb), .12);
   transform: translateY(-1px);
 }
 .controls .chip.active:hover {
-  background: var(--primary);
-  border-color: var(--primary);
-  box-shadow: 0 3px 10px -2px rgba(var(--primary-rgb), .55), 0 0 0 3px rgba(var(--primary-rgb), .16);
+  background: var(--color-action);
+  border-color: var(--color-action);
+  box-shadow: 0 3px 10px -2px rgba(var(--color-action-rgb), .55), 0 0 0 3px rgba(var(--color-action-rgb), .16);
 }
 .dark .controls .chip.active {
-  box-shadow: 0 2px 8px -2px rgba(var(--primary-rgb), .5), 0 0 0 3px rgba(var(--primary-rgb), .22);
+  box-shadow: 0 2px 8px -2px rgba(var(--color-action-rgb), .5), 0 0 0 3px rgba(var(--color-action-rgb), .22);
 }
 /* inactive chips get a hair more lift on hover for a tactile feel */
 .controls .chip:not(.active):hover { transform: translateY(-1px); }
