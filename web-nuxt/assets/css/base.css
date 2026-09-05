@@ -173,7 +173,6 @@ h4 { font-size: var(--text-lg);  line-height: var(--lh-lg);  letter-spacing: var
 .hero-search { display: flex; gap: var(--space-3); margin: var(--space-6) 0 0; max-width: 560px; }
 .hero-search input { flex: 1; padding: var(--space-4) var(--space-5) var(--space-4) 44px; border: 2px solid transparent; border-radius: var(--radius-surface); font-size: 1rem; transition: border-color .3s, box-shadow .3s; }
 .hero-search input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 2px rgba(var(--accent-rgb), .4), inset 0 0 0 1.5px rgba(var(--accent-rgb), .2); }
-.hero-search input:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
 .hero-search button { padding: 0 28px; border: none; border-radius: var(--radius-surface); background: var(--accent); color: var(--ink); font-weight: 700; font-size: var(--text-base); cursor: pointer; transition: background .25s var(--ease-out), transform .25s var(--ease-spring), box-shadow .25s var(--ease-out); min-height: 48px; }
 .hero-search button:hover { will-change: transform; background: var(--accent-dark); color: var(--ink); box-shadow: 0 4px 20px rgba(var(--accent-rgb), .45); transform: translateY(-1px); }
 .hero-search button:active { transform: scale(.94) translateY(0); transition-duration: .08s; box-shadow: 0 2px 8px rgba(var(--accent-rgb), .3); }
