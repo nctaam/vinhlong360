@@ -418,7 +418,7 @@ if (import.meta.client) {
   text-decoration: none; cursor: pointer;
   transition: background .25s var(--ease-out), border-color .25s var(--ease-out), transform .25s var(--ease-out-expo);
 }
-.ac-chip:hover { background: var(--card); border-color: var(--primary-fg); transform: translateY(-1px); }
+.ac-chip:hover { background: var(--card); border-color: var(--color-action); transform: translateY(-1px); }
 .ac-chip:active { transform: scale(.97); transition-duration: .08s; }
 .ac-chip:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
 
@@ -430,12 +430,12 @@ if (import.meta.client) {
 .ac-empty-chips { justify-content: center; margin-top: var(--space-1); }
 .ac-empty-all {
   margin-top: var(--space-2); font-size: var(--text-sm);
-  font-weight: var(--weight-semibold); color: var(--primary-fg);
+  font-weight: var(--weight-semibold); color: var(--color-action);
   text-decoration: none; min-height: 44px; display: inline-flex; align-items: center;
   gap: var(--space-1);
   transition: color .2s var(--ease-out);
 }
-.ac-empty-all:hover { text-decoration: none; color: var(--primary-fg); }
+.ac-empty-all:hover { text-decoration: none; color: var(--color-action-hover); }
 .ac-empty-all .ac-empty-arrow {
   transition: transform .25s var(--ease-out-expo);
 }

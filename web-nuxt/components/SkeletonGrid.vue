@@ -39,7 +39,7 @@ withDefaults(defineProps<{ count?: number }>(), { count: 6 })
 /* Cover carries the same faint grain as the real Story Card's phù-sa placeholder
    (.cover-grain) — so the loading moment forecasts "editorial illustration",
    not a generic shimmering rectangle. */
-.sk-cover { position: relative; height: 160px; background: linear-gradient(90deg, rgba(var(--primary-rgb),.08) 25%, rgba(var(--primary-rgb),.15) 50%, rgba(var(--primary-rgb),.08) 75%); background-size: 200% 100%; animation: shimmer 1.5s infinite; }
+.sk-cover { position: relative; height: 160px; background: linear-gradient(90deg, rgba(var(--color-action-rgb),.08) 25%, rgba(var(--color-action-rgb),.15) 50%, rgba(var(--color-action-rgb),.08) 75%); background-size: 200% 100%; animation: shimmer 1.5s infinite; }
 .sk-cover::after {
   content: ""; position: absolute; inset: 0;
   background-image: var(--grain); background-size: 120px 120px; opacity: .05;

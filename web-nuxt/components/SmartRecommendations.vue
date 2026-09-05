@@ -253,9 +253,9 @@ async function disablePersonalization() {
   font-weight: var(--weight-semibold);
   line-height: 1.4;
 }
-.smart-rec-reason:hover { color: var(--primary-fg); background: var(--bg-warm); }
+.smart-rec-reason:hover { color: var(--color-action-hover); background: var(--bg-warm); }
 .smart-rec-reason:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
-.smart-rec-reason .line-icon { color: var(--primary-fg); }
+.smart-rec-reason .line-icon { color: var(--color-action); }
 .smart-rec-status { margin: var(--space-3) 0 0; color: var(--muted); font-size: var(--text-sm); }
 .smart-rec-skel {
   min-height: 260px;

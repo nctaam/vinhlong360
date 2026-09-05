@@ -138,7 +138,7 @@ async function remove() {
    khoảng trống. Trước đây nhánh "trả lời" không có hàng hành động nào cả. */
 .comment-actions:not(:has(> *)) { display: none; }
 .comment-reply-btn { font-size: var(--text-xs); font-weight: var(--weight-semibold); padding: .15rem .1rem; border: none; background: none; color: var(--muted); cursor: pointer; min-height: 44px; min-width: 44px; display: inline-flex; align-items: center; justify-content: center; }
-.comment-reply-btn:hover { color: var(--primary-fg); }
+.comment-reply-btn:hover { color: var(--color-action-hover); }
 .comment-reply-btn:disabled { opacity: .55; cursor: not-allowed; }
 
 .comment-edit-form { display: flex; flex-direction: column; gap: var(--space-2); margin: .25rem 0 .35rem; }

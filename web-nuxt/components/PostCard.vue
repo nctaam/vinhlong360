@@ -282,7 +282,7 @@ const { timeAgo } = useTimeAgo()
   color: var(--muted);
 }
 .thread-type-badge.type-review { color: var(--accent-text); }
-.thread-type-badge.type-question { color: var(--primary-fg); }
+.thread-type-badge.type-question { color: var(--color-action); }
 .thread-type-badge.type-recommend { color: var(--secondary); }
 .thread-type-badge.type-share { color: var(--tertiary-fg); }
 
