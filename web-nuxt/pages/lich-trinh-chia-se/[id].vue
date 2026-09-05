@@ -7,7 +7,13 @@
         { label: plan?.title || 'Lịch trình chia sẻ' }
       ]"
       :json-ld="true"
-    />
+    >
+      <template #before>
+        <button type="button" class="bc-back" aria-label="Quay lại" @click="goBack">
+          <IconLine name="arrow-left" aria-hidden="true" />
+        </button>
+      </template>
+    </Breadcrumb>
 
     <div v-if="plan" class="shared-plan card">
       <header class="sp-header">
@@ -41,9 +47,9 @@
           <IconLine :name="copied ? 'check' : 'share'" class="sp-btn-icon" />
           <span>{{ copied ? 'Đã sao chép liên kết!' : 'Chia sẻ lịch trình' }}</span>
         </button>
-        <NuxtLink to="/tao-lich-trinh" class="btn btn-primary sp-btn-create">
+        <NuxtLink :to="{ path: '/tao-lich-trinh', query: { title: plan?.title } }" class="btn btn-primary sp-btn-create">
           <IconLine name="plus" class="sp-btn-icon" />
-          <span>Tạo lịch trình của bạn</span>
+          <span>Tạo lịch trình từ gợi ý này</span>
         </NuxtLink>
       </div>
     </div>
@@ -60,6 +66,15 @@ const route = useRoute()
 const planId = normalizeRouteParam(route.params.id)
 const encodedPlanId = encodePathId(planId)
 
+const goBack = () => goBackOr('/lich-trinh')
+
+const copied = ref(false)
+let copyTimer: ReturnType<typeof setTimeout> | null = null
+
+onUnmounted(() => {
+  if (copyTimer) clearTimeout(copyTimer)
+})
+
 const { data: plan, status } = await useAsyncData(`shared-plan-${planId}`, async () => {
   try {
     const res = await apiFetch<{ plan: any }>(`/api/shared-plans/${encodedPlanId}`)
@@ -71,9 +86,6 @@ const { data: plan, status } = await useAsyncData(`shared-plan-${planId}`, async
 if (import.meta.server && !plan.value) {
   throw createError({ statusCode: 404, statusMessage: 'Không tìm thấy lịch trình' })
 }
-
-const copied = ref(false)
-let copyTimer: ReturnType<typeof setTimeout> | null = null
 
 async function copyShareLink() {
   if (import.meta.server) return
@@ -100,10 +112,6 @@ async function copyShareLink() {
     /* copy best-effort */
   }
 }
-
-onUnmounted(() => {
-  if (copyTimer) clearTimeout(copyTimer)
-})
 
 const planSchema = computed(() => {
   if (!plan.value) return null
@@ -196,6 +204,15 @@ useHead({
   gap: var(--space-3);
   position: relative;
 }
+.sp-stop:not(:last-child)::before {
+  content: '';
+  position: absolute;
+  top: 36px;
+  bottom: -16px;
+  left: 15px;
+  width: 2px;
+  background: var(--line);
+}
 .sp-num {
   flex-shrink: 0;
   width: 32px;
@@ -209,6 +226,8 @@ useHead({
   font-weight: var(--weight-bold);
   font-size: var(--text-sm);
   box-shadow: var(--shadow-sm);
+  position: relative;
+  z-index: 1;
 }
 .sp-stop-body {
   display: flex;
@@ -256,6 +275,22 @@ useHead({
   align-items: center;
   gap: var(--space-2);
   min-height: 44px;
+  transition: transform .2s var(--ease-out-expo), box-shadow .2s var(--ease-out);
+}
+.sp-btn-share:hover,
+.sp-btn-create:hover {
+  transform: translateY(-1px);
+}
+.sp-btn-share:active,
+.sp-btn-create:active {
+  transform: scale(.97);
+}
+@media (prefers-reduced-motion: reduce) {
+  .sp-btn-share,
+  .sp-btn-create {
+    transition: none;
+    transform: none;
+  }
 }
 .sp-btn-icon {
   font-size: 1.1em;

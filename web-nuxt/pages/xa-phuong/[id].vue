@@ -781,6 +781,7 @@ useHead({
   gap: var(--space-6);
   margin-top: var(--space-5);
   align-items: start;
+  contain: layout style;
 }
 .wp-main { grid-area: main; min-width: 0; }
 
@@ -828,7 +829,7 @@ useHead({
 .wp-empty-hint { color: var(--muted); font-size: var(--text-xs); max-width: 44ch; margin: 0 auto; position: relative; z-index: 1; }
 
 /* Sidebar cards */
-.wp-aside { grid-area: aside; display: flex; flex-direction: column; gap: var(--space-4); position: sticky; top: 78px; }
+.wp-aside { grid-area: aside; display: flex; flex-direction: column; gap: var(--space-4); position: sticky; top: 78px; max-height: calc(100vh - 78px); max-height: calc(100dvh - 78px); overflow-y: auto; overscroll-behavior: contain; contain: layout style; }
 .wp-aside :deep(.entity-trust-panel) { margin: 0; }
 .ward-action-dock { margin: 0; }
 .ward-action-dock :deep(.action-dock__primary) { flex: 1 1 100%; }
@@ -904,7 +905,7 @@ useHead({
      nested .wp-grid EntityCard rows force .wp-main (and, through it, the
      single .wp-body track) wider than the viewport, causing page-level
      horizontal scroll on mobile. */
-  .wp-aside { position: static; margin-top: 0; }
+  .wp-aside { position: static; max-height: none; overflow-y: visible; margin-top: 0; }
   .ward-action-dock[data-detail-action-safe-area] { padding-bottom: max(var(--space-3), env(safe-area-inset-bottom, 0px)); }
   .wp-stats { gap: var(--space-4); }
 }
