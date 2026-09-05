@@ -720,11 +720,12 @@ useHead(() => ({
   display: inline-flex; align-items: center; justify-content: center;
   border: .5px solid var(--line); border-radius: var(--radius-full);
   background: var(--bg); color: var(--ink); cursor: pointer;
-  transition: background var(--duration-fast) var(--ease-out);
+  transition: background var(--duration-fast) var(--ease-out), transform var(--duration-fast) var(--ease-out);
 }
 .lvn-nav:hover:not(:disabled) { background: var(--bg-alt); }
+.lvn-nav:active:not(:disabled) { transform: scale(.94); }
 .lvn-nav:disabled { opacity: var(--opacity-disabled); cursor: not-allowed; }
-.lvn-nav:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+.lvn-nav:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
 
 .lvn-picker { display: flex; flex-wrap: wrap; align-items: flex-end; gap: var(--space-2); }
 .lvn-field { display: flex; flex-direction: column; gap: 2px; }
@@ -737,17 +738,18 @@ useHead(() => ({
 }
 .lvn-field input[type="number"] { width: 6.5rem; }
 .lvn-field select:focus-visible,
-.lvn-field input:focus-visible { outline: 2px solid var(--primary); outline-offset: 1px; }
+.lvn-field input:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 1px; }
 
 .lvn-btn {
   min-height: 44px; padding: 0 var(--space-3);
   border: .5px solid var(--line); border-radius: var(--radius-control);
   background: var(--bg-alt); color: var(--ink); font: inherit; font-size: var(--text-sm);
   cursor: pointer;
-  transition: background var(--duration-fast) var(--ease-out);
+  transition: background var(--duration-fast) var(--ease-out), transform var(--duration-fast) var(--ease-out);
 }
 .lvn-btn:hover { background: var(--state-hover); }
-.lvn-btn:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+.lvn-btn:active { transform: scale(.97); }
+.lvn-btn:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
 
 .lvn-cal-caption { margin: 0 0 var(--space-2); color: var(--ink-secondary); font-size: var(--text-sm); }
 
@@ -776,13 +778,14 @@ useHead(() => ({
   border-block-start: .5px solid var(--line);
   border-inline-start: .5px solid var(--line);
   cursor: pointer;
-  transition: background var(--duration-fast) var(--ease-out);
+  transition: background var(--duration-fast) var(--ease-out), transform var(--duration-fast) var(--ease-out);
 }
 .lvn-row > .lvn-cell:last-child { border-inline-end: .5px solid var(--line); }
 .lvn-row:last-child > .lvn-cell { border-block-end: .5px solid var(--line); }
 .lvn-cell.is-blank { cursor: default; background: var(--bg-alt); }
 .lvn-cell:not(.is-blank):hover { background: rgba(var(--primary-rgb), .06); }
-.lvn-cell:focus-visible { outline: 2px solid var(--primary); outline-offset: -2px; }
+.lvn-cell:not(.is-blank):active { transform: scale(.95); }
+.lvn-cell:focus-visible { outline: 2px solid var(--color-focus); outline-offset: -2px; }
 .lvn-cell.is-weekend .lvn-num { color: var(--ink-secondary); }
 .lvn-cell.is-today { background: rgba(var(--primary-rgb), .1); }
 .lvn-cell.is-selected { box-shadow: inset 0 0 0 2px var(--primary-fg); }
@@ -840,8 +843,9 @@ useHead(() => ({
 .lvn-form { display: flex; flex-direction: column; gap: var(--space-2); align-items: flex-start; }
 .lvn-form .lvn-h3 { margin-top: 0; }
 .lvn-inputs { display: flex; flex-wrap: wrap; gap: var(--space-2); }
-.lvn-check { display: flex; align-items: center; gap: var(--space-1h); min-height: 44px; font-size: var(--text-sm); }
-.lvn-check input { width: 20px; height: 20px; }
+.lvn-check { display: flex; align-items: center; gap: var(--space-1h); min-height: 44px; font-size: var(--text-sm); cursor: pointer; }
+.lvn-check input { width: 20px; height: 20px; cursor: pointer; }
+.lvn-check input:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
 .lvn-out {
   display: block; width: 100%; padding: var(--space-2h) 0;
   border-block-start: .5px solid var(--line);
@@ -872,8 +876,11 @@ useHead(() => ({
   display: flex; align-items: center; gap: var(--space-2);
   padding: var(--space-3) 0; min-height: 44px;
   border-block-end: .5px solid var(--line); color: var(--ink); text-decoration: none;
+  transition: transform var(--duration-fast) var(--ease-out);
 }
 .lvn-cross-card:hover strong { text-decoration: underline; }
+.lvn-cross-card:active { transform: translateX(2px); }
+.lvn-cross-card:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; border-radius: var(--radius-control); }
 .lvn-cross-card small { display: block; color: var(--ink-tertiary); font-size: var(--text-2xs); }
 
 /* --- Khung chờ dựng lịch (chỉ hiện trước khi client tiếp quản) --- */
@@ -889,6 +896,7 @@ useHead(() => ({
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .lvn-nav, .lvn-btn, .lvn-cell { transition: none; }
+  .lvn-nav, .lvn-btn, .lvn-cell, .lvn-cross-card { transition: none; transform: none; }
+  .lvn-nav:active, .lvn-btn:active, .lvn-cell:active, .lvn-cross-card:active { transform: none; }
 }
 </style>
