@@ -51,19 +51,32 @@ watch(() => state.value.open, async (open) => {
 <style scoped>
 .confirm-overlay {
   position: fixed; inset: 0; z-index: var(--z-modal-high); display: flex; align-items: center; justify-content: center;
-  background: rgba(var(--ink-rgb), .45); padding: var(--space-4);
+  background: rgba(var(--ink-rgb), .45);
+  padding: max(var(--space-4), env(safe-area-inset-top, 0px)) max(var(--space-4), env(safe-area-inset-right, 0px)) max(var(--space-4), env(safe-area-inset-bottom, 0px)) max(var(--space-4), env(safe-area-inset-left, 0px));
 }
 .confirm-box {
   background: var(--bg); color: var(--ink-900); border-radius: var(--radius-sheet);
+  border: 1px solid var(--line);
   max-width: 400px; width: 100%; padding: 1.5rem; box-shadow: var(--shadow-lg, 0 10px 40px rgba(var(--ink-rgb),.25));
+  transition: transform .25s var(--ease-out-expo);
 }
-.confirm-title { margin: 0 0 .5rem; font-size: 1.15rem; }
+.dark .confirm-box {
+  background: var(--card);
+  border-color: rgba(var(--white-rgb), .12);
+  box-shadow: 0 18px 48px rgba(var(--black-rgb), .6);
+}
+.confirm-title { margin: 0 0 .5rem; font-size: 1.15rem; font-family: var(--font-editorial, inherit); font-weight: var(--weight-bold, 700); letter-spacing: -.01em; }
 .confirm-message { margin: 0 0 1.25rem; color: var(--ink-700); line-height: 1.5; }
 .confirm-actions { display: flex; gap: .75rem; justify-content: flex-end; }
 .btn-danger { background: var(--danger); color: var(--text-on-dark, var(--white)); }
 .confirm-fade-enter-active, .confirm-fade-leave-active { transition: opacity .2s var(--ease-out); }
+.confirm-fade-enter-active .confirm-box, .confirm-fade-leave-active .confirm-box { transition: transform .25s var(--ease-out-expo); }
 .confirm-fade-enter-from, .confirm-fade-leave-to { opacity: 0; }
-@media (prefers-reduced-motion: reduce) { .confirm-fade-enter-active, .confirm-fade-leave-active { transition: none; } }
+.confirm-fade-enter-from .confirm-box, .confirm-fade-leave-to .confirm-box { transform: scale(.96) translateY(6px); }
+@media (prefers-reduced-motion: reduce) {
+  .confirm-fade-enter-active, .confirm-fade-leave-active { transition: none; }
+  .confirm-fade-enter-active .confirm-box, .confirm-fade-leave-active .confirm-box { transition: none; transform: none; }
+}
 @media (forced-colors: active) {
   .confirm-overlay { background: rgba(var(--black-rgb),.7); }
   .confirm-box { border: 2px solid CanvasText; background: Canvas; }

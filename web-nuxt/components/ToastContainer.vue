@@ -39,7 +39,7 @@ function iconNameFor(type?: string) {
 
 <style scoped>
 .toast-container {
-  position: fixed; top: var(--space-4); right: var(--space-4); z-index: var(--z-toast);
+  position: fixed; top: max(var(--space-4), env(safe-area-inset-top, 0px)); right: max(var(--space-4), env(safe-area-inset-right, 0px)); z-index: var(--z-toast);
   display: flex; flex-direction: column; gap: var(--space-2);
   max-width: 380px; width: calc(100% - var(--space-8));
   pointer-events: none;
@@ -92,6 +92,7 @@ function iconNameFor(type?: string) {
 }
 .toast-dismiss:hover { background: var(--bg-alt); color: var(--ink); }
 .toast-dismiss:hover .line-icon { transform: scale(1.15); }
+.toast-dismiss:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
 
 .toast-progress {
   position: absolute; bottom: 0; left: 0; right: 0; height: 2px;
@@ -115,7 +116,13 @@ function iconNameFor(type?: string) {
 .dark .toast { background: var(--card); border-color: rgba(var(--text-on-dark-rgb),.1); box-shadow: 0 8px 32px rgba(var(--black-rgb),.5); }
 
 @media (max-width: 480px) {
-  .toast-container { right: var(--space-2); left: var(--space-2); max-width: none; width: auto; }
+  .toast-container {
+    top: max(var(--space-2), env(safe-area-inset-top, 0px));
+    right: max(var(--space-2), env(safe-area-inset-right, 0px));
+    left: max(var(--space-2), env(safe-area-inset-left, 0px));
+    max-width: none;
+    width: auto;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
