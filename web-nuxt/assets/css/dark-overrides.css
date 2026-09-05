@@ -20,7 +20,7 @@
 }
 
 /* ScrollToTop */
-.dark .scroll-top { background: var(--glass-bg-heavy); backdrop-filter: var(--glass); -webkit-backdrop-filter: var(--glass); border-color: var(--line); box-shadow: var(--shadow-md); color: var(--primary-fg); }
+.dark .scroll-top { background: var(--glass-bg-heavy); backdrop-filter: var(--glass); -webkit-backdrop-filter: var(--glass); border-color: var(--line); box-shadow: var(--shadow-md); color: var(--color-action); }
 .dark .scroll-top:hover { box-shadow: var(--shadow-lg); }
 
 /* ShareButton */
@@ -47,7 +47,7 @@
 
 /* ── Post detail (bai-viet/[id]) ── */
 .dark .comment-form { background: rgba(255,255,255,.04); border-color: rgba(255,255,255,.08); }
-.dark .comment-form:focus-within { background: rgba(255,255,255,.06); border-color: var(--primary-fg); box-shadow: 0 0 0 3px rgba(var(--primary-rgb), .15); }
+.dark .comment-form:focus-within { background: rgba(255,255,255,.06); border-color: var(--color-action); box-shadow: 0 0 0 3px rgba(var(--color-action-rgb), .15); }
 .dark .comment-form .input { color: var(--ink); }
 .dark .comment-form .input::placeholder { color: rgba(255,255,255,.35); }
 .dark .comment-item { border-color: rgba(255,255,255,.06); }
@@ -93,7 +93,7 @@
 
 /* ── Search (tim-kiem) ── */
 .dark .quick-pick { border-color: rgba(255,255,255,.08); }
-.dark .quick-pick:hover { border-color: var(--primary-fg); box-shadow: var(--shadow-md); }
+.dark .quick-pick:hover { border-color: var(--color-action); box-shadow: var(--shadow-md); }
 
 /* ── Seasonal (theo-mua) ── */
 .dark .season-badge { background: rgba(0,0,0,.7); }
@@ -132,7 +132,7 @@
 .dark .stat-panel:hover { box-shadow: var(--shadow-md); }
 
 /* ── Admin: reports (bao-cao) ── */
-.dark .status-pending { background: rgba(var(--accent-rgb), .18); color: var(--accent-light, #f59e0b); }
+.dark .status-pending { background: rgba(var(--accent-rgb), .18); color: var(--color-warning); }
 .dark .status-resolved { background: rgba(var(--secondary-rgb), .18); color: var(--secondary-fg); }
 .dark .status-dismissed { background: rgba(255,255,255,.06); color: rgba(255,255,255,.4); }
 
@@ -146,13 +146,13 @@
 
 /* Section headings */
 .dark .home .section-head h2 { color: var(--ink); }
-.dark .home .section-head .section-link { color: var(--primary-fg); }
+.dark .home .section-head .section-link { color: var(--color-action); }
 
 /* Event cards */
 /* Cùng vết M3 residue với .spotlight ở dưới: gỡ nền để .event-mini không thành
    hòn đảo xám tím duy nhất sau khi .spotlight trở về --card. */
 .dark .event-mini { border-color: rgba(255,255,255,.14); }
-.dark .event-mini:hover { border-color: var(--primary-fg); }
+.dark .event-mini:hover { border-color: var(--color-action); }
 .dark .event-mini h3 { color: var(--ink); }
 .dark .ec-countdown { color: var(--accent-text); background: rgba(var(--accent-rgb), .12); }
 
@@ -176,7 +176,7 @@
 
 /* ── Admin: data quality ── */
 .dark .dq-diff-item { background: rgba(255,255,255,.04); }
-.dark .dq-apply-result { background: rgba(33,150,83,.1); border-color: var(--primary); color: var(--primary); }
+.dark .dq-apply-result { background: rgba(33,150,83,.1); border-color: var(--color-success); color: var(--color-success); }
 .dark .dq-skipped-list { background: rgba(230,126,34,.06); }
 
 /* ── HeroIllustration (moved from scoped :global(.dark) — see component comment) ── */
@@ -224,10 +224,10 @@ html[data-high-contrast="true"].dark {
 }
 
 /* ── Lưu trú ── */
-.dark .quick-pick-count { background: rgba(var(--river-rgb, var(--primary-rgb)), .18); color: var(--ink); }
+.dark .quick-pick-count { background: rgba(var(--color-action-rgb), .18); color: var(--ink); }
 .dark .quick-pick.active .quick-pick-count,
-.dark .quick-pick:hover .quick-pick-count { background: rgba(var(--river-rgb, var(--primary-rgb)), .28); }
-.dark .type-pill { background: rgba(var(--river-rgb, var(--primary-rgb)), .16); border-color: rgba(var(--river-rgb, var(--primary-rgb)), .3); }
-.dark .type-pill:hover { background: rgba(var(--river-rgb, var(--primary-rgb)), .24); }
+.dark .quick-pick:hover .quick-pick-count { background: rgba(var(--color-action-rgb), .28); }
+.dark .type-pill { background: rgba(var(--color-action-rgb), .16); border-color: rgba(var(--color-action-rgb), .3); }
+.dark .type-pill:hover { background: rgba(var(--color-action-rgb), .24); }
 .dark .type-count { color: var(--ink); }
 .dark .type-name { color: var(--muted); }
