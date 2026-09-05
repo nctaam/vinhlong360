@@ -46,7 +46,7 @@ onUnmounted(() => { if (popTimer) clearTimeout(popTimer) })
   font-size: var(--text-sm); font-weight: var(--weight-medium);
   color: var(--ink); text-decoration: none;
 }
-.jb-summary:hover { color: var(--primary-fg); }
+.jb-summary:hover { color: var(--color-action-hover); }
 .jb-heart { width: 20px; height: 20px; flex-shrink: 0; }
 .jb-actions { display: flex; gap: var(--space-2); }
 

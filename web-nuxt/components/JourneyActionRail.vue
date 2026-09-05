@@ -76,7 +76,7 @@ withDefaults(defineProps<{
 }
 .journey-action:hover {
   transform: translateY(-1px);
-  border-color: rgba(var(--primary-rgb), .38);
+  border-color: rgba(var(--color-action-rgb), .38);
   box-shadow: var(--shadow-xs);
 }
 .journey-action:focus-visible {
@@ -108,7 +108,7 @@ withDefaults(defineProps<{
   font-size: var(--text-xs);
   line-height: 1.35;
 }
-.tone-primary .journey-action-icon { background: rgba(var(--primary-rgb), .1); }
+.tone-primary .journey-action-icon { background: rgba(var(--color-action-rgb), .1); }
 .tone-map .journey-action-icon { background: rgba(var(--river-rgb), .1); }
 .tone-planner .journey-action-icon { background: rgba(var(--accent-rgb), .12); }
 .tone-community .journey-action-icon { background: rgba(var(--secondary-rgb), .12); }

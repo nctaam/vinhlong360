@@ -175,7 +175,7 @@ function goToSlide(idx: number) {
   width: 100%;
   border-radius: var(--radius-sheet);
   overflow: hidden;
-  background: linear-gradient(135deg, rgba(var(--primary-rgb), 0.08), rgba(var(--secondary-rgb), 0.08));
+  background: linear-gradient(135deg, rgba(var(--color-action-rgb), 0.08), rgba(var(--secondary-rgb), 0.08));
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -279,7 +279,7 @@ function goToSlide(idx: number) {
   display: grid;
   place-items: center;
   color: var(--muted);
-  background: linear-gradient(135deg, rgba(var(--primary-rgb), .08), rgba(var(--secondary-rgb), .08));
+  background: linear-gradient(135deg, rgba(var(--color-action-rgb), .08), rgba(var(--secondary-rgb), .08));
   font-size: 2rem;
 }
 .pg-disclosure {
@@ -372,12 +372,12 @@ function goToSlide(idx: number) {
     border-radius: 50%;
     border: none;
     padding: 0;
-    background: rgba(var(--primary-rgb), 0.25);
+    background: rgba(var(--color-action-rgb), 0.25);
     cursor: pointer;
     transition: background 200ms, transform 200ms;
   }
   .pg-dot.active {
-    background: var(--primary);
+    background: var(--color-action);
     transform: scale(1.3);
   }
   .pg-dot:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }

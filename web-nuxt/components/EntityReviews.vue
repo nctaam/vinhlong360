@@ -419,10 +419,10 @@ onMounted(() => fetchReviews())
 .rf-label { font-size: var(--text-sm); font-weight: var(--weight-semibold); color: var(--muted); }
 .review-form .btn { margin-top: var(--space-2); }
 .review-login-hint { font-size: var(--text-sm); color: var(--muted); margin-bottom: var(--space-4); }
-.review-login-hint a { color: var(--primary-fg); font-weight: var(--weight-semibold); }
+.review-login-hint a { color: var(--color-action); font-weight: var(--weight-semibold); }
 
 .review-form { transition: border-color .35s var(--ease-out), box-shadow .35s var(--ease-out-expo); }
-.review-form:focus-within { border-color: var(--primary-fg); box-shadow: 0 0 0 4px rgba(var(--primary-rgb), .12), var(--shadow-sm); }
+.review-form:focus-within { border-color: var(--color-action); box-shadow: 0 0 0 4px rgba(var(--color-action-rgb), .12), var(--shadow-sm); }
 .review-form .btn:active { transform: scale(.95); transition-duration: .08s; }
 
 .review-list { display: flex; flex-direction: column; gap: var(--space-4); }
@@ -453,7 +453,7 @@ onMounted(() => fetchReviews())
   background: var(--season-tint);
   border-color: rgba(var(--white-rgb), .06);
 }
-.dark .review-form:focus-within { box-shadow: 0 0 0 3px rgba(var(--primary-rgb), .15); }
+.dark .review-form:focus-within { box-shadow: 0 0 0 3px rgba(var(--color-action-rgb), .18); }
 .dark .review-item:hover { background: rgba(var(--white-rgb),.03); }
-.dark .ri-avatar-placeholder { background: rgba(var(--primary-rgb), .3); }
+.dark .ri-avatar-placeholder { background: rgba(var(--color-action-rgb), .3); }
 </style>
