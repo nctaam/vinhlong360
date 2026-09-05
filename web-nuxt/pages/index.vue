@@ -936,7 +936,7 @@ html.js .home .hero-enter h1::after { animation: hero-underline-draw .8s var(--e
 .home .hero .hero-ac { align-items: center; }
 .home .hero .hero-ac input {
   flex: 1; width: 100%;
-  padding: var(--space-4) 48px var(--space-4) 54px;
+  padding: var(--space-4) var(--space-12) var(--space-4) calc(var(--space-12) + var(--space-1h));
   border-color: transparent; background: var(--card);
 }
 .home .hero .hero-ac .ac-dropdown { text-align: left; }

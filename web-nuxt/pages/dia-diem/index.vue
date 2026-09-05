@@ -577,9 +577,9 @@ useHead(() => ({
 .dd-af-chip {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
+  gap: var(--space-1);
   min-height: 32px;
-  padding: 4px 10px;
+  padding: var(--space-1) var(--space-2h);
   border-radius: var(--radius-full);
   border: 1px solid var(--color-action-border);
   background: var(--color-action-surface);

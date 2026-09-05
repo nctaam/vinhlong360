@@ -1271,7 +1271,7 @@ useHead({
 .char-count { font-size: var(--text-xs); color: var(--muted); font-variant-numeric: tabular-nums; transition: color .2s; }
 .char-count.warn { color: var(--accent-dark); }
 .char-count.full { color: var(--error); font-weight: var(--weight-semibold); }
-.chip-sm { font-size: var(--text-xs); padding: var(--space-2) 10px; min-height: 44px; display: inline-flex; align-items: center; gap: var(--space-1); }
+.chip-sm { font-size: var(--text-xs); padding: var(--space-2) var(--space-2h); min-height: 44px; display: inline-flex; align-items: center; gap: var(--space-1); }
 
 .threads-compose-guest {
   display: flex; gap: var(--space-3); padding: var(--space-4) 0;
@@ -1371,7 +1371,7 @@ useHead({
 .img-preview-thumb { position: relative; width: 64px; height: 64px; border-radius: var(--radius-control); overflow: hidden; }
 .img-preview-item:hover { transform: scale(1.08); box-shadow: var(--shadow-sm); }
 .img-preview-thumb img { width: 100%; height: 100%; object-fit: cover; }
-.img-preview-invalid { min-height: 64px; margin: 0; padding: var(--space-2) 32px var(--space-2) var(--space-2); border: 1px dashed var(--line); border-radius: var(--radius-control); color: var(--error); font-size: var(--text-xs); line-height: 1.35; }
+.img-preview-invalid { min-height: 64px; margin: 0; padding: var(--space-2) var(--space-8) var(--space-2) var(--space-2); border: 1px dashed var(--line); border-radius: var(--radius-control); color: var(--error); font-size: var(--text-xs); line-height: 1.35; }
 .img-preview-item .remove { position: absolute; top: -4px; right: -4px; width: 28px; height: 28px; border-radius: 50%; background: var(--overlay-dark); color: var(--text-on-dark, var(--white)); border: none; cursor: pointer; font-size: .7rem; display: flex; align-items: center; justify-content: center; padding: var(--space-2); box-sizing: content-box; transition: background .2s, transform .2s var(--ease-out-expo); }
 .img-preview-item .remove:hover { background: var(--error); transform: scale(1.1); }
 .img-preview-item .remove:focus-visible { outline: 2px solid var(--text-on-dark, var(--white)); outline-offset: 1px; }
@@ -1468,7 +1468,7 @@ useHead({
   .bm-dismiss:active { transform: none; }
   .threads-refresh .spinning { animation: none; }
 }
-.btn-xs { padding: var(--space-1) 10px; font-size: .72rem; border-radius: var(--radius-control); }
+.btn-xs { padding: var(--space-1) var(--space-2h); font-size: .72rem; border-radius: var(--radius-control); }
 
 /* ── Lên lịch đăng bài ── */
 .schedule-option { margin-top: var(--space-1); }

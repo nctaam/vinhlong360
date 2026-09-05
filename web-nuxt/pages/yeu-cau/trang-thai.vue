@@ -85,6 +85,13 @@ useHead(() => ({
   <section class="case-page" data-color-system="tri-region-v1">
     <Breadcrumb :items="[{ label: 'Trang chủ', to: '/' }, { label: 'Trạng thái yêu cầu' }]" :json-ld="true" />
 
+    <header class="case-header">
+      <h1>Trạng thái yêu cầu</h1>
+      <p class="case-trust-note">
+        Theo dõi tiến trình xử lý và phản hồi từ ban biên tập vinhlong360.
+      </p>
+    </header>
+
     <p v-if="loading" aria-live="polite">Đang tải trạng thái…</p>
 
     <template v-else-if="cases.status.value">
@@ -122,6 +129,13 @@ useHead(() => ({
   max-inline-size: 42rem;
   margin-inline: auto;
   padding: 1rem;
+}
+.case-header h1 {
+  margin: 0 0 0.4rem;
+}
+.case-trust-note {
+  margin: 0;
+  color: var(--muted);
 }
 .case-failure {
   padding: 0.75rem 1rem;

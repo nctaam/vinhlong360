@@ -4,7 +4,7 @@
 
     <div v-if="!isLoggedIn" class="settings-guest card">
       <p class="dateline-eyebrow">QUẦY TIẾP TÂN</p>
-      <h1>Cài đặt</h1>
+      <h1 class="settings-title">Cài đặt</h1>
       <p>Bạn cần đăng nhập để chỉnh sửa hồ sơ.</p>
       <button type="button" class="btn btn-primary" @click="openAuth()">Đăng nhập</button>
     </div>

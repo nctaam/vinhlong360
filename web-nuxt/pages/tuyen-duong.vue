@@ -324,7 +324,7 @@ useHead(() => ({
    Replaces the plain <ol> bullet list. Vertical hairline + numbered dots,
    tinted per area (echoes the tri-province sediment gradient when a route
    crosses all 3 — see .area-lien-vung below). */
-.route-rail { position: relative; list-style: none; margin: 0 0 var(--space-4); padding: 0 0 0 32px; }
+.route-rail { position: relative; list-style: none; margin: 0 0 var(--space-4); padding: 0 0 0 var(--space-8); }
 .route-rail::before {
   content: ""; position: absolute; left: 11px; top: 6px; bottom: 6px; width: 2px;
   background: linear-gradient(180deg, var(--rail-tone, var(--color-action)) 0%, color-mix(in srgb, var(--rail-tone, var(--color-action)) 35%, transparent) 100%);
