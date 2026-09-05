@@ -240,7 +240,7 @@ const themeOverrideCss = computed(() => {
   const fontScale = ss('theme.font_scale', '') as string
   // P0-5: chỉ nhận mã hex hợp lệ → chặn CSS-injection qua site_settings (vd "red;}body{...")
   const isHex = (c: string) => /^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/.test(c)
-  if (isHex(primary)) vars.push(`--primary: ${primary}`)
+  if (isHex(primary)) vars.push(`--color-brand: ${primary}`)
   if (isHex(accent)) vars.push(`--accent: ${accent}`)
   if (isHex(secondary)) vars.push(`--secondary: ${secondary}`)
   // Validate radius is a plain CSS length (blocks any CSS injection via the setting).

@@ -84,7 +84,7 @@ onMounted(reload)
 
 .cs-help {
   max-width: 680px; margin-bottom: var(--space-5); padding: var(--space-4);
-  background: rgba(var(--primary-rgb),.04); border: .5px solid var(--line); border-radius: 12px;
+  background: rgba(var(--color-brand-rgb),.04); border: .5px solid var(--line); border-radius: 12px;
   font-size: .82rem; color: var(--muted); line-height: 1.5;
 }
 .cs-help p { margin: 0 0 var(--space-2); }
@@ -101,7 +101,7 @@ onMounted(reload)
 .cs-skeleton { max-width: 680px; display: flex; flex-direction: column; gap: 2px; }
 .cs-skel-item { height: 64px; border-radius: 12px; background: var(--line); opacity: .4; animation: cs-pulse 1.5s var(--ease-in-out) infinite; }
 .cs-skel-item:nth-child(even) { animation-delay: .2s; }
-.dark .cs-help { background: rgba(var(--primary-rgb),.08); }
+.dark .cs-help { background: rgba(var(--color-brand-rgb),.08); }
 .dark .cs-help pre { background: var(--card); }
 @media (prefers-reduced-motion: reduce) {
   .cs-skel-item { animation: none; }

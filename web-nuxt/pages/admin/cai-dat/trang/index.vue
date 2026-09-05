@@ -38,7 +38,7 @@ const pages = PAGE_MANIFEST_LIST
   animation: cs-fade-in .4s var(--ease-soft) both; animation-delay: var(--stagger, 0ms);
   transition: transform .3s var(--ease-soft), box-shadow .3s, border-color .3s;
 }
-.cs-card:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(var(--black-rgb),.06); border-color: var(--primary); }
+.cs-card:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(var(--black-rgb),.06); border-color: var(--color-action); }
 .cs-card:active { transform: scale(.98); }
 .cs-card:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
 .cs-icon { font-size: 1.8rem; flex-shrink: 0; width: 40px; text-align: center; }

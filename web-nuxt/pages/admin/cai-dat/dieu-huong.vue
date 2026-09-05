@@ -107,11 +107,11 @@ onMounted(reload)
 }
 .sf-save {
   padding: var(--space-3) var(--space-7); border-radius: 12px; font-weight: 600; font-size: .88rem;
-  background: var(--primary); color: var(--on-primary); border: none; cursor: pointer;
+  background: var(--color-action); color: var(--text-on-dark); border: none; cursor: pointer;
   min-height: 44px;
   transition: transform .2s var(--ease-soft), box-shadow .2s;
 }
-.sf-save:hover:not(:disabled) { transform: scale(1.02); box-shadow: 0 4px 12px rgba(var(--primary-rgb),.2); }
+.sf-save:hover:not(:disabled) { transform: scale(1.02); box-shadow: 0 4px 12px rgba(var(--color-action-rgb),.2); }
 .sf-save:active:not(:disabled) { transform: scale(.97); }
 .sf-save:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
 .sf-save:disabled { opacity: var(--opacity-disabled); cursor: not-allowed; }

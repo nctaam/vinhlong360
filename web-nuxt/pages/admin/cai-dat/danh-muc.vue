@@ -50,7 +50,7 @@ onMounted(reload)
 <style scoped>
 .cs-help {
   max-width: 640px; margin-bottom: var(--space-5); padding: var(--space-4);
-  background: rgba(var(--primary-rgb),.04); border: .5px solid var(--line); border-radius: 12px;
+  background: rgba(var(--color-brand-rgb),.04); border: .5px solid var(--line); border-radius: 12px;
   font-size: .82rem; color: var(--muted); line-height: 1.5;
 }
 .cs-help p { margin: 0 0 var(--space-2); }
@@ -61,8 +61,8 @@ onMounted(reload)
   font-family: 'SF Mono', 'Cascadia Code', monospace; font-size: .78rem; color: var(--ink);
   overflow-x: auto;
 }
-.cs-help-keys code { font-family: 'SF Mono', monospace; font-size: .75rem; color: var(--primary); }
+.cs-help-keys code { font-family: 'SF Mono', monospace; font-size: .75rem; color: var(--color-brand); }
 .cs-skel-tall { height: 120px; }
-.dark .cs-help { background: rgba(var(--primary-rgb),.08); }
+.dark .cs-help { background: rgba(var(--color-brand-rgb),.08); }
 .dark .cs-help pre { background: var(--card); }
 </style>
