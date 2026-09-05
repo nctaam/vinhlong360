@@ -122,8 +122,13 @@ def claim_task_slot(
                     finished_at = NULL,
                     outcome = NULL,
                     receipt_json = NULL
-                WHERE scheduler_task_slots.status = 'leased'
-                  AND scheduler_task_slots.lease_until <= EXCLUDED.started_at
+                WHERE (
+                    scheduler_task_slots.status = 'leased'
+                    AND scheduler_task_slots.lease_until <= EXCLUDED.started_at
+                ) OR (
+                    scheduler_task_slots.status = 'finished'
+                    AND scheduler_task_slots.outcome = 'failed'
+                )
                 RETURNING task_name, slot_key, owner_id, lease_id, lease_until, status
             """
             row = database._fetchone(
@@ -152,7 +157,10 @@ def claim_task_slot(
                         status = 'leased', started_at = {ph}, finished_at = NULL,
                         outcome = NULL, receipt_json = NULL
                     WHERE task_name = {ph} AND slot_key = {ph}
-                      AND status = 'leased' AND lease_until <= {ph}
+                      AND (
+                          (status = 'leased' AND lease_until <= {ph})
+                          OR (status = 'finished' AND outcome = 'failed')
+                      )
                     """,
                     (owner_id, lease_id, _text(lease_until), _text(now), task_name, slot_key, _text(now)),
                 )

@@ -1291,10 +1291,12 @@ class TestMediumFixesBatch2:
         assert "_RETRY_BACKOFF_BASE" in src, "Scheduler must define _RETRY_BACKOFF_BASE"
         assert "_consecutive_failures" in src, "Tasks must track consecutive failures"
 
-    def test_scheduler_retry_logic(self):
+    def test_scheduler_retry_logic(self, isolated_sqlite_db, monkeypatch):
         """Scheduler retry: success resets counter, failure increments with backoff."""
         import time as _time
         sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+        import database
+        monkeypatch.setattr(database, "db", isolated_sqlite_db)
         from scheduler import ScheduledTask
 
         call_count = 0
@@ -2041,7 +2043,7 @@ class TestPostDeletionCleanup:
 
 
 class TestInfoReportsLockShared:
-    """Info reports file must be protected by a shared lock across public_api and admin."""
+    """Canonical report transitions no longer mutate the legacy JSONL file."""
 
     def test_admin_uses_shared_jsonl_lock(self):
         import admin as admin_mod
@@ -2054,8 +2056,8 @@ class TestInfoReportsLockShared:
         # function_source: cắt theo ranh giới AST thay vì cửa sổ ký tự
         # cố định — xem agent/tests/_source_window.py.
         block = function_source(src, "info_report_action")
-        assert "_info_reports_lock" in block, \
-            "info_report_action must use _info_reports_lock for thread safety"
+        assert "legacy_report_mutation_disabled" in block
+        assert "_transition_canonical_report" in block
 
     def test_trending_cache_has_asyncio_lock(self):
         src = _social_src()
@@ -2278,8 +2280,8 @@ class TestReportIpPseudonymization:
         # function_source: cắt theo ranh giới AST thay vì cửa sổ ký tự
         # cố định — xem agent/tests/_source_window.py.
         block = function_source(src, "submit_report")
-        assert "ip_hash" in block, \
-            "submit_report must store ip_hash, not raw ip"
+        assert "reporter_hash" in block, \
+            "submit_report must store a pseudonymous reporter hash"
         assert '"ip": ip' not in block, \
             "submit_report must NOT store raw ip"
 

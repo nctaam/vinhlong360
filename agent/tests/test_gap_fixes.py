@@ -249,23 +249,26 @@ class TestAdminReportsUserFilter:
         assert "r.reporter_id" in src
 
 
-# ── JSONL rotation in social.py comment report ──
+# ── Canonical authority in social.py comment report ──
 
 class TestCommentReportRotation:
-    """Comment report endpoint delegates to the shared JSONL leaf."""
+    """Comment reports use the canonical report authority."""
 
-    def test_comment_report_uses_shared_writer(self):
-        import jsonl_store
+    def test_comment_report_uses_canonical_service(self):
         from community import api as community_api
-        assert community_api._append_jsonl is jsonl_store.append_jsonl
+        src = inspect.getsource(community_api.report_comment)
+        assert "ReportService" in src
+        assert "ReportCreate" in src
 
-    def test_comment_report_calls_rotation(self):
+    def test_comment_report_sets_idempotency_context(self):
         src = inspect.getsource(__import__("community.api", fromlist=["api"]).report_comment)
-        assert "_append_jsonl" in src
+        assert "idempotency_key" in src
+        assert "correlation_id" in src
 
-    def test_writer_comes_from_leaf_module(self):
+    def test_comment_report_imports_service_module(self):
         from community import api as community_api
-        assert community_api._append_jsonl.__module__ == "jsonl_store"
+        src = inspect.getsource(community_api.report_comment)
+        assert "reports.service" in src
 
 
 # ── Mute enforcement in notifications ──
@@ -2638,28 +2641,24 @@ class TestRaceConditionFixes:
         assert lock_pos < count_pos, "Lock must come before count check"
 
     def test_report_post_advisory_lock(self):
-        """report_post must use advisory lock to prevent duplicate reports."""
+        """report_post delegates duplicate handling to canonical idempotency."""
         src = _social_src()
         # function_source: cắt theo ranh giới AST thay vì cửa sổ ký tự
         # cố định — xem agent/tests/_source_window.py.
         fn = function_source(src, "report_post")
-        lock_pos = fn.find("pg_advisory_xact_lock")
-        check_pos = fn.find("SELECT 1 FROM reports")
-        assert lock_pos != -1, "Missing advisory lock"
-        assert check_pos != -1, "Missing duplicate check"
-        assert lock_pos < check_pos, "Lock must come before duplicate check"
+        assert "ReportService" in fn
+        assert 'idempotency_key=f"community:post:{post_id}"' in fn
+        assert "ReportError" in fn
 
     def test_report_user_advisory_lock(self):
-        """report_user must use advisory lock to prevent duplicate reports."""
+        """report_user delegates duplicate handling to canonical idempotency."""
         src = _social_src()
         # function_source: cắt theo ranh giới AST thay vì cửa sổ ký tự
         # cố định — xem agent/tests/_source_window.py.
         fn = function_source(src, "report_user")
-        lock_pos = fn.find("pg_advisory_xact_lock")
-        check_pos = fn.find("SELECT 1 FROM reports")
-        assert lock_pos != -1, "Missing advisory lock"
-        assert check_pos != -1, "Missing duplicate check"
-        assert lock_pos < check_pos, "Lock must come before duplicate check"
+        assert "ReportService" in fn
+        assert 'idempotency_key=f"community:user:{user_id}"' in fn
+        assert "ReportError" in fn
 
     def test_appeal_post_advisory_lock(self):
         """appeal_post must use advisory lock to prevent duplicate appeals."""

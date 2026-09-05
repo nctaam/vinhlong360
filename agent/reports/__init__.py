@@ -11,6 +11,7 @@ from .models import (
 from .repository import ReportRepository
 from .service import (
     ReportConflict,
+    ReportIdempotencyConflict,
     ReportNotFound,
     ReportService,
     ReportTargetNotFound,
@@ -26,6 +27,7 @@ __all__ = [
     "ReportStatus",
     "ReportTargetType",
     "ReportConflict",
+    "ReportIdempotencyConflict",
     "ReportNotFound",
     "ReportTargetNotFound",
 ]

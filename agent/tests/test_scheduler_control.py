@@ -96,6 +96,35 @@ def test_finished_slot_is_not_run_twice(isolated_sqlite_db):
     assert replay.acquired is False
 
 
+def test_failed_slot_can_be_reclaimed_for_retry(isolated_sqlite_db):
+    claim = claim_task_slot(
+        isolated_sqlite_db,
+        task_name="retryable",
+        slot_key="slot-1",
+        owner_id="worker-a",
+        now=NOW,
+        lease_seconds=60,
+    )
+    finish_task_slot(
+        isolated_sqlite_db,
+        lease_id=claim.lease_id,
+        outcome="failed",
+        finished_at=NOW + timedelta(seconds=2),
+        receipt={"status": "failed"},
+    )
+
+    retry = claim_task_slot(
+        isolated_sqlite_db,
+        task_name="retryable",
+        slot_key="slot-1",
+        owner_id="worker-b",
+        now=NOW + timedelta(seconds=3),
+        lease_seconds=60,
+    )
+    assert retry.acquired is True
+    assert retry.lease_id != claim.lease_id
+
+
 def test_scheduled_task_writes_success_receipt(isolated_sqlite_db, monkeypatch):
     monkeypatch.setattr(database_module, "db", isolated_sqlite_db)
     monkeypatch.setattr(scheduler, "_SCHEDULER_OWNER_ID", "worker-test")

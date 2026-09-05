@@ -293,11 +293,11 @@ class TestIPHashing:
 
     def test_report_hashes_ip(self):
         src = inspect.getsource(public_api.submit_report)
-        assert "ip_hash" in src
+        assert "reporter_hash" in src
         assert "sha256" in src
         lines = src.split("\n")
         for line in lines:
-            if '"ip"' in line and "ip_hash" not in line:
+            if '"ip"' in line and "reporter_hash" not in line:
                 assert "sha256" in line or "hash" in line, \
                     f"Raw IP stored: {line.strip()}"
 

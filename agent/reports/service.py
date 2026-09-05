@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import hashlib
+
 from database import db as default_database
 
 from .models import (
@@ -56,6 +58,31 @@ class ReportService:
         # unknown values to the historical `other` bucket.
         return request
 
+    @staticmethod
+    def _replay_matches(request: ReportCreate, actor: ReportActor, record) -> bool:
+        """Ensure a reused key is the same operation, not just the same actor."""
+        expected_contact = None
+        if request.contact:
+            expected_contact = "sha256:" + hashlib.sha256(request.contact.encode("utf-8")).hexdigest()
+        return (
+            record.target_id == request.target_id.strip()
+            and record.target_type is request.target_type
+            and record.reason == request.reason.strip()
+            and record.detail == request.detail.strip()
+            and record.field == request.field
+            and record.contact_ciphertext == expected_contact
+            and record.reporter_id == actor.reporter_id
+            and record.reporter_hash == actor.reporter_hash
+            and record.source_channel == actor.source_channel
+            and record.legacy_locator == request.legacy_locator
+        )
+
+    @classmethod
+    def _accept_record(cls, request: ReportCreate, actor: ReportActor, record):
+        if record.replayed and not cls._replay_matches(request, actor, record):
+            raise ReportIdempotencyConflict("idempotency_conflict")
+        return record
+
     def create(self, request: ReportCreate, *, actor: ReportActor, idempotency_key: str, correlation_id: str) -> ReportRecord:
         request = self._normalize_request(request)
         if type(actor) is not ReportActor:
@@ -67,12 +94,13 @@ class ReportService:
         if not self.repository.target_exists(request.target_type, request.target_id.strip()):
             raise ReportTargetNotFound("target_not_found")
         try:
-            return self.repository.create(
+            record = self.repository.create(
                 request,
                 actor=actor,
                 idempotency_key=idempotency_key.strip(),
                 correlation_id=correlation_id.strip(),
             )
+            return self._accept_record(request, actor, record)
         except Exception as exc:
             # A unique-key race is resolved by the repository's select-after-
             # insert path. Preserve driver failures as service errors instead

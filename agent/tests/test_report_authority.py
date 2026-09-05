@@ -67,6 +67,23 @@ def test_same_report_idempotency_key_replays_one_record(isolated_sqlite_db):
     assert int(isolated_sqlite_db._row_to_dict(row)["n"]) == 1
 
 
+def test_reused_idempotency_key_with_different_request_is_rejected(isolated_sqlite_db):
+    isolated_sqlite_db.upsert_entity({"id": "entity-1", "type": "facility", "name": "Một"})
+    isolated_sqlite_db.upsert_entity({"id": "entity-2", "type": "facility", "name": "Hai"})
+    service = ReportService(database=isolated_sqlite_db)
+    service.create(request(), actor=actor(), idempotency_key="r-conflict", correlation_id="c-1")
+
+    with pytest.raises(ReportError) as excinfo:
+        service.create(
+            request(target_id="entity-2", reason="wrong"),
+            actor=actor(),
+            idempotency_key="r-conflict",
+            correlation_id="c-2",
+        )
+
+    assert excinfo.value.code == "idempotency_conflict"
+
+
 def test_transition_uses_revision_cas(isolated_sqlite_db):
     isolated_sqlite_db.upsert_entity({"id": "entity-1", "type": "facility", "name": "Trụ sở"})
     service = ReportService(database=isolated_sqlite_db)
