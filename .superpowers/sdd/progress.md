@@ -17,6 +17,7 @@ Task 11: complete (implementation + second review remediation; 148 focused tests
 Task 12: complete (implementation + remediation; final independent review clean; PostgreSQL rerun 256 passed/3 skipped)
 Task 13: complete (scanner/registry/legal CMS remediation; 42 focused design+ratchet tests passed, scanner semantic/z-index debt 0, production CLI PASS; CMS sections now require canonical count/order/headings and claim-bearing Unicode variants fail closed)
 Task 14: complete (structural evidence/receipt hardening; ops/evidence 72 passed, py_compile/Ruff green, acceptance exit 2 NO_GO, release verifier exit 2 BLOCKED; residual P1: execution receipt is unsigned and cannot attest that captured commands actually ran)
+Task 15: complete (commits af14df9d..79b87a72, review clean after removing stale source-test comment contracts; shared JSONL report writer and focused boundary tests verified)
 
 PostgreSQL integration follow-up (2026-09-02): disposable PostgreSQL 16 runtime at 127.0.0.1:55432, schema version 86 and catalog readiness `ok=True`; migration/schema suites 29 passed, full `*postgres.py` suites 94 passed/30 skipped, correction-case race/idempotency/HTTP contract regressions remediated and re-run green. Evidence is local disposable only; it does not establish production-equivalent HA, backup/restore, browser, multiprocess deployment, provider, residency, or legal sign-off.
 
