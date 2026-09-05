@@ -82,9 +82,42 @@
             </template>
           </SavedEntityCard>
         </div>
-        <div v-else class="saved-empty">
-          <p>{{ savedQuery ? 'Không tìm thấy địa điểm phù hợp trong mục đã lưu.' : 'Chưa lưu địa điểm nào. Khi duyệt các trang địa điểm, nhấn nút lưu để thêm vào đây.' }}</p>
-          <NuxtLink :to="savedQuery ? searchLink : '/dia-diem'" class="btn btn-ghost btn-sm">{{ savedQuery ? 'Tìm trên hệ thống' : 'Khám phá địa điểm' }}</NuxtLink>
+        <div v-else :class="['saved-empty', { 'saved-empty-catalyst': !savedQuery }]">
+          <div v-if="!savedQuery" class="saved-catalyst-box">
+            <span class="saved-catalyst-icon" aria-hidden="true"><IconLine name="bookmark" /></span>
+            <h3 class="saved-catalyst-title">Hành trình sông nước của bạn chưa được đánh dấu</h3>
+            <p class="saved-catalyst-desc">Khi dạo quanh các cẩm nang, bấm biểu tượng trái tim để lưu lại những điểm đến, làng nghề và quán ngon bạn muốn ghé thăm.</p>
+            
+            <div class="saved-suggestions-block">
+              <span class="saved-suggestions-title">Gợi ý khám phá khởi đầu Tam giác Phù sa:</span>
+              <div class="saved-suggestions-grid">
+                <NuxtLink to="/dia-diem?q=Mang+Thít" class="saved-sugg-card">
+                  <span class="sugg-badge sugg-clay">Mang Thít</span>
+                  <strong>Lò gạch gốm đỏ ven sông</strong>
+                  <span class="sugg-sub">Di sản làng nghề · ~14km</span>
+                </NuxtLink>
+                <NuxtLink to="/dia-diem?q=An+Bình" class="saved-sugg-card">
+                  <span class="sugg-badge sugg-leaf">Long Hồ</span>
+                  <strong>Cù lao An Bình miệt vườn</strong>
+                  <span class="sugg-sub">Vườn sinh thái · 10p phà</span>
+                </NuxtLink>
+                <NuxtLink to="/dia-diem?q=Trà+Ôn" class="saved-sugg-card">
+                  <span class="sugg-badge sugg-river">Trà Ôn</span>
+                  <strong>Chợ nổi ngã ba sông Hậu</strong>
+                  <span class="sugg-sub">Giao thương sông nước · ~38km</span>
+                </NuxtLink>
+              </div>
+            </div>
+          </div>
+          <p v-else>{{ 'Không tìm thấy địa điểm phù hợp trong mục đã lưu.' }}</p>
+          <div class="saved-empty-actions">
+            <NuxtLink :to="savedQuery ? searchLink : '/dia-diem'" class="btn btn-primary btn-sm">
+              <IconLine name="compass" /> {{ savedQuery ? 'Tìm trên hệ thống' : 'Khám phá 1.500+ địa điểm' }}
+            </NuxtLink>
+            <NuxtLink v-if="!savedQuery" to="/du-lich" class="btn btn-ghost btn-sm">
+              <IconLine name="calendar" /> Cẩm nang theo mùa
+            </NuxtLink>
+          </div>
         </div>
       </div>
 
@@ -511,6 +544,109 @@ useHead(() => ({
 .saved-empty { color: var(--muted); font-size: .9rem; text-align: center; padding: 2rem 1rem; display: flex; flex-direction: column; align-items: center; gap: .75rem; }
 .saved-empty p { margin: 0; }
 
+.saved-empty-catalyst {
+  padding: var(--space-6) var(--space-4);
+  background: var(--card);
+  border: 1px dashed var(--line);
+  border-radius: var(--radius-sheet);
+  max-width: 680px;
+  margin: 0 auto;
+}
+.saved-catalyst-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-3);
+  text-align: center;
+}
+.saved-catalyst-icon {
+  font-size: 2rem;
+  color: var(--color-brand);
+  background: var(--color-brand-surface);
+  width: 48px;
+  height: 48px;
+  border-radius: var(--radius-full);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.saved-catalyst-title {
+  font-family: var(--font-editorial);
+  font-size: var(--text-lg);
+  font-weight: 600;
+  color: var(--ink);
+  margin: 0;
+}
+.saved-catalyst-desc {
+  font-size: var(--text-sm);
+  color: var(--muted);
+  max-width: 480px;
+  line-height: var(--leading-relaxed);
+}
+.saved-suggestions-block {
+  width: 100%;
+  margin-top: var(--space-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+.saved-suggestions-title {
+  font-size: var(--text-xs);
+  font-weight: var(--weight-bold);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-caps);
+  color: var(--muted);
+  text-align: left;
+}
+.saved-suggestions-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-3);
+  width: 100%;
+}
+.saved-sugg-card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  padding: var(--space-3);
+  background: var(--bg-alt);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-surface);
+  text-decoration: none;
+  text-align: left;
+  transition: transform .2s var(--ease-out), border-color .2s var(--ease-out);
+}
+.saved-sugg-card:hover {
+  transform: translateY(-2px);
+  border-color: var(--primary);
+}
+.saved-sugg-card strong {
+  font-size: var(--text-xs);
+  color: var(--ink);
+  line-height: 1.3;
+}
+.sugg-sub {
+  font-size: var(--text-2xs, 10px);
+  color: var(--muted);
+}
+.sugg-badge {
+  align-self: flex-start;
+  font-size: var(--text-2xs, 10px);
+  font-weight: var(--weight-bold);
+  padding: 1px 6px;
+  border-radius: var(--radius-full);
+}
+.sugg-clay { background: var(--color-brand-surface); color: var(--color-brand); }
+.sugg-leaf { background: color-mix(in srgb, var(--color-material-leaf) 14%, transparent); color: var(--color-material-leaf); }
+.sugg-river { background: var(--color-action-surface); color: var(--color-action); }
+.saved-empty-actions {
+  display: flex;
+  gap: var(--space-3);
+  margin-top: var(--space-3);
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
 /* Dark */
 .dark .saved-overview-item, .dark .saved-search input { background: var(--bg-alt); border-color: var(--line); }
 .dark .saved-post { background: var(--bg-alt); }
@@ -524,5 +660,6 @@ useHead(() => ({
   .saved-tools { grid-template-columns: 1fr; }
   .saved-tools .btn { width: 100%; justify-content: center; }
   .saved-tab { padding: .5rem .6rem; font-size: .82rem; }
+  .saved-suggestions-grid { grid-template-columns: 1fr; }
 }
 </style>

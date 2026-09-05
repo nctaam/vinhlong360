@@ -49,7 +49,10 @@
           @click="pickArea(key as string)"
         >
           <span class="stamp-mark" aria-hidden="true"><IconLine :name="meta.icon" /></span>
-          <span class="stamp-name">{{ meta.name }}</span>
+          <div class="stamp-title-row">
+            <span class="stamp-name">{{ meta.name }}</span>
+            <span v-if="meta.distance" class="stamp-distance">{{ meta.distance }}</span>
+          </div>
           <span class="stamp-caption">{{ meta.blurb }}</span>
         </button>
       </div>
@@ -468,10 +471,26 @@ useHead(() => ({
   font-size: 1.4rem; opacity: .9;
 }
 /* IconLine là SVG 1em nên kế thừa đúng 1.4rem ở trên. */
-.stamp-mark .line-icon { font-size: inherit; }
+.stamp-title-row {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-2);
+  padding-right: 2rem;
+  flex-wrap: wrap;
+}
 .stamp-name {
   font-family: var(--font-editorial); font-weight: 600; font-size: var(--text-lg);
-  color: var(--ink); letter-spacing: var(--tracking-tight); padding-right: 2rem;
+  color: var(--ink); letter-spacing: var(--tracking-tight);
+}
+.stamp-distance {
+  font-family: var(--font-sans);
+  font-size: var(--text-2xs, 10px);
+  font-weight: var(--weight-bold);
+  padding: 1px 6px;
+  border-radius: var(--radius-full);
+  background: rgba(var(--stamp-rgb), 0.14);
+  color: var(--ink);
+  letter-spacing: .02em;
 }
 .stamp-caption {
   font-size: var(--text-xs); color: var(--muted); line-height: var(--leading-relaxed);

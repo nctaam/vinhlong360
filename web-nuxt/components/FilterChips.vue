@@ -6,6 +6,7 @@ interface FilterOption {
   /** Tên biểu tượng IconLine — thay cho `icon` dạng emoji (B2: thêm đường mới). */
   iconName?: string
   count?: number
+  sublabel?: string
 }
 
 const props = withDefaults(defineProps<{
@@ -41,6 +42,7 @@ function toggle(key: string) {
       <span v-if="f.iconName" class="fc-icon" aria-hidden="true"><IconLine :name="f.iconName" /></span>
       <span v-else-if="f.icon" class="fc-icon" aria-hidden="true">{{ f.icon }}</span>
       <span class="fc-label">{{ f.label }}</span>
+      <span v-if="f.sublabel" class="fc-sublabel">{{ f.sublabel }}</span>
       <span v-if="f.count != null" class="fc-count">{{ f.count }}</span>
     </button>
   </div>
@@ -144,6 +146,20 @@ function toggle(key: string) {
   background: var(--color-brand-surface);
   color: var(--color-action);
   font-weight: var(--weight-semibold);
+}
+
+.fc-sublabel {
+  font-size: var(--text-2xs, 10px);
+  padding: 1px 6px;
+  border-radius: var(--radius-full);
+  background: var(--color-action-surface);
+  color: var(--color-action);
+  font-weight: var(--weight-semibold);
+  margin-inline-start: var(--space-1);
+}
+.fc-chip.active .fc-sublabel {
+  background: color-mix(in srgb, var(--color-on-action, var(--surface-white)) 22%, transparent);
+  color: inherit;
 }
 @media (prefers-reduced-motion: reduce) {
   .fc-chip { transition: none; transform: none; }
