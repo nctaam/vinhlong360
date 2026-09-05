@@ -50,6 +50,98 @@ FORBIDDEN_SCOPE_TOKENS = ("STAGING", "PRODUCTION", "PROD", "LIVE")
 # hole — but only for this status.
 STATUS_WITHOUT_EVIDENCE = "UNAVAILABLE"
 
+_LIFECYCLE_REQUIRED = {
+    "reports",
+    "admin_audit",
+    "case_outbox",
+    "provider_receipts",
+    "jsonl_legacy_archive",
+    "bot_conversations",
+    "browser_storage",
+    "object_media",
+}
+_LIFECYCLE_AUTHORITIES = {
+    "postgresql",
+    "legacy-read-only",
+    "append-only",
+    "case-outbox",
+    "provider-receipts",
+    "bot-memory",
+    "browser-client",
+    "object-storage",
+}
+_LIFECYCLE_EXPORT_MODES = {
+    "redacted", "metadata", "append-only-read", "manifest", "instruction-only",
+}
+_LIFECYCLE_ERASURE_MODES = {
+    "redact", "delete", "retain", "quarantine", "instruction-only",
+}
+
+
+def _validate_lifecycle_sink_item(
+    item: object,
+    index: int,
+    required: set[str],
+) -> list[str]:
+    prefix = f"lifecycle sink [{index}]"
+    if not isinstance(item, dict) or set(item) != required:
+        return [f"{prefix}: incomplete or unknown fields"]
+    checks = (
+        ("name", bool(item.get("name")), "missing name"),
+        ("authority", item.get("authority") in _LIFECYCLE_AUTHORITIES, "invalid authority"),
+        (
+            "contains_personal_data",
+            type(item.get("contains_personal_data")) is bool,
+            "contains_personal_data must be boolean",
+        ),
+        ("export_mode", item.get("export_mode") in _LIFECYCLE_EXPORT_MODES, "invalid export_mode"),
+        ("erasure_mode", item.get("erasure_mode") in _LIFECYCLE_ERASURE_MODES, "invalid erasure_mode"),
+        (
+            "retention_days",
+            type(item.get("retention_days")) is int and item["retention_days"] >= 0,
+            "retention_days must be a non-negative integer",
+        ),
+        (
+            "proof_level",
+            item.get("proof_level") in {"strong", "bounded", "instruction", "receipt", "hash-only", "unavailable"},
+            "invalid proof_level",
+        ),
+    )
+    return [f"{prefix}: {message}" for _, valid, message in checks if not valid]
+
+
+def _validate_lifecycle_contract(root: Path) -> list[str]:
+    path = root / "config" / "lifecycle-registry.json"
+    if not path.is_file():
+        # Hermetic drill fixtures may intentionally validate only the evidence
+        # index. A real repository root always carries this registry; when it
+        # is present, malformed lifecycle metadata is fail-closed.
+        return []
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as exc:
+        return [f"lifecycle registry cannot be read: {type(exc).__name__}"]
+    raw = payload.get("lifecycle_sinks") if isinstance(payload, dict) else None
+    if not isinstance(raw, list) or not raw:
+        return ["lifecycle_sinks is missing or empty"]
+    required = {
+        "name", "authority", "contains_personal_data", "export_mode",
+        "erasure_mode", "retention_days", "proof_level",
+    }
+    problems: list[str] = []
+    names: list[str] = []
+    for index, item in enumerate(raw):
+        problems.extend(_validate_lifecycle_sink_item(item, index, required))
+        if isinstance(item, dict) and item.get("name"):
+            names.append(str(item["name"]))
+    if len(names) != len(set(names)):
+        problems.append("lifecycle sink names are duplicated")
+    missing = _LIFECYCLE_REQUIRED - set(names)
+    extra = set(names) - _LIFECYCLE_REQUIRED
+    problems.extend(f"lifecycle sink missing: {name}" for name in sorted(missing))
+    problems.extend(f"lifecycle sink undeclared: {name}" for name in sorted(extra))
+    return problems
+
 
 def _iso(value: str) -> datetime | None:
     try:
@@ -184,6 +276,7 @@ def validate(root: Path) -> dict[str, Any]:
     entries = index.get("entries") or []
     drills = root / "artifacts" / "runtime-drills"
     problems = (["index declares no entries"] if not entries else [])
+    problems.extend(_validate_lifecycle_contract(root))
     problems.extend(_validate_entries(entries, root))
     raw_generated = str(index.get("generated_at", ""))
     problems.extend(_validate_evidence_freshness(entries, root, _iso(raw_generated), raw_generated))

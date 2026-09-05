@@ -44,5 +44,15 @@
     {"name":"object-store","owner_key":"subject_id/object_key/generation","classification":"personal","export_strategy":"media-manifest","erase_strategy":"delete-receipt","retention_days":null,"proof_level":"receipt"},
     {"name":"cdn","owner_key":"subject_id/object_key/generation","classification":"personal","export_strategy":"media-manifest","erase_strategy":"purge-receipt","retention_days":null,"proof_level":"receipt"},
     {"name":"audit-retention","owner_key":"subject_hash","classification":"operational","export_strategy":"excluded","erase_strategy":"retain-hash","retention_days":2555,"proof_level":"hash-only"}
+  ],
+  "lifecycle_sinks": [
+    {"name":"reports","authority":"postgresql","contains_personal_data":true,"export_mode":"redacted","erasure_mode":"delete","retention_days":365,"proof_level":"strong"},
+    {"name":"admin_audit","authority":"append-only","contains_personal_data":true,"export_mode":"metadata","erasure_mode":"retain","retention_days":2555,"proof_level":"hash-only"},
+    {"name":"case_outbox","authority":"case-outbox","contains_personal_data":true,"export_mode":"metadata","erasure_mode":"delete","retention_days":90,"proof_level":"strong"},
+    {"name":"provider_receipts","authority":"provider-receipts","contains_personal_data":true,"export_mode":"redacted","erasure_mode":"redact","retention_days":365,"proof_level":"strong"},
+    {"name":"jsonl_legacy_archive","authority":"legacy-read-only","contains_personal_data":true,"export_mode":"append-only-read","erasure_mode":"redact","retention_days":365,"proof_level":"bounded"},
+    {"name":"bot_conversations","authority":"bot-memory","contains_personal_data":true,"export_mode":"redacted","erasure_mode":"delete","retention_days":30,"proof_level":"bounded"},
+    {"name":"browser_storage","authority":"browser-client","contains_personal_data":true,"export_mode":"instruction-only","erasure_mode":"instruction-only","retention_days":30,"proof_level":"instruction"},
+    {"name":"object_media","authority":"object-storage","contains_personal_data":true,"export_mode":"manifest","erasure_mode":"delete","retention_days":365,"proof_level":"receipt"}
   ]
 }

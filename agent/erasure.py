@@ -63,12 +63,28 @@ class ErasureResult:
     browser_clear_instruction: dict | None = None
 
     def to_dict(self) -> dict:
+        receipt_stores = []
+        for store in self.stores:
+            removed = max(0, int(store.get("removed_count", 0) or 0))
+            residual = max(0, int(store.get("residual_count", 0) or 0))
+            receipt_stores.append({
+                "store_name": store.get("store_name"),
+                "rows_before": removed + residual,
+                "rows_after": residual,
+                "verified": bool(store.get("verified")),
+            })
         return {
             "status": self.status,
             "stores": [dict(store) for store in self.stores],
             "error_code": self.error_code,
             "verified": self.verified,
             "run_id": self.run_id,
+            "receipt": {
+                "run_id": self.run_id,
+                "status": self.status,
+                "verified": self.verified,
+                "stores": receipt_stores,
+            },
             "browser_clear_instruction": self.browser_clear_instruction,
         }
 

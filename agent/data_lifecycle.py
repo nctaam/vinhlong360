@@ -19,6 +19,12 @@ import prompt_compiler
 import self_optimizer
 import semantic_cache
 
+from control_plane.lifecycle import (
+    LifecycleSink,  # noqa: F401 - public lifecycle contract re-export
+    list_lifecycle_sinks,  # noqa: F401 - public lifecycle contract re-export
+    validate_lifecycle_sinks,  # noqa: F401 - public lifecycle contract re-export
+)
+
 
 _MAX_CACHE_SCAN_ITEMS = 5_000
 _CLASSIFICATIONS = {"personal", "pseudonymous", "aggregate", "operational"}
@@ -544,7 +550,8 @@ def validate_lifecycle_registry(
 
 
 def lifecycle_registry_readiness() -> dict:
-    errors = validate_lifecycle_registry()
+    errors = list(validate_lifecycle_registry())
+    errors.extend(validate_lifecycle_sinks())
     stores = [
         {
             "name": policy.name,
@@ -560,5 +567,6 @@ def lifecycle_registry_readiness() -> dict:
             1 for policy in lifecycle_registry.policies if policy.subject_linked
         ),
         "errors": list(errors),
+        "lifecycle_sink_count": len(list_lifecycle_sinks()) if not errors else 0,
         "stores": stores,
     }

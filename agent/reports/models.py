@@ -2,10 +2,13 @@
 
 from __future__ import annotations
 
+import hashlib
 from dataclasses import dataclass, field as dc_field
 from datetime import datetime, timezone
 from enum import Enum
 from typing import Any
+
+from privacy_boundary import redact_text
 
 
 class ReportTargetType(str, Enum):
@@ -133,3 +136,35 @@ class ReportRecord:
         if not redact_contact:
             result["contact_ciphertext"] = self.contact_ciphertext
         return result
+
+    def to_export_dict(self) -> dict[str, Any]:
+        """Return the minimal account-export representation of a report."""
+        def _safe(value: str) -> str:
+            try:
+                return redact_text(value, source="private_user_data").text[:4000]
+            except Exception:
+                return "[redacted]" if value else ""
+
+        try:
+            safe_detail = _safe(self.detail)
+            safe_reason = _safe(self.reason)
+        except Exception:
+            # Export must fail closed rather than leak unclassified text.
+            safe_detail = "[redacted]" if self.detail else ""
+            safe_reason = "[redacted]" if self.reason else ""
+        actor_pseudonym = hashlib.sha256(
+            self.actor_scope.encode("utf-8"),
+        ).hexdigest()[:24]
+        return {
+            "report_id": self.report_id,
+            "target": {
+                "type": self.target_type.value,
+                "id": self.target_id,
+            },
+            "reason": safe_reason,
+            "status": self.status.value,
+            "created_at": self.created_at.isoformat(),
+            "updated_at": self.updated_at.isoformat(),
+            "actor_pseudonym": actor_pseudonym,
+            "detail": safe_detail,
+        }

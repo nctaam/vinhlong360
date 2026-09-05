@@ -18,6 +18,7 @@ from pathlib import Path
 from typing import Any, Iterable
 
 from database import db
+from privacy_boundary import redact_text
 
 
 _VERSION = "1"
@@ -33,6 +34,40 @@ _ERASE_STRATEGIES = {
     "purge-receipt", "issued-only", "unavailable",
 }
 _PROOF_LEVELS = {"strong", "bounded", "instruction", "receipt", "hash-only", "unavailable"}
+_LIFECYCLE_AUTHORITIES = {
+    "postgresql",
+    "legacy-read-only",
+    "append-only",
+    "case-outbox",
+    "provider-receipts",
+    "bot-memory",
+    "browser-client",
+    "object-storage",
+}
+_LIFECYCLE_EXPORT_MODES = {
+    "redacted",
+    "metadata",
+    "append-only-read",
+    "manifest",
+    "instruction-only",
+}
+_LIFECYCLE_ERASURE_MODES = {
+    "redact",
+    "delete",
+    "retain",
+    "quarantine",
+    "instruction-only",
+}
+_REQUIRED_LIFECYCLE_SINKS = frozenset({
+    "reports",
+    "admin_audit",
+    "case_outbox",
+    "provider_receipts",
+    "jsonl_legacy_archive",
+    "bot_conversations",
+    "browser_storage",
+    "object_media",
+})
 _SECRET_EXCLUSIONS = (
     {"field": "users.password_hash", "reason": "credential material is never exported"},
     {"field": "user_2fa.secret_enc", "reason": "encrypted TOTP secret is authentication material"},
@@ -85,6 +120,86 @@ class LifecycleRegistry:
     @property
     def policies(self) -> tuple[SinkSpec, ...]:
         return self.specs
+
+
+@dataclass(frozen=True)
+class LifecycleSink:
+    """Cross-system lifecycle contract for sinks outside account tables."""
+
+    name: str
+    authority: str
+    contains_personal_data: bool
+    export_mode: str
+    erasure_mode: str
+    retention_days: int
+    proof_level: str
+
+    def __post_init__(self) -> None:
+        if not self.name or self.authority not in _LIFECYCLE_AUTHORITIES:
+            raise ValueError(f"invalid lifecycle sink authority: {self.name}")
+        if type(self.contains_personal_data) is not bool:
+            raise ValueError(f"contains_personal_data must be boolean: {self.name}")
+        if self.export_mode not in _LIFECYCLE_EXPORT_MODES:
+            raise ValueError(f"invalid lifecycle export_mode: {self.name}")
+        if self.erasure_mode not in _LIFECYCLE_ERASURE_MODES:
+            raise ValueError(f"invalid lifecycle erasure_mode: {self.name}")
+        if type(self.retention_days) is not int or self.retention_days < 0:
+            raise ValueError(f"retention_days must be a non-negative integer: {self.name}")
+        if self.proof_level not in _PROOF_LEVELS:
+            raise ValueError(f"invalid lifecycle proof_level: {self.name}")
+
+
+def list_lifecycle_sinks(path: Path | None = None) -> tuple[LifecycleSink, ...]:
+    """Load the fail-closed cross-system lifecycle contract from config."""
+    root = Path(__file__).resolve().parents[2]
+    registry_path = path or root / "config" / "lifecycle-registry.json"
+    payload = json.loads(Path(registry_path).read_text(encoding="utf-8"))
+    raw = payload.get("lifecycle_sinks")
+    if not isinstance(raw, list) or not raw:
+        raise ValueError("lifecycle_sinks must be a non-empty list")
+    required = {
+        "name", "authority", "contains_personal_data", "export_mode",
+        "erasure_mode", "retention_days", "proof_level",
+    }
+    sinks = []
+    for item in raw:
+        if not isinstance(item, dict) or set(item) != required:
+            raise ValueError("incomplete lifecycle sink contract")
+        sinks.append(LifecycleSink(**item))
+    if len({sink.name for sink in sinks}) != len(sinks):
+        raise ValueError("duplicate lifecycle sink contract")
+    names = {sink.name for sink in sinks}
+    if names != _REQUIRED_LIFECYCLE_SINKS:
+        raise ValueError(
+            "lifecycle sink set mismatch: "
+            f"missing={sorted(_REQUIRED_LIFECYCLE_SINKS - names)} "
+            f"extra={sorted(names - _REQUIRED_LIFECYCLE_SINKS)}"
+        )
+    return tuple(sinks)
+
+
+def validate_lifecycle_sinks(
+    sinks: Iterable[LifecycleSink] | None = None,
+    *,
+    path: Path | None = None,
+) -> tuple[str, ...]:
+    """Return contract errors without silently accepting a partial registry."""
+    try:
+        selected = tuple(sinks) if sinks is not None else list_lifecycle_sinks(path)
+    except Exception as exc:
+        return (f"INVALID_LIFECYCLE_SINKS:{type(exc).__name__}:{exc}",)
+    errors = []
+    invalid = [sink for sink in selected if not isinstance(sink, LifecycleSink)]
+    if invalid:
+        return ("INVALID_LIFECYCLE_SINKS:unexpected_sink_type",)
+    names = [sink.name for sink in selected]
+    if len(names) != len(set(names)):
+        errors.append("DUPLICATE_LIFECYCLE_SINK")
+    missing = _REQUIRED_LIFECYCLE_SINKS - set(names)
+    extra = set(names) - _REQUIRED_LIFECYCLE_SINKS
+    errors.extend(f"MISSING_LIFECYCLE_SINK:{name}" for name in sorted(missing))
+    errors.extend(f"UNDECLARED_LIFECYCLE_SINK:{name}" for name in sorted(extra))
+    return tuple(errors)
 
 
 def load_lifecycle_registry(path: Path) -> LifecycleRegistry:
@@ -141,10 +256,25 @@ class ErasureReport:
         return self.verified
 
     def to_dict(self) -> dict[str, Any]:
+        receipt_stores = []
+        for name, outcome in self.sinks.items():
+            before = int(outcome.get("rows_before", outcome.get("count", 0)) or 0)
+            after = int(outcome.get("rows_after", 0) or 0)
+            receipt_stores.append({
+                "store_name": name,
+                "rows_before": max(0, before),
+                "rows_after": max(0, after),
+                "status": outcome.get("status"),
+            })
         return {
             "subject_hash": self.subject_hash,
             "dry_run": self.dry_run,
             "sinks": self.sinks,
+            "receipt": {
+                "subject_hash": self.subject_hash,
+                "dry_run": self.dry_run,
+                "stores": receipt_stores,
+            },
             "browser_instruction": self.browser_instruction,
         }
 
@@ -188,7 +318,7 @@ _TABLES: dict[str, tuple[str, str, str]] = {
     "notifications": ("user_id", "created_at", "id, type, title, body, ref_type, ref_id, is_read, created_at"),
     # Export only the report metadata needed by the account owner. Contact is
     # intentionally excluded; bearer/IP material is never part of a bundle.
-    "reports": ("reporter_id", "created_at", "id, target_type, target_id, reason, status, detail, field, revision, created_at, updated_at, correlation_id, source_channel, legacy_locator"),
+    "reports": ("reporter_id", "created_at", "id, target_type, target_id, reason, status, detail, actor_scope, created_at, updated_at"),
     "login_history": ("user_id", "created_at", "id, method, success, ip, user_agent, created_at"),
     "user_privacy": ("user_id", "updated_at", "user_id, profile_visibility, show_activity, show_saved, updated_at"),
     "consent_log": ("user_id", "created_at", "id, user_id, version, ip, created_at"),
@@ -330,9 +460,37 @@ def _rows_for_table(table: str, subject_id: str, cursor: str | None, limit: int)
     sql = f"SELECT {columns} FROM {table} WHERE {where} ORDER BY {_table_order(table, order_col, columns)} LIMIT {ph} OFFSET {ph}"
     params.extend([limit + 1, offset])
     values, error = _query_page(sql, params, limit)
+    cursor_values = values
+    if table == "reports":
+        values = [_redact_report_export(row) for row in values]
     truncated = len(values) > limit
     values = values[:limit]
-    return values, _page_cursor(table, values, order_col, offset, limit, truncated), truncated, error
+    return values, _page_cursor(table, cursor_values, order_col, offset, limit, truncated), truncated, error
+
+
+def _redact_report_export(row: dict[str, Any]) -> dict[str, Any]:
+    """Keep account exports useful without exporting report internals."""
+    def _safe_text(value: Any) -> str:
+        try:
+            return redact_text(str(value or ""), source="private_user_data").text[:4000]
+        except Exception:
+            return "[redacted]" if value else ""
+
+    actor_scope = str(row.get("actor_scope") or "legacy")
+    actor_pseudonym = hashlib.sha256(actor_scope.encode("utf-8")).hexdigest()[:24]
+    return {
+        "report_id": str(row.get("id") or ""),
+        "target": {
+            "type": str(row.get("target_type") or ""),
+            "id": str(row.get("target_id") or ""),
+        },
+        "reason": _safe_text(row.get("reason")),
+        "status": str(row.get("status") or ""),
+        "created_at": str(row.get("created_at") or ""),
+        "updated_at": str(row.get("updated_at") or ""),
+        "actor_pseudonym": actor_pseudonym,
+        "detail": _safe_text(row.get("detail")),
+    }
 
 
 def _default_registry() -> LifecycleRegistry:
@@ -589,6 +747,35 @@ def _erase_reports(owner: str) -> dict[str, Any]:
         return {"status": "deleted" if removed else "already_absent", "count": removed}
 
 
+def _erase_report_rows(owner: str, *, dry_run: bool) -> dict[str, Any]:
+    """Delete canonical report rows owned by an erased account."""
+    if dry_run:
+        return {"status": "retained", "count": 0, "dry_run": True}
+    if not getattr(db, "_use_pg", False):
+        return {"status": "unavailable", "count": 0, "error_code": "DB_UNAVAILABLE"}
+    ph = getattr(db, "_ph", "%s")
+    try:
+        with db._conn() as conn:
+            result = db._execute(
+                conn,
+                f"""
+                DELETE FROM reports
+                WHERE reporter_id::text = {ph}
+                   OR actor_scope = {ph}
+                """,
+                (str(owner).removeprefix("user:"), str(owner)),
+            )
+            removed = int(getattr(result, "rowcount", 0) or 0)
+        return {
+            "status": "deleted" if removed else "already_absent",
+            "count": removed,
+            "rows_before": removed,
+            "rows_after": 0,
+        }
+    except Exception as exc:
+        return {"status": "failed", "count": 0, "error_code": type(exc).__name__}
+
+
 def _named_external_erase(name: str, owner: str) -> dict[str, Any] | None:
     handlers = {
         "analytics-jsonl": _erase_analytics,
@@ -650,6 +837,7 @@ def erase_subject(subject_id: str, *, dry_run: bool = True) -> ErasureReport:
 
     subject = f"user:{subject_id}" if not str(subject_id).startswith("user:") else str(subject_id)
     outcomes: dict[str, dict[str, Any]] = {}
+    outcomes["reports"] = _erase_report_rows(subject, dry_run=dry_run)
     for policy in store_registry.policies:
         if not policy.subject_linked:
             outcomes[policy.name] = {"status": "retained", "count": 0}
@@ -678,7 +866,8 @@ def erase_subject(subject_id: str, *, dry_run: bool = True) -> ErasureReport:
 
 
 __all__ = [
-    "ErasureReport", "ExportBundle", "LifecycleRegistry", "SinkSpec",
+    "ErasureReport", "ExportBundle", "LifecycleRegistry", "LifecycleSink", "SinkSpec",
+    "list_lifecycle_sinks", "validate_lifecycle_sinks",
     "erase_subject", "export_subject", "issue_browser_clear_instruction",
     "get_browser_clear_instruction",
     "lifecycle_registry", "load_lifecycle_registry",
