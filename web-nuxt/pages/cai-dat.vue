@@ -1251,7 +1251,7 @@ onUnmounted(() => {
   font: inherit; transition: border-color .25s var(--ease-out), box-shadow .25s var(--ease-out), background .25s var(--ease-out);
 }
 .sf-input:hover:not(:focus) { border-color: var(--ink-700); }
-.sf-input:focus-visible { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px rgba(var(--accent-rgb), .15); background: var(--card); }
+.sf-input:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 1px; background: var(--card); }
 .sf-textarea { resize: vertical; min-height: 90px; }
 .sf-error { color: var(--danger); font-size: var(--text-sm); }
 .pw-strength { display: flex; align-items: center; gap: var(--space-2); margin-top: var(--space-1); }
@@ -1348,7 +1348,7 @@ onUnmounted(() => {
 .dl-consent-ver { font-weight: 600; font-size: var(--text-sm); }
 .dl-consent-time { font-size: var(--text-xs); color: var(--ink-700); }
 [data-action="load-consent-history"] { min-height: 44px; }
-.delete-confirm .btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.delete-confirm .btn:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
 .delete-confirm { display: flex; align-items: center; justify-content: space-between; gap: var(--space-4); margin-top: var(--space-3); padding: .9rem; border: 1px solid rgba(var(--danger-rgb), .28); border-radius: var(--radius-surface); background: color-mix(in oklab, var(--danger) 5%, var(--bg)); }
 .delete-confirm p { margin: .2rem 0 0; color: var(--ink-700); font-size: var(--text-xs); }
 .delete-confirm-actions { display: flex; gap: var(--space-2); flex-shrink: 0; }
