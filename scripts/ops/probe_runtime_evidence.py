@@ -117,17 +117,17 @@ def _multi_process_check(postgres_up: bool, file_exists=None) -> dict[str, Any]:
     """Report readiness of the multi-process contention proof."""
 
     file_exists = file_exists or _file
-    ready = postgres_up and file_exists("agent/tests/test_case_contention_postgres.py")
+    ready = postgres_up and file_exists("scripts/ops/probe_multiprocess_scheduler.py")
     return {
         "id": "multi-process-contention",
         "title": "Multi-process contention",
         "status": AVAILABLE if ready else UNAVAILABLE,
-        "command": "python -m pytest agent/tests/test_case_contention_postgres.py -v",
+        "command": "python scripts/ops/probe_multiprocess_scheduler.py --workers 2 --slots 20",
         "missing": (
             []
             if ready
             else (["disposable PostgreSQL on 127.0.0.1:55432"] if not postgres_up
-                  else ["agent/tests/test_case_contention_postgres.py"])
+                  else ["scripts/ops/probe_multiprocess_scheduler.py"])
         ),
         "note": (
             "Genuine multi-process contention against one disposable PostgreSQL is reachable here. "
@@ -262,13 +262,13 @@ def _provider_check() -> dict[str, Any]:
         "id": "provider-sandbox-retry",
         "title": "Provider and object-store retry and idempotency",
         "status": UNAVAILABLE,
-        "command": "",
-        "missing": ["a provider sandbox account", "an object-store sandbox"],
+        "command": "python scripts/ops/probe_provider_sandbox.py --mode deterministic",
+        "missing": ["a provider sandbox account", "an object-store sandbox", "external provider/object receipt"],
         "note": (
-            "No sandbox exists. The acceptance runner's --external-sandbox flag writes a local file "
-            "asserting provider_call=false; that records restraint, not retry behaviour, and it is "
-            "deliberately left off. Provider-side idempotency across the crash window remains an open "
-            "decision (audit F-53)."
+            "The deterministic local provider probe exercises accept/timeout/reject without a network call, "
+            "but it cannot prove provider-side idempotency or object-store retry behaviour. The acceptance "
+            "runner records a receipt only when an external sandbox is explicitly supplied; provider-side "
+            "idempotency across the crash window remains an open decision (audit F-53)."
         ),
     }
 

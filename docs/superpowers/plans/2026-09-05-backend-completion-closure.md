@@ -406,13 +406,13 @@ git commit -m "fix: make report lifecycle policy explicit"
 
 ### Task 7: Staging evidence harness cho boundary chưa chứng minh
 
-**Files:** scripts/ops/probe_multiprocess_scheduler.py; scripts/ops/probe_provider_sandbox.py; scripts/ops/probe_proxy_contract.py; tests/integration/test_staging_evidence_contract.py; scripts/ops/run_pilot_acceptance.py; scripts/ops/probe_runtime_evidence.py; scripts/ops/restore_drill.py; docker-compose.prod.yml; nginx.conf; docs/runbooks/proof-first-pilot-acceptance.md; config/release-authority.json.
+**Files:** scripts/ops/probe_multiprocess_scheduler.py; scripts/ops/probe_provider_sandbox.py; scripts/ops/probe_proxy_contract.py; scripts/ops/probe_rollback.py; tests/integration/test_staging_evidence_contract.py; scripts/ops/run_pilot_acceptance.py; scripts/ops/probe_runtime_evidence.py; scripts/ops/restore_drill.py; docker-compose.prod.yml; nginx.conf; docs/runbooks/proof-first-pilot-acceptance.md; config/release-authority.json.
 
 **Interfaces:**
 - Mỗi probe tạo receipt JSON có probe_id, head_sha, environment_id, timestamps, exact command, exit code, output SHA-256, test nodeids và verdict.
 - Probe không chứa production secret/data; DSN phải disposable/staging và loopback/allowlisted.
 
-- [ ] Step 1: RED receipt completeness.
+- [x] Step 1: RED receipt completeness.
 
 ~~~python
 def test_staging_receipt_rejects_missing_environment_or_output_hash(tmp_path):
@@ -420,7 +420,7 @@ def test_staging_receipt_rejects_missing_environment_or_output_hash(tmp_path):
     assert verify_probe_receipt(receipt).verdict == "BLOCKED"
 ~~~
 
-- [ ] Step 2: Thêm probes.
+- [x] Step 2: Thêm probes.
 
 1. probe_multiprocess_scheduler.py: hai process cùng PostgreSQL, đo duplicate slot.
 2. probe_proxy_contract.py: Nginx/staging đến FastAPI đến PostgreSQL, kiểm status, cache headers, authenticated no-store và SSR route.
@@ -428,15 +428,15 @@ def test_staging_receipt_rejects_missing_environment_or_output_hash(tmp_path):
 4. restore_drill.py: backup đến restore DB mới đến checksum bảng/row counts đến receipt.
 5. Rollback probe: staged release A đến B đến health fail giả lập đến revert artifact B, không chạm production.
 
-- [ ] Step 3: Nối acceptance nhưng giữ fail-closed.
+- [x] Step 3: Nối acceptance nhưng giữ fail-closed.
 
 run_pilot_acceptance.py chỉ nâng verdict khi đủ probe receipt hợp lệ. Thiếu browser/proxy, backup-restore, multiprocess hoặc provider evidence phải giữ NO_GO, không biến SKIPPED thành PASS.
 
-- [ ] Step 4: GREEN trên disposable/staging.
+- [x] Step 4: GREEN trên disposable/staging.
 
 ~~~powershell
 python -m pytest tests/integration/test_staging_evidence_contract.py tests/integration/test_probe_runtime_evidence.py -q
-python scripts/ops/probe_multiprocess_scheduler.py --workers 2 --slots 20 --dsn $env:VL360_TEST_DATABASE_URL
+python scripts/ops/probe_multiprocess_scheduler.py --workers 2 --slots 20
 python scripts/ops/probe_provider_sandbox.py --mode deterministic
 python scripts/ops/probe_proxy_contract.py --base-url http://127.0.0.1:8360
 python scripts/ops/run_pilot_acceptance.py --root . --evidence-dir artifacts/staging-evidence
@@ -444,7 +444,7 @@ python scripts/ops/run_pilot_acceptance.py --root . --evidence-dir artifacts/sta
 
 Expected: local disposable probes có thể pass, nhưng acceptance vẫn NO_GO nếu thiếu staging, custody key hoặc human sign-off.
 
-- [ ] Step 5: Commit.
+- [x] Step 5: Commit.
 
 ~~~powershell
 git add scripts/ops/run_pilot_acceptance.py scripts/ops/probe_runtime_evidence.py scripts/ops/restore_drill.py scripts/ops/probe_multiprocess_scheduler.py scripts/ops/probe_provider_sandbox.py scripts/ops/probe_proxy_contract.py tests/integration/test_staging_evidence_contract.py docker-compose.prod.yml nginx.conf docs/runbooks/proof-first-pilot-acceptance.md config/release-authority.json

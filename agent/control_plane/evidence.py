@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from datetime import datetime
 from hashlib import sha256
 import json
 from pathlib import Path
@@ -93,6 +94,128 @@ class VerificationResult:
     verdict: Verdict
     reasons: tuple[str, ...]
     checked_sha256: str
+
+
+ProbeVerdict = Literal["PASS", "BLOCKED", "UNAVAILABLE"]
+
+
+@dataclass(frozen=True)
+class ProbeReceiptVerification:
+    """Fail-closed verification result for an operational probe receipt."""
+
+    verdict: ProbeVerdict
+    reasons: tuple[str, ...] = ()
+
+
+def _probe_timestamp(value: object, field: str, reasons: list[str]) -> datetime | None:
+    if not isinstance(value, str) or not value.strip():
+        reasons.append(f"missing or invalid field: {field}")
+        return None
+    try:
+        parsed = datetime.fromisoformat(value)
+    except ValueError:
+        reasons.append(f"invalid timestamp: {field}")
+        return None
+    if parsed.tzinfo is None or parsed.utcoffset() is None:
+        reasons.append("timestamps must be timezone-aware")
+        return None
+    return parsed
+
+
+def _probe_required_fields(receipt: dict[str, object]) -> list[str]:
+    required = (
+        "probe_id", "head_sha", "environment_id", "started_at", "finished_at",
+        "command", "exit_code", "output_sha256", "test_nodeids", "verdict",
+    )
+    return [f"missing or invalid field: {field}" for field in required if field not in receipt]
+
+
+def _probe_identity_reasons(receipt: dict[str, object]) -> list[str]:
+    reasons: list[str] = []
+    for field in ("probe_id", "environment_id", "command"):
+        value = receipt.get(field)
+        if not isinstance(value, str) or not value.strip():
+            reasons.append(f"missing or invalid field: {field}")
+    head_sha = receipt.get("head_sha")
+    if not isinstance(head_sha, str) or not _HEAD_SHA.fullmatch(head_sha):
+        reasons.append("missing or invalid field: head_sha")
+    return reasons
+
+
+def _probe_output_reasons(receipt: dict[str, object]) -> list[str]:
+    reasons: list[str] = []
+    output_sha256 = receipt.get("output_sha256")
+    if not isinstance(output_sha256, str) or not _SHA256.fullmatch(output_sha256):
+        reasons.append("missing or invalid field: output_sha256")
+    captured_output = receipt.get("captured_output")
+    if captured_output is not None:
+        if not isinstance(captured_output, str):
+            reasons.append("captured_output must be text")
+        elif isinstance(output_sha256, str) and _SHA256.fullmatch(output_sha256):
+            if sha256(captured_output.encode("utf-8")).hexdigest() != output_sha256:
+                reasons.append("output_sha256 does not match captured_output")
+    return reasons
+
+
+def _probe_clock_reasons(receipt: dict[str, object]) -> list[str]:
+    reasons: list[str] = []
+    started_at = _probe_timestamp(receipt.get("started_at"), "started_at", reasons)
+    finished_at = _probe_timestamp(receipt.get("finished_at"), "finished_at", reasons)
+    if started_at is not None and finished_at is not None and finished_at < started_at:
+        reasons.append("finished_at must not precede started_at")
+    return reasons
+
+
+def _probe_capture_reasons(receipt: dict[str, object]) -> list[str]:
+    reasons: list[str] = []
+    exit_code = receipt.get("exit_code")
+    if type(exit_code) is not int:
+        reasons.append("missing or invalid field: exit_code")
+    nodeids = receipt.get("test_nodeids")
+    if not isinstance(nodeids, list) or not all(isinstance(nodeid, str) and nodeid.strip() for nodeid in nodeids):
+        reasons.append("missing or invalid field: test_nodeids")
+    return reasons
+
+
+def _probe_verdict_reasons(receipt: dict[str, object]) -> list[str]:
+    reasons: list[str] = []
+    exit_code = receipt.get("exit_code")
+    nodeids = receipt.get("test_nodeids")
+    declared_verdict = receipt.get("verdict")
+    if declared_verdict not in {"PASS", "BLOCKED", "UNAVAILABLE"}:
+        reasons.append("missing or invalid field: verdict")
+    if declared_verdict == "PASS" and type(exit_code) is int and exit_code != 0:
+        reasons.append("PASS receipt must have exit_code 0")
+    if declared_verdict == "PASS" and isinstance(nodeids, list) and not nodeids:
+        reasons.append("PASS receipt must list executed test_nodeids")
+    if declared_verdict == "UNAVAILABLE" and type(exit_code) is int and exit_code == 0:
+        reasons.append("UNAVAILABLE receipt must have nonzero exit_code")
+    return reasons
+
+
+def _probe_execution_reasons(receipt: dict[str, object]) -> list[str]:
+    return [
+        *_probe_clock_reasons(receipt),
+        *_probe_capture_reasons(receipt),
+        *_probe_verdict_reasons(receipt),
+    ]
+
+
+def verify_probe_receipt(receipt: object) -> ProbeReceiptVerification:
+    """Validate the portable receipt contract emitted by staging probes."""
+
+    if not isinstance(receipt, dict):
+        return ProbeReceiptVerification("BLOCKED", ("receipt must be a JSON object",))
+
+    reasons = [
+        *_probe_required_fields(receipt),
+        *_probe_identity_reasons(receipt),
+        *_probe_output_reasons(receipt),
+        *_probe_execution_reasons(receipt),
+    ]
+    if reasons:
+        return ProbeReceiptVerification("BLOCKED", tuple(dict.fromkeys(reasons)))
+    return ProbeReceiptVerification(receipt["verdict"], ())
 
 
 def _ordered_unique(values: list[str]) -> tuple[str, ...]:

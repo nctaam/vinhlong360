@@ -36,7 +36,7 @@ from agent.control_plane.attestation import (  # noqa: E402
     payload_digest,
     resolve_key,
 )
-from agent.control_plane.evidence import classify_verdict, parse_test_output
+from agent.control_plane.evidence import classify_verdict, parse_test_output, verify_probe_receipt
 
 
 ACCEPTANCE_LAYERS = (
@@ -48,6 +48,13 @@ ACCEPTANCE_LAYERS = (
 )
 DECISION_REQUIRED_ITEMS = ("legal", "provider", "residency", "public_indexing")
 PUBLIC_LAUNCH_VERDICT = "NO_GO"
+_PROBE_RECEIPT_FILES = {
+    "multiprocess-scheduler": "multiprocess-scheduler-receipt.json",
+    "provider-sandbox": "provider-sandbox-receipt.json",
+    "proxy-contract": "proxy-contract-receipt.json",
+    "backup-restore-checksum": "backup-restore-receipt.json",
+    "rollback-local-rehearsal": "rollback-rehearsal-receipt.json",
+}
 _HEAD_SHA = re.compile(r"^[0-9a-f]{40}$")
 _SHA256 = re.compile(r"^[0-9a-f]{64}$")
 _PYTEST_SUCCESS_LINE = re.compile(
@@ -88,6 +95,45 @@ _CANONICAL_EVIDENCE_FIELDS = (
     "drill_steps",
     "execution_receipt",
 )
+
+
+def load_probe_receipts(evidence_dir: Path | None) -> dict[str, dict[str, Any]]:
+    """Load only the fixed probe receipt set, treating absence as unavailable."""
+
+    directory = Path(evidence_dir).resolve() if evidence_dir is not None else None
+    statuses: dict[str, dict[str, Any]] = {}
+    for probe_id, filename in _PROBE_RECEIPT_FILES.items():
+        path = directory / filename if directory is not None else None
+        if path is None or not path.is_file():
+            statuses[probe_id] = {
+                "verdict": "UNAVAILABLE",
+                "reasons": ["probe receipt missing"],
+            }
+            continue
+        try:
+            payload = json.loads(path.read_text(encoding="utf-8"))
+        except (OSError, UnicodeDecodeError, json.JSONDecodeError) as exc:
+            statuses[probe_id] = {
+                "verdict": "BLOCKED",
+                "reasons": [f"unable to read probe receipt: {type(exc).__name__}"],
+            }
+            continue
+        verification = verify_probe_receipt(payload)
+        reasons = list(verification.reasons)
+        if isinstance(payload, dict) and payload.get("probe_id") != probe_id:
+            reasons.append("probe_id does not match expected slot")
+        statuses[probe_id] = {
+            "verdict": "BLOCKED" if reasons else verification.verdict,
+            "reasons": reasons,
+        }
+    return statuses
+
+
+def _load_checkout_probe_receipts(root: Path, evidence_dir: Path | None) -> dict[str, dict[str, Any]]:
+    if evidence_dir is None:
+        return load_probe_receipts(None)
+    resolved = evidence_dir if evidence_dir.is_absolute() else root / evidence_dir
+    return load_probe_receipts(resolved)
 
 
 def _receipt_fields(receipt: Any) -> set[str] | None:
@@ -985,6 +1031,36 @@ def _validate_sections(
     return True
 
 
+def _required_probe_receipts_pass(bundle: AcceptanceBundle) -> bool:
+    probe_receipts = bundle.environment.get("probe_receipts")
+    if probe_receipts is None:
+        return True
+    required = (
+        "multiprocess-scheduler",
+        "provider-sandbox",
+        "proxy-contract",
+        "backup-restore-checksum",
+    )
+    return isinstance(probe_receipts, dict) and all(
+        isinstance(probe_receipts.get(probe_id), dict)
+        and probe_receipts[probe_id].get("verdict") == "PASS"
+        for probe_id in required
+    )
+
+
+def _pilot_attestation_checks(bundle: AcceptanceBundle, root: Path) -> bool:
+    references = _attestation_references(root)
+    if references is None:
+        return False
+    attested, _reasons = evaluate_attestations(
+        bundle.attestations,
+        digest=payload_digest(bundle.unsigned_payload()),
+        references=references,
+        root=root,
+    )
+    return attested and _countersignature_covers_every_passing_record(bundle)
+
+
 def _evaluate_pilot_gate_contents(bundle: AcceptanceBundle, root: Path | None = None) -> GateVerdict:
     """Compute the closed-pilot decision from the evidence contents."""
     try:
@@ -994,24 +1070,9 @@ def _evaluate_pilot_gate_contents(bundle: AcceptanceBundle, root: Path | None = 
             return "NO_GO"
         now, working_tree_digest, contract = identity
         required_decisions, _public_verdict, authority_max_age_hours, authority_owner = contract
-        # The owner_signoff boolean above stays an AND-condition rather than
-        # being replaced: absence already fails closed, and a signature the
-        # same actor can mint is not a reason to drop a second control.
-        references = _attestation_references(checked_root)
-        if references is None:
+        if not _pilot_attestation_checks(bundle, checked_root):
             return "NO_GO"
-        attested, _reasons = evaluate_attestations(
-            bundle.attestations,
-            digest=payload_digest(bundle.unsigned_payload()),
-            references=references,
-            root=checked_root,
-        )
-        if not attested:
-            return "NO_GO"
-        # A countersignature is only worth its signature if it names every
-        # record it claims to have re-executed; a short `covers` list would let
-        # one re-run stand in for the whole bundle.
-        if not _countersignature_covers_every_passing_record(bundle):
+        if not _required_probe_receipts_pass(bundle):
             return "NO_GO"
         if not isinstance(bundle.decision_required, dict) or set(bundle.decision_required) != required_decisions:
             return "NO_GO"
@@ -1378,7 +1439,7 @@ def _bind_evidence(evidence: dict[str, Any], finding: str, layer: str) -> dict[s
     return bound
 
 
-def run_pilot_acceptance(root: Path, *, database_target: str, browser_base_url: str | None, external_sandbox: bool, postgres_proof: bool = False) -> AcceptanceBundle:
+def run_pilot_acceptance(root: Path, *, database_target: str, browser_base_url: str | None, external_sandbox: bool, postgres_proof: bool = False, probe_evidence_dir: Path | None = None) -> AcceptanceBundle:
     """Run repository-local checks in a scratch directory that is always removed.
 
     The scratch tree is created inside the checkout so pytest never writes to a
@@ -1396,16 +1457,19 @@ def run_pilot_acceptance(root: Path, *, database_target: str, browser_base_url: 
             browser_base_url=browser_base_url,
             external_sandbox=external_sandbox,
             postgres_proof=postgres_proof,
+            probe_evidence_dir=probe_evidence_dir,
         )
     finally:
         shutil.rmtree(pytest_temp_root, ignore_errors=True)
 
 
-def _collect_pilot_evidence(root: Path, *, pytest_temp_root: Path, database_target: str, browser_base_url: str | None, external_sandbox: bool, postgres_proof: bool) -> AcceptanceBundle:
+def _collect_pilot_evidence(root: Path, *, pytest_temp_root: Path, database_target: str, browser_base_url: str | None, external_sandbox: bool, postgres_proof: bool, probe_evidence_dir: Path | None) -> AcceptanceBundle:
     """Run only repository-local checks and return a fail-closed bundle."""
 
     owner = "service-owner"
     env = _environment(root, database_target, browser_base_url, external_sandbox)
+    probe_receipts = _load_checkout_probe_receipts(root, probe_evidence_dir)
+    env["probe_receipts"] = probe_receipts
     before_free = _disk_free(root)
     # ``-v`` so the transcript names the tests it ran, and a drill-sized
     # timeout: the 120s default silently turned this layer into a TIMEOUT
@@ -1437,6 +1501,7 @@ def _collect_pilot_evidence(root: Path, *, pytest_temp_root: Path, database_targ
     layers["multi_process"]["outcome"] = "UNCLASSIFIED"
     layers["multi_process"]["evidence_kind"] = "partial-local-proof"
     layers["multi_process"]["availability_gap"] = "multi-process-contention-command-not-run"
+    layers["multi_process"]["probe_receipt"] = probe_receipts["multiprocess-scheduler"]
     # `docker info` was never PostgreSQL proof, so it is not consulted here.
     # A finding gets a real capture only when a PostgreSQL test names its
     # defect; every other finding records an explicit, per-finding gap.
@@ -1446,6 +1511,7 @@ def _collect_pilot_evidence(root: Path, *, pytest_temp_root: Path, database_targ
         layers["browser"] = _skip_evidence("browser", "browser-harness-not-invoked; local URL supplied but no browser binary was authorized", env, owner, "No browser state retained; rerun with disposable harness.")
     else:
         layers["browser"] = _skip_evidence("browser", "browser-base-url-not-supplied", env, owner, "No browser state retained.")
+    layers["browser"]["proxy_probe_receipt"] = probe_receipts["proxy-contract"]
     if external_sandbox:
         # The receipt lives inside the runner's own excluded scratch directory:
         # a crashed run must never leave a repository-root file behind that
@@ -1478,6 +1544,9 @@ def _collect_pilot_evidence(root: Path, *, pytest_temp_root: Path, database_targ
         }
     else:
         layers["external_side_effect"] = _skip_evidence("external_side_effect", "external-sandbox-not-enabled", env, owner, "No provider call performed.")
+    layers["external_side_effect"]["provider_probe_receipt"] = probe_receipts["provider-sandbox"]
+    layers["external_side_effect"]["backup_restore_probe_receipt"] = probe_receipts["backup-restore-checksum"]
+    layers["external_side_effect"]["rollback_probe_receipt"] = probe_receipts["rollback-local-rehearsal"]
 
     all_layers = {name: value for name, value in layers.items()}
 
@@ -1568,10 +1637,11 @@ def main(argv: list[str] | None = None) -> int:
     # environment so no credential can reach argv, the recorded command, or the
     # artifact that claims `secrets_collected: False`.
     parser.add_argument("--postgres-proof", action="store_true")
+    parser.add_argument("--evidence-dir", type=Path, default=None, help="directory containing validated staging probe receipts")
     parser.add_argument("--output", type=Path, default=None)
     args = parser.parse_args(argv)
     output = args.output or (args.root / "artifacts" / "pilot-acceptance.json")
-    bundle = run_pilot_acceptance(args.root, database_target=args.database_target, browser_base_url=args.browser_base_url, external_sandbox=args.external_sandbox, postgres_proof=args.postgres_proof)
+    bundle = run_pilot_acceptance(args.root, database_target=args.database_target, browser_base_url=args.browser_base_url, external_sandbox=args.external_sandbox, postgres_proof=args.postgres_proof, probe_evidence_dir=args.evidence_dir)
     bundle.write(output)
     print(json.dumps({"artifact": str(output), "gate": bundle.gate, "p1_count": len(bundle.sections), "layers": list(ACCEPTANCE_LAYERS)}, ensure_ascii=True, sort_keys=True))
     return 0 if bundle.gate == "GO_CONDITIONAL" else 2
