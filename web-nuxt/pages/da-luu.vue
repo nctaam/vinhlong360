@@ -519,7 +519,7 @@ useHead(() => ({
   font-family: var(--font-sans); font-size: .78rem; font-weight: 700;
   text-transform: uppercase; letter-spacing: .06em; color: var(--muted);
 }
-.dateline-eyebrow::before { content: ""; width: 14px; height: 1.5px; background: var(--color-brand, var(--primary)); flex-shrink: 0; }
+.dateline-eyebrow::before { content: ""; width: 14px; height: 1.5px; background: var(--color-brand); flex-shrink: 0; }
 .saved-title { font-size: 1.5rem; margin: 0; }
 .saved-overview {
   display: grid; grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -556,13 +556,13 @@ useHead(() => ({
 .saved-tab:hover { color: var(--ink); }
 .saved-tab:active { transform: scale(.98); }
 .saved-tab:focus-visible { outline: 2px solid var(--color-focus); outline-offset: -2px; border-radius: var(--radius-control); }
-.saved-tab.active { color: var(--primary); border-bottom-color: var(--primary); font-weight: 600; }
+.saved-tab.active { color: var(--color-action); border-bottom-color: var(--color-action); font-weight: 600; }
 .saved-tab-count {
   display: inline-block; margin-left: .35rem;
   background: var(--bg-alt); padding: 0 5px; border-radius: var(--radius-full);
   font-size: .75rem; font-weight: 600; color: var(--muted);
 }
-.saved-tab.active .saved-tab-count { background: var(--primary-light); color: var(--primary); }
+.saved-tab.active .saved-tab-count { background: rgba(var(--color-action-rgb), .12); color: var(--color-action); }
 
 /* Entity grid — rows use the shared <SavedEntityCard> for the Story-Card
    treatment (serif title, dateline eyebrow, tri-province card-rule, grain
@@ -683,7 +683,7 @@ useHead(() => ({
 }
 .saved-sugg-card:hover {
   transform: translateY(-2px);
-  border-color: var(--primary);
+  border-color: var(--color-action);
 }
 .saved-sugg-card:active {
   transform: scale(.98);

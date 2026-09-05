@@ -401,7 +401,7 @@ useHead(() => ({
   font-family: var(--font-sans); font-size: .78rem; font-weight: 700;
   text-transform: uppercase; letter-spacing: .06em; color: var(--muted);
 }
-.dateline-eyebrow::before { content: ""; width: 14px; height: 1.5px; background: var(--primary); flex-shrink: 0; }
+.dateline-eyebrow::before { content: ""; width: 14px; height: 1.5px; background: var(--color-brand); flex-shrink: 0; }
 
 .cp-hero {
   display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 1rem;

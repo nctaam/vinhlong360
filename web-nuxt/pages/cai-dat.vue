@@ -686,7 +686,7 @@ const pwStrength = computed(() => {
   if (/[^a-zA-Z0-9]/.test(pw)) score++
   const level = score <= 2 ? 1 : score <= 3 ? 2 : score <= 4 ? 3 : 4
   const labels = ['', 'Yếu', 'Trung bình', 'Mạnh', 'Rất mạnh']
-  const colors = ['', 'var(--error)', 'var(--warning)', 'var(--success)', 'var(--primary)']
+  const colors = ['', 'var(--error)', 'var(--warning)', 'var(--success)', 'var(--color-brand)']
   return { score: level, label: labels[level], color: colors[level] }
 })
 const hasPassword = computed(() => user.value?.has_password === true)
@@ -1208,7 +1208,7 @@ onUnmounted(() => {
   font-family: var(--font-sans); font-size: var(--text-xs); font-weight: 700;
   text-transform: uppercase; letter-spacing: .06em; color: var(--ink-700);
 }
-.dateline-eyebrow::before { content: ""; width: 14px; height: 1.5px; background: var(--primary); flex-shrink: 0; }
+.dateline-eyebrow::before { content: ""; width: 14px; height: 1.5px; background: var(--color-brand); flex-shrink: 0; }
 
 .settings-title { font-family: var(--font-editorial); font-weight: 600; font-size: var(--text-xl); margin: 0 0 .4rem; }
 .settings-dek { color: var(--ink-700); font-size: var(--text-sm); max-width: 56ch; margin: 0 0 var(--space-5); line-height: var(--leading-relaxed); }
@@ -1237,7 +1237,7 @@ onUnmounted(() => {
 }
 .settings-tab:hover { color: var(--ink); }
 .settings-tab:active { transform: scale(.98); }
-.settings-tab.active { color: var(--accent, var(--primary)); border-bottom-color: var(--accent, var(--primary)); font-weight: 600; }
+.settings-tab.active { color: var(--color-action); border-bottom-color: var(--color-action); font-weight: 600; }
 .settings-tab.active .settings-tab-icon { transform: scale(1.15); }
 .settings-tab:focus-visible { outline: 2px solid var(--color-focus); outline-offset: -2px; border-radius: var(--radius-control); }
 .settings-tab-icon { font-size: 1rem; transition: transform .25s var(--ease-out-expo); }
@@ -1317,9 +1317,9 @@ onUnmounted(() => {
 .notif-pref-icon { font-size: 1.25rem; flex-shrink: 0; }
 .notif-pref-info strong { display: block; font-size: var(--text-sm); }
 .notif-pref-info .sf-hint { display: block; margin-top: .1rem; }
-.toggle { appearance: none; width: 40px; height: 22px; background: var(--muted); border-radius: 11px; position: relative; cursor: pointer; transition: background .25s var(--ease-out); flex-shrink: 0; min-height: 44px; padding: 11px 0; box-sizing: content-box; }
+.toggle { appearance: none; width: 40px; height: 22px; background: var(--muted); border-radius: 11px; position: relative; cursor: pointer; transition: background .25s var(--ease-out); flex-shrink: 0; min-height: 44px; padding: 11px 0; box-sizing: content-box; margin: 0; }
 .toggle::after { content: ''; position: absolute; top: 2px; left: 2px; width: 18px; height: 18px; background: var(--white, var(--white)); border-radius: 50%; transition: transform .25s var(--ease-out-expo); box-shadow: 0 1px 3px rgba(var(--black-rgb),.15); }
-.toggle:checked { background: var(--accent, var(--primary)); }
+.toggle:checked { background: var(--color-action); }
 .toggle:checked::after { transform: translateX(18px); }
 .toggle:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
 .toggle:active::after { width: 22px; }
@@ -1353,7 +1353,7 @@ onUnmounted(() => {
 .delete-confirm p { margin: .2rem 0 0; color: var(--ink-700); font-size: var(--text-xs); }
 .delete-confirm-actions { display: flex; gap: var(--space-2); flex-shrink: 0; }
 .delete-confirm .btn { min-height: 44px; }
-.account-status { margin: var(--space-3) 0 0; padding: .75rem .85rem; border: 1px solid var(--border); box-shadow: inset 3px 0 0 var(--primary); border-radius: var(--radius-control); background: var(--bg-alt); color: var(--ink-700); font-size: var(--text-sm); }
+.account-status { margin: var(--space-3) 0 0; padding: .75rem .85rem; border: 1px solid var(--border); box-shadow: inset 3px 0 0 var(--color-brand); border-radius: var(--radius-control); background: var(--bg-alt); color: var(--ink-700); font-size: var(--text-sm); }
 
 .login-fail { border-color: rgba(var(--danger-rgb), .3) !important; }
 .login-ok { color: var(--accent); font-weight: 600; font-size: var(--text-base); }
@@ -1370,7 +1370,7 @@ onUnmounted(() => {
 .theme-btn:hover { border-color: var(--muted); }
 .theme-btn:active { transform: scale(.97); }
 .theme-btn:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
-.theme-btn.active { border-color: var(--accent, var(--primary)); background: color-mix(in oklab, var(--accent, var(--primary)) 8%, transparent); color: var(--ink); font-weight: 600; }
+.theme-btn.active { border-color: var(--color-action); background: color-mix(in oklab, var(--color-action) 8%, transparent); color: var(--ink); font-weight: 600; }
 .theme-icon { font-size: 1.1rem; }
 
 /* ── Dark mode ── */

@@ -110,7 +110,7 @@ const discoveryLinks = [
   outline: 2px solid var(--color-focus);
   outline-offset: 1px;
   border-color: var(--accent);
-  box-shadow: 0 0 0 3px rgba(var(--primary-rgb), .1);
+  box-shadow: 0 0 0 3px rgba(var(--color-action-rgb), .1);
 }
 
 .nf-search button {

@@ -625,14 +625,14 @@ useHead({
 .pef-count { margin-right: auto; font-size: var(--text-xs); color: var(--muted); }
 .qa-badge { display: inline-flex; align-items: center; gap: .25rem; font-size: var(--text-xs); font-weight: var(--weight-semibold); padding: .2rem .55rem; border-radius: 999px; background: var(--success-bg); color: var(--secondary-fg); }
 .qa-pick { font-size: var(--text-xs); padding: .2rem .55rem; border: 1px solid var(--border); border-radius: 999px; background: var(--bg); color: var(--ink-700); cursor: pointer; min-height: 44px; display: inline-flex; align-items: center; transition: border-color .2s, color .2s, transform .2s var(--ease-out-expo); }
-.qa-pick:hover { border-color: var(--primary); color: var(--primary-fg); }
+.qa-pick:hover { border-color: var(--color-action); color: var(--color-action); }
 .qa-pick:active { transform: scale(.95); transition-duration: .08s; }
 .qa-pick:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
 
 /* ── Comment actions + threaded replies ── */
 .comment-actions { display: flex; align-items: center; gap: var(--space-3); margin-top: .35rem; flex-wrap: wrap; }
 .comment-reply-btn { font-size: var(--text-xs); font-weight: var(--weight-semibold); padding: .15rem .1rem; border: none; background: none; color: var(--muted); cursor: pointer; min-height: 44px; min-width: 44px; display: inline-flex; align-items: center; justify-content: center; transition: color .2s, transform .2s var(--ease-out-expo); }
-.comment-reply-btn:hover { color: var(--primary-fg); }
+.comment-reply-btn:hover { color: var(--color-action); }
 .comment-reply-btn:active { transform: scale(.92); transition-duration: .08s; }
 .comment-reply-btn:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; border-radius: var(--radius-control); }
 .thread-subreply { display: flex; gap: var(--space-2); margin-top: var(--space-3); padding-left: var(--space-2); border-left: 2px solid var(--line); }
@@ -655,7 +655,7 @@ useHead({
   display: flex; align-items: center; gap: var(--space-2);
   padding: 0 0 var(--space-4);
 }
-.replies-icon { color: var(--primary-fg); flex-shrink: 0; }
+.replies-icon { color: var(--color-action); flex-shrink: 0; }
 .replies-label { font-size: var(--text-base); font-weight: var(--weight-semibold); color: var(--ink); letter-spacing: .01em; }
 .replies-count {
   font-size: var(--text-xs); font-weight: var(--weight-semibold);
@@ -663,7 +663,7 @@ useHead({
   padding: 2px 9px; min-width: 22px; text-align: center; line-height: 1.6;
 }
 .replies-count--active {
-  background: rgba(var(--primary-rgb), .12); color: var(--primary-fg);
+  background: rgba(var(--color-action-rgb), .12); color: var(--color-action);
 }
 
 /* ── Comment compose (Threads style) ── */
@@ -682,7 +682,7 @@ useHead({
   transition: border-color .2s var(--ease-out);
 }
 .compose-input-sm::placeholder { color: var(--ink-tertiary, var(--muted)); }
-.compose-input-sm:focus { border-bottom-color: var(--primary-fg); box-shadow: none; }
+.compose-input-sm:focus { border-bottom-color: var(--color-action); box-shadow: none; }
 .compose-input-sm:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
 /* --text-sm clamps to ~14px under ~640px viewport — below the 16px iOS auto-zoom
    threshold. Force 16px on mobile only for this real comment input; desktop keeps
@@ -698,10 +698,10 @@ useHead({
 .compose-send:hover:not(:disabled) { transform: translateY(-1px); box-shadow: var(--shadow-sm); }
 .compose-send:active:not(:disabled) { transform: scale(.95); transition-duration: .08s; }
 .compose-send:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
-.compose-send .spinner-sm { width: 14px; height: 14px; color: var(--primary-fg); }
+.compose-send .spinner-sm { width: 14px; height: 14px; color: var(--color-action); }
 
 .thread-comment-guest { padding: var(--space-3) 0 var(--space-4); border-bottom: .5px solid var(--line); }
-.guest-reply-link { font-size: var(--text-sm); color: var(--primary-fg); text-decoration: none; font-weight: var(--weight-medium); border-radius: var(--radius-control); }
+.guest-reply-link { font-size: var(--text-sm); color: var(--color-action); text-decoration: none; font-weight: var(--weight-medium); border-radius: var(--radius-control); }
 .guest-reply-link:hover { text-decoration: underline; }
 .guest-reply-link:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
 
@@ -721,7 +721,7 @@ useHead({
 
 .thread-reply .thread-left { width: 32px; flex-shrink: 0; display: flex; flex-direction: column; align-items: center; gap: var(--space-2); }
 .thread-reply .thread-line { flex: 1; width: 2px; background: var(--line); border-radius: 1px; min-height: 16px; transition: background .3s var(--ease-out); }
-.thread-reply:hover .thread-line { background: var(--primary-fg); }
+.thread-reply:hover .thread-line { background: var(--color-action); }
 .thread-reply .thread-right { flex: 1; min-width: 0; }
 
 .reply-text { margin: var(--space-1) 0 0; font-size: var(--text-sm); line-height: var(--leading-relaxed); color: var(--ink); }
@@ -775,7 +775,7 @@ useHead({
   border-radius: var(--radius-sheet); overflow: hidden; text-decoration: none; color: var(--ink);
   transition: border-color .2s, transform .2s var(--ease-out-expo);
 }
-.related-card:hover { border-color: var(--primary-fg); transform: translateY(-1px); }
+.related-card:hover { border-color: var(--color-action); transform: translateY(-1px); }
 .related-card:active { transform: scale(.99); }
 .related-card:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
 .related-body { padding: var(--space-2) var(--space-3); display: flex; flex-direction: column; gap: .2rem; }
