@@ -757,7 +757,7 @@ useHead(() => ({
   display: flex; gap: var(--space-2); align-items: flex-start;
   max-width: var(--measure-read);
   padding: var(--space-3); border-inline-start: 2px solid var(--error);
-  background: rgba(var(--red-rgb, var(--primary-rgb)), .06);
+  background: rgba(var(--color-error-rgb), .06);
   color: var(--ink); font-size: var(--text-sm); line-height: var(--leading-relaxed);
 }
 
@@ -783,12 +783,12 @@ useHead(() => ({
 .lvn-row > .lvn-cell:last-child { border-inline-end: .5px solid var(--line); }
 .lvn-row:last-child > .lvn-cell { border-block-end: .5px solid var(--line); }
 .lvn-cell.is-blank { cursor: default; background: var(--bg-alt); }
-.lvn-cell:not(.is-blank):hover { background: rgba(var(--primary-rgb), .06); }
+.lvn-cell:not(.is-blank):hover { background: rgba(var(--color-action-rgb), .06); }
 .lvn-cell:not(.is-blank):active { transform: scale(.95); }
 .lvn-cell:focus-visible { outline: 2px solid var(--color-focus); outline-offset: -2px; }
 .lvn-cell.is-weekend .lvn-num { color: var(--ink-secondary); }
-.lvn-cell.is-today { background: rgba(var(--primary-rgb), .1); }
-.lvn-cell.is-selected { box-shadow: inset 0 0 0 2px var(--primary-fg); }
+.lvn-cell.is-today { background: rgba(var(--color-action-rgb), .1); }
+.lvn-cell.is-selected { box-shadow: inset 0 0 0 2px var(--color-action); }
 .lvn-num { font-size: var(--text-sm); font-weight: var(--weight-medium); color: var(--ink); }
 .lvn-lunar { font-size: var(--text-2xs); color: var(--ink-tertiary); }
 .lvn-cell.is-first .lvn-lunar { color: var(--error); font-weight: var(--weight-semibold); }
@@ -804,7 +804,7 @@ useHead(() => ({
 .lvn-key-full { color: var(--accent-dark); }
 .lvn-key-today {
   display: inline-block; width: 10px; height: 10px; vertical-align: -1px;
-  background: rgba(var(--primary-rgb), .35);
+  background: rgba(var(--color-action-rgb), .35);
 }
 .lvn-legend-note { flex-basis: 100%; }
 
@@ -836,7 +836,7 @@ useHead(() => ({
 }
 .lvn-hour-range { color: var(--ink-tertiary); font-variant-numeric: tabular-nums; }
 .lvn-hour.is-now { font-weight: var(--weight-semibold); }
-.lvn-hour.is-now .lvn-hour-range { color: var(--primary-fg); }
+.lvn-hour.is-now .lvn-hour-range { color: var(--color-action); }
 
 /* --- Đổi ngày --- */
 .lvn-convert { display: grid; grid-template-columns: repeat(auto-fit, minmax(19rem, 1fr)); gap: var(--space-6); }
@@ -864,7 +864,7 @@ useHead(() => ({
 }
 .lvn-term-date { color: var(--ink-tertiary); font-variant-numeric: tabular-nums; }
 .lvn-term.is-current { font-weight: var(--weight-semibold); }
-.lvn-term.is-current .lvn-term-date { color: var(--primary-fg); }
+.lvn-term.is-current .lvn-term-date { color: var(--color-action); }
 
 /* --- Ranh giới trung thực --- */
 .lvn-scope p { max-width: var(--measure-read); color: var(--ink-secondary); line-height: var(--leading-relaxed); }

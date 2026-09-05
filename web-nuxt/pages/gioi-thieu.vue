@@ -158,7 +158,7 @@ useHead(() => ({
   gap: var(--space-6);
   background:
     var(--grain),
-    linear-gradient(120deg, color-mix(in srgb, var(--river-600) 14%, transparent) 0%, var(--bg-warm) 55%, rgba(var(--primary-rgb), .16) 120%);
+    linear-gradient(120deg, color-mix(in srgb, var(--river-600) 14%, transparent) 0%, var(--bg-warm) 55%, rgba(var(--color-brand-rgb), .16) 120%);
   background-blend-mode: overlay, normal;
 }
 .bm-inner { flex: 1 1 auto; min-width: 0; max-width: var(--measure-read); }
@@ -166,7 +166,7 @@ useHead(() => ({
   display: flex; align-items: center; gap: var(--space-2);
   font-family: var(--font-sans); font-size: var(--text-2xs); font-weight: 700;
   text-transform: uppercase; letter-spacing: var(--tracking-caps);
-  color: var(--primary-fg-strong); margin: 0 0 var(--space-3);
+  color: var(--color-brand); margin: 0 0 var(--space-3);
 }
 .bm-tick { width: 14px; height: 1.5px; background: var(--accent, var(--amber-500)); flex-shrink: 0; }
 .brand-masthead h1 {
@@ -250,7 +250,7 @@ useHead(() => ({
 .about-mission-quote :deep(cite) { font-style: normal; }
 
 /* Section 3 — Non-commercial trust signal. */
-.noncommercial-section :deep(.legal-body > p:first-child) { font-weight: var(--weight-semibold); color: var(--primary-fg-strong); }
+.noncommercial-section :deep(.legal-body > p:first-child) { font-weight: var(--weight-semibold); color: var(--color-brand); }
 .noncommercial-section :deep(.legal-body ul) { list-style: none; padding-inline-start: 0; }
 .noncommercial-section :deep(.legal-body li) { position: relative; padding-inline-start: var(--space-6); }
 .noncommercial-section :deep(.legal-body li)::before {
@@ -321,9 +321,9 @@ useHead(() => ({
 .about-intro :deep(p) { font-size: inherit; color: inherit; }
 .legal-page :deep(ul) { padding-inline-start: var(--space-5); }
 .legal-page :deep(li) { margin: var(--space-2) 0; font-size: var(--text-sm); color: var(--ink-secondary, var(--ink)); }
-.legal-page :deep(a) { color: var(--primary-fg); font-weight: var(--weight-semibold); text-decoration-line: underline; text-decoration-color: transparent; text-underline-offset: 3px; transition: text-decoration-color .3s var(--ease-out), color .3s var(--ease-out); }
-.legal-page :deep(a:hover) { text-decoration-color: var(--primary-fg); }
-.legal-page :deep(a:visited) { color: var(--primary-fg); opacity: .85; }
+.legal-page :deep(a) { color: var(--color-action); font-weight: var(--weight-semibold); text-decoration-line: underline; text-decoration-color: transparent; text-underline-offset: 3px; transition: text-decoration-color .3s var(--ease-out), color .3s var(--ease-out); }
+.legal-page :deep(a:hover) { text-decoration-color: var(--color-action); }
+.legal-page :deep(a:visited) { color: var(--color-action); opacity: .85; }
 .legal-page :deep(a:focus-visible) { outline: 2px solid var(--color-focus); outline-offset: 2px; }
 
 /* ── Responsive scale-up ──────────────────────────────────────────── */
@@ -342,14 +342,14 @@ useHead(() => ({
 .dark .brand-masthead {
   background:
     var(--grain),
-    linear-gradient(120deg, color-mix(in srgb, var(--river-legacy-dark) 10%, transparent) 0%, rgba(var(--white-rgb),.02) 55%, rgba(var(--primary-rgb), .12) 120%);
+    linear-gradient(120deg, color-mix(in srgb, var(--river-legacy-dark) 10%, transparent) 0%, rgba(var(--white-rgb),.02) 55%, rgba(var(--color-brand-rgb), .12) 120%);
 }
 .dark .bm-motif { color: var(--clay-400); opacity: .7; }
 .dark .highlight-badge { background: var(--bg-alt); border-color: var(--line); }
 .dark .about-section.tint-alt { background: rgba(var(--white-rgb),.025); }
 .dark .mission-section { border-color: var(--secondary-fg); background: rgba(var(--secondary-rgb), .12); }
 .dark .legal-page :deep(a) { text-decoration-color: transparent; }
-.dark .legal-page :deep(a:hover) { text-decoration-color: var(--primary-fg); }
+.dark .legal-page :deep(a:hover) { text-decoration-color: var(--color-action); }
 
 /* ── Reduced motion ───────────────────────────────────────────────── */
 @media (prefers-reduced-motion: reduce) {

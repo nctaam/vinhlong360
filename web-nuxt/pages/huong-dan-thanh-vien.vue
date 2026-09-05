@@ -178,7 +178,7 @@ useHead(() => ({
   background: linear-gradient(135deg, rgba(var(--secondary-rgb), .1) 0%, var(--bg-warm) 100%);
   border-radius: var(--radius-sheet); border: .5px solid var(--line);
 }
-.guide-hero-icon { font-size: 2.5rem; flex-shrink: 0; display: inline-flex; align-items: center; justify-content: center; color: var(--primary-fg); }
+.guide-hero-icon { font-size: 2.5rem; flex-shrink: 0; display: inline-flex; align-items: center; justify-content: center; color: var(--color-brand); }
 /* Local page masthead eyebrow — small-caps dateline, matches the site's
    area/ward eyebrow pattern but scoped here (not promoted global). */
 .dateline-eyebrow {
@@ -189,7 +189,7 @@ useHead(() => ({
 }
 .dateline-eyebrow::before {
   content: ""; position: absolute; left: 0; top: 50%; transform: translateY(-50%);
-  width: var(--space-2); height: 1.5px; background: var(--primary);
+  width: var(--space-2); height: 1.5px; background: var(--color-brand);
 }
 .guide-hero h1 { margin: 0 0 var(--space-1); font-family: var(--font-editorial); font-size: var(--text-2xl); font-weight: 600; letter-spacing: var(--tracking-tight); }
 .guide-hero p { margin: 0; color: var(--muted); font-size: var(--text-sm); }
@@ -207,13 +207,13 @@ useHead(() => ({
   border: .5px solid var(--line); background: var(--card);
   transition: transform .25s var(--ease-out-expo), border-color .25s var(--ease-out);
 }
-.level-card:hover { transform: translateY(-2px); border-color: var(--primary-fg); }
+.level-card:hover { transform: translateY(-2px); border-color: var(--color-action); }
 .level-card:active { transform: scale(.985); }
-.lv-icon { font-size: 1.75rem; flex-shrink: 0; display: inline-flex; align-items: center; justify-content: center; color: var(--level-color, var(--primary-fg)); }
+.lv-icon { font-size: 1.75rem; flex-shrink: 0; display: inline-flex; align-items: center; justify-content: center; color: var(--level-color, var(--color-brand)); }
 .lv-info { flex: 1; min-width: 0; }
 .lv-name { display: block; font-weight: var(--weight-semibold); }
 .lv-req { font-size: var(--text-xs); color: var(--muted); }
-.lv-tag { font-size: var(--text-xs); font-weight: var(--weight-semibold); color: var(--primary-fg); background: rgba(var(--primary-rgb), .1); padding: .15rem .5rem; border-radius: var(--radius-full); white-space: nowrap; }
+.lv-tag { font-size: var(--text-xs); font-weight: var(--weight-semibold); color: var(--color-action); background: rgba(var(--color-action-rgb), .1); padding: .15rem .5rem; border-radius: var(--radius-full); white-space: nowrap; }
 
 .level-1 { --level-color: var(--leaf-600); box-shadow: inset 3px 0 0 var(--level-color); }
 .level-2 { --level-color: var(--river-600); box-shadow: inset 3px 0 0 var(--level-color); }
@@ -227,9 +227,9 @@ useHead(() => ({
 .points-table th { text-align: left; padding: var(--space-2) var(--space-3); font-weight: var(--weight-semibold); color: var(--muted); border-bottom: 1.5px solid var(--line); font-size: var(--text-xs); text-transform: uppercase; letter-spacing: .04em; }
 .points-table td { padding: var(--space-3); border-bottom: .5px solid var(--line); }
 .points-table tbody tr:hover { background: var(--bg-warm); }
-.cat-icon { margin-right: var(--space-2); display: inline-flex; align-items: center; vertical-align: middle; color: var(--primary-fg); }
+.cat-icon { margin-right: var(--space-2); display: inline-flex; align-items: center; vertical-align: middle; color: var(--color-action); }
 .cat-formula { color: var(--muted); font-size: var(--text-xs); }
-.cat-max { text-align: right; font-weight: var(--weight-semibold); font-variant-numeric: tabular-nums; color: var(--primary-fg); }
+.cat-max { text-align: right; font-weight: var(--weight-semibold); font-variant-numeric: tabular-nums; color: var(--color-brand); }
 .points-table tfoot td { border-bottom: none; padding-top: var(--space-3); }
 
 .guide-note {
@@ -248,7 +248,7 @@ useHead(() => ({
 }
 .badge-card:hover { transform: translateY(-1px); }
 .badge-card:active { transform: scale(.985); }
-.badge-icon { font-size: 1.5rem; flex-shrink: 0; display: inline-flex; align-items: center; justify-content: center; color: var(--secondary-fg, var(--primary-fg)); }
+.badge-icon { font-size: 1.5rem; flex-shrink: 0; display: inline-flex; align-items: center; justify-content: center; color: var(--secondary-fg, var(--color-brand)); }
 .badge-info { flex: 1; min-width: 0; }
 .badge-info strong { display: block; font-size: var(--text-sm); }
 .badge-req { font-size: var(--text-xs); color: var(--muted); }
@@ -263,7 +263,7 @@ useHead(() => ({
 .tip-num {
   flex-shrink: 0; width: 28px; height: 28px;
   display: flex; align-items: center; justify-content: center;
-  border-radius: 50%; background: var(--primary-fg); color: var(--text-on-dark, var(--white));
+  border-radius: 50%; background: var(--color-brand); color: var(--color-on-action, var(--white));
   font-size: var(--text-xs); font-weight: var(--weight-bold);
 }
 .tip-item strong { display: block; margin-bottom: var(--space-1); }
