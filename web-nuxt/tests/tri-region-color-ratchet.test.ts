@@ -27,8 +27,8 @@ const approvedBudgets = {
   'components/ImageDisclosure.vue': { rawHex: 0, legacyPrimary: 0 },
   'components/EntityHeroPlaceholder.vue': { rawHex: 0, legacyPrimary: 0 },
   'assets/css/tri-region-color.css': { rawHex: 0, legacyPrimary: 0 },
-  'assets/css/catalog.css': { rawHex: 5, legacyPrimary: 0 },
-  'assets/css/detail.css': { rawHex: 20, legacyPrimary: 0 },
+  'assets/css/catalog.css': { rawHex: 0, legacyPrimary: 0 },
+  'assets/css/detail.css': { rawHex: 0, legacyPrimary: 0 },
 }
 
 type Manifest = Record<string, { rawHex?: unknown, legacyPrimary?: unknown }>
@@ -104,8 +104,8 @@ describe('tri-region color debt ratchet', () => {
     const result = runChecker(createFixture())
 
     expect(result.status).toBe(0)
-    expect(result.stdout).toContain('assets/css/catalog.css: rawHex 0/5, legacyPrimary 0/0')
-    expect(result.stdout).toContain('shared catalog.css + detail.css: rawHex 0/25, legacyPrimary 0/0')
+    expect(result.stdout).toContain('assets/css/catalog.css: rawHex 0/0, legacyPrimary 0/0')
+    expect(result.stdout).toContain('shared catalog.css + detail.css: rawHex 0/0, legacyPrimary 0/0')
   })
 
   it('rejects one new shared legacy-primary consumer above the exact baseline', () => {
