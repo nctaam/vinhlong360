@@ -70,7 +70,7 @@
               </ul>
             </div>
             <button type="button" class="btn btn-primary btn-sm compose-send" aria-label="Gửi bình luận" :disabled="!commentText.trim() || submitting" @click="submitComment">
-              <svg v-if="!submitting" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M22 2 11 13"/><path d="m22 2-7 20-4-9-9-4z"/></svg>
+              <IconLine v-if="!submitting" name="send" aria-hidden="true" />
               <span v-else class="spinner spinner-sm"></span>
             </button>
           </div>
@@ -624,20 +624,23 @@ useHead({
 .pef-actions { display: flex; align-items: center; justify-content: flex-end; gap: var(--space-3); margin-top: var(--space-3); }
 .pef-count { margin-right: auto; font-size: var(--text-xs); color: var(--muted); }
 .qa-badge { display: inline-flex; align-items: center; gap: .25rem; font-size: var(--text-xs); font-weight: var(--weight-semibold); padding: .2rem .55rem; border-radius: 999px; background: var(--success-bg); color: var(--secondary-fg); }
-.qa-pick { font-size: var(--text-xs); padding: .2rem .55rem; border: 1px solid var(--border); border-radius: 999px; background: var(--bg); color: var(--ink-700); cursor: pointer; }
+.qa-pick { font-size: var(--text-xs); padding: .2rem .55rem; border: 1px solid var(--border); border-radius: 999px; background: var(--bg); color: var(--ink-700); cursor: pointer; min-height: 44px; display: inline-flex; align-items: center; }
 .qa-pick:hover { border-color: var(--primary); color: var(--primary-fg); }
+.qa-pick:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
 
 /* ── Comment actions + threaded replies ── */
 .comment-actions { display: flex; align-items: center; gap: var(--space-3); margin-top: .35rem; flex-wrap: wrap; }
 .comment-reply-btn { font-size: var(--text-xs); font-weight: var(--weight-semibold); padding: .15rem .1rem; border: none; background: none; color: var(--muted); cursor: pointer; min-height: 44px; min-width: 44px; display: inline-flex; align-items: center; justify-content: center; }
 .comment-reply-btn:hover { color: var(--primary-fg); }
+.comment-reply-btn:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; border-radius: var(--radius-control); }
 .thread-subreply { display: flex; gap: var(--space-2); margin-top: var(--space-3); padding-left: var(--space-2); border-left: 2px solid var(--line); }
 .subreply-body { flex: 1; min-width: 0; }
 .subreply-body .comment-reply-btn { margin-top: .25rem; }
 .avatar-xs { width: 26px; height: 26px; font-size: var(--text-2xs); }
 .reply-context { display: flex; align-items: center; justify-content: space-between; gap: var(--space-2); font-size: var(--text-xs); color: var(--ink-700); background: var(--bg-alt); border-radius: var(--radius-control); padding: .3rem .6rem; margin-bottom: var(--space-2); }
-.reply-context-x { background: none; border: none; color: var(--muted); font-size: 1.1rem; line-height: 1; cursor: pointer; min-width: 44px; display: inline-flex; align-items: center; justify-content: center; }
+.reply-context-x { background: none; border: none; color: var(--muted); font-size: 1.1rem; line-height: 1; cursor: pointer; min-width: 44px; min-height: 44px; display: inline-flex; align-items: center; justify-content: center; }
 .reply-context-x:hover { color: var(--ink); }
+.reply-context-x:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; border-radius: var(--radius-control); }
 .thread-detail-page { max-width: 680px; margin: 0 auto; }
 .thread-detail { display: flex; flex-direction: column; }
 
@@ -690,6 +693,8 @@ useHead({
   transition: transform .2s var(--ease-out), box-shadow .2s var(--ease-out), background .2s var(--ease-out);
 }
 .compose-send:hover:not(:disabled) { transform: translateY(-1px); box-shadow: var(--shadow-sm); }
+.compose-send:active:not(:disabled) { transform: scale(.95); transition-duration: .08s; }
+.compose-send:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
 .compose-send .spinner-sm { width: 14px; height: 14px; color: var(--primary-fg); }
 
 .thread-comment-guest { padding: var(--space-3) 0 var(--space-4); border-bottom: .5px solid var(--line); }
@@ -777,6 +782,6 @@ useHead({
 @media (prefers-reduced-motion: reduce) {
   .thread-reply { animation: none; }
   .compose-input-sm, .compose-send { transition: none; }
-  .compose-send:hover:not(:disabled) { transform: none; }
+  .compose-send:hover:not(:disabled), .compose-send:active:not(:disabled) { transform: none; }
 }
 </style>

@@ -106,6 +106,7 @@ const ICONS: Record<string, string> = {
   plus: W('<path d="M5 12h14"/><path d="M12 5v14"/>'),
   'more-horizontal': W('<circle cx="12" cy="12" r="1.5"/><circle cx="19" cy="12" r="1.5"/><circle cx="5" cy="12" r="1.5"/>'),
   award: W('<circle cx="12" cy="8" r="6"/><path d="m15.4 12.5 2.6 9-6-3.5-6 3.5 2.6-9"/>'),
+  send: W('<path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/>'),
 }
 
 const resolvedName = computed(() => ICONS[props.name] ? props.name : 'circle-help')
