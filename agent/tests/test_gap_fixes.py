@@ -252,21 +252,20 @@ class TestAdminReportsUserFilter:
 # ── JSONL rotation in social.py comment report ──
 
 class TestCommentReportRotation:
-    """Comment report endpoint uses shared lock and rotation."""
+    """Comment report endpoint delegates to the shared JSONL leaf."""
 
     def test_comment_report_uses_shared_lock(self):
-        src = inspect.getsource(__import__("community.api", fromlist=["api"]).report_comment)
-        assert "_jsonl_lock" in src
+        import jsonl_store
+        from community import api as community_api
+        assert community_api._append_jsonl is jsonl_store.append_jsonl
 
     def test_comment_report_calls_rotation(self):
         src = inspect.getsource(__import__("community.api", fromlist=["api"]).report_comment)
-        assert "_maybe_rotate_jsonl" in src
+        assert "_append_jsonl" in src
 
     def test_imports_from_public_api(self):
-        # JSONL locking/rotation now lives in the shared primitive module;
-        # keep this contract anchored to the actual dependency boundary.
-        src = inspect.getsource(__import__("community.api", fromlist=["api"]).report_comment)
-        assert "from jsonl_store import" in src
+        from community import api as community_api
+        assert community_api._append_jsonl.__module__ == "jsonl_store"
 
 
 # ── Mute enforcement in notifications ──

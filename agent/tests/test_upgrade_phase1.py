@@ -111,7 +111,7 @@ class TestReportStale:
 
     def test_report_stale_writes_jsonl(self):
         src = inspect.getsource(__import__("public_api").report_stale_field)
-        assert "_jsonl_lock" in src
+        assert "_append_jsonl" in src
         assert "REPORTS_FILE" in src
         assert "stale_field" in src
 

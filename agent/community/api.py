@@ -2714,7 +2714,6 @@ async def report_comment(comment_id: str, body: ReportCommentBody, request: Requ
         "ip_hash": _hashlib.sha256(get_client_ip(request).encode()).hexdigest()[:16],
         "status": "open",
     }
-    # `from jsonl_store import` provides _jsonl_lock and _maybe_rotate_jsonl via the writer.
     try:
         await asyncio.to_thread(_append_jsonl, reports_file, record)
     except OSError:

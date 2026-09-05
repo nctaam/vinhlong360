@@ -2759,7 +2759,6 @@ async def submit_report(payload: ReportIn, request: Request):
         "ip_hash": hashlib.sha256(ip.encode()).hexdigest()[:16],
         "status": "open",
     }
-    # The shared writer owns the imported _jsonl_lock and rotation boundary.
     try:
         await asyncio.to_thread(_append_jsonl, REPORTS_FILE, record)
     except OSError:
@@ -2809,7 +2808,6 @@ async def report_stale_field(entity_id: str, payload: ReportStaleIn, request: Re
         "ip_hash": hashlib.sha256(ip.encode()).hexdigest()[:16],
         "status": "open",
     }
-    # The shared writer owns the imported _jsonl_lock and rotation boundary.
     try:
         await asyncio.to_thread(_append_jsonl, REPORTS_FILE, record)
     except OSError:

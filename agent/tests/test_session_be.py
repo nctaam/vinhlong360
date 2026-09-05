@@ -1236,11 +1236,11 @@ class TestPhase7DataIntegrity:
         assert hasattr(public_api, '_jsonl_lock')
 
     def test_jsonl_write_uses_lock(self):
-        """Report write uses _jsonl_lock for thread safety."""
-        import inspect
+        """Report write uses the shared JSONL writer and its lock boundary."""
+        import jsonl_store
         import public_api
-        source = inspect.getsource(public_api.submit_report)
-        assert "_jsonl_lock" in source
+        assert public_api._append_jsonl is jsonl_store.append_jsonl
+        assert public_api._jsonl_lock is jsonl_store.jsonl_lock
 
 
 # ── Phase 8: Block enforcement + notification hardening ─────────────────
