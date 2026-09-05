@@ -42,7 +42,6 @@ from api_schemas import (  # W6.3: response_model (extra="allow" — không stri
     # SiteSettingsResponse sang siteops/api.py cung route cua no (2026-08-29, lat 3)
 )
 import lunar_calendar
-from jsonl_store import append_jsonl as _append_jsonl
 from jsonl_store import jsonl_lock as _jsonl_lock
 from jsonl_store import maybe_rotate_jsonl as _maybe_rotate_jsonl
 from config import settings  # noqa: F401  (be mat va cua test — mien entity sang goi rieng 2026-08-28)
@@ -275,7 +274,7 @@ def _itinerary_coverage_areas(itinerary: dict) -> set[str]:
 # admin xem qua /admin/reports để xử lý (takedown/sửa). KHÔNG dùng DB/dịch vụ trả phí.
 REPORTS_FILE = Path(__file__).resolve().parent / "data" / "reports.jsonl"
 SEARCH_LOG_FILE = Path(__file__).resolve().parent / "data" / "search_queries.jsonl"
-_VALID_TARGET_TYPES = {"facility", "entity", "post", "comment", "other"}
+_VALID_TARGET_TYPES = {"facility", "entity", "post", "comment", "user", "stale_field"}
 
 def _log_search_query(q: str, entity_type: str | None, area: str | None, total: int) -> None:
     try:
@@ -2726,45 +2725,52 @@ def _legacy_correction_closed() -> JSONResponse | None:
              summary="Submit a report",
              description="Submits a report for incorrect information or policy-violating content. Stored in JSONL for admin review. Rate-limited per IP.")
 async def submit_report(payload: ReportIn, request: Request):
-    """GĐ13.6f: tiếp nhận báo-sai (facility/entity) & báo cáo nội dung (post/comment).
-
-    Lưu vào reports.jsonl cho admin xử lý — KHÔNG đăng/khoá tự động. Rate-limit theo IP.
-    """
+    """Create a report through the canonical database authority."""
     ip = get_client_ip(request)
     allowed, info = report_limiter.is_allowed(ip)
     if not allowed:
         return _err(429, "Bạn gửi quá nhiều báo cáo. Vui lòng thử lại sau.",
                     retry_after=info.get("retry_after", 60))
-    target_type = payload.target_type if payload.target_type in _VALID_TARGET_TYPES else "other"
-    report_field = payload.field if payload.field and payload.field in _REPORT_FIELD_OPTIONS else None
-    # A factual entity report the kernel can hold is a correction, and after the
-    # cutover the kernel is its only authority. Content reports (post/comment)
-    # are moderation work and keep their lane untouched.
-    if target_type in {"entity", "facility"} and report_field in LEGACY_STALE_FIELD_PATHS:
-        if _correction_intake_live():
-            return _file_legacy_correction(
-                payload.target_id.strip(), report_field, payload.detail, request
-            )
-        closed = _legacy_correction_closed()
-        if closed is not None:
-            return closed
-    record = {
-        "ts": datetime.now(timezone.utc).isoformat(),
-        "target_id": payload.target_id.strip(),
-        "target_type": target_type,
-        "reason": payload.reason.strip(),
-        "detail": payload.detail.strip(),
-        "contact": payload.contact.strip(),
-        "field": report_field,
-        "ip_hash": hashlib.sha256(ip.encode()).hexdigest()[:16],
-        "status": "open",
-    }
     try:
-        await asyncio.to_thread(_append_jsonl, REPORTS_FILE, record)
-    except OSError:
-        logger.exception("Failed to write report to %s", REPORTS_FILE)
-        return _err(500, "store_failed")
-    return {"ok": True, "message": "Đã ghi nhận. Cảm ơn bạn đã góp ý — chúng tôi sẽ kiểm tra."}
+        from reports.models import InvalidReportTargetType, ReportActor, ReportCreate
+        from reports.service import ReportService, ReportError, ReportTargetNotFound
+
+        target_type = payload.target_type
+        report_field = payload.field if payload.field in _REPORT_FIELD_OPTIONS else None
+        if target_type in {"entity", "facility"} and report_field:
+            target_type = "stale_field"
+        actor = ReportActor(
+            actor_scope="anon:ip:" + hashlib.sha256(ip.encode()).hexdigest(),
+            reporter_hash=hashlib.sha256(ip.encode()).hexdigest(),
+            source_channel="web",
+        )
+        record = await asyncio.to_thread(
+            ReportService(database=db).create,
+            ReportCreate(
+                target_id=payload.target_id.strip(),
+                target_type=target_type,
+                reason=payload.reason.strip(),
+                detail=payload.detail.strip(),
+                contact=payload.contact.strip(),
+                field=report_field,
+            ),
+            actor=actor,
+            idempotency_key=request.headers.get("idempotency-key") or f"request:{uuid4().hex}",
+            correlation_id=request.headers.get("x-request-id") or uuid4().hex,
+        )
+        return {
+            "ok": True,
+            "report_id": record.report_id,
+            "revision": record.revision,
+            "replayed": record.replayed,
+            "message": "Đã ghi nhận. Cảm ơn bạn đã góp ý — chúng tôi sẽ kiểm tra.",
+        }
+    except InvalidReportTargetType:
+        return JSONResponse(status_code=422, content={"error": "invalid_target_type"})
+    except ReportTargetNotFound:
+        return JSONResponse(status_code=404, content={"error": "target_not_found"})
+    except ReportError as exc:
+        return JSONResponse(status_code=exc.status, content={"error": exc.code})
 
 
 # ── Report stale field (U-02: field-level freshness reports) ─────────
@@ -2793,27 +2799,34 @@ async def report_stale_field(entity_id: str, payload: ReportStaleIn, request: Re
     if not allowed:
         return _err(429, "Bạn gửi quá nhiều yêu cầu. Vui lòng thử lại sau.",
                     retry_after=info.get("retry_after", 60))
-    if payload.field in LEGACY_STALE_FIELD_PATHS:
-        if _correction_intake_live():
-            return _file_legacy_correction(entity_id, payload.field, payload.detail, request)
-        closed = _legacy_correction_closed()
-        if closed is not None:
-            return closed
-    record = {
-        "ts": datetime.now(timezone.utc).isoformat(),
-        "target_id": entity_id,
-        "target_type": "stale_field",
-        "field": payload.field,
-        "detail": payload.detail.strip(),
-        "ip_hash": hashlib.sha256(ip.encode()).hexdigest()[:16],
-        "status": "open",
-    }
     try:
-        await asyncio.to_thread(_append_jsonl, REPORTS_FILE, record)
-    except OSError:
-        logger.exception("Failed to write stale report")
-        return _err(500, "store_failed")
-    return {"ok": True, "message": "Đã ghi nhận — chúng tôi sẽ kiểm tra và cập nhật."}
+        from reports.models import ReportActor, ReportCreate
+        from reports.service import ReportService, ReportError, ReportTargetNotFound
+        digest = hashlib.sha256(ip.encode()).hexdigest()
+        record = await asyncio.to_thread(
+            ReportService(database=db).create,
+            ReportCreate(
+                target_id=entity_id,
+                target_type="stale_field",
+                reason="stale_field",
+                detail=payload.detail.strip(),
+                field=payload.field,
+            ),
+            actor=ReportActor(actor_scope="anon:ip:" + digest, reporter_hash=digest, source_channel="web"),
+            idempotency_key=request.headers.get("idempotency-key") or f"request:{uuid4().hex}",
+            correlation_id=request.headers.get("x-request-id") or uuid4().hex,
+        )
+        return {
+            "ok": True,
+            "report_id": record.report_id,
+            "revision": record.revision,
+            "replayed": record.replayed,
+            "message": "Đã ghi nhận — chúng tôi sẽ kiểm tra và cập nhật.",
+        }
+    except ReportTargetNotFound:
+        return JSONResponse(status_code=404, content={"error": "target_not_found"})
+    except ReportError as exc:
+        return JSONResponse(status_code=exc.status, content={"error": exc.code})
 
 
 # ── Entity gallery (entity images + review images) ───────────────────

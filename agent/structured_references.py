@@ -88,6 +88,7 @@ _REGISTERED_DELETE_ACTIONS = (
     DeleteActionPolicy("profile_views", "viewed_id", "cascade"),
     DeleteActionPolicy("profile_views", "viewer_id", "cascade"),
     DeleteActionPolicy("reports", "reporter_id", "cascade"),
+    DeleteActionPolicy("reports", "resolved_by", "set_null", "actor_reference"),
     DeleteActionPolicy("review_responses", "responder_id", "cascade"),
     DeleteActionPolicy("saved_entities", "user_id", "cascade"),
     DeleteActionPolicy("trusted_devices", "user_id", "cascade"),
@@ -294,6 +295,22 @@ def scrub_user_references(conn, user_id, *, actor_policy) -> ScrubSummary:
             """,
             (canonical_user_id, canonical_user_id),
         )
+        cursor.execute(
+            """
+            SELECT 1 FROM information_schema.columns
+            WHERE table_schema = current_schema()
+              AND table_name = 'reports' AND column_name = 'resolved_by'
+            """
+        )
+        if cursor.fetchone():
+            updated_rows += _execute_count(
+                cursor,
+                """
+                UPDATE reports SET resolved_by = NULL
+                WHERE resolved_by = %s OR resolved_by = %s
+                """,
+                (canonical_user_id, owner_key),
+            )
         updated_rows += _execute_count(
             cursor,
             """

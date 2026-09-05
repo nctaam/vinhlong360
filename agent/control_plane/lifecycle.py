@@ -186,7 +186,9 @@ _TABLES: dict[str, tuple[str, str, str]] = {
     "users": ("id", "id", "id, display_name, username, bio, avatar_url, role, is_active, consent_at, consent_version, created_at, updated_at"),
     "user_plans": ("user_id", "created_at", "id, user_id, title, stops, created_at"),
     "notifications": ("user_id", "created_at", "id, type, title, body, ref_type, ref_id, is_read, created_at"),
-    "reports": ("reporter_id", "created_at", "id, target_type, target_id, reason, status, created_at"),
+    # Export only the report metadata needed by the account owner. Contact is
+    # intentionally excluded; bearer/IP material is never part of a bundle.
+    "reports": ("reporter_id", "created_at", "id, target_type, target_id, reason, status, detail, field, revision, created_at, updated_at, correlation_id, source_channel, legacy_locator"),
     "login_history": ("user_id", "created_at", "id, method, success, ip, user_agent, created_at"),
     "user_privacy": ("user_id", "updated_at", "user_id, profile_visibility, show_activity, show_saved, updated_at"),
     "consent_log": ("user_id", "created_at", "id, user_id, version, ip, created_at"),

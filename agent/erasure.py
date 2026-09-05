@@ -234,7 +234,7 @@ def _structured_checks(user_id: str):
         ("SELECT COUNT(*) FROM feedback WHERE user_id = %s OR user_id = %s", (user_id, owner_key)),
         ("SELECT COUNT(*) FROM follows WHERE follower_id::text = %s OR (target_type = 'user' AND target_id = %s)", (user_id, user_id)),
         ("SELECT COUNT(*) FROM notifications WHERE ref_type = 'user' AND ref_id = %s", (user_id,)),
-        ("SELECT COUNT(*) FROM reports WHERE reporter_id::text = %s OR (target_type = 'user' AND target_id = %s)", (user_id, user_id)),
+        ("SELECT COUNT(*) FROM reports WHERE reporter_id::text = %s OR resolved_by IN (%s, %s) OR (target_type = 'user' AND target_id = %s)", (user_id, user_id, owner_key, user_id)),
         ("SELECT COUNT(*) FROM moderation_log WHERE target_type = 'user' AND target_id = %s", (user_id,)),
         ("SELECT COUNT(*) FROM posts WHERE mentions @> %s::jsonb", (sentinel,)),
         ("SELECT COUNT(*) FROM comments WHERE mentions @> %s::jsonb", (sentinel,)),

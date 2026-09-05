@@ -43,7 +43,6 @@ from ratelimit import check_rate, check_rate_ip
 from control_plane.concurrency import IdempotencyKey, claim_idempotency, record_idempotency_receipt
 from text_utils import normalize_name
 from media_policy import AI_ONLY_MEDIA_DETAIL
-from jsonl_store import append_jsonl as _append_jsonl
 from profile_access import (
     can_view_profile_audience as _profile_can_view_full,
     resolve_profile_access,
@@ -2698,28 +2697,22 @@ async def report_comment(comment_id: str, body: ReportCommentBody, request: Requ
             if str(rd["user_id"]) == uid:
                 raise HTTPException(400, "Không thể báo cáo bình luận của chính mình")
     await asyncio.to_thread(_check)
-    from pathlib import Path as _Path
-    import hashlib as _hashlib
-    from datetime import datetime as _dt, timezone as _tz
-    from middleware import get_client_ip
-    reports_file = _Path(__file__).resolve().parent / "data" / "reports.jsonl"  # noqa: ASYNC240 (dựng path rẻ; ghi file bọc asyncio.to_thread)
+    from reports.models import ReportActor, ReportCreate
+    from reports.service import ReportService, ReportError, ReportTargetNotFound
     reason = body.reason.strip() if body.reason.strip() in _COMMENT_REPORT_REASONS else "other"
-    record = {
-        "ts": _dt.now(_tz.utc).isoformat(),
-        "target_id": comment_id,
-        "target_type": "comment",
-        "reason": reason,
-        "detail": body.detail.strip(),
-        "reporter_id": uid,
-        "ip_hash": _hashlib.sha256(get_client_ip(request).encode()).hexdigest()[:16],
-        "status": "open",
-    }
     try:
-        await asyncio.to_thread(_append_jsonl, reports_file, record)
-    except OSError:
-        logger.exception("Failed to write comment report")
-        raise HTTPException(500, "Lỗi lưu báo cáo")
-    return {"success": True, "message": "Đã ghi nhận báo cáo. Cảm ơn bạn!"}
+        record = await asyncio.to_thread(
+            ReportService(database=db).create,
+            ReportCreate(target_id=comment_id, target_type="comment", reason=reason, detail=body.detail.strip()),
+            actor=ReportActor(actor_scope=f"user:{uid}", reporter_id=uid, source_channel="community"),
+            idempotency_key=request.headers.get("idempotency-key") or f"community:comment:{comment_id}",
+            correlation_id=request.headers.get("x-request-id") or f"community:comment:{comment_id}",
+        )
+    except ReportTargetNotFound as exc:
+        raise HTTPException(exc.status, "Bình luận không tồn tại") from exc
+    except ReportError as exc:
+        raise HTTPException(exc.status, exc.code) from exc
+    return {"success": True, "report_id": record.report_id, "replayed": record.replayed, "message": "Đã ghi nhận báo cáo. Cảm ơn bạn!"}
 
 
 # ── Report post (FE-friendly shortcut → PG reports table) ──
@@ -2738,32 +2731,28 @@ class ReportPostBody(BaseModel):
 async def report_post(post_id: str, body: ReportPostBody, user=Depends(require_user), _csrf=Depends(require_csrf)):
     post_id = validate_path_id(post_id, "post_id")
     check_rate(f"report-post:{user['id']}", 10, 600, "Bạn báo cáo quá nhanh. Vui lòng thử lại sau.")
-    ph = db._ph
     uid = str(user["id"])
-
-    def _query():
-        with db._conn() as conn:
-            post = db._fetchone(conn, f"SELECT user_id FROM posts WHERE id::text = {ph} AND deleted_at IS NULL", (post_id,))
-            if not post:
-                raise HTTPException(404, "Bài viết không tồn tại")
-            if str(db._row_to_dict(post)["user_id"]) == uid:
-                raise HTTPException(400, "Không thể báo cáo bài viết của chính mình")
-            db._execute(conn, f"SELECT pg_advisory_xact_lock(hashtext({ph}))", (f"report:{uid}:{post_id}",))
-            existing = db._fetchone(conn, f"""
-                SELECT 1 FROM reports
-                WHERE reporter_id = {ph}::uuid AND target_type = 'post' AND target_id = {ph}
-                  AND status = 'pending'
-            """, (uid, post_id))
-            if existing:
-                raise HTTPException(400, "Bạn đã báo cáo bài viết này rồi")
-            reason = body.reason.strip() if body.reason.strip() in _POST_REPORT_REASONS else "other"
-            db._execute(conn, f"""
-                INSERT INTO reports (reporter_id, target_type, target_id, reason)
-                VALUES ({ph}::uuid, 'post', {ph}, {ph})
-            """, (uid, post_id, reason))
-
-    await asyncio.to_thread(_query)
-    return {"success": True, "message": "Đã ghi nhận báo cáo. Cảm ơn bạn!"}
+    ph = db._ph
+    with db._conn() as conn:
+        post = db._fetchone(conn, f"SELECT user_id FROM posts WHERE {('id::text' if db._use_pg else 'id')} = {ph} AND deleted_at IS NULL", (post_id,))
+    if post and str(db._row_to_dict(post)["user_id"]) == uid:
+        raise HTTPException(400, "Không thể báo cáo bài viết của chính mình")
+    reason = body.reason.strip() if body.reason.strip() in _POST_REPORT_REASONS else "other"
+    from reports.models import ReportActor, ReportCreate
+    from reports.service import ReportService, ReportError, ReportTargetNotFound
+    try:
+        record = await asyncio.to_thread(
+            ReportService(database=db).create,
+            ReportCreate(target_id=post_id, target_type="post", reason=reason, detail=body.detail.strip()),
+            actor=ReportActor(actor_scope=f"user:{uid}", reporter_id=uid, source_channel="community"),
+            idempotency_key=f"community:post:{post_id}",
+            correlation_id=f"community:post:{post_id}",
+        )
+    except ReportTargetNotFound as exc:
+        raise HTTPException(exc.status, "Bài viết không tồn tại") from exc
+    except ReportError as exc:
+        raise HTTPException(exc.status, exc.code) from exc
+    return {"success": True, "report_id": record.report_id, "replayed": record.replayed, "message": "Đã ghi nhận báo cáo. Cảm ơn bạn!"}
 
 
 _USER_REPORT_REASONS = {"spam", "harassment", "impersonation", "inappropriate", "scam", "other"}
@@ -2780,32 +2769,26 @@ class ReportUserBody(BaseModel):
 async def report_user(user_id: str, body: ReportUserBody, user=Depends(require_user), _csrf=Depends(require_csrf)):
     user_id = validate_path_id(user_id, "user_id")
     check_rate(f"report-user:{user['id']}", 10, 600, "Bạn báo cáo quá nhanh. Vui lòng thử lại sau.")
-    ph = db._ph
     uid = str(user["id"])
     if user_id == uid:
         raise HTTPException(400, "Không thể báo cáo chính mình")
 
-    def _query():
-        with db._conn() as conn:
-            target = db._fetchone(conn, f"SELECT id FROM users WHERE id::text = {ph} AND is_active = TRUE", (user_id,))
-            if not target:
-                raise HTTPException(404, "Người dùng không tồn tại")
-            db._execute(conn, f"SELECT pg_advisory_xact_lock(hashtext({ph}))", (f"report:{uid}:{user_id}",))
-            existing = db._fetchone(conn, f"""
-                SELECT 1 FROM reports
-                WHERE reporter_id = {ph}::uuid AND target_type = 'user' AND target_id = {ph}
-                  AND status = 'pending'
-            """, (uid, user_id))
-            if existing:
-                raise HTTPException(400, "Bạn đã báo cáo người dùng này rồi")
-            reason = body.reason.strip() if body.reason.strip() in _USER_REPORT_REASONS else "other"
-            db._execute(conn, f"""
-                INSERT INTO reports (reporter_id, target_type, target_id, reason)
-                VALUES ({ph}::uuid, 'user', {ph}, {ph})
-            """, (uid, user_id, reason))
-
-    await asyncio.to_thread(_query)
-    return {"success": True, "message": "Đã ghi nhận báo cáo. Cảm ơn bạn!"}
+    reason = body.reason.strip() if body.reason.strip() in _USER_REPORT_REASONS else "other"
+    from reports.models import ReportActor, ReportCreate
+    from reports.service import ReportService, ReportError, ReportTargetNotFound
+    try:
+        record = await asyncio.to_thread(
+            ReportService(database=db).create,
+            ReportCreate(target_id=user_id, target_type="user", reason=reason, detail=body.detail.strip()),
+            actor=ReportActor(actor_scope=f"user:{uid}", reporter_id=uid, source_channel="community"),
+            idempotency_key=f"community:user:{user_id}",
+            correlation_id=f"community:user:{user_id}",
+        )
+    except ReportTargetNotFound as exc:
+        raise HTTPException(exc.status, "Người dùng không tồn tại") from exc
+    except ReportError as exc:
+        raise HTTPException(exc.status, exc.code) from exc
+    return {"success": True, "report_id": record.report_id, "replayed": record.replayed, "message": "Đã ghi nhận báo cáo. Cảm ơn bạn!"}
 
 
 # ── Moderation appeal (NĐ147 compliance) ──

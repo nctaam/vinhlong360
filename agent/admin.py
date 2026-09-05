@@ -1456,23 +1456,26 @@ _BADGE_TTL = 60.0
             summary="List information reports",
             description="List anonymous info-correction and content reports from the JSONL store, newest first. Returns open count for badge display.")
 async def get_info_reports(limit: int = Query(100, ge=1, le=500)):
-    """Liệt kê báo-sai/báo cáo ẩn danh (reports.jsonl), mới nhất trước. Admin tự xử lý
-    (sửa entity qua editor / takedown thủ công)."""
+    """List canonical reports plus read-only legacy JSONL history."""
     def _query():
-        if not _INFO_REPORTS_FILE.exists():
-            return {"reports": [], "total": 0}
         items = []
-        with open(_INFO_REPORTS_FILE, "r", encoding="utf-8") as f:
-            for line in f:
-                line = line.strip()
-                if not line:
-                    continue
-                try:
-                    items.append(json.loads(line))
-                except json.JSONDecodeError:
-                    continue
-        items.reverse()
-        open_count = sum(1 for r in items if r.get("status", "open") == "open")
+        try:
+            from reports.repository import ReportRepository
+            items.extend(record.to_dict() for record in ReportRepository(db).list(limit=limit))
+        except Exception:
+            logger.debug("Canonical report list unavailable", exc_info=True)
+        if _INFO_REPORTS_FILE.exists():
+            with open(_INFO_REPORTS_FILE, "r", encoding="utf-8") as f:
+                for line in f:
+                    line = line.strip()
+                    if not line:
+                        continue
+                    try:
+                        items.append(json.loads(line))
+                    except json.JSONDecodeError:
+                        continue
+        items.sort(key=lambda r: str(r.get("created_at") or r.get("ts") or ""), reverse=True)
+        open_count = sum(1 for r in items if r.get("status", "open") in {"open", "pending"})
         return {"reports": items[:limit], "total": len(items), "open": open_count}
     return await asyncio.to_thread(_query)
 
@@ -1547,15 +1550,44 @@ def _audit_log_filter(items, method, q, date_from, date_to) -> list:
 
 
 class ReportActionRequest(BaseModel):
-    ts: str = Field(..., min_length=1, max_length=64)   # khóa theo timestamp ISO (ổn định)
+    report_id: str | None = Field(None, min_length=1, max_length=128)
+    expected_revision: int = Field(1, ge=1, le=2_147_483_647)
+    ts: str | None = Field(None, min_length=1, max_length=64)   # legacy JSONL locator
     status: str = Field(..., pattern="^(open|resolved|dismissed)$")
+
+
+async def _transition_canonical_report(body: ReportActionRequest):
+    from reports.models import ReportActor
+    from reports.service import ReportService, ReportError
+    try:
+        status = "pending" if body.status == "open" else body.status
+        record = await asyncio.to_thread(
+            ReportService(database=db).transition,
+            body.report_id,
+            expected_revision=body.expected_revision,
+            status=status,
+            actor=ReportActor(actor_scope="admin", source_channel="admin"),
+            reason=f"admin:{body.status}",
+        )
+    except ReportError as exc:
+        raise HTTPException(exc.status, exc.code) from exc
+    return {
+        "success": True,
+        "report_id": record.report_id,
+        "new_status": record.status.value,
+        "revision": record.revision,
+    }
 
 
 @router.post("/info-reports/action",
              summary="Update information report status",
              description="Change the status of an info-correction report to open, resolved, or dismissed. Writes atomically to the JSONL store.")
 async def info_report_action(body: ReportActionRequest):
-    """Đổi trạng thái 1 báo-sai (resolve/dismiss/open) — ghi lại reports.jsonl atomic."""
+    """Transition a canonical report; retain timestamp JSONL handling for history."""
+    if body.report_id:
+        return await _transition_canonical_report(body)
+    if not body.ts:
+        raise HTTPException(422, "report_id or ts is required")
     def _query():
         with _info_reports_lock:
             if not _INFO_REPORTS_FILE.exists():

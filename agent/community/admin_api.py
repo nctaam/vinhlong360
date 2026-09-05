@@ -1237,13 +1237,22 @@ class BulkReportAction(BaseModel):
               description="Applies a resolve or dismiss action to multiple reports at once.")
 async def bulk_report_action(body: BulkReportAction):
     status = "resolved" if body.action == "resolve" else "dismissed"
+    from reports.models import ReportActor
+    from reports.service import ReportService, ReportError
     def _query():
-        ph = db._ph
-        placeholders = ",".join([ph] * len(body.ids))
+        updated = 0
+        service = ReportService(database=db)
         with db._conn() as conn:
-            cur = db._execute(conn, f"UPDATE reports SET status = {ph} WHERE id::text IN ({placeholders})",
-                              (status, *body.ids))
-            return cur.rowcount
+            rows = db._fetchall(conn, f"SELECT id, revision FROM reports WHERE id::text IN ({','.join([db._ph] * len(body.ids))})", tuple(body.ids))
+        for row in rows:
+            item = db._row_to_dict(row)
+            try:
+                service.transition(str(item["id"]), expected_revision=int(item.get("revision") or 1), status=status,
+                                   actor=ReportActor(actor_scope="admin", source_channel="admin"), reason=f"bulk:{body.action}")
+                updated += 1
+            except ReportError:
+                continue
+        return updated
     updated = await asyncio.to_thread(_query)
     for rid in body.ids:
         _log_mod_action("report", rid, status)
@@ -1255,14 +1264,15 @@ async def bulk_report_action(body: BulkReportAction):
               description="Marks a user report as resolved after admin review.")
 async def resolve_report(report_id: str):
     report_id = validate_path_id(report_id, "report_id")
+    from reports.models import ReportActor
+    from reports.service import ReportService
     def _query():
-        ph = db._ph
         with db._conn() as conn:
-            cur = db._execute(conn, f"""
-                UPDATE reports SET status = 'resolved' WHERE id::text = {ph}
-            """, (report_id,))
-            if cur.rowcount == 0:
-                raise HTTPException(404, "Báo cáo không tồn tại")
+            row = db._fetchone(conn, f"SELECT revision FROM reports WHERE id::text = {db._ph}", (report_id,))
+        if not row:
+            raise HTTPException(404, "Báo cáo không tồn tại")
+        return ReportService(database=db).transition(report_id, expected_revision=int(db._row_to_dict(row).get("revision") or 1), status="resolved",
+                                          actor=ReportActor(actor_scope="admin", source_channel="admin"), reason="admin:resolve")
     await asyncio.to_thread(_query)
     _log_mod_action("report", report_id, "resolved")
     return {"success": True}
@@ -1273,14 +1283,18 @@ async def resolve_report(report_id: str):
               description="Marks a user report as dismissed, indicating no action is needed.")
 async def dismiss_report(report_id: str):
     report_id = validate_path_id(report_id, "report_id")
+    from reports.models import ReportActor
+    from reports.service import ReportService, ReportError
     def _query():
-        ph = db._ph
         with db._conn() as conn:
-            cur = db._execute(conn, f"""
-                UPDATE reports SET status = 'dismissed' WHERE id::text = {ph}
-            """, (report_id,))
-            if cur.rowcount == 0:
-                raise HTTPException(404, "Báo cáo không tồn tại")
+            row = db._fetchone(conn, f"SELECT revision FROM reports WHERE id::text = {db._ph}", (report_id,))
+        if not row:
+            raise HTTPException(404, "Báo cáo không tồn tại")
+        try:
+            return ReportService(database=db).transition(report_id, expected_revision=int(db._row_to_dict(row).get("revision") or 1), status="dismissed",
+                                              actor=ReportActor(actor_scope="admin", source_channel="admin"), reason="admin:dismiss")
+        except ReportError as exc:
+            raise HTTPException(exc.status, exc.code) from exc
     await asyncio.to_thread(_query)
     _log_mod_action("report", report_id, "dismissed")
     return {"success": True}
