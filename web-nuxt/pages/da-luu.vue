@@ -19,7 +19,7 @@
     <template v-else>
       <header class="saved-header">
         <div>
-          <p class="saved-kicker">Kho cá nhân</p>
+          <p class="saved-kicker dateline-eyebrow">Kho cá nhân</p>
           <h1 class="saved-title">Đã lưu</h1>
         </div>
         <button type="button" class="btn btn-ghost btn-sm" :disabled="activeLoading" @click="refreshCurrentTab">
@@ -86,7 +86,14 @@
         <div v-else-if="filteredEntities.length" class="saved-grid">
           <SavedEntityCard v-for="item in filteredEntities" :key="item.id" :item="item">
             <template #action>
-              <button type="button" class="saved-remove" aria-label="Bỏ lưu" @click="removeEntity(item.id)"><IconLine name="x" /></button>
+              <button
+                type="button"
+                class="saved-remove"
+                :aria-label="`Bỏ lưu địa điểm ${item.name || ''}`"
+                @click="removeEntity(item.id)"
+              >
+                <IconLine name="x" />
+              </button>
             </template>
           </SavedEntityCard>
         </div>
@@ -119,6 +126,9 @@
           </div>
           <p v-else>{{ 'Không tìm thấy địa điểm phù hợp trong mục đã lưu.' }}</p>
           <div class="saved-empty-actions">
+            <button v-if="savedQuery" type="button" class="btn btn-ghost btn-sm" @click="savedQuery = ''">
+              <IconLine name="repeat" /> Xóa bộ lọc
+            </button>
             <NuxtLink :to="savedQuery ? searchLink : '/dia-diem'" class="btn btn-primary btn-sm">
               <IconLine name="compass" /> {{ savedQuery ? 'Tìm trên hệ thống' : 'Khám phá 1.500+ địa điểm' }}
             </NuxtLink>
@@ -145,12 +155,24 @@
                 {{ post.author_name || 'Người dùng' }} · {{ timeAgo(post.bookmarked_at || post.created_at) }}
               </span>
             </NuxtLink>
-            <button type="button" class="saved-remove" aria-label="Bỏ lưu" @click="removeBookmark(post.id)"><IconLine name="x" /></button>
+            <button
+              type="button"
+              class="saved-remove"
+              :aria-label="`Bỏ lưu bài viết của ${post.author_name || 'tác giả'}`"
+              @click="removeBookmark(post.id)"
+            >
+              <IconLine name="x" />
+            </button>
           </div>
         </div>
         <div v-else class="saved-empty">
           <p>{{ savedQuery ? 'Không tìm thấy bài viết phù hợp trong bookmark.' : 'Chưa bookmark bài viết nào.' }}</p>
-          <NuxtLink to="/cong-dong" class="btn btn-ghost btn-sm">Xem bài viết cộng đồng</NuxtLink>
+          <div v-if="savedQuery" class="saved-empty-actions">
+            <button type="button" class="btn btn-ghost btn-sm" @click="savedQuery = ''">
+              <IconLine name="repeat" /> Xóa bộ lọc
+            </button>
+          </div>
+          <NuxtLink v-else to="/cong-dong" class="btn btn-ghost btn-sm">Xem bài viết cộng đồng</NuxtLink>
         </div>
         <button v-if="!savedQuery && postsHasMore && bookmarkedPosts.length" type="button" class="btn btn-secondary saved-load-more" @click="loadMorePosts">
           Xem thêm
@@ -171,12 +193,24 @@
               <span class="saved-post-title">{{ plan.title || `Lịch trình ${plan.days || ''}` }}</span>
               <span class="saved-post-meta">{{ timeAgo(plan.savedAt || plan.created_at) }}</span>
             </NuxtLink>
-            <button type="button" class="saved-remove" aria-label="Xóa lịch trình" @click="removeItinerary(plan.id)"><IconLine name="x" /></button>
+            <button
+              type="button"
+              class="saved-remove"
+              :aria-label="`Xóa lịch trình ${plan.title || ''}`"
+              @click="removeItinerary(plan.id)"
+            >
+              <IconLine name="x" />
+            </button>
           </div>
         </div>
         <div v-else class="saved-empty">
           <p>{{ savedQuery ? 'Không tìm thấy lịch trình phù hợp.' : 'Chưa có lịch trình nào.' }}</p>
-          <NuxtLink to="/lich-trinh" class="btn btn-ghost btn-sm">Tạo lịch trình mới</NuxtLink>
+          <div v-if="savedQuery" class="saved-empty-actions">
+            <button type="button" class="btn btn-ghost btn-sm" @click="savedQuery = ''">
+              <IconLine name="repeat" /> Xóa bộ lọc
+            </button>
+          </div>
+          <NuxtLink v-else to="/lich-trinh" class="btn btn-ghost btn-sm">Tạo lịch trình mới</NuxtLink>
         </div>
       </div>
       <NuxtErrorBoundary>
@@ -480,6 +514,12 @@ useHead(() => ({
 .saved-guest { padding: var(--space-6) 0; }
 .saved-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 1rem; margin-bottom: 1rem; }
 .saved-kicker { margin: 0 0 .2rem; color: var(--muted); font-size: .8rem; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; }
+.dateline-eyebrow {
+  display: flex; align-items: center; gap: .4rem;
+  font-family: var(--font-sans); font-size: .78rem; font-weight: 700;
+  text-transform: uppercase; letter-spacing: .06em; color: var(--muted);
+}
+.dateline-eyebrow::before { content: ""; width: 14px; height: 1.5px; background: var(--color-brand, var(--primary)); flex-shrink: 0; }
 .saved-title { font-size: 1.5rem; margin: 0; }
 .saved-overview {
   display: grid; grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -505,13 +545,17 @@ useHead(() => ({
   overflow-x: auto; -webkit-overflow-scrolling: touch;
 }
 .saved-tab {
+  min-height: 44px; display: inline-flex; align-items: center;
   padding: .5rem 1rem; background: none; border: none; cursor: pointer;
   font-weight: 500; font-size: .9rem; color: var(--muted);
   border-bottom: 2px solid transparent; margin-bottom: -2px;
-  transition: color .15s, border-color .15s;
+  transition: color var(--duration-fast) var(--ease-out),
+              border-color var(--duration-fast) var(--ease-out),
+              transform var(--duration-fast) var(--ease-out);
 }
 .saved-tab:hover { color: var(--ink); }
-.saved-tab:focus-visible { outline: 2px solid var(--primary); outline-offset: -2px; border-radius: 4px; }
+.saved-tab:active { transform: scale(.98); }
+.saved-tab:focus-visible { outline: 2px solid var(--color-focus); outline-offset: -2px; border-radius: var(--radius-control); }
 .saved-tab.active { color: var(--primary); border-bottom-color: var(--primary); font-weight: 600; }
 .saved-tab-count {
   display: inline-block; margin-left: .35rem;
@@ -525,19 +569,32 @@ useHead(() => ({
    overlay); this page just supplies the remove-button action + grid layout. */
 .saved-grid { display: flex; flex-direction: column; gap: .5rem; }
 .saved-remove {
-  flex-shrink: 0; width: 28px; height: 28px; border: none; background: none;
-  color: var(--muted); cursor: pointer; font-size: .85rem;
-  border-radius: var(--radius-full); transition: background .15s;
+  flex-shrink: 0; width: 44px; height: 44px; min-width: 44px; min-height: 44px;
+  display: inline-flex; align-items: center; justify-content: center;
+  border: none; background: none;
+  color: var(--muted); cursor: pointer; font-size: .95rem;
+  border-radius: var(--radius-full);
+  transition: background var(--duration-fast) var(--ease-out),
+              color var(--duration-fast) var(--ease-out),
+              transform var(--duration-fast) var(--ease-out);
 }
 .saved-remove:hover { background: var(--bg-alt); color: var(--error); }
+.saved-remove:active { transform: scale(.92); }
+.saved-remove:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
 
 /* Posts list */
 .saved-posts-list { display: flex; flex-direction: column; gap: .5rem; }
 .saved-post { padding: .75rem 1rem; display: flex; align-items: center; gap: .5rem; }
-.saved-post-link { text-decoration: none; color: var(--ink); display: block; flex: 1; min-width: 0; }
+.saved-post-link {
+  text-decoration: none; color: var(--ink); display: block; flex: 1; min-width: 0;
+  border-radius: var(--radius-control);
+  transition: opacity var(--duration-fast) var(--ease-out);
+}
+.saved-post-link:hover { opacity: .85; }
+.saved-post-link:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 3px; }
 .saved-post-title { display: block; font-weight: 500; font-size: .92rem; line-height: 1.4; }
 .saved-post-meta { display: block; font-size: .78rem; color: var(--muted); margin-top: .2rem; }
-.saved-load-more { margin-top: .75rem; width: 100%; }
+.saved-load-more { margin-top: .75rem; width: 100%; min-height: 44px; }
 .saved-inline-warning {
   margin-bottom: .75rem; padding: .65rem .75rem; border-radius: var(--radius-surface);
   background: color-mix(in oklab, var(--accent-container) 72%, var(--card));
@@ -614,17 +671,26 @@ useHead(() => ({
   display: flex;
   flex-direction: column;
   gap: var(--space-1);
+  min-height: 44px;
   padding: var(--space-3);
   background: var(--bg-alt);
   border: 1px solid var(--line);
   border-radius: var(--radius-surface);
   text-decoration: none;
   text-align: left;
-  transition: transform .2s var(--ease-out), border-color .2s var(--ease-out);
+  transition: transform var(--duration-fast) var(--ease-out),
+              border-color var(--duration-fast) var(--ease-out);
 }
 .saved-sugg-card:hover {
   transform: translateY(-2px);
   border-color: var(--primary);
+}
+.saved-sugg-card:active {
+  transform: scale(.98);
+}
+.saved-sugg-card:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 2px;
 }
 .saved-sugg-card strong {
   font-size: var(--text-xs);
@@ -667,5 +733,14 @@ useHead(() => ({
   .saved-tools .btn { width: 100%; justify-content: center; }
   .saved-tab { padding: .5rem .6rem; font-size: .82rem; }
   .saved-suggestions-grid { grid-template-columns: 1fr; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .saved-tab,
+  .saved-remove,
+  .saved-post-link,
+  .saved-sugg-card {
+    transition: none !important;
+    transform: none !important;
+  }
 }
 </style>
