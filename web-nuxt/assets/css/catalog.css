@@ -1389,7 +1389,10 @@
   border: none;
   cursor: pointer;
   font-weight: var(--weight-semibold);
-  padding: var(--space-1) var(--space-2);
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding: var(--space-2) var(--space-3);
   border-radius: var(--radius-control);
   transition: background .2s;
 }

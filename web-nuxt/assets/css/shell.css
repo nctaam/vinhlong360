@@ -621,6 +621,23 @@ html[data-density="compact"] .public-bottom-nav-item {
     padding-bottom: calc(var(--space-16) + var(--shell-public-bottom-nav-reserved-height));
   }
 
+  body:has(.journey-bar) .public-shell main {
+    padding-bottom: calc(var(--shell-public-bottom-nav-reserved-height) + 56px + var(--space-2));
+  }
+
+  body:has(.journey-bar) .public-shell .site-footer {
+    padding-bottom: calc(var(--space-16) + var(--shell-public-bottom-nav-reserved-height) + 56px);
+  }
+}
+
+/* Khi JourneyBar xuất hiện (teleport vào body khi có mục đã lưu),
+   dành khoảng đệm đáy trên desktop để nội dung và footer không bị che khuất. */
+body:has(.journey-bar) .public-shell main {
+  padding-bottom: calc(56px + var(--space-4));
+}
+
+body:has(.journey-bar) .public-shell .site-footer {
+  padding-bottom: calc(var(--space-12) + 56px);
 }
 
 /* ContactWidget chỉ chuyển sang thanh fixed đáy ở `max-width: 767px`

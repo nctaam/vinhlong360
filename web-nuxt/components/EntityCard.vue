@@ -6,7 +6,7 @@
   >
     <div class="cover cover-img" :class="{ 'cover-generated': !activeDescriptor.url || imgError, [`cat-${typeMeta.cat}`]: true }" :style="(!activeDescriptor.url || imgError) ? { backgroundImage: placeholderBg } : undefined">
       <template v-if="activeDescriptor.url && !imgError">
-        <NuxtLink :to="cardPath" class="card-cover-link" :aria-label="`Xem ${entity.name}`" :aria-describedby="activeDisclosureId">
+        <NuxtLink :to="cardPath" class="card-cover-link" tabindex="-1" aria-hidden="true">
           <NuxtImg v-if="isRemote" :src="activeDescriptor.url" :alt="activeDescriptor.alt" :key="activeDescriptor.url" loading="lazy" width="400" height="267" sizes="sm:100vw md:50vw lg:400px" decoding="async" :aria-describedby="activeDisclosureId" @load="($event.target as HTMLElement)?.classList.add('loaded')" @error="imgError = true" />
           <img v-else :src="activeDescriptor.url" :alt="activeDescriptor.alt" :key="activeDescriptor.url" loading="lazy" width="400" height="267" decoding="async" :aria-describedby="activeDisclosureId" @load="($event.target as HTMLElement)?.classList.add('loaded')" @error="imgError = true" />
           <span class="cover-tag cover-dateline" :class="`cat-${typeMeta.cat}`">{{ dateline }}</span>
@@ -14,7 +14,7 @@
       </template>
       <template v-else>
         <span class="cover-grain" aria-hidden="true"></span>
-        <NuxtLink :to="cardPath" class="card-cover-link" :aria-label="`Xem ${entity.name}`" :aria-describedby="activeDisclosureId">
+        <NuxtLink :to="cardPath" class="card-cover-link" tabindex="-1" aria-hidden="true">
           <span class="cover-svg-icon" v-html="placeholderSvg" />
           <span class="cover-tag cover-dateline" :class="`cat-${typeMeta.cat}`">{{ dateline }}</span>
         </NuxtLink>
