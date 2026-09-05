@@ -166,7 +166,7 @@ defineExpose({ open })
   overflow: hidden;
 }
 .cmd-input { width: 100%; padding: 14px var(--space-5); border: none; outline: none; font-size: 1rem; background: transparent; color: var(--ink); }
-.cmd-input:focus-visible { outline: 2px solid var(--primary); outline-offset: -2px; }
+.cmd-input:focus-visible { outline: 2px solid var(--color-focus); outline-offset: -2px; }
 .cmd-input::placeholder { color: var(--muted); }
 .cmd-results { max-height: 360px; overflow-y: auto; border-top: .5px solid var(--line); }
 .cmd-item {
@@ -181,7 +181,7 @@ defineExpose({ open })
   background: linear-gradient(180deg, var(--river-600) 0%, var(--amber-600) 52%, var(--clay-600) 100%);
 }
 .dark .cmd-item.active::before { background: linear-gradient(180deg, var(--river-legacy-dark) 0%, var(--amber-500) 52%, var(--clay-400) 100%); }
-.cmd-item:focus-visible { outline: 2px solid var(--primary); outline-offset: -2px; }
+.cmd-item:focus-visible { outline: 2px solid var(--color-focus); outline-offset: -2px; }
 .cmd-icon-chip {
   flex-shrink: 0; width: 26px; height: 26px; border-radius: var(--radius-full);
   display: flex; align-items: center; justify-content: center;

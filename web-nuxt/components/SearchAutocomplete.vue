@@ -420,7 +420,7 @@ if (import.meta.client) {
 }
 .ac-chip:hover { background: var(--card); border-color: var(--primary-fg); transform: translateY(-1px); }
 .ac-chip:active { transform: scale(.97); transition-duration: .08s; }
-.ac-chip:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+.ac-chip:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
 
 /* ── Expanded empty state ──────────────────────────────────────────────────*/
 .ac-empty { display: flex; flex-direction: column; align-items: center; gap: var(--space-2); }
@@ -442,7 +442,7 @@ if (import.meta.client) {
 .ac-empty-all:hover .ac-empty-arrow {
   transform: translateX(3px);
 }
-.ac-empty-all:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; border-radius: var(--radius-control); }
+.ac-empty-all:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; border-radius: var(--radius-control); }
 
 /* dark overrides for .ac-chip / .ac-empty-title in dark-overrides.css */
 

@@ -146,7 +146,7 @@ useModalA11y(openState, drawerEl, { onClose: () => emit('close') })
 .disclosure-close:hover { color: var(--ink); background: var(--bg-alt); }
 .disclosure-close:focus-visible,
 .why-secondary-actions button:focus-visible,
-.disclosure-primary:focus-visible { outline: 2px solid var(--primary); outline-offset: 3px; }
+.disclosure-primary:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 3px; }
 .disclosure-header { padding-right: var(--space-7); }
 .disclosure-kicker {
   display: inline-flex;

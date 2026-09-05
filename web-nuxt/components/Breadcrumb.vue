@@ -67,7 +67,7 @@ if (props.jsonLd) {
 }
 .breadcrumb a:hover { color: var(--primary-fg-strong, var(--primary-fg)); background: rgba(var(--primary-rgb), .06); }
 .breadcrumb a:active { transform: scale(.95); transition-duration: .08s; }
-.breadcrumb a:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+.breadcrumb a:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
 /* current page — the trail's destination reads in ink, slightly heavier, not muted like ancestors */
 .breadcrumb span { color: var(--ink); font-weight: 700; max-width: 200px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 @media (prefers-reduced-motion: reduce) { .breadcrumb { animation: none; } }

@@ -62,7 +62,7 @@ watch(() => props.loading, (now, prev) => {
 .lm-btn:hover:not(:disabled) { border-color: var(--primary); color: var(--primary); }
 .lm-btn:hover:not(:disabled) .lm-arrow { transform: translateX(3px); }
 .lm-btn:active:not(:disabled) { transform: scale(.97); }
-.lm-btn:focus-visible { outline: 2px solid var(--primary); outline-offset: 4px; }
+.lm-btn:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 4px; }
 .lm-btn:disabled { opacity: .6; cursor: not-allowed; }
 .lm-label { letter-spacing: -.01em; }
 .lm-count {

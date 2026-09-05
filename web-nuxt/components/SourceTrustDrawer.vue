@@ -228,7 +228,7 @@ useModalA11y(openState, drawerEl, { onClose: () => emit('close') })
   cursor: pointer;
 }
 .trust-close:hover { color: var(--ink); background: var(--bg-alt); }
-.trust-close:focus-visible, .trust-primary:focus-visible, .trust-evidence a:focus-visible { outline: 2px solid var(--primary); outline-offset: 3px; }
+.trust-close:focus-visible, .trust-primary:focus-visible, .trust-evidence a:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 3px; }
 .trust-header { padding-right: var(--space-7); }
 .trust-kicker { display: inline-flex; align-items: center; gap: var(--space-2); color: var(--primary-fg); font-size: var(--text-xs); font-weight: var(--weight-semibold); letter-spacing: var(--tracking-caps); text-transform: uppercase; }
 .trust-header h2 { margin: var(--space-3) 0 var(--space-2); font-family: var(--font-editorial); font-size: clamp(1.55rem, 3vw, 2rem); line-height: var(--leading-tight); letter-spacing: -.025em; }

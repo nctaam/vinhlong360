@@ -54,7 +54,7 @@ async function share() {
 }
 .share-btn:hover { background: var(--bg-warm); border-color: var(--primary-light); transform: translateY(-1px); box-shadow: var(--shadow-xs); }
 .share-btn:active { transform: scale(.92); transition-duration: .08s; }
-.share-btn:focus-visible { outline: 2px solid var(--primary); outline-offset: 3px; }
+.share-btn:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 3px; }
 .share-icon { font-size: 1rem; flex-shrink: 0; transition: transform .35s var(--ease-out-expo); }
 .share-btn:hover .share-icon { transform: scale(1.08); }
 @media (prefers-reduced-motion: reduce) {

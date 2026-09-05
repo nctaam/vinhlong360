@@ -51,7 +51,7 @@ onUnmounted(() => window.removeEventListener('scroll', onScroll))
    utility control that lives on every page. */
 .scroll-top:hover { transform: translateY(-3px); box-shadow: var(--shadow-md); color: var(--accent-dark); }
 .scroll-top:active { transform: scale(.9); transition-duration: .08s; }
-.scroll-top:focus-visible { outline: 2px solid var(--primary); outline-offset: 3px; }
+.scroll-top:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 3px; }
 .fade-enter-active, .fade-leave-active { transition: opacity .3s var(--ease-out-expo), transform .3s var(--ease-out-expo); }
 .fade-enter-from { opacity: 0; transform: translateY(8px) scale(.9); }
 .fade-leave-to { opacity: 0; transform: translateY(4px) scale(.95); }

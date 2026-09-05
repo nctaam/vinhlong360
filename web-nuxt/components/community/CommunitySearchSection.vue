@@ -72,7 +72,7 @@ defineEmits<{
 .community-search:focus-within { border-color: var(--primary); }
 .cs-icon { color: var(--muted); flex-shrink: 0; }
 .cs-input { flex: 1; min-width: 0; border: none; background: none; outline: none; color: var(--ink); font-size: var(--text-sm); padding: .35rem 0; }
-.cs-input:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+.cs-input:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
 .cs-input::placeholder { color: var(--muted); }
 .cs-clear { border: none; background: none; color: var(--muted); font-size: 1.3rem; line-height: 1; cursor: pointer; padding: 0 .25rem; min-width: 44px; display: inline-flex; align-items: center; justify-content: center; }
 .cs-clear:hover { color: var(--ink); }

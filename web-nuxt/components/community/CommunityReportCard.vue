@@ -115,7 +115,7 @@ onMounted(() => {
   animation: slide-up .3s var(--ease-out);
 }
 .report-entity-card:focus-within { border-color: var(--accent-dark); box-shadow: 0 0 0 4px rgba(var(--accent-rgb),.15); }
-.report-entity-card:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+.report-entity-card:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
 .report-kicker { margin: 0; font-size: var(--text-2xs); font-weight: var(--weight-bold); text-transform: uppercase; letter-spacing: var(--tracking-caps); color: var(--accent); }
 .report-entity-card h2 { margin: 2px 0 var(--space-1); font-size: var(--text-base); font-weight: var(--weight-semibold); color: var(--ink); }
 .report-entity-card p { margin: 0; color: var(--muted); font-size: var(--text-sm); }

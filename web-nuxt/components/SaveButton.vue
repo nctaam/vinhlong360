@@ -73,7 +73,7 @@ function onToggle() {
   box-shadow: var(--shadow-xs);
 }
 .save-btn:active { transform: scale(.92); transition-duration: .08s; }
-.save-btn:focus-visible { outline: 2px solid var(--primary); outline-offset: 3px; }
+.save-btn:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 3px; }
 
 .save-btn.saved {
   color: var(--save-red);
