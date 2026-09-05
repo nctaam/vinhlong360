@@ -188,10 +188,9 @@ def test_init_sql_contains_final_feedback_schema():
 
 
 def test_database_readiness_requires_erasure_schema_version_74():
-    # Tên hàm giữ nguyên (74 = mốc erasure) nhưng NGƯỠNG đã tiến: hợp NP-1 vào main
-    # thêm migration 076-078, 079 planner revision, 080 Case Kernel, 081 vòng đời
-    # change set và 082 CHECK vị-trí nhận chữ số Unicode.
-    assert database.PG_REQUIRED_SCHEMA_VERSION == 86
+    # Tên hàm giữ nguyên (74 = mốc erasure) nhưng readiness đã tiến qua toàn bộ
+    # migration additive hiện hành, tới 090.
+    assert database.PG_REQUIRED_SCHEMA_VERSION == 90
     assert {"feedback_receipts", "feedback_daily_rollups"} <= database.PG_REQUIRED_TABLES
     assert {
         "token_digest",
@@ -326,9 +325,9 @@ def test_init_sql_contains_case_kernel_parity_and_entity_revision():
 
 def test_database_readiness_requires_case_schema_version_81():
     # 081 is part of the kernel contract, not an optional follow-up: without it
-    # a published correction can never be marked as published. (Ngưỡng đã tiến
-    # lên 82 — unicode-digit CHECK — nhưng hợp đồng kernel của test này giữ nguyên.)
-    assert database.PG_REQUIRED_SCHEMA_VERSION == 86
+    # a published correction can never be marked as published. The readiness
+    # gate now includes every subsequent additive migration through 090.
+    assert database.PG_REQUIRED_SCHEMA_VERSION == 90
     assert CASE_TABLES <= database.PG_REQUIRED_TABLES
     assert {"revision"} <= database.PG_REQUIRED_COLUMNS["entities"]
     assert {"case_id", "current_revision", "service_kind", "phase"} <= database.PG_REQUIRED_COLUMNS["cases"]

@@ -97,8 +97,11 @@ def test_pg_schema_contract_tracks_latest_release_tables():
     # 71 phục hồi trigger rating; 72-74 thêm feedback + vòng đời xoá tài khoản;
     # 75 index đường nóng; 76-78 là NP-1 identity/location/trust; 79 planner revision;
     # 80 Case Kernel; 81 mở hai cột vòng đời của change set (xuất bản đính chính);
-    # 82 CHECK vị-trí nhận chữ số Unicode (§48.4).
-    assert PG_REQUIRED_SCHEMA_VERSION == 86
+    # 82 CHECK vị-trí nhận chữ số Unicode (§48.4); 83 snapshot generation,
+    # 84 audit/media receipts, 85 report actor-scope hardening, 86 lifecycle
+    # parity, 87 report authority, 88 scheduler leases, 89 provider receipts,
+    # and 90 pending image-suggestion uniqueness.
+    assert PG_REQUIRED_SCHEMA_VERSION == 90
     assert {"schema_version", "admin_audit_events", "shared_rate_limits", "request_idempotency_keys"} <= PG_REQUIRED_TABLES
     assert "moderation_appeals" in PG_REQUIRED_TABLES
     assert {"feedback_receipts", "feedback_daily_rollups"} <= PG_REQUIRED_TABLES
