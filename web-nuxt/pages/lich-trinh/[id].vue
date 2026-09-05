@@ -538,8 +538,8 @@ if (itinerary.value && !itinerary.value.error) {
   position: absolute; top: 14px; transform: translateX(-50%);
   display: flex; align-items: center; justify-content: center;
   width: 18px; height: 18px; border-radius: 50%;
-  background: var(--card); color: var(--primary-fg);
-  box-shadow: 0 0 0 2px var(--primary-fg) inset, var(--shadow-xs);
+  background: var(--card); color: var(--color-brand);
+  box-shadow: 0 0 0 2px var(--color-brand) inset, var(--shadow-xs);
   font-size: var(--text-2xs); font-weight: var(--weight-bold); font-variant-numeric: tabular-nums;
   cursor: default;
   animation: dayArcDotIn .4s var(--ease-out) both;
@@ -558,7 +558,7 @@ if (itinerary.value && !itinerary.value.error) {
   font-size: var(--text-2xs); color: var(--muted); text-transform: uppercase; letter-spacing: var(--tracking-caps);
   font-weight: var(--weight-semibold);
 }
-.dark .day-arc-dot { background: var(--card); box-shadow: 0 0 0 2px var(--primary-fg) inset, 0 1px 3px rgba(var(--black-rgb),.4); }
+.dark .day-arc-dot { background: var(--card); box-shadow: 0 0 0 2px var(--color-brand) inset, 0 1px 3px rgba(var(--black-rgb),.4); }
 
 .itin-actions { display: flex; gap: var(--space-2); flex-wrap: wrap; margin: var(--space-4) 0; }
 .itin-actions .btn { transition: transform .35s var(--ease-out-expo), box-shadow .35s var(--ease-out-expo); }
@@ -599,7 +599,7 @@ if (itinerary.value && !itinerary.value.error) {
   bottom: 6px;
   width: 3px;
   border-radius: 2px;
-  background: linear-gradient(180deg, var(--primary-fg) 0%, rgba(var(--primary-rgb), .35) 100%);
+  background: linear-gradient(180deg, var(--color-brand) 0%, rgba(var(--color-brand-rgb), .35) 100%);
   opacity: .4;
 }
 /* ── Timeline chapter divider — "chapters of the day" (§3). Quiet hairline +
@@ -630,7 +630,7 @@ if (itinerary.value && !itinerary.value.error) {
   width: 9px;
   height: 9px;
   border-radius: 50%;
-  background: var(--primary-fg);
+  background: var(--color-brand);
   box-shadow: 0 0 0 3px var(--bg);
   z-index: 1;
 }
@@ -640,7 +640,7 @@ if (itinerary.value && !itinerary.value.error) {
 .step-emoji { font-size: 1.6rem; line-height: 1; transition: transform .35s var(--ease-out-expo); }
 .step-card:hover .step-emoji { transform: scale(1.1) rotate(-3deg); }
 .stop-link { color: var(--ink); font-weight: var(--weight-semibold); transition: color .3s var(--ease-out); border-radius: var(--radius-control); }
-.stop-link:hover { color: var(--primary-fg); }
+.stop-link:hover { color: var(--color-action); }
 .stop-link:active { opacity: .7; }
 .stop-link:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
 
@@ -680,7 +680,7 @@ if (itinerary.value && !itinerary.value.error) {
 .route-leg-info { font-size: var(--text-xs); color: var(--muted); }
 /* Narrative bridge — the next stop's name whispered inline, so a distance
    stat becomes a handoff between two moments in the day (§5/§7). */
-.route-leg-next { color: var(--primary-fg); font-weight: var(--weight-medium); }
+.route-leg-next { color: var(--color-brand); font-weight: var(--weight-medium); }
 .rl-arrow { font-size: .85em; vertical-align: -.05em; margin: 0 var(--space-1); }
 
 .route-map-section { margin-top: var(--space-6); }
@@ -698,7 +698,7 @@ if (itinerary.value && !itinerary.value.error) {
   position: absolute; inset: 0; z-index: 1;
   display: flex; align-items: center; justify-content: center; gap: var(--space-2);
   color: var(--muted); border-radius: var(--radius-sheet); font-size: var(--text-sm);
-  background: linear-gradient(90deg, rgba(var(--primary-rgb),.06) 25%, rgba(var(--primary-rgb),.12) 50%, rgba(var(--primary-rgb),.06) 75%);
+  background: linear-gradient(90deg, rgba(var(--color-action-rgb),.06) 25%, rgba(var(--color-action-rgb),.12) 50%, rgba(var(--color-action-rgb),.06) 75%);
   background-size: 200% 100%;
   animation: routeMapShimmer 1.5s var(--ease-in-out) infinite;
 }
@@ -720,11 +720,11 @@ if (itinerary.value && !itinerary.value.error) {
   display: inline-block;
   margin: 0 0 var(--space-3);
   font-size: var(--text-sm);
-  color: var(--primary-fg);
+  color: var(--color-brand);
   font-weight: var(--weight-bold);
   padding: var(--space-2) var(--space-4);
   background: var(--card);
-  border: 1.5px solid rgba(var(--primary-rgb), .35);
+  border: 1.5px solid rgba(var(--color-brand-rgb), .35);
   border-radius: var(--radius-full);
   box-shadow: var(--shadow-xs);
   transition: background .3s var(--ease-out), box-shadow .3s var(--ease-out);
@@ -739,7 +739,7 @@ if (itinerary.value && !itinerary.value.error) {
   gap: var(--space-2);
 }
 .route-total[role="status"] .chip { font-weight: var(--weight-semibold); }
-.dark .route-total { background: rgba(var(--white-rgb),.04); border-color: rgba(var(--primary-rgb), .4); }
+.dark .route-total { background: rgba(var(--white-rgb),.04); border-color: rgba(var(--color-brand-rgb), .4); }
 
 /* Dark mode */
 .dark .step-card { border-color: var(--line); }

@@ -218,8 +218,8 @@ useHead({
   width: 32px;
   height: 32px;
   border-radius: var(--radius-full);
-  background: var(--primary);
-  color: var(--primary-fg, var(--text-on-dark, var(--white)));
+  background: var(--color-brand);
+  color: var(--color-on-action, var(--white));
   display: flex;
   align-items: center;
   justify-content: center;
@@ -243,7 +243,7 @@ useHead({
   transition: color .2s var(--ease-out);
 }
 .sp-stop-name:hover {
-  color: var(--primary);
+  color: var(--color-action);
 }
 .sp-stop-place,
 .sp-stop-time {

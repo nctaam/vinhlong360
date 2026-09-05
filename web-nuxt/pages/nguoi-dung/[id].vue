@@ -1045,7 +1045,7 @@ useSeoMeta({
 .rep-badge { font-size: var(--text-xs); padding: .2rem .55rem; border-radius: 999px; background: var(--bg-alt); border: 1px solid var(--border); color: var(--ink-700); }
 .xp-bar-wrap { display: flex; align-items: center; gap: var(--space-2); margin-top: var(--space-1); }
 .xp-bar { flex: 1; height: 6px; background: var(--line); border-radius: var(--radius-full); overflow: hidden; }
-.xp-fill { height: 100%; background: linear-gradient(90deg, var(--primary), var(--accent)); border-radius: var(--radius-full); }
+.xp-fill { height: 100%; background: linear-gradient(90deg, var(--color-brand), var(--accent)); border-radius: var(--radius-full); }
 .xp-label { font-size: var(--text-2xs); color: var(--muted); white-space: nowrap; }
 .streak-chip { display: inline-flex; align-items: center; gap: var(--space-1); margin-top: var(--space-1); padding: var(--space-1) var(--space-2); background: color-mix(in srgb, var(--warning) 12%, transparent); border-radius: var(--radius-full); font-size: var(--text-xs); font-weight: var(--weight-medium); color: var(--ink); }
 /* Mốc tuần (bội số của 7 ngày) — một nhấp nháy nhẹ DUY NHẤT lúc mount, không loop. */
@@ -1065,7 +1065,7 @@ useSeoMeta({
 .bs-cat-title { font-size: var(--text-xs); font-weight: var(--weight-semibold); color: var(--muted); text-transform: uppercase; letter-spacing: 0.04em; margin: 0 0 var(--space-2); }
 .bs-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: var(--space-2); margin-top: var(--space-2); }
 .bs-card { display: flex; align-items: flex-start; gap: var(--space-2); padding: var(--space-2); border-radius: var(--radius); border: 1px solid var(--line); text-align: left; background: var(--surface); }
-.bs-card.bs-earned { border-color: var(--primary); transition: transform .2s var(--ease-out), box-shadow .2s var(--ease-out); }
+.bs-card.bs-earned { border-color: var(--color-brand); transition: transform .2s var(--ease-out), box-shadow .2s var(--ease-out); }
 .bs-card.bs-earned:hover { transform: translateY(-1px); box-shadow: var(--shadow-sm); }
 .bs-card.bs-earned:active { transform: scale(.98); }
 .bs-card.bs-locked { opacity: 0.55; }
@@ -1074,7 +1074,7 @@ useSeoMeta({
 .bs-info { min-width: 0; display: flex; flex-direction: column; gap: 2px; }
 .bs-label { font-size: var(--text-sm); font-weight: var(--weight-medium); color: var(--ink); }
 .bs-bar { height: 4px; background: var(--line); border-radius: var(--radius-full); overflow: hidden; margin-top: var(--space-1); }
-.bs-fill { height: 100%; background: var(--primary); border-radius: var(--radius-full); }
+.bs-fill { height: 100%; background: var(--color-brand); border-radius: var(--radius-full); }
 .bs-date { font-size: var(--text-2xs); color: var(--success); }
 .bs-hint { font-size: var(--text-2xs); color: var(--muted); }
 
@@ -1107,7 +1107,7 @@ useSeoMeta({
 .profile-chip.is-public { border-color: color-mix(in srgb, var(--success, var(--leaf-600)) 28%, var(--line)); color: var(--success, var(--leaf-600)); }
 .profile-chip.is-private { border-color: color-mix(in srgb, var(--warning) 28%, var(--line)); color: var(--warning); }
 .profile-chip.is-self,
-.profile-chip.is-following { background: color-mix(in srgb, var(--primary) 10%, var(--card)); border-color: color-mix(in srgb, var(--primary) 30%, var(--line)); color: var(--primary); }
+.profile-chip.is-following { background: color-mix(in srgb, var(--color-brand) 10%, var(--card)); border-color: color-mix(in srgb, var(--color-brand) 30%, var(--line)); color: var(--color-brand); }
 .profile-more-wrap { position: relative; }
 .btn-icon { min-width: 44px; min-height: 44px; display: inline-flex; align-items: center; justify-content: center; padding: .3rem .5rem; letter-spacing: 2px; font-weight: 700; }
 .profile-more-menu { position: absolute; right: 0; top: 100%; margin-top: var(--space-1); background: var(--card); border: 1px solid var(--line); border-radius: var(--radius-surface); box-shadow: var(--shadow-md); z-index: var(--z-dropdown); min-width: 160px; overflow: hidden; }
@@ -1139,7 +1139,7 @@ useSeoMeta({
 .stat-item strong { font-size: var(--text-lg); font-weight: var(--weight-bold); user-select: all; }
 .stat-item span { font-size: var(--text-xs); color: var(--muted); }
 .stat-clickable { cursor: pointer; font: inherit; min-height: 44px; }
-.stat-clickable:hover { border-color: color-mix(in srgb, var(--primary) 35%, var(--line)); }
+.stat-clickable:hover { border-color: color-mix(in srgb, var(--color-action) 35%, var(--line)); }
 .stat-clickable:active { transform: scale(.96); transition-duration: .08s; }
 .profile-insight { display: flex; align-items: center; justify-content: space-between; gap: var(--space-3); margin-top: var(--space-4); padding: var(--space-3) var(--space-4); border: 1px solid var(--line); border-radius: var(--radius-surface); background: color-mix(in srgb, var(--bg-warm) 82%, var(--card)); }
 .profile-insight-copy { display: flex; flex-direction: column; min-width: 0; gap: 2px; }
@@ -1151,7 +1151,7 @@ useSeoMeta({
   align-items: center;
   gap: var(--space-1);
   min-height: 44px;
-  color: var(--primary);
+  color: var(--color-action);
   font-size: var(--text-sm);
   font-weight: var(--weight-semibold);
   text-decoration: none;
@@ -1187,7 +1187,7 @@ useSeoMeta({
 }
 .fm-tab:hover { color: var(--ink-secondary); }
 .fm-tab:active { transform: scale(.98); }
-.fm-tab.active { color: var(--ink); border-bottom-color: var(--primary); }
+.fm-tab.active { color: var(--ink); border-bottom-color: var(--color-action); }
 .fm-tab:focus-visible { outline: 2px solid var(--color-focus); outline-offset: -2px; }
 .fm-close {
   border: none;
@@ -1226,7 +1226,7 @@ useSeoMeta({
 .fm-user:hover { background: var(--bg-alt); }
 .fm-user:active { transform: scale(.985); }
 .fm-user:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
-.fm-avatar { width: 38px; height: 38px; display: inline-flex; align-items: center; justify-content: center; border-radius: 50%; background: var(--primary); color: var(--primary-fg, var(--white)); font-weight: var(--weight-semibold); flex-shrink: 0; }
+.fm-avatar { width: 38px; height: 38px; display: inline-flex; align-items: center; justify-content: center; border-radius: 50%; background: var(--color-brand); color: var(--color-on-action, var(--white)); font-weight: var(--weight-semibold); flex-shrink: 0; }
 .fm-name { font-size: var(--text-sm); font-weight: var(--weight-medium); }
 .fm-empty {
   display: flex;
@@ -1305,7 +1305,7 @@ useSeoMeta({
   background: var(--bg-alt); color: var(--ink); font: inherit; font-size: var(--text-sm); resize: vertical;
   transition: border-color .2s var(--ease-out), background .2s var(--ease-out);
 }
-.sf-input:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; border-color: var(--primary); background: var(--card); box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary) 15%, transparent); }
+.sf-input:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; border-color: var(--color-action); background: var(--card); box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-action) 15%, transparent); }
 .sf-actions { display: flex; justify-content: flex-end; gap: var(--space-3); margin-top: var(--space-2); }
 /* --text-sm clamps to ~14px under ~640px viewport — below the 16px iOS auto-zoom
    threshold. Force 16px on mobile only for these real form fields (create-collection
@@ -1354,7 +1354,7 @@ useSeoMeta({
 .profile-completion { padding: 0 var(--space-4); margin-bottom: var(--space-3); }
 .pc-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: var(--space-1); }
 .pc-label { font-size: var(--text-sm); font-weight: 600; color: var(--muted); }
-.pc-link { font-size: var(--text-sm); color: var(--primary); text-decoration: none; }
+.pc-link { font-size: var(--text-sm); color: var(--color-action); text-decoration: none; }
 .pc-bar { height: 6px; background: var(--bg-alt); border-radius: var(--radius-full); overflow: hidden; }
 .pc-fill { height: 100%; background: var(--accent); border-radius: var(--radius-full); transform-origin: left; animation: pc-grow .6s var(--ease-out) .3s backwards; }
 @keyframes pc-grow { from { transform: scaleX(0); } to { transform: scaleX(1); } }

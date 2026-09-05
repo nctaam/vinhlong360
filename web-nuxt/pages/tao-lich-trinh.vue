@@ -1368,19 +1368,19 @@ await plannerAsyncData
   transform: scale(.985);
 }
 .stop-item.drag-over .stop-card {
-  border-color: var(--primary);
-  box-shadow: 0 0 0 2px rgba(var(--primary-rgb), .25), var(--shadow-sm);
-  background: color-mix(in srgb, var(--primary) 3%, var(--card));
+  border-color: var(--color-action);
+  box-shadow: 0 0 0 2px rgba(var(--color-action-rgb), .25), var(--shadow-sm);
+  background: color-mix(in srgb, var(--color-action) 3%, var(--card));
 }
 @keyframes stopIn { from { opacity: 0; transform: translateY(6px); } }
 .stop-num {
   width: 28px; height: 28px; border-radius: 50%;
-  background: var(--primary); color: var(--text-on-dark, var(--white));
+  background: var(--color-brand); color: var(--color-on-action, var(--white));
   display: flex; align-items: center; justify-content: center;
   font-size: var(--text-sm); font-weight: var(--weight-bold);
   flex-shrink: 0; z-index: 1;
 }
-.stop-connector { position: absolute; left: 13px; top: 28px; bottom: -12px; width: 2px; background: var(--primary); opacity: .25; }
+.stop-connector { position: absolute; left: 13px; top: 28px; bottom: -12px; width: 2px; background: var(--color-brand); opacity: .25; }
 .stop-card {
   flex: 1; background: var(--card); border: .5px solid var(--line);
   border-radius: var(--radius-sheet); padding: var(--space-3) var(--space-4);
@@ -1426,7 +1426,7 @@ await plannerAsyncData
   background: color-mix(in srgb, var(--night-amber) 16%, transparent);
   border-color: color-mix(in srgb, var(--night-amber) 32%, transparent);
 }
-.scheduled-interval { display: block; margin-top: var(--space-2); color: var(--primary-fg); font-size: var(--text-xs); font-weight: var(--weight-semibold); }
+.scheduled-interval { display: block; margin-top: var(--space-2); color: var(--color-action); font-size: var(--text-xs); font-weight: var(--weight-semibold); }
 .stop-card-actions { display: flex; gap: var(--space-1); }
 .stop-list { margin-bottom: var(--space-4); }
 .stop-card-actions button { min-height: 44px; min-width: 44px; display: inline-flex; align-items: center; justify-content: center; border-radius: var(--radius-control); transition: background .3s var(--ease-out), transform .35s var(--ease-out-expo); }
@@ -1437,7 +1437,7 @@ await plannerAsyncData
 .dark .stop-card { background: var(--card); border-color: var(--line); }
 .dark .stop-card-actions button:hover { background: rgba(var(--white-rgb),.06); }
 .dark .stop-card:hover { border-color: var(--border); }
-.dark .stop-connector { background: var(--primary-fg); }
+.dark .stop-connector { background: var(--color-brand); }
 .dark .picker-list::-webkit-scrollbar-thumb { background: var(--glass-medium); }
 .dark .picker-list::-webkit-scrollbar-thumb:hover { background: rgba(var(--white-rgb),.2); }
 .dark .route-leg-info { background: rgba(var(--white-rgb),.04); }
@@ -1447,7 +1447,7 @@ await plannerAsyncData
 
 /* ── Premium picker empty state surface ───────────────────── */
 .premium-empty-state {
-  background: radial-gradient(120% 90% at 50% -10%, rgba(var(--primary-rgb), .06), transparent 60%), var(--card);
+  background: radial-gradient(120% 90% at 50% -10%, rgba(var(--color-brand-rgb), .06), transparent 60%), var(--card);
   border: .5px solid var(--line); border-radius: var(--radius-sheet);
   padding: var(--space-8) var(--space-4); position: relative; overflow: hidden;
 }
@@ -1459,7 +1459,7 @@ await plannerAsyncData
 }
 .premium-empty-state > * { position: relative; z-index: 1; }
 .dark .premium-empty-state {
-  background: radial-gradient(120% 90% at 50% -10%, rgba(var(--primary-rgb), .08), transparent 60%), var(--card);
+  background: radial-gradient(120% 90% at 50% -10%, rgba(var(--color-brand-rgb), .08), transparent 60%), var(--card);
 }
 .dark .premium-empty-state::before {
   opacity: .07;
@@ -1467,7 +1467,7 @@ await plannerAsyncData
 }
 
 /* ── Picker item: brief highlight when added ──────────────── */
-.picker-item.adding { background: rgba(var(--primary-rgb), .12); transform: scale(1.02); }
+.picker-item.adding { background: rgba(var(--color-action-rgb), .12); transform: scale(1.02); }
 
 /* ── Move buttons: draggable affordance on hover ──────────── */
 .stop-card-actions button.move:hover { background: var(--bg-warm); border-radius: var(--radius-full); }
