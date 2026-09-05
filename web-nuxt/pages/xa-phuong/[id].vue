@@ -158,7 +158,7 @@
         </section>
       </aside>
 
-      <main class="wp-main" data-detail-region="narrative">
+      <div class="wp-main" data-detail-region="narrative">
         <p v-if="data.place.summary" class="wp-summary">{{ data.place.summary }}</p>
 
         <ClientOnly>
@@ -203,7 +203,7 @@
             <p class="wp-empty-hint">Quay lại sau hoặc khám phá các xã/phường lân cận qua trang khu vực.</p>
           </div>
         </div>
-      </main>
+      </div>
     </div>
   </section>
 

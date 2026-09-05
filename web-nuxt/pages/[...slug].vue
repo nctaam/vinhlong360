@@ -1,5 +1,5 @@
 <template>
-  <section class="not-found">
+  <section class="page not-found" data-color-system="tri-region-v1">
     <div class="nf-inner">
       <span class="nf-emoji" aria-hidden="true"><IconLine name="map" /></span>
       <h1 class="nf-code">404</h1>
@@ -150,23 +150,23 @@ const discoveryLinks = [
 }
 
 .nf-btn:active { transform: scale(.97); }
-.nf-btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.nf-btn:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
 
 .nf-btn-primary {
-  background: var(--accent);
-  color: var(--text-on-dark, var(--white));
+  background: var(--color-action);
+  color: var(--color-on-action);
   border: none;
 }
 
-.nf-btn-primary:hover { background: var(--accent-dark); }
+.nf-btn-primary:hover { background: var(--color-action-hover); }
 
 .nf-btn-outline {
   background: transparent;
-  color: var(--accent);
-  border: 1.5px solid var(--accent);
+  color: var(--color-action);
+  border: 1.5px solid var(--color-action);
 }
 
-.nf-btn-outline:hover { background: var(--accent); color: var(--text-on-dark, var(--white)); }
+.nf-btn-outline:hover { background: var(--color-action-surface); color: var(--color-action-hover); }
 
 .nf-inner { animation: nfIn .5s var(--ease-out-expo); }
 @keyframes nfIn { from { opacity: 0; transform: translateY(16px) scale(.96); } to { opacity: 1; transform: translateY(0) scale(1); } }
@@ -200,7 +200,7 @@ const discoveryLinks = [
   display: inline-flex;
   align-items: center;
   gap: var(--space-2);
-  min-height: 40px;
+  min-height: var(--touch-min);
   padding: var(--space-2) var(--space-4);
   border: 1px solid var(--line);
   border-radius: var(--radius-full);
@@ -229,7 +229,7 @@ const discoveryLinks = [
 }
 
 .nf-pill:focus-visible {
-  outline: 2px solid var(--accent);
+  outline: 2px solid var(--color-focus);
   outline-offset: 2px;
 }
 

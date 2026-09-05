@@ -1,5 +1,5 @@
 <template>
-  <main class="access-denied-page">
+  <div class="page access-denied-page" data-color-system="tri-region-v1">
     <SystemSystemStatePanel
       kind="permission-denied"
       title="Bạn chưa có quyền truy cập"
@@ -10,7 +10,7 @@
       @primary="openAllowedArea"
       @secondary="navigateTo('/')"
     />
-  </main>
+  </div>
 </template>
 
 <script setup lang="ts">

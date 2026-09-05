@@ -12,8 +12,8 @@
   position: relative;
   overflow: clip;
   isolation: isolate;
-  margin: 0 calc(-1 * var(--space-5)) var(--space-6);
-  padding: var(--space-8) var(--space-5) var(--space-6);
+  margin: 0 calc(-1 * var(--space-4)) var(--space-6);
+  padding: var(--space-8) var(--space-4) var(--space-6);
   display: flex;
   align-items: center;
   gap: var(--space-6);
@@ -168,6 +168,7 @@
 /* ── Responsive scale-up ──────────────────────────────────────────── */
 @media (min-width: 640px) {
   .legal-page { padding: var(--space-8) var(--space-5) var(--space-16); }
+  .brand-masthead { margin-inline: calc(-1 * var(--space-5)); padding-inline: var(--space-5); }
 }
 @media (max-width: 600px) {
   .legal-metadata dl { grid-template-columns: 1fr; }

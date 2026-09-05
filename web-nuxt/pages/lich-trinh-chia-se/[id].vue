@@ -1,5 +1,5 @@
 <template>
-  <section class="page shared-plan-page">
+  <section class="page shared-plan-page" data-color-system="tri-region-v1">
     <Breadcrumb
       :items="[
         { label: 'Trang chủ', to: '/' },
