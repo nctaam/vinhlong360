@@ -146,11 +146,12 @@ Không tự làm. Đây là thay đổi lớn, đụng dữ liệu, và phải n
   **Cấp thiết vì:** nên vá **trước khi mở index**; mở rồi mới sửa thì dữ kiện đã kịp
   vào chỉ mục và vào mô hình (§23.7).
 
-- [ ] **T9 — Thêm schema `QAPage` cho hỏi–đáp cộng đồng.**
+- [x] **T9 — Thêm schema `QAPage` cho hỏi–đáp cộng đồng.**
   `pages/bai-viet/[id].vue` đã có `post_type === 'question'` + `bestAnswerId`; toàn dự án
   **0 chỗ** dùng `QAPage`/`acceptedAnswer`.
   **Vì sao:** 64% nhà tiếp thị điểm đến đang làm đúng việc này để được cỗ máy trả lời
   trích dẫn; dữ liệu đã có sẵn trong DB (§23.3).
+  *(Đã hoàn thành: phân nhánh `QAPage` + `Question` + `acceptedAnswer` khi `post_type === 'question'`, bảo toàn bất biến `safeJsonLd(articleLd)`).*
 
 ---
 

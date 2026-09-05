@@ -188,6 +188,9 @@ describe('SEO & Editorial Craft Guardrails', () => {
     expect(post).toContain("ogType: 'article'")
     expect(post).toContain("twitterCard: 'summary_large_image'")
     expect(post).toContain("ogUrl: () => canonicalUrl(postPath(postId.value))")
+    expect(post).toContain("p.post_type === 'question'")
+    expect(post).toContain("'@type': 'QAPage'")
+    expect(post).toContain("'@type': 'Question'")
     expect(post).toContain('safeJsonLd(articleLd)')
   })
 

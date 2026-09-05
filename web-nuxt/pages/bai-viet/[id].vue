@@ -592,23 +592,66 @@ useHead({
     const p = post.value
     const postTitle = p.display_name || 'Bài viết'
     const postDesc = (p.content || '').substring(0, 160)
-    const articleLd: Record<string, any> = {
-      '@context': 'https://schema.org',
-      '@type': p.post_type === 'review' ? 'Review' : 'Article',
-      headline: postTitle,
-      description: postDesc,
-      url: `https://vinhlong360.vn${postPath(postId.value)}`,
-      datePublished: p.created_at,
-      dateModified: p.updated_at || p.created_at,
-      author: {
-        '@type': 'Person',
-        name: p.display_name || 'Người dùng',
-        ...(p.user_id ? { url: `https://vinhlong360.vn${userPath(p.user_id)}` } : {}),
-      },
-      publisher: { '@type': 'Organization', name: 'vinhlong360', url: 'https://vinhlong360.vn' },
-    }
-    if (p.post_type === 'review' && p.rating) {
-      articleLd.reviewRating = { '@type': 'Rating', ratingValue: p.rating, bestRating: 5 }
+    const postUrl = `https://vinhlong360.vn${postPath(postId.value)}`
+    let articleLd: Record<string, any>
+
+    if (p.post_type === 'question') {
+      const bestAnswer = bestAnswerId.value && comments.value.length
+        ? comments.value.find(c => c.id === bestAnswerId.value)
+        : null
+
+      const questionEntity: Record<string, any> = {
+        '@type': 'Question',
+        name: postTitle,
+        text: p.content || postTitle,
+        dateCreated: p.created_at,
+        url: postUrl,
+        answerCount: p.comments_count ?? comments.value.length ?? 0,
+        author: {
+          '@type': 'Person',
+          name: p.display_name || 'Người dùng',
+          ...(p.user_id ? { url: `https://vinhlong360.vn${userPath(p.user_id)}` } : {}),
+        },
+      }
+
+      if (bestAnswer) {
+        questionEntity.acceptedAnswer = {
+          '@type': 'Answer',
+          text: bestAnswer.content,
+          dateCreated: bestAnswer.created_at,
+          url: `${postUrl}#comment-${bestAnswer.id}`,
+          author: {
+            '@type': 'Person',
+            name: bestAnswer.author?.display_name || 'Người dùng',
+            ...(bestAnswer.author?.id ? { url: `https://vinhlong360.vn${userPath(bestAnswer.author.id)}` } : {}),
+          },
+        }
+      }
+
+      articleLd = {
+        '@context': 'https://schema.org',
+        '@type': 'QAPage',
+        mainEntity: questionEntity,
+      }
+    } else {
+      articleLd = {
+        '@context': 'https://schema.org',
+        '@type': p.post_type === 'review' ? 'Review' : 'Article',
+        headline: postTitle,
+        description: postDesc,
+        url: postUrl,
+        datePublished: p.created_at,
+        dateModified: p.updated_at || p.created_at,
+        author: {
+          '@type': 'Person',
+          name: p.display_name || 'Người dùng',
+          ...(p.user_id ? { url: `https://vinhlong360.vn${userPath(p.user_id)}` } : {}),
+        },
+        publisher: { '@type': 'Organization', name: 'vinhlong360', url: 'https://vinhlong360.vn' },
+      }
+      if (p.post_type === 'review' && p.rating) {
+        articleLd.reviewRating = { '@type': 'Rating', ratingValue: p.rating, bestRating: 5 }
+      }
     }
     return [
       { type: 'application/ld+json', innerHTML: safeJsonLd(articleLd) },
