@@ -195,7 +195,7 @@ useModalA11y(openState, drawerEl, { onClose: () => emit('close') })
 .disclosure-drawer-enter-from .disclosure-drawer, .disclosure-drawer-leave-to .disclosure-drawer { transform: translateX(24px); }
 @media (max-width: 640px) {
   .disclosure-overlay { align-items: flex-end; }
-  .disclosure-drawer { width: 100%; height: auto; max-height: min(88vh, 760px); padding: var(--space-6) var(--space-4) var(--space-4); border: 0; border-radius: var(--radius-sheet) var(--radius-sheet) 0 0; box-shadow: 0 -18px 44px rgba(var(--black-rgb), .2); }
+  .disclosure-drawer { width: 100%; height: auto; max-height: min(88vh, 760px); padding: var(--space-6) var(--space-4) var(--space-4); border: 0; border-top: 1px solid var(--line); border-radius: var(--radius-sheet) var(--radius-sheet) 0 0; box-shadow: 0 -18px 44px rgba(var(--black-rgb), .2); }
   .why-secondary-actions { grid-template-columns: 1fr; }
   .disclosure-primary-wrap { bottom: calc(-1 * var(--space-4)); margin-right: calc(-1 * var(--space-4)); margin-bottom: calc(-1 * var(--space-4)); margin-left: calc(-1 * var(--space-4)); padding-right: var(--space-4); padding-bottom: calc(var(--space-4) + env(safe-area-inset-bottom)); padding-left: var(--space-4); }
   .disclosure-drawer-enter-from .disclosure-drawer, .disclosure-drawer-leave-to .disclosure-drawer { transform: translateY(24px); }
