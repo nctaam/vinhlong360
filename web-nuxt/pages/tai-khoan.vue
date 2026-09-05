@@ -35,7 +35,14 @@
             <NuxtLink to="/cai-dat" class="btn btn-ghost btn-sm">Cài đặt</NuxtLink>
           </div>
         </div>
-        <div class="cp-score" aria-label="Điểm sẵn sàng tài khoản">
+        <div
+          class="cp-score"
+          role="meter"
+          :aria-label="`Điểm sẵn sàng tài khoản: ${accountScore} trên 100, mức độ ${accountLevel}`"
+          :aria-valuenow="accountScore"
+          aria-valuemin="0"
+          aria-valuemax="100"
+        >
           <span class="cp-score-value">{{ accountScore }}</span>
           <span class="cp-score-label">{{ accountLevel }}</span>
         </div>
@@ -58,7 +65,16 @@
             </span>
             <NuxtLink to="/cai-dat#ho-so" class="cp-mini-link">Cập nhật</NuxtLink>
           </div>
-          <div class="cp-progress" role="progressbar" aria-label="Tiến độ hoàn thiện hồ sơ" :aria-valuenow="profileCompletion" aria-valuemin="0" aria-valuemax="100"><span :style="{ width: profileCompletion + '%' }"></span></div>
+          <div
+            class="cp-progress"
+            role="progressbar"
+            :aria-label="`Tiến độ hoàn thiện hồ sơ: ${profileCompletion}%`"
+            :aria-valuenow="profileCompletion"
+            aria-valuemin="0"
+            aria-valuemax="100"
+          >
+            <span :style="{ width: profileCompletion + '%' }"></span>
+          </div>
           <div class="cp-checks">
             <NuxtLink v-for="item in profileChecks" :key="item.key" :to="item.to" :class="['cp-check', { done: item.done }]">
               <IconLine v-if="item.done" name="check" class="cp-check-icon" aria-hidden="true" />
@@ -95,7 +111,8 @@
           <div class="cp-action-list">
             <NuxtLink v-for="item in nextActions" :key="item.to + item.label" :to="item.to" class="cp-action-item">
               <span class="cp-action-icon" aria-hidden="true"><IconLine :name="item.icon" /></span>
-              <span>{{ item.label }}</span>
+              <span class="cp-action-label">{{ item.label }}</span>
+              <IconLine name="chevron-right" class="cp-action-chevron" aria-hidden="true" />
             </NuxtLink>
             <div v-if="!nextActions.length" class="cp-done-state">
               Hồ sơ đang ở trạng thái tốt. Bạn có thể tiếp tục khám phá và lưu thêm điểm đến.
@@ -148,15 +165,15 @@
         <aside class="cp-side-panel sediment-head" aria-label="Dữ liệu của bạn">
           <h2>Dữ liệu của bạn</h2>
           <div class="cp-data-list">
-            <NuxtLink to="/da-luu" class="cp-data-row">
+            <NuxtLink to="/da-luu" class="cp-data-row" :aria-label="`Địa điểm đã lưu: ${counts.bookmarks ?? 0}`">
               <span>Địa điểm đã lưu</span>
               <strong>{{ counts.bookmarks ?? 0 }}</strong>
             </NuxtLink>
-            <NuxtLink to="/thong-bao" class="cp-data-row">
+            <NuxtLink to="/thong-bao" class="cp-data-row" :aria-label="`Thông báo chưa đọc: ${counts.unread_notifications ?? 0}`">
               <span>Thông báo chưa đọc</span>
               <strong>{{ counts.unread_notifications ?? 0 }}</strong>
             </NuxtLink>
-            <NuxtLink to="/cong-dong" class="cp-data-row">
+            <NuxtLink to="/cong-dong" class="cp-data-row" :aria-label="`Bản nháp: ${counts.drafts ?? 0}`">
               <span>Bản nháp</span>
               <strong>{{ counts.drafts ?? 0 }}</strong>
             </NuxtLink>
@@ -391,7 +408,11 @@ useHead(() => ({
   align-items: center; margin-bottom: 1rem; padding: 1.25rem;
   border: 1px solid var(--line); border-radius: var(--radius-sheet); background: var(--card);
 }
-.cp-avatar-link { width: 80px; height: 80px; border-radius: 50%; overflow: hidden; display: block; }
+.cp-avatar-link {
+  width: 80px; height: 80px; border-radius: 50%; overflow: hidden; display: block;
+  transition: transform var(--duration-fast) var(--ease-out);
+}
+.cp-avatar-link:active { transform: scale(.95); }
 .cp-avatar, .cp-avatar-fallback { width: 80px; height: 80px; border-radius: 50%; object-fit: cover; display: block; }
 .cp-kicker { margin: 0 0 .2rem; color: var(--muted); font-size: .82rem; font-weight: 600; text-transform: uppercase; letter-spacing: .04em; }
 .cp-name { margin: 0; font-family: var(--font-editorial); font-weight: 600; font-size: clamp(1.35rem, 2vw, 1.9rem); }
@@ -401,7 +422,11 @@ useHead(() => ({
 .cp-pill.ok { color: var(--accent); border-color: color-mix(in oklab, var(--accent) 35%, var(--line)); }
 .cp-pill.warn { color: var(--danger); border-color: rgba(var(--danger-rgb), .25); }
 .cp-hero-actions { display: flex; flex-wrap: wrap; gap: .5rem; margin-top: .85rem; }
-.cp-score { width: 92px; height: 92px; border-radius: 50%; display: grid; place-content: center; text-align: center; border: 8px solid color-mix(in oklab, var(--accent) 55%, var(--line)); background: var(--bg-alt); }
+.cp-score {
+  width: 92px; height: 92px; border-radius: 50%; display: grid; place-content: center; text-align: center;
+  border: 8px solid color-mix(in oklab, var(--accent) 55%, var(--line)); background: var(--bg-alt);
+  transition: transform var(--duration-fast) var(--ease-out);
+}
 .cp-score-value { font-size: 1.45rem; font-weight: 800; line-height: 1; }
 .cp-score-label { font-size: .72rem; color: var(--muted); margin-top: .2rem; }
 .cp-alert {
@@ -421,35 +446,89 @@ useHead(() => ({
 .cp-panel-head, .cp-section-head { display: flex; justify-content: space-between; gap: .75rem; align-items: flex-start; margin-bottom: .75rem; }
 .cp-panel-head strong, .cp-section-head h2, .cp-side-panel h2 { display: block; margin: 0; font-size: 1rem; }
 .cp-panel-head small { display: block; color: var(--muted); font-size: .78rem; margin-top: .15rem; }
-.cp-mini-link { color: var(--accent); text-decoration: none; font-weight: 600; font-size: .82rem; white-space: nowrap; }
+.cp-mini-link {
+  display: inline-flex; align-items: center; min-height: 44px; padding: .25rem .5rem; margin: -.25rem -.5rem;
+  color: var(--accent); text-decoration: none; font-weight: 600; font-size: .82rem; white-space: nowrap;
+  border-radius: var(--radius-control);
+  transition: opacity var(--duration-fast) var(--ease-out), color var(--duration-fast) var(--ease-out);
+}
+.cp-mini-link:hover { opacity: .85; }
 .cp-progress { height: 8px; border-radius: var(--radius-full); overflow: hidden; background: var(--bg-alt); margin-bottom: .75rem; }
 .cp-progress span { display: block; height: 100%; border-radius: inherit; background: var(--accent); }
 .cp-checks, .cp-action-list, .cp-data-list { display: flex; flex-direction: column; gap: .45rem; }
 .cp-check { display: flex; align-items: center; gap: .45rem; color: var(--muted); font-size: .84rem; text-decoration: none; border-radius: var(--radius-control); }
 .cp-check:hover { color: var(--ink); }
-.cp-check:focus-visible, .cp-mini-link:focus-visible, .cp-action-item:focus-visible, .cp-data-row:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+.cp-avatar-link:focus-visible,
+.cp-check:focus-visible,
+.cp-mini-link:focus-visible,
+.cp-action-item:focus-visible,
+.cp-data-row:focus-visible,
+.cp-activity-link:focus-visible,
+.cp-load-more:focus-visible,
+.cp-wide-btn:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 2px;
+}
+.cp-avatar-link:focus-visible { outline-offset: 3px; }
 .cp-check.done { color: var(--ink); }
 .cp-check-icon { color: var(--accent); font-size: .95rem; flex-shrink: 0; }
 .cp-check-dot { display: inline-block; width: 6px; height: 6px; margin: 0 4px; border-radius: 50%; background: var(--muted); opacity: .6; flex-shrink: 0; }
-.cp-action-item, .cp-data-row { display: flex; align-items: center; justify-content: space-between; gap: .65rem; padding: .55rem .65rem; border-radius: var(--radius-surface); text-decoration: none; color: var(--ink); background: var(--bg-alt); }
-.cp-action-item:hover, .cp-data-row:hover { background: color-mix(in oklab, var(--accent) 8%, var(--bg-alt)); }
-.cp-action-icon { font-size: 1rem; }
+.cp-action-item, .cp-data-row {
+  display: flex; align-items: center; justify-content: space-between; gap: .65rem;
+  min-height: 44px; padding: .55rem .75rem; border-radius: var(--radius-surface);
+  text-decoration: none; color: var(--ink); background: var(--bg-alt);
+  border: 1px solid transparent;
+  transition: background-color var(--duration-fast) var(--ease-out),
+              border-color var(--duration-fast) var(--ease-out),
+              transform var(--duration-fast) var(--ease-out);
+}
+.cp-action-item:hover, .cp-data-row:hover {
+  background: color-mix(in oklab, var(--accent) 8%, var(--bg-alt));
+  border-color: color-mix(in oklab, var(--accent) 25%, transparent);
+}
+.cp-action-item:active, .cp-data-row:active {
+  transform: scale(.985);
+}
+.cp-action-label { flex: 1; min-width: 0; }
+.cp-action-chevron {
+  font-size: .85rem; color: var(--muted); opacity: .7; flex-shrink: 0;
+  transition: transform var(--duration-fast) var(--ease-out), color var(--duration-fast) var(--ease-out), opacity var(--duration-fast) var(--ease-out);
+}
+.cp-action-item:hover .cp-action-chevron { transform: translateX(2px); color: var(--accent); opacity: 1; }
 .cp-done-state { padding: .75rem; border-radius: var(--radius-surface); background: var(--bg-alt); color: var(--muted); font-size: .84rem; line-height: 1.45; }
-
-
 
 .cp-main-grid { grid-template-columns: minmax(0, 1fr) 280px; align-items: start; }
 .cp-section, .cp-side-panel { padding: 1rem; }
 .cp-activity-list { display: flex; flex-direction: column; gap: .55rem; }
-.cp-activity-item { display: flex; gap: .65rem; align-items: flex-start; padding: .7rem .8rem; border-radius: var(--radius-surface); border: 1px solid var(--line); background: var(--bg-alt); color: inherit; text-decoration: none; }
-.cp-activity-link:hover { border-color: var(--accent); background: color-mix(in oklab, var(--accent) 8%, var(--bg-alt)); }
+.cp-activity-item {
+  display: flex; gap: .65rem; align-items: flex-start; padding: .75rem .85rem;
+  border-radius: var(--radius-surface); border: 1px solid var(--line);
+  background: var(--bg-alt); color: inherit; text-decoration: none; min-height: 44px;
+  transition: background-color var(--duration-fast) var(--ease-out),
+              border-color var(--duration-fast) var(--ease-out),
+              transform var(--duration-fast) var(--ease-out);
+}
+.cp-activity-link:hover {
+  border-color: var(--accent);
+  background: color-mix(in oklab, var(--accent) 8%, var(--bg-alt));
+}
+.cp-activity-link:active {
+  transform: scale(.99);
+}
 .cp-activity-icon { font-size: 1.05rem; flex-shrink: 0; }
 .cp-activity-body { min-width: 0; }
 .cp-activity-text { display: block; font-size: .88rem; line-height: 1.4; }
 .cp-activity-time { display: block; font-size: .76rem; color: var(--muted); margin-top: .1rem; }
 .cp-activity-loading { display: flex; flex-direction: column; gap: .5rem; }
 .cp-activity-skel { height: 50px; border-radius: var(--radius-surface); }
-.cp-load-more, .cp-wide-btn { width: 100%; margin-top: .75rem; }
+.cp-load-more, .cp-wide-btn {
+  width: 100%; min-height: 44px; margin-top: .75rem;
+  display: inline-flex; align-items: center; justify-content: center;
+  transition: transform var(--duration-fast) var(--ease-out);
+}
+.cp-load-more:active:not(:disabled), .cp-wide-btn:active {
+  transform: scale(.985);
+}
 .cp-empty-state { text-align: center; padding: 1.5rem .75rem; color: var(--muted); }
 .cp-empty-actions { display: flex; flex-wrap: wrap; justify-content: center; gap: .5rem; margin-top: .75rem; }
 .cp-data-row strong { font-variant-numeric: tabular-nums; }
@@ -463,10 +542,28 @@ useHead(() => ({
 @media (max-width: 600px) {
   .cp-hero { grid-template-columns: auto 1fr; }
   .cp-hero-actions .btn { flex: 1 1 130px; justify-content: center; }
-  .cp-score { grid-column: 1 / -1; width: 100%; height: auto; border-radius: var(--radius-surface); border-width: 1px; padding: .75rem; display: block; }
+  .cp-score {
+    grid-column: 1 / -1; width: auto; height: auto; border-radius: var(--radius-surface);
+    border-width: 2px; border-style: solid; padding: .75rem 1rem;
+    display: flex; align-items: center; justify-content: space-between; text-align: left;
+  }
+  .cp-score-value { font-size: 1.3rem; }
+  .cp-score-label { margin-top: 0; font-size: .8rem; font-weight: 600; text-transform: uppercase; letter-spacing: .03em; }
   .cp-alert { flex-direction: column; align-items: stretch; }
 }
 @media (prefers-reduced-motion: reduce) {
   .cp-progress span { transition: none; }
+  .cp-avatar-link,
+  .cp-action-item,
+  .cp-action-chevron,
+  .cp-data-row,
+  .cp-activity-item,
+  .cp-activity-link,
+  .cp-load-more,
+  .cp-wide-btn,
+  .cp-score {
+    transition: none !important;
+    transform: none !important;
+  }
 }
 </style>
