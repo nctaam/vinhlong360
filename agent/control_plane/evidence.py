@@ -179,17 +179,29 @@ def _probe_capture_reasons(receipt: dict[str, object]) -> list[str]:
 
 def _probe_verdict_reasons(receipt: dict[str, object]) -> list[str]:
     reasons: list[str] = []
-    exit_code = receipt.get("exit_code")
-    nodeids = receipt.get("test_nodeids")
     declared_verdict = receipt.get("verdict")
     if declared_verdict not in {"PASS", "BLOCKED", "UNAVAILABLE"}:
         reasons.append("missing or invalid field: verdict")
-    if declared_verdict == "PASS" and type(exit_code) is int and exit_code != 0:
-        reasons.append("PASS receipt must have exit_code 0")
-    if declared_verdict == "PASS" and isinstance(nodeids, list) and not nodeids:
-        reasons.append("PASS receipt must list executed test_nodeids")
+    return reasons
+
+
+def _probe_status_exit_reasons(receipt: dict[str, object]) -> list[str]:
+    reasons: list[str] = []
+    exit_code = receipt.get("exit_code")
+    declared_verdict = receipt.get("verdict")
     if declared_verdict == "UNAVAILABLE" and type(exit_code) is int and exit_code == 0:
         reasons.append("UNAVAILABLE receipt must have nonzero exit_code")
+    if declared_verdict == "BLOCKED" and type(exit_code) is int and exit_code == 0:
+        reasons.append("BLOCKED receipt must have nonzero exit_code")
+    return reasons
+
+
+def _probe_pass_reasons(receipt: dict[str, object]) -> list[str]:
+    reasons: list[str] = []
+    if receipt.get("verdict") == "PASS" and type(receipt.get("exit_code")) is int and receipt["exit_code"] != 0:
+        reasons.append("PASS receipt must have exit_code 0")
+    if receipt.get("verdict") == "PASS" and isinstance(receipt.get("test_nodeids"), list) and not receipt["test_nodeids"]:
+        reasons.append("PASS receipt must list executed test_nodeids")
     return reasons
 
 
@@ -198,6 +210,8 @@ def _probe_execution_reasons(receipt: dict[str, object]) -> list[str]:
         *_probe_clock_reasons(receipt),
         *_probe_capture_reasons(receipt),
         *_probe_verdict_reasons(receipt),
+        *_probe_status_exit_reasons(receipt),
+        *_probe_pass_reasons(receipt),
     ]
 
 

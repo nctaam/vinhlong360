@@ -105,6 +105,18 @@ def test_unavailable_receipt_requires_nonzero_exit():
     assert "UNAVAILABLE receipt must have nonzero exit_code" in result.reasons
 
 
+def test_blocked_receipt_requires_nonzero_exit():
+    receipt = _valid_receipt()
+    receipt["verdict"] = "BLOCKED"
+    receipt["exit_code"] = 0
+    receipt["test_nodeids"] = []
+
+    result = verify_probe_receipt(receipt)
+
+    assert result.verdict == "BLOCKED"
+    assert "BLOCKED receipt must have nonzero exit_code" in result.reasons
+
+
 def test_provider_sandbox_exercises_accept_timeout_and_reject_without_external_calls():
     result = run_deterministic_scenarios()
 
