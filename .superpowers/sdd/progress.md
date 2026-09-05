@@ -87,4 +87,4 @@ runtime regression and preserved the valid HTTP journey.
 
 ## Backend Completion Closure (2026-09-05)
 
-Task 0: complete with release-authority concern (commits pending review; focused authority/release tests `30 passed` using workspace basetemp; default pytest temp root was blocked by Windows `WinError 5`; `run_hard.py --all` remains `R60.1 doc_status` because six authority documents are stale; pilot remains `NO_GO`, verifier remains `BLOCKED`).
+Task 0: review remediation in progress (initial commit `05ed0999`; focused authority/release tests `30 passed` using workspace basetemp; default pytest temp root was blocked by Windows `WinError 5`; authority and hard gate clean after truth-sync; pilot remains `NO_GO`, verifier remains `BLOCKED`).

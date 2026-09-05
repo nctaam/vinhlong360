@@ -7,6 +7,7 @@
   "baseline_source": "docs/ROADMAP.md#fail-da-biet",
   "rule_index": "docs/standards/00-INDEX.md",
   "audit_artifact": "docs/audit-toan-du-an-2026-08.md",
+  "progress_artifact": ".superpowers/sdd/progress.md",
   "max_age_hours": 24,
   "baseline_count": 15,
   "rule_count": 38,

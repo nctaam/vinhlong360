@@ -40,6 +40,7 @@ class AuthorityRegistry:
     baseline_source: str
     rule_index: str
     audit_artifact: str
+    progress_artifact: str | None
     max_age_hours: int
     p1_findings: tuple[str, ...]
     active_documents: tuple[ActiveDocument, ...]
@@ -122,6 +123,11 @@ def load_authority(path: Path) -> AuthorityRegistry:
         baseline_source=payload["baseline_source"],
         rule_index=payload["rule_index"],
         audit_artifact=payload["audit_artifact"].replace("\\", "/"),
+        progress_artifact=(
+            payload["progress_artifact"].replace("\\", "/")
+            if isinstance(payload.get("progress_artifact"), str)
+            else None
+        ),
         max_age_hours=payload["max_age_hours"],
         p1_findings=tuple(p1),
         active_documents=_document_entries(active),
@@ -366,7 +372,10 @@ def _check_artifacts(root: Path, registry: AuthorityRegistry, mismatches: list[s
         (registry.baseline_source.split("#", 1)[0], "baseline"),
         (registry.rule_index, "rule index"),
         (registry.audit_artifact, "audit artifact"),
-    ) + tuple((doc.path, "active document") for doc in registry.active_documents)
+    )
+    if registry.progress_artifact:
+        references += ((registry.progress_artifact, "progress artifact"),)
+    references += tuple((doc.path, "active document") for doc in registry.active_documents)
     for path, label in references:
         if _tracked(root, path):
             tracked.append(path)

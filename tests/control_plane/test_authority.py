@@ -146,6 +146,25 @@ def test_untracked_audit_artifact_blocks_authority(tmp_path: Path) -> None:
     assert "untracked" in " ".join(report.mismatches)
 
 
+def test_untracked_current_progress_artifact_blocks_authority(tmp_path: Path) -> None:
+    path = write_registry(tmp_path)
+    payload = json.loads(path.read_text(encoding="utf-8"))
+    payload["progress_artifact"] = ".superpowers/sdd/progress.md"
+    path.write_text(json.dumps(payload), encoding="utf-8")
+    progress = tmp_path / ".superpowers/sdd/progress.md"
+    progress.parent.mkdir(parents=True)
+    progress.write_text("current execution ledger\n", encoding="utf-8")
+
+    report = check_authority(
+        tmp_path,
+        now=datetime(2026, 8, 31, tzinfo=UTC),
+        head_sha=_head_sha(tmp_path),
+    )
+
+    assert report.status == "BLOCKED"
+    assert "untracked progress artifact" in " ".join(report.mismatches)
+
+
 def test_stale_active_document_cannot_be_release_evidence(tmp_path: Path) -> None:
     write_registry(tmp_path, max_age_hours=24)
     report = check_authority(
