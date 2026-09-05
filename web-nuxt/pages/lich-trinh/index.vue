@@ -31,7 +31,7 @@
       <div class="day-arc day-arc-strip" role="img" aria-label="Dải màu tượng trưng nhịp một ngày: sáng sớm, trưa, chiều, hoàng hôn">
         <span class="day-arc-track" aria-hidden="true"></span>
         <span v-for="m in DAY_MARKS" :key="m.key" class="day-arc-mark" :style="{ left: m.pct + '%' }">
-          <span class="day-arc-glyph" aria-hidden="true">{{ m.glyph }}</span>
+          <span class="day-arc-glyph" aria-hidden="true"><IconLine :name="m.icon" /></span>
           <span class="day-arc-label">{{ m.label }}</span>
         </span>
       </div>
@@ -73,7 +73,7 @@
           :aria-pressed="paceFilter === p.key"
           @click="paceFilter = paceFilter === p.key ? 'all' : p.key"
         >
-          <span class="pace-chip-glyph" aria-hidden="true">{{ p.glyph }}</span>
+          <span class="pace-chip-glyph" aria-hidden="true"><IconLine :name="p.icon" /></span>
           <span class="pace-chip-label">{{ p.label }}</span>
           <span class="pace-chip-count">{{ countByPace(p.key) }}</span>
         </button>
@@ -119,6 +119,20 @@
             @click="areaFilter = key as string"
           ><IconLine :name="meta.icon" /> {{ meta.name }}</button>
         </div>
+        <div v-if="areaFilter !== 'all' || paceFilter !== 'all'" class="active-filter-ledger" role="region" aria-label="Bộ lọc đang áp dụng">
+          <span class="afl-heading">Đang lọc:</span>
+          <div class="afl-chips">
+            <span v-if="paceFilter !== 'all'" class="afl-chip">
+              <span class="afl-text">Nhịp: {{ PACE_DEFS.find(p => p.key === paceFilter)?.label || paceFilter }}</span>
+              <button type="button" class="afl-remove" aria-label="Bỏ lọc nhịp ngày" @click="paceFilter = 'all'"><IconLine name="x" aria-hidden="true" /></button>
+            </span>
+            <span v-if="areaFilter !== 'all'" class="afl-chip">
+              <span class="afl-text">Khu vực: {{ AREA_META[areaFilter]?.name || areaFilter }}</span>
+              <button type="button" class="afl-remove" aria-label="Bỏ lọc khu vực" @click="areaFilter = 'all'"><IconLine name="x" aria-hidden="true" /></button>
+            </span>
+            <button type="button" class="afl-clear-all" @click="clearAllFilters">Xóa tất cả</button>
+          </div>
+        </div>
       </div>
 
       <p class="result-meta" aria-live="polite">{{ filtered.length }} lịch trình</p>
@@ -136,7 +150,7 @@
       <template v-else-if="filtered.length">
         <div v-if="paceFilter === 'all'" class="pace-shelves">
           <div v-for="shelf in paceShelves" :key="shelf.key" class="pace-shelf">
-            <p class="pace-shelf-kicker">{{ shelf.glyph }} {{ shelf.label }}</p>
+            <p class="pace-shelf-kicker"><IconLine :name="shelf.icon" aria-hidden="true" /> {{ shelf.label }}</p>
             <div class="grid itin">
               <ItineraryCard v-for="it in shelf.items" :key="it.id" :itinerary="it" />
             </div>
@@ -209,24 +223,29 @@ watch(areaFilter, () => {
   nextTick(() => gridSection.value?.scrollIntoView({ behavior: 'smooth', block: 'start' }))
 })
 
+function clearAllFilters() {
+  areaFilter.value = 'all'
+  paceFilter.value = 'all'
+}
+
 useFilterUrl({ vung: areaFilter, nhip: paceFilter }, { vung: 'all', nhip: 'all' })
 
 // ── Day-arc strip (signature ambient device, §10) — 4 fixed time-of-day
 // marks, no per-stop data on the list page (that's the detail page's job).
 const DAY_MARKS = [
-  { key: 'dawn', glyph: '🌅', label: 'Sáng sớm', pct: 6 },
-  { key: 'noon', glyph: '☀️', label: 'Trưa', pct: 37 },
-  { key: 'afternoon', glyph: '🌤️', label: 'Chiều', pct: 68 },
-  { key: 'dusk', glyph: '🌇', label: 'Hoàng hôn', pct: 94 },
+  { key: 'dawn', icon: 'cloud-sun', glyph: '🌅', label: 'Sáng sớm', pct: 6 },
+  { key: 'noon', icon: 'sun', glyph: '☀️', label: 'Trưa', pct: 37 },
+  { key: 'afternoon', icon: 'cloud', glyph: '🌤️', label: 'Chiều', pct: 68 },
+  { key: 'dusk', icon: 'haze', glyph: '🌇', label: 'Hoàng hôn', pct: 94 },
 ]
 
 // ── Pace chips — "how much time do you have" as the first filter axis,
 // computed client-side from itinerary.duration string heuristics (no schema
 // change, per B2/additive-first).
 const PACE_DEFS = [
-  { key: 'half', glyph: '🌤️', label: 'Nửa ngày' },
-  { key: 'full', glyph: '☀️', label: 'Trọn ngày' },
-  { key: 'multi', glyph: '🌅', label: 'Nhiều ngày' },
+  { key: 'half', icon: 'clock', glyph: '🌤️', label: 'Nửa ngày' },
+  { key: 'full', icon: 'sun', glyph: '☀️', label: 'Trọn ngày' },
+  { key: 'multi', icon: 'calendar', glyph: '🌅', label: 'Nhiều ngày' },
 ] as const
 type PaceKey = typeof PACE_DEFS[number]['key']
 

@@ -41,19 +41,29 @@
     </section>
 
     <div class="block">
-    <div class="controls">
-      <p class="control-label">Khu vực</p>
-      <div class="chip-row" role="group" aria-label="Lọc theo khu vực">
-        <button type="button" :class="['chip', { active: areaFilter === 'all' }]" :aria-pressed="areaFilter === 'all'" @click="areaFilter = 'all'">Tất cả</button>
-        <button type="button"
-          v-for="(meta, key) in AREA_META"
-          :key="key"
-          :class="['chip', 'chip-area', `area-${key}`, { active: areaFilter === key }]"
-          :aria-pressed="areaFilter === key"
-          @click="areaFilter = key as string"
-        ><IconLine :name="meta.icon || 'pin'" class="chip-area-icon" /> {{ meta.name }}</button>
+      <div class="controls">
+        <p class="control-label">Khu vực</p>
+        <div class="chip-row" role="group" aria-label="Lọc theo khu vực">
+          <button type="button" :class="['chip', { active: areaFilter === 'all' }]" :aria-pressed="areaFilter === 'all'" @click="areaFilter = 'all'">Tất cả</button>
+          <button type="button"
+            v-for="(meta, key) in AREA_META"
+            :key="key"
+            :class="['chip', 'chip-area', `area-${key}`, { active: areaFilter === key }]"
+            :aria-pressed="areaFilter === key"
+            @click="areaFilter = key as string"
+          ><IconLine :name="meta.icon || 'pin'" class="chip-area-icon" /> {{ meta.name }}</button>
+        </div>
+        <div v-if="areaFilter !== 'all'" class="active-filter-ledger" role="region" aria-label="Bộ lọc đang áp dụng">
+          <span class="afl-heading">Đang lọc:</span>
+          <div class="afl-chips">
+            <span class="afl-chip">
+              <span class="afl-text">{{ AREA_META[areaFilter]?.name || areaFilter }}</span>
+              <button type="button" class="afl-remove" aria-label="Bỏ lọc khu vực" @click="areaFilter = 'all'"><IconLine name="x" aria-hidden="true" /></button>
+            </span>
+            <button type="button" class="afl-clear-all" @click="areaFilter = 'all'">Xóa tất cả</button>
+          </div>
+        </div>
       </div>
-    </div>
     </div>
 
     <!-- Editorial -->
@@ -120,6 +130,7 @@
           </div>
           <div class="route-links">
             <NuxtLink :to="`/khu-vuc/${r.area}`" class="btn btn-outline btn-sm"><IconLine name="pin" /> {{ AREA_META[r.area]?.name }}</NuxtLink>
+            <NuxtLink :to="{ path: '/tao-lich-trinh', query: { title: r.name } }" class="btn btn-ghost btn-sm"><IconLine name="plus" /> Lập lịch trình</NuxtLink>
             <NuxtLink to="/ban-do" no-prefetch class="btn btn-ghost btn-sm"><IconLine name="map" /> Xem bản đồ</NuxtLink>
             <NuxtLink to="/lien-he" class="btn btn-ghost btn-sm route-contact-cta"><IconLine name="phone" /> Hỏi HTX/homestay dọc tuyến</NuxtLink>
           </div>

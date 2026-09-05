@@ -59,7 +59,11 @@
             <EmptyState title="Chưa có điểm đã lưu" message="Nhấn hình trái tim ở các điểm đến để lưu lại, rồi quay lại đây thêm vào lịch trình." />
           </div>
           <div v-else-if="!pickerResults.length" class="premium-empty-state">
-            <EmptyState title="Không tìm thấy" message="Thử từ khóa khác hoặc bỏ bộ lọc loại nhé." />
+            <EmptyState title="Không tìm thấy" message="Thử từ khóa khác hoặc bỏ bộ lọc loại nhé.">
+              <template #actions>
+                <button type="button" class="btn btn-outline btn-sm" @click="resetPickerFilters">Xóa bộ lọc</button>
+              </template>
+            </EmptyState>
           </div>
         </div>
       </div>
@@ -407,13 +411,7 @@ const planBusy = ref(-1)
 
 type PlannerType = (typeof CARD_TYPES)[number]
 const TYPES = CARD_TYPES as readonly PlannerType[]
-const typeChips = TYPES.map((t) => {
-  const meta = TYPE_META[t] ?? getTypeMeta(t)
-  return {
-    value: t,
-    label: meta.label,
-  }
-})
+const typeChips = TYPES.map(t => ({ value: t, label: (TYPE_META[t] ?? getTypeMeta(t)).label }))
 
 function isPlannerType(type: string): type is PlannerType {
   return (TYPES as readonly string[]).includes(type)
@@ -438,7 +436,13 @@ const typeFilterOptions = computed(() => [
   { key: 'all', label: 'Tất cả' },
   ...typeChips.map(t => ({ key: t.value, label: t.label })),
 ])
-const planTitle = ref('')
+
+function resetPickerFilters() {
+  searchQ.value = ''
+  typeFilter.value = 'all'
+}
+
+const planTitle = ref(normalizeRouteParam(route.query.title as any) || '')
 const stops = ref<PlanStop[]>([])
 const savedPlans = ref<SavedPlan[]>([])
 const transportMode = ref<TransportMode>('driving')
@@ -1443,13 +1447,9 @@ await plannerAsyncData
 
 /* ── Premium picker empty state surface ───────────────────── */
 .premium-empty-state {
-  background:
-    radial-gradient(120% 90% at 50% -10%, rgba(var(--primary-rgb), .06), transparent 60%),
-    var(--card);
-  border: .5px solid var(--line);
-  border-radius: var(--radius-sheet);
-  padding: var(--space-8) var(--space-4);
-  position: relative; overflow: hidden;
+  background: radial-gradient(120% 90% at 50% -10%, rgba(var(--primary-rgb), .06), transparent 60%), var(--card);
+  border: .5px solid var(--line); border-radius: var(--radius-sheet);
+  padding: var(--space-8) var(--space-4); position: relative; overflow: hidden;
 }
 .premium-empty-state::before {
   content: ""; position: absolute; inset: auto 0 0 0; height: 90px;
@@ -1459,9 +1459,7 @@ await plannerAsyncData
 }
 .premium-empty-state > * { position: relative; z-index: 1; }
 .dark .premium-empty-state {
-  background:
-    radial-gradient(120% 90% at 50% -10%, rgba(var(--primary-rgb), .08), transparent 60%),
-    var(--card);
+  background: radial-gradient(120% 90% at 50% -10%, rgba(var(--primary-rgb), .08), transparent 60%), var(--card);
 }
 .dark .premium-empty-state::before {
   opacity: .07;
@@ -1482,13 +1480,9 @@ await plannerAsyncData
 .route-loading { animation: route-loading-pulse 1.2s var(--ease-out) infinite; }
 @keyframes route-loading-pulse { 0%, 100% { opacity: 1; } 50% { opacity: .45; } }
 
-
 /* Reduced motion */
 @media (prefers-reduced-motion: reduce) {
-  .picker-item:hover { transform: none; }
-  .picker-item:active { transform: none; }
-  .picker-item.adding { transform: none; }
-  .stop-card:hover { transform: none; }
+  .picker-item:hover, .picker-item:active, .picker-item.adding, .stop-card:hover { transform: none; }
   .stop-item { animation: none; }
   .save-pulse { animation: none; }
   .route-loading { animation: none; opacity: .7; }
