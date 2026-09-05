@@ -624,23 +624,26 @@ useHead({
 .pef-actions { display: flex; align-items: center; justify-content: flex-end; gap: var(--space-3); margin-top: var(--space-3); }
 .pef-count { margin-right: auto; font-size: var(--text-xs); color: var(--muted); }
 .qa-badge { display: inline-flex; align-items: center; gap: .25rem; font-size: var(--text-xs); font-weight: var(--weight-semibold); padding: .2rem .55rem; border-radius: 999px; background: var(--success-bg); color: var(--secondary-fg); }
-.qa-pick { font-size: var(--text-xs); padding: .2rem .55rem; border: 1px solid var(--border); border-radius: 999px; background: var(--bg); color: var(--ink-700); cursor: pointer; min-height: 44px; display: inline-flex; align-items: center; }
+.qa-pick { font-size: var(--text-xs); padding: .2rem .55rem; border: 1px solid var(--border); border-radius: 999px; background: var(--bg); color: var(--ink-700); cursor: pointer; min-height: 44px; display: inline-flex; align-items: center; transition: border-color .2s, color .2s, transform .2s var(--ease-out-expo); }
 .qa-pick:hover { border-color: var(--primary); color: var(--primary-fg); }
-.qa-pick:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+.qa-pick:active { transform: scale(.95); transition-duration: .08s; }
+.qa-pick:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
 
 /* ── Comment actions + threaded replies ── */
 .comment-actions { display: flex; align-items: center; gap: var(--space-3); margin-top: .35rem; flex-wrap: wrap; }
-.comment-reply-btn { font-size: var(--text-xs); font-weight: var(--weight-semibold); padding: .15rem .1rem; border: none; background: none; color: var(--muted); cursor: pointer; min-height: 44px; min-width: 44px; display: inline-flex; align-items: center; justify-content: center; }
+.comment-reply-btn { font-size: var(--text-xs); font-weight: var(--weight-semibold); padding: .15rem .1rem; border: none; background: none; color: var(--muted); cursor: pointer; min-height: 44px; min-width: 44px; display: inline-flex; align-items: center; justify-content: center; transition: color .2s, transform .2s var(--ease-out-expo); }
 .comment-reply-btn:hover { color: var(--primary-fg); }
-.comment-reply-btn:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; border-radius: var(--radius-control); }
+.comment-reply-btn:active { transform: scale(.92); transition-duration: .08s; }
+.comment-reply-btn:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; border-radius: var(--radius-control); }
 .thread-subreply { display: flex; gap: var(--space-2); margin-top: var(--space-3); padding-left: var(--space-2); border-left: 2px solid var(--line); }
 .subreply-body { flex: 1; min-width: 0; }
 .subreply-body .comment-reply-btn { margin-top: .25rem; }
 .avatar-xs { width: 26px; height: 26px; font-size: var(--text-2xs); }
 .reply-context { display: flex; align-items: center; justify-content: space-between; gap: var(--space-2); font-size: var(--text-xs); color: var(--ink-700); background: var(--bg-alt); border-radius: var(--radius-control); padding: .3rem .6rem; margin-bottom: var(--space-2); }
-.reply-context-x { background: none; border: none; color: var(--muted); font-size: 1.1rem; line-height: 1; cursor: pointer; min-width: 44px; min-height: 44px; display: inline-flex; align-items: center; justify-content: center; }
+.reply-context-x { background: none; border: none; color: var(--muted); font-size: 1.1rem; line-height: 1; cursor: pointer; min-width: 44px; min-height: 44px; display: inline-flex; align-items: center; justify-content: center; transition: color .2s, transform .2s var(--ease-out-expo); }
 .reply-context-x:hover { color: var(--ink); }
-.reply-context-x:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; border-radius: var(--radius-control); }
+.reply-context-x:active { transform: scale(.88); transition-duration: .08s; }
+.reply-context-x:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; border-radius: var(--radius-control); }
 .thread-detail-page { max-width: 680px; margin: 0 auto; }
 .thread-detail { display: flex; flex-direction: column; }
 
@@ -680,7 +683,7 @@ useHead({
 }
 .compose-input-sm::placeholder { color: var(--ink-tertiary, var(--muted)); }
 .compose-input-sm:focus { border-bottom-color: var(--primary-fg); box-shadow: none; }
-.compose-input-sm:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+.compose-input-sm:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
 /* --text-sm clamps to ~14px under ~640px viewport — below the 16px iOS auto-zoom
    threshold. Force 16px on mobile only for this real comment input; desktop keeps
    --text-sm (14px→16px fluid scale) unchanged. */
@@ -694,13 +697,13 @@ useHead({
 }
 .compose-send:hover:not(:disabled) { transform: translateY(-1px); box-shadow: var(--shadow-sm); }
 .compose-send:active:not(:disabled) { transform: scale(.95); transition-duration: .08s; }
-.compose-send:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+.compose-send:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
 .compose-send .spinner-sm { width: 14px; height: 14px; color: var(--primary-fg); }
 
 .thread-comment-guest { padding: var(--space-3) 0 var(--space-4); border-bottom: .5px solid var(--line); }
 .guest-reply-link { font-size: var(--text-sm); color: var(--primary-fg); text-decoration: none; font-weight: var(--weight-medium); border-radius: var(--radius-control); }
 .guest-reply-link:hover { text-decoration: underline; }
-.guest-reply-link:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+.guest-reply-link:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
 
 /* ── Thread replies ── */
 .thread-comments { display: flex; flex-direction: column; }
@@ -760,7 +763,7 @@ useHead({
 /* ── Focus-visible & keyboard nav in replies ── */
 .thread-reply .thread-author:focus-visible,
 .thread-reply .thread-avatar-link:focus-visible {
-  outline: 2px solid var(--primary); outline-offset: 2px; border-radius: var(--radius-control);
+  outline: 2px solid var(--color-focus); outline-offset: 2px; border-radius: var(--radius-control);
 }
 
 /* ── Related posts ── */
@@ -773,6 +776,8 @@ useHead({
   transition: border-color .2s, transform .2s var(--ease-out-expo);
 }
 .related-card:hover { border-color: var(--primary-fg); transform: translateY(-1px); }
+.related-card:active { transform: scale(.99); }
+.related-card:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
 .related-body { padding: var(--space-2) var(--space-3); display: flex; flex-direction: column; gap: .2rem; }
 .related-author { font-size: var(--text-xs); font-weight: var(--weight-semibold); }
 .related-text { margin: 0; font-size: var(--text-xs); color: var(--ink-secondary, var(--ink)); line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
@@ -783,5 +788,6 @@ useHead({
   .thread-reply { animation: none; }
   .compose-input-sm, .compose-send { transition: none; }
   .compose-send:hover:not(:disabled), .compose-send:active:not(:disabled) { transform: none; }
+  .qa-pick:active, .comment-reply-btn:active, .reply-context-x:active, .related-card:active { transform: none; }
 }
 </style>

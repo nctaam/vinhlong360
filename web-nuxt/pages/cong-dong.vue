@@ -1211,7 +1211,7 @@ useHead({
   animation: hint-settle .4s var(--ease-out-expo) both;
 }
 .new-post-thread-hint:hover { color: var(--ink); background-color: rgba(var(--accent-rgb), .09); }
-.new-post-thread-hint:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+.new-post-thread-hint:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
 @keyframes hint-settle { from { opacity: 0; transform: translateY(-4px); } }
 .dark .new-post-thread-hint { background-color: rgba(var(--accent-rgb), .08); }
 .dark .new-post-thread-hint:hover { background-color: rgba(var(--accent-rgb), .13); }
@@ -1243,7 +1243,7 @@ useHead({
   resize: none; outline: none; font-family: inherit;
   min-height: 44px; padding: 0;
 }
-.compose-input:focus-visible { outline: 2px solid var(--primary); outline-offset: -2px; }
+.compose-input:focus-visible { outline: 2px solid var(--color-focus); outline-offset: -2px; }
 .compose-input::placeholder { color: var(--muted); }
 .threads-compose {
   transition: background .3s var(--ease-out), border-color .3s var(--ease-out), border-radius .3s var(--ease-out), box-shadow .3s var(--ease-out-expo);
@@ -1267,7 +1267,7 @@ useHead({
 }
 .compose-attach:hover { background: var(--bg-alt); color: var(--ink); transform: scale(1.08); }
 .compose-attach:active { transform: scale(.88); transition-duration: .08s; }
-.compose-attach:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+.compose-attach:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
 .char-count { font-size: var(--text-xs); color: var(--muted); font-variant-numeric: tabular-nums; transition: color .2s; }
 .char-count.warn { color: var(--accent-dark); }
 .char-count.full { color: var(--error); font-weight: var(--weight-semibold); }
@@ -1308,7 +1308,7 @@ useHead({
 }
 .threads-tab:hover { color: var(--ink); }
 .threads-tab:hover::after { transform: scaleX(.5); }
-.threads-tab:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+.threads-tab:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
 .threads-tab.active { color: var(--ink); border-bottom-color: transparent; }
 .threads-tab.active::after { transform: scaleX(1); }
 .dark .threads-tab.active { color: var(--ink); }
@@ -1320,7 +1320,7 @@ useHead({
   transition: color .25s var(--ease-out), background .25s var(--ease-out);
 }
 .threads-refresh:hover { color: var(--ink); background: var(--overlay-subtle); }
-.threads-refresh:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+.threads-refresh:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
 .threads-refresh svg { display: block; }
 .threads-refresh .spinning { animation: spin .8s linear infinite; }
 @keyframes spin { to { transform: rotate(360deg); } }
@@ -1341,7 +1341,7 @@ useHead({
 }
 .chip-filter:hover { border-color: var(--ink); color: var(--ink); }
 .chip-filter:active { transform: scale(.95); transition-duration: .08s; }
-.chip-filter:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+.chip-filter:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
 .chip-filter.active { background: var(--ink); color: var(--bg); border-color: var(--ink); font-weight: var(--weight-semibold); }
 
 /* ── Post list transitions ── */
@@ -1360,7 +1360,7 @@ useHead({
 }
 .threads-load-more:hover { transform: translateY(-1px); box-shadow: var(--shadow-xs); }
 .threads-load-more:active { transform: scale(.98); transition-duration: .08s; }
-.threads-load-more:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+.threads-load-more:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
 /* Section rhythm — quiet divider between compose and feed */
 .type-filter-row + .post-list-container { margin-top: var(--space-1); }
 
@@ -1402,7 +1402,7 @@ useHead({
   transition: color .2s var(--ease-out);
 }
 .bm-link:hover { color: var(--ink); text-decoration: underline; }
-.bm-link:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; border-radius: var(--radius-control); }
+.bm-link:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; border-radius: var(--radius-control); }
 .bm-dismiss {
   flex-shrink: 0; width: 44px; height: 44px; min-width: 44px; border-radius: var(--radius-full);
   background: none; border: none; cursor: pointer; color: var(--muted);
@@ -1411,7 +1411,7 @@ useHead({
 }
 .bm-dismiss:hover { background: var(--bg-alt); color: var(--ink); }
 .bm-dismiss:active { transform: scale(.9); transition-duration: .08s; }
-.bm-dismiss:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+.bm-dismiss:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
 /* Dải "Đã ẩn — Hoàn tác": mượn nguyên hình khối của .bookmark-momentum, chỉ
    thêm câu giải thích ngắn ở giữa. Chỉ 1 trong 2 dải hiện tại một thời điểm. */
 .hide-undo { padding-left: var(--space-3); }
@@ -1478,15 +1478,13 @@ useHead({
 .cd-toggle::after { content: ''; position: absolute; top: 2px; left: 2px; width: 18px; height: 18px; background: var(--white, var(--white)); border-radius: 50%; transition: transform .25s var(--ease-out-expo); box-shadow: 0 1px 3px rgba(var(--black-rgb),.15); }
 .cd-toggle:checked { background: var(--accent, var(--primary)); }
 .cd-toggle:checked::after { transform: translateX(18px); }
-.cd-toggle:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+.cd-toggle:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
 .cd-input {
   padding: var(--space-2) var(--space-3); border: 1px solid var(--line); border-radius: var(--radius-surface);
   background: var(--bg-alt); color: var(--ink); font-size: var(--text-sm); font-family: inherit; min-height: 44px;
 }
-.cd-input:focus-visible { outline: none; border-color: var(--accent, var(--primary)); box-shadow: 0 0 0 3px rgba(var(--accent-rgb), .15); }
+.cd-input:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 1px; border-color: var(--color-focus); box-shadow: 0 0 0 3px rgba(var(--accent-rgb), .15); }
 .cd-hint { font-size: var(--text-xs); color: var(--muted); }
-
-
 
 @media (prefers-reduced-motion: reduce) {
   .cd-toggle, .cd-toggle::after { transition: none; }
