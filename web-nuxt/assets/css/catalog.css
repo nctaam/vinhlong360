@@ -23,7 +23,7 @@
 .chip.season.active { background: rgba(var(--primary-rgb), .88); color: var(--text-on-dark); border-color: var(--primary); }
 .dark .chip.season.active { background: rgba(var(--primary-rgb), .75); }
 @media (max-width: 840px) {
-  .chip-row { flex-wrap: nowrap; overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: none; padding-bottom: var(--space-1); scroll-snap-type: x proximity; overscroll-behavior-x: contain; mask-image: linear-gradient(to right, #000 85%, transparent); -webkit-mask-image: linear-gradient(to right, #000 85%, transparent); }
+  .chip-row { flex-wrap: nowrap; overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: none; padding-bottom: var(--space-1); scroll-snap-type: x proximity; overscroll-behavior-x: contain; mask-image: linear-gradient(to right, var(--color-mask-opaque) 85%, transparent); -webkit-mask-image: linear-gradient(to right, var(--color-mask-opaque) 85%, transparent); }
   .chip-row::-webkit-scrollbar { display: none; }
   .chip-row:focus-within, .chip-row:hover { mask-image: none; -webkit-mask-image: none; }
   .chip-row .chip { scroll-snap-align: start; }
