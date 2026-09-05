@@ -485,7 +485,7 @@ onMounted(() => fetchUsers())
   background: var(--bg); color: var(--ink);
   cursor: pointer; transition: border-color .2s var(--ease-soft), box-shadow .2s;
 }
-.usr-filter-select:focus { border-color: var(--primary); outline: none; box-shadow: 0 0 0 2px rgba(var(--primary-rgb),.1); }
+.usr-filter-select:focus { border-color: var(--color-action); outline: none; box-shadow: 0 0 0 2px rgba(var(--color-action-rgb),.1); }
 .usr-filter-select:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; box-shadow: none; }
 
 /* ── Sortable column headers ── */
@@ -497,28 +497,28 @@ onMounted(() => fetchUsers())
   cursor: pointer; white-space: nowrap;
   transition: background .2s var(--ease-soft), color .2s;
 }
-.usr-sort-th:hover { background: var(--primary-light, rgba(var(--primary-rgb),.08)); color: var(--primary); }
+.usr-sort-th:hover { background: rgba(var(--color-action-rgb),.08); color: var(--color-action); }
 .usr-sort-th:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
-.usr-sort-th.usr-sort-active { color: var(--primary); }
+.usr-sort-th.usr-sort-active { color: var(--color-action); }
 .usr-sort-arrow {
   display: inline-block; min-width: .7em; font-size: .8em;
   transition: transform .25s var(--ease-soft);
 }
 
 .dark .usr-filter-select { background: var(--card); border-color: rgba(var(--white-rgb),.08); }
-.dark .usr-sort-th:hover { background: rgba(var(--primary-rgb),.16); }
+.dark .usr-sort-th:hover { background: rgba(var(--color-action-rgb),.16); }
 
 /* ── User cell with avatar ── */
 .usr-cell { display: flex; align-items: center; gap: var(--space-3); }
 .usr-avatar {
   width: 32px; height: 32px; border-radius: 50%;
-  background: var(--primary-light, rgba(var(--primary-rgb),.12)); color: var(--primary);
+  background: rgba(var(--color-brand-rgb),.12); color: var(--color-brand);
   display: flex; align-items: center; justify-content: center;
   font-weight: 700; font-size: .78rem; flex-shrink: 0;
   text-transform: uppercase;
   transition: transform .25s var(--ease-soft), box-shadow .25s;
 }
-.usr-cell:hover .usr-avatar { transform: scale(1.08); box-shadow: 0 2px 8px rgba(var(--primary-rgb),.15); }
+.usr-cell:hover .usr-avatar { transform: scale(1.08); box-shadow: 0 2px 8px rgba(var(--color-brand-rgb),.15); }
 
 /* ── Role select ── */
 .usr-role-select {
@@ -527,7 +527,7 @@ onMounted(() => fetchUsers())
   background: var(--bg); color: var(--ink);
   cursor: pointer; transition: border-color .2s var(--ease-soft), box-shadow .2s;
 }
-.usr-role-select:focus { border-color: var(--primary); outline: none; box-shadow: 0 0 0 2px rgba(var(--primary-rgb),.1); }
+.usr-role-select:focus { border-color: var(--color-action); outline: none; box-shadow: 0 0 0 2px rgba(var(--color-action-rgb),.1); }
 .usr-role-select:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; box-shadow: none; }
 
 /* ── Status badges with dot ── */
@@ -540,7 +540,7 @@ onMounted(() => fetchUsers())
 .usr-status-dot {
   width: 6px; height: 6px; border-radius: 50%;
 }
-.usr-active { background: rgba(var(--primary-rgb),.08); color: var(--secondary); }
+.usr-active { background: rgba(var(--color-success-rgb),.08); color: var(--success); }
 .usr-active .usr-status-dot { background: var(--secondary); animation: usr-pulse 2s var(--ease-in-out) infinite; }
 .usr-banned { background: rgba(var(--danger-rgb),.08); color: var(--error); }
 .usr-banned .usr-status-dot { background: var(--error); }
@@ -559,16 +559,16 @@ onMounted(() => fetchUsers())
   cursor: pointer;
   transition: border-color .2s var(--ease-soft), color .2s, background .2s;
 }
-.usr-rolecount:hover { border-color: var(--primary); color: var(--primary); }
+.usr-rolecount:hover { border-color: var(--color-action); color: var(--color-action); }
 .usr-rolecount:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
-.usr-rolecount.active { border-color: var(--primary); color: var(--primary); background: var(--primary-light, rgba(var(--primary-rgb),.08)); }
+.usr-rolecount.active { border-color: var(--color-action); color: var(--color-action); background: rgba(var(--color-action-rgb),.08); }
 .usr-rolecount-n {
   display: inline-flex; align-items: center; justify-content: center;
   min-width: 18px; padding: 0 5px; height: 18px;
   font-size: .7rem; font-weight: 700; border-radius: 100px;
   background: var(--line); color: var(--ink);
 }
-.usr-rolecount.active .usr-rolecount-n { background: var(--primary); color: var(--on-primary); }
+.usr-rolecount.active .usr-rolecount-n { background: var(--color-action); color: var(--text-on-dark); }
 
 /* ── Inline confirm row (ban/unban) ── */
 .usr-confirm-row td { background: var(--bg-alt); }
@@ -590,8 +590,8 @@ onMounted(() => fetchUsers())
 .usr-confirm-actions button:disabled { opacity: var(--opacity-disabled); cursor: default; }
 .usr-confirm-actions .btn-danger { color: var(--error); border-color: var(--error); }
 .usr-confirm-actions .btn-danger:hover { background: var(--error); color: var(--on-error); box-shadow: 0 2px 8px rgba(var(--danger-rgb),.2); }
-.usr-confirm-actions .btn-success { color: var(--primary); border-color: var(--primary); }
-.usr-confirm-actions .btn-success:hover { background: var(--primary); color: var(--on-primary); box-shadow: 0 2px 8px rgba(var(--primary-rgb),.2); }
+.usr-confirm-actions .btn-success { color: var(--color-action); border-color: var(--color-action); }
+.usr-confirm-actions .btn-success:hover { background: var(--color-action); color: var(--text-on-dark); box-shadow: 0 2px 8px rgba(var(--color-action-rgb),.2); }
 .usr-confirm-cancel:hover { background: var(--bg-alt); }
 
 /* ── Loading skeleton rows ── */
@@ -613,14 +613,14 @@ onMounted(() => fetchUsers())
 }
 
 /* ── Dark ── */
-.dark .usr-avatar { background: rgba(var(--primary-rgb),.2); }
-.dark .usr-cell:hover .usr-avatar { box-shadow: 0 2px 8px rgba(var(--primary-rgb),.25); }
+.dark .usr-avatar { background: rgba(var(--color-brand-rgb),.2); }
+.dark .usr-cell:hover .usr-avatar { box-shadow: 0 2px 8px rgba(var(--color-brand-rgb),.25); }
 .dark .usr-role-select { background: var(--card); border-color: rgba(var(--white-rgb),.08); }
-.dark .usr-active { background: rgba(var(--primary-rgb),.12); }
+.dark .usr-active { background: rgba(var(--color-success-rgb),.12); }
 .dark .usr-banned { background: rgba(var(--danger-rgb),.12); }
 .dark .usr-rolecount { background: var(--card); border-color: rgba(var(--white-rgb),.08); }
 .dark .usr-rolecount-n { background: rgba(var(--white-rgb),.12); color: var(--ink); }
-.dark .usr-rolecount.active { background: rgba(var(--primary-rgb),.18); }
+.dark .usr-rolecount.active { background: rgba(var(--color-action-rgb),.18); }
 .dark .usr-skeleton-line { background: linear-gradient(90deg, rgba(var(--white-rgb),.06) 25%, rgba(var(--white-rgb),.12) 50%, rgba(var(--white-rgb),.06) 75%); background-size: 200% 100%; }
 .dark .usr-confirm-actions button { background: var(--card); border-color: rgba(var(--white-rgb),.08); }
 .dark .usr-confirm-cancel:hover { background: rgba(var(--white-rgb),.06); }
@@ -650,11 +650,11 @@ onMounted(() => fetchUsers())
 .ud-empty { font-size: var(--text-sm); color: var(--muted); text-align: center; padding: var(--space-4); }
 .ud-post-list { display: flex; flex-direction: column; gap: var(--space-2); }
 .ud-post { display: flex; flex-direction: column; gap: 2px; padding: var(--space-2) var(--space-3); border: .5px solid var(--line); border-radius: var(--radius-surface); text-decoration: none; color: var(--ink); transition: background .2s, border-color .2s; }
-.ud-post:hover { background: var(--bg-alt); border-color: var(--primary); }
-.ud-post-type { font-size: .7rem; font-weight: 600; color: var(--primary); text-transform: uppercase; }
+.ud-post:hover { background: var(--bg-alt); border-color: var(--color-action); }
+.ud-post-type { font-size: .7rem; font-weight: 600; color: var(--color-brand); text-transform: uppercase; }
 .ud-post-content { font-size: var(--text-sm); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
 .ud-post-time { font-size: var(--text-xs); color: var(--muted); }
-.usr-admin-role { color: var(--primary); font-weight: 600; }
+.usr-admin-role { color: var(--color-brand); font-weight: 600; }
 
 .dark .ud-drawer { background: var(--card); box-shadow: -4px 0 32px rgba(var(--black-rgb),.5); }
 .dark .ud-stat { background: rgba(var(--white-rgb),.04); }
