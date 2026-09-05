@@ -103,5 +103,21 @@ a.hl-action[href^="https://zalo"]:hover { background: var(--brand-zalo-hover); b
 /* Reduced-motion overrides */
 @media (prefers-reduced-motion: reduce) {
   .lb-fade-enter-active, .lb-fade-leave-active { transition-duration: 0s; }
+  .lb-img, .lb-close, .lb-prev, .lb-next { transition: none; }
+  .lb-close:hover, .lb-close:active { transform: none; }
+  .lb-prev:hover, .lb-prev:active, .lb-next:hover, .lb-next:active { transform: translateY(-50%); }
   .bc-back:hover { transform: none; }
+}
+
+@media (forced-colors: active) {
+  .lb-close, .lb-prev, .lb-next {
+    border: 2px solid ButtonText;
+    background: ButtonFace;
+    color: ButtonText;
+  }
+  .lb-counter {
+    border: 1px solid CanvasText;
+    background: Canvas;
+    color: CanvasText;
+  }
 }
