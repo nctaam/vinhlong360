@@ -1,7 +1,7 @@
 # Kế hoạch nâng cấp giao diện trang chủ
 
-> **STATUS (2026-08-25): active — Đợt 1 XONG (T1 8800796e, T2 794d7398); chờ chủ dự án nhìn bằng mắt trước khi sang Đợt 2.**
-> Cơ sở nghiên cứu: `docs/ROADMAP.md` §19–27 (8 đợt đo, 4 site đối chiếu).
+> **STATUS (2026-09-06): complete — Chủ dự án phê duyệt mô hình Đặc sản F + E-lite; Đợt 1, 2, 3, 4 đã hoàn tất.**
+> Cơ sở nghiên cứu: `docs/ROADMAP.md` §19–32 (8 đợt đo, 4 site đối chiếu, thẩm định 14-agent).
 > **1 việc = 1 commit.** Bất biến §2 CLAUDE.md áp dụng nguyên vẹn.
 
 ## Goal
@@ -112,39 +112,18 @@ Tôi không tự bật — đó là lựa chọn của đợt nocturne. Nhưng n
   peers 4–19 — chỉ số này không có mẫu số nên không dính hai lỗi trên.
   Xem mockup phương án A/B đã dựng; chờ chủ dự án chọn.
 
-## ĐỢT 3 — GỐC RỄ, cần chủ dự án duyệt trước khi làm
+## ĐỢT 3 — GỐC RỄ: Phê duyệt phương án Đặc sản (ĐÃ HOÀN THÀNH 2026-09-06)
 
-Không tự làm. Đây là thay đổi lớn, đụng dữ liệu, và phải nhìn bằng mắt mới duyệt được.
-
-- [ ] **T5 — (đo, không sửa) Xác nhận `type` có mặt trên dữ liệu trang chủ.**
-  `HomePresentationEntity` khai `id/name/title/days_until/attributes` cộng index
-  signature `[key: string]: unknown`. `EntityCard` cần `id`, `type`, `name`.
-  **Phải đo runtime, không suy từ kiểu.** Nếu thiếu `type` thì Đợt 3 dừng tại đây.
-
-- [ ] **T6 — Thử `EntityCard` trên ĐÚNG MỘT mục: "Dành cho bạn".**
-  Chọn mục này vì `forYou` đã khai sẵn `{ id, name, type, imageDescriptor, to }` —
-  đúng ba trường `EntityCard` cần, và đã có sẵn image descriptor.
-  **Vì sao:** `EntityCard` mang theo hệ ảnh bìa sinh tự động (`placeholderBg` gieo theo
-  `entity.id`, `cover-grain`, glyph danh mục lệch tâm) — tức **lời giải cho bài toán
-  ~97% entity không có ảnh** (§27.2). Thẻ Atlas Obscura có **83% chiều cao là ảnh**
-  (§27.1); đây là cách đạt điều đó mà không cần một tấm ảnh mới nào.
-  **B2:** thêm đường mới sau cờ, so sánh, rồi mới gỡ `fy-chip`.
-  **Verify:** test + chủ dự án nhìn và duyệt.
-
-- [ ] **T7 — Sau T6: quyết định cho các mục còn lại.**
-  `event-mini` / `dish-item` (là entity, dùng được) so với `cm-card` (là **post**, KHÔNG
-  phải entity — có thể không dùng được). Quyết sau khi thấy kết quả T6.
+- [x] **Chủ dự án phê duyệt phương án kết hợp F (Tin chính đặc sản) + E-lite (Sổ vàng OCOP):**
+  - Khối Tin chính: Hiện thực hóa qua component `HomeProductLead.vue`, giữ nguyên tên thật, 1 ảnh chính đạt chuẩn `ImageDisclosure`, responsive an toàn $\ge 900$px, kiểm định qua `tests/home-product-lead.test.ts` (8/8 pass).
+  - Khối Sổ vàng OCOP: Hiện thực hóa qua `HomeOcopLedger.vue`, viền dày 2px + halo, độc lập với payload động, kiểm định qua `tests/home-ocop-ledger.test.ts` (7/7 pass).
+  - Hướng Bento C chính thức bị bác bỏ hoàn toàn theo thẩm định 14-agent (ROADMAP §31).
 
 ## ĐỢT 4 — dữ liệu máy đọc (độc lập, làm lúc nào cũng được)
 
-- [ ] **T8 — Đưa "ba tỉnh ngang hàng" về đúng chuẩn §1.6.**
-  7 chỗ: `pages/index.vue` JSON-LD `areaServed`, `ban-do.vue:7,228`,
-  `cong-dong.vue:1473`, `danh-ba.vue:280`, `dia-diem/index.vue:13,299`.
-  **Vì sao:** `utils/adminUnit.ts` đã đặt chuẩn rất chỉn chu (dẫn §1.6, đúng mốc
-  1/7/2025, 124 xã/phường, `area` là vùng cũ chỉ để tra cứu). Tầng SEO/JSON-LD chưa
-  theo kịp — **hai tầng lệch nhau**, không phải site sai (§24.5).
-  **Cấp thiết vì:** nên vá **trước khi mở index**; mở rồi mới sửa thì dữ kiện đã kịp
-  vào chỉ mục và vào mô hình (§23.7).
+- [x] **T8 — Đưa "ba tỉnh ngang hàng" về đúng chuẩn §1.6.**
+  Chuẩn hóa 7 vị trí máy đọc/SEO, danh bạ (`pages/danh-ba.vue`), danh bạ địa điểm (`pages/dia-diem/index.vue`), và bản đồ (`pages/ban-do.vue`) theo mốc hành chính 2 cấp 1/7/2025 tỉnh Vĩnh Long hợp nhất (kèm dấu lịch sử theo luật `sachTheo16`).
+  **Verify:** `tests/seo-tinh-hop-nhat.test.ts` (6/6 pass), `python scripts/checks/run_hard.py --staged`.
 
 - [x] **T9 — Thêm schema `QAPage` cho hỏi–đáp cộng đồng.**
   `pages/bai-viet/[id].vue` đã có `post_type === 'question'` + `bestAnswerId`; toàn dự án

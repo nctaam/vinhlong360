@@ -6,7 +6,7 @@
       <div class="catalog-hero-inner map-hero-inner">
         <span class="catalog-hero-icon" aria-hidden="true"><IconLine name="map" /></span>
         <div>
-          <span class="dateline-eyebrow">Bản đồ sống · Vĩnh Long · Bến Tre · Trà Vinh</span>
+          <span class="dateline-eyebrow">Bản đồ sống · Tỉnh Vĩnh Long hợp nhất (3 vùng trước 7-2025)</span>
           <h1>Bản đồ</h1>
           <p>So sánh vị trí bằng bản đồ, đối chiếu bằng danh sách và địa chỉ ngay cả khi tile không tải.</p>
         </div>

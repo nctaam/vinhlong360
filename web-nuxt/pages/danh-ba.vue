@@ -281,7 +281,7 @@ const directorySchema = computed(() => ({
   '@context': 'https://schema.org',
   '@type': 'CollectionPage',
   name: pc('seo_title') || 'Danh bạ hành chính — vinhlong360',
-  description: pc('seo_description') || 'Danh bạ xã/phường, cơ quan hành chính Vĩnh Long, Bến Tre, Trà Vinh.',
+  description: pc('seo_description') || 'Danh bạ 124 xã/phường, cơ quan hành chính tỉnh Vĩnh Long (gồm khu vực Bến Tre, Trà Vinh trước 7-2025).',
   url: canonicalUrl('/danh-ba'),
   inLanguage: 'vi',
   mainEntity: {

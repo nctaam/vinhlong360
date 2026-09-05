@@ -10,7 +10,7 @@
         <span class="catalog-hero-icon almanac-compass" aria-hidden="true" v-html="COMPASS_SVG"></span>
         <div>
           <h1>Danh bạ địa điểm</h1>
-          <p>1.532 điểm đến được ban biên tập tổng hợp, từ cù lao giữa sông đến quầy hàng trong hẻm nhỏ — Vĩnh Long, Bến Tre, Trà Vinh, không sót nơi nào.</p>
+          <p>1.532 điểm đến được ban biên tập tổng hợp, từ cù lao giữa sông đến quầy hàng trong hẻm nhỏ khắp tỉnh Vĩnh Long hợp nhất (gồm các vùng Bến Tre, Trà Vinh trước 7-2025), không sót nơi nào.</p>
         </div>
       </div>
       <div v-if="total" class="catalog-stats almanac-stats">
