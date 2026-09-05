@@ -31,6 +31,15 @@ def _sha256(path: Path) -> str:
     return hashlib.sha256(path.read_bytes()).hexdigest()
 
 
+def _symlink_or_skip(link: Path, target: Path) -> None:
+    try:
+        link.symlink_to(target)
+    except OSError as exc:
+        if getattr(exc, "winerror", None) == 1314:
+            pytest.skip("Windows symlink privilege is unavailable")
+        raise
+
+
 def test_repository_has_no_duplicate_canonical_artifacts():
     assert find_tracked_duplicate_artifacts(REPO_ROOT) == []
 
@@ -41,7 +50,7 @@ def test_candidate_scanner_rejects_alias_symlink_and_non_file(tmp_path: Path) ->
     canonical.write_bytes(b"{}")
     alias = tmp_path / "web-nuxt" / canonical.name
     alias.parent.mkdir()
-    alias.symlink_to(canonical)
+    _symlink_or_skip(alias, canonical)
     directory = tmp_path / "config" / "ai-disclosure.json"
     directory.mkdir()
 
@@ -176,7 +185,7 @@ def test_backend_archive_excludes_private_runtime_and_unsafe_symlinks(tmp_path: 
     (root / "agent" / "runtime.jsonl").write_bytes(b'{"private":true}\n')
     outside = tmp_path / "outside-secret.txt"
     outside.write_bytes(b"outside secret")
-    (root / "agent" / "outside-link").symlink_to(outside)
+    _symlink_or_skip(root / "agent" / "outside-link", outside)
 
     archive = build_backend_archive(root, tmp_path / "backend.tar.gz")
 
