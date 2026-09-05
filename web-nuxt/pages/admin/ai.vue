@@ -279,7 +279,7 @@ const statusColor = computed(() => {
 })
 const statusBg = computed(() => {
   if (!health.value) return 'rgba(var(--gray-rgb), .1)'
-  if (health.value.status === 'ok') return 'rgba(var(--primary-rgb),.1)'
+  if (health.value.status === 'ok') return 'rgba(var(--color-success-rgb),.1)'
   if (health.value.status === 'degraded') return 'rgba(var(--warning-rgb),.1)'
   return 'rgba(var(--danger-rgb),.1)'
 })
@@ -495,7 +495,7 @@ onMounted(() => { fetchHealth(); fetchCost() })
 .ai-subsys-dot {
   width: 6px; height: 6px; border-radius: 50%;
 }
-.ai-subsys-on { background: rgba(var(--primary-rgb),.06); color: var(--secondary); }
+.ai-subsys-on { background: rgba(var(--color-success-rgb),.06); color: var(--success); }
 .ai-subsys-on .ai-subsys-dot { background: var(--secondary); animation: ai-sub-pulse 2.5s var(--ease-in-out) infinite; }
 .ai-subsys-off { background: rgba(var(--danger-rgb),.06); color: var(--error); }
 .ai-subsys-off .ai-subsys-dot { background: var(--error); opacity: .5; }
@@ -514,7 +514,7 @@ onMounted(() => { fetchHealth(); fetchCost() })
   cursor: pointer; font-size: .82rem; font-weight: 500; color: var(--ink);
   transition: transform .3s var(--ease-soft), box-shadow .3s, border-color .3s, background .3s;
 }
-.ai-action-btn:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(var(--black-rgb),.06); border-color: var(--primary); }
+.ai-action-btn:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(var(--black-rgb),.06); border-color: var(--color-action); }
 .ai-action-btn:active:not(:disabled) { transform: scale(.97); }
 .ai-action-btn:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
 .ai-action-btn:disabled { opacity: var(--opacity-disabled); cursor: not-allowed; }
@@ -522,12 +522,12 @@ onMounted(() => { fetchHealth(); fetchCost() })
 
 /* Primary actions — stronger visual weight */
 .ai-action-primary {
-  background: var(--primary); border-color: var(--primary);
-  color: var(--on-primary); font-weight: 600;
+  background: var(--color-action); border-color: var(--color-action);
+  color: var(--text-on-dark); font-weight: 600;
 }
 .ai-action-primary:hover:not(:disabled) {
-  transform: translateY(-3px); box-shadow: 0 6px 20px rgba(var(--primary-rgb),.28);
-  border-color: var(--primary);
+  transform: translateY(-3px); box-shadow: 0 6px 20px rgba(var(--color-action-rgb),.28);
+  border-color: var(--color-action-hover);
 }
 /* Secondary action — outline style */
 .ai-action-secondary { background: var(--bg); }
@@ -545,7 +545,7 @@ onMounted(() => { fetchHealth(); fetchCost() })
 .ai-trigger-result {
   margin-top: var(--space-3); padding: var(--space-3) var(--space-4);
   border-radius: 10px; font-size: .85rem;
-  background: rgba(var(--primary-rgb),.06); border: .5px solid rgba(var(--primary-rgb),.15);
+  background: rgba(var(--color-action-rgb),.06); border: .5px solid rgba(var(--color-action-rgb),.15);
   color: var(--secondary);
 }
 .ai-trigger-result.ai-result-error {
@@ -556,7 +556,7 @@ onMounted(() => { fetchHealth(); fetchCost() })
   margin-top: var(--space-3); padding: var(--space-4);
   border: 1px solid color-mix(in srgb, var(--secondary) 30%, var(--line)); border-radius: 12px;
   font-size: .85rem; line-height: 1.6;
-  background: rgba(var(--primary-rgb),.05);
+  background: rgba(var(--color-action-rgb),.05);
 }
 .ai-triage-box .ai-triage-text { white-space: pre-wrap; flex: 1; min-width: 0; }
 .ai-triage-icon { font-weight: 800; color: var(--secondary); flex-shrink: 0; line-height: 1.6; }
@@ -576,17 +576,17 @@ onMounted(() => { fetchHealth(); fetchCost() })
 .ai-cost-note strong { color: var(--ink); }
 
 /* ── Dark mode ── */
-.dark .ai-section { background: var(--card); border-color: rgba(var(--white-rgb),.06); border-left-color: var(--primary); box-shadow: 0 1px 3px rgba(var(--black-rgb),.3); }
+.dark .ai-section { background: var(--card); border-color: rgba(var(--white-rgb),.06); border-left-color: var(--color-brand); box-shadow: 0 1px 3px rgba(var(--black-rgb),.3); }
 .dark .ai-dq-track { background: rgba(var(--white-rgb),.06); }
 .dark .ai-metric { background: var(--bg); border-color: rgba(var(--white-rgb),.08); }
-.dark .ai-subsys-on { background: rgba(var(--primary-rgb),.1); }
+.dark .ai-subsys-on { background: rgba(var(--color-success-rgb),.1); }
 .dark .ai-subsys-off { background: rgba(var(--danger-rgb),.1); }
 .dark .ai-action-secondary { background: var(--bg); border-color: rgba(var(--white-rgb),.08); color: var(--ink); }
 .dark .ai-action-btn:hover:not(:disabled) { box-shadow: 0 4px 12px rgba(var(--black-rgb),.3); }
 .dark .ai-action-primary { color: var(--ink); }
-.dark .ai-triage-box { background: rgba(var(--primary-rgb),.1); border-color: rgba(var(--primary-rgb),.3); }
+.dark .ai-triage-box { background: rgba(var(--color-action-rgb),.1); border-color: rgba(var(--color-action-rgb),.3); }
 .dark .ai-triage-box.ai-triage-error { background: rgba(var(--danger-rgb),.12); border-color: var(--error); border-left-color: var(--error); }
-.dark .ai-trigger-result { background: rgba(var(--primary-rgb),.1); border-color: rgba(var(--primary-rgb),.2); }
+.dark .ai-trigger-result { background: rgba(var(--color-action-rgb),.1); border-color: rgba(var(--color-action-rgb),.2); }
 .dark .ai-trigger-result.ai-result-error { background: rgba(var(--danger-rgb),.12); border-color: var(--error); }
 .dark .ai-cost-note { background: rgba(var(--warning-rgb),.06); border-color: rgba(var(--warning-rgb),.25); }
 
