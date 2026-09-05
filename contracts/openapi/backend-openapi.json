@@ -4627,20 +4627,46 @@
       },
       "ReportActionRequest": {
         "properties": {
+          "expected_revision": {
+            "default": 1,
+            "maximum": 2147483647.0,
+            "minimum": 1.0,
+            "title": "Expected Revision",
+            "type": "integer"
+          },
+          "report_id": {
+            "anyOf": [
+              {
+                "maxLength": 128,
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Report Id"
+          },
           "status": {
             "pattern": "^(open|resolved|dismissed)$",
             "title": "Status",
             "type": "string"
           },
           "ts": {
-            "maxLength": 64,
-            "minLength": 1,
-            "title": "Ts",
-            "type": "string"
+            "anyOf": [
+              {
+                "maxLength": 64,
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ts"
           }
         },
         "required": [
-          "ts",
           "status"
         ],
         "title": "ReportActionRequest",
@@ -11557,7 +11583,7 @@
     },
     "/admin/info-reports/action": {
       "post": {
-        "description": "Change the status of an info-correction report to open, resolved, or dismissed. Writes atomically to the JSONL store.",
+        "description": "Change the status of a canonical information report to open, resolved, or dismissed. Legacy JSONL rows are read/import-only.",
         "operationId": "info_report_action_admin_info_reports_action_post",
         "parameters": [
           {
@@ -22989,7 +23015,7 @@
     },
     "/api/report": {
       "post": {
-        "description": "Submits a report for incorrect information or policy-violating content. Stored in JSONL for admin review. Rate-limited per IP.",
+        "description": "Submits a report for incorrect information or policy-violating content. Stored in the canonical reports authority. Rate-limited per IP.",
         "operationId": "submit_report_api_report_post",
         "requestBody": {
           "content": {
@@ -23029,7 +23055,7 @@
     },
     "/api/report-ugc": {
       "post": {
-        "description": "Submits a moderation report for a post, comment, or user. Duplicate pending reports for the same target are rejected.",
+        "description": "Submits a moderation report for a post, comment, or user through the canonical reports authority. Retries are idempotent.",
         "operationId": "create_report_api_report_ugc_post",
         "requestBody": {
           "content": {
