@@ -1332,8 +1332,8 @@
 /* Editorial signature: drop-cap on the lead paragraph of each article intro */
 .page-article > p:first-of-type::first-letter {
   font-family: var(--font-editorial); font-weight: 700;
-  float: left; font-size: 3.1em; line-height: .78;
-  padding: .04em .1em 0 0; color: var(--primary-fg);
+  float: left; font-size: 3.1em; line-height: 1.05;
+  padding: .02em .12em 0 0; margin-top: -.08em; color: var(--primary-fg);
 }
 .page-article p {
   color: var(--ink); font-size: var(--text-base);

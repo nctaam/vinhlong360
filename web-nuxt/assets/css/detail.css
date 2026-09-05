@@ -92,7 +92,7 @@
 .detail-main { grid-area: main; min-width: 0; }
 .detail-main .lead { font-size: var(--text-lg); margin-top: 0; line-height: var(--leading-relaxed); max-width: var(--measure-read); }
 /* Editorial feature opening: drop-cap on the lead's first letter */
-.detail-main .lead::first-letter { font-family: var(--font-editorial); font-weight: 700; float: left; font-size: 3.1em; line-height: .78; padding: .04em .12em 0 0; color: var(--primary-fg); }
+.detail-main .lead::first-letter { font-family: var(--font-editorial); font-weight: 700; float: left; font-size: 3.1em; line-height: 1.05; padding: .02em .12em 0 0; margin-top: -.08em; color: var(--primary-fg); }
 
 .entity-description, .detail-main > :nth-child(n+4) { content-visibility: auto; contain-intrinsic-size: auto 300px; }
 .entity-description { margin: var(--space-5) 0 var(--space-6); padding-top: var(--space-5); border-top: .5px solid var(--line); }
