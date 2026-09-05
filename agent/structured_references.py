@@ -88,7 +88,6 @@ _REGISTERED_DELETE_ACTIONS = (
     DeleteActionPolicy("profile_views", "viewed_id", "cascade"),
     DeleteActionPolicy("profile_views", "viewer_id", "cascade"),
     DeleteActionPolicy("reports", "reporter_id", "cascade"),
-    DeleteActionPolicy("reports", "resolved_by", "set_null", "actor_reference"),
     DeleteActionPolicy("review_responses", "responder_id", "cascade"),
     DeleteActionPolicy("saved_entities", "user_id", "cascade"),
     DeleteActionPolicy("trusted_devices", "user_id", "cascade"),

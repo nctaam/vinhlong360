@@ -91,6 +91,14 @@ def test_registry_contains_owner_and_actor_inventory():
     )
 
 
+def test_report_resolved_by_is_actor_scope_not_user_fk():
+    actions = {(item.table, item.column) for item in registered_delete_actions()}
+
+    # Report transitions persist values such as ``admin`` or ``user:<id>``;
+    # this audit actor scope is deliberately not a users.id foreign key.
+    assert ("reports", "resolved_by") not in actions
+
+
 def test_registry_matches_every_source_fk_to_users():
     assert callable(registered_delete_actions), "structured_references.py is not implemented"
     source_actions = set()

@@ -62,7 +62,6 @@ BEGIN
             ('profile_views', 'viewed_id', 'CASCADE', NULL),
             ('profile_views', 'viewer_id', 'CASCADE', NULL),
             ('reports', 'reporter_id', 'CASCADE', NULL),
-            ('reports', 'resolved_by', 'SET NULL', 'actor_reference'),
             ('review_responses', 'responder_id', 'CASCADE', NULL),
             ('saved_entities', 'user_id', 'CASCADE', NULL),
             ('trusted_devices', 'user_id', 'CASCADE', NULL),
