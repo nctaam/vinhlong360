@@ -15,11 +15,13 @@ import asyncio
 import json
 import logging
 import os
+import socket
 import subprocess
 import sys
 import time
 import threading
 import traceback
+import uuid
 from dataclasses import dataclass
 from datetime import datetime, timedelta, timezone
 
@@ -103,6 +105,7 @@ _TASK_TIMEOUT = int(os.environ.get("SCHEDULER_TASK_TIMEOUT", "600"))
 
 _MAX_RETRIES = 2
 _RETRY_BACKOFF_BASE = 30
+_SCHEDULER_OWNER_ID = f"scheduler:{socket.gethostname()}:{os.getpid()}:{uuid.uuid4().hex}"
 
 _ERASURE_BATCH_LIMIT = 50
 _ERASURE_INTERVAL_SECONDS = 300
@@ -330,7 +333,29 @@ class ScheduledTask:
 
     def run(self):
         self._is_running = True
+        lease = None
+        lease_outcome = "failed"
+        lease_receipt = {"task": self.name, "owner_id": _SCHEDULER_OWNER_ID}
         try:
+            from database import db
+            from scheduler_control import claim_task_slot, finish_task_slot
+
+            started_at = _utc_now()
+            slot_epoch = int(started_at.timestamp()) // max(1, self.interval) * max(1, self.interval)
+            slot_key = datetime.fromtimestamp(slot_epoch, tz=timezone.utc).isoformat()
+            claimed = claim_task_slot(
+                db,
+                task_name=self.name,
+                slot_key=slot_key,
+                owner_id=_SCHEDULER_OWNER_ID,
+                now=started_at,
+                lease_seconds=max(self.timeout + 60, self.interval),
+            )
+            if not claimed.acquired:
+                _sched_logger.info("Skipping task %s: slot %s owned by another worker", self.name, slot_key)
+                return False
+            lease = claimed
+
             _sched_logger.info("Running task: %s (timeout=%ds)", self.name, self.timeout)
             start = time.time()
             result_holder = [None]
@@ -347,6 +372,8 @@ class ScheduledTask:
             worker.join(timeout=self.timeout)
 
             if worker.is_alive():
+                lease_outcome = "timeout"
+                lease_receipt.update({"status": "timeout", "timeout_seconds": self.timeout})
                 self._consecutive_failures += 1
                 self.last_error = f"Task timed out after {self.timeout}s"
                 if self._consecutive_failures <= _MAX_RETRIES:
@@ -365,15 +392,23 @@ class ScheduledTask:
                 return
 
             if error_holder[0] is not None:
+                lease_outcome = "failed"
+                lease_receipt.update({"status": "failed", "error": str(error_holder[0])[:500]})
                 raise error_holder[0]
 
             elapsed = round(time.time() - start, 1)
+            lease_outcome = "success"
+            lease_receipt.update({"status": "success", "elapsed_seconds": elapsed})
+            if result_holder[0] is not None:
+                lease_receipt["result_type"] = type(result_holder[0]).__name__
             self.last_run = time.time()
             self.run_count += 1
             self.last_error = None
             self._consecutive_failures = 0
             _sched_logger.info("Task done: %s (%.1fs)", self.name, elapsed)
         except Exception as e:
+            lease_outcome = "failed"
+            lease_receipt.update({"status": "failed", "error": str(e)[:500]})
             self._consecutive_failures += 1
             self.last_error = str(e)
             if self._consecutive_failures <= _MAX_RETRIES:
@@ -387,6 +422,19 @@ class ScheduledTask:
                 _sched_logger.error("Task failed: %s — %d consecutive failures, waiting normal interval — %s\n%s",
                                     self.name, self._consecutive_failures, e, traceback.format_exc())
         finally:
+            if lease is not None:
+                try:
+                    from database import db
+                    from scheduler_control import finish_task_slot
+                    finish_task_slot(
+                        db,
+                        lease_id=lease.lease_id,
+                        outcome=lease_outcome,
+                        finished_at=_utc_now(),
+                        receipt=lease_receipt,
+                    )
+                except Exception as exc:
+                    _sched_logger.error("Scheduler lease receipt failed for %s: %s", self.name, exc)
             self._is_running = False
 
 

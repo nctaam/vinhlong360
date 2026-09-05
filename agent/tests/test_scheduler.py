@@ -56,7 +56,7 @@ class TestScheduledTask:
         counter = {"n": 0}
         def inc():
             counter["n"] += 1
-        task = ScheduledTask("test", inc, interval_seconds=60)
+        task = ScheduledTask("test-run-tracks-count", inc, interval_seconds=60)
         task.run()
         assert task.run_count == 1
         assert counter["n"] == 1
@@ -65,7 +65,7 @@ class TestScheduledTask:
     def test_run_captures_error(self):
         def fail():
             raise ValueError("boom")
-        task = ScheduledTask("test", fail, interval_seconds=60)
+        task = ScheduledTask("test-run-captures-error", fail, interval_seconds=60)
         task.run()  # Should not raise
         assert task.last_error == "boom"
         assert task.run_count == 0  # Failed runs don't count
@@ -73,7 +73,7 @@ class TestScheduledTask:
     def test_run_timing(self):
         def slow():
             time.sleep(0.1)
-        task = ScheduledTask("test", slow, interval_seconds=60)
+        task = ScheduledTask("test-run-timing", slow, interval_seconds=60)
         task.run()
         assert task.last_run > 0
 
