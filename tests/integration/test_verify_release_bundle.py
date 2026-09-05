@@ -24,7 +24,7 @@ import importlib.util
 import json
 import sys
 from pathlib import Path
-from types import ModuleType
+from types import ModuleType, SimpleNamespace
 
 import pytest
 
@@ -327,13 +327,23 @@ def test_cli_honours_an_explicit_countersignature_path(tmp_path: Path, monkeypat
     assert sidecar.resolve() in seen
 
 
-def test_authority_staleness_is_wired_into_the_verifier() -> None:
+def test_authority_staleness_is_wired_into_the_verifier(monkeypatch) -> None:
     """Authority quá hạn PHẢI sinh ra lý do chặn.
 
-    Không hermetic có chủ đích: kho hiện có 7 tài liệu hết hạn, nên hàm này phải
-    trả về lý do. Nếu ai đó gỡ dây nối, test đỏ.
+    The release verifier must surface an authority status other than PASS. The
+    authority result is supplied by the real control-plane boundary, while the
+    fixture below keeps this wiring test independent of the checkout's clock.
     """
     module = _load()
+    monkeypatch.setattr(
+        module,
+        "check_authority",
+        lambda *_args, **_kwargs: SimpleNamespace(
+            status="STALE",
+            mismatches=(),
+            expired_documents=("docs/HANDOFF.md",),
+        ),
+    )
     reasons = module.authority_reasons(ROOT)
     assert reasons, "authority hiện đang STALE nên phải có lý do"
     assert any("release authority is" in r for r in reasons), reasons
