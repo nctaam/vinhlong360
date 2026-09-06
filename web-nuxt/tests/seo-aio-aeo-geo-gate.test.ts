@@ -17,6 +17,9 @@ import {
   buildGuideSchemaGraph,
   buildLeaderboardSchemaGraph,
   buildMemberGuideSchemaGraph,
+  buildPrivacyPolicySchemaGraph,
+  buildTermsOfServiceSchemaGraph,
+  buildInterestCategorySchemaGraph,
   safeJsonLd,
   SITE_URL,
 } from '../composables/useSeoHelpers'
@@ -572,6 +575,96 @@ describe('SEO / AIO / AEO / GEO Architecture Quality Gate', () => {
 
       const faq = graph['@graph'].find((n: any) => n['@type'] === 'FAQPage')
       expect(faq.mainEntity.length).toBeGreaterThanOrEqual(4)
+    })
+  })
+
+  describe('Privacy Policy Knowledge Graph (pages/chinh-sach-bao-mat.vue)', () => {
+    it('publishes unified @graph with WebPage, Organization, WebSite, Speakable, and FAQPage without duplicate BreadcrumbList', () => {
+      const privacy = doc('pages/chinh-sach-bao-mat.vue')
+      expect(privacy).toContain('buildPrivacyPolicySchemaGraph')
+      expect(privacy).toContain('safeJsonLd(privacySchema.value)')
+      expect(privacy).toContain("twitterCard: 'summary_large_image'")
+
+      const graph = buildPrivacyPolicySchemaGraph()
+      expect(graph['@context']).toBe('https://schema.org')
+      const types = graph['@graph'].map((n: any) => n['@type'])
+      expect(types).toContain('WebSite')
+      expect(types).toContain('Organization')
+      expect(types).toContain('WebPage')
+      expect(types).toContain('FAQPage')
+      expect(types).not.toContain('BreadcrumbList')
+
+      const webpage = graph['@graph'].find((n: any) => n['@type'] === 'WebPage')
+      expect(webpage.name).toContain('Chính sách bảo mật')
+      expect(webpage.speakable?.['@type']).toBe('SpeakableSpecification')
+
+      const faq = graph['@graph'].find((n: any) => n['@type'] === 'FAQPage')
+      expect(faq.mainEntity.length).toBeGreaterThanOrEqual(3)
+    })
+  })
+
+  describe('Terms of Service Knowledge Graph (pages/dieu-khoan-su-dung.vue)', () => {
+    it('publishes unified @graph with WebPage, Organization, WebSite, Speakable, and FAQPage without duplicate BreadcrumbList', () => {
+      const terms = doc('pages/dieu-khoan-su-dung.vue')
+      expect(terms).toContain('buildTermsOfServiceSchemaGraph')
+      expect(terms).toContain('safeJsonLd(termsSchema.value)')
+      expect(terms).toContain("twitterCard: 'summary_large_image'")
+
+      const graph = buildTermsOfServiceSchemaGraph()
+      expect(graph['@context']).toBe('https://schema.org')
+      const types = graph['@graph'].map((n: any) => n['@type'])
+      expect(types).toContain('WebSite')
+      expect(types).toContain('Organization')
+      expect(types).toContain('WebPage')
+      expect(types).toContain('FAQPage')
+      expect(types).not.toContain('BreadcrumbList')
+
+      const webpage = graph['@graph'].find((n: any) => n['@type'] === 'WebPage')
+      expect(webpage.name).toContain('Điều khoản sử dụng')
+      expect(webpage.speakable?.['@type']).toBe('SpeakableSpecification')
+
+      const faq = graph['@graph'].find((n: any) => n['@type'] === 'FAQPage')
+      expect(faq.mainEntity.length).toBeGreaterThanOrEqual(3)
+    })
+  })
+
+  describe('Interest Exploration Hub Knowledge Graph (pages/kham-pha/[interest].vue)', () => {
+    it('publishes unified @graph with CollectionPage, ItemList, Organization, WebSite, Speakable, and FAQPage without duplicate BreadcrumbList', () => {
+      const interest = doc('pages/kham-pha/[interest].vue')
+      expect(interest).toContain('buildInterestCategorySchemaGraph')
+      expect(interest).toContain('safeJsonLd(interestSchema.value)')
+      expect(interest).toContain("twitterCard: 'summary_large_image'")
+
+      const graph = buildInterestCategorySchemaGraph({
+        interestKey: 'am-thuc',
+        title: 'Ẩm thực — Khám phá Vĩnh Long',
+        description: 'Khám phá món ngon đặc sản Vĩnh Long.',
+        totalCount: 42,
+        items: [
+          { id: 101, name: 'Khoai lang Bình Tân' },
+          { id: 102, name: 'Bưởi năm roi Bình Minh' },
+        ],
+      })
+      expect(graph['@context']).toBe('https://schema.org')
+      const types = graph['@graph'].map((n: any) => n['@type'])
+      expect(types).toContain('WebSite')
+      expect(types).toContain('Organization')
+      expect(types).toContain('CollectionPage')
+      expect(types).toContain('ItemList')
+      expect(types).toContain('FAQPage')
+      expect(types).not.toContain('BreadcrumbList')
+
+      const collectionPage = graph['@graph'].find((n: any) => n['@type'] === 'CollectionPage')
+      expect(collectionPage.name).toContain('Ẩm thực')
+      expect(collectionPage.speakable?.['@type']).toBe('SpeakableSpecification')
+
+      const itemList = graph['@graph'].find((n: any) => n['@type'] === 'ItemList')
+      expect(itemList.numberOfItems).toBe(42)
+      expect(itemList.itemListElement).toHaveLength(2)
+      expect(itemList.itemListElement[0].name).toBe('Khoai lang Bình Tân')
+
+      const faq = graph['@graph'].find((n: any) => n['@type'] === 'FAQPage')
+      expect(faq.mainEntity.length).toBeGreaterThanOrEqual(3)
     })
   })
 })

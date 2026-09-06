@@ -1326,6 +1326,178 @@ export function buildMemberGuideSchemaGraph(options: MemberGuideSchemaOptions = 
   ])
 }
 
+export interface LegalDocumentSchemaOptions {
+  title?: string
+  description?: string
+  canonicalUrl?: string
+  policyVersion?: string
+  updatedDate?: string
+  faqs?: Array<{ q: string; a: string }>
+}
+
+export function buildPrivacyPolicySchemaGraph(options: LegalDocumentSchemaOptions = {}): Record<string, any> {
+  const pageUrl = options.canonicalUrl || canonicalUrl('/chinh-sach-bao-mat')
+  const title = options.title || 'Chính sách bảo mật'
+  const desc = options.description || 'Chính sách bảo mật và quyền riêng tư dữ liệu trên vinhlong360.'
+
+  const webpageNode = {
+    '@type': 'WebPage',
+    '@id': `${pageUrl}#webpage`,
+    url: pageUrl,
+    name: `${title} — vinhlong360`,
+    description: desc,
+    inLanguage: 'vi-VN',
+    isPartOf: { '@id': `${SITE_URL}/#website` },
+    about: { '@id': `${SITE_URL}/#organization` },
+    mainEntity: { '@id': `${SITE_URL}/#organization` },
+    speakable: buildSpeakableSpecification(['.bm-inner h1', '.bm-sub', '.legal-metadata', '.about-section-content h2']),
+  }
+
+  const defaultFaqs = [
+    {
+      q: 'Dữ liệu cá nhân nào được thu thập khi người dùng sử dụng vinhlong360?',
+      a: 'vinhlong360 chỉ thu thập các thông tin cần thiết để xác thực tài khoản và tương tác cộng đồng (tên hiển thị, email/số điện thoại, bài viết, đánh giá) và thông tin kỹ thuật cơ bản (cookie phiên làm việc, tùy biến giao diện).',
+    },
+    {
+      q: 'Người dùng có quyền yêu cầu trích xuất hoặc xóa dữ liệu tài khoản không?',
+      a: 'Có, người dùng có đầy đủ quyền yêu cầu cung cấp bản sao dữ liệu cá nhân hoặc yêu cầu khóa và xóa dữ liệu tài khoản theo quy định bảo vệ dữ liệu cá nhân.',
+    },
+    {
+      q: 'Cookie trên hệ thống vinhlong360 được phân loại và kiểm soát như thế nào?',
+      a: 'Cookie bắt buộc dùng cho bảo mật phiên và xác thực biểu mẫu. Cookie tùy chọn lưu các cấu hình giao diện người dùng và có thể xóa bất cứ lúc nào qua trang cài đặt hoặc trình duyệt.',
+    },
+  ]
+
+  const faqs = options.faqs && options.faqs.length > 0 ? options.faqs : defaultFaqs
+  const faqNode = buildFaqPageSchema(faqs, `${pageUrl}#faq`)
+
+  return buildUnifiedSchemaGraph([
+    buildWebSiteSchema(),
+    buildOrganizationSchema(),
+    webpageNode,
+    faqNode,
+  ])
+}
+
+export function buildTermsOfServiceSchemaGraph(options: LegalDocumentSchemaOptions = {}): Record<string, any> {
+  const pageUrl = options.canonicalUrl || canonicalUrl('/dieu-khoan-su-dung')
+  const title = options.title || 'Điều khoản sử dụng'
+  const desc = options.description || 'Điều khoản sử dụng và quy định dịch vụ trên vinhlong360.'
+
+  const webpageNode = {
+    '@type': 'WebPage',
+    '@id': `${pageUrl}#webpage`,
+    url: pageUrl,
+    name: `${title} — vinhlong360`,
+    description: desc,
+    inLanguage: 'vi-VN',
+    isPartOf: { '@id': `${SITE_URL}/#website` },
+    about: { '@id': `${SITE_URL}/#organization` },
+    mainEntity: { '@id': `${SITE_URL}/#organization` },
+    speakable: buildSpeakableSpecification(['.bm-inner h1', '.bm-sub', '.legal-metadata', '.about-section-content h2']),
+  }
+
+  const defaultFaqs = [
+    {
+      q: 'Quy định đối với việc chia sẻ bài viết, đánh giá và ảnh trên cộng đồng vinhlong360?',
+      a: 'Nội dung chia sẻ phải là trải nghiệm thực tế, trung thực, tôn trọng văn hóa bản địa, không sao chép hình ảnh không thuộc quyền sở hữu, không phát tán thư rác hoặc thông tin sai lệch.',
+    },
+    {
+      q: 'Bản quyền đối với tư liệu và đồ thị dữ liệu trên vinhlong360 thuộc về ai?',
+      a: 'Cơ sở dữ liệu biên tập, hình ảnh bản quyền và đồ thị dữ liệu số thuộc sở hữu của vinhlong360 và các đối tác ủy quyền. Tác giả giữ quyền đối với các bài viết và đánh giá đóng góp cá nhân.',
+    },
+    {
+      q: 'Quy trình xử lý khi phát hiện nội dung có dấu hiệu vi phạm điều khoản?',
+      a: 'Thành viên có thể sử dụng nút Báo cáo trực tiếp trên bài viết hoặc liên hệ ban quản trị. Hệ thống sẽ tiếp nhận, đối soát và xử lý trong vòng 24–48 giờ.',
+    },
+  ]
+
+  const faqs = options.faqs && options.faqs.length > 0 ? options.faqs : defaultFaqs
+  const faqNode = buildFaqPageSchema(faqs, `${pageUrl}#faq`)
+
+  return buildUnifiedSchemaGraph([
+    buildWebSiteSchema(),
+    buildOrganizationSchema(),
+    webpageNode,
+    faqNode,
+  ])
+}
+
+export interface InterestCategorySchemaOptions {
+  interestKey: string
+  title?: string
+  description?: string
+  canonicalUrl?: string
+  totalCount?: number
+  items?: Array<{
+    id: string | number
+    name: string
+    type?: string
+  }>
+  faqs?: Array<{ q: string; a: string }>
+}
+
+export function buildInterestCategorySchemaGraph(options: InterestCategorySchemaOptions): Record<string, any> {
+  const pageUrl = options.canonicalUrl || canonicalUrl(`/kham-pha/${encodeURIComponent(options.interestKey)}`)
+  const title = options.title || 'Khám phá Vĩnh Long'
+  const desc = options.description || 'Chuyên mục khám phá du lịch, ẩm thực và văn hóa tỉnh Vĩnh Long.'
+
+  const webpageNode = {
+    '@type': 'CollectionPage',
+    '@id': `${pageUrl}#webpage`,
+    url: pageUrl,
+    name: `${title} — vinhlong360`,
+    description: desc,
+    inLanguage: 'vi-VN',
+    isPartOf: { '@id': `${SITE_URL}/#website` },
+    about: { '@id': `${SITE_URL}/#organization` },
+    mainEntity: { '@id': `${pageUrl}#items` },
+    speakable: buildSpeakableSpecification(['.catalog-hero-inner h1', '.catalog-lead', '.int-cross-sub']),
+  }
+
+  const itemListElements = (options.items || []).slice(0, 30).map((item, index) => ({
+    '@type': 'ListItem',
+    position: index + 1,
+    name: item.name,
+    url: canonicalUrl(entityPath(item.id)),
+  }))
+
+  const itemListNode = {
+    '@type': 'ItemList',
+    '@id': `${pageUrl}#items`,
+    name: `Danh sách ${title}`,
+    description: desc,
+    numberOfItems: options.totalCount ?? (options.items?.length || 0),
+    itemListElement: itemListElements,
+  }
+
+  const defaultFaqs = [
+    {
+      q: `Chuyên mục ${title} trên vinhlong360 bao gồm những trải nghiệm gì?`,
+      a: `Chuyên mục tổng hợp các địa điểm, hoạt động văn hóa, ẩm thực đặc sản và trải nghiệm thực địa tiêu biểu nhất tại tỉnh Vĩnh Long và các cù lao lân cận.`,
+    },
+    {
+      q: `Làm thế nào để lọc kết quả theo vùng hoặc loại hình trải nghiệm?`,
+      a: `Du khách có thể sử dụng bộ lọc danh mục và bộ lọc 3 vùng địa lý (Vĩnh Long trung tâm, Trà Vinh ven biển, Bến Tre cù lao) để thu hẹp kết quả tìm kiếm.`,
+    },
+    {
+      q: `Thông tin về giờ mở cửa, địa chỉ và số điện thoại liên hệ có chính xác không?`,
+      a: `Mọi địa điểm trong danh mục đều được Ban biên tập đối soát thực địa, xác minh tọa độ số và cập nhật liên tục từ cộng đồng địa phương.`,
+    },
+  ]
+
+  const faqs = options.faqs && options.faqs.length > 0 ? options.faqs : defaultFaqs
+  const faqNode = buildFaqPageSchema(faqs, `${pageUrl}#faq`)
+
+  return buildUnifiedSchemaGraph([
+    buildWebSiteSchema(),
+    buildOrganizationSchema(),
+    webpageNode,
+    itemListNode,
+    faqNode,
+  ])
+}
+
 
 
 

@@ -353,16 +353,21 @@ useSeoMeta({
   twitterCard: 'summary_large_image',
 })
 
+const interestSchema = computed(() =>
+  buildInterestCategorySchemaGraph({
+    interestKey: interest,
+    title: `${interestMeta.value.label} — Khám phá Vĩnh Long`,
+    description: interestMeta.value.description,
+    totalCount: filtered.value.length,
+    items: filtered.value,
+  })
+)
+
 useHead(() => ({
   link: [{ rel: 'canonical', href: canonicalUrl(`/kham-pha/${interest}`) }],
   script: [{
     type: 'application/ld+json',
-    innerHTML: safeJsonLd(itemListJsonLd(
-      `${interestMeta.value.label} — Khám phá Vĩnh Long`,
-      interestMeta.value.description,
-      `/kham-pha/${interest}`,
-      filtered.value,
-    )),
+    innerHTML: safeJsonLd(interestSchema.value),
   }],
 }))
 </script>

@@ -82,14 +82,13 @@ const introHtml = computed(() => mdLite(doc.value.intro))
 // already shows the order, so strip the inline number to avoid duplicates.
 const stripNum = (h: string) => (h || '').replace(/^\s*\d+\.\s*/, '')
 
-const termsSchema = computed(() => ({
-  '@context': 'https://schema.org',
-  '@type': 'WebPage',
-  name: doc.value.title || 'Điều khoản sử dụng — vinhlong360',
-  description: doc.value.seo_description || 'Điều khoản sử dụng và quy định dịch vụ trên vinhlong360.',
-  url: canonicalUrl('/dieu-khoan-su-dung'),
-  inLanguage: 'vi',
-}))
+// Schema graph unified with '@type': 'WebPage' and Terms of Service FAQs
+const termsSchema = computed(() =>
+  buildTermsOfServiceSchemaGraph({
+    title: doc.value.title,
+    description: doc.value.seo_description,
+  })
+)
 
 useSeoMeta({
   title: () => doc.value.seo_title,
