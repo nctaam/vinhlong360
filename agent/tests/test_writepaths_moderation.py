@@ -2,9 +2,8 @@
 B3 write-path coverage — MODERATION & REPORTS.
 
 Two surfaces:
-  1. Public report intake  — POST /api/report (public_api.py): file-based
-     (reports.jsonl), works on BOTH backends → fully tested here (happy-path,
-     validation, target-type coercion, rate-limit).
+  1. Public report intake  — POST /api/report (public_api.py): canonical
+     PostgreSQL authority with strict target validation and rate limiting.
   2. Admin moderation       — /admin/moderation/* (admin.py): Postgres-backed
      state transitions (approve/reject on `posts`). The auth gate is asserted
      deterministically (401 without X-Admin-Key); the actual state transitions
@@ -45,13 +44,12 @@ def _route_pairs(app) -> set:
 
 
 # ═══════════════════════════════════════════════════════════════════════════
-#  1. Public report intake — POST /api/report  (file-based, both backends)
+#  1. Public report intake — POST /api/report (canonical report authority)
 # ═══════════════════════════════════════════════════════════════════════════
 
 @pytest.fixture
 def report_client(tmp_path, monkeypatch):
-    """Mount public_api.router with reports.jsonl redirected to a temp file
-    and the report rate-limiter reset so tests don't bleed into each other."""
+    """Mount the public router with isolated legacy-file and limiter state."""
     monkeypatch.setattr(public_api, "REPORTS_FILE", tmp_path / "reports.jsonl")
     # Fresh limiter state (singleton is shared process-wide).
     middleware.report_limiter._requests.clear()
@@ -66,33 +64,26 @@ def test_report_router_mounted():
     assert ("POST", "/api/report") in _route_pairs(app)
 
 
-def test_submit_report_happy_path(report_client):
+def test_submit_report_missing_target_fails_closed(report_client):
     resp = report_client.post("/api/report", json={
         "target_id": "cam-sanh-vinh-long",
         "target_type": "entity",
         "reason": "Thông tin sai",
         "detail": "Mùa vụ không đúng.",
     })
-    assert resp.status_code == 200
-    assert resp.json()["ok"] is True
-    # Persisted to the temp JSONL with status 'open'.
-    lines = (public_api.REPORTS_FILE).read_text(encoding="utf-8").strip().splitlines()
-    assert len(lines) == 1
-    import json
-    rec = json.loads(lines[0])
-    assert rec["target_id"] == "cam-sanh-vinh-long"
-    assert rec["status"] == "open"
+    assert resp.status_code == 404
+    assert resp.json()["detail"] == "target_not_found"
+    assert not public_api.REPORTS_FILE.exists()
 
 
-def test_submit_report_unknown_target_type_coerced(report_client):
-    """Unrecognized target_type is coerced to 'other' (not rejected)."""
+def test_submit_report_unknown_target_type_rejected(report_client):
+    """Unknown target types are rejected; they are not coerced to legacy 'other'."""
     resp = report_client.post("/api/report", json={
         "target_id": "x", "target_type": "weird", "reason": "spam",
     })
-    assert resp.status_code == 200
-    import json
-    rec = json.loads(public_api.REPORTS_FILE.read_text(encoding="utf-8").strip())
-    assert rec["target_type"] == "other"
+    assert resp.status_code == 422
+    assert resp.json()["detail"] == "invalid_target_type"
+    assert not public_api.REPORTS_FILE.exists()
 
 
 def test_submit_report_missing_reason_422(report_client):
@@ -102,10 +93,10 @@ def test_submit_report_missing_reason_422(report_client):
 
 
 def test_submit_report_rate_limited(report_client):
-    """6th report from the same IP within the window → 429."""
+    """The limiter still runs before canonical target validation."""
     body = {"target_id": "x", "target_type": "entity", "reason": "spam"}
     codes = [report_client.post("/api/report", json=body).status_code for _ in range(6)]
-    assert codes[:5] == [200, 200, 200, 200, 200]
+    assert codes[:5] == [404, 404, 404, 404, 404]
     assert codes[5] == 429
 
 

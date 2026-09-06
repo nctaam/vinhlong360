@@ -942,10 +942,11 @@ class TestReportComment:
         assert "uid" in src
         assert "400" in src
 
-    def test_writes_to_reports_jsonl(self):
+    def test_uses_canonical_reports_authority(self):
         src = inspect.getsource(__import__("community.api", fromlist=["api"]).report_comment)
-        assert "reports.jsonl" in src
-        assert '"target_type": "comment"' in src
+        assert "ReportService" in src
+        assert "ReportCreate" in src
+        assert 'target_type="comment"' in src
 
     def test_report_reasons(self):
         from community.api import _COMMENT_REPORT_REASONS
@@ -1939,21 +1940,21 @@ class TestAdminSystemHealth:
         assert "tables" in src
 
     def test_counts_table_rows(self):
-        _admin = __import__("admin")
-        src = inspect.getsource(_admin.system_health) + inspect.getsource(_admin._system_health_pg)
+        _admin = __import__("siteops.admin_api", fromlist=["admin_api"])
+        src = inspect.getsource(_admin._system_health_pg_queries)
         assert "users" in src
         assert "posts" in src
         assert "comments" in src
 
     def test_active_sessions(self):
-        _admin = __import__("admin")
-        src = inspect.getsource(_admin.system_health) + inspect.getsource(_admin._system_health_pg)
+        _admin = __import__("siteops.admin_api", fromlist=["admin_api"])
+        src = inspect.getsource(_admin._system_health_pg_queries)
         assert "active_sessions" in src
         assert "expires_at" in src
 
     def test_db_size(self):
-        _admin = __import__("admin")
-        src = inspect.getsource(_admin.system_health) + inspect.getsource(_admin._system_health_pg)
+        _admin = __import__("siteops.admin_api", fromlist=["admin_api"])
+        src = inspect.getsource(_admin._system_health_pg_queries)
         assert "pg_database_size" in src
 
 
@@ -2828,11 +2829,13 @@ class TestPostReport:
 
     def test_prevents_duplicate_report(self):
         src = inspect.getsource(__import__("community.api", fromlist=["api"]).report_post)
-        assert "pending" in src
+        assert "ReportService" in src
+        assert "idempotency_key" in src
 
     def test_inserts_to_pg_reports(self):
         src = inspect.getsource(__import__("community.api", fromlist=["api"]).report_post)
-        assert "INSERT INTO reports" in src
+        assert "ReportService" in src
+        assert "ReportCreate" in src
         assert "target_type" in src
 
     def test_uses_parameterized_queries(self):
@@ -2986,7 +2989,7 @@ class TestRound4SecurityGuards:
     def test_post_report_uses_parameterized_queries(self):
         src = inspect.getsource(__import__("community.api", fromlist=["api"]).report_post)
         assert "{ph}" in src
-        assert "INSERT" in src
+        assert "ReportService" in src
 
     def test_admin_exports_under_admin_router(self):
         from admin import router
@@ -3231,13 +3234,13 @@ class TestEnhancedSystemHealth:
         assert "jsonl_size_mb" in src
 
     def test_includes_pending_moderation(self):
-        _admin = __import__("admin")
-        src = inspect.getsource(_admin.system_health) + inspect.getsource(_admin._system_health_pg)
+        _admin = __import__("siteops.admin_api", fromlist=["admin_api"])
+        src = inspect.getsource(_admin._system_health_pg_queries)
         assert "pending_moderation" in src
 
     def test_includes_open_reports(self):
-        _admin = __import__("admin")
-        src = inspect.getsource(_admin.system_health) + inspect.getsource(_admin._system_health_pg)
+        _admin = __import__("siteops.admin_api", fromlist=["admin_api"])
+        src = inspect.getsource(_admin._system_health_pg_queries)
         assert "open_reports" in src
 
     def test_format_uptime_helper(self):
@@ -3247,8 +3250,8 @@ class TestEnhancedSystemHealth:
         assert _format_uptime(300) == "5m"
 
     def test_includes_more_pg_tables(self):
-        _admin = __import__("admin")
-        src = inspect.getsource(_admin.system_health) + inspect.getsource(_admin._system_health_pg)
+        _admin = __import__("siteops.admin_api", fromlist=["admin_api"])
+        src = inspect.getsource(_admin._system_health_pg_queries)
         assert "reports" in src
         assert "announcements" in src
 
@@ -4217,12 +4220,13 @@ class TestReportUser:
     def test_report_user_prevents_duplicate(self):
         from community import api as social
         src = inspect.getsource(social.report_user)
-        assert "đã báo cáo người dùng này rồi" in src
+        assert "ReportService" in src
+        assert "idempotency_key" in src
 
     def test_report_user_uses_target_type_user(self):
         from community import api as social
         src = inspect.getsource(social.report_user)
-        assert "'user'" in src
+        assert 'target_type="user"' in src
 
     def test_report_user_reasons(self):
         from community import api as social

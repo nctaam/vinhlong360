@@ -109,11 +109,13 @@ class TestReportStale:
         src = inspect.getsource(__import__("public_api").report_stale_field)
         assert "report_limiter" in src
 
-    def test_report_stale_writes_jsonl(self):
+    def test_report_stale_uses_canonical_report_authority(self):
         src = inspect.getsource(__import__("public_api").report_stale_field)
-        assert "_append_jsonl" in src
-        assert "REPORTS_FILE" in src
-        assert "stale_field" in src
+        # Canonical PostgreSQL reports authority replaced the legacy JSONL
+        # write path; the endpoint must construct a typed stale-field report.
+        assert "ReportService" in src
+        assert "ReportCreate" in src
+        assert 'target_type="stale_field"' in src
 
     def test_report_stale_validates_path_id(self):
         src = inspect.getsource(__import__("public_api").report_stale_field)

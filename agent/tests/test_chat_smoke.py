@@ -257,32 +257,39 @@ def test_cost_overview_endpoint(client_mocked):
     assert "enabled" in body["agent_budget"]  # off mặc định
 
 
-def test_info_report_resolve_action(client_mocked, tmp_path, monkeypatch):
-    """Feature: hàng đợi báo-sai có action — resolve đổi status trong reports.jsonl."""
-    import public_api
-    import admin as admin_mod
+def test_info_report_resolve_action(client_mocked):
+    """Canonical reports are transitioned through the revision-aware action."""
+    from database import db
     from middleware import ADMIN_API_KEY as _ADMIN_KEY
-    rfile = tmp_path / "reports.jsonl"
-    monkeypatch.setattr(public_api, "REPORTS_FILE", rfile)
-    monkeypatch.setattr(admin_mod, "_INFO_REPORTS_FILE", rfile)
     hdr = {"X-Admin-Key": _ADMIN_KEY}
+    entity_id = "chat-smoke-report-target"
+    db.upsert_entity({"id": entity_id, "type": "facility", "name": "Chat smoke report target"})
+    try:
+        created = client_mocked.post(
+            "/api/report",
+            json={"target_id": entity_id, "target_type": "entity", "reason": "sai thong tin"},
+        )
+        assert created.status_code == 200, created.text
+        report_id = created.json()["report_id"]
 
-    # tạo 1 báo-sai
-    client_mocked.post("/api/report", json={"target_id": "x1", "target_type": "facility", "reason": "sai sđt"})
-    lst = client_mocked.get("/admin/info-reports", headers=hdr).json()
-    assert lst["open"] == 1
-    ts = lst["reports"][0]["ts"]
+        lst = client_mocked.get("/admin/info-reports", headers=hdr)
+        assert lst.status_code == 200, lst.text
+        row = next(item for item in lst.json()["reports"] if item.get("report_id") == report_id)
+        assert row["status"] == "pending"
 
-    # resolve
-    r = client_mocked.post("/admin/info-reports/action", headers=hdr, json={"ts": ts, "status": "resolved"})
-    assert r.status_code == 200, r.text
-    after = client_mocked.get("/admin/info-reports", headers=hdr).json()
-    assert after["open"] == 0
-    assert after["reports"][0]["status"] == "resolved"
+        resolved = client_mocked.post(
+            "/admin/info-reports/action",
+            headers=hdr,
+            json={"report_id": report_id, "expected_revision": 1, "status": "resolved"},
+        )
+        assert resolved.status_code == 200, resolved.text
+        assert resolved.json()["new_status"] == "resolved"
 
-    # ts không tồn tại -> 404
-    assert client_mocked.post("/admin/info-reports/action", headers=hdr,
-                              json={"ts": "khong-co", "status": "open"}).status_code == 404
+        after = client_mocked.get("/admin/info-reports", headers=hdr).json()
+        row = next(item for item in after["reports"] if item.get("report_id") == report_id)
+        assert row["status"] == "resolved"
+    finally:
+        db.delete_entity(entity_id)
 
 
 def test_create_facility_keeps_official_source(client_mocked):
@@ -368,13 +375,6 @@ def test_internal_endpoints_gated(client_mocked):
     assert client_mocked.get("/health").status_code == 200
 
 
-def _assert_info_report_list(body):
-    assert body["total"] == 2
-    assert body["reports"][0]["target_id"] == "x"
-    assert body["reports"][0]["target_type"] == "other"
-    assert body["reports"][1]["reason"] == "Sai số điện thoại"
-
-
 def _assert_info_report_rate_limit(client_mocked, report_limiter):
     last = None
     for _ in range(6):
@@ -385,42 +385,40 @@ def _assert_info_report_rate_limit(client_mocked, report_limiter):
     assert 1 <= retry_after <= report_limiter.window
 
 
-def test_info_report_submit_and_admin_list(client_mocked, tmp_path, monkeypatch):
-    """GĐ13.6f: POST /api/report (ẩn danh, JSONL) ghi nhận; admin xem qua /admin/info-reports;
-    rate-limit chặn spam. Tách khỏi UGC `reports` (Postgres)."""
-    import public_api
-    import admin as admin_mod
+def test_info_report_submit_and_admin_list(client_mocked):
+    """POST /api/report uses canonical storage; admin reads the same authority."""
+    from database import db
     from middleware import report_limiter, ADMIN_API_KEY as _ADMIN_KEY
-
-    rfile = tmp_path / "reports.jsonl"
-    monkeypatch.setattr(public_api, "REPORTS_FILE", rfile)
-    monkeypatch.setattr(admin_mod, "_INFO_REPORTS_FILE", rfile)
     report_limiter._requests.clear()  # state sạch (singleton toàn cục)
+    entity_id = "chat-smoke-info-target"
+    db.upsert_entity({"id": entity_id, "type": "facility", "name": "Chat smoke info target"})
+    try:
+        r = client_mocked.post("/api/report", json={
+            "target_id": entity_id, "target_type": "facility",
+            "reason": "Sai số điện thoại", "detail": "SĐT đúng là 0270 111 222"})
+        assert r.status_code == 200, r.text
+        assert r.json().get("ok") is True
+        report_id = r.json()["report_id"]
 
-    # 1) Gửi báo-sai hợp lệ
-    r = client_mocked.post("/api/report", json={
-        "target_id": "ubnd-xa-test", "target_type": "facility",
-        "reason": "Sai số điện thoại", "detail": "SĐT đúng là 0270 111 222"})
-    assert r.status_code == 200, r.text
-    assert r.json().get("ok") is True
-    assert rfile.exists()
+        r2 = client_mocked.post("/api/report", json={
+            "target_id": "x", "target_type": "weird", "reason": "test"})
+        assert r2.status_code == 422, r2.text
 
-    # target_type lạ -> chuẩn hoá "other"
-    r2 = client_mocked.post("/api/report", json={
-        "target_id": "x", "target_type": "weird", "reason": "test"})
-    assert r2.status_code == 200, r2.text
+        # Admin lists the canonical record; legacy file rows are not required.
+        hdr = {"X-Admin-Key": _ADMIN_KEY}
+        lst = client_mocked.get("/admin/info-reports", headers=hdr)
+        assert lst.status_code == 200, lst.text
+        row = next(item for item in lst.json()["reports"] if item.get("report_id") == report_id)
+        assert row["target_id"] == entity_id
+        assert row["target_type"] == "facility"
 
-    # 2) Admin liệt kê (mới nhất trước)
-    hdr = {"X-Admin-Key": _ADMIN_KEY}
-    lst = client_mocked.get("/admin/info-reports", headers=hdr)
-    assert lst.status_code == 200, lst.text
-    _assert_info_report_list(lst.json())
+        # admin endpoint yêu cầu auth
+        assert client_mocked.get("/admin/info-reports").status_code == 401
 
-    # admin endpoint yêu cầu auth
-    assert client_mocked.get("/admin/info-reports").status_code == 401
-
-    # 3) Rate-limit: limiter cho 5/5min — đã dùng 2, gửi thêm tới khi 429
-    _assert_info_report_rate_limit(client_mocked, report_limiter)
+        # 3) Rate-limit: limiter cho 5/5min.
+        _assert_info_report_rate_limit(client_mocked, report_limiter)
+    finally:
+        db.delete_entity(entity_id)
 
 
 def test_entities_month_pagination(client_mocked):

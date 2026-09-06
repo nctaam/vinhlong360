@@ -26,8 +26,9 @@ class TestFieldLevelReport:
 
     def test_submit_report_includes_field_in_record(self):
         src = inspect.getsource(__import__("public_api").submit_report)
-        assert '"field"' in src
+        assert "ReportCreate" in src
         assert "report_field" in src
+        assert "field=report_field" in src
 
     def test_submit_report_validates_field_options(self):
         src = inspect.getsource(__import__("public_api").submit_report)

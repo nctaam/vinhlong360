@@ -5,7 +5,7 @@ Phủ các handler/closure chưa từng chạy trên DB thật:
   - get_comments (+ closure _get_comments)
   - create_comment (+ _comment_guard/_comment_insert/_comment_query/_notify_comment/_notify_owner_comment)
   - edit_comment (+ _check/_update), delete_comment (+ _query)
-  - report_comment (+ _check/_write), report_post (+ _query), report_user (+ _query)
+  - report_comment (+ _check), report_post (+ _query), report_user (+ _query)
   - appeal_post (+ _query), get_appeal_status (+ _query)
   - set_best_answer (+ _query)
 
@@ -19,7 +19,6 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 import asyncio
-import json
 import os
 import uuid
 from types import SimpleNamespace
@@ -496,41 +495,33 @@ def test_delete_comment_missing_404(pg_db, stubs):
     assert exc.value.status_code == 404
 
 
-# ── report_comment (JSONL) ──
+# ── report_comment (canonical reports table) ──
 
-def test_report_comment_writes_jsonl_record(pg_db, stubs, monkeypatch, tmp_path):
-    """Closure _check chạy PG thật; _write ghi JSONL — chuyển hướng __file__ sang
-    thư mục tạm để không đụng agent/community/data/ thật."""
+def test_report_comment_writes_canonical_record_and_replays(pg_db, stubs):
+    """Comment reports are persisted by the shared PostgreSQL report service."""
     owner = _seed_user(pg_db)
     reporter = _seed_user(pg_db)
     post_id = _seed_post(pg_db, owner["id"])
     comment_id = _seed_comment(pg_db, post_id, owner["id"])
-    monkeypatch.setattr(community_api, "__file__", str(tmp_path / "api.py"))
-
     body = community_api.ReportCommentBody(reason="spam", detail="Rác quảng cáo")
-    result = _run(community_api.report_comment(
-        comment_id, body, _fake_request(), user=reporter,
-    ))
+    result = _run(community_api.report_comment(comment_id, body, _fake_request(), user=reporter))
     assert result["success"] is True
+    row = _fetch_one(
+        pg_db,
+        "SELECT reporter_id, target_type, target_id, reason, status FROM reports WHERE id = %s",
+        (result["report_id"],),
+    )
+    assert str(row["reporter_id"]) == reporter["id"]
+    assert row["target_type"] == "comment"
+    assert row["target_id"] == comment_id
+    assert row["reason"] == "spam"
+    assert row["status"] == "pending"
 
-    # lý do ngoài danh sách bị chuẩn hoá thành "other"
-    body2 = community_api.ReportCommentBody(reason="ly-do-la", detail="")
-    _run(community_api.report_comment(
-        comment_id, body2, _fake_request(), user=reporter,
-    ))
-
-    lines = (tmp_path / "data" / "reports.jsonl").read_text(
-        encoding="utf-8"
-    ).strip().splitlines()
-    records = [json.loads(line) for line in lines]
-    assert len(records) == 2
-    assert records[0]["target_id"] == comment_id
-    assert records[0]["target_type"] == "comment"
-    assert records[0]["reason"] == "spam"
-    assert records[0]["detail"] == "Rác quảng cáo"
-    assert records[0]["reporter_id"] == reporter["id"]
-    assert records[0]["status"] == "open"
-    assert records[1]["reason"] == "other"
+    replay = _run(community_api.report_comment(comment_id, body, _fake_request(), user=reporter))
+    assert replay["report_id"] == result["report_id"]
+    assert replay["replayed"] is True
+    count = _fetch_one(pg_db, "SELECT COUNT(*) AS c FROM reports WHERE id = %s", (result["report_id"],))
+    assert count["c"] == 1
 
 
 def test_report_comment_missing_404(pg_db, stubs):
@@ -557,7 +548,7 @@ def test_report_comment_own_comment_400(pg_db, stubs):
 
 # ── report_post (bảng reports PG) ──
 
-def test_report_post_inserts_row_and_rejects_duplicate(pg_db, stubs):
+def test_report_post_inserts_row_and_replays_duplicate(pg_db, stubs):
     owner = _seed_user(pg_db)
     reporter = _seed_user(pg_db)
     post_id = _seed_post(pg_db, owner["id"])
@@ -578,9 +569,9 @@ def test_report_post_inserts_row_and_rejects_duplicate(pg_db, stubs):
     assert row["reason"] == "harassment"
     assert row["status"] == "pending"
 
-    with pytest.raises(HTTPException) as exc:
-        _run(community_api.report_post(post_id, body, user=reporter))
-    assert exc.value.status_code == 400
+    replay = _run(community_api.report_post(post_id, body, user=reporter))
+    assert replay["success"] is True
+    assert replay["replayed"] is True
     count = _fetch_one(
         pg_db, "SELECT COUNT(*) AS c FROM reports WHERE target_id = %s", (post_id,)
     )
@@ -603,7 +594,7 @@ def test_report_post_own_post_400_and_missing_404(pg_db, stubs):
 
 # ── report_user ──
 
-def test_report_user_inserts_row_and_rejects_duplicate(pg_db, stubs):
+def test_report_user_inserts_row_and_replays_duplicate(pg_db, stubs):
     target = _seed_user(pg_db)
     reporter = _seed_user(pg_db)
     body = community_api.ReportUserBody(reason="impersonation")
@@ -619,9 +610,9 @@ def test_report_user_inserts_row_and_rejects_duplicate(pg_db, stubs):
     assert row["target_type"] == "user"
     assert row["reason"] == "impersonation"
 
-    with pytest.raises(HTTPException) as exc:
-        _run(community_api.report_user(target["id"], body, user=reporter))
-    assert exc.value.status_code == 400
+    replay = _run(community_api.report_user(target["id"], body, user=reporter))
+    assert replay["success"] is True
+    assert replay["replayed"] is True
 
 
 def test_report_user_self_400_and_inactive_404(pg_db, stubs):

@@ -97,6 +97,8 @@ def test_build_phases_returns_exact_immutable_commands(runner: ModuleType) -> No
                 "pytest",
                 "-q",
                 "tests/launch_safety/test_closed_installer.py",
+                "-m",
+                "subprocess_heavy",
                 "-n",
                 "2",
                 "--dist=load",

@@ -29,19 +29,16 @@ def test_append_jsonl_writes_utf8_and_uses_rotation_policy(tmp_path, monkeypatch
     ]
 
 
-def test_report_handlers_delegate_to_the_shared_leaf_writer():
-    assert public_api._append_jsonl is jsonl_store.append_jsonl
-    assert community_api._append_jsonl is jsonl_store.append_jsonl
-
+def test_report_handlers_delegate_to_the_canonical_service():
     for handler in (
         public_api.submit_report,
         public_api.report_stale_field,
         community_api.report_comment,
     ):
         source = inspect.getsource(handler)
-        assert "_append_jsonl" in source
-        assert "def _write" not in source
-        assert "_maybe_rotate_jsonl(" not in source
+        assert "ReportService" in source
+        assert "ReportCreate" in source
+        assert "_append_jsonl" not in source
 
 
 def test_public_and_community_import_orders_share_one_jsonl_module():
@@ -53,8 +50,6 @@ __import__(sys.argv[3])
 import jsonl_store
 import public_api
 from community import api as community_api
-assert public_api._append_jsonl is jsonl_store.append_jsonl
-assert community_api._append_jsonl is jsonl_store.append_jsonl
 assert public_api._jsonl_lock is jsonl_store.jsonl_lock
 assert len([name for name in sys.modules if name.rsplit('.', 1)[-1] == 'jsonl_store']) == 1
 '''
