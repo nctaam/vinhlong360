@@ -552,10 +552,59 @@ const eventListSchema = computed(() => {
   })
 })
 
-useHead(() => ({
-  link: [{ rel: 'canonical', href: canonicalUrl('/su-kien') }],
-  script: eventListSchema.value ? [{ type: 'application/ld+json', innerHTML: eventListSchema.value }] : [],
-}))
+useHead(() => {
+  const pageUrl = canonicalUrl('/su-kien')
+  const graphNodes: any[] = [
+    buildWebSiteSchema(),
+    buildOrganizationSchema(),
+    {
+      '@type': 'CollectionPage',
+      '@id': `${pageUrl}#collection`,
+      name: 'Sự kiện & Hội chợ Vĩnh Long',
+      description: 'Hội chợ, triển lãm, ngày hội nông sản và sự kiện văn hóa nghệ thuật tại Vĩnh Long.',
+      url: pageUrl,
+      numberOfItems: allEvents.value.length,
+      isPartOf: { '@id': `${SITE_URL}/#website` },
+      about: {
+        '@type': 'Thing',
+        name: 'Sự kiện văn hóa và hội chợ thương mại Vĩnh Long',
+        description: 'Các hoạt động sự kiện xúc tiến thương mại, ngày hội văn hóa và festival nghệ thuật tại Vĩnh Long.',
+      },
+      speakable: buildSpeakableSpecification(['.catalog-hero h1', '.catalog-lead', '.register-toggle']),
+    },
+  ]
+
+  const faqItems: FaqItem[] = [
+    {
+      q: 'Vĩnh Long thường tổ chức những sự kiện hoặc hội chợ lớn nào trong năm?',
+      a: 'Các sự kiện tiêu biểu gồm Ngày hội Du lịch Vĩnh Long, Ngày đồng hành cùng gốm đỏ Mang Thít, Hội chợ Xúc tiến Thương mại - Nông nghiệp cùng các giải đua ghe Ngo truyền thống trên sông.',
+    },
+    {
+      q: 'Người dân và du khách có thể theo dõi lịch sự kiện sắp diễn ra ở đâu?',
+      a: 'Trang Sự Kiện trên VinhLong360 cập nhật liên tục các sự kiện đang diễn ra và sắp khai mạc, kèm tiện ích xuất file .ics nhắc hẹn trực tiếp vào điện thoại.',
+    },
+    {
+      q: 'Tham gia các sự kiện văn hóa và hội chợ tại Vĩnh Long có cần mua vé không?',
+      a: 'Đa số các sự kiện văn hóa cộng đồng, hội chợ xúc tiến thương mại và ngày hội du lịch tại Vĩnh Long đều mở cửa miễn phí phục vụ nhân dân và du khách.',
+    },
+  ]
+  const faqNode = buildFaqPageSchema(faqItems, `${pageUrl}#faq`)
+  if (faqNode) graphNodes.push(faqNode)
+
+  return {
+    link: [{ rel: 'canonical', href: pageUrl }],
+    script: [
+      {
+        type: 'application/ld+json',
+        innerHTML: safeJsonLd({
+          '@context': 'https://schema.org',
+          '@graph': graphNodes,
+        }),
+      },
+      ...(eventListSchema.value ? [{ type: 'application/ld+json' as const, innerHTML: eventListSchema.value }] : []),
+    ],
+  }
+})
 </script>
 
 <!-- events.css nạp theo route (bỏ khỏi global entry.css) — dùng .event-*/.cal-*/.toggle-btn -->

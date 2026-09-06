@@ -280,30 +280,83 @@ if (areaMeta) {
     twitterImageAlt: () => featuredImageMeta.value.twitterImageAlt,
   })
 
-  useHead(() => ({
-    link: [{ rel: 'canonical', href: canonicalUrl(`/khu-vuc/${areaKey}`) }],
-    script: [
+  useHead(() => {
+    const pageUrl = canonicalUrl(`/khu-vuc/${areaKey}`)
+    const repImage = descriptorToImageObject(featuredImageDescriptor.value)
+    const graphNodes: any[] = [
+      buildWebSiteSchema(),
+      buildOrganizationSchema(),
       {
-        type: 'application/ld+json',
-        innerHTML: safeJsonLd({
-          '@context': 'https://schema.org',
+        '@type': 'AdministrativeArea',
+        '@id': `${pageUrl}#adminarea`,
+        name: areaMeta.name,
+        description: areaMeta.blurb,
+        url: pageUrl,
+        containedInPlace: {
           '@type': 'AdministrativeArea',
-          name: areaMeta.name,
-          description: areaMeta.blurb,
-          url: canonicalUrl(`/khu-vuc/${areaKey}`),
-        }),
+          name: 'Tỉnh Vĩnh Long',
+          '@id': `${SITE_URL}/#province`,
+        },
+        ...(repImage ? { image: repImage } : {}),
       },
       {
-        type: 'application/ld+json',
-        innerHTML: safeJsonLd(itemListJsonLd(
-          `Khu vực ${areaMeta.name}`,
-          areaMeta.blurb,
-          `/khu-vuc/${areaKey}`,
-          entities.value,
-        )),
+        '@type': 'WebPage',
+        '@id': `${pageUrl}#webpage`,
+        name: `Khu vực ${areaMeta.name} — vinhlong360`,
+        description: areaMeta.blurb,
+        url: pageUrl,
+        isPartOf: { '@id': `${SITE_URL}/#website` },
+        mainEntity: { '@id': `${pageUrl}#adminarea` },
+        speakable: buildSpeakableSpecification(['.catalog-hero-inner h1', '.catalog-lead', '.area-stats']),
       },
-    ],
-  }))
+    ]
+
+    if (entities.value?.length) {
+      graphNodes.push({
+        '@type': 'ItemList',
+        '@id': `${pageUrl}#items`,
+        name: `Khu vực ${areaMeta.name}`,
+        description: areaMeta.blurb,
+        numberOfItems: entities.value.length,
+        itemListElement: entities.value.slice(0, 30).map((e: Entity, i: number) => ({
+          '@type': 'ListItem',
+          position: i + 1,
+          name: e.name,
+          url: `${SITE_URL}${entityPath(e.id)}`,
+        })),
+      })
+    }
+
+    const faqItems: FaqItem[] = [
+      {
+        q: `Khu vực ${areaMeta.name} có những nét văn hóa và địa danh nào tiêu biểu?`,
+        a: `Khu vực ${areaMeta.name} nổi bật với hệ sinh thái miệt vườn ven sông, các di tích lịch sử - văn hóa địa phương và các làng nghề truyền thống gắn liền với dòng sông Tiền và sông Hậu.`,
+      },
+      {
+        q: `Làm thế nào để di chuyển đến và khám phá ${areaMeta.name}?`,
+        a: `Du khách có thể dễ dàng tiếp cận ${areaMeta.name} bằng đường bộ thông qua các trục quốc lộ hoặc trải nghiệm các tuyến đò ngang, phà sông kết nối giữa các cù lao và xã/phường.`,
+      },
+      {
+        q: `Đặc sản và sản phẩm OCOP nổi bật của ${areaMeta.name} gồm những gì?`,
+        a: `Tại ${areaMeta.name}, du khách có thể thưởng thức các loại trái cây đặc sản trứ danh, nông thủy sản tươi ngon cùng các sản phẩm thủ công truyền thống của cư dân bản địa.`,
+      },
+    ]
+    const faqNode = buildFaqPageSchema(faqItems, `${pageUrl}#faq`)
+    if (faqNode) graphNodes.push(faqNode)
+
+    return {
+      link: [{ rel: 'canonical', href: pageUrl }],
+      script: [
+        {
+          type: 'application/ld+json',
+          innerHTML: safeJsonLd({
+            '@context': 'https://schema.org',
+            '@graph': graphNodes,
+          }),
+        },
+      ],
+    }
+  })
 }
 </script>
 

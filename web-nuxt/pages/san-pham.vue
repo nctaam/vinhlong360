@@ -337,31 +337,74 @@ useSeoMeta({
   twitterCard: 'summary_large_image',
 })
 
-useHead(() => ({
-  link: [{ rel: 'canonical', href: canonicalUrl('/san-pham') }],
-  script: [
+useHead(() => {
+  const pageUrl = canonicalUrl('/san-pham')
+  const graphNodes: any[] = [
+    buildWebSiteSchema(),
+    buildOrganizationSchema(),
     {
-      type: 'application/ld+json',
-      innerHTML: safeJsonLd({
-        '@context': 'https://schema.org',
-        '@type': 'CollectionPage',
-        name: 'Sản phẩm địa phương Vĩnh Long',
-        description: 'Đặc sản & sản phẩm OCOP Vĩnh Long theo mùa.',
-        url: canonicalUrl('/san-pham'),
-        numberOfItems: allEntities.value.length,
-      }),
+      '@type': 'CollectionPage',
+      '@id': `${pageUrl}#collection`,
+      name: 'Sản phẩm địa phương Vĩnh Long',
+      description: 'Đặc sản & sản phẩm OCOP Vĩnh Long theo mùa.',
+      url: pageUrl,
+      numberOfItems: allEntities.value.length,
+      isPartOf: { '@id': `${SITE_URL}/#website` },
+      about: {
+        '@type': 'Thing',
+        name: 'Đặc sản và Sản phẩm địa phương Vĩnh Long',
+        description: 'Trái cây nhiệt đới, nông sản chất lượng cao, sản phẩm OCOP và làng nghề truyền thống Vĩnh Long.',
+      },
+      speakable: buildSpeakableSpecification(['.catalog-hero h1', '.catalog-lead', '.seasonal-banner-lead']),
+    },
+  ]
+
+  if (filtered.value?.length) {
+    graphNodes.push({
+      '@type': 'ItemList',
+      '@id': `${pageUrl}#items`,
+      name: 'Sản phẩm địa phương Vĩnh Long',
+      description: 'Đặc sản và sản phẩm OCOP Vĩnh Long theo mùa.',
+      numberOfItems: filtered.value.length,
+      itemListElement: filtered.value.slice(0, 30).map((e: Entity, i: number) => ({
+        '@type': 'ListItem',
+        position: i + 1,
+        name: e.name,
+        url: `${SITE_URL}${entityPath(e.id)}`,
+      })),
+    })
+  }
+
+  const faqItems: FaqItem[] = [
+    {
+      q: 'Vĩnh Long có những loại đặc sản nào nổi tiếng nhất để mua làm quà?',
+      a: 'Các đặc sản nức tiếng gồm bưởi năm roi Bình Minh, khoai lang Bình Tân, sầu riêng Ri6, bánh tráng cù lao Mây, cam sành Tam Bình và các sản phẩm thủ công gốm đỏ Mang Thít.',
     },
     {
-      type: 'application/ld+json',
-      innerHTML: safeJsonLd(itemListJsonLd(
-        'Sản phẩm địa phương Vĩnh Long',
-        'Đặc sản và sản phẩm OCOP Vĩnh Long theo mùa.',
-        '/san-pham',
-        filtered.value,
-      )),
+      q: 'Làm thế nào để chọn mua được trái cây và đặc sản Vĩnh Long đúng nguồn gốc?',
+      a: 'Du khách nên ghé trực tiếp các nhà vườn tại cù lao An Bình, các hợp tác xã đạt chứng nhận OCOP hoặc các điểm trưng bày có tem truy xuất nguồn gốc rõ ràng.',
     },
-  ],
-}))
+    {
+      q: 'Các cơ sở sản xuất tại Vĩnh Long có hỗ trợ đóng gói trái cây gửi đi xa không?',
+      a: 'Nhiều nhà vườn và cơ sở chế biến hỗ trợ đóng thùng chống sốc cho trái cây tươi, hút chân không cho bánh tráng và nông sản khô để du khách tiện mang theo đường dài.',
+    },
+  ]
+  const faqNode = buildFaqPageSchema(faqItems, `${pageUrl}#faq`)
+  if (faqNode) graphNodes.push(faqNode)
+
+  return {
+    link: [{ rel: 'canonical', href: pageUrl }],
+    script: [
+      {
+        type: 'application/ld+json',
+        innerHTML: safeJsonLd({
+          '@context': 'https://schema.org',
+          '@graph': graphNodes,
+        }),
+      },
+    ],
+  }
+})
 </script>
 
 <style scoped>

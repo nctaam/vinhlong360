@@ -344,18 +344,74 @@ useSeoMeta({
   twitterCard: 'summary_large_image',
 })
 
-useHead(() => ({
-  link: [{ rel: 'canonical', href: canonicalUrl('/luu-tru') }],
-  script: [{
-    type: 'application/ld+json',
-    innerHTML: safeJsonLd(itemListJsonLd(
-      'Lưu trú Tỉnh Vĩnh Long hợp nhất (3 vùng trước 7-2025)',
-      'Homestay, nhà vườn, khách sạn và nơi nghỉ ở Vĩnh Long.',
-      '/luu-tru',
-      allEntities.value,
-    )),
-  }],
-}))
+useHead(() => {
+  const pageUrl = canonicalUrl('/luu-tru')
+  const graphNodes: any[] = [
+    buildWebSiteSchema(),
+    buildOrganizationSchema(),
+    {
+      '@type': 'CollectionPage',
+      '@id': `${pageUrl}#collection`,
+      name: 'Lưu trú Vĩnh Long',
+      description: 'Homestay, nhà vườn, khách sạn và nơi nghỉ ở Vĩnh Long.',
+      url: pageUrl,
+      numberOfItems: allEntities.value.length,
+      isPartOf: { '@id': `${SITE_URL}/#website` },
+      about: {
+        '@type': 'Thing',
+        name: 'Dịch vụ lưu trú và Homestay Vĩnh Long',
+        description: 'Hệ thống homestay nhà vườn, khách sạn và khu nghỉ dưỡng ven sông tại Vĩnh Long.',
+      },
+      speakable: buildSpeakableSpecification(['.catalog-hero h1', '.catalog-lead', '.catalog-type-breakdown']),
+    },
+  ]
+
+  if (allEntities.value?.length) {
+    graphNodes.push({
+      '@type': 'ItemList',
+      '@id': `${pageUrl}#items`,
+      name: 'Danh sách cơ sở lưu trú Vĩnh Long',
+      description: 'Homestay, nhà vườn, khách sạn và nơi nghỉ ở Vĩnh Long.',
+      numberOfItems: allEntities.value.length,
+      itemListElement: allEntities.value.slice(0, 30).map((e: Entity, i: number) => ({
+        '@type': 'ListItem',
+        position: i + 1,
+        name: e.name,
+        url: `${SITE_URL}${entityPath(e.id)}`,
+      })),
+    })
+  }
+
+  const faqItems: FaqItem[] = [
+    {
+      q: 'Vĩnh Long có những loại hình lưu trú nào phổ biến nhất?',
+      a: 'Nổi bật nhất là các homestay miệt vườn tại cù lao An Bình với trải nghiệm ngủ nhà gỗ truyền thống Nam Bộ, sinh hoạt cùng gia đình chủ nhà và hái trái cây tại vườn. Ngoài ra còn có hệ thống khách sạn trung tâm thành phố và nhà nghỉ tiện nghi.',
+    },
+    {
+      q: 'Du khách nên lưu ý điều gì khi đặt phòng homestay cù lao tại Vĩnh Long?',
+      a: 'Nên liên hệ đặt trước vào các dịp cuối tuần, mùa lễ hội hoặc mùa trái cây rộ (tháng 5 đến tháng 8). Kiểm tra trước khung giờ hoạt động của phà hoặc đò sang cù lao để chủ động lịch trình di chuyển.',
+    },
+    {
+      q: 'Các cơ sở lưu trú tại Vĩnh Long có cung cấp dịch vụ ẩm thực bản địa không?',
+      a: 'Đa số các homestay sinh thái Vĩnh Long đều phục vụ bữa cơm gia đình nấu theo hương vị truyền thống địa phương với cá tai tượng chiên xù, canh chua cá lóc bông điên điển, cá kèo kho tộ và bánh xèo giòn rụm.',
+    },
+  ]
+  const faqNode = buildFaqPageSchema(faqItems, `${pageUrl}#faq`)
+  if (faqNode) graphNodes.push(faqNode)
+
+  return {
+    link: [{ rel: 'canonical', href: pageUrl }],
+    script: [
+      {
+        type: 'application/ld+json',
+        innerHTML: safeJsonLd({
+          '@context': 'https://schema.org',
+          '@graph': graphNodes,
+        }),
+      },
+    ],
+  }
+})
 </script>
 
 <style scoped>

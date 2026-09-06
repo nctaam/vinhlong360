@@ -431,20 +431,74 @@ useSeoMeta({
   ogUrl: canonicalUrl('/theo-mua'),
   twitterCard: 'summary_large_image',
 })
-useHead(() => ({
-  link: [{ rel: 'canonical', href: canonicalUrl('/theo-mua') }],
-  script: [{
-    type: 'application/ld+json',
-    innerHTML: safeJsonLd({
-      '@context': 'https://schema.org',
+useHead(() => {
+  const pageUrl = canonicalUrl('/theo-mua')
+  const graphNodes: any[] = [
+    buildWebSiteSchema(),
+    buildOrganizationSchema(),
+    {
       '@type': 'CollectionPage',
+      '@id': `${pageUrl}#collection`,
       name: `Tháng ${month.value}: đi đâu, ăn gì ở Vĩnh Long`,
       description: `Những mục đang mùa, ngon nhất vào tháng ${month.value} — trái cây, nông sản, ẩm thực, trải nghiệm miệt vườn.`,
-      url: canonicalUrl('/theo-mua'),
+      url: pageUrl,
       numberOfItems: wedge.value.length,
-    }),
-  }],
-}))
+      isPartOf: { '@id': `${SITE_URL}/#website` },
+      about: {
+        '@type': 'Thing',
+        name: 'Lịch mùa vụ nông sản và du lịch Vĩnh Long',
+        description: 'Cẩm nang tra cứu nông sản, trái cây vào mùa và ẩm thực đặc trưng theo 12 tháng tại Vĩnh Long.',
+      },
+      speakable: buildSpeakableSpecification(['.catalog-hero h1', '.catalog-lead', '.season-section-head']),
+    },
+  ]
+
+  if (wedge.value?.length) {
+    graphNodes.push({
+      '@type': 'ItemList',
+      '@id': `${pageUrl}#items`,
+      name: `Đặc sản tháng ${month.value} tại Vĩnh Long`,
+      description: `Danh mục sản vật ngon nhất vào tháng ${month.value}.`,
+      numberOfItems: wedge.value.length,
+      itemListElement: wedge.value.slice(0, 30).map((e: Entity, i: number) => ({
+        '@type': 'ListItem',
+        position: i + 1,
+        name: e.name,
+        url: `${SITE_URL}${entityPath(e.id)}`,
+      })),
+    })
+  }
+
+  const faqItems: FaqItem[] = [
+    {
+      q: 'Mùa trái cây rộ nhất tại Vĩnh Long diễn ra vào những tháng nào?',
+      a: 'Thời điểm trái cây trĩu cành ngon nhất là từ tháng 5 đến tháng 8, tiêu biểu với chôm chôm, sầu riêng, bưởi năm roi, măng cụt và nhãn xuồng cơm vàng tại các vườn cù lao An Bình.',
+    },
+    {
+      q: 'Đến Vĩnh Long vào mùa nước nổi (tháng 9 đến tháng 11) có gì đặc sắc?',
+      a: 'Mùa nước nổi đem lại nguồn thủy sản phong phú với cá linh non, bông điên điển, cá lóc đồng cùng các trải nghiệm giăng lưới, chèo xuồng ngắm cảnh sông nước phù sa.',
+    },
+    {
+      q: 'Làm thế nào để theo dõi sản vật nào đang vào mùa chín ngon nhất?',
+      a: 'Du khách có thể chọn trực tiếp từng tháng từ Tháng 1 đến Tháng 12 trên chuyên trang Theo Mùa của VinhLong360 để tra cứu trái cây, món ngon và địa điểm trải nghiệm tương ứng.',
+    },
+  ]
+  const faqNode = buildFaqPageSchema(faqItems, `${pageUrl}#faq`)
+  if (faqNode) graphNodes.push(faqNode)
+
+  return {
+    link: [{ rel: 'canonical', href: pageUrl }],
+    script: [
+      {
+        type: 'application/ld+json',
+        innerHTML: safeJsonLd({
+          '@context': 'https://schema.org',
+          '@graph': graphNodes,
+        }),
+      },
+    ],
+  }
+})
 </script>
 
 <style scoped>

@@ -175,4 +175,77 @@ describe('SEO / AIO / AEO / GEO Architecture Quality Gate', () => {
       expect(lvn).toContain('safeJsonLd(lvnSchema.value)')
     })
   })
+
+  describe('Regional Area Knowledge Graph (pages/khu-vuc/[area].vue)', () => {
+    it('publishes AdministrativeArea with WebPage, Speakable, and regional FAQ', () => {
+      const area = doc('pages/khu-vuc/[area].vue')
+      expect(area).toContain('buildWebSiteSchema()')
+      expect(area).toContain('buildOrganizationSchema()')
+      expect(area).toContain('buildSpeakableSpecification')
+      expect(area).toContain('buildFaqPageSchema')
+      expect(area).toContain("'@type': 'AdministrativeArea'")
+      expect(area).toContain("name: 'Tỉnh Vĩnh Long'")
+      expect(area).toContain("safeJsonLd({")
+    })
+  })
+
+  describe('Tourism Hub Knowledge Graph (pages/du-lich.vue)', () => {
+    it('publishes CollectionPage with about Tourism, Speakable, and itinerary FAQ', () => {
+      const tourism = doc('pages/du-lich.vue')
+      expect(tourism).toContain('buildWebSiteSchema()')
+      expect(tourism).toContain('buildOrganizationSchema()')
+      expect(tourism).toContain('buildSpeakableSpecification')
+      expect(tourism).toContain('buildFaqPageSchema')
+      expect(tourism).toContain("name: 'Du lịch Vĩnh Long'")
+      expect(tourism).toContain("safeJsonLd({")
+    })
+  })
+
+  describe('Lodging Hub Knowledge Graph (pages/luu-tru.vue)', () => {
+    it('publishes CollectionPage with about Lodging, Speakable, and homestay FAQ', () => {
+      const lodging = doc('pages/luu-tru.vue')
+      expect(lodging).toContain('buildWebSiteSchema()')
+      expect(lodging).toContain('buildOrganizationSchema()')
+      expect(lodging).toContain('buildSpeakableSpecification')
+      expect(lodging).toContain('buildFaqPageSchema')
+      expect(lodging).toContain("name: 'Lưu trú Vĩnh Long'")
+      expect(lodging).toContain("safeJsonLd({")
+    })
+  })
+
+  describe('Product Catalog Knowledge Graph (pages/san-pham.vue)', () => {
+    it('publishes CollectionPage with about Products, Speakable, and gift FAQ', () => {
+      const product = doc('pages/san-pham.vue')
+      expect(product).toContain('buildWebSiteSchema()')
+      expect(product).toContain('buildOrganizationSchema()')
+      expect(product).toContain('buildSpeakableSpecification')
+      expect(product).toContain('buildFaqPageSchema')
+      expect(product).toContain("name: 'Sản phẩm địa phương Vĩnh Long'")
+      expect(product).toContain("safeJsonLd({")
+    })
+  })
+
+  describe('Seasonal Almanac Knowledge Graph (pages/theo-mua.vue)', () => {
+    it('publishes CollectionPage with about Seasonal crops, Speakable, and harvest FAQ', () => {
+      const season = doc('pages/theo-mua.vue')
+      expect(season).toContain('buildWebSiteSchema()')
+      expect(season).toContain('buildOrganizationSchema()')
+      expect(season).toContain('buildSpeakableSpecification')
+      expect(season).toContain('buildFaqPageSchema')
+      expect(season).toContain("name: 'Lịch mùa vụ nông sản và du lịch Vĩnh Long'")
+      expect(season).toContain("safeJsonLd({")
+    })
+  })
+
+  describe('Events Hub Knowledge Graph (pages/su-kien.vue)', () => {
+    it('publishes CollectionPage with about Events, Speakable, and cultural fair FAQ', () => {
+      const events = doc('pages/su-kien.vue')
+      expect(events).toContain('buildWebSiteSchema()')
+      expect(events).toContain('buildOrganizationSchema()')
+      expect(events).toContain('buildSpeakableSpecification')
+      expect(events).toContain('buildFaqPageSchema')
+      expect(events).toContain("name: 'Sự kiện & Hội chợ Vĩnh Long'")
+      expect(events).toContain("safeJsonLd({")
+    })
+  })
 })
