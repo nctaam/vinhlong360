@@ -110,9 +110,10 @@
             maxlength="50"
             required
             :aria-invalid="!!nameError"
+            :aria-describedby="nameError ? 'cd-err-name' : undefined"
             placeholder="Tên bạn muốn hiển thị"
           />
-          <span v-if="nameError" class="sf-error" role="alert">{{ nameError }}</span>
+          <span v-if="nameError" id="cd-err-name" class="sf-error" role="alert">{{ nameError }}</span>
         </label>
 
         <label class="sf-field">

@@ -17,7 +17,7 @@
 
       <div class="search-row search-row-spaced search-row-hero" :class="{ error: hasError }" role="search" aria-label="Tìm kiếm địa điểm">
         <div class="search-input-wrap" role="combobox" :aria-expanded="showSuggestions" aria-haspopup="listbox" aria-owns="search-suggestions">
-          <input ref="heroInputEl" v-model="searchInput" type="search" enterkeyhint="search" :placeholder="inputPlaceholder" aria-label="Tìm kiếm" :aria-invalid="hasError || undefined" autocomplete="off" aria-autocomplete="list" :aria-activedescendant="activeSuggestionId" @input="onTypeahead" @keyup.enter="onEnter" @keydown.down.prevent="sugNext" @keydown.up.prevent="sugPrev" @keydown.escape="sugClose" @focus="inputFocused = true" @blur="onInputBlur" />
+          <input ref="heroInputEl" v-model="searchInput" type="search" enterkeyhint="search" :placeholder="inputPlaceholder" aria-label="Tìm kiếm" :aria-invalid="hasError || undefined" :aria-describedby="hasError && !totalSearchResults ? 'search-error-state' : undefined" autocomplete="off" aria-autocomplete="list" :aria-activedescendant="activeSuggestionId" @input="onTypeahead" @keyup.enter="onEnter" @keydown.down.prevent="sugNext" @keydown.up.prevent="sugPrev" @keydown.escape="sugClose" @focus="inputFocused = true" @blur="onInputBlur" />
           <div v-if="sugLoading" class="sug-loading" aria-hidden="true"><span class="spinner spinner-xs"></span></div>
           <Transition name="sug-fade">
             <ul v-if="showSuggestions && suggestions.length" id="search-suggestions" class="search-suggestions" role="listbox" aria-label="Gợi ý tìm kiếm">
@@ -54,6 +54,7 @@
     <SkeletonGrid v-if="searching" :count="6" />
     <EmptyState
       v-else-if="hasError && !totalSearchResults"
+      id="search-error-state"
       title="Lỗi tìm kiếm"
       message="Không thể tìm kiếm lúc này. Vui lòng thử lại."
       tone="error"

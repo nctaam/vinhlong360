@@ -21,6 +21,7 @@
               class="input"
               :class="{ error: error && step === 'phone' }"
               :aria-invalid="!!(error && step === 'phone')"
+              :aria-describedby="error && step === 'phone' ? 'auth-err-phone' : undefined"
               type="tel"
               inputmode="tel"
               autocomplete="tel"
@@ -30,7 +31,7 @@
               @keyup.enter="handlePhone"
             />
           </div>
-          <p v-if="error" class="form-error" role="alert">{{ error }}</p>
+          <p v-if="error" id="auth-err-phone" class="form-error" role="alert">{{ error }}</p>
           <label class="consent-row">
             <input v-model="consent" type="checkbox" class="consent-checkbox" />
             <span>Tôi đồng ý với
@@ -132,6 +133,7 @@
               class="input"
               :class="{ error: error && step === 'password' }"
               :aria-invalid="!!(error && step === 'password')"
+              :aria-describedby="error && step === 'password' ? 'auth-err-password' : undefined"
               type="password"
               autocomplete="current-password"
               aria-label="Mật khẩu"
@@ -139,7 +141,7 @@
               @keyup.enter="handleLogin"
             />
           </div>
-          <p v-if="error" class="form-error" role="alert">{{ error }}</p>
+          <p v-if="error" id="auth-err-password" class="form-error" role="alert">{{ error }}</p>
           <button type="button" class="btn btn-primary btn-full" :disabled="sending" @click="handleLogin">
             {{ sending ? 'Đang đăng nhập…' : 'Đăng nhập' }}
           </button>
@@ -189,6 +191,7 @@
               class="input"
               :class="{ error: error && step === 'set-password' }"
               :aria-invalid="!!(error && step === 'set-password')"
+              :aria-describedby="error && step === 'set-password' ? 'auth-err-setpw' : undefined"
               type="password"
               autocomplete="new-password"
               aria-label="Mật khẩu mới"
@@ -207,7 +210,7 @@
               @keyup.enter="handleSetPassword"
             />
           </div>
-          <p v-if="error" class="form-error" role="alert">{{ error }}</p>
+          <p v-if="error" id="auth-err-setpw" class="form-error" role="alert">{{ error }}</p>
           <button type="button" class="btn btn-primary btn-full" :disabled="sending" @click="handleSetPassword">
             {{ sending ? 'Đang lưu…' : 'Đặt mật khẩu' }}
           </button>
@@ -225,6 +228,7 @@
                 class="input"
                 :class="{ error: error && step === 'twofactor' }"
                 :aria-invalid="!!(error && step === 'twofactor')"
+                :aria-describedby="error && step === 'twofactor' ? 'auth-err-2fa' : undefined"
                 type="text"
                 inputmode="numeric"
                 maxlength="6"
@@ -243,6 +247,7 @@
                 class="input"
                 :class="{ error: error && step === 'twofactor' }"
                 :aria-invalid="!!(error && step === 'twofactor')"
+                :aria-describedby="error && step === 'twofactor' ? 'auth-err-2fa' : undefined"
                 type="text"
                 autocomplete="off"
                 aria-label="Mã khôi phục"
@@ -255,7 +260,7 @@
             <input v-model="rememberDevice" type="checkbox" class="consent-checkbox" />
             <span>Tin cậy thiết bị này trong 90 ngày</span>
           </label>
-          <p v-if="error" class="form-error" role="alert">{{ error }}</p>
+          <p v-if="error" id="auth-err-2fa" class="form-error" role="alert">{{ error }}</p>
           <button type="button" class="btn btn-primary btn-full" :disabled="sending" @click="verifyTwoFactorCode">
             {{ sending ? 'Đang xác minh…' : 'Xác nhận' }}
           </button>
