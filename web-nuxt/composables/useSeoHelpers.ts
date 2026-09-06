@@ -123,3 +123,76 @@ export function itineraryItemListJsonLd(name: string, description: string, path:
     },
   }
 }
+
+export interface FaqItem {
+  q: string
+  a: string
+}
+
+export function buildFaqPageSchema(faqItems: FaqItem[], id?: string): Record<string, any> | null {
+  if (!Array.isArray(faqItems) || faqItems.length === 0) return null
+  return {
+    '@type': 'FAQPage',
+    ...(id ? { '@id': id } : {}),
+    mainEntity: faqItems.map((f) => ({
+      '@type': 'Question',
+      name: f.q,
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: f.a,
+      },
+    })),
+  }
+}
+
+export function buildSpeakableSpecification(cssSelectors: string[] = ['.lead', 'h1', '.desc-heading']): Record<string, any> {
+  return {
+    '@type': 'SpeakableSpecification',
+    cssSelector: cssSelectors,
+  }
+}
+
+export function buildWebSiteSchema(): Record<string, any> {
+  return {
+    '@type': 'WebSite',
+    '@id': `${SITE_URL}/#website`,
+    url: SITE_URL,
+    name: 'vinhlong360',
+    description: 'Cổng du lịch và sản phẩm địa phương Vĩnh Long.',
+    inLanguage: 'vi-VN',
+    publisher: { '@id': `${SITE_URL}/#organization` },
+  }
+}
+
+export function buildOrganizationSchema(): Record<string, any> {
+  return {
+    '@type': 'Organization',
+    '@id': `${SITE_URL}/#organization`,
+    name: 'vinhlong360',
+    url: SITE_URL,
+    logo: `${SITE_URL}/icons/icon-512.png`,
+    description: 'Cổng du lịch và sản phẩm địa phương Vĩnh Long.',
+    inLanguage: 'vi-VN',
+    areaServed: {
+      '@type': 'AdministrativeArea',
+      name: 'Tỉnh Vĩnh Long',
+      '@id': `${SITE_URL}/#province`,
+    },
+    knowsAbout: [
+      'Du lịch Vĩnh Long',
+      'Văn hóa Khmer',
+      'Đặc sản OCOP Vĩnh Long',
+      'Làng nghề gốm Mang Thít',
+      'Cù lao An Bình',
+      'Lễ hội truyền thống Vĩnh Long',
+    ],
+  }
+}
+
+export function buildUnifiedSchemaGraph(nodes: Array<Record<string, any> | null | undefined>): Record<string, any> {
+  return {
+    '@context': 'https://schema.org',
+    '@graph': nodes.filter(Boolean),
+  }
+}
+

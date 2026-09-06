@@ -1457,27 +1457,37 @@ const fallbackJsonLdScripts = computed(() => {
   if (e.attributes?.best_time)
     faqItems.push({ q: `Thời điểm nào đẹp nhất để đến ${e.name}?`, a: e.attributes.best_time })
 
-  const scripts: any[] = [
-    { type: 'application/ld+json', innerHTML: safeJsonLd(ld) },
-    { type: 'application/ld+json', innerHTML: safeJsonLd(breadcrumb) },
-  ]
-
-  if (faqItems.length >= 2) {
-    scripts.push({
-      type: 'application/ld+json',
-      innerHTML: safeJsonLd({
-        '@context': 'https://schema.org',
-        '@type': 'FAQPage',
-        mainEntity: faqItems.map(f => ({
-          '@type': 'Question',
-          name: f.q,
-          acceptedAnswer: { '@type': 'Answer', text: f.a },
-        })),
-      }),
-    })
+  const webpageNode = {
+    '@type': 'WebPage',
+    '@id': `${entityUrl}#webpage`,
+    url: entityUrl,
+    name: `${e.name} — ${typeMeta.value.label} — vinhlong360`,
+    description: e.summary || e.description,
+    inLanguage: 'vi-VN',
+    isPartOf: { '@id': `${SITE_URL}/#website` },
+    breadcrumb: { '@id': `${entityUrl}#breadcrumb` },
+    mainEntity: { '@id': `${entityUrl}#entity` },
+    speakable: buildSpeakableSpecification(['.lead', '.highlights', 'h1', '.desc-heading']),
+    publisher: { '@id': `${SITE_URL}/#organization` },
   }
 
-  return scripts
+  ld['@id'] = `${entityUrl}#entity`
+  breadcrumb['@id'] = `${entityUrl}#breadcrumb`
+
+  const faqNode = faqItems.length >= 2 ? buildFaqPageSchema(faqItems, `${entityUrl}#faq`) : null
+
+  const graph = buildUnifiedSchemaGraph([
+    buildWebSiteSchema(),
+    buildOrganizationSchema(),
+    webpageNode,
+    breadcrumb,
+    ld,
+    faqNode,
+  ])
+
+  return [
+    { type: 'application/ld+json', innerHTML: safeJsonLd(graph) },
+  ]
 })
 
 function normalizeJsonLdPayload(payload: JsonLdPayload | null | undefined) {

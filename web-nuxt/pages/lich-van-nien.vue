@@ -641,15 +641,43 @@ function goToConverted(which: 'solar' | 'lunar') {
   void focusSelected()
 }
 
-const lvnSchema = computed(() => ({
-  '@context': 'https://schema.org',
-  '@type': 'WebApplication',
-  name: pc('seo_title', 'Lịch vạn niên — âm lịch, can chi, tiết khí | vinhlong360'),
-  description: pc('seo_description', 'Đối chiếu dương lịch và âm lịch Việt Nam (múi giờ UTC+7), can chi và tiết khí.'),
-  applicationCategory: 'UtilitiesApplication',
-  operatingSystem: 'All',
-  url: canonicalUrl('/lich-van-nien'),
-}))
+const lvnSchema = computed(() => {
+  const pageUrl = canonicalUrl('/lich-van-nien')
+  const appNode = {
+    '@type': 'WebApplication',
+    '@id': `${pageUrl}#app`,
+    name: pc('seo_title', 'Lịch vạn niên — âm lịch, can chi, tiết khí | vinhlong360'),
+    description: pc('seo_description', 'Đối chiếu dương lịch và âm lịch Việt Nam (múi giờ UTC+7), can chi và tiết khí.'),
+    applicationCategory: 'UtilitiesApplication',
+    operatingSystem: 'All',
+    url: pageUrl,
+    isPartOf: { '@id': `${SITE_URL}/#website` },
+    speakable: buildSpeakableSpecification(['.lvn-lede', '.lvn-today', 'h1']),
+  }
+
+  const faqItems: FaqItem[] = [
+    {
+      q: 'Lịch vạn niên trên VinhLong360 được tính toán theo quy chuẩn nào?',
+      a: 'Trang áp dụng thuật toán thiên văn Jean Meeus kết hợp công thức chuyển đổi âm lịch Việt Nam chính xác của Hồ Ngọc Đức, quy đổi theo múi giờ UTC+7 tiêu chuẩn quốc gia.',
+    },
+    {
+      q: 'Hệ thống hỗ trợ tra cứu âm lịch và tiết khí trong khoảng thời gian nào?',
+      a: `Bảng lịch hỗ trợ tra cứu đầy đủ can chi ngày tháng năm, tiết khí và tháng nhuận từ năm ${LUNAR_YEAR_MIN} đến năm ${LUNAR_YEAR_MAX}.`,
+    },
+    {
+      q: 'Trang có hiển thị xem ngày tốt xấu, giờ hoàng đạo hay bói toán không?',
+      a: 'Không. VinhLong360 chỉ hiển thị dữ liệu lịch pháp và thiên văn học kiểm chứng được, không cung cấp các yếu tố bói toán hay ngày hoàng đạo dân gian.',
+    },
+  ]
+  const faqNode = buildFaqPageSchema(faqItems, `${pageUrl}#faq`)
+
+  return buildUnifiedSchemaGraph([
+    buildWebSiteSchema(),
+    buildOrganizationSchema(),
+    appNode,
+    faqNode,
+  ])
+})
 
 // --- SEO -------------------------------------------------------------------
 useSeoMeta({

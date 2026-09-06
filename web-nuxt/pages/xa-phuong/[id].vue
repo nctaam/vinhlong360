@@ -536,8 +536,7 @@ const representativeImageMeta = computed(() => buildImageMeta(representativeImag
 
 const placeName = computed(() => data.value?.place?.name || 'Xã/Phường')
 useSeoMeta({
-  ogType: 'article',
-  title: () => `${placeName.value} — du lịch, lưu trú, đặc sản & danh bạ | vinhlong360`,
+  title: () => data.value?.place?.name ? `${data.value.place.name} — ${areaMeta.value.name} — vinhlong360` : 'Xã phường — vinhlong360',
   description: () => data.value?.place?.summary || `Tổng hợp địa điểm du lịch, cơ sở lưu trú, sản phẩm đặc sản và danh bạ hành chính của ${placeName.value}.`,
   ogTitle: () => `${placeName.value} — vinhlong360`,
   ogDescription: () => data.value?.place?.summary || `Du lịch, đặc sản & danh bạ ${placeName.value}.`,
@@ -545,61 +544,8 @@ useSeoMeta({
   ogImageAlt: () => representativeImageMeta.value.ogImageAlt,
   twitterImage: () => representativeImageMeta.value.twitterImage,
   twitterImageAlt: () => representativeImageMeta.value.twitterImageAlt,
-})
-useHead(() => {
-  const place = data.value?.place
-  if (!place) return { link: [{ rel: 'canonical', href: canonicalUrl(`/xa-phuong/${encodedId.value}`) }] }
-
-  const adminLd: Record<string, any> = {
-    '@context': 'https://schema.org', '@type': 'AdministrativeArea',
-    name: place.name,
-    ...(place.summary ? { description: place.summary } : {}),
-    address: { '@type': 'PostalAddress', addressRegion: areaMeta.value.name, addressCountry: 'VN' },
-  }
-  const representativeImage = descriptorToImageObject(representativeImageDescriptor.value)
-  if (representativeImage) adminLd.image = representativeImage
-  const geoCoords = normalizeCoords(place.coordinates)
-  if (geoCoords) {
-    adminLd.geo = { '@type': 'GeoCoordinates', latitude: geoCoords[0], longitude: geoCoords[1] }
-  }
-
-  const breadcrumbLd = {
-    '@context': 'https://schema.org', '@type': 'BreadcrumbList',
-    itemListElement: [
-      { '@type': 'ListItem', position: 1, name: 'Trang chủ', item: 'https://vinhlong360.vn/' },
-      ...(place.area ? [{ '@type': 'ListItem', position: 2, name: areaMeta.value.name, item: `https://vinhlong360.vn/khu-vuc/${place.area}` }] : []),
-      { '@type': 'ListItem', position: place.area ? 3 : 2, name: place.name, item: `https://vinhlong360.vn/xa-phuong/${encodedId.value}` },
-    ],
-  }
-
-  const scripts = [
-    { type: 'application/ld+json', innerHTML: safeJsonLd(adminLd) },
-    { type: 'application/ld+json', innerHTML: safeJsonLd(breadcrumbLd) },
-  ]
-
-  const allEnts = allWardEntities.value
-  if (allEnts.length) {
-    scripts.push({
-      type: 'application/ld+json',
-      innerHTML: safeJsonLd({
-        '@context': 'https://schema.org',
-        '@type': 'ItemList',
-        name: `Địa điểm tại ${place.name}`,
-        numberOfItems: allEnts.length,
-        itemListElement: allEnts.slice(0, 30).map((e: any, i: number) => ({
-          '@type': 'ListItem',
-          position: i + 1,
-          name: e.name,
-          url: `https://vinhlong360.vn${entityPath(e.id)}`,
-        })),
-      }),
-    })
-  }
-
-  return {
-    link: [{ rel: 'canonical', href: canonicalUrl(`/xa-phuong/${encodedId.value}`) }],
-    script: scripts,
-  }
+  ogUrl: () => canonicalUrl(`/xa-phuong/${encodedId.value}`),
+  twitterCard: 'summary_large_image',
 })
 
 // Map
@@ -672,41 +618,101 @@ const breadcrumbItems = computed(() => [
   { label: data.value?.place?.name || 'Xã/phường' },
 ])
 
-useSeoMeta({
-  title: () => data.value?.place?.name ? `${data.value.place.name} — ${areaMeta.value.name} — vinhlong360` : 'Xã phường — vinhlong360',
-  description: () => data.value?.place?.summary || `${data.value?.place?.name || 'Xã/phường'} thuộc ${areaMeta.value.name}, tỉnh Vĩnh Long — thông tin hành chính, địa điểm du lịch, đặc sản OCOP.`,
-  ogTitle: () => data.value?.place?.name ? `${data.value.place.name} — ${areaMeta.value.name} — vinhlong360` : 'Xã phường — vinhlong360',
-  ogDescription: () => data.value?.place?.summary || '',
-  ogUrl: () => canonicalUrl(`/xa-phuong/${encodeURIComponent(route.params.id as string)}`),
-  twitterCard: 'summary_large_image',
-})
-
 const placeJsonLd = computed(() => {
   const p = data.value?.place
   if (!p) return []
-  const placeUrl = canonicalUrl(`/xa-phuong/${encodeURIComponent(route.params.id as string)}`)
+  const placeUrl = canonicalUrl(`/xa-phuong/${encodedId.value}`)
   const schema: Record<string, any> = {
-    '@context': 'https://schema.org',
     '@type': 'AdministrativeArea',
-    '@id': placeUrl,
+    '@id': `${placeUrl}#adminarea`,
     name: p.name,
-    description: p.summary || '',
+    description: p.summary || `${p.name} thuộc ${areaMeta.value.name}, tỉnh Vĩnh Long.`,
     url: placeUrl,
+    address: { '@type': 'PostalAddress', addressRegion: areaMeta.value.name, addressCountry: 'VN' },
     containedInPlace: {
       '@type': 'AdministrativeArea',
       name: areaMeta.value.name,
     },
   }
+  const representativeImage = descriptorToImageObject(representativeImageDescriptor.value)
+  if (representativeImage) schema.image = representativeImage
   const c = normalizeCoords(p.coordinates)
   if (c) {
     schema.geo = { '@type': 'GeoCoordinates', latitude: c[0], longitude: c[1] }
     schema.hasMap = `https://www.google.com/maps/search/?api=1&query=${c[0]},${c[1]}`
   }
-  return [{ type: 'application/ld+json', innerHTML: safeJsonLd(schema) }]
+
+  const webpageNode = {
+    '@type': 'WebPage',
+    '@id': `${placeUrl}#webpage`,
+    url: placeUrl,
+    name: `${p.name} — ${areaMeta.value.name} — vinhlong360`,
+    description: p.summary || `Khám phá địa điểm du lịch, ẩm thực, đặc sản và danh bạ hành chính tại ${p.name}.`,
+    inLanguage: 'vi-VN',
+    isPartOf: { '@id': `${SITE_URL}/#website` },
+    breadcrumb: { '@id': `${placeUrl}#breadcrumb` },
+    mainEntity: { '@id': `${placeUrl}#adminarea` },
+    speakable: buildSpeakableSpecification(['.place-hero-summary', '.lead', 'h1', '.admin-unit-stats', '.wp-summary']),
+    publisher: { '@id': `${SITE_URL}/#organization` },
+  }
+
+  const breadcrumbNode = {
+    '@type': 'BreadcrumbList',
+    '@id': `${placeUrl}#breadcrumb`,
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'Trang chủ', item: `${SITE_URL}/` },
+      ...(p.area ? [{ '@type': 'ListItem', position: 2, name: areaMeta.value.name, item: `${SITE_URL}/khu-vuc/${p.area}` }] : []),
+      { '@type': 'ListItem', position: p.area ? 3 : 2, name: p.name, item: placeUrl },
+    ],
+  }
+
+  const allEnts = allWardEntities.value
+  const itemListNode = allEnts.length ? {
+    '@type': 'ItemList',
+    '@id': `${placeUrl}#items`,
+    name: `Địa điểm tại ${p.name}`,
+    numberOfItems: allEnts.length,
+    itemListElement: allEnts.slice(0, 30).map((e: any, i: number) => ({
+      '@type': 'ListItem',
+      position: i + 1,
+      name: e.name,
+      url: `${SITE_URL}${entityPath(e.id)}`,
+    })),
+  } : null
+
+  const faqItems: FaqItem[] = [
+    {
+      q: `${p.name} thuộc huyện, thị xã hay thành phố nào của tỉnh Vĩnh Long?`,
+      a: `${p.name} là đơn vị hành chính cấp ${p.level === 'phuong' ? 'phường' : 'xã'} trực thuộc ${areaMeta.value.name}, tỉnh Vĩnh Long.`,
+    },
+    {
+      q: `Có những địa điểm du lịch, ẩm thực hoặc đặc sản nào tại ${p.name}?`,
+      a: allEnts.length > 0
+        ? `Hiện tại trên hệ thống VinhLong360 đã ghi nhận ${allEnts.length} địa điểm, cơ sở lưu trú, ẩm thực và sản phẩm đặc sản tại ${p.name}.`
+        : `Các điểm đến, dịch vụ du lịch và đặc sản tại ${p.name} đang tiếp tục được cập nhật đầy đủ trên hệ thống VinhLong360.`,
+    },
+    {
+      q: `Làm sao để tìm số điện thoại cơ quan công an hoặc danh bạ hành chính của ${p.name}?`,
+      a: `Trang thông tin ${p.name} trên VinhLong360 cung cấp số điện thoại liên hệ công an xã/phường, trạm y tế, ủy ban và các dịch vụ công ích địa phương kèm bản đồ số tương tác.`,
+    },
+  ]
+  const faqNode = buildFaqPageSchema(faqItems, `${placeUrl}#faq`)
+
+  const graph = buildUnifiedSchemaGraph([
+    buildWebSiteSchema(),
+    buildOrganizationSchema(),
+    webpageNode,
+    breadcrumbNode,
+    schema,
+    itemListNode,
+    faqNode,
+  ])
+
+  return [{ type: 'application/ld+json', innerHTML: safeJsonLd(graph) }]
 })
 
 useHead({
-  link: [{ rel: 'canonical', href: () => canonicalUrl(`/xa-phuong/${encodeURIComponent(route.params.id as string)}`) }],
+  link: [{ rel: 'canonical', href: () => canonicalUrl(`/xa-phuong/${encodedId.value}`) }],
   script: placeJsonLd,
 })
 </script>

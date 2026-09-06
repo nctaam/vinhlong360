@@ -250,29 +250,68 @@ useSeoMeta({
   twitterCard: 'summary_large_image',
 })
 
-useHead(() => ({
-  link: [{ rel: 'canonical', href: canonicalUrl('/tuyen-duong') }],
-  script: [{
-    type: 'application/ld+json',
-    innerHTML: safeJsonLd({
-      '@context': 'https://schema.org',
+useHead(() => {
+  const pageUrl = canonicalUrl('/tuyen-duong')
+  const graphNodes: any[] = [
+    buildWebSiteSchema(),
+    buildOrganizationSchema(),
+    {
       '@type': 'CollectionPage',
+      '@id': `${pageUrl}#collection`,
       name: 'Tuyến đường gợi ý Vĩnh Long',
       description: 'Các tuyến đường tự khám phá qua miệt vườn, làng nghề và văn hóa tỉnh Vĩnh Long hợp nhất (3 vùng trước 7-2025).',
-      url: 'https://vinhlong360.vn/tuyen-duong',
-      mainEntity: {
-        '@type': 'ItemList',
-        numberOfItems: ROUTES.value.length,
-        itemListElement: ROUTES.value.map((r: any, i: number) => ({
-          '@type': 'ListItem',
-          position: i + 1,
-          name: r.name,
-          description: `${r.duration} · ${r.distance}`,
-        })),
+      url: pageUrl,
+      numberOfItems: ROUTES.value.length,
+      isPartOf: { '@id': `${SITE_URL}/#website` },
+      about: {
+        '@type': 'Thing',
+        name: 'Lộ trình du lịch Vĩnh Long',
+        description: 'Tuyến đường gợi ý khám phá miệt vườn, di sản gốm đỏ Mang Thít và cù lao sông Tiền.',
       },
-    }),
-  }],
-}))
+      speakable: buildSpeakableSpecification(['.hero-lede', 'h1', '.route-header', '.route-stops-head']),
+    },
+    {
+      '@type': 'ItemList',
+      '@id': `${pageUrl}#items`,
+      name: 'Danh sách tuyến đường gợi ý',
+      numberOfItems: ROUTES.value.length,
+      itemListElement: ROUTES.value.map((r: any, i: number) => ({
+        '@type': 'ListItem',
+        position: i + 1,
+        name: r.name,
+        description: `${r.duration} · ${r.distance}`,
+      })),
+    },
+  ]
+
+  const faqItems: FaqItem[] = [
+    {
+      q: 'Nên chọn phương tiện gì để đi các tuyến đường khám phá Vĩnh Long?',
+      a: 'Xe máy phù hợp nhất cho các cung đường miệt vườn ngõ nhỏ, cù lao và phà sông. Ô tô thuận tiện cho các tuyến trục quốc lộ và liên tỉnh kết nối Bến Tre, Trà Vinh.',
+    },
+    {
+      q: 'Thời điểm nào trong năm thích hợp nhất để trải nghiệm các cung đường này?',
+      a: 'Từ tháng 5 đến tháng 8 là mùa trái cây chín rộ tại cù lao An Bình; từ tháng 9 đến tháng 11 là mùa phù sa ven sông Tiền - sông Hậu với nhiều trải nghiệm đồng quê sông nước đặc sắc.',
+    },
+    {
+      q: 'Cần chuẩn bị gì khi di chuyển qua các tuyến phà hoặc đò ngang ở Vĩnh Long?',
+      a: 'Nên chuẩn bị tiền mặt mệnh giá nhỏ khi qua đò/phà, kiểm tra lịch hoạt động của các bến phà lớn như phà An Bình, phà Đình Khao và lưu ý khung giờ cao điểm.',
+    },
+  ]
+  const faqNode = buildFaqPageSchema(faqItems, `${pageUrl}#faq`)
+  if (faqNode) graphNodes.push(faqNode)
+
+  return {
+    link: [{ rel: 'canonical', href: pageUrl }],
+    script: [{
+      type: 'application/ld+json',
+      innerHTML: safeJsonLd({
+        '@context': 'https://schema.org',
+        '@graph': graphNodes,
+      }),
+    }],
+  }
+})
 </script>
 
 <style scoped>
