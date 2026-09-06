@@ -14,6 +14,7 @@ import {
   buildCatalogDirectorySchemaGraph,
   buildAboutPageSchemaGraph,
   buildContactPageSchemaGraph,
+  buildGuideSchemaGraph,
   safeJsonLd,
   SITE_URL,
 } from '../composables/useSeoHelpers'
@@ -479,5 +480,33 @@ describe('SEO / AIO / AEO / GEO Architecture Quality Gate', () => {
       expect(itemListNode.itemListElement[0].name).toBe('Chùa Phật Ngọc Xá Lợi')
     })
   })
+
+  describe('Guide Knowledge Graph (pages/huong-dan.vue)', () => {
+    it('publishes unified @graph with WebPage, Organization, WebSite, Speakable, and FAQPage', () => {
+      const guide = doc('pages/huong-dan.vue')
+      expect(guide).toContain('buildGuideSchemaGraph')
+      expect(guide).toContain('safeJsonLd(guideSchema.value)')
+      expect(guide).toContain("twitterCard: 'summary_large_image'")
+
+      const lines = guide.split('\n').length
+      expect(lines).toBeLessThan(700)
+
+      const graph = buildGuideSchemaGraph()
+      expect(graph['@context']).toBe('https://schema.org')
+      const types = graph['@graph'].map((n: any) => n['@type'])
+      expect(types).toContain('WebSite')
+      expect(types).toContain('Organization')
+      expect(types).toContain('WebPage')
+      expect(types).toContain('FAQPage')
+
+      const webpage = graph['@graph'].find((n: any) => n['@type'] === 'WebPage')
+      expect(webpage.name).toContain('Hướng dẫn sử dụng')
+      expect(webpage.speakable?.['@type']).toBe('SpeakableSpecification')
+
+      const faq = graph['@graph'].find((n: any) => n['@type'] === 'FAQPage')
+      expect(faq.mainEntity.length).toBeGreaterThanOrEqual(3)
+    })
+  })
 })
+
 

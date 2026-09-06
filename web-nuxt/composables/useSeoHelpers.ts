@@ -1126,5 +1126,61 @@ export function buildCatalogDirectorySchemaGraph(options: CatalogDirectorySchema
   ])
 }
 
+export interface GuideSchemaOptions {
+  title?: string
+  description?: string
+  canonicalUrl?: string
+  faqs?: Array<{ q: string; a: string }>
+}
+
+export function buildGuideSchemaGraph(options: GuideSchemaOptions = {}): Record<string, any> {
+  const pageUrl = options.canonicalUrl || canonicalUrl('/huong-dan')
+  const title = options.title || 'Hướng dẫn sử dụng vinhlong360'
+  const desc = options.description || 'Cẩm nang đầy đủ mọi tính năng trên vinhlong360: tìm kiếm, bản đồ, tạo lịch trình, cộng đồng, điểm thưởng và xử lý sự cố.'
+
+  const webpageNode = {
+    '@type': 'WebPage',
+    '@id': `${pageUrl}#webpage`,
+    url: pageUrl,
+    name: `${title} — vinhlong360`,
+    description: desc,
+    inLanguage: 'vi-VN',
+    isPartOf: { '@id': `${SITE_URL}/#website` },
+    about: { '@id': `${SITE_URL}/#organization` },
+    mainEntity: { '@id': `${SITE_URL}/#organization` },
+    speakable: buildSpeakableSpecification(['.bm-inner h1', '.bm-sub', '.section-intro', '#bat-dau h2']),
+  }
+
+  const defaultFaqs = [
+    {
+      q: 'Làm thế nào để tìm kiếm địa điểm và sản phẩm OCOP trên vinhlong360?',
+      a: 'Bạn chỉ cần nhập từ khóa vào thanh tìm kiếm ở đầu trang hoặc chọn các danh mục Du lịch, Ẩm thực, OCOP để duyệt nhanh mà không cần tạo tài khoản.',
+    },
+    {
+      q: 'Tính năng tạo lịch trình du lịch thông minh hoạt động như thế nào?',
+      a: 'Du khách có thể chọn các điểm đến yêu thích từ danh sách đã lưu, kéo thả sắp xếp thứ tự và hệ thống sẽ tự động tính toán lộ trình hiển thị trực quan trên bản đồ.',
+    },
+    {
+      q: 'Bản đồ số du lịch vinhlong360 có hỗ trợ tìm điểm quanh tôi không?',
+      a: 'Có, tính năng Tìm quanh tôi trên bản đồ số giúp bạn định vị vị trí hiện tại và lọc các điểm tham quan, ẩm thực, lưu trú gần nhất trong bán kính mong muốn.',
+    },
+    {
+      q: 'Tham gia cộng đồng du lịch Vĩnh Long mang lại những quyền lợi gì?',
+      a: 'Thành viên đăng nhập có thể viết bài chia sẻ kinh nghiệm, đánh giá địa điểm, lưu trữ hành trình đám mây và tích lũy điểm danh tiếng để thăng hạng huy hiệu.',
+    },
+  ]
+
+  const faqs = options.faqs && options.faqs.length > 0 ? options.faqs : defaultFaqs
+  const faqNode = buildFaqPageSchema(faqs, `${pageUrl}#faq`)
+
+  return buildUnifiedSchemaGraph([
+    buildWebSiteSchema(),
+    buildOrganizationSchema(),
+    webpageNode,
+    faqNode,
+  ])
+}
+
+
 
 
