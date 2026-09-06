@@ -351,6 +351,7 @@ onUnmounted(() => window.removeEventListener('keydown', onKeydown))
 .img-reject { padding: 0 var(--space-3) var(--space-3); display: flex; flex-direction: column; gap: var(--space-2); }
 .img-reason-input { padding: 9px 12px; border: .5px solid var(--line); border-radius: 10px; font-size: .85rem; background: var(--bg); color: var(--ink); min-height: 40px; }
 .img-reason-input:focus { outline: none; border-color: var(--error); box-shadow: 0 0 0 3px rgba(var(--danger-rgb),.1); }
+.img-reason-input:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
 .img-reject-btns { display: flex; gap: var(--space-2); }
 .img-reject-btns .btn-danger { flex: 1; }
 .btn-ghost-sm { background: none; border: none; color: var(--muted); font-size: .82rem; cursor: pointer; padding: var(--space-2) var(--space-3); border-radius: 8px; }

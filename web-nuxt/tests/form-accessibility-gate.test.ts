@@ -127,4 +127,32 @@ describe('Form Accessibility & Live Region Quality Gate (Mốc 104)', () => {
       expect(nguoiDungContent).toContain('aria-label="Mô tả bộ sưu tập"')
     })
   })
+
+  describe('Mốc 105: Input Autocomplete Semantics (WCAG 2.2 SC 1.3.5) & Focus-Visible Standards (SC 2.4.7)', () => {
+    const caiDatContent = readFile('pages/cai-dat.vue')
+    const intakeContent = readFile('components/cases/CorrectionIntakeForm.vue')
+    const duyetAnhContent = readFile('pages/admin/duyet-anh.vue')
+    const caiDatIndexContent = readFile('pages/admin/cai-dat/index.vue')
+
+    it('bảo đảm các trường trong cài đặt có autocomplete ngữ nghĩa chuẩn', () => {
+      expect(caiDatContent).toContain('autocomplete="tel"')
+      expect(caiDatContent).toContain('autocomplete="username"')
+      expect(caiDatContent).toContain('autocomplete="name"')
+      expect(caiDatContent).toContain('autocomplete="nickname"')
+      expect(caiDatContent).toContain('autocomplete="one-time-code"')
+    })
+
+    it('bảo đảm trường số điện thoại trong CorrectionIntakeForm có autocomplete="tel"', () => {
+      expect(intakeContent).toContain('id="optional-phone"')
+      expect(intakeContent).toMatch(/id="optional-phone"[^>]*autocomplete="tel"/)
+    })
+
+    it('bảo đảm các ô nhập liệu quản trị có focus-visible outline với token var(--color-focus)', () => {
+      expect(duyetAnhContent).toContain('.img-reason-input:focus-visible')
+      expect(duyetAnhContent).toContain('outline: 2px solid var(--color-focus);')
+      expect(caiDatIndexContent).toContain('.cs-search-input:focus-visible')
+      expect(caiDatIndexContent).toContain('outline: 2px solid var(--color-focus);')
+    })
+  })
 })
+

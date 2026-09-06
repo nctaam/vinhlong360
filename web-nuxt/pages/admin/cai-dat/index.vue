@@ -195,7 +195,9 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKeydown))
 }
 .cs-search-input::placeholder { color: var(--muted); }
 .cs-search-input:focus-visible {
-  outline: none; border-color: var(--color-action);
+  outline: 2px solid var(--color-focus);
+  outline-offset: 2px;
+  border-color: var(--color-action);
   box-shadow: 0 0 0 3px color-mix(in oklab, var(--color-action) 18%, transparent);
 }
 .cs-search-count {

@@ -346,7 +346,7 @@ function submit() {
       <legend>Nhận kết quả (không bắt buộc)</legend>
       <div class="intake-field">
         <label for="optional-phone">Số điện thoại (chỉ để báo kết quả)</label>
-        <input id="optional-phone" v-model="optionalPhone" type="tel" inputmode="tel" maxlength="32">
+        <input id="optional-phone" v-model="optionalPhone" type="tel" inputmode="tel" autocomplete="tel" maxlength="32">
       </div>
       <label v-if="optionalPhone.trim()" id="phone-consent" class="intake-consent">
         <input v-model="phoneConsent" type="checkbox" @change="emit('phone-consent-changed', phoneConsent)">
