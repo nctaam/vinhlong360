@@ -465,7 +465,7 @@ a.tag:hover, button.tag:hover, .tag[role="button"]:hover { filter: brightness(.9
 .notif-badge {
   position: absolute; top: -4px; right: -6px;
   background: var(--error); color: var(--text-on-dark);
-  font-size: .65rem; font-weight: 800;
+  font-size: var(--text-2xs); font-weight: 800;
   min-width: 18px; height: 18px; border-radius: 50%;
   display: flex; align-items: center; justify-content: center;
   border: 2px solid var(--card); padding: 0 3px;

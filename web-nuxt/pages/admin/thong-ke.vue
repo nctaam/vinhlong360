@@ -275,7 +275,7 @@ onMounted(fetchData)
 }
 /* Cost-scope micro badge ("tháng" / "ngày") */
 .tk-cost-scope {
-  font-size: .62rem; font-weight: 700; line-height: 1;
+  font-size: var(--text-2xs); font-weight: 700; line-height: 1;
   text-transform: uppercase; letter-spacing: .4px;
   padding: 2px 6px; border-radius: 100px;
   background: rgba(var(--color-brand-rgb),.12); color: var(--color-brand);

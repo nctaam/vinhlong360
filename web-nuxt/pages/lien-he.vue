@@ -170,7 +170,7 @@ useHead(() => ({
   font-family: var(--font-sans); font-size: var(--text-xs); font-weight: var(--weight-semibold);
   color: var(--secondary-fg); margin: 0;
 }
-.bm-sla span { color: var(--leaf-600); font-size: .55rem; }
+.bm-sla span { color: var(--leaf-600); font-size: var(--text-2xs); }
 .bm-motif { width: clamp(80px, 8vw + 40px, 128px); height: auto; flex-shrink: 0; color: var(--clay-400); opacity: .85; }
 .bm-motif path, .bm-motif rect, .bm-motif line, .bm-motif circle { stroke: currentColor; fill: none; }
 

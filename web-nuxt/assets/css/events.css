@@ -699,7 +699,7 @@
 }
 .cal-event-dot {
   display: block;
-  font-size: 10px;
+  font-size: var(--text-2xs);
   line-height: 1.3;
   padding: var(--space-1);
   /* Cùng lỗi với .event-date-badge: --primary-fg là token CHỮ, dùng làm NỀN thì
@@ -756,7 +756,7 @@
 }
 /* Tiny markers distinguish the two lunar anchor days at a glance. */
 .cal-lunar.lunar-first::before { content: '•'; margin-inline-end: 1px; }
-.cal-lunar.lunar-mid::before { content: '◯'; margin-inline-end: 1px; font-size: 8px; }
+.cal-lunar.lunar-mid::before { content: '◯'; margin-inline-end: 1px; font-size: var(--text-2xs); }
 
 @media (prefers-reduced-motion: reduce) {
   .cal-lunar { transition: none; }
@@ -831,7 +831,7 @@
   /* roomier calendar touch targets on phones */
   .cal-grid { min-width: 320px; }
   .cal-cell { min-height: 64px; }
-  .cal-event-dot { font-size: 9px; }
+  .cal-event-dot { font-size: var(--text-2xs); }
   /* keep the summary but cap it to 2 lines so the stacked row stays compact */
   .event-summary {
     display: -webkit-box;

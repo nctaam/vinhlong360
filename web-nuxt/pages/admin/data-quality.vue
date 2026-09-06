@@ -702,7 +702,7 @@ onMounted(() => refreshAll())
 .dq-btn-count { display: inline-flex; align-items: center; justify-content: center; min-width: 18px; height: 18px; padding: 0 5px; margin-left: 6px; border-radius: 999px; background: rgba(var(--white-rgb),.25); font-size: .72rem; font-weight: 700; font-variant-numeric: tabular-nums; }
 
 /* Severity / status badges (derived from existing bucket / record_type data) */
-.dq-sev-badge, .dq-status-badge { display: inline-flex; align-items: center; justify-content: center; font-size: .68rem; font-weight: 700; letter-spacing: .02em; padding: 2px 8px; border-radius: 999px; white-space: nowrap; }
+.dq-sev-badge, .dq-status-badge { display: inline-flex; align-items: center; justify-content: center; font-size: var(--text-2xs); font-weight: 700; letter-spacing: .02em; padding: 2px 8px; border-radius: 999px; white-space: nowrap; }
 .dq-sev-success { background: rgba(var(--color-success-rgb),.12); color: var(--success); }
 .dq-sev-warning { background: rgba(var(--warning-rgb),.14); color: var(--warning); }
 .dq-sev-error { background: rgba(var(--danger-rgb),.12); color: var(--error); }
@@ -717,7 +717,7 @@ onMounted(() => refreshAll())
 .dq-row-actions .btn { min-height: 32px; padding: 5px 8px; font-size: .72rem; line-height: 1.2; }
 .dq-decision-badge {
   display: inline-flex; align-items: center; justify-content: center;
-  padding: 2px 8px; border-radius: 999px; font-size: .68rem;
+  padding: 2px 8px; border-radius: 999px; font-size: var(--text-2xs);
   font-weight: 700; white-space: nowrap; border: .5px solid transparent;
 }
 .dq-decision-approve { background: rgba(var(--color-success-rgb),.12); color: var(--success); border-color: rgba(var(--color-success-rgb),.24); }
@@ -784,7 +784,7 @@ onMounted(() => refreshAll())
 .dq-skipped-item { display: grid; gap: 2px; }
 .dq-skipped-item .dq-skipped-entity { font-weight: 700; word-break: break-word; color: var(--color-brand); }
 .dq-skipped-item small { color: var(--muted); word-break: break-word; }
-.dq-skipped-reason { display: inline-block; font-size: .68rem; font-weight: 600; padding: 1px 6px; border-radius: 999px; }
+.dq-skipped-reason { display: inline-block; font-size: var(--text-2xs); font-weight: 600; padding: 1px 6px; border-radius: 999px; }
 .btn.danger { color: var(--error); border-color: var(--error); }
 
 @media (prefers-reduced-motion: reduce) {

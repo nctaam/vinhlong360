@@ -459,7 +459,7 @@ function accuracyLabel(value: string) {
 .personalize-actions .next-icon { transform: rotate(-90deg); }
 @media (max-width: 420px) {
   .personalize-sheet { padding-left: var(--space-4); padding-right: var(--space-4); }
-  .setup-rail-item { font-size: .68rem; }
+  .setup-rail-item { font-size: var(--text-2xs); }
   .setup-rail-item span:last-child { display: none; }
   .personalize-actions { flex-direction: column-reverse; align-items: stretch; }
   .personalize-actions .btn { width: 100%; justify-content: center; }

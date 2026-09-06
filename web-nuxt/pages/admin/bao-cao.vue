@@ -490,7 +490,7 @@ onMounted(() => fetchAll())
 .rpt-chip-count {
   display: inline-flex; align-items: center; justify-content: center;
   min-width: 18px; height: 18px; padding: 0 5px;
-  border-radius: 100px; font-size: .68rem; font-weight: 600;
+  border-radius: 100px; font-size: var(--text-2xs); font-weight: 600;
   background: rgba(var(--black-rgb),.06); color: var(--muted);
 }
 .rpt-chip.active .rpt-chip-count { background: rgba(var(--white-rgb),.25); color: var(--text-on-dark); }

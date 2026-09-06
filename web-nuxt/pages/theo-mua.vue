@@ -760,7 +760,7 @@ useHead(() => ({
   .stl-legend { gap: var(--space-1) var(--space-3); }
 }
 @media (max-width: 480px) {
-  .season-badge { font-size: .65rem; padding: 2px var(--space-2); top: var(--space-1); left: var(--space-1); }
+  .season-badge { font-size: var(--text-2xs); padding: 2px var(--space-2); top: var(--space-1); left: var(--space-1); }
   .stl-track { gap: 2px; }
 }
 

@@ -259,7 +259,7 @@ useSeoMeta({
 .admin-brand .logo { font-size: 1.15rem; font-weight: 800; letter-spacing: -.02em; }
 .admin-brand .dot { color: var(--accent); }
 .admin-brand small {
-  display: block; font-size: .65rem; opacity: .45; margin-top: 1px;
+  display: block; font-size: var(--text-2xs); opacity: .45; margin-top: 1px;
   letter-spacing: 2.5px; text-transform: uppercase;
 }
 .collapsed .admin-brand .logo { font-size: .9rem; }
@@ -290,7 +290,7 @@ useSeoMeta({
 .admin-nav::-webkit-scrollbar-thumb { background: rgba(var(--white-rgb),.08); border-radius: 2px; }
 .admin-nav-group { margin-bottom: var(--space-2); }
 .admin-nav-group-label {
-  display: block; font-size: .65rem; font-weight: 600;
+  display: block; font-size: var(--text-2xs); font-weight: 600;
   text-transform: uppercase; letter-spacing: 1.5px;
   color: rgba(var(--white-rgb),.3); padding: var(--space-2) var(--space-3) var(--space-1);
   transition: opacity .25s;
@@ -319,12 +319,12 @@ useSeoMeta({
 .nav-badge {
   margin-left: auto; min-width: 20px; height: 20px; padding: 0 6px;
   border-radius: 10px; background: var(--error); color: var(--on-error);
-  font-size: .65rem; font-weight: 700; display: flex; align-items: center; justify-content: center;
+  font-size: var(--text-2xs); font-weight: 700; display: flex; align-items: center; justify-content: center;
   line-height: 1; flex-shrink: 0;
 }
 .collapsed .nav-badge {
   position: absolute; top: 4px; right: 4px; min-width: 16px; height: 16px;
-  padding: 0 4px; font-size: .6rem;
+  padding: 0 4px; font-size: var(--text-2xs);
 }
 .collapsed .nav-icon { font-size: 1.2rem; }
 .collapsed .admin-nav a { justify-content: center; padding: var(--space-2); }
@@ -354,7 +354,7 @@ useSeoMeta({
 .admin-user-info:hover .admin-user-avatar { transform: scale(1.08); }
 .admin-user-meta { display: flex; flex-direction: column; overflow: hidden; }
 .admin-user-name { font-size: .82rem; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.admin-user-role { font-size: .68rem; color: rgba(var(--white-rgb),.4); text-transform: uppercase; letter-spacing: 1px; }
+.admin-user-role { font-size: var(--text-2xs); color: rgba(var(--white-rgb),.4); text-transform: uppercase; letter-spacing: 1px; }
 .back-link {
   color: rgba(var(--white-rgb),.45); text-decoration: none; font-size: .78rem;
   transition: color .25s, transform .35s var(--ease-soft);
@@ -695,7 +695,7 @@ useSeoMeta({
   display: inline-flex; align-items: center; justify-content: center;
   width: 16px; height: 16px; border-radius: 50%;
   background: rgba(var(--gray-rgb),.12); color: var(--muted);
-  font-size: .65rem; font-weight: 700; cursor: help;
+  font-size: var(--text-2xs); font-weight: 700; cursor: help;
   position: relative; vertical-align: middle; margin-left: var(--space-1);
 }
 .admin-help::after {

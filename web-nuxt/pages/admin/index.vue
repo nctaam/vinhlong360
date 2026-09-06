@@ -699,7 +699,7 @@ onMounted(fetchDashboard)
   pointer-events: none;
 }
 .dash-donut-total { font-size: 1.4rem; font-weight: 800; line-height: 1.2; }
-.dash-donut-label { font-size: .68rem; color: var(--muted); text-transform: uppercase; letter-spacing: .5px; }
+.dash-donut-label { font-size: var(--text-2xs); color: var(--muted); text-transform: uppercase; letter-spacing: .5px; }
 .dash-donut-legend {
   display: flex; flex-wrap: wrap; gap: 6px 12px; justify-content: center;
 }
@@ -774,7 +774,7 @@ onMounted(fetchDashboard)
 
 @media (max-width: 480px) {
   .dash-donut-legend { gap: 3px 6px; }
-  .dash-legend-item { font-size: .65rem; }
+  .dash-legend-item { font-size: var(--text-2xs); }
 }
 .dash-activity { display: flex; flex-direction: column; gap: 2px; }
 .activity-row { display: flex; align-items: center; gap: .5rem; padding: .4rem .6rem; border-radius: var(--radius-control); font-size: .8rem; }

@@ -1241,7 +1241,7 @@ html.js .home .hero-enter h1::after { animation: hero-underline-draw .8s var(--e
 }
 .fy-thumb img { width: 100%; height: 100%; object-fit: cover; }
 .fy-disclosure { max-width: 60px; color: var(--muted); overflow-wrap: anywhere; }
-.fy-disclosure :deep([data-short-label]) { font-size: .6rem; font-weight: var(--weight-semibold); line-height: 1.15; }
+.fy-disclosure :deep([data-short-label]) { font-size: var(--text-2xs); font-weight: var(--weight-semibold); line-height: 1.15; }
 .fy-icon { width: 30px; height: 30px; opacity: .8; color: var(--muted); }
 .fy-icon :deep(svg) { width: 100%; height: 100%; }
 .fy-body { display: flex; flex-direction: column; gap: 2px; min-width: 0; }

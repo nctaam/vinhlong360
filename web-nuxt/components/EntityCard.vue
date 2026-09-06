@@ -304,7 +304,7 @@ const ratingDisplay = computed(() => {
 }
 .dark .cover-grain { opacity: .09; }
 .ca-icon { font-size: .7rem; opacity: .7; cursor: default; }
-.ca-more { font-size: .65rem; color: var(--muted); font-weight: 600; margin-left: 1px; }
+.ca-more { font-size: var(--text-2xs); color: var(--muted); font-weight: 600; margin-left: 1px; }
 .card-rating { display: flex; align-items: center; gap: .25rem; font-size: .8rem; margin-top: .25rem; }
 .cr-stars { color: var(--secondary); letter-spacing: -1px; }
 .cr-score { font-weight: 600; color: var(--ink); }

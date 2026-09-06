@@ -138,7 +138,7 @@ h4 { font-size: var(--text-lg);  line-height: var(--lh-lg);  letter-spacing: var
 .nav-group-btn:active { transform: scale(.95); transition-duration: .08s; }
 .nav-group-btn:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
 .nav-group-btn.active { color: var(--color-action); }
-.caret { font-size: .65rem; transition: transform .3s var(--ease-out); }
+.caret { font-size: var(--text-2xs); transition: transform .3s var(--ease-out); }
 .nav-group.open .caret { transform: rotate(180deg); }
 .nav-panel { position: absolute; top: calc(100% + var(--space-2)); left: 0; min-width: 220px; background: var(--glass-bg-heavy); backdrop-filter: var(--glass-heavy); -webkit-backdrop-filter: var(--glass-heavy); border: .5px solid rgba(var(--ink-rgb),.06); border-radius: var(--radius-surface); box-shadow: var(--shadow-xl); padding: var(--space-1); display: none; flex-direction: column; gap: 2px; z-index: var(--z-dropdown); transform-origin: top left; }
 .dark .nav-panel { border-color: var(--overlay-light); }

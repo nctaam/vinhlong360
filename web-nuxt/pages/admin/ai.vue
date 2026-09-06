@@ -431,7 +431,7 @@ onMounted(() => { fetchHealth(); fetchCost() })
   align-items: center; justify-content: center; pointer-events: none;
 }
 .ai-ring-val { font-size: .95rem; font-weight: 800; line-height: 1.2; }
-.ai-ring-lbl { font-size: .58rem; color: var(--muted); text-transform: uppercase; letter-spacing: .5px; }
+.ai-ring-lbl { font-size: var(--text-2xs); color: var(--muted); text-transform: uppercase; letter-spacing: .5px; }
 .ai-metrics-col { display: flex; gap: var(--space-3); flex-wrap: wrap; }
 
 /* ── Data quality progress bar ── */
@@ -469,7 +469,7 @@ onMounted(() => { fetchHealth(); fetchCost() })
 .ai-metric:hover { transform: translateY(-1px); }
 .ai-metric-val { font-size: 1.2rem; font-weight: 800; line-height: 1.2; }
 .ai-metric-val small { font-size: .7rem; font-weight: 500; opacity: .6; }
-.ai-metric-lbl { font-size: .68rem; color: var(--muted); text-transform: uppercase; letter-spacing: .5px; }
+.ai-metric-lbl { font-size: var(--text-2xs); color: var(--muted); text-transform: uppercase; letter-spacing: .5px; }
 .ai-rt-dot {
   display: inline-block; width: 7px; height: 7px; border-radius: 50%;
   margin-right: 6px; vertical-align: middle;

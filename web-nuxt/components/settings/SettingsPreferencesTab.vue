@@ -431,7 +431,7 @@ onBeforeUnmount(() => {
 .preference-chip { padding: .35rem .65rem; border-radius: var(--radius-full); background: var(--bg-alt); color: var(--ink-700); font-size: .82rem; font-weight: 600; }
 .preference-controls { display: flex; flex-direction: column; gap: var(--space-2); }
 .preference-control { cursor: default; min-height: 68px; }
-.preference-control-mark { display: inline-flex; align-items: center; justify-content: center; min-width: 54px; min-height: 32px; border: 1px solid var(--line); border-radius: var(--radius-control); color: var(--ink-700); font-size: .65rem; font-weight: 750; letter-spacing: .06em; }
+.preference-control-mark { display: inline-flex; align-items: center; justify-content: center; min-width: 54px; min-height: 32px; border: 1px solid var(--line); border-radius: var(--radius-control); color: var(--ink-700); font-size: var(--text-2xs); font-weight: 750; letter-spacing: .06em; }
 .preference-reset { display: flex; align-items: center; justify-content: space-between; gap: var(--space-4); margin-top: var(--space-4); padding-top: var(--space-4); border-top: 1px solid var(--line); }
 .preference-reset p { margin: .2rem 0 0; max-width: 60ch; }
 .preference-reset .btn { min-height: 44px; flex-shrink: 0; }

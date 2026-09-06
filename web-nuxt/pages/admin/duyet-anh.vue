@@ -321,7 +321,7 @@ onUnmounted(() => window.removeEventListener('keydown', onKeydown))
 .img-thumb { width: 100%; height: 100%; object-fit: cover; display: block; }
 .img-thumb.img-broken { object-fit: contain; opacity: .35; }
 .img-conf {
-  position: absolute; top: 8px; right: 8px; font-size: .68rem; font-weight: 700;
+  position: absolute; top: 8px; right: 8px; font-size: var(--text-2xs); font-weight: 700;
   padding: 2px 8px; border-radius: 100px; color: var(--text-on-dark); backdrop-filter: blur(4px);
 }
 .conf-high { background: rgba(var(--color-action-rgb),.9); }
