@@ -455,6 +455,10 @@ useSeoMeta({
   border-radius: 14px;
   border: .5px solid var(--line);
 }
+.admin-table-wrap:focus-visible {
+  outline: 2px solid var(--color-action);
+  outline-offset: 2px;
+}
 .admin-table { width: 100%; border-collapse: collapse; background: var(--bg); min-width: 600px; }
 .dense-workbench .admin-table th {
   text-align: left; padding: var(--space-3) var(--space-4);

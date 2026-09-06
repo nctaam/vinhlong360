@@ -21,7 +21,7 @@
       <button type="button" class="btn btn-secondary" @click="fetchItineraries">Thử lại</button>
     </div>
     <template v-else>
-      <div class="admin-table-wrap">
+      <div class="admin-table-wrap" role="region" tabindex="0" aria-label="Bảng danh sách lịch trình">
         <table class="admin-table" aria-label="Danh sách lịch trình">
           <thead>
             <tr>

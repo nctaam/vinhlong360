@@ -61,6 +61,10 @@
 .legal-disclosure h3 { margin: var(--space-5) 0 var(--space-2); font-size: var(--text-base); color: var(--color-text); }
 .legal-disclosure p { margin: 0 0 var(--space-3); }
 .legal-table-wrap { overflow-x: auto; border: .5px solid var(--color-border); border-radius: var(--radius-control); }
+.legal-table-wrap:focus-visible {
+  outline: 2px solid var(--color-action);
+  outline-offset: 2px;
+}
 .legal-cookie-table { width: 100%; min-width: 680px; border-collapse: collapse; font-size: var(--text-sm); }
 .legal-cookie-table th, .legal-cookie-table td { padding: var(--space-2) var(--space-3); text-align: left; vertical-align: top; border-bottom: .5px solid var(--color-border); }
 .legal-cookie-table thead th { color: var(--color-text-muted); background: var(--color-surface-subtle); font-size: var(--text-xs); text-transform: uppercase; letter-spacing: .04em; }

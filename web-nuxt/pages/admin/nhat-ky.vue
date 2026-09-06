@@ -34,7 +34,7 @@
     <template v-else>
       <div class="audit-summary">{{ total }} mục{{ total > entries.length ? ` · trang ${page}/${totalPages}` : '' }}</div>
 
-      <div class="admin-table-wrap">
+      <div class="admin-table-wrap" role="region" tabindex="0" aria-label="Bảng nhật ký hoạt động">
         <table class="admin-table" aria-label="Nhật ký hoạt động">
           <thead>
             <tr>

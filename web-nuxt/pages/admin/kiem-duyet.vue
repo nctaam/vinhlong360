@@ -70,7 +70,7 @@
     </div>
 
     <!-- Queue table -->
-    <div class="admin-table-wrap">
+    <div class="admin-table-wrap" role="region" tabindex="0" aria-label="Bảng hàng đợi kiểm duyệt">
     <table class="admin-table" aria-label="Hàng đợi kiểm duyệt">
       <thead>
         <tr>

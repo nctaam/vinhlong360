@@ -150,7 +150,7 @@
       </div>
 
       <div v-if="sources.length" class="dth-sources">
-        <div class="admin-table-wrap">
+        <div class="admin-table-wrap" role="region" tabindex="0" aria-label="Bảng đề xuất tự học">
           <table class="admin-table" aria-label="Nguồn dữ liệu tự học">
             <thead><tr><th scope="col">Nguồn</th><th scope="col">Số entity</th><th scope="col">URL mẫu</th></tr></thead>
             <tbody>

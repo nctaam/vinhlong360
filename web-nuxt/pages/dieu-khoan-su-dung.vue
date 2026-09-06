@@ -33,9 +33,9 @@
     <section class="legal-disclosure" aria-labelledby="cookie-inventory-title">
       <h2 id="cookie-inventory-title">Cookie và lịch sử chính sách</h2>
       <p>Danh mục dưới đây mô tả cookie hiện có và cách kiểm soát. Các mốc xử lý, nơi lưu trữ, bên xử lý và phạm vi lập chỉ mục công khai chỉ có hiệu lực sau khi được phê duyệt.</p>
-      <div class="legal-table-wrap">
-        <table class="legal-cookie-table">
-          <thead><tr><th>Tên / vai trò runtime</th><th>Chủ quản & mục đích</th><th>Hạn / quyết định</th><th>Thuộc tính</th><th>Đồng ý / xoá</th><th>Lưu giữ / ngừng dùng</th></tr></thead>
+      <div class="legal-table-wrap" role="region" tabindex="0" aria-label="Bảng danh mục cookie và lịch sử chính sách">
+        <table class="legal-cookie-table" aria-label="Danh mục cookie và lịch sử chính sách">
+          <thead><tr><th scope="col">Tên / vai trò runtime</th><th scope="col">Chủ quản & mục đích</th><th scope="col">Hạn / quyết định</th><th scope="col">Thuộc tính</th><th scope="col">Đồng ý / xoá</th><th scope="col">Lưu giữ / ngừng dùng</th></tr></thead>
           <tbody>
             <tr v-for="cookie in doc.cookieInventory" :key="cookie.name">
               <th scope="row">{{ cookie.name }}<br><small>{{ cookie.runtimeRole }}</small></th>

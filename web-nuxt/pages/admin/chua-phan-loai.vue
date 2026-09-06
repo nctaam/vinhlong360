@@ -42,7 +42,7 @@
         <button type="button" class="btn btn-secondary btn-sm cpl-bulk-clear" :disabled="bulkBusy" @click="clearSelection">Bỏ chọn</button>
       </div>
 
-      <div v-if="items.length && filtered.length" class="admin-table-wrap cpl-table-wrap">
+      <div v-if="items.length && filtered.length" class="admin-table-wrap cpl-table-wrap" role="region" tabindex="0" aria-label="Bảng entity chưa phân loại">
         <table class="admin-table" aria-label="Entity chưa phân loại">
           <thead>
             <tr>

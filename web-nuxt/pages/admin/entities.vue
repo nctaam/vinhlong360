@@ -109,7 +109,7 @@
       </div>
     </div>
     <template v-else>
-      <div class="admin-table-wrap">
+      <div class="admin-table-wrap" role="region" tabindex="0" aria-label="Bảng danh sách entity">
       <table class="admin-table" aria-label="Danh sách entity">
         <thead>
           <tr>

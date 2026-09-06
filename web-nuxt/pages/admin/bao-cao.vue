@@ -55,7 +55,7 @@
         </div>
       </div>
 
-      <div class="admin-table-wrap">
+      <div class="admin-table-wrap" role="region" tabindex="0" aria-label="Bảng danh sách báo cáo vi phạm">
         <table class="admin-table" aria-label="Danh sách báo cáo vi phạm">
           <thead>
             <tr>
@@ -136,7 +136,7 @@
         <h2 class="admin-section-title">Báo sai thông tin (ẩn danh)</h2>
         <span v-if="infoOpen" class="rpt-open-badge">{{ infoOpen }} chưa xử lý</span>
       </div>
-      <div class="admin-table-wrap">
+      <div class="admin-table-wrap" role="region" tabindex="0" aria-label="Bảng báo sai thông tin">
         <table class="admin-table" aria-label="Thông tin vi phạm">
           <thead><tr><th scope="col">Loại</th><th scope="col">Đối tượng</th><th scope="col">Lý do</th><th scope="col">Trạng thái</th><th scope="col">Ngày</th><th scope="col">Thao tác</th></tr></thead>
           <tbody>

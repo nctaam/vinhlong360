@@ -122,7 +122,7 @@
     <div v-if="loading && !candidates.length" class="dq-skeleton" role="status" aria-label="Đang tải danh sách candidate">
       <div v-for="i in 6" :key="i" class="dq-skel-row"><div class="skel skel-check"></div><div class="skel skel-sev"></div><div class="skel skel-entity"></div><div class="skel skel-field"></div><div class="skel skel-value"></div></div>
     </div>
-    <div class="admin-table-wrap dq-table-wrap">
+    <div class="admin-table-wrap dq-table-wrap" role="region" tabindex="0" aria-label="Bảng kiểm tra chất lượng dữ liệu">
       <table class="admin-table dq-table" aria-label="Chất lượng dữ liệu">
         <thead>
           <tr>

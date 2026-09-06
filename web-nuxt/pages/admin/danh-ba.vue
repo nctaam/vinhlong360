@@ -75,7 +75,7 @@
         <span class="db-sr-only">Đang tải danh sách cơ quan...</span>
       </div>
       <template v-else>
-        <div v-if="facilities.length" class="admin-table-wrap">
+        <div v-if="facilities.length" class="admin-table-wrap" role="region" tabindex="0" aria-label="Bảng danh bạ cơ quan">
           <table class="admin-table" aria-label="Danh bạ cơ sở">
             <thead><tr><th scope="col">Cơ quan</th><th scope="col">Liên hệ</th><th scope="col">Nguồn</th><th scope="col"><span class="sr-only">Thao tác</span></th></tr></thead>
             <tbody>

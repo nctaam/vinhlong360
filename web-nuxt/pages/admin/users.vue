@@ -37,7 +37,7 @@
       </button>
     </div>
 
-    <div v-if="loading" class="admin-table-wrap" aria-busy="true" aria-label="Đang tải danh sách user">
+    <div v-if="loading" class="admin-table-wrap" role="region" tabindex="0" aria-busy="true" aria-label="Đang tải danh sách user">
       <table class="admin-table" aria-label="Danh sách người dùng">
         <thead>
           <tr>
@@ -52,7 +52,7 @@
       </table>
     </div>
     <template v-else>
-      <div class="admin-table-wrap">
+      <div class="admin-table-wrap" role="region" tabindex="0" aria-label="Bảng danh sách người dùng">
       <table class="admin-table" aria-label="Danh sách người dùng">
         <thead>
           <tr>
