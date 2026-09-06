@@ -48,33 +48,39 @@
           <h3 tabindex="-1" class="step-label">Tạo tài khoản</h3>
           <p>Hoàn tất thông tin để đăng ký cho {{ phone }}</p>
           <div class="form-group">
-            <label class="form-label">Họ và tên <span class="required">*</span></label>
+            <label class="form-label" for="reg-fullname">Họ và tên <span class="required">*</span></label>
             <input
+              id="reg-fullname"
               v-model="regFullName"
               class="input"
               type="text"
               autocomplete="name"
+              aria-label="Họ và tên"
               placeholder="Nguyễn Văn A"
               maxlength="100"
             />
           </div>
           <div class="form-group">
-            <label class="form-label">Ngày sinh</label>
+            <label class="form-label" for="reg-dob">Ngày sinh</label>
             <input
+              id="reg-dob"
               v-model="regDob"
               class="input"
               type="date"
               autocomplete="bday"
+              aria-label="Ngày sinh"
               :max="maxDob"
             />
           </div>
           <div class="form-group">
-            <label class="form-label">Username <span class="required">*</span></label>
+            <label class="form-label" for="reg-username">Username <span class="required">*</span></label>
             <input
+              id="reg-username"
               v-model="regUsername"
               class="input"
               type="text"
               autocomplete="username"
+              aria-label="Tên người dùng (username)"
               placeholder="nguyenvana"
               maxlength="30"
               @blur="checkUsernameAvail"
@@ -84,23 +90,27 @@
             <p v-else-if="usernameStatus === 'available'" class="form-success">Username khả dụng</p>
           </div>
           <div class="form-group">
-            <label class="form-label">Mật khẩu <span class="required">*</span></label>
+            <label class="form-label" for="reg-password">Mật khẩu <span class="required">*</span></label>
             <input
+              id="reg-password"
               v-model="regPassword"
               class="input"
               type="password"
               autocomplete="new-password"
+              aria-label="Mật khẩu"
               placeholder="Tối thiểu 8 ký tự, có chữ và số"
               maxlength="128"
             />
           </div>
           <div class="form-group">
-            <label class="form-label">Xác nhận mật khẩu <span class="required">*</span></label>
+            <label class="form-label" for="reg-password-confirm">Xác nhận mật khẩu <span class="required">*</span></label>
             <input
+              id="reg-password-confirm"
               v-model="regPasswordConfirm"
               class="input"
               type="password"
               autocomplete="new-password"
+              aria-label="Xác nhận mật khẩu"
               placeholder="Nhập lại mật khẩu"
               maxlength="128"
             />

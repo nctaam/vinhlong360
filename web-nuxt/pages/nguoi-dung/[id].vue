@@ -244,11 +244,11 @@
                   <form @submit.prevent="handleCreateCollection">
                     <label class="sf-field">
                       <span class="sf-label">Tên</span>
-                      <input v-model="newCollectionName" type="text" class="sf-input" maxlength="100" required placeholder="VD: Quán ngon Vĩnh Long" />
+                      <input v-model="newCollectionName" type="text" class="sf-input" maxlength="100" required placeholder="VD: Quán ngon Vĩnh Long" aria-label="Tên danh sách bộ sưu tập" />
                     </label>
                     <label class="sf-field">
                       <span class="sf-label">Mô tả (không bắt buộc)</span>
-                      <textarea v-model="newCollectionDesc" class="sf-input" maxlength="300" rows="2"></textarea>
+                      <textarea v-model="newCollectionDesc" class="sf-input" maxlength="300" rows="2" aria-label="Mô tả bộ sưu tập"></textarea>
                     </label>
                     <div class="sf-actions">
                       <button type="button" class="btn btn-ghost" @click="closeCreateCollection">Hủy</button>

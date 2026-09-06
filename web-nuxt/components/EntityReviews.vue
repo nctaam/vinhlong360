@@ -59,6 +59,7 @@
             type="file"
             accept="image/*"
             class="rf-image-input"
+            aria-label="Đính kèm hình ảnh đánh giá"
             :disabled="uploadingImage || formImages.length >= 4"
             @change="onPickImage"
           />

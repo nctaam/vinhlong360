@@ -56,9 +56,12 @@
       <div class="saved-tools">
         <label class="saved-search">
           <span class="sr-only">Tìm trong mục đã lưu</span>
-          <input v-model.trim="savedQuery" type="search" placeholder="Tìm trong mục đã lưu" autocomplete="off" />
+          <input v-model.trim="savedQuery" type="search" placeholder="Tìm trong mục đã lưu" aria-label="Tìm trong mục đã lưu" autocomplete="off" />
         </label>
         <NuxtLink :to="savedMapLink" class="btn btn-secondary btn-sm">Mở bản đồ</NuxtLink>
+        <p class="sr-only" role="status" aria-live="polite">
+          Hiển thị {{ visibleCount }} mục {{ activeTabMeta.label.toLowerCase() }}
+        </p>
       </div>
 
       <!-- Tabs -->

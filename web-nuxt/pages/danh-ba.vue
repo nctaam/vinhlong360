@@ -64,6 +64,8 @@
       <p class="ward-caveat">Sau sáp nhập, hệ thống xã/phường đang điều chỉnh — thông tin có thể chưa đầy đủ, vui lòng kiểm chứng trực tiếp với cơ quan khi cần.</p>
     </section>
 
+    <p class="sr-only" role="status" aria-live="polite">{{ statusAnnouncement }}</p>
+
     <p class="dir-report-link"><NuxtLink to="/lien-he">Báo thông tin sai</NuxtLink>.</p>
 
     <div v-if="!wardId" class="empty-hint">
@@ -205,6 +207,23 @@ const wardId = ref('')
 const facilities = ref<Entity[]>([])
 const facilitiesError = ref(false)
 const loading = ref(false)
+
+const selectedWard = computed(() => {
+  if (!wardId.value) return null
+  for (const g of wardGroups.value) {
+    const found = g.wards.find(w => w.id === wardId.value)
+    if (found) return found
+  }
+  return null
+})
+
+const statusAnnouncement = computed(() => {
+  if (!wardId.value) return 'Vui lòng chọn xã hoặc phường để xem danh bạ'
+  if (loading.value) return 'Đang tải danh bạ cơ quan...'
+  if (facilitiesError.value) return 'Lỗi khi tải danh bạ. Vui lòng thử lại.'
+  if (!facilities.value.length) return `Chưa có danh bạ cơ quan cho ${selectedWard.value?.name || 'xã/phường đã chọn'}.`
+  return `Đã tìm thấy ${facilities.value.length} cơ quan hành chính tại ${selectedWard.value?.name || 'xã/phường đã chọn'}.`
+})
 
 function attr(f: Entity, k: string): string {
   const value = (f.attributes || {})[k]

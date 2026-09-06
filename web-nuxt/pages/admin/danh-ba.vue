@@ -37,15 +37,15 @@
         </label>
         <label class="db-field">
           <span class="db-field-label">Số điện thoại</span>
-          <input v-model="f.phone" class="input" placeholder="0270 xxx xxxx" />
+          <input v-model="f.phone" class="input" placeholder="0270 xxx xxxx" aria-label="Số điện thoại" />
         </label>
         <label class="db-field">
           <span class="db-field-label">Địa chỉ</span>
-          <input v-model="f.address" class="input" placeholder="Ấp ..., xã ..." />
+          <input v-model="f.address" class="input" placeholder="Ấp ..., xã ..." aria-label="Địa chỉ" />
         </label>
         <label class="db-field">
           <span class="db-field-label">Giờ làm việc</span>
-          <input v-model="f.hours" class="input" placeholder="7:30-17:00, T2-T6" />
+          <input v-model="f.hours" class="input" placeholder="7:30-17:00, T2-T6" aria-label="Giờ làm việc" />
         </label>
         <label class="db-field db-field-full">
           <span class="db-field-label">Nguồn (URL chính thống) *</span>

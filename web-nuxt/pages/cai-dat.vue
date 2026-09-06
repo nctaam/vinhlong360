@@ -51,7 +51,7 @@
               {{ uploadingAvatar ? 'Đang tải...' : 'Đổi ảnh' }}
             </button>
           </div>
-          <input ref="avatarInput" type="file" accept="image/jpeg,image/png,image/webp" hidden @change="onAvatarChange" />
+          <input ref="avatarInput" type="file" accept="image/jpeg,image/png,image/webp" hidden aria-label="Tải lên ảnh đại diện" @change="onAvatarChange" />
         </div>
 
         <div class="sf-cover-section">
@@ -69,19 +69,19 @@
               {{ uploadingCover ? 'Đang tải...' : 'Đổi ảnh bìa' }}
             </button>
           </div>
-          <input ref="coverInput" type="file" accept="image/jpeg,image/png,image/webp" hidden @change="onCoverChange" />
+          <input ref="coverInput" type="file" accept="image/jpeg,image/png,image/webp" hidden aria-label="Tải lên ảnh bìa" @change="onCoverChange" />
         </div>
 
         <div class="sf-field sf-readonly-group">
           <span class="sf-label">Số điện thoại <span class="sf-hint">— không thể thay đổi</span></span>
-          <input type="tel" class="sf-input sf-readonly" :value="user?.phone" readonly tabindex="0" />
+          <input type="tel" class="sf-input sf-readonly" :value="user?.phone" readonly tabindex="0" aria-label="Số điện thoại" />
         </div>
 
         <div class="sf-field sf-readonly-group">
           <span class="sf-label">Username <span class="sf-hint">— không thể thay đổi</span></span>
           <div class="sf-username-row">
             <span class="sf-username-prefix">vinhlong360.vn/nguoi-dung/</span>
-            <input type="text" class="sf-input sf-username-input sf-readonly" :value="user?.username || user?.id || '—'" readonly tabindex="0" />
+            <input type="text" class="sf-input sf-username-input sf-readonly" :value="user?.username || user?.id || '—'" readonly tabindex="0" aria-label="Tên người dùng (username)" />
           </div>
         </div>
 
@@ -163,11 +163,11 @@
         <form class="settings-form" @submit.prevent="savePassword">
           <label v-if="hasPassword" class="sf-field">
             <span class="sf-label">Mật khẩu hiện tại</span>
-            <input v-model="currentPw" type="password" class="sf-input" autocomplete="current-password" required />
+            <input v-model="currentPw" type="password" class="sf-input" autocomplete="current-password" aria-label="Mật khẩu hiện tại" required />
           </label>
           <label class="sf-field">
             <span class="sf-label">{{ hasPassword ? 'Mật khẩu mới' : 'Đặt mật khẩu' }}</span>
-            <input v-model="newPw" type="password" class="sf-input" minlength="6" autocomplete="new-password" required />
+            <input v-model="newPw" type="password" class="sf-input" minlength="6" autocomplete="new-password" aria-label="Mật khẩu mới" required />
             <div v-if="newPw" class="pw-strength" aria-live="polite">
               <div class="pw-bar">
                 <span v-for="i in 4" :key="i" :class="['pw-segment', { filled: i <= pwStrength.score }]" :style="i <= pwStrength.score ? { background: pwStrength.color } : {}"></span>
@@ -177,7 +177,7 @@
           </label>
           <label class="sf-field">
             <span class="sf-label">Xác nhận mật khẩu</span>
-            <input v-model="confirmPw" type="password" class="sf-input" minlength="6" autocomplete="new-password" required />
+            <input v-model="confirmPw" type="password" class="sf-input" minlength="6" autocomplete="new-password" aria-label="Xác nhận mật khẩu" required />
             <span v-if="confirmPw && confirmPw !== newPw" class="sf-error" role="alert">Mật khẩu xác nhận không khớp</span>
           </label>
           <div class="sf-actions">
@@ -204,7 +204,7 @@
           <p class="sf-hint"><IconLine name="check" aria-hidden="true" /> Đã bật. Còn {{ twoFA.recovery_remaining }} mã khôi phục.</p>
           <label class="sf-field">
             <span class="sf-label">Nhập mã để tắt 2FA</span>
-            <input v-model="disableCode" type="text" inputmode="numeric" class="sf-input" placeholder="Mã 6 số hoặc mã khôi phục" />
+            <input v-model="disableCode" type="text" inputmode="numeric" class="sf-input" placeholder="Mã 6 số hoặc mã khôi phục" aria-label="Mã 6 số hoặc mã khôi phục" />
           </label>
           <button type="button" class="btn btn-danger-text btn-sm" :disabled="securityBusy" @click="withBusy(() => disable2FA())">Tắt xác thực 2 bước</button>
         </template>
@@ -214,7 +214,7 @@
           <p class="sf-hint">Hoặc nhập khoá thủ công: <code>{{ setupData.secret }}</code></p>
           <label class="sf-field">
             <span class="sf-label">Mã xác nhận</span>
-            <input v-model="setupCode" type="text" inputmode="numeric" maxlength="6" class="sf-input" />
+            <input v-model="setupCode" type="text" inputmode="numeric" maxlength="6" class="sf-input" aria-label="Mã xác nhận 6 chữ số" />
           </label>
           <button type="button" class="btn btn-primary btn-sm" :disabled="securityBusy" @click="withBusy(() => confirm2FASetup())">Xác nhận &amp; bật</button>
         </template>

@@ -37,7 +37,7 @@
             <span aria-hidden="true"></span><span aria-hidden="true"></span><span aria-hidden="true"></span>
           </div>
           <div v-if="activeSuggestions.length" class="csuggestions">
-            <button type="button" v-for="s in activeSuggestions" :key="s" @click="sendMessage(s)">{{ s }}</button>
+            <button type="button" v-for="s in activeSuggestions" :key="s" :aria-label="'Gợi ý hỏi: ' + s" @click="sendMessage(s)">{{ s }}</button>
           </div>
         </div>
 

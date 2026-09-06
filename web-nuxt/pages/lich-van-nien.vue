@@ -209,15 +209,15 @@
               <div class="lvn-inputs">
                 <label class="lvn-field">
                   <span class="lvn-field-label">Ngày</span>
-                  <input v-model.number="s2l.day" data-lvn-s2l-day type="number" inputmode="numeric" min="1" max="31" step="1">
+                  <input v-model.number="s2l.day" data-lvn-s2l-day type="number" inputmode="numeric" min="1" max="31" step="1" aria-label="Ngày dương lịch">
                 </label>
                 <label class="lvn-field">
                   <span class="lvn-field-label">Tháng</span>
-                  <input v-model.number="s2l.month" data-lvn-s2l-month type="number" inputmode="numeric" min="1" max="12" step="1">
+                  <input v-model.number="s2l.month" data-lvn-s2l-month type="number" inputmode="numeric" min="1" max="12" step="1" aria-label="Tháng dương lịch">
                 </label>
                 <label class="lvn-field">
                   <span class="lvn-field-label">Năm</span>
-                  <input v-model.number="s2l.year" data-lvn-s2l-year type="number" inputmode="numeric" :min="LUNAR_YEAR_MIN" :max="LUNAR_YEAR_MAX" step="1">
+                  <input v-model.number="s2l.year" data-lvn-s2l-year type="number" inputmode="numeric" :min="LUNAR_YEAR_MIN" :max="LUNAR_YEAR_MAX" step="1" aria-label="Năm dương lịch">
                 </label>
               </div>
               <output class="lvn-out" :class="{ 'is-error': !!solarToLunarResult.error }" data-lvn-s2l-out>
@@ -238,15 +238,15 @@
               <div class="lvn-inputs">
                 <label class="lvn-field">
                   <span class="lvn-field-label">Ngày âm</span>
-                  <input v-model.number="l2s.day" data-lvn-l2s-day type="number" inputmode="numeric" min="1" max="30" step="1">
+                  <input v-model.number="l2s.day" data-lvn-l2s-day type="number" inputmode="numeric" min="1" max="30" step="1" aria-label="Ngày âm lịch">
                 </label>
                 <label class="lvn-field">
                   <span class="lvn-field-label">Tháng âm</span>
-                  <input v-model.number="l2s.month" data-lvn-l2s-month type="number" inputmode="numeric" min="1" max="12" step="1">
+                  <input v-model.number="l2s.month" data-lvn-l2s-month type="number" inputmode="numeric" min="1" max="12" step="1" aria-label="Tháng âm lịch">
                 </label>
                 <label class="lvn-field">
                   <span class="lvn-field-label">Năm âm</span>
-                  <input v-model.number="l2s.year" data-lvn-l2s-year type="number" inputmode="numeric" :min="LUNAR_YEAR_MIN" :max="LUNAR_YEAR_MAX" step="1">
+                  <input v-model.number="l2s.year" data-lvn-l2s-year type="number" inputmode="numeric" :min="LUNAR_YEAR_MIN" :max="LUNAR_YEAR_MAX" step="1" aria-label="Năm âm lịch">
                 </label>
               </div>
               <label class="lvn-check">

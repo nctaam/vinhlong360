@@ -57,7 +57,7 @@ watch(() => state.value.open, async (open) => {
 .confirm-box {
   background: var(--bg); color: var(--ink-900); border-radius: var(--radius-sheet);
   border: 1px solid var(--line);
-  max-width: 400px; width: 100%; padding: 1.5rem; box-shadow: var(--shadow-lg, 0 10px 40px rgba(var(--ink-rgb),.25));
+  max-width: 400px; width: 100%; padding: var(--space-6); box-shadow: var(--shadow-lg, 0 10px 40px rgba(var(--ink-rgb),.25));
   transition: transform .25s var(--ease-out-expo);
 }
 .dark .confirm-box {
