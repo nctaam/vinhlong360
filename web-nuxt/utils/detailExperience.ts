@@ -112,3 +112,37 @@ export function resolveDetailAction(entity: DetailActionEntity, context: DetailA
     href: `/tao-lich-trinh?add=${encodeURIComponent(context.id)}`,
   }
 }
+
+export interface DescSection {
+  level: 0 | 2 | 3
+  heading: string
+  paragraphs: string[]
+}
+
+export function parseDescriptionSections(description?: string | null, summary?: string | null): DescSection[] {
+  if (!description || typeof description !== 'string') return []
+  let blocks = description.split(/\n\s*\n/).map(b => b.trim()).filter(b => b.length > 0)
+  const norm = (s: unknown) => String(s ?? '').replace(/\s+/g, ' ').trim().toLowerCase()
+  if (summary && blocks.length && norm(blocks[0]) === norm(summary)) {
+    blocks = blocks.slice(1)
+  }
+  if (!blocks.length) return []
+  const sections: DescSection[] = []
+  let current: DescSection = { level: 0, heading: '', paragraphs: [] }
+  for (const block of blocks) {
+    const h2 = block.match(/^##\s+(.+)$/)
+    const h3 = block.match(/^###\s+(.+)$/)
+    if (h3) {
+      if (current.paragraphs.length || current.heading) sections.push(current)
+      current = { level: 3, heading: h3[1] ?? '', paragraphs: [] }
+    } else if (h2) {
+      if (current.paragraphs.length || current.heading) sections.push(current)
+      current = { level: 2, heading: h2[1] ?? '', paragraphs: [] }
+    } else {
+      current.paragraphs.push(block)
+    }
+  }
+  if (current.paragraphs.length || current.heading) sections.push(current)
+  return sections
+}
+

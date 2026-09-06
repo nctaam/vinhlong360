@@ -1,11 +1,11 @@
-﻿<template>
+<template>
   <div
     class="page"
     data-color-system="tri-region-v1"
     data-page-recipe="discovery"
     :data-material-accent="activeMode.accent"
   >
-    <Breadcrumb :items="[{ label: 'Trang chủ', to: '/' }, { label: 'Du lịch' }]" />
+    <Breadcrumb :items="[{ label: 'Trang chủ', to: '/' }, { label: 'Du lịch' }]" :json-ld="true" />
 
     <section
       class="atlas-hero"
@@ -14,9 +14,9 @@
       data-catalog-section="orientation"
     >
       <div class="atlas-hero-inner">
-        <p class="atlas-hero-eyebrow">Vĩnh Long · chỉ mục khám phá theo địa bàn</p>
+        <p class="atlas-hero-eyebrow dateline-eyebrow">Chỉ mục khám phá · Tỉnh Vĩnh Long hợp nhất (3 vùng trước 7-2025)</p>
         <h1 class="atlas-hero-title">
-          <span class="atlas-hero-line1">{{ pc('hero_title', 'Ba tỉnh, một nhịp sông.') }}</span>
+          <span class="atlas-hero-line1">{{ pc('hero_title', 'Ba vùng đất, một nhịp sông.') }}</span>
           <Transition name="mode-fade" mode="out-in">
             <span class="atlas-hero-line2" :key="activeModeKey">{{ activeMode.line }}</span>
           </Transition>
@@ -79,9 +79,23 @@
           aria-label="Lọc theo tháng"
           @update:model-value="v => seasonFilter = v[0] || 'all'"
         />
-        <div v-if="activeFilterCount > 0" class="filter-status">
-          <span class="filter-count">{{ activeFilterCount }} bộ lọc</span>
-          <button type="button" class="filter-clear" @click="clearFilters">Xóa tất cả</button>
+        <div v-if="activeFilterCount > 0" class="active-filter-ledger" role="region" aria-label="Bộ lọc đang áp dụng">
+          <span class="afl-heading">Đang lọc:</span>
+          <div class="afl-chips">
+            <span v-if="q.trim()" class="afl-chip">
+              <span class="afl-text">Tìm: "{{ q.trim() }}"</span>
+              <button type="button" class="afl-remove" aria-label="Xóa từ khóa tìm kiếm" @click="q = ''"><IconLine name="x" aria-hidden="true" /></button>
+            </span>
+            <span v-if="typeFilter !== 'all'" class="afl-chip">
+              <span class="afl-text">{{ typeMeta(typeFilter).label || typeFilter }}</span>
+              <button type="button" class="afl-remove" aria-label="Bỏ lọc loại hình" @click="typeFilter = 'all'"><IconLine name="x" aria-hidden="true" /></button>
+            </span>
+            <span v-if="seasonFilter !== 'all'" class="afl-chip">
+              <span class="afl-text">{{ seasonFilter === 'flood' ? 'Mùa nước nổi' : `Tháng ${seasonFilter}` }}</span>
+              <button type="button" class="afl-remove" aria-label="Bỏ lọc thời điểm" @click="seasonFilter = 'all'"><IconLine name="x" aria-hidden="true" /></button>
+            </span>
+            <button type="button" class="afl-clear-all" @click="clearFilters">Xóa tất cả</button>
+          </div>
         </div>
       </div>
     </section>
@@ -95,9 +109,9 @@
         </div>
       </div>
       <SkeletonGrid v-if="status === 'pending' && !allEntities.length" :count="6" />
-      <EmptyState v-else-if="fetchError && !allEntities.length" title="Không thể tải dữ liệu" message="Mạng có thể đang chập chờn. Thử tải lại nhé.">
+      <EmptyState v-else-if="fetchError && !allEntities.length" icon-name="alert-triangle" tone="error" title="Không thể tải dữ liệu" message="Mạng có thể đang chập chờn. Thử tải lại nhé.">
         <template #actions>
-          <button type="button" class="btn btn-outline" @click="refreshCatalog">Thử lại</button>
+          <button type="button" class="btn btn-outline" @click="refreshCatalog"><IconLine name="repeat" aria-hidden="true" /> Thử lại</button>
         </template>
       </EmptyState>
       <PageState
@@ -128,9 +142,9 @@
           <EntityCard :entity="e" :season-filter="seasonFilter" color-recipe="tri-region-v1" />
         </div>
       </div>
-      <EmptyState v-else title="Không tìm thấy kết quả" message="Thử thay đổi bộ lọc hoặc từ khóa tìm kiếm.">
+      <EmptyState v-else icon-name="search" title="Không tìm thấy kết quả" message="Thử thay đổi bộ lọc hoặc từ khóa tìm kiếm.">
         <template #actions>
-          <button type="button" class="btn btn-outline" @click="clearFilters">Xóa bộ lọc</button>
+          <button type="button" class="btn btn-outline" @click="clearFilters"><IconLine name="x" aria-hidden="true" /> Xóa bộ lọc</button>
           <NuxtLink to="/theo-mua" class="btn btn-outline"><IconLine name="calendar" aria-hidden="true" /> Xem theo mùa</NuxtLink>
           <NuxtLink to="/san-pham" class="btn btn-outline"><IconLine name="gift" aria-hidden="true" /> Đặc sản</NuxtLink>
           <NuxtLink to="/le-hoi" class="btn btn-outline"><IconLine name="flag" aria-hidden="true" /> Lễ hội</NuxtLink>
@@ -303,9 +317,10 @@ onMounted(() => {
   onUnmounted(() => document.removeEventListener('keydown', h))
 })
 
-const { data, error: fetchError, status, refresh } = await useAsyncData('catalog-tourism', () =>
+const catalogAsyncData = useAsyncData('catalog-tourism', () =>
   apiFetch<{ entities: Entity[]; total: number }>(`/api/entities?type=${TYPES.join(',')}&limit=500`)
 )
+const { data, error: fetchError, status, refresh } = catalogAsyncData
 
 const catalogOnline = ref(true)
 const lastSuccessfulCatalog = ref<Entity[]>([])
@@ -343,6 +358,8 @@ onBeforeUnmount(() => {
   window.removeEventListener('online', updateCatalogConnectivity)
   window.removeEventListener('offline', updateCatalogConnectivity)
 })
+
+await catalogAsyncData
 
 const activeFilterCount = computed(() => {
   let n = 0
@@ -463,45 +480,76 @@ useSeoMeta({
   description: () => pc('seo_description'),
   ogTitle: () => pc('og_title'),
   ogDescription: () => pc('og_description'),
+  ogUrl: canonicalUrl('/du-lich'),
+  twitterCard: 'summary_large_image',
 })
 
-useHead({
-  link: [{ rel: 'canonical', href: canonicalUrl('/du-lich') }],
-  script: [
+useHead(() => {
+  const pageUrl = canonicalUrl('/du-lich')
+  const graphNodes: any[] = [
+    buildWebSiteSchema(),
+    buildOrganizationSchema(),
     {
-      type: 'application/ld+json',
-      innerHTML: JSON.stringify({
-        '@context': 'https://schema.org',
-        '@type': 'CollectionPage',
+      '@type': 'CollectionPage',
+      '@id': `${pageUrl}#collection`,
+      name: 'Du lịch Vĩnh Long',
+      description: 'Trải nghiệm bản địa, điểm tham quan, lưu trú, làng nghề và ẩm thực khắp Vĩnh Long.',
+      url: pageUrl,
+      numberOfItems: allEntities.value.length,
+      isPartOf: { '@id': `${SITE_URL}/#website` },
+      about: {
+        '@type': 'Thing',
         name: 'Du lịch Vĩnh Long',
-        description: 'Trải nghiệm bản địa, điểm tham quan, lưu trú, làng nghề và ẩm thực khắp Vĩnh Long.',
-        url: 'https://vinhlong360.vn/du-lich',
-        numberOfItems: allEntities.value.length,
-      }),
+        description: 'Du lịch sinh thái, di sản làng nghề gốm Mang Thít và cù lao sông Tiền.',
+      },
+      speakable: buildSpeakableSpecification(['.catalog-hero h1', '.catalog-lead']),
+    },
+  ]
+
+  if (filtered.value?.length) {
+    graphNodes.push({
+      '@type': 'ItemList',
+      '@id': `${pageUrl}#items`,
+      name: 'Du lịch Tỉnh Vĩnh Long',
+      description: 'Trải nghiệm bản địa, điểm tham quan, lưu trú, làng nghề và ẩm thực Vĩnh Long.',
+      numberOfItems: filtered.value.length,
+      itemListElement: filtered.value.slice(0, 30).map((e: Entity, i: number) => ({
+        '@type': 'ListItem',
+        position: i + 1,
+        name: e.name,
+        url: `${SITE_URL}${entityPath(e.id)}`,
+      })),
+    })
+  }
+
+  const faqItems: FaqItem[] = [
+    {
+      q: 'Đi du lịch Vĩnh Long mùa nào trong năm là đẹp nhất?',
+      a: 'Mùa trái cây chín rộ từ tháng 5 đến tháng 8 tại các vườn cù lao An Bình là thời điểm nhộn nhịp nhất. Ngoài ra, mùa phù sa từ tháng 9 đến tháng 11 mang đến trải nghiệm cảnh quan sông nước đặc sắc.',
     },
     {
-      type: 'application/ld+json',
-      innerHTML: JSON.stringify({
-        '@context': 'https://schema.org',
-        '@type': 'BreadcrumbList',
-        itemListElement: [
-          { '@type': 'ListItem', position: 1, name: 'Trang chủ', item: 'https://vinhlong360.vn/' },
-          { '@type': 'ListItem', position: 2, name: 'Du lịch' },
-        ],
-      }),
+      q: 'Những điểm đến du lịch nổi bật nhất tại Vĩnh Long gồm những nơi nào?',
+      a: 'Du khách nên ghé thăm di sản đương đại lò gạch gốm đỏ Mang Thít, hệ thống nhà vườn cù lao An Bình, chùa Phật Ngọc Xá Lợi, làng bánh tráng cù lao Mây và các điểm sinh thái ven sông.',
     },
-  ],
-})
+    {
+      q: 'Phương tiện di chuyển phổ biến và thuận tiện nhất khi du lịch Vĩnh Long là gì?',
+      a: 'Xe máy và ô tô thuận tiện để kết nối các tuyến đường liên huyện, kết hợp trải nghiệm đò ngang, phà sông hoặc xuồng chèo len lỏi qua các rạch nhỏ miệt vườn.',
+    },
+  ]
+  const faqNode = buildFaqPageSchema(faqItems, `${pageUrl}#faq`)
+  if (faqNode) graphNodes.push(faqNode)
 
-useHead(() => ({
-  script: [{
-    type: 'application/ld+json',
-    innerHTML: JSON.stringify(itemListJsonLd(
-      'Du lịch Vĩnh Long, Bến Tre, Trà Vinh',
-      'Trải nghiệm bản địa, điểm tham quan, lưu trú, làng nghề và ẩm thực Vĩnh Long.',
-      '/du-lich',
-      filtered.value,
-    )),
-  }],
-}))
+  return {
+    link: [{ rel: 'canonical', href: pageUrl }],
+    script: [
+      {
+        type: 'application/ld+json',
+        innerHTML: safeJsonLd({
+          '@context': 'https://schema.org',
+          '@graph': graphNodes,
+        }),
+      },
+    ],
+  }
+})
 </script>

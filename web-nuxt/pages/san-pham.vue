@@ -1,12 +1,12 @@
-﻿<template>
-  <div class="page">
-    <Breadcrumb :items="[{ label: 'Trang chủ', to: '/' }, { label: 'Sản phẩm' }]" />
+<template>
+  <div class="page" data-color-system="tri-region-v1">
+    <Breadcrumb :items="[{ label: 'Trang chủ', to: '/' }, { label: 'Sản phẩm' }]" :json-ld="true" />
 
     <!-- Hero — "Phiên chợ đang họp" (month-alive market masthead; signature moment) -->
     <section class="catalog-hero cat-product market-hero" aria-label="Giới thiệu sản phẩm">
       <div class="woven-texture" aria-hidden="true"></div>
       <div class="catalog-hero-inner">
-        <span class="catalog-hero-icon" aria-hidden="true">🍊</span>
+        <span class="catalog-hero-icon" aria-hidden="true"><IconLine name="fruit" /></span>
         <div>
           <p class="market-kicker">Phiên chợ · Tháng {{ currentMonth }}</p>
           <h1>{{ pc('hero_title') }}</h1>
@@ -35,7 +35,7 @@
     <!-- Đang vào mùa — promoted above OCOP teaser: season is this page's spine -->
     <section v-if="seasonalHighlights.length" class="block band reveal market-shelf">
       <div class="seasonal-banner seasonal-banner-live">
-        <span class="seasonal-banner-icon" aria-hidden="true">🔥</span>
+        <span class="seasonal-banner-icon" aria-hidden="true"><IconLine name="flame" /></span>
         <div>
           <!-- h2 chứ không phải strong: đây LÀ tiêu đề của khối, và khối này chứa
                bốn thẻ sản phẩm mang h3. Dùng strong thì cây tiêu đề nhảy thẳng
@@ -55,11 +55,11 @@
     <!-- OCOP teaser — slim signpost outward to /ocop, not a competing deep-dive -->
     <section v-if="ocopCount" class="block reveal ocop-teaser-strip">
       <NuxtLink to="/ocop" class="ocop-teaser-link">
-        <span class="ocop-teaser-icon" aria-hidden="true">⭐</span>
+        <span class="ocop-teaser-icon" aria-hidden="true"><IconLine name="star" /></span>
         <span class="ocop-teaser-copy">
           Trong {{ allEntities.length }} đặc sản này, <strong>{{ ocopCount }} món</strong> đã có sao OCOP — xem sổ vàng
         </span>
-        <span class="ocop-teaser-arrow" aria-hidden="true">→</span>
+        <IconLine name="arrow-right" class="ocop-teaser-arrow" aria-hidden="true" />
       </NuxtLink>
     </section>
 
@@ -68,12 +68,12 @@
          mạch editorial làm callout (props tĩnh, an toàn dưới v-once). -->
     <section v-once class="page-article editorial-body reveal">
       <h2 class="sediment-head">Đặc sản vùng sông nước</h2>
-      <p>Đồng bằng sông Cửu Long là vựa trái cây và nông sản lớn nhất cả nước, và tỉnh Vĩnh Long — miệt vườn nằm trọn giữa hai nhánh sông Tiền, sông Hậu — góp vào đó hàng chục loại đặc sản mang đậm bản sắc: bưởi Năm Roi vỏ mỏng ruột ngọt, kẹo dừa Bến Tre dẻo thơm, dừa sáp Cầu Kè béo quánh hiếm có, hay bánh tráng Mỹ Lồng giòn rụm nướng than.</p>
+      <p>Đồng bằng sông Cửu Long là vựa trái cây và nông sản lớn nhất cả nước, và tỉnh Vĩnh Long — miệt vườn nằm trọn giữa hai nhánh sông Tiền, sông Hậu — góp vào đó hàng chục loại đặc sản mang đậm bản sắc: bưởi Năm Roi vỏ mỏng ruột ngọt, kẹo dừa Bến Tre (cũ) dẻo thơm, dừa sáp Cầu Kè béo quánh hiếm có, hay bánh tráng Mỹ Lồng giòn rụm nướng than.</p>
       <blockquote class="pull-quote">Mỗi sản phẩm gắn liền với một vùng đất, một mùa vụ và một câu chuyện sản xuất riêng.</blockquote>
       <p>Nhiều sản phẩm đã được chứng nhận OCOP (Mỗi xã Một sản phẩm) — đạt tiêu chuẩn chất lượng quốc gia từ 3 đến 5 sao.</p>
 
       <CatalogInterstitial
-        fact="Tỉnh Vĩnh Long — hợp từ ba vùng đất Vĩnh Long, Bến Tre, Trà Vinh — là một trong những vựa trái cây lớn nhất đồng bằng, mỗi mùa mang một hương vị riêng."
+        fact="Tỉnh Vĩnh Long hợp nhất (3 vùng trước 7-2025: Vĩnh Long, Bến Tre, Trà Vinh) — là một trong những vựa trái cây lớn nhất đồng bằng, mỗi mùa mang một hương vị riêng."
         icon-name="fruit"
         variant="accent"
         :links="[{ to: '/theo-mua', label: 'Xem theo mùa' }, { to: '/ocop', label: 'Sản phẩm OCOP' }]"
@@ -110,7 +110,7 @@
             type="button"
             class="season-reset-chip"
             @click="seasonFilter = String(currentMonth)"
-          >⟲ tháng này</button>
+          ><IconLine name="repeat" aria-hidden="true" /> Tháng này</button>
         </div>
         <FilterChips
           :filters="seasonFilterOptions"
@@ -125,21 +125,35 @@
           aria-label="Lọc nâng cao"
           @update:model-value="v => ocopOnly = v.includes('ocop')"
         />
-        <div v-if="activeFilterCount > 0" class="filter-status">
-          <span class="filter-count">{{ activeFilterCount }} bộ lọc</span>
-          <button type="button" class="filter-clear" @click="clearFilters">Xóa tất cả</button>
+        <div v-if="activeFilterCount > 0" class="active-filter-ledger" role="region" aria-label="Bộ lọc đang áp dụng">
+          <span class="afl-heading">Đang lọc:</span>
+          <div class="afl-chips">
+            <span v-if="q.trim()" class="afl-chip">
+              <span class="afl-text">Tìm: "{{ q.trim() }}"</span>
+              <button type="button" class="afl-remove" aria-label="Xóa từ khóa tìm kiếm" @click="q = ''"><IconLine name="x" aria-hidden="true" /></button>
+            </span>
+            <span v-if="seasonFilter !== 'all' && seasonFilter !== String(currentMonth)" class="afl-chip">
+              <span class="afl-text">Tháng {{ seasonFilter }}</span>
+              <button type="button" class="afl-remove" aria-label="Bỏ lọc tháng, về tháng này" @click="seasonFilter = String(currentMonth)"><IconLine name="x" aria-hidden="true" /></button>
+            </span>
+            <span v-if="ocopOnly" class="afl-chip">
+              <span class="afl-text">Sản phẩm OCOP</span>
+              <button type="button" class="afl-remove" aria-label="Bỏ lọc OCOP" @click="ocopOnly = false"><IconLine name="x" aria-hidden="true" /></button>
+            </span>
+            <button type="button" class="afl-clear-all" @click="clearFilters">Xóa tất cả</button>
+          </div>
         </div>
       </div>
       <div class="result-bar">
         <p class="result-meta" aria-live="polite">{{ filtered.length }} kết quả{{ sortBy !== 'relevant' ? ` · ${sortLabels[sortBy]}` : '' }}</p>
         <div class="view-toggle" role="group" aria-label="Chế độ hiển thị">
-          <button type="button" :class="['vt-btn', { active: viewMode === 'grid' }]" :aria-pressed="viewMode === 'grid'" @click="viewMode = 'grid'" title="Dạng lưới" aria-label="Dạng lưới">⊞</button>
-          <button type="button" :class="['vt-btn', { active: viewMode === 'list' }]" :aria-pressed="viewMode === 'list'" @click="viewMode = 'list'" title="Dạng danh sách" aria-label="Dạng danh sách"><IconLine name="list" /></button>
+          <button type="button" :class="['vt-btn', { active: viewMode === 'grid' }]" :aria-pressed="viewMode === 'grid'" @click="viewMode = 'grid'" title="Dạng lưới" aria-label="Dạng lưới"><IconLine name="layout-dashboard" aria-hidden="true" /></button>
+          <button type="button" :class="['vt-btn', { active: viewMode === 'list' }]" :aria-pressed="viewMode === 'list'" @click="viewMode = 'list'" title="Dạng danh sách" aria-label="Dạng danh sách"><IconLine name="list" aria-hidden="true" /></button>
         </div>
       </div>
       <EmptyState v-if="fetchError" icon-name="alert-triangle" title="Không thể tải dữ liệu" message="Lỗi kết nối. Thử tải lại nhé.">
         <template #actions>
-          <button type="button" class="btn btn-outline" @click="refreshNuxtData('catalog-products')">Thử lại</button>
+          <button type="button" class="btn btn-outline" @click="refreshNuxtData('catalog-products')"><IconLine name="repeat" aria-hidden="true" /> Thử lại</button>
         </template>
       </EmptyState>
       <SkeletonGrid v-else-if="!data" :count="6" />
@@ -148,7 +162,7 @@
       </div>
       <EmptyState v-else icon-name="fruit" title="Không tìm thấy sản phẩm" message="Thử chọn tháng khác hoặc bỏ bộ lọc OCOP.">
         <template #actions>
-          <button type="button" class="btn btn-outline" @click="clearFilters">Xóa bộ lọc</button>
+          <button type="button" class="btn btn-outline" @click="clearFilters"><IconLine name="x" aria-hidden="true" /> Xóa bộ lọc</button>
           <NuxtLink to="/ocop" class="btn btn-outline"><IconLine name="star" /> OCOP</NuxtLink>
           <NuxtLink to="/du-lich" class="btn btn-outline"><IconLine name="leaf" /> Du lịch</NuxtLink>
           <NuxtLink to="/theo-mua" class="btn btn-outline"><IconLine name="calendar" /> Theo mùa</NuxtLink>
@@ -169,7 +183,7 @@
       <h2>Khám phá thêm</h2>
       <div class="cross-links">
         <NuxtLink v-for="c in relatedCatalogs" :key="c.to" :to="c.to" class="cross-card">
-          <span class="cross-icon" aria-hidden="true">{{ c.icon }}</span>
+          <span class="cross-icon" aria-hidden="true"><IconLine :name="c.icon" /></span>
           <div><strong>{{ c.label }}</strong><p>{{ c.desc }}</p></div>
         </NuxtLink>
       </div>
@@ -195,7 +209,7 @@ const ocopOnly = ref(false)
 const seasonFilterOptions = computed(() => [
   { key: 'all', label: 'Tất cả' },
   ...Array.from({ length: 12 }, (_, i) => ({ key: String(i + 1), label: `T${i + 1}` })),
-  { key: 'flood', label: 'Mùa nước nổi', icon: '🌊' },
+  { key: 'flood', label: 'Mùa nước nổi', iconName: 'droplet' },
 ])
 const sortBy = ref('relevant')
 const sortLabels: Record<string, string> = { popular: 'Phổ biến', newest: 'Mới nhất', name: 'Tên A-Z' }
@@ -233,9 +247,9 @@ const ocopCount = computed(() => allEntities.value.filter((e: Entity) => isOcopC
 // declutter-2 A1: cross-links 3 card script-driven (bỏ OCOP — teaser-strip trên trang
 // đã là tham chiếu OCOP nổi bật hơn).
 const relatedCatalogs = [
-  { to: '/theo-mua', icon: '📅', label: 'Theo mùa', desc: 'Lịch mùa vụ' },
-  { to: '/du-lich', icon: '🌿', label: 'Du lịch', desc: 'Trải nghiệm miệt vườn' },
-  { to: '/kham-pha/am-thuc', icon: '🍲', label: 'Ẩm thực', desc: 'Món ngon Vĩnh Long' },
+  { to: '/theo-mua', icon: 'calendar', label: 'Theo mùa', desc: 'Lịch mùa vụ' },
+  { to: '/du-lich', icon: 'leaf', label: 'Du lịch', desc: 'Trải nghiệm miệt vườn' },
+  { to: '/kham-pha/am-thuc', icon: 'bowl', label: 'Ẩm thực', desc: 'Món ngon Vĩnh Long' },
 ]
 const inSeasonCount = computed(() => allEntities.value.filter((e: Entity) => inSeason(e, String(currentMonth))).length)
 
@@ -319,47 +333,78 @@ useSeoMeta({
   description: () => pc('seo_description'),
   ogTitle: () => pc('og_title'),
   ogDescription: () => pc('og_description'),
+  ogUrl: canonicalUrl('/san-pham'),
+  twitterCard: 'summary_large_image',
 })
 
-useHead({
-  link: [{ rel: 'canonical', href: canonicalUrl('/san-pham') }],
-  script: [
+useHead(() => {
+  const pageUrl = canonicalUrl('/san-pham')
+  const graphNodes: any[] = [
+    buildWebSiteSchema(),
+    buildOrganizationSchema(),
     {
-      type: 'application/ld+json',
-      innerHTML: JSON.stringify({
-        '@context': 'https://schema.org',
-        '@type': 'CollectionPage',
-        name: 'Sản phẩm địa phương Vĩnh Long',
-        description: 'Đặc sản & sản phẩm OCOP Vĩnh Long theo mùa.',
-        url: 'https://vinhlong360.vn/san-pham',
-        numberOfItems: allEntities.value.length,
-      }),
+      '@type': 'CollectionPage',
+      '@id': `${pageUrl}#collection`,
+      name: 'Sản phẩm địa phương Vĩnh Long',
+      description: 'Đặc sản & sản phẩm OCOP Vĩnh Long theo mùa.',
+      url: pageUrl,
+      numberOfItems: allEntities.value.length,
+      isPartOf: { '@id': `${SITE_URL}/#website` },
+      about: {
+        '@type': 'Thing',
+        name: 'Đặc sản và Sản phẩm địa phương Vĩnh Long',
+        description: 'Trái cây nhiệt đới, nông sản chất lượng cao, sản phẩm OCOP và làng nghề truyền thống Vĩnh Long.',
+      },
+      speakable: buildSpeakableSpecification(['.catalog-hero h1', '.catalog-lead', '.seasonal-banner-lead']),
     },
-    {
-      type: 'application/ld+json',
-      innerHTML: JSON.stringify({
-        '@context': 'https://schema.org',
-        '@type': 'BreadcrumbList',
-        itemListElement: [
-          { '@type': 'ListItem', position: 1, name: 'Trang chủ', item: 'https://vinhlong360.vn/' },
-          { '@type': 'ListItem', position: 2, name: 'Sản phẩm' },
-        ],
-      }),
-    },
-  ],
-})
+  ]
 
-useHead(() => ({
-  script: [{
-    type: 'application/ld+json',
-    innerHTML: JSON.stringify(itemListJsonLd(
-      'Sản phẩm địa phương Vĩnh Long',
-      'Đặc sản và sản phẩm OCOP Vĩnh Long theo mùa.',
-      '/san-pham',
-      filtered.value,
-    )),
-  }],
-}))
+  if (filtered.value?.length) {
+    graphNodes.push({
+      '@type': 'ItemList',
+      '@id': `${pageUrl}#items`,
+      name: 'Sản phẩm địa phương Vĩnh Long',
+      description: 'Đặc sản và sản phẩm OCOP Vĩnh Long theo mùa.',
+      numberOfItems: filtered.value.length,
+      itemListElement: filtered.value.slice(0, 30).map((e: Entity, i: number) => ({
+        '@type': 'ListItem',
+        position: i + 1,
+        name: e.name,
+        url: `${SITE_URL}${entityPath(e.id)}`,
+      })),
+    })
+  }
+
+  const faqItems: FaqItem[] = [
+    {
+      q: 'Vĩnh Long có những loại đặc sản nào nổi tiếng nhất để mua làm quà?',
+      a: 'Các đặc sản nức tiếng gồm bưởi năm roi Bình Minh, khoai lang Bình Tân, sầu riêng Ri6, bánh tráng cù lao Mây, cam sành Tam Bình và các sản phẩm thủ công gốm đỏ Mang Thít.',
+    },
+    {
+      q: 'Làm thế nào để chọn mua được trái cây và đặc sản Vĩnh Long đúng nguồn gốc?',
+      a: 'Du khách nên ghé trực tiếp các nhà vườn tại cù lao An Bình, các hợp tác xã đạt chứng nhận OCOP hoặc các điểm trưng bày có tem truy xuất nguồn gốc rõ ràng.',
+    },
+    {
+      q: 'Các cơ sở sản xuất tại Vĩnh Long có hỗ trợ đóng gói trái cây gửi đi xa không?',
+      a: 'Nhiều nhà vườn và cơ sở chế biến hỗ trợ đóng thùng chống sốc cho trái cây tươi, hút chân không cho bánh tráng và nông sản khô để du khách tiện mang theo đường dài.',
+    },
+  ]
+  const faqNode = buildFaqPageSchema(faqItems, `${pageUrl}#faq`)
+  if (faqNode) graphNodes.push(faqNode)
+
+  return {
+    link: [{ rel: 'canonical', href: pageUrl }],
+    script: [
+      {
+        type: 'application/ld+json',
+        innerHTML: safeJsonLd({
+          '@context': 'https://schema.org',
+          '@graph': graphNodes,
+        }),
+      },
+    ],
+  }
+})
 </script>
 
 <style scoped>
@@ -492,6 +537,9 @@ useHead(() => ({
 .control-label-row { display: flex; align-items: center; justify-content: space-between; gap: var(--space-2); }
 .control-label-row .control-label { margin: var(--space-4) 0 var(--space-2); }
 .season-reset-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
   font-size: var(--text-2xs);
   font-weight: var(--weight-semibold);
   color: var(--accent-dark, var(--amber-600));
@@ -519,7 +567,7 @@ useHead(() => ({
   background: linear-gradient(90deg, rgba(var(--secondary-rgb), .06), transparent);
   text-decoration: none;
   color: var(--ink);
-  transition: border-color .25s var(--ease-out), box-shadow .25s var(--ease-out), transform .2s var(--ease-spring-gentle);
+  transition: border-color .25s var(--ease-out), box-shadow .25s var(--ease-out), transform .2s var(--ease-out-expo);
 }
 .ocop-teaser-link:hover {
   border-color: rgba(var(--secondary-rgb), .5);
@@ -529,12 +577,23 @@ useHead(() => ({
 .ocop-teaser-icon { font-size: 1.3rem; flex-shrink: 0; }
 .ocop-teaser-copy { flex: 1; font-size: var(--text-sm); color: var(--muted); }
 .ocop-teaser-copy strong { color: var(--ink); font-weight: var(--weight-semibold); }
-.ocop-teaser-arrow { color: var(--secondary-fg, var(--secondary)); font-weight: var(--weight-semibold); flex-shrink: 0; }
+.ocop-teaser-arrow {
+  color: var(--secondary-fg, var(--secondary));
+  flex-shrink: 0;
+  width: 18px;
+  height: 18px;
+  transition: transform .2s var(--ease-out-expo);
+}
+.ocop-teaser-link:hover .ocop-teaser-arrow {
+  transform: translateX(3px);
+}
 .dark .ocop-teaser-link { background: linear-gradient(90deg, rgba(var(--secondary-rgb), .1), transparent); }
 
 @media (prefers-reduced-motion: reduce) {
+  .seasonal-banner-live .seasonal-banner-icon { animation: none; }
   .season-reset-chip:active { transform: none; }
   .ocop-teaser-link:hover { transform: none; }
+  .ocop-teaser-link:hover .ocop-teaser-arrow { transform: none; }
 }
 
 @media (max-width: 640px) {

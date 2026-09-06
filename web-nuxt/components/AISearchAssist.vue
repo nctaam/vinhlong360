@@ -3,8 +3,12 @@
     <button type="button" v-if="!aiReply && !loading && !errored" class="ai-toggle-btn ai-toggle-btn-emoji" @click="load"><IconLine name="sparkles" class="emoji-chip" /> Gợi ý AI cho "{{ query }}"</button>
     <div v-else-if="loading" class="ai-loading ai-loading-padded" role="status" aria-label="Đang tải gợi ý"><div class="spinner spinner-center"></div></div>
     <div v-else-if="errored" class="ai-error" role="status">
-      <small>Không tải được gợi ý.</small>
-      <button type="button" class="ai-retry-btn" @click="retry">Thử lại</button>
+      <IconLine name="alert-triangle" class="ai-error-icon" aria-hidden="true" />
+      <small>Không thể tải gợi ý lúc này.</small>
+      <button type="button" class="ai-retry-btn" @click="retry">
+        <IconLine name="repeat" class="retry-icon" aria-hidden="true" />
+        <span>Thử lại</span>
+      </button>
     </div>
     <template v-else>
       <div class="ai-search-header sediment-head">
@@ -131,16 +135,16 @@ watch(() => props.query, () => {
 .ai-search-h3::before {
   content: "";
   position: absolute; left: 0; top: 50%; transform: translateY(-50%);
-  width: 4px; height: 1.05em; border-radius: var(--radius-full);
+  width: 2px; height: 1.05em; border-radius: var(--radius-full);
   background: linear-gradient(180deg, var(--river-600) 0%, var(--amber-600) 52%, var(--clay-600) 100%);
 }
 .dark .ai-search-h3::before {
   background: linear-gradient(180deg, var(--river-legacy-dark) 0%, var(--amber-500) 52%, var(--clay-400) 100%);
 }
 .ai-search-assist[data-color-recipe='tri-region-v1'] .ai-search-h3 {
-  border-left: 4px solid var(--color-material-neutral);
+  border-left: 2px solid var(--color-material-neutral);
 }
-.ai-search-assist[data-color-recipe='tri-region-v1'] .ai-search-h3::before { content: none; }
+.ai-search-assist[data-color-recipe='tri-region-v1'] .ai-search-h3::before { content: none; background-image: none; }
 /* Quiet "AI-assisted" label — hairline tag, not a decorative badge; overrides
    the shared bold-span styling since this is a secondary meta label. */
 .ai-label {
@@ -155,7 +159,28 @@ watch(() => props.query, () => {
 .ai-loading-padded { padding: var(--space-4); }
 .ai-disclaimer { margin: var(--space-2) 0 0; font-size: .75rem; color: var(--text-muted); }
 .ai-error { display: flex; align-items: center; gap: var(--space-2); padding: var(--space-3); font-size: var(--text-sm); color: var(--muted); }
-.ai-retry-btn { font-size: var(--text-xs); font-weight: var(--weight-semibold); color: var(--primary-fg); background: none; border: none; cursor: pointer; text-decoration: underline; text-underline-offset: 2px; padding: var(--space-1); min-height: 44px; }
+.ai-error-icon { width: 16px; height: 16px; color: var(--color-material-clay); flex-shrink: 0; }
+.ai-retry-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  font-size: var(--text-xs);
+  font-weight: var(--weight-semibold);
+  color: var(--color-action);
+  background: none;
+  border: none;
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  padding: var(--space-1) var(--space-2);
+  min-height: 44px;
+  border-radius: var(--radius-control);
+  transition: opacity .2s var(--ease-out-expo), transform .15s var(--ease-out-expo);
+}
+.ai-retry-btn:hover { opacity: .85; }
+.ai-retry-btn:active { transform: scale(.96); }
+.ai-retry-btn:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
+.retry-icon { width: 13px; height: 13px; flex-shrink: 0; }
 .spinner-center { margin: 0 auto; }
 .ai-search-body { animation: aiSlideIn .35s var(--ease-out-expo); }
 @keyframes aiSlideIn { from { opacity: 0; transform: translateY(-8px) scale(.99); } to { opacity: 1; transform: translateY(0) scale(1); } }

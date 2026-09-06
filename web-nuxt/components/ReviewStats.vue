@@ -105,7 +105,7 @@ const mentionChips = computed(() => {
 .er-dist-fill {
   height: 100%; border-radius: var(--radius-full);
   background: linear-gradient(90deg, var(--river-600) 0%, var(--amber-600) 55%, var(--clay-600) 100%);
-  transition: width 400ms var(--ease-out); min-width: 2px;
+  min-width: 2px;
 }
 .dark .er-dist-fill { background: linear-gradient(90deg, var(--river-legacy-dark) 0%, var(--amber-500) 55%, var(--clay-400) 100%); }
 .er-dist-count { font-size: var(--text-xs); color: var(--muted); font-variant-numeric: tabular-nums; }

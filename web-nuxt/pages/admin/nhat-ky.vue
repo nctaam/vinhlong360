@@ -34,7 +34,7 @@
     <template v-else>
       <div class="audit-summary">{{ total }} mục{{ total > entries.length ? ` · trang ${page}/${totalPages}` : '' }}</div>
 
-      <div class="admin-table-wrap">
+      <div class="admin-table-wrap" role="region" tabindex="0" aria-label="Bảng nhật ký hoạt động">
         <table class="admin-table" aria-label="Nhật ký hoạt động">
           <thead>
             <tr>
@@ -61,9 +61,9 @@
       </div>
 
       <nav v-if="totalPages > 1" class="admin-pagination" role="navigation" aria-label="Phân trang">
-        <button type="button" :disabled="page <= 1" @click="page--; fetchLog()">&larr; Trước</button>
+        <button type="button" :disabled="page <= 1" @click="page--; fetchLog()"><IconLine name="arrow-left" /> Trước</button>
         <span class="admin-page-info">Trang {{ page }}/{{ totalPages }}</span>
-        <button type="button" :disabled="page >= totalPages" @click="page++; fetchLog()">Sau &rarr;</button>
+        <button type="button" :disabled="page >= totalPages" @click="page++; fetchLog()">Sau <IconLine name="arrow-right" /></button>
       </nav>
     </template>
   </div>

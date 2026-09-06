@@ -98,20 +98,20 @@ onMounted(async () => {
   display: flex; gap: var(--space-3); padding: var(--space-3);
   background: var(--card); border: .5px solid var(--line); border-radius: var(--radius-sheet);
   text-decoration: none; color: var(--ink);
-  transition: border-color .25s var(--ease-out), transform .2s var(--ease-spring-gentle);
+  transition: border-color .25s var(--ease-out), transform .2s var(--ease-out-expo);
 }
-.ef-link:hover { border-color: var(--primary-fg); transform: translateY(-1px); }
+.ef-link:hover { border-color: var(--color-action); transform: translateY(-1px); }
 .ef-avatar {
   width: 36px; height: 36px; border-radius: 50%; flex-shrink: 0;
   display: flex; align-items: center; justify-content: center;
-  background: var(--primary); color: var(--text-on-dark, var(--white)); font-weight: var(--weight-semibold); font-size: var(--text-sm);
+  background: var(--color-brand); color: var(--text-on-dark, var(--white)); font-weight: var(--weight-semibold); font-size: var(--text-sm);
 }
 .ef-body { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: .2rem; }
 .ef-author { font-weight: var(--weight-semibold); font-size: var(--text-sm); }
 .ef-text { margin: 0; font-size: var(--text-sm); color: var(--ink-secondary, var(--ink)); line-height: var(--leading-relaxed); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
 .ef-meta { display: flex; align-items: center; gap: var(--space-2); font-size: var(--text-xs); color: var(--muted); flex-wrap: wrap; }
-.ef-more { display: block; text-align: center; padding: var(--space-3); font-size: var(--text-sm); font-weight: var(--weight-medium); color: var(--primary-fg); text-decoration: none; border: .5px solid var(--line); border-radius: var(--radius-sheet); margin-top: var(--space-2); transition: background .2s; }
-.ef-more:hover { background: rgba(var(--primary-rgb), .04); }
+.ef-more { display: block; text-align: center; padding: var(--space-3); font-size: var(--text-sm); font-weight: var(--weight-medium); color: var(--color-action); text-decoration: none; border: .5px solid var(--line); border-radius: var(--radius-sheet); margin-top: var(--space-2); transition: background .2s; }
+.ef-more:hover { background: rgba(var(--color-action-rgb), .06); }
 
 .dark .ef-link { background: var(--bg-alt); }
 .dark .ef-more:hover { background: rgba(var(--white-rgb),.04); }

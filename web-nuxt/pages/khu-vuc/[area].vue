@@ -1,6 +1,6 @@
 <template>
-  <section class="page ce-area">
-    <Breadcrumb :items="[{ label: 'Trang chủ', to: '/' }, { label: areaMeta?.name || 'Khu vực' }]" />
+  <section class="page ce-area" data-color-system="tri-region-v1">
+    <Breadcrumb :items="breadcrumbItems" :json-ld="true" />
 
     <!-- Hero -->
     <section v-if="areaMeta" class="catalog-hero area-hero" :class="'cat-area-' + areaKey" :style="areaTint">
@@ -8,7 +8,7 @@
       <div class="catalog-hero-inner">
         <IconLine :name="areaMeta.icon" class="catalog-hero-icon" />
         <div>
-          <span class="area-eyebrow">Vĩnh Long · Cửu Long</span>
+          <span class="area-eyebrow dateline-eyebrow">Khu vực {{ areaMeta.name }} · Tỉnh Vĩnh Long hợp nhất (trước 7-2025)</span>
           <h1>{{ areaMeta.name }}</h1>
           <p>{{ areaMeta.blurb }}</p>
         </div>
@@ -96,7 +96,9 @@
          /xa-phuong/* trong DOM cho crawler (SEO-caution, không xoá) -->
     <section v-if="wards.length" class="block band reveal">
       <details class="wards-fold">
-        <summary class="wards-summary"><h2>Xã / phường ({{ wards.length }})</h2></summary>
+        <summary class="wards-summary">
+          <h2><IconLine name="chevron-right" class="wards-chevron" aria-hidden="true" /> Xã / phường ({{ wards.length }})</h2>
+        </summary>
         <p class="section-desc">Mỗi xã/phường có trang riêng: du lịch · lưu trú · đặc sản · danh bạ hành chính.</p>
         <div class="chip-row wrap-mobile area-wards">
           <NuxtLink v-for="w in wards" :key="w.id" :to="`/xa-phuong/${w.id}`" class="chip">{{ w.name }}</NuxtLink>
@@ -126,15 +128,15 @@
       <h2>Khám phá thêm {{ areaMeta.name }}</h2>
       <div class="cross-links">
         <NuxtLink :to="`/du-lich?type=experience&mua=all`" class="cross-card">
-          <span class="cross-icon" aria-hidden="true">🌾</span>
+          <span class="cross-icon" aria-hidden="true"><IconLine name="sprout" /></span>
           <div><strong>Trải nghiệm</strong><p>Miệt vườn sông nước</p></div>
         </NuxtLink>
         <NuxtLink to="/san-pham" class="cross-card">
-          <span class="cross-icon" aria-hidden="true">🍊</span>
+          <span class="cross-icon" aria-hidden="true"><IconLine name="fruit" /></span>
           <div><strong>Sản phẩm</strong><p>Đặc sản địa phương</p></div>
         </NuxtLink>
         <NuxtLink to="/luu-tru" class="cross-card">
-          <span class="cross-icon" aria-hidden="true">🏡</span>
+          <span class="cross-icon" aria-hidden="true"><IconLine name="home" /></span>
           <div><strong>Lưu trú</strong><p>Homestay, nhà vườn</p></div>
         </NuxtLink>
       </div>
@@ -158,11 +160,11 @@ if (!areaMeta) throw createError({ statusCode: 404, statusMessage: 'Không tìm 
 // Per-region accent binding — feeds the scoped hero bloom + stat tint so each
 // area "owns" its colour. Falls back to brand primary for unknown areas.
 const AREA_RGB: Record<string, string> = {
-  'vinh-long': 'var(--primary-rgb)',
+  'vinh-long': 'var(--color-brand-rgb)',
   'ben-tre': 'var(--secondary-rgb)',
   'tra-vinh': 'var(--river-rgb)',
 }
-const areaTint = { '--AREA-rgb': AREA_RGB[areaKey] || 'var(--primary-rgb)' }
+const areaTint = { '--AREA-rgb': AREA_RGB[areaKey] || 'var(--color-brand-rgb)' }
 
 const [{ data, error: fetchError }, { data: placesData }] = await Promise.all([
   useAsyncData(`area-${areaKey}`, () =>
@@ -175,24 +177,24 @@ const [{ data, error: fetchError }, { data: placesData }] = await Promise.all([
 
 const AREA_EDITORIAL: Record<string, { title: string; paragraphs: string[] }> = {
   'vinh-long': {
-    title: 'Vĩnh Long — xứ dừa miệt vườn',
+    title: 'Khu vực Vĩnh Long (trung tâm) — miệt vườn sông nước',
     paragraphs: [
       'Vĩnh Long nằm giữa sông Tiền và sông Hậu, nổi tiếng với các cù lao trái cây, vườn cây ăn trái xanh mướt quanh năm và hệ thống kênh rạch chằng chịt. Du khách đến đây thường trải nghiệm đi xuồng ba lá, thăm các làng nghề truyền thống như làm gạch gốm, dệt chiếu, và thưởng thức trái cây tại vườn.',
       'Ngoài du lịch sinh thái, Vĩnh Long còn giữ được nhiều di tích lịch sử và công trình kiến trúc độc đáo: Văn Thánh Miếu, nhà cổ Cai Cường, chùa Tiên Châu. Ẩm thực địa phương phong phú với cá tai tượng chiên xù, bánh tráng Cù Lao Mây, và các loại mứt trái cây đặc sản.',
     ],
   },
   'ben-tre': {
-    title: 'Bến Tre — xứ dừa ngàn năm',
+    title: 'Khu vực Bến Tre (trước 7-2025) — xứ dừa ngàn năm',
     paragraphs: [
-      'Bến Tre được mệnh danh là "xứ dừa" với hơn 70.000 hecta dừa — lớn nhất cả nước. Cả vùng là một hệ thống cù lao được bao bọc bởi sông Tiền và biển Đông, tạo nên cảnh quan sông nước đặc trưng bậc nhất đồng bằng.',
-      'Du lịch Bến Tre xoay quanh trải nghiệm sông nước: chèo thuyền trên rạch dừa, thăm lò kẹo dừa, uống nước dừa tươi trong vườn, và nghỉ tại các homestay ven sông. Sản phẩm OCOP nổi bật của Bến Tre gồm kẹo dừa Bến Tre, rượu dừa, tinh dầu dừa và các sản phẩm thủ công từ gáo dừa.',
+      'Khu vực Bến Tre (trước 7-2025) được mệnh danh là "xứ dừa" với hơn 70.000 hecta dừa — lớn nhất cả nước. Cả vùng là một hệ thống cù lao được bao bọc bởi sông Tiền và biển Đông, tạo nên cảnh quan sông nước đặc trưng bậc nhất đồng bằng.',
+      'Du lịch vùng Bến Tre (trước 7-2025) xoay quanh trải nghiệm sông nước: chèo thuyền trên rạch dừa, thăm lò kẹo dừa, uống nước dừa tươi trong vườn, và nghỉ tại các homestay ven sông. Sản phẩm OCOP nổi bật của xứ dừa gồm kẹo dừa Bến Tre (cũ), rượu dừa, tinh dầu dừa và các sản phẩm thủ công từ gáo dừa.',
     ],
   },
   'tra-vinh': {
-    title: 'Trà Vinh — giao thoa Kinh–Khmer–Hoa',
+    title: 'Khu vực Trà Vinh (trước 7-2025) — giao thoa Kinh–Khmer–Hoa',
     paragraphs: [
-      'Trà Vinh là tỉnh có cộng đồng Khmer lớn nhất vùng đồng bằng, tạo nên bản sắc văn hoá đặc biệt với hệ thống hơn 140 ngôi chùa Khmer cổ, lễ hội Ok Om Bok, đua ghe Ngo và ẩm thực Khmer đặc trưng. Kiến trúc chùa Khmer Trà Vinh được đánh giá là đẹp nhất khu vực.',
-      'Ngoài văn hoá Khmer, Trà Vinh còn có bờ biển Ba Động kéo dài, rừng ngập mặn Long Khánh, và hệ thống ao Bà Om — di tích quốc gia với hàng cổ thụ hàng trăm năm tuổi. Đặc sản nổi tiếng gồm bún nước lèo, bánh tét Trà Cuôn, và dừa sáp — giống dừa quý hiếm chỉ có ở Cầu Kè, Trà Vinh.',
+      'Khu vực Trà Vinh (trước 7-2025) có cộng đồng Khmer lớn nhất vùng đồng bằng, tạo nên bản sắc văn hoá đặc biệt với hệ thống hơn 140 ngôi chùa Khmer cổ, lễ hội Ok Om Bok, đua ghe Ngo và ẩm thực Khmer đặc trưng. Kiến trúc chùa Khmer Trà Vinh được đánh giá là đẹp nhất khu vực.',
+      'Ngoài văn hoá Khmer, vùng Trà Vinh (trước 7-2025) còn có bờ biển Ba Động kéo dài, rừng ngập mặn Long Khánh, và hệ thống ao Bà Om — di tích quốc gia với hàng cổ thụ hàng trăm năm tuổi. Đặc sản nổi tiếng gồm bún nước lèo, bánh tét Trà Cuôn, và dừa sáp — giống dừa quý hiếm chỉ có ở Cầu Kè (Trà Vinh cũ).',
     ],
   },
 }
@@ -258,45 +260,103 @@ function toggleExpand(type: string) {
   expanded[type] = !expanded[type]
 }
 
+const breadcrumbItems = computed(() => [
+  { label: 'Trang chủ', to: '/' },
+  { label: areaMeta?.name || 'Khu vực' },
+])
+
 if (areaMeta) {
   useSeoMeta({
     ogType: 'article',
     title: `Khu vực ${areaMeta.name} — vinhlong360`,
     description: areaMeta.blurb,
-    ogTitle: `${areaMeta.emoji} ${areaMeta.name} — vinhlong360`,
+    ogTitle: `Khu vực ${areaMeta.name} — vinhlong360`,
     ogDescription: areaMeta.blurb,
+    ogUrl: canonicalUrl(`/khu-vuc/${areaKey}`),
+    twitterCard: 'summary_large_image',
     ogImage: () => featuredImageMeta.value.ogImage,
     ogImageAlt: () => featuredImageMeta.value.ogImageAlt,
     twitterImage: () => featuredImageMeta.value.twitterImage,
     twitterImageAlt: () => featuredImageMeta.value.twitterImageAlt,
   })
 
-  useHead(() => ({
-    link: [{ rel: 'canonical', href: canonicalUrl(`/khu-vuc/${areaKey}`) }],
-    script: [{
-      type: 'application/ld+json',
-      innerHTML: safeJsonLd({
-        '@context': 'https://schema.org',
-        '@type': 'BreadcrumbList',
-        itemListElement: [
-          { '@type': 'ListItem', position: 1, name: 'Trang chủ', item: 'https://vinhlong360.vn/' },
-          { '@type': 'ListItem', position: 2, name: areaMeta.name, item: `https://vinhlong360.vn/khu-vuc/${areaKey}` },
-        ],
-      }),
-    }],
-  }))
+  useHead(() => {
+    const pageUrl = canonicalUrl(`/khu-vuc/${areaKey}`)
+    const repImage = descriptorToImageObject(featuredImageDescriptor.value)
+    const graphNodes: any[] = [
+      buildWebSiteSchema(),
+      buildOrganizationSchema(),
+      {
+        '@type': 'AdministrativeArea',
+        '@id': `${pageUrl}#adminarea`,
+        name: areaMeta.name,
+        description: areaMeta.blurb,
+        url: pageUrl,
+        containedInPlace: {
+          '@type': 'AdministrativeArea',
+          name: 'Tỉnh Vĩnh Long',
+          '@id': `${SITE_URL}/#province`,
+        },
+        ...(repImage ? { image: repImage } : {}),
+      },
+      {
+        '@type': 'WebPage',
+        '@id': `${pageUrl}#webpage`,
+        name: `Khu vực ${areaMeta.name} — vinhlong360`,
+        description: areaMeta.blurb,
+        url: pageUrl,
+        isPartOf: { '@id': `${SITE_URL}/#website` },
+        mainEntity: { '@id': `${pageUrl}#adminarea` },
+        speakable: buildSpeakableSpecification(['.catalog-hero-inner h1', '.catalog-lead', '.area-stats']),
+      },
+    ]
 
-  useHead(() => ({
-    script: [{
-      type: 'application/ld+json',
-      innerHTML: safeJsonLd(itemListJsonLd(
-        `Khu vực ${areaMeta.name}`,
-        areaMeta.blurb,
-        `/khu-vuc/${areaKey}`,
-        entities.value,
-      )),
-    }],
-  }))
+    if (entities.value?.length) {
+      graphNodes.push({
+        '@type': 'ItemList',
+        '@id': `${pageUrl}#items`,
+        name: `Khu vực ${areaMeta.name}`,
+        description: areaMeta.blurb,
+        numberOfItems: entities.value.length,
+        itemListElement: entities.value.slice(0, 30).map((e: Entity, i: number) => ({
+          '@type': 'ListItem',
+          position: i + 1,
+          name: e.name,
+          url: `${SITE_URL}${entityPath(e.id)}`,
+        })),
+      })
+    }
+
+    const faqItems: FaqItem[] = [
+      {
+        q: `Khu vực ${areaMeta.name} có những nét văn hóa và địa danh nào tiêu biểu?`,
+        a: `Khu vực ${areaMeta.name} nổi bật với hệ sinh thái miệt vườn ven sông, các di tích lịch sử - văn hóa địa phương và các làng nghề truyền thống gắn liền với dòng sông Tiền và sông Hậu.`,
+      },
+      {
+        q: `Làm thế nào để di chuyển đến và khám phá ${areaMeta.name}?`,
+        a: `Du khách có thể dễ dàng tiếp cận ${areaMeta.name} bằng đường bộ thông qua các trục quốc lộ hoặc trải nghiệm các tuyến đò ngang, phà sông kết nối giữa các cù lao và xã/phường.`,
+      },
+      {
+        q: `Đặc sản và sản phẩm OCOP nổi bật của ${areaMeta.name} gồm những gì?`,
+        a: `Tại ${areaMeta.name}, du khách có thể thưởng thức các loại trái cây đặc sản trứ danh, nông thủy sản tươi ngon cùng các sản phẩm thủ công truyền thống của cư dân bản địa.`,
+      },
+    ]
+    const faqNode = buildFaqPageSchema(faqItems, `${pageUrl}#faq`)
+    if (faqNode) graphNodes.push(faqNode)
+
+    return {
+      link: [{ rel: 'canonical', href: pageUrl }],
+      script: [
+        {
+          type: 'application/ld+json',
+          innerHTML: safeJsonLd({
+            '@context': 'https://schema.org',
+            '@graph': graphNodes,
+          }),
+        },
+      ],
+    }
+  })
 }
 </script>
 
@@ -310,7 +370,7 @@ if (areaMeta) {
    feels "owned" by its colour without overwriting the global motif layer.
    Sits below the text/stats (catalog-hero-inner / catalog-stats are z-index 1
    per catalog.css). Decorative only. */
-.area-hero { --AREA-rgb: var(--primary-rgb); }
+.area-hero { --AREA-rgb: var(--color-brand-rgb); }
 /* CE2 editorial hero refinement (scoped to region hero only — does NOT touch the shared
    .catalog-hero used by /kham-pha): drop the emoji glyph — it's redundant decoration on a
    real cinematic photo and reads app-y (an AI-slop tell) — and set the region name in the
@@ -342,7 +402,7 @@ if (areaMeta) {
 }
 .ce-area .page-article p:first-of-type::first-letter {
   font-family: var(--font-editorial); font-weight: 600;
-  float: left; font-size: 3.1em; line-height: .82; padding: .04em .12em 0 0; color: var(--primary);
+  float: left; font-size: 3.1em; line-height: .82; padding: .04em .12em 0 0; color: var(--color-brand);
 }
 /* Section heads: editorial serif + the vertical "sediment core" tick (river→amber→clay) — the same
    phù-sa signature the homepage uses, so the region page speaks one voice. */
@@ -358,7 +418,7 @@ if (areaMeta) {
 .dark .ce-area .section-head h2::before { background: linear-gradient(180deg, var(--river-400, var(--river-legacy-dark)) 0%, var(--amber-500) 52%, var(--clay-400) 100%); }
 
 /* ── SIGNATURE: cinematic per-region hero photo (logic-matched — each region shows its own
-   signature scene: VL gạch gốm + miệt vườn · Bến Tre xứ dừa · Trà Vinh chùa Khmer).
+   signature scene: VL gạch gốm + miệt vườn · Bến Tre cũ xứ dừa · Trà Vinh cũ chùa Khmer).
    Only the 3 regions that have an AI-gen image; strong scrim + white text keeps copy legible. ── */
 .cat-area-vinh-long, .cat-area-ben-tre, .cat-area-tra-vinh {
   min-height: clamp(19rem, 44vh, 30rem);
@@ -411,12 +471,12 @@ if (areaMeta) {
   background: rgba(var(--AREA-rgb), .1);
 }
 .area-stats .stat-item:hover .stat-num {
-  color: var(--primary-fg-strong, var(--primary-fg));
+  color: var(--color-action-hover);
   transform: scale(1.08);
 }
 .area-stats .stat-num {
   display: inline-block;
-  transition: color .3s var(--ease-out), transform .25s var(--ease-spring-gentle);
+  transition: color .3s var(--ease-out), transform .25s var(--ease-out-expo);
 }
 /* mobile: stats become a tidy 2-up grid so they never orphan on a line */
 @media (max-width: 640px) {
@@ -439,7 +499,7 @@ if (areaMeta) {
 .see-all-toggle {
   font-size: var(--text-sm);
   font-weight: var(--weight-semibold);
-  color: var(--primary-fg);
+  color: var(--color-action);
   background: transparent;
   border: .5px solid transparent;
   border-radius: var(--radius-full);
@@ -451,18 +511,29 @@ if (areaMeta) {
   transition: background .25s var(--ease-out), color .25s var(--ease-out), transform .15s var(--ease-spring);
 }
 .see-all-toggle:hover {
-  background: rgba(var(--primary-rgb), .08);
-  border-color: rgba(var(--primary-rgb), .2);
+  background: rgba(var(--color-action-rgb), .08);
+  border-color: rgba(var(--color-action-rgb), .2);
 }
 .see-all-toggle:active { transform: scale(.96); transition-duration: .08s; }
-.see-all-toggle:focus-visible { outline: 2px solid var(--primary); outline-offset: 3px; }
+.see-all-toggle:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 3px; }
 
 /* declutter-3 T12: wards thu gọn sau <details> — link vẫn trong DOM, đỡ nhiễu thị giác */
-.wards-summary { cursor: pointer; list-style: none; }
+.wards-summary { cursor: pointer; list-style: none; user-select: none; }
+.wards-summary:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; border-radius: var(--radius-control); }
 .wards-summary::-webkit-details-marker { display: none; }
-.wards-summary::before { content: "▸ "; color: var(--muted); }
-details[open] > .wards-summary::before { content: "▾ "; }
-.wards-summary h2 { display: inline; }
+.wards-chevron {
+  display: inline-block;
+  margin-inline-end: var(--space-2);
+  color: var(--muted);
+  font-size: var(--icon-sm);
+  vertical-align: middle;
+  transition: transform .25s var(--ease-out-expo), color .2s var(--ease-out);
+}
+details[open] .wards-chevron {
+  transform: rotate(90deg);
+  color: var(--color-action);
+}
+.wards-summary h2 { display: inline-flex; align-items: center; }
 .wards-fold[open] .wards-summary { margin-bottom: var(--space-3); }
 
 /* ── POLISH: Ward chips wrap to a tap-friendly grid on mobile ─────────────
@@ -493,5 +564,6 @@ details[open] > .wards-summary::before { content: "▾ "; }
 @media (prefers-reduced-motion: reduce) {
   .area-stats .stat-item:hover .stat-num { transform: none; }
   .see-all-toggle:active { transform: none; }
+  .wards-chevron { transition: none; }
 }
 </style>

@@ -70,7 +70,7 @@
     </div>
 
     <!-- Queue table -->
-    <div class="admin-table-wrap">
+    <div class="admin-table-wrap" role="region" tabindex="0" aria-label="Bảng hàng đợi kiểm duyệt">
     <table class="admin-table" aria-label="Hàng đợi kiểm duyệt">
       <thead>
         <tr>
@@ -95,7 +95,7 @@
             </td>
             <td class="mod-content-cell">
               <span :class="{ 'mod-content-truncate': !expanded.has(p.id) }">{{ p.content }}</span>
-              <button v-if="(p.content || '').length > 90" type="button" class="mod-expand" @click="toggleExpand(p.id)">
+              <button v-if="(p.content || '').length > 90" type="button" class="mod-expand" :aria-expanded="expanded.has(p.id)" @click="toggleExpand(p.id)">
                 {{ expanded.has(p.id) ? 'Thu gọn' : 'Xem đầy đủ' }}
               </button>
             </td>
@@ -137,12 +137,12 @@
         <tr v-if="!queue.length">
           <td colspan="7">
             <div class="admin-empty-state">
-              <div class="admin-empty-state-icon">{{ emptyState.icon }}</div>
+              <div class="admin-empty-state-icon"><IconLine :name="emptyState.icon" /></div>
               <div class="admin-empty-state-text">{{ emptyState.text }}</div>
               <button
                 v-if="status !== 'review'" type="button" class="mod-empty-action"
                 @click="setStatus('review')"
-              >Về hàng đợi cần duyệt &rarr;</button>
+              >Về hàng đợi cần duyệt <IconLine name="arrow-right" /></button>
             </div>
           </td>
         </tr>
@@ -288,13 +288,13 @@ const hasMore = computed(() => queue.value.length < total.value)
 function badgeOf(s: string) { return BADGES[s] || { label: s, cls: 'mb-pending' } }
 
 const EMPTY_STATES: Record<string, { icon: string; text: string }> = {
-  review: { icon: '🎉', text: 'Hàng đợi đã sạch. Tốt lắm!' },
-  pending: { icon: '🎉', text: 'Không có bài nào đang chờ duyệt.' },
-  flagged: { icon: '✓', text: 'Không có bài nào bị gắn cờ.' },
-  approved: { icon: '📭', text: 'Chưa có bài viết nào đã duyệt.' },
-  rejected: { icon: '📭', text: 'Chưa có bài viết nào bị từ chối.' },
+  review: { icon: 'sparkles', text: 'Hàng đợi đã sạch. Tốt lắm!' },
+  pending: { icon: 'sparkles', text: 'Không có bài nào đang chờ duyệt.' },
+  flagged: { icon: 'check', text: 'Không có bài nào bị gắn cờ.' },
+  approved: { icon: 'file-text', text: 'Chưa có bài viết nào đã duyệt.' },
+  rejected: { icon: 'file-text', text: 'Chưa có bài viết nào bị từ chối.' },
 }
-const emptyState = computed(() => EMPTY_STATES[status.value] || { icon: '📭', text: 'Không có bài nào.' })
+const emptyState = computed(() => EMPTY_STATES[status.value] || { icon: 'file-text', text: 'Không có bài nào.' })
 
 function tabCount(key: string): number | null {
   if (key === 'review') return (modStats.value.pending || 0) + (modStats.value.flagged || 0)
@@ -461,8 +461,8 @@ onUnmounted(() => window.removeEventListener('keydown', onKeydown))
 .mod-session-stats { margin-left: auto; font-size: .72rem; }
 .mod-session-ok { color: var(--secondary-fg); }
 .mod-session-rej { color: var(--error); }
-.mod-focused td { background: rgba(var(--primary-rgb),.06) !important; }
-.mod-focused td:first-child { box-shadow: inset 3px 0 0 var(--primary); }
+.mod-focused td { background: rgba(var(--color-action-rgb),.06) !important; }
+.mod-focused td:first-child { box-shadow: inset 3px 0 0 var(--color-action); }
 
 /* ── Status tabs ── */
 .mod-tabs { display: flex; flex-wrap: wrap; gap: var(--space-2); margin-bottom: var(--space-5); }
@@ -472,16 +472,16 @@ onUnmounted(() => window.removeEventListener('keydown', onKeydown))
   background: var(--bg); color: var(--muted); font-size: .82rem; font-weight: 500; cursor: pointer;
   transition: background .2s, color .2s, border-color .2s, transform .15s var(--ease-soft);
 }
-.mod-tab:hover { border-color: var(--primary); color: var(--ink); }
+.mod-tab:hover { border-color: var(--color-action); color: var(--ink); }
 .mod-tab:active { transform: scale(.97); }
-.mod-tab.active { background: var(--primary); color: var(--text-on-dark); border-color: var(--primary); }
-.mod-tab:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+.mod-tab.active { background: var(--color-action); color: var(--text-on-dark); border-color: var(--color-action); }
+.mod-tab:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
 .mod-tab-count { font-size: .72rem; font-weight: 700; padding: 0 6px; border-radius: 100px; background: var(--line); color: var(--muted); }
 .mod-tab.active .mod-tab-count { background: rgba(var(--white-rgb),.2); color: var(--text-on-dark); }
 
 /* Urgency accent for queue cards with pending/flagged items (dashboard-at-a-glance) */
-.stat-card.status-warn { border-left: 4px solid var(--warning); }
-.stat-card.status-error { border-left: 4px solid var(--error); }
+.stat-card.status-warn { box-shadow: inset 3px 0 0 var(--warning); }
+.stat-card.status-error { box-shadow: inset 3px 0 0 var(--error); }
 .stat-card.status-warn .stat-icon,
 .stat-card.status-error .stat-icon { font-size: 1.3rem; font-weight: 700; }
 
@@ -493,9 +493,9 @@ onUnmounted(() => window.removeEventListener('keydown', onKeydown))
 /* ── Content cell ── */
 .mod-content-cell { max-width: 420px; }
 .mod-content-truncate { display: -webkit-box; -webkit-line-clamp: 2; line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
-.mod-expand { display: inline-block; margin-top: var(--space-1); background: none; border: none; padding: 0; color: var(--primary-fg); font-size: .76rem; font-weight: 600; cursor: pointer; }
+.mod-expand { display: inline-block; margin-top: var(--space-1); background: none; border: none; padding: 0; color: var(--color-action); font-size: .76rem; font-weight: 600; cursor: pointer; }
 .mod-expand:hover { text-decoration: underline; }
-.mod-expand:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; border-radius: 4px; }
+.mod-expand:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; border-radius: 4px; }
 
 /* Keyboard affordance: highlight the row whose action button is focused (mirrors tr:hover) */
 .admin-table tbody tr:focus-within td { background: rgba(var(--black-rgb),.04); }
@@ -506,7 +506,7 @@ onUnmounted(() => window.removeEventListener('keydown', onKeydown))
 .mod-badge { display: inline-block; padding: 2px 9px; border-radius: 100px; font-size: .72rem; font-weight: 700; white-space: nowrap; }
 .mb-pending { background: rgba(var(--warning-rgb),.12); color: var(--warning); }
 .mb-flagged { background: rgba(var(--danger-rgb),.13); color: var(--error); }
-.mb-approved { background: rgba(var(--primary-rgb),.12); color: var(--secondary-fg); }
+.mb-approved { background: rgba(var(--color-success-rgb),.12); color: var(--success); }
 .mb-rejected { background: rgba(var(--gray-rgb),.15); color: var(--muted); }
 
 /* ── Reject reason inline ── */
@@ -527,6 +527,7 @@ onUnmounted(() => window.removeEventListener('keydown', onKeydown))
 .mod-reason-chip.active { background: rgba(var(--danger-rgb),.12); border-color: var(--error); color: var(--error); font-weight: 600; }
 .mod-reason-input { flex: 1; min-width: 200px; padding: 9px var(--space-3); border: .5px solid var(--line); border-radius: 10px; font-size: .85rem; background: var(--bg); color: var(--ink); min-height: 40px; }
 .mod-reason-input:focus { outline: none; border-color: var(--error); box-shadow: 0 0 0 3px rgba(var(--danger-rgb),.1); }
+.mod-reason-input:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
 .mod-batch-reason {
   flex: 1;
   min-width: 220px;
@@ -542,18 +543,19 @@ onUnmounted(() => window.removeEventListener('keydown', onKeydown))
   border-color: var(--error);
   box-shadow: 0 0 0 3px rgba(var(--danger-rgb),.1);
 }
+.mod-batch-reason:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
 .btn-ghost-sm { background: none; border: none; color: var(--muted); font-size: .82rem; cursor: pointer; padding: var(--space-2) var(--space-3); border-radius: 8px; }
 .btn-ghost-sm:hover { background: var(--bg-alt); color: var(--ink); }
 
 .mod-empty-action {
   background: none; border: .5px solid var(--line); border-radius: 8px;
-  padding: 7px 14px; font-size: .82rem; font-weight: 500; color: var(--primary);
+  padding: 7px 14px; font-size: .82rem; font-weight: 500; color: var(--color-action);
   cursor: pointer; min-height: 44px;
   transition: border-color .25s, background .25s, transform .15s var(--ease-soft);
 }
-.mod-empty-action:hover { border-color: var(--primary); background: rgba(var(--primary-rgb),.04); }
+.mod-empty-action:hover { border-color: var(--color-action); background: rgba(var(--color-action-rgb),.04); }
 .mod-empty-action:active { transform: scale(.96); }
-.mod-empty-action:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+.mod-empty-action:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
 @media (prefers-reduced-motion: reduce) { .mod-empty-action:active { transform: none; } }
 
 @media (prefers-reduced-motion: reduce) {
@@ -580,7 +582,8 @@ onUnmounted(() => window.removeEventListener('keydown', onKeydown))
 .mod-notes-empty { font-size: .78rem; color: var(--muted); font-style: italic; margin-bottom: var(--space-2); }
 .mod-note-add { display: flex; gap: var(--space-2); }
 .mod-note-input { flex: 1; padding: 7px 12px; border: .5px solid var(--line); border-radius: 8px; font-size: .82rem; background: var(--bg); color: var(--ink); }
-.mod-note-input:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(var(--primary-rgb),.1); }
+.mod-note-input:focus { outline: none; border-color: var(--color-action); box-shadow: 0 0 0 3px rgba(var(--color-action-rgb),.1); }
+.mod-note-input:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
 
 @media (max-width: 520px) {
   .mod-tabs { gap: var(--space-1); }

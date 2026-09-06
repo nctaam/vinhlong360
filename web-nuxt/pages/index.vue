@@ -237,44 +237,14 @@
             <h2>Từ <em class="ac-neutral">cộng đồng</em></h2>
             <p class="sh-sub">Trải nghiệm thật, mẹo hay từ người đi trước</p>
           </div>
-          <NuxtLink class="see-all" to="/cong-dong">Đọc thêm chuyện người đi trước →</NuxtLink>
+          <NuxtLink class="see-all" to="/cong-dong">Đọc thêm chuyện người đi trước <IconLine name="arrow-right" class="inline-arrow" aria-hidden="true" /></NuxtLink>
         </div>
-        <template v-if="communityPosts.length">
-          <p v-if="communityStats && (communityStats.posts || communityStats.reviews || communityStats.members)" class="community-stats-line">
-            <strong>{{ communityStats.posts }}</strong> bài viết
-            · <strong>{{ communityStats.reviews }}</strong> đánh giá
-            · <strong>{{ communityStats.members }}</strong> thành viên
-          </p>
-          <div v-if="trendingTags.length" class="trending-tags">
-            <span class="tt-label"><IconLine name="flame" /> Đang được nhắc:</span>
-            <NuxtLink v-for="t in trendingTags" :key="t.tag" :to="`/cong-dong?tag=${encodeURIComponent(t.tag)}`" class="tt-chip">{{ t.tag }}</NuxtLink>
-          </div>
-          <!-- declutter-3 T16 (B1-6): dàn chip leaderboard → 1 link teaser (đích /bang-xep-hang) -->
-          <p v-if="topMembers.length" class="home-leaders-teaser">
-            <IconLine name="trophy" /> <NuxtLink to="/bang-xep-hang">Xem thành viên tích cực →</NuxtLink>
-          </p>
-          <div class="scroll-row" role="region" aria-label="Bài viết cộng đồng mới" tabindex="0">
-            <NuxtLink v-for="p in communityPosts" :key="p.id" :to="postPath(p.id)" class="cm-card">
-              <div class="cm-body">
-                <div class="cm-author">
-                  <span class="cm-avatar">{{ (p.display_name || '?').charAt(0).toUpperCase() }}</span>
-                  <span class="cm-name">{{ p.display_name || 'Người dùng' }}</span>
-                  <span v-if="p.post_type_label" class="cm-type">{{ p.post_type_label }}</span>
-                </div>
-                <p class="cm-content">{{ p.content }}</p>
-                <div class="cm-meta">
-                  <span v-if="p.likes"><IconLine name="heart" /> {{ p.likes }}</span>
-                  <span v-if="p.comments_count || p.comment_count"><IconLine name="message" /> {{ p.comments_count || p.comment_count }}</span>
-                  <span v-if="p.entity_name" class="cm-place">{{ p.entity_name }}</span>
-                </div>
-              </div>
-            </NuxtLink>
-          </div>
-        </template>
-        <div class="community-join">
-          <span>Chia sẻ quán ngon, điểm đẹp, mẹo đi — góp một mảnh ghép cho bản đồ chung.</span>
-          <NuxtLink to="/cong-dong" class="btn btn-outline"><IconLine name="message" /> Tham gia cộng đồng</NuxtLink>
-        </div>
+        <HomeCommunityFeed
+          :posts="communityPosts"
+          :stats="communityStats"
+          :trending-tags="trendingTags"
+          :top-members="topMembers"
+        />
       </section>
       <section v-else class="block reveal" aria-label="Cộng đồng" data-home-section="community" data-material-accent="neutral">
         <EmptyState tone="empty" title="Cộng đồng đang khởi động"
@@ -282,8 +252,36 @@
           <template #actions>
             <NuxtLink to="/cong-dong" class="btn btn-outline"><IconLine name="message" /> Tham gia cộng đồng</NuxtLink>
           </template>
+          <div class="community-seed-prompts" aria-label="Gợi ý chủ đề chia sẻ">
+            <p class="community-seed-label">Gợi ý chủ đề người Vĩnh Long đang quan tâm:</p>
+            <div class="community-seed-grid">
+              <NuxtLink to="/cong-dong" class="community-seed-card">
+                <strong>Chèo SUP ngắm bình minh</strong>
+                <span>Khúc sông Cổ Chiên buổi sáng sớm</span>
+              </NuxtLink>
+              <NuxtLink to="/cong-dong" class="community-seed-card">
+                <strong>Sầu riêng chín cây An Bình</strong>
+                <span>Nhận biết sầu riêng rụng không nhúng thuốc</span>
+              </NuxtLink>
+              <NuxtLink to="/cong-dong" class="community-seed-card">
+                <strong>Lò gạch Thầy Kay hoàng hôn</strong>
+                <span>Góc chụp ánh sáng xuyên vòm gốm đỏ</span>
+              </NuxtLink>
+            </div>
+          </div>
         </EmptyState>
       </section>
+      <template #fallback>
+        <section class="block reveal" aria-hidden="true" data-home-section="community" style="min-height: 240px;">
+          <div class="section-head">
+            <div class="sh-text">
+              <h2>Từ <em class="ac-neutral">cộng đồng</em></h2>
+              <p class="sh-sub">Trải nghiệm thật, mẹo hay từ người đi trước</p>
+            </div>
+          </div>
+          <SkeletonGrid :count="2" />
+        </section>
+      </template>
     </ClientOnly>
 
     <!-- 6. Dành cho bạn — one merged, image-tolerant personalization strip (client-only) -->
@@ -322,27 +320,8 @@
       </section>
     </ClientOnly>
 
-    <section class="home-continuation" data-home-section="journey-continuation" aria-labelledby="home-continuation-title">
-      <div>
-        <p class="home-continuation__eyebrow">Tiếp tục hành trình</p>
-        <h2 id="home-continuation-title">Giữ mạch khám phá khi bạn đã có một điểm bắt đầu</h2>
-      </div>
-      <!-- Personalized continuation is client-only because it reads saved/recent local state. -->
-      <ClientOnly>
-        <JourneyActionRail
-          v-if="!homePending && homeJourneyActions.length"
-          :actions="homeJourneyActions"
-          title="Tiếp tục hành trình của bạn"
-          subtitle="Từ những gì bạn đã lưu và vừa xem."
-          aria-label="Gợi ý hành trình trên trang chủ"
-          compact
-        />
-      </ClientOnly>
-      <nav class="home-continuation__links" aria-label="Bước tiếp theo">
-        <NuxtLink to="/ban-do">Mở bản đồ</NuxtLink>
-        <NuxtLink to="/lich-trinh">Xem lịch trình</NuxtLink>
-      </nav>
-    </section>
+    <!-- Continuation with JourneyActionRail -->
+    <HomeContinuation :actions="homeJourneyActions" :pending="homePending" />
 
   </div>
 </template>
@@ -357,11 +336,23 @@ import HomeFeatureDossier from '~/components/home/HomeFeatureDossier.vue'
 import HomeLocalBriefing from '~/components/home/HomeLocalBriefing.vue'
 import HomeProductLead from '~/components/home/HomeProductLead.vue'
 import HomeOcopLedger from '~/components/home/HomeOcopLedger.vue'
+import HomeCommunityFeed from '~/components/home/HomeCommunityFeed.vue'
+import HomeContinuation from '~/components/home/HomeContinuation.vue'
 import ImageDisclosure from '~/components/ImageDisclosure.vue'
 import { describeEntityImages, describeEntityPlaceholder } from '~/utils/imageDescriptors'
 import { createHomeNocturnePresentation } from '~/utils/homeNocturnePresentation'
 import type { HomePresentationEntity } from '~/utils/homeNocturnePresentation'
 import { resolveFreshnessStatus, resolveSourceTier } from '~/utils/regionalColor'
+import {
+  formatFreshnessLabel,
+  eventMetadata,
+  eventSourceTier,
+  eventSourceTitle,
+  eventSourceUrl,
+  eventVerifiedAt,
+  eventFreshnessStatus,
+  eventFreshnessLabel,
+} from '~/utils/homeSignalFormatters'
 import { aiDisclosure } from '~/utils/aiDisclosure'
 import type { ImageDescriptor } from '~/types/image'
 import { useId } from 'vue'
@@ -415,10 +406,11 @@ if (import.meta.client) {
 }
 const getFavTypeMeta = getTypeMeta
 
-const { data: homeData, error: homeError, pending: homePending, refresh: refreshHome } = await useAsyncData('homepage',
+const homeAsyncData = useAsyncData('homepage',
   () => apiFetch<any>('/api/homepage'))
+const { data: homeData, error: homeError, pending: homePending, refresh: refreshHome } = homeAsyncData
 
-const { data: communityData } = await useAsyncData('home-community', async () => {
+const communityAsyncData = useAsyncData('home-community', async () => {
   const [feed, cstats, lb, tags] = await Promise.all([
     apiFetch<any>('/api/feed?limit=10').catch(() => ({ posts: [] })),
     apiFetch<any>('/api/community/stats').catch(() => null),
@@ -430,6 +422,7 @@ const { data: communityData } = await useAsyncData('home-community', async () =>
     .slice(0, 6)
   return { posts, stats: cstats, leaders: lb.leaders || [], tags: tags.tags || [] }
 }, { lazy: true })
+const { data: communityData } = communityAsyncData
 const communityPosts = computed(() => communityData.value?.posts || [])
 const communityStats = computed(() => communityData.value?.stats || null)
 const topMembers = computed(() => communityData.value?.leaders || [])
@@ -578,75 +571,7 @@ const hasHomepageContent = computed(() => !!(upcomingEvents.value.length || seas
 const homeFailed = computed(() => !homePending.value && (!!homeError.value || (!!homeData.value && !hasHomepageContent.value)))
 const homeLoadingSkeleton = computed(() => !hasHomepageContent.value && !homeFailed.value)
 onMounted(() => { if (homeError.value || !hasHomepageContent.value) refreshHome() })
-
-function formatEventDay(ev: any) {
-  const ds = ev.attributes?.date_start
-  if (!ds) return '?'
-  return ds.split('-')[2]?.replace(/^0/, '') || '?'
-}
-function formatEventMonth(ev: any) {
-  const ds = ev.attributes?.date_start
-  if (!ds) return ''
-  const m = parseInt(ds.split('-')[1] || '0', 10)
-  return isNaN(m) || m === 0 ? '' : `Th${m}`
-}
-
-function formatFreshnessLabel(value?: string | null): string {
-  if (!value || !Number.isFinite(Date.parse(value))) return ''
-  return `Cập nhật ${new Intl.DateTimeFormat('vi-VN', {
-    day: '2-digit',
-    month: '2-digit',
-    year: 'numeric',
-    timeZone: 'Asia/Ho_Chi_Minh',
-  }).format(new Date(value))}`
-}
-
-function metadataRecord(value: unknown): Record<string, unknown> {
-  return value && typeof value === 'object' ? value as Record<string, unknown> : {}
-}
-
-function metadataText(value: unknown): string {
-  return typeof value === 'string' ? value.trim() : ''
-}
-
-function eventMetadata(event: HomePresentationEntity) {
-  return {
-    source: metadataRecord(event.source_freshness),
-    quality: metadataRecord(event.quality),
-  }
-}
-
-function eventSourceTier(event: HomePresentationEntity) {
-  const { source, quality } = eventMetadata(event)
-  return resolveSourceTier(source.source_tier || quality.source_tier)
-}
-
-function eventSourceTitle(event: HomePresentationEntity): string {
-  const { source, quality } = eventMetadata(event)
-  return metadataText(source.source_title) || metadataText(quality.source_title)
-}
-
-function eventSourceUrl(event: HomePresentationEntity): string {
-  const { source, quality } = eventMetadata(event)
-  return metadataText(source.source_url) || metadataText(quality.source_url)
-}
-
-function eventVerifiedAt(event: HomePresentationEntity): string {
-  const { source, quality } = eventMetadata(event)
-  return metadataText(source.verified_at) || metadataText(quality.verified_at)
-}
-
-function eventFreshnessStatus(event: HomePresentationEntity) {
-  return resolveFreshnessStatus(eventMetadata(event).source.freshness_status)
-}
-
-function eventFreshnessLabel(event: HomePresentationEntity): string {
-  const sourceUpdatedAt = metadataText(eventMetadata(event).source.updated_at)
-  const entityUpdatedAt = metadataText(event.updatedAt)
-  return formatFreshnessLabel(sourceUpdatedAt || entityUpdatedAt)
-}
-
-
+await homeAsyncData
 function plannerAddPath(id: string | number) {
   return `/tao-lich-trinh?add=${encodeURIComponent(String(id))}`
 }
@@ -657,82 +582,35 @@ function onImgError(e: Event | string) {
   img.style.display = 'none'
 }
 
-function areaName(slug: string | undefined): string {
-  if (!slug) return ''
-  const meta = (AREA_META as Record<string, { name: string }>)[slug]
-  return meta ? meta.name : ''
-}
-
 useSeoMeta({
   title: ss('seo.default_title', 'vinhlong360 — Du lịch & Sản phẩm địa phương'),
   description: ss('seo.default_description', 'Cổng du lịch và sản phẩm địa phương Vĩnh Long: trải nghiệm miệt vườn, đặc sản theo mùa, OCOP, làng nghề và lịch trình gợi ý.'),
   ogTitle: ss('seo.default_title', 'vinhlong360 — Du lịch & Sản phẩm địa phương'),
   ogDescription: ss('seo.default_description', 'Cổng du lịch và sản phẩm địa phương Vĩnh Long: trải nghiệm miệt vườn, đặc sản theo mùa, OCOP, làng nghề và lịch trình gợi ý.'),
   ogImage: ss('branding.og_image', 'https://vinhlong360.vn/img/og-default.jpg'),
+  ogType: 'website',
+  ogUrl: 'https://vinhlong360.vn/',
+  twitterCard: 'summary_large_image',
 })
 
-const eventListSchema = computed(() => {
-  const events = upcomingEvents.value.map((ev: any, i: number) => ({
-    '@type': 'ListItem',
-    position: i + 1,
-    item: {
-      '@type': 'Event',
-      name: ev.name,
-      startDate: ev.attributes?.date_start,
-      endDate: ev.attributes?.date_end || ev.attributes?.date_start,
-      url: `https://vinhlong360.vn${entityPath(ev.id)}`,
-      eventStatus: 'https://schema.org/EventScheduled',
-      eventAttendanceMode: 'https://schema.org/OfflineEventAttendanceMode',
-      location: { '@type': 'Place', name: ev.place_name || 'Vĩnh Long', address: { '@type': 'PostalAddress', addressRegion: areaName(ev.area || ev.place_area) || 'Vĩnh Long', addressCountry: 'VN' } },
-    },
-  }))
-  if (!events.length) return ''
-  return JSON.stringify({
-    '@context': 'https://schema.org',
-    '@type': 'ItemList',
-    name: 'Sự kiện sắp tới tại Vĩnh Long',
-    itemListElement: events,
-  })
-})
+// Schema.org unified @graph: buildHomeSchemaGraph (@type': 'EntryPoint', urlTemplate: 'https://vinhlong360.vn/tim-kiem?q={search_term_string}')
+// §1.6: areaServed: 'Vĩnh Long'
+const homeSchema = computed(() => buildHomeSchemaGraph({
+  upcomingEvents: upcomingEvents.value,
+}))
 
 useHead({
   link: [
     { rel: 'canonical', href: canonicalUrl('/') },
   ],
-  script: [
+  script: computed(() => [
     {
       type: 'application/ld+json',
-      innerHTML: JSON.stringify({
-        '@context': 'https://schema.org',
-        '@type': 'WebSite',
-        name: 'vinhlong360',
-        url: 'https://vinhlong360.vn',
-        description: 'Cổng du lịch và sản phẩm địa phương Vĩnh Long.',
-        inLanguage: 'vi-VN',
-        potentialAction: {
-          '@type': 'SearchAction',
-          target: 'https://vinhlong360.vn/tim-kiem?q={search_term_string}',
-          'query-input': 'required name=search_term_string',
-        },
+      innerHTML: safeJsonLd({
+        ...homeSchema.value,
       }),
     },
-    {
-      type: 'application/ld+json',
-      innerHTML: JSON.stringify({
-        '@context': 'https://schema.org',
-        '@type': 'Organization',
-        name: 'vinhlong360',
-        url: 'https://vinhlong360.vn',
-        logo: 'https://vinhlong360.vn/icons/icon-512.png',
-        description: 'Cổng du lịch và sản phẩm địa phương Vĩnh Long.',
-        inLanguage: 'vi-VN',
-        // §1.6: MỘT đơn vị hành chính. Liệt kê ba tỉnh là khai với Google rằng ba
-        // tỉnh đó còn tồn tại — chúng đã hợp nhất từ 7-2025.
-        areaServed: { '@type': 'AdministrativeArea', name: 'Vĩnh Long' },
-      }),
-    },
-    ...(eventListSchema.value ? [{ type: 'application/ld+json', innerHTML: eventListSchema.value }] : []),
-  ],
+  ]),
 })
 </script>
 
@@ -868,7 +746,7 @@ html.js .home .hero-enter h1::after { animation: hero-underline-draw .8s var(--e
   border: .5px solid rgba(var(--white-rgb),.30);
   border-radius: calc(var(--radius-surface) + var(--space-1));
   box-shadow: 0 8px 30px rgba(var(--black-rgb),.18), 0 2px 8px rgba(var(--black-rgb),.12);
-  transition: box-shadow .35s var(--ease-out-expo), border-color .3s var(--ease-out), transform .35s var(--ease-spring-gentle);
+  transition: box-shadow .35s var(--ease-out-expo), border-color .3s var(--ease-out), transform .35s var(--ease-out-expo);
 }
 .home .hero .hero-ac::before {
   content: "";
@@ -896,7 +774,7 @@ html.js .home .hero-enter h1::after { animation: hero-underline-draw .8s var(--e
 .home .hero .hero-ac { align-items: center; }
 .home .hero .hero-ac input {
   flex: 1; width: 100%;
-  padding: var(--space-4) 48px var(--space-4) 54px;
+  padding: var(--space-4) var(--space-12) var(--space-4) calc(var(--space-12) + var(--space-1h));
   border-color: transparent; background: var(--card);
 }
 .home .hero .hero-ac .ac-dropdown { text-align: left; }
@@ -995,7 +873,7 @@ html.js .home .hero-enter h1::after { animation: hero-underline-draw .8s var(--e
 /* declutter-3 T16 (B1-2): event-hero + .eh-* đã xoá; minis đứng riêng thành hàng 3 cột */
 .happening-rest { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--space-2); }
 @media (max-width: 760px) { .happening-rest { grid-template-columns: 1fr; } }
-.event-mini { display: flex; align-items: center; gap: var(--space-3); padding: var(--space-2) var(--space-3); min-height: 48px; background: var(--card); border: .5px solid var(--line); border-radius: var(--radius); text-decoration: none; color: var(--ink); transition: border-color .25s var(--ease-out), transform .25s var(--ease-spring-gentle); }
+.event-mini { display: flex; align-items: center; gap: var(--space-3); padding: var(--space-2) var(--space-3); min-height: 48px; background: var(--card); border: .5px solid var(--line); border-radius: var(--radius); text-decoration: none; color: var(--ink); transition: border-color .25s var(--ease-out), transform .25s var(--ease-out-expo); }
 .event-mini:hover { border-color: var(--color-action-border); transform: translateX(2px); }
 .ec-date-sm { min-width: 46px; padding: var(--space-2); }
 .ec-date { display: flex; flex-direction: column; align-items: center; justify-content: center; min-width: 52px; padding: var(--space-2); background: var(--home-color-amber-surface); border-radius: var(--radius-control); color: var(--home-color-amber-text); }
@@ -1035,12 +913,30 @@ html.js .home .hero-enter h1::after { animation: hero-underline-draw .8s var(--e
 .dark .tt-chip { background: rgba(var(--white-rgb),.06); border-color: rgba(var(--white-rgb),.1); }
 .dark .tt-chip:hover { background: rgba(var(--white-rgb),.1); }
 
-/* declutter-3 T16 (B1-6): dàn chip leaderboard → 1 dòng teaser */
 .home-leaders-teaser { display: flex; align-items: center; gap: var(--space-2); margin: 0 0 var(--space-4); font-size: var(--text-sm); font-weight: var(--weight-semibold); }
 .home-leaders-teaser a { color: var(--color-action); text-decoration: none; }
 .home-leaders-teaser a:hover { text-decoration: underline; }
+.see-all .inline-arrow,
+.home-leaders-teaser a .inline-arrow {
+  display: inline-block;
+  vertical-align: middle;
+  width: 15px;
+  height: 15px;
+  margin-left: var(--space-1);
+  transition: transform .2s var(--ease-out-expo);
+}
+.see-all:hover .inline-arrow,
+.home-leaders-teaser a:hover .inline-arrow {
+  transform: translateX(3px);
+}
+@media (prefers-reduced-motion: reduce) {
+  .see-all:hover .inline-arrow,
+  .home-leaders-teaser a:hover .inline-arrow {
+    transform: none;
+  }
+}
 
-.cm-card { display: flex; flex-direction: column; background: var(--card); border: .5px solid var(--line); border-radius: var(--radius); overflow: hidden; box-shadow: var(--shadow-xs); text-decoration: none; color: var(--ink); transition: transform .35s var(--ease-spring-gentle), box-shadow .35s var(--ease-out-expo), border-color .3s var(--ease-out); }
+.cm-card { display: flex; flex-direction: column; background: var(--card); border: .5px solid var(--line); border-radius: var(--radius); overflow: hidden; box-shadow: var(--shadow-xs); text-decoration: none; color: var(--ink); transition: transform .35s var(--ease-out-expo), box-shadow .35s var(--ease-out-expo), border-color .3s var(--ease-out); }
 .cm-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-md); border-color: var(--border); }
 .cm-card:active { transform: scale(.98); transition-duration: .1s; }
 .cm-card:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 3px; }
@@ -1064,6 +960,58 @@ html.js .home .hero-enter h1::after { animation: hero-underline-draw .8s var(--e
 .community-join .btn { flex-shrink: 0; }
 @media (max-width: 480px) { .community-join { flex-direction: column; text-align: center; gap: var(--space-3); } }
 .dark .community-join { background: var(--bg-alt); }
+
+.community-seed-prompts {
+  margin-top: var(--space-5);
+  padding-top: var(--space-4);
+  border-top: 1px dashed var(--line);
+  width: min(100%, 720px);
+  margin-inline: auto;
+}
+.community-seed-label {
+  font-size: var(--text-xs);
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: .05em;
+  font-weight: var(--weight-semibold);
+  margin-bottom: var(--space-3);
+  text-align: center;
+}
+.community-seed-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--space-3);
+  text-align: left;
+}
+.community-seed-card {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius);
+  border: 1px solid var(--line);
+  background: var(--card);
+  color: var(--color-text);
+  text-decoration: none;
+  font-size: var(--text-xs);
+  transition: transform .18s var(--ease-out), border-color .18s var(--ease-out);
+}
+.community-seed-card:hover {
+  border-color: var(--color-action);
+  transform: translateY(-2px);
+}
+.community-seed-card strong {
+  color: var(--color-text);
+  font-size: var(--text-xs);
+  font-weight: var(--weight-semibold);
+}
+.community-seed-card span {
+  color: var(--muted);
+  line-height: 1.35;
+}
+@media (max-width: 640px) {
+  .community-seed-grid { grid-template-columns: 1fr; }
+}
 
 /* ═══════════════════════════════════════════════════
    SKELETON + MISC
@@ -1117,7 +1065,7 @@ html.js .home .hero-enter h1::after { animation: hero-underline-draw .8s var(--e
   padding: var(--space-3); min-height: 48px;
   background: var(--card); border: .5px solid var(--line); border-radius: var(--radius);
   text-decoration: none; color: var(--ink);
-  transition: transform .25s var(--ease-spring-gentle), box-shadow .25s var(--ease-out), border-color .25s var(--ease-out);
+  transition: transform .25s var(--ease-out-expo), box-shadow .25s var(--ease-out), border-color .25s var(--ease-out);
 }
 .fy-chip:hover { transform: translateY(-3px); box-shadow: var(--shadow-sm); border-color: var(--border); }
 .fy-chip:active { transform: translateY(-1px) scale(.98); transition-duration: .1s; }
@@ -1131,7 +1079,7 @@ html.js .home .hero-enter h1::after { animation: hero-underline-draw .8s var(--e
 }
 .fy-thumb img { width: 100%; height: 100%; object-fit: cover; }
 .fy-disclosure { max-width: 60px; color: var(--muted); overflow-wrap: anywhere; }
-.fy-disclosure :deep([data-short-label]) { font-size: .6rem; font-weight: var(--weight-semibold); line-height: 1.15; }
+.fy-disclosure :deep([data-short-label]) { font-size: var(--text-2xs); font-weight: var(--weight-semibold); line-height: 1.15; }
 .fy-icon { width: 30px; height: 30px; opacity: .8; color: var(--muted); }
 .fy-icon :deep(svg) { width: 100%; height: 100%; }
 .fy-body { display: flex; flex-direction: column; gap: 2px; min-width: 0; }

@@ -21,7 +21,22 @@ const countPop = ref(false)
 const prevCount = ref(count.value)
 let popTimer: ReturnType<typeof setTimeout> | null = null
 
+function updateBodyState(total: number) {
+  if (typeof document !== 'undefined' && document.body) {
+    if (total > 0) {
+      document.body.classList.add('has-journey-bar')
+    } else {
+      document.body.classList.remove('has-journey-bar')
+    }
+  }
+}
+
+onMounted(() => {
+  updateBodyState(count.value)
+})
+
 watch(count, (n) => {
+  updateBodyState(n)
   if (n > prevCount.value) {
     if (popTimer) clearTimeout(popTimer)
     countPop.value = true
@@ -30,7 +45,10 @@ watch(count, (n) => {
   prevCount.value = n
 })
 
-onUnmounted(() => { if (popTimer) clearTimeout(popTimer) })
+onUnmounted(() => {
+  if (popTimer) clearTimeout(popTimer)
+  updateBodyState(0)
+})
 </script>
 
 <style scoped>
@@ -46,7 +64,7 @@ onUnmounted(() => { if (popTimer) clearTimeout(popTimer) })
   font-size: var(--text-sm); font-weight: var(--weight-medium);
   color: var(--ink); text-decoration: none;
 }
-.jb-summary:hover { color: var(--primary-fg); }
+.jb-summary:hover { color: var(--color-action-hover); }
 .jb-heart { width: 20px; height: 20px; flex-shrink: 0; }
 .jb-actions { display: flex; gap: var(--space-2); }
 
@@ -62,12 +80,20 @@ onUnmounted(() => { if (popTimer) clearTimeout(popTimer) })
     bottom: var(--shell-public-bottom-nav-reserved-height);
     z-index: var(--z-sticky);
   }
+  :global(body.has-journey-bar .scroll-top) {
+    bottom: calc(var(--shell-public-bottom-nav-reserved-height) + 68px + env(safe-area-inset-bottom, 0px));
+  }
+}
+@media (max-width: 480px) {
+  :global(body.has-journey-bar .scroll-top) {
+    bottom: calc(var(--shell-public-bottom-nav-reserved-height) + 106px + env(safe-area-inset-bottom, 0px));
+  }
 }
 
-.jb-count-pop { animation: jbPop .4s var(--ease-spring-gentle); }
-@keyframes jbPop { 0% { transform: scale(1); } 30% { transform: scale(1.3); } 100% { transform: scale(1); } }
+.jb-count-pop { animation: jbPop .35s var(--ease-out-expo); }
+@keyframes jbPop { 0% { transform: scale(1); } 40% { transform: scale(1.15); } 100% { transform: scale(1); } }
 
-.jb-slide-enter-active { transition: transform .35s var(--ease-spring-gentle), opacity .25s var(--ease-out); }
+.jb-slide-enter-active { transition: transform .35s var(--ease-out-expo), opacity .25s var(--ease-out); }
 .jb-slide-leave-active { transition: transform .2s var(--ease-out), opacity .15s var(--ease-out); }
 .jb-slide-enter-from { transform: translateY(100%); opacity: 0; }
 .jb-slide-leave-to { transform: translateY(100%); opacity: 0; }

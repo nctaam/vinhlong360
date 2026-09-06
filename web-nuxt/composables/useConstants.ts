@@ -46,11 +46,11 @@ export const OFFICE_KIND: Record<string, { emoji: string; icon: string; label: s
   khac: { emoji: '🏢', icon: 'building', label: 'Cơ quan khác' },
 }
 
-export const AREA_META: Record<string, { name: string; emoji: string; icon: string; blurb: string }> = {
-  'vinh-long': { name: 'Vĩnh Long', emoji: '🍊', icon: 'fruit', blurb: 'Miệt vườn cam sành, khoai lang, bưởi Năm Roi và làng gốm Mang Thít.' },
-  'ben-tre': { name: 'Bến Tre', emoji: '🥥', icon: 'leaf', blurb: 'Xứ dừa: kẹo dừa, mật hoa dừa, bưởi da xanh và những rẫy dừa bạt ngàn.' },
-  'tra-vinh': { name: 'Trà Vinh', emoji: '🛕', icon: 'landmark', blurb: 'Văn hóa Khmer: ao Bà Om, chùa cổ, dừa sáp Cầu Kè và bún nước lèo.' },
-  'lien-vung': { name: 'Liên vùng', emoji: '🧭', icon: 'compass', blurb: 'Tuyến kết nối nhiều điểm đến giữa Vĩnh Long, Bến Tre và Trà Vinh.' },
+export const AREA_META: Record<string, { name: string; emoji: string; icon: string; blurb: string; distance?: string; hub?: string }> = {
+  'vinh-long': { name: 'Vĩnh Long', emoji: '🍊', icon: 'fruit', blurb: 'Miệt vườn cam sành, khoai lang, bưởi Năm Roi và làng gốm Mang Thít.', distance: 'Trung tâm', hub: 'TP. Vĩnh Long' },
+  'ben-tre': { name: 'Bến Tre', emoji: '🥥', icon: 'leaf', blurb: 'Xứ dừa: kẹo dừa, mật hoa dừa, bưởi da xanh và những rẫy dừa bạt ngàn.', distance: '~35km', hub: 'Cầu Cổ Chiên' },
+  'tra-vinh': { name: 'Trà Vinh', emoji: '🛕', icon: 'landmark', blurb: 'Văn hóa Khmer: ao Bà Om, chùa cổ, dừa sáp Cầu Kè và bún nước lèo.', distance: '~48km', hub: 'QL53 / Ao Bà Om' },
+  'lien-vung': { name: 'Liên vùng', emoji: '🧭', icon: 'compass', blurb: 'Tuyến kết nối nhiều điểm đến giữa Vĩnh Long, Bến Tre và Trà Vinh.', distance: 'Hành trình mở', hub: 'Tam giác Phù sa' },
 }
 
 // Interest landing pages (/kham-pha/<slug>). Overridable via metadata.interests.

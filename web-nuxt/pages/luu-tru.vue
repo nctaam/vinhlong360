@@ -1,5 +1,5 @@
-﻿<template>
-  <section class="page">
+<template>
+  <section class="page" data-color-system="tri-region-v1">
     <Breadcrumb :items="[{ label: 'Trang chủ', to: '/' }, { label: 'Lưu trú' }]" :json-ld="true" />
 
     <!-- Hero — "wake-up" thesis: sell the morning, not the mattress -->
@@ -63,7 +63,7 @@
           :aria-pressed="areaFilter === key"
           @click="toggleAreaAndScroll(key as string)"
         >
-          <span class="rw-motif" :class="`rw-${key}`" aria-hidden="true">{{ meta.emoji }}</span>
+          <span class="rw-motif" :class="`rw-${key}`" aria-hidden="true"><IconLine :name="meta.icon || 'pin'" /></span>
           <span class="rw-name">{{ meta.name }}</span>
           <span class="rw-count">{{ countByArea(key as string) }} chỗ ở</span>
           <span class="rw-blurb">{{ meta.blurb }}</span>
@@ -86,7 +86,7 @@
     <section v-once class="page-article reveal">
       <div class="sediment-head"><h2>Ở đâu khi đi Vĩnh Long?</h2></div>
       <div class="editorial-body drop-cap">
-        <p>Lưu trú ở Vĩnh Long, Bến Tre và Trà Vinh mang đến những trải nghiệm rất khác so với khách sạn thành phố. Đây là vùng đất của homestay nhà vườn — nơi bạn ngủ trong căn nhà gỗ giữa vườn trái cây, thức dậy với tiếng chim hót và hương hoa bưởi. Nhiều chỗ ở nằm trên cù lao, phải đi đò hoặc xuồng mới tới — chính sự cách biệt ấy tạo nên sự yên tĩnh đặc trưng.</p>
+        <p>Lưu trú ở tỉnh Vĩnh Long hợp nhất (3 vùng trước 7-2025) mang đến những trải nghiệm rất khác so với khách sạn thành phố. Đây là vùng đất của homestay nhà vườn — nơi bạn ngủ trong căn nhà gỗ giữa vườn trái cây, thức dậy với tiếng chim hót và hương hoa bưởi. Nhiều chỗ ở nằm trên cù lao, phải đi đò hoặc xuồng mới tới — chính sự cách biệt ấy tạo nên sự yên tĩnh đặc trưng.</p>
         <!-- declutter-3 T11: booking-note aside → inline vào mạch editorial (bỏ khung callout) -->
         <p><strong>Tết Nguyên đán, lễ 30/4–1/5 và hè (tháng 6–8) là mùa cao điểm — đặt trước 1–2 tuần;</strong> ngày thường hầu như luôn còn phòng. Liên hệ thẳng điện thoại hoặc Zalo của chủ nhà thường được giá tốt hơn qua trung gian; đi nhóm đông, nhiều homestay bao trọn gói ăn ở lẫn tour vườn.</p>
       </div>
@@ -114,6 +114,20 @@
           aria-label="Lọc theo khu vực"
           @update:model-value="v => areaFilter = v[0] || 'all'"
         />
+        <div v-if="activeFilterCount > 0" class="active-filter-ledger" role="region" aria-label="Bộ lọc đang áp dụng">
+          <span class="afl-heading">Đang lọc:</span>
+          <div class="afl-chips">
+            <span v-if="q.trim()" class="afl-chip">
+              <span class="afl-text">Tìm: "{{ q.trim() }}"</span>
+              <button type="button" class="afl-remove" aria-label="Xóa từ khóa tìm kiếm" @click="q = ''"><IconLine name="x" aria-hidden="true" /></button>
+            </span>
+            <span v-if="areaFilter !== 'all'" class="afl-chip">
+              <span class="afl-text">{{ AREA_META[areaFilter]?.name || areaFilter }}</span>
+              <button type="button" class="afl-remove" aria-label="Bỏ lọc khu vực" @click="areaFilter = 'all'"><IconLine name="x" aria-hidden="true" /></button>
+            </span>
+            <button type="button" class="afl-clear-all" @click="clearFilters">Xóa tất cả</button>
+          </div>
+        </div>
       </div>
 
       <p class="result-meta" aria-live="polite">{{ filtered.length }} nơi lưu trú</p>
@@ -128,7 +142,7 @@
       </div>
       <EmptyState v-else icon-name="home" title="Chưa thấy nơi ở phù hợp" message="Thử đổi khu vực hoặc từ khóa khác xem sao nhé." hint="Bỏ bộ lọc khu vực để xem nơi ở khắp tỉnh — từ cù lao ven sông Tiền tới các xã ven biển.">
         <template #actions>
-          <button type="button" class="btn btn-outline" @click="areaFilter = 'all'; q = ''; scrollToGrid()">Xóa bộ lọc</button>
+          <button type="button" class="btn btn-outline" @click="clearFilters(); scrollToGrid()"><IconLine name="x" aria-hidden="true" /> Xóa bộ lọc</button>
           <NuxtLink to="/du-lich" class="btn btn-outline">Khám phá du lịch</NuxtLink>
         </template>
       </EmptyState>
@@ -140,7 +154,7 @@
       <h2>Khám phá thêm</h2>
       <div class="cross-links">
         <NuxtLink v-for="c in relatedCatalogs" :key="c.to" :to="c.to" :no-prefetch="c.noPrefetch" class="cross-card">
-          <span class="cross-icon" aria-hidden="true">{{ c.icon }}</span>
+          <span class="cross-icon" aria-hidden="true"><IconLine :name="c.icon" /></span>
           <div><strong>{{ c.label }}</strong><p>{{ c.desc }}</p></div>
         </NuxtLink>
       </div>
@@ -198,7 +212,7 @@ const stayTypes = [
     key: 'hotel',
     kicker: 'KHÁCH SẠN PHỐ',
     title: 'Tiện di chuyển',
-    body: 'Tập trung ở trung tâm thành phố Vĩnh Long, Bến Tre, Trà Vinh — gần chợ, gần bến xe, ít trải nghiệm bản địa hơn.',
+    body: 'Tập trung ở trung tâm các đô thị Vĩnh Long, Bến Tre, Trà Vinh (trước 7-2025) — gần chợ, gần bến xe, ít trải nghiệm bản địa hơn.',
     persona: 'đi công việc hoặc chỉ ghé qua một đêm',
     price: 'Thường 150.000–600.000đ/đêm',
     motif: attractionMotif,
@@ -236,8 +250,8 @@ function countByArea(key: string) {
 
 // FilterChips options for the grid's area filter (single-select, mirrors du-lich.vue's typeFilterOptions pattern)
 const areaFilterOptions = computed(() => [
-  { key: 'all', label: 'Tất cả' },
-  ...Object.entries(AREA_META).map(([key, meta]) => ({ key, label: `${meta.emoji} ${meta.name}` })),
+  { key: 'all', label: 'Tất cả khu vực' },
+  ...Object.entries(AREA_META).map(([key, meta]) => ({ key, label: meta.name })),
 ])
 
 // Data-driven accommodation type breakdown for hero confidence (no fabricated values):
@@ -282,11 +296,23 @@ function scrollToGrid() {
   nextTick(() => gridSection.value?.scrollIntoView({ behavior: 'smooth', block: 'start' }))
 }
 
+const activeFilterCount = computed(() => {
+  let n = 0
+  if (areaFilter.value !== 'all') n++
+  if (q.value.trim()) n++
+  return n
+})
+
+function clearFilters() {
+  areaFilter.value = 'all'
+  q.value = ''
+}
+
 // declutter-2 A1: cross-links 3 card script-driven (bỏ Du-lịch — trùng interstitial links + nav).
 const relatedCatalogs = [
-  { to: '/lich-trinh', icon: '🗓️', label: 'Lịch trình', desc: 'Ghép lưu trú vào kế hoạch đi' },
-  { to: '/ban-do', icon: '🗺️', label: 'Bản đồ', desc: 'Xem trên bản đồ', noPrefetch: true },
-  { to: '/san-pham', icon: '🍊', label: 'Đặc sản', desc: 'Mua quà Vĩnh Long' },
+  { to: '/lich-trinh', icon: 'calendar', label: 'Lịch trình', desc: 'Ghép lưu trú vào kế hoạch đi' },
+  { to: '/ban-do', icon: 'map', label: 'Bản đồ', desc: 'Xem trên bản đồ', noPrefetch: true },
+  { to: '/san-pham', icon: 'fruit', label: 'Đặc sản', desc: 'Mua quà Vĩnh Long' },
 ]
 
 const filtered = computed(() => {
@@ -310,24 +336,82 @@ const filtered = computed(() => {
 
 useSeoMeta({
   ogType: 'website',
-  title: () => pc('seo_title') || 'Lưu trú Vĩnh Long, Bến Tre, Trà Vinh — vinhlong360',
+  title: () => pc('seo_title') || 'Lưu trú Tỉnh Vĩnh Long hợp nhất (3 vùng trước 7-2025) — vinhlong360',
   description: () => pc('seo_description') || 'Homestay, nhà vườn, khách sạn và nơi nghỉ ở Vĩnh Long.',
   ogTitle: () => pc('og_title') || 'Lưu trú — vinhlong360',
   ogDescription: () => pc('og_description') || 'Tìm chỗ ở phù hợp cho chuyến đi Vĩnh Long.',
+  ogUrl: () => canonicalUrl('/luu-tru'),
+  twitterCard: 'summary_large_image',
 })
 
-useHead(() => ({
-  link: [{ rel: 'canonical', href: canonicalUrl('/luu-tru') }],
-  script: [{
-    type: 'application/ld+json',
-    innerHTML: safeJsonLd(itemListJsonLd(
-      'Lưu trú Vĩnh Long, Bến Tre, Trà Vinh',
-      'Homestay, nhà vườn, khách sạn và nơi nghỉ ở Vĩnh Long.',
-      '/luu-tru',
-      allEntities.value,
-    )),
-  }],
-}))
+useHead(() => {
+  const pageUrl = canonicalUrl('/luu-tru')
+  const graphNodes: any[] = [
+    buildWebSiteSchema(),
+    buildOrganizationSchema(),
+    {
+      '@type': 'CollectionPage',
+      '@id': `${pageUrl}#collection`,
+      name: 'Lưu trú Vĩnh Long',
+      description: 'Homestay, nhà vườn, khách sạn và nơi nghỉ ở Vĩnh Long.',
+      url: pageUrl,
+      numberOfItems: allEntities.value.length,
+      isPartOf: { '@id': `${SITE_URL}/#website` },
+      about: {
+        '@type': 'Thing',
+        name: 'Dịch vụ lưu trú và Homestay Vĩnh Long',
+        description: 'Hệ thống homestay nhà vườn, khách sạn và khu nghỉ dưỡng ven sông tại Vĩnh Long.',
+      },
+      speakable: buildSpeakableSpecification(['.catalog-hero h1', '.catalog-lead', '.catalog-type-breakdown']),
+    },
+  ]
+
+  if (allEntities.value?.length) {
+    graphNodes.push({
+      '@type': 'ItemList',
+      '@id': `${pageUrl}#items`,
+      name: 'Danh sách cơ sở lưu trú Vĩnh Long',
+      description: 'Homestay, nhà vườn, khách sạn và nơi nghỉ ở Vĩnh Long.',
+      numberOfItems: allEntities.value.length,
+      itemListElement: allEntities.value.slice(0, 30).map((e: Entity, i: number) => ({
+        '@type': 'ListItem',
+        position: i + 1,
+        name: e.name,
+        url: `${SITE_URL}${entityPath(e.id)}`,
+      })),
+    })
+  }
+
+  const faqItems: FaqItem[] = [
+    {
+      q: 'Vĩnh Long có những loại hình lưu trú nào phổ biến nhất?',
+      a: 'Nổi bật nhất là các homestay miệt vườn tại cù lao An Bình với trải nghiệm ngủ nhà gỗ truyền thống Nam Bộ, sinh hoạt cùng gia đình chủ nhà và hái trái cây tại vườn. Ngoài ra còn có hệ thống khách sạn trung tâm thành phố và nhà nghỉ tiện nghi.',
+    },
+    {
+      q: 'Du khách nên lưu ý điều gì khi đặt phòng homestay cù lao tại Vĩnh Long?',
+      a: 'Nên liên hệ đặt trước vào các dịp cuối tuần, mùa lễ hội hoặc mùa trái cây rộ (tháng 5 đến tháng 8). Kiểm tra trước khung giờ hoạt động của phà hoặc đò sang cù lao để chủ động lịch trình di chuyển.',
+    },
+    {
+      q: 'Các cơ sở lưu trú tại Vĩnh Long có cung cấp dịch vụ ẩm thực bản địa không?',
+      a: 'Đa số các homestay sinh thái Vĩnh Long đều phục vụ bữa cơm gia đình nấu theo hương vị truyền thống địa phương với cá tai tượng chiên xù, canh chua cá lóc bông điên điển, cá kèo kho tộ và bánh xèo giòn rụm.',
+    },
+  ]
+  const faqNode = buildFaqPageSchema(faqItems, `${pageUrl}#faq`)
+  if (faqNode) graphNodes.push(faqNode)
+
+  return {
+    link: [{ rel: 'canonical', href: pageUrl }],
+    script: [
+      {
+        type: 'application/ld+json',
+        innerHTML: safeJsonLd({
+          '@context': 'https://schema.org',
+          '@graph': graphNodes,
+        }),
+      },
+    ],
+  }
+})
 </script>
 
 <style scoped>
@@ -349,13 +433,13 @@ useHead(() => ({
   gap: var(--space-1);
   padding: var(--space-1) var(--space-3);
   border-radius: var(--radius-full);
-  background: rgba(var(--river-rgb, var(--primary-rgb)), .1);
-  border: .5px solid rgba(var(--river-rgb, var(--primary-rgb)), .2);
+  background: rgba(var(--color-action-rgb), .1);
+  border: .5px solid rgba(var(--color-action-rgb), .2);
   font-size: var(--text-xs);
-  transition: background .3s var(--ease-out), transform .3s var(--ease-spring-gentle);
+  transition: background .3s var(--ease-out), transform .3s var(--ease-out-expo);
 }
-.type-pill:hover { transform: translateY(-1px); background: rgba(var(--river-rgb, var(--primary-rgb)), .16); }
-.type-count { font-weight: var(--weight-bold); color: var(--tertiary, var(--primary-fg)); }
+.type-pill:hover { transform: translateY(-1px); background: rgba(var(--color-action-rgb), .16); }
+.type-count { font-weight: var(--weight-bold); color: var(--tertiary, var(--color-brand)); }
 .type-name { color: var(--muted); font-weight: var(--weight-medium); }
 /* dark overrides for .type-pill in dark-overrides.css */
 
@@ -480,12 +564,12 @@ useHead(() => ({
   border-radius: var(--radius-sheet);
   background: var(--card);
   border: .5px solid var(--line);
-  transition: transform .35s var(--ease-spring-gentle), box-shadow .3s var(--ease-out-expo), border-color .2s var(--ease-out);
+  transition: transform .35s var(--ease-out-expo), box-shadow .3s var(--ease-out-expo), border-color .2s var(--ease-out);
 }
 .stay-tile:hover { transform: translateY(-4px); box-shadow: var(--shadow-md); border-color: var(--border); }
 .stay-tile-motif {
   position: absolute; right: -10%; bottom: -12%; z-index: 0;
-  width: 96px; height: 96px; opacity: .1; color: var(--primary);
+  width: 96px; height: 96px; opacity: .1; color: var(--color-brand);
   pointer-events: none;
 }
 .stay-tile.stay-resort .stay-tile-motif { color: var(--secondary); }
@@ -545,14 +629,14 @@ useHead(() => ({
   padding: var(--space-5); border-radius: var(--radius-sheet);
   background: var(--card); border: .5px solid var(--line);
   cursor: pointer; min-height: 44px;
-  transition: transform .3s var(--ease-spring-gentle), box-shadow .3s var(--ease-out-expo), border-color .2s var(--ease-out);
+  transition: transform .3s var(--ease-out-expo), box-shadow .3s var(--ease-out-expo), border-color .2s var(--ease-out);
 }
-.region-window:hover { transform: translateY(-3px); box-shadow: var(--shadow-md); border-color: rgba(var(--river-rgb, var(--primary-rgb)), .4); }
+.region-window:hover { transform: translateY(-3px); box-shadow: var(--shadow-md); border-color: rgba(var(--color-action-rgb), .4); }
 .region-window:active { transform: scale(.98); transition-duration: .08s; }
-.region-window:focus-visible { outline: 2px solid var(--primary); outline-offset: 3px; }
+.region-window:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 3px; }
 /* Active state = tri-province gradient underline (river→amber→clay), matching
    FilterChips.vue's ::after treatment, instead of a flat single-tone border. */
-.region-window.active { border-color: transparent; background: rgba(var(--river-rgb, var(--primary-rgb)), .06); }
+.region-window.active { border-color: transparent; background: rgba(var(--color-action-rgb), .06); }
 .region-window.active::after {
   content: "";
   position: absolute; left: var(--space-5); right: var(--space-5); bottom: 0;
@@ -562,7 +646,18 @@ useHead(() => ({
 .dark .region-window.active::after {
   background: linear-gradient(90deg, var(--river-legacy-dark) 0%, var(--amber-500) 52%, var(--clay-400) 100%);
 }
-.rw-motif { font-size: 1.6rem; transition: transform .35s var(--ease-spring-gentle); }
+.rw-motif {
+  font-size: 1.6rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-brand);
+  transition: transform .35s var(--ease-out-expo);
+}
+.rw-vinh-long { color: var(--clay-600, var(--color-brand)); }
+.rw-ben-tre { color: var(--leaf-600, var(--secondary-fg)); }
+.rw-tra-vinh { color: var(--amber-600, var(--tertiary-fg)); }
+.rw-lien-vung { color: var(--river-600, var(--accent-text)); }
 .region-window:hover .rw-motif { transform: scale(1.12); }
 .rw-name {
   font-family: var(--font-editorial); font-weight: 600;
@@ -570,7 +665,7 @@ useHead(() => ({
 }
 .rw-count {
   font-size: var(--text-xs); font-weight: var(--weight-semibold);
-  color: var(--tertiary, var(--primary-fg));
+  color: var(--tertiary, var(--color-brand));
   font-variant-numeric: tabular-nums;
 }
 .rw-blurb {
@@ -578,7 +673,7 @@ useHead(() => ({
   font-size: var(--text-xs); color: var(--muted); line-height: var(--leading-relaxed);
 }
 .dark .region-window { background: var(--card); border-color: var(--line); }
-.dark .region-window.active { background: rgba(var(--river-rgb, var(--primary-rgb)), .12); }
+.dark .region-window.active { background: rgba(var(--color-action-rgb), .12); }
 @media (prefers-reduced-motion: reduce) {
   .region-window:hover,
   .region-window:active { transform: none; }

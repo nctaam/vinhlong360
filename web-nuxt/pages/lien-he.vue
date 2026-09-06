@@ -1,6 +1,6 @@
-﻿<template>
-  <div class="page contact-page">
-    <Breadcrumb :items="[{ label: 'Trang chủ', to: '/' }, { label: 'Liên hệ' }]" />
+<template>
+  <div class="page contact-page" data-color-system="tri-region-v1">
+    <Breadcrumb :items="[{ label: 'Trang chủ', to: '/' }, { label: 'Liên hệ' }]" :json-ld="true" />
 
     <!-- Brand masthead — same river→clay wash family as Giới thiệu. -->
     <section class="brand-masthead contact-masthead">
@@ -24,7 +24,7 @@
 
     <div class="contact-cards">
       <section v-if="isClaim" class="contact-card card-claim">
-        <div class="card-icon" aria-hidden="true"><span class="card-icon-glyph">🏷️</span></div>
+        <div class="card-icon" aria-hidden="true"><span class="card-icon-vector"><IconLine name="tag" /></span></div>
         <h2>Đăng ký quản lý trang</h2>
         <p>Bạn là chủ cơ sở kinh doanh, homestay, nhà vườn, hoặc điểm du lịch? Đăng ký để cập nhật thông tin, ảnh, giờ mở cửa và nhận đánh giá từ khách.</p>
         <div class="card-action">
@@ -34,7 +34,7 @@
       </section>
 
       <section class="contact-card card-correction">
-        <div class="card-icon" aria-hidden="true"><span class="card-icon-glyph">📝</span></div>
+        <div class="card-icon" aria-hidden="true"><span class="card-icon-vector"><IconLine name="pencil" /></span></div>
         <h2>Sửa thông tin chưa đúng</h2>
         <p>Số điện thoại, địa chỉ, giờ mở cửa… hiển thị sai? Gửi yêu cầu có mã tra cứu — bạn theo dõi được từng bước và biết trước khi nào có cập nhật.</p>
         <div class="card-action">
@@ -44,7 +44,7 @@
       </section>
 
       <section class="contact-card card-general">
-        <div class="card-icon" aria-hidden="true"><span class="card-icon-glyph">📬</span></div>
+        <div class="card-icon" aria-hidden="true"><span class="card-icon-vector"><IconLine name="message" /></span></div>
         <h2>Gửi yêu cầu khác</h2>
         <p>Dữ liệu cá nhân, khiếu nại bản quyền, hoặc việc chưa có kênh riêng. Khiếu nại nội dung và khôi phục tài khoản hiện xử lý qua email — chưa có trang theo dõi trực tuyến.</p>
         <div class="card-action">
@@ -53,7 +53,7 @@
       </section>
 
       <section class="contact-card card-partner">
-        <div class="card-icon" aria-hidden="true"><span class="card-icon-glyph">🤝</span></div>
+        <div class="card-icon" aria-hidden="true"><span class="card-icon-vector"><IconLine name="users" /></span></div>
         <h2>Hợp tác quảng bá</h2>
         <p>Đối tác du lịch, OCOP, cơ quan địa phương muốn giới thiệu sản phẩm, điểm đến trên vinhlong360.</p>
         <div class="card-action">
@@ -62,13 +62,13 @@
       </section>
 
       <section class="contact-card card-report">
-        <div class="card-icon" aria-hidden="true"><span class="card-icon-glyph">🛡️</span></div>
+        <div class="card-icon" aria-hidden="true"><span class="card-icon-vector"><IconLine name="flag" /></span></div>
         <h2>Báo cáo vi phạm</h2>
         <p>Dùng nút <strong>Báo cáo</strong> ngay trên mỗi bài đăng/bình luận. Đội kiểm duyệt xem xét theo thứ tự tiếp nhận.</p>
       </section>
 
       <section class="contact-card card-privacy">
-        <div class="card-icon" aria-hidden="true"><span class="card-icon-glyph">🔒</span></div>
+        <div class="card-icon" aria-hidden="true"><span class="card-icon-vector"><IconLine name="shield-check" /></span></div>
         <h2>Dữ liệu cá nhân</h2>
         <p>Theo <NuxtLink to="/chinh-sach-bao-mat">Chính sách bảo mật</NuxtLink>: truy cập/chỉnh sửa (10 ngày), rút đồng ý (15 ngày), xoá dữ liệu ({{ accountErasureDeadlineDays }} ngày). Bạn cũng có thể tự xoá tài khoản trong phần tài khoản.</p>
       </section>
@@ -105,30 +105,24 @@ useSeoMeta({
   description: () => pc('seo_description'),
   ogTitle: () => pc('og_title'),
   ogDescription: () => pc('og_description'),
+  ogUrl: () => canonicalUrl('/lien-he'),
+  twitterCard: 'summary_large_image',
 })
-useHead({
+
+// Schema.org unified @graph: '@type': 'ContactPage'
+const contactJsonLd = computed(() => buildContactPageSchemaGraph({
+  title: pc('seo_title'),
+  description: pc('seo_description'),
+  email: contactEmail.value,
+  claimEmail: claimEmail.value,
+}))
+
+useHead(() => ({
   link: [{ rel: 'canonical', href: canonicalUrl('/lien-he') }],
-  script: [{
-    type: 'application/ld+json',
-    innerHTML: JSON.stringify({
-      '@context': 'https://schema.org',
-      '@type': 'ContactPage',
-      name: 'Liên hệ vinhlong360',
-      description: 'Liên hệ vinhlong360.vn: yêu cầu, báo cáo, hợp tác.',
-      url: canonicalUrl('/lien-he'),
-    }),
-  }, {
-    type: 'application/ld+json',
-    innerHTML: JSON.stringify({
-      '@context': 'https://schema.org',
-      '@type': 'BreadcrumbList',
-      itemListElement: [
-        { '@type': 'ListItem', position: 1, name: 'Trang chủ', item: 'https://vinhlong360.vn/' },
-        { '@type': 'ListItem', position: 2, name: 'Liên hệ' },
-      ],
-    }),
-  }],
-})
+  script: [
+    { type: 'application/ld+json', innerHTML: safeJsonLd(contactJsonLd.value) },
+  ],
+}))
 </script>
 
 <style scoped>
@@ -147,7 +141,7 @@ useHead({
   gap: var(--space-6);
   background:
     var(--grain),
-    linear-gradient(120deg, color-mix(in srgb, var(--river-600) 14%, transparent) 0%, var(--bg-warm) 55%, rgba(var(--primary-rgb), .16) 120%);
+    linear-gradient(120deg, color-mix(in srgb, var(--river-600) 14%, transparent) 0%, var(--bg-warm) 55%, rgba(var(--color-brand-rgb), .16) 120%);
   background-blend-mode: overlay, normal;
 }
 .bm-inner { flex: 1 1 auto; min-width: 0; max-width: var(--measure-read); }
@@ -155,7 +149,7 @@ useHead({
   display: flex; align-items: center; gap: var(--space-2);
   font-family: var(--font-sans); font-size: var(--text-2xs); font-weight: 700;
   text-transform: uppercase; letter-spacing: var(--tracking-caps);
-  color: var(--primary-fg-strong); margin: 0 0 var(--space-3);
+  color: var(--color-brand); margin: 0 0 var(--space-3);
 }
 .bm-tick { width: 14px; height: 1.5px; background: var(--accent, var(--amber-500)); flex-shrink: 0; }
 .brand-masthead h1 {
@@ -176,7 +170,7 @@ useHead({
   font-family: var(--font-sans); font-size: var(--text-xs); font-weight: var(--weight-semibold);
   color: var(--secondary-fg); margin: 0;
 }
-.bm-sla span { color: var(--leaf-600); font-size: .55rem; }
+.bm-sla span { color: var(--leaf-600); font-size: var(--text-2xs); }
 .bm-motif { width: clamp(80px, 8vw + 40px, 128px); height: auto; flex-shrink: 0; color: var(--clay-400); opacity: .85; }
 .bm-motif path, .bm-motif rect, .bm-motif line, .bm-motif circle { stroke: currentColor; fill: none; }
 
@@ -197,7 +191,7 @@ useHead({
   border-radius: var(--radius-sheet);
   padding: var(--space-6);
   box-shadow: var(--shadow-xs);
-  transition: transform .35s var(--ease-spring-gentle), box-shadow .35s var(--ease-out-expo), border-color .3s var(--ease-out);
+  transition: transform .35s var(--ease-out-expo), box-shadow .35s var(--ease-out-expo), border-color .3s var(--ease-out);
 }
 .contact-card:hover {
   transform: translateY(-3px);
@@ -223,15 +217,15 @@ useHead({
   display: inline-flex;
   align-items: flex-end;
   justify-content: flex-start;
-  width: 48px;
-  height: 48px;
-  padding: 7px;
-  border-radius: var(--radius-surface) var(--radius-surface) var(--radius-surface) 4px;
+  width: var(--space-12);
+  height: var(--space-12);
+  padding: var(--space-2);
+  border-radius: var(--radius-surface) var(--radius-surface) var(--radius-surface) var(--radius-control);
   border: .5px solid var(--line);
   background: var(--bg-warm);
   margin-bottom: var(--space-3);
   overflow: clip;
-  transition: transform .35s var(--ease-spring-gentle), border-color .3s var(--ease-out);
+  transition: transform .35s var(--ease-out-expo), border-color .3s var(--ease-out);
 }
 .card-icon::before {
   content: "";
@@ -240,11 +234,16 @@ useHead({
   background: linear-gradient(180deg, var(--river-600), var(--clay-600));
   opacity: .7;
 }
-.card-icon-glyph {
-  font-size: var(--text-xl);
-  line-height: 1;
-  opacity: .68;
-  transform: translate(3px, 2px);
+.card-icon-vector {
+  display: inline-flex;
+  font-size: 1.4rem;
+  color: var(--color-action);
+  opacity: .85;
+  transform: translate(2px, 2px);
+  transition: transform .35s var(--ease-out-expo), color .3s var(--ease-out);
+}
+.contact-card:hover .card-icon-vector {
+  transform: translate(3px, 1px) scale(1.05);
 }
 .contact-card:hover .card-icon { transform: translateY(-2px); border-color: var(--border); }
 .card-report:hover, .card-report:hover .card-icon, .card-privacy:hover, .card-privacy:hover .card-icon { transform: none; }
@@ -279,7 +278,7 @@ useHead({
 }
 
 @media (min-width: 640px) {
-  /* Intentional hierarchy: primary claim full-width, then a row of
+  /* Intentional hierarchy: primary claim and correction cards full-width, then a row of
      actionable cards (general + partner), then a row of informational
      cards (report + privacy). 6-col base lets thirds & halves coexist. */
   .contact-cards {
@@ -287,7 +286,7 @@ useHead({
     grid-template-columns: repeat(6, 1fr);
     gap: var(--space-5);
   }
-  .card-claim { grid-column: 1 / -1; }
+  .card-claim, .card-correction { grid-column: 1 / -1; }
   .card-general, .card-partner { grid-column: span 3; }
   .card-report, .card-privacy { grid-column: span 3; }
 }
@@ -298,8 +297,8 @@ useHead({
 }
 
 /* Focus & accessibility */
-.contact-card a:focus-visible, .card-action .btn:focus-visible { outline: 2px solid var(--primary); outline-offset: 3px; border-radius: var(--radius-control); }
-.card-action .btn { transition: transform .35s var(--ease-spring-gentle), box-shadow .35s var(--ease-out-expo), background .3s var(--ease-out); }
+.contact-card a:focus-visible, .card-action .btn:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 3px; border-radius: var(--radius-control); }
+.card-action .btn { transition: transform .35s var(--ease-out-expo), box-shadow .35s var(--ease-out-expo), background .3s var(--ease-out); }
 .card-action .btn:hover { transform: translateY(-1px); box-shadow: var(--shadow-sm); }
 .card-action .btn:active { transform: scale(.96); transition-duration: .08s; }
 
@@ -307,7 +306,7 @@ useHead({
 .dark .brand-masthead {
   background:
     var(--grain),
-    linear-gradient(120deg, color-mix(in srgb, var(--river-legacy-dark) 10%, transparent) 0%, rgba(var(--white-rgb),.02) 55%, rgba(var(--primary-rgb), .12) 120%);
+    linear-gradient(120deg, color-mix(in srgb, var(--river-legacy-dark) 10%, transparent) 0%, rgba(var(--white-rgb),.02) 55%, rgba(var(--color-brand-rgb), .12) 120%);
 }
 .dark .bm-motif { color: var(--clay-400); opacity: .7; }
 .dark .contact-card { background: var(--bg-alt); border-color: var(--line); }
@@ -325,6 +324,7 @@ useHead({
   .contact-card:hover,
   .contact-card:active,
   .contact-card:hover .card-icon,
+  .contact-card:hover .card-icon-vector,
   .card-action .btn:hover,
   .card-action .btn:active {
     transform: none;

@@ -1,6 +1,6 @@
-﻿<template>
+<template>
   <div class="page" data-color-system="tri-region-v1">
-    <Breadcrumb :items="[{ label: 'Trang chủ', to: '/' }, { label: 'Sản phẩm', to: '/san-pham' }, { label: 'OCOP' }]" />
+    <Breadcrumb :items="[{ label: 'Trang chủ', to: '/' }, { label: 'Sản phẩm', to: '/san-pham' }, { label: 'OCOP' }]" :json-ld="true" />
 
     <!-- Hero — "Sổ vàng" (the ledger opens; calmer/formal, structurally distinct
          from san-pham's market hero — kills the twin-collision, concept §2) -->
@@ -57,11 +57,11 @@
     <section v-if="fiveStarHighlights.length" class="block reveal ocop-band ocop-band--5" data-stagger="0">
       <div class="section-head sediment-head">
         <h2><IconLine name="star" /> Bậc 5 sao</h2>
-        <button type="button" class="see-all" @click="starFilter = 5; scrollToGrid()">Xem tất cả →</button>
+        <button type="button" class="see-all" @click="starFilter = 5; scrollToGrid()">Xem tất cả <IconLine name="arrow-right" class="see-all-arrow" /></button>
       </div>
       <p class="section-desc">Bậc cao nhất, hiếm nhất — sản phẩm đã chứng minh được cả chất lượng lẫn khả năng vươn xa.</p>
       <div class="honor-banner">
-        <span class="honor-banner-icon" aria-hidden="true">👑</span>
+        <span class="honor-banner-icon" aria-hidden="true"><IconLine name="trophy" /></span>
         <span class="honor-banner-text">Danh sách vinh dự</span>
       </div>
       <div class="scroll-row honor-roll" role="region" aria-label="Sản phẩm OCOP 5 sao" tabindex="0">
@@ -72,7 +72,7 @@
     <section v-if="fourStarHighlights.length" class="block reveal ocop-band ocop-band--4" data-stagger="1">
       <div class="section-head sediment-head">
         <h2>Bậc 4 sao</h2>
-        <button type="button" class="see-all" @click="starFilter = 4; scrollToGrid()">Xem tất cả →</button>
+        <button type="button" class="see-all" @click="starFilter = 4; scrollToGrid()">Xem tất cả <IconLine name="arrow-right" class="see-all-arrow" /></button>
       </div>
       <p class="section-desc">Chất lượng cao, bao bì chuyên nghiệp — đã có câu chuyện sản phẩm rõ ràng.</p>
       <div class="scroll-row" role="region" aria-label="Sản phẩm OCOP 4 sao" tabindex="0">
@@ -83,7 +83,7 @@
     <section v-if="threeStarHighlights.length" class="block reveal ocop-band ocop-band--3" data-stagger="2">
       <div class="section-head sediment-head">
         <h2>Bậc 3 sao</h2>
-        <button type="button" class="see-all" @click="starFilter = 3; scrollToGrid()">Xem tất cả →</button>
+        <button type="button" class="see-all" @click="starFilter = 3; scrollToGrid()">Xem tất cả <IconLine name="arrow-right" class="see-all-arrow" /></button>
       </div>
       <p class="section-desc">Mức cơ bản — đạt tiêu chuẩn an toàn thực phẩm, nhãn mác rõ ràng.</p>
       <div class="scroll-row" role="region" aria-label="Sản phẩm OCOP 3 sao" tabindex="0">
@@ -101,7 +101,7 @@
       <p>OCOP (One Commune One Product — Mỗi xã Một sản phẩm) là chương trình quốc gia nhằm phát triển kinh tế nông thôn thông qua việc nâng cao chất lượng và giá trị sản phẩm địa phương. Mỗi xã, phường xác định một hoặc vài sản phẩm thế mạnh, được hỗ trợ chuẩn hoá quy trình sản xuất, bao bì, truy xuất nguồn gốc và kết nối thị trường.</p>
 
       <CatalogInterstitial
-        fact="Chương trình OCOP đã chứng nhận hàng trăm sản phẩm từ 3 tỉnh — mỗi sản phẩm đều qua đánh giá nghiêm ngặt về chất lượng và nguồn gốc."
+        fact="Chương trình OCOP đã chứng nhận hàng trăm sản phẩm từ 3 vùng trước 7-2025 — mỗi sản phẩm đều qua đánh giá nghiêm ngặt về chất lượng và nguồn gốc."
         icon-name="trophy"
         variant="warm"
         :links="[{ to: '/san-pham', label: 'Tất cả sản phẩm' }, { to: '/theo-mua', label: 'Theo mùa vụ' }]"
@@ -111,8 +111,8 @@
       <p>Sản phẩm OCOP được đánh giá theo thang 5 sao bởi hội đồng cấp tỉnh và trung ương. <strong>3 sao</strong> là mức cơ bản — sản phẩm đạt tiêu chuẩn an toàn thực phẩm, có nhãn mác rõ ràng. <strong>4 sao</strong> yêu cầu chất lượng cao hơn, bao bì chuyên nghiệp, có câu chuyện sản phẩm và khả năng mở rộng thị trường. <strong>5 sao</strong> là cấp quốc gia — rất hiếm, dành cho sản phẩm xuất sắc có tiềm năng xuất khẩu.</p>
       <blockquote class="pull-quote">Khi bạn thấy nhãn OCOP trên sản phẩm, bạn biết sản phẩm đó đã qua quy trình đánh giá nghiêm ngặt, có nguồn gốc rõ ràng và chất lượng được kiểm chứng — không phải tự phong hay tự gắn nhãn.</blockquote>
 
-      <h2 class="sediment-head">OCOP vùng Vĩnh Long, Bến Tre, Trà Vinh</h2>
-      <p>Ba tỉnh thuộc top đầu cả nước về số lượng sản phẩm OCOP, nhờ lợi thế nông nghiệp phong phú. Bến Tre dẫn đầu với các sản phẩm từ dừa: dầu dừa nguyên chất, kẹo dừa, thạch dừa, mỹ phẩm từ dừa. Vĩnh Long nổi bật với bưởi Năm Roi, cam sành Tam Bình, gạch gốm Mang Thít. Trà Vinh đóng góp các đặc sản Khmer như bánh tét lá cẩm, dừa sáp và mắm prohok.</p>
+      <h2 class="sediment-head">OCOP 3 vùng tỉnh Vĩnh Long hợp nhất</h2>
+      <p>Ba vùng đất của tỉnh Vĩnh Long hợp nhất (gồm khu vực Bến Tre, Trà Vinh trước 7-2025) thuộc top đầu cả nước về số lượng sản phẩm OCOP, nhờ lợi thế nông nghiệp phong phú. Khu vực Bến Tre (trước 7-2025) dẫn đầu với các sản phẩm từ dừa: dầu dừa nguyên chất, kẹo dừa, thạch dừa, mỹ phẩm từ dừa. Vùng Vĩnh Long nổi bật với bưởi Năm Roi, cam sành Tam Bình, gạch gốm Mang Thít. Khu vực Trà Vinh (trước 7-2025) đóng góp các đặc sản Khmer như bánh tét lá cẩm, dừa sáp và mắm prohok.</p>
     </section>
 
     <!-- Divider -->
@@ -158,22 +158,40 @@
           aria-label="Lọc theo tháng"
           @update:model-value="v => seasonFilter = v[0] || 'all'"
         />
-        <div v-if="activeFilterCount > 0" class="filter-status">
-          <span class="filter-count">{{ activeFilterCount }} bộ lọc</span>
-          <button type="button" class="filter-clear" @click="clearFilters">Xóa tất cả</button>
+        <div v-if="activeFilterCount > 0" class="active-filter-ledger" role="region" aria-label="Bộ lọc đang áp dụng">
+          <span class="afl-heading">Đang lọc:</span>
+          <div class="afl-chips">
+            <span v-if="q.trim()" class="afl-chip">
+              <span class="afl-text">Tìm: "{{ q.trim() }}"</span>
+              <button type="button" class="afl-remove" aria-label="Xóa từ khóa tìm kiếm" @click="q = ''"><IconLine name="x" aria-hidden="true" /></button>
+            </span>
+            <span v-if="starFilterStr !== '0'" class="afl-chip">
+              <span class="afl-text">{{ starFilterStr }} sao</span>
+              <button type="button" class="afl-remove" aria-label="Bỏ lọc hạng sao" @click="starFilterStr = '0'"><IconLine name="x" aria-hidden="true" /></button>
+            </span>
+            <span v-if="areaFilter !== 'all'" class="afl-chip">
+              <span class="afl-text">{{ AREA_META[areaFilter]?.name || areaFilter }}</span>
+              <button type="button" class="afl-remove" aria-label="Bỏ lọc khu vực" @click="areaFilter = 'all'"><IconLine name="x" aria-hidden="true" /></button>
+            </span>
+            <span v-if="seasonFilter !== 'all'" class="afl-chip">
+              <span class="afl-text">Tháng {{ seasonFilter }}</span>
+              <button type="button" class="afl-remove" aria-label="Bỏ lọc tháng" @click="seasonFilter = 'all'"><IconLine name="x" aria-hidden="true" /></button>
+            </span>
+            <button type="button" class="afl-clear-all" @click="clearFilters">Xóa tất cả</button>
+          </div>
         </div>
       </div>
 
       <div class="result-bar">
         <p class="result-meta" aria-live="polite">{{ filtered.length }} sản phẩm OCOP{{ sortBy !== 'relevant' ? ` · ${sortLabels[sortBy]}` : '' }}</p>
         <div class="view-toggle" role="group" aria-label="Chế độ hiển thị">
-          <button type="button" :class="['vt-btn', { active: viewMode === 'grid' }]" :aria-pressed="viewMode === 'grid'" @click="viewMode = 'grid'" title="Dạng lưới" aria-label="Dạng lưới">⊞</button>
-          <button type="button" :class="['vt-btn', { active: viewMode === 'list' }]" :aria-pressed="viewMode === 'list'" @click="viewMode = 'list'" title="Dạng danh sách" aria-label="Dạng danh sách"><IconLine name="list" /></button>
+          <button type="button" :class="['vt-btn', { active: viewMode === 'grid' }]" :aria-pressed="viewMode === 'grid'" @click="viewMode = 'grid'" title="Dạng lưới" aria-label="Dạng lưới"><IconLine name="layout-dashboard" aria-hidden="true" /></button>
+          <button type="button" :class="['vt-btn', { active: viewMode === 'list' }]" :aria-pressed="viewMode === 'list'" @click="viewMode = 'list'" title="Dạng danh sách" aria-label="Dạng danh sách"><IconLine name="list" aria-hidden="true" /></button>
         </div>
       </div>
       <EmptyState v-if="fetchError" icon-name="alert-triangle" title="Không thể tải sản phẩm OCOP" message="Mạng có thể đang chập chờn. Thử lại giúp mình nhé.">
         <template #actions>
-          <button type="button" class="btn btn-outline" @click="refreshNuxtData('catalog-ocop')">Thử lại</button>
+          <button type="button" class="btn btn-outline" @click="refreshNuxtData('catalog-ocop')"><IconLine name="repeat" aria-hidden="true" /> Thử lại</button>
         </template>
       </EmptyState>
       <SkeletonGrid v-else-if="!data" :count="6" />
@@ -182,7 +200,7 @@
       </div>
       <EmptyState v-else icon-name="star" title="Không tìm thấy sản phẩm OCOP" message="Thử thay đổi hạng sao, khu vực hoặc tháng mùa vụ.">
         <template #actions>
-          <button type="button" class="btn btn-outline" @click="clearFilters">Xóa bộ lọc</button>
+          <button type="button" class="btn btn-outline" @click="clearFilters"><IconLine name="x" aria-hidden="true" /> Xóa bộ lọc</button>
           <NuxtLink to="/san-pham" class="btn btn-outline"><IconLine name="fruit" /> Tất cả sản phẩm</NuxtLink>
           <NuxtLink to="/du-lich" class="btn btn-outline"><IconLine name="leaf" /> Du lịch</NuxtLink>
         </template>
@@ -202,7 +220,7 @@
       <h2>Khám phá thêm</h2>
       <div class="cross-links">
         <NuxtLink v-for="c in relatedCatalogs" :key="c.to" :to="c.to" class="cross-card">
-          <span class="cross-icon" aria-hidden="true">{{ c.icon }}</span>
+          <span class="cross-icon" aria-hidden="true"><IconLine :name="c.icon" /></span>
           <div><strong>{{ c.label }}</strong><p>{{ c.desc }}</p></div>
         </NuxtLink>
       </div>
@@ -263,9 +281,10 @@ onMounted(() => {
   onUnmounted(() => document.removeEventListener('keydown', h))
 })
 
-const { data, error: fetchError } = await useAsyncData('catalog-ocop', () =>
+const ocopAsyncData = useAsyncData('catalog-ocop', () =>
   apiFetch<{ entities: Entity[] }>('/api/entities?type=product&limit=200')
 )
+const { data, error: fetchError } = ocopAsyncData
 
 const allOcop = computed(() => {
   const raw = data.value
@@ -286,9 +305,9 @@ const otherProductsCount = computed(() => {
 
 // declutter-2 A1: cross-links 3 card script-driven (bỏ Theo-mùa — trùng interstitial links).
 const relatedCatalogs = computed(() => [
-  { to: '/san-pham', icon: '🍊', label: 'Đặc sản', desc: `Còn ${otherProductsCount.value} đặc sản khác chưa có sao` },
-  { to: '/du-lich', icon: '🌿', label: 'Du lịch', desc: 'Trải nghiệm miệt vườn' },
-  { to: '/kham-pha/am-thuc', icon: '🍲', label: 'Ẩm thực', desc: 'Món ngon Vĩnh Long' },
+  { to: '/san-pham', icon: 'fruit', label: 'Đặc sản', desc: `Còn ${otherProductsCount.value} đặc sản khác chưa có sao` },
+  { to: '/du-lich', icon: 'leaf', label: 'Du lịch', desc: 'Trải nghiệm miệt vườn' },
+  { to: '/kham-pha/am-thuc', icon: 'bowl', label: 'Ẩm thực', desc: 'Món ngon Vĩnh Long' },
 ])
 
 // `parseInt(attributes.ocop)` cũ trả 0 cho gần như mọi sản phẩm: `ocop` là văn
@@ -341,6 +360,7 @@ watch(starFilter, () => {
   })
 })
 onUnmounted(() => clearTimeout(starFlashTimer))
+await ocopAsyncData
 
 const activeFilterCount = computed(() => {
   let n = 0
@@ -416,48 +436,78 @@ useSeoMeta({
   description: () => pc('seo_description'),
   ogTitle: () => pc('og_title'),
   ogDescription: () => pc('og_description'),
+  ogUrl: () => canonicalUrl('/ocop'),
+  twitterCard: 'summary_large_image',
 })
 
-useHead({
-  link: [{ rel: 'canonical', href: canonicalUrl('/ocop') }],
-  script: [
+useHead(() => {
+  const pageUrl = canonicalUrl('/ocop')
+  const graphNodes: any[] = [
+    buildWebSiteSchema(),
+    buildOrganizationSchema(),
     {
-      type: 'application/ld+json',
-      innerHTML: JSON.stringify({
-        '@context': 'https://schema.org',
-        '@type': 'CollectionPage',
-        name: 'Sản phẩm OCOP Vĩnh Long',
-        description: 'Sản phẩm đạt chuẩn OCOP từ Vĩnh Long, Bến Tre, Trà Vinh.',
-        url: 'https://vinhlong360.vn/ocop',
-        numberOfItems: allOcop.value.length,
-      }),
+      '@type': 'CollectionPage',
+      '@id': `${pageUrl}#collection`,
+      name: 'Sản phẩm OCOP Vĩnh Long',
+      description: 'Sản phẩm đạt chuẩn OCOP từ tỉnh Vĩnh Long hợp nhất (3 vùng trước 7-2025).',
+      url: pageUrl,
+      numberOfItems: allOcop.value.length,
+      isPartOf: { '@id': `${SITE_URL}/#website` },
+      about: {
+        '@type': 'Thing',
+        name: 'Chương trình Mỗi xã Một sản phẩm (OCOP)',
+        description: 'Chương trình phát triển kinh tế nông thôn nâng cao giá trị đặc sản địa phương.',
+      },
+      speakable: buildSpeakableSpecification(['.hero-creds', 'h1', '.lead', '.result-meta']),
     },
-    {
-      type: 'application/ld+json',
-      innerHTML: JSON.stringify({
-        '@context': 'https://schema.org',
-        '@type': 'BreadcrumbList',
-        itemListElement: [
-          { '@type': 'ListItem', position: 1, name: 'Trang chủ', item: 'https://vinhlong360.vn/' },
-          { '@type': 'ListItem', position: 2, name: 'Sản phẩm', item: 'https://vinhlong360.vn/san-pham' },
-          { '@type': 'ListItem', position: 3, name: 'OCOP' },
-        ],
-      }),
-    },
-  ],
-})
+  ]
 
-useHead(() => ({
-  script: [{
-    type: 'application/ld+json',
-    innerHTML: JSON.stringify(itemListJsonLd(
-      'Sản phẩm OCOP Vĩnh Long, Bến Tre, Trà Vinh',
-      'Sản phẩm đạt chuẩn OCOP từ Vĩnh Long, Bến Tre và Trà Vinh.',
-      '/ocop',
-      filtered.value,
-    )),
-  }],
-}))
+  if (filtered.value?.length) {
+    graphNodes.push({
+      '@type': 'ItemList',
+      '@id': `${pageUrl}#items`,
+      name: 'Sản phẩm OCOP Tỉnh Vĩnh Long',
+      description: 'Sản phẩm đạt chuẩn OCOP từ tỉnh Vĩnh Long hợp nhất (3 vùng trước 7-2025).',
+      numberOfItems: filtered.value.length,
+      itemListElement: filtered.value.slice(0, 30).map((e: Entity, i: number) => ({
+        '@type': 'ListItem',
+        position: i + 1,
+        name: e.name,
+        url: `${SITE_URL}${entityPath(e.id)}`,
+      })),
+    })
+  }
+
+  const faqItems: FaqItem[] = [
+    {
+      q: 'Sản phẩm OCOP Vĩnh Long là gì?',
+      a: 'Chương trình Mỗi xã một sản phẩm (OCOP) tại Vĩnh Long tôn vinh và chứng nhận các đặc sản nông nghiệp, làng nghề thủ công và ẩm thực truyền thống đạt tiêu chuẩn chất lượng cao từ 3 sao đến 5 sao.',
+    },
+    {
+      q: 'Vĩnh Long hiện có những sản phẩm OCOP 5 sao nào tiêu biểu?',
+      a: 'Vĩnh Long sở hữu các sản phẩm OCOP đạt hạng cao tiêu biểu như bưởi năm roi Bình Minh, khoai lang Bình Tân, bánh tráng cù lao Mây, các sản phẩm chế biến từ dừa và gốm đỏ Mang Thít.',
+    },
+    {
+      q: 'Làm thế nào để tìm và mua đặc sản OCOP Vĩnh Long chính gốc?',
+      a: 'Du khách và người tiêu dùng có thể tra cứu thông tin nhà sản xuất, địa chỉ điểm bán, số điện thoại liên hệ và định vị bản đồ trực tiếp trên hệ thống VinhLong360.',
+    },
+  ]
+  const faqNode = buildFaqPageSchema(faqItems, `${pageUrl}#faq`)
+  if (faqNode) graphNodes.push(faqNode)
+
+  return {
+    link: [{ rel: 'canonical', href: pageUrl }],
+    script: [
+      {
+        type: 'application/ld+json',
+        innerHTML: safeJsonLd({
+          '@context': 'https://schema.org',
+          '@graph': graphNodes,
+        }),
+      },
+    ],
+  }
+})
 </script>
 
 <style scoped>
@@ -483,7 +533,7 @@ useHead(() => ({
   font-weight: var(--weight-semibold);
   text-transform: uppercase;
   letter-spacing: .03em;
-  color: var(--primary-fg);
+  color: var(--color-brand);
 }
 .hero-cred-seal em { font-style: normal; color: var(--muted); text-transform: none; letter-spacing: 0; }
 
@@ -494,7 +544,8 @@ useHead(() => ({
   gap: var(--space-2);
   padding: var(--space-4);
   margin-bottom: var(--space-4);
-  border-left: 3px solid var(--secondary);
+  border: 1px solid color-mix(in srgb, var(--secondary) 25%, transparent);
+  box-shadow: inset 3px 0 0 var(--secondary);
   border-radius: var(--radius-control);
   background: linear-gradient(90deg, rgba(var(--secondary-rgb), .08), transparent);
 }
@@ -526,10 +577,10 @@ useHead(() => ({
   width: 3px;
   height: .85em;
   border-radius: 2px;
-  background: var(--primary-fg);
+  background: var(--color-brand);
 }
 
-.dark .hero-cred-seal { color: var(--primary-fg); }
+.dark .hero-cred-seal { color: var(--color-brand); }
 .dark .honor-banner { background: linear-gradient(90deg, rgba(var(--secondary-rgb), .12), transparent); }
 
 @media (prefers-reduced-motion: reduce) {
@@ -581,15 +632,15 @@ useHead(() => ({
   display: flex;
   align-items: center;
   justify-content: center;
-  background: radial-gradient(circle at 34% 30%, rgba(var(--secondary-rgb), .95), rgba(var(--primary-rgb), .9) 72%);
+  background: radial-gradient(circle at 34% 30%, rgba(var(--secondary-rgb), .95), rgba(var(--color-brand-rgb), .9) 72%);
   clip-path: polygon(
     50% 0%, 61% 7%, 74% 3%, 82% 13%, 95% 15%, 96% 28%, 100% 38%,
     92% 48%, 100% 58%, 96% 68%, 95% 81%, 82% 83%, 74% 93%, 61% 89%,
     50% 100%, 39% 89%, 26% 93%, 18% 83%, 5% 81%, 4% 68%, 0% 58%,
     8% 48%, 0% 38%, 4% 28%, 5% 15%, 18% 13%, 26% 3%, 39% 7%
   );
-  box-shadow: inset 0 2px 6px rgba(var(--black-rgb), .28), 0 4px 14px -6px rgba(var(--primary-rgb), .5);
-  animation: seal-stamp .4s var(--ease-spring-gentle) both;
+  box-shadow: inset 0 2px 6px rgba(var(--black-rgb), .28), 0 4px 14px -6px rgba(var(--color-brand-rgb), .5);
+  animation: seal-stamp .4s var(--ease-out-expo) both;
 }
 .wax-seal-notches {
   position: absolute;
@@ -611,7 +662,7 @@ useHead(() => ({
   0% { transform: scale(.9); opacity: 0; }
   100% { transform: scale(1); opacity: 1; }
 }
-.dark .wax-seal { box-shadow: inset 0 2px 6px rgba(var(--black-rgb), .4), 0 4px 14px -6px rgba(var(--primary-rgb), .35); }
+.dark .wax-seal { box-shadow: inset 0 2px 6px rgba(var(--black-rgb), .4), 0 4px 14px -6px rgba(var(--color-brand-rgb), .35); }
 
 /* Kicker / dek — calmer, more formal register than san-pham's market voice */
 .catalog-hero-inner p.ledger-kicker {
@@ -663,8 +714,8 @@ useHead(() => ({
   font-size: var(--text-xs);
   transition: border-color .2s var(--ease-out), background .2s var(--ease-out);
 }
-.star-jump-btn:hover { border-color: var(--primary-fg); }
-.star-jump-btn.active { border-color: var(--primary); background: rgba(var(--primary-rgb), .06); }
+.star-jump-btn:hover { border-color: var(--color-action); }
+.star-jump-btn.active { border-color: var(--color-action); background: rgba(var(--color-action-rgb), .06); }
 .star-jump-btn .quick-pick-icon { font-size: .85rem; }
 .star-jump-btn .quick-pick-count { color: var(--muted); font-size: var(--text-xs); }
 

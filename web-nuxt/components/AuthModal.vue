@@ -21,6 +21,7 @@
               class="input"
               :class="{ error: error && step === 'phone' }"
               :aria-invalid="!!(error && step === 'phone')"
+              :aria-describedby="error && step === 'phone' ? 'auth-err-phone' : undefined"
               type="tel"
               inputmode="tel"
               autocomplete="tel"
@@ -30,7 +31,7 @@
               @keyup.enter="handlePhone"
             />
           </div>
-          <p v-if="error" class="form-error" role="alert">{{ error }}</p>
+          <p v-if="error" id="auth-err-phone" class="form-error" role="alert">{{ error }}</p>
           <label class="consent-row">
             <input v-model="consent" type="checkbox" class="consent-checkbox" />
             <span>Tôi đồng ý với
@@ -48,33 +49,39 @@
           <h3 tabindex="-1" class="step-label">Tạo tài khoản</h3>
           <p>Hoàn tất thông tin để đăng ký cho {{ phone }}</p>
           <div class="form-group">
-            <label class="form-label">Họ và tên <span class="required">*</span></label>
+            <label class="form-label" for="reg-fullname">Họ và tên <span class="required">*</span></label>
             <input
+              id="reg-fullname"
               v-model="regFullName"
               class="input"
               type="text"
               autocomplete="name"
+              aria-label="Họ và tên"
               placeholder="Nguyễn Văn A"
               maxlength="100"
             />
           </div>
           <div class="form-group">
-            <label class="form-label">Ngày sinh</label>
+            <label class="form-label" for="reg-dob">Ngày sinh</label>
             <input
+              id="reg-dob"
               v-model="regDob"
               class="input"
               type="date"
               autocomplete="bday"
+              aria-label="Ngày sinh"
               :max="maxDob"
             />
           </div>
           <div class="form-group">
-            <label class="form-label">Username <span class="required">*</span></label>
+            <label class="form-label" for="reg-username">Username <span class="required">*</span></label>
             <input
+              id="reg-username"
               v-model="regUsername"
               class="input"
               type="text"
               autocomplete="username"
+              aria-label="Tên người dùng (username)"
               placeholder="nguyenvana"
               maxlength="30"
               @blur="checkUsernameAvail"
@@ -84,23 +91,27 @@
             <p v-else-if="usernameStatus === 'available'" class="form-success">Username khả dụng</p>
           </div>
           <div class="form-group">
-            <label class="form-label">Mật khẩu <span class="required">*</span></label>
+            <label class="form-label" for="reg-password">Mật khẩu <span class="required">*</span></label>
             <input
+              id="reg-password"
               v-model="regPassword"
               class="input"
               type="password"
               autocomplete="new-password"
+              aria-label="Mật khẩu"
               placeholder="Tối thiểu 8 ký tự, có chữ và số"
               maxlength="128"
             />
           </div>
           <div class="form-group">
-            <label class="form-label">Xác nhận mật khẩu <span class="required">*</span></label>
+            <label class="form-label" for="reg-password-confirm">Xác nhận mật khẩu <span class="required">*</span></label>
             <input
+              id="reg-password-confirm"
               v-model="regPasswordConfirm"
               class="input"
               type="password"
               autocomplete="new-password"
+              aria-label="Xác nhận mật khẩu"
               placeholder="Nhập lại mật khẩu"
               maxlength="128"
             />
@@ -122,6 +133,7 @@
               class="input"
               :class="{ error: error && step === 'password' }"
               :aria-invalid="!!(error && step === 'password')"
+              :aria-describedby="error && step === 'password' ? 'auth-err-password' : undefined"
               type="password"
               autocomplete="current-password"
               aria-label="Mật khẩu"
@@ -129,7 +141,7 @@
               @keyup.enter="handleLogin"
             />
           </div>
-          <p v-if="error" class="form-error" role="alert">{{ error }}</p>
+          <p v-if="error" id="auth-err-password" class="form-error" role="alert">{{ error }}</p>
           <button type="button" class="btn btn-primary btn-full" :disabled="sending" @click="handleLogin">
             {{ sending ? 'Đang đăng nhập…' : 'Đăng nhập' }}
           </button>
@@ -179,6 +191,7 @@
               class="input"
               :class="{ error: error && step === 'set-password' }"
               :aria-invalid="!!(error && step === 'set-password')"
+              :aria-describedby="error && step === 'set-password' ? 'auth-err-setpw' : undefined"
               type="password"
               autocomplete="new-password"
               aria-label="Mật khẩu mới"
@@ -197,7 +210,7 @@
               @keyup.enter="handleSetPassword"
             />
           </div>
-          <p v-if="error" class="form-error" role="alert">{{ error }}</p>
+          <p v-if="error" id="auth-err-setpw" class="form-error" role="alert">{{ error }}</p>
           <button type="button" class="btn btn-primary btn-full" :disabled="sending" @click="handleSetPassword">
             {{ sending ? 'Đang lưu…' : 'Đặt mật khẩu' }}
           </button>
@@ -215,6 +228,7 @@
                 class="input"
                 :class="{ error: error && step === 'twofactor' }"
                 :aria-invalid="!!(error && step === 'twofactor')"
+                :aria-describedby="error && step === 'twofactor' ? 'auth-err-2fa' : undefined"
                 type="text"
                 inputmode="numeric"
                 maxlength="6"
@@ -233,6 +247,7 @@
                 class="input"
                 :class="{ error: error && step === 'twofactor' }"
                 :aria-invalid="!!(error && step === 'twofactor')"
+                :aria-describedby="error && step === 'twofactor' ? 'auth-err-2fa' : undefined"
                 type="text"
                 autocomplete="off"
                 aria-label="Mã khôi phục"
@@ -245,7 +260,7 @@
             <input v-model="rememberDevice" type="checkbox" class="consent-checkbox" />
             <span>Tin cậy thiết bị này trong 90 ngày</span>
           </label>
-          <p v-if="error" class="form-error" role="alert">{{ error }}</p>
+          <p v-if="error" id="auth-err-2fa" class="form-error" role="alert">{{ error }}</p>
           <button type="button" class="btn btn-primary btn-full" :disabled="sending" @click="verifyTwoFactorCode">
             {{ sending ? 'Đang xác minh…' : 'Xác nhận' }}
           </button>
@@ -395,7 +410,7 @@ async function checkUsernameAvail() {
   }
   usernameStatus.value = 'checking'
   try {
-    const res = await $fetch<{ available: boolean }>(`/auth/check-username/${encodeURIComponent(uname)}`)
+    const res = await apiFetch<{ available: boolean }>(`/auth/check-username/${encodeURIComponent(uname)}`)
     usernameStatus.value = res.available ? 'available' : 'taken'
   } catch {
     usernameStatus.value = 'idle'
@@ -627,11 +642,11 @@ function onOtpPaste(e: ClipboardEvent) {
 }
 .consent-row { display: flex; gap: var(--space-3); align-items: flex-start; margin: var(--space-3) 0; font-size: var(--text-sm); line-height: var(--leading-relaxed); cursor: pointer; padding: var(--space-3); border-radius: var(--radius-surface); transition: background .3s var(--ease-out); }
 .consent-row:hover { background: var(--bg-alt); }
-.consent-checkbox { margin-top: 3px; width: 18px; height: 18px; accent-color: var(--primary); flex-shrink: 0; }
+.consent-checkbox { margin-top: 3px; width: 18px; height: 18px; accent-color: var(--color-action); flex-shrink: 0; }
 .btn-full { width: 100%; }
 .otp-done { text-align: center; }
-.otp-done h3 { animation: successPop .45s var(--ease-spring-gentle); }
-@keyframes successPop { 0% { transform: scale(.85); opacity: 0; } 60% { transform: scale(1.06); } 100% { transform: scale(1); opacity: 1; } }
+.otp-done h3 { animation: successPop .45s var(--ease-out-expo); }
+@keyframes successPop { from { transform: scale(.94); opacity: 0; } to { transform: scale(1); opacity: 1; } }
 .otp-step { animation: stepSlideIn .35s var(--ease-out-expo); }
 @keyframes stepSlideIn { from { opacity: 0; transform: translateX(14px); } to { opacity: 1; transform: translateX(0); } }
 .form-label { display: block; font-size: var(--text-sm); font-weight: 600; margin-bottom: var(--space-1); color: var(--ink-secondary); }
@@ -643,7 +658,7 @@ function onOtpPaste(e: ClipboardEvent) {
   .otp-step { animation: none; }
 }
 @media (max-width: 600px) {
-  .otp-step .input { font-size: 16px; }
+  .otp-step .input { font-size: var(--text-base, 16px); }
 }
 .otp-step h3 { outline: none; }
 @media (forced-colors: active) {

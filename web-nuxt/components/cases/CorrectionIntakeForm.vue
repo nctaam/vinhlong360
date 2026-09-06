@@ -321,12 +321,12 @@ function submit() {
         </div>
       </template>
 
-      <button v-if="items.length > 1" type="button" class="intake-remove" @click="removeItem(index)">
+      <button v-if="items.length > 1" type="button" class="intake-remove btn btn-ghost btn-sm" @click="removeItem(index)">
         Bỏ mục này
       </button>
     </fieldset>
 
-    <button v-if="canAddItem" type="button" class="intake-add" @click="addItem">
+    <button v-if="canAddItem" type="button" class="intake-add btn btn-outline btn-sm" @click="addItem">
       Thêm nội dung khác của cùng địa điểm
     </button>
 
@@ -346,7 +346,7 @@ function submit() {
       <legend>Nhận kết quả (không bắt buộc)</legend>
       <div class="intake-field">
         <label for="optional-phone">Số điện thoại (chỉ để báo kết quả)</label>
-        <input id="optional-phone" v-model="optionalPhone" type="tel" inputmode="tel" maxlength="32">
+        <input id="optional-phone" v-model="optionalPhone" type="tel" inputmode="tel" autocomplete="tel" maxlength="32">
       </div>
       <label v-if="optionalPhone.trim()" id="phone-consent" class="intake-consent">
         <input v-model="phoneConsent" type="checkbox" @change="emit('phone-consent-changed', phoneConsent)">
@@ -355,6 +355,7 @@ function submit() {
       <button
         v-if="optionalPhone.trim() && phoneConsent"
         type="button"
+        class="btn btn-outline btn-sm"
         data-role="verify-phone"
         :disabled="verificationBusy"
         @click="emit('request-phone-verification', optionalPhone.trim())"
@@ -383,6 +384,7 @@ function submit() {
           >
           <button
             type="button"
+            class="btn btn-primary btn-sm"
             data-role="verify-code"
             :disabled="verificationBusy || !verificationReceipt || !verificationCode.trim()"
             @click="emit('verify-phone', verificationCode.trim())"
@@ -391,6 +393,7 @@ function submit() {
           </button>
           <button
             type="button"
+            class="btn btn-ghost btn-sm"
             data-role="resend-code"
             :disabled="verificationBusy || resendIn > 0"
             @click="emit('request-phone-verification', optionalPhone.trim())"
@@ -436,7 +439,7 @@ function submit() {
         Báo kết quả về số {{ optionalPhone.trim() }} — và chỉ việc đó.
       </p>
       <p v-else data-role="review-no-phone">Không để lại số điện thoại.</p>
-      <button type="button" data-role="review-back" @click="reviewing = false">
+      <button type="button" class="btn btn-outline btn-sm" data-role="review-back" @click="reviewing = false">
         Quay lại sửa
       </button>
     </section>
@@ -447,13 +450,14 @@ function submit() {
       <button
         v-if="!reviewing"
         type="button"
+        class="btn btn-primary"
         :disabled="busy"
         data-role="review"
         @click="requestReview"
       >
         Xem lại trước khi gửi
       </button>
-      <button v-else type="submit" :disabled="busy || !canSubmit" data-role="submit">
+      <button v-else type="submit" class="btn btn-primary" :disabled="busy || !canSubmit" data-role="submit">
         {{ busy ? 'Đang gửi…' : 'Xác nhận gửi yêu cầu' }}
       </button>
       <p class="intake-promise-note">
@@ -473,12 +477,12 @@ function submit() {
 .intake-safety {
   margin: 0;
   padding: 0.6rem 0.8rem;
-  border-radius: 8px;
+  border-radius: var(--radius-control);
   background: var(--bg-alt);
 }
 .intake-errors {
   border: 1px solid var(--color-error);
-  border-radius: 8px;
+  border-radius: var(--radius-control);
   padding: 0.75rem 1rem;
 }
 .intake-errors h3 {
@@ -490,7 +494,7 @@ function submit() {
 }
 fieldset {
   border: 1px solid var(--border);
-  border-radius: 10px;
+  border-radius: var(--radius-surface);
   padding: 0.9rem 1rem;
   display: grid;
   gap: 0.7rem;
@@ -512,11 +516,44 @@ fieldset {
 .intake-field textarea,
 .intake-field input {
   max-inline-size: 100%;
+  min-height: 44px;
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--border-input, var(--line));
+  border-radius: var(--radius-control);
+  background: var(--surface);
+  color: var(--ink);
+  font: inherit;
+  font-size: var(--text-base);
+  transition: border-color var(--duration-fast) var(--ease-out);
 }
-.intake-consent {
+.intake-field textarea {
+  min-height: 88px;
+  resize: vertical;
+}
+.intake-field select:focus-visible,
+.intake-field textarea:focus-visible,
+.intake-field input:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 1px;
+}
+.intake-consent,
+.intake-privacy label {
   display: flex;
   gap: 0.5rem;
-  align-items: flex-start;
+  align-items: center;
+  min-height: 44px;
+  cursor: pointer;
+}
+.intake-consent input,
+.intake-privacy input {
+  inline-size: 20px;
+  block-size: 20px;
+  cursor: pointer;
+}
+.intake-consent input:focus-visible,
+.intake-privacy input:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 2px;
 }
 .intake-actions {
   position: sticky;

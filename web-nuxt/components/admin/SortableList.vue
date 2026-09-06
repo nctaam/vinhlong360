@@ -27,8 +27,8 @@
             </template>
           </div>
           <div class="sl-actions">
-            <button type="button" class="sl-btn" :disabled="i === 0" @click="moveUp(i)" title="Lên" :aria-label="`Di chuyển mục ${i + 1} lên`">▲</button>
-            <button type="button" class="sl-btn" :disabled="i === localItems.length - 1" @click="moveDown(i)" title="Xuống" :aria-label="`Di chuyển mục ${i + 1} xuống`">▼</button>
+            <button type="button" class="sl-btn" :disabled="i === 0" @click="moveUp(i)" title="Lên" :aria-label="`Di chuyển mục ${i + 1} lên`"><IconLine name="chevron-up" aria-hidden="true" /></button>
+            <button type="button" class="sl-btn" :disabled="i === localItems.length - 1" @click="moveDown(i)" title="Xuống" :aria-label="`Di chuyển mục ${i + 1} xuống`"><IconLine name="chevron-down" aria-hidden="true" /></button>
             <button type="button" class="sl-btn sl-btn-edit" @click="toggleEdit(i)" :title="editingIndex === i ? 'Đóng' : 'Sửa'" :aria-label="editingIndex === i ? 'Đóng chỉnh sửa' : 'Sửa mục'">
               <IconLine :name="editingIndex === i ? 'check' : 'pencil'" />
             </button>
@@ -172,7 +172,7 @@ function addChild(parentIdx: number) {
   transition: box-shadow .3s var(--ease-soft), border-color .3s;
 }
 .sl-item:hover { box-shadow: 0 2px 12px rgba(var(--black-rgb),.05); }
-.sl-item-editing { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(var(--primary-rgb),.08); }
+.sl-item-editing { border-color: var(--color-action); box-shadow: 0 0 0 3px rgba(var(--color-action-rgb), .15); }
 
 .sl-item-head {
   display: flex; align-items: center; gap: var(--space-3);
@@ -185,7 +185,7 @@ function addChild(parentIdx: number) {
   transition: opacity .2s;
 }
 .sl-item:hover .sl-handle { opacity: 1; }
-.sl-handle:focus-visible { opacity: 1; outline: 2px solid var(--primary); outline-offset: 2px; }
+.sl-handle:focus-visible { opacity: 1; outline: 2px solid var(--color-focus); outline-offset: 2px; }
 
 .sl-empty {
   text-align: center; padding: var(--space-5) var(--space-3);
@@ -204,11 +204,11 @@ function addChild(parentIdx: number) {
   font-size: .72rem; cursor: pointer; display: flex; align-items: center; justify-content: center;
   transition: background .2s var(--ease-soft), color .2s, transform .15s var(--ease-soft);
 }
-.sl-btn:hover:not(:disabled) { background: rgba(var(--primary-rgb), .06); color: var(--primary-fg); }
+.sl-btn:hover:not(:disabled) { background: rgba(var(--color-action-rgb), .06); color: var(--color-action); }
 .sl-btn:active:not(:disabled) { transform: scale(.9); }
-.sl-btn:focus-visible { outline: 2px solid var(--primary); outline-offset: 1px; }
+.sl-btn:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 1px; }
 .sl-btn:disabled { opacity: .25; cursor: not-allowed; }
-.sl-btn-edit:hover:not(:disabled) { background: rgba(var(--primary-rgb), .06); color: var(--primary); }
+.sl-btn-edit:hover:not(:disabled) { background: rgba(var(--color-action-rgb), .06); color: var(--color-action); }
 .sl-btn-remove:hover:not(:disabled) { background: rgba(var(--danger-rgb), .06); color: var(--danger); }
 
 .sl-edit-fields { display: flex; flex-direction: column; gap: var(--space-3); }
@@ -221,8 +221,12 @@ function addChild(parentIdx: number) {
   transition: border-color .2s, box-shadow .2s;
 }
 .sl-edit-input:focus {
-  outline: none; border-color: var(--primary);
-  box-shadow: 0 0 0 3px rgba(var(--primary-rgb),.1);
+  outline: none; border-color: var(--color-action);
+  box-shadow: 0 0 0 3px rgba(var(--color-action-rgb), .18);
+}
+.sl-edit-input:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 1px;
 }
 
 .sl-children {
@@ -237,25 +241,25 @@ function addChild(parentIdx: number) {
 .sl-child-input { flex: 1; }
 .sl-add-child {
   align-self: flex-start; padding: var(--space-2) 14px; border-radius: 10px;
-  font-size: .8rem; font-weight: 500; color: var(--primary);
-  background: rgba(var(--primary-rgb),.06); border: none; cursor: pointer;
+  font-size: .8rem; font-weight: 500; color: var(--color-action);
+  background: rgba(var(--color-action-rgb), .06); border: none; cursor: pointer;
   min-height: 44px;
   transition: background .2s, transform .15s var(--ease-soft);
 }
-.sl-add-child:hover { background: rgba(var(--primary-rgb), .1); }
+.sl-add-child:hover { background: rgba(var(--color-action-rgb), .1); }
 .sl-add-child:active { transform: scale(.97); }
-.sl-add-child:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+.sl-add-child:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
 
 .sl-add {
   padding: 14px; border-radius: 12px;
   border: 1.5px dashed var(--line); background: transparent;
-  font-size: .88rem; font-weight: 500; color: var(--primary);
+  font-size: .88rem; font-weight: 500; color: var(--color-action);
   cursor: pointer; min-height: 44px;
   transition: background .2s var(--ease-soft), border-color .2s, transform .15s;
 }
-.sl-add:hover { background: rgba(var(--primary-rgb),.04); border-color: var(--primary); }
+.sl-add:hover { background: rgba(var(--color-action-rgb), .06); border-color: var(--color-action); }
 .sl-add:active { transform: scale(.98); }
-.sl-add:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+.sl-add:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
 
 /* ── List transitions ── */
 .sl-list-enter-active { transition: opacity .3s var(--ease-soft), transform .3s var(--ease-soft); }
@@ -272,7 +276,7 @@ function addChild(parentIdx: number) {
 
 /* ── Dark ── */
 .dark .sl-item { background: var(--card); border-color: rgba(var(--white-rgb),.06); }
-.dark .sl-item-editing { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(var(--primary-rgb),.15); }
+.dark .sl-item-editing { border-color: var(--color-action); box-shadow: 0 0 0 3px rgba(var(--color-action-rgb), .2); }
 .dark .sl-btn { background: var(--card); border-color: rgba(var(--white-rgb),.06); }
 .dark .sl-edit-input { background: rgba(var(--white-rgb),.04); border-color: rgba(var(--white-rgb),.08); }
 .dark .sl-add { border-color: rgba(var(--white-rgb),.1); }

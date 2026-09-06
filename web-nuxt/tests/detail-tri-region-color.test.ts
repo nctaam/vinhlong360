@@ -701,7 +701,7 @@ describe('entity detail tri-region behavior', () => {
     const primaryActions = wrapper.findAll('[data-action-dock-primary] [data-color-role="action-primary"]')
     expect(primaryActions).toHaveLength(1)
     expect(primaryActions[0]!.text()).toBe('Chỉ đường')
-    expect(wrapper.findAll('.sticky-cta-bar a')).toHaveLength(0)
+    expect(wrapper.findAll('.sticky-cta-bar a')).toHaveLength(3)
   })
 
   it('generates the material border pseudo-element for every detail hero', () => {

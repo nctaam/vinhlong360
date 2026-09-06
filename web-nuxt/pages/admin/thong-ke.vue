@@ -275,10 +275,10 @@ onMounted(fetchData)
 }
 /* Cost-scope micro badge ("tháng" / "ngày") */
 .tk-cost-scope {
-  font-size: .62rem; font-weight: 700; line-height: 1;
+  font-size: var(--text-2xs); font-weight: 700; line-height: 1;
   text-transform: uppercase; letter-spacing: .4px;
   padding: 2px 6px; border-radius: 100px;
-  background: rgba(var(--primary-rgb),.12); color: var(--secondary-fg);
+  background: rgba(var(--color-brand-rgb),.12); color: var(--color-brand);
   align-self: center;
 }
 
@@ -353,14 +353,14 @@ onMounted(fetchData)
   font-variant-numeric: tabular-nums;
 }
 /* Semantic ranking: top-3 solid, 4-10 muted outline, rest plain */
-.tk-list li:nth-child(-n+3) .tk-rank { background: var(--primary); color: var(--text-on-dark); }
+.tk-list li:nth-child(-n+3) .tk-rank { background: var(--color-brand); color: var(--text-on-dark); }
 .tk-list li:nth-child(n+4):nth-child(-n+10) .tk-rank {
-  background: transparent; border: 1px solid rgba(var(--primary-rgb),.3); color: var(--secondary-fg);
+  background: transparent; border: 1px solid rgba(var(--color-brand-rgb),.3); color: var(--color-brand);
 }
 .tk-query { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .tk-hits {
   flex: 0 0 auto; text-align: right;
-  font-weight: 700; color: var(--primary); font-size: .82rem;
+  font-weight: 700; color: var(--color-action); font-size: .82rem;
   position: relative;
   font-family: ui-monospace, "SF Mono", "Cascadia Code", "Roboto Mono", Menlo, Consolas, monospace;
   font-variant-numeric: tabular-nums;
@@ -387,7 +387,7 @@ onMounted(fetchData)
   padding: var(--space-6) 0; color: var(--muted); font-size: .85rem;
 }
 .tk-empty-icon { font-size: 1.8rem; opacity: .3; }
-.tk-empty-ok { color: var(--primary); }
+.tk-empty-ok { color: var(--success); }
 .tk-empty-ok .tk-empty-icon { opacity: .5; }
 
 /* ── Reduced motion ── */
@@ -405,13 +405,13 @@ onMounted(fetchData)
 .dark .tk-panel:hover { box-shadow: inset 0 1px 0 rgba(var(--white-rgb),.04), 0 4px 16px rgba(var(--black-rgb),.3); border-color: rgba(var(--blue-rgb),.3); }
 .dark .tk-list li:hover { background: rgba(var(--white-rgb),.03); }
 .dark .tk-rank { background: rgba(var(--white-rgb),.06); }
-.dark .tk-list li:nth-child(n+4):nth-child(-n+10) .tk-rank { border-color: rgba(var(--primary-rgb),.5); color: var(--primary-light); }
+.dark .tk-list li:nth-child(n+4):nth-child(-n+10) .tk-rank { border-color: rgba(var(--color-brand-rgb),.5); color: var(--color-brand); }
 .dark .tk-count-badge { background: rgba(var(--blue-rgb),.15); }
 .dark .tk-count-warn { background: rgba(var(--warning-rgb),.15); color: var(--accent); }
 .dark .tk-panel:hover .tk-count-badge { background: rgba(var(--blue-rgb),.3); }
 .dark .tk-panel:hover .tk-count-warn { background: rgba(var(--warning-rgb),.28); }
-.dark .stat-card .stat-value { color: var(--primary-light); }
-.dark .tk-cost-scope { background: rgba(var(--primary-rgb),.22); color: var(--primary-light); }
+.dark .stat-card .stat-value { color: var(--ink); }
+.dark .tk-cost-scope { background: rgba(var(--color-brand-rgb),.22); color: var(--color-brand); }
 .dark .stat-card.status-warn { background: rgba(var(--accent-rgb),.08); border-color: var(--warning); }
 .dark .tk-sk-card, .dark .tk-sk-panel { background: rgba(var(--white-rgb),.06); }
 
@@ -462,10 +462,10 @@ onMounted(fetchData)
   background: var(--bg); color: var(--muted); font-size: .82rem; font-weight: 500;
   cursor: pointer; transition: background .2s, color .2s, border-color .2s;
 }
-.tk-chip:hover { border-color: var(--primary); color: var(--ink); }
-.tk-chip.active { background: var(--primary); color: var(--text-on-dark); border-color: var(--primary); }
-.tk-chip:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
-.dark .tk-chip.active { background: var(--primary); }
+.tk-chip:hover { border-color: var(--color-action); color: var(--ink); }
+.tk-chip.active { background: var(--color-action); color: var(--text-on-dark); border-color: var(--color-action); }
+.tk-chip:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
+.dark .tk-chip.active { background: var(--color-action); border-color: var(--color-action); }
 
 .tk-gap-action { text-decoration: none; font-size: .8rem; opacity: .4; transition: opacity .15s; margin-left: 2px; }
 .tk-gap-action:hover { opacity: 1; }

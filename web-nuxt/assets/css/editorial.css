@@ -21,9 +21,10 @@
   font-weight: 600;
   float: left;
   font-size: 3.4em;
-  line-height: .82;
-  padding: .06em .12em 0 0;
-  color: var(--primary);
+  line-height: 1.05;
+  padding: .02em .12em 0 0;
+  margin-top: -.08em;
+  color: var(--color-brand);
 }
 .pull-quote {
   font-family: var(--font-editorial);
@@ -31,8 +32,8 @@
   line-height: var(--leading-snug);
   font-weight: 500;
   color: var(--ink);
-  border-left: 3px solid var(--primary);
-  padding-left: var(--space-5);
+  padding: var(--space-4) 0;
+  border-block: 1px solid var(--line);
   margin: var(--space-editorial) 0;
   text-wrap: balance;
 }

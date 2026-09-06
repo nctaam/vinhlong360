@@ -19,7 +19,7 @@
           class="interstitial-link"
           :data-color-role="materialAccent ? 'catalog-action' : undefined"
         >
-          {{ l.label }} <span aria-hidden="true">→</span>
+          {{ l.label }} <IconLine name="arrow-right" aria-hidden="true" />
         </NuxtLink>
       </div>
     </div>
@@ -116,12 +116,15 @@ const props = withDefaults(defineProps<{
   padding: var(--space-2) var(--space-3);
   border-radius: var(--radius-surface);
   background: rgba(var(--catalog-legacy-primary-rgb), .06);
-  transition: background .2s var(--ease-out), transform .2s var(--ease-out);
+  transition: background .2s var(--ease-out), transform .2s var(--ease-out-expo);
   min-height: 44px;
 }
 .interstitial-link:hover {
   background: rgba(var(--catalog-legacy-primary-rgb), .12);
   transform: translateX(2px);
+}
+@media (prefers-reduced-motion: reduce) {
+  .interstitial-link:hover { transform: none; }
 }
 .interstitial-link:focus-visible {
   outline: 2px solid var(--catalog-interstitial-focus);

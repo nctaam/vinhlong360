@@ -1,5 +1,5 @@
 <template>
-  <main class="access-denied-page">
+  <div class="page access-denied-page" data-color-system="tri-region-v1">
     <SystemSystemStatePanel
       kind="permission-denied"
       title="Bạn chưa có quyền truy cập"
@@ -10,7 +10,7 @@
       @primary="openAllowedArea"
       @secondary="navigateTo('/')"
     />
-  </main>
+  </div>
 </template>
 
 <script setup lang="ts">
@@ -21,6 +21,14 @@ const { user } = useAuth()
 
 useHead({
   title: 'Không đủ quyền truy cập',
+})
+
+useSeoMeta({
+  title: 'Không đủ quyền truy cập — vinhlong360',
+  description: 'Tài khoản hiện tại không có phạm vi cần thiết để mở màn hình này.',
+  robots: 'noindex, nofollow',
+  ogTitle: 'Không đủ quyền truy cập — vinhlong360',
+  twitterCard: 'summary_large_image',
 })
 
 const scopes = computed(() => resolveAdminScopes(user.value))
@@ -51,10 +59,6 @@ function openAllowedArea() {
   min-height: min(72vh, 760px);
   padding: clamp(var(--space-8), 8vw, var(--space-16)) var(--page-gutter, var(--space-4));
   place-items: center;
-  background:
-    linear-gradient(var(--line) 1px, transparent 1px),
-    linear-gradient(90deg, var(--line) 1px, transparent 1px),
-    var(--bg);
-  background-size: 48px 48px;
+  background: var(--bg);
 }
 </style>

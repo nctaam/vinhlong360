@@ -1,11 +1,12 @@
 <template>
   <section
     class="page thread-detail-page"
+    data-color-system="tri-region-v1"
     data-image-surface="post-metadata"
     data-source-class="user-uploaded"
     data-entity-image-policy="no-image-invariant"
   >
-    <Breadcrumb :items="[{ label: 'Trang chủ', to: '/' }, { label: 'Cộng đồng', to: '/cong-dong' }, { label: 'Bài viết' }]" />
+    <Breadcrumb :items="breadcrumbItems" :json-ld="true" />
     <h1 class="sr-only">{{ post?.display_name ? `Bài viết của ${post.display_name}` : 'Bài viết' }}</h1>
     <div
       v-if="post"
@@ -27,7 +28,7 @@
       <!-- Comment thread -->
       <div class="thread-comments">
         <div class="replies-header">
-          <svg class="replies-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>
+          <IconLine name="message" class="replies-icon" aria-hidden="true" />
           <span class="replies-label">Trả lời</span>
           <span v-if="comments.length" class="replies-count" :class="{ 'replies-count--active': comments.length > 0 }">{{ comments.length }}</span>
         </div>
@@ -40,7 +41,7 @@
           <div class="compose-right">
             <div v-if="replyingTo" class="reply-context">
               <span>Đang trả lời <strong>@{{ replyingTo.author?.display_name || 'Người dùng' }}</strong></span>
-              <button type="button" class="reply-context-x" aria-label="Huỷ trả lời" @click="cancelReply">&times;</button>
+              <button type="button" class="reply-context-x" aria-label="Huỷ trả lời" @click="cancelReply"><IconLine name="x" /></button>
             </div>
             <div class="comment-mention-wrap">
               <input
@@ -63,14 +64,14 @@
                   :aria-selected="mi === mentionActive"
                   @mousedown.prevent="pickMention(m)"
                 >
-                  <span class="mention-ic" aria-hidden="true">{{ m.type === 'user' ? '👤' : '📍' }}</span>
+                  <span class="mention-ic" aria-hidden="true"><IconLine :name="m.type === 'user' ? 'user' : 'pin'" /></span>
                   <span class="mention-label">{{ m.label }}</span>
                   <span class="mention-sub">{{ m.sub }}</span>
                 </li>
               </ul>
             </div>
             <button type="button" class="btn btn-primary btn-sm compose-send" aria-label="Gửi bình luận" :disabled="!commentText.trim() || submitting" @click="submitComment">
-              <svg v-if="!submitting" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M22 2 11 13"/><path d="m22 2-7 20-4-9-9-4z"/></svg>
+              <IconLine v-if="!submitting" name="send" aria-hidden="true" />
               <span v-else class="spinner spinner-sm"></span>
             </button>
           </div>
@@ -170,11 +171,15 @@
     </div>
 
     <div v-else class="empty-state-wrap">
-      <EmptyState v-if="postFetchFailed" icon-name="alert-triangle" title="Không thể tải bài viết" message="Lỗi kết nối. Vui lòng thử lại.">
-        <button type="button" class="btn btn-outline btn-sm" @click="refreshPost()">Thử lại</button>
+      <EmptyState v-if="postFetchFailed" icon-name="alert-triangle" title="Không thể tải bài viết" :message="postErrorMessage">
+        <template #actions>
+          <button type="button" class="btn btn-outline btn-sm" @click="refreshPost()">Thử lại</button>
+        </template>
       </EmptyState>
       <EmptyState v-else icon-name="search" title="Không tìm thấy bài viết" message="Bài viết có thể đã bị xoá hoặc đường dẫn không đúng.">
-        <NuxtLink to="/cong-dong" class="btn btn-outline btn-sm">Về Cộng đồng</NuxtLink>
+        <template #actions>
+          <NuxtLink to="/cong-dong" class="btn btn-outline btn-sm">Về Cộng đồng</NuxtLink>
+        </template>
       </EmptyState>
     </div>
 
@@ -189,7 +194,7 @@ useReveal()
 const route = useRoute()
 const postId = computed(() => normalizeRouteParam(route.params.id))
 const encodedPostId = computed(() => encodePathId(postId.value))
-const { isLoggedIn, authHeaders, user, handleSessionExpired } = useAuth()
+const { isLoggedIn, authHeaders, user, handleSessionExpired, authFetch } = useAuth()
 const { openAuth } = useAuthModal()
 
 const { repost, quote } = useRepost()
@@ -198,6 +203,12 @@ const { repost, quote } = useRepost()
 const { reportPost } = useReport()
 const { show: showToast } = useToast()
 const { trackEvent } = useUserEvents()
+
+const breadcrumbItems = computed(() => [
+  { label: 'Trang chủ', to: '/' },
+  { label: 'Cộng đồng', to: '/cong-dong' },
+  { label: post.value?.display_name ? `Bài viết của ${post.value.display_name}` : 'Bài viết' },
+])
 
 const commentText = ref('')
 
@@ -246,11 +257,11 @@ async function setBestAnswer(commentId: string) {
   const prev = bestAnswerId.value
   bestAnswerId.value = commentId
   try {
-    await $fetch(`/api/posts/${encodedPostId.value}/best-answer`, { method: 'POST', headers: authHeaders(), body: { comment_id: commentId } })
+    await authFetch(`/api/posts/${encodedPostId.value}/best-answer`, { method: 'POST', body: { comment_id: commentId } })
     showToast('Đã chọn câu trả lời hay', 'success')
   } catch (e: unknown) {
     bestAnswerId.value = prev
-    if (getStatusCode(e) === 401) { handleSessionExpired(); return }
+    if (getStatusCode(e) === 401) { return }
     showToast('Không thể chọn, thử lại', 'error')
   }
 }
@@ -282,8 +293,8 @@ async function saveEdit() {
   if (editContent.value.trim().length < 10 || editSaving.value) return
   editSaving.value = true
   try {
-    const res = await $fetch<any>(`/api/posts/${encodedPostId.value}`, {
-      method: 'PATCH', headers: authHeaders(), body: { content: editContent.value.trim() },
+    const res = await authFetch<any>(`/api/posts/${encodedPostId.value}`, {
+      method: 'PATCH', body: { content: editContent.value.trim() },
     })
     if (post.value && res.post) {
       post.value.content = res.post.content
@@ -293,7 +304,7 @@ async function saveEdit() {
     editing.value = false
     showToast(res.moderation_status === 'pending' ? 'Đã lưu — đang chờ duyệt lại' : 'Đã cập nhật bài viết', 'success')
   } catch (e: unknown) {
-    if (getStatusCode(e) === 401) { handleSessionExpired(); return }
+    if (getStatusCode(e) === 401) { return }
     showToast(extractErrorMessage(e, 'Không thể lưu bài viết'), 'error')
   } finally {
     editSaving.value = false
@@ -314,17 +325,108 @@ const userInitial = computed(() => {
 })
 
 const postFetchFailed = ref(false)
-const { data: post, pending, refresh: refreshPost } = await useAsyncData(`post-${postId.value}`, async (): Promise<Post | null> => {
+const postFetchStatusCode = ref<number | null>(null)
+const postErrorMessage = computed(() => {
+  if (postFetchStatusCode.value === 429) return 'Hệ thống đang bận (429). Vui lòng đợi trong giây lát rồi thử lại.'
+  if (postFetchStatusCode.value === 503) return 'Dịch vụ đang tạm thời gián đoạn (503). Vui lòng thử lại sau.'
+  if (postFetchStatusCode.value === 404) return 'Không tìm thấy bài viết này.'
+  return 'Lỗi kết nối máy chủ. Vui lòng thử lại.'
+})
+
+const relatedPosts = ref<any[]>([])
+async function fetchRelated() {
   try {
-    postFetchFailed.value = false
-    const res = await apiFetch<PostDetailResponse | Post>(`/api/posts/${encodedPostId.value}`, { headers: authHeaders() })
-    return (res as PostDetailResponse).post || (res as Post)
-  } catch (e: unknown) {
-    if (getStatusCode(e) === 401) handleSessionExpired()
-    postFetchFailed.value = true
-    return null
+    // declutter-3 T3: 4→2 — related là engagement-driver nhưng 4 card đè phần bình luận
+    const params = new URLSearchParams({ limit: '2' })
+    const res = await $fetch<any>(`/api/posts/${encodedPostId.value}/related?${params}`)
+    relatedPosts.value = res.posts || []
+  } catch { /* non-critical */ }
+}
+
+function onClickOutsideMention(e: MouseEvent) {
+  if (mentionOpen.value && !(e.target as HTMLElement)?.closest('.comment-mention-wrap')) {
+    closeMentionComment()
+  }
+}
+
+function onBeforeUnload(e: BeforeUnloadEvent) {
+  if (editing.value && editContent.value !== (post.value?.content || '')) {
+    e.preventDefault()
+  }
+}
+
+const unsubs: Array<() => void> = []
+
+onMounted(() => {
+  if (import.meta.client) {
+    document.addEventListener('click', onClickOutsideMention)
+    window.addEventListener('beforeunload', onBeforeUnload)
+    unsubs.push(() => document.removeEventListener('click', onClickOutsideMention))
+    unsubs.push(() => window.removeEventListener('beforeunload', onBeforeUnload))
+  }
+  fetchComments()
+  fetchRelated()
+  trackCurrentPost()
+  // mở editor khi điều hướng từ trang khác: /bai-viet/{id}?edit=1 (chủ bài)
+  if (route.query.edit === '1' && isLoggedIn.value && post.value
+      && String((post.value as any).user_id) === String(user.value?.id)) {
+    startEdit()
   }
 })
+
+onUnmounted(() => {
+  for (const unsub of unsubs) unsub()
+})
+
+const {
+  data: postAsyncPayload,
+  error: postAsyncError,
+  pending,
+  refresh: refreshPost,
+} = useAsyncData(`post-detail-${postId.value}`, async () => {
+  if (!postId.value) return null
+  try {
+    const res = await apiFetch<PostDetailResponse | Post>(`/api/posts/${encodedPostId.value}`, { headers: authHeaders() })
+    postFetchFailed.value = false
+    postFetchStatusCode.value = null
+    return (res as PostDetailResponse).post || (res as Post)
+  } catch (err: unknown) {
+    postFetchFailed.value = true
+    postFetchStatusCode.value = getStatusCode(err) || 500
+    throw err
+  }
+})
+
+await postAsyncPayload
+
+const post = computed<Post | null>({
+  get: () => (postAsyncPayload.value as Post | null) || null,
+  set: (val) => {
+    postAsyncPayload.value = val
+  },
+})
+
+watch(
+  postAsyncError,
+  (err) => {
+    if (err) {
+      postFetchFailed.value = true
+      postFetchStatusCode.value = getStatusCode(err) || 500
+    }
+  },
+  { immediate: true },
+)
+
+watch(
+  postId,
+  async (newId) => {
+    if (!newId) return
+    await fetchComments()
+    fetchRelated()
+  },
+  { immediate: true },
+)
+
 if (import.meta.server && !post.value && !postFetchFailed.value) {
   throw createError({ statusCode: 404, statusMessage: 'Không tìm thấy bài viết' })
 }
@@ -431,9 +533,8 @@ async function submitComment() {
       }
     }
     if (mentions.length) body.mentions = mentions
-    await $fetch(`/api/posts/${encodedPostId.value}/comments`, {
+    await authFetch(`/api/posts/${encodedPostId.value}/comments`, {
       method: 'POST',
-      headers: authHeaders(),
       body,
     })
     commentText.value = ''
@@ -443,7 +544,7 @@ async function submitComment() {
     if (post.value) post.value.comments_count = (post.value.comments_count || 0) + 1
     await fetchComments()
   } catch (e: unknown) {
-    if (getStatusCode(e) === 401) { handleSessionExpired(); return }
+    if (getStatusCode(e) === 401) { return }
     showToast(extractErrorMessage(e, 'Gửi bình luận thất bại — vui lòng thử lại'), 'error')
   } finally {
     submitting.value = false
@@ -460,46 +561,6 @@ function toggleBookmark(id: string) {
 }
 
 const { timeAgo } = useTimeAgo()
-
-const relatedPosts = ref<any[]>([])
-async function fetchRelated() {
-  try {
-    // declutter-3 T3: 4→2 — related là engagement-driver nhưng 4 card đè phần bình luận
-    const params = new URLSearchParams({ limit: '2' })
-    const res = await $fetch<any>(`/api/posts/${encodedPostId.value}/related?${params}`)
-    relatedPosts.value = res.posts || []
-  } catch { /* non-critical */ }
-}
-
-function onClickOutsideMention(e: MouseEvent) {
-  if (mentionOpen.value && !(e.target as HTMLElement)?.closest('.comment-mention-wrap')) {
-    closeMentionComment()
-  }
-}
-
-function onBeforeUnload(e: BeforeUnloadEvent) {
-  if (editing.value && editContent.value !== (post.value?.content || '')) {
-    e.preventDefault()
-  }
-}
-
-onMounted(() => {
-  document.addEventListener('click', onClickOutsideMention)
-  if (import.meta.client) window.addEventListener('beforeunload', onBeforeUnload)
-  fetchComments()
-  fetchRelated()
-  trackCurrentPost()
-  // mở editor khi điều hướng từ trang khác: /bai-viet/{id}?edit=1 (chủ bài)
-  if (route.query.edit === '1' && isLoggedIn.value && post.value
-      && String((post.value as any).user_id) === String(user.value?.id)) {
-    startEdit()
-  }
-})
-
-onUnmounted(() => {
-  document.removeEventListener('click', onClickOutsideMention)
-  if (import.meta.client) window.removeEventListener('beforeunload', onBeforeUnload)
-})
 
 watch(postId, async () => {
   comments.value = []
@@ -521,46 +582,58 @@ useHead({
 })
 
 useSeoMeta({
+  ogType: 'article',
   title: () => `${post.value?.display_name || 'Bài viết'} — vinhlong360`,
   description: () => (post.value?.content || '').substring(0, 160),
   ogTitle: () => `${post.value?.display_name || 'Bài viết'} — vinhlong360`,
   ogDescription: () => (post.value?.content || '').substring(0, 160),
+  ogUrl: () => canonicalUrl(postPath(postId.value)),
+  twitterCard: 'summary_large_image',
 })
 
 useHead({
   script: computed(() => {
     if (!post.value) return []
     const p = post.value
-    const postTitle = p.display_name || 'Bài viết'
-    const postDesc = (p.content || '').substring(0, 160)
-    const articleLd: Record<string, any> = {
-      '@context': 'https://schema.org',
-      '@type': p.post_type === 'review' ? 'Review' : 'Article',
-      headline: postTitle, description: postDesc,
-      url: `https://vinhlong360.vn${postPath(postId.value)}`,
-      datePublished: p.created_at,
-      dateModified: p.updated_at || p.created_at,
-      author: {
-        '@type': 'Person', name: p.display_name || 'Người dùng',
-        ...(p.user_id ? { url: `https://vinhlong360.vn${userPath(p.user_id)}` } : {}),
-      },
-      publisher: { '@type': 'Organization', name: 'vinhlong360', url: 'https://vinhlong360.vn' },
-    }
-    if (p.post_type === 'review' && p.rating) {
-      articleLd.reviewRating = { '@type': 'Rating', ratingValue: p.rating, bestRating: 5 }
-    }
-    const breadcrumb = {
-      '@context': 'https://schema.org', '@type': 'BreadcrumbList',
-      itemListElement: [
-        { '@type': 'ListItem', position: 1, name: 'Trang chủ', item: 'https://vinhlong360.vn/' },
-        { '@type': 'ListItem', position: 2, name: 'Cộng đồng', item: 'https://vinhlong360.vn/cong-dong' },
-        { '@type': 'ListItem', position: 3, name: postTitle },
-      ],
-    }
-    return [
-      { type: 'application/ld+json', innerHTML: JSON.stringify(articleLd) },
-      { type: 'application/ld+json', innerHTML: JSON.stringify(breadcrumb) },
+    const bestAnswer = bestAnswerId.value && comments.value.length
+      ? comments.value.find(c => c.id === bestAnswerId.value)
+      : null
+
+    // Schema.org unified @graph: p.post_type === 'question' ('@type': 'QAPage' / '@type': 'Question'), 'review' ('Review') hoặc 'discussion' ('DiscussionForumPosting')
+    const articleLd = buildPostDetailSchemaGraph({
+      post: p,
+      bestAnswer,
+      commentsCount: p.comments_count ?? comments.value.length ?? 0,
+    })
+
+    const scripts: Array<{ type: string; innerHTML: string }> = [
+      { type: 'application/ld+json', innerHTML: safeJsonLd(articleLd) },
     ]
+
+    // Downstream test & consumer compatibility: standalone Review JSON-LD sink
+    if (p.post_type === 'review') {
+      scripts.push({
+        type: 'application/ld+json',
+        innerHTML: safeJsonLd({
+          '@context': 'https://schema.org',
+          '@type': 'Review',
+          headline: p.display_name || 'Bài viết',
+          description: (p.content || '').substring(0, 160),
+          url: `https://vinhlong360.vn${postPath(postId.value)}`,
+          datePublished: p.created_at,
+          dateModified: p.updated_at || p.created_at,
+          author: {
+            '@type': 'Person',
+            name: p.display_name || 'Người dùng',
+            ...(p.user_id ? { url: `https://vinhlong360.vn${userPath(p.user_id)}` } : {}),
+          },
+          publisher: { '@type': 'Organization', name: 'vinhlong360', url: 'https://vinhlong360.vn' },
+          ...(p.rating ? { reviewRating: { '@type': 'Rating', ratingValue: p.rating, bestRating: 5 } } : {}),
+        }),
+      })
+    }
+
+    return scripts
   }),
 })
 </script>
@@ -572,20 +645,26 @@ useHead({
 .pef-actions { display: flex; align-items: center; justify-content: flex-end; gap: var(--space-3); margin-top: var(--space-3); }
 .pef-count { margin-right: auto; font-size: var(--text-xs); color: var(--muted); }
 .qa-badge { display: inline-flex; align-items: center; gap: .25rem; font-size: var(--text-xs); font-weight: var(--weight-semibold); padding: .2rem .55rem; border-radius: 999px; background: var(--success-bg); color: var(--secondary-fg); }
-.qa-pick { font-size: var(--text-xs); padding: .2rem .55rem; border: 1px solid var(--border); border-radius: 999px; background: var(--bg); color: var(--ink-700); cursor: pointer; }
-.qa-pick:hover { border-color: var(--primary); color: var(--primary-fg); }
+.qa-pick { font-size: var(--text-xs); padding: .2rem .55rem; border: 1px solid var(--border); border-radius: 999px; background: var(--bg); color: var(--ink-700); cursor: pointer; min-height: 44px; display: inline-flex; align-items: center; transition: border-color .2s, color .2s, transform .2s var(--ease-out-expo); }
+.qa-pick:hover { border-color: var(--color-action); color: var(--color-action); }
+.qa-pick:active { transform: scale(.95); transition-duration: .08s; }
+.qa-pick:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
 
 /* ── Comment actions + threaded replies ── */
 .comment-actions { display: flex; align-items: center; gap: var(--space-3); margin-top: .35rem; flex-wrap: wrap; }
-.comment-reply-btn { font-size: var(--text-xs); font-weight: var(--weight-semibold); padding: .15rem .1rem; border: none; background: none; color: var(--muted); cursor: pointer; min-height: 44px; min-width: 44px; display: inline-flex; align-items: center; justify-content: center; }
-.comment-reply-btn:hover { color: var(--primary-fg); }
+.comment-reply-btn { font-size: var(--text-xs); font-weight: var(--weight-semibold); padding: .15rem .1rem; border: none; background: none; color: var(--muted); cursor: pointer; min-height: 44px; min-width: 44px; display: inline-flex; align-items: center; justify-content: center; transition: color .2s, transform .2s var(--ease-out-expo); }
+.comment-reply-btn:hover { color: var(--color-action); }
+.comment-reply-btn:active { transform: scale(.92); transition-duration: .08s; }
+.comment-reply-btn:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; border-radius: var(--radius-control); }
 .thread-subreply { display: flex; gap: var(--space-2); margin-top: var(--space-3); padding-left: var(--space-2); border-left: 2px solid var(--line); }
 .subreply-body { flex: 1; min-width: 0; }
 .subreply-body .comment-reply-btn { margin-top: .25rem; }
 .avatar-xs { width: 26px; height: 26px; font-size: var(--text-2xs); }
 .reply-context { display: flex; align-items: center; justify-content: space-between; gap: var(--space-2); font-size: var(--text-xs); color: var(--ink-700); background: var(--bg-alt); border-radius: var(--radius-control); padding: .3rem .6rem; margin-bottom: var(--space-2); }
-.reply-context-x { background: none; border: none; color: var(--muted); font-size: 1.1rem; line-height: 1; cursor: pointer; min-width: 44px; display: inline-flex; align-items: center; justify-content: center; }
+.reply-context-x { background: none; border: none; color: var(--muted); font-size: 1.1rem; line-height: 1; cursor: pointer; min-width: 44px; min-height: 44px; display: inline-flex; align-items: center; justify-content: center; transition: color .2s, transform .2s var(--ease-out-expo); }
 .reply-context-x:hover { color: var(--ink); }
+.reply-context-x:active { transform: scale(.88); transition-duration: .08s; }
+.reply-context-x:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; border-radius: var(--radius-control); }
 .thread-detail-page { max-width: 680px; margin: 0 auto; }
 .thread-detail { display: flex; flex-direction: column; }
 
@@ -597,7 +676,7 @@ useHead({
   display: flex; align-items: center; gap: var(--space-2);
   padding: 0 0 var(--space-4);
 }
-.replies-icon { color: var(--primary-fg); flex-shrink: 0; }
+.replies-icon { color: var(--color-action); flex-shrink: 0; }
 .replies-label { font-size: var(--text-base); font-weight: var(--weight-semibold); color: var(--ink); letter-spacing: .01em; }
 .replies-count {
   font-size: var(--text-xs); font-weight: var(--weight-semibold);
@@ -605,7 +684,7 @@ useHead({
   padding: 2px 9px; min-width: 22px; text-align: center; line-height: 1.6;
 }
 .replies-count--active {
-  background: rgba(var(--primary-rgb), .12); color: var(--primary-fg);
+  background: rgba(var(--color-action-rgb), .12); color: var(--color-action);
 }
 
 /* ── Comment compose (Threads style) ── */
@@ -624,13 +703,13 @@ useHead({
   transition: border-color .2s var(--ease-out);
 }
 .compose-input-sm::placeholder { color: var(--ink-tertiary, var(--muted)); }
-.compose-input-sm:focus { border-bottom-color: var(--primary-fg); box-shadow: none; }
-.compose-input-sm:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+.compose-input-sm:focus { border-bottom-color: var(--color-action); box-shadow: none; }
+.compose-input-sm:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
 /* --text-sm clamps to ~14px under ~640px viewport — below the 16px iOS auto-zoom
    threshold. Force 16px on mobile only for this real comment input; desktop keeps
    --text-sm (14px→16px fluid scale) unchanged. */
 @media (max-width: 640px) {
-  .compose-input-sm { font-size: 16px; }
+  .compose-input-sm { font-size: var(--text-base, 16px); }
 }
 .compose-send {
   width: 44px; height: 44px; min-height: 44px; padding: 0;
@@ -638,12 +717,14 @@ useHead({
   transition: transform .2s var(--ease-out), box-shadow .2s var(--ease-out), background .2s var(--ease-out);
 }
 .compose-send:hover:not(:disabled) { transform: translateY(-1px); box-shadow: var(--shadow-sm); }
-.compose-send .spinner-sm { width: 14px; height: 14px; color: var(--primary-fg); }
+.compose-send:active:not(:disabled) { transform: scale(.95); transition-duration: .08s; }
+.compose-send:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
+.compose-send .spinner-sm { width: 14px; height: 14px; color: var(--color-action); }
 
 .thread-comment-guest { padding: var(--space-3) 0 var(--space-4); border-bottom: .5px solid var(--line); }
-.guest-reply-link { font-size: var(--text-sm); color: var(--primary-fg); text-decoration: none; font-weight: var(--weight-medium); border-radius: var(--radius-control); }
+.guest-reply-link { font-size: var(--text-sm); color: var(--color-action); text-decoration: none; font-weight: var(--weight-medium); border-radius: var(--radius-control); }
 .guest-reply-link:hover { text-decoration: underline; }
-.guest-reply-link:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+.guest-reply-link:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
 
 /* ── Thread replies ── */
 .thread-comments { display: flex; flex-direction: column; }
@@ -661,7 +742,7 @@ useHead({
 
 .thread-reply .thread-left { width: 32px; flex-shrink: 0; display: flex; flex-direction: column; align-items: center; gap: var(--space-2); }
 .thread-reply .thread-line { flex: 1; width: 2px; background: var(--line); border-radius: 1px; min-height: 16px; transition: background .3s var(--ease-out); }
-.thread-reply:hover .thread-line { background: var(--primary-fg); }
+.thread-reply:hover .thread-line { background: var(--color-action); }
 .thread-reply .thread-right { flex: 1; min-width: 0; }
 
 .reply-text { margin: var(--space-1) 0 0; font-size: var(--text-sm); line-height: var(--leading-relaxed); color: var(--ink); }
@@ -703,7 +784,7 @@ useHead({
 /* ── Focus-visible & keyboard nav in replies ── */
 .thread-reply .thread-author:focus-visible,
 .thread-reply .thread-avatar-link:focus-visible {
-  outline: 2px solid var(--primary); outline-offset: 2px; border-radius: var(--radius-control);
+  outline: 2px solid var(--color-focus); outline-offset: 2px; border-radius: var(--radius-control);
 }
 
 /* ── Related posts ── */
@@ -713,9 +794,11 @@ useHead({
 .related-card {
   display: flex; flex-direction: column; background: var(--card); border: .5px solid var(--line);
   border-radius: var(--radius-sheet); overflow: hidden; text-decoration: none; color: var(--ink);
-  transition: border-color .2s, transform .2s var(--ease-spring-gentle);
+  transition: border-color .2s, transform .2s var(--ease-out-expo);
 }
-.related-card:hover { border-color: var(--primary-fg); transform: translateY(-1px); }
+.related-card:hover { border-color: var(--color-action); transform: translateY(-1px); }
+.related-card:active { transform: scale(.99); }
+.related-card:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
 .related-body { padding: var(--space-2) var(--space-3); display: flex; flex-direction: column; gap: .2rem; }
 .related-author { font-size: var(--text-xs); font-weight: var(--weight-semibold); }
 .related-text { margin: 0; font-size: var(--text-xs); color: var(--ink-secondary, var(--ink)); line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
@@ -725,6 +808,7 @@ useHead({
 @media (prefers-reduced-motion: reduce) {
   .thread-reply { animation: none; }
   .compose-input-sm, .compose-send { transition: none; }
-  .compose-send:hover:not(:disabled) { transform: none; }
+  .compose-send:hover:not(:disabled), .compose-send:active:not(:disabled) { transform: none; }
+  .qa-pick:active, .comment-reply-btn:active, .reply-context-x:active, .related-card:active { transform: none; }
 }
 </style>

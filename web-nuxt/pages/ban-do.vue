@@ -1,12 +1,15 @@
 <template>
   <section class="page" data-color-system="tri-region-v1" data-page-recipe="map">
-    <Breadcrumb :items="[{ label: 'Trang chủ', to: '/' }, { label: 'Bản đồ' }]" />
+    <Breadcrumb :items="[{ label: 'Trang chủ', to: '/' }, { label: 'Bản đồ' }]" :json-ld="true" />
 
     <section class="catalog-hero cat-map">
       <div class="catalog-hero-inner map-hero-inner">
-        <span class="dateline-eyebrow">Bản đồ sống · Vĩnh Long · Bến Tre · Trà Vinh</span>
-        <h1>Bản đồ</h1>
-        <p>So sánh vị trí bằng bản đồ, đối chiếu bằng danh sách và địa chỉ ngay cả khi tile không tải.</p>
+        <span class="catalog-hero-icon" aria-hidden="true"><IconLine name="map" /></span>
+        <div>
+          <span class="dateline-eyebrow">Bản đồ sống · Tỉnh Vĩnh Long hợp nhất (3 vùng trước 7-2025)</span>
+          <h1>Bản đồ</h1>
+          <p>So sánh vị trí bằng bản đồ, đối chiếu bằng danh sách và địa chỉ ngay cả khi tile không tải.</p>
+        </div>
       </div>
     </section>
 
@@ -22,6 +25,22 @@
           aria-label="Lọc theo loại địa điểm"
           @update:model-value="onTypeFilterChange"
         />
+        <div v-if="hasActiveFilters" class="active-filter-ledger" role="region" aria-label="Bộ lọc đang áp dụng">
+          <span class="afl-heading">Đang lọc:</span>
+          <div class="afl-chips">
+            <span v-if="savedMode" class="afl-chip">
+              <span class="afl-text">Đã lưu</span>
+              <button type="button" class="afl-remove" aria-label="Bỏ lọc điểm đã lưu" @click="clearSavedMode"><IconLine name="x" aria-hidden="true" /></button>
+            </span>
+            <template v-if="!activeTypeArray.includes('all')">
+              <span v-for="t in activeTypeArray" :key="t" class="afl-chip">
+                <span class="afl-text">{{ getTypeLabel(t) }}</span>
+                <button type="button" class="afl-remove" :aria-label="`Bỏ lọc ${getTypeLabel(t)}`" @click="removeTypeFilter(t)"><IconLine name="x" aria-hidden="true" /></button>
+              </span>
+            </template>
+            <button type="button" class="afl-clear-all" aria-label="Xóa tất cả bộ lọc" @click="clearAllFilters">Xóa tất cả</button>
+          </div>
+        </div>
         <p class="result-meta" aria-live="polite">{{ visibleLabel }}</p>
       </div>
     </ClientOnly>
@@ -138,6 +157,30 @@ function onTypeFilterChange(values: string[]) {
   searchView.setFilter('type', filtered.length ? filtered : undefined)
 }
 
+const hasActiveFilters = computed(() => savedMode.value || !activeTypeArray.value.includes('all'))
+
+function clearSavedMode() {
+  const query = { ...route.query }
+  delete query.source
+  router.push({ path: '/ban-do', query })
+}
+
+function removeTypeFilter(typeToRemove: string) {
+  const remaining = activeTypeArray.value.filter(t => t !== typeToRemove && t !== 'all')
+  searchView.setFilter('type', remaining.length ? remaining : undefined)
+}
+
+function clearAllFilters() {
+  searchView.setFilter('type', undefined)
+  if (savedMode.value) {
+    clearSavedMode()
+  }
+}
+
+function getTypeLabel(type: string): string {
+  return typeFilters.find(f => f.value === type)?.label || type
+}
+
 const mapPinApiPath = computed(() => {
   const params = new URLSearchParams()
   if (activeTypeQuery.value) params.set('type', activeTypeQuery.value)
@@ -146,11 +189,12 @@ const mapPinApiPath = computed(() => {
   return `/api/map-pins${query ? `?${query}` : ''}`
 })
 
-const { data, error: fetchError, status, refresh } = await useAsyncData(
+const mapAsyncData = useAsyncData(
   computed(() => `map-pins-${activeTypeQuery.value || 'all'}-${areaQuery.value || 'all'}`),
   () => apiFetch<MapPin[]>(mapPinApiPath.value),
   { watch: [mapPinApiPath] },
 )
+const { data, error: fetchError, status, refresh } = mapAsyncData
 const retryData = () => refresh()
 
 const lastSuccessfulMapPins = ref<MapPin[]>([])
@@ -221,20 +265,24 @@ onBeforeUnmount(() => {
   window.removeEventListener('offline', updateNetworkState)
 })
 
+await mapAsyncData
+
 useReveal()
 
 useSeoMeta({
   title: 'Bản đồ du lịch Vĩnh Long — vinhlong360',
-  description: 'Bản đồ và danh sách địa chỉ điểm du lịch, đặc sản, lưu trú, làng nghề tại Vĩnh Long, Bến Tre, Trà Vinh.',
+  description: 'Bản đồ và danh sách địa chỉ điểm du lịch, đặc sản, lưu trú, làng nghề tại tỉnh Vĩnh Long hợp nhất (3 vùng trước 7-2025).',
   ogTitle: 'Bản đồ du lịch — vinhlong360',
   ogDescription: 'Khám phá vị trí và đối chiếu địa chỉ trên danh sách luôn khả dụng.',
+  ogUrl: () => canonicalUrl('/ban-do'),
+  twitterCard: 'summary_large_image',
 })
 
 useHead({
   link: [{ rel: 'canonical', href: canonicalUrl('/ban-do') }],
   script: [{
     type: 'application/ld+json',
-    innerHTML: JSON.stringify({
+    innerHTML: safeJsonLd({
       '@context': 'https://schema.org',
       '@type': 'WebPage',
       name: 'Bản đồ du lịch vinhlong360',
@@ -242,7 +290,7 @@ useHead({
       url: canonicalUrl('/ban-do'),
       spatialCoverage: {
         '@type': 'Place',
-        name: 'Vĩnh Long – Bến Tre – Trà Vinh',
+        name: 'Tỉnh Vĩnh Long hợp nhất (3 vùng trước 7-2025)',
         geo: { '@type': 'GeoShape', box: '9.8 105.8 10.4 106.7' },
       },
     }),

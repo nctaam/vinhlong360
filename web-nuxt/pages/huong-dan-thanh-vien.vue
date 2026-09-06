@@ -1,9 +1,9 @@
 <template>
-  <section class="guide-page">
-    <Breadcrumb :items="[{ label: 'Trang chủ', to: '/' }, { label: 'Cộng đồng', to: '/cong-dong' }, { label: 'Hướng dẫn thành viên' }]" />
+  <section class="guide-page" data-color-system="tri-region-v1">
+    <Breadcrumb :items="[{ label: 'Trang chủ', to: '/' }, { label: 'Cộng đồng', to: '/cong-dong' }, { label: 'Hướng dẫn thành viên' }]" :json-ld="true" />
 
     <header class="guide-hero">
-      <span class="guide-hero-icon" aria-hidden="true">🏅</span>
+      <span class="guide-hero-icon" aria-hidden="true"><IconLine name="award" /></span>
       <div>
         <p class="dateline-eyebrow">SỔ TAY CỘNG ĐỒNG · CẤP BẬC &amp; HUY HIỆU</p>
         <h1>Hướng dẫn thành viên</h1>
@@ -17,7 +17,7 @@
       <p class="guide-intro editorial-body">Cấp bậc phản ánh mức độ đóng góp tổng thể của bạn. Điểm được tính từ nhiều hoạt động — không thể đạt cấp cao chỉ bằng một loại đóng góp duy nhất.</p>
       <div class="level-grid">
         <div v-for="lv in levels" :key="lv.level" class="level-card" :class="`level-${lv.level}`">
-          <span class="lv-icon" aria-hidden="true">{{ lv.icon }}</span>
+          <span class="lv-icon" aria-hidden="true"><IconLine :name="lv.icon" /></span>
           <div class="lv-info">
             <strong class="lv-name">{{ lv.label }}</strong>
             <span class="lv-req">{{ lv.req }}</span>
@@ -32,7 +32,7 @@
       <h2>Cách tính điểm danh tiếng</h2>
       <p class="guide-intro editorial-body">Điểm được tính tự động từ các đóng góp đã duyệt. Để tránh lạm phát, mỗi loại hoạt động có <strong>giới hạn tối đa</strong> — điểm giảm dần khi số lượng tăng lên.</p>
       <div class="points-table-wrap" role="region" aria-label="Bảng tính điểm danh tiếng" tabindex="0">
-        <table class="points-table">
+        <table class="points-table" aria-label="Bảng tính điểm danh tiếng">
           <thead>
             <tr>
               <th scope="col">Hoạt động</th>
@@ -43,7 +43,7 @@
           <tbody>
             <tr v-for="cat in categories" :key="cat.name">
               <td>
-                <span class="cat-icon" aria-hidden="true">{{ cat.icon }}</span>
+                <span class="cat-icon" aria-hidden="true"><IconLine :name="cat.icon" /></span>
                 {{ cat.name }}
               </td>
               <td class="cat-formula">{{ cat.formula }}</td>
@@ -69,7 +69,7 @@
       <p class="guide-intro editorial-body">Huy hiệu ghi nhận thành tích cụ thể. Chúng được trao tự động khi bạn đạt đủ điều kiện.</p>
       <div class="badge-grid">
         <div v-for="b in badges" :key="b.id" class="badge-card">
-          <span class="badge-icon" aria-hidden="true">{{ b.icon }}</span>
+          <span class="badge-icon" aria-hidden="true"><IconLine :name="b.icon" /></span>
           <div class="badge-info">
             <strong>{{ b.label }}</strong>
             <span class="badge-req">{{ b.req }}</span>
@@ -97,32 +97,32 @@
 
 <script lang="ts">
 const levels = [
-  { level: 1, icon: '🌱', label: 'Người mới', req: '0 – 19 điểm' },
-  { level: 2, icon: '🤝', label: 'Người đóng góp', req: '20 – 79 điểm' },
-  { level: 3, icon: '🌟', label: 'Đóng góp tích cực', req: '80 – 199 điểm' },
-  { level: 4, icon: '👑', label: 'Đại sứ', req: '200+ điểm' },
+  { level: 1, icon: 'sprout', label: 'Người mới', req: '0 – 19 điểm' },
+  { level: 2, icon: 'users', label: 'Người đóng góp', req: '20 – 79 điểm' },
+  { level: 3, icon: 'star', label: 'Đóng góp tích cực', req: '80 – 199 điểm' },
+  { level: 4, icon: 'award', label: 'Đại sứ', req: '200+ điểm' },
 ]
 
 const categories = [
-  { icon: '✍️', name: 'Đánh giá', formula: '10 đầu ×5, 20 tiếp ×3, 20 tiếp ×1', max: 130 },
-  { icon: '📝', name: 'Bài viết (không tính đánh giá)', formula: '15 đầu ×2, 15 tiếp ×1', max: 45 },
-  { icon: '📸', name: 'Ảnh đính kèm', formula: '10 đầu ×3, 10 tiếp ×1', max: 40 },
-  { icon: '👥', name: 'Người theo dõi', formula: '20 đầu ×1', max: 20 },
-  { icon: '📍', name: 'Địa điểm khác nhau', formula: '10 đầu ×2, 10 tiếp ×1', max: 30 },
-  { icon: '❤️', name: 'Lượt thích nhận được', formula: '50 đầu ×1', max: 50 },
+  { icon: 'pencil', name: 'Đánh giá', formula: '10 đầu ×5, 20 tiếp ×3, 20 tiếp ×1', max: 130 },
+  { icon: 'file-text', name: 'Bài viết (không tính đánh giá)', formula: '15 đầu ×2, 15 tiếp ×1', max: 45 },
+  { icon: 'camera', name: 'Ảnh đính kèm', formula: '10 đầu ×3, 10 tiếp ×1', max: 40 },
+  { icon: 'users', name: 'Người theo dõi', formula: '20 đầu ×1', max: 20 },
+  { icon: 'pin', name: 'Địa điểm khác nhau', formula: '10 đầu ×2, 10 tiếp ×1', max: 30 },
+  { icon: 'heart', name: 'Lượt thích nhận được', formula: '50 đầu ×1', max: 50 },
 ]
 
 const examplePoints = 40 + 0 + 9 + 12 + 8 + 15
 const exampleLevel = examplePoints >= 200 ? 'Đại sứ' : examplePoints >= 80 ? 'Đóng góp tích cực' : examplePoints >= 20 ? 'Người đóng góp' : 'Người mới'
 
 const badges = [
-  { id: 'first_review', icon: '✍️', label: 'Đánh giá đầu tiên', req: '1 đánh giá' },
-  { id: 'reviewer_25', icon: '⭐', label: 'Nhà phê bình', req: '25 đánh giá' },
-  { id: 'photographer', icon: '📸', label: 'Nhiếp ảnh cộng đồng', req: '10 bài có ảnh' },
-  { id: 'explorer', icon: '🧭', label: 'Người khám phá', req: '10 địa điểm khác nhau' },
-  { id: 'popular', icon: '💛', label: 'Được yêu thích', req: '20 người theo dõi' },
-  { id: 'quality', icon: '🏆', label: 'Nội dung chất lượng', req: '50 lượt thích' },
-  { id: 'allrounder', icon: '🌟', label: 'Đa năng', req: '3+ địa điểm, 5+ đánh giá, 3+ ảnh' },
+  { id: 'first_review', icon: 'pencil', label: 'Đánh giá đầu tiên', req: '1 đánh giá' },
+  { id: 'reviewer_25', icon: 'star', label: 'Nhà phê bình', req: '25 đánh giá' },
+  { id: 'photographer', icon: 'camera', label: 'Nhiếp ảnh cộng đồng', req: '10 bài có ảnh' },
+  { id: 'explorer', icon: 'compass', label: 'Người khám phá', req: '10 địa điểm khác nhau' },
+  { id: 'popular', icon: 'heart', label: 'Được yêu thích', req: '20 người theo dõi' },
+  { id: 'quality', icon: 'trophy', label: 'Nội dung chất lượng', req: '50 lượt thích' },
+  { id: 'allrounder', icon: 'sparkles', label: 'Đa năng', req: '3+ địa điểm, 5+ đánh giá, 3+ ảnh' },
 ]
 
 const tips = [
@@ -136,27 +136,24 @@ const tips = [
 <script setup lang="ts">
 useReveal()
 
+// Schema graph unified with '@type': 'WebPage' and Member Guide FAQs
+const guideSchema = computed(() => buildMemberGuideSchemaGraph())
+
 useSeoMeta({
   title: 'Hướng dẫn thành viên — Hệ thống cấp bậc & điểm danh tiếng — vinhlong360',
   description: 'Tìm hiểu cách tính điểm danh tiếng, cấp bậc thành viên và huy hiệu trên cộng đồng vinhlong360.',
   ogTitle: 'Hướng dẫn thành viên — vinhlong360',
   ogDescription: 'Cách tính điểm danh tiếng, cấp bậc và huy hiệu trên vinhlong360.',
+  ogUrl: () => canonicalUrl('/huong-dan-thanh-vien'),
+  twitterCard: 'summary_large_image',
 })
-useHead({
+useHead(() => ({
   link: [{ rel: 'canonical', href: canonicalUrl('/huong-dan-thanh-vien') }],
   script: [{
     type: 'application/ld+json',
-    innerHTML: JSON.stringify({
-      '@context': 'https://schema.org',
-      '@type': 'BreadcrumbList',
-      itemListElement: [
-        { '@type': 'ListItem', position: 1, name: 'Trang chủ', item: 'https://vinhlong360.vn/' },
-        { '@type': 'ListItem', position: 2, name: 'Cộng đồng', item: 'https://vinhlong360.vn/cong-dong' },
-        { '@type': 'ListItem', position: 3, name: 'Hướng dẫn thành viên' },
-      ],
-    }),
+    innerHTML: safeJsonLd(guideSchema.value),
   }],
-})
+}))
 </script>
 
 <style scoped>
@@ -169,7 +166,7 @@ useHead({
   background: linear-gradient(135deg, rgba(var(--secondary-rgb), .1) 0%, var(--bg-warm) 100%);
   border-radius: var(--radius-sheet); border: .5px solid var(--line);
 }
-.guide-hero-icon { font-size: 2.5rem; flex-shrink: 0; }
+.guide-hero-icon { font-size: 2.5rem; flex-shrink: 0; display: inline-flex; align-items: center; justify-content: center; color: var(--color-brand); }
 /* Local page masthead eyebrow — small-caps dateline, matches the site's
    area/ward eyebrow pattern but scoped here (not promoted global). */
 .dateline-eyebrow {
@@ -180,7 +177,7 @@ useHead({
 }
 .dateline-eyebrow::before {
   content: ""; position: absolute; left: 0; top: 50%; transform: translateY(-50%);
-  width: var(--space-2); height: 1.5px; background: var(--primary);
+  width: var(--space-2); height: 1.5px; background: var(--color-brand);
 }
 .guide-hero h1 { margin: 0 0 var(--space-1); font-family: var(--font-editorial); font-size: var(--text-2xl); font-weight: 600; letter-spacing: var(--tracking-tight); }
 .guide-hero p { margin: 0; color: var(--muted); font-size: var(--text-sm); }
@@ -196,29 +193,31 @@ useHead({
   display: flex; align-items: center; gap: var(--space-3);
   padding: var(--space-4); border-radius: var(--radius-sheet);
   border: .5px solid var(--line); background: var(--card);
-  transition: transform .25s var(--ease-spring-gentle), border-color .25s var(--ease-out);
+  transition: transform .25s var(--ease-out-expo), border-color .25s var(--ease-out);
 }
-.level-card:hover { transform: translateY(-2px); border-color: var(--primary-fg); }
-.lv-icon { font-size: 1.75rem; flex-shrink: 0; }
+.level-card:hover { transform: translateY(-2px); border-color: var(--color-action); }
+.level-card:active { transform: scale(.985); }
+.lv-icon { font-size: 1.75rem; flex-shrink: 0; display: inline-flex; align-items: center; justify-content: center; color: var(--level-color, var(--color-brand)); }
 .lv-info { flex: 1; min-width: 0; }
 .lv-name { display: block; font-weight: var(--weight-semibold); }
 .lv-req { font-size: var(--text-xs); color: var(--muted); }
-.lv-tag { font-size: var(--text-xs); font-weight: var(--weight-semibold); color: var(--primary-fg); background: rgba(var(--primary-rgb), .1); padding: .15rem .5rem; border-radius: var(--radius-full); white-space: nowrap; }
+.lv-tag { font-size: var(--text-xs); font-weight: var(--weight-semibold); color: var(--color-action); background: rgba(var(--color-action-rgb), .1); padding: .15rem .5rem; border-radius: var(--radius-full); white-space: nowrap; }
 
-.level-1 { --level-color: var(--leaf-600); border-left: 3px solid var(--level-color); }
-.level-2 { --level-color: var(--river-600); border-left: 3px solid var(--level-color); }
-.level-3 { --level-color: var(--amber-500); border-left: 3px solid var(--level-color); }
-.level-4 { --level-color: var(--amber-700); border-left: 3px solid var(--level-color); }
+.level-1 { --level-color: var(--leaf-600); box-shadow: inset 3px 0 0 var(--level-color); }
+.level-2 { --level-color: var(--river-600); box-shadow: inset 3px 0 0 var(--level-color); }
+.level-3 { --level-color: var(--amber-500); box-shadow: inset 3px 0 0 var(--level-color); }
+.level-4 { --level-color: var(--amber-700); box-shadow: inset 3px 0 0 var(--level-color); }
 
 /* Points table */
 .points-table-wrap { overflow-x: auto; margin-bottom: var(--space-4); }
+.points-table-wrap:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; border-radius: var(--radius-surface); }
 .points-table { width: 100%; border-collapse: collapse; font-size: var(--text-sm); }
 .points-table th { text-align: left; padding: var(--space-2) var(--space-3); font-weight: var(--weight-semibold); color: var(--muted); border-bottom: 1.5px solid var(--line); font-size: var(--text-xs); text-transform: uppercase; letter-spacing: .04em; }
 .points-table td { padding: var(--space-3); border-bottom: .5px solid var(--line); }
 .points-table tbody tr:hover { background: var(--bg-warm); }
-.cat-icon { margin-right: var(--space-2); }
+.cat-icon { margin-right: var(--space-2); display: inline-flex; align-items: center; vertical-align: middle; color: var(--color-action); }
 .cat-formula { color: var(--muted); font-size: var(--text-xs); }
-.cat-max { text-align: right; font-weight: var(--weight-semibold); font-variant-numeric: tabular-nums; color: var(--primary-fg); }
+.cat-max { text-align: right; font-weight: var(--weight-semibold); font-variant-numeric: tabular-nums; color: var(--color-brand); }
 .points-table tfoot td { border-bottom: none; padding-top: var(--space-3); }
 
 .guide-note {
@@ -233,10 +232,11 @@ useHead({
   display: flex; align-items: center; gap: var(--space-3);
   padding: var(--space-3) var(--space-4); border-radius: var(--radius-sheet);
   border: .5px solid var(--line); background: var(--card);
-  transition: transform .2s var(--ease-spring-gentle);
+  transition: transform .2s var(--ease-out-expo);
 }
 .badge-card:hover { transform: translateY(-1px); }
-.badge-icon { font-size: 1.5rem; flex-shrink: 0; }
+.badge-card:active { transform: scale(.985); }
+.badge-icon { font-size: 1.5rem; flex-shrink: 0; display: inline-flex; align-items: center; justify-content: center; color: var(--secondary-fg, var(--color-brand)); }
 .badge-info { flex: 1; min-width: 0; }
 .badge-info strong { display: block; font-size: var(--text-sm); }
 .badge-req { font-size: var(--text-xs); color: var(--muted); }
@@ -251,7 +251,7 @@ useHead({
 .tip-num {
   flex-shrink: 0; width: 28px; height: 28px;
   display: flex; align-items: center; justify-content: center;
-  border-radius: 50%; background: var(--primary-fg); color: var(--text-on-dark, var(--white));
+  border-radius: 50%; background: var(--color-brand); color: var(--color-on-action, var(--white));
   font-size: var(--text-xs); font-weight: var(--weight-bold);
 }
 .tip-item strong { display: block; margin-bottom: var(--space-1); }
@@ -267,7 +267,7 @@ useHead({
 
 /* Reduced motion */
 @media (prefers-reduced-motion: reduce) {
-  .level-card:hover, .badge-card:hover, .tip-item:hover { transform: none; }
+  .level-card:hover, .level-card:active, .badge-card:hover, .badge-card:active, .tip-item:hover { transform: none; }
 }
 
 /* Mobile */

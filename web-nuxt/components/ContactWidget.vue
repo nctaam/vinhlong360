@@ -171,7 +171,7 @@ onUnmounted(() => { if (copyTimer) clearTimeout(copyTimer) })
   color: var(--success);
   opacity: 0;
   transform: scale(.5);
-  transition: opacity .2s, transform .25s var(--ease-spring-gentle);
+  transition: opacity .2s, transform .25s var(--ease-out-expo);
 }
 .cw-copyable.copied .cw-check { opacity: 1; transform: scale(1); }
 .cw-copyable.copied .cw-icon { opacity: .4; }
@@ -284,5 +284,25 @@ onUnmounted(() => { if (copyTimer) clearTimeout(copyTimer) })
   .cw-btn { transition: none; }
   .cw-btn:active:not(:disabled) { transform: none; }
   .cw-check { transition: none; }
+}
+
+.dark .cw {
+  border-color: rgba(var(--white-rgb), .12);
+}
+
+@media (forced-colors: active) {
+  .cw {
+    border: 1px solid CanvasText;
+  }
+  .cw-btn-primary {
+    background: Highlight;
+    color: HighlightText;
+    border-color: Highlight;
+  }
+  .cw-btn-secondary {
+    background: ButtonFace;
+    color: ButtonText;
+    border-color: ButtonText;
+  }
 }
 </style>

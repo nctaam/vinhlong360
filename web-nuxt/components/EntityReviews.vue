@@ -59,6 +59,7 @@
             type="file"
             accept="image/*"
             class="rf-image-input"
+            aria-label="Đính kèm hình ảnh đánh giá"
             :disabled="uploadingImage || formImages.length >= 4"
             @change="onPickImage"
           />
@@ -366,6 +367,15 @@ onMounted(() => fetchReviews())
   cursor: pointer; padding: 0;
   transition: background .15s var(--ease-soft);
 }
+.rf-image-remove::before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  min-width: 44px;
+  min-height: 44px;
+}
 .rf-image-remove:hover { background: rgba(var(--black-rgb), .8); }
 /* Viền kép: vòng trắng + quầng tối bên ngoài. Nút này nằm ĐÈ LÊN ẢNH nên
    nền sau viền là không đoán được: chỉ vòng trắng thì trên ảnh trắng chỉ đạt
@@ -419,14 +429,14 @@ onMounted(() => fetchReviews())
 .rf-label { font-size: var(--text-sm); font-weight: var(--weight-semibold); color: var(--muted); }
 .review-form .btn { margin-top: var(--space-2); }
 .review-login-hint { font-size: var(--text-sm); color: var(--muted); margin-bottom: var(--space-4); }
-.review-login-hint a { color: var(--primary-fg); font-weight: var(--weight-semibold); }
+.review-login-hint a { color: var(--color-action); font-weight: var(--weight-semibold); }
 
 .review-form { transition: border-color .35s var(--ease-out), box-shadow .35s var(--ease-out-expo); }
-.review-form:focus-within { border-color: var(--primary-fg); box-shadow: 0 0 0 4px rgba(var(--primary-rgb), .12), var(--shadow-sm); }
+.review-form:focus-within { border-color: var(--color-action); box-shadow: 0 0 0 4px rgba(var(--color-action-rgb), .12), var(--shadow-sm); }
 .review-form .btn:active { transform: scale(.95); transition-duration: .08s; }
 
 .review-list { display: flex; flex-direction: column; gap: var(--space-4); }
-.review-item { border-bottom: .5px solid var(--line); padding: var(--space-3) var(--space-3) var(--space-4); margin: 0 calc(var(--space-3) * -1); transition: background .3s var(--ease-out), transform .35s var(--ease-spring-gentle); border-radius: var(--radius-control); }
+.review-item { border-bottom: .5px solid var(--line); padding: var(--space-3) var(--space-3) var(--space-4); margin: 0 calc(var(--space-3) * -1); transition: background .3s var(--ease-out), transform .35s var(--ease-out-expo); border-radius: var(--radius-control); }
 .review-item:hover { background: var(--overlay-subtle); transform: translateX(2px); }
 .review-item:last-child { border-bottom: none; }
 .ri-head { display: flex; align-items: center; gap: var(--space-3); flex-wrap: wrap; margin-bottom: var(--space-2); }
@@ -438,7 +448,7 @@ onMounted(() => fetchReviews())
 .ri-content { margin: 0; font-size: var(--text-sm); line-height: var(--leading-relaxed); }
 .ri-images { display: flex; gap: var(--space-2); margin-top: var(--space-2); overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: none; scroll-snap-type: x proximity; overscroll-behavior-x: contain; }
 .ri-images::-webkit-scrollbar { display: none; }
-.ri-images img { width: 120px; height: 90px; object-fit: cover; border-radius: var(--radius-control); flex-shrink: 0; cursor: pointer; scroll-snap-align: start; transition: transform .35s var(--ease-spring-gentle), box-shadow .3s var(--ease-out); }
+.ri-images img { width: 120px; height: 90px; object-fit: cover; border-radius: var(--radius-control); flex-shrink: 0; cursor: pointer; scroll-snap-align: start; transition: transform .35s var(--ease-out-expo), box-shadow .3s var(--ease-out); }
 .ri-images img:hover { transform: scale(var(--img-hover-scale)); box-shadow: var(--shadow-md); }
 .ri-images img:active { transform: scale(.96); transition-duration: .08s; }
 @media (prefers-reduced-motion: reduce) {
@@ -453,7 +463,7 @@ onMounted(() => fetchReviews())
   background: var(--season-tint);
   border-color: rgba(var(--white-rgb), .06);
 }
-.dark .review-form:focus-within { box-shadow: 0 0 0 3px rgba(var(--primary-rgb), .15); }
+.dark .review-form:focus-within { box-shadow: 0 0 0 3px rgba(var(--color-action-rgb), .18); }
 .dark .review-item:hover { background: rgba(var(--white-rgb),.03); }
-.dark .ri-avatar-placeholder { background: rgba(var(--primary-rgb), .3); }
+.dark .ri-avatar-placeholder { background: rgba(var(--color-action-rgb), .3); }
 </style>

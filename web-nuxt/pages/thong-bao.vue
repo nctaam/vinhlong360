@@ -1,6 +1,6 @@
 <template>
-  <section class="page tb-page">
-    <Breadcrumb :items="[{ label: 'Trang chủ', to: '/' }, { label: 'Thông báo' }]" />
+  <section class="page tb-page" data-color-system="tri-region-v1">
+    <Breadcrumb :items="[{ label: 'Trang chủ', to: '/' }, { label: 'Thông báo' }]" :json-ld="true" />
     <header class="tb-head">
       <div class="tb-head-text">
         <p class="dateline-eyebrow">HỘP THƯ · SỔ TAY CỦA BẠN</p>
@@ -18,12 +18,15 @@
     </div>
 
     <template v-else>
-      <div class="tb-filters">
+      <div class="tb-filters" role="tablist" aria-label="Lọc thông báo" aria-orientation="horizontal">
         <button v-for="f in FILTERS" :key="f.key" type="button" role="tab"
+          :id="`tb-filter-${f.key}`"
           :class="['chip', { active: filter === f.key }]"
           :aria-selected="filter === f.key"
+          :tabindex="filter === f.key ? 0 : -1"
           @click="filter = f.key"
-        >{{ f.icon }} {{ f.label }}</button>
+          @keydown="onFilterKeydown"
+        ><IconLine :name="f.icon" class="tb-filter-icon" /> {{ f.label }}</button>
       </div>
 
       <SkeletonList v-if="loading && !items.length" :count="6" />
@@ -40,7 +43,7 @@
               class="tb-item-link"
               @click="markReadOnOpen(n)"
             >
-              <span class="tb-icon-chip" aria-hidden="true">{{ icon(n) }}</span>
+              <span class="tb-icon-chip" aria-hidden="true"><IconLine :name="icon(n)" /></span>
               <span class="tb-body">
                 <span class="tb-item-title">{{ n.title }}<span v-if="n.group_count > 1" class="tb-group"> +{{ n.group_count - 1 }}</span></span>
                 <span v-if="n.body" class="tb-sub">{{ n.body }}</span>
@@ -57,7 +60,7 @@
               @keydown.enter.prevent="open(n)"
               @keydown.space.prevent="open(n)"
             >
-              <span class="tb-icon-chip" aria-hidden="true">{{ icon(n) }}</span>
+              <span class="tb-icon-chip" aria-hidden="true"><IconLine :name="icon(n)" /></span>
               <span class="tb-body">
                 <span class="tb-item-title">{{ n.title }}<span v-if="n.group_count > 1" class="tb-group"> +{{ n.group_count - 1 }}</span></span>
                 <span v-if="n.body" class="tb-sub">{{ n.body }}</span>
@@ -65,7 +68,14 @@
               </span>
               <span v-if="!n.is_read" class="tb-dot" role="status" aria-label="Chưa đọc" title="Chưa đọc"></span>
             </div>
-            <button type="button" class="tb-dismiss" aria-label="Xóa thông báo" @click.stop="dismiss(n)"><IconLine name="x" /></button>
+            <button
+              type="button"
+              class="tb-dismiss"
+              :aria-label="`Xóa thông báo: ${n.title}`"
+              @click.stop="dismiss(n)"
+            >
+              <IconLine name="x" />
+            </button>
           </li>
         </ul>
         <LoadMoreButton v-if="hasMore" :loading="loadingMore" @load="loadMore" />
@@ -80,11 +90,11 @@ const { openAuth } = useAuthModal()
 const { timeAgo } = useTimeAgo()
 
 const FILTERS = [
-  { key: 'all', label: 'Tất cả', icon: '🔔' },
-  { key: 'like', label: 'Thích', icon: '❤️' },
-  { key: 'comment', label: 'Bình luận', icon: '💬' },
-  { key: 'follow', label: 'Theo dõi', icon: '👤' },
-  { key: 'mention', label: 'Nhắc đến', icon: '📣' },
+  { key: 'all', label: 'Tất cả', icon: 'bell' },
+  { key: 'like', label: 'Thích', icon: 'heart' },
+  { key: 'comment', label: 'Bình luận', icon: 'message' },
+  { key: 'follow', label: 'Theo dõi', icon: 'user' },
+  { key: 'mention', label: 'Nhắc đến', icon: 'megaphone' },
 ] as const
 type FilterKey = typeof FILTERS[number]['key']
 
@@ -108,6 +118,27 @@ const emptyHint = computed(() => {
   }
   return hints[filter.value] || 'Khi có hoạt động mới, bạn sẽ thấy ở đây.'
 })
+
+function onFilterKeydown(e: KeyboardEvent) {
+  const currentIndex = FILTERS.findIndex(f => f.key === filter.value)
+  if (currentIndex === -1) return
+  let nextIndex = -1
+  if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
+    nextIndex = (currentIndex + 1) % FILTERS.length
+  } else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
+    nextIndex = (currentIndex - 1 + FILTERS.length) % FILTERS.length
+  } else if (e.key === 'Home') {
+    nextIndex = 0
+  } else if (e.key === 'End') {
+    nextIndex = FILTERS.length - 1
+  }
+  if (nextIndex !== -1) {
+    e.preventDefault()
+    filter.value = FILTERS[nextIndex].key
+    const btn = document.getElementById(`tb-filter-${FILTERS[nextIndex].key}`)
+    btn?.focus()
+  }
+}
 
 async function load() {
   if (!isLoggedIn.value) { loading.value = false; return }
@@ -139,12 +170,12 @@ async function loadMore() {
 }
 
 function icon(n: any): string {
-  if (n.type === 'like') return '❤️'
-  if (n.type === 'comment') return '💬'
-  if (n.type === 'follow') return '👤'
-  if (n.type === 'mention') return '📣'
-  if (n.type === 'repost') return '🔁'
-  return '🔔'
+  if (n.type === 'like') return 'heart'
+  if (n.type === 'comment') return 'message'
+  if (n.type === 'follow') return 'user'
+  if (n.type === 'mention') return 'megaphone'
+  if (n.type === 'repost') return 'repeat'
+  return 'bell'
 }
 
 async function markReadOnOpen(n: any) {
@@ -201,10 +232,18 @@ watch(isLoggedIn, (loggedIn) => {
   }
 })
 
-useHead({
+useSeoMeta({
   title: 'Thông báo — vinhlong360',
-  link: [{ rel: 'canonical', href: canonicalUrl('/thong-bao') }],
+  description: 'Hộp thư thông báo tương tác và hoạt động của bạn trên vinhlong360.',
+  robots: 'noindex, nofollow',
+  ogTitle: 'Thông báo — vinhlong360',
+  ogUrl: () => canonicalUrl('/thong-bao'),
+  twitterCard: 'summary_large_image',
 })
+
+useHead(() => ({
+  link: [{ rel: 'canonical', href: canonicalUrl('/thong-bao') }],
+}))
 </script>
 
 <style scoped>
@@ -221,7 +260,7 @@ useHead({
   text-transform: uppercase; letter-spacing: .06em; color: var(--ink-700);
   margin: 0 0 .25rem;
 }
-.dateline-eyebrow::before { content: ""; width: 14px; height: 1.5px; background: var(--primary); flex-shrink: 0; }
+.dateline-eyebrow::before { content: ""; width: 14px; height: 1.5px; background: var(--color-brand); flex-shrink: 0; }
 .tb-list { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: var(--space-1); }
 /* .tb-item is the card (li) — .tb-item-link is the inner "open notification"
    affordance (NuxtLink or role=button div). Kept as siblings, not nested,
@@ -231,7 +270,7 @@ useHead({
    button out avoids invalid nesting and any native-navigation ambiguity. */
 .tb-item { position: relative; display: flex; align-items: flex-start; gap: var(--space-3); width: 100%; padding: var(--space-3); background: var(--card); border: .5px solid var(--line); border-radius: var(--radius-sheet); transition: background .2s var(--ease-out), border-color .2s var(--ease-out); }
 .tb-item:hover { background: var(--bg-alt); }
-.tb-item.unread { border-color: var(--primary); background: rgba(var(--primary-rgb), .04); }
+.tb-item.unread { border-color: var(--color-action); background: var(--color-action-surface); }
 /* Tri-province sediment tick — left-edge hairline echo of the site-wide
    river→amber→clay thread (same recipe as EntityCard .card-rule / PostCard
    .thread-rule), so the notification list ties into the shared system. */
@@ -240,48 +279,79 @@ useHead({
   width: 3px; height: 22px; border-radius: var(--radius-full);
   background: linear-gradient(180deg, var(--river-600) 0%, var(--amber-600) 52%, var(--clay-600) 100%);
 }
-.tb-item-link { display: flex; align-items: flex-start; gap: var(--space-3); flex: 1; min-width: 0; text-align: left; text-decoration: none; color: inherit; cursor: pointer; border-radius: var(--radius-control); }
-.tb-item-link:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+.tb-item-link {
+  display: flex; align-items: flex-start; gap: var(--space-3); flex: 1; min-width: 0;
+  text-align: left; text-decoration: none; color: inherit; cursor: pointer;
+  border-radius: var(--radius-control);
+  transition: opacity var(--duration-fast) var(--ease-out);
+}
+.tb-item-link:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
 .tb-icon-chip {
   display: flex; align-items: center; justify-content: center;
   width: 34px; height: 34px; flex-shrink: 0; border-radius: 50%;
   font-size: 1.05rem; line-height: 1; background: var(--bg-alt);
+  transition: transform var(--duration-fast) var(--ease-out);
 }
-.tb-item.unread .tb-icon-chip { background: rgba(var(--primary-rgb), .12); }
+.tb-item.unread .tb-icon-chip { background: rgba(var(--color-action-rgb), .12); color: var(--color-action); }
 .tb-body { display: flex; flex-direction: column; gap: .15rem; flex: 1; min-width: 0; }
 .tb-item-title { font-size: var(--text-sm); font-family: var(--font-editorial); font-weight: 600; color: var(--ink); }
-.tb-group { font-size: .72rem; font-weight: 700; color: var(--primary); background: rgba(var(--primary-rgb), .1); padding: 1px 6px; border-radius: 100px; margin-left: var(--space-1); }
+.tb-group { font-size: .72rem; font-weight: 700; color: var(--color-action); background: rgba(var(--color-action-rgb), .1); padding: var(--space-half) var(--space-1h); border-radius: var(--radius-full); margin-left: var(--space-1); }
 .tb-sub { font-size: var(--text-sm); color: var(--ink-700); }
 .tb-time { font-size: var(--text-xs); color: var(--muted); }
-.tb-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--primary); flex-shrink: 0; margin-top: .35rem; }
+.tb-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--color-action); flex-shrink: 0; margin-top: .35rem; }
 .tb-dismiss {
   flex-shrink: 0; min-width: 44px; min-height: 44px; border: none; background: none;
   color: var(--ink-700); cursor: pointer; font-size: .75rem; border-radius: var(--radius-full);
-  opacity: 0; transition: opacity .15s, background .15s, color .15s;
+  opacity: 0;
+  transition: opacity var(--duration-fast),
+              background var(--duration-fast),
+              color var(--duration-fast),
+              transform var(--duration-fast) var(--ease-out);
   display: flex; align-items: center; justify-content: center; align-self: center;
 }
 .tb-item:hover .tb-dismiss, .tb-dismiss:focus-visible { opacity: 1; }
 .tb-dismiss:hover { background: var(--bg-alt); color: var(--error); }
-.tb-dismiss:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+.tb-dismiss:active { transform: scale(.92); }
+.tb-dismiss:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
 .tb-guest { margin-top: var(--space-6); }
 .tb-filters { display: flex; gap: var(--space-2); margin-bottom: var(--space-4); overflow-x: auto; padding-bottom: var(--space-1); scrollbar-width: none; }
 .tb-filters::-webkit-scrollbar { display: none; }
-.tb-filters .chip { white-space: nowrap; }
+.tb-filters .chip {
+  white-space: nowrap; display: inline-flex; align-items: center; gap: .35rem;
+  transition: transform var(--duration-fast) var(--ease-out), background-color var(--duration-fast), border-color var(--duration-fast);
+}
+.tb-filters .chip:active { transform: scale(.96); }
+.tb-filters .chip:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
+.tb-filter-icon { font-size: 1em; flex-shrink: 0; }
 
 /* ── Dark mode ── */
 .dark .tb-item { background: var(--bg-alt); border-color: var(--line); }
 .dark .tb-item:hover { background: color-mix(in srgb, var(--bg-alt) 80%, var(--ink) 5%); }
-.dark .tb-item.unread { background: color-mix(in srgb, var(--primary) 8%, var(--bg-alt)); border-color: var(--primary); }
+.dark .tb-item.unread { background: var(--color-action-surface); border-color: var(--color-action); }
 .dark .tb-item::before { background: linear-gradient(180deg, var(--river-legacy-dark) 0%, var(--amber-500) 52%, var(--clay-400) 100%); }
 .dark .tb-icon-chip { background: rgba(var(--white-rgb),.06); }
-.dark .tb-item.unread .tb-icon-chip { background: color-mix(in srgb, var(--primary) 18%, transparent); }
+.dark .tb-item.unread .tb-icon-chip { background: rgba(var(--color-action-rgb), .18); }
 
-/* ── Mobile ── */
+/* ── Mobile & Reduced Motion ── */
 @media (max-width: 600px) {
   .tb-page { padding: var(--space-4) var(--space-3); }
   .tb-item { padding: var(--space-2) var(--space-3); gap: var(--space-2); }
   .tb-item-link { gap: var(--space-2); }
   .tb-item::before { left: 2px; width: 2px; height: 18px; }
   .tb-item-title { font-size: var(--text-xs); }
+}
+@media (hover: none), (max-width: 860px) {
+  .tb-dismiss { opacity: .65; }
+  .tb-dismiss:active { opacity: 1; transform: scale(.92); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .tb-item,
+  .tb-item-link,
+  .tb-icon-chip,
+  .tb-dismiss,
+  .tb-filters .chip {
+    transition: none !important;
+    transform: none !important;
+  }
 }
 </style>

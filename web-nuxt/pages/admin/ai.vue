@@ -198,17 +198,17 @@
         </button>
         <button type="button" class="ai-action-btn ai-action-primary" :disabled="triageLoading" @click="triage">
           <span v-if="triageLoading" class="ai-action-spinner" aria-hidden="true"></span>
-          <span v-else class="ai-action-icon">&#129302;</span>
+          <span v-else class="ai-action-icon"><IconLine name="bot" /></span>
           <span>{{ triageLoading ? 'Đang phân tích...' : 'Gợi ý ưu tiên' }}</span>
         </button>
         <button type="button" class="ai-action-btn ai-action-secondary" @click="reload">
-          <span class="ai-action-icon">&#128260;</span>
+          <span class="ai-action-icon"><IconLine name="repeat" /></span>
           <span>Reload KB</span>
         </button>
       </div>
       <p v-if="triggerResult" class="ai-trigger-result" :class="{ 'ai-result-error': triggerResultIsError }" role="status" aria-live="polite">{{ triggerResult }}</p>
       <div v-if="triageOut" class="ai-triage-box" :class="{ 'ai-triage-error': triageOutIsError }" role="status" aria-live="polite">
-        <span class="ai-triage-icon" aria-hidden="true">{{ triageOutIsError ? '⚠' : '✓' }}</span>
+        <span class="ai-triage-icon" aria-hidden="true"><IconLine :name="triageOutIsError ? 'alert-triangle' : 'check'" /></span>
         <span class="ai-triage-text">{{ triageOut }}</span>
       </div>
     </div>
@@ -279,7 +279,7 @@ const statusColor = computed(() => {
 })
 const statusBg = computed(() => {
   if (!health.value) return 'rgba(var(--gray-rgb), .1)'
-  if (health.value.status === 'ok') return 'rgba(var(--primary-rgb),.1)'
+  if (health.value.status === 'ok') return 'rgba(var(--color-success-rgb),.1)'
   if (health.value.status === 'degraded') return 'rgba(var(--warning-rgb),.1)'
   return 'rgba(var(--danger-rgb),.1)'
 })
@@ -411,8 +411,7 @@ onMounted(() => { fetchHealth(); fetchCost() })
   margin-bottom: var(--space-6);
   position: relative;
   background: var(--card, var(--white));
-  border: .5px solid var(--line);
-  border-left: 4px solid var(--primary);
+  border: 1px solid var(--line);
   border-radius: 14px;
   padding: var(--space-5);
   box-shadow: 0 1px 3px rgba(var(--black-rgb),.04);
@@ -432,7 +431,7 @@ onMounted(() => { fetchHealth(); fetchCost() })
   align-items: center; justify-content: center; pointer-events: none;
 }
 .ai-ring-val { font-size: .95rem; font-weight: 800; line-height: 1.2; }
-.ai-ring-lbl { font-size: .58rem; color: var(--muted); text-transform: uppercase; letter-spacing: .5px; }
+.ai-ring-lbl { font-size: var(--text-2xs); color: var(--muted); text-transform: uppercase; letter-spacing: .5px; }
 .ai-metrics-col { display: flex; gap: var(--space-3); flex-wrap: wrap; }
 
 /* ── Data quality progress bar ── */
@@ -470,19 +469,18 @@ onMounted(() => { fetchHealth(); fetchCost() })
 .ai-metric:hover { transform: translateY(-1px); }
 .ai-metric-val { font-size: 1.2rem; font-weight: 800; line-height: 1.2; }
 .ai-metric-val small { font-size: .7rem; font-weight: 500; opacity: .6; }
-.ai-metric-lbl { font-size: .68rem; color: var(--muted); text-transform: uppercase; letter-spacing: .5px; }
+.ai-metric-lbl { font-size: var(--text-2xs); color: var(--muted); text-transform: uppercase; letter-spacing: .5px; }
 .ai-rt-dot {
   display: inline-block; width: 7px; height: 7px; border-radius: 50%;
   margin-right: 6px; vertical-align: middle;
 }
 .ai-near-cap {
-  border-color: var(--warning); background: rgba(var(--warning-rgb),.04);
-  border-left-width: 4px; border-left-style: dashed;
-  animation: ai-near-cap-pulse 2s var(--ease-in-out) infinite;
+  border: 1px solid var(--warning); background: color-mix(in srgb, var(--warning) 8%, var(--card, var(--white)));
+  animation: ai-near-cap-pulse 2.5s var(--ease-out-expo) infinite alternate;
 }
 @keyframes ai-near-cap-pulse {
-  0%, 100% { border-left-color: var(--warning); }
-  50% { border-left-color: transparent; }
+  from { opacity: 1; }
+  to { opacity: .75; }
 }
 
 /* ── Subsystems grid ── */
@@ -497,7 +495,7 @@ onMounted(() => { fetchHealth(); fetchCost() })
 .ai-subsys-dot {
   width: 6px; height: 6px; border-radius: 50%;
 }
-.ai-subsys-on { background: rgba(var(--primary-rgb),.06); color: var(--secondary); }
+.ai-subsys-on { background: rgba(var(--color-success-rgb),.06); color: var(--success); }
 .ai-subsys-on .ai-subsys-dot { background: var(--secondary); animation: ai-sub-pulse 2.5s var(--ease-in-out) infinite; }
 .ai-subsys-off { background: rgba(var(--danger-rgb),.06); color: var(--error); }
 .ai-subsys-off .ai-subsys-dot { background: var(--error); opacity: .5; }
@@ -516,20 +514,20 @@ onMounted(() => { fetchHealth(); fetchCost() })
   cursor: pointer; font-size: .82rem; font-weight: 500; color: var(--ink);
   transition: transform .3s var(--ease-soft), box-shadow .3s, border-color .3s, background .3s;
 }
-.ai-action-btn:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(var(--black-rgb),.06); border-color: var(--primary); }
+.ai-action-btn:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(var(--black-rgb),.06); border-color: var(--color-action); }
 .ai-action-btn:active:not(:disabled) { transform: scale(.97); }
-.ai-action-btn:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+.ai-action-btn:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
 .ai-action-btn:disabled { opacity: var(--opacity-disabled); cursor: not-allowed; }
 .ai-action-icon { font-size: 1.4rem; }
 
 /* Primary actions — stronger visual weight */
 .ai-action-primary {
-  background: var(--primary); border-color: var(--primary);
-  color: var(--on-primary); font-weight: 600;
+  background: var(--color-action); border-color: var(--color-action);
+  color: var(--text-on-dark); font-weight: 600;
 }
 .ai-action-primary:hover:not(:disabled) {
-  transform: translateY(-3px); box-shadow: 0 6px 20px rgba(var(--primary-rgb),.28);
-  border-color: var(--primary);
+  transform: translateY(-3px); box-shadow: 0 6px 20px rgba(var(--color-action-rgb),.28);
+  border-color: var(--color-action-hover);
 }
 /* Secondary action — outline style */
 .ai-action-secondary { background: var(--bg); }
@@ -547,7 +545,7 @@ onMounted(() => { fetchHealth(); fetchCost() })
 .ai-trigger-result {
   margin-top: var(--space-3); padding: var(--space-3) var(--space-4);
   border-radius: 10px; font-size: .85rem;
-  background: rgba(var(--primary-rgb),.06); border: .5px solid rgba(var(--primary-rgb),.15);
+  background: rgba(var(--color-action-rgb),.06); border: .5px solid rgba(var(--color-action-rgb),.15);
   color: var(--secondary);
 }
 .ai-trigger-result.ai-result-error {
@@ -556,14 +554,14 @@ onMounted(() => { fetchHealth(); fetchCost() })
 .ai-triage-box {
   display: flex; align-items: flex-start; gap: var(--space-2);
   margin-top: var(--space-3); padding: var(--space-4);
-  border: .5px solid rgba(var(--primary-rgb),.2); border-left: 3px solid var(--secondary); border-radius: 12px;
+  border: 1px solid color-mix(in srgb, var(--secondary) 30%, var(--line)); border-radius: 12px;
   font-size: .85rem; line-height: 1.6;
-  background: rgba(var(--primary-rgb),.05);
+  background: rgba(var(--color-action-rgb),.05);
 }
 .ai-triage-box .ai-triage-text { white-space: pre-wrap; flex: 1; min-width: 0; }
 .ai-triage-icon { font-weight: 800; color: var(--secondary); flex-shrink: 0; line-height: 1.6; }
 .ai-triage-box.ai-triage-error {
-  background: rgba(var(--danger-rgb),.08); border-color: var(--error); border-left-color: var(--error);
+  background: rgba(var(--danger-rgb),.08); border-color: var(--error);
 }
 .ai-triage-box.ai-triage-error .ai-triage-icon { color: var(--error); }
 
@@ -578,17 +576,17 @@ onMounted(() => { fetchHealth(); fetchCost() })
 .ai-cost-note strong { color: var(--ink); }
 
 /* ── Dark mode ── */
-.dark .ai-section { background: var(--card); border-color: rgba(var(--white-rgb),.06); border-left-color: var(--primary); box-shadow: 0 1px 3px rgba(var(--black-rgb),.3); }
+.dark .ai-section { background: var(--card); border-color: rgba(var(--white-rgb),.06); border-left-color: var(--color-brand); box-shadow: 0 1px 3px rgba(var(--black-rgb),.3); }
 .dark .ai-dq-track { background: rgba(var(--white-rgb),.06); }
 .dark .ai-metric { background: var(--bg); border-color: rgba(var(--white-rgb),.08); }
-.dark .ai-subsys-on { background: rgba(var(--primary-rgb),.1); }
+.dark .ai-subsys-on { background: rgba(var(--color-success-rgb),.1); }
 .dark .ai-subsys-off { background: rgba(var(--danger-rgb),.1); }
 .dark .ai-action-secondary { background: var(--bg); border-color: rgba(var(--white-rgb),.08); color: var(--ink); }
 .dark .ai-action-btn:hover:not(:disabled) { box-shadow: 0 4px 12px rgba(var(--black-rgb),.3); }
 .dark .ai-action-primary { color: var(--ink); }
-.dark .ai-triage-box { background: rgba(var(--primary-rgb),.1); border-color: rgba(var(--primary-rgb),.3); }
+.dark .ai-triage-box { background: rgba(var(--color-action-rgb),.1); border-color: rgba(var(--color-action-rgb),.3); }
 .dark .ai-triage-box.ai-triage-error { background: rgba(var(--danger-rgb),.12); border-color: var(--error); border-left-color: var(--error); }
-.dark .ai-trigger-result { background: rgba(var(--primary-rgb),.1); border-color: rgba(var(--primary-rgb),.2); }
+.dark .ai-trigger-result { background: rgba(var(--color-action-rgb),.1); border-color: rgba(var(--color-action-rgb),.2); }
 .dark .ai-trigger-result.ai-result-error { background: rgba(var(--danger-rgb),.12); border-color: var(--error); }
 .dark .ai-cost-note { background: rgba(var(--warning-rgb),.06); border-color: rgba(var(--warning-rgb),.25); }
 

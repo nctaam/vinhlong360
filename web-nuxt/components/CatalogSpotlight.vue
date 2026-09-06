@@ -19,7 +19,9 @@
           <span v-if="relCount >= 3" class="cspot-badge cspot-badge-pop">{{ relCount }} liên kết</span>
         </div>
         <p v-if="pick.summary" class="cspot-sum">{{ pick.summary }}</p>
-        <NuxtLink :to="entityPath(pick.id)" class="btn btn-primary cspot-cta">Đọc câu chuyện →</NuxtLink>
+        <NuxtLink :to="entityPath(pick.id)" class="btn btn-primary cspot-cta">
+          Đọc câu chuyện <IconLine name="arrow-right" aria-hidden="true" />
+        </NuxtLink>
       </div>
     </div>
   </section>
@@ -126,6 +128,22 @@ const relCount = computed(() => pick.value?.relationship_total || 0)
 .dark .cspot-badge-peak { color: var(--clay-400); }
 .dark .cspot-badge-year { color: var(--catalog-legacy-rule-river-dark); }
 .dark .cspot-badge-pop { color: var(--amber-500); }
-.cspot-cta { align-self: flex-start; margin-top: var(--space-2); }
-@media (prefers-reduced-motion: reduce) { .cspot-visual::before { animation: none; } }
+.cspot-cta {
+  align-self: flex-start;
+  margin-top: var(--space-2);
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  transition: background var(--duration-fast) var(--ease-out), transform var(--duration-fast) var(--ease-out-expo), box-shadow var(--duration-fast) var(--ease-out-expo);
+}
+.cspot-cta:hover :deep(.line-icon) {
+  transform: translateX(2px);
+}
+.cspot-cta :deep(.line-icon) {
+  transition: transform var(--duration-fast) var(--ease-out-expo);
+}
+@media (prefers-reduced-motion: reduce) {
+  .cspot-visual::before { animation: none; }
+  .cspot-cta :deep(.line-icon) { transform: none !important; }
+}
 </style>

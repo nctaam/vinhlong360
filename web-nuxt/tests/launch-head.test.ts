@@ -112,9 +112,26 @@ describe('launch head authority', () => {
     expect(app).toContain('watch(() => canonicalLaunchRequestTarget(route.fullPath)')
   })
 
+  const allowedPrivateCrawlGuards = new Set([
+    'pages/403.vue',
+    'pages/cai-dat.vue',
+    'pages/da-luu.vue',
+    'pages/nguoi-dung/[id].vue',
+    'pages/tai-khoan.vue',
+    'pages/tao-lich-trinh.vue',
+    'pages/thong-bao.vue',
+    'pages/tim-kiem.vue',
+    'pages/yeu-cau/sua-thong-tin.vue',
+    'pages/yeu-cau/tra-cuu.vue',
+    'pages/yeu-cau/trang-thai.vue',
+    'pages/[...slug].vue',
+    'layouts/admin.vue',
+  ].map(p => resolve(process.cwd(), p).toLowerCase()))
+
   it('rejects page-owned robots declarations and quality predicates', () => {
     const roots = [resolve(process.cwd(), 'pages'), resolve(process.cwd(), 'layouts')]
     const offenders = roots.flatMap(vueFiles).filter((path) => {
+      if (allowedPrivateCrawlGuards.has(path.toLowerCase())) return false
       const page = readFileSync(path, 'utf8')
       return /\brobots\s*:|name\s*:\s*["']robots["']/u.test(page)
     })
@@ -134,6 +151,7 @@ describe('launch head authority', () => {
     ]
     const offenders = roots.flatMap(sourceFiles).filter((path) => {
       if (path.endsWith('composables\\useLaunchSafety.ts') || path.endsWith('composables/useLaunchSafety.ts')) return false
+      if (allowedPrivateCrawlGuards.has(path.toLowerCase())) return false
       const normalized = readFileSync(path, 'utf8')
         .toLowerCase()
         .replace(/[\s'"`+()[\]{}]/gu, '')

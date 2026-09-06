@@ -429,30 +429,27 @@ function accuracyLabel(value: string) {
 .personalize-sheet { gap: var(--space-4); padding-top: var(--space-6); }
 .personalize-kicker { display: flex; align-items: center; justify-content: space-between; gap: var(--space-3); padding-right: 2.9rem; }
 .personalize-eyebrow { color: var(--muted); font-size: var(--text-xs); font-weight: var(--weight-semibold); letter-spacing: .08em; text-transform: uppercase; }
-.location-source-chip { display: inline-flex; align-items: center; gap: var(--space-2); min-height: 32px; padding: 0 var(--space-3); border: .5px solid var(--line); border-radius: var(--radius-full); color: var(--primary-fg); background: var(--bg-warm); font-size: var(--text-xs); white-space: nowrap; }
+.location-source-chip { display: inline-flex; align-items: center; gap: var(--space-2); min-height: 32px; padding: 0 var(--space-3); border: .5px solid var(--line); border-radius: var(--radius-full); color: var(--color-action); background: var(--bg-warm); font-size: var(--text-xs); white-space: nowrap; }
 .location-source-chip[data-source="default"] { color: var(--muted); }
 .setup-rail { display: flex; align-items: center; justify-content: space-between; gap: var(--space-2); padding: var(--space-2) 0; border-top: .5px solid var(--line); border-bottom: .5px solid var(--line); }
 .setup-rail-item { display: inline-flex; align-items: center; gap: var(--space-2); color: var(--muted); font-size: var(--text-xs); font-weight: var(--weight-semibold); white-space: nowrap; }
 .setup-rail-item.active, .setup-rail-item.complete { color: var(--ink); }
 .setup-rail-mark { display: inline-flex; align-items: center; justify-content: center; width: 24px; height: 24px; border: 1px solid var(--line); border-radius: var(--radius-full); font-size: var(--text-xs); }
-.setup-rail-item.active .setup-rail-mark { border-color: var(--primary-fg); color: var(--primary-fg); box-shadow: 0 0 0 3px rgba(var(--primary-rgb), .12); }
-/* --primary-fg là token CHỮ, dùng làm NỀN thì chữ trắng chỉ đạt 2.69:1 ở chế độ
-   tối (cùng lỗi đã sửa ở huy hiệu ngày). Dùng cặp đúng của hệ: nền --primary,
-   chữ --on-primary — 6.38 ở chế độ tối, 6.89 ở chế độ sáng. */
-.setup-rail-item.complete .setup-rail-mark { border-color: var(--primary); background: var(--primary); color: var(--on-primary); }
+.setup-rail-item.active .setup-rail-mark { border-color: var(--color-action); color: var(--color-action); box-shadow: 0 0 0 3px rgba(var(--color-action-rgb), .18); }
+.setup-rail-item.complete .setup-rail-mark { border-color: var(--color-action); background: var(--color-action); color: var(--color-on-action); }
 .personalize-header { margin: 0; }
-.sheet-icon-chip { display: inline-flex; align-items: center; justify-content: center; width: 48px; height: 48px; margin: 0 auto var(--space-3); border-radius: var(--radius-full); color: var(--primary-fg); background: var(--bg-warm); }
+.sheet-icon-chip { display: inline-flex; align-items: center; justify-content: center; width: 48px; height: 48px; margin: 0 auto var(--space-3); border-radius: var(--radius-full); color: var(--color-action); background: var(--bg-warm); }
 .personalize-header h2 { margin-bottom: var(--space-2); font-family: var(--font-editorial); font-weight: 600; letter-spacing: -.01em; }
 .personalize-body { min-height: 0; }
 .setup-option-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-2); }
 .setup-option { display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: var(--space-2); min-height: 56px; padding: var(--space-3); border: .5px solid var(--line); border-radius: var(--radius-surface); color: var(--ink); background: var(--bg-warm); cursor: pointer; text-align: left; font: inherit; font-size: var(--text-sm); transition: background .2s var(--ease-out), border-color .2s var(--ease-out), box-shadow .2s var(--ease-out); }
-.setup-option:hover { background: var(--bg-alt); border-color: var(--primary-fg); }
-.setup-option.selected { border-color: var(--primary-fg); background: color-mix(in srgb, var(--primary-fg) 10%, var(--bg-warm)); box-shadow: inset 0 0 0 1px var(--primary-fg); }
-.setup-option .line-icon { color: var(--primary-fg); font-size: 1.1rem; }
+.setup-option:hover { background: var(--bg-alt); border-color: var(--color-action); }
+.setup-option.selected { border-color: var(--color-action); background: var(--color-action-surface); box-shadow: inset 0 0 0 1px var(--color-action); }
+.setup-option .line-icon { color: var(--color-action); font-size: 1.1rem; }
 .setup-note, .setup-status { display: flex; align-items: flex-start; gap: var(--space-2); margin: var(--space-3) 0 0; color: var(--muted); font-size: var(--text-xs); line-height: var(--leading-relaxed); }
-.setup-note .line-icon, .setup-status .line-icon { color: var(--primary-fg); margin-top: .1rem; }
+.setup-note .line-icon, .setup-status .line-icon { color: var(--color-action); margin-top: .1rem; }
 .location-prompt { display: flex; align-items: flex-start; gap: var(--space-3); padding: var(--space-4); border: .5px solid var(--line); border-radius: var(--radius-surface); background: var(--bg-warm); }
-.location-prompt-icon { display: inline-flex; align-items: center; justify-content: center; width: 40px; height: 40px; flex: 0 0 auto; border-radius: var(--radius-control); color: var(--primary-fg); background: var(--bg-alt); }
+.location-prompt-icon { display: inline-flex; align-items: center; justify-content: center; width: 40px; height: 40px; flex: 0 0 auto; border-radius: var(--radius-control); color: var(--color-action); background: var(--bg-alt); }
 .location-prompt strong { display: block; margin-bottom: 2px; color: var(--ink); font-size: var(--text-sm); }
 .location-prompt p { margin: 0; color: var(--muted); font-size: var(--text-xs); line-height: var(--leading-relaxed); }
 .setup-error { margin: 0; color: var(--error); font-size: var(--text-xs); }
@@ -462,7 +459,7 @@ function accuracyLabel(value: string) {
 .personalize-actions .next-icon { transform: rotate(-90deg); }
 @media (max-width: 420px) {
   .personalize-sheet { padding-left: var(--space-4); padding-right: var(--space-4); }
-  .setup-rail-item { font-size: .68rem; }
+  .setup-rail-item { font-size: var(--text-2xs); }
   .setup-rail-item span:last-child { display: none; }
   .personalize-actions { flex-direction: column-reverse; align-items: stretch; }
   .personalize-actions .btn { width: 100%; justify-content: center; }

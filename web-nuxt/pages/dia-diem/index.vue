@@ -1,7 +1,7 @@
 <template>
-  <section class="page dd-page">
+  <section class="page dd-page" data-color-system="tri-region-v1">
     <span class="almanac-progress" aria-hidden="true"><span class="almanac-progress-fill" :style="{ transform: `scaleY(${scrollProgress})` }"></span></span>
-    <Breadcrumb :items="[{ label: 'Trang chủ', to: '/' }, { label: 'Địa điểm' }]" />
+    <Breadcrumb :items="[{ label: 'Trang chủ', to: '/' }, { label: 'Địa điểm' }]" :json-ld="true" />
 
     <!-- Almanac hero — bến đò signboard: horizon wash + hand-drawn route line -->
     <section class="catalog-hero cat-directory almanac-hero" aria-label="Danh bạ địa điểm">
@@ -10,7 +10,7 @@
         <span class="catalog-hero-icon almanac-compass" aria-hidden="true" v-html="COMPASS_SVG"></span>
         <div>
           <h1>Danh bạ địa điểm</h1>
-          <p>1.532 điểm đến được ban biên tập tổng hợp, từ cù lao giữa sông đến quầy hàng trong hẻm nhỏ — Vĩnh Long, Bến Tre, Trà Vinh, không sót nơi nào.</p>
+          <p>1.532 điểm đến được ban biên tập tổng hợp, từ cù lao giữa sông đến quầy hàng trong hẻm nhỏ khắp tỉnh Vĩnh Long hợp nhất (gồm các vùng Bến Tre, Trà Vinh trước 7-2025), không sót nơi nào.</p>
         </div>
       </div>
       <div v-if="total" class="catalog-stats almanac-stats">
@@ -44,12 +44,15 @@
         <button type="button"
           v-for="(meta, key) in AREA_META" :key="key"
           :class="['province-stamp', { active: areaFilter === key }]"
-          :style="{ '--stamp-rgb': STAMP_RGB[key as string] || 'var(--primary-rgb)' }"
+          :style="{ '--stamp-rgb': STAMP_RGB[key as string] || 'var(--color-brand-rgb)' }"
           :aria-pressed="areaFilter === key"
           @click="pickArea(key as string)"
         >
           <span class="stamp-mark" aria-hidden="true"><IconLine :name="meta.icon" /></span>
-          <span class="stamp-name">{{ meta.name }}</span>
+          <div class="stamp-title-row">
+            <span class="stamp-name">{{ meta.name }}</span>
+            <span v-if="meta.distance" class="stamp-distance">{{ meta.distance }}</span>
+          </div>
           <span class="stamp-caption">{{ meta.blurb }}</span>
         </button>
       </div>
@@ -67,7 +70,7 @@
           :aria-pressed="typeFilter === t.value"
           @click="pickType(t.value)"
         >
-          <span class="dd-type-icon">{{ t.emoji }}</span>
+          <span class="dd-type-icon"><IconLine :name="t.icon" /></span>
           <span class="dd-type-label">{{ t.label }}</span>
         </button>
       </div>
@@ -78,11 +81,11 @@
     <section v-once class="page-article reveal">
       <div class="sediment-head"><h2>Khám phá toàn bộ điểm đến Vĩnh Long</h2></div>
       <div class="editorial-body drop-cap">
-        <p>Danh bạ địa điểm tổng hợp mọi điểm đến, trải nghiệm, sản phẩm, lưu trú và di tích trên toàn vùng Vĩnh Long, Bến Tre và Trà Vinh. Mỗi mục đều có thông tin thực tế: địa chỉ, số điện thoại, giờ mở cửa, giá tham khảo và mùa vụ phù hợp.</p>
+        <p>Danh bạ địa điểm tổng hợp mọi điểm đến, trải nghiệm, sản phẩm, lưu trú và di tích trên toàn tỉnh Vĩnh Long hợp nhất (3 vùng trước 7-2025). Mỗi mục đều có thông tin thực tế: địa chỉ, số điện thoại, giờ mở cửa, giá tham khảo và mùa vụ phù hợp.</p>
       </div>
 
       <CatalogInterstitial
-        fact="Vĩnh Long, Bến Tre và Trà Vinh có hơn 1.500 điểm đến, đặc sản và dịch vụ — từ cù lao xanh mát đến làng nghề trăm năm, tất cả được xác minh và cập nhật liên tục."
+        fact="Tỉnh Vĩnh Long hợp nhất (3 vùng trước 7-2025) có hơn 1.500 điểm đến, đặc sản và dịch vụ — từ cù lao xanh mát đến làng nghề trăm năm, tất cả được xác minh và cập nhật liên tục."
         icon-name="chart"
         variant="warm"
         :links="[{ to: '/ban-do', label: 'Xem bản đồ' }, { to: '/du-lich', label: 'Du lịch sinh thái' }]"
@@ -96,8 +99,25 @@
       <div class="dd-search">
         <svg class="dd-search-ic" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
         <input v-model="qInput" type="search" enterkeyhint="search" class="dd-search-input" placeholder="Tìm địa điểm, đặc sản, làng nghề…" aria-label="Tìm địa điểm" @keyup.enter="applyQuery" />
-        <button v-if="qApplied" type="button" class="dd-search-clear" aria-label="Xoá tìm" @click="clearQuery">&times;</button>
+        <button v-if="qApplied" type="button" class="dd-search-clear" aria-label="Xoá tìm" @click="clearQuery"><IconLine name="x" /></button>
         <button type="button" class="btn btn-primary btn-sm" @click="applyQuery">Tìm</button>
+      </div>
+
+      <div v-if="hasActiveFilters" class="dd-active-filters" role="region" aria-label="Bộ lọc đang áp dụng">
+        <span class="dd-af-label">Đang lọc:</span>
+        <button v-if="areaFilter !== 'all'" type="button" class="dd-af-chip" :aria-label="`Bỏ lọc khu vực ${activeAreaName}`" @click="pickArea(areaFilter)">
+          <span>{{ activeAreaName }}</span>
+          <IconLine name="x" aria-hidden="true" />
+        </button>
+        <button v-if="typeFilter !== 'all'" type="button" class="dd-af-chip" :aria-label="`Bỏ lọc loại hình ${activeTypeLabel}`" @click="pickType(typeFilter)">
+          <span>{{ activeTypeLabel }}</span>
+          <IconLine name="x" aria-hidden="true" />
+        </button>
+        <button v-if="qApplied" type="button" class="dd-af-chip" :aria-label="`Bỏ tìm kiếm ${qApplied}`" @click="clearQuery">
+          <span>“{{ qApplied }}”</span>
+          <IconLine name="x" aria-hidden="true" />
+        </button>
+        <button type="button" class="dd-af-clear" @click="resetAll">Xóa tất cả</button>
       </div>
     </div>
 
@@ -143,6 +163,7 @@
       <p v-if="loadMoreError" class="dd-load-error" role="alert">Không tải thêm được. <button type="button" class="btn-text" @click="loadMore">Thử lại</button></p>
       <button v-if="hasMore" type="button" class="btn btn-ghost dd-more" :disabled="loadingMore" @click="loadMore">
         {{ loadingMore ? 'Đang tải…' : loadMoreLabel }}
+        <IconLine v-if="!loadingMore" name="arrow-down" class="dd-more-icon" aria-hidden="true" />
       </button>
     </template>
     <!-- declutter-3 T14 (A3c): JourneyBar page-level — trang thuộc luồng lập-kế-hoạch -->
@@ -160,7 +181,7 @@ const COMPASS_SVG = `<svg viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg"
 
 // Province-stamp tint per area — reuses existing brand RGB tokens (no new colours).
 const STAMP_RGB: Record<string, string> = {
-  'vinh-long': 'var(--primary-rgb)',
+  'vinh-long': 'var(--color-brand-rgb)',
   'ben-tre': 'var(--secondary-rgb)',
   'tra-vinh': 'var(--river-rgb)',
   'lien-vung': 'var(--accent-rgb)',
@@ -185,7 +206,12 @@ const areaFilter = ref<string>(typeof route.query.area === 'string' ? route.quer
 const qApplied = ref<string>(typeof route.query.q === 'string' ? route.query.q : '')
 const qInput = ref<string>(qApplied.value)
 
-const typeChips = CARD_TYPES.map(t => ({ value: t, emoji: TYPE_META[t]?.emoji || '📍', label: TYPE_META[t]?.label || t }))
+const typeChips = CARD_TYPES.map(t => ({
+  value: t,
+  emoji: TYPE_META[t]?.emoji || '📍',
+  icon: TYPE_META[t]?.icon || 'pin',
+  label: TYPE_META[t]?.label || t,
+}))
 
 function buildUrl(offset: number) {
   const p = new URLSearchParams({ limit: String(PAGE), offset: String(offset) })
@@ -252,6 +278,7 @@ watch(qInput, (val) => {
 // data proves exists: other areas when a type+area combo is empty).
 const activeTypeLabel = computed(() => typeFilter.value === 'all' ? '' : (TYPE_META[typeFilter.value]?.label || ''))
 const activeAreaName = computed(() => areaFilter.value === 'all' ? '' : (AREA_META[areaFilter.value]?.name || ''))
+const hasActiveFilters = computed(() => typeFilter.value !== 'all' || areaFilter.value !== 'all' || !!qApplied.value)
 const emptyTitle = 'Chưa có trong danh bạ'
 const emptyMessage = computed(() => {
   if (activeTypeLabel.value && activeAreaName.value) {
@@ -289,32 +316,40 @@ const loadMoreLabel = computed(() => {
   if (remaining <= 0) return ''
   const last = items.value[items.value.length - 1]
   const teaseName = last?.placeName || last?.place_name || last?.name
-  if (teaseName) return `Xem thêm — còn ${remaining} nơi nữa, kể cả gần ${teaseName} →`
+  if (teaseName) return `Xem thêm — còn ${remaining} nơi nữa, kể cả gần ${teaseName}`
   return `Xem thêm (còn ${remaining})`
 })
 
 useSeoMeta({
   title: () => activeTypeLabel.value
     ? `${activeTypeLabel.value} — Danh bạ địa điểm — vinhlong360`
-    : 'Danh bạ địa điểm — Vĩnh Long, Bến Tre, Trà Vinh — vinhlong360',
-  description: () => 'Khám phá toàn bộ điểm đến, đặc sản OCOP, làng nghề, lưu trú và di tích của Vĩnh Long, Bến Tre, Trà Vinh. Lọc theo loại hình và khu vực.',
+    : 'Danh bạ địa điểm — Tỉnh Vĩnh Long hợp nhất (3 vùng trước 7-2025) — vinhlong360',
+  description: () => 'Khám phá toàn bộ điểm đến, đặc sản OCOP, làng nghề, lưu trú và di tích của tỉnh Vĩnh Long hợp nhất (3 vùng trước 7-2025). Lọc theo loại hình và khu vực.',
   ogTitle: 'Danh bạ địa điểm — vinhlong360',
-  ogDescription: 'Điểm đến, đặc sản, làng nghề, lưu trú và di tích Vĩnh Long — tìm theo loại và khu vực.',
+  ogDescription: 'Điểm đến, đặc sản, làng nghề, lưu trú và di tích tỉnh Vĩnh Long hợp nhất — tìm theo loại và khu vực.',
+  ogUrl: canonicalUrl('/dia-diem'),
+  twitterCard: 'summary_large_image',
 })
 
-// JSON-LD: ItemList structured data for search engines
-const listJsonLd = computed(() => {
-  return itemListJsonLd(
-    'Danh bạ địa điểm — vinhlong360',
-    'Tất cả điểm đến, đặc sản, làng nghề, lưu trú và di tích của Vĩnh Long, Bến Tre, Trà Vinh.',
-    '/dia-diem',
-    firstPage.value,
-  )
-})
-useHead({
+// Schema.org unified @graph: buildCatalogDirectorySchemaGraph
+const directorySchema = computed(() => buildCatalogDirectorySchemaGraph({
+  total: total.value,
+  items: firstPage.value,
+  activeType: typeFilter.value,
+  activeArea: areaFilter.value,
+}))
+
+useHead(() => ({
   link: [{ rel: 'canonical', href: canonicalUrl('/dia-diem') }],
-  script: [{ type: 'application/ld+json', innerHTML: () => JSON.stringify(listJsonLd.value) }],
-})
+  script: [
+    {
+      type: 'application/ld+json',
+      innerHTML: safeJsonLd({
+        ...directorySchema.value,
+      }),
+    },
+  ],
+}))
 </script>
 
 <style scoped>
@@ -327,28 +362,33 @@ useHead({
   cursor: pointer; transition: border-color .2s, box-shadow .2s;
   min-width: 100px; flex-shrink: 0;
 }
-.dd-type-card:hover { border-color: var(--primary); box-shadow: 0 2px 8px rgba(var(--black-rgb),.06); }
-.dd-type-card:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
-.dd-type-card.active { border-color: var(--primary); background: rgba(var(--primary-rgb), .06); }
+.dd-type-card:hover { border-color: var(--color-action); box-shadow: 0 2px 8px rgba(var(--black-rgb),.06); }
+.dd-type-card:active { transform: scale(.96); transition-duration: .08s; }
+.dd-type-card:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
+.dd-type-card.active { border-color: var(--color-action); background: rgba(var(--color-action-rgb), .06); }
 .dd-type-icon { font-size: 1.6rem; }
 .dd-type-label { font-size: var(--text-sm); font-weight: var(--weight-semibold); color: var(--ink); white-space: nowrap; }
 
 .dd-search { display: flex; align-items: center; gap: var(--space-2); padding: .35rem .5rem .35rem .75rem; background: var(--card); border: 1px solid var(--border); border-radius: var(--radius-full); margin-bottom: var(--space-3); }
-.dd-search:focus-within { border-color: var(--primary); }
+.dd-search:focus-within { border-color: var(--color-action); }
 .dd-search-ic { color: var(--muted); flex-shrink: 0; }
 .dd-search-input { flex: 1; min-width: 0; border: none; background: none; outline: none; color: var(--ink); font-size: var(--text-sm); padding: .4rem 0; }
-.dd-search-input:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+.dd-search-input:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
 .dd-search-input::placeholder { color: var(--muted); }
-.dd-search-clear { border: none; background: none; color: var(--muted); font-size: 1.3rem; line-height: 1; cursor: pointer; padding: 0 .25rem; }
+.dd-search-clear { border: none; background: none; color: var(--muted); font-size: 1rem; line-height: 1; cursor: pointer; padding: 0 .25rem; min-width: 44px; min-height: 44px; display: inline-flex; align-items: center; justify-content: center; }
 .dd-search-clear:hover { color: var(--ink); }
 
 .dd-count { font-size: var(--text-sm); color: var(--muted); margin: 0 0 var(--space-4); }
 .dd-count strong { color: var(--ink); }
 
-.dd-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: var(--space-4); }
-.dd-more { display: block; margin: var(--space-5) auto 0; }
+.dd-more { display: inline-flex; align-items: center; justify-content: center; margin: var(--space-5) auto 0; gap: var(--space-1); }
+.dd-more-icon { width: 16px; height: 16px; transition: transform .2s var(--ease-out-expo); }
+.dd-more:hover .dd-more-icon { transform: translateY(2px); }
+@media (prefers-reduced-motion: reduce) {
+  .dd-more:hover .dd-more-icon { transform: none; }
+}
 .dd-load-error { text-align: center; color: var(--danger); font-size: var(--text-sm); margin: var(--space-3) 0; }
-.dd-load-error .btn-text { color: var(--primary-fg); font-weight: var(--weight-semibold); background: none; border: none; cursor: pointer; text-decoration: underline; }
+.dd-load-error .btn-text { color: var(--color-action); font-weight: var(--weight-semibold); background: none; border: none; cursor: pointer; text-decoration: underline; }
 
 /* ============================================================
    ALMANAC HERO — bến đò signboard: horizon wash + hand-drawn
@@ -368,7 +408,7 @@ useHead({
 }
 .almanac-compass { color: var(--clay-600); display: inline-flex; }
 .almanac-compass :deep(svg) { width: 2.2rem; height: 2.2rem; }
-.dark .almanac-compass { color: var(--primary-fg); }
+.dark .almanac-compass { color: var(--color-brand); }
 @media (max-width: 640px) { .almanac-compass :deep(svg) { width: 1.7rem; height: 1.7rem; } }
 
 /* Stat hover-gloss — a second poetic line reveals under the count on hover/focus,
@@ -377,14 +417,14 @@ useHead({
 .almanac-gloss {
   position: absolute; left: var(--space-3); top: 100%; margin-top: 2px;
   font-family: var(--font-editorial); font-style: italic; font-size: var(--text-xs);
-  color: var(--primary-fg); white-space: nowrap;
+  color: var(--color-brand); white-space: nowrap;
   opacity: 0; transform: translateY(-2px);
   transition: opacity .3s var(--ease-out), transform .3s var(--ease-out);
   pointer-events: none;
 }
 .almanac-stat:hover .almanac-gloss,
 .almanac-stat:focus-visible .almanac-gloss { opacity: 1; transform: translateY(0); }
-.dark .almanac-gloss { color: var(--primary-fg-strong); }
+.dark .almanac-gloss { color: var(--color-brand); }
 @media (prefers-reduced-motion: reduce) {
   .almanac-gloss { transition: opacity .01s linear; transform: none; }
 }
@@ -403,7 +443,7 @@ useHead({
   gap: var(--space-4); margin-bottom: var(--space-2);
 }
 .province-stamp {
-  --stamp-rgb: var(--primary-rgb);
+  --stamp-rgb: var(--color-brand-rgb);
   position: relative; text-align: left; cursor: pointer;
   display: flex; flex-direction: column; gap: var(--space-2);
   padding: var(--space-5) var(--space-4) var(--space-4);
@@ -418,7 +458,7 @@ useHead({
     100% 100%, 0% 100%
   );
   border-radius: 0 0 var(--radius-sheet) var(--radius-sheet);
-  transition: transform .35s var(--ease-spring-gentle), box-shadow .3s var(--ease-out-expo), border-color .2s var(--ease-out);
+  transition: transform .35s var(--ease-out-expo), box-shadow .3s var(--ease-out-expo), border-color .2s var(--ease-out);
   transform: rotate(-1deg);
 }
 .province-stamp:nth-child(2n) { transform: rotate(.6deg); }
@@ -429,7 +469,7 @@ useHead({
   border-color: rgba(var(--stamp-rgb), .4);
 }
 .province-stamp:active { transform: rotate(0deg) scale(.98); transition-duration: .08s; }
-.province-stamp:focus-visible { outline: 2px solid var(--primary); outline-offset: 3px; }
+.province-stamp:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 3px; }
 .province-stamp.active {
   border-color: rgba(var(--stamp-rgb), .5);
   background: linear-gradient(160deg, rgba(var(--stamp-rgb), .14) 0%, var(--card) 55%);
@@ -440,10 +480,26 @@ useHead({
   font-size: 1.4rem; opacity: .9;
 }
 /* IconLine là SVG 1em nên kế thừa đúng 1.4rem ở trên. */
-.stamp-mark .line-icon { font-size: inherit; }
+.stamp-title-row {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-2);
+  padding-right: 2rem;
+  flex-wrap: wrap;
+}
 .stamp-name {
   font-family: var(--font-editorial); font-weight: 600; font-size: var(--text-lg);
-  color: var(--ink); letter-spacing: var(--tracking-tight); padding-right: 2rem;
+  color: var(--ink); letter-spacing: var(--tracking-tight);
+}
+.stamp-distance {
+  font-family: var(--font-sans);
+  font-size: var(--text-2xs, 10px);
+  font-weight: var(--weight-bold);
+  padding: 1px 6px;
+  border-radius: var(--radius-full);
+  background: rgba(var(--stamp-rgb), 0.14);
+  color: var(--ink);
+  letter-spacing: .02em;
 }
 .stamp-caption {
   font-size: var(--text-xs); color: var(--muted); line-height: var(--leading-relaxed);
@@ -453,6 +509,8 @@ useHead({
   .province-stamp, .province-stamp:nth-child(2n), .province-stamp:nth-child(3n) { transform: none; }
   .province-stamp:hover, .province-stamp:focus-visible { transform: none; }
   .province-stamp:active { transform: none; }
+  .dd-type-card:active { transform: none; }
+  .dd-af-chip:active, .dd-af-clear:active { transform: none; }
 }
 @media (max-width: 640px) {
   .province-stamps { grid-template-columns: repeat(2, 1fr); }
@@ -491,6 +549,61 @@ useHead({
 }
 .dd-refine .dd-search { margin-bottom: 0; }
 .dark .dd-refine { background: var(--surface-translucent); border-color: var(--line); }
+
+.dd-active-filters {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin-top: var(--space-2);
+  padding-top: var(--space-2);
+  border-top: .5px solid var(--color-border);
+}
+.dd-af-label {
+  font-size: var(--text-xs);
+  color: var(--color-text-muted);
+  font-weight: var(--weight-medium);
+}
+.dd-af-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  min-height: 32px;
+  padding: var(--space-1) var(--space-2h);
+  border-radius: var(--radius-full);
+  border: 1px solid var(--color-action-border);
+  background: var(--color-action-surface);
+  color: var(--color-action);
+  font-size: var(--text-xs);
+  font-weight: var(--weight-semibold);
+  cursor: pointer;
+  transition: background .2s var(--ease-out), transform .2s var(--ease-out-expo);
+}
+.dd-af-chip:hover {
+  background: var(--color-action-surface-hover);
+}
+.dd-af-chip:active { transform: scale(.95); transition-duration: .08s; }
+.dd-af-chip:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
+.dd-af-clear {
+  margin-left: auto;
+  min-height: 32px;
+  background: none;
+  border: none;
+  color: var(--color-text-muted);
+  font-size: var(--text-xs);
+  font-weight: var(--weight-medium);
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: var(--radius-control);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  transition: color .2s var(--ease-out), transform .2s var(--ease-out-expo);
+}
+.dd-af-clear:hover {
+  color: var(--color-action);
+}
+.dd-af-clear:active { transform: scale(.95); transition-duration: .08s; }
+.dd-af-clear:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
 
 /* ============================================================
    EMPTY-STATE RECOVERY — near-match chips before the generic reset.

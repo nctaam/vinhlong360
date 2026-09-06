@@ -45,7 +45,10 @@
           <button type="button" class="btn btn-primary error-search-btn" @click="goSearch">Tìm</button>
         </div>
         <nav class="error-links" aria-label="Liên kết phổ biến">
-          <NuxtLink v-for="l in popularLinks" :key="l.to" :to="l.to" class="error-link-pill">{{ l.label }}</NuxtLink>
+          <NuxtLink v-for="l in popularLinks" :key="l.to" :to="l.to" class="error-link-pill">
+            <IconLine v-if="l.icon" :name="l.icon" class="error-link-pill__icon" />
+            <span>{{ l.label }}</span>
+          </NuxtLink>
         </nav>
       </div>
 
@@ -65,10 +68,10 @@ const is404 = computed(() => props.error?.statusCode === 404)
 
 const q = ref('')
 const popularLinks = [
-  { label: 'Du lịch', to: '/du-lich' },
-  { label: 'Ẩm thực', to: '/san-pham' },
-  { label: 'Sự kiện', to: '/su-kien' },
-  { label: 'OCOP', to: '/ocop' },
+  { label: 'Du lịch', to: '/du-lich', icon: 'compass' },
+  { label: 'Ẩm thực', to: '/san-pham', icon: 'bowl' },
+  { label: 'Sự kiện', to: '/su-kien', icon: 'calendar' },
+  { label: 'OCOP', to: '/ocop', icon: 'gift' },
 ]
 
 function goSearch() {
@@ -96,7 +99,7 @@ onMounted(() => {
 
 const message = computed(() => {
   const code = props.error?.statusCode
-  if (code === 404) return 'Hmm, trang này có vẻ đã chuyển đi rồi. 🌿 Bạn thử tìm lại hoặc quay về trang chủ nhé!'
+  if (code === 404) return 'Trang bạn tìm kiếm hiện không còn ở địa chỉ này. Bạn thử tìm kiếm lại hoặc quay về trang chủ nhé!'
   if (code === 403) return 'Bạn chưa có quyền vào đây. Liên hệ hỗ trợ nếu cần nha.'
   return 'Có lỗi gì đó trên máy chủ. Chúng tôi đang sửa chữa, bạn thử lại trong tý nhé!'
 })
@@ -112,7 +115,12 @@ function retry() {
   navigateTo(url, { replace: true })
 }
 
-useSeoMeta({ title: `${props.error?.statusCode || 'Lỗi'} — vinhlong360` })
+useSeoMeta({
+  title: `${props.error?.statusCode || 'Lỗi'} — vinhlong360`,
+  robots: 'noindex, nofollow',
+  ogTitle: `${props.error?.statusCode || 'Lỗi'} — vinhlong360`,
+  twitterCard: 'summary_large_image',
+})
 </script>
 
 <style scoped>
@@ -123,7 +131,7 @@ useSeoMeta({ title: `${props.error?.statusCode || 'Lỗi'} — vinhlong360` })
   justify-content: center;
   padding: var(--space-10) var(--space-5);
 }
-.error-content { text-align: center; max-width: 460px; animation: errorIn .6s var(--ease-spring-gentle) both; }
+.error-content { text-align: center; max-width: 460px; animation: errorIn .6s var(--ease-out-expo) both; }
 @keyframes errorIn { from { opacity: 0; transform: translateY(16px) scale(.96); } to { opacity: 1; transform: translateY(0) scale(1); } }
 @keyframes errorPartIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 @keyframes sparkTwinkle { 0%, 100% { opacity: .25; transform: scale(.9); } 50% { opacity: .7; transform: scale(1.05); } }
@@ -142,8 +150,7 @@ useSeoMeta({ title: `${props.error?.statusCode || 'Lỗi'} — vinhlong360` })
   line-height: 1;
   font-weight: var(--weight-extrabold);
   letter-spacing: var(--tracking-tighter);
-  background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
-  -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+  color: var(--color-brand);
   animation: errorPartIn .5s var(--ease-out-expo) .1s both;
 }
 .error-msg {
@@ -172,11 +179,13 @@ useSeoMeta({ title: `${props.error?.statusCode || 'Lỗi'} — vinhlong360` })
   transition: border-color .25s var(--ease-out), box-shadow .3s var(--ease-out-expo);
 }
 .error-search-input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px rgba(var(--accent-rgb), .25); }
+.error-search-input:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 1px; }
 .error-search-btn { flex: 0 0 auto; padding: 0 var(--space-5); min-height: 44px; }
 .error-links { display: flex; flex-wrap: wrap; gap: var(--space-2); justify-content: center; }
 .error-link-pill {
   display: inline-flex;
   align-items: center;
+  gap: var(--space-2);
   min-height: 44px;
   padding: var(--space-2) var(--space-4);
   border: .5px solid var(--line);
@@ -186,11 +195,15 @@ useSeoMeta({ title: `${props.error?.statusCode || 'Lỗi'} — vinhlong360` })
   font-size: var(--text-sm);
   font-weight: var(--weight-semibold);
   text-decoration: none;
-  transition: transform .35s var(--ease-spring-gentle), border-color .3s var(--ease-out), background .3s var(--ease-out), box-shadow .3s var(--ease-out);
+  transition: transform .35s var(--ease-out-expo), border-color .3s var(--ease-out), background .3s var(--ease-out), box-shadow .3s var(--ease-out);
 }
-.error-link-pill:hover { transform: translateY(-1px); border-color: var(--primary); box-shadow: var(--shadow-sm); }
+.error-link-pill__icon {
+  font-size: 1.05em;
+  color: var(--accent);
+}
+.error-link-pill:hover { transform: translateY(-1px); border-color: var(--color-action); box-shadow: var(--shadow-sm); }
 .error-link-pill:active { transform: scale(.96); }
-.error-link-pill:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+.error-link-pill:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
 
 .error-actions {
   display: flex;
@@ -200,18 +213,18 @@ useSeoMeta({ title: `${props.error?.statusCode || 'Lỗi'} — vinhlong360` })
   margin-top: var(--space-6);
   animation: errorPartIn .5s var(--ease-out-expo) .4s both;
 }
-.error-actions .btn { transition: transform .35s var(--ease-spring-gentle), box-shadow .35s var(--ease-out-expo); }
+.error-actions .btn { transition: transform .35s var(--ease-out-expo), box-shadow .35s var(--ease-out-expo); }
 .error-actions .btn:hover { transform: translateY(-1px); box-shadow: var(--shadow-md); }
 .error-actions .btn:active { transform: scale(.95); transition-duration: .08s; }
 
-/* Dark mode: gradient text + SVG legibility */
-.dark .error-code { background: linear-gradient(135deg, var(--primary-light) 0%, var(--accent) 100%); -webkit-background-clip: text; background-clip: text; }
+/* Dark mode: solid primary pigment + SVG legibility */
+.dark .error-code { color: var(--color-brand); }
 .dark .illust-halo { opacity: .9; }
 .dark .illust-face { stroke-opacity: 1; }
 .dark .error-link-pill { background: var(--bg-alt, var(--bg-warm)); border-color: var(--border); }
-.dark .error-link-pill:hover { border-color: var(--primary-fg); }
+.dark .error-link-pill:hover { border-color: var(--color-action); }
 .dark .error-search-input { background: var(--card, var(--bg-alt)); border-color: var(--border); }
-.dark .error-search-input:focus { border-color: var(--primary-fg); box-shadow: 0 0 0 3px rgba(var(--primary-rgb), .25); }
+.dark .error-search-input:focus { border-color: var(--color-action); box-shadow: 0 0 0 3px rgba(var(--color-action-rgb), .25); }
 
 /* Mobile: stack actions + search vertically, generous touch targets */
 @media (max-width: 520px) {

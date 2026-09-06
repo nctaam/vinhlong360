@@ -62,7 +62,7 @@ function onToggle() {
   font-size: var(--text-sm);
   font-weight: var(--weight-semibold);
   transition: background .3s var(--ease-out), color .3s var(--ease-out),
-              border-color .3s var(--ease-out), transform .35s var(--ease-spring-gentle),
+              border-color .3s var(--ease-out), transform .35s var(--ease-out-expo),
               box-shadow .3s var(--ease-out);
 }
 .save-btn:hover {
@@ -73,7 +73,7 @@ function onToggle() {
   box-shadow: var(--shadow-xs);
 }
 .save-btn:active { transform: scale(.92); transition-duration: .08s; }
-.save-btn:focus-visible { outline: 2px solid var(--primary); outline-offset: 3px; }
+.save-btn:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 3px; }
 
 .save-btn.saved {
   color: var(--save-red);
@@ -85,16 +85,15 @@ function onToggle() {
 
 .save-icon {
   width: 18px; height: 18px; flex-shrink: 0;
-  transition: transform .35s var(--ease-spring-gentle);
+  transition: transform .35s var(--ease-out-expo);
 }
 .save-btn:hover .save-icon { transform: scale(1.12); }
 
-.save-pop .save-icon { animation: heartPop .5s var(--ease-spring-gentle); }
+.save-pop .save-icon { animation: heartPop .45s var(--ease-out-expo); }
 
 @keyframes heartPop {
   0% { transform: scale(1); }
-  30% { transform: scale(1.35); }
-  60% { transform: scale(.9); }
+  45% { transform: scale(1.22); }
   100% { transform: scale(1); }
 }
 

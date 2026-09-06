@@ -150,7 +150,7 @@
       </div>
 
       <div v-if="sources.length" class="dth-sources">
-        <div class="admin-table-wrap">
+        <div class="admin-table-wrap" role="region" tabindex="0" aria-label="Bảng đề xuất tự học">
           <table class="admin-table" aria-label="Nguồn dữ liệu tự học">
             <thead><tr><th scope="col">Nguồn</th><th scope="col">Số entity</th><th scope="col">URL mẫu</th></tr></thead>
             <tbody>
@@ -394,10 +394,10 @@ onMounted(loadProvisional)
 .dth-field-grid dd { margin: 4px 0 0; font-size: .82rem; color: var(--ink); overflow-wrap: anywhere; }
 .dth-image-list { display: grid; gap: var(--space-2); margin: 0; padding: 0; list-style: none; }
 .dth-image-list li { display: grid; gap: var(--space-1); }
-.dth-image-list a { color: var(--primary); font-size: .78rem; overflow-wrap: anywhere; }
+.dth-image-list a { color: var(--color-action); font-size: .78rem; overflow-wrap: anywhere; }
 .dth-image-placeholder { display: grid; gap: var(--space-1); }
 .dth-snapshot { margin-top: var(--space-4); border-top: .5px solid var(--line); padding-top: var(--space-3); }
-.dth-snapshot summary { cursor: pointer; font-size: .8rem; font-weight: 650; color: var(--primary); }
+.dth-snapshot summary { cursor: pointer; font-size: .8rem; font-weight: 650; color: var(--color-action); }
 .dth-snapshot pre { margin-top: var(--space-3); max-height: 480px; overflow: auto; }
 .dth-review-actions { display: flex; justify-content: flex-end; gap: var(--space-2); margin-top: var(--space-4); }
 .dth-type-badge {
@@ -412,7 +412,7 @@ onMounted(loadProvisional)
   min-width: 40px; padding: 2px 8px; border-radius: 100px;
   font-size: .72rem; font-weight: 700; font-variant-numeric: tabular-nums;
 }
-.dth-conf-high { background: rgba(var(--primary-rgb),.1); color: var(--success); }
+.dth-conf-high { background: rgba(var(--color-action-rgb),.1); color: var(--success); }
 .dth-conf-low { background: rgba(var(--warning-rgb),.12); color: var(--warning); }
 
 /* ── Empty state ── */
@@ -437,14 +437,14 @@ onMounted(loadProvisional)
   cursor: pointer; text-align: center;
   transition: transform .3s var(--ease-soft), box-shadow .3s, border-color .3s;
 }
-.dth-tool-card:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 4px 16px rgba(var(--black-rgb),.06); border-color: var(--primary); }
+.dth-tool-card:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 4px 16px rgba(var(--black-rgb),.06); border-color: var(--color-action); }
 .dth-tool-card:active:not(:disabled) { transform: scale(.97); }
-.dth-tool-card:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+.dth-tool-card:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
 .dth-tool-card:disabled { opacity: var(--opacity-disabled); cursor: not-allowed; }
 .dth-tool-icon { font-size: 1.6rem; }
 .dth-tool-spinner {
   width: 22px; height: 22px; border-radius: 50%;
-  border: 2px solid rgba(var(--primary-rgb),.2); border-top-color: var(--primary);
+  border: 2px solid rgba(var(--color-action-rgb),.2); border-top-color: var(--color-action);
   animation: dth-spin .7s linear infinite;
 }
 @keyframes dth-spin { to { transform: rotate(360deg); } }
@@ -452,7 +452,7 @@ onMounted(loadProvisional)
 .dth-tool-card small { font-size: .75rem; color: var(--muted); }
 
 .dth-sources { margin-top: var(--space-3); }
-.dth-source-count { font-weight: 700; color: var(--primary); }
+.dth-source-count { font-weight: 700; color: var(--color-brand); }
 
 /* ── Reduced motion ── */
 @media (prefers-reduced-motion: reduce) {
@@ -466,7 +466,7 @@ onMounted(loadProvisional)
 .dark .dth-review-card { background: var(--card); border-color: rgba(var(--white-rgb),.06); box-shadow: none; }
 .dark .dth-tool-card { background: var(--card); border-color: rgba(var(--white-rgb),.06); }
 .dark .dth-tool-card:hover:not(:disabled) { box-shadow: 0 4px 16px rgba(var(--black-rgb),.4); }
-.dark .dth-conf-high { background: rgba(var(--primary-rgb),.18); color: rgb(var(--success-rgb)); }
+.dark .dth-conf-high { background: rgba(var(--color-action-rgb),.18); color: rgb(var(--success-rgb)); }
 .dark .dth-conf-low { background: rgba(var(--warning-rgb),.14); color: var(--accent-text); }
 .dark .dth-tool-label { color: var(--ink); }
 .dark .dth-count-warn { background: rgba(var(--warning-rgb),.12); color: var(--accent-text); }

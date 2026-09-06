@@ -1,11 +1,11 @@
-﻿<template>
-  <section class="page">
-    <Breadcrumb :items="[{ label: 'Trang chủ', to: '/' }, { label: 'Tuyến đường gợi ý' }]" />
+<template>
+  <section class="page" data-color-system="tri-region-v1">
+    <Breadcrumb :items="[{ label: 'Trang chủ', to: '/' }, { label: 'Tuyến đường gợi ý' }]" :json-ld="true" />
 
     <!-- Hero -->
     <section class="catalog-hero cat-route">
       <div class="catalog-hero-inner">
-        <span class="catalog-hero-icon" aria-hidden="true">🛤️</span>
+        <span class="catalog-hero-icon" aria-hidden="true"><IconLine name="route" /></span>
         <div>
           <h1>{{ pc('hero_title') }}</h1>
           <p>{{ pc('hero_subtitle') }}</p>
@@ -26,7 +26,7 @@
            Tri-province silhouette line-art with a pin per route, positioned by
            its area (x-band) so "these routes spread across 3 areas" reads at
            a glance before any card text. -->
-      <div class="route-vignette" role="img" aria-label="Vị trí các tuyến đường trên 3 khu vực Vĩnh Long, Bến Tre, Trà Vinh">
+      <div class="route-vignette" role="img" aria-label="Vị trí các tuyến đường trên 3 khu vực tỉnh Vĩnh Long hợp nhất (trước 7-2025)">
         <svg viewBox="0 0 640 90" preserveAspectRatio="none" aria-hidden="true" class="route-vignette-svg">
           <path d="M0 46 Q 90 20 180 46 T 360 46 T 540 46 T 640 40" class="rv-river" />
           <path d="M0 64 Q 100 78 220 60 T 440 66 T 640 58" class="rv-road" />
@@ -35,31 +35,41 @@
           <span class="rv-pin-dot" aria-hidden="true" />
         </span>
         <div class="rv-labels" aria-hidden="true">
-          <span>Vĩnh Long</span><span>Bến Tre</span><span>Trà Vinh</span>
+          <span>Vùng Vĩnh Long</span><span>Vùng Bến Tre (cũ)</span><span>Vùng Trà Vinh (cũ)</span>
         </div>
       </div>
     </section>
 
     <div class="block">
-    <div class="controls">
-      <p class="control-label">Khu vực</p>
-      <div class="chip-row" role="group" aria-label="Lọc theo khu vực">
-        <button type="button" :class="['chip', { active: areaFilter === 'all' }]" :aria-pressed="areaFilter === 'all'" @click="areaFilter = 'all'">Tất cả</button>
-        <button type="button"
-          v-for="(meta, key) in AREA_META"
-          :key="key"
-          :class="['chip', 'chip-area', `area-${key}`, { active: areaFilter === key }]"
-          :aria-pressed="areaFilter === key"
-          @click="areaFilter = key as string"
-        >{{ meta.emoji }} {{ meta.name }}</button>
+      <div class="controls">
+        <p class="control-label">Khu vực</p>
+        <div class="chip-row" role="group" aria-label="Lọc theo khu vực">
+          <button type="button" :class="['chip', { active: areaFilter === 'all' }]" :aria-pressed="areaFilter === 'all'" @click="areaFilter = 'all'">Tất cả</button>
+          <button type="button"
+            v-for="(meta, key) in AREA_META"
+            :key="key"
+            :class="['chip', 'chip-area', `area-${key}`, { active: areaFilter === key }]"
+            :aria-pressed="areaFilter === key"
+            @click="areaFilter = key as string"
+          ><IconLine :name="meta.icon || 'pin'" class="chip-area-icon" /> {{ meta.name }}</button>
+        </div>
+        <div v-if="areaFilter !== 'all'" class="active-filter-ledger" role="region" aria-label="Bộ lọc đang áp dụng">
+          <span class="afl-heading">Đang lọc:</span>
+          <div class="afl-chips">
+            <span class="afl-chip">
+              <span class="afl-text">{{ AREA_META[areaFilter]?.name || areaFilter }}</span>
+              <button type="button" class="afl-remove" aria-label="Bỏ lọc khu vực" @click="areaFilter = 'all'"><IconLine name="x" aria-hidden="true" /></button>
+            </span>
+            <button type="button" class="afl-clear-all" @click="areaFilter = 'all'">Xóa tất cả</button>
+          </div>
+        </div>
       </div>
-    </div>
     </div>
 
     <!-- Editorial -->
     <section v-once class="page-article reveal">
       <div class="sediment-head route-article-head"><h2>Tự khám phá Vĩnh Long bằng xe máy hoặc ô tô</h2></div>
-      <p>Các tuyến đường dưới đây được thiết kế cho người muốn <strong>tự đi</strong> — không cần tour, không cần hướng dẫn viên. Mỗi tuyến ghi rõ khoảng cách, thời gian di chuyển và các điểm dừng theo thứ tự hợp lý. Đường liên tỉnh giữa Vĩnh Long, Bến Tre và Trà Vinh phần lớn là đường nhựa tốt, phù hợp cả xe máy lẫn ô tô 4-7 chỗ.</p>
+      <p>Các tuyến đường dưới đây được thiết kế cho người muốn <strong>tự đi</strong> — không cần tour, không cần hướng dẫn viên. Mỗi tuyến ghi rõ khoảng cách, thời gian di chuyển và các điểm dừng theo thứ tự hợp lý. Đường liên vùng kết nối giữa các khu vực của tỉnh Vĩnh Long hợp nhất (gồm Bến Tre và Trà Vinh trước 7-2025) phần lớn là đường nhựa tốt, phù hợp cả xe máy lẫn ô tô 4-7 chỗ.</p>
       <p>Nếu đi xe máy, ưu tiên khởi hành sáng sớm (trước 7h) để tránh nắng và tận dụng ánh sáng đẹp. Mang theo áo mưa — vùng này hay có mưa rào chiều, đặc biệt từ tháng 6 đến tháng 11. Đường vào các làng nghề đôi khi hẹp và dốc cầu, chạy chậm khi qua khu dân cư.</p>
 
       <!-- declutter-2 A2: interstitial inline vào mạch bài -->
@@ -78,7 +88,7 @@
     <div v-if="filtered.length" class="route-grid">
       <article v-for="r in filtered" :key="r.id" class="route-card" :class="`area-${r.area}`" :aria-label="r.name + ' — ' + r.duration">
         <div :class="['route-header', `area-${r.area}`]">
-          <span class="route-emoji">{{ r.emoji }}</span>
+          <span class="route-emoji" aria-hidden="true"><IconLine :name="routeIcon(r)" /></span>
           <div>
             <h3 class="route-name">{{ r.name }}</h3>
             <span class="route-meta">{{ r.duration }} · {{ r.distance }}</span>
@@ -97,7 +107,7 @@
 
           <!-- "Tuyến này hợp mùa nào?" — cross-link tying the road to the almanac. -->
           <NuxtLink v-if="routeSeasonTag(r)" :to="`/theo-mua?mua=${routeSeasonTag(r)!.month}`" class="route-season-tag">
-            <span aria-hidden="true">📅</span> Hợp mùa: {{ routeSeasonTag(r)!.label }}
+            <span aria-hidden="true"><IconLine name="calendar" /></span> Hợp mùa: {{ routeSeasonTag(r)!.label }}
           </NuxtLink>
 
           <h3 class="route-stops-head">Điểm dừng chân</h3>
@@ -120,6 +130,7 @@
           </div>
           <div class="route-links">
             <NuxtLink :to="`/khu-vuc/${r.area}`" class="btn btn-outline btn-sm"><IconLine name="pin" /> {{ AREA_META[r.area]?.name }}</NuxtLink>
+            <NuxtLink :to="{ path: '/tao-lich-trinh', query: { title: r.name } }" class="btn btn-ghost btn-sm"><IconLine name="plus" /> Lập lịch trình</NuxtLink>
             <NuxtLink to="/ban-do" no-prefetch class="btn btn-ghost btn-sm"><IconLine name="map" /> Xem bản đồ</NuxtLink>
             <NuxtLink to="/lien-he" class="btn btn-ghost btn-sm route-contact-cta"><IconLine name="phone" /> Hỏi HTX/homestay dọc tuyến</NuxtLink>
           </div>
@@ -146,19 +157,19 @@
       <p class="cross-sub">Tiếp tục hành trình Vĩnh Long của bạn</p>
       <div class="cross-links">
         <NuxtLink to="/ban-do" class="cross-card" no-prefetch>
-          <span class="cross-icon" aria-hidden="true">🗺️</span>
+          <span class="cross-icon" aria-hidden="true"><IconLine name="map" /></span>
           <div><strong>Bản đồ</strong><p>Xem trên bản đồ</p></div>
         </NuxtLink>
         <NuxtLink to="/lich-trinh" class="cross-card">
-          <span class="cross-icon" aria-hidden="true">🗓️</span>
+          <span class="cross-icon" aria-hidden="true"><IconLine name="calendar" /></span>
           <div><strong>Lịch trình</strong><p>Tuyến đi sẵn</p></div>
         </NuxtLink>
         <NuxtLink to="/du-lich" class="cross-card">
-          <span class="cross-icon" aria-hidden="true">🌿</span>
+          <span class="cross-icon" aria-hidden="true"><IconLine name="leaf" /></span>
           <div><strong>Du lịch</strong><p>Trải nghiệm miệt vườn</p></div>
         </NuxtLink>
         <NuxtLink to="/luu-tru" class="cross-card">
-          <span class="cross-icon" aria-hidden="true">🏡</span>
+          <span class="cross-icon" aria-hidden="true"><IconLine name="home" /></span>
           <div><strong>Lưu trú</strong><p>Homestay, nhà vườn</p></div>
         </NuxtLink>
       </div>
@@ -221,51 +232,101 @@ function routeSeasonTag(r: RouteDef) {
   return ROUTE_SEASON[r.id] || null
 }
 
+function routeIcon(r: RouteDef): string {
+  if (r.emoji === '🍊') return 'fruit'
+  if (r.emoji === '🥥') return 'leaf'
+  if (r.emoji === '🛕') return 'landmark'
+  if (r.emoji === '🌊' || r.emoji === '🛶') return 'compass'
+  return AREA_META[r.area]?.icon || 'route'
+}
+
 useSeoMeta({
   ogType: 'website',
   title: () => pc('seo_title') || 'Tuyến đường gợi ý Vĩnh Long — vinhlong360',
-  description: () => pc('seo_description') || 'Các tuyến đường tự khám phá qua miệt vườn, làng nghề và văn hóa Vĩnh Long, Bến Tre, Trà Vinh.',
+  description: () => pc('seo_description') || 'Các tuyến đường tự khám phá qua miệt vườn, làng nghề và văn hóa tỉnh Vĩnh Long hợp nhất (3 vùng trước 7-2025).',
   ogTitle: () => pc('og_title') || 'Tuyến đường gợi ý — vinhlong360',
   ogDescription: () => pc('og_description') || 'Tự khám phá Vĩnh Long bằng xe máy hoặc ô tô.',
+  ogUrl: () => canonicalUrl('/tuyen-duong'),
+  twitterCard: 'summary_large_image',
 })
 
-useHead(() => ({
-  link: [{ rel: 'canonical', href: canonicalUrl('/tuyen-duong') }],
-  script: [{
-    type: 'application/ld+json',
-    innerHTML: safeJsonLd({
-      '@context': 'https://schema.org',
+useHead(() => {
+  const pageUrl = canonicalUrl('/tuyen-duong')
+  const graphNodes: any[] = [
+    buildWebSiteSchema(),
+    buildOrganizationSchema(),
+    {
       '@type': 'CollectionPage',
+      '@id': `${pageUrl}#collection`,
       name: 'Tuyến đường gợi ý Vĩnh Long',
-      description: 'Các tuyến đường tự khám phá qua miệt vườn, làng nghề và văn hóa Vĩnh Long, Bến Tre, Trà Vinh.',
-      url: 'https://vinhlong360.vn/tuyen-duong',
-      mainEntity: {
-        '@type': 'ItemList',
-        numberOfItems: ROUTES.value.length,
-        itemListElement: ROUTES.value.map((r: any, i: number) => ({
-          '@type': 'ListItem',
-          position: i + 1,
-          name: r.name,
-          description: `${r.duration} · ${r.distance}`,
-        })),
+      description: 'Các tuyến đường tự khám phá qua miệt vườn, làng nghề và văn hóa tỉnh Vĩnh Long hợp nhất (3 vùng trước 7-2025).',
+      url: pageUrl,
+      numberOfItems: ROUTES.value.length,
+      isPartOf: { '@id': `${SITE_URL}/#website` },
+      about: {
+        '@type': 'Thing',
+        name: 'Lộ trình du lịch Vĩnh Long',
+        description: 'Tuyến đường gợi ý khám phá miệt vườn, di sản gốm đỏ Mang Thít và cù lao sông Tiền.',
       },
-    }),
-  }],
-}))
+      speakable: buildSpeakableSpecification(['.hero-lede', 'h1', '.route-header', '.route-stops-head']),
+    },
+    {
+      '@type': 'ItemList',
+      '@id': `${pageUrl}#items`,
+      name: 'Danh sách tuyến đường gợi ý',
+      numberOfItems: ROUTES.value.length,
+      itemListElement: ROUTES.value.map((r: any, i: number) => ({
+        '@type': 'ListItem',
+        position: i + 1,
+        name: r.name,
+        description: `${r.duration} · ${r.distance}`,
+      })),
+    },
+  ]
+
+  const faqItems: FaqItem[] = [
+    {
+      q: 'Nên chọn phương tiện gì để đi các tuyến đường khám phá Vĩnh Long?',
+      a: 'Xe máy phù hợp nhất cho các cung đường miệt vườn ngõ nhỏ, cù lao và phà sông. Ô tô thuận tiện cho các tuyến trục quốc lộ và liên tỉnh kết nối Bến Tre, Trà Vinh.',
+    },
+    {
+      q: 'Thời điểm nào trong năm thích hợp nhất để trải nghiệm các cung đường này?',
+      a: 'Từ tháng 5 đến tháng 8 là mùa trái cây chín rộ tại cù lao An Bình; từ tháng 9 đến tháng 11 là mùa phù sa ven sông Tiền - sông Hậu với nhiều trải nghiệm đồng quê sông nước đặc sắc.',
+    },
+    {
+      q: 'Cần chuẩn bị gì khi di chuyển qua các tuyến phà hoặc đò ngang ở Vĩnh Long?',
+      a: 'Nên chuẩn bị tiền mặt mệnh giá nhỏ khi qua đò/phà, kiểm tra lịch hoạt động của các bến phà lớn như phà An Bình, phà Đình Khao và lưu ý khung giờ cao điểm.',
+    },
+  ]
+  const faqNode = buildFaqPageSchema(faqItems, `${pageUrl}#faq`)
+  if (faqNode) graphNodes.push(faqNode)
+
+  return {
+    link: [{ rel: 'canonical', href: pageUrl }],
+    script: [{
+      type: 'application/ld+json',
+      innerHTML: safeJsonLd({
+        '@context': 'https://schema.org',
+        '@graph': graphNodes,
+      }),
+    }],
+  }
+})
 </script>
 
 <style scoped>
 .route-grid { display: flex; flex-direction: column; gap: var(--space-6); }
-.route-card { position: relative; background: var(--card); border: .5px solid var(--line); border-radius: var(--radius); overflow: hidden; box-shadow: var(--shadow-sm); transition: transform .35s var(--ease-spring-gentle), box-shadow .35s var(--ease-out-expo), border-color .3s var(--ease-out); }
+.route-card { position: relative; background: var(--card); border: .5px solid var(--line); border-radius: var(--radius); overflow: hidden; box-shadow: var(--shadow-sm); transition: transform .35s var(--ease-out-expo), box-shadow .35s var(--ease-out-expo), border-color .3s var(--ease-out); }
 /* glassy top-sheen, revealed on hover for an Apple-style finish */
 .route-card::before { content: ""; position: absolute; inset: 0 0 auto 0; height: 40%; pointer-events: none; opacity: 0; background: linear-gradient(180deg, rgba(var(--white-rgb),.18), transparent); transition: opacity .35s var(--ease-out); z-index: 2; }
-.route-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-lg), 0 0 0 1px rgba(var(--primary-rgb), .14), 0 18px 40px -18px rgba(var(--primary-rgb), .35); border-color: var(--border); }
+.route-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-lg), 0 0 0 1px rgba(var(--color-action-rgb), .14), 0 18px 40px -18px rgba(var(--color-action-rgb), .25); border-color: var(--border); }
 .route-card:hover::before { opacity: .9; }
 .route-card:active { transform: translateY(0) scale(.99); transition-duration: .08s; }
 .route-header { display: flex; gap: var(--space-3); align-items: center; padding: var(--space-5) var(--space-6); color: var(--text-on-dark, var(--white)); box-shadow: inset 0 1px 0 rgba(var(--white-rgb),.15), 0 1px 2px rgba(var(--black-rgb),.1); transition: background .3s var(--ease-out); }
 .route-header h3 { margin: 0; font-size: var(--text-lg); font-weight: var(--weight-bold); letter-spacing: var(--tracking-tight); text-shadow: var(--shadow-text); overflow-wrap: break-word; word-break: break-word; }
 .route-meta { font-size: var(--text-sm); opacity: .9; }
-.route-emoji { font-size: var(--text-3xl); text-shadow: var(--shadow-text); }
+.route-emoji { font-size: var(--text-2xl); display: inline-flex; align-items: center; justify-content: center; color: currentColor; }
+.chip-area-icon { margin-right: .25rem; font-size: .95em; }
 .route-header.area-vinh-long { background: var(--cat-experience); }
 .route-header.area-ben-tre { background: var(--cat-product); }
 .route-header.area-tra-vinh { background: var(--cat-attraction); }
@@ -283,7 +344,7 @@ useHead(() => ({
   padding: var(--space-3) 0; border-top: .5px solid var(--line); border-bottom: .5px solid var(--line);
 }
 .rstat { display: flex; flex-direction: column; gap: 1px; flex: 1 1 0; min-width: 0; }
-.rstat-num { font-size: var(--text-lg); font-weight: var(--weight-extrabold); color: var(--primary-fg); letter-spacing: var(--tracking-tight); font-variant-numeric: tabular-nums; line-height: 1.2; overflow-wrap: break-word; }
+.rstat-num { font-size: var(--text-lg); font-weight: var(--weight-extrabold); color: var(--color-action); letter-spacing: var(--tracking-tight); font-variant-numeric: tabular-nums; line-height: 1.2; overflow-wrap: break-word; }
 .rstat-label { font-size: var(--text-2xs); color: var(--muted); text-transform: uppercase; letter-spacing: var(--tracking-caps); font-weight: var(--weight-semibold); }
 
 /* ── Season cross-tag → /theo-mua (§2.5 highest-leverage cross-link) ── */
@@ -302,10 +363,10 @@ useHead(() => ({
    Replaces the plain <ol> bullet list. Vertical hairline + numbered dots,
    tinted per area (echoes the tri-province sediment gradient when a route
    crosses all 3 — see .area-lien-vung below). */
-.route-rail { position: relative; list-style: none; margin: 0 0 var(--space-4); padding: 0 0 0 32px; }
+.route-rail { position: relative; list-style: none; margin: 0 0 var(--space-4); padding: 0 0 0 var(--space-8); }
 .route-rail::before {
   content: ""; position: absolute; left: 11px; top: 6px; bottom: 6px; width: 2px;
-  background: linear-gradient(180deg, var(--rail-tone, var(--primary)) 0%, color-mix(in srgb, var(--rail-tone, var(--primary)) 35%, transparent) 100%);
+  background: linear-gradient(180deg, var(--rail-tone, var(--color-action)) 0%, color-mix(in srgb, var(--rail-tone, var(--color-action)) 35%, transparent) 100%);
   border-radius: var(--radius-full);
 }
 .route-card.area-vinh-long .route-rail { --rail-tone: var(--secondary); }
@@ -336,34 +397,34 @@ useHead(() => ({
   width: 22px; height: 22px; border-radius: 50%; flex-shrink: 0;
   display: flex; align-items: center; justify-content: center;
   font-size: var(--text-2xs); font-weight: var(--weight-bold); font-variant-numeric: tabular-nums;
-  background: var(--card); color: var(--rail-tone, var(--primary));
-  box-shadow: 0 0 0 2px var(--rail-tone, var(--primary)) inset, var(--shadow-xs);
-  transition: transform .3s var(--ease-spring-gentle), background .25s var(--ease-out), color .25s var(--ease-out);
+  background: var(--card); color: var(--rail-tone, var(--color-action));
+  box-shadow: 0 0 0 2px var(--rail-tone, var(--color-action)) inset, var(--shadow-xs);
+  transition: transform .3s var(--ease-out-expo), background .25s var(--ease-out), color .25s var(--ease-out);
 }
 .rail-text strong { color: var(--ink); transition: color .25s var(--ease-out); }
 .rail-text span { color: var(--muted); font-size: var(--text-sm); }
 .rail-stop:hover { transform: translateX(2px); background: var(--overlay-subtle); }
-.rail-stop:hover .rail-dot { transform: scale(1.1); background: var(--rail-tone, var(--primary)); color: var(--text-on-dark, var(--white)); }
-.rail-stop:hover .rail-text strong { color: var(--primary-fg); }
+.rail-stop:hover .rail-dot { transform: scale(1.1); background: var(--rail-tone, var(--color-action)); color: var(--color-on-action); }
+.rail-stop:hover .rail-text strong { color: var(--color-action); }
 /* hovering a dot nudges the connecting line's tone brighter — "this is a path" */
 .route-rail:has(.rail-stop:hover)::before { filter: saturate(1.3) brightness(1.08); }
 
 .route-tips {
   background: var(--badge-season-bg); padding: var(--space-3) var(--space-4); border-radius: var(--radius-control);
   font-size: var(--text-sm); margin-bottom: var(--space-3); line-height: var(--leading-normal);
-  border: .5px solid rgba(var(--primary-rgb), .15); box-shadow: 0 1px 2px rgba(var(--primary-rgb), .2);
+  border: .5px solid rgba(var(--color-action-rgb), .15); box-shadow: 0 1px 2px rgba(var(--color-action-rgb), .15);
   transition: box-shadow .3s var(--ease-out);
 }
 .route-tips-eyebrow {
   display: block; font-size: var(--text-2xs); font-weight: var(--weight-bold);
-  text-transform: uppercase; letter-spacing: var(--tracking-caps); color: var(--primary-fg);
+  text-transform: uppercase; letter-spacing: var(--tracking-caps); color: var(--color-brand);
   margin-bottom: 2px;
 }
 /* subtle breathing pulse when the card is hovered, to draw the eye to the tip */
 .route-card:hover .route-tips { animation: tips-pulse 2.4s var(--ease-out) infinite; }
 @keyframes tips-pulse {
-  0%, 100% { box-shadow: 0 1px 2px rgba(var(--primary-rgb), .2); }
-  50%      { box-shadow: 0 1px 8px rgba(var(--primary-rgb), .32); }
+  0%, 100% { box-shadow: 0 1px 2px rgba(var(--color-action-rgb), .15); }
+  50%      { box-shadow: 0 1px 8px rgba(var(--color-action-rgb), .25); }
 }
 /* staggered entrance for route cards, tying into the batch signature rhythm */
 .route-grid > .route-card { animation: card-rise .55s var(--ease-out-expo) both; }
@@ -375,18 +436,18 @@ useHead(() => ({
 .route-grid > .route-card:nth-child(n+6) { animation-delay: .22s; }
 .cross-sub { margin: calc(var(--space-3) * -1) 0 var(--space-4); color: var(--muted); font-size: var(--text-sm); }
 .route-links { display: flex; gap: var(--space-2); flex-wrap: wrap; }
-.route-links .btn { transition: transform .35s var(--ease-spring-gentle), box-shadow .35s var(--ease-out-expo); }
+.route-links .btn { transition: transform .35s var(--ease-out-expo), box-shadow .35s var(--ease-out-expo); }
 .route-links .btn:active { transform: scale(.95); transition-duration: .08s; }
 .dark .route-card { background: var(--card); border-color: var(--line); }
 .dark .route-card::before { background: linear-gradient(180deg, rgba(var(--white-rgb),.07), transparent); }
-.dark .route-card:hover { box-shadow: var(--shadow-lg), 0 0 0 1px rgba(var(--primary-rgb), .22), 0 18px 44px -18px rgba(var(--black-rgb),.6); border-color: var(--border); }
+.dark .route-card:hover { box-shadow: var(--shadow-lg), 0 0 0 1px rgba(var(--color-action-rgb), .22), 0 18px 44px -18px rgba(var(--black-rgb),.6); border-color: var(--border); }
 .dark .route-tips { background: rgba(var(--white-rgb),.06); border-color: rgba(var(--white-rgb),.1); }
 .dark .route-body p { color: rgba(var(--white-rgb),.85); }
-.dark .rail-stop:hover .rail-text strong { color: var(--primary); }
+.dark .rail-stop:hover .rail-text strong { color: var(--color-action); }
 .dark .rail-text span { color: rgba(var(--white-rgb),.55); }
-.dark .rail-dot { background: var(--card); box-shadow: 0 0 0 2px var(--rail-tone, var(--primary)) inset, 0 1px 3px rgba(var(--black-rgb),.4); }
+.dark .rail-dot { background: var(--card); box-shadow: 0 0 0 2px var(--rail-tone, var(--color-action)) inset, 0 1px 3px rgba(var(--black-rgb),.4); }
 .dark .route-stat-trio { border-color: var(--line); }
-.dark .rstat-num { color: var(--primary); }
+.dark .rstat-num { color: var(--color-action); }
 .dark .route-season-tag { background: rgba(var(--secondary-rgb), .16); border-color: rgba(var(--secondary-rgb), .3); }
 .dark .route-season-tag:hover { background: rgba(var(--secondary-rgb), .24); }
 .dark .route-header.area-lien-vung { background: linear-gradient(135deg, var(--river-legacy-dark), var(--amber-500) 55%, var(--clay-400)); }
@@ -412,7 +473,7 @@ useHead(() => ({
   .route-links .btn:active { transform: none; }
   .route-grid > .route-card { animation: none; }
   .rail-stop { animation: none; }
-  .route-card:hover .route-tips { animation: none; box-shadow: 0 1px 8px rgba(var(--primary-rgb), .28); }
+  .route-card:hover .route-tips { animation: none; box-shadow: 0 1px 8px rgba(var(--color-action-rgb), .25); }
 }
 
 /* ── Editorial essay heading — sediment-head sits inside .page-article, so
@@ -470,6 +531,6 @@ useHead(() => ({
 .dark .rv-pin-dot { box-shadow: 0 0 0 2px var(--card), 0 1px 3px rgba(var(--black-rgb),.4); }
 @media (max-width: 640px) {
   .route-vignette { height: 52px; }
-  .rv-labels { font-size: 9px; }
+  .rv-labels { font-size: var(--text-2xs, 11px); }
 }
 </style>

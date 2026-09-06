@@ -9,7 +9,7 @@
     <Transition name="sheet">
       <div v-if="visible && ff('onboarding')" class="onboarding-overlay" @click.self="dismiss">
         <div class="onboarding-sheet" role="dialog" aria-modal="true" aria-label="Chào mừng đến vinhlong360" ref="sheetEl">
-          <button type="button" class="sheet-close" aria-label="Đóng" @click="dismiss">&times;</button>
+          <button type="button" class="sheet-close" aria-label="Đóng" @click="dismiss"><IconLine name="x" /></button>
           <div class="sheet-header">
             <span class="sheet-emoji-chip" aria-hidden="true"><span class="sheet-emoji">{{ ob.emoji }}</span></span>
             <h2 class="sheet-title">{{ ob.title }}</h2>

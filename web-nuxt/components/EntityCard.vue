@@ -6,7 +6,7 @@
   >
     <div class="cover cover-img" :class="{ 'cover-generated': !activeDescriptor.url || imgError, [`cat-${typeMeta.cat}`]: true }" :style="(!activeDescriptor.url || imgError) ? { backgroundImage: placeholderBg } : undefined">
       <template v-if="activeDescriptor.url && !imgError">
-        <NuxtLink :to="cardPath" class="card-cover-link" :aria-label="`Xem ${entity.name}`" :aria-describedby="activeDisclosureId">
+        <NuxtLink :to="cardPath" class="card-cover-link" tabindex="-1" aria-hidden="true">
           <NuxtImg v-if="isRemote" :src="activeDescriptor.url" :alt="activeDescriptor.alt" :key="activeDescriptor.url" loading="lazy" width="400" height="267" sizes="sm:100vw md:50vw lg:400px" decoding="async" :aria-describedby="activeDisclosureId" @load="($event.target as HTMLElement)?.classList.add('loaded')" @error="imgError = true" />
           <img v-else :src="activeDescriptor.url" :alt="activeDescriptor.alt" :key="activeDescriptor.url" loading="lazy" width="400" height="267" decoding="async" :aria-describedby="activeDisclosureId" @load="($event.target as HTMLElement)?.classList.add('loaded')" @error="imgError = true" />
           <span class="cover-tag cover-dateline" :class="`cat-${typeMeta.cat}`">{{ dateline }}</span>
@@ -14,14 +14,18 @@
       </template>
       <template v-else>
         <span class="cover-grain" aria-hidden="true"></span>
-        <NuxtLink :to="cardPath" class="card-cover-link" :aria-label="`Xem ${entity.name}`" :aria-describedby="activeDisclosureId">
+        <NuxtLink :to="cardPath" class="card-cover-link" tabindex="-1" aria-hidden="true">
           <span class="cover-svg-icon" v-html="placeholderSvg" />
           <span class="cover-tag cover-dateline" :class="`cat-${typeMeta.cat}`">{{ dateline }}</span>
         </NuxtLink>
       </template>
       <template v-if="allDescriptors.length > 1">
-        <button v-if="activeSlide > 0" type="button" class="card-arrow card-arrow-prev" aria-label="Ảnh trước" @click.prevent="activeSlide--">‹</button>
-        <button v-if="activeSlide < allDescriptors.length - 1" type="button" class="card-arrow card-arrow-next" aria-label="Ảnh sau" @click.prevent="activeSlide++">›</button>
+        <button v-if="activeSlide > 0" type="button" class="card-arrow card-arrow-prev" aria-label="Ảnh trước" @click.prevent="activeSlide--">
+          <IconLine name="chevron-left" aria-hidden="true" />
+        </button>
+        <button v-if="activeSlide < allDescriptors.length - 1" type="button" class="card-arrow card-arrow-next" aria-label="Ảnh sau" @click.prevent="activeSlide++">
+          <IconLine name="chevron-right" aria-hidden="true" />
+        </button>
         <div class="card-dots" aria-hidden="true">
           <span v-for="(_, i) in allDescriptors.slice(0, 5)" :key="i" :class="['card-dot', { active: i === activeSlide }]" />
         </div>
@@ -41,6 +45,7 @@
       <div v-if="cardMeta" class="card-meta">
         <span v-if="cardMeta.price" class="cm-item"><IconLine name="tag" /> {{ cardMeta.price }}</span>
         <span v-if="cardMeta.hours" class="cm-item"><IconLine name="clock" /> {{ cardMeta.hours }}</span>
+        <span v-if="cardMeta.access" class="cm-item"><IconLine name="car" /> {{ cardMeta.access }}</span>
       </div>
       <div v-if="ratingDisplay" class="card-rating">
         <span class="cr-stars">{{ ratingDisplay.stars }}</span>
@@ -48,14 +53,14 @@
         <span class="cr-count">({{ ratingDisplay.count }})</span>
       </div>
       <div v-if="amenityIcons.length" class="card-amenities" :aria-label="amenityIcons.map(a => a.label).join(', ') + (amenityExtra > 0 ? ` và ${amenityExtra} tiện ích khác` : '')">
-        <span v-for="a in amenityIcons" :key="a.key" class="ca-icon" :title="a.label" aria-hidden="true">{{ a.icon }}</span>
+        <span v-for="a in amenityIcons" :key="a.key" class="ca-icon" :title="a.label" aria-hidden="true"><IconLine :name="a.icon" /></span>
         <span v-if="amenityExtra > 0" class="ca-more" :title="`${amenityExtra} tiện ích khác`">+{{ amenityExtra }}</span>
       </div>
       <div class="badges">
         <span v-if="isNew" class="badge new-badge">Mới</span>
         <span v-if="isPeak" class="badge peak"><span class="peak-dot" aria-hidden="true"></span> Đang mùa {{ peakLabel }}</span>
-        <span v-if="isYearRoundSeason" class="badge year">Quanh năm</span>
-        <span v-else class="badge season">{{ seasonLabel }}</span>
+        <span v-else-if="isYearRoundSeason" class="badge year">Quanh năm</span>
+        <span v-else-if="seasonLabel" class="badge season">{{ seasonLabel }}</span>
         <span v-if="ocopBadge" :class="['badge', 'ocop', { 'ocop-5': ocopTier === 5, 'ocop-4': ocopTier === 4, 'ocop-3': ocopTier === 3 }]"><IconLine name="star" /> {{ ocopBadge }}</span>
       </div>
     </NuxtLink>
@@ -64,14 +69,14 @@
 
 <script lang="ts">
 const AMENITY_ICONS: Record<string, { icon: string; label: string }> = {
-  wifi: { icon: '📶', label: 'Wi-Fi' },
-  free_entry: { icon: '🆓', label: 'Miễn phí' },
-  kid_friendly: { icon: '👶', label: 'Trẻ em OK' },
-  wheelchair: { icon: '♿', label: 'Xe lăn' },
-  pet_friendly: { icon: '🐕', label: 'Thú cưng OK' },
-  air_conditioned: { icon: '❄️', label: 'Máy lạnh' },
-  restroom: { icon: '🚻', label: 'WC' },
-  photography: { icon: '📸', label: 'Chụp ảnh OK' },
+  wifi: { icon: 'wind', label: 'Wi-Fi' },
+  free_entry: { icon: 'tag', label: 'Miễn phí' },
+  kid_friendly: { icon: 'users', label: 'Trẻ em OK' },
+  wheelchair: { icon: 'compass', label: 'Xe lăn' },
+  pet_friendly: { icon: 'heart', label: 'Thú cưng OK' },
+  air_conditioned: { icon: 'wind', label: 'Máy lạnh' },
+  restroom: { icon: 'building', label: 'WC' },
+  photography: { icon: 'camera', label: 'Chụp ảnh OK' },
 }
 </script>
 
@@ -137,11 +142,10 @@ const dateline = computed(() => entityDateline(props.entity, typeMeta.value.labe
 const cardMeta = computed(() => {
   const a = props.entity.attributes
   if (!a) return null
-  const t = props.entity.type
-  if (t !== 'product' && t !== 'dish' && t !== 'experience') return null
-  const price = a.price || a.fee || null
-  const hours = a.hours || null
-  return (price || hours) ? { price, hours } : null
+  const price = a.price || a.fee || a.ticket_price || null
+  const hours = a.hours || a.opening_hours || null
+  const access = a.vehicle_access || a.road_access || null
+  return (price || hours || access) ? { price, hours, access } : null
 })
 const allAmenities = computed(() => {
   const badges = props.entity.attributes?.amenity_badges
@@ -232,17 +236,25 @@ const ratingDisplay = computed(() => {
   line-height: 1;
   cursor: pointer;
   opacity: 0;
-  transition: opacity 200ms var(--ease-out), transform 200ms var(--ease-spring-gentle);
+  transition: opacity 200ms var(--ease-out), transform 200ms var(--ease-out-expo);
   display: flex;
   align-items: center;
   justify-content: center;
   box-shadow: 0 1px 4px rgba(var(--black-rgb), 0.15);
 }
+.card-arrow::before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  min-width: 44px;
+  min-height: 44px;
+}
 .card-arrow-prev { left: var(--space-2); }
 .card-arrow-next { right: var(--space-2); }
 .card-arrow:hover { transform: translateY(-50%) scale(1.1); }
-.card .card-arrow:focus-visible { outline: 2px solid var(--catalog-legacy-primary); outline-offset: 1px; opacity: 1; }
-.card[data-color-recipe='tri-region-v1'] .card-arrow:focus-visible { outline-color: var(--color-focus); }
+.card .card-arrow:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 1px; opacity: 1; }
 :deep(.card:hover) .card-arrow { opacity: 1; }
 /* Carousel dots */
 .card-dots {
@@ -259,7 +271,7 @@ const ratingDisplay = computed(() => {
   height: 6px;
   border-radius: 50%;
   background: rgba(var(--white-rgb), 0.6);
-  transition: background 200ms var(--ease-out), transform 200ms var(--ease-spring-gentle);
+  transition: background 200ms var(--ease-out), transform 200ms var(--ease-out-expo);
 }
 .card-dot.active {
   background: var(--text-on-dark, var(--white));
@@ -268,7 +280,7 @@ const ratingDisplay = computed(() => {
 .card-amenities { display: none; }
 /* ── Story Card (Wave 1 keystone) — editorial treatment on every grid card ── */
 .card-type { display: none; }
-.card-name { font-family: var(--font-editorial); font-weight: 600; letter-spacing: -.01em; }
+.card-name { font-family: var(--font-editorial); font-weight: 600; letter-spacing: -.01em; line-height: var(--leading-snug, 1.25); word-break: break-word; overflow-wrap: anywhere; hyphens: auto; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
 /* dateline eyebrow — small-caps, hairline accent, NOT a solid pill */
 .card-dateline {
   display: inline-block; margin-bottom: 2px;
@@ -292,23 +304,11 @@ const ratingDisplay = computed(() => {
 }
 .dark .cover-grain { opacity: .09; }
 .ca-icon { font-size: .7rem; opacity: .7; cursor: default; }
-.ca-more { font-size: .65rem; color: var(--muted); font-weight: 600; margin-left: 1px; }
+.ca-more { font-size: var(--text-2xs); color: var(--muted); font-weight: 600; margin-left: 1px; }
 .card-rating { display: flex; align-items: center; gap: .25rem; font-size: .8rem; margin-top: .25rem; }
 .cr-stars { color: var(--secondary); letter-spacing: -1px; }
 .cr-score { font-weight: 600; color: var(--ink); }
 .cr-count { color: var(--muted); font-size: .75rem; }
-.badge.ocop-5 {
-  background: linear-gradient(135deg, var(--secondary), var(--secondary-dark));
-  color: var(--text-on-dark, var(--white));
-  border-color: transparent;
-  box-shadow: 0 0 0 2px rgba(var(--secondary-rgb), .2);
-}
-.badge.ocop-4 {
-  background: rgba(var(--secondary-rgb), .15);
-  color: var(--secondary-dark);
-}
-.dark .badge.ocop-5 { box-shadow: 0 0 0 2px rgba(var(--secondary-rgb), .35); }
-.dark .badge.ocop-4 { color: var(--secondary-fg); }
 .badge.new-badge {
   background: var(--success-bg);
   color: var(--success);

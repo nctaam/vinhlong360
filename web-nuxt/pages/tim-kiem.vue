@@ -1,15 +1,15 @@
-﻿<template>
+<template>
   <div
     class="page"
     data-color-system="tri-region-v1"
     data-page-recipe="search"
     data-material-accent="neutral"
   >
-    <Breadcrumb :items="[{ label: 'Trang chủ', to: '/' }, { label: 'Tìm kiếm' }]" />
+    <Breadcrumb :items="[{ label: 'Trang chủ', to: '/' }, { label: 'Tìm kiếm' }]" :json-ld="true" />
 
     <!-- Hero: masthead + hero-scale input, with one Clay editorial tick. -->
     <section class="catalog-hero cat-search search-hero">
-      <span class="dateline-eyebrow">Tìm kiếm · Vĩnh Long · Bến Tre · Trà Vinh</span>
+      <span class="dateline-eyebrow">Tìm kiếm · Tỉnh Vĩnh Long hợp nhất (3 vùng trước 7-2025)</span>
       <h1>{{ pc('hero_title') }}</h1>
       <p class="search-ticker-line" aria-live="off">
         <span class="search-ticker-word" :key="tickerIdx">{{ tickerPhrase }}<span class="search-ticker-q">?</span></span>
@@ -17,16 +17,19 @@
 
       <div class="search-row search-row-spaced search-row-hero" :class="{ error: hasError }" role="search" aria-label="Tìm kiếm địa điểm">
         <div class="search-input-wrap" role="combobox" :aria-expanded="showSuggestions" aria-haspopup="listbox" aria-owns="search-suggestions">
-          <input v-model="searchInput" type="search" enterkeyhint="search" :placeholder="inputPlaceholder" aria-label="Tìm kiếm" :aria-invalid="hasError || undefined" autocomplete="off" aria-autocomplete="list" :aria-activedescendant="activeSuggestionId" @input="onTypeahead" @keyup.enter="onEnter" @keydown.down.prevent="sugNext" @keydown.up.prevent="sugPrev" @keydown.escape="sugClose" @focus="inputFocused = true" @blur="onInputBlur" />
+          <input ref="heroInputEl" v-model="searchInput" type="search" enterkeyhint="search" :placeholder="inputPlaceholder" aria-label="Tìm kiếm" :aria-invalid="hasError || undefined" :aria-describedby="hasError && !totalSearchResults ? 'search-error-state' : undefined" autocomplete="off" aria-autocomplete="list" :aria-activedescendant="activeSuggestionId" @input="onTypeahead" @keyup.enter="onEnter" @keydown.down.prevent="sugNext" @keydown.up.prevent="sugPrev" @keydown.escape="sugClose" @focus="inputFocused = true" @blur="onInputBlur" />
           <div v-if="sugLoading" class="sug-loading" aria-hidden="true"><span class="spinner spinner-xs"></span></div>
           <Transition name="sug-fade">
             <ul v-if="showSuggestions && suggestions.length" id="search-suggestions" class="search-suggestions" role="listbox" aria-label="Gợi ý tìm kiếm">
               <li v-for="(s, i) in suggestions" :key="s.id" :id="`sug-${s.id}`" role="option" :aria-selected="i === sugIdx" :class="['sug-item', `sug-cat-${TYPE_META[s.type]?.cat || 'place'}`, { active: i === sugIdx }]" @mousedown.prevent="goToSuggestion(s)">
-                <span class="sug-name">{{ s.name }}</span>
+                <span class="sug-icon" aria-hidden="true"><IconLine :name="typeIcon(s.type)" /></span>
+                <span class="sug-name" v-html="highlightMatch(s.name)"></span>
                 <span v-if="s.place_name" class="sug-place">{{ s.place_name }}</span>
               </li>
               <li id="sug-search-all" class="sug-item sug-all" role="option" :aria-selected="sugIdx === suggestions.length" :class="{ active: sugIdx === suggestions.length }" @mousedown.prevent="doSearch">
-                Tìm tất cả „{{ searchInput.trim() }}"
+                <span class="sug-icon" aria-hidden="true"><IconLine name="search" /></span>
+                <span class="sug-all-label">Tìm tất cả „{{ searchInput.trim() }}"</span>
+                <IconLine name="arrow-right" class="sug-all-arrow" aria-hidden="true" />
               </li>
             </ul>
           </Transition>
@@ -51,15 +54,17 @@
     <SkeletonGrid v-if="searching" :count="6" />
     <EmptyState
       v-else-if="hasError && !totalSearchResults"
+      id="search-error-state"
       title="Lỗi tìm kiếm"
       message="Không thể tìm kiếm lúc này. Vui lòng thử lại."
       tone="error"
+      icon-name="alert-triangle"
       color-recipe="tri-region-v1"
       role="alert"
       data-color-role="status-error"
     >
       <template #actions>
-        <button type="button" class="btn btn-outline btn-sm" @click="refreshSearch">Thử lại</button>
+        <button type="button" class="btn btn-outline btn-sm" @click="refreshSearch"><IconLine name="repeat" aria-hidden="true" /> Thử lại</button>
       </template>
     </EmptyState>
     <PageState v-else-if="q" :state="searchSurfaceState" :retry="refreshSearch">
@@ -146,6 +151,21 @@
             </button>
           </template>
         </EmptyState>
+        <div class="zero-result-curated-wrap" aria-label="Gợi ý tìm kiếm phổ biến">
+          <p class="zero-result-curated-label"><IconLine name="sparkles" aria-hidden="true" /> Gợi ý chủ đề phổ biến:</p>
+          <div class="scroll-row trending-row">
+            <button
+              v-for="(chip, i) in trendingChips"
+              :key="'zr-' + i"
+              type="button"
+              class="trending-chip"
+              @click="goTrending(chip)"
+            >
+              <span class="trending-dot" aria-hidden="true"></span>
+              <span>{{ chip }}</span>
+            </button>
+          </div>
+        </div>
         <NuxtErrorBoundary>
           <ClientOnly>
             <LazySmartRecommendations context="search" :query="q" title="Có phải bạn muốn tìm…" :limit="6" color-recipe="tri-region-v1" />
@@ -264,6 +284,7 @@ import { describeEntityPlaceholder } from '~/utils/imageDescriptors'
 import { normalizeCoords } from '~/composables/useCoords'
 import { viewportTileBounds } from '~/utils/publicStateUrl'
 import { resolveFreshnessStatus } from '~/utils/regionalColor'
+import { escapeHtml } from '~/utils/safe'
 useReveal()
 const { f: pc } = usePageContent('tim_kiem')
 const { recentItems } = useRecentlyViewed()
@@ -316,7 +337,7 @@ const TICKER_PHRASES = [
   'mùa này bưởi Năm Roi ngọt chưa',
   'ngủ đêm giữa vườn dừa, ở đâu',
   'chợ nổi Trà Ôn còn họp giờ nào',
-  'dừa xiêm Bến Tre uống tại vườn',
+  'dừa xiêm xứ dừa (Bến Tre cũ) uống tại vườn',
   'đờn ca tài tử nghe ở đâu',
   'cù lao nào yên tĩnh nhất',
 ]
@@ -326,12 +347,25 @@ const inputFocused = ref(false)
 const inputPlaceholder = computed(() =>
   inputFocused.value || searchInput.value ? 'Tìm đặc sản, trải nghiệm…' : `${tickerPhrase.value}…`
 )
+const heroInputEl = ref<HTMLInputElement | null>(null)
+function onHeroGlobalKey(e: KeyboardEvent) {
+  if (e.key === '/' && !['INPUT', 'TEXTAREA', 'SELECT'].includes((e.target as HTMLElement)?.tagName) && !(e.target as HTMLElement)?.isContentEditable) {
+    e.preventDefault()
+    heroInputEl.value?.focus()
+    heroInputEl.value?.select()
+  }
+}
 let tickerTimer: ReturnType<typeof setInterval> | null = null
 onMounted(() => {
-  if (window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) return
-  tickerTimer = setInterval(() => { tickerIdx.value++ }, 4000)
+  if (!window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) {
+    tickerTimer = setInterval(() => { tickerIdx.value++ }, 4000)
+  }
+  document.addEventListener('keydown', onHeroGlobalKey)
 })
-onBeforeUnmount(() => { if (tickerTimer) clearInterval(tickerTimer) })
+onBeforeUnmount(() => {
+  if (tickerTimer) clearInterval(tickerTimer)
+  document.removeEventListener('keydown', onHeroGlobalKey)
+})
 
 // Row A — "Đang được hỏi nhiều": chip tĩnh dẫn thẳng vào một câu tìm kiếm thật.
 const trendingChips = [
@@ -377,7 +411,7 @@ const emptySearchData = () => ({ entities: [], posts: [], users: [], totals: { e
 type SearchData = Awaited<ReturnType<typeof searchAll>>
 type SearchDataCarrier = { readonly key: string; readonly data: SearchData }
 
-const { data, error: searchError, status, refresh } = await useAsyncData<SearchDataCarrier>(
+const searchAsyncData = useAsyncData<SearchDataCarrier>(
   'search-results',
   async () => {
     const key = q.value
@@ -386,6 +420,7 @@ const { data, error: searchError, status, refresh } = await useAsyncData<SearchD
   },
   { watch: [q] }
 )
+const { data, error: searchError, status, refresh } = searchAsyncData
 const lastSuccessfulSearchData = ref<SearchDataCarrier | null>(null)
 watch(data, (value) => {
   if (value) lastSuccessfulSearchData.value = value
@@ -516,6 +551,22 @@ const activeSuggestionId = computed(() => {
   return undefined
 })
 
+function typeIcon(type?: string): string {
+  return (type && TYPE_META[type]?.icon) || 'pin'
+}
+
+function highlightMatch(name: string): string {
+  const q = searchInput.value.trim()
+  const safe = escapeHtml(name)
+  if (!q) return safe
+  const idx = name.toLowerCase().indexOf(q.toLowerCase())
+  if (idx === -1) return safe
+  const before = escapeHtml(name.slice(0, idx))
+  const match = escapeHtml(name.slice(idx, idx + q.length))
+  const after = escapeHtml(name.slice(idx + q.length))
+  return `${before}<mark class="sug-mark">${match}</mark>${after}`
+}
+
 function onTypeahead() {
   const term = searchInput.value.trim()
   if (sugTimer) clearTimeout(sugTimer)
@@ -579,17 +630,22 @@ onBeforeUnmount(() => {
   window.removeEventListener('offline', updateNetworkState)
 })
 
+await searchAsyncData
+
 useSeoMeta({
   title: () => q.value.trim() ? `"${q.value.trim()}" — Tìm kiếm — vinhlong360` : pc('seo_title'),
   description: () => q.value.trim() ? `Kết quả tìm kiếm cho "${q.value.trim()}" trên vinhlong360.` : pc('seo_description'),
   ogTitle: () => q.value.trim() ? `"${q.value.trim()}" — vinhlong360` : pc('og_title'),
   ogDescription: () => pc('og_description'),
+  ogUrl: () => canonicalUrl('/tim-kiem'),
+  twitterCard: 'summary_large_image',
+  robots: () => q.value.trim() ? 'noindex, follow' : 'index, follow',
 })
 useHead({
   link: [{ rel: 'canonical', href: canonicalUrl('/tim-kiem') }],
   script: [{
     type: 'application/ld+json',
-    innerHTML: JSON.stringify({
+    innerHTML: safeJsonLd({
       '@context': 'https://schema.org',
       '@type': 'WebSite',
       name: 'vinhlong360',
@@ -630,7 +686,7 @@ useHead({
 .search-section-secondary .section-head h2 { font-size: var(--text-lg); }
 .search-section-secondary .people-list { margin-bottom: var(--space-3); }
 .people-list { display: flex; flex-wrap: wrap; gap: var(--space-2); }
-.person-chip { display: inline-flex; align-items: center; gap: var(--space-2); padding: var(--space-1) var(--space-3) var(--space-1) var(--space-1); background: var(--card); border: .5px solid var(--line); border-radius: var(--radius-full); text-decoration: none; color: var(--ink); transition: border-color .25s var(--ease-out), transform .25s var(--ease-spring-gentle); }
+.person-chip { display: inline-flex; align-items: center; gap: var(--space-2); padding: var(--space-1) var(--space-3) var(--space-1) var(--space-1); background: var(--card); border: .5px solid var(--line); border-radius: var(--radius-full); text-decoration: none; color: var(--ink); transition: border-color .25s var(--ease-out), transform .25s var(--ease-out-expo); }
 .person-chip:hover { border-color: var(--color-action); transform: translateY(-1px); }
 .person-avatar { width: 30px; height: 30px; display: inline-flex; align-items: center; justify-content: center; border-radius: 50%; background: var(--color-action); color: var(--color-on-action); font-size: var(--text-xs); font-weight: var(--weight-semibold); }
 .person-name { font-size: var(--text-sm); font-weight: var(--weight-medium); }
@@ -640,11 +696,11 @@ useHead({
 .search-post-item:hover { border-color: var(--color-action); }
 .spi-head { display: flex; align-items: center; gap: var(--space-2); margin-bottom: .2rem; }
 .spi-head strong { font-size: var(--text-sm); }
-.spi-type { font-size: var(--text-xs); color: var(--muted); background: var(--bg-alt); padding: 1px 8px; border-radius: var(--radius-full); }
+.spi-type { font-size: var(--text-xs); color: var(--muted); background: var(--bg-alt); padding: var(--space-half) var(--space-2); border-radius: var(--radius-full); }
 .spi-content { font-size: var(--text-sm); color: var(--ink-700); margin: 0; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
 
 .quick-picks { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: var(--space-3); }
-.quick-pick { display: flex; flex-direction: column; align-items: center; gap: var(--space-2); padding: var(--space-4); background: var(--card); border: .5px solid var(--line); border-radius: var(--radius-sheet); text-align: center; box-shadow: var(--shadow-xs); transition: transform .35s var(--ease-spring-gentle), box-shadow .35s var(--ease-out-expo), border-color .3s var(--ease-out); }
+.quick-pick { display: flex; flex-direction: column; align-items: center; gap: var(--space-2); padding: var(--space-4); background: var(--card); border: .5px solid var(--line); border-radius: var(--radius-sheet); text-align: center; box-shadow: var(--shadow-xs); transition: transform .35s var(--ease-out-expo), box-shadow .35s var(--ease-out-expo), border-color .3s var(--ease-out); }
 .quick-pick:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); border-color: var(--color-action); background: var(--color-action-surface); }
 .quick-pick:active { transform: scale(.97); transition-duration: .08s; }
 .quick-pick:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 3px; }
@@ -655,7 +711,7 @@ useHead({
   display: inline-flex; align-items: center; justify-content: center;
   width: 44px; height: 44px; border-radius: var(--radius-surface);
   background-size: cover; background-position: center;
-  transition: transform .35s var(--ease-spring-gentle);
+  transition: transform .35s var(--ease-out-expo);
 }
 .quick-pick-glyph { display: inline-flex; width: 24px; height: 24px; color: rgba(var(--white-rgb),.85); }
 .quick-pick-glyph :deep(svg) { width: 100%; height: 100%; }
@@ -682,23 +738,57 @@ useHead({
 }
 .sug-item {
   display: flex; align-items: center; gap: var(--space-2);
+  min-height: 44px;
   padding: var(--space-2) var(--space-3); border-radius: var(--radius-surface);
   cursor: pointer; font-size: var(--text-sm); color: var(--ink);
   border-left: 3px solid transparent;
-  transition: background .15s, border-color .15s;
+  transition: background .2s var(--ease-out), border-color .2s var(--ease-out);
 }
 .sug-item:hover, .sug-item.active { background: var(--bg-alt); }
 /* Keyboard selection stays explicit in structure and gains one restrained Clay marker. */
 .sug-item[aria-selected="true"] { border-left-color: var(--color-material-clay); background: var(--color-brand-surface); }
-.sug-name { font-weight: var(--weight-medium); }
+.sug-icon {
+  display: inline-flex; align-items: center; justify-content: center;
+  font-size: var(--text-base); color: var(--muted); flex-shrink: 0;
+  transition: color .2s var(--ease-out);
+}
+.sug-item:hover .sug-icon, .sug-item.active .sug-icon, .sug-item[aria-selected="true"] .sug-icon {
+  color: var(--color-action);
+}
+.sug-name { font-weight: var(--weight-medium); flex: 1; min-width: 0; }
+:deep(.sug-mark) {
+  background: var(--color-action-surface, var(--color-brand-surface));
+  color: var(--color-action);
+  font-weight: var(--weight-bold);
+  border-radius: var(--radius-control);
+  padding: 0 var(--space-half);
+}
 .sug-place { color: var(--muted); font-size: var(--text-xs); margin-left: auto; flex-shrink: 0; }
-.sug-all { color: var(--color-action); font-weight: var(--weight-semibold); border-top: .5px solid var(--line); margin-top: var(--space-1); padding-top: var(--space-2); }
+.sug-all {
+  color: var(--color-action); font-weight: var(--weight-semibold);
+  border-top: .5px solid var(--line); margin-top: var(--space-1); padding-top: var(--space-2);
+  display: flex; align-items: center; gap: var(--space-2);
+}
+.sug-all-label { flex: 1; min-width: 0; }
+.sug-all-arrow {
+  flex-shrink: 0; margin-left: auto;
+  transition: transform .25s var(--ease-out-expo);
+}
+.sug-all:hover .sug-all-arrow, .sug-all.active .sug-all-arrow, .sug-all[aria-selected="true"] .sug-all-arrow {
+  transform: translateX(3px);
+}
 .sug-fade-enter-active { transition: opacity .15s, transform .15s; }
 .sug-fade-leave-active { transition: opacity .1s; }
 .sug-fade-enter-from { opacity: 0; transform: translateY(-4px); }
 .sug-fade-leave-to { opacity: 0; }
 .dark .search-suggestions { background: var(--card); border-color: rgba(var(--white-rgb),.1); }
 .dark .sug-item:hover, .dark .sug-item.active { background: rgba(var(--white-rgb),.06); }
+@media (prefers-reduced-motion: reduce) {
+  .sug-all-arrow,
+  .sug-all:hover .sug-all-arrow,
+  .sug-all.active .sug-all-arrow,
+  .sug-all[aria-selected="true"] .sug-all-arrow { transform: none; }
+}
 
 /* Search input polish */
 .search-row-spaced input {
@@ -759,8 +849,8 @@ useHead({
 }
 .search-row-hero::before {
   content: "";
-  position: absolute; left: 0; top: 2px; bottom: 2px;
-  width: 4px; border-radius: var(--radius-full);
+  position: absolute; left: 0; top: 6px; bottom: 6px;
+  width: 2px; border-radius: var(--radius-full);
   background: var(--color-material-clay);
 }
 .search-row-hero .search-input-wrap input {
@@ -797,7 +887,7 @@ useHead({
   background: var(--card); border: .5px solid var(--line); border-radius: var(--radius-full);
   font-size: var(--text-sm); font-weight: var(--weight-medium); color: var(--ink);
   cursor: pointer; white-space: nowrap;
-  transition: border-color .25s var(--ease-out), transform .25s var(--ease-spring-gentle), background .25s var(--ease-out);
+  transition: border-color .25s var(--ease-out), transform .25s var(--ease-out-expo), background .25s var(--ease-out);
 }
 .trending-chip:hover { border-color: var(--color-action); transform: translateY(-1px); background: var(--color-action-surface); }
 .trending-chip:active { transform: scale(.97); transition-duration: .08s; }
@@ -819,6 +909,34 @@ useHead({
 .dark .trending-chip { background: var(--bg-alt); border-color: var(--line); }
 .dark .trending-chip:hover { border-color: var(--color-action); background: var(--color-action-surface); }
 
+/* Curated recovery chips in zero-result state */
+.zero-result-curated-wrap {
+  margin-top: var(--space-4);
+  margin-bottom: var(--space-4);
+  padding: var(--space-4);
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-surface);
+}
+.zero-result-curated-label {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin: 0 0 var(--space-3);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-semibold);
+  color: var(--muted);
+}
+.zero-result-curated-label :deep(svg) {
+  width: 16px;
+  height: 16px;
+  color: var(--color-action);
+}
+.dark .zero-result-curated-wrap {
+  background: var(--bg-alt);
+  border-color: var(--line);
+}
+
 /* Grid results stagger */
 .grid { animation: fadeInGrid .4s var(--ease-out) both; }
 @keyframes fadeInGrid { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
@@ -835,7 +953,7 @@ useHead({
   display: flex; flex-direction: column; align-items: center; gap: var(--space-2);
   padding: var(--space-3); background: var(--card); border: .5px solid var(--line);
   border-radius: var(--radius-sheet); text-decoration: none; color: var(--ink); text-align: center;
-  transition: transform .3s var(--ease-spring-gentle), box-shadow .3s var(--ease-out), border-color .3s;
+  transition: transform .3s var(--ease-out-expo), box-shadow .3s var(--ease-out), border-color .3s;
 }
 .recent-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); border-color: var(--color-action); }
 .recent-card:active { transform: scale(.97); transition-duration: .08s; }
@@ -845,7 +963,7 @@ useHead({
 }
 .recent-image-wrap { position: relative; display: block; width: 56px; height: 56px; }
 .recent-image-disclosure { position: absolute; inset: auto 1px 1px; display: flex; justify-content: flex-end; }
-.recent-image-disclosure :deep([data-image-disclosure]) { font-size: 8px; padding: 1px 3px; }
+.recent-image-disclosure :deep([data-image-disclosure]) { font-size: var(--text-2xs, 11px); padding: var(--space-half) var(--space-1); }
 /* Same EntityCard pairing: seeded gradient (inline style) + white-watermark glyph on top. */
 .recent-placeholder {
   display: flex; align-items: center; justify-content: center;
@@ -854,7 +972,7 @@ useHead({
 .recent-placeholder-glyph { display: inline-flex; width: 28px; height: 28px; color: rgba(var(--white-rgb),.85); }
 .recent-placeholder-glyph :deep(svg) { width: 100%; height: 100%; }
 .recent-name { font-size: var(--text-xs); font-weight: var(--weight-semibold); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; line-height: 1.3; }
-.recent-type { font-size: 10px; color: var(--muted); }
+.recent-type { font-size: var(--text-xs, 12px); color: var(--muted); }
 .dark .recent-card { background: var(--bg-alt); border-color: var(--line); }
 .dark .recent-card:hover { border-color: var(--color-action); background: var(--color-action-surface); }
 

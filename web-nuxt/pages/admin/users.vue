@@ -37,7 +37,7 @@
       </button>
     </div>
 
-    <div v-if="loading" class="admin-table-wrap" aria-busy="true" aria-label="Đang tải danh sách user">
+    <div v-if="loading" class="admin-table-wrap" role="region" tabindex="0" aria-busy="true" aria-label="Đang tải danh sách user">
       <table class="admin-table" aria-label="Danh sách người dùng">
         <thead>
           <tr>
@@ -52,7 +52,7 @@
       </table>
     </div>
     <template v-else>
-      <div class="admin-table-wrap">
+      <div class="admin-table-wrap" role="region" tabindex="0" aria-label="Bảng danh sách người dùng">
       <table class="admin-table" aria-label="Danh sách người dùng">
         <thead>
           <tr>
@@ -113,7 +113,11 @@
           <tr v-if="confirmingId === u.id" class="usr-confirm-row">
             <td colspan="6">
               <div class="usr-confirm" role="alertdialog" :aria-label="confirmAction === 'role' ? 'Xác nhận đổi role' : confirmAction === 'ban' ? 'Xác nhận cấm user' : 'Xác nhận mở cấm user'">
-                <span class="usr-confirm-icon" aria-hidden="true">{{ confirmAction === 'ban' ? '⚠' : confirmAction === 'role' ? '🔑' : '✓' }}</span>
+                <span class="usr-confirm-icon" aria-hidden="true">
+                  <IconLine v-if="confirmAction === 'ban'" name="alert-triangle" />
+                  <IconLine v-else-if="confirmAction === 'role'" name="shield" />
+                  <IconLine v-else name="check" />
+                </span>
                 <span class="usr-confirm-text">
                   <template v-if="confirmAction === 'role'">Đổi role <strong>{{ u.display_name || u.phone }}</strong> thành <strong>{{ confirmRoleValue }}</strong>?</template>
                   <template v-else>{{ confirmAction === 'ban' ? 'Cấm' : 'Mở cấm' }} <strong>{{ u.display_name || u.phone }}</strong>?</template>
@@ -158,7 +162,7 @@
                 <span class="ud-phone">{{ detailUser.phone }}</span>
               </div>
             </div>
-            <button type="button" class="ud-close" aria-label="Đóng" @click="detailUser = null">&times;</button>
+            <button type="button" class="ud-close" aria-label="Đóng" @click="detailUser = null"><IconLine name="x" /></button>
           </header>
           <div class="ud-body">
             <div class="ud-meta">
@@ -481,8 +485,8 @@ onMounted(() => fetchUsers())
   background: var(--bg); color: var(--ink);
   cursor: pointer; transition: border-color .2s var(--ease-soft), box-shadow .2s;
 }
-.usr-filter-select:focus { border-color: var(--primary); outline: none; box-shadow: 0 0 0 2px rgba(var(--primary-rgb),.1); }
-.usr-filter-select:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; box-shadow: none; }
+.usr-filter-select:focus { border-color: var(--color-action); outline: none; box-shadow: 0 0 0 2px rgba(var(--color-action-rgb),.1); }
+.usr-filter-select:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; box-shadow: none; }
 
 /* ── Sortable column headers ── */
 .usr-sort-th {
@@ -493,28 +497,28 @@ onMounted(() => fetchUsers())
   cursor: pointer; white-space: nowrap;
   transition: background .2s var(--ease-soft), color .2s;
 }
-.usr-sort-th:hover { background: var(--primary-light, rgba(var(--primary-rgb),.08)); color: var(--primary); }
-.usr-sort-th:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
-.usr-sort-th.usr-sort-active { color: var(--primary); }
+.usr-sort-th:hover { background: rgba(var(--color-action-rgb),.08); color: var(--color-action); }
+.usr-sort-th:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
+.usr-sort-th.usr-sort-active { color: var(--color-action); }
 .usr-sort-arrow {
   display: inline-block; min-width: .7em; font-size: .8em;
   transition: transform .25s var(--ease-soft);
 }
 
 .dark .usr-filter-select { background: var(--card); border-color: rgba(var(--white-rgb),.08); }
-.dark .usr-sort-th:hover { background: rgba(var(--primary-rgb),.16); }
+.dark .usr-sort-th:hover { background: rgba(var(--color-action-rgb),.16); }
 
 /* ── User cell with avatar ── */
 .usr-cell { display: flex; align-items: center; gap: var(--space-3); }
 .usr-avatar {
   width: 32px; height: 32px; border-radius: 50%;
-  background: var(--primary-light, rgba(var(--primary-rgb),.12)); color: var(--primary);
+  background: rgba(var(--color-brand-rgb),.12); color: var(--color-brand);
   display: flex; align-items: center; justify-content: center;
   font-weight: 700; font-size: .78rem; flex-shrink: 0;
   text-transform: uppercase;
   transition: transform .25s var(--ease-soft), box-shadow .25s;
 }
-.usr-cell:hover .usr-avatar { transform: scale(1.08); box-shadow: 0 2px 8px rgba(var(--primary-rgb),.15); }
+.usr-cell:hover .usr-avatar { transform: scale(1.08); box-shadow: 0 2px 8px rgba(var(--color-brand-rgb),.15); }
 
 /* ── Role select ── */
 .usr-role-select {
@@ -523,8 +527,8 @@ onMounted(() => fetchUsers())
   background: var(--bg); color: var(--ink);
   cursor: pointer; transition: border-color .2s var(--ease-soft), box-shadow .2s;
 }
-.usr-role-select:focus { border-color: var(--primary); outline: none; box-shadow: 0 0 0 2px rgba(var(--primary-rgb),.1); }
-.usr-role-select:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; box-shadow: none; }
+.usr-role-select:focus { border-color: var(--color-action); outline: none; box-shadow: 0 0 0 2px rgba(var(--color-action-rgb),.1); }
+.usr-role-select:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; box-shadow: none; }
 
 /* ── Status badges with dot ── */
 .usr-status {
@@ -536,7 +540,7 @@ onMounted(() => fetchUsers())
 .usr-status-dot {
   width: 6px; height: 6px; border-radius: 50%;
 }
-.usr-active { background: rgba(var(--primary-rgb),.08); color: var(--secondary); }
+.usr-active { background: rgba(var(--color-success-rgb),.08); color: var(--success); }
 .usr-active .usr-status-dot { background: var(--secondary); animation: usr-pulse 2s var(--ease-in-out) infinite; }
 .usr-banned { background: rgba(var(--danger-rgb),.08); color: var(--error); }
 .usr-banned .usr-status-dot { background: var(--error); }
@@ -555,16 +559,16 @@ onMounted(() => fetchUsers())
   cursor: pointer;
   transition: border-color .2s var(--ease-soft), color .2s, background .2s;
 }
-.usr-rolecount:hover { border-color: var(--primary); color: var(--primary); }
-.usr-rolecount:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
-.usr-rolecount.active { border-color: var(--primary); color: var(--primary); background: var(--primary-light, rgba(var(--primary-rgb),.08)); }
+.usr-rolecount:hover { border-color: var(--color-action); color: var(--color-action); }
+.usr-rolecount:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
+.usr-rolecount.active { border-color: var(--color-action); color: var(--color-action); background: rgba(var(--color-action-rgb),.08); }
 .usr-rolecount-n {
   display: inline-flex; align-items: center; justify-content: center;
   min-width: 18px; padding: 0 5px; height: 18px;
   font-size: .7rem; font-weight: 700; border-radius: 100px;
   background: var(--line); color: var(--ink);
 }
-.usr-rolecount.active .usr-rolecount-n { background: var(--primary); color: var(--on-primary); }
+.usr-rolecount.active .usr-rolecount-n { background: var(--color-action); color: var(--text-on-dark); }
 
 /* ── Inline confirm row (ban/unban) ── */
 .usr-confirm-row td { background: var(--bg-alt); }
@@ -582,12 +586,12 @@ onMounted(() => fetchUsers())
   transition: background .25s, color .25s, border-color .25s, transform .35s var(--ease-soft), box-shadow .25s;
 }
 .usr-confirm-actions button:active { transform: scale(.95); transition-duration: .08s; }
-.usr-confirm-actions button:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+.usr-confirm-actions button:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
 .usr-confirm-actions button:disabled { opacity: var(--opacity-disabled); cursor: default; }
 .usr-confirm-actions .btn-danger { color: var(--error); border-color: var(--error); }
 .usr-confirm-actions .btn-danger:hover { background: var(--error); color: var(--on-error); box-shadow: 0 2px 8px rgba(var(--danger-rgb),.2); }
-.usr-confirm-actions .btn-success { color: var(--primary); border-color: var(--primary); }
-.usr-confirm-actions .btn-success:hover { background: var(--primary); color: var(--on-primary); box-shadow: 0 2px 8px rgba(var(--primary-rgb),.2); }
+.usr-confirm-actions .btn-success { color: var(--color-action); border-color: var(--color-action); }
+.usr-confirm-actions .btn-success:hover { background: var(--color-action); color: var(--text-on-dark); box-shadow: 0 2px 8px rgba(var(--color-action-rgb),.2); }
 .usr-confirm-cancel:hover { background: var(--bg-alt); }
 
 /* ── Loading skeleton rows ── */
@@ -609,14 +613,14 @@ onMounted(() => fetchUsers())
 }
 
 /* ── Dark ── */
-.dark .usr-avatar { background: rgba(var(--primary-rgb),.2); }
-.dark .usr-cell:hover .usr-avatar { box-shadow: 0 2px 8px rgba(var(--primary-rgb),.25); }
+.dark .usr-avatar { background: rgba(var(--color-brand-rgb),.2); }
+.dark .usr-cell:hover .usr-avatar { box-shadow: 0 2px 8px rgba(var(--color-brand-rgb),.25); }
 .dark .usr-role-select { background: var(--card); border-color: rgba(var(--white-rgb),.08); }
-.dark .usr-active { background: rgba(var(--primary-rgb),.12); }
+.dark .usr-active { background: rgba(var(--color-success-rgb),.12); }
 .dark .usr-banned { background: rgba(var(--danger-rgb),.12); }
 .dark .usr-rolecount { background: var(--card); border-color: rgba(var(--white-rgb),.08); }
 .dark .usr-rolecount-n { background: rgba(var(--white-rgb),.12); color: var(--ink); }
-.dark .usr-rolecount.active { background: rgba(var(--primary-rgb),.18); }
+.dark .usr-rolecount.active { background: rgba(var(--color-action-rgb),.18); }
 .dark .usr-skeleton-line { background: linear-gradient(90deg, rgba(var(--white-rgb),.06) 25%, rgba(var(--white-rgb),.12) 50%, rgba(var(--white-rgb),.06) 75%); background-size: 200% 100%; }
 .dark .usr-confirm-actions button { background: var(--card); border-color: rgba(var(--white-rgb),.08); }
 .dark .usr-confirm-cancel:hover { background: rgba(var(--white-rgb),.06); }
@@ -630,7 +634,7 @@ onMounted(() => fetchUsers())
 .ud-avatar { width: 44px; height: 44px; font-size: 1rem; }
 .ud-name { font-size: var(--text-base); font-weight: var(--weight-bold); margin: 0; }
 .ud-phone { font-size: var(--text-xs); color: var(--muted); }
-.ud-close { border: none; background: none; font-size: 1.5rem; line-height: 1; cursor: pointer; color: var(--muted); padding: var(--space-2); }
+.ud-close { border: none; background: none; font-size: 1.25rem; line-height: 1; cursor: pointer; color: var(--muted); padding: var(--space-2); min-width: 44px; min-height: 44px; display: inline-flex; align-items: center; justify-content: center; }
 .ud-body { flex: 1; overflow-y: auto; padding: var(--space-4); }
 .ud-meta { display: flex; flex-direction: column; gap: var(--space-3); margin-bottom: var(--space-5); }
 .ud-meta-item { display: flex; align-items: center; justify-content: space-between; font-size: var(--text-sm); }
@@ -646,11 +650,11 @@ onMounted(() => fetchUsers())
 .ud-empty { font-size: var(--text-sm); color: var(--muted); text-align: center; padding: var(--space-4); }
 .ud-post-list { display: flex; flex-direction: column; gap: var(--space-2); }
 .ud-post { display: flex; flex-direction: column; gap: 2px; padding: var(--space-2) var(--space-3); border: .5px solid var(--line); border-radius: var(--radius-surface); text-decoration: none; color: var(--ink); transition: background .2s, border-color .2s; }
-.ud-post:hover { background: var(--bg-alt); border-color: var(--primary); }
-.ud-post-type { font-size: .7rem; font-weight: 600; color: var(--primary); text-transform: uppercase; }
+.ud-post:hover { background: var(--bg-alt); border-color: var(--color-action); }
+.ud-post-type { font-size: .7rem; font-weight: 600; color: var(--color-brand); text-transform: uppercase; }
 .ud-post-content { font-size: var(--text-sm); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
 .ud-post-time { font-size: var(--text-xs); color: var(--muted); }
-.usr-admin-role { color: var(--primary); font-weight: 600; }
+.usr-admin-role { color: var(--color-brand); font-weight: 600; }
 
 .dark .ud-drawer { background: var(--card); box-shadow: -4px 0 32px rgba(var(--black-rgb),.5); }
 .dark .ud-stat { background: rgba(var(--white-rgb),.04); }

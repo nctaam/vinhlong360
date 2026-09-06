@@ -13,7 +13,7 @@
     <div class="admin-toolbar">
       <div class="ent-search-wrap">
         <input v-model="search" class="input" placeholder="Tìm entity…" aria-label="Tìm entity" @input="debounceFetch" @keyup.escape="clearSearch" />
-        <button v-if="search" type="button" class="ent-search-clear" aria-label="Xóa tìm kiếm" @click="clearSearch">&times;</button>
+        <button v-if="search" type="button" class="ent-search-clear" aria-label="Xóa tìm kiếm" @click="clearSearch"><IconLine name="x" /></button>
         <span v-if="searching" class="ent-searching" aria-live="polite">Đang tìm…</span>
       </div>
       <select v-model="typeFilter" class="input admin-select-filter" aria-label="Lọc theo loại entity" @change="fetchEntities(true)">
@@ -21,7 +21,7 @@
         <option v-for="t in kindTypes" :key="t" :value="t">{{ TYPE_META[t]?.emoji || '' }} {{ TYPE_META[t]?.label || t }}</option>
       </select>
       <button type="button" class="btn btn-outline btn-sm" :class="{ 'btn-active-warn': orphansOnly }" @click="orphansOnly = !orphansOnly; fetchEntities(true)">
-        {{ orphansOnly ? '&#10003; Mồ côi' : 'Mồ côi' }}
+        <IconLine v-if="orphansOnly" name="check" /> Mồ côi
       </button>
       <button type="button" class="btn btn-primary" @click="openCreate">+ Tạo mới</button>
       <button type="button" class="btn btn-outline btn-sm" :title="`Tải JSON (${entities.length} entity trang này)`" @click="exportJSON">&#x2B73; JSON ({{ entities.length }})</button>
@@ -109,15 +109,15 @@
       </div>
     </div>
     <template v-else>
-      <div class="admin-table-wrap">
+      <div class="admin-table-wrap" role="region" tabindex="0" aria-label="Bảng danh sách entity">
       <table class="admin-table" aria-label="Danh sách entity">
         <thead>
           <tr>
             <th scope="col" class="admin-th-check"><input type="checkbox" :checked="allSelected" @change="toggleAll" aria-label="Chọn tất cả" /></th>
-            <th scope="col" class="ent-sortable" :aria-sort="sortKey === 'id' ? (sortDir === 'asc' ? 'ascending' : 'descending') : 'none'"><button type="button" class="ent-sort-btn" @click="toggleSort('id')">ID <span class="ent-sort-arrow" aria-hidden="true">{{ sortArrow('id') }}</span></button></th>
-            <th scope="col" class="ent-sortable" :aria-sort="sortKey === 'name' ? (sortDir === 'asc' ? 'ascending' : 'descending') : 'none'"><button type="button" class="ent-sort-btn" @click="toggleSort('name')">Tên <span class="ent-sort-arrow" aria-hidden="true">{{ sortArrow('name') }}</span></button></th>
-            <th scope="col" class="ent-sortable" :aria-sort="sortKey === 'type' ? (sortDir === 'asc' ? 'ascending' : 'descending') : 'none'"><button type="button" class="ent-sort-btn" @click="toggleSort('type')">Loại <span class="ent-sort-arrow" aria-hidden="true">{{ sortArrow('type') }}</span></button></th>
-            <th scope="col" class="ent-sortable" :aria-sort="sortKey === 'place_name' ? (sortDir === 'asc' ? 'ascending' : 'descending') : 'none'"><button type="button" class="ent-sort-btn" @click="toggleSort('place_name')">Địa điểm <span class="ent-sort-arrow" aria-hidden="true">{{ sortArrow('place_name') }}</span></button></th>
+            <th scope="col" class="ent-sortable" :aria-sort="sortKey === 'id' ? (sortDir === 'asc' ? 'ascending' : 'descending') : 'none'"><button type="button" class="ent-sort-btn" @click="toggleSort('id')">ID <span class="ent-sort-arrow" aria-hidden="true"><IconLine v-if="sortIcon('id')" :name="sortIcon('id')" /></span></button></th>
+            <th scope="col" class="ent-sortable" :aria-sort="sortKey === 'name' ? (sortDir === 'asc' ? 'ascending' : 'descending') : 'none'"><button type="button" class="ent-sort-btn" @click="toggleSort('name')">Tên <span class="ent-sort-arrow" aria-hidden="true"><IconLine v-if="sortIcon('name')" :name="sortIcon('name')" /></span></button></th>
+            <th scope="col" class="ent-sortable" :aria-sort="sortKey === 'type' ? (sortDir === 'asc' ? 'ascending' : 'descending') : 'none'"><button type="button" class="ent-sort-btn" @click="toggleSort('type')">Loại <span class="ent-sort-arrow" aria-hidden="true"><IconLine v-if="sortIcon('type')" :name="sortIcon('type')" /></span></button></th>
+            <th scope="col" class="ent-sortable" :aria-sort="sortKey === 'place_name' ? (sortDir === 'asc' ? 'ascending' : 'descending') : 'none'"><button type="button" class="ent-sort-btn" @click="toggleSort('place_name')">Địa điểm <span class="ent-sort-arrow" aria-hidden="true"><IconLine v-if="sortIcon('place_name')" :name="sortIcon('place_name')" /></span></button></th>
             <th scope="col">Place ID</th>
             <th v-for="c in currentKind?.columns || []" :key="c.key" scope="col">{{ c.label }}</th>
             <th scope="col"><span title="Tóm tắt / Ảnh / Địa điểm">Chất lượng</span><span class="admin-help" data-tip="● xanh = có, ● đỏ = thiếu. Thứ tự: Tóm tắt · Ảnh · Địa điểm" tabindex="0" role="img" aria-label="Giải thích chất lượng">?</span></th>
@@ -226,11 +226,11 @@
       </div>
 
       <nav v-if="entities.length || page > 1" class="admin-pagination" role="navigation" aria-label="Phân trang">
-        <button type="button" :disabled="page <= 1" @click="page--; fetchEntities()">← Trước</button>
+        <button type="button" :disabled="page <= 1" @click="page--; fetchEntities()"><IconLine name="arrow-left" /> Trước</button>
         <span class="admin-page-info">
           Trang {{ page }}<span v-if="totalEntities" class="ent-page-hint"> · {{ totalEntities }} entity</span><span v-if="entities.length < limit" class="ent-page-hint"> · trang cuối</span>
         </span>
-        <button type="button" :disabled="entities.length < limit" @click="page++; fetchEntities()">Sau →</button>
+        <button type="button" :disabled="entities.length < limit" @click="page++; fetchEntities()">Sau <IconLine name="arrow-right" /></button>
       </nav>
     </template>
 
@@ -274,7 +274,7 @@
             <label class="form-label" for="ent-summary">Tóm tắt <span class="ent-char-count" :class="{ 'ent-char-warn': (form.summary || '').length > 400, 'ent-char-danger': (form.summary || '').length > 450 }">{{ (form.summary || '').length }}/500</span></label>
             <textarea v-if="!previewSummary" id="ent-summary" v-model="form.summary" class="input admin-textarea" placeholder="Tóm tắt" aria-label="Tóm tắt" rows="3" maxlength="500"></textarea>
             <div v-else class="ent-summary-preview" v-html="mdLite(form.summary)"></div>
-            <button type="button" class="btn btn-ghost btn-sm" @click="previewSummary = !previewSummary">{{ previewSummary ? 'Sửa' : 'Xem trước' }}</button>
+            <button type="button" class="btn btn-ghost btn-sm" :aria-expanded="previewSummary" @click="previewSummary = !previewSummary">{{ previewSummary ? 'Sửa' : 'Xem trước' }}</button>
           </div>
           </fieldset>
 
@@ -402,7 +402,7 @@
               <label class="btn btn-outline btn-sm" style="cursor:pointer; margin:0">
                 <template v-if="uploadingImg">Đang tải &amp; tối ưu…</template>
                 <template v-else><IconLine name="camera" /> Tải ảnh AI biên tập (tự nén WebP)</template>
-                <input type="file" accept="image/*" class="sr-only" :disabled="uploadingImg" @change="uploadImageFile" />
+                <input type="file" accept="image/*" class="sr-only" :disabled="uploadingImg" @change="uploadImageFile" aria-label="Tải ảnh AI biên tập (tự nén WebP)" />
               </label>
             </div>
           </div>
@@ -442,7 +442,7 @@
             <span class="ent-history-field">{{ h.field }}</span>
             <span class="ent-history-diff">
               <del v-if="h.old_value" :title="h.old_value">{{ truncVal(h.old_value) }}</del>
-              <span class="ent-history-arrow">&rarr;</span>
+              <span class="ent-history-arrow"><IconLine name="arrow-right" /></span>
               <ins :title="h.new_value">{{ truncVal(h.new_value) }}</ins>
             </span>
             <span class="ent-history-time">{{ timeAgo(h.created_at) }}</span>
@@ -779,9 +779,9 @@ function toggleSort(key: string) {
     sortDir.value = 'asc'
   }
 }
-function sortArrow(key: string): string {
+function sortIcon(key: string): string {
   if (sortKey.value !== key) return ''
-  return sortDir.value === 'asc' ? '▲' : '▼'
+  return sortDir.value === 'asc' ? 'chevron-up' : 'chevron-down'
 }
 const sortedEntities = computed(() => {
   if (!sortKey.value) return chipFiltered.value
@@ -1330,292 +1330,4 @@ onMounted(() => {
 onUnmounted(() => window.removeEventListener('keydown', onKeydown))
 </script>
 
-<style scoped>
-.ent-subtitle { font-size: .82rem; color: var(--muted); margin-top: 2px; }
-.refresh-spin { display: inline-block; animation: admin-spin .6s linear infinite; }
-
-/* ── Entity name cell with thumbnail ── */
-.ent-name-cell { display: flex; align-items: center; gap: var(--space-3); }
-.ent-thumb-stack { display: flex; align-items: center; gap: var(--space-2); min-width: 0; }
-.ent-thumb {
-  width: 32px; height: 32px; border-radius: 8px; overflow: hidden; flex-shrink: 0;
-  background: var(--bg-alt);
-  transition: transform .25s var(--ease-soft), box-shadow .25s;
-}
-.ent-name-cell:hover .ent-thumb { transform: scale(1.08); box-shadow: 0 2px 8px rgba(var(--black-rgb),.1); }
-.ent-thumb img { width: 100%; height: 100%; object-fit: cover; }
-.ent-thumb-empty {
-  display: flex; align-items: center; justify-content: center;
-  font-size: .85rem; opacity: .3;
-}
-
-/* ── Type badges ── */
-.type-badge {
-  display: inline-block; padding: 2px 10px; border-radius: 100px;
-  font-size: .72rem; font-weight: 600; letter-spacing: .3px;
-  text-transform: uppercase;
-}
-.type-badge[data-type="attraction"] { background: rgba(var(--primary-rgb),.1); color: var(--success); }
-.type-badge[data-type="dish"] { background: rgba(var(--warning-rgb),.1); color: var(--warning); }
-.type-badge[data-type="product"] { background: rgba(var(--blue-rgb),.1); color: rgb(var(--blue-rgb)); }
-.type-badge[data-type="accommodation"] { background: rgba(var(--purple-rgb),.1); color: rgb(var(--purple-rgb)); }
-.type-badge[data-type="nature"] { background: rgba(var(--sys-green-rgb), .1); color: rgb(var(--sys-green-rgb)); }
-.type-badge[data-type="experience"] { background: rgba(var(--warning-rgb),.1); color: var(--warning); }
-.type-badge[data-type="craft_village"] { background: rgba(var(--sys-brown-rgb), .1); color: rgb(var(--sys-brown-rgb)); }
-.type-badge[data-type="event"] { background: rgba(var(--danger-rgb),.1); color: var(--error); }
-.type-badge[data-type="drink"] { background: rgba(var(--teal-rgb),.1); color: rgb(var(--teal-rgb)); }
-.type-badge[data-type="place"] { background: rgba(var(--gray-rgb),.1); color: var(--muted); }
-.dark .type-badge[data-type="accommodation"] { background: rgba(var(--purple-rgb),.15); color: rgb(var(--purple-rgb)); }
-.dark .type-badge[data-type="nature"] { background: rgba(var(--sys-green-rgb), .15); color: rgb(var(--sys-green-rgb)); }
-.dark .type-badge[data-type="craft_village"] { background: rgba(var(--sys-brown-rgb), .15); color: rgb(var(--accent-rgb)); }
-.dark .type-badge[data-type="drink"] { background: rgba(var(--teal-rgb),.15); color: rgb(var(--blue-rgb)); }
-
-/* ── Selected row ── */
-.row-selected td { background: rgba(var(--blue-rgb),.04); transition: background .2s; }
-
-/* ── Empty state ── */
-.ent-empty { display: flex; flex-direction: column; align-items: center; gap: var(--space-2); }
-.ent-empty-icon { font-size: 2rem; opacity: .3; }
-
-/* ── Bulk bar ── */
-.bulk-bar {
-  display: flex; align-items: center; gap: var(--space-3); margin: var(--space-3) 0;
-  padding: var(--space-3) var(--space-4);
-  background: rgba(var(--blue-rgb),.06); border: .5px solid rgba(var(--blue-rgb),.2);
-  border-radius: 10px; font-size: .88rem; font-weight: 500;
-  animation: bulk-slide-in .3s var(--ease-soft);
-}
-@keyframes bulk-slide-in { from { opacity: 0; transform: translateY(-8px); } }
-
-/* ── Image manager ── */
-.img-mgr { border-top: .5px solid var(--line); padding-top: var(--space-3); margin-top: var(--space-1); }
-.img-row { display: flex; align-items: center; gap: var(--space-2); margin: var(--space-2) 0; }
-.img-thumb { width: 40px; height: 40px; object-fit: cover; border-radius: 6px; flex: 0 0 40px; border: .5px solid var(--line); transition: transform .2s var(--ease-out); }
-.img-row:hover .img-thumb { transform: scale(var(--img-hover-scale)); }
-.img-url { flex: 1; font-size: .78rem; color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.img-details { display: flex; flex: 1; min-width: 0; flex-direction: column; gap: 3px; }
-.img-invalid-value { flex: 1; min-width: 0; margin: 0; padding: var(--space-2); border-radius: 6px; background: var(--bg-alt); white-space: pre-wrap; overflow-wrap: anywhere; }
-.img-row-placeholder { color: var(--muted); }
-
-/* ── Search box (clear + searching feedback) ── */
-.btn-active-warn { background: rgba(var(--warning-rgb),.12) !important; border-color: var(--warning) !important; color: var(--warning) !important; font-weight: 600; }
-.ent-search-wrap { position: relative; display: flex; align-items: center; flex: 1 1 220px; min-width: 180px; }
-.ent-search-wrap .input { width: 100%; padding-right: 32px; }
-.ent-search-clear {
-  position: absolute; right: 6px; top: 50%; transform: translateY(-50%);
-  width: 22px; height: 22px; border: none; background: transparent;
-  font-size: 1.1rem; line-height: 1; color: var(--muted); cursor: pointer;
-  border-radius: 50%; display: flex; align-items: center; justify-content: center;
-}
-.ent-search-clear:hover { background: var(--bg-alt); color: var(--ink); }
-.ent-search-clear:focus-visible { outline: 2px solid var(--primary); outline-offset: 1px; }
-.ent-searching {
-  position: absolute; left: 0; top: calc(100% + 2px);
-  font-size: .72rem; color: var(--muted); opacity: .8;
-  animation: ent-fade-in .2s var(--ease-out);
-}
-@keyframes ent-fade-in { from { opacity: 0; } }
-
-/* ── Error banner ── */
-.ent-error-banner {
-  display: flex; align-items: center; gap: var(--space-3);
-  margin: var(--space-3) 0; padding: var(--space-3) var(--space-4);
-  background: var(--error-bg); border: .5px solid var(--error);
-  border-radius: 10px; font-size: .88rem; color: var(--error);
-}
-
-/* ── Skeleton loading rows ── */
-.ent-skeleton { display: flex; flex-direction: column; gap: var(--space-3); width: 100%; padding: var(--space-2) 0; }
-.ent-skel-row { display: flex; align-items: center; gap: var(--space-4); }
-.ent-skel-check { width: 18px; height: 18px; border-radius: 4px; flex: 0 0 18px; }
-.skeleton-text.ent-skel-id { width: 64px; margin: 0; }
-.skeleton-text.ent-skel-name { flex: 1; max-width: 320px; margin: 0; }
-.skeleton-text.ent-skel-type { width: 90px; margin: 0; }
-
-/* ── Acting (deleting) row overlay ── */
-.row-acting td { opacity: .5; pointer-events: none; transition: opacity .2s; }
-
-/* ── Modal form fields (labels + spacing) ── */
-.admin-form-col { gap: var(--space-4); }
-.ent-field { display: flex; flex-direction: column; gap: var(--space-1); }
-.ent-field .form-error { margin-top: 2px; }
-.ent-fieldset { border: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: var(--space-4); }
-.ent-fieldset-legend { font-weight: 600; font-size: .88rem; color: var(--ink); padding: 0; margin-bottom: var(--space-1); }
-.ent-typed-fieldset { border: 1px solid var(--line); border-radius: 10px; padding: var(--space-3); margin-top: var(--space-3); background: var(--bg-alt); }
-.ent-typed-fieldset .ent-fieldset-legend { padding: 0 var(--space-2); }
-.ent-typed-hint { font-weight: 400; color: var(--muted); font-size: .78rem; }
-.ent-typed-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: var(--space-3); }
-
-/* Phase 2: kind overview panel */
-.ent-kinds-panel { border: 1px solid var(--line); border-radius: 10px; margin-bottom: var(--space-4); background: var(--card); }
-.ent-kinds-summary { cursor: pointer; padding: var(--space-3); font-weight: 600; font-size: .9rem; display: flex; align-items: center; gap: var(--space-2); list-style: none; }
-.ent-kinds-summary::-webkit-details-marker { display: none; }
-.ent-kinds-summary::before { content: '▸'; transition: transform .15s; color: var(--muted); }
-.ent-kinds-panel[open] .ent-kinds-summary::before { transform: rotate(90deg); }
-.ent-kinds-total { margin-left: auto; font-weight: 400; color: var(--muted); font-size: .8rem; }
-.ent-kinds-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: var(--space-3); padding: 0 var(--space-3) var(--space-3); }
-.ent-kind-card { border: 1px solid var(--line); border-radius: 8px; padding: var(--space-2) var(--space-3); background: var(--bg-alt); }
-.ent-kind-head { display: flex; align-items: center; gap: var(--space-2); margin-bottom: var(--space-2); }
-.ent-kind-emoji { font-size: 1.1rem; }
-.ent-kind-emoji .line-icon { font-size: inherit; }
-.ent-kind-label { font-weight: 600; font-size: .85rem; }
-.ent-kind-count { margin-left: auto; font-weight: 700; color: var(--primary); font-size: .9rem; }
-.ent-kind-types { display: flex; flex-wrap: wrap; gap: 4px; }
-.ent-kind-chip { border: 1px solid var(--line); background: var(--card); border-radius: 100px; padding: 2px 8px; font-size: .74rem; cursor: pointer; color: var(--ink-700); transition: background .12s, border-color .12s, color .12s; }
-.ent-kind-chip:hover { border-color: var(--primary); color: var(--ink); }
-.ent-kind-chip.active { background: var(--primary); color: var(--text-on-dark, var(--white)); border-color: var(--primary); }
-.ent-kind-chip-n { opacity: .7; font-weight: 600; }
-
-/* GĐ-A: chip lọc nhanh theo nhóm + ô cột đặc thù */
-.ent-chip-row { display: flex; flex-wrap: wrap; gap: var(--space-2); margin: var(--space-3) 0; align-items: center; }
-.ent-chip-note { font-size: .8rem; color: var(--ink-700); }
-.ent-kind-cell { font-size: .85rem; max-width: 140px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.ent-bool-toggle { background: none; border: 1px solid var(--line); border-radius: 6px; padding: 2px 10px; cursor: pointer; font-size: .85rem; color: var(--ink); }
-.ent-bool-toggle:hover { border-color: var(--primary); }
-.bulk-assign-field, .bulk-assign-value { max-width: 170px; font-size: .84rem; padding: 4px 8px; }
-
-/* Phase 1c: season editor + advanced JSON */
-.ent-season-hint { margin: 0 0 var(--space-2); }
-.ent-season-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 4px; }
-.ent-season-cell { padding: 6px 0; border: 1px solid var(--line); border-radius: 6px; background: var(--card); font-size: .78rem; font-weight: 600; cursor: pointer; color: var(--ink-700); transition: background .12s, color .12s, border-color .12s; }
-.ent-season-cell.ent-season-in { background: color-mix(in srgb, var(--primary) 22%, var(--card)); color: var(--ink); border-color: var(--primary); }
-.ent-season-cell.ent-season-peak { background: var(--primary); color: var(--white); border-color: var(--primary); }
-.ent-season-legend { display: flex; gap: var(--space-4); margin-top: var(--space-2); font-size: .76rem; color: var(--ink-700); }
-.ent-season-legend span { display: inline-flex; align-items: center; gap: 4px; }
-.ent-season-swatch { width: 12px; height: 12px; border-radius: 3px; display: inline-block; }
-.ent-season-swatch.ent-season-in { background: color-mix(in srgb, var(--primary) 22%, var(--card)); border: 1px solid var(--primary); }
-.ent-season-swatch.ent-season-peak { background: var(--primary); }
-.ent-advanced-json { font-family: ui-monospace, 'SF Mono', Menlo, monospace; font-size: .8rem; }
-
-/* ── Row action buttons: consistent sizing + 44px touch + focus ── */
-.admin-actions { display: flex; gap: var(--space-1); align-items: center; }
-.admin-actions button { min-height: 44px; }
-.admin-actions button:focus-visible { outline: 2px solid var(--primary); outline-offset: 1px; }
-@media (max-width: 768px) {
-  .admin-actions button { min-height: 44px; }
-  .ent-typed-grid { grid-template-columns: 1fr; }
-  .admin-toolbar { flex-direction: column; align-items: stretch; }
-  .ent-search-wrap { flex-basis: 100%; }
-  .ent-inline-label:focus-visible { outline: 1px dashed var(--primary); outline-offset: 2px; border-radius: 4px; }
-}
-@media (max-width: 520px) {
-  .ent-season-grid { grid-template-columns: repeat(3, 1fr); }
-  .bulk-bar { flex-direction: column; align-items: stretch; }
-  .bulk-assign-field, .bulk-assign-value { max-width: 100%; width: 100%; }
-}
-
-/* ── Pagination hint ── */
-.ent-page-hint { color: var(--muted); font-weight: 400; }
-.admin-pagination button { min-height: 44px; }
-
-/* ── Reduced motion ── */
-@media (prefers-reduced-motion: reduce) {
-  .ent-name-cell:hover .ent-thumb { transform: none; }
-  .img-row:hover .img-thumb { transform: none; }
-  .bulk-bar { animation: none; }
-  .ent-searching { animation: none; }
-}
-
-/* ── Dark mode ── */
-.dark .type-badge[data-type="attraction"] { background: rgba(var(--primary-rgb),.15); }
-.dark .type-badge[data-type="dish"] { background: rgba(var(--warning-rgb),.15); color: var(--warning); }
-.dark .type-badge[data-type="product"] { background: rgba(var(--blue-rgb),.15); }
-.dark .type-badge[data-type="accommodation"] { background: rgba(var(--purple-rgb),.15); }
-.dark .type-badge[data-type="nature"] { background: rgba(var(--sys-green-rgb), .15); }
-.dark .type-badge[data-type="experience"] { background: rgba(var(--warning-rgb),.15); color: var(--accent-text); }
-.dark .type-badge[data-type="craft_village"] { background: rgba(var(--sys-brown-rgb), .15); }
-.dark .type-badge[data-type="event"] { background: rgba(var(--danger-rgb),.15); color: rgb(var(--danger-rgb)); }
-.dark .type-badge[data-type="drink"] { background: rgba(var(--teal-rgb),.15); }
-.dark .type-badge[data-type="place"] { background: rgba(var(--gray-rgb),.18); color: var(--muted); }
-.dark .ent-name-cell:hover .ent-thumb { box-shadow: 0 2px 8px rgba(var(--black-rgb),.3); }
-.dark .row-selected td { background: rgba(var(--blue-rgb),.08); }
-.dark .bulk-bar { background: rgba(var(--blue-rgb),.08); border-color: rgba(var(--blue-rgb),.15); }
-.dark .img-thumb { border-color: rgba(var(--white-rgb),.1); }
-.dark .ent-search-clear:hover { background: rgba(var(--white-rgb),.08); color: var(--ink); }
-.dark .admin-actions button:focus-visible,
-.dark .ent-search-clear:focus-visible { outline-color: var(--primary-fg); }
-/* ── Bulk relationship add ── */
-.bulk-rel-details { margin-top: var(--space-2); }
-.bulk-rel-details summary { cursor: pointer; font-size: .82rem; }
-.bulk-rel-inner { display: flex; flex-direction: column; gap: var(--space-2); margin-top: var(--space-2); }
-
-/* ── Entity change history ── */
-.ent-history { border-top: .5px solid var(--line); padding-top: var(--space-3); margin-top: var(--space-3); }
-.ent-history-item {
-  display: flex; align-items: baseline; gap: var(--space-2);
-  padding: var(--space-1) 0; font-size: .82rem;
-  border-bottom: .5px solid var(--line);
-}
-.ent-history-item:last-child { border-bottom: none; }
-.ent-history-field { font-weight: 600; color: var(--ink); min-width: 70px; }
-.ent-history-arrow { color: var(--muted); flex-shrink: 0; }
-.ent-history-diff { display: inline-flex; align-items: baseline; gap: var(--space-2); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 320px; }
-.ent-history-diff del { color: var(--error); text-decoration: line-through; }
-.ent-history-diff ins { color: var(--success); text-decoration: none; }
-.ent-history-time { color: var(--muted); font-size: .75rem; margin-left: auto; white-space: nowrap; }
-
-/* ── Inline edit ── */
-.ent-inline-label { cursor: default; }
-.ent-inline-label:hover { outline: 1px dashed var(--line); outline-offset: 2px; border-radius: 4px; }
-.ent-inline-input { max-width: 200px; padding: 3px 6px; font-size: .85rem; font-weight: 600; }
-.ent-inline-select { max-width: 140px; padding: 3px 6px; font-size: .78rem; }
-
-/* ── Duplicate warning ── */
-.ent-dup-warn {
-  display: flex; flex-wrap: wrap; align-items: center; gap: 6px;
-  padding: var(--space-2) var(--space-3); border-radius: 8px; font-size: .82rem;
-  background: rgba(var(--warning-rgb),.1); border: .5px solid rgba(var(--warning-rgb),.3);
-  color: var(--warning); animation: ent-fade-in .2s ease;
-}
-.ent-dup-warn strong { white-space: nowrap; }
-.ent-dup-item { background: rgba(var(--warning-rgb),.12); padding: 2px 8px; border-radius: 100px; font-weight: 500; }
-.ent-dup-type { font-weight: 400; font-size: .72rem; opacity: .7; }
-.dark .ent-dup-warn { background: rgba(var(--warning-rgb),.08); border-color: rgba(var(--warning-rgb),.2); color: var(--accent-text); }
-
-/* ── Sortable columns ── */
-.ent-sortable { white-space: nowrap; }
-.ent-sort-btn { background: none; border: none; padding: 0; font: inherit; color: inherit; cursor: pointer; user-select: none; }
-.ent-sort-btn:hover { color: var(--primary); }
-.ent-sort-btn:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; border-radius: var(--radius-control); }
-.ent-sort-arrow { font-size: .65rem; opacity: .7; margin-left: 2px; }
-
-.ent-char-count { font-weight: 400; font-size: .78rem; color: var(--muted); transition: color .2s; }
-.ent-char-warn { color: var(--warning); font-weight: 600; }
-.ent-char-danger { color: var(--error); font-weight: 600; }
-.ent-summary-preview { padding: .5rem .8rem; border: 1px solid var(--line); border-radius: 6px; min-height: 60px; font-size: .9rem; line-height: 1.6; white-space: pre-wrap; }
-
-/* ── Health indicator dots ── */
-.ent-health-cell { white-space: nowrap; }
-.ent-dot {
-  display: inline-flex; align-items: center; justify-content: center;
-  width: 16px; height: 16px; border-radius: 50%;
-  margin-right: 2px; vertical-align: middle; transition: transform .15s, box-shadow .15s;
-  font-size: 9px; line-height: 1; color: var(--text-on-dark);
-}
-.ent-health-cell:hover .ent-dot { transform: scale(1.4); }
-.ent-health-cell:hover .dot-miss { box-shadow: 0 0 0 3px rgba(var(--sys-red-rgb),.15); }
-.dot-ok { background: var(--success); }
-.dot-miss { background: var(--error); opacity: .45; }
-
-/* ── KBYG fields ── */
-.ent-kbyg-details { margin-top: var(--space-3); border: 1px solid var(--line); border-radius: 8px; }
-.ent-kbyg-summary { cursor: pointer; padding: 10px 14px; font-weight: 600; user-select: none; }
-.ent-kbyg-summary:hover { background: rgba(var(--black-rgb),.03); }
-.ent-kbyg-fields { padding: 0 14px 14px; display: flex; flex-direction: column; gap: var(--space-3); }
-.kbyg-amenity-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 6px; }
-.kbyg-amenity-check { display: flex; align-items: center; gap: 5px; font-size: .82rem; cursor: pointer; padding: var(--space-1) 6px; border-radius: 6px; }
-.kbyg-amenity-check:hover { background: rgba(var(--black-rgb),.04); }
-.kbyg-amenity-check input[type="checkbox"] { accent-color: var(--primary); }
-.dark .ent-kbyg-summary:hover { background: rgba(var(--white-rgb),.05); }
-.dark .kbyg-amenity-check:hover { background: rgba(var(--white-rgb),.06); }
-
-/* Sàn 16px cho ô nhập trên thiết bị cảm ứng. Khối sàn chung ở
-   base.css dùng bộ chọn TRẦN (input/select/textarea, độ đặc hiệu
-   0,0,1) nên mọi quy tắc theo lớp — kể cả quy tắc ngay trên — đều
-   thắng nó. Dưới 16px thì iOS Safari tự phóng to khi chạm vào ô và
-   không tự thu lại. max() giữ nguyên ý định cỡ chữ ở màn hình chuột. */
-@media (pointer: coarse) {
-  .ent-inline-input { font-size: max(16px, .85rem); }
-  .ent-inline-select { font-size: max(16px, .78rem); }
-}
-</style>
+<style src="~/assets/css/admin-entities.css"></style>

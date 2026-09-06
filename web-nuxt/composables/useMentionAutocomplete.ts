@@ -37,7 +37,7 @@ export function useMentionAutocomplete(
 
   async function search(q: string) {
     try {
-      const res = await $fetch<{ results: MentionItem[] }>(`/api/mentions?q=${encodeURIComponent(q)}`)
+      const res = await apiFetch<{ results: MentionItem[] }>(`/api/mentions?q=${encodeURIComponent(q)}`)
       mentionResults.value = res.results || []
       mentionActive.value = 0
       mentionOpen.value = mentionResults.value.length > 0

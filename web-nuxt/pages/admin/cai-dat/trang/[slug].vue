@@ -2,18 +2,18 @@
   <div>
     <div class="admin-head-row">
       <div>
-        <NuxtLink to="/admin/cai-dat/trang" class="cs-back">← Nội dung trang</NuxtLink>
+        <NuxtLink to="/admin/cai-dat/trang" class="cs-back"><IconLine name="arrow-left" class="cs-back-icon" /> Nội dung trang</NuxtLink>
         <h1>{{ manifest?.title || slug }}</h1>
         <p class="cs-subtitle" v-if="manifest">
           Sửa nội dung trang
-          <a :href="manifest.route" target="_blank" rel="noopener" class="cs-view">{{ manifest.route }} ↗</a>
+          <a :href="manifest.route" target="_blank" rel="noopener" class="cs-view">{{ manifest.route }} <IconLine name="arrow-up" class="cs-view-icon" /></a>
         </p>
       </div>
     </div>
 
     <div v-if="!manifest" class="cs-missing">
       <p>Không tìm thấy cấu hình cho trang <code>{{ slug }}</code>.</p>
-      <NuxtLink to="/admin/cai-dat/trang" class="btn btn-outline">← Quay lại</NuxtLink>
+      <NuxtLink to="/admin/cai-dat/trang" class="btn btn-outline"><IconLine name="arrow-left" /> Quay lại</NuxtLink>
     </div>
 
     <template v-else>
@@ -81,8 +81,8 @@ onMounted(reload)
 </script>
 
 <style scoped>
-.cs-view { color: var(--primary); text-decoration: none; margin-left: 6px; font-family: 'SF Mono', monospace; font-size: .78rem; }
+.cs-view { color: var(--color-action); text-decoration: none; margin-left: 6px; font-family: 'SF Mono', monospace; font-size: .78rem; }
 .cs-view:hover { text-decoration: underline; }
 .cs-missing { padding: var(--space-6); color: var(--muted); }
-.cs-missing code { font-family: 'SF Mono', monospace; color: var(--primary); }
+.cs-missing code { font-family: 'SF Mono', monospace; color: var(--color-brand); }
 </style>

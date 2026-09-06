@@ -81,7 +81,7 @@ function normalizeFavoriteItem(item: FavoriteItem): FavoriteItem {
 
 export function useFavorites() {
   const favorites = useState<FavoriteItem[]>('favorites', () => [])
-  const { isLoggedIn, authHeaders } = useAuth()
+  const { isLoggedIn, authFetch } = useAuth()
   const { trackSave } = useUserEvents()
 
   function load() {
@@ -104,20 +104,20 @@ export function useFavorites() {
     try {
       const hasLocalItems = favorites.value.length > 0
       const res = hasLocalItems
-        ? await $fetch<{ items?: FavoriteItem[] }>('/api/saved/merge', {
-            method: 'POST', headers: authHeaders(), body: { items: favorites.value },
+        ? await authFetch<{ items?: FavoriteItem[] }>('/api/saved/merge', {
+            method: 'POST', body: { items: favorites.value },
           })
-        : await $fetch<{ items?: FavoriteItem[] }>('/api/saved', { headers: authHeaders() })
+        : await authFetch<{ items?: FavoriteItem[] }>('/api/saved')
       if (Array.isArray(res?.items)) { favorites.value = res.items.filter(isValidFavorite).map(normalizeFavoriteItem); persist() }
     } catch { /* offline / not available — keep local */ }
   }
   async function pushAdd(item: FavoriteItem) {
     if (!isLoggedIn.value || import.meta.server) return
-    try { await $fetch('/api/saved', { method: 'POST', headers: authHeaders(), body: item }) } catch { /* keep local */ }
+    try { await authFetch('/api/saved', { method: 'POST', body: item }) } catch { /* keep local */ }
   }
   async function pushRemove(id: string) {
     if (!isLoggedIn.value || import.meta.server) return
-    try { await $fetch(`/api/saved/${encodeURIComponent(id)}`, { method: 'DELETE', headers: authHeaders() }) } catch { /* keep local */ }
+    try { await authFetch(`/api/saved/${encodeURIComponent(id)}`, { method: 'DELETE' }) } catch { /* keep local */ }
   }
 
   function bootstrapSync() {

@@ -21,7 +21,7 @@
       <button type="button" class="btn btn-secondary" @click="fetchItineraries">Thử lại</button>
     </div>
     <template v-else>
-      <div class="admin-table-wrap">
+      <div class="admin-table-wrap" role="region" tabindex="0" aria-label="Bảng danh sách lịch trình">
         <table class="admin-table" aria-label="Danh sách lịch trình">
           <thead>
             <tr>
@@ -103,16 +103,16 @@
 
           <template v-else>
             <div v-if="!stops.length" class="lt-stops-empty">
-              <span class="lt-stops-empty-icon" aria-hidden="true">&#128205;</span>
+              <IconLine name="pin" class="lt-stops-empty-icon" aria-hidden="true" />
               <span>Chưa có điểm dừng nào. Thêm từ nút bên dưới.</span>
             </div>
             <ul v-else class="lt-stop-list">
               <li v-for="(s, i) in stops" :key="s._key" class="lt-stop-row" :class="`lt-stop-${stopStatus(s).kind}`">
                 <div class="lt-stop-order">
-                  <button type="button" class="lt-move" :disabled="i === 0" aria-label="Lên trên" title="Lên trên" @click="moveStop(i, -1)">&#9650;</button>
+                  <button type="button" class="lt-move" :disabled="i === 0" aria-label="Lên trên" title="Lên trên" @click="moveStop(i, -1)"><IconLine name="chevron-up" /></button>
                   <span class="lt-stop-num">{{ i + 1 }}</span>
-                  <button type="button" class="lt-move" :disabled="i === stops.length - 1" aria-label="Xuống dưới" title="Xuống dưới" @click="moveStop(i, 1)">&#9660;</button>
-                  <span class="lt-stop-status" :class="`lt-stop-status-${stopStatus(s).kind}`" :title="stopStatus(s).title" :aria-label="stopStatus(s).title">{{ stopStatus(s).icon }}</span>
+                  <button type="button" class="lt-move" :disabled="i === stops.length - 1" aria-label="Xuống dưới" title="Xuống dưới" @click="moveStop(i, 1)"><IconLine name="chevron-down" /></button>
+                  <span class="lt-stop-status" :class="`lt-stop-status-${stopStatus(s).kind}`" :title="stopStatus(s).title" :aria-label="stopStatus(s).title"><IconLine :name="stopStatus(s).icon" /></span>
                 </div>
                 <div class="lt-stop-fields">
                   <div class="lt-stop-grid">
@@ -122,7 +122,7 @@
                   <input v-model="s.name" class="input lt-stop-input" placeholder="Tên hiển thị (tùy chọn)" aria-label="Tên hiển thị" />
                   <input v-model="s.note" class="input lt-stop-input" placeholder="Ghi chú (tùy chọn)" aria-label="Ghi chú" />
                 </div>
-                <button type="button" class="lt-stop-del" aria-label="Xóa điểm dừng" title="Xóa" @click="removeStop(i)">&#10005;</button>
+                <button type="button" class="lt-stop-del" aria-label="Xóa điểm dừng" title="Xóa" @click="removeStop(i)"><IconLine name="x" /></button>
               </li>
             </ul>
             <button type="button" class="lt-add-stop" @click="addStop">+ Thêm điểm dừng</button>
@@ -324,10 +324,10 @@ function rowsFromStops(raw: unknown): StopRow[] {
 function stopStatus(s: StopRow): { kind: 'ok' | 'warn'; icon: string; title: string } {
   const hasTime = !!s.time.trim()
   const hasId = !!s.entityId.trim()
-  if (hasTime && hasId) return { kind: 'ok', icon: '✓', title: 'Đầy đủ thời điểm và ID điểm đến' }
-  if (!hasTime && !hasId) return { kind: 'warn', icon: '⚠', title: 'Thiếu thời điểm và ID điểm đến' }
-  if (!hasId) return { kind: 'warn', icon: '⚠', title: 'Thiếu ID điểm đến' }
-  return { kind: 'warn', icon: '⚠', title: 'Thiếu thời điểm' }
+  if (hasTime && hasId) return { kind: 'ok', icon: 'check', title: 'Đầy đủ thời điểm và ID điểm đến' }
+  if (!hasTime && !hasId) return { kind: 'warn', icon: 'alert-triangle', title: 'Thiếu thời điểm và ID điểm đến' }
+  if (!hasId) return { kind: 'warn', icon: 'alert-triangle', title: 'Thiếu ID điểm đến' }
+  return { kind: 'warn', icon: 'alert-triangle', title: 'Thiếu thời điểm' }
 }
 
 function addStop() {
@@ -479,7 +479,7 @@ onUnmounted(() => { if (entitySearchTimer) clearTimeout(entitySearchTimer) })
   display: inline-flex; align-items: center; justify-content: center;
   min-width: 24px; height: 24px; padding: 0 6px;
   border-radius: 8px; font-size: .78rem; font-weight: 700;
-  background: rgba(var(--primary-rgb),.08); color: var(--secondary-fg);
+  background: rgba(var(--color-brand-rgb),.08); color: var(--color-brand);
   transition: transform .2s var(--ease-soft);
 }
 tr:hover .lt-stops-badge { transform: scale(1.1); }
@@ -493,13 +493,13 @@ tr:hover .lt-stops-badge { transform: scale(1.1); }
 
 .dark .lt-area-badge { background: rgba(var(--blue-rgb),.12); }
 .dark .lt-area-badge:hover { background: rgba(var(--blue-rgb),.2); }
-.dark .lt-stops-badge { background: rgba(var(--primary-rgb),.15); }
+.dark .lt-stops-badge { background: rgba(var(--color-brand-rgb),.15); }
 
 .lt-area-cell { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
 .lt-coverage-badge {
   display: inline-flex; align-items: center; max-width: 220px;
   padding: 2px 8px; border-radius: 8px; font-size: .7rem;
-  color: var(--muted); background: rgba(var(--primary-rgb), .06);
+  color: var(--muted); background: rgba(var(--color-brand-rgb), .06);
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
 .lt-area-picker {
@@ -514,8 +514,8 @@ tr:hover .lt-stops-badge { transform: scale(1.1); }
   display: inline-flex; align-items: center; gap: 6px;
   font-size: .82rem; color: var(--text);
 }
-.lt-area-check input { width: 16px; height: 16px; accent-color: var(--primary); }
-.dark .lt-coverage-badge { background: rgba(var(--primary-rgb), .12); }
+.lt-area-check input { width: 16px; height: 16px; accent-color: var(--color-action); }
+.dark .lt-coverage-badge { background: rgba(var(--color-brand-rgb), .12); }
 
 /* --- Visual stops editor --- */
 .lt-stops-head {
@@ -527,7 +527,7 @@ tr:hover .lt-stops-badge { transform: scale(1.1); }
   display: inline-flex; align-items: center; justify-content: center;
   min-width: 22px; height: 22px; padding: 0 6px;
   border-radius: 7px; font-size: .74rem; font-weight: 700;
-  background: rgba(var(--primary-rgb),.08); color: var(--secondary-fg);
+  background: rgba(var(--color-brand-rgb),.08); color: var(--color-brand);
 }
 .lt-mode-toggle {
   appearance: none; border: 1px solid var(--border, rgba(var(--black-rgb),.12));
@@ -551,14 +551,13 @@ tr:hover .lt-stops-badge { transform: scale(1.1); }
 .lt-stop-row {
   display: flex; align-items: flex-start; gap: var(--space-2);
   padding: var(--space-2); border: 1px solid var(--border, rgba(var(--black-rgb),.1));
-  border-radius: 12px; background: rgba(var(--black-rgb),.015);
+  border-radius: var(--radius-surface); background: rgba(var(--black-rgb),.015);
   transition: border-color .2s, background .2s;
 }
 .lt-stop-row:hover { border-color: rgba(var(--blue-rgb),.28); background: rgba(var(--blue-rgb),.03); }
-/* Status colour-coding: a left accent bar for quick scanning. */
-.lt-stop-row { border-left-width: 3px; }
-.lt-stop-ok { border-left-color: rgba(var(--primary-rgb),.5); }
-.lt-stop-warn { border-left-color: rgba(var(--warning-rgb),.55); }
+/* Status colour-coding: a subtle accent for quick scanning. */
+.lt-stop-ok { border-color: rgba(var(--color-success-rgb),.25); }
+.lt-stop-warn { border-color: rgba(var(--warning-rgb),.35); background: rgba(var(--warning-rgb),.03); }
 
 .lt-stop-order { display: flex; flex-direction: column; align-items: center; gap: 2px; flex: 0 0 auto; padding-top: 2px; }
 .lt-stop-num {
@@ -568,17 +567,19 @@ tr:hover .lt-stops-badge { transform: scale(1.1); }
 .lt-stop-status {
   display: inline-flex; align-items: center; justify-content: center;
   width: 20px; height: 20px; margin-top: 2px;
-  border-radius: 50%; font-size: .68rem; font-weight: 700; line-height: 1;
+  border-radius: var(--radius-full); font-size: .75rem; font-weight: 700; line-height: 1;
 }
-.lt-stop-status-ok { background: rgba(var(--primary-rgb),.12); color: var(--secondary-fg); }
+.lt-stop-status .line-icon { font-size: var(--text-2xs, 11px); }
+.lt-stop-status-ok { background: rgba(var(--color-success-rgb),.12); color: var(--success); }
 .lt-stop-status-warn { background: rgba(var(--warning-rgb),.14); color: var(--warning); }
 .lt-move {
   appearance: none; border: none; background: transparent; cursor: pointer;
   color: var(--muted); font-size: .7rem; line-height: 1;
-  width: 44px; height: 44px; border-radius: 6px;
+  width: 44px; height: 44px; border-radius: var(--radius-control);
   display: inline-flex; align-items: center; justify-content: center;
   transition: background .2s, color .2s, transform .2s var(--ease-soft);
 }
+.lt-move .line-icon { font-size: var(--text-sm, 14px); }
 .lt-move:hover:not(:disabled) { background: rgba(var(--blue-rgb),.1); color: var(--info); transform: scale(1.12); }
 .lt-move:focus-visible { outline: 2px solid var(--info); outline-offset: 1px; }
 .lt-move:disabled { opacity: .25; cursor: not-allowed; }
@@ -590,10 +591,11 @@ tr:hover .lt-stops-badge { transform: scale(1.1); }
 .lt-stop-del {
   flex: 0 0 auto; appearance: none; border: none; background: transparent; cursor: pointer;
   color: var(--muted); font-size: .9rem; line-height: 1;
-  width: 44px; height: 44px; min-width: 44px; border-radius: 8px;
+  width: 44px; height: 44px; min-width: 44px; border-radius: var(--radius-control);
   display: inline-flex; align-items: center; justify-content: center;
   transition: background .2s, color .2s, transform .2s var(--ease-soft);
 }
+.lt-stop-del .line-icon { font-size: var(--text-sm, 14px); }
 .lt-stop-del:hover { background: rgba(var(--danger-rgb),.12); color: var(--error); transform: scale(1.1); }
 .lt-stop-del:focus-visible { outline: 2px solid var(--error); outline-offset: 1px; }
 
@@ -601,7 +603,7 @@ tr:hover .lt-stops-badge { transform: scale(1.1); }
   appearance: none; cursor: pointer; margin-top: var(--space-2);
   border: 1px dashed rgba(var(--blue-rgb),.4); background: rgba(var(--blue-rgb),.04);
   color: var(--info); font-size: .84rem; font-weight: 600;
-  padding: 10px 14px; border-radius: 10px; width: 100%; min-height: 44px;
+  padding: 10px 14px; border-radius: var(--radius-control); width: 100%; min-height: 44px;
   transition: background .2s, border-color .2s, transform .2s var(--ease-soft);
 }
 .lt-add-stop:hover { background: rgba(var(--blue-rgb),.1); border-color: rgba(var(--blue-rgb),.6); transform: translateY(-1px); }
@@ -616,7 +618,7 @@ tr:hover .lt-stops-badge { transform: scale(1.1); }
 
 /* Table-row action buttons: comfortable touch target + clear focus ring. */
 .lt-row-btn { min-height: 44px; }
-.lt-row-btn:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+.lt-row-btn:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
 
 /* Duration cell: isolate the clock glyph so it can be tuned per theme. */
 .lt-duration-icon { opacity: .65; }
@@ -628,25 +630,25 @@ tr:hover .lt-stops-badge { transform: scale(1.1); }
   margin-right: auto;
   display: inline-flex; align-items: center;
   padding: var(--space-1) 10px; border-radius: 999px;
-  font-size: .72rem; font-weight: 600; color: var(--primary);
-  background: rgba(var(--primary-rgb),.1); border: .5px solid rgba(var(--primary-rgb),.25);
+  font-size: .72rem; font-weight: 600; color: var(--color-action);
+  background: rgba(var(--color-action-rgb),.1); border: .5px solid rgba(var(--color-action-rgb),.25);
 }
 
 @media (prefers-reduced-motion: reduce) {
   .lt-row-btn { transition: none; }
 }
 
-.dark .lt-stops-count { background: rgba(var(--primary-rgb),.15); }
+.dark .lt-stops-count { background: rgba(var(--color-brand-rgb),.15); }
 .dark .lt-stop-row { background: rgba(var(--white-rgb),.02); border-color: rgba(var(--white-rgb),.08); }
 .dark .lt-stop-row:hover { background: rgba(var(--blue-rgb),.08); }
-.dark .lt-stop-ok { border-left-color: rgba(var(--primary-rgb),.6); }
+.dark .lt-stop-ok { border-left-color: rgba(var(--color-success-rgb),.6); }
 .dark .lt-stop-warn { border-left-color: rgba(var(--warning-rgb),.65); }
 .dark .lt-stops-empty { border-color: rgba(var(--white-rgb),.14); }
-.dark .lt-stop-status-ok { background: rgba(var(--primary-rgb),.2); color: rgb(var(--success-rgb)); }
+.dark .lt-stop-status-ok { background: rgba(var(--color-success-rgb),.2); color: var(--success); }
 .dark .lt-stop-status-warn { background: rgba(var(--warning-rgb),.22); color: var(--warning); }
 .dark .lt-duration { color: rgba(var(--white-rgb),.55); }
 .dark .lt-duration-icon { opacity: .8; }
-.dark .lt-dirty-badge { color: rgb(var(--success-rgb)); background: rgba(var(--primary-rgb),.18); border-color: rgba(var(--success-rgb),.3); }
+.dark .lt-dirty-badge { color: var(--color-action); background: rgba(var(--color-action-rgb),.18); border-color: rgba(var(--color-action-rgb),.3); }
 
 /* ── Skeleton loading ── */
 .lt-skeleton { display: flex; flex-direction: column; gap: var(--space-2); padding: var(--space-4) 0; }

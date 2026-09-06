@@ -24,7 +24,7 @@
 // .card-rule, grain overlay on the no-photo cover. Consolidates the 3 bespoke
 // copies that had drifted (da-luu, lich-trinh/index, nguoi-dung/[id]) into one
 // component so all three render consistently AND all get NuxtImg optimization
-// (the previous nguoi-dung plain-<img> was the drift point).
+// (the previous nguoi-dung plain img element was the drift point).
 //
 // Deliberately NOT built on EntityCard: EntityCard expects a full entity object
 // (images[], attributes, season, updatedAt) to drive its carousel/badges/rating/
@@ -71,12 +71,21 @@ const dateline = computed(() => {
 .saved-entity-link {
   display: flex; align-items: center; gap: .75rem; flex: 1; min-width: 0;
   text-decoration: none; color: var(--ink);
+  border-radius: var(--radius-surface);
+  transition: transform .15s var(--ease-out);
+}
+.saved-entity-link:active {
+  transform: scale(.985);
+}
+.saved-entity-link:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 2px;
 }
 .saved-entity-cover { position: relative; display: block; flex-shrink: 0; width: 80px; height: 56px; border-radius: var(--radius-surface); overflow: hidden; }
 .saved-entity-img { display: block; width: 80px; height: 56px; border-radius: var(--radius-surface); object-fit: cover; flex-shrink: 0; }
 .saved-image-disclosure { position: absolute; inset: auto 2px 2px; display: flex; justify-content: flex-end; }
-.saved-image-disclosure :deep([data-image-disclosure]) { font-size: 9px; padding: 1px 4px; }
-.saved-entity-img-generated { position: relative; background: linear-gradient(160deg, rgba(var(--primary-rgb), .14) 0%, var(--bg-alt) 70%); }
+.saved-image-disclosure :deep([data-image-disclosure]) { font-size: var(--text-2xs, 11px); padding: var(--space-half, 2px) var(--space-1, 4px); }
+.saved-entity-img-generated { position: relative; background: linear-gradient(160deg, rgba(var(--color-action-rgb), .14) 0%, var(--bg-alt) 70%); }
 .saved-entity-img-generated .cover-grain {
   position: absolute; inset: 0; background-image: var(--grain); background-size: 120px 120px; opacity: .06;
 }
@@ -104,5 +113,10 @@ const dateline = computed(() => {
 /* Mobile */
 @media (max-width: 600px) {
   .saved-entity-cover, .saved-entity-img { width: 60px; height: 42px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .saved-entity-link { transition: none; }
+  .saved-entity-link:active { transform: none; }
 }
 </style>

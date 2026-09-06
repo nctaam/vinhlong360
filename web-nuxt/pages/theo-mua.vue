@@ -1,12 +1,12 @@
-﻿<template>
-  <div class="page">
-    <Breadcrumb :items="[{ label: 'Trang chủ', to: '/' }, { label: 'Theo mùa' }]" />
+<template>
+  <div class="page" data-color-system="tri-region-v1">
+    <Breadcrumb :items="[{ label: 'Trang chủ', to: '/' }, { label: 'Theo mùa' }]" :json-ld="true" />
 
     <!-- Hero — retints per quarter (class q-* on the section itself) so
          scrubbing the ring changes the whole hero's color temperature. -->
     <section class="catalog-hero cat-season" :class="'q-' + seasonQuarter.key">
       <div class="catalog-hero-inner">
-        <span class="catalog-hero-icon" :key="seasonEmoji" aria-hidden="true">{{ seasonEmoji }}</span>
+        <span class="catalog-hero-icon" :key="seasonIcon" aria-hidden="true"><IconLine :name="seasonIcon" /></span>
         <div>
           <h1>{{ pc('hero_title', 'Tháng ' + month + ' — đi đâu, ăn gì?') }}</h1>
           <p>{{ pc('hero_subtitle', heroSubtitle) }}</p>
@@ -28,7 +28,7 @@
               :aria-label="'Tháng ' + m"
               @click="month = m"
             ><span class="ring-notch-tick" aria-hidden="true" /></button>
-            <span class="season-ring-emoji" aria-hidden="true">{{ seasonEmoji }}</span>
+            <span class="season-ring-emoji" aria-hidden="true"><IconLine :name="seasonIcon" /></span>
           </div>
         </div>
         <div class="season-moment-text">
@@ -143,12 +143,12 @@
 
     <!-- B2B callout (§1.4: liên hệ/hỏi-giá only, no order form) -->
     <aside class="b2b-callout">
-      <span class="b2b-callout-icon" aria-hidden="true">🤝</span>
+      <span class="b2b-callout-icon" aria-hidden="true"><IconLine name="users" /></span>
       <div class="b2b-callout-text">
         Cần <strong>mua sỉ nông sản theo mùa</strong> hoặc kết nối HTX / nhà vườn?
         Liên hệ trực tiếp cơ sở ở mỗi mục.
       </div>
-      <NuxtLink to="/lien-he" class="b2b-callout-link">Gửi yêu cầu <span aria-hidden="true">→</span></NuxtLink>
+      <NuxtLink to="/lien-he" class="b2b-callout-link">Gửi yêu cầu <IconLine name="arrow-right" class="b2b-arrow" /></NuxtLink>
     </aside>
 
     <!-- Editorial -->
@@ -217,7 +217,7 @@
           <span v-if="isPeak(e)" class="season-badge peak">Cao điểm</span>
           <span v-else-if="isInSeason(e)" class="season-badge">Đang mùa</span>
           <EntityCard :entity="e" />
-          <small class="season-when"><span aria-hidden="true">📅</span>{{ seasonText(e.season) }}</small>
+          <small class="season-when"><IconLine name="calendar" class="season-when-icon" />{{ seasonText(e.season) }}</small>
         </div>
       </div>
       <button
@@ -247,19 +247,19 @@
       <h2>Khám phá thêm</h2>
       <div class="cross-links">
         <NuxtLink to="/san-pham" class="cross-card">
-          <span class="cross-icon" aria-hidden="true">🍊</span>
+          <span class="cross-icon" aria-hidden="true"><IconLine name="fruit" /></span>
           <div><strong>Đặc sản</strong><p>Tất cả sản phẩm</p></div>
         </NuxtLink>
         <NuxtLink to="/ocop" class="cross-card">
-          <span class="cross-icon" aria-hidden="true">⭐</span>
+          <span class="cross-icon" aria-hidden="true"><IconLine name="star" /></span>
           <div><strong>OCOP</strong><p>Sản phẩm đạt chuẩn</p></div>
         </NuxtLink>
         <NuxtLink to="/du-lich" class="cross-card">
-          <span class="cross-icon" aria-hidden="true">🌿</span>
+          <span class="cross-icon" aria-hidden="true"><IconLine name="leaf" /></span>
           <div><strong>Du lịch</strong><p>Trải nghiệm miệt vườn</p></div>
         </NuxtLink>
         <NuxtLink to="/kham-pha/am-thuc" class="cross-card">
-          <span class="cross-icon" aria-hidden="true">🍲</span>
+          <span class="cross-icon" aria-hidden="true"><IconLine name="bowl" /></span>
           <div><strong>Ẩm thực</strong><p>Món ngon Vĩnh Long</p></div>
         </NuxtLink>
       </div>
@@ -281,7 +281,7 @@ const TYPE_EYEBROW: Record<string, string> = {
   product: 'Nông sản',
   dish: 'Ẩm thực',
 }
-const SEASON_EMOJIS = ['💧', '🌿', '🌿', '🌻', '🌻', '🌞', '🌞', '🌞', '🌾', '🌾', '💧', '💧']
+const SEASON_ICONS = ['droplet', 'leaf', 'leaf', 'sprout', 'sprout', 'sun', 'sun', 'sun', 'fruit', 'fruit', 'droplet', 'droplet']
 </script>
 
 <script setup lang="ts">
@@ -316,7 +316,8 @@ watch(month, (m) => {
   nextTick(() => resultsSection.value?.scrollIntoView({ behavior: 'smooth', block: 'start' }))
 })
 
-const seasonEmoji = computed(() => SEASON_EMOJIS[month.value - 1] || '📅')
+const seasonIcon = computed(() => SEASON_ICONS[month.value - 1] || 'calendar')
+const seasonEmoji = seasonIcon
 
 /* Mekong quarters → mood label + note (evocative, not factual claims).
    Extracted to a pure fn so both the hero ring (current month) and the
@@ -427,38 +428,84 @@ useSeoMeta({
   description: () => pc('seo_description'),
   ogTitle: () => pc('og_title'),
   ogDescription: () => pc('og_description'),
+  ogUrl: canonicalUrl('/theo-mua'),
+  twitterCard: 'summary_large_image',
 })
-useHead(() => ({
-  link: [{ rel: 'canonical', href: canonicalUrl('/theo-mua') }],
-  script: [{
-    type: 'application/ld+json',
-    innerHTML: JSON.stringify({
-      '@context': 'https://schema.org',
+useHead(() => {
+  const pageUrl = canonicalUrl('/theo-mua')
+  const graphNodes: any[] = [
+    buildWebSiteSchema(),
+    buildOrganizationSchema(),
+    {
       '@type': 'CollectionPage',
+      '@id': `${pageUrl}#collection`,
       name: `Tháng ${month.value}: đi đâu, ăn gì ở Vĩnh Long`,
       description: `Những mục đang mùa, ngon nhất vào tháng ${month.value} — trái cây, nông sản, ẩm thực, trải nghiệm miệt vườn.`,
-      url: canonicalUrl('/theo-mua'),
+      url: pageUrl,
       numberOfItems: wedge.value.length,
-    }),
-  }, {
-    type: 'application/ld+json',
-    innerHTML: JSON.stringify({
-      '@context': 'https://schema.org',
-      '@type': 'BreadcrumbList',
-      itemListElement: [
-        { '@type': 'ListItem', position: 1, name: 'Trang chủ', item: 'https://vinhlong360.vn/' },
-        { '@type': 'ListItem', position: 2, name: 'Theo mùa' },
-      ],
-    }),
-  }],
-}))
+      isPartOf: { '@id': `${SITE_URL}/#website` },
+      about: {
+        '@type': 'Thing',
+        name: 'Lịch mùa vụ nông sản và du lịch Vĩnh Long',
+        description: 'Cẩm nang tra cứu nông sản, trái cây vào mùa và ẩm thực đặc trưng theo 12 tháng tại Vĩnh Long.',
+      },
+      speakable: buildSpeakableSpecification(['.catalog-hero h1', '.catalog-lead', '.season-section-head']),
+    },
+  ]
+
+  if (wedge.value?.length) {
+    graphNodes.push({
+      '@type': 'ItemList',
+      '@id': `${pageUrl}#items`,
+      name: `Đặc sản tháng ${month.value} tại Vĩnh Long`,
+      description: `Danh mục sản vật ngon nhất vào tháng ${month.value}.`,
+      numberOfItems: wedge.value.length,
+      itemListElement: wedge.value.slice(0, 30).map((e: Entity, i: number) => ({
+        '@type': 'ListItem',
+        position: i + 1,
+        name: e.name,
+        url: `${SITE_URL}${entityPath(e.id)}`,
+      })),
+    })
+  }
+
+  const faqItems: FaqItem[] = [
+    {
+      q: 'Mùa trái cây rộ nhất tại Vĩnh Long diễn ra vào những tháng nào?',
+      a: 'Thời điểm trái cây trĩu cành ngon nhất là từ tháng 5 đến tháng 8, tiêu biểu với chôm chôm, sầu riêng, bưởi năm roi, măng cụt và nhãn xuồng cơm vàng tại các vườn cù lao An Bình.',
+    },
+    {
+      q: 'Đến Vĩnh Long vào mùa nước nổi (tháng 9 đến tháng 11) có gì đặc sắc?',
+      a: 'Mùa nước nổi đem lại nguồn thủy sản phong phú với cá linh non, bông điên điển, cá lóc đồng cùng các trải nghiệm giăng lưới, chèo xuồng ngắm cảnh sông nước phù sa.',
+    },
+    {
+      q: 'Làm thế nào để theo dõi sản vật nào đang vào mùa chín ngon nhất?',
+      a: 'Du khách có thể chọn trực tiếp từng tháng từ Tháng 1 đến Tháng 12 trên chuyên trang Theo Mùa của VinhLong360 để tra cứu trái cây, món ngon và địa điểm trải nghiệm tương ứng.',
+    },
+  ]
+  const faqNode = buildFaqPageSchema(faqItems, `${pageUrl}#faq`)
+  if (faqNode) graphNodes.push(faqNode)
+
+  return {
+    link: [{ rel: 'canonical', href: pageUrl }],
+    script: [
+      {
+        type: 'application/ld+json',
+        innerHTML: safeJsonLd({
+          '@context': 'https://schema.org',
+          '@graph': graphNodes,
+        }),
+      },
+    ],
+  }
+})
 </script>
 
 <style scoped>
 .month-grid { position: relative; display: grid; grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: var(--space-2); }
-.month-grid .quick-pick { border-left: 2px solid color-mix(in srgb, var(--month-tone, var(--primary)) 55%, transparent); }
+.month-grid .quick-pick { border-left: 2px solid color-mix(in srgb, var(--month-tone, var(--color-brand)) 55%, transparent); }
 .month-grid .quick-pick.active {
-  box-shadow: 0 2px 8px rgba(var(--primary-rgb), .28), inset 0 1px 0 rgba(var(--white-rgb), .15);
+  box-shadow: 0 2px 8px rgba(var(--color-action-rgb), .22), inset 0 1px 0 rgba(var(--white-rgb), .15);
 }
 .quick-pick-count { color: var(--muted); font-size: var(--text-xs); }
 
@@ -473,7 +520,7 @@ useHead(() => ({
   display: grid; grid-template-columns: auto 1fr auto; gap: var(--space-4);
   align-items: center;
   margin-top: var(--space-4); padding-top: var(--space-4);
-  border-top: .5px solid rgba(var(--primary-rgb), .15);
+  border-top: .5px solid rgba(var(--color-brand-rgb), .15);
 }
 .season-ring-wrap { flex-shrink: 0; }
 /* Signature: the ring IS the month-picker — a 12-notch annular instrument,
@@ -483,7 +530,7 @@ useHead(() => ({
 .season-ring {
   width: 108px; height: 108px; border-radius: 50%;
   position: relative; display: flex; align-items: center; justify-content: center;
-  box-shadow: inset 0 0 0 1px rgba(var(--primary-rgb), .12);
+  box-shadow: inset 0 0 0 1px rgba(var(--color-brand-rgb), .12);
 }
 .season-ring::after {
   content: ''; position: absolute; inset: 13px; border-radius: 50%;
@@ -528,18 +575,19 @@ useHead(() => ({
 }
 .ring-notch-tick {
   position: absolute; left: 50%; top: 2px; width: 2px; height: 9px;
-  transform: translateX(-50%);
+  transform: translateX(-50%) scaleY(1);
+  transform-origin: top center;
   background: rgba(var(--white-rgb), .55);
   border-radius: var(--radius-full);
-  transition: height .2s var(--ease-out), background .2s var(--ease-out);
+  transition: transform .2s var(--ease-out-expo), background .2s var(--ease-out);
 }
 .ring-notch:hover .ring-notch-tick,
-.ring-notch:focus-visible .ring-notch-tick { height: 13px; background: var(--white); }
-.ring-notch.is-current .ring-notch-tick { height: 13px; width: 3px; background: var(--card); box-shadow: 0 0 0 1px rgba(var(--black-rgb), .12); }
+.ring-notch:focus-visible .ring-notch-tick { transform: translateX(-50%) scaleY(1.44); background: var(--white); }
+.ring-notch.is-current .ring-notch-tick { transform: translateX(-50%) scaleY(1.44) scaleX(1.5); background: var(--card); box-shadow: 0 0 0 1px rgba(var(--black-rgb), .12); }
 .ring-notch:focus-visible { outline: 2px solid var(--card); outline-offset: 1px; }
 
 .season-moment-text strong { display: block; font-size: var(--text-base); font-weight: var(--weight-semibold); color: var(--ink); }
-.season-moment-text strong em { font-family: var(--font-editorial); font-style: italic; font-weight: 500; color: var(--primary-fg); }
+.season-moment-text strong em { font-family: var(--font-editorial); font-style: italic; font-weight: 500; color: var(--color-brand); }
 .season-moment-text p { margin: var(--space-1) 0 0; font-size: var(--text-sm); color: var(--muted); line-height: var(--leading-relaxed); }
 
 /* Hero retinting per quarter (§1.2) — scrubbing the ring changes the whole
@@ -655,6 +703,19 @@ useHead(() => ({
 }
 .b2b-callout-link:hover { background: var(--secondary-dark); transform: translateX(2px); }
 .b2b-callout-link:focus-visible { outline: 2px solid var(--secondary); outline-offset: 3px; }
+.b2b-arrow {
+  display: inline-block;
+  margin-left: var(--space-1);
+  font-size: .95rem;
+  transition: transform var(--duration-fast) var(--ease-out-expo);
+}
+.b2b-callout-link:hover .b2b-arrow {
+  transform: translateX(3px);
+}
+.season-when-icon {
+  margin-right: 4px;
+  vertical-align: -0.1em;
+}
 
 .see-all-count { font-size: var(--text-sm); color: var(--muted); }
 
@@ -682,7 +743,7 @@ useHead(() => ({
   display: flex; align-items: flex-end; justify-content: center; padding-bottom: 4px;
   color: var(--ink); font-size: var(--text-2xs); font-weight: var(--weight-semibold);
   font-variant-numeric: tabular-nums;
-  transition: filter .2s var(--ease-out), transform .2s var(--ease-spring-gentle);
+  transition: filter .2s var(--ease-out), transform .2s var(--ease-out-expo);
 }
 .stl-cell.q-spring  { background: var(--secondary); }
 .stl-cell.q-bloom   { background: color-mix(in srgb, var(--accent) 60%, var(--secondary)); }
@@ -749,11 +810,11 @@ useHead(() => ({
   .month-grid .quick-pick { padding: var(--space-5) var(--space-2); min-height: 48px; }
   .b2b-callout { grid-template-columns: auto 1fr; }
   .b2b-callout-link { grid-column: 1 / -1; justify-content: center; }
-  .stl-cell { font-size: 9px; }
+  .stl-cell { font-size: var(--text-2xs, 11px); }
   .stl-legend { gap: var(--space-1) var(--space-3); }
 }
 @media (max-width: 480px) {
-  .season-badge { font-size: .65rem; padding: 2px var(--space-2); top: var(--space-1); left: var(--space-1); }
+  .season-badge { font-size: var(--text-2xs); padding: 2px var(--space-2); top: var(--space-1); left: var(--space-1); }
   .stl-track { gap: 2px; }
 }
 

@@ -2,11 +2,11 @@
   <div>
     <div class="admin-head-row">
       <div>
-        <NuxtLink to="/admin/cai-dat" class="cs-back">← Cài đặt</NuxtLink>
+        <NuxtLink to="/admin/cai-dat" class="cs-back"><IconLine name="arrow-left" class="cs-back-icon" /> Cài đặt</NuxtLink>
         <h1>Tuyến đường gợi ý</h1>
         <p class="cs-subtitle">
           Dữ liệu các tuyến đường tự khám phá
-          <a href="/tuyen-duong" target="_blank" rel="noopener" class="cs-view">/tuyen-duong ↗</a>
+          <a href="/tuyen-duong" target="_blank" rel="noopener" class="cs-view">/tuyen-duong <IconLine name="arrow-up" class="cs-view-icon" /></a>
         </p>
       </div>
     </div>
@@ -58,19 +58,19 @@ onMounted(reload)
 </script>
 
 <style scoped>
-.cs-view { color: var(--primary); text-decoration: none; margin-left: 6px; font-family: 'SF Mono', monospace; font-size: .78rem; }
+.cs-view { color: var(--color-action); text-decoration: none; margin-left: 6px; font-family: 'SF Mono', monospace; font-size: .78rem; }
 .cs-view:hover { text-decoration: underline; }
 .cs-form-wrap { max-width: 760px; }
 .cs-help {
   max-width: 760px; margin-bottom: var(--space-5); padding: var(--space-4);
-  background: rgba(var(--primary-rgb),.04); border: .5px solid var(--line); border-radius: 12px;
+  background: rgba(var(--color-brand-rgb),.04); border: .5px solid var(--line); border-radius: 12px;
   font-size: .82rem; color: var(--muted); line-height: 1.5;
 }
 .cs-help p { margin: 0; }
-.cs-help code { font-family: 'SF Mono', monospace; font-size: .76rem; color: var(--primary); }
+.cs-help code { font-family: 'SF Mono', monospace; font-size: .76rem; color: var(--color-brand); }
 .cs-skeleton { max-width: 760px; }
 .cs-skel-item { height: 280px; border-radius: 12px; background: var(--line); opacity: .4; animation: cs-pulse 1.5s var(--ease-in-out) infinite; }
-.dark .cs-help { background: rgba(var(--primary-rgb),.08); }
+.dark .cs-help { background: rgba(var(--color-brand-rgb),.08); }
 @media (prefers-reduced-motion: reduce) {
   .cs-skel-item { animation: none; }
 }

@@ -17,6 +17,7 @@ import {
 } from '../../composables/useAdminCases'
 
 definePageMeta({ layout: 'admin' })
+useHead({ title: 'Xử lý yêu cầu — Admin' })
 
 const cases = useAdminCases()
 const scopes = computed<string[]>(() => {

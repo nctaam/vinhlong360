@@ -20,7 +20,7 @@ export function useAI() {
   async function aiChat(message: string, history: ChatMessage[] = []): Promise<ChatResponse> {
     for (let attempt = 0; attempt < 2; attempt++) {
       try {
-        const res = await $fetch<ChatResponse & { session_id?: string }>('/chat', {
+        const res = await apiFetch<ChatResponse & { session_id?: string }>('/chat', {
           method: 'POST',
           body: chatBody(message, history),
         })
@@ -42,6 +42,8 @@ export function useAI() {
     onChunk: (text: string) => void,
     onDone?: (data: Record<string, unknown>) => void,
     history: ChatMessage[] = [],
+    signal?: AbortSignal,
+    onError?: (error: Error) => void,
   ) {
     try {
       const request = () => fetch('/chat/stream', {
@@ -49,13 +51,23 @@ export function useAI() {
         headers: { 'Content-Type': 'application/json', ...authHeaders() },
         credentials: 'same-origin',
         body: JSON.stringify(chatBody(message, history)),
+        signal,
       })
       let res = await request()
       if (res.status === 404 && aiSessionId.value) {
         aiSessionId.value = ''
         res = await request()
       }
-      if (!res.ok || !res.body) return ''
+      if (!res.ok) {
+        let errMessage = 'Không thể kết nối trợ lý ảo'
+        if (res.status === 429) errMessage = 'Hệ thống đang quá tải yêu cầu (429). Vui lòng đợi trong giây lát rồi thử lại.'
+        else if (res.status === 503) errMessage = 'Dịch vụ trợ lý ảo đang tạm bảo trì (503). Vui lòng thử lại sau.'
+        const err = new Error(`${errMessage} (HTTP ${res.status})`)
+        ;(err as any).status = res.status
+        onError?.(err)
+        return ''
+      }
+      if (!res.body) return ''
       const reader = res.body.getReader()
       let fullText = ''
       let completed = false
@@ -79,7 +91,15 @@ export function useAI() {
         try { reader.releaseLock() } catch { /* reader may already be detached */ }
       }
       return fullText
-    } catch { return '' }
+    } catch (err: unknown) {
+      if (err instanceof DOMException && err.name === 'AbortError') return ''
+      if (err instanceof Error) {
+        onError?.(err)
+      } else {
+        onError?.(new Error(String(err || 'Lỗi không xác định khi kết nối trợ lý ảo')))
+      }
+      return ''
+    }
   }
 
   async function aiRecommend(opts: { entityId?: string; month?: number; weather?: string; limit?: number } = {}) {
@@ -89,12 +109,12 @@ export function useAI() {
       if (opts.month) params.set('month', String(opts.month))
       if (opts.weather) params.set('weather', opts.weather)
       if (opts.limit) params.set('limit', String(opts.limit))
-      return await $fetch<any>(`/recommend?${params}`)
+      return await apiFetch<any>(`/recommend?${params}`)
     } catch { return null }
   }
 
   async function aiHealth() {
-    try { return await $fetch<Record<string, unknown>>('/health') } catch { return null }
+    try { return await apiFetch<Record<string, unknown>>('/health') } catch { return null }
   }
 
   async function aiSmartSearch(query: string): Promise<{ reply: string; entities: Entity[]; suggestions: string[] }> {

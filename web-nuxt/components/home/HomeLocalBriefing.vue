@@ -53,7 +53,8 @@
     </template>
 
     <NuxtLink class="home-local-briefing__link" :to="seasonLink">
-      Lịch mùa vụ tháng {{ currentMonth }} →
+      <span>Lịch mùa vụ tháng {{ currentMonth }}</span>
+      <IconLine name="arrow-right" class="hlb-arrow" aria-hidden="true" />
     </NuxtLink>
   </section>
 </template>
@@ -239,6 +240,7 @@ const seasonLink = computed(() => `/theo-mua?mua=${currentMonth.value}`)
 .home-local-briefing__link {
   display: inline-flex;
   align-items: center;
+  gap: var(--space-1);
   min-height: var(--touch-min);
   margin-inline-start: auto;
   color: var(--color-action);
@@ -246,8 +248,29 @@ const seasonLink = computed(() => `/theo-mua?mua=${currentMonth.value}`)
   text-decoration: none;
 }
 
-.home-local-briefing__link:hover,
-.home-local-briefing__link:focus-visible { text-decoration: underline; }
+.hlb-arrow {
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
+  transition: transform .2s var(--ease-out-expo);
+}
+
+.home-local-briefing__link:hover { text-decoration: underline; }
+.home-local-briefing__link:focus-visible {
+  text-decoration: underline;
+  outline: 2px solid var(--color-focus);
+  outline-offset: 2px;
+  border-radius: var(--radius-control);
+}
+
+.home-local-briefing__link:hover .hlb-arrow,
+.home-local-briefing__link:focus-visible .hlb-arrow {
+  transform: translateX(3px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hlb-arrow { transition: none; transform: none; }
+}
 
 @media (max-width: 40rem) {
   .home-local-briefing {

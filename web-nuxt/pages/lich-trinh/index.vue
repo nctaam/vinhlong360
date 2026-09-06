@@ -1,13 +1,13 @@
-﻿<template>
+<template>
   <div class="page" data-color-system="tri-region-v1">
-    <Breadcrumb :items="[{ label: 'Trang chủ', to: '/' }, { label: 'Lịch trình' }]" />
+    <Breadcrumb :items="[{ label: 'Trang chủ', to: '/' }, { label: 'Lịch trình' }]" :json-ld="true" />
 
     <!-- Hero -->
     <section class="catalog-hero cat-itinerary">
       <div class="catalog-hero-inner">
-        <span class="catalog-hero-icon" aria-hidden="true">🗓️</span>
+        <span class="catalog-hero-icon" aria-hidden="true"><IconLine name="calendar" /></span>
         <div>
-          <span class="itin-eyebrow">Lịch trình gợi ý · 3 khu vực</span>
+          <span class="itin-eyebrow dateline-eyebrow">Lịch trình gợi ý · Tỉnh Vĩnh Long hợp nhất (3 vùng trước 7-2025)</span>
           <h1 class="day-arc-title">Chọn một ngày ở Vĩnh Long</h1>
           <p>Có ngày chỉ cần nửa buổi ở miệt vườn, có ngày cần trọn ba hôm để đi hết một khúc sông. Chọn nhịp ngày phù hợp — phần còn lại, tụi mình đã sắp sẵn.</p>
         </div>
@@ -31,7 +31,7 @@
       <div class="day-arc day-arc-strip" role="img" aria-label="Dải màu tượng trưng nhịp một ngày: sáng sớm, trưa, chiều, hoàng hôn">
         <span class="day-arc-track" aria-hidden="true"></span>
         <span v-for="m in DAY_MARKS" :key="m.key" class="day-arc-mark" :style="{ left: m.pct + '%' }">
-          <span class="day-arc-glyph" aria-hidden="true">{{ m.glyph }}</span>
+          <span class="day-arc-glyph" aria-hidden="true"><IconLine :name="m.icon" /></span>
           <span class="day-arc-label">{{ m.label }}</span>
         </span>
       </div>
@@ -73,7 +73,7 @@
           :aria-pressed="paceFilter === p.key"
           @click="paceFilter = paceFilter === p.key ? 'all' : p.key"
         >
-          <span class="pace-chip-glyph" aria-hidden="true">{{ p.glyph }}</span>
+          <span class="pace-chip-glyph" aria-hidden="true"><IconLine :name="p.icon" /></span>
           <span class="pace-chip-label">{{ p.label }}</span>
           <span class="pace-chip-count">{{ countByPace(p.key) }}</span>
         </button>
@@ -119,6 +119,20 @@
             @click="areaFilter = key as string"
           ><IconLine :name="meta.icon" /> {{ meta.name }}</button>
         </div>
+        <div v-if="areaFilter !== 'all' || paceFilter !== 'all'" class="active-filter-ledger" role="region" aria-label="Bộ lọc đang áp dụng">
+          <span class="afl-heading">Đang lọc:</span>
+          <div class="afl-chips">
+            <span v-if="paceFilter !== 'all'" class="afl-chip">
+              <span class="afl-text">Nhịp: {{ PACE_DEFS.find(p => p.key === paceFilter)?.label || paceFilter }}</span>
+              <button type="button" class="afl-remove" aria-label="Bỏ lọc nhịp ngày" @click="paceFilter = 'all'"><IconLine name="x" aria-hidden="true" /></button>
+            </span>
+            <span v-if="areaFilter !== 'all'" class="afl-chip">
+              <span class="afl-text">Khu vực: {{ AREA_META[areaFilter]?.name || areaFilter }}</span>
+              <button type="button" class="afl-remove" aria-label="Bỏ lọc khu vực" @click="areaFilter = 'all'"><IconLine name="x" aria-hidden="true" /></button>
+            </span>
+            <button type="button" class="afl-clear-all" @click="clearAllFilters">Xóa tất cả</button>
+          </div>
+        </div>
       </div>
 
       <p class="result-meta" aria-live="polite">{{ filtered.length }} lịch trình</p>
@@ -136,7 +150,7 @@
       <template v-else-if="filtered.length">
         <div v-if="paceFilter === 'all'" class="pace-shelves">
           <div v-for="shelf in paceShelves" :key="shelf.key" class="pace-shelf">
-            <p class="pace-shelf-kicker">{{ shelf.glyph }} {{ shelf.label }}</p>
+            <p class="pace-shelf-kicker"><IconLine :name="shelf.icon" aria-hidden="true" /> {{ shelf.label }}</p>
             <div class="grid itin">
               <ItineraryCard v-for="it in shelf.items" :key="it.id" :itinerary="it" />
             </div>
@@ -156,7 +170,7 @@
       </div>
 
       <div class="block-cta">
-        <NuxtLink to="/tao-lich-trinh" no-prefetch class="btn btn-primary">+ Tự tạo lịch trình</NuxtLink>
+        <NuxtLink to="/tao-lich-trinh" no-prefetch class="btn btn-primary"><IconLine name="plus" /> Tự tạo lịch trình</NuxtLink>
       </div>
     </section>
 
@@ -165,19 +179,19 @@
       <h2>Khám phá thêm</h2>
       <div class="cross-links">
         <NuxtLink to="/du-lich" class="cross-card">
-          <span class="cross-icon" aria-hidden="true">🌿</span>
+          <span class="cross-icon" aria-hidden="true"><IconLine name="leaf" /></span>
           <div><strong>Du lịch</strong><p>Trải nghiệm miệt vườn</p></div>
         </NuxtLink>
         <NuxtLink to="/luu-tru" class="cross-card">
-          <span class="cross-icon" aria-hidden="true">🏡</span>
+          <span class="cross-icon" aria-hidden="true"><IconLine name="home" /></span>
           <div><strong>Lưu trú</strong><p>Homestay, nhà vườn</p></div>
         </NuxtLink>
         <NuxtLink to="/ban-do" class="cross-card" no-prefetch>
-          <span class="cross-icon" aria-hidden="true">🗺️</span>
+          <span class="cross-icon" aria-hidden="true"><IconLine name="map" /></span>
           <div><strong>Bản đồ</strong><p>Xem trên bản đồ</p></div>
         </NuxtLink>
         <NuxtLink to="/san-pham" class="cross-card">
-          <span class="cross-icon" aria-hidden="true">🍊</span>
+          <span class="cross-icon" aria-hidden="true"><IconLine name="fruit" /></span>
           <div><strong>Đặc sản</strong><p>Mua quà Vĩnh Long</p></div>
         </NuxtLink>
       </div>
@@ -209,24 +223,29 @@ watch(areaFilter, () => {
   nextTick(() => gridSection.value?.scrollIntoView({ behavior: 'smooth', block: 'start' }))
 })
 
+function clearAllFilters() {
+  areaFilter.value = 'all'
+  paceFilter.value = 'all'
+}
+
 useFilterUrl({ vung: areaFilter, nhip: paceFilter }, { vung: 'all', nhip: 'all' })
 
 // ── Day-arc strip (signature ambient device, §10) — 4 fixed time-of-day
 // marks, no per-stop data on the list page (that's the detail page's job).
 const DAY_MARKS = [
-  { key: 'dawn', glyph: '🌅', label: 'Sáng sớm', pct: 6 },
-  { key: 'noon', glyph: '☀️', label: 'Trưa', pct: 37 },
-  { key: 'afternoon', glyph: '🌤️', label: 'Chiều', pct: 68 },
-  { key: 'dusk', glyph: '🌇', label: 'Hoàng hôn', pct: 94 },
+  { key: 'dawn', icon: 'cloud-sun', glyph: '🌅', label: 'Sáng sớm', pct: 6 },
+  { key: 'noon', icon: 'sun', glyph: '☀️', label: 'Trưa', pct: 37 },
+  { key: 'afternoon', icon: 'cloud', glyph: '🌤️', label: 'Chiều', pct: 68 },
+  { key: 'dusk', icon: 'haze', glyph: '🌇', label: 'Hoàng hôn', pct: 94 },
 ]
 
 // ── Pace chips — "how much time do you have" as the first filter axis,
 // computed client-side from itinerary.duration string heuristics (no schema
 // change, per B2/additive-first).
 const PACE_DEFS = [
-  { key: 'half', glyph: '🌤️', label: 'Nửa ngày' },
-  { key: 'full', glyph: '☀️', label: 'Trọn ngày' },
-  { key: 'multi', glyph: '🌅', label: 'Nhiều ngày' },
+  { key: 'half', icon: 'clock', glyph: '🌤️', label: 'Nửa ngày' },
+  { key: 'full', icon: 'sun', glyph: '☀️', label: 'Trọn ngày' },
+  { key: 'multi', icon: 'calendar', glyph: '🌅', label: 'Nhiều ngày' },
 ] as const
 type PaceKey = typeof PACE_DEFS[number]['key']
 
@@ -288,50 +307,42 @@ const emptyMessage = computed(() => {
   return `${regionName} chưa có lịch trình gợi ý, nhưng các vùng khác đang chờ bạn khám phá — hoặc tự tạo một lịch trình riêng theo sở thích.`
 })
 
+const itineraryCollectionSchema = computed(() => ({
+  '@context': 'https://schema.org',
+  '@type': 'CollectionPage',
+  name: 'Lịch trình gợi ý — vinhlong360',
+  description: 'Tuyến tham quan tỉnh Vĩnh Long hợp nhất (3 vùng trước 7-2025) được thiết kế sẵn.',
+  url: canonicalUrl('/lich-trinh'),
+  inLanguage: 'vi',
+}))
+
 useSeoMeta({
   title: 'Lịch trình — vinhlong360',
-  description: 'Tuyến tham quan Vĩnh Long, Bến Tre, Trà Vinh được thiết kế sẵn — chỉ cần chọn và đi. Hoặc tự tạo lịch trình cá nhân theo sở thích.',
+  description: 'Tuyến tham quan tỉnh Vĩnh Long hợp nhất (3 vùng trước 7-2025) được thiết kế sẵn — chỉ cần chọn và đi. Hoặc tự tạo lịch trình cá nhân theo sở thích.',
   ogTitle: 'Lịch trình — vinhlong360',
   ogDescription: 'Tuyến tham quan Vĩnh Long được thiết kế sẵn — chỉ cần chọn và đi.',
   ogImage: '/icons/icon-512.png',
+  ogUrl: () => canonicalUrl('/lich-trinh'),
+  twitterCard: 'summary_large_image',
 })
-useHead({
+
+useHead(() => ({
   link: [{ rel: 'canonical', href: canonicalUrl('/lich-trinh') }],
   script: [
     {
       type: 'application/ld+json',
-      innerHTML: JSON.stringify({
-        '@context': 'https://schema.org',
-        '@type': 'CollectionPage',
-        name: 'Lịch trình gợi ý',
-        description: 'Tuyến tham quan Vĩnh Long, Bến Tre, Trà Vinh được thiết kế sẵn.',
-        url: 'https://vinhlong360.vn/lich-trinh',
-      }),
+      innerHTML: safeJsonLd(itineraryCollectionSchema.value),
     },
     {
       type: 'application/ld+json',
-      innerHTML: JSON.stringify({
-        '@context': 'https://schema.org',
-        '@type': 'BreadcrumbList',
-        itemListElement: [
-          { '@type': 'ListItem', position: 1, name: 'Trang chủ', item: 'https://vinhlong360.vn/' },
-          { '@type': 'ListItem', position: 2, name: 'Lịch trình' },
-        ],
-      }),
+      innerHTML: safeJsonLd(itineraryItemListJsonLd(
+        'Lịch trình gợi ý',
+        'Tuyến tham quan tỉnh Vĩnh Long hợp nhất (3 vùng trước 7-2025) được thiết kế sẵn.',
+        '/lich-trinh',
+        filtered.value,
+      )),
     },
   ],
-})
-
-useHead(() => ({
-  script: [{
-    type: 'application/ld+json',
-    innerHTML: JSON.stringify(itineraryItemListJsonLd(
-      'Lịch trình gợi ý',
-      'Tuyến tham quan Vĩnh Long, Bến Tre, Trà Vinh được thiết kế sẵn.',
-      '/lich-trinh',
-      filtered.value,
-    )),
-  }],
 }))
 </script>
 
@@ -384,12 +395,14 @@ useHead(() => ({
   padding: var(--space-2) var(--space-4); border-radius: var(--radius-full);
   border: .5px solid var(--line); background: var(--card); color: var(--ink);
   font-size: var(--text-sm); font-weight: var(--weight-medium); cursor: pointer;
-  transition: transform .3s var(--ease-spring-gentle), background .25s var(--ease-out), border-color .25s var(--ease-out), box-shadow .25s var(--ease-out);
+  min-height: 44px;
+  transition: transform .3s var(--ease-out-expo), background .25s var(--ease-out), border-color .25s var(--ease-out), box-shadow .25s var(--ease-out);
 }
 .pace-chip-glyph { font-size: var(--text-base); line-height: 1; }
 .pace-chip-count { font-size: var(--text-2xs); color: var(--muted); font-variant-numeric: tabular-nums; }
 .pace-chip:hover { transform: translateY(-1px); box-shadow: var(--shadow-xs); border-color: var(--border); }
 .pace-chip:active { transform: scale(.96); transition-duration: .08s; }
+.pace-chip:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
 /* --color-on-action thay cho chữ trắng cứng: --secondary đảo sáng-tối theo
    theme, nên ở Nocturne nền thành --night-leaf và chữ trắng chỉ đạt
    2.80:1. Đây cũng là hợp đồng mà tri-region-color.css áp cho mọi control
@@ -417,12 +430,12 @@ useHead(() => ({
 .saved-cta { text-align: center; margin-top: var(--space-4); }
 .saved-cta .btn:active { transform: scale(.97); transition-duration: .08s; }
 .saved-row { margin-top: var(--space-3); }
-.saved-row .card { transition: transform .35s var(--ease-spring-gentle), box-shadow .35s var(--ease-out-expo); }
+.saved-row .card { transition: transform .35s var(--ease-out-expo), box-shadow .35s var(--ease-out-expo); }
 .saved-row .card:hover { transform: translateY(-5px); box-shadow: var(--shadow-lg); }
 .saved-row .card:active { transform: translateY(-1px) scale(.98); transition-duration: .08s; }
 
 .journey-stats { display: flex; flex-wrap: wrap; gap: var(--space-3); margin-top: var(--space-3); }
-.js-item { display: flex; align-items: center; gap: var(--space-1); padding: var(--space-2) var(--space-3); background: var(--bg-alt); border-radius: var(--radius-surface); font-size: var(--text-sm); transition: background .3s var(--ease-out), transform .35s var(--ease-spring-gentle), box-shadow .3s var(--ease-out); }
+.js-item { display: flex; align-items: center; gap: var(--space-1); padding: var(--space-2) var(--space-3); background: var(--bg-alt); border-radius: var(--radius-surface); font-size: var(--text-sm); transition: background .3s var(--ease-out), transform .35s var(--ease-out-expo), box-shadow .3s var(--ease-out); }
 .js-item:hover { background: var(--card); transform: translateY(-2px); box-shadow: var(--shadow-xs); }
 .js-item:active { transform: scale(.97); transition-duration: .08s; }
 .js-emoji { font-size: var(--text-lg); }
@@ -430,9 +443,10 @@ useHead(() => ({
 /* Premium hero stat-items: brand-tinted surface + accent border */
 .catalog-hero .stat-item {
   background: rgba(var(--secondary-rgb), .04);
-  border-left: 3px solid var(--secondary);
+  border: 1px solid rgba(var(--secondary-rgb), .16);
+  box-shadow: inset 3px 0 0 var(--secondary);
   border-radius: var(--radius-control);
-  transition: background .3s var(--ease-out), transform .35s var(--ease-spring-gentle);
+  transition: background .3s var(--ease-out), transform .35s var(--ease-out-expo);
 }
 .catalog-hero .stat-item:hover {
   background: rgba(var(--secondary-rgb), .08);

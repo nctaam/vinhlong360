@@ -301,10 +301,10 @@ onUnmounted(() => window.removeEventListener('keydown', onKeydown))
   background: var(--bg); color: var(--muted); font-size: .82rem; font-weight: 500; cursor: pointer;
   transition: background .2s, color .2s, border-color .2s, transform .15s var(--ease-soft);
 }
-.img-tab:hover { border-color: var(--primary); color: var(--ink); }
+.img-tab:hover { border-color: var(--color-action); color: var(--ink); }
 .img-tab:active { transform: scale(.97); }
-.img-tab.active { background: var(--primary); color: var(--text-on-dark); border-color: var(--primary); }
-.img-tab:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+.img-tab.active { background: var(--color-action); color: var(--color-on-action, var(--white)); border-color: var(--color-action); }
+.img-tab:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
 .img-tab-count { font-size: .72rem; font-weight: 700; padding: 0 6px; border-radius: 10px; background: rgba(var(--ink-rgb),.08); }
 .img-tab.active .img-tab-count { background: rgba(var(--white-rgb),.25); }
 
@@ -315,16 +315,16 @@ onUnmounted(() => window.removeEventListener('keydown', onKeydown))
   background: var(--bg); overflow: hidden; transition: box-shadow .15s;
 }
 .img-card.img-focused {
-  box-shadow: 0 0 0 2px var(--primary); border-color: var(--primary);
+  box-shadow: 0 0 0 2px var(--color-action); border-color: var(--color-action);
 }
 .img-thumb-wrap { position: relative; aspect-ratio: 4 / 3; background: var(--bg-alt); overflow: hidden; }
 .img-thumb { width: 100%; height: 100%; object-fit: cover; display: block; }
 .img-thumb.img-broken { object-fit: contain; opacity: .35; }
 .img-conf {
-  position: absolute; top: 8px; right: 8px; font-size: .68rem; font-weight: 700;
+  position: absolute; top: 8px; right: 8px; font-size: var(--text-2xs); font-weight: 700;
   padding: 2px 8px; border-radius: 100px; color: var(--text-on-dark); backdrop-filter: blur(4px);
 }
-.conf-high { background: rgba(var(--primary-rgb),.9); }
+.conf-high { background: rgba(var(--color-action-rgb),.9); }
 .conf-mid { background: rgba(var(--accent-rgb), .9); }
 .conf-low { background: rgba(var(--danger-rgb),.9); }
 
@@ -332,12 +332,12 @@ onUnmounted(() => window.removeEventListener('keydown', onKeydown))
 .img-entity { font-weight: 600; font-size: .9rem; color: var(--ink); line-height: 1.3; }
 .img-row { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
 .img-type-badge { display: inline-block; padding: 2px 8px; border-radius: 100px; font-size: .7rem; font-weight: 600; background: rgba(var(--ink-rgb),.06); color: var(--muted); }
-.img-lic-badge { display: inline-block; padding: 2px 8px; border-radius: 100px; font-size: .7rem; font-weight: 700; background: rgba(var(--primary-rgb),.12); color: var(--secondary-fg); }
+.img-lic-badge { display: inline-block; padding: 2px 8px; border-radius: 100px; font-size: .7rem; font-weight: 700; background: rgba(var(--color-action-rgb),.12); color: var(--secondary-fg); }
 .img-lic-badge.lic-warn { background: rgba(var(--danger-rgb),.13); color: var(--error); }
 .img-detail { font-size: .76rem; color: var(--muted); line-height: 1.4; }
 .img-detail-k { font-weight: 600; color: var(--ink); }
 .img-reject-note { color: var(--error); }
-.img-src-link { font-size: .76rem; font-weight: 600; color: var(--primary-fg); text-decoration: none; }
+.img-src-link { font-size: .76rem; font-weight: 600; color: var(--color-action); text-decoration: none; }
 .img-src-link:hover { text-decoration: underline; }
 
 .img-actions { display: flex; gap: var(--space-2); padding: var(--space-3); margin-top: auto; }
@@ -345,17 +345,18 @@ onUnmounted(() => window.removeEventListener('keydown', onKeydown))
 .img-status-final { padding: var(--space-3); margin-top: auto; }
 .img-badge { display: inline-block; padding: 2px 9px; border-radius: 100px; font-size: .72rem; font-weight: 700; }
 .ib-pending { background: rgba(var(--warning-rgb),.12); color: var(--warning); }
-.ib-approved { background: rgba(var(--primary-rgb),.12); color: var(--secondary-fg); }
+.ib-approved { background: rgba(var(--color-action-rgb),.12); color: var(--secondary-fg); }
 .ib-rejected { background: rgba(var(--gray-rgb),.15); color: var(--muted); }
 
 .img-reject { padding: 0 var(--space-3) var(--space-3); display: flex; flex-direction: column; gap: var(--space-2); }
 .img-reason-input { padding: 9px 12px; border: .5px solid var(--line); border-radius: 10px; font-size: .85rem; background: var(--bg); color: var(--ink); min-height: 40px; }
 .img-reason-input:focus { outline: none; border-color: var(--error); box-shadow: 0 0 0 3px rgba(var(--danger-rgb),.1); }
+.img-reason-input:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
 .img-reject-btns { display: flex; gap: var(--space-2); }
 .img-reject-btns .btn-danger { flex: 1; }
 .btn-ghost-sm { background: none; border: none; color: var(--muted); font-size: .82rem; cursor: pointer; padding: var(--space-2) var(--space-3); border-radius: 8px; }
 .btn-ghost-sm:hover { background: var(--bg-alt); color: var(--ink); }
-.btn-ghost-sm:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+.btn-ghost-sm:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
 
 .img-load-more { margin-top: var(--space-5); }
 
@@ -368,14 +369,14 @@ onUnmounted(() => window.removeEventListener('keydown', onKeydown))
 
 /* ── Confidence bar (additive visual of match_confidence) ── */
 .img-conf-bar { height: 4px; border-radius: 100px; background: rgba(var(--gray-rgb),.18); overflow: hidden; }
-.img-conf-fill { display: block; height: 100%; border-radius: 100px; background: var(--muted); transition: width .3s var(--ease-soft); }
+.img-conf-fill { display: block; height: 100%; border-radius: 100px; background: var(--muted); }
 .img-conf-bar.conf-high .img-conf-fill { background: var(--secondary-fg); }
 .img-conf-bar.conf-mid .img-conf-fill { background: var(--warning); }
 .img-conf-bar.conf-low .img-conf-fill { background: var(--error); }
 
 /* ── Meta links row ── */
 .img-links { display: flex; flex-wrap: wrap; gap: var(--space-3); }
-.img-entity-link { font-size: .76rem; font-weight: 600; color: var(--primary-fg); text-decoration: none; }
+.img-entity-link { font-size: .76rem; font-weight: 600; color: var(--color-action); text-decoration: none; }
 .img-entity-link:hover { text-decoration: underline; }
 
 /* ── Broken-image affordance ── */

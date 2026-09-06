@@ -14,7 +14,7 @@
       <div class="db-form-grid">
         <label class="db-field">
           <span class="db-field-label">Tên cơ quan *</span>
-          <input v-model="f.name" class="input" :class="{ 'db-input-error': formErrors.name }" required placeholder="UBND xã An Bình" :aria-invalid="!!formErrors.name" :aria-describedby="formErrors.name ? 'db-err-name' : undefined" />
+          <input v-model="f.name" class="input" :class="{ 'db-input-error': formErrors.name }" required placeholder="UBND xã An Bình" aria-label="Tên cơ quan" :aria-invalid="!!formErrors.name" :aria-describedby="formErrors.name ? 'db-err-name' : undefined" />
           <span v-if="formErrors.name" id="db-err-name" class="db-field-error" role="alert">{{ formErrors.name }}</span>
         </label>
         <label class="db-field">
@@ -37,19 +37,19 @@
         </label>
         <label class="db-field">
           <span class="db-field-label">Số điện thoại</span>
-          <input v-model="f.phone" class="input" placeholder="0270 xxx xxxx" />
+          <input v-model="f.phone" class="input" placeholder="0270 xxx xxxx" aria-label="Số điện thoại" />
         </label>
         <label class="db-field">
           <span class="db-field-label">Địa chỉ</span>
-          <input v-model="f.address" class="input" placeholder="Ấp ..., xã ..." />
+          <input v-model="f.address" class="input" placeholder="Ấp ..., xã ..." aria-label="Địa chỉ" />
         </label>
         <label class="db-field">
           <span class="db-field-label">Giờ làm việc</span>
-          <input v-model="f.hours" class="input" placeholder="7:30-17:00, T2-T6" />
+          <input v-model="f.hours" class="input" placeholder="7:30-17:00, T2-T6" aria-label="Giờ làm việc" />
         </label>
         <label class="db-field db-field-full">
           <span class="db-field-label">Nguồn (URL chính thống) *</span>
-          <input v-model="f.sourceUrl" class="input" :class="{ 'db-input-error': formErrors.sourceUrl, 'db-input-ok': sourceUrlValid }" required placeholder="https://...gov.vn/..." :aria-invalid="!!formErrors.sourceUrl" :aria-describedby="formErrors.sourceUrl ? 'db-err-url' : undefined" />
+          <input v-model="f.sourceUrl" class="input" :class="{ 'db-input-error': formErrors.sourceUrl, 'db-input-ok': sourceUrlValid }" required placeholder="https://...gov.vn/..." aria-label="Nguồn URL chính thống" :aria-invalid="!!formErrors.sourceUrl" :aria-describedby="formErrors.sourceUrl ? 'db-err-url' : undefined" />
           <span v-if="formErrors.sourceUrl" id="db-err-url" class="db-field-error" role="alert">{{ formErrors.sourceUrl }}</span>
           <span v-else-if="f.sourceUrl && !sourceUrlValid" class="db-field-hint">Nên là URL chính thống .gov.vn (bắt đầu bằng https://)</span>
         </label>
@@ -75,7 +75,7 @@
         <span class="db-sr-only">Đang tải danh sách cơ quan...</span>
       </div>
       <template v-else>
-        <div v-if="facilities.length" class="admin-table-wrap">
+        <div v-if="facilities.length" class="admin-table-wrap" role="region" tabindex="0" aria-label="Bảng danh bạ cơ quan">
           <table class="admin-table" aria-label="Danh bạ cơ sở">
             <thead><tr><th scope="col">Cơ quan</th><th scope="col">Liên hệ</th><th scope="col">Nguồn</th><th scope="col"><span class="sr-only">Thao tác</span></th></tr></thead>
             <tbody>
@@ -147,7 +147,8 @@ function validate(): boolean {
   return Object.keys(errs).length === 0
 }
 
-const { data: places } = await useAsyncData('adb-places', () => apiFetch<Entity[]>('/api/places').catch((err) => { showToast?.('Không tải được danh sách xã/phường', 'error'); console.error('[danh-ba] places fetch failed', err); return [] }))
+const placesAsyncData = useAsyncData('adb-places', () => apiFetch<Entity[]>('/api/places').catch((err) => { showToast?.('Không tải được danh sách xã/phường', 'error'); console.error('[danh-ba] places fetch failed', err); return [] }))
+const { data: places } = placesAsyncData
 const placeById = computed<Record<string, Entity>>(() => Object.fromEntries((places.value || []).map(p => [p.id, p])))
 const wardGroups = computed(() => {
   const wards = (places.value || []).filter(p => ADMIN_LEVELS.includes(p.level || ''))
@@ -223,6 +224,7 @@ async function del(e: Entity) {
 }
 
 onMounted(loadFacilities)
+await placesAsyncData
 </script>
 
 <style scoped>
@@ -234,7 +236,7 @@ onMounted(loadFacilities)
   padding: var(--space-5); margin-bottom: var(--space-6);
   transition: box-shadow .3s var(--ease-soft), border-color .3s;
 }
-.db-form:focus-within { box-shadow: 0 4px 20px rgba(var(--black-rgb),.06); border-color: rgba(var(--primary-rgb),.2); }
+.db-form:focus-within { box-shadow: 0 4px 20px rgba(var(--black-rgb),.06); border-color: rgba(var(--color-action-rgb),.2); }
 .db-form-title { font-size: .95rem; font-weight: 600; margin: 0 0 var(--space-4); }
 .db-form-grid {
   display: grid; grid-template-columns: 1fr 1fr;
@@ -245,7 +247,7 @@ onMounted(loadFacilities)
   font-size: .78rem; font-weight: 600; color: var(--muted);
   transition: color .2s;
 }
-.db-field:focus-within .db-field-label { color: var(--primary); }
+.db-field:focus-within .db-field-label { color: var(--color-action); }
 .db-field-full { grid-column: 1 / -1; }
 
 /* ── Inline validation ── */
@@ -257,7 +259,7 @@ onMounted(loadFacilities)
 .db-field-hint { font-size: .74rem; color: var(--muted); }
 .db-input-error { border-color: var(--error) !important; }
 .db-input-error:focus { box-shadow: 0 0 0 3px rgba(var(--danger-rgb),.12); }
-.db-input-ok { border-color: rgba(var(--primary-rgb),.5); }
+.db-input-ok { border-color: rgba(var(--color-action-rgb),.5); }
 
 /* ── Form actions ── */
 .db-form-actions { display: flex; align-items: center; gap: var(--space-3); flex-wrap: wrap; }
@@ -269,7 +271,7 @@ onMounted(loadFacilities)
 
 /* ── Delete button: touch target + focus-visible ── */
 .db-del-btn { border: none; min-height: 44px; }
-.db-del-btn:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+.db-del-btn:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
 
 /* ── Screen-reader-only ── */
 .db-sr-only {
@@ -295,15 +297,15 @@ onMounted(loadFacilities)
 .sf-dirty-badge {
   display: inline-flex; align-items: center;
   padding: var(--space-1) 10px; border-radius: 999px;
-  font-size: .72rem; font-weight: 600; color: var(--primary);
-  background: rgba(var(--primary-rgb),.1); border: .5px solid rgba(var(--primary-rgb),.25);
+  font-size: .72rem; font-weight: 600; color: var(--color-action);
+  background: rgba(var(--color-action-rgb),.1); border: .5px solid rgba(var(--color-action-rgb),.25);
 }
 
 /* ── Dark ── */
 .dark .db-form { background: var(--card); border-color: rgba(var(--white-rgb),.06); }
-.dark .db-form:focus-within { box-shadow: 0 4px 20px rgba(var(--black-rgb),.3); border-color: rgba(var(--primary-rgb),.3); }
+.dark .db-form:focus-within { box-shadow: 0 4px 20px rgba(var(--black-rgb),.3); border-color: rgba(var(--color-action-rgb),.3); }
 .dark .db-count-badge { background: rgba(var(--blue-rgb),.12); }
-.dark .sf-dirty-badge { color: rgb(var(--success-rgb)); background: rgba(var(--primary-rgb),.18); border-color: rgba(var(--success-rgb),.3); }
+.dark .sf-dirty-badge { color: rgb(var(--success-rgb)); background: rgba(var(--color-action-rgb),.18); border-color: rgba(var(--success-rgb),.3); }
 .dark .db-input-ok { border-color: rgba(var(--success-rgb),.45); }
 
 @media (max-width: 640px) {

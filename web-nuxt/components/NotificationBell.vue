@@ -1,7 +1,7 @@
 <template>
   <div class="notif-bell" v-if="isLoggedIn">
     <button type="button" ref="triggerRef" class="notif-trigger" @click="toggle" :aria-label="unreadCount > 0 ? `${unreadCount} thông báo chưa đọc` : 'Thông báo'" :aria-expanded="open">
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+      <IconLine name="bell" aria-hidden="true" />
       <span v-if="unreadCount > 0" class="notif-badge">{{ unreadCount > 9 ? '9+' : unreadCount }}</span>
     </button>
 
@@ -35,9 +35,9 @@
             <span class="notif-loading-text">Đang tải thông báo…</span>
           </div>
           <div v-else-if="fetchError && !notifications.length" class="notif-error" role="alert">
-            <span class="notif-error-icon" aria-hidden="true">⚠️</span>
+            <span class="notif-error-icon" aria-hidden="true"><IconLine name="alert-triangle" /></span>
             <p>Không thể tải thông báo</p>
-            <button type="button" class="notif-retry" :disabled="retrying" @click="retryFetch">{{ retrying ? 'Đang thử…' : 'Thử lại' }}</button>
+            <button type="button" class="notif-retry" :disabled="retrying" @click="retryFetch"><IconLine name="repeat" aria-hidden="true" /> {{ retrying ? 'Đang thử…' : 'Thử lại' }}</button>
           </div>
           <div v-else-if="!notifications.length" class="notif-empty">
             <IconLine name="bell" class="notif-empty-icon" />
@@ -115,7 +115,7 @@ onUnmounted(() => stopPolling())
   background: linear-gradient(90deg, var(--river-600) 0%, var(--amber-600) 52%, var(--clay-600) 100%);
 }
 .dark .notif-rule { background: linear-gradient(90deg, var(--river-legacy-dark) 0%, var(--amber-500) 52%, var(--clay-400) 100%); }
-.notif-see-all { display: block; text-align: center; padding: var(--space-3); border-top: .5px solid var(--line); font-size: var(--text-sm); font-weight: var(--weight-semibold); color: var(--primary-fg); text-decoration: none; }
+.notif-see-all { display: block; text-align: center; padding: var(--space-3); border-top: .5px solid var(--line); font-size: var(--text-sm); font-weight: var(--weight-semibold); color: var(--color-action); text-decoration: none; }
 .notif-see-all:hover { background: var(--bg-alt); }
 .notif-error { text-align: center; padding: var(--space-5); color: var(--muted); font-size: .88rem; display: flex; flex-direction: column; align-items: center; gap: var(--space-2); }
 .notif-error-icon { font-size: 1.5rem; }
@@ -125,11 +125,11 @@ onUnmounted(() => stopPolling())
   border: .5px solid var(--line); border-radius: var(--radius-full);
   background: var(--card); color: var(--ink); cursor: pointer;
   font-size: var(--text-sm); font-weight: var(--weight-semibold);
-  transition: background .25s var(--ease-out), transform .25s var(--ease-spring-gentle), border-color .25s var(--ease-out);
+  transition: background .25s var(--ease-out), transform .25s var(--ease-out-expo), border-color .25s var(--ease-out);
 }
 .notif-retry:hover { background: var(--bg-alt); border-color: var(--ink); }
 .notif-retry:active { transform: scale(.96); transition-duration: .08s; }
-.notif-retry:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+.notif-retry:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
 .notif-loading-text { font-size: var(--text-xs); color: var(--muted); margin-top: var(--space-1); }
 /* dark overrides for .notif-retry in dark-overrides.css */
 @media (max-width: 600px) {

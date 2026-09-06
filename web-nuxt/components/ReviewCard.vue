@@ -83,7 +83,7 @@ const { timeAgo } = useTimeAgo()
 .dark .ri-content-testimony::before { color: var(--river-legacy-dark); opacity: .55; }
 
 .ri-helpful { margin-top: var(--space-2); display: inline-flex; align-items: center; gap: .3rem; font-size: var(--text-sm); padding: .3rem .7rem; border: 1px solid var(--border); border-radius: 999px; background: var(--bg); color: var(--ink-700); cursor: pointer; min-height: 44px; }
-.ri-helpful.active { background: color-mix(in srgb, var(--primary) 12%, var(--bg)); border-color: var(--primary); color: var(--primary-fg); }
+.ri-helpful.active { background: var(--color-action-surface); border-color: var(--color-action); color: var(--color-action); }
 .ri-helpful-count { font-weight: var(--weight-medium); font-variant-numeric: tabular-nums; }
 .ri-actions { margin-inline-start: auto; display: inline-flex; gap: var(--space-2); }
 .ri-action-btn {

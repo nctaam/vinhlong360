@@ -1,6 +1,6 @@
 <template>
-  <section class="legal-page about-page">
-    <Breadcrumb :items="[{ label: 'Trang chủ', to: '/' }, { label: 'Chính sách bảo mật' }]" />
+  <section class="legal-page about-page" data-color-system="tri-region-v1">
+    <Breadcrumb :items="[{ label: 'Trang chủ', to: '/' }, { label: 'Chính sách bảo mật' }]" :json-ld="true" />
     <!-- Hero — brand-masthead dùng chung (declutter-3 T1: thống nhất với gioi-thieu,
          bỏ catalog-hero cat-org lai tạp trên trang pháp lý) -->
     <section class="brand-masthead about-masthead">
@@ -33,9 +33,9 @@
     <section class="legal-disclosure" aria-labelledby="cookie-inventory-title">
       <h2 id="cookie-inventory-title">Cookie và kiểm soát</h2>
       <p>Cookie cần thiết giúp đăng nhập và bảo vệ biểu mẫu. Cookie tuỳ chọn chỉ lưu khi bạn chọn và có thể xoá trong cài đặt.</p>
-      <div class="legal-table-wrap">
-        <table class="legal-cookie-table">
-          <thead><tr><th>Tên / vai trò runtime</th><th>Chủ quản & mục đích</th><th>Hạn / quyết định</th><th>Thuộc tính</th><th>Đồng ý / xoá</th><th>Lưu giữ / ngừng dùng</th></tr></thead>
+      <div class="legal-table-wrap" role="region" tabindex="0" aria-label="Bảng danh mục cookie và kiểm soát">
+        <table class="legal-cookie-table" aria-label="Danh mục cookie và kiểm soát">
+          <thead><tr><th scope="col">Tên / vai trò runtime</th><th scope="col">Chủ quản & mục đích</th><th scope="col">Hạn / quyết định</th><th scope="col">Thuộc tính</th><th scope="col">Đồng ý / xoá</th><th scope="col">Lưu giữ / ngừng dùng</th></tr></thead>
           <tbody>
             <tr v-for="cookie in doc.cookieInventory" :key="cookie.name">
               <th scope="row">{{ cookie.name }}<br><small>{{ cookie.runtimeRole }}</small></th>
@@ -82,26 +82,29 @@ const introHtml = computed(() => mdLite(doc.value.intro))
 // already shows the order, so strip the inline number to avoid duplicates.
 const stripNum = (h: string) => (h || '').replace(/^\s*\d+\.\s*/, '')
 
+// Schema graph unified with '@type': 'WebPage' and Privacy Policy FAQs
+const privacySchema = computed(() =>
+  buildPrivacyPolicySchemaGraph({
+    title: doc.value.title,
+    description: doc.value.seo_description,
+  })
+)
+
 useSeoMeta({
   title: () => doc.value.seo_title,
   description: () => doc.value.seo_description,
   ogTitle: () => doc.value.seo_title,
   ogDescription: () => doc.value.seo_description,
+  ogUrl: () => canonicalUrl('/chinh-sach-bao-mat'),
+  twitterCard: 'summary_large_image',
 })
-useHead({
+
+useHead(() => ({
   link: [{ rel: 'canonical', href: canonicalUrl('/chinh-sach-bao-mat') }],
-  script: [{
-    type: 'application/ld+json',
-    innerHTML: JSON.stringify({
-      '@context': 'https://schema.org',
-      '@type': 'BreadcrumbList',
-      itemListElement: [
-        { '@type': 'ListItem', position: 1, name: 'Trang chủ', item: 'https://vinhlong360.vn/' },
-        { '@type': 'ListItem', position: 2, name: 'Chính sách bảo mật' },
-      ],
-    }),
-  }],
-})
+  script: [
+    { type: 'application/ld+json', innerHTML: safeJsonLd(privacySchema.value) },
+  ],
+}))
 </script>
 
 <style src="~/assets/css/legal.css"></style>

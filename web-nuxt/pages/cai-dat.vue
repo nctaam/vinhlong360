@@ -1,10 +1,10 @@
 <template>
-  <section class="page settings-page">
-    <Breadcrumb :items="[{ label: 'Trang chủ', to: '/' }, { label: 'Cài đặt' }]" />
+  <section class="page settings-page" data-color-system="tri-region-v1">
+    <Breadcrumb :items="[{ label: 'Trang chủ', to: '/' }, { label: 'Cài đặt' }]" :json-ld="true" />
 
     <div v-if="!isLoggedIn" class="settings-guest card">
       <p class="dateline-eyebrow">QUẦY TIẾP TÂN</p>
-      <h1>Cài đặt</h1>
+      <h1 class="settings-title">Cài đặt</h1>
       <p>Bạn cần đăng nhập để chỉnh sửa hồ sơ.</p>
       <button type="button" class="btn btn-primary" @click="openAuth()">Đăng nhập</button>
     </div>
@@ -51,7 +51,7 @@
               {{ uploadingAvatar ? 'Đang tải...' : 'Đổi ảnh' }}
             </button>
           </div>
-          <input ref="avatarInput" type="file" accept="image/jpeg,image/png,image/webp" hidden @change="onAvatarChange" />
+          <input ref="avatarInput" type="file" accept="image/jpeg,image/png,image/webp" hidden aria-label="Tải lên ảnh đại diện" @change="onAvatarChange" />
         </div>
 
         <div class="sf-cover-section">
@@ -69,19 +69,19 @@
               {{ uploadingCover ? 'Đang tải...' : 'Đổi ảnh bìa' }}
             </button>
           </div>
-          <input ref="coverInput" type="file" accept="image/jpeg,image/png,image/webp" hidden @change="onCoverChange" />
+          <input ref="coverInput" type="file" accept="image/jpeg,image/png,image/webp" hidden aria-label="Tải lên ảnh bìa" @change="onCoverChange" />
         </div>
 
         <div class="sf-field sf-readonly-group">
           <span class="sf-label">Số điện thoại <span class="sf-hint">— không thể thay đổi</span></span>
-          <input type="tel" class="sf-input sf-readonly" :value="user?.phone" readonly tabindex="0" />
+          <input type="tel" class="sf-input sf-readonly" :value="user?.phone" readonly tabindex="0" autocomplete="tel" aria-label="Số điện thoại" />
         </div>
 
         <div class="sf-field sf-readonly-group">
           <span class="sf-label">Username <span class="sf-hint">— không thể thay đổi</span></span>
           <div class="sf-username-row">
             <span class="sf-username-prefix">vinhlong360.vn/nguoi-dung/</span>
-            <input type="text" class="sf-input sf-username-input sf-readonly" :value="user?.username || user?.id || '—'" readonly tabindex="0" />
+            <input type="text" class="sf-input sf-username-input sf-readonly" :value="user?.username || user?.id || '—'" readonly tabindex="0" autocomplete="username" aria-label="Tên người dùng (username)" />
           </div>
         </div>
 
@@ -91,6 +91,8 @@
             v-model="fullName"
             type="text"
             class="sf-input"
+            autocomplete="name"
+            aria-label="Họ và tên thật"
             maxlength="100"
             placeholder="Họ và tên thật"
           />
@@ -102,13 +104,16 @@
             v-model="displayName"
             type="text"
             class="sf-input"
+            autocomplete="nickname"
+            aria-label="Tên bạn muốn hiển thị"
             enterkeyhint="done"
             maxlength="50"
             required
             :aria-invalid="!!nameError"
+            :aria-describedby="nameError ? 'cd-err-name' : undefined"
             placeholder="Tên bạn muốn hiển thị"
           />
-          <span v-if="nameError" class="sf-error" role="alert">{{ nameError }}</span>
+          <span v-if="nameError" id="cd-err-name" class="sf-error" role="alert">{{ nameError }}</span>
         </label>
 
         <label class="sf-field">
@@ -128,6 +133,7 @@
             v-model="email"
             type="email"
             class="sf-input"
+            aria-label="Địa chỉ email"
             maxlength="200"
             placeholder="email@example.com"
             autocomplete="email"
@@ -163,11 +169,11 @@
         <form class="settings-form" @submit.prevent="savePassword">
           <label v-if="hasPassword" class="sf-field">
             <span class="sf-label">Mật khẩu hiện tại</span>
-            <input v-model="currentPw" type="password" class="sf-input" autocomplete="current-password" required />
+            <input v-model="currentPw" type="password" class="sf-input" autocomplete="current-password" aria-label="Mật khẩu hiện tại" required />
           </label>
           <label class="sf-field">
             <span class="sf-label">{{ hasPassword ? 'Mật khẩu mới' : 'Đặt mật khẩu' }}</span>
-            <input v-model="newPw" type="password" class="sf-input" minlength="6" autocomplete="new-password" required />
+            <input v-model="newPw" type="password" class="sf-input" minlength="6" autocomplete="new-password" aria-label="Mật khẩu mới" required />
             <div v-if="newPw" class="pw-strength" aria-live="polite">
               <div class="pw-bar">
                 <span v-for="i in 4" :key="i" :class="['pw-segment', { filled: i <= pwStrength.score }]" :style="i <= pwStrength.score ? { background: pwStrength.color } : {}"></span>
@@ -177,7 +183,7 @@
           </label>
           <label class="sf-field">
             <span class="sf-label">Xác nhận mật khẩu</span>
-            <input v-model="confirmPw" type="password" class="sf-input" minlength="6" autocomplete="new-password" required />
+            <input v-model="confirmPw" type="password" class="sf-input" minlength="6" autocomplete="new-password" aria-label="Xác nhận mật khẩu" required />
             <span v-if="confirmPw && confirmPw !== newPw" class="sf-error" role="alert">Mật khẩu xác nhận không khớp</span>
           </label>
           <div class="sf-actions">
@@ -204,7 +210,7 @@
           <p class="sf-hint"><IconLine name="check" aria-hidden="true" /> Đã bật. Còn {{ twoFA.recovery_remaining }} mã khôi phục.</p>
           <label class="sf-field">
             <span class="sf-label">Nhập mã để tắt 2FA</span>
-            <input v-model="disableCode" type="text" inputmode="numeric" class="sf-input" placeholder="Mã 6 số hoặc mã khôi phục" />
+            <input v-model="disableCode" type="text" inputmode="numeric" autocomplete="one-time-code" class="sf-input" placeholder="Mã 6 số hoặc mã khôi phục" aria-label="Mã 6 số hoặc mã khôi phục" />
           </label>
           <button type="button" class="btn btn-danger-text btn-sm" :disabled="securityBusy" @click="withBusy(() => disable2FA())">Tắt xác thực 2 bước</button>
         </template>
@@ -214,7 +220,7 @@
           <p class="sf-hint">Hoặc nhập khoá thủ công: <code>{{ setupData.secret }}</code></p>
           <label class="sf-field">
             <span class="sf-label">Mã xác nhận</span>
-            <input v-model="setupCode" type="text" inputmode="numeric" maxlength="6" class="sf-input" />
+            <input v-model="setupCode" type="text" inputmode="numeric" maxlength="6" autocomplete="one-time-code" class="sf-input" aria-label="Mã xác nhận 6 chữ số" />
           </label>
           <button type="button" class="btn btn-primary btn-sm" :disabled="securityBusy" @click="withBusy(() => confirm2FASetup())">Xác nhận &amp; bật</button>
         </template>
@@ -353,169 +359,11 @@
     </div>
 
     <!-- Tab: Khu vực & đề xuất -->
-    <div
+    <SettingsPreferencesTab
       v-if="ff('preference_ui_v1')"
-      v-show="activeTab === 'khu-vuc-de-xuat'"
-      id="khu-vuc-de-xuat"
-      class="settings-card card preference-card sediment-head"
-      role="tabpanel"
-      aria-labelledby="tab-khu-vuc-de-xuat"
-      :hidden="activeTab !== 'khu-vuc-de-xuat'"
-      :tabindex="activeTab === 'khu-vuc-de-xuat' ? 0 : -1"
-    >
-      <div class="preference-heading">
-        <div>
-          <p class="preference-kicker">GỢI Ý THEO CÁCH CỦA BẠN</p>
-          <h2>Khu vực &amp; đề xuất</h2>
-        </div>
-        <span class="preference-revision">Bạn kiểm soát</span>
-      </div>
-      <p class="sf-hint preference-intro">Xem hệ thống đang dùng khu vực nào, chọn sở thích chủ động và kiểm soát các tín hiệu dùng để sắp xếp nội dung.</p>
+      :active="activeTab === 'khu-vuc-de-xuat'"
+    />
 
-      <div v-if="!preferenceOnline" class="preference-banner preference-offline" role="status" aria-live="polite">
-        <div>
-          <strong>Đang ngoại tuyến</strong>
-          <p>Ảnh chụp thiết lập gần nhất vẫn đọc được. Các thay đổi được khóa để tránh ghi đè khi chưa kết nối.</p>
-        </div>
-        <button type="button" class="btn btn-secondary btn-sm" data-action="retry-preferences" @click="retryPreferences">Thử kết nối lại</button>
-      </div>
-
-      <div v-if="preferenceConflict" class="preference-banner preference-conflict" role="alert">
-        <div>
-          <strong>Dữ liệu trên máy chủ đã thay đổi</strong>
-          <p>Đang hiển thị ảnh chụp mới từ máy chủ. Hãy xem lại trước khi thử lưu thay đổi của bạn.</p>
-        </div>
-        <button type="button" class="btn btn-secondary btn-sm" data-action="retry-conflict" :disabled="preferenceBusy" @click="retryPreferenceConflict">Thử lưu lại</button>
-      </div>
-
-      <div
-        v-if="preferenceView.location_reconfirm_required"
-        class="preference-banner preference-reconfirm"
-        data-state="location-reconfirm"
-        role="status"
-        aria-live="polite"
-      >
-        <div>
-          <strong>Chọn lại khu vực ưu tiên</strong>
-          <p>Khu vực trước đây cần được chọn lại để bảo vệ quyền riêng tư. Sở thích và dữ liệu đã lưu của bạn vẫn được giữ nguyên.</p>
-        </div>
-        <button type="button" class="btn btn-primary btn-sm" data-action="choose-region-again" @click="focusManualRegionChoices">
-          Chọn lại khu vực
-        </button>
-      </div>
-      <p v-if="preferenceNotice" class="preference-notice" role="status" aria-live="polite">{{ preferenceNotice }}</p>
-      <div v-if="preferences.loading.value && !preferenceBusy" class="sf-loading" role="status" aria-label="Đang tải thiết lập đề xuất"><div class="spinner spinner-sm"></div> Đang tải thiết lập...</div>
-
-      <dl class="preference-summary">
-        <div>
-          <dt>Khu vực ưu tiên</dt>
-          <dd>{{ preferenceRegionLabel }}</dd>
-        </div>
-        <div>
-          <dt>Nguồn khu vực</dt>
-          <dd>{{ preferenceSourceLabel }}</dd>
-        </div>
-        <div>
-          <dt>Độ chính xác công bố</dt>
-          <dd>{{ preferenceAccuracyLabel }}</dd>
-        </div>
-        <div>
-          <dt>Nhóm tuổi nội dung</dt>
-          <dd>{{ preferenceAgeBandLabel }}</dd>
-        </div>
-      </dl>
-
-      <p class="preference-state-copy" :data-consent-state="preferenceView.location_consent_state">{{ preferenceLocationStateCopy }}</p>
-
-      <section class="preference-section" aria-labelledby="preference-region-title">
-        <div class="preference-section-head">
-          <div>
-            <h3 id="preference-region-title">Đổi khu vực thủ công</h3>
-            <p>Chọn thủ công không cần bật vị trí và vẫn được dùng khi vị trí đang tắt.</p>
-          </div>
-        </div>
-        <div ref="manualRegionGroup" class="preference-options" role="group" aria-label="Chọn khu vực ưu tiên" data-region-group="manual" tabindex="-1">
-          <button
-            v-for="region in PREFERENCE_REGIONS"
-            :key="region.id || 'all'"
-            type="button"
-            class="preference-option"
-            :class="{ selected: preferenceView.region_id === region.id && preferenceView.location_source === 'manual' }"
-            :data-region="region.id || 'all'"
-            :aria-pressed="preferenceView.region_id === region.id && preferenceView.location_source === 'manual'"
-            :disabled="preferenceMutationsDisabled"
-            @click="setPreferenceRegion(region)"
-          >{{ region.label }}</button>
-        </div>
-      </section>
-
-      <section class="preference-section" aria-labelledby="preference-interest-title">
-        <div class="preference-section-head">
-          <div>
-            <h3 id="preference-interest-title">Sở thích chủ động</h3>
-            <p>Những lựa chọn này được ưu tiên hơn tín hiệu suy đoán.</p>
-          </div>
-        </div>
-        <div v-if="preferenceView.explicit_interests.length" class="preference-chips" aria-label="Sở thích đã chọn">
-          <span v-for="interest in preferenceView.explicit_interests" :key="interest" class="preference-chip">{{ preferenceInterestLabel(interest) }}</span>
-        </div>
-        <p v-else class="sf-hint">Chưa chọn sở thích chủ động.</p>
-      </section>
-
-      <section class="preference-section preference-controls" aria-label="Kiểm soát đề xuất">
-        <label class="notif-pref-item preference-control">
-          <div class="notif-pref-info">
-            <span class="preference-control-mark" aria-hidden="true">VỊ TRÍ</span>
-            <div>
-              <strong>Cho phép vị trí gần đúng</strong>
-              <span class="sf-hint">Bật hoặc dừng tín hiệu GPS/IP. Khu vực thủ công không bị xóa.</span>
-            </div>
-          </div>
-          <input
-            type="checkbox"
-            class="toggle"
-            data-action="toggle-location"
-            aria-label="Cho phép vị trí gần đúng"
-            :checked="preferenceView.location_enabled"
-            :disabled="preferenceMutationsDisabled"
-            @change="togglePreferenceLocation"
-          />
-        </label>
-        <label class="notif-pref-item preference-control">
-          <div class="notif-pref-info">
-            <span class="preference-control-mark" aria-hidden="true">GỢI Ý</span>
-            <div>
-              <strong>Cá nhân hóa theo hoạt động</strong>
-              <span class="sf-hint">Khi tắt, chỉ dùng khu vực thủ công và nội dung công khai.</span>
-            </div>
-          </div>
-          <input
-            type="checkbox"
-            class="toggle"
-            data-action="toggle-personalization"
-            aria-label="Cá nhân hóa theo hoạt động"
-            :checked="preferenceView.personalization_enabled"
-            :disabled="preferenceMutationsDisabled"
-            @change="togglePreferencePersonalization"
-          />
-        </label>
-      </section>
-
-      <div class="preference-reset">
-        <div>
-          <strong>Đặt lại đề xuất</strong>
-          <p class="sf-hint">Bỏ ảnh hưởng của tín hiệu cũ khỏi xếp hạng; không xóa mục đã lưu, lượt xem hay hồ sơ.</p>
-        </div>
-        <button
-          type="button"
-          class="btn btn-secondary"
-          data-action="reset-recommendations"
-          aria-label="Đặt lại đề xuất"
-          :disabled="preferenceMutationsDisabled"
-          @click="resetPreferenceRecommendations"
-        >{{ preferenceBusy ? 'Đang xử lý...' : 'Đặt lại đề xuất' }}</button>
-      </div>
-    </div>
 
     <!-- Tab: Người chặn -->
     <div v-if="activeTab === 'chan'" id="panel-chan" class="settings-card card sediment-head" role="tabpanel" aria-labelledby="tab-chan">
@@ -645,9 +493,7 @@
 
 <script setup lang="ts">
 import type { HideablePost } from '~/composables/useHiddenPosts'
-import { usePersonalizationPreferences } from '~/composables/usePersonalizationPreferences'
 import type { AccessibilityTheme } from '~/types/accessibility'
-import type { PreferencePatch, PreferenceRegionChoice, PreferenceSnapshot } from '~/types/personalization'
 import { consumeLifecycleClearInstruction } from '~/composables/useLifecycleClear'
 
 const { user, isLoggedIn, authHeaders, fetchMe, handleSessionExpired } = useAuth()
@@ -661,10 +507,19 @@ watch(isLoggedIn, (v) => { if (!v) navigateTo('/') })
 function setColorMode(mode: AccessibilityTheme) {
   accessibility.setProfile({ theme: mode })
 }
-useHead({
+useSeoMeta({
+  title: 'Cài đặt — Quầy tiếp tân — vinhlong360',
+  description: 'Quản lý tài khoản cá nhân, bảo mật hai lớp, quyền riêng tư và tùy chỉnh giao diện trên vinhlong360.',
+  ogTitle: 'Cài đặt — vinhlong360',
+  ogDescription: 'Quản lý tài khoản cá nhân trên vinhlong360.',
+  ogUrl: () => canonicalUrl('/cai-dat'),
+  twitterCard: 'summary_large_image',
+  robots: 'noindex, nofollow',
+})
+useHead(() => ({
   title: 'Cài đặt',
   link: [{ rel: 'canonical', href: canonicalUrl('/cai-dat') }],
-})
+}))
 
 const TABS = [
   { key: 'ho-so', label: 'Hồ sơ', icon: 'user' },
@@ -726,217 +581,8 @@ function lazyLoadTab(key: TabKey) {
   else if (key === 'tat-tieng') loadMutedUsers()
   else if (key === 'bai-da-an') loadHiddenPosts(true)
   else if (key === 'thong-bao') loadNotifPrefs()
-  else if (key === 'khu-vuc-de-xuat') loadPreferences()
 }
 
-const preferences = usePersonalizationPreferences()
-const PREFERENCE_REGIONS = [
-  { id: 'province-vl', label: 'Vĩnh Long', scope: 'province' },
-  { id: 'province-bt', label: 'Bến Tre', scope: 'province' },
-  { id: 'province-tv', label: 'Trà Vinh', scope: 'province' },
-  { id: null, label: 'Toàn tỉnh', scope: 'all' },
-] satisfies PreferenceRegionChoice[]
-
-const PREFERENCE_INTEREST_LABELS: Record<string, string> = {
-  food: 'Ẩm thực',
-  local_products: 'Đặc sản & OCOP',
-  garden: 'Miệt vườn',
-  culture: 'Văn hóa',
-  craft: 'Làng nghề',
-  stay: 'Lưu trú',
-}
-
-type PreferenceOperation = {
-  values: PreferencePatch
-  optimistic: Partial<PreferenceSnapshot>
-  successMessage: string
-}
-
-function clonePreferenceSnapshot(value: PreferenceSnapshot): PreferenceSnapshot {
-  return { ...value, explicit_interests: [...value.explicit_interests] }
-}
-
-const preferenceView = ref<PreferenceSnapshot>(clonePreferenceSnapshot(preferences.snapshot.value))
-const preferenceOnline = ref(true)
-const preferenceBusy = ref(false)
-const preferenceConflict = ref(false)
-const preferenceNotice = ref('')
-const manualRegionGroup = ref<HTMLElement | null>(null)
-let preferenceConflictOperation: PreferenceOperation | null = null
-
-watch(preferences.snapshot, (value) => {
-  if (!preferenceBusy.value) preferenceView.value = clonePreferenceSnapshot(value)
-}, { deep: true, immediate: true })
-
-const preferenceMutationsDisabled = computed(() => !preferenceOnline.value || preferenceBusy.value || preferences.loading.value)
-const preferenceRegionLabel = computed(() => {
-  if (preferenceView.value.region_scope === 'all') return 'Toàn tỉnh'
-  return preferenceView.value.region_label || 'Chưa xác định'
-})
-const preferenceSourceLabel = computed(() => {
-  const source = preferenceView.value.location_source
-  if (source === 'manual') return 'Bạn chọn thủ công'
-  if (source === 'gps') return 'GPS gần đúng'
-  if (source === 'ip') return 'IP gần đúng'
-  return 'Chưa xác định'
-})
-const preferenceAccuracyLabel = computed(() => {
-  const accuracy = preferenceView.value.location_accuracy
-  if (accuracy === 'ward') return 'Cấp xã/phường'
-  if (accuracy === 'district') return 'Cấp huyện'
-  if (accuracy === 'province') return 'Cấp tỉnh'
-  return 'Chưa xác định'
-})
-const preferenceAgeBandLabel = computed(() => {
-  const labels: Record<string, string> = {
-    under_18: 'Dưới 18',
-    '18_24': '18–24',
-    '25_34': '25–34',
-    '35_49': '35–49',
-    '50_plus': 'Từ 50 trở lên',
-    unknown: 'Chưa xác định',
-  }
-  return labels[preferenceView.value.derived_age_band || 'unknown'] || labels.unknown
-})
-const preferenceLocationStateCopy = computed(() => {
-  const consent = preferenceView.value.location_consent_state
-  if (consent === 'off') return 'Vị trí đang tắt; khu vực thủ công vẫn được dùng cho nội dung gần bạn.'
-  if (consent === 'denied') return 'Quyền vị trí đã bị từ chối. Bạn vẫn có thể chọn khu vực thủ công.'
-  if (consent === 'expired') return 'Quyền vị trí đã hết hạn. Cần xác nhận lại trước khi dùng GPS hoặc IP.'
-  if (consent === 'unknown') return 'Chưa có quyết định về vị trí. Hệ thống không tự yêu cầu GPS.'
-  if (preferenceView.value.location_source === 'gps') return 'GPS gần đúng đã được xác nhận; tọa độ không được giữ trong thiết lập.'
-  if (preferenceView.value.location_source === 'ip') return 'Đang dùng khu vực gần đúng từ IP, không hiển thị hoặc lưu địa chỉ IP tại đây.'
-  if (preferenceView.value.location_source === 'manual') return 'Khu vực này do bạn chọn thủ công và không cần quyền vị trí.'
-  return 'Chưa xác định được khu vực; nội dung công khai vẫn hoạt động.'
-})
-
-function preferenceInterestLabel(key: string) {
-  return PREFERENCE_INTEREST_LABELS[key] || key
-}
-
-function focusManualRegionChoices() {
-  const target = manualRegionGroup.value
-  if (!target) return
-  target.focus({ preventScroll: true })
-  const reduced = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches
-  target.scrollIntoView({ block: 'center', behavior: reduced ? 'auto' : 'smooth' })
-}
-
-function syncPreferenceOnline() {
-  preferenceOnline.value = !import.meta.client || navigator.onLine
-}
-
-async function loadPreferences() {
-  syncPreferenceOnline()
-  if (!preferenceOnline.value) return
-  const loaded = await preferences.refresh()
-  preferenceView.value = clonePreferenceSnapshot(preferences.snapshot.value)
-  if (loaded) {
-    preferenceNotice.value = ''
-    preferenceConflict.value = false
-    preferenceConflictOperation = null
-  } else {
-    preferenceNotice.value = preferences.error.value || 'Không thể tải thiết lập đề xuất lúc này.'
-  }
-}
-
-async function retryPreferences() {
-  syncPreferenceOnline()
-  if (!preferenceOnline.value) return
-  await loadPreferences()
-}
-
-async function applyPreferenceOperation(operation: PreferenceOperation) {
-  syncPreferenceOnline()
-  if (!preferenceOnline.value || preferenceBusy.value) return
-  const before = clonePreferenceSnapshot(preferenceView.value)
-  preferenceBusy.value = true
-  preferenceNotice.value = ''
-  preferenceConflict.value = false
-  preferenceView.value = clonePreferenceSnapshot({ ...before, ...operation.optimistic })
-  try {
-    const result = await preferences.patch(operation.values)
-    preferenceView.value = clonePreferenceSnapshot(result.snapshot)
-    if (result.ok) {
-      preferenceConflictOperation = null
-      preferenceNotice.value = operation.successMessage
-      return
-    }
-    if (result.status === 409) {
-      preferenceConflictOperation = operation
-      preferenceConflict.value = true
-      return
-    }
-    preferenceNotice.value = preferences.error.value || 'Không thể lưu thiết lập cá nhân hóa.'
-  } finally {
-    preferenceBusy.value = false
-  }
-}
-
-async function retryPreferenceConflict() {
-  if (!preferenceConflictOperation) return
-  await applyPreferenceOperation(preferenceConflictOperation)
-}
-
-async function setPreferenceRegion(region: PreferenceRegionChoice) {
-  const accuracy = region.scope === 'ward' || region.scope === 'district' || region.scope === 'province' ? region.scope : 'unknown'
-  await applyPreferenceOperation({
-    values: {
-      region_id: region.id,
-      region_label: region.id ? region.label : null,
-      region_scope: region.scope,
-      location_source: 'manual',
-      location_accuracy: accuracy,
-    },
-    optimistic: {
-      region_id: region.id,
-      region_label: region.id ? region.label : null,
-      region_scope: region.scope,
-      location_source: 'manual',
-      location_accuracy: accuracy,
-      location_reconfirm_required: false,
-    },
-    successMessage: `Đã cập nhật khu vực ưu tiên: ${region.label}.`,
-  })
-}
-
-async function togglePreferenceLocation(event: Event) {
-  const enabled = (event.target as HTMLInputElement).checked
-  await applyPreferenceOperation({
-    values: enabled
-      ? { location_enabled: true, location_consent_state: 'granted' }
-      : { location_enabled: false, location_consent_state: 'off' },
-    optimistic: enabled
-      ? { location_enabled: true, location_consent_state: 'granted' }
-      : { location_enabled: false, location_consent_state: 'off' },
-    successMessage: enabled ? 'Đã cho phép vị trí gần đúng.' : 'Đã tắt vị trí gần đúng; khu vực thủ công được giữ lại.',
-  })
-}
-
-async function togglePreferencePersonalization(event: Event) {
-  const enabled = (event.target as HTMLInputElement).checked
-  await applyPreferenceOperation({
-    values: { personalization_enabled: enabled },
-    optimistic: { personalization_enabled: enabled },
-    successMessage: enabled ? 'Đã bật cá nhân hóa theo hoạt động.' : 'Đã tắt cá nhân hóa theo hoạt động.',
-  })
-}
-
-async function resetPreferenceRecommendations() {
-  syncPreferenceOnline()
-  if (!preferenceOnline.value || preferenceBusy.value) return
-  preferenceBusy.value = true
-  preferenceNotice.value = ''
-  try {
-    const result = await preferences.resetRecommendations()
-    preferenceView.value = clonePreferenceSnapshot(result.snapshot)
-    preferenceNotice.value = result.ok
-      ? 'Đã đặt lại đề xuất. Mục đã lưu, lượt xem và hồ sơ không bị xóa.'
-      : preferences.error.value || 'Không thể đặt lại đề xuất lúc này.'
-  } finally {
-    preferenceBusy.value = false
-  }
-}
 
 const displayName = ref(user.value?.display_name || '')
 const fullName = ref(user.value?.full_name || '')
@@ -951,7 +597,15 @@ const savedContactInfo = ref(contactInfo.value)
 const saving = ref(false)
 // Guard security-tab action buttons against double-submit while an async op runs.
 const securityBusy = ref(false)
-async function withBusy(fn: () => unknown) { if (securityBusy.value) return; securityBusy.value = true; try { await fn() } finally { securityBusy.value = false } }
+async function withBusy(fn: () => unknown) {
+  if (securityBusy.value) return
+  securityBusy.value = true
+  try {
+    await fn()
+  } finally {
+    securityBusy.value = false
+  }
+}
 const nameError = ref('')
 
 const uploadingAvatar = ref(false)
@@ -1038,7 +692,7 @@ const pwStrength = computed(() => {
   if (/[^a-zA-Z0-9]/.test(pw)) score++
   const level = score <= 2 ? 1 : score <= 3 ? 2 : score <= 4 ? 3 : 4
   const labels = ['', 'Yếu', 'Trung bình', 'Mạnh', 'Rất mạnh']
-  const colors = ['', 'var(--error)', 'var(--warning)', 'var(--success)', 'var(--primary)']
+  const colors = ['', 'var(--error)', 'var(--warning)', 'var(--success)', 'var(--color-brand)']
   return { score: level, label: labels[level], color: colors[level] }
 })
 const hasPassword = computed(() => user.value?.has_password === true)
@@ -1519,9 +1173,6 @@ const isDirty = computed(() => displayName.value !== savedName.value || bio.valu
 function onBeforeUnload(e: BeforeUnloadEvent) {
   if (isDirty.value) e.preventDefault()
 }
-function onPreferenceConnectivityChange() {
-  syncPreferenceOnline()
-}
 function onPopState() {
   const hash = window.location.hash.slice(1) as TabKey
   if (hash && validKeys.value.has(hash)) {
@@ -1539,9 +1190,6 @@ onMounted(() => {
     window.addEventListener('beforeunload', onBeforeUnload)
     window.addEventListener('popstate', onPopState)
     window.addEventListener('hashchange', onPopState)
-    window.addEventListener('online', onPreferenceConnectivityChange)
-    window.addEventListener('offline', onPreferenceConnectivityChange)
-    syncPreferenceOnline()
     syncHashTabSoon()
   }
 })
@@ -1550,8 +1198,6 @@ onUnmounted(() => {
     window.removeEventListener('beforeunload', onBeforeUnload)
     window.removeEventListener('popstate', onPopState)
     window.removeEventListener('hashchange', onPopState)
-    window.removeEventListener('online', onPreferenceConnectivityChange)
-    window.removeEventListener('offline', onPreferenceConnectivityChange)
   }
   if (avatarPreview.value?.startsWith('blob:')) URL.revokeObjectURL(avatarPreview.value)
   if (coverPreview.value?.startsWith('blob:')) URL.revokeObjectURL(coverPreview.value)
@@ -1568,7 +1214,7 @@ onUnmounted(() => {
   font-family: var(--font-sans); font-size: var(--text-xs); font-weight: 700;
   text-transform: uppercase; letter-spacing: .06em; color: var(--ink-700);
 }
-.dateline-eyebrow::before { content: ""; width: 14px; height: 1.5px; background: var(--primary); flex-shrink: 0; }
+.dateline-eyebrow::before { content: ""; width: 14px; height: 1.5px; background: var(--color-brand); flex-shrink: 0; }
 
 .settings-title { font-family: var(--font-editorial); font-weight: 600; font-size: var(--text-xl); margin: 0 0 .4rem; }
 .settings-dek { color: var(--ink-700); font-size: var(--text-sm); max-width: 56ch; margin: 0 0 var(--space-5); line-height: var(--leading-relaxed); }
@@ -1591,13 +1237,16 @@ onUnmounted(() => {
   font-size: var(--text-sm); font-weight: 500; color: var(--muted);
   cursor: pointer; white-space: nowrap; position: relative;
   border-bottom: 2px solid transparent; margin-bottom: -1px;
-  transition: color .2s, border-color .2s;
+  transition: color var(--duration-fast) var(--ease-out),
+              border-color var(--duration-fast) var(--ease-out),
+              transform var(--duration-fast) var(--ease-out);
 }
 .settings-tab:hover { color: var(--ink); }
-.settings-tab.active { color: var(--accent, var(--primary)); border-bottom-color: var(--accent, var(--primary)); font-weight: 600; }
+.settings-tab:active { transform: scale(.98); }
+.settings-tab.active { color: var(--color-action); border-bottom-color: var(--color-action); font-weight: 600; }
 .settings-tab.active .settings-tab-icon { transform: scale(1.15); }
-.settings-tab:focus-visible { outline: 2px solid var(--accent, var(--primary)); outline-offset: -2px; border-radius: 4px; }
-.settings-tab-icon { font-size: 1rem; transition: transform .25s var(--ease-spring-gentle); }
+.settings-tab:focus-visible { outline: 2px solid var(--color-focus); outline-offset: -2px; border-radius: var(--radius-control); }
+.settings-tab-icon { font-size: 1rem; transition: transform .25s var(--ease-out-expo); }
 .settings-form { display: flex; flex-direction: column; gap: 1.25rem; }
 .sf-field { display: flex; flex-direction: column; gap: .4rem; }
 .sf-label { font-weight: 600; font-size: var(--text-sm); }
@@ -1608,7 +1257,7 @@ onUnmounted(() => {
   font: inherit; transition: border-color .25s var(--ease-out), box-shadow .25s var(--ease-out), background .25s var(--ease-out);
 }
 .sf-input:hover:not(:focus) { border-color: var(--ink-700); }
-.sf-input:focus-visible { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px rgba(var(--accent-rgb), .15); background: var(--card); }
+.sf-input:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 1px; background: var(--card); }
 .sf-textarea { resize: vertical; min-height: 90px; }
 .sf-error { color: var(--danger); font-size: var(--text-sm); }
 .pw-strength { display: flex; align-items: center; gap: var(--space-2); margin-top: var(--space-1); }
@@ -1628,7 +1277,10 @@ onUnmounted(() => {
   width: 80px; height: 80px; border-radius: 50%; overflow: hidden; cursor: pointer;
   position: relative; flex-shrink: 0; border: 2px solid var(--border-input);
   padding: 0; background: none; font: inherit; text-align: left;
+  transition: transform var(--duration-fast) var(--ease-out);
 }
+.sf-avatar-preview:active { transform: scale(.95); }
+.sf-avatar-preview:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 3px; }
 .sf-avatar-preview:hover .sf-avatar-overlay { opacity: 1; }
 .sf-avatar-img { width: 100%; height: 100%; object-fit: cover; }
 .sf-avatar-overlay {
@@ -1652,23 +1304,30 @@ onUnmounted(() => {
 .recovery-list code { font-size: var(--text-sm); letter-spacing: 0.05em; }
 .rc-actions { display: flex; gap: var(--space-2); flex-wrap: wrap; }
 .qr-img { display: block; margin: var(--space-2) 0; border-radius: var(--radius-control); background: var(--white); padding: var(--space-2); }
-.settings-danger { border-color: rgba(var(--danger-rgb), .2); border-left: 3px solid var(--error); }
+.settings-danger { border: 1px solid rgba(var(--danger-rgb), .2); box-shadow: inset 3px 0 0 var(--error); }
 .danger-actions { display: flex; flex-direction: column; gap: .75rem; }
 .danger-item { display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
 .danger-item p { margin: 0; }
 .btn-danger-text { color: var(--danger) !important; }
 .notif-prefs { display: flex; flex-direction: column; gap: .5rem; }
-.notif-pref-item { display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: .75rem .8rem; border: 1px solid var(--border-input); border-radius: var(--radius-surface); cursor: pointer; transition: background .2s; }
+.notif-pref-item {
+  display: flex; align-items: center; justify-content: space-between; gap: 1rem;
+  padding: .75rem .8rem; border: 1px solid var(--border-input);
+  border-radius: var(--radius-surface); cursor: pointer;
+  transition: background var(--duration-fast), transform var(--duration-fast) var(--ease-out);
+}
 .notif-pref-item:hover { background: var(--bg-warm); }
+.notif-pref-item:active { transform: scale(.99); }
+.notif-pref-item:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
 .notif-pref-info { display: flex; align-items: center; gap: .75rem; }
 .notif-pref-icon { font-size: 1.25rem; flex-shrink: 0; }
 .notif-pref-info strong { display: block; font-size: var(--text-sm); }
 .notif-pref-info .sf-hint { display: block; margin-top: .1rem; }
-.toggle { appearance: none; width: 40px; height: 22px; background: var(--muted); border-radius: 11px; position: relative; cursor: pointer; transition: background .25s var(--ease-out); flex-shrink: 0; min-height: 44px; padding: 11px 0; box-sizing: content-box; }
-.toggle::after { content: ''; position: absolute; top: 2px; left: 2px; width: 18px; height: 18px; background: var(--white, var(--white)); border-radius: 50%; transition: transform .3s var(--ease-spring-gentle); box-shadow: 0 1px 3px rgba(var(--black-rgb),.15); }
-.toggle:checked { background: var(--accent, var(--primary)); }
+.toggle { appearance: none; width: 40px; height: 22px; background: var(--muted); border-radius: 11px; position: relative; cursor: pointer; transition: background .25s var(--ease-out); flex-shrink: 0; min-height: 44px; padding: 11px 0; box-sizing: content-box; margin: 0; }
+.toggle::after { content: ''; position: absolute; top: 2px; left: 2px; width: 18px; height: 18px; background: var(--white, var(--white)); border-radius: 50%; transition: transform .25s var(--ease-out-expo); box-shadow: 0 1px 3px rgba(var(--black-rgb),.15); }
+.toggle:checked { background: var(--color-action); }
 .toggle:checked::after { transform: translateX(18px); }
-.toggle:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.toggle:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
 .toggle:active::after { width: 22px; }
 
 /* ── Cover photo ── */
@@ -1677,7 +1336,10 @@ onUnmounted(() => {
   width: 200px; height: 68px; border-radius: var(--radius-surface); overflow: hidden; cursor: pointer;
   position: relative; flex-shrink: 0; border: 2px solid var(--border-input);
   padding: 0; background: none; font: inherit; text-align: left;
+  transition: transform var(--duration-fast) var(--ease-out);
 }
+.sf-cover-preview:active { transform: scale(.98); }
+.sf-cover-preview:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 3px; }
 .sf-cover-preview:hover .sf-avatar-overlay { opacity: 1; }
 .sf-cover-img { width: 100%; height: 100%; object-fit: cover; }
 .sf-cover-placeholder {
@@ -1691,48 +1353,13 @@ onUnmounted(() => {
 .dl-consent-item { display: flex; gap: .75rem; align-items: center; padding: .4rem .6rem; border: 1px solid var(--border-input); border-radius: var(--radius-surface); }
 .dl-consent-ver { font-weight: 600; font-size: var(--text-sm); }
 .dl-consent-time { font-size: var(--text-xs); color: var(--ink-700); }
-
-/* ── Preference workspace ── */
-.preference-card { border-top: 3px solid var(--primary); }
-.preference-heading { display: flex; align-items: flex-start; justify-content: space-between; gap: var(--space-3); }
-.preference-heading .preference-kicker { margin: 0 0 .25rem; color: var(--ink-700); font-size: var(--text-2xs); font-weight: 700; letter-spacing: .08em; }
-.preference-heading h2 { margin: 0; padding: 0; border: 0; font-family: var(--font-editorial); font-size: var(--text-lg); }
-.preference-revision { flex-shrink: 0; padding: .25rem .55rem; border: 1px solid var(--line); border-radius: var(--radius-full); color: var(--ink-700); font-size: var(--text-xs); }
-.preference-intro { max-width: 68ch; margin: .55rem 0 var(--space-4); line-height: var(--leading-relaxed); }
-.preference-banner { display: flex; align-items: center; justify-content: space-between; gap: var(--space-3); margin-bottom: var(--space-4); padding: .8rem .9rem; border: 1px solid var(--line); border-left: 3px solid var(--amber-600); border-radius: var(--radius-surface); background: var(--bg-warm); }
-.preference-banner .btn, [data-action="load-consent-history"] { min-height: 44px; }
-.preference-banner p { margin: .15rem 0 0; color: var(--ink-700); font-size: var(--text-xs); line-height: 1.45; }
-.preference-conflict { border-left-color: var(--danger); }
-.preference-notice { margin: 0 0 var(--space-4); padding: .7rem .8rem; border-radius: var(--radius-surface); background: var(--bg-alt); color: var(--ink-700); font-size: var(--text-sm); }
-.preference-summary { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); margin: 0; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
-.preference-summary > div { display: grid; grid-template-columns: minmax(120px, .8fr) minmax(0, 1.2fr); gap: var(--space-2); padding: .75rem 0; }
-.preference-summary > div:nth-child(odd) { padding-right: var(--space-4); }
-.preference-summary > div:nth-child(even) { padding-left: var(--space-4); border-left: 1px solid var(--line); }
-.preference-summary dt { color: var(--ink-700); font-size: var(--text-xs); }
-.preference-summary dd { margin: 0; font-size: var(--text-sm); font-weight: 650; }
-.preference-state-copy { margin: var(--space-3) 0 0; padding-left: .75rem; border-left: 2px solid var(--primary); color: var(--ink-700); font-size: var(--text-sm); line-height: 1.5; }
-.preference-section { margin-top: var(--space-5); padding-top: var(--space-4); border-top: 1px solid var(--line); }
-.preference-section-head h3 { margin: 0 0 .2rem; font-size: var(--text-base); }
-.preference-section-head p { margin: 0; color: var(--ink-700); font-size: var(--text-xs); }
-.preference-options { display: flex; flex-wrap: wrap; gap: var(--space-2); margin-top: var(--space-3); }
-.preference-option { min-height: 44px; padding: .55rem .85rem; border: 1px solid var(--border-input); border-radius: var(--radius-full); background: var(--bg); color: var(--ink-700); font: inherit; font-size: var(--text-sm); cursor: pointer; transition: border-color .2s, background .2s, color .2s; }
-.preference-option:hover:not(:disabled) { border-color: var(--muted); color: var(--ink); }
-.preference-option.selected { border-color: var(--primary); background: color-mix(in oklab, var(--primary) 9%, transparent); color: var(--ink); font-weight: 650; }
-.preference-option:focus-visible, .preference-banner .btn:focus-visible, .preference-reset .btn:focus-visible, .delete-confirm .btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
-.preference-option:disabled { cursor: not-allowed; opacity: .55; }
-.preference-chips { display: flex; flex-wrap: wrap; gap: var(--space-2); margin-top: var(--space-3); }
-.preference-chip { padding: .35rem .65rem; border-radius: var(--radius-full); background: var(--bg-alt); color: var(--ink-700); font-size: .82rem; font-weight: 600; }
-.preference-controls { display: flex; flex-direction: column; gap: var(--space-2); }
-.preference-control { cursor: default; min-height: 68px; }
-.preference-control-mark { display: inline-flex; align-items: center; justify-content: center; min-width: 54px; min-height: 32px; border: 1px solid var(--line); border-radius: var(--radius-control); color: var(--ink-700); font-size: .65rem; font-weight: 750; letter-spacing: .06em; }
-.preference-reset { display: flex; align-items: center; justify-content: space-between; gap: var(--space-4); margin-top: var(--space-4); padding-top: var(--space-4); border-top: 1px solid var(--line); }
-.preference-reset p { margin: .2rem 0 0; max-width: 60ch; }
-.preference-reset .btn { min-height: 44px; flex-shrink: 0; }
+[data-action="load-consent-history"] { min-height: 44px; }
+.delete-confirm .btn:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
 .delete-confirm { display: flex; align-items: center; justify-content: space-between; gap: var(--space-4); margin-top: var(--space-3); padding: .9rem; border: 1px solid rgba(var(--danger-rgb), .28); border-radius: var(--radius-surface); background: color-mix(in oklab, var(--danger) 5%, var(--bg)); }
 .delete-confirm p { margin: .2rem 0 0; color: var(--ink-700); font-size: var(--text-xs); }
 .delete-confirm-actions { display: flex; gap: var(--space-2); flex-shrink: 0; }
 .delete-confirm .btn { min-height: 44px; }
-.account-status { margin: var(--space-3) 0 0; padding: .75rem .85rem; border-left: 3px solid var(--primary); border-radius: var(--radius-control); background: var(--bg-alt); color: var(--ink-700); font-size: var(--text-sm); }
+.account-status { margin: var(--space-3) 0 0; padding: .75rem .85rem; border: 1px solid var(--border); box-shadow: inset 3px 0 0 var(--color-brand); border-radius: var(--radius-control); background: var(--bg-alt); color: var(--ink-700); font-size: var(--text-sm); }
 
 .login-fail { border-color: rgba(var(--danger-rgb), .3) !important; }
 .login-ok { color: var(--accent); font-weight: 600; font-size: var(--text-base); }
@@ -1741,13 +1368,15 @@ onUnmounted(() => {
 /* ── Theme toggle ── */
 .theme-options { display: flex; gap: .5rem; flex-wrap: wrap; }
 .theme-btn {
-  display: flex; align-items: center; gap: .4rem; padding: .6rem 1rem;
+  display: flex; align-items: center; gap: .4rem; padding: .6rem 1rem; min-height: 44px;
   border: 2px solid var(--border-input); border-radius: var(--radius-surface);
   background: var(--bg); color: var(--ink-700); cursor: pointer; font-size: var(--text-sm);
-  transition: border-color .2s, background .2s;
+  transition: border-color var(--duration-fast), background var(--duration-fast), transform var(--duration-fast) var(--ease-out);
 }
 .theme-btn:hover { border-color: var(--muted); }
-.theme-btn.active { border-color: var(--accent, var(--primary)); background: color-mix(in oklab, var(--accent, var(--primary)) 8%, transparent); color: var(--ink); font-weight: 600; }
+.theme-btn:active { transform: scale(.97); }
+.theme-btn:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
+.theme-btn.active { border-color: var(--color-action); background: color-mix(in oklab, var(--color-action) 8%, transparent); color: var(--ink); font-weight: 600; }
 .theme-icon { font-size: 1.1rem; }
 
 /* ── Dark mode ── */
@@ -1761,8 +1390,7 @@ onUnmounted(() => {
 .dark .notif-pref-item { border-color: var(--line); }
 .dark .notif-pref-item:hover { background: var(--bg-alt); }
 .dark .sf-readonly { background: var(--bg); }
-.dark .preference-banner, .dark .preference-notice, .dark .preference-chip, .dark .account-status { background: var(--bg-alt); }
-.dark .preference-option { background: var(--bg-alt); border-color: var(--line); }
+.dark .account-status { background: var(--bg-alt); }
 .dark .delete-confirm { background: color-mix(in oklab, var(--danger) 8%, var(--bg-alt)); }
 
 /* ── Mobile ── */
@@ -1771,21 +1399,19 @@ onUnmounted(() => {
   .settings-card, .settings-guest { padding: var(--space-4); }
   .sf-avatar-section { flex-direction: column; align-items: flex-start; }
   .danger-item { flex-direction: column; align-items: flex-start; gap: .5rem; }
-  .preference-heading, .preference-banner, .preference-reset, .delete-confirm { align-items: flex-start; flex-direction: column; }
-  .preference-summary { grid-template-columns: 1fr; }
-  .preference-summary > div, .preference-summary > div:nth-child(odd), .preference-summary > div:nth-child(even) { padding: .7rem 0; border-left: 0; }
-  .preference-summary > div + div { border-top: 1px solid var(--line); }
-  .preference-options { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .preference-option, .preference-reset .btn, .preference-banner .btn { width: 100%; justify-content: center; }
+  .delete-confirm { align-items: flex-start; flex-direction: column; }
   .delete-confirm-actions { width: 100%; flex-direction: column-reverse; }
   .delete-confirm-actions .btn { width: 100%; }
   .settings-tabs { gap: 0; }
   .settings-tab { padding: .5rem .65rem; font-size: var(--text-xs); }
-  .sf-input { font-size: 16px; }
+  .sf-input { font-size: var(--text-base, 16px); }
   .sf-username-prefix { font-size: var(--text-xs); padding: .65rem .4rem; }
 }
 @media (prefers-reduced-motion: reduce) {
   .settings-tab, .settings-tab-icon, .sf-input, .toggle, .toggle::after,
-  .notif-pref-item, .theme-btn, .preference-option { transition: none; }
+  .notif-pref-item, .theme-btn, .sf-avatar-preview, .sf-cover-preview {
+    transition: none !important;
+    transform: none !important;
+  }
 }
 </style>

@@ -2,7 +2,7 @@
   <div>
     <div class="admin-head-row">
       <div>
-        <NuxtLink to="/admin/cai-dat" class="cs-back">← Cài đặt</NuxtLink>
+        <NuxtLink to="/admin/cai-dat" class="cs-back"><IconLine name="arrow-left" class="cs-back-icon" /> Cài đặt</NuxtLink>
         <h1>Điều hướng</h1>
         <p class="cs-subtitle">Thêm, xoá, sắp xếp menu điều hướng chính</p>
       </div>
@@ -13,7 +13,7 @@
     </div>
     <Transition name="cs-fade">
       <div v-if="!loading" class="cs-form-wrap">
-        <p class="cs-hint">Bấm nút sửa để đổi tên nhóm và các mục con. Dùng ▲▼ để sắp xếp.</p>
+        <p class="cs-hint">Bấm nút sửa để đổi tên nhóm và các mục con. Dùng các nút mũi tên lên / xuống để sắp xếp thứ tự.</p>
 
         <AdminSortableList
           :items="navGroups"
@@ -107,13 +107,13 @@ onMounted(reload)
 }
 .sf-save {
   padding: var(--space-3) var(--space-7); border-radius: 12px; font-weight: 600; font-size: .88rem;
-  background: var(--primary); color: var(--on-primary); border: none; cursor: pointer;
+  background: var(--color-action); color: var(--text-on-dark); border: none; cursor: pointer;
   min-height: 44px;
   transition: transform .2s var(--ease-soft), box-shadow .2s;
 }
-.sf-save:hover:not(:disabled) { transform: scale(1.02); box-shadow: 0 4px 12px rgba(var(--primary-rgb),.2); }
+.sf-save:hover:not(:disabled) { transform: scale(1.02); box-shadow: 0 4px 12px rgba(var(--color-action-rgb),.2); }
 .sf-save:active:not(:disabled) { transform: scale(.97); }
-.sf-save:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+.sf-save:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
 .sf-save:disabled { opacity: var(--opacity-disabled); cursor: not-allowed; }
 .sf-reset {
   padding: var(--space-3) var(--space-5); border-radius: 12px; font-size: .85rem; font-weight: 500;

@@ -1,5 +1,5 @@
 <template>
-  <section v-if="wardFetchResolution?.kind === 'not_found'" class="page">
+  <section v-if="wardFetchResolution?.kind === 'not_found'" class="page" data-color-system="tri-region-v1">
     <EmptyState title="Không tìm thấy xã/phường" message="Có thể đơn vị hành chính đã được sắp xếp lại hoặc đường dẫn chưa đúng.">
       <template #actions>
         <NuxtLink to="/danh-ba" class="btn btn-primary">Danh bạ hành chính</NuxtLink>
@@ -8,7 +8,7 @@
     </EmptyState>
   </section>
 
-  <section v-else-if="wardFetchResolution?.kind === 'hidden'" class="page">
+  <section v-else-if="wardFetchResolution?.kind === 'hidden'" class="page" data-color-system="tri-region-v1">
     <EmptyState title="Nội dung chưa công khai" message="Đơn vị này hiện không có trên bề mặt công khai.">
       <template #actions>
         <button type="button" class="btn btn-primary" @click="goBack">Quay lại</button>
@@ -17,7 +17,7 @@
     </EmptyState>
   </section>
 
-  <section v-else-if="wardFetchResolution?.kind === 'error'" class="page ward-recovery-page">
+  <section v-else-if="wardFetchResolution?.kind === 'error'" class="page ward-recovery-page" data-color-system="tri-region-v1">
     <PageState
       :state="{ kind: 'error', retry: { label: 'Thử lại' } }"
       title="Không thể tải trang"
@@ -29,18 +29,15 @@
     </nav>
   </section>
 
-  <section v-else-if="data?.place" class="wp ce-ward">
+  <section v-else-if="data?.place" class="wp ce-ward" data-color-system="tri-region-v1">
     <!-- Breadcrumb -->
-    <nav class="breadcrumb" aria-label="Breadcrumb">
-      <button type="button" class="bc-back" aria-label="Quay lại" @click="goBack">
-        <span aria-hidden="true">←</span>
-      </button>
-      <ol>
-        <li><NuxtLink to="/">Trang chủ</NuxtLink></li>
-        <li v-if="data.place.area"><NuxtLink :to="`/khu-vuc/${data.place.area}`">{{ areaMeta.name }}</NuxtLink></li>
-        <li aria-current="page">{{ data.place.name }}</li>
-      </ol>
-    </nav>
+    <Breadcrumb :items="breadcrumbItems" :json-ld="true">
+      <template #before>
+        <button type="button" class="bc-back" aria-label="Quay lại" @click="goBack">
+          <IconLine name="arrow-left" aria-hidden="true" />
+        </button>
+      </template>
+    </Breadcrumb>
 
     <!-- Hero -->
     <header class="wp-hero" data-detail-region="identity" :class="`area-${data.place.area}`">
@@ -161,7 +158,7 @@
         </section>
       </aside>
 
-      <main class="wp-main" data-detail-region="narrative">
+      <div class="wp-main" data-detail-region="narrative">
         <p v-if="data.place.summary" class="wp-summary">{{ data.place.summary }}</p>
 
         <ClientOnly>
@@ -206,7 +203,7 @@
             <p class="wp-empty-hint">Quay lại sau hoặc khám phá các xã/phường lân cận qua trang khu vực.</p>
           </div>
         </div>
-      </main>
+      </div>
     </div>
   </section>
 
@@ -277,6 +274,14 @@ watch(() => route.fullPath, (next, previous) => {
 }, { flush: 'sync' })
 
 const goBack = () => goBackOr('/danh-ba')
+
+let mapInstance: any = null
+let mapLoadTimer: ReturnType<typeof setTimeout> | undefined
+
+onUnmounted(() => {
+  if (mapLoadTimer) clearTimeout(mapLoadTimer)
+  if (mapInstance) { mapInstance.remove(); mapInstance = null }
+})
 
 const {
   data: wardOverviewResult,
@@ -531,8 +536,7 @@ const representativeImageMeta = computed(() => buildImageMeta(representativeImag
 
 const placeName = computed(() => data.value?.place?.name || 'Xã/Phường')
 useSeoMeta({
-  ogType: 'article',
-  title: () => `${placeName.value} — du lịch, lưu trú, đặc sản & danh bạ | vinhlong360`,
+  title: () => data.value?.place?.name ? `${data.value.place.name} — ${areaMeta.value.name} — vinhlong360` : 'Xã phường — vinhlong360',
   description: () => data.value?.place?.summary || `Tổng hợp địa điểm du lịch, cơ sở lưu trú, sản phẩm đặc sản và danh bạ hành chính của ${placeName.value}.`,
   ogTitle: () => `${placeName.value} — vinhlong360`,
   ogDescription: () => data.value?.place?.summary || `Du lịch, đặc sản & danh bạ ${placeName.value}.`,
@@ -540,61 +544,8 @@ useSeoMeta({
   ogImageAlt: () => representativeImageMeta.value.ogImageAlt,
   twitterImage: () => representativeImageMeta.value.twitterImage,
   twitterImageAlt: () => representativeImageMeta.value.twitterImageAlt,
-})
-useHead(() => {
-  const place = data.value?.place
-  if (!place) return { link: [{ rel: 'canonical', href: canonicalUrl(`/xa-phuong/${encodedId.value}`) }] }
-
-  const adminLd: Record<string, any> = {
-    '@context': 'https://schema.org', '@type': 'AdministrativeArea',
-    name: place.name,
-    ...(place.summary ? { description: place.summary } : {}),
-    address: { '@type': 'PostalAddress', addressRegion: areaMeta.value.name, addressCountry: 'VN' },
-  }
-  const representativeImage = descriptorToImageObject(representativeImageDescriptor.value)
-  if (representativeImage) adminLd.image = representativeImage
-  const geoCoords = normalizeCoords(place.coordinates)
-  if (geoCoords) {
-    adminLd.geo = { '@type': 'GeoCoordinates', latitude: geoCoords[0], longitude: geoCoords[1] }
-  }
-
-  const breadcrumbLd = {
-    '@context': 'https://schema.org', '@type': 'BreadcrumbList',
-    itemListElement: [
-      { '@type': 'ListItem', position: 1, name: 'Trang chủ', item: 'https://vinhlong360.vn/' },
-      ...(place.area ? [{ '@type': 'ListItem', position: 2, name: areaMeta.value.name, item: `https://vinhlong360.vn/khu-vuc/${place.area}` }] : []),
-      { '@type': 'ListItem', position: place.area ? 3 : 2, name: place.name, item: `https://vinhlong360.vn/xa-phuong/${encodedId.value}` },
-    ],
-  }
-
-  const scripts = [
-    { type: 'application/ld+json', innerHTML: safeJsonLd(adminLd) },
-    { type: 'application/ld+json', innerHTML: safeJsonLd(breadcrumbLd) },
-  ]
-
-  const allEnts = allWardEntities.value
-  if (allEnts.length) {
-    scripts.push({
-      type: 'application/ld+json',
-      innerHTML: safeJsonLd({
-        '@context': 'https://schema.org',
-        '@type': 'ItemList',
-        name: `Địa điểm tại ${place.name}`,
-        numberOfItems: allEnts.length,
-        itemListElement: allEnts.slice(0, 30).map((e: any, i: number) => ({
-          '@type': 'ListItem',
-          position: i + 1,
-          name: e.name,
-          url: `https://vinhlong360.vn${entityPath(e.id)}`,
-        })),
-      }),
-    })
-  }
-
-  return {
-    link: [{ rel: 'canonical', href: canonicalUrl(`/xa-phuong/${encodedId.value}`) }],
-    script: scripts,
-  }
+  ogUrl: () => canonicalUrl(`/xa-phuong/${encodedId.value}`),
+  twitterCard: 'summary_large_image',
 })
 
 // Map
@@ -604,8 +555,6 @@ const { createMap } = useNDAMap()
 
 const mapLoadError = ref(false)
 const mapReady = ref(false)
-let mapInstance: any = null
-let mapLoadTimer: ReturnType<typeof setTimeout> | undefined
 watch(mapEl, async (el) => {
   const center = normalizeCoords(data.value?.place?.coordinates)
   if (!el || !center) return
@@ -663,9 +612,108 @@ watch(mapEl, async (el) => {
   }
 }, { once: true })
 
-onUnmounted(() => {
-  if (mapLoadTimer) clearTimeout(mapLoadTimer)
-  if (mapInstance) { mapInstance.remove(); mapInstance = null }
+const breadcrumbItems = computed(() => [
+  { label: 'Trang chủ', to: '/' },
+  ...(data.value?.place?.area ? [{ label: areaMeta.value.name, to: `/khu-vuc/${data.value.place.area}` }] : []),
+  { label: data.value?.place?.name || 'Xã/phường' },
+])
+
+const placeJsonLd = computed(() => {
+  const p = data.value?.place
+  if (!p) return []
+  const placeUrl = canonicalUrl(`/xa-phuong/${encodedId.value}`)
+  const schema: Record<string, any> = {
+    '@type': 'AdministrativeArea',
+    '@id': `${placeUrl}#adminarea`,
+    name: p.name,
+    description: p.summary || `${p.name} thuộc ${areaMeta.value.name}, tỉnh Vĩnh Long.`,
+    url: placeUrl,
+    address: { '@type': 'PostalAddress', addressRegion: areaMeta.value.name, addressCountry: 'VN' },
+    containedInPlace: {
+      '@type': 'AdministrativeArea',
+      name: areaMeta.value.name,
+    },
+  }
+  const representativeImage = descriptorToImageObject(representativeImageDescriptor.value)
+  if (representativeImage) schema.image = representativeImage
+  const c = normalizeCoords(p.coordinates)
+  if (c) {
+    schema.geo = { '@type': 'GeoCoordinates', latitude: c[0], longitude: c[1] }
+    schema.hasMap = `https://www.google.com/maps/search/?api=1&query=${c[0]},${c[1]}`
+  }
+
+  const webpageNode = {
+    '@type': 'WebPage',
+    '@id': `${placeUrl}#webpage`,
+    url: placeUrl,
+    name: `${p.name} — ${areaMeta.value.name} — vinhlong360`,
+    description: p.summary || `Khám phá địa điểm du lịch, ẩm thực, đặc sản và danh bạ hành chính tại ${p.name}.`,
+    inLanguage: 'vi-VN',
+    isPartOf: { '@id': `${SITE_URL}/#website` },
+    breadcrumb: { '@id': `${placeUrl}#breadcrumb` },
+    mainEntity: { '@id': `${placeUrl}#adminarea` },
+    speakable: buildSpeakableSpecification(['.place-hero-summary', '.lead', 'h1', '.admin-unit-stats', '.wp-summary']),
+    publisher: { '@id': `${SITE_URL}/#organization` },
+  }
+
+  const breadcrumbNode = {
+    '@type': 'BreadcrumbList',
+    '@id': `${placeUrl}#breadcrumb`,
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'Trang chủ', item: `${SITE_URL}/` },
+      ...(p.area ? [{ '@type': 'ListItem', position: 2, name: areaMeta.value.name, item: `${SITE_URL}/khu-vuc/${p.area}` }] : []),
+      { '@type': 'ListItem', position: p.area ? 3 : 2, name: p.name, item: placeUrl },
+    ],
+  }
+
+  const allEnts = allWardEntities.value
+  const itemListNode = allEnts.length ? {
+    '@type': 'ItemList',
+    '@id': `${placeUrl}#items`,
+    name: `Địa điểm tại ${p.name}`,
+    numberOfItems: allEnts.length,
+    itemListElement: allEnts.slice(0, 30).map((e: any, i: number) => ({
+      '@type': 'ListItem',
+      position: i + 1,
+      name: e.name,
+      url: `${SITE_URL}${entityPath(e.id)}`,
+    })),
+  } : null
+
+  const faqItems: FaqItem[] = [
+    {
+      q: `${p.name} thuộc huyện, thị xã hay thành phố nào của tỉnh Vĩnh Long?`,
+      a: `${p.name} là đơn vị hành chính cấp ${p.level === 'phuong' ? 'phường' : 'xã'} trực thuộc ${areaMeta.value.name}, tỉnh Vĩnh Long.`,
+    },
+    {
+      q: `Có những địa điểm du lịch, ẩm thực hoặc đặc sản nào tại ${p.name}?`,
+      a: allEnts.length > 0
+        ? `Hiện tại trên hệ thống VinhLong360 đã ghi nhận ${allEnts.length} địa điểm, cơ sở lưu trú, ẩm thực và sản phẩm đặc sản tại ${p.name}.`
+        : `Các điểm đến, dịch vụ du lịch và đặc sản tại ${p.name} đang tiếp tục được cập nhật đầy đủ trên hệ thống VinhLong360.`,
+    },
+    {
+      q: `Làm sao để tìm số điện thoại cơ quan công an hoặc danh bạ hành chính của ${p.name}?`,
+      a: `Trang thông tin ${p.name} trên VinhLong360 cung cấp số điện thoại liên hệ công an xã/phường, trạm y tế, ủy ban và các dịch vụ công ích địa phương kèm bản đồ số tương tác.`,
+    },
+  ]
+  const faqNode = buildFaqPageSchema(faqItems, `${placeUrl}#faq`)
+
+  const graph = buildUnifiedSchemaGraph([
+    buildWebSiteSchema(),
+    buildOrganizationSchema(),
+    webpageNode,
+    breadcrumbNode,
+    schema,
+    itemListNode,
+    faqNode,
+  ])
+
+  return [{ type: 'application/ld+json', innerHTML: safeJsonLd(graph) }]
+})
+
+useHead({
+  link: [{ rel: 'canonical', href: () => canonicalUrl(`/xa-phuong/${encodedId.value}`) }],
+  script: placeJsonLd,
 })
 </script>
 
@@ -728,7 +776,7 @@ onUnmounted(() => {
 .wp-map-container { width: 100%; height: 380px; border-radius: var(--radius-sheet); overflow: hidden; border: .5px solid var(--line); box-shadow: var(--shadow-sm); transition: box-shadow .35s var(--ease-out-expo); }
 .wp-map-loading { background: linear-gradient(100deg, var(--bg-warm) 30%, var(--line) 50%, var(--bg-warm) 70%); background-size: 200% 100%; animation: wp-shimmer 1.4s var(--ease-out) infinite; }
 @keyframes wp-shimmer { from { background-position: 200% 0; } to { background-position: -200% 0; } }
-:deep(.wp-marker) { width: 1rem; height: 1rem; cursor: pointer; background: var(--primary); border: 2px solid var(--text-on-dark, var(--white)); border-radius: 50% 50% 50% 0; box-shadow: 0 1px 3px rgba(var(--black-rgb),.4); transform: rotate(-45deg); transition: transform .35s var(--ease-spring-gentle); }
+:deep(.wp-marker) { width: 1rem; height: 1rem; cursor: pointer; background: var(--color-brand); border: 2px solid var(--text-on-dark, var(--white)); border-radius: 50% 50% 50% 0; box-shadow: 0 1px 3px rgba(var(--black-rgb),.4); transform: rotate(-45deg); transition: transform .35s var(--ease-out-expo); }
 :deep(.wp-marker:hover) { transform: rotate(-45deg) scale(1.25); }
 
 /* Body layout */
@@ -739,16 +787,17 @@ onUnmounted(() => {
   gap: var(--space-6);
   margin-top: var(--space-5);
   align-items: start;
+  contain: layout style;
 }
 .wp-main { grid-area: main; min-width: 0; }
 
 /* Sections */
 .wp-sec { margin-bottom: var(--space-6); }
 .wp-divider { height: 0; border-top: .5px dashed var(--line); margin: var(--space-8) 0 var(--space-6); }
-.wp-eyebrow { font-size: var(--text-xs); font-weight: var(--weight-semibold); text-transform: uppercase; letter-spacing: var(--tracking-caps); color: var(--primary-fg); margin: 0 0 var(--space-1); }
+.wp-eyebrow { font-size: var(--text-xs); font-weight: var(--weight-semibold); text-transform: uppercase; letter-spacing: var(--tracking-caps); color: var(--color-brand); margin: 0 0 var(--space-1); }
 .wp-sec h2 { font-family: var(--font-editorial); font-size: var(--text-lg); font-weight: 600; letter-spacing: var(--tracking-tight); margin: 0 0 var(--space-4); display: flex; align-items: center; gap: var(--space-2); }
-.cnt { color: rgba(var(--primary-rgb), .6); font-weight: var(--weight-medium); font-size: var(--text-sm); }
-.dark .cnt { color: rgba(var(--primary-rgb), .85); }
+.cnt { color: rgba(var(--color-action-rgb), .7); font-weight: var(--weight-medium); font-size: var(--text-sm); }
+.dark .cnt { color: rgba(var(--color-action-rgb), .85); }
 /* ── CE3: unify the ward page under the phù-sa editorial voice (scoped .ce-ward) ── */
 /* Section heads already use the serif; add the vertical "sediment core" tick (river→amber→clay). */
 .ce-ward .wp-sec h2::before {
@@ -766,19 +815,19 @@ onUnmounted(() => {
   background: var(--card); border: .5px solid var(--line);
   border-radius: var(--radius-sheet); padding: var(--space-10) var(--space-6) var(--space-8);
   margin-top: var(--space-2);
-  background-image: radial-gradient(circle at 50% 0%, rgba(var(--primary-rgb), .06), transparent 60%);
+  background-image: radial-gradient(circle at 50% 0%, rgba(var(--color-brand-rgb), .06), transparent 60%);
 }
 .wp-empty-motif {
   position: absolute; inset: auto 0 0 0; height: 60px; pointer-events: none; opacity: .06;
   background:
-    radial-gradient(circle at 20% 100%, var(--primary) 0 2px, transparent 3px),
-    radial-gradient(circle at 50% 100%, var(--primary) 0 2px, transparent 3px),
-    radial-gradient(circle at 80% 100%, var(--primary) 0 2px, transparent 3px);
+    radial-gradient(circle at 20% 100%, var(--color-brand) 0 2px, transparent 3px),
+    radial-gradient(circle at 50% 100%, var(--color-brand) 0 2px, transparent 3px),
+    radial-gradient(circle at 80% 100%, var(--color-brand) 0 2px, transparent 3px);
 }
 .wp-empty-icon {
   display: inline-flex; align-items: center; justify-content: center;
   width: 72px; height: 72px; font-size: 2.2rem; border-radius: 50%;
-  background: radial-gradient(circle, rgba(var(--primary-rgb), .12), rgba(var(--primary-rgb), .04) 70%, transparent);
+  background: radial-gradient(circle, rgba(var(--color-brand-rgb), .12), rgba(var(--color-brand-rgb), .04) 70%, transparent);
   margin-bottom: var(--space-3); position: relative; z-index: 1;
 }
 .wp-empty-title { font-size: var(--text-lg); font-weight: var(--weight-bold); color: var(--ink); margin: 0 0 var(--space-2); position: relative; z-index: 1; }
@@ -786,7 +835,7 @@ onUnmounted(() => {
 .wp-empty-hint { color: var(--muted); font-size: var(--text-xs); max-width: 44ch; margin: 0 auto; position: relative; z-index: 1; }
 
 /* Sidebar cards */
-.wp-aside { grid-area: aside; display: flex; flex-direction: column; gap: var(--space-4); position: sticky; top: 78px; }
+.wp-aside { grid-area: aside; display: flex; flex-direction: column; gap: var(--space-4); position: sticky; top: 78px; max-height: calc(100vh - 78px); max-height: calc(100dvh - 78px); overflow-y: auto; overscroll-behavior: contain; contain: layout style; }
 .wp-aside :deep(.entity-trust-panel) { margin: 0; }
 .ward-action-dock { margin: 0; }
 .ward-action-dock :deep(.action-dock__primary) { flex: 1 1 100%; }
@@ -805,13 +854,13 @@ onUnmounted(() => {
 }
 .ward-primary-action:hover { background: var(--color-action-hover); }
 .ward-primary-action:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 3px; }
-.wp-card { position: relative; background: var(--card); border: .5px solid var(--line); border-radius: var(--radius-sheet); padding: var(--space-5); box-shadow: var(--shadow-sm); transition: transform .35s var(--ease-spring-gentle), box-shadow .35s var(--ease-out-expo); }
+.wp-card { position: relative; background: var(--card); border: .5px solid var(--line); border-radius: var(--radius-sheet); padding: var(--space-5); box-shadow: var(--shadow-sm); transition: transform .35s var(--ease-out-expo), box-shadow .35s var(--ease-out-expo); }
 .wp-card::before {
   content: ''; position: absolute; inset: 0; border-radius: inherit; pointer-events: none;
   background: linear-gradient(180deg, rgba(var(--white-rgb),.6) 0%, transparent 55%);
   mix-blend-mode: overlay; opacity: 0; transition: opacity .35s var(--ease-out-expo);
 }
-.wp-card:hover { transform: translateY(-2px); box-shadow: 0 0 0 1px rgba(var(--primary-rgb), .14), 0 18px 40px -18px rgba(var(--primary-rgb), .35); }
+.wp-card:hover { transform: translateY(-2px); box-shadow: 0 0 0 1px rgba(var(--color-action-rgb), .14), 0 18px 40px -18px rgba(var(--color-action-rgb), .25); }
 .wp-card:hover::before { opacity: .9; }
 .dark .wp-card::before { background: linear-gradient(180deg, rgba(var(--white-rgb),.08) 0%, transparent 55%); }
 .dark .wp-card:hover::before { opacity: .5; }
@@ -832,28 +881,28 @@ onUnmounted(() => {
 .wp-contact { display: flex; flex-direction: column; gap: var(--space-3); }
 .wp-contact-item { display: flex; flex-direction: column; gap: 2px; padding: var(--space-2) 0; border-bottom: .5px solid var(--line); }
 .wp-contact-item:last-child { border-bottom: none; padding-bottom: 0; }
-.wp-contact-main { background: linear-gradient(90deg, rgba(var(--primary-rgb), .07) 0%, rgba(var(--accent-rgb), .07) 100%); border-radius: var(--radius-surface); padding: var(--space-3); border-bottom: none; margin-bottom: 2px; }
+.wp-contact-main { background: linear-gradient(90deg, rgba(var(--color-action-rgb), .07) 0%, rgba(var(--accent-rgb), .07) 100%); border-radius: var(--radius-surface); padding: var(--space-3); border-bottom: none; margin-bottom: 2px; }
 .wp-contact-label { font-size: var(--text-xs); color: var(--muted); }
-.wp-phone { font-size: var(--text-base); font-weight: var(--weight-bold); color: var(--primary-fg); min-height: 44px; padding: var(--space-2) var(--space-3); margin-inline-start: calc(var(--space-3) * -1); display: inline-flex; align-items: center; border-radius: var(--radius-control); }
+.wp-phone { font-size: var(--text-base); font-weight: var(--weight-bold); color: var(--color-action); min-height: 44px; padding: var(--space-2) var(--space-3); margin-inline-start: calc(var(--space-3) * -1); display: inline-flex; align-items: center; border-radius: var(--radius-control); }
 .wp-phone:hover { text-decoration: underline; }
-.wp-phone:focus-visible { outline: 2px solid var(--primary); outline-offset: 3px; }
+.wp-phone:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 3px; }
 
 /* Facilities */
 .wp-fac-list { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: var(--space-3); }
-.wp-fac { padding: var(--space-2) var(--space-2); border-bottom: .5px solid var(--line); transition: background .3s var(--ease-out), transform .35s var(--ease-spring-gentle); border-radius: var(--radius-control); margin: 0 calc(var(--space-2) * -1); }
-.wp-fac:hover { background: rgba(var(--primary-rgb), .04); transform: translateX(2px); }
+.wp-fac { padding: var(--space-2) var(--space-2); border-bottom: .5px solid var(--line); transition: background .3s var(--ease-out), transform .35s var(--ease-out-expo); border-radius: var(--radius-control); margin: 0 calc(var(--space-2) * -1); }
+.wp-fac:hover { background: rgba(var(--color-action-rgb), .05); transform: translateX(2px); }
 .wp-fac:last-child { border-bottom: none; }
-.wp-fac-kind { font-size: var(--text-xs); color: var(--primary-fg); display: inline-flex; align-items: center; gap: var(--space-1); margin-bottom: 2px; }
+.wp-fac-kind { font-size: var(--text-xs); color: var(--color-action); display: inline-flex; align-items: center; gap: var(--space-1); margin-bottom: 2px; }
 .wp-fac-icon { font-size: 1.1rem; line-height: 1; flex-shrink: 0; }
 .wp-fac-row { font-size: var(--text-sm); color: var(--muted); margin-top: 2px; }
-.wp-fac-row a { color: var(--primary); }
-.wp-fac-row a:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+.wp-fac-row a { color: var(--color-action); }
+.wp-fac-row a:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; border-radius: var(--radius-control); }
 
 /* Map button */
-.wp-map-btn { display: flex; align-items: center; justify-content: center; gap: var(--space-2); padding: var(--space-3); border-radius: var(--radius-sheet); background: var(--bg-warm); border: .5px solid var(--line); font-weight: var(--weight-bold); font-size: var(--text-sm); color: var(--ink); min-height: 44px; transition: background .3s var(--ease-out), transform .35s var(--ease-spring-gentle), box-shadow .3s var(--ease-out); }
+.wp-map-btn { display: flex; align-items: center; justify-content: center; gap: var(--space-2); padding: var(--space-3); border-radius: var(--radius-sheet); background: var(--bg-warm); border: .5px solid var(--line); font-weight: var(--weight-bold); font-size: var(--text-sm); color: var(--ink); min-height: 44px; transition: background .3s var(--ease-out), transform .35s var(--ease-out-expo), box-shadow .3s var(--ease-out); }
 .wp-map-btn:hover { background: var(--line); transform: translateY(-1px); box-shadow: var(--shadow-xs); }
 .wp-map-btn:active { transform: scale(.97); transition-duration: .08s; }
-.wp-map-btn:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+.wp-map-btn:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
 
 /* Responsive */
 @media (max-width: 840px) {
@@ -862,7 +911,7 @@ onUnmounted(() => {
      nested .wp-grid EntityCard rows force .wp-main (and, through it, the
      single .wp-body track) wider than the viewport, causing page-level
      horizontal scroll on mobile. */
-  .wp-aside { position: static; margin-top: 0; }
+  .wp-aside { position: static; max-height: none; overflow-y: visible; margin-top: 0; }
   .ward-action-dock[data-detail-action-safe-area] { padding-bottom: max(var(--space-3), env(safe-area-inset-bottom, 0px)); }
   .wp-stats { gap: var(--space-4); }
 }
@@ -877,15 +926,15 @@ onUnmounted(() => {
 
 /* Dark mode */
 .dark .wp-card { background: var(--card); border-color: var(--line); }
-.dark .wp-card:hover { box-shadow: 0 0 0 1px rgba(var(--primary-rgb), .22), 0 18px 40px -18px rgba(var(--black-rgb),.6); }
-.dark .wp-contact-main { background: linear-gradient(90deg, rgba(var(--primary-rgb), .12) 0%, rgba(var(--accent-rgb), .10) 100%); }
-.dark .wp-phone { color: var(--primary-fg); }
+.dark .wp-card:hover { box-shadow: 0 0 0 1px rgba(var(--color-action-rgb), .22), 0 18px 40px -18px rgba(var(--black-rgb),.6); }
+.dark .wp-contact-main { background: linear-gradient(90deg, rgba(var(--color-action-rgb), .12) 0%, rgba(var(--accent-rgb), .10) 100%); }
+.dark .wp-phone { color: var(--color-action); }
 .dark .wp-fac:hover { background: var(--glass-subtle); }
-.dark .wp-fac-kind { color: var(--primary-fg); }
-.dark .wp-fac-row a { color: var(--primary-fg); }
+.dark .wp-fac-kind { color: var(--color-action); }
+.dark .wp-fac-row a { color: var(--color-action); }
 .dark .wp-map-btn { background: var(--glass-subtle); border-color: var(--line); color: var(--ink); }
 .dark .wp-map-btn:hover { background: var(--glass-light); }
-.dark .wp-empty-card { background-image: radial-gradient(circle at 50% 0%, rgba(var(--primary-rgb), .10), transparent 60%); }
+.dark .wp-empty-card { background-image: radial-gradient(circle at 50% 0%, rgba(var(--color-brand-rgb), .10), transparent 60%); }
 
 /* Reduced motion */
 @media (prefers-reduced-motion: reduce) {

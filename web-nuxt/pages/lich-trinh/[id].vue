@@ -1,16 +1,16 @@
 <template>
-  <section v-if="itinerary" class="page">
-    <Breadcrumb :items="[{ label: 'Trang chủ', to: '/' }, { label: 'Lịch trình', to: '/lich-trinh' }, { label: itineraryTitle }]">
+  <section v-if="itinerary" class="page" data-color-system="tri-region-v1">
+    <Breadcrumb :items="[{ label: 'Trang chủ', to: '/' }, { label: 'Lịch trình', to: '/lich-trinh' }, { label: itineraryTitle }]" :json-ld="true">
       <template #before>
         <button type="button" class="bc-back" aria-label="Quay lại" @click="goBack">
-          <span aria-hidden="true">←</span>
+          <IconLine name="arrow-left" aria-hidden="true" />
         </button>
       </template>
     </Breadcrumb>
 
     <section class="catalog-hero cat-itinerary">
       <div class="catalog-hero-inner">
-        <span class="catalog-hero-icon" aria-hidden="true">🗓️</span>
+        <span class="catalog-hero-icon" aria-hidden="true"><IconLine name="calendar" /></span>
         <div>
           <span class="itin-eyebrow"><IconLine :name="areaMeta.icon" /> {{ areaMeta.name }} · {{ itinerary.duration }}</span>
           <h1>{{ itineraryTitle }}</h1>
@@ -41,7 +41,7 @@
         <ShareButton :title="itineraryTitle" :text="itinerary.summary || itinerary.description" />
         <button type="button" class="btn btn-ghost btn-sm" aria-label="Báo cáo lịch trình" @click="openReport('entity', id)"><IconLine name="flag" /> Báo cáo</button>
       </ClientOnly>
-        <NuxtLink to="/tao-lich-trinh" no-prefetch class="btn btn-outline btn-sm">+ Tự tạo lịch trình</NuxtLink>
+        <NuxtLink to="/tao-lich-trinh" no-prefetch class="btn btn-outline btn-sm"><IconLine name="plus" aria-hidden="true" /> Tự tạo lịch trình</NuxtLink>
     </div>
 
     <!-- Transport mode + total -->
@@ -49,7 +49,8 @@
       <div v-if="stopsWithCoords.length >= 2" class="transport-mode transport-mode-spaced">
         <span class="tm-label">Phương tiện:</span>
         <button type="button" v-for="m in transportModes" :key="m.value" :class="['chip', { active: transportMode === m.value }]" :aria-pressed="transportMode === m.value" @click="switchMode(m.value)">
-          {{ m.icon }} {{ m.label }}
+          <IconLine :name="m.icon" aria-hidden="true" />
+          <span>{{ m.label }}</span>
         </button>
       </div>
     </ClientOnly>
@@ -67,9 +68,12 @@
           <span class="tc-label">{{ CHAPTER_LABEL[stopChapters[idx]!] }}</span>
         </li>
         <li class="step">
-          <span class="step-time">{{ stop.time || '' }}</span>
+          <div class="step-time">
+            <span class="step-index">#{{ idx + 1 }}</span>
+            <span v-if="stop.time" class="step-time-val">{{ stop.time }}</span>
+          </div>
           <div :class="['step-card', stop.type ? `cat-${catClass(stop.type)}` : '']">
-            <span class="step-emoji" aria-hidden="true">{{ typeEmoji(stop.type) }}</span>
+            <span class="step-emoji" aria-hidden="true"><IconLine :name="typeIcon(stop.type)" /></span>
             <div class="step-content">
               <h3>
                 <NuxtLink v-if="stopIdentity(stop)" :to="entityPath(stopIdentity(stop))" class="stop-link">{{ stop.name || stopIdentity(stop) }}</NuxtLink>
@@ -77,7 +81,7 @@
               </h3>
               <span v-if="stop.type" class="step-type-label">{{ typeLabel(stop.type) }}</span>
               <p v-if="stop.summary" class="summary">{{ stop.summary }}</p>
-              <p v-if="stop.note" class="step-note-callout"><span class="tnc-glyph" aria-hidden="true">☞</span>{{ stop.note }}</p>
+              <p v-if="stop.note" class="step-note-callout"><IconLine name="bulb" class="tnc-icon" aria-hidden="true" /><span>{{ stop.note }}</span></p>
             </div>
           </div>
         </li>
@@ -88,7 +92,7 @@
           <div class="route-leg-line"></div>
           <div class="route-leg-info">
             {{ formatDistance(routeLegs[idx].distance) }} · {{ formatDuration(routeLegs[idx].duration) }}
-            <span v-if="nextStopName(idx)" class="route-leg-next"> → tới {{ nextStopName(idx) }}</span>
+            <span v-if="nextStopName(idx)" class="route-leg-next"><IconLine name="arrow-right" class="rl-arrow" aria-hidden="true" /> tới {{ nextStopName(idx) }}</span>
           </div>
         </li>
       </template>
@@ -121,16 +125,25 @@
       </NuxtErrorBoundary>
     </div>
   </section>
-  <div v-else-if="pending" class="page">
+  <div v-else-if="pending" class="page" data-color-system="tri-region-v1">
     <SkeletonList :count="4" />
   </div>
-  <div v-else-if="fetchError" class="page">
+  <div v-else-if="fetchError" class="page" data-color-system="tri-region-v1">
     <EmptyState icon-name="alert-triangle" tone="error" title="Không thể tải lịch trình" message="Lỗi kết nối. Vui lòng thử lại.">
       <template #actions><NuxtLink to="/lich-trinh" class="btn btn-outline btn-sm">Về danh sách</NuxtLink></template>
     </EmptyState>
   </div>
-  <div v-else class="page">
-    <EmptyState message="Không tìm thấy lịch trình." />
+  <div v-else class="page" data-color-system="tri-region-v1">
+    <EmptyState
+      icon-name="map"
+      title="Không tìm thấy lịch trình"
+      message="Lịch trình này không tồn tại hoặc đã được chuyển sang chế độ riêng tư."
+    >
+      <template #actions>
+        <NuxtLink to="/lich-trinh" class="btn btn-primary btn-sm">Xem lịch trình gợi ý</NuxtLink>
+        <NuxtLink to="/tao-lich-trinh" class="btn btn-outline btn-sm">Tạo lịch trình mới</NuxtLink>
+      </template>
+    </EmptyState>
   </div>
 
   <!-- declutter-3 T14 (A3c): ReportModal page-level — trang này là 1 trong 2 consumer thật -->
@@ -153,15 +166,12 @@ const goBack = () => goBackOr('/lich-trinh')
 
 const { openReport } = useReport()
 
-const { data: itinerary, error: fetchError, status } = await useAsyncData(`itinerary-${id}`, () =>
+const itineraryAsyncData = useAsyncData(`itinerary-${id}`, () =>
   apiFetch<Itinerary>(`/api/itineraries/${encodedId}`)
 )
+const { data: itinerary, error: fetchError, status } = itineraryAsyncData
 const pending = computed(() => status.value === 'pending')
 const itineraryTitle = computed(() => itinerary.value?.title || itinerary.value?.name || 'Lịch trình')
-
-if (import.meta.server && fetchError.value) {
-  throw createError({ statusCode: 404, statusMessage: 'Không tìm thấy lịch trình' })
-}
 
 const areaMeta = computed(() => {
   const area = itinerary.value?.area
@@ -175,6 +185,11 @@ const itinerarySaveShape = computed(() => ({
   summary: itinerary.value?.summary || itinerary.value?.description || '',
   images: [] as string[],
 }))
+
+function typeIcon(type?: string) {
+  if (!type) return 'pin'
+  return TYPE_META[type]?.icon || 'pin'
+}
 
 function typeEmoji(type?: string) {
   if (!type) return '📍'
@@ -273,9 +288,9 @@ const nextStopName = (idx: number) => {
 
 // --- Route map & routing ---
 const transportModes = [
-  { value: 'driving' as TransportMode, icon: '🚗', label: 'Ô tô' },
-  { value: 'cycling' as TransportMode, icon: '🚲', label: 'Xe đạp' },
-  { value: 'foot' as TransportMode, icon: '🚶', label: 'Đi bộ' },
+  { value: 'driving' as TransportMode, icon: 'car', label: 'Ô tô' },
+  { value: 'cycling' as TransportMode, icon: 'bike', label: 'Xe đạp' },
+  { value: 'foot' as TransportMode, icon: 'foot', label: 'Đi bộ' },
 ]
 
 const routeMapEl = ref<HTMLElement | null>(null)
@@ -440,6 +455,12 @@ onBeforeUnmount(() => {
   mapInstance = null
 })
 
+await itineraryAsyncData
+
+if (import.meta.server && fetchError.value) {
+  throw createError({ statusCode: 404, statusMessage: 'Không tìm thấy lịch trình' })
+}
+
 // --- SEO ---
 if (itinerary.value && !itinerary.value.error) {
   const it = itinerary.value
@@ -450,45 +471,22 @@ if (itinerary.value && !itinerary.value.error) {
     description: itDesc,
     ogTitle: `${itTitle} — vinhlong360`,
     ogDescription: itDesc,
+    ogUrl: () => itineraryUrl(String(it.id || id)),
+    twitterCard: 'summary_large_image',
   })
 
-  const ld: Record<string, any> = {
-    '@context': 'https://schema.org',
-    '@type': 'TouristTrip',
-    name: itTitle,
-    description: itDesc,
-    touristType: 'Sightseeing',
-  }
-  if (it.stops?.length) {
-    ld.itinerary = {
-      '@type': 'ItemList',
-      itemListElement: it.stops.map((s, i: number) => {
-        const stopId = stopIdentity(s)
-        const item: Record<string, any> = {
-          '@type': 'ListItem',
-          position: i + 1,
-          name: s.name || stopId || `Diem dung ${i + 1}`,
-        }
-        if (stopId) item.item = canonicalUrl(entityPath(stopId))
-        return item
-      }),
-    }
-  }
-  const breadcrumb = {
-    '@context': 'https://schema.org',
-    '@type': 'BreadcrumbList',
-    itemListElement: [
-      { '@type': 'ListItem', position: 1, name: 'Trang chủ', item: 'https://vinhlong360.vn/' },
-      { '@type': 'ListItem', position: 2, name: 'Lịch trình', item: 'https://vinhlong360.vn/lich-trinh' },
-      { '@type': 'ListItem', position: 3, name: itTitle },
-    ],
-  }
+  // Schema stops mapped via canonicalUrl(entityPath(stopId))
+  const ld = buildItineraryDetailSchemaGraph({
+    itinerary: it,
+    itineraryTitle: itTitle,
+    itineraryDesc: itDesc,
+    itineraryUrl: itineraryUrl(String(it.id || id)),
+  })
 
   useHead({
     link: [{ rel: 'canonical', href: itineraryUrl(String(it.id || id)) }],
     script: [
-      { type: 'application/ld+json', innerHTML: JSON.stringify(ld) },
-      { type: 'application/ld+json', innerHTML: JSON.stringify(breadcrumb) },
+      { type: 'application/ld+json', innerHTML: safeJsonLd(ld) },
     ],
   })
 }
@@ -534,12 +532,12 @@ if (itinerary.value && !itinerary.value.error) {
   position: absolute; top: 14px; transform: translateX(-50%);
   display: flex; align-items: center; justify-content: center;
   width: 18px; height: 18px; border-radius: 50%;
-  background: var(--card); color: var(--primary-fg);
-  box-shadow: 0 0 0 2px var(--primary-fg) inset, var(--shadow-xs);
+  background: var(--card); color: var(--color-brand);
+  box-shadow: 0 0 0 2px var(--color-brand) inset, var(--shadow-xs);
   font-size: var(--text-2xs); font-weight: var(--weight-bold); font-variant-numeric: tabular-nums;
   cursor: default;
   animation: dayArcDotIn .4s var(--ease-out) both;
-  transition: transform .25s var(--ease-spring-gentle);
+  transition: transform .25s var(--ease-out-expo);
 }
 .day-arc-dot:hover { transform: translateX(-50%) scale(1.18); }
 .day-arc-dot:nth-child(2) { animation-delay: .18s; }
@@ -554,12 +552,13 @@ if (itinerary.value && !itinerary.value.error) {
   font-size: var(--text-2xs); color: var(--muted); text-transform: uppercase; letter-spacing: var(--tracking-caps);
   font-weight: var(--weight-semibold);
 }
-.dark .day-arc-dot { background: var(--card); box-shadow: 0 0 0 2px var(--primary-fg) inset, 0 1px 3px rgba(var(--black-rgb),.4); }
+.dark .day-arc-dot { background: var(--card); box-shadow: 0 0 0 2px var(--color-brand) inset, 0 1px 3px rgba(var(--black-rgb),.4); }
 
 .itin-actions { display: flex; gap: var(--space-2); flex-wrap: wrap; margin: var(--space-4) 0; }
-.itin-actions .btn { transition: transform .35s var(--ease-spring-gentle), box-shadow .35s var(--ease-out-expo); }
+.itin-actions .btn { transition: transform .35s var(--ease-out-expo), box-shadow .35s var(--ease-out-expo); }
 .itin-actions .btn:hover { transform: translateY(-1px); box-shadow: var(--shadow-xs); }
 .itin-actions .btn:active { transform: scale(.95); transition-duration: .08s; }
+.itin-actions .btn:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
 
 /* Mode selector panel: snug card-like container */
 .transport-mode-spaced {
@@ -577,9 +576,10 @@ if (itinerary.value && !itinerary.value.error) {
   min-height: 56px;
 }
 .dark .transport-mode-spaced { background: rgba(var(--white-rgb),.03); border-color: var(--line); }
-.transport-mode .chip { transition: transform .35s var(--ease-spring-gentle), box-shadow .3s var(--ease-out), background .3s var(--ease-out), border-color .3s var(--ease-out); }
+.transport-mode .chip { transition: transform .35s var(--ease-out-expo), box-shadow .3s var(--ease-out), background .3s var(--ease-out), border-color .3s var(--ease-out); }
 .transport-mode .chip:hover { transform: translateY(-1px); box-shadow: var(--shadow-xs); }
 .transport-mode .chip:active { transform: scale(.95); transition-duration: .08s; }
+.transport-mode .chip:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
 
 /* Section head introducing the timeline (WCAG 1.3.1: was h1→h3, this restores h2) */
 .timeline-head { margin: var(--space-5) 0 var(--space-2); }
@@ -593,7 +593,7 @@ if (itinerary.value && !itinerary.value.error) {
   bottom: 6px;
   width: 3px;
   border-radius: 2px;
-  background: linear-gradient(180deg, var(--primary-fg) 0%, rgba(var(--primary-rgb), .35) 100%);
+  background: linear-gradient(180deg, var(--color-brand) 0%, rgba(var(--color-brand-rgb), .35) 100%);
   opacity: .4;
 }
 /* ── Timeline chapter divider — "chapters of the day" (§3). Quiet hairline +
@@ -624,19 +624,19 @@ if (itinerary.value && !itinerary.value.error) {
   width: 9px;
   height: 9px;
   border-radius: 50%;
-  background: var(--primary-fg);
+  background: var(--color-brand);
   box-shadow: 0 0 0 3px var(--bg);
   z-index: 1;
 }
-.step-card { display: flex; gap: var(--space-3); align-items: flex-start; padding: var(--space-4); background: var(--card); border: .5px solid var(--line); border-radius: var(--radius-sheet); box-shadow: var(--shadow-xs); transition: transform .35s var(--ease-spring-gentle), box-shadow .35s var(--ease-out-expo), border-color .3s var(--ease-out); }
+.step-card { display: flex; gap: var(--space-3); align-items: flex-start; padding: var(--space-4); background: var(--card); border: .5px solid var(--line); border-radius: var(--radius-sheet); box-shadow: var(--shadow-xs); transition: transform .35s var(--ease-out-expo), box-shadow .35s var(--ease-out-expo), border-color .3s var(--ease-out); }
 .step-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); border-color: var(--border); }
 .step-card:active { transform: scale(.97); transition-duration: .08s; }
-.step-emoji { font-size: 1.6rem; line-height: 1; transition: transform .35s var(--ease-spring-gentle); }
+.step-emoji { font-size: 1.6rem; line-height: 1; transition: transform .35s var(--ease-out-expo); }
 .step-card:hover .step-emoji { transform: scale(1.1) rotate(-3deg); }
 .stop-link { color: var(--ink); font-weight: var(--weight-semibold); transition: color .3s var(--ease-out); border-radius: var(--radius-control); }
-.stop-link:hover { color: var(--primary-fg); }
+.stop-link:hover { color: var(--color-action); }
 .stop-link:active { opacity: .7; }
-.stop-link:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+.stop-link:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
 
 /* Type label as scannable badge pill */
 .step-type-label {
@@ -657,29 +657,33 @@ if (itinerary.value && !itinerary.value.error) {
   display: flex; align-items: flex-start; gap: var(--space-2);
   margin: var(--space-2) 0 0; padding: var(--space-2) var(--space-3);
   background: color-mix(in srgb, var(--amber-600) 10%, transparent);
-  border-left: 2px solid color-mix(in srgb, var(--amber-600) 55%, transparent);
+  border: 1px solid color-mix(in srgb, var(--amber-600) 25%, transparent);
+  box-shadow: inset 2px 0 0 color-mix(in srgb, var(--amber-600) 55%, transparent);
   border-radius: var(--radius-control); font-size: var(--text-sm); line-height: var(--leading-normal);
   color: var(--ink);
 }
-.tnc-glyph { flex-shrink: 0; color: var(--amber-600); font-size: var(--text-sm); line-height: 1.4; }
-.dark .step-note-callout { background: color-mix(in srgb, var(--amber-500) 14%, transparent); border-left-color: color-mix(in srgb, var(--amber-500) 55%, transparent); }
-.dark .tnc-glyph { color: var(--amber-500); }
+.tnc-icon { flex-shrink: 0; color: var(--amber-600); font-size: 1.1em; line-height: 1.4; }
+.dark .step-note-callout { background: color-mix(in srgb, var(--amber-500) 14%, transparent); border-color: color-mix(in srgb, var(--amber-500) 25%, transparent); box-shadow: inset 2px 0 0 color-mix(in srgb, var(--amber-500) 55%, transparent); }
+.dark .tnc-icon { color: var(--amber-500); }
+
+.transport-mode-spaced .chip { display: inline-flex; align-items: center; gap: var(--space-1); }
+.transport-mode-spaced .chip .line-icon { font-size: 1.05em; }
 
 .route-leg { display: flex; align-items: center; gap: var(--space-2); padding: var(--space-2) 0 var(--space-2) var(--space-6); }
 .route-leg-line { width: 2px; height: 20px; background: var(--line); border-radius: 1px; transition: background .3s var(--ease-out); }
 .route-leg-info { font-size: var(--text-xs); color: var(--muted); }
 /* Narrative bridge — the next stop's name whispered inline, so a distance
    stat becomes a handoff between two moments in the day (§5/§7). */
-.route-leg-next { color: var(--primary-fg); font-weight: var(--weight-medium); }
+.route-leg-next { color: var(--color-brand); font-weight: var(--weight-medium); }
+.rl-arrow { font-size: .85em; vertical-align: -.05em; margin: 0 var(--space-1); }
 
 .route-map-section { margin-top: var(--space-6); }
 /* Branded accent on the map section title */
 .route-map-section h3 {
+  font-family: var(--font-editorial);
   font-size: var(--text-lg);
   font-weight: var(--weight-semibold);
   margin-bottom: var(--space-3);
-  padding-left: var(--space-3);
-  border-left: 3px solid var(--secondary);
 }
 .route-map { height: clamp(240px, 50vh, 400px); border-radius: var(--radius-sheet); overflow: hidden; border: .5px solid var(--line); box-shadow: var(--shadow-sm); transition: box-shadow .35s var(--ease-out-expo); }
 .route-map-wrap { position: relative; }
@@ -688,7 +692,7 @@ if (itinerary.value && !itinerary.value.error) {
   position: absolute; inset: 0; z-index: 1;
   display: flex; align-items: center; justify-content: center; gap: var(--space-2);
   color: var(--muted); border-radius: var(--radius-sheet); font-size: var(--text-sm);
-  background: linear-gradient(90deg, rgba(var(--primary-rgb),.06) 25%, rgba(var(--primary-rgb),.12) 50%, rgba(var(--primary-rgb),.06) 75%);
+  background: linear-gradient(90deg, rgba(var(--color-action-rgb),.06) 25%, rgba(var(--color-action-rgb),.12) 50%, rgba(var(--color-action-rgb),.06) 75%);
   background-size: 200% 100%;
   animation: routeMapShimmer 1.5s var(--ease-in-out) infinite;
 }
@@ -710,11 +714,11 @@ if (itinerary.value && !itinerary.value.error) {
   display: inline-block;
   margin: 0 0 var(--space-3);
   font-size: var(--text-sm);
-  color: var(--primary-fg);
+  color: var(--color-brand);
   font-weight: var(--weight-bold);
   padding: var(--space-2) var(--space-4);
   background: var(--card);
-  border: 1.5px solid rgba(var(--primary-rgb), .35);
+  border: 1.5px solid rgba(var(--color-brand-rgb), .35);
   border-radius: var(--radius-full);
   box-shadow: var(--shadow-xs);
   transition: background .3s var(--ease-out), box-shadow .3s var(--ease-out);
@@ -729,7 +733,7 @@ if (itinerary.value && !itinerary.value.error) {
   gap: var(--space-2);
 }
 .route-total[role="status"] .chip { font-weight: var(--weight-semibold); }
-.dark .route-total { background: rgba(var(--white-rgb),.04); border-color: rgba(var(--primary-rgb), .4); }
+.dark .route-total { background: rgba(var(--white-rgb),.04); border-color: rgba(var(--color-brand-rgb), .4); }
 
 /* Dark mode */
 .dark .step-card { border-color: var(--line); }

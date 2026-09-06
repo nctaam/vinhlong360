@@ -1,11 +1,11 @@
-﻿<template>
+<template>
   <section class="page dir-page" data-color-system="tri-region-v1">
-    <Breadcrumb :items="[{ label: 'Trang chủ', to: '/' }, { label: 'Danh bạ' }]" />
+    <Breadcrumb :items="[{ label: 'Trang chủ', to: '/' }, { label: 'Danh bạ' }]" :json-ld="true" />
 
     <!-- Hero -->
     <section class="catalog-hero cat-directory">
       <div class="catalog-hero-inner">
-        <span class="catalog-hero-icon" aria-hidden="true">🏛️</span>
+        <span class="catalog-hero-icon" aria-hidden="true"><IconLine name="landmark" /></span>
         <div>
           <h1>{{ pc('hero_title') }}</h1>
           <p>{{ pc('hero_subtitle') }}</p>
@@ -25,7 +25,9 @@
 
     <!-- Error state -->
     <EmptyState v-if="placesError && !places?.length" icon-name="alert-triangle" title="Không thể tải dữ liệu" message="Vui lòng thử lại sau.">
-      <button type="button" class="btn btn-outline btn-sm" @click="refreshNuxtData('dir-places')">Thử lại</button>
+      <template #actions>
+        <button type="button" class="btn btn-outline btn-sm" @click="refreshNuxtData('dir-places')">Thử lại</button>
+      </template>
     </EmptyState>
 
     <!-- Region quick-picks -->
@@ -62,16 +64,18 @@
       <p class="ward-caveat">Sau sáp nhập, hệ thống xã/phường đang điều chỉnh — thông tin có thể chưa đầy đủ, vui lòng kiểm chứng trực tiếp với cơ quan khi cần.</p>
     </section>
 
+    <p class="sr-only" role="status" aria-live="polite">{{ statusAnnouncement }}</p>
+
     <p class="dir-report-link"><NuxtLink to="/lien-he">Báo thông tin sai</NuxtLink>.</p>
 
     <div v-if="!wardId" class="empty-hint">
-      <span class="empty-hint-halo" aria-hidden="true"><span class="empty-hint-icon">🏘️</span></span>
+      <span class="empty-hint-halo" aria-hidden="true"><span class="empty-hint-icon"><IconLine name="building" /></span></span>
       <h3 class="empty-hint-title">Chọn một xã/phường</h3>
       <p>Chọn khu vực rồi chọn xã/phường ở trên để xem danh bạ cơ quan hành chính.</p>
     </div>
     <template v-else>
       <p class="ward-hub-link">
-        <NuxtLink :to="`/xa-phuong/${wardId}`"><IconLine name="home" /> Xem trang đầy đủ xã/phường này (du lịch · lưu trú · đặc sản) →</NuxtLink>
+        <NuxtLink :to="`/xa-phuong/${wardId}`"><IconLine name="home" /> Xem trang đầy đủ xã/phường này (du lịch · lưu trú · đặc sản) <IconLine name="arrow-right" class="danhba-arrow" /></NuxtLink>
       </p>
       <div v-if="loading" class="fac-skeleton" role="status" aria-label="Đang tải dữ liệu" aria-busy="true">
         <div v-for="i in 3" :key="i" class="fac-sk-item">
@@ -105,7 +109,9 @@
         </li>
       </ul>
       <EmptyState v-else-if="facilitiesError" icon-name="alert-triangle" title="Không thể tải danh bạ" message="Có lỗi khi tải dữ liệu. Vui lòng thử lại.">
-        <button type="button" class="btn btn-outline btn-sm" @click="loadFacilities">Thử lại</button>
+        <template #actions>
+          <button type="button" class="btn btn-outline btn-sm" @click="loadFacilities">Thử lại</button>
+        </template>
       </EmptyState>
       <EmptyState v-else icon-name="list" title="Chưa có danh bạ" message="Chưa có dữ liệu danh bạ cho xã/phường này. Dữ liệu đang được bổ sung từ nguồn chính thống." />
     </template>
@@ -115,19 +121,19 @@
       <h2>Khám phá thêm</h2>
       <div class="cross-links">
         <NuxtLink to="/du-lich" class="cross-card">
-          <span class="cross-icon" aria-hidden="true">🌿</span>
+          <span class="cross-icon" aria-hidden="true"><IconLine name="leaf" /></span>
           <div><strong>Du lịch</strong><p>Trải nghiệm miệt vườn</p></div>
         </NuxtLink>
         <NuxtLink to="/ban-do" class="cross-card" no-prefetch>
-          <span class="cross-icon" aria-hidden="true">🗺️</span>
+          <span class="cross-icon" aria-hidden="true"><IconLine name="map" /></span>
           <div><strong>Bản đồ</strong><p>Xem trên bản đồ</p></div>
         </NuxtLink>
         <NuxtLink to="/lich-trinh" class="cross-card">
-          <span class="cross-icon" aria-hidden="true">🗓️</span>
+          <span class="cross-icon" aria-hidden="true"><IconLine name="calendar" /></span>
           <div><strong>Lịch trình</strong><p>Tuyến đi sẵn</p></div>
         </NuxtLink>
         <NuxtLink to="/lien-he" class="cross-card">
-          <span class="cross-icon" aria-hidden="true">📩</span>
+          <span class="cross-icon" aria-hidden="true"><IconLine name="message" /></span>
           <div><strong>Liên hệ</strong><p>Góp ý & báo sai</p></div>
         </NuxtLink>
       </div>
@@ -143,7 +149,7 @@ import { OFFICE_KIND, AREA_META } from '~/composables/useConstants'
 import { trackContactView } from '~/composables/useContactBeacon'
 
 const AREA_RGB: Record<string, string> = {
-  'vinh-long': 'var(--primary-rgb)',
+  'vinh-long': 'var(--color-brand-rgb)',
   'ben-tre': 'var(--secondary-rgb)',
   'tra-vinh': 'var(--river-rgb)',
 }
@@ -155,7 +161,8 @@ const { show: showToast } = useToast()
 const ADMIN_LEVELS = ['phuong', 'xa']  // danh-bạ chỉ xã/phường (124), KHÔNG gộp cấp tỉnh
 const route = useRoute()
 
-const { data: places, error: placesError } = await useAsyncData('dir-places', () => apiFetch<Entity[]>('/api/places'))
+const placesAsyncData = useAsyncData('dir-places', () => apiFetch<Entity[]>('/api/places'))
+const { data: places, error: placesError } = placesAsyncData
 
 const areaFromQuery = computed(() => {
   const a = route.query.area as string
@@ -201,6 +208,23 @@ const facilities = ref<Entity[]>([])
 const facilitiesError = ref(false)
 const loading = ref(false)
 
+const selectedWard = computed(() => {
+  if (!wardId.value) return null
+  for (const g of wardGroups.value) {
+    const found = g.wards.find(w => w.id === wardId.value)
+    if (found) return found
+  }
+  return null
+})
+
+const statusAnnouncement = computed(() => {
+  if (!wardId.value) return 'Vui lòng chọn xã hoặc phường để xem danh bạ'
+  if (loading.value) return 'Đang tải danh bạ cơ quan...'
+  if (facilitiesError.value) return 'Lỗi khi tải danh bạ. Vui lòng thử lại.'
+  if (!facilities.value.length) return `Chưa có danh bạ cơ quan cho ${selectedWard.value?.name || 'xã/phường đã chọn'}.`
+  return `Đã tìm thấy ${facilities.value.length} cơ quan hành chính tại ${selectedWard.value?.name || 'xã/phường đã chọn'}.`
+})
+
 function attr(f: Entity, k: string): string {
   const value = (f.attributes || {})[k]
   return typeof value === 'string' ? value : value == null ? '' : String(value)
@@ -242,6 +266,8 @@ onBeforeUnmount(() => {
   facilitiesAbort?.abort()
 })
 
+await placesAsyncData
+
 async function loadFacilities() {
   if (facilitiesAbort) facilitiesAbort.abort()
   const id = wardId.value
@@ -274,25 +300,44 @@ const jsonLd = computed(() => facilities.value
     ...(attr(f, 'hours') ? { openingHours: attr(f, 'hours') } : {}),
   })))
 
+// Đồ thị tri thức hợp nhất: '@type': 'CollectionPage', GovernmentService, ContactPoint, GovernmentOffice, FAQPage
+const directorySchema = computed(() => buildDirectorySchemaGraph({
+  totalWards: totalWards.value,
+  selectedArea: selectedArea.value,
+  dirTitle: pc('seo_title') || 'Danh bạ hành chính — vinhlong360',
+  dirDesc: pc('seo_description') || 'Danh bạ 124 xã/phường, cơ quan hành chính tỉnh Vĩnh Long hợp nhất (3 vùng trước 7-2025).',
+  facilities: facilities.value.map((f: Entity) => ({
+    id: f.id,
+    name: f.name,
+    address: attr(f, 'address'),
+    phone: attr(f, 'phone'),
+    hours: attr(f, 'hours'),
+    kind: attr(f, 'kind'),
+  })),
+}))
+
 useSeoMeta({
   ogType: 'website',
   title: () => pc('seo_title') || 'Danh bạ hành chính — vinhlong360',
-  description: () => pc('seo_description') || 'Danh bạ xã/phường, cơ quan hành chính Vĩnh Long, Bến Tre, Trà Vinh.',
+  description: () => pc('seo_description') || 'Danh bạ 124 xã/phường, cơ quan hành chính tỉnh Vĩnh Long hợp nhất (3 vùng trước 7-2025).',
   ogTitle: () => pc('og_title') || 'Danh bạ — vinhlong360',
   ogDescription: () => pc('og_description') || 'Tra cứu thông tin hành chính địa phương.',
+  ogUrl: () => canonicalUrl('/danh-ba'),
+  twitterCard: 'summary_large_image',
 })
 useHead(() => ({
   link: [{ rel: 'canonical', href: canonicalUrl('/danh-ba') }],
-  script: jsonLd.value.length
-    ? [{ type: 'application/ld+json', innerHTML: safeJsonLd(jsonLd.value) }]
-    : [],
+  script: [
+    { type: 'application/ld+json', innerHTML: safeJsonLd(directorySchema.value) },
+    ...(jsonLd.value.length ? [{ type: 'application/ld+json', innerHTML: safeJsonLd(jsonLd.value) }] : []),
+  ],
 }))
 </script>
 
 <style scoped>
 .dir-page { max-width: 920px; }
-.empty-hint { display: flex; flex-direction: column; align-items: center; gap: var(--space-2); padding: var(--space-8) var(--space-4); color: var(--muted); text-align: center; background: radial-gradient(120% 100% at 50% 0%, rgba(var(--primary-rgb), .06), transparent 70%); border: .5px solid var(--line); border-radius: var(--radius-sheet); }
-.empty-hint-halo { display: inline-flex; align-items: center; justify-content: center; width: 96px; height: 96px; border-radius: 50%; background: radial-gradient(circle, rgba(var(--primary-rgb), .14), rgba(var(--primary-rgb), .04) 70%); margin-bottom: var(--space-1); }
+.empty-hint { display: flex; flex-direction: column; align-items: center; gap: var(--space-2); padding: var(--space-8) var(--space-4); color: var(--muted); text-align: center; background: radial-gradient(120% 100% at 50% 0%, rgba(var(--color-brand-rgb), .06), transparent 70%); border: .5px solid var(--line); border-radius: var(--radius-sheet); }
+.empty-hint-halo { display: inline-flex; align-items: center; justify-content: center; width: 96px; height: 96px; border-radius: 50%; background: radial-gradient(circle, rgba(var(--color-brand-rgb), .14), rgba(var(--color-brand-rgb), .04) 70%); margin-bottom: var(--space-1); }
 .empty-hint-icon { font-size: 2.6rem; line-height: 1; }
 .empty-hint-title { margin: 0; font-size: var(--text-lg); font-weight: var(--weight-bold); color: var(--ink); }
 .empty-hint p { margin: 0; font-size: var(--text-sm); max-width: 38ch; }
@@ -300,46 +345,49 @@ useHead(() => ({
 .ward-pick { display: flex; flex-direction: column; gap: var(--space-2); max-width: 420px; padding: var(--space-4); border: .5px solid var(--line); border-radius: var(--radius-sheet); background: var(--card); box-shadow: var(--shadow-xs); }
 .ward-pick .control-label { font-weight: var(--weight-semibold); }
 .ward-pick select { padding: var(--space-3); border: .5px solid var(--line); border-radius: var(--radius-surface); font-size: 1rem; min-height: 44px; background: var(--bg-alt); transition: border-color .3s var(--ease-out), box-shadow .35s var(--ease-out-expo); }
-.ward-pick select:focus-visible { outline: none; border-color: var(--primary-fg); box-shadow: 0 0 0 3px rgba(var(--primary-rgb), .15), var(--shadow-xs); }
+.ward-pick select:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 1px; border-color: var(--color-focus); box-shadow: 0 0 0 3px rgba(var(--color-action-rgb), .15), var(--shadow-xs); }
 .ward-caveat { margin: var(--space-2) 0 0; max-width: 60ch; font-size: var(--text-xs); color: var(--muted); line-height: var(--leading-relaxed); }
 .dir-report-link { font-size: var(--text-sm); color: var(--muted); margin: var(--space-6) 0 var(--space-5); }
-.dir-report-link a { color: var(--primary-fg); font-weight: var(--weight-semibold); }
+.dir-report-link a { color: var(--color-action); font-weight: var(--weight-semibold); }
 .dir-report-link a:hover { text-decoration: underline; }
 .fac-list { list-style: none; padding: 0; margin: 0; display: grid; gap: var(--space-3); }
 /* Left accent = tri-province sediment gradient (::before bar, same technique
    as .sediment-head's h2 tick / .region-window.active), replacing the flat
    single-tone border-left so each office entry reads as a considered
    directory record, not a generic list row. */
-.fac { position: relative; overflow: hidden; border: .5px solid var(--line); border-radius: var(--radius-sheet); padding: var(--space-5); background: linear-gradient(180deg, rgba(var(--primary-rgb), .04), transparent 60%), var(--card); box-shadow: var(--shadow-sm); transition: transform .35s var(--ease-spring-gentle), box-shadow .35s var(--ease-out-expo), border-color .3s var(--ease-out); }
+.fac { position: relative; overflow: hidden; border: .5px solid var(--line); border-radius: var(--radius-sheet); padding: var(--space-5); background: linear-gradient(180deg, rgba(var(--color-brand-rgb), .04), transparent 60%), var(--card); box-shadow: var(--shadow-sm); transition: transform .35s var(--ease-out-expo), box-shadow .35s var(--ease-out-expo), border-color .3s var(--ease-out); }
 .fac::before {
-  content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 4px;
+  content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 2px;
   background: linear-gradient(180deg, var(--river-600) 0%, var(--amber-600) 52%, var(--clay-600) 100%);
 }
 .dark .fac::before { background: linear-gradient(180deg, var(--river-legacy-dark) 0%, var(--amber-500) 52%, var(--clay-400) 100%); }
 .fac:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); border-color: var(--border); }
 .fac-head { display: flex; flex-direction: column; align-items: flex-start; gap: var(--space-1); margin-bottom: var(--space-2); }
 .fac strong { font-family: var(--font-editorial); font-weight: 600; }
-.fac-kind { align-self: flex-start; font-size: var(--text-xs); color: var(--primary-fg); font-weight: var(--weight-semibold); text-transform: uppercase; letter-spacing: var(--tracking-wide); background: rgba(var(--primary-rgb), .12); border-radius: var(--radius-control); padding: 2px var(--space-2); line-height: 1.5; }
+.fac-kind { align-self: flex-start; font-size: var(--text-xs); color: var(--color-brand); font-weight: var(--weight-semibold); text-transform: uppercase; letter-spacing: var(--tracking-wide); background: rgba(var(--color-brand-rgb), .12); border-radius: var(--radius-control); padding: 2px var(--space-2); line-height: 1.5; }
 .fac-row { font-size: var(--text-sm); margin: 2px 0; }
 .fac-row a { transition: color .3s var(--ease-out); }
-.fac-row a:hover { color: var(--primary-fg); }
-.fac-row a:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; border-radius: var(--radius-control); }
+.fac-row a:hover { color: var(--color-action); }
+.fac-row a:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; border-radius: var(--radius-control); }
 /* Phone as accessible tel: target — full 44px tap area, brand colour on hover */
-.fac-row a[href^="tel:"] { display: inline-flex; align-items: center; min-height: 44px; color: var(--primary-fg); font-weight: var(--weight-semibold); border-radius: var(--radius-control); }
-.fac-row a[href^="tel:"]:hover { color: var(--primary-fg-strong, var(--primary-fg)); text-decoration: underline; }
+.fac-row a[href^="tel:"] { display: inline-flex; align-items: center; min-height: 44px; color: var(--color-action); font-weight: var(--weight-semibold); border-radius: var(--radius-control); }
+.fac-row a[href^="tel:"]:hover { color: var(--color-action-hover); text-decoration: underline; }
 .fac-src { color: var(--muted); display: block; margin: var(--space-3) calc(-1 * var(--space-5)) 0; padding: var(--space-2) var(--space-5); font-size: var(--text-xs); background: var(--overlay-subtle, rgba(var(--black-rgb),.02)); border-top: .5px solid var(--line); }
 .fac-src a { color: var(--ink-secondary); text-decoration: underline; transition: color .3s var(--ease-out); }
-.fac-src a:hover { color: var(--primary-fg); }
-.fac-verified { display: inline-flex; align-items: center; justify-content: center; width: 16px; height: 16px; margin-right: 2px; border-radius: 50%; background: rgba(var(--secondary-rgb), .14); color: var(--success); font-weight: var(--weight-bold); font-size: .65rem; vertical-align: middle; }
+.fac-src a:hover { color: var(--color-action); }
+.fac-verified { display: inline-flex; align-items: center; justify-content: center; width: 16px; height: 16px; margin-right: 2px; border-radius: 50%; background: rgba(var(--secondary-rgb), .14); color: var(--success); font-weight: var(--weight-bold); font-size: var(--text-2xs); vertical-align: middle; }
 .ward-hub-link { margin: 0 0 var(--space-4); }
-.ward-hub-link a { color: var(--primary-fg); font-weight: var(--weight-semibold); transition: opacity .3s var(--ease-out); }
+.ward-hub-link a { display: inline-flex; align-items: center; gap: var(--space-1); color: var(--color-action); font-weight: var(--weight-semibold); transition: opacity .3s var(--ease-out); }
 .ward-hub-link a:active { opacity: .7; }
+.ward-hub-link a:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; border-radius: var(--radius-control); }
+.danhba-arrow { display: inline-flex; transition: transform .3s var(--ease-out-expo); }
+.ward-hub-link a:hover .danhba-arrow { transform: translateX(3px); }
 .fac-report { margin-top: var(--space-2); background: none; border: none; padding: var(--space-2) var(--space-3); margin-left: calc(-1 * var(--space-3)); color: var(--muted); font-size: var(--text-xs); cursor: pointer; text-decoration: underline; transition: color .3s var(--ease-out), background .3s var(--ease-out); min-height: 44px; border-radius: var(--radius-control); display: inline-flex; align-items: center; }
-.fac-report:hover:not(:disabled) { color: var(--primary-fg); background: rgba(var(--primary-rgb), .06); }
+.fac-report:hover:not(:disabled) { color: var(--color-action); background: rgba(var(--color-action-rgb), .06); }
 .fac-report:active:not(:disabled) { transform: scale(.97); }
-.fac-report:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+.fac-report:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
 .fac-skeleton { display: grid; gap: var(--space-3); }
-.fac-sk-item { border: .5px solid var(--line); border-left: 4px solid var(--secondary-fg); border-radius: var(--radius-sheet); padding: var(--space-5); background: var(--card); display: flex; flex-direction: column; gap: var(--space-2); }
+.fac-sk-item { border: 1px solid var(--line); box-shadow: inset 3px 0 0 var(--secondary-fg); border-radius: var(--radius-sheet); padding: var(--space-5); background: var(--card); display: flex; flex-direction: column; gap: var(--space-2); }
 .sk-bar {
   position: relative;
   height: 10px;
@@ -368,16 +416,17 @@ useHead(() => ({
 .dark .fac { background: var(--bg-alt); border-color: var(--line); }
 .dark .fac:hover { box-shadow: var(--shadow-lg); border-color: rgba(var(--white-rgb),.1); }
 .dark .ward-pick select { background: var(--bg-alt); border-color: var(--line); color: var(--ink); }
-.dark .ward-pick select:focus-visible { border-color: var(--primary-fg); }
-.dark .empty-hint { color: var(--muted); border-color: rgba(var(--white-rgb),.08); background: radial-gradient(120% 100% at 50% 0%, rgba(var(--primary-rgb), .1), transparent 70%); }
+.dark .ward-pick select:focus-visible { border-color: var(--color-focus); }
+.dark .empty-hint { color: var(--muted); border-color: rgba(var(--white-rgb),.08); background: radial-gradient(120% 100% at 50% 0%, rgba(var(--color-brand-rgb), .1), transparent 70%); }
 .dark .empty-hint-title { color: var(--ink); }
 .dark .fac-src { background: rgba(var(--white-rgb),.03); border-top-color: rgba(var(--white-rgb),.08); }
-.dark .fac-report:hover:not(:disabled) { color: var(--primary); }
+.dark .fac-report:hover:not(:disabled) { color: var(--color-action); }
 .dark .fac-sk-item { background: var(--bg-alt); border-color: var(--line); border-left-color: var(--secondary-fg); }
 
 /* Reduced motion — full */
 @media (prefers-reduced-motion: reduce) {
   .fac:hover { transform: none; }
   .fac-report:active:not(:disabled) { transform: none; }
+  .ward-hub-link a:hover .danhba-arrow { transform: none; }
 }
 </style>

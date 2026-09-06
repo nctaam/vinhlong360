@@ -12,14 +12,14 @@
   position: relative;
   overflow: clip;
   isolation: isolate;
-  margin: 0 calc(-1 * var(--space-5)) var(--space-6);
-  padding: var(--space-8) var(--space-5) var(--space-6);
+  margin: 0 calc(-1 * var(--space-4)) var(--space-6);
+  padding: var(--space-8) var(--space-4) var(--space-6);
   display: flex;
   align-items: center;
   gap: var(--space-6);
   background:
     var(--grain),
-    linear-gradient(120deg, color-mix(in srgb, var(--river-600) 14%, transparent) 0%, var(--bg-warm) 55%, rgba(var(--primary-rgb), .16) 120%);
+    linear-gradient(120deg, color-mix(in srgb, var(--river-600) 14%, transparent) 0%, var(--bg-warm) 55%, rgba(var(--color-action-rgb), .16) 120%);
   background-blend-mode: overlay, normal;
 }
 .bm-inner { flex: 1 1 auto; min-width: 0; max-width: var(--measure-read); }
@@ -27,7 +27,7 @@
   display: flex; align-items: center; gap: var(--space-2);
   font-family: var(--font-sans); font-size: var(--text-2xs); font-weight: 700;
   text-transform: uppercase; letter-spacing: var(--tracking-caps);
-  color: var(--primary-fg-strong); margin: 0 0 var(--space-3);
+  color: var(--color-brand); margin: 0 0 var(--space-3);
 }
 .bm-tick { width: 14px; height: 1.5px; background: var(--accent, var(--amber-500)); flex-shrink: 0; }
 .brand-masthead h1 {
@@ -46,7 +46,9 @@
 .legal-metadata {
   margin: 0 0 var(--space-6);
   padding: var(--space-3) var(--space-4);
-  border-inline-start: 3px solid var(--color-action);
+  border: 1px solid var(--color-border);
+  box-shadow: inset 3px 0 0 var(--color-action);
+  border-radius: var(--radius-surface);
   background: var(--color-surface-subtle);
 }
 .legal-metadata dl { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-2) var(--space-5); margin: 0; }
@@ -59,6 +61,10 @@
 .legal-disclosure h3 { margin: var(--space-5) 0 var(--space-2); font-size: var(--text-base); color: var(--color-text); }
 .legal-disclosure p { margin: 0 0 var(--space-3); }
 .legal-table-wrap { overflow-x: auto; border: .5px solid var(--color-border); border-radius: var(--radius-control); }
+.legal-table-wrap:focus-visible {
+  outline: 2px solid var(--color-action);
+  outline-offset: 2px;
+}
 .legal-cookie-table { width: 100%; min-width: 680px; border-collapse: collapse; font-size: var(--text-sm); }
 .legal-cookie-table th, .legal-cookie-table td { padding: var(--space-2) var(--space-3); text-align: left; vertical-align: top; border-bottom: .5px solid var(--color-border); }
 .legal-cookie-table thead th { color: var(--color-text-muted); background: var(--color-surface-subtle); font-size: var(--text-xs); text-transform: uppercase; letter-spacing: .04em; }
@@ -71,14 +77,14 @@
 .dark .brand-masthead {
   background:
     var(--grain),
-    linear-gradient(120deg, color-mix(in srgb, var(--river-legacy-dark) 10%, transparent) 0%, rgba(255,255,255,.02) 55%, rgba(var(--primary-rgb), .12) 120%);
+    linear-gradient(120deg, color-mix(in srgb, var(--river-legacy-dark) 10%, transparent) 0%, rgba(var(--white-rgb), .02) 55%, rgba(var(--color-action-rgb), .12) 120%);
 }
 @media (max-width: 640px) {
   .brand-masthead { flex-direction: column; text-align: center; padding-block: var(--space-6); }
   .bm-inner { max-width: none; }
 }
 
-.legal-page h1 { font-size: var(--text-3xl); font-weight: var(--weight-bold); letter-spacing: var(--tracking-tight); color: var(--primary-fg-strong); margin-bottom: var(--space-1); }
+.legal-page h1 { font-size: var(--text-3xl); font-weight: var(--weight-bold); letter-spacing: var(--tracking-tight); color: var(--color-brand); margin-bottom: var(--space-1); }
 
 /* Local page masthead eyebrow — small-caps dateline, matches the site's
    area/ward eyebrow pattern but scoped here (not promoted global). */
@@ -90,7 +96,7 @@
 }
 .dateline-eyebrow::before {
   content: ""; position: absolute; left: 0; top: 50%; transform: translateY(-50%);
-  width: var(--space-2); height: 1.5px; background: var(--primary);
+  width: var(--space-2); height: 1.5px; background: var(--color-brand);
 }
 
 /* Legal prose gets the measured reading width + relaxed leading; the intro
@@ -111,12 +117,12 @@
   background: var(--bg-alt);
 }
 .legal-toc-link {
-  font-size: var(--text-sm); color: var(--primary-fg); font-weight: var(--weight-medium);
+  font-size: var(--text-sm); color: var(--color-action); font-weight: var(--weight-medium);
   text-decoration-line: underline; text-decoration-color: transparent; text-underline-offset: 3px;
   transition: text-decoration-color .3s var(--ease-out), color .3s var(--ease-out);
 }
-.legal-toc-link:hover { text-decoration-color: var(--primary-fg); }
-.legal-toc-link:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; border-radius: var(--radius-control); }
+.legal-toc-link:hover { text-decoration-color: var(--color-action); }
+.legal-toc-link:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; border-radius: var(--radius-control); }
 .dark .legal-toc { background: var(--bg-alt); border-color: var(--line); }
 
 /* ── Section rhythm: number badge + content zone ──────────────────── */
@@ -159,13 +165,14 @@
 .legal-page p { color: var(--ink-secondary, var(--ink)); }
 .legal-page ul { padding-inline-start: var(--space-5); }
 .legal-page li { margin: var(--space-2) 0; color: var(--ink-secondary, var(--ink)); }
-.legal-page a { color: var(--primary-fg); font-weight: var(--weight-semibold); text-decoration-line: underline; text-decoration-color: transparent; text-underline-offset: 3px; transition: text-decoration-color .3s var(--ease-out), color .3s var(--ease-out); }
-.legal-page a:hover { text-decoration-color: var(--primary-fg); }
-.legal-page a:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+.legal-page a { color: var(--color-action); font-weight: var(--weight-semibold); text-decoration-line: underline; text-decoration-color: transparent; text-underline-offset: 3px; transition: text-decoration-color .3s var(--ease-out), color .3s var(--ease-out); }
+.legal-page a:hover { text-decoration-color: var(--color-action); }
+.legal-page a:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
 
 /* ── Responsive scale-up ──────────────────────────────────────────── */
 @media (min-width: 640px) {
   .legal-page { padding: var(--space-8) var(--space-5) var(--space-16); }
+  .brand-masthead { margin-inline: calc(-1 * var(--space-5)); padding-inline: var(--space-5); }
 }
 @media (max-width: 600px) {
   .legal-metadata dl { grid-template-columns: 1fr; }
@@ -175,10 +182,10 @@
 
 /* ── Dark mode ────────────────────────────────────────────────────── */
 .dark .about-page .catalog-hero.cat-org {
-  background: linear-gradient(135deg, rgba(255,255,255,.03) 0%, rgba(255,255,255,.01) 100%);
+  background: linear-gradient(135deg, rgba(var(--white-rgb), .03) 0%, rgba(var(--white-rgb), .01) 100%);
 }
 .dark .legal-page a { text-decoration-color: transparent; }
-.dark .legal-page a:hover { text-decoration-color: var(--primary-fg); }
+.dark .legal-page a:hover { text-decoration-color: var(--color-action); }
 
 /* Reveal stagger + reduced-motion fallback are provided by the global
    .reveal infrastructure in base.css. */

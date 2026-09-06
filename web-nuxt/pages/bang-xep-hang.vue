@@ -1,6 +1,6 @@
 <template>
-  <section class="page bxh-page">
-    <Breadcrumb :items="[{ label: 'Trang chủ', to: '/' }, { label: 'Cộng đồng', to: '/cong-dong' }, { label: 'Bảng xếp hạng' }]" />
+  <section class="page bxh-page" data-color-system="tri-region-v1">
+    <Breadcrumb :items="[{ label: 'Trang chủ', to: '/' }, { label: 'Cộng đồng', to: '/cong-dong' }, { label: 'Bảng xếp hạng' }]" :json-ld="true" />
     <header class="bxh-head">
       <p class="bxh-eyebrow">Sổ vàng cộng đồng</p>
       <h1 class="bxh-h1">Thành viên tích cực</h1>
@@ -27,6 +27,18 @@
     >
       <template #actions>
         <button type="button" class="btn btn-outline btn-sm" @click="refreshNuxtData('leaderboard')">Thử lại</button>
+      </template>
+    </EmptyState>
+
+    <EmptyState
+      v-else-if="!leaders.length && q.trim()"
+      icon-name="search" title="Không tìm thấy thành viên"
+      :message="`Không có thành viên nào khớp với từ khóa “${q.trim()}”.`"
+    >
+      <template #actions>
+        <button type="button" class="btn btn-outline btn-sm" @click="q = ''">
+          <IconLine name="repeat" class="icon-inline" /> Xóa tìm kiếm
+        </button>
       </template>
     </EmptyState>
 
@@ -127,22 +139,24 @@ useSeoMeta({
   description: 'Bảng xếp hạng thành viên đóng góp tích cực nhất cộng đồng vinhlong360: đánh giá, bài viết, ảnh và lượt theo dõi.',
   ogTitle: 'Bảng xếp hạng — vinhlong360',
   ogDescription: 'Thành viên đóng góp tích cực nhất cộng đồng vinhlong360.',
+  ogUrl: () => canonicalUrl('/bang-xep-hang'),
+  twitterCard: 'summary_large_image',
 })
-useHead({
+
+// Schema graph unified with '@type': 'CollectionPage' and Top Members ItemList
+const leaderboardSchema = computed(() =>
+  buildLeaderboardSchemaGraph({
+    totalCount: leaders.value.length,
+    podium: podium.value,
+  })
+)
+
+useHead(() => ({
   link: [{ rel: 'canonical', href: canonicalUrl('/bang-xep-hang') }],
-  script: [{
-    type: 'application/ld+json',
-    innerHTML: JSON.stringify({
-      '@context': 'https://schema.org',
-      '@type': 'BreadcrumbList',
-      itemListElement: [
-        { '@type': 'ListItem', position: 1, name: 'Trang chủ', item: 'https://vinhlong360.vn/' },
-        { '@type': 'ListItem', position: 2, name: 'Cộng đồng', item: 'https://vinhlong360.vn/cong-dong' },
-        { '@type': 'ListItem', position: 3, name: 'Bảng xếp hạng' },
-      ],
-    }),
-  }],
-})
+  script: [
+    { type: 'application/ld+json', innerHTML: safeJsonLd(leaderboardSchema.value) },
+  ],
+}))
 </script>
 
 <style scoped>
@@ -150,16 +164,37 @@ useHead({
 .bxh-head { margin-bottom: var(--space-5); }
 .bxh-head h1 { margin: 0 0 var(--space-2); }
 .bxh-head p { color: var(--muted); margin: 0; }
-.bxh-guide-link { color: var(--primary-fg); font-weight: var(--weight-medium); text-decoration: underline; text-decoration-color: transparent; text-underline-offset: 2px; transition: text-decoration-color .2s; }
-.bxh-guide-link:hover { text-decoration-color: var(--primary-fg); }
+.bxh-guide-link {
+  color: var(--color-action);
+  font-weight: var(--weight-medium);
+  text-decoration: underline;
+  text-decoration-color: transparent;
+  text-underline-offset: 2px;
+  border-radius: var(--radius-control);
+  transition: text-decoration-color .2s var(--ease-out);
+}
+.bxh-guide-link:hover { text-decoration-color: var(--color-action); }
+.bxh-guide-link:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
 .bxh-filters { display: flex; flex-wrap: wrap; gap: var(--space-2); margin-bottom: var(--space-3); }
-.bxh-search { flex: 1 1 200px; padding: var(--space-2) var(--space-3); border: 1px solid var(--border-input); border-radius: var(--radius-control); background: var(--surface); color: var(--ink); }
-.bxh-self { padding: var(--space-2) var(--space-3); background: color-mix(in srgb, var(--primary) 8%, transparent); border-radius: var(--radius-control); margin-bottom: var(--space-2); font-size: var(--text-sm); }
+.bxh-search {
+  flex: 1 1 200px;
+  min-height: 44px;
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--border-input);
+  border-radius: var(--radius-control);
+  background: var(--surface);
+  color: var(--ink);
+  font: inherit;
+  font-size: var(--text-sm);
+  transition: border-color .2s var(--ease-out);
+}
+.bxh-search:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
+.bxh-self { padding: var(--space-2) var(--space-3); background: color-mix(in srgb, var(--color-brand) 8%, transparent); border-radius: var(--radius-control); margin-bottom: var(--space-2); font-size: var(--text-sm); }
 .bxh-list { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: var(--space-2); }
-.bxh-list li.is-self .bxh-row { outline: 2px solid var(--primary); outline-offset: -1px; }
-.bxh-row { display: flex; align-items: center; gap: var(--space-3); padding: var(--space-3); min-height: 56px; background: var(--card); border: .5px solid var(--line); border-radius: var(--radius-sheet); text-decoration: none; color: var(--ink); transition: border-color .25s var(--ease-out), transform .25s var(--ease-spring-gentle); }
-.bxh-row:hover { border-color: var(--primary-fg); transform: translateY(-1px); }
-.bxh-row:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+.bxh-list li.is-self .bxh-row { outline: 2px solid var(--color-focus); outline-offset: -1px; }
+.bxh-row { display: flex; align-items: center; gap: var(--space-3); padding: var(--space-3); min-height: 56px; background: var(--card); border: .5px solid var(--line); border-radius: var(--radius-sheet); text-decoration: none; color: var(--ink); transition: border-color .25s var(--ease-out), transform .25s var(--ease-out-expo); }
+.bxh-row:hover { border-color: var(--color-action); transform: translateY(-1px); }
+.bxh-row:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
 .bxh-row:active { transform: scale(.98); transition-duration: .08s; }
 .bxh-rank { flex-shrink: 0; width: 28px; text-align: center; font-size: var(--text-lg); font-weight: var(--weight-bold); color: var(--muted); }
 /* Hạng 1–3 là huy hiệu tròn tô đầy, chữ đọc bằng --medal-ink.
@@ -174,20 +209,16 @@ useHead({
 .bxh-rank-1 { background: var(--medal-gold); }
 .bxh-rank-2 { background: var(--medal-silver); }
 .bxh-rank-3 { background: var(--medal-bronze); }
-.bxh-avatar { width: 44px; height: 44px; display: inline-flex; align-items: center; justify-content: center; border-radius: 50%; background: var(--primary); color: var(--primary-fg, var(--white)); font-weight: var(--weight-semibold); flex-shrink: 0; }
+.bxh-avatar { width: 44px; height: 44px; display: inline-flex; align-items: center; justify-content: center; border-radius: 50%; background: var(--color-brand); color: var(--color-on-action, var(--white)); font-weight: var(--weight-semibold); flex-shrink: 0; }
 .bxh-main { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: .1rem; }
 .bxh-name { font-weight: var(--weight-semibold); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .bxh-meta { display: flex; flex-wrap: wrap; gap: var(--space-2); font-size: var(--text-xs); color: var(--muted); }
 .bxh-level { color: var(--ink-700); }
-.bxh-points { flex-shrink: 0; font-size: var(--text-lg); font-weight: var(--weight-bold); color: var(--primary-fg); display: flex; flex-direction: column; align-items: center; line-height: 1; font-variant-numeric: tabular-nums; }
+.bxh-points { flex-shrink: 0; font-size: var(--text-lg); font-weight: var(--weight-bold); color: var(--color-brand); display: flex; flex-direction: column; align-items: center; line-height: 1; font-variant-numeric: tabular-nums; }
 .bxh-points small { font-size: var(--text-xs); font-weight: var(--weight-normal); color: var(--muted); }
 @media (max-width: 480px) {
   .bxh-row { padding: var(--space-3) var(--space-2); gap: var(--space-2); }
   .bxh-name { font-size: var(--text-sm); }
-}
-@media (prefers-reduced-motion: reduce) {
-  .bxh-row:hover { transform: none; }
-  .bxh-row:active { transform: none; }
 }
 
 /* ── Masthead eyebrow — "Sổ vàng cộng đồng" ─────────────────────────────────
@@ -210,10 +241,10 @@ useHead({
   display: flex; flex-direction: column; align-items: center; text-align: center; gap: var(--space-1);
   padding: var(--space-5) var(--space-3) var(--space-4); border-radius: var(--radius-sheet);
   background: var(--card); border: .5px solid var(--line); text-decoration: none; color: var(--ink);
-  transition: border-color .25s var(--ease-out), transform .25s var(--ease-spring-gentle), box-shadow .25s var(--ease-out);
+  transition: border-color .25s var(--ease-out), transform .25s var(--ease-out-expo), box-shadow .25s var(--ease-out);
 }
-.podium-link:hover { border-color: var(--primary-fg); transform: translateY(-2px); box-shadow: var(--shadow-sm); }
-.podium-link:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+.podium-link:hover { border-color: var(--color-action); transform: translateY(-2px); box-shadow: var(--shadow-sm); }
+.podium-link:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
 .podium-link:active { transform: scale(.98); transition-duration: .08s; }
 /* Huy chương giữa (rank #1) nhô cao hơn — cả desktop lẫn mobile so le */
 .podium-1 { order: 2; }
@@ -236,7 +267,7 @@ useHead({
 .podium-1 .podium-avatar { width: 68px; height: 68px; font-size: var(--text-xl); }
 .podium-name { font-weight: var(--weight-semibold); overflow-wrap: anywhere; }
 .podium-level { font-size: var(--text-xs); color: var(--ink-700); }
-.podium-points { font-size: var(--text-lg); font-weight: var(--weight-bold); color: var(--primary-fg); line-height: 1; font-variant-numeric: tabular-nums; margin-top: var(--space-1); }
+.podium-points { font-size: var(--text-lg); font-weight: var(--weight-bold); color: var(--color-brand); line-height: 1; font-variant-numeric: tabular-nums; margin-top: var(--space-1); }
 .podium-points small { font-size: var(--text-2xs); font-weight: var(--weight-normal); color: var(--muted); margin-left: 2px; }
 /* Trích dẫn tự động — .pull-quote-lite: serif, italic, cỡ nhỏ hơn bản gốc */
 .podium-quote {
@@ -261,7 +292,7 @@ useHead({
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .podium-link:hover { transform: none; }
-  .podium-link:active { transform: none; }
+  .bxh-row:hover, .bxh-row:active { transform: none; }
+  .podium-link:hover, .podium-link:active { transform: none; }
 }
 </style>

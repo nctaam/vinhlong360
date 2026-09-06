@@ -18,6 +18,9 @@ const ICONS: Record<string, string> = {
   shield: W('<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10Z"/>'),
   menu: W('<path d="M4 7h16"/><path d="M4 12h16"/><path d="M4 17h16"/>'),
   'chevron-down': W('<path d="m6 9 6 6 6-6"/>'),
+  'chevron-left': W('<path d="m15 18-6-6 6-6"/>'),
+  'chevron-right': W('<path d="m9 18 6-6-6-6"/>'),
+  'chevron-up': W('<path d="m18 15-6-6-6 6"/>'),
   search: W('<circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/>'),
   locate: W('<circle cx="12" cy="12" r="7"/><circle cx="12" cy="12" r="2"/><path d="M12 2v3"/><path d="M12 19v3"/><path d="M2 12h3"/><path d="M19 12h3"/>'),
   'alert-triangle': W('<path d="m12 3 10 18H2Z"/><path d="M12 9v5"/><path d="M12 18h.01"/>'),
@@ -33,6 +36,7 @@ const ICONS: Record<string, string> = {
   'file-text': W('<path d="M6 2h8l4 4v16H6Z"/><path d="M14 2v5h5"/><path d="M9 12h6"/><path d="M9 16h6"/>'),
   settings: W('<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1-2.8 2.8-.1-.1a1.7 1.7 0 0 0-1.9-.3 1.7 1.7 0 0 0-1 1.6v.2h-4V21a1.7 1.7 0 0 0-1-1.6 1.7 1.7 0 0 0-1.9.3l-.1.1L4.2 17l.1-.1a1.7 1.7 0 0 0 .3-1.9A1.7 1.7 0 0 0 3 14H2.8v-4H3a1.7 1.7 0 0 0 1.6-1 1.7 1.7 0 0 0-.3-1.9L4.2 7 7 4.2l.1.1A1.7 1.7 0 0 0 9 4.6a1.7 1.7 0 0 0 1-1.6v-.2h4V3a1.7 1.7 0 0 0 1 1.6 1.7 1.7 0 0 0 1.9-.3l.1-.1L19.8 7l-.1.1a1.7 1.7 0 0 0-.3 1.9 1.7 1.7 0 0 0 1.6 1h.2v4H21a1.7 1.7 0 0 0-1.6 1Z"/>'),
   'arrow-left': W('<path d="m15 18-6-6 6-6"/><path d="M9 12h12"/>'),
+  'arrow-right': W('<path d="m9 6 6 6-6 6"/><path d="M15 12H3"/>'),
   'arrow-up': W('<path d="m6 15 6-6 6 6"/><path d="M12 9v12"/>'),
   'arrow-down': W('<path d="m6 9 6 6 6-6"/><path d="M12 15V3"/>'),
   trash: W('<path d="M4 7h16"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M6 7l1 14h10l1-14"/><path d="M9 7V4h6v3"/>'),
@@ -63,6 +67,7 @@ const ICONS: Record<string, string> = {
   bell: W('<path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.9 1.9 0 0 0 3.4 0"/>'),
   x: W('<path d="M18 6 6 18"/><path d="m6 6 12 12"/>'),
   sparkles: W('<path d="M12 3l1.8 4.7L18.5 9l-4.7 1.8L12 15l-1.8-4.7L5.5 9l4.7-1.3Z"/><path d="M19 14.5l.8 2 2 .8-2 .8-.8 2-.8-2-2-.8 2-.8Z"/>'),
+  share: W('<circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>'),
   user: W('<circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/>'),
   bookmark: W('<path d="M6 3h12a1 1 0 0 1 1 1v17l-7-4-7 4V4a1 1 0 0 1 1-1Z"/>'),
   sliders: W('<path d="M4 6h16"/><path d="M4 12h16"/><path d="M4 18h16"/><circle cx="8" cy="6" r="2"/><circle cx="16" cy="12" r="2"/><circle cx="9" cy="18" r="2"/>'),
@@ -86,6 +91,7 @@ const ICONS: Record<string, string> = {
   vase: W('<path d="M8 3h8"/><path d="M9.5 3c0 2.5-3 3.5-3 7a5.5 5.5 0 0 0 11 0c0-3.5-3-4.5-3-7"/>'),
   megaphone: W('<path d="M4 9v6h3l10 5V4L7 9Z"/><path d="M18.5 9a4 4 0 0 1 0 6"/>'),
   repeat: W('<path d="M17 2.5 21 6l-4 3.5"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><path d="M7 21.5 3 18l4-3.5"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/>'),
+  square: W('<rect x="5" y="5" width="14" height="14" rx="2"/>'),
   'eye-off': W('<path d="M3 3l18 18"/><path d="M10.6 5.2A9.6 9.6 0 0 1 12 5c5 0 9 4.5 10 7a15 15 0 0 1-3.3 4.2"/><path d="M6.5 7.3A14.6 14.6 0 0 0 2 12c1 2.5 5 7 10 7a9.4 9.4 0 0 0 3.9-.8"/><path d="M9.9 10.1a3 3 0 0 0 4 4"/>'),
   // Bộ thời tiết — phủ mã icon OpenWeatherMap 01–50 qua composables/useWeather.ts.
   // `sun` (01d) và `moon` (01n) đã có ở trên nên không lặp lại.
@@ -97,6 +103,10 @@ const ICONS: Record<string, string> = {
   haze: W('<path d="m5.2 6.2 1.4 1.4"/><path d="M2 13h2"/><path d="M20 13h2"/><path d="m17.4 7.6 1.4-1.4"/><path d="M22 17H2"/><path d="M22 21H2"/><path d="M16 13a4 4 0 0 0-8 0"/><path d="M12 5V2.5"/>'),
   droplet: W('<path d="M12 22a7 7 0 0 0 7-7c0-2-1-3.9-3-5.5S12.5 5.5 12 3c-.5 2.5-2 4.9-4 6.5C6 11.1 5 13 5 15a7 7 0 0 0 7 7Z"/>'),
   wind: W('<path d="M12.8 19.6A2 2 0 1 0 14 16H2"/><path d="M17.5 8a2.5 2.5 0 1 1 2 4H2"/><path d="M9.8 4.4A2 2 0 1 1 11 8H2"/>'),
+  plus: W('<path d="M5 12h14"/><path d="M12 5v14"/>'),
+  'more-horizontal': W('<circle cx="12" cy="12" r="1.5"/><circle cx="19" cy="12" r="1.5"/><circle cx="5" cy="12" r="1.5"/>'),
+  award: W('<circle cx="12" cy="8" r="6"/><path d="m15.4 12.5 2.6 9-6-3.5-6 3.5 2.6-9"/>'),
+  send: W('<path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/>'),
 }
 
 const resolvedName = computed(() => ICONS[props.name] ? props.name : 'circle-help')

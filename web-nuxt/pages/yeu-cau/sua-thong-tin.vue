@@ -114,12 +114,20 @@ function onPhoneConsentChanged(consent: boolean) {
 useSeoMeta({
   title: 'Yêu cầu sửa thông tin — vinhlong360',
   description: 'Báo thông tin chưa đúng trên vinhlong360 và nhận mã tra cứu tiến trình xử lý.',
+  robots: 'noindex, nofollow',
+  ogTitle: 'Yêu cầu sửa thông tin — vinhlong360',
+  ogUrl: () => canonicalUrl('/yeu-cau/sua-thong-tin'),
+  twitterCard: 'summary_large_image',
 })
+
+useHead(() => ({
+  link: [{ rel: 'canonical', href: canonicalUrl('/yeu-cau/sua-thong-tin') }],
+}))
 </script>
 
 <template>
-  <section class="case-page">
-    <Breadcrumb :items="[{ label: 'Trang chủ', to: '/' }, { label: 'Yêu cầu sửa thông tin' }]" />
+  <section class="case-page" data-color-system="tri-region-v1">
+    <Breadcrumb :items="[{ label: 'Trang chủ', to: '/' }, { label: 'Yêu cầu sửa thông tin' }]" :json-ld="true" />
 
     <header class="case-header">
       <h1>Yêu cầu sửa thông tin</h1>
@@ -138,10 +146,10 @@ useSeoMeta({
 
     <div v-else-if="!entityId || !entity" class="case-missing" aria-live="polite">
       <p>
-        Hãy mở trang của địa điểm cần sửa và bấm «Báo thông tin chưa đúng» để bắt đầu —
+        Hãy mở trang của địa điểm cần sửa và bấm “Báo thông tin chưa đúng” để bắt đầu —
         như vậy yêu cầu gắn đúng vào trang đó.
       </p>
-      <NuxtLink to="/danh-ba">Tìm địa điểm trong danh bạ</NuxtLink>
+      <NuxtLink to="/danh-ba" class="btn btn-outline">Tìm địa điểm trong danh bạ</NuxtLink>
     </div>
 
     <template v-else>
@@ -196,12 +204,24 @@ useSeoMeta({
   color: var(--muted);
 }
 .case-failure {
-  padding: 0.6rem 0.8rem;
-  border-radius: 8px;
+  padding: 0.75rem 1rem;
+  border-radius: var(--radius-control);
   border: 1px solid var(--color-error);
+  background: color-mix(in srgb, var(--color-error) 8%, transparent);
+  color: var(--ink);
+  font-size: var(--text-sm);
 }
 .case-missing {
   display: grid;
-  gap: 0.5rem;
+  gap: var(--space-3);
+  padding: var(--space-5);
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-surface);
+}
+.case-missing p {
+  margin: 0;
+  line-height: var(--leading-relaxed);
+  color: var(--ink-secondary);
 }
 </style>

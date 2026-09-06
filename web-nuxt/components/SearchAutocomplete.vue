@@ -21,14 +21,20 @@
         @keydown.escape="close"
       />
       <button type="button" v-if="query" class="ac-clear" aria-label="Xóa tìm kiếm" @click="clearQuery">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        <IconLine name="x" aria-hidden="true" />
       </button>
     </form>
     <span class="sr-only" aria-live="polite" aria-atomic="true">{{ suggestions.length ? `${suggestions.length} kết quả` : '' }}</span>
     <Transition name="menu-pop">
-    <div v-if="showDropdown" id="ac-listbox" class="ac-dropdown" role="listbox">
+    <div
+      v-if="showDropdown"
+      id="ac-listbox"
+      class="ac-dropdown"
+      :role="hasListboxOptions ? 'listbox' : 'region'"
+      :aria-label="hasListboxOptions ? 'Gợi ý tìm kiếm' : 'Gợi ý danh mục'"
+    >
       <!-- Initial-state hint: categories when no query (and no recents) -->
-      <div v-if="!query.trim() && !recentSearches.length" class="ac-hint-section">
+      <div v-if="!query.trim() && !recentSearches.length" class="ac-hint-section" role="group" aria-label="Tìm theo danh mục">
         <div class="ac-hint-head">
           <span class="ac-hint-tick" aria-hidden="true"></span>
           <span class="ac-hint-title">Tìm theo danh mục</span>
@@ -41,7 +47,7 @@
       </div>
 
       <!-- Recent searches (when no query) -->
-      <div v-if="!query.trim() && recentSearches.length" class="ac-section">
+      <div v-if="!query.trim() && recentSearches.length" class="ac-section" role="group" aria-label="Lịch sử tìm kiếm">
         <div class="ac-section-header">
           <span class="ac-section-title">Gần đây</span>
           <button type="button" class="ac-section-clear" @click="clearRecents">Xóa</button>
@@ -50,6 +56,7 @@
           v-for="(term, i) in recentSearches"
           :key="'r-' + i"
           class="ac-recent-row"
+          role="none"
         >
           <span class="ac-emoji" aria-hidden="true"><IconLine name="clock" /></span>
           <div
@@ -63,7 +70,7 @@
             <span class="ac-info"><span class="ac-name">{{ term }}</span></span>
           </div>
           <button type="button" class="ac-remove-recent" @mousedown.stop.prevent="removeRecent(i)" aria-label="Xóa khỏi lịch sử">
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            <IconLine name="x" aria-hidden="true" />
           </button>
         </div>
       </div>
@@ -106,14 +113,14 @@
 
       <!-- Fetch error -->
       <div v-if="fetchFailed && !loading && query.trim()" class="ac-empty" role="status">
-        <span class="ac-empty-icon" aria-hidden="true">⚠️</span>
+        <span class="ac-empty-icon" aria-hidden="true"><IconLine name="alert-triangle" /></span>
         <p class="ac-empty-title">Lỗi kết nối</p>
         <p class="ac-empty-hint">Không thể tải gợi ý. Thử nhập lại hoặc tìm theo danh mục.</p>
       </div>
 
       <!-- Empty state -->
-      <div v-if="query.trim() && !suggestions.length && !loading && !fetchFailed" class="ac-empty">
-        <span class="ac-empty-icon" aria-hidden="true">🔍</span>
+      <div v-if="query.trim() && !suggestions.length && !loading && !fetchFailed" class="ac-empty" role="status">
+        <span class="ac-empty-icon" aria-hidden="true"><IconLine name="search" /></span>
         <p class="ac-empty-title">Chưa tìm thấy nơi nào khớp</p>
         <p class="ac-empty-hint">Thử từ khóa khác, hoặc xem gợi ý theo danh mục:</p>
         <div class="ac-chips ac-empty-chips">
@@ -122,7 +129,8 @@
           </NuxtLink>
         </div>
         <NuxtLink :to="`/tim-kiem?q=${encodeURIComponent(query.trim())}`" class="ac-empty-all" @mousedown.prevent="onSubmit">
-          Xem tất cả kết quả →
+          <span>Xem tất cả kết quả</span>
+          <IconLine name="arrow-right" class="ac-empty-arrow" aria-hidden="true" />
         </NuxtLink>
       </div>
 
@@ -177,6 +185,7 @@ const totalItems = computed(() => {
   if (!query.value.trim()) return recentSearches.value.length
   return suggestions.value.length + (query.value.trim() ? 1 : 0)
 })
+const hasListboxOptions = computed(() => totalItems.value > 0)
 
 function useRecent(term: string) {
   query.value = term
@@ -310,7 +319,10 @@ function onSubmit() {
   navigateTo(`/tim-kiem?q=${encodeURIComponent(q)}`)
 }
 
-function focusInput() { inputEl.value?.focus() }
+function focusInput() {
+  inputEl.value?.focus()
+  inputEl.value?.select()
+}
 defineExpose({ focusInput })
 
 if (import.meta.client) {
@@ -322,6 +334,9 @@ if (import.meta.client) {
   }
   const onGlobalKey = (e: KeyboardEvent) => {
     if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+      e.preventDefault()
+      focusInput()
+    } else if (e.key === '/' && !['INPUT', 'TEXTAREA', 'SELECT'].includes((e.target as HTMLElement)?.tagName) && !(e.target as HTMLElement)?.isContentEditable) {
       e.preventDefault()
       focusInput()
     }
@@ -345,12 +360,8 @@ if (import.meta.client) {
    section-heads elsewhere, at zero added motion/latency. */
 .ac-dropdown :deep(.ac-item) { min-height: 44px; }
 .ac-dropdown :deep(.ac-item.highlighted) {
-  border-left: 3px solid;
-  border-image: linear-gradient(180deg, var(--river-600) 0%, var(--amber-600) 52%, var(--clay-600) 100%) 1;
-  padding-left: calc(var(--space-4) - 3px);
-}
-.dark .ac-dropdown :deep(.ac-item.highlighted) {
-  border-image: linear-gradient(180deg, var(--river-legacy-dark) 0%, var(--amber-500) 52%, var(--clay-400) 100%) 1;
+  background: var(--color-action-surface, var(--bg-alt));
+  box-shadow: inset 2px 0 0 var(--color-action);
 }
 .ac-recent-row {
   display: flex;
@@ -405,11 +416,11 @@ if (import.meta.client) {
   border-radius: var(--radius-full); color: var(--ink);
   font-size: var(--text-sm); font-weight: var(--weight-medium);
   text-decoration: none; cursor: pointer;
-  transition: background .25s var(--ease-out), border-color .25s var(--ease-out), transform .25s var(--ease-spring-gentle);
+  transition: background .25s var(--ease-out), border-color .25s var(--ease-out), transform .25s var(--ease-out-expo);
 }
-.ac-chip:hover { background: var(--card); border-color: var(--primary-fg); transform: translateY(-1px); }
+.ac-chip:hover { background: var(--card); border-color: var(--color-action); transform: translateY(-1px); }
 .ac-chip:active { transform: scale(.97); transition-duration: .08s; }
-.ac-chip:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+.ac-chip:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
 
 /* ── Expanded empty state ──────────────────────────────────────────────────*/
 .ac-empty { display: flex; flex-direction: column; align-items: center; gap: var(--space-2); }
@@ -419,11 +430,19 @@ if (import.meta.client) {
 .ac-empty-chips { justify-content: center; margin-top: var(--space-1); }
 .ac-empty-all {
   margin-top: var(--space-2); font-size: var(--text-sm);
-  font-weight: var(--weight-semibold); color: var(--primary-fg);
+  font-weight: var(--weight-semibold); color: var(--color-action);
   text-decoration: none; min-height: 44px; display: inline-flex; align-items: center;
+  gap: var(--space-1);
+  transition: color .2s var(--ease-out);
 }
-.ac-empty-all:hover { text-decoration: underline; }
-.ac-empty-all:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; border-radius: var(--radius-control); }
+.ac-empty-all:hover { text-decoration: none; color: var(--color-action-hover); }
+.ac-empty-all .ac-empty-arrow {
+  transition: transform .25s var(--ease-out-expo);
+}
+.ac-empty-all:hover .ac-empty-arrow {
+  transform: translateX(3px);
+}
+.ac-empty-all:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; border-radius: var(--radius-control); }
 
 /* dark overrides for .ac-chip / .ac-empty-title in dark-overrides.css */
 
@@ -433,6 +452,8 @@ if (import.meta.client) {
   .ac-loading { animation: none; }
   .ac-chip:hover { transform: none; }
   .ac-chip:active { transform: none; }
+  .ac-empty-all .ac-empty-arrow,
+  .ac-empty-all:hover .ac-empty-arrow { transform: none; }
 }
 @media (forced-colors: active) {
   .ac-dropdown { border: 1px solid CanvasText; background: Canvas; }

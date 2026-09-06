@@ -1,6 +1,6 @@
 <template>
   <div class="page lvn-page" data-color-system="tri-region-v1">
-    <Breadcrumb :items="[{ label: 'Trang chủ', to: '/' }, { label: 'Lịch vạn niên' }]" />
+    <Breadcrumb :items="[{ label: 'Trang chủ', to: '/' }, { label: 'Lịch vạn niên' }]" :json-ld="true" />
 
     <header class="lvn-head">
       <p class="lvn-eyebrow"><IconLine name="calendar" /><span>Công cụ tra cứu</span></p>
@@ -38,7 +38,7 @@
                   type="button" class="lvn-nav lvn-nav-next" data-lvn-next
                   :disabled="!canStep(1)" aria-label="Tháng sau"
                   @click="stepMonth(1)"
-                ><IconLine name="arrow-left" /></button>
+                ><IconLine name="arrow-right" /></button>
               </div>
 
               <div class="lvn-picker">
@@ -209,15 +209,15 @@
               <div class="lvn-inputs">
                 <label class="lvn-field">
                   <span class="lvn-field-label">Ngày</span>
-                  <input v-model.number="s2l.day" data-lvn-s2l-day type="number" inputmode="numeric" min="1" max="31" step="1">
+                  <input v-model.number="s2l.day" data-lvn-s2l-day type="number" inputmode="numeric" min="1" max="31" step="1" aria-label="Ngày dương lịch">
                 </label>
                 <label class="lvn-field">
                   <span class="lvn-field-label">Tháng</span>
-                  <input v-model.number="s2l.month" data-lvn-s2l-month type="number" inputmode="numeric" min="1" max="12" step="1">
+                  <input v-model.number="s2l.month" data-lvn-s2l-month type="number" inputmode="numeric" min="1" max="12" step="1" aria-label="Tháng dương lịch">
                 </label>
                 <label class="lvn-field">
                   <span class="lvn-field-label">Năm</span>
-                  <input v-model.number="s2l.year" data-lvn-s2l-year type="number" inputmode="numeric" :min="LUNAR_YEAR_MIN" :max="LUNAR_YEAR_MAX" step="1">
+                  <input v-model.number="s2l.year" data-lvn-s2l-year type="number" inputmode="numeric" :min="LUNAR_YEAR_MIN" :max="LUNAR_YEAR_MAX" step="1" aria-label="Năm dương lịch">
                 </label>
               </div>
               <output class="lvn-out" :class="{ 'is-error': !!solarToLunarResult.error }" data-lvn-s2l-out>
@@ -238,15 +238,15 @@
               <div class="lvn-inputs">
                 <label class="lvn-field">
                   <span class="lvn-field-label">Ngày âm</span>
-                  <input v-model.number="l2s.day" data-lvn-l2s-day type="number" inputmode="numeric" min="1" max="30" step="1">
+                  <input v-model.number="l2s.day" data-lvn-l2s-day type="number" inputmode="numeric" min="1" max="30" step="1" aria-label="Ngày âm lịch">
                 </label>
                 <label class="lvn-field">
                   <span class="lvn-field-label">Tháng âm</span>
-                  <input v-model.number="l2s.month" data-lvn-l2s-month type="number" inputmode="numeric" min="1" max="12" step="1">
+                  <input v-model.number="l2s.month" data-lvn-l2s-month type="number" inputmode="numeric" min="1" max="12" step="1" aria-label="Tháng âm lịch">
                 </label>
                 <label class="lvn-field">
                   <span class="lvn-field-label">Năm âm</span>
-                  <input v-model.number="l2s.year" data-lvn-l2s-year type="number" inputmode="numeric" :min="LUNAR_YEAR_MIN" :max="LUNAR_YEAR_MAX" step="1">
+                  <input v-model.number="l2s.year" data-lvn-l2s-year type="number" inputmode="numeric" :min="LUNAR_YEAR_MIN" :max="LUNAR_YEAR_MAX" step="1" aria-label="Năm âm lịch">
                 </label>
               </div>
               <label class="lvn-check">
@@ -641,25 +641,58 @@ function goToConverted(which: 'solar' | 'lunar') {
   void focusSelected()
 }
 
+const lvnSchema = computed(() => {
+  const pageUrl = canonicalUrl('/lich-van-nien')
+  const appNode = {
+    '@type': 'WebApplication',
+    '@id': `${pageUrl}#app`,
+    name: pc('seo_title', 'Lịch vạn niên — âm lịch, can chi, tiết khí | vinhlong360'),
+    description: pc('seo_description', 'Đối chiếu dương lịch và âm lịch Việt Nam (múi giờ UTC+7), can chi và tiết khí.'),
+    applicationCategory: 'UtilitiesApplication',
+    operatingSystem: 'All',
+    url: pageUrl,
+    isPartOf: { '@id': `${SITE_URL}/#website` },
+    speakable: buildSpeakableSpecification(['.lvn-lede', '.lvn-today', 'h1']),
+  }
+
+  const faqItems: FaqItem[] = [
+    {
+      q: 'Lịch vạn niên trên VinhLong360 được tính toán theo quy chuẩn nào?',
+      a: 'Trang áp dụng thuật toán thiên văn Jean Meeus kết hợp công thức chuyển đổi âm lịch Việt Nam chính xác của Hồ Ngọc Đức, quy đổi theo múi giờ UTC+7 tiêu chuẩn quốc gia.',
+    },
+    {
+      q: 'Hệ thống hỗ trợ tra cứu âm lịch và tiết khí trong khoảng thời gian nào?',
+      a: `Bảng lịch hỗ trợ tra cứu đầy đủ can chi ngày tháng năm, tiết khí và tháng nhuận từ năm ${LUNAR_YEAR_MIN} đến năm ${LUNAR_YEAR_MAX}.`,
+    },
+    {
+      q: 'Trang có hiển thị xem ngày tốt xấu, giờ hoàng đạo hay bói toán không?',
+      a: 'Không. VinhLong360 chỉ hiển thị dữ liệu lịch pháp và thiên văn học kiểm chứng được, không cung cấp các yếu tố bói toán hay ngày hoàng đạo dân gian.',
+    },
+  ]
+  const faqNode = buildFaqPageSchema(faqItems, `${pageUrl}#faq`)
+
+  return buildUnifiedSchemaGraph([
+    buildWebSiteSchema(),
+    buildOrganizationSchema(),
+    appNode,
+    faqNode,
+  ])
+})
+
 // --- SEO -------------------------------------------------------------------
 useSeoMeta({
   title: () => pc('seo_title', 'Lịch vạn niên — âm lịch, can chi, tiết khí | vinhlong360'),
   description: () => pc('seo_description'),
   ogTitle: () => pc('og_title'),
   ogDescription: () => pc('og_description'),
+  ogUrl: () => canonicalUrl('/lich-van-nien'),
+  twitterCard: 'summary_large_image',
 })
 useHead(() => ({
   link: [{ rel: 'canonical', href: canonicalUrl('/lich-van-nien') }],
   script: [{
     type: 'application/ld+json',
-    innerHTML: JSON.stringify({
-      '@context': 'https://schema.org',
-      '@type': 'BreadcrumbList',
-      itemListElement: [
-        { '@type': 'ListItem', position: 1, name: 'Trang chủ', item: 'https://vinhlong360.vn/' },
-        { '@type': 'ListItem', position: 2, name: 'Lịch vạn niên' },
-      ],
-    }),
+    innerHTML: safeJsonLd(lvnSchema.value),
   }],
 }))
 </script>
@@ -715,12 +748,12 @@ useHead(() => ({
   display: inline-flex; align-items: center; justify-content: center;
   border: .5px solid var(--line); border-radius: var(--radius-full);
   background: var(--bg); color: var(--ink); cursor: pointer;
-  transition: background var(--duration-fast) var(--ease-out);
+  transition: background var(--duration-fast) var(--ease-out), transform var(--duration-fast) var(--ease-out);
 }
-.lvn-nav-next { transform: rotate(180deg); }
 .lvn-nav:hover:not(:disabled) { background: var(--bg-alt); }
+.lvn-nav:active:not(:disabled) { transform: scale(.94); }
 .lvn-nav:disabled { opacity: var(--opacity-disabled); cursor: not-allowed; }
-.lvn-nav:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+.lvn-nav:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
 
 .lvn-picker { display: flex; flex-wrap: wrap; align-items: flex-end; gap: var(--space-2); }
 .lvn-field { display: flex; flex-direction: column; gap: 2px; }
@@ -733,17 +766,18 @@ useHead(() => ({
 }
 .lvn-field input[type="number"] { width: 6.5rem; }
 .lvn-field select:focus-visible,
-.lvn-field input:focus-visible { outline: 2px solid var(--primary); outline-offset: 1px; }
+.lvn-field input:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 1px; }
 
 .lvn-btn {
   min-height: 44px; padding: 0 var(--space-3);
   border: .5px solid var(--line); border-radius: var(--radius-control);
   background: var(--bg-alt); color: var(--ink); font: inherit; font-size: var(--text-sm);
   cursor: pointer;
-  transition: background var(--duration-fast) var(--ease-out);
+  transition: background var(--duration-fast) var(--ease-out), transform var(--duration-fast) var(--ease-out);
 }
 .lvn-btn:hover { background: var(--state-hover); }
-.lvn-btn:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+.lvn-btn:active { transform: scale(.97); }
+.lvn-btn:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
 
 .lvn-cal-caption { margin: 0 0 var(--space-2); color: var(--ink-secondary); font-size: var(--text-sm); }
 
@@ -751,7 +785,7 @@ useHead(() => ({
   display: flex; gap: var(--space-2); align-items: flex-start;
   max-width: var(--measure-read);
   padding: var(--space-3); border-inline-start: 2px solid var(--error);
-  background: rgba(var(--red-rgb, var(--primary-rgb)), .06);
+  background: rgba(var(--color-error-rgb), .06);
   color: var(--ink); font-size: var(--text-sm); line-height: var(--leading-relaxed);
 }
 
@@ -772,22 +806,23 @@ useHead(() => ({
   border-block-start: .5px solid var(--line);
   border-inline-start: .5px solid var(--line);
   cursor: pointer;
-  transition: background var(--duration-fast) var(--ease-out);
+  transition: background var(--duration-fast) var(--ease-out), transform var(--duration-fast) var(--ease-out);
 }
 .lvn-row > .lvn-cell:last-child { border-inline-end: .5px solid var(--line); }
 .lvn-row:last-child > .lvn-cell { border-block-end: .5px solid var(--line); }
 .lvn-cell.is-blank { cursor: default; background: var(--bg-alt); }
-.lvn-cell:not(.is-blank):hover { background: rgba(var(--primary-rgb), .06); }
-.lvn-cell:focus-visible { outline: 2px solid var(--primary); outline-offset: -2px; }
+.lvn-cell:not(.is-blank):hover { background: rgba(var(--color-action-rgb), .06); }
+.lvn-cell:not(.is-blank):active { transform: scale(.95); }
+.lvn-cell:focus-visible { outline: 2px solid var(--color-focus); outline-offset: -2px; }
 .lvn-cell.is-weekend .lvn-num { color: var(--ink-secondary); }
-.lvn-cell.is-today { background: rgba(var(--primary-rgb), .1); }
-.lvn-cell.is-selected { box-shadow: inset 0 0 0 2px var(--primary-fg); }
+.lvn-cell.is-today { background: rgba(var(--color-action-rgb), .1); }
+.lvn-cell.is-selected { box-shadow: inset 0 0 0 2px var(--color-action); }
 .lvn-num { font-size: var(--text-sm); font-weight: var(--weight-medium); color: var(--ink); }
 .lvn-lunar { font-size: var(--text-2xs); color: var(--ink-tertiary); }
 .lvn-cell.is-first .lvn-lunar { color: var(--error); font-weight: var(--weight-semibold); }
 .lvn-cell.is-full .lvn-lunar { color: var(--accent-dark); font-weight: var(--weight-semibold); }
 .lvn-cell.is-first .lvn-lunar::before { content: '•'; margin-inline-end: 1px; }
-.lvn-cell.is-full .lvn-lunar::before { content: '◯'; margin-inline-end: 1px; font-size: 8px; }
+.lvn-cell.is-full .lvn-lunar::before { content: '◯'; margin-inline-end: var(--space-half, 2px); font-size: var(--text-2xs, 11px); }
 
 .lvn-legend {
   display: flex; flex-wrap: wrap; gap: var(--space-1) var(--space-4);
@@ -797,7 +832,7 @@ useHead(() => ({
 .lvn-key-full { color: var(--accent-dark); }
 .lvn-key-today {
   display: inline-block; width: 10px; height: 10px; vertical-align: -1px;
-  background: rgba(var(--primary-rgb), .35);
+  background: rgba(var(--color-action-rgb), .35);
 }
 .lvn-legend-note { flex-basis: 100%; }
 
@@ -829,15 +864,16 @@ useHead(() => ({
 }
 .lvn-hour-range { color: var(--ink-tertiary); font-variant-numeric: tabular-nums; }
 .lvn-hour.is-now { font-weight: var(--weight-semibold); }
-.lvn-hour.is-now .lvn-hour-range { color: var(--primary-fg); }
+.lvn-hour.is-now .lvn-hour-range { color: var(--color-action); }
 
 /* --- Đổi ngày --- */
 .lvn-convert { display: grid; grid-template-columns: repeat(auto-fit, minmax(19rem, 1fr)); gap: var(--space-6); }
 .lvn-form { display: flex; flex-direction: column; gap: var(--space-2); align-items: flex-start; }
 .lvn-form .lvn-h3 { margin-top: 0; }
 .lvn-inputs { display: flex; flex-wrap: wrap; gap: var(--space-2); }
-.lvn-check { display: flex; align-items: center; gap: var(--space-1h); min-height: 44px; font-size: var(--text-sm); }
-.lvn-check input { width: 20px; height: 20px; }
+.lvn-check { display: flex; align-items: center; gap: var(--space-1h); min-height: 44px; font-size: var(--text-sm); cursor: pointer; }
+.lvn-check input { width: 20px; height: 20px; cursor: pointer; }
+.lvn-check input:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
 .lvn-out {
   display: block; width: 100%; padding: var(--space-2h) 0;
   border-block-start: .5px solid var(--line);
@@ -856,7 +892,7 @@ useHead(() => ({
 }
 .lvn-term-date { color: var(--ink-tertiary); font-variant-numeric: tabular-nums; }
 .lvn-term.is-current { font-weight: var(--weight-semibold); }
-.lvn-term.is-current .lvn-term-date { color: var(--primary-fg); }
+.lvn-term.is-current .lvn-term-date { color: var(--color-action); }
 
 /* --- Ranh giới trung thực --- */
 .lvn-scope p { max-width: var(--measure-read); color: var(--ink-secondary); line-height: var(--leading-relaxed); }
@@ -868,8 +904,11 @@ useHead(() => ({
   display: flex; align-items: center; gap: var(--space-2);
   padding: var(--space-3) 0; min-height: 44px;
   border-block-end: .5px solid var(--line); color: var(--ink); text-decoration: none;
+  transition: transform var(--duration-fast) var(--ease-out);
 }
 .lvn-cross-card:hover strong { text-decoration: underline; }
+.lvn-cross-card:active { transform: translateX(2px); }
+.lvn-cross-card:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; border-radius: var(--radius-control); }
 .lvn-cross-card small { display: block; color: var(--ink-tertiary); font-size: var(--text-2xs); }
 
 /* --- Khung chờ dựng lịch (chỉ hiện trước khi client tiếp quản) --- */
@@ -885,6 +924,7 @@ useHead(() => ({
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .lvn-nav, .lvn-btn, .lvn-cell { transition: none; }
+  .lvn-nav, .lvn-btn, .lvn-cell, .lvn-cross-card { transition: none; transform: none; }
+  .lvn-nav:active, .lvn-btn:active, .lvn-cell:active, .lvn-cross-card:active { transform: none; }
 }
 </style>

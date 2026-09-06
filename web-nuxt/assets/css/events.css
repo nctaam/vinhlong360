@@ -51,7 +51,7 @@
 }
 .lunar-ribbon-moon circle.moon-base { fill: var(--bg-alt); }
 .lunar-ribbon-moon path.moon-lit { fill: var(--accent-dark); }
-.dark .lunar-ribbon-moon circle.moon-base { fill: rgba(255,255,255,.08); }
+.dark .lunar-ribbon-moon circle.moon-base { fill: rgba(var(--white-rgb), .08); }
 .dark .lunar-ribbon-moon path.moon-lit { fill: var(--amber-500); }
 
 .lunar-ribbon-label {
@@ -85,10 +85,10 @@
   height: 10px;
   border-radius: var(--radius-full);
   background: var(--card);
-  border: 2px solid var(--primary-fg);
+  border: 2px solid var(--color-brand);
   cursor: pointer;
   padding: 0;
-  transition: transform .25s var(--ease-spring-gentle), box-shadow .25s var(--ease-out);
+  transition: transform .25s var(--ease-out-expo), box-shadow .25s var(--ease-out);
 }
 /* Mobile audit: the visible dot measured 10×44 at 375px (height comes from the
    ribbon's align-items: center stretch; width is the literal 10px dot) — an
@@ -107,14 +107,14 @@
   width: 44px;
   height: 44px;
   transform: translate(-50%, -50%);
+  pointer-events: auto;
 }
 .lunar-ribbon-tick:hover,
 .lunar-ribbon-tick:focus-visible {
   transform: translate(-50%, -50%) scale(1.35);
-  box-shadow: 0 0 0 4px rgba(var(--primary-rgb), .16);
-  outline: none;
+  box-shadow: 0 0 0 4px rgba(var(--color-brand-rgb), .16);
 }
-.lunar-ribbon-tick:focus-visible { outline: 2px solid var(--primary); outline-offset: 3px; }
+.lunar-ribbon-tick:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 3px; }
 .dark .lunar-ribbon-tick { background: var(--bg-alt); }
 
 /* Tooltip card revealed on hover/focus of a ribbon tick — information-scent device */
@@ -174,7 +174,7 @@
   border-radius: var(--radius-surface);
   color: var(--ink);
   text-decoration: none;
-  transition: box-shadow .25s var(--ease-out), transform .25s var(--ease-spring-gentle);
+  transition: box-shadow .25s var(--ease-out), transform .25s var(--ease-out-expo);
 }
 .now-banner:hover { box-shadow: var(--shadow-sm); transform: translateY(-1px); }
 .register-su-kien .now-banner {
@@ -327,8 +327,8 @@
    2.62:1 trên nền sáng vì nó là biến thể ĐẬM CỦA NỀN, không phải màu chữ.
    --accent-text mới là token dành cho chữ và có bản riêng mỗi chế độ. */
 .register-toggle-tab.is-active.tone-amber { color: var(--accent-text); }
-.register-toggle-tab:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
-.dark .register-toggle { background: rgba(255,255,255,.05); }
+.register-toggle-tab:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
+.dark .register-toggle { background: rgba(var(--white-rgb), .05); }
 .dark .register-toggle-tab.is-active { background: var(--card); }
 
 /* ── Etiquette callout ("Đi lễ hội — cần biết gì?") ── */
@@ -336,12 +336,12 @@
   margin: var(--space-4) 0 0;
   padding: var(--space-4) var(--space-5);
   background: rgba(var(--secondary-rgb), .07);
-  border-left: 3px solid rgba(var(--secondary-rgb), .4);
+  border: 1px solid rgba(var(--secondary-rgb), .2);
   border-radius: var(--radius-surface);
 }
 .etiquette-box p { margin: 0; font-size: var(--text-sm); line-height: var(--leading-relaxed); color: var(--ink-secondary); }
 .etiquette-box strong { color: var(--ink); }
-.dark .etiquette-box { background: rgba(var(--secondary-rgb), .12); border-left-color: rgba(var(--secondary-rgb), .5); }
+.dark .etiquette-box { background: rgba(var(--secondary-rgb), .12); border-color: rgba(var(--secondary-rgb), .3); }
 
 /* ── ical bulk-subscribe button ── */
 .ical-bulk-btn {
@@ -357,11 +357,11 @@
   font-weight: var(--weight-semibold);
   color: var(--ink);
   cursor: pointer;
-  transition: background .25s var(--ease-out), box-shadow .25s var(--ease-out), transform .25s var(--ease-spring-gentle);
+  transition: background .25s var(--ease-out), box-shadow .25s var(--ease-out), transform .25s var(--ease-out-expo);
 }
 .ical-bulk-btn:hover { box-shadow: var(--shadow-xs); transform: translateY(-1px); }
 .ical-bulk-btn:active { transform: scale(.97); }
-.ical-bulk-btn:focus-visible { outline: 2px solid var(--primary); outline-offset: 3px; }
+.ical-bulk-btn:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 3px; }
 .dark .ical-bulk-btn { background: var(--bg-alt); border-color: var(--line); }
 
 @media (prefers-reduced-motion: reduce) {
@@ -456,12 +456,12 @@
   padding: var(--space-1) var(--space-2);
   line-height: 1.2;
   /* Depth treatment: soft inner border + bottom inset scrim so the badge reads as a folded date tab. */
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .18), inset 0 -2px 4px rgba(0, 0, 0, .14), var(--shadow-xs);
-  transition: transform .35s var(--ease-spring-gentle), box-shadow .35s var(--ease-out-expo);
+  box-shadow: inset 0 1px 0 rgba(var(--white-rgb), .18), inset 0 -2px 4px rgba(var(--black-rgb), .14), var(--shadow-xs);
+  transition: transform .35s var(--ease-out-expo), box-shadow .35s var(--ease-out-expo);
 }
 .event-row:hover .event-date-badge {
   transform: translateY(-1px) scale(1.03);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .22), inset 0 -2px 4px rgba(0, 0, 0, .16), var(--shadow-sm);
+  box-shadow: inset 0 1px 0 rgba(var(--white-rgb), .22), inset 0 -2px 4px rgba(var(--black-rgb), .16), var(--shadow-sm);
 }
 .edb-month {
   display: block;
@@ -580,7 +580,7 @@
 .event-row:hover .ical-btn,
 .event-row:focus-within .ical-btn { opacity: 1; }
 .ical-btn:hover { background: var(--surface); box-shadow: var(--shadow-xs); }
-.ical-btn:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; opacity: 1; }
+.ical-btn:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; opacity: 1; }
 /* dark overrides for .ical-btn in dark-overrides.css */
 /* Touch devices have no :hover — the "add to calendar" affordance was invisible on
    first pass on mobile. Make it always-visible wherever hover can't reveal it. */
@@ -604,11 +604,11 @@
   color: var(--ink-secondary);
   cursor: pointer;
   min-height: 44px;
-  transition: background .3s var(--ease-out), color .3s var(--ease-out), border-color .3s var(--ease-out), transform .3s var(--ease-spring-gentle), box-shadow .3s var(--ease-out);
+  transition: background .3s var(--ease-out), color .3s var(--ease-out), border-color .3s var(--ease-out), transform .3s var(--ease-out-expo), box-shadow .3s var(--ease-out);
 }
 .toggle-btn:hover:not(.active) { box-shadow: var(--shadow-xs); transform: translateY(-1px); }
 .toggle-btn:active { transform: scale(.96); }
-.toggle-btn:focus-visible { outline: 2px solid var(--primary); outline-offset: 3px; }
+.toggle-btn:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 3px; }
 .toggle-btn.active {
   background: var(--date-badge-bg);
   color: var(--date-badge-ink);
@@ -648,11 +648,11 @@
   font-size: var(--text-lg);
   cursor: pointer;
   color: var(--ink);
-  transition: background .3s var(--ease-out), transform .3s var(--ease-spring-gentle), box-shadow .3s var(--ease-out);
+  transition: background .3s var(--ease-out), transform .3s var(--ease-out-expo), box-shadow .3s var(--ease-out);
 }
 .cal-nav:hover { background: var(--state-hover); transform: scale(1.06); box-shadow: var(--shadow-xs); }
 .cal-nav:active { transform: scale(.93); }
-.cal-nav:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+.cal-nav:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
 
 .cal-grid {
   display: grid;
@@ -674,17 +674,17 @@
   border-radius: var(--radius-control);
   transition: background .3s var(--ease-out), border-color .3s var(--ease-out);
 }
-.cal-cell:not(.cal-empty):hover { background: rgba(var(--primary-rgb), .04); }
+.cal-cell:not(.cal-empty):hover { background: rgba(var(--color-action-rgb), .04); }
 .cal-cell.cal-today {
-  background: rgba(var(--primary-rgb), .08);
-  border-color: var(--primary-fg);
+  background: rgba(var(--color-action-rgb), .08);
+  border-color: var(--color-action);
 }
 .cal-cell.cal-has-events {
   background:
-    repeating-linear-gradient(45deg, rgba(var(--primary-rgb), .03) 0 2px, transparent 2px 7px),
-    rgba(var(--primary-rgb), .06);
+    repeating-linear-gradient(45deg, rgba(var(--color-action-rgb), .03) 0 2px, transparent 2px 7px),
+    rgba(var(--color-action-rgb), .06);
 }
-.cal-cell:focus-visible { outline: 2px solid var(--primary-fg); outline-offset: -2px; border-radius: var(--radius-control); }
+.cal-cell:focus-visible { outline: 2px solid var(--color-focus); outline-offset: -2px; border-radius: var(--radius-control); }
 .cal-empty { visibility: hidden; }
 .cal-num {
   font-size: var(--text-xs);
@@ -699,7 +699,7 @@
 }
 .cal-event-dot {
   display: block;
-  font-size: 10px;
+  font-size: var(--text-2xs);
   line-height: 1.3;
   padding: var(--space-1);
   /* Cùng lỗi với .event-date-badge: --primary-fg là token CHỮ, dùng làm NỀN thì
@@ -707,13 +707,13 @@
   background: var(--date-badge-bg);
   color: var(--date-badge-ink);
   border-radius: 3px;
-  border-inline-start: 3px solid var(--secondary-fg, var(--secondary));
-  box-shadow: var(--shadow-xs);
+  border: 1px solid color-mix(in srgb, var(--secondary-fg, var(--secondary)) 35%, transparent);
+  box-shadow: inset 2px 0 0 var(--secondary-fg, var(--secondary)), var(--shadow-xs);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
-.cal-event-dot { transition: opacity .3s var(--ease-out), transform .3s var(--ease-spring-gentle); }
+.cal-event-dot { transition: opacity .3s var(--ease-out), transform .3s var(--ease-out-expo); }
 .cal-event-dot:hover { opacity: .85; transform: scale(1.04); }
 .cal-event-dot:active { transform: scale(.93); }
 .cal-more {
@@ -756,7 +756,7 @@
 }
 /* Tiny markers distinguish the two lunar anchor days at a glance. */
 .cal-lunar.lunar-first::before { content: '•'; margin-inline-end: 1px; }
-.cal-lunar.lunar-mid::before { content: '◯'; margin-inline-end: 1px; font-size: 8px; }
+.cal-lunar.lunar-mid::before { content: '◯'; margin-inline-end: 1px; font-size: var(--text-2xs); }
 
 @media (prefers-reduced-motion: reduce) {
   .cal-lunar { transition: none; }
@@ -764,19 +764,19 @@
 
 /* ── Dark mode (events) ── */
 .dark .event-row { border-color: var(--line); }
-.dark .event-row:hover { box-shadow: var(--shadow-lg); border-color: rgba(255,255,255,.1); }
+.dark .event-row:hover { box-shadow: var(--shadow-lg); border-color: rgba(var(--white-rgb), .1); }
 .dark .toggle-btn { background: var(--bg-alt); border-color: var(--line); }
 /* Stronger focus ring contrast on dark backgrounds for the view-toggle. */
-.dark .toggle-btn:focus-visible { outline-color: var(--primary-fg-strong); }
+.dark .toggle-btn:focus-visible { outline-color: var(--color-focus); }
 .dark .calendar { border-color: var(--line); }
 .dark .cal-nav { border-color: var(--line); background: var(--bg-alt); }
-.dark .cal-nav:hover { background: rgba(255,255,255,.08); }
+.dark .cal-nav:hover { background: rgba(var(--white-rgb), .08); }
 .dark .cat-mua { background: rgba(var(--secondary-rgb), .18); color: var(--secondary-fg); }
 /* Calendar has-events cells need a stronger tint to stay visible on the dark card. */
 .dark .cal-cell.cal-has-events {
   background:
-    repeating-linear-gradient(45deg, rgba(var(--primary-rgb), .05) 0 2px, transparent 2px 7px),
-    rgba(var(--primary-rgb), .1);
+    repeating-linear-gradient(45deg, rgba(var(--color-action-rgb), .05) 0 2px, transparent 2px 7px),
+    rgba(var(--color-action-rgb), .1);
 }
 /* Festival date badge: lighten the clay tint so white month/day text keeps ≥4.5:1 in dark mode. */
 /* Soften the date-badge inset scrim on dark so it doesn't read as a hard line. */
@@ -784,11 +784,11 @@
   /* Vòng ngoài 1px thay cho việc làm sáng nền: chip đậm giữ được chữ trắng
      10.12:1, còn ranh giới thành phần do viền gánh (#d98a6f trên card tối
      = 6.43, thừa ngưỡng 3.0). box-shadow chứ không border: không đổi kích thước. */
-  box-shadow: 0 0 0 1px var(--date-badge-ring), inset 0 1px 0 rgba(255, 255, 255, .12), inset 0 -2px 4px rgba(0, 0, 0, .28), var(--shadow-xs);
+  box-shadow: 0 0 0 1px var(--date-badge-ring), inset 0 1px 0 rgba(var(--white-rgb), .12), inset 0 -2px 4px rgba(var(--black-rgb), .28), var(--shadow-xs);
 }
 .dark .lunar-ribbon { background: var(--card); border-color: var(--line); }
 .dark .ledger-row { border-color: var(--line); }
-.dark .ledger-row:hover { box-shadow: var(--shadow-lg); border-color: rgba(255,255,255,.1); }
+.dark .ledger-row:hover { box-shadow: var(--shadow-lg); border-color: rgba(var(--white-rgb), .1); }
 
 /* ── Responsive: tablet ── */
 @media (min-width: 769px) and (max-width: 1024px) {
@@ -831,7 +831,7 @@
   /* roomier calendar touch targets on phones */
   .cal-grid { min-width: 320px; }
   .cal-cell { min-height: 64px; }
-  .cal-event-dot { font-size: 9px; }
+  .cal-event-dot { font-size: var(--text-2xs); }
   /* keep the summary but cap it to 2 lines so the stacked row stays compact */
   .event-summary {
     display: -webkit-box;

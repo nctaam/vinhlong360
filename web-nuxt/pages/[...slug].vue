@@ -1,5 +1,5 @@
 <template>
-  <section class="not-found">
+  <section class="page not-found" data-color-system="tri-region-v1">
     <div class="nf-inner">
       <span class="nf-emoji" aria-hidden="true"><IconLine name="map" /></span>
       <h1 class="nf-code">404</h1>
@@ -12,6 +12,16 @@
         <NuxtLink to="/" class="nf-btn nf-btn-primary">Về trang chủ</NuxtLink>
         <button type="button" class="nf-btn nf-btn-outline" @click="$router.back()">Quay lại</button>
       </div>
+
+      <nav class="nf-suggestions" aria-label="Gợi ý khám phá">
+        <p class="nf-suggestions__title">Hoặc bắt đầu hành trình từ:</p>
+        <div class="nf-suggestions__list">
+          <NuxtLink v-for="item in discoveryLinks" :key="item.to" :to="item.to" class="nf-pill">
+            <IconLine :name="item.icon" class="nf-pill__icon" />
+            <span>{{ item.label }}</span>
+          </NuxtLink>
+        </div>
+      </nav>
     </div>
   </section>
 </template>
@@ -22,12 +32,25 @@ if (import.meta.server) {
   if (event) setResponseStatus(event, 404)
 }
 
-useSeoMeta({ title: '404 — vinhlong360' })
+useSeoMeta({
+  title: '404 — Không tìm thấy trang | vinhlong360',
+  description: 'Trang bạn tìm kiếm không tồn tại hoặc đã được di chuyển trên Cổng thông tin Vĩnh Long 360.',
+  robots: 'noindex, nofollow',
+  ogTitle: '404 — Không tìm thấy trang | vinhlong360',
+  twitterCard: 'summary_large_image',
+})
 
 const q = ref('')
 function onSearch() {
   if (q.value.trim()) navigateTo(`/tim-kiem?q=${encodeURIComponent(q.value.trim())}`)
 }
+
+const discoveryLinks = [
+  { label: 'Điểm đến', to: '/dia-diem', icon: 'compass' },
+  { label: 'Ẩm thực', to: '/san-pham', icon: 'bowl' },
+  { label: 'Sự kiện', to: '/su-kien', icon: 'calendar' },
+  { label: 'OCOP', to: '/ocop', icon: 'gift' },
+]
 </script>
 
 <style scoped>
@@ -84,9 +107,10 @@ function onSearch() {
 }
 
 .nf-search input:focus-visible {
-  outline: none;
+  outline: 2px solid var(--color-focus);
+  outline-offset: 1px;
   border-color: var(--accent);
-  box-shadow: 0 0 0 3px rgba(var(--primary-rgb), .1);
+  box-shadow: 0 0 0 3px rgba(var(--color-action-rgb), .1);
 }
 
 .nf-search button {
@@ -99,12 +123,12 @@ function onSearch() {
   font-weight: var(--weight-semibold);
   cursor: pointer;
   min-height: 44px;
-  transition: background .3s var(--ease-out), transform .35s var(--ease-spring-gentle), box-shadow .3s var(--ease-out);
+  transition: background .3s var(--ease-out), transform .35s var(--ease-out-expo), box-shadow .3s var(--ease-out);
 }
 
 .nf-search button:hover { background: var(--accent-dark); }
 .nf-search button:active { transform: scale(.95); transition-duration: .08s; }
-.nf-search button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.nf-search button:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
 
 .nf-actions {
   display: flex;
@@ -122,36 +146,96 @@ function onSearch() {
   text-decoration: none;
   cursor: pointer;
   min-height: 44px;
-  transition: background .3s var(--ease-out), transform .35s var(--ease-spring-gentle), box-shadow .35s var(--ease-out-expo);
+  transition: background .3s var(--ease-out), transform .35s var(--ease-out-expo), box-shadow .35s var(--ease-out-expo);
 }
 
 .nf-btn:active { transform: scale(.97); }
-.nf-btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.nf-btn:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
 
 .nf-btn-primary {
-  background: var(--accent);
-  color: var(--text-on-dark, var(--white));
+  background: var(--color-action);
+  color: var(--color-on-action);
   border: none;
 }
 
-.nf-btn-primary:hover { background: var(--accent-dark); }
+.nf-btn-primary:hover { background: var(--color-action-hover); }
 
 .nf-btn-outline {
   background: transparent;
-  color: var(--accent);
-  border: 1.5px solid var(--accent);
+  color: var(--color-action);
+  border: 1.5px solid var(--color-action);
 }
 
-.nf-btn-outline:hover { background: var(--accent); color: var(--text-on-dark, var(--white)); }
+.nf-btn-outline:hover { background: var(--color-action-surface); color: var(--color-action-hover); }
 
-.nf-inner { animation: nfIn .5s var(--ease-spring-gentle); }
+.nf-inner { animation: nfIn .5s var(--ease-out-expo); }
 @keyframes nfIn { from { opacity: 0; transform: translateY(16px) scale(.96); } to { opacity: 1; transform: translateY(0) scale(1); } }
-.nf-emoji { transition: transform .35s var(--ease-spring-gentle); }
+.nf-emoji { transition: transform .35s var(--ease-out-expo); }
 .nf-inner:hover .nf-emoji { transform: scale(1.1) rotate(-5deg); }
 .nf-btn:hover { transform: translateY(-1px); box-shadow: var(--shadow-md); }
 .nf-search button:active { transform: scale(.95); transition-duration: .08s; }
+.nf-suggestions {
+  margin-top: var(--space-8);
+  padding-top: var(--space-6);
+  border-top: 1px dashed var(--line);
+}
+
+.nf-suggestions__title {
+  font-size: var(--text-xs);
+  font-weight: var(--weight-medium);
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-wider, 0.05em);
+  margin-bottom: var(--space-3);
+}
+
+.nf-suggestions__list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  justify-content: center;
+}
+
+.nf-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: var(--touch-min);
+  padding: var(--space-2) var(--space-4);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-full);
+  background: var(--card);
+  color: var(--ink);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-medium);
+  text-decoration: none;
+  transition: transform .3s var(--ease-out-expo), border-color .25s var(--ease-out), color .25s var(--ease-out), box-shadow .25s var(--ease-out);
+}
+
+.nf-pill__icon {
+  font-size: 1.05em;
+  color: var(--accent);
+}
+
+.nf-pill:hover {
+  transform: translateY(-1px);
+  border-color: var(--accent);
+  color: var(--accent);
+  box-shadow: var(--shadow-sm);
+}
+
+.nf-pill:active {
+  transform: scale(0.96);
+}
+
+.nf-pill:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 2px;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .nf-inner { animation: none; }
   .nf-emoji { transition: none; }
+  .nf-pill { transition: none; }
 }
 </style>

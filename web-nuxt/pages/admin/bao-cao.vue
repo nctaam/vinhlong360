@@ -55,7 +55,7 @@
         </div>
       </div>
 
-      <div class="admin-table-wrap">
+      <div class="admin-table-wrap" role="region" tabindex="0" aria-label="Bảng danh sách báo cáo vi phạm">
         <table class="admin-table" aria-label="Danh sách báo cáo vi phạm">
           <thead>
             <tr>
@@ -136,7 +136,7 @@
         <h2 class="admin-section-title">Báo sai thông tin (ẩn danh)</h2>
         <span v-if="infoOpen" class="rpt-open-badge">{{ infoOpen }} chưa xử lý</span>
       </div>
-      <div class="admin-table-wrap">
+      <div class="admin-table-wrap" role="region" tabindex="0" aria-label="Bảng báo sai thông tin">
         <table class="admin-table" aria-label="Thông tin vi phạm">
           <thead><tr><th scope="col">Loại</th><th scope="col">Đối tượng</th><th scope="col">Lý do</th><th scope="col">Trạng thái</th><th scope="col">Ngày</th><th scope="col">Thao tác</th></tr></thead>
           <tbody>
@@ -451,8 +451,8 @@ onMounted(() => fetchAll())
 }
 .status-pending { background: rgba(var(--warning-rgb),.08); color: var(--warning); }
 .status-pending::before { background: var(--warning); animation: rpt-pulse 2s var(--ease-in-out) infinite; }
-.status-resolved { background: rgba(var(--primary-rgb),.08); color: var(--secondary-fg); }
-.status-resolved::before { background: var(--secondary-fg); }
+.status-resolved { background: rgba(var(--color-success-rgb),.08); color: var(--success); }
+.status-resolved::before { background: var(--success); }
 .status-dismissed { background: rgba(var(--gray-rgb),.08); color: var(--muted); }
 .status-dismissed::before { background: var(--muted); opacity: .4; }
 @keyframes rpt-pulse { 0%, 100% { opacity: 1; } 50% { opacity: .35; } }
@@ -472,25 +472,25 @@ onMounted(() => fetchAll())
   font-size: .78rem; font-weight: 500; cursor: pointer;
   transition: background .2s, border-color .2s, color .2s, transform .2s var(--ease-soft);
 }
-.rpt-chip:hover { border-color: var(--primary); }
+.rpt-chip:hover { border-color: var(--color-action); }
 .rpt-chip:active { transform: scale(.96); }
 .rpt-chip.active {
-  background: var(--primary); border-color: var(--primary); color: var(--text-on-dark);
+  background: var(--color-action); border-color: var(--color-action); color: var(--text-on-dark);
   position: relative; box-shadow: 0 2px 8px rgba(var(--link-blue-rgb), .22);
 }
 /* subtle affordance dot under the active chip */
 .rpt-chip.active::after {
   content: ''; position: absolute; left: 50%; bottom: -7px;
   width: 5px; height: 5px; border-radius: 50%;
-  background: var(--primary); transform: translateX(-50%);
+  background: var(--color-action); transform: translateX(-50%);
   animation: rpt-dot-in .25s var(--ease-soft);
 }
 @keyframes rpt-dot-in { from { opacity: 0; transform: translate(-50%, -3px); } to { opacity: 1; transform: translate(-50%, 0); } }
-.rpt-chip:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+.rpt-chip:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
 .rpt-chip-count {
   display: inline-flex; align-items: center; justify-content: center;
   min-width: 18px; height: 18px; padding: 0 5px;
-  border-radius: 100px; font-size: .68rem; font-weight: 600;
+  border-radius: 100px; font-size: var(--text-2xs); font-weight: 600;
   background: rgba(var(--black-rgb),.06); color: var(--muted);
 }
 .rpt-chip.active .rpt-chip-count { background: rgba(var(--white-rgb),.25); color: var(--text-on-dark); }
@@ -500,29 +500,29 @@ onMounted(() => fetchAll())
   display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap;
   gap: var(--space-3);
   padding: var(--space-3) var(--space-4); margin-bottom: var(--space-3);
-  border: 1px solid var(--primary); border-radius: var(--radius);
+  border: 1px solid var(--color-action); border-radius: var(--radius);
   background: rgba(var(--link-blue-rgb), .06);
   animation: rpt-slide-in .25s var(--ease-soft);
 }
 @keyframes rpt-slide-in { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: translateY(0); } }
 .rpt-bulk-summary { display: inline-flex; align-items: baseline; gap: var(--space-2); flex-wrap: wrap; }
-.rpt-bulk-count { font-size: .82rem; font-weight: 600; color: var(--primary); }
+.rpt-bulk-count { font-size: .82rem; font-weight: 600; color: var(--color-action); }
 .rpt-bulk-hint { font-size: .74rem; color: var(--muted); }
 .rpt-bulk-actions { display: flex; align-items: center; gap: var(--space-2); flex-wrap: wrap; }
 /* make the primary bulk action more prominent than the secondary ones */
-.rpt-bulk-primary { font-weight: 600; box-shadow: 0 2px 8px rgba(var(--primary-rgb),.18); }
+.rpt-bulk-primary { font-weight: 600; box-shadow: 0 2px 8px rgba(var(--color-action-rgb),.18); }
 .rpt-bulk-clear {
   min-height: 44px; padding: 6px 12px; border: none; border-radius: 8px;
   background: transparent; color: var(--muted); font-size: .78rem; cursor: pointer;
   transition: color .2s;
 }
 .rpt-bulk-clear:hover { color: var(--text); }
-.rpt-bulk-clear:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+.rpt-bulk-clear:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
 
 /* ── Checkboxes / selected row ── */
 .rpt-th-check, .rpt-td-check { width: 36px; text-align: center; }
-.rpt-checkbox { width: 17px; height: 17px; cursor: pointer; accent-color: var(--primary); padding: 13px; margin: -13px; box-sizing: content-box; }
-.rpt-checkbox:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+.rpt-checkbox { width: 17px; height: 17px; cursor: pointer; accent-color: var(--color-action); padding: 13px; margin: -13px; box-sizing: content-box; }
+.rpt-checkbox:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
 .rpt-row-selected { background: rgba(var(--link-blue-rgb), .05); }
 
 /* ── Expandable reason ── */
@@ -530,10 +530,10 @@ onMounted(() => fetchAll())
 .rpt-reason-full { white-space: normal; word-break: break-word; line-height: 1.45; }
 .rpt-reason-toggle {
   margin-top: var(--space-1); padding: 0; border: none; background: none;
-  color: var(--primary); font-size: .72rem; font-weight: 600; cursor: pointer;
+  color: var(--color-action); font-size: .72rem; font-weight: 600; cursor: pointer;
 }
 .rpt-reason-toggle:hover { text-decoration: underline; }
-.rpt-reason-toggle:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; border-radius: 4px; }
+.rpt-reason-toggle:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; border-radius: 4px; }
 .rpt-reason-chevron { font-size: .8rem; line-height: 1; margin-left: 2px; }
 
 /* ── Pager ── */
@@ -549,9 +549,9 @@ onMounted(() => fetchAll())
   font-size: .82rem; font-weight: 600; cursor: pointer;
   transition: background .2s, border-color .2s, transform .2s var(--ease-soft);
 }
-.rpt-loadmore:hover { border-color: var(--primary); }
+.rpt-loadmore:hover { border-color: var(--color-action); }
 .rpt-loadmore:active { transform: scale(.97); }
-.rpt-loadmore:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+.rpt-loadmore:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
 
 /* ── Reduced motion ── */
 @media (prefers-reduced-motion: reduce) {
@@ -565,7 +565,7 @@ onMounted(() => fetchAll())
 
 /* ── Dark ── */
 .dark .status-pending { background: rgba(var(--warning-rgb),.12); color: var(--accent-text); }
-.dark .status-resolved { background: rgba(var(--primary-rgb),.12); }
+.dark .status-resolved { background: rgba(var(--color-success-rgb),.12); }
 .dark .status-dismissed { background: rgba(var(--white-rgb),.06); }
 .dark .rpt-open-badge { background: rgba(var(--warning-rgb),.12); color: var(--accent-text); }
 .dark .rpt-chip { background: rgba(var(--white-rgb),.04); }

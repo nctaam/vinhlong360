@@ -1,6 +1,6 @@
 <template>
-  <section class="legal-page about-page">
-    <Breadcrumb :items="[{ label: 'Trang chủ', to: '/' }, { label: 'Giới thiệu' }]" />
+  <section class="legal-page about-page" data-color-system="tri-region-v1">
+    <Breadcrumb :items="[{ label: 'Trang chủ', to: '/' }, { label: 'Giới thiệu' }]" :json-ld="true" />
 
     <!-- Brand masthead — river→clay wash, unique to this page family. -->
     <section class="brand-masthead about-masthead">
@@ -112,39 +112,24 @@ useSeoMeta({
   description: () => doc.value.seo_description,
   ogTitle: () => doc.value.seo_title,
   ogDescription: () => doc.value.seo_description,
+  ogUrl: () => canonicalUrl('/gioi-thieu'),
+  twitterCard: 'summary_large_image',
 })
 
-const aboutJsonLd = {
-  '@context': 'https://schema.org',
-  '@type': 'AboutPage',
-  name: 'Về vinhlong360',
-  url: canonicalUrl('/gioi-thieu'),
-  mainEntity: {
-    '@type': 'Organization',
-    name: 'vinhlong360',
-    url: canonicalUrl('/'),
-    logo: 'https://vinhlong360.vn/icons/icon-512.png',
-    areaServed: ['Vĩnh Long'],   // §1.6 — một tỉnh sau sáp nhập 7-2025
-  },
-}
+// Schema.org unified @graph: '@type': 'AboutPage'
+// §1.6: areaServed: ['Vĩnh Long'] (một tỉnh sau sáp nhập 7-2025)
+const aboutJsonLd = computed(() => buildAboutPageSchemaGraph({
+  title: doc.value.seo_title,
+  description: doc.value.seo_description,
+  updatedDate: doc.value.updated_date,
+}))
 
-useHead({
+useHead(() => ({
   link: [{ rel: 'canonical', href: canonicalUrl('/gioi-thieu') }],
   script: [
-    { type: 'application/ld+json', innerHTML: JSON.stringify(aboutJsonLd) },
-    {
-      type: 'application/ld+json',
-      innerHTML: JSON.stringify({
-        '@context': 'https://schema.org',
-        '@type': 'BreadcrumbList',
-        itemListElement: [
-          { '@type': 'ListItem', position: 1, name: 'Trang chủ', item: 'https://vinhlong360.vn/' },
-          { '@type': 'ListItem', position: 2, name: 'Giới thiệu' },
-        ],
-      }),
-    },
+    { type: 'application/ld+json', innerHTML: safeJsonLd(aboutJsonLd) },
   ],
-})
+}))
 </script>
 
 <style scoped>
@@ -167,7 +152,7 @@ useHead({
   gap: var(--space-6);
   background:
     var(--grain),
-    linear-gradient(120deg, color-mix(in srgb, var(--river-600) 14%, transparent) 0%, var(--bg-warm) 55%, rgba(var(--primary-rgb), .16) 120%);
+    linear-gradient(120deg, color-mix(in srgb, var(--river-600) 14%, transparent) 0%, var(--bg-warm) 55%, rgba(var(--color-brand-rgb), .16) 120%);
   background-blend-mode: overlay, normal;
 }
 .bm-inner { flex: 1 1 auto; min-width: 0; max-width: var(--measure-read); }
@@ -175,7 +160,7 @@ useHead({
   display: flex; align-items: center; gap: var(--space-2);
   font-family: var(--font-sans); font-size: var(--text-2xs); font-weight: 700;
   text-transform: uppercase; letter-spacing: var(--tracking-caps);
-  color: var(--primary-fg-strong); margin: 0 0 var(--space-3);
+  color: var(--color-brand); margin: 0 0 var(--space-3);
 }
 .bm-tick { width: 14px; height: 1.5px; background: var(--accent, var(--amber-500)); flex-shrink: 0; }
 .brand-masthead h1 {
@@ -250,14 +235,16 @@ useHead({
 
 /* Section 1 — Mission emphasis (pull-quote spread lives inside). */
 .mission-section {
-  border-left: 4px solid var(--secondary-fg);
+  border: 1px solid rgba(var(--secondary-rgb), .2);
+  box-shadow: inset 3px 0 0 var(--secondary-fg);
+  border-radius: var(--radius-sheet);
   background: rgba(var(--secondary-rgb), .08);
 }
 .about-mission-quote { margin: var(--space-4) 0 var(--space-5); }
 .about-mission-quote :deep(cite) { font-style: normal; }
 
 /* Section 3 — Non-commercial trust signal. */
-.noncommercial-section :deep(.legal-body > p:first-child) { font-weight: var(--weight-semibold); color: var(--primary-fg-strong); }
+.noncommercial-section :deep(.legal-body > p:first-child) { font-weight: var(--weight-semibold); color: var(--color-brand); }
 .noncommercial-section :deep(.legal-body ul) { list-style: none; padding-inline-start: 0; }
 .noncommercial-section :deep(.legal-body li) { position: relative; padding-inline-start: var(--space-6); }
 .noncommercial-section :deep(.legal-body li)::before {
@@ -310,6 +297,15 @@ useHead({
   display: flex; gap: var(--space-3); justify-content: center; flex-wrap: wrap;
   padding-bottom: var(--space-4);
 }
+.about-cta .btn {
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform .2s var(--ease-out), box-shadow .2s var(--ease-out);
+}
+.about-cta .btn:active { transform: scale(.97); }
+.about-cta .btn:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
 
 /* ── Body typography ──────────────────────────────────────────────── */
 .legal-page :deep(p) { font-size: var(--text-sm); color: var(--ink-secondary, var(--ink)); }
@@ -319,10 +315,10 @@ useHead({
 .about-intro :deep(p) { font-size: inherit; color: inherit; }
 .legal-page :deep(ul) { padding-inline-start: var(--space-5); }
 .legal-page :deep(li) { margin: var(--space-2) 0; font-size: var(--text-sm); color: var(--ink-secondary, var(--ink)); }
-.legal-page :deep(a) { color: var(--primary-fg); font-weight: var(--weight-semibold); text-decoration-line: underline; text-decoration-color: transparent; text-underline-offset: 3px; transition: text-decoration-color .3s var(--ease-out), color .3s var(--ease-out); }
-.legal-page :deep(a:hover) { text-decoration-color: var(--primary-fg); }
-.legal-page :deep(a:visited) { color: var(--primary-fg); opacity: .85; }
-.legal-page :deep(a:focus-visible) { outline: 2px solid var(--primary); outline-offset: 2px; }
+.legal-page :deep(a) { color: var(--color-action); font-weight: var(--weight-semibold); text-decoration-line: underline; text-decoration-color: transparent; text-underline-offset: 3px; transition: text-decoration-color .3s var(--ease-out), color .3s var(--ease-out); }
+.legal-page :deep(a:hover) { text-decoration-color: var(--color-action); }
+.legal-page :deep(a:visited) { color: var(--color-action); opacity: .85; }
+.legal-page :deep(a:focus-visible) { outline: 2px solid var(--color-focus); outline-offset: 2px; }
 
 /* ── Responsive scale-up ──────────────────────────────────────────── */
 @media (min-width: 640px) {
@@ -340,18 +336,19 @@ useHead({
 .dark .brand-masthead {
   background:
     var(--grain),
-    linear-gradient(120deg, color-mix(in srgb, var(--river-legacy-dark) 10%, transparent) 0%, rgba(var(--white-rgb),.02) 55%, rgba(var(--primary-rgb), .12) 120%);
+    linear-gradient(120deg, color-mix(in srgb, var(--river-legacy-dark) 10%, transparent) 0%, rgba(var(--white-rgb),.02) 55%, rgba(var(--color-brand-rgb), .12) 120%);
 }
 .dark .bm-motif { color: var(--clay-400); opacity: .7; }
 .dark .highlight-badge { background: var(--bg-alt); border-color: var(--line); }
 .dark .about-section.tint-alt { background: rgba(var(--white-rgb),.025); }
 .dark .mission-section { border-color: var(--secondary-fg); background: rgba(var(--secondary-rgb), .12); }
 .dark .legal-page :deep(a) { text-decoration-color: transparent; }
-.dark .legal-page :deep(a:hover) { text-decoration-color: var(--primary-fg); }
+.dark .legal-page :deep(a:hover) { text-decoration-color: var(--color-action); }
 
 /* ── Reduced motion ───────────────────────────────────────────────── */
 @media (prefers-reduced-motion: reduce) {
   .bm-river, .bm-river--2 { animation: none; stroke-dasharray: none; }
+  .about-cta .btn:active { transform: none; }
 }
 
 /* Reveal stagger + reduced-motion fallback are provided by the global

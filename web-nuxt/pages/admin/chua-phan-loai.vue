@@ -42,7 +42,7 @@
         <button type="button" class="btn btn-secondary btn-sm cpl-bulk-clear" :disabled="bulkBusy" @click="clearSelection">Bỏ chọn</button>
       </div>
 
-      <div v-if="items.length && filtered.length" class="admin-table-wrap cpl-table-wrap">
+      <div v-if="items.length && filtered.length" class="admin-table-wrap cpl-table-wrap" role="region" tabindex="0" aria-label="Bảng entity chưa phân loại">
         <table class="admin-table" aria-label="Entity chưa phân loại">
           <thead>
             <tr>
@@ -148,7 +148,8 @@ const bulkPick = ref('')
 const bulkBusy = ref(false)
 const bulkProgress = ref({ done: 0, total: 0 })
 
-const { data: places } = await useAsyncData('cpl-places', () => apiFetch<Entity[]>('/api/places').catch((err) => { showToast?.('Không tải được danh sách xã/phường', 'error'); console.error('[chua-phan-loai] places fetch failed', err); return [] }))
+const placesAsyncData = useAsyncData('cpl-places', () => apiFetch<Entity[]>('/api/places').catch((err) => { showToast?.('Không tải được danh sách xã/phường', 'error'); console.error('[chua-phan-loai] places fetch failed', err); return [] }))
+const { data: places } = placesAsyncData
 const wardGroups = computed(() => {
   const wards = (places.value || []).filter(p => ADMIN_LEVELS.includes(p.level || ''))
   return Object.keys(AREA_META).map(area => {
@@ -295,6 +296,7 @@ function removeItem(id: string) {
 }
 
 onMounted(load)
+await placesAsyncData
 </script>
 
 <style scoped>
@@ -321,7 +323,7 @@ onMounted(load)
   border-radius: 100px; font-size: .75rem; font-weight: 600;
   background: rgba(var(--warning-rgb),.08); color: var(--warning);
 }
-.cpl-filter-badge { background: rgba(var(--primary-rgb),.08); color: var(--secondary); }
+.cpl-filter-badge { background: rgba(var(--color-action-rgb),.08); color: var(--color-action); }
 
 .cpl-summary { display: block; color: var(--muted); margin-top: 2px; font-size: .78rem; max-width: 300px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
@@ -337,18 +339,18 @@ onMounted(load)
   background: var(--bg); color: var(--ink); cursor: pointer;
   transition: border-color .2s var(--ease-soft), box-shadow .2s;
 }
-.cpl-place-select:focus { border-color: var(--primary); outline: none; box-shadow: 0 0 0 2px rgba(var(--primary-rgb),.1); }
-.cpl-place-select:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; box-shadow: none; }
+.cpl-place-select:focus { border-color: var(--color-action); outline: none; box-shadow: 0 0 0 2px rgba(var(--color-action-rgb),.1); }
+.cpl-place-select:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; box-shadow: none; }
 
 /* ── Bulk bar ── */
 .cpl-bulk-bar {
   display: flex; gap: var(--space-3); align-items: center; flex-wrap: wrap;
   margin-bottom: var(--space-3); padding: var(--space-2) var(--space-3);
-  background: rgba(var(--primary-rgb),.06);
-  border: .5px solid rgba(var(--primary-rgb),.2); border-top: 1px solid rgba(var(--primary-rgb),.3);
+  background: rgba(var(--color-action-rgb),.06);
+  border: .5px solid rgba(var(--color-action-rgb),.2); border-top: 1px solid rgba(var(--color-action-rgb),.3);
   border-radius: 12px;
 }
-.cpl-bulk-count { font-size: .82rem; font-weight: 600; color: var(--primary); }
+.cpl-bulk-count { font-size: .82rem; font-weight: 600; color: var(--color-action); }
 .cpl-bulk-clear { margin-left: auto; }
 
 /* Progress bar along bottom edge of the bulk-apply button */
@@ -356,18 +358,17 @@ onMounted(load)
 .cpl-bulk-progress {
   position: absolute; left: 0; bottom: 0; height: 2px;
   background: rgba(var(--white-rgb),.85); border-radius: 0 1px 1px 0;
-  transition: width .2s var(--ease-soft);
 }
 
 /* ── Checkboxes ── */
 .cpl-check-col { width: 44px; text-align: center; }
 .cpl-checkbox {
-  width: 18px; height: 18px; cursor: pointer; accent-color: var(--primary);
+  width: 18px; height: 18px; cursor: pointer; accent-color: var(--color-action);
   /* expand hit area to WCAG 2.5.5 (44px) without growing the visual box */
   padding: 13px; margin: -13px; box-sizing: content-box;
 }
-.cpl-checkbox:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; border-radius: 3px; }
-.cpl-row-selected { background: rgba(var(--primary-rgb),.05); }
+.cpl-checkbox:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; border-radius: 3px; }
+.cpl-row-selected { background: rgba(var(--color-action-rgb),.05); }
 
 /* ── Row density + scan-friendly hover (page-scoped; does not touch shared .admin-table rules) ── */
 .cpl-table-wrap :deep(.admin-table) td { padding-top: var(--space-2); padding-bottom: var(--space-2); }
@@ -375,7 +376,7 @@ onMounted(load)
 .cpl-table-wrap :deep(.admin-table) tbody tr td:first-child { position: relative; }
 .cpl-table-wrap :deep(.admin-table) tbody tr:hover td:first-child::before {
   content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 2px;
-  background: var(--primary);
+  background: var(--color-action);
 }
 
 /* ── Load more ── */
@@ -388,13 +389,12 @@ onMounted(load)
   background: rgba(var(--fill-gray-rgb), .16); overflow: hidden;
 }
 .cpl-loadmore-fill {
-  height: 100%; border-radius: 100px; background: var(--primary);
-  transition: width .25s var(--ease-soft);
+  height: 100%; border-radius: 100px; background: var(--color-brand);
 }
 .cpl-loadmore-info { font-size: .8rem; color: var(--muted); }
 
 /* ── Empty states (use shared .admin-empty-state; tint icon by intent) ── */
-.cpl-empty-done .admin-empty-state-icon { color: var(--primary); opacity: .85; }
+.cpl-empty-done .admin-empty-state-icon { color: var(--success); opacity: .85; }
 .cpl-empty-miss .admin-empty-state-icon { color: var(--muted); }
 
 /* ── Responsive: reflow toolbar on narrow viewports ── */
@@ -410,14 +410,14 @@ onMounted(load)
 /* ── Dark ── */
 .dark .cpl-progress-pill { background: rgba(var(--white-rgb),.08); }
 .dark .cpl-total-badge { background: rgba(var(--warning-rgb),.12); color: var(--accent); }
-.dark .cpl-filter-badge { background: rgba(var(--primary-rgb),.14); color: rgb(var(--success-rgb)); }
+.dark .cpl-filter-badge { background: rgba(var(--color-action-rgb),.14); color: var(--color-action); }
 .dark .cpl-type-badge { background: rgba(var(--white-rgb),.06); }
 .dark .cpl-place-select { background: var(--card); border-color: rgba(var(--white-rgb),.08); }
-.dark .cpl-bulk-bar { background: rgba(var(--primary-rgb),.1); border-color: rgba(var(--primary-rgb),.25); border-top-color: rgba(var(--primary-rgb),.35); }
+.dark .cpl-bulk-bar { background: rgba(var(--color-action-rgb),.1); border-color: rgba(var(--color-action-rgb),.25); border-top-color: rgba(var(--color-action-rgb),.35); }
 .dark .cpl-bulk-count { color: rgb(var(--success-rgb)); }
 .dark .cpl-bulk-progress { background: rgba(var(--white-rgb),.7); }
 .dark .cpl-loadmore-track { background: rgba(var(--white-rgb),.1); }
-.dark .cpl-row-selected { background: rgba(var(--primary-rgb),.08); }
+.dark .cpl-row-selected { background: rgba(var(--color-action-rgb),.08); }
 
 /* ── Reduced motion ── */
 @media (prefers-reduced-motion: reduce) {

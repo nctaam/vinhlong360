@@ -2,7 +2,7 @@
   <div>
     <div class="admin-head-row">
       <div>
-        <NuxtLink to="/admin/cai-dat" class="cs-back">← Cài đặt</NuxtLink>
+        <NuxtLink to="/admin/cai-dat" class="cs-back"><IconLine name="arrow-left" class="cs-back-icon" /> Cài đặt</NuxtLink>
         <h1>Nội dung trang</h1>
         <p class="cs-subtitle">Sửa tiêu đề, mô tả & SEO của từng trang</p>
       </div>
@@ -15,7 +15,7 @@
           <h3>{{ p.title }}</h3>
           <p>{{ p.route }}</p>
         </div>
-        <span class="cs-arrow" aria-hidden="true">›</span>
+        <span class="cs-arrow" aria-hidden="true"><IconLine name="chevron-right" /></span>
       </NuxtLink>
     </div>
   </div>
@@ -38,14 +38,14 @@ const pages = PAGE_MANIFEST_LIST
   animation: cs-fade-in .4s var(--ease-soft) both; animation-delay: var(--stagger, 0ms);
   transition: transform .3s var(--ease-soft), box-shadow .3s, border-color .3s;
 }
-.cs-card:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(var(--black-rgb),.06); border-color: var(--primary); }
+.cs-card:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(var(--black-rgb),.06); border-color: var(--color-action); }
 .cs-card:active { transform: scale(.98); }
-.cs-card:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+.cs-card:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
 .cs-icon { font-size: 1.8rem; flex-shrink: 0; width: 40px; text-align: center; }
 .cs-card div { flex: 1; min-width: 0; }
 .cs-card h3 { margin: 0; font-size: .95rem; font-weight: 600; }
 .cs-card p { margin: var(--space-1) 0 0; font-size: .78rem; color: var(--muted); font-family: 'SF Mono', monospace; }
-.cs-arrow { font-size: 1.4rem; font-weight: 300; color: var(--muted); flex-shrink: 0; opacity: .4; transition: opacity .2s, transform .2s var(--ease-soft); }
+.cs-arrow { font-size: 1.1rem; color: var(--muted); flex-shrink: 0; opacity: .4; transition: opacity .2s, transform .2s var(--ease-soft); display: inline-flex; align-items: center; justify-content: center; }
 .cs-card:hover .cs-arrow { opacity: .8; transform: translateX(3px); }
 @keyframes cs-fade-in { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
 .dark .cs-card { background: var(--card); border-color: rgba(var(--white-rgb),.06); }

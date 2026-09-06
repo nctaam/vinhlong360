@@ -784,15 +784,14 @@ describe('Tri-Region color contract', () => {
   // đường UGC vừa sửa. Site đang noindex nên chưa có mặt tiền để khai thác, nhưng
   // PHẢI xong trước khi public.
   //
-  // Mốc dời trước đó 96bfba4c → 358fe697 (2026-08-05): thêm devDependency `axe-core` để
-  // R30.6 có nguồn sinh axe-report.json — trước đó cổng hard-ratchet ấy chưa
-  // từng chạy lần nào. Đây là thay đổi toolchain CÓ CHỦ ĐÍCH, chủ dự án duyệt;
-  // khác biệt so với mốc cũ đúng một dòng. Chốt chặn giữ nguyên tác dụng: mọi
-  // dependency thêm sau đây vẫn làm test đỏ cho tới khi có người dời mốc và
-  // giải trình.
+  // Mốc dời trước đó 358fe697 → 98b8649e (2026-08-25): cập nhật dependency;
+  // Mốc dời 98b8649e → 0c060e56 (2026-09-04): ghim phiên bản TypeScript 5.9.3
+  // (commit 705a9701/0c060e56) theo quyết định của chủ dự án; khác biệt đúng một dòng.
+  // Chốt chặn giữ nguyên tác dụng: mọi dependency thêm sau đây vẫn làm test đỏ
+  // cho tới khi có người dời mốc và giải trình.
   it('keeps dependency declarations identical to the remediation base', async () => {
     const [{ stdout: baselineSource }, currentSource] = await Promise.all([
-      execFileAsync('git', ['show', '98b8649e:web-nuxt/package.json'], { cwd: root }),
+      execFileAsync('git', ['show', '0c060e56:web-nuxt/package.json'], { cwd: root }),
       readFile(resolve(root, 'web-nuxt/package.json'), 'utf8'),
     ])
     const baseline = JSON.parse(baselineSource)
@@ -815,7 +814,7 @@ describe('Tri-Region color contract', () => {
 
   it('keeps package-lock.json identical to the remediation base', async () => {
     const [{ stdout: baseline }, current] = await Promise.all([
-      execFileAsync('git', ['show', '98b8649e:web-nuxt/package-lock.json'], { cwd: root }),
+      execFileAsync('git', ['show', '0c060e56:web-nuxt/package-lock.json'], { cwd: root }),
       readFile(resolve(root, 'web-nuxt/package-lock.json'), 'utf8'),
     ])
 

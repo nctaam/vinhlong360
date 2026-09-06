@@ -20,104 +20,104 @@
 }
 
 /* ScrollToTop */
-.dark .scroll-top { background: var(--glass-bg-heavy); backdrop-filter: var(--glass); -webkit-backdrop-filter: var(--glass); border-color: var(--line); box-shadow: var(--shadow-md); color: var(--primary-fg); }
+.dark .scroll-top { background: var(--glass-bg-heavy); backdrop-filter: var(--glass); -webkit-backdrop-filter: var(--glass); border-color: var(--line); box-shadow: var(--shadow-md); color: var(--color-action); }
 .dark .scroll-top:hover { box-shadow: var(--shadow-lg); }
 
 /* ShareButton */
 .dark .share-btn { background: var(--glass-bg-heavy); backdrop-filter: var(--glass); -webkit-backdrop-filter: var(--glass); border-color: var(--line); }
-.dark .share-btn:hover { background: rgba(255,255,255,.06); }
+.dark .share-btn:hover { background: rgba(var(--white-rgb), .06); }
 
 /* PostCard */
-.dark .post-entity-link { background: rgba(255,255,255,.06); }
-.dark .post-entity-link:hover { background: rgba(255,255,255,.1); }
+.dark .post-entity-link { background: rgba(var(--white-rgb), .06); }
+.dark .post-entity-link:hover { background: rgba(var(--white-rgb), .1); }
 
 /* Breadcrumb */
-.dark .breadcrumb a:hover { background: rgba(255,255,255,.06); }
+.dark .breadcrumb a:hover { background: rgba(var(--white-rgb), .06); }
 
 /* SearchAutocomplete — lift type/place label contrast on dark surfaces
    (base uses --primary-fg / --muted which can dip below 4.5:1 on dark hover) */
-.dark .ac-type { color: rgba(255,255,255,.75); font-weight: var(--weight-semibold); }
-.dark .ac-place { color: rgba(255,255,255,.7); }
+.dark .ac-type { color: rgba(var(--white-rgb), .75); font-weight: var(--weight-semibold); }
+.dark .ac-place { color: rgba(var(--white-rgb), .7); }
 
 /* ── 404 catch-all ([...slug]) ── */
-.dark .nf-search input { background: rgba(255,255,255,.05); border-color: rgba(255,255,255,.1); color: var(--ink); }
-.dark .nf-search input:focus-visible { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(var(--accent-rgb), .15); }
-.dark .nf-search input::placeholder { color: rgba(255,255,255,.35); }
-.dark .nf-btn-outline { border-color: var(--accent); color: var(--accent); }
+.dark .nf-search input { background: rgba(var(--white-rgb), .05); border-color: rgba(var(--white-rgb), .1); color: var(--ink); }
+.dark .nf-search input:focus-visible { border-color: var(--color-action); box-shadow: 0 0 0 3px rgba(var(--color-action-rgb), .15); }
+.dark .nf-search input::placeholder { color: var(--color-text-muted); }
+.dark .nf-btn-outline { border-color: var(--color-action); color: var(--color-action); }
 
 /* ── Post detail (bai-viet/[id]) ── */
-.dark .comment-form { background: rgba(255,255,255,.04); border-color: rgba(255,255,255,.08); }
-.dark .comment-form:focus-within { background: rgba(255,255,255,.06); border-color: var(--primary-fg); box-shadow: 0 0 0 3px rgba(var(--primary-rgb), .15); }
+.dark .comment-form { background: rgba(var(--white-rgb), .04); border-color: rgba(var(--white-rgb), .08); }
+.dark .comment-form:focus-within { background: rgba(var(--white-rgb), .06); border-color: var(--color-action); box-shadow: 0 0 0 3px rgba(var(--color-action-rgb), .15); }
 .dark .comment-form .input { color: var(--ink); }
-.dark .comment-form .input::placeholder { color: rgba(255,255,255,.35); }
-.dark .comment-item { border-color: rgba(255,255,255,.06); }
-.dark .comment-item:hover { background: rgba(255,255,255,.03); }
+.dark .comment-form .input::placeholder { color: var(--color-text-muted); }
+.dark .comment-item { border-color: rgba(var(--white-rgb), .06); }
+.dark .comment-item:hover { background: rgba(var(--white-rgb), .03); }
 
 /* ── Map (ban-do) ── */
-.dark #mapContainer { border-color: rgba(255,255,255,.08); box-shadow: var(--shadow-md); }
+.dark #mapContainer { border-color: rgba(var(--white-rgb), .08); box-shadow: var(--shadow-md); }
 .dark #mapContainer:hover { box-shadow: var(--shadow-lg); }
 .dark .maplibregl-canvas { filter: brightness(.8) contrast(1.1) invert(1) hue-rotate(180deg); }
 .dark .maplibregl-popup-content { filter: invert(1) hue-rotate(180deg); }
 
 /* ── Ward hub (xa-phuong/[id]) ── */
-.dark .wp-card { border-color: rgba(255,255,255,.08); }
+.dark .wp-card { border-color: rgba(var(--white-rgb), .08); }
 .dark .wp-card:hover { box-shadow: var(--shadow-lg); }
-.dark .wp-contact-item { border-color: rgba(255,255,255,.06); }
-.dark .wp-contact-main { background: rgba(255,255,255,.04); }
-.dark .wp-fac { border-color: rgba(255,255,255,.06); }
-.dark .wp-fac:hover { background: rgba(255,255,255,.04); }
-.dark .wp-map-btn { background: rgba(255,255,255,.05); border-color: rgba(255,255,255,.08); }
-.dark .wp-map-btn:hover { background: rgba(255,255,255,.08); }
-.dark .wp-map-container { border-color: rgba(255,255,255,.08); }
+.dark .wp-contact-item { border-color: rgba(var(--white-rgb), .06); }
+.dark .wp-contact-main { background: rgba(var(--white-rgb), .04); }
+.dark .wp-fac { border-color: rgba(var(--white-rgb), .06); }
+.dark .wp-fac:hover { background: rgba(var(--white-rgb), .04); }
+.dark .wp-map-btn { background: rgba(var(--white-rgb), .05); border-color: rgba(var(--white-rgb), .08); }
+.dark .wp-map-btn:hover { background: rgba(var(--white-rgb), .08); }
+.dark .wp-map-container { border-color: rgba(var(--white-rgb), .08); }
 
 /* ── Itinerary detail (lich-trinh/[id]) ── */
-.dark .step-card { border-color: rgba(255,255,255,.08); }
-.dark .step-card:hover { border-color: rgba(255,255,255,.15); box-shadow: var(--shadow-md); }
-.dark .route-leg-line { background: rgba(255,255,255,.1); }
-.dark .route-map { border-color: rgba(255,255,255,.08); box-shadow: var(--shadow-md); }
+.dark .step-card { border-color: rgba(var(--white-rgb), .08); }
+.dark .step-card:hover { border-color: rgba(var(--white-rgb), .15); box-shadow: var(--shadow-md); }
+.dark .route-leg-line { background: rgba(var(--white-rgb), .1); }
+.dark .route-map { border-color: rgba(var(--white-rgb), .08); box-shadow: var(--shadow-md); }
 
 /* ── Itinerary list (lich-trinh/index) ── */
-.dark .saved-section { border-bottom-color: rgba(255,255,255,.08); }
-.dark .js-item { border-color: rgba(255,255,255,.08); }
+.dark .saved-section { border-bottom-color: rgba(var(--white-rgb), .08); }
+.dark .js-item { border-color: rgba(var(--white-rgb), .08); }
 .dark .js-item:hover { box-shadow: var(--shadow-sm); }
 
 /* ── Create itinerary (tao-lich-trinh) ── */
-.dark .picker-item:hover { background: rgba(255,255,255,.05); }
+.dark .picker-item:hover { background: rgba(var(--white-rgb), .05); }
 .dark .stop-card:hover { box-shadow: var(--shadow-md); }
 
 /* ── Routes (tuyen-duong) ── */
-.dark .route-card { border-color: rgba(255,255,255,.08); }
-.dark .route-card:hover { border-color: rgba(255,255,255,.15); box-shadow: var(--shadow-lg); }
-.dark .route-tips { background: rgba(255,255,255,.04); }
-.dark .route-stops li:hover { background: rgba(255,255,255,.03); }
+.dark .route-card { border-color: rgba(var(--white-rgb), .08); }
+.dark .route-card:hover { border-color: rgba(var(--white-rgb), .15); box-shadow: var(--shadow-lg); }
+.dark .route-tips { background: rgba(var(--white-rgb), .04); }
+.dark .route-stops li:hover { background: rgba(var(--white-rgb), .03); }
 
 /* ── Search (tim-kiem) ── */
-.dark .quick-pick { border-color: rgba(255,255,255,.08); }
-.dark .quick-pick:hover { border-color: var(--primary-fg); box-shadow: var(--shadow-md); }
+.dark .quick-pick { border-color: rgba(var(--white-rgb), .08); }
+.dark .quick-pick:hover { border-color: var(--color-action); box-shadow: var(--shadow-md); }
 
 /* ── Seasonal (theo-mua) ── */
-.dark .season-badge { background: rgba(0,0,0,.7); }
+.dark .season-badge { background: rgba(var(--black-rgb), .7); }
 
 /* ── Community (cong-dong) ── */
 .dark .sidebar-card:hover { box-shadow: var(--shadow-md); }
-.dark .report-entity-card { background: rgba(255,255,255,.04); }
+.dark .report-entity-card { background: rgba(var(--white-rgb), .04); }
 
 /* ── Directory (danh-ba) ── */
-.dark .fac { border-color: rgba(255,255,255,.08); }
-.dark .fac:hover { border-color: rgba(255,255,255,.15); box-shadow: var(--shadow-md); }
+.dark .fac { border-color: rgba(var(--white-rgb), .08); }
+.dark .fac:hover { border-color: rgba(var(--white-rgb), .15); box-shadow: var(--shadow-md); }
 .dark .dir-disclaimer { background: rgba(var(--accent-rgb), .08); border-color: rgba(var(--accent-rgb), .25); }
 
 /* ── Contact (lien-he) ── */
-.dark .contact-card { border-color: rgba(255,255,255,.08); }
-.dark .contact-card:hover { border-color: rgba(255,255,255,.15); box-shadow: var(--shadow-lg); }
-.dark .card-claim { background: color-mix(in srgb, var(--accent) 6%, var(--card)); border-color: rgba(255,255,255,.12); }
-.dark .card-note { color: rgba(255,255,255,.6) !important; }
+.dark .contact-card { border-color: rgba(var(--white-rgb), .08); }
+.dark .contact-card:hover { border-color: rgba(var(--white-rgb), .15); box-shadow: var(--shadow-lg); }
+.dark .card-claim { background: color-mix(in srgb, var(--accent) 6%, var(--card)); border-color: rgba(var(--white-rgb), .12); }
+.dark .card-note { color: rgba(var(--white-rgb), .6) !important; }
 
 /* ── Profile (nguoi-dung/[id]) ── */
-.dark .profile-cover { border-color: rgba(255,255,255,.06); }
-.dark .profile-stats { border-color: rgba(255,255,255,.06); }
-.dark .stat-item:hover { background: rgba(255,255,255,.05); }
-.dark .profile-tabs { border-color: rgba(255,255,255,.08); }
+.dark .profile-cover { border-color: rgba(var(--white-rgb), .06); }
+.dark .profile-stats { border-color: rgba(var(--white-rgb), .06); }
+.dark .stat-item:hover { background: rgba(var(--white-rgb), .05); }
+.dark .profile-tabs { border-color: rgba(var(--white-rgb), .08); }
 
 /* ── Explore by interest (kham-pha/[interest]) ── */
 .dark .interest-nav .chip.active { box-shadow: var(--shadow-sm); }
@@ -125,34 +125,34 @@
 /* ── Admin: users ── */
 .dark .status-active { background: rgba(var(--secondary-rgb), .18); color: var(--secondary-fg); }
 .dark .status-banned { background: rgba(var(--color-error-rgb), .16); color: var(--error); }
-.dark .admin-select-inline { background: rgba(255,255,255,.05); border-color: rgba(255,255,255,.1); color: var(--ink); }
+.dark .admin-select-inline { background: rgba(var(--white-rgb), .05); border-color: rgba(var(--white-rgb), .1); color: var(--ink); }
 
 /* ── Admin: stats (thong-ke) ── */
-.dark .stat-panel { border-color: rgba(255,255,255,.08); }
+.dark .stat-panel { border-color: rgba(var(--white-rgb), .08); }
 .dark .stat-panel:hover { box-shadow: var(--shadow-md); }
 
 /* ── Admin: reports (bao-cao) ── */
-.dark .status-pending { background: rgba(var(--accent-rgb), .18); color: var(--accent-light, #f59e0b); }
+.dark .status-pending { background: rgba(var(--accent-rgb), .18); color: var(--color-warning); }
 .dark .status-resolved { background: rgba(var(--secondary-rgb), .18); color: var(--secondary-fg); }
-.dark .status-dismissed { background: rgba(255,255,255,.06); color: rgba(255,255,255,.4); }
+.dark .status-dismissed { background: rgba(var(--white-rgb), .06); color: rgba(var(--white-rgb), .4); }
 
 /* ── Homepage hero + category grid ── */
 /* hf-card (glass feature card) keeps glass in dark. hero-pill (redesigned → text-link index),
    hero-stats (→ hairline contents-strip) and cat-tile (→ per-category PHOTO tiles) were
    rebuilt: they must NOT get a dark `background` override — the shorthand erases the tile
    image (leaving a blank dark box) and boxes the contents-strip. Their own rules handle dark. */
-.dark .hf-card { background: rgba(255,255,255,.10); border-color: rgba(255,255,255,.20); }
-.dark .hf-card:hover { background: rgba(255,255,255,.16); }
+.dark .hf-card { background: rgba(var(--white-rgb), .10); border-color: rgba(var(--white-rgb), .20); }
+.dark .hf-card:hover { background: rgba(var(--white-rgb), .16); }
 
 /* Section headings */
 .dark .home .section-head h2 { color: var(--ink); }
-.dark .home .section-head .section-link { color: var(--primary-fg); }
+.dark .home .section-head .section-link { color: var(--color-action); }
 
 /* Event cards */
 /* Cùng vết M3 residue với .spotlight ở dưới: gỡ nền để .event-mini không thành
    hòn đảo xám tím duy nhất sau khi .spotlight trở về --card. */
-.dark .event-mini { border-color: rgba(255,255,255,.14); }
-.dark .event-mini:hover { border-color: var(--primary-fg); }
+.dark .event-mini { border-color: rgba(var(--white-rgb), .14); }
+.dark .event-mini:hover { border-color: var(--color-action); }
 .dark .event-mini h3 { color: var(--ink); }
 .dark .ec-countdown { color: var(--accent-text); background: rgba(var(--accent-rgb), .12); }
 
@@ -162,12 +162,12 @@
    = --night-surface #111D1B, đúng pattern card-tối-hơn-band của cả site
    (cards.css:138) và khớp .cspot vốn không có override dark.
    .spot-kicker 3.35 → 5.79; .spot-sum vốn sát mép 4.50 → 7.80. */
-.dark .spotlight { border-color: rgba(255,255,255,.16); }
+.dark .spotlight { border-color: rgba(var(--white-rgb), .16); }
 .dark .spot-body { color: var(--ink); }
 
 /* Quán ngon list */
-.dark .top-place { border-color: rgba(255,255,255,.10); }
-.dark .top-place:hover { background: rgba(255,255,255,.08); }
+.dark .top-place { border-color: rgba(var(--white-rgb), .10); }
+.dark .top-place:hover { background: rgba(var(--white-rgb), .08); }
 .dark .top-place h3 { color: var(--ink); }
 .dark .top-place .tp-reviews { color: var(--muted); }
 
@@ -175,21 +175,21 @@
 .dark .section-head p { color: var(--muted); }
 
 /* ── Admin: data quality ── */
-.dark .dq-diff-item { background: rgba(255,255,255,.04); }
-.dark .dq-apply-result { background: rgba(33,150,83,.1); border-color: var(--primary); color: var(--primary); }
-.dark .dq-skipped-list { background: rgba(230,126,34,.06); }
+.dark .dq-diff-item { background: rgba(var(--white-rgb), .04); }
+.dark .dq-apply-result { background: rgba(var(--color-success-rgb), .1); border-color: var(--color-success); color: var(--color-success); }
+.dark .dq-skipped-list { background: rgba(var(--color-warning-rgb), .06); }
 
 /* ── HeroIllustration (moved from scoped :global(.dark) — see component comment) ── */
 .dark .hero-illustration .motif { color: var(--text-on-dark); opacity: .08; }
 
 /* ── SearchAutocomplete ── */
 .dark .ac-chip { background: var(--glass-subtle); border-color: var(--glass-border); }
-.dark .ac-chip:hover { background: var(--overlay-light); border-color: rgba(255,255,255,.2); }
-.dark .ac-empty-title { color: rgba(255,255,255,.9); }
+.dark .ac-chip:hover { background: var(--overlay-light); border-color: rgba(var(--white-rgb), .2); }
+.dark .ac-empty-title { color: rgba(var(--white-rgb), .9); }
 
 /* ── NotificationBell ── */
 .dark .notif-retry { background: var(--bg-alt); border-color: var(--line); }
-.dark .notif-retry:hover { border-color: rgba(255,255,255,.2); }
+.dark .notif-retry:hover { border-color: rgba(var(--white-rgb), .2); }
 
 /* ── ReviewCard ── */
 .dark .review-featured { background: rgba(var(--accent-rgb),.06); }
@@ -197,11 +197,11 @@
 /* ── CommandPalette ── */
 .dark .cmd-palette { background: var(--card); }
 .dark .cmd-item.active { background: rgba(var(--blue-rgb),.15); }
-.dark .cmd-footer kbd { background: rgba(255,255,255,.12); color: rgba(255,255,255,.7); }
+.dark .cmd-footer kbd { background: rgba(var(--white-rgb), .12); color: rgba(var(--white-rgb), .7); }
 
 /* ── Sự kiện ── */
 .dark .ical-btn { background: var(--card); border-color: var(--line); color: var(--ink); }
-.dark .ical-btn:hover { background: rgba(255,255,255,.08); }
+.dark .ical-btn:hover { background: rgba(var(--white-rgb), .08); }
 
 /* Explicit and system contrast preferences stay on semantic Nocturne tokens. */
 html[data-high-contrast="true"].dark {
@@ -224,10 +224,10 @@ html[data-high-contrast="true"].dark {
 }
 
 /* ── Lưu trú ── */
-.dark .quick-pick-count { background: rgba(var(--river-rgb, var(--primary-rgb)), .18); color: var(--ink); }
+.dark .quick-pick-count { background: rgba(var(--color-action-rgb), .18); color: var(--ink); }
 .dark .quick-pick.active .quick-pick-count,
-.dark .quick-pick:hover .quick-pick-count { background: rgba(var(--river-rgb, var(--primary-rgb)), .28); }
-.dark .type-pill { background: rgba(var(--river-rgb, var(--primary-rgb)), .16); border-color: rgba(var(--river-rgb, var(--primary-rgb)), .3); }
-.dark .type-pill:hover { background: rgba(var(--river-rgb, var(--primary-rgb)), .24); }
+.dark .quick-pick:hover .quick-pick-count { background: rgba(var(--color-action-rgb), .28); }
+.dark .type-pill { background: rgba(var(--color-action-rgb), .16); border-color: rgba(var(--color-action-rgb), .3); }
+.dark .type-pill:hover { background: rgba(var(--color-action-rgb), .24); }
 .dark .type-count { color: var(--ink); }
 .dark .type-name { color: var(--muted); }

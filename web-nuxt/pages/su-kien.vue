@@ -1,5 +1,5 @@
-﻿<template>
-  <div class="page events-page">
+<template>
+  <div class="page events-page" data-color-system="tri-region-v1">
     <Breadcrumb :items="[{ label: 'Trang chủ', to: '/' }, { label: 'Sự kiện' }]" :json-ld="true" />
 
     <!-- Hero: "Đất này giữ lịch riêng" — contemporary register, amber-toned -->
@@ -8,7 +8,7 @@
         HÔM NAY · <strong>{{ todayGregorianLabel }}</strong> · ÂM LỊCH <span class="lunar-label">{{ todayLunarLabel }}</span>
       </p>
       <div class="catalog-hero-inner">
-        <span class="catalog-hero-icon" aria-hidden="true">🎪</span>
+        <span class="catalog-hero-icon" aria-hidden="true"><IconLine name="calendar" /></span>
         <div>
           <h1>{{ pc('hero_title') }}</h1>
           <p>{{ pc('hero_subtitle') }}</p>
@@ -128,7 +128,7 @@
           :aria-pressed="areaFilter === key"
           @click="areaFilter = areaFilter === key ? 'all' : (key as string)"
         >
-          <span class="quick-pick-icon">{{ meta.emoji }}</span>
+          <span class="quick-pick-icon"><IconLine :name="meta.icon || 'pin'" /></span>
           <span class="quick-pick-label">{{ meta.name }}</span>
           <span class="quick-pick-count">{{ countByArea(key as string) }} sự kiện</span>
         </button>
@@ -138,7 +138,7 @@
     <!-- Editorial: the contemporary register — same land, modern calendar -->
     <section v-once class="page-article reveal">
       <div class="sediment-head sediment-head-first"><h2>Sự kiện tại Vĩnh Long</h2></div>
-      <p>Ngoài các lễ hội truyền thống, vùng Vĩnh Long, Bến Tre và Trà Vinh ngày càng có nhiều sự kiện văn hoá, thể thao và du lịch hiện đại. Hội chợ nông sản, festival ẩm thực, giải chạy marathon, triển lãm nghệ thuật và các chương trình xúc tiến du lịch được tổ chức thường xuyên, đặc biệt vào dịp cuối tuần và các ngày lễ lớn.</p>
+      <p>Ngoài các lễ hội truyền thống, các vùng của tỉnh Vĩnh Long hợp nhất (gồm khu vực Bến Tre và Trà Vinh trước 7-2025) ngày càng có nhiều sự kiện văn hoá, thể thao và du lịch hiện đại. Hội chợ nông sản, festival ẩm thực, giải chạy marathon, triển lãm nghệ thuật và các chương trình xúc tiến du lịch được tổ chức thường xuyên, đặc biệt vào dịp cuối tuần và các ngày lễ lớn.</p>
       <blockquote class="pull-quote">Thưởng thức ẩm thực đường phố, xem trình diễn nghề truyền thống, mua sản phẩm OCOP trực tiếp từ nhà sản xuất, hoặc tham gia hoạt động cộng đồng cùng người dân bản địa — cùng một vùng đất, cách hiện đại để gặp nó.</blockquote>
     </section>
 
@@ -195,7 +195,7 @@
             <p v-if="e.summary" class="event-summary">{{ truncateText(e.summary, 120) }}</p>
             <div class="event-meta">
               <span v-if="e.place_name" class="event-place"><IconLine name="pin" /> {{ e.place_name }}</span>
-              <span v-if="getArea(e)" class="event-area">{{ AREA_META[getArea(e)]?.emoji }} {{ AREA_META[getArea(e)]?.name }}</span>
+              <span v-if="getArea(e)" class="event-area"><IconLine :name="AREA_META[getArea(e)]?.icon || 'pin'" /> {{ AREA_META[getArea(e)]?.name }}</span>
               <span v-if="dateRange(e)" class="event-dates"><IconLine name="calendar" /> {{ dateRange(e) }}</span>
             </div>
           </div>
@@ -259,19 +259,19 @@
       <h2>Khám phá thêm</h2>
       <div class="cross-links">
         <NuxtLink to="/le-hoi" class="cross-card">
-          <span class="cross-icon" aria-hidden="true">🎋</span>
+          <span class="cross-icon" aria-hidden="true"><IconLine name="lantern" /></span>
           <div><strong>Lễ hội</strong><p>Truyền thống văn hóa</p></div>
         </NuxtLink>
         <NuxtLink to="/du-lich" class="cross-card">
-          <span class="cross-icon" aria-hidden="true">🌿</span>
+          <span class="cross-icon" aria-hidden="true"><IconLine name="leaf" /></span>
           <div><strong>Du lịch</strong><p>Trải nghiệm miệt vườn</p></div>
         </NuxtLink>
         <NuxtLink to="/lich-trinh" class="cross-card">
-          <span class="cross-icon" aria-hidden="true">🗓️</span>
+          <span class="cross-icon" aria-hidden="true"><IconLine name="calendar" /></span>
           <div><strong>Lịch trình</strong><p>Tuyến đi sẵn</p></div>
         </NuxtLink>
         <NuxtLink to="/ban-do" class="cross-card" no-prefetch>
-          <span class="cross-icon" aria-hidden="true">🗺️</span>
+          <span class="cross-icon" aria-hidden="true"><IconLine name="map" /></span>
           <div><strong>Bản đồ</strong><p>Xem trên bản đồ</p></div>
         </NuxtLink>
       </div>
@@ -300,8 +300,8 @@ useFilterUrl({ vung: areaFilter, trang_thai: statusFilter }, { vung: 'all', tran
 
 const statusFilterOptions = [
   { key: 'all', label: 'Tất cả' },
-  { key: 'upcoming', label: 'Sắp diễn ra', icon: '📅' },
-  { key: 'past', label: 'Đã qua', icon: '📋' },
+  { key: 'upcoming', label: 'Sắp diễn ra', iconName: 'calendar' },
+  { key: 'past', label: 'Đã qua', iconName: 'clipboard-list' },
 ]
 
 const todayStr = new Date().toISOString().slice(0, 10)
@@ -524,6 +524,8 @@ useSeoMeta({
   description: () => pc('seo_description'),
   ogTitle: () => pc('og_title'),
   ogDescription: () => pc('og_description'),
+  ogUrl: () => canonicalUrl('/su-kien'),
+  twitterCard: 'summary_large_image',
 })
 const eventListSchema = computed(() => {
   const items = allEvents.value.slice(0, 30).map((e: Entity, i: number) => ({
@@ -540,7 +542,7 @@ const eventListSchema = computed(() => {
     },
   }))
   if (!items.length) return ''
-  return JSON.stringify({
+  return safeJsonLd({
     '@context': 'https://schema.org',
     '@type': 'ItemList',
     name: 'Sự kiện',
@@ -550,24 +552,59 @@ const eventListSchema = computed(() => {
   })
 })
 
-useHead({
-  script: [{
-    type: 'application/ld+json',
-    innerHTML: JSON.stringify({
-      '@context': 'https://schema.org',
-      '@type': 'BreadcrumbList',
-      itemListElement: [
-        { '@type': 'ListItem', position: 1, name: 'Trang chủ', item: 'https://vinhlong360.vn/' },
-        { '@type': 'ListItem', position: 2, name: 'Sự kiện' },
-      ],
-    }),
-  }],
-})
+useHead(() => {
+  const pageUrl = canonicalUrl('/su-kien')
+  const graphNodes: any[] = [
+    buildWebSiteSchema(),
+    buildOrganizationSchema(),
+    {
+      '@type': 'CollectionPage',
+      '@id': `${pageUrl}#collection`,
+      name: 'Sự kiện & Hội chợ Vĩnh Long',
+      description: 'Hội chợ, triển lãm, ngày hội nông sản và sự kiện văn hóa nghệ thuật tại Vĩnh Long.',
+      url: pageUrl,
+      numberOfItems: allEvents.value.length,
+      isPartOf: { '@id': `${SITE_URL}/#website` },
+      about: {
+        '@type': 'Thing',
+        name: 'Sự kiện văn hóa và hội chợ thương mại Vĩnh Long',
+        description: 'Các hoạt động sự kiện xúc tiến thương mại, ngày hội văn hóa và festival nghệ thuật tại Vĩnh Long.',
+      },
+      speakable: buildSpeakableSpecification(['.catalog-hero h1', '.catalog-lead', '.register-toggle']),
+    },
+  ]
 
-useHead(() => ({
-  link: [{ rel: 'canonical', href: canonicalUrl('/su-kien') }],
-  script: eventListSchema.value ? [{ type: 'application/ld+json', innerHTML: eventListSchema.value }] : [],
-}))
+  const faqItems: FaqItem[] = [
+    {
+      q: 'Vĩnh Long thường tổ chức những sự kiện hoặc hội chợ lớn nào trong năm?',
+      a: 'Các sự kiện tiêu biểu gồm Ngày hội Du lịch Vĩnh Long, Ngày đồng hành cùng gốm đỏ Mang Thít, Hội chợ Xúc tiến Thương mại - Nông nghiệp cùng các giải đua ghe Ngo truyền thống trên sông.',
+    },
+    {
+      q: 'Người dân và du khách có thể theo dõi lịch sự kiện sắp diễn ra ở đâu?',
+      a: 'Trang Sự Kiện trên VinhLong360 cập nhật liên tục các sự kiện đang diễn ra và sắp khai mạc, kèm tiện ích xuất file .ics nhắc hẹn trực tiếp vào điện thoại.',
+    },
+    {
+      q: 'Tham gia các sự kiện văn hóa và hội chợ tại Vĩnh Long có cần mua vé không?',
+      a: 'Đa số các sự kiện văn hóa cộng đồng, hội chợ xúc tiến thương mại và ngày hội du lịch tại Vĩnh Long đều mở cửa miễn phí phục vụ nhân dân và du khách.',
+    },
+  ]
+  const faqNode = buildFaqPageSchema(faqItems, `${pageUrl}#faq`)
+  if (faqNode) graphNodes.push(faqNode)
+
+  return {
+    link: [{ rel: 'canonical', href: pageUrl }],
+    script: [
+      {
+        type: 'application/ld+json',
+        innerHTML: safeJsonLd({
+          '@context': 'https://schema.org',
+          '@graph': graphNodes,
+        }),
+      },
+      ...(eventListSchema.value ? [{ type: 'application/ld+json' as const, innerHTML: eventListSchema.value }] : []),
+    ],
+  }
+})
 </script>
 
 <!-- events.css nạp theo route (bỏ khỏi global entry.css) — dùng .event-*/.cal-*/.toggle-btn -->

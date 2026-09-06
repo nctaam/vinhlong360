@@ -1,6 +1,6 @@
-﻿<template>
-  <div class="page events-page">
-    <Breadcrumb :items="[{ label: 'Trang chủ', to: '/' }, { label: 'Lễ hội' }]" />
+<template>
+  <div class="page events-page" data-color-system="tri-region-v1">
+    <Breadcrumb :items="[{ label: 'Trang chủ', to: '/' }, { label: 'Lễ hội' }]" :json-ld="true" />
 
     <!-- Hero: "Đất này giữ lịch riêng" — lunar-first, time-aware -->
     <section class="catalog-hero cat-festival register-le-hoi">
@@ -8,7 +8,7 @@
         HÔM NAY · <strong>{{ todayGregorianLabel }}</strong> · ÂM LỊCH <span class="lunar-label">{{ todayLunarLabel }}</span>
       </p>
       <div class="catalog-hero-inner">
-        <span class="catalog-hero-icon" aria-hidden="true">🎋</span>
+        <span class="catalog-hero-icon" aria-hidden="true"><IconLine name="lantern" /></span>
         <div>
           <h1>{{ pc('hero_title') }}</h1>
           <p>{{ pc('hero_subtitle') }}</p>
@@ -144,7 +144,7 @@
          so the strongest lines aren't buried in dense paragraph body text. -->
     <section v-once class="page-article reveal">
       <div class="sediment-head sediment-head-first"><h2>Văn hoá lễ hội Vĩnh Long</h2></div>
-      <p>Vùng đất Vĩnh Long, Bến Tre và Trà Vinh là nơi giao thoa của ba nền văn hoá: Kinh, Khmer và Hoa. Mỗi cộng đồng mang đến một hệ thống lễ hội riêng biệt, tạo nên bức tranh văn hoá đa dạng hiếm có trong cả nước.</p>
+      <p>Vùng đất tỉnh Vĩnh Long hợp nhất (3 vùng trước 7-2025) là nơi giao thoa của ba nền văn hoá: Kinh, Khmer và Hoa. Mỗi cộng đồng mang đến một hệ thống lễ hội riêng biệt, tạo nên bức tranh văn hoá đa dạng hiếm có trong cả nước.</p>
       <blockquote class="pull-quote">Từ đình miếu Kinh ven sông đến chùa Khmer tháp nhọn, từ hội quán Hoa rực rỡ đèn lồng đến giỗ kỵ danh nhân — lễ hội ở đây không chỉ là dịp vui mà là sợi dây kết nối cộng đồng qua nhiều thế hệ.</blockquote>
 
       <!-- Ba dòng lễ hội: makes the tri-ethnic framing visible at a glance -->
@@ -154,7 +154,7 @@
 
       <div class="sediment-head"><h2>Lễ hội tiêu biểu</h2></div>
       <p><strong>Lễ Kỳ Yên</strong> là lễ hội phổ biến nhất, tổ chức tại đình làng khắp vùng vào đầu năm âm lịch, cầu cho mưa thuận gió hoà, mùa màng bội thu.</p>
-      <blockquote class="pull-quote">Ok Om Bok — lễ Cúng Trăng của người Khmer Trà Vinh, tổ chức vào rằm tháng 10 âm lịch với đua ghe ngo trên sông Maspéro.</blockquote>
+      <blockquote class="pull-quote">Ok Om Bok — lễ Cúng Trăng của người Khmer vùng Trà Vinh (trước 7-2025), tổ chức vào rằm tháng 10 âm lịch với đua ghe ngo trên sông Maspéro.</blockquote>
       <p><strong>Lễ Nghinh Ông</strong> diễn ra ở các vùng ven biển, tôn vinh Cá Ông (cá voi) — vị thần bảo hộ ngư dân. Ngoài ra còn có các lễ giỗ danh nhân như giỗ Thủ khoa Bùi Hữu Nghĩa (Vĩnh Long), giỗ cụ Phan Thanh Giản, và nhiều lễ hội nông nghiệp như Hội trái cây ngon, Lễ hội bánh dân gian Nam Bộ. Mỗi lễ hội thường kéo dài 2–3 ngày với phần lễ trang nghiêm và phần hội sôi nổi.</p>
 
       <div class="sediment-head"><h2>Đi lễ hội — cần biết gì?</h2></div>
@@ -181,8 +181,24 @@
         aria-label="Lọc theo trạng thái"
         @update:model-value="v => statusFilter = v[0] || 'all'"
       />
-      <!-- declutter-2 A5: FilterChips khu-vực đã bỏ — quick-picks blob (đầu trang, bind
-           cùng areaFilter) là 1 đường filter khu vực duy nhất. -->
+      <div v-if="activeFilterCount > 0" class="active-filter-ledger" role="region" aria-label="Bộ lọc đang áp dụng">
+        <span class="afl-heading">Đang lọc:</span>
+        <div class="afl-chips">
+          <span v-if="q.trim()" class="afl-chip">
+            <span class="afl-text">Tìm: "{{ q.trim() }}"</span>
+            <button type="button" class="afl-remove" aria-label="Xóa từ khóa tìm kiếm" @click="q = ''"><IconLine name="x" aria-hidden="true" /></button>
+          </span>
+          <span v-if="statusFilter !== 'all'" class="afl-chip">
+            <span class="afl-text">{{ STATUS_LABEL[statusFilter] || statusFilter }}</span>
+            <button type="button" class="afl-remove" aria-label="Bỏ lọc trạng thái" @click="statusFilter = 'all'"><IconLine name="x" aria-hidden="true" /></button>
+          </span>
+          <span v-if="areaFilter !== 'all'" class="afl-chip">
+            <span class="afl-text">{{ AREA_META[areaFilter]?.name || areaFilter }}</span>
+            <button type="button" class="afl-remove" aria-label="Bỏ lọc khu vực" @click="areaFilter = 'all'"><IconLine name="x" aria-hidden="true" /></button>
+          </span>
+          <button type="button" class="afl-clear-all" @click="clearFilters">Xóa tất cả</button>
+        </div>
+      </div>
     </div>
 
     <div class="view-toggle" role="group" aria-label="Chế độ hiển thị">
@@ -232,7 +248,7 @@
       </div>
       <EmptyState v-else icon-name="lantern" title="Không tìm thấy lễ hội" message="Thử thay đổi trạng thái, khu vực hoặc từ khóa tìm kiếm.">
         <template #actions>
-          <button type="button" class="btn btn-outline" @click="statusFilter = 'all'; areaFilter = 'all'; q = ''">Xóa bộ lọc</button>
+          <button type="button" class="btn btn-outline" @click="clearFilters()"><IconLine name="x" aria-hidden="true" /> Xóa bộ lọc</button>
           <button type="button" class="btn btn-outline" @click="view = 'calendar'"><IconLine name="calendar" /> Xem lịch</button>
           <NuxtLink to="/su-kien" class="btn btn-outline"><IconLine name="megaphone" /> Sự kiện</NuxtLink>
         </template>
@@ -280,19 +296,19 @@
       <h2>Khám phá thêm</h2>
       <div class="cross-links">
         <NuxtLink to="/su-kien" class="cross-card">
-          <span class="cross-icon" aria-hidden="true">🎪</span>
+          <span class="cross-icon" aria-hidden="true"><IconLine name="lantern" /></span>
           <div><strong>Sự kiện</strong><p>Festival, hội chợ</p></div>
         </NuxtLink>
         <NuxtLink to="/du-lich" class="cross-card">
-          <span class="cross-icon" aria-hidden="true">🌿</span>
+          <span class="cross-icon" aria-hidden="true"><IconLine name="leaf" /></span>
           <div><strong>Du lịch</strong><p>Trải nghiệm miệt vườn</p></div>
         </NuxtLink>
         <NuxtLink to="/lich-trinh" class="cross-card">
-          <span class="cross-icon" aria-hidden="true">🗓️</span>
+          <span class="cross-icon" aria-hidden="true"><IconLine name="calendar" /></span>
           <div><strong>Lịch trình</strong><p>Tuyến đi sẵn</p></div>
         </NuxtLink>
         <NuxtLink to="/ban-do" class="cross-card" no-prefetch>
-          <span class="cross-icon" aria-hidden="true">🗺️</span>
+          <span class="cross-icon" aria-hidden="true"><IconLine name="map" /></span>
           <div><strong>Bản đồ</strong><p>Xem trên bản đồ</p></div>
         </NuxtLink>
       </div>
@@ -328,9 +344,23 @@ useFilterUrl({ vung: areaFilter, trang_thai: statusFilter }, { vung: 'all', tran
 
 const statusFilterOptions = [
   { key: 'all', label: 'Tất cả' },
-  { key: 'now', label: 'Đang diễn ra', icon: '🔴' },
-  { key: 'soon', label: 'Sắp khai mạc', icon: '🟡' },
+  { key: 'now', label: 'Đang diễn ra', iconName: 'flame' },
+  { key: 'soon', label: 'Sắp khai mạc', iconName: 'clock' },
 ]
+
+const activeFilterCount = computed(() => {
+  let n = 0
+  if (areaFilter.value !== 'all') n++
+  if (statusFilter.value !== 'all') n++
+  if (q.value.trim()) n++
+  return n
+})
+
+function clearFilters() {
+  areaFilter.value = 'all'
+  statusFilter.value = 'all'
+  q.value = ''
+}
 
 const { data, error: fetchError } = await useAsyncData('festivals', () =>
   apiFetch<{ events: Entity[] }>('/api/events?limit=200&include_past=true')
@@ -566,6 +596,8 @@ useSeoMeta({
   description: () => pc('seo_description'),
   ogTitle: () => pc('og_title'),
   ogDescription: () => pc('og_description'),
+  ogUrl: canonicalUrl('/le-hoi'),
+  twitterCard: 'summary_large_image',
 })
 
 const festivalListSchema = computed(() => {
@@ -583,7 +615,7 @@ const festivalListSchema = computed(() => {
     },
   }))
   if (!items.length) return ''
-  return JSON.stringify({
+  return safeJsonLd({
     '@context': 'https://schema.org',
     '@type': 'ItemList',
     name: 'Lễ hội truyền thống',
@@ -593,33 +625,58 @@ const festivalListSchema = computed(() => {
   })
 })
 
-useHead({
-  link: [{ rel: 'canonical', href: canonicalUrl('/le-hoi') }],
-  script: [
+useHead(() => {
+  const pageUrl = canonicalUrl('/le-hoi')
+  const graphNodes: any[] = [
+    buildWebSiteSchema(),
+    buildOrganizationSchema(),
     {
-      type: 'application/ld+json',
-      innerHTML: JSON.stringify({
-        '@context': 'https://schema.org',
-        '@type': 'CollectionPage',
-        name: 'Lễ hội truyền thống',
-        description: 'Lễ hội đình miếu, lễ Khmer, Nghinh Ông, giỗ danh nhân — truyền thống văn hóa Vĩnh Long, Bến Tre, Trà Vinh.',
-        url: 'https://vinhlong360.vn/le-hoi',
-        numberOfItems: allEvents.value.length,
-      }),
+      '@type': 'CollectionPage',
+      '@id': `${pageUrl}#collection`,
+      name: 'Lễ hội truyền thống Vĩnh Long',
+      description: 'Lễ hội đình miếu, lễ Khmer, Nghinh Ông, giỗ danh nhân — truyền thống văn hóa tỉnh Vĩnh Long hợp nhất (3 vùng trước 7-2025).',
+      url: pageUrl,
+      numberOfItems: allEvents.value.length,
+      isPartOf: { '@id': `${SITE_URL}/#website` },
+      about: {
+        '@type': 'Thing',
+        name: 'Lễ hội truyền thống Vĩnh Long',
+        description: 'Văn hóa ba dòng sông giao thoa giữa cộng đồng Kinh, Khmer và Hoa.',
+      },
+      speakable: buildSpeakableSpecification(['.page-article', 'h1', '.pull-quote', '.etiquette-box']),
+    },
+  ]
+
+  const faqItems: FaqItem[] = [
+    {
+      q: 'Văn hóa lễ hội Vĩnh Long có những nét đặc trưng gì?',
+      a: 'Vĩnh Long là nơi giao thoa văn hóa độc đáo của ba dân tộc Kinh, Khmer và Hoa với các lễ hội đình miếu Kỳ Yên, lễ hội Ok Om Bok cúng trăng, Chôl Chnăm Thmây và lễ hội Nghinh Ông miền duyên hải.',
     },
     {
-      type: 'application/ld+json',
-      innerHTML: JSON.stringify({
-        '@context': 'https://schema.org',
-        '@type': 'BreadcrumbList',
-        itemListElement: [
-          { '@type': 'ListItem', position: 1, name: 'Trang chủ', item: 'https://vinhlong360.vn/' },
-          { '@type': 'ListItem', position: 2, name: 'Lễ hội' },
-        ],
-      }),
+      q: 'Du khách tham gia lễ hội ở Vĩnh Long cần lưu ý những quy tắc gì?',
+      a: 'Hầu hết các lễ hội truyền thống mở cửa tự do không thu phí. Du khách nên mặc trang phục lịch sự khi vào chánh điện; tháo giày dép khi vào chùa Khmer và nên tham dự các nghi thức chính vào buổi sáng.',
     },
-    ...(festivalListSchema.value ? [{ type: 'application/ld+json' as const, innerHTML: festivalListSchema.value }] : []),
-  ],
+    {
+      q: 'Làm thế nào để theo dõi lịch diễn ra các lễ hội theo cả âm lịch và dương lịch?',
+      a: 'Trang Lễ hội trên VinhLong360 tích hợp bảng chuyển đổi âm - dương lịch, chu kỳ trăng và tải lịch nhắc sự kiện dạng tập tin .ics về điện thoại tiện lợi.',
+    },
+  ]
+  const faqNode = buildFaqPageSchema(faqItems, `${pageUrl}#faq`)
+  if (faqNode) graphNodes.push(faqNode)
+
+  return {
+    link: [{ rel: 'canonical', href: pageUrl }],
+    script: [
+      {
+        type: 'application/ld+json',
+        innerHTML: safeJsonLd({
+          '@context': 'https://schema.org',
+          '@graph': graphNodes,
+        }),
+      },
+      ...(festivalListSchema.value ? [{ type: 'application/ld+json' as const, innerHTML: festivalListSchema.value }] : []),
+    ],
+  }
 })
 </script>
 
@@ -628,12 +685,12 @@ useHead({
 
 <style>
 .lehoi-badge {
-  background: var(--primary-dark);
+  background: var(--color-brand);
 }
-/* Không cần bản .dark riêng: --primary-dark đã đậm ở cả hai chế độ nên chữ
+/* Không cần bản .dark riêng: --color-brand đã đậm ở cả hai chế độ nên chữ
    trắng đạt 10.12:1, và ranh giới do vòng viền ở .dark .event-date-badge lo. */
 .lehoi-dot {
-  background: var(--primary-dark);
+  background: var(--color-brand);
 }
 
 /* Hero depth & cultural warmth: layered scrim over the festival gradient */
@@ -641,7 +698,7 @@ useHead({
   position: relative;
   background:
     radial-gradient(120% 90% at 12% 0%, rgba(var(--accent-rgb), .07) 0%, transparent 55%),
-    linear-gradient(135deg, rgba(var(--primary-rgb), .06) 0%, rgba(var(--accent-rgb), .08) 100%);
+    linear-gradient(135deg, rgba(var(--color-brand-rgb), .06) 0%, rgba(var(--accent-rgb), .08) 100%);
 }
 .dark .catalog-hero.cat-festival {
   background:
@@ -686,10 +743,10 @@ useHead({
   color: var(--ink-tertiary, var(--muted));
   background: rgba(var(--accent-rgb), .08);
   border-radius: var(--radius-surface);
-  border-left: 3px solid rgba(var(--accent-rgb), .35);
+  border: 1px solid rgba(var(--accent-rgb), .2);
 }
 
-.dark .lehoi-offseason { background: rgba(var(--accent-rgb), .12); border-left-color: rgba(var(--accent-rgb), .5); }
+.dark .lehoi-offseason { background: rgba(var(--accent-rgb), .12); border-color: rgba(var(--accent-rgb), .3); }
 
 /* Thumbnail placeholder colour if image fails / while loading */
 .event-thumb { background: var(--bg-alt); }

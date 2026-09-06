@@ -3,7 +3,7 @@
     <Transition name="rm-fade">
       <div v-if="modal.open" class="rm-overlay" @click.self="close">
         <div class="rm-sheet" role="dialog" aria-modal="true" aria-labelledby="rm-title" ref="sheetEl">
-          <button type="button" class="rm-close" aria-label="Đóng" @click="close">&times;</button>
+          <button type="button" class="rm-close" aria-label="Đóng" @click="close"><IconLine name="x" /></button>
           <div class="rm-head">
             <h3 id="rm-title">Báo cáo nội dung</h3>
             <p class="rm-sub">Chọn lý do và mô tả ngắn. Chúng tôi xử lý theo quy định — không tự động gỡ/khoá.</p>
@@ -45,7 +45,7 @@
 import type { ReportModalState } from '~/composables/useReport'
 
 const modal = useState<ReportModalState>('report-modal', () => ({ open: false, targetType: 'post', targetId: '' }))
-const { authHeaders } = useAuth()
+const { authFetch } = useAuth()
 const { show: showToast } = useToast()
 
 const REASONS = ['Spam/quảng cáo', 'Sai sự thật', 'Xúc phạm/quấy rối', 'Nội dung không phù hợp', 'Vi phạm bản quyền', 'Khác']
@@ -76,9 +76,8 @@ async function submit() {
   if (combined.value.length < 5) return
   submitting.value = true
   try {
-    await $fetch('/api/report', {
+    await authFetch('/api/report', {
       method: 'POST',
-      headers: authHeaders(),
       body: { target_type: modal.value.targetType, target_id: modal.value.targetId, reason: combined.value },
     })
     showToast('Đã gửi báo cáo. Cảm ơn bạn!', 'success')
@@ -102,18 +101,27 @@ async function submit() {
 
 .rm-sheet {
   background: var(--card); width: 100%; max-width: 460px;
-  border-radius: 18px 18px 0 0; padding: var(--space-6);
+  border-radius: 18px 18px 0 0;
+  padding: var(--space-6) var(--space-6) calc(var(--space-6) + env(safe-area-inset-bottom, 0px));
   box-shadow: 0 -8px 40px rgba(var(--black-rgb),.18); position: relative;
+  border: 1px solid var(--line); border-bottom: none;
   /* Flex column + capped height: middle scrolls, actions stay reachable. */
   display: flex; flex-direction: column;
   max-height: min(90vh, calc(100vh - 40px)); overflow: hidden;
 }
-@media (min-width: 560px) { .rm-sheet { border-radius: 18px; box-shadow: 0 12px 48px rgba(var(--black-rgb),.22); } }
+@media (min-width: 560px) {
+  .rm-sheet {
+    border-radius: 18px;
+    border-bottom: 1px solid var(--line);
+    padding-bottom: var(--space-6);
+    box-shadow: 0 12px 48px rgba(var(--black-rgb),.22);
+  }
+}
 
 .rm-head { flex-shrink: 0; }
 .rm-body { flex: 1; min-height: 0; overflow-y: auto; overscroll-behavior-y: contain; }
 
-.rm-close { position: absolute; top: 10px; right: 12px; background: none; border: none; font-size: 1.6rem; line-height: 1; color: var(--muted); cursor: pointer; padding: var(--space-1) var(--space-2); border-radius: 8px; }
+.rm-close { position: absolute; top: 10px; right: 12px; background: none; border: none; font-size: 1.25rem; line-height: 1; color: var(--muted); cursor: pointer; padding: var(--space-1); border-radius: var(--radius-control); display: inline-flex; align-items: center; justify-content: center; min-width: 44px; min-height: 44px; transition: background .2s var(--ease-out), color .2s var(--ease-out); }
 .rm-close:hover { background: var(--bg-warm); color: var(--ink); }
 .rm-sheet h3 { margin: 0 0 4px; font-size: 1.1rem; font-weight: 700; }
 .rm-sub { margin: 0 0 var(--space-4); font-size: .84rem; color: var(--muted); line-height: 1.45; }
@@ -124,17 +132,17 @@ async function submit() {
   border: .5px solid var(--line); background: var(--bg); color: var(--ink); cursor: pointer;
   transition: background .2s, border-color .2s, color .2s, transform .15s var(--ease-soft);
 }
-.rm-chip:hover { border-color: var(--primary); }
+.rm-chip:hover { border-color: var(--color-action); }
 .rm-chip:active { transform: scale(.96); }
-.rm-chip.active { background: var(--primary); color: var(--on-primary); border-color: var(--primary); }
-.rm-chip:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+.rm-chip.active { background: var(--color-action); color: var(--color-on-action); border-color: var(--color-action); }
+.rm-chip:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
 
 .rm-textarea {
   width: 100%; box-sizing: border-box; padding: 11px 14px; border: .5px solid var(--line);
   border-radius: 12px; font: inherit; font-size: .9rem; background: var(--bg); color: var(--ink);
   resize: vertical; min-height: 72px; transition: border-color .2s, box-shadow .2s;
 }
-.rm-textarea:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(var(--primary-rgb),.1); }
+.rm-textarea:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 1px; border-color: var(--color-focus); box-shadow: 0 0 0 3px rgba(var(--color-action-rgb),.18); }
 
 .rm-actions { display: flex; justify-content: flex-end; gap: var(--space-3); margin-top: var(--space-4); flex-shrink: 0; }
 .rm-actions .btn { min-height: 44px; }
@@ -144,7 +152,7 @@ async function submit() {
 .rm-fade-enter-from, .rm-fade-leave-to { opacity: 0; }
 .rm-fade-enter-from .rm-sheet, .rm-fade-leave-to .rm-sheet { transform: translateY(16px); }
 
-.dark .rm-sheet { background: var(--card); }
+.dark .rm-sheet { background: var(--card); border-color: rgba(var(--white-rgb), .12); }
 .dark .rm-chip { background: var(--glass-subtle); border-color: var(--glass-border); }
 .dark .rm-textarea { background: var(--glass-subtle); border-color: var(--glass-border); }
 

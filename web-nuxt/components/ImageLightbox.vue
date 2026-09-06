@@ -136,8 +136,8 @@ onUnmounted(() => {
         <div class="lightbox"
           data-image-surface="image-lightbox" data-source-class="user-uploaded" data-entity-image-policy="no-image-invariant"
           @click.self="close">
-        <button type="button" class="lb-close" aria-label="Đóng" @click="close">&times;</button>
-        <button type="button" v-if="renderableImages.length > 1" class="lb-prev" data-prev aria-label="Ảnh trước" @click="prev">&#8249;</button>
+        <button type="button" class="lb-close" aria-label="Đóng" @click="close"><IconLine name="x" /></button>
+        <button type="button" v-if="renderableImages.length > 1" class="lb-prev" data-prev aria-label="Ảnh trước" @click="prev"><IconLine name="chevron-left" /></button>
         <template v-if="active">
           <img
             v-if="active.url"
@@ -169,7 +169,7 @@ onUnmounted(() => {
             <span v-if="active.credit" data-credit class="lb-credit">{{ active.credit }}</span>
           </span>
         </template>
-        <button type="button" v-if="renderableImages.length > 1" class="lb-next" data-next aria-label="Ảnh tiếp" @click="next">&#8250;</button>
+        <button type="button" v-if="renderableImages.length > 1" class="lb-next" data-next aria-label="Ảnh tiếp" @click="next"><IconLine name="chevron-right" /></button>
         <div class="lb-counter" data-counter aria-live="polite">{{ renderableImages.length ? index + 1 : 0 }} / {{ renderableImages.length }}</div>
         </div>
       </div>

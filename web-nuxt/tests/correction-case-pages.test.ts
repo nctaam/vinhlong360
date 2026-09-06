@@ -291,12 +291,10 @@ describe('the three pages', () => {
     resolve(__dirname, '..', 'pages', 'yeu-cau', name), 'utf8',
   )
 
-  it('leave robots ownership to the launch head', () => {
-    // Indexability is decided once, at the application boundary
-    // (useLaunchSafety); a page declaring robots itself would fork that
-    // ownership, and the launch-head contract rejects it.
+  it('guard crawl budget with noindex on private case intake routes', () => {
+    // Private case workflows must never be crawled or indexed.
     for (const name of ['sua-thong-tin.vue', 'tra-cuu.vue', 'trang-thai.vue']) {
-      expect(page(name), `${name} declares robots itself`).not.toMatch(/robots\s*:/)
+      expect(page(name), `${name} guards crawl budget with noindex`).toContain("robots: 'noindex, nofollow'")
     }
   })
 

@@ -93,6 +93,7 @@ const publicationByItem = computed(() => new Map(
       <button
         v-if="terminal"
         type="button"
+        class="btn btn-primary"
         data-role="request-review"
         @click="emit('request-review')"
       >

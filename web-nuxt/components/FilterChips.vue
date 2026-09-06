@@ -6,6 +6,7 @@ interface FilterOption {
   /** Tên biểu tượng IconLine — thay cho `icon` dạng emoji (B2: thêm đường mới). */
   iconName?: string
   count?: number
+  sublabel?: string
 }
 
 const props = withDefaults(defineProps<{
@@ -41,6 +42,7 @@ function toggle(key: string) {
       <span v-if="f.iconName" class="fc-icon" aria-hidden="true"><IconLine :name="f.iconName" /></span>
       <span v-else-if="f.icon" class="fc-icon" aria-hidden="true">{{ f.icon }}</span>
       <span class="fc-label">{{ f.label }}</span>
+      <span v-if="f.sublabel" class="fc-sublabel">{{ f.sublabel }}</span>
       <span v-if="f.count != null" class="fc-count">{{ f.count }}</span>
     </button>
   </div>
@@ -55,8 +57,15 @@ function toggle(key: string) {
   -webkit-overflow-scrolling: touch;
   scrollbar-width: none;
   padding: var(--space-1) 0;
+  -webkit-mask-image: linear-gradient(to right, black 0%, black calc(100% - 32px), transparent 100%);
+  mask-image: linear-gradient(to right, black 0%, black calc(100% - 32px), transparent 100%);
 }
 .fc-row::-webkit-scrollbar { display: none; }
+.fc-row:focus-within,
+.fc-row:hover {
+  -webkit-mask-image: none;
+  mask-image: none;
+}
 
 .fc-chip {
   flex: 0 0 auto;
@@ -74,18 +83,24 @@ function toggle(key: string) {
   font-weight: var(--weight-medium);
   letter-spacing: .01em;
   cursor: pointer;
-  transition: background-color 150ms, color 150ms, border-color 150ms;
+  transition: background-color 150ms var(--ease-out), color 150ms var(--ease-out), border-color 150ms var(--ease-out), transform 200ms var(--ease-out-expo), box-shadow 200ms var(--ease-out-expo);
   white-space: nowrap;
   min-height: 44px;
 }
 
 .fc-chip:hover {
-  background: rgba(var(--primary-rgb), 0.06);
-  border-color: rgba(var(--primary-rgb), .3);
+  background: rgba(var(--color-action-rgb), 0.06);
+  border-color: rgba(var(--color-action-rgb), .3);
+  transform: translateY(-1px);
+}
+
+.fc-chip:active {
+  transform: scale(.96);
+  transition-duration: .08s;
 }
 
 .fc-chip:focus-visible {
-  outline: 2px solid var(--primary);
+  outline: 2px solid var(--color-focus);
   outline-offset: 2px;
 }
 
@@ -112,12 +127,48 @@ function toggle(key: string) {
 
 .fc-count {
   font-size: var(--text-xs);
-  opacity: 0.7;
+  opacity: 0.75;
   font-weight: var(--weight-normal);
   font-variant-numeric: tabular-nums;
+  padding: 0 6px;
+  min-width: 18px;
+  height: 18px;
+  line-height: 18px;
+  text-align: center;
+  border-radius: var(--radius-full);
+  background: var(--bg-alt);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
-.fc-chip.active .fc-count { opacity: 0.85; }
+.fc-chip.active .fc-count {
+  opacity: 1;
+  background: var(--color-brand-surface);
+  color: var(--color-action);
+  font-weight: var(--weight-semibold);
+}
+
+.fc-sublabel {
+  font-size: var(--text-2xs, 10px);
+  padding: 1px 6px;
+  border-radius: var(--radius-full);
+  background: var(--color-action-surface);
+  color: var(--color-action);
+  font-weight: var(--weight-semibold);
+  margin-inline-start: var(--space-1);
+}
+.fc-chip.active .fc-sublabel {
+  background: color-mix(in srgb, var(--color-on-action, var(--surface-white)) 22%, transparent);
+  color: inherit;
+}
 @media (prefers-reduced-motion: reduce) {
-  .fc-chip { transition: none; }
+  .fc-chip { transition: none; transform: none; }
+  .fc-chip:hover { transform: none; }
+  .fc-chip:active { transform: none; }
+}
+@media (forced-colors: active) {
+  .fc-row { mask-image: none; -webkit-mask-image: none; }
+  .fc-chip { border: 1px solid ButtonText; }
+  .fc-chip.active { border: 2px solid Highlight; }
 }
 </style>

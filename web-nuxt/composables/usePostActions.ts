@@ -6,7 +6,7 @@ interface PostLike {
 }
 
 export function usePostActions() {
-  const { authHeaders, handleSessionExpired, isLoggedIn } = useAuth()
+  const { authFetch, handleSessionExpired, isLoggedIn } = useAuth()
   const { show: showToast } = useToast()
   const { confirmDialog } = useConfirm()
   const pending = reactive(new Set<string>())
@@ -32,13 +32,13 @@ export function usePostActions() {
       p.likes = Math.max(0, (p.likes || 0) + (p.user_liked ? 1 : -1))
     })
     try {
-      await $fetch(`/api/posts/${encodedPostId}/like`, { method: 'POST', headers: authHeaders() })
+      await authFetch(`/api/posts/${encodedPostId}/like`, { method: 'POST' })
     } catch (e: unknown) {
       previous.forEach(prev => {
         prev.target.user_liked = prev.user_liked
         prev.target.likes = prev.likes
       })
-      if (getStatusCode(e) === 401) { handleSessionExpired(); return }
+      if (getStatusCode(e) === 401) return
       showToast('Không thể thích bài viết', 'error')
     } finally { pending.delete(key) }
   }
@@ -59,14 +59,14 @@ export function usePostActions() {
     const wasBookmarked = items[0]?.user_bookmarked
     items.forEach(p => { p.user_bookmarked = !p.user_bookmarked })
     try {
-      await $fetch(`/api/posts/${encodedPostId}/bookmark`, { method: 'POST', headers: authHeaders() })
+      await authFetch(`/api/posts/${encodedPostId}/bookmark`, { method: 'POST' })
       if (!wasBookmarked && items[0]?.user_bookmarked) {
         showToast('Đã lưu bài viết', 'success')
         onBookmarked?.()
       }
     } catch (e: unknown) {
       previous.forEach(prev => { prev.target.user_bookmarked = prev.user_bookmarked })
-      if (getStatusCode(e) === 401) { handleSessionExpired(); return }
+      if (getStatusCode(e) === 401) return
       showToast('Không thể lưu bài viết', 'error')
     } finally { pending.delete(key) }
   }
@@ -80,11 +80,11 @@ export function usePostActions() {
     const encodedPostId = encodePathId(postId)
     if (!encodedPostId) return
     try {
-      await $fetch(`/api/posts/${encodedPostId}`, { method: 'DELETE', headers: authHeaders() })
+      await authFetch(`/api/posts/${encodedPostId}`, { method: 'DELETE' })
       showToast('Đã xoá bài viết', 'success')
       onSuccess?.()
     } catch (e: unknown) {
-      if (getStatusCode(e) === 401) { handleSessionExpired(); return }
+      if (getStatusCode(e) === 401) return
       showToast('Không thể xoá bài viết', 'error')
     }
   }

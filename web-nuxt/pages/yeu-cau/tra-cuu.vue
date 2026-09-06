@@ -38,12 +38,20 @@ async function open() {
 useSeoMeta({
   title: 'Tra cứu yêu cầu — vinhlong360',
   description: 'Tra cứu tiến trình xử lý yêu cầu sửa thông tin bằng mã trên biên nhận.',
+  robots: 'noindex, nofollow',
+  ogTitle: 'Tra cứu yêu cầu — vinhlong360',
+  ogUrl: () => canonicalUrl('/yeu-cau/tra-cuu'),
+  twitterCard: 'summary_large_image',
 })
+
+useHead(() => ({
+  link: [{ rel: 'canonical', href: canonicalUrl('/yeu-cau/tra-cuu') }],
+}))
 </script>
 
 <template>
-  <section class="case-page">
-    <Breadcrumb :items="[{ label: 'Trang chủ', to: '/' }, { label: 'Tra cứu yêu cầu' }]" />
+  <section class="case-page" data-color-system="tri-region-v1">
+    <Breadcrumb :items="[{ label: 'Trang chủ', to: '/' }, { label: 'Tra cứu yêu cầu' }]" :json-ld="true" />
 
     <header class="case-header">
       <h1>Tra cứu yêu cầu</h1>
@@ -81,7 +89,11 @@ useSeoMeta({
       </div>
 
       <div class="case-actions">
-        <button type="submit" :disabled="busy || !reference.trim() || !capability.trim()">
+        <button
+          type="submit"
+          class="btn btn-primary"
+          :disabled="busy || !reference.trim() || !capability.trim()"
+        >
           {{ busy ? 'Đang mở…' : 'Mở yêu cầu' }}
         </button>
       </div>
@@ -107,15 +119,41 @@ useSeoMeta({
 }
 .case-lookup {
   display: grid;
-  gap: 0.9rem;
+  gap: 1rem;
 }
 .case-field {
   display: grid;
-  gap: 0.25rem;
+  gap: 0.35rem;
+}
+.case-field label {
+  font-size: var(--text-sm);
+  font-weight: var(--weight-medium);
+  color: var(--ink);
+}
+.case-field input {
+  min-height: 44px;
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--border-input, var(--line));
+  border-radius: var(--radius-control);
+  background: var(--surface);
+  color: var(--ink);
+  font: inherit;
+  font-size: var(--text-base);
+  transition: border-color var(--duration-fast) var(--ease-out);
+}
+.case-field input:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 1px;
 }
 .case-failure {
-  padding: 0.6rem 0.8rem;
-  border-radius: 8px;
+  padding: 0.75rem 1rem;
+  border-radius: var(--radius-control);
   border: 1px solid var(--color-error);
+  background: color-mix(in srgb, var(--color-error) 8%, transparent);
+  color: var(--ink);
+  font-size: var(--text-sm);
+}
+.case-actions {
+  margin-top: var(--space-1);
 }
 </style>

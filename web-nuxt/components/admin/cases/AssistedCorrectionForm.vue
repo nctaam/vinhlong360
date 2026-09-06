@@ -58,7 +58,7 @@ function submit() {
       <input v-model="noticeReadOut" type="checkbox" required>
       Tôi đã đọc cho người gọi nghe thông báo quyền riêng tư
       <strong>{{ privacyNoticeRevision }}</strong> và họ đồng ý phạm vi
-      «chỉ dùng để xử lý yêu cầu sửa».
+      “chỉ dùng để xử lý yêu cầu sửa”.
     </label>
 
     <fieldset class="assisted-item">

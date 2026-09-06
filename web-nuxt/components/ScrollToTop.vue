@@ -1,9 +1,7 @@
 <template>
   <Transition name="fade">
     <button type="button" v-show="visible" class="scroll-top" aria-label="Lên đầu trang" @click="scrollUp">
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-        <path d="M18 15l-6-6-6 6"/>
-      </svg>
+      <IconLine name="chevron-up" class="scroll-top-icon" aria-hidden="true" />
     </button>
   </Transition>
 </template>
@@ -29,7 +27,7 @@ onUnmounted(() => window.removeEventListener('scroll', onScroll))
 <style scoped>
 .scroll-top {
   position: fixed;
-  bottom: calc(90px + env(safe-area-inset-bottom));
+  bottom: var(--scroll-top-bottom, calc(90px + env(safe-area-inset-bottom)));
   right: var(--space-5);
   z-index: var(--z-floating);
   width: 44px;
@@ -40,20 +38,21 @@ onUnmounted(() => window.removeEventListener('scroll', onScroll))
   backdrop-filter: var(--glass);
   -webkit-backdrop-filter: var(--glass);
   box-shadow: var(--shadow-sm);
-  color: var(--primary);
+  color: var(--color-brand);
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: transform .35s var(--ease-spring-gentle), box-shadow .35s var(--ease-out-expo), color .3s var(--ease-out);
+  transition: transform .35s var(--ease-out-expo), box-shadow .35s var(--ease-out-expo), color .3s var(--ease-out);
 }
+.scroll-top-icon { font-size: 1.25rem; flex-shrink: 0; }
 /* Quiet at rest; on interaction only, the icon warms from clay toward amber —
    a one-pixel nod to the river→amber→clay motif, not a loud rebrand of a
    utility control that lives on every page. */
 .scroll-top:hover { transform: translateY(-3px); box-shadow: var(--shadow-md); color: var(--accent-dark); }
 .scroll-top:active { transform: scale(.9); transition-duration: .08s; }
-.scroll-top:focus-visible { outline: 2px solid var(--primary); outline-offset: 3px; }
-.fade-enter-active, .fade-leave-active { transition: opacity .3s var(--ease-out-expo), transform .3s var(--ease-spring-gentle); }
+.scroll-top:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 3px; }
+.fade-enter-active, .fade-leave-active { transition: opacity .3s var(--ease-out-expo), transform .3s var(--ease-out-expo); }
 .fade-enter-from { opacity: 0; transform: translateY(8px) scale(.9); }
 .fade-leave-to { opacity: 0; transform: translateY(4px) scale(.95); }
 

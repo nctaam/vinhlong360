@@ -1,6 +1,6 @@
 <template>
-  <section class="page user-profile-page">
-    <Breadcrumb :items="[{ label: 'Trang chủ', to: '/' }, { label: 'Cộng đồng', to: '/cong-dong' }, { label: profile?.display_name || 'Người dùng' }]" />
+  <section class="page user-profile-page" data-color-system="tri-region-v1">
+    <Breadcrumb :items="[{ label: 'Trang chủ', to: '/' }, { label: 'Cộng đồng', to: '/cong-dong' }, { label: profile?.display_name || 'Người dùng' }]" :json-ld="true" />
 
     <div v-if="profile" class="user-profile reveal">
       <div class="profile-cover">
@@ -31,17 +31,17 @@
             <span v-else class="spinner spinner-sm" aria-label="Đang xử lý"></span>
           </button>
           <div v-if="isLoggedIn && !isSelf" class="profile-more-wrap" @keydown.escape="showMoreMenu = false">
-            <button type="button" class="btn btn-ghost btn-sm btn-icon" aria-label="Thêm" aria-haspopup="true" :aria-expanded="showMoreMenu" @click="showMoreMenu = !showMoreMenu">&#8226;&#8226;&#8226;</button>
+            <button type="button" class="btn btn-ghost btn-sm btn-icon" aria-label="Thêm" aria-haspopup="true" :aria-expanded="showMoreMenu" @click="showMoreMenu = !showMoreMenu"><IconLine name="more-horizontal" /></button>
             <div v-if="showMoreMenu" class="profile-more-menu" @click.self="showMoreMenu = false">
               <button type="button" class="pm-item" @click="toggleBlock">{{ isBlocked ? 'Bỏ chặn' : 'Chặn người này' }}</button>
               <button type="button" class="pm-item pm-danger" @click="reportUser">Báo cáo</button>
             </div>
           </div>
           <NuxtLink v-if="isSelf" to="/cai-dat" class="btn btn-ghost btn-sm">
-            <svg class="icon-inline" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>Sửa hồ sơ
+            <IconLine name="pencil" class="icon-inline" /> Sửa hồ sơ
           </NuxtLink>
           <button type="button" class="btn btn-ghost btn-sm btn-icon" aria-label="Chia sẻ hồ sơ" @click="shareProfile">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>
+            <IconLine name="share" />
           </button>
         </div>
         <div class="profile-meta-row" aria-label="Thông tin nhanh">
@@ -124,8 +124,14 @@
             <span>Tổng quan</span>
             <strong>{{ activitySummary }}</strong>
           </div>
-          <NuxtLink v-if="isSelf" to="/cai-dat" class="profile-insight-link">Cập nhật hồ sơ</NuxtLink>
-          <NuxtLink v-else to="/cong-dong" class="profile-insight-link">Xem cộng đồng</NuxtLink>
+          <NuxtLink v-if="isSelf" to="/cai-dat" class="profile-insight-link">
+            <span>Cập nhật hồ sơ</span>
+            <IconLine name="chevron-right" class="insight-chevron" aria-hidden="true" />
+          </NuxtLink>
+          <NuxtLink v-else to="/cong-dong" class="profile-insight-link">
+            <span>Xem cộng đồng</span>
+            <IconLine name="chevron-right" class="insight-chevron" aria-hidden="true" />
+          </NuxtLink>
         </div>
       </div>
 
@@ -193,7 +199,9 @@
             message="Lưu địa điểm yêu thích để xem lại nhanh và ghép vào lịch trình."
             hint="Nhấn nút lưu ở bất kỳ địa điểm nào để bắt đầu."
           >
-            <NuxtLink to="/du-lich" class="btn btn-primary btn-sm">Khám phá địa điểm</NuxtLink>
+            <template #actions>
+              <NuxtLink to="/du-lich" class="btn btn-primary btn-sm">Khám phá địa điểm</NuxtLink>
+            </template>
           </EmptyState>
         </ClientOnly>
 
@@ -236,11 +244,11 @@
                   <form @submit.prevent="handleCreateCollection">
                     <label class="sf-field">
                       <span class="sf-label">Tên</span>
-                      <input v-model="newCollectionName" type="text" class="sf-input" maxlength="100" required placeholder="VD: Quán ngon Vĩnh Long" />
+                      <input v-model="newCollectionName" type="text" class="sf-input" maxlength="100" required placeholder="VD: Quán ngon Vĩnh Long" aria-label="Tên danh sách bộ sưu tập" />
                     </label>
                     <label class="sf-field">
                       <span class="sf-label">Mô tả (không bắt buộc)</span>
-                      <textarea v-model="newCollectionDesc" class="sf-input" maxlength="300" rows="2"></textarea>
+                      <textarea v-model="newCollectionDesc" class="sf-input" maxlength="300" rows="2" aria-label="Mô tả bộ sưu tập"></textarea>
                     </label>
                     <div class="sf-actions">
                       <button type="button" class="btn btn-ghost" @click="closeCreateCollection">Hủy</button>
@@ -308,7 +316,9 @@
             v-if="postsFetchFailed && !filteredPosts.length && !loading"
             icon-name="alert-triangle" tone="error" title="Không thể tải bài viết" message="Lỗi kết nối. Vui lòng thử lại."
           >
-            <button type="button" class="btn btn-outline btn-sm" @click="fetchPosts">Thử lại</button>
+            <template #actions>
+              <button type="button" class="btn btn-outline btn-sm" @click="fetchPosts">Thử lại</button>
+            </template>
           </EmptyState>
           <Transition name="fade">
             <EmptyState
@@ -318,9 +328,11 @@
               :message="tab === 'reviews' ? 'Chưa có đánh giá nào.' : 'Chưa có bài viết nào.'"
               :hint="emptyHint"
             >
-              <NuxtLink v-if="isSelf" to="/cong-dong" class="btn btn-primary btn-sm">
-                {{ tab === 'reviews' ? 'Viết đánh giá đầu tiên' : 'Viết bài viết đầu tiên' }}
-              </NuxtLink>
+              <template #actions>
+                <NuxtLink v-if="isSelf" to="/cong-dong" class="btn btn-primary btn-sm">
+                  {{ tab === 'reviews' ? 'Viết đánh giá đầu tiên' : 'Viết bài viết đầu tiên' }}
+                </NuxtLink>
+              </template>
             </EmptyState>
           </Transition>
           <SkeletonList v-if="loading && !posts.length" :count="3" class="profile-skeleton" />
@@ -330,23 +342,49 @@
     </div>
 
     <EmptyState v-else-if="profileFetchFailed" icon-name="alert-triangle" tone="error" title="Không thể tải trang" message="Lỗi kết nối. Vui lòng thử lại.">
-      <button type="button" class="btn btn-outline btn-sm" @click="refreshProfile()">Thử lại</button>
+      <template #actions>
+        <button type="button" class="btn btn-outline btn-sm" @click="refreshProfile()">Thử lại</button>
+      </template>
     </EmptyState>
     <EmptyState v-else-if="profileNotFound" icon-name="user" title="Không tìm thấy người dùng" message="Hồ sơ này không tồn tại hoặc đã được đổi tên." />
-    <EmptyState v-else message="Không tìm thấy người dùng." />
+    <EmptyState v-else icon-name="user" title="Không tìm thấy người dùng" message="Hồ sơ này không tồn tại hoặc đã được chuyển sang chế độ riêng tư." />
 
     <!-- Modal danh sách theo dõi -->
     <Teleport to="body">
       <div v-if="followModalOpen" class="fm-overlay" @click.self="followModalOpen = false" @keydown.escape="followModalOpen = false">
         <div class="fm-dialog" role="dialog" aria-modal="true" aria-label="Danh sách theo dõi" tabindex="-1" ref="followDialogEl">
           <header class="fm-head">
-            <div class="fm-tabs" role="tablist" aria-label="Danh sách theo dõi">
-              <button type="button" role="tab" :class="['fm-tab', { active: followModalTab === 'followers' }]" :aria-selected="followModalTab === 'followers'" @click="followModalTab = 'followers'">Người theo dõi</button>
-              <button type="button" role="tab" :class="['fm-tab', { active: followModalTab === 'following' }]" :aria-selected="followModalTab === 'following'" @click="followModalTab = 'following'">Đang theo dõi</button>
+            <div class="fm-tabs" role="tablist" aria-label="Danh sách theo dõi" @keydown="onFollowModalTabKeydown">
+              <button
+                type="button"
+                id="fm-tab-followers"
+                role="tab"
+                :class="['fm-tab', { active: followModalTab === 'followers' }]"
+                :aria-selected="followModalTab === 'followers'"
+                aria-controls="fm-panel-followers"
+                :tabindex="followModalTab === 'followers' ? 0 : -1"
+                @click="followModalTab = 'followers'"
+              >Người theo dõi</button>
+              <button
+                type="button"
+                id="fm-tab-following"
+                role="tab"
+                :class="['fm-tab', { active: followModalTab === 'following' }]"
+                :aria-selected="followModalTab === 'following'"
+                aria-controls="fm-panel-following"
+                :tabindex="followModalTab === 'following' ? 0 : -1"
+                @click="followModalTab = 'following'"
+              >Đang theo dõi</button>
             </div>
-            <button type="button" class="fm-close" aria-label="Đóng" @click="followModalOpen = false">&times;</button>
+            <button type="button" class="fm-close" aria-label="Đóng" @click="followModalOpen = false"><IconLine name="x" /></button>
           </header>
-          <div class="fm-body">
+          <div
+            class="fm-body"
+            role="tabpanel"
+            :id="`fm-panel-${followModalTab}`"
+            :aria-labelledby="`fm-tab-${followModalTab}`"
+            tabindex="0"
+          >
             <div v-if="followLoadingList" class="fm-loading" role="status" aria-label="Đang tải danh sách"><div class="spinner spinner-sm"></div></div>
             <template v-else>
               <ul v-if="followModalList.length" class="fm-list">
@@ -357,7 +395,10 @@
                   </NuxtLink>
                 </li>
               </ul>
-              <p v-else class="fm-empty">{{ followModalTab === 'followers' ? 'Chưa có người theo dõi.' : 'Chưa theo dõi ai.' }}</p>
+              <div v-else class="fm-empty">
+                <IconLine name="users" class="fm-empty-icon" aria-hidden="true" />
+                <p>{{ followModalTab === 'followers' ? 'Chưa có người theo dõi.' : 'Chưa theo dõi ai.' }}</p>
+              </div>
             </template>
           </div>
         </div>
@@ -464,7 +505,7 @@ function mapProfileView(u: Record<string, any>): ProfileView {
   }
 }
 
-const { data: profileState, refresh: refreshProfile } = await useAsyncData<ProfilePayload>(`public-user-${userId.value}`, async () => {
+const profileAsyncData = useAsyncData<ProfilePayload>(`public-user-${userId.value}`, async () => {
   const lookup = userId.value.trim()
   if (!lookup) return { profile: null, status: 'not-found' }
   try {
@@ -478,29 +519,84 @@ const { data: profileState, refresh: refreshProfile } = await useAsyncData<Profi
 }, {
   default: (): ProfilePayload => ({ profile: null, status: 'error' }),
 })
+const profileState = profileAsyncData.data
+const refreshProfile = profileAsyncData.refresh
 
 const profilePayload = computed(() => profileState.value as ProfilePayload | null | undefined)
 const profile = computed(() => profilePayload.value?.profile ?? null)
 const profileLoadStatus = computed(() => profilePayload.value?.status ?? 'error')
 const profileFetchFailed = computed(() => profileLoadStatus.value === 'error')
 const profileNotFound = computed(() => profileLoadStatus.value === 'not-found')
-if (import.meta.server && profileNotFound.value) setResponseStatus(404)
 
 const profileSlug = computed(() => profile.value?.username || userId.value)
 const publicProfilePath = computed(() => `/nguoi-dung/${encodeURIComponent(profileSlug.value)}`)
-
-useHead({
-  link: computed(() => [{ rel: 'canonical', href: canonicalUrl(publicProfilePath.value) }]),
-})
-
+const profileId = computed(() => String(profile.value?.id || userId.value))
+const encodedProfileId = computed(() => encodeURIComponent(profileId.value))
 const isSelf = computed(() => {
   const me = currentUser.value
   if (!me) return false
   const profileUsername = profile.value?.username
   return String(me.id) === profileId.value || (!!profileUsername && me.username === profileUsername) || me.username === userId.value
 })
-const profileId = computed(() => String(profile.value?.id || userId.value))
-const encodedProfileId = computed(() => encodeURIComponent(profileId.value))
+
+const showMoreMenu = ref(false)
+function onClickOutsideMore(e: MouseEvent) {
+  const wrap = (e.target as HTMLElement)?.closest('.profile-more-wrap')
+  if (!wrap) showMoreMenu.value = false
+}
+
+onMounted(() => {
+  fetchPosts()
+  checkFollowing()
+  checkBlocked()
+  loadHeatmap()
+  if (isSelf.value) { loadAchievements() }
+  if (tab.value === 'collections' && isSelf.value) fetchCollections()
+})
+
+onUnmounted(() => {
+  document.removeEventListener('click', onClickOutsideMore)
+})
+
+await profileAsyncData
+
+if (import.meta.server && profileNotFound.value) setResponseStatus(404)
+
+const profileSchema = computed(() => {
+  if (!profile.value || profile.value.is_private) return null
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'ProfilePage',
+    '@id': canonicalUrl(publicProfilePath.value) + '#webpage',
+    url: canonicalUrl(publicProfilePath.value),
+    name: `${profile.value.display_name || 'Người dùng'} — Hồ sơ thành viên`,
+    mainEntity: {
+      '@type': 'Person',
+      name: profile.value.display_name || profile.value.username || 'Thành viên vinhlong360',
+      description: profile.value.bio || undefined,
+      image: profile.value.avatar || undefined,
+      url: canonicalUrl(publicProfilePath.value),
+    },
+  }
+})
+
+useSeoMeta({
+  title: () => `${profile.value?.display_name || 'Người dùng'} — Cộng đồng vinhlong360`,
+  description: () => profile.value?.bio || `Hồ sơ thành viên ${profile.value?.display_name || ''} trên vinhlong360.`,
+  robots: () => (profile.value?.is_private || profileNotFound.value) ? 'noindex, nofollow' : 'index, follow',
+  ogTitle: () => `${profile.value?.display_name || 'Người dùng'} — vinhlong360`,
+  ogDescription: () => profile.value?.bio || `Khám phá bài viết và đánh giá của ${profile.value?.display_name || 'thành viên'} trên vinhlong360.`,
+  ogUrl: () => canonicalUrl(publicProfilePath.value),
+  twitterCard: 'summary_large_image',
+})
+
+useHead(() => ({
+  link: [{ rel: 'canonical', href: canonicalUrl(publicProfilePath.value) }],
+  script: profileSchema.value ? [{
+    type: 'application/ld+json',
+    innerHTML: safeJsonLd(profileSchema.value),
+  }] : [],
+}))
 const displayFollowerCount = computed(() => followerCount.value ?? profile.value?.follower_count ?? 0)
 const profileHandle = computed(() => profile.value?.username ? `@${profile.value.username}` : '')
 const totalContributions = computed(() => (profile.value?.post_count || 0) + (profile.value?.review_count || 0))
@@ -712,6 +808,21 @@ function openFollowModal(tab: 'followers' | 'following') {
 }
 watch(followModalTab, (t) => loadFollowList(t))
 
+function onFollowModalTabKeydown(event: KeyboardEvent) {
+  const keys = ['ArrowLeft', 'ArrowRight', 'Home', 'End']
+  if (!keys.includes(event.key)) return
+  event.preventDefault()
+  const tabs: Array<'followers' | 'following'> = ['followers', 'following']
+  const current = tabs.indexOf(followModalTab.value)
+  const next = event.key === 'Home'
+    ? tabs[0]
+    : event.key === 'End'
+      ? tabs[1]
+      : tabs[(current + (event.key === 'ArrowRight' ? 1 : -1) + tabs.length) % tabs.length]
+  followModalTab.value = next
+  nextTick(() => document.getElementById(`fm-tab-${next}`)?.focus())
+}
+
 async function checkFollowing() {
   if (!isLoggedIn.value || !profile.value) return
   try {
@@ -811,7 +922,6 @@ async function toggleFollow() {
 }
 
 // ── Block / Report ──
-const showMoreMenu = ref(false)
 const isBlocked = ref(false)
 const { confirmDialog } = useConfirm()
 
@@ -824,17 +934,12 @@ function syncViewerRelationship(p: ProfileView | null) {
 
 watch(profile, syncViewerRelationship, { immediate: true })
 
-function onClickOutsideMore(e: MouseEvent) {
-  const wrap = (e.target as HTMLElement)?.closest('.profile-more-wrap')
-  if (!wrap) showMoreMenu.value = false
-}
 watch(showMoreMenu, (v) => {
   if (import.meta.client) {
     if (v) setTimeout(() => document.addEventListener('click', onClickOutsideMore), 0)
     else document.removeEventListener('click', onClickOutsideMore)
   }
 })
-onUnmounted(() => document.removeEventListener('click', onClickOutsideMore))
 
 async function checkBlocked() {
   if (!isLoggedIn.value || isSelf.value || !profile.value) return
@@ -896,15 +1001,6 @@ async function shareProfile() {
   }
 }
 
-onMounted(() => {
-  fetchPosts()
-  checkFollowing()
-  checkBlocked()
-  loadHeatmap()
-  if (isSelf.value) { loadAchievements() }
-  if (tab.value === 'collections' && isSelf.value) fetchCollections()
-})
-
 watch(userId, async () => {
   tab.value = 'posts'
   posts.value = []
@@ -937,13 +1033,27 @@ useSeoMeta({
 
 <style scoped>
 .profile-reputation { display: flex; flex-wrap: wrap; gap: .4rem; margin: .25rem 0 .75rem; }
-.rep-level { font-weight: var(--weight-semibold); font-size: var(--text-sm); padding: .2rem .6rem; border-radius: 999px; background: color-mix(in srgb, var(--accent) 16%, var(--bg-alt)); color: var(--accent-text, var(--ink)); text-decoration: none; transition: filter .2s; }
+.rep-level {
+  display: inline-flex;
+  align-items: center;
+  min-height: 36px;
+  font-weight: var(--weight-semibold);
+  font-size: var(--text-sm);
+  padding: .2rem .65rem;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--accent) 16%, var(--bg-alt));
+  color: var(--accent-text, var(--ink));
+  text-decoration: none;
+  transition: filter .2s var(--ease-out), transform .15s var(--ease-out);
+}
 .rep-level:hover { filter: brightness(1.1); }
+.rep-level:active { transform: scale(.96); }
+.rep-level:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
 .rep-level[data-level="4"] { background: color-mix(in srgb, gold 28%, var(--bg-alt)); }
 .rep-badge { font-size: var(--text-xs); padding: .2rem .55rem; border-radius: 999px; background: var(--bg-alt); border: 1px solid var(--border); color: var(--ink-700); }
 .xp-bar-wrap { display: flex; align-items: center; gap: var(--space-2); margin-top: var(--space-1); }
 .xp-bar { flex: 1; height: 6px; background: var(--line); border-radius: var(--radius-full); overflow: hidden; }
-.xp-fill { height: 100%; background: linear-gradient(90deg, var(--primary), var(--accent)); border-radius: var(--radius-full); transition: width var(--duration-slow) var(--ease-out); }
+.xp-fill { height: 100%; background: linear-gradient(90deg, var(--color-brand), var(--accent)); border-radius: var(--radius-full); }
 .xp-label { font-size: var(--text-2xs); color: var(--muted); white-space: nowrap; }
 .streak-chip { display: inline-flex; align-items: center; gap: var(--space-1); margin-top: var(--space-1); padding: var(--space-1) var(--space-2); background: color-mix(in srgb, var(--warning) 12%, transparent); border-radius: var(--radius-full); font-size: var(--text-xs); font-weight: var(--weight-medium); color: var(--ink); }
 /* Mốc tuần (bội số của 7 ngày) — một nhấp nháy nhẹ DUY NHẤT lúc mount, không loop. */
@@ -963,14 +1073,16 @@ useSeoMeta({
 .bs-cat-title { font-size: var(--text-xs); font-weight: var(--weight-semibold); color: var(--muted); text-transform: uppercase; letter-spacing: 0.04em; margin: 0 0 var(--space-2); }
 .bs-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: var(--space-2); margin-top: var(--space-2); }
 .bs-card { display: flex; align-items: flex-start; gap: var(--space-2); padding: var(--space-2); border-radius: var(--radius); border: 1px solid var(--line); text-align: left; background: var(--surface); }
-.bs-card.bs-earned { border-color: var(--primary); }
+.bs-card.bs-earned { border-color: var(--color-brand); transition: transform .2s var(--ease-out), box-shadow .2s var(--ease-out); }
+.bs-card.bs-earned:hover { transform: translateY(-1px); box-shadow: var(--shadow-sm); }
+.bs-card.bs-earned:active { transform: scale(.98); }
 .bs-card.bs-locked { opacity: 0.55; }
 .bs-icon { font-size: 1.5rem; line-height: 1; flex-shrink: 0; }
 .bs-card.bs-locked .bs-icon { filter: grayscale(1); }
 .bs-info { min-width: 0; display: flex; flex-direction: column; gap: 2px; }
 .bs-label { font-size: var(--text-sm); font-weight: var(--weight-medium); color: var(--ink); }
 .bs-bar { height: 4px; background: var(--line); border-radius: var(--radius-full); overflow: hidden; margin-top: var(--space-1); }
-.bs-fill { height: 100%; background: var(--primary); border-radius: var(--radius-full); transition: width var(--duration-slow) var(--ease-out); }
+.bs-fill { height: 100%; background: var(--color-brand); border-radius: var(--radius-full); }
 .bs-date { font-size: var(--text-2xs); color: var(--success); }
 .bs-hint { font-size: var(--text-2xs); color: var(--muted); }
 
@@ -982,7 +1094,7 @@ useSeoMeta({
 .cover-scrim { position: absolute; inset: 0; pointer-events: none; background: linear-gradient(to bottom, transparent 40%, rgba(var(--black-rgb),.18)); }
 .dark .cover-scrim { background: linear-gradient(to bottom, transparent 30%, rgba(var(--black-rgb),.45)); }
 .profile-avatar-wrap { position: absolute; bottom: calc(-1 * var(--space-6)); left: var(--space-5); z-index: 1; }
-.profile-avatar-wrap .avatar { border: 6px solid var(--card); box-shadow: 0 0 0 2px var(--line), 0 8px 28px rgba(var(--black-rgb),.12); transition: transform .35s var(--ease-spring-gentle); }
+.profile-avatar-wrap .avatar { border: 6px solid var(--card); box-shadow: 0 0 0 2px var(--line), 0 8px 28px rgba(var(--black-rgb),.12); transition: transform .35s var(--ease-out-expo); }
 .profile-avatar-wrap .avatar:hover { transform: scale(1.05); }
 .profile-avatar-wrap .avatar:active { transform: scale(.98); transition-duration: .08s; }
 
@@ -1003,12 +1115,14 @@ useSeoMeta({
 .profile-chip.is-public { border-color: color-mix(in srgb, var(--success, var(--leaf-600)) 28%, var(--line)); color: var(--success, var(--leaf-600)); }
 .profile-chip.is-private { border-color: color-mix(in srgb, var(--warning) 28%, var(--line)); color: var(--warning); }
 .profile-chip.is-self,
-.profile-chip.is-following { background: color-mix(in srgb, var(--primary) 10%, var(--card)); border-color: color-mix(in srgb, var(--primary) 30%, var(--line)); color: var(--primary); }
+.profile-chip.is-following { background: color-mix(in srgb, var(--color-brand) 10%, var(--card)); border-color: color-mix(in srgb, var(--color-brand) 30%, var(--line)); color: var(--color-brand); }
 .profile-more-wrap { position: relative; }
-.btn-icon { min-width: 44px; padding: .3rem .5rem; letter-spacing: 2px; font-weight: 700; }
+.btn-icon { min-width: 44px; min-height: 44px; display: inline-flex; align-items: center; justify-content: center; padding: .3rem .5rem; letter-spacing: 2px; font-weight: 700; }
 .profile-more-menu { position: absolute; right: 0; top: 100%; margin-top: var(--space-1); background: var(--card); border: 1px solid var(--line); border-radius: var(--radius-surface); box-shadow: var(--shadow-md); z-index: var(--z-dropdown); min-width: 160px; overflow: hidden; }
-.pm-item { display: block; width: 100%; text-align: left; padding: .6rem 1rem; border: none; background: none; font: inherit; font-size: var(--text-sm); color: var(--ink); cursor: pointer; transition: background .15s; }
+.pm-item { display: block; width: 100%; text-align: left; padding: .6rem 1rem; border: none; background: none; font: inherit; font-size: var(--text-sm); color: var(--ink); cursor: pointer; transition: background .15s var(--ease-out); }
 .pm-item:hover { background: var(--bg-alt); }
+.pm-item:active { background: var(--bg-warm); }
+.pm-item:focus-visible { outline: 2px solid var(--color-focus); outline-offset: -2px; }
 .pm-danger { color: var(--danger); }
 .pm-danger:hover { background: rgba(var(--danger-rgb), .06); }
 .profile-info h1 { font-size: clamp(1.25rem, 2.5vw, 1.75rem); letter-spacing: var(--tracking-tight); margin: 0; text-wrap: balance; overflow-wrap: break-word; }
@@ -1026,48 +1140,127 @@ useSeoMeta({
 .dark .hairline-phusa { background: linear-gradient(90deg, transparent 0%, var(--river-legacy-dark) 15%, var(--amber-500) 50%, var(--clay-400) 85%, transparent 100%); }
 
 .profile-stats { display: flex; gap: var(--space-6); margin-top: var(--space-4); }
-.stat-item { display: flex; flex-direction: column; align-items: center; gap: var(--space-1); padding: var(--space-2) var(--space-3); background: var(--bg-warm); border: .5px solid var(--line); border-radius: var(--radius-surface); transition: background .3s var(--ease-out), transform .35s var(--ease-spring-gentle), box-shadow .3s var(--ease-out), border-color .3s var(--ease-out); }
+.stat-item { display: flex; flex-direction: column; align-items: center; gap: var(--space-1); padding: var(--space-2) var(--space-3); background: var(--bg-warm); border: .5px solid var(--line); border-radius: var(--radius-surface); transition: background .3s var(--ease-out), transform .35s var(--ease-out-expo), box-shadow .3s var(--ease-out), border-color .3s var(--ease-out); }
 .stat-item:hover { background: var(--card); transform: translateY(-1px); box-shadow: var(--shadow-sm); border-color: var(--border, var(--line)); }
 .stat-item:active { transform: scale(.95); transition-duration: .08s; }
-.stat-item:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+.stat-item:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
 .stat-item strong { font-size: var(--text-lg); font-weight: var(--weight-bold); user-select: all; }
 .stat-item span { font-size: var(--text-xs); color: var(--muted); }
-.stat-clickable { cursor: pointer; font: inherit; }
+.stat-clickable { cursor: pointer; font: inherit; min-height: 44px; }
+.stat-clickable:hover { border-color: color-mix(in srgb, var(--color-action) 35%, var(--line)); }
+.stat-clickable:active { transform: scale(.96); transition-duration: .08s; }
 .profile-insight { display: flex; align-items: center; justify-content: space-between; gap: var(--space-3); margin-top: var(--space-4); padding: var(--space-3) var(--space-4); border: 1px solid var(--line); border-radius: var(--radius-surface); background: color-mix(in srgb, var(--bg-warm) 82%, var(--card)); }
 .profile-insight-copy { display: flex; flex-direction: column; min-width: 0; gap: 2px; }
 .profile-insight-copy span { color: var(--muted); font-size: var(--text-xs); font-weight: var(--weight-semibold); text-transform: uppercase; letter-spacing: .04em; }
 .profile-insight-copy strong { color: var(--ink); font-size: var(--text-sm); line-height: var(--leading-snug); overflow-wrap: anywhere; }
-.profile-insight-link { flex: 0 0 auto; color: var(--primary); font-size: var(--text-sm); font-weight: var(--weight-semibold); text-decoration: none; }
+.profile-insight-link {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  min-height: 44px;
+  color: var(--color-action);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-semibold);
+  text-decoration: none;
+  border-radius: var(--radius-control);
+  transition: color .2s var(--ease-out), transform .15s var(--ease-out);
+}
 .profile-insight-link:hover { text-decoration: underline; }
+.profile-insight-link:active { transform: scale(.97); }
+.profile-insight-link:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
+.insight-chevron { width: 14px; height: 14px; transition: transform .2s var(--ease-out); }
+.profile-insight-link:hover .insight-chevron { transform: translateX(2px); }
 
 /* Modal follower/following */
 .fm-overlay { position: fixed; inset: 0; z-index: var(--z-modal-high); background: rgba(var(--black-rgb),.45); display: flex; align-items: center; justify-content: center; padding: var(--space-4); }
 .fm-dialog { background: var(--card); border-radius: var(--radius-sheet); width: 100%; max-width: 420px; max-height: 80vh; display: flex; flex-direction: column; box-shadow: var(--shadow-lg); overflow: hidden; }
 .fm-head { display: flex; align-items: center; justify-content: space-between; border-bottom: .5px solid var(--line); padding-right: var(--space-2); }
 .fm-tabs { display: flex; }
-.fm-tab { flex: 1; padding: var(--space-3) var(--space-4); border: none; background: none; cursor: pointer; font-size: var(--text-sm); font-weight: var(--weight-semibold); color: var(--muted); border-bottom: 2px solid transparent; transition: color .2s var(--ease-out), border-bottom-color .25s var(--ease-out); }
+.fm-tab {
+  flex: 1;
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-3) var(--space-4);
+  border: none;
+  background: none;
+  cursor: pointer;
+  font-size: var(--text-sm);
+  font-weight: var(--weight-semibold);
+  color: var(--muted);
+  border-bottom: 2px solid transparent;
+  transition: color .2s var(--ease-out), border-bottom-color .25s var(--ease-out), transform .15s var(--ease-out);
+}
 .fm-tab:hover { color: var(--ink-secondary); }
-.fm-tab.active { color: var(--ink); border-bottom-color: var(--primary); }
-.fm-close { border: none; background: none; font-size: 1.5rem; line-height: 1; cursor: pointer; color: var(--muted); padding: var(--space-2); min-width: 44px; display: inline-flex; align-items: center; justify-content: center; }
+.fm-tab:active { transform: scale(.98); }
+.fm-tab.active { color: var(--ink); border-bottom-color: var(--color-action); }
+.fm-tab:focus-visible { outline: 2px solid var(--color-focus); outline-offset: -2px; }
+.fm-close {
+  border: none;
+  background: none;
+  font-size: 1.5rem;
+  line-height: 1;
+  cursor: pointer;
+  color: var(--muted);
+  padding: var(--space-2);
+  min-width: 44px;
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-control);
+  transition: color .2s var(--ease-out), transform .15s var(--ease-out);
+}
+.fm-close:hover { color: var(--ink); }
+.fm-close:active { transform: scale(.92); }
+.fm-close:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
 .fm-body { overflow-y: auto; padding: var(--space-2); }
+.fm-body:focus-visible { outline: 2px solid var(--color-focus); outline-offset: -2px; }
 .fm-loading { display: flex; justify-content: center; padding: var(--space-5); }
-.fm-list { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; }
-.fm-user { display: flex; align-items: center; gap: var(--space-3); padding: var(--space-2) var(--space-3); border-radius: var(--radius-surface); text-decoration: none; color: var(--ink); }
+.fm-list { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: var(--space-1); }
+.fm-user {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  min-height: 44px;
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-surface);
+  text-decoration: none;
+  color: var(--ink);
+  transition: background .15s var(--ease-out), transform .15s var(--ease-out);
+}
 .fm-user:hover { background: var(--bg-alt); }
-.fm-avatar { width: 38px; height: 38px; display: inline-flex; align-items: center; justify-content: center; border-radius: 50%; background: var(--primary); color: var(--primary-fg, var(--white)); font-weight: var(--weight-semibold); flex-shrink: 0; }
+.fm-user:active { transform: scale(.985); }
+.fm-user:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
+.fm-avatar { width: 38px; height: 38px; display: inline-flex; align-items: center; justify-content: center; border-radius: 50%; background: var(--color-brand); color: var(--color-on-action, var(--white)); font-weight: var(--weight-semibold); flex-shrink: 0; }
 .fm-name { font-size: var(--text-sm); font-weight: var(--weight-medium); }
-.fm-empty { text-align: center; color: var(--muted); padding: var(--space-5); font-size: var(--text-sm); }
+.fm-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  text-align: center;
+  color: var(--muted);
+  padding: var(--space-8) var(--space-4);
+  font-size: var(--text-sm);
+}
+.fm-empty-icon { font-size: 1.75rem; opacity: .5; }
+.fm-empty p { margin: 0; }
 
 .profile-tabs { display: flex; gap: var(--space-2); margin: var(--space-5) 0 var(--space-4); border-bottom: .5px solid var(--line); padding-bottom: var(--space-3); }
-.profile-tabs .chip { min-height: 44px; transition: transform .35s var(--ease-spring-gentle), background .3s var(--ease-out), color .3s var(--ease-out), border-color .3s var(--ease-out); }
+.profile-tabs .chip { min-height: 44px; transition: transform .35s var(--ease-out-expo), background .3s var(--ease-out), color .3s var(--ease-out), border-color .3s var(--ease-out); }
 .profile-tabs .chip:active { transform: scale(.95); transition-duration: .08s; }
+.profile-tabs .chip:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
 
 /* Post list transitions */
-.post-list-enter-active { transition: opacity .35s var(--ease-out), transform .4s var(--ease-spring-gentle); }
+.post-list-enter-active { transition: opacity .35s var(--ease-out), transform .4s var(--ease-out-expo); }
 .post-list-leave-active { transition: opacity .2s var(--ease-out), transform .2s var(--ease-out); }
 .post-list-enter-from { opacity: 0; transform: translateY(8px); }
 .post-list-leave-to { opacity: 0; transform: translateY(-4px); }
-.post-list-move { transition: transform .35s var(--ease-spring-gentle); }
+.post-list-move { transition: transform .35s var(--ease-out-expo); }
 
 /* Fade */
 .fade-enter-active { transition: opacity .3s var(--ease-out); }
@@ -1075,7 +1268,7 @@ useSeoMeta({
 .fade-enter-from, .fade-leave-to { opacity: 0; }
 
 /* Follow button spring */
-.profile-name-row .btn { transition: transform .35s var(--ease-spring-gentle), background .3s var(--ease-out), color .3s var(--ease-out), border-color .3s var(--ease-out); }
+.profile-name-row .btn { transition: transform .35s var(--ease-out-expo), background .3s var(--ease-out), color .3s var(--ease-out), border-color .3s var(--ease-out); }
 .profile-name-row .btn:active { transform: scale(.92); transition-duration: .08s; }
 .profile-name-row .btn[aria-busy="true"] { pointer-events: none; }
 /* Spinner contrast inside filled primary follow button */
@@ -1107,8 +1300,10 @@ useSeoMeta({
 .collections-header { display: flex; justify-content: flex-end; margin-bottom: var(--space-4); }
 .collections-loading { display: flex; align-items: center; gap: var(--space-2); justify-content: center; padding: var(--space-8) 0; color: var(--muted); font-size: var(--text-sm); }
 .saved-card .card-b .place { overflow-wrap: break-word; word-break: break-word; }
-.btn-danger-text { align-self: flex-start; margin: 0 var(--space-4) var(--space-4); color: var(--danger); }
+.btn-danger-text { align-self: flex-start; min-height: 44px; display: inline-flex; align-items: center; margin: 0 var(--space-4) var(--space-4); color: var(--danger); }
 .btn-danger-text:hover:not(:disabled) { background: rgba(var(--danger-rgb), .08); color: var(--danger); }
+.btn-danger-text:active:not(:disabled) { transform: scale(.97); }
+.btn-danger-text:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
 
 /* Create-collection modal form (mirrors .sf-* in cai-dat.vue / SettingsForm.vue — scoped styles don't leak across components) */
 .sf-field { display: flex; flex-direction: column; gap: var(--space-2); margin-bottom: var(--space-4); }
@@ -1118,13 +1313,13 @@ useSeoMeta({
   background: var(--bg-alt); color: var(--ink); font: inherit; font-size: var(--text-sm); resize: vertical;
   transition: border-color .2s var(--ease-out), background .2s var(--ease-out);
 }
-.sf-input:focus-visible { outline: none; border-color: var(--primary); background: var(--card); box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary) 15%, transparent); }
+.sf-input:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; border-color: var(--color-action); background: var(--card); box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-action) 15%, transparent); }
 .sf-actions { display: flex; justify-content: flex-end; gap: var(--space-3); margin-top: var(--space-2); }
 /* --text-sm clamps to ~14px under ~640px viewport — below the 16px iOS auto-zoom
    threshold. Force 16px on mobile only for these real form fields (create-collection
    name/description); desktop keeps --text-sm (14px→16px fluid scale) unchanged. */
 @media (max-width: 640px) {
-  .sf-input { font-size: 16px; }
+  .sf-input { font-size: var(--text-base, 16px); }
 }
 
 /* Dark mode */
@@ -1142,26 +1337,37 @@ useSeoMeta({
   .profile-insight-link { width: 100%; }
 }
 
+@media (pointer: coarse) {
+  .rep-level { min-height: 44px; }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .post-list-enter-active, .post-list-leave-active, .post-list-move { transition: none; }
-  .profile-avatar-wrap .avatar:hover { transform: none; }
-  .stat-item:hover { transform: none; }
+  .profile-avatar-wrap .avatar:hover, .profile-avatar-wrap .avatar:active { transform: none; }
+  .stat-item:hover, .stat-item:active, .stat-clickable:active { transform: none; }
   .profile-tabs .chip:active { transform: none; }
   .saved-cta .btn:active { transform: none; }
   .pc-fill { animation: none; }
   .saved-grid > * { animation: none; }
   .cover-img { animation: none; }
   .streak-milestone { animation: none; }
+  .rep-level:hover, .rep-level:active { transform: none; filter: none; }
+  .profile-insight-link:active { transform: none; }
+  .insight-chevron { transform: none; }
+  .profile-insight-link:hover .insight-chevron { transform: none; }
+  .fm-tab:active, .fm-close:active, .fm-user:active { transform: none; }
+  .bs-card.bs-earned:hover, .bs-card.bs-earned:active { transform: none; }
+  .btn-danger-text:active { transform: none; }
 }
 .profile-completion { padding: 0 var(--space-4); margin-bottom: var(--space-3); }
 .pc-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: var(--space-1); }
 .pc-label { font-size: var(--text-sm); font-weight: 600; color: var(--muted); }
-.pc-link { font-size: var(--text-sm); color: var(--primary); text-decoration: none; }
+.pc-link { font-size: var(--text-sm); color: var(--color-action); text-decoration: none; }
 .pc-bar { height: 6px; background: var(--bg-alt); border-radius: var(--radius-full); overflow: hidden; }
-.pc-fill { height: 100%; background: var(--accent); border-radius: var(--radius-full); transition: width .4s var(--ease-out); transform-origin: left; animation: pc-grow .6s var(--ease-out) .3s backwards; }
+.pc-fill { height: 100%; background: var(--accent); border-radius: var(--radius-full); transform-origin: left; animation: pc-grow .6s var(--ease-out) .3s backwards; }
 @keyframes pc-grow { from { transform: scaleX(0); } to { transform: scaleX(1); } }
 .pc-hints { display: flex; flex-wrap: wrap; gap: var(--space-1); margin-top: var(--space-2); }
-.pc-hint { font-size: .72rem; color: var(--muted); padding: 2px 8px; border: 1px solid var(--border-input); border-radius: var(--radius-full); }
+.pc-hint { font-size: .72rem; color: var(--muted); padding: var(--space-half) var(--space-2); border: 1px solid var(--border-input); border-radius: var(--radius-full); }
 
 
 /* Hoạt động (timeline) tab */

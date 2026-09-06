@@ -1,6 +1,6 @@
 <template>
-  <section class="page" :style="{ '--int-rgb': interestTintRgb }">
-    <Breadcrumb :items="breadcrumbItems" />
+  <section class="page" data-color-system="tri-region-v1" :style="{ '--int-rgb': interestTintRgb }">
+    <Breadcrumb :items="breadcrumbItems" :json-ld="true" />
 
     <!-- Hero — "Một góc nhìn, một người kể": lens hero with per-interest halo shape -->
     <section class="catalog-hero cat-interest">
@@ -68,6 +68,22 @@
           ><IconLine :name="t.icon" /> {{ t.label }} ({{ t.count }})</button>
         </div>
       </template>
+
+      <!-- Active filter ledger: shows applied area and type filters with 1-tap dismiss -->
+      <div v-if="activeFilterCount > 0" class="active-filter-ledger" role="region" aria-label="Bộ lọc đang áp dụng">
+        <span class="afl-heading">Đang lọc:</span>
+        <div class="afl-chips">
+          <span v-if="areaFilter !== 'all'" class="afl-chip">
+            <span class="afl-text">{{ activeAreaLabel }}</span>
+            <button type="button" class="afl-remove" :aria-label="`Bỏ lọc khu vực ${activeAreaLabel}`" @click="areaFilter = 'all'"><IconLine name="x" aria-hidden="true" /></button>
+          </span>
+          <span v-if="typeFilter !== 'all'" class="afl-chip">
+            <span class="afl-text">{{ activeTypeLabel }}</span>
+            <button type="button" class="afl-remove" :aria-label="`Bỏ lọc loại hình ${activeTypeLabel}`" @click="typeFilter = 'all'"><IconLine name="x" aria-hidden="true" /></button>
+          </span>
+          <button type="button" class="afl-clear-all" aria-label="Xóa tất cả bộ lọc" @click="clearFilters">Xóa tất cả</button>
+        </div>
+      </div>
     </div>
 
     <p class="result-meta" aria-live="polite">{{ filtered.length }} kết quả</p>
@@ -85,7 +101,29 @@
         <EntityCard :entity="e" />
       </template>
     </div>
-    <EmptyState v-else :message="emptyMessage" />
+    <EmptyState
+      v-else
+      icon-name="search"
+      title="Chưa tìm thấy mục phù hợp"
+      :message="emptyMessage"
+    >
+      <template #actions>
+        <button
+          v-if="activeFilterCount > 0"
+          type="button"
+          class="btn btn-outline"
+          @click="clearFilters"
+        >
+          <IconLine name="repeat" aria-hidden="true" /> Xóa bộ lọc
+        </button>
+        <NuxtLink to="/du-lich" class="btn btn-outline">
+          <IconLine name="leaf" aria-hidden="true" /> Khám phá du lịch
+        </NuxtLink>
+        <NuxtLink to="/san-pham" class="btn btn-outline">
+          <IconLine name="gift" aria-hidden="true" /> Đặc sản & OCOP
+        </NuxtLink>
+      </template>
+    </EmptyState>
     <button
       v-if="filtered.length && visibleCount < filtered.length"
       type="button"
@@ -93,6 +131,7 @@
       @click="visibleCount += PAGE_SIZE"
     >
       {{ loadMoreLabel }}
+      <IconLine name="arrow-down" class="int-more-icon" />
     </button>
     </section>
 
@@ -104,19 +143,19 @@
       <p class="int-cross-sub">Khám phá theo hình thức khác</p>
       <div class="cross-links int-cross">
         <NuxtLink v-if="interestMeta.relatedRoutes?.length" to="/tuyen-duong" class="cross-card">
-          <span class="cross-icon" aria-hidden="true">🛤️</span>
+          <span class="cross-icon" aria-hidden="true"><IconLine name="map" /></span>
           <div><strong>Tuyến đường</strong><p>Vòng {{ interestMeta.label.toLowerCase() }} gợi ý sẵn</p></div>
         </NuxtLink>
         <NuxtLink to="/ban-do" class="cross-card" no-prefetch>
-          <span class="cross-icon" aria-hidden="true">🗺️</span>
+          <span class="cross-icon" aria-hidden="true"><IconLine name="compass" /></span>
           <div><strong>Bản đồ</strong><p>Vị trí thật của từng nơi trong chuyên mục này</p></div>
         </NuxtLink>
         <NuxtLink to="/lich-trinh" class="cross-card">
-          <span class="cross-icon" aria-hidden="true">🗓️</span>
+          <span class="cross-icon" aria-hidden="true"><IconLine name="calendar" /></span>
           <div><strong>Lịch trình</strong><p>Ghép {{ interestMeta.label.toLowerCase() }} vào một tuyến đi</p></div>
         </NuxtLink>
         <NuxtLink to="/ocop" class="cross-card">
-          <span class="cross-icon" aria-hidden="true">⭐</span>
+          <span class="cross-icon" aria-hidden="true"><IconLine name="star" /></span>
           <div><strong>OCOP</strong><p>Sản phẩm đã qua kiểm định sao</p></div>
         </NuxtLink>
       </div>
@@ -149,11 +188,11 @@ const interestMeta = computed(() => resolvedInterestMeta)
 const INTEREST_TINT: Record<string, string> = {
   'am-thuc': 'var(--accent-rgb)',
   'thien-nhien': 'var(--secondary-rgb)',
-  'van-hoa': 'var(--primary-rgb)',
+  'van-hoa': 'var(--color-brand-rgb)',
   'lang-nghe': 'var(--accent-rgb)',
-  'mua-sam': 'var(--primary-rgb)',
+  'mua-sam': 'var(--color-brand-rgb)',
 }
-const interestTintRgb = computed(() => INTEREST_TINT[interest] || 'var(--primary-rgb)')
+const interestTintRgb = computed(() => INTEREST_TINT[interest] || 'var(--color-brand-rgb)')
 
 // Lens hero icon — the interest's own motif glyph, reusing the same
 // generateCategoryIcon() system already powering EntityCard placeholders so
@@ -190,6 +229,23 @@ const breadcrumbItems = computed(() => [
 const areaFilter = ref('all')
 const typeFilter = ref('all')
 useFilterUrl({ vung: areaFilter, loai: typeFilter }, { vung: 'all', loai: 'all' })
+
+const activeFilterCount = computed(() => (areaFilter.value !== 'all' ? 1 : 0) + (typeFilter.value !== 'all' ? 1 : 0))
+
+const activeAreaLabel = computed(() => {
+  if (areaFilter.value === 'all') return ''
+  return AREA_META[areaFilter.value]?.name || areaFilter.value
+})
+
+const activeTypeLabel = computed(() => {
+  if (typeFilter.value === 'all') return ''
+  return TYPE_META[typeFilter.value]?.label || typeFilter.value
+})
+
+function clearFilters() {
+  areaFilter.value = 'all'
+  typeFilter.value = 'all'
+}
 
 const interestTypes = resolvedInterestMeta.types
 
@@ -255,7 +311,7 @@ const loadMoreLabel = computed(() => {
   if (remaining <= 0) return ''
   const last = visible.value[visible.value.length - 1]
   const teaseName = (last as any)?.placeName || (last as any)?.place_name || last?.name
-  if (teaseName) return `Xem thêm — còn ${remaining} mục nữa, kể cả gần ${teaseName} →`
+  if (teaseName) return `Xem thêm — còn ${remaining} mục nữa, kể cả gần ${teaseName}`
   return `Xem thêm (${remaining} còn lại)`
 })
 
@@ -289,25 +345,29 @@ watch([areaFilter, typeFilter], () => {
 })
 
 useSeoMeta({
-  title: `${interestMeta.value.emoji} ${interestMeta.value.label} — Khám phá Vĩnh Long — vinhlong360`,
+  title: `${interestMeta.value.label} — Khám phá Vĩnh Long — vinhlong360`,
   description: interestMeta.value.description,
   ogTitle: `${interestMeta.value.label} — vinhlong360`,
   ogDescription: interestMeta.value.description,
+  ogUrl: () => canonicalUrl(`/kham-pha/${interest}`),
+  twitterCard: 'summary_large_image',
 })
 
-useHead({
-  link: [{ rel: 'canonical', href: canonicalUrl(`/kham-pha/${interest}`) }],
-})
+const interestSchema = computed(() =>
+  buildInterestCategorySchemaGraph({
+    interestKey: interest,
+    title: `${interestMeta.value.label} — Khám phá Vĩnh Long`,
+    description: interestMeta.value.description,
+    totalCount: filtered.value.length,
+    items: filtered.value,
+  })
+)
 
 useHead(() => ({
+  link: [{ rel: 'canonical', href: canonicalUrl(`/kham-pha/${interest}`) }],
   script: [{
     type: 'application/ld+json',
-    innerHTML: JSON.stringify(itemListJsonLd(
-      `${interestMeta.value.label} — Khám phá Vĩnh Long`,
-      interestMeta.value.description,
-      `/kham-pha/${interest}`,
-      filtered.value,
-    )),
+    innerHTML: safeJsonLd(interestSchema.value),
   }],
 }))
 </script>
@@ -321,12 +381,12 @@ useHead(() => ({
    ============================================================ */
 /* the interest tint (--int-rgb) is set inline on the root .page element and
    cascades into every page-local element below, so hero + intro + ribbon all
-   share one cohesive per-interest colour. Falls back to --primary-rgb. */
+   share one cohesive per-interest colour. Falls back to --color-brand-rgb. */
 .catalog-hero.cat-interest {
   /* lift the local hero with a soft brand wash keyed to the interest tone */
   background:
-    radial-gradient(140% 120% at 0% 0%, rgba(var(--int-rgb, var(--primary-rgb)), .12), transparent 62%),
-    linear-gradient(135deg, rgba(var(--int-rgb, var(--primary-rgb)), .07) 0%, rgba(var(--secondary-rgb), .04) 100%);
+    radial-gradient(140% 120% at 0% 0%, rgba(var(--int-rgb, var(--color-brand-rgb)), .12), transparent 62%),
+    linear-gradient(135deg, rgba(var(--int-rgb, var(--color-brand-rgb)), .07) 0%, rgba(var(--secondary-rgb), .04) 100%);
 }
 
 /* animated interest icon: gentle scale + fade reveal on mount, with a soft
@@ -345,7 +405,7 @@ useHead(() => ({
   inset: -28%;
   z-index: -1;
   border-radius: 50%;
-  background: radial-gradient(circle at 50% 45%, rgba(var(--int-rgb, var(--primary-rgb)), .18), transparent 70%);
+  background: radial-gradient(circle at 50% 45%, rgba(var(--int-rgb, var(--color-brand-rgb)), .18), transparent 70%);
   pointer-events: none;
 }
 @keyframes int-icon-reveal {
@@ -354,7 +414,7 @@ useHead(() => ({
 }
 /* the motif glyph now lives in the icon slot (v-html svg) — size + tint it to
    match the hero's visual weight, replacing the old bare-emoji font-size rule */
-.int-hero-icon :deep(svg) { width: 2.6rem; height: 2.6rem; color: rgba(var(--int-rgb, var(--primary-rgb)), .9); }
+.int-hero-icon :deep(svg) { width: 2.6rem; height: 2.6rem; color: rgba(var(--int-rgb, var(--color-brand-rgb)), .9); }
 @media (max-width: 640px) { .int-hero-icon :deep(svg) { width: 2rem; height: 2rem; } }
 
 /* Per-interest halo shape — the halo behind the icon (::before) takes a
@@ -398,14 +458,14 @@ useHead(() => ({
    page-local interest-nav and stagger between the two filter rows.)
    ============================================================ */
 .interest-nav { display: flex; flex-wrap: wrap; gap: var(--space-2); margin-bottom: var(--space-5); }
-.interest-nav .chip { transition: transform .35s var(--ease-spring-gentle), box-shadow .3s var(--ease-out), background .3s var(--ease-out), border-color .3s var(--ease-out); }
+.interest-nav .chip { transition: transform .35s var(--ease-out-expo), box-shadow .3s var(--ease-out), background .3s var(--ease-out), border-color .3s var(--ease-out); }
 .interest-nav .chip:hover { transform: translateY(-1px); box-shadow: var(--shadow-xs); }
 .interest-nav .chip:active { transform: scale(.95); transition-duration: .08s; }
 .interest-nav .chip.active { box-shadow: var(--shadow-sm); }
 /* Polish: explicit focus-visible rings on the interest nav chips so keyboard
    focus is always visible, including on the active (filled) chip */
-.interest-nav .chip:focus-visible { outline: 2px solid var(--primary); outline-offset: 3px; }
-.interest-nav .chip.active:focus-visible { outline-color: var(--accent); outline-offset: 4px; }
+.interest-nav .chip:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 3px; }
+.interest-nav .chip.active:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 4px; }
 
 @media (max-width: 840px) { .interest-nav { flex-wrap: wrap; overflow-x: visible; } }
 /* Polish: roomier tap targets on narrow screens (>=48px, comfortable padding) */
@@ -421,7 +481,7 @@ useHead(() => ({
    underline draws in on hover/focus, evoking flipping through
    indexed photo negatives.
    ============================================================ */
-.int-filmstrip-chip { position: relative; overflow: hidden; transition: font-size .3s var(--ease-out), transform .35s var(--ease-spring-gentle), box-shadow .3s var(--ease-out), background .3s var(--ease-out), border-color .3s var(--ease-out); }
+.int-filmstrip-chip { position: relative; overflow: hidden; transition: font-size .3s var(--ease-out), transform .35s var(--ease-out-expo), box-shadow .3s var(--ease-out), background .3s var(--ease-out), border-color .3s var(--ease-out); }
 .int-filmstrip-chip.int-chip-deep { font-size: calc(var(--text-sm) * 1.08); font-weight: var(--weight-bold); }
 .int-filmstrip-chip::after {
   content: ""; position: absolute; left: var(--space-4); right: var(--space-4); bottom: 5px;
@@ -460,13 +520,13 @@ useHead(() => ({
 /* Dark mode */
 .dark .catalog-hero.cat-interest {
   background:
-    radial-gradient(140% 120% at 0% 0%, rgba(var(--int-rgb, var(--primary-rgb)), .16), transparent 62%),
-    linear-gradient(135deg, rgba(var(--int-rgb, var(--primary-rgb)), .1) 0%, rgba(var(--secondary-rgb), .05) 100%);
+    radial-gradient(140% 120% at 0% 0%, rgba(var(--int-rgb, var(--color-brand-rgb)), .16), transparent 62%),
+    linear-gradient(135deg, rgba(var(--int-rgb, var(--color-brand-rgb)), .1) 0%, rgba(var(--secondary-rgb), .05) 100%);
 }
 .dark .int-byline { color: var(--ink-tertiary) !important; border-top-color: var(--line); }
 .dark .interest-nav .chip { background: var(--bg-alt); border-color: var(--line); }
 .dark .interest-nav .chip:hover { border-color: rgba(var(--white-rgb),.15); }
-.dark .interest-nav .chip.active { background: rgba(var(--primary-rgb), .12); border-color: var(--primary-fg); }
+.dark .interest-nav .chip.active { background: rgba(var(--color-action-rgb), .12); border-color: var(--color-action); }
 .dark .result-meta { color: var(--ink-tertiary); }
 
 /* Reduced motion — drop every page-local transform/animation */
@@ -476,5 +536,16 @@ useHead(() => ({
   .int-hero-icon { animation: none; }
   .int-filmstrip-chip { transition: none; }
   .int-filmstrip-chip::after { transition: none; }
+  .catalog-more:hover .int-more-icon { transform: none; }
+}
+
+.int-more-icon {
+  display: inline-block;
+  margin-left: var(--space-1);
+  font-size: .95rem;
+  transition: transform var(--duration-fast) var(--ease-out-expo);
+}
+.catalog-more:hover .int-more-icon {
+  transform: translateY(2px);
 }
 </style>

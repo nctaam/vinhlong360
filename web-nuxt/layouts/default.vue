@@ -139,8 +139,10 @@ const mobileNav = ref(false)
 const clientReady = ref(false)
 // A3a declutter: beta-banner đã bỏ — OnboardingSheet là kênh truyền thông beta duy nhất
 // (hết 2 interrupt chồng nhau lần đầu vào). CMS key announcements.* không còn bề mặt render.
+const { applySolarThemeIfUnset } = useAdaptiveTheme()
 onMounted(() => {
   clientReady.value = true
+  applySolarThemeIfUnset()
   if (route.query.login === 'admin') showAuth.value = true
 })
 
@@ -238,7 +240,7 @@ const themeOverrideCss = computed(() => {
   const fontScale = ss('theme.font_scale', '') as string
   // P0-5: chỉ nhận mã hex hợp lệ → chặn CSS-injection qua site_settings (vd "red;}body{...")
   const isHex = (c: string) => /^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/.test(c)
-  if (isHex(primary)) vars.push(`--primary: ${primary}`)
+  if (isHex(primary)) vars.push(`--color-brand: ${primary}`)
   if (isHex(accent)) vars.push(`--accent: ${accent}`)
   if (isHex(secondary)) vars.push(`--secondary: ${secondary}`)
   // Validate radius is a plain CSS length (blocks any CSS injection via the setting).
