@@ -698,3 +698,221 @@ export function buildItineraryDetailSchemaGraph(options: ItineraryDetailSchemaOp
   ])
 }
 
+export interface DirectorySchemaOptions {
+  totalWards?: number
+  selectedArea?: string
+  dirTitle?: string
+  dirDesc?: string
+  dirUrl?: string
+  facilities?: Array<{
+    id: string
+    name: string
+    address?: string
+    phone?: string
+    hours?: string
+    kind?: string
+  }>
+}
+
+export function buildDirectorySchemaGraph(options: DirectorySchemaOptions = {}): Record<string, any> {
+  const dirUrl = options.dirUrl || canonicalUrl('/danh-ba')
+  const dirTitle = options.dirTitle || 'Danh bạ hành chính — vinhlong360'
+  const dirDesc = options.dirDesc || 'Danh bạ 124 xã/phường, cơ quan hành chính tỉnh Vĩnh Long hợp nhất (3 vùng trước 7-2025).'
+  const total = options.totalWards || 124
+
+  const webpageNode: Record<string, any> = {
+    '@type': 'CollectionPage',
+    '@id': `${dirUrl}#webpage`,
+    url: dirUrl,
+    name: dirTitle,
+    description: dirDesc,
+    inLanguage: 'vi',
+    isPartOf: { '@id': `${SITE_URL}/#website` },
+    breadcrumb: { '@id': `${dirUrl}#breadcrumb` },
+    mainEntity: {
+      '@type': 'ItemList',
+      numberOfItems: total,
+    },
+    speakable: buildSpeakableSpecification(['h1', '.catalog-hero p', '.ward-caveat']),
+    publisher: { '@id': `${SITE_URL}/#organization` },
+  }
+
+  const breadcrumbNode = {
+    '@type': 'BreadcrumbList',
+    '@id': `${dirUrl}#breadcrumb`,
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'Trang chủ', item: `${SITE_URL}/` },
+      { '@type': 'ListItem', position: 2, name: 'Danh bạ', item: dirUrl },
+    ],
+  }
+
+  const govServiceNode = {
+    '@type': 'GovernmentService',
+    '@id': `${dirUrl}#service`,
+    name: 'Dịch vụ tra cứu danh bạ hành chính và hỗ trợ du khách Vĩnh Long',
+    serviceType: 'Administrative Directory & Visitor Support',
+    provider: { '@id': `${SITE_URL}/#organization` },
+    serviceArea: {
+      '@type': 'AdministrativeArea',
+      name: 'Tỉnh Vĩnh Long',
+      description: 'Bao gồm 124 xã/phường hợp nhất từ 3 vùng trước tháng 7-2025.',
+    },
+    availableChannel: {
+      '@type': 'ServiceChannel',
+      serviceUrl: dirUrl,
+      servicePhone: {
+        '@type': 'ContactPoint',
+        telephone: '+84-270-3822182',
+        contactType: 'customer support, emergency, administrative information',
+        areaServed: 'VN-49',
+        availableLanguage: ['vi', 'en'],
+      },
+    },
+  }
+
+  const facilityNodes = (options.facilities || [])
+    .filter(f => f.address || f.phone)
+    .slice(0, 20)
+    .map(f => ({
+      '@type': 'GovernmentOffice',
+      '@id': `${dirUrl}#office-${f.id}`,
+      name: f.name,
+      ...(f.address ? {
+        address: {
+          '@type': 'PostalAddress',
+          streetAddress: f.address,
+          addressRegion: 'Vĩnh Long',
+          addressCountry: 'VN',
+        },
+      } : {}),
+      ...(f.phone ? { telephone: f.phone } : {}),
+      ...(f.hours ? { openingHours: f.hours } : {}),
+    }))
+
+  const faqItems: FaqItem[] = [
+    {
+      q: 'Danh bạ hành chính vinhlong360 gồm những đơn vị nào?',
+      a: 'Danh bạ tra cứu gồm 124 xã, phường và thị trấn thuộc tỉnh Vĩnh Long hợp nhất (bao gồm cả các địa phương của Bến Tre và Trà Vinh trước tháng 7-2025).',
+    },
+    {
+      q: 'Làm thế nào để tra cứu số điện thoại UBND và Công an xã/phường?',
+      a: 'Bạn có thể chọn khu vực vùng, sau đó chọn tên xã/phường để xem địa chỉ trụ sở, số điện thoại liên hệ trực tiếp và thời gian tiếp công dân.',
+    },
+    {
+      q: 'Dữ liệu danh bạ cơ quan có được kiểm chứng từ nguồn chính thống không?',
+      a: 'Các thông tin có huy hiệu xác minh được đối soát trực tiếp từ cổng thông tin điện tử của cơ quan nhà nước (.gov.vn).',
+    },
+  ]
+  const faqNode = buildFaqPageSchema(faqItems, `${dirUrl}#faq`)
+
+  return buildUnifiedSchemaGraph([
+    buildWebSiteSchema(),
+    buildOrganizationSchema(),
+    webpageNode,
+    breadcrumbNode,
+    govServiceNode,
+    ...facilityNodes,
+    faqNode,
+  ])
+}
+
+export interface NewsArticleSchemaOptions {
+  article: {
+    id?: string | number
+    title: string
+    headline?: string
+    description?: string
+    summary?: string
+    body?: string
+    content?: string
+    url?: string
+    image?: string | ImageDescriptor
+    datePublished?: string
+    dateModified?: string
+    author?: {
+      name?: string
+      url?: string
+      avatar?: string
+    } | string
+    category?: string
+    tags?: string[]
+  }
+  canonicalUrl?: string
+}
+
+export function buildNewsArticleSchemaGraph(options: NewsArticleSchemaOptions): Record<string, any> {
+  const a = options.article
+  const articleUrl = options.canonicalUrl || a.url || canonicalUrl(`/tin-tuc/${a.id || ''}`)
+  const title = a.headline || a.title
+  const desc = a.description || a.summary || ''
+  const body = a.body || a.content || desc
+
+  const webpageNode = {
+    '@type': 'WebPage',
+    '@id': `${articleUrl}#webpage`,
+    url: articleUrl,
+    name: `${title} — Tin tức Vĩnh Long 360`,
+    description: desc,
+    inLanguage: 'vi-VN',
+    isPartOf: { '@id': `${SITE_URL}/#website` },
+    breadcrumb: { '@id': `${articleUrl}#breadcrumb` },
+    mainEntity: { '@id': `${articleUrl}#article` },
+    speakable: buildSpeakableSpecification(['h1', '.news-summary', '.lead', 'article p']),
+    publisher: { '@id': `${SITE_URL}/#organization` },
+  }
+
+  const breadcrumbNode = {
+    '@type': 'BreadcrumbList',
+    '@id': `${articleUrl}#breadcrumb`,
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'Trang chủ', item: `${SITE_URL}/` },
+      { '@type': 'ListItem', position: 2, name: 'Tin tức', item: `${SITE_URL}/tin-tuc` },
+      { '@type': 'ListItem', position: 3, name: title, item: articleUrl },
+    ],
+  }
+
+  const authorName = typeof a.author === 'string' ? a.author : (a.author?.name || 'Ban biên tập vinhlong360')
+  const authorNode = {
+    '@type': 'Person',
+    name: authorName,
+    ...(typeof a.author === 'object' && a.author?.url ? { url: a.author.url } : {}),
+  }
+
+  const articleMeta: Record<string, any> = {
+    '@type': 'NewsArticle',
+    '@id': `${articleUrl}#article`,
+    isPartOf: { '@id': `${articleUrl}#webpage` },
+    headline: title,
+    description: desc,
+    articleBody: body,
+    url: articleUrl,
+    mainEntityOfPage: { '@id': `${articleUrl}#webpage` },
+    inLanguage: 'vi-VN',
+    datePublished: a.datePublished || new Date().toISOString(),
+    dateModified: a.dateModified || a.datePublished || new Date().toISOString(),
+    author: authorNode,
+    publisher: { '@id': `${SITE_URL}/#organization` },
+  }
+
+  if (a.image) {
+    if (typeof a.image === 'string') {
+      articleMeta.image = [a.image.startsWith('http') ? a.image : `${SITE_URL}${a.image}`]
+    } else {
+      const imgObj = descriptorToImageObject(a.image)
+      if (imgObj) articleMeta.image = [imgObj.contentUrl]
+    }
+  }
+
+  if (a.category) articleMeta.articleSection = a.category
+  if (Array.isArray(a.tags) && a.tags.length) articleMeta.keywords = a.tags.join(', ')
+
+  return buildUnifiedSchemaGraph([
+    buildWebSiteSchema(),
+    buildOrganizationSchema(),
+    webpageNode,
+    breadcrumbNode,
+    articleMeta,
+  ])
+}
+
+

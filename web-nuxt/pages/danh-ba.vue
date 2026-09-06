@@ -300,17 +300,20 @@ const jsonLd = computed(() => facilities.value
     ...(attr(f, 'hours') ? { openingHours: attr(f, 'hours') } : {}),
   })))
 
-const directorySchema = computed(() => ({
-  '@context': 'https://schema.org',
-  '@type': 'CollectionPage',
-  name: pc('seo_title') || 'Danh bạ hành chính — vinhlong360',
-  description: pc('seo_description') || 'Danh bạ 124 xã/phường, cơ quan hành chính tỉnh Vĩnh Long (gồm khu vực Bến Tre, Trà Vinh trước 7-2025).',
-  url: canonicalUrl('/danh-ba'),
-  inLanguage: 'vi',
-  mainEntity: {
-    '@type': 'ItemList',
-    numberOfItems: totalWards.value,
-  },
+// Đồ thị tri thức hợp nhất: '@type': 'CollectionPage', GovernmentService, ContactPoint, GovernmentOffice, FAQPage
+const directorySchema = computed(() => buildDirectorySchemaGraph({
+  totalWards: totalWards.value,
+  selectedArea: selectedArea.value,
+  dirTitle: pc('seo_title') || 'Danh bạ hành chính — vinhlong360',
+  dirDesc: pc('seo_description') || 'Danh bạ 124 xã/phường, cơ quan hành chính tỉnh Vĩnh Long hợp nhất (3 vùng trước 7-2025).',
+  facilities: facilities.value.map((f: Entity) => ({
+    id: f.id,
+    name: f.name,
+    address: attr(f, 'address'),
+    phone: attr(f, 'phone'),
+    hours: attr(f, 'hours'),
+    kind: attr(f, 'kind'),
+  })),
 }))
 
 useSeoMeta({

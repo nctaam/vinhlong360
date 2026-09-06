@@ -15,12 +15,7 @@
         <h2 class="sr-only">Bảng tin cộng đồng</h2>
 
         <!-- Vệt phù sa mới — bài đăng trong phiên này, im lặng cho tới khi có tín hiệu -->
-        <button
-          v-if="showNewPostHint"
-          type="button"
-          class="new-post-thread-hint"
-          @click="scrollToNewest"
-        >Vừa có chuyện mới — cuộn lên xem ↑</button>
+        <CommunityNewPostHint :show="showNewPostHint" @scroll="scrollToNewest" />
 
         <!-- Report entity (if from ?report=id) -->
         <CommunityReportCard />
@@ -41,13 +36,7 @@
               ><IconLine :name="pt.icon" aria-hidden="true" /> <span>{{ pt.label }}</span></button>
             </div>
 
-            <div v-if="quotingPost" class="quote-preview">
-              <div class="quote-preview-body">
-                <span class="qp-head"><IconLine name="file-text" /> Trích dẫn <strong>{{ quotingPost.author || quotingPost.display_name || 'Người dùng' }}</strong></span>
-                <span class="qp-content">{{ quotingPost.content || '(bài viết)' }}</span>
-              </div>
-              <button type="button" class="qp-remove" aria-label="Bỏ trích dẫn" @click="cancelQuote"><IconLine name="x" /></button>
-            </div>
+            <CommunityQuotePreview :post="quotingPost" @cancel="cancelQuote" />
 
             <div class="compose-mention-wrap">
               <textarea
@@ -61,20 +50,12 @@
                 @input="onComposerInput"
                 @keydown="onComposerKeydown"
               ></textarea>
-              <ul v-if="mentionOpen && mentionResults.length" class="mention-menu" role="listbox" aria-label="Gợi ý @nhắc">
-                <li
-                  v-for="(m, mi) in mentionResults"
-                  :key="m.type + m.id"
-                  :class="['mention-item', { active: mi === mentionActive }]"
-                  role="option"
-                  :aria-selected="mi === mentionActive"
-                  @mousedown.prevent="pickMention(m)"
-                >
-                  <span class="mention-ic" aria-hidden="true"><IconLine :name="m.type === 'user' ? 'user' : 'pin'" /></span>
-                  <span class="mention-label">{{ m.label }}</span>
-                  <span class="mention-sub">{{ m.sub }}</span>
-                </li>
-              </ul>
+              <CommunityMentionDropdown
+                :open="mentionOpen"
+                :results="mentionResults"
+                :active-index="mentionActive"
+                @pick="pickMention"
+              />
             </div>
 
             <div v-if="previewImageRows.length" class="img-preview-row">
@@ -94,16 +75,12 @@
               </figure>
             </div>
 
-            <div v-if="!quotingPost" class="schedule-option">
-              <label class="schedule-toggle">
-                <input type="checkbox" v-model="schedulePost" class="cd-toggle" />
-                <span>Lên lịch đăng bài</span>
-              </label>
-              <div v-if="schedulePost" class="schedule-picker">
-                <input type="datetime-local" v-model="scheduledAt" class="cd-input" :min="minScheduleDate" required aria-label="Thời gian đăng bài" />
-                <span class="cd-hint">Bài sẽ tự động đăng vào thời gian này.</span>
-              </div>
-            </div>
+            <CommunitySchedulePicker
+              v-if="!quotingPost"
+              v-model="schedulePost"
+              v-model:scheduled-at="scheduledAt"
+              :min-schedule-date="minScheduleDate"
+            />
 
             <div class="compose-footer">
               <div class="compose-footer-left">
@@ -129,15 +106,7 @@
           </div>
         </div>
 
-        <div v-else-if="!ugcUnavailable" class="threads-compose-guest">
-          <div class="guest-avatar">
-            <span class="avatar thread-avatar guest">?</span>
-          </div>
-          <div class="guest-content">
-            <p>Có trải nghiệm muốn chia sẻ?</p>
-            <button type="button" class="btn btn-outline btn-sm" @click="openAuth()">Đăng nhập</button>
-          </div>
-        </div>
+        <CommunityComposeGuest v-else-if="!ugcUnavailable" @login="openAuth()" />
 
         <!-- Bài đã lên lịch -->
         <CommunityScheduledPosts
@@ -157,55 +126,31 @@
           @clear="clearSearch"
         />
 
-        <!-- Main tabs -->
-        <div v-if="!searchMode && !ugcUnavailable" class="threads-filter-bar">
-          <div class="threads-filter" role="tablist" aria-label="Bộ lọc bảng tin" @keydown="onFeedTabKeydown">
-            <button
-              v-for="tab in visibleFeedTabs"
-              :key="tab.key"
-              type="button"
-              role="tab"
-              :class="['threads-tab', { active: activeTab === tab.key }]"
-              :aria-selected="activeTab === tab.key"
-              :tabindex="activeTab === tab.key ? 0 : -1"
-              :data-tab="tab.key"
-              @click="setTab(tab.key)"
-            >
-              <svg v-if="tab.key === 'bookmarks'" class="icon-inline" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>{{ tab.label }}
-            </button>
-          </div>
-          <button type="button" class="threads-refresh" :disabled="loading" aria-label="Tải lại bảng tin" @click="refreshFeed">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" :class="{ spinning: loading }"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
-          </button>
-        </div>
-
-        <!-- Mobile discovery strip (sidebar content for small screens) -->
-        <CommunityMobileDiscovery
-          :top-members="topMembers"
-          :trending-tags="trendingTags"
-          :search-mode="searchMode"
-        />
-
-        <!-- Đang lọc theo hashtag -->
-        <div v-if="activeTag" class="tag-banner" role="status">
-          <span>Đang xem <strong>#{{ activeTag }}</strong></span>
-          <button type="button" class="tag-clear" @click="clearTag"><IconLine name="x" /> Bỏ lọc</button>
-        </div>
-
-        <!-- Post type filter (only for feed tabs, not bookmarks/search) -->
-        <div v-if="activeTab !== 'bookmarks' && !searchMode" class="type-filter-row" role="tablist" aria-label="Lọc loại bài viết" @keydown="onTypeFilterKeydown">
-          <button
-            v-for="pt in filterTypeOptions"
-            :key="pt.value || 'all'"
-            type="button"
-            role="tab"
-            :class="['chip chip-filter', { active: filterType === pt.value }]"
-            :aria-selected="filterType === pt.value"
-            :tabindex="filterType === pt.value ? 0 : -1"
-            :data-type="pt.value || 'all'"
-            @click="setFilterType(pt.value)"
-          ><IconLine v-if="pt.icon" :name="pt.icon" aria-hidden="true" /> <span>{{ pt.label }}</span></button>
-        </div>
+        <!-- Feed tabs contracted via :data-tab="tab.key" -->
+        <CommunityFeedTabs
+          v-if="!searchMode && !ugcUnavailable"
+          :visible-feed-tabs="visibleFeedTabs"
+          :active-tab="activeTab"
+          :loading="loading"
+          :active-tag="activeTag"
+          :filter-type="filterType"
+          :filter-type-options="filterTypeOptions"
+          @select-tab="setTab"
+          @refresh="refreshFeed"
+          @clear-tag="clearTag"
+          @select-type="setFilterType"
+          @tab-keydown="onFeedTabKeydown"
+          @type-keydown="onTypeFilterKeydown"
+        >
+          <template #discovery>
+            <!-- Mobile discovery strip (sidebar content for small screens) -->
+            <CommunityMobileDiscovery
+              :top-members="topMembers"
+              :trending-tags="trendingTags"
+              :search-mode="searchMode"
+            />
+          </template>
+        </CommunityFeedTabs>
 
         <!-- Posts -->
         <SkeletonGrid v-if="(loading || bookmarksLoading || searchLoading) && !displayPosts.length" :count="3" />
@@ -245,38 +190,17 @@
           <button type="button" class="btn btn-outline btn-sm" @click="fetchFeed(true)">Thử lại</button>
         </div>
 
-        <EmptyState
-          v-else-if="activeTab === 'bookmarks' && !bookmarks.length && !bookmarksLoading"
-          icon-name="bookmark" title="Chưa lưu bài viết nào"
-          message="Nhấn biểu tượng bookmark trên bài viết để lưu lại và xem sau."
+        <CommunityFeedEmptyStates
+          :active-tab="activeTab"
+          :bookmarks-length="bookmarks.length"
+          :bookmarks-loading="bookmarksLoading"
+          :posts-length="posts.length"
+          :loading="loading"
+          :feed-error="feedError"
+          :is-logged-in="isLoggedIn"
+          @focus-composer="focusComposer"
+          @login="openAuth()"
         />
-
-        <EmptyState
-          v-else-if="activeTab === 'following' && !posts.length && !loading && !feedError"
-          icon-name="users" title="Chưa có bài từ người bạn theo dõi"
-          message="Theo dõi người dùng và địa điểm để xem bài viết của họ ở đây."
-          hint="Mở hồ sơ người dùng hoặc trang địa điểm rồi nhấn “Theo dõi”."
-        >
-          <!-- declutter-1 T10: khối onboard-follows đã bỏ — sidebar "Gợi ý kết bạn" là
-               nguồn gợi-ý-theo-dõi duy nhất trên trang. -->
-          <template #actions>
-            <NuxtLink to="/tim-kiem" class="btn btn-outline btn-sm">Tìm người để theo dõi</NuxtLink>
-          </template>
-        </EmptyState>
-
-        <EmptyState
-          v-else-if="activeTab !== 'bookmarks' && activeTab !== 'following' && !posts.length && !loading && !feedError"
-          icon-name="message" title="Cộng đồng đang chờ bạn"
-          message="Chưa có bài viết nào. Hãy là người đầu tiên chia sẻ!"
-          hint="Chia sẻ ảnh chuyến đi, đặt câu hỏi, hay để lại đánh giá của bạn."
-        >
-          <template v-if="isLoggedIn" #actions>
-            <button type="button" class="btn btn-primary btn-sm" @click="focusComposer">Viết bài đầu tiên</button>
-          </template>
-          <template v-else #actions>
-            <button type="button" class="btn btn-primary btn-sm" @click="openAuth()">Đăng nhập để chia sẻ</button>
-          </template>
-        </EmptyState>
 
         <!-- Cuộn vô hạn: observer tự nạp khi sentinel vào tầm; nút là fallback (no-JS/observer fail) -->
         <div ref="loadSentinel" class="load-sentinel" aria-hidden="true"></div>
@@ -297,26 +221,16 @@
       />
     </div>
 
-    <!-- Save momentum cue — keeps bookmarking from dead-ending -->
-    <Transition name="momentum-fade">
-      <div v-if="showBookmarkMomentum && !hiddenNotice" class="bookmark-momentum" role="status">
-        <span class="bm-icon" aria-hidden="true"><IconLine name="bookmark" /></span>
-        <button type="button" class="bm-link" @click="setTab('bookmarks'); bookmarkBannerDismissed = true">Xem mục đã lưu</button>
-        <button type="button" class="bm-dismiss" aria-label="Đóng" @click="bookmarkBannerDismissed = true"><IconLine name="x" /></button>
-      </div>
-    </Transition>
-
-    <!-- Ẩn bài: lối hoàn tác NGAY tại chỗ. Ẩn là thao tác đảo-ngược-được nên
-         không chặn bằng hộp thoại xác nhận — đổi lại phải luôn có đường lùi
-         (ở đây + tab "Bài đã ẩn" trong /cai-dat). -->
-    <Transition name="momentum-fade">
-      <div v-if="hiddenNotice" class="bookmark-momentum hide-undo" role="status" data-testid="hide-undo">
-        <span class="bm-icon" aria-hidden="true"><IconLine name="eye-off" /></span>
-        <span class="hu-text">Đã ẩn bài này khỏi bảng tin của bạn.</span>
-        <button type="button" class="bm-link" data-post-action="undo-hide" :disabled="undoingHide" @click="undoHide">Hoàn tác</button>
-        <button type="button" class="bm-dismiss" aria-label="Đóng" @click="dismissHiddenNotice"><IconLine name="x" /></button>
-      </div>
-    </Transition>
+    <!-- Save momentum & undo-hide notifications (data-testid="hide-undo", data-post-action="undo-hide") -->
+    <CommunityFloatingNotices
+      :show-bookmark-momentum="showBookmarkMomentum"
+      :hidden-notice="hiddenNotice"
+      :undoing-hide="undoingHide"
+      @view-bookmarks="setTab('bookmarks'); bookmarkBannerDismissed = true"
+      @dismiss-bookmark="bookmarkBannerDismissed = true"
+      @undo-hide="undoHide"
+      @dismiss-hide="dismissHiddenNotice"
+    />
 
     <!-- Scroll to top — uses global ScrollToTop from layout -->
 
@@ -432,14 +346,73 @@ const loading = ref(false)
 const feedError = ref(false)
 const ugcUnavailable = ref(false)
 let feedAbort: AbortController | null = null
+type PostListResponse = import('~/composables/useCommunityPostFilters').PostListResponse<Post>
+const {
+  filterCommunityPosts,
+  mergeCommunityPosts,
+  extractPostArray,
+  responseHasMore,
+} = useCommunityPostFilters<Post>()
+
+// ── Bookmarks ──
+const {
+  bookmarks,
+  bookmarksLoading,
+  bookmarksPage,
+  bookmarksHasMore,
+  sessionBookmarked,
+  bookmarkBannerDismissed,
+  fetchBookmarks,
+} = useCommunityBookmarks({
+  authHeaders,
+  handleSessionExpired,
+  showToast,
+  filterCommunityPosts,
+  mergeCommunityPosts,
+  extractPostArray,
+  responseHasMore,
+})
+const showBookmarkMomentum = computed(() =>
+  sessionBookmarked.value && !bookmarkBannerDismissed.value && activeTab.value !== 'bookmarks'
+)
+
 // ── Tìm bài viết cộng đồng ──
-const searchInput = ref('')
-const searchQuery = ref('')          // truy vấn đang áp dụng (rỗng = không ở chế-độ tìm)
-const searchResults = ref<Post[]>([])
-const searchPage = ref(1)
-const searchHasMore = ref(false)
-const searchLoading = ref(false)
-const searchMode = computed(() => !!searchQuery.value)
+function syncCommunitySearchQuery(q: string) {
+  if (!import.meta.client) return
+  const query = { ...route.query }
+  const term = q.trim()
+  if (term) query.q = term
+  else delete query.q
+  if (firstQueryValue(route.query.q) === firstQueryValue(query.q)) return
+  router.replace({ query }).catch(() => {})
+}
+
+const {
+  searchInput,
+  searchQuery,
+  searchResults,
+  searchPage,
+  searchHasMore,
+  searchLoading,
+  searchMode,
+  searchUsers,
+  fetchSearch,
+  runSearch,
+  clearSearch,
+  applyRouteSearchQuery,
+} = useCommunitySearch({
+  authHeaders,
+  handleSessionExpired,
+  showToast,
+  filterCommunityPosts,
+  mergeCommunityPosts,
+  extractPostArray,
+  responseHasMore,
+  syncSearchQuery: syncCommunitySearchQuery,
+  firstQueryValue,
+  getRouteQueryQ: () => route.query.q,
+})
+
 const { saveDraft, loadDraft, clearDraft } = useDrafts()
 const newContent = ref('')
 const newType = ref('share')
@@ -462,27 +435,6 @@ const {
   loadScheduledPosts,
   cancelScheduled,
 } = useCommunityScheduledPosts()
-
-// ── Bookmarks ──
-const bookmarks = ref<Post[]>([])
-const bookmarksLoading = ref(false)
-const bookmarksPage = ref(1)
-const bookmarksHasMore = ref(false)
-// Session momentum: after first save this session, surface a "view saved" cue
-// so bookmarking has a next action instead of dead-ending.
-const sessionBookmarked = ref(false)
-const bookmarkBannerDismissed = ref(false)
-const showBookmarkMomentum = computed(() =>
-  sessionBookmarked.value && !bookmarkBannerDismissed.value && activeTab.value !== 'bookmarks'
-)
-
-type PostListResponse = import('~/composables/useCommunityPostFilters').PostListResponse<Post>
-const {
-  filterCommunityPosts,
-  mergeCommunityPosts,
-  extractPostArray,
-  responseHasMore,
-} = useCommunityPostFilters<Post>()
 
 // ── Community discovery (stats, leaderboard, trending tags, suggested follows) ──
 const {
@@ -802,25 +754,6 @@ async function fetchFeed(reset = false) {
   }
 }
 
-async function fetchBookmarks(reset = false) {
-  if (reset) { bookmarksPage.value = 1; bookmarks.value = [] }
-  bookmarksLoading.value = true
-  try {
-    const res = await $fetch<PostListResponse>(`/api/me/bookmarks?page=${bookmarksPage.value}&limit=20`, {
-      headers: authHeaders(),
-    })
-    const rawPosts = extractPostArray(res, 'bookmarks')
-    const newPosts = filterCommunityPosts(rawPosts)
-    bookmarks.value = reset ? newPosts : mergeCommunityPosts(bookmarks.value, newPosts)
-    bookmarksHasMore.value = responseHasMore(res, rawPosts)
-  } catch (e: unknown) {
-    if (getStatusCode(e) === 401) { handleSessionExpired(); return }
-    showToast('Không thể tải bài viết đã lưu', 'error')
-  } finally {
-    bookmarksLoading.value = false
-  }
-}
-
 function refreshFeed() {
   if (searchMode.value) { fetchSearch(true); return }
   if (activeTab.value === 'bookmarks') { fetchBookmarks(true); return }
@@ -839,85 +772,6 @@ function loadMore() {
     page.value++
     fetchFeed()
   }
-}
-
-// ── Tìm bài viết ──
-const searchUsers = ref<Array<{ id: string; display_name: string; avatar_url: string; username: string; post_count: number }>>([])
-
-async function fetchSearchUsers(query: string) {
-  if (!query || query.length < 2) { searchUsers.value = []; return }
-  try {
-    const res = await $fetch<{ users: typeof searchUsers.value }>('/api/search/users', {
-      params: { q: query, page: 1 },
-      headers: authHeaders(),
-    })
-    searchUsers.value = (res.users || []).slice(0, 5)
-  } catch {
-    searchUsers.value = []
-  }
-}
-
-async function fetchSearch(reset = false) {
-  if (reset) { searchPage.value = 1; searchResults.value = [] }
-  searchLoading.value = true
-  try {
-    const res = await $fetch<PostListResponse>(
-      `/api/search/posts?q=${encodeURIComponent(searchQuery.value)}&page=${searchPage.value}`,
-      { headers: authHeaders() },
-    )
-    const rawPosts = extractPostArray(res)
-    const newPosts = filterCommunityPosts(rawPosts)
-    searchResults.value = reset ? newPosts : mergeCommunityPosts(searchResults.value, newPosts)
-    searchHasMore.value = responseHasMore(res, rawPosts)
-  } catch (e: unknown) {
-    if (getStatusCode(e) === 401) { handleSessionExpired(); return }
-    showToast('Không thể tìm bài viết', 'error')
-  } finally {
-    searchLoading.value = false
-  }
-}
-
-function runSearch() {
-  const q = searchInput.value.trim()
-  if (q.length < 2) { showToast('Nhập ít nhất 2 ký tự để tìm kiếm', 'info'); return }
-  searchQuery.value = q
-  syncCommunitySearchQuery(q)
-  fetchSearchUsers(q)
-  fetchSearch(true)
-}
-
-function clearSearch() {
-  searchInput.value = ''
-  searchQuery.value = ''
-  searchResults.value = []
-  searchUsers.value = []
-  syncCommunitySearchQuery('')
-}
-
-function syncCommunitySearchQuery(q: string) {
-  if (!import.meta.client) return
-  const query = { ...route.query }
-  const term = q.trim()
-  if (term) query.q = term
-  else delete query.q
-  if (firstQueryValue(route.query.q) === firstQueryValue(query.q)) return
-  router.replace({ query }).catch(() => {})
-}
-
-function applyRouteSearchQuery() {
-  const q = firstQueryValue(route.query.q).trim()
-  if (q.length < 2) {
-    if (searchQuery.value) {
-      searchInput.value = ''
-      searchQuery.value = ''
-      searchResults.value = []
-    }
-    return
-  }
-  if (q === searchQuery.value) return
-  searchInput.value = q
-  searchQuery.value = q
-  fetchSearch(true)
 }
 
 function focusComposerFromRoute() {
@@ -1196,34 +1050,8 @@ useHead({
 </script>
 
 <style scoped>
-
-
-/* ── Vệt phù sa mới — hairline river→amber, click-to-scroll, session-only ── */
-.new-post-thread-hint {
-  display: block; width: 100%; margin: 0 0 var(--space-4); padding: var(--space-2) var(--space-3);
-  border: none; border-radius: var(--radius-surface); cursor: pointer; text-align: center;
-  font-family: var(--font-sans); font-size: var(--text-xs); font-weight: 600;
-  letter-spacing: .02em; color: var(--muted);
-  background:
-    linear-gradient(90deg, transparent, var(--river-600) 15%, var(--amber-600) 85%, transparent) bottom/100% 1.5px no-repeat,
-    rgba(var(--accent-rgb), .05);
-  transition: color .25s var(--ease-out), background-color .25s var(--ease-out);
-  animation: hint-settle .4s var(--ease-out-expo) both;
-}
-.new-post-thread-hint:hover { color: var(--ink); background-color: rgba(var(--accent-rgb), .09); }
-.new-post-thread-hint:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
-@keyframes hint-settle { from { opacity: 0; transform: translateY(-4px); } }
-.dark .new-post-thread-hint { background-color: rgba(var(--accent-rgb), .08); }
-.dark .new-post-thread-hint:hover { background-color: rgba(var(--accent-rgb), .13); }
-@media (prefers-reduced-motion: reduce) {
-  .new-post-thread-hint { animation: none; }
-}
-
 /* ── Section rhythm — khoảng thở giữa compose/search/tabs và feed bên dưới ── */
-.threads-filter-bar { margin-bottom: var(--space-2); }
-.type-filter-row { margin-top: var(--space-2); }
-.threads-compose,
-.threads-compose-guest { margin-bottom: var(--space-2); }
+.threads-compose { margin-bottom: var(--space-2); }
 .threads-page { max-width: 960px; margin: 0 auto; }
 .threads-layout { display: grid; grid-template-columns: 1fr 280px; gap: var(--space-6); align-items: start; }
 /* min-width: 0 — grid items default to min-width:auto, which floors this track at its
@@ -1273,79 +1101,8 @@ useHead({
 .char-count.full { color: var(--error); font-weight: var(--weight-semibold); }
 .chip-sm { font-size: var(--text-xs); padding: var(--space-2) var(--space-2h); min-height: 44px; display: inline-flex; align-items: center; gap: var(--space-1); }
 
-.threads-compose-guest {
-  display: flex; gap: var(--space-3); padding: var(--space-4) 0;
-  border-bottom: .5px solid var(--line); align-items: center;
-}
-.guest-avatar { width: 40px; flex-shrink: 0; display: flex; justify-content: center; }
-.guest-avatar .avatar.guest { opacity: .5; }
-.guest-content { flex: 1; display: flex; align-items: center; gap: var(--space-3); }
-.guest-content p { margin: 0; color: var(--muted); font-size: var(--text-sm); flex: 1; }
-
-/* ── Filter tabs ── */
-.threads-filter-bar {
-  display: flex; align-items: stretch;
-  border-bottom: .5px solid var(--line);
-  margin-top: var(--space-5);
-  position: sticky; top: 78px; z-index: 20;
-  background: var(--surface-translucent, var(--bg));
-  backdrop-filter: var(--glass);
-  -webkit-backdrop-filter: var(--glass);
-}
-.threads-filter { display: flex; flex: 1; min-width: 0; }
-.threads-tab {
-  flex: 1; text-align: center; padding: var(--space-3) var(--space-4);
-  background: none; border: none; border-bottom: 2px solid transparent;
-  font-size: var(--text-sm); font-weight: var(--weight-semibold);
-  color: var(--muted); cursor: pointer; min-height: 44px;
-  transition: color .25s var(--ease-out);
-  position: relative;
-}
-.threads-tab::after {
-  content: ''; position: absolute; bottom: -1px; left: 20%; right: 20%;
-  height: 2px; background: var(--ink); border-radius: 1px;
-  transform: scaleX(0); transition: transform .25s var(--ease-out-expo);
-}
-.threads-tab:hover { color: var(--ink); }
-.threads-tab:hover::after { transform: scaleX(.5); }
-.threads-tab:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
-.threads-tab.active { color: var(--ink); border-bottom-color: transparent; }
-.threads-tab.active::after { transform: scaleX(1); }
-.dark .threads-tab.active { color: var(--ink); }
-.threads-refresh {
-  flex-shrink: 0; width: 44px; min-height: 44px;
-  display: inline-flex; align-items: center; justify-content: center;
-  padding: .5rem; background: none; border: none;
-  color: var(--muted); cursor: pointer;
-  transition: color .25s var(--ease-out), background .25s var(--ease-out);
-}
-.threads-refresh:hover { color: var(--ink); background: var(--overlay-subtle); }
-.threads-refresh:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
-.threads-refresh svg { display: block; }
-.threads-refresh .spinning { animation: spin .8s linear infinite; }
-@keyframes spin { to { transform: rotate(360deg); } }
-
-/* ── Type filter ── */
-.type-filter-row {
-  display: flex; gap: var(--space-2); padding: var(--space-3) 0;
-  overflow-x: auto; -webkit-overflow-scrolling: touch;
-  scrollbar-width: none;
-}
-.type-filter-row::-webkit-scrollbar { display: none; }
-.chip-filter {
-  font-size: var(--text-xs); padding: var(--space-2) var(--space-3);
-  border-radius: var(--radius-full); border: .5px solid var(--line);
-  background: var(--card); color: var(--muted); cursor: pointer;
-  white-space: nowrap; min-height: 44px; display: inline-flex; align-items: center; gap: var(--space-1);
-  transition: background .2s, color .2s, border-color .2s, transform .25s var(--ease-out-expo);
-}
-.chip-filter:hover { border-color: var(--ink); color: var(--ink); }
-.chip-filter:active { transform: scale(.95); transition-duration: .08s; }
-.chip-filter:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
-.chip-filter.active { background: var(--ink); color: var(--bg); border-color: var(--ink); font-weight: var(--weight-semibold); }
-
 /* ── Post list transitions ── */
-.post-list-container { display: flex; flex-direction: column; }
+.post-list-container { display: flex; flex-direction: column; margin-top: var(--space-1); }
 .post-list-enter-active { transition: opacity .3s var(--ease-out), transform .3s var(--ease-out-expo); }
 .post-list-leave-active { transition: opacity .2s var(--ease-out); }
 .post-list-enter-from { opacity: 0; transform: translateY(8px); }
@@ -1361,10 +1118,6 @@ useHead({
 .threads-load-more:hover { transform: translateY(-1px); box-shadow: var(--shadow-xs); }
 .threads-load-more:active { transform: scale(.98); transition-duration: .08s; }
 .threads-load-more:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
-/* Section rhythm — quiet divider between compose and feed */
-.type-filter-row + .post-list-container { margin-top: var(--space-1); }
-
-
 
 .img-preview-row { display: flex; gap: var(--space-2); flex-wrap: wrap; animation: fadeIn .25s var(--ease-out); }
 .img-preview-item { position: relative; width: 120px; margin: 0; display: flex; flex-direction: column; gap: var(--space-1); transition: transform .3s var(--ease-out-expo), box-shadow .3s var(--ease-out); }
@@ -1382,57 +1135,10 @@ useHead({
 .feed-loading { text-align: center; padding: var(--space-5); }
 .feed-loading .spinner { margin: 0 auto; }
 
-
-/* ── Bookmark momentum cue (bottom-center, clears the right-side FAB) ── */
-.bookmark-momentum {
-  position: fixed; z-index: var(--z-dropdown);
-  bottom: calc(var(--space-6) + env(safe-area-inset-bottom));
-  left: 50%; transform: translateX(-50%);
-  display: flex; align-items: center; gap: var(--space-2);
-  padding: var(--space-2) var(--space-2) var(--space-2) var(--space-4);
-  background: var(--card); border: .5px solid var(--line);
-  border-radius: var(--radius-full); box-shadow: var(--shadow-lg);
-  max-width: calc(100vw - var(--space-6) * 2);
-}
-.bm-icon { font-size: 1.05rem; flex-shrink: 0; }
-.bm-link {
-  background: none; border: none; cursor: pointer; padding: 0;
-  color: var(--color-action); font-size: var(--text-sm); font-weight: var(--weight-semibold);
-  min-height: 44px; display: inline-flex; align-items: center;
-  transition: color .2s var(--ease-out);
-}
-.bm-link:hover { color: var(--ink); text-decoration: underline; }
-.bm-link:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; border-radius: var(--radius-control); }
-.bm-dismiss {
-  flex-shrink: 0; width: 44px; height: 44px; min-width: 44px; border-radius: var(--radius-full);
-  background: none; border: none; cursor: pointer; color: var(--muted);
-  font-size: 1.25rem; line-height: 1; display: inline-flex; align-items: center; justify-content: center;
-  transition: background .2s var(--ease-out), color .2s var(--ease-out), transform .2s var(--ease-out-expo);
-}
-.bm-dismiss:hover { background: var(--bg-alt); color: var(--ink); }
-.bm-dismiss:active { transform: scale(.9); transition-duration: .08s; }
-.bm-dismiss:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
-/* Dải "Đã ẩn — Hoàn tác": mượn nguyên hình khối của .bookmark-momentum, chỉ
-   thêm câu giải thích ngắn ở giữa. Chỉ 1 trong 2 dải hiện tại một thời điểm. */
-.hide-undo { padding-left: var(--space-3); }
-.hu-text { font-size: var(--text-sm); color: var(--ink); }
-.bm-link:disabled { opacity: .55; cursor: progress; }
-.momentum-fade-enter-active { transition: opacity .25s var(--ease-out), transform .25s var(--ease-out-expo); }
-.momentum-fade-leave-active { transition: opacity .15s var(--ease-out), transform .15s var(--ease-out); }
-.momentum-fade-enter-from { opacity: 0; transform: translate(-50%, 16px); }
-.momentum-fade-leave-to { opacity: 0; transform: translate(-50%, 8px); }
-
 /* ── Dark mode ── */
-.dark .chip-filter { background: var(--bg-alt); border-color: var(--line); }
-.dark .chip-filter.active { background: var(--ink); color: var(--bg); border-color: var(--ink); }
-.dark .bookmark-momentum { background: var(--card); border-color: rgba(var(--white-rgb),.1); box-shadow: 0 8px 32px rgba(var(--black-rgb),.5); }
-.dark .bm-dismiss:hover { background: rgba(var(--white-rgb),.08); }
 .dark .compose-attach:hover { background: rgba(var(--white-rgb),.08); }
 .dark .threads-compose { background: rgba(var(--accent-rgb),.06); }
 .dark .threads-compose:focus-within { background: rgba(var(--accent-rgb),.1); }
-.dark .threads-filter-bar { background: var(--surface-translucent, rgba(var(--black-rgb),.72)); }
-
-/* ── Bạn bè: hoạt động gần đây (tab "Đang theo dõi") ── */
 
 @media (max-width: 820px) {
   .threads-layout { grid-template-columns: 1fr; }
@@ -1457,36 +1163,10 @@ useHead({
   .img-preview-item:hover { transform: none; }
   .compose-attach:hover { transform: none; }
   .compose-attach:active { transform: none; }
-  .threads-tab::after { transition: none; }
   .post-type-selector .chip-sm.active { transform: none; }
   .post-type-selector .chip-sm:active { transform: none; }
-  .chip-filter:active { transform: none; }
   .threads-load-more:hover { transform: none; }
   .threads-load-more:active { transform: none; }
-  .momentum-fade-enter-active,
-  .momentum-fade-leave-active { transition: none; }
-  .bm-dismiss:active { transform: none; }
-  .threads-refresh .spinning { animation: none; }
 }
 .btn-xs { padding: var(--space-1) var(--space-2h); font-size: .72rem; border-radius: var(--radius-control); }
-
-/* ── Lên lịch đăng bài ── */
-.schedule-option { margin-top: var(--space-1); }
-.schedule-toggle { display: flex; align-items: center; gap: var(--space-2); cursor: pointer; font-size: var(--text-sm); color: var(--ink); width: fit-content; }
-.schedule-picker { margin-top: var(--space-2); display: flex; flex-direction: column; gap: var(--space-1); align-items: flex-start; }
-.cd-toggle { appearance: none; width: 40px; height: 22px; background: var(--muted); border-radius: 11px; position: relative; cursor: pointer; transition: background .25s var(--ease-out); flex-shrink: 0; min-height: 44px; padding: 11px 0; box-sizing: content-box; margin: 0; }
-.cd-toggle::after { content: ''; position: absolute; top: 2px; left: 2px; width: 18px; height: 18px; background: var(--white, var(--white)); border-radius: 50%; transition: transform .25s var(--ease-out-expo); box-shadow: 0 1px 3px rgba(var(--black-rgb),.15); }
-.cd-toggle:checked { background: var(--color-action); }
-.cd-toggle:checked::after { transform: translateX(18px); }
-.cd-toggle:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
-.cd-input {
-  padding: var(--space-2) var(--space-3); border: 1px solid var(--line); border-radius: var(--radius-surface);
-  background: var(--bg-alt); color: var(--ink); font-size: var(--text-sm); font-family: inherit; min-height: 44px;
-}
-.cd-input:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 1px; border-color: var(--color-focus); box-shadow: 0 0 0 3px rgba(var(--accent-rgb), .15); }
-.cd-hint { font-size: var(--text-xs); color: var(--muted); }
-
-@media (prefers-reduced-motion: reduce) {
-  .cd-toggle, .cd-toggle::after { transition: none; }
-}
 </style>

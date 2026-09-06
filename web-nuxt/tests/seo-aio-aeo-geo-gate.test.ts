@@ -8,6 +8,8 @@ import {
   buildWebSiteSchema,
   buildOrganizationSchema,
   buildUnifiedSchemaGraph,
+  buildDirectorySchemaGraph,
+  buildNewsArticleSchemaGraph,
   safeJsonLd,
   SITE_URL,
 } from '../composables/useSeoHelpers'
@@ -294,6 +296,76 @@ describe('SEO / AIO / AEO / GEO Architecture Quality Gate', () => {
       expect(seoHelpers).toContain("touristType: 'Sightseeing'")
       expect(seoHelpers).toContain("name: 'Lịch trình'")
       expect(seoHelpers).toContain("name: `${itTitle} — vinhlong360`")
+    })
+  })
+
+  describe('Directory Knowledge Graph (pages/danh-ba.vue)', () => {
+    it('publishes unified @graph with CollectionPage, GovernmentService, ContactPoint, and FAQPage', () => {
+      const danhba = doc('pages/danh-ba.vue')
+      expect(danhba).toContain('buildDirectorySchemaGraph')
+      expect(danhba).toContain('safeJsonLd(directorySchema.value)')
+
+      const seoHelpers = doc('composables/useSeoHelpers.ts')
+      expect(seoHelpers).toContain('buildDirectorySchemaGraph')
+      expect(seoHelpers).toContain("'@type': 'GovernmentService'")
+      expect(seoHelpers).toContain("'@type': 'ContactPoint'")
+      expect(seoHelpers).toContain("'@type': 'GovernmentOffice'")
+
+      const graph = buildDirectorySchemaGraph({
+        totalWards: 124,
+        facilities: [
+          { id: 'ubnd-1', name: 'UBND Phường 1', address: 'Số 1 đường 2/9', phone: '02703822182', hours: 'T2-T6 07:00-17:00' },
+        ],
+      })
+      expect(graph['@context']).toBe('https://schema.org')
+      const types = graph['@graph'].map((n: any) => n['@type'])
+      expect(types).toContain('WebSite')
+      expect(types).toContain('Organization')
+      expect(types).toContain('CollectionPage')
+      expect(types).toContain('BreadcrumbList')
+      expect(types).toContain('GovernmentService')
+      expect(types).toContain('GovernmentOffice')
+      expect(types).toContain('FAQPage')
+
+      const govService = graph['@graph'].find((n: any) => n['@type'] === 'GovernmentService')
+      expect(govService.availableChannel?.servicePhone?.['@type']).toBe('ContactPoint')
+      expect(govService.availableChannel?.servicePhone?.telephone).toBe('+84-270-3822182')
+    })
+  })
+
+  describe('NewsArticle Knowledge Graph (composables/useSeoHelpers.ts)', () => {
+    it('generates unified @graph with NewsArticle, Person author, BreadcrumbList, and SpeakableSpecification', () => {
+      const seoHelpers = doc('composables/useSeoHelpers.ts')
+      expect(seoHelpers).toContain('buildNewsArticleSchemaGraph')
+      expect(seoHelpers).toContain("'@type': 'NewsArticle'")
+
+      const graph = buildNewsArticleSchemaGraph({
+        article: {
+          id: 'tin-123',
+          title: 'Khai mạc lễ hội gốm Mang Thít 2026',
+          description: 'Hàng ngàn du khách đổ về tham quan di sản lò gốm.',
+          body: 'Nội dung chi tiết về ngày hội...',
+          author: { name: 'Nguyễn Văn A', url: 'https://vinhlong360.vn/tac-gia/nva' },
+          datePublished: '2026-09-01T08:00:00Z',
+          tags: ['Gốm', 'Lễ hội'],
+          category: 'Văn hóa',
+        },
+      })
+      expect(graph['@context']).toBe('https://schema.org')
+      const types = graph['@graph'].map((n: any) => n['@type'])
+      expect(types).toContain('WebSite')
+      expect(types).toContain('Organization')
+      expect(types).toContain('WebPage')
+      expect(types).toContain('BreadcrumbList')
+      expect(types).toContain('NewsArticle')
+
+      const articleNode = graph['@graph'].find((n: any) => n['@type'] === 'NewsArticle')
+      expect(articleNode.headline).toBe('Khai mạc lễ hội gốm Mang Thít 2026')
+      expect(articleNode.author?.['@type']).toBe('Person')
+      expect(articleNode.author?.name).toBe('Nguyễn Văn A')
+      expect(articleNode.publisher?.['@id']).toBe('https://vinhlong360.vn/#organization')
+      expect(articleNode.articleSection).toBe('Văn hóa')
+      expect(articleNode.keywords).toBe('Gốm, Lễ hội')
     })
   })
 })
