@@ -366,6 +366,15 @@ onMounted(() => fetchReviews())
   cursor: pointer; padding: 0;
   transition: background .15s var(--ease-soft);
 }
+.rf-image-remove::before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  min-width: 44px;
+  min-height: 44px;
+}
 .rf-image-remove:hover { background: rgba(var(--black-rgb), .8); }
 /* Viền kép: vòng trắng + quầng tối bên ngoài. Nút này nằm ĐÈ LÊN ẢNH nên
    nền sau viền là không đoán được: chỉ vòng trắng thì trên ảnh trắng chỉ đạt

@@ -199,7 +199,9 @@
             message="Lưu địa điểm yêu thích để xem lại nhanh và ghép vào lịch trình."
             hint="Nhấn nút lưu ở bất kỳ địa điểm nào để bắt đầu."
           >
-            <NuxtLink to="/du-lich" class="btn btn-primary btn-sm">Khám phá địa điểm</NuxtLink>
+            <template #actions>
+              <NuxtLink to="/du-lich" class="btn btn-primary btn-sm">Khám phá địa điểm</NuxtLink>
+            </template>
           </EmptyState>
         </ClientOnly>
 
@@ -314,7 +316,9 @@
             v-if="postsFetchFailed && !filteredPosts.length && !loading"
             icon-name="alert-triangle" tone="error" title="Không thể tải bài viết" message="Lỗi kết nối. Vui lòng thử lại."
           >
-            <button type="button" class="btn btn-outline btn-sm" @click="fetchPosts">Thử lại</button>
+            <template #actions>
+              <button type="button" class="btn btn-outline btn-sm" @click="fetchPosts">Thử lại</button>
+            </template>
           </EmptyState>
           <Transition name="fade">
             <EmptyState
@@ -324,9 +328,11 @@
               :message="tab === 'reviews' ? 'Chưa có đánh giá nào.' : 'Chưa có bài viết nào.'"
               :hint="emptyHint"
             >
-              <NuxtLink v-if="isSelf" to="/cong-dong" class="btn btn-primary btn-sm">
-                {{ tab === 'reviews' ? 'Viết đánh giá đầu tiên' : 'Viết bài viết đầu tiên' }}
-              </NuxtLink>
+              <template #actions>
+                <NuxtLink v-if="isSelf" to="/cong-dong" class="btn btn-primary btn-sm">
+                  {{ tab === 'reviews' ? 'Viết đánh giá đầu tiên' : 'Viết bài viết đầu tiên' }}
+                </NuxtLink>
+              </template>
             </EmptyState>
           </Transition>
           <SkeletonList v-if="loading && !posts.length" :count="3" class="profile-skeleton" />
@@ -336,10 +342,12 @@
     </div>
 
     <EmptyState v-else-if="profileFetchFailed" icon-name="alert-triangle" tone="error" title="Không thể tải trang" message="Lỗi kết nối. Vui lòng thử lại.">
-      <button type="button" class="btn btn-outline btn-sm" @click="refreshProfile()">Thử lại</button>
+      <template #actions>
+        <button type="button" class="btn btn-outline btn-sm" @click="refreshProfile()">Thử lại</button>
+      </template>
     </EmptyState>
     <EmptyState v-else-if="profileNotFound" icon-name="user" title="Không tìm thấy người dùng" message="Hồ sơ này không tồn tại hoặc đã được đổi tên." />
-    <EmptyState v-else message="Không tìm thấy người dùng." />
+    <EmptyState v-else icon-name="user" title="Không tìm thấy người dùng" message="Hồ sơ này không tồn tại hoặc đã được chuyển sang chế độ riêng tư." />
 
     <!-- Modal danh sách theo dõi -->
     <Teleport to="body">

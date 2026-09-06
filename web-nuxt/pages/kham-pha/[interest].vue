@@ -101,15 +101,27 @@
         <EntityCard :entity="e" />
       </template>
     </div>
-    <EmptyState v-else :message="emptyMessage">
-      <template v-if="activeFilterCount > 0" #actions>
+    <EmptyState
+      v-else
+      icon-name="search"
+      title="Chưa tìm thấy mục phù hợp"
+      :message="emptyMessage"
+    >
+      <template #actions>
         <button
+          v-if="activeFilterCount > 0"
           type="button"
           class="btn btn-outline"
           @click="clearFilters"
         >
           <IconLine name="repeat" aria-hidden="true" /> Xóa bộ lọc
         </button>
+        <NuxtLink to="/du-lich" class="btn btn-outline">
+          <IconLine name="leaf" aria-hidden="true" /> Khám phá du lịch
+        </NuxtLink>
+        <NuxtLink to="/san-pham" class="btn btn-outline">
+          <IconLine name="gift" aria-hidden="true" /> Đặc sản & OCOP
+        </NuxtLink>
       </template>
     </EmptyState>
     <button

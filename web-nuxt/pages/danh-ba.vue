@@ -25,7 +25,9 @@
 
     <!-- Error state -->
     <EmptyState v-if="placesError && !places?.length" icon-name="alert-triangle" title="Không thể tải dữ liệu" message="Vui lòng thử lại sau.">
-      <button type="button" class="btn btn-outline btn-sm" @click="refreshNuxtData('dir-places')">Thử lại</button>
+      <template #actions>
+        <button type="button" class="btn btn-outline btn-sm" @click="refreshNuxtData('dir-places')">Thử lại</button>
+      </template>
     </EmptyState>
 
     <!-- Region quick-picks -->
@@ -105,7 +107,9 @@
         </li>
       </ul>
       <EmptyState v-else-if="facilitiesError" icon-name="alert-triangle" title="Không thể tải danh bạ" message="Có lỗi khi tải dữ liệu. Vui lòng thử lại.">
-        <button type="button" class="btn btn-outline btn-sm" @click="loadFacilities">Thử lại</button>
+        <template #actions>
+          <button type="button" class="btn btn-outline btn-sm" @click="loadFacilities">Thử lại</button>
+        </template>
       </EmptyState>
       <EmptyState v-else icon-name="list" title="Chưa có danh bạ" message="Chưa có dữ liệu danh bạ cho xã/phường này. Dữ liệu đang được bổ sung từ nguồn chính thống." />
     </template>

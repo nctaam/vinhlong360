@@ -420,6 +420,7 @@
   /* ── Spacing scale (lưới 8pt, base 4px) ── */
   --space-0:  0px;
   --space-05: 2px;
+  --space-half: 2px;
   --space-1:  4px;
   --space-1h: 6px;
   --space-2h:  10px; /* nửa bậc, cùng lối đặt tên với --space-1h (6px) */

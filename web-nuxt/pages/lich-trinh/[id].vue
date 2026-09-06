@@ -134,7 +134,16 @@
     </EmptyState>
   </div>
   <div v-else class="page" data-color-system="tri-region-v1">
-    <EmptyState message="Không tìm thấy lịch trình." />
+    <EmptyState
+      icon-name="map"
+      title="Không tìm thấy lịch trình"
+      message="Lịch trình này không tồn tại hoặc đã được chuyển sang chế độ riêng tư."
+    >
+      <template #actions>
+        <NuxtLink to="/lich-trinh" class="btn btn-primary btn-sm">Xem lịch trình gợi ý</NuxtLink>
+        <NuxtLink to="/tao-lich-trinh" class="btn btn-outline btn-sm">Tạo lịch trình mới</NuxtLink>
+      </template>
+    </EmptyState>
   </div>
 
   <!-- declutter-3 T14 (A3c): ReportModal page-level — trang này là 1 trong 2 consumer thật -->

@@ -56,10 +56,10 @@
           <p v-if="status === 'pending' && !pickerResults.length" class="empty picker-empty" data-picker-state="loading" role="status">Đang tải danh sách điểm đến…</p>
           <p v-else-if="fetchError" class="empty picker-empty"><IconLine name="alert-triangle" aria-hidden="true" /> Không thể tải danh sách. <button type="button" class="btn btn-outline btn-sm" @click="refreshPicker()">Thử lại</button></p>
           <div v-else-if="sourceTab === 'saved' && !favCount" class="premium-empty-state">
-            <EmptyState title="Chưa có điểm đã lưu" message="Nhấn hình trái tim ở các điểm đến để lưu lại, rồi quay lại đây thêm vào lịch trình." />
+            <EmptyState icon-name="heart" title="Chưa có điểm đã lưu" message="Nhấn hình trái tim ở các điểm đến để lưu lại, rồi quay lại đây thêm vào lịch trình." />
           </div>
           <div v-else-if="!pickerResults.length" class="premium-empty-state">
-            <EmptyState title="Không tìm thấy" message="Thử từ khóa khác hoặc bỏ bộ lọc loại nhé.">
+            <EmptyState icon-name="search" title="Không tìm thấy" message="Thử từ khóa khác hoặc bỏ bộ lọc loại nhé.">
               <template #actions>
                 <button type="button" class="btn btn-outline btn-sm" @click="resetPickerFilters">Xóa bộ lọc</button>
               </template>
@@ -160,7 +160,11 @@
         <p v-if="stops.length >= 20" class="max-stops-warn" role="status">Đã đạt tối đa 20 điểm mỗi lịch trình.</p>
         <span class="sr-only" aria-live="polite" aria-atomic="true">{{ stopAnnounce }}</span>
         <div v-if="!stops.length" class="builder-empty">
-          <EmptyState message="Chưa có điểm nào. Chọn điểm đến từ danh sách bên trái để bắt đầu." />
+          <EmptyState
+            icon-name="compass"
+            title="Chưa có điểm dừng nào"
+            message="Chọn điểm đến từ danh sách bên trái hoặc tìm kiếm để bắt đầu tạo hành trình."
+          />
         </div>
 
         <div v-else class="stop-list">

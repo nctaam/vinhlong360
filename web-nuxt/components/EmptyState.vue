@@ -33,10 +33,10 @@
     <component :is="headingTag" v-if="title" class="empty-title">{{ title }}</component>
     <p class="empty-text">{{ message }}</p>
     <p v-if="hint" class="empty-hint">{{ hint }}</p>
-    <div v-if="$slots.actions" class="empty-actions" role="group" aria-label="Hành động">
+    <div v-if="$slots.actions || $slots.default" class="empty-actions" role="group" aria-label="Hành động">
       <slot name="actions" />
+      <slot />
     </div>
-    <slot />
   </div>
 </template>
 

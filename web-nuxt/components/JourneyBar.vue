@@ -21,7 +21,22 @@ const countPop = ref(false)
 const prevCount = ref(count.value)
 let popTimer: ReturnType<typeof setTimeout> | null = null
 
+function updateBodyState(total: number) {
+  if (typeof document !== 'undefined' && document.body) {
+    if (total > 0) {
+      document.body.classList.add('has-journey-bar')
+    } else {
+      document.body.classList.remove('has-journey-bar')
+    }
+  }
+}
+
+onMounted(() => {
+  updateBodyState(count.value)
+})
+
 watch(count, (n) => {
+  updateBodyState(n)
   if (n > prevCount.value) {
     if (popTimer) clearTimeout(popTimer)
     countPop.value = true
@@ -30,7 +45,10 @@ watch(count, (n) => {
   prevCount.value = n
 })
 
-onUnmounted(() => { if (popTimer) clearTimeout(popTimer) })
+onUnmounted(() => {
+  if (popTimer) clearTimeout(popTimer)
+  updateBodyState(0)
+})
 </script>
 
 <style scoped>
@@ -61,6 +79,14 @@ onUnmounted(() => { if (popTimer) clearTimeout(popTimer) })
   .journey-bar {
     bottom: var(--shell-public-bottom-nav-reserved-height);
     z-index: var(--z-sticky);
+  }
+  :global(body.has-journey-bar .scroll-top) {
+    bottom: calc(var(--shell-public-bottom-nav-reserved-height) + 68px + env(safe-area-inset-bottom, 0px));
+  }
+}
+@media (max-width: 480px) {
+  :global(body.has-journey-bar .scroll-top) {
+    bottom: calc(var(--shell-public-bottom-nav-reserved-height) + 106px + env(safe-area-inset-bottom, 0px));
   }
 }
 

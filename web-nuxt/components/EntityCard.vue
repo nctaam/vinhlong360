@@ -242,6 +242,15 @@ const ratingDisplay = computed(() => {
   justify-content: center;
   box-shadow: 0 1px 4px rgba(var(--black-rgb), 0.15);
 }
+.card-arrow::before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  min-width: 44px;
+  min-height: 44px;
+}
 .card-arrow-prev { left: var(--space-2); }
 .card-arrow-next { right: var(--space-2); }
 .card-arrow:hover { transform: translateY(-50%) scale(1.1); }

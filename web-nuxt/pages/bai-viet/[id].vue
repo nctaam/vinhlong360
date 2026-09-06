@@ -172,10 +172,14 @@
 
     <div v-else class="empty-state-wrap">
       <EmptyState v-if="postFetchFailed" icon-name="alert-triangle" title="Không thể tải bài viết" :message="postErrorMessage">
-        <button type="button" class="btn btn-outline btn-sm" @click="refreshPost()">Thử lại</button>
+        <template #actions>
+          <button type="button" class="btn btn-outline btn-sm" @click="refreshPost()">Thử lại</button>
+        </template>
       </EmptyState>
       <EmptyState v-else icon-name="search" title="Không tìm thấy bài viết" message="Bài viết có thể đã bị xoá hoặc đường dẫn không đúng.">
-        <NuxtLink to="/cong-dong" class="btn btn-outline btn-sm">Về Cộng đồng</NuxtLink>
+        <template #actions>
+          <NuxtLink to="/cong-dong" class="btn btn-outline btn-sm">Về Cộng đồng</NuxtLink>
+        </template>
       </EmptyState>
     </div>
 

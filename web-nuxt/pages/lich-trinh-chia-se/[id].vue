@@ -56,7 +56,9 @@
 
     <SkeletonList v-else-if="status === 'pending'" :count="4" />
     <EmptyState v-else icon-name="map" title="Không tìm thấy lịch trình" message="Lịch trình này không tồn tại hoặc chưa được công khai.">
-      <NuxtLink to="/lich-trinh" class="btn btn-outline">Xem lịch trình gợi ý</NuxtLink>
+      <template #actions>
+        <NuxtLink to="/lich-trinh" class="btn btn-outline">Xem lịch trình gợi ý</NuxtLink>
+      </template>
     </EmptyState>
   </section>
 </template>
