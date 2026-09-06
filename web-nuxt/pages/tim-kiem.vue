@@ -9,7 +9,7 @@
 
     <!-- Hero: masthead + hero-scale input, with one Clay editorial tick. -->
     <section class="catalog-hero cat-search search-hero">
-      <span class="dateline-eyebrow">Tìm kiếm · Vĩnh Long · Bến Tre · Trà Vinh</span>
+      <span class="dateline-eyebrow">Tìm kiếm · Tỉnh Vĩnh Long hợp nhất (3 vùng trước 7-2025)</span>
       <h1>{{ pc('hero_title') }}</h1>
       <p class="search-ticker-line" aria-live="off">
         <span class="search-ticker-word" :key="tickerIdx">{{ tickerPhrase }}<span class="search-ticker-q">?</span></span>

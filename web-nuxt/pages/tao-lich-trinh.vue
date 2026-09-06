@@ -5,7 +5,7 @@
     <!-- Hero: chrome-only CE pass — masthead eyebrow + serif H1, builder/picker logic untouched -->
     <section class="catalog-hero cat-itinerary">
       <div class="catalog-hero-inner planner-hero-inner">
-        <span class="dateline-eyebrow">Sổ tay hành trình · Vĩnh Long · Bến Tre · Trà Vinh</span>
+        <span class="dateline-eyebrow">Sổ tay hành trình · Tỉnh Vĩnh Long hợp nhất (3 vùng trước 7-2025)</span>
         <h1>Tạo lịch trình</h1>
         <p>Lập kế hoạch chuyến đi của bạn — chọn điểm đến, sắp xếp thứ tự và lưu lại.</p>
       </div>

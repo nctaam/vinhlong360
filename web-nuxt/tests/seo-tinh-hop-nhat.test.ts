@@ -81,4 +81,14 @@ describe('§1.6 — bề mặt máy đọc phải nói đúng tỉnh hợp nhấ
     expect(heading, 'thiếu mục ba vùng').toBeTruthy()
     expect(DAU_LICH_SU.test(heading![0])).toBe(true)
   })
+
+  it('các thanh dateline-eyebrow ở hero các trang công cụ tuân thủ §1.6', () => {
+    for (const rel of ['pages/ban-do.vue', 'pages/tim-kiem.vue', 'pages/tao-lich-trinh.vue', 'pages/danh-ba.vue', 'pages/dia-diem/index.vue']) {
+      const src = doc(rel)
+      const m = src.match(/class="[^"]*dateline-eyebrow[^"]*"[^>]*>([^<]+)</)
+      if (m) {
+        expect(sachTheo16(m[1]), `${rel}: dateline-eyebrow gọi tỉnh cũ mà không có dấu lịch sử: ${m[1]}`).toBe(true)
+      }
+    }
+  })
 })
