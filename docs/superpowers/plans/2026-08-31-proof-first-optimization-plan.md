@@ -78,7 +78,7 @@
 - `ParsedOutcome` contains `passed`, `failed`, `errors`, `skipped`, `xfailed`, `collection_errors`, `interrupted`, `return_code`, `failed_nodeids`, `error_nodeids`.
 - `VerificationResult` contains `verdict: Literal['PASS', 'BLOCKED', 'UNCLASSIFIED']`, `reasons: tuple[str, ...]`, `checked_sha256: str`.
 
-- [ ] **Step 1: Write failing parser/verdict tests**
+- [x] **Step 1: Write failing parser/verdict tests**
 
 ```python
 def test_error_and_nonzero_return_code_block_even_without_failed_lines():
@@ -97,13 +97,13 @@ def test_clean_allowlisted_failure_is_pass_but_collection_error_is_not():
     assert classify_verdict(parse_pytest_output("5 passed in 0.1s\n", return_code=0), frozenset()) == "PASS"
 ```
 
-- [ ] **Step 2: Run RED**
+- [x] **Step 2: Run RED**
 
 Run: `python -m pytest tests/control_plane/test_evidence.py -q`
 
 Expected: FAIL with `ModuleNotFoundError: No module named 'agent.control_plane.evidence'`.
 
-- [ ] **Step 3: Implement parser and JSON schema**
+- [x] **Step 3: Implement parser and JSON schema**
 
 ```python
 @dataclass(frozen=True)
@@ -123,17 +123,17 @@ def classify_verdict(outcome: ParsedOutcome, allowlist: frozenset[str]) -> str:
 
 The parser must read summary counts, `FAILED <nodeid>`, `ERROR <nodeid>`, collection-error lines and interrupted markers. Missing summary counts are `UNCLASSIFIED`, never zero.
 
-- [ ] **Step 4: Wire evidence recording and CLI verification**
+- [x] **Step 4: Wire evidence recording and CLI verification**
 
 Extend `EvidenceDocument.record()` so each section stores `outcomes`, exact command, environment, `head_sha`, output checksum and verdict. `scripts/ops/verify_release_bundle.py --bundle path` must exit `0` only for `PASS`, `2` for `BLOCKED`, and `3` for `UNCLASSIFIED`; it must print the JSON reason list without replacing the native test exit code.
 
-- [ ] **Step 5: Run GREEN and focused release tests**
+- [x] **Step 5: Run GREEN and focused release tests**
 
 Run: `python -m pytest tests/control_plane/test_evidence.py tests/launch_safety/test_evidence_record.py tests/test_release_quality_gates.py -q`
 
 Expected: all tests PASS; synthetic `FAILED + ERROR + return_code=1` is `BLOCKED`, clean run is `PASS`.
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```powershell
 git add agent/control_plane scripts/ops/verify_release_bundle.py scripts/ops/record_launch_evidence.py scripts/ops/run_backend_regression.py scripts/ops/release_gate_harness.ps1 scripts/release_gate.ps1 agent/launch_evidence.py tests/control_plane/test_evidence.py tests/launch_safety/test_evidence_record.py tests/test_release_quality_gates.py
