@@ -320,6 +320,7 @@
       </section>
     </ClientOnly>
 
+    <!-- Continuation with JourneyActionRail -->
     <HomeContinuation :actions="homeJourneyActions" :pending="homePending" />
 
   </div>
