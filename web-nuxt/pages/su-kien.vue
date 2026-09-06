@@ -138,7 +138,7 @@
     <!-- Editorial: the contemporary register — same land, modern calendar -->
     <section v-once class="page-article reveal">
       <div class="sediment-head sediment-head-first"><h2>Sự kiện tại Vĩnh Long</h2></div>
-      <p>Ngoài các lễ hội truyền thống, vùng Vĩnh Long, Bến Tre và Trà Vinh ngày càng có nhiều sự kiện văn hoá, thể thao và du lịch hiện đại. Hội chợ nông sản, festival ẩm thực, giải chạy marathon, triển lãm nghệ thuật và các chương trình xúc tiến du lịch được tổ chức thường xuyên, đặc biệt vào dịp cuối tuần và các ngày lễ lớn.</p>
+      <p>Ngoài các lễ hội truyền thống, các vùng của tỉnh Vĩnh Long hợp nhất (gồm khu vực Bến Tre và Trà Vinh trước 7-2025) ngày càng có nhiều sự kiện văn hoá, thể thao và du lịch hiện đại. Hội chợ nông sản, festival ẩm thực, giải chạy marathon, triển lãm nghệ thuật và các chương trình xúc tiến du lịch được tổ chức thường xuyên, đặc biệt vào dịp cuối tuần và các ngày lễ lớn.</p>
       <blockquote class="pull-quote">Thưởng thức ẩm thực đường phố, xem trình diễn nghề truyền thống, mua sản phẩm OCOP trực tiếp từ nhà sản xuất, hoặc tham gia hoạt động cộng đồng cùng người dân bản địa — cùng một vùng đất, cách hiện đại để gặp nó.</blockquote>
     </section>
 

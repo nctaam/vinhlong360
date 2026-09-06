@@ -295,7 +295,7 @@ useHead(() => ({
 .tb-item.unread .tb-icon-chip { background: rgba(var(--color-action-rgb), .12); color: var(--color-action); }
 .tb-body { display: flex; flex-direction: column; gap: .15rem; flex: 1; min-width: 0; }
 .tb-item-title { font-size: var(--text-sm); font-family: var(--font-editorial); font-weight: 600; color: var(--ink); }
-.tb-group { font-size: .72rem; font-weight: 700; color: var(--color-action); background: rgba(var(--color-action-rgb), .1); padding: 1px 6px; border-radius: 100px; margin-left: var(--space-1); }
+.tb-group { font-size: .72rem; font-weight: 700; color: var(--color-action); background: rgba(var(--color-action-rgb), .1); padding: var(--space-half) var(--space-1h); border-radius: var(--radius-full); margin-left: var(--space-1); }
 .tb-sub { font-size: var(--text-sm); color: var(--ink-700); }
 .tb-time { font-size: var(--text-xs); color: var(--muted); }
 .tb-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--color-action); flex-shrink: 0; margin-top: .35rem; }

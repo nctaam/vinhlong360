@@ -1188,7 +1188,7 @@ useHead({
       '@context': 'https://schema.org',
       '@type': 'CollectionPage',
       name: 'Cộng đồng vinhlong360',
-      description: 'Bảng tin cộng đồng chia sẻ trải nghiệm du lịch, đánh giá và báo cáo dữ liệu cho Vĩnh Long, Bến Tre, Trà Vinh.',
+      description: 'Bảng tin cộng đồng chia sẻ trải nghiệm du lịch, đánh giá và báo cáo dữ liệu cho tỉnh Vĩnh Long hợp nhất (3 vùng trước 7-2025).',
       url: canonicalUrl('/cong-dong'),
     }),
   }],

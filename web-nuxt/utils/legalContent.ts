@@ -179,8 +179,8 @@ export const LEGAL_TERMS: LegalDoc = {
 export const ABOUT_PAGE: LegalDoc = {
   title: 'Về vinhlong360',
   seo_title: 'Về chúng tôi — vinhlong360',
-  seo_description: 'vinhlong360.vn là nền tảng giới thiệu du lịch, đặc sản OCOP và cộng đồng cho Vĩnh Long, Bến Tre và Trà Vinh — tổng hợp từ nguồn công khai, có trích dẫn.',
-  intro: 'vinhlong360.vn là một dự án độc lập, phi lợi nhuận-định-hướng, do một nhóm nhỏ thực hiện nhằm **giới thiệu** du lịch, đặc sản và đời sống cộng đồng của vùng Vĩnh Long mới — bao gồm Vĩnh Long, Bến Tre và Trà Vinh. Chúng tôi tổng hợp, sắp xếp lại và liên kết tới các nguồn thông tin công khai để người dân và du khách dễ khám phá vùng đất này.',
+  seo_description: 'vinhlong360.vn là nền tảng giới thiệu du lịch, đặc sản OCOP và cộng đồng cho tỉnh Vĩnh Long hợp nhất (3 vùng trước 7-2025) — tổng hợp từ nguồn công khai, có trích dẫn.',
+  intro: 'vinhlong360.vn là một dự án độc lập, phi lợi nhuận-định-hướng, do một nhóm nhỏ thực hiện nhằm **giới thiệu** du lịch, đặc sản và đời sống cộng đồng của tỉnh Vĩnh Long hợp nhất — bao gồm 3 khu vực Vĩnh Long, Bến Tre và Trà Vinh (trước 7-2025). Chúng tôi tổng hợp, sắp xếp lại và liên kết tới các nguồn thông tin công khai để người dân và du khách dễ khám phá vùng đất này.',
   ...LEGAL_METADATA,
   // About content has its own reviewed publication date, independent of the
   // privacy/terms release metadata shared for ownership and inventory fields.
@@ -189,11 +189,11 @@ export const ABOUT_PAGE: LegalDoc = {
   sections: [
     {
       heading: '1. Sứ mệnh',
-      body: 'Giúp mọi người **khám phá Vĩnh Long, Bến Tre, Trà Vinh theo cách của người bản địa** — từ điểm đến, lễ hội, lưu trú đến đặc sản theo mùa và sản phẩm OCOP.\n\nChúng tôi muốn thông tin về vùng đất này trở nên dễ tìm, dễ hiểu và đáng tin cậy, đồng thời tôn vinh giá trị văn hoá, ẩm thực và sản vật địa phương.',
+      body: 'Giúp mọi người **khám phá tỉnh Vĩnh Long hợp nhất (3 vùng trước 7-2025) theo cách của người bản địa** — từ điểm đến, lễ hội, lưu trú đến đặc sản theo mùa và sản phẩm OCOP.\n\nChúng tôi muốn thông tin về vùng đất này trở nên dễ tìm, dễ hiểu và đáng tin cậy, đồng thời tôn vinh giá trị văn hoá, ẩm thực và sản vật địa phương.',
     },
     {
       heading: '2. Phạm vi: ba vùng đất',
-      body: 'Nội dung tập trung vào **vùng Vĩnh Long mới** gồm:\n- 🍊 **Vĩnh Long** — sông nước, miệt vườn, làng nghề.\n- 🥥 **Bến Tre** — xứ dừa, cù lao, đặc sản dừa.\n- 🛕 **Trà Vinh** — văn hoá Khmer, chùa cổ, ẩm thực giao thoa.\n\nMỗi vùng có bản sắc riêng, và chúng tôi cố gắng phản ánh điều đó một cách tôn trọng.',
+      body: 'Nội dung tập trung vào **tỉnh Vĩnh Long hợp nhất (3 vùng trước 7-2025)** gồm:\n- 🍊 **Khu vực Vĩnh Long (trung tâm)** — sông nước, miệt vườn, làng nghề.\n- 🥥 **Khu vực Bến Tre (cũ)** — xứ dừa, cù lao, đặc sản dừa.\n- 🛕 **Khu vực Trà Vinh (cũ)** — văn hoá Khmer, chùa cổ, ẩm thực giao thoa.\n\nMỗi vùng có bản sắc riêng, và chúng tôi cố gắng phản ánh điều đó một cách tôn trọng.',
     },
     {
       heading: '3. Chỉ giới thiệu — không đặt hàng, không thanh toán',

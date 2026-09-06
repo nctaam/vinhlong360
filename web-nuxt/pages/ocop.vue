@@ -101,7 +101,7 @@
       <p>OCOP (One Commune One Product — Mỗi xã Một sản phẩm) là chương trình quốc gia nhằm phát triển kinh tế nông thôn thông qua việc nâng cao chất lượng và giá trị sản phẩm địa phương. Mỗi xã, phường xác định một hoặc vài sản phẩm thế mạnh, được hỗ trợ chuẩn hoá quy trình sản xuất, bao bì, truy xuất nguồn gốc và kết nối thị trường.</p>
 
       <CatalogInterstitial
-        fact="Chương trình OCOP đã chứng nhận hàng trăm sản phẩm từ 3 tỉnh — mỗi sản phẩm đều qua đánh giá nghiêm ngặt về chất lượng và nguồn gốc."
+        fact="Chương trình OCOP đã chứng nhận hàng trăm sản phẩm từ 3 vùng trước 7-2025 — mỗi sản phẩm đều qua đánh giá nghiêm ngặt về chất lượng và nguồn gốc."
         icon-name="trophy"
         variant="warm"
         :links="[{ to: '/san-pham', label: 'Tất cả sản phẩm' }, { to: '/theo-mua', label: 'Theo mùa vụ' }]"
@@ -111,8 +111,8 @@
       <p>Sản phẩm OCOP được đánh giá theo thang 5 sao bởi hội đồng cấp tỉnh và trung ương. <strong>3 sao</strong> là mức cơ bản — sản phẩm đạt tiêu chuẩn an toàn thực phẩm, có nhãn mác rõ ràng. <strong>4 sao</strong> yêu cầu chất lượng cao hơn, bao bì chuyên nghiệp, có câu chuyện sản phẩm và khả năng mở rộng thị trường. <strong>5 sao</strong> là cấp quốc gia — rất hiếm, dành cho sản phẩm xuất sắc có tiềm năng xuất khẩu.</p>
       <blockquote class="pull-quote">Khi bạn thấy nhãn OCOP trên sản phẩm, bạn biết sản phẩm đó đã qua quy trình đánh giá nghiêm ngặt, có nguồn gốc rõ ràng và chất lượng được kiểm chứng — không phải tự phong hay tự gắn nhãn.</blockquote>
 
-      <h2 class="sediment-head">OCOP vùng Vĩnh Long, Bến Tre, Trà Vinh</h2>
-      <p>Ba tỉnh thuộc top đầu cả nước về số lượng sản phẩm OCOP, nhờ lợi thế nông nghiệp phong phú. Bến Tre dẫn đầu với các sản phẩm từ dừa: dầu dừa nguyên chất, kẹo dừa, thạch dừa, mỹ phẩm từ dừa. Vĩnh Long nổi bật với bưởi Năm Roi, cam sành Tam Bình, gạch gốm Mang Thít. Trà Vinh đóng góp các đặc sản Khmer như bánh tét lá cẩm, dừa sáp và mắm prohok.</p>
+      <h2 class="sediment-head">OCOP 3 vùng tỉnh Vĩnh Long hợp nhất</h2>
+      <p>Ba vùng đất của tỉnh Vĩnh Long hợp nhất (gồm khu vực Bến Tre, Trà Vinh trước 7-2025) thuộc top đầu cả nước về số lượng sản phẩm OCOP, nhờ lợi thế nông nghiệp phong phú. Khu vực Bến Tre (trước 7-2025) dẫn đầu với các sản phẩm từ dừa: dầu dừa nguyên chất, kẹo dừa, thạch dừa, mỹ phẩm từ dừa. Vùng Vĩnh Long nổi bật với bưởi Năm Roi, cam sành Tam Bình, gạch gốm Mang Thít. Khu vực Trà Vinh (trước 7-2025) đóng góp các đặc sản Khmer như bánh tét lá cẩm, dừa sáp và mắm prohok.</p>
     </section>
 
     <!-- Divider -->
@@ -449,7 +449,7 @@ useHead({
         '@context': 'https://schema.org',
         '@type': 'CollectionPage',
         name: 'Sản phẩm OCOP Vĩnh Long',
-        description: 'Sản phẩm đạt chuẩn OCOP từ Vĩnh Long, Bến Tre, Trà Vinh.',
+        description: 'Sản phẩm đạt chuẩn OCOP từ tỉnh Vĩnh Long hợp nhất (3 vùng trước 7-2025).',
         url: canonicalUrl('/ocop'),
         numberOfItems: allOcop.value.length,
       }),
@@ -461,8 +461,8 @@ useHead(() => ({
   script: [{
     type: 'application/ld+json',
     innerHTML: safeJsonLd(itemListJsonLd(
-      'Sản phẩm OCOP Vĩnh Long, Bến Tre, Trà Vinh',
-      'Sản phẩm đạt chuẩn OCOP từ Vĩnh Long, Bến Tre và Trà Vinh.',
+      'Sản phẩm OCOP Tỉnh Vĩnh Long hợp nhất (3 vùng trước 7-2025)',
+      'Sản phẩm đạt chuẩn OCOP từ tỉnh Vĩnh Long hợp nhất (3 vùng trước 7-2025).',
       '/ocop',
       filtered.value,
     )),

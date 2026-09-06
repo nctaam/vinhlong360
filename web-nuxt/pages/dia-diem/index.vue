@@ -81,11 +81,11 @@
     <section v-once class="page-article reveal">
       <div class="sediment-head"><h2>Khám phá toàn bộ điểm đến Vĩnh Long</h2></div>
       <div class="editorial-body drop-cap">
-        <p>Danh bạ địa điểm tổng hợp mọi điểm đến, trải nghiệm, sản phẩm, lưu trú và di tích trên toàn vùng Vĩnh Long, Bến Tre và Trà Vinh. Mỗi mục đều có thông tin thực tế: địa chỉ, số điện thoại, giờ mở cửa, giá tham khảo và mùa vụ phù hợp.</p>
+        <p>Danh bạ địa điểm tổng hợp mọi điểm đến, trải nghiệm, sản phẩm, lưu trú và di tích trên toàn tỉnh Vĩnh Long hợp nhất (3 vùng trước 7-2025). Mỗi mục đều có thông tin thực tế: địa chỉ, số điện thoại, giờ mở cửa, giá tham khảo và mùa vụ phù hợp.</p>
       </div>
 
       <CatalogInterstitial
-        fact="Vĩnh Long, Bến Tre và Trà Vinh có hơn 1.500 điểm đến, đặc sản và dịch vụ — từ cù lao xanh mát đến làng nghề trăm năm, tất cả được xác minh và cập nhật liên tục."
+        fact="Tỉnh Vĩnh Long hợp nhất (3 vùng trước 7-2025) có hơn 1.500 điểm đến, đặc sản và dịch vụ — từ cù lao xanh mát đến làng nghề trăm năm, tất cả được xác minh và cập nhật liên tục."
         icon-name="chart"
         variant="warm"
         :links="[{ to: '/ban-do', label: 'Xem bản đồ' }, { to: '/du-lich', label: 'Du lịch sinh thái' }]"
@@ -323,10 +323,10 @@ const loadMoreLabel = computed(() => {
 useSeoMeta({
   title: () => activeTypeLabel.value
     ? `${activeTypeLabel.value} — Danh bạ địa điểm — vinhlong360`
-    : 'Danh bạ địa điểm — Vĩnh Long, Bến Tre, Trà Vinh — vinhlong360',
-  description: () => 'Khám phá toàn bộ điểm đến, đặc sản OCOP, làng nghề, lưu trú và di tích của Vĩnh Long, Bến Tre, Trà Vinh. Lọc theo loại hình và khu vực.',
+    : 'Danh bạ địa điểm — Tỉnh Vĩnh Long hợp nhất (3 vùng trước 7-2025) — vinhlong360',
+  description: () => 'Khám phá toàn bộ điểm đến, đặc sản OCOP, làng nghề, lưu trú và di tích của tỉnh Vĩnh Long hợp nhất (3 vùng trước 7-2025). Lọc theo loại hình và khu vực.',
   ogTitle: 'Danh bạ địa điểm — vinhlong360',
-  ogDescription: 'Điểm đến, đặc sản, làng nghề, lưu trú và di tích Vĩnh Long — tìm theo loại và khu vực.',
+  ogDescription: 'Điểm đến, đặc sản, làng nghề, lưu trú và di tích tỉnh Vĩnh Long hợp nhất — tìm theo loại và khu vực.',
   ogUrl: canonicalUrl('/dia-diem'),
   twitterCard: 'summary_large_image',
 })
@@ -335,7 +335,7 @@ useSeoMeta({
 const listJsonLd = computed(() => {
   return itemListJsonLd(
     'Danh bạ địa điểm — vinhlong360',
-    'Tất cả điểm đến, đặc sản, làng nghề, lưu trú và di tích của Vĩnh Long, Bến Tre, Trà Vinh.',
+    'Tất cả điểm đến, đặc sản, làng nghề, lưu trú và di tích của tỉnh Vĩnh Long hợp nhất (3 vùng trước 7-2025).',
     '/dia-diem',
     firstPage.value,
   )
@@ -348,8 +348,8 @@ useHead(() => ({
       innerHTML: safeJsonLd({
         '@context': 'https://schema.org',
         '@type': 'CollectionPage',
-        name: 'Danh bạ địa điểm Vĩnh Long, Bến Tre, Trà Vinh',
-        description: 'Tất cả điểm đến, đặc sản, làng nghề, lưu trú và di tích của Vĩnh Long, Bến Tre, Trà Vinh.',
+        name: 'Danh bạ địa điểm Tỉnh Vĩnh Long hợp nhất (3 vùng trước 7-2025)',
+        description: 'Tất cả điểm đến, đặc sản, làng nghề, lưu trú và di tích của tỉnh Vĩnh Long hợp nhất (3 vùng trước 7-2025).',
         url: canonicalUrl('/dia-diem'),
         numberOfItems: total.value,
       }),

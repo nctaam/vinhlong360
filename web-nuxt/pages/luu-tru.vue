@@ -86,7 +86,7 @@
     <section v-once class="page-article reveal">
       <div class="sediment-head"><h2>Ở đâu khi đi Vĩnh Long?</h2></div>
       <div class="editorial-body drop-cap">
-        <p>Lưu trú ở Vĩnh Long, Bến Tre và Trà Vinh mang đến những trải nghiệm rất khác so với khách sạn thành phố. Đây là vùng đất của homestay nhà vườn — nơi bạn ngủ trong căn nhà gỗ giữa vườn trái cây, thức dậy với tiếng chim hót và hương hoa bưởi. Nhiều chỗ ở nằm trên cù lao, phải đi đò hoặc xuồng mới tới — chính sự cách biệt ấy tạo nên sự yên tĩnh đặc trưng.</p>
+        <p>Lưu trú ở tỉnh Vĩnh Long hợp nhất (3 vùng trước 7-2025) mang đến những trải nghiệm rất khác so với khách sạn thành phố. Đây là vùng đất của homestay nhà vườn — nơi bạn ngủ trong căn nhà gỗ giữa vườn trái cây, thức dậy với tiếng chim hót và hương hoa bưởi. Nhiều chỗ ở nằm trên cù lao, phải đi đò hoặc xuồng mới tới — chính sự cách biệt ấy tạo nên sự yên tĩnh đặc trưng.</p>
         <!-- declutter-3 T11: booking-note aside → inline vào mạch editorial (bỏ khung callout) -->
         <p><strong>Tết Nguyên đán, lễ 30/4–1/5 và hè (tháng 6–8) là mùa cao điểm — đặt trước 1–2 tuần;</strong> ngày thường hầu như luôn còn phòng. Liên hệ thẳng điện thoại hoặc Zalo của chủ nhà thường được giá tốt hơn qua trung gian; đi nhóm đông, nhiều homestay bao trọn gói ăn ở lẫn tour vườn.</p>
       </div>
@@ -212,7 +212,7 @@ const stayTypes = [
     key: 'hotel',
     kicker: 'KHÁCH SẠN PHỐ',
     title: 'Tiện di chuyển',
-    body: 'Tập trung ở trung tâm thành phố Vĩnh Long, Bến Tre, Trà Vinh — gần chợ, gần bến xe, ít trải nghiệm bản địa hơn.',
+    body: 'Tập trung ở trung tâm các đô thị Vĩnh Long, Bến Tre, Trà Vinh (trước 7-2025) — gần chợ, gần bến xe, ít trải nghiệm bản địa hơn.',
     persona: 'đi công việc hoặc chỉ ghé qua một đêm',
     price: 'Thường 150.000–600.000đ/đêm',
     motif: attractionMotif,
@@ -336,7 +336,7 @@ const filtered = computed(() => {
 
 useSeoMeta({
   ogType: 'website',
-  title: () => pc('seo_title') || 'Lưu trú Vĩnh Long, Bến Tre, Trà Vinh — vinhlong360',
+  title: () => pc('seo_title') || 'Lưu trú Tỉnh Vĩnh Long hợp nhất (3 vùng trước 7-2025) — vinhlong360',
   description: () => pc('seo_description') || 'Homestay, nhà vườn, khách sạn và nơi nghỉ ở Vĩnh Long.',
   ogTitle: () => pc('og_title') || 'Lưu trú — vinhlong360',
   ogDescription: () => pc('og_description') || 'Tìm chỗ ở phù hợp cho chuyến đi Vĩnh Long.',
@@ -349,7 +349,7 @@ useHead(() => ({
   script: [{
     type: 'application/ld+json',
     innerHTML: safeJsonLd(itemListJsonLd(
-      'Lưu trú Vĩnh Long, Bến Tre, Trà Vinh',
+      'Lưu trú Tỉnh Vĩnh Long hợp nhất (3 vùng trước 7-2025)',
       'Homestay, nhà vườn, khách sạn và nơi nghỉ ở Vĩnh Long.',
       '/luu-tru',
       allEntities.value,

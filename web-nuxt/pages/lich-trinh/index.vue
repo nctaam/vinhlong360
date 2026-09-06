@@ -7,7 +7,7 @@
       <div class="catalog-hero-inner">
         <span class="catalog-hero-icon" aria-hidden="true"><IconLine name="calendar" /></span>
         <div>
-          <span class="itin-eyebrow">Lịch trình gợi ý · 3 khu vực</span>
+          <span class="itin-eyebrow dateline-eyebrow">Lịch trình gợi ý · Tỉnh Vĩnh Long hợp nhất (3 vùng trước 7-2025)</span>
           <h1 class="day-arc-title">Chọn một ngày ở Vĩnh Long</h1>
           <p>Có ngày chỉ cần nửa buổi ở miệt vườn, có ngày cần trọn ba hôm để đi hết một khúc sông. Chọn nhịp ngày phù hợp — phần còn lại, tụi mình đã sắp sẵn.</p>
         </div>
@@ -311,14 +311,14 @@ const itineraryCollectionSchema = computed(() => ({
   '@context': 'https://schema.org',
   '@type': 'CollectionPage',
   name: 'Lịch trình gợi ý — vinhlong360',
-  description: 'Tuyến tham quan Vĩnh Long, Bến Tre, Trà Vinh được thiết kế sẵn.',
+  description: 'Tuyến tham quan tỉnh Vĩnh Long hợp nhất (3 vùng trước 7-2025) được thiết kế sẵn.',
   url: canonicalUrl('/lich-trinh'),
   inLanguage: 'vi',
 }))
 
 useSeoMeta({
   title: 'Lịch trình — vinhlong360',
-  description: 'Tuyến tham quan Vĩnh Long, Bến Tre, Trà Vinh được thiết kế sẵn — chỉ cần chọn và đi. Hoặc tự tạo lịch trình cá nhân theo sở thích.',
+  description: 'Tuyến tham quan tỉnh Vĩnh Long hợp nhất (3 vùng trước 7-2025) được thiết kế sẵn — chỉ cần chọn và đi. Hoặc tự tạo lịch trình cá nhân theo sở thích.',
   ogTitle: 'Lịch trình — vinhlong360',
   ogDescription: 'Tuyến tham quan Vĩnh Long được thiết kế sẵn — chỉ cần chọn và đi.',
   ogImage: '/icons/icon-512.png',
@@ -337,7 +337,7 @@ useHead(() => ({
       type: 'application/ld+json',
       innerHTML: safeJsonLd(itineraryItemListJsonLd(
         'Lịch trình gợi ý',
-        'Tuyến tham quan Vĩnh Long, Bến Tre, Trà Vinh được thiết kế sẵn.',
+        'Tuyến tham quan tỉnh Vĩnh Long hợp nhất (3 vùng trước 7-2025) được thiết kế sẵn.',
         '/lich-trinh',
         filtered.value,
       )),

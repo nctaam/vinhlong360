@@ -26,7 +26,7 @@
            Tri-province silhouette line-art with a pin per route, positioned by
            its area (x-band) so "these routes spread across 3 areas" reads at
            a glance before any card text. -->
-      <div class="route-vignette" role="img" aria-label="Vị trí các tuyến đường trên 3 khu vực Vĩnh Long, Bến Tre, Trà Vinh">
+      <div class="route-vignette" role="img" aria-label="Vị trí các tuyến đường trên 3 khu vực tỉnh Vĩnh Long hợp nhất (trước 7-2025)">
         <svg viewBox="0 0 640 90" preserveAspectRatio="none" aria-hidden="true" class="route-vignette-svg">
           <path d="M0 46 Q 90 20 180 46 T 360 46 T 540 46 T 640 40" class="rv-river" />
           <path d="M0 64 Q 100 78 220 60 T 440 66 T 640 58" class="rv-road" />
@@ -35,7 +35,7 @@
           <span class="rv-pin-dot" aria-hidden="true" />
         </span>
         <div class="rv-labels" aria-hidden="true">
-          <span>Vĩnh Long</span><span>Bến Tre</span><span>Trà Vinh</span>
+          <span>Vùng Vĩnh Long</span><span>Vùng Bến Tre (cũ)</span><span>Vùng Trà Vinh (cũ)</span>
         </div>
       </div>
     </section>
@@ -69,7 +69,7 @@
     <!-- Editorial -->
     <section v-once class="page-article reveal">
       <div class="sediment-head route-article-head"><h2>Tự khám phá Vĩnh Long bằng xe máy hoặc ô tô</h2></div>
-      <p>Các tuyến đường dưới đây được thiết kế cho người muốn <strong>tự đi</strong> — không cần tour, không cần hướng dẫn viên. Mỗi tuyến ghi rõ khoảng cách, thời gian di chuyển và các điểm dừng theo thứ tự hợp lý. Đường liên tỉnh giữa Vĩnh Long, Bến Tre và Trà Vinh phần lớn là đường nhựa tốt, phù hợp cả xe máy lẫn ô tô 4-7 chỗ.</p>
+      <p>Các tuyến đường dưới đây được thiết kế cho người muốn <strong>tự đi</strong> — không cần tour, không cần hướng dẫn viên. Mỗi tuyến ghi rõ khoảng cách, thời gian di chuyển và các điểm dừng theo thứ tự hợp lý. Đường liên vùng kết nối giữa các khu vực của tỉnh Vĩnh Long hợp nhất (gồm Bến Tre và Trà Vinh trước 7-2025) phần lớn là đường nhựa tốt, phù hợp cả xe máy lẫn ô tô 4-7 chỗ.</p>
       <p>Nếu đi xe máy, ưu tiên khởi hành sáng sớm (trước 7h) để tránh nắng và tận dụng ánh sáng đẹp. Mang theo áo mưa — vùng này hay có mưa rào chiều, đặc biệt từ tháng 6 đến tháng 11. Đường vào các làng nghề đôi khi hẹp và dốc cầu, chạy chậm khi qua khu dân cư.</p>
 
       <!-- declutter-2 A2: interstitial inline vào mạch bài -->
@@ -243,7 +243,7 @@ function routeIcon(r: RouteDef): string {
 useSeoMeta({
   ogType: 'website',
   title: () => pc('seo_title') || 'Tuyến đường gợi ý Vĩnh Long — vinhlong360',
-  description: () => pc('seo_description') || 'Các tuyến đường tự khám phá qua miệt vườn, làng nghề và văn hóa Vĩnh Long, Bến Tre, Trà Vinh.',
+  description: () => pc('seo_description') || 'Các tuyến đường tự khám phá qua miệt vườn, làng nghề và văn hóa tỉnh Vĩnh Long hợp nhất (3 vùng trước 7-2025).',
   ogTitle: () => pc('og_title') || 'Tuyến đường gợi ý — vinhlong360',
   ogDescription: () => pc('og_description') || 'Tự khám phá Vĩnh Long bằng xe máy hoặc ô tô.',
   ogUrl: () => canonicalUrl('/tuyen-duong'),
@@ -258,7 +258,7 @@ useHead(() => ({
       '@context': 'https://schema.org',
       '@type': 'CollectionPage',
       name: 'Tuyến đường gợi ý Vĩnh Long',
-      description: 'Các tuyến đường tự khám phá qua miệt vườn, làng nghề và văn hóa Vĩnh Long, Bến Tre, Trà Vinh.',
+      description: 'Các tuyến đường tự khám phá qua miệt vườn, làng nghề và văn hóa tỉnh Vĩnh Long hợp nhất (3 vùng trước 7-2025).',
       url: 'https://vinhlong360.vn/tuyen-duong',
       mainEntity: {
         '@type': 'ItemList',

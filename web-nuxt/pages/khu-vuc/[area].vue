@@ -8,7 +8,7 @@
       <div class="catalog-hero-inner">
         <IconLine :name="areaMeta.icon" class="catalog-hero-icon" />
         <div>
-          <span class="area-eyebrow">Vĩnh Long · Cửu Long</span>
+          <span class="area-eyebrow dateline-eyebrow">Khu vực {{ areaMeta.name }} · Tỉnh Vĩnh Long hợp nhất (trước 7-2025)</span>
           <h1>{{ areaMeta.name }}</h1>
           <p>{{ areaMeta.blurb }}</p>
         </div>
@@ -177,24 +177,24 @@ const [{ data, error: fetchError }, { data: placesData }] = await Promise.all([
 
 const AREA_EDITORIAL: Record<string, { title: string; paragraphs: string[] }> = {
   'vinh-long': {
-    title: 'Vĩnh Long — xứ dừa miệt vườn',
+    title: 'Khu vực Vĩnh Long (trung tâm) — miệt vườn sông nước',
     paragraphs: [
       'Vĩnh Long nằm giữa sông Tiền và sông Hậu, nổi tiếng với các cù lao trái cây, vườn cây ăn trái xanh mướt quanh năm và hệ thống kênh rạch chằng chịt. Du khách đến đây thường trải nghiệm đi xuồng ba lá, thăm các làng nghề truyền thống như làm gạch gốm, dệt chiếu, và thưởng thức trái cây tại vườn.',
       'Ngoài du lịch sinh thái, Vĩnh Long còn giữ được nhiều di tích lịch sử và công trình kiến trúc độc đáo: Văn Thánh Miếu, nhà cổ Cai Cường, chùa Tiên Châu. Ẩm thực địa phương phong phú với cá tai tượng chiên xù, bánh tráng Cù Lao Mây, và các loại mứt trái cây đặc sản.',
     ],
   },
   'ben-tre': {
-    title: 'Bến Tre — xứ dừa ngàn năm',
+    title: 'Khu vực Bến Tre (trước 7-2025) — xứ dừa ngàn năm',
     paragraphs: [
-      'Bến Tre được mệnh danh là "xứ dừa" với hơn 70.000 hecta dừa — lớn nhất cả nước. Cả vùng là một hệ thống cù lao được bao bọc bởi sông Tiền và biển Đông, tạo nên cảnh quan sông nước đặc trưng bậc nhất đồng bằng.',
-      'Du lịch Bến Tre xoay quanh trải nghiệm sông nước: chèo thuyền trên rạch dừa, thăm lò kẹo dừa, uống nước dừa tươi trong vườn, và nghỉ tại các homestay ven sông. Sản phẩm OCOP nổi bật của Bến Tre gồm kẹo dừa Bến Tre, rượu dừa, tinh dầu dừa và các sản phẩm thủ công từ gáo dừa.',
+      'Khu vực Bến Tre (trước 7-2025) được mệnh danh là "xứ dừa" với hơn 70.000 hecta dừa — lớn nhất cả nước. Cả vùng là một hệ thống cù lao được bao bọc bởi sông Tiền và biển Đông, tạo nên cảnh quan sông nước đặc trưng bậc nhất đồng bằng.',
+      'Du lịch vùng Bến Tre (trước 7-2025) xoay quanh trải nghiệm sông nước: chèo thuyền trên rạch dừa, thăm lò kẹo dừa, uống nước dừa tươi trong vườn, và nghỉ tại các homestay ven sông. Sản phẩm OCOP nổi bật của xứ dừa gồm kẹo dừa Bến Tre (cũ), rượu dừa, tinh dầu dừa và các sản phẩm thủ công từ gáo dừa.',
     ],
   },
   'tra-vinh': {
-    title: 'Trà Vinh — giao thoa Kinh–Khmer–Hoa',
+    title: 'Khu vực Trà Vinh (trước 7-2025) — giao thoa Kinh–Khmer–Hoa',
     paragraphs: [
-      'Trà Vinh là tỉnh có cộng đồng Khmer lớn nhất vùng đồng bằng, tạo nên bản sắc văn hoá đặc biệt với hệ thống hơn 140 ngôi chùa Khmer cổ, lễ hội Ok Om Bok, đua ghe Ngo và ẩm thực Khmer đặc trưng. Kiến trúc chùa Khmer Trà Vinh được đánh giá là đẹp nhất khu vực.',
-      'Ngoài văn hoá Khmer, Trà Vinh còn có bờ biển Ba Động kéo dài, rừng ngập mặn Long Khánh, và hệ thống ao Bà Om — di tích quốc gia với hàng cổ thụ hàng trăm năm tuổi. Đặc sản nổi tiếng gồm bún nước lèo, bánh tét Trà Cuôn, và dừa sáp — giống dừa quý hiếm chỉ có ở Cầu Kè, Trà Vinh.',
+      'Khu vực Trà Vinh (trước 7-2025) có cộng đồng Khmer lớn nhất vùng đồng bằng, tạo nên bản sắc văn hoá đặc biệt với hệ thống hơn 140 ngôi chùa Khmer cổ, lễ hội Ok Om Bok, đua ghe Ngo và ẩm thực Khmer đặc trưng. Kiến trúc chùa Khmer Trà Vinh được đánh giá là đẹp nhất khu vực.',
+      'Ngoài văn hoá Khmer, vùng Trà Vinh (trước 7-2025) còn có bờ biển Ba Động kéo dài, rừng ngập mặn Long Khánh, và hệ thống ao Bà Om — di tích quốc gia với hàng cổ thụ hàng trăm năm tuổi. Đặc sản nổi tiếng gồm bún nước lèo, bánh tét Trà Cuôn, và dừa sáp — giống dừa quý hiếm chỉ có ở Cầu Kè (Trà Vinh cũ).',
     ],
   },
 }
@@ -365,7 +365,7 @@ if (areaMeta) {
 .dark .ce-area .section-head h2::before { background: linear-gradient(180deg, var(--river-400, var(--river-legacy-dark)) 0%, var(--amber-500) 52%, var(--clay-400) 100%); }
 
 /* ── SIGNATURE: cinematic per-region hero photo (logic-matched — each region shows its own
-   signature scene: VL gạch gốm + miệt vườn · Bến Tre xứ dừa · Trà Vinh chùa Khmer).
+   signature scene: VL gạch gốm + miệt vườn · Bến Tre cũ xứ dừa · Trà Vinh cũ chùa Khmer).
    Only the 3 regions that have an AI-gen image; strong scrim + white text keeps copy legible. ── */
 .cat-area-vinh-long, .cat-area-ben-tre, .cat-area-tra-vinh {
   min-height: clamp(19rem, 44vh, 30rem);

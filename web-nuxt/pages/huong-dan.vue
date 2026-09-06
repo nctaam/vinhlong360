@@ -348,7 +348,7 @@ const sections: Section[] = [
             steps: [
               'Kết quả được chia theo danh mục: Địa điểm, Sản phẩm, Bài viết cộng đồng, Người dùng',
               'Dùng chip lọc phía trên để thu hẹp theo loại hình (du lịch, ẩm thực, lưu trú, OCOP...)',
-              'Dùng chip lọc khu vực (Vĩnh Long, Bến Tre, Trà Vinh) để giới hạn theo vùng',
+              'Dùng chip lọc khu vực (3 vùng trước 7-2025: Vĩnh Long, Bến Tre, Trà Vinh) để giới hạn theo vùng',
               'Mỗi kết quả hiển thị dưới dạng card với ảnh, tên, loại, mùa vụ (nếu có)',
             ],
           },
@@ -408,7 +408,7 @@ const sections: Section[] = [
               'Truy cập /ocop',
               'Lọc theo hạng sao: 3 sao, 4 sao, hoặc 5 sao',
               'Phần "Vinh danh" hiển thị riêng các sản phẩm 5 sao (biểu tượng vương miện 👑)',
-              'Lọc theo khu vực (Vĩnh Long, Bến Tre, Trà Vinh)',
+              'Lọc theo khu vực (3 vùng trước 7-2025: Vĩnh Long, Bến Tre, Trà Vinh)',
             ],
           },
           {
@@ -478,7 +478,7 @@ const sections: Section[] = [
         desc: 'Bản đồ dùng MapLibre (mã nguồn mở) với giao diện Việt hóa. Bạn có thể kéo, zoom, và nhấn vào từng điểm.',
         steps: [
           'Truy cập /ban-do hoặc nhấn menu "Khám phá" → "Bản đồ"',
-          'Bản đồ hiển thị toàn vùng Vĩnh Long – Bến Tre – Trà Vinh',
+          'Bản đồ hiển thị toàn tỉnh Vĩnh Long hợp nhất (3 vùng trước 7-2025)',
           'Kéo để di chuyển, cuộn chuột (hoặc chụm 2 ngón trên di động) để zoom',
           'Mỗi điểm đánh dấu là một biểu tượng emoji tương ứng loại hình',
           'Nhấn vào điểm đánh dấu để mở popup thông tin nhanh',
@@ -611,7 +611,7 @@ const sections: Section[] = [
       {
         icon: '📝', title: 'Duyệt lịch trình gợi ý',
         desc: 'Các lịch trình được biên soạn sẵn theo khu vực, phù hợp cho người lần đầu đến.',
-        steps: ['Truy cập /lich-trinh', 'Hero hiển thị số lượng lịch trình theo từng khu vực', 'Dùng chip lọc: Vĩnh Long, Bến Tre, Trà Vinh, hoặc Tất cả', 'Nhấn vào card lịch trình để xem chi tiết: các điểm dừng, thời gian, quãng đường', 'Nhấn "Lưu" để lưu vào danh sách cá nhân'],
+        steps: ['Truy cập /lich-trinh', 'Hero hiển thị số lượng lịch trình theo từng khu vực', 'Dùng chip lọc: 3 vùng trước 7-2025 (Vĩnh Long, Bến Tre, Trà Vinh), hoặc Tất cả', 'Nhấn vào card lịch trình để xem chi tiết: các điểm dừng, thời gian, quãng đường', 'Nhấn "Lưu" để lưu vào danh sách cá nhân'],
         subtopics: [
           { title: 'Lịch trình đã lưu', desc: 'Phần đầu trang hiển thị các lịch trình bạn đã lưu (tối đa 8 gần nhất). Nhấn để mở lại, hoặc "Bỏ lưu" để xóa khỏi danh sách. Nút "Xóa tất cả" cần xác nhận trước khi xóa.' },
         ],
@@ -793,11 +793,11 @@ const sections: Section[] = [
     topics: [
       {
         icon: '💬', title: 'Chat với trợ lý AI',
-        desc: 'Trợ lý AI hiểu về du lịch, ẩm thực, văn hóa vùng Vĩnh Long – Bến Tre – Trà Vinh. Hỏi bất cứ điều gì.',
+        desc: 'Trợ lý AI hiểu về du lịch, ẩm thực, văn hóa tỉnh Vĩnh Long hợp nhất (3 vùng trước 7-2025). Hỏi bất cứ điều gì.',
         steps: ['Nhấn nút 💬 ở góc phải dưới màn hình (hiện trên mọi trang)', 'Cửa sổ chat mở ra với gợi ý câu hỏi (thay đổi theo trang bạn đang xem)', 'Gõ câu hỏi và nhấn Enter hoặc nút gửi', 'Trợ lý trả lời dạng streaming (từng chữ hiện ra)', 'Nhấn nút dừng nếu muốn ngắt giữa chừng', 'Nhấn nút 💬 lần nữa hoặc Esc để đóng'],
         subtopics: [
           { title: 'Gợi ý theo ngữ cảnh', desc: 'Khi đang ở trang "Chợ nổi Trà Ôn", gợi ý sẽ là: "Nên đi chợ nổi lúc mấy giờ?", "Có gì ăn ở đây?". Ở trang khác sẽ có gợi ý khác. Nhấn vào gợi ý để hỏi nhanh mà không cần gõ.' },
-          { title: 'Ví dụ câu hỏi hay', desc: '"Đi Vĩnh Long 2 ngày nên đi đâu?", "Món gì ngon ở Bến Tre?", "Mùa nước nổi có gì thú vị?", "So sánh homestay ở Cù lao An Bình", "Quà mang về từ Trà Vinh".' },
+          { title: 'Ví dụ câu hỏi hay', desc: '"Đi Vĩnh Long 2 ngày nên đi đâu?", "Món gì ngon ở vùng Bến Tre (cũ)?", "Mùa nước nổi có gì thú vị?", "So sánh homestay ở Cù lao An Bình", "Quà mang về từ vùng Trà Vinh (cũ)".' },
           { title: 'Giới hạn', desc: 'Trợ lý trả lời dựa trên dữ liệu trong hệ thống. Không có thông tin giá vé real-time, tình trạng phòng, hoặc thời tiết hiện tại.' },
         ],
         tips: ['Hỏi rõ ràng sẽ được câu trả lời tốt hơn. "Ăn gì ở TP Vĩnh Long buổi tối" > "ăn gì".', 'Tiêu đề cửa sổ chat và disclaimer có thể thay đổi tùy cấu hình admin.'],
@@ -821,7 +821,7 @@ const sections: Section[] = [
       {
         icon: '🛣️', title: 'Tuyến đường gợi ý',
         desc: 'Các tuyến du lịch biên soạn sẵn — phù hợp cho người đi tự túc bằng xe máy hoặc ô tô.',
-        steps: ['Truy cập /tuyen-duong', 'Lọc theo khu vực (Vĩnh Long, Bến Tre, Trà Vinh)', 'Mỗi tuyến gồm: tên, emoji, thời gian, quãng đường, danh sách điểm dừng', 'Đọc mẹo di chuyển ở cuối mỗi tuyến', 'Nhấn vào điểm dừng để xem chi tiết hoặc mở trên bản đồ'],
+        steps: ['Truy cập /tuyen-duong', 'Lọc theo khu vực (3 vùng trước 7-2025: Vĩnh Long, Bến Tre, Trà Vinh)', 'Mỗi tuyến gồm: tên, emoji, thời gian, quãng đường, danh sách điểm dừng', 'Đọc mẹo di chuyển ở cuối mỗi tuyến', 'Nhấn vào điểm dừng để xem chi tiết hoặc mở trên bản đồ'],
         tips: ['Tuyến đường là gợi ý — bạn có thể bỏ/thêm điểm dừng bằng cách tạo lịch trình riêng.'],
         seeAlso: [{ href: '#lich-trinh', label: 'Tạo lịch trình tùy chỉnh' }],
         link: '/tuyen-duong', linkLabel: 'Xem tuyến đường',
@@ -854,7 +854,7 @@ const sections: Section[] = [
       {
         icon: '📒', title: 'Danh bạ hành chính',
         desc: 'Thông tin liên hệ UBND xã/phường: địa chỉ, số điện thoại, email, website.',
-        steps: ['Truy cập /danh-ba', 'Chọn khu vực: Vĩnh Long, Bến Tre, hoặc Trà Vinh', 'Chọn xã/phường từ dropdown', 'Xem thông tin liên hệ: địa chỉ, SĐT (nhấn để gọi), email, website', 'Nhấn "Xem trên bản đồ" để mở vị trí'],
+        steps: ['Truy cập /danh-ba', 'Chọn khu vực: Vĩnh Long, Bến Tre, hoặc Trà Vinh (trước 7-2025)', 'Chọn xã/phường từ dropdown', 'Xem thông tin liên hệ: địa chỉ, SĐT (nhấn để gọi), email, website', 'Nhấn "Xem trên bản đồ" để mở vị trí'],
         subtopics: [{ title: 'Báo thông tin sai', desc: 'Nếu phát hiện SĐT, địa chỉ sai — nhấn "Báo sai" để gửi yêu cầu cập nhật.' }],
         warnings: ['Thông tin có thể thay đổi sau khi sáp nhập đơn vị hành chính. Xác nhận trực tiếp nếu cần.'],
         link: '/danh-ba', linkLabel: 'Mở danh bạ',
@@ -869,7 +869,7 @@ const sections: Section[] = [
       },
       {
         icon: '🗺️', title: 'Ba khu vực',
-        desc: 'Duyệt theo 3 vùng chính: Vĩnh Long (🍊), Bến Tre (🥥), Trà Vinh (🛕).',
+        desc: 'Duyệt theo 3 vùng chính trước 7-2025: Vĩnh Long (🍊), Bến Tre (🥥), Trà Vinh (🛕).',
         steps: ['Nhấn vào khu vực ở footer hoặc truy cập /khu-vuc/vinh-long, /khu-vuc/ben-tre, /khu-vuc/tra-vinh', 'Xem tổng quan, địa điểm nổi bật, đặc sản riêng của vùng', 'Lọc danh sách theo loại hình hoặc mùa'],
       },
     ],

@@ -14,9 +14,9 @@
       data-catalog-section="orientation"
     >
       <div class="atlas-hero-inner">
-        <p class="atlas-hero-eyebrow">Vĩnh Long · chỉ mục khám phá theo địa bàn</p>
+        <p class="atlas-hero-eyebrow dateline-eyebrow">Chỉ mục khám phá · Tỉnh Vĩnh Long hợp nhất (3 vùng trước 7-2025)</p>
         <h1 class="atlas-hero-title">
-          <span class="atlas-hero-line1">{{ pc('hero_title', 'Ba tỉnh, một nhịp sông.') }}</span>
+          <span class="atlas-hero-line1">{{ pc('hero_title', 'Ba vùng đất, một nhịp sông.') }}</span>
           <Transition name="mode-fade" mode="out-in">
             <span class="atlas-hero-line2" :key="activeModeKey">{{ activeMode.line }}</span>
           </Transition>
@@ -501,7 +501,7 @@ useHead(() => ({
     {
       type: 'application/ld+json',
       innerHTML: safeJsonLd(itemListJsonLd(
-        'Du lịch Vĩnh Long, Bến Tre, Trà Vinh',
+        'Du lịch Tỉnh Vĩnh Long hợp nhất (3 vùng trước 7-2025)',
         'Trải nghiệm bản địa, điểm tham quan, lưu trú, làng nghề và ẩm thực Vĩnh Long.',
         '/du-lich',
         filtered.value,

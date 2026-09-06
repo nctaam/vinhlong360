@@ -336,7 +336,7 @@ const TICKER_PHRASES = [
   'mùa này bưởi Năm Roi ngọt chưa',
   'ngủ đêm giữa vườn dừa, ở đâu',
   'chợ nổi Trà Ôn còn họp giờ nào',
-  'dừa xiêm Bến Tre uống tại vườn',
+  'dừa xiêm xứ dừa (Bến Tre cũ) uống tại vườn',
   'đờn ca tài tử nghe ở đâu',
   'cù lao nào yên tĩnh nhất',
 ]
@@ -695,7 +695,7 @@ useHead({
 .search-post-item:hover { border-color: var(--color-action); }
 .spi-head { display: flex; align-items: center; gap: var(--space-2); margin-bottom: .2rem; }
 .spi-head strong { font-size: var(--text-sm); }
-.spi-type { font-size: var(--text-xs); color: var(--muted); background: var(--bg-alt); padding: 1px 8px; border-radius: var(--radius-full); }
+.spi-type { font-size: var(--text-xs); color: var(--muted); background: var(--bg-alt); padding: var(--space-half) var(--space-2); border-radius: var(--radius-full); }
 .spi-content { font-size: var(--text-sm); color: var(--ink-700); margin: 0; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
 
 .quick-picks { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: var(--space-3); }
@@ -759,8 +759,8 @@ useHead({
   background: var(--color-action-surface, var(--color-brand-surface));
   color: var(--color-action);
   font-weight: var(--weight-bold);
-  border-radius: 2px;
-  padding: 0 1px;
+  border-radius: var(--radius-control);
+  padding: 0 var(--space-half);
 }
 .sug-place { color: var(--muted); font-size: var(--text-xs); margin-left: auto; flex-shrink: 0; }
 .sug-all {
@@ -962,7 +962,7 @@ useHead({
 }
 .recent-image-wrap { position: relative; display: block; width: 56px; height: 56px; }
 .recent-image-disclosure { position: absolute; inset: auto 1px 1px; display: flex; justify-content: flex-end; }
-.recent-image-disclosure :deep([data-image-disclosure]) { font-size: 8px; padding: 1px 3px; }
+.recent-image-disclosure :deep([data-image-disclosure]) { font-size: var(--text-2xs, 8px); padding: var(--space-half) var(--space-1); }
 /* Same EntityCard pairing: seeded gradient (inline style) + white-watermark glyph on top. */
 .recent-placeholder {
   display: flex; align-items: center; justify-content: center;

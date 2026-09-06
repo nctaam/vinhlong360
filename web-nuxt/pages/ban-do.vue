@@ -271,7 +271,7 @@ useReveal()
 
 useSeoMeta({
   title: 'Bản đồ du lịch Vĩnh Long — vinhlong360',
-  description: 'Bản đồ và danh sách địa chỉ điểm du lịch, đặc sản, lưu trú, làng nghề tại Vĩnh Long, Bến Tre, Trà Vinh.',
+  description: 'Bản đồ và danh sách địa chỉ điểm du lịch, đặc sản, lưu trú, làng nghề tại tỉnh Vĩnh Long hợp nhất (3 vùng trước 7-2025).',
   ogTitle: 'Bản đồ du lịch — vinhlong360',
   ogDescription: 'Khám phá vị trí và đối chiếu địa chỉ trên danh sách luôn khả dụng.',
   ogUrl: () => canonicalUrl('/ban-do'),
@@ -290,7 +290,7 @@ useHead({
       url: canonicalUrl('/ban-do'),
       spatialCoverage: {
         '@type': 'Place',
-        name: 'Vĩnh Long – Bến Tre – Trà Vinh',
+        name: 'Tỉnh Vĩnh Long hợp nhất (3 vùng trước 7-2025)',
         geo: { '@type': 'GeoShape', box: '9.8 105.8 10.4 106.7' },
       },
     }),

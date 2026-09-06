@@ -18,7 +18,7 @@ const root = resolve(process.cwd())
 const doc = (rel: string) => readFileSync(resolve(root, rel), 'utf8')
 
 const TEN_CU = /Bến Tre|Trà Vinh/
-const DAU_LICH_SU = /\bcũ\b|trước\s+7-2025|hợp nhất|sáp nhập/
+const DAU_LICH_SU = /(?:^|\P{L})cũ(?:\P{L}|$)|trước\s+7-2025|hợp nhất|sáp nhập/u
 
 /** Mọi lần nhắc tên tỉnh cũ trong chuỗi này đều phải có dấu lịch sử đi kèm. */
 function sachTheo16(s: string): boolean {
@@ -88,6 +88,43 @@ describe('§1.6 — bề mặt máy đọc phải nói đúng tỉnh hợp nhấ
       const m = src.match(/class="[^"]*dateline-eyebrow[^"]*"[^>]*>([^<]+)</)
       if (m) {
         expect(sachTheo16(m[1]), `${rel}: dateline-eyebrow gọi tỉnh cũ mà không có dấu lịch sử: ${m[1]}`).toBe(true)
+      }
+    }
+  })
+
+  it('tất cả giá trị mặc định trong pageManifest.ts tuân thủ §1.6', () => {
+    const src = doc('utils/pageManifest.ts')
+    const lines = src.split('\n')
+    for (let i = 0; i < lines.length; i++) {
+      const line = lines[i].trim()
+      if (line.startsWith('//') || line.startsWith('/*') || line.startsWith('*')) continue
+      if (TEN_CU.test(line)) {
+        expect(sachTheo16(line), `utils/pageManifest.ts:${i + 1} nhắc tỉnh cũ mà thiếu dấu mốc lịch sử: ${line}`).toBe(true)
+      }
+    }
+  })
+
+  it('các khối editorial và mô tả trang công khai chính tuân thủ §1.6', () => {
+    const pages = [
+      'pages/dia-diem/index.vue',
+      'pages/du-lich.vue',
+      'pages/ocop.vue',
+      'pages/su-kien.vue',
+      'pages/tuyen-duong.vue',
+      'pages/luu-tru.vue',
+      'pages/le-hoi.vue',
+      'pages/lich-trinh/index.vue',
+      'pages/san-pham.vue',
+    ]
+    for (const rel of pages) {
+      const src = doc(rel)
+      const lines = src.split('\n')
+      for (let i = 0; i < lines.length; i++) {
+        const line = lines[i].trim()
+        if (line.startsWith('//') || line.startsWith('/*') || line.startsWith('*')) continue
+        if (TEN_CU.test(line)) {
+          expect(sachTheo16(line), `${rel}:${i + 1} nhắc tỉnh cũ mà thiếu dấu mốc lịch sử: ${line}`).toBe(true)
+        }
       }
     }
   })

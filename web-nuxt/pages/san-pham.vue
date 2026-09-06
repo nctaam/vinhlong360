@@ -68,12 +68,12 @@
          mạch editorial làm callout (props tĩnh, an toàn dưới v-once). -->
     <section v-once class="page-article editorial-body reveal">
       <h2 class="sediment-head">Đặc sản vùng sông nước</h2>
-      <p>Đồng bằng sông Cửu Long là vựa trái cây và nông sản lớn nhất cả nước, và tỉnh Vĩnh Long — miệt vườn nằm trọn giữa hai nhánh sông Tiền, sông Hậu — góp vào đó hàng chục loại đặc sản mang đậm bản sắc: bưởi Năm Roi vỏ mỏng ruột ngọt, kẹo dừa Bến Tre dẻo thơm, dừa sáp Cầu Kè béo quánh hiếm có, hay bánh tráng Mỹ Lồng giòn rụm nướng than.</p>
+      <p>Đồng bằng sông Cửu Long là vựa trái cây và nông sản lớn nhất cả nước, và tỉnh Vĩnh Long — miệt vườn nằm trọn giữa hai nhánh sông Tiền, sông Hậu — góp vào đó hàng chục loại đặc sản mang đậm bản sắc: bưởi Năm Roi vỏ mỏng ruột ngọt, kẹo dừa Bến Tre (cũ) dẻo thơm, dừa sáp Cầu Kè béo quánh hiếm có, hay bánh tráng Mỹ Lồng giòn rụm nướng than.</p>
       <blockquote class="pull-quote">Mỗi sản phẩm gắn liền với một vùng đất, một mùa vụ và một câu chuyện sản xuất riêng.</blockquote>
       <p>Nhiều sản phẩm đã được chứng nhận OCOP (Mỗi xã Một sản phẩm) — đạt tiêu chuẩn chất lượng quốc gia từ 3 đến 5 sao.</p>
 
       <CatalogInterstitial
-        fact="Tỉnh Vĩnh Long — hợp từ ba vùng đất Vĩnh Long, Bến Tre, Trà Vinh — là một trong những vựa trái cây lớn nhất đồng bằng, mỗi mùa mang một hương vị riêng."
+        fact="Tỉnh Vĩnh Long hợp nhất (3 vùng trước 7-2025: Vĩnh Long, Bến Tre, Trà Vinh) — là một trong những vựa trái cây lớn nhất đồng bằng, mỗi mùa mang một hương vị riêng."
         icon-name="fruit"
         variant="accent"
         :links="[{ to: '/theo-mua', label: 'Xem theo mùa' }, { to: '/ocop', label: 'Sản phẩm OCOP' }]"

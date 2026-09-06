@@ -15,7 +15,7 @@ export interface OnboardingContent {
 export const DEFAULT_ONBOARDING: OnboardingContent = {
   emoji: '🌴',
   title: 'Chào mừng đến vinhlong360',
-  intro: 'Khám phá Vĩnh Long, Bến Tre, Trà Vinh — theo cách của người bản địa.',
+  intro: 'Khám phá tỉnh Vĩnh Long hợp nhất (3 vùng trước 7-2025) — theo cách của người bản địa.',
   features: [
     { icon: '🗺️', title: '1.400+ địa điểm & đặc sản', desc: 'Trải nghiệm miệt vườn, làng nghề, món ngon — cập nhật liên tục từ cộng đồng.' },
     { icon: '📅', title: 'Lịch trình gợi ý theo mùa', desc: 'Lộ trình chi tiết với bản đồ, đặc sản mùa nào, lễ hội sắp diễn ra.' },

@@ -144,7 +144,7 @@
          so the strongest lines aren't buried in dense paragraph body text. -->
     <section v-once class="page-article reveal">
       <div class="sediment-head sediment-head-first"><h2>Văn hoá lễ hội Vĩnh Long</h2></div>
-      <p>Vùng đất Vĩnh Long, Bến Tre và Trà Vinh là nơi giao thoa của ba nền văn hoá: Kinh, Khmer và Hoa. Mỗi cộng đồng mang đến một hệ thống lễ hội riêng biệt, tạo nên bức tranh văn hoá đa dạng hiếm có trong cả nước.</p>
+      <p>Vùng đất tỉnh Vĩnh Long hợp nhất (3 vùng trước 7-2025) là nơi giao thoa của ba nền văn hoá: Kinh, Khmer và Hoa. Mỗi cộng đồng mang đến một hệ thống lễ hội riêng biệt, tạo nên bức tranh văn hoá đa dạng hiếm có trong cả nước.</p>
       <blockquote class="pull-quote">Từ đình miếu Kinh ven sông đến chùa Khmer tháp nhọn, từ hội quán Hoa rực rỡ đèn lồng đến giỗ kỵ danh nhân — lễ hội ở đây không chỉ là dịp vui mà là sợi dây kết nối cộng đồng qua nhiều thế hệ.</blockquote>
 
       <!-- Ba dòng lễ hội: makes the tri-ethnic framing visible at a glance -->
@@ -154,7 +154,7 @@
 
       <div class="sediment-head"><h2>Lễ hội tiêu biểu</h2></div>
       <p><strong>Lễ Kỳ Yên</strong> là lễ hội phổ biến nhất, tổ chức tại đình làng khắp vùng vào đầu năm âm lịch, cầu cho mưa thuận gió hoà, mùa màng bội thu.</p>
-      <blockquote class="pull-quote">Ok Om Bok — lễ Cúng Trăng của người Khmer Trà Vinh, tổ chức vào rằm tháng 10 âm lịch với đua ghe ngo trên sông Maspéro.</blockquote>
+      <blockquote class="pull-quote">Ok Om Bok — lễ Cúng Trăng của người Khmer vùng Trà Vinh (trước 7-2025), tổ chức vào rằm tháng 10 âm lịch với đua ghe ngo trên sông Maspéro.</blockquote>
       <p><strong>Lễ Nghinh Ông</strong> diễn ra ở các vùng ven biển, tôn vinh Cá Ông (cá voi) — vị thần bảo hộ ngư dân. Ngoài ra còn có các lễ giỗ danh nhân như giỗ Thủ khoa Bùi Hữu Nghĩa (Vĩnh Long), giỗ cụ Phan Thanh Giản, và nhiều lễ hội nông nghiệp như Hội trái cây ngon, Lễ hội bánh dân gian Nam Bộ. Mỗi lễ hội thường kéo dài 2–3 ngày với phần lễ trang nghiêm và phần hội sôi nổi.</p>
 
       <div class="sediment-head"><h2>Đi lễ hội — cần biết gì?</h2></div>
@@ -634,7 +634,7 @@ useHead(() => ({
         '@context': 'https://schema.org',
         '@type': 'CollectionPage',
         name: 'Lễ hội truyền thống',
-        description: 'Lễ hội đình miếu, lễ Khmer, Nghinh Ông, giỗ danh nhân — truyền thống văn hóa Vĩnh Long, Bến Tre, Trà Vinh.',
+        description: 'Lễ hội đình miếu, lễ Khmer, Nghinh Ông, giỗ danh nhân — truyền thống văn hóa tỉnh Vĩnh Long hợp nhất (3 vùng trước 7-2025).',
         url: canonicalUrl('/le-hoi'),
         numberOfItems: allEvents.value.length,
       }),

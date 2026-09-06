@@ -293,7 +293,7 @@ const directorySchema = computed(() => ({
 useSeoMeta({
   ogType: 'website',
   title: () => pc('seo_title') || 'Danh bạ hành chính — vinhlong360',
-  description: () => pc('seo_description') || 'Danh bạ xã/phường, cơ quan hành chính Vĩnh Long, Bến Tre, Trà Vinh.',
+  description: () => pc('seo_description') || 'Danh bạ 124 xã/phường, cơ quan hành chính tỉnh Vĩnh Long hợp nhất (3 vùng trước 7-2025).',
   ogTitle: () => pc('og_title') || 'Danh bạ — vinhlong360',
   ogDescription: () => pc('og_description') || 'Tra cứu thông tin hành chính địa phương.',
   ogUrl: () => canonicalUrl('/danh-ba'),

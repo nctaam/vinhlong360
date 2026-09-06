@@ -1359,7 +1359,7 @@ useSeoMeta({
 .pc-fill { height: 100%; background: var(--accent); border-radius: var(--radius-full); transform-origin: left; animation: pc-grow .6s var(--ease-out) .3s backwards; }
 @keyframes pc-grow { from { transform: scaleX(0); } to { transform: scaleX(1); } }
 .pc-hints { display: flex; flex-wrap: wrap; gap: var(--space-1); margin-top: var(--space-2); }
-.pc-hint { font-size: .72rem; color: var(--muted); padding: 2px 8px; border: 1px solid var(--border-input); border-radius: var(--radius-full); }
+.pc-hint { font-size: .72rem; color: var(--muted); padding: var(--space-half) var(--space-2); border: 1px solid var(--border-input); border-radius: var(--radius-full); }
 
 
 /* Hoạt động (timeline) tab */

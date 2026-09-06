@@ -217,10 +217,10 @@ useHead(() => ({
   display: inline-flex;
   align-items: flex-end;
   justify-content: flex-start;
-  width: 48px;
-  height: 48px;
-  padding: 7px;
-  border-radius: var(--radius-surface) var(--radius-surface) var(--radius-surface) 4px;
+  width: var(--space-12);
+  height: var(--space-12);
+  padding: var(--space-2);
+  border-radius: var(--radius-surface) var(--radius-surface) var(--radius-surface) var(--radius-control);
   border: .5px solid var(--line);
   background: var(--bg-warm);
   margin-bottom: var(--space-3);

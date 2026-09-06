@@ -369,7 +369,7 @@ const plannerSchema = computed(() => ({
   name: 'Tạo lịch trình khám phá — vinhlong360',
   applicationCategory: 'TravelApplication',
   operatingSystem: 'All',
-  description: 'Công cụ lập kế hoạch và tối ưu lộ trình du lịch tự túc tại Vĩnh Long, Bến Tre và Trà Vinh.',
+  description: 'Công cụ lập kế hoạch và tối ưu lộ trình du lịch tự túc tại tỉnh Vĩnh Long hợp nhất (3 vùng trước 7-2025).',
   publisher: {
     '@type': 'Organization',
     name: 'vinhlong360',
@@ -379,7 +379,7 @@ const plannerSchema = computed(() => ({
 
 useSeoMeta({
   title: 'Tạo lịch trình — vinhlong360',
-  description: 'Công cụ lập kế hoạch chuyến đi tự túc tại Vĩnh Long, Bến Tre và Trà Vinh.',
+  description: 'Công cụ lập kế hoạch chuyến đi tự túc tại tỉnh Vĩnh Long hợp nhất (3 vùng trước 7-2025).',
   robots: 'noindex, nofollow',
   ogTitle: 'Tạo lịch trình — vinhlong360',
   ogDescription: 'Lập kế hoạch chuyến đi của bạn — chọn điểm đến, sắp xếp thứ tự và lưu lại.',
