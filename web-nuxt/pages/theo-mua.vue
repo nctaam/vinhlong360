@@ -756,7 +756,7 @@ useHead(() => ({
   .month-grid .quick-pick { padding: var(--space-5) var(--space-2); min-height: 48px; }
   .b2b-callout { grid-template-columns: auto 1fr; }
   .b2b-callout-link { grid-column: 1 / -1; justify-content: center; }
-  .stl-cell { font-size: 9px; }
+  .stl-cell { font-size: var(--text-2xs, 11px); }
   .stl-legend { gap: var(--space-1) var(--space-3); }
 }
 @media (max-width: 480px) {

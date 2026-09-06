@@ -643,7 +643,7 @@ function onOtpPaste(e: ClipboardEvent) {
   .otp-step { animation: none; }
 }
 @media (max-width: 600px) {
-  .otp-step .input { font-size: 16px; }
+  .otp-step .input { font-size: var(--text-base, 16px); }
 }
 .otp-step h3 { outline: none; }
 @media (forced-colors: active) {

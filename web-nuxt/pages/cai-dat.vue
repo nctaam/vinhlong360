@@ -1398,7 +1398,7 @@ onUnmounted(() => {
   .delete-confirm-actions .btn { width: 100%; }
   .settings-tabs { gap: 0; }
   .settings-tab { padding: .5rem .65rem; font-size: var(--text-xs); }
-  .sf-input { font-size: 16px; }
+  .sf-input { font-size: var(--text-base, 16px); }
   .sf-username-prefix { font-size: var(--text-xs); padding: .65rem .4rem; }
 }
 @media (prefers-reduced-motion: reduce) {

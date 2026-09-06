@@ -794,7 +794,7 @@ useHead(() => ({
 .lvn-cell.is-first .lvn-lunar { color: var(--error); font-weight: var(--weight-semibold); }
 .lvn-cell.is-full .lvn-lunar { color: var(--accent-dark); font-weight: var(--weight-semibold); }
 .lvn-cell.is-first .lvn-lunar::before { content: '•'; margin-inline-end: 1px; }
-.lvn-cell.is-full .lvn-lunar::before { content: '◯'; margin-inline-end: 1px; font-size: 8px; }
+.lvn-cell.is-full .lvn-lunar::before { content: '◯'; margin-inline-end: var(--space-half, 2px); font-size: var(--text-2xs, 11px); }
 
 .lvn-legend {
   display: flex; flex-wrap: wrap; gap: var(--space-1) var(--space-4);

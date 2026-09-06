@@ -69,7 +69,7 @@ function iconNameFor(type?: string) {
   animation: toastIconPop .35s var(--ease-out-expo) .1s both;
 }
 .toast-icon .line-icon {
-  font-size: 14px;
+  font-size: var(--text-sm, 14px);
 }
 @keyframes toastIconPop { from { transform: scale(0); opacity: 0; } to { transform: scale(1); opacity: 1; } }
 .toast.success .toast-icon { background: rgba(var(--secondary-rgb), .12); color: var(--secondary); }
@@ -87,7 +87,7 @@ function iconNameFor(type?: string) {
   transition: background .2s, color .2s;
 }
 .toast-dismiss .line-icon {
-  font-size: 16px;
+  font-size: var(--text-base, 16px);
   transition: transform .2s var(--ease-out-expo);
 }
 .toast-dismiss:hover { background: var(--bg-alt); color: var(--ink); }

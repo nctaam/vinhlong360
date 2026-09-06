@@ -434,7 +434,7 @@
   .sticky-cta-bar {
     display: flex;
     position: fixed;
-    bottom: 0;
+    bottom: var(--shell-public-bottom-nav-reserved-height);
     left: 0;
     right: 0;
     z-index: var(--z-sticky);
@@ -625,11 +625,6 @@
 .aside-actions { display: flex; gap: var(--space-2); margin: var(--space-3) 0 var(--space-4); }
 .aside-actions > * { flex: 1; }
 
-/* On mobile, hide the desktop ContactWidget (it renders its own fixed bottom bar) */
-@media (max-width: 767px) {
-  /* Hide existing sticky-cta-bar since ContactWidget provides mobile bottom bar */
-  .sticky-cta-bar { display: none; }
-}
 
 /* ── Cover-story hero layer (Wave 2): dateline eyebrow + hook + phù-sa no-photo hero ── */
 .detail-cover .dc-eyebrow {

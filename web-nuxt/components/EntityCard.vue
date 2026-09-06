@@ -271,7 +271,7 @@ const ratingDisplay = computed(() => {
 .card-amenities { display: none; }
 /* ── Story Card (Wave 1 keystone) — editorial treatment on every grid card ── */
 .card-type { display: none; }
-.card-name { font-family: var(--font-editorial); font-weight: 600; letter-spacing: -.01em; line-height: var(--leading-snug, 1.25); word-break: break-word; overflow-wrap: anywhere; hyphens: auto; }
+.card-name { font-family: var(--font-editorial); font-weight: 600; letter-spacing: -.01em; line-height: var(--leading-snug, 1.25); word-break: break-word; overflow-wrap: anywhere; hyphens: auto; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
 /* dateline eyebrow — small-caps, hairline accent, NOT a solid pill */
 .card-dateline {
   display: inline-block; margin-bottom: 2px;

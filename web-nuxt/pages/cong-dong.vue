@@ -1444,7 +1444,7 @@ useHead({
   /* --text-sm clamps to ~14px under ~640px viewport — below the 16px iOS auto-zoom
      threshold. Force 16px on mobile only for the two real text inputs that use it
      (community search box, schedule datetime picker); desktop keeps --text-sm as-is. */
-  .cd-input { font-size: 16px; }
+  .cd-input { font-size: var(--text-base, 16px); }
 }
 
 @media (prefers-reduced-motion: reduce) {

@@ -498,6 +498,52 @@
 
     </div>
 
+    <!-- Mobile Sticky CTA Bar — thumb-zone reachability on mobile -->
+    <nav class="sticky-cta-bar" aria-label="Thao tác nhanh địa điểm">
+      <a
+        v-if="entity.attributes?.phone"
+        :href="telHref(entity.attributes.phone)"
+        class="scta-phone"
+        data-color-role="action-primary"
+        data-contact-action="phone"
+        :aria-label="`Gọi ${entity.name}`"
+        @click="trackContact('phone')"
+      >
+        <IconLine name="phone" aria-hidden="true" /> Gọi điện
+      </a>
+      <a
+        v-if="zaloLink"
+        :href="zaloLink"
+        target="_blank"
+        rel="noopener noreferrer nofollow"
+        class="scta-zalo"
+        data-contact-action="zalo"
+        :aria-label="`Nhắn Zalo ${entity.name}`"
+        @click="trackContact('zalo')"
+      >
+        <IconLine name="message" aria-hidden="true" /> Zalo
+      </a>
+      <NuxtLink
+        v-if="hasCoords"
+        :to="mapUrl"
+        class="scta-map"
+        data-contact-action="map"
+        :aria-label="`Chỉ đường tới ${entity.name}`"
+        @click="trackContact('map')"
+      >
+        <IconLine name="map" aria-hidden="true" /> Chỉ đường
+      </NuxtLink>
+      <NuxtLink
+        v-if="!entity.attributes?.phone && !zaloLink && !hasCoords"
+        :to="planAddUrl"
+        class="scta-plan"
+        data-color-role="action-primary"
+        :aria-label="`Thêm ${entity.name} vào lịch trình`"
+      >
+        <IconLine name="clipboard-list" aria-hidden="true" /> Thêm lịch trình
+      </NuxtLink>
+    </nav>
+
   </section>
   <section v-else-if="detailFetchResolution?.kind === 'not_found'" class="page">
     <EmptyState title="Không tìm thấy địa điểm này" message="Có thể nội dung đã được di chuyển hoặc đường dẫn chưa đúng. Bạn thử khám phá các điểm đến khác nhé.">

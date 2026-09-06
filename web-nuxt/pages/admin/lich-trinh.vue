@@ -569,7 +569,7 @@ tr:hover .lt-stops-badge { transform: scale(1.1); }
   width: 20px; height: 20px; margin-top: 2px;
   border-radius: var(--radius-full); font-size: .75rem; font-weight: 700; line-height: 1;
 }
-.lt-stop-status .line-icon { font-size: 11px; }
+.lt-stop-status .line-icon { font-size: var(--text-2xs, 11px); }
 .lt-stop-status-ok { background: rgba(var(--color-success-rgb),.12); color: var(--success); }
 .lt-stop-status-warn { background: rgba(var(--warning-rgb),.14); color: var(--warning); }
 .lt-move {
@@ -579,7 +579,7 @@ tr:hover .lt-stops-badge { transform: scale(1.1); }
   display: inline-flex; align-items: center; justify-content: center;
   transition: background .2s, color .2s, transform .2s var(--ease-soft);
 }
-.lt-move .line-icon { font-size: 14px; }
+.lt-move .line-icon { font-size: var(--text-sm, 14px); }
 .lt-move:hover:not(:disabled) { background: rgba(var(--blue-rgb),.1); color: var(--info); transform: scale(1.12); }
 .lt-move:focus-visible { outline: 2px solid var(--info); outline-offset: 1px; }
 .lt-move:disabled { opacity: .25; cursor: not-allowed; }
@@ -595,7 +595,7 @@ tr:hover .lt-stops-badge { transform: scale(1.1); }
   display: inline-flex; align-items: center; justify-content: center;
   transition: background .2s, color .2s, transform .2s var(--ease-soft);
 }
-.lt-stop-del .line-icon { font-size: 14px; }
+.lt-stop-del .line-icon { font-size: var(--text-sm, 14px); }
 .lt-stop-del:hover { background: rgba(var(--danger-rgb),.12); color: var(--error); transform: scale(1.1); }
 .lt-stop-del:focus-visible { outline: 2px solid var(--error); outline-offset: 1px; }
 

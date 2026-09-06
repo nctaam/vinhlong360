@@ -732,7 +732,7 @@ useHead({
    threshold. Force 16px on mobile only for this real comment input; desktop keeps
    --text-sm (14px→16px fluid scale) unchanged. */
 @media (max-width: 640px) {
-  .compose-input-sm { font-size: 16px; }
+  .compose-input-sm { font-size: var(--text-base, 16px); }
 }
 .compose-send {
   width: 44px; height: 44px; min-height: 44px; padding: 0;

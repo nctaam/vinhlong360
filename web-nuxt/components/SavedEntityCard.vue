@@ -84,7 +84,7 @@ const dateline = computed(() => {
 .saved-entity-cover { position: relative; display: block; flex-shrink: 0; width: 80px; height: 56px; border-radius: var(--radius-surface); overflow: hidden; }
 .saved-entity-img { display: block; width: 80px; height: 56px; border-radius: var(--radius-surface); object-fit: cover; flex-shrink: 0; }
 .saved-image-disclosure { position: absolute; inset: auto 2px 2px; display: flex; justify-content: flex-end; }
-.saved-image-disclosure :deep([data-image-disclosure]) { font-size: 9px; padding: 1px 4px; }
+.saved-image-disclosure :deep([data-image-disclosure]) { font-size: var(--text-2xs, 11px); padding: var(--space-half, 2px) var(--space-1, 4px); }
 .saved-entity-img-generated { position: relative; background: linear-gradient(160deg, rgba(var(--color-action-rgb), .14) 0%, var(--bg-alt) 70%); }
 .saved-entity-img-generated .cover-grain {
   position: absolute; inset: 0; background-image: var(--grain); background-size: 120px 120px; opacity: .06;

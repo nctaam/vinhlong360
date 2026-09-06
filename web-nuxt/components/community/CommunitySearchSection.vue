@@ -90,6 +90,6 @@ defineEmits<{
 .section-label { font-size: var(--text-sm); font-weight: var(--weight-semibold); color: var(--muted); margin: 0 0 var(--space-2); text-transform: uppercase; letter-spacing: 0.04em; }
 
 @media (max-width: 820px) {
-  .cs-input { font-size: 16px; }
+  .cs-input { font-size: var(--text-base, 16px); }
 }
 </style>

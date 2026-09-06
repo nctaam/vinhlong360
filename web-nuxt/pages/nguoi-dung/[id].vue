@@ -1311,7 +1311,7 @@ useSeoMeta({
    threshold. Force 16px on mobile only for these real form fields (create-collection
    name/description); desktop keeps --text-sm (14px→16px fluid scale) unchanged. */
 @media (max-width: 640px) {
-  .sf-input { font-size: 16px; }
+  .sf-input { font-size: var(--text-base, 16px); }
 }
 
 /* Dark mode */

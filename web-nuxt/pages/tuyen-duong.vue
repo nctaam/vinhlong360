@@ -492,6 +492,6 @@ useHead(() => ({
 .dark .rv-pin-dot { box-shadow: 0 0 0 2px var(--card), 0 1px 3px rgba(var(--black-rgb),.4); }
 @media (max-width: 640px) {
   .route-vignette { height: 52px; }
-  .rv-labels { font-size: 9px; }
+  .rv-labels { font-size: var(--text-2xs, 11px); }
 }
 </style>
