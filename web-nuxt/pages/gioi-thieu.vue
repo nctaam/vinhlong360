@@ -116,19 +116,13 @@ useSeoMeta({
   twitterCard: 'summary_large_image',
 })
 
-const aboutJsonLd = {
-  '@context': 'https://schema.org',
-  '@type': 'AboutPage',
-  name: 'Về vinhlong360',
-  url: canonicalUrl('/gioi-thieu'),
-  mainEntity: {
-    '@type': 'Organization',
-    name: 'vinhlong360',
-    url: canonicalUrl('/'),
-    logo: 'https://vinhlong360.vn/icons/icon-512.png',
-    areaServed: ['Vĩnh Long'],   // §1.6 — một tỉnh sau sáp nhập 7-2025
-  },
-}
+// Schema.org unified @graph: '@type': 'AboutPage'
+// §1.6: areaServed: ['Vĩnh Long'] (một tỉnh sau sáp nhập 7-2025)
+const aboutJsonLd = computed(() => buildAboutPageSchemaGraph({
+  title: doc.value.seo_title,
+  description: doc.value.seo_description,
+  updatedDate: doc.value.updated_date,
+}))
 
 useHead(() => ({
   link: [{ rel: 'canonical', href: canonicalUrl('/gioi-thieu') }],

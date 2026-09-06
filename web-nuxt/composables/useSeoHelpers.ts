@@ -389,7 +389,18 @@ export function buildEntityDetailSchemaGraph(options: EntityDetailSchemaOptions)
   ])
 }
 
-export function buildHomeSchemaGraph(): Record<string, any> {
+export interface HomeSchemaOptions {
+  upcomingEvents?: Array<{
+    id: string | number
+    name: string
+    attributes?: { date_start?: string; date_end?: string }
+    place_name?: string
+    area?: string
+    place_area?: string
+  }>
+}
+
+export function buildHomeSchemaGraph(options?: HomeSchemaOptions): Record<string, any> {
   const webpageNode = {
     '@type': 'WebPage',
     '@id': `${SITE_URL}/#webpage`,
@@ -459,13 +470,47 @@ export function buildHomeSchemaGraph(): Record<string, any> {
     },
   ], `${SITE_URL}/#faq`)
 
-  return buildUnifiedSchemaGraph([
+  const nodes = [
     websiteNode,
     buildOrganizationSchema(),
     webpageNode,
     itemList,
     faqNode,
-  ])
+  ]
+
+  if (options?.upcomingEvents && options.upcomingEvents.length > 0) {
+    const eventItems = options.upcomingEvents.map((ev, i) => ({
+      '@type': 'ListItem',
+      position: i + 1,
+      item: {
+        '@type': 'Event',
+        name: ev.name,
+        startDate: ev.attributes?.date_start,
+        endDate: ev.attributes?.date_end || ev.attributes?.date_start,
+        url: `${SITE_URL}/dia-diem/${encodeURIComponent(String(ev.id))}`,
+        eventStatus: 'https://schema.org/EventScheduled',
+        eventAttendanceMode: 'https://schema.org/OfflineEventAttendanceMode',
+        location: {
+          '@type': 'Place',
+          name: ev.place_name || 'Vĩnh Long',
+          address: {
+            '@type': 'PostalAddress',
+            addressRegion: 'Vĩnh Long',
+            addressCountry: 'VN',
+          },
+        },
+      },
+    }))
+    nodes.push({
+      '@type': 'ItemList',
+      '@id': `${SITE_URL}/#upcoming-events`,
+      name: 'Sự kiện sắp tới tại Vĩnh Long',
+      numberOfItems: eventItems.length,
+      itemListElement: eventItems,
+    })
+  }
+
+  return buildUnifiedSchemaGraph(nodes)
 }
 
 export interface PostDetailSchemaOptions {
@@ -914,5 +959,172 @@ export function buildNewsArticleSchemaGraph(options: NewsArticleSchemaOptions): 
     articleMeta,
   ])
 }
+
+export interface AboutPageSchemaOptions {
+  title?: string
+  description?: string
+  updatedDate?: string
+  canonicalUrl?: string
+}
+
+export function buildAboutPageSchemaGraph(options: AboutPageSchemaOptions = {}): Record<string, any> {
+  const pageUrl = options.canonicalUrl || canonicalUrl('/gioi-thieu')
+  const title = options.title || 'Giới thiệu về vinhlong360'
+  const desc = options.description || 'Về vinhlong360: Sứ mệnh, văn hóa, con người và phương pháp biên tập cổng du lịch Vĩnh Long.'
+
+  const webpageNode = {
+    '@type': 'AboutPage',
+    '@id': `${pageUrl}#webpage`,
+    url: pageUrl,
+    name: `${title} — vinhlong360`,
+    description: desc,
+    inLanguage: 'vi-VN',
+    isPartOf: { '@id': `${SITE_URL}/#website` },
+    breadcrumb: { '@id': `${pageUrl}#breadcrumb` },
+    mainEntity: { '@id': `${SITE_URL}/#organization` },
+    about: { '@id': `${SITE_URL}/#organization` },
+    speakable: buildSpeakableSpecification(['.about-intro', 'h1', '.about-mission-quote', '#ban-bien-tap']),
+  }
+
+  const nodes: any[] = [
+    buildWebSiteSchema(),
+    buildOrganizationSchema(),
+    webpageNode,
+  ]
+
+  if (options.canonicalUrl && options.updatedDate) {
+    // optional extension hook
+  }
+
+  return buildUnifiedSchemaGraph(nodes)
+}
+
+export interface ContactPageSchemaOptions {
+  title?: string
+  description?: string
+  email?: string
+  claimEmail?: string
+  hotline?: string
+  canonicalUrl?: string
+}
+
+export function buildContactPageSchemaGraph(options: ContactPageSchemaOptions = {}): Record<string, any> {
+  const pageUrl = options.canonicalUrl || canonicalUrl('/lien-he')
+  const title = options.title || 'Liên hệ vinhlong360'
+  const desc = options.description || 'Liên hệ vinhlong360.vn: yêu cầu sửa thông tin, hợp tác quảng bá, đăng ký quản lý trang.'
+  const email = options.email || 'lienhe@vinhlong360.vn'
+  const hotline = options.hotline || '+84-270-3822182'
+
+  const webpageNode = {
+    '@type': 'ContactPage',
+    '@id': `${pageUrl}#webpage`,
+    url: pageUrl,
+    name: `${title} — vinhlong360`,
+    description: desc,
+    inLanguage: 'vi-VN',
+    isPartOf: { '@id': `${SITE_URL}/#website` },
+    breadcrumb: { '@id': `${pageUrl}#breadcrumb` },
+    mainEntity: { '@id': `${SITE_URL}/#organization` },
+    speakable: buildSpeakableSpecification(['.bm-inner h1', '.bm-sub', '.bm-sla', '.contact-quote', '.contact-cards h2']),
+  }
+
+  const contactPointNode = {
+    '@type': 'ContactPoint',
+    '@id': `${pageUrl}#contact-point`,
+    telephone: hotline,
+    email,
+    contactType: 'customer support',
+    areaServed: { '@type': 'AdministrativeArea', name: 'Vĩnh Long' },
+    availableLanguage: ['vi', 'en'],
+  }
+
+  return buildUnifiedSchemaGraph([
+    buildWebSiteSchema(),
+    buildOrganizationSchema(),
+    webpageNode,
+    contactPointNode,
+  ])
+}
+
+export interface CatalogDirectorySchemaOptions {
+  total: number
+  items?: Array<{ id: string | number; name: string; type?: string; place_name?: string }>
+  activeType?: string
+  activeArea?: string
+  canonicalUrl?: string
+}
+
+export function buildCatalogDirectorySchemaGraph(options: CatalogDirectorySchemaOptions): Record<string, any> {
+  const pageUrl = options.canonicalUrl || canonicalUrl('/dia-diem')
+  const total = options.total || 0
+  const title = 'Danh bạ địa điểm du lịch & văn hóa Vĩnh Long'
+  const desc = 'Toàn bộ điểm đến, đặc sản OCOP, làng nghề, lưu trú và di tích lịch sử tỉnh Vĩnh Long. Lọc theo 3 vùng và loại hình.'
+
+  const webpageNode = {
+    '@type': 'CollectionPage',
+    '@id': `${pageUrl}#collection`,
+    url: pageUrl,
+    name: `${title} — vinhlong360`,
+    description: desc,
+    inLanguage: 'vi-VN',
+    isPartOf: { '@id': `${SITE_URL}/#website` },
+    breadcrumb: { '@id': `${pageUrl}#breadcrumb` },
+    about: {
+      '@type': 'Thing',
+      name: 'Địa điểm du lịch và đặc sản tỉnh Vĩnh Long',
+    },
+    speakable: buildSpeakableSpecification(['.catalog-hero-inner h1', '.catalog-hero-inner p', '.almanac-stats']),
+  }
+
+  const breadcrumbNode = {
+    '@type': 'BreadcrumbList',
+    '@id': `${pageUrl}#breadcrumb`,
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'Trang chủ', item: `${SITE_URL}/` },
+      { '@type': 'ListItem', position: 2, name: 'Địa điểm', item: pageUrl },
+    ],
+  }
+
+  const itemListElements = (options.items || []).slice(0, 30).map((item, index) => ({
+    '@type': 'ListItem',
+    position: index + 1,
+    name: item.name,
+    url: canonicalUrl(`/dia-diem/${encodeURIComponent(String(item.id))}`),
+  }))
+
+  const itemListNode = {
+    '@type': 'ItemList',
+    '@id': `${pageUrl}#items`,
+    name: 'Danh sách địa điểm nổi bật tại Vĩnh Long',
+    numberOfItems: total,
+    itemListElement: itemListElements,
+  }
+
+  const faqItems = [
+    {
+      q: 'Danh bạ địa điểm Vĩnh Long 360 bao gồm những danh mục nào?',
+      a: 'Danh bạ tổng hợp đầy đủ các điểm tham quan sinh thái, di tích lịch sử văn hóa, homestay nhà vườn, quán ăn đặc sản và cơ sở OCOP trên địa bàn toàn tỉnh Vĩnh Long.',
+    },
+    {
+      q: 'Làm thế nào để lọc điểm đến theo khu vực hành chính hoặc khoảng cách?',
+      a: 'Bạn có thể bấm chọn các con dấu khu vực (Vĩnh Long trung tâm, Trà Vinh ven biển, Bến Tre cù lao) hoặc lọc theo loại hình để tìm đúng địa điểm mong muốn.',
+    },
+    {
+      q: 'Thông tin giờ mở cửa và số điện thoại trên danh bạ có được cập nhật thường xuyên không?',
+      a: 'Dữ liệu được Ban biên tập đối soát thực địa và tiếp nhận phản hồi cập nhật liên tục từ các chủ cơ sở kinh doanh và người dùng bản địa.',
+    },
+  ]
+  const faqNode = buildFaqPageSchema(faqItems, `${pageUrl}#faq`)
+
+  return buildUnifiedSchemaGraph([
+    buildWebSiteSchema(),
+    buildOrganizationSchema(),
+    webpageNode,
+    breadcrumbNode,
+    itemListNode,
+    faqNode,
+  ])
+}
+
 
 

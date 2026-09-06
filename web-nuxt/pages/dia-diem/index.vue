@@ -331,32 +331,22 @@ useSeoMeta({
   twitterCard: 'summary_large_image',
 })
 
-// JSON-LD: ItemList structured data for search engines
-const listJsonLd = computed(() => {
-  return itemListJsonLd(
-    'Danh bạ địa điểm — vinhlong360',
-    'Tất cả điểm đến, đặc sản, làng nghề, lưu trú và di tích của tỉnh Vĩnh Long hợp nhất (3 vùng trước 7-2025).',
-    '/dia-diem',
-    firstPage.value,
-  )
-})
+// Schema.org unified @graph: buildCatalogDirectorySchemaGraph
+const directorySchema = computed(() => buildCatalogDirectorySchemaGraph({
+  total: total.value,
+  items: firstPage.value,
+  activeType: typeFilter.value,
+  activeArea: areaFilter.value,
+}))
+
 useHead(() => ({
   link: [{ rel: 'canonical', href: canonicalUrl('/dia-diem') }],
   script: [
     {
       type: 'application/ld+json',
       innerHTML: safeJsonLd({
-        '@context': 'https://schema.org',
-        '@type': 'CollectionPage',
-        name: 'Danh bạ địa điểm Tỉnh Vĩnh Long hợp nhất (3 vùng trước 7-2025)',
-        description: 'Tất cả điểm đến, đặc sản, làng nghề, lưu trú và di tích của tỉnh Vĩnh Long hợp nhất (3 vùng trước 7-2025).',
-        url: canonicalUrl('/dia-diem'),
-        numberOfItems: total.value,
+        ...directorySchema.value,
       }),
-    },
-    {
-      type: 'application/ld+json',
-      innerHTML: safeJsonLd(listJsonLd.value),
     },
   ],
 }))

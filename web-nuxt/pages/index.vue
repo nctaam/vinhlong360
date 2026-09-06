@@ -239,42 +239,12 @@
           </div>
           <NuxtLink class="see-all" to="/cong-dong">Đọc thêm chuyện người đi trước <IconLine name="arrow-right" class="inline-arrow" aria-hidden="true" /></NuxtLink>
         </div>
-        <template v-if="communityPosts.length">
-          <p v-if="communityStats && (communityStats.posts || communityStats.reviews || communityStats.members)" class="community-stats-line">
-            <strong>{{ communityStats.posts }}</strong> bài viết
-            · <strong>{{ communityStats.reviews }}</strong> đánh giá
-            · <strong>{{ communityStats.members }}</strong> thành viên
-          </p>
-          <div v-if="trendingTags.length" class="trending-tags">
-            <span class="tt-label"><IconLine name="flame" /> Đang được nhắc:</span>
-            <NuxtLink v-for="t in trendingTags" :key="t.tag" :to="`/cong-dong?tag=${encodeURIComponent(t.tag)}`" class="tt-chip">{{ t.tag }}</NuxtLink>
-          </div>
-          <!-- declutter-3 T16 (B1-6): dàn chip leaderboard → 1 link teaser (đích /bang-xep-hang) -->
-          <p v-if="topMembers.length" class="home-leaders-teaser">
-            <IconLine name="trophy" /> <NuxtLink to="/bang-xep-hang">Xem thành viên tích cực <IconLine name="arrow-right" class="inline-arrow" aria-hidden="true" /></NuxtLink>
-          </p>
-          <div class="scroll-row" role="region" aria-label="Bài viết cộng đồng mới" tabindex="0">
-            <NuxtLink v-for="p in communityPosts" :key="p.id" :to="postPath(p.id)" class="cm-card">
-              <div class="cm-body">
-                <div class="cm-author">
-                  <span class="cm-avatar">{{ (p.display_name || '?').charAt(0).toUpperCase() }}</span>
-                  <span class="cm-name">{{ p.display_name || 'Người dùng' }}</span>
-                  <span v-if="p.post_type_label" class="cm-type">{{ p.post_type_label }}</span>
-                </div>
-                <p class="cm-content">{{ p.content }}</p>
-                <div class="cm-meta">
-                  <span v-if="p.likes"><IconLine name="heart" /> {{ p.likes }}</span>
-                  <span v-if="p.comments_count || p.comment_count"><IconLine name="message" /> {{ p.comments_count || p.comment_count }}</span>
-                  <span v-if="p.entity_name" class="cm-place">{{ p.entity_name }}</span>
-                </div>
-              </div>
-            </NuxtLink>
-          </div>
-        </template>
-        <div class="community-join">
-          <span>Chia sẻ quán ngon, điểm đẹp, mẹo đi — góp một mảnh ghép cho bản đồ chung.</span>
-          <NuxtLink to="/cong-dong" class="btn btn-outline"><IconLine name="message" /> Tham gia cộng đồng</NuxtLink>
-        </div>
+        <HomeCommunityFeed
+          :posts="communityPosts"
+          :stats="communityStats"
+          :trending-tags="trendingTags"
+          :top-members="topMembers"
+        />
       </section>
       <section v-else class="block reveal" aria-label="Cộng đồng" data-home-section="community" data-material-accent="neutral">
         <EmptyState tone="empty" title="Cộng đồng đang khởi động"
@@ -350,30 +320,7 @@
       </section>
     </ClientOnly>
 
-    <section class="home-continuation" data-home-section="journey-continuation" aria-labelledby="home-continuation-title">
-      <div>
-        <p class="home-continuation__eyebrow">Tiếp tục hành trình</p>
-        <h2 id="home-continuation-title">Giữ mạch khám phá khi bạn đã có một điểm bắt đầu</h2>
-      </div>
-      <!-- Personalized continuation is client-only because it reads saved/recent local state. -->
-      <ClientOnly>
-        <JourneyActionRail
-          v-if="!homePending && homeJourneyActions.length"
-          :actions="homeJourneyActions"
-          title="Tiếp tục hành trình của bạn"
-          subtitle="Từ những gì bạn đã lưu và vừa xem."
-          aria-label="Gợi ý hành trình trên trang chủ"
-          compact
-        />
-        <template #fallback>
-          <div class="home-continuation-rail-fallback" aria-hidden="true" style="min-height: 64px;"></div>
-        </template>
-      </ClientOnly>
-      <nav class="home-continuation__links" aria-label="Bước tiếp theo">
-        <NuxtLink to="/ban-do">Mở bản đồ</NuxtLink>
-        <NuxtLink to="/lich-trinh">Xem lịch trình</NuxtLink>
-      </nav>
-    </section>
+    <HomeContinuation :actions="homeJourneyActions" :pending="homePending" />
 
   </div>
 </template>
@@ -388,11 +335,23 @@ import HomeFeatureDossier from '~/components/home/HomeFeatureDossier.vue'
 import HomeLocalBriefing from '~/components/home/HomeLocalBriefing.vue'
 import HomeProductLead from '~/components/home/HomeProductLead.vue'
 import HomeOcopLedger from '~/components/home/HomeOcopLedger.vue'
+import HomeCommunityFeed from '~/components/home/HomeCommunityFeed.vue'
+import HomeContinuation from '~/components/home/HomeContinuation.vue'
 import ImageDisclosure from '~/components/ImageDisclosure.vue'
 import { describeEntityImages, describeEntityPlaceholder } from '~/utils/imageDescriptors'
 import { createHomeNocturnePresentation } from '~/utils/homeNocturnePresentation'
 import type { HomePresentationEntity } from '~/utils/homeNocturnePresentation'
 import { resolveFreshnessStatus, resolveSourceTier } from '~/utils/regionalColor'
+import {
+  formatFreshnessLabel,
+  eventMetadata,
+  eventSourceTier,
+  eventSourceTitle,
+  eventSourceUrl,
+  eventVerifiedAt,
+  eventFreshnessStatus,
+  eventFreshnessLabel,
+} from '~/utils/homeSignalFormatters'
 import { aiDisclosure } from '~/utils/aiDisclosure'
 import type { ImageDescriptor } from '~/types/image'
 import { useId } from 'vue'
@@ -612,75 +571,6 @@ const homeFailed = computed(() => !homePending.value && (!!homeError.value || (!
 const homeLoadingSkeleton = computed(() => !hasHomepageContent.value && !homeFailed.value)
 onMounted(() => { if (homeError.value || !hasHomepageContent.value) refreshHome() })
 await homeAsyncData
-
-function formatEventDay(ev: any) {
-  const ds = ev.attributes?.date_start
-  if (!ds) return '?'
-  return ds.split('-')[2]?.replace(/^0/, '') || '?'
-}
-function formatEventMonth(ev: any) {
-  const ds = ev.attributes?.date_start
-  if (!ds) return ''
-  const m = parseInt(ds.split('-')[1] || '0', 10)
-  return isNaN(m) || m === 0 ? '' : `Th${m}`
-}
-
-function formatFreshnessLabel(value?: string | null): string {
-  if (!value || !Number.isFinite(Date.parse(value))) return ''
-  return `Cập nhật ${new Intl.DateTimeFormat('vi-VN', {
-    day: '2-digit',
-    month: '2-digit',
-    year: 'numeric',
-    timeZone: 'Asia/Ho_Chi_Minh',
-  }).format(new Date(value))}`
-}
-
-function metadataRecord(value: unknown): Record<string, unknown> {
-  return value && typeof value === 'object' ? value as Record<string, unknown> : {}
-}
-
-function metadataText(value: unknown): string {
-  return typeof value === 'string' ? value.trim() : ''
-}
-
-function eventMetadata(event: HomePresentationEntity) {
-  return {
-    source: metadataRecord(event.source_freshness),
-    quality: metadataRecord(event.quality),
-  }
-}
-
-function eventSourceTier(event: HomePresentationEntity) {
-  const { source, quality } = eventMetadata(event)
-  return resolveSourceTier(source.source_tier || quality.source_tier)
-}
-
-function eventSourceTitle(event: HomePresentationEntity): string {
-  const { source, quality } = eventMetadata(event)
-  return metadataText(source.source_title) || metadataText(quality.source_title)
-}
-
-function eventSourceUrl(event: HomePresentationEntity): string {
-  const { source, quality } = eventMetadata(event)
-  return metadataText(source.source_url) || metadataText(quality.source_url)
-}
-
-function eventVerifiedAt(event: HomePresentationEntity): string {
-  const { source, quality } = eventMetadata(event)
-  return metadataText(source.verified_at) || metadataText(quality.verified_at)
-}
-
-function eventFreshnessStatus(event: HomePresentationEntity) {
-  return resolveFreshnessStatus(eventMetadata(event).source.freshness_status)
-}
-
-function eventFreshnessLabel(event: HomePresentationEntity): string {
-  const sourceUpdatedAt = metadataText(eventMetadata(event).source.updated_at)
-  const entityUpdatedAt = metadataText(event.updatedAt)
-  return formatFreshnessLabel(sourceUpdatedAt || entityUpdatedAt)
-}
-
-
 function plannerAddPath(id: string | number) {
   return `/tao-lich-trinh?add=${encodeURIComponent(String(id))}`
 }
@@ -689,12 +579,6 @@ function onImgError(e: Event | string) {
   if (typeof e === 'string') return
   const img = e.target as HTMLImageElement
   img.style.display = 'none'
-}
-
-function areaName(slug: string | undefined): string {
-  if (!slug) return ''
-  const meta = (AREA_META as Record<string, { name: string }>)[slug]
-  return meta ? meta.name : ''
 }
 
 useSeoMeta({
@@ -708,71 +592,24 @@ useSeoMeta({
   twitterCard: 'summary_large_image',
 })
 
-const eventListSchema = computed(() => {
-  const events = upcomingEvents.value.map((ev: any, i: number) => ({
-    '@type': 'ListItem',
-    position: i + 1,
-    item: {
-      '@type': 'Event',
-      name: ev.name,
-      startDate: ev.attributes?.date_start,
-      endDate: ev.attributes?.date_end || ev.attributes?.date_start,
-      url: `https://vinhlong360.vn${entityPath(ev.id)}`,
-      eventStatus: 'https://schema.org/EventScheduled',
-      eventAttendanceMode: 'https://schema.org/OfflineEventAttendanceMode',
-      location: { '@type': 'Place', name: ev.place_name || 'Vĩnh Long', address: { '@type': 'PostalAddress', addressRegion: areaName(ev.area || ev.place_area) || 'Vĩnh Long', addressCountry: 'VN' } },
-    },
-  }))
-  if (!events.length) return ''
-  return safeJsonLd({
-    '@context': 'https://schema.org',
-    '@type': 'ItemList',
-    name: 'Sự kiện sắp tới tại Vĩnh Long',
-    itemListElement: events,
-  })
-})
+// Schema.org unified @graph: buildHomeSchemaGraph (@type': 'EntryPoint', urlTemplate: 'https://vinhlong360.vn/tim-kiem?q={search_term_string}')
+// §1.6: areaServed: 'Vĩnh Long'
+const homeSchema = computed(() => buildHomeSchemaGraph({
+  upcomingEvents: upcomingEvents.value,
+}))
 
 useHead({
   link: [
     { rel: 'canonical', href: canonicalUrl('/') },
   ],
-  script: [
+  script: computed(() => [
     {
       type: 'application/ld+json',
       innerHTML: safeJsonLd({
-        '@context': 'https://schema.org',
-        '@type': 'WebSite',
-        name: 'vinhlong360',
-        url: 'https://vinhlong360.vn',
-        description: 'Cổng du lịch và sản phẩm địa phương Vĩnh Long.',
-        inLanguage: 'vi-VN',
-        potentialAction: {
-          '@type': 'SearchAction',
-          target: {
-            '@type': 'EntryPoint',
-            urlTemplate: 'https://vinhlong360.vn/tim-kiem?q={search_term_string}',
-          },
-          'query-input': 'required name=search_term_string',
-        },
+        ...homeSchema.value,
       }),
     },
-    {
-      type: 'application/ld+json',
-      innerHTML: safeJsonLd({
-        '@context': 'https://schema.org',
-        '@type': 'Organization',
-        name: 'vinhlong360',
-        url: 'https://vinhlong360.vn',
-        logo: 'https://vinhlong360.vn/icons/icon-512.png',
-        description: 'Cổng du lịch và sản phẩm địa phương Vĩnh Long.',
-        inLanguage: 'vi-VN',
-        // §1.6: MỘT đơn vị hành chính. Liệt kê ba tỉnh là khai với Google rằng ba
-        // tỉnh đó còn tồn tại — chúng đã hợp nhất từ 7-2025.
-        areaServed: { '@type': 'AdministrativeArea', name: 'Vĩnh Long' },
-      }),
-    },
-    ...(eventListSchema.value ? [{ type: 'application/ld+json', innerHTML: eventListSchema.value }] : []),
-  ],
+  ]),
 })
 </script>
 

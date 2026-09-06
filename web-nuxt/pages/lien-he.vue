@@ -109,12 +109,12 @@ useSeoMeta({
   twitterCard: 'summary_large_image',
 })
 
-const contactJsonLd = computed(() => ({
-  '@context': 'https://schema.org',
-  '@type': 'ContactPage',
-  name: 'Liên hệ vinhlong360',
-  description: 'Liên hệ vinhlong360.vn: yêu cầu, báo cáo, hợp tác.',
-  url: canonicalUrl('/lien-he'),
+// Schema.org unified @graph: '@type': 'ContactPage'
+const contactJsonLd = computed(() => buildContactPageSchemaGraph({
+  title: pc('seo_title'),
+  description: pc('seo_description'),
+  email: contactEmail.value,
+  claimEmail: claimEmail.value,
 }))
 
 useHead(() => ({

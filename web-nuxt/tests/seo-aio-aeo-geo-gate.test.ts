@@ -10,6 +10,10 @@ import {
   buildUnifiedSchemaGraph,
   buildDirectorySchemaGraph,
   buildNewsArticleSchemaGraph,
+  buildHomeSchemaGraph,
+  buildCatalogDirectorySchemaGraph,
+  buildAboutPageSchemaGraph,
+  buildContactPageSchemaGraph,
   safeJsonLd,
   SITE_URL,
 } from '../composables/useSeoHelpers'
@@ -133,6 +137,38 @@ describe('SEO / AIO / AEO / GEO Architecture Quality Gate', () => {
       expect(seoHelpers).toContain('buildHomeSchemaGraph')
       expect(seoHelpers).toContain("'@type': 'SearchAction'")
       expect(seoHelpers).toContain("'@id': `${SITE_URL}/#catalog-hubs`")
+
+      const homeGraph = buildHomeSchemaGraph({
+        upcomingEvents: [
+          {
+            id: 'ev-1',
+            name: 'Lễ hội sông nước Vĩnh Long',
+            attributes: { date_start: '2026-10-01', date_end: '2026-10-03' },
+            place_name: 'Bến phà An Bình',
+          },
+        ],
+      })
+      expect(homeGraph['@context']).toBe('https://schema.org')
+      const types = homeGraph['@graph'].map((n: any) => n['@type'])
+      expect(types).toContain('WebSite')
+      expect(types).toContain('Organization')
+      expect(types).toContain('WebPage')
+      expect(types).toContain('ItemList')
+      expect(types).toContain('FAQPage')
+
+      const eventsList = homeGraph['@graph'].find((n: any) => n['@id'] === `${SITE_URL}/#upcoming-events`)
+      expect(eventsList).toBeDefined()
+      expect(eventsList.itemListElement[0].item['@type']).toBe('Event')
+      expect(eventsList.itemListElement[0].item.name).toBe('Lễ hội sông nước Vĩnh Long')
+    })
+
+    it('pages/index.vue integrates buildHomeSchemaGraph and maintains Clean Code SFC < 1.100 lines', () => {
+      const index = doc('pages/index.vue')
+      expect(index).toContain('buildHomeSchemaGraph')
+      expect(index).toContain('<HomeCommunityFeed')
+      expect(index).toContain('<HomeContinuation')
+      const lines = index.split('\n').length
+      expect(lines).toBeLessThan(1100)
     })
   })
 
@@ -368,4 +404,80 @@ describe('SEO / AIO / AEO / GEO Architecture Quality Gate', () => {
       expect(articleNode.keywords).toBe('Gốm, Lễ hội')
     })
   })
+
+  describe('AboutPage Knowledge Graph (pages/gioi-thieu.vue)', () => {
+    it('publishes unified @graph with AboutPage, WebSite, Organization, and Speakable', () => {
+      const about = doc('pages/gioi-thieu.vue')
+      expect(about).toContain('buildAboutPageSchemaGraph')
+      expect(about).toContain('safeJsonLd(aboutJsonLd)')
+
+      const graph = buildAboutPageSchemaGraph({
+        title: 'Giới thiệu về vinhlong360',
+        description: 'Sứ mệnh và tầm nhìn vinhlong360.',
+      })
+      expect(graph['@context']).toBe('https://schema.org')
+      const types = graph['@graph'].map((n: any) => n['@type'])
+      expect(types).toContain('WebSite')
+      expect(types).toContain('Organization')
+      expect(types).toContain('AboutPage')
+
+      const aboutNode = graph['@graph'].find((n: any) => n['@type'] === 'AboutPage')
+      expect(aboutNode.name).toContain('Giới thiệu về vinhlong360')
+      expect(aboutNode.speakable?.['@type']).toBe('SpeakableSpecification')
+      expect(aboutNode.mainEntity?.['@id']).toBe(`${SITE_URL}/#organization`)
+    })
+  })
+
+  describe('ContactPage Knowledge Graph (pages/lien-he.vue)', () => {
+    it('publishes unified @graph with ContactPage, Organization, ContactPoint hotline, and Speakable', () => {
+      const contact = doc('pages/lien-he.vue')
+      expect(contact).toContain('buildContactPageSchemaGraph')
+      expect(contact).toContain('safeJsonLd(contactJsonLd.value)')
+
+      const graph = buildContactPageSchemaGraph({
+        hotline: '+84-270-3822182',
+        email: 'lienhe@vinhlong360.vn',
+      })
+      expect(graph['@context']).toBe('https://schema.org')
+      const types = graph['@graph'].map((n: any) => n['@type'])
+      expect(types).toContain('WebSite')
+      expect(types).toContain('Organization')
+      expect(types).toContain('ContactPage')
+      expect(types).toContain('ContactPoint')
+
+      const contactPoint = graph['@graph'].find((n: any) => n['@type'] === 'ContactPoint')
+      expect(contactPoint.telephone).toBe('+84-270-3822182')
+      expect(contactPoint.email).toBe('lienhe@vinhlong360.vn')
+    })
+  })
+
+  describe('Catalog Directory Knowledge Graph (pages/dia-diem/index.vue)', () => {
+    it('publishes unified @graph with CollectionPage, BreadcrumbList, ItemList, and FAQPage', () => {
+      const catalog = doc('pages/dia-diem/index.vue')
+      expect(catalog).toContain('buildCatalogDirectorySchemaGraph')
+      expect(catalog).toContain('safeJsonLd({')
+
+      const graph = buildCatalogDirectorySchemaGraph({
+        total: 105,
+        items: [
+          { id: 1, name: 'Chùa Phật Ngọc Xá Lợi', type: 'di-tich' },
+          { id: 2, name: 'Lò gạch Mang Thít', type: 'di-san' },
+        ],
+      })
+      expect(graph['@context']).toBe('https://schema.org')
+      const types = graph['@graph'].map((n: any) => n['@type'])
+      expect(types).toContain('WebSite')
+      expect(types).toContain('Organization')
+      expect(types).toContain('CollectionPage')
+      expect(types).toContain('BreadcrumbList')
+      expect(types).toContain('ItemList')
+      expect(types).toContain('FAQPage')
+
+      const itemListNode = graph['@graph'].find((n: any) => n['@type'] === 'ItemList')
+      expect(itemListNode.numberOfItems).toBe(105)
+      expect(itemListNode.itemListElement).toHaveLength(2)
+      expect(itemListNode.itemListElement[0].name).toBe('Chùa Phật Ngọc Xá Lợi')
+    })
+  })
 })
+
