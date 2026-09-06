@@ -1,11 +1,5 @@
 <template>
-  <section
-    v-if="entity"
-    class="page entity-detail entity-detail-page"
-    data-color-system="tri-region-v1"
-    data-page-recipe="detail"
-    :data-material-accent="detailMaterialAccent"
-  >
+  <section v-if="entity" class="page entity-detail entity-detail-page" data-color-system="tri-region-v1" data-page-recipe="detail" :data-material-accent="detailMaterialAccent">
     <div class="scroll-progress" :style="{ transform: `scaleX(${progress})` }" aria-hidden="true" />
     <PageState
       v-if="!detailOnline"
@@ -65,37 +59,15 @@
         <p v-if="entity.place_name" class="dc-place"><NuxtLink v-if="entity.placeId" :to="`/xa-phuong/${entity.placeId}`" class="dc-place-link">{{ entity.place_name }}</NuxtLink><template v-else>{{ entity.place_name }}</template></p>
         <!-- declutter-3 T17 (B5d): Save/Share dời về sidebar .aside-actions (additive-first,
              verify xong mới xoá ở đây) — hero còn tối đa 3 nút hành-vi-chuyến-đi -->
-        <div class="dc-actions">
-          <ClientOnly>
-            <div class="dc-trip">
-              <button v-if="entity.type === 'event'" type="button" :class="['trip-btn', { active: rsvpGoing }]" :aria-pressed="rsvpGoing" :disabled="actionPending" @click="toggleRsvp">
-                {{ rsvpGoing ? 'Sẽ đi' : 'Tôi sẽ đi' }}<span v-if="rsvpCount" class="trip-count">{{ rsvpCount }}</span>
-              </button>
-              <template v-else>
-                <button type="button" :class="['trip-btn', { active: visitStatus === 'visited' }]" :aria-pressed="visitStatus === 'visited'" :disabled="actionPending" @click="setVisit('visited')"><IconLine name="check" aria-hidden="true" /> Đã đến</button>
-                <button type="button" :class="['trip-btn', { active: visitStatus === 'want' }]" :aria-pressed="visitStatus === 'want'" :disabled="actionPending" @click="setVisit('want')"><IconLine name="heart" aria-hidden="true" /> Muốn đến</button>
-              </template>
-              <button type="button" :class="['trip-btn', { active: isFollowingPlace }]" :aria-pressed="isFollowingPlace" :disabled="actionPending" @click="toggleFollowPlace"><IconLine name="bell" aria-hidden="true" /> {{ isFollowingPlace ? 'Đang theo dõi' : 'Theo dõi' }}</button>
-            </div>
-          </ClientOnly>
-        </div>
+        <DetailActionSuite :entity-id="entity.id" :entity-type="entity.type" />
       </div>
-      <button type="button" v-if="hasEntityImages" class="dc-photo-btn" :aria-label="entityImageDescriptors.length === 1 ? 'Xem ảnh' : `Xem ${entityImageDescriptors.length} ảnh`" @click="openCoverLightbox()">
-        <IconLine class="dc-photo-icon" name="camera" aria-hidden="true" />
-        {{ entityImageDescriptors.length === 1 ? 'Xem ảnh' : `${entityImageDescriptors.length} ảnh` }}
-      </button>
-      <div v-if="hasEntityImages && entityImageDescriptors.length > 1" class="dc-thumbs">
-        <template v-for="(descriptor, i) in entityImageDescriptors.slice(0, 4)" :key="disclosureIdFor(i)">
-          <button type="button" class="dc-thumb-btn" data-disclosure-target :class="{ active: i === 0 }" :aria-label="`Xem ảnh ${i + 1} của ${entity.name}`" :aria-describedby="disclosureIdFor(i)" @click="openCoverLightbox(i)">
-            <NuxtImg v-if="descriptor.url && isRemoteUrl(descriptor.url)" :src="descriptor.url" :alt="descriptor.alt" class="dc-thumb" loading="lazy" width="56" height="40" sizes="56px" decoding="async" @error="hideImage" />
-            <img v-else-if="descriptor.url" :src="descriptor.url" :alt="descriptor.alt" class="dc-thumb" loading="lazy" width="56" height="40" decoding="async" @error="hideImage" />
-            <ImageDisclosure :id="disclosureIdFor(i)" :descriptor="descriptor" presentation="short" />
-          </button>
-        </template>
-        <button type="button" v-if="entityImageDescriptors.length > 4" class="dc-thumb-more" :aria-label="`Xem thêm ${entityImageDescriptors.length - 4} ảnh`" @click="openCoverLightbox(4)">
-          +{{ entityImageDescriptors.length - 4 }}
-        </button>
-      </div>
+      <DetailCoverLightbox
+        ref="coverLightboxRef"
+        :entity-name="entity.name"
+        :entity-id="entity.id"
+        :entity-image-descriptors="entityImageDescriptors"
+        :has-entity-images="hasEntityImages"
+      />
       <ImageDisclosure :id="heroDisclosureId" :descriptor="heroDescriptor" presentation="short" class="dc-disclosure" />
     </div>
 
@@ -113,8 +85,6 @@
         @open-lightbox="openCoverLightbox"
       />
     </div>
-
-    <LazyImageLightbox v-if="entityImageDescriptors.length" v-model="lightboxOpen" :images="entityImageDescriptors" :start-index="lbIndex" />
 
     <PageState
       v-if="galleryPartial"
@@ -580,7 +550,6 @@
 import { ocopBadgeLabel, ocopStars as ocopStarsOf } from '~/utils/ocop'
 import type { Entity } from '~/types'
 import type { ImageDescriptor } from '~/types/image'
-import type { DetailFetchResolution } from '~/utils/detailExperience'
 import { TYPE_META, AREA_META, REL_FWD, REL_BWD } from '~/composables/useConstants'
 import { seasonText } from '~/composables/useSeason'
 import { generateCategoryPlaceholder, generateCategoryIcon } from '~/composables/useCategoryPlaceholder'
@@ -590,7 +559,7 @@ import { adminUnitCrumb, withAdminUnitBreadcrumb } from '~/utils/adminUnit'
 import { aiDisclosure } from '~/utils/aiDisclosure'
 import { currentGalleryDescriptors, type GalleryDescriptorCarrier } from '~/utils/entityGallery'
 import { describeEntityImages, parseGalleryDescriptor } from '~/utils/imageDescriptors'
-import { resolveDetailAction, resolveDetailFetchError } from '~/utils/detailExperience'
+import { resolveDetailAction, resolveDetailFetchError, parseDescriptionSections, type DetailFetchResolution, type DescSection } from '~/utils/detailExperience'
 import { resolveFreshnessStatus, resolveRegionalAccent, resolveSourceTier } from '~/utils/regionalColor'
 import ActionDock from '~/components/public/ActionDock.vue'
 import PageState from '~/components/public/PageState.vue'
@@ -667,9 +636,7 @@ onUnmounted(() => {
   window.removeEventListener('offline', updateDetailConnectivity)
 })
 
-// ── Đã-đi/Muốn-đi + theo-dõi địa-điểm (Tier-1 MXH) ──
-const { user, isLoggedIn, authHeaders } = useAuth()
-const { openAuth } = useAuthModal()
+const { user, isLoggedIn } = useAuth()
 const journeyThread = useJourneyThread({
   ownerScope: () => isLoggedIn.value ? String(user.value?.id || 'authenticated') : 'guest',
 })
@@ -685,11 +652,6 @@ async function copyText(text: string, label: string) {
   }
 }
 
-const visitStatus = ref<string | null>(null)
-const isFollowingPlace = ref(false)
-const rsvpGoing = ref(false)
-const rsvpCount = ref(0)
-const actionPending = ref(false)
 type HeroImageRef = HTMLImageElement | { $el?: unknown } | null
 const heroImage = ref<HeroImageRef>(null)
 
@@ -710,54 +672,6 @@ function revealHeroImage(event?: Event) {
 async function revealHeroImageAfterUpdate() {
   await nextTick()
   revealHeroImage()
-}
-
-async function toggleRsvp() {
-  if (!isLoggedIn.value) { openAuth(() => toggleRsvp()); return }
-  if (actionPending.value) return
-  actionPending.value = true
-  const prevGoing = rsvpGoing.value
-  const prevCount = rsvpCount.value
-  rsvpGoing.value = !prevGoing
-  rsvpCount.value += prevGoing ? -1 : 1
-  try {
-    const r = await $fetch<{ going: boolean; count: number }>(`/api/events/${encodeURIComponent(id.value)}/rsvp`, { method: 'POST', headers: authHeaders() })
-    rsvpGoing.value = r.going
-    rsvpCount.value = r.count
-    if (r.going) _showToast('Đã đăng ký đi sự kiện này', 'success')
-  } catch { rsvpGoing.value = prevGoing; rsvpCount.value = prevCount; _showToast('Không thể đăng ký, thử lại', 'error') }
-  finally { actionPending.value = false }
-}
-
-async function setVisit(status: 'visited' | 'want') {
-  if (!isLoggedIn.value) { openAuth(() => setVisit(status)); return }
-  if (actionPending.value) return
-  actionPending.value = true
-  const prev = visitStatus.value
-  try {
-    if (visitStatus.value === status) {
-      visitStatus.value = null
-      await $fetch(`/api/me/visits/${encodeURIComponent(id.value)}`, { method: 'DELETE', headers: authHeaders() })
-    } else {
-      visitStatus.value = status
-      await $fetch('/api/me/visits', { method: 'POST', headers: authHeaders(), body: { entity_id: id.value, status } })
-      _showToast(status === 'visited' ? 'Đã đánh dấu Đã đến' : 'Đã thêm vào Muốn đến', 'success')
-    }
-  } catch { visitStatus.value = prev; _showToast('Không thể lưu, thử lại', 'error') }
-  finally { actionPending.value = false }
-}
-
-async function toggleFollowPlace() {
-  if (!isLoggedIn.value) { openAuth(() => toggleFollowPlace()); return }
-  if (actionPending.value) return
-  actionPending.value = true
-  const prev = isFollowingPlace.value
-  isFollowingPlace.value = !prev
-  try {
-    await $fetch(`/api/follow/entity/${encodeURIComponent(id.value)}`, { method: 'POST', headers: authHeaders() })
-    if (!prev) _showToast('Đang theo dõi — sẽ báo khi có bài mới', 'success')
-  } catch { isFollowingPlace.value = prev; _showToast('Không thể theo dõi, thử lại', 'error') }
-  finally { actionPending.value = false }
 }
 
 const { track: trackRecent } = useRecentlyViewed()
@@ -788,20 +702,6 @@ onMounted(async () => {
   advanceDetailJourney()
   await revealHeroImageAfterUpdate()
   trackCurrentEntity()
-  if (!isLoggedIn.value) return
-  const tasks: Promise<void>[] = [
-    $fetch<{ status: string | null }>(`/api/me/visits/check/${encodeURIComponent(id.value)}`, { headers: authHeaders() })
-      .then(v => { visitStatus.value = v?.status ?? null }).catch(() => {}),
-    $fetch<{ following: { target_id: string }[] }>('/api/following', { headers: authHeaders() })
-      .then(f => { isFollowingPlace.value = (f?.following || []).some(x => String(x.target_id) === id.value) }).catch(() => {}),
-  ]
-  if (entity.value?.type === 'event') {
-    tasks.push(
-      $fetch<{ count: number; going: boolean }>(`/api/events/${encodeURIComponent(id.value)}/rsvp`, { headers: authHeaders() })
-        .then(r => { rsvpGoing.value = r.going; rsvpCount.value = r.count }).catch(() => {}),
-    )
-  }
-  await Promise.all(tasks)
 })
 
 const RELATIONSHIP_BATCH_SIZE = 24
@@ -958,10 +858,6 @@ function sanitizeDisclosureIdToken(value: unknown): string {
 
 const disclosureEntityId = computed(() => sanitizeDisclosureIdToken(entity.value?.id || id.value))
 const heroDisclosureId = computed(() => `entity-image-disclosure-${disclosureEntityId.value}-hero`)
-function disclosureIdFor(index: number): string {
-  return `entity-image-disclosure-${disclosureEntityId.value}-rail-${index}`
-}
-
 // No-photo "phù sa" hero: per-entity hash-seeded gradient (same system as EntityCard),
 // promoted to full-bleed hero scale. Replaces the flat shared /img/cat/*.jpg fallback.
 const heroPlaceholderBg = computed(() =>
@@ -978,18 +874,9 @@ const heroHook = computed(() => {
   const t = entityStoryTeaser(entity.value)
   return t && t !== entity.value.name ? t : ''
 })
-const lightboxOpen = ref(false)
-const lbIndex = ref(0)
+const coverLightboxRef = ref<{ open: (idx?: number) => void } | null>(null)
 function openCoverLightbox(idx = 0) {
-  if (!entityImageDescriptors.value.length) return
-  lbIndex.value = typeof idx === 'number' ? idx : 0
-  lightboxOpen.value = true
-}
-
-function hideImage(payload: Event | string) {
-  if (typeof payload === 'string') return
-  const img = payload.target
-  if (img instanceof HTMLImageElement) img.style.display = 'none'
+  coverLightboxRef.value?.open(idx)
 }
 
 const TYPE_BREADCRUMB: Record<string, string> = {
@@ -1010,43 +897,8 @@ const adminUnitBreadcrumb = computed(() => adminUnitCrumb(entity.value))
 const seasonLabel = computed(() => seasonText(entity.value?.season))
 
 // P0-3: bỏ paragraph description đầu nếu chỉ lặp lại summary (đã render làm lead
-// phía trên) — giết double-print verbatim (description==summary / body in lại lead).
-const _normText = (s: unknown) => String(s ?? '').replace(/\s+/g, ' ').trim().toLowerCase()
-const descriptionBlocks = computed<string[]>(() => {
-  const desc = entity.value?.description
-  if (!desc || typeof desc !== 'string') return []
-  let blocks = desc.split(/\n\s*\n/).map(b => b.trim()).filter(b => b.length > 0)
-  const summary = entity.value?.summary
-  if (summary && blocks.length && _normText(blocks[0]) === _normText(summary)) {
-    blocks = blocks.slice(1)
-  }
-  return blocks
-})
-
-const descriptionParagraphs = computed(() => descriptionBlocks.value)
-
-interface DescSection { level: 0 | 2 | 3; heading: string; paragraphs: string[] }
-const descriptionSections = computed<DescSection[]>(() => {
-  const blocks = descriptionBlocks.value
-  if (!blocks.length) return []
-  const sections: DescSection[] = []
-  let current: DescSection = { level: 0, heading: '', paragraphs: [] }
-  for (const block of blocks) {
-    const h2 = block.match(/^##\s+(.+)$/)
-    const h3 = block.match(/^###\s+(.+)$/)
-    if (h3) {
-      if (current.paragraphs.length || current.heading) sections.push(current)
-      current = { level: 3, heading: h3[1] ?? '', paragraphs: [] }
-    } else if (h2) {
-      if (current.paragraphs.length || current.heading) sections.push(current)
-      current = { level: 2, heading: h2[1] ?? '', paragraphs: [] }
-    } else {
-      current.paragraphs.push(block)
-    }
-  }
-  if (current.paragraphs.length || current.heading) sections.push(current)
-  return sections
-})
+const descriptionSections = computed<DescSection[]>(() =>
+  parseDescriptionSections(entity.value?.description, entity.value?.summary))
 const hasRichDescription = computed(() => descriptionSections.value.some(s => s.level > 0))
 const totalDescParagraphs = computed(() => descriptionSections.value.reduce((n, s) => n + s.paragraphs.length + (s.heading ? 1 : 0), 0))
 
@@ -1162,12 +1014,8 @@ const trustConflicts = computed(() => {
     return [{
       label,
       value,
-      ...(typeof conflict.source_title === 'string' && conflict.source_title.trim()
-        ? { sourceTitle: conflict.source_title.trim() }
-        : {}),
-      ...(typeof conflict.updated_at === 'string' && conflict.updated_at.trim()
-        ? { updatedLabel: formatDateVN(conflict.updated_at) }
-        : {}),
+      ...(typeof conflict.source_title === 'string' && conflict.source_title.trim() ? { sourceTitle: conflict.source_title.trim() } : {}),
+      ...(typeof conflict.updated_at === 'string' && conflict.updated_at.trim() ? { updatedLabel: formatDateVN(conflict.updated_at) } : {}),
     }]
   })
 })
@@ -1277,18 +1125,6 @@ async function loadMoreRelationships() {
 }
 
 // ── Reactive SEO meta: updates when entity changes (client-side navigation) ──
-const TYPE_TO_SCHEMA: Record<string, string> = {
-  product: 'Product',
-  accommodation: 'LodgingBusiness',
-  dish: 'FoodEstablishment',
-  craft_village: 'LocalBusiness',
-  organization: 'LocalBusiness',
-  attraction: 'TouristAttraction',
-  experience: 'TouristAttraction',
-  event: 'Event',
-  place: 'Place',
-}
-
 const seoDesc = computed(() => {
   const e = entity.value
   if (!e) return ''
@@ -1318,176 +1154,16 @@ const fallbackJsonLdScripts = computed(() => {
   const e = entity.value
   if (!e) return []
 
-  const ldType = TYPE_TO_SCHEMA[e.type] || 'TouristAttraction'
-  const entityUrl = `${SITE_URL}${entityPath(e.id)}`
-  const ld: Record<string, any> = {
-    '@context': 'https://schema.org',
-    '@type': ldType,
-    '@id': entityUrl,
-    name: e.name,
-    description: e.description || e.summary,
-    inLanguage: 'vi-VN',
-    url: entityUrl,
-    address: {
-      '@type': 'PostalAddress',
-      addressLocality: e.place_name || '',
-      addressRegion: areaName.value,
-      addressCountry: 'VN',
-    },
-  }
-  const imageObject = descriptorToImageObject(heroDescriptor.value)
-  if (imageObject) ld.image = imageObject
-  if (e.attributes?.phone) ld.telephone = e.attributes.phone
-  const sameAs = [e.attributes?.website, e.quality?.source_url].filter(Boolean)
-  if (sameAs.length) ld.sameAs = sameAs.length === 1 ? sameAs[0] : sameAs
-  if (e.quality?.source_url) {
-    ld.citation = {
-      '@type': 'CreativeWork',
-      name: e.quality?.source_title || e.quality.source_url,
-      url: e.quality.source_url,
-    }
-  }
-  if (e.attributes?.address) ld.address.streetAddress = e.attributes.address
-  const geoCoords = normalizeCoords(e.coordinates)
-  if (geoCoords) {
-    ld.geo = { '@type': 'GeoCoordinates', latitude: geoCoords[0], longitude: geoCoords[1] }
-    ld.hasMap = `https://www.google.com/maps/search/?api=1&query=${geoCoords[0]},${geoCoords[1]}`
-  }
-  if (e.attributes?.hours) ld.openingHours = e.attributes.hours
+  const graph = buildEntityDetailSchemaGraph({
+    entity: e,
+    typeLabel: typeMeta.value.label,
+    areaName: areaName.value,
+    adminUnitBreadcrumb: adminUnitBreadcrumb.value,
+    heroDescriptor: heroDescriptor.value,
+    typeBreadcrumbUrl: typeBreadcrumbUrl.value,
+  })
 
-  // isAccessibleForFree
-  const fee = e.attributes?.fee || e.attributes?.price_range || ''
-  const isFree = /miễn phí|free|không mất phí|0\s*đ/i.test(fee)
-    || (e.attributes?.amenities && Array.isArray(e.attributes.amenities) && e.attributes.amenities.includes('free_entry'))
-  if (isFree) ld.isAccessibleForFree = true
-
-  // LocalBusiness/LodgingBusiness/FoodEstablishment enrichment
-  if (['LocalBusiness', 'LodgingBusiness', 'FoodEstablishment'].includes(ldType)) {
-    if (e.attributes?.price_range) ld.priceRange = e.attributes.price_range
-  }
-  if (ldType === 'LodgingBusiness') {
-    if (e.attributes?.checkin) ld.checkinTime = e.attributes.checkin
-    if (e.attributes?.checkout) ld.checkoutTime = e.attributes.checkout
-  }
-
-  if (ldType === 'Event') {
-    if (e.attributes?.date_start) ld.startDate = e.attributes.date_start
-    if (e.attributes?.date_end) ld.endDate = e.attributes.date_end
-    if (e.place_name || areaName.value) {
-      ld.location = {
-        '@type': 'Place',
-        name: e.place_name || areaName.value,
-        address: { '@type': 'PostalAddress', addressRegion: areaName.value, addressCountry: 'VN' },
-      }
-      if (geoCoords) {
-        ld.location.geo = { '@type': 'GeoCoordinates', latitude: geoCoords[0], longitude: geoCoords[1] }
-      }
-    }
-    ld.eventStatus = 'https://schema.org/EventScheduled'
-    ld.eventAttendanceMode = 'https://schema.org/OfflineEventAttendanceMode'
-    if (isFree) {
-      ld.offers = { '@type': 'Offer', price: '0', priceCurrency: 'VND', availability: 'https://schema.org/InStock' }
-    }
-  }
-  // KHÔNG phát aggregateRating. Điểm sao trong attributes.rating là dữ liệu của bên thứ ba
-  // (125/126 mục ghi nguồn "foody.vn", chỉ 2 mục có URL) — vinhlong360 không tự thu thập
-  // đánh giá. Phát chúng dưới dạng AggregateRating là nói với máy tìm kiếm rằng site này
-  // sở hữu đánh giá tổng hợp đó, và nhánh cũ còn bịa `ratingCount: '1'` khi không có số
-  // lượng thật. Chỉ được bật lại khi site thực sự có đánh giá của chính mình.
-  if (ldType === 'Product') {
-    if (e.attributes?.price) {
-      ld.offers = {
-        '@type': 'Offer',
-        price: String(e.attributes.price).replace(/[^\d]/g, '') || '0',
-        priceCurrency: 'VND',
-        availability: 'https://schema.org/InStock',
-        url: entityUrl,
-      }
-    }
-    // KHÔNG đẩy `attributes.ocop` thô vào structured data. Đo 2026-08-27:
-    // dua-sap-cau-ke từng có brand.name = "OCOP VICOSAP: 4 SP OCOP 5 sao quốc
-    // gia + 7 SP OCOP 4 sao" — tức khai với Google rằng thương hiệu của trái
-    // dừa là danh mục chứng nhận của một công ty khác.
-    const ocopLabel = ocopBadgeLabel(e as any)
-    if (ocopLabel) {
-      ld.brand = { '@type': 'Brand', name: ocopLabel }
-    }
-  }
-
-  // Geographic containment (all entity types)
-  if (e.place_name) {
-    ld.containedInPlace = {
-      '@type': 'AdministrativeArea',
-      name: e.place_name,
-      ...(areaName.value ? { containedInPlace: { '@type': 'AdministrativeArea', name: areaName.value } } : {}),
-    }
-  }
-
-  // Mắt xích giữa PHẢI khớp breadcrumb hiển thị (§1.6) — lệch nhau là lỗi structured-data.
-  const bcItems: any[] = [
-    { '@type': 'ListItem', position: 1, name: 'Trang chủ', item: `${SITE_URL}/` },
-    { '@type': 'ListItem', position: 2, name: typeMeta.value.label, item: `${SITE_URL}${typeBreadcrumbUrl.value}` },
-  ]
-  const unitCrumb = adminUnitBreadcrumb.value
-  if (unitCrumb) {
-    bcItems.push({
-      '@type': 'ListItem',
-      position: bcItems.length + 1,
-      name: unitCrumb.label,
-      ...(unitCrumb.to ? { item: `${SITE_URL}${unitCrumb.to}` } : {}),
-    })
-  }
-  bcItems.push({ '@type': 'ListItem', position: bcItems.length + 1, name: e.name, item: entityUrl })
-  const breadcrumb = {
-    '@context': 'https://schema.org',
-    '@type': 'BreadcrumbList',
-    itemListElement: bcItems,
-  }
-
-  // FAQPage from entity attributes
-  const faqItems: { q: string; a: string }[] = []
-  if (e.attributes?.hours)
-    faqItems.push({ q: `${e.name} mở cửa lúc mấy giờ?`, a: `Giờ mở cửa: ${e.attributes.hours}` })
-  if (e.attributes?.fee)
-    faqItems.push({ q: `Phí vào ${e.name} bao nhiêu?`, a: e.attributes.fee })
-  if (e.attributes?.transport)
-    faqItems.push({ q: `Đi đến ${e.name} bằng cách nào?`, a: e.attributes.transport })
-  if (e.attributes?.parking)
-    faqItems.push({ q: `${e.name} có chỗ đậu xe không?`, a: e.attributes.parking })
-  if (e.attributes?.best_time)
-    faqItems.push({ q: `Thời điểm nào đẹp nhất để đến ${e.name}?`, a: e.attributes.best_time })
-
-  const webpageNode = {
-    '@type': 'WebPage',
-    '@id': `${entityUrl}#webpage`,
-    url: entityUrl,
-    name: `${e.name} — ${typeMeta.value.label} — vinhlong360`,
-    description: e.summary || e.description,
-    inLanguage: 'vi-VN',
-    isPartOf: { '@id': `${SITE_URL}/#website` },
-    breadcrumb: { '@id': `${entityUrl}#breadcrumb` },
-    mainEntity: { '@id': `${entityUrl}#entity` },
-    speakable: buildSpeakableSpecification(['.lead', '.highlights', 'h1', '.desc-heading']),
-    publisher: { '@id': `${SITE_URL}/#organization` },
-  }
-
-  ld['@id'] = `${entityUrl}#entity`
-  breadcrumb['@id'] = `${entityUrl}#breadcrumb`
-
-  const faqNode = faqItems.length >= 2 ? buildFaqPageSchema(faqItems, `${entityUrl}#faq`) : null
-
-  const graph = buildUnifiedSchemaGraph([
-    buildWebSiteSchema(),
-    buildOrganizationSchema(),
-    webpageNode,
-    breadcrumb,
-    ld,
-    faqNode,
-  ])
-
-  return [
-    { type: 'application/ld+json', innerHTML: safeJsonLd(graph) },
-  ]
+  return graph ? [{ type: 'application/ld+json', innerHTML: safeJsonLd(graph) }] : []
 })
 
 function normalizeJsonLdPayload(payload: JsonLdPayload | null | undefined) {
@@ -1503,11 +1179,9 @@ const backendJsonLdScripts = computed(() => normalizeJsonLdPayload(backendJsonLd
   innerHTML: safeJsonLd(withAdminUnitBreadcrumb(item, adminUnitBreadcrumb.value)),
 })))
 
-const jsonLdScripts = computed(() => {
-  // P1-3: nếu backend /seo/jsonld fail/rỗng → dùng fallback (BreadcrumbList + entity
-  // schema + FAQ) thay vì mất hết rich-result, chỉ còn WebSite toàn cục.
-  return backendJsonLdScripts.value.length ? backendJsonLdScripts.value : fallbackJsonLdScripts.value
-})
+// P1-3: nếu backend /seo/jsonld fail/rỗng → dùng fallback (BreadcrumbList + entity schema + FAQ)
+const jsonLdScripts = computed(() =>
+  backendJsonLdScripts.value.length ? backendJsonLdScripts.value : fallbackJsonLdScripts.value)
 
 useHead({
   link: [{ rel: 'canonical', href: () => entity.value ? entityDetailUrl(entity.value.id) : canonicalUrl('/dia-diem') }],
@@ -1517,4 +1191,3 @@ useHead({
 
 <!-- detail.css nạp theo route (bỏ khỏi global entry.css; phần dùng-chung ở detail-shared.css) -->
 <style src="~/assets/css/detail.css"></style>
-

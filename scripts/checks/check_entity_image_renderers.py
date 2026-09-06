@@ -1065,7 +1065,7 @@ def _metadata_proof(text: str, entry: dict, root: Path) -> bool:
 # nhau — thêm một component mà quên một chỗ là cổng nói dối theo kiểu khó thấy.
 DELEGATING_COMPONENTS = {
     "EntityCard", "SavedEntityCard", "PostCard", "PhotoGallery", "ImageLightbox",
-    "HomeFeatureDossier", "HomeProductLead",
+    "HomeFeatureDossier", "HomeProductLead", "DetailCoverLightbox",
 }
 
 
@@ -1089,7 +1089,7 @@ def _has_delegated_presentation(text: str, presentation: str) -> bool:
         return bool(re.search(r"<(?:Lazy)?(?:PhotoGallery|ImageLightbox)\b", text))
     if presentation == "short":
         return bool(re.search(
-            r"<(?:EntityCard|SavedEntityCard|PostCard|HomeFeatureDossier|HomeProductLead)\b", text))
+            r"<(?:EntityCard|SavedEntityCard|PostCard|HomeFeatureDossier|HomeProductLead|DetailCoverLightbox)\b", text))
     return False
 
 

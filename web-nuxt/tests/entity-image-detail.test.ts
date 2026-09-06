@@ -165,6 +165,7 @@ describe('ImageDisclosure', () => {
 
 describe('entity detail image descriptor boundary', () => {
   const detailSource = readFileSync(resolve(process.cwd(), 'pages/dia-diem/[id].vue'), 'utf8')
+  const coverLightboxSource = readFileSync(resolve(process.cwd(), 'components/DetailCoverLightbox.vue'), 'utf8')
 
   it('loads and strictly parses the Task33 gallery descriptor response', () => {
     expect(detailSource).toContain('/api/entities/${encodedId.value}/gallery')
@@ -203,11 +204,12 @@ describe('entity detail image descriptor boundary', () => {
     expect(detailSource).toContain('data-entity-hero')
     expect(detailSource).toContain(':alt="heroDescriptor.alt"')
     expect(detailSource).toContain(':aria-describedby="heroDisclosureId"')
-    expect(detailSource).toContain(':aria-describedby="disclosureIdFor(i)"')
-    expect(detailSource).toContain(':alt="descriptor.alt"')
+    expect(coverLightboxSource).toContain(':aria-describedby="disclosureIdFor(i)"')
+    expect(coverLightboxSource).toContain(':alt="descriptor.alt"')
     expect(detailSource).toContain(':descriptor="heroDescriptor"')
-    expect(detailSource).toContain(':descriptor="descriptor"')
+    expect(coverLightboxSource).toContain(':descriptor="descriptor"')
     expect(detailSource).not.toContain('imageCredit')
+    expect(coverLightboxSource).not.toContain('imageCredit')
   })
 
   it('passes classified descriptors directly through the final Task35 component boundary', () => {

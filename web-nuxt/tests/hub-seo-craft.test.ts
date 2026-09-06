@@ -151,9 +151,11 @@ describe('SEO & Editorial Craft Guardrails', () => {
 
   it('Entity detail page includes full OpenGraph metadata, Twitter card, and Schema.org hasMap', () => {
     const detail = doc('pages/dia-diem/[id].vue')
+    const seoHelpers = doc('composables/useSeoHelpers.ts')
     expect(detail).toContain("twitterCard: 'summary_large_image'")
     expect(detail).toContain("ogUrl: () => entity.value ? entityDetailUrl(entity.value.id) : canonicalUrl('/dia-diem')")
-    expect(detail).toContain("ld.hasMap = `https://www.google.com/maps/search/?api=1&query=${geoCoords[0]},${geoCoords[1]}`")
+    expect(detail).toContain('buildEntityDetailSchemaGraph')
+    expect(seoHelpers).toContain("ld.hasMap = `https://www.google.com/maps/search/?api=1&query=${geoCoords[0]},${geoCoords[1]}`")
   })
 
   it('Public forms and helpers use standard Vietnamese typographic curly quotes', () => {

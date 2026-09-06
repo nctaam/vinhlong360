@@ -105,15 +105,32 @@ describe('SEO / AIO / AEO / GEO Architecture Quality Gate', () => {
   })
 
   describe('Place Detail Knowledge Graph (pages/dia-diem/[id].vue)', () => {
-    it('integrates unified @graph with WebPage, Speakable, Entity, Breadcrumb and FAQ', () => {
+    it('integrates unified @graph via buildEntityDetailSchemaGraph with Clean Code SFC < 1.200 lines', () => {
       const detail = doc('pages/dia-diem/[id].vue')
-      expect(detail).toContain('buildUnifiedSchemaGraph')
-      expect(detail).toContain('buildSpeakableSpecification')
-      expect(detail).toContain('buildFaqPageSchema')
-      expect(detail).toContain("isPartOf: { '@id': `${SITE_URL}/#website` }")
-      expect(detail).toContain("publisher: { '@id': `${SITE_URL}/#organization` }")
-      expect(detail).toContain("breadcrumb: { '@id': `${entityUrl}#breadcrumb` }")
-      expect(detail).toContain("mainEntity: { '@id': `${entityUrl}#entity` }")
+      expect(detail).toContain('buildEntityDetailSchemaGraph')
+      expect(detail).toContain('<DetailCoverLightbox')
+      expect(detail).toContain('<DetailActionSuite')
+      const lines = detail.split('\n').length
+      expect(lines).toBeLessThan(1200)
+
+      const seoHelpers = doc('composables/useSeoHelpers.ts')
+      expect(seoHelpers).toContain('buildEntityDetailSchemaGraph')
+      expect(seoHelpers).toContain('buildUnifiedSchemaGraph')
+      expect(seoHelpers).toContain('buildSpeakableSpecification')
+      expect(seoHelpers).toContain('buildFaqPageSchema')
+      expect(seoHelpers).toContain("isPartOf: { '@id': `${SITE_URL}/#website` }")
+      expect(seoHelpers).toContain("publisher: { '@id': `${SITE_URL}/#organization` }")
+      expect(seoHelpers).toContain("breadcrumb: { '@id': `${entityUrl}#breadcrumb` }")
+      expect(seoHelpers).toContain("mainEntity: { '@id': `${entityUrl}#entity` }")
+    })
+  })
+
+  describe('Homepage Knowledge Graph Builder (composables/useSeoHelpers.ts)', () => {
+    it('provides unified @graph builder with WebSite, Organization, SearchAction, ItemList and Localized FAQ', () => {
+      const seoHelpers = doc('composables/useSeoHelpers.ts')
+      expect(seoHelpers).toContain('buildHomeSchemaGraph')
+      expect(seoHelpers).toContain("'@type': 'SearchAction'")
+      expect(seoHelpers).toContain("'@id': `${SITE_URL}/#catalog-hubs`")
     })
   })
 
