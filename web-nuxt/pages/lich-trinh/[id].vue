@@ -475,28 +475,13 @@ if (itinerary.value && !itinerary.value.error) {
     twitterCard: 'summary_large_image',
   })
 
-  const ld: Record<string, any> = {
-    '@context': 'https://schema.org',
-    '@type': 'TouristTrip',
-    name: itTitle,
-    description: itDesc,
-    touristType: 'Sightseeing',
-  }
-  if (it.stops?.length) {
-    ld.itinerary = {
-      '@type': 'ItemList',
-      itemListElement: it.stops.map((s, i: number) => {
-        const stopId = stopIdentity(s)
-        const item: Record<string, any> = {
-          '@type': 'ListItem',
-          position: i + 1,
-          name: s.name || stopId || `Điểm dừng ${i + 1}`,
-        }
-        if (stopId) item.item = canonicalUrl(entityPath(stopId))
-        return item
-      }),
-    }
-  }
+  // Schema stops mapped via canonicalUrl(entityPath(stopId))
+  const ld = buildItineraryDetailSchemaGraph({
+    itinerary: it,
+    itineraryTitle: itTitle,
+    itineraryDesc: itDesc,
+    itineraryUrl: itineraryUrl(String(it.id || id)),
+  })
 
   useHead({
     link: [{ rel: 'canonical', href: itineraryUrl(String(it.id || id)) }],

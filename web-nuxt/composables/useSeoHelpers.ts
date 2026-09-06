@@ -1,5 +1,6 @@
 import type { ImageDescriptor } from '../types/image'
 import { normalizeRenderableImageUrl } from '../utils/imageDescriptors'
+import { entityPath } from '../utils/routePaths'
 
 export const SITE_URL = 'https://vinhlong360.vn'
 const DEFAULT_OG = `${SITE_URL}/img/og-default.jpg`
@@ -463,6 +464,236 @@ export function buildHomeSchemaGraph(): Record<string, any> {
     buildOrganizationSchema(),
     webpageNode,
     itemList,
+    faqNode,
+  ])
+}
+
+export interface PostDetailSchemaOptions {
+  post: {
+    id: string | number
+    display_name?: string
+    content?: string
+    post_type?: string
+    created_at?: string
+    updated_at?: string
+    user_id?: string | number
+    rating?: number
+    comments_count?: number
+  }
+  bestAnswer?: {
+    id?: string | number
+    content?: string
+    created_at?: string
+    author?: { id?: string | number; display_name?: string }
+  } | null
+  commentsCount?: number
+}
+
+export function buildPostDetailSchemaGraph(options: PostDetailSchemaOptions): Record<string, any> {
+  const p = options.post
+  const postId = String(p.id)
+  const postUrl = canonicalUrl(`/bai-viet/${encodeURIComponent(postId)}`)
+  const postTitle = p.display_name || 'Bài viết'
+  const postDesc = (p.content || '').substring(0, 160)
+  const commentsCount = options.commentsCount ?? p.comments_count ?? 0
+
+  const webpageNode = {
+    '@type': p.post_type === 'question' ? 'QAPage' : 'WebPage',
+    '@id': `${postUrl}#webpage`,
+    url: postUrl,
+    name: `${postTitle} — vinhlong360`,
+    description: postDesc,
+    inLanguage: 'vi-VN',
+    isPartOf: { '@id': `${SITE_URL}/#website` },
+    breadcrumb: { '@id': `${postUrl}#breadcrumb` },
+    mainEntity: { '@id': `${postUrl}#post` },
+    speakable: buildSpeakableSpecification(['.thread-detail', 'h1', '.thread-comments']),
+    publisher: { '@id': `${SITE_URL}/#organization` },
+  }
+
+  const breadcrumbNode = {
+    '@type': 'BreadcrumbList',
+    '@id': `${postUrl}#breadcrumb`,
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'Trang chủ', item: `${SITE_URL}/` },
+      { '@type': 'ListItem', position: 2, name: 'Cộng đồng', item: `${SITE_URL}/cong-dong` },
+      { '@type': 'ListItem', position: 3, name: postTitle, item: postUrl },
+    ],
+  }
+
+  let postNode: Record<string, any>
+  const authorNode = {
+    '@type': 'Person',
+    name: p.display_name || 'Người dùng',
+    ...(p.user_id ? { url: canonicalUrl(`/nguoi-dung/${encodeURIComponent(String(p.user_id))}`) } : {}),
+  }
+
+  if (p.post_type === 'question') {
+    const questionNode: Record<string, any> = {
+      '@type': 'Question',
+      '@id': `${postUrl}#post`,
+      name: postTitle,
+      text: p.content || postTitle,
+      dateCreated: p.created_at,
+      url: postUrl,
+      answerCount: commentsCount,
+      author: authorNode,
+    }
+
+    if (options.bestAnswer) {
+      const ba = options.bestAnswer
+      questionNode.acceptedAnswer = {
+        '@type': 'Answer',
+        text: ba.content,
+        dateCreated: ba.created_at,
+        url: `${postUrl}#comment-${ba.id}`,
+        author: {
+          '@type': 'Person',
+          name: ba.author?.display_name || 'Người dùng',
+          ...(ba.author?.id ? { url: canonicalUrl(`/nguoi-dung/${encodeURIComponent(String(ba.author.id))}`) } : {}),
+        },
+      }
+    }
+    postNode = questionNode
+  } else if (p.post_type === 'review') {
+    postNode = {
+      '@type': 'Review',
+      '@id': `${postUrl}#post`,
+      headline: postTitle,
+      reviewBody: p.content || postTitle,
+      url: postUrl,
+      datePublished: p.created_at,
+      dateModified: p.updated_at || p.created_at,
+      author: authorNode,
+      publisher: { '@id': `${SITE_URL}/#organization` },
+      ...(p.rating ? { reviewRating: { '@type': 'Rating', ratingValue: p.rating, bestRating: 5 } } : {}),
+      itemReviewed: {
+        '@type': 'TouristAttraction',
+        name: 'Địa điểm du lịch Vĩnh Long',
+        containedInPlace: { '@type': 'AdministrativeArea', name: 'Tỉnh Vĩnh Long' },
+      },
+    }
+  } else {
+    postNode = {
+      '@type': 'DiscussionForumPosting',
+      '@id': `${postUrl}#post`,
+      headline: postTitle,
+      articleBody: p.content || postTitle,
+      description: postDesc,
+      url: postUrl,
+      datePublished: p.created_at,
+      dateModified: p.updated_at || p.created_at,
+      author: authorNode,
+      publisher: { '@id': `${SITE_URL}/#organization` },
+      interactionStatistic: {
+        '@type': 'InteractionCounter',
+        interactionType: 'https://schema.org/CommentAction',
+        userInteractionCount: commentsCount,
+      },
+    }
+  }
+
+  return buildUnifiedSchemaGraph([
+    buildWebSiteSchema(),
+    buildOrganizationSchema(),
+    webpageNode,
+    breadcrumbNode,
+    postNode,
+  ])
+}
+
+export interface ItineraryDetailSchemaOptions {
+  itinerary: {
+    id?: string | number
+    title?: string
+    name?: string
+    summary?: string
+    description?: string
+    duration?: string
+    stops?: Array<{ id?: string | number; name?: string; entity_id?: string | number }>
+  }
+  itineraryTitle: string
+  itineraryDesc?: string
+  itineraryUrl: string
+}
+
+export function buildItineraryDetailSchemaGraph(options: ItineraryDetailSchemaOptions): Record<string, any> {
+  const it = options.itinerary
+  const itTitle = options.itineraryTitle
+  const itDesc = options.itineraryDesc || it.summary || it.description || ''
+  const itUrl = options.itineraryUrl
+
+  const webpageNode = {
+    '@type': 'WebPage',
+    '@id': `${itUrl}#webpage`,
+    url: itUrl,
+    name: `${itTitle} — vinhlong360`,
+    description: itDesc,
+    inLanguage: 'vi-VN',
+    isPartOf: { '@id': `${SITE_URL}/#website` },
+    breadcrumb: { '@id': `${itUrl}#breadcrumb` },
+    mainEntity: { '@id': `${itUrl}#trip` },
+    speakable: buildSpeakableSpecification(['.lead', 'h1', '.timeline-head']),
+    publisher: { '@id': `${SITE_URL}/#organization` },
+  }
+
+  const breadcrumbNode = {
+    '@type': 'BreadcrumbList',
+    '@id': `${itUrl}#breadcrumb`,
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'Trang chủ', item: `${SITE_URL}/` },
+      { '@type': 'ListItem', position: 2, name: 'Lịch trình', item: `${SITE_URL}/lich-trinh` },
+      { '@type': 'ListItem', position: 3, name: itTitle, item: itUrl },
+    ],
+  }
+
+  const tripNode: Record<string, any> = {
+    '@type': 'TouristTrip',
+    '@id': `${itUrl}#trip`,
+    name: itTitle,
+    description: itDesc,
+    touristType: 'Sightseeing',
+    url: itUrl,
+  }
+
+  if (Array.isArray(it.stops) && it.stops.length) {
+    tripNode.itinerary = {
+      '@type': 'ItemList',
+      numberOfItems: it.stops.length,
+      itemListElement: it.stops.map((s, i: number) => {
+        const stopId = String(s.entity_id || s.id || '')
+        const item: Record<string, any> = {
+          '@type': 'ListItem',
+          position: i + 1,
+          name: s.name || stopId || `Điểm dừng ${i + 1}`,
+        }
+        if (stopId) item.item = canonicalUrl(entityPath(stopId))
+        return item
+      }),
+    }
+  }
+
+  const faqItems: FaqItem[] = []
+  if (it.duration) {
+    faqItems.push({
+      q: `Lịch trình "${itTitle}" kéo dài bao lâu?`,
+      a: `Thời gian trải nghiệm dự kiến cho toàn bộ lịch trình là ${it.duration}.`,
+    })
+  }
+  if (it.stops?.length) {
+    faqItems.push({
+      q: `Lịch trình "${itTitle}" có bao nhiêu điểm dừng tham quan?`,
+      a: `Lịch trình gồm ${it.stops.length} điểm dừng chân trải nghiệm tiêu biểu tại Vĩnh Long.`,
+    })
+  }
+  const faqNode = faqItems.length ? buildFaqPageSchema(faqItems, `${itUrl}#faq`) : null
+
+  return buildUnifiedSchemaGraph([
+    buildWebSiteSchema(),
+    buildOrganizationSchema(),
+    webpageNode,
+    breadcrumbNode,
+    tripNode,
     faqNode,
   ])
 }

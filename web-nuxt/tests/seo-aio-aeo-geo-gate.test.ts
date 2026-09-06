@@ -265,4 +265,35 @@ describe('SEO / AIO / AEO / GEO Architecture Quality Gate', () => {
       expect(events).toContain("safeJsonLd({")
     })
   })
+
+  describe('Community Post Detail Knowledge Graph (pages/bai-viet/[id].vue)', () => {
+    it('publishes unified @graph with DiscussionForumPosting, QAPage, Review, BreadcrumbList, and Speakable', () => {
+      const post = doc('pages/bai-viet/[id].vue')
+      expect(post).toContain('buildPostDetailSchemaGraph')
+      expect(post).toContain('safeJsonLd(articleLd)')
+
+      const seoHelpers = doc('composables/useSeoHelpers.ts')
+      expect(seoHelpers).toContain('buildPostDetailSchemaGraph')
+      expect(seoHelpers).toContain("'@type': 'DiscussionForumPosting'")
+      expect(seoHelpers).toContain("'@type': p.post_type === 'question' ? 'QAPage' : 'WebPage'")
+      expect(seoHelpers).toContain("'@type': 'Question'")
+      expect(seoHelpers).toContain("'@type': 'Review'")
+      expect(seoHelpers).toContain("name: 'Cộng đồng'")
+    })
+  })
+
+  describe('Itinerary Detail Knowledge Graph (pages/lich-trinh/[id].vue)', () => {
+    it('publishes unified @graph with TouristTrip, stops ItemList, BreadcrumbList, Speakable, and FAQPage', () => {
+      const itinerary = doc('pages/lich-trinh/[id].vue')
+      expect(itinerary).toContain('buildItineraryDetailSchemaGraph')
+      expect(itinerary).toContain('safeJsonLd(ld)')
+
+      const seoHelpers = doc('composables/useSeoHelpers.ts')
+      expect(seoHelpers).toContain('buildItineraryDetailSchemaGraph')
+      expect(seoHelpers).toContain("'@type': 'TouristTrip'")
+      expect(seoHelpers).toContain("touristType: 'Sightseeing'")
+      expect(seoHelpers).toContain("name: 'Lịch trình'")
+      expect(seoHelpers).toContain("name: `${itTitle} — vinhlong360`")
+    })
+  })
 })
