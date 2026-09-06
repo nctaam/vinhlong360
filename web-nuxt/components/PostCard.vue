@@ -68,7 +68,7 @@
 
       <div v-if="post.content" class="thread-body">
         <p class="thread-content" :class="{ collapsed: isLong && !expanded }" v-html="contentHtml"></p>
-        <button v-if="isLong" type="button" class="thread-expand" @click="expanded = !expanded">
+        <button v-if="isLong" type="button" class="thread-expand" :aria-expanded="expanded" @click="expanded = !expanded">
           {{ expanded ? 'Thu gọn' : 'Xem thêm' }}
         </button>
       </div>

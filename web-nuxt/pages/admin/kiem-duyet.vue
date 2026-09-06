@@ -95,7 +95,7 @@
             </td>
             <td class="mod-content-cell">
               <span :class="{ 'mod-content-truncate': !expanded.has(p.id) }">{{ p.content }}</span>
-              <button v-if="(p.content || '').length > 90" type="button" class="mod-expand" @click="toggleExpand(p.id)">
+              <button v-if="(p.content || '').length > 90" type="button" class="mod-expand" :aria-expanded="expanded.has(p.id)" @click="toggleExpand(p.id)">
                 {{ expanded.has(p.id) ? 'Thu gọn' : 'Xem đầy đủ' }}
               </button>
             </td>
