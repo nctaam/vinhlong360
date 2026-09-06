@@ -136,20 +136,8 @@ const tips = [
 <script setup lang="ts">
 useReveal()
 
-const guideSchema = computed(() => ({
-  '@context': 'https://schema.org',
-  '@type': 'WebPage',
-  '@id': canonicalUrl('/huong-dan-thanh-vien') + '#webpage',
-  url: canonicalUrl('/huong-dan-thanh-vien'),
-  name: 'Hướng dẫn thành viên — Hệ thống cấp bậc & điểm danh tiếng — vinhlong360',
-  description: 'Tìm hiểu cách tính điểm danh tiếng, cấp bậc thành viên và huy hiệu trên cộng đồng vinhlong360.',
-  inLanguage: 'vi',
-  publisher: {
-    '@type': 'Organization',
-    name: 'vinhlong360',
-    url: 'https://vinhlong360.vn',
-  },
-}))
+// Schema graph unified with '@type': 'WebPage' and Member Guide FAQs
+const guideSchema = computed(() => buildMemberGuideSchemaGraph())
 
 useSeoMeta({
   title: 'Hướng dẫn thành viên — Hệ thống cấp bậc & điểm danh tiếng — vinhlong360',

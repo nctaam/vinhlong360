@@ -15,6 +15,8 @@ import {
   buildAboutPageSchemaGraph,
   buildContactPageSchemaGraph,
   buildGuideSchemaGraph,
+  buildLeaderboardSchemaGraph,
+  buildMemberGuideSchemaGraph,
   safeJsonLd,
   SITE_URL,
 } from '../composables/useSeoHelpers'
@@ -505,6 +507,71 @@ describe('SEO / AIO / AEO / GEO Architecture Quality Gate', () => {
 
       const faq = graph['@graph'].find((n: any) => n['@type'] === 'FAQPage')
       expect(faq.mainEntity.length).toBeGreaterThanOrEqual(3)
+    })
+  })
+
+  describe('Leaderboard Knowledge Graph (pages/bang-xep-hang.vue)', () => {
+    it('publishes unified @graph with CollectionPage, ItemList, Organization, WebSite, Speakable, and FAQPage without duplicate BreadcrumbList', () => {
+      const leaderboard = doc('pages/bang-xep-hang.vue')
+      expect(leaderboard).toContain('buildLeaderboardSchemaGraph')
+      expect(leaderboard).toContain('safeJsonLd(leaderboardSchema.value)')
+      expect(leaderboard).toContain("twitterCard: 'summary_large_image'")
+
+      const graph = buildLeaderboardSchemaGraph({
+        totalCount: 50,
+        podium: [
+          { id: 1, username: 'lethihong', display_name: 'Lê Thị Hồng', rank: 1, points: 280, level: 4, level_label: 'Đại sứ' },
+          { id: 2, username: 'nguyenvanan', display_name: 'Nguyễn Văn An', rank: 2, points: 195, level: 3, level_label: 'Đóng góp tích cực' },
+          { id: 3, username: 'tranminh', display_name: 'Trần Minh', rank: 3, points: 140, level: 3, level_label: 'Đóng góp tích cực' },
+        ],
+      })
+      expect(graph['@context']).toBe('https://schema.org')
+      const types = graph['@graph'].map((n: any) => n['@type'])
+      expect(types).toContain('WebSite')
+      expect(types).toContain('Organization')
+      expect(types).toContain('CollectionPage')
+      expect(types).toContain('ItemList')
+      expect(types).toContain('FAQPage')
+      expect(types).not.toContain('BreadcrumbList')
+
+      const collectionPage = graph['@graph'].find((n: any) => n['@type'] === 'CollectionPage')
+      expect(collectionPage.name).toContain('Bảng xếp hạng')
+      expect(collectionPage.speakable?.['@type']).toBe('SpeakableSpecification')
+
+      const itemList = graph['@graph'].find((n: any) => n['@type'] === 'ItemList')
+      expect(itemList.numberOfItems).toBe(50)
+      expect(itemList.itemListElement).toHaveLength(3)
+      expect(itemList.itemListElement[0].name).toBe('Lê Thị Hồng')
+      expect(itemList.itemListElement[0].item?.['@type']).toBe('Person')
+      expect(itemList.itemListElement[0].item?.jobTitle).toBe('Đại sứ')
+
+      const faq = graph['@graph'].find((n: any) => n['@type'] === 'FAQPage')
+      expect(faq.mainEntity.length).toBeGreaterThanOrEqual(3)
+    })
+  })
+
+  describe('Member Guide Knowledge Graph (pages/huong-dan-thanh-vien.vue)', () => {
+    it('publishes unified @graph with WebPage, Organization, WebSite, Speakable, and FAQPage without duplicate BreadcrumbList', () => {
+      const guide = doc('pages/huong-dan-thanh-vien.vue')
+      expect(guide).toContain('buildMemberGuideSchemaGraph')
+      expect(guide).toContain('safeJsonLd(guideSchema.value)')
+      expect(guide).toContain("twitterCard: 'summary_large_image'")
+
+      const graph = buildMemberGuideSchemaGraph()
+      expect(graph['@context']).toBe('https://schema.org')
+      const types = graph['@graph'].map((n: any) => n['@type'])
+      expect(types).toContain('WebSite')
+      expect(types).toContain('Organization')
+      expect(types).toContain('WebPage')
+      expect(types).toContain('FAQPage')
+      expect(types).not.toContain('BreadcrumbList')
+
+      const webpage = graph['@graph'].find((n: any) => n['@type'] === 'WebPage')
+      expect(webpage.name).toContain('Hướng dẫn thành viên')
+      expect(webpage.speakable?.['@type']).toBe('SpeakableSpecification')
+
+      const faq = graph['@graph'].find((n: any) => n['@type'] === 'FAQPage')
+      expect(faq.mainEntity.length).toBeGreaterThanOrEqual(4)
     })
   })
 })

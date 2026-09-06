@@ -143,24 +143,13 @@ useSeoMeta({
   twitterCard: 'summary_large_image',
 })
 
-const leaderboardSchema = computed(() => ({
-  '@context': 'https://schema.org',
-  '@type': 'CollectionPage',
-  name: 'Thành viên tích cực — Bảng xếp hạng — vinhlong360',
-  description: 'Bảng xếp hạng thành viên đóng góp tích cực nhất cộng đồng vinhlong360.',
-  url: canonicalUrl('/bang-xep-hang'),
-  inLanguage: 'vi',
-  mainEntity: {
-    '@type': 'ItemList',
-    numberOfItems: leaders.value.length,
-    itemListElement: podium.value.map(m => ({
-      '@type': 'ListItem',
-      position: m.rank,
-      name: m.display_name,
-      url: canonicalUrl(userPath(m.username || m.id)),
-    })),
-  },
-}))
+// Schema graph unified with '@type': 'CollectionPage' and Top Members ItemList
+const leaderboardSchema = computed(() =>
+  buildLeaderboardSchemaGraph({
+    totalCount: leaders.value.length,
+    podium: podium.value,
+  })
+)
 
 useHead(() => ({
   link: [{ rel: 'canonical', href: canonicalUrl('/bang-xep-hang') }],

@@ -1,6 +1,6 @@
 import type { ImageDescriptor } from '../types/image'
 import { normalizeRenderableImageUrl } from '../utils/imageDescriptors'
-import { entityPath } from '../utils/routePaths'
+import { entityPath, userPath } from '../utils/routePaths'
 
 export const SITE_URL = 'https://vinhlong360.vn'
 const DEFAULT_OG = `${SITE_URL}/img/og-default.jpg`
@@ -1167,6 +1167,151 @@ export function buildGuideSchemaGraph(options: GuideSchemaOptions = {}): Record<
     {
       q: 'Tham gia cộng đồng du lịch Vĩnh Long mang lại những quyền lợi gì?',
       a: 'Thành viên đăng nhập có thể viết bài chia sẻ kinh nghiệm, đánh giá địa điểm, lưu trữ hành trình đám mây và tích lũy điểm danh tiếng để thăng hạng huy hiệu.',
+    },
+  ]
+
+  const faqs = options.faqs && options.faqs.length > 0 ? options.faqs : defaultFaqs
+  const faqNode = buildFaqPageSchema(faqs, `${pageUrl}#faq`)
+
+  return buildUnifiedSchemaGraph([
+    buildWebSiteSchema(),
+    buildOrganizationSchema(),
+    webpageNode,
+    faqNode,
+  ])
+}
+
+export interface LeaderboardSchemaOptions {
+  title?: string
+  description?: string
+  canonicalUrl?: string
+  totalCount?: number
+  podium?: Array<{
+    id?: string | number
+    username?: string
+    display_name?: string
+    rank?: number
+    points?: number
+    level?: number
+    level_label?: string
+  }>
+  faqs?: Array<{ q: string; a: string }>
+}
+
+export function buildLeaderboardSchemaGraph(options: LeaderboardSchemaOptions = {}): Record<string, any> {
+  const pageUrl = options.canonicalUrl || canonicalUrl('/bang-xep-hang')
+  const title = options.title || 'Thành viên tích cực — Bảng xếp hạng'
+  const desc = options.description || 'Bảng xếp hạng thành viên đóng góp tích cực nhất cộng đồng vinhlong360: đánh giá, bài viết, ảnh và lượt theo dõi.'
+
+  const webpageNode = {
+    '@type': 'CollectionPage',
+    '@id': `${pageUrl}#webpage`,
+    url: pageUrl,
+    name: `${title} — vinhlong360`,
+    description: desc,
+    inLanguage: 'vi-VN',
+    isPartOf: { '@id': `${SITE_URL}/#website` },
+    about: { '@id': `${SITE_URL}/#organization` },
+    mainEntity: { '@id': `${pageUrl}#leaderboard` },
+    speakable: buildSpeakableSpecification(['.bxh-h1', '.bxh-head p', '.bxh-eyebrow']),
+  }
+
+  const podiumList = options.podium || []
+  const itemListElements = podiumList.map((m, index) => {
+    const position = m.rank ?? (index + 1)
+    const name = m.display_name || 'Thành viên vinhlong360'
+    const memberUrl = m.username || m.id ? canonicalUrl(userPath(m.username || m.id)) : pageUrl
+    return {
+      '@type': 'ListItem',
+      position,
+      name,
+      url: memberUrl,
+      item: {
+        '@type': 'Person',
+        name,
+        url: memberUrl,
+        ...(m.level_label ? { jobTitle: m.level_label } : {}),
+      },
+    }
+  })
+
+  const itemListNode = {
+    '@type': 'ItemList',
+    '@id': `${pageUrl}#leaderboard`,
+    name: 'Bảng xếp hạng thành viên tích cực — vinhlong360',
+    description: 'Danh sách các thành viên đóng góp tích cực nhất trong cộng đồng vinhlong360.',
+    numberOfItems: options.totalCount ?? podiumList.length,
+    itemListElement: itemListElements,
+  }
+
+  const defaultFaqs = [
+    {
+      q: 'Bảng xếp hạng thành viên vinhlong360 được tính điểm như thế nào?',
+      a: 'Điểm danh tiếng được tính tự động từ các hoạt động đóng góp hữu ích: viết đánh giá địa điểm (tối đa 130 điểm), đăng bài viết (tối đa 45 điểm), chia sẻ ảnh (tối đa 40 điểm), lượt thích nhận được và người theo dõi.',
+    },
+    {
+      q: 'Bao lâu thì bảng xếp hạng cộng đồng vinhlong360 được làm mới một lần?',
+      a: 'Bảng xếp hạng được cập nhật liên tục theo thời gian thực khi các hoạt động đánh giá và bài viết được hệ thống kiểm duyệt và ghi nhận thành công.',
+    },
+    {
+      q: 'Làm thế nào để xuất hiện trên bục vinh danh Top 3 thành viên tích cực?',
+      a: 'Thành viên cần duy trì các đóng góp chất lượng và đều đặn ở nhiều danh mục (đánh giá, bài viết, ảnh thực địa) để tích lũy điểm danh tiếng trong tuần, tháng hoặc toàn thời gian.',
+    },
+  ]
+
+  const faqs = options.faqs && options.faqs.length > 0 ? options.faqs : defaultFaqs
+  const faqNode = buildFaqPageSchema(faqs, `${pageUrl}#faq`)
+
+  return buildUnifiedSchemaGraph([
+    buildWebSiteSchema(),
+    buildOrganizationSchema(),
+    webpageNode,
+    itemListNode,
+    faqNode,
+  ])
+}
+
+export interface MemberGuideSchemaOptions {
+  title?: string
+  description?: string
+  canonicalUrl?: string
+  faqs?: Array<{ q: string; a: string }>
+}
+
+export function buildMemberGuideSchemaGraph(options: MemberGuideSchemaOptions = {}): Record<string, any> {
+  const pageUrl = options.canonicalUrl || canonicalUrl('/huong-dan-thanh-vien')
+  const title = options.title || 'Hướng dẫn thành viên — Hệ thống cấp bậc & điểm danh tiếng'
+  const desc = options.description || 'Tìm hiểu cách tính điểm danh tiếng, cấp bậc thành viên và huy hiệu trên cộng đồng vinhlong360.'
+
+  const webpageNode = {
+    '@type': 'WebPage',
+    '@id': `${pageUrl}#webpage`,
+    url: pageUrl,
+    name: `${title} — vinhlong360`,
+    description: desc,
+    inLanguage: 'vi-VN',
+    isPartOf: { '@id': `${SITE_URL}/#website` },
+    about: { '@id': `${SITE_URL}/#organization` },
+    mainEntity: { '@id': `${SITE_URL}/#organization` },
+    speakable: buildSpeakableSpecification(['.guide-hero h1', '.guide-hero p', '.guide-section h2', '.guide-intro']),
+  }
+
+  const defaultFaqs = [
+    {
+      q: 'Hệ thống cấp bậc thành viên trên vinhlong360 gồm những cấp độ nào?',
+      a: 'Hệ thống gồm 4 cấp bậc chính: Cấp 1 (Người mới: 0–19 điểm), Cấp 2 (Người đóng góp: 20–79 điểm), Cấp 3 (Đóng góp tích cực: 80–199 điểm) và Cấp 4 (Đại sứ: từ 200 điểm trở lên).',
+    },
+    {
+      q: 'Công thức tính điểm danh tiếng có bị giới hạn số lượng đóng góp không?',
+      a: 'Có, mỗi loại hoạt động đều có mức trần điểm tối đa nhằm tránh lạm phát và khuyến khích đóng góp đa dạng. Tổng điểm tối đa lý thuyết là 315 điểm.',
+    },
+    {
+      q: 'Làm thế nào để nhận huy hiệu thành tích trên vinhlong360?',
+      a: 'Huy hiệu được trao tự động ngay khi thành viên hoàn thành điều kiện tương ứng, ví dụ: Đánh giá đầu tiên (1 đánh giá), Nhiếp ảnh cộng đồng (10 bài có ảnh), Người khám phá (10 địa điểm khác nhau), và Đa năng.',
+    },
+    {
+      q: 'Đóng góp loại nào mang lại điểm danh tiếng cao nhất?',
+      a: 'Đánh giá địa điểm trải nghiệm thực tế mang lại điểm cao nhất (5 điểm/bài cho 10 bài đầu tiên), tiếp theo là chia sẻ ảnh thực tế (3 điểm/bài cho 10 bài đầu tiên).',
     },
   ]
 
