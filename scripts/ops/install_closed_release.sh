@@ -3,8 +3,14 @@
 set -Eeuo pipefail
 umask 077
 
+die() {
+  printf 'install_closed_release: %s\n' "$1" >&2
+  exit 2
+}
+
 EARLY_ARGUMENTS=("$@")
 EARLY_ARGUMENTS_VALID=true
+EARLY_PARSE_ERROR=''
 EARLY_LOCAL_REHEARSAL=false
 EARLY_ARCHIVE_PRESENT=false
 EARLY_ARCHIVE_DIGEST_PRESENT=false
@@ -26,11 +32,16 @@ while ((early_index < ${#EARLY_ARGUMENTS[@]})); do
       early_value_index=$((early_index + 1))
       if ((early_value_index >= ${#EARLY_ARGUMENTS[@]})); then
         EARLY_ARGUMENTS_VALID=false
+        EARLY_PARSE_ERROR="${early_argument#--}-value-required"
         break
       fi
       early_value="${EARLY_ARGUMENTS[$early_value_index]}"
       case "$early_value" in
-        ''|--*) EARLY_ARGUMENTS_VALID=false; break ;;
+        ''|--*)
+          EARLY_ARGUMENTS_VALID=false
+          EARLY_PARSE_ERROR="${early_argument#--}-value-required"
+          break
+          ;;
       esac
       case "$early_argument" in
         --archive) EARLY_ARCHIVE_PRESENT=true ;;
@@ -57,10 +68,14 @@ while ((early_index < ${#EARLY_ARGUMENTS[@]})); do
       ;;
     *)
       EARLY_ARGUMENTS_VALID=false
+      EARLY_PARSE_ERROR='unknown-option'
       break
       ;;
   esac
 done
+if [ -n "$EARLY_PARSE_ERROR" ]; then
+  die "$EARLY_PARSE_ERROR"
+fi
 EARLY_REQUIRED_ARGUMENTS_VALID=false
 if [ "$EARLY_ARGUMENTS_VALID" = true ] \
   && [ "$EARLY_ARCHIVE_PRESENT" = true ] \
@@ -304,11 +319,6 @@ remove_private_directory() {
     [ "$cleanup_status" -ne 0 ] || cleanup_status="$fsync_status"
   fi
   return "$cleanup_status"
-}
-
-die() {
-  printf 'install_closed_release: %s\n' "$1" >&2
-  exit 2
 }
 
 SCRIPT_DIR="$(CDPATH= cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd -P)"
