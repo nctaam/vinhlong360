@@ -14,7 +14,7 @@
       <div class="db-form-grid">
         <label class="db-field">
           <span class="db-field-label">Tên cơ quan *</span>
-          <input v-model="f.name" class="input" :class="{ 'db-input-error': formErrors.name }" required placeholder="UBND xã An Bình" :aria-invalid="!!formErrors.name" :aria-describedby="formErrors.name ? 'db-err-name' : undefined" />
+          <input v-model="f.name" class="input" :class="{ 'db-input-error': formErrors.name }" required placeholder="UBND xã An Bình" aria-label="Tên cơ quan" :aria-invalid="!!formErrors.name" :aria-describedby="formErrors.name ? 'db-err-name' : undefined" />
           <span v-if="formErrors.name" id="db-err-name" class="db-field-error" role="alert">{{ formErrors.name }}</span>
         </label>
         <label class="db-field">
@@ -49,7 +49,7 @@
         </label>
         <label class="db-field db-field-full">
           <span class="db-field-label">Nguồn (URL chính thống) *</span>
-          <input v-model="f.sourceUrl" class="input" :class="{ 'db-input-error': formErrors.sourceUrl, 'db-input-ok': sourceUrlValid }" required placeholder="https://...gov.vn/..." :aria-invalid="!!formErrors.sourceUrl" :aria-describedby="formErrors.sourceUrl ? 'db-err-url' : undefined" />
+          <input v-model="f.sourceUrl" class="input" :class="{ 'db-input-error': formErrors.sourceUrl, 'db-input-ok': sourceUrlValid }" required placeholder="https://...gov.vn/..." aria-label="Nguồn URL chính thống" :aria-invalid="!!formErrors.sourceUrl" :aria-describedby="formErrors.sourceUrl ? 'db-err-url' : undefined" />
           <span v-if="formErrors.sourceUrl" id="db-err-url" class="db-field-error" role="alert">{{ formErrors.sourceUrl }}</span>
           <span v-else-if="f.sourceUrl && !sourceUrlValid" class="db-field-hint">Nên là URL chính thống .gov.vn (bắt đầu bằng https://)</span>
         </label>

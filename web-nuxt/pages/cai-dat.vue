@@ -92,6 +92,7 @@
             type="text"
             class="sf-input"
             autocomplete="name"
+            aria-label="Họ và tên thật"
             maxlength="100"
             placeholder="Họ và tên thật"
           />
@@ -104,6 +105,7 @@
             type="text"
             class="sf-input"
             autocomplete="nickname"
+            aria-label="Tên bạn muốn hiển thị"
             enterkeyhint="done"
             maxlength="50"
             required
@@ -130,6 +132,7 @@
             v-model="email"
             type="email"
             class="sf-input"
+            aria-label="Địa chỉ email"
             maxlength="200"
             placeholder="email@example.com"
             autocomplete="email"

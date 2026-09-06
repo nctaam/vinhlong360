@@ -402,7 +402,7 @@
               <label class="btn btn-outline btn-sm" style="cursor:pointer; margin:0">
                 <template v-if="uploadingImg">Đang tải &amp; tối ưu…</template>
                 <template v-else><IconLine name="camera" /> Tải ảnh AI biên tập (tự nén WebP)</template>
-                <input type="file" accept="image/*" class="sr-only" :disabled="uploadingImg" @change="uploadImageFile" />
+                <input type="file" accept="image/*" class="sr-only" :disabled="uploadingImg" @change="uploadImageFile" aria-label="Tải ảnh AI biên tập (tự nén WebP)" />
               </label>
             </div>
           </div>
