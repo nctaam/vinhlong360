@@ -85,8 +85,6 @@ const detailStubs = {
   LazyNearbyEntities: true,
   SmartRecommendations: true,
   LazySmartRecommendations: true,
-  AIRecommendations: true,
-  LazyAIRecommendations: true,
   AITravelTips: true,
   LazyAITravelTips: true,
   AIBestTime: true,

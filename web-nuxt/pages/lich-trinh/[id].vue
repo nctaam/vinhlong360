@@ -144,7 +144,7 @@
     <div class="reveal">
       <NuxtErrorBoundary>
         <ClientOnly>
-          <LazyAIRecommendations v-if="itinerary.area" title="Khám phá thêm" :limit="4" />
+          <LazySmartRecommendations v-if="itinerary.area" context="itinerary" title="Khám phá thêm" :limit="4" />
         </ClientOnly>
       </NuxtErrorBoundary>
     </div>

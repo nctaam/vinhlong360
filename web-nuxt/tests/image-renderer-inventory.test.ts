@@ -54,7 +54,6 @@ const requiredBoundaries = [
   ['pages/xa-phuong/[id].vue', 'ward-entity-card-consumer', 'ai-generated'],
   ['components/NearbyEntities.vue', 'nearby-delegated', 'ai-generated'],
   ['components/SmartRecommendations.vue', 'smart-delegated', 'ai-generated'],
-  ['components/AIRecommendations.vue', 'ai-delegated', 'ai-generated'],
   ['composables/useFavorites.ts', 'favorite-adapter', 'ai-generated'],
   ['composables/useRecentlyViewed.ts', 'recent-adapter', 'ai-generated'],
   ['composables/useContextualRecommendations.ts', 'context-adapter', 'ai-generated'],
