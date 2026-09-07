@@ -10,6 +10,30 @@
       :stats="communityStats"
     />
 
+    <!-- AEO Plaque: Community Co-Creation & Responsible Storytelling -->
+    <CatalogAeoPlaque
+      title="Diễn Đàn Đồng Sáng Tạo &amp; Lan Tỏa Văn Hóa Bản Địa"
+      kicker="Góc nhìn cộng đồng · Trải nghiệm thực địa từ người bản xứ"
+      accent="river"
+      icon="users"
+      :entries="[
+        {
+          heading: 'Không Gian Chia Sẻ Thực Chất &amp; Khách Quan',
+          text: 'Cộng đồng du khách và người dân cùng ghi nhận những góc quán mộc mạc, con đò quen và nếp sống hào sảng.',
+        },
+        {
+          heading: 'Quy Chuẩn Gắn Thẻ &amp; Xác Thực Địa Điểm',
+          text: 'Sử dụng ký tự @ để liên kết chính xác địa chỉ danh thắng, nhà vườn sinh thái hoặc nghệ nhân làng nghề trong tỉnh.',
+        },
+        {
+          heading: 'Tôn Trọng Sự Thật &amp; Gìn Giữ Cảnh Quan Bản Địa',
+          text: 'Khuyến khích các đánh giá trung thực, văn minh, bảo vệ môi trường và tôn vinh phong tục tập quán truyền thống.',
+        },
+      ]"
+      cta-to="/huong-dan-thanh-vien"
+      cta-label="Quy tắc ứng xử &amp; hướng dẫn cộng đồng"
+    />
+
     <div class="threads-layout">
       <div class="threads-feed">
         <h2 class="sr-only">Bảng tin cộng đồng</h2>
@@ -1044,6 +1068,7 @@ useHead({
       name: 'Cộng đồng vinhlong360',
       description: 'Bảng tin cộng đồng chia sẻ trải nghiệm du lịch, đánh giá và báo cáo dữ liệu cho tỉnh Vĩnh Long hợp nhất (3 vùng trước 7-2025).',
       url: canonicalUrl('/cong-dong'),
+      speakable: buildSpeakableSpecification(['h1', '.threads-layout h2', '.catalog-aeo-plaque__title', '.catalog-aeo-plaque__dek']),
     }),
   }],
 })

@@ -133,6 +133,30 @@
             <IconLine name="chevron-right" class="insight-chevron" aria-hidden="true" />
           </NuxtLink>
         </div>
+
+        <!-- AEO Plaque: Member Passport & Local Contributor Digest -->
+        <CatalogAeoPlaque
+          title="Sổ Hành Trình Thành Viên &amp; Đóng Góp Bản Địa"
+          kicker="Góc nhìn cộng đồng · Dấu ấn thực địa"
+          accent="amber"
+          icon="award"
+          :entries="[
+            {
+              heading: 'Hồ Sơ Xác Thực &amp; Dấu Ấn Đóng Góp',
+              text: 'Ghi nhận minh bạch quá trình trải nghiệm thực tế qua các bài viết, đánh giá địa điểm và bộ sưu tập được chia sẻ.',
+            },
+            {
+              heading: 'Hệ Thống Cấp Bậc &amp; Điểm Danh Tiếng',
+              text: 'Tích lũy điểm uy tín theo quy chuẩn cộng đồng VinhLong360, vinh danh những người đồng hành tâm huyết.',
+            },
+            {
+              heading: 'Kết Nối Du Khách &amp; Cư Dân Địa Phương',
+              text: 'Theo dõi để cập nhật các gợi ý du lịch mới nhất và tham gia thảo luận các cung đường miệt vườn phù sa.',
+            },
+          ]"
+          cta-to="/bang-xep-hang"
+          cta-label="Xem bảng vinh danh thành viên tích cực"
+        />
       </div>
 
       <div v-if="isSelf && profileCompletion < 100" class="profile-completion">
@@ -1028,6 +1052,45 @@ useSeoMeta({
   ogTitle: () => `${profile.value?.display_name || 'Người dùng'} — vinhlong360`,
   ogDescription: () => `Trang cá nhân của ${profile.value?.display_name || 'thành viên'} trên cộng đồng vinhlong360.`,
   ogImage: () => profileOgImage([profile.value?.cover_url || profile.value?.avatar].filter(Boolean) as string[]),
+})
+
+const userProfileSchema = computed(() => {
+  if (!profile.value) return null
+  const p = profile.value
+  const profileKey = p.username || p.id || route.params.id
+  const pageUrl = canonicalUrl(userPath(profileKey))
+  return buildUnifiedSchemaGraph([
+    buildWebSiteSchema(),
+    buildOrganizationSchema(),
+    {
+      '@type': 'ProfilePage',
+      '@id': `${pageUrl}#profile`,
+      url: pageUrl,
+      name: `${p.display_name || 'Người dùng'} — vinhlong360`,
+      description: p.bio || `Trang cá nhân của ${p.display_name || 'thành viên'} trên cộng đồng vinhlong360.`,
+      mainEntity: {
+        '@type': 'Person',
+        '@id': `${pageUrl}#person`,
+        name: p.display_name || 'Người dùng',
+        ...(p.bio ? { description: p.bio } : {}),
+        ...(p.avatar ? { image: p.avatar } : {}),
+        ...(p.reputation?.level_label ? { jobTitle: p.reputation.level_label } : {}),
+      },
+      speakable: buildSpeakableSpecification(['.profile-name', '.profile-bio', '.profile-eyebrow', '.catalog-aeo-plaque__title', '.catalog-aeo-plaque__dek']),
+    },
+  ])
+})
+
+useHead(() => {
+  const profileKey = profile.value?.username || profile.value?.id || route.params.id
+  const pageUrl = canonicalUrl(userPath(profileKey))
+  return {
+    link: [{ rel: 'canonical', href: pageUrl }],
+    script: computed(() => {
+      const s = userProfileSchema.value
+      return s ? [{ type: 'application/ld+json', innerHTML: safeJsonLd(s) }] : []
+    }).value,
+  }
 })
 </script>
 

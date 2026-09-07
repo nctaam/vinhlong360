@@ -552,7 +552,7 @@ export function buildPostDetailSchemaGraph(options: PostDetailSchemaOptions): Re
     isPartOf: { '@id': `${SITE_URL}/#website` },
     breadcrumb: { '@id': `${postUrl}#breadcrumb` },
     mainEntity: { '@id': `${postUrl}#post` },
-    speakable: buildSpeakableSpecification(['.thread-detail', 'h1', '.thread-comments']),
+    speakable: buildSpeakableSpecification(['.thread-detail', 'h1', '.thread-comments', '.catalog-aeo-plaque__title', '.catalog-aeo-plaque__dek']),
     publisher: { '@id': `${SITE_URL}/#organization` },
   }
 
