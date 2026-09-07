@@ -1823,3 +1823,115 @@ export function buildOcopLedgerSchemaGraph(options: OcopLedgerSchemaOptions = {}
     faqNode,
   ])
 }
+
+export interface ProductCatalogSchemaOptions {
+  items?: Array<{
+    id: string | number
+    name: string
+    summary?: string
+    ocop_stars?: number
+    category?: string
+  }>
+  totalCount?: number
+  inSeasonCount?: number
+  currentMonth?: number
+  canonicalUrl?: string
+  faqs?: Array<{ q: string; a: string }>
+}
+
+export function buildProductCatalogSchemaGraph(options: ProductCatalogSchemaOptions = {}): Record<string, any> {
+  const pageUrl = options.canonicalUrl || canonicalUrl('/san-pham')
+  const total = options.totalCount ?? (options.items?.length || 0)
+  const month = options.currentMonth || new Date().getMonth() + 1
+  const title = `Đặc sản & Sản phẩm Vĩnh Long — Chợ phiên tháng ${month} đất phù sa`
+  const desc = 'Trái cây nhiệt đới tươi ngon chính vụ, nông sản thượng hạng, đặc sản OCOP và quà quê bản địa tỉnh Vĩnh Long.'
+
+  const webpageNode = {
+    '@type': 'CollectionPage',
+    '@id': `${pageUrl}#collection`,
+    url: pageUrl,
+    name: `${title} — vinhlong360`,
+    description: desc,
+    inLanguage: 'vi-VN',
+    isPartOf: { '@id': `${SITE_URL}/#website` },
+    about: {
+      '@type': 'Thing',
+      name: 'Đặc sản và Sản phẩm địa phương Vĩnh Long',
+      description: 'Trái cây nhiệt đới, nông sản chất lượng cao, sản phẩm OCOP và làng nghề truyền thống Vĩnh Long.',
+    },
+    speakable: buildSpeakableSpecification([
+      '.catalog-hero h1',
+      '.market-kicker',
+      '.market-dek',
+      '.seasonal-banner-title',
+      '.catalog-aeo-plaque__title',
+      '.catalog-aeo-plaque__dek',
+    ]),
+  }
+
+  const breadcrumbNode = {
+    '@type': 'BreadcrumbList',
+    '@id': `${pageUrl}#breadcrumb`,
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'Trang chủ', item: `${SITE_URL}/` },
+      { '@type': 'ListItem', position: 2, name: 'Sản phẩm', item: pageUrl },
+    ],
+  }
+
+  const itemListElements = (options.items || []).slice(0, 30).map((e, index) => {
+    const itemUrl = canonicalUrl(entityPath(e.id))
+    const itemNode: Record<string, any> = {
+      '@type': 'Product',
+      '@id': `${itemUrl}#product`,
+      name: e.name,
+      description: e.summary || e.name,
+      url: itemUrl,
+      category: e.category || 'Nông sản đặc sản Vĩnh Long',
+    }
+    if (e.ocop_stars) {
+      itemNode.award = `Chứng nhận OCOP ${e.ocop_stars} sao`
+    }
+    return {
+      '@type': 'ListItem',
+      position: index + 1,
+      item: itemNode,
+    }
+  })
+
+  const itemListNode = {
+    '@type': 'ItemList',
+    '@id': `${pageUrl}#items`,
+    name: `Danh mục đặc sản Vĩnh Long phiên chợ tháng ${month}`,
+    description: 'Sản phẩm nông nghiệp và đặc sản địa phương đang chính vụ.',
+    numberOfItems: total,
+    itemListElement: itemListElements,
+  }
+
+  const defaultFaqs = [
+    {
+      q: 'Vĩnh Long có những loại đặc sản nào nổi tiếng nhất để mua làm quà?',
+      a: 'Các đặc sản nức tiếng gồm bưởi năm roi Bình Minh, khoai lang Bình Tân, sầu riêng Ri6, bánh tráng cù lao Mây, cam sành Tam Bình và các sản phẩm thủ công gốm đỏ Mang Thít.',
+    },
+    {
+      q: 'Làm thế nào để chọn mua được trái cây và đặc sản Vĩnh Long đúng nguồn gốc?',
+      a: 'Du khách nên ghé trực tiếp các nhà vườn tại cù lao An Bình, các hợp tác xã đạt chứng nhận OCOP hoặc các điểm trưng bày có tem truy xuất nguồn gốc rõ ràng.',
+    },
+    {
+      q: 'Các cơ sở sản xuất tại Vĩnh Long có hỗ trợ đóng gói trái cây gửi đi xa không?',
+      a: 'Nhiều nhà vườn và cơ sở chế biến hỗ trợ đóng thùng chống sốc cho trái cây tươi, hút chân không cho bánh tráng và nông sản khô để du khách tiện mang theo đường dài.',
+    },
+  ]
+
+  const faqs = options.faqs && options.faqs.length > 0 ? options.faqs : defaultFaqs
+  const faqNode = buildFaqPageSchema(faqs, `${pageUrl}#faq`)
+
+  return buildUnifiedSchemaGraph([
+    buildWebSiteSchema(),
+    buildOrganizationSchema(),
+    webpageNode,
+    breadcrumbNode,
+    itemListNode,
+    faqNode,
+  ])
+}
+

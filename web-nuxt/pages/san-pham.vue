@@ -364,68 +364,26 @@ useSeoMeta({
 
 useHead(() => {
   const pageUrl = canonicalUrl('/san-pham')
-  const graphNodes: any[] = [
-    buildWebSiteSchema(),
-    buildOrganizationSchema(),
-    {
-      '@type': 'CollectionPage',
-      '@id': `${pageUrl}#collection`,
-      name: 'Sản phẩm địa phương Vĩnh Long',
-      description: 'Đặc sản & sản phẩm OCOP Vĩnh Long theo mùa.',
-      url: pageUrl,
-      numberOfItems: allEntities.value.length,
-      isPartOf: { '@id': `${SITE_URL}/#website` },
-      about: {
-        '@type': 'Thing',
-        name: 'Đặc sản và Sản phẩm địa phương Vĩnh Long',
-        description: 'Trái cây nhiệt đới, nông sản chất lượng cao, sản phẩm OCOP và làng nghề truyền thống Vĩnh Long.',
-      },
-      speakable: buildSpeakableSpecification(['.catalog-hero h1', '.catalog-lead', '.seasonal-banner-lead', '.catalog-aeo-plaque__title', '.catalog-aeo-plaque__dek']),
-    },
-  ]
-
-  if (filtered.value?.length) {
-    graphNodes.push({
-      '@type': 'ItemList',
-      '@id': `${pageUrl}#items`,
-      name: 'Sản phẩm địa phương Vĩnh Long',
-      description: 'Đặc sản và sản phẩm OCOP Vĩnh Long theo mùa.',
-      numberOfItems: filtered.value.length,
-      itemListElement: filtered.value.slice(0, 30).map((e: Entity, i: number) => ({
-        '@type': 'ListItem',
-        position: i + 1,
-        name: e.name,
-        url: `${SITE_URL}${entityPath(e.id)}`,
-      })),
-    })
-  }
-
-  const faqItems: FaqItem[] = [
-    {
-      q: 'Vĩnh Long có những loại đặc sản nào nổi tiếng nhất để mua làm quà?',
-      a: 'Các đặc sản nức tiếng gồm bưởi năm roi Bình Minh, khoai lang Bình Tân, sầu riêng Ri6, bánh tráng cù lao Mây, cam sành Tam Bình và các sản phẩm thủ công gốm đỏ Mang Thít.',
-    },
-    {
-      q: 'Làm thế nào để chọn mua được trái cây và đặc sản Vĩnh Long đúng nguồn gốc?',
-      a: 'Du khách nên ghé trực tiếp các nhà vườn tại cù lao An Bình, các hợp tác xã đạt chứng nhận OCOP hoặc các điểm trưng bày có tem truy xuất nguồn gốc rõ ràng.',
-    },
-    {
-      q: 'Các cơ sở sản xuất tại Vĩnh Long có hỗ trợ đóng gói trái cây gửi đi xa không?',
-      a: 'Nhiều nhà vườn và cơ sở chế biến hỗ trợ đóng thùng chống sốc cho trái cây tươi, hút chân không cho bánh tráng và nông sản khô để du khách tiện mang theo đường dài.',
-    },
-  ]
-  const faqNode = buildFaqPageSchema(faqItems, `${pageUrl}#faq`)
-  if (faqNode) graphNodes.push(faqNode)
+  const schemaGraph = buildProductCatalogSchemaGraph({
+    items: filtered.value.map((e: Entity) => ({
+      id: e.id,
+      name: e.name,
+      summary: e.summary,
+      category: e.attributes?.category,
+      ocop_stars: (e.attributes as any)?.ocop_stars,
+    })),
+    totalCount: allEntities.value.length,
+    inSeasonCount: inSeasonCount.value,
+    currentMonth: currentMonth,
+    canonicalUrl: pageUrl,
+  })
 
   return {
     link: [{ rel: 'canonical', href: pageUrl }],
     script: [
       {
         type: 'application/ld+json',
-        innerHTML: safeJsonLd({
-          '@context': 'https://schema.org',
-          '@graph': graphNodes,
-        }),
+        innerHTML: safeJsonLd(schemaGraph),
       },
     ],
   }
@@ -447,7 +405,7 @@ useHead(() => {
   font-weight: var(--weight-semibold);
   color: var(--accent-fg, var(--muted));
   padding: var(--space-1) var(--space-3);
-  border-radius: var(--radius-full);
+  border-radius: var(--radius-pill, 999px);
   background: rgba(var(--accent-rgb), .12);
   white-space: nowrap;
 }
@@ -537,7 +495,7 @@ useHead(() => {
   transform: translateY(-50%);
   width: 4px;
   height: 1.6em;
-  border-radius: var(--radius-full);
+  border-radius: var(--radius-pill, 999px);
   background: linear-gradient(180deg, var(--river-600) 0%, var(--amber-600) 52%, var(--clay-600) 100%);
 }
 .dark .market-stats::before { background: linear-gradient(180deg, var(--river-legacy-dark) 0%, var(--amber-500) 52%, var(--clay-400) 100%); }
@@ -570,13 +528,14 @@ useHead(() => {
   color: var(--accent-dark, var(--amber-600));
   background: rgba(var(--accent-rgb), .1);
   border: 1px solid rgba(var(--accent-rgb), .4);
-  border-radius: var(--radius-full);
-  padding: var(--space-05) var(--space-3);
+  border-radius: var(--radius-pill, 999px);
+  padding: var(--space-1) var(--space-3);
+  min-height: 44px;
   cursor: pointer;
-  transition: background .2s var(--ease-out), transform .2s var(--ease-spring);
+  transition: background .25s var(--ease-out), transform .25s cubic-bezier(0.16, 1, 0.3, 1), box-shadow .25s var(--ease-out);
 }
-.season-reset-chip:hover { background: rgba(var(--accent-rgb), .18); }
-.season-reset-chip:active { transform: scale(.94); }
+.season-reset-chip:hover { background: rgba(var(--accent-rgb), .18); box-shadow: var(--shadow-xs); transform: translateY(-1px); }
+.season-reset-chip:active { transform: scale(.95); }
 .dark .season-reset-chip { color: var(--amber-500); background: rgba(var(--accent-rgb), .14); border-color: rgba(var(--accent-rgb), .5); }
 
 /* OCOP teaser strip — slim signpost outward to /ocop (not a competing
@@ -592,7 +551,7 @@ useHead(() => {
   background: linear-gradient(90deg, rgba(var(--secondary-rgb), .06), transparent);
   text-decoration: none;
   color: var(--ink);
-  transition: border-color .25s var(--ease-out), box-shadow .25s var(--ease-out), transform .2s var(--ease-out-expo);
+  transition: border-color .25s var(--ease-out), box-shadow .25s var(--ease-out), transform .25s cubic-bezier(0.16, 1, 0.3, 1);
 }
 .ocop-teaser-link:hover {
   border-color: rgba(var(--secondary-rgb), .5);
