@@ -122,6 +122,7 @@ describe('SEO / AIO / AEO / GEO Architecture Quality Gate', () => {
       expect(detail).toContain('buildEntityDetailSchemaGraph')
       expect(detail).toContain('<DetailCoverLightbox')
       expect(detail).toContain('<DetailActionSuite')
+      expect(detail).toContain('<DetailAeoSummary')
       const lines = detail.split('\n').length
       expect(lines).toBeLessThan(1200)
 
@@ -129,6 +130,8 @@ describe('SEO / AIO / AEO / GEO Architecture Quality Gate', () => {
       expect(seoHelpers).toContain('buildEntityDetailSchemaGraph')
       expect(seoHelpers).toContain('buildUnifiedSchemaGraph')
       expect(seoHelpers).toContain('buildSpeakableSpecification')
+      expect(seoHelpers).toContain('.detail-aeo-summary__highlight')
+      expect(seoHelpers).toContain('.detail-aeo-summary__tip')
       expect(seoHelpers).toContain('buildFaqPageSchema')
       expect(seoHelpers).toContain("isPartOf: { '@id': `${SITE_URL}/#website` }")
       expect(seoHelpers).toContain("publisher: { '@id': `${SITE_URL}/#organization` }")

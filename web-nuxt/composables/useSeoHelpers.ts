@@ -373,7 +373,7 @@ export function buildEntityDetailSchemaGraph(options: EntityDetailSchemaOptions)
     isPartOf: { '@id': `${SITE_URL}/#website` },
     breadcrumb: { '@id': `${entityUrl}#breadcrumb` },
     mainEntity: { '@id': `${entityUrl}#entity` },
-    speakable: buildSpeakableSpecification(['.lead', '.highlights', 'h1', '.desc-heading']),
+    speakable: buildSpeakableSpecification(['.lead', '.highlights', 'h1', '.desc-heading', '.detail-aeo-summary__highlight', '.detail-aeo-summary__tip']),
     publisher: { '@id': `${SITE_URL}/#organization` },
   }
 

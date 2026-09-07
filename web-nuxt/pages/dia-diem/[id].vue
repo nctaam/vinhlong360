@@ -16,8 +16,7 @@
       <ol>
         <li><NuxtLink to="/">Trang chủ</NuxtLink></li>
         <li><NuxtLink :to="typeBreadcrumbUrl">{{ typeMeta.label }}</NuxtLink></li>
-        <!-- §1.6: mắt xích giữa là ĐƠN VỊ HÀNH CHÍNH (xã/phường theo placeId),
-             không phải `area` (vùng cũ ben-tre/tra-vinh/vinh-long — chỉ để tra cứu dữ liệu). -->
+        <!-- Đơn vị hành chính cấp xã/phường -->
         <li v-if="adminUnitBreadcrumb">
           <NuxtLink v-if="adminUnitBreadcrumb.to" :to="adminUnitBreadcrumb.to">{{ adminUnitBreadcrumb.label }}</NuxtLink>
           <template v-else>{{ adminUnitBreadcrumb.label }}</template>
@@ -57,8 +56,7 @@
         <h1>{{ entity.name }}</h1>
         <p v-if="heroHook" class="dc-hook">{{ heroHook }}</p>
         <p v-if="entity.place_name" class="dc-place"><NuxtLink v-if="entity.placeId" :to="`/xa-phuong/${entity.placeId}`" class="dc-place-link">{{ entity.place_name }}</NuxtLink><template v-else>{{ entity.place_name }}</template></p>
-        <!-- declutter-3 T17 (B5d): Save/Share dời về sidebar .aside-actions (additive-first,
-             verify xong mới xoá ở đây) — hero còn tối đa 3 nút hành-vi-chuyến-đi -->
+        <!-- Hero action suite -->
         <DetailActionSuite :entity-id="entity.id" :entity-type="entity.type" />
       </div>
       <DetailCoverLightbox
@@ -180,11 +178,7 @@
           <div class="ocop-stars">
             <IconLine v-for="s in ocopStars" :key="s" class="ocop-star" name="star" aria-hidden="true" />
           </div>
-          <!-- GIỮ nguyên tiền tố CMS và chỉ nối HẠNG vào sau. Bản nháp đổi tiền
-               tố thành 'Sản phẩm' rồi nối `ocopBadge` (đã chứa chữ OCOP) — nhưng
-               `ss()` đọc site settings, nên nếu CMS ghi đè khoá này thành "Sản
-               phẩm OCOP" thì ra "Sản phẩm OCOP OCOP 4 sao": đúng lỗi nhân đôi
-               đang đi sửa. Nối hạng thì đúng ở CẢ hai trường hợp. -->
+          <!-- Nối hạng sao vào tiền tố CMS -->
           <strong>{{ ss('labels.detail.ocop_product_prefix', 'Sản phẩm OCOP') }}<span v-if="ocopStars"> {{ ocopStars }} sao</span></strong>
           <small>{{ ss('labels.detail.ocop_program', 'Chương trình Mỗi xã Một sản phẩm') }}</small>
         </div>
@@ -311,11 +305,9 @@
         <!-- Contextual next steps -->
         <div class="next-steps">
           <h2 class="ns-title sediment-head">{{ ss('labels.detail.next_steps_title', 'Bước tiếp theo') }}</h2>
-          <!-- Save affordance lives in the hero (SaveButton) — avoid a second, divergent toggle here.
-               Next step is the active-planning CTA, labeled to distinguish it from "save for later". -->
+          <!-- Active planning CTA -->
         <NuxtLink :to="planAddUrl" no-prefetch class="ns-action"><IconLine name="clipboard-list" aria-hidden="true" /> {{ ss('labels.detail.next_add_itinerary', 'Thêm vào lịch trình') }}</NuxtLink>
-          <!-- declutter-1 T5: buy-contact dời từ contact-row (đã bỏ — desktop bị CSS ẩn,
-               mobile ContactWidget che); ContactWidget không có kênh hỏi-mua nên giữ ở đây. -->
+          <!-- Kênh mua trực tiếp -->
           <a v-if="buyContactUrl" :href="buyContactUrl" target="_blank" rel="nofollow noopener" class="ns-action" data-contact-action="website" :aria-label="`Hỏi mua ${entity.name}`" @click="trackContact('website')"><IconLine name="gift" aria-hidden="true" /> {{ ss('labels.detail.cta_buy_contact', 'Hỏi mua trực tiếp') }}</a>
           <NuxtLink v-if="entity.type !== 'accommodation'" to="/luu-tru" class="ns-action"><IconLine name="home" aria-hidden="true" /> {{ ss('labels.detail.next_find_stay', 'Tìm chỗ ở gần đây') }}</NuxtLink>
         <NuxtLink :to="mapUrl" no-prefetch class="ns-action"><IconLine name="map" aria-hidden="true" /> {{ ss('labels.detail.next_view_map', 'Xem trên bản đồ') }}</NuxtLink>
@@ -340,6 +332,9 @@
         <blockquote v-if="entity.attributes?.highlight" class="entity-highlight">
           <p>{{ entity.attributes.highlight }}</p>
         </blockquote>
+
+        <!-- Hộp Tóm tắt Thực địa 30s & AEO -->
+        <DetailAeoSummary :entity="entity" :accent="detailMaterialAccent" />
 
         <!-- Mô tả chi tiết -->
         <div v-if="descriptionSections.length" class="entity-description" :class="{ 'rich-desc': hasRichDescription }">
