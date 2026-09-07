@@ -40,6 +40,30 @@
       </div>
     </section>
 
+    <!-- AEO Plaque: River Ecology Routes & Land Road Adventures -->
+    <CatalogAeoPlaque
+      title="Cẩm Nang Tuyến Đường Khám Phá &amp; Hành Trình Sông Nước"
+      kicker="Góc nhìn bản địa · Kết nối liên vùng &amp; Nhịp sống bến phà"
+      accent="leaf"
+      icon="route"
+      :entries="[
+        {
+          heading: 'Cung đường Cù lao An Bình &amp; Đò ngang sông Cổ Chiên',
+          text: 'Lộ trình len lỏi qua các liếp vườn cây trái trĩu cành, trải nghiệm qua phà An Bình ngắm toàn cảnh sông nước mênh mông.',
+        },
+        {
+          heading: 'Cung đường Di sản Gốm đỏ Mang Thít (ĐT 902)',
+          text: 'Chạy xe dọc kênh Thầy Cai chiêm ngưỡng hàng ngàn mái lò nung gạch đất nung rêu phong cổ kính độc bản phương Nam.',
+        },
+        {
+          heading: 'Hành trình Liên Vùng Ba Con Sông (Tiền – Cổ Chiên – Hậu)',
+          text: 'Kết nối các trục lộ huyết mạch QL53, QL57 qua Chợ Lách và Trà Vinh, ngắm những rặng bần xanh ngắt và cồn bãi màu mỡ.',
+        },
+      ]"
+      cta-to="/tao-lich-trinh"
+      cta-label="Lập lịch trình thông minh theo tuyến"
+    />
+
     <div class="block">
       <div class="controls">
         <p class="control-label">Khu vực</p>
@@ -268,7 +292,7 @@ useHead(() => {
         name: 'Lộ trình du lịch Vĩnh Long',
         description: 'Tuyến đường gợi ý khám phá miệt vườn, di sản gốm đỏ Mang Thít và cù lao sông Tiền.',
       },
-      speakable: buildSpeakableSpecification(['.hero-lede', 'h1', '.route-header', '.route-stops-head']),
+      speakable: buildSpeakableSpecification(['.hero-lede', 'h1', '.route-header', '.route-stops-head', '.catalog-aeo-plaque__title', '.catalog-aeo-plaque__dek']),
     },
     {
       '@type': 'ItemList',

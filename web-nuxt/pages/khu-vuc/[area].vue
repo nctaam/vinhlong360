@@ -34,6 +34,17 @@
     <!-- Spotlight -->
     <CatalogSpotlight :items="entities" />
 
+    <!-- AEO Plaque: District Terroir & Cultural Geography Portfolio -->
+    <CatalogAeoPlaque
+      :title="areaAeoDigest.title"
+      :kicker="areaAeoDigest.kicker"
+      :accent="areaAeoDigest.accent"
+      :icon="areaAeoDigest.icon"
+      :entries="areaAeoDigest.entries"
+      :cta-to="areaAeoDigest.ctaTo"
+      :cta-label="areaAeoDigest.ctaLabel"
+    />
+
     <!-- Interstitial -->
     <CatalogInterstitial
       v-if="typeStats.length"
@@ -200,6 +211,81 @@ const AREA_EDITORIAL: Record<string, { title: string; paragraphs: string[] }> = 
 }
 const areaEditorial = computed(() => AREA_EDITORIAL[areaKey])
 
+const areaAeoDigest = computed(() => {
+  if (areaKey === 'ben-tre') {
+    return {
+      title: 'Đặc Trưng Thổ Nhưỡng & Văn Hóa Địa Hạt Bến Tre (Cũ)',
+      kicker: 'Góc nhìn bản địa · Xứ sở dừa xiêm & Vườn ươm cây giống',
+      accent: 'leaf' as const,
+      icon: 'leaf',
+      entries: [
+        {
+          heading: 'Rừng dừa nước & Kênh rạch châu thổ',
+          text: 'Hệ sinh thái xanh mát trải dài với hàng chục giống dừa bản địa, kẹo dừa gia truyền và đồ thủ công mỹ nghệ gáo dừa.',
+        },
+        {
+          heading: 'Chợ Lách — Thủ phủ Hoa kiểng Cái Mơn',
+          text: 'Nơi khởi nguồn hàng triệu gốc cây giống ăn quả và hoa kiểng cung ứng cho cả nước mỗi dịp Tết đến xuân về.',
+        },
+        {
+          heading: 'Cồn bãi ven sông Hàm Luông',
+          text: 'Trải nghiệm du lịch sinh thái sông nước miệt vườn nguyên sơ, lưu trú homestay đậm chất hào sảng Nam Bộ.',
+        },
+      ],
+      ctaTo: '/kham-pha/thien-nhien',
+      ctaLabel: 'Khám phá sinh thái sông nước',
+    }
+  }
+
+  if (areaKey === 'tra-vinh') {
+    return {
+      title: 'Đặc Trưng Thổ Nhưỡng & Văn Hóa Địa Hạt Trà Vinh (Cũ)',
+      kicker: 'Góc nhìn bản địa · Bản sắc Khmer & Hệ sinh thái ven biển',
+      accent: 'clay' as const,
+      icon: 'landmark',
+      entries: [
+        {
+          heading: 'Quần thể 140+ Chùa Khmer Cổ kính',
+          text: 'Kiến trúc Angkor rực rỡ, lễ hội Ok Om Bok và nghệ thuật múa Chhay-dâm đậm đà bản sắc tâm linh phương Nam.',
+        },
+        {
+          heading: 'Ao Bà Om & Danh thắng Cây cổ thụ',
+          text: 'Hồ nước ngọt huyền thoại được bao bọc bởi hàng cây sao, cây dầu cổ thụ rễ trồi kỳ vĩ hàng trăm năm tuổi.',
+        },
+        {
+          heading: 'Dừa sáp Cầu Kè & Biển Ba Động',
+          text: 'Đặc sản dừa sáp sánh đặc quý hiếm độc nhất vô nhị cùng bờ biển phù sa lộng gió biển Đông hoang sơ.',
+        },
+      ],
+      ctaTo: '/kham-pha/lang-nghe',
+      ctaLabel: 'Khám phá đặc sản & làng nghề',
+    }
+  }
+
+  return {
+    title: 'Đặc Trưng Thổ Nhưỡng & Văn Hóa Địa Hạt Vĩnh Long',
+    kicker: 'Góc nhìn bản địa · Miệt vườn châu thổ & Lò gạch gốm đỏ',
+    accent: 'river' as const,
+    icon: 'compass',
+    entries: [
+      {
+        heading: 'Cù lao An Bình & Bình Hòa Phước',
+        text: 'Vương quốc chôm chôm, nhãn xuồng, sầu riêng và hệ sinh thái homestay miệt vườn sông Cổ Chiên trứ danh.',
+      },
+      {
+        heading: 'Di sản Đương đại Mang Thít',
+        text: 'Hàng ngàn lò gạch gốm đỏ rực rỡ dọc kênh Thầy Cai và sông Cổ Chiên với bề dày kỹ nghệ hơn một thế kỷ.',
+      },
+      {
+        heading: 'Đất Danh Nhân & Làng Nghề Bền Bỉ',
+        text: 'Cái nôi văn hóa Long Hồ Dinh với Văn Thánh Miếu 1864, làng bánh tráng Cù lao Mây và tàu hũ ky Mỹ Hòa.',
+      },
+    ],
+    ctaTo: '/kham-pha/van-hoa',
+    ctaLabel: 'Khám phá văn hóa & di tích Vĩnh Long',
+  }
+})
+
 const ADMIN_LEVELS = ['phuong', 'xa', 'tinh']
 const wards = computed(() =>
   (placesData.value || [])
@@ -307,7 +393,7 @@ if (areaMeta) {
         url: pageUrl,
         isPartOf: { '@id': `${SITE_URL}/#website` },
         mainEntity: { '@id': `${pageUrl}#adminarea` },
-        speakable: buildSpeakableSpecification(['.catalog-hero-inner h1', '.catalog-lead', '.area-stats']),
+        speakable: buildSpeakableSpecification(['.catalog-hero-inner h1', '.catalog-lead', '.area-stats', '.catalog-aeo-plaque__title', '.catalog-aeo-plaque__dek']),
       },
     ]
 

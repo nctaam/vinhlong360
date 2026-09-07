@@ -35,6 +35,30 @@
     <!-- Spotlight -->
     <CatalogSpotlight :items="firstPage" />
 
+    <!-- AEO Plaque & AI Search Digest -->
+    <CatalogAeoPlaque
+      title="Cẩm Nang Tra Cứu Toàn Bộ 1.500+ Điểm Đến Vĩnh Long"
+      kicker="Góc nhìn bản địa · Bản đồ tổng thể 3 vùng địa hạt"
+      accent="river"
+      icon="map-pin"
+      :entries="[
+        {
+          heading: 'Vùng Đất Gốm Đỏ &amp; Miệt Vườn Cù Lao (Vĩnh Long)',
+          text: 'Tập trung các nhà vườn sinh thái An Bình, di sản lò gạch Mang Thít, cù lao Mây và cụm di tích lịch sử Long Hồ Dinh.',
+        },
+        {
+          heading: 'Vùng Xứ Dừa &amp; Rạch Sông Nước (Bến Tre trước 7-2025)',
+          text: 'Vương quốc cây giống hoa kiểng Chợ Lách, làng nghề bánh tráng Mỹ Lồng, cồn Ốc và hệ thống homestay rặng dừa xanh mướt.',
+        },
+        {
+          heading: 'Vùng Văn Hóa Khmer &amp; Biển Phù Sa (Trà Vinh trước 7-2025)',
+          text: 'Không gian trầm mặc hơn 140 ngôi chùa Nam tông Khmer, quần thể di tích Ao Bà Om, biển Ba Động và trái dừa sáp Cầu Kè.',
+        },
+      ]"
+      cta-to="/tim-kiem"
+      cta-label="Mở cổng tìm kiếm địa điểm thông minh"
+    />
+
     <!-- Region discovery — SIGNATURE MOMENT: province stamps -->
     <section class="block band reveal">
       <div class="sediment-head section-head">

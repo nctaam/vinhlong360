@@ -1073,7 +1073,7 @@ export function buildCatalogDirectorySchemaGraph(options: CatalogDirectorySchema
       '@type': 'Thing',
       name: 'Địa điểm du lịch và đặc sản tỉnh Vĩnh Long',
     },
-    speakable: buildSpeakableSpecification(['.catalog-hero-inner h1', '.catalog-hero-inner p', '.almanac-stats']),
+    speakable: buildSpeakableSpecification(['.catalog-hero-inner h1', '.catalog-hero-inner p', '.almanac-stats', '.catalog-aeo-plaque__title', '.catalog-aeo-plaque__dek']),
   }
 
   const breadcrumbNode = {
