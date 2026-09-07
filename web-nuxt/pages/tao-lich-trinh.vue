@@ -168,6 +168,7 @@
         </div>
 
         <div v-else class="stop-list">
+          <PlannerRiverTransitWarning :stops="stops" />
           <template v-for="(stop, idx) in stops" :key="stop.id + '-' + idx">
             <div
               class="stop-item"
@@ -281,6 +282,14 @@
               {{ saving ? 'Đang lưu…' : 'Lưu lịch trình' }}
             </button>
           </template>
+          <button
+            v-if="stops.length"
+            type="button"
+            class="btn btn-outline"
+            @click="showPassModal = true"
+          >
+            <IconLine name="ticket" aria-hidden="true" /> Thẻ thực địa
+          </button>
           <button type="button" class="btn btn-ghost" @click="clearPlan" :disabled="!stops.length || saving">Xóa tất cả</button>
         </ActionDock>
 
@@ -294,6 +303,12 @@
           @publish="publishPlan"
           @share="sharePlan"
           @delete="deletePlan"
+        />
+
+        <PlannerMobilePassModal
+          v-model:open="showPassModal"
+          :title="planTitle"
+          :stops="stops"
         />
       </div>
     </div>
@@ -339,6 +354,8 @@ import PlannerFrictionNotice from '~/components/planner/PlannerFrictionNotice.vu
 import PlannerOptimizationPreview from '~/components/planner/PlannerOptimizationPreview.vue'
 import PlannerSummary from '~/components/planner/PlannerSummary.vue'
 import ActionDock from '~/components/public/ActionDock.vue'
+import PlannerRiverTransitWarning from '~/components/planner/PlannerRiverTransitWarning.vue'
+import PlannerMobilePassModal from '~/components/planner/PlannerMobilePassModal.vue'
 import {
   type PlanStop,
   type SavedPlan,
@@ -362,6 +379,7 @@ import {
 
 const route = useRoute()
 const router = useRouter()
+const showPassModal = ref(false)
 const runtimeConfig = useRuntimeConfig()
 const itineraryScheduleV2 = runtimeConfig.public.itineraryScheduleV2 === true
 
@@ -1306,19 +1324,7 @@ await plannerAsyncData
    .dateline-eyebrow is defined locally (not global — same convention as
    tim-kiem.vue/ban-do.vue's scoped copies) per this unit's edit boundary. */
 .planner-hero-inner { display: flex; flex-direction: column; align-items: flex-start; }
-.planner-hero-inner .dateline-eyebrow {
-  display: block;
-  font-family: var(--font-sans);
-  font-size: var(--text-2xs);
-  font-weight: var(--weight-bold);
-  text-transform: uppercase;
-  letter-spacing: var(--tracking-caps);
-  color: var(--muted);
-  margin: 0 0 var(--space-3);
-  padding-bottom: var(--space-2);
-  border-bottom: .5px solid var(--line);
-  width: 100%;
-}
+.planner-hero-inner .dateline-eyebrow { display: block; font-family: var(--font-sans); font-size: var(--text-2xs); font-weight: var(--weight-bold); text-transform: uppercase; letter-spacing: var(--tracking-caps); color: var(--muted); margin: 0 0 var(--space-3); padding-bottom: var(--space-2); border-bottom: .5px solid var(--line); width: 100%; }
 .dark .planner-hero-inner .dateline-eyebrow { border-bottom-color: var(--line); }
 
 /* ── Section heads: WCAG 1.3.1 fix — these were h3.sediment-head with a
@@ -1363,19 +1369,9 @@ await plannerAsyncData
 .picker-empty { text-align: center; padding: var(--space-5); color: var(--muted); font-size: var(--text-sm); }
 .builder-header { display: flex; flex-wrap: wrap; gap: var(--space-3); align-items: center; margin-bottom: var(--space-4); }
 .builder-actions { display: flex; gap: var(--space-2); }
-.stop-item {
-  display: flex; gap: var(--space-3); position: relative; animation: stopIn .3s var(--ease-out) both;
-  transition: opacity .2s var(--ease-out), transform .2s var(--ease-out);
-}
-.stop-item.is-dragging {
-  opacity: .45;
-  transform: scale(.985);
-}
-.stop-item.drag-over .stop-card {
-  border-color: var(--color-action);
-  box-shadow: 0 0 0 2px rgba(var(--color-action-rgb), .25), var(--shadow-sm);
-  background: color-mix(in srgb, var(--color-action) 3%, var(--card));
-}
+.stop-item { display: flex; gap: var(--space-3); position: relative; animation: stopIn .3s var(--ease-out) both; transition: opacity .2s var(--ease-out), transform .2s var(--ease-out); }
+.stop-item.is-dragging { opacity: .45; transform: scale(.985); }
+.stop-item.drag-over .stop-card { border-color: var(--color-action); box-shadow: 0 0 0 2px rgba(var(--color-action-rgb), .25), var(--shadow-sm); background: color-mix(in srgb, var(--color-action) 3%, var(--card)); }
 @keyframes stopIn { from { opacity: 0; transform: translateY(6px); } }
 .stop-num {
   width: 28px; height: 28px; border-radius: 50%;
@@ -1385,12 +1381,7 @@ await plannerAsyncData
   flex-shrink: 0; z-index: 1;
 }
 .stop-connector { position: absolute; left: 13px; top: 28px; bottom: -12px; width: 2px; background: var(--color-brand); opacity: .25; }
-.stop-card {
-  flex: 1; background: var(--card); border: .5px solid var(--line);
-  border-radius: var(--radius-sheet); padding: var(--space-3) var(--space-4);
-  margin-bottom: var(--space-3);
-  transition: border-color .3s var(--ease-out), box-shadow .35s var(--ease-out-expo), transform .35s var(--ease-out-expo);
-}
+.stop-card { flex: 1; background: var(--card); border: .5px solid var(--line); border-radius: var(--radius-sheet); padding: var(--space-3) var(--space-4); margin-bottom: var(--space-3); transition: border-color .3s var(--ease-out), box-shadow .35s var(--ease-out-expo), transform .35s var(--ease-out-expo); }
 .stop-card:hover { border-color: var(--border); box-shadow: var(--shadow-sm); }
 .stop-card:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
 .stop-card-head { display: flex; align-items: center; gap: var(--space-3); }
@@ -1398,38 +1389,10 @@ await plannerAsyncData
 .stop-card-info { flex: 1; min-width: 0; }
 .stop-card-info strong { display: block; font-size: var(--text-sm); }
 .stop-card-info small { color: var(--muted); font-size: var(--text-xs); }
-.stop-access-fact {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--space-1);
-  font-size: var(--text-2xs);
-  color: var(--color-material-river);
-  background: color-mix(in srgb, var(--color-material-river) 10%, transparent);
-  border: 1px solid color-mix(in srgb, var(--color-material-river) 22%, transparent);
-  border-radius: var(--radius-full);
-  padding: 1px var(--space-2);
-  margin-top: var(--space-1);
-  max-width: 100%;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-.stop-access-fact.is-restricted {
-  color: var(--color-warning);
-  background: color-mix(in srgb, var(--color-warning) 12%, transparent);
-  border-color: color-mix(in srgb, var(--color-warning) 30%, transparent);
-  font-weight: var(--weight-semibold);
-}
-.dark .stop-access-fact {
-  color: var(--night-river);
-  background: color-mix(in srgb, var(--night-river) 14%, transparent);
-  border-color: color-mix(in srgb, var(--night-river) 25%, transparent);
-}
-.dark .stop-access-fact.is-restricted {
-  color: var(--night-amber);
-  background: color-mix(in srgb, var(--night-amber) 16%, transparent);
-  border-color: color-mix(in srgb, var(--night-amber) 32%, transparent);
-}
+.stop-access-fact { display: inline-flex; align-items: center; gap: var(--space-1); font-size: var(--text-2xs); color: var(--color-material-river); background: color-mix(in srgb, var(--color-material-river) 10%, transparent); border: 1px solid color-mix(in srgb, var(--color-material-river) 22%, transparent); border-radius: var(--radius-full); padding: 1px var(--space-2); margin-top: var(--space-1); max-width: 100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.stop-access-fact.is-restricted { color: var(--color-warning); background: color-mix(in srgb, var(--color-warning) 12%, transparent); border-color: color-mix(in srgb, var(--color-warning) 30%, transparent); font-weight: var(--weight-semibold); }
+.dark .stop-access-fact { color: var(--night-river); background: color-mix(in srgb, var(--night-river) 14%, transparent); border-color: color-mix(in srgb, var(--night-river) 25%, transparent); }
+.dark .stop-access-fact.is-restricted { color: var(--night-amber); background: color-mix(in srgb, var(--night-amber) 16%, transparent); border-color: color-mix(in srgb, var(--night-amber) 32%, transparent); }
 .scheduled-interval { display: block; margin-top: var(--space-2); color: var(--color-action); font-size: var(--text-xs); font-weight: var(--weight-semibold); }
 .stop-card-actions { display: flex; gap: var(--space-1); }
 .stop-list { margin-bottom: var(--space-4); }
@@ -1450,25 +1413,11 @@ await plannerAsyncData
 .dark .stop-time-input, .dark .stop-note-input { background: var(--bg-alt); border-color: var(--line); color: var(--ink); }
 
 /* ── Premium picker empty state surface ───────────────────── */
-.premium-empty-state {
-  background: radial-gradient(120% 90% at 50% -10%, rgba(var(--color-brand-rgb), .06), transparent 60%), var(--card);
-  border: .5px solid var(--line); border-radius: var(--radius-sheet);
-  padding: var(--space-8) var(--space-4); position: relative; overflow: hidden;
-}
-.premium-empty-state::before {
-  content: ""; position: absolute; inset: auto 0 0 0; height: 90px;
-  opacity: .06; pointer-events: none;
-  background-repeat: no-repeat; background-position: center bottom; background-size: 480px auto;
-  background-image: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22480%22%20height%3D%2290%22%20viewBox%3D%220%200%20480%2090%22%20fill%3D%22none%22%20stroke%3D%22%23586860%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%3E%3Cpath%20d%3D%22M-20%2030%20Q60%2014%20140%2030%20T300%2030%20T460%2030%22%2F%3E%3Cpath%20d%3D%22M-20%2060%20Q60%2044%20140%2060%20T300%2060%20T460%2060%22%2F%3E%3C%2Fsvg%3E");
-}
+.premium-empty-state { background: radial-gradient(120% 90% at 50% -10%, rgba(var(--color-brand-rgb), .06), transparent 60%), var(--card); border: .5px solid var(--line); border-radius: var(--radius-sheet); padding: var(--space-8) var(--space-4); position: relative; overflow: hidden; }
+.premium-empty-state::before { content: ""; position: absolute; inset: auto 0 0 0; height: 90px; opacity: .06; pointer-events: none; background-repeat: no-repeat; background-position: center bottom; background-size: 480px auto; background-image: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22480%22%20height%3D%2290%22%20viewBox%3D%220%200%20480%2090%22%20fill%3D%22none%22%20stroke%3D%22%23586860%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%3E%3Cpath%20d%3D%22M-20%2030%20Q60%2014%20140%2030%20T300%2030%20T460%2030%22%2F%3E%3Cpath%20d%3D%22M-20%2060%20Q60%2044%20140%2060%20T300%2060%20T460%2060%22%2F%3E%3C%2Fsvg%3E"); }
 .premium-empty-state > * { position: relative; z-index: 1; }
-.dark .premium-empty-state {
-  background: radial-gradient(120% 90% at 50% -10%, rgba(var(--color-brand-rgb), .08), transparent 60%), var(--card);
-}
-.dark .premium-empty-state::before {
-  opacity: .07;
-  background-image: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22480%22%20height%3D%2290%22%20viewBox%3D%220%200%20480%2090%22%20fill%3D%22none%22%20stroke%3D%22%23ffffff%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%3E%3Cpath%20d%3D%22M-20%2030%20Q60%2014%20140%2030%20T300%2030%20T460%2030%22%2F%3E%3Cpath%20d%3D%22M-20%2060%20Q60%2044%20140%2060%20T300%2060%20T460%2060%22%2F%3E%3C%2Fsvg%3E");
-}
+.dark .premium-empty-state { background: radial-gradient(120% 90% at 50% -10%, rgba(var(--color-brand-rgb), .08), transparent 60%), var(--card); }
+.dark .premium-empty-state::before { opacity: .07; background-image: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22480%22%20height%3D%2290%22%20viewBox%3D%220%200%20480%2090%22%20fill%3D%22none%22%20stroke%3D%22%23ffffff%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%3E%3Cpath%20d%3D%22M-20%2030%20Q60%2014%20140%2030%20T300%2030%20T460%2030%22%2F%3E%3Cpath%20d%3D%22M-20%2060%20Q60%2044%20140%2060%20T300%2060%20T460%2060%22%2F%3E%3C%2Fsvg%3E"); }
 
 /* ── Picker item: brief highlight when added ──────────────── */
 .picker-item.adding { background: rgba(var(--color-action-rgb), .12); transform: scale(1.02); }
