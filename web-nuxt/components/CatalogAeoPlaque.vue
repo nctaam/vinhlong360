@@ -11,7 +11,13 @@
           <IconLine :name="icon || 'bulb'" />
         </span>
         <div class="catalog-aeo-plaque__kicker-group">
-          <span class="catalog-aeo-plaque__kicker">{{ kicker }}</span>
+          <div class="catalog-aeo-plaque__meta-row">
+            <span class="catalog-aeo-plaque__kicker">{{ kicker }}</span>
+            <span class="catalog-aeo-plaque__stamp" title="Dữ liệu bản địa được đối soát">
+              <IconLine name="shield-check" class="catalog-aeo-plaque__stamp-icon" aria-hidden="true" />
+              <span>Xác thực thực địa</span>
+            </span>
+          </div>
           <h2 :id="titleId" class="catalog-aeo-plaque__title">{{ title }}</h2>
         </div>
       </div>
@@ -73,12 +79,17 @@ const titleId = `catalog-aeo-title-${instanceId}`
   border-left: 4px solid var(--tri-region-material-accent, var(--color-material-amber));
   border-radius: var(--radius-sheet);
   background: var(--color-canvas);
-  box-shadow: 0 1px 3px rgba(var(--black-rgb), 0.05), 0 0 0 1px rgba(var(--white-rgb), 0.5);
+  box-shadow:
+    0 2px 8px -2px rgba(var(--black-rgb), 0.05),
+    0 0 0 1px rgba(var(--white-rgb), 0.5);
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.3s cubic-bezier(0.16, 1, 0.3, 1);
   contain: layout style paint;
 }
 
 .dark .catalog-aeo-plaque__frame {
-  box-shadow: 0 1px 3px rgba(var(--black-rgb), 0.2), 0 0 0 1px rgba(var(--white-rgb), 0.08);
+  box-shadow:
+    0 4px 14px -4px rgba(var(--black-rgb), 0.25),
+    0 0 0 1px rgba(var(--white-rgb), 0.08);
 }
 
 .catalog-aeo-plaque__head {
@@ -94,7 +105,7 @@ const titleId = `catalog-aeo-title-${instanceId}`
   justify-content: center;
   width: 2.25rem;
   height: 2.25rem;
-  border-radius: var(--radius-full);
+  border-radius: var(--radius-pill, 999px);
   background: rgba(var(--black-rgb), 0.04);
   color: var(--tri-region-material-accent, var(--color-material-amber));
   font-size: 1.25rem;
@@ -110,12 +121,36 @@ const titleId = `catalog-aeo-title-${instanceId}`
   flex-direction: column;
 }
 
+.catalog-aeo-plaque__meta-row {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
 .catalog-aeo-plaque__kicker {
   font-size: var(--text-2xs);
   font-weight: var(--weight-bold);
   letter-spacing: var(--tracking-caps);
   text-transform: uppercase;
   color: var(--color-text-muted);
+}
+
+.catalog-aeo-plaque__stamp {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  font-size: var(--text-2xs);
+  font-weight: var(--weight-medium);
+  color: var(--color-source-verified, var(--color-action));
+  background: color-mix(in srgb, var(--tri-region-material-accent, var(--color-material-amber)) 12%, transparent);
+  padding: 0.125rem var(--space-2);
+  border-radius: var(--radius-pill, 999px);
+  letter-spacing: normal;
+}
+
+.catalog-aeo-plaque__stamp-icon {
+  font-size: 0.85em;
 }
 
 .catalog-aeo-plaque__title {
@@ -144,6 +179,14 @@ const titleId = `catalog-aeo-title-${instanceId}`
   display: flex;
   flex-direction: column;
   gap: var(--space-1);
+  padding: var(--space-3);
+  border-radius: var(--radius-surface);
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), background-color 0.2s var(--ease-out);
+}
+
+.catalog-aeo-plaque__item:hover {
+  background-color: color-mix(in srgb, var(--tri-region-material-accent, var(--color-material-amber)) 4%, transparent);
+  transform: translateY(-1px);
 }
 
 .catalog-aeo-plaque__entry-title {
@@ -178,12 +221,13 @@ const titleId = `catalog-aeo-title-${instanceId}`
   font-weight: var(--weight-bold);
   color: var(--color-action, var(--color-text));
   text-decoration: none;
-  border-radius: var(--radius-full);
-  transition: background 150ms var(--ease-out);
+  border-radius: var(--radius-pill, 999px);
+  transition: background 150ms var(--ease-out), transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .catalog-aeo-plaque__cta:hover {
-  background: rgba(var(--black-rgb), 0.04);
+  background: color-mix(in srgb, var(--tri-region-material-accent, var(--color-material-amber)) 8%, transparent);
+  transform: translateY(-1px);
 }
 
 .dark .catalog-aeo-plaque__cta:hover {
@@ -206,6 +250,8 @@ const titleId = `catalog-aeo-title-${instanceId}`
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .catalog-aeo-plaque__frame,
+  .catalog-aeo-plaque__item,
   .catalog-aeo-plaque__arrow,
   .catalog-aeo-plaque__cta {
     transform: none !important;
