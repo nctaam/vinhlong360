@@ -87,44 +87,6 @@ interface ListableItem {
   title?: string
 }
 
-export function itemListJsonLd(name: string, description: string, path: string, items: ListableItem[] = []) {
-  return {
-    '@context': 'https://schema.org',
-    '@type': 'CollectionPage',
-    name,
-    description,
-    url: canonicalUrl(path),
-    mainEntity: {
-      '@type': 'ItemList',
-      itemListElement: items.slice(0, 24).map((item, index) => ({
-        '@type': 'ListItem',
-        position: index + 1,
-        name: item.name || item.title || item.id,
-        url: item.id ? entityDetailUrl(String(item.id)) : undefined,
-      })).map((item) => Object.fromEntries(Object.entries(item).filter(([, value]) => value !== undefined))),
-    },
-  }
-}
-
-export function itineraryItemListJsonLd(name: string, description: string, path: string, items: ListableItem[] = []) {
-  return {
-    '@context': 'https://schema.org',
-    '@type': 'CollectionPage',
-    name,
-    description,
-    url: canonicalUrl(path),
-    mainEntity: {
-      '@type': 'ItemList',
-      itemListElement: items.slice(0, 24).map((item, index) => ({
-        '@type': 'ListItem',
-        position: index + 1,
-        name: item.title || item.name || item.id,
-        url: item.id ? itineraryUrl(String(item.id)) : undefined,
-      })).map((item) => Object.fromEntries(Object.entries(item).filter(([, value]) => value !== undefined))),
-    },
-  }
-}
-
 export interface FaqItem {
   q: string
   a: string

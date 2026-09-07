@@ -211,7 +211,7 @@ describe('SEO & Editorial Craft Guardrails', () => {
     expect(ocop).toMatch(/<Breadcrumb[^>]*:json-ld="true"/)
     expect(ocop).toContain("twitterCard: 'summary_large_image'")
     expect(ocop).toContain("ogUrl: () => canonicalUrl('/ocop')")
-    expect(ocop).toContain('safeJsonLd({')
+    expect(ocop).toContain('safeJsonLd(')
     expect(ocop).not.toContain("'@type': 'BreadcrumbList',\n        itemListElement: [")
   })
 
@@ -234,8 +234,8 @@ describe('SEO & Editorial Craft Guardrails', () => {
     expect(tourism).toMatch(/<Breadcrumb[^>]*:json-ld="true"/)
     expect(tourism).toContain("twitterCard: 'summary_large_image'")
     expect(tourism).toContain("ogUrl: canonicalUrl('/du-lich')")
-    expect(tourism).toContain("'@type': 'CollectionPage'")
-    expect(tourism).toContain('safeJsonLd({')
+    expect(tourism).toContain('buildTourismCatalogSchemaGraph')
+    expect(tourism).toContain('safeJsonLd(')
     expect(tourism).not.toContain("'@type': 'BreadcrumbList'")
   })
 
@@ -246,7 +246,7 @@ describe('SEO & Editorial Craft Guardrails', () => {
     expect(product).toContain("ogUrl: canonicalUrl('/san-pham')")
     expect(product).toContain('<IconLine name="arrow-right" class="ocop-teaser-arrow"')
     expect(product).not.toContain('<span class="ocop-teaser-arrow" aria-hidden="true">→</span>')
-    expect(product).toContain('safeJsonLd({')
+    expect(product).toContain('safeJsonLd(')
     expect(product).not.toContain("'@type': 'BreadcrumbList'")
     expect(product).toContain('.seasonal-banner-live .seasonal-banner-icon { animation: none; }')
   })
@@ -256,7 +256,7 @@ describe('SEO & Editorial Craft Guardrails', () => {
     expect(festival).toMatch(/<Breadcrumb[^>]*:json-ld="true"/)
     expect(festival).toContain("twitterCard: 'summary_large_image'")
     expect(festival).toContain("ogUrl: canonicalUrl('/le-hoi')")
-    expect(festival).toContain('safeJsonLd({')
+    expect(festival).toContain('safeJsonLd(')
     expect(festival).not.toContain("'@type': 'BreadcrumbList'")
   })
 
@@ -265,7 +265,7 @@ describe('SEO & Editorial Craft Guardrails', () => {
     expect(season).toMatch(/<Breadcrumb[^>]*:json-ld="true"/)
     expect(season).toContain("twitterCard: 'summary_large_image'")
     expect(season).toContain("ogUrl: canonicalUrl('/theo-mua')")
-    expect(season).toContain('safeJsonLd({')
+    expect(season).toContain('safeJsonLd(')
     expect(season).not.toContain("'@type': 'BreadcrumbList'")
   })
 

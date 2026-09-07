@@ -331,15 +331,29 @@ const emptyMessage = computed(() => {
   return `${regionName} chưa có lịch trình gợi ý, nhưng các vùng khác đang chờ bạn khám phá — hoặc tự tạo một lịch trình riêng theo sở thích.`
 })
 
-const itineraryCollectionSchema = computed(() => ({
-  '@context': 'https://schema.org',
-  '@type': 'CollectionPage',
-  name: 'Lịch trình gợi ý — vinhlong360',
-  description: 'Tuyến tham quan tỉnh Vĩnh Long hợp nhất (3 vùng trước 7-2025) được thiết kế sẵn.',
-  url: canonicalUrl('/lich-trinh'),
-  inLanguage: 'vi',
-  speakable: buildSpeakableSpecification(['.day-arc-title', '.cat-itinerary p', '.catalog-aeo-plaque__title', '.catalog-aeo-plaque__dek']),
-}))
+const itineraryCollectionSchema = computed(() => {
+  const pageUrl = canonicalUrl('/lich-trinh')
+  const total = filtered.value.length
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'CollectionPage',
+    name: 'Lịch trình gợi ý — vinhlong360',
+    description: 'Tuyến tham quan tỉnh Vĩnh Long hợp nhất (3 vùng trước 7-2025) được thiết kế sẵn.',
+    url: pageUrl,
+    inLanguage: 'vi',
+    speakable: buildSpeakableSpecification(['.day-arc-title', '.cat-itinerary p', '.catalog-aeo-plaque__title', '.catalog-aeo-plaque__dek']),
+    mainEntity: {
+      '@type': 'ItemList',
+      numberOfItems: total,
+      itemListElement: (filtered.value || []).slice(0, 24).map((item: any, index: number) => ({
+        '@type': 'ListItem',
+        position: index + 1,
+        name: item.title || item.name || `Lịch trình ${index + 1}`,
+        url: item.id ? canonicalUrl(`/lich-trinh/${encodeURIComponent(String(item.id))}`) : undefined,
+      })),
+    },
+  }
+})
 
 useSeoMeta({
   title: 'Lịch trình — vinhlong360',
@@ -357,15 +371,6 @@ useHead(() => ({
     {
       type: 'application/ld+json',
       innerHTML: safeJsonLd(itineraryCollectionSchema.value),
-    },
-    {
-      type: 'application/ld+json',
-      innerHTML: safeJsonLd(itineraryItemListJsonLd(
-        'Lịch trình gợi ý',
-        'Tuyến tham quan tỉnh Vĩnh Long hợp nhất (3 vùng trước 7-2025) được thiết kế sẵn.',
-        '/lich-trinh',
-        filtered.value,
-      )),
     },
   ],
 }))
