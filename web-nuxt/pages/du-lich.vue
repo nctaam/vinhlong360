@@ -511,68 +511,24 @@ useSeoMeta({
 
 useHead(() => {
   const pageUrl = canonicalUrl('/du-lich')
-  const graphNodes: any[] = [
-    buildWebSiteSchema(),
-    buildOrganizationSchema(),
-    {
-      '@type': 'CollectionPage',
-      '@id': `${pageUrl}#collection`,
-      name: 'Du lịch Vĩnh Long',
-      description: 'Trải nghiệm bản địa, điểm tham quan, lưu trú, làng nghề và ẩm thực khắp Vĩnh Long.',
-      url: pageUrl,
-      numberOfItems: allEntities.value.length,
-      isPartOf: { '@id': `${SITE_URL}/#website` },
-      about: {
-        '@type': 'Thing',
-        name: 'Du lịch Vĩnh Long',
-        description: 'Du lịch sinh thái, di sản làng nghề gốm Mang Thít và cù lao sông Tiền.',
-      },
-      speakable: buildSpeakableSpecification(['.catalog-hero h1', '.catalog-lead', '.catalog-aeo-plaque__title', '.catalog-aeo-plaque__dek']),
-    },
-  ]
-
-  if (filtered.value?.length) {
-    graphNodes.push({
-      '@type': 'ItemList',
-      '@id': `${pageUrl}#items`,
-      name: 'Du lịch Tỉnh Vĩnh Long',
-      description: 'Trải nghiệm bản địa, điểm tham quan, lưu trú, làng nghề và ẩm thực Vĩnh Long.',
-      numberOfItems: filtered.value.length,
-      itemListElement: filtered.value.slice(0, 30).map((e: Entity, i: number) => ({
-        '@type': 'ListItem',
-        position: i + 1,
-        name: e.name,
-        url: `${SITE_URL}${entityPath(e.id)}`,
-      })),
-    })
-  }
-
-  const faqItems: FaqItem[] = [
-    {
-      q: 'Đi du lịch Vĩnh Long mùa nào trong năm là đẹp nhất?',
-      a: 'Mùa trái cây chín rộ từ tháng 5 đến tháng 8 tại các vườn cù lao An Bình là thời điểm nhộn nhịp nhất. Ngoài ra, mùa phù sa từ tháng 9 đến tháng 11 mang đến trải nghiệm cảnh quan sông nước đặc sắc.',
-    },
-    {
-      q: 'Những điểm đến du lịch nổi bật nhất tại Vĩnh Long gồm những nơi nào?',
-      a: 'Du khách nên ghé thăm di sản đương đại lò gạch gốm đỏ Mang Thít, hệ thống nhà vườn cù lao An Bình, chùa Phật Ngọc Xá Lợi, làng bánh tráng cù lao Mây và các điểm sinh thái ven sông.',
-    },
-    {
-      q: 'Phương tiện di chuyển phổ biến và thuận tiện nhất khi du lịch Vĩnh Long là gì?',
-      a: 'Xe máy và ô tô thuận tiện để kết nối các tuyến đường liên huyện, kết hợp trải nghiệm đò ngang, phà sông hoặc xuồng chèo len lỏi qua các rạch nhỏ miệt vườn.',
-    },
-  ]
-  const faqNode = buildFaqPageSchema(faqItems, `${pageUrl}#faq`)
-  if (faqNode) graphNodes.push(faqNode)
+  const schemaGraph = buildTourismCatalogSchemaGraph({
+    items: filtered.value.map((e: Entity) => ({
+      id: e.id,
+      name: e.name,
+      summary: e.summary,
+      type: e.type,
+    })),
+    totalCount: allEntities.value.length,
+    currentMonth: currentMonthNumber,
+    canonicalUrl: pageUrl,
+  })
 
   return {
     link: [{ rel: 'canonical', href: pageUrl }],
     script: [
       {
         type: 'application/ld+json',
-        innerHTML: safeJsonLd({
-          '@context': 'https://schema.org',
-          '@graph': graphNodes,
-        }),
+        innerHTML: safeJsonLd(schemaGraph),
       },
     ],
   }

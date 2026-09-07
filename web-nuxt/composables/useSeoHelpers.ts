@@ -2059,3 +2059,226 @@ export function buildRoutesCatalogSchemaGraph(options: RoutesCatalogSchemaOption
     faqNode,
   ])
 }
+
+export interface ContemporaryEventSchemaOptions {
+  events?: Array<{
+    id: string | number
+    name: string
+    summary?: string
+    place_name?: string
+    date_start?: string
+    date_end?: string
+  }>
+  totalCount?: number
+  todayGregorianLabel?: string
+  todayLunarLabel?: string
+  canonicalUrl?: string
+  faqs?: Array<{ q: string; a: string }>
+}
+
+export function buildContemporaryEventSchemaGraph(options: ContemporaryEventSchemaOptions = {}): Record<string, any> {
+  const pageUrl = options.canonicalUrl || canonicalUrl('/su-kien')
+  const total = options.totalCount ?? (options.events?.length || 0)
+  const title = 'Sự kiện & Hội chợ Vĩnh Long — Nhịp đập văn hóa & xúc tiến thương mại'
+  const desc = 'Hội chợ, triển lãm nông nghiệp OCOP, ngày hội du lịch sông nước và festival gốm đỏ Mang Thít tại Vĩnh Long.'
+
+  const webpageNode = {
+    '@type': 'CollectionPage',
+    '@id': `${pageUrl}#collection`,
+    url: pageUrl,
+    name: `${title} — vinhlong360`,
+    description: desc,
+    inLanguage: 'vi-VN',
+    isPartOf: { '@id': `${SITE_URL}/#website` },
+    about: {
+      '@type': 'Thing',
+      name: 'Sự kiện văn hóa và hội chợ thương mại Vĩnh Long',
+      description: 'Các hoạt động sự kiện xúc tiến thương mại, ngày hội văn hóa và festival nghệ thuật tại Vĩnh Long.',
+    },
+    speakable: buildSpeakableSpecification([
+      '.catalog-hero h1',
+      '.dateline-eyebrow',
+      '.now-banner',
+      '.register-toggle',
+      '.catalog-aeo-plaque__title',
+      '.catalog-aeo-plaque__dek',
+    ]),
+  }
+
+  const breadcrumbNode = {
+    '@type': 'BreadcrumbList',
+    '@id': `${pageUrl}#breadcrumb`,
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'Trang chủ', item: `${SITE_URL}/` },
+      { '@type': 'ListItem', position: 2, name: 'Sự kiện', item: pageUrl },
+    ],
+  }
+
+  const eventListElements = (options.events || []).slice(0, 30).map((e, index) => {
+    const eventUrl = canonicalUrl(entityPath(e.id))
+    const itemNode: Record<string, any> = {
+      '@type': 'Event',
+      '@id': `${eventUrl}#event`,
+      name: e.name,
+      description: e.summary || e.name,
+      url: eventUrl,
+      eventAttendanceMode: 'https://schema.org/OfflineEventAttendanceMode',
+      eventStatus: 'https://schema.org/EventScheduled',
+    }
+    if (e.date_start) itemNode.startDate = e.date_start
+    if (e.date_end) itemNode.endDate = e.date_end
+    if (e.place_name) {
+      itemNode.location = {
+        '@type': 'Place',
+        name: e.place_name,
+        address: { '@type': 'PostalAddress', addressRegion: 'Vĩnh Long', addressCountry: 'VN' },
+      }
+    }
+    return {
+      '@type': 'ListItem',
+      position: index + 1,
+      item: itemNode,
+    }
+  })
+
+  const itemListNode = {
+    '@type': 'ItemList',
+    '@id': `${pageUrl}#events`,
+    name: 'Danh sách sự kiện và hội chợ tiêu biểu tại Vĩnh Long',
+    description: 'Các sự kiện văn hóa, ngày hội du lịch và triển lãm thương mại.',
+    numberOfItems: total,
+    itemListElement: eventListElements,
+  }
+
+  const defaultFaqs = [
+    {
+      q: 'Vĩnh Long thường tổ chức những sự kiện hoặc hội chợ lớn nào trong năm?',
+      a: 'Các sự kiện tiêu biểu gồm Ngày hội Du lịch Vĩnh Long, Ngày đồng hành cùng gốm đỏ Mang Thít, Hội chợ Xúc tiến Thương mại - Nông nghiệp cùng các giải đua ghe Ngo truyền thống trên sông.',
+    },
+    {
+      q: 'Người dân và du khách có thể theo dõi lịch sự kiện sắp diễn ra ở đâu?',
+      a: 'Trang Sự Kiện trên VinhLong360 cập nhật liên tục các sự kiện đang diễn ra và sắp khai mạc, kèm tiện ích xuất file .ics nhắc hẹn trực tiếp vào điện thoại.',
+    },
+    {
+      q: 'Tham gia các sự kiện văn hóa và hội chợ tại Vĩnh Long có cần mua vé không?',
+      a: 'Đa số các sự kiện văn hóa cộng đồng, hội chợ xúc tiến thương mại và ngày hội du lịch tại Vĩnh Long đều mở cửa miễn phí phục vụ nhân dân và du khách.',
+    },
+  ]
+
+  const faqs = options.faqs && options.faqs.length > 0 ? options.faqs : defaultFaqs
+  const faqNode = buildFaqPageSchema(faqs, `${pageUrl}#faq`)
+
+  return buildUnifiedSchemaGraph([
+    buildWebSiteSchema(),
+    buildOrganizationSchema(),
+    webpageNode,
+    breadcrumbNode,
+    itemListNode,
+    faqNode,
+  ])
+}
+
+export interface TourismCatalogSchemaOptions {
+  items?: Array<{
+    id: string | number
+    name: string
+    summary?: string
+    type?: string
+  }>
+  totalCount?: number
+  currentMonth?: number
+  canonicalUrl?: string
+  faqs?: Array<{ q: string; a: string }>
+}
+
+export function buildTourismCatalogSchemaGraph(options: TourismCatalogSchemaOptions = {}): Record<string, any> {
+  const pageUrl = options.canonicalUrl || canonicalUrl('/du-lich')
+  const total = options.totalCount ?? (options.items?.length || 0)
+  const title = 'Du lịch Vĩnh Long — Chỉ mục khám phá 3 vùng sông nước Cửu Long'
+  const desc = 'Trải nghiệm bản địa, điểm tham quan sinh thái, làng nghề gốm đỏ Mang Thít, cù lao An Bình và ẩm thực miệt vườn Vĩnh Long.'
+
+  const webpageNode = {
+    '@type': 'CollectionPage',
+    '@id': `${pageUrl}#collection`,
+    url: pageUrl,
+    name: `${title} — vinhlong360`,
+    description: desc,
+    inLanguage: 'vi-VN',
+    isPartOf: { '@id': `${SITE_URL}/#website` },
+    about: {
+      '@type': 'TouristDestination',
+      name: 'Điểm đến du lịch Vĩnh Long',
+      description: 'Du lịch sinh thái, di sản làng nghề gốm Mang Thít và cù lao sông Tiền.',
+      geo: { '@type': 'GeoShape', box: '9.8 105.8 10.4 106.7' },
+    },
+    speakable: buildSpeakableSpecification([
+      '.atlas-hero-title',
+      '.atlas-hero-eyebrow',
+      '.catalog-route-trace',
+      '.catalog-filter-ledger__header',
+      '.catalog-aeo-plaque__title',
+      '.catalog-aeo-plaque__dek',
+    ]),
+  }
+
+  const breadcrumbNode = {
+    '@type': 'BreadcrumbList',
+    '@id': `${pageUrl}#breadcrumb`,
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'Trang chủ', item: `${SITE_URL}/` },
+      { '@type': 'ListItem', position: 2, name: 'Du lịch', item: pageUrl },
+    ],
+  }
+
+  const itemListElements = (options.items || []).slice(0, 30).map((e, index) => {
+    const itemUrl = canonicalUrl(entityPath(e.id))
+    return {
+      '@type': 'ListItem',
+      position: index + 1,
+      item: {
+        '@type': 'TouristAttraction',
+        '@id': `${itemUrl}#attraction`,
+        name: e.name,
+        description: e.summary || e.name,
+        url: itemUrl,
+      },
+    }
+  })
+
+  const itemListNode = {
+    '@type': 'ItemList',
+    '@id': `${pageUrl}#items`,
+    name: 'Danh mục điểm đến và trải nghiệm du lịch Vĩnh Long',
+    description: 'Trải nghiệm bản địa, điểm tham quan, lưu trú, làng nghề và ẩm thực Vĩnh Long.',
+    numberOfItems: total,
+    itemListElement: itemListElements,
+  }
+
+  const defaultFaqs = [
+    {
+      q: 'Đi du lịch Vĩnh Long mùa nào trong năm là đẹp nhất?',
+      a: 'Mùa trái cây chín rộ từ tháng 5 đến tháng 8 tại các vườn cù lao An Bình là thời điểm nhộn nhịp nhất. Ngoài ra, mùa phù sa từ tháng 9 đến tháng 11 mang đến trải nghiệm cảnh quan sông nước đặc sắc.',
+    },
+    {
+      q: 'Những điểm đến du lịch nổi bật nhất tại Vĩnh Long gồm những nơi nào?',
+      a: 'Du khách nên ghé thăm di sản đương đại lò gạch gốm đỏ Mang Thít, hệ thống nhà vườn cù lao An Bình, chùa Phật Ngọc Xá Lợi, làng bánh tráng cù lao Mây và các điểm sinh thái ven sông.',
+    },
+    {
+      q: 'Phương tiện di chuyển phổ biến và thuận tiện nhất khi du lịch Vĩnh Long là gì?',
+      a: 'Xe máy và ô tô thuận tiện để kết nối các tuyến đường liên huyện, kết hợp trải nghiệm đò ngang, phà sông hoặc xuồng chèo len lỏi qua các rạch nhỏ miệt vườn.',
+    },
+  ]
+
+  const faqs = options.faqs && options.faqs.length > 0 ? options.faqs : defaultFaqs
+  const faqNode = buildFaqPageSchema(faqs, `${pageUrl}#faq`)
+
+  return buildUnifiedSchemaGraph([
+    buildWebSiteSchema(),
+    buildOrganizationSchema(),
+    webpageNode,
+    breadcrumbNode,
+    itemListNode,
+    faqNode,
+  ])
+}
+

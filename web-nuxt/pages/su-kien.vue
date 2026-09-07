@@ -551,81 +551,30 @@ useSeoMeta({
   ogUrl: () => canonicalUrl('/su-kien'),
   twitterCard: 'summary_large_image',
 })
-const eventListSchema = computed(() => {
-  const items = allEvents.value.slice(0, 30).map((e: Entity, i: number) => ({
-    '@type': 'ListItem',
-    position: i + 1,
-    item: {
-      '@type': 'Event',
-      name: e.name,
-      ...(e.attributes?.date_start ? { startDate: e.attributes.date_start } : {}),
-      ...(e.attributes?.date_end ? { endDate: e.attributes.date_end } : {}),
-      url: `https://vinhlong360.vn${entityPath(e.id)}`,
-      eventAttendanceMode: 'https://schema.org/OfflineEventAttendanceMode',
-      ...(e.place_name ? { location: { '@type': 'Place', name: e.place_name } } : {}),
-    },
-  }))
-  if (!items.length) return ''
-  return safeJsonLd({
-    '@context': 'https://schema.org',
-    '@type': 'ItemList',
-    name: 'Sự kiện',
-    numberOfItems: allEvents.value.length,
-    itemListOrder: 'https://schema.org/ItemListOrderAscending',
-    itemListElement: items,
-  })
-})
-
 useHead(() => {
   const pageUrl = canonicalUrl('/su-kien')
-  const graphNodes: any[] = [
-    buildWebSiteSchema(),
-    buildOrganizationSchema(),
-    {
-      '@type': 'CollectionPage',
-      '@id': `${pageUrl}#collection`,
-      name: 'Sự kiện & Hội chợ Vĩnh Long',
-      description: 'Hội chợ, triển lãm, ngày hội nông sản và sự kiện văn hóa nghệ thuật tại Vĩnh Long.',
-      url: pageUrl,
-      numberOfItems: allEvents.value.length,
-      isPartOf: { '@id': `${SITE_URL}/#website` },
-      about: {
-        '@type': 'Thing',
-        name: 'Sự kiện văn hóa và hội chợ thương mại Vĩnh Long',
-        description: 'Các hoạt động sự kiện xúc tiến thương mại, ngày hội văn hóa và festival nghệ thuật tại Vĩnh Long.',
-      },
-      speakable: buildSpeakableSpecification(['.catalog-hero h1', '.catalog-lead', '.register-toggle', '.catalog-aeo-plaque__title', '.catalog-aeo-plaque__dek']),
-    },
-  ]
-
-  const faqItems: FaqItem[] = [
-    {
-      q: 'Vĩnh Long thường tổ chức những sự kiện hoặc hội chợ lớn nào trong năm?',
-      a: 'Các sự kiện tiêu biểu gồm Ngày hội Du lịch Vĩnh Long, Ngày đồng hành cùng gốm đỏ Mang Thít, Hội chợ Xúc tiến Thương mại - Nông nghiệp cùng các giải đua ghe Ngo truyền thống trên sông.',
-    },
-    {
-      q: 'Người dân và du khách có thể theo dõi lịch sự kiện sắp diễn ra ở đâu?',
-      a: 'Trang Sự Kiện trên VinhLong360 cập nhật liên tục các sự kiện đang diễn ra và sắp khai mạc, kèm tiện ích xuất file .ics nhắc hẹn trực tiếp vào điện thoại.',
-    },
-    {
-      q: 'Tham gia các sự kiện văn hóa và hội chợ tại Vĩnh Long có cần mua vé không?',
-      a: 'Đa số các sự kiện văn hóa cộng đồng, hội chợ xúc tiến thương mại và ngày hội du lịch tại Vĩnh Long đều mở cửa miễn phí phục vụ nhân dân và du khách.',
-    },
-  ]
-  const faqNode = buildFaqPageSchema(faqItems, `${pageUrl}#faq`)
-  if (faqNode) graphNodes.push(faqNode)
+  const schemaGraph = buildContemporaryEventSchemaGraph({
+    events: allEvents.value.map((e: Entity) => ({
+      id: e.id,
+      name: e.name,
+      summary: e.summary,
+      place_name: e.place_name,
+      date_start: e.attributes?.date_start,
+      date_end: e.attributes?.date_end,
+    })),
+    totalCount: allEvents.value.length,
+    todayGregorianLabel: todayGregorianLabel.value,
+    todayLunarLabel: todayLunarLabel.value,
+    canonicalUrl: pageUrl,
+  })
 
   return {
     link: [{ rel: 'canonical', href: pageUrl }],
     script: [
       {
         type: 'application/ld+json',
-        innerHTML: safeJsonLd({
-          '@context': 'https://schema.org',
-          '@graph': graphNodes,
-        }),
+        innerHTML: safeJsonLd(schemaGraph),
       },
-      ...(eventListSchema.value ? [{ type: 'application/ld+json' as const, innerHTML: eventListSchema.value }] : []),
     ],
   }
 })
