@@ -2,6 +2,8 @@ import { describe, expect, it } from 'vitest'
 import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 
+import { buildPostDetailSchemaGraph } from '../composables/useSeoHelpers'
+
 function readPage(relPath: string): string {
   return readFileSync(resolve(__dirname, '..', relPath), 'utf8')
 }
@@ -25,40 +27,39 @@ describe('Community Forum, Posts & User Profiles (Moc 131)', () => {
   })
 
   describe('Post Detail Hub (pages/bai-viet/[id].vue)', () => {
-    it('integrates CatalogAeoPlaque for forum verification & civil discussion', () => {
+    it('maintains a distraction-free post reading experience without intrusive plaques', () => {
       const src = readPage('pages/bai-viet/[id].vue')
-      expect(src).toContain('<CatalogAeoPlaque')
-      expect(src).toContain('Góc Nhìn Thực Địa &amp; Thảo Luận Văn Minh Bản Xứ')
-      expect(src).toContain('Bài Viết Chia Sẻ Trải Nghiệm Thực Tế')
-      expect(src).toContain('Tương Tác &amp; Hỏi Đáp Chân Thành')
-      expect(src).toContain('Bảo Vệ Tính Xác Thực &amp; Tôn Trọng Bản Địa')
+      expect(src).not.toContain('<CatalogAeoPlaque')
+      expect(src).toContain('thread-detail')
+      expect(src).toContain('thread-comments')
     })
 
-    it('injects speakable AEO selectors into buildPostDetailSchemaGraph', () => {
-      const helperSrc = readPage('composables/useSeoHelpers.ts')
-      expect(helperSrc).toContain('buildPostDetailSchemaGraph')
-      expect(helperSrc).toContain("'.catalog-aeo-plaque__title'")
-      expect(helperSrc).toContain("'.catalog-aeo-plaque__dek'")
+    it('injects lean speakable selectors into buildPostDetailSchemaGraph', () => {
+      const graph = buildPostDetailSchemaGraph({ post: { id: '123', display_name: 'Test Post', content: 'Sample' } })
+      const webpage = graph['@graph'].find((n: any) => n['@type'] === 'WebPage')
+      expect(webpage.speakable.cssSelector).toContain('.thread-detail')
+      expect(webpage.speakable.cssSelector).toContain('h1')
+      expect(webpage.speakable.cssSelector).toContain('.thread-comments')
+      expect(webpage.speakable.cssSelector).not.toContain('.catalog-aeo-plaque__title')
     })
   })
 
   describe('User Profile Hub (pages/nguoi-dung/[id].vue)', () => {
-    it('integrates CatalogAeoPlaque with member passport highlights', () => {
+    it('keeps personal profile view focused without generic catalog plaques', () => {
       const src = readPage('pages/nguoi-dung/[id].vue')
-      expect(src).toContain('<CatalogAeoPlaque')
-      expect(src).toContain('Sổ Hành Trình Thành Viên &amp; Đóng Góp Bản Địa')
-      expect(src).toContain('Hồ Sơ Xác Thực &amp; Dấu Ấn Đóng Góp')
-      expect(src).toContain('Hệ Thống Cấp Bậc &amp; Điểm Danh Tiếng')
-      expect(src).toContain('Kết Nối Du Khách &amp; Cư Dân Địa Phương')
+      expect(src).not.toContain('<CatalogAeoPlaque')
+      expect(src).toContain('user-profile reveal')
+      expect(src).toContain('profile-info')
     })
 
-    it('injects structured ProfilePage schema with speakable specification', () => {
+    it('injects structured ProfilePage schema with accurate profile speakable specification', () => {
       const src = readPage('pages/nguoi-dung/[id].vue')
-      expect(src).toContain("userProfileSchema")
+      expect(src).toContain('userProfileSchema')
       expect(src).toContain("'@type': 'ProfilePage'")
       expect(src).toContain("'@type': 'Person'")
-      expect(src).toContain("'.catalog-aeo-plaque__title'")
-      expect(src).toContain("'.catalog-aeo-plaque__dek'")
+      expect(src).toContain("'.profile-name'")
+      expect(src).toContain("'.profile-bio'")
+      expect(src).not.toContain("'.catalog-aeo-plaque__title'")
     })
   })
 

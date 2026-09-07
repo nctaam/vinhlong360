@@ -140,29 +140,6 @@
         <div v-if="loading" class="feed-loading" role="status" aria-label="Đang tải bình luận"><div class="spinner"></div></div>
       </div>
 
-      <!-- AEO Plaque: Local Experience Insights & Forum Verification -->
-      <CatalogAeoPlaque
-        title="Góc Nhìn Thực Địa &amp; Thảo Luận Văn Minh Bản Xứ"
-        kicker="Góc nhìn cộng đồng · Đóng góp trải nghiệm chân thực"
-        accent="river"
-        icon="message"
-        :entries="[
-          {
-            heading: 'Bài Viết Chia Sẻ Trải Nghiệm Thực Tế',
-            text: 'Nội dung phản ánh góc nhìn độc lập của thành viên cộng đồng về điểm đến, ẩm thực và văn hóa đời sống Vĩnh Long.',
-          },
-          {
-            heading: 'Tương Tác &amp; Hỏi Đáp Chân Thành',
-            text: 'Bình luận trao đổi kinh nghiệm, giải đáp thắc mắc về đường đi, giá cả và thời điểm tham quan thích hợp nhất.',
-          },
-          {
-            heading: 'Bảo Vệ Tính Xác Thực &amp; Tôn Trọng Bản Địa',
-            text: 'Mọi bài viết và phản hồi tuân thủ tiêu chuẩn cộng đồng, không quảng cáo sai sự thật hay gây hiểu lầm về di sản.',
-          },
-        ]"
-        cta-to="/cong-dong"
-        cta-label="Khám phá thêm bài viết trên diễn đàn"
-      />
 
       <!-- Related posts -->
       <ClientOnly>

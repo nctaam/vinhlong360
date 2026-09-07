@@ -134,29 +134,6 @@
           </NuxtLink>
         </div>
 
-        <!-- AEO Plaque: Member Passport & Local Contributor Digest -->
-        <CatalogAeoPlaque
-          title="Sổ Hành Trình Thành Viên &amp; Đóng Góp Bản Địa"
-          kicker="Góc nhìn cộng đồng · Dấu ấn thực địa"
-          accent="amber"
-          icon="award"
-          :entries="[
-            {
-              heading: 'Hồ Sơ Xác Thực &amp; Dấu Ấn Đóng Góp',
-              text: 'Ghi nhận minh bạch quá trình trải nghiệm thực tế qua các bài viết, đánh giá địa điểm và bộ sưu tập được chia sẻ.',
-            },
-            {
-              heading: 'Hệ Thống Cấp Bậc &amp; Điểm Danh Tiếng',
-              text: 'Tích lũy điểm uy tín theo quy chuẩn cộng đồng VinhLong360, vinh danh những người đồng hành tâm huyết.',
-            },
-            {
-              heading: 'Kết Nối Du Khách &amp; Cư Dân Địa Phương',
-              text: 'Theo dõi để cập nhật các gợi ý du lịch mới nhất và tham gia thảo luận các cung đường miệt vườn phù sa.',
-            },
-          ]"
-          cta-to="/bang-xep-hang"
-          cta-label="Xem bảng vinh danh thành viên tích cực"
-        />
       </div>
 
       <div v-if="isSelf && profileCompletion < 100" class="profile-completion">
@@ -1076,7 +1053,7 @@ const userProfileSchema = computed(() => {
         ...(p.avatar ? { image: p.avatar } : {}),
         ...(p.reputation?.level_label ? { jobTitle: p.reputation.level_label } : {}),
       },
-      speakable: buildSpeakableSpecification(['.profile-name', '.profile-bio', '.profile-eyebrow', '.catalog-aeo-plaque__title', '.catalog-aeo-plaque__dek']),
+      speakable: buildSpeakableSpecification(['.profile-name', '.profile-bio', '.profile-eyebrow']),
     },
   ])
 })

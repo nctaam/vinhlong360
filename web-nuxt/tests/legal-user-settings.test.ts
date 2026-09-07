@@ -2,42 +2,44 @@ import { describe, expect, it } from 'vitest'
 import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 
+import { buildPrivacyPolicySchemaGraph, buildTermsOfServiceSchemaGraph } from '../composables/useSeoHelpers'
+
 function readPage(relPath: string): string {
   return readFileSync(resolve(__dirname, '..', relPath), 'utf8')
 }
 
 describe('Legal & User Account Utilities (Moc 133)', () => {
   describe('Privacy Policy Page (pages/chinh-sach-bao-mat.vue)', () => {
-    it('integrates CatalogAeoPlaque for privacy guarantees & data rights', () => {
+    it('maintains a clean legal structure without misplaced catalog plaques', () => {
       const src = readPage('pages/chinh-sach-bao-mat.vue')
-      expect(src).toContain('<CatalogAeoPlaque')
-      expect(src).toContain('Cam kết bảo vệ dữ liệu cá nhân & quyền kiểm soát của du khách')
-      expect(src).toContain('Thu thập tối thiểu & Đúng mục đích')
-      expect(src).toContain('Quyền trích xuất & Xóa dữ liệu hoàn toàn')
-      expect(src).toContain('Kiểm soát cookie & Lưu trữ an toàn')
+      expect(src).not.toContain('<CatalogAeoPlaque')
+      expect(src).toContain('class="legal-section')
+      expect(src).toContain('class="legal-body editorial-body"')
     })
 
-    it('injects speakable AEO selectors into buildPrivacyPolicySchemaGraph', () => {
-      const helperSrc = readPage('composables/useSeoHelpers.ts')
-      expect(helperSrc).toContain('buildPrivacyPolicySchemaGraph')
-      expect(helperSrc).toMatch(/buildPrivacyPolicySchemaGraph[\s\S]*?'.catalog-aeo-plaque__title'[\s\S]*?'.catalog-aeo-plaque__dek'/)
+    it('injects authentic legal speakable selectors into buildPrivacyPolicySchemaGraph', () => {
+      const graph = buildPrivacyPolicySchemaGraph()
+      const webpage = graph['@graph'].find((n: any) => n['@type'] === 'WebPage')
+      expect(webpage.speakable.cssSelector).toContain('.bm-inner h1')
+      expect(webpage.speakable.cssSelector).toContain('.about-section-content h2')
+      expect(webpage.speakable.cssSelector).not.toContain('.catalog-aeo-plaque__title')
     })
   })
 
   describe('Terms of Service Page (pages/dieu-khoan-su-dung.vue)', () => {
-    it('integrates CatalogAeoPlaque for community etiquette & content ownership', () => {
+    it('maintains a clean terms structure without misplaced catalog plaques', () => {
       const src = readPage('pages/dieu-khoan-su-dung.vue')
-      expect(src).toContain('<CatalogAeoPlaque')
-      expect(src).toContain('Quy tắc ứng xử & bản quyền thông tin trên vinhlong360')
-      expect(src).toContain('Trải nghiệm chân thực & Tôn trọng địa phương')
-      expect(src).toContain('Bản quyền tri thức & Cơ sở dữ liệu')
-      expect(src).toContain('Cơ chế báo cáo & Kiểm duyệt công minh')
+      expect(src).not.toContain('<CatalogAeoPlaque')
+      expect(src).toContain('class="legal-section')
+      expect(src).toContain('class="legal-body editorial-body"')
     })
 
-    it('injects speakable AEO selectors into buildTermsOfServiceSchemaGraph', () => {
-      const helperSrc = readPage('composables/useSeoHelpers.ts')
-      expect(helperSrc).toContain('buildTermsOfServiceSchemaGraph')
-      expect(helperSrc).toMatch(/buildTermsOfServiceSchemaGraph[\s\S]*?'.catalog-aeo-plaque__title'[\s\S]*?'.catalog-aeo-plaque__dek'/)
+    it('injects authentic legal speakable selectors into buildTermsOfServiceSchemaGraph', () => {
+      const graph = buildTermsOfServiceSchemaGraph()
+      const webpage = graph['@graph'].find((n: any) => n['@type'] === 'WebPage')
+      expect(webpage.speakable.cssSelector).toContain('.bm-inner h1')
+      expect(webpage.speakable.cssSelector).toContain('.about-section-content h2')
+      expect(webpage.speakable.cssSelector).not.toContain('.catalog-aeo-plaque__title')
     })
   })
 

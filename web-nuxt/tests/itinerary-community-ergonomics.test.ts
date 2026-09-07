@@ -50,19 +50,20 @@ describe('Itinerary, Community Ergonomics & Hall of Honor (Moc 130)', () => {
   })
 
   describe('Shared Itinerary Hub (pages/lich-trinh-chia-se/[id].vue)', () => {
-    it('integrates CatalogAeoPlaque with community travel experiences', () => {
+    it('focuses immediately on shared stops and actions without generic plaques', () => {
       const src = readPage('pages/lich-trinh-chia-se/[id].vue')
-      expect(src).toContain('<CatalogAeoPlaque')
-      expect(src).toContain('Gợi Ý Hành Trình Chia Sẻ &amp; Trải Nghiệm Thực Địa')
-      expect(src).toContain('Hành Trình Thực Tế Từ Người Đi Trước')
-      expect(src).toContain('Dễ Dàng Tùy Chỉnh Theo Sở Thích Riêng')
-      expect(src).toContain('Khám Phá Chi Tiết Từng Điểm Đến')
+      expect(src).not.toContain('<CatalogAeoPlaque')
+      expect(src).toContain('class="sp-header"')
+      expect(src).toContain('class="sp-stops"')
+      expect(src).toContain('class="sp-actions"')
     })
 
-    it('includes speakable selectors in planSchema', () => {
+    it('includes direct itinerary speakable selectors in planSchema', () => {
       const src = readPage('pages/lich-trinh-chia-se/[id].vue')
-      expect(src).toContain("'.catalog-aeo-plaque__title'")
-      expect(src).toContain("'.catalog-aeo-plaque__dek'")
+      expect(src).toContain("'.sp-title'")
+      expect(src).toContain("'.sp-meta'")
+      expect(src).toContain("'.sp-stops'")
+      expect(src).not.toMatch(/planSchema[\s\S]*?'.catalog-aeo-plaque__title'/)
     })
   })
 
