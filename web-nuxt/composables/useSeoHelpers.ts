@@ -1935,3 +1935,127 @@ export function buildProductCatalogSchemaGraph(options: ProductCatalogSchemaOpti
   ])
 }
 
+export interface RoutesCatalogSchemaOptions {
+  routes?: Array<{
+    id: string
+    name: string
+    description?: string
+    duration?: string
+    distance?: string
+    area?: string
+    stops?: Array<{ name: string; type?: string }>
+  }>
+  totalCount?: number
+  canonicalUrl?: string
+  faqs?: Array<{ q: string; a: string }>
+}
+
+export function buildRoutesCatalogSchemaGraph(options: RoutesCatalogSchemaOptions = {}): Record<string, any> {
+  const pageUrl = options.canonicalUrl || canonicalUrl('/tuyen-duong')
+  const total = options.totalCount ?? (options.routes?.length || 0)
+  const title = 'Tuyến đường gợi ý Vĩnh Long — Lộ trình du lịch miệt vườn & sông nước'
+  const desc = 'Các cung đường du lịch tự khám phá bằng xe máy và ô tô kết nối cù lao An Bình, lò gốm Mang Thít và sông nước Cửu Long.'
+
+  const webpageNode = {
+    '@type': 'CollectionPage',
+    '@id': `${pageUrl}#collection`,
+    url: pageUrl,
+    name: `${title} — vinhlong360`,
+    description: desc,
+    inLanguage: 'vi-VN',
+    isPartOf: { '@id': `${SITE_URL}/#website` },
+    about: {
+      '@type': 'TouristTrip',
+      name: 'Hành trình du lịch khám phá Vĩnh Long',
+      description: 'Tuyến đường gợi ý khám phá miệt vườn, di sản gốm đỏ Mang Thít và cù lao sông Tiền.',
+      spatialCoverage: {
+        '@type': 'Place',
+        name: 'Tỉnh Vĩnh Long',
+        geo: { '@type': 'GeoShape', box: '9.8 105.8 10.4 106.7' },
+      },
+    },
+    speakable: buildSpeakableSpecification([
+      '.catalog-hero h1',
+      '.hero-lede',
+      '.route-header',
+      '.route-stops-head',
+      '.catalog-aeo-plaque__title',
+      '.catalog-aeo-plaque__dek',
+    ]),
+  }
+
+  const breadcrumbNode = {
+    '@type': 'BreadcrumbList',
+    '@id': `${pageUrl}#breadcrumb`,
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'Trang chủ', item: `${SITE_URL}/` },
+      { '@type': 'ListItem', position: 2, name: 'Tuyến đường gợi ý', item: pageUrl },
+    ],
+  }
+
+  const itemListElements = (options.routes || []).map((r, index) => {
+    const routeUrl = `${pageUrl}#route-${r.id}`
+    const itemNode: Record<string, any> = {
+      '@type': 'TouristTrip',
+      '@id': routeUrl,
+      name: r.name,
+      description: r.description || `${r.duration || ''} · ${r.distance || ''}`,
+      url: pageUrl,
+      touristType: ['RoadTrip', 'CulturalTourism', 'Ecotourism'],
+    }
+    if (r.distance) itemNode.distance = r.distance
+    if (r.duration) itemNode.typicalAgeRange = r.duration
+    if (r.stops && r.stops.length > 0) {
+      itemNode.itinerary = {
+        '@type': 'ItemList',
+        numberOfItems: r.stops.length,
+        itemListElement: r.stops.map((s, si) => ({
+          '@type': 'ListItem',
+          position: si + 1,
+          name: s.name,
+        })),
+      }
+    }
+    return {
+      '@type': 'ListItem',
+      position: index + 1,
+      item: itemNode,
+    }
+  })
+
+  const itemListNode = {
+    '@type': 'ItemList',
+    '@id': `${pageUrl}#items`,
+    name: 'Danh sách các tuyến đường du lịch gợi ý tại Vĩnh Long',
+    description: 'Lộ trình khám phá tự túc qua các danh lam, làng nghề và cù lao.',
+    numberOfItems: total,
+    itemListElement: itemListElements,
+  }
+
+  const defaultFaqs = [
+    {
+      q: 'Nên chọn phương tiện gì để đi các tuyến đường khám phá Vĩnh Long?',
+      a: 'Xe máy phù hợp nhất cho các cung đường miệt vườn ngõ nhỏ, cù lao và phà sông. Ô tô thuận tiện cho các tuyến trục quốc lộ và liên tỉnh kết nối Bến Tre, Trà Vinh.',
+    },
+    {
+      q: 'Thời điểm nào trong năm thích hợp nhất để trải nghiệm các cung đường này?',
+      a: 'Từ tháng 5 đến tháng 8 là mùa trái cây chín rộ tại cù lao An Bình; từ tháng 9 đến tháng 11 là mùa phù sa ven sông Tiền - sông Hậu với nhiều trải nghiệm đồng quê sông nước đặc sắc.',
+    },
+    {
+      q: 'Các cung đường gợi ý có dễ tìm trạm xăng và điểm dừng chân nghỉ ngơi không?',
+      a: 'Dọc các trục đường tỉnh lộ và quốc lộ đều có trạm xăng và quán cà phê võng ven sông mát mẻ. Khi vào sâu đường làng cù lao An Bình, nên đổ đầy bình xăng trước khi qua phà.',
+    },
+  ]
+
+  const faqs = options.faqs && options.faqs.length > 0 ? options.faqs : defaultFaqs
+  const faqNode = buildFaqPageSchema(faqs, `${pageUrl}#faq`)
+
+  return buildUnifiedSchemaGraph([
+    buildWebSiteSchema(),
+    buildOrganizationSchema(),
+    webpageNode,
+    breadcrumbNode,
+    itemListNode,
+    faqNode,
+  ])
+}

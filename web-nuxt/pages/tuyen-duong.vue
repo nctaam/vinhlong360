@@ -276,63 +276,25 @@ useSeoMeta({
 
 useHead(() => {
   const pageUrl = canonicalUrl('/tuyen-duong')
-  const graphNodes: any[] = [
-    buildWebSiteSchema(),
-    buildOrganizationSchema(),
-    {
-      '@type': 'CollectionPage',
-      '@id': `${pageUrl}#collection`,
-      name: 'Tuyến đường gợi ý Vĩnh Long',
-      description: 'Các tuyến đường tự khám phá qua miệt vườn, làng nghề và văn hóa tỉnh Vĩnh Long hợp nhất (3 vùng trước 7-2025).',
-      url: pageUrl,
-      numberOfItems: ROUTES.value.length,
-      isPartOf: { '@id': `${SITE_URL}/#website` },
-      about: {
-        '@type': 'Thing',
-        name: 'Lộ trình du lịch Vĩnh Long',
-        description: 'Tuyến đường gợi ý khám phá miệt vườn, di sản gốm đỏ Mang Thít và cù lao sông Tiền.',
-      },
-      speakable: buildSpeakableSpecification(['.hero-lede', 'h1', '.route-header', '.route-stops-head', '.catalog-aeo-plaque__title', '.catalog-aeo-plaque__dek']),
-    },
-    {
-      '@type': 'ItemList',
-      '@id': `${pageUrl}#items`,
-      name: 'Danh sách tuyến đường gợi ý',
-      numberOfItems: ROUTES.value.length,
-      itemListElement: ROUTES.value.map((r: any, i: number) => ({
-        '@type': 'ListItem',
-        position: i + 1,
-        name: r.name,
-        description: `${r.duration} · ${r.distance}`,
-      })),
-    },
-  ]
-
-  const faqItems: FaqItem[] = [
-    {
-      q: 'Nên chọn phương tiện gì để đi các tuyến đường khám phá Vĩnh Long?',
-      a: 'Xe máy phù hợp nhất cho các cung đường miệt vườn ngõ nhỏ, cù lao và phà sông. Ô tô thuận tiện cho các tuyến trục quốc lộ và liên tỉnh kết nối Bến Tre, Trà Vinh.',
-    },
-    {
-      q: 'Thời điểm nào trong năm thích hợp nhất để trải nghiệm các cung đường này?',
-      a: 'Từ tháng 5 đến tháng 8 là mùa trái cây chín rộ tại cù lao An Bình; từ tháng 9 đến tháng 11 là mùa phù sa ven sông Tiền - sông Hậu với nhiều trải nghiệm đồng quê sông nước đặc sắc.',
-    },
-    {
-      q: 'Cần chuẩn bị gì khi di chuyển qua các tuyến phà hoặc đò ngang ở Vĩnh Long?',
-      a: 'Nên chuẩn bị tiền mặt mệnh giá nhỏ khi qua đò/phà, kiểm tra lịch hoạt động của các bến phà lớn như phà An Bình, phà Đình Khao và lưu ý khung giờ cao điểm.',
-    },
-  ]
-  const faqNode = buildFaqPageSchema(faqItems, `${pageUrl}#faq`)
-  if (faqNode) graphNodes.push(faqNode)
+  const schemaGraph = buildRoutesCatalogSchemaGraph({
+    routes: ROUTES.value.map((r: any) => ({
+      id: r.id,
+      name: r.name,
+      description: r.description,
+      duration: r.duration,
+      distance: r.distance,
+      area: r.area,
+      stops: r.stops,
+    })),
+    totalCount: ROUTES.value.length,
+    canonicalUrl: pageUrl,
+  })
 
   return {
     link: [{ rel: 'canonical', href: pageUrl }],
     script: [{
       type: 'application/ld+json',
-      innerHTML: safeJsonLd({
-        '@context': 'https://schema.org',
-        '@graph': graphNodes,
-      }),
+      innerHTML: safeJsonLd(schemaGraph),
     }],
   }
 })
@@ -340,7 +302,7 @@ useHead(() => {
 
 <style scoped>
 .route-grid { display: flex; flex-direction: column; gap: var(--space-6); }
-.route-card { position: relative; background: var(--card); border: .5px solid var(--line); border-radius: var(--radius); overflow: hidden; box-shadow: var(--shadow-sm); transition: transform .35s var(--ease-out-expo), box-shadow .35s var(--ease-out-expo), border-color .3s var(--ease-out); }
+.route-card { position: relative; background: var(--card); border: .5px solid var(--line); border-radius: var(--radius-sheet); overflow: hidden; box-shadow: var(--shadow-sm); transition: transform .35s cubic-bezier(0.16, 1, 0.3, 1), box-shadow .35s cubic-bezier(0.16, 1, 0.3, 1), border-color .3s var(--ease-out); }
 /* glassy top-sheen, revealed on hover for an Apple-style finish */
 .route-card::before { content: ""; position: absolute; inset: 0 0 auto 0; height: 40%; pointer-events: none; opacity: 0; background: linear-gradient(180deg, rgba(var(--white-rgb),.18), transparent); transition: opacity .35s var(--ease-out); z-index: 2; }
 .route-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-lg), 0 0 0 1px rgba(var(--color-action-rgb), .14), 0 18px 40px -18px rgba(var(--color-action-rgb), .25); border-color: var(--border); }
@@ -376,7 +338,7 @@ useHead(() => {
   display: inline-flex; align-items: center; gap: var(--space-1);
   font-size: var(--text-xs); font-weight: var(--weight-semibold); color: var(--secondary-fg);
   background: rgba(var(--secondary-rgb), .1); border: .5px solid rgba(var(--secondary-rgb), .22);
-  padding: var(--space-1) var(--space-3); border-radius: var(--radius-full);
+  padding: var(--space-1) var(--space-3); border-radius: var(--radius-pill, 999px);
   margin-bottom: var(--space-4); min-height: 30px;
   transition: background .25s var(--ease-out), border-color .25s var(--ease-out);
 }
@@ -391,7 +353,7 @@ useHead(() => {
 .route-rail::before {
   content: ""; position: absolute; left: 11px; top: 6px; bottom: 6px; width: 2px;
   background: linear-gradient(180deg, var(--rail-tone, var(--color-action)) 0%, color-mix(in srgb, var(--rail-tone, var(--color-action)) 35%, transparent) 100%);
-  border-radius: var(--radius-full);
+  border-radius: var(--radius-pill, 999px);
 }
 .route-card.area-vinh-long .route-rail { --rail-tone: var(--secondary); }
 .route-card.area-ben-tre .route-rail { --rail-tone: var(--accent); }
