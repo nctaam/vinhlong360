@@ -1350,7 +1350,7 @@ export function buildPrivacyPolicySchemaGraph(options: LegalDocumentSchemaOption
     isPartOf: { '@id': `${SITE_URL}/#website` },
     about: { '@id': `${SITE_URL}/#organization` },
     mainEntity: { '@id': `${SITE_URL}/#organization` },
-    speakable: buildSpeakableSpecification(['.bm-inner h1', '.bm-sub', '.legal-metadata', '.about-section-content h2']),
+    speakable: buildSpeakableSpecification(['.bm-inner h1', '.bm-sub', '.legal-metadata', '.about-section-content h2', '.catalog-aeo-plaque__title', '.catalog-aeo-plaque__dek']),
   }
 
   const defaultFaqs = [
@@ -1394,7 +1394,7 @@ export function buildTermsOfServiceSchemaGraph(options: LegalDocumentSchemaOptio
     isPartOf: { '@id': `${SITE_URL}/#website` },
     about: { '@id': `${SITE_URL}/#organization` },
     mainEntity: { '@id': `${SITE_URL}/#organization` },
-    speakable: buildSpeakableSpecification(['.bm-inner h1', '.bm-sub', '.legal-metadata', '.about-section-content h2']),
+    speakable: buildSpeakableSpecification(['.bm-inner h1', '.bm-sub', '.legal-metadata', '.about-section-content h2', '.catalog-aeo-plaque__title', '.catalog-aeo-plaque__dek']),
   }
 
   const defaultFaqs = [

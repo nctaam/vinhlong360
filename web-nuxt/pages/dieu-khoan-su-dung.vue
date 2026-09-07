@@ -66,6 +66,16 @@
         <div class="legal-body editorial-body" v-html="mdLite(s.body)"></div>
       </div>
     </section>
+
+    <CatalogAeoPlaque
+      kicker="Chuẩn mực cộng đồng · Trách nhiệm thành viên"
+      title="Quy tắc ứng xử & bản quyền thông tin trên vinhlong360"
+      accent="amber"
+      icon="file-text"
+      :entries="termsAeoEntries"
+      cta-to="/cong-dong"
+      cta-label="Tham gia diễn đàn đồng sáng tạo văn hóa bản địa"
+    />
   </section>
 </template>
 
@@ -81,6 +91,21 @@ const introHtml = computed(() => mdLite(doc.value.intro))
 // Headings may carry their own "N. " prefix; the .about-section-num badge
 // already shows the order, so strip the inline number to avoid duplicates.
 const stripNum = (h: string) => (h || '').replace(/^\s*\d+\.\s*/, '')
+
+const termsAeoEntries = [
+  {
+    heading: 'Trải nghiệm chân thực & Tôn trọng địa phương',
+    text: 'Các bài viết, hình ảnh và nhận xét chia sẻ phải xuất phát từ trải nghiệm thực địa chân thực, tôn trọng thuần phong mỹ tục và nếp sống bản xứ.',
+  },
+  {
+    heading: 'Bản quyền tri thức & Cơ sở dữ liệu',
+    text: 'Cơ sở dữ liệu số hóa, bản đồ di sản và các bài tổng thuật biên tập thuộc quyền sở hữu của vinhlong360. Tác giả giữ quyền đối với bài chia sẻ cá nhân.',
+  },
+  {
+    heading: 'Cơ chế báo cáo & Kiểm duyệt công minh',
+    text: 'Mọi hành vi mạo danh, thông tin sai sự thật hoặc quảng cáo trục lợi trái phép sẽ bị ẩn hoặc xử lý trong vòng 24–48 giờ khi có báo cáo từ cộng đồng.',
+  },
+]
 
 // Schema graph unified with '@type': 'WebPage' and Terms of Service FAQs
 const termsSchema = computed(() =>

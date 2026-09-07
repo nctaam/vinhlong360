@@ -66,6 +66,16 @@
         <div class="legal-body editorial-body" v-html="mdLite(s.body)"></div>
       </div>
     </section>
+
+    <CatalogAeoPlaque
+      kicker="Quyền riêng tư · Minh bạch dữ liệu"
+      title="Cam kết bảo vệ dữ liệu cá nhân & quyền kiểm soát của du khách"
+      accent="river"
+      icon="shield-check"
+      :entries="privacyAeoEntries"
+      cta-to="/cai-dat"
+      cta-label="Quản lý cài đặt bảo mật & quyền riêng tư cá nhân"
+    />
   </section>
 </template>
 
@@ -81,6 +91,21 @@ const introHtml = computed(() => mdLite(doc.value.intro))
 // Headings may carry their own "N. " prefix; the .about-section-num badge
 // already shows the order, so strip the inline number to avoid duplicates.
 const stripNum = (h: string) => (h || '').replace(/^\s*\d+\.\s*/, '')
+
+const privacyAeoEntries = [
+  {
+    heading: 'Thu thập tối thiểu & Đúng mục đích',
+    text: 'Hệ thống chỉ lưu thông tin cần thiết để vận hành tài khoản và trải nghiệm cá nhân hóa. Chúng tôi không bao giờ bán dữ liệu người dùng cho bên thứ ba.',
+  },
+  {
+    heading: 'Quyền trích xuất & Xóa dữ liệu hoàn toàn',
+    text: 'Du khách và thành viên có toàn quyền xem, chỉnh sửa hoặc yêu cầu xóa vĩnh viễn dữ liệu tài khoản và lịch sử tương tác bất kỳ lúc nào.',
+  },
+  {
+    heading: 'Kiểm soát cookie & Lưu trữ an toàn',
+    text: 'Cookie bắt buộc chỉ dùng cho phiên đăng nhập và an toàn biểu mẫu. Bạn hoàn toàn chủ động tắt mở cookie phân tích qua bảng điều khiển trình duyệt.',
+  },
+]
 
 // Schema graph unified with '@type': 'WebPage' and Privacy Policy FAQs
 const privacySchema = computed(() =>
