@@ -6,9 +6,15 @@
     :aria-labelledby="headingId"
   >
     <header class="ward-terroir-digest__header">
-      <div class="ward-terroir-digest__badge">
-        <IconLine name="sparkles" aria-hidden="true" />
-        <span>Hồ sơ Thực địa Bản xứ · Địa hạt {{ placeName }}</span>
+      <div class="ward-terroir-digest__meta-row">
+        <div class="ward-terroir-digest__badge">
+          <IconLine name="sparkles" aria-hidden="true" />
+          <span>Hồ sơ Thực địa Bản xứ · Địa hạt {{ placeName }}</span>
+        </div>
+        <span class="ward-terroir-digest__stamp">
+          <IconLine name="shield-check" aria-hidden="true" />
+          <span>Xác thực thực địa bản xứ</span>
+        </span>
       </div>
       <h2 :id="headingId" class="ward-terroir-digest__title">
         Đặc trưng thổ nhưỡng &amp; Lưu ý hành trình
@@ -35,7 +41,13 @@
           <li v-for="(spec, idx) in terroirSpecs" :key="idx" class="ward-terroir-digest__spec-item">
             <div class="ward-terroir-digest__spec-top">
               <strong class="ward-terroir-digest__spec-name">{{ spec.title }}</strong>
-              <span v-if="spec.badge" class="ward-terroir-digest__tag">{{ spec.badge }}</span>
+              <div class="ward-terroir-digest__spec-badges">
+                <span v-if="spec.season" class="ward-terroir-digest__season-tag">
+                  <IconLine name="calendar" aria-hidden="true" />
+                  <span>{{ spec.season }}</span>
+                </span>
+                <span v-if="spec.badge" class="ward-terroir-digest__tag">{{ spec.badge }}</span>
+              </div>
             </div>
             <p class="ward-terroir-digest__spec-desc">{{ spec.desc }}</p>
           </li>
@@ -92,7 +104,8 @@
               :href="telHref(policePhone)"
               class="ward-terroir-digest__call-btn"
               data-contact-action="phone"
-              data-contact-surface="ward-terroir-digest"
+              data-contact-surface="ward-detail"
+              data-contact-outcome="navigation"
               :data-contact-entity-id="place.id"
               :aria-label="`Gọi công an ${placeName}: ${policePhone}`"
               @click="trackContactView(place.id, 'phone')"
@@ -111,7 +124,8 @@
               :href="telHref('02703822188')"
               class="ward-terroir-digest__call-btn"
               data-contact-action="phone"
-              data-contact-surface="ward-terroir-digest"
+              data-contact-surface="ward-detail"
+              data-contact-outcome="navigation"
               data-contact-entity-id="vl360-helpline"
               aria-label="Gọi Cứu hộ Du lịch Vĩnh Long 360: 0270 3822 188"
               @click="trackContactView('vl360-helpline', 'phone')"
@@ -130,7 +144,8 @@
               :href="telHref('115')"
               class="ward-terroir-digest__call-btn ward-terroir-digest__call-btn--urgent"
               data-contact-action="phone"
-              data-contact-surface="ward-terroir-digest"
+              data-contact-surface="ward-detail"
+              data-contact-outcome="navigation"
               data-contact-entity-id="medical-115"
               aria-label="Gọi Cấp cứu Y tế 115"
               @click="trackContactView('medical-115', 'phone')"
@@ -186,6 +201,7 @@ interface TerroirSpec {
   title: string
   desc: string
   badge?: string
+  season?: string
 }
 
 const terroirSpecs = computed<TerroirSpec[]>(() => {
@@ -198,11 +214,13 @@ const terroirSpecs = computed<TerroirSpec[]>(() => {
         title: 'Bánh tráng nem Cù lao Mây',
         desc: 'Bánh tráng ngọt bùi, bánh tráng nem và bánh tráng ớt cay nồng tráng thủ công nức tiếng cù lao ven sông Hậu.',
         badge: 'OCOP 4 sao',
+        season: 'Quanh năm (rộ dịp Tết)',
       },
       {
         title: 'Cam sành Trà Ôn đất phù sa',
         desc: 'Cam sành trồng trên dải đất phù sa cổ ven sông Măng Thít, tép mọng nước đậm đà vị ngọt thanh.',
         badge: 'OCOP',
+        season: 'Tháng 10 – Giêng âm lịch',
       },
       {
         title: 'Dưa lưới & Chuối xiêm hữu cơ',
@@ -218,6 +236,7 @@ const terroirSpecs = computed<TerroirSpec[]>(() => {
         title: 'Bưởi Năm Roi Hoàng Gia',
         desc: 'Tép vàng óng, ráo nước không hạt, chua ngọt thanh mát trứ danh vùng chuyên canh sông Hậu.',
         badge: 'Chỉ dẫn PGI',
+        season: 'Rộ tháng 8 – Chạp (Tết)',
       },
       {
         title: 'Tàu hũ ky làng nghề Mỹ Hòa',
@@ -244,6 +263,7 @@ const terroirSpecs = computed<TerroirSpec[]>(() => {
         title: 'Chôm chôm Bình Hòa Phước',
         desc: 'Chôm chôm nhãn giòn ráo tróc cơm, chôm chôm Java chín đỏ rực vườn cây miệt cù lao An Bình.',
         badge: 'OCOP 4 sao',
+        season: 'Rộ tháng 5 – 7 âm lịch',
       },
       {
         title: 'Nhãn xuồng cơm vàng Cù lao',
@@ -264,6 +284,7 @@ const terroirSpecs = computed<TerroirSpec[]>(() => {
         title: 'Gốm đỏ Di sản Đương đại',
         desc: 'Đất sét đỏ trầm tích nung lò truyền thống rực lửa trăm năm dọc dải kênh Thầy Cai cổ kính.',
         badge: 'Di sản',
+        season: 'Quanh năm bên dòng Thầy Cai',
       },
       {
         title: 'Bưởi da xanh đất sét phù sa',
@@ -284,6 +305,7 @@ const terroirSpecs = computed<TerroirSpec[]>(() => {
         title: 'Khoai lang tím Nhật Bình Tân',
         desc: 'Củ khoai ruột tím thẫm đậm đà tinh bột, xuất khẩu toàn cầu và được bảo hộ chỉ dẫn địa lý.',
         badge: 'Chỉ dẫn PGI',
+        season: 'Thu hoạch tháng 11 – 3',
       },
       {
         title: 'Hành lá & Rau màu chuyên canh',
@@ -456,7 +478,7 @@ const transitGuide = computed<TransitGuide>(() => {
   font-weight: 600;
   color: var(--color-action);
   background: var(--color-action-surface);
-  border-radius: var(--radius-pill);
+  border-radius: var(--radius-pill, 999px);
   margin-block-end: var(--space-2);
 }
 
@@ -582,7 +604,7 @@ const transitGuide = computed<TransitGuide>(() => {
   font-size: 0.6875rem;
   font-weight: 600;
   padding: 0.125rem var(--space-2);
-  border-radius: var(--radius-pill);
+  border-radius: var(--radius-pill, 999px);
   background: var(--color-action-surface);
   color: var(--color-action);
   white-space: nowrap;
@@ -664,20 +686,73 @@ const transitGuide = computed<TransitGuide>(() => {
   color: var(--color-text-muted);
 }
 
-.ward-terroir-digest__call-btn {
+.ward-terroir-digest__meta-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin-block-end: var(--space-2);
+}
+
+.ward-terroir-digest__stamp {
   display: inline-flex;
   align-items: center;
   gap: var(--space-1);
+  padding: var(--space-1) var(--space-2);
+  border-radius: var(--radius-pill, 999px);
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: var(--tracking-caps);
+  text-transform: uppercase;
+  background: color-mix(in srgb, var(--color-material-clay) 12%, transparent);
+  color: var(--color-material-clay);
+  border: 1px solid color-mix(in srgb, var(--color-material-clay) 24%, transparent);
+}
+
+.ward-terroir-digest__spec-badges {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  flex-wrap: wrap;
+}
+
+.ward-terroir-digest__season-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 0.6875rem;
+  font-weight: 500;
+  color: var(--color-material-amber);
+  background: color-mix(in srgb, var(--color-material-amber) 10%, transparent);
+  border: 1px solid color-mix(in srgb, var(--color-material-amber) 25%, transparent);
+  border-radius: var(--radius-pill, 999px);
+  padding: 0.125rem var(--space-2);
+}
+
+.ward-terroir-digest__call-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-1);
   font-size: 0.8125rem;
   font-weight: 600;
-  padding: var(--space-1) var(--space-3);
-  border-radius: var(--radius-pill);
+  min-height: 44px;
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-pill, 999px);
   background: var(--color-action-surface);
   color: var(--color-action);
   border: 1px solid var(--color-action-border);
   text-decoration: none;
   white-space: nowrap;
-  transition: background-color 0.15s ease, color 0.15s ease;
+  transition: background-color 0.2s cubic-bezier(0.16, 1, 0.3, 1), color 0.2s cubic-bezier(0.16, 1, 0.3, 1), transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@media (max-width: 640px) {
+  .ward-terroir-digest__call-btn {
+    min-height: 48px;
+    padding: var(--space-2) var(--space-4);
+  }
 }
 
 .ward-terroir-digest__call-btn:hover {

@@ -112,7 +112,7 @@ const claimSubject = computed(() => {
 const contactAeoEntries = [
   {
     heading: 'Thời gian phản hồi cam kết',
-    text: 'Yêu cầu sửa đổi thông tin địa điểm được cấp mã tra cứu riêng và xử lý trong 48 giờ. Mọi phản hồi cộng đồng và liên hệ hợp tác được người thật tiếp nhận và xử lý.',
+    text: 'Yêu cầu sửa đổi thông tin địa điểm được cấp mã tra cứu riêng để theo dõi tiến độ. Mọi phản hồi cộng đồng và liên hệ hợp tác được người thật tiếp nhận và xử lý theo thứ tự.',
   },
   {
     heading: 'Kênh hỗ trợ khẩn cấp & thực địa',

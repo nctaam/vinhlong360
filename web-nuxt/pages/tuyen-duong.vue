@@ -57,7 +57,7 @@
         },
         {
           heading: 'Hành trình Liên Vùng Ba Con Sông (Tiền – Cổ Chiên – Hậu)',
-          text: 'Kết nối các trục lộ huyết mạch QL53, QL57 qua Chợ Lách và Trà Vinh, ngắm những rặng bần xanh ngắt và cồn bãi màu mỡ.',
+          text: 'Kết nối các trục lộ huyết mạch QL53, QL57 qua Chợ Lách và Trà Vinh (địa hạt trước 7-2025), ngắm những rặng bần xanh ngắt và cồn bãi màu mỡ.',
         },
       ]"
       cta-to="/tao-lich-trinh"

@@ -164,7 +164,7 @@ const activeWaterPreset = ref<'all' | 'river' | 'pottery' | 'ferry'>('all')
 const quickWaterPresets = [
   { id: 'river' as const, label: 'Cù lao & Ven sông', icon: 'droplet' },
   { id: 'pottery' as const, label: 'Lò gốm Mang Thít', icon: 'flame' },
-  { id: 'ferry' as const, label: 'Bến đò - Phà', icon: 'compass' },
+  { id: 'ferry' as const, label: 'Bến phà & Đò ngang', icon: 'compass' },
 ]
 
 function toggleWaterPreset(presetId: 'river' | 'pottery' | 'ferry') {
@@ -268,7 +268,7 @@ const filteredPins = computed(() => mapPins.value.filter((pin) => {
       const text = `${pin.name || ''} ${pin.place_name || ''} ${pin.place_area || ''} ${pin.area || ''}`.toLocaleLowerCase('vi-VN')
       if (activeWaterPreset.value === 'river') return text.includes('cù lao') || text.includes('sông') || text.includes('an bình') || text.includes('đồng phú') || text.includes('bình hòa phước')
       if (activeWaterPreset.value === 'pottery') return text.includes('gốm') || text.includes('mang thít') || text.includes('lò gạch') || text.includes('thầy cai')
-      if (activeWaterPreset.value === 'ferry') return text.includes('phà') || text.includes('đò') || text.includes('bến phà') || text.includes('bến đò')
+      if (activeWaterPreset.value === 'ferry') return text.includes('phà') || text.includes('đò') || text.includes('bến phà') || text.includes('bến đò') || text.includes('cổ chiên') || text.includes('sông tiền') || text.includes('đình khao') || text.includes('bến tàu')
       return true
     })())
   )
@@ -389,11 +389,11 @@ useHead({
   color: var(--muted);
   background: var(--card);
   border: 1px solid var(--line);
-  border-radius: var(--radius-full);
+  border-radius: var(--radius-pill, 999px);
   cursor: pointer;
-  transition: background .2s var(--ease-out), border-color .2s var(--ease-out), color .2s var(--ease-out);
+  transition: background 0.2s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.2s cubic-bezier(0.16, 1, 0.3, 1), color 0.2s cubic-bezier(0.16, 1, 0.3, 1), transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
-.map-quick-preset-btn:hover { background: var(--bg-warm); border-color: var(--border); color: var(--ink); }
+.map-quick-preset-btn:hover { background: var(--bg-warm); border-color: var(--border); color: var(--ink); transform: translateY(-1px); }
 .map-quick-preset-btn.is-active {
   background: color-mix(in srgb, var(--color-brand) 12%, var(--card));
   border-color: var(--color-brand);
@@ -409,9 +409,9 @@ useHead({
   color: var(--muted);
   background: transparent;
   border: 1px solid var(--line);
-  border-radius: var(--radius-full);
+  border-radius: var(--radius-pill, 999px);
   cursor: pointer;
-  transition: all .2s var(--ease-out);
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
 .map-contrast-toggle:hover { background: var(--bg-warm); color: var(--ink); }
 .map-contrast-toggle.is-high {
@@ -423,9 +423,19 @@ useHead({
 [data-outdoor-contrast="high"] .map-filters {
   border: 2px solid var(--color-brand);
   box-shadow: var(--shadow-md);
+  background: var(--card);
 }
 [data-outdoor-contrast="high"] .map-quick-preset-btn {
-  border-width: 2px;
+  border: 2px solid var(--color-brand);
   font-weight: var(--weight-bold);
+  color: var(--color-text);
+}
+[data-outdoor-contrast="high"] .map-contrast-toggle {
+  border: 2px solid var(--color-brand);
+  font-weight: var(--weight-bold);
+}
+[data-outdoor-contrast="high"] .result-meta {
+  font-weight: var(--weight-bold);
+  color: var(--color-text);
 }
 </style>

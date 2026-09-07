@@ -6,10 +6,16 @@
     aria-labelledby="detail-aeo-summary-title"
   >
     <div class="detail-aeo-summary__badge">
-      <span class="detail-aeo-summary__pill">
-        <IconLine name="sparkles" aria-hidden="true" />
-        <span>30s Thực địa · Góc nhìn Bản địa</span>
-      </span>
+      <div class="detail-aeo-summary__badge-group">
+        <span class="detail-aeo-summary__pill">
+          <IconLine name="sparkles" aria-hidden="true" />
+          <span>30s Thực địa · Góc nhìn Bản địa</span>
+        </span>
+        <span class="detail-aeo-summary__stamp">
+          <IconLine name="shield-check" aria-hidden="true" />
+          <span>Xác thực thực địa bản xứ</span>
+        </span>
+      </div>
       <span class="detail-aeo-summary__watermark" aria-hidden="true">AEO</span>
     </div>
 
@@ -41,7 +47,7 @@
       <div class="detail-aeo-summary__card">
         <div class="detail-aeo-summary__card-head">
           <IconLine name="clock" class="detail-aeo-summary__icon" aria-hidden="true" />
-          <span class="detail-aeo-summary__label">Thời lượng & Chi phí</span>
+          <span class="detail-aeo-summary__label">Thời lượng &amp; Chi phí</span>
         </div>
         <p class="detail-aeo-summary__value">{{ durationAndCost }}</p>
       </div>
@@ -53,6 +59,13 @@
         </div>
         <p class="detail-aeo-summary__value detail-aeo-summary__tip">{{ localTip }}</p>
       </div>
+    </div>
+
+    <div class="detail-aeo-summary__footer">
+      <span class="detail-aeo-summary__tide-cue">
+        <IconLine name="droplet" aria-hidden="true" />
+        <span>{{ tideCue }}</span>
+      </span>
     </div>
   </section>
 </template>
@@ -104,6 +117,17 @@ const localTip = computed(() => {
   if (props.entity?.type === 'dish') return 'Hỏi người bản địa món ăn kèm hoặc rau đồng đúng mùa nước'
   return 'Mang mũ nón che nắng và mang theo bình nước cá nhân khi đi bộ'
 })
+
+const tideCue = computed(() => {
+  if (attrs.value.tide_note) return String(attrs.value.tide_note)
+  if (props.entity?.place_area === 'an-binh' || props.entity?.type === 'experience') {
+    return 'Thủy triều sông Cổ Chiên: Nước lớn sáng sớm mát mẻ; triều rằm và mùng 1 nước dâng cao đẹp mắt'
+  }
+  if (props.entity?.place_area === 'mang-thit') {
+    return 'Dọc kênh Thầy Cai: Thuyền ghe tấp nập theo con nước lớn; đường 902 cao ráo thông thoáng'
+  }
+  return 'Nhịp sống sông nước: Khởi hành buổi sớm ngắm bình minh trên sông Tiền & Cổ Chiên'
+})
 </script>
 
 <style scoped>
@@ -115,8 +139,13 @@ const localTip = computed(() => {
   background: var(--color-canvas);
   border: 1px solid var(--color-border);
   border-top: 3px solid var(--color-material-clay);
-  box-shadow: var(--shadow-sm);
+  box-shadow: 0 2px 8px -2px rgba(var(--black-rgb), 0.05), 0 0 0 1px rgba(var(--white-rgb), 0.5);
   contain: layout style;
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.detail-aeo-summary:hover {
+  box-shadow: 0 4px 14px -2px rgba(var(--black-rgb), 0.08), 0 0 0 1px rgba(var(--white-rgb), 0.7);
 }
 
 .detail-aeo-summary[data-material-accent="amber"] {
@@ -139,7 +168,16 @@ const localTip = computed(() => {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  flex-wrap: wrap;
+  gap: var(--space-2);
   margin-bottom: var(--space-3);
+}
+
+.detail-aeo-summary__badge-group {
+  display: inline-flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--space-2);
 }
 
 .detail-aeo-summary__pill {
@@ -147,7 +185,7 @@ const localTip = computed(() => {
   align-items: center;
   gap: var(--space-1);
   padding: var(--space-1) var(--space-3);
-  border-radius: var(--radius-full);
+  border-radius: var(--radius-pill, 999px);
   font-size: var(--text-2xs);
   font-weight: var(--weight-bold);
   text-transform: uppercase;
@@ -170,6 +208,38 @@ const localTip = computed(() => {
 
 .detail-aeo-summary[data-material-accent="leaf"] .detail-aeo-summary__pill {
   color: var(--color-material-leaf);
+}
+
+.detail-aeo-summary__stamp {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: var(--space-1) var(--space-2);
+  border-radius: var(--radius-pill, 999px);
+  font-size: var(--text-2xs);
+  font-weight: var(--weight-bold);
+  letter-spacing: var(--tracking-caps);
+  text-transform: uppercase;
+  background: color-mix(in srgb, var(--color-material-clay) 12%, transparent);
+  color: var(--color-material-clay);
+  border: 1px solid color-mix(in srgb, var(--color-material-clay) 24%, transparent);
+}
+
+.dark .detail-aeo-summary__stamp {
+  background: color-mix(in srgb, var(--color-material-clay) 20%, transparent);
+  border-color: color-mix(in srgb, var(--color-material-clay) 35%, transparent);
+}
+
+.detail-aeo-summary[data-material-accent="amber"] .detail-aeo-summary__stamp {
+  background: color-mix(in srgb, var(--color-material-amber) 12%, transparent);
+  color: var(--color-material-amber);
+  border-color: color-mix(in srgb, var(--color-material-amber) 25%, transparent);
+}
+
+.detail-aeo-summary[data-material-accent="river"] .detail-aeo-summary__stamp {
+  background: color-mix(in srgb, var(--color-material-river) 12%, transparent);
+  color: var(--color-material-river);
+  border-color: color-mix(in srgb, var(--color-material-river) 25%, transparent);
 }
 
 .detail-aeo-summary__watermark {
@@ -209,9 +279,10 @@ const localTip = computed(() => {
 
 .detail-aeo-summary__card {
   padding: var(--space-3);
-  border-radius: var(--radius-base);
+  border-radius: var(--radius-surface, 12px);
   background: rgba(var(--black-rgb), 0.02);
   border: 1px solid var(--color-border);
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .dark .detail-aeo-summary__card {
@@ -259,8 +330,31 @@ const localTip = computed(() => {
   color: var(--color-text);
 }
 
+.detail-aeo-summary__footer {
+  margin-top: var(--space-3);
+  padding-top: var(--space-2);
+  border-top: 1px dashed var(--color-border);
+}
+
+.detail-aeo-summary__tide-cue {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--text-xs);
+  color: var(--color-text-muted);
+  line-height: var(--leading-normal);
+}
+
+.detail-aeo-summary__tide-cue :deep(svg) {
+  width: 14px;
+  height: 14px;
+  color: var(--color-material-river);
+  flex-shrink: 0;
+}
+
 @media (prefers-reduced-motion: reduce) {
-  .detail-aeo-summary {
+  .detail-aeo-summary,
+  .detail-aeo-summary__card {
     transition: none;
   }
 }

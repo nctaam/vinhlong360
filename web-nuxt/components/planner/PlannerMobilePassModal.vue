@@ -148,7 +148,7 @@ function printPass() {
   justify-content: center;
   width: 2rem;
   height: 2rem;
-  border-radius: var(--radius-full);
+  border-radius: var(--radius-pill, 999px);
   border: 1px solid var(--color-border);
   background: transparent;
   color: var(--color-text-muted);
@@ -156,7 +156,7 @@ function printPass() {
 }
 
 .planner-pass-modal__card {
-  border-radius: var(--radius-base);
+  border-radius: var(--radius-surface, 12px);
   border: 1px solid var(--color-border);
   padding: var(--space-4);
   background: rgba(var(--black-rgb), 0.02);

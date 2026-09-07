@@ -56,7 +56,7 @@
           <a
             :href="telHref(item.phone)"
             class="dir-emergency-call"
-            data-contact-action="phone"
+            data-emergency-action="phone"
             data-contact-surface="directory-emergency"
             :data-contact-entity-id="item.id"
             :aria-label="`Gọi trực tiếp ${item.name}: ${item.phone}`"
