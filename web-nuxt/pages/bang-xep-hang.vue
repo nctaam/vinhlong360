@@ -7,6 +7,30 @@
       <p>Xếp hạng theo điểm danh tiếng — đánh giá, bài viết, ảnh và lượt theo dõi. <NuxtLink to="/huong-dan-thanh-vien" class="bxh-guide-link">Cách tính điểm?</NuxtLink></p>
     </header>
 
+    <!-- AEO Plaque: Community Hall of Honor & Terroir Ambassadorship -->
+    <CatalogAeoPlaque
+      title="Sổ Vàng Đóng Góp &amp; Danh Hiệu Đại Sứ Bản Địa"
+      kicker="Góc nhìn cộng đồng · Vinh danh người đồng hành"
+      accent="amber"
+      icon="award"
+      :entries="[
+        {
+          heading: 'Hệ thống Cấp bậc &amp; Điểm Danh tiếng Minh bạch',
+          text: 'Tích lũy thực chất qua từng lượt đánh giá địa điểm thực địa, bài viết chia sẻ kinh nghiệm và kho ảnh tư liệu địa phương.',
+        },
+        {
+          heading: 'Top 3 Đại sứ Bản xứ Vinh danh Trang trọng',
+          text: 'Những thành viên đóng góp tích cực nhất được vinh danh trên bục podium, tạo cảm hứng gìn giữ và lan tỏa nét đẹp châu thổ.',
+        },
+        {
+          heading: 'Đặc quyền Đóng góp &amp; Huy hiệu Xác thực',
+          text: 'Nhận huy hiệu thành viên uy tín, thẩm quyền đồng biên tập cẩm nang du lịch và tham vấn lộ trình khám phá thực tế.',
+        },
+      ]"
+      cta-to="/huong-dan-thanh-vien"
+      cta-label="Tìm hiểu quy chế tích điểm &amp; vinh danh"
+    />
+
     <div class="bxh-filters">
       <input v-model="q" type="search" enterkeyhint="search" placeholder="Tìm thành viên…" aria-label="Tìm thành viên" class="bxh-search" />
       <FilterChips :filters="periodFilters" :model-value="[period]" single-select

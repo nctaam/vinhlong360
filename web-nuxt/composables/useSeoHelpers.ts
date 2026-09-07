@@ -678,7 +678,7 @@ export function buildItineraryDetailSchemaGraph(options: ItineraryDetailSchemaOp
     isPartOf: { '@id': `${SITE_URL}/#website` },
     breadcrumb: { '@id': `${itUrl}#breadcrumb` },
     mainEntity: { '@id': `${itUrl}#trip` },
-    speakable: buildSpeakableSpecification(['.lead', 'h1', '.timeline-head']),
+    speakable: buildSpeakableSpecification(['.lead', 'h1', '.timeline-head', '.catalog-aeo-plaque__title', '.catalog-aeo-plaque__dek']),
     publisher: { '@id': `${SITE_URL}/#organization` },
   }
 
@@ -1213,7 +1213,7 @@ export function buildLeaderboardSchemaGraph(options: LeaderboardSchemaOptions = 
     isPartOf: { '@id': `${SITE_URL}/#website` },
     about: { '@id': `${SITE_URL}/#organization` },
     mainEntity: { '@id': `${pageUrl}#leaderboard` },
-    speakable: buildSpeakableSpecification(['.bxh-h1', '.bxh-head p', '.bxh-eyebrow']),
+    speakable: buildSpeakableSpecification(['.bxh-h1', '.bxh-head p', '.bxh-eyebrow', '.catalog-aeo-plaque__title', '.catalog-aeo-plaque__dek']),
   }
 
   const podiumList = options.podium || []

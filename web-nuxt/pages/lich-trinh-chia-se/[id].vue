@@ -24,6 +24,30 @@
         </p>
       </header>
 
+      <!-- AEO Plaque: Shared Route Field Digest -->
+      <CatalogAeoPlaque
+        title="Gợi Ý Hành Trình Chia Sẻ &amp; Trải Nghiệm Thực Địa"
+        kicker="Góc nhìn cộng đồng · Kinh nghiệm người đi trước"
+        accent="river"
+        icon="compass"
+        :entries="[
+          {
+            heading: 'Hành Trình Thực Tế Từ Người Đi Trước',
+            text: 'Được đúc kết từ trải nghiệm thực tế của các thành viên cộng đồng VinhLong360 qua những cung đường phù sa sông nước.',
+          },
+          {
+            heading: 'Dễ Dàng Tùy Chỉnh Theo Sở Thích Riêng',
+            text: 'Bạn có thể nhấn “Tạo lịch trình từ gợi ý này” để thêm bớt điểm đến, đổi phương tiện hoặc sắp xếp lại thứ tự thời gian.',
+          },
+          {
+            heading: 'Khám Phá Chi Tiết Từng Điểm Đến',
+            text: 'Nhấp vào tên từng điểm dừng để xem ảnh thực tế, thông tin mở cửa, số điện thoại liên hệ và sản vật OCOP đặc trưng.',
+          },
+        ]"
+        cta-to="/tao-lich-trinh"
+        cta-label="Tạo lịch trình từ gợi ý này"
+      />
+
       <ol class="sp-stops">
         <li v-for="(s, i) in plan.stops" :key="i" class="sp-stop">
           <span class="sp-num" aria-hidden="true">{{ Number(i) + 1 }}</span>
@@ -123,6 +147,7 @@ const planSchema = computed(() => {
     name: plan.value.title,
     description: `Lịch trình trải nghiệm ${plan.value.stops?.length || 0} điểm dừng tại Vĩnh Long`,
     url: canonicalUrl(`/lich-trinh-chia-se/${encodedPlanId}`),
+    speakable: buildSpeakableSpecification(['.sp-title', '.sp-meta', '.sp-stops', '.catalog-aeo-plaque__title', '.catalog-aeo-plaque__dek']),
     mainEntity: {
       '@type': 'TouristTrip',
       name: plan.value.title,

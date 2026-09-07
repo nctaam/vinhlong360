@@ -37,6 +37,30 @@
       </div>
     </section>
 
+    <!-- AEO Plaque: Custom Itinerary Design & Travel Rhythm -->
+    <CatalogAeoPlaque
+      title="Sổ Tay Thiết Kế Lịch Trình &amp; Cung Đường Khám Phá"
+      kicker="Góc nhìn bản địa · Tối ưu thời gian &amp; Cung bậc trải nghiệm"
+      accent="river"
+      icon="calendar"
+      :entries="[
+        {
+          heading: 'Nhịp Điệu Nửa Ngày (Sáng sớm hoặc Chiều tà)',
+          text: 'Thích hợp dạo chợ sớm ven sông, khám phá cù lao An Bình hoặc ghé thăm cụm di tích danh nhân Long Hồ Dinh.',
+        },
+        {
+          heading: 'Nhịp Điệu Trọn Ngày (Khám phá Sâu sắc)',
+          text: 'Trải nghiệm trọn vẹn cuộc sống bản địa: len lỏi rạch dừa nước, thưởng thức cá đồng và ngắm hoàng hôn sông Cổ Chiên.',
+        },
+        {
+          heading: 'Nhịp Điệu Nhiều Ngày (Hành trình Liên vùng)',
+          text: 'Cung đường liên thông 3 vùng địa hạt kết nối di sản lò gạch Mang Thít, làng hoa Cái Mơn và quần thể chùa Khmer cổ kính.',
+        },
+      ]"
+      cta-to="/tao-lich-trinh"
+      cta-label="Khởi tạo hành trình cá nhân hóa"
+    />
+
     <!-- Đã lưu (client-only, từ localStorage) -->
     <ClientOnly>
       <section v-if="count > 0" class="block saved-section reveal">
@@ -314,6 +338,7 @@ const itineraryCollectionSchema = computed(() => ({
   description: 'Tuyến tham quan tỉnh Vĩnh Long hợp nhất (3 vùng trước 7-2025) được thiết kế sẵn.',
   url: canonicalUrl('/lich-trinh'),
   inLanguage: 'vi',
+  speakable: buildSpeakableSpecification(['.day-arc-title', '.cat-itinerary p', '.catalog-aeo-plaque__title', '.catalog-aeo-plaque__dek']),
 }))
 
 useSeoMeta({

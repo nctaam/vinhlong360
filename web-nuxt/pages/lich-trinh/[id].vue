@@ -41,8 +41,31 @@
         <ShareButton :title="itineraryTitle" :text="itinerary.summary || itinerary.description" />
         <button type="button" class="btn btn-ghost btn-sm" aria-label="Báo cáo lịch trình" @click="openReport('entity', id)"><IconLine name="flag" /> Báo cáo</button>
       </ClientOnly>
-        <NuxtLink to="/tao-lich-trinh" no-prefetch class="btn btn-outline btn-sm"><IconLine name="plus" aria-hidden="true" /> Tự tạo lịch trình</NuxtLink>
     </div>
+
+    <!-- AEO Plaque: Field Trip Digest & Terroir Highlights -->
+    <CatalogAeoPlaque
+      title="Cẩm Nang Trải Nghiệm Thực Địa &amp; Điểm Nhấn Bản Địa"
+      kicker="Góc nhìn bản địa · Tối ưu thời gian &amp; Điểm dừng chân"
+      accent="river"
+      icon="compass"
+      :entries="[
+        {
+          heading: 'Tối ưu Di chuyển &amp; Nhịp Điệu Hành Trình',
+          text: 'Các điểm dừng được sắp xếp tuần tự khoa học từ sáng đến chiều tà, giảm thiểu thời gian di chuyển giữa các bến đò và phà sông.',
+        },
+        {
+          heading: 'Trải Nghiệm Đậm Chất Sông Nước Nam Bộ',
+          text: 'Kết hợp hài hòa giữa thưởng thức sản vật miệt vườn, tìm hiểu di sản văn hóa lịch sử và gặp gỡ con người hồn hậu chất phác.',
+        },
+        {
+          heading: 'Mẹo Bỏ Túi Cho Chuyến Đi Trọn Vẹn',
+          text: 'Khởi hành sớm để đón bình minh trên sông, chuẩn bị tiền mặt lẻ cho các bến đò ngang và trang phục gọn gàng khi viếng chùa.',
+        },
+      ]"
+      cta-to="/tao-lich-trinh"
+      cta-label="Tự điều chỉnh hoặc sao chép lịch trình"
+    />
 
     <!-- Transport mode + total -->
     <ClientOnly>
