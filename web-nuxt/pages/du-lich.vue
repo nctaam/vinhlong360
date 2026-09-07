@@ -32,6 +32,16 @@
       </ol>
     </section>
 
+    <CatalogAeoPlaque
+      title="Cẩm nang 3 vùng Mekong — Khám phá Vĩnh Long theo địa hạt"
+      kicker="Định hướng thực địa · 3 tiểu vùng cốt lõi"
+      :accent="(activeMode.accent as any) || 'clay'"
+      icon="map-pin"
+      :entries="catalogAeoEntries"
+      cta-to="/ban-do"
+      cta-label="Mở tọa độ 3 vùng trên bản đồ số"
+    />
+
     <section class="catalog-filter-ledger block reveal" data-catalog-section="filters" aria-labelledby="catalog-filter-title">
       <header class="catalog-filter-ledger__header">
         <div>
@@ -288,6 +298,21 @@ function selectDiscoveryMode(mode: DiscoveryMode) {
   typeFilter.value = mode.filterType
 }
 
+const catalogAeoEntries = [
+  {
+    heading: 'Cù Lao An Bình & Nhịp Sông Tiền',
+    text: 'Miệt vườn sinh thái bốn mùa, chôm chôm và sầu riêng chín cây. Di chuyển bằng phà An Bình, trải nghiệm đạp xe đường làng và nghỉ đêm homestay miệt vườn.',
+  },
+  {
+    heading: 'Vương Quốc Gốm Đỏ Mang Thít — Long Hồ',
+    text: 'Quần thể hơn 1.000 lò gạch gốm đỏ rực rỡ dọc kênh Thầy Cai. Di sản công nghiệp bản địa trăm năm độc nhất vô nhị vùng Đồng bằng sông Cửu Long.',
+  },
+  {
+    heading: 'Vùng Trái Cây & Sắc Tộc Tam Bình — Trà Ôn',
+    text: 'Thủ phủ cam sành Tam Bình mọng nước, chợ nổi Trà Ôn sông Hậu cùng nhịp sống giao thoa văn hóa ba dân tộc Kinh, Khmer, Hoa.',
+  },
+]
+
 const typeFilterOptions = computed(() => [
   { key: 'all', label: 'Tất cả' },
   ...typeChips.map(t => ({ key: t.value, label: t.label })),
@@ -502,7 +527,7 @@ useHead(() => {
         name: 'Du lịch Vĩnh Long',
         description: 'Du lịch sinh thái, di sản làng nghề gốm Mang Thít và cù lao sông Tiền.',
       },
-      speakable: buildSpeakableSpecification(['.catalog-hero h1', '.catalog-lead']),
+      speakable: buildSpeakableSpecification(['.catalog-hero h1', '.catalog-lead', '.catalog-aeo-plaque__title', '.catalog-aeo-plaque__dek']),
     },
   ]
 

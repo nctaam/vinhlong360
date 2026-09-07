@@ -60,6 +60,16 @@
     <!-- Spotlight nổi bật -->
     <CatalogSpotlight :items="allEvents" />
 
+    <CatalogAeoPlaque
+      title="Cẩm nang nghi thức lễ hội ba dân tộc Kinh — Khmer — Hoa"
+      kicker="Văn hóa tâm linh · Nghi thức bản địa"
+      accent="river"
+      icon="calendar"
+      :entries="festivalAeoEntries"
+      cta-to="/lich-van-nien"
+      cta-label="Tra cứu lịch vạn niên & âm lịch"
+    />
+
     <!-- Ceremonial ledger: full-width rows ordered strictly by nearness in time,
          not a horizontal scroll-row — a calendar of upcoming ritual time deserves
          the same narrative weight as an itinerary. -->
@@ -362,6 +372,21 @@ function clearFilters() {
   q.value = ''
 }
 
+const festivalAeoEntries = [
+  {
+    heading: 'Lễ Hội Kỳ Yên & Miếu Đình Người Kinh',
+    text: 'Cầu quốc thái dân an, phong điều vũ thuận. Diễn ra trang nghiêm tại các đình làng cổ kính với nghi thức rước sắc thần, lễ tế tiền hiền và nghệ thuật hát bội truyền thống.',
+  },
+  {
+    heading: 'Lễ Tết Chôl Chnăm Thmây & Ok Om Bok Người Khmer',
+    text: 'Tết năm mới ấm áp và lễ hội cúng trăng tạ ơn đất trời. Điểm nhấn là nghi thức tắm Phật, đút cốm dẹp truyền thống và không khí rộn rã tại các ngôi chùa Khmer Nam Bộ.',
+  },
+  {
+    heading: 'Lễ Vía Bà & Miếu Thất Phủ Người Hoa',
+    text: 'Không gian văn hóa tín ngưỡng đặc sắc tại Thất Phủ Miếu (Chùa Ông), múa lân sư rồng sôi động cùng tục xin xăm, thỉnh lộc linh thiêng đầu xuân.',
+  },
+]
+
 const { data, error: fetchError } = await useAsyncData('festivals', () =>
   apiFetch<{ events: Entity[] }>('/api/events?limit=200&include_past=true')
 )
@@ -643,7 +668,7 @@ useHead(() => {
         name: 'Lễ hội truyền thống Vĩnh Long',
         description: 'Văn hóa ba dòng sông giao thoa giữa cộng đồng Kinh, Khmer và Hoa.',
       },
-      speakable: buildSpeakableSpecification(['.page-article', 'h1', '.pull-quote', '.etiquette-box']),
+      speakable: buildSpeakableSpecification(['.page-article', 'h1', '.pull-quote', '.etiquette-box', '.catalog-aeo-plaque__title', '.catalog-aeo-plaque__dek']),
     },
   ]
 

@@ -34,6 +34,16 @@
       </div>
     </section>
 
+    <CatalogAeoPlaque
+      title="Bộ tiêu chuẩn chất lượng OCOP Vĩnh Long"
+      kicker="Quy chuẩn quốc gia · Xếp hạng 3 đến 5 sao"
+      accent="amber"
+      icon="trophy"
+      :entries="ocopAeoEntries"
+      cta-to="/san-pham"
+      cta-label="Khám phá chợ đặc sản mùa vụ"
+    />
+
     <!-- declutter-3 T9: CatalogSpotlight đã bỏ — 3 star-band honor-roll là "what's great"
          signal đặc trưng của trang này. -->
     <!-- Star-rank quick-jump — subordinate to the ledger bands below, not equal rank -->
@@ -268,6 +278,22 @@ const seasonFilterOptions = computed(() => [
   { key: 'all', label: 'Tất cả' },
   ...Array.from({ length: 12 }, (_, i) => ({ key: String(i + 1), label: `T${i + 1}` })),
 ])
+
+const ocopAeoEntries = [
+  {
+    heading: 'Hạng 5 sao Quốc gia — Tiêu chuẩn Xuất khẩu',
+    text: 'Sản phẩm đạt chuẩn chất lượng tối cao theo Quyết định của Thủ tướng Chính phủ, có khả năng cạnh tranh toàn cầu và truy xuất nguồn gốc minh bạch.',
+  },
+  {
+    heading: 'Hạng 4 sao Cấp Tỉnh — Nông sản Chế biến Tiên tiến',
+    text: 'Sản phẩm chủ lực mang đậm bản sắc Vĩnh Long, quy trình đóng gói và an toàn vệ sinh thực phẩm đáp ứng nghiêm ngặt tiêu chuẩn HACCP/ISO.',
+  },
+  {
+    heading: 'Hạng 3 sao Địa phương — Hương vị Làng nghề Truyền thống',
+    text: 'Đặc sản tự nhiên và tinh hoa thủ công của các xã phường ven sông Tiền, Cổ Chiên và sông Hậu, giàu giá trị văn hóa nông nghiệp và đời sống cù lao châu thổ.',
+  },
+]
+
 const { sortByRegion } = useRegionPref()
 
 onMounted(() => {
@@ -458,7 +484,7 @@ useHead(() => {
         name: 'Chương trình Mỗi xã Một sản phẩm (OCOP)',
         description: 'Chương trình phát triển kinh tế nông thôn nâng cao giá trị đặc sản địa phương.',
       },
-      speakable: buildSpeakableSpecification(['.hero-creds', 'h1', '.lead', '.result-meta']),
+      speakable: buildSpeakableSpecification(['.hero-creds', 'h1', '.lead', '.result-meta', '.catalog-aeo-plaque__title', '.catalog-aeo-plaque__dek']),
     },
   ]
 
