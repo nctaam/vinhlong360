@@ -468,68 +468,25 @@ useSeoMeta({
 
 useHead(() => {
   const pageUrl = canonicalUrl('/ocop')
-  const graphNodes: any[] = [
-    buildWebSiteSchema(),
-    buildOrganizationSchema(),
-    {
-      '@type': 'CollectionPage',
-      '@id': `${pageUrl}#collection`,
-      name: 'Sản phẩm OCOP Vĩnh Long',
-      description: 'Sản phẩm đạt chuẩn OCOP từ tỉnh Vĩnh Long hợp nhất (3 vùng trước 7-2025).',
-      url: pageUrl,
-      numberOfItems: allOcop.value.length,
-      isPartOf: { '@id': `${SITE_URL}/#website` },
-      about: {
-        '@type': 'Thing',
-        name: 'Chương trình Mỗi xã Một sản phẩm (OCOP)',
-        description: 'Chương trình phát triển kinh tế nông thôn nâng cao giá trị đặc sản địa phương.',
-      },
-      speakable: buildSpeakableSpecification(['.hero-creds', 'h1', '.lead', '.result-meta', '.catalog-aeo-plaque__title', '.catalog-aeo-plaque__dek']),
-    },
-  ]
-
-  if (filtered.value?.length) {
-    graphNodes.push({
-      '@type': 'ItemList',
-      '@id': `${pageUrl}#items`,
-      name: 'Sản phẩm OCOP Tỉnh Vĩnh Long',
-      description: 'Sản phẩm đạt chuẩn OCOP từ tỉnh Vĩnh Long hợp nhất (3 vùng trước 7-2025).',
-      numberOfItems: filtered.value.length,
-      itemListElement: filtered.value.slice(0, 30).map((e: Entity, i: number) => ({
-        '@type': 'ListItem',
-        position: i + 1,
-        name: e.name,
-        url: `${SITE_URL}${entityPath(e.id)}`,
-      })),
-    })
-  }
-
-  const faqItems: FaqItem[] = [
-    {
-      q: 'Sản phẩm OCOP Vĩnh Long là gì?',
-      a: 'Chương trình Mỗi xã một sản phẩm (OCOP) tại Vĩnh Long tôn vinh và chứng nhận các đặc sản nông nghiệp, làng nghề thủ công và ẩm thực truyền thống đạt tiêu chuẩn chất lượng cao từ 3 sao đến 5 sao.',
-    },
-    {
-      q: 'Vĩnh Long hiện có những sản phẩm OCOP 5 sao nào tiêu biểu?',
-      a: 'Vĩnh Long sở hữu các sản phẩm OCOP đạt hạng cao tiêu biểu như bưởi năm roi Bình Minh, khoai lang Bình Tân, bánh tráng cù lao Mây, các sản phẩm chế biến từ dừa và gốm đỏ Mang Thít.',
-    },
-    {
-      q: 'Làm thế nào để tìm và mua đặc sản OCOP Vĩnh Long chính gốc?',
-      a: 'Du khách và người tiêu dùng có thể tra cứu thông tin nhà sản xuất, địa chỉ điểm bán, số điện thoại liên hệ và định vị bản đồ trực tiếp trên hệ thống VinhLong360.',
-    },
-  ]
-  const faqNode = buildFaqPageSchema(faqItems, `${pageUrl}#faq`)
-  if (faqNode) graphNodes.push(faqNode)
+  const schemaGraph = buildOcopLedgerSchemaGraph({
+    items: filtered.value.map((e: Entity) => ({
+      id: e.id,
+      name: e.name,
+      summary: e.summary,
+      stars: getStars(e),
+      category: e.attributes?.category,
+    })),
+    totalCount: allOcop.value.length,
+    topStarTier: topStarTier.value,
+    canonicalUrl: pageUrl,
+  })
 
   return {
     link: [{ rel: 'canonical', href: pageUrl }],
     script: [
       {
         type: 'application/ld+json',
-        innerHTML: safeJsonLd({
-          '@context': 'https://schema.org',
-          '@graph': graphNodes,
-        }),
+        innerHTML: safeJsonLd(schemaGraph),
       },
     ],
   }
@@ -721,7 +678,7 @@ useHead(() => {
   transform: translateY(-50%);
   width: 4px;
   height: 1.6em;
-  border-radius: var(--radius-full);
+  border-radius: var(--radius-pill, 999px);
   background: linear-gradient(180deg, var(--river-600) 0%, var(--amber-600) 52%, var(--clay-600) 100%);
 }
 .dark .ledger-stats::before { background: linear-gradient(180deg, var(--river-legacy-dark) 0%, var(--amber-500) 52%, var(--clay-400) 100%); }
@@ -732,16 +689,18 @@ useHead(() => {
   display: inline-flex;
   align-items: center;
   gap: var(--space-2);
-  padding: var(--space-1) var(--space-3);
+  padding: var(--space-2) var(--space-3);
+  min-height: 44px;
   border: .5px solid var(--line);
-  border-radius: var(--radius-full);
+  border-radius: var(--radius-pill, 999px);
   background: var(--card);
   cursor: pointer;
   font-size: var(--text-xs);
-  transition: border-color .2s var(--ease-out), background .2s var(--ease-out);
+  transition: border-color .25s var(--ease-out), background .25s var(--ease-out), transform .25s cubic-bezier(0.16, 1, 0.3, 1), box-shadow .25s var(--ease-out);
 }
-.star-jump-btn:hover { border-color: var(--color-action); }
-.star-jump-btn.active { border-color: var(--color-action); background: rgba(var(--color-action-rgb), .06); }
+.star-jump-btn:hover { border-color: var(--color-action); transform: translateY(-1px); box-shadow: var(--shadow-xs); }
+.star-jump-btn:active { transform: scale(.96); }
+.star-jump-btn.active { border-color: var(--color-action); background: rgba(var(--color-action-rgb), .06); box-shadow: 0 2px 8px rgba(var(--color-action-rgb), .15); }
 .star-jump-btn .quick-pick-icon { font-size: .85rem; }
 .star-jump-btn .quick-pick-count { color: var(--muted); font-size: var(--text-xs); }
 

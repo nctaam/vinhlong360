@@ -1714,6 +1714,112 @@ export function buildFestivalEventSchemaGraph(options: FestivalEventSchemaOption
   ])
 }
 
+export interface OcopLedgerSchemaOptions {
+  items?: Array<{
+    id: string | number
+    name: string
+    summary?: string
+    stars?: number
+    category?: string
+  }>
+  totalCount?: number
+  topStarTier?: number
+  canonicalUrl?: string
+  faqs?: Array<{ q: string; a: string }>
+}
 
+export function buildOcopLedgerSchemaGraph(options: OcopLedgerSchemaOptions = {}): Record<string, any> {
+  const pageUrl = options.canonicalUrl || canonicalUrl('/ocop')
+  const total = options.totalCount ?? (options.items?.length || 0)
+  const title = 'Sản phẩm OCOP Vĩnh Long — Sổ vàng vinh danh đặc sản quốc gia'
+  const desc = 'Chương trình Mỗi xã một sản phẩm (OCOP) tỉnh Vĩnh Long xếp hạng 3 đến 5 sao — nông sản sạch, thủ công mỹ nghệ và ẩm thực miệt vườn kiểm định chất lượng cao.'
 
+  const webpageNode = {
+    '@type': 'CollectionPage',
+    '@id': `${pageUrl}#collection`,
+    url: pageUrl,
+    name: `${title} — vinhlong360`,
+    description: desc,
+    inLanguage: 'vi-VN',
+    isPartOf: { '@id': `${SITE_URL}/#website` },
+    about: {
+      '@type': 'Thing',
+      name: 'Chương trình Mỗi xã Một sản phẩm (OCOP)',
+      description: 'Chương trình phát triển kinh tế nông thôn nâng cao giá trị đặc sản địa phương tỉnh Vĩnh Long.',
+    },
+    speakable: buildSpeakableSpecification([
+      '.catalog-hero h1',
+      '.ledger-kicker',
+      '.ledger-dek',
+      '.hero-creds',
+      '.catalog-aeo-plaque__title',
+      '.catalog-aeo-plaque__dek',
+    ]),
+  }
 
+  const breadcrumbNode = {
+    '@type': 'BreadcrumbList',
+    '@id': `${pageUrl}#breadcrumb`,
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'Trang chủ', item: `${SITE_URL}/` },
+      { '@type': 'ListItem', position: 2, name: 'Sản phẩm', item: `${SITE_URL}/san-pham` },
+      { '@type': 'ListItem', position: 3, name: 'OCOP', item: pageUrl },
+    ],
+  }
+
+  const itemListElements = (options.items || []).slice(0, 30).map((e, index) => {
+    const itemUrl = canonicalUrl(entityPath(e.id))
+    const itemNode: Record<string, any> = {
+      '@type': 'Product',
+      '@id': `${itemUrl}#product`,
+      name: e.name,
+      description: e.summary || e.name,
+      url: itemUrl,
+      category: 'OCOP Certified Products',
+    }
+    if (e.stars) {
+      itemNode.award = `Chứng nhận OCOP ${e.stars} sao Tỉnh Vĩnh Long`
+    }
+    return {
+      '@type': 'ListItem',
+      position: index + 1,
+      item: itemNode,
+    }
+  })
+
+  const itemListNode = {
+    '@type': 'ItemList',
+    '@id': `${pageUrl}#items`,
+    name: 'Sổ vàng sản phẩm OCOP Vĩnh Long',
+    description: 'Danh mục sản phẩm nông nghiệp và làng nghề đạt chuẩn OCOP từ 3 đến 5 sao.',
+    numberOfItems: total,
+    itemListElement: itemListElements,
+  }
+
+  const defaultFaqs = [
+    {
+      q: 'Sản phẩm OCOP Vĩnh Long là gì?',
+      a: 'Chương trình Mỗi xã một sản phẩm (OCOP) tại Vĩnh Long tôn vinh và chứng nhận các đặc sản nông nghiệp, làng nghề thủ công và ẩm thực truyền thống đạt tiêu chuẩn chất lượng cao từ 3 sao đến 5 sao.',
+    },
+    {
+      q: 'Vĩnh Long hiện có những sản phẩm OCOP 5 sao nào tiêu biểu?',
+      a: 'Vĩnh Long sở hữu các sản phẩm OCOP đạt hạng cao tiêu biểu như bưởi năm roi Bình Minh, khoai lang Bình Tân, bánh tráng cù lao Mây, các sản phẩm chế biến từ dừa và gốm đỏ Mang Thít.',
+    },
+    {
+      q: 'Làm thế nào để tìm và mua đặc sản OCOP Vĩnh Long chính gốc?',
+      a: 'Du khách và người tiêu dùng có thể tra cứu thông tin nhà sản xuất, địa chỉ điểm bán, số điện thoại liên hệ và định vị bản đồ trực tiếp trên hệ thống VinhLong360.',
+    },
+  ]
+
+  const faqs = options.faqs && options.faqs.length > 0 ? options.faqs : defaultFaqs
+  const faqNode = buildFaqPageSchema(faqs, `${pageUrl}#faq`)
+
+  return buildUnifiedSchemaGraph([
+    buildWebSiteSchema(),
+    buildOrganizationSchema(),
+    webpageNode,
+    breadcrumbNode,
+    itemListNode,
+    faqNode,
+  ])
+}
