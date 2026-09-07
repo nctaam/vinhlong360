@@ -652,52 +652,26 @@ const festivalListSchema = computed(() => {
 
 useHead(() => {
   const pageUrl = canonicalUrl('/le-hoi')
-  const graphNodes: any[] = [
-    buildWebSiteSchema(),
-    buildOrganizationSchema(),
-    {
-      '@type': 'CollectionPage',
-      '@id': `${pageUrl}#collection`,
-      name: 'Lễ hội truyền thống Vĩnh Long',
-      description: 'Lễ hội đình miếu, lễ Khmer, Nghinh Ông, giỗ danh nhân — truyền thống văn hóa tỉnh Vĩnh Long hợp nhất (3 vùng trước 7-2025).',
-      url: pageUrl,
-      numberOfItems: allEvents.value.length,
-      isPartOf: { '@id': `${SITE_URL}/#website` },
-      about: {
-        '@type': 'Thing',
-        name: 'Lễ hội truyền thống Vĩnh Long',
-        description: 'Văn hóa ba dòng sông giao thoa giữa cộng đồng Kinh, Khmer và Hoa.',
-      },
-      speakable: buildSpeakableSpecification(['.page-article', 'h1', '.pull-quote', '.etiquette-box', '.catalog-aeo-plaque__title', '.catalog-aeo-plaque__dek']),
-    },
-  ]
-
-  const faqItems: FaqItem[] = [
-    {
-      q: 'Văn hóa lễ hội Vĩnh Long có những nét đặc trưng gì?',
-      a: 'Vĩnh Long là nơi giao thoa văn hóa độc đáo của ba dân tộc Kinh, Khmer và Hoa với các lễ hội đình miếu Kỳ Yên, lễ hội Ok Om Bok cúng trăng, Chôl Chnăm Thmây và lễ hội Nghinh Ông miền duyên hải.',
-    },
-    {
-      q: 'Du khách tham gia lễ hội ở Vĩnh Long cần lưu ý những quy tắc gì?',
-      a: 'Hầu hết các lễ hội truyền thống mở cửa tự do không thu phí. Du khách nên mặc trang phục lịch sự khi vào chánh điện; tháo giày dép khi vào chùa Khmer và nên tham dự các nghi thức chính vào buổi sáng.',
-    },
-    {
-      q: 'Làm thế nào để theo dõi lịch diễn ra các lễ hội theo cả âm lịch và dương lịch?',
-      a: 'Trang Lễ hội trên VinhLong360 tích hợp bảng chuyển đổi âm - dương lịch, chu kỳ trăng và tải lịch nhắc sự kiện dạng tập tin .ics về điện thoại tiện lợi.',
-    },
-  ]
-  const faqNode = buildFaqPageSchema(faqItems, `${pageUrl}#faq`)
-  if (faqNode) graphNodes.push(faqNode)
+  const schemaGraph = buildFestivalEventSchemaGraph({
+    events: allEvents.value.map((e: Entity) => ({
+      id: e.id,
+      name: e.name,
+      summary: e.summary,
+      place_name: e.place_name,
+      date_start: e.attributes?.date_start,
+      date_end: e.attributes?.date_end,
+    })),
+    totalCount: allEvents.value.length,
+    todayLunarLabel: todayLunarLabel.value,
+    canonicalUrl: pageUrl,
+  })
 
   return {
     link: [{ rel: 'canonical', href: pageUrl }],
     script: [
       {
         type: 'application/ld+json',
-        innerHTML: safeJsonLd({
-          '@context': 'https://schema.org',
-          '@graph': graphNodes,
-        }),
+        innerHTML: safeJsonLd(schemaGraph),
       },
       ...(festivalListSchema.value ? [{ type: 'application/ld+json' as const, innerHTML: festivalListSchema.value }] : []),
     ],
@@ -738,7 +712,7 @@ useHead(() => {
   font-weight: var(--weight-bold);
   letter-spacing: .02em;
   padding: 1px var(--space-2);
-  border-radius: var(--radius-full);
+  border-radius: var(--radius-pill, 999px);
   margin-bottom: var(--space-1);
 }
 .lehoi-status.status-soon {
@@ -767,7 +741,7 @@ useHead(() => {
   font-size: var(--text-sm);
   color: var(--ink-tertiary, var(--muted));
   background: rgba(var(--accent-rgb), .08);
-  border-radius: var(--radius-surface);
+  border-radius: var(--radius-surface, 12px);
   border: 1px solid rgba(var(--accent-rgb), .2);
 }
 

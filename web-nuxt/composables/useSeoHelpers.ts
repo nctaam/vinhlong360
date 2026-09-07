@@ -1597,6 +1597,123 @@ export function buildSeasonalitySchemaGraph(options: SeasonalitySchemaOptions): 
   ])
 }
 
+export interface FestivalEventSchemaOptions {
+  events?: Array<{
+    id: string | number
+    name: string
+    summary?: string
+    place_name?: string
+    date_start?: string
+    date_end?: string
+  }>
+  totalCount?: number
+  todayLunarLabel?: string
+  canonicalUrl?: string
+  faqs?: Array<{ q: string; a: string }>
+}
+
+export function buildFestivalEventSchemaGraph(options: FestivalEventSchemaOptions = {}): Record<string, any> {
+  const pageUrl = options.canonicalUrl || canonicalUrl('/le-hoi')
+  const total = options.totalCount ?? (options.events?.length || 0)
+  const title = 'Lễ hội truyền thống Vĩnh Long — Giao thoa văn hóa Kinh - Khmer - Hoa'
+  const desc = 'Lễ hội đình miếu Kỳ Yên, lễ hội Ok Om Bok cúng trăng, Chôl Chnăm Thmây và Nghinh Ông miền duyên hải — truyền thống văn hóa tỉnh Vĩnh Long.'
+
+  const webpageNode = {
+    '@type': 'CollectionPage',
+    '@id': `${pageUrl}#collection`,
+    url: pageUrl,
+    name: `${title} — vinhlong360`,
+    description: desc,
+    inLanguage: 'vi-VN',
+    isPartOf: { '@id': `${SITE_URL}/#website` },
+    about: {
+      '@type': 'Place',
+      name: 'Tỉnh Vĩnh Long',
+      geo: { '@type': 'GeoShape', box: '9.8 105.8 10.4 106.7' },
+    },
+    speakable: buildSpeakableSpecification([
+      '.catalog-hero h1',
+      '.dateline-eyebrow',
+      '.now-banner',
+      '.sediment-head h2',
+      '.catalog-aeo-plaque__title',
+      '.catalog-aeo-plaque__dek',
+    ]),
+  }
+
+  const breadcrumbNode = {
+    '@type': 'BreadcrumbList',
+    '@id': `${pageUrl}#breadcrumb`,
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'Trang chủ', item: `${SITE_URL}/` },
+      { '@type': 'ListItem', position: 2, name: 'Lễ hội', item: pageUrl },
+    ],
+  }
+
+  const eventListElements = (options.events || []).slice(0, 30).map((e, index) => {
+    const eventUrl = canonicalUrl(entityPath(e.id))
+    const itemNode: Record<string, any> = {
+      '@type': 'Event',
+      '@id': `${eventUrl}#event`,
+      name: e.name,
+      description: e.summary || e.name,
+      url: eventUrl,
+      eventAttendanceMode: 'https://schema.org/OfflineEventAttendanceMode',
+      eventStatus: 'https://schema.org/EventScheduled',
+    }
+    if (e.date_start) itemNode.startDate = e.date_start
+    if (e.date_end) itemNode.endDate = e.date_end
+    if (e.place_name) {
+      itemNode.location = {
+        '@type': 'Place',
+        name: e.place_name,
+        address: { '@type': 'PostalAddress', addressRegion: 'Vĩnh Long', addressCountry: 'VN' },
+      }
+    }
+    return {
+      '@type': 'ListItem',
+      position: index + 1,
+      item: itemNode,
+    }
+  })
+
+  const itemListNode = {
+    '@type': 'ItemList',
+    '@id': `${pageUrl}#events`,
+    name: 'Danh sách lễ hội truyền thống tiêu biểu tại Vĩnh Long',
+    description: 'Các sự kiện văn hóa, lễ hội dân gian và nghi thức tâm linh.',
+    numberOfItems: total,
+    itemListElement: eventListElements,
+  }
+
+  const defaultFaqs = [
+    {
+      q: 'Văn hóa lễ hội Vĩnh Long có những nét đặc trưng gì?',
+      a: 'Vĩnh Long là nơi giao thoa văn hóa độc đáo của ba dân tộc Kinh, Khmer và Hoa với các lễ hội đình miếu Kỳ Yên, lễ hội Ok Om Bok cúng trăng, Chôl Chnăm Thmây và lễ hội Nghinh Ông miền duyên hải.',
+    },
+    {
+      q: 'Du khách tham gia lễ hội ở Vĩnh Long cần lưu ý những quy tắc gì?',
+      a: 'Hầu hết các lễ hội truyền thống mở cửa tự do không thu phí. Du khách nên mặc trang phục lịch sự khi vào chánh điện; tháo giày dép khi vào chùa Khmer và nên tham dự các nghi thức chính vào buổi sáng.',
+    },
+    {
+      q: 'Làm thế nào để theo dõi lịch diễn ra các lễ hội theo cả âm lịch và dương lịch?',
+      a: 'Trang Lễ hội trên VinhLong360 tích hợp bảng chuyển đổi âm - dương lịch, chu kỳ trăng và tải lịch nhắc sự kiện dạng tập tin .ics về điện thoại tiện lợi.',
+    },
+  ]
+
+  const faqs = options.faqs && options.faqs.length > 0 ? options.faqs : defaultFaqs
+  const faqNode = buildFaqPageSchema(faqs, `${pageUrl}#faq`)
+
+  return buildUnifiedSchemaGraph([
+    buildWebSiteSchema(),
+    buildOrganizationSchema(),
+    webpageNode,
+    breadcrumbNode,
+    itemListNode,
+    faqNode,
+  ])
+}
+
 
 
 
