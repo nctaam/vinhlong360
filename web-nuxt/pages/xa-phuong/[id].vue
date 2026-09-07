@@ -161,6 +161,8 @@
       <div class="wp-main" data-detail-region="narrative">
         <p v-if="data.place.summary" class="wp-summary">{{ data.place.summary }}</p>
 
+        <WardTerroirDigest :place="data.place" />
+
         <ClientOnly>
           <section v-if="data.place.coordinates" class="wp-map-sec">
             <EmptyState v-if="mapLoadError" tone="error" message="Không tải được bản đồ. Kiểm tra kết nối và thử lại." />

@@ -23,6 +23,52 @@
       </div>
     </section>
 
+    <!-- 24/7 Emergency Tourism Rescue Hotlines -->
+    <section class="block dir-emergency reveal" aria-labelledby="dir-emergency-title" data-dir-emergency>
+      <div class="section-head dir-emergency-head">
+        <div class="dir-emergency-badge">
+          <IconLine name="shield" aria-hidden="true" />
+          <span>Hạ tầng An toàn Thực địa</span>
+        </div>
+        <h2 id="dir-emergency-title" class="sediment-head">Cứu hộ Du lịch &amp; Hotline Khẩn cấp 24/7</h2>
+        <p class="dir-emergency-dek">
+          Đầu mối cứu hộ cứu nạn sông Tiền, cấp cứu y tế, an ninh trật tự và phà vượt sông luôn túc trực phục vụ du khách.
+        </p>
+      </div>
+
+      <div class="dir-emergency-grid">
+        <article
+          v-for="item in emergencyHotlines"
+          :key="item.id"
+          class="dir-emergency-card"
+          :class="{ 'dir-emergency-card--priority': item.priority }"
+        >
+          <div class="dir-emergency-card-top">
+            <span class="dir-emergency-icon" aria-hidden="true">
+              <IconLine :name="item.icon" />
+            </span>
+            <span class="dir-emergency-tag">{{ item.badge }}</span>
+          </div>
+
+          <h3 class="dir-emergency-card-name">{{ item.name }}</h3>
+          <p class="dir-emergency-card-desc">{{ item.desc }}</p>
+
+          <a
+            :href="telHref(item.phone)"
+            class="dir-emergency-call"
+            data-contact-action="phone"
+            data-contact-surface="directory-emergency"
+            :data-contact-entity-id="item.id"
+            :aria-label="`Gọi trực tiếp ${item.name}: ${item.phone}`"
+            @click="trackContactView(item.id, 'phone')"
+          >
+            <IconLine name="phone" aria-hidden="true" />
+            <span>{{ item.phone }}</span>
+          </a>
+        </article>
+      </div>
+    </section>
+
     <!-- Error state -->
     <EmptyState v-if="placesError && !places?.length" icon-name="alert-triangle" title="Không thể tải dữ liệu" message="Vui lòng thử lại sau.">
       <template #actions>
@@ -260,6 +306,61 @@ function relativeUpdated(raw: string) {
   return `${Math.floor(days / 365)} năm trước`
 }
 
+interface EmergencyHotline {
+  id: string
+  name: string
+  phone: string
+  desc: string
+  badge: string
+  icon: string
+  priority?: boolean
+}
+
+const emergencyHotlines: EmergencyHotline[] = [
+  {
+    id: 'rescue-waterway',
+    name: 'CSGT & Cứu nạn Đường thủy',
+    phone: '0270 3822 305',
+    desc: 'Tuần tra sông Tiền & Cổ Chiên, cứu hộ sự cố đò phà và tàu thuyền du lịch 24/7.',
+    badge: 'Đường thủy 24/7',
+    icon: 'shield',
+    priority: true,
+  },
+  {
+    id: 'rescue-medical',
+    name: 'Cấp cứu Y tế 115 & BV Đa khoa',
+    phone: '115',
+    desc: 'Điều phối xe cấp cứu lưu động và tiếp nhận hỗ trợ y tế khẩn cấp toàn tỉnh.',
+    badge: 'Khẩn cấp 115',
+    icon: 'phone',
+    priority: true,
+  },
+  {
+    id: 'rescue-police',
+    name: 'Công an Tỉnh (Phản ứng nhanh)',
+    phone: '113',
+    desc: 'Bảo đảm an ninh trật tự, hỗ trợ du khách bị thất lạc hoặc gặp sự cố an ninh.',
+    badge: 'Trực ban 113',
+    icon: 'shield-check',
+  },
+  {
+    id: 'rescue-ferry',
+    name: 'Điều phối Phà An Bình',
+    phone: '0270 3822 514',
+    desc: 'Hỗ trợ phương tiện qua sông Cổ Chiên, giải quyết sự cố bến phà đêm ngày.',
+    badge: 'Vượt sông',
+    icon: 'route',
+  },
+  {
+    id: 'rescue-tourism',
+    name: 'Cứu hộ Du lịch Vĩnh Long 360',
+    phone: '0270 3822 188',
+    desc: 'Hỗ trợ hướng dẫn thực địa, giải quyết khúc mắc dịch vụ và phản ánh du lịch.',
+    badge: 'Hỗ trợ du khách',
+    icon: 'compass',
+  },
+]
+
 let facilitiesAbort: AbortController | null = null
 
 onBeforeUnmount(() => {
@@ -411,6 +512,129 @@ useHead(() => ({
 .sk-bar--wide { width: 65%; }
 .sk-bar--mid { width: 50%; }
 @media (prefers-reduced-motion: reduce) { .sk-bar { animation: none; } }
+
+/* 24/7 Emergency Tourism Hotline */
+.dir-emergency {
+  margin-block-end: var(--space-6);
+}
+.dir-emergency-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-1) var(--space-3);
+  font-size: var(--text-xs);
+  font-weight: var(--weight-semibold);
+  color: var(--color-action);
+  background: var(--color-action-surface);
+  border-radius: var(--radius-control);
+  margin-block-end: var(--space-2);
+}
+.dir-emergency-dek {
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+  line-height: 1.5;
+  max-width: 48rem;
+  margin-block-start: var(--space-1);
+}
+.dir-emergency-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-3);
+  margin-block-start: var(--space-4);
+}
+@media (min-width: 640px) {
+  .dir-emergency-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+@media (min-width: 1024px) {
+  .dir-emergency-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+.dir-emergency-card {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: var(--space-4);
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sheet);
+  transition: transform 0.2s var(--ease-out), box-shadow 0.2s var(--ease-out);
+}
+.dir-emergency-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-sm);
+}
+.dir-emergency-card--priority {
+  border-left: 3px solid var(--color-action);
+}
+.dir-emergency-card-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+  margin-block-end: var(--space-2);
+}
+.dir-emergency-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  border-radius: var(--radius-control);
+  background: var(--color-action-surface);
+  color: var(--color-action);
+  font-size: 1rem;
+}
+.dir-emergency-tag {
+  font-size: var(--text-xs);
+  font-weight: var(--weight-semibold);
+  padding: 0.125rem var(--space-2);
+  border-radius: var(--radius-control);
+  background: var(--color-action-surface);
+  color: var(--color-action);
+}
+.dir-emergency-card-name {
+  font-size: var(--text-base);
+  font-weight: var(--weight-bold);
+  color: var(--ink);
+  margin-block-end: var(--space-1);
+}
+.dir-emergency-card-desc {
+  font-size: var(--text-xs);
+  color: var(--color-text-muted);
+  line-height: 1.45;
+  margin-block-end: var(--space-4);
+  flex-grow: 1;
+}
+.dir-emergency-call {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-4);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-semibold);
+  border-radius: var(--radius-control);
+  background: var(--color-action-surface);
+  color: var(--color-action);
+  border: 1px solid var(--color-action-border);
+  text-decoration: none;
+  min-height: 44px;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+.dir-emergency-call:hover {
+  background: var(--color-action);
+  color: var(--color-on-action);
+}
+.dir-emergency-card--priority .dir-emergency-call {
+  background: var(--color-action);
+  color: var(--color-on-action);
+}
+.dir-emergency-card--priority .dir-emergency-call:hover {
+  background: var(--color-action-hover);
+}
 
 /* Dark mode */
 .dark .fac { background: var(--bg-alt); border-color: var(--line); }
