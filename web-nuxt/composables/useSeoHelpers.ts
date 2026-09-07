@@ -983,7 +983,7 @@ export function buildAboutPageSchemaGraph(options: AboutPageSchemaOptions = {}):
     breadcrumb: { '@id': `${pageUrl}#breadcrumb` },
     mainEntity: { '@id': `${SITE_URL}/#organization` },
     about: { '@id': `${SITE_URL}/#organization` },
-    speakable: buildSpeakableSpecification(['.about-intro', 'h1', '.about-mission-quote', '#ban-bien-tap']),
+    speakable: buildSpeakableSpecification(['.about-intro', 'h1', '.about-mission-quote', '#ban-bien-tap', '.catalog-aeo-plaque__title', '.catalog-aeo-plaque__dek']),
   }
 
   const nodes: any[] = [
@@ -1025,7 +1025,7 @@ export function buildContactPageSchemaGraph(options: ContactPageSchemaOptions = 
     isPartOf: { '@id': `${SITE_URL}/#website` },
     breadcrumb: { '@id': `${pageUrl}#breadcrumb` },
     mainEntity: { '@id': `${SITE_URL}/#organization` },
-    speakable: buildSpeakableSpecification(['.bm-inner h1', '.bm-sub', '.bm-sla', '.contact-quote', '.contact-cards h2']),
+    speakable: buildSpeakableSpecification(['.bm-inner h1', '.bm-sub', '.bm-sla', '.contact-quote', '.contact-cards h2', '.catalog-aeo-plaque__title', '.catalog-aeo-plaque__dek']),
   }
 
   const contactPointNode = {
@@ -1148,7 +1148,7 @@ export function buildGuideSchemaGraph(options: GuideSchemaOptions = {}): Record<
     isPartOf: { '@id': `${SITE_URL}/#website` },
     about: { '@id': `${SITE_URL}/#organization` },
     mainEntity: { '@id': `${SITE_URL}/#organization` },
-    speakable: buildSpeakableSpecification(['.bm-inner h1', '.bm-sub', '.section-intro', '#bat-dau h2']),
+    speakable: buildSpeakableSpecification(['.bm-inner h1', '.bm-sub', '.section-intro', '#bat-dau h2', '.catalog-aeo-plaque__title', '.catalog-aeo-plaque__dek']),
   }
 
   const defaultFaqs = [
@@ -1293,7 +1293,7 @@ export function buildMemberGuideSchemaGraph(options: MemberGuideSchemaOptions = 
     isPartOf: { '@id': `${SITE_URL}/#website` },
     about: { '@id': `${SITE_URL}/#organization` },
     mainEntity: { '@id': `${SITE_URL}/#organization` },
-    speakable: buildSpeakableSpecification(['.guide-hero h1', '.guide-hero p', '.guide-section h2', '.guide-intro']),
+    speakable: buildSpeakableSpecification(['.guide-hero h1', '.guide-hero p', '.guide-section h2', '.guide-intro', '.catalog-aeo-plaque__title', '.catalog-aeo-plaque__dek']),
   }
 
   const defaultFaqs = [

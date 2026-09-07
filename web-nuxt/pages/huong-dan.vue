@@ -218,6 +218,16 @@
         </div>
       </section>
 
+      <CatalogAeoPlaque
+        kicker="Cẩm nang du khách · Tra cứu tức thì"
+        title="Hỏi đáp cốt lõi khi trải nghiệm nền tảng số vinhlong360"
+        accent="leaf"
+        icon="help-circle"
+        :entries="guideAeoEntries"
+        cta-to="/huong-dan-thanh-vien"
+        cta-label="Khám phá quy chế tính điểm danh tiếng & huy hiệu"
+      />
+
       <!-- declutter-3 T7: CTA band đã bỏ — thay 1 dòng hỗ trợ -->
       <p class="guide-support-line">Cần thêm giúp đỡ? <NuxtLink to="/lien-he">Liên hệ hỗ trợ</NuxtLink> · <NuxtLink to="/huong-dan-thanh-vien">Hệ thống cấp bậc &amp; điểm</NuxtLink></p>
 
@@ -237,6 +247,21 @@ import {
 useReveal()
 
 const updatedDate = '26/06/2026'
+
+const guideAeoEntries = [
+  {
+    heading: 'Khám phá & Lưu điểm không cần đăng ký',
+    text: 'Du khách tự do tra cứu 1.500+ địa điểm, xem chỉ đường, mùa vụ và lưu danh sách yêu thích trực tiếp vào trình duyệt cá nhân.',
+  },
+  {
+    heading: 'Công cụ lập lộ trình thông minh',
+    text: 'Tự động tính khoảng cách, gợi ý điểm dừng theo tuyến sông Tiền – sông Hậu và tích hợp bản đồ số vệ tinh thời gian thực.',
+  },
+  {
+    heading: 'Đóng góp & Nâng hạng thành viên',
+    text: 'Chia sẻ đánh giá chân thực, báo sai thông tin để tích lũy điểm danh tiếng và nhận các huy hiệu danh dự từ cộng đồng.',
+  },
+]
 const search = ref('')
 const activeId = ref('')
 

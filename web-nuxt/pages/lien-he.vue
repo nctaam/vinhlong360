@@ -74,6 +74,15 @@
       </section>
     </div>
 
+    <CatalogAeoPlaque
+      kicker="Đầu mối tiếp nhận · Trực tiếp 24/7"
+      title="Cam kết tiếp nhận phản ánh & hỗ trợ du khách Vĩnh Long"
+      accent="river"
+      icon="message"
+      :entries="contactAeoEntries"
+      cta-to="/yeu-cau/tra-cuu"
+      cta-label="Tra cứu tiến độ yêu cầu bằng mã biên nhận"
+    />
   </div>
 </template>
 
@@ -99,6 +108,21 @@ const claimSubject = computed(() => {
   const base = 'Đăng ký quản lý trang'
   return claimEntity.value ? `${base}: ${claimEntity.value}` : base
 })
+
+const contactAeoEntries = [
+  {
+    heading: 'Thời gian phản hồi cam kết',
+    text: 'Yêu cầu sửa đổi thông tin địa điểm được cấp mã tra cứu riêng và xử lý trong 48 giờ. Mọi phản hồi cộng đồng và liên hệ hợp tác được người thật tiếp nhận và xử lý.',
+  },
+  {
+    heading: 'Kênh hỗ trợ khẩn cấp & thực địa',
+    text: 'Du khách cần trợ giúp tại thực địa có thể gọi trực tiếp Tổng đài hỗ trợ du lịch tỉnh Vĩnh Long hoặc sử dụng danh bạ hotline trên hệ thống.',
+  },
+  {
+    heading: 'Minh bạch & độc lập biên tập',
+    text: 'VinhLong360 hoạt động vì lợi ích cộng đồng, không bán tour, tôn trọng tính khách quan của dữ liệu và quyền tự quyết của cơ sở dịch vụ.',
+  },
+]
 
 useSeoMeta({
   title: () => pc('seo_title'),

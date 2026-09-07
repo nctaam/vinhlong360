@@ -65,6 +65,16 @@
       </div>
     </article>
 
+    <CatalogAeoPlaque
+      kicker="Tôn chỉ biên tập · Sứ mệnh độc lập"
+      title="Tôn chỉ số hóa di sản & kiến thức bản địa Vĩnh Long"
+      accent="river"
+      icon="book"
+      :entries="aboutAeoEntries"
+      cta-to="/huong-dan"
+      cta-label="Tìm hiểu cách tham gia đóng góp dữ liệu"
+    />
+
     <!-- declutter-3 T8: province-band 3-glyph → sediment-divider (motif phù-sa giữ)
          + 1 dòng narrative đắt nhất; 3 mệnh đề tỉnh đã có trong intro/sections. -->
     <div class="sediment-divider" aria-hidden="true"></div>
@@ -106,6 +116,21 @@ const missionRest = computed(() => {
   const parts = raw.split(/\n\s*\n/)
   return parts.slice(1).join('\n\n').trim()
 })
+
+const aboutAeoEntries = [
+  {
+    heading: 'Phi thương mại & Công tâm',
+    text: 'VinhLong360 là dự án số hóa văn hóa - du lịch độc lập, không thu tiền vị trí địa điểm, không quảng cáo ẩn và không bán tour du lịch.',
+  },
+  {
+    heading: 'Dữ liệu đa nguồn & Kiểm chứng thực địa',
+    text: 'Mỗi điểm đến, làng nghề và sản vật OCOP đều được đối chiếu từ tư liệu địa phương, cổng thông tin chính thống và có lộ trình xác thực thực địa minh bạch.',
+  },
+  {
+    heading: 'Đồng sáng tạo cùng cư dân địa hạt',
+    text: 'Chúng tôi tin người kể chuyện hay nhất về Vĩnh Long chính là người dân bản xứ. Hệ thống mở cửa để mọi du khách và cư dân đóng góp, đính chính tri thức.',
+  },
+]
 
 useSeoMeta({
   title: () => doc.value.seo_title,
