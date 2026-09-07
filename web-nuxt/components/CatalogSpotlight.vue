@@ -72,8 +72,12 @@ const relCount = computed(() => pick.value?.relationship_total || 0)
 .cspot {
   display: grid; grid-template-columns: 1.05fr 1fr; gap: var(--space-6);
   align-items: stretch; background: var(--card); border: 1px solid var(--border);
-  border-radius: var(--radius-sheet); overflow: hidden; box-shadow: var(--shadow-sm);
+  border-radius: var(--radius-sheet); overflow: hidden;
+  box-shadow: 0 1px 3px rgba(var(--black-rgb), 0.05), 0 0 0 1px rgba(var(--white-rgb), 0.5);
   contain: layout style paint;
+}
+.dark .cspot {
+  box-shadow: 0 1px 3px rgba(var(--black-rgb), 0.2), 0 0 0 1px rgba(var(--white-rgb), 0.08);
 }
 @media (max-width: 760px) { .cspot { grid-template-columns: 1fr; } }
 .cspot-visual {

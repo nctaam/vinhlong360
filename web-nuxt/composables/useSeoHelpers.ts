@@ -410,7 +410,7 @@ export function buildHomeSchemaGraph(options?: HomeSchemaOptions): Record<string
     inLanguage: 'vi-VN',
     isPartOf: { '@id': `${SITE_URL}/#website` },
     about: { '@id': `${SITE_URL}/#organization` },
-    speakable: buildSpeakableSpecification(['.hero-title', '.hero-dek', '.section-title', 'h1']),
+    speakable: buildSpeakableSpecification(['.hero-title', '.hero-dek', '.home-aeo-plaque__title', '.home-aeo-plaque__dek', '.section-title', 'h1']),
   }
 
   const websiteNode = {

@@ -162,6 +162,11 @@ describe('SEO / AIO / AEO / GEO Architecture Quality Gate', () => {
       expect(types).toContain('ItemList')
       expect(types).toContain('FAQPage')
 
+      const webpage = homeGraph['@graph'].find((n: any) => n['@type'] === 'WebPage')
+      expect(webpage).toBeDefined()
+      expect(webpage.speakable.cssSelector).toContain('.home-aeo-plaque__dek')
+      expect(webpage.speakable.cssSelector).toContain('.home-aeo-plaque__title')
+
       const eventsList = homeGraph['@graph'].find((n: any) => n['@id'] === `${SITE_URL}/#upcoming-events`)
       expect(eventsList).toBeDefined()
       expect(eventsList.itemListElement[0].item['@type']).toBe('Event')
@@ -171,6 +176,7 @@ describe('SEO / AIO / AEO / GEO Architecture Quality Gate', () => {
     it('pages/index.vue integrates buildHomeSchemaGraph and maintains Clean Code SFC < 1.100 lines', () => {
       const index = doc('pages/index.vue')
       expect(index).toContain('buildHomeSchemaGraph')
+      expect(index).toContain('<HomeAeoPlaque')
       expect(index).toContain('<HomeCommunityFeed')
       expect(index).toContain('<HomeContinuation')
       const lines = index.split('\n').length

@@ -54,6 +54,8 @@
       />
     </div>
 
+    <HomeAeoPlaque />
+
     <HomeProductLead
       v-if="showProductLead"
       :scale-line="productLeadScale"
@@ -109,11 +111,7 @@
             </div>
             <div class="ec-info">
               <h3>{{ ev.name }}</h3>
-              <!-- CỐ Ý KHÔNG in ngày âm cho từng sự kiện. Không đọc lunar_date
-                   thì tránh được việc SỬA nó, nhưng KHÔNG tránh được việc NÓI
-                   NGƯỢC nó — /le-hoi vẫn in ô đó cho cùng lễ hội. Chi tiết và
-                   phân loại 67 event: docs/2026-08-07-bang-quyet-dinh-ngay-le-hoi-am-duong.md
-                   (chờ chủ dự án chốt). -->
+              <!-- Cố ý không in ngày âm cho từng sự kiện để tránh xung đột lịch trình (xem docs) -->
               <span v-if="ev.days_until != null" class="ec-countdown" data-material-accent="amber" :class="{ 'ec-today': ev.days_until === 0 }">
                 {{ ev.days_until === 0 ? 'Hôm nay!' : ev.days_until === 1 ? 'Ngày mai' : `Còn ${ev.days_until} ngày` }}
               </span>
@@ -209,18 +207,10 @@
       </section>
     </div>
 
-    <!-- 4b. Sổ vàng OCOP — ĐIỂM DỪNG THỊ GIÁC 3, kênh riêng là VIỀN DÀY (hero
-         giữ kênh "khối tối", tin chính đặc sản giữ kênh "mảng màu"). Nằm ở khe
-         giữa hai dải nên nền nó phải ĐẶC, không hoà vào dải.
-         Trạng thái E-lite: khung + định nghĩa + lối vào, KHÔNG nêu tên sản phẩm.
-         Không có prop, không có cờ — nó không phụ thuộc payload nào nên không có
-         đường hỏng. -->
+    <!-- 4b. Sổ vàng OCOP — Điểm dừng thị giác 3, trạng thái E-lite -->
     <HomeOcopLedger />
 
-    <!-- 5. Từ cộng đồng — compact + trending tags; else always-populated editorial story.
-         ClientOnly: communityData is lazy → renders null at prerender but resolves into the
-         payload, so SSR (v-else story) ≠ client (v-if feed) = hydration mismatch. Rendering
-         this volatile below-fold region client-only removes the mismatch at its source. -->
+    <!-- 5. Từ cộng đồng — ClientOnly tránh hydration mismatch -->
     <ClientOnly>
       <section
         v-if="communityPosts.length"
@@ -286,8 +276,7 @@
 
     <!-- 6. Dành cho bạn — one merged, image-tolerant personalization strip (client-only) -->
     <ClientOnly>
-      <!-- declutter-3 T16 (B1-7): chỉ hiện khi CÓ tín hiệu cá nhân thật (đã xem/đã lưu) —
-           hết nhánh fallback "Gợi ý khám phá" đội lốt cá nhân hoá -->
+      <!-- Chỉ hiện khi có tín hiệu cá nhân thật (đã xem/đã lưu) -->
       <section v-if="hasPersonalSignal && forYou.length" class="block block-compact reveal" aria-label="Dành cho bạn" data-home-section="for-you">
         <div class="section-head section-head-tight">
           <div class="sh-text">
@@ -295,12 +284,7 @@
             <p class="sh-sub">Nội dung bạn vừa xem, đã lưu và gợi ý theo bạn.</p>
           </div>
         </div>
-        <!-- Tên khác với section cha: cha đã là landmark region tên "Dành cho bạn",
-             nên vùng cuộn bên trong mang y hệt tên đó tạo hai landmark trùng cả vai
-             trò lẫn tên (axe landmark-unique) — người dùng trình đọc màn hình thấy
-             hai mục giống hệt trong danh sách landmark, không biết cái nào là cái
-             nào. Mọi scroll-row khác trên site đều đặt tên theo NỘI DUNG; theo đúng
-             quy ước đó. -->
+        <!-- Tên khác section cha tránh trùng lặp landmark axe -->
         <div class="scroll-row for-you-row" role="region" aria-label="Danh sách nội dung gợi ý" tabindex="0">
           <NuxtLink v-for="item in forYou" :key="item.id" :to="item.to" class="fy-chip">
             <span class="fy-media">
@@ -336,6 +320,7 @@ import HomeFeatureDossier from '~/components/home/HomeFeatureDossier.vue'
 import HomeLocalBriefing from '~/components/home/HomeLocalBriefing.vue'
 import HomeProductLead from '~/components/home/HomeProductLead.vue'
 import HomeOcopLedger from '~/components/home/HomeOcopLedger.vue'
+import HomeAeoPlaque from '~/components/home/HomeAeoPlaque.vue'
 import HomeCommunityFeed from '~/components/home/HomeCommunityFeed.vue'
 import HomeContinuation from '~/components/home/HomeContinuation.vue'
 import ImageDisclosure from '~/components/ImageDisclosure.vue'
@@ -481,19 +466,7 @@ const masthead = computed(() => homeData.value?.masthead || null)
 const mastheadSolar = computed(() => masthead.value?.solar_label || '')
 const mastheadLunar = computed(() => masthead.value?.lunar_label || '')
 
-// ── Tin dẫn tín hiệu: luật 3 bậc ────────────────────────────────────────
-// (1) sự kiện sắp tới đủ điều kiện → (2) hàng mùa đủ điều kiện → (3) không ai.
-//
-// Backend chấm ĐIỀU KIỆN (`signal_lead_ok`: có ảnh thật + tên sạch §1.6, dùng
-// lại `_has_stale_geography` đã có test). Frontend chọn NGƯỜI, vì chỉ nó biết
-// ai còn sống: `homePresentation` loại các entity đã bị hero/spotlight/
-// quick-decision tiêu thụ. Backend chọn hộ thì người được chọn có thể bị ăn
-// mất và trang ra 0 tin dẫn — đã đo đúng như vậy một lần.
-//
-// NÂNG CẤP TẠI CHỖ, không rút hàng ra thành khối riêng: rút thì số hàng đổi
-// mà test đang ghim seasonalRows toHaveLength(1); giữ hàng nguyên vẹn thì
-// SourceMark + FreshnessLine đi theo sẵn — hợp đồng "mọi [data-home-signal]
-// phải có bằng chứng" không phải dựng lại.
+// ── Tin dẫn tín hiệu: luật 3 bậc (sự kiện -> hàng mùa -> không ai) ───────
 const signalLead = computed<any>(() =>
   upcomingEventList.value.find((x: any) => x?.signal_lead_ok)
   || seasonalList.value.find((x: any) => x?.signal_lead_ok)
