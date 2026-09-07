@@ -36,6 +36,22 @@
         </div>
         <button type="button" class="btn btn-primary" data-color-role="action-primary" @click="doSearch">Tìm</button>
       </div>
+
+      <div class="search-quick-culture" role="group" aria-label="Gợi ý tìm kiếm 3 vùng văn hóa">
+        <span class="sqc-label">Gợi ý nhanh:</span>
+        <div class="sqc-chips">
+          <button
+            v-for="chip in quickSearchChips"
+            :key="chip.query"
+            type="button"
+            class="sqc-btn"
+            @click="selectQuickSearch(chip.query)"
+          >
+            <IconLine :name="chip.icon" aria-hidden="true" />
+            <span>{{ chip.label }}</span>
+          </button>
+        </div>
+      </div>
     </section>
 
     <NuxtErrorBoundary>
@@ -151,6 +167,22 @@
             </button>
           </template>
         </EmptyState>
+
+        <div class="zero-result-hub-shortcuts" role="navigation" aria-label="Lối tắt khám phá danh mục">
+          <NuxtLink to="/du-lich" class="zrhs-card">
+            <IconLine name="compass" aria-hidden="true" />
+            <div><strong>Khám phá Du lịch</strong><small>Xem các điểm đến sinh thái & văn hóa</small></div>
+          </NuxtLink>
+          <NuxtLink to="/san-pham" class="zrhs-card">
+            <IconLine name="fruit" aria-hidden="true" />
+            <div><strong>Đặc sản & OCOP</strong><small>Nông sản và quà tặng chính vụ</small></div>
+          </NuxtLink>
+          <NuxtLink to="/ban-do" class="zrhs-card">
+            <IconLine name="map" aria-hidden="true" />
+            <div><strong>Bản đồ số thực địa</strong><small>Tìm quanh vị trí hoặc theo vùng</small></div>
+          </NuxtLink>
+        </div>
+
         <div class="zero-result-curated-wrap" aria-label="Gợi ý tìm kiếm phổ biến">
           <p class="zero-result-curated-label"><IconLine name="sparkles" aria-hidden="true" /> Gợi ý chủ đề phổ biến:</p>
           <div class="scroll-row trending-row">
@@ -368,6 +400,19 @@ onBeforeUnmount(() => {
 })
 
 // Row A — "Đang được hỏi nhiều": chip tĩnh dẫn thẳng vào một câu tìm kiếm thật.
+const quickSearchChips = [
+  { label: 'Cù lao An Bình', query: 'cù lao an bình', icon: 'leaf' },
+  { label: 'Lò gốm Mang Thít', query: 'gốm mang thít', icon: 'flame' },
+  { label: 'Bưởi Năm Roi', query: 'bưởi năm roi', icon: 'fruit' },
+  { label: 'Phà & Đò sông', query: 'bến phà', icon: 'compass' },
+  { label: 'Chùa Khmer', query: 'chùa khmer', icon: 'landmark' },
+]
+
+function selectQuickSearch(term: string) {
+  searchInput.value = term
+  doSearch()
+}
+
 const trendingChips = [
   'bún nước lèo',
   'bưởi Năm Roi',
@@ -990,4 +1035,13 @@ useHead({
   .trending-chip:hover { transform: none; }
   .trending-chip:active { transform: none; }
 }
+.search-quick-culture { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2); margin-top: var(--space-3); }
+.sqc-label { font-size: var(--text-xs); color: var(--muted); font-weight: var(--weight-medium); }
+.sqc-chips { display: flex; flex-wrap: wrap; gap: var(--space-2); }
+.sqc-btn { display: inline-flex; align-items: center; gap: var(--space-1); padding: 3px var(--space-3); font-size: var(--text-xs); color: var(--ink); background: var(--card); border: 1px solid var(--line); border-radius: var(--radius-full); cursor: pointer; transition: all .2s var(--ease-out); }
+.sqc-btn:hover { background: var(--bg-warm); border-color: var(--border); color: var(--color-brand); }
+.zero-result-hub-shortcuts { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: var(--space-3); margin: var(--space-4) 0; }
+.zrhs-card { display: flex; align-items: center; gap: var(--space-3); padding: var(--space-3) var(--space-4); background: var(--card); border: 1px solid var(--line); border-radius: var(--radius-sheet); text-decoration: none; color: var(--ink); transition: all .2s var(--ease-out); }
+.zrhs-card:hover { border-color: var(--border); box-shadow: var(--shadow-sm); transform: translateY(-1px); }
+.zrhs-card small { display: block; font-size: var(--text-xs); color: var(--muted); }
 </style>
