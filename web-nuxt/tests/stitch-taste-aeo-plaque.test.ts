@@ -38,34 +38,15 @@ describe('Stitch Design Taste & AEO Plaque Refinements (Moc 136)', () => {
     })
   })
 
-  describe('Home AEO Plaque (components/home/HomeAeoPlaque.vue)', () => {
-    it('integrates local field verification stamp with icon and localized text', () => {
-      const src = readComp('components/home/HomeAeoPlaque.vue')
-      expect(src).toContain('home-aeo-plaque__stamp')
-      expect(src).toContain('name="shield-check"')
-      expect(src).toContain('Xác thực thực địa')
-    })
-
-    it('enforces purpose-based radius scale and eliminates legacy radius-full', () => {
-      const src = readComp('components/home/HomeAeoPlaque.vue')
-      const style = src.match(/<style[^>]*>([\s\S]*?)<\/style>/)?.[1] || ''
-      expect(style).toContain('--radius-pill')
-      expect(style).toContain('--radius-sheet')
-      expect(style).toContain('--radius-surface')
-      expect(style).not.toMatch(/--radius-full\b/)
-      expect(style).not.toMatch(/--radius-(?:xs|sm|md|lg|xl)\b/)
-    })
-
-    it('enforces zero raw hex color debt in style tag', () => {
-      const src = readComp('components/home/HomeAeoPlaque.vue')
-      const style = src.match(/<style[^>]*>([\s\S]*?)<\/style>/)?.[1] || ''
-      expect(style).not.toMatch(/:\s*#[0-9a-fA-F]{3,8}\b/)
-    })
-
-    it('provides tactile spring physics and accessibility motion reduction', () => {
-      const src = readComp('components/home/HomeAeoPlaque.vue')
-      expect(src).toContain('cubic-bezier(0.16, 1, 0.3, 1)')
-      expect(src).toContain('prefers-reduced-motion: reduce')
+  describe('Home AEO Plaque Integration (pages/index.vue)', () => {
+    it('integrates configurable CatalogAeoPlaque with seasonal entries on home page', () => {
+      const src = readFileSync(resolve(__dirname, '../pages/index.vue'), 'utf8')
+      expect(src).toContain('<CatalogAeoPlaque')
+      expect(src).toContain('data-home-section="aeo-plaque"')
+      expect(src).toContain('data-home-aeo-plaque')
+      expect(src).toContain('Cẩm nang du lịch theo mùa')
+      expect(src).toContain('Mùa nước nổi & Miệt vườn')
+      expect(src).toContain('Mùa di sản gốm & Hoa xuân')
     })
   })
 
@@ -84,12 +65,12 @@ describe('Stitch Design Taste & AEO Plaque Refinements (Moc 136)', () => {
 
     const files = [
       'components/CatalogAeoPlaque.vue',
-      'components/home/HomeAeoPlaque.vue',
+      'pages/index.vue',
     ]
 
     for (const f of files) {
       it(`${f} is free from banned promotional fillers`, () => {
-        const src = readComp(f)
+        const src = readFileSync(resolve(__dirname, '..', f), 'utf8')
         for (const filler of FILLERS) {
           expect(src.toLowerCase()).not.toContain(filler.toLowerCase())
         }

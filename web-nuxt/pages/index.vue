@@ -54,7 +54,17 @@
       />
     </div>
 
-    <HomeAeoPlaque />
+    <CatalogAeoPlaque
+      data-home-section="aeo-plaque"
+      data-home-aeo-plaque
+      title="Cẩm nang du lịch theo mùa"
+      kicker="Góc nhìn bản địa · Giải đáp nhanh AEO"
+      accent="amber"
+      icon="bulb"
+      :entries="homeAeoEntries"
+      cta-to="/theo-mua"
+      cta-label="Khám phá lịch trình theo mùa"
+    />
 
     <HomeProductLead
       v-if="showProductLead"
@@ -320,7 +330,6 @@ import HomeFeatureDossier from '~/components/home/HomeFeatureDossier.vue'
 import HomeLocalBriefing from '~/components/home/HomeLocalBriefing.vue'
 import HomeProductLead from '~/components/home/HomeProductLead.vue'
 import HomeOcopLedger from '~/components/home/HomeOcopLedger.vue'
-import HomeAeoPlaque from '~/components/home/HomeAeoPlaque.vue'
 import HomeCommunityFeed from '~/components/home/HomeCommunityFeed.vue'
 import HomeContinuation from '~/components/home/HomeContinuation.vue'
 import ImageDisclosure from '~/components/ImageDisclosure.vue'
@@ -328,6 +337,17 @@ import { describeEntityImages, describeEntityPlaceholder } from '~/utils/imageDe
 import { createHomeNocturnePresentation } from '~/utils/homeNocturnePresentation'
 import type { HomePresentationEntity } from '~/utils/homeNocturnePresentation'
 import { resolveFreshnessStatus, resolveSourceTier } from '~/utils/regionalColor'
+
+const homeAeoEntries = [
+  {
+    heading: 'Mùa nước nổi & Miệt vườn (Tháng 8 – 10)',
+    text: 'Thời điểm vàng trải nghiệm sinh thái sông nước Cửu Long. Xuồng ba lá len lỏi dưới bóng dừa nước Cù Lao An Bình, thưởng thức cá linh non đầu mùa và trái cây chín cây thanh ngọt.',
+  },
+  {
+    heading: 'Mùa di sản gốm & Hoa xuân (Tháng 1 – 3)',
+    text: 'Vương quốc gốm đỏ Mang Thít vào vụ nung đỏ lửa bên dòng Cổ Chiên. Khí hậu mát dịu lý tưởng cho các tour di sản kiến trúc tâm linh, làng nghề truyền thống và lễ hội đầu năm.',
+  },
+]
 import {
   formatFreshnessLabel,
   eventMetadata,

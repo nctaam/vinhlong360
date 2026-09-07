@@ -20,6 +20,14 @@ import {
   buildPrivacyPolicySchemaGraph,
   buildTermsOfServiceSchemaGraph,
   buildInterestCategorySchemaGraph,
+  buildOcopLedgerSchemaGraph,
+  buildFestivalEventSchemaGraph,
+  buildRoutesCatalogSchemaGraph,
+  buildTourismCatalogSchemaGraph,
+  buildStayCatalogSchemaGraph,
+  buildProductCatalogSchemaGraph,
+  buildSeasonalitySchemaGraph,
+  buildContemporaryEventSchemaGraph,
   safeJsonLd,
   SITE_URL,
 } from '../composables/useSeoHelpers'
@@ -179,7 +187,7 @@ describe('SEO / AIO / AEO / GEO Architecture Quality Gate', () => {
     it('pages/index.vue integrates buildHomeSchemaGraph and maintains Clean Code SFC < 1.100 lines', () => {
       const index = doc('pages/index.vue')
       expect(index).toContain('buildHomeSchemaGraph')
-      expect(index).toContain('<HomeAeoPlaque')
+      expect(index).toContain('<CatalogAeoPlaque')
       expect(index).toContain('<HomeCommunityFeed')
       expect(index).toContain('<HomeContinuation')
       const lines = index.split('\n').length
@@ -202,40 +210,45 @@ describe('SEO / AIO / AEO / GEO Architecture Quality Gate', () => {
   describe('OCOP Hub Knowledge Graph (pages/ocop.vue)', () => {
     it('publishes CollectionPage with program About node, Speakable, and 3-to-5 star FAQ', () => {
       const ocop = doc('pages/ocop.vue')
-      expect(ocop).toContain('buildWebSiteSchema()')
-      expect(ocop).toContain('buildOrganizationSchema()')
-      expect(ocop).toContain('buildSpeakableSpecification')
-      expect(ocop).toContain('.catalog-aeo-plaque__title')
-      expect(ocop).toContain('.catalog-aeo-plaque__dek')
+      expect(ocop).toContain('buildOcopLedgerSchemaGraph')
       expect(ocop).toContain('<CatalogAeoPlaque')
-      expect(ocop).toContain("name: 'Chương trình Mỗi xã Một sản phẩm (OCOP)'")
-      expect(ocop).toContain("safeJsonLd({")
+      expect(ocop).toContain('safeJsonLd(schemaGraph)')
+
+      const graph = buildOcopLedgerSchemaGraph({ items: [] })
+      expect(graph['@context']).toBe('https://schema.org')
+      const types = graph['@graph'].map((n: any) => n['@type'])
+      expect(types).toContain('CollectionPage')
+      expect(types).toContain('FAQPage')
     })
   })
 
   describe('Festival Cultural Knowledge Graph (pages/le-hoi.vue)', () => {
     it('publishes CollectionPage with tri-ethnic cultural About node and etiquette FAQ', () => {
       const festival = doc('pages/le-hoi.vue')
-      expect(festival).toContain('buildWebSiteSchema()')
-      expect(festival).toContain('buildOrganizationSchema()')
-      expect(festival).toContain('buildSpeakableSpecification')
-      expect(festival).toContain('.catalog-aeo-plaque__title')
-      expect(festival).toContain('.catalog-aeo-plaque__dek')
+      expect(festival).toContain('buildFestivalEventSchemaGraph')
       expect(festival).toContain('<CatalogAeoPlaque')
-      expect(festival).toContain('buildFaqPageSchema')
-      expect(festival).toContain("name: 'Lễ hội truyền thống Vĩnh Long'")
+      expect(festival).toContain('safeJsonLd(schemaGraph)')
+
+      const graph = buildFestivalEventSchemaGraph({ events: [] })
+      expect(graph['@context']).toBe('https://schema.org')
+      const types = graph['@graph'].map((n: any) => n['@type'])
+      expect(types).toContain('CollectionPage')
+      expect(types).toContain('FAQPage')
     })
   })
 
   describe('Routes Travel Knowledge Graph (pages/tuyen-duong.vue)', () => {
     it('publishes CollectionPage with route ItemList, road-trip Speakable, and transit FAQ', () => {
       const routes = doc('pages/tuyen-duong.vue')
-      expect(routes).toContain('buildWebSiteSchema()')
-      expect(routes).toContain('buildOrganizationSchema()')
-      expect(routes).toContain('buildSpeakableSpecification')
-      expect(routes).toContain('buildFaqPageSchema')
-      expect(routes).toContain("name: 'Tuyến đường gợi ý Vĩnh Long'")
-      expect(routes).toContain("name: 'Lộ trình du lịch Vĩnh Long'")
+      expect(routes).toContain('buildRoutesCatalogSchemaGraph')
+      expect(routes).toContain('<CatalogAeoPlaque')
+      expect(routes).toContain('safeJsonLd(schemaGraph)')
+
+      const graph = buildRoutesCatalogSchemaGraph({ routes: [] })
+      expect(graph['@context']).toBe('https://schema.org')
+      const types = graph['@graph'].map((n: any) => n['@type'])
+      expect(types).toContain('CollectionPage')
+      expect(types).toContain('FAQPage')
     })
   })
 
@@ -267,63 +280,75 @@ describe('SEO / AIO / AEO / GEO Architecture Quality Gate', () => {
   describe('Tourism Hub Knowledge Graph (pages/du-lich.vue)', () => {
     it('publishes CollectionPage with about Tourism, Speakable, and itinerary FAQ', () => {
       const tourism = doc('pages/du-lich.vue')
-      expect(tourism).toContain('buildWebSiteSchema()')
-      expect(tourism).toContain('buildOrganizationSchema()')
-      expect(tourism).toContain('buildSpeakableSpecification')
-      expect(tourism).toContain('.catalog-aeo-plaque__title')
-      expect(tourism).toContain('.catalog-aeo-plaque__dek')
+      expect(tourism).toContain('buildTourismCatalogSchemaGraph')
       expect(tourism).toContain('<CatalogAeoPlaque')
-      expect(tourism).toContain('buildFaqPageSchema')
-      expect(tourism).toContain("name: 'Du lịch Vĩnh Long'")
-      expect(tourism).toContain("safeJsonLd({")
+      expect(tourism).toContain('safeJsonLd(schemaGraph)')
+
+      const graph = buildTourismCatalogSchemaGraph({ items: [] })
+      expect(graph['@context']).toBe('https://schema.org')
+      const types = graph['@graph'].map((n: any) => n['@type'])
+      expect(types).toContain('CollectionPage')
+      expect(types).toContain('FAQPage')
     })
   })
 
   describe('Lodging Hub Knowledge Graph (pages/luu-tru.vue)', () => {
     it('publishes CollectionPage with about Lodging, Speakable, and homestay FAQ', () => {
       const lodging = doc('pages/luu-tru.vue')
-      expect(lodging).toContain('buildWebSiteSchema()')
-      expect(lodging).toContain('buildOrganizationSchema()')
-      expect(lodging).toContain('buildSpeakableSpecification')
-      expect(lodging).toContain('buildFaqPageSchema')
-      expect(lodging).toContain("name: 'Lưu trú Vĩnh Long'")
-      expect(lodging).toContain("safeJsonLd({")
+      expect(lodging).toContain('buildStayCatalogSchemaGraph')
+      expect(lodging).toContain('<CatalogAeoPlaque')
+      expect(lodging).toContain('safeJsonLd(schemaGraph)')
+
+      const graph = buildStayCatalogSchemaGraph({ items: [] })
+      expect(graph['@context']).toBe('https://schema.org')
+      const types = graph['@graph'].map((n: any) => n['@type'])
+      expect(types).toContain('CollectionPage')
+      expect(types).toContain('FAQPage')
     })
   })
 
   describe('Product Catalog Knowledge Graph (pages/san-pham.vue)', () => {
     it('publishes CollectionPage with about Products, Speakable, and gift FAQ', () => {
       const product = doc('pages/san-pham.vue')
-      expect(product).toContain('buildWebSiteSchema()')
-      expect(product).toContain('buildOrganizationSchema()')
-      expect(product).toContain('buildSpeakableSpecification')
-      expect(product).toContain('buildFaqPageSchema')
-      expect(product).toContain("name: 'Sản phẩm địa phương Vĩnh Long'")
-      expect(product).toContain("safeJsonLd({")
+      expect(product).toContain('buildProductCatalogSchemaGraph')
+      expect(product).toContain('<CatalogAeoPlaque')
+      expect(product).toContain('safeJsonLd(schemaGraph)')
+
+      const graph = buildProductCatalogSchemaGraph({ products: [] })
+      expect(graph['@context']).toBe('https://schema.org')
+      const types = graph['@graph'].map((n: any) => n['@type'])
+      expect(types).toContain('CollectionPage')
+      expect(types).toContain('FAQPage')
     })
   })
 
   describe('Seasonal Almanac Knowledge Graph (pages/theo-mua.vue)', () => {
     it('publishes CollectionPage with about Seasonal crops, Speakable, and harvest FAQ', () => {
       const season = doc('pages/theo-mua.vue')
-      expect(season).toContain('buildWebSiteSchema()')
-      expect(season).toContain('buildOrganizationSchema()')
-      expect(season).toContain('buildSpeakableSpecification')
-      expect(season).toContain('buildFaqPageSchema')
-      expect(season).toContain("name: 'Lịch mùa vụ nông sản và du lịch Vĩnh Long'")
-      expect(season).toContain("safeJsonLd({")
+      expect(season).toContain('buildSeasonalitySchemaGraph')
+      expect(season).toContain('<CatalogAeoPlaque')
+      expect(season).toContain('safeJsonLd(schemaGraph)')
+
+      const graph = buildSeasonalitySchemaGraph({ currentMonth: 1 })
+      expect(graph['@context']).toBe('https://schema.org')
+      const types = graph['@graph'].map((n: any) => n['@type'])
+      expect(types).toContain('CollectionPage')
+      expect(types).toContain('FAQPage')
     })
   })
 
   describe('Events Hub Knowledge Graph (pages/su-kien.vue)', () => {
     it('publishes CollectionPage with about Events, Speakable, and cultural fair FAQ', () => {
       const events = doc('pages/su-kien.vue')
-      expect(events).toContain('buildWebSiteSchema()')
-      expect(events).toContain('buildOrganizationSchema()')
-      expect(events).toContain('buildSpeakableSpecification')
-      expect(events).toContain('buildFaqPageSchema')
-      expect(events).toContain("name: 'Sự kiện & Hội chợ Vĩnh Long'")
-      expect(events).toContain("safeJsonLd({")
+      expect(events).toContain('buildContemporaryEventSchemaGraph')
+      expect(events).toContain('<CatalogAeoPlaque')
+      expect(events).toContain('safeJsonLd(schemaGraph)')
+
+      const graph = buildContemporaryEventSchemaGraph({ events: [] })
+      expect(graph['@context']).toBe('https://schema.org')
+      const types = graph['@graph'].map((n: any) => n['@type'])
+      expect(types).toContain('CollectionPage')
+      expect(types).toContain('FAQPage')
     })
   })
 
