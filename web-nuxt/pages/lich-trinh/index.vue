@@ -391,7 +391,7 @@ useHead(() => ({
 .day-arc-title { font-family: var(--font-editorial); }
 .day-arc { position: relative; margin-top: var(--space-6); height: 56px; }
 .day-arc-track {
-  position: absolute; left: 0; right: 0; top: 18px; height: 3px; border-radius: var(--radius-full);
+  position: absolute; left: 0; right: 0; top: 18px; height: 3px; border-radius: var(--radius-pill, 999px);
   background: linear-gradient(90deg,
     var(--river-600) 0%,
     color-mix(in srgb, var(--river-600) 40%, var(--amber-600) 60%) 30%,
@@ -417,11 +417,11 @@ useHead(() => ({
 .pace-chips { display: flex; flex-wrap: wrap; gap: var(--space-2); }
 .pace-chip {
   display: inline-flex; align-items: center; gap: var(--space-2);
-  padding: var(--space-2) var(--space-4); border-radius: var(--radius-full);
+  padding: var(--space-2) var(--space-4); border-radius: var(--radius-pill, 999px);
   border: .5px solid var(--line); background: var(--card); color: var(--ink);
   font-size: var(--text-sm); font-weight: var(--weight-medium); cursor: pointer;
   min-height: 44px;
-  transition: transform .3s var(--ease-out-expo), background .25s var(--ease-out), border-color .25s var(--ease-out), box-shadow .25s var(--ease-out);
+  transition: transform .25s cubic-bezier(0.16, 1, 0.3, 1), background .25s var(--ease-out), border-color .25s var(--ease-out), box-shadow .25s var(--ease-out);
 }
 .pace-chip-glyph { font-size: var(--text-base); line-height: 1; }
 .pace-chip-count { font-size: var(--text-2xs); color: var(--muted); font-variant-numeric: tabular-nums; }
@@ -445,7 +445,7 @@ useHead(() => ({
 }
 .pace-shelf-kicker::before {
   content: ""; position: absolute; left: 0; top: 50%; transform: translateY(-50%);
-  width: 4px; height: 1.05em; border-radius: var(--radius-full);
+  width: 4px; height: 1.05em; border-radius: var(--radius-pill, 999px);
   background: linear-gradient(180deg, var(--river-600) 0%, var(--amber-600) 52%, var(--clay-600) 100%);
 }
 .dark .pace-shelf-kicker::before { background: linear-gradient(180deg, var(--river-legacy-dark) 0%, var(--amber-500) 52%, var(--clay-400) 100%); }

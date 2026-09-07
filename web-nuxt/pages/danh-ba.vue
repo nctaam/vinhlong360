@@ -391,16 +391,6 @@ async function loadFacilities() {
 }
 watch(wardId, loadFacilities)
 
-const jsonLd = computed(() => facilities.value
-  .filter((f: Entity) => attr(f, 'address') || attr(f, 'phone'))
-  .map((f: Entity) => ({
-    '@context': 'https://schema.org', '@type': 'GovernmentOffice',
-    name: f.name,
-    ...(attr(f, 'address') ? { address: attr(f, 'address') } : {}),
-    ...(attr(f, 'phone') ? { telephone: attr(f, 'phone') } : {}),
-    ...(attr(f, 'hours') ? { openingHours: attr(f, 'hours') } : {}),
-  })))
-
 // Đồ thị tri thức hợp nhất: '@type': 'CollectionPage', GovernmentService, ContactPoint, GovernmentOffice, FAQPage
 const directorySchema = computed(() => buildDirectorySchemaGraph({
   totalWards: totalWards.value,
@@ -430,7 +420,6 @@ useHead(() => ({
   link: [{ rel: 'canonical', href: canonicalUrl('/danh-ba') }],
   script: [
     { type: 'application/ld+json', innerHTML: safeJsonLd(directorySchema.value) },
-    ...(jsonLd.value.length ? [{ type: 'application/ld+json', innerHTML: safeJsonLd(jsonLd.value) }] : []),
   ],
 }))
 </script>

@@ -2282,3 +2282,131 @@ export function buildTourismCatalogSchemaGraph(options: TourismCatalogSchemaOpti
   ])
 }
 
+export interface StayCatalogItem {
+  id: string
+  name: string
+  summary?: string
+  place_name?: string
+  type?: string
+}
+
+export interface StayCatalogSchemaOptions {
+  items: StayCatalogItem[]
+  totalCount?: number
+  typeCounts?: Record<string, number>
+  canonicalUrl?: string
+  faqs?: FaqItem[]
+}
+
+/**
+ * Đồ thị tri thức hợp nhất danh mục Lưu trú & Nghỉ dưỡng Vĩnh Long (Mốc 145):
+ * CollectionPage + LodgingBusiness/BedAndBreakfast ItemList + BreadcrumbList + GeoShape + FAQPage
+ */
+export function buildStayCatalogSchemaGraph(options: StayCatalogSchemaOptions): Record<string, any> {
+  const pageUrl = options.canonicalUrl || canonicalUrl('/luu-tru')
+  const total = options.totalCount ?? options.items.length
+
+  const webpageNode: Record<string, any> = {
+    '@type': 'CollectionPage',
+    '@id': `${pageUrl}#collection`,
+    url: pageUrl,
+    name: 'Lưu trú Tỉnh Vĩnh Long',
+    description: 'Hệ thống homestay miệt vườn cù lao, khách sạn trung tâm và khu nghỉ dưỡng sinh thái ven sông Tiền, Cổ Chiên.',
+    inLanguage: 'vi',
+    isPartOf: { '@id': `${SITE_URL}/#website` },
+    breadcrumb: { '@id': `${pageUrl}#breadcrumb` },
+    numberOfItems: total,
+    about: [
+      {
+        '@type': 'Thing',
+        name: 'Dịch vụ lưu trú và Homestay Vĩnh Long',
+        description: 'Hệ thống homestay nhà vườn cù lao An Bình, khách sạn tiện nghi và khu nghỉ dưỡng ven sông tại Vĩnh Long.',
+      },
+      {
+        '@type': 'TouristDestination',
+        name: 'Vĩnh Long',
+        description: 'Điểm đến du lịch sinh thái sông nước miệt vườn Mekong.',
+      },
+    ],
+    spatialCoverage: {
+      '@type': 'Place',
+      name: 'Tỉnh Vĩnh Long',
+      geo: {
+        '@type': 'GeoShape',
+        box: '10.0 105.8 10.4 106.2',
+      },
+    },
+    speakable: buildSpeakableSpecification([
+      '.catalog-hero h1',
+      '.catalog-lead',
+      '.catalog-type-breakdown',
+      '.catalog-aeo-plaque__title',
+      '.catalog-aeo-plaque__dek',
+    ]),
+  }
+
+  const breadcrumbNode = {
+    '@type': 'BreadcrumbList',
+    '@id': `${pageUrl}#breadcrumb`,
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'Trang chủ', item: `${SITE_URL}/` },
+      { '@type': 'ListItem', position: 2, name: 'Lưu trú', item: pageUrl },
+    ],
+  }
+
+  const itemListNode = {
+    '@type': 'ItemList',
+    '@id': `${pageUrl}#items`,
+    name: 'Danh sách cơ sở lưu trú Vĩnh Long',
+    description: 'Homestay miệt vườn cù lao An Bình, khách sạn trung tâm và khu nghỉ dưỡng sinh thái Vĩnh Long.',
+    numberOfItems: total,
+    itemListElement: options.items.slice(0, 30).map((item, index) => {
+      const isHomestay = (item.type || '').toLowerCase().includes('homestay') || item.name.toLowerCase().includes('homestay')
+      return {
+        '@type': 'ListItem',
+        position: index + 1,
+        item: {
+          '@type': isHomestay ? 'BedAndBreakfast' : 'LodgingBusiness',
+          name: item.name,
+          description: item.summary || undefined,
+          url: `${SITE_URL}${entityPath(item.id)}`,
+          ...(item.place_name ? {
+            address: {
+              '@type': 'PostalAddress',
+              addressLocality: item.place_name,
+              addressRegion: 'Vĩnh Long',
+              addressCountry: 'VN',
+            },
+          } : {}),
+        },
+      }
+    }),
+  }
+
+  const defaultFaqs: FaqItem[] = [
+    {
+      q: 'Vĩnh Long có những loại hình lưu trú nào phổ biến nhất?',
+      a: 'Nổi bật nhất là các homestay miệt vườn tại cù lao An Bình với trải nghiệm ngủ nhà gỗ truyền thống Nam Bộ, sinh hoạt cùng gia đình chủ nhà và hái trái cây tại vườn. Ngoài ra còn có hệ thống khách sạn trung tâm thành phố và nhà nghỉ tiện nghi.',
+    },
+    {
+      q: 'Du khách nên lưu ý điều gì khi đặt phòng homestay cù lao tại Vĩnh Long?',
+      a: 'Nên liên hệ đặt trước vào các dịp cuối tuần, mùa lễ hội hoặc mùa trái cây rộ (tháng 5 đến tháng 8). Kiểm tra trước khung giờ hoạt động của phà hoặc đò sang cù lao để chủ động lịch trình di chuyển.',
+    },
+    {
+      q: 'Các cơ sở lưu trú tại Vĩnh Long có cung cấp dịch vụ ẩm thực bản địa không?',
+      a: 'Đa số các homestay sinh thái Vĩnh Long đều phục vụ bữa cơm gia đình nấu theo hương vị truyền thống địa phương với cá tai tượng chiên xù, canh chua cá lóc bông điên điển, cá kèo kho tộ và bánh xèo giòn rụm.',
+    },
+  ]
+
+  const faqs = options.faqs && options.faqs.length > 0 ? options.faqs : defaultFaqs
+  const faqNode = buildFaqPageSchema(faqs, `${pageUrl}#faq`)
+
+  return buildUnifiedSchemaGraph([
+    buildWebSiteSchema(),
+    buildOrganizationSchema(),
+    webpageNode,
+    breadcrumbNode,
+    itemListNode,
+    faqNode,
+  ])
+}

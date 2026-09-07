@@ -770,9 +770,9 @@ useHead(() => ({
 .lvn-nav {
   width: 44px; height: 44px;
   display: inline-flex; align-items: center; justify-content: center;
-  border: .5px solid var(--line); border-radius: var(--radius-full);
+  border: .5px solid var(--line); border-radius: var(--radius-pill, 999px);
   background: var(--bg); color: var(--ink); cursor: pointer;
-  transition: background var(--duration-fast) var(--ease-out), transform var(--duration-fast) var(--ease-out);
+  transition: background var(--duration-fast) var(--ease-out), transform var(--duration-fast) cubic-bezier(0.16, 1, 0.3, 1);
 }
 .lvn-nav:hover:not(:disabled) { background: var(--bg-alt); }
 .lvn-nav:active:not(:disabled) { transform: scale(.94); }
@@ -871,7 +871,7 @@ useHead(() => ({
 .lvn-hint { display: block; margin-top: 2px; color: var(--ink-tertiary); font-size: var(--text-2xs); }
 .lvn-tag {
   display: inline-block; margin-inline-start: var(--space-1h); padding: 0 var(--space-1h);
-  border: .5px solid var(--line); border-radius: var(--radius-full);
+  border: .5px solid var(--line); border-radius: var(--radius-pill, 999px);
   font-size: var(--text-2xs); color: var(--ink-secondary);
 }
 .lvn-tag-first { color: var(--error); border-color: currentColor; }

@@ -216,7 +216,7 @@ useHead(() => ({
 .bxh-self { padding: var(--space-2) var(--space-3); background: color-mix(in srgb, var(--color-brand) 8%, transparent); border-radius: var(--radius-control); margin-bottom: var(--space-2); font-size: var(--text-sm); }
 .bxh-list { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: var(--space-2); }
 .bxh-list li.is-self .bxh-row { outline: 2px solid var(--color-focus); outline-offset: -1px; }
-.bxh-row { display: flex; align-items: center; gap: var(--space-3); padding: var(--space-3); min-height: 56px; background: var(--card); border: .5px solid var(--line); border-radius: var(--radius-sheet); text-decoration: none; color: var(--ink); transition: border-color .25s var(--ease-out), transform .25s var(--ease-out-expo); }
+.bxh-row { display: flex; align-items: center; gap: var(--space-3); padding: var(--space-3); min-height: 56px; background: var(--card); border: .5px solid var(--line); border-radius: var(--radius-sheet); text-decoration: none; color: var(--ink); transition: border-color .25s var(--ease-out), transform .25s cubic-bezier(0.16, 1, 0.3, 1); }
 .bxh-row:hover { border-color: var(--color-action); transform: translateY(-1px); }
 .bxh-row:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
 .bxh-row:active { transform: scale(.98); transition-duration: .08s; }
@@ -265,7 +265,7 @@ useHead(() => ({
   display: flex; flex-direction: column; align-items: center; text-align: center; gap: var(--space-1);
   padding: var(--space-5) var(--space-3) var(--space-4); border-radius: var(--radius-sheet);
   background: var(--card); border: .5px solid var(--line); text-decoration: none; color: var(--ink);
-  transition: border-color .25s var(--ease-out), transform .25s var(--ease-out-expo), box-shadow .25s var(--ease-out);
+  transition: border-color .25s var(--ease-out), transform .25s cubic-bezier(0.16, 1, 0.3, 1), box-shadow .25s var(--ease-out);
 }
 .podium-link:hover { border-color: var(--color-action); transform: translateY(-2px); box-shadow: var(--shadow-sm); }
 .podium-link:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
@@ -303,7 +303,7 @@ useHead(() => ({
    khỏi danh sách #4 trở đi, đúng công thức đã chuẩn hoá (sediment-head/
    tc-label), không tự chế biến thể mới. ── */
 .hairline-phusa {
-  height: 2px; margin: 0 0 var(--space-5); border-radius: var(--radius-full);
+  height: 2px; margin: 0 0 var(--space-5); border-radius: var(--radius-pill, 999px);
   background: linear-gradient(90deg, transparent 0%, var(--river-600) 15%, var(--amber-600) 50%, var(--clay-600) 85%, transparent 100%);
   opacity: .55;
 }
