@@ -53,6 +53,16 @@
       </div>
     </section>
 
+    <CatalogAeoPlaque
+      title="Nhịp điệu mùa vụ sông nước — Lịch nông sản & con nước nổi Vĩnh Long"
+      kicker="Chu kỳ tự nhiên · Thời điểm vàng trải nghiệm"
+      accent="clay"
+      icon="calendar"
+      :entries="catalogAeoEntries"
+      cta-to="/su-kien"
+      cta-label="Xem lịch sự kiện và lễ hội sắp tới"
+    />
+
     <!-- Spotlight nổi bật (entity đang mùa có summary dài nhất) -->
     <CatalogSpotlight :items="inSeasonItems" />
 
@@ -270,6 +280,21 @@
 </template>
 
 <script lang="ts">
+const catalogAeoEntries = [
+  {
+    heading: 'Tháng 5 – 7: Đại tiệc trái cây hè chính vụ',
+    text: 'Mùa rộ nhất của chôm chôm, sầu riêng, măng cụt, dâu da trên khắp các dải cù lao Long Hồ; trái ngọt đậm đà nhất và giá tốt nhất năm.',
+  },
+  {
+    heading: 'Tháng 8 – 10: Mùa nước nổi phù sa & ẩm thực đồng chiêm',
+    text: 'Nước son từ thượng nguồn đổ về đem theo cá linh non béo ngọt, hoa điên điển vàng rực bờ kênh và mùa bưởi Năm Roi vào độ thu hoạch.',
+  },
+  {
+    heading: 'Tháng 11 – 1: Sắc hoa chợ nổi & lễ hội đón xuân',
+    text: 'Làng hoa kiểng Chợ Lách rực rỡ tàu bè, dưa hấu Tết dọc bờ sông và các ngày hội văn hóa, hội chùa rộn rã đầu xuân.',
+  },
+]
+
 const WEDGE_TYPES = ['experience', 'product', 'dish']
 const TYPE_DESC: Record<string, string> = {
   experience: 'Chèo xuồng, đạp xe, tát mương — trải nghiệm đúng mùa đẹp nhất.',
@@ -449,7 +474,7 @@ useHead(() => {
         name: 'Lịch mùa vụ nông sản và du lịch Vĩnh Long',
         description: 'Cẩm nang tra cứu nông sản, trái cây vào mùa và ẩm thực đặc trưng theo 12 tháng tại Vĩnh Long.',
       },
-      speakable: buildSpeakableSpecification(['.catalog-hero h1', '.catalog-lead', '.season-section-head']),
+      speakable: buildSpeakableSpecification(['.catalog-hero h1', '.catalog-lead', '.season-section-head', '.catalog-aeo-plaque__title', '.catalog-aeo-plaque__dek']),
     },
   ]
 

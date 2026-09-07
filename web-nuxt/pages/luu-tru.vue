@@ -29,6 +29,16 @@
       </ul>
     </section>
 
+    <CatalogAeoPlaque
+      title="Chỉ dẫn lưu trú Vĩnh Long — Thức dậy cùng nhịp sống cù lao"
+      kicker="Mẹo chọn chỗ nghỉ · Thực địa miệt vườn"
+      accent="river"
+      icon="home"
+      :entries="catalogAeoEntries"
+      cta-to="/ban-do"
+      cta-label="Xem vị trí các homestay trên bản đồ số"
+    />
+
     <!-- Spotlight nổi bật -->
     <CatalogSpotlight :items="allEntities" />
 
@@ -189,6 +199,21 @@ function toggleAreaAndScroll(key: string) {
 const nhaMotif = generateCategoryIcon('accommodation')
 const natureMotif = generateCategoryIcon('nature')
 const attractionMotif = generateCategoryIcon('attraction')
+const catalogAeoEntries = [
+  {
+    heading: 'Homestay nhà vườn Cù lao An Bình & Bình Hòa Phước',
+    text: 'Trải nghiệm sống cùng gia chủ miệt vườn, chèo xuồng rạch nhỏ dừa nước, hái trái cây ăn tại vườn và thưởng thức bữa cơm cá tai tượng chiên xù giòn rụm.',
+  },
+  {
+    heading: 'Resort sinh thái ven sông Tiền & sông Cổ Chiên',
+    text: 'Không gian nghỉ dưỡng khoáng đạt hướng trọn tầm nhìn sông lớn, đón ngọn gió mát lành và ngắm bình minh rạng rỡ trên những chuyến phà châu thổ.',
+  },
+  {
+    heading: 'Khách sạn trung tâm thành phố Vĩnh Long & Bình Minh',
+    text: 'Vị trí thuận tiện kết nối các trục quốc lộ huyết mạch, gần chợ đêm bờ kè, phố ẩm thực và bến tàu du lịch đường thủy.',
+  },
+]
+
 const stayTypes = [
   {
     key: 'homestay',
@@ -362,7 +387,7 @@ useHead(() => {
         name: 'Dịch vụ lưu trú và Homestay Vĩnh Long',
         description: 'Hệ thống homestay nhà vườn, khách sạn và khu nghỉ dưỡng ven sông tại Vĩnh Long.',
       },
-      speakable: buildSpeakableSpecification(['.catalog-hero h1', '.catalog-lead', '.catalog-type-breakdown']),
+      speakable: buildSpeakableSpecification(['.catalog-hero h1', '.catalog-lead', '.catalog-type-breakdown', '.catalog-aeo-plaque__title', '.catalog-aeo-plaque__dek']),
     },
   ]
 

@@ -30,6 +30,16 @@
       </div>
     </section>
 
+    <CatalogAeoPlaque
+      title="Chỉ dẫn địa lý & Đặc sản Vĩnh Long — Nông sản thượng hạng đất phù sa"
+      kicker="Chỉ dẫn địa lý PGI & Bảo hộ thương hiệu"
+      accent="leaf"
+      icon="fruit"
+      :entries="catalogAeoEntries"
+      cta-to="/ocop"
+      cta-label="Xem sổ vàng sản phẩm OCOP đạt sao"
+    />
+
     <!-- declutter-3 T10: CatalogSpotlight đã bỏ — market-shelf mùa vụ thay vai khối tease
          duy nhất trước grid (chốt spec-review). -->
     <!-- Đang vào mùa — promoted above OCOP teaser: season is this page's spine -->
@@ -251,6 +261,21 @@ const relatedCatalogs = [
   { to: '/du-lich', icon: 'leaf', label: 'Du lịch', desc: 'Trải nghiệm miệt vườn' },
   { to: '/kham-pha/am-thuc', icon: 'bowl', label: 'Ẩm thực', desc: 'Món ngon Vĩnh Long' },
 ]
+const catalogAeoEntries = [
+  {
+    heading: 'Bưởi Năm Roi Bình Minh & Sầu riêng Ri6 Quới Thiện',
+    text: 'Vùng đất cù lao màu mỡ phù sa sông Hậu kiến tạo nên hương vị bưởi vỏ mỏng không hạt ngọt thanh cùng múi sầu riêng vàng ươm cơm dày béo ngậy.',
+  },
+  {
+    heading: 'Cam sành Tam Bình & Khoai lang tím Bình Tân',
+    text: 'Thổ nhưỡng đất phù sa kết hợp phèn nhẹ đặc thù tạo ra khoai lang tím xuất khẩu danh tiếng và những vườn cam sành mọng nước ngọt đậm đà.',
+  },
+  {
+    heading: 'Bánh tráng Cù lao Mây & Tàu hũ ky Mỹ Hòa',
+    text: 'Di sản làng nghề thủ công hơn trăm năm tuổi gìn giữ kỹ nghệ quết bánh phơi sương và tráng váng đậu truyền thống đạt chứng nhận OCOP.',
+  },
+]
+
 const inSeasonCount = computed(() => allEntities.value.filter((e: Entity) => inSeason(e, String(currentMonth))).length)
 
 const seasonalHighlights = computed(() => {
@@ -355,7 +380,7 @@ useHead(() => {
         name: 'Đặc sản và Sản phẩm địa phương Vĩnh Long',
         description: 'Trái cây nhiệt đới, nông sản chất lượng cao, sản phẩm OCOP và làng nghề truyền thống Vĩnh Long.',
       },
-      speakable: buildSpeakableSpecification(['.catalog-hero h1', '.catalog-lead', '.seasonal-banner-lead']),
+      speakable: buildSpeakableSpecification(['.catalog-hero h1', '.catalog-lead', '.seasonal-banner-lead', '.catalog-aeo-plaque__title', '.catalog-aeo-plaque__dek']),
     },
   ]
 
