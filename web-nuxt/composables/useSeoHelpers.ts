@@ -315,6 +315,8 @@ export function buildEntityDetailSchemaGraph(options: EntityDetailSchemaOptions)
     const ocopLabel = ocopBadgeLabel(e as any)
     if (ocopLabel) {
       ld.brand = { '@type': 'Brand', name: ocopLabel }
+      ld.award = ocopLabel
+      ld.category = 'Sản phẩm OCOP'
     }
   }
 
@@ -678,7 +680,7 @@ export function buildItineraryDetailSchemaGraph(options: ItineraryDetailSchemaOp
     isPartOf: { '@id': `${SITE_URL}/#website` },
     breadcrumb: { '@id': `${itUrl}#breadcrumb` },
     mainEntity: { '@id': `${itUrl}#trip` },
-    speakable: buildSpeakableSpecification(['.lead', 'h1', '.timeline-head', '.catalog-aeo-plaque__title', '.catalog-aeo-plaque__dek']),
+    speakable: buildSpeakableSpecification(['.lead', 'h1', '.timeline-head', '.catalog-aeo-plaque__title', '.catalog-aeo-plaque__dek', '.step-card strong', '.step-card .summary', '.step-note-callout']),
     publisher: { '@id': `${SITE_URL}/#organization` },
   }
 
@@ -699,6 +701,11 @@ export function buildItineraryDetailSchemaGraph(options: ItineraryDetailSchemaOp
     description: itDesc,
     touristType: 'Sightseeing',
     url: itUrl,
+    spatialCoverage: {
+      '@type': 'Place',
+      name: 'Tỉnh Vĩnh Long',
+      geo: { '@type': 'GeoShape', box: '9.8 105.8 10.4 106.7' },
+    },
   }
 
   if (Array.isArray(it.stops) && it.stops.length) {

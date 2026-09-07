@@ -64,8 +64,9 @@ const transitTips = computed(() => {
     tips.push('Phà An Bình hoạt động liên tục từ 4h30 đến 22h00; ban đêm sau 22h chuyển sang chuyến giãn cách hoặc đò bao.')
   }
   if (hasMangThit) {
-    tips.push('Tuyến rạch Thầy Cai và các lò gốm Mang Thít thuận tiện đi thuyền vào buổi sáng khi con nước lớn.')
+    tips.push('Tuyến kênh Thầy Cai và các lò gốm Mang Thít thuận tiện đi thuyền vào buổi sáng khi con nước lớn.')
   }
+  tips.push('Lưu ý con nước rằm và mùng 1 (triều cường): các tuyến đường đan ven rạch có thể ngập nhẹ vào giờ đỉnh triều.')
   tips.push('Nên chuẩn bị tiền mặt lẻ mệnh giá nhỏ để mua vé phà và qua các đò ngang dọc tuyến cù lao.')
   return tips
 })
@@ -99,7 +100,7 @@ const transitTips = computed(() => {
   justify-content: center;
   width: 2rem;
   height: 2rem;
-  border-radius: var(--radius-full);
+  border-radius: var(--radius-pill, 999px);
   background: rgba(var(--black-rgb), 0.04);
   color: var(--color-material-river);
   flex-shrink: 0;

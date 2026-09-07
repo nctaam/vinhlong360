@@ -10,7 +10,13 @@
     <div class="planner-pass-modal__sheet">
       <header class="planner-pass-modal__head">
         <div class="planner-pass-modal__brand">
-          <span class="planner-pass-modal__pill">Thẻ hành trình thực địa</span>
+          <div class="planner-pass-modal__badge-row">
+            <span class="planner-pass-modal__pill">Thẻ hành trình thực địa</span>
+            <span class="planner-pass-modal__offline-pill">
+              <IconLine name="wifi" aria-hidden="true" />
+              <span>Khả dụng ngoại tuyến</span>
+            </span>
+          </div>
           <h2 id="pass-modal-title" class="planner-pass-modal__title">{{ title || 'Lịch trình Vĩnh Long' }}</h2>
         </div>
         <button
@@ -31,7 +37,7 @@
           </div>
           <div>
             <span class="planner-pass-modal__label">Phương thức</span>
-            <strong>Đường bộ & Đò sông</strong>
+            <strong>Đường bộ &amp; Đò sông</strong>
           </div>
         </div>
 
@@ -47,7 +53,7 @@
 
         <div class="planner-pass-modal__notice">
           <p>
-            <strong>Cứu hộ & Hỗ trợ địa phương:</strong> Phà An Bình (24/7) · Tổng đài Du lịch Vĩnh Long 360.
+            <strong>Cứu hộ &amp; Hỗ trợ địa phương:</strong> Phà An Bình (24/7) · Hotline 0270 3822 188.
           </p>
         </div>
       </div>
@@ -125,6 +131,14 @@ function printPass() {
   margin-bottom: var(--space-4);
 }
 
+.planner-pass-modal__badge-row {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin-bottom: var(--space-1);
+}
+
 .planner-pass-modal__pill {
   display: inline-block;
   font-size: var(--text-2xs);
@@ -132,7 +146,18 @@ function printPass() {
   text-transform: uppercase;
   letter-spacing: var(--tracking-caps);
   color: var(--color-material-clay);
-  margin-bottom: var(--space-1);
+}
+
+.planner-pass-modal__offline-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  font-size: var(--text-2xs);
+  font-weight: var(--weight-medium);
+  color: var(--color-material-river);
+  background: color-mix(in srgb, var(--color-material-river) 10%, transparent);
+  border-radius: var(--radius-pill, 999px);
+  padding: 0.125rem var(--space-2);
 }
 
 .planner-pass-modal__title {
@@ -204,7 +229,7 @@ function printPass() {
   justify-content: center;
   width: 1.5rem;
   height: 1.5rem;
-  border-radius: var(--radius-full);
+  border-radius: var(--radius-pill, 999px);
   background: var(--color-material-clay);
   color: var(--color-canvas);
   font-size: var(--text-xs);
@@ -246,7 +271,7 @@ function printPass() {
   align-items: center;
   gap: var(--space-1);
   padding: var(--space-2) var(--space-4);
-  border-radius: var(--radius-full);
+  border-radius: var(--radius-pill, 999px);
   border: 1px solid var(--color-border);
   background: var(--color-canvas);
   color: var(--color-text);
@@ -259,7 +284,7 @@ function printPass() {
   display: inline-flex;
   align-items: center;
   padding: var(--space-2) var(--space-4);
-  border-radius: var(--radius-full);
+  border-radius: var(--radius-pill, 999px);
   border: none;
   background: var(--color-material-clay);
   color: var(--color-canvas);
