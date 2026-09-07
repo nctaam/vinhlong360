@@ -418,7 +418,7 @@ useHead(() => ({
 .cp-name { margin: 0; font-family: var(--font-editorial); font-weight: 600; font-size: clamp(1.35rem, 2vw, 1.9rem); }
 .cp-username { margin: .15rem 0 0; color: var(--muted); }
 .cp-status-row { display: flex; flex-wrap: wrap; gap: .4rem; margin-top: .6rem; }
-.cp-pill { display: inline-flex; align-items: center; min-height: 28px; padding: .2rem .65rem; border: 1px solid var(--line); border-radius: var(--radius-full); font-size: .78rem; color: var(--muted); background: var(--bg-alt); }
+.cp-pill { display: inline-flex; align-items: center; min-height: 28px; padding: .2rem .65rem; border: 1px solid var(--line); border-radius: var(--radius-pill, 999px); font-size: .78rem; color: var(--muted); background: var(--bg-alt); }
 .cp-pill.ok { color: var(--accent); border-color: color-mix(in oklab, var(--accent) 35%, var(--line)); }
 .cp-pill.warn { color: var(--danger); border-color: rgba(var(--danger-rgb), .25); }
 .cp-hero-actions { display: flex; flex-wrap: wrap; gap: .5rem; margin-top: .85rem; }
@@ -453,7 +453,7 @@ useHead(() => ({
   transition: opacity var(--duration-fast) var(--ease-out), color var(--duration-fast) var(--ease-out);
 }
 .cp-mini-link:hover { opacity: .85; }
-.cp-progress { height: 8px; border-radius: var(--radius-full); overflow: hidden; background: var(--bg-alt); margin-bottom: .75rem; }
+.cp-progress { height: 8px; border-radius: var(--radius-pill, 999px); overflow: hidden; background: var(--bg-alt); margin-bottom: .75rem; }
 .cp-progress span { display: block; height: 100%; border-radius: inherit; background: var(--accent); }
 .cp-checks, .cp-action-list, .cp-data-list { display: flex; flex-direction: column; gap: .45rem; }
 .cp-check { display: flex; align-items: center; gap: .45rem; color: var(--muted); font-size: .84rem; text-decoration: none; border-radius: var(--radius-control); }

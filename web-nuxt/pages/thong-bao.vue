@@ -276,7 +276,7 @@ useHead(() => ({
    .thread-rule), so the notification list ties into the shared system. */
 .tb-item::before {
   content: ""; position: absolute; left: 3px; top: 50%; transform: translateY(-50%);
-  width: 3px; height: 22px; border-radius: var(--radius-full);
+  width: 3px; height: 22px; border-radius: var(--radius-pill, 999px);
   background: linear-gradient(180deg, var(--river-600) 0%, var(--amber-600) 52%, var(--clay-600) 100%);
 }
 .tb-item-link {
@@ -295,13 +295,13 @@ useHead(() => ({
 .tb-item.unread .tb-icon-chip { background: rgba(var(--color-action-rgb), .12); color: var(--color-action); }
 .tb-body { display: flex; flex-direction: column; gap: .15rem; flex: 1; min-width: 0; }
 .tb-item-title { font-size: var(--text-sm); font-family: var(--font-editorial); font-weight: 600; color: var(--ink); }
-.tb-group { font-size: .72rem; font-weight: 700; color: var(--color-action); background: rgba(var(--color-action-rgb), .1); padding: var(--space-half) var(--space-1h); border-radius: var(--radius-full); margin-left: var(--space-1); }
+.tb-group { font-size: .72rem; font-weight: 700; color: var(--color-action); background: rgba(var(--color-action-rgb), .1); padding: var(--space-half) var(--space-1h); border-radius: var(--radius-pill, 999px); margin-left: var(--space-1); }
 .tb-sub { font-size: var(--text-sm); color: var(--ink-700); }
 .tb-time { font-size: var(--text-xs); color: var(--muted); }
 .tb-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--color-action); flex-shrink: 0; margin-top: .35rem; }
 .tb-dismiss {
   flex-shrink: 0; min-width: 44px; min-height: 44px; border: none; background: none;
-  color: var(--ink-700); cursor: pointer; font-size: .75rem; border-radius: var(--radius-full);
+  color: var(--ink-700); cursor: pointer; font-size: .75rem; border-radius: var(--radius-pill, 999px);
   opacity: 0;
   transition: opacity var(--duration-fast),
               background var(--duration-fast),

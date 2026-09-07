@@ -1115,10 +1115,10 @@ useHead(() => {
 .rep-level[data-level="4"] { background: color-mix(in srgb, gold 28%, var(--bg-alt)); }
 .rep-badge { font-size: var(--text-xs); padding: .2rem .55rem; border-radius: 999px; background: var(--bg-alt); border: 1px solid var(--border); color: var(--ink-700); }
 .xp-bar-wrap { display: flex; align-items: center; gap: var(--space-2); margin-top: var(--space-1); }
-.xp-bar { flex: 1; height: 6px; background: var(--line); border-radius: var(--radius-full); overflow: hidden; }
-.xp-fill { height: 100%; background: linear-gradient(90deg, var(--color-brand), var(--accent)); border-radius: var(--radius-full); }
+.xp-bar { flex: 1; height: 6px; background: var(--line); border-radius: var(--radius-pill, 999px); overflow: hidden; }
+.xp-fill { height: 100%; background: linear-gradient(90deg, var(--color-brand), var(--accent)); border-radius: var(--radius-pill, 999px); }
 .xp-label { font-size: var(--text-2xs); color: var(--muted); white-space: nowrap; }
-.streak-chip { display: inline-flex; align-items: center; gap: var(--space-1); margin-top: var(--space-1); padding: var(--space-1) var(--space-2); background: color-mix(in srgb, var(--warning) 12%, transparent); border-radius: var(--radius-full); font-size: var(--text-xs); font-weight: var(--weight-medium); color: var(--ink); }
+.streak-chip { display: inline-flex; align-items: center; gap: var(--space-1); margin-top: var(--space-1); padding: var(--space-1) var(--space-2); background: color-mix(in srgb, var(--warning) 12%, transparent); border-radius: var(--radius-pill, 999px); font-size: var(--text-xs); font-weight: var(--weight-medium); color: var(--ink); }
 /* Mốc tuần (bội số của 7 ngày) — một nhấp nháy nhẹ DUY NHẤT lúc mount, không loop. */
 .streak-milestone { animation: streak-pulse-once 1.1s var(--ease-out) 1; }
 @keyframes streak-pulse-once {
@@ -1144,8 +1144,8 @@ useHead(() => {
 .bs-card.bs-locked .bs-icon { filter: grayscale(1); }
 .bs-info { min-width: 0; display: flex; flex-direction: column; gap: 2px; }
 .bs-label { font-size: var(--text-sm); font-weight: var(--weight-medium); color: var(--ink); }
-.bs-bar { height: 4px; background: var(--line); border-radius: var(--radius-full); overflow: hidden; margin-top: var(--space-1); }
-.bs-fill { height: 100%; background: var(--color-brand); border-radius: var(--radius-full); }
+.bs-bar { height: 4px; background: var(--line); border-radius: var(--radius-pill, 999px); overflow: hidden; margin-top: var(--space-1); }
+.bs-fill { height: 100%; background: var(--color-brand); border-radius: var(--radius-pill, 999px); }
 .bs-date { font-size: var(--text-2xs); color: var(--success); }
 .bs-hint { font-size: var(--text-2xs); color: var(--muted); }
 
@@ -1174,7 +1174,7 @@ useHead(() => {
 .profile-name-row h1 { flex: 1; min-width: 0; }
 .profile-meta-row { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2); margin-top: var(--space-2); }
 .profile-handle { color: var(--muted); font-size: var(--text-sm); font-weight: var(--weight-semibold); overflow-wrap: anywhere; }
-.profile-chip { display: inline-flex; align-items: center; min-height: 28px; padding: 0 var(--space-3); border-radius: var(--radius-full); border: 1px solid var(--line); background: var(--card); color: var(--ink-700); font-size: var(--text-xs); font-weight: var(--weight-semibold); }
+.profile-chip { display: inline-flex; align-items: center; min-height: 28px; padding: 0 var(--space-3); border-radius: var(--radius-pill, 999px); border: 1px solid var(--line); background: var(--card); color: var(--ink-700); font-size: var(--text-xs); font-weight: var(--weight-semibold); }
 .profile-chip.is-public { border-color: color-mix(in srgb, var(--success, var(--leaf-600)) 28%, var(--line)); color: var(--success, var(--leaf-600)); }
 .profile-chip.is-private { border-color: color-mix(in srgb, var(--warning) 28%, var(--line)); color: var(--warning); }
 .profile-chip.is-self,
@@ -1196,7 +1196,7 @@ useHead(() => {
    bio, cấp bậc, XP) khỏi khối "bằng chứng" (stats), đúng công thức đã chuẩn
    hoá (sediment-head/tc-label), không tự chế biến thể mới. */
 .hairline-phusa {
-  height: 2px; margin: var(--space-4) 0 0; border-radius: var(--radius-full);
+  height: 2px; margin: var(--space-4) 0 0; border-radius: var(--radius-pill, 999px);
   background: linear-gradient(90deg, transparent 0%, var(--river-600) 15%, var(--amber-600) 50%, var(--clay-600) 85%, transparent 100%);
   opacity: .55;
 }
@@ -1342,7 +1342,7 @@ useHead(() => {
 /* Saved tab (self profile) */
 .tab-count {
   margin-left: var(--space-2); padding: 0 var(--space-2);
-  border-radius: var(--radius-full); background: rgba(var(--accent-rgb), .16);
+  border-radius: var(--radius-pill, 999px); background: rgba(var(--accent-rgb), .16);
   color: var(--accent-dark); font-size: var(--text-xs); font-weight: var(--weight-bold);
   font-variant-numeric: tabular-nums; line-height: 1.6;
 }
@@ -1426,11 +1426,11 @@ useHead(() => {
 .pc-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: var(--space-1); }
 .pc-label { font-size: var(--text-sm); font-weight: 600; color: var(--muted); }
 .pc-link { font-size: var(--text-sm); color: var(--color-action); text-decoration: none; }
-.pc-bar { height: 6px; background: var(--bg-alt); border-radius: var(--radius-full); overflow: hidden; }
-.pc-fill { height: 100%; background: var(--accent); border-radius: var(--radius-full); transform-origin: left; animation: pc-grow .6s var(--ease-out) .3s backwards; }
+.pc-bar { height: 6px; background: var(--bg-alt); border-radius: var(--radius-pill, 999px); overflow: hidden; }
+.pc-fill { height: 100%; background: var(--accent); border-radius: var(--radius-pill, 999px); transform-origin: left; animation: pc-grow .6s var(--ease-out) .3s backwards; }
 @keyframes pc-grow { from { transform: scaleX(0); } to { transform: scaleX(1); } }
 .pc-hints { display: flex; flex-wrap: wrap; gap: var(--space-1); margin-top: var(--space-2); }
-.pc-hint { font-size: .72rem; color: var(--muted); padding: var(--space-half) var(--space-2); border: 1px solid var(--border-input); border-radius: var(--radius-full); }
+.pc-hint { font-size: .72rem; color: var(--muted); padding: var(--space-half) var(--space-2); border: 1px solid var(--border-input); border-radius: var(--radius-pill, 999px); }
 
 
 /* Hoạt động (timeline) tab */

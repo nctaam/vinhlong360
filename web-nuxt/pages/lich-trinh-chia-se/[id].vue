@@ -244,7 +244,7 @@ useHead({
   flex-shrink: 0;
   width: 32px;
   height: 32px;
-  border-radius: var(--radius-full);
+  border-radius: var(--radius-pill, 999px);
   background: var(--color-brand);
   color: var(--color-on-action, var(--white));
   display: flex;

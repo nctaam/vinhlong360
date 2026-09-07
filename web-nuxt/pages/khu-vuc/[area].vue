@@ -498,7 +498,7 @@ if (areaMeta) {
 }
 .ce-area .section-head h2::before {
   content: ""; position: absolute; left: 0; top: 50%; transform: translateY(-50%);
-  width: 4px; height: 1.05em; border-radius: var(--radius-full);
+  width: 4px; height: 1.05em; border-radius: var(--radius-pill, 999px);
   background: linear-gradient(180deg, var(--river-600) 0%, var(--amber-600) 52%, var(--clay-600) 100%);
 }
 .dark .ce-area .section-head h2::before { background: linear-gradient(180deg, var(--river-400, var(--river-legacy-dark)) 0%, var(--amber-500) 52%, var(--clay-400) 100%); }
@@ -588,7 +588,7 @@ if (areaMeta) {
   color: var(--color-action);
   background: transparent;
   border: .5px solid transparent;
-  border-radius: var(--radius-full);
+  border-radius: var(--radius-pill, 999px);
   padding: var(--space-2) var(--space-3);
   min-height: 44px;
   display: inline-flex;
