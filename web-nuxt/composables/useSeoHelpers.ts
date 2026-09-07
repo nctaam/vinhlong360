@@ -1505,6 +1505,98 @@ export function buildInterestCategorySchemaGraph(options: InterestCategorySchema
   ])
 }
 
+export interface SeasonalitySchemaOptions {
+  month: number
+  quarterTag?: string
+  quarterNote?: string
+  totalInSeason?: number
+  items?: Array<{ id: string | number; name: string; type?: string; summary?: string }>
+  canonicalUrl?: string
+  faqs?: Array<{ q: string; a: string }>
+}
+
+export function buildSeasonalitySchemaGraph(options: SeasonalitySchemaOptions): Record<string, any> {
+  const m = options.month || 1
+  const pageUrl = options.canonicalUrl || canonicalUrl('/theo-mua')
+  const title = `Tháng ${m}: đi đâu, ăn gì ở Vĩnh Long — Lịch mùa vụ nông sản & sông nước`
+  const desc = `Những sản vật đang mùa, ngon nhất vào tháng ${m} tại Vĩnh Long — trái cây, nông sản miệt vườn, và nhịp nước sông Mekong.`
+
+  const webpageNode = {
+    '@type': 'CollectionPage',
+    '@id': `${pageUrl}#collection`,
+    url: pageUrl,
+    name: `${title} — vinhlong360`,
+    description: desc,
+    inLanguage: 'vi-VN',
+    isPartOf: { '@id': `${SITE_URL}/#website` },
+    about: {
+      '@type': 'Place',
+      name: 'Tỉnh Vĩnh Long',
+      geo: { '@type': 'GeoShape', box: '9.8 105.8 10.4 106.7' },
+    },
+    speakable: buildSpeakableSpecification([
+      '.catalog-hero h1',
+      '.season-moment-text strong',
+      '.season-moment-text p',
+      '.season-tide-cue',
+      '.catalog-aeo-plaque__title',
+      '.catalog-aeo-plaque__dek',
+    ]),
+  }
+
+  const breadcrumbNode = {
+    '@type': 'BreadcrumbList',
+    '@id': `${pageUrl}#breadcrumb`,
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'Trang chủ', item: `${SITE_URL}/` },
+      { '@type': 'ListItem', position: 2, name: 'Theo mùa', item: pageUrl },
+    ],
+  }
+
+  const itemListElements = (options.items || []).slice(0, 30).map((item, index) => ({
+    '@type': 'ListItem',
+    position: index + 1,
+    name: item.name,
+    url: canonicalUrl(entityPath(item.id)),
+  }))
+
+  const itemListNode = {
+    '@type': 'ItemList',
+    '@id': `${pageUrl}#items`,
+    name: `Đặc sản và điểm đến tháng ${m} tại Vĩnh Long`,
+    description: `Danh mục sản vật và điểm đến ngon nhất vào tháng ${m}.`,
+    numberOfItems: options.totalInSeason ?? (options.items?.length || 0),
+    itemListElement: itemListElements,
+  }
+
+  const defaultFaqs = [
+    {
+      q: 'Mùa trái cây rộ nhất tại Vĩnh Long diễn ra vào những tháng nào?',
+      a: 'Thời điểm trái cây trĩu cành ngon nhất là từ tháng 5 đến tháng 8, tiêu biểu với chôm chôm, sầu riêng, bưởi năm roi, măng cụt và nhãn xuồng cơm vàng tại các vườn cù lao An Bình.',
+    },
+    {
+      q: 'Đến Vĩnh Long vào mùa nước nổi (tháng 9 đến tháng 11) có gì đặc sắc?',
+      a: 'Mùa nước nổi đem lại nguồn thủy sản phong phú với cá linh non, bông điên điển, cá lóc đồng cùng các trải nghiệm giăng lưới, chèo xuồng ngắm cảnh sông nước phù sa.',
+    },
+    {
+      q: `Nhịp con nước và nông vụ Vĩnh Long trong tháng ${m} ra sao?`,
+      a: options.quarterNote || 'Khám phá các sản vật và hành trình miệt vườn phong phú theo chu kỳ con nước sông Mekong.',
+    },
+  ]
+
+  const faqs = options.faqs && options.faqs.length > 0 ? options.faqs : defaultFaqs
+  const faqNode = buildFaqPageSchema(faqs, `${pageUrl}#faq`)
+
+  return buildUnifiedSchemaGraph([
+    buildWebSiteSchema(),
+    buildOrganizationSchema(),
+    webpageNode,
+    breadcrumbNode,
+    itemListNode,
+    faqNode,
+  ])
+}
+
 
 
 
