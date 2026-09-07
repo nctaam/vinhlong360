@@ -1452,7 +1452,7 @@ export function buildInterestCategorySchemaGraph(options: InterestCategorySchema
     isPartOf: { '@id': `${SITE_URL}/#website` },
     about: { '@id': `${SITE_URL}/#organization` },
     mainEntity: { '@id': `${pageUrl}#items` },
-    speakable: buildSpeakableSpecification(['.catalog-hero-inner h1', '.catalog-lead', '.int-cross-sub']),
+    speakable: buildSpeakableSpecification(['.catalog-hero-inner h1', '.catalog-lead', '.int-cross-sub', '.catalog-aeo-plaque__title', '.catalog-aeo-plaque__dek']),
   }
 
   const itemListElements = (options.items || []).slice(0, 30).map((item, index) => ({

@@ -35,6 +35,17 @@
       ><IconLine :name="meta.icon" /> {{ meta.label }}</NuxtLink>
     </div>
 
+    <!-- AEO Plaque & AI Search Digest -->
+    <CatalogAeoPlaque
+      :title="aeoContent.title"
+      :kicker="aeoContent.kicker"
+      :accent="aeoContent.accent"
+      :icon="aeoContent.icon"
+      :entries="aeoContent.entries"
+      :cta-to="aeoContent.ctaTo"
+      :cta-label="aeoContent.ctaLabel"
+    />
+
     <section class="block reveal" aria-label="Duyệt tất cả">
     <h2 class="sr-only">Duyệt tất cả {{ interestMeta.label.toLowerCase() }}</h2>
     <!-- declutter-3 T12: 2 hàng filter gộp 1 panel — bỏ 2 control-label rời, divider mảnh
@@ -342,6 +353,146 @@ watch([areaFilter, typeFilter], () => {
   // skip the initial URL-sync run; only react to genuine user changes
   if (!_filtersTouched) { _filtersTouched = true; return }
   nextTick(scrollToResults)
+})
+
+interface AeoDigestItem {
+  heading: string
+  text: string
+}
+
+interface AeoDigestPayload {
+  title: string
+  kicker: string
+  accent: 'leaf' | 'clay' | 'amber' | 'river' | 'neutral'
+  icon: string
+  entries: AeoDigestItem[]
+  ctaTo?: string
+  ctaLabel?: string
+}
+
+const aeoContent = computed<AeoDigestPayload>(() => {
+  if (interest === 'am-thuc') {
+    return {
+      title: 'Tinh hoa Ẩm thực Bản địa Vĩnh Long',
+      kicker: 'Góc nhìn bản địa · Hương vị miền sông nước',
+      accent: 'amber',
+      icon: 'cup',
+      entries: [
+        {
+          heading: 'Khoai lang tím mắm sống & Cá tai tượng',
+          text: 'Món ăn dân dã gắn liền với đồng đất Bình Tân và cá nuôi bè sông Cổ Chiên giòn rụm cuốn bánh tráng rau vườn.',
+        },
+        {
+          heading: 'Lẩu mắm cá linh bông điên điển',
+          text: 'Món ngon mùa nước nổi từ tháng 8 đến tháng 10 âm lịch, đậm đà vị cá đồng hòa quyện hương điên điển tươi ngọt.',
+        },
+        {
+          heading: 'Chuối nếp nướng & Bánh tét 3 màu',
+          text: 'Thức quà quê nướng than hồng thơm phức béo ngậy nước cốt dừa, đậm đà phong vị góc phố miệt vườn.',
+        },
+      ],
+      ctaTo: '/ocop',
+      ctaLabel: 'Khám phá sản vật OCOP ẩm thực',
+    }
+  }
+
+  if (interest === 'lang-nghe') {
+    return {
+      title: 'Di sản Làng nghề & Vương quốc Gốm Đỏ',
+      kicker: 'Góc nhìn bản địa · Bàn tay nghệ nhân trăm năm',
+      accent: 'clay',
+      icon: 'award',
+      entries: [
+        {
+          heading: 'Lò gạch gốm đỏ Mang Thít',
+          text: 'Hơn 100 năm di sản đương đại dọc kênh Thầy Cai, nơi những lò nung hình tháp sừng sững trầm tích đất sét đỏ.',
+        },
+        {
+          heading: 'Làng nghề Tàu hũ ky Mỹ Hòa',
+          text: 'Di sản văn hóa phi vật thể quốc gia đỏ lửa ngày đêm với lớp váng đậu nành nguyên chất giòn bùi nức tiếng.',
+        },
+        {
+          heading: 'Bánh tráng Cù lao Mây & Chiếu Tân Duyệt',
+          text: 'Làng tráng bánh nem thủ công trên cồn bãi Trà Ôn và nghề dệt chiếu cói dẻo dai in hoa đậm chất Nam Bộ.',
+        },
+      ],
+      ctaTo: '/tuyen-duong',
+      ctaLabel: 'Xem tuyến đường di sản gốm đỏ',
+    }
+  }
+
+  if (interest === 'van-hoa') {
+    return {
+      title: 'Đất Địa Linh Nhân Kiệt & Di Tích Lịch Sử',
+      kicker: 'Góc nhìn bản địa · Trầm tích văn hóa Long Hồ Dinh',
+      accent: 'river',
+      icon: 'landmark',
+      entries: [
+        {
+          heading: 'Văn Thánh Miếu 1864',
+          text: 'Một trong ba Văn Thánh Miếu đầu tiên của phương Nam, nơi lưu giữ tinh hoa Nho học và truyền thống hiếu học.',
+        },
+        {
+          heading: 'Khu lưu niệm Danh nhân Vĩnh Long',
+          text: 'Vùng đất địa linh nhân kiệt: Cố Chủ tịch HĐBT Phạm Hùng, Thủ tướng Võ Văn Kiệt và GS.VS Trần Đại Nghĩa.',
+        },
+        {
+          heading: 'Chùa cổ Tiên Châu & Chùa Khmer',
+          text: 'Sự giao thoa tín ngưỡng Phật giáo Bắc tông, Nam tông và kiến trúc Angkor Khmer độc đáo rực rỡ.',
+        },
+      ],
+      ctaTo: '/ban-do',
+      ctaLabel: 'Xem bản đồ di tích lịch sử',
+    }
+  }
+
+  if (interest === 'thien-nhien') {
+    return {
+      title: 'Nhịp Sống Cù Lao & Vườn Cây Trái Xanh Mát',
+      kicker: 'Góc nhìn bản địa · Hệ sinh thái cồn bãi',
+      accent: 'leaf',
+      icon: 'leaf',
+      entries: [
+        {
+          heading: 'Cù lao An Bình sông Cổ Chiên',
+          text: 'Trải nghiệm dạo vườn chôm chôm, nhãn xuồng, hái trái tại chỗ và ngắm hoàng hôn rực rỡ trên sông Cổ Chiên.',
+        },
+        {
+          heading: 'Rạch dừa nước & Chèo xuồng ba lá',
+          text: 'Len lỏi dưới rặng dừa nước mát rượi, hít thở bầu không khí trong lành nguyên sơ của miệt vườn châu thổ.',
+        },
+        {
+          heading: 'Cồn Cò & Vườn chim tự nhiên',
+          text: 'Điểm hẹn sinh thái ngắm hàng ngàn cánh chim về tổ mỗi buổi chiều muộn trên những rặng bần ven sông.',
+        },
+      ],
+      ctaTo: '/luu-tru',
+      ctaLabel: 'Xem homestay cù lao sinh thái',
+    }
+  }
+
+  return {
+    title: 'Đặc Sản OCOP & Quà Quê Phù Sa',
+    kicker: 'Góc nhìn bản địa · Chỉ dẫn địa lý uy tín',
+    accent: 'amber',
+    icon: 'gift',
+    entries: [
+      {
+        heading: 'Bưởi Năm Roi & Sầu riêng Ri6',
+        text: 'Trái cây bảo hộ chỉ dẫn địa lý PGI tép vàng óng và sầu riêng múi cơm khô béo ngậy nức tiếng gần xa.',
+      },
+      {
+        heading: 'Khoai lang tím Nhật & Cam sành Tam Bình',
+        text: 'Nông sản thế mạnh xuất khẩu cùng cam sành mọng nước ngọt thanh bổ dưỡng cho sức khỏe.',
+      },
+      {
+        heading: 'Kẹo thèo lèo & Mật ong hoa nhãn',
+        text: 'Món quà ngọt ngào đóng gói sạch sẽ, dễ dàng mang về làm quà biếu sau chuyến hành trình.',
+      },
+    ],
+    ctaTo: '/san-pham',
+    ctaLabel: 'Khám phá tất cả sản phẩm OCOP',
+  }
 })
 
 useSeoMeta({

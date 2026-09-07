@@ -60,6 +60,30 @@
     <!-- Spotlight -->
     <CatalogSpotlight :items="allEvents" />
 
+    <!-- AEO Plaque & Contemporary Event Ledger Digest -->
+    <CatalogAeoPlaque
+      title="Nhịp Điệu Sự Kiện &amp; Hội Chợ Vĩnh Long"
+      kicker="Góc nhìn bản địa · Nhịp đập sự kiện đương đại"
+      accent="amber"
+      icon="megaphone"
+      :entries="[
+        {
+          heading: 'Festival Gạch Gốm Đỏ Mang Thít',
+          text: 'Sự kiện văn hóa du lịch quy mô lớn tôn vinh hơn 100 năm di sản đương đại dọc kênh Thầy Cai và nghệ thuật nung đất sét đỏ độc bản.',
+        },
+        {
+          heading: 'Ngày hội Du lịch Sông nước Cù lao',
+          text: 'Diễn ra định kỳ vào mùa trái cây chín rộ tháng 5–7 hàng năm với giải đua ghe tam bản, đờn ca tài tử và tour tham quan vườn sinh thái.',
+        },
+        {
+          heading: 'Hội chợ Nông nghiệp &amp; Triển lãm OCOP',
+          text: 'Điểm hẹn giao thương và quảng bá hơn 100 nông đặc sản OCOP tiêu biểu của 8 huyện thị thành tỉnh Vĩnh Long và ĐBSCL.',
+        },
+      ]"
+      cta-to="/le-hoi"
+      cta-label="Khám phá sổ lễ hội truyền thống"
+    />
+
     <!-- Register toggle: contemporary (sự kiện, here) vs ancestral (lễ hội) — amber ↔ leaf -->
     <section class="block reveal">
       <div class="register-toggle" role="group" aria-label="Chọn sổ lễ hội">
@@ -570,7 +594,7 @@ useHead(() => {
         name: 'Sự kiện văn hóa và hội chợ thương mại Vĩnh Long',
         description: 'Các hoạt động sự kiện xúc tiến thương mại, ngày hội văn hóa và festival nghệ thuật tại Vĩnh Long.',
       },
-      speakable: buildSpeakableSpecification(['.catalog-hero h1', '.catalog-lead', '.register-toggle']),
+      speakable: buildSpeakableSpecification(['.catalog-hero h1', '.catalog-lead', '.register-toggle', '.catalog-aeo-plaque__title', '.catalog-aeo-plaque__dek']),
     },
   ]
 
