@@ -355,13 +355,6 @@ function clearTag() {
   router.replace({ query: rest })
   fetchFeed(true)
 }
-const page = ref(1)
-const posts = ref<Post[]>([])
-const hasMore = ref(false)
-const loading = ref(false)
-const feedError = ref(false)
-const ugcUnavailable = ref(false)
-let feedAbort: AbortController | null = null
 type PostListResponse = import('~/composables/useCommunityPostFilters').PostListResponse<Post>
 const {
   filterCommunityPosts,
@@ -427,6 +420,18 @@ const {
   syncSearchQuery: syncCommunitySearchQuery,
   firstQueryValue,
   getRouteQueryQ: () => route.query.q,
+})
+
+const {
+  page, posts, hasMore, loading, feedError, ugcUnavailable,
+  fetchFeed, refreshFeed, loadMore, abortFeed,
+} = useCommunityFeedPagination({
+  activeTab, sort, filterType, activeTag, searchMode,
+  bookmarks, bookmarksLoading, bookmarksPage, bookmarksHasMore,
+  searchLoading, searchPage, searchHasMore,
+  authHeaders, showToast, fetchBookmarks, fetchSearch,
+  filterCommunityPosts, mergeCommunityPosts, extractPostArray, responseHasMore,
+  normalizeCommunityRouteState,
 })
 
 const { saveDraft, loadDraft, clearDraft } = useDrafts()
@@ -619,7 +624,8 @@ function setTab(tab: FeedTab) {
   const nextTab = normalizeFeedTab(tab)
   if (searchMode.value) clearSearch()
   if (activeTab.value === nextTab) return
-  feedAbort?.abort()
+  abortFeed()
+  cleanupUndoHide()
   activeTab.value = nextTab
   suppressFilterFetch = true
   filterType.value = ''
@@ -650,64 +656,6 @@ const {
   normalizeFeedTab,
   normalizeFilterType,
 })
-
-async function fetchFeed(reset = false) {
-  normalizeCommunityRouteState()
-  if (activeTab.value === 'bookmarks') { await fetchBookmarks(reset); return }
-  if (reset) { page.value = 1; posts.value = []; feedError.value = false; ugcUnavailable.value = false }
-  feedAbort?.abort()
-  feedAbort = new AbortController()
-  loading.value = true
-  try {
-    const url = activeTab.value === 'following'
-      ? `/api/feed/following?page=${page.value}&limit=20`
-      : (() => {
-          const params = new URLSearchParams({ page: String(page.value), limit: '20', sort: sort.value })
-          if (filterType.value) params.set('post_type', filterType.value)
-          if (activeTag.value) params.set('tag', activeTag.value)
-          return `/api/feed?${params}`
-        })()
-    const res = await $fetch<PostListResponse>(url, {
-      headers: authHeaders(),
-      signal: feedAbort.signal,
-    })
-    const rawPosts = extractPostArray(res)
-    const newPosts = filterCommunityPosts(rawPosts)
-    posts.value = reset ? newPosts : mergeCommunityPosts(posts.value, newPosts)
-    hasMore.value = responseHasMore(res, rawPosts)
-  } catch (e: unknown) {
-    if (e instanceof DOMException && e.name === 'AbortError') return
-    const status = (e as any)?.response?.status || (e as any)?.status || (e as any)?.statusCode
-    if (status === 503) {
-      ugcUnavailable.value = true
-      return
-    }
-    if (reset && !posts.value.length) feedError.value = true
-    showToast(reset ? 'Không thể tải bảng tin' : 'Không thể tải thêm', 'error')
-  } finally {
-    loading.value = false
-  }
-}
-
-function refreshFeed() {
-  if (searchMode.value) { fetchSearch(true); return }
-  if (activeTab.value === 'bookmarks') { fetchBookmarks(true); return }
-  fetchFeed(true)
-}
-
-function loadMore() {
-  if (loading.value || searchLoading.value || bookmarksLoading.value) return
-  if (searchMode.value) {
-    searchPage.value++
-    fetchSearch()
-  } else if (activeTab.value === 'bookmarks') {
-    bookmarksPage.value++
-    fetchBookmarks()
-  } else {
-    page.value++
-    fetchFeed()
-  }
-}
 
 watch(activeTab, (tab) => {
   const normalized = normalizeFeedTab(tab)
@@ -826,41 +774,9 @@ const {
 // `user_hidden_posts`, nên bài ẩn ở đó sẽ quay lại sau khi tải lại trang.
 const canHidePosts = computed(() => !searchMode.value && activeTab.value !== 'bookmarks')
 
-const { hidePost: _hide, unhidePost: _unhide } = useHiddenPosts()
-const hiddenNotice = ref<{ id: string } | null>(null)
-const undoingHide = ref(false)
-let hiddenNoticeTimer: ReturnType<typeof setTimeout> | null = null
-
-function dismissHiddenNotice() {
-  if (hiddenNoticeTimer) { clearTimeout(hiddenNoticeTimer); hiddenNoticeTimer = null }
-  hiddenNotice.value = null
-}
-
-async function hidePost(postId: string) {
-  // Lạc quan + hoàn nguyên nằm trong useHiddenPosts: API lỗi thì bài quay lại
-  // ĐÚNG vị trí cũ kèm toast lỗi, và `ok=false` nên không hiện dải "Hoàn tác".
-  const ok = await _hide(postId, [posts, bookmarks, searchResults])
-  if (!ok) return
-  dismissHiddenNotice()
-  hiddenNotice.value = { id: postId }
-  hiddenNoticeTimer = setTimeout(() => { hiddenNotice.value = null; hiddenNoticeTimer = null }, 8000)
-}
-
-async function undoHide() {
-  const notice = hiddenNotice.value
-  if (!notice || undoingHide.value) return
-  undoingHide.value = true
-  try {
-    const ok = await _unhide(notice.id)
-    if (!ok) return
-    dismissHiddenNotice()
-    showToast('Đã bỏ ẩn bài viết', 'success')
-    // Nạp lại feed để bài về đúng thứ tự backend trả, không phải vị trí đoán.
-    await fetchFeed(true)
-  } finally {
-    undoingHide.value = false
-  }
-}
+const {
+  hiddenNotice, undoingHide, hidePost, undoHide, dismissHiddenNotice, cleanupUndoHide,
+} = useCommunityUndoHide({ posts, bookmarks, searchResults, fetchFeed, showToast })
 
 onUnmounted(dismissHiddenNotice)
 
@@ -911,7 +827,7 @@ onMounted(() => {
 
 onUnmounted(() => {
   if (draftTimer) { clearTimeout(draftTimer); draftTimer = null }
-  feedAbort?.abort()
+  abortFeed()
   loadObserver?.disconnect()
   document.removeEventListener('click', onClickOutsideMention)
 })
@@ -973,7 +889,7 @@ useHead({
 .compose-footer-left { display: flex; align-items: center; gap: var(--space-3); }
 .compose-attach {
   display: inline-flex; align-items: center; justify-content: center;
-  width: 44px; height: 44px; min-width: 44px; min-height: 44px; border-radius: var(--radius-full);
+  width: 44px; height: 44px; min-width: 44px; min-height: 44px; border-radius: var(--radius-pill);
   cursor: pointer; color: var(--muted); transition: background .3s var(--ease-out), color .3s var(--ease-out), transform .25s var(--ease-out-expo);
 }
 .compose-attach:hover { background: var(--bg-alt); color: var(--ink); transform: scale(1.08); }

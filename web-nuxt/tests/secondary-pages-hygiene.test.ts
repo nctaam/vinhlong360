@@ -27,7 +27,7 @@ describe('Moc 146: Secondary & Account Pages Radius Hygiene & Integrity', () => 
       'pages/tao-lich-trinh.vue': 1050,
       'pages/tim-kiem.vue': 1100,
       'pages/xa-phuong/[id].vue': 1050,
-      'pages/cong-dong.vue': 1050,
+      'pages/cong-dong.vue': 990,
       'pages/cai-dat.vue': 980,
       'pages/nguoi-dung/[id].vue': 1050,
       'pages/admin/entities.vue': 1050,
