@@ -374,6 +374,8 @@ def _is_digest_excluded(relative_path: str) -> bool:
     parts = [part for part in relative_path.split("/") if part]
     if not parts:
         return False
+    if any(part.startswith(".pytest-") for part in parts):
+        return True
     if parts[0] == ".git" or parts[0] in {"artifacts", "graphify-out"}:
         return True
     if parts[0].startswith(".tmp-"):

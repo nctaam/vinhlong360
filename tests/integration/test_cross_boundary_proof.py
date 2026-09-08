@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import shutil
+import subprocess
 import sys
 import uuid
 from datetime import datetime, timedelta, timezone
@@ -954,6 +955,27 @@ def test_working_tree_digest_ignores_the_acceptance_artifact_but_not_source(tmp_
 
     (repo / "agent").mkdir()
     (repo / "agent" / "new_source.py").write_text("x = 1\n", encoding="utf-8")
+    assert _working_tree_digest(repo) != baseline
+
+
+def test_working_tree_digest_ignores_generated_pytest_nested_worktrees(tmp_path):
+    """Generated pytest nested repos must not collapse the checkout digest."""
+
+    repo = tmp_path / "repo"
+    run = _seed_repo(repo)
+    (repo / "seed.txt").write_text("seed\n", encoding="utf-8")
+    run("add", "-A")
+    run("commit", "-qm", "seed")
+
+    baseline = _working_tree_digest(repo)
+    assert baseline != "unknown"
+    generated = repo / "agent" / ".pytest-generated" / "test-case"
+    generated.mkdir(parents=True)
+    subprocess.run(["git", "init", "-q"], cwd=generated, check=True, capture_output=True)
+
+    assert _working_tree_digest(repo) == baseline
+
+    (repo / "agent" / "source.py").write_text("value = 1\n", encoding="utf-8")
     assert _working_tree_digest(repo) != baseline
 
 
