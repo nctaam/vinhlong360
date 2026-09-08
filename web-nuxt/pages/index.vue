@@ -600,127 +600,19 @@ useHead({
 
 <style>
 /* ═══════════════════════════════════════════════════
-   HERO — layered depth, Ken Burns, cinematic entrance
+   HERO DISPLAY & PROTECTED CONSUMER CONTRACT
    ═══════════════════════════════════════════════════ */
-.home .hero {
-  isolation: isolate;
-  min-height: 62vh;
-  min-height: clamp(24rem, 62svh, 40rem);
-  display: flex; flex-direction: column; justify-content: flex-end;
-  padding-bottom: max(var(--space-6), env(safe-area-inset-bottom));
-}
-/* Cinematic scrim — a clean bottom-up wash (no coloured "glow" radials, which read AI-ish),
-   anchoring an editorial masthead composition to the lower-left. */
-.home .hero-scrim {
-  position: absolute; inset: 0; z-index: 0; pointer-events: none;
-  background:
-    linear-gradient(to top, rgba(var(--nocturne-ink-rgb),.80) 0%, rgba(var(--nocturne-ink-rgb),.38) 24%, rgba(var(--nocturne-ink-rgb),.06) 52%, transparent 74%),
-    linear-gradient(103deg, rgba(var(--nocturne-ink-rgb),.48) 0%, rgba(var(--nocturne-ink-rgb),.10) 46%, transparent 70%);
-}
-/* Tactile grain over the image — the antidote to the flat "AI-gradient" look.
-   Small tiled SVG the browser rasterises once; subtle overlay. */
-.home .hero::after {
-  content: ""; position: absolute; inset: 0; z-index: 0; pointer-events: none;
-  background-image: var(--grain); background-size: 120px 120px;
-  opacity: .05;
-}
-.home .hero-inner {
-  position: relative; z-index: 1;
-  /* CÙNG công thức khung với `.block` và các mục nocturne. Trước đây dòng này
-     là công thức THỨ BA trên cùng một trang, lại ghim cứng 1180px thay vì token
-     --maxw (1140) — hero rộng hơn mọi mục khác 40px. */
-  max-width: var(--maxw); margin-inline: auto;
-}
-
-/* Hero asymmetric layout: ≥920px two columns */
-@media (min-width: 920px) {
-  .home .hero-inner { display: grid; grid-template-columns: minmax(0, 1.32fr) minmax(280px, 0.8fr); gap: var(--space-10); align-items: center; }
-  .home .hero-feature { align-self: end; padding-bottom: var(--space-2); }
-}
-html.js .home .hero-feature { opacity: 0; transform: translateY(16px); animation: hero-rise .7s var(--ease-out-expo) .5s forwards; }
-
-/* Hero nhan motif song nuoc — cung motif ma `.catalog-hero` dung tren 12 trang.
-   Truoc day dong nay la `background-image: none`, KHONG ghi chu, khien trang chu
-   la trang DUY NHAT tat motif cua ca site (ROADMAP §21.1).
-   KHONG dung `overflow: hidden` nhu `.catalog-hero`: hero trang chu chua panel goi y
-   tim kiem, che tran se cat cut panel do. Motif dung `inset: 0` nen von da khong
-   tran ra duoc. `.home .hero-inner` da co san `position:relative; z-index:1`. */
-.home .hero { position: relative; }
-.home .hero::before {
-  content: ""; position: absolute; inset: 0; z-index: 0; pointer-events: none;
-  background-repeat: no-repeat; background-position: right -30px center;
-  background-size: auto 92%; opacity: .1;
-  background-image: var(--hero-motif-waves);
-  animation: hero-motif-sway 8s var(--ease-out) infinite;
-  will-change: transform;
-}
-.dark .home .hero::before { opacity: .08; }
-
-/* Kicker */
-/* Editorial dateline eyebrow — a hairline rule + wide-tracked caps, not a glass badge/pill */
-.home .hero-kicker {
-  display: inline-flex; align-items: center; gap: var(--space-3);
-  margin-bottom: var(--space-5);
-  color: rgba(var(--white-rgb),.88);
-  font-family: var(--font-sans);
-  font-size: var(--text-2xs); font-weight: 700;
-  letter-spacing: .24em; text-transform: uppercase;
-  text-shadow: 0 1px 3px rgba(var(--black-rgb),.45);
-}
-.home .hero-kicker::before {
-  content: ""; flex: 0 0 auto;
-  width: clamp(26px, 6vw, 54px); height: 1.5px;
-  background: var(--color-brand);
-}
-.home .hero-kicker-dot { display: none; }
-@keyframes hero-dot-pulse {
-  0% { box-shadow: 0 0 0 0 rgba(var(--color-brand-rgb), .55); }
-  70% { box-shadow: 0 0 0 7px rgba(var(--color-brand-rgb), 0); }
-  100% { box-shadow: 0 0 0 0 rgba(var(--color-brand-rgb), 0); }
-}
-
-/* Display headline — editorial serif, cinematic scale */
-/* Masthead headline — oversized editorial serif, tight measure so it wraps into a
-   strong multi-line block (no decorative accent bar under it — that reads templated). */
 .home .hero h1 {
   font-family: var(--font-editorial);
   font-weight: 600;
-  /* Genuinely fluid: ~47px @375 (was ~66px — the old 2.6rem min never triggered because
-     3.4rem+3.2vw stays ≥64px even at 320, so a 5-word tagline wrapped to 5 lines and pushed
-     the search + feature card below the mobile fold). Now ~47px→86px, wraps to ~3 lines on
-     phones, capped identically at 5.4rem on desktop. */
   font-size: clamp(2.75rem, 1.6rem + 5.6vw, 5.4rem);
   letter-spacing: -.02em;
-  /* line-height CỐ Ý KHÔNG đặt ở đây. Bản cũ khai `.98` nhưng nó KHÔNG BAO GIỜ
-     có hiệu lực: `[data-home-pilot="nocturne-b1"] .hero-main h1` trong
-     home-nocturne.css đặt `line-height: 1.12` với ĐỘ ĐẶC HIỆU NGANG NHAU
-     (0,2,1), nên thắng thua do thứ tự nạp file — và file kia nạp sau.
-     `data-home-pilot` là thuộc tính CỨNG ở đầu file này (không sau cờ nào),
-     nên nhánh 1.12 luôn chạy. Giữ một khai báo chết ở đây tệ hơn không có:
-     nó làm người đọc tin mình đang chỉnh được thứ mình không chỉnh được.
-     Muốn đổi nhịp dòng của h1 hero: sửa home-nocturne.css. */
   text-shadow: 0 2px 28px rgba(var(--black-rgb),.42);
   max-width: 15ch;
   text-wrap: balance;
 }
 .home .hero-sub { font-family: var(--font-editorial); font-size: clamp(1.08rem, 1rem + .5vw, 1.3rem); line-height: 1.5; opacity: .95; max-width: 600px; margin: var(--space-4) 0 0; text-shadow: 0 1px 8px rgba(var(--black-rgb),.22); }
 .dark .home .hero-sub { opacity: 1; font-weight: 400; }
-
-/* Cinematic entrance */
-html.js .home .hero-enter > * { opacity: 0; transform: translateY(16px); animation: hero-rise .7s var(--ease-out-expo) forwards; }
-html.js .home .hero-enter > .hero-kicker { animation-delay: .05s; }
-html.js .home .hero-enter > h1 { animation-delay: .14s; }
-html.js .home .hero-enter > .hero-sub { animation-delay: .24s; }
-html.js .home .hero-enter > .hero-search { animation-delay: .34s; }
-@keyframes hero-rise {
-  from { opacity: 0; transform: translateY(16px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-html.js .home .hero-enter h1::after { animation: hero-underline-draw .8s var(--ease-out-expo) .5s both; }
-@keyframes hero-underline-draw {
-  from { transform: scaleX(0); opacity: 0; }
-  to { transform: scaleX(1); opacity: 1; }
-}
 
 /* Premium search capsule */
 .home .hero-search {
@@ -762,7 +654,6 @@ html.js .home .hero-enter h1::after { animation: hero-underline-draw .8s var(--e
   border-color: transparent; background: var(--card);
 }
 .home .hero .hero-ac .ac-dropdown { text-align: left; }
-/* Single "near me" quick-entry under search (restores the intent lost when hero pills were cut). */
 .home .hero-nearby {
   display: inline-flex; align-items: center; gap: .35em;
   margin-top: var(--space-3); min-height: 44px;
@@ -773,304 +664,34 @@ html.js .home .hero-enter h1::after { animation: hero-underline-draw .8s var(--e
 .home .hero-nearby:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 3px; border-radius: 4px; }
 
 /* ═══════════════════════════════════════════════════
-   SECTION RHYTHM
+   "ĐANG DIỄN RA" — protected date & countdown consumers
    ═══════════════════════════════════════════════════ */
-.home .section-head h2 {
-  font-family: var(--font-editorial);
-  font-size: var(--text-2xl); font-weight: 600;
-  letter-spacing: -.01em; line-height: var(--leading-tight);
-  position: relative; padding-left: var(--space-4);
-}
-.home .section-head h2::before {
-  content: ""; position: absolute; left: 0; top: 50%; transform: translateY(-50%);
-  width: 4px; height: 1.05em; border-radius: var(--radius-full);
-  /* Dải phù sa ba màu — giống hệt `.sediment-head` dùng chung. Trước đây chỗ này
-     là một màu phẳng: trang chủ chép hình dạng sediment-tick nhưng bỏ ý nghĩa,
-     trong khi phù sa là ẩn dụ nền tảng của cả site (ROADMAP §24.3). */
-  background: var(--sediment-tick);
-}
-/* Fraunces cất tiếng: chữ nghiêng trong tiêu đề dùng accent vật liệu theo ngữ cảnh,
-   không gắn một theme riêng cho từng địa phương. */
-.home .section-head h2 em, .home .spot-name em {
-  font-family: var(--font-editorial); font-style: italic; font-weight: 600;
-}
-.home .ac-clay  { color: var(--color-material-clay); }
-.home .ac-leaf  { color: var(--color-material-leaf); }
-.home .ac-river { color: var(--color-material-river); }
-.home .ac-amber { color: var(--color-material-amber); }
-.home .ac-neutral { color: var(--color-material-neutral); }
-.home .section-head .sh-text { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
-.home .sh-sub { padding-left: var(--space-4); margin: 0; font-size: var(--text-sm); font-weight: var(--weight-normal); color: var(--muted); line-height: var(--leading-normal); max-width: 62ch; }
-/* Tight variant — itineraries + personalization rows: smaller heading, less bottom margin,
-   so these secondary sections read as a compact strip rather than a full-weight section. */
-.home .section-head-tight { margin-bottom: var(--space-3); }
-.home .section-head-tight h2.h2-tight { font-size: var(--text-lg); }
-
-.home .block + .block { position: relative; }
-.home .block + .block::before {
-  content: ""; position: absolute; top: 0; left: 50%; transform: translateX(-50%);
-  width: min(100%, var(--maxw)); height: 7px;
-  background: linear-gradient(90deg, transparent, var(--color-material-clay) 26%, var(--color-material-clay) 74%, transparent) center/100% 1px no-repeat;
-  opacity: .5;
-}
-.dark .home .block + .block::before { opacity: .62; }
-/* Even vertical rhythm: every section shares the same symmetric padding as .block-compact
-   (32/32) so the gap between ANY two sections is a uniform 64px — was 64px top / 32px bottom,
-   giving 96px gaps between blocks vs 64px between compacts (the uneven, oversized whitespace). */
-/* MỘT nhịp dọc duy nhất: --space-10 (40px) giống các mục nocturne, nên mọi
-   khoảng tách giữa hai mục đều là 80px. Trước đây .block đệm 32 còn mục
-   nocturne đệm 40, nên khoảng tách nhảy 64 / 72 / 80 tuỳ chỗ — đo được bốn
-   giá trị khác nhau trên cùng một trang.
-   Dòng .block-compact cũ đặt ĐÚNG CÙNG giá trị với .block nên không hề làm nó
-   "compact" — đã bỏ. Tính compact của dải đó nằm ở .section-head-tight
-   (tiêu đề nhỏ hơn, lề dưới hẹp hơn), không ở đệm mục. */
-.home .block { padding-top: var(--space-10); padding-bottom: var(--space-10); content-visibility: auto; contain-intrinsic-size: auto 480px; }
-.block-cta { text-align: center; margin-top: var(--space-4); }
-
-/* ═══════════════════════════════════════════════════
-   SCROLL ROW
-   ═══════════════════════════════════════════════════ */
-.home .scroll-row {
-  display: grid; gap: var(--space-5);
-  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-}
-@media (min-width: 769px) and (max-width: 1024px) { .home .scroll-row { grid-template-columns: repeat(2, 1fr); } }
-@media (max-width: 768px) {
-  .home .scroll-row {
-    display: flex; gap: var(--space-3); overflow-x: auto;
-    scroll-snap-type: x mandatory; overscroll-behavior-x: contain;
-    -webkit-overflow-scrolling: touch; padding-bottom: var(--space-2);
-    padding-inline: var(--space-4); margin-inline: calc(-1 * var(--space-4));
-    scrollbar-width: none;
-    mask-image: linear-gradient(to right, transparent, var(--color-mask-opaque) var(--space-4), var(--color-mask-opaque) 88%, transparent);
-    -webkit-mask-image: linear-gradient(to right, transparent, var(--color-mask-opaque) var(--space-4), var(--color-mask-opaque) 88%, transparent);
-  }
-  .home .scroll-row::-webkit-scrollbar { display: none; }
-  .home .scroll-row:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; border-radius: var(--radius-surface); }
-  .home .scroll-row:hover, .home .scroll-row:focus-within { mask-image: linear-gradient(to right, transparent, var(--color-mask-opaque) var(--space-4), var(--color-mask-opaque) 100%); -webkit-mask-image: linear-gradient(to right, transparent, var(--color-mask-opaque) var(--space-4), var(--color-mask-opaque) 100%); }
-  .home .scroll-row > * { flex: 0 0 280px; scroll-snap-align: start; }
-}
-
-/* ═══════════════════════════════════════════════════
-   "ĐANG DIỄN RA" — events + seasonal
-   ═══════════════════════════════════════════════════ */
-/* declutter-3 T16 (B1-2): event-hero + .eh-* đã xoá; minis đứng riêng thành hàng 3 cột */
-.happening-rest { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--space-2); }
-@media (max-width: 760px) { .happening-rest { grid-template-columns: 1fr; } }
-.event-mini { display: flex; align-items: center; gap: var(--space-3); padding: var(--space-2) var(--space-3); min-height: 48px; background: var(--card); border: .5px solid var(--line); border-radius: var(--radius); text-decoration: none; color: var(--ink); transition: border-color .25s var(--ease-out), transform .25s var(--ease-out-expo); }
-.event-mini:hover { border-color: var(--color-action-border); transform: translateX(2px); }
-.ec-date-sm { min-width: 46px; padding: var(--space-2); }
 .ec-date { display: flex; flex-direction: column; align-items: center; justify-content: center; min-width: 52px; padding: var(--space-2); background: var(--home-color-amber-surface); border-radius: var(--radius-control); color: var(--home-color-amber-text); }
-.ec-day { font-size: var(--text-xl); font-weight: var(--weight-extrabold); line-height: 1; font-variant-numeric: tabular-nums; }
-.ec-month { font-size: var(--text-xs); font-weight: var(--weight-semibold); opacity: 1; }
-.ec-info { display: flex; flex-direction: column; gap: var(--space-1); min-width: 0; }
-.ec-info h3 { margin: 0; font-size: var(--text-base); font-weight: var(--weight-semibold); letter-spacing: var(--tracking-tight); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
-.event-mini .ec-info { gap: 2px; }
-.event-mini h3 { margin: 0; font-size: var(--text-sm); font-weight: var(--weight-semibold); line-height: var(--leading-snug); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
 .ec-countdown {
   display: inline-flex; align-items: center; gap: var(--space-1);
   font-size: var(--text-xs); font-weight: var(--weight-bold); color: var(--home-color-amber-text);
   background: var(--home-color-amber-surface); padding: var(--space-1) var(--space-2); border-radius: var(--radius-full);
 }
 .ec-today { color: var(--color-error); }
-.happening-label { font-size: var(--text-sm); font-weight: var(--weight-semibold); color: var(--home-color-amber-text); margin: var(--space-4) 0 var(--space-2); }
-.happening-section { margin-top: var(--space-1); }
-
 
 /* ═══════════════════════════════════════════════════
-   COMMUNITY — compact with trending tags
+   DARK MODE & REDUCED TRANSPARENCY PROTECTED CONSUMERS
    ═══════════════════════════════════════════════════ */
-.community-stats-line { font-size: var(--text-sm); color: var(--muted); margin: 0 0 var(--space-3); }
-.community-stats-line strong { color: var(--color-source-community); font-weight: var(--weight-bold); }
-
-.trending-tags { display: flex; align-items: center; flex-wrap: wrap; gap: var(--space-2); margin: 0 0 var(--space-3); }
-.tt-label { font-size: var(--text-sm); font-weight: var(--weight-semibold); color: var(--ink); }
-.tt-chip {
-  display: inline-flex; align-items: center;
-  padding: var(--space-2) var(--space-3);
-  background: var(--bg-alt); border: .5px solid var(--line); border-radius: var(--radius-full);
-  font-size: var(--text-xs); font-weight: var(--weight-semibold); color: var(--color-source-community);
-  text-decoration: none; min-height: 44px;
-  transition: background .2s var(--ease-out), border-color .2s var(--ease-out);
-}
-.tt-chip:hover { background: var(--bg-warm); border-color: var(--color-action-border); }
-.dark .tt-chip { background: rgba(var(--white-rgb),.06); border-color: rgba(var(--white-rgb),.1); }
-.dark .tt-chip:hover { background: rgba(var(--white-rgb),.1); }
-
-.home-leaders-teaser { display: flex; align-items: center; gap: var(--space-2); margin: 0 0 var(--space-4); font-size: var(--text-sm); font-weight: var(--weight-semibold); }
-.home-leaders-teaser a { color: var(--color-action); text-decoration: none; }
-.home-leaders-teaser a:hover { text-decoration: underline; }
-.see-all .inline-arrow,
-.home-leaders-teaser a .inline-arrow {
-  display: inline-block;
-  vertical-align: middle;
-  width: 15px;
-  height: 15px;
-  margin-left: var(--space-1);
-  transition: transform .2s var(--ease-out-expo);
-}
-.see-all:hover .inline-arrow,
-.home-leaders-teaser a:hover .inline-arrow {
-  transform: translateX(3px);
-}
-@media (prefers-reduced-motion: reduce) {
-  .see-all:hover .inline-arrow,
-  .home-leaders-teaser a:hover .inline-arrow {
-    transform: none;
-  }
-}
-
-.cm-card { display: flex; flex-direction: column; background: var(--card); border: .5px solid var(--line); border-radius: var(--radius); overflow: hidden; box-shadow: var(--shadow-xs); text-decoration: none; color: var(--ink); transition: transform .35s var(--ease-out-expo), box-shadow .35s var(--ease-out-expo), border-color .3s var(--ease-out); }
-.cm-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-md); border-color: var(--border); }
-.cm-card:active { transform: scale(.98); transition-duration: .1s; }
-.cm-card:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 3px; }
-.cm-body { display: flex; flex-direction: column; gap: var(--space-2); padding: var(--space-3) var(--space-4) var(--space-4); }
-.cm-author { display: flex; align-items: center; gap: var(--space-2); min-width: 0; }
-.cm-avatar { width: 26px; height: 26px; display: inline-flex; align-items: center; justify-content: center; border-radius: 50%; background: var(--color-source-community-surface); color: var(--color-source-community); font-size: var(--text-xs); font-weight: var(--weight-semibold); flex-shrink: 0; }
-.cm-name { font-size: var(--text-sm); font-weight: var(--weight-semibold); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.cm-type { margin-left: auto; font-size: var(--text-xs); color: var(--muted); background: var(--bg-alt); padding: 1px 8px; border-radius: var(--radius-full); white-space: nowrap; flex-shrink: 0; }
-.cm-content { margin: 0; font-size: var(--text-sm); color: var(--ink-700); line-height: var(--leading-normal); display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
-.cm-meta { display: flex; flex-wrap: wrap; gap: var(--space-3); font-size: var(--text-xs); color: var(--muted); }
-.cm-place { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 60%; }
-.dark .cm-card { background: var(--card); border-color: var(--line); }
-.dark .cm-card:hover { border-color: rgba(var(--white-rgb),.1); }
-
-.community-join {
-  display: flex; align-items: center; gap: var(--space-4);
-  margin-top: var(--space-4); padding: var(--space-4) var(--space-5);
-  background: var(--bg-warm); border-radius: var(--radius);
-  font-size: var(--text-sm); color: var(--muted);
-}
-.community-join .btn { flex-shrink: 0; }
-@media (max-width: 480px) { .community-join { flex-direction: column; text-align: center; gap: var(--space-3); } }
-.dark .community-join { background: var(--bg-alt); }
-
-.community-seed-prompts {
-  margin-top: var(--space-5);
-  padding-top: var(--space-4);
-  border-top: 1px dashed var(--line);
-  width: min(100%, 720px);
-  margin-inline: auto;
-}
-.community-seed-label {
-  font-size: var(--text-xs);
-  color: var(--muted);
-  text-transform: uppercase;
-  letter-spacing: .05em;
-  font-weight: var(--weight-semibold);
-  margin-bottom: var(--space-3);
-  text-align: center;
-}
-.community-seed-grid {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: var(--space-3);
-  text-align: left;
-}
-.community-seed-card {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  padding: var(--space-3) var(--space-4);
-  border-radius: var(--radius);
-  border: 1px solid var(--line);
-  background: var(--card);
-  color: var(--color-text);
-  text-decoration: none;
-  font-size: var(--text-xs);
-  transition: transform .18s var(--ease-out), border-color .18s var(--ease-out);
-}
-.community-seed-card:hover {
-  border-color: var(--color-action);
-  transform: translateY(-2px);
-}
-.community-seed-card strong {
-  color: var(--color-text);
-  font-size: var(--text-xs);
-  font-weight: var(--weight-semibold);
-}
-.community-seed-card span {
-  color: var(--muted);
-  line-height: 1.35;
-}
-@media (max-width: 640px) {
-  .community-seed-grid { grid-template-columns: 1fr; }
-}
-
-/* ═══════════════════════════════════════════════════
-   SKELETON + MISC
-   ═══════════════════════════════════════════════════ */
-.sk-heading { height: 1.4rem; width: 180px; border-radius: var(--radius-control); background: linear-gradient(90deg, var(--bg-alt) 25%, var(--line) 37%, var(--bg-alt) 63%); background-size: 400% 100%; animation: skShimmer 1.4s var(--ease-out) infinite; }
-@keyframes skShimmer { 0% { background-position: 100% 0; } 100% { background-position: -100% 0; } }
-.home .grid .card, .home .scroll-row .card { transition: transform .18s var(--ease-out), box-shadow .25s var(--ease-out); }
-
-/* ═══════════════════════════════════════════════════
-   DARK MODE
-   ═══════════════════════════════════════════════════ */
-.dark .home .hero-scrim {
-  background:
-    radial-gradient(120% 95% at 88% 6%, color-mix(in srgb, var(--color-material-clay) 12%, transparent) 0%, color-mix(in srgb, var(--color-material-clay) 3%, transparent) 34%, transparent 60%),
-    radial-gradient(90% 70% at 6% 100%, color-mix(in srgb, var(--color-material-clay) 12%, transparent) 0%, transparent 58%),
-    linear-gradient(to top, rgba(var(--black-rgb),.30) 0%, rgba(var(--black-rgb),.04) 28%, transparent 50%);
-}
-.dark .home .hero-kicker { background: rgba(var(--white-rgb),.12); border-color: rgba(var(--white-rgb),.22); }
 .dark .home .hero-search { background: rgba(var(--white-rgb),.22); border-color: rgba(var(--white-rgb),.38); }
 .dark .home .hero-search input { background: var(--bg-warm); color: var(--ink); }
 .dark .home .hero-search input::placeholder { color: rgba(var(--white-rgb),.50); }
 .dark .home .hero-search:focus-within { border-color: var(--color-focus); }
-.dark .home .block + .block::before { background: linear-gradient(90deg, transparent, var(--line) 22%, var(--line) 78%, transparent); opacity: .6; }
 .dark .ec-today { color: var(--color-error); }
 
-/* ═══════════════════════════════════════════════════
-   REDUCED TRANSPARENCY / MOTION
-   ═══════════════════════════════════════════════════ */
 @media (prefers-reduced-transparency: reduce) {
-  .home .hero-kicker { backdrop-filter: none; -webkit-backdrop-filter: none; background: rgba(var(--black-rgb),.4); }
   .home .hero-search { backdrop-filter: none; -webkit-backdrop-filter: none; background: rgba(var(--black-rgb),.35); }
-}
-@media (prefers-reduced-motion: reduce) {
-  html.js .home .hero-enter > * { opacity: 1; transform: none; animation: none; }
-  html.js .home .hero-enter h1::after { animation: none; transform: scaleX(1); opacity: 1; }
-  .home .hero-kicker-dot { animation: none; }
-  html.js .home .hero-feature { opacity: 1; transform: none; animation: none; }
-  .event-mini:hover { transform: none; }
-  .cm-card:hover, .cm-card:active { transform: none; }
-  .sk-heading { animation: none; }
-  .fy-chip:hover, .fy-chip:active { transform: none; }
 }
 
 /* ═══════════════════════════════════════════════════
-   DÀNH CHO BẠN — merged personalization strip (chips)
+   DÀNH CHO BẠN & DISCLOSURE MICRO-TYPOGRAPHY
    ═══════════════════════════════════════════════════ */
 .for-you-row { align-items: stretch; }
-.fy-chip {
-  display: flex; align-items: center; gap: var(--space-3);
-  flex: 0 0 auto; width: 15rem;
-  padding: var(--space-3); min-height: 48px;
-  background: var(--card); border: .5px solid var(--line); border-radius: var(--radius);
-  text-decoration: none; color: var(--ink);
-  transition: transform .25s var(--ease-out-expo), box-shadow .25s var(--ease-out), border-color .25s var(--ease-out);
-}
-.fy-chip:hover { transform: translateY(-3px); box-shadow: var(--shadow-sm); border-color: var(--border); }
-.fy-chip:active { transform: translateY(-1px) scale(.98); transition-duration: .1s; }
-.fy-chip:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
-.fy-media { flex: 0 0 60px; width: 60px; display: flex; flex-direction: column; gap: 2px; align-self: stretch; }
-.fy-thumb {
-  flex: 0 0 60px; width: 60px; height: 60px;
-  border-radius: var(--radius-control); overflow: hidden;
-  display: flex; align-items: center; justify-content: center;
-  background: var(--bg-alt);
-}
-.fy-thumb img { width: 100%; height: 100%; object-fit: cover; }
 .fy-disclosure { max-width: 60px; color: var(--muted); overflow-wrap: anywhere; }
 .fy-disclosure :deep([data-short-label]) { font-size: var(--text-2xs); font-weight: var(--weight-semibold); line-height: 1.15; }
-.fy-icon { width: 30px; height: 30px; opacity: .8; color: var(--muted); }
-.fy-icon :deep(svg) { width: 100%; height: 100%; }
-.fy-body { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
-.fy-type { font-size: var(--text-xs); font-weight: var(--weight-bold); text-transform: uppercase; letter-spacing: .04em; color: var(--color-material-clay); }
-.fy-name { font-size: var(--text-sm); font-weight: var(--weight-bold); line-height: var(--leading-snug); color: var(--ink); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
-.dark .fy-chip { background: var(--card); border-color: var(--line); }
-.dark .fy-chip:hover { border-color: rgba(var(--white-rgb),.1); }
-.dark .fy-thumb { background: rgba(var(--white-rgb),.06); }
 </style>
 <style src="~/assets/css/home-nocturne.css"></style>
