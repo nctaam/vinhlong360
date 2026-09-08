@@ -353,3 +353,5 @@ ghi ở backlog tối ưu — giảm dần, KHÔNG được tăng tiếp từ 47
 - 2026-09-04T15:58:08 SKIP R30.7 — Backend chat stream decomposition; frontend bundle unchanged and existing R30.7 debt is unrelated.
 
 - 2026-09-04T16:38:00 SKIP R30.7 — Backend correction audit contract fix; frontend bundle unchanged and existing R30.7 debt is unrelated.
+
+- 2026-09-08T20:02:40 SKIP R30.7 — Backend-only stream lifecycle, release packaging, and Windows regression fixes; pre-existing frontend bundle debt is unchanged.

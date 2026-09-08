@@ -199,7 +199,7 @@ class TestAuthCsrfBootstrap:
         src = (Path(__file__).resolve().parents[2] / "web-nuxt/composables/useFavorites.ts").read_text(encoding="utf-8")
         assert "hasLocalItems" in src
         assert "/api/saved/merge" in src
-        assert "await $fetch<{ items?: FavoriteItem[] }>('/api/saved', { headers: authHeaders() })" in src
+        assert "await authFetch<{ items?: FavoriteItem[] }>('/api/saved')" in src
 
 class TestSessionListCleanup:
     """Regression: internal script sessions must not pollute user UI."""

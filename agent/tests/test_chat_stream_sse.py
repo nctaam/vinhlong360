@@ -179,6 +179,39 @@ async def test_streaming_response_scopes_turn_id_and_sets_owner_cookie(monkeypat
     assert cookie_calls == [(response, owner_context)]
 
 
+@pytest.mark.anyio
+async def test_streaming_response_closes_delegated_generator_on_outer_close(monkeypatch):
+    class RecordingIterator:
+        def __init__(self):
+            self.yielded = False
+            self.closed = False
+
+        def __aiter__(self):
+            return self
+
+        async def __anext__(self):
+            if self.yielded:
+                raise StopAsyncIteration
+            self.yielded = True
+            return "data: {}\n\n"
+
+        async def aclose(self):
+            self.closed = True
+
+    delegated = RecordingIterator()
+    monkeypatch.setattr(chat_api, "set_chat_owner_cookie", lambda *_args: None)
+    response = chat_api._streaming_chat_response(
+        delegated,
+        SimpleNamespace(owner_key="owner-1"),
+        "turn-1",
+    )
+
+    assert await anext(response.body_iterator) == "data: {}\n\n"
+    await response.body_iterator.aclose()
+
+    assert delegated.closed is True
+
+
 def test_builtin_chat_page_uses_post_body_for_stream_payload(client_mocked):
     r = client_mocked.get("/")
 

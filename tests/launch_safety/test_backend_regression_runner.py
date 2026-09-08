@@ -290,6 +290,90 @@ def test_popen_uses_root_inherited_output_and_process_group(
         assert "creationflags" not in kwargs
 
 
+def test_report_capture_does_not_nest_windows_job_supervisor(
+    runner: ModuleType, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    calls: list[dict[str, object]] = []
+
+    class CapturedProcess:
+        returncode = 0
+
+        def communicate(self, timeout: float):
+            assert timeout > 0
+            return "1 passed in 0.1s\n", None
+
+    def fake_start(phase, **kwargs: object):
+        calls.append(kwargs)
+        return CapturedProcess()
+
+    monkeypatch.setattr(runner, "_start_phase", fake_start)
+    monkeypatch.setattr(runner, "IS_WINDOWS", True)
+
+    record = runner._capture_phase(
+        runner.build_phases("python-under-test")[1],
+        runner.time.monotonic() + 30.0,
+    )
+
+    assert record["clean"] is True
+    assert calls == [{"capture": True, "use_job_supervisor": False}]
+
+
+def test_report_capture_keeps_windows_job_supervisor_for_phase_a(
+    runner: ModuleType, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    calls: list[dict[str, object]] = []
+
+    class CapturedProcess:
+        returncode = 0
+
+        def communicate(self, timeout: float):
+            assert timeout > 0
+            return "1 passed in 0.1s\n", None
+
+    monkeypatch.setattr(
+        runner,
+        "_start_phase",
+        lambda _phase, **kwargs: calls.append(kwargs) or CapturedProcess(),
+    )
+    monkeypatch.setattr(runner, "IS_WINDOWS", True)
+
+    record = runner._capture_phase(
+        runner.build_phases("python-under-test")[0],
+        runner.time.monotonic() + 30.0,
+    )
+
+    assert record["clean"] is True
+    assert calls == [{"capture": True, "use_job_supervisor": True}]
+
+
+def test_report_capture_keeps_timeout_evidence_when_cleanup_fails(
+    runner: ModuleType, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    class TimedOutProcess:
+        returncode = None
+
+        def communicate(self, timeout: float):
+            raise subprocess.TimeoutExpired(["pytest"], timeout)
+
+    monkeypatch.setattr(
+        runner, "_start_phase", lambda *_args, **_kwargs: TimedOutProcess()
+    )
+
+    def fail_cleanup(_process: TimedOutProcess) -> None:
+        raise RuntimeError("taskkill exited 255")
+
+    monkeypatch.setattr(runner, "_cleanup_process", fail_cleanup)
+
+    record = runner._capture_phase(
+        runner.build_phases("python-under-test")[1],
+        runner.time.monotonic() + 30.0,
+    )
+
+    assert record["return_code"] == runner.TIMEOUT_EXIT_CODE
+    assert record["clean"] is False
+    assert record["cleanup_warning"] == "RuntimeError: taskkill exited 255"
+
+
 def test_windows_job_supervisor_assigns_job_before_spawning_child(
     runner: ModuleType, monkeypatch: pytest.MonkeyPatch
 ) -> None:

@@ -183,7 +183,17 @@ def _run_windows_job_supervisor(command: tuple[str, ...]) -> int:
     return process.wait()
 
 
-def _start_phase(phase: Phase, *, capture: bool = False) -> subprocess.Popen:
+def _start_phase(
+    phase: Phase, *, capture: bool = False, use_job_supervisor: bool | None = None
+) -> subprocess.Popen:
+    """Start one phase, optionally isolating it in a Windows job.
+
+    Report mode captures pytest output for classification.  The subprocess-heavy
+    Phase B suite already creates job supervisors inside its tests; adding an
+    outer nested job changes Windows process/PID semantics, so report capture
+    deliberately starts that phase directly and relies on bounded taskkill
+    cleanup on timeout.
+    """
     kwargs: dict[str, object] = {
         "cwd": ROOT,
         # Capturing is opt-in because the default mode streams live to the
@@ -195,9 +205,15 @@ def _start_phase(phase: Phase, *, capture: bool = False) -> subprocess.Popen:
     if capture:
         kwargs["text"] = True
         kwargs["errors"] = "replace"
+    if use_job_supervisor is None:
+        use_job_supervisor = IS_WINDOWS
     if IS_WINDOWS:
         kwargs["creationflags"] = CREATE_NEW_PROCESS_GROUP
-        command = _windows_job_supervisor_command(phase.command)
+        command = (
+            _windows_job_supervisor_command(phase.command)
+            if use_job_supervisor
+            else phase.command
+        )
     else:
         kwargs["start_new_session"] = True
         command = phase.command
@@ -428,16 +444,32 @@ def _capture_phase(phase: Phase, deadline: float) -> dict[str, object]:
             "failed_nodeids": [],
             "error_nodeids": [],
         }
-    process = _start_phase(phase, capture=True)
+    process = _start_phase(
+        phase,
+        capture=True,
+        # Phase B already supervises installer children inside its tests;
+        # keep the outer job for the serial Phase A suite.
+        use_job_supervisor=phase.name != "B",
+    )
+    cleanup_warning: str | None = None
     try:
         output, _ = process.communicate(timeout=remaining)
         return_code = process.returncode
-    except subprocess.TimeoutExpired:
-        _cleanup_process(process)
-        output, return_code = "", TIMEOUT_EXIT_CODE
+    except subprocess.TimeoutExpired as exc:
+        try:
+            _cleanup_process(process)
+        except Exception as cleanup_exc:  # cleanup is diagnostic-only on timeout
+            cleanup_warning = f"{type(cleanup_exc).__name__}: {cleanup_exc}"
+            _diagnose(
+                f"phase {phase.name} cleanup warning: {cleanup_warning}"
+            )
+        output, return_code = exc.output or "", TIMEOUT_EXIT_CODE
     sys.stdout.write(output or "")
     sys.stdout.flush()
-    return classify_phase(phase.name, output or "", return_code)
+    record = classify_phase(phase.name, output or "", return_code)
+    if cleanup_warning is not None:
+        record["cleanup_warning"] = cleanup_warning
+    return record
 
 
 def _run_with_report(python: str, deadline: float, report_path: Path) -> int:

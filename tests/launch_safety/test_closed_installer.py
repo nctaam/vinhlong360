@@ -8572,27 +8572,59 @@ def _interrupt_after_systemd_mutation(
     unit_hook.write_text(
         "#!/usr/bin/env bash\n"
         f": > '{_bash_path(interrupted)}'\n"
-        "kill -9 \"$PPID\"\n"
-        "exit 97\n",
+        "while :; do sleep 1; done\n",
         encoding="ascii",
     )
     unit_hook.chmod(0o755)
     env = os.environ.copy()
     env.update(values)
 
-    result = subprocess.run(
-        _installer_command(
-            package,
-            case_root,
-            prepared,
-            evidence_arg=evidence_arg,
-            runtime_arg=runtime_arg,
-        ),
-        cwd=ROOT,
-        env=env,
-        check=False,
-        capture_output=True,
-        text=True,
+    installer_command = _installer_command(
+        package,
+        case_root,
+        prepared,
+        evidence_arg=evidence_arg,
+        runtime_arg=runtime_arg,
+    )
+    if os.name == "nt":
+        installer_command = [
+            sys.executable,
+            str(OPS / "run_backend_regression.py"),
+            "--windows-job-supervisor",
+            "--",
+            *installer_command,
+        ]
+    stdout_path = case_root / "systemd-interruption.stdout"
+    stderr_path = case_root / "systemd-interruption.stderr"
+    popen_kwargs: dict[str, object] = {
+        "cwd": ROOT,
+        "env": env,
+        "text": True,
+    }
+    if os.name == "nt":
+        popen_kwargs["creationflags"] = getattr(
+            subprocess, "CREATE_NEW_PROCESS_GROUP", 0x00000200
+        )
+    else:
+        popen_kwargs["start_new_session"] = True
+    with (
+        stdout_path.open("w", encoding="utf-8", errors="replace") as stdout_stream,
+        stderr_path.open("w", encoding="utf-8", errors="replace") as stderr_stream,
+    ):
+        popen_kwargs["stdout"] = stdout_stream
+        popen_kwargs["stderr"] = stderr_stream
+        process = subprocess.Popen(installer_command, **popen_kwargs)
+        _wait_for_path(interrupted, timeout=60)
+        _, _, cleanup_errors = _terminate_owned_installer_process(
+            process, windows_job_supervisor=os.name == "nt"
+        )
+    stdout, stderr = _read_file_backed_output(stdout_path, stderr_path)
+    assert not cleanup_errors, "; ".join(cleanup_errors) + "\n" + stderr + stdout
+    result = subprocess.CompletedProcess(
+        installer_command,
+        process.returncode if process.returncode is not None else -1,
+        stdout,
+        stderr,
     )
 
     assert result.returncode != 0, result.stderr + result.stdout
@@ -9034,7 +9066,9 @@ def test_systemd_recovery_material_is_durable_before_journal_and_unit_mutation()
 
 def test_fsync_directories_uses_os_fsync_off_windows():
     source = INSTALL.read_text(encoding="utf-8")
-    helper = source[source.index("fsync_directories()") : source.index("die()")]
+    helper = source[
+        source.index("fsync_directories()") : source.index("remove_private_directory()")
+    ]
     assert 'if os.name == "nt":' in helper
     assert "os.fsync(descriptor)" in helper
 

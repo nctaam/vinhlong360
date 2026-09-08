@@ -394,7 +394,7 @@ def build_backend_archive(root: Path, destination: Path) -> Path:
     root = _lexical_path(root)
     destination = _lexical_path(destination)
     _preflight(root, destination)
-    snapshot = _snapshot_tar_payload(_collect_payload(root))
+    snapshot = _snapshot_tar_payload(_collect_payload(root), root=root)
     duplicates = find_snapshot_duplicate_artifacts(snapshot)
     if duplicates:
         raise ValueError(
@@ -1156,8 +1156,23 @@ def _launch_tar_info(name: str, *, size: int = 0, directory: bool) -> tarfile.Ta
     return info
 
 
-def _snapshot_tar_payload(payload: list[tuple[Path, str]]) -> _LaunchReleaseSnapshot:
-    root = _lexical_path(Path.cwd().anchor or Path.cwd())
+def _snapshot_tar_payload(
+    payload: list[tuple[Path, str]], *, root: Path | None = None
+) -> _LaunchReleaseSnapshot:
+    """Capture a payload while enforcing containment under its source root.
+
+    The archive builder may be exercised from a different drive than the
+    process working directory (for example, pytest temp roots on ``E:\\``).
+    Deriving the root from ``Path.cwd().anchor`` incorrectly treated those
+    sources as escaping ``C:\\``.
+    """
+    if root is None:
+        sources = [_lexical_path(source) for source, _ in payload]
+        if sources:
+            root = Path(os.path.commonpath([os.fspath(source) for source in sources]))
+        else:
+            root = Path.cwd()
+    root = _lexical_path(root)
     sources: dict[Path, _SnapshotSource] = {}
     members: list[_SnapshotMember] = []
     for source, arcname in payload:

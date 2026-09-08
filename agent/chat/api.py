@@ -3521,12 +3521,17 @@ def _streaming_chat_response(generator, owner_context, turn_id: str, semantic_le
             async for event in generator:
                 yield event
         finally:
-            # A response body may be closed by another task after disconnect.
-            # ContextVar tokens belong to their creating context.
+            # Closing this outer async generator does not implicitly close the
+            # delegated iterator. Explicitly close it so stream producers and
+            # usage settlement always run on client disconnect.
             try:
-                _stream_turn_id.reset(token)
-            except ValueError:
-                pass
+                await generator.aclose()
+            finally:
+                # ContextVar tokens belong to their creating context.
+                try:
+                    _stream_turn_id.reset(token)
+                except ValueError:
+                    pass
 
     response = _SemanticLeaseStreamingResponse(
         contextual_generator(),
