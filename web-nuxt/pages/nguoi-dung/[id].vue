@@ -416,12 +416,9 @@ import { TYPE_META } from '~/composables/useConstants'
 import { useUserProfileCollections } from '~/composables/useUserProfileCollections'
 import { useUserProfileActivity } from '~/composables/useUserProfileActivity'
 import { useUserProfileSocial } from '~/composables/useUserProfileSocial'
+import { useUserProfilePosts } from '~/composables/useUserProfilePosts'
+import { useUserProfilePresentation, mapProfileView, type ProfileView } from '~/composables/useUserProfilePresentation'
 
-type ProfileView = Record<string, any> & {
-  id?: string; username?: string; display_name?: string; phone?: string; bio?: string
-  avatar?: string | null; avatar_url?: string | null; cover_url?: string | null; created_at?: string
-  post_count?: number; review_count?: number; follower_count?: number; following_count?: number
-}
 type ProfilePayload = { profile: ProfileView | null; status: 'ok' | 'not-found' | 'error' }
 type ProfileTab = 'posts' | 'reviews' | 'timeline' | 'saved' | 'collections'
 
@@ -444,20 +441,6 @@ function normalizeProfileTab(value: unknown): ProfileTab {
   return validProfileTabs.has(raw as ProfileTab) ? raw as ProfileTab : 'posts'
 }
 const tab = ref<ProfileTab>(normalizeProfileTab(route.query.tab))
-const posts = ref<any[]>([])
-const loading = ref(true)
-
-function mapProfileView(u: Record<string, any>): ProfileView {
-  const stats = u.stats || {}
-  return {
-    ...u,
-    avatar: u.avatar_url ?? u.avatar ?? null,
-    post_count: stats.posts ?? u.post_count ?? 0,
-    review_count: stats.reviews ?? u.review_count ?? 0,
-    follower_count: stats.followers ?? u.follower_count ?? 0,
-    following_count: stats.following ?? u.following_count ?? 0,
-  }
-}
 
 const profileAsyncData = useAsyncData<ProfilePayload>(`public-user-${userId.value}`, async () => {
   const lookup = userId.value.trim()
@@ -517,13 +500,17 @@ const {
   profile, encodedProfileId, isSelf, tab, authHeaders, handleSessionExpired,
 })
 
-const profileHandle = computed(() => profile.value?.username ? `@${profile.value.username}` : '')
-const totalContributions = computed(() => (profile.value?.post_count || 0) + (profile.value?.review_count || 0))
-const activitySummary = computed(() => {
-  if (totalContributions.value === 0) {
-    return isSelf.value ? 'Bắt đầu chia sẻ trải nghiệm đầu tiên' : 'Thành viên mới, chưa có đóng góp công khai'
-  }
-  return `${totalContributions.value} đóng góp công khai`
+const {
+  profileHandle, totalContributions, activitySummary,
+  initial, joinDate, profileCompletion, displayName, emptyHint,
+} = useUserProfilePresentation({ profile, isSelf })
+
+const {
+  posts, loading, postsFetchFailed, filteredPosts,
+  fetchPosts, toggleLike, toggleBookmark, deletePost,
+} = useUserProfilePosts({
+  profile, encodedProfileId, tab, authHeaders,
+  handleSessionExpired, showToast, filterCommunityPosts,
 })
 
 const visibleProfileTabs = computed<ProfileTab[]>(() => {
@@ -536,60 +523,6 @@ const activeTabId = computed(() => `profile-tab-${tab.value}`), activePanelId = 
 function normalizeVisibleProfileTab(value: unknown): ProfileTab {
   const next = normalizeProfileTab(value)
   return (next === 'saved' || next === 'collections') && !isSelf.value ? 'posts' : next
-}
-
-const initial = computed(() => (profile.value?.display_name || profile.value?.phone || '?').charAt(0).toUpperCase())
-const joinDate = computed(() => formatDateVN(profile.value?.created_at))
-const profileCompletion = computed(() => {
-  if (!profile.value) return 0
-  const p = profile.value
-  const checks = [p.display_name, p.avatar, p.bio, p.cover_url, (p.post_count || 0) > 0, (p.review_count || 0) > 0]
-  return Math.round((checks.filter(Boolean).length / checks.length) * 100)
-})
-
-const filteredPosts = computed(() => {
-  if (tab.value === 'reviews') return posts.value.filter(p => p.post_type === 'review')
-  return posts.value
-})
-const displayName = computed(() => profile.value?.display_name || profile.value?.phone || 'Người dùng')
-const emptyHint = computed(() => {
-  if (isSelf.value) return 'Chia sẻ trải nghiệm của bạn với cộng đồng.'
-  return `Theo dõi ${displayName.value} để nhận cập nhật mới.`
-})
-
-const postsFetchFailed = ref(false)
-async function fetchPosts() {
-  if (!profile.value || profile.value.is_private) {
-    posts.value = []
-    loading.value = false
-    return
-  }
-  loading.value = true
-  postsFetchFailed.value = false
-  try {
-    const res = await $fetch<Record<string, unknown>>(`/api/users/${encodedProfileId.value}/posts?limit=50`, { headers: authHeaders() })
-    const list = res?.posts
-    posts.value = Array.isArray(list) ? filterCommunityPosts(list as any[]) : []
-  } catch (e: unknown) {
-    postsFetchFailed.value = true
-    if (getStatusCode(e) === 401) { handleSessionExpired(); return }
-    showToast('Không thể tải bài viết', 'error')
-  } finally {
-    loading.value = false
-  }
-}
-
-const { toggleLike: _like, toggleBookmark: _bookmark, deletePost: _delete } = usePostActions()
-function toggleLike(pid: string) {
-  const p = posts.value.find(x => x.id === pid)
-  if (p) _like(pid, p)
-}
-function toggleBookmark(pid: string) {
-  const p = posts.value.find(x => x.id === pid)
-  if (p) _bookmark(pid, p)
-}
-function deletePost(pid: string) {
-  _delete(pid, () => { posts.value = posts.value.filter(x => x.id !== pid) })
 }
 
 function setProfileTab(next: ProfileTab) {
