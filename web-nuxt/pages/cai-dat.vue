@@ -494,12 +494,17 @@
 <script setup lang="ts">
 import type { HideablePost } from '~/composables/useHiddenPosts'
 import type { AccessibilityTheme } from '~/types/accessibility'
-import { consumeLifecycleClearInstruction } from '~/composables/useLifecycleClear'
+import { useSettingsSecurity } from '~/composables/useSettingsSecurity'
+import { useSettingsModeration } from '~/composables/useSettingsModeration'
+import { useSettingsAccountLifecycle } from '~/composables/useSettingsAccountLifecycle'
+import { getStatusCode, extractErrorMessage } from '~/composables/useFetchError'
 
 const { user, isLoggedIn, authHeaders, fetchMe, handleSessionExpired } = useAuth()
 const { enabled: ff } = useFeature()
 const { openAuth } = useAuthModal()
 const { show: showToast } = useToast()
+const { confirmDialog: confirm } = useConfirm()
+const { timeAgo } = useTimeAgo()
 const colorModeState = useColorMode()
 const accessibility = useAccessibilityProfile({ colorMode: colorModeState })
 const colorMode = computed(() => accessibility.profile.value.theme)
@@ -539,6 +544,29 @@ type TabKey = typeof TABS[number]['key']
 const tabsForNavigation = computed(() => TABS.filter(t => t.key !== 'khu-vuc-de-xuat' || ff('preference_ui_v1')))
 const validKeys = computed(() => new Set(tabsForNavigation.value.map(t => t.key)))
 const activeTab = ref<TabKey>('ho-so')
+
+// ── Delegated Composable Domains ──
+const {
+  securityBusy, withBusy,
+  currentPw, newPw, confirmPw, savingPw, pwStrength, hasPassword, hasPasswordKnown, savePassword,
+  sessions, sessionsLoading, hiddenSystemSessions, loadSessions, shortUA, revokeSession,
+  loginHistory, loginHistoryLoading, loadLoginHistory,
+  twoFA, twoFALoading, setupData, setupCode, recoveryCodes, disableCode, trustedDevices,
+  load2FAStatus, begin2FASetup, confirm2FASetup, disable2FA, loadTrustedDevices, removeTrustedDevice,
+  copyRecoveryCodes, downloadRecoveryCodes,
+} = useSettingsSecurity({ user, authHeaders, fetchMe, handleSessionExpired, showToast })
+
+const {
+  privacy, privacyLoading, loadPrivacy, setPrivacy,
+  blockedUsers, blockedLoading, loadBlocked, unblockUser,
+  mutedUsers, mutedLoading, loadMutedUsers, unmuteUser,
+  NOTIF_TYPES, notifPrefs, notifPrefsLoading, loadNotifPrefs, toggleNotifPref,
+} = useSettingsModeration({ authHeaders, handleSessionExpired, showToast })
+
+const {
+  exportLoading, consentHistory, consentLoaded, deleteConfirmVisible, deleteBusy, accountStatus,
+  exportData, loadConsent, formatConsentDate, deactivate, deleteAccount,
+} = useSettingsAccountLifecycle({ authHeaders, fetchMe, handleSessionExpired, showToast, confirm, navigateTo })
 
 const tabLoaded = reactive(new Set<TabKey>())
 async function setTab(key: TabKey): Promise<boolean> {
@@ -583,7 +611,7 @@ function lazyLoadTab(key: TabKey) {
   else if (key === 'thong-bao') loadNotifPrefs()
 }
 
-
+// ── Profile Form & Avatar / Cover Management ──
 const displayName = ref(user.value?.display_name || '')
 const fullName = ref(user.value?.full_name || '')
 const bio = ref('')
@@ -595,17 +623,6 @@ const savedBio = ref('')
 const savedEmail = ref(email.value)
 const savedContactInfo = ref(contactInfo.value)
 const saving = ref(false)
-// Guard security-tab action buttons against double-submit while an async op runs.
-const securityBusy = ref(false)
-async function withBusy(fn: () => unknown) {
-  if (securityBusy.value) return
-  securityBusy.value = true
-  try {
-    await fn()
-  } finally {
-    securityBusy.value = false
-  }
-}
 const nameError = ref('')
 
 const uploadingAvatar = ref(false)
@@ -645,132 +662,6 @@ async function onAvatarChange(e: Event) {
   }
 }
 
-// Prefill bio from the public profile (User type doesn't carry bio).
-onMounted(async () => {
-  const hash = window.location.hash.slice(1) as TabKey
-  if (hash && validKeys.value.has(hash)) {
-    activeTab.value = hash
-  }
-  lazyLoadTab(activeTab.value)
-  if (!user.value) return
-  // Pre-fetch notif prefs + privacy so the overview cards can show a summary
-  // immediately instead of only once those tabs are clicked.
-  lazyLoadTab('thong-bao')
-  lazyLoadTab('rieng-tu')
-  try {
-    const res = await $fetch<Record<string, any>>(`/api/users/${user.value.id}`, { headers: authHeaders() })
-    const u = res?.user ?? res
-    if (u?.bio) { bio.value = u.bio; savedBio.value = u.bio }
-    if (!displayName.value && u?.display_name) { displayName.value = u.display_name; savedName.value = u.display_name }
-    if (u?.full_name) { fullName.value = u.full_name; savedFullName.value = u.full_name }
-    if (u?.email) { email.value = u.email; savedEmail.value = u.email }
-    if (u?.contact_info) { contactInfo.value = u.contact_info; savedContactInfo.value = u.contact_info }
-  } catch { /* prefill is best-effort */ }
-})
-
-const currentPw = ref('')
-const newPw = ref('')
-const confirmPw = ref('')
-const savingPw = ref(false)
-
-const COMMON_PASSWORDS = new Set([
-  '123456', 'password', '12345678', 'qwerty', 'abc123', 'monkey', 'master',
-  '111111', '123123', 'letmein', 'dragon', 'baseball', 'iloveyou', 'trustno1',
-  'sunshine', 'princess', 'football', 'shadow', 'superman', 'michael',
-])
-
-const pwStrength = computed(() => {
-  const pw = newPw.value
-  if (!pw) return { score: 0, label: '', color: '' }
-  if (COMMON_PASSWORDS.has(pw.toLowerCase())) return { score: 1, label: 'Rất yếu', color: 'var(--error)' }
-  let score = 0
-  if (pw.length >= 8) score++
-  if (pw.length >= 12) score++
-  if (pw.length >= 16) score++
-  if (/[a-z]/.test(pw) && /[A-Z]/.test(pw)) score++
-  if (/\d/.test(pw)) score++
-  if (/[^a-zA-Z0-9]/.test(pw)) score++
-  const level = score <= 2 ? 1 : score <= 3 ? 2 : score <= 4 ? 3 : 4
-  const labels = ['', 'Yếu', 'Trung bình', 'Mạnh', 'Rất mạnh']
-  const colors = ['', 'var(--error)', 'var(--warning)', 'var(--success)', 'var(--color-brand)']
-  return { score: level, label: labels[level], color: colors[level] }
-})
-const hasPassword = computed(() => user.value?.has_password === true)
-const hasPasswordKnown = computed(() => typeof user.value?.has_password === 'boolean')
-async function savePassword() {
-  if (hasPassword.value && !currentPw.value) {
-    showToast('Vui lòng nhập mật khẩu hiện tại', 'error')
-    return
-  }
-  if (!newPw.value || newPw.value.length < 6) {
-    showToast('Mật khẩu mới phải từ 6 ký tự trở lên', 'error')
-    return
-  }
-  if (newPw.value !== confirmPw.value) {
-    showToast('Mật khẩu xác nhận không khớp', 'error')
-    return
-  }
-  savingPw.value = true
-  try {
-    const body: Record<string, string> = { password: newPw.value }
-    if (currentPw.value) body.current_password = currentPw.value
-    await $fetch('/auth/set-password', { method: 'POST', headers: authHeaders(), body })
-    showToast('Đã cập nhật mật khẩu', 'success')
-    currentPw.value = ''
-    newPw.value = ''
-    confirmPw.value = ''
-    await fetchMe()
-  } catch (e: unknown) {
-    if (getStatusCode(e) === 401) { handleSessionExpired(); return }
-    showToast(extractErrorMessage(e, 'Không thể đổi mật khẩu'), 'error')
-  } finally { savingPw.value = false }
-}
-
-const sessions = ref<any[]>([])
-const sessionsLoading = ref(true)
-const hiddenSystemSessions = ref(0)
-
-async function loadSessions() {
-  sessionsLoading.value = true
-  try {
-    const res = await $fetch<{ sessions: any[]; hidden_internal_count?: number }>('/auth/sessions', { headers: authHeaders() })
-    const visible = []
-    let hidden = Number(res.hidden_internal_count || 0)
-    for (const session of res.sessions || []) {
-      if (!session.is_current && isInternalUA(session.user_agent)) hidden += 1
-      else visible.push(session)
-    }
-    sessions.value = visible
-    hiddenSystemSessions.value = hidden
-  } catch { /* ignore */ }
-  sessionsLoading.value = false
-}
-
-function isInternalUA(ua: string): boolean {
-  return /(python|urllib|httpx|aiohttp|curl|wget|healthcheck|uptime|node|undici|node-fetch)/i.test(ua || '')
-}
-
-function shortUA(ua: string): string {
-  if (!ua) return 'Không rõ'
-  if (isInternalUA(ua)) return 'Phiên hệ thống'
-  if (ua.includes('Mobile')) return 'Di động'
-  if (ua.includes('Windows')) return 'Windows'
-  if (ua.includes('Mac')) return 'macOS'
-  if (ua.includes('Linux')) return 'Linux'
-  return ua.slice(0, 30)
-}
-
-async function revokeSession(id: string) {
-  try {
-    await $fetch(`/auth/sessions/${id}`, { method: 'DELETE', headers: authHeaders() })
-    sessions.value = sessions.value.filter(s => s.id !== id)
-    showToast('Đã thu hồi phiên', 'success')
-  } catch (e: unknown) {
-    if (getStatusCode(e) === 401) { handleSessionExpired(); return }
-    showToast('Không thể thu hồi phiên', 'error')
-  }
-}
-
 const uploadingCover = ref(false)
 const coverPreview = ref('')
 
@@ -800,155 +691,6 @@ async function onCoverChange(e: Event) {
     showToast(extractErrorMessage(err, 'Không thể tải ảnh bìa lên'), 'error')
   } finally {
     uploadingCover.value = false
-  }
-}
-
-const loginHistory = ref<any[]>([])
-const loginHistoryLoading = ref(true)
-
-async function loadLoginHistory() {
-  loginHistoryLoading.value = true
-  try {
-    const res = await $fetch<{ history: any[] }>('/auth/login-history', { headers: authHeaders() })
-    loginHistory.value = res.history || []
-  } catch { /* ignore */ }
-  loginHistoryLoading.value = false
-}
-
-// ── 2FA ──
-const twoFA = ref<{ enabled: boolean; recovery_remaining: number }>({ enabled: false, recovery_remaining: 0 })
-const twoFALoading = ref(true)
-const setupData = ref<{ secret: string; otpauth_uri: string; qr: string } | null>(null)
-const setupCode = ref('')
-const recoveryCodes = ref<string[]>([])
-const disableCode = ref('')
-const trustedDevices = ref<any[]>([])
-
-async function load2FAStatus() {
-  twoFALoading.value = true
-  try {
-    twoFA.value = await $fetch<{ enabled: boolean; recovery_remaining: number }>('/auth/2fa/status', { headers: authHeaders() })
-  } catch { /* ignore */ }
-  twoFALoading.value = false
-}
-async function begin2FASetup() {
-  try { setupData.value = await $fetch<{ secret: string; otpauth_uri: string; qr: string }>('/auth/2fa/setup', { method: 'POST', headers: authHeaders() }) }
-  catch (e: unknown) { if (getStatusCode(e) === 401) { handleSessionExpired(); return } showToast(extractErrorMessage(e, 'Không thể bắt đầu thiết lập'), 'error') }
-}
-async function confirm2FASetup() {
-  try {
-    const res = await $fetch<{ recovery_codes: string[] }>('/auth/2fa/verify-setup', { method: 'POST', headers: authHeaders(), body: { code: setupCode.value } })
-    recoveryCodes.value = res.recovery_codes || []
-    setupData.value = null
-    setupCode.value = ''
-    showToast('Đã bật xác thực 2 bước', 'success')
-    await load2FAStatus()
-  } catch (e: unknown) { if (getStatusCode(e) === 401) { handleSessionExpired(); return } showToast(extractErrorMessage(e, 'Mã không đúng'), 'error') }
-}
-async function disable2FA() {
-  try {
-    await $fetch('/auth/2fa/disable', { method: 'POST', headers: authHeaders(), body: { code: disableCode.value } })
-    disableCode.value = ''
-    recoveryCodes.value = []
-    showToast('Đã tắt xác thực 2 bước', 'success')
-    await load2FAStatus()
-    await loadTrustedDevices()
-  } catch (e: unknown) { if (getStatusCode(e) === 401) { handleSessionExpired(); return } showToast(extractErrorMessage(e, 'Mã không đúng'), 'error') }
-}
-async function loadTrustedDevices() {
-  try {
-    const r = await $fetch<{ devices: any[] }>('/auth/trusted-devices', { headers: authHeaders() })
-    trustedDevices.value = r.devices || []
-  } catch { /* ignore */ }
-}
-async function removeTrustedDevice(id: string) {
-  try {
-    await $fetch(`/auth/trusted-devices/${encodeURIComponent(id)}`, { method: 'DELETE', headers: authHeaders() })
-    trustedDevices.value = trustedDevices.value.filter(d => d.id !== id)
-    showToast('Đã xoá thiết bị', 'success')
-  } catch (e: unknown) { if (getStatusCode(e) === 401) { handleSessionExpired(); return } showToast('Không thể xoá thiết bị', 'error') }
-}
-function copyRecoveryCodes() {
-  navigator.clipboard.writeText(recoveryCodes.value.join('\n')).then(() => showToast('Đã sao chép mã khôi phục', 'success')).catch(() => showToast('Không thể sao chép', 'error'))
-}
-function downloadRecoveryCodes() {
-  const blob = new Blob([recoveryCodes.value.join('\n')], { type: 'text/plain' })
-  const url = URL.createObjectURL(blob)
-  const a = document.createElement('a')
-  a.href = url
-  a.download = 'vinhlong360-recovery-codes.txt'
-  a.click()
-  URL.revokeObjectURL(url)
-}
-
-const privacy = ref({ profile_visibility: 'public', show_activity: true, show_saved: true })
-const privacyLoading = ref(true)
-
-async function loadPrivacy() {
-  privacyLoading.value = true
-  try {
-    const res = await $fetch<Record<string, any>>('/auth/privacy', { headers: authHeaders() })
-    privacy.value = { profile_visibility: res.profile_visibility || 'public', show_activity: res.show_activity !== false, show_saved: res.show_saved !== false }
-  } catch { /* ignore */ }
-  privacyLoading.value = false
-}
-
-async function setPrivacy(key: string, value: any) {
-  const prev = { ...privacy.value }
-  ;(privacy.value as any)[key] = value
-  try {
-    await $fetch('/auth/privacy', { method: 'PUT', headers: { ...authHeaders(), 'Content-Type': 'application/json' }, body: { [key]: value } })
-    showToast('Đã cập nhật quyền riêng tư', 'success')
-  } catch (e: unknown) {
-    privacy.value = prev
-    if (getStatusCode(e) === 401) { handleSessionExpired(); return }
-    showToast('Không thể cập nhật', 'error')
-  }
-}
-
-const blockedUsers = ref<any[]>([])
-const blockedLoading = ref(true)
-
-async function loadBlocked() {
-  blockedLoading.value = true
-  try {
-    const res = await $fetch<{ blocked: any[] }>('/api/blocked-users', { headers: authHeaders() })
-    blockedUsers.value = res.blocked || []
-  } catch { /* ignore */ }
-  blockedLoading.value = false
-}
-
-async function unblockUser(id: string, name: string) {
-  try {
-    await $fetch(`/api/notifications/block/${id}`, { method: 'POST', headers: authHeaders() })
-    blockedUsers.value = blockedUsers.value.filter(u => u.id !== id)
-    showToast(`${name || 'Người dùng'} đã được bỏ chặn`, 'success')
-  } catch (e: unknown) {
-    if (getStatusCode(e) === 401) { handleSessionExpired(); return }
-    showToast('Không thể bỏ chặn', 'error')
-  }
-}
-
-const mutedUsers = ref<any[]>([])
-const mutedLoading = ref(true)
-
-async function loadMutedUsers() {
-  mutedLoading.value = true
-  try {
-    const res = await $fetch<{ muted: any[] }>('/api/muted-users', { headers: authHeaders() })
-    mutedUsers.value = res.muted || []
-  } catch { /* ignore */ }
-  mutedLoading.value = false
-}
-
-async function unmuteUser(id: string, name: string) {
-  try {
-    await $fetch(`/api/mute/${encodeURIComponent(id)}`, { method: 'POST', headers: authHeaders() })
-    mutedUsers.value = mutedUsers.value.filter(u => u.id !== id)
-    showToast(`Đã bỏ tắt tiếng ${name || 'người dùng'}`, 'success')
-  } catch (e: unknown) {
-    if (getStatusCode(e) === 401) { handleSessionExpired(); return }
-    showToast('Không thể bỏ tắt tiếng', 'error')
   }
 }
 
@@ -1002,137 +744,6 @@ async function unhideHiddenPost(postId: string) {
   }
 }
 
-const NOTIF_TYPES = [
-  { key: 'like', pref: 'pref_like', icon: 'heart', label: 'Lượt thích', desc: 'Khi ai đó thích bài viết của bạn' },
-  { key: 'comment', pref: 'pref_comment', icon: 'message', label: 'Bình luận', desc: 'Khi ai đó bình luận bài viết của bạn' },
-  { key: 'follow', pref: 'pref_follow', icon: 'user', label: 'Theo dõi', desc: 'Khi ai đó theo dõi bạn' },
-  { key: 'mention', pref: 'pref_mention', icon: 'megaphone', label: 'Nhắc đến', desc: 'Khi ai đó nhắc đến bạn' },
-  { key: 'system', pref: 'pref_system', icon: 'bell', label: 'Hệ thống', desc: 'Thông báo từ hệ thống và quản trị' },
-] as const
-
-const notifPrefs = ref<Record<string, boolean>>({ pref_like: true, pref_comment: true, pref_follow: true, pref_mention: true, pref_system: true })
-const notifPrefsLoading = ref(true)
-
-async function loadNotifPrefs() {
-  notifPrefsLoading.value = true
-  try {
-    const res = await $fetch<Record<string, boolean>>('/api/notification-preferences', { headers: authHeaders() })
-    Object.assign(notifPrefs.value, res)
-  } catch { /* defaults stay */ }
-  notifPrefsLoading.value = false
-}
-
-async function toggleNotifPref(prefKey: string) {
-  const prev = notifPrefs.value[prefKey] ?? false
-  notifPrefs.value[prefKey] = !prev
-  try {
-    await $fetch('/api/notification-preferences', { method: 'PUT', headers: { ...authHeaders(), 'Content-Type': 'application/json' }, body: { [prefKey]: !prev } })
-    showToast('Đã lưu tùy chọn thông báo', 'success')
-  } catch (e: unknown) {
-    notifPrefs.value[prefKey] = prev
-    if (getStatusCode(e) === 401) { handleSessionExpired(); return }
-    showToast('Không thể cập nhật tùy chọn', 'error')
-  }
-}
-
-const { confirmDialog: confirm } = useConfirm()
-
-// ── Data & legal ──
-const exportLoading = ref(false)
-type ConsentHistoryItem = { id: string; version: string | null; created_at: string }
-type DeleteAccountResponse = { status: string; message: string; grace_days: number; browser_clear_instruction?: unknown }
-
-const consentHistory = ref<ConsentHistoryItem[]>([])
-const consentLoaded = ref(false)
-const deleteConfirmVisible = ref(false)
-const deleteBusy = ref(false)
-const accountStatus = ref('')
-
-async function exportData() {
-  exportLoading.value = true
-  try {
-    const data = await $fetch<Record<string, any>>('/auth/export-data', { headers: authHeaders() })
-    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' })
-    const url = URL.createObjectURL(blob)
-    const a = document.createElement('a')
-    a.href = url
-    a.download = `vinhlong360-data-${new Date().toISOString().slice(0, 10)}.json`
-    a.click()
-    URL.revokeObjectURL(url)
-    showToast('Đã tải dữ liệu', 'success')
-  } catch (e: unknown) {
-    if (getStatusCode(e) === 401) { handleSessionExpired(); return }
-    showToast(extractErrorMessage(e, 'Không thể xuất dữ liệu'), 'error')
-  } finally {
-    exportLoading.value = false
-  }
-}
-
-async function loadConsent() {
-  try {
-    const data = await $fetch<{ history: ConsentHistoryItem[] }>('/auth/consent-history', { headers: authHeaders() })
-    consentHistory.value = data.history || []
-    consentLoaded.value = true
-  } catch (e: unknown) {
-    if (getStatusCode(e) === 401) { handleSessionExpired(); return }
-    showToast(extractErrorMessage(e, 'Không thể tải lịch sử'), 'error')
-    consentLoaded.value = true
-  }
-}
-
-function formatConsentDate(value: string) {
-  const parsed = new Date(value)
-  if (Number.isNaN(parsed.getTime())) return 'Không rõ thời điểm'
-  return parsed.toLocaleDateString('vi-VN', { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' })
-}
-
-async function deactivate() {
-  const ok = await confirm('Tài khoản sẽ bị khóa tạm thời. Đăng nhập lại bằng OTP để kích hoạt.', { title: 'Vô hiệu hóa tài khoản?', confirmText: 'Vô hiệu hóa', danger: true })
-  if (!ok) return
-  try {
-    await $fetch('/auth/deactivate', { method: 'POST', headers: authHeaders() })
-    await fetchMe()
-    showToast('Tài khoản đã bị vô hiệu hóa', 'success')
-    navigateTo('/')
-  } catch (e: unknown) {
-    if (getStatusCode(e) === 401) { handleSessionExpired(); return }
-    showToast(extractErrorMessage(e, 'Lỗi'), 'error')
-  }
-}
-
-async function deleteAccount() {
-  if (deleteBusy.value) return
-  deleteBusy.value = true
-  accountStatus.value = ''
-  try {
-    const result = await $fetch<DeleteAccountResponse>('/auth/account', { method: 'DELETE', headers: authHeaders() })
-    if (result.browser_clear_instruction) {
-      try { localStorage.setItem('vl360_erasure_clear_instruction', JSON.stringify(result.browser_clear_instruction)) } catch { /* storage unavailable */ }
-      consumeLifecycleClearInstruction(result.browser_clear_instruction)
-    }
-    const gracePhrase = `${result.grace_days} ngày`
-    const messageIncludesGrace = result.message
-      .toLocaleLowerCase('vi-VN')
-      .replace(/\s+/g, ' ')
-      .includes(gracePhrase.toLocaleLowerCase('vi-VN'))
-    const graceCopy = Number.isFinite(result.grace_days) && result.grace_days > 0 && !messageIncludesGrace
-      ? ` Thời gian chờ: ${gracePhrase}.`
-      : ''
-    accountStatus.value = `${result.message}${graceCopy}`.trim()
-    deleteConfirmVisible.value = false
-    showToast(result.message, result.status === 'scheduled' ? 'success' : 'info')
-    await fetchMe()
-    navigateTo('/')
-  } catch (e: unknown) {
-    if (getStatusCode(e) === 401) { handleSessionExpired(); return }
-    showToast(extractErrorMessage(e, 'Lỗi'), 'error')
-  } finally {
-    deleteBusy.value = false
-  }
-}
-
-const { timeAgo } = useTimeAgo()
-
 async function save() {
   nameError.value = ''
   const name = displayName.value.trim()
@@ -1170,6 +781,7 @@ async function save() {
 }
 
 const isDirty = computed(() => displayName.value !== savedName.value || bio.value !== savedBio.value || fullName.value !== savedFullName.value || email.value !== savedEmail.value || contactInfo.value !== savedContactInfo.value)
+
 function onBeforeUnload(e: BeforeUnloadEvent) {
   if (isDirty.value) e.preventDefault()
 }
@@ -1185,7 +797,28 @@ function syncHashTabSoon() {
   nextTick(onPopState)
   window.setTimeout(onPopState, 250)
 }
-onMounted(() => {
+
+onMounted(async () => {
+  const hash = window.location.hash.slice(1) as TabKey
+  if (hash && validKeys.value.has(hash)) {
+    activeTab.value = hash
+  }
+  lazyLoadTab(activeTab.value)
+  if (!user.value) return
+  // Pre-fetch notif prefs + privacy so the overview cards can show a summary
+  // immediately instead of only once those tabs are clicked.
+  lazyLoadTab('thong-bao')
+  lazyLoadTab('rieng-tu')
+  try {
+    const res = await $fetch<Record<string, any>>(`/api/users/${user.value.id}`, { headers: authHeaders() })
+    const u = res?.user ?? res
+    if (u?.bio) { bio.value = u.bio; savedBio.value = u.bio }
+    if (!displayName.value && u?.display_name) { displayName.value = u.display_name; savedName.value = u.display_name }
+    if (u?.full_name) { fullName.value = u.full_name; savedFullName.value = u.full_name }
+    if (u?.email) { email.value = u.email; savedEmail.value = u.email }
+    if (u?.contact_info) { contactInfo.value = u.contact_info; savedContactInfo.value = u.contact_info }
+  } catch { /* prefill is best-effort */ }
+
   if (import.meta.client) {
     window.addEventListener('beforeunload', onBeforeUnload)
     window.addEventListener('popstate', onPopState)
@@ -1193,6 +826,7 @@ onMounted(() => {
     syncHashTabSoon()
   }
 })
+
 onUnmounted(() => {
   if (import.meta.client) {
     window.removeEventListener('beforeunload', onBeforeUnload)
