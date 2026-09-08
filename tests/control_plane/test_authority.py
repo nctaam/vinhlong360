@@ -24,6 +24,13 @@ P1_FIXTURE_IDS = [
 ]
 
 
+def test_live_authority_uses_the_current_plan_ledger() -> None:
+    registry = load_authority(Path(__file__).resolve().parents[2] / "config" / "release-authority.json")
+
+    assert registry.progress_artifact == ".superpowers/sdd/2026-09-05-backend-completion-closure/progress.md"
+    assert registry.progress_artifact != ".superpowers/sdd/progress.md"
+
+
 def test_baseline_section_preserves_nested_headings_until_same_level() -> None:
     mismatches: list[str] = []
     markdown = "## Target\nvalue\n### Child\nchild value\n## Next\nnext value\n"

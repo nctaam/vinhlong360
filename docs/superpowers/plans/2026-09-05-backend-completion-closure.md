@@ -1,6 +1,6 @@
 # Backend Completion Closure Implementation Plan
 
-> STATUS (2026-09-05): active — kế hoạch đang được thực thi theo từng task, giữ nguyên NO_GO/BLOCKED cho tới khi có evidence hợp lệ.
+> STATUS (2026-09-08): Task 0 baseline freeze recorded on HEAD `0d537202c381ec75c863612b03ae25d7b1832af0` / branch `codex/correction-case-pilot`; authority remains **BLOCKED** (`tracked=7 stale=4 mismatches=1`) because the current per-plan ledger is ignored/untracked. Keep NO_GO/BLOCKED until evidence is valid.
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox syntax for tracking.
 
@@ -20,6 +20,13 @@
 - Trước migration/data cleanup: chạy python scripts/backup_data.py cho local fixture và pg_dump cho disposable/staging; lưu checksum backup.
 - Mỗi task kết thúc bằng test riêng, python scripts/checks/run_hard.py --all, git diff --check và một commit nhỏ.
 - Không chỉnh frontend layout/visual implementation; chỉ cập nhật contract types/tests khi cần giữ API compatibility.
+
+## Task 0 provenance snapshot (2026-09-08)
+
+- Baseline commands were run on the current tree: `git rev-parse HEAD` = `0d537202c381ec75c863612b03ae25d7b1832af0`; `git branch --show-current` = `codex/correction-case-pilot`; `git status --short` contains 13 pre-existing tracked frontend/contract edits plus untracked `agent/.pytest-task15-review-green/` and `outputs/`.
+- `python scripts/check_release_authority.py --root .` returns `BLOCKED tracked=7 stale=4 mismatches=1`. The mismatch is intentional and fail-closed: `progress_artifact` points to `.superpowers/sdd/2026-09-05-backend-completion-closure/progress.md`, which is ignored/untracked. The older tracked `.superpowers/sdd/progress.md` is not the current plan ledger and is not overwritten.
+- Artifact classification: `agent/.pytest-task15-review-green/` = generated test output; `outputs/` = generated research exports. Both remain on disk, are excluded from Task 0 staging and release evidence, and require owner-approved cleanup before deletion or packaging.
+- HEAD already contains the implementation commits for Tasks 1–6: `1efe000d`, `61a10742`, `ade34c72`, `7614e490`, `62e8a473`, `89eac4af`, `49a10093`, and `ec2b85f3`. Their unchecked boxes below are stale bookkeeping, not evidence of absence; do not reimplement them in Task 0.
 
 ## Hiện trạng và phạm vi còn lại
 
@@ -64,7 +71,7 @@ Khoảng trống còn thật sự mở:
 - python scripts/check_release_authority.py --root . là kiểm tra authority trước mỗi task.
 - git status --short phải được ghi vào baseline; artifact chưa phân loại không được đưa vào evidence bundle.
 
-- [ ] Step 1: Ghi baseline hiện tại.
+- [x] Step 1: Ghi baseline hiện tại.
 
 ~~~powershell
 git rev-parse HEAD
@@ -75,7 +82,7 @@ python scripts/check_release_authority.py --root .
 
 Expected: branch codex/correction-case-pilot; authority báo STALE hoặc BLOCKED rõ ràng, không che giấu.
 
-- [ ] Step 2: Viết RED cho stale snapshot và untracked artifact.
+- [x] Step 2: Viết RED cho stale snapshot và untracked artifact.
 
 ~~~python
 def test_untracked_artifact_cannot_enter_release_bundle(tmp_path):
@@ -86,11 +93,11 @@ def test_untracked_artifact_cannot_enter_release_bundle(tmp_path):
 
 Run: python -m pytest tests/control_plane/test_authority.py -q. Expected: FAIL cho test mới.
 
-- [ ] Step 3: Cập nhật snapshot có provenance.
+- [x] Step 3: Cập nhật snapshot có provenance.
 
 docs/HANDOFF.md phải ghi HEAD, branch, ngày đo và lệnh đo thật; config/release-authority.json phải trỏ audit/progress hiện tại. Không xóa agent/.pytest-task15-review-green/; chỉ ghi nhận đây là generated artifact và xử lý ở bước cleanup được owner duyệt.
 
-- [ ] Step 4: GREEN và commit.
+- [x] Step 4: GREEN và commit.
 
 ~~~powershell
 python -m pytest tests/control_plane/test_authority.py tests/test_release_quality_gates.py -q
