@@ -372,6 +372,7 @@ import {
   optimizationTradeoffs,
   openingHourConflictsFor,
 } from '~/utils/plannerTradeoffs'
+import { usePlannerStopOperations } from '~/composables/usePlannerStopOperations'
 import {
   usePlannerServerPlans,
   LS_PLANS,
@@ -492,8 +493,6 @@ let addingTimer: ReturnType<typeof setTimeout> | null = null
 const savePulse = ref(false)
 const saving = ref(false)
 const stopAnnounce = ref('')
-const draggedStopIndex = ref<number | null>(null)
-const dragOverStopIndex = ref<number | null>(null)
 const plannerOnline = ref(true)
 const draftSavedAt = ref<string | null>(null)
 const draftSource = ref<'local' | 'server'>('local')
@@ -569,25 +568,6 @@ const plannerConflictDifferences = computed<PlannerConflictDifference[]>(() => (
     ? diffPlannerPlanStops(stops.value, plannerRevisionConflict.value.stops)
     : []
 ))
-const plannerVisitDuration = computed(() => {
-  return stops.value.reduce((total, stop) => (
-    total + ((plannerScheduleMetadata.get(stop)?.visitMinutes || 0) * 60)
-  ), 0)
-})
-const plannerTravelDuration = computed<number | null>(() => {
-  if (stops.value.length < 2) return 0
-  return routeResult.value?.totalDuration ?? null
-})
-const plannerTotalDurationPartial = computed(() => (
-  stops.value.length >= 2 && plannerTravelDuration.value === null
-))
-const plannerTotalDuration = computed<number | null>(() => {
-  const visitDuration = plannerVisitDuration.value
-  const travelDuration = plannerTravelDuration.value
-  return travelDuration === null
-    ? (visitDuration > 0 ? visitDuration : null)
-    : travelDuration + visitDuration
-})
 
 const plannerQueryKey = computed(() => [
   sourceTab.value,
@@ -664,6 +644,39 @@ const pickerResults = computed(() => {
   }
 
   return list.slice(0, 50)
+})
+
+const {
+  draggedStopIndex,
+  dragOverStopIndex,
+  stopAccessFactsMap,
+  beginStopDrag,
+  handleStopDragOver,
+  handleStopDragLeave,
+  dropStop,
+  endStopDrag,
+  moveStop,
+  removeStop,
+  plannerRouteLeg,
+  scheduledIntervalForStop,
+  stopAccessFact,
+  isVehicleAccessRestricted,
+  plannerVisitDuration,
+  plannerTravelDuration,
+  plannerTotalDurationPartial,
+  plannerTotalDuration,
+} = usePlannerStopOperations({
+  stops,
+  allEntities,
+  favList,
+  transportMode,
+  routeResult,
+  currentRoutableStops,
+  plannerScheduleMetadata,
+  plannerInputState,
+  invalidatePlannerSchedule,
+  optimizationMessage,
+  stopAnnounce,
 })
 
 
@@ -900,70 +913,6 @@ async function addStop(entity: Entity) {
   }
 }
 
-function removeStop(idx: number) {
-  invalidatePlannerSchedule()
-  const name = stops.value[idx]?.name || ''
-  stops.value.splice(idx, 1)
-  optimizationMessage.value = ''
-  stopAnnounce.value = ''
-  nextTick(() => { stopAnnounce.value = `Đã xóa ${name}. ${stops.value.length} điểm.` })
-}
-
-function moveStop(idx: number, dir: number) {
-  const target = idx + dir
-  if (target < 0 || target >= stops.value.length) return
-  const temp = stops.value[idx]
-  const targetStop = stops.value[target]
-  if (!temp || !targetStop) return
-  invalidatePlannerSchedule()
-  stops.value[idx] = targetStop
-  stops.value[target] = temp
-  optimizationMessage.value = ''
-  stopAnnounce.value = ''
-  nextTick(() => { stopAnnounce.value = `${temp.name} chuyển sang vị trí ${target + 1}.` })
-}
-
-function beginStopDrag(index: number, event: DragEvent) {
-  draggedStopIndex.value = index
-  dragOverStopIndex.value = null
-  if (event.dataTransfer) {
-    event.dataTransfer.effectAllowed = 'move'
-    event.dataTransfer.setData('text/plain', String(index))
-  }
-}
-
-function handleStopDragOver(index: number, event: DragEvent) {
-  event.preventDefault()
-  if (draggedStopIndex.value !== null && draggedStopIndex.value !== index) {
-    dragOverStopIndex.value = index
-  }
-}
-
-function handleStopDragLeave(index: number) {
-  if (dragOverStopIndex.value === index) {
-    dragOverStopIndex.value = null
-  }
-}
-
-function dropStop(targetIndex: number) {
-  const sourceIndex = draggedStopIndex.value
-  draggedStopIndex.value = null
-  dragOverStopIndex.value = null
-  if (sourceIndex === null || sourceIndex === targetIndex) return
-  const stop = stops.value[sourceIndex]
-  if (!stop) return
-  invalidatePlannerSchedule()
-  stops.value.splice(sourceIndex, 1)
-  stops.value.splice(targetIndex, 0, stop)
-  optimizationMessage.value = ''
-  stopAnnounce.value = ''
-  nextTick(() => { stopAnnounce.value = `${stop.name} chuyển sang vị trí ${targetIndex + 1}.` })
-}
-
-function endStopDrag() {
-  draggedStopIndex.value = null
-  dragOverStopIndex.value = null
-}
 
 async function clearPlan() {
   if (saving.value) return
@@ -1029,13 +978,6 @@ watch([allEntities, pendingAddId], async () => {
 }, { immediate: true })
 const formatDate = formatDateVN
 
-function plannerRouteLeg(stopIndex: number) {
-  return routeLegForStopIndex(
-    stopIndex,
-    currentRoutableStops.value,
-    routeResult.value?.legs || [],
-  )
-}
 
 function invalidatePlannerSchedule() {
   clearPendingOptimizationPreview()
@@ -1047,33 +989,6 @@ function invalidatePlannerSchedule() {
   )
 }
 
-function scheduledIntervalForStop(stop: PlanStop): string {
-  void plannerInputState.version
-  return formatScheduledInterval(plannerScheduleMetadata.get(stop)?.placement)
-}
-
-const stopAccessFactsMap = reactive(new Map<string, string>())
-
-function stopAccessFact(stop: PlanStop): string | null {
-  if (stopAccessFactsMap.has(stop.id)) {
-    return stopAccessFactsMap.get(stop.id) || null
-  }
-  const match = (allEntities.value as Entity[]).find(e => e.id === stop.id)
-    || ((favList.value || []) as any[]).find(e => e.id === stop.id)
-  const access = match?.attributes?.vehicle_access || match?.attributes?.road_access
-  if (access && typeof access === 'string') {
-    const trimmed = access.trim()
-    stopAccessFactsMap.set(stop.id, trimmed)
-    return trimmed
-  }
-  return null
-}
-
-function isVehicleAccessRestricted(stop: PlanStop): boolean {
-  if (transportMode.value !== 'driving') return false
-  const fact = (stopAccessFact(stop) || '').toLowerCase()
-  return fact.includes('chỉ xe máy') || fact.includes('không vào được ô tô') || fact.includes('hẹp')
-}
 
 async function announceOptimization(message: string) {
   optimizationMessage.value = message
