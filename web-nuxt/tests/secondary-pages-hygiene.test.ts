@@ -27,6 +27,7 @@ describe('Moc 146: Secondary & Account Pages Radius Hygiene & Integrity', () => 
       'pages/tao-lich-trinh.vue': 1500,
       'pages/tim-kiem.vue': 1100,
       'pages/xa-phuong/[id].vue': 1050,
+      'pages/cong-dong.vue': 1050,
     }
 
     for (const [relPath, maxLines] of Object.entries(ceilings)) {
