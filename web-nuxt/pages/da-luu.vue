@@ -2,30 +2,26 @@
   <section class="page saved-page" data-color-system="tri-region-v1">
     <Breadcrumb :items="[{ label: 'Trang chủ', to: '/' }, { label: 'Đã lưu' }]" :json-ld="true" />
 
-    <div v-if="!isLoggedIn" class="saved-guest">
-      <EmptyState
-        icon-name="bookmark"
-        title="Đã lưu — Kho hành trình cá nhân"
-        message="Đăng nhập để đồng bộ và xem danh sách địa điểm, bài viết và lịch trình bạn đã lưu giữ trên mọi thiết bị."
-        color-recipe="tri-region-v1"
-        :heading-level="1"
-      >
-        <template #actions>
-          <button type="button" class="btn btn-primary" @click="openAuth()">Đăng nhập</button>
-        </template>
-      </EmptyState>
-    </div>
+    <header class="saved-header">
+      <div>
+        <p class="saved-kicker dateline-eyebrow">Kho cá nhân</p>
+        <h1 class="saved-title">Đã lưu</h1>
+      </div>
+      <button v-if="isLoggedIn" type="button" class="btn btn-ghost btn-sm" :disabled="activeLoading" @click="refreshCurrentTab">
+        {{ activeLoading ? 'Đang đồng bộ...' : 'Đồng bộ' }}
+      </button>
+      <button v-else type="button" class="btn btn-secondary btn-sm" @click="openAuth()">
+        Đăng nhập để đồng bộ
+      </button>
+    </header>
 
-    <template v-else>
-      <header class="saved-header">
-        <div>
-          <p class="saved-kicker dateline-eyebrow">Kho cá nhân</p>
-          <h1 class="saved-title">Đã lưu</h1>
-        </div>
-        <button type="button" class="btn btn-ghost btn-sm" :disabled="activeLoading" @click="refreshCurrentTab">
-          {{ activeLoading ? 'Đang đồng bộ...' : 'Đồng bộ' }}
-        </button>
-      </header>
+    <div v-if="!isLoggedIn" class="saved-guest-banner" role="status">
+      <div class="saved-guest-banner-text">
+        <IconLine name="info" class="saved-guest-banner-icon" />
+        <span>Danh sách đang lưu trên trình duyệt này. Đăng nhập để đồng bộ và mở khóa lưu bài viết, lịch trình.</span>
+      </div>
+      <button type="button" class="btn btn-primary btn-sm" @click="openAuth()">Đăng nhập</button>
+    </div>
 
       <section class="saved-overview" aria-label="Tổng quan đã lưu">
         <div class="saved-overview-item">
@@ -144,86 +140,111 @@
 
       <!-- Bookmarked posts -->
       <div v-if="tab === 'posts'" id="saved-panel-posts" class="saved-panel" role="tabpanel" aria-labelledby="saved-tab-posts">
-        <div v-if="postsError && !postsLoading" class="saved-inline-warning" role="status">
-          Chưa thể tải bookmark bài viết. Bạn có thể thử đồng bộ lại.
-        </div>
-        <div v-if="postsLoading" class="saved-skeletons">
-          <div v-for="i in 4" :key="i" class="skeleton-box saved-card-skel"></div>
-        </div>
-        <div v-else-if="filteredPosts.length" class="saved-posts-list">
-          <div v-for="post in filteredPosts" :key="post.id" class="saved-post card">
-            <NuxtLink :to="postPath(post.id)" class="saved-post-link">
-              <span class="saved-post-title">{{ post.content?.slice(0, 100) || 'Bài viết' }}{{ post.content?.length > 100 ? '…' : '' }}</span>
-              <span class="saved-post-meta">
-                {{ post.author_name || 'Người dùng' }} · {{ timeAgo(post.bookmarked_at || post.created_at) }}
-              </span>
-            </NuxtLink>
-            <button
-              type="button"
-              class="saved-remove"
-              :aria-label="`Bỏ lưu bài viết của ${post.author_name || 'tác giả'}`"
-              @click="removeBookmark(post.id)"
-            >
-              <IconLine name="x" />
-            </button>
+        <EmptyState
+          v-if="!isLoggedIn"
+          icon-name="bookmark"
+          title="Đăng nhập để xem bài viết đã lưu"
+          message="Các bài viết cộng đồng bạn lưu giữ sẽ hiển thị ở đây sau khi đăng nhập."
+          color-recipe="tri-region-v1"
+        >
+          <template #actions>
+            <button type="button" class="btn btn-primary btn-sm" @click="openAuth()">Đăng nhập</button>
+          </template>
+        </EmptyState>
+        <template v-else>
+          <div v-if="postsError && !postsLoading" class="saved-inline-warning" role="status">
+            Chưa thể tải bookmark bài viết. Bạn có thể thử đồng bộ lại.
           </div>
-        </div>
-        <div v-else class="saved-empty">
-          <p>{{ savedQuery ? 'Không tìm thấy bài viết phù hợp trong bookmark.' : 'Chưa bookmark bài viết nào.' }}</p>
-          <div v-if="savedQuery" class="saved-empty-actions">
-            <button type="button" class="btn btn-ghost btn-sm" @click="savedQuery = ''">
-              <IconLine name="repeat" /> Xóa bộ lọc
-            </button>
+          <div v-if="postsLoading" class="saved-skeletons">
+            <div v-for="i in 4" :key="i" class="skeleton-box saved-card-skel"></div>
           </div>
-          <NuxtLink v-else to="/cong-dong" class="btn btn-ghost btn-sm">Xem bài viết cộng đồng</NuxtLink>
-        </div>
-        <button v-if="!savedQuery && postsHasMore && bookmarkedPosts.length" type="button" class="btn btn-secondary saved-load-more" @click="loadMorePosts">
-          Xem thêm
-        </button>
+          <div v-else-if="filteredPosts.length" class="saved-posts-list">
+            <div v-for="post in filteredPosts" :key="post.id" class="saved-post card">
+              <NuxtLink :to="postPath(post.id)" class="saved-post-link">
+                <span class="saved-post-title">{{ post.content?.slice(0, 100) || 'Bài viết' }}{{ post.content?.length > 100 ? '…' : '' }}</span>
+                <span class="saved-post-meta">
+                  {{ post.author_name || 'Người dùng' }} · {{ timeAgo(post.bookmarked_at || post.created_at) }}
+                </span>
+              </NuxtLink>
+              <button
+                type="button"
+                class="saved-remove"
+                :aria-label="`Bỏ lưu bài viết của ${post.author_name || 'tác giả'}`"
+                @click="removeBookmark(post.id)"
+              >
+                <IconLine name="x" />
+              </button>
+            </div>
+          </div>
+          <div v-else class="saved-empty">
+            <p>{{ savedQuery ? 'Không tìm thấy bài viết phù hợp trong bookmark.' : 'Chưa bookmark bài viết nào.' }}</p>
+            <div v-if="savedQuery" class="saved-empty-actions">
+              <button type="button" class="btn btn-ghost btn-sm" @click="savedQuery = ''">
+                <IconLine name="repeat" /> Xóa bộ lọc
+              </button>
+            </div>
+            <NuxtLink v-else to="/cong-dong" class="btn btn-ghost btn-sm">Xem bài viết cộng đồng</NuxtLink>
+          </div>
+          <button v-if="!savedQuery && postsHasMore && bookmarkedPosts.length" type="button" class="btn btn-secondary saved-load-more" @click="loadMorePosts">
+            Xem thêm
+          </button>
+        </template>
       </div>
 
       <!-- Itineraries -->
       <div v-if="tab === 'itineraries'" id="saved-panel-itineraries" class="saved-panel" role="tabpanel" aria-labelledby="saved-tab-itineraries">
-        <div v-if="itinerariesError && !itinerariesLoading" class="saved-inline-warning" role="status">
-          Chưa thể tải lịch trình. Bạn có thể thử đồng bộ lại.
-        </div>
-        <div v-if="itinerariesLoading" class="saved-skeletons">
-          <div v-for="i in 3" :key="i" class="skeleton-box saved-card-skel"></div>
-        </div>
-        <div v-else-if="filteredItineraries.length" class="saved-posts-list">
-          <div v-for="plan in filteredItineraries" :key="plan.id" class="saved-post card">
-            <NuxtLink :to="itineraryPath(plan.id)" class="saved-post-link">
-              <span class="saved-post-title">{{ plan.title || `Lịch trình ${plan.days || ''}` }}</span>
-              <span class="saved-post-meta">{{ timeAgo(plan.savedAt || plan.created_at) }}</span>
-            </NuxtLink>
-            <button
-              type="button"
-              class="saved-remove"
-              :aria-label="`Xóa lịch trình ${plan.title || ''}`"
-              @click="removeItinerary(plan.id)"
-            >
-              <IconLine name="x" />
-            </button>
+        <EmptyState
+          v-if="!isLoggedIn"
+          icon-name="compass"
+          title="Đăng nhập để xem lịch trình đã lưu"
+          message="Các lịch trình cá nhân hoá được đồng bộ và lưu trữ trong tài khoản của bạn."
+          color-recipe="tri-region-v1"
+        >
+          <template #actions>
+            <button type="button" class="btn btn-primary btn-sm" @click="openAuth()">Đăng nhập</button>
+          </template>
+        </EmptyState>
+        <template v-else>
+          <div v-if="itinerariesError && !itinerariesLoading" class="saved-inline-warning" role="status">
+            Chưa thể tải lịch trình. Bạn có thể thử đồng bộ lại.
           </div>
-        </div>
-        <div v-else class="saved-empty">
-          <p>{{ savedQuery ? 'Không tìm thấy lịch trình phù hợp.' : 'Chưa có lịch trình nào.' }}</p>
-          <div v-if="savedQuery" class="saved-empty-actions">
-            <button type="button" class="btn btn-ghost btn-sm" @click="savedQuery = ''">
-              <IconLine name="repeat" /> Xóa bộ lọc
-            </button>
+          <div v-if="itinerariesLoading" class="saved-skeletons">
+            <div v-for="i in 3" :key="i" class="skeleton-box saved-card-skel"></div>
           </div>
-          <NuxtLink v-else to="/lich-trinh" class="btn btn-ghost btn-sm">Tạo lịch trình mới</NuxtLink>
-        </div>
+          <div v-else-if="filteredItineraries.length" class="saved-posts-list">
+            <div v-for="plan in filteredItineraries" :key="plan.id" class="saved-post card">
+              <NuxtLink :to="itineraryPath(plan.id)" class="saved-post-link">
+                <span class="saved-post-title">{{ plan.title || `Lịch trình ${plan.days || ''}` }}</span>
+                <span class="saved-post-meta">{{ timeAgo(plan.savedAt || plan.created_at) }}</span>
+              </NuxtLink>
+              <button
+                type="button"
+                class="saved-remove"
+                :aria-label="`Xóa lịch trình ${plan.title || ''}`"
+                @click="removeItinerary(plan.id)"
+              >
+                <IconLine name="x" />
+              </button>
+            </div>
+          </div>
+          <div v-else class="saved-empty">
+            <p>{{ savedQuery ? 'Không tìm thấy lịch trình phù hợp.' : 'Chưa có lịch trình nào.' }}</p>
+            <div v-if="savedQuery" class="saved-empty-actions">
+              <button type="button" class="btn btn-ghost btn-sm" @click="savedQuery = ''">
+                <IconLine name="repeat" /> Xóa bộ lọc
+              </button>
+            </div>
+            <NuxtLink v-else to="/lich-trinh" class="btn btn-ghost btn-sm">Tạo lịch trình mới</NuxtLink>
+          </div>
+        </template>
       </div>
       <NuxtErrorBoundary>
         <ClientOnly>
           <LazySmartRecommendations context="saved" title="Gợi ý thêm cho chuyến đi" :limit="6" />
         </ClientOnly>
       </NuxtErrorBoundary>
-    </template>
-  </section>
-</template>
+    </section>
+  </template>
 
 <script setup lang="ts">
 import { useJourneyActions } from '~/composables/useJourneyActions'
@@ -267,11 +288,15 @@ const itineraries = ref<any[]>([])
 
 const tabs = computed(() => [
   { key: 'entities' as const, label: 'Địa điểm', count: savedEntities.value.length || favorites.value.length || null },
-  { key: 'posts' as const, label: 'Bài viết', count: bookmarkedPosts.value.length || null },
-  { key: 'itineraries' as const, label: 'Lịch trình', count: itineraries.value.length || null },
+  { key: 'posts' as const, label: 'Bài viết', count: isLoggedIn.value ? (bookmarkedPosts.value.length || null) : null },
+  { key: 'itineraries' as const, label: 'Lịch trình', count: isLoggedIn.value ? (itineraries.value.length || null) : null },
 ])
 const activeTabMeta = computed(() => tabs.value.find(t => t.key === tab.value) || { key: 'entities' as const, label: 'Địa điểm', count: null })
-const totalSaved = computed(() => savedEntities.value.length + bookmarkedPosts.value.length + itineraries.value.length)
+const totalSaved = computed(() => {
+  const entityCount = savedEntities.value.length || favorites.value.length
+  if (!isLoggedIn.value) return entityCount
+  return entityCount + bookmarkedPosts.value.length + itineraries.value.length
+})
 const activeLoading = computed(() => {
   if (tab.value === 'entities') return entitiesLoading.value
   if (tab.value === 'posts') return postsLoading.value
@@ -355,19 +380,26 @@ const savedJourneyActions = computed(() => savedWorkspaceActions({
 }))
 
 onMounted(async () => {
-  if (!isLoggedIn.value) return
   await loadEntities()
 })
 
 watch(isLoggedIn, async (loggedIn) => {
   if (!loggedIn) {
     resetSavedRemoteData()
+    savedEntities.value = [...favorites.value]
     return
   }
   await loadEntities()
 })
 
+watch(favorites, (favs) => {
+  if (!isLoggedIn.value) {
+    savedEntities.value = [...favs]
+  }
+}, { deep: true })
+
 watch(tab, (t) => {
+  if (!isLoggedIn.value) return
   if (t === 'posts' && !postsLoaded.value && !postsLoading.value) loadPosts()
   if (t === 'itineraries' && !itinerariesLoaded.value && !itinerariesLoading.value) loadItineraries()
 })
@@ -390,6 +422,10 @@ function onSavedTabKeydown(e: KeyboardEvent) {
 }
 
 async function refreshCurrentTab() {
+  if (!isLoggedIn.value) {
+    savedEntities.value = [...favorites.value]
+    return
+  }
   if (tab.value === 'entities') await loadEntities()
   else if (tab.value === 'posts') await loadPosts()
   else await loadItineraries()
@@ -398,6 +434,11 @@ async function refreshCurrentTab() {
 async function loadEntities() {
   entitiesLoading.value = true
   entitiesError.value = false
+  if (!isLoggedIn.value) {
+    savedEntities.value = [...favorites.value]
+    entitiesLoading.value = false
+    return
+  }
   try {
     const res = await authFetch<{ items: any[] }>('/api/saved')
     savedEntities.value = res.items || []
@@ -514,7 +555,24 @@ useHead(() => ({
 
 <style scoped>
 .saved-page { max-width: 920px; margin: 0 auto; }
-.saved-guest { padding: var(--space-6) 0; }
+.saved-guest-banner {
+  display: flex; align-items: center; justify-content: space-between; gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  background: rgba(var(--color-action-rgb), .06);
+  border: 1px solid rgba(var(--color-action-rgb), .2);
+  border-radius: var(--radius-surface);
+  margin-bottom: 1rem;
+}
+.saved-guest-banner-text {
+  display: flex; align-items: center; gap: var(--space-2);
+  font-size: .88rem; color: var(--ink);
+}
+.saved-guest-banner-icon {
+  flex-shrink: 0; color: var(--color-action); width: 18px; height: 18px;
+}
+@media (max-width: 640px) {
+  .saved-guest-banner { flex-direction: column; align-items: stretch; gap: var(--space-2); }
+}
 .saved-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 1rem; margin-bottom: 1rem; }
 .saved-kicker { margin: 0 0 .2rem; color: var(--muted); font-size: .8rem; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; }
 .dateline-eyebrow {

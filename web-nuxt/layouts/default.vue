@@ -85,6 +85,7 @@
       <LazyChatWidget />
       <LazyOnboardingSheet />
       <LazyToastContainer />
+      <LazyJourneyBar />
     </template>
 
     <footer class="site-footer" role="contentinfo">

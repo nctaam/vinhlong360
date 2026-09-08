@@ -214,7 +214,6 @@
         <NuxtLink to="/ban-do"><IconLine name="map" aria-hidden="true" /> Xem trên bản đồ</NuxtLink>
         <NuxtLink to="/lich-trinh"><IconLine name="route" aria-hidden="true" /> Mở lịch trình</NuxtLink>
       </nav>
-      <ClientOnly><LazyJourneyBar /></ClientOnly>
     </section>
   </div>
 </template>

@@ -190,8 +190,6 @@
         <IconLine v-if="!loadingMore" name="arrow-down" class="dd-more-icon" aria-hidden="true" />
       </button>
     </template>
-    <!-- declutter-3 T14 (A3c): JourneyBar page-level — trang thuộc luồng lập-kế-hoạch -->
-    <ClientOnly><LazyJourneyBar /></ClientOnly>
   </section>
 </template>
 

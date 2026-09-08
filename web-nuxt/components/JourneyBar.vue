@@ -1,13 +1,13 @@
 <template>
   <Teleport to="body">
     <Transition name="jb-slide">
-      <div v-if="count > 0" class="journey-bar">
-        <NuxtLink to="/lich-trinh" class="jb-summary">
+      <div v-if="count > 0 && isVisibleOnPage" class="journey-bar">
+        <NuxtLink to="/da-luu" class="jb-summary" aria-label="Xem danh sách địa điểm đã lưu">
           <svg class="jb-heart" viewBox="0 0 24 24" aria-hidden="true"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" fill="var(--save-red)" stroke="var(--save-red)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
           <span aria-live="polite" aria-atomic="true"><strong :class="{ 'jb-count-pop': countPop }">{{ count }}</strong> đã lưu</span>
         </NuxtLink>
         <div class="jb-actions">
-          <NuxtLink to="/lich-trinh" class="btn btn-sm btn-ghost jb-link" aria-label="Xem tất cả lịch trình">Xem tất cả</NuxtLink>
+          <NuxtLink to="/da-luu" class="btn btn-sm btn-ghost jb-link" aria-label="Xem tất cả địa điểm đã lưu">Xem tất cả</NuxtLink>
           <NuxtLink to="/tao-lich-trinh" no-prefetch class="btn btn-sm btn-primary jb-link">Tạo lịch trình</NuxtLink>
         </div>
       </div>
@@ -16,14 +16,20 @@
 </template>
 
 <script setup lang="ts">
+const route = useRoute()
 const { count } = useFavorites()
 const countPop = ref(false)
 const prevCount = ref(count.value)
 let popTimer: ReturnType<typeof setTimeout> | null = null
 
+const isVisibleOnPage = computed(() => {
+  const p = route.path
+  return p !== '/da-luu' && p !== '/tao-lich-trinh' && !p.startsWith('/dia-diem/') && !p.startsWith('/admin')
+})
+
 function updateBodyState(total: number) {
   if (typeof document !== 'undefined' && document.body) {
-    if (total > 0) {
+    if (total > 0 && isVisibleOnPage.value) {
       document.body.classList.add('has-journey-bar')
     } else {
       document.body.classList.remove('has-journey-bar')
@@ -35,7 +41,7 @@ onMounted(() => {
   updateBodyState(count.value)
 })
 
-watch(count, (n) => {
+watch([count, isVisibleOnPage], ([n]) => {
   updateBodyState(n)
   if (n > prevCount.value) {
     if (popTimer) clearTimeout(popTimer)

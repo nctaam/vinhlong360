@@ -204,8 +204,6 @@
         </NuxtLink>
       </div>
     </section>
-    <!-- declutter-3 T14 (A3c): JourneyBar page-level — trang thuộc luồng lập-kế-hoạch -->
-    <ClientOnly><LazyJourneyBar /></ClientOnly>
   </div>
 </template>
 
