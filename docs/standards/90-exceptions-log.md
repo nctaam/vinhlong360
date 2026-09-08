@@ -355,3 +355,17 @@ ghi ở backlog tối ưu — giảm dần, KHÔNG được tăng tiếp từ 47
 - 2026-09-04T16:38:00 SKIP R30.7 — Backend correction audit contract fix; frontend bundle unchanged and existing R30.7 debt is unrelated.
 
 - 2026-09-08T20:02:40 SKIP R30.7 — Backend-only stream lifecycle, release packaging, and Windows regression fixes; pre-existing frontend bundle debt is unchanged.
+
+- 2026-09-08T21:11:16 SKIP R30.7 — Task 0 docs-only baseline freeze; pre-existing frontend bundle ratchet is outside scoped files
+
+- 2026-09-08T21:39:55 SKIP R30.7 — Task 0 documentation/authority baseline only; pre-existing frontend bundle debt is unchanged.
+
+- 2026-09-08T22:36:46 SKIP R30.7 — Pre-existing frontend bundle debt; backend-only acceptance digest fix adds no frontend changes.
+
+- 2026-09-08T22:40:43 SKIP R30.7 — Pre-existing frontend bundle debt; backend-only acceptance digest fix adds no frontend changes.
+
+- 2026-09-08T23:27:27 SKIP R30.7 — Backend-only restore readiness contract fix; pre-existing frontend bundle debt is unchanged.
+
+- 2026-09-09T00:00:57 SKIP R30.7 — Restore probe now supports manifest-backed row parity; pre-existing frontend bundle debt is unchanged.
+
+- 2026-09-09T06:05:39 SKIP R30.7 — Pre-existing frontend bundle debt; strict typing, accessibility, SEO contract, and endpoint corrections do not change generated bundle size.

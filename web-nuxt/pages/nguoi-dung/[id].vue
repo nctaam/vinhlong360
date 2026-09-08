@@ -819,7 +819,7 @@ function onFollowModalTabKeydown(event: KeyboardEvent) {
     : event.key === 'End'
       ? tabs[1]
       : tabs[(current + (event.key === 'ArrowRight' ? 1 : -1) + tabs.length) % tabs.length]
-  followModalTab.value = next
+  followModalTab.value = next ?? 'followers'
   nextTick(() => document.getElementById(`fm-tab-${next}`)?.focus())
 }
 

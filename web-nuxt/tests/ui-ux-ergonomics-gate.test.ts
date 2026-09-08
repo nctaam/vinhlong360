@@ -37,8 +37,8 @@ describe("Mốc 103: UI/UX Ergonomics, WCAG 2.2 Touch Targets & EmptyState Gover
   })
 
   it("Tất cả các trang công khai gọi EmptyState có nút hành động đều dùng semantic template #actions", () => {
-    function walk(dir) {
-      let results = []
+    function walk(dir: string): string[] {
+      let results: string[] = []
       const list = readdirSync(dir)
       for (const file of list) {
         const full = join(dir, file)
@@ -52,8 +52,8 @@ describe("Mốc 103: UI/UX Ergonomics, WCAG 2.2 Touch Targets & EmptyState Gover
       return results
     }
 
-    const pages = walk(resolve(root, "pages")).filter(p => !p.includes("admin"))
-    const violations = []
+    const pages = walk(resolve(root, "pages")).filter((p: string) => !p.includes("admin"))
+    const violations: Array<{ file: string; snippet: string }> = []
 
     for (const file of pages) {
       const content = readFileSync(file, "utf8")

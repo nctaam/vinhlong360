@@ -134,8 +134,10 @@ function onFilterKeydown(e: KeyboardEvent) {
   }
   if (nextIndex !== -1) {
     e.preventDefault()
-    filter.value = FILTERS[nextIndex].key
-    const btn = document.getElementById(`tb-filter-${FILTERS[nextIndex].key}`)
+    const nextFilter = FILTERS[nextIndex]
+    if (!nextFilter) return
+    filter.value = nextFilter.key
+    const btn = document.getElementById(`tb-filter-${nextFilter.key}`)
     btn?.focus()
   }
 }

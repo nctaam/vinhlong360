@@ -9,8 +9,8 @@ export interface CommunityBookmarksOptions {
   showToast: (msg: string, type?: 'info' | 'success' | 'warning' | 'error') => void
   filterCommunityPosts: (posts: Post[]) => Post[]
   mergeCommunityPosts: (existing: Post[], incoming: Post[]) => Post[]
-  extractPostArray: (res: any, key?: string) => Post[]
-  responseHasMore: (res: any, posts: Post[]) => boolean
+  extractPostArray: (res: unknown, key?: 'posts' | 'bookmarks') => Post[]
+  responseHasMore: (res: unknown, posts: Post[]) => boolean
 }
 
 export function useCommunityBookmarks(options: CommunityBookmarksOptions) {

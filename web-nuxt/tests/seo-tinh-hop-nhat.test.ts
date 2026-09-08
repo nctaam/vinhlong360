@@ -87,7 +87,8 @@ describe('§1.6 — bề mặt máy đọc phải nói đúng tỉnh hợp nhấ
       const src = doc(rel)
       const m = src.match(/class="[^"]*dateline-eyebrow[^"]*"[^>]*>([^<]+)</)
       if (m) {
-        expect(sachTheo16(m[1]), `${rel}: dateline-eyebrow gọi tỉnh cũ mà không có dấu lịch sử: ${m[1]}`).toBe(true)
+        const label = m[1] ?? ''
+        expect(sachTheo16(label), `${rel}: dateline-eyebrow gọi tỉnh cũ mà không có dấu lịch sử: ${label}`).toBe(true)
       }
     }
   })
@@ -96,7 +97,7 @@ describe('§1.6 — bề mặt máy đọc phải nói đúng tỉnh hợp nhấ
     const src = doc('utils/pageManifest.ts')
     const lines = src.split('\n')
     for (let i = 0; i < lines.length; i++) {
-      const line = lines[i].trim()
+      const line = lines[i]?.trim() ?? ''
       if (line.startsWith('//') || line.startsWith('/*') || line.startsWith('*')) continue
       if (TEN_CU.test(line)) {
         expect(sachTheo16(line), `utils/pageManifest.ts:${i + 1} nhắc tỉnh cũ mà thiếu dấu mốc lịch sử: ${line}`).toBe(true)
@@ -120,7 +121,7 @@ describe('§1.6 — bề mặt máy đọc phải nói đúng tỉnh hợp nhấ
       const src = doc(rel)
       const lines = src.split('\n')
       for (let i = 0; i < lines.length; i++) {
-        const line = lines[i].trim()
+        const line = lines[i]?.trim() ?? ''
         if (line.startsWith('//') || line.startsWith('/*') || line.startsWith('*')) continue
         if (TEN_CU.test(line)) {
           expect(sachTheo16(line), `${rel}:${i + 1} nhắc tỉnh cũ mà thiếu dấu mốc lịch sử: ${line}`).toBe(true)

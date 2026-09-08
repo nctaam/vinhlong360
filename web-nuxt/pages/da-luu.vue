@@ -8,7 +8,7 @@
         title="Đã lưu — Kho hành trình cá nhân"
         message="Đăng nhập để đồng bộ và xem danh sách địa điểm, bài viết và lịch trình bạn đã lưu giữ trên mọi thiết bị."
         color-recipe="tri-region-v1"
-        :heading-level="1"
+        :heading-level="2"
       >
         <template #actions>
           <button type="button" class="btn btn-primary" @click="openAuth()">Đăng nhập</button>

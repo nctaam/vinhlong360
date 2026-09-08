@@ -68,7 +68,7 @@ describe('Mốc 109: Form Error Association & Programmatic Feedback Standards (W
         const inputRegex = /<(?:input|textarea|select)\b([^>]*)>/gi
         let match: RegExpExecArray | null
         while ((match = inputRegex.exec(code)) !== null) {
-          const attrs = match[1]
+          const attrs = match[1] ?? ''
           if (/aria-invalid/i.test(attrs) && !/aria-describedby/i.test(attrs)) {
             unassociated.push(`${rel}: ${attrs.slice(0, 60)}`)
           }

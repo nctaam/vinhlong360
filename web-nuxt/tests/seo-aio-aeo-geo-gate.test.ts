@@ -43,13 +43,13 @@ describe('SEO / AIO / AEO / GEO Architecture Quality Gate', () => {
         mainEntity: [
           {
             '@type': 'Question',
-            name: faqs[0].q,
-            acceptedAnswer: { '@type': 'Answer', text: faqs[0].a },
+            name: faqs[0]!.q,
+            acceptedAnswer: { '@type': 'Answer', text: faqs[0]!.a },
           },
           {
             '@type': 'Question',
-            name: faqs[1].q,
-            acceptedAnswer: { '@type': 'Answer', text: faqs[1].a },
+            name: faqs[1]!.q,
+            acceptedAnswer: { '@type': 'Answer', text: faqs[1]!.a },
           },
         ],
       })

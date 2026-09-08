@@ -481,7 +481,7 @@
     {
       "method": "DELETE",
       "path": "/api/me/visits/{id}",
-      "source_match": "/api/me/visits/${encodeURIComponent(id.value)}",
+      "source_match": "/api/me/visits/${encodeURIComponent(props.entityId)}",
       "auth": "session",
       "domain": "identity"
     },
@@ -740,7 +740,7 @@
     {
       "method": "GET",
       "path": "/api/events/{id}/rsvp",
-      "source_match": "/api/events/${encodeURIComponent(id.value)}/rsvp",
+      "source_match": "/api/events/${encodeURIComponent(props.entityId)}/rsvp",
       "auth": "public",
       "domain": "catalog"
     },
@@ -782,7 +782,7 @@
     {
       "method": "GET",
       "path": "/api/me/visits/check/{id}",
-      "source_match": "/api/me/visits/check/${encodeURIComponent(id.value)}",
+      "source_match": "/api/me/visits/check/${encodeURIComponent(props.entityId)}",
       "auth": "session",
       "domain": "identity"
     },
@@ -1097,14 +1097,14 @@
     {
       "method": "POST",
       "path": "/api/events/{id}/rsvp",
-      "source_match": "/api/events/${encodeURIComponent(id.value)}/rsvp",
+      "source_match": "/api/events/${encodeURIComponent(props.entityId)}/rsvp",
       "auth": "session",
       "domain": "catalog"
     },
     {
       "method": "POST",
       "path": "/api/follow/entity/{id}",
-      "source_match": "/api/follow/entity/${encodeURIComponent(id.value)}",
+      "source_match": "/api/follow/entity/${encodeURIComponent(props.entityId)}",
       "auth": "session",
       "domain": "community"
     },

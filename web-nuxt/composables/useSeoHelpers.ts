@@ -529,7 +529,7 @@ export interface PostDetailSchemaOptions {
     id?: string | number
     content?: string
     created_at?: string
-    author?: { id?: string | number; display_name?: string }
+    author?: { id?: string | number; display_name?: string | null }
   } | null
   commentsCount?: number
 }

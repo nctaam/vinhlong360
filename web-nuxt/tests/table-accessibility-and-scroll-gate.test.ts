@@ -64,7 +64,7 @@ describe('Mốc 110: Table Accessibility, Keyboard-Scrollable Regions & Reduced 
           const thRegex = /<th\b([^>]*)>/gi
           let m
           while ((m = thRegex.exec(thead)) !== null) {
-            const attrs = m[1]
+            const attrs = m[1] ?? ''
             if (!attrs.includes('scope="col"') && !attrs.includes("scope='col'")) {
               invalidThs.push({
                 file: path.relative(BASE_DIR, file).replace(/\\/g, '/'),
@@ -87,7 +87,7 @@ describe('Mốc 110: Table Accessibility, Keyboard-Scrollable Regions & Reduced 
       const wrapRegex = /<div\b([^>]*class="[^"]*(?:admin-table-wrap|legal-table-wrap|points-table-wrap)[^"]*"[^>]*)>/gi
       let match
       while ((match = wrapRegex.exec(content)) !== null) {
-        const attrs = match[1]
+        const attrs = match[1] ?? ''
         const hasRegion = /role="region"/i.test(attrs)
         const hasTabindex = /tabindex="0"/i.test(attrs)
         const hasLabel = /aria-label\s*=/i.test(attrs)

@@ -8,7 +8,7 @@
         title="Tài khoản — Hồ sơ hành trình"
         message="Đăng nhập để xem bảng điều khiển tài khoản, lịch sử tương tác và cài đặt bảo mật."
         color-recipe="tri-region-v1"
-        :heading-level="1"
+        :heading-level="2"
       >
         <template #actions>
           <button type="button" class="btn btn-primary" @click="openAuth()">Đăng nhập</button>
