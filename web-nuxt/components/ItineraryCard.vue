@@ -11,7 +11,6 @@
         @load="($event.target as HTMLElement)?.classList.add('loaded')"
         @error="imgErr = true"
       />
-      <span class="cover-tag cover-dateline cat-itinerary" aria-hidden="true">{{ dateline }}</span>
     </div>
     <div
       v-else
@@ -20,7 +19,6 @@
     >
       <span class="cover-grain" aria-hidden="true"></span>
       <span class="cover-svg-icon" v-html="placeholderSvg" />
-      <span class="cover-tag cover-dateline cat-itinerary" aria-hidden="true">{{ dateline }}</span>
     </div>
     <div class="card-b">
       <span class="card-dateline">{{ dateline }}</span>
@@ -90,7 +88,6 @@ const dateline = computed(() => `Lịch trình · ${areaName.value}`)
   font-family: var(--font-sans); font-size: var(--text-2xs); font-weight: 700;
   letter-spacing: .1em; text-transform: uppercase; color: var(--muted);
 }
-.cover-dateline { text-transform: uppercase; letter-spacing: .08em; }
 .card-rule {
   display: block; width: 26px; height: 2px; border-radius: 2px; margin: 5px 0 6px;
   background: linear-gradient(90deg, var(--river-600) 0%, var(--amber-600) 52%, var(--clay-600) 100%);

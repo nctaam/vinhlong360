@@ -171,11 +171,11 @@ if (!areaMeta) throw createError({ statusCode: 404, statusMessage: 'Không tìm 
 // Per-region accent binding — feeds the scoped hero bloom + stat tint so each
 // area "owns" its colour. Falls back to brand primary for unknown areas.
 const AREA_RGB: Record<string, string> = {
-  'vinh-long': 'var(--color-brand-rgb)',
-  'ben-tre': 'var(--secondary-rgb)',
+  'vinh-long': 'var(--clay-rgb)',
+  'ben-tre': 'var(--leaf-rgb)',
   'tra-vinh': 'var(--river-rgb)',
 }
-const areaTint = { '--AREA-rgb': AREA_RGB[areaKey] || 'var(--color-brand-rgb)' }
+const areaTint = { '--AREA-rgb': AREA_RGB[areaKey] || 'var(--clay-rgb)' }
 
 const [{ data, error: fetchError }, { data: placesData }] = await Promise.all([
   useAsyncData(`area-${areaKey}`, () =>

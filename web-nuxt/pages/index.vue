@@ -6,16 +6,6 @@
     data-page-recipe="homepage"
     data-material-accent="clay"
   >
-    <section class="home-context-line" data-home-section="context" aria-label="Ngữ cảnh khám phá">
-      <div>
-        <span class="home-context-line__label">Khu vực khám phá</span>
-        <strong>Vĩnh Long</strong>
-        <span v-if="mastheadSolar" class="home-masthead__solar">{{ mastheadSolar }}</span>
-        <span v-if="mastheadLunar" class="home-masthead__lunar">{{ mastheadLunar }}</span>
-      </div>
-      <NuxtLink to="/ban-do" class="home-context-line__action">Đổi khu vực</NuxtLink>
-    </section>
-
     <!-- One editorial thesis: useful action first, one disclosed media dossier second. -->
     <section class="hero" aria-label="Giới thiệu" data-home-section="editorial-lead">
       <div class="hero-inner">

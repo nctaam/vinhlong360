@@ -195,8 +195,8 @@ import { OFFICE_KIND, AREA_META } from '~/composables/useConstants'
 import { trackContactView } from '~/composables/useContactBeacon'
 
 const AREA_RGB: Record<string, string> = {
-  'vinh-long': 'var(--color-brand-rgb)',
-  'ben-tre': 'var(--secondary-rgb)',
+  'vinh-long': 'var(--clay-rgb)',
+  'ben-tre': 'var(--leaf-rgb)',
   'tra-vinh': 'var(--river-rgb)',
 }
 

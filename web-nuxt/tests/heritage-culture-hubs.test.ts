@@ -53,9 +53,9 @@ describe('Heritage, Culture Hubs & Lunar Terroir Calendar (Moc 128)', () => {
     })
 
     it('includes speakable selectors in Schema.org LD+JSON graph', () => {
-      const src = readPage('pages/su-kien.vue')
-      expect(src).toContain("'.catalog-aeo-plaque__title'")
-      expect(src).toContain("'.catalog-aeo-plaque__dek'")
+      const helper = readPage('composables/useSeoHelpers.ts')
+      expect(helper).toMatch(/buildContemporaryEventSchemaGraph[\s\S]*?\.catalog-aeo-plaque__title/)
+      expect(helper).toMatch(/buildContemporaryEventSchemaGraph[\s\S]*?\.catalog-aeo-plaque__dek/)
     })
   })
 
