@@ -432,6 +432,7 @@
 
         <!-- Relationships belong after the full narrative and recommendation flow. -->
         <DetailRelationships
+          data-detail-region="related"
           :entity-id="id"
           :initial-relationships="entity?.relationships"
           :initial-total="entity?.relationship_total"
