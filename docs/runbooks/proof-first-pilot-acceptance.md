@@ -77,6 +77,26 @@ target can be provisioned, but it is not PostgreSQL acceptance proof. A passing
 PostgreSQL layer must run the repository-local integration/drill command against
 the explicitly named disposable target and capture its native result.
 
+For the backup/restore/checksum slot, use a named restore target and a
+manifest-backed dump. The manifest must declare the dump SHA-256 and non-empty
+`row_counts`; the probe queries those tables after `pg_restore` and emits `PASS`
+only when every count matches. Credentials stay in `PGUSER`/`PGPASSWORD` and
+never appear in the command or receipt:
+
+```powershell
+$env:VL360_RESTORE_DATABASE_URL = 'postgresql://127.0.0.1:55432/<db>?marker=disposable'
+$env:PGUSER = '<restore-user>'
+$env:PGPASSWORD = '<restore-password>'
+python scripts/ops/restore_drill.py `
+  --backup <backup.dump> `
+  --manifest <backup.dump.manifest.json> `
+  --execute `
+  --receipt artifacts/staging-evidence/backup-restore-receipt.json
+```
+
+The older successful-`pg_restore` path without a manifest remains
+`UNAVAILABLE`: restoring bytes alone is not row/checksum proof.
+
 ## Gate rules
 
 `evaluate_pilot_gate()` returns `NO_GO` when any P1 is missing, a section or

@@ -13,6 +13,7 @@ from scripts.ops.probe_provider_sandbox import run_deterministic_scenarios
 from scripts.ops.probe_proxy_contract import validate_base_url
 from scripts.ops.probe_rollback import run_local_rollback_rehearsal
 from scripts.ops.restore_drill import main as restore_drill_main
+from scripts.ops.restore_drill import _query_restored_row_counts
 from scripts.ops.restore_drill import validate_restore_inputs
 from scripts.ops.run_pilot_acceptance import _required_probe_receipts_pass, AcceptanceBundle, load_probe_receipts
 
@@ -214,6 +215,115 @@ def test_restore_drill_keeps_password_out_of_command_receipt(tmp_path, monkeypat
     assert "super-secret" not in (tmp_path / "receipt.json").read_text(encoding="utf-8")
     assert "super-secret" not in " ".join(calls[0][0])
     assert calls[0][1]["env"]["PGPASSWORD"] == "super-secret"
+
+
+def test_restore_drill_passes_with_manifest_backed_row_parity(tmp_path, monkeypatch, capsys):
+    backup = tmp_path / "backup.dump"
+    backup.write_bytes(b"dump")
+    manifest = tmp_path / "backup.dump.manifest.json"
+    manifest.write_text(
+        json.dumps(
+            {
+                "schema": "vinhlong360-backup-manifest-v2",
+                "artifact_id": "backup-1",
+                "format": "postgres.custom",
+                "source_identity": {},
+                "row_counts": {"entities": 2, "relationships": 1},
+                "checksum": sha256(b"dump").hexdigest(),
+                "created_at": "2026-09-08T00:00:00+00:00",
+            }
+        ),
+        encoding="utf-8",
+    )
+    monkeypatch.setenv(
+        "VL360_RESTORE_DATABASE_URL",
+        "postgresql://127.0.0.1:55432/app?marker=disposable",
+    )
+    monkeypatch.setattr("scripts.ops.restore_drill.shutil.which", lambda _name: "pg_restore")
+    monkeypatch.setattr("scripts.ops.restore_drill._head_sha", lambda: "a" * 40)
+    monkeypatch.setattr(
+        "scripts.ops.restore_drill._query_restored_row_counts",
+        lambda _target_dsn, tables: {table: {"entities": 2, "relationships": 1}[table] for table in tables},
+    )
+
+    class Completed:
+        returncode = 0
+        stdout = ""
+        stderr = ""
+
+    monkeypatch.setattr("scripts.ops.restore_drill.subprocess.run", lambda *_args, **_kwargs: Completed())
+
+    receipt_path = tmp_path / "receipt.json"
+    assert restore_drill_main(
+        ["--backup", str(backup), "--execute", "--manifest", str(manifest), "--receipt", str(receipt_path)]
+    ) == 0
+
+    payload = json.loads(receipt_path.read_text(encoding="utf-8"))
+    assert verify_probe_receipt(payload).verdict == "PASS"
+    assert payload["result"]["row_counts"] == {"entities": 2, "relationships": 1}
+    assert payload["test_nodeids"]
+    assert json.loads(capsys.readouterr().out)["verdict"] == "PASS"
+
+
+def test_restore_row_count_probe_rejects_unsafe_manifest_table_before_connect(monkeypatch):
+    monkeypatch.setattr(
+        "psycopg2.connect",
+        lambda **_kwargs: (_ for _ in ()).throw(AssertionError("connection must not be opened")),
+    )
+
+    with pytest.raises(ValueError, match="invalid manifest table name"):
+        _query_restored_row_counts(
+            "postgresql://127.0.0.1:55432/app?marker=disposable",
+            ["entities;DROP TABLE users"],
+        )
+
+
+def test_restore_drill_records_blocked_receipt_when_parity_query_errors(tmp_path, monkeypatch, capsys):
+    backup = tmp_path / "backup.dump"
+    backup.write_bytes(b"dump")
+    monkeypatch.setenv(
+        "VL360_RESTORE_DATABASE_URL",
+        "postgresql://127.0.0.1:55432/app?marker=disposable",
+    )
+    monkeypatch.setattr("scripts.ops.restore_drill.shutil.which", lambda _name: "pg_restore")
+    monkeypatch.setattr("scripts.ops.restore_drill._head_sha", lambda: "a" * 40)
+
+    class Manifest:
+        row_counts = {"entities": 1}
+
+    monkeypatch.setattr(
+        "scripts.ops.restore_drill._load_backup_manifest",
+        lambda _backup, _explicit: (Manifest(), tmp_path / "manifest.json"),
+    )
+    monkeypatch.setattr(
+        "scripts.ops.restore_drill._query_restored_row_counts",
+        lambda _target_dsn, _tables: (_ for _ in ()).throw(Exception("database unavailable")),
+    )
+
+    class Completed:
+        returncode = 0
+        stdout = ""
+        stderr = ""
+
+    monkeypatch.setattr("scripts.ops.restore_drill.subprocess.run", lambda *_args, **_kwargs: Completed())
+
+    receipt_path = tmp_path / "receipt.json"
+    assert restore_drill_main(
+        ["--backup", str(backup), "--execute", "--receipt", str(receipt_path)]
+    ) == 1
+
+    payload = json.loads(receipt_path.read_text(encoding="utf-8"))
+    assert payload["verdict"] == "BLOCKED"
+    assert "database unavailable" in payload["result"]["error"]
+    assert json.loads(capsys.readouterr().out)["verdict"] == "BLOCKED"
+
+
+def test_restore_drill_stays_within_the_complexity_gate():
+    from scripts.checks.check_complexity import CHECKS
+
+    result = next(check.run(["scripts/ops/restore_drill.py"]) for check in CHECKS if check.rule == "R20.8")
+
+    assert result["count"] == 0, result["violations"]
 
 
 def test_acceptance_loads_probe_receipts_fail_closed(tmp_path):
