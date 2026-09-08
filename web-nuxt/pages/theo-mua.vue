@@ -257,27 +257,7 @@
     </EmptyState>
 
     <!-- Cross-links -->
-    <section class="block band reveal catalog-cross">
-      <h2>Khám phá thêm</h2>
-      <div class="cross-links">
-        <NuxtLink to="/san-pham" class="cross-card">
-          <span class="cross-icon" aria-hidden="true"><IconLine name="fruit" /></span>
-          <div><strong>Đặc sản</strong><p>Tất cả sản phẩm</p></div>
-        </NuxtLink>
-        <NuxtLink to="/ocop" class="cross-card">
-          <span class="cross-icon" aria-hidden="true"><IconLine name="star" /></span>
-          <div><strong>OCOP</strong><p>Sản phẩm đạt chuẩn</p></div>
-        </NuxtLink>
-        <NuxtLink to="/du-lich" class="cross-card">
-          <span class="cross-icon" aria-hidden="true"><IconLine name="leaf" /></span>
-          <div><strong>Du lịch</strong><p>Trải nghiệm miệt vườn</p></div>
-        </NuxtLink>
-        <NuxtLink to="/kham-pha/am-thuc" class="cross-card">
-          <span class="cross-icon" aria-hidden="true"><IconLine name="bowl" /></span>
-          <div><strong>Ẩm thực</strong><p>Món ngon Vĩnh Long</p></div>
-        </NuxtLink>
-      </div>
-    </section>
+    <CatalogCrossLinks />
   </div>
 </template>
 

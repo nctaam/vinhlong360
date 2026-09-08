@@ -146,31 +146,12 @@
     </button>
     </section>
 
-    <!-- Cross-links — reframed as "đi tiếp" (where to next), each phrased as a
-         chapter tied back to the interest just browsed, not a generic menu -->
-    <section class="block band catalog-cross reveal">
-      <h2>Đi tiếp</h2>
-      <!-- SIGNATURE 4: identity ribbon — clarifies this is a navigation hub -->
-      <p class="int-cross-sub">Khám phá theo hình thức khác</p>
-      <div class="cross-links int-cross">
-        <NuxtLink v-if="interestMeta.relatedRoutes?.length" to="/tuyen-duong" class="cross-card">
-          <span class="cross-icon" aria-hidden="true"><IconLine name="map" /></span>
-          <div><strong>Tuyến đường</strong><p>Vòng {{ interestMeta.label.toLowerCase() }} gợi ý sẵn</p></div>
-        </NuxtLink>
-        <NuxtLink to="/ban-do" class="cross-card" no-prefetch>
-          <span class="cross-icon" aria-hidden="true"><IconLine name="compass" /></span>
-          <div><strong>Bản đồ</strong><p>Vị trí thật của từng nơi trong chuyên mục này</p></div>
-        </NuxtLink>
-        <NuxtLink to="/lich-trinh" class="cross-card">
-          <span class="cross-icon" aria-hidden="true"><IconLine name="calendar" /></span>
-          <div><strong>Lịch trình</strong><p>Ghép {{ interestMeta.label.toLowerCase() }} vào một tuyến đi</p></div>
-        </NuxtLink>
-        <NuxtLink to="/ocop" class="cross-card">
-          <span class="cross-icon" aria-hidden="true"><IconLine name="star" /></span>
-          <div><strong>OCOP</strong><p>Sản phẩm đã qua kiểm định sao</p></div>
-        </NuxtLink>
-      </div>
-    </section>
+    <!-- Cross-links -->
+    <CatalogCrossLinks
+      title="Đi tiếp"
+      subtitle="Khám phá theo hình thức khác"
+      :links="interestCrossLinks"
+    />
   </section>
 </template>
 
@@ -190,6 +171,34 @@ if (!resolvedInterestMeta) {
 }
 
 const interestMeta = computed(() => resolvedInterestMeta)
+
+const interestCrossLinks = computed(() => [
+  ...(interestMeta.value.relatedRoutes?.length ? [{
+    to: '/tuyen-duong',
+    label: 'Tuyến đường',
+    desc: `Vòng ${interestMeta.value.label.toLowerCase()} gợi ý sẵn`,
+    icon: 'map',
+  }] : []),
+  {
+    to: '/ban-do',
+    label: 'Bản đồ',
+    desc: 'Vị trí thật của từng nơi trong chuyên mục này',
+    icon: 'compass',
+    noPrefetch: true,
+  },
+  {
+    to: '/lich-trinh',
+    label: 'Lịch trình',
+    desc: `Ghép ${interestMeta.value.label.toLowerCase()} vào một tuyến đi`,
+    icon: 'calendar',
+  },
+  {
+    to: '/ocop',
+    label: 'OCOP',
+    desc: 'Sản phẩm đã qua kiểm định sao',
+    icon: 'star',
+  },
+])
 
 // SIGNATURE 1: per-interest tint token — drives the hero wash, icon halo,
 // intro card and cross-link ribbon so each interest feels like its own

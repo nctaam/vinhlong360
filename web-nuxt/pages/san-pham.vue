@@ -194,16 +194,8 @@
       kicker="Hỏi đáp · Cẩm nang phiên chợ"
     />
 
-    <!-- Cross-links (declutter-2 A1: 4→3 script-driven; bỏ OCOP — trùng teaser-strip trên trang) -->
-    <section class="block band catalog-cross reveal" aria-label="Khám phá thêm">
-      <h2>Khám phá thêm</h2>
-      <div class="cross-links">
-        <NuxtLink v-for="c in relatedCatalogs" :key="c.to" :to="c.to" class="cross-card">
-          <span class="cross-icon" aria-hidden="true"><IconLine :name="c.icon" /></span>
-          <div><strong>{{ c.label }}</strong><p>{{ c.desc }}</p></div>
-        </NuxtLink>
-      </div>
-    </section>
+    <!-- Cross-links -->
+    <CatalogCrossLinks />
   </div>
 </template>
 
@@ -259,13 +251,6 @@ const allEntities = computed(() => {
 // (đo 2026-08-27: 26 lọt / 99 thật) — cùng lỗi đã vá ở /ocop.
 const ocopCount = computed(() => allEntities.value.filter((e: Entity) => isOcopCertified(e as any)).length)
 
-// declutter-2 A1: cross-links 3 card script-driven (bỏ OCOP — teaser-strip trên trang
-// đã là tham chiếu OCOP nổi bật hơn).
-const relatedCatalogs = [
-  { to: '/theo-mua', icon: 'calendar', label: 'Theo mùa', desc: 'Lịch mùa vụ' },
-  { to: '/du-lich', icon: 'leaf', label: 'Du lịch', desc: 'Trải nghiệm miệt vườn' },
-  { to: '/kham-pha/am-thuc', icon: 'bowl', label: 'Ẩm thực', desc: 'Món ngon Vĩnh Long' },
-]
 const catalogAeoEntries = [
   {
     heading: 'Bưởi Năm Roi Bình Minh & Sầu riêng Ri6 Quới Thiện',

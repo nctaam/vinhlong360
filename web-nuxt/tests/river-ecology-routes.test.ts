@@ -74,8 +74,10 @@ describe('District Terroirs, River Ecology Routes & Directory Hub (Moc 129)', ()
 
     it('includes speakable selectors in WebPage schema', () => {
       const src = readPage('pages/tuyen-duong.vue')
-      expect(src).toContain("'.catalog-aeo-plaque__title'")
-      expect(src).toContain("'.catalog-aeo-plaque__dek'")
+      expect(src).toContain('buildRoutesCatalogSchemaGraph')
+      const helperSrc = readPage('composables/useSeoHelpers.ts')
+      expect(helperSrc).toContain("'.catalog-aeo-plaque__title'")
+      expect(helperSrc).toContain("'.catalog-aeo-plaque__dek'")
     })
   })
 

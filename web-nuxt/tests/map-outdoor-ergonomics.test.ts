@@ -59,7 +59,7 @@ describe('/ban-do — Outdoor ergonomics & Riverine/Pottery presets', () => {
     expect(presetButtons.length).toBe(3)
     expect(wrapper.text()).toContain('Cù lao & Ven sông')
     expect(wrapper.text()).toContain('Lò gốm Mang Thít')
-    expect(wrapper.text()).toContain('Bến đò - Phà')
+    expect(wrapper.text()).toContain('Bến phà & Đò ngang')
   })
 
   it('strictly adheres to design tokens with zero raw hex in ban-do.vue', () => {

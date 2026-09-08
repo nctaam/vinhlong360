@@ -225,16 +225,8 @@
       </button>
     </section>
 
-    <!-- Cross-links (declutter-2 A1: 4→3 script-driven; bỏ Theo-mùa — trùng interstitial links) -->
-    <section class="block band reveal catalog-cross">
-      <h2>Khám phá thêm</h2>
-      <div class="cross-links">
-        <NuxtLink v-for="c in relatedCatalogs" :key="c.to" :to="c.to" class="cross-card">
-          <span class="cross-icon" aria-hidden="true"><IconLine :name="c.icon" /></span>
-          <div><strong>{{ c.label }}</strong><p>{{ c.desc }}</p></div>
-        </NuxtLink>
-      </div>
-    </section>
+    <!-- Cross-links -->
+    <CatalogCrossLinks />
   </div>
 </template>
 
@@ -326,13 +318,6 @@ const otherProductsCount = computed(() => {
   if (!raw) return 0
   return (raw.entities || []).length - allOcop.value.length
 })
-
-// declutter-2 A1: cross-links 3 card script-driven (bỏ Theo-mùa — trùng interstitial links).
-const relatedCatalogs = computed(() => [
-  { to: '/san-pham', icon: 'fruit', label: 'Đặc sản', desc: `Còn ${otherProductsCount.value} đặc sản khác chưa có sao` },
-  { to: '/du-lich', icon: 'leaf', label: 'Du lịch', desc: 'Trải nghiệm miệt vườn' },
-  { to: '/kham-pha/am-thuc', icon: 'bowl', label: 'Ẩm thực', desc: 'Món ngon Vĩnh Long' },
-])
 
 // `parseInt(attributes.ocop)` cũ trả 0 cho gần như mọi sản phẩm: `ocop` là văn
 // xuôi ("OCOP 3 sao"), không phải số. Hậu quả đo được trên trang đang chạy: sổ

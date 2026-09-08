@@ -199,27 +199,7 @@
     </section>
 
     <!-- Cross-links -->
-    <section class="block band reveal catalog-cross">
-      <h2>Khám phá thêm</h2>
-      <div class="cross-links">
-        <NuxtLink to="/du-lich" class="cross-card">
-          <span class="cross-icon" aria-hidden="true"><IconLine name="leaf" /></span>
-          <div><strong>Du lịch</strong><p>Trải nghiệm miệt vườn</p></div>
-        </NuxtLink>
-        <NuxtLink to="/luu-tru" class="cross-card">
-          <span class="cross-icon" aria-hidden="true"><IconLine name="home" /></span>
-          <div><strong>Lưu trú</strong><p>Homestay, nhà vườn</p></div>
-        </NuxtLink>
-        <NuxtLink to="/ban-do" class="cross-card" no-prefetch>
-          <span class="cross-icon" aria-hidden="true"><IconLine name="map" /></span>
-          <div><strong>Bản đồ</strong><p>Xem trên bản đồ</p></div>
-        </NuxtLink>
-        <NuxtLink to="/san-pham" class="cross-card">
-          <span class="cross-icon" aria-hidden="true"><IconLine name="fruit" /></span>
-          <div><strong>Đặc sản</strong><p>Mua quà Vĩnh Long</p></div>
-        </NuxtLink>
-      </div>
-    </section>
+    <CatalogCrossLinks />
   </div>
 </template>
 

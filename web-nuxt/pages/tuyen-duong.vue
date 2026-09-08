@@ -176,28 +176,7 @@
     </div>
 
     <!-- Cross-links -->
-    <section class="block band catalog-cross reveal">
-      <h2>Khám phá thêm</h2>
-      <p class="cross-sub">Tiếp tục hành trình Vĩnh Long của bạn</p>
-      <div class="cross-links">
-        <NuxtLink to="/ban-do" class="cross-card" no-prefetch>
-          <span class="cross-icon" aria-hidden="true"><IconLine name="map" /></span>
-          <div><strong>Bản đồ</strong><p>Xem trên bản đồ</p></div>
-        </NuxtLink>
-        <NuxtLink to="/lich-trinh" class="cross-card">
-          <span class="cross-icon" aria-hidden="true"><IconLine name="calendar" /></span>
-          <div><strong>Lịch trình</strong><p>Tuyến đi sẵn</p></div>
-        </NuxtLink>
-        <NuxtLink to="/du-lich" class="cross-card">
-          <span class="cross-icon" aria-hidden="true"><IconLine name="leaf" /></span>
-          <div><strong>Du lịch</strong><p>Trải nghiệm miệt vườn</p></div>
-        </NuxtLink>
-        <NuxtLink to="/luu-tru" class="cross-card">
-          <span class="cross-icon" aria-hidden="true"><IconLine name="home" /></span>
-          <div><strong>Lưu trú</strong><p>Homestay, nhà vườn</p></div>
-        </NuxtLink>
-      </div>
-    </section>
+    <CatalogCrossLinks subtitle="Tiếp tục hành trình Vĩnh Long của bạn" />
   </section>
 </template>
 

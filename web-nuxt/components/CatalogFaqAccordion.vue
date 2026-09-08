@@ -97,7 +97,7 @@ withDefaults(defineProps<{
 
 .catalog-faq-item {
   border: 1px solid var(--line);
-  border-radius: var(--radius-card);
+  border-radius: var(--radius-surface);
   background: var(--card);
   overflow: hidden;
   transition: border-color 0.2s var(--ease-out), box-shadow 0.2s var(--ease-out);

@@ -269,35 +269,7 @@
     </template>
 
     <!-- Cross-links -->
-    <section class="block band catalog-cross reveal">
-      <h2>Khám phá thêm</h2>
-      <div class="cross-links">
-        <NuxtLink :to="mapContinuityPath" class="cross-card" no-prefetch>
-          <span class="quick-pick-icon cross-glyph-icon" :style="{ backgroundImage: categoryPlaceholderBg('cross-ban-do', 'place') }">
-            <span class="quick-pick-glyph" v-html="categoryGlyph('place')"></span>
-          </span>
-          <div><strong>Bản đồ</strong><p>Xem trên bản đồ</p></div>
-        </NuxtLink>
-        <NuxtLink to="/theo-mua" class="cross-card">
-          <span class="quick-pick-icon cross-glyph-icon" :style="{ backgroundImage: categoryPlaceholderBg('cross-theo-mua', 'nature') }">
-            <span class="quick-pick-glyph" v-html="categoryGlyph('nature')"></span>
-          </span>
-          <div><strong>Theo mùa</strong><p>Đúng mùa thưởng thức</p></div>
-        </NuxtLink>
-        <NuxtLink to="/cong-dong" class="cross-card">
-          <span class="quick-pick-icon cross-glyph-icon" :style="{ backgroundImage: categoryPlaceholderBg('cross-cong-dong', 'person') }">
-            <span class="quick-pick-glyph" v-html="categoryGlyph('person')"></span>
-          </span>
-          <div><strong>Cộng đồng</strong><p>Hỏi đáp & chia sẻ</p></div>
-        </NuxtLink>
-        <NuxtLink to="/danh-ba" class="cross-card">
-          <span class="quick-pick-icon cross-glyph-icon" :style="{ backgroundImage: categoryPlaceholderBg('cross-danh-ba', 'org') }">
-            <span class="quick-pick-glyph" v-html="categoryGlyph('org')"></span>
-          </span>
-          <div><strong>Danh bạ</strong><p>Hành chính xã/phường</p></div>
-        </NuxtLink>
-      </div>
-    </section>
+    <CatalogCrossLinks :links="timKiemCrossLinks" />
   </div>
 </template>
 
@@ -441,6 +413,12 @@ const q = computed(() => searchView.state.value.query)
 const searchInput = ref(q.value)
 const mapNetworkState = ref<'ready' | 'offline'>('ready')
 const mapContinuityPath = computed(() => searchView.url.value.replace(/^\/tim-kiem/, '/ban-do'))
+const timKiemCrossLinks = computed(() => [
+  { to: mapContinuityPath.value, label: 'Bản đồ', desc: 'Xem trên bản đồ', icon: 'map', noPrefetch: true },
+  { to: '/theo-mua', label: 'Theo mùa', desc: 'Đúng mùa thưởng thức', icon: 'calendar' },
+  { to: '/cong-dong', label: 'Cộng đồng', desc: 'Hỏi đáp & chia sẻ', icon: 'message' },
+  { to: '/danh-ba', label: 'Danh bạ', desc: 'Hành chính xã/phường', icon: 'bookmark' },
+])
 const recoveryQueryAliases: Record<string, string> = {
   'gom do': 'gốm đỏ',
   'bun nuoc leo': 'bún nước lèo',

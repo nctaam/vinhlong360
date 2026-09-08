@@ -7,6 +7,7 @@
     data-material-accent="clay"
   >
     <!-- One editorial thesis: useful action first, one disclosed media dossier second. -->
+    <div class="sr-only" data-home-section="context" aria-label="Ngữ cảnh khám phá">Khu vực khám phá: Vĩnh Long</div>
     <section class="hero" aria-label="Giới thiệu" data-home-section="editorial-lead">
       <div class="hero-inner">
         <div class="hero-main hero-enter">

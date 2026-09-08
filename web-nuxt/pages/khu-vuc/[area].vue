@@ -135,23 +135,15 @@
     </EmptyState>
 
     <!-- Cross-links -->
-    <section v-if="areaMeta" class="block band catalog-cross reveal">
-      <h2>Khám phá thêm {{ areaMeta.name }}</h2>
-      <div class="cross-links">
-        <NuxtLink :to="`/du-lich?type=experience&mua=all`" class="cross-card">
-          <span class="cross-icon" aria-hidden="true"><IconLine name="sprout" /></span>
-          <div><strong>Trải nghiệm</strong><p>Miệt vườn sông nước</p></div>
-        </NuxtLink>
-        <NuxtLink to="/san-pham" class="cross-card">
-          <span class="cross-icon" aria-hidden="true"><IconLine name="fruit" /></span>
-          <div><strong>Sản phẩm</strong><p>Đặc sản địa phương</p></div>
-        </NuxtLink>
-        <NuxtLink to="/luu-tru" class="cross-card">
-          <span class="cross-icon" aria-hidden="true"><IconLine name="home" /></span>
-          <div><strong>Lưu trú</strong><p>Homestay, nhà vườn</p></div>
-        </NuxtLink>
-      </div>
-    </section>
+    <CatalogCrossLinks
+      v-if="areaMeta"
+      :title="`Khám phá thêm ${areaMeta.name}`"
+      :links="[
+        { to: '/du-lich?type=experience&mua=all', label: 'Trải nghiệm', desc: 'Miệt vườn sông nước', icon: 'sprout' },
+        { to: '/san-pham', label: 'Sản phẩm', desc: 'Đặc sản địa phương', icon: 'fruit' },
+        { to: '/luu-tru', label: 'Lưu trú', desc: 'Homestay, nhà vườn', icon: 'home' },
+      ]"
+    />
   </section>
 </template>
 
