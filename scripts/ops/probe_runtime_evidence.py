@@ -174,8 +174,11 @@ def _backup_check(docker: bool, file_exists=None) -> dict[str, Any]:
         missing.append("S3_BUCKET")
     if "S3_ENDPOINT" in missing or "S3_BUCKET" in missing:
         missing.append("an offsite destination")
-    if not _env_configured("DATABASE_URL"):
-        missing.append("a restore database target")
+    # The restore harness intentionally requires an explicit, named target so
+    # the application's DATABASE_URL can never be mistaken for a disposable
+    # restore destination.
+    if not _env_configured("VL360_RESTORE_DATABASE_URL"):
+        missing.append("a restore database target (VL360_RESTORE_DATABASE_URL)")
     # This read-only probe cannot execute the upload and destructive restore
     # legs.  Configuration alone is never promoted to composite-drill proof.
     missing.append("backup/offsite/restore execution receipt")

@@ -148,6 +148,23 @@ def test_backup_probe_does_not_promote_configuration_to_execution_readiness(monk
     assert "backup_data.py --target local" not in backup["command"]
 
 
+def test_backup_probe_checks_the_explicit_restore_target_environment(monkeypatch):
+    """Readiness must use the restore harness target, never the app database URL."""
+
+    monkeypatch.setattr(probe_module, "_tool", lambda _name: False)
+    monkeypatch.setattr(probe_module, "_file", lambda _relative: True)
+    monkeypatch.delenv("DATABASE_URL", raising=False)
+    monkeypatch.setenv(
+        "VL360_RESTORE_DATABASE_URL",
+        "postgresql://restore-target@127.0.0.1:55432/disposable?marker=disposable",
+    )
+
+    report = probe()
+    backup = next(item for item in report["checks"] if item["id"] == "backup-offsite-restore-checksum")
+
+    assert "a restore database target" not in backup["missing"]
+
+
 def test_monitoring_delivery_proof_is_unavailable_without_alert_receiver(monkeypatch):
     """A running monitoring stack does not prove delivery to an external sink."""
 
