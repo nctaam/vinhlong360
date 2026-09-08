@@ -24,7 +24,7 @@ describe('Moc 146: Secondary & Account Pages Radius Hygiene & Integrity', () => 
     const rootDir = resolve(__dirname, '..')
     const ceilings: Record<string, number> = {
       'pages/dia-diem/[id].vue': 1200,
-      'pages/tao-lich-trinh.vue': 1500,
+      'pages/tao-lich-trinh.vue': 1050,
       'pages/tim-kiem.vue': 1100,
       'pages/xa-phuong/[id].vue': 1050,
       'pages/cong-dong.vue': 1050,

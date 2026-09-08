@@ -320,35 +320,14 @@ import type { Entity } from '~/types'
 import type { EntityListResponse } from '~/types/api'
 import { usePublicApi } from '~/composables/usePublicApi'
 import { TYPE_META, CARD_TYPES, getTypeMeta } from '~/composables/useConstants'
-import { fetchRoute, fetchRouteTable, formatDistance, formatDuration, resolvePlannerRouteSurface, type TransportMode, type RouteResult } from '~/composables/useRouting'
+import { formatDistance, formatDuration, type TransportMode, type RouteResult } from '~/composables/useRouting'
 import {
-  applySchedulePlacements,
-  collectRoutableStops,
-  commitPlannerOptimizationResult,
-  createSuspendedRouteScheduler,
   enrichPlannerStopFromDetail,
-  formatScheduledInterval,
-  invalidatePlannerInputs,
-  mergeOptimizedStops,
   plannerMetadataForEntity,
   plannerMetadataForLoadedStop,
   plannerFreshnessEvidenceForEntity,
-  isPlannerStopFreshnessStale,
-  requestOptimizedOrder,
-  routeLegForStopIndex,
-  runPlannerOptimization,
-  serializePlanStops,
-  createPlannerOptimizationPreview,
-  createPlannerDraftSnapshot,
-  parsePlannerDraftSnapshot,
-  projectPlannerFrictions,
   type PlannerInputState,
-  type PlannerFrictionNotice as PlannerFriction,
-  type PlannerOptimizationPreview as PlannerPreviewTransaction,
-  type CurrentPlannerOptimizationResult,
-  type RoutableStop,
   type PlannerScheduleMetadata,
-  type PlannerStopFreshnessEvidence,
 } from '~/composables/useItineraryOptimization'
 import PlannerFrictionNotice from '~/components/planner/PlannerFrictionNotice.vue'
 import PlannerOptimizationPreview from '~/components/planner/PlannerOptimizationPreview.vue'
@@ -356,27 +335,12 @@ import PlannerSummary from '~/components/planner/PlannerSummary.vue'
 import ActionDock from '~/components/public/ActionDock.vue'
 import PlannerRiverTransitWarning from '~/components/planner/PlannerRiverTransitWarning.vue'
 import PlannerMobilePassModal from '~/components/planner/PlannerMobilePassModal.vue'
-import {
-  type PlanStop,
-  type SavedPlan,
-  type PlanSnapshot,
-  type PlannerConflictDifference,
-  type OpeningHourConflict,
-  positiveRevision,
-  plannerStopFromDraft,
-  normalizePlanSnapshot,
-  conflictSnapshot,
-  diffPlannerPlanStops,
-} from '~/utils/plannerSnapshots'
-import {
-  optimizationTradeoffs,
-  openingHourConflictsFor,
-} from '~/utils/plannerTradeoffs'
+import type { PlanStop, SavedPlan } from '~/utils/plannerSnapshots'
 import { usePlannerStopOperations } from '~/composables/usePlannerStopOperations'
-import {
-  usePlannerServerPlans,
-  LS_PLANS,
-} from '~/composables/usePlannerServerPlans'
+import { usePlannerServerPlans, LS_PLANS } from '~/composables/usePlannerServerPlans'
+import { usePlannerRouteOptimization } from '~/composables/usePlannerRouteOptimization'
+import { usePlannerDraftState } from '~/composables/usePlannerDraftState'
+import { usePlannerFrictions } from '~/composables/usePlannerFrictions'
 
 const route = useRoute()
 const router = useRouter()
@@ -429,8 +393,16 @@ const journeyThread = useJourneyThread({
   ownerScope: () => isLoggedIn.value ? String(user.value?.id || 'authenticated') : 'guest',
 })
 const journeyOwner = computed(() => isLoggedIn.value ? String(user.value?.id || 'authenticated') : 'guest')
-const routeError = ref(false)   // OSRM không tính được route (≥2 điểm có toạ độ)
+
 const planBusy = ref(-1)
+const saving = ref(false)
+const savePulse = ref(false)
+const stopAnnounce = ref('')
+let plannerLifecycleActive = true
+
+function isPlannerLifecycleActive() {
+  return plannerLifecycleActive
+}
 
 type PlannerType = (typeof CARD_TYPES)[number]
 const TYPES = CARD_TYPES as readonly PlannerType[]
@@ -469,18 +441,12 @@ const planTitle = ref(normalizeRouteParam(route.query.title as any) || '')
 const stops = ref<PlanStop[]>([])
 const savedPlans = ref<SavedPlan[]>([])
 const transportMode = ref<TransportMode>('driving')
-const routeResult = ref<RouteResult | null>(null)
-const routeLoading = ref(false)
-const optimizing = ref(false)
-const optimizationMessage = ref('')
+const travelBudgetMinutes = ref<number | null>(null)
 const summaryDrawerOpen = ref(false)
-const optimizationPreview = ref<PlannerPreviewTransaction<PlanStop> | null>(null)
-let pendingOptimization: {
-  result: CurrentPlannerOptimizationResult<PlanStop>
-  routed: RoutableStop<PlanStop>[]
-} | null = null
-const suspendAutoRoute = ref(false)
-let latestAutoRouteRequest: number | null = null
+const MAX_STOPS = 20
+let addingTimer: ReturnType<typeof setTimeout> | null = null
+const addingId = ref<string | null>(null)
+
 const plannerInputState = reactive<PlannerInputState>({ version: 0 })
 const plannerScheduleMetadata = new WeakMap<object, PlannerScheduleMetadata>()
 const plannerRouteMapRef = ref<{ updateMap: (route: RouteResult | null) => Promise<void>; retryMap: () => Promise<void> } | null>(null)
@@ -488,87 +454,140 @@ const plannerRouteMapRef = ref<{ updateMap: (route: RouteResult | null) => Promi
 async function updateMap(result: RouteResult | null = routeResult.value) {
   await plannerRouteMapRef.value?.updateMap(result)
 }
-const addingId = ref<string | null>(null)
-let addingTimer: ReturnType<typeof setTimeout> | null = null
-const savePulse = ref(false)
-const saving = ref(false)
-const stopAnnounce = ref('')
-const plannerOnline = ref(true)
-const draftSavedAt = ref<string | null>(null)
-const draftSource = ref<'local' | 'server'>('local')
-const localDraftRevision = ref(0)
-const localDirty = ref(false)
-const activeServerPlanId = ref<string | null>(null)
-const baseServerRevision = ref<number | null>(null)
-const plannerRevisionConflict = ref<PlanSnapshot | null>(null)
-const plannerDraftGeneration = ref(0)
-const plannerConflictEl = ref<{ focus: () => void } | null>(null)
-const travelBudgetMinutes = ref<number | null>(null)
-const candidateOpeningHourConflicts = ref<OpeningHourConflict[]>([])
-const confirmedOpeningHourConflicts = ref<OpeningHourConflict[]>([])
-const MAX_STOPS = 20
-const LS_DRAFT = 'vl360_planner_draft'
-let savePulseTimer: ReturnType<typeof setTimeout> | null = null
-let plannerLifecycleActive = true
-let draftPersistenceReady = false
 
-function isPlannerLifecycleActive() {
-  return plannerLifecycleActive
-}
-
-const currentRoutableStops = computed(() => collectRoutableStops(stops.value))
-const canOptimizeRoute = computed(() => {
-  if (!optimizerEnabled.value) return false
-  const routed = currentRoutableStops.value
-  return routed.length >= 3
-    && routed[0]?.originalIndex === 0
-    && routed[routed.length - 1]?.originalIndex === stops.value.length - 1
-})
-const optimizeRouteTitle = computed(() => {
-  if (!optimizerEnabled.value) return 'Tối ưu nâng cao đang tạm tắt; bạn vẫn có thể chỉnh và lưu lịch trình'
-  if (stops.value.length < 3) return 'Cần ít nhất 3 điểm để tối ưu thứ tự'
-  if (currentRoutableStops.value.length < 3) return 'Cần ít nhất 3 điểm có tọa độ'
-  if (!canOptimizeRoute.value) return 'Điểm đầu và điểm cuối cần có tọa độ hợp lệ'
-  return 'Giữ nguyên điểm đầu, điểm cuối và tối ưu các điểm ở giữa'
+// ── Domain 1: Route Optimization Composable ───────────────────
+const {
+  routeResult,
+  routeLoading,
+  routeError,
+  optimizing,
+  optimizationMessage,
+  optimizationPreview,
+  suspendAutoRoute,
+  currentRoutableStops,
+  canOptimizeRoute,
+  optimizeRouteTitle,
+  visibleOpeningHourConflicts,
+  invalidatePlannerSchedule,
+  announceOptimization,
+  optimizePlanRoute,
+  confirmOptimizationPreview,
+  cancelOptimizationPreview,
+  computeRoute,
+  autoRouteScheduler,
+  scheduleRouteCalc,
+} = usePlannerRouteOptimization({
+  stops,
+  transportMode,
+  plannerScheduleMetadata,
+  plannerInputState,
+  itineraryScheduleV2,
+  optimizerEnabled,
+  isPlannerLifecycleActive,
+  updateMap,
+  showToast,
+  stopAnnounce,
 })
 
-const stalePlannerStops = computed(() => stops.value
-  .filter(stop => isPlannerStopFreshnessStale(stop.sourceFreshness))
-  .map(stop => ({
-    stopId: stop.id,
-    label: stop.name || stop.id,
-    status: stop.sourceFreshness?.status,
-    updatedAt: stop.sourceFreshness?.updatedAt,
-  })))
-const visibleOpeningHourConflicts = computed(() => (
-  optimizationPreview.value
-    ? candidateOpeningHourConflicts.value
-    : confirmedOpeningHourConflicts.value
-))
+// ── Domain 2: Draft State & Offline Persistence Composable ────
+const {
+  plannerOnline,
+  draftSavedAt,
+  draftSource,
+  localDraftRevision,
+  localDirty,
+  activeServerPlanId,
+  baseServerRevision,
+  plannerRevisionConflict,
+  plannerDraftGeneration,
+  plannerConflictEl,
+  draftPersistenceReady,
+  isDraftPersistenceReady,
+  setDraftPersistenceReady,
+  advancePlannerDraftGeneration,
+  clearActiveServerPlan,
+  persistPlannerDraft,
+  restorePlannerDraft,
+  updatePlannerConnectivity,
+  choosePlannerConflict,
+} = usePlannerDraftState({
+  planTitle,
+  stops,
+  travelBudgetMinutes,
+  plannerScheduleMetadata,
+  plannerInputState,
+  plannerMetadataForLoadedStop,
+  invalidatePlannerSchedule,
+  saving,
+  acceptServerComparisonBase: (snapshot) => acceptServerComparisonBase(snapshot),
+})
 
-const plannerFrictionNotices = computed<PlannerFriction[]>(() => projectPlannerFrictions({
-  openingHourConflicts: visibleOpeningHourConflicts.value,
-  travelMinutes: routeResult.value ? Math.round(routeResult.value.totalDuration / 60) : null,
-  travelBudgetMinutes: travelBudgetMinutes.value,
-  staleStops: stalePlannerStops.value,
-  missingCoordinateStopIds: stops.value
-    .filter(stop => !stop.coords)
-    .map(stop => stop.name || stop.id),
-  offlineDraft: plannerOnline.value ? false : {
-    revision: localDraftRevision.value,
-    savedAt: draftSavedAt.value,
-    source: draftSource.value,
-  },
-  routeUnavailable: routeError.value,
-}))
+// ── Domain 3: Frictions & Recovery Composable ──────────────────
+const {
+  stalePlannerStops,
+  plannerFrictionNotices,
+  plannerSummaryWarnings,
+  plannerConflictDifferences,
+  handleFrictionRecovery,
+} = usePlannerFrictions({
+  stops,
+  visibleOpeningHourConflicts,
+  routeResult,
+  travelBudgetMinutes,
+  plannerOnline,
+  localDraftRevision,
+  draftSavedAt,
+  draftSource,
+  routeError,
+  plannerRevisionConflict,
+  refreshPlannerStopEvidence,
+})
 
-const plannerSummaryWarnings = computed(() => plannerFrictionNotices.value.map(notice => notice.reason))
-const plannerConflictDifferences = computed<PlannerConflictDifference[]>(() => (
-  plannerRevisionConflict.value
-    ? diffPlannerPlanStops(stops.value, plannerRevisionConflict.value.stops)
-    : []
-))
+// ── Server Plans Composable ───────────────────────────────────
+const {
+  savePlan,
+  loadPlan,
+  deletePlan,
+  publishPlan,
+  sharePlan,
+  publishBlockedByConflict,
+  replaceSavedServerPlan,
+  acceptServerComparisonBase,
+  persistLocal,
+} = usePlannerServerPlans({
+  planTitle,
+  stops,
+  savedPlans,
+  saving,
+  planBusy,
+  savePulse,
+  activeServerPlanId,
+  baseServerRevision,
+  localDraftRevision,
+  draftSource,
+  localDirty,
+  plannerRevisionConflict,
+  plannerDraftGeneration,
+  revisionSafeSaveEnabled,
+  plannerConflictEl,
+  plannerScheduleMetadata,
+  routeResult,
+  optimizationMessage,
+  isDraftPersistenceReady,
+  setDraftPersistenceReady,
+  persistPlannerDraft,
+  invalidatePlannerSchedule,
+  refreshPlannerStopEvidence,
+  plannerMetadataForLoadedStop,
+  clearActiveServerPlan,
+  advancePlannerDraftGeneration,
+  showToast,
+  confirmDialog,
+  isLoggedIn,
+  authHeaders,
+})
 
+// ── Entity Picker Data Fetching ───────────────────────────────
 const plannerQueryKey = computed(() => [
   sourceTab.value,
   searchQ.value.trim(),
@@ -646,6 +665,7 @@ const pickerResults = computed(() => {
   return list.slice(0, 50)
 })
 
+// ── Stop Operations (Drag, Drop, Reorder, Durations) ──────────
 const {
   draggedStopIndex,
   dragOverStopIndex,
@@ -679,163 +699,8 @@ const {
   stopAnnounce,
 })
 
-
-// F4: dùng chuẩn chung normalizeCoords (validate + hoán đổi lat/lng đảo)
 function extractCoords(entity: Entity): [number, number] | null {
   return normalizeCoords(entity.coordinates)
-}
-
-function clearPendingOptimizationPreview() {
-  optimizationPreview.value = null
-  pendingOptimization = null
-  candidateOpeningHourConflicts.value = []
-}
-
-function advancePlannerDraftGeneration() {
-  plannerDraftGeneration.value += 1
-}
-
-function clearActiveServerPlan() {
-  advancePlannerDraftGeneration()
-  activeServerPlanId.value = null
-  baseServerRevision.value = null
-  plannerRevisionConflict.value = null
-}
-
-const {
-  savePlan,
-  loadPlan,
-  deletePlan,
-  publishPlan,
-  sharePlan,
-  publishBlockedByConflict,
-  replaceSavedServerPlan,
-  acceptServerComparisonBase,
-  persistLocal,
-} = usePlannerServerPlans({
-  planTitle,
-  stops,
-  savedPlans,
-  saving,
-  planBusy,
-  savePulse,
-  activeServerPlanId,
-  baseServerRevision,
-  localDraftRevision,
-  draftSource,
-  localDirty,
-  plannerRevisionConflict,
-  plannerDraftGeneration,
-  revisionSafeSaveEnabled,
-  plannerConflictEl,
-  plannerScheduleMetadata,
-  routeResult,
-  optimizationMessage,
-  isDraftPersistenceReady: () => draftPersistenceReady,
-  setDraftPersistenceReady: (ready: boolean) => { draftPersistenceReady = ready },
-  persistPlannerDraft,
-  invalidatePlannerSchedule,
-  refreshPlannerStopEvidence,
-  plannerMetadataForLoadedStop,
-  clearActiveServerPlan,
-  advancePlannerDraftGeneration,
-  showToast,
-  confirmDialog,
-  isLoggedIn,
-  authHeaders,
-})
-
-async function choosePlannerConflict(choice: 'local' | 'server' | 'manual') {
-  if (saving.value) return
-  if (choice === 'manual') {
-    await nextTick()
-    plannerConflictEl.value?.focus()
-    return
-  }
-  const snapshot = plannerRevisionConflict.value
-  if (!snapshot) return
-  const persistenceWasReady = draftPersistenceReady
-  draftPersistenceReady = false
-  acceptServerComparisonBase(snapshot)
-  if (choice === 'server') {
-    invalidatePlannerSchedule()
-    planTitle.value = snapshot.title
-    stops.value = serializePlanStops(snapshot.stops) as PlanStop[]
-    stops.value.forEach(stop => plannerScheduleMetadata.set(stop, plannerMetadataForLoadedStop(stop.type)))
-    localDraftRevision.value += 1
-    localDirty.value = false
-  } else {
-    localDirty.value = true
-  }
-  plannerRevisionConflict.value = null
-  await nextTick()
-  draftPersistenceReady = persistenceWasReady
-  persistPlannerDraft()
-}
-
-function persistPlannerDraft() {
-  if (!import.meta.client) return
-  const savedAt = new Date().toISOString()
-  draftSavedAt.value = savedAt
-  try {
-    localStorage.setItem(LS_DRAFT, JSON.stringify(createPlannerDraftSnapshot({
-      title: planTitle.value,
-      stops: stops.value,
-      revision: localDraftRevision.value,
-      savedAt,
-      source: draftSource.value,
-      travelBudgetMinutes: travelBudgetMinutes.value,
-      serverPlanId: activeServerPlanId.value,
-      serverRevision: baseServerRevision.value,
-    })))
-  } catch { /* local storage is an optional offline cache */ }
-}
-
-function restorePlannerDraft() {
-  if (!import.meta.client || stops.value.length) return
-  try {
-    const raw = localStorage.getItem(LS_DRAFT)
-    if (!raw) return
-    const parsed = parsePlannerDraftSnapshot(JSON.parse(raw))
-    if (!parsed?.stops.length) return
-    stops.value = parsed.stops.map(stop => plannerStopFromDraft(stop))
-    planTitle.value = parsed.title
-    localDraftRevision.value = parsed.revision
-    plannerInputState.version = localDraftRevision.value
-    draftSavedAt.value = parsed.savedAt
-    draftSource.value = parsed.source
-    if (parsed.serverPlanId && positiveRevision(parsed.serverRevision)) {
-      activeServerPlanId.value = parsed.serverPlanId
-      baseServerRevision.value = parsed.serverRevision
-    } else {
-      activeServerPlanId.value = null
-      baseServerRevision.value = null
-    }
-    travelBudgetMinutes.value = parsed.travelBudgetMinutes
-    localDirty.value = true
-    stops.value.forEach((stop) => {
-      plannerScheduleMetadata.set(stop, plannerMetadataForLoadedStop(stop.type))
-    })
-  } catch { /* malformed draft is ignored without blocking the timeline */ }
-}
-
-function handleFrictionRecovery(notice: PlannerFriction) {
-  if (!import.meta.client) return
-  if (notice.recovery.action === 'edit-budget') {
-    document.getElementById('planner-time-budget')?.focus()
-    return
-  }
-  if (notice.recovery.action === 'edit-time') {
-    document.querySelector<HTMLInputElement>('.stop-time-input')?.focus()
-    return
-  }
-  if (notice.recovery.action === 'refresh-stop') {
-    if (notice.stopId) void refreshPlannerStopEvidence(notice.stopId)
-    return
-  }
-  if (notice.recovery.action === 'edit-stop' || notice.recovery.action === 'use-timeline') {
-    document.querySelector<HTMLElement>('.stop-list, .planner-timeline-column')?.focus()
-  }
 }
 
 async function refreshPlannerStopEvidence(stopId: string): Promise<boolean> {
@@ -883,16 +748,14 @@ async function addStop(entity: Entity) {
   if (addingTimer) clearTimeout(addingTimer)
   addingTimer = setTimeout(() => { addingId.value = null }, 300)
   if (entity.attributes?.vehicle_access || entity.attributes?.road_access) {
-    const access = String(entity.attributes.vehicle_access || entity.attributes.road_access).trim()
+    const access = String(entity.attributes.vehicle_access || entity.attributes?.road_access).trim()
     if (access) stopAccessFactsMap.set(entity.id, access)
   }
-  // P0-19: saved items (favorites) carry no coordinates → fetch detail so the
-  // stop can be routed/mapped. Falls back silently (stop still listed) on error.
   if ((!stop.coords || !stop.sourceFreshness) && entity.id) {
     try {
       const detail = await publicApi.getEntity(entity.id)
       if (detail?.attributes?.vehicle_access || detail?.attributes?.road_access) {
-        const access = String(detail.attributes.vehicle_access || detail.attributes.road_access).trim()
+        const access = String(detail.attributes.vehicle_access || detail.attributes?.road_access).trim()
         if (access) stopAccessFactsMap.set(stop.id, access)
       }
       await enrichPlannerStopFromDetail({
@@ -913,7 +776,6 @@ async function addStop(entity: Entity) {
   }
 }
 
-
 async function clearPlan() {
   if (saving.value) return
   if (stops.value.length && !await confirmDialog('Xóa toàn bộ điểm trong lịch trình đang tạo?', { danger: true, confirmText: 'Xóa' })) return
@@ -927,6 +789,8 @@ async function clearPlan() {
   clearActiveServerPlan()
   journeyThread.clear()
 }
+
+// ── Query Parameter Auto-Add Handler ──────────────────────────
 const pendingAddId = ref(normalizeRouteParam(route.query.add as any))
 const autoAddedFromQuery = ref(false)
 
@@ -976,206 +840,8 @@ watch([allEntities, pendingAddId], async () => {
   clearPlannerAddQuery()
   showToast(`Đã thêm "${entity.name}" vào lịch trình`, 'success')
 }, { immediate: true })
+
 const formatDate = formatDateVN
-
-
-function invalidatePlannerSchedule() {
-  clearPendingOptimizationPreview()
-  confirmedOpeningHourConflicts.value = []
-  invalidatePlannerInputs(
-    plannerInputState,
-    stops.value,
-    plannerScheduleMetadata,
-  )
-}
-
-
-async function announceOptimization(message: string) {
-  optimizationMessage.value = message
-  if (!isPlannerLifecycleActive()) return
-  stopAnnounce.value = ''
-  await nextTick()
-  if (isPlannerLifecycleActive()) stopAnnounce.value = message
-}
-
-async function optimizePlanRoute() {
-  if (!canOptimizeRoute.value || optimizing.value) {
-    optimizationMessage.value = optimizeRouteTitle.value
-    return
-  }
-
-  const routed = currentRoutableStops.value
-  optimizing.value = true
-  suspendAutoRoute.value = true
-  routeLoading.value = true
-  routeError.value = false
-  clearPendingOptimizationPreview()
-  optimizationMessage.value = ''
-  autoRouteScheduler.cancelScheduled()
-
-  try {
-    const plannerResult = await runPlannerOptimization({
-      scheduleEnabled: itineraryScheduleV2,
-      routed,
-      metadataByStop: plannerScheduleMetadata,
-      inputState: plannerInputState,
-      mode: transportMode.value,
-      fetchTable: (coordinates, mode) => fetchRouteTable(coordinates, mode),
-      requestOptimization: (ordered, blockedEdges, schedule) => schedule
-        ? requestOptimizedOrder(ordered, blockedEdges, schedule)
-        : requestOptimizedOrder(ordered, blockedEdges),
-      route: coordinates => fetchRoute(coordinates, transportMode.value),
-    })
-    if (!isPlannerLifecycleActive() || plannerResult.status === 'stale') return
-
-    const candidateStops = mergeOptimizedStops(
-      stops.value,
-      routed,
-      plannerResult.outcome.ordered.map(item => item.key),
-    )
-    pendingOptimization = { result: plannerResult, routed }
-    candidateOpeningHourConflicts.value = openingHourConflictsFor(plannerResult, routed, plannerScheduleMetadata)
-    optimizationPreview.value = await createPlannerOptimizationPreview(
-      stops.value,
-      candidateStops,
-      { tradeoffs: optimizationTradeoffs(plannerResult, routed, stops.value.length, itineraryScheduleV2) },
-    )
-    await announceOptimization('Đã tạo bản xem trước. Thứ tự hiện tại chưa thay đổi.')
-  } catch (error: unknown) {
-    if (!isPlannerLifecycleActive()) return
-    const message = extractErrorMessage(error, 'Không thể tối ưu tuyến lúc này')
-    optimizationMessage.value = message
-    showToast(message, 'error')
-  } finally {
-    if (!isPlannerLifecycleActive()) return
-    routeLoading.value = false
-    await nextTick()
-    if (!isPlannerLifecycleActive()) return
-    suspendAutoRoute.value = false
-    autoRouteScheduler.resume()
-    optimizing.value = false
-  }
-}
-
-async function confirmOptimizationPreview() {
-  const transaction = pendingOptimization
-  if (!transaction || !optimizationPreview.value) return
-  for (let attempt = 0; attempt < 3 && optimizing.value; attempt += 1) {
-    await nextTick()
-  }
-  if (optimizing.value || !isPlannerLifecycleActive()) return
-  optimizing.value = true
-  suspendAutoRoute.value = true
-  routeLoading.value = true
-  autoRouteScheduler.cancelScheduled()
-  const routeRequestBeforeCommit = latestAutoRouteRequest
-  let reorderInputVersion: number | null = null
-  let optimizerWatcherRequest: number | null = null
-
-  try {
-    const committedResult = await commitPlannerOptimizationResult(transaction.result, {
-      isActive: isPlannerLifecycleActive,
-      applyPlacements: (result) => {
-        const schedule = result.outcome.optimization.schedule
-        if (schedule) {
-          applySchedulePlacements(
-            transaction.routed,
-            schedule.placements,
-            plannerScheduleMetadata,
-            plannerInputState,
-          )
-        } else if (itineraryScheduleV2) {
-          applySchedulePlacements(transaction.routed, [], plannerScheduleMetadata, plannerInputState)
-        }
-      },
-      reorderStops: (orderedKeys) => {
-        reorderInputVersion = plannerInputState.version
-        stops.value = mergeOptimizedStops(stops.value, transaction.routed, orderedKeys)
-      },
-      applyRoute: (route) => {
-        routeResult.value = route
-        routeError.value = resolvePlannerRouteSurface(transaction.routed.length, route).kind === 'fallback'
-      },
-      updateMap: async (route) => {
-        await nextTick()
-        if (!isPlannerLifecycleActive()) return
-        if (
-          reorderInputVersion !== null
-          && plannerInputState.version === reorderInputVersion
-          && latestAutoRouteRequest !== routeRequestBeforeCommit
-        ) {
-          optimizerWatcherRequest = latestAutoRouteRequest
-        }
-        await updateMap(route)
-      },
-    })
-    if (!committedResult || !isPlannerLifecycleActive()) return
-    autoRouteScheduler.discardPending(optimizerWatcherRequest)
-    const message = optimizationTradeoffs(committedResult, transaction.routed, stops.value.length, itineraryScheduleV2).join(' ')
-    confirmedOpeningHourConflicts.value = candidateOpeningHourConflicts.value.map(conflict => ({ ...conflict }))
-    clearPendingOptimizationPreview()
-    await announceOptimization(message || 'Đã áp dụng thứ tự đề xuất.')
-  } finally {
-    if (!isPlannerLifecycleActive()) return
-    routeLoading.value = false
-    suspendAutoRoute.value = false
-    autoRouteScheduler.resume()
-    optimizing.value = false
-  }
-}
-
-async function cancelOptimizationPreview() {
-  if (!optimizationPreview.value) return
-  optimizationPreview.value.cancel()
-  clearPendingOptimizationPreview()
-  await announceOptimization('Đã giữ nguyên thứ tự hiện tại.')
-}
-
-async function computeRoute() {
-  const coords = stops.value.map(s => s.coords).filter(Boolean) as [number, number][]
-  if (coords.length < 2) {
-    routeResult.value = null
-    routeError.value = false
-    updateMap(null)
-    return
-  }
-  routeLoading.value = true
-  routeError.value = false
-  const result = await fetchRoute(coords, transportMode.value)
-  routeResult.value = result
-  routeError.value = resolvePlannerRouteSurface(coords.length, result).kind === 'fallback'
-  routeLoading.value = false
-  updateMap(result)
-}
-
-const autoRouteScheduler = createSuspendedRouteScheduler(
-  computeRoute,
-  () => suspendAutoRoute.value,
-)
-
-function scheduleRouteCalc() {
-  latestAutoRouteRequest = autoRouteScheduler.request()
-}
-
-
-// Chỉ tính lại route khi TOẠ-ĐỘ/THỨ-TỰ stop hoặc phương-tiện đổi — KHÔNG khi sửa giờ/ghi-chú.
-watch(
-  () => [stops.value.map(s => (s.coords ? s.coords.join(',') : 'x')).join('|'), transportMode.value],
-  scheduleRouteCalc,
-)
-watch(transportMode, invalidatePlannerSchedule)
-
-watch([planTitle, stops, travelBudgetMinutes], () => {
-  if (!draftPersistenceReady) return
-  localDraftRevision.value += 1
-  localDirty.value = true
-  persistPlannerDraft()
-}, { deep: true })
-
-function updatePlannerConnectivity() {
-  if (!import.meta.client) return
-  plannerOnline.value = navigator.onLine
-}
 
 function advancePlannerJourney() {
   const restored = journeyThread.restore()
@@ -1191,7 +857,7 @@ onMounted(async () => {
   window.addEventListener('offline', updatePlannerConnectivity)
   restorePlannerDraft()
   await nextTick()
-  draftPersistenceReady = true
+  setDraftPersistenceReady(true)
   let local: SavedPlan[] = []
   try {
     const raw = localStorage.getItem(LS_PLANS)
@@ -1203,7 +869,6 @@ onMounted(async () => {
 
   if (isLoggedIn.value) {
     try {
-      // có plan khách lưu trước khi đăng nhập → đẩy lên rồi xoá local
       if (local.length) {
         const merged = await $fetch<{ plans: SavedPlan[] }>('/api/my-plans/merge', {
           method: 'POST', headers: authHeaders(), body: { plans: local },
@@ -1215,7 +880,7 @@ onMounted(async () => {
         savedPlans.value = res.plans || []
       }
     } catch {
-      savedPlans.value = local  // lỗi mạng → hiển thị tạm local
+      savedPlans.value = local
     }
   } else {
     savedPlans.value = local
@@ -1228,7 +893,6 @@ onBeforeUnmount(() => {
   window.removeEventListener('offline', updatePlannerConnectivity)
   autoRouteScheduler.dispose()
   if (addingTimer) clearTimeout(addingTimer)
-  if (savePulseTimer) clearTimeout(savePulseTimer)
 })
 
 await plannerAsyncData
@@ -1241,13 +905,6 @@ await plannerAsyncData
 .planner-hero-inner { display: flex; flex-direction: column; align-items: flex-start; }
 .planner-hero-inner .dateline-eyebrow { display: block; font-family: var(--font-sans); font-size: var(--text-2xs); font-weight: var(--weight-bold); text-transform: uppercase; letter-spacing: var(--tracking-caps); color: var(--muted); margin: 0 0 var(--space-3); padding-bottom: var(--space-2); border-bottom: .5px solid var(--line); width: 100%; }
 .dark .planner-hero-inner .dateline-eyebrow { border-bottom-color: var(--line); }
-
-/* ── Section heads: WCAG 1.3.1 fix — these were h3.sediment-head with a
-   scoped override reusing the shared tick recipe, but the page had no h2 at
-   all, so h3 skipped straight from h1 with no h2 in between. Bumped the
-   markup to h2.sediment-head, which now matches components.css's global
-   `.sediment-head h2, h2.sediment-head` rule exactly (same gradient/spacing),
-   so the scoped h3 override above is no longer needed and was removed. */
 
 .builder-title-wrap { position: relative; flex: 1; min-width: 0; }
 .title-counter { position: absolute; right: 8px; top: 50%; transform: translateY(-50%); font-size: var(--text-xs); color: var(--muted); pointer-events: none; }
