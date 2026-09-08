@@ -361,12 +361,6 @@
           </div>
         </div>
 
-        <!-- Lưu ý thực tế — Scenarios 2,3,6,9: practical tips for food/family/OCOP/delegation -->
-        <DetailPracticalTips
-          :entity="entity"
-          :tips-heading="ss('labels.detail.practical_tips_heading', 'Lưu ý thực tế')"
-        />
-
         <!-- Know Before You Go -->
         <KnowBeforeYouGo
           v-if="entity.attributes"
