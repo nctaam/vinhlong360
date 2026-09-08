@@ -29,28 +29,12 @@
     </div>
 
     <!-- Phase 2: tổng quan theo danh mục (7 nhóm chủ trên 17 type) -->
-    <details v-if="kindGroups.length" class="ent-kinds-panel">
-      <summary class="ent-kinds-summary">
-        <IconLine name="chart" /> Tổng quan theo danh mục
-        <span class="ent-kinds-total">{{ kindGrandTotal.toLocaleString('vi-VN') }} entity</span>
-      </summary>
-      <div class="ent-kinds-grid">
-        <div v-for="k in kindGroups" :key="k.kind" class="ent-kind-card">
-          <div class="ent-kind-head">
-            <span class="ent-kind-emoji" aria-hidden="true"><IconLine :name="kindIcon(k.kind)" /></span>
-            <span class="ent-kind-label">{{ k.label }}</span>
-            <span class="ent-kind-count">{{ k.total }}</span>
-          </div>
-          <div class="ent-kind-types">
-            <button v-for="t in k.types" :key="t.type" type="button"
-              class="ent-kind-chip" :class="{ active: typeFilter === t.type }"
-              :title="`Lọc: ${t.label} (${t.count})`" @click="filterByType(t.type)">
-              <IconLine :name="typeIcon(t.type)" aria-hidden="true" /> {{ t.label }} <span class="ent-kind-chip-n">{{ t.count }}</span>
-            </button>
-          </div>
-        </div>
-      </div>
-    </details>
+    <AdminEntityKindOverview
+      :kind-groups="kindGroups"
+      :kind-grand-total="kindGrandTotal"
+      :type-filter="typeFilter"
+      @filter="filterByType"
+    />
 
     <!-- GĐ-A: dashboard độ đầy đủ dữ liệu theo nhóm -->
     <LazyAdminKindCompleteness v-if="currentKind" :kind="currentKind.kind" @edit="onCompletenessEdit" />
@@ -206,21 +190,13 @@
               <button type="button" class="btn-danger" :disabled="acting === e.id" @click="deleteEntity(e.id)" :aria-label="`Xóa ${e.name}`">Xóa</button>
             </td>
           </tr>
-          <tr v-if="!sortedEntities.length">
-            <td :colspan="8 + (currentKind?.columns.length || 0)" class="admin-empty-row">
-              <div class="ent-empty">
-                <span class="ent-empty-icon">&#128269;</span>
-                <template v-if="search">
-                  <span>Không có kết quả cho “{{ search }}”.</span>
-                  <button type="button" class="btn btn-outline btn-sm" @click="clearSearch">Xóa tìm kiếm</button>
-                </template>
-                <template v-else>
-                  <span>Chưa có entity nào.</span>
-                  <button type="button" class="btn btn-primary btn-sm" @click="openCreate">+ Tạo mới</button>
-                </template>
-              </div>
-            </td>
-          </tr>
+          <AdminEntityTableEmpty
+            :has-entities="!!sortedEntities.length"
+            :colspan="8 + (currentKind?.columns.length || 0)"
+            :search="search"
+            @clear-search="clearSearch"
+            @open-create="openCreate"
+          />
         </tbody>
       </table>
       </div>
@@ -295,75 +271,32 @@
           </fieldset>
 
           <!-- Mùa (season) — tháng có mặt + cao điểm -->
-          <details class="ent-kbyg-details">
-            <summary class="admin-label ent-kbyg-summary"><IconLine name="calendar" /> Mùa / thời điểm ({{ seasonMonths.length }} tháng<span v-if="seasonPeak.length">, {{ seasonPeak.length }} cao điểm</span>)</summary>
-            <div class="ent-kbyg-fields">
-              <p class="sf-help ent-season-hint">Bấm mỗi tháng để chuyển: không → có mùa → cao điểm → tắt.</p>
-              <div class="ent-season-grid" role="group" aria-label="Chọn tháng theo mùa">
-                <button v-for="(lbl, i) in MONTH_LABELS" :key="i" type="button"
-                  :class="['ent-season-cell', `ent-season-${monthState(i + 1)}`]"
-                  :aria-label="`Tháng ${lbl}: ${monthState(i + 1) === 'peak' ? 'cao điểm' : monthState(i + 1) === 'in' ? 'có mùa' : 'không'}`"
-                  @click="cycleMonth(i + 1)">T{{ lbl }}</button>
-              </div>
-              <div class="ent-season-legend">
-                <span><i class="ent-season-swatch ent-season-in"></i> Có mùa</span>
-                <span><i class="ent-season-swatch ent-season-peak"></i> Cao điểm</span>
-              </div>
-            </div>
-          </details>
+          <AdminEntitySeasonEditor
+            :season-months="seasonMonths"
+            :season-peak="seasonPeak"
+            :month-labels="MONTH_LABELS"
+            :month-state="monthState"
+            :cycle-month="cycleMonth"
+          />
 
           <!-- KBYG — Know Before You Go -->
-          <details class="ent-kbyg-details">
-            <summary class="admin-label ent-kbyg-summary"><IconLine name="briefcase" /> Biết trước khi đi (KBYG)</summary>
-            <div class="ent-kbyg-fields">
-              <div class="ent-field">
-                <label class="form-label" for="kbyg-tips">Mẹo du lịch (mỗi dòng = 1 mẹo)</label>
-                <textarea id="kbyg-tips" v-model="kbygTips" class="input admin-textarea" rows="3" placeholder="VD: Nên đi buổi sáng sớm&#10;Mang dép thoải mái&#10;Có chỗ đậu xe miễn phí"></textarea>
-              </div>
-              <div class="ent-field">
-                <label class="form-label" for="kbyg-golden-hours">Giờ vàng</label>
-                <input id="kbyg-golden-hours" v-model="kbygGoldenHours" class="input" placeholder="VD: 6-8h sáng hoặc 16-18h chiều" />
-              </div>
-              <div class="ent-field">
-                <label class="form-label" for="kbyg-peak-days">Ngày đông</label>
-                <input id="kbyg-peak-days" v-model="kbygPeakDays" class="input" placeholder="VD: Cuối tuần, lễ Tết" />
-              </div>
-              <div class="ent-field">
-                <label class="form-label" for="kbyg-crowd-level">Mức đông</label>
-                <select id="kbyg-crowd-level" v-model="kbygCrowdLevel" class="input">
-                  <option value="">— Chưa rõ —</option>
-                  <option value="Ít người">Ít người</option>
-                  <option value="Vừa phải">Vừa phải</option>
-                  <option value="Đông">Đông</option>
-                  <option value="Rất đông">Rất đông</option>
-                </select>
-              </div>
-              <div class="ent-field">
-                <label class="form-label" id="kbyg-amenities-label">Tiện ích</label>
-                <div class="kbyg-amenity-grid" role="group" aria-labelledby="kbyg-amenities-label">
-                  <label v-for="(meta, key) in AMENITY_OPTIONS" :key="key" class="kbyg-amenity-check">
-                    <input type="checkbox" :checked="kbygAmenities.includes(key)" @change="toggleAmenity(key)" />
-                    <span>{{ meta.icon }} {{ meta.label }}</span>
-                  </label>
-                </div>
-              </div>
-              <div class="ent-field">
-                <label class="form-label" for="kbyg-checklist">Checklist chuẩn bị (mỗi dòng = 1 item, để trống = mặc định theo loại)</label>
-                <textarea id="kbyg-checklist" v-model="kbygChecklist" class="input admin-textarea" rows="2" placeholder="VD: Kem chống nắng&#10;Tiền mặt&#10;Nón"></textarea>
-              </div>
-            </div>
-          </details>
+          <AdminEntityKbygEditor
+            v-model:tips="kbygTips"
+            v-model:golden-hours="kbygGoldenHours"
+            v-model:peak-days="kbygPeakDays"
+            v-model:crowd-level="kbygCrowdLevel"
+            :amenities="kbygAmenities"
+            v-model:checklist="kbygChecklist"
+            :amenity-options="AMENITY_OPTIONS"
+            @toggle-amenity="toggleAmenity"
+          />
 
           <!-- Thuộc tính nâng cao (bespoke tail — không có trong schema/KBYG) -->
-          <details class="ent-kbyg-details">
-            <summary class="admin-label ent-kbyg-summary"><IconLine name="sliders" /> Thuộc tính nâng cao (JSON)</summary>
-            <div class="ent-kbyg-fields">
-              <p class="sf-help">Các thuộc tính đặc thù không có ô riêng (vd sac_phong, deity_worshipped…). Sửa trực tiếp JSON — các trường đã có ô riêng ở trên sẽ được giữ tách biệt.</p>
-              <textarea v-model="advancedJson" class="input admin-textarea ent-advanced-json" rows="6" spellcheck="false"
-                placeholder='{&#10;  "sac_phong": "…",&#10;  "custom_key": "…"&#10;}' @input="advancedError = ''"></textarea>
-              <span v-if="advancedError" class="form-error" role="alert">{{ advancedError }}</span>
-            </div>
-          </details>
+          <AdminEntityAdvancedJson
+            v-model="advancedJson"
+            :error="advancedError"
+            @clear-error="advancedError = ''"
+          />
 
           <!-- Quản lý ảnh (chỉ khi sửa) -->
           <div v-if="editingEntity" class="img-mgr" data-expanded-preview data-admin-entity-image-editor>
@@ -408,46 +341,24 @@
           </div>
 
           <!-- Quản lý quan hệ (chỉ khi sửa) -->
-          <div v-if="editingEntity" class="img-mgr">
-            <strong class="admin-label">Quan hệ ({{ rels.length }})</strong>
-            <div v-for="(r, i) in rels" :key="i" class="img-row">
-              <span class="img-url">{{ r.type }} → {{ r.target_name || r.source_name || r.to_id }}</span>
-              <button type="button" class="btn-danger btn-sm" @click="removeRel(r)">Xóa</button>
-            </div>
-            <div class="admin-inline-add">
-              <select v-model="newRel.type" class="input" aria-label="Loại quan hệ" style="flex:0 0 130px">
-                <option v-for="t in relTypes" :key="t" :value="t">{{ t }}</option>
-              </select>
-              <input v-model="newRel.to_id" class="input" placeholder="ID entity đích" aria-label="ID entity đích" @keyup.enter="addRel" />
-              <button type="button" class="btn btn-secondary btn-sm" :disabled="!newRel.to_id.trim()" @click="addRel">Thêm</button>
-            </div>
-            <details class="bulk-rel-details">
-              <summary class="btn btn-ghost btn-sm">Thêm hàng loạt…</summary>
-              <div class="bulk-rel-inner">
-                <select v-model="bulkRelType" class="input" aria-label="Loại quan hệ hàng loạt" style="max-width:160px">
-                  <option v-for="t in relTypes" :key="t" :value="t">{{ t }}</option>
-                </select>
-                <textarea v-model="bulkRelIds" class="input" placeholder="Mỗi dòng 1 entity ID đích" rows="3" aria-label="Danh sách entity ID đích"></textarea>
-                <button type="button" class="btn btn-secondary btn-sm" :disabled="!bulkRelIds.trim() || bulkRelSaving" @click="addBulkRels">
-                  {{ bulkRelSaving ? 'Đang thêm…' : 'Thêm tất cả' }}
-                </button>
-              </div>
-            </details>
-          </div>
+          <AdminEntityRelationshipsEditor
+            v-if="editingEntity"
+            :rels="rels"
+            :rel-types="relTypes"
+            :new-rel="newRel"
+            v-model:bulk-rel-type="bulkRelType"
+            v-model:bulk-rel-ids="bulkRelIds"
+            :bulk-rel-saving="bulkRelSaving"
+            @add-rel="addRel"
+            @remove-rel="removeRel"
+            @add-bulk-rels="addBulkRels"
+          />
         </div>
 
-        <div v-if="editingEntity && entityHistory.length" class="ent-history">
-          <strong class="admin-label">Lịch sử thay đổi ({{ entityHistory.length }})</strong>
-          <div v-for="h in entityHistory" :key="h.id" class="ent-history-item">
-            <span class="ent-history-field">{{ h.field }}</span>
-            <span class="ent-history-diff">
-              <del v-if="h.old_value" :title="h.old_value">{{ truncVal(h.old_value) }}</del>
-              <span class="ent-history-arrow"><IconLine name="arrow-right" /></span>
-              <ins :title="h.new_value">{{ truncVal(h.new_value) }}</ins>
-            </span>
-            <span class="ent-history-time">{{ timeAgo(h.created_at) }}</span>
-          </div>
-        </div>
+        <AdminEntityHistoryList
+          v-if="editingEntity && entityHistory.length"
+          :history="entityHistory"
+        />
 
         <div class="admin-modal-actions">
           <button type="button" class="btn btn-outline" @click="showModal = false">Hủy</button>
@@ -467,6 +378,8 @@ import type { ImageDescriptor } from '~/types/image'
 import { TYPE_META } from '~/composables/useConstants'
 import { ADMIN_KINDS } from '~/utils/adminKinds'
 import { describeEntityImages, describeEntityPlaceholder, normalizeEntityEditorialUpload } from '~/utils/imageDescriptors'
+import { useAdminEntityDeletion } from '~/composables/useAdminEntityDeletion'
+import { useAdminEntityKinds } from '~/composables/useAdminEntityKinds'
 import { useAdminEntityAttributes } from '~/composables/useAdminEntityAttributes'
 import { useAdminEntityRelationships } from '~/composables/useAdminEntityRelationships'
 import { useAdminEntityBulkAssign } from '~/composables/useAdminEntityBulkAssign'
@@ -484,7 +397,6 @@ useHead({ title: 'Quản lý Entity — Admin' })
 const { authHeaders } = useAuth()
 const { show: showToast } = useToast()
 const { confirmDialog } = useConfirm()
-const { timeAgo } = useTimeAgo()
 
 interface EntityForm {
   id: string
@@ -563,26 +475,15 @@ watch(() => form.value.type, () => { initTypedAttrs(typedAttrs.value) })
 
 // GĐ-A: chế độ xem theo nhóm (?kind=) — cột/bộ lọc đặc thù (utils/adminKinds)
 const route = useRoute()
-function kindIcon(kind: string) {
-  return ADMIN_KINDS.find(k => k.kind === kind)?.icon || 'tag'
-}
-function typeIcon(type: string) {
-  return TYPE_META[type]?.icon || 'tag'
-}
-const currentKind = computed(() => ADMIN_KINDS.find(k => k.kind === String(route.query.kind || '')) || null)
-const kindTypes = computed(() => currentKind.value ? currentKind.value.types : types)
-const activeChips = ref<Set<string>>(new Set())
-function toggleChip(key: string) {
-  const s = new Set(activeChips.value)
-  if (s.has(key)) s.delete(key)
-  else s.add(key)
-  activeChips.value = s
-}
-const chipFiltered = computed(() => {
-  if (!currentKind.value || !activeChips.value.size) return entities.value
-  const chips = currentKind.value.chips.filter(c => activeChips.value.has(c.key))
-  return entities.value.filter(e => chips.every(c => c.test(e)))
-})
+const {
+  kindIcon,
+  typeIcon,
+  currentKind,
+  kindTypes,
+  activeChips,
+  toggleChip,
+  chipFiltered,
+} = useAdminEntityKinds({ route, entities, types })
 watch(() => route.query.kind, () => {
   selected.value = new Set()
   activeChips.value = new Set()
@@ -766,9 +667,7 @@ async function onCompletenessEdit(id: string) {
   if (e) openEdit(e)
 }
 const loading = ref(true)
-const acting = ref<string | null>(null)
 const saving = ref(false)
-const bulkBusy = ref(false)
 
 // UX state
 const loadError = ref(false)
@@ -913,7 +812,6 @@ const {
 const {
   entityHistory,
   fetchEntityHistory,
-  truncVal,
 } = useAdminEntityHistory({
   authHeaders,
 })
@@ -973,44 +871,28 @@ function mdLite(src: string): string {
     .replace(/\n/g, '<br>')
 }
 
-// ── Thao tác hàng loạt ──
-function toggleSel(id: string) {
-  const s = new Set(selected.value)
-  s.has(id) ? s.delete(id) : s.add(id)
-  selected.value = s
-}
-const allSelected = computed(() => entities.value.length > 0 && entities.value.every(e => selected.value.has(e.id)))
-function toggleAll() {
-  selected.value = allSelected.value ? new Set() : new Set(entities.value.map(e => e.id))
-}
+const {
+  acting,
+  bulkBusy,
+  toggleSel,
+  allSelected,
+  toggleAll,
+  executeBulkDelete,
+  deleteEntity,
+} = useAdminEntityDeletion({
+  selected,
+  entities,
+  authHeaders,
+  showToast,
+  confirmDialog,
+  fetchEntities,
+})
+
 async function bulkDelete() {
   if (bulkBusy.value) return
   const ids = [...selected.value]
   if (!ids.length || !await confirmDialog(`Xóa ${ids.length} entity đã chọn?`, { danger: true })) return
-  bulkBusy.value = true
-  try {
-    const r = await $fetch<Record<string, unknown>>('/admin-api/entities/bulk-delete', { method: 'POST', headers: authHeaders(), body: ids })
-    const deleted = Number(r.count) || 0
-    showToast(`Đã xóa ${deleted}/${ids.length} entity`, deleted === ids.length ? 'success' : 'warning')
-    selected.value = new Set()
-    await fetchEntities()
-  } catch (e: unknown) { showToast(getErrorDetail(e, 'Xóa hàng loạt lỗi'), 'error') }
-  bulkBusy.value = false
-}
-
-async function deleteEntity(id: string) {
-  if (acting.value) return
-  if (!await confirmDialog(`Xóa entity "${id}"?`, { danger: true })) return
-  acting.value = id
-  try {
-    await $fetch(`/admin-api/entities/${id}`, { method: 'DELETE', headers: authHeaders() })
-    showToast('Đã xóa entity', 'success')
-    acting.value = null
-    await fetchEntities()
-  } catch (e: unknown) {
-    showToast(getErrorDetail(e, 'Lỗi khi xóa entity'), 'error')
-    acting.value = null
-  }
+  await executeBulkDelete(ids)
 }
 
 // Esc clears bulk selection (only when modal is closed)

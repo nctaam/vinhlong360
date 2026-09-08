@@ -30,7 +30,7 @@ describe('Moc 146: Secondary & Account Pages Radius Hygiene & Integrity', () => 
       'pages/cong-dong.vue': 990,
       'pages/cai-dat.vue': 980,
       'pages/nguoi-dung/[id].vue': 1050,
-      'pages/admin/entities.vue': 1050,
+      'pages/admin/entities.vue': 950,
     }
 
     for (const [relPath, maxLines] of Object.entries(ceilings)) {
