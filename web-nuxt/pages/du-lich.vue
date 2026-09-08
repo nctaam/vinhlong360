@@ -199,6 +199,12 @@
       <p v-else class="catalog-evidence__empty">Chưa có kết quả để đối chiếu nguồn. Bộ lọc vẫn được giữ để bạn thử lại.</p>
     </section>
 
+    <CatalogFaqAccordion
+      :items="TOURISM_CATALOG_FAQS"
+      title="Hỏi đáp du lịch Vĩnh Long"
+      kicker="Hỏi đáp · Cẩm nang thực địa"
+    />
+
     <section class="catalog-continuation block reveal" data-catalog-section="continuation" aria-labelledby="catalog-continuation-title">
       <div>
         <p>Tiếp tục hành trình</p>
@@ -223,6 +229,7 @@ import type { RegionalAccent } from '~/utils/regionalColor'
 import { resolveFreshnessStatus, resolveSourceTier } from '~/utils/regionalColor'
 import { TYPE_META, TOURISM_TYPES } from '~/composables/useConstants'
 import { inSeason, relevanceScore } from '~/composables/useSeason'
+import { TOURISM_CATALOG_FAQS } from '~/composables/useSeoHelpers'
 import PageState from '~/components/public/PageState.vue'
 
 useReveal()

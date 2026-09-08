@@ -92,6 +92,66 @@ export interface FaqItem {
   a: string
 }
 
+export const TOURISM_CATALOG_FAQS: FaqItem[] = [
+  {
+    q: 'Đi du lịch Vĩnh Long mùa nào trong năm là đẹp nhất?',
+    a: 'Mùa trái cây chín rộ từ tháng 5 đến tháng 8 tại các vườn cù lao An Bình là thời điểm nhộn nhịp nhất. Ngoài ra, mùa phù sa từ tháng 9 đến tháng 11 mang đến trải nghiệm cảnh quan sông nước đặc sắc.',
+  },
+  {
+    q: 'Những điểm đến du lịch nổi bật nhất tại Vĩnh Long gồm những nơi nào?',
+    a: 'Du khách nên ghé thăm di sản đương đại lò gạch gốm đỏ Mang Thít, hệ thống nhà vườn cù lao An Bình, chùa Phật Ngọc Xá Lợi, làng bánh tráng cù lao Mây và các điểm sinh thái ven sông.',
+  },
+  {
+    q: 'Phương tiện di chuyển phổ biến và thuận tiện nhất khi du lịch Vĩnh Long là gì?',
+    a: 'Xe máy và ô tô thuận tiện để kết nối các tuyến đường liên huyện, kết hợp trải nghiệm đò ngang, phà sông hoặc xuồng chèo len lỏi qua các rạch nhỏ miệt vườn.',
+  },
+]
+
+export const PRODUCT_CATALOG_FAQS: FaqItem[] = [
+  {
+    q: 'Vĩnh Long có những loại đặc sản nào nổi tiếng nhất để mua làm quà?',
+    a: 'Các đặc sản nức tiếng gồm bưởi năm roi Bình Minh, khoai lang Bình Tân, sầu riêng Ri6, bánh tráng cù lao Mây, cam sành Tam Bình và các sản phẩm thủ công gốm đỏ Mang Thít.',
+  },
+  {
+    q: 'Làm thế nào để chọn mua được trái cây và đặc sản Vĩnh Long đúng nguồn gốc?',
+    a: 'Du khách nên ghé trực tiếp các nhà vườn tại cù lao An Bình, các hợp tác xã đạt chứng nhận OCOP hoặc các điểm trưng bày có tem truy xuất nguồn gốc rõ ràng.',
+  },
+  {
+    q: 'Các cơ sở sản xuất tại Vĩnh Long có hỗ trợ đóng gói trái cây gửi đi xa không?',
+    a: 'Nhiều nhà vườn và cơ sở chế biến hỗ trợ đóng thùng chống sốc cho trái cây tươi, hút chân không cho bánh tráng và nông sản khô để du khách tiện mang theo đường dài.',
+  },
+]
+
+export const STAY_CATALOG_FAQS: FaqItem[] = [
+  {
+    q: 'Vĩnh Long có những loại hình lưu trú nào phổ biến nhất?',
+    a: 'Nổi bật nhất là các homestay miệt vườn tại cù lao An Bình với trải nghiệm ngủ nhà gỗ truyền thống Nam Bộ, sinh hoạt cùng gia đình chủ nhà và hái trái cây tại vườn. Ngoài ra còn có hệ thống khách sạn trung tâm thành phố và nhà nghỉ tiện nghi.',
+  },
+  {
+    q: 'Du khách nên lưu ý điều gì khi đặt phòng homestay cù lao tại Vĩnh Long?',
+    a: 'Nên liên hệ đặt trước vào các dịp cuối tuần, mùa lễ hội hoặc mùa trái cây rộ (tháng 5 đến tháng 8). Kiểm tra trước khung giờ hoạt động của phà hoặc đò sang cù lao để chủ động lịch trình di chuyển.',
+  },
+  {
+    q: 'Các cơ sở lưu trú tại Vĩnh Long có cung cấp dịch vụ ẩm thực bản địa không?',
+    a: 'Đa số các homestay sinh thái Vĩnh Long đều phục vụ bữa cơm gia đình nấu theo hương vị truyền thống địa phương với cá tai tượng chiên xù, canh chua cá lóc bông điên điển, cá kèo kho tộ và bánh xèo giòn rụm.',
+  },
+]
+
+export const EVENT_CATALOG_FAQS: FaqItem[] = [
+  {
+    q: 'Vĩnh Long thường tổ chức những sự kiện hoặc hội chợ lớn nào trong năm?',
+    a: 'Các sự kiện tiêu biểu gồm Ngày hội Du lịch Vĩnh Long, Ngày đồng hành cùng gốm đỏ Mang Thít, Hội chợ Xúc tiến Thương mại - Nông nghiệp cùng các giải đua ghe Ngo truyền thống trên sông.',
+  },
+  {
+    q: 'Người dân và du khách có thể theo dõi lịch sự kiện sắp diễn ra ở đâu?',
+    a: 'Trang Sự Kiện trên VinhLong360 cập nhật liên tục các sự kiện đang diễn ra và sắp khai mạc, kèm tiện ích xuất file .ics nhắc hẹn trực tiếp vào điện thoại.',
+  },
+  {
+    q: 'Tham gia các sự kiện văn hóa và hội chợ tại Vĩnh Long có cần mua vé không?',
+    a: 'Đa số các sự kiện văn hóa cộng đồng, hội chợ xúc tiến thương mại và ngày hội du lịch tại Vĩnh Long đều mở cửa miễn phí phục vụ nhân dân và du khách.',
+  },
+]
+
 export function buildFaqPageSchema(faqItems: FaqItem[], id?: string): Record<string, any> | null {
   if (!Array.isArray(faqItems) || faqItems.length === 0) return null
   return {
@@ -1869,22 +1929,7 @@ export function buildProductCatalogSchemaGraph(options: ProductCatalogSchemaOpti
     itemListElement: itemListElements,
   }
 
-  const defaultFaqs = [
-    {
-      q: 'Vĩnh Long có những loại đặc sản nào nổi tiếng nhất để mua làm quà?',
-      a: 'Các đặc sản nức tiếng gồm bưởi năm roi Bình Minh, khoai lang Bình Tân, sầu riêng Ri6, bánh tráng cù lao Mây, cam sành Tam Bình và các sản phẩm thủ công gốm đỏ Mang Thít.',
-    },
-    {
-      q: 'Làm thế nào để chọn mua được trái cây và đặc sản Vĩnh Long đúng nguồn gốc?',
-      a: 'Du khách nên ghé trực tiếp các nhà vườn tại cù lao An Bình, các hợp tác xã đạt chứng nhận OCOP hoặc các điểm trưng bày có tem truy xuất nguồn gốc rõ ràng.',
-    },
-    {
-      q: 'Các cơ sở sản xuất tại Vĩnh Long có hỗ trợ đóng gói trái cây gửi đi xa không?',
-      a: 'Nhiều nhà vườn và cơ sở chế biến hỗ trợ đóng thùng chống sốc cho trái cây tươi, hút chân không cho bánh tráng và nông sản khô để du khách tiện mang theo đường dài.',
-    },
-  ]
-
-  const faqs = options.faqs && options.faqs.length > 0 ? options.faqs : defaultFaqs
+  const faqs = options.faqs && options.faqs.length > 0 ? options.faqs : PRODUCT_CATALOG_FAQS
   const faqNode = buildFaqPageSchema(faqs, `${pageUrl}#faq`)
 
   return buildUnifiedSchemaGraph([
@@ -2112,22 +2157,7 @@ export function buildContemporaryEventSchemaGraph(options: ContemporaryEventSche
     itemListElement: eventListElements,
   }
 
-  const defaultFaqs = [
-    {
-      q: 'Vĩnh Long thường tổ chức những sự kiện hoặc hội chợ lớn nào trong năm?',
-      a: 'Các sự kiện tiêu biểu gồm Ngày hội Du lịch Vĩnh Long, Ngày đồng hành cùng gốm đỏ Mang Thít, Hội chợ Xúc tiến Thương mại - Nông nghiệp cùng các giải đua ghe Ngo truyền thống trên sông.',
-    },
-    {
-      q: 'Người dân và du khách có thể theo dõi lịch sự kiện sắp diễn ra ở đâu?',
-      a: 'Trang Sự Kiện trên VinhLong360 cập nhật liên tục các sự kiện đang diễn ra và sắp khai mạc, kèm tiện ích xuất file .ics nhắc hẹn trực tiếp vào điện thoại.',
-    },
-    {
-      q: 'Tham gia các sự kiện văn hóa và hội chợ tại Vĩnh Long có cần mua vé không?',
-      a: 'Đa số các sự kiện văn hóa cộng đồng, hội chợ xúc tiến thương mại và ngày hội du lịch tại Vĩnh Long đều mở cửa miễn phí phục vụ nhân dân và du khách.',
-    },
-  ]
-
-  const faqs = options.faqs && options.faqs.length > 0 ? options.faqs : defaultFaqs
+  const faqs = options.faqs && options.faqs.length > 0 ? options.faqs : EVENT_CATALOG_FAQS
   const faqNode = buildFaqPageSchema(faqs, `${pageUrl}#faq`)
 
   return buildUnifiedSchemaGraph([
@@ -2216,22 +2246,7 @@ export function buildTourismCatalogSchemaGraph(options: TourismCatalogSchemaOpti
     itemListElement: itemListElements,
   }
 
-  const defaultFaqs = [
-    {
-      q: 'Đi du lịch Vĩnh Long mùa nào trong năm là đẹp nhất?',
-      a: 'Mùa trái cây chín rộ từ tháng 5 đến tháng 8 tại các vườn cù lao An Bình là thời điểm nhộn nhịp nhất. Ngoài ra, mùa phù sa từ tháng 9 đến tháng 11 mang đến trải nghiệm cảnh quan sông nước đặc sắc.',
-    },
-    {
-      q: 'Những điểm đến du lịch nổi bật nhất tại Vĩnh Long gồm những nơi nào?',
-      a: 'Du khách nên ghé thăm di sản đương đại lò gạch gốm đỏ Mang Thít, hệ thống nhà vườn cù lao An Bình, chùa Phật Ngọc Xá Lợi, làng bánh tráng cù lao Mây và các điểm sinh thái ven sông.',
-    },
-    {
-      q: 'Phương tiện di chuyển phổ biến và thuận tiện nhất khi du lịch Vĩnh Long là gì?',
-      a: 'Xe máy và ô tô thuận tiện để kết nối các tuyến đường liên huyện, kết hợp trải nghiệm đò ngang, phà sông hoặc xuồng chèo len lỏi qua các rạch nhỏ miệt vườn.',
-    },
-  ]
-
-  const faqs = options.faqs && options.faqs.length > 0 ? options.faqs : defaultFaqs
+  const faqs = options.faqs && options.faqs.length > 0 ? options.faqs : TOURISM_CATALOG_FAQS
   const faqNode = buildFaqPageSchema(faqs, `${pageUrl}#faq`)
 
   return buildUnifiedSchemaGraph([
@@ -2345,22 +2360,7 @@ export function buildStayCatalogSchemaGraph(options: StayCatalogSchemaOptions): 
     }),
   }
 
-  const defaultFaqs: FaqItem[] = [
-    {
-      q: 'Vĩnh Long có những loại hình lưu trú nào phổ biến nhất?',
-      a: 'Nổi bật nhất là các homestay miệt vườn tại cù lao An Bình với trải nghiệm ngủ nhà gỗ truyền thống Nam Bộ, sinh hoạt cùng gia đình chủ nhà và hái trái cây tại vườn. Ngoài ra còn có hệ thống khách sạn trung tâm thành phố và nhà nghỉ tiện nghi.',
-    },
-    {
-      q: 'Du khách nên lưu ý điều gì khi đặt phòng homestay cù lao tại Vĩnh Long?',
-      a: 'Nên liên hệ đặt trước vào các dịp cuối tuần, mùa lễ hội hoặc mùa trái cây rộ (tháng 5 đến tháng 8). Kiểm tra trước khung giờ hoạt động của phà hoặc đò sang cù lao để chủ động lịch trình di chuyển.',
-    },
-    {
-      q: 'Các cơ sở lưu trú tại Vĩnh Long có cung cấp dịch vụ ẩm thực bản địa không?',
-      a: 'Đa số các homestay sinh thái Vĩnh Long đều phục vụ bữa cơm gia đình nấu theo hương vị truyền thống địa phương với cá tai tượng chiên xù, canh chua cá lóc bông điên điển, cá kèo kho tộ và bánh xèo giòn rụm.',
-    },
-  ]
-
-  const faqs = options.faqs && options.faqs.length > 0 ? options.faqs : defaultFaqs
+  const faqs = options.faqs && options.faqs.length > 0 ? options.faqs : STAY_CATALOG_FAQS
   const faqNode = buildFaqPageSchema(faqs, `${pageUrl}#faq`)
 
   return buildUnifiedSchemaGraph([

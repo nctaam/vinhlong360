@@ -158,6 +158,12 @@
       </EmptyState>
     </section>
 
+    <CatalogFaqAccordion
+      :items="STAY_CATALOG_FAQS"
+      title="Hỏi đáp lưu trú & homestay Vĩnh Long"
+      kicker="Hỏi đáp · Cẩm nang chỗ nghỉ"
+    />
+
     <!-- Cross-links -->
     <!-- Cross-links (declutter-2 A1: 4→3 script-driven; bỏ Du-lịch — trùng interstitial links + nav) -->
     <section class="block band reveal catalog-cross">
@@ -178,6 +184,7 @@
 import type { Entity } from '~/types'
 import { AREA_META } from '~/composables/useConstants'
 import { generateCategoryIcon } from '~/composables/useCategoryPlaceholder'
+import { STAY_CATALOG_FAQS } from '~/composables/useSeoHelpers'
 
 useReveal()
 const { f: pc } = usePageContent('luu_tru')

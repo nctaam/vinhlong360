@@ -188,6 +188,12 @@
       </button>
     </section>
 
+    <CatalogFaqAccordion
+      :items="PRODUCT_CATALOG_FAQS"
+      title="Hỏi đáp đặc sản & quà quê Vĩnh Long"
+      kicker="Hỏi đáp · Cẩm nang phiên chợ"
+    />
+
     <!-- Cross-links (declutter-2 A1: 4→3 script-driven; bỏ OCOP — trùng teaser-strip trên trang) -->
     <section class="block band catalog-cross reveal" aria-label="Khám phá thêm">
       <h2>Khám phá thêm</h2>
@@ -207,6 +213,7 @@
 import { isOcopCertified } from '~/utils/ocop'
 import type { Entity } from '~/types'
 import { inSeason, relevanceScore } from '~/composables/useSeason'
+import { PRODUCT_CATALOG_FAQS } from '~/composables/useSeoHelpers'
 
 useReveal()
 const { f: pc } = usePageContent('san_pham')

@@ -278,6 +278,12 @@
     </template>
     </section>
 
+    <CatalogFaqAccordion
+      :items="EVENT_CATALOG_FAQS"
+      title="Hỏi đáp sự kiện & hội chợ Vĩnh Long"
+      kicker="Hỏi đáp · Cẩm nang sự kiện"
+    />
+
     <!-- Cross-links -->
     <section class="block band reveal catalog-cross">
       <h2>Khám phá thêm</h2>
@@ -310,6 +316,7 @@ import ImageDisclosure from '~/components/ImageDisclosure.vue'
 import { AREA_META } from '~/composables/useConstants'
 import { solarToLunar } from '~/composables/useLunar'
 import { describeEntityImages, describeEntityPlaceholder } from '~/utils/imageDescriptors'
+import { EVENT_CATALOG_FAQS } from '~/composables/useSeoHelpers'
 import { useId } from 'vue'
 
 useReveal()
