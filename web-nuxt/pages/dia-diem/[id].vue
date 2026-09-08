@@ -537,6 +537,7 @@ import { resolveFreshnessStatus, resolveRegionalAccent, resolveSourceTier } from
 import ActionDock from '~/components/public/ActionDock.vue'
 import PageState from '~/components/public/PageState.vue'
 import SourceTrustDrawer from '~/components/SourceTrustDrawer.vue'
+import { useDetailHeroTransition, type HeroImageRef } from '~/composables/useDetailHeroTransition'
 
 interface LaunchEntityCarrier extends Entity {
   readonly __launchGeneration: number
@@ -560,7 +561,6 @@ const route = useRoute()
 const router = useRouter()
 const id = computed(() => normalizeRouteParam(route.params.id))
 const encodedId = computed(() => encodePathId(id.value))
-const heroLoaded = ref(false)
 const detailOnline = ref(true)
 const launchSafety = useLaunchSafety()
 const entityLaunchGeneration = createLaunchGenerationGuard(() => launchSafety.resetForNavigation())
@@ -574,37 +574,7 @@ watch(() => route.fullPath, (next, previous) => {
   if (previous !== undefined && next !== previous) entityLaunchGeneration.begin()
 }, { flush: 'sync' })
 
-type HeroNavigationAttempt = {
-  readonly fromFullPath: string
-  readonly toFullPath: string
-}
-
-let pendingHeroNavigation: HeroNavigationAttempt | null = null
-
-function changesHeroRouteIdentity(to: typeof route, from: typeof route): boolean {
-  return to.name !== from.name || normalizeRouteParam(to.params.id) !== normalizeRouteParam(from.params.id)
-}
-
-const removeHeroNavigationGuard = router.beforeEach((to, from) => {
-  if (!changesHeroRouteIdentity(to, from)) return
-  pendingHeroNavigation = { fromFullPath: from.fullPath, toFullPath: to.fullPath }
-  heroLoaded.value = false
-})
-
-const removeHeroNavigationCompletionHook = router.afterEach((to, from, failure) => {
-  const pending = pendingHeroNavigation
-  if (!pending) return
-  const completesPendingNavigation = (
-    pending.fromFullPath === from.fullPath && pending.toFullPath === to.fullPath
-  ) || to.redirectedFrom?.fullPath === pending.toFullPath
-  if (!completesPendingNavigation) return
-  pendingHeroNavigation = null
-  if (failure || !changesHeroRouteIdentity(to, from)) void revealHeroImageAfterUpdate()
-})
-
 onUnmounted(() => {
-  removeHeroNavigationGuard()
-  removeHeroNavigationCompletionHook()
   window.removeEventListener('online', updateDetailConnectivity)
   window.removeEventListener('offline', updateDetailConnectivity)
 })
@@ -625,27 +595,6 @@ async function copyText(text: string, label: string) {
   }
 }
 
-type HeroImageRef = HTMLImageElement | { $el?: unknown } | null
-const heroImage = ref<HeroImageRef>(null)
-
-function revealHeroImage(event?: Event) {
-  const eventTarget = event?.currentTarget
-  const refTarget = heroImage.value
-  const image = eventTarget instanceof HTMLImageElement
-    ? eventTarget
-    : refTarget instanceof HTMLImageElement
-      ? refTarget
-      : refTarget?.$el instanceof HTMLImageElement
-        ? refTarget.$el
-        : null
-  if (!image?.complete || image.naturalWidth <= 0) return
-  heroLoaded.value = true
-}
-
-async function revealHeroImageAfterUpdate() {
-  await nextTick()
-  revealHeroImage()
-}
 
 const { track: trackRecent } = useRecentlyViewed()
 const { trackEntityView } = useUserEvents()
@@ -814,14 +763,16 @@ const hasEntityGallery = computed(() => (
 
 const coverImage = computed(() => heroDescriptor.value.url || '')
 
-// Reset stale route state before Vue reuses the hero, then inspect the committed replacement ref.
-watch(heroImageIdentity, () => {
-  heroLoaded.value = false
-}, { flush: 'sync' })
-
-watch(heroImageIdentity, () => {
-  void revealHeroImageAfterUpdate()
-}, { flush: 'post' })
+const {
+  heroLoaded,
+  heroImage,
+  revealHeroImage,
+  revealHeroImageAfterUpdate,
+} = useDetailHeroTransition({
+  router,
+  route,
+  heroImageIdentity,
+})
 
 function sanitizeDisclosureIdToken(value: unknown): string {
   const raw = String(value ?? '').trim()
