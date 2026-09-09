@@ -14,7 +14,7 @@ import queue as queue_module
 import subprocess
 import sys
 import uuid
-from urllib.parse import parse_qs, urlparse
+from urllib.parse import parse_qs, parse_qsl, urlencode, urlparse, urlunparse
 
 ROOT = Path(__file__).resolve().parents[2]
 AGENT = ROOT / "agent"
@@ -32,7 +32,14 @@ def _dsn() -> str:
         raise RuntimeError("VL360_TEST_DATABASE_URL requires marker=disposable")
     if query.get("hostaddr"):
         raise RuntimeError("VL360_TEST_DATABASE_URL must not override hostaddr")
-    return raw
+    safe_query = [(key, value) for key, value in parse_qsl(parsed.query, keep_blank_values=True) if key != "marker"]
+    return urlunparse(parsed._replace(query=urlencode(safe_query)))
+
+
+def _configure_database_runtime(dsn: str) -> None:
+    """Make the Database module load its PostgreSQL adapter in probe workers."""
+
+    os.environ["DATABASE_URL"] = dsn
 
 
 def _worker(
@@ -51,6 +58,7 @@ def _worker(
     try:
         from datetime import datetime, timezone
 
+        _configure_database_runtime(dsn)
         import database
         from scheduler_control import claim_task_slot, finish_task_slot
 
@@ -194,6 +202,7 @@ def _takeover_record(adapter, task_name: str, slot_key: str) -> tuple[dict[str, 
 def run_probe(*, dsn: str, workers: int, slots: int) -> dict[str, object]:
     """Run contention and return a structured result suitable for a receipt."""
 
+    _configure_database_runtime(dsn)
     ctx = multiprocessing.get_context("spawn")
     totals: dict[str, object] = {
         "slots": slots,

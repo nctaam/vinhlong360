@@ -8,6 +8,7 @@ import pytest
 
 from agent.control_plane.evidence import verify_probe_receipt
 from scripts.ops.probe_multiprocess_scheduler import main as scheduler_probe_main
+from scripts.ops import probe_multiprocess_scheduler as scheduler_probe
 from scripts.ops.probe_multiprocess_scheduler import _dsn as scheduler_probe_dsn
 from scripts.ops.probe_provider_sandbox import run_deterministic_scenarios
 from scripts.ops.probe_proxy_contract import validate_base_url
@@ -149,6 +150,28 @@ def test_proxy_probe_allows_only_explicit_loopback_base_urls():
     assert validate_base_url("http://localhost:8080") == (True, "")
     assert validate_base_url("https://vinhlong360.vn") == (False, "non-loopback host")
     assert validate_base_url("") == (False, "base URL is required")
+
+
+def test_scheduler_probe_configures_database_module_before_postgres_import(monkeypatch):
+    """The disposable scheduler probe must activate psycopg2-backed Database."""
+
+    monkeypatch.delenv("DATABASE_URL", raising=False)
+    dsn = "postgresql://vl360:probe@127.0.0.1:55432/disposable?marker=disposable"
+
+    scheduler_probe._configure_database_runtime(dsn)
+
+    assert scheduler_probe.os.environ["DATABASE_URL"] == dsn
+
+
+def test_scheduler_probe_strips_disposable_marker_before_libpq(monkeypatch):
+    """The safety marker is validation-only and must not reach libpq."""
+
+    dsn = "postgresql://vl360:probe@127.0.0.1:55432/disposable?marker=disposable&sslmode=disable"
+    monkeypatch.setenv("VL360_TEST_DATABASE_URL", dsn)
+
+    assert scheduler_probe._dsn() == (
+        "postgresql://vl360:probe@127.0.0.1:55432/disposable?sslmode=disable"
+    )
 
 
 def test_scheduler_probe_writes_unavailable_receipt_without_a_disposable_dsn(tmp_path, monkeypatch, capsys):
