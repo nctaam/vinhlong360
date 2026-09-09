@@ -110,7 +110,22 @@ def test_combined_browser_proxy_proof_is_unavailable_without_proxy_base_url(monk
     browser = next(item for item in report["checks"] if item["id"] == "browser-proxy-e2e")
 
     assert browser["status"] == UNAVAILABLE
-    assert any("base" in item.lower() or "nginx" in item.lower() for item in browser["missing"])
+    assert "VL360_LAUNCH_PUBLIC_URL with an http(s) origin" in browser["missing"]
+
+
+def test_combined_browser_proxy_proof_is_available_with_explicit_public_url(monkeypatch):
+    """The browser runner can exercise a reverse proxy when an origin is supplied."""
+
+    monkeypatch.setattr(probe_module, "_tool", lambda name: name == "node")
+    monkeypatch.setattr(probe_module, "_file", lambda _relative: True)
+    monkeypatch.setenv("VL360_LAUNCH_PUBLIC_URL", "http://127.0.0.1:3180")
+
+    report = probe()
+    browser = next(item for item in report["checks"] if item["id"] == "browser-proxy-e2e")
+
+    assert browser["status"] == AVAILABLE
+    assert browser["missing"] == []
+    assert "--base-url http://127.0.0.1:3180" in browser["command"]
 
 
 def test_combined_backup_proof_is_unavailable_without_restore_and_offsite_prerequisites(monkeypatch):

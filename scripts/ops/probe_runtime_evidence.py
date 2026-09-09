@@ -25,6 +25,7 @@ import shutil
 import socket
 import subprocess
 from typing import Any
+from urllib.parse import urlsplit
 
 ROOT = Path(__file__).resolve().parents[2]
 
@@ -86,29 +87,48 @@ def _env_configured(name: str) -> bool:
     return bool(os.environ.get(name, "").strip())
 
 
+def _browser_public_origin() -> str | None:
+    """Return a safe browser origin configured by the operator, if any."""
+
+    raw = os.environ.get("VL360_LAUNCH_PUBLIC_URL", "").strip()
+    if not raw:
+        return None
+    try:
+        parsed = urlsplit(raw)
+    except ValueError:
+        return None
+    if parsed.scheme not in {"http", "https"} or not parsed.hostname:
+        return None
+    if parsed.username or parsed.password or parsed.query or parsed.fragment:
+        return None
+    return f"{parsed.scheme}://{parsed.netloc}"
+
+
 def _browser_check(file_exists=None) -> dict[str, Any]:
     """Report readiness of the browser and reverse-proxy end-to-end proof."""
 
     file_exists = file_exists or _file
-    # The checked-in browser runner has no nginx/base-URL option yet, so this
-    # combined proof remains unavailable even when the browser script exists.
-    ready = False
     missing = []
     if not _tool("node"):
         missing.append("node")
     if not file_exists("scripts/launch_safety_browser_e2e.mjs"):
         missing.append("scripts/launch_safety_browser_e2e.mjs")
-    missing.append("nginx harness base URL support")
+    public_origin = _browser_public_origin()
+    if public_origin is None:
+        missing.append("VL360_LAUNCH_PUBLIC_URL with an http(s) origin")
+    ready = not missing
+    command = "node scripts/launch_safety_browser_e2e.mjs --probe-browser"
+    if public_origin is not None:
+        command += f" --base-url {public_origin}"
     return {
         "id": "browser-proxy-e2e",
         "title": "Browser and reverse-proxy end-to-end",
         "status": AVAILABLE if ready else UNAVAILABLE,
-        "command": "node scripts/launch_safety_browser_e2e.mjs --probe-browser",
+        "command": command,
         "missing": missing,
         "note": (
-            "A browser harness exists, but it is pinned to the application port; driving the browser "
-            "THROUGH the nginx harness needs a base-URL parameter the harness does not yet expose. "
-            "Browser-only and proxy-only receipts are each reachable; the combined proof is not."
+            "The browser runner supports --base-url; an explicit operator-supplied origin is required "
+            "before a browser-through-proxy drill can be attempted. This read-only probe never runs it."
         ),
     }
 
