@@ -36,6 +36,22 @@
         </div>
         <button type="button" class="btn btn-primary" data-color-role="action-primary" @click="doSearch">Tìm</button>
       </div>
+
+      <div class="search-quick-culture" role="group" aria-label="Gợi ý tìm kiếm 3 vùng văn hóa">
+        <span class="sqc-label">Gợi ý nhanh:</span>
+        <div class="sqc-chips">
+          <button
+            v-for="chip in quickSearchChips"
+            :key="chip.query"
+            type="button"
+            class="sqc-btn"
+            @click="selectQuickSearch(chip.query)"
+          >
+            <IconLine :name="chip.icon" aria-hidden="true" />
+            <span>{{ chip.label }}</span>
+          </button>
+        </div>
+      </div>
     </section>
 
     <NuxtErrorBoundary>
@@ -151,6 +167,22 @@
             </button>
           </template>
         </EmptyState>
+
+        <div class="zero-result-hub-shortcuts" role="navigation" aria-label="Lối tắt khám phá danh mục">
+          <NuxtLink to="/du-lich" class="zrhs-card">
+            <IconLine name="compass" aria-hidden="true" />
+            <div><strong>Khám phá Du lịch</strong><small>Xem các điểm đến sinh thái & văn hóa</small></div>
+          </NuxtLink>
+          <NuxtLink to="/san-pham" class="zrhs-card">
+            <IconLine name="fruit" aria-hidden="true" />
+            <div><strong>Đặc sản & OCOP</strong><small>Nông sản và quà tặng chính vụ</small></div>
+          </NuxtLink>
+          <NuxtLink to="/ban-do" class="zrhs-card">
+            <IconLine name="map" aria-hidden="true" />
+            <div><strong>Bản đồ số thực địa</strong><small>Tìm quanh vị trí hoặc theo vùng</small></div>
+          </NuxtLink>
+        </div>
+
         <div class="zero-result-curated-wrap" aria-label="Gợi ý tìm kiếm phổ biến">
           <p class="zero-result-curated-label"><IconLine name="sparkles" aria-hidden="true" /> Gợi ý chủ đề phổ biến:</p>
           <div class="scroll-row trending-row">
@@ -237,43 +269,14 @@
     </template>
 
     <!-- Cross-links -->
-    <section class="block band catalog-cross reveal">
-      <h2>Khám phá thêm</h2>
-      <div class="cross-links">
-        <NuxtLink :to="mapContinuityPath" class="cross-card" no-prefetch>
-          <span class="quick-pick-icon cross-glyph-icon" :style="{ backgroundImage: categoryPlaceholderBg('cross-ban-do', 'place') }">
-            <span class="quick-pick-glyph" v-html="categoryGlyph('place')"></span>
-          </span>
-          <div><strong>Bản đồ</strong><p>Xem trên bản đồ</p></div>
-        </NuxtLink>
-        <NuxtLink to="/theo-mua" class="cross-card">
-          <span class="quick-pick-icon cross-glyph-icon" :style="{ backgroundImage: categoryPlaceholderBg('cross-theo-mua', 'nature') }">
-            <span class="quick-pick-glyph" v-html="categoryGlyph('nature')"></span>
-          </span>
-          <div><strong>Theo mùa</strong><p>Đúng mùa thưởng thức</p></div>
-        </NuxtLink>
-        <NuxtLink to="/cong-dong" class="cross-card">
-          <span class="quick-pick-icon cross-glyph-icon" :style="{ backgroundImage: categoryPlaceholderBg('cross-cong-dong', 'person') }">
-            <span class="quick-pick-glyph" v-html="categoryGlyph('person')"></span>
-          </span>
-          <div><strong>Cộng đồng</strong><p>Hỏi đáp & chia sẻ</p></div>
-        </NuxtLink>
-        <NuxtLink to="/danh-ba" class="cross-card">
-          <span class="quick-pick-icon cross-glyph-icon" :style="{ backgroundImage: categoryPlaceholderBg('cross-danh-ba', 'org') }">
-            <span class="quick-pick-glyph" v-html="categoryGlyph('org')"></span>
-          </span>
-          <div><strong>Danh bạ</strong><p>Hành chính xã/phường</p></div>
-        </NuxtLink>
-      </div>
-    </section>
-    <!-- declutter-3 T14 (A3c): JourneyBar page-level — trang thuộc luồng lập-kế-hoạch -->
-    <ClientOnly><LazyJourneyBar /></ClientOnly>
+    <CatalogCrossLinks :links="timKiemCrossLinks" />
   </div>
 </template>
 
 <script setup lang="ts">
 import { TYPE_META } from '~/composables/useConstants'
 import { useJourneyActions } from '~/composables/useJourneyActions'
+import { useSearchTypeahead } from '~/composables/useSearchTypeahead'
 import type { ZeroResultRecoveryAction } from '~/composables/useUnifiedSearch'
 import MapListSurface from '~/components/public/MapListSurface.vue'
 import PageState from '~/components/public/PageState.vue'
@@ -368,6 +371,19 @@ onBeforeUnmount(() => {
 })
 
 // Row A — "Đang được hỏi nhiều": chip tĩnh dẫn thẳng vào một câu tìm kiếm thật.
+const quickSearchChips = [
+  { label: 'Cù lao An Bình', query: 'cù lao an bình', icon: 'leaf' },
+  { label: 'Lò gốm Mang Thít', query: 'gốm mang thít', icon: 'flame' },
+  { label: 'Bưởi Năm Roi', query: 'bưởi năm roi', icon: 'fruit' },
+  { label: 'Phà & Đò sông', query: 'bến phà', icon: 'compass' },
+  { label: 'Chùa Khmer', query: 'chùa khmer', icon: 'landmark' },
+]
+
+function selectQuickSearch(term: string) {
+  searchInput.value = term
+  doSearch()
+}
+
 const trendingChips = [
   'bún nước lèo',
   'bưởi Năm Roi',
@@ -398,6 +414,12 @@ const q = computed(() => searchView.state.value.query)
 const searchInput = ref(q.value)
 const mapNetworkState = ref<'ready' | 'offline'>('ready')
 const mapContinuityPath = computed(() => searchView.url.value.replace(/^\/tim-kiem/, '/ban-do'))
+const timKiemCrossLinks = computed(() => [
+  { to: mapContinuityPath.value, label: 'Bản đồ', desc: 'Xem trên bản đồ', icon: 'map', noPrefetch: true },
+  { to: '/theo-mua', label: 'Theo mùa', desc: 'Đúng mùa thưởng thức', icon: 'calendar' },
+  { to: '/cong-dong', label: 'Cộng đồng', desc: 'Hỏi đáp & chia sẻ', icon: 'message' },
+  { to: '/danh-ba', label: 'Danh bạ', desc: 'Hành chính xã/phường', icon: 'bookmark' },
+])
 const recoveryQueryAliases: Record<string, string> = {
   'gom do': 'gốm đỏ',
   'bun nuoc leo': 'bún nước lèo',
@@ -538,76 +560,33 @@ function doSearch() {
   }
 }
 
-const suggestions = ref<any[]>([])
-const sugIdx = ref(-1)
-const showSuggestions = ref(false)
-const sugLoading = ref(false)
-let sugTimer: ReturnType<typeof setTimeout> | null = null
-let sugAbort: AbortController | null = null
-const activeSuggestionId = computed(() => {
-  if (sugIdx.value < 0 || !showSuggestions.value) return undefined
-  if (sugIdx.value < suggestions.value.length) return `sug-${suggestions.value[sugIdx.value].id}`
-  if (sugIdx.value === suggestions.value.length) return 'sug-search-all'
-  return undefined
-})
-
 function typeIcon(type?: string): string {
   return (type && TYPE_META[type]?.icon) || 'pin'
 }
 
-function highlightMatch(name: string): string {
-  const q = searchInput.value.trim()
-  const safe = escapeHtml(name)
-  if (!q) return safe
-  const idx = name.toLowerCase().indexOf(q.toLowerCase())
-  if (idx === -1) return safe
-  const before = escapeHtml(name.slice(0, idx))
-  const match = escapeHtml(name.slice(idx, idx + q.length))
-  const after = escapeHtml(name.slice(idx + q.length))
-  return `${before}<mark class="sug-mark">${match}</mark>${after}`
-}
+const {
+  suggestions,
+  sugIdx,
+  showSuggestions,
+  sugLoading,
+  activeSuggestionId,
+  highlightMatch,
+  onTypeahead,
+  sugNext,
+  sugPrev,
+  sugClose,
+  onInputBlur: sugInputBlur,
+  goToSuggestion,
+  onEnter,
+} = useSearchTypeahead({
+  searchInput,
+  fetchSuggestions: fetchEntitySuggestions,
+  onSelectAll: doSearch,
+})
 
-function onTypeahead() {
-  const term = searchInput.value.trim()
-  if (sugTimer) clearTimeout(sugTimer)
-  if (term.length < 2) { sugClose(); sugLoading.value = false; return }
-  sugLoading.value = true
-  sugTimer = setTimeout(async () => {
-    sugAbort?.abort()
-    const ctrl = new AbortController()
-    sugAbort = ctrl
-    try {
-      const res = await fetchEntitySuggestions(term, 5, { signal: ctrl.signal })
-      if (ctrl.signal.aborted) return
-      suggestions.value = res || []
-      sugIdx.value = -1
-      showSuggestions.value = suggestions.value.length > 0
-    } catch { if (!ctrl.signal.aborted) { suggestions.value = []; showSuggestions.value = false } }
-    sugLoading.value = false
-  }, 300)
-}
-function sugNext() {
-  if (!showSuggestions.value) return
-  sugIdx.value = Math.min(sugIdx.value + 1, suggestions.value.length)
-}
-function sugPrev() {
-  if (!showSuggestions.value) return
-  sugIdx.value = Math.max(sugIdx.value - 1, -1)
-}
-function sugClose() { showSuggestions.value = false; sugIdx.value = -1 }
-let blurTimer: ReturnType<typeof setTimeout> | null = null
-function sugBlur() { blurTimer = setTimeout(sugClose, 150) }
-function onInputBlur() { inputFocused.value = false; sugBlur() }
-function goToSuggestion(s: any) {
-  sugClose()
-  navigateTo(entityPath(s.id))
-}
-function onEnter() {
-  if (showSuggestions.value && sugIdx.value >= 0 && sugIdx.value < suggestions.value.length) {
-    goToSuggestion(suggestions.value[sugIdx.value])
-  } else {
-    doSearch()
-  }
+function onInputBlur() {
+  inputFocused.value = false
+  sugInputBlur()
 }
 
 watch(q, (v) => { searchInput.value = v; sugClose() })
@@ -623,9 +602,6 @@ onMounted(() => {
 })
 
 onBeforeUnmount(() => {
-  if (sugTimer) clearTimeout(sugTimer)
-  if (blurTimer) clearTimeout(blurTimer)
-  sugAbort?.abort()
   window.removeEventListener('online', updateNetworkState)
   window.removeEventListener('offline', updateNetworkState)
 })
@@ -990,4 +966,13 @@ useHead({
   .trending-chip:hover { transform: none; }
   .trending-chip:active { transform: none; }
 }
+.search-quick-culture { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2); margin-top: var(--space-3); }
+.sqc-label { font-size: var(--text-xs); color: var(--muted); font-weight: var(--weight-medium); }
+.sqc-chips { display: flex; flex-wrap: wrap; gap: var(--space-2); }
+.sqc-btn { display: inline-flex; align-items: center; gap: var(--space-1); padding: 3px var(--space-3); font-size: var(--text-xs); color: var(--ink); background: var(--card); border: 1px solid var(--line); border-radius: var(--radius-full); cursor: pointer; transition: all .2s var(--ease-out); }
+.sqc-btn:hover { background: var(--bg-warm); border-color: var(--border); color: var(--color-brand); }
+.zero-result-hub-shortcuts { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: var(--space-3); margin: var(--space-4) 0; }
+.zrhs-card { display: flex; align-items: center; gap: var(--space-3); padding: var(--space-3) var(--space-4); background: var(--card); border: 1px solid var(--line); border-radius: var(--radius-sheet); text-decoration: none; color: var(--ink); transition: all .2s var(--ease-out); }
+.zrhs-card:hover { border-color: var(--border); box-shadow: var(--shadow-sm); transform: translateY(-1px); }
+.zrhs-card small { display: block; font-size: var(--text-xs); color: var(--muted); }
 </style>

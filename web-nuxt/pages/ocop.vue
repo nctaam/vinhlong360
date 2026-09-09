@@ -34,6 +34,16 @@
       </div>
     </section>
 
+    <CatalogAeoPlaque
+      title="Bộ tiêu chuẩn chất lượng OCOP Vĩnh Long"
+      kicker="Quy chuẩn quốc gia · Xếp hạng 3 đến 5 sao"
+      accent="amber"
+      icon="trophy"
+      :entries="ocopAeoEntries"
+      cta-to="/san-pham"
+      cta-label="Khám phá chợ đặc sản mùa vụ"
+    />
+
     <!-- declutter-3 T9: CatalogSpotlight đã bỏ — 3 star-band honor-roll là "what's great"
          signal đặc trưng của trang này. -->
     <!-- Star-rank quick-jump — subordinate to the ledger bands below, not equal rank -->
@@ -215,18 +225,8 @@
       </button>
     </section>
 
-    <!-- Cross-links (declutter-2 A1: 4→3 script-driven; bỏ Theo-mùa — trùng interstitial links) -->
-    <section class="block band reveal catalog-cross">
-      <h2>Khám phá thêm</h2>
-      <div class="cross-links">
-        <NuxtLink v-for="c in relatedCatalogs" :key="c.to" :to="c.to" class="cross-card">
-          <span class="cross-icon" aria-hidden="true"><IconLine :name="c.icon" /></span>
-          <div><strong>{{ c.label }}</strong><p>{{ c.desc }}</p></div>
-        </NuxtLink>
-      </div>
-    </section>
-    <!-- declutter-3 T14 (A3c): JourneyBar page-level — trang thuộc luồng lập-kế-hoạch -->
-    <ClientOnly><LazyJourneyBar /></ClientOnly>
+    <!-- Cross-links -->
+    <CatalogCrossLinks />
   </div>
 </template>
 
@@ -268,6 +268,22 @@ const seasonFilterOptions = computed(() => [
   { key: 'all', label: 'Tất cả' },
   ...Array.from({ length: 12 }, (_, i) => ({ key: String(i + 1), label: `T${i + 1}` })),
 ])
+
+const ocopAeoEntries = [
+  {
+    heading: 'Hạng 5 sao Quốc gia — Tiêu chuẩn Xuất khẩu',
+    text: 'Sản phẩm đạt chuẩn chất lượng tối cao theo Quyết định của Thủ tướng Chính phủ, có khả năng cạnh tranh toàn cầu và truy xuất nguồn gốc minh bạch.',
+  },
+  {
+    heading: 'Hạng 4 sao Cấp Tỉnh — Nông sản Chế biến Tiên tiến',
+    text: 'Sản phẩm chủ lực mang đậm bản sắc Vĩnh Long, quy trình đóng gói và an toàn vệ sinh thực phẩm đáp ứng nghiêm ngặt tiêu chuẩn HACCP/ISO.',
+  },
+  {
+    heading: 'Hạng 3 sao Địa phương — Hương vị Làng nghề Truyền thống',
+    text: 'Đặc sản tự nhiên và tinh hoa thủ công của các xã phường ven sông Tiền, Cổ Chiên và sông Hậu, giàu giá trị văn hóa nông nghiệp và đời sống cù lao châu thổ.',
+  },
+]
+
 const { sortByRegion } = useRegionPref()
 
 onMounted(() => {
@@ -302,13 +318,6 @@ const otherProductsCount = computed(() => {
   if (!raw) return 0
   return (raw.entities || []).length - allOcop.value.length
 })
-
-// declutter-2 A1: cross-links 3 card script-driven (bỏ Theo-mùa — trùng interstitial links).
-const relatedCatalogs = computed(() => [
-  { to: '/san-pham', icon: 'fruit', label: 'Đặc sản', desc: `Còn ${otherProductsCount.value} đặc sản khác chưa có sao` },
-  { to: '/du-lich', icon: 'leaf', label: 'Du lịch', desc: 'Trải nghiệm miệt vườn' },
-  { to: '/kham-pha/am-thuc', icon: 'bowl', label: 'Ẩm thực', desc: 'Món ngon Vĩnh Long' },
-])
 
 // `parseInt(attributes.ocop)` cũ trả 0 cho gần như mọi sản phẩm: `ocop` là văn
 // xuôi ("OCOP 3 sao"), không phải số. Hậu quả đo được trên trang đang chạy: sổ
@@ -442,68 +451,25 @@ useSeoMeta({
 
 useHead(() => {
   const pageUrl = canonicalUrl('/ocop')
-  const graphNodes: any[] = [
-    buildWebSiteSchema(),
-    buildOrganizationSchema(),
-    {
-      '@type': 'CollectionPage',
-      '@id': `${pageUrl}#collection`,
-      name: 'Sản phẩm OCOP Vĩnh Long',
-      description: 'Sản phẩm đạt chuẩn OCOP từ tỉnh Vĩnh Long hợp nhất (3 vùng trước 7-2025).',
-      url: pageUrl,
-      numberOfItems: allOcop.value.length,
-      isPartOf: { '@id': `${SITE_URL}/#website` },
-      about: {
-        '@type': 'Thing',
-        name: 'Chương trình Mỗi xã Một sản phẩm (OCOP)',
-        description: 'Chương trình phát triển kinh tế nông thôn nâng cao giá trị đặc sản địa phương.',
-      },
-      speakable: buildSpeakableSpecification(['.hero-creds', 'h1', '.lead', '.result-meta']),
-    },
-  ]
-
-  if (filtered.value?.length) {
-    graphNodes.push({
-      '@type': 'ItemList',
-      '@id': `${pageUrl}#items`,
-      name: 'Sản phẩm OCOP Tỉnh Vĩnh Long',
-      description: 'Sản phẩm đạt chuẩn OCOP từ tỉnh Vĩnh Long hợp nhất (3 vùng trước 7-2025).',
-      numberOfItems: filtered.value.length,
-      itemListElement: filtered.value.slice(0, 30).map((e: Entity, i: number) => ({
-        '@type': 'ListItem',
-        position: i + 1,
-        name: e.name,
-        url: `${SITE_URL}${entityPath(e.id)}`,
-      })),
-    })
-  }
-
-  const faqItems: FaqItem[] = [
-    {
-      q: 'Sản phẩm OCOP Vĩnh Long là gì?',
-      a: 'Chương trình Mỗi xã một sản phẩm (OCOP) tại Vĩnh Long tôn vinh và chứng nhận các đặc sản nông nghiệp, làng nghề thủ công và ẩm thực truyền thống đạt tiêu chuẩn chất lượng cao từ 3 sao đến 5 sao.',
-    },
-    {
-      q: 'Vĩnh Long hiện có những sản phẩm OCOP 5 sao nào tiêu biểu?',
-      a: 'Vĩnh Long sở hữu các sản phẩm OCOP đạt hạng cao tiêu biểu như bưởi năm roi Bình Minh, khoai lang Bình Tân, bánh tráng cù lao Mây, các sản phẩm chế biến từ dừa và gốm đỏ Mang Thít.',
-    },
-    {
-      q: 'Làm thế nào để tìm và mua đặc sản OCOP Vĩnh Long chính gốc?',
-      a: 'Du khách và người tiêu dùng có thể tra cứu thông tin nhà sản xuất, địa chỉ điểm bán, số điện thoại liên hệ và định vị bản đồ trực tiếp trên hệ thống VinhLong360.',
-    },
-  ]
-  const faqNode = buildFaqPageSchema(faqItems, `${pageUrl}#faq`)
-  if (faqNode) graphNodes.push(faqNode)
+  const schemaGraph = buildOcopLedgerSchemaGraph({
+    items: filtered.value.map((e: Entity) => ({
+      id: e.id,
+      name: e.name,
+      summary: e.summary,
+      stars: getStars(e),
+      category: e.attributes?.category,
+    })),
+    totalCount: allOcop.value.length,
+    topStarTier: topStarTier.value,
+    canonicalUrl: pageUrl,
+  })
 
   return {
     link: [{ rel: 'canonical', href: pageUrl }],
     script: [
       {
         type: 'application/ld+json',
-        innerHTML: safeJsonLd({
-          '@context': 'https://schema.org',
-          '@graph': graphNodes,
-        }),
+        innerHTML: safeJsonLd(schemaGraph),
       },
     ],
   }
@@ -695,7 +661,7 @@ useHead(() => {
   transform: translateY(-50%);
   width: 4px;
   height: 1.6em;
-  border-radius: var(--radius-full);
+  border-radius: var(--radius-pill, 999px);
   background: linear-gradient(180deg, var(--river-600) 0%, var(--amber-600) 52%, var(--clay-600) 100%);
 }
 .dark .ledger-stats::before { background: linear-gradient(180deg, var(--river-legacy-dark) 0%, var(--amber-500) 52%, var(--clay-400) 100%); }
@@ -706,16 +672,18 @@ useHead(() => {
   display: inline-flex;
   align-items: center;
   gap: var(--space-2);
-  padding: var(--space-1) var(--space-3);
+  padding: var(--space-2) var(--space-3);
+  min-height: 44px;
   border: .5px solid var(--line);
-  border-radius: var(--radius-full);
+  border-radius: var(--radius-pill, 999px);
   background: var(--card);
   cursor: pointer;
   font-size: var(--text-xs);
-  transition: border-color .2s var(--ease-out), background .2s var(--ease-out);
+  transition: border-color .25s var(--ease-out), background .25s var(--ease-out), transform .25s cubic-bezier(0.16, 1, 0.3, 1), box-shadow .25s var(--ease-out);
 }
-.star-jump-btn:hover { border-color: var(--color-action); }
-.star-jump-btn.active { border-color: var(--color-action); background: rgba(var(--color-action-rgb), .06); }
+.star-jump-btn:hover { border-color: var(--color-action); transform: translateY(-1px); box-shadow: var(--shadow-xs); }
+.star-jump-btn:active { transform: scale(.96); }
+.star-jump-btn.active { border-color: var(--color-action); background: rgba(var(--color-action-rgb), .06); box-shadow: 0 2px 8px rgba(var(--color-action-rgb), .15); }
 .star-jump-btn .quick-pick-icon { font-size: .85rem; }
 .star-jump-btn .quick-pick-count { color: var(--muted); font-size: var(--text-xs); }
 

@@ -369,3 +369,5 @@ ghi ở backlog tối ưu — giảm dần, KHÔNG được tăng tiếp từ 47
 - 2026-09-09T00:00:57 SKIP R30.7 — Restore probe now supports manifest-backed row parity; pre-existing frontend bundle debt is unchanged.
 
 - 2026-09-09T06:05:39 SKIP R30.7 — Pre-existing frontend bundle debt; strict typing, accessibility, SEO contract, and endpoint corrections do not change generated bundle size.
+
+- 2026-09-09T07:03:34 SKIP R30.7 — Merged frontend foundation preserves known pre-existing bundle debt; typecheck, full Vitest, and production build pass; bundle optimization remains a separately owned release task.

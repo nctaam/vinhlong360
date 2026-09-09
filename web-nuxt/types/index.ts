@@ -192,6 +192,9 @@ export interface Post {
   created_at: string
   updated_at?: string
   like_count?: number
+  likes_count?: number
+  shares_count?: number
+  views_count?: number
   likes?: number
   comment_count?: number
   comments_count?: number
@@ -199,10 +202,13 @@ export interface Post {
   display_name?: string
   username?: string
   avatar?: string
+  avatar_url?: string
   phone?: string
   liked_by_me?: boolean
+  liked?: boolean
   user_liked?: boolean
   bookmarked_by_me?: boolean
+  bookmarked?: boolean
   user_bookmarked?: boolean
   post_type?: string
   post_type_label?: string

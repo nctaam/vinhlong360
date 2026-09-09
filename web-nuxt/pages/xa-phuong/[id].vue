@@ -161,6 +161,8 @@
       <div class="wp-main" data-detail-region="narrative">
         <p v-if="data.place.summary" class="wp-summary">{{ data.place.summary }}</p>
 
+        <WardTerroirDigest :place="data.place" />
+
         <ClientOnly>
           <section v-if="data.place.coordinates" class="wp-map-sec">
             <EmptyState v-if="mapLoadError" tone="error" message="Không tải được bản đồ. Kiểm tra kết nối và thử lại." />
@@ -223,6 +225,7 @@ import { describeEntityImages } from '~/utils/imageDescriptors'
 import { resolveFreshnessStatus, resolveSourceTier } from '~/utils/regionalColor'
 import ActionDock from '~/components/public/ActionDock.vue'
 import PageState from '~/components/public/PageState.vue'
+import { useWardDetailMap } from '~/composables/useWardDetailMap'
 
 useReveal()
 
@@ -275,13 +278,6 @@ watch(() => route.fullPath, (next, previous) => {
 
 const goBack = () => goBackOr('/danh-ba')
 
-let mapInstance: any = null
-let mapLoadTimer: ReturnType<typeof setTimeout> | undefined
-
-onUnmounted(() => {
-  if (mapLoadTimer) clearTimeout(mapLoadTimer)
-  if (mapInstance) { mapInstance.remove(); mapInstance = null }
-})
 
 const {
   data: wardOverviewResult,
@@ -549,68 +545,10 @@ useSeoMeta({
 })
 
 // Map
-const mapEl = ref<HTMLElement | null>(null)
-const { createMap } = useNDAMap()
-
-
-const mapLoadError = ref(false)
-const mapReady = ref(false)
-watch(mapEl, async (el) => {
-  const center = normalizeCoords(data.value?.place?.coordinates)
-  if (!el || !center) return
-  const coords = center
-  let map: any, maplibregl: any
-  try {
-    const r = await createMap(el, { center: [coords[1], coords[0]], zoom: 14 })
-    map = r.map
-    maplibregl = r.maplibregl
-    mapInstance = map
-  } catch {
-    mapLoadError.value = true
-    return
-  }
-  map.on('styleimagemissing', (e: any) => {
-    if (!map.hasImage(e.id)) map.addImage(e.id, { width: 1, height: 1, data: new Uint8Array(4) })
-  })
-  mapLoadTimer = setTimeout(() => { if (!map.isStyleLoaded()) mapLoadError.value = true }, 15000)
-  map.on('load', () => { clearTimeout(mapLoadTimer); mapLoadError.value = false; mapReady.value = true })
-
-  map.addControl(new maplibregl.FullscreenControl(), 'top-right')
-
-  // Ward center marker — popup mở mặc định
-  const centerPopup = new maplibregl.Popup({ offset: 25, closeOnClick: false })
-    .setHTML(`<strong>${escapeHtml(data.value?.place?.name || '')}</strong>`)
-  new maplibregl.Marker({ color: 'var(--clay-600)', scale: 1.1 })
-    .setLngLat([coords[1], coords[0]])
-    .setPopup(centerPopup)
-    .addTo(map)
-    .togglePopup()
-
-  // Entity markers
-  const bounds = new maplibregl.LngLatBounds()
-  bounds.extend([coords[1], coords[0]])
-  const entities = allWardEntities.value
-
-  for (const ent of entities) {
-    const c = normalizeCoords(ent.coordinates)
-    if (!c) continue
-    const meta = TYPE_META[ent.type] || { icon: 'pin', label: '' }
-    const el = document.createElement('div')
-    el.className = 'wp-marker'
-    el.title = ent.name
-    new maplibregl.Marker({ element: el })
-      .setLngLat([c[1], c[0]])
-      .setPopup(new maplibregl.Popup({ offset: 20, maxWidth: '220px' }).setHTML(
-        `<a href="/dia-diem/${encodeURIComponent(ent.id)}" class="map-popup-link">${escapeHtml(ent.name)}</a><br><small>${escapeHtml(meta.label)}</small>`
-      ))
-      .addTo(map)
-    bounds.extend([c[1], c[0]])
-  }
-
-  if (entities.length && !bounds.isEmpty()) {
-    map.fitBounds(bounds, { padding: 60, maxZoom: 16 })
-  }
-}, { once: true })
+const { mapEl, mapReady, mapLoadError } = useWardDetailMap({
+  place: computed(() => data.value?.place),
+  entities: allWardEntities,
+})
 
 const breadcrumbItems = computed(() => [
   { label: 'Trang chủ', to: '/' },

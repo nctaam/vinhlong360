@@ -60,6 +60,16 @@
     <!-- Spotlight nổi bật -->
     <CatalogSpotlight :items="allEvents" />
 
+    <CatalogAeoPlaque
+      title="Cẩm nang nghi thức lễ hội ba dân tộc Kinh — Khmer — Hoa"
+      kicker="Văn hóa tâm linh · Nghi thức bản địa"
+      accent="river"
+      icon="calendar"
+      :entries="festivalAeoEntries"
+      cta-to="/lich-van-nien"
+      cta-label="Tra cứu lịch vạn niên & âm lịch"
+    />
+
     <!-- Ceremonial ledger: full-width rows ordered strictly by nearness in time,
          not a horizontal scroll-row — a calendar of upcoming ritual time deserves
          the same narrative weight as an itinerary. -->
@@ -292,27 +302,7 @@
     </section>
 
     <!-- Cross-links -->
-    <section class="block band reveal catalog-cross">
-      <h2>Khám phá thêm</h2>
-      <div class="cross-links">
-        <NuxtLink to="/su-kien" class="cross-card">
-          <span class="cross-icon" aria-hidden="true"><IconLine name="lantern" /></span>
-          <div><strong>Sự kiện</strong><p>Festival, hội chợ</p></div>
-        </NuxtLink>
-        <NuxtLink to="/du-lich" class="cross-card">
-          <span class="cross-icon" aria-hidden="true"><IconLine name="leaf" /></span>
-          <div><strong>Du lịch</strong><p>Trải nghiệm miệt vườn</p></div>
-        </NuxtLink>
-        <NuxtLink to="/lich-trinh" class="cross-card">
-          <span class="cross-icon" aria-hidden="true"><IconLine name="calendar" /></span>
-          <div><strong>Lịch trình</strong><p>Tuyến đi sẵn</p></div>
-        </NuxtLink>
-        <NuxtLink to="/ban-do" class="cross-card" no-prefetch>
-          <span class="cross-icon" aria-hidden="true"><IconLine name="map" /></span>
-          <div><strong>Bản đồ</strong><p>Xem trên bản đồ</p></div>
-        </NuxtLink>
-      </div>
-    </section>
+    <CatalogCrossLinks />
   </div>
 </template>
 
@@ -361,6 +351,21 @@ function clearFilters() {
   statusFilter.value = 'all'
   q.value = ''
 }
+
+const festivalAeoEntries = [
+  {
+    heading: 'Lễ Hội Kỳ Yên & Miếu Đình Người Kinh',
+    text: 'Cầu quốc thái dân an, phong điều vũ thuận. Diễn ra trang nghiêm tại các đình làng cổ kính với nghi thức rước sắc thần, lễ tế tiền hiền và nghệ thuật hát bội truyền thống.',
+  },
+  {
+    heading: 'Lễ Tết Chôl Chnăm Thmây & Ok Om Bok Người Khmer',
+    text: 'Tết năm mới ấm áp và lễ hội cúng trăng tạ ơn đất trời. Điểm nhấn là nghi thức tắm Phật, đút cốm dẹp truyền thống và không khí rộn rã tại các ngôi chùa Khmer Nam Bộ.',
+  },
+  {
+    heading: 'Lễ Vía Bà & Miếu Thất Phủ Người Hoa',
+    text: 'Không gian văn hóa tín ngưỡng đặc sắc tại Thất Phủ Miếu (Chùa Ông), múa lân sư rồng sôi động cùng tục xin xăm, thỉnh lộc linh thiêng đầu xuân.',
+  },
+]
 
 const { data, error: fetchError } = await useAsyncData('festivals', () =>
   apiFetch<{ events: Entity[] }>('/api/events?limit=200&include_past=true')
@@ -627,52 +632,26 @@ const festivalListSchema = computed(() => {
 
 useHead(() => {
   const pageUrl = canonicalUrl('/le-hoi')
-  const graphNodes: any[] = [
-    buildWebSiteSchema(),
-    buildOrganizationSchema(),
-    {
-      '@type': 'CollectionPage',
-      '@id': `${pageUrl}#collection`,
-      name: 'Lễ hội truyền thống Vĩnh Long',
-      description: 'Lễ hội đình miếu, lễ Khmer, Nghinh Ông, giỗ danh nhân — truyền thống văn hóa tỉnh Vĩnh Long hợp nhất (3 vùng trước 7-2025).',
-      url: pageUrl,
-      numberOfItems: allEvents.value.length,
-      isPartOf: { '@id': `${SITE_URL}/#website` },
-      about: {
-        '@type': 'Thing',
-        name: 'Lễ hội truyền thống Vĩnh Long',
-        description: 'Văn hóa ba dòng sông giao thoa giữa cộng đồng Kinh, Khmer và Hoa.',
-      },
-      speakable: buildSpeakableSpecification(['.page-article', 'h1', '.pull-quote', '.etiquette-box']),
-    },
-  ]
-
-  const faqItems: FaqItem[] = [
-    {
-      q: 'Văn hóa lễ hội Vĩnh Long có những nét đặc trưng gì?',
-      a: 'Vĩnh Long là nơi giao thoa văn hóa độc đáo của ba dân tộc Kinh, Khmer và Hoa với các lễ hội đình miếu Kỳ Yên, lễ hội Ok Om Bok cúng trăng, Chôl Chnăm Thmây và lễ hội Nghinh Ông miền duyên hải.',
-    },
-    {
-      q: 'Du khách tham gia lễ hội ở Vĩnh Long cần lưu ý những quy tắc gì?',
-      a: 'Hầu hết các lễ hội truyền thống mở cửa tự do không thu phí. Du khách nên mặc trang phục lịch sự khi vào chánh điện; tháo giày dép khi vào chùa Khmer và nên tham dự các nghi thức chính vào buổi sáng.',
-    },
-    {
-      q: 'Làm thế nào để theo dõi lịch diễn ra các lễ hội theo cả âm lịch và dương lịch?',
-      a: 'Trang Lễ hội trên VinhLong360 tích hợp bảng chuyển đổi âm - dương lịch, chu kỳ trăng và tải lịch nhắc sự kiện dạng tập tin .ics về điện thoại tiện lợi.',
-    },
-  ]
-  const faqNode = buildFaqPageSchema(faqItems, `${pageUrl}#faq`)
-  if (faqNode) graphNodes.push(faqNode)
+  const schemaGraph = buildFestivalEventSchemaGraph({
+    events: allEvents.value.map((e: Entity) => ({
+      id: e.id,
+      name: e.name,
+      summary: e.summary,
+      place_name: e.place_name,
+      date_start: e.attributes?.date_start,
+      date_end: e.attributes?.date_end,
+    })),
+    totalCount: allEvents.value.length,
+    todayLunarLabel,
+    canonicalUrl: pageUrl,
+  })
 
   return {
     link: [{ rel: 'canonical', href: pageUrl }],
     script: [
       {
         type: 'application/ld+json',
-        innerHTML: safeJsonLd({
-          '@context': 'https://schema.org',
-          '@graph': graphNodes,
-        }),
+        innerHTML: safeJsonLd(schemaGraph),
       },
       ...(festivalListSchema.value ? [{ type: 'application/ld+json' as const, innerHTML: festivalListSchema.value }] : []),
     ],
@@ -713,7 +692,7 @@ useHead(() => {
   font-weight: var(--weight-bold);
   letter-spacing: .02em;
   padding: 1px var(--space-2);
-  border-radius: var(--radius-full);
+  border-radius: var(--radius-pill, 999px);
   margin-bottom: var(--space-1);
 }
 .lehoi-status.status-soon {
@@ -742,7 +721,7 @@ useHead(() => {
   font-size: var(--text-sm);
   color: var(--ink-tertiary, var(--muted));
   background: rgba(var(--accent-rgb), .08);
-  border-radius: var(--radius-surface);
+  border-radius: var(--radius-surface, 12px);
   border: 1px solid rgba(var(--accent-rgb), .2);
 }
 

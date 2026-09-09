@@ -41,8 +41,32 @@
         <ShareButton :title="itineraryTitle" :text="itinerary.summary || itinerary.description" />
         <button type="button" class="btn btn-ghost btn-sm" aria-label="Báo cáo lịch trình" @click="openReport('entity', id)"><IconLine name="flag" /> Báo cáo</button>
       </ClientOnly>
-        <NuxtLink to="/tao-lich-trinh" no-prefetch class="btn btn-outline btn-sm"><IconLine name="plus" aria-hidden="true" /> Tự tạo lịch trình</NuxtLink>
+      <NuxtLink to="/tao-lich-trinh" no-prefetch class="btn btn-outline btn-sm"><IconLine name="plus" aria-hidden="true" /> Tự tạo lịch trình</NuxtLink>
     </div>
+
+    <!-- AEO Plaque: Field Trip Digest & Terroir Highlights -->
+    <CatalogAeoPlaque
+      title="Cẩm Nang Trải Nghiệm Thực Địa &amp; Điểm Nhấn Bản Địa"
+      kicker="Góc nhìn bản địa · Tối ưu thời gian &amp; Điểm dừng chân"
+      accent="river"
+      icon="compass"
+      :entries="[
+        {
+          heading: 'Tối ưu Di chuyển &amp; Nhịp Điệu Hành Trình',
+          text: 'Các điểm dừng được sắp xếp tuần tự khoa học từ sáng đến chiều tà, giảm thiểu thời gian di chuyển giữa các bến đò và phà sông.',
+        },
+        {
+          heading: 'Trải Nghiệm Đậm Chất Sông Nước Nam Bộ',
+          text: 'Kết hợp hài hòa giữa thưởng thức sản vật miệt vườn, tìm hiểu di sản văn hóa lịch sử và gặp gỡ con người hồn hậu chất phác.',
+        },
+        {
+          heading: 'Mẹo Bỏ Túi Cho Chuyến Đi Trọn Vẹn',
+          text: 'Khởi hành sớm để đón bình minh trên sông, chuẩn bị tiền mặt lẻ cho các bến đò ngang và trang phục gọn gàng khi viếng chùa.',
+        },
+      ]"
+      cta-to="/tao-lich-trinh"
+      cta-label="Tự điều chỉnh hoặc sao chép lịch trình"
+    />
 
     <!-- Transport mode + total -->
     <ClientOnly>
@@ -120,7 +144,7 @@
     <div class="reveal">
       <NuxtErrorBoundary>
         <ClientOnly>
-          <LazyAIRecommendations v-if="itinerary.area" title="Khám phá thêm" :limit="4" />
+          <LazySmartRecommendations v-if="itinerary.area" context="itinerary" title="Khám phá thêm" :limit="4" />
         </ClientOnly>
       </NuxtErrorBoundary>
     </div>
@@ -515,7 +539,7 @@ if (itinerary.value && !itinerary.value.error) {
 .day-arc { position: relative; margin-top: var(--space-6); }
 .day-arc-hero { height: 64px; }
 .day-arc-track {
-  position: absolute; left: 0; right: 0; top: 22px; height: 3px; border-radius: var(--radius-full);
+  position: absolute; left: 0; right: 0; top: 22px; height: 3px; border-radius: var(--radius-pill, 999px);
   background: linear-gradient(90deg,
     var(--river-600) 0%,
     color-mix(in srgb, var(--river-600) 40%, var(--amber-600) 60%) 30%,
@@ -609,7 +633,7 @@ if (itinerary.value && !itinerary.value.error) {
 }
 .tc-label::before {
   content: ""; position: absolute; left: 0; top: 50%; transform: translateY(-50%);
-  width: 3px; height: .95em; border-radius: var(--radius-full);
+  width: 3px; height: .95em; border-radius: var(--radius-pill, 999px);
   background: linear-gradient(180deg, var(--river-600) 0%, var(--amber-600) 52%, var(--clay-600) 100%);
 }
 .dark .tc-label::before { background: linear-gradient(180deg, var(--river-legacy-dark) 0%, var(--amber-500) 52%, var(--clay-400) 100%); }
@@ -642,7 +666,7 @@ if (itinerary.value && !itinerary.value.error) {
 .step-type-label {
   background: var(--bg-alt);
   padding: 2px var(--space-2);
-  border-radius: var(--radius-full);
+  border-radius: var(--radius-pill, 999px);
   line-height: 1.4;
 }
 .dark .step-type-label { background: rgba(var(--white-rgb),.06); }
@@ -701,7 +725,7 @@ if (itinerary.value && !itinerary.value.error) {
 @media (max-width: 640px) { .route-map { height: clamp(200px, 45vh, 300px); } }
 
 /* Route leg pill */
-.route-leg-info { background: var(--bg-alt); padding: var(--space-1) var(--space-3); border-radius: var(--radius-full); transition: background .3s var(--ease-out); }
+.route-leg-info { background: var(--bg-alt); padding: var(--space-1) var(--space-3); border-radius: var(--radius-pill, 999px); transition: background .3s var(--ease-out); }
 
 /* Route loading shimmer */
 /* Nâng đáy opacity .6 → .82: ở .6 thì --muted trộn với nền tối tụt dưới ngưỡng
@@ -719,7 +743,7 @@ if (itinerary.value && !itinerary.value.error) {
   padding: var(--space-2) var(--space-4);
   background: var(--card);
   border: 1.5px solid rgba(var(--color-brand-rgb), .35);
-  border-radius: var(--radius-full);
+  border-radius: var(--radius-pill, 999px);
   box-shadow: var(--shadow-xs);
   transition: background .3s var(--ease-out), box-shadow .3s var(--ease-out);
 }

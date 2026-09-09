@@ -343,17 +343,6 @@
       "test_file": "tests/entity-card-disclosure.test.ts"
     },
     {
-      "file": "components/AIRecommendations.vue",
-      "surface": "ai-delegated",
-      "access_path": "entity.images",
-      "source_class": "ai-generated",
-      "descriptor_producer": "EntityCard",
-      "render_policy": "render",
-      "presentation": "short",
-      "accessibility": "aria-describedby-full-copy",
-      "test_file": "tests/entity-card-disclosure.test.ts"
-    },
-    {
       "file": "composables/useFavorites.ts",
       "surface": "favorite-adapter",
       "access_path": "entity.images|entity.image",

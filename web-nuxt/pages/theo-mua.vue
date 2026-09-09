@@ -34,6 +34,10 @@
         <div class="season-moment-text">
           <strong>Tháng {{ month }} — <em>{{ seasonQuarter.tag }}</em></strong>
           <p>{{ seasonQuarter.note }}</p>
+          <span class="season-tide-cue">
+            <IconLine name="ship" aria-hidden="true" />
+            <span>{{ seasonalTideCue }}</span>
+          </span>
         </div>
       </div>
 
@@ -52,6 +56,16 @@
         </div>
       </div>
     </section>
+
+    <CatalogAeoPlaque
+      title="Nhịp điệu mùa vụ sông nước — Lịch nông sản & con nước nổi Vĩnh Long"
+      kicker="Chu kỳ tự nhiên · Thời điểm vàng trải nghiệm"
+      accent="clay"
+      icon="calendar"
+      :entries="catalogAeoEntries"
+      cta-to="/su-kien"
+      cta-label="Xem lịch sự kiện và lễ hội sắp tới"
+    />
 
     <!-- Spotlight nổi bật (entity đang mùa có summary dài nhất) -->
     <CatalogSpotlight :items="inSeasonItems" />
@@ -243,33 +257,26 @@
     </EmptyState>
 
     <!-- Cross-links -->
-    <section class="block band reveal catalog-cross">
-      <h2>Khám phá thêm</h2>
-      <div class="cross-links">
-        <NuxtLink to="/san-pham" class="cross-card">
-          <span class="cross-icon" aria-hidden="true"><IconLine name="fruit" /></span>
-          <div><strong>Đặc sản</strong><p>Tất cả sản phẩm</p></div>
-        </NuxtLink>
-        <NuxtLink to="/ocop" class="cross-card">
-          <span class="cross-icon" aria-hidden="true"><IconLine name="star" /></span>
-          <div><strong>OCOP</strong><p>Sản phẩm đạt chuẩn</p></div>
-        </NuxtLink>
-        <NuxtLink to="/du-lich" class="cross-card">
-          <span class="cross-icon" aria-hidden="true"><IconLine name="leaf" /></span>
-          <div><strong>Du lịch</strong><p>Trải nghiệm miệt vườn</p></div>
-        </NuxtLink>
-        <NuxtLink to="/kham-pha/am-thuc" class="cross-card">
-          <span class="cross-icon" aria-hidden="true"><IconLine name="bowl" /></span>
-          <div><strong>Ẩm thực</strong><p>Món ngon Vĩnh Long</p></div>
-        </NuxtLink>
-      </div>
-    </section>
-    <!-- declutter-3 T14 (A3c): JourneyBar page-level — trang thuộc luồng lập-kế-hoạch -->
-    <ClientOnly><LazyJourneyBar /></ClientOnly>
+    <CatalogCrossLinks />
   </div>
 </template>
 
 <script lang="ts">
+const catalogAeoEntries = [
+  {
+    heading: 'Tháng 5 – 7: Đại tiệc trái cây hè chính vụ',
+    text: 'Mùa rộ nhất của chôm chôm, sầu riêng, măng cụt, dâu da trên khắp các dải cù lao Long Hồ; trái ngọt đậm đà nhất và giá tốt nhất năm.',
+  },
+  {
+    heading: 'Tháng 8 – 10: Mùa nước nổi phù sa & ẩm thực đồng chiêm',
+    text: 'Nước son từ thượng nguồn đổ về đem theo cá linh non béo ngọt, hoa điên điển vàng rực bờ kênh và mùa bưởi Năm Roi vào độ thu hoạch.',
+  },
+  {
+    heading: 'Tháng 11 – 1: Sắc hoa chợ nổi & lễ hội đón xuân',
+    text: 'Làng hoa kiểng Chợ Lách rực rỡ tàu bè, dưa hấu Tết dọc bờ sông và các ngày hội văn hóa, hội chùa rộn rã đầu xuân.',
+  },
+]
+
 const WEDGE_TYPES = ['experience', 'product', 'dish']
 const TYPE_DESC: Record<string, string> = {
   experience: 'Chèo xuồng, đạp xe, tát mương — trải nghiệm đúng mùa đẹp nhất.',
@@ -423,6 +430,15 @@ function countByMonth(m: number) {
   return monthCountMap.value.get(m) || 0
 }
 
+const seasonalTideCue = computed(() => {
+  const m = month.value
+  if (m >= 1 && m <= 3) return 'Mùa nước trong, gió chướng nhẹ — thuận tiện xuồng ghe cù lao'
+  if (m >= 4 && m <= 5) return 'Giao mùa nắng ấm, con nước ròng buổi sáng, nước lớn chiều tà'
+  if (m >= 6 && m <= 8) return 'Mùa mưa Nam Bộ, nước dâng đều — phù sa bồi đắp vườn trái cây'
+  if (m >= 9 && m <= 11) return 'Đỉnh lũ Mekong (nước nổi) — cá linh, điên điển tràn bờ sông'
+  return 'Nước giật rút chậm, gió bấc se lạnh — chuẩn bị làng hoa Tết'
+})
+
 useSeoMeta({
   title: () => pc('seo_title', `Tháng ${month.value}: đi đâu, ăn gì ở Vĩnh Long — vinhlong360`),
   description: () => pc('seo_description'),
@@ -431,70 +447,29 @@ useSeoMeta({
   ogUrl: canonicalUrl('/theo-mua'),
   twitterCard: 'summary_large_image',
 })
+
 useHead(() => {
   const pageUrl = canonicalUrl('/theo-mua')
-  const graphNodes: any[] = [
-    buildWebSiteSchema(),
-    buildOrganizationSchema(),
-    {
-      '@type': 'CollectionPage',
-      '@id': `${pageUrl}#collection`,
-      name: `Tháng ${month.value}: đi đâu, ăn gì ở Vĩnh Long`,
-      description: `Những mục đang mùa, ngon nhất vào tháng ${month.value} — trái cây, nông sản, ẩm thực, trải nghiệm miệt vườn.`,
-      url: pageUrl,
-      numberOfItems: wedge.value.length,
-      isPartOf: { '@id': `${SITE_URL}/#website` },
-      about: {
-        '@type': 'Thing',
-        name: 'Lịch mùa vụ nông sản và du lịch Vĩnh Long',
-        description: 'Cẩm nang tra cứu nông sản, trái cây vào mùa và ẩm thực đặc trưng theo 12 tháng tại Vĩnh Long.',
-      },
-      speakable: buildSpeakableSpecification(['.catalog-hero h1', '.catalog-lead', '.season-section-head']),
-    },
-  ]
-
-  if (wedge.value?.length) {
-    graphNodes.push({
-      '@type': 'ItemList',
-      '@id': `${pageUrl}#items`,
-      name: `Đặc sản tháng ${month.value} tại Vĩnh Long`,
-      description: `Danh mục sản vật ngon nhất vào tháng ${month.value}.`,
-      numberOfItems: wedge.value.length,
-      itemListElement: wedge.value.slice(0, 30).map((e: Entity, i: number) => ({
-        '@type': 'ListItem',
-        position: i + 1,
-        name: e.name,
-        url: `${SITE_URL}${entityPath(e.id)}`,
-      })),
-    })
-  }
-
-  const faqItems: FaqItem[] = [
-    {
-      q: 'Mùa trái cây rộ nhất tại Vĩnh Long diễn ra vào những tháng nào?',
-      a: 'Thời điểm trái cây trĩu cành ngon nhất là từ tháng 5 đến tháng 8, tiêu biểu với chôm chôm, sầu riêng, bưởi năm roi, măng cụt và nhãn xuồng cơm vàng tại các vườn cù lao An Bình.',
-    },
-    {
-      q: 'Đến Vĩnh Long vào mùa nước nổi (tháng 9 đến tháng 11) có gì đặc sắc?',
-      a: 'Mùa nước nổi đem lại nguồn thủy sản phong phú với cá linh non, bông điên điển, cá lóc đồng cùng các trải nghiệm giăng lưới, chèo xuồng ngắm cảnh sông nước phù sa.',
-    },
-    {
-      q: 'Làm thế nào để theo dõi sản vật nào đang vào mùa chín ngon nhất?',
-      a: 'Du khách có thể chọn trực tiếp từng tháng từ Tháng 1 đến Tháng 12 trên chuyên trang Theo Mùa của VinhLong360 để tra cứu trái cây, món ngon và địa điểm trải nghiệm tương ứng.',
-    },
-  ]
-  const faqNode = buildFaqPageSchema(faqItems, `${pageUrl}#faq`)
-  if (faqNode) graphNodes.push(faqNode)
+  const schemaGraph = buildSeasonalitySchemaGraph({
+    month: month.value,
+    quarterTag: seasonQuarter.value.tag,
+    quarterNote: seasonQuarter.value.note,
+    totalInSeason: wedge.value?.length || 0,
+    items: (wedge.value || []).map((e: Entity) => ({
+      id: e.id,
+      name: e.name,
+      type: e.type,
+      summary: e.summary,
+    })),
+    canonicalUrl: pageUrl,
+  })
 
   return {
     link: [{ rel: 'canonical', href: pageUrl }],
     script: [
       {
         type: 'application/ld+json',
-        innerHTML: safeJsonLd({
-          '@context': 'https://schema.org',
-          '@graph': graphNodes,
-        }),
+        innerHTML: safeJsonLd(schemaGraph),
       },
     ],
   }
@@ -572,14 +547,18 @@ useHead(() => {
   background: none; border: none; padding: 0; cursor: pointer; border-radius: 50%;
   transform: rotate(var(--notch-angle)) translateY(-43px);
   -webkit-tap-highlight-color: transparent;
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.ring-notch:active {
+  transform: rotate(var(--notch-angle)) translateY(-43px) scale(0.92);
 }
 .ring-notch-tick {
   position: absolute; left: 50%; top: 2px; width: 2px; height: 9px;
   transform: translateX(-50%) scaleY(1);
   transform-origin: top center;
   background: rgba(var(--white-rgb), .55);
-  border-radius: var(--radius-full);
-  transition: transform .2s var(--ease-out-expo), background .2s var(--ease-out);
+  border-radius: var(--radius-pill, 999px);
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), background 0.25s ease-out;
 }
 .ring-notch:hover .ring-notch-tick,
 .ring-notch:focus-visible .ring-notch-tick { transform: translateX(-50%) scaleY(1.44); background: var(--white); }
@@ -589,6 +568,19 @@ useHead(() => {
 .season-moment-text strong { display: block; font-size: var(--text-base); font-weight: var(--weight-semibold); color: var(--ink); }
 .season-moment-text strong em { font-family: var(--font-editorial); font-style: italic; font-weight: 500; color: var(--color-brand); }
 .season-moment-text p { margin: var(--space-1) 0 0; font-size: var(--text-sm); color: var(--muted); line-height: var(--leading-relaxed); }
+
+.season-tide-cue {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  margin-top: var(--space-2);
+  padding: 0.2rem var(--space-2);
+  border-radius: var(--radius-pill, 999px);
+  background: color-mix(in srgb, var(--color-material-river) 12%, transparent);
+  color: var(--color-material-river);
+  font-size: var(--text-2xs);
+  font-weight: var(--weight-medium);
+}
 
 /* Hero retinting per quarter (§1.2) — scrubbing the ring changes the whole
    hero's color temperature, not just an emoji. Cross-fades via `transition`
@@ -646,7 +638,7 @@ useHead(() => {
   backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
   color: var(--text-on-dark, var(--white));
   font-size: .72rem; font-weight: var(--weight-semibold);
-  padding: 3px var(--space-3); border-radius: var(--radius-full);
+  padding: 3px var(--space-3); border-radius: var(--radius-pill, 999px);
   box-shadow: 0 1px 3px rgba(var(--black-rgb), .35), inset 0 1px 0 rgba(var(--white-rgb), .08);
 }
 .season-badge.peak {

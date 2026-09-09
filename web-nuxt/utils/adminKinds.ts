@@ -28,6 +28,9 @@ export interface KindDef {
   chips: KindChip[]
 }
 
+// Compatibility name used by the extracted admin composables.
+export type AdminKind = KindDef
+
 const attr = (e: Record<string, any>, k: string) => (e?.attributes || {})[k]
 const noAttr = (k: string) => (e: Record<string, any>) => {
   const v = attr(e, k)

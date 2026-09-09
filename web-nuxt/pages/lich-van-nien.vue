@@ -292,6 +292,30 @@
       </template>
     </ClientOnly>
 
+    <!-- AEO Plaque: Mekong River Lunar Cycle & Agricultural Terroir Rhythm -->
+    <CatalogAeoPlaque
+      title="Nhịp Con Nước &amp; Tiết Khí Sông Nước Vĩnh Long"
+      kicker="Góc nhìn bản địa · Lịch trăng &amp; Phù sa miệt vườn"
+      accent="river"
+      icon="droplet"
+      :entries="[
+        {
+          heading: 'Con nước rong (Rằm &amp; Mùng 1 âm lịch)',
+          text: 'Triều cường dâng cao nhất tháng đưa phù sa màu mỡ tràn qua các liếp vườn cù lao An Bình, thuận tiện ghe xuồng du lịch vào sâu các con rạch nhỏ.',
+        },
+        {
+          heading: 'Con nước kém (Mùng 7–8 &amp; 22–23 âm lịch)',
+          text: 'Dòng nước chảy êm dịu, mực nước tĩnh lặng thích hợp cho ngư dân giăng lưới cá đồng và trải nghiệm cào hến ven sông Cổ Chiên.',
+        },
+        {
+          heading: '24 Tiết khí &amp; Vụ mùa cây trái',
+          text: 'Tiết Thanh Minh – Cốc Vũ mở màn mùa trái chín xum xuê; Tiết Bạch Lộ – Hàn Lộ đón mùa nước nổi cá linh; Tiết Đại Hàn hoa Tết khoe sắc.',
+        },
+      ]"
+      cta-to="/theo-mua"
+      cta-label="Xem hướng dẫn du lịch theo mùa"
+    />
+
     <!-- Ranh giới trung thực: nói rõ trang tính gì và cố ý không nói gì -->
     <section v-once class="block lvn-block lvn-scope">
       <h2 class="lvn-h2">Trang này tính gì</h2>
@@ -652,7 +676,7 @@ const lvnSchema = computed(() => {
     operatingSystem: 'All',
     url: pageUrl,
     isPartOf: { '@id': `${SITE_URL}/#website` },
-    speakable: buildSpeakableSpecification(['.lvn-lede', '.lvn-today', 'h1']),
+    speakable: buildSpeakableSpecification(['.lvn-lede', '.lvn-today', 'h1', '.catalog-aeo-plaque__title', '.catalog-aeo-plaque__dek']),
   }
 
   const faqItems: FaqItem[] = [
@@ -746,9 +770,9 @@ useHead(() => ({
 .lvn-nav {
   width: 44px; height: 44px;
   display: inline-flex; align-items: center; justify-content: center;
-  border: .5px solid var(--line); border-radius: var(--radius-full);
+  border: .5px solid var(--line); border-radius: var(--radius-pill, 999px);
   background: var(--bg); color: var(--ink); cursor: pointer;
-  transition: background var(--duration-fast) var(--ease-out), transform var(--duration-fast) var(--ease-out);
+  transition: background var(--duration-fast) var(--ease-out), transform var(--duration-fast) cubic-bezier(0.16, 1, 0.3, 1);
 }
 .lvn-nav:hover:not(:disabled) { background: var(--bg-alt); }
 .lvn-nav:active:not(:disabled) { transform: scale(.94); }
@@ -847,7 +871,7 @@ useHead(() => ({
 .lvn-hint { display: block; margin-top: 2px; color: var(--ink-tertiary); font-size: var(--text-2xs); }
 .lvn-tag {
   display: inline-block; margin-inline-start: var(--space-1h); padding: 0 var(--space-1h);
-  border: .5px solid var(--line); border-radius: var(--radius-full);
+  border: .5px solid var(--line); border-radius: var(--radius-pill, 999px);
   font-size: var(--text-2xs); color: var(--ink-secondary);
 }
 .lvn-tag-first { color: var(--error); border-color: currentColor; }

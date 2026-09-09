@@ -10,6 +10,30 @@
       :stats="communityStats"
     />
 
+    <!-- AEO Plaque: Community Co-Creation & Responsible Storytelling -->
+    <CatalogAeoPlaque
+      title="Diễn Đàn Đồng Sáng Tạo &amp; Lan Tỏa Văn Hóa Bản Địa"
+      kicker="Góc nhìn cộng đồng · Trải nghiệm thực địa từ người bản xứ"
+      accent="river"
+      icon="users"
+      :entries="[
+        {
+          heading: 'Không Gian Chia Sẻ Thực Chất &amp; Khách Quan',
+          text: 'Cộng đồng du khách và người dân cùng ghi nhận những góc quán mộc mạc, con đò quen và nếp sống hào sảng.',
+        },
+        {
+          heading: 'Quy Chuẩn Gắn Thẻ &amp; Xác Thực Địa Điểm',
+          text: 'Sử dụng ký tự @ để liên kết chính xác địa chỉ danh thắng, nhà vườn sinh thái hoặc nghệ nhân làng nghề trong tỉnh.',
+        },
+        {
+          heading: 'Tôn Trọng Sự Thật &amp; Gìn Giữ Cảnh Quan Bản Địa',
+          text: 'Khuyến khích các đánh giá trung thực, văn minh, bảo vệ môi trường và tôn vinh phong tục tập quán truyền thống.',
+        },
+      ]"
+      cta-to="/huong-dan-thanh-vien"
+      cta-label="Quy tắc ứng xử &amp; hướng dẫn cộng đồng"
+    />
+
     <div class="threads-layout">
       <div class="threads-feed">
         <h2 class="sr-only">Bảng tin cộng đồng</h2>
@@ -243,6 +267,12 @@
 import type { Post, Entity } from '~/types'
 import ImageDisclosure from '~/components/ImageDisclosure.vue'
 import { describePostPreviewRows } from '~/utils/imageDescriptors'
+import {
+  COMMUNITY_POST_TYPES as postTypes,
+  COMMUNITY_FEED_TABS as feedTabs,
+  type FeedTab,
+  type PostTypeValue,
+} from '~/composables/useCommunityFeedNavigation'
 useReveal()
 const { f: pc } = usePageContent('cong_dong')
 
@@ -259,23 +289,9 @@ const router = useRouter()
 
 const { show: showToast } = useToast()
 const { trackEvent } = useUserEvents()
-const postTypes = [
-  { value: 'share', label: 'Chia sẻ', icon: 'camera' },
-  { value: 'review', label: 'Đánh giá', icon: 'star' },
-  { value: 'question', label: 'Hỏi đáp', icon: 'circle-help' },
-  { value: 'recommend', label: 'Gợi ý', icon: 'thumbs-up' },
-]
-type FeedTab = 'latest' | 'trending' | 'following' | 'bookmarks'
-type PostTypeValue = '' | 'share' | 'review' | 'question' | 'recommend'
 
-const feedTabs: Array<{ key: FeedTab; label: string; requiresAuth?: boolean }> = [
-  { key: 'latest', label: 'Mới nhất' },
-  { key: 'trending', label: 'Nổi bật' },
-  { key: 'following', label: 'Đang theo dõi', requiresAuth: true },
-  { key: 'bookmarks', label: 'Đã lưu', requiresAuth: true },
-]
 const privateFeedTabs = new Set<FeedTab>(['following', 'bookmarks'])
-const postTypeValues = new Set(postTypes.map(pt => pt.value))
+const postTypeValues = new Set<string>(postTypes.map(pt => pt.value))
 
 function firstQueryValue(value: unknown) {
   return Array.isArray(value) ? String(value[0] || '') : String(value || '')
@@ -339,13 +355,6 @@ function clearTag() {
   router.replace({ query: rest })
   fetchFeed(true)
 }
-const page = ref(1)
-const posts = ref<Post[]>([])
-const hasMore = ref(false)
-const loading = ref(false)
-const feedError = ref(false)
-const ugcUnavailable = ref(false)
-let feedAbort: AbortController | null = null
 type PostListResponse = import('~/composables/useCommunityPostFilters').PostListResponse<Post>
 const {
   filterCommunityPosts,
@@ -413,6 +422,18 @@ const {
   getRouteQueryQ: () => route.query.q,
 })
 
+const {
+  page, posts, hasMore, loading, feedError, ugcUnavailable,
+  fetchFeed, refreshFeed, loadMore, abortFeed,
+} = useCommunityFeedPagination({
+  activeTab, sort, filterType, activeTag, searchMode,
+  bookmarks, bookmarksLoading, bookmarksPage, bookmarksHasMore,
+  searchLoading, searchPage, searchHasMore,
+  authHeaders, showToast, fetchBookmarks, fetchSearch,
+  filterCommunityPosts, mergeCommunityPosts, extractPostArray, responseHasMore,
+  normalizeCommunityRouteState,
+})
+
 const { saveDraft, loadDraft, clearDraft } = useDrafts()
 const newContent = ref('')
 const newType = ref('share')
@@ -458,62 +479,19 @@ const displayPosts = computed(() => {
   return posts.value.filter(p => p.post_type === filterType.value)
 })
 
-// ── Sổ tay hôm nay — masthead sống động (thuần trình bày lại dữ liệu đã có, không API mới) ──
-const todayLabel = computed(() =>
-  new Date().toLocaleDateString('vi-VN', { weekday: 'long', day: 'numeric', month: 'long' }),
-)
-
-// Bài mới nhất trong feed 'latest' — nguồn cho cả H1 động và tín hiệu "vừa có bài mới".
-const latestPost = computed(() => posts.value[0])
-
-const almanacHeadline = computed(() => {
-  const p = latestPost.value
-  if (p?.entity_name) return `Hôm nay, ai đó vừa kể chuyện về ${p.entity_name}.`
-  if (p?.display_name) return `Hôm nay, ${p.display_name} vừa kể một chuyện mới.`
-  return 'Chuyện kể mỗi ngày của người miền sông nước.'
-})
-
-// "Vừa có bài mới" — chỉ tính bài đăng trong 10 phút gần nhất, không phải bài cũ tải lại.
-const hasFreshPost = computed(() => {
-  const p = latestPost.value
-  if (!p?.created_at) return false
-  const ageMs = Date.now() - new Date(p.created_at).getTime()
-  return ageMs >= 0 && ageMs < 10 * 60 * 1000
-})
-
-// Vệt phù sa "bài mới": xuất hiện khi bài đầu feed đổi SAU lần tải đầu tiên của phiên
-// (không phải mọi lần feed rỗng→có, tránh hiện ngay khi mới vào trang).
-const sessionFirstPostId = ref<string | null>(null)
-const newestSeenPostId = ref<string | null>(null)
-const newPostHintDismissed = ref(false)
-watch(() => posts.value[0]?.id, (id) => {
-  if (!id) return
-  if (sessionFirstPostId.value === null) { sessionFirstPostId.value = id; newestSeenPostId.value = id; return }
-  if (id !== newestSeenPostId.value) { newestSeenPostId.value = id; newPostHintDismissed.value = false }
-})
-const showNewPostHint = computed(() =>
-  activeTab.value === 'latest' && !searchMode.value &&
-  !newPostHintDismissed.value &&
-  !!newestSeenPostId.value && newestSeenPostId.value !== sessionFirstPostId.value,
-)
-function scrollToNewest() {
-  newPostHintDismissed.value = true
-  if (typeof window === 'undefined') return
-  const prefersReduced = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches
-  window.scrollTo({ top: 0, behavior: prefersReduced ? 'auto' : 'smooth' })
-}
-
-// "Nhắc tới gần đây" — địa danh được nhắc nhiều nhất trong feed đã tải (client-side tally,
-// không gọi API mới). Cầu nối UGC → catalog.
-const recentMentions = computed(() => {
-  const tally = new Map<string, { entity_id: string; entity_name: string; count: number }>()
-  for (const p of posts.value) {
-    if (!p.entity_id || !p.entity_name) continue
-    const existing = tally.get(p.entity_id)
-    if (existing) existing.count++
-    else tally.set(p.entity_id, { entity_id: p.entity_id, entity_name: p.entity_name, count: 1 })
-  }
-  return [...tally.values()].sort((a, b) => b.count - a.count).slice(0, 4)
+// ── Sổ tay hôm nay & Vệt phù sa mới (Composable useCommunityAlmanac) ──
+const {
+  todayLabel,
+  latestPost,
+  almanacHeadline,
+  hasFreshPost,
+  showNewPostHint,
+  scrollToNewest,
+  recentMentions,
+} = useCommunityAlmanac({
+  posts,
+  activeTab,
+  searchMode,
 })
 
 const canLoadMore = computed(() => {
@@ -547,52 +525,41 @@ const loadSentinel = ref<HTMLElement | null>(null)
 let loadObserver: IntersectionObserver | null = null
 let suppressFilterFetch = false
 
-// ── Composer focus (from empty-state CTA) ──
-const composeEl = ref<HTMLElement | null>(null)
+// ── Composer & Quote (Composable useCommunityQuoteAndComposer) ──
 const composeInputEl = ref<HTMLTextAreaElement | null>(null)
-function focusComposer() {
-  const prefersReduced = typeof window !== 'undefined' && window.matchMedia?.('(prefers-reduced-motion: reduce)').matches
-  composeEl.value?.scrollIntoView({ behavior: prefersReduced ? 'auto' : 'smooth', block: 'center' })
-  nextTick(() => composeInputEl.value?.focus())
-}
-
-// ── Trích dẫn (quote) ──
-async function startQuote(postId: string) {
-  if (!isLoggedIn.value) { openAuth(() => startQuote(postId)); return }
-  let p: any = posts.value.find((x: any) => x.id === postId)
-  if (!p) {
-    try { const r = await $fetch<any>(`/api/posts/${encodePathId(postId)}`, { headers: authHeaders() }); p = r?.post } catch { /* post may be deleted */ }
-  }
-  quotingPost.value = p || { id: postId, content: '(Bài viết không khả dụng)' }
-  schedulePost.value = false
-  scheduledAt.value = ''
-  activeTab.value = 'latest'
-  focusComposer()
-}
-function cancelQuote() { quotingPost.value = null }
-
-function autoGrow(e: Event) {
-  const el = e.target as HTMLTextAreaElement
-  el.style.height = 'auto'
-  el.style.height = el.scrollHeight + 'px'
-}
-
-// ── @-mention: gõ @ để nhắc người dùng / địa điểm (composable chung) ──
 const {
   mentionResults, mentionOpen, mentionActive,
   onInput: onMentionInput, pick: pickMention,
   onKeydown: onMentionKeydownComposer, closeMention, reset: resetMention, activeMentions,
 } = useMentionAutocomplete(newContent, composeInputEl)
 
-function onComposerKeydown(e: KeyboardEvent) {
-  if (onMentionKeydownComposer(e)) return
-  if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') { e.preventDefault(); submitPost() }
-}
-
-function onComposerInput(e: Event) {
-  autoGrow(e)
-  onMentionInput(e)
-}
+const {
+  composeEl,
+  focusComposer,
+  startQuote,
+  cancelQuote,
+  autoGrow,
+  onComposerKeydown,
+  onComposerInput,
+  focusComposerFromRoute,
+  onClickOutsideMention,
+} = useCommunityQuoteAndComposer({
+  posts,
+  isLoggedIn,
+  openAuth,
+  authHeaders,
+  activeTab,
+  schedulePost,
+  scheduledAt,
+  onMentionInput,
+  onMentionKeydownComposer,
+  submitPost,
+  closeMention,
+  mentionOpen,
+  firstQueryValue,
+  route,
+  quotingPost,
+})
 
 // Thu nhỏ ảnh trước khi gửi (max 1280px, JPEG q0.82) — base64 nhẹ đi nhiều lần (trước đây
 // gửi full-size → payload có thể tới hàng chục MB).
@@ -648,50 +615,6 @@ function communityUploadDisclosureId(index: number): string {
   return `community-upload-image-${index}-disclosure`
 }
 
-function focusFeedTab(tab: FeedTab) {
-  if (typeof document === 'undefined') return
-  nextTick(() => document.querySelector<HTMLElement>(`.threads-filter [data-tab="${tab}"]`)?.focus())
-}
-
-function focusTypeFilter(value: PostTypeValue) {
-  if (typeof document === 'undefined') return
-  const key = value || 'all'
-  nextTick(() => document.querySelector<HTMLElement>(`.type-filter-row [data-type="${key}"]`)?.focus())
-}
-
-function nextIndex(current: number, total: number, key: string) {
-  if (key === 'Home') return 0
-  if (key === 'End') return total - 1
-  if (key === 'ArrowRight' || key === 'ArrowDown') return (current + 1) % total
-  if (key === 'ArrowLeft' || key === 'ArrowUp') return (current - 1 + total) % total
-  return current
-}
-
-function onFeedTabKeydown(e: KeyboardEvent) {
-  if (!['ArrowRight', 'ArrowLeft', 'ArrowDown', 'ArrowUp', 'Home', 'End'].includes(e.key)) return
-  const tabs = visibleFeedTabs.value.map(tab => tab.key)
-  if (!tabs.length) return
-  e.preventDefault()
-  const current = Math.max(0, tabs.indexOf(normalizeFeedTab(activeTab.value)))
-  const tab = tabs[nextIndex(current, tabs.length, e.key)] || 'latest'
-  setTab(tab)
-  focusFeedTab(tab)
-}
-
-function onTypeFilterKeydown(e: KeyboardEvent) {
-  if (!['ArrowRight', 'ArrowLeft', 'ArrowDown', 'ArrowUp', 'Home', 'End'].includes(e.key)) return
-  const options = filterTypeOptions.value.map(option => option.value)
-  e.preventDefault()
-  const current = Math.max(0, options.indexOf(normalizeFilterType(filterType.value)))
-  const value = options[nextIndex(current, options.length, e.key)] || ''
-  setFilterType(value)
-  focusTypeFilter(value)
-}
-
-function setFilterType(value: PostTypeValue) {
-  filterType.value = normalizeFilterType(value)
-}
-
 function setTab(tab: FeedTab) {
   if (isPrivateFeedTab(tab) && !isLoggedIn.value) {
     activeTab.value = 'latest'
@@ -701,7 +624,8 @@ function setTab(tab: FeedTab) {
   const nextTab = normalizeFeedTab(tab)
   if (searchMode.value) clearSearch()
   if (activeTab.value === nextTab) return
-  feedAbort?.abort()
+  abortFeed()
+  cleanupUndoHide()
   activeTab.value = nextTab
   suppressFilterFetch = true
   filterType.value = ''
@@ -716,72 +640,22 @@ function setTab(tab: FeedTab) {
   })
 }
 
-async function fetchFeed(reset = false) {
-  normalizeCommunityRouteState()
-  if (activeTab.value === 'bookmarks') { await fetchBookmarks(reset); return }
-  if (reset) { page.value = 1; posts.value = []; feedError.value = false; ugcUnavailable.value = false }
-  feedAbort?.abort()
-  feedAbort = new AbortController()
-  loading.value = true
-  try {
-    const url = activeTab.value === 'following'
-      ? `/api/feed/following?page=${page.value}&limit=20`
-      : (() => {
-          const params = new URLSearchParams({ page: String(page.value), limit: '20', sort: sort.value })
-          if (filterType.value) params.set('post_type', filterType.value)
-          if (activeTag.value) params.set('tag', activeTag.value)
-          return `/api/feed?${params}`
-        })()
-    const res = await $fetch<PostListResponse>(url, {
-      headers: authHeaders(),
-      signal: feedAbort.signal,
-    })
-    const rawPosts = extractPostArray(res)
-    const newPosts = filterCommunityPosts(rawPosts)
-    posts.value = reset ? newPosts : mergeCommunityPosts(posts.value, newPosts)
-    hasMore.value = responseHasMore(res, rawPosts)
-  } catch (e: unknown) {
-    if (e instanceof DOMException && e.name === 'AbortError') return
-    const status = (e as any)?.response?.status || (e as any)?.status || (e as any)?.statusCode
-    if (status === 503) {
-      ugcUnavailable.value = true
-      return
-    }
-    if (reset && !posts.value.length) feedError.value = true
-    showToast(reset ? 'Không thể tải bảng tin' : 'Không thể tải thêm', 'error')
-  } finally {
-    loading.value = false
-  }
-}
-
-function refreshFeed() {
-  if (searchMode.value) { fetchSearch(true); return }
-  if (activeTab.value === 'bookmarks') { fetchBookmarks(true); return }
-  fetchFeed(true)
-}
-
-function loadMore() {
-  if (loading.value || searchLoading.value || bookmarksLoading.value) return
-  if (searchMode.value) {
-    searchPage.value++
-    fetchSearch()
-  } else if (activeTab.value === 'bookmarks') {
-    bookmarksPage.value++
-    fetchBookmarks()
-  } else {
-    page.value++
-    fetchFeed()
-  }
-}
-
-function focusComposerFromRoute() {
-  const composeIntent = firstQueryValue(route.query.compose).trim().toLowerCase()
-  if (composeIntent !== 'draft' && route.hash !== '#compose') return
-  nextTick(() => {
-    composeEl.value?.scrollIntoView({ behavior: 'smooth', block: 'start' })
-    composeInputEl.value?.focus()
-  })
-}
+// ── Feed navigation & A11y phím tắt (Composable useCommunityFeedNavigation) ──
+const {
+  focusFeedTab,
+  focusTypeFilter,
+  onFeedTabKeydown,
+  onTypeFilterKeydown,
+  setFilterType,
+} = useCommunityFeedNavigation({
+  activeTab,
+  filterType,
+  visibleFeedTabs,
+  filterTypeOptions,
+  setTab,
+  normalizeFeedTab,
+  normalizeFilterType,
+})
 
 watch(activeTab, (tab) => {
   const normalized = normalizeFeedTab(tab)
@@ -790,11 +664,7 @@ watch(activeTab, (tab) => {
 })
 
 watch(isLoggedIn, (loggedIn) => {
-  if (loggedIn) {
-    loadSuggested()
-    loadScheduledPosts()
-    return
-  }
+  if (loggedIn) { loadSuggested(); loadScheduledPosts(); return }
   suggestedUsers.value = []
   scheduledPosts.value = []
   if (isPrivateFeedTab(activeTab.value)) setTab('latest')
@@ -817,15 +687,8 @@ if (import.meta.client) {
 }
 
 function resetComposer() {
-  newContent.value = ''
-  newType.value = 'share'
-  imageFiles.value = []
-  previewImages.value = []
-  clearDraft()
-  resetMention()
-  quotingPost.value = null
-  schedulePost.value = false
-  scheduledAt.value = ''
+  newContent.value = ''; newType.value = 'share'; imageFiles.value = []; previewImages.value = []
+  clearDraft(); resetMention(); quotingPost.value = null; schedulePost.value = false; scheduledAt.value = ''
 }
 
 async function submitScheduledPost() {
@@ -892,28 +755,18 @@ async function submitPost() {
 
 const { reportPost } = useReport()
 
-// cùng 1 post có thể nằm ở CẢ feed + tab bookmark → cập-nhật MỌI bản để không lệch.
-function _copies(postId: string) {
-  return [...posts.value, ...bookmarks.value, ...searchResults.value].filter(p => p.id === postId)
-}
-
-const { toggleLike: _like, toggleBookmark: _bookmark, deletePost: _delete } = usePostActions()
-
-function toggleLike(postId: string) {
-  _like(postId, _copies(postId))
-}
-function toggleBookmark(postId: string) {
-  _bookmark(postId, _copies(postId), () => {
-    if (!sessionBookmarked.value) sessionBookmarked.value = true
-  })
-}
-function deletePost(postId: string) {
-  _delete(postId, () => {
-    posts.value = posts.value.filter(p => p.id !== postId)
-    bookmarks.value = bookmarks.value.filter(p => p.id !== postId)
-    searchResults.value = searchResults.value.filter(p => p.id !== postId)
-  })
-}
+// ── Tương tác bài viết đa bộ sưu tập (Composable useCommunityPostInteractions) ──
+const {
+  _copies,
+  toggleLike,
+  toggleBookmark,
+  deletePost,
+} = useCommunityPostInteractions({
+  posts,
+  bookmarks,
+  searchResults,
+  sessionBookmarked,
+})
 
 // ── Tự dọn bảng tin: ẩn bài (riêng tư, không phải kiểm duyệt) ──
 // CHỈ bật ở tab feed thật (latest / trending / following). Tab "Đã lưu" và chế-độ
@@ -921,41 +774,9 @@ function deletePost(postId: string) {
 // `user_hidden_posts`, nên bài ẩn ở đó sẽ quay lại sau khi tải lại trang.
 const canHidePosts = computed(() => !searchMode.value && activeTab.value !== 'bookmarks')
 
-const { hidePost: _hide, unhidePost: _unhide } = useHiddenPosts()
-const hiddenNotice = ref<{ id: string } | null>(null)
-const undoingHide = ref(false)
-let hiddenNoticeTimer: ReturnType<typeof setTimeout> | null = null
-
-function dismissHiddenNotice() {
-  if (hiddenNoticeTimer) { clearTimeout(hiddenNoticeTimer); hiddenNoticeTimer = null }
-  hiddenNotice.value = null
-}
-
-async function hidePost(postId: string) {
-  // Lạc quan + hoàn nguyên nằm trong useHiddenPosts: API lỗi thì bài quay lại
-  // ĐÚNG vị trí cũ kèm toast lỗi, và `ok=false` nên không hiện dải "Hoàn tác".
-  const ok = await _hide(postId, [posts, bookmarks, searchResults])
-  if (!ok) return
-  dismissHiddenNotice()
-  hiddenNotice.value = { id: postId }
-  hiddenNoticeTimer = setTimeout(() => { hiddenNotice.value = null; hiddenNoticeTimer = null }, 8000)
-}
-
-async function undoHide() {
-  const notice = hiddenNotice.value
-  if (!notice || undoingHide.value) return
-  undoingHide.value = true
-  try {
-    const ok = await _unhide(notice.id)
-    if (!ok) return
-    dismissHiddenNotice()
-    showToast('Đã bỏ ẩn bài viết', 'success')
-    // Nạp lại feed để bài về đúng thứ tự backend trả, không phải vị trí đoán.
-    await fetchFeed(true)
-  } finally {
-    undoingHide.value = false
-  }
-}
+const {
+  hiddenNotice, undoingHide, hidePost, undoHide, dismissHiddenNotice, cleanupUndoHide,
+} = useCommunityUndoHide({ posts, bookmarks, searchResults, fetchFeed, showToast })
 
 onUnmounted(dismissHiddenNotice)
 
@@ -967,19 +788,9 @@ let draftTimer: ReturnType<typeof setTimeout> | null = null
 watch(newContent, (v) => {
   if (draftTimer) clearTimeout(draftTimer)
   draftTimer = setTimeout(() => {
-    try {
-      saveDraft(v, newType.value)
-    } catch {
-      showToast('Không thể lưu bản nháp', 'warning')
-    }
+    try { saveDraft(v, newType.value) } catch { showToast('Không thể lưu bản nháp', 'warning') }
   }, 3000)
 })
-
-function onClickOutsideMention(e: MouseEvent) {
-  if (mentionOpen.value && !(e.target as HTMLElement)?.closest('.compose-mention-wrap')) {
-    closeMention()
-  }
-}
 
 onMounted(() => {
   document.addEventListener('click', onClickOutsideMention)
@@ -997,11 +808,7 @@ onMounted(() => {
   // 'following' TRƯỚC KHI watch(activeTab, …) bên dưới kịp đăng ký (useFilterUrl
   // gán ref đồng bộ lúc setup), nên watcher sẽ không bắt được lần đổi tab đó.
   if (activeTab.value === 'following' && isLoggedIn.value) fetchFeed(true)
-  loadCommunityStats()
-  loadTrendingTags()
-  loadLeaderboard()
-  loadSuggested()
-  loadScheduledPosts()
+  loadCommunityStats(); loadTrendingTags(); loadLeaderboard(); loadSuggested(); loadScheduledPosts()
   // Trích dẫn từ trang khác điều hướng tới: ?quote=<post_id>
   const q = firstQueryValue(route.query.quote).trim()
   if (q) {
@@ -1020,7 +827,7 @@ onMounted(() => {
 
 onUnmounted(() => {
   if (draftTimer) { clearTimeout(draftTimer); draftTimer = null }
-  feedAbort?.abort()
+  abortFeed()
   loadObserver?.disconnect()
   document.removeEventListener('click', onClickOutsideMention)
 })
@@ -1044,44 +851,36 @@ useHead({
       name: 'Cộng đồng vinhlong360',
       description: 'Bảng tin cộng đồng chia sẻ trải nghiệm du lịch, đánh giá và báo cáo dữ liệu cho tỉnh Vĩnh Long hợp nhất (3 vùng trước 7-2025).',
       url: canonicalUrl('/cong-dong'),
+      speakable: buildSpeakableSpecification(['h1', '.threads-layout h2', '.catalog-aeo-plaque__title', '.catalog-aeo-plaque__dek']),
     }),
   }],
 })
 </script>
 
 <style scoped>
-/* ── Section rhythm — khoảng thở giữa compose/search/tabs và feed bên dưới ── */
-.threads-compose { margin-bottom: var(--space-2); }
+/* ── Section rhythm & layout ── */
 .threads-page { max-width: 960px; margin: 0 auto; }
 .threads-layout { display: grid; grid-template-columns: 1fr 280px; gap: var(--space-6); align-items: start; }
-/* min-width: 0 — grid items default to min-width:auto, which floors this track at its
-   content's intrinsic width (the 5 type-filter-row chips, ~430px) instead of shrinking to
-   the 1fr track size. That silently widened .threads-page/.threads-layout past the viewport
-   on mobile (~84px horizontal overflow at 375px) even though .type-filter-row already has
-   overflow-x:auto — the scroll never engaged because the container itself had grown to fit. */
 .threads-feed { display: flex; flex-direction: column; min-width: 0; }
 
 /* ── Compose (Threads style) ── */
-.threads-compose { display: flex; gap: var(--space-3); padding: var(--space-4) 0; border-bottom: .5px solid var(--line); }
+.threads-compose {
+  display: flex; gap: var(--space-3); border-radius: var(--radius-surface);
+  margin: 0 calc(var(--space-2) * -1) var(--space-2);
+  padding: var(--space-5) var(--space-3) var(--space-4);
+  background: rgba(var(--accent-rgb), .04); box-shadow: var(--shadow-xs);
+  transition: background .3s var(--ease-out), border-color .3s var(--ease-out), border-radius .3s var(--ease-out), box-shadow .3s var(--ease-out-expo);
+}
+.threads-compose:focus-within { background: rgba(var(--accent-rgb), .07); border-radius: var(--radius-sheet); box-shadow: var(--shadow-sm); }
 .compose-left { width: 40px; flex-shrink: 0; display: flex; justify-content: center; }
 .compose-right { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: var(--space-2); }
 .compose-input {
   width: 100%; border: none; background: transparent; color: var(--ink);
   font-size: var(--text-base); line-height: var(--leading-relaxed);
-  resize: none; outline: none; font-family: inherit;
-  min-height: 44px; padding: 0;
+  resize: none; outline: none; font-family: inherit; min-height: 44px; padding: 0;
 }
 .compose-input:focus-visible { outline: 2px solid var(--color-focus); outline-offset: -2px; }
 .compose-input::placeholder { color: var(--muted); }
-.threads-compose {
-  transition: background .3s var(--ease-out), border-color .3s var(--ease-out), border-radius .3s var(--ease-out), box-shadow .3s var(--ease-out-expo);
-  border-radius: var(--radius-surface); margin: 0 calc(var(--space-2) * -1);
-  padding: var(--space-5) var(--space-3) var(--space-4);
-  background: rgba(var(--accent-rgb), .04);
-  border-bottom: none; box-shadow: var(--shadow-xs);
-}
-.threads-compose:focus-within { background: rgba(var(--accent-rgb), .07); border-radius: var(--radius-sheet); box-shadow: var(--shadow-sm); }
-/* Composer post-type chips — micro feedback on selection (signature) */
 .post-type-selector { display: flex; flex-wrap: wrap; gap: var(--space-2); }
 .post-type-selector .chip-sm { transition: background .2s, color .2s, border-color .2s, transform .25s var(--ease-out-expo); }
 .post-type-selector .chip-sm.active { transform: scale(1.04); }
@@ -1101,18 +900,15 @@ useHead({
 .char-count.full { color: var(--error); font-weight: var(--weight-semibold); }
 .chip-sm { font-size: var(--text-xs); padding: var(--space-2) var(--space-2h); min-height: 44px; display: inline-flex; align-items: center; gap: var(--space-1); }
 
-/* ── Post list transitions ── */
+/* ── Post list transitions & controls ── */
 .post-list-container { display: flex; flex-direction: column; margin-top: var(--space-1); }
 .post-list-enter-active { transition: opacity .3s var(--ease-out), transform .3s var(--ease-out-expo); }
 .post-list-leave-active { transition: opacity .2s var(--ease-out); }
 .post-list-enter-from { opacity: 0; transform: translateY(8px); }
 .post-list-leave-to { opacity: 0; }
 .post-list-move { transition: transform .3s var(--ease-out-expo); }
-
-/* ── Load more ── */
 .threads-load-more {
-  width: 100%; margin-top: var(--space-3); min-height: 44px;
-  font-weight: var(--weight-semibold);
+  width: 100%; margin-top: var(--space-3); min-height: 44px; font-weight: var(--weight-semibold);
   transition: background .25s var(--ease-out), transform .25s var(--ease-out-expo), box-shadow .25s var(--ease-out);
 }
 .threads-load-more:hover { transform: translateY(-1px); box-shadow: var(--shadow-xs); }
@@ -1135,11 +931,10 @@ useHead({
 .feed-loading { text-align: center; padding: var(--space-5); }
 .feed-loading .spinner { margin: 0 auto; }
 
-/* ── Dark mode ── */
+/* ── Dark mode & Responsive ── */
 .dark .compose-attach:hover { background: rgba(var(--white-rgb),.08); }
 .dark .threads-compose { background: rgba(var(--accent-rgb),.06); }
 .dark .threads-compose:focus-within { background: rgba(var(--accent-rgb),.1); }
-
 @media (max-width: 820px) {
   .threads-layout { grid-template-columns: 1fr; }
   .threads-sidebar { display: none; }
@@ -1147,26 +942,15 @@ useHead({
   .threads-feed { padding-inline: var(--space-1); }
   .threads-compose { padding-inline: var(--space-3); }
   .compose-input { min-height: 48px; font-size: var(--text-base); }
-  /* --text-sm clamps to ~14px under ~640px viewport — below the 16px iOS auto-zoom
-     threshold. Force 16px on mobile only for the two real text inputs that use it
-     (community search box, schedule datetime picker); desktop keeps --text-sm as-is. */
   .cd-input { font-size: var(--text-base, 16px); }
 }
-
 @media (prefers-reduced-motion: reduce) {
   .img-preview-row { animation: none; }
-  .post-list-enter-active,
-  .post-list-leave-active,
-  .post-list-move,
-  .fab-fade-enter-active,
-  .fab-fade-leave-active { transition: none; }
-  .img-preview-item:hover { transform: none; }
-  .compose-attach:hover { transform: none; }
-  .compose-attach:active { transform: none; }
-  .post-type-selector .chip-sm.active { transform: none; }
-  .post-type-selector .chip-sm:active { transform: none; }
-  .threads-load-more:hover { transform: none; }
-  .threads-load-more:active { transform: none; }
+  .post-list-enter-active, .post-list-leave-active, .post-list-move,
+  .fab-fade-enter-active, .fab-fade-leave-active { transition: none; }
+  .img-preview-item:hover, .compose-attach:hover, .compose-attach:active,
+  .post-type-selector .chip-sm.active, .post-type-selector .chip-sm:active,
+  .threads-load-more:hover, .threads-load-more:active { transform: none; }
 }
 .btn-xs { padding: var(--space-1) var(--space-2h); font-size: .72rem; border-radius: var(--radius-control); }
 </style>

@@ -66,6 +66,7 @@
         <div class="legal-body editorial-body" v-html="mdLite(s.body)"></div>
       </div>
     </section>
+
   </section>
 </template>
 

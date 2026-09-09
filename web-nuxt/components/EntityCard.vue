@@ -9,14 +9,12 @@
         <NuxtLink :to="cardPath" class="card-cover-link" tabindex="-1" aria-hidden="true">
           <NuxtImg v-if="isRemote" :src="activeDescriptor.url" :alt="activeDescriptor.alt" :key="activeDescriptor.url" loading="lazy" width="400" height="267" sizes="sm:100vw md:50vw lg:400px" decoding="async" :aria-describedby="activeDisclosureId" @load="($event.target as HTMLElement)?.classList.add('loaded')" @error="imgError = true" />
           <img v-else :src="activeDescriptor.url" :alt="activeDescriptor.alt" :key="activeDescriptor.url" loading="lazy" width="400" height="267" decoding="async" :aria-describedby="activeDisclosureId" @load="($event.target as HTMLElement)?.classList.add('loaded')" @error="imgError = true" />
-          <span class="cover-tag cover-dateline" :class="`cat-${typeMeta.cat}`">{{ dateline }}</span>
         </NuxtLink>
       </template>
       <template v-else>
         <span class="cover-grain" aria-hidden="true"></span>
         <NuxtLink :to="cardPath" class="card-cover-link" tabindex="-1" aria-hidden="true">
           <span class="cover-svg-icon" v-html="placeholderSvg" />
-          <span class="cover-tag cover-dateline" :class="`cat-${typeMeta.cat}`">{{ dateline }}</span>
         </NuxtLink>
       </template>
       <template v-if="allDescriptors.length > 1">
@@ -287,8 +285,6 @@ const ratingDisplay = computed(() => {
   font-family: var(--font-sans); font-size: var(--text-2xs); font-weight: 700;
   letter-spacing: .1em; text-transform: uppercase; color: var(--muted);
 }
-/* the on-cover dateline stays legible on imagery — keep the readable chip form there */
-.cover-dateline { text-transform: uppercase; letter-spacing: .08em; }
 /* Legacy callers retain the existing sediment rule until they opt into the recipe. */
 .card-rule {
   display: block; width: 26px; height: 2px; border-radius: 2px; margin: 5px 0 6px;

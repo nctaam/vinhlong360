@@ -24,6 +24,7 @@
         </p>
       </header>
 
+
       <ol class="sp-stops">
         <li v-for="(s, i) in plan.stops" :key="i" class="sp-stop">
           <span class="sp-num" aria-hidden="true">{{ Number(i) + 1 }}</span>
@@ -123,6 +124,7 @@ const planSchema = computed(() => {
     name: plan.value.title,
     description: `Lịch trình trải nghiệm ${plan.value.stops?.length || 0} điểm dừng tại Vĩnh Long`,
     url: canonicalUrl(`/lich-trinh-chia-se/${encodedPlanId}`),
+    speakable: buildSpeakableSpecification(['.sp-title', '.sp-meta', '.sp-stops']),
     mainEntity: {
       '@type': 'TouristTrip',
       name: plan.value.title,
@@ -219,7 +221,7 @@ useHead({
   flex-shrink: 0;
   width: 32px;
   height: 32px;
-  border-radius: var(--radius-full);
+  border-radius: var(--radius-pill, 999px);
   background: var(--color-brand);
   color: var(--color-on-action, var(--white));
   display: flex;

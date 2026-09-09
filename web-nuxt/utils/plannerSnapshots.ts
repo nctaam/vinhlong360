@@ -38,6 +38,10 @@ export type OpeningHourConflict = {
   stopId: string
   requestedTime?: string | null
   openingHours?: string | null
+  title?: string
+  detail?: string
+  code?: string
+  severity?: string
 }
 
 export function positiveRevision(value: unknown): value is number {

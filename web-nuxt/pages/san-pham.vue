@@ -30,6 +30,16 @@
       </div>
     </section>
 
+    <CatalogAeoPlaque
+      title="Chỉ dẫn địa lý & Đặc sản Vĩnh Long — Nông sản thượng hạng đất phù sa"
+      kicker="Chỉ dẫn địa lý PGI & Bảo hộ thương hiệu"
+      accent="leaf"
+      icon="fruit"
+      :entries="catalogAeoEntries"
+      cta-to="/ocop"
+      cta-label="Xem sổ vàng sản phẩm OCOP đạt sao"
+    />
+
     <!-- declutter-3 T10: CatalogSpotlight đã bỏ — market-shelf mùa vụ thay vai khối tease
          duy nhất trước grid (chốt spec-review). -->
     <!-- Đang vào mùa — promoted above OCOP teaser: season is this page's spine -->
@@ -178,18 +188,14 @@
       </button>
     </section>
 
-    <!-- Cross-links (declutter-2 A1: 4→3 script-driven; bỏ OCOP — trùng teaser-strip trên trang) -->
-    <section class="block band catalog-cross reveal" aria-label="Khám phá thêm">
-      <h2>Khám phá thêm</h2>
-      <div class="cross-links">
-        <NuxtLink v-for="c in relatedCatalogs" :key="c.to" :to="c.to" class="cross-card">
-          <span class="cross-icon" aria-hidden="true"><IconLine :name="c.icon" /></span>
-          <div><strong>{{ c.label }}</strong><p>{{ c.desc }}</p></div>
-        </NuxtLink>
-      </div>
-    </section>
-    <!-- declutter-3 T14 (A3c): JourneyBar page-level — trang thuộc luồng lập-kế-hoạch -->
-    <ClientOnly><LazyJourneyBar /></ClientOnly>
+    <CatalogFaqAccordion
+      :items="PRODUCT_CATALOG_FAQS"
+      title="Hỏi đáp đặc sản & quà quê Vĩnh Long"
+      kicker="Hỏi đáp · Cẩm nang phiên chợ"
+    />
+
+    <!-- Cross-links -->
+    <CatalogCrossLinks />
   </div>
 </template>
 
@@ -197,6 +203,7 @@
 import { isOcopCertified } from '~/utils/ocop'
 import type { Entity } from '~/types'
 import { inSeason, relevanceScore } from '~/composables/useSeason'
+import { PRODUCT_CATALOG_FAQS } from '~/composables/useSeoHelpers'
 
 useReveal()
 const { f: pc } = usePageContent('san_pham')
@@ -244,13 +251,21 @@ const allEntities = computed(() => {
 // (đo 2026-08-27: 26 lọt / 99 thật) — cùng lỗi đã vá ở /ocop.
 const ocopCount = computed(() => allEntities.value.filter((e: Entity) => isOcopCertified(e as any)).length)
 
-// declutter-2 A1: cross-links 3 card script-driven (bỏ OCOP — teaser-strip trên trang
-// đã là tham chiếu OCOP nổi bật hơn).
-const relatedCatalogs = [
-  { to: '/theo-mua', icon: 'calendar', label: 'Theo mùa', desc: 'Lịch mùa vụ' },
-  { to: '/du-lich', icon: 'leaf', label: 'Du lịch', desc: 'Trải nghiệm miệt vườn' },
-  { to: '/kham-pha/am-thuc', icon: 'bowl', label: 'Ẩm thực', desc: 'Món ngon Vĩnh Long' },
+const catalogAeoEntries = [
+  {
+    heading: 'Bưởi Năm Roi Bình Minh & Sầu riêng Ri6 Quới Thiện',
+    text: 'Vùng đất cù lao màu mỡ phù sa sông Hậu kiến tạo nên hương vị bưởi vỏ mỏng không hạt ngọt thanh cùng múi sầu riêng vàng ươm cơm dày béo ngậy.',
+  },
+  {
+    heading: 'Cam sành Tam Bình & Khoai lang tím Bình Tân',
+    text: 'Thổ nhưỡng đất phù sa kết hợp phèn nhẹ đặc thù tạo ra khoai lang tím xuất khẩu danh tiếng và những vườn cam sành mọng nước ngọt đậm đà.',
+  },
+  {
+    heading: 'Bánh tráng Cù lao Mây & Tàu hũ ky Mỹ Hòa',
+    text: 'Di sản làng nghề thủ công hơn trăm năm tuổi gìn giữ kỹ nghệ quết bánh phơi sương và tráng váng đậu truyền thống đạt chứng nhận OCOP.',
+  },
 ]
+
 const inSeasonCount = computed(() => allEntities.value.filter((e: Entity) => inSeason(e, String(currentMonth))).length)
 
 const seasonalHighlights = computed(() => {
@@ -339,68 +354,26 @@ useSeoMeta({
 
 useHead(() => {
   const pageUrl = canonicalUrl('/san-pham')
-  const graphNodes: any[] = [
-    buildWebSiteSchema(),
-    buildOrganizationSchema(),
-    {
-      '@type': 'CollectionPage',
-      '@id': `${pageUrl}#collection`,
-      name: 'Sản phẩm địa phương Vĩnh Long',
-      description: 'Đặc sản & sản phẩm OCOP Vĩnh Long theo mùa.',
-      url: pageUrl,
-      numberOfItems: allEntities.value.length,
-      isPartOf: { '@id': `${SITE_URL}/#website` },
-      about: {
-        '@type': 'Thing',
-        name: 'Đặc sản và Sản phẩm địa phương Vĩnh Long',
-        description: 'Trái cây nhiệt đới, nông sản chất lượng cao, sản phẩm OCOP và làng nghề truyền thống Vĩnh Long.',
-      },
-      speakable: buildSpeakableSpecification(['.catalog-hero h1', '.catalog-lead', '.seasonal-banner-lead']),
-    },
-  ]
-
-  if (filtered.value?.length) {
-    graphNodes.push({
-      '@type': 'ItemList',
-      '@id': `${pageUrl}#items`,
-      name: 'Sản phẩm địa phương Vĩnh Long',
-      description: 'Đặc sản và sản phẩm OCOP Vĩnh Long theo mùa.',
-      numberOfItems: filtered.value.length,
-      itemListElement: filtered.value.slice(0, 30).map((e: Entity, i: number) => ({
-        '@type': 'ListItem',
-        position: i + 1,
-        name: e.name,
-        url: `${SITE_URL}${entityPath(e.id)}`,
-      })),
-    })
-  }
-
-  const faqItems: FaqItem[] = [
-    {
-      q: 'Vĩnh Long có những loại đặc sản nào nổi tiếng nhất để mua làm quà?',
-      a: 'Các đặc sản nức tiếng gồm bưởi năm roi Bình Minh, khoai lang Bình Tân, sầu riêng Ri6, bánh tráng cù lao Mây, cam sành Tam Bình và các sản phẩm thủ công gốm đỏ Mang Thít.',
-    },
-    {
-      q: 'Làm thế nào để chọn mua được trái cây và đặc sản Vĩnh Long đúng nguồn gốc?',
-      a: 'Du khách nên ghé trực tiếp các nhà vườn tại cù lao An Bình, các hợp tác xã đạt chứng nhận OCOP hoặc các điểm trưng bày có tem truy xuất nguồn gốc rõ ràng.',
-    },
-    {
-      q: 'Các cơ sở sản xuất tại Vĩnh Long có hỗ trợ đóng gói trái cây gửi đi xa không?',
-      a: 'Nhiều nhà vườn và cơ sở chế biến hỗ trợ đóng thùng chống sốc cho trái cây tươi, hút chân không cho bánh tráng và nông sản khô để du khách tiện mang theo đường dài.',
-    },
-  ]
-  const faqNode = buildFaqPageSchema(faqItems, `${pageUrl}#faq`)
-  if (faqNode) graphNodes.push(faqNode)
+  const schemaGraph = buildProductCatalogSchemaGraph({
+    items: filtered.value.map((e: Entity) => ({
+      id: e.id,
+      name: e.name,
+      summary: e.summary,
+      category: e.attributes?.category,
+      ocop_stars: (e.attributes as any)?.ocop_stars,
+    })),
+    totalCount: allEntities.value.length,
+    inSeasonCount: inSeasonCount.value,
+    currentMonth: currentMonth,
+    canonicalUrl: pageUrl,
+  })
 
   return {
     link: [{ rel: 'canonical', href: pageUrl }],
     script: [
       {
         type: 'application/ld+json',
-        innerHTML: safeJsonLd({
-          '@context': 'https://schema.org',
-          '@graph': graphNodes,
-        }),
+        innerHTML: safeJsonLd(schemaGraph),
       },
     ],
   }
@@ -422,7 +395,7 @@ useHead(() => {
   font-weight: var(--weight-semibold);
   color: var(--accent-fg, var(--muted));
   padding: var(--space-1) var(--space-3);
-  border-radius: var(--radius-full);
+  border-radius: var(--radius-pill, 999px);
   background: rgba(var(--accent-rgb), .12);
   white-space: nowrap;
 }
@@ -512,7 +485,7 @@ useHead(() => {
   transform: translateY(-50%);
   width: 4px;
   height: 1.6em;
-  border-radius: var(--radius-full);
+  border-radius: var(--radius-pill, 999px);
   background: linear-gradient(180deg, var(--river-600) 0%, var(--amber-600) 52%, var(--clay-600) 100%);
 }
 .dark .market-stats::before { background: linear-gradient(180deg, var(--river-legacy-dark) 0%, var(--amber-500) 52%, var(--clay-400) 100%); }
@@ -545,13 +518,14 @@ useHead(() => {
   color: var(--accent-dark, var(--amber-600));
   background: rgba(var(--accent-rgb), .1);
   border: 1px solid rgba(var(--accent-rgb), .4);
-  border-radius: var(--radius-full);
-  padding: var(--space-05) var(--space-3);
+  border-radius: var(--radius-pill, 999px);
+  padding: var(--space-1) var(--space-3);
+  min-height: 44px;
   cursor: pointer;
-  transition: background .2s var(--ease-out), transform .2s var(--ease-spring);
+  transition: background .25s var(--ease-out), transform .25s cubic-bezier(0.16, 1, 0.3, 1), box-shadow .25s var(--ease-out);
 }
-.season-reset-chip:hover { background: rgba(var(--accent-rgb), .18); }
-.season-reset-chip:active { transform: scale(.94); }
+.season-reset-chip:hover { background: rgba(var(--accent-rgb), .18); box-shadow: var(--shadow-xs); transform: translateY(-1px); }
+.season-reset-chip:active { transform: scale(.95); }
 .dark .season-reset-chip { color: var(--amber-500); background: rgba(var(--accent-rgb), .14); border-color: rgba(var(--accent-rgb), .5); }
 
 /* OCOP teaser strip — slim signpost outward to /ocop (not a competing
@@ -567,7 +541,7 @@ useHead(() => {
   background: linear-gradient(90deg, rgba(var(--secondary-rgb), .06), transparent);
   text-decoration: none;
   color: var(--ink);
-  transition: border-color .25s var(--ease-out), box-shadow .25s var(--ease-out), transform .2s var(--ease-out-expo);
+  transition: border-color .25s var(--ease-out), box-shadow .25s var(--ease-out), transform .25s cubic-bezier(0.16, 1, 0.3, 1);
 }
 .ocop-teaser-link:hover {
   border-color: rgba(var(--secondary-rgb), .5);

@@ -1,5 +1,5 @@
 <template>
-  <div class="admin-shell dense-workbench" data-admin-density="dense-workbench">
+  <div class="admin-shell dense-workbench" data-admin-density="dense-workbench" data-color-system="tri-region-v1">
     <a href="#admin-main" class="skip-link">Chuyển đến nội dung chính</a>
     <button
       v-if="mobileSidebarOpen"

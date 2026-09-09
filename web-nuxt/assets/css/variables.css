@@ -274,6 +274,8 @@
   --accent-rgb: 232, 163, 61;
   --secondary-rgb: var(--color-success-rgb);
   --river-rgb: 91, 108, 196;
+  --clay-rgb: var(--color-brand-rgb);
+  --leaf-rgb: var(--color-success-rgb);
   --ink-rgb: 43, 38, 34;
   --danger-rgb: var(--color-error-rgb);
   --blue-rgb: 52, 120, 246;

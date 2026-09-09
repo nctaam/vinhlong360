@@ -1,5 +1,5 @@
 <template>
-  <section class="page" data-color-system="tri-region-v1" data-page-recipe="map">
+  <section class="page" data-color-system="tri-region-v1" data-page-recipe="map" :data-outdoor-contrast="outdoorContrast ? 'high' : 'normal'">
     <Breadcrumb :items="[{ label: 'Trang chủ', to: '/' }, { label: 'Bản đồ' }]" :json-ld="true" />
 
     <section class="catalog-hero cat-map">
@@ -25,12 +25,42 @@
           aria-label="Lọc theo loại địa điểm"
           @update:model-value="onTypeFilterChange"
         />
+        <div class="map-field-dock" role="toolbar" aria-label="Tiện ích thực địa & lọc chuyên đề">
+          <div class="map-quick-presets" role="group" aria-label="Lọc theo đặc trưng sông nước">
+            <button
+              v-for="preset in quickWaterPresets"
+              :key="preset.id"
+              type="button"
+              :class="['map-quick-preset-btn', { 'is-active': activeWaterPreset === preset.id }]"
+              :aria-pressed="activeWaterPreset === preset.id"
+              @click="toggleWaterPreset(preset.id)"
+            >
+              <IconLine :name="preset.icon" aria-hidden="true" />
+              <span>{{ preset.label }}</span>
+            </button>
+          </div>
+          <button
+            type="button"
+            class="map-contrast-toggle"
+            :class="{ 'is-high': outdoorContrast }"
+            :aria-pressed="outdoorContrast"
+            title="Tăng tương phản để dễ nhìn dưới nắng ngoài trời"
+            @click="outdoorContrast = !outdoorContrast"
+          >
+            <IconLine :name="outdoorContrast ? 'sun' : 'bulb'" aria-hidden="true" />
+            <span>{{ outdoorContrast ? 'Tương phản ngoài trời: BẬT' : 'Độ tương phản thực địa' }}</span>
+          </button>
+        </div>
         <div v-if="hasActiveFilters" class="active-filter-ledger" role="region" aria-label="Bộ lọc đang áp dụng">
           <span class="afl-heading">Đang lọc:</span>
           <div class="afl-chips">
             <span v-if="savedMode" class="afl-chip">
               <span class="afl-text">Đã lưu</span>
               <button type="button" class="afl-remove" aria-label="Bỏ lọc điểm đã lưu" @click="clearSavedMode"><IconLine name="x" aria-hidden="true" /></button>
+            </span>
+            <span v-if="activeWaterPreset !== 'all'" class="afl-chip">
+              <span class="afl-text">{{ quickWaterPresets.find(p => p.id === activeWaterPreset)?.label }}</span>
+              <button type="button" class="afl-remove" aria-label="Bỏ lọc đặc trưng" @click="activeWaterPreset = 'all'"><IconLine name="x" aria-hidden="true" /></button>
             </span>
             <template v-if="!activeTypeArray.includes('all')">
               <span v-for="t in activeTypeArray" :key="t" class="afl-chip">
@@ -128,6 +158,18 @@ const searchView = useSearchViewState()
 const { favorites } = useFavorites()
 const mapNetworkState = ref<'ready' | 'offline'>('ready')
 const scopeAnnouncement = ref('')
+const outdoorContrast = ref(false)
+const activeWaterPreset = ref<'all' | 'river' | 'pottery' | 'ferry'>('all')
+
+const quickWaterPresets = [
+  { id: 'river' as const, label: 'Cù lao & Ven sông', icon: 'droplet' },
+  { id: 'pottery' as const, label: 'Lò gốm Mang Thít', icon: 'flame' },
+  { id: 'ferry' as const, label: 'Bến phà & Đò ngang', icon: 'compass' },
+]
+
+function toggleWaterPreset(presetId: 'river' | 'pottery' | 'ferry') {
+  activeWaterPreset.value = activeWaterPreset.value === presetId ? 'all' : presetId
+}
 
 function filterTypes(value: unknown) {
   const values = Array.isArray(value) ? value : typeof value === 'string' ? value.split(',') : []
@@ -157,7 +199,7 @@ function onTypeFilterChange(values: string[]) {
   searchView.setFilter('type', filtered.length ? filtered : undefined)
 }
 
-const hasActiveFilters = computed(() => savedMode.value || !activeTypeArray.value.includes('all'))
+const hasActiveFilters = computed(() => savedMode.value || !activeTypeArray.value.includes('all') || activeWaterPreset.value !== 'all')
 
 function clearSavedMode() {
   const query = { ...route.query }
@@ -172,6 +214,7 @@ function removeTypeFilter(typeToRemove: string) {
 
 function clearAllFilters() {
   searchView.setFilter('type', undefined)
+  activeWaterPreset.value = 'all'
   if (savedMode.value) {
     clearSavedMode()
   }
@@ -221,6 +264,13 @@ const filteredPins = computed(() => mapPins.value.filter((pin) => {
     && (!areaQuery.value || pin.place_area === areaQuery.value || pin.area === areaQuery.value)
     && matchesQuery
     && matchesViewport
+    && (activeWaterPreset.value === 'all' || (() => {
+      const text = `${pin.name || ''} ${pin.place_name || ''} ${pin.place_area || ''} ${pin.area || ''}`.toLocaleLowerCase('vi-VN')
+      if (activeWaterPreset.value === 'river') return text.includes('cù lao') || text.includes('sông') || text.includes('an bình') || text.includes('đồng phú') || text.includes('bình hòa phước')
+      if (activeWaterPreset.value === 'pottery') return text.includes('gốm') || text.includes('mang thít') || text.includes('lò gạch') || text.includes('thầy cai')
+      if (activeWaterPreset.value === 'ferry') return text.includes('phà') || text.includes('đò') || text.includes('bến phà') || text.includes('bến đò') || text.includes('cổ chiên') || text.includes('sông tiền') || text.includes('đình khao') || text.includes('bến tàu')
+      return true
+    })())
   )
 }))
 
@@ -236,11 +286,17 @@ const mapResults = computed<MapListResult[]>(() => filteredPins.value.slice(0, 1
   }
 }))
 
-const visibleLabel = computed(() => savedMode.value
-  ? `${filteredPins.value.length} địa điểm đã lưu`
-  : activeTypeArray.value.includes('all')
-    ? `${filteredPins.value.length} địa điểm`
-    : `${filteredPins.value.length} địa điểm phù hợp`)
+const visibleLabel = computed(() => {
+  const count = filteredPins.value.length
+  if (savedMode.value) return `${count} địa điểm đã lưu`
+  if (activeWaterPreset.value !== 'all') {
+    const preset = quickWaterPresets.find(p => p.id === activeWaterPreset.value)
+    return `${count} địa điểm ${preset?.label || ''}`
+  }
+  return activeTypeArray.value.includes('all')
+    ? `${count} địa điểm`
+    : `${count} địa điểm phù hợp`
+})
 
 function commitSearchArea(viewport: MapViewport) {
   searchView.commitViewport(viewport)
@@ -311,5 +367,75 @@ useHead({
   font-weight: var(--weight-bold);
   letter-spacing: var(--tracking-caps);
   text-transform: uppercase;
+}
+.map-field-dock {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+  margin-top: var(--space-3);
+  padding-top: var(--space-3);
+  border-top: 1px dashed var(--line);
+}
+.map-quick-presets { display: flex; flex-wrap: wrap; gap: var(--space-2); }
+.map-quick-preset-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: var(--space-1) var(--space-3);
+  font-size: var(--text-xs);
+  font-weight: var(--weight-medium);
+  color: var(--muted);
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-pill, 999px);
+  cursor: pointer;
+  transition: background 0.2s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.2s cubic-bezier(0.16, 1, 0.3, 1), color 0.2s cubic-bezier(0.16, 1, 0.3, 1), transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.map-quick-preset-btn:hover { background: var(--bg-warm); border-color: var(--border); color: var(--ink); transform: translateY(-1px); }
+.map-quick-preset-btn.is-active {
+  background: color-mix(in srgb, var(--color-brand) 12%, var(--card));
+  border-color: var(--color-brand);
+  color: var(--color-brand);
+  font-weight: var(--weight-semibold);
+}
+.map-contrast-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: var(--space-1) var(--space-3);
+  font-size: var(--text-xs);
+  color: var(--muted);
+  background: transparent;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-pill, 999px);
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.map-contrast-toggle:hover { background: var(--bg-warm); color: var(--ink); }
+.map-contrast-toggle.is-high {
+  background: var(--color-brand);
+  border-color: var(--color-brand);
+  color: var(--color-on-action, var(--white));
+  font-weight: var(--weight-semibold);
+}
+[data-outdoor-contrast="high"] .map-filters {
+  border: 2px solid var(--color-brand);
+  box-shadow: var(--shadow-md);
+  background: var(--card);
+}
+[data-outdoor-contrast="high"] .map-quick-preset-btn {
+  border: 2px solid var(--color-brand);
+  font-weight: var(--weight-bold);
+  color: var(--color-text);
+}
+[data-outdoor-contrast="high"] .map-contrast-toggle {
+  border: 2px solid var(--color-brand);
+  font-weight: var(--weight-bold);
+}
+[data-outdoor-contrast="high"] .result-meta {
+  font-weight: var(--weight-bold);
+  color: var(--color-text);
 }
 </style>

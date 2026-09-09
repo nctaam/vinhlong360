@@ -35,6 +35,17 @@
       </div>
     </dl>
 
+    <!-- Practical facts (booking, fee, transport, parking, access) -->
+    <dl v-if="practicalItems.length" class="kbyg-practical" data-kbyg-practical>
+      <div v-for="item in practicalItems" :key="item.label" class="kbyg-practical-item">
+        <dt>
+          <IconLine class="kbyg-practical-icon" :name="item.icon" aria-hidden="true" />
+          <span>{{ item.label }}</span>
+        </dt>
+        <dd>{{ item.value }}</dd>
+      </div>
+    </dl>
+
     <!-- Tips -->
     <div v-if="tips.length" class="kbyg-tips">
       <div v-for="(tip, i) in tips" :key="i" class="kbyg-tip">
@@ -122,15 +133,43 @@ const amenities = computed(() => {
   return result
 })
 
-const goldenHours = computed(() => (attrs.value.golden_hours as string) || '')
+const goldenHours = computed(() => (attrs.value.golden_hours as string) || (attrs.value.best_time as string) || '')
 const peakDays = computed(() => (attrs.value.peak_days as string) || '')
 const crowdLevel = computed(() => (attrs.value.crowd_level as string) || '')
 const hasTimeSensitiveFacts = computed(() => Boolean(goldenHours.value || peakDays.value || crowdLevel.value))
 
+const practicalItems = computed(() => {
+  const a = attrs.value
+  const items: { icon: string; label: string; value: string }[] = []
+  if (a.highlight) items.push({ icon: 'sparkles', label: 'Điểm nhấn', value: String(a.highlight) })
+  if (a.booking_note) items.push({ icon: 'clipboard-list', label: 'Đặt trước', value: String(a.booking_note) })
+  if (a.fee) items.push({ icon: 'tag', label: 'Phí vào cửa', value: String(a.fee) })
+  if (a.transport) items.push({ icon: 'car', label: 'Di chuyển', value: String(a.transport) })
+  if (a.parking) items.push({ icon: 'pin', label: 'Đậu xe', value: String(a.parking) })
+  if (a.vehicle_access) items.push({ icon: 'car', label: 'Tiếp cận xe', value: String(a.vehicle_access) })
+  if (a.family_friendly || (Array.isArray(a.suitable_for) && a.suitable_for.includes('family'))) {
+    if (!amenities.value.some(b => b.key === 'kid_friendly')) {
+      items.push({ icon: 'users', label: 'Gia đình', value: 'Phù hợp cho gia đình có trẻ em' })
+    }
+  }
+  return items
+})
+
 const tips = computed(() => {
+  const result: string[] = []
   const t = attrs.value.kbyg_tips
-  if (Array.isArray(t)) return t.filter((s: unknown) => typeof s === 'string' && s.trim()) as string[]
-  return []
+  if (Array.isArray(t)) {
+    for (const s of t) {
+      if (typeof s === 'string' && s.trim() && !result.includes(s.trim())) result.push(s.trim())
+    }
+  }
+  const tt = attrs.value.travel_tips
+  if (Array.isArray(tt)) {
+    for (const s of tt) {
+      if (typeof s === 'string' && s.trim() && !result.includes(s.trim())) result.push(s.trim())
+    }
+  }
+  return result
 })
 
 const checklist = computed(() => {
@@ -139,7 +178,15 @@ const checklist = computed(() => {
   return TYPE_CHECKLIST[props.entityType] || []
 })
 
-const hasContent = computed(() => amenities.value.length > 0 || goldenHours.value || peakDays.value || tips.value.length > 0 || checklist.value.length > 0)
+const hasContent = computed(() =>
+  amenities.value.length > 0 ||
+  goldenHours.value ||
+  peakDays.value ||
+  crowdLevel.value ||
+  practicalItems.value.length > 0 ||
+  tips.value.length > 0 ||
+  checklist.value.length > 0
+)
 </script>
 
 <style scoped>
@@ -215,6 +262,24 @@ const hasContent = computed(() => amenities.value.length > 0 || goldenHours.valu
 .kbyg-golden-item dt { display: flex; align-items: center; gap: var(--space-2); font-size: .78rem; font-weight: var(--weight-semibold); color: var(--muted); }
 .kbyg-golden-item dd { margin: 0; font-size: .88rem; font-variant-numeric: tabular-nums; }
 .kbyg-evidence { display: flex; flex-wrap: wrap; gap: var(--space-2); align-items: center; }
+
+/* Practical facts */
+.kbyg-practical {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: var(--space-3);
+  margin-bottom: var(--space-4);
+}
+.kbyg-practical-item {
+  display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--space-1);
+  padding: 10px 14px; border-radius: var(--radius-surface);
+  background: var(--bg-alt); border: 1px solid var(--line);
+}
+.kbyg-practical-item dt {
+  display: flex; align-items: center; gap: var(--space-2);
+  font-size: .78rem; font-weight: var(--weight-semibold); color: var(--muted);
+  text-transform: uppercase; letter-spacing: .04em;
+}
+.kbyg-practical-icon { font-size: 1rem; flex-shrink: 0; color: var(--color-action); }
+.kbyg-practical-item dd { margin: 0; font-size: .88rem; color: var(--ink); line-height: 1.4; }
 
 /* Tips */
 .kbyg-tips {

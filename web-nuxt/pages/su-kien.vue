@@ -60,6 +60,30 @@
     <!-- Spotlight -->
     <CatalogSpotlight :items="allEvents" />
 
+    <!-- AEO Plaque & Contemporary Event Ledger Digest -->
+    <CatalogAeoPlaque
+      title="Nhịp Điệu Sự Kiện &amp; Hội Chợ Vĩnh Long"
+      kicker="Góc nhìn bản địa · Nhịp đập sự kiện đương đại"
+      accent="amber"
+      icon="megaphone"
+      :entries="[
+        {
+          heading: 'Festival Gạch Gốm Đỏ Mang Thít',
+          text: 'Sự kiện văn hóa du lịch quy mô lớn tôn vinh hơn 100 năm di sản đương đại dọc kênh Thầy Cai và nghệ thuật nung đất sét đỏ độc bản.',
+        },
+        {
+          heading: 'Ngày hội Du lịch Sông nước Cù lao',
+          text: 'Diễn ra định kỳ vào mùa trái cây chín rộ tháng 5–7 hàng năm với giải đua ghe tam bản, đờn ca tài tử và tour tham quan vườn sinh thái.',
+        },
+        {
+          heading: 'Hội chợ Nông nghiệp &amp; Triển lãm OCOP',
+          text: 'Điểm hẹn giao thương và quảng bá hơn 100 nông đặc sản OCOP tiêu biểu của 8 huyện thị thành tỉnh Vĩnh Long và ĐBSCL.',
+        },
+      ]"
+      cta-to="/le-hoi"
+      cta-label="Khám phá sổ lễ hội truyền thống"
+    />
+
     <!-- Register toggle: contemporary (sự kiện, here) vs ancestral (lễ hội) — amber ↔ leaf -->
     <section class="block reveal">
       <div class="register-toggle" role="group" aria-label="Chọn sổ lễ hội">
@@ -254,28 +278,14 @@
     </template>
     </section>
 
+    <CatalogFaqAccordion
+      :items="EVENT_CATALOG_FAQS"
+      title="Hỏi đáp sự kiện & hội chợ Vĩnh Long"
+      kicker="Hỏi đáp · Cẩm nang sự kiện"
+    />
+
     <!-- Cross-links -->
-    <section class="block band reveal catalog-cross">
-      <h2>Khám phá thêm</h2>
-      <div class="cross-links">
-        <NuxtLink to="/le-hoi" class="cross-card">
-          <span class="cross-icon" aria-hidden="true"><IconLine name="lantern" /></span>
-          <div><strong>Lễ hội</strong><p>Truyền thống văn hóa</p></div>
-        </NuxtLink>
-        <NuxtLink to="/du-lich" class="cross-card">
-          <span class="cross-icon" aria-hidden="true"><IconLine name="leaf" /></span>
-          <div><strong>Du lịch</strong><p>Trải nghiệm miệt vườn</p></div>
-        </NuxtLink>
-        <NuxtLink to="/lich-trinh" class="cross-card">
-          <span class="cross-icon" aria-hidden="true"><IconLine name="calendar" /></span>
-          <div><strong>Lịch trình</strong><p>Tuyến đi sẵn</p></div>
-        </NuxtLink>
-        <NuxtLink to="/ban-do" class="cross-card" no-prefetch>
-          <span class="cross-icon" aria-hidden="true"><IconLine name="map" /></span>
-          <div><strong>Bản đồ</strong><p>Xem trên bản đồ</p></div>
-        </NuxtLink>
-      </div>
-    </section>
+    <CatalogCrossLinks />
   </div>
 </template>
 
@@ -286,6 +296,7 @@ import ImageDisclosure from '~/components/ImageDisclosure.vue'
 import { AREA_META } from '~/composables/useConstants'
 import { solarToLunar } from '~/composables/useLunar'
 import { describeEntityImages, describeEntityPlaceholder } from '~/utils/imageDescriptors'
+import { EVENT_CATALOG_FAQS } from '~/composables/useSeoHelpers'
 import { useId } from 'vue'
 
 useReveal()
@@ -527,81 +538,30 @@ useSeoMeta({
   ogUrl: () => canonicalUrl('/su-kien'),
   twitterCard: 'summary_large_image',
 })
-const eventListSchema = computed(() => {
-  const items = allEvents.value.slice(0, 30).map((e: Entity, i: number) => ({
-    '@type': 'ListItem',
-    position: i + 1,
-    item: {
-      '@type': 'Event',
-      name: e.name,
-      ...(e.attributes?.date_start ? { startDate: e.attributes.date_start } : {}),
-      ...(e.attributes?.date_end ? { endDate: e.attributes.date_end } : {}),
-      url: `https://vinhlong360.vn${entityPath(e.id)}`,
-      eventAttendanceMode: 'https://schema.org/OfflineEventAttendanceMode',
-      ...(e.place_name ? { location: { '@type': 'Place', name: e.place_name } } : {}),
-    },
-  }))
-  if (!items.length) return ''
-  return safeJsonLd({
-    '@context': 'https://schema.org',
-    '@type': 'ItemList',
-    name: 'Sự kiện',
-    numberOfItems: allEvents.value.length,
-    itemListOrder: 'https://schema.org/ItemListOrderAscending',
-    itemListElement: items,
-  })
-})
-
 useHead(() => {
   const pageUrl = canonicalUrl('/su-kien')
-  const graphNodes: any[] = [
-    buildWebSiteSchema(),
-    buildOrganizationSchema(),
-    {
-      '@type': 'CollectionPage',
-      '@id': `${pageUrl}#collection`,
-      name: 'Sự kiện & Hội chợ Vĩnh Long',
-      description: 'Hội chợ, triển lãm, ngày hội nông sản và sự kiện văn hóa nghệ thuật tại Vĩnh Long.',
-      url: pageUrl,
-      numberOfItems: allEvents.value.length,
-      isPartOf: { '@id': `${SITE_URL}/#website` },
-      about: {
-        '@type': 'Thing',
-        name: 'Sự kiện văn hóa và hội chợ thương mại Vĩnh Long',
-        description: 'Các hoạt động sự kiện xúc tiến thương mại, ngày hội văn hóa và festival nghệ thuật tại Vĩnh Long.',
-      },
-      speakable: buildSpeakableSpecification(['.catalog-hero h1', '.catalog-lead', '.register-toggle']),
-    },
-  ]
-
-  const faqItems: FaqItem[] = [
-    {
-      q: 'Vĩnh Long thường tổ chức những sự kiện hoặc hội chợ lớn nào trong năm?',
-      a: 'Các sự kiện tiêu biểu gồm Ngày hội Du lịch Vĩnh Long, Ngày đồng hành cùng gốm đỏ Mang Thít, Hội chợ Xúc tiến Thương mại - Nông nghiệp cùng các giải đua ghe Ngo truyền thống trên sông.',
-    },
-    {
-      q: 'Người dân và du khách có thể theo dõi lịch sự kiện sắp diễn ra ở đâu?',
-      a: 'Trang Sự Kiện trên VinhLong360 cập nhật liên tục các sự kiện đang diễn ra và sắp khai mạc, kèm tiện ích xuất file .ics nhắc hẹn trực tiếp vào điện thoại.',
-    },
-    {
-      q: 'Tham gia các sự kiện văn hóa và hội chợ tại Vĩnh Long có cần mua vé không?',
-      a: 'Đa số các sự kiện văn hóa cộng đồng, hội chợ xúc tiến thương mại và ngày hội du lịch tại Vĩnh Long đều mở cửa miễn phí phục vụ nhân dân và du khách.',
-    },
-  ]
-  const faqNode = buildFaqPageSchema(faqItems, `${pageUrl}#faq`)
-  if (faqNode) graphNodes.push(faqNode)
+  const schemaGraph = buildContemporaryEventSchemaGraph({
+    events: allEvents.value.map((e: Entity) => ({
+      id: e.id,
+      name: e.name,
+      summary: e.summary,
+      place_name: e.place_name,
+      date_start: e.attributes?.date_start,
+      date_end: e.attributes?.date_end,
+    })),
+    totalCount: allEvents.value.length,
+    todayGregorianLabel,
+    todayLunarLabel,
+    canonicalUrl: pageUrl,
+  })
 
   return {
     link: [{ rel: 'canonical', href: pageUrl }],
     script: [
       {
         type: 'application/ld+json',
-        innerHTML: safeJsonLd({
-          '@context': 'https://schema.org',
-          '@graph': graphNodes,
-        }),
+        innerHTML: safeJsonLd(schemaGraph),
       },
-      ...(eventListSchema.value ? [{ type: 'application/ld+json' as const, innerHTML: eventListSchema.value }] : []),
     ],
   }
 })

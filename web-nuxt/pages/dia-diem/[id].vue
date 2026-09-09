@@ -16,8 +16,7 @@
       <ol>
         <li><NuxtLink to="/">Trang chủ</NuxtLink></li>
         <li><NuxtLink :to="typeBreadcrumbUrl">{{ typeMeta.label }}</NuxtLink></li>
-        <!-- §1.6: mắt xích giữa là ĐƠN VỊ HÀNH CHÍNH (xã/phường theo placeId),
-             không phải `area` (vùng cũ ben-tre/tra-vinh/vinh-long — chỉ để tra cứu dữ liệu). -->
+        <!-- Đơn vị hành chính cấp xã/phường -->
         <li v-if="adminUnitBreadcrumb">
           <NuxtLink v-if="adminUnitBreadcrumb.to" :to="adminUnitBreadcrumb.to">{{ adminUnitBreadcrumb.label }}</NuxtLink>
           <template v-else>{{ adminUnitBreadcrumb.label }}</template>
@@ -57,8 +56,7 @@
         <h1>{{ entity.name }}</h1>
         <p v-if="heroHook" class="dc-hook">{{ heroHook }}</p>
         <p v-if="entity.place_name" class="dc-place"><NuxtLink v-if="entity.placeId" :to="`/xa-phuong/${entity.placeId}`" class="dc-place-link">{{ entity.place_name }}</NuxtLink><template v-else>{{ entity.place_name }}</template></p>
-        <!-- declutter-3 T17 (B5d): Save/Share dời về sidebar .aside-actions (additive-first,
-             verify xong mới xoá ở đây) — hero còn tối đa 3 nút hành-vi-chuyến-đi -->
+        <!-- Hero action suite -->
         <DetailActionSuite :entity-id="entity.id" :entity-type="entity.type" />
       </div>
       <DetailCoverLightbox
@@ -180,11 +178,7 @@
           <div class="ocop-stars">
             <IconLine v-for="s in ocopStars" :key="s" class="ocop-star" name="star" aria-hidden="true" />
           </div>
-          <!-- GIỮ nguyên tiền tố CMS và chỉ nối HẠNG vào sau. Bản nháp đổi tiền
-               tố thành 'Sản phẩm' rồi nối `ocopBadge` (đã chứa chữ OCOP) — nhưng
-               `ss()` đọc site settings, nên nếu CMS ghi đè khoá này thành "Sản
-               phẩm OCOP" thì ra "Sản phẩm OCOP OCOP 4 sao": đúng lỗi nhân đôi
-               đang đi sửa. Nối hạng thì đúng ở CẢ hai trường hợp. -->
+          <!-- Nối hạng sao vào tiền tố CMS -->
           <strong>{{ ss('labels.detail.ocop_product_prefix', 'Sản phẩm OCOP') }}<span v-if="ocopStars"> {{ ocopStars }} sao</span></strong>
           <small>{{ ss('labels.detail.ocop_program', 'Chương trình Mỗi xã Một sản phẩm') }}</small>
         </div>
@@ -311,11 +305,9 @@
         <!-- Contextual next steps -->
         <div class="next-steps">
           <h2 class="ns-title sediment-head">{{ ss('labels.detail.next_steps_title', 'Bước tiếp theo') }}</h2>
-          <!-- Save affordance lives in the hero (SaveButton) — avoid a second, divergent toggle here.
-               Next step is the active-planning CTA, labeled to distinguish it from "save for later". -->
+          <!-- Active planning CTA -->
         <NuxtLink :to="planAddUrl" no-prefetch class="ns-action"><IconLine name="clipboard-list" aria-hidden="true" /> {{ ss('labels.detail.next_add_itinerary', 'Thêm vào lịch trình') }}</NuxtLink>
-          <!-- declutter-1 T5: buy-contact dời từ contact-row (đã bỏ — desktop bị CSS ẩn,
-               mobile ContactWidget che); ContactWidget không có kênh hỏi-mua nên giữ ở đây. -->
+          <!-- Kênh mua trực tiếp -->
           <a v-if="buyContactUrl" :href="buyContactUrl" target="_blank" rel="nofollow noopener" class="ns-action" data-contact-action="website" :aria-label="`Hỏi mua ${entity.name}`" @click="trackContact('website')"><IconLine name="gift" aria-hidden="true" /> {{ ss('labels.detail.cta_buy_contact', 'Hỏi mua trực tiếp') }}</a>
           <NuxtLink v-if="entity.type !== 'accommodation'" to="/luu-tru" class="ns-action"><IconLine name="home" aria-hidden="true" /> {{ ss('labels.detail.next_find_stay', 'Tìm chỗ ở gần đây') }}</NuxtLink>
         <NuxtLink :to="mapUrl" no-prefetch class="ns-action"><IconLine name="map" aria-hidden="true" /> {{ ss('labels.detail.next_view_map', 'Xem trên bản đồ') }}</NuxtLink>
@@ -341,6 +333,9 @@
           <p>{{ entity.attributes.highlight }}</p>
         </blockquote>
 
+        <!-- Hộp Tóm tắt Thực địa 30s & AEO -->
+        <DetailAeoSummary :entity="entity" :accent="detailMaterialAccent" />
+
         <!-- Mô tả chi tiết -->
         <div v-if="descriptionSections.length" class="entity-description" :class="{ 'rich-desc': hasRichDescription }">
           <div id="desc-content" class="desc-content" :class="{ expanded: descExpanded || totalDescParagraphs <= 5 }">
@@ -365,12 +360,6 @@
             <p>{{ sec.text }}</p>
           </div>
         </div>
-
-        <!-- Lưu ý thực tế — Scenarios 2,3,6,9: practical tips for food/family/OCOP/delegation -->
-        <DetailPracticalTips
-          :entity="entity"
-          :tips-heading="ss('labels.detail.practical_tips_heading', 'Lưu ý thực tế')"
-        />
 
         <!-- Know Before You Go -->
         <KnowBeforeYouGo
@@ -442,28 +431,12 @@
         </NuxtErrorBoundary>
 
         <!-- Relationships belong after the full narrative and recommendation flow. -->
-        <div v-if="relationships.length" class="rel-block reveal" data-detail-region="related">
-          <h2 class="sediment-head">{{ ss('labels.detail.relationships_heading', 'Liên kết') }}</h2>
-          <ul class="rel-list">
-            <li v-for="rel in relationships" :key="`${rel.target_id}-${rel.rel_type}`">
-              <span class="rel-label">{{ rel.label }}</span>
-              <span class="rel-main">
-                <NuxtLink :to="entityPath(rel.target_id)">{{ rel.target_name }}</NuxtLink>
-                <small v-if="rel.distance_km" class="rel-distance">{{ rel.distance_km }} km</small>
-              </span>
-            </li>
-          </ul>
-          <button
-            v-if="hasMoreRelationships"
-            class="rel-more"
-            type="button"
-            :disabled="loadingRelationships"
-            @click="loadMoreRelationships"
-          >
-            {{ loadingRelationships ? ss('labels.detail.relationships_loading', 'Đang tải...') : `${ss('labels.detail.relationships_more', 'Xem thêm')} ${remainingRelationshipCount}` }}
-          </button>
-          <p v-if="relError" class="empty" role="alert">{{ relError }}</p>
-        </div>
+        <DetailRelationships
+          data-detail-region="related"
+          :entity-id="id"
+          :initial-relationships="entity?.relationships"
+          :initial-total="entity?.relationship_total"
+        />
       </article>
 
     </div>
@@ -550,7 +523,7 @@
 import { ocopBadgeLabel, ocopStars as ocopStarsOf } from '~/utils/ocop'
 import type { Entity } from '~/types'
 import type { ImageDescriptor } from '~/types/image'
-import { TYPE_META, AREA_META, REL_FWD, REL_BWD } from '~/composables/useConstants'
+import { TYPE_META, AREA_META } from '~/composables/useConstants'
 import { seasonText } from '~/composables/useSeason'
 import { generateCategoryPlaceholder, generateCategoryIcon } from '~/composables/useCategoryPlaceholder'
 import { entityStoryTeaser } from '~/composables/useEntityStory'
@@ -564,6 +537,7 @@ import { resolveFreshnessStatus, resolveRegionalAccent, resolveSourceTier } from
 import ActionDock from '~/components/public/ActionDock.vue'
 import PageState from '~/components/public/PageState.vue'
 import SourceTrustDrawer from '~/components/SourceTrustDrawer.vue'
+import { useDetailHeroTransition, type HeroImageRef } from '~/composables/useDetailHeroTransition'
 
 interface LaunchEntityCarrier extends Entity {
   readonly __launchGeneration: number
@@ -587,7 +561,6 @@ const route = useRoute()
 const router = useRouter()
 const id = computed(() => normalizeRouteParam(route.params.id))
 const encodedId = computed(() => encodePathId(id.value))
-const heroLoaded = ref(false)
 const detailOnline = ref(true)
 const launchSafety = useLaunchSafety()
 const entityLaunchGeneration = createLaunchGenerationGuard(() => launchSafety.resetForNavigation())
@@ -601,37 +574,7 @@ watch(() => route.fullPath, (next, previous) => {
   if (previous !== undefined && next !== previous) entityLaunchGeneration.begin()
 }, { flush: 'sync' })
 
-type HeroNavigationAttempt = {
-  readonly fromFullPath: string
-  readonly toFullPath: string
-}
-
-let pendingHeroNavigation: HeroNavigationAttempt | null = null
-
-function changesHeroRouteIdentity(to: typeof route, from: typeof route): boolean {
-  return to.name !== from.name || normalizeRouteParam(to.params.id) !== normalizeRouteParam(from.params.id)
-}
-
-const removeHeroNavigationGuard = router.beforeEach((to, from) => {
-  if (!changesHeroRouteIdentity(to, from)) return
-  pendingHeroNavigation = { fromFullPath: from.fullPath, toFullPath: to.fullPath }
-  heroLoaded.value = false
-})
-
-const removeHeroNavigationCompletionHook = router.afterEach((to, from, failure) => {
-  const pending = pendingHeroNavigation
-  if (!pending) return
-  const completesPendingNavigation = (
-    pending.fromFullPath === from.fullPath && pending.toFullPath === to.fullPath
-  ) || to.redirectedFrom?.fullPath === pending.toFullPath
-  if (!completesPendingNavigation) return
-  pendingHeroNavigation = null
-  if (failure || !changesHeroRouteIdentity(to, from)) void revealHeroImageAfterUpdate()
-})
-
 onUnmounted(() => {
-  removeHeroNavigationGuard()
-  removeHeroNavigationCompletionHook()
   window.removeEventListener('online', updateDetailConnectivity)
   window.removeEventListener('offline', updateDetailConnectivity)
 })
@@ -652,27 +595,6 @@ async function copyText(text: string, label: string) {
   }
 }
 
-type HeroImageRef = HTMLImageElement | { $el?: unknown } | null
-const heroImage = ref<HeroImageRef>(null)
-
-function revealHeroImage(event?: Event) {
-  const eventTarget = event?.currentTarget
-  const refTarget = heroImage.value
-  const image = eventTarget instanceof HTMLImageElement
-    ? eventTarget
-    : refTarget instanceof HTMLImageElement
-      ? refTarget
-      : refTarget?.$el instanceof HTMLImageElement
-        ? refTarget.$el
-        : null
-  if (!image?.complete || image.naturalWidth <= 0) return
-  heroLoaded.value = true
-}
-
-async function revealHeroImageAfterUpdate() {
-  await nextTick()
-  revealHeroImage()
-}
 
 const { track: trackRecent } = useRecentlyViewed()
 const { trackEntityView } = useUserEvents()
@@ -841,14 +763,16 @@ const hasEntityGallery = computed(() => (
 
 const coverImage = computed(() => heroDescriptor.value.url || '')
 
-// Reset stale route state before Vue reuses the hero, then inspect the committed replacement ref.
-watch(heroImageIdentity, () => {
-  heroLoaded.value = false
-}, { flush: 'sync' })
-
-watch(heroImageIdentity, () => {
-  void revealHeroImageAfterUpdate()
-}, { flush: 'post' })
+const {
+  heroLoaded,
+  heroImage,
+  revealHeroImage,
+  revealHeroImageAfterUpdate,
+} = useDetailHeroTransition({
+  router,
+  route,
+  heroImageIdentity,
+})
 
 function sanitizeDisclosureIdToken(value: unknown): string {
   const raw = String(value ?? '').trim()
@@ -1045,84 +969,6 @@ const bylineText = computed(() => entityVerifiedAt.value
 // trả 0 cho gần như mọi sản phẩm vừa để chuỗi thô lọt lên giao diện.
 const ocopStars = computed(() => Math.min(ocopStarsOf(entity.value as any), 5))
 const ocopBadge = computed(() => ocopBadgeLabel(entity.value as any))
-
-const relationshipRows = ref<Record<string, any>[]>([])
-const relationshipTotal = ref(0)
-const loadingRelationships = ref(false)
-
-watch(entity, (next) => {
-  relationshipRows.value = Array.isArray(next?.relationships) ? next.relationships.map(rel => ({ ...rel })) : []
-  relationshipTotal.value = Number(next?.relationship_total ?? relationshipRows.value.length) || relationshipRows.value.length
-}, { immediate: true })
-
-function rawRelationshipKey(r: Record<string, any>) {
-  return `${r.source_id || ''}|${r.target_id || ''}|${r.rel_type || ''}`
-}
-
-function normalizeRelationship(r: Record<string, any>) {
-  const sourceId = r.source_id
-  const targetId = r.target_id
-  const relType = r.rel_type
-  if (!sourceId || !targetId || !relType) return null
-  const isNear = relType === 'near'
-  const distance = typeof r.distance_km === 'number' ? r.distance_km : null
-  if (isNear && (distance === null || distance > 50)) return null
-  const isFwd = sourceId === id.value
-  const otherId = r.other_id ?? (isFwd ? targetId : sourceId)
-  const otherName = r.other_name ?? (isFwd ? (r.target_name ?? r.name) : (r.source_name ?? r.name))
-  const otherType = r.other_type ?? ''
-  let label = isFwd ? (REL_FWD[relType] || relType) : (REL_BWD[relType] || relType)
-  if ((relType === 'related_to' || relType === 'associated_with') && otherType) {
-    const meta = TYPE_META[otherType]
-    if (meta) label = meta.emoji + ' ' + meta.label
-  }
-  return {
-    target_id: otherId,
-    target_name: otherName || otherId,
-    rel_type: relType,
-    distance_km: distance,
-    label,
-  }
-}
-
-const relationships = computed(() => {
-  return relationshipRows.value
-    .map(normalizeRelationship)
-    .filter((rel): rel is NonNullable<ReturnType<typeof normalizeRelationship>> => Boolean(rel))
-})
-
-const remainingRelationshipCount = computed(() => Math.max(relationshipTotal.value - relationshipRows.value.length, 0))
-const hasMoreRelationships = computed(() => remainingRelationshipCount.value > 0)
-
-const relError = ref('')
-async function loadMoreRelationships() {
-  if (loadingRelationships.value || !hasMoreRelationships.value) return
-  const currentId = id.value
-  loadingRelationships.value = true
-  relError.value = ''
-  try {
-    const response = await $fetch<{ total?: number; relationships?: Record<string, any>[] }>(`/api/entities/${encodePathId(currentId)}/relationships`, {
-      query: {
-        limit: RELATIONSHIP_BATCH_SIZE,
-        offset: relationshipRows.value.length,
-      },
-    })
-    if (currentId !== id.value) return
-    relationshipTotal.value = Number(response?.total ?? relationshipTotal.value) || relationshipTotal.value
-    const seen = new Set(relationshipRows.value.map(rawRelationshipKey))
-    for (const rel of response?.relationships || []) {
-      const key = rawRelationshipKey(rel)
-      if (!seen.has(key)) {
-        relationshipRows.value.push(rel)
-        seen.add(key)
-      }
-    }
-  } catch {
-    relError.value = ss('labels.detail.relationships_error', 'Không tải thêm được, thử lại sau.')
-  } finally {
-    loadingRelationships.value = false
-  }
-}
 
 // ── Reactive SEO meta: updates when entity changes (client-side navigation) ──
 const seoDesc = computed(() => {

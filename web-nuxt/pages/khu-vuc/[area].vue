@@ -34,6 +34,17 @@
     <!-- Spotlight -->
     <CatalogSpotlight :items="entities" />
 
+    <!-- AEO Plaque: District Terroir & Cultural Geography Portfolio -->
+    <CatalogAeoPlaque
+      :title="areaAeoDigest.title"
+      :kicker="areaAeoDigest.kicker"
+      :accent="areaAeoDigest.accent"
+      :icon="areaAeoDigest.icon"
+      :entries="areaAeoDigest.entries"
+      :cta-to="areaAeoDigest.ctaTo"
+      :cta-label="areaAeoDigest.ctaLabel"
+    />
+
     <!-- Interstitial -->
     <CatalogInterstitial
       v-if="typeStats.length"
@@ -124,25 +135,15 @@
     </EmptyState>
 
     <!-- Cross-links -->
-    <section v-if="areaMeta" class="block band catalog-cross reveal">
-      <h2>Khám phá thêm {{ areaMeta.name }}</h2>
-      <div class="cross-links">
-        <NuxtLink :to="`/du-lich?type=experience&mua=all`" class="cross-card">
-          <span class="cross-icon" aria-hidden="true"><IconLine name="sprout" /></span>
-          <div><strong>Trải nghiệm</strong><p>Miệt vườn sông nước</p></div>
-        </NuxtLink>
-        <NuxtLink to="/san-pham" class="cross-card">
-          <span class="cross-icon" aria-hidden="true"><IconLine name="fruit" /></span>
-          <div><strong>Sản phẩm</strong><p>Đặc sản địa phương</p></div>
-        </NuxtLink>
-        <NuxtLink to="/luu-tru" class="cross-card">
-          <span class="cross-icon" aria-hidden="true"><IconLine name="home" /></span>
-          <div><strong>Lưu trú</strong><p>Homestay, nhà vườn</p></div>
-        </NuxtLink>
-      </div>
-    </section>
-    <!-- declutter-3 T14 (A3c): JourneyBar page-level — trang thuộc luồng lập-kế-hoạch -->
-    <ClientOnly><LazyJourneyBar /></ClientOnly>
+    <CatalogCrossLinks
+      v-if="areaMeta"
+      :title="`Khám phá thêm ${areaMeta.name}`"
+      :links="[
+        { to: '/du-lich?type=experience&mua=all', label: 'Trải nghiệm', desc: 'Miệt vườn sông nước', icon: 'sprout' },
+        { to: '/san-pham', label: 'Sản phẩm', desc: 'Đặc sản địa phương', icon: 'fruit' },
+        { to: '/luu-tru', label: 'Lưu trú', desc: 'Homestay, nhà vườn', icon: 'home' },
+      ]"
+    />
   </section>
 </template>
 
@@ -160,11 +161,11 @@ if (!areaMeta) throw createError({ statusCode: 404, statusMessage: 'Không tìm 
 // Per-region accent binding — feeds the scoped hero bloom + stat tint so each
 // area "owns" its colour. Falls back to brand primary for unknown areas.
 const AREA_RGB: Record<string, string> = {
-  'vinh-long': 'var(--color-brand-rgb)',
-  'ben-tre': 'var(--secondary-rgb)',
+  'vinh-long': 'var(--clay-rgb)',
+  'ben-tre': 'var(--leaf-rgb)',
   'tra-vinh': 'var(--river-rgb)',
 }
-const areaTint = { '--AREA-rgb': AREA_RGB[areaKey] || 'var(--color-brand-rgb)' }
+const areaTint = { '--AREA-rgb': AREA_RGB[areaKey] || 'var(--clay-rgb)' }
 
 const [{ data, error: fetchError }, { data: placesData }] = await Promise.all([
   useAsyncData(`area-${areaKey}`, () =>
@@ -199,6 +200,81 @@ const AREA_EDITORIAL: Record<string, { title: string; paragraphs: string[] }> = 
   },
 }
 const areaEditorial = computed(() => AREA_EDITORIAL[areaKey])
+
+const areaAeoDigest = computed(() => {
+  if (areaKey === 'ben-tre') {
+    return {
+      title: 'Đặc Trưng Thổ Nhưỡng & Văn Hóa Địa Hạt Bến Tre (Cũ)',
+      kicker: 'Góc nhìn bản địa · Xứ sở dừa xiêm & Vườn ươm cây giống',
+      accent: 'leaf' as const,
+      icon: 'leaf',
+      entries: [
+        {
+          heading: 'Rừng dừa nước & Kênh rạch châu thổ',
+          text: 'Hệ sinh thái xanh mát trải dài với hàng chục giống dừa bản địa, kẹo dừa gia truyền và đồ thủ công mỹ nghệ gáo dừa.',
+        },
+        {
+          heading: 'Chợ Lách — Thủ phủ Hoa kiểng Cái Mơn',
+          text: 'Nơi khởi nguồn hàng triệu gốc cây giống ăn quả và hoa kiểng cung ứng cho cả nước mỗi dịp Tết đến xuân về.',
+        },
+        {
+          heading: 'Cồn bãi ven sông Hàm Luông',
+          text: 'Trải nghiệm du lịch sinh thái sông nước miệt vườn nguyên sơ, lưu trú homestay đậm chất hào sảng Nam Bộ.',
+        },
+      ],
+      ctaTo: '/kham-pha/thien-nhien',
+      ctaLabel: 'Khám phá sinh thái sông nước',
+    }
+  }
+
+  if (areaKey === 'tra-vinh') {
+    return {
+      title: 'Đặc Trưng Thổ Nhưỡng & Văn Hóa Địa Hạt Trà Vinh (Cũ)',
+      kicker: 'Góc nhìn bản địa · Bản sắc Khmer & Hệ sinh thái ven biển',
+      accent: 'clay' as const,
+      icon: 'landmark',
+      entries: [
+        {
+          heading: 'Quần thể 140+ Chùa Khmer Cổ kính',
+          text: 'Kiến trúc Angkor rực rỡ, lễ hội Ok Om Bok và nghệ thuật múa Chhay-dâm đậm đà bản sắc tâm linh phương Nam.',
+        },
+        {
+          heading: 'Ao Bà Om & Danh thắng Cây cổ thụ',
+          text: 'Hồ nước ngọt huyền thoại được bao bọc bởi hàng cây sao, cây dầu cổ thụ rễ trồi kỳ vĩ hàng trăm năm tuổi.',
+        },
+        {
+          heading: 'Dừa sáp Cầu Kè & Biển Ba Động',
+          text: 'Đặc sản dừa sáp sánh đặc quý hiếm độc nhất vô nhị cùng bờ biển phù sa lộng gió biển Đông hoang sơ.',
+        },
+      ],
+      ctaTo: '/kham-pha/lang-nghe',
+      ctaLabel: 'Khám phá đặc sản & làng nghề',
+    }
+  }
+
+  return {
+    title: 'Đặc Trưng Thổ Nhưỡng & Văn Hóa Địa Hạt Vĩnh Long',
+    kicker: 'Góc nhìn bản địa · Miệt vườn châu thổ & Lò gạch gốm đỏ',
+    accent: 'river' as const,
+    icon: 'compass',
+    entries: [
+      {
+        heading: 'Cù lao An Bình & Bình Hòa Phước',
+        text: 'Vương quốc chôm chôm, nhãn xuồng, sầu riêng và hệ sinh thái homestay miệt vườn sông Cổ Chiên trứ danh.',
+      },
+      {
+        heading: 'Di sản Đương đại Mang Thít',
+        text: 'Hàng ngàn lò gạch gốm đỏ rực rỡ dọc kênh Thầy Cai và sông Cổ Chiên với bề dày kỹ nghệ hơn một thế kỷ.',
+      },
+      {
+        heading: 'Đất Danh Nhân & Làng Nghề Bền Bỉ',
+        text: 'Cái nôi văn hóa Long Hồ Dinh với Văn Thánh Miếu 1864, làng bánh tráng Cù lao Mây và tàu hũ ky Mỹ Hòa.',
+      },
+    ],
+    ctaTo: '/kham-pha/van-hoa',
+    ctaLabel: 'Khám phá văn hóa & di tích Vĩnh Long',
+  }
+})
 
 const ADMIN_LEVELS = ['phuong', 'xa', 'tinh']
 const wards = computed(() =>
@@ -307,7 +383,7 @@ if (areaMeta) {
         url: pageUrl,
         isPartOf: { '@id': `${SITE_URL}/#website` },
         mainEntity: { '@id': `${pageUrl}#adminarea` },
-        speakable: buildSpeakableSpecification(['.catalog-hero-inner h1', '.catalog-lead', '.area-stats']),
+        speakable: buildSpeakableSpecification(['.catalog-hero-inner h1', '.catalog-lead', '.area-stats', '.catalog-aeo-plaque__title', '.catalog-aeo-plaque__dek']),
       },
     ]
 
@@ -412,7 +488,7 @@ if (areaMeta) {
 }
 .ce-area .section-head h2::before {
   content: ""; position: absolute; left: 0; top: 50%; transform: translateY(-50%);
-  width: 4px; height: 1.05em; border-radius: var(--radius-full);
+  width: 4px; height: 1.05em; border-radius: var(--radius-pill, 999px);
   background: linear-gradient(180deg, var(--river-600) 0%, var(--amber-600) 52%, var(--clay-600) 100%);
 }
 .dark .ce-area .section-head h2::before { background: linear-gradient(180deg, var(--river-400, var(--river-legacy-dark)) 0%, var(--amber-500) 52%, var(--clay-400) 100%); }
@@ -502,7 +578,7 @@ if (areaMeta) {
   color: var(--color-action);
   background: transparent;
   border: .5px solid transparent;
-  border-radius: var(--radius-full);
+  border-radius: var(--radius-pill, 999px);
   padding: var(--space-2) var(--space-3);
   min-height: 44px;
   display: inline-flex;

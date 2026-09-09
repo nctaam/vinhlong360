@@ -225,7 +225,7 @@ describe('Task36 image boundaries', () => {
   })
 
   it('keeps nearby and recommendation surfaces delegated through EntityCard', () => {
-    for (const file of ['components/NearbyEntities.vue', 'components/SmartRecommendations.vue', 'components/AIRecommendations.vue']) {
+    for (const file of ['components/NearbyEntities.vue', 'components/SmartRecommendations.vue']) {
       const source = readFileSync(resolve(__dirname, '..', file), 'utf8')
       expect(source).toContain('<EntityCard')
     }

@@ -29,6 +29,16 @@
       </ul>
     </section>
 
+    <CatalogAeoPlaque
+      title="Chỉ dẫn lưu trú Vĩnh Long — Thức dậy cùng nhịp sống cù lao"
+      kicker="Mẹo chọn chỗ nghỉ · Thực địa miệt vườn"
+      accent="river"
+      icon="home"
+      :entries="catalogAeoEntries"
+      cta-to="/ban-do"
+      cta-label="Xem vị trí các homestay trên bản đồ số"
+    />
+
     <!-- Spotlight nổi bật -->
     <CatalogSpotlight :items="allEntities" />
 
@@ -148,19 +158,14 @@
       </EmptyState>
     </section>
 
+    <CatalogFaqAccordion
+      :items="STAY_CATALOG_FAQS"
+      title="Hỏi đáp lưu trú & homestay Vĩnh Long"
+      kicker="Hỏi đáp · Cẩm nang chỗ nghỉ"
+    />
+
     <!-- Cross-links -->
-    <!-- Cross-links (declutter-2 A1: 4→3 script-driven; bỏ Du-lịch — trùng interstitial links + nav) -->
-    <section class="block band reveal catalog-cross">
-      <h2>Khám phá thêm</h2>
-      <div class="cross-links">
-        <NuxtLink v-for="c in relatedCatalogs" :key="c.to" :to="c.to" :no-prefetch="c.noPrefetch" class="cross-card">
-          <span class="cross-icon" aria-hidden="true"><IconLine :name="c.icon" /></span>
-          <div><strong>{{ c.label }}</strong><p>{{ c.desc }}</p></div>
-        </NuxtLink>
-      </div>
-    </section>
-    <!-- declutter-3 T14 (A3c): JourneyBar page-level — trang thuộc luồng lập-kế-hoạch -->
-    <ClientOnly><LazyJourneyBar /></ClientOnly>
+    <CatalogCrossLinks />
   </section>
 </template>
 
@@ -168,6 +173,7 @@
 import type { Entity } from '~/types'
 import { AREA_META } from '~/composables/useConstants'
 import { generateCategoryIcon } from '~/composables/useCategoryPlaceholder'
+import { STAY_CATALOG_FAQS } from '~/composables/useSeoHelpers'
 
 useReveal()
 const { f: pc } = usePageContent('luu_tru')
@@ -189,6 +195,21 @@ function toggleAreaAndScroll(key: string) {
 const nhaMotif = generateCategoryIcon('accommodation')
 const natureMotif = generateCategoryIcon('nature')
 const attractionMotif = generateCategoryIcon('attraction')
+const catalogAeoEntries = [
+  {
+    heading: 'Homestay nhà vườn Cù lao An Bình & Bình Hòa Phước',
+    text: 'Trải nghiệm sống cùng gia chủ miệt vườn, chèo xuồng rạch nhỏ dừa nước, hái trái cây ăn tại vườn và thưởng thức bữa cơm cá tai tượng chiên xù giòn rụm.',
+  },
+  {
+    heading: 'Resort sinh thái ven sông Tiền & sông Cổ Chiên',
+    text: 'Không gian nghỉ dưỡng khoáng đạt hướng trọn tầm nhìn sông lớn, đón ngọn gió mát lành và ngắm bình minh rạng rỡ trên những chuyến phà châu thổ.',
+  },
+  {
+    heading: 'Khách sạn trung tâm thành phố Vĩnh Long & Bình Minh',
+    text: 'Vị trí thuận tiện kết nối các trục quốc lộ huyết mạch, gần chợ đêm bờ kè, phố ẩm thực và bến tàu du lịch đường thủy.',
+  },
+]
+
 const stayTypes = [
   {
     key: 'homestay',
@@ -308,13 +329,6 @@ function clearFilters() {
   q.value = ''
 }
 
-// declutter-2 A1: cross-links 3 card script-driven (bỏ Du-lịch — trùng interstitial links + nav).
-const relatedCatalogs = [
-  { to: '/lich-trinh', icon: 'calendar', label: 'Lịch trình', desc: 'Ghép lưu trú vào kế hoạch đi' },
-  { to: '/ban-do', icon: 'map', label: 'Bản đồ', desc: 'Xem trên bản đồ', noPrefetch: true },
-  { to: '/san-pham', icon: 'fruit', label: 'Đặc sản', desc: 'Mua quà Vĩnh Long' },
-]
-
 const filtered = computed(() => {
   let list = allEntities.value
 
@@ -346,68 +360,24 @@ useSeoMeta({
 
 useHead(() => {
   const pageUrl = canonicalUrl('/luu-tru')
-  const graphNodes: any[] = [
-    buildWebSiteSchema(),
-    buildOrganizationSchema(),
-    {
-      '@type': 'CollectionPage',
-      '@id': `${pageUrl}#collection`,
-      name: 'Lưu trú Vĩnh Long',
-      description: 'Homestay, nhà vườn, khách sạn và nơi nghỉ ở Vĩnh Long.',
-      url: pageUrl,
-      numberOfItems: allEntities.value.length,
-      isPartOf: { '@id': `${SITE_URL}/#website` },
-      about: {
-        '@type': 'Thing',
-        name: 'Dịch vụ lưu trú và Homestay Vĩnh Long',
-        description: 'Hệ thống homestay nhà vườn, khách sạn và khu nghỉ dưỡng ven sông tại Vĩnh Long.',
-      },
-      speakable: buildSpeakableSpecification(['.catalog-hero h1', '.catalog-lead', '.catalog-type-breakdown']),
-    },
-  ]
-
-  if (allEntities.value?.length) {
-    graphNodes.push({
-      '@type': 'ItemList',
-      '@id': `${pageUrl}#items`,
-      name: 'Danh sách cơ sở lưu trú Vĩnh Long',
-      description: 'Homestay, nhà vườn, khách sạn và nơi nghỉ ở Vĩnh Long.',
-      numberOfItems: allEntities.value.length,
-      itemListElement: allEntities.value.slice(0, 30).map((e: Entity, i: number) => ({
-        '@type': 'ListItem',
-        position: i + 1,
-        name: e.name,
-        url: `${SITE_URL}${entityPath(e.id)}`,
-      })),
-    })
-  }
-
-  const faqItems: FaqItem[] = [
-    {
-      q: 'Vĩnh Long có những loại hình lưu trú nào phổ biến nhất?',
-      a: 'Nổi bật nhất là các homestay miệt vườn tại cù lao An Bình với trải nghiệm ngủ nhà gỗ truyền thống Nam Bộ, sinh hoạt cùng gia đình chủ nhà và hái trái cây tại vườn. Ngoài ra còn có hệ thống khách sạn trung tâm thành phố và nhà nghỉ tiện nghi.',
-    },
-    {
-      q: 'Du khách nên lưu ý điều gì khi đặt phòng homestay cù lao tại Vĩnh Long?',
-      a: 'Nên liên hệ đặt trước vào các dịp cuối tuần, mùa lễ hội hoặc mùa trái cây rộ (tháng 5 đến tháng 8). Kiểm tra trước khung giờ hoạt động của phà hoặc đò sang cù lao để chủ động lịch trình di chuyển.',
-    },
-    {
-      q: 'Các cơ sở lưu trú tại Vĩnh Long có cung cấp dịch vụ ẩm thực bản địa không?',
-      a: 'Đa số các homestay sinh thái Vĩnh Long đều phục vụ bữa cơm gia đình nấu theo hương vị truyền thống địa phương với cá tai tượng chiên xù, canh chua cá lóc bông điên điển, cá kèo kho tộ và bánh xèo giòn rụm.',
-    },
-  ]
-  const faqNode = buildFaqPageSchema(faqItems, `${pageUrl}#faq`)
-  if (faqNode) graphNodes.push(faqNode)
+  const schemaGraph = buildStayCatalogSchemaGraph({
+    items: allEntities.value.map((e: Entity) => ({
+      id: e.id,
+      name: e.name,
+      summary: e.summary,
+      place_name: e.place_name,
+      type: e.type,
+    })),
+    totalCount: allEntities.value.length,
+    canonicalUrl: pageUrl,
+  })
 
   return {
     link: [{ rel: 'canonical', href: pageUrl }],
     script: [
       {
         type: 'application/ld+json',
-        innerHTML: safeJsonLd({
-          '@context': 'https://schema.org',
-          '@graph': graphNodes,
-        }),
+        innerHTML: safeJsonLd(schemaGraph),
       },
     ],
   }
@@ -432,11 +402,11 @@ useHead(() => {
   align-items: baseline;
   gap: var(--space-1);
   padding: var(--space-1) var(--space-3);
-  border-radius: var(--radius-full);
+  border-radius: var(--radius-pill, 999px);
   background: rgba(var(--color-action-rgb), .1);
   border: .5px solid rgba(var(--color-action-rgb), .2);
   font-size: var(--text-xs);
-  transition: background .3s var(--ease-out), transform .3s var(--ease-out-expo);
+  transition: background .25s cubic-bezier(0.16, 1, 0.3, 1), transform .25s cubic-bezier(0.16, 1, 0.3, 1);
 }
 .type-pill:hover { transform: translateY(-1px); background: rgba(var(--color-action-rgb), .16); }
 .type-count { font-weight: var(--weight-bold); color: var(--tertiary, var(--color-brand)); }

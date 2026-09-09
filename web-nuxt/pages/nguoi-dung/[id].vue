@@ -133,6 +133,7 @@
             <IconLine name="chevron-right" class="insight-chevron" aria-hidden="true" />
           </NuxtLink>
         </div>
+
       </div>
 
       <div v-if="isSelf && profileCompletion < 100" class="profile-completion">
@@ -412,37 +413,27 @@
 
 <script setup lang="ts">
 import { TYPE_META } from '~/composables/useConstants'
-type ProfileView = Record<string, any> & {
-  id?: string
-  username?: string
-  display_name?: string
-  phone?: string
-  bio?: string
-  avatar?: string | null
-  avatar_url?: string | null
-  cover_url?: string | null
-  created_at?: string
-  post_count?: number
-  review_count?: number
-  follower_count?: number
-  following_count?: number
-}
-type ProfilePayload = {
-  profile: ProfileView | null
-  status: 'ok' | 'not-found' | 'error'
-}
+import { useUserProfileCollections } from '~/composables/useUserProfileCollections'
+import { useUserProfileActivity } from '~/composables/useUserProfileActivity'
+import { useUserProfileSocial } from '~/composables/useUserProfileSocial'
+import { useUserProfilePosts } from '~/composables/useUserProfilePosts'
+import { useUserProfilePresentation, mapProfileView, type ProfileView } from '~/composables/useUserProfilePresentation'
+
+type ProfilePayload = { profile: ProfileView | null; status: 'ok' | 'not-found' | 'error' }
 type ProfileTab = 'posts' | 'reviews' | 'timeline' | 'saved' | 'collections'
+
 useReveal()
 const route = useRoute()
 const userId = computed(() => {
   const id = route.params.id
   return Array.isArray(id) ? String(id[0] || '') : String(id || '')
 })
+
 const { user: currentUser, isLoggedIn, authHeaders, handleSessionExpired } = useAuth()
-const { show: showToast } = useToast()
-const { reportPost, openReport } = useReport()
-const { repost, quote } = useRepost()
+const { show: showToast } = useToast(), { confirmDialog } = useConfirm()
+const { reportPost, openReport } = useReport(), { repost, quote } = useRepost()
 const { filterCommunityPosts } = useCommunityPostFilters<any>()
+const { favorites, count: savedCount } = useFavorites(), { timeAgo } = useTimeAgo()
 
 const validProfileTabs = new Set<ProfileTab>(['posts', 'reviews', 'timeline', 'saved', 'collections'])
 function normalizeProfileTab(value: unknown): ProfileTab {
@@ -450,60 +441,6 @@ function normalizeProfileTab(value: unknown): ProfileTab {
   return validProfileTabs.has(raw as ProfileTab) ? raw as ProfileTab : 'posts'
 }
 const tab = ref<ProfileTab>(normalizeProfileTab(route.query.tab))
-const posts = ref<any[]>([])
-const { favorites, count: savedCount } = useFavorites()
-const loading = ref(true)
-const isFollowing = ref(false)
-const followLoading = ref(false)
-const followerCount = ref<number | null>(null)
-
-// ── Danh sách (collections) ──
-const { collections: userCollections, loading: collectionsLoading, fetchCollections, createCollection, deleteCollection } = useCollections()
-const collectionsCount = computed(() => userCollections.value.length)
-const showCreateCollection = ref(false)
-const newCollectionName = ref('')
-const newCollectionDesc = ref('')
-const creatingCollection = ref(false)
-const createCollectionModalEl = ref<HTMLElement | null>(null)
-useModalA11y(showCreateCollection, createCollectionModalEl, { onClose: () => { showCreateCollection.value = false } })
-
-function closeCreateCollection() {
-  showCreateCollection.value = false
-}
-
-async function handleCreateCollection() {
-  if (!newCollectionName.value.trim() || creatingCollection.value) return
-  creatingCollection.value = true
-  try {
-    await createCollection(newCollectionName.value.trim(), newCollectionDesc.value.trim())
-    showCreateCollection.value = false
-    newCollectionName.value = ''
-    newCollectionDesc.value = ''
-  } catch { /* toast đã hiển thị trong composable */ }
-  creatingCollection.value = false
-}
-
-async function handleDeleteCollection(id: string, name: string) {
-  const ok = await confirmDialog(`Xoá danh sách "${name}"? Hành động không thể hoàn tác.`, { title: 'Xoá danh sách?', confirmText: 'Xoá', danger: true })
-  if (!ok) return
-  try { await deleteCollection(id) } catch { /* toast đã hiển thị trong composable */ }
-}
-
-watch(tab, (t) => {
-  if (t === 'collections' && isSelf.value && !userCollections.value.length) fetchCollections()
-})
-
-function mapProfileView(u: Record<string, any>): ProfileView {
-  const stats = u.stats || {}
-  return {
-    ...u,
-    avatar: u.avatar_url ?? u.avatar ?? null,
-    post_count: stats.posts ?? u.post_count ?? 0,
-    review_count: stats.reviews ?? u.review_count ?? 0,
-    follower_count: stats.followers ?? u.follower_count ?? 0,
-    following_count: stats.following ?? u.following_count ?? 0,
-  }
-}
 
 const profileAsyncData = useAsyncData<ProfilePayload>(`public-user-${userId.value}`, async () => {
   const lookup = userId.value.trim()
@@ -519,19 +456,16 @@ const profileAsyncData = useAsyncData<ProfilePayload>(`public-user-${userId.valu
 }, {
   default: (): ProfilePayload => ({ profile: null, status: 'error' }),
 })
-const profileState = profileAsyncData.data
-const refreshProfile = profileAsyncData.refresh
+const profileState = profileAsyncData.data, refreshProfile = profileAsyncData.refresh
 
 const profilePayload = computed(() => profileState.value as ProfilePayload | null | undefined)
 const profile = computed(() => profilePayload.value?.profile ?? null)
 const profileLoadStatus = computed(() => profilePayload.value?.status ?? 'error')
-const profileFetchFailed = computed(() => profileLoadStatus.value === 'error')
-const profileNotFound = computed(() => profileLoadStatus.value === 'not-found')
+const profileFetchFailed = computed(() => profileLoadStatus.value === 'error'), profileNotFound = computed(() => profileLoadStatus.value === 'not-found')
 
 const profileSlug = computed(() => profile.value?.username || userId.value)
 const publicProfilePath = computed(() => `/nguoi-dung/${encodeURIComponent(profileSlug.value)}`)
-const profileId = computed(() => String(profile.value?.id || userId.value))
-const encodedProfileId = computed(() => encodeURIComponent(profileId.value))
+const profileId = computed(() => String(profile.value?.id || userId.value)), encodedProfileId = computed(() => encodeURIComponent(profileId.value))
 const isSelf = computed(() => {
   const me = currentUser.value
   if (!me) return false
@@ -539,11 +473,116 @@ const isSelf = computed(() => {
   return String(me.id) === profileId.value || (!!profileUsername && me.username === profileUsername) || me.username === userId.value
 })
 
-const showMoreMenu = ref(false)
-function onClickOutsideMore(e: MouseEvent) {
-  const wrap = (e.target as HTMLElement)?.closest('.profile-more-wrap')
-  if (!wrap) showMoreMenu.value = false
+// ── Composable Domain Extractions ──
+const {
+  userCollections, collectionsLoading, collectionsCount, showCreateCollection,
+  newCollectionName, newCollectionDesc, creatingCollection, createCollectionModalEl,
+  closeCreateCollection, handleCreateCollection, handleDeleteCollection, fetchCollections,
+} = useUserProfileCollections({ confirmDialog })
+
+const {
+  isFollowing, followLoading, followerCount, displayFollowerCount, checkFollowing, toggleFollow,
+  followModalOpen, followModalTab, followLists, followLoadingList, followModalList, followDialogEl,
+  loadFollowList, closeFollowModal, openFollowModal, onFollowModalTabKeydown,
+  isBlocked, syncViewerRelationship, checkBlocked, toggleBlock,
+  showMoreMenu, onClickOutsideMore, reportUser, shareProfile, resetSocial,
+} = useUserProfileSocial({
+  profile, encodedProfileId, profileId, publicProfilePath, isSelf, isLoggedIn,
+  authHeaders, handleSessionExpired, showToast, confirmDialog, openReport,
+})
+
+const {
+  xpProgress, isStreakMilestone,
+  timelineItems, timelineLoading, timelinePage, timelineHasMore, timelineIcon, loadTimeline, timelineSentinel,
+  heatmap, heatmapMax, heatmapTotal, loadHeatmap, heatmapWeeks,
+  achievements, achievementsEarned, loadAchievements, achievementCategories, resetActivity,
+} = useUserProfileActivity({
+  profile, encodedProfileId, isSelf, tab, authHeaders, handleSessionExpired,
+})
+
+const {
+  profileHandle, totalContributions, activitySummary,
+  initial, joinDate, profileCompletion, displayName, emptyHint,
+} = useUserProfilePresentation({ profile, isSelf })
+
+const {
+  posts, loading, postsFetchFailed, filteredPosts,
+  fetchPosts, toggleLike, toggleBookmark, deletePost,
+} = useUserProfilePosts({
+  profile, encodedProfileId, tab, authHeaders,
+  handleSessionExpired, showToast, filterCommunityPosts,
+})
+
+const visibleProfileTabs = computed<ProfileTab[]>(() => {
+  const tabs: ProfileTab[] = ['posts', 'reviews', 'timeline']
+  if (isSelf.value) tabs.push('saved', 'collections')
+  return tabs
+})
+const activeTabId = computed(() => `profile-tab-${tab.value}`), activePanelId = computed(() => `profile-panel-${tab.value}`)
+
+function normalizeVisibleProfileTab(value: unknown): ProfileTab {
+  const next = normalizeProfileTab(value)
+  return (next === 'saved' || next === 'collections') && !isSelf.value ? 'posts' : next
 }
+
+function setProfileTab(next: ProfileTab) {
+  tab.value = normalizeVisibleProfileTab(next)
+}
+function onProfileTabKeydown(event: KeyboardEvent) {
+  const keys = ['ArrowLeft', 'ArrowRight', 'Home', 'End']
+  if (!keys.includes(event.key)) return
+  event.preventDefault()
+  const tabs = visibleProfileTabs.value
+  const current = Math.max(0, tabs.indexOf(tab.value))
+  const firstTab = tabs[0] || 'posts'
+  const lastTab = tabs[tabs.length - 1] || firstTab
+  const next: ProfileTab = event.key === 'Home'
+    ? firstTab
+    : event.key === 'End'
+      ? lastTab
+      : event.key === 'ArrowRight'
+        ? tabs[(current + 1) % tabs.length] || firstTab
+        : tabs[(current - 1 + tabs.length) % tabs.length] || firstTab
+  setProfileTab(next)
+  nextTick(() => document.getElementById(`profile-tab-${next}`)?.focus())
+}
+
+watch(tab, (t) => {
+  if (t === 'collections' && isSelf.value && !userCollections.value.length) fetchCollections()
+  if (t === 'timeline' && !timelineItems.value.length) loadTimeline()
+  const query = { ...route.query }
+  if (t === 'posts') delete query.tab
+  else query.tab = t
+  navigateTo({ path: route.path, query }, { replace: true })
+})
+watch(() => route.query.tab, (value) => {
+  const next = normalizeVisibleProfileTab(value)
+  if (next !== tab.value) setProfileTab(next)
+})
+watch([isSelf, tab], ([self, active]) => {
+  if (!self && (active === 'saved' || active === 'collections')) tab.value = 'posts'
+}, { immediate: true })
+
+watch(profile, syncViewerRelationship, { immediate: true })
+watch(showMoreMenu, (v) => {
+  if (import.meta.client) {
+    if (v) setTimeout(() => document.addEventListener('click', onClickOutsideMore), 0)
+    else document.removeEventListener('click', onClickOutsideMore)
+  }
+})
+
+watch(userId, async () => {
+  tab.value = 'posts'
+  posts.value = []
+  loading.value = true
+  resetSocial()
+  resetActivity()
+  await refreshProfile()
+  fetchPosts()
+  checkFollowing()
+  checkBlocked()
+  loadHeatmap()
+})
 
 onMounted(() => {
   fetchPosts()
@@ -553,13 +592,11 @@ onMounted(() => {
   if (isSelf.value) { loadAchievements() }
   if (tab.value === 'collections' && isSelf.value) fetchCollections()
 })
-
 onUnmounted(() => {
   document.removeEventListener('click', onClickOutsideMore)
 })
 
 await profileAsyncData
-
 if (import.meta.server && profileNotFound.value) setResponseStatus(404)
 
 const profileSchema = computed(() => {
@@ -581,453 +618,53 @@ const profileSchema = computed(() => {
 })
 
 useSeoMeta({
-  title: () => `${profile.value?.display_name || 'Người dùng'} — Cộng đồng vinhlong360`,
-  description: () => profile.value?.bio || `Hồ sơ thành viên ${profile.value?.display_name || ''} trên vinhlong360.`,
+  title: () => `${profile.value?.display_name || 'Người dùng'} — vinhlong360`,
+  description: () => `Trang cá nhân của ${profile.value?.display_name || 'thành viên'} trên cộng đồng vinhlong360.`,
   robots: () => (profile.value?.is_private || profileNotFound.value) ? 'noindex, nofollow' : 'index, follow',
   ogTitle: () => `${profile.value?.display_name || 'Người dùng'} — vinhlong360`,
-  ogDescription: () => profile.value?.bio || `Khám phá bài viết và đánh giá của ${profile.value?.display_name || 'thành viên'} trên vinhlong360.`,
+  ogDescription: () => `Trang cá nhân của ${profile.value?.display_name || 'thành viên'} trên cộng đồng vinhlong360.`,
   ogUrl: () => canonicalUrl(publicProfilePath.value),
+  ogImage: () => profileOgImage([profile.value?.cover_url || profile.value?.avatar].filter(Boolean) as string[]),
   twitterCard: 'summary_large_image',
 })
 
-useHead(() => ({
-  link: [{ rel: 'canonical', href: canonicalUrl(publicProfilePath.value) }],
-  script: profileSchema.value ? [{
-    type: 'application/ld+json',
-    innerHTML: safeJsonLd(profileSchema.value),
-  }] : [],
-}))
-const displayFollowerCount = computed(() => followerCount.value ?? profile.value?.follower_count ?? 0)
-const profileHandle = computed(() => profile.value?.username ? `@${profile.value.username}` : '')
-const totalContributions = computed(() => (profile.value?.post_count || 0) + (profile.value?.review_count || 0))
-const activitySummary = computed(() => {
-  if (totalContributions.value === 0) {
-    return isSelf.value ? 'Bắt đầu chia sẻ trải nghiệm đầu tiên' : 'Thành viên mới, chưa có đóng góp công khai'
+useHead(() => {
+  const profileKey = profile.value?.username || profile.value?.id || route.params.id
+  const pageUrl = canonicalUrl(userPath(profileKey))
+  return {
+    link: [{ rel: 'canonical', href: pageUrl }],
+    script: [
+      ...(profileSchema.value ? [{ type: 'application/ld+json', innerHTML: safeJsonLd(profileSchema.value) }] : []),
+      ...(userProfileSchema.value ? [{ type: 'application/ld+json', innerHTML: safeJsonLd(userProfileSchema.value) }] : []),
+    ],
   }
-  return `${totalContributions.value} đóng góp công khai`
-})
-// Cấp danh tiếng: 1 (<20đ), 2 (20-79đ), 3 (80-199đ), 4 (200+đ) — social.py _level_for().
-const LEVEL_THRESHOLDS = [0, 20, 80, 200]
-const xpProgress = computed(() => {
-  const pts = profile.value?.reputation?.points ?? 0
-  const lvl = profile.value?.reputation?.level ?? 1
-  if (lvl >= 4) return { pct: 100, toNext: 0, max: true }
-  const lo = LEVEL_THRESHOLDS[lvl - 1] ?? 0
-  const hi = LEVEL_THRESHOLDS[lvl] ?? 20
-  const pct = Math.max(0, Math.min(100, Math.round((pts - lo) / (hi - lo) * 100)))
-  return { pct, toNext: Math.max(0, hi - pts), max: false }
-})
-// Mốc tuần (bội số của 7) — một nhấp nháy nhẹ DUY NHẤT lúc mount, không loop.
-const isStreakMilestone = computed(() => {
-  const days = profile.value?.login_streak ?? 0
-  return days > 0 && days % 7 === 0
-})
-const visibleProfileTabs = computed<ProfileTab[]>(() => {
-  const tabs: ProfileTab[] = ['posts', 'reviews', 'timeline']
-  if (isSelf.value) tabs.push('saved', 'collections')
-  return tabs
-})
-const activeTabId = computed(() => `profile-tab-${tab.value}`)
-const activePanelId = computed(() => `profile-panel-${tab.value}`)
-
-function normalizeVisibleProfileTab(value: unknown): ProfileTab {
-  const next = normalizeProfileTab(value)
-  return (next === 'saved' || next === 'collections') && !isSelf.value ? 'posts' : next
-}
-
-const initial = computed(() => {
-  const name = profile.value?.display_name || profile.value?.phone || '?'
-  return name.charAt(0).toUpperCase()
 })
 
-const joinDate = computed(() => formatDateVN(profile.value?.created_at))
-
-const profileCompletion = computed(() => {
-  if (!profile.value) return 0
+const userProfileSchema = computed(() => {
+  if (!profile.value) return null
   const p = profile.value
-  const checks = [p.display_name, p.avatar, p.bio, p.cover_url, (p.post_count || 0) > 0, (p.review_count || 0) > 0]
-  return Math.round((checks.filter(Boolean).length / checks.length) * 100)
-})
-
-const filteredPosts = computed(() => {
-  if (tab.value === 'reviews') return posts.value.filter(p => p.post_type === 'review')
-  return posts.value
-})
-
-const displayName = computed(() => profile.value?.display_name || profile.value?.phone || 'Người dùng')
-const emptyHint = computed(() => {
-  if (isSelf.value) return 'Chia sẻ trải nghiệm của bạn với cộng đồng.'
-  return `Theo dõi ${displayName.value} để nhận cập nhật mới.`
-})
-
-// ── Hoạt động (timeline — bài viết, đánh giá, theo dõi) ──
-const { timeAgo } = useTimeAgo()
-const timelineItems = ref<Array<{ type: string; created_at: string; data: Record<string, any> }>>([])
-const timelineLoading = ref(false)
-const timelinePage = ref(1)
-const timelineHasMore = ref(true)
-
-function timelineIcon(type: string): string {
-  switch (type) {
-    case 'post': return '✍️'
-    case 'review': return '⭐'
-    case 'follow': return '👥'
-    default: return '📌'
-  }
-}
-
-async function loadTimeline() {
-  if (timelineLoading.value || !timelineHasMore.value || !profile.value) return
-  timelineLoading.value = true
-  try {
-    const res = await $fetch<{ items: typeof timelineItems.value; has_more: boolean }>(`/api/users/${encodedProfileId.value}/timeline`, {
-      params: { page: timelinePage.value, limit: 20 },
-      headers: authHeaders(),
-    })
-    timelineItems.value.push(...(res.items || []))
-    timelineHasMore.value = res.has_more
-    timelinePage.value++
-  } catch {
-    /* im lặng bỏ qua — timeline chỉ là bổ sung */
-  } finally {
-    timelineLoading.value = false
-  }
-}
-
-const { sentinel: timelineSentinel } = useInfiniteScroll(loadTimeline, { enabled: computed(() => tab.value === 'timeline' && timelineHasMore.value) })
-
-watch(tab, (t) => {
-  if (t === 'timeline' && !timelineItems.value.length) loadTimeline()
-})
-
-// ── Bản đồ nhiệt hoạt động (365 ngày, kiểu GitHub) ──
-type HeatDay = { date: string; count: number }
-const heatmap = ref<HeatDay[]>([])
-const heatmapMax = ref(0)
-const heatmapTotal = ref(0)
-
-async function loadHeatmap() {
-  if (!profile.value) return
-  try {
-    const res = await $fetch<{ days: HeatDay[]; total: number; max: number }>(
-      `/api/users/${encodedProfileId.value}/activity-heatmap`, { headers: authHeaders() })
-    heatmap.value = res.days || []
-    heatmapMax.value = res.max || 0
-    heatmapTotal.value = res.total || 0
-  } catch { /* im lặng — heatmap chỉ là bổ sung */ }
-}
-
-// build 53 tuần cột × 7 ngày, level 0..4 theo count/max
-const heatmapWeeks = computed(() => {
-  const byDate = new Map(heatmap.value.map(d => [d.date, d.count]))
-  const cells: Array<{ date: string; count: number; level: number }> = []
-  const today = new Date()
-  const start = new Date(today); start.setDate(today.getDate() - 364)
-  // căn về Chủ nhật đầu tuần
-  start.setDate(start.getDate() - start.getDay())
-  const mx = heatmapMax.value || 1
-  for (let i = 0; i < 53 * 7; i++) {
-    const d = new Date(start); d.setDate(start.getDate() + i)
-    const iso = d.toISOString().slice(0, 10)
-    const count = byDate.get(iso) || 0
-    const level = count === 0 ? 0 : Math.min(4, Math.ceil(count / mx * 4))
-    cells.push({ date: iso, count, level })
-    if (d > today) break
-  }
-  // nhóm thành cột-tuần
-  const weeks: typeof cells[] = []
-  for (let i = 0; i < cells.length; i += 7) weeks.push(cells.slice(i, i + 7))
-  return weeks
-})
-
-const postsFetchFailed = ref(false)
-async function fetchPosts() {
-  if (!profile.value || profile.value.is_private) {
-    posts.value = []
-    loading.value = false
-    return
-  }
-  loading.value = true
-  postsFetchFailed.value = false
-  try {
-    const res = await $fetch<Record<string, unknown>>(`/api/users/${encodedProfileId.value}/posts?limit=50`, { headers: authHeaders() })
-    const list = res?.posts
-    posts.value = Array.isArray(list) ? filterCommunityPosts(list as any[]) : []
-  } catch (e: unknown) {
-    postsFetchFailed.value = true
-    if (getStatusCode(e) === 401) { handleSessionExpired(); return }
-    showToast('Không thể tải bài viết', 'error')
-  } finally {
-    loading.value = false
-  }
-}
-
-const { toggleLike: _like, toggleBookmark: _bookmark, deletePost: _delete } = usePostActions()
-
-function toggleLike(pid: string) {
-  const p = posts.value.find(x => x.id === pid)
-  if (p) _like(pid, p)
-}
-function toggleBookmark(pid: string) {
-  const p = posts.value.find(x => x.id === pid)
-  if (p) _bookmark(pid, p)
-}
-function deletePost(pid: string) {
-  _delete(pid, () => { posts.value = posts.value.filter(x => x.id !== pid) })
-}
-
-
-// ── Modal danh sách follower/following ──
-const followModalOpen = ref(false)
-const followModalTab = ref<'followers' | 'following'>('followers')
-const followLists = ref<{ followers: any[] | null; following: any[] | null }>({ followers: null, following: null })
-const followLoadingList = ref(false)
-const followModalList = computed(() => followLists.value[followModalTab.value] || [])
-async function loadFollowList(which: 'followers' | 'following') {
-  if (!profile.value) return
-  if (followLists.value[which]) return  // đã tải (cache)
-  followLoadingList.value = true
-  try {
-    const res = await $fetch<any>(`/api/users/${encodedProfileId.value}/${which}`, { headers: authHeaders() })
-    followLists.value[which] = res.users || []
-  } catch (e: unknown) {
-    followLists.value[which] = []
-    if (getStatusCode(e) === 401) { handleSessionExpired(); return }
-    showToast('Không thể tải danh sách', 'error')
-  } finally {
-    followLoadingList.value = false
-  }
-}
-const followDialogEl = ref<HTMLElement | null>(null)
-function closeFollowModal() { followModalOpen.value = false }
-useModalA11y(followModalOpen, followDialogEl, { onClose: closeFollowModal })
-function openFollowModal(tab: 'followers' | 'following') {
-  followModalTab.value = tab
-  followModalOpen.value = true
-  loadFollowList(tab)
-}
-watch(followModalTab, (t) => loadFollowList(t))
-
-function onFollowModalTabKeydown(event: KeyboardEvent) {
-  const keys = ['ArrowLeft', 'ArrowRight', 'Home', 'End']
-  if (!keys.includes(event.key)) return
-  event.preventDefault()
-  const tabs: Array<'followers' | 'following'> = ['followers', 'following']
-  const current = tabs.indexOf(followModalTab.value)
-  const next = event.key === 'Home'
-    ? tabs[0]
-    : event.key === 'End'
-      ? tabs[1]
-      : tabs[(current + (event.key === 'ArrowRight' ? 1 : -1) + tabs.length) % tabs.length]
-  followModalTab.value = next ?? 'followers'
-  nextTick(() => document.getElementById(`fm-tab-${next}`)?.focus())
-}
-
-async function checkFollowing() {
-  if (!isLoggedIn.value || !profile.value) return
-  try {
-    const res = await $fetch<{ following: boolean }>(`/api/follow/check/user/${encodedProfileId.value}`, { headers: authHeaders() })
-    isFollowing.value = res.following
-  } catch { /* non-critical */ }
-}
-
-// ── Thành tích (achievement showcase, chỉ hồ sơ của mình) ──
-type Achievement = {
-  id: string; name: string; description: string; icon: string; category: string
-  current: number; target: number; earned: boolean; unlocked_at: string | null
-}
-const achievements = ref<Achievement[]>([])
-const achievementsEarned = ref(0)
-
-async function loadAchievements() {
-  if (!isSelf.value) return
-  try {
-    const res = await $fetch<{ achievements: Achievement[]; earned_count: number }>(
-      '/api/me/achievements', { headers: authHeaders() })
-    achievements.value = res.achievements || []
-    achievementsEarned.value = res.earned_count || 0
-  } catch (e: unknown) {
-    if (getStatusCode(e) === 401) { handleSessionExpired(); return }
-    /* im lặng — showcase là bổ sung */
-  }
-}
-
-const achievementCategories = computed(() => {
-  const order: Array<[string, string]> = [
-    ['content', 'Nội dung'], ['explorer', 'Khám phá'],
-    ['social', 'Cộng đồng'], ['veteran', 'Kỳ cựu'], ['special', 'Đặc biệt'],
-  ]
-  return order
-    .map(([key, label]) => ({ key, label, items: achievements.value.filter(a => a.category === key) }))
-    .filter(c => c.items.length)
-})
-
-function setProfileTab(next: ProfileTab) {
-  tab.value = normalizeVisibleProfileTab(next)
-}
-
-function onProfileTabKeydown(event: KeyboardEvent) {
-  const keys = ['ArrowLeft', 'ArrowRight', 'Home', 'End']
-  if (!keys.includes(event.key)) return
-  event.preventDefault()
-  const tabs = visibleProfileTabs.value
-  const current = Math.max(0, tabs.indexOf(tab.value))
-  const firstTab = tabs[0] || 'posts'
-  const lastTab = tabs[tabs.length - 1] || firstTab
-  const next: ProfileTab = event.key === 'Home'
-    ? firstTab
-    : event.key === 'End'
-      ? lastTab
-      : event.key === 'ArrowRight'
-        ? tabs[(current + 1) % tabs.length] || firstTab
-        : tabs[(current - 1 + tabs.length) % tabs.length] || firstTab
-  setProfileTab(next)
-  nextTick(() => document.getElementById(`profile-tab-${next}`)?.focus())
-}
-
-watch(tab, (t) => {
-  const query = { ...route.query }
-  if (t === 'posts') delete query.tab
-  else query.tab = t
-  navigateTo({ path: route.path, query }, { replace: true })
-})
-
-watch(() => route.query.tab, (value) => {
-  const next = normalizeVisibleProfileTab(value)
-  if (next !== tab.value) setProfileTab(next)
-})
-
-watch([isSelf, tab], ([self, active]) => {
-  if (!self && (active === 'saved' || active === 'collections')) tab.value = 'posts'
-}, { immediate: true })
-
-async function toggleFollow() {
-  if (!isLoggedIn.value) { showToast('Đăng nhập để theo dõi', 'info'); return }
-  if (!profile.value) return
-  followLoading.value = true
-  const was = isFollowing.value
-  isFollowing.value = !was
-  followerCount.value = Math.max(0, displayFollowerCount.value + (was ? -1 : 1))
-  try {
-    await $fetch(`/api/follow/user/${encodedProfileId.value}`, { method: 'POST', headers: authHeaders() })
-    followLists.value = { followers: null, following: null }
-  } catch (e: unknown) {
-    isFollowing.value = was
-    followerCount.value = Math.max(0, displayFollowerCount.value + (was ? 1 : -1))
-    if (getStatusCode(e) === 401) { handleSessionExpired(); return }
-    showToast('Không thể theo dõi', 'error')
-  } finally {
-    followLoading.value = false
-  }
-}
-
-// ── Block / Report ──
-const isBlocked = ref(false)
-const { confirmDialog } = useConfirm()
-
-function syncViewerRelationship(p: ProfileView | null) {
-  const relationship = p?.viewer_relationship || {}
-  if (typeof relationship.is_following === 'boolean') isFollowing.value = relationship.is_following
-  if (typeof relationship.is_blocked === 'boolean') isBlocked.value = relationship.is_blocked
-  followerCount.value = null
-}
-
-watch(profile, syncViewerRelationship, { immediate: true })
-
-watch(showMoreMenu, (v) => {
-  if (import.meta.client) {
-    if (v) setTimeout(() => document.addEventListener('click', onClickOutsideMore), 0)
-    else document.removeEventListener('click', onClickOutsideMore)
-  }
-})
-
-async function checkBlocked() {
-  if (!isLoggedIn.value || isSelf.value || !profile.value) return
-  try {
-    const res = await $fetch<{ blocked: any[] }>('/api/blocked-users', { headers: authHeaders() })
-    isBlocked.value = (res.blocked || []).some(u => u.id === profileId.value)
-  } catch { /* non-critical */ }
-}
-
-async function toggleBlock() {
-  if (!profile.value) return
-  if (isBlocked.value) {
-    try {
-      await $fetch(`/api/block/${encodedProfileId.value}`, { method: 'POST', headers: authHeaders() })
-      isBlocked.value = false
-      showToast('Đã bỏ chặn', 'success')
-    } catch (e: unknown) {
-      if (getStatusCode(e) === 401) { handleSessionExpired(); return }
-      showToast('Không thể bỏ chặn', 'error')
-    }
-    return
-  }
-  const ok = await confirmDialog(
-    'Họ sẽ không thấy bài viết, bình luận và hoạt động của bạn. Bạn cũng sẽ không thấy nội dung của họ.',
+  const profileKey = p.username || p.id || route.params.id
+  const pageUrl = canonicalUrl(userPath(profileKey))
+  return buildUnifiedSchemaGraph([
+    buildWebSiteSchema(),
+    buildOrganizationSchema(),
     {
-      title: `Chặn ${profile.value?.display_name || 'người dùng này'}?`,
-      confirmText: 'Chặn',
-      danger: true,
+      '@type': 'ProfilePage',
+      '@id': `${pageUrl}#profile`,
+      url: pageUrl,
+      name: `${p.display_name || 'Người dùng'} — vinhlong360`,
+      description: p.bio || `Trang cá nhân của ${p.display_name || 'thành viên'} trên cộng đồng vinhlong360.`,
+      mainEntity: {
+        '@type': 'Person',
+        '@id': `${pageUrl}#person`,
+        name: p.display_name || 'Người dùng',
+        ...(p.bio ? { description: p.bio } : {}),
+        ...(p.avatar ? { image: p.avatar } : {}),
+        ...(p.reputation?.level_label ? { jobTitle: p.reputation.level_label } : {}),
+      },
+      speakable: buildSpeakableSpecification(['.profile-name', '.profile-bio', '.profile-eyebrow']),
     },
-  )
-  if (!ok) return
-  try {
-    await $fetch(`/api/block/${encodedProfileId.value}`, { method: 'POST', headers: authHeaders() })
-    isBlocked.value = true
-    if (isFollowing.value) { isFollowing.value = false; followerCount.value = Math.max(0, displayFollowerCount.value - 1) }
-    showToast('Đã chặn người dùng', 'success')
-  } catch (e: unknown) {
-    if (getStatusCode(e) === 401) { handleSessionExpired(); return }
-    showToast('Không thể chặn', 'error')
-  }
-}
-
-function reportUser() {
-  if (!profile.value) return
-  showMoreMenu.value = false
-  openReport('user', profileId.value)
-}
-
-async function shareProfile() {
-  const url = `${window.location.origin}${publicProfilePath.value}`
-  const name = profile.value?.display_name || 'Người dùng'
-  if (navigator.share) {
-    try { await navigator.share({ title: `${name} — vinhlong360`, url }) } catch {}
-  } else {
-    try {
-      await navigator.clipboard.writeText(url)
-      showToast('Đã sao chép liên kết hồ sơ', 'success')
-    } catch { showToast('Không thể sao chép', 'error') }
-  }
-}
-
-watch(userId, async () => {
-  tab.value = 'posts'
-  posts.value = []
-  loading.value = true
-  isFollowing.value = false
-  isBlocked.value = false
-  followerCount.value = null
-  followLists.value = { followers: null, following: null }
-  timelineItems.value = []
-  timelinePage.value = 1
-  timelineHasMore.value = true
-  heatmap.value = []
-  heatmapMax.value = 0
-  heatmapTotal.value = 0
-  await refreshProfile()
-  fetchPosts()
-  checkFollowing()
-  checkBlocked()
-  loadHeatmap()
-})
-
-useSeoMeta({
-  title: () => `${profile.value?.display_name || 'Người dùng'} — vinhlong360`,
-  description: () => `Trang cá nhân của ${profile.value?.display_name || 'thành viên'} trên cộng đồng vinhlong360.`,
-  ogTitle: () => `${profile.value?.display_name || 'Người dùng'} — vinhlong360`,
-  ogDescription: () => `Trang cá nhân của ${profile.value?.display_name || 'thành viên'} trên cộng đồng vinhlong360.`,
-  ogImage: () => profileOgImage([profile.value?.cover_url || profile.value?.avatar].filter(Boolean) as string[]),
+  ])
 })
 </script>
 
@@ -1052,10 +689,10 @@ useSeoMeta({
 .rep-level[data-level="4"] { background: color-mix(in srgb, gold 28%, var(--bg-alt)); }
 .rep-badge { font-size: var(--text-xs); padding: .2rem .55rem; border-radius: 999px; background: var(--bg-alt); border: 1px solid var(--border); color: var(--ink-700); }
 .xp-bar-wrap { display: flex; align-items: center; gap: var(--space-2); margin-top: var(--space-1); }
-.xp-bar { flex: 1; height: 6px; background: var(--line); border-radius: var(--radius-full); overflow: hidden; }
-.xp-fill { height: 100%; background: linear-gradient(90deg, var(--color-brand), var(--accent)); border-radius: var(--radius-full); }
+.xp-bar { flex: 1; height: 6px; background: var(--line); border-radius: var(--radius-pill, 999px); overflow: hidden; }
+.xp-fill { height: 100%; background: linear-gradient(90deg, var(--color-brand), var(--accent)); border-radius: var(--radius-pill, 999px); }
 .xp-label { font-size: var(--text-2xs); color: var(--muted); white-space: nowrap; }
-.streak-chip { display: inline-flex; align-items: center; gap: var(--space-1); margin-top: var(--space-1); padding: var(--space-1) var(--space-2); background: color-mix(in srgb, var(--warning) 12%, transparent); border-radius: var(--radius-full); font-size: var(--text-xs); font-weight: var(--weight-medium); color: var(--ink); }
+.streak-chip { display: inline-flex; align-items: center; gap: var(--space-1); margin-top: var(--space-1); padding: var(--space-1) var(--space-2); background: color-mix(in srgb, var(--warning) 12%, transparent); border-radius: var(--radius-pill, 999px); font-size: var(--text-xs); font-weight: var(--weight-medium); color: var(--ink); }
 /* Mốc tuần (bội số của 7 ngày) — một nhấp nháy nhẹ DUY NHẤT lúc mount, không loop. */
 .streak-milestone { animation: streak-pulse-once 1.1s var(--ease-out) 1; }
 @keyframes streak-pulse-once {
@@ -1081,8 +718,8 @@ useSeoMeta({
 .bs-card.bs-locked .bs-icon { filter: grayscale(1); }
 .bs-info { min-width: 0; display: flex; flex-direction: column; gap: 2px; }
 .bs-label { font-size: var(--text-sm); font-weight: var(--weight-medium); color: var(--ink); }
-.bs-bar { height: 4px; background: var(--line); border-radius: var(--radius-full); overflow: hidden; margin-top: var(--space-1); }
-.bs-fill { height: 100%; background: var(--color-brand); border-radius: var(--radius-full); }
+.bs-bar { height: 4px; background: var(--line); border-radius: var(--radius-pill, 999px); overflow: hidden; margin-top: var(--space-1); }
+.bs-fill { height: 100%; background: var(--color-brand); border-radius: var(--radius-pill, 999px); }
 .bs-date { font-size: var(--text-2xs); color: var(--success); }
 .bs-hint { font-size: var(--text-2xs); color: var(--muted); }
 
@@ -1111,7 +748,7 @@ useSeoMeta({
 .profile-name-row h1 { flex: 1; min-width: 0; }
 .profile-meta-row { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2); margin-top: var(--space-2); }
 .profile-handle { color: var(--muted); font-size: var(--text-sm); font-weight: var(--weight-semibold); overflow-wrap: anywhere; }
-.profile-chip { display: inline-flex; align-items: center; min-height: 28px; padding: 0 var(--space-3); border-radius: var(--radius-full); border: 1px solid var(--line); background: var(--card); color: var(--ink-700); font-size: var(--text-xs); font-weight: var(--weight-semibold); }
+.profile-chip { display: inline-flex; align-items: center; min-height: 28px; padding: 0 var(--space-3); border-radius: var(--radius-pill, 999px); border: 1px solid var(--line); background: var(--card); color: var(--ink-700); font-size: var(--text-xs); font-weight: var(--weight-semibold); }
 .profile-chip.is-public { border-color: color-mix(in srgb, var(--success, var(--leaf-600)) 28%, var(--line)); color: var(--success, var(--leaf-600)); }
 .profile-chip.is-private { border-color: color-mix(in srgb, var(--warning) 28%, var(--line)); color: var(--warning); }
 .profile-chip.is-self,
@@ -1133,7 +770,7 @@ useSeoMeta({
    bio, cấp bậc, XP) khỏi khối "bằng chứng" (stats), đúng công thức đã chuẩn
    hoá (sediment-head/tc-label), không tự chế biến thể mới. */
 .hairline-phusa {
-  height: 2px; margin: var(--space-4) 0 0; border-radius: var(--radius-full);
+  height: 2px; margin: var(--space-4) 0 0; border-radius: var(--radius-pill, 999px);
   background: linear-gradient(90deg, transparent 0%, var(--river-600) 15%, var(--amber-600) 50%, var(--clay-600) 85%, transparent 100%);
   opacity: .55;
 }
@@ -1279,7 +916,7 @@ useSeoMeta({
 /* Saved tab (self profile) */
 .tab-count {
   margin-left: var(--space-2); padding: 0 var(--space-2);
-  border-radius: var(--radius-full); background: rgba(var(--accent-rgb), .16);
+  border-radius: var(--radius-pill, 999px); background: rgba(var(--accent-rgb), .16);
   color: var(--accent-dark); font-size: var(--text-xs); font-weight: var(--weight-bold);
   font-variant-numeric: tabular-nums; line-height: 1.6;
 }
@@ -1343,31 +980,25 @@ useSeoMeta({
 
 @media (prefers-reduced-motion: reduce) {
   .post-list-enter-active, .post-list-leave-active, .post-list-move { transition: none; }
-  .profile-avatar-wrap .avatar:hover, .profile-avatar-wrap .avatar:active { transform: none; }
-  .stat-item:hover, .stat-item:active, .stat-clickable:active { transform: none; }
-  .profile-tabs .chip:active { transform: none; }
-  .saved-cta .btn:active { transform: none; }
-  .pc-fill { animation: none; }
-  .saved-grid > * { animation: none; }
-  .cover-img { animation: none; }
-  .streak-milestone { animation: none; }
-  .rep-level:hover, .rep-level:active { transform: none; filter: none; }
-  .profile-insight-link:active { transform: none; }
-  .insight-chevron { transform: none; }
-  .profile-insight-link:hover .insight-chevron { transform: none; }
-  .fm-tab:active, .fm-close:active, .fm-user:active { transform: none; }
-  .bs-card.bs-earned:hover, .bs-card.bs-earned:active { transform: none; }
-  .btn-danger-text:active { transform: none; }
+  .profile-avatar-wrap .avatar:hover, .profile-avatar-wrap .avatar:active,
+  .stat-item:hover, .stat-item:active, .stat-clickable:active,
+  .profile-tabs .chip:active, .saved-cta .btn:active,
+  .rep-level:hover, .rep-level:active, .profile-insight-link:active,
+  .insight-chevron, .profile-insight-link:hover .insight-chevron,
+  .fm-tab:active, .fm-close:active, .fm-user:active,
+  .bs-card.bs-earned:hover, .bs-card.bs-earned:active,
+  .btn-danger-text:active { transform: none; filter: none; }
+  .pc-fill, .saved-grid > *, .cover-img, .streak-milestone { animation: none; }
 }
 .profile-completion { padding: 0 var(--space-4); margin-bottom: var(--space-3); }
 .pc-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: var(--space-1); }
 .pc-label { font-size: var(--text-sm); font-weight: 600; color: var(--muted); }
 .pc-link { font-size: var(--text-sm); color: var(--color-action); text-decoration: none; }
-.pc-bar { height: 6px; background: var(--bg-alt); border-radius: var(--radius-full); overflow: hidden; }
-.pc-fill { height: 100%; background: var(--accent); border-radius: var(--radius-full); transform-origin: left; animation: pc-grow .6s var(--ease-out) .3s backwards; }
+.pc-bar { height: 6px; background: var(--bg-alt); border-radius: var(--radius-pill, 999px); overflow: hidden; }
+.pc-fill { height: 100%; background: var(--accent); border-radius: var(--radius-pill, 999px); transform-origin: left; animation: pc-grow .6s var(--ease-out) .3s backwards; }
 @keyframes pc-grow { from { transform: scaleX(0); } to { transform: scaleX(1); } }
 .pc-hints { display: flex; flex-wrap: wrap; gap: var(--space-1); margin-top: var(--space-2); }
-.pc-hint { font-size: .72rem; color: var(--muted); padding: var(--space-half) var(--space-2); border: 1px solid var(--border-input); border-radius: var(--radius-full); }
+.pc-hint { font-size: .72rem; color: var(--muted); padding: var(--space-half) var(--space-2); border: 1px solid var(--border-input); border-radius: var(--radius-pill, 999px); }
 
 
 /* Hoạt động (timeline) tab */

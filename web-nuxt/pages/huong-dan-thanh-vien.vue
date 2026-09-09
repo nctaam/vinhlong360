@@ -92,6 +92,16 @@
       </div>
     </section>
 
+    <CatalogAeoPlaque
+      kicker="Quy chế cộng đồng · Minh bạch điểm số"
+      title="Hỏi đáp danh tiếng & cơ chế vinh danh thành viên vinhlong360"
+      accent="amber"
+      icon="award"
+      :entries="memberAeoEntries"
+      cta-to="/bang-xep-hang"
+      cta-label="Xem bảng vinh danh thành viên tiêu biểu"
+    />
+
   </section>
 </template>
 
@@ -135,6 +145,21 @@ const tips = [
 
 <script setup lang="ts">
 useReveal()
+
+const memberAeoEntries = [
+  {
+    heading: 'Hệ thống 4 cấp bậc danh dự',
+    text: 'Cấp bậc phản ánh bề dày đóng góp: Cấp 1 (Người mới, 0-19đ), Cấp 2 (Người đóng góp, 20-79đ), Cấp 3 (Đóng góp tích cực, 80-199đ), Cấp 4 (Đại sứ Vĩnh Long, từ 200đ trở lên).',
+  },
+  {
+    heading: 'Chống lạm phát & Giới hạn trần điểm',
+    text: 'Mỗi loại hoạt động đều có trần điểm và công thức suy giảm để khuyến khích đóng góp đa dạng, chất lượng thay vì spam số lượng.',
+  },
+  {
+    heading: 'Huy hiệu thành tích tự động',
+    text: 'Huy hiệu được hệ thống trao tự động khi đạt cột mốc đánh giá, chia sẻ ảnh thực tế hoặc khám phá đa dạng các địa hạt xã/phường.',
+  },
+]
 
 // Schema graph unified with '@type': 'WebPage' and Member Guide FAQs
 const guideSchema = computed(() => buildMemberGuideSchemaGraph())

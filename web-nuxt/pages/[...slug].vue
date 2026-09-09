@@ -99,7 +99,7 @@ const discoveryLinks = [
   flex: 1;
   padding: var(--space-3) var(--space-4);
   border: .5px solid var(--line);
-  border-radius: var(--radius-full);
+  border-radius: var(--radius-pill, 999px);
   background: var(--card);
   font-size: 1rem;
   min-height: 44px;
@@ -118,7 +118,7 @@ const discoveryLinks = [
   background: var(--accent);
   color: var(--text-on-dark, var(--white));
   border: none;
-  border-radius: var(--radius-full);
+  border-radius: var(--radius-pill, 999px);
   font-size: var(--text-sm);
   font-weight: var(--weight-semibold);
   cursor: pointer;
@@ -140,7 +140,7 @@ const discoveryLinks = [
   display: inline-flex;
   align-items: center;
   padding: var(--space-3) var(--space-5);
-  border-radius: var(--radius-full);
+  border-radius: var(--radius-pill, 999px);
   font-size: var(--text-sm);
   font-weight: var(--weight-semibold);
   text-decoration: none;
@@ -203,7 +203,7 @@ const discoveryLinks = [
   min-height: var(--touch-min);
   padding: var(--space-2) var(--space-4);
   border: 1px solid var(--line);
-  border-radius: var(--radius-full);
+  border-radius: var(--radius-pill, 999px);
   background: var(--card);
   color: var(--ink);
   font-size: var(--text-sm);

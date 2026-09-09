@@ -7,6 +7,30 @@
       <p>Xếp hạng theo điểm danh tiếng — đánh giá, bài viết, ảnh và lượt theo dõi. <NuxtLink to="/huong-dan-thanh-vien" class="bxh-guide-link">Cách tính điểm?</NuxtLink></p>
     </header>
 
+    <!-- AEO Plaque: Community Hall of Honor & Terroir Ambassadorship -->
+    <CatalogAeoPlaque
+      title="Sổ Vàng Đóng Góp &amp; Danh Hiệu Đại Sứ Bản Địa"
+      kicker="Góc nhìn cộng đồng · Vinh danh người đồng hành"
+      accent="amber"
+      icon="award"
+      :entries="[
+        {
+          heading: 'Hệ thống Cấp bậc &amp; Điểm Danh tiếng Minh bạch',
+          text: 'Tích lũy thực chất qua từng lượt đánh giá địa điểm thực địa, bài viết chia sẻ kinh nghiệm và kho ảnh tư liệu địa phương.',
+        },
+        {
+          heading: 'Top 3 Đại sứ Bản xứ Vinh danh Trang trọng',
+          text: 'Những thành viên đóng góp tích cực nhất được vinh danh trên bục podium, tạo cảm hứng gìn giữ và lan tỏa nét đẹp châu thổ.',
+        },
+        {
+          heading: 'Đặc quyền Đóng góp &amp; Huy hiệu Xác thực',
+          text: 'Nhận huy hiệu thành viên uy tín, thẩm quyền đồng biên tập cẩm nang du lịch và tham vấn lộ trình khám phá thực tế.',
+        },
+      ]"
+      cta-to="/huong-dan-thanh-vien"
+      cta-label="Tìm hiểu quy chế tích điểm &amp; vinh danh"
+    />
+
     <div class="bxh-filters">
       <input v-model="q" type="search" enterkeyhint="search" placeholder="Tìm thành viên…" aria-label="Tìm thành viên" class="bxh-search" />
       <FilterChips :filters="periodFilters" :model-value="[period]" single-select
@@ -192,7 +216,7 @@ useHead(() => ({
 .bxh-self { padding: var(--space-2) var(--space-3); background: color-mix(in srgb, var(--color-brand) 8%, transparent); border-radius: var(--radius-control); margin-bottom: var(--space-2); font-size: var(--text-sm); }
 .bxh-list { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: var(--space-2); }
 .bxh-list li.is-self .bxh-row { outline: 2px solid var(--color-focus); outline-offset: -1px; }
-.bxh-row { display: flex; align-items: center; gap: var(--space-3); padding: var(--space-3); min-height: 56px; background: var(--card); border: .5px solid var(--line); border-radius: var(--radius-sheet); text-decoration: none; color: var(--ink); transition: border-color .25s var(--ease-out), transform .25s var(--ease-out-expo); }
+.bxh-row { display: flex; align-items: center; gap: var(--space-3); padding: var(--space-3); min-height: 56px; background: var(--card); border: .5px solid var(--line); border-radius: var(--radius-sheet); text-decoration: none; color: var(--ink); transition: border-color .25s var(--ease-out), transform .25s cubic-bezier(0.16, 1, 0.3, 1); }
 .bxh-row:hover { border-color: var(--color-action); transform: translateY(-1px); }
 .bxh-row:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
 .bxh-row:active { transform: scale(.98); transition-duration: .08s; }
@@ -241,7 +265,7 @@ useHead(() => ({
   display: flex; flex-direction: column; align-items: center; text-align: center; gap: var(--space-1);
   padding: var(--space-5) var(--space-3) var(--space-4); border-radius: var(--radius-sheet);
   background: var(--card); border: .5px solid var(--line); text-decoration: none; color: var(--ink);
-  transition: border-color .25s var(--ease-out), transform .25s var(--ease-out-expo), box-shadow .25s var(--ease-out);
+  transition: border-color .25s var(--ease-out), transform .25s cubic-bezier(0.16, 1, 0.3, 1), box-shadow .25s var(--ease-out);
 }
 .podium-link:hover { border-color: var(--color-action); transform: translateY(-2px); box-shadow: var(--shadow-sm); }
 .podium-link:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
@@ -279,7 +303,7 @@ useHead(() => ({
    khỏi danh sách #4 trở đi, đúng công thức đã chuẩn hoá (sediment-head/
    tc-label), không tự chế biến thể mới. ── */
 .hairline-phusa {
-  height: 2px; margin: 0 0 var(--space-5); border-radius: var(--radius-full);
+  height: 2px; margin: 0 0 var(--space-5); border-radius: var(--radius-pill, 999px);
   background: linear-gradient(90deg, transparent 0%, var(--river-600) 15%, var(--amber-600) 50%, var(--clay-600) 85%, transparent 100%);
   opacity: .55;
 }

@@ -87,48 +87,70 @@ interface ListableItem {
   title?: string
 }
 
-export function itemListJsonLd(name: string, description: string, path: string, items: ListableItem[] = []) {
-  return {
-    '@context': 'https://schema.org',
-    '@type': 'CollectionPage',
-    name,
-    description,
-    url: canonicalUrl(path),
-    mainEntity: {
-      '@type': 'ItemList',
-      itemListElement: items.slice(0, 24).map((item, index) => ({
-        '@type': 'ListItem',
-        position: index + 1,
-        name: item.name || item.title || item.id,
-        url: item.id ? entityDetailUrl(String(item.id)) : undefined,
-      })).map((item) => Object.fromEntries(Object.entries(item).filter(([, value]) => value !== undefined))),
-    },
-  }
-}
-
-export function itineraryItemListJsonLd(name: string, description: string, path: string, items: ListableItem[] = []) {
-  return {
-    '@context': 'https://schema.org',
-    '@type': 'CollectionPage',
-    name,
-    description,
-    url: canonicalUrl(path),
-    mainEntity: {
-      '@type': 'ItemList',
-      itemListElement: items.slice(0, 24).map((item, index) => ({
-        '@type': 'ListItem',
-        position: index + 1,
-        name: item.title || item.name || item.id,
-        url: item.id ? itineraryUrl(String(item.id)) : undefined,
-      })).map((item) => Object.fromEntries(Object.entries(item).filter(([, value]) => value !== undefined))),
-    },
-  }
-}
-
 export interface FaqItem {
   q: string
   a: string
 }
+
+export const TOURISM_CATALOG_FAQS: FaqItem[] = [
+  {
+    q: 'Đi du lịch Vĩnh Long mùa nào trong năm là đẹp nhất?',
+    a: 'Mùa trái cây chín rộ từ tháng 5 đến tháng 8 tại các vườn cù lao An Bình là thời điểm nhộn nhịp nhất. Ngoài ra, mùa phù sa từ tháng 9 đến tháng 11 mang đến trải nghiệm cảnh quan sông nước đặc sắc.',
+  },
+  {
+    q: 'Những điểm đến du lịch nổi bật nhất tại Vĩnh Long gồm những nơi nào?',
+    a: 'Du khách nên ghé thăm di sản đương đại lò gạch gốm đỏ Mang Thít, hệ thống nhà vườn cù lao An Bình, chùa Phật Ngọc Xá Lợi, làng bánh tráng cù lao Mây và các điểm sinh thái ven sông.',
+  },
+  {
+    q: 'Phương tiện di chuyển phổ biến và thuận tiện nhất khi du lịch Vĩnh Long là gì?',
+    a: 'Xe máy và ô tô thuận tiện để kết nối các tuyến đường liên huyện, kết hợp trải nghiệm đò ngang, phà sông hoặc xuồng chèo len lỏi qua các rạch nhỏ miệt vườn.',
+  },
+]
+
+export const PRODUCT_CATALOG_FAQS: FaqItem[] = [
+  {
+    q: 'Vĩnh Long có những loại đặc sản nào nổi tiếng nhất để mua làm quà?',
+    a: 'Các đặc sản nức tiếng gồm bưởi năm roi Bình Minh, khoai lang Bình Tân, sầu riêng Ri6, bánh tráng cù lao Mây, cam sành Tam Bình và các sản phẩm thủ công gốm đỏ Mang Thít.',
+  },
+  {
+    q: 'Làm thế nào để chọn mua được trái cây và đặc sản Vĩnh Long đúng nguồn gốc?',
+    a: 'Du khách nên ghé trực tiếp các nhà vườn tại cù lao An Bình, các hợp tác xã đạt chứng nhận OCOP hoặc các điểm trưng bày có tem truy xuất nguồn gốc rõ ràng.',
+  },
+  {
+    q: 'Các cơ sở sản xuất tại Vĩnh Long có hỗ trợ đóng gói trái cây gửi đi xa không?',
+    a: 'Nhiều nhà vườn và cơ sở chế biến hỗ trợ đóng thùng chống sốc cho trái cây tươi, hút chân không cho bánh tráng và nông sản khô để du khách tiện mang theo đường dài.',
+  },
+]
+
+export const STAY_CATALOG_FAQS: FaqItem[] = [
+  {
+    q: 'Vĩnh Long có những loại hình lưu trú nào phổ biến nhất?',
+    a: 'Nổi bật nhất là các homestay miệt vườn tại cù lao An Bình với trải nghiệm ngủ nhà gỗ truyền thống Nam Bộ, sinh hoạt cùng gia đình chủ nhà và hái trái cây tại vườn. Ngoài ra còn có hệ thống khách sạn trung tâm thành phố và nhà nghỉ tiện nghi.',
+  },
+  {
+    q: 'Du khách nên lưu ý điều gì khi đặt phòng homestay cù lao tại Vĩnh Long?',
+    a: 'Nên liên hệ đặt trước vào các dịp cuối tuần, mùa lễ hội hoặc mùa trái cây rộ (tháng 5 đến tháng 8). Kiểm tra trước khung giờ hoạt động của phà hoặc đò sang cù lao để chủ động lịch trình di chuyển.',
+  },
+  {
+    q: 'Các cơ sở lưu trú tại Vĩnh Long có cung cấp dịch vụ ẩm thực bản địa không?',
+    a: 'Đa số các homestay sinh thái Vĩnh Long đều phục vụ bữa cơm gia đình nấu theo hương vị truyền thống địa phương với cá tai tượng chiên xù, canh chua cá lóc bông điên điển, cá kèo kho tộ và bánh xèo giòn rụm.',
+  },
+]
+
+export const EVENT_CATALOG_FAQS: FaqItem[] = [
+  {
+    q: 'Vĩnh Long thường tổ chức những sự kiện hoặc hội chợ lớn nào trong năm?',
+    a: 'Các sự kiện tiêu biểu gồm Ngày hội Du lịch Vĩnh Long, Ngày đồng hành cùng gốm đỏ Mang Thít, Hội chợ Xúc tiến Thương mại - Nông nghiệp cùng các giải đua ghe Ngo truyền thống trên sông.',
+  },
+  {
+    q: 'Người dân và du khách có thể theo dõi lịch sự kiện sắp diễn ra ở đâu?',
+    a: 'Trang Sự Kiện trên VinhLong360 cập nhật liên tục các sự kiện đang diễn ra và sắp khai mạc, kèm tiện ích xuất file .ics nhắc hẹn trực tiếp vào điện thoại.',
+  },
+  {
+    q: 'Tham gia các sự kiện văn hóa và hội chợ tại Vĩnh Long có cần mua vé không?',
+    a: 'Đa số các sự kiện văn hóa cộng đồng, hội chợ xúc tiến thương mại và ngày hội du lịch tại Vĩnh Long đều mở cửa miễn phí phục vụ nhân dân và du khách.',
+  },
+]
 
 export function buildFaqPageSchema(faqItems: FaqItem[], id?: string): Record<string, any> | null {
   if (!Array.isArray(faqItems) || faqItems.length === 0) return null
@@ -315,6 +337,8 @@ export function buildEntityDetailSchemaGraph(options: EntityDetailSchemaOptions)
     const ocopLabel = ocopBadgeLabel(e as any)
     if (ocopLabel) {
       ld.brand = { '@type': 'Brand', name: ocopLabel }
+      ld.award = ocopLabel
+      ld.category = 'Sản phẩm OCOP'
     }
   }
 
@@ -373,7 +397,7 @@ export function buildEntityDetailSchemaGraph(options: EntityDetailSchemaOptions)
     isPartOf: { '@id': `${SITE_URL}/#website` },
     breadcrumb: { '@id': `${entityUrl}#breadcrumb` },
     mainEntity: { '@id': `${entityUrl}#entity` },
-    speakable: buildSpeakableSpecification(['.lead', '.highlights', 'h1', '.desc-heading']),
+    speakable: buildSpeakableSpecification(['.lead', '.highlights', 'h1', '.desc-heading', '.detail-aeo-summary__highlight', '.detail-aeo-summary__tip']),
     publisher: { '@id': `${SITE_URL}/#organization` },
   }
 
@@ -410,7 +434,7 @@ export function buildHomeSchemaGraph(options?: HomeSchemaOptions): Record<string
     inLanguage: 'vi-VN',
     isPartOf: { '@id': `${SITE_URL}/#website` },
     about: { '@id': `${SITE_URL}/#organization` },
-    speakable: buildSpeakableSpecification(['.hero-title', '.hero-dek', '.section-title', 'h1']),
+    speakable: buildSpeakableSpecification(['.hero-title', '.hero-dek', '.home-aeo-plaque__title', '.home-aeo-plaque__dek', '.section-title', 'h1']),
   }
 
   const websiteNode = {
@@ -678,7 +702,7 @@ export function buildItineraryDetailSchemaGraph(options: ItineraryDetailSchemaOp
     isPartOf: { '@id': `${SITE_URL}/#website` },
     breadcrumb: { '@id': `${itUrl}#breadcrumb` },
     mainEntity: { '@id': `${itUrl}#trip` },
-    speakable: buildSpeakableSpecification(['.lead', 'h1', '.timeline-head']),
+    speakable: buildSpeakableSpecification(['.lead', 'h1', '.timeline-head', '.catalog-aeo-plaque__title', '.catalog-aeo-plaque__dek', '.step-card strong', '.step-card .summary', '.step-note-callout']),
     publisher: { '@id': `${SITE_URL}/#organization` },
   }
 
@@ -699,6 +723,11 @@ export function buildItineraryDetailSchemaGraph(options: ItineraryDetailSchemaOp
     description: itDesc,
     touristType: 'Sightseeing',
     url: itUrl,
+    spatialCoverage: {
+      '@type': 'Place',
+      name: 'Tỉnh Vĩnh Long',
+      geo: { '@type': 'GeoShape', box: '9.8 105.8 10.4 106.7' },
+    },
   }
 
   if (Array.isArray(it.stops) && it.stops.length) {
@@ -983,7 +1012,7 @@ export function buildAboutPageSchemaGraph(options: AboutPageSchemaOptions = {}):
     breadcrumb: { '@id': `${pageUrl}#breadcrumb` },
     mainEntity: { '@id': `${SITE_URL}/#organization` },
     about: { '@id': `${SITE_URL}/#organization` },
-    speakable: buildSpeakableSpecification(['.about-intro', 'h1', '.about-mission-quote', '#ban-bien-tap']),
+    speakable: buildSpeakableSpecification(['.about-intro', 'h1', '.about-mission-quote', '#ban-bien-tap', '.catalog-aeo-plaque__title', '.catalog-aeo-plaque__dek']),
   }
 
   const nodes: any[] = [
@@ -1025,7 +1054,7 @@ export function buildContactPageSchemaGraph(options: ContactPageSchemaOptions = 
     isPartOf: { '@id': `${SITE_URL}/#website` },
     breadcrumb: { '@id': `${pageUrl}#breadcrumb` },
     mainEntity: { '@id': `${SITE_URL}/#organization` },
-    speakable: buildSpeakableSpecification(['.bm-inner h1', '.bm-sub', '.bm-sla', '.contact-quote', '.contact-cards h2']),
+    speakable: buildSpeakableSpecification(['.bm-inner h1', '.bm-sub', '.bm-sla', '.contact-quote', '.contact-cards h2', '.catalog-aeo-plaque__title', '.catalog-aeo-plaque__dek']),
   }
 
   const contactPointNode = {
@@ -1073,7 +1102,7 @@ export function buildCatalogDirectorySchemaGraph(options: CatalogDirectorySchema
       '@type': 'Thing',
       name: 'Địa điểm du lịch và đặc sản tỉnh Vĩnh Long',
     },
-    speakable: buildSpeakableSpecification(['.catalog-hero-inner h1', '.catalog-hero-inner p', '.almanac-stats']),
+    speakable: buildSpeakableSpecification(['.catalog-hero-inner h1', '.catalog-hero-inner p', '.almanac-stats', '.catalog-aeo-plaque__title', '.catalog-aeo-plaque__dek']),
   }
 
   const breadcrumbNode = {
@@ -1148,7 +1177,7 @@ export function buildGuideSchemaGraph(options: GuideSchemaOptions = {}): Record<
     isPartOf: { '@id': `${SITE_URL}/#website` },
     about: { '@id': `${SITE_URL}/#organization` },
     mainEntity: { '@id': `${SITE_URL}/#organization` },
-    speakable: buildSpeakableSpecification(['.bm-inner h1', '.bm-sub', '.section-intro', '#bat-dau h2']),
+    speakable: buildSpeakableSpecification(['.bm-inner h1', '.bm-sub', '.section-intro', '#bat-dau h2', '.catalog-aeo-plaque__title', '.catalog-aeo-plaque__dek']),
   }
 
   const defaultFaqs = [
@@ -1213,7 +1242,7 @@ export function buildLeaderboardSchemaGraph(options: LeaderboardSchemaOptions = 
     isPartOf: { '@id': `${SITE_URL}/#website` },
     about: { '@id': `${SITE_URL}/#organization` },
     mainEntity: { '@id': `${pageUrl}#leaderboard` },
-    speakable: buildSpeakableSpecification(['.bxh-h1', '.bxh-head p', '.bxh-eyebrow']),
+    speakable: buildSpeakableSpecification(['.bxh-h1', '.bxh-head p', '.bxh-eyebrow', '.catalog-aeo-plaque__title', '.catalog-aeo-plaque__dek']),
   }
 
   const podiumList = options.podium || []
@@ -1293,7 +1322,7 @@ export function buildMemberGuideSchemaGraph(options: MemberGuideSchemaOptions = 
     isPartOf: { '@id': `${SITE_URL}/#website` },
     about: { '@id': `${SITE_URL}/#organization` },
     mainEntity: { '@id': `${SITE_URL}/#organization` },
-    speakable: buildSpeakableSpecification(['.guide-hero h1', '.guide-hero p', '.guide-section h2', '.guide-intro']),
+    speakable: buildSpeakableSpecification(['.guide-hero h1', '.guide-hero p', '.guide-section h2', '.guide-intro', '.catalog-aeo-plaque__title', '.catalog-aeo-plaque__dek']),
   }
 
   const defaultFaqs = [
@@ -1452,7 +1481,7 @@ export function buildInterestCategorySchemaGraph(options: InterestCategorySchema
     isPartOf: { '@id': `${SITE_URL}/#website` },
     about: { '@id': `${SITE_URL}/#organization` },
     mainEntity: { '@id': `${pageUrl}#items` },
-    speakable: buildSpeakableSpecification(['.catalog-hero-inner h1', '.catalog-lead', '.int-cross-sub']),
+    speakable: buildSpeakableSpecification(['.catalog-hero-inner h1', '.catalog-lead', '.int-cross-sub', '.catalog-aeo-plaque__title', '.catalog-aeo-plaque__dek']),
   }
 
   const itemListElements = (options.items || []).slice(0, 30).map((item, index) => ({
@@ -1498,6 +1527,851 @@ export function buildInterestCategorySchemaGraph(options: InterestCategorySchema
   ])
 }
 
+export interface SeasonalitySchemaOptions {
+  month?: number
+  currentMonth?: number
+  quarterTag?: string
+  quarterNote?: string
+  totalInSeason?: number
+  items?: Array<{ id: string | number; name: string; type?: string; summary?: string }>
+  canonicalUrl?: string
+  faqs?: Array<{ q: string; a: string }>
+}
 
+export function buildSeasonalitySchemaGraph(options: SeasonalitySchemaOptions): Record<string, any> {
+  const m = options.currentMonth || options.month || 1
+  const pageUrl = options.canonicalUrl || canonicalUrl('/theo-mua')
+  const title = `Tháng ${m}: đi đâu, ăn gì ở Vĩnh Long — Lịch mùa vụ nông sản & sông nước`
+  const desc = `Những sản vật đang mùa, ngon nhất vào tháng ${m} tại Vĩnh Long — trái cây, nông sản miệt vườn, và nhịp nước sông Mekong.`
 
+  const webpageNode = {
+    '@type': 'CollectionPage',
+    '@id': `${pageUrl}#collection`,
+    url: pageUrl,
+    name: `${title} — vinhlong360`,
+    description: desc,
+    inLanguage: 'vi-VN',
+    isPartOf: { '@id': `${SITE_URL}/#website` },
+    about: {
+      '@type': 'Place',
+      name: 'Tỉnh Vĩnh Long',
+      geo: { '@type': 'GeoShape', box: '9.8 105.8 10.4 106.7' },
+    },
+    speakable: buildSpeakableSpecification([
+      '.catalog-hero h1',
+      '.season-moment-text strong',
+      '.season-moment-text p',
+      '.season-tide-cue',
+      '.catalog-aeo-plaque__title',
+      '.catalog-aeo-plaque__dek',
+    ]),
+  }
 
+  const breadcrumbNode = {
+    '@type': 'BreadcrumbList',
+    '@id': `${pageUrl}#breadcrumb`,
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'Trang chủ', item: `${SITE_URL}/` },
+      { '@type': 'ListItem', position: 2, name: 'Theo mùa', item: pageUrl },
+    ],
+  }
+
+  const itemListElements = (options.items || []).slice(0, 30).map((item, index) => ({
+    '@type': 'ListItem',
+    position: index + 1,
+    name: item.name,
+    url: canonicalUrl(entityPath(item.id)),
+  }))
+
+  const itemListNode = {
+    '@type': 'ItemList',
+    '@id': `${pageUrl}#items`,
+    name: `Đặc sản và điểm đến tháng ${m} tại Vĩnh Long`,
+    description: `Danh mục sản vật và điểm đến ngon nhất vào tháng ${m}.`,
+    numberOfItems: options.totalInSeason ?? (options.items?.length || 0),
+    itemListElement: itemListElements,
+  }
+
+  const defaultFaqs = [
+    {
+      q: 'Mùa trái cây rộ nhất tại Vĩnh Long diễn ra vào những tháng nào?',
+      a: 'Thời điểm trái cây trĩu cành ngon nhất là từ tháng 5 đến tháng 8, tiêu biểu với chôm chôm, sầu riêng, bưởi năm roi, măng cụt và nhãn xuồng cơm vàng tại các vườn cù lao An Bình.',
+    },
+    {
+      q: 'Đến Vĩnh Long vào mùa nước nổi (tháng 9 đến tháng 11) có gì đặc sắc?',
+      a: 'Mùa nước nổi đem lại nguồn thủy sản phong phú với cá linh non, bông điên điển, cá lóc đồng cùng các trải nghiệm giăng lưới, chèo xuồng ngắm cảnh sông nước phù sa.',
+    },
+    {
+      q: `Nhịp con nước và nông vụ Vĩnh Long trong tháng ${m} ra sao?`,
+      a: options.quarterNote || 'Khám phá các sản vật và hành trình miệt vườn phong phú theo chu kỳ con nước sông Mekong.',
+    },
+  ]
+
+  const faqs = options.faqs && options.faqs.length > 0 ? options.faqs : defaultFaqs
+  const faqNode = buildFaqPageSchema(faqs, `${pageUrl}#faq`)
+
+  return buildUnifiedSchemaGraph([
+    buildWebSiteSchema(),
+    buildOrganizationSchema(),
+    webpageNode,
+    breadcrumbNode,
+    itemListNode,
+    faqNode,
+  ])
+}
+
+export interface FestivalEventSchemaOptions {
+  events?: Array<{
+    id: string | number
+    name: string
+    summary?: string
+    place_name?: string
+    date_start?: string
+    date_end?: string
+  }>
+  totalCount?: number
+  todayLunarLabel?: string
+  canonicalUrl?: string
+  faqs?: Array<{ q: string; a: string }>
+}
+
+export function buildFestivalEventSchemaGraph(options: FestivalEventSchemaOptions = {}): Record<string, any> {
+  const pageUrl = options.canonicalUrl || canonicalUrl('/le-hoi')
+  const total = options.totalCount ?? (options.events?.length || 0)
+  const title = 'Lễ hội truyền thống Vĩnh Long — Giao thoa văn hóa Kinh - Khmer - Hoa'
+  const desc = 'Lễ hội đình miếu Kỳ Yên, lễ hội Ok Om Bok cúng trăng, Chôl Chnăm Thmây và Nghinh Ông miền duyên hải — truyền thống văn hóa tỉnh Vĩnh Long.'
+
+  const webpageNode = {
+    '@type': 'CollectionPage',
+    '@id': `${pageUrl}#collection`,
+    url: pageUrl,
+    name: `${title} — vinhlong360`,
+    description: desc,
+    inLanguage: 'vi-VN',
+    isPartOf: { '@id': `${SITE_URL}/#website` },
+    about: {
+      '@type': 'Place',
+      name: 'Tỉnh Vĩnh Long',
+      geo: { '@type': 'GeoShape', box: '9.8 105.8 10.4 106.7' },
+    },
+    speakable: buildSpeakableSpecification([
+      '.catalog-hero h1',
+      '.dateline-eyebrow',
+      '.now-banner',
+      '.sediment-head h2',
+      '.catalog-aeo-plaque__title',
+      '.catalog-aeo-plaque__dek',
+    ]),
+  }
+
+  const breadcrumbNode = {
+    '@type': 'BreadcrumbList',
+    '@id': `${pageUrl}#breadcrumb`,
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'Trang chủ', item: `${SITE_URL}/` },
+      { '@type': 'ListItem', position: 2, name: 'Lễ hội', item: pageUrl },
+    ],
+  }
+
+  const eventListElements = (options.events || []).slice(0, 30).map((e, index) => {
+    const eventUrl = canonicalUrl(entityPath(e.id))
+    const itemNode: Record<string, any> = {
+      '@type': 'Event',
+      '@id': `${eventUrl}#event`,
+      name: e.name,
+      description: e.summary || e.name,
+      url: eventUrl,
+      eventAttendanceMode: 'https://schema.org/OfflineEventAttendanceMode',
+      eventStatus: 'https://schema.org/EventScheduled',
+    }
+    if (e.date_start) itemNode.startDate = e.date_start
+    if (e.date_end) itemNode.endDate = e.date_end
+    if (e.place_name) {
+      itemNode.location = {
+        '@type': 'Place',
+        name: e.place_name,
+        address: { '@type': 'PostalAddress', addressRegion: 'Vĩnh Long', addressCountry: 'VN' },
+      }
+    }
+    return {
+      '@type': 'ListItem',
+      position: index + 1,
+      item: itemNode,
+    }
+  })
+
+  const itemListNode = {
+    '@type': 'ItemList',
+    '@id': `${pageUrl}#events`,
+    name: 'Danh sách lễ hội truyền thống tiêu biểu tại Vĩnh Long',
+    description: 'Các sự kiện văn hóa, lễ hội dân gian và nghi thức tâm linh.',
+    numberOfItems: total,
+    itemListElement: eventListElements,
+  }
+
+  const defaultFaqs = [
+    {
+      q: 'Văn hóa lễ hội Vĩnh Long có những nét đặc trưng gì?',
+      a: 'Vĩnh Long là nơi giao thoa văn hóa độc đáo của ba dân tộc Kinh, Khmer và Hoa với các lễ hội đình miếu Kỳ Yên, lễ hội Ok Om Bok cúng trăng, Chôl Chnăm Thmây và lễ hội Nghinh Ông miền duyên hải.',
+    },
+    {
+      q: 'Du khách tham gia lễ hội ở Vĩnh Long cần lưu ý những quy tắc gì?',
+      a: 'Hầu hết các lễ hội truyền thống mở cửa tự do không thu phí. Du khách nên mặc trang phục lịch sự khi vào chánh điện; tháo giày dép khi vào chùa Khmer và nên tham dự các nghi thức chính vào buổi sáng.',
+    },
+    {
+      q: 'Làm thế nào để theo dõi lịch diễn ra các lễ hội theo cả âm lịch và dương lịch?',
+      a: 'Trang Lễ hội trên VinhLong360 tích hợp bảng chuyển đổi âm - dương lịch, chu kỳ trăng và tải lịch nhắc sự kiện dạng tập tin .ics về điện thoại tiện lợi.',
+    },
+  ]
+
+  const faqs = options.faqs && options.faqs.length > 0 ? options.faqs : defaultFaqs
+  const faqNode = buildFaqPageSchema(faqs, `${pageUrl}#faq`)
+
+  return buildUnifiedSchemaGraph([
+    buildWebSiteSchema(),
+    buildOrganizationSchema(),
+    webpageNode,
+    breadcrumbNode,
+    itemListNode,
+    faqNode,
+  ])
+}
+
+export interface OcopLedgerSchemaOptions {
+  items?: Array<{
+    id: string | number
+    name: string
+    summary?: string
+    stars?: number
+    category?: string
+  }>
+  totalCount?: number
+  topStarTier?: number
+  canonicalUrl?: string
+  faqs?: Array<{ q: string; a: string }>
+}
+
+export function buildOcopLedgerSchemaGraph(options: OcopLedgerSchemaOptions = {}): Record<string, any> {
+  const pageUrl = options.canonicalUrl || canonicalUrl('/ocop')
+  const total = options.totalCount ?? (options.items?.length || 0)
+  const title = 'Sản phẩm OCOP Vĩnh Long — Sổ vàng vinh danh đặc sản quốc gia'
+  const desc = 'Chương trình Mỗi xã một sản phẩm (OCOP) tỉnh Vĩnh Long xếp hạng 3 đến 5 sao — nông sản sạch, thủ công mỹ nghệ và ẩm thực miệt vườn kiểm định chất lượng cao.'
+
+  const webpageNode = {
+    '@type': 'CollectionPage',
+    '@id': `${pageUrl}#collection`,
+    url: pageUrl,
+    name: `${title} — vinhlong360`,
+    description: desc,
+    inLanguage: 'vi-VN',
+    isPartOf: { '@id': `${SITE_URL}/#website` },
+    about: {
+      '@type': 'Thing',
+      name: 'Chương trình Mỗi xã Một sản phẩm (OCOP)',
+      description: 'Chương trình phát triển kinh tế nông thôn nâng cao giá trị đặc sản địa phương tỉnh Vĩnh Long.',
+    },
+    speakable: buildSpeakableSpecification([
+      '.catalog-hero h1',
+      '.ledger-kicker',
+      '.ledger-dek',
+      '.hero-creds',
+      '.catalog-aeo-plaque__title',
+      '.catalog-aeo-plaque__dek',
+    ]),
+  }
+
+  const breadcrumbNode = {
+    '@type': 'BreadcrumbList',
+    '@id': `${pageUrl}#breadcrumb`,
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'Trang chủ', item: `${SITE_URL}/` },
+      { '@type': 'ListItem', position: 2, name: 'Sản phẩm', item: `${SITE_URL}/san-pham` },
+      { '@type': 'ListItem', position: 3, name: 'OCOP', item: pageUrl },
+    ],
+  }
+
+  const itemListElements = (options.items || []).slice(0, 30).map((e, index) => {
+    const itemUrl = canonicalUrl(entityPath(e.id))
+    const itemNode: Record<string, any> = {
+      '@type': 'Product',
+      '@id': `${itemUrl}#product`,
+      name: e.name,
+      description: e.summary || e.name,
+      url: itemUrl,
+      category: 'OCOP Certified Products',
+    }
+    if (e.stars) {
+      itemNode.award = `Chứng nhận OCOP ${e.stars} sao Tỉnh Vĩnh Long`
+    }
+    return {
+      '@type': 'ListItem',
+      position: index + 1,
+      item: itemNode,
+    }
+  })
+
+  const itemListNode = {
+    '@type': 'ItemList',
+    '@id': `${pageUrl}#items`,
+    name: 'Sổ vàng sản phẩm OCOP Vĩnh Long',
+    description: 'Danh mục sản phẩm nông nghiệp và làng nghề đạt chuẩn OCOP từ 3 đến 5 sao.',
+    numberOfItems: total,
+    itemListElement: itemListElements,
+  }
+
+  const defaultFaqs = [
+    {
+      q: 'Sản phẩm OCOP Vĩnh Long là gì?',
+      a: 'Chương trình Mỗi xã một sản phẩm (OCOP) tại Vĩnh Long tôn vinh và chứng nhận các đặc sản nông nghiệp, làng nghề thủ công và ẩm thực truyền thống đạt tiêu chuẩn chất lượng cao từ 3 sao đến 5 sao.',
+    },
+    {
+      q: 'Vĩnh Long hiện có những sản phẩm OCOP 5 sao nào tiêu biểu?',
+      a: 'Vĩnh Long sở hữu các sản phẩm OCOP đạt hạng cao tiêu biểu như bưởi năm roi Bình Minh, khoai lang Bình Tân, bánh tráng cù lao Mây, các sản phẩm chế biến từ dừa và gốm đỏ Mang Thít.',
+    },
+    {
+      q: 'Làm thế nào để tìm và mua đặc sản OCOP Vĩnh Long chính gốc?',
+      a: 'Du khách và người tiêu dùng có thể tra cứu thông tin nhà sản xuất, địa chỉ điểm bán, số điện thoại liên hệ và định vị bản đồ trực tiếp trên hệ thống VinhLong360.',
+    },
+  ]
+
+  const faqs = options.faqs && options.faqs.length > 0 ? options.faqs : defaultFaqs
+  const faqNode = buildFaqPageSchema(faqs, `${pageUrl}#faq`)
+
+  return buildUnifiedSchemaGraph([
+    buildWebSiteSchema(),
+    buildOrganizationSchema(),
+    webpageNode,
+    breadcrumbNode,
+    itemListNode,
+    faqNode,
+  ])
+}
+
+export interface ProductCatalogSchemaOptions {
+  products?: ProductCatalogSchemaOptions['items']
+  items?: Array<{
+    id: string | number
+    name: string
+    summary?: string
+    ocop_stars?: number
+    category?: string
+  }>
+  totalCount?: number
+  inSeasonCount?: number
+  currentMonth?: number
+  canonicalUrl?: string
+  faqs?: Array<{ q: string; a: string }>
+}
+
+export function buildProductCatalogSchemaGraph(options: ProductCatalogSchemaOptions = {}): Record<string, any> {
+  const items = options.items || options.products || []
+  const pageUrl = options.canonicalUrl || canonicalUrl('/san-pham')
+  const total = options.totalCount ?? items.length
+  const month = options.currentMonth || new Date().getMonth() + 1
+  const title = `Đặc sản & Sản phẩm Vĩnh Long — Chợ phiên tháng ${month} đất phù sa`
+  const desc = 'Trái cây nhiệt đới tươi ngon chính vụ, nông sản thượng hạng, đặc sản OCOP và quà quê bản địa tỉnh Vĩnh Long.'
+
+  const webpageNode = {
+    '@type': 'CollectionPage',
+    '@id': `${pageUrl}#collection`,
+    url: pageUrl,
+    name: `${title} — vinhlong360`,
+    description: desc,
+    inLanguage: 'vi-VN',
+    isPartOf: { '@id': `${SITE_URL}/#website` },
+    about: {
+      '@type': 'Thing',
+      name: 'Đặc sản và Sản phẩm địa phương Vĩnh Long',
+      description: 'Trái cây nhiệt đới, nông sản chất lượng cao, sản phẩm OCOP và làng nghề truyền thống Vĩnh Long.',
+    },
+    speakable: buildSpeakableSpecification([
+      '.catalog-hero h1',
+      '.market-kicker',
+      '.market-dek',
+      '.seasonal-banner-title',
+      '.catalog-aeo-plaque__title',
+      '.catalog-aeo-plaque__dek',
+    ]),
+  }
+
+  const breadcrumbNode = {
+    '@type': 'BreadcrumbList',
+    '@id': `${pageUrl}#breadcrumb`,
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'Trang chủ', item: `${SITE_URL}/` },
+      { '@type': 'ListItem', position: 2, name: 'Sản phẩm', item: pageUrl },
+    ],
+  }
+
+  const itemListElements = items.slice(0, 30).map((e, index) => {
+    const itemUrl = canonicalUrl(entityPath(e.id))
+    const itemNode: Record<string, any> = {
+      '@type': 'Product',
+      '@id': `${itemUrl}#product`,
+      name: e.name,
+      description: e.summary || e.name,
+      url: itemUrl,
+      category: e.category || 'Nông sản đặc sản Vĩnh Long',
+    }
+    if (e.ocop_stars) {
+      itemNode.award = `Chứng nhận OCOP ${e.ocop_stars} sao`
+    }
+    return {
+      '@type': 'ListItem',
+      position: index + 1,
+      item: itemNode,
+    }
+  })
+
+  const itemListNode = {
+    '@type': 'ItemList',
+    '@id': `${pageUrl}#items`,
+    name: `Danh mục đặc sản Vĩnh Long phiên chợ tháng ${month}`,
+    description: 'Sản phẩm nông nghiệp và đặc sản địa phương đang chính vụ.',
+    numberOfItems: total,
+    itemListElement: itemListElements,
+  }
+
+  const faqs = options.faqs && options.faqs.length > 0 ? options.faqs : PRODUCT_CATALOG_FAQS
+  const faqNode = buildFaqPageSchema(faqs, `${pageUrl}#faq`)
+
+  return buildUnifiedSchemaGraph([
+    buildWebSiteSchema(),
+    buildOrganizationSchema(),
+    webpageNode,
+    breadcrumbNode,
+    itemListNode,
+    faqNode,
+  ])
+}
+
+export interface RoutesCatalogSchemaOptions {
+  routes?: Array<{
+    id: string
+    name: string
+    description?: string
+    duration?: string
+    distance?: string
+    area?: string
+    stops?: Array<{ name: string; type?: string }>
+  }>
+  totalCount?: number
+  canonicalUrl?: string
+  faqs?: Array<{ q: string; a: string }>
+}
+
+export function buildRoutesCatalogSchemaGraph(options: RoutesCatalogSchemaOptions = {}): Record<string, any> {
+  const pageUrl = options.canonicalUrl || canonicalUrl('/tuyen-duong')
+  const total = options.totalCount ?? (options.routes?.length || 0)
+  const title = 'Tuyến đường gợi ý Vĩnh Long — Lộ trình du lịch miệt vườn & sông nước'
+  const desc = 'Các cung đường du lịch tự khám phá bằng xe máy và ô tô kết nối cù lao An Bình, lò gốm Mang Thít và sông nước Cửu Long.'
+
+  const webpageNode = {
+    '@type': 'CollectionPage',
+    '@id': `${pageUrl}#collection`,
+    url: pageUrl,
+    name: `${title} — vinhlong360`,
+    description: desc,
+    inLanguage: 'vi-VN',
+    isPartOf: { '@id': `${SITE_URL}/#website` },
+    about: {
+      '@type': 'TouristTrip',
+      name: 'Hành trình du lịch khám phá Vĩnh Long',
+      description: 'Tuyến đường gợi ý khám phá miệt vườn, di sản gốm đỏ Mang Thít và cù lao sông Tiền.',
+      spatialCoverage: {
+        '@type': 'Place',
+        name: 'Tỉnh Vĩnh Long',
+        geo: { '@type': 'GeoShape', box: '9.8 105.8 10.4 106.7' },
+      },
+    },
+    speakable: buildSpeakableSpecification([
+      '.catalog-hero h1',
+      '.hero-lede',
+      '.route-header',
+      '.route-stops-head',
+      '.catalog-aeo-plaque__title',
+      '.catalog-aeo-plaque__dek',
+    ]),
+  }
+
+  const breadcrumbNode = {
+    '@type': 'BreadcrumbList',
+    '@id': `${pageUrl}#breadcrumb`,
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'Trang chủ', item: `${SITE_URL}/` },
+      { '@type': 'ListItem', position: 2, name: 'Tuyến đường gợi ý', item: pageUrl },
+    ],
+  }
+
+  const itemListElements = (options.routes || []).map((r, index) => {
+    const routeUrl = `${pageUrl}#route-${r.id}`
+    const itemNode: Record<string, any> = {
+      '@type': 'TouristTrip',
+      '@id': routeUrl,
+      name: r.name,
+      description: r.description || `${r.duration || ''} · ${r.distance || ''}`,
+      url: pageUrl,
+      touristType: ['RoadTrip', 'CulturalTourism', 'Ecotourism'],
+    }
+    if (r.distance) itemNode.distance = r.distance
+    if (r.duration) itemNode.typicalAgeRange = r.duration
+    if (r.stops && r.stops.length > 0) {
+      itemNode.itinerary = {
+        '@type': 'ItemList',
+        numberOfItems: r.stops.length,
+        itemListElement: r.stops.map((s, si) => ({
+          '@type': 'ListItem',
+          position: si + 1,
+          name: s.name,
+        })),
+      }
+    }
+    return {
+      '@type': 'ListItem',
+      position: index + 1,
+      item: itemNode,
+    }
+  })
+
+  const itemListNode = {
+    '@type': 'ItemList',
+    '@id': `${pageUrl}#items`,
+    name: 'Danh sách các tuyến đường du lịch gợi ý tại Vĩnh Long',
+    description: 'Lộ trình khám phá tự túc qua các danh lam, làng nghề và cù lao.',
+    numberOfItems: total,
+    itemListElement: itemListElements,
+  }
+
+  const defaultFaqs = [
+    {
+      q: 'Nên chọn phương tiện gì để đi các tuyến đường khám phá Vĩnh Long?',
+      a: 'Xe máy phù hợp nhất cho các cung đường miệt vườn ngõ nhỏ, cù lao và phà sông. Ô tô thuận tiện cho các tuyến trục quốc lộ và liên tỉnh kết nối Bến Tre, Trà Vinh.',
+    },
+    {
+      q: 'Thời điểm nào trong năm thích hợp nhất để trải nghiệm các cung đường này?',
+      a: 'Từ tháng 5 đến tháng 8 là mùa trái cây chín rộ tại cù lao An Bình; từ tháng 9 đến tháng 11 là mùa phù sa ven sông Tiền - sông Hậu với nhiều trải nghiệm đồng quê sông nước đặc sắc.',
+    },
+    {
+      q: 'Các cung đường gợi ý có dễ tìm trạm xăng và điểm dừng chân nghỉ ngơi không?',
+      a: 'Dọc các trục đường tỉnh lộ và quốc lộ đều có trạm xăng và quán cà phê võng ven sông mát mẻ. Khi vào sâu đường làng cù lao An Bình, nên đổ đầy bình xăng trước khi qua phà.',
+    },
+  ]
+
+  const faqs = options.faqs && options.faqs.length > 0 ? options.faqs : defaultFaqs
+  const faqNode = buildFaqPageSchema(faqs, `${pageUrl}#faq`)
+
+  return buildUnifiedSchemaGraph([
+    buildWebSiteSchema(),
+    buildOrganizationSchema(),
+    webpageNode,
+    breadcrumbNode,
+    itemListNode,
+    faqNode,
+  ])
+}
+
+export interface ContemporaryEventSchemaOptions {
+  events?: Array<{
+    id: string | number
+    name: string
+    summary?: string
+    place_name?: string
+    date_start?: string
+    date_end?: string
+  }>
+  totalCount?: number
+  todayGregorianLabel?: string
+  todayLunarLabel?: string
+  canonicalUrl?: string
+  faqs?: Array<{ q: string; a: string }>
+}
+
+export function buildContemporaryEventSchemaGraph(options: ContemporaryEventSchemaOptions = {}): Record<string, any> {
+  const pageUrl = options.canonicalUrl || canonicalUrl('/su-kien')
+  const total = options.totalCount ?? (options.events?.length || 0)
+  const title = 'Sự kiện & Hội chợ Vĩnh Long — Nhịp đập văn hóa & xúc tiến thương mại'
+  const desc = 'Hội chợ, triển lãm nông nghiệp OCOP, ngày hội du lịch sông nước và festival gốm đỏ Mang Thít tại Vĩnh Long.'
+
+  const webpageNode = {
+    '@type': 'CollectionPage',
+    '@id': `${pageUrl}#collection`,
+    url: pageUrl,
+    name: `${title} — vinhlong360`,
+    description: desc,
+    inLanguage: 'vi-VN',
+    isPartOf: { '@id': `${SITE_URL}/#website` },
+    about: {
+      '@type': 'Thing',
+      name: 'Sự kiện văn hóa và hội chợ thương mại Vĩnh Long',
+      description: 'Các hoạt động sự kiện xúc tiến thương mại, ngày hội văn hóa và festival nghệ thuật tại Vĩnh Long.',
+    },
+    speakable: buildSpeakableSpecification([
+      '.catalog-hero h1',
+      '.dateline-eyebrow',
+      '.now-banner',
+      '.register-toggle',
+      '.catalog-aeo-plaque__title',
+      '.catalog-aeo-plaque__dek',
+    ]),
+  }
+
+  const breadcrumbNode = {
+    '@type': 'BreadcrumbList',
+    '@id': `${pageUrl}#breadcrumb`,
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'Trang chủ', item: `${SITE_URL}/` },
+      { '@type': 'ListItem', position: 2, name: 'Sự kiện', item: pageUrl },
+    ],
+  }
+
+  const eventListElements = (options.events || []).slice(0, 30).map((e, index) => {
+    const eventUrl = canonicalUrl(entityPath(e.id))
+    const itemNode: Record<string, any> = {
+      '@type': 'Event',
+      '@id': `${eventUrl}#event`,
+      name: e.name,
+      description: e.summary || e.name,
+      url: eventUrl,
+      eventAttendanceMode: 'https://schema.org/OfflineEventAttendanceMode',
+      eventStatus: 'https://schema.org/EventScheduled',
+    }
+    if (e.date_start) itemNode.startDate = e.date_start
+    if (e.date_end) itemNode.endDate = e.date_end
+    if (e.place_name) {
+      itemNode.location = {
+        '@type': 'Place',
+        name: e.place_name,
+        address: { '@type': 'PostalAddress', addressRegion: 'Vĩnh Long', addressCountry: 'VN' },
+      }
+    }
+    return {
+      '@type': 'ListItem',
+      position: index + 1,
+      item: itemNode,
+    }
+  })
+
+  const itemListNode = {
+    '@type': 'ItemList',
+    '@id': `${pageUrl}#events`,
+    name: 'Danh sách sự kiện và hội chợ tiêu biểu tại Vĩnh Long',
+    description: 'Các sự kiện văn hóa, ngày hội du lịch và triển lãm thương mại.',
+    numberOfItems: total,
+    itemListElement: eventListElements,
+  }
+
+  const faqs = options.faqs && options.faqs.length > 0 ? options.faqs : EVENT_CATALOG_FAQS
+  const faqNode = buildFaqPageSchema(faqs, `${pageUrl}#faq`)
+
+  return buildUnifiedSchemaGraph([
+    buildWebSiteSchema(),
+    buildOrganizationSchema(),
+    webpageNode,
+    breadcrumbNode,
+    itemListNode,
+    faqNode,
+  ])
+}
+
+export interface TourismCatalogSchemaOptions {
+  items?: Array<{
+    id: string | number
+    name: string
+    summary?: string
+    type?: string
+  }>
+  totalCount?: number
+  currentMonth?: number
+  canonicalUrl?: string
+  faqs?: Array<{ q: string; a: string }>
+}
+
+export function buildTourismCatalogSchemaGraph(options: TourismCatalogSchemaOptions = {}): Record<string, any> {
+  const pageUrl = options.canonicalUrl || canonicalUrl('/du-lich')
+  const total = options.totalCount ?? (options.items?.length || 0)
+  const title = 'Du lịch Vĩnh Long — Chỉ mục khám phá 3 vùng sông nước Cửu Long'
+  const desc = 'Trải nghiệm bản địa, điểm tham quan sinh thái, làng nghề gốm đỏ Mang Thít, cù lao An Bình và ẩm thực miệt vườn Vĩnh Long.'
+
+  const webpageNode = {
+    '@type': 'CollectionPage',
+    '@id': `${pageUrl}#collection`,
+    url: pageUrl,
+    name: `${title} — vinhlong360`,
+    description: desc,
+    inLanguage: 'vi-VN',
+    isPartOf: { '@id': `${SITE_URL}/#website` },
+    about: {
+      '@type': 'TouristDestination',
+      name: 'Điểm đến du lịch Vĩnh Long',
+      description: 'Du lịch sinh thái, di sản làng nghề gốm Mang Thít và cù lao sông Tiền.',
+      geo: { '@type': 'GeoShape', box: '9.8 105.8 10.4 106.7' },
+    },
+    speakable: buildSpeakableSpecification([
+      '.atlas-hero-title',
+      '.atlas-hero-eyebrow',
+      '.catalog-route-trace',
+      '.catalog-filter-ledger__header',
+      '.catalog-aeo-plaque__title',
+      '.catalog-aeo-plaque__dek',
+    ]),
+  }
+
+  const breadcrumbNode = {
+    '@type': 'BreadcrumbList',
+    '@id': `${pageUrl}#breadcrumb`,
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'Trang chủ', item: `${SITE_URL}/` },
+      { '@type': 'ListItem', position: 2, name: 'Du lịch', item: pageUrl },
+    ],
+  }
+
+  const itemListElements = (options.items || []).slice(0, 30).map((e, index) => {
+    const itemUrl = canonicalUrl(entityPath(e.id))
+    return {
+      '@type': 'ListItem',
+      position: index + 1,
+      item: {
+        '@type': 'TouristAttraction',
+        '@id': `${itemUrl}#attraction`,
+        name: e.name,
+        description: e.summary || e.name,
+        url: itemUrl,
+      },
+    }
+  })
+
+  const itemListNode = {
+    '@type': 'ItemList',
+    '@id': `${pageUrl}#items`,
+    name: 'Danh mục điểm đến và trải nghiệm du lịch Vĩnh Long',
+    description: 'Trải nghiệm bản địa, điểm tham quan, lưu trú, làng nghề và ẩm thực Vĩnh Long.',
+    numberOfItems: total,
+    itemListElement: itemListElements,
+  }
+
+  const faqs = options.faqs && options.faqs.length > 0 ? options.faqs : TOURISM_CATALOG_FAQS
+  const faqNode = buildFaqPageSchema(faqs, `${pageUrl}#faq`)
+
+  return buildUnifiedSchemaGraph([
+    buildWebSiteSchema(),
+    buildOrganizationSchema(),
+    webpageNode,
+    breadcrumbNode,
+    itemListNode,
+    faqNode,
+  ])
+}
+
+export interface StayCatalogItem {
+  id: string
+  name: string
+  summary?: string
+  place_name?: string
+  type?: string
+}
+
+export interface StayCatalogSchemaOptions {
+  items: StayCatalogItem[]
+  totalCount?: number
+  typeCounts?: Record<string, number>
+  canonicalUrl?: string
+  faqs?: FaqItem[]
+}
+
+/**
+ * Đồ thị tri thức hợp nhất danh mục Lưu trú & Nghỉ dưỡng Vĩnh Long (Mốc 145):
+ * CollectionPage + LodgingBusiness/BedAndBreakfast ItemList + BreadcrumbList + GeoShape + FAQPage
+ */
+export function buildStayCatalogSchemaGraph(options: StayCatalogSchemaOptions): Record<string, any> {
+  const pageUrl = options.canonicalUrl || canonicalUrl('/luu-tru')
+  const total = options.totalCount ?? options.items.length
+
+  const webpageNode: Record<string, any> = {
+    '@type': 'CollectionPage',
+    '@id': `${pageUrl}#collection`,
+    url: pageUrl,
+    name: 'Lưu trú Tỉnh Vĩnh Long',
+    description: 'Hệ thống homestay miệt vườn cù lao, khách sạn trung tâm và khu nghỉ dưỡng sinh thái ven sông Tiền, Cổ Chiên.',
+    inLanguage: 'vi',
+    isPartOf: { '@id': `${SITE_URL}/#website` },
+    breadcrumb: { '@id': `${pageUrl}#breadcrumb` },
+    numberOfItems: total,
+    about: [
+      {
+        '@type': 'Thing',
+        name: 'Dịch vụ lưu trú và Homestay Vĩnh Long',
+        description: 'Hệ thống homestay nhà vườn cù lao An Bình, khách sạn tiện nghi và khu nghỉ dưỡng ven sông tại Vĩnh Long.',
+      },
+      {
+        '@type': 'TouristDestination',
+        name: 'Vĩnh Long',
+        description: 'Điểm đến du lịch sinh thái sông nước miệt vườn Mekong.',
+      },
+    ],
+    spatialCoverage: {
+      '@type': 'Place',
+      name: 'Tỉnh Vĩnh Long',
+      geo: {
+        '@type': 'GeoShape',
+        box: '10.0 105.8 10.4 106.2',
+      },
+    },
+    speakable: buildSpeakableSpecification([
+      '.catalog-hero h1',
+      '.catalog-lead',
+      '.catalog-type-breakdown',
+      '.catalog-aeo-plaque__title',
+      '.catalog-aeo-plaque__dek',
+    ]),
+  }
+
+  const breadcrumbNode = {
+    '@type': 'BreadcrumbList',
+    '@id': `${pageUrl}#breadcrumb`,
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'Trang chủ', item: `${SITE_URL}/` },
+      { '@type': 'ListItem', position: 2, name: 'Lưu trú', item: pageUrl },
+    ],
+  }
+
+  const itemListNode = {
+    '@type': 'ItemList',
+    '@id': `${pageUrl}#items`,
+    name: 'Danh sách cơ sở lưu trú Vĩnh Long',
+    description: 'Homestay miệt vườn cù lao An Bình, khách sạn trung tâm và khu nghỉ dưỡng sinh thái Vĩnh Long.',
+    numberOfItems: total,
+    itemListElement: options.items.slice(0, 30).map((item, index) => {
+      const isHomestay = (item.type || '').toLowerCase().includes('homestay') || item.name.toLowerCase().includes('homestay')
+      return {
+        '@type': 'ListItem',
+        position: index + 1,
+        item: {
+          '@type': isHomestay ? 'BedAndBreakfast' : 'LodgingBusiness',
+          name: item.name,
+          description: item.summary || undefined,
+          url: `${SITE_URL}${entityPath(item.id)}`,
+          ...(item.place_name ? {
+            address: {
+              '@type': 'PostalAddress',
+              addressLocality: item.place_name,
+              addressRegion: 'Vĩnh Long',
+              addressCountry: 'VN',
+            },
+          } : {}),
+        },
+      }
+    }),
+  }
+
+  const faqs = options.faqs && options.faqs.length > 0 ? options.faqs : STAY_CATALOG_FAQS
+  const faqNode = buildFaqPageSchema(faqs, `${pageUrl}#faq`)
+
+  return buildUnifiedSchemaGraph([
+    buildWebSiteSchema(),
+    buildOrganizationSchema(),
+    webpageNode,
+    breadcrumbNode,
+    itemListNode,
+    faqNode,
+  ])
+}

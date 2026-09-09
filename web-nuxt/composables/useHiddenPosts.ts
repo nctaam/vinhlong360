@@ -34,7 +34,12 @@
 /** Chỉ cần `id` — dùng chung cho Post của feed lẫn item trong danh sách đã ẩn. */
 export interface HideablePost {
   id: string
-  [key: string]: unknown
+  user_id?: string
+  content?: string
+  display_name?: string
+  entity_name?: string
+  avatar?: string
+  created_at?: string
 }
 
 export interface HiddenPostsPage {
