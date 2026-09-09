@@ -404,7 +404,7 @@ def test_runner_uses_workspace_local_pytest_temp_and_binds_unique_provenance(mon
 
     commands = []
 
-    def fake_run(command, root, *, timeout=120):
+    def fake_run(command, root, *, timeout=120, env=None):
         commands.append(command)
         return " ".join(command), 0, {
             "outcome": "PASS",
@@ -982,7 +982,7 @@ def test_working_tree_digest_ignores_generated_pytest_nested_worktrees(tmp_path)
 def test_runner_leaves_no_scratch_directory_behind(monkeypatch, tmp_path):
     """Repeated runs must not accumulate scratch trees and exhaust the disk."""
 
-    def fake_run(command, root, *, timeout=120):
+    def fake_run(command, root, *, timeout=120, env=None):
         return " ".join(command), 0, {
             "outcome": "PASS",
             "nodeids": ["tests/x.py::proof"],
@@ -1072,7 +1072,7 @@ def test_postgres_credentials_never_reach_the_bundle(monkeypatch, tmp_path):
     secret = "postgresql://vl360:sup3rsecret@127.0.0.1:55432/disposable"
     monkeypatch.setenv("VL360_TEST_DATABASE_URL", secret)
 
-    def fake_run(command, root, *, timeout=120):
+    def fake_run(command, root, *, timeout=120, env=None):
         return " ".join(command), 0, {
             "outcome": "PASS",
             "nodeids": ["agent/tests/x.py::proof"],
