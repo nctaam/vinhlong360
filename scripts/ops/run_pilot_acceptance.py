@@ -23,7 +23,7 @@ import subprocess
 import sys
 import tempfile
 from typing import Any, Literal
-from urllib.parse import parse_qs, urlsplit
+from urllib.parse import parse_qs, urlencode, urlsplit
 
 ROOT = Path(__file__).resolve().parents[2]
 if str(ROOT) not in sys.path:
@@ -1220,10 +1220,24 @@ def _successful_pytest_nodeids(output: str, command: list[str]) -> list[str]:
     return nodeids
 
 
-def _run(command: list[str], root: Path, *, timeout: int = 120) -> tuple[str, int, dict[str, Any]]:
+def _run(
+    command: list[str],
+    root: Path,
+    *,
+    timeout: int = 120,
+    env: dict[str, str] | None = None,
+) -> tuple[str, int, dict[str, Any]]:
     rendered = " ".join(command)
     try:
-        result = subprocess.run(command, cwd=root, text=True, capture_output=True, timeout=timeout, check=False)
+        result = subprocess.run(
+            command,
+            cwd=root,
+            env=env,
+            text=True,
+            capture_output=True,
+            timeout=timeout,
+            check=False,
+        )
         output = (result.stdout or "") + (result.stderr or "")
         outcome = parse_test_output(output, result.returncode)
         verdict = classify_verdict(outcome, frozenset())
@@ -1331,9 +1345,11 @@ def _loopback_pg_dsn() -> str | None:
     hostname = (parsed.hostname or "").lower()
     if hostname not in {"127.0.0.1", "::1", "localhost"}:
         return None
-    if "hostaddr" in parse_qs(parsed.query):
+    query = parse_qs(parsed.query, keep_blank_values=True)
+    if "hostaddr" in query:
         return None
-    return raw
+    safe_query = [(key, value) for key, values in query.items() if key != "marker" for value in values]
+    return parsed._replace(query=urlencode(safe_query)).geturl()
 
 
 def _postgres_capture(
@@ -1343,6 +1359,7 @@ def _postgres_capture(
     env: dict[str, Any],
     owner: str,
     finding: str,
+    database_url: str,
 ) -> dict[str, Any]:
     """Capture one finding's PostgreSQL result against the disposable target.
 
@@ -1351,6 +1368,8 @@ def _postgres_capture(
     be indistinguishable from proof.
     """
 
+    child_env = os.environ.copy()
+    child_env["VL360_TEST_DATABASE_URL"] = database_url
     command, exit_code, details = _run(
         [
             # ``-v`` is required, not cosmetic: under ``-q`` pytest prints no
@@ -1361,6 +1380,7 @@ def _postgres_capture(
         ],
         root,
         timeout=900,
+        env=child_env,
     )
     parsed = details.get("parsed", {})
     gap: str | None = None
@@ -1401,7 +1421,8 @@ def _postgres_layers(
     borrowing a capture that proves something else.
     """
 
-    available = postgres_proof and database_target == "disposable-postgres" and _loopback_pg_dsn() is not None
+    database_url = _loopback_pg_dsn()
+    available = postgres_proof and database_target == "disposable-postgres" and database_url is not None
     if not postgres_proof:
         reason = "postgres-proof-not-requested"
     elif database_target != "disposable-postgres":
@@ -1414,7 +1435,9 @@ def _postgres_layers(
         if not node_ids:
             layers[finding] = _skip_evidence("postgres", "no-postgres-proof-mapped-for-finding", env, owner, "No database mutation performed.")
         elif available:
-            layers[finding] = _postgres_capture(root, node_ids, pytest_temp_root, env, owner, finding)
+            layers[finding] = _postgres_capture(
+                root, node_ids, pytest_temp_root, env, owner, finding, database_url
+            )
         else:
             layers[finding] = _skip_evidence("postgres", reason, env, owner, "No database mutation performed.")
     return layers

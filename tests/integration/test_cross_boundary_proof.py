@@ -1020,6 +1020,20 @@ def test_loopback_only_postgres_dsn_is_required(monkeypatch):
     assert runner._loopback_pg_dsn() is not None
 
 
+def test_loopback_postgres_dsn_strips_runner_only_marker(monkeypatch):
+    """Acceptance subprocesses receive a libpq-safe DSN, not the guard marker."""
+
+    monkeypatch.setenv(
+        "VL360_TEST_DATABASE_URL",
+        "postgresql://u:p@127.0.0.1:55432/disposable?marker=disposable&sslmode=disable",
+    )
+    monkeypatch.setenv("VL360_TEST_DATABASE_CONFIRM", "disposable")
+
+    assert runner._loopback_pg_dsn() == (
+        "postgresql://u:p@127.0.0.1:55432/disposable?sslmode=disable"
+    )
+
+
 def test_loopback_postgres_requires_explicit_disposable_marker(monkeypatch):
     """Loopback reachability alone must never authorize database mutation."""
 
