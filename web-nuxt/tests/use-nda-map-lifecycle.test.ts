@@ -56,16 +56,20 @@ const mocks = vi.hoisted(() => {
   }
 })
 
-vi.mock('maplibre-gl/dist/maplibre-gl-csp.js', async () => {
-  await mocks.importReady
+vi.mock('../utils/maplibre-loader', () => {
   return {
-    AttributionControl: mocks.FakeAttributionControl,
-    Map: mocks.FakeMap,
-    NavigationControl: mocks.FakeNavigationControl,
-    setWorkerUrl: mocks.setWorkerUrl,
+    ensureMapLibreStylesheet: vi.fn(),
+    loadMapLibre: async () => {
+      await mocks.importReady
+      return {
+        AttributionControl: mocks.FakeAttributionControl,
+        Map: mocks.FakeMap,
+        NavigationControl: mocks.FakeNavigationControl,
+        setWorkerUrl: mocks.setWorkerUrl,
+      }
+    },
   }
 })
-vi.mock('maplibre-gl/dist/maplibre-gl.css', () => ({}))
 
 import { useNDAMap } from '../composables/useNDAMap'
 

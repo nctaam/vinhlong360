@@ -33,7 +33,7 @@ Cơ chế: **hard** = 0 vi phạm mọi lúc · **hard-ratchet/soft-ratchet** = 
 | R20.9 | policy HTTP route registry exact + mounted identity | hard | check_policy_http_registry | 0 | 20-backend.md |
 | R20.10 | registry bồn ảnh entity: validate registry JSON + quét nguồn FE tìm sink ảnh không qua descriptor (fail-closed) | hard | check_entity_image_renderers | 0 | 20-backend.md |
 | R30.1 | cấm Tailwind | hard | check_banned_claims | 0 | 30-frontend.md |
-| R30.2 | emoji chức năng → IconLine (đếm từng match) | soft-ratchet | check_fe_tokens | 330 | 30-frontend.md |
+| R30.2 | emoji chức năng → IconLine (đếm từng match) | soft-ratchet | check_fe_tokens | 74 | 30-frontend.md |
 | R30.3 | màu ngoài tokens (đếm từng match) | hard-ratchet | check_fe_tokens | 0 | 30-frontend.md |
 | R30.4 | ClientOnly cho volatile | checklist-ký | — | — | 30-frontend.md |
 | R30.5 | tap-target ≥44 (ngoại lệ season-ring) | checklist-ký | — | — | 30-frontend.md |

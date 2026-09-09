@@ -31,6 +31,13 @@ if sys.stdout.encoding != "utf-8":
     sys.stdout.reconfigure(encoding="utf-8")
     sys.stderr.reconfigure(encoding="utf-8")
 
+# `python agent/server.py` puts only `agent/` on sys.path.  Keep repository-
+# level packages (notably `scripts.backup_manifest`) importable for that
+# documented entrypoint as well as for `python -m agent.server`.
+REPOSITORY_ROOT = Path(__file__).resolve().parent.parent
+if str(REPOSITORY_ROOT) not in sys.path:
+    sys.path.insert(0, str(REPOSITORY_ROOT))
+
 from contextlib import asynccontextmanager
 
 from dotenv import load_dotenv

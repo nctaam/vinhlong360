@@ -13,6 +13,7 @@ import shutil
 import signal
 import subprocess
 import sys
+import tempfile
 import time
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -50,9 +51,14 @@ def parse_phase_output(output: str, return_code: int) -> ParsedOutcome:
     return parse_pytest_output(output, return_code)
 
 
-def build_phases(python: str) -> tuple[Phase, Phase]:
-    """Build the two ordered pytest invocations for the backend suite."""
-    return (
+def build_phases(python: str, temp_root: Path | None = None) -> tuple[Phase, Phase]:
+    """Build the two ordered pytest invocations for the backend suite.
+
+    When a scratch root is supplied, each phase gets its own runner-owned
+    pytest base directory. Keeping the argument optional preserves the small
+    command-construction contract tests while production runs always provide it.
+    """
+    phases = (
         Phase(
             "A",
             (
@@ -80,6 +86,25 @@ def build_phases(python: str) -> tuple[Phase, Phase]:
             ),
         ),
     )
+    if temp_root is None:
+        return phases
+
+    root = Path(temp_root).resolve()
+    return tuple(
+        Phase(phase.name, phase.command + ("--basetemp", str(root / f"phase-{phase.name.lower()}")))
+        for phase in phases
+    )
+
+
+def _create_regression_temp_root() -> Path:
+    """Create a runner-owned scratch root beside the checkout.
+
+    Pytest's default Windows temp hierarchy can be ACL-restricted on developer
+    machines. A sibling of the checkout is writable without placing test
+    fixtures inside the source root, which matters for path-containment tests.
+    """
+
+    return Path(tempfile.mkdtemp(prefix=".tmp-backend-regression-", dir=ROOT.parent)).resolve()
 
 
 def _diagnose(message: str) -> None:
@@ -398,36 +423,40 @@ def run_backend_regression(
 ) -> int:
     """Run both phases against one absolute monotonic deadline."""
     deadline = time.monotonic() + deadline_seconds
-    if report_path is not None:
-        return _run_with_report(python, deadline, report_path)
+    temp_root = _create_regression_temp_root()
+    try:
+        if report_path is not None:
+            return _run_with_report(python, deadline, report_path, temp_root)
 
-    for phase in build_phases(python):
-        remaining = deadline - time.monotonic()
-        if remaining <= 0:
+        for phase in build_phases(python, temp_root):
+            remaining = deadline - time.monotonic()
+            if remaining <= 0:
+                _diagnose(
+                    f"deadline exhausted before phase {phase.name}; deadline={deadline:.6f}"
+                )
+                return TIMEOUT_EXIT_CODE
+
             _diagnose(
-                f"deadline exhausted before phase {phase.name}; deadline={deadline:.6f}"
+                f"phase {phase.name} start ({'serial suite' if phase.name == 'A' else 'closed-installer xdist suite'}); "
+                f"deadline={deadline:.6f}; "
+                f"remaining={remaining:.3f}s"
             )
-            return TIMEOUT_EXIT_CODE
+            process = _start_phase(phase)
+            remaining = deadline - time.monotonic()
+            if remaining <= 0:
+                return _deadline_timeout(phase, process, " startup")
+            try:
+                status = process.wait(timeout=remaining)
+            except subprocess.TimeoutExpired:
+                return _deadline_timeout(phase, process, "")
 
-        _diagnose(
-            f"phase {phase.name} start ({'serial suite' if phase.name == 'A' else 'closed-installer xdist suite'}); "
-            f"deadline={deadline:.6f}; "
-            f"remaining={remaining:.3f}s"
-        )
-        process = _start_phase(phase)
-        remaining = deadline - time.monotonic()
-        if remaining <= 0:
-            return _deadline_timeout(phase, process, " startup")
-        try:
-            status = process.wait(timeout=remaining)
-        except subprocess.TimeoutExpired:
-            return _deadline_timeout(phase, process, "")
+            _diagnose(f"phase {phase.name} complete: exit {status}")
+            if status != 0:
+                return status
 
-        _diagnose(f"phase {phase.name} complete: exit {status}")
-        if status != 0:
-            return status
-
-    return 0
+        return 0
+    finally:
+        shutil.rmtree(temp_root, ignore_errors=True)
 
 
 def _capture_phase(phase: Phase, deadline: float) -> dict[str, object]:
@@ -472,7 +501,36 @@ def _capture_phase(phase: Phase, deadline: float) -> dict[str, object]:
     return record
 
 
-def _run_with_report(python: str, deadline: float, report_path: Path) -> int:
+def _capture_report_phases(
+    python: str, deadline: float, temp_root: Path
+) -> tuple[list[dict[str, object]], int]:
+    """Capture every phase without short-circuiting the report run."""
+
+    phases: list[dict[str, object]] = []
+    exit_code = 0
+    for phase in build_phases(python, temp_root):
+        record = _capture_phase(phase, deadline)
+        phases.append(record)
+        if not record["clean"]:
+            exit_code = exit_code or (int(record["return_code"]) or 1)
+    return phases, exit_code
+
+
+def _unclassified_nodeids(phases: list[dict[str, object]]) -> list[str]:
+    return sorted({
+        nodeid
+        for item in phases
+        for key in ("failed_nodeids", "error_nodeids")
+        for nodeid in item.get(key, [])
+    })
+
+
+def _run_with_report(
+    python: str,
+    deadline: float,
+    report_path: Path,
+    temp_root: Path | None = None,
+) -> int:
     """Run every phase, classify each transcript, and persist one JSON report.
 
     Phases are not short-circuited on failure here: the point of the report is
@@ -480,32 +538,26 @@ def _run_with_report(python: str, deadline: float, report_path: Path) -> int:
     remaining outcomes unclassified.
     """
 
-    phases: list[dict[str, object]] = []
-    exit_code = 0
-    for phase in build_phases(python):
-        record = _capture_phase(phase, deadline)
-        phases.append(record)
-        if not record["clean"]:
-            exit_code = exit_code or (int(record["return_code"]) or 1)
-
-    report = {
-        "version": 1,
-        "environment": _report_environment(),
-        "phases": phases,
-        # "No regression" is only a valid claim when every outcome group in
-        # every phase is empty, so it is derived here rather than asserted.
-        "clean": all(bool(item.get("clean")) for item in phases),
-        "unclassified_nodeids": sorted({
-            nodeid
-            for item in phases
-            for key in ("failed_nodeids", "error_nodeids")
-            for nodeid in item.get(key, [])
-        }),
-    }
-    report_path.parent.mkdir(parents=True, exist_ok=True)
-    report_path.write_text(json.dumps(report, ensure_ascii=True, indent=2, sort_keys=True) + "\n", encoding="utf-8")
-    _diagnose(f"regression report written to {report_path}; clean={report['clean']}")
-    return 0 if report["clean"] else (exit_code or 1)
+    owns_temp_root = temp_root is None
+    owned_temp_root = temp_root or _create_regression_temp_root()
+    try:
+        phases, exit_code = _capture_report_phases(python, deadline, owned_temp_root)
+        report = {
+            "version": 1,
+            "environment": _report_environment(),
+            "phases": phases,
+            # "No regression" is only a valid claim when every outcome group in
+            # every phase is empty, so it is derived here rather than asserted.
+            "clean": all(bool(item.get("clean")) for item in phases),
+            "unclassified_nodeids": _unclassified_nodeids(phases),
+        }
+        report_path.parent.mkdir(parents=True, exist_ok=True)
+        report_path.write_text(json.dumps(report, ensure_ascii=True, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+        _diagnose(f"regression report written to {report_path}; clean={report['clean']}")
+        return 0 if report["clean"] else (exit_code or 1)
+    finally:
+        if owns_temp_root:
+            shutil.rmtree(owned_temp_root, ignore_errors=True)
 
 
 def _positive_finite_seconds(value: str) -> float:

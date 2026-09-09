@@ -116,6 +116,32 @@ def test_build_phases_returns_exact_immutable_commands(runner: ModuleType) -> No
         phases[0].name = "changed"
 
 
+def test_build_phases_bind_each_phase_to_workspace_local_temp_root(
+    runner: ModuleType, tmp_path: Path
+) -> None:
+    phases = runner.build_phases("python-under-test", tmp_path)
+
+    phase_temp_roots = []
+    for phase in phases:
+        command = phase.command
+        basetemp_index = command.index("--basetemp")
+        phase_temp_root = Path(command[basetemp_index + 1])
+        phase_temp_roots.append(phase_temp_root)
+        assert phase_temp_root.parent == tmp_path
+        assert phase_temp_root.is_absolute()
+
+    assert phase_temp_roots == [tmp_path / "phase-a", tmp_path / "phase-b"]
+
+
+def test_regression_temp_root_is_sibling_of_source_root(runner: ModuleType) -> None:
+    temp_root = runner._create_regression_temp_root()
+    try:
+        assert temp_root.parent == runner.ROOT.parent
+        assert runner.ROOT not in temp_root.parents
+    finally:
+        runner.shutil.rmtree(temp_root, ignore_errors=True)
+
+
 def test_run_reuses_one_absolute_deadline_and_shrinks_wait_budget(
     runner: ModuleType,
     monkeypatch: pytest.MonkeyPatch,

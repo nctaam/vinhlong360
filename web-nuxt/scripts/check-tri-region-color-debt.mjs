@@ -176,7 +176,10 @@ const walkSourceFiles = (directory) => {
   if (!existsSync(directory)) return []
   const files = []
   for (const entry of readdirSync(directory, { withFileTypes: true })) {
-    if (['node_modules', '.output', '.nuxt', '.tmp', 'tests', 'docs'].includes(entry.name)) continue
+    // Public assets may include immutable third-party CSS/JS (for example the
+    // MapLibre CSP bundle); design debt applies to authored source, not vendor
+    // payloads copied verbatim for runtime delivery.
+    if (['node_modules', '.output', '.nuxt', '.tmp', 'public', 'tests', 'docs'].includes(entry.name)) continue
     const path = resolve(directory, entry.name)
     if (entry.isDirectory()) files.push(...walkSourceFiles(path))
     else if (/\.(?:css|vue|ts|mjs)$/.test(entry.name)) files.push(path)

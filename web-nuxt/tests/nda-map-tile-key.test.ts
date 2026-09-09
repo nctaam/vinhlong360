@@ -22,13 +22,15 @@ const mocks = vi.hoisted(() => {
   return { constructMap, FakeMap, setWorkerUrl: vi.fn() }
 })
 
-vi.mock('maplibre-gl/dist/maplibre-gl-csp.js', () => ({
-  AttributionControl: class {},
-  Map: mocks.FakeMap,
-  NavigationControl: class {},
-  setWorkerUrl: mocks.setWorkerUrl,
+vi.mock('../utils/maplibre-loader', () => ({
+  ensureMapLibreStylesheet: vi.fn(),
+  loadMapLibre: async () => ({
+    AttributionControl: class {},
+    Map: mocks.FakeMap,
+    NavigationControl: class {},
+    setWorkerUrl: mocks.setWorkerUrl,
+  }),
 }))
-vi.mock('maplibre-gl/dist/maplibre-gl.css', () => ({}))
 
 import { useNDAMap } from '../composables/useNDAMap'
 

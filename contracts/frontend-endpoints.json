@@ -26,7 +26,7 @@
     {
       "method": "GET",
       "path": "/api/entities/{id}/relationships",
-      "source_match": "/api/entities/${id}/relationships",
+      "source_match": "/api/entities/${encodePathId(currentId)}/relationships",
       "auth": "session",
       "domain": "catalog"
     },
@@ -453,7 +453,7 @@
     {
       "method": "DELETE",
       "path": "/admin-api/relationships",
-      "source_match": "/admin-api/relationships?${params}",
+      "source_match": "/admin-api/relationships?",
       "auth": "admin",
       "domain": "siteops"
     },
@@ -1349,14 +1349,14 @@
     {
       "method": "GET",
       "path": "/admin-api/entities/{id}/history",
-      "source_match": "/admin-api/entities/${id}/history",
+      "source_match": "/admin-api/entities/' + id + '/history",
       "auth": "admin",
       "domain": "siteops"
     },
     {
       "method": "GET",
       "path": "/admin-api/entities/check-duplicate",
-      "source_match": "/admin-api/entities/check-duplicate?name=${encodeURIComponent(name)}",
+      "source_match": "/admin-api/entities/check-duplicate?name=",
       "auth": "admin",
       "domain": "siteops"
     },
@@ -1420,6 +1420,20 @@
       "method": "POST",
       "path": "/admin-api/entities/{id}/images",
       "source_match": "/admin-api/entities/${form.value.id}/images",
+      "auth": "admin",
+      "domain": "siteops"
+    },
+    {
+      "method": "POST",
+      "path": "/admin-api/entities/{id}/images/upload",
+      "source_match": "/admin-api/entities/${form.value.id}/images/upload",
+      "auth": "admin",
+      "domain": "siteops"
+    },
+    {
+      "method": "POST",
+      "path": "/admin-api/entities/bulk-delete",
+      "source_match": "/admin-api/entities/bulk-delete",
       "auth": "admin",
       "domain": "siteops"
     },

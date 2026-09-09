@@ -57,3 +57,5 @@ scratch-axe-detail.json
 
 # Generated from maplibre-gl dependency during frontend install/build.
 web-nuxt/public/maplibre-gl-csp-worker.js
+web-nuxt/public/maplibre-gl-csp.js
+web-nuxt/public/maplibre-gl.css

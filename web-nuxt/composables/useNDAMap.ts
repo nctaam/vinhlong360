@@ -1,9 +1,9 @@
-import type { Map, Marker, NavigationControl } from 'maplibre-gl'
+import type { Map } from 'maplibre-gl'
+import { ensureMapLibreStylesheet, loadMapLibre, type MapLibreModule } from '../utils/maplibre-loader'
 
 const NDA_STYLE_BASE = 'https://maptiles.openmap.vn/styles'
 const OSM_TILE_URL = 'https://tile.openstreetmap.org/{z}/{x}/{y}.png'
 
-type MapLibreModule = typeof import('maplibre-gl')
 type MapCreateResult = { map: Map; maplibregl: MapLibreModule }
 export type NDAMapState = 'loading' | 'ready' | 'fallback' | 'error'
 type MapCreatePositionOptions = {
@@ -77,9 +77,7 @@ export function useNDAMap() {
       // constructor Map" thay vì "có khoá default không". Đọc `.default` trước
       // sẽ ném trên namespace giả của vitest khi mock không khai default —
       // tests/use-nda-map-lifecycle.test.ts:57 mock đúng như vậy.
-      const mod = await import('maplibre-gl/dist/maplibre-gl-csp.js') as unknown as
-        MapLibreModule & { default?: MapLibreModule }
-      maplibregl = (typeof mod.Map === 'function' ? mod : mod.default) as MapLibreModule
+      maplibregl = await loadMapLibre()
       // CSP build keeps the worker in a separately cached asset instead of
       // embedding it as a 100KB+ inline string in the client chunk.
       maplibregl.setWorkerUrl?.('/maplibre-gl-csp-worker.js')
@@ -89,7 +87,7 @@ export function useNDAMap() {
     }
     if (!isActive()) return null
     try {
-      await import('maplibre-gl/dist/maplibre-gl.css')
+      ensureMapLibreStylesheet()
     } catch (error) {
       mapOptions.onStateChange?.('error')
       throw error
