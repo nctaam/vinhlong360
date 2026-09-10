@@ -210,6 +210,59 @@ def test_runner_retains_successful_pytest_nodeids(monkeypatch, tmp_path: Path) -
     assert details["nodeids"] == [nodeid]
 
 
+def test_countersigner_passes_libpq_safe_loopback_dsn_to_child(monkeypatch, tmp_path: Path) -> None:
+    """Countersigner strips the runner-only marker before invoking pytest."""
+
+    nodeid = "tests/example.py::test_green"
+    captured: dict[str, object] = {}
+    monkeypatch.setenv(
+        "VL360_TEST_DATABASE_URL",
+        "postgresql://u:p@127.0.0.1:55432/disposable?marker=disposable&sslmode=disable",
+    )
+    monkeypatch.setenv("VL360_TEST_DATABASE_CONFIRM", "disposable")
+
+    def fake_run(command, **kwargs):
+        captured["env"] = kwargs["env"]
+        return SimpleNamespace(stdout=f"{nodeid} PASSED [100%]\n1 passed in 0.01s\n", stderr="", returncode=0)
+
+    monkeypatch.setattr(countersigner.subprocess, "run", fake_run)
+
+    verdict, return_code, observed, counts = countersigner._rerun(
+        [nodeid], tmp_path, tmp_path / "scratch", "postgres", 30
+    )
+
+    child_env = captured["env"]
+    assert isinstance(child_env, dict)
+    assert child_env["VL360_TEST_DATABASE_URL"] == (
+        "postgresql://u:p@127.0.0.1:55432/disposable?sslmode=disable"
+    )
+    assert verdict == "PASS"
+    assert return_code == 0
+    assert observed == [nodeid]
+    assert counts["passed"] == 1
+
+
+def test_countersigner_does_not_forward_unauthorized_database_dsn(monkeypatch, tmp_path: Path) -> None:
+    """A non-loopback DSN is removed before the child process starts."""
+
+    nodeid = "tests/example.py::test_green"
+    captured: dict[str, object] = {}
+    monkeypatch.setenv("VL360_TEST_DATABASE_URL", "postgresql://u:p@db.example.com/prod")
+    monkeypatch.setenv("VL360_TEST_DATABASE_CONFIRM", "disposable")
+
+    def fake_run(command, **kwargs):
+        captured["env"] = kwargs["env"]
+        return SimpleNamespace(stdout=f"{nodeid} PASSED [100%]\n1 passed in 0.01s\n", stderr="", returncode=0)
+
+    monkeypatch.setattr(countersigner.subprocess, "run", fake_run)
+
+    countersigner._rerun([nodeid], tmp_path, tmp_path / "scratch", "postgres", 30)
+
+    child_env = captured["env"]
+    assert isinstance(child_env, dict)
+    assert "VL360_TEST_DATABASE_URL" not in child_env
+
+
 def test_countersign_cli_resolves_relative_bundle_against_root(tmp_path: Path, monkeypatch) -> None:
     """A relative bundle argument is rooted at the selected checkout."""
 

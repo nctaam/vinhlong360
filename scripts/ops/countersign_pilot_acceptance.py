@@ -25,6 +25,7 @@ from __future__ import annotations
 import argparse
 from datetime import datetime, timezone
 import json
+import os
 from pathlib import Path
 import subprocess
 import sys
@@ -45,6 +46,7 @@ from scripts.ops.run_pilot_acceptance import (  # noqa: E402
     AcceptanceBundle,
     _attestation_references,
     _coverage_key,
+    _loopback_pg_dsn,
     _PARSED_EVIDENCE_KINDS,
 )
 
@@ -58,8 +60,9 @@ _COUNTED_OUTCOMES = ("passed", "skipped", "failed", "errors", "collection_errors
 def _counts(summary: Any) -> dict[str, int]:
     """Normalise a parsed-outcome summary to the counts that enter the digest."""
 
-    source = summary if isinstance(summary, dict) else {}
-    return {name: int(source.get(name) or 0) for name in _COUNTED_OUTCOMES}
+    if isinstance(summary, dict):
+        return {name: int(summary.get(name) or 0) for name in _COUNTED_OUTCOMES}
+    return {name: int(getattr(summary, name, 0) or 0) for name in _COUNTED_OUTCOMES}
 
 
 def _outcome_fingerprint(
@@ -103,8 +106,24 @@ def _rerun(nodeids: list[str], root: Path, temp_root: Path, label: str, timeout:
         sys.executable, "-m", "pytest", "-v", "--tb=line", "-p", "no:randomly",
         "--basetemp", str(temp_root / label), *nodeids,
     ]
+    child_env = os.environ.copy()
+    database_url = _loopback_pg_dsn()
+    if database_url is None:
+        # Never let a countersignature replay inherit a production or otherwise
+        # unauthorized test database target from the operator shell.
+        child_env.pop("VL360_TEST_DATABASE_URL", None)
+    else:
+        child_env["VL360_TEST_DATABASE_URL"] = database_url
     try:
-        result = subprocess.run(command, cwd=root, text=True, capture_output=True, timeout=timeout, check=False)
+        result = subprocess.run(
+            command,
+            cwd=root,
+            env=child_env,
+            text=True,
+            capture_output=True,
+            timeout=timeout,
+            check=False,
+        )
         output = (result.stdout or "") + (result.stderr or "")
         return_code = result.returncode
     except subprocess.TimeoutExpired:
