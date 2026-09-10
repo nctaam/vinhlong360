@@ -6,9 +6,12 @@ been asserted by reading the SQL text. A string containing "SKIP LOCKED" is not
 evidence that two workers cannot both send the same message; it is evidence that
 somebody typed it.
 
-These start real threads on real connections behind a barrier, so the racing
-calls overlap rather than queue politely, and then assert the invariant rather
-than the timing: exactly one winner, exactly one message, exactly one write.
+These start real threads on real connections behind a barrier, then assert the
+durable invariant rather than a scheduling accident: exactly one message and
+exactly one write. A separate lock test deliberately holds one transaction open
+so the ``change_set_busy`` branch is exercised under genuine overlap; a caller
+that arrives after commit is an ordinary idempotent replay and is allowed to
+receive the committed result.
 """
 from __future__ import annotations
 
@@ -206,6 +209,23 @@ def test_only_one_operator_can_hold_one_work_item(pg):
 
 
 @pg_only
+def test_change_set_lock_rejects_a_transaction_that_is_still_in_flight(pg):
+    """The busy response is proven while the first transaction is open.
+
+    A later call after commit is intentionally a replay, so the thread race
+    tests below cannot use response count as their concurrency invariant.
+    """
+    from cases.store import PostgresCaseStore
+
+    change_set_id = f"lock-race-{uuid.uuid4()}"
+    store = PostgresCaseStore(pg)
+    with store.transaction() as first:
+        assert first.try_change_set_lock(change_set_id)
+        with store.transaction() as second:
+            assert not second.try_change_set_lock(change_set_id)
+
+
+@pg_only
 def test_racing_dispatchers_never_send_one_notification_twice(pg):
     from cases.outbox import configure_case_outbox, dispatch_case_outbox
     from cases.security import CaseCrypto
@@ -371,10 +391,14 @@ def test_racing_applies_write_the_entry_once(pg):
         results, errors = race(work, count=4)
 
         applied = [item for item in results if item is not None]
-        # Two applies of one change set would write the public entry twice and
-        # leave two audit rows claiming to be the moment it went live.
-        assert len(applied) == 1, f"{len(applied)} applies believed they published"
-        assert len([e for e in errors if e is not None]) == 3
+        # A caller that reaches the transaction after commit may replay the
+        # durable receipt. The invariant is one mutation, not one response.
+        assert 1 <= len(applied) <= 4
+        assert all(item == applied[0] for item in applied)
+        assert all(
+            getattr(getattr(error, "problem", None), "code", None) == "change_set_busy"
+            for error in errors if error is not None
+        )
         with pg._conn(commit_on_success=False) as conn:
             live = dict(pg._row_to_dict(pg._fetchone(
                 conn, "SELECT attributes, revision FROM entities WHERE id=%s", (entity_id,),
@@ -464,8 +488,14 @@ def test_racing_rollbacks_undo_the_entry_once(pg):
         results, errors = race(work, count=4)
 
         undone = [item for item in results if item is not None]
-        assert len(undone) == 1, f"{len(undone)} rollbacks believed they undid it"
-        assert len([e for e in errors if e is not None]) == 3
+        # As with apply, post-commit callers may receive the idempotent
+        # rollback receipt; only the durable inverse write must happen once.
+        assert 1 <= len(undone) <= 4
+        assert all(item == undone[0] for item in undone)
+        assert all(
+            getattr(getattr(error, "problem", None), "code", None) == "change_set_busy"
+            for error in errors if error is not None
+        )
         with pg._conn(commit_on_success=False) as conn:
             live = dict(pg._row_to_dict(pg._fetchone(
                 conn, "SELECT attributes, revision FROM entities WHERE id=%s", (entity_id,),
