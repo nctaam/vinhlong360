@@ -161,6 +161,9 @@ def _expected_closed_model() -> dict[str, object]:
                 ],
             },
             "prometheus": {"expose": ["9090"]},
+            "alertmanager": {"expose": ["9093"]},
+            "backup-status-exporter": {"expose": ["9105"]},
+            "node-exporter": {"expose": ["9100"]},
             "grafana": {"expose": ["3000"]},
             "loki": {"expose": ["3100"]},
             "promtail": {},
@@ -678,6 +681,25 @@ def test_developer_validator_accepts_only_exact_loopback_publications():
         "developer endpoint topology mismatch" in issue
         for issue in audit.validate_developer_model(model)
     )
+
+
+def test_repository_developer_compose_service_inventory_matches_audit(monkeypatch):
+    """The real Compose render must not drift from the audited service set."""
+    audit = _load_audit()
+    for name in (
+        "ADMIN_API_KEY",
+        "CORS_ORIGINS",
+        "CSRF_SECRET",
+        "GRAFANA_ADMIN_PASSWORD",
+        "JWT_SECRET",
+        "LLM_API_KEY",
+        "POSTGRES_PASSWORD",
+    ):
+        monkeypatch.setenv(name, "audit-placeholder")
+    model = audit.render_developer_compose(
+        ROOT, ROOT / "docker-compose.yml", ROOT / "docker-compose.dev.yml"
+    )
+    assert set(model["services"]) == audit.REQUIRED_SERVICES
     model = _expected_developer_model()
     model["services"]["rogue"] = {}
     assert any(
