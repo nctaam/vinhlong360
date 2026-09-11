@@ -19,7 +19,7 @@
 - Nuxt build was rerun and generated `launch-readiness-manifest` for the candidate revision.
 - Candidate archive: `E:\vl360-release-artifacts-20260911\dist\vl360-launch-release-2bd4979e.tar.gz`.
 - Candidate archive SHA-256: `c8ebad369f894df9ef09c64b122aa4033f79f812b1331e33af0a9eb32119adf0`.
-- Candidate archive `verify_closed_release.py --require-closed`: PASS locally; remote verification must be repeated for this refreshed digest before any admission.
+- Candidate archive `verify_closed_release.py --require-closed`: PASS locally and PASS on VPS after SHA-256 sidecar verification; VPS staging files were removed after verification.
 
 ## Preflight
 
