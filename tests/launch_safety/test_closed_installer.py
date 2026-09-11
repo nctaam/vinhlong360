@@ -67,6 +67,8 @@ SYSTEMD_UNIT_NAMES = (
     "vl-bot.service",
     "vl-watchdog.service",
     "vl-watchdog.timer",
+    "vl-backup-db.service",
+    "vl-backup-db.timer",
 )
 
 

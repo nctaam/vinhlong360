@@ -2,6 +2,7 @@ import hashlib
 import json
 import os
 from pathlib import Path
+import shutil
 import tarfile
 
 import pytest
@@ -350,6 +351,24 @@ def _write_launch_fixture(root: Path) -> Path:
     audit_path.parent.mkdir()
     audit_path.write_text(json.dumps(audit, sort_keys=True, separators=(",", ":")) + "\n", encoding="utf-8")
     return audit_path
+
+
+def test_closed_verifier_rejects_archive_without_backup_script_member(tmp_path: Path):
+    root = tmp_path / "source"
+    audit = _write_launch_fixture(root)
+    shutil.copytree(ROOT / "ops" / "systemd", root / "ops" / "systemd", dirs_exist_ok=True)
+    shutil.copytree(ROOT / "scripts" / "ops", root / "scripts" / "ops", dirs_exist_ok=True)
+    (root / "scripts" / "ops" / "backup_db_daily.sh").unlink()
+
+    package = build_launch_release(
+        root,
+        tmp_path / "release.tar.gz",
+        compose_network_audit=audit,
+        source_revision="reviewed-source-revision",
+    )
+
+    with pytest.raises(ValueError, match="missing required members"):
+        closed_release_verifier.verify_archive(package.archive, package.digest_file)
 
 
 def _assert_manifest_matches_archive_members(archive: Path) -> dict[str, object]:

@@ -2188,6 +2188,8 @@ UNIT_NAMES = (
     "vl-bot.service",
     "vl-watchdog.service",
     "vl-watchdog.timer",
+    "vl-backup-db.service",
+    "vl-backup-db.timer",
 )
 
 destination = Path(sys.argv[1])
@@ -4717,6 +4719,8 @@ UNIT_PATHS = (
     "ops/systemd/vl-bot.service",
     "ops/systemd/vl-watchdog.service",
     "ops/systemd/vl-watchdog.timer",
+    "ops/systemd/vl-backup-db.service",
+    "ops/systemd/vl-backup-db.timer",
 )
 
 def write_durable_bytes(path, raw):
@@ -4800,6 +4804,8 @@ UNIT_PATHS = (
     "ops/systemd/vl-bot.service",
     "ops/systemd/vl-watchdog.service",
     "ops/systemd/vl-watchdog.timer",
+    "ops/systemd/vl-backup-db.service",
+    "ops/systemd/vl-backup-db.timer",
 )
 
 release = Path(sys.argv[1])

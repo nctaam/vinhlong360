@@ -45,9 +45,12 @@ REQUIRED_MEMBERS = frozenset(
         "ops/systemd/vl-bot.service",
         "ops/systemd/vl-watchdog.service",
         "ops/systemd/vl-watchdog.timer",
+        "ops/systemd/vl-backup-db.service",
+        "ops/systemd/vl-backup-db.timer",
         "scripts/check_migration_gate.py",
         "scripts/ops/verify_closed_release.py",
         "scripts/ops/install_closed_release.sh",
+        "scripts/ops/backup_db_daily.sh",
     }
 )
 PERSISTENT_PATHS = ["agent/data", "agent/data/sitemap-bundles"]
@@ -57,6 +60,8 @@ SYSTEMD_UNIT_PATHS = (
     "ops/systemd/vl-bot.service",
     "ops/systemd/vl-watchdog.service",
     "ops/systemd/vl-watchdog.timer",
+    "ops/systemd/vl-backup-db.service",
+    "ops/systemd/vl-backup-db.timer",
 )
 CONFIG_INGRESS_UNIT_PATHS = (
     "config/launch-indexing-policy.json",
@@ -723,6 +728,14 @@ def _validate_loopback_units(members: Mapping[str, bytes]) -> None:
         "ops/systemd/vl-bot.service": ("BIND_HOST=127.0.0.1", "AGENT_URL=http://127.0.0.1:8360"),
         "ops/systemd/vl-watchdog.service": ("watchdog.sh",),
         "ops/systemd/vl-watchdog.timer": ("Persistent=false",),
+        "ops/systemd/vl-backup-db.service": (
+            "Type=oneshot",
+            "ExecStart=/opt/vinhlong360/scripts/ops/backup_db_daily.sh",
+        ),
+        "ops/systemd/vl-backup-db.timer": (
+            "OnCalendar=*-*-* 20:30:00",
+            "Persistent=true",
+        ),
     }
     for relative, required in expectations.items():
         raw = members.get(relative)

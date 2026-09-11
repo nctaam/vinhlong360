@@ -11,6 +11,8 @@ import sys
 
 import pytest
 
+from scripts.ops import verify_closed_release as closed_release_verifier
+
 
 ROOT = Path(__file__).resolve().parents[2]
 SYSTEMD_ROOT = ROOT / "ops" / "systemd"
@@ -97,6 +99,21 @@ EXPECTED_UNITS = {
             ("OnCalendar", "*:0/5"),
             ("Persistent", "false"),
             ("Unit", "vl-watchdog.service"),
+        ],
+        "Install": [("WantedBy", "timers.target")],
+    },
+    "vl-backup-db.service": {
+        "Unit": [("Description", "vinhlong360 daily Postgres backup")],
+        "Service": [
+            ("Type", "oneshot"),
+            ("ExecStart", "/opt/vinhlong360/scripts/ops/backup_db_daily.sh"),
+        ],
+    },
+    "vl-backup-db.timer": {
+        "Unit": [("Description", "Daily DB backup 20:30 UTC (03:30 VN)")],
+        "Timer": [
+            ("OnCalendar", "*-*-* 20:30:00"),
+            ("Persistent", "true"),
         ],
         "Install": [("WantedBy", "timers.target")],
     },
@@ -283,10 +300,16 @@ def test_systemd_parser_preserves_duplicate_directives():
     ]
 
 
-def test_tracked_systemd_authority_is_exactly_five_units():
+def test_tracked_systemd_authority_is_exactly_seven_units():
     assert SYSTEMD_ROOT.is_dir()
     assert {path.name for path in SYSTEMD_ROOT.iterdir() if path.is_file()} == set(
         EXPECTED_UNITS
+    )
+
+
+def test_closed_release_verifier_authority_matches_tracked_seven_units():
+    assert tuple(closed_release_verifier.SYSTEMD_UNIT_PATHS) == tuple(
+        f"ops/systemd/{name}" for name in EXPECTED_UNITS
     )
 
 

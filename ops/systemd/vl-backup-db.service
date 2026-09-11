@@ -1,0 +1,6 @@
+[Unit]
+Description=vinhlong360 daily Postgres backup
+
+[Service]
+Type=oneshot
+ExecStart=/opt/vinhlong360/scripts/ops/backup_db_daily.sh

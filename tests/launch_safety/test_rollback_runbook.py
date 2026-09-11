@@ -53,9 +53,12 @@ REQUIRED_PACKAGE_MEMBERS = {
     "ops/systemd/vl-bot.service",
     "ops/systemd/vl-watchdog.service",
     "ops/systemd/vl-watchdog.timer",
+    "ops/systemd/vl-backup-db.service",
+    "ops/systemd/vl-backup-db.timer",
     "scripts/check_migration_gate.py",
     "scripts/ops/install_closed_release.sh",
     "scripts/ops/verify_closed_release.py",
+    "scripts/ops/backup_db_daily.sh",
 }
 
 
