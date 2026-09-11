@@ -488,6 +488,7 @@ export function runControlHelper(command, args, {
   cleanupTimeoutMs = 12000,
   deadline,
   env,
+  cwd,
   ownershipMarker = 'vl360-control-helper-' + randomUUID(),
 } = {}) {
   const sharedDeadline = Number.isFinite(deadline) ? Number(deadline) : null
@@ -508,6 +509,7 @@ export function runControlHelper(command, args, {
     ...wrappedArgs,
   ], {
     env,
+    cwd,
     windowsHide: true,
     stdio: ['ignore', 'pipe', 'pipe'],
   })
@@ -1087,6 +1089,18 @@ export function runCaptured(command, args, options = {}) {
     captureInitialIdentity = captureProcessIdentity,
     ...spawnOptions
   } = options
+  if (process.platform === 'win32') {
+    // Windows commands run inside a Job Object so timeout cleanup is OS-enforced.
+    const jobMarker = ownershipMarker || 'vl360-run-captured-' + randomUUID()
+    return Promise.resolve().then(() => runControlHelper(command, args, {
+      timeoutMs,
+      cleanupTimeoutMs,
+      deadline,
+      env: spawnOptions.env,
+      cwd: spawnOptions.cwd,
+      ownershipMarker: jobMarker,
+    }))
+  }
   const sharedDeadline = Number.isFinite(deadline) ? Number(deadline) : null
   if (sharedDeadline !== null && sharedDeadline <= Date.now()) {
     return Promise.reject(new Error(basename(command) + ' caller deadline expired before process start'))

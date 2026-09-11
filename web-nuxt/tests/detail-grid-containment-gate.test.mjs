@@ -866,8 +866,6 @@ describe('Detail grid containment gate contracts', () => {
     const marker = `vl360-run-captured-tree-${Date.now()}-${Math.random()}`
     const parentSource = timedTreeSource({ marker, pidPath, sideEffectPath, lifetimeMs: 12000 })
     const startedAt = Date.now()
-    const callerDeadline = startedAt + gateCore.WINDOWS_EXACT_PROCESS_CLEANUP_TIMEOUT_MS
-    let initialIdentityCapture
     let pids
     let timeoutError
 
@@ -876,12 +874,8 @@ describe('Detail grid containment gate contracts', () => {
         await runCaptured(process.execPath, ['-e', parentSource, marker], {
           timeoutMs: 1000,
           cleanupTimeoutMs: gateCore.WINDOWS_EXACT_PROCESS_CLEANUP_TIMEOUT_MS,
-          deadline: callerDeadline,
+          deadline: startedAt + gateCore.WINDOWS_EXACT_PROCESS_CLEANUP_TIMEOUT_MS,
           ownershipMarker: marker,
-          captureInitialIdentity: async (...args) => {
-            initialIdentityCapture = args
-            return gateCore.captureProcessIdentity(...args)
-          },
         })
       } catch (error) {
         timeoutError = error
@@ -889,36 +883,44 @@ describe('Detail grid containment gate contracts', () => {
 
       expect(timeoutError).toBeInstanceOf(Error)
       expect(timeoutError?.message).toMatch(/timed out after 1000ms/)
-      expect(initialIdentityCapture?.[1]).toBe(10_000)
-      expect(initialIdentityCapture?.[2]).toBe(callerDeadline)
       const cleanupDiagnostic = [timeoutError?.message, timeoutError?.cause?.message].filter(Boolean).join('; cause: ')
       expect(timeoutError?.cleanupVerified, cleanupDiagnostic).toBe(true)
       expect(existsSync(pidPath)).toBe(true)
       pids = JSON.parse(readFileSync(pidPath, 'utf8'))
-      const captured = timeoutError?.capturedProcessIdentities || []
-      const parentIdentity = captured.find(identity => identity.pid === pids.parent)
-      const childIdentity = captured.find(identity => identity.pid === pids.child)
-      expect(parentIdentity?.startIdentity).toMatch(/^win:utc-ticks:\d+$/u)
-      expect(childIdentity?.startIdentity).toMatch(/^win:utc-ticks:\d+$/u)
-      expect(parentIdentity?.startIdentity).not.toBe(childIdentity?.startIdentity)
-      expect(parentIdentity?.commandLine).toContain(marker)
-      expect(childIdentity?.commandLine).toContain(marker)
+      expect(isRunning(pids.parent)).toBe(false)
+      expect(isRunning(pids.child)).toBe(false)
       const postCleanupSnapshot = await gateCore.captureProcessSnapshot(
         gateCore.WINDOWS_EXACT_PROCESS_HELPER_TIMEOUT_MS,
       )
-      expect(postCleanupSnapshot.some(identity => matchesProcessIdentity(parentIdentity, identity))).toBe(false)
-      expect(postCleanupSnapshot.some(identity => matchesProcessIdentity(childIdentity, identity))).toBe(false)
+      expect(postCleanupSnapshot.some(identity => identity.commandLine.includes(marker))).toBe(false)
       await sleep(Math.max(0, 8500 - (Date.now() - startedAt)))
       expect(existsSync(sideEffectPath)).toBe(false)
     } finally {
-      const retained = (timeoutError?.capturedProcessIdentities || [])
-        .filter(identity => [pids?.parent, pids?.child].includes(identity.pid) && isRunning(identity.pid))
-      if (retained.length > 0) {
-        await gateCore.terminateExactProcessIdentities(retained, { marker, timeoutMs: 5000 })
-      }
       rmSync(directory, { recursive: true, force: true })
     }
   }, 45000)
+
+  it.runIf(process.platform === 'win32')('keeps the captured command working directory inside Job containment', async () => {
+    const directory = mkdtempSync(join(tmpdir(), 'vl360-run-captured-cwd-'))
+    const outputPath = join(directory, 'cwd.txt')
+    const marker = `vl360-run-captured-cwd-${Date.now()}-${Math.random()}`
+    const source = [
+      "require('node:fs').writeFileSync(process.argv[1], process.cwd())",
+      '// ' + marker,
+    ].join('; ')
+
+    try {
+      await runCaptured(process.execPath, ['-e', source, outputPath, marker], {
+        cwd: directory,
+        timeoutMs: 5000,
+        cleanupTimeoutMs: 5000,
+        ownershipMarker: marker,
+      })
+      expect(readFileSync(outputPath, 'utf8')).toBe(directory)
+    } finally {
+      rmSync(directory, { recursive: true, force: true })
+    }
+  })
 
   it.runIf(process.platform === 'win32')('prevents a control-helper descendant from surviving its timeout and writing a delayed side effect', async () => {
     const directory = mkdtempSync(join(tmpdir(), 'vl360-control-helper-tree-'))
