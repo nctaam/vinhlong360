@@ -13,6 +13,14 @@
 - Docker Compose audit remains unavailable because the VPS/local Compose runtime is not available; prior audit was reused only after all four source digests matched.
 - Release remains BLOCKED/NO_GO: owner signing key, countersignature key, signed decision records, and current owner/countersigner attestations are absent. No installer run, restart, traffic change, migration, or production data mutation was performed.
 
+## Archive refresh 2026-09-11T16:30:35Z
+
+- Candidate source revision: `2bd4979edac5973f31f49076983c962a53494f37` (runtime/docs release commit; the following ledger-only commit does not change packaged runtime members).
+- Nuxt build was rerun and generated `launch-readiness-manifest` for the candidate revision.
+- Candidate archive: `E:\vl360-release-artifacts-20260911\dist\vl360-launch-release-2bd4979e.tar.gz`.
+- Candidate archive SHA-256: `c8ebad369f894df9ef09c64b122aa4033f79f812b1331e33af0a9eb32119adf0`.
+- Candidate archive `verify_closed_release.py --require-closed`: PASS locally; remote verification must be repeated for this refreshed digest before any admission.
+
 ## Preflight
 
 - BASE: `0d537202c381ec75c863612b03ae25d7b1832af0`
