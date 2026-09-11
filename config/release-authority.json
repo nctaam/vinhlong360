@@ -11,7 +11,7 @@
   "max_age_hours": 24,
   "baseline_count": 15,
   "rule_count": 38,
-  "last_verified_at": "2026-09-08T13:53:23Z",
+  "last_verified_at": "2026-09-11T16:13:28Z",
   "pilot_acceptance": {
     "runner": "scripts/ops/run_pilot_acceptance.py",
     "bundle": "artifacts/pilot-acceptance.json",
@@ -33,11 +33,11 @@
   },
   "p1_findings": ["F-01", "F-02", "F-03", "F-04", "F-05", "F-06", "F-07", "F-08", "F-09", "F-10", "F-11", "F-12", "F-13", "F-14", "F-15", "F-16", "F-17", "F-32", "F-34", "F-38", "F-40", "F-41", "F-42", "F-44", "F-47", "F-49", "F-53", "F-69"],
   "active_documents": [
-    {"path": "CLAUDE.md", "last_verified_at": "2026-09-05T03:06:08Z"},
-    {"path": "docs/ROADMAP.md", "last_verified_at": "2026-09-08T13:53:23Z"},
-    {"path": "docs/HANDOFF.md", "last_verified_at": "2026-09-08T13:53:23Z"},
-    {"path": "docs/README.md", "last_verified_at": "2026-09-05T03:06:08Z"},
-    {"path": "docs/standards/00-INDEX.md", "last_verified_at": "2026-09-05T03:06:08Z"},
-    {"path": "docs/audit-toan-du-an-2026-08.md", "last_verified_at": "2026-09-05T03:06:08Z"}
+    {"path": "CLAUDE.md", "last_verified_at": "2026-09-11T16:13:28Z"},
+    {"path": "docs/ROADMAP.md", "last_verified_at": "2026-09-11T16:13:28Z"},
+    {"path": "docs/HANDOFF.md", "last_verified_at": "2026-09-11T16:13:28Z"},
+    {"path": "docs/README.md", "last_verified_at": "2026-09-11T16:13:28Z"},
+    {"path": "docs/standards/00-INDEX.md", "last_verified_at": "2026-09-11T16:13:28Z"},
+    {"path": "docs/audit-toan-du-an-2026-08.md", "last_verified_at": "2026-09-11T16:13:28Z"}
   ]
 }
