@@ -38,6 +38,7 @@ export default defineNuxtConfig({
     // thua cascade — 45,2 kB tải ở ưu tiên cao nhất rồi vứt.
     families: [
       { name: 'Be Vietnam Pro', provider: 'google' },
+      { name: 'Lora', provider: 'google' },
       { name: 'Fraunces', provider: 'google' },
     ],
   },

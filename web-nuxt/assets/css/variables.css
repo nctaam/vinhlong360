@@ -354,7 +354,7 @@
      (Palatino/Iowan family — more character than Georgia) via a zero-download system stack,
      research-backed (modern-font-stacks). Vietnamese-safe: Palatino Linotype / Georgia /
      Noto Serif / Times all carry full VN diacritics, and browsers do per-glyph fallback. ── */
-  --font-editorial: 'Fraunces', 'Iowan Old Style', 'Palatino Linotype', Palatino, 'Book Antiqua', Georgia, 'Noto Serif', 'Times New Roman', serif;
+  --font-editorial: 'Lora', 'Fraunces', 'Iowan Old Style', 'Palatino Linotype', Palatino, 'Book Antiqua', Georgia, 'Noto Serif', serif;
   --font-optical-sizing-policy: normal;
   --typography-glyph-fixture: 'Ệ ộ Ẵ ữ Ề Ậ';
   /* Tactile grain (SVG fractalNoise, grayscale, tileable 120px) — the antidote to the
