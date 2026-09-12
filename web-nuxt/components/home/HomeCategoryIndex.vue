@@ -1,8 +1,8 @@
 <template>
   <section class="home-category-index" data-home-category-index aria-labelledby="home-category-title">
     <header class="home-category-index__header">
-      <p>Chỉ mục địa phương</p>
-      <h2 id="home-category-title">Khám phá theo nhu cầu</h2>
+      <p>Trải nghiệm phong phú</p>
+      <h2 id="home-category-title">Bạn muốn trải nghiệm điều gì hôm nay?</h2>
     </header>
     <nav class="home-category-index__primary" data-home-category-primary aria-label="Khám phá chính">
       <NuxtLink

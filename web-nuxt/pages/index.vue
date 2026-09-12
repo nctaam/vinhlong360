@@ -9,6 +9,19 @@
     <!-- One editorial thesis: useful action first, one disclosed media dossier second. -->
     <div class="sr-only" data-home-section="context" aria-label="Ngữ cảnh khám phá">Khu vực khám phá: Vĩnh Long</div>
     <section class="hero" aria-label="Giới thiệu" data-home-section="editorial-lead">
+      <div class="hero-cinematic" aria-hidden="true">
+        <img
+          class="hero-cinematic__img"
+          src="https://lh3.googleusercontent.com/aida/AP1WRLuhIlWtgMUJXpWEnEK0CVO5nwYREJTRexRwmTC-OMDvsxHdgtWLegzI3DoU39LjtDYOlH6joAindAQM2YtStsL5gTBm1UulvZr3QJfnNvDWgV8uI5q2V4sjUyNHQWHDmok0xmHdCXDXXWiYOSNhS2EOugdqrCLHpd1BbdYcJ_RNVxrzthvHrFu-_p8Y2sG65FqAH6YjBP42iAWTK8oOoPFM0urWA166SmjClkTSRufvoKiKs6kGVOwsWk0X"
+          alt=""
+          width="1920"
+          height="1080"
+          loading="eager"
+          decoding="async"
+          @error="onHeroImgError"
+        >
+        <span class="hero-cinematic__scrim" />
+      </div>
       <div class="hero-inner">
         <div class="hero-main hero-enter">
           <span class="hero-kicker" data-color-role="brand"><span class="hero-kicker-dot" aria-hidden="true"></span>{{ ss('homepage.hero_kicker', 'Du lịch & Đặc sản Vĩnh Long') }}</span>
@@ -54,6 +67,8 @@
     </section>
 
     <div class="home-river-divider" aria-hidden="true" />
+
+    <HomeNativeStories v-if="!homeFailed" />
 
     <div class="home-quick-decisions" data-home-section="quick-decisions">
       <HomeDecisionLedger :entries="homePresentation.decisionEntries" />
@@ -624,6 +639,14 @@ useSeoMeta({
 const homeSchema = computed(() => buildHomeSchemaGraph({
   upcomingEvents: upcomingEvents.value,
 }))
+
+function onHeroImgError(e: Event) {
+  const img = e.target as HTMLImageElement
+  if (img && !img.dataset.fallbackApplied) {
+    img.dataset.fallbackApplied = 'true'
+    img.src = '/img/spread/song-nuoc.webp'
+  }
+}
 
 useHead({
   link: [
