@@ -26,14 +26,28 @@
 }
 
 .public-context-bar {
-  border-bottom: 1px solid color-mix(in srgb, var(--color-border) 72%, transparent);
-  background: var(--color-surface-subtle);
+  border-bottom: 1px solid color-mix(in srgb, var(--color-border) 60%, transparent);
+  background: color-mix(in srgb, var(--color-surface-subtle) 65%, transparent);
   color: var(--color-text-muted);
+  max-height: 36px;
+  opacity: 1;
+  overflow: visible;
+  transition: max-height var(--duration-normal) var(--ease-out),
+              opacity var(--duration-fast) var(--ease-out),
+              border-bottom-color var(--duration-fast) var(--ease-out);
+}
+
+.public-shell-chrome.scrolled .public-context-bar {
+  max-height: 0;
+  opacity: 0;
+  overflow: hidden;
+  border-bottom-color: transparent;
+  pointer-events: none;
 }
 
 .public-context-inner {
   width: min(100% - 32px, 1280px);
-  min-height: 32px;
+  min-height: 26px;
   padding-block: 2px;
   margin-inline: auto;
   display: flex;
@@ -54,15 +68,21 @@
 .public-context-copy .line-icon {
   color: var(--color-action);
   font-size: var(--icon-sm);
+  opacity: 0.85;
 }
 
 .public-context-label {
   color: var(--color-text-muted);
+  font-size: 0.68rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  opacity: 0.8;
 }
 
 .public-context-current {
   color: var(--color-text);
   font-weight: var(--weight-semibold);
+  font-size: 0.74rem;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -73,33 +93,38 @@
   flex: 0 0 auto;
   display: inline-flex;
   align-items: center;
-  min-height: var(--touch-min, 44px);
+  min-height: 24px;
+  border-radius: var(--radius-pill, 999px);
+  background: color-mix(in srgb, var(--color-surface) 60%, transparent);
+  border: 1px solid color-mix(in srgb, var(--color-border) 70%, transparent);
+  transition: all var(--duration-fast) var(--ease-out);
+}
+
+.public-context-control:hover {
+  background: color-mix(in srgb, var(--color-surface) 95%, transparent);
+  border-color: var(--color-action-border);
 }
 
 .public-context-control select {
-  min-height: var(--touch-min, 44px);
+  min-height: 24px;
   max-width: 250px;
   appearance: none;
   border: 0;
-  border-radius: var(--radius-control);
-  padding: 4px 28px 4px 8px;
+  border-radius: var(--radius-pill, 999px);
+  padding: 2px 24px 2px 8px;
   background: transparent;
   color: var(--color-action);
-  font: 600 .78rem/1.4 var(--font-sans);
+  font: 600 .74rem/1.3 var(--font-sans);
   cursor: pointer;
 }
 
-/* Sàn 16px phải theo THIẾT BỊ, không theo bề rộng. Khối `max-width: 640px` phía
-   dưới không với tới máy tính bảng cảm ứng (iPad rộng ~1024px), mà iOS Safari
-   vẫn tự phóng to khi chạm vào ô dưới 16px. Đo ở 1280px: ô này ra 12,48px. */
+/* Sàn 16px theo thiết bị cảm ứng tránh iOS Safari tự phóng to */
 @media (pointer: coarse) {
+  .public-context-control,
   .public-context-control select {
+    min-height: var(--touch-min, 44px);
     font-size: max(16px, .78rem);
   }
-}
-
-.public-context-control select:hover {
-  background: color-mix(in srgb, var(--color-action) 8%, transparent);
 }
 
 .public-context-control select:focus-visible {
@@ -109,10 +134,10 @@
 
 .public-context-chevron {
   position: absolute;
-  right: 8px;
+  right: 7px;
   pointer-events: none;
   color: var(--color-action);
-  font-size: var(--text-xs);
+  font-size: 10px;
 }
 
 .public-context-mobile-icon {
@@ -130,25 +155,27 @@
 }
 
 .public-shell-command-row {
-  min-height: 52px;
+  min-height: 48px;
   display: flex;
   align-items: center;
-  gap: var(--space-5);
+  gap: var(--space-4);
+  padding-block: 3px;
 }
 
 .public-shell .brand {
   flex: 0 0 auto;
   display: inline-flex;
   align-items: baseline;
-  min-height: 44px;
-  padding-block: 8px;
+  min-height: 40px;
+  padding-block: 6px;
+  padding-right: var(--space-2);
 }
 
 .public-shell .brand .logo {
   color: var(--color-text);
-  font-size: 1.35rem;
-  font-weight: 700;
-  letter-spacing: -.04em;
+  font-size: 1.25rem;
+  font-weight: 750;
+  letter-spacing: -.035em;
 }
 
 .public-shell .brand .logo .dot {
@@ -162,89 +189,175 @@
   color: var(--color-text-muted);
   font-size: var(--text-xs);
   font-weight: 600;
+  opacity: 0.8;
+  margin-inline-start: 1px;
 }
 
 .public-shell-search {
-  flex: 1 1 520px;
-  max-width: 680px;
+  flex: 1 1 480px;
+  max-width: 620px;
   margin-inline: auto;
 }
 
 .public-shell-search input {
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-control-refined, var(--radius-control));
-  background: var(--color-surface);
+  height: 38px;
+  min-height: 38px;
+  border: 1px solid color-mix(in srgb, var(--color-border) 80%, transparent);
+  border-radius: var(--radius-pill, 999px);
+  background: color-mix(in srgb, var(--color-surface) 90%, transparent);
   font-family: var(--font-sans);
-  transition: border-color var(--duration-fast) var(--ease-out), box-shadow var(--duration-fast) var(--ease-out);
+  font-size: 0.82rem;
+  padding: 0 16px 0 38px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='15' height='15' viewBox='0 0 24 24' fill='none' stroke='%237DAEBA' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='11' cy='11' r='8'%3E%3C/circle%3E%3Cline x1='21' y1='21' x2='16.65' y2='16.65'%3E%3C/line%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: 13px center;
+  transition: border-color var(--duration-fast) var(--ease-out),
+              box-shadow var(--duration-fast) var(--ease-out),
+              background-color var(--duration-fast) var(--ease-out);
+}
+
+.public-shell-search input::placeholder {
+  color: var(--color-text-muted);
+  opacity: 0.75;
+  font-size: 0.8rem;
 }
 
 .public-shell-search input:focus {
+  background: var(--color-surface);
   border-color: var(--color-action);
-  box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-focus) 16%, transparent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-action) 16%, transparent),
+              0 4px 14px rgba(0, 0, 0, 0.12);
 }
 
 .public-shell-command-row .auth-area {
   flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
 }
 
+.public-shell-command-row .auth-btn {
+  height: 32px;
+  min-height: 32px;
+  padding: 0 14px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border-radius: var(--radius-pill, 999px);
+  border: 1px solid color-mix(in srgb, var(--color-action-border) 75%, transparent);
+  background: color-mix(in srgb, var(--color-action-surface) 60%, transparent);
+  color: var(--color-action);
+  font-family: var(--font-sans);
+  font-size: 0.75rem;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all var(--duration-fast) var(--ease-out);
+}
+
+.public-shell-command-row .auth-btn:hover {
+  border-color: var(--color-action);
+  background: var(--color-action-surface-hover);
+  color: var(--color-action-hover);
+}
+
+.public-shell-command-row .auth-btn .line-icon {
+  font-size: 14px;
+}
+
+/* ── Precision Segmented Micro-Toggle ── */
 .theme-mode-control {
   display: inline-flex;
-  align-items: stretch;
-  min-height: var(--theme-control-min-height);
+  align-items: center;
+  padding: 2px;
+  height: 32px;
+  min-height: 32px;
   overflow: hidden;
-  border: 1px solid var(--theme-control-border);
-  border-radius: var(--theme-control-radius);
-  background: var(--theme-control-bg);
+  border: 1px solid color-mix(in srgb, var(--color-border) 75%, transparent);
+  border-radius: var(--radius-pill, 999px);
+  background: color-mix(in srgb, var(--color-surface-subtle) 75%, transparent);
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.08);
 }
 
 .theme-mode-control button {
-  min-width: var(--theme-control-min-height);
-  min-height: var(--theme-control-min-height);
+  position: relative;
+  height: 26px;
+  min-height: 26px;
+  min-width: auto;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: var(--space-2);
-  padding: var(--space-2) var(--space-3);
+  gap: 5px;
+  padding: 0 10px;
   border: 0;
-  border-inline-end: 1px solid var(--theme-control-border);
+  border-radius: var(--radius-pill, 999px);
   background: transparent;
   color: var(--color-text-muted);
-  /* Tách khỏi shorthand: .76rem viết cứng, và line-height 1.1 thấp hơn hẳn tỉ lệ
-     mực tiếng Việt 1,33. Đo nhãn "Nền sáng dễ đọc": hộp glyph tràn khỏi hộp dòng
-     1,62px — nặng nhất trong ba chỗ cùng lỗi tìm được. */
-  font-family: var(--font-body);
-  font-size: var(--text-xs);
+  font-family: var(--font-sans);
+  font-size: 0.72rem;
   font-weight: 600;
-  line-height: 1.4;
+  line-height: 1;
+  white-space: nowrap;
   cursor: pointer;
+  transition: all var(--duration-fast) var(--ease-out);
 }
 
-.theme-mode-control button:last-child {
-  border-inline-end: 0;
-}
-
-.theme-mode-control button[aria-pressed="true"] {
-  background: var(--theme-control-active);
-  color: var(--color-canvas);
+.theme-mode-control button .line-icon {
+  font-size: 13px;
+  transition: color var(--duration-fast) var(--ease-out);
 }
 
 .theme-mode-control button:hover:not([aria-pressed="true"]) {
   color: var(--color-text);
 }
 
+/* Active State: Raised Tactile Tile (Nocturne Dark Default) */
+.theme-mode-control button[aria-pressed="true"] {
+  background: var(--color-surface-raised, #1D2927);
+  color: var(--color-text);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.35), 0 0 0 1px color-mix(in srgb, var(--color-border) 45%, transparent);
+}
+
+.theme-mode-control button[aria-pressed="true"] .line-icon {
+  color: var(--color-action);
+}
+
+/* Active State: Daylight Parchment */
+.light .theme-mode-control button[aria-pressed="true"],
+[data-theme="parchment"] .theme-mode-control button[aria-pressed="true"] {
+  background: #FFFFFF;
+  color: var(--color-text);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1), 0 0 0 1px rgba(0, 0, 0, 0.06);
+}
+
+.light .theme-mode-control button[aria-pressed="true"] .line-icon,
+[data-theme="parchment"] .theme-mode-control button[aria-pressed="true"] .line-icon {
+  color: var(--harvest-700);
+}
+
 .theme-mode-control button:focus-visible {
   position: relative;
-  z-index: 1;
+  z-index: 2;
   outline: 2px solid var(--color-focus);
-  outline-offset: -3px;
+  outline-offset: 1px;
+}
+
+@media (max-width: 1100px) {
+  .theme-mode-control .theme-mode-label {
+    display: none;
+  }
+  .theme-mode-control button {
+    padding-inline: 8px;
+  }
 }
 
 .public-shell-task-row {
-  min-height: 38px;
+  min-height: 34px;
   display: flex;
   align-items: stretch;
   justify-content: space-between;
   gap: var(--space-6);
+  border-top: 1px solid color-mix(in srgb, var(--color-border) 45%, transparent);
 }
 
 .public-shell-task-nav {
@@ -256,36 +369,33 @@
 .public-shell-task-nav a,
 .public-shell-catalog-button {
   position: relative;
-  min-height: 38px;
+  min-height: 34px;
   display: inline-flex;
   align-items: center;
   border: 0;
   background: transparent;
   color: var(--color-text-muted);
-  /* Tách khỏi shorthand `font: 600 .84rem/1.2` vì hai lý do đo được:
-     - .84rem = 13,44px viết cứng, ngoài thang --text-*;
-     - line-height 1.2 THẤP HƠN tỉ lệ mực tiếng Việt (đo Be Vietnam Pro: 1,33).
-       Đo trên 5 link nav: hộp glyph 17px trong hộp dòng 16,13px — tràn 0,87px,
-       dấu thanh của "Cộng đồng", "Lịch trình" chen vào phần trên/dưới. */
   font-family: var(--font-sans);
   font-size: var(--text-xs);
   font-weight: 600;
   line-height: 1.4;
   cursor: pointer;
+  transition: color var(--duration-fast) var(--ease-out);
 }
 
 .public-shell-task-nav a::after,
 .public-shell-catalog-button::after {
   content: '';
   position: absolute;
-  right: 0;
+  right: 2px;
   bottom: -1px;
-  left: 0;
+  left: 2px;
   height: 2px;
+  border-radius: 2px;
   background: var(--color-action);
   transform: scaleX(0);
   transform-origin: center;
-  transition: transform var(--duration-fast) var(--ease-out);
+  transition: transform var(--duration-fast) cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .public-shell-task-nav a:is(:hover, :focus-visible),
@@ -308,10 +418,23 @@
 
 .public-shell-catalog-button {
   gap: var(--space-2);
+  padding: 0 10px;
+  height: 26px;
+  min-height: 26px;
+  margin-block: auto;
+  border-radius: var(--radius-control);
+  background: color-mix(in srgb, var(--color-surface-subtle) 50%, transparent);
+  border: 1px solid color-mix(in srgb, var(--color-border) 50%, transparent);
+  font-size: 0.75rem;
+}
+
+.public-shell-catalog-button:hover {
+  background: color-mix(in srgb, var(--color-surface-subtle) 90%, transparent);
+  border-color: var(--color-border);
 }
 
 .public-shell-catalog-button .line-icon {
-  font-size: .76rem;
+  font-size: .74rem;
   transition: transform var(--duration-fast) var(--ease-out);
 }
 
@@ -460,7 +583,7 @@ html[data-density="compact"] .public-bottom-nav-item {
 
   .public-shell-command-row {
     width: min(100% - 24px, 1280px);
-    min-height: 60px;
+    min-height: 52px;
     gap: var(--space-3);
   }
 
@@ -473,9 +596,9 @@ html[data-density="compact"] .public-bottom-nav-item {
   }
 
   .public-shell-command-row .auth-btn {
-    width: 44px;
-    height: 44px;
-    min-height: 44px;
+    width: 36px;
+    height: 36px;
+    min-height: 36px;
     padding: 0;
     display: inline-flex;
     align-items: center;
@@ -510,7 +633,7 @@ html[data-density="compact"] .public-bottom-nav-item {
 
   .public-shell-catalog {
     position: fixed;
-    top: 104px;
+    top: 84px;
     right: 0;
     bottom: 0;
     left: auto;
@@ -539,7 +662,7 @@ html[data-density="compact"] .public-bottom-nav-item {
 
   .public-shell .nav-backdrop.show {
     position: fixed;
-    inset: 104px 0 0;
+    inset: 84px 0 0;
     z-index: var(--z-mobile-nav);
     display: block;
     background: var(--color-shell-scrim);

@@ -6,7 +6,7 @@
       <header class="public-shell-header" role="banner">
         <div class="public-shell-command-row">
           <NuxtLink class="brand" to="/" aria-label="Về trang chủ vinhlong360">
-            <span class="logo">{{ ss('branding.site_name', 'vinhlong360').replace('360', '') }}<span class="dot">360</span></span>
+            <span class="logo">{{ brandSitePrefix }}<span class="dot">360</span></span>
             <span class="tld">{{ ss('branding.logo_suffix', '.vn') }}</span>
           </NuxtLink>
 
@@ -93,7 +93,7 @@
         <div class="footer-top">
           <div class="footer-brand">
             <NuxtLink to="/" class="footer-logo">
-              <span class="logo">{{ ss('branding.site_name', 'vinhlong360').replace('360', '') }}<span class="dot">360</span></span><span class="tld">{{ ss('branding.logo_suffix', '.vn') }}</span>
+              <span class="logo">{{ brandSitePrefix }}<span class="dot">360</span></span><span class="tld">{{ ss('branding.logo_suffix', '.vn') }}</span>
             </NuxtLink>
             <p>{{ ss('footer.tagline', 'Khám phá tỉnh Vĩnh Long\ntheo cách của người bản địa.') }}</p>
             <nav v-if="socialLinks.length" class="footer-social" aria-label="Mạng xã hội">
@@ -131,6 +131,10 @@
 const route = useRoute()
 const { isLoggedIn, user } = useAuth()
 const { get: ss } = useSiteSettings()
+const brandSitePrefix = computed(() => {
+  const raw = ss('branding.site_name', 'vinhlong360')
+  return raw.replace(/[-–—]?\s*360\s*$/i, '').trim() || 'vinhlong'
+})
 const hasAuthSession = computed(() => isLoggedIn.value)
 const headerDisplayName = computed(() => user.value?.display_name || user.value?.phone || 'Tài khoản')
 const headerInitial = computed(() => headerDisplayName.value ? headerDisplayName.value.charAt(0).toUpperCase() : '?')
