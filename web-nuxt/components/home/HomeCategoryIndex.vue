@@ -13,12 +13,27 @@
         :data-material-accent="link.accent"
         data-decision-route
       >
-        <IconLine :name="link.icon" aria-hidden="true" />
-        <span>
-          <strong>{{ link.label }}</strong>
-          <small>{{ link.hint }}</small>
+        <span class="home-category-index__media" aria-hidden="true">
+          <img
+            :src="categoryImage(link.key)"
+            alt=""
+            loading="lazy"
+            decoding="async"
+            width="320"
+            height="180"
+            class="home-category-index__media-img"
+            @error="onImgError"
+          >
+          <span class="home-category-index__scrim" />
         </span>
-        <span v-if="link.countLabel" class="home-category-index__count">{{ link.countLabel }}</span>
+        <span class="home-category-index__meta">
+          <IconLine :name="link.icon" aria-hidden="true" />
+          <span>
+            <strong>{{ link.label }}</strong>
+            <small>{{ link.hint }}</small>
+          </span>
+          <span v-if="link.countLabel" class="home-category-index__count">{{ link.countLabel }}</span>
+        </span>
       </NuxtLink>
     </nav>
     <div class="home-category-index__utility" data-home-category-utility>
@@ -32,12 +47,27 @@
           :data-material-accent="link.accent"
           data-decision-route
         >
-          <IconLine :name="link.icon" aria-hidden="true" />
-          <span>
-            <strong>{{ link.label }}</strong>
-            <small>{{ link.hint }}</small>
+          <span class="home-category-index__media" aria-hidden="true">
+            <img
+              :src="categoryImage(link.key)"
+              alt=""
+              loading="lazy"
+              decoding="async"
+              width="240"
+              height="140"
+              class="home-category-index__media-img"
+              @error="onImgError"
+            >
+            <span class="home-category-index__scrim" />
           </span>
-          <span v-if="link.countLabel" class="home-category-index__count">{{ link.countLabel }}</span>
+          <span class="home-category-index__meta">
+            <IconLine :name="link.icon" aria-hidden="true" />
+            <span>
+              <strong>{{ link.label }}</strong>
+              <small>{{ link.hint }}</small>
+            </span>
+            <span v-if="link.countLabel" class="home-category-index__count">{{ link.countLabel }}</span>
+          </span>
         </NuxtLink>
       </nav>
     </div>
@@ -48,4 +78,23 @@
 import type { HomeCategoryGroups } from '~/utils/homeNocturnePresentation'
 
 defineProps<{ groups: HomeCategoryGroups }>()
+
+const CATEGORY_IMAGES: Record<string, string> = {
+  'du-lich': '/img/cat-du-lich.webp',
+  'am-thuc': '/img/cat-am-thuc.webp',
+  'ocop': '/img/cat-ocop.webp',
+  'le-hoi': '/img/cat-le-hoi.webp',
+  'luu-tru': '/img/cat-luu-tru.webp',
+  'lich-trinh': '/img/cat-lich-trinh.webp',
+  'ban-do': '/img/cat-ban-do.webp',
+}
+
+function categoryImage(key: string): string {
+  return CATEGORY_IMAGES[key] || '/img/cat-du-lich.webp'
+}
+
+function onImgError(e: Event) {
+  const img = e.target as HTMLImageElement
+  if (img) img.style.display = 'none'
+}
 </script>

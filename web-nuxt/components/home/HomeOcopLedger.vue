@@ -19,6 +19,18 @@
     aria-labelledby="home-ocop-title"
   >
     <div class="home-ocop__frame">
+      <div class="home-ocop__emblem-wrap" aria-hidden="true">
+        <img
+          src="/img/cat-ocop.webp"
+          alt=""
+          width="88"
+          height="88"
+          loading="lazy"
+          decoding="async"
+          class="home-ocop__emblem"
+          @error="onImgError"
+        >
+      </div>
       <p class="home-ocop__dept">Chứng nhận quốc gia · Mỗi xã một sản phẩm</p>
       <h2 id="home-ocop-title" class="home-ocop__title">Sổ vàng OCOP</h2>
 
@@ -56,4 +68,9 @@
 // không có gì để lệch. Cố ý không mô tả cấp nào chấm hạng nào: quy định đó vừa
 // đổi theo cải cách hành chính 2 cấp (§1.6) và không được nói bừa.
 const TIERS = [{ stars: 3 }, { stars: 4 }, { stars: 5 }] as const
+
+function onImgError(e: Event) {
+  const img = e.target as HTMLImageElement
+  if (img) img.style.display = 'none'
+}
 </script>

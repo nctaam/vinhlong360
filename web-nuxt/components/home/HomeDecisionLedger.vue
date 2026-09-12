@@ -25,6 +25,18 @@
           :data-tone="entry.tone"
           :data-material-accent="resolveRegionalAccent(entry.tone)"
         >
+          <span class="home-decision-ledger__thumb-wrap" aria-hidden="true">
+            <img
+              :src="decisionThumb(entry.tone)"
+              alt=""
+              loading="lazy"
+              decoding="async"
+              width="44"
+              height="44"
+              class="home-decision-ledger__thumb"
+              @error="onImgError"
+            >
+          </span>
           <span class="home-decision-ledger__eyebrow">{{ entry.eyebrow }}</span>
           <strong class="home-decision-ledger__title">{{ entry.title }}</strong>
           <span class="home-decision-ledger__text">{{ entry.text }}</span>
@@ -36,8 +48,25 @@
 </template>
 
 <script setup lang="ts">
-import type { HomeDecisionEntry } from '~/utils/homeNocturnePresentation'
+import type { HomeDecisionEntry, HomeDecisionTone } from '~/utils/homeNocturnePresentation'
 import { resolveRegionalAccent } from '~/utils/regionalColor'
 
 defineProps<{ entries: readonly HomeDecisionEntry[] }>()
+
+const TONE_THUMBS: Record<HomeDecisionTone, string> = {
+  event: '/img/cat-le-hoi.webp',
+  season: '/img/cat-du-lich.webp',
+  food: '/img/cat-am-thuc.webp',
+  planner: '/img/cat-lich-trinh.webp',
+  map: '/img/cat-ban-do.webp',
+}
+
+function decisionThumb(tone: HomeDecisionTone): string {
+  return TONE_THUMBS[tone] || '/img/cat-du-lich.webp'
+}
+
+function onImgError(e: Event) {
+  const img = e.target as HTMLImageElement
+  if (img) img.style.display = 'none'
+}
 </script>
