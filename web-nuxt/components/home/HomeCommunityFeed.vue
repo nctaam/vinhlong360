@@ -14,7 +14,7 @@
       <p v-if="topMembers.length" class="home-leaders-teaser">
         <IconLine name="trophy" /> <NuxtLink to="/bang-xep-hang">Xem thành viên tích cực <IconLine name="arrow-right" class="inline-arrow" aria-hidden="true" /></NuxtLink>
       </p>
-      <div class="scroll-row" role="region" aria-label="Bài viết cộng đồng mới" tabindex="0">
+      <div class="scroll-row home-community-dispatches" role="region" aria-label="Bài viết cộng đồng mới" tabindex="0">
         <NuxtLink v-for="p in posts" :key="p.id" :to="postPath(p.id)" class="cm-card">
           <div class="cm-body">
             <div class="cm-author">
