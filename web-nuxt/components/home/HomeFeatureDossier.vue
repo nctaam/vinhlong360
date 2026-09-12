@@ -49,13 +49,24 @@
           <IconLine name="sparkle" aria-hidden="true" />
           <span>Thổ nhưỡng di sản</span>
         </span>
-        <span
-          class="home-feature-dossier__coords"
-          data-geo-coordinates="10.254° N, 105.972° E"
-          title="Tọa độ thực địa sông Cổ Chiên & Vĩnh Long"
+        <NuxtLink
+          v-if="mapTo"
+          :to="mapTo"
+          class="home-feature-dossier__coords home-feature-dossier__coords--link"
+          :data-geo-coordinates="coordinates || '10.254° N, 105.972° E'"
+          :title="`Xem vị trí trên bản đồ (${coordinates || '10.254° N, 105.972° E'})`"
         >
           <IconLine name="pin" aria-hidden="true" />
-          <span>10.254° N, 105.972° E</span>
+          <span>{{ coordinates || '10.254° N, 105.972° E' }}</span>
+        </NuxtLink>
+        <span
+          v-else
+          class="home-feature-dossier__coords"
+          :data-geo-coordinates="coordinates || '10.254° N, 105.972° E'"
+          :title="`Tọa độ thực địa: ${coordinates || '10.254° N, 105.972° E'}`"
+        >
+          <IconLine name="pin" aria-hidden="true" />
+          <span>{{ coordinates || '10.254° N, 105.972° E' }}</span>
         </span>
         <SourceMark
           :tier="sourceTier"
@@ -109,6 +120,8 @@ withDefaults(defineProps<{
   sourceUrl?: string | null
   verifiedAt?: string | null
   plannerTo?: string
+  coordinates?: string | null
+  mapTo?: string | null
 }>(), {
   summary: undefined,
   region: undefined,
@@ -116,5 +129,7 @@ withDefaults(defineProps<{
   sourceTitle: undefined,
   sourceUrl: undefined,
   verifiedAt: undefined,
+  coordinates: '10.254° N, 105.972° E',
+  mapTo: undefined,
 })
 </script>

@@ -316,6 +316,23 @@
   border-radius: var(--radius-control);
 }
 
+[data-home-pilot="nocturne-b1"] .home-feature-dossier__coords--link {
+  text-decoration: none;
+  cursor: pointer;
+  transition: color .2s var(--ease-out-expo), border-color .2s var(--ease-out-expo), background-color .2s var(--ease-out-expo);
+}
+
+[data-home-pilot="nocturne-b1"] .home-feature-dossier__coords--link:hover {
+  color: var(--color-action);
+  border-color: var(--color-action);
+  background: var(--color-action-surface);
+}
+
+[data-home-pilot="nocturne-b1"] .home-feature-dossier__coords--link:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 2px;
+}
+
 [data-home-pilot="nocturne-b1"] .home-feature-dossier__action {
   display: inline-flex;
   align-items: center;

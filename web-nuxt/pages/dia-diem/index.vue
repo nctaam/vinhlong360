@@ -176,7 +176,7 @@
     </EmptyState>
 
     <template v-else>
-      <div class="grid dd-grid" role="list" aria-label="Danh sách địa điểm">
+      <div class="grid grid--asymmetric dd-grid" role="list" aria-label="Danh sách địa điểm">
         <template v-for="(e, i) in items" :key="e.id">
           <div v-if="i > 0 && i % 9 === 0" class="grid-divider reveal" role="presentation" aria-hidden="true">
             <span class="grid-divider-label">{{ dividerFact(i) }}</span>

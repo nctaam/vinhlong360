@@ -104,7 +104,7 @@
       </template>
     </EmptyState>
     <SkeletonGrid v-else-if="!data" :count="6" />
-    <div v-else-if="filtered.length" ref="gridEl" class="grid int-grid">
+    <div v-else-if="filtered.length" ref="gridEl" class="grid grid--asymmetric int-grid">
       <template v-for="(e, i) in visible" :key="e.id">
         <div v-if="i > 0 && i % 9 === 0" class="int-grid-divider reveal" role="presentation" aria-hidden="true">
           <span class="int-grid-divider-label">{{ dividerFact(i) }}</span>

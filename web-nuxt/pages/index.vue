@@ -47,6 +47,8 @@
           :source-title="eventSourceTitle(heroFeature)"
           :source-url="eventSourceUrl(heroFeature)"
           :verified-at="eventVerifiedAt(heroFeature)"
+          :coordinates="hfCoordinates"
+          :map-to="hfMapTo"
         />
       </div>
     </section>
@@ -492,6 +494,20 @@ const heroFeatureReason = computed(() => {
   if (!heroFeature.value) return 'Gợi ý nổi bật'
   const label = hfMeta.value?.label || 'Điểm đến'
   return hfRegion.value ? `${label} tại ${hfRegion.value}` : `${label} nổi bật`
+})
+const hfCoordinates = computed<string>(() => {
+  const e = heroFeature.value
+  if (!e) return '10.254° N, 105.972° E'
+  const lat = Number(e.lat ?? e.latitude ?? e.attributes?.lat ?? e.attributes?.latitude)
+  const lng = Number(e.lng ?? e.longitude ?? e.attributes?.lng ?? e.attributes?.longitude)
+  if (Number.isFinite(lat) && Number.isFinite(lng) && lat !== 0 && lng !== 0) {
+    return `${lat.toFixed(3)}° N, ${lng.toFixed(3)}° E`
+  }
+  return '10.254° N, 105.972° E'
+})
+const hfMapTo = computed<string>(() => {
+  if (!heroFeature.value?.id) return '/ban-do'
+  return `/ban-do?selected=${encodeURIComponent(heroFeature.value.id)}`
 })
 
 // Măng-sét ngày âm–dương — ĐỌC TỪ PAYLOAD, không tính ở trình duyệt.

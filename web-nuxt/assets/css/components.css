@@ -611,7 +611,7 @@ a.tag:hover, button.tag:hover, .tag[role="button"]:hover { filter: brightness(.9
 .ac-section-clear { font-size: var(--text-xs); color: var(--color-action); background: none; border: 0; padding: var(--space-1) var(--space-2); border-radius: var(--radius-control); cursor: pointer; transition: background .2s; }
 .ac-section-clear:hover { background: var(--bg-alt); }
 .ac-recent .ac-info { flex: 1; }
-.ac-remove-recent { margin-inline-start: auto; flex-shrink: 0; display: grid; place-items: center; width: 32px; height: 32px; border: 0; background: none; color: var(--muted); border-radius: var(--radius-full); cursor: pointer; opacity: 0; transition: opacity .2s, color .2s, background .2s; }
+.ac-remove-recent { position: relative; margin-inline-start: auto; flex-shrink: 0; display: grid; place-items: center; width: 32px; height: 32px; border: 0; background: none; color: var(--muted); border-radius: var(--radius-full); cursor: pointer; opacity: 0; transition: opacity .2s, color .2s, background .2s; }
 /* :focus-visible BẮT BUỘC nằm trong danh sách này: nút để opacity:0 mặc định,
    mà opacity nuốt luôn vòng focus — người dùng bàn phím Tab tới được một nút
    hoàn toàn vô hình. Hover và .highlighted không phủ được đường bàn phím. */
@@ -619,11 +619,26 @@ a.tag:hover, button.tag:hover, .tag[role="button"]:hover { filter: brightness(.9
 .ac-recent.highlighted .ac-remove-recent,
 .ac-remove-recent:focus-visible { opacity: 1; }
 .ac-remove-recent:hover { color: var(--ink); background: var(--bg-alt); }
+
+/* Cơi nới vùng cảm ứng đạt chuẩn WCAG 2.2 AAA (tối thiểu 44x44px) mà không làm vỡ layout */
+.ac-clear::before,
+.ac-remove-recent::before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  min-width: 44px;
+  min-height: 44px;
+  width: 100%;
+  height: 100%;
+}
+
 .ac-empty { padding: var(--space-5) var(--space-4); text-align: center; color: var(--muted); font-size: var(--text-sm); line-height: 1.5; }
 .ac-loading { display: flex; justify-content: center; padding: var(--space-5); }
 @media (hover: none) {
-  .ac-remove-recent { opacity: 1; width: 40px; height: 40px; }
-  .ac-clear { width: 40px; height: 40px; }
+  .ac-remove-recent { opacity: 1; min-width: 44px; min-height: 44px; width: 44px; height: 44px; }
+  .ac-clear { min-width: 44px; min-height: 44px; width: 44px; height: 44px; }
 }
 
 /* ── Dark mode (components) ── */

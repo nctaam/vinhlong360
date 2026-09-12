@@ -9,9 +9,26 @@
 @container (min-width: 481px) and (max-width: 720px) {
   .grid { grid-template-columns: repeat(2, 1fr); }
 }
+
+/* ── Asymmetric editorial catalog grid (Anti Equal-Column Slop) ── */
+@container (min-width: 48rem) {
+  .grid--asymmetric > .card:first-child {
+    grid-column: span 2;
+  }
+  .grid--asymmetric > .card:first-child .cover-img {
+    aspect-ratio: 21 / 9;
+  }
+  .grid--asymmetric > .card:first-child h3 {
+    font-size: var(--text-lg);
+  }
+  .grid--asymmetric > .card:first-child .summary {
+    -webkit-line-clamp: 3;
+  }
+}
+
 .card { background: var(--card); border: .5px solid var(--line); border-radius: var(--radius-surface-refined, var(--radius)); overflow: hidden; box-shadow: var(--shadow-card-ambient, var(--shadow-sm)); transition: var(--transition-card); display: flex; flex-direction: column; }
 .card:hover { transform: translateY(-6px); box-shadow: var(--shadow-card-hover, var(--shadow-lg)); border-color: var(--border); will-change: transform; }
-.card:active { transform: translateY(-1px) scale(.97); transition-duration: .1s; }
+.card:active { transform: translateY(1px) scale(0.98); transition-duration: .1s; }
 .card:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 3px; transform: translateY(-6px); }
 @media (max-width: 820px) {
   .card { border: 1px solid var(--color-border-strong); }

@@ -52,10 +52,16 @@
       </div>
     </template>
 
-    <div class="home-local-briefing__tide" title="Quy luật bán nhật triều không đều & chu kỳ nước rong theo tuần trăng">
+    <div
+      class="home-local-briefing__tide"
+      :data-tide-phase="tidePhase.phase"
+      :data-lunar-day="tidePhase.lunarDay"
+      title="Quy luật bán nhật triều không đều &amp; chu kỳ nước rong theo tuần trăng"
+    >
       <IconLine name="droplet" aria-hidden="true" />
       <span class="home-local-briefing__tide-label">Nhịp nước sông Cửu Long:</span>
-      <span class="home-local-briefing__tide-desc">Nước rong rằm &amp; mùng một · Nước kém mùng bảy &amp; hăm ba</span>
+      <strong class="home-local-briefing__tide-badge" :data-tide-phase="tidePhase.phase">{{ tidePhase.label }}</strong>
+      <span class="home-local-briefing__tide-desc">({{ tidePhase.desc }} · Nước rong rằm &amp; mùng một, nước kém mùng bảy &amp; hăm ba)</span>
     </div>
 
     <NuxtLink class="home-local-briefing__link" :to="seasonLink">
@@ -67,6 +73,7 @@
 
 <script setup lang="ts">
 import { useWeather, weatherAccent, WEATHER_MEASURE_POINT } from '~/composables/useWeather'
+import { solarToLunar } from '~/composables/useLunar'
 
 const { reading } = useWeather()
 
@@ -151,6 +158,42 @@ const freshnessLabel = computed(() => {
   if (!observedAt) return ''
   const clock = vnClock(observedAt)
   return clock ? `Nhận dữ liệu lúc ${clock}` : ''
+})
+
+interface TidePhaseInfo {
+  lunarDay: number
+  phase: 'rong' | 'kem' | 'chuyen'
+  label: string
+  desc: string
+}
+
+const tidePhase = computed<TidePhaseInfo>(() => {
+  const now = new Date()
+  const lunar = solarToLunar(now.getDate(), now.getMonth() + 1, now.getFullYear())
+  const day = lunar.day
+
+  if ([29, 30, 1, 2, 3, 14, 15, 16, 17].includes(day)) {
+    return {
+      lunarDay: day,
+      phase: 'rong',
+      label: 'Kỳ Nước rong',
+      desc: 'Triều dâng cao theo tuần trăng',
+    }
+  }
+  if ([7, 8, 9, 22, 23, 24].includes(day)) {
+    return {
+      lunarDay: day,
+      phase: 'kem',
+      label: 'Kỳ Nước kém',
+      desc: 'Dòng chảy êm, biên độ nhỏ',
+    }
+  }
+  return {
+    lunarDay: day,
+    phase: 'chuyen',
+    label: 'Kỳ Nước chuyển',
+    desc: 'Triều chuyển dòng',
+  }
 })
 
 /**
@@ -253,6 +296,34 @@ const seasonLink = computed(() => `/theo-mua?mua=${currentMonth.value}`)
 
 .home-local-briefing__tide-label {
   font-weight: var(--weight-medium);
+  color: var(--color-text);
+}
+
+.home-local-briefing__tide-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 1px var(--space-2);
+  border-radius: var(--radius-control);
+  font-size: var(--text-2xs);
+  font-weight: var(--weight-bold);
+  border: 1px solid var(--color-border);
+  background: var(--color-surface);
+  color: var(--color-text);
+  letter-spacing: .02em;
+}
+
+.home-local-briefing__tide-badge[data-tide-phase="rong"] {
+  border-color: var(--color-action);
+  color: var(--color-action);
+}
+
+.home-local-briefing__tide-badge[data-tide-phase="kem"] {
+  border-color: var(--color-border-strong);
+  color: var(--color-text-muted);
+}
+
+.home-local-briefing__tide-badge[data-tide-phase="chuyen"] {
+  border-color: var(--color-border);
   color: var(--color-text);
 }
 
