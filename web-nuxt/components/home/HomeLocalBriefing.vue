@@ -52,6 +52,12 @@
       </div>
     </template>
 
+    <div class="home-local-briefing__tide" title="Quy luật bán nhật triều không đều & chu kỳ nước rong theo tuần trăng">
+      <IconLine name="droplet" aria-hidden="true" />
+      <span class="home-local-briefing__tide-label">Nhịp nước sông Cửu Long:</span>
+      <span class="home-local-briefing__tide-desc">Nước rong rằm &amp; mùng một · Nước kém mùng bảy &amp; hăm ba</span>
+    </div>
+
     <NuxtLink class="home-local-briefing__link" :to="seasonLink">
       <span>Lịch mùa vụ tháng {{ currentMonth }}</span>
       <IconLine name="arrow-right" class="hlb-arrow" aria-hidden="true" />
@@ -235,6 +241,19 @@ const seasonLink = computed(() => `/theo-mua?mua=${currentMonth.value}`)
   flex: 1 1 20rem;
   max-width: 62ch;
   font-size: var(--text-sm);
+}
+
+.home-local-briefing__tide {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  color: var(--color-text-muted);
+  font-size: var(--text-xs);
+}
+
+.home-local-briefing__tide-label {
+  font-weight: var(--weight-medium);
+  color: var(--color-text);
 }
 
 .home-local-briefing__link {

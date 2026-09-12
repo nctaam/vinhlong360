@@ -20,6 +20,17 @@
             :placeholder="ss('homepage.search_placeholder', 'Tìm điểm đến, món ngon, lịch trình…')"
           />
           <NuxtLink to="/ban-do?near=1" class="hero-nearby"><IconLine name="pin" /> Tìm quanh tôi</NuxtLink>
+          <div class="hero-terroir-chips" role="region" aria-label="Gợi ý thực địa Vĩnh Long">
+            <span class="hero-terroir-chips__label">Khám phá nhanh:</span>
+            <NuxtLink
+              v-for="chip in HERO_TERROIR_CHIPS"
+              :key="chip.label"
+              :to="`/kham-pha?q=${encodeURIComponent(chip.q)}`"
+              class="hero-terroir-chip"
+            >
+              {{ chip.label }}
+            </NuxtLink>
+          </div>
         </div>
         <HomeFeatureDossier
           v-if="heroFeature"
@@ -328,6 +339,14 @@ import { describeEntityImages, describeEntityPlaceholder } from '~/utils/imageDe
 import { createHomeNocturnePresentation } from '~/utils/homeNocturnePresentation'
 import type { HomePresentationEntity } from '~/utils/homeNocturnePresentation'
 import { resolveFreshnessStatus, resolveSourceTier } from '~/utils/regionalColor'
+
+const HERO_TERROIR_CHIPS = [
+  { label: 'Cù lao An Bình', q: 'Cù lao An Bình' },
+  { label: 'Lò gạch Mang Thít', q: 'Lò gạch Mang Thít' },
+  { label: 'Chợ nổi Trà Ôn', q: 'Chợ nổi Trà Ôn' },
+  { label: 'Sầu riêng Ri6', q: 'Sầu riêng Ri6' },
+  { label: 'Chùa Phật Ngọc', q: 'Chùa Phật Ngọc Xá Lợi' },
+] as const
 
 const homeAeoEntries = [
   {

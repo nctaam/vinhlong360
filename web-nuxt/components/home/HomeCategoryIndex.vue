@@ -9,7 +9,7 @@
         v-for="link in groups.primary"
         :key="link.key"
         :to="link.to"
-        class="home-category-index__primary-link"
+        class="home-category-index__primary-link home-category-index__card"
         :data-material-accent="link.accent"
         data-decision-route
       >
@@ -43,7 +43,7 @@
           v-for="link in groups.utility"
           :key="link.key"
           :to="link.to"
-          class="home-category-index__utility-link"
+          class="home-category-index__utility-link home-category-index__card"
           :data-material-accent="link.accent"
           data-decision-route
         >

@@ -139,9 +139,67 @@
   transform: none;
 }
 
+@keyframes pulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.18); }
+  100% { transform: scale(1); }
+}
+
 [data-home-pilot="nocturne-b1"] .hero-nearby {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
   color: var(--color-action);
   text-shadow: none;
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), color var(--duration-fast) var(--ease-out);
+}
+
+[data-home-pilot="nocturne-b1"] .hero-nearby .line-icon {
+  animation: pulse 2.4s cubic-bezier(0.16, 1, 0.3, 1) infinite;
+}
+
+[data-home-pilot="nocturne-b1"] .hero-nearby:active {
+  transform: scale(0.98);
+}
+
+[data-home-pilot="nocturne-b1"] .hero-terroir-chips {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+  margin-block-start: var(--space-3);
+}
+
+[data-home-pilot="nocturne-b1"] .hero-terroir-chips__label {
+  font-size: var(--text-xs);
+  color: var(--color-text-muted);
+  font-weight: var(--weight-medium);
+}
+
+[data-home-pilot="nocturne-b1"] .hero-terroir-chip {
+  display: inline-flex;
+  align-items: center;
+  min-height: 2rem;
+  padding-inline: var(--space-3);
+  padding-block: var(--space-1);
+  font-size: var(--text-xs);
+  font-weight: var(--weight-medium);
+  color: var(--color-text);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-pill, 9999px);
+  text-decoration: none;
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), background-color var(--duration-fast) var(--ease-out), border-color var(--duration-fast) var(--ease-out);
+}
+
+[data-home-pilot="nocturne-b1"] .hero-terroir-chip:hover {
+  border-color: var(--color-brand);
+  color: var(--color-brand);
+  transform: translateY(-1px);
+}
+
+[data-home-pilot="nocturne-b1"] .hero-terroir-chip:active {
+  transform: scale(0.96);
 }
 
 [data-home-pilot="nocturne-b1"] :is(a, button, input):focus-visible {
@@ -229,6 +287,20 @@
 
 [data-home-pilot="nocturne-b1"] .home-feature-dossier [data-source-mark] {
   margin-inline-start: auto;
+}
+
+[data-home-pilot="nocturne-b1"] .home-feature-dossier__stamp {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding-inline: var(--space-2);
+  padding-block: 2px;
+  font-size: var(--text-xs);
+  font-weight: var(--weight-semibold);
+  color: var(--color-brand);
+  background: color-mix(in srgb, var(--color-brand) 10%, transparent);
+  border: 1px solid color-mix(in srgb, var(--color-brand) 28%, transparent);
+  border-radius: var(--radius-control);
 }
 
 [data-home-pilot="nocturne-b1"] .home-feature-dossier__action {
@@ -349,6 +421,10 @@
   background: color-mix(in srgb, var(--tri-region-material-accent, var(--color-brand)) 6%, transparent);
 }
 
+[data-home-pilot="nocturne-b1"] .home-decision-ledger__link:active {
+  transform: scale(0.98);
+}
+
 [data-home-pilot="nocturne-b1"] .home-decision-ledger__arrow {
   display: inline-flex;
   align-items: center;
@@ -403,6 +479,14 @@
   color: var(--color-text);
   text-decoration: none;
   transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), background var(--duration-fast) var(--ease-out), box-shadow 0.2s ease;
+}
+
+[data-home-pilot="nocturne-b1"] .home-category-index__card {
+  border: 1px solid color-mix(in srgb, var(--mangthit-600) 18%, transparent);
+}
+
+[data-home-pilot="nocturne-b1"] .home-category-index__card:active {
+  transform: scale(0.98);
 }
 
 [data-home-pilot="nocturne-b1"] .home-category-index__media {
@@ -750,6 +834,7 @@
   [data-home-pilot="nocturne-b1"] .hero-main > h1 { order: 3; }
   [data-home-pilot="nocturne-b1"] .hero-main > .hero-sub { order: 4; }
   [data-home-pilot="nocturne-b1"] .hero-main > .hero-nearby { order: 5; }
+  [data-home-pilot="nocturne-b1"] .hero-main > .hero-terroir-chips { order: 6; }
 }
 
 @container home-decisions (max-width: 44rem) {
@@ -1778,6 +1863,9 @@ html.js .home .hero-enter h1::after { animation: hero-underline-draw .8s var(--e
   .cm-card:hover, .cm-card:active { transform: none; }
   .sk-heading { animation: none; }
   .fy-chip:hover, .fy-chip:active { transform: none; }
+  [data-home-pilot="nocturne-b1"] .hero-nearby .line-icon { animation: none; }
+  [data-home-pilot="nocturne-b1"] .hero-terroir-chip:hover,
+  [data-home-pilot="nocturne-b1"] .hero-terroir-chip:active { transform: none; }
 }
 
 /* ═══════════════════════════════════════════════════
