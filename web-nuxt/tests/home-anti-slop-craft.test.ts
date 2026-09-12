@@ -42,4 +42,10 @@ describe('Homepage Anti-AI-Slop Craftsmanship & Terroir Depth', () => {
     expect(ocopVue).toContain('quốc gia')
     expect(ocopVue).toMatch(/3\s*sao|4\s*sao|5\s*sao/i)
   })
+
+  it('eradicates AI sparkle icon from heritage stamp in HomeFeatureDossier', () => {
+    const dossierVue = readFileSync(resolve(__dirname, '../components/home/HomeFeatureDossier.vue'), 'utf8')
+    expect(dossierVue).not.toContain('name="sparkle"')
+    expect(dossierVue).toMatch(/name="(flame|leaf)"/)
+  })
 })
