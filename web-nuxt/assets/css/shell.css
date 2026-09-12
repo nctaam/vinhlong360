@@ -15,8 +15,8 @@
   z-index: var(--z-sticky);
   border-bottom: 1px solid var(--color-border);
   background: color-mix(in srgb, var(--color-surface) 94%, transparent);
-  -webkit-backdrop-filter: saturate(1.15) blur(14px);
-  backdrop-filter: saturate(1.15) blur(14px);
+  -webkit-backdrop-filter: var(--glass-frosted-nav, saturate(1.15) blur(14px));
+  backdrop-filter: var(--glass-frosted-nav, saturate(1.15) blur(14px));
   transition: box-shadow var(--duration-normal) var(--ease-out);
   padding-top: env(safe-area-inset-top, 0px);
 }
@@ -153,6 +153,9 @@
 
 .public-shell .brand .logo .dot {
   color: var(--color-brand);
+  background: var(--sediment-tick);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
 }
 
 .public-shell .brand .tld {
@@ -169,9 +172,10 @@
 
 .public-shell-search input {
   border: 1px solid var(--color-border);
-  border-radius: var(--radius-control);
+  border-radius: var(--radius-control-refined, var(--radius-control));
   background: var(--color-surface);
   font-family: var(--font-sans);
+  transition: border-color var(--duration-fast) var(--ease-out), box-shadow var(--duration-fast) var(--ease-out);
 }
 
 .public-shell-search input:focus {
