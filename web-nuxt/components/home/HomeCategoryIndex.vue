@@ -6,10 +6,11 @@
     </header>
     <nav class="home-category-index__primary" data-home-category-primary aria-label="Khám phá chính">
       <NuxtLink
-        v-for="link in groups.primary"
+        v-for="(link, index) in groups.primary"
         :key="link.key"
         :to="link.to"
         class="home-category-index__primary-link home-category-index__card"
+        :class="{ 'home-category-index__card--lead': index === 0 }"
         :data-material-accent="link.accent"
         data-decision-route
       >

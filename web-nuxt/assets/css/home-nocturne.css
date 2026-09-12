@@ -485,6 +485,26 @@
   border: 1px solid color-mix(in srgb, var(--mangthit-600) 18%, transparent);
 }
 
+[data-home-pilot="nocturne-b1"] .home-category-index__card--lead {
+  grid-column: span 2;
+}
+
+[data-home-pilot="nocturne-b1"] .home-river-divider {
+  width: min(var(--maxw), calc(100% - var(--space-10)));
+  height: 1px;
+  margin-inline: auto;
+  margin-block: var(--space-4);
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    color-mix(in srgb, var(--color-material-clay) 24%, var(--color-border)) 25%,
+    color-mix(in srgb, var(--color-brand) 32%, var(--color-border)) 50%,
+    color-mix(in srgb, var(--color-material-clay) 24%, var(--color-border)) 75%,
+    transparent 100%
+  );
+  border: 0;
+}
+
 [data-home-pilot="nocturne-b1"] .home-category-index__card:active {
   transform: scale(0.98);
 }
@@ -847,6 +867,10 @@
   [data-home-pilot="nocturne-b1"] .home-category-index__primary,
   [data-home-pilot="nocturne-b1"] .home-category-index__utility nav {
     grid-template-columns: 1fr;
+  }
+
+  [data-home-pilot="nocturne-b1"] .home-category-index__card--lead {
+    grid-column: span 1;
   }
 }
 

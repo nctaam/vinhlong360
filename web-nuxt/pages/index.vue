@@ -48,6 +48,8 @@
       </div>
     </section>
 
+    <div class="home-river-divider" aria-hidden="true" />
+
     <div class="home-quick-decisions" data-home-section="quick-decisions">
       <HomeDecisionLedger :entries="homePresentation.decisionEntries" />
       <HomeCategoryIndex
