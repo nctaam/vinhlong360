@@ -1248,7 +1248,7 @@
   border-radius: var(--radius-sheet);
   /* Halo — vòng thứ hai mảnh, cách ra một hơi. Đây là thứ làm "viền dày"
      đọc thành TỜ CHỨNG NHẬN chứ không phải cái hộp. */
-  box-shadow: 0 0 0 1px var(--color-canvas), 0 0 0 4px var(--color-border);
+  box-shadow: 0 0 0 1px var(--color-canvas), 0 0 0 4px var(--color-border), var(--shadow-card-ambient);
 }
 
 [data-home-pilot="nocturne-b1"] .home-ocop__dept {
@@ -1352,7 +1352,7 @@
    sáng đủ để thấy. --color-border ở dark quá chìm cho vai trò đó. */
 .dark [data-home-pilot="nocturne-b1"] .home-ocop__frame {
   border-color: var(--color-text-muted);
-  box-shadow: 0 0 0 1px var(--color-canvas), 0 0 0 4px var(--color-border);
+  box-shadow: 0 0 0 1px var(--color-canvas), 0 0 0 4px var(--color-border), var(--shadow-card-ambient);
 }
 .dark [data-home-pilot="nocturne-b1"] .home-ocop__tier[data-tier="5"] .home-ocop__stars {
   color: var(--night-amber);

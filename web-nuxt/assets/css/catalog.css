@@ -1773,3 +1773,14 @@
     color: ButtonText !important;
   }
 }
+
+/* ── Catalog AEO Plaque Enclosure ── */
+.catalog-aeo-plaque {
+  padding-block: var(--space-6);
+}
+
+.catalog-aeo-plaque__frame {
+  border-radius: var(--radius-surface-refined, 14px);
+  box-shadow: var(--shadow-card-ambient);
+}
+
