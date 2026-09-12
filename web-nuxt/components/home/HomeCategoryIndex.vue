@@ -34,6 +34,7 @@
             <small>{{ link.hint }}</small>
           </span>
           <span v-if="link.countLabel" class="home-category-index__count">{{ link.countLabel }}</span>
+          <span class="home-category-index__arrow" aria-hidden="true"><IconLine name="arrow-right" /></span>
         </span>
       </NuxtLink>
     </nav>
@@ -68,6 +69,7 @@
               <small>{{ link.hint }}</small>
             </span>
             <span v-if="link.countLabel" class="home-category-index__count">{{ link.countLabel }}</span>
+            <span class="home-category-index__arrow" aria-hidden="true"><IconLine name="arrow-right" /></span>
           </span>
         </NuxtLink>
       </nav>

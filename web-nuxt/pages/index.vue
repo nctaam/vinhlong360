@@ -109,7 +109,7 @@
       <section v-if="upcomingEventList.length || seasonalList.length" class="block reveal" aria-label="Tín hiệu địa phương" data-material-accent="amber">
         <div class="section-head">
           <div class="sh-text">
-            <h2>Tín hiệu địa phương</h2>
+            <h2>Tín hiệu địa phương <em class="editorial-italic-accent" aria-hidden="true">theo mùa</em></h2>
             <p class="sh-sub">Lịch đang tới và mùa vụ đang có dữ liệu.</p>
           </div>
           <NuxtLink class="see-all" to="/su-kien">Xem lịch</NuxtLink>

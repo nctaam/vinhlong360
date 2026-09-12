@@ -559,8 +559,9 @@
   inset: 0;
   background: linear-gradient(
     to bottom,
-    transparent 30%,
-    color-mix(in srgb, var(--tri-region-material-accent) 25%, rgba(var(--black-rgb), 0.55)) 100%
+    transparent 15%,
+    rgba(62, 39, 35, 0.35) 55%,
+    color-mix(in srgb, var(--tri-region-material-accent) 30%, rgba(62, 39, 35, 0.72)) 100%
   );
   pointer-events: none;
 }
@@ -572,11 +573,32 @@
 
 [data-home-pilot="nocturne-b1"] .home-category-index__meta {
   display: grid;
-  grid-template-columns: auto minmax(0, 1fr);
+  grid-template-columns: auto minmax(0, 1fr) auto;
   gap: var(--space-3) var(--space-4);
-  align-items: start;
+  align-items: center;
   padding: var(--space-4) var(--space-5) var(--space-5);
   flex: 1 1 auto;
+}
+
+[data-home-pilot="nocturne-b1"] .home-category-index__arrow {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: var(--radius-full);
+  color: var(--color-text-muted);
+  background: color-mix(in srgb, var(--tri-region-material-accent) 6%, transparent);
+  border: 1px solid color-mix(in srgb, var(--tri-region-material-accent) 15%, transparent);
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), color 0.2s ease, background 0.2s ease, border-color 0.2s ease;
+}
+
+[data-home-pilot="nocturne-b1"] .home-category-index__primary-link:hover .home-category-index__arrow,
+[data-home-pilot="nocturne-b1"] .home-category-index__utility-link:hover .home-category-index__arrow {
+  transform: translateX(4px);
+  color: var(--tri-region-material-accent);
+  background: color-mix(in srgb, var(--tri-region-material-accent) 16%, transparent);
+  border-color: color-mix(in srgb, var(--tri-region-material-accent) 32%, transparent);
 }
 
 [data-home-pilot="nocturne-b1"] .home-category-index__primary-link:hover,
@@ -1718,8 +1740,15 @@ html.js .home .hero-enter h1::after { animation: hero-underline-draw .8s var(--e
   width: 4px; height: 1.05em; border-radius: var(--radius-full);
   background: var(--sediment-tick);
 }
-.home .section-head h2 em, .home .spot-name em {
-  font-family: var(--font-editorial); font-style: italic; font-weight: 600;
+.home .section-head h2 em,
+.home .section-head h2 i,
+.home .spot-name em,
+.home .font-meta-italic,
+.home .editorial-italic-accent {
+  font-family: var(--font-editorial);
+  font-style: italic;
+  font-weight: 600;
+  color: var(--color-brand);
 }
 .home .ac-clay  { color: var(--color-material-clay); }
 .home .ac-leaf  { color: var(--color-material-leaf); }
