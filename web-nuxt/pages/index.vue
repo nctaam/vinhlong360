@@ -110,92 +110,42 @@
           <NuxtLink class="see-all" to="/su-kien">Xem lịch</NuxtLink>
         </div>
 
-        <div v-if="upcomingEventList.length" class="happening-rest">
-          <NuxtLink
-            v-for="ev in upcomingEventList"
-            :key="ev.id"
-            :to="entityPath(ev.id)"
-            class="event-mini"
-            :class="{ 'is-signal-lead': ev.id === signalLeadId }"
-            data-home-signal
-          >
-            <div class="ec-date ec-date-sm" data-material-accent="amber">
-              <span class="ec-day">{{ formatEventDay(ev) }}</span>
-              <span class="ec-month">{{ formatEventMonth(ev) }}</span>
-            </div>
-            <div class="ec-info">
-              <h3>{{ ev.name }}</h3>
-              <!-- Cố ý không in ngày âm cho từng sự kiện để tránh xung đột lịch trình (xem docs) -->
-              <span v-if="ev.days_until != null" class="ec-countdown" data-material-accent="amber" :class="{ 'ec-today': ev.days_until === 0 }">
-                {{ ev.days_until === 0 ? 'Hôm nay!' : ev.days_until === 1 ? 'Ngày mai' : `Còn ${ev.days_until} ngày` }}
-              </span>
-              <span class="home-signal-evidence">
-                <SourceMark
-                  :tier="eventSourceTier(ev)"
-                  :source-title="eventSourceTitle(ev)"
-                  :source-url="eventSourceUrl(ev)"
-                  :verified-at="eventVerifiedAt(ev)"
-                  compact
-                  data-signal-source
-                />
-                <FreshnessLine
-                  :status="eventFreshnessStatus(ev)"
-                  :updated-label="eventFreshnessLabel(ev)"
-                />
-              </span>
-            </div>
-            <span v-if="ev.id === signalLeadId && signalLeadDescriptor?.url" class="signal-lead-figure">
-              <img
-                class="signal-lead-media"
-                :src="signalLeadDescriptor.url"
-                :alt="signalLeadDescriptor.alt"
-                :aria-describedby="signalLeadDisclosureId"
-                width="800"
-                height="600"
-                loading="lazy"
-                decoding="async"
-              >
-              <ImageDisclosure
-                :id="signalLeadDisclosureId"
-                :descriptor="signalLeadDescriptor"
-                presentation="short"
-                class="signal-lead-disclosure"
-              />
-            </span>
-          </NuxtLink>
-        </div>
-
-        <div v-if="seasonalList.length" class="happening-section">
-          <p class="happening-label" data-material-accent="amber"><IconLine name="calendar" /> Đang vào mùa tháng {{ currentMonth }}</p>
-          <!-- ul/li: role="listitem" trên NuxtLink ghi đè vai trò link của thẻ <a>
-               và xoá luôn tên khả truy cập (listitem là name-from-author). -->
-          <ul class="home-season-ledger" aria-label="Đặc sản theo mùa">
-            <li v-for="e in seasonalList" :key="e.id" class="home-season-item">
+        <div class="home-signals__grid">
+          <div v-if="upcomingEventList.length" class="happening-rest">
             <NuxtLink
-              :to="entityPath(e.id)"
-              class="home-season-row"
-              :class="{ 'is-signal-lead': e.id === signalLeadId }"
+              v-for="ev in upcomingEventList"
+              :key="ev.id"
+              :to="entityPath(ev.id)"
+              class="event-mini"
+              :class="{ 'is-signal-lead': ev.id === signalLeadId }"
               data-home-signal
-              data-home-seasonal-signal
             >
-              <span class="home-season-row__body">
-                <strong>{{ e.name }}</strong>
+              <div class="ec-date ec-date-sm" data-material-accent="amber">
+                <span class="ec-day">{{ formatEventDay(ev) }}</span>
+                <span class="ec-month">{{ formatEventMonth(ev) }}</span>
+              </div>
+              <div class="ec-info">
+                <h3>{{ ev.name }}</h3>
+                <!-- Cố ý không in ngày âm cho từng sự kiện để tránh xung đột lịch trình (xem docs) -->
+                <span v-if="ev.days_until != null" class="ec-countdown" data-material-accent="amber" :class="{ 'ec-today': ev.days_until === 0 }">
+                  {{ ev.days_until === 0 ? 'Hôm nay!' : ev.days_until === 1 ? 'Ngày mai' : `Còn ${ev.days_until} ngày` }}
+                </span>
                 <span class="home-signal-evidence">
                   <SourceMark
-                    :tier="eventSourceTier(e)"
-                    :source-title="eventSourceTitle(e)"
-                    :source-url="eventSourceUrl(e)"
-                    :verified-at="eventVerifiedAt(e)"
+                    :tier="eventSourceTier(ev)"
+                    :source-title="eventSourceTitle(ev)"
+                    :source-url="eventSourceUrl(ev)"
+                    :verified-at="eventVerifiedAt(ev)"
                     compact
                     data-signal-source
                   />
                   <FreshnessLine
-                    :status="eventFreshnessStatus(e)"
-                    :updated-label="eventFreshnessLabel(e)"
+                    :status="eventFreshnessStatus(ev)"
+                    :updated-label="eventFreshnessLabel(ev)"
                   />
                 </span>
-              </span>
-              <span v-if="e.id === signalLeadId && signalLeadDescriptor?.url" class="signal-lead-figure">
+              </div>
+              <span v-if="ev.id === signalLeadId && signalLeadDescriptor?.url" class="signal-lead-figure">
                 <img
                   class="signal-lead-media"
                   :src="signalLeadDescriptor.url"
@@ -213,10 +163,62 @@
                   class="signal-lead-disclosure"
                 />
               </span>
-              <span class="home-season-row__action">Xem theo mùa</span>
             </NuxtLink>
-            </li>
-          </ul>
+          </div>
+
+          <div v-if="seasonalList.length" class="happening-section">
+            <p class="happening-label" data-material-accent="amber"><IconLine name="calendar" /> Đang vào mùa tháng {{ currentMonth }}</p>
+            <!-- ul/li: role="listitem" trên NuxtLink ghi đè vai trò link của thẻ <a>
+                 và xoá luôn tên khả truy cập (listitem là name-from-author). -->
+            <ul class="home-season-ledger" aria-label="Đặc sản theo mùa">
+              <li v-for="e in seasonalList" :key="e.id" class="home-season-item">
+              <NuxtLink
+                :to="entityPath(e.id)"
+                class="home-season-row"
+                :class="{ 'is-signal-lead': e.id === signalLeadId }"
+                data-home-signal
+                data-home-seasonal-signal
+              >
+                <span class="home-season-row__body">
+                  <strong>{{ e.name }}</strong>
+                  <span class="home-signal-evidence">
+                    <SourceMark
+                      :tier="eventSourceTier(e)"
+                      :source-title="eventSourceTitle(e)"
+                      :source-url="eventSourceUrl(e)"
+                      :verified-at="eventVerifiedAt(e)"
+                      compact
+                      data-signal-source
+                    />
+                    <FreshnessLine
+                      :status="eventFreshnessStatus(e)"
+                      :updated-label="eventFreshnessLabel(e)"
+                    />
+                  </span>
+                </span>
+                <span v-if="e.id === signalLeadId && signalLeadDescriptor?.url" class="signal-lead-figure">
+                  <img
+                    class="signal-lead-media"
+                    :src="signalLeadDescriptor.url"
+                    :alt="signalLeadDescriptor.alt"
+                    :aria-describedby="signalLeadDisclosureId"
+                    width="800"
+                    height="600"
+                    loading="lazy"
+                    decoding="async"
+                  >
+                  <ImageDisclosure
+                    :id="signalLeadDisclosureId"
+                    :descriptor="signalLeadDescriptor"
+                    presentation="short"
+                    class="signal-lead-disclosure"
+                  />
+                </span>
+                <span class="home-season-row__action">Xem theo mùa</span>
+              </NuxtLink>
+              </li>
+            </ul>
+          </div>
         </div>
       </section>
     </div>

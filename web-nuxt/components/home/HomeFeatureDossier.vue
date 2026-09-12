@@ -49,6 +49,14 @@
           <IconLine name="sparkle" aria-hidden="true" />
           <span>Thổ nhưỡng di sản</span>
         </span>
+        <span
+          class="home-feature-dossier__coords"
+          data-geo-coordinates="10.254° N, 105.972° E"
+          title="Tọa độ thực địa sông Cổ Chiên & Vĩnh Long"
+        >
+          <IconLine name="pin" aria-hidden="true" />
+          <span>10.254° N, 105.972° E</span>
+        </span>
         <SourceMark :tier="sourceTier" compact />
       </template>
       <template #action>
