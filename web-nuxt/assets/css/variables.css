@@ -111,6 +111,7 @@
      bằng chứng khi ấy). Chủ dự án đã chọn đi tiếp cuộc di trú, nên đây là ĐÍCH
      ĐẾN cho 101 lượt dùng --radius-lg. Không phải token chết nữa. */
   --radius-sheet: 20px;
+  --radius-pill: 999px;
   --shell-public-header-height: 150px;
   --shell-public-bottom-nav-reserved-height: max(64px, calc(59px + env(safe-area-inset-bottom, 0px)));
   --contact-widget-mobile-reserved-height: calc(var(--contact-cta-height) + var(--space-6) + 1px);
