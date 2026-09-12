@@ -75,7 +75,7 @@
         </button>
       </div>
     </aside>
-    <main id="admin-main" class="admin-main">
+    <main id="admin-main" class="admin-main" tabindex="-1">
       <div class="admin-topbar">
         <button
           type="button"
