@@ -818,7 +818,7 @@ onUnmounted(() => {
 .session-item.current { border-color: var(--accent); background: color-mix(in oklab, var(--accent) 5%, transparent); }
 .session-info { flex: 1; display: flex; flex-direction: column; gap: .15rem; }
 .session-ua { font-weight: 600; font-size: var(--text-sm); }
-.session-badge { font-size: .75rem; font-weight: 600; color: var(--accent); background: color-mix(in oklab, var(--accent) 12%, transparent); padding: .15rem .5rem; border-radius: var(--radius-full); }
+.session-badge { font-size: .75rem; font-weight: 600; color: var(--accent); background: color-mix(in oklab, var(--accent) 12%, transparent); padding: .15rem .5rem; border-radius: var(--radius-pill, 999px); }
 .session-system-note { margin: .75rem 0 0; padding: .65rem .75rem; border-radius: var(--radius-surface); background: var(--bg-alt); }
 .recovery-list { list-style: none; padding: 0; display: grid; grid-template-columns: repeat(2, 1fr); gap: var(--space-1); margin: var(--space-2) 0; }
 .recovery-list code { font-size: var(--text-sm); letter-spacing: 0.05em; }

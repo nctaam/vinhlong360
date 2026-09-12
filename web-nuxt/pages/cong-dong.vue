@@ -889,7 +889,7 @@ useHead({
 .compose-footer-left { display: flex; align-items: center; gap: var(--space-3); }
 .compose-attach {
   display: inline-flex; align-items: center; justify-content: center;
-  width: 44px; height: 44px; min-width: 44px; min-height: 44px; border-radius: var(--radius-full);
+  width: 44px; height: 44px; min-width: 44px; min-height: 44px; border-radius: var(--radius-pill, 999px);
   cursor: pointer; color: var(--muted); transition: background .3s var(--ease-out), color .3s var(--ease-out), transform .25s var(--ease-out-expo);
 }
 .compose-attach:hover { background: var(--bg-alt); color: var(--ink); transform: scale(1.08); }
