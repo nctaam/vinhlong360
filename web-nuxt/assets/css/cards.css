@@ -9,8 +9,8 @@
 @container (min-width: 481px) and (max-width: 720px) {
   .grid { grid-template-columns: repeat(2, 1fr); }
 }
-.card { background: var(--card); border: .5px solid var(--line); border-radius: var(--radius); overflow: hidden; box-shadow: var(--shadow-sm); transition: var(--transition-card); display: flex; flex-direction: column; }
-.card:hover { transform: translateY(-6px); box-shadow: var(--shadow-lg); border-color: var(--border); will-change: transform; }
+.card { background: var(--card); border: .5px solid var(--line); border-radius: var(--radius-surface-refined, var(--radius)); overflow: hidden; box-shadow: var(--shadow-card-ambient, var(--shadow-sm)); transition: var(--transition-card); display: flex; flex-direction: column; }
+.card:hover { transform: translateY(-6px); box-shadow: var(--shadow-card-hover, var(--shadow-lg)); border-color: var(--border); will-change: transform; }
 .card:active { transform: translateY(-1px) scale(.97); transition-duration: .1s; }
 .card:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 3px; transform: translateY(-6px); }
 @media (max-width: 820px) {
@@ -212,13 +212,13 @@
 .card { position: relative; }
 .card:hover {
   box-shadow:
-    var(--shadow-lg),
+    var(--shadow-card-hover, var(--shadow-lg)),
     0 0 0 1px rgba(var(--color-action-rgb), .14),
     0 18px 40px -18px rgba(var(--color-action-rgb), .35);
 }
 .card:focus-visible {
   box-shadow:
-    var(--shadow-lg),
+    var(--shadow-card-hover, var(--shadow-lg)),
     0 0 0 1px rgba(var(--color-action-rgb), .14),
     0 18px 40px -18px rgba(var(--color-action-rgb), .35);
 }
@@ -297,9 +297,15 @@
     0 0 0 1px rgba(var(--color-action-rgb), .22),
     0 18px 44px -18px rgba(var(--black-rgb), .7);
 }
+.dark .card:hover {
+  box-shadow:
+    var(--shadow-card-hover, var(--shadow-lg)),
+    0 0 0 1px rgba(var(--color-action-rgb), .22),
+    0 18px 44px -18px rgba(var(--black-rgb), .7);
+}
 .dark .card:focus-visible {
   box-shadow:
-    var(--shadow-lg),
+    var(--shadow-card-hover, var(--shadow-lg)),
     0 0 0 1px rgba(var(--color-action-rgb), .22),
     0 18px 44px -18px rgba(var(--black-rgb), .7);
 }
