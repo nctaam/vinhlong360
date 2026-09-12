@@ -19,6 +19,7 @@ GIT_ATTRIBUTES_PATH = REPO_ROOT / ".gitattributes"
 EXPECTED_GIT_ATTRIBUTES_BYTES = (
     b"config/launch-indexing-policy.json text eol=lf\n"
     b"config/ai-disclosure.json text eol=lf\n"
+    b"*.sh text eol=lf\n"
 )
 EXPECTED_DISCLOSURE_BYTES = (
     "{\n"
