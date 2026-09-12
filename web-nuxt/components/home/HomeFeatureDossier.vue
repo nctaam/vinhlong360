@@ -57,7 +57,13 @@
           <IconLine name="pin" aria-hidden="true" />
           <span>10.254° N, 105.972° E</span>
         </span>
-        <SourceMark :tier="sourceTier" compact />
+        <SourceMark
+          :tier="sourceTier"
+          :source-title="sourceTitle"
+          :source-url="sourceUrl"
+          :verified-at="verifiedAt"
+          compact
+        />
       </template>
       <template #action>
         <NuxtLink
@@ -99,10 +105,16 @@ withDefaults(defineProps<{
   disclosureId: string
   detailTo: string
   sourceTier: SourceTier
+  sourceTitle?: string | null
+  sourceUrl?: string | null
+  verifiedAt?: string | null
   plannerTo?: string
 }>(), {
   summary: undefined,
   region: undefined,
   plannerTo: undefined,
+  sourceTitle: undefined,
+  sourceUrl: undefined,
+  verifiedAt: undefined,
 })
 </script>

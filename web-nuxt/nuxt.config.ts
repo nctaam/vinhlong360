@@ -194,7 +194,10 @@ export default defineNuxtConfig({
     '/reload': { proxy: `${apiBase}/reload` },
     '/recommend': { proxy: `${apiBase}/recommend` },
     '/freshness/**': { proxy: `${apiBase}/freshness/**` },
-    '/events': { proxy: `${apiBase}/events` },
+    '/api/events/**': { proxy: `${apiBase}/events/**` },
+    '/events': { redirect: { to: '/su-kien', statusCode: 301 } },
+    '/map': { redirect: { to: '/ban-do', statusCode: 301 } },
+    '/explore': { redirect: { to: '/du-lich', statusCode: 301 } },
   },
 
   experimental: {

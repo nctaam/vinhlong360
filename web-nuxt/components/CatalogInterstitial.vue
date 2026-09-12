@@ -8,7 +8,9 @@
     :aria-label="ariaLabel"
   >
     <span v-if="materialAccent" class="catalog-interstitial-rule" aria-hidden="true"></span>
-    <span class="interstitial-icon-chip" aria-hidden="true"><span class="interstitial-icon">{{ icon }}</span></span>
+    <span class="interstitial-icon-chip" aria-hidden="true">
+      <IconLine :name="effectiveIconName" class="interstitial-icon" />
+    </span>
     <div class="interstitial-body">
       <p class="interstitial-text">{{ fact }}</p>
       <div v-if="links.length" class="interstitial-links">
@@ -32,15 +34,23 @@ import type { RegionalAccent } from '~/utils/regionalColor'
 const props = withDefaults(defineProps<{
   fact: string
   icon?: string
+  iconName?: string
   links?: { to: string; label: string }[]
   variant?: 'default' | 'warm' | 'accent'
   ariaLabel?: string
   materialAccent?: RegionalAccent
 }>(), {
-  icon: '💡',
+  icon: undefined,
+  iconName: undefined,
   links: () => [],
   variant: 'default',
   ariaLabel: 'Thông tin thú vị',
+})
+
+const effectiveIconName = computed(() => {
+  if (props.iconName) return props.iconName
+  if (props.icon && !/^\p{Extended_Pictographic}/u.test(props.icon)) return props.icon
+  return 'bulb'
 })
 </script>
 

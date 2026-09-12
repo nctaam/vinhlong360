@@ -75,7 +75,7 @@
         <span class="honor-banner-text">Danh sách vinh dự</span>
       </div>
       <div class="scroll-row honor-roll" role="region" aria-label="Sản phẩm OCOP 5 sao" tabindex="0">
-        <EntityCard v-for="e in fiveStarHighlights" :key="e.id" :entity="e" />
+        <EntityCard v-for="e in fiveStarHighlights" :key="e.id" :entity="e" color-recipe="tri-region-v1" />
       </div>
     </section>
 
@@ -86,7 +86,7 @@
       </div>
       <p class="section-desc">Chất lượng cao, bao bì chuyên nghiệp — đã có câu chuyện sản phẩm rõ ràng.</p>
       <div class="scroll-row" role="region" aria-label="Sản phẩm OCOP 4 sao" tabindex="0">
-        <EntityCard v-for="e in fourStarHighlights" :key="e.id" :entity="e" />
+        <EntityCard v-for="e in fourStarHighlights" :key="e.id" :entity="e" color-recipe="tri-region-v1" />
       </div>
     </section>
 
@@ -97,7 +97,7 @@
       </div>
       <p class="section-desc">Mức cơ bản — đạt tiêu chuẩn an toàn thực phẩm, nhãn mác rõ ràng.</p>
       <div class="scroll-row" role="region" aria-label="Sản phẩm OCOP 3 sao" tabindex="0">
-        <EntityCard v-for="e in threeStarHighlights" :key="e.id" :entity="e" />
+        <EntityCard v-for="e in threeStarHighlights" :key="e.id" :entity="e" color-recipe="tri-region-v1" />
       </div>
     </section>
 
@@ -206,7 +206,7 @@
       </EmptyState>
       <SkeletonGrid v-else-if="!data" :count="6" />
       <div v-else-if="filtered.length" :class="viewMode === 'list' ? 'list-view' : 'grid'">
-        <EntityCard v-for="e in visible" :key="e.id" :entity="e" :season-filter="seasonFilter" />
+        <EntityCard v-for="e in visible" :key="e.id" :entity="e" :season-filter="seasonFilter" color-recipe="tri-region-v1" />
       </div>
       <EmptyState v-else icon-name="star" title="Không tìm thấy sản phẩm OCOP" message="Thử thay đổi hạng sao, khu vực hoặc tháng mùa vụ.">
         <template #actions>

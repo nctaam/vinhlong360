@@ -25,7 +25,7 @@
             <NuxtLink
               v-for="chip in HERO_TERROIR_CHIPS"
               :key="chip.label"
-              :to="`/kham-pha?q=${encodeURIComponent(chip.q)}`"
+              :to="`/tim-kiem?q=${encodeURIComponent(chip.q)}`"
               class="hero-terroir-chip"
             >
               {{ chip.label }}
@@ -43,7 +43,10 @@
           :disclosure-id="heroFeatureDisclosureId"
           :detail-to="entityPath(heroFeature.id)"
           :planner-to="plannerAddPath(heroFeature.id)"
-          :source-tier="resolveSourceTier(heroFeature?.quality?.source_tier)"
+          :source-tier="eventSourceTier(heroFeature)"
+          :source-title="eventSourceTitle(heroFeature)"
+          :source-url="eventSourceUrl(heroFeature)"
+          :verified-at="eventVerifiedAt(heroFeature)"
         />
       </div>
     </section>

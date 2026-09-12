@@ -35,7 +35,14 @@
     </div>
     <NuxtLink :to="cardPath" class="card-b card-body-link">
       <span class="card-dateline">{{ dateline }}</span>
-      <SourceMark v-if="colorRecipe === 'tri-region-v1'" :tier="sourceTier" compact />
+      <SourceMark
+        v-if="colorRecipe === 'tri-region-v1'"
+        :tier="sourceTier"
+        :source-title="sourceTitle"
+        :source-url="sourceUrl"
+        :verified-at="verifiedAt"
+        compact
+      />
       <h3 class="card-name">{{ entity.name }}</h3>
       <span class="card-rule" aria-hidden="true"></span>
       <p class="summary card-teaser">{{ storyTeaser }}</p>
@@ -102,7 +109,10 @@ const typeMeta = computed(() => TYPE_META[props.entity.type] || { label: props.e
 const cardMaterialAccent = computed(() => props.colorRecipe === 'tri-region-v1'
   ? resolveRegionalAccent(props.entity.type)
   : undefined)
-const sourceTier = computed(() => resolveSourceTier(props.entity.quality?.source_tier))
+const sourceTier = computed(() => resolveSourceTier(props.entity.quality?.source_tier || props.entity.source_freshness?.source_tier))
+const sourceTitle = computed(() => (props.entity.quality?.source_title || props.entity.source_freshness?.source_title || '') as string)
+const sourceUrl = computed(() => (props.entity.quality?.source_url || props.entity.source_freshness?.source_url || '') as string)
+const verifiedAt = computed(() => (props.entity.quality?.verified_at || props.entity.source_freshness?.verified_at || '') as string)
 const allDescriptors = computed<ImageDescriptor[]>(() => {
   const descriptors = describeEntityImages(props.entity)
   return descriptors.length ? descriptors : [describeEntityPlaceholder(props.entity)]

@@ -69,7 +69,15 @@
           >
             <span class="ac-info"><span class="ac-name">{{ term }}</span></span>
           </div>
-          <button type="button" class="ac-remove-recent" @mousedown.stop.prevent="removeRecent(i)" aria-label="Xóa khỏi lịch sử">
+          <button
+            type="button"
+            class="ac-remove-recent"
+            aria-label="Xóa khỏi lịch sử"
+            @mousedown.stop.prevent="removeRecent(i)"
+            @click.stop="removeRecent(i)"
+            @keydown.enter.stop.prevent="removeRecent(i)"
+            @keydown.space.stop.prevent="removeRecent(i)"
+          >
             <IconLine name="x" aria-hidden="true" />
           </button>
         </div>
