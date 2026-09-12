@@ -132,8 +132,10 @@ const route = useRoute()
 const { isLoggedIn, user } = useAuth()
 const { get: ss } = useSiteSettings()
 const brandSitePrefix = computed(() => {
-  const raw = ss('branding.site_name', 'vinhlong360')
-  return raw.replace(/[-–—]?\s*360\s*$/i, '').trim() || 'vinhlong'
+  const raw = String(ss('branding.site_name', 'vinhlong360') || 'vinhlong')
+  const cleaned = raw.replace(/\b360\b/gi, '').replace(/[-–—\s]+$/, '').trim()
+  if (!cleaned || cleaned.toLowerCase() === 'vinhlong') return 'vinhlong'
+  return cleaned + ' '
 })
 const hasAuthSession = computed(() => isLoggedIn.value)
 const headerDisplayName = computed(() => user.value?.display_name || user.value?.phone || 'Tài khoản')
