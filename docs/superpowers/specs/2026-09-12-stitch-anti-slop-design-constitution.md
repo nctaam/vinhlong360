@@ -164,3 +164,11 @@ Các điều khoản cấm kỵ sau đây bắt buộc áp dụng cho toàn bộ
 - **Project ID:** `14916181929760067680`
 - **Tên Dự Án:** `vinhlong360 - Mekong River Heritage & Discovery Platform`
 - **Mục Tiêu:** Đồng bộ hóa tệp `DESIGN.md` này làm Hiến pháp Tham chiếu Thường trực trong Stitch MCP server để mọi màn hình tạo mới hoặc tinh chỉnh bởi Stitch đều tự động tuân thủ nguyên tắc chống AI-slop và bảo tồn thổ nhưỡng Vĩnh Long.
+
+## 7. Chuẩn Đối Sánh Thế Giới & Bố Cục Biên Tập Đỉnh Cao (World-Class Benchmark)
+Kế thừa tinh hoa từ các website di sản và ấn phẩm thế giới:
+1. **Rijksmuseum (Amsterdam):** Tỷ lệ bất đối xứng vàng 62/38 giữa tiêu điểm di sản và chú giải tư liệu, nhịp thở "Art Gallery Airy" (Density 4–5/10), không dồn dập thẻ card.
+2. **National Geographic:** Tọa độ địa lý thực chứng (`10.254° N, 105.972° E`), nhãn nguồn kiểm định (`SourceMark`), mốc cập nhật thực địa (`FreshnessLine`), loại trừ triệt để câu từ quảng bá sáo rỗng.
+3. **Visit Oslo & Switzerland Tourism:** Dải cẩm nang tình huống theo thời gian thực (con nước rằm/mùng một, thời tiết bản địa).
+4. **Monocle & Kinfolk:** Bố cục Dải Biên Tập Kép (Asymmetric Dual-Rail Editorial Spread 1.35:1), đường kẻ tóc 1px hairline, nhịp thở vĩ mô `clamp(var(--space-8), 5vw, var(--space-12))`.
+

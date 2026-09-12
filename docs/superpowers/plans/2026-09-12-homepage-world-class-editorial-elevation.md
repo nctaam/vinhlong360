@@ -1,6 +1,6 @@
 # Kế Hoạch Triển Khai: Chuẩn Đối Sánh Bố Cục Hiện Đại Thế Giới, Nhịp Thở Không Gian & Triệt Tiêu AI Slop (Giai Đoạn 4)
 
-> STATUS (2026-09-12): proposed — đề xuất kế hoạch nâng cấp bố cục biên tập trang chủ đối sánh thế giới, tối ưu nhịp thở không gian và triệt tiêu AI slop.
+> STATUS (2026-09-12): completed — hoàn thành xuất sắc nâng cấp chuẩn đối sánh thế giới, tọa độ thực địa, dải biên tập kép, nhịp thở không gian và đồng bộ Stitch MCP.
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Phát triển và tối ưu hóa sâu hơn trang chủ Vĩnh Long 360 dựa trên nghiên cứu đối sánh bố cục hiện đại của các website danh tiếng thế giới (Rijksmuseum, National Geographic, Visit Oslo, Switzerland Tourism, Monocle), phân tích và phản biện sắc bén các khuôn mẫu AI slop phổ biến, nâng cấp nhịp thở không gian (Macro-Rhythm & Visual Breathability), thiết lập bố cục dải biên tập kép (Asymmetric Dual-Rail Editorial Spread) cho khối tín hiệu thực địa, bổ sung chỉ số tọa độ địa lý thực chứng (Geographic Field Coordinates) và đồng bộ với Google Stitch Cloud MCP (`14916181929760067680`).
@@ -76,7 +76,7 @@
   3. Nhịp thở vĩ mô (Macro-Rhythm) sử dụng `clamp()` cho khoảng cách giữa các đại phân đoạn.
   4. Triệt tiêu hoàn toàn các từ ngữ AI slop sáo rỗng trong source code trang chủ.
 
-- [ ] **Step 1: Viết test failing (RED)**
+- [x] **Step 1: Viết test failing (RED)**
 
 Tạo file `web-nuxt/tests/home-world-class-editorial.test.ts`:
 ```ts
@@ -99,7 +99,7 @@ describe('Homepage World-Class Editorial Benchmark & Anti-AI-Slop', () => {
   })
 
   it('employs fluid macro-rhythm breathability spacing for major sections', () => {
-    expect(homeCss).toMatch(/padding-block:\s*clamp\([^)]+var\(--space-/)
+    expect(homeCss).toMatch(/padding-block:\s*clamp\([^)]*var\(--space-/)
   })
 
   it('eradicates generic AI copywriting buzzwords from homepage components', () => {
@@ -112,7 +112,7 @@ describe('Homepage World-Class Editorial Benchmark & Anti-AI-Slop', () => {
 })
 ```
 
-- [ ] **Step 2: Chạy test để xác nhận trạng thái RED**
+- [x] **Step 2: Chạy test để xác nhận trạng thái RED**
 Run: `npm --prefix web-nuxt test -- tests/home-world-class-editorial.test.ts`
 Expected: FAIL (ít nhất 2 test assertions failed).
 
@@ -127,10 +127,10 @@ Expected: FAIL (ít nhất 2 test assertions failed).
 - Consumes: Template slot `#meta` của `FramedDossier`
 - Produces: Thêm huy hiệu tọa độ thực địa National Geographic style: `<span class="home-feature-dossier__coords" data-geo-coordinates="10.254° N, 105.972° E" title="Tọa độ thực địa sông Cổ Chiên & Vĩnh Long"><IconLine name="pin" aria-hidden="true" /> 10.254° N, 105.972° E</span>`
 
-- [ ] **Step 1: Cập nhật template trong `HomeFeatureDossier.vue`**
+- [x] **Step 1: Cập nhật template trong `HomeFeatureDossier.vue`**
 Bổ sung nhãn tọa độ thực địa vào `#meta` bên cạnh `Thổ nhưỡng di sản` và `SourceMark`.
 
-- [ ] **Step 2: Chạy test để xác nhận assertion tọa độ chuyển sang GREEN**
+- [x] **Step 2: Chạy test để xác nhận assertion tọa độ chuyển sang GREEN**
 Run: `npm --prefix web-nuxt test -- tests/home-world-class-editorial.test.ts`
 
 ---
@@ -148,20 +148,20 @@ Run: `npm --prefix web-nuxt test -- tests/home-world-class-editorial.test.ts`
   2. Trong `home-nocturne.css`, định nghĩa bố cục desktop `@media (min-width: 64rem)` chia 2 cột bất đối xứng (1.35fr / 1fr), với đường kẻ hairline ngăn cách giữa 2 rail.
   3. Cập nhật `padding-block: clamp(var(--space-8), 5vw, var(--space-12))` cho các dải phân đoạn để mở rộng nhịp thở thị giác.
 
-- [ ] **Step 1: Cập nhật template trong `pages/index.vue`**
+- [x] **Step 1: Cập nhật template trong `pages/index.vue`**
 Thêm wrapper `.home-signals__grid` bao quanh `.happening-rest` và `.happening-section` mà không làm thay đổi thứ tự ngữ nghĩa hay vị trí của `HomeLocalBriefing`.
 
-- [ ] **Step 2: Cập nhật CSS trong `home-nocturne.css`**
+- [x] **Step 2: Cập nhật CSS trong `home-nocturne.css`**
 Thêm rule `.home-signals__grid` với mobile-first:
 - Dưới 64rem: 1 cột tuần tự.
 - Trên 64rem: Grid 2 cột bất đối xứng, gap thoáng đãng `var(--space-8)`, border-inline ngăn cách nhẹ nhàng.
 - Cập nhật macro-rhythm padding.
 
-- [ ] **Step 3: Chạy test để xác nhận toàn bộ test Task 1 chuyển sang GREEN**
+- [x] **Step 3: Chạy test để xác nhận toàn bộ test Task 1 chuyển sang GREEN**
 Run: `npm --prefix web-nuxt test -- tests/home-world-class-editorial.test.ts`
 Expected: PASS (4/4 tests passed).
 
-- [ ] **Step 4: Commit Git cho thay đổi code và test**
+- [x] **Step 4: Commit Git cho thay đổi code và test**
 Run: `git add web-nuxt/tests/home-world-class-editorial.test.ts web-nuxt/components/home/HomeFeatureDossier.vue web-nuxt/pages/index.vue web-nuxt/assets/css/home-nocturne.css`
 Run: `git commit -m "feat(home): introduce world-class dual-rail editorial layout, field coordinates and macro-rhythm"`
 
@@ -177,35 +177,35 @@ Run: `git commit -m "feat(home): introduce world-class dual-rail editorial layou
 - Consumes: Stitch MCP tool `upload_design_md` hoặc `update_design_system`
 - Produces: Hiến pháp cập nhật bổ sung quy chuẩn Bố cục Dải Biên Tập Kép (Dual-Rail Layout) và Tọa độ thực địa (Geographic Field Proof); đồng bộ tài liệu lên Google Stitch project.
 
-- [ ] **Step 1: Cập nhật tài liệu spec hiến pháp**
+- [x] **Step 1: Cập nhật tài liệu spec hiến pháp**
 Ghi nhận các quy tắc mới về Dual-Rail Layout, Geographic Proof và Macro-Rhythm vào `docs/superpowers/specs/2026-09-12-stitch-anti-slop-design-constitution.md`.
 
-- [ ] **Step 2: Gọi Stitch MCP để đồng bộ**
-Gọi `upload_design_md` với nội dung hiến pháp cập nhật lên project `14916181929760067680`.
+- [x] **Step 2: Gọi Stitch MCP để đồng bộ**
+Gọi `upload_design_md` hoặc `update_design_system` với nội dung hiến pháp cập nhật lên project `14916181929760067680`.
 
 ---
 
 ### Task 5: Chuỗi Kiểm Định Toàn Diện Không Khoan Nhượng (Full Verification)
 
-- [ ] **Step 1: Chạy 14 bộ test trang chủ Vitest**
+- [x] **Step 1: Chạy 14 bộ test trang chủ Vitest**
 Command: `npm --prefix web-nuxt test -- tests/home-`
 Expected: 14 test files passed (toàn bộ 70+ assertions xanh sạch).
 
-- [ ] **Step 2: Chạy 78 bài kiểm định hợp đồng màu sắc Tam Vùng**
+- [x] **Step 2: Chạy 78 bài kiểm định hợp đồng màu sắc Tam Vùng**
 Command: `npm --prefix web-nuxt test -- tests/tri-region-color-contract.test.ts`
 Expected: 78 tests passed, không vi phạm AST checker.
 
-- [ ] **Step 3: Kiểm tra TypeScript Typecheck**
+- [x] **Step 3: Kiểm tra TypeScript Typecheck**
 Command: `npm --prefix web-nuxt run typecheck`
 Expected: 0 errors.
 
-- [ ] **Step 4: Chạy kiểm định Launch Safety Python**
+- [x] **Step 4: Chạy kiểm định Launch Safety Python**
 Command: `python scripts/checks/run_hard.py --all`
 Expected: Hard failures: 0, Ratchet regressions: 0.
 
-- [ ] **Step 5: Kiểm tra Production Build Nuxt/Nitro**
+- [x] **Step 5: Kiểm tra Production Build Nuxt/Nitro**
 Command: `npm --prefix web-nuxt run build`
 Expected: Build thành công trơn tru.
 
-- [ ] **Step 6: Commit hoàn tất Giai đoạn 4**
+- [x] **Step 6: Commit hoàn tất Giai đoạn 4**
 Run: `git commit -am "docs(plans): mark homepage world-class editorial elevation plan as completed"`
