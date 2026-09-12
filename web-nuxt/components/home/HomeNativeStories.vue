@@ -11,7 +11,7 @@
       <!-- Story 1: Left Lead Feature -->
       <NuxtLink to="/kham-pha" class="home-story-card home-story-card--primary">
         <img
-          src="https://lh3.googleusercontent.com/aida/AP1WRLsRbAhYwqPsipNYG1T05OrVkOcggAUC6GAQh8LXbOfSkhDMUCB-T4xDPhs4wE48MuY1kbOLW9nKI7FS_Shv0YH2EzTa_UXO1LfNzGWdTEA1VradAleoN0c9_F4Pnjqrd2-fjWNILpT1un-8pGFmlP8TQMjyznDk4vyXMVLAngkNlUPkLqBcnRUM4xCBp5BS-1hvmcUxa2LqnzRIefvVNe6u7t5UJX7CJamguTR02ORNjvNhADyhdCzLLHWt"
+          src="/img/spread/cu-lao-an-binh.webp"
           alt="Làng du lịch cộng đồng cù lao An Bình"
           class="home-story-card__img"
           width="800"
@@ -31,7 +31,7 @@
       <div class="home-native-stories__side">
         <NuxtLink to="/kham-pha" class="home-story-card home-story-card--secondary">
           <img
-            src="https://lh3.googleusercontent.com/aida/AP1WRLvjxEggHbzRxMfDnyGneoufLmZNRImHa_OzMS4fWKufGg9HdaImjDdriGjbcGqVUj5MLGzr-hs-a3yNguX_VI-V-5HrEu8c1IOfZ9rIL7g7l-urXCtSdRLa8fgqkQDRTTya-l20dpTWCunqV7hV7x-ZeugX60gX9f_OFWb2dQ9tAdUEU17W_ZfUzlVo045WgKgtXWfxwcAX3diTyfVTPs4IuJz_qZtwQrAHi-lsX7Cbuva1S4XxhtLCCw-p"
+            src="/img/spread/song-nuoc.webp"
             alt="Vườn dừa sinh thái Cầu Kè"
             class="home-story-card__img"
             width="500"

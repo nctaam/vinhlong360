@@ -12,7 +12,7 @@
       <div class="hero-cinematic" aria-hidden="true">
         <img
           class="hero-cinematic__img"
-          src="https://lh3.googleusercontent.com/aida/AP1WRLuhIlWtgMUJXpWEnEK0CVO5nwYREJTRexRwmTC-OMDvsxHdgtWLegzI3DoU39LjtDYOlH6joAindAQM2YtStsL5gTBm1UulvZr3QJfnNvDWgV8uI5q2V4sjUyNHQWHDmok0xmHdCXDXXWiYOSNhS2EOugdqrCLHpd1BbdYcJ_RNVxrzthvHrFu-_p8Y2sG65FqAH6YjBP42iAWTK8oOoPFM0urWA166SmjClkTSRufvoKiKs6kGVOwsWk0X"
+          src="/img/spread/song-nuoc.webp"
           alt=""
           width="1920"
           height="1080"

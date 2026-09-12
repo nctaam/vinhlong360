@@ -45,32 +45,17 @@
           v-for="link in groups.utility"
           :key="link.key"
           :to="link.to"
-          class="home-category-index__utility-link home-category-index__card"
+          class="home-category-index__utility-link"
           :data-material-accent="link.accent"
           data-decision-route
         >
-          <span class="home-category-index__media" aria-hidden="true">
-            <img
-              :src="categoryImage(link.key)"
-              alt=""
-              loading="lazy"
-              decoding="async"
-              width="240"
-              height="140"
-              class="home-category-index__media-img"
-              @error="onImgError"
-            >
-            <span class="home-category-index__scrim" />
+          <IconLine :name="link.icon" aria-hidden="true" />
+          <span>
+            <strong>{{ link.label }}</strong>
+            <small>{{ link.hint }}</small>
           </span>
-          <span class="home-category-index__meta">
-            <IconLine :name="link.icon" aria-hidden="true" />
-            <span>
-              <strong>{{ link.label }}</strong>
-              <small>{{ link.hint }}</small>
-            </span>
-            <span v-if="link.countLabel" class="home-category-index__count">{{ link.countLabel }}</span>
-            <span class="home-category-index__arrow" aria-hidden="true"><IconLine name="arrow-right" /></span>
-          </span>
+          <span v-if="link.countLabel" class="home-category-index__count">{{ link.countLabel }}</span>
+          <span class="home-category-index__arrow" aria-hidden="true"><IconLine name="arrow-right" /></span>
         </NuxtLink>
       </nav>
     </div>
