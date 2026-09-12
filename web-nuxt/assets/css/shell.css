@@ -73,16 +73,16 @@
   flex: 0 0 auto;
   display: inline-flex;
   align-items: center;
-  min-height: 32px;
+  min-height: var(--touch-min, 44px);
 }
 
 .public-context-control select {
-  min-height: 32px;
+  min-height: var(--touch-min, 44px);
   max-width: 250px;
   appearance: none;
   border: 0;
   border-radius: var(--radius-control);
-  padding: 2px 28px 2px 8px;
+  padding: 4px 28px 4px 8px;
   background: transparent;
   color: var(--color-action);
   font: 600 .78rem/1.4 var(--font-sans);
