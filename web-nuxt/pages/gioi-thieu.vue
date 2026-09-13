@@ -172,7 +172,7 @@ const aboutJsonLd = computed(() => buildAboutPageSchemaGraph({
 useHead(() => ({
   link: [{ rel: 'canonical', href: canonicalUrl('/gioi-thieu') }],
   script: [
-    { type: 'application/ld+json', innerHTML: safeJsonLd(aboutJsonLd.value) },
+    { type: 'application/ld+json', innerHTML: safeJsonLd(aboutJsonLd) },
   ],
 }))
 </script>
