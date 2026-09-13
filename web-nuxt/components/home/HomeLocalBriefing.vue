@@ -58,7 +58,7 @@
       :data-lunar-day="tidePhase.lunarDay"
       title="Quy luật bán nhật triều không đều &amp; chu kỳ nước rong theo tuần trăng"
     >
-      <IconLine name="droplet" aria-hidden="true" />
+      <MekongWaterBadge :state="tidePhase.phase" :lunar-day="tidePhase.lunarDay" compact />
       <span class="home-local-briefing__tide-label">Nhịp nước sông Cửu Long:</span>
       <strong class="home-local-briefing__tide-badge" :data-tide-phase="tidePhase.phase">{{ tidePhase.label }}</strong>
       <span class="home-local-briefing__tide-desc">({{ tidePhase.desc }} · Nước rong rằm &amp; mùng một, nước kém mùng bảy &amp; hăm ba)</span>
@@ -72,6 +72,7 @@
 </template>
 
 <script setup lang="ts">
+import MekongWaterBadge from '~/components/MekongWaterBadge.vue'
 import { useWeather, weatherAccent, WEATHER_MEASURE_POINT } from '~/composables/useWeather'
 import { solarToLunar } from '~/composables/useLunar'
 
@@ -230,11 +231,15 @@ const seasonLink = computed(() => `/theo-mua?mua=${currentMonth.value}`)
   gap: var(--space-2);
   margin: 0;
   color: var(--tri-region-material-accent);
-  font-family: var(--font-body);
+  font-family: var(--font-editorial, 'Lora', serif);
   font-size: var(--text-xs);
   font-weight: var(--weight-bold);
   letter-spacing: .08em;
   text-transform: uppercase;
+}
+
+.home-local-briefing[data-material-accent="amber"] .home-local-briefing__title {
+  color: var(--home-color-amber-text, var(--color-warning));
 }
 
 .home-local-briefing__measure {

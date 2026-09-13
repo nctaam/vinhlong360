@@ -19,17 +19,12 @@
     aria-labelledby="home-ocop-title"
   >
     <div class="home-ocop__frame">
+      <div class="guilloche-texture" aria-hidden="true" />
       <div class="home-ocop__emblem-wrap" aria-hidden="true">
-        <img
-          src="/img/cat-ocop.webp"
-          alt=""
-          width="88"
-          height="88"
-          loading="lazy"
-          decoding="async"
-          class="home-ocop__emblem"
-          @error="onImgError"
-        >
+        <div class="wax-seal" :aria-label="'Chứng nhận OCOP Quốc gia'" role="img">
+          <span class="wax-seal-notches" aria-hidden="true" />
+          <span class="wax-seal-star" aria-hidden="true"><IconLine name="star" />OCOP</span>
+        </div>
       </div>
       <p class="home-ocop__dept">Chứng nhận quốc gia · Mỗi xã một sản phẩm</p>
       <h2 id="home-ocop-title" class="home-ocop__title">Sổ vàng OCOP</h2>

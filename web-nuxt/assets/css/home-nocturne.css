@@ -179,7 +179,7 @@
 [data-home-pilot="nocturne-b1"] .hero-terroir-chip {
   display: inline-flex;
   align-items: center;
-  min-height: 2rem;
+  min-height: var(--touch-min, 44px);
   padding-inline: var(--space-3);
   padding-block: var(--space-1);
   font-size: var(--text-xs);
@@ -221,7 +221,7 @@
   display: grid;
   grid-template-rows: minmax(16rem, 1fr) auto;
   align-self: stretch;
-  border: 1px solid var(--color-border);
+  border: 1px solid var(--border-liquid-glass, var(--color-border));
   border-radius: var(--radius-surface-refined, var(--radius-surface));
   box-shadow: var(--shadow-card-ambient);
   overflow: hidden;
@@ -336,10 +336,16 @@
 [data-home-pilot="nocturne-b1"] .home-feature-dossier__action {
   display: inline-flex;
   align-items: center;
+  min-height: var(--touch-min);
   padding-inline: var(--space-4);
   border: 1px solid var(--color-action);
   color: var(--color-action);
   text-decoration: none;
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), background-color var(--duration-fast) var(--ease-out);
+}
+
+[data-home-pilot="nocturne-b1"] .home-feature-dossier__action:active {
+  transform: scale(0.98);
 }
 
 [data-home-pilot="nocturne-b1"] .home-feature-dossier__action--secondary {
@@ -502,6 +508,7 @@
   flex-direction: column;
   gap: 0;
   padding: 0;
+  min-height: var(--touch-min);
   overflow: hidden;
   border-inline-end: 1px solid var(--color-border);
   border-block-end: 1px solid var(--color-border);
@@ -512,7 +519,7 @@
 }
 
 [data-home-pilot="nocturne-b1"] .home-category-index__card {
-  border: 1px solid color-mix(in srgb, var(--mangthit-600) 18%, transparent);
+  border: 1px solid var(--border-liquid-glass, color-mix(in srgb, var(--mangthit-600) 18%, transparent));
 }
 
 [data-home-pilot="nocturne-b1"] .home-category-index__card--lead {
@@ -535,7 +542,7 @@
   border: 0;
 }
 
-[data-home-pilot="nocturne-b1"] .home-category-index__card:active {
+[data-home-pilot="nocturne-b1"] :is(.home-category-index__card, .home-category-index__utility-link):active {
   transform: scale(0.98);
 }
 
@@ -887,6 +894,11 @@
   min-height: var(--touch-min);
   border-block-end: 1px solid var(--color-border);
   color: var(--color-action);
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), color var(--duration-fast) var(--ease-out);
+}
+
+[data-home-pilot="nocturne-b1"] .home-continuation__links a:active {
+  transform: scale(0.98);
 }
 
 @container home-lead (max-width: 52rem) {
@@ -1492,6 +1504,8 @@
 }
 
 [data-home-pilot="nocturne-b1"] .home-ocop__frame {
+  position: relative;
+  overflow: hidden;
   max-inline-size: 46rem;         /* hẹp hơn --maxw: tờ chứng nhận, không
                                      phải dải nội dung */
   margin-inline: auto;
@@ -1502,26 +1516,82 @@
   /* Halo — vòng thứ hai mảnh, cách ra một hơi. Đây là thứ làm "viền dày"
      đọc thành TỜ CHỨNG NHẬN chứ không phải cái hộp. */
   box-shadow: 0 0 0 1px var(--color-canvas), 0 0 0 4px var(--color-border), var(--shadow-card-ambient);
+  background: var(--color-surface);
+}
+
+[data-home-pilot="nocturne-b1"] .home-ocop__frame .guilloche-texture {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  opacity: .045;
+  background-repeat: repeat;
+  background-size: 64px 64px;
+  background-image: radial-gradient(circle at 1px 1px, color-mix(in srgb, var(--color-material-clay, var(--color-brand)) 30%, transparent) 1px, transparent 0);
+}
+
+.dark [data-home-pilot="nocturne-b1"] .home-ocop__frame .guilloche-texture {
+  opacity: .06;
+}
+
+[data-home-pilot="nocturne-b1"] .wax-seal {
+  position: relative;
+  flex-shrink: 0;
+  width: 72px;
+  height: 72px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: radial-gradient(circle at 34% 30%, color-mix(in srgb, var(--mangthit-600) 95%, transparent), color-mix(in srgb, var(--mangthit-700) 90%, transparent) 72%);
+  clip-path: polygon(
+    50% 0%, 61% 7%, 74% 3%, 82% 13%, 95% 15%, 96% 28%, 100% 38%,
+    92% 48%, 100% 58%, 96% 68%, 95% 81%, 82% 83%, 74% 93%, 61% 89%,
+    50% 100%, 39% 89%, 26% 93%, 18% 83%, 5% 81%, 4% 68%, 0% 58%,
+    8% 48%, 0% 38%, 4% 28%, 5% 15%, 18% 13%, 26% 3%, 39% 7%
+  );
+  box-shadow: inset 0 2px 6px rgba(var(--black-rgb), .28), 0 4px 14px -6px color-mix(in srgb, var(--mangthit-700) 50%, transparent);
+  animation: seal-stamp .4s var(--ease-out-expo) both;
+}
+
+[data-home-pilot="nocturne-b1"] .wax-seal-notches {
+  position: absolute;
+  inset: 6%;
+  border-radius: var(--radius-full);
+  border: 1px dashed rgba(var(--white-rgb), .4);
+}
+
+[data-home-pilot="nocturne-b1"] .wax-seal-star {
+  position: relative;
+  z-index: 1;
+  font-family: var(--font-editorial);
+  font-weight: var(--weight-bold);
+  font-size: var(--text-xs);
+  letter-spacing: .02em;
+  color: var(--surface-white);
+  text-shadow: 0 1px 3px rgba(var(--black-rgb), .35);
+}
+
+@keyframes seal-stamp {
+  0% { transform: scale(.9); opacity: 0; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-home-pilot="nocturne-b1"] .wax-seal {
+    animation: none;
+  }
 }
 
 [data-home-pilot="nocturne-b1"] .home-ocop__emblem-wrap {
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  position: relative;
+  z-index: 1;
   width: 72px;
   height: 72px;
   margin: 0 auto var(--space-3);
-  padding: 4px;
-  border-radius: var(--radius-full);
-  background: color-mix(in srgb, var(--color-material-clay) 12%, var(--color-surface));
-  border: 1px solid color-mix(in srgb, var(--color-material-clay) 30%, transparent);
-  box-shadow: 0 4px 12px rgba(var(--black-rgb), 0.08);
-}
-
-[data-home-pilot="nocturne-b1"] .home-ocop__emblem {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
+  padding: 0;
   border-radius: var(--radius-full);
 }
 
@@ -1596,8 +1666,14 @@
 [data-home-pilot="nocturne-b1"] .home-ocop__cta {
   display: inline-flex;
   align-items: center;
+  min-height: var(--touch-min);
   gap: var(--space-2);
   font-weight: var(--weight-bold);
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+[data-home-pilot="nocturne-b1"] .home-ocop__cta:active {
+  transform: scale(0.98);
 }
 
 [data-home-pilot="nocturne-b1"] .home-ocop__cta:hover .home-ocop__arrow {
@@ -2032,9 +2108,14 @@ html.js .home .hero-enter h1::after { animation: hero-underline-draw .8s var(--e
   inset: 0;
   background: linear-gradient(
     105deg,
-    color-mix(in srgb, var(--color-canvas) 85%, transparent) 0%,
-    color-mix(in srgb, var(--color-canvas) 68%, transparent) 50%,
-    color-mix(in srgb, var(--color-canvas) 42%, transparent) 100%
+    color-mix(in srgb, var(--color-canvas) 88%, transparent) 0%,
+    color-mix(in srgb, var(--color-canvas) 70%, transparent) 45%,
+    color-mix(in srgb, var(--color-canvas) 45%, transparent) 100%
+  ),
+  linear-gradient(
+    to bottom,
+    transparent 60%,
+    var(--color-canvas) 100%
   );
   pointer-events: none;
 }
@@ -2042,9 +2123,14 @@ html.js .home .hero-enter h1::after { animation: hero-underline-draw .8s var(--e
 .dark [data-home-pilot="nocturne-b1"] .hero-cinematic__scrim {
   background: linear-gradient(
     105deg,
-    rgba(var(--black-rgb), 0.90) 0%,
-    rgba(var(--ink-rgb), 0.78) 50%,
+    rgba(var(--black-rgb), 0.92) 0%,
+    rgba(var(--ink-rgb), 0.80) 45%,
     rgba(var(--ink-rgb), 0.50) 100%
+  ),
+  linear-gradient(
+    to bottom,
+    transparent 60%,
+    var(--color-canvas) 100%
   );
 }
 
@@ -2117,11 +2203,37 @@ html.js .home .hero-enter h1::after { animation: hero-underline-draw .8s var(--e
   display: block;
   overflow: hidden;
   border-radius: var(--radius-surface);
-  border: 1px solid color-mix(in srgb, var(--mangthit-600) 18%, transparent);
+  border: 1px solid var(--border-liquid-glass, color-mix(in srgb, var(--mangthit-600) 18%, transparent));
   background: var(--color-surface);
   text-decoration: none;
-  box-shadow: var(--shadow-sm);
+  box-shadow: var(--shadow-card-ambient);
   transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.35s ease, border-color 0.25s ease;
+}
+
+[data-home-pilot="nocturne-b1"] .home-story-card__quote {
+  margin: 0 0 var(--space-3);
+  padding-inline-start: var(--space-3);
+  border-inline-start: 2px solid var(--color-material-clay, var(--color-brand));
+  font-style: italic;
+}
+
+[data-home-pilot="nocturne-b1"] .home-story-card__quote-text {
+  font-family: var(--font-editorial, 'Lora', serif);
+  font-size: clamp(var(--text-xs), 1.2vw, var(--text-sm));
+  line-height: var(--leading-relaxed);
+  color: var(--surface-white);
+  margin: 0 0 var(--space-1);
+  text-shadow: 0 1px 4px rgba(var(--black-rgb), 0.5);
+}
+
+[data-home-pilot="nocturne-b1"] .home-story-card__cite {
+  display: block;
+  font-family: var(--font-body);
+  font-size: var(--text-2xs);
+  font-style: normal;
+  color: color-mix(in srgb, var(--surface-white) 80%, transparent);
+  letter-spacing: var(--tracking-caps);
+  text-transform: uppercase;
 }
 
 [data-home-pilot="nocturne-b1"] .home-story-card:hover {
@@ -2499,15 +2611,20 @@ html.js .home .hero-enter h1::after { animation: hero-underline-draw .8s var(--e
    ═══════════════════════════════════════════════════ */
 .home-community-dispatches .cm-card {
   border-radius: var(--radius-surface);
-  border: 1px solid color-mix(in srgb, var(--mangthit-600) 22%, var(--color-border));
+  border: 1px solid var(--border-liquid-glass, color-mix(in srgb, var(--mangthit-600) 22%, var(--color-border)));
   background: var(--color-surface);
+  box-shadow: var(--shadow-card-ambient);
   transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.25s ease, border-color 0.2s ease;
 }
 
 .home-community-dispatches .cm-card:hover {
   transform: translateY(-4px);
   border-color: color-mix(in srgb, var(--mangthit-600) 55%, transparent);
-  box-shadow: 0 12px 28px rgba(var(--black-rgb), 0.25);
+  box-shadow: 0 12px 28px rgba(var(--black-rgb), 0.25), 0 0 0 1px var(--border-liquid-glass);
+}
+
+.home-community-dispatches .cm-card:active {
+  transform: scale(0.98);
 }
 
 .home-community-dispatches .cm-content {

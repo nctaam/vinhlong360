@@ -474,3 +474,33 @@ Nhằm giữ vững danh dự và linh hồn bản địa của nền tảng, 10
 | Viền Bắt Sáng Thẻ Lưu | `border-liquid-glass` | `.saved-grid .saved-card` | `oklch(100% 0 0 / 0.12)` |
 | Khối Ban Biên Tập | `surface-container-low` | `.editors-infobox` | Nền `#f8f3e9`, viền gốm nung, font Lora/Be Vietnam |
 | Khung Tra Cứu Hiệu Đính | `surface-container` | `.case-lookup` | Bo góc 12px, nút tra cứu River Blue 44px |
+
+### 6.12. Quy Chuẩn Kiệt Tác Biên Tập Trang Chủ (Homepage Editorial Masterpiece Constitution)
+
+Trang chủ là mỏ neo thị giác và đỉnh cao mỹ thuật biên tập của toàn bộ nền tảng Vĩnh Long 360, đóng vai trò kết nối hữu cơ các phân hệ đã hoàn thiện thông qua các quy chuẩn bất biến:
+
+1. **Khối Dẫn Nhập Hero Cinematic & Thẻ Hồ Sơ Thực Địa (Hero & Fieldwork Dossier):**
+   - **Tỷ lệ thị giác:** Bố cục 62/38 chuẩn Rijksmuseum giữa trường tìm kiếm ngữ cảnh và Thẻ Hồ sơ Thực địa `HomeFeatureDossier`.
+   - **Mỹ học sương sớm:** Scrim gradient chuyển tiếp êm ái từ ảnh đại diện sông nước `/img/spread/song-nuoc.webp` vào nền Canvas Bến Cloud `#faf9f7` (chế độ sáng) hoặc Đêm Nocturne `#071210` (chế độ tối), loại bỏ hoàn toàn các vệt cắt đột ngột.
+   - **Chất liệu Liquid Glass:** Viền thẻ dossier áp dụng viền bắt sáng `border: 1px solid var(--border-liquid-glass, var(--color-border));` kết hợp đổ bóng than củi hữu cơ đa tầng `var(--shadow-card-ambient)`.
+   - **Dấu mốc thực chứng:** Tọa độ GPS thực địa `10.254° N, 105.972° E` (font Monospace), tem di sản gốm nung Mang Thít (`#b95f38`), nhãn nguồn kiểm chứng minh bạch `SourceMark: Ban biên tập vinhlong360`.
+   - **Công thái học chạm:** 100% nút hành động và chip gợi ý thực địa `hero-terroir-chip` đạt touch target $\ge 44\times 44$px với hiệu ứng nhún lò xo `:active scale(0.96)`.
+
+2. **Ký Sự Thổ Nhưỡng Bản Địa (Native Stories Chronicle):**
+   - **Ngôn ngữ thuần khiết:** Thanh trừng triệt để tagline ngoại lai `"The Soul of the Mekong"`, thay thế bằng định danh chuẩn mực: `"Ký sự thổ nhưỡng · Hồn cốt phù sa"`.
+   - **Ấn loát Monocle:** Khối trích dẫn ký sự sử dụng font serif cổ điển `Lora` in nghiêng sang trọng (`.pull-quote`), viền vàng Phù Sa Cổ Chiên (`#c99446`), trích dẫn nguồn bằng thẻ `<cite>` font `Be Vietnam Pro`.
+   - **Nhịp điệu so le:** Thẻ câu chuyện chính tuân thủ tỷ lệ vàng biên tập với viền Liquid Glass và lớp lót mờ nhẹ, khơi gợi cảm xúc khám phá chiều sâu văn hóa đồng bằng.
+
+3. **Sổ Ghi Quyết Định Nhanh & Lưới Chỉ Mục Danh Mục (Decisions & Category Index):**
+   - **Niên giám Monocle:** `HomeDecisionLedger` trình bày danh sách lối rẽ nhanh với đường viền gốm nung Mang Thít tinh tế, phân tách bằng đường kẻ tóc hairline.
+   - **Động lực học xúc giác:** Mọi liên kết và thẻ danh mục thực thi gia tốc nhún lò xo `cubic-bezier(0.16, 1, 0.3, 1)` với `:active scale(0.98)` và diện tích chạm $\ge 44\times 44$px.
+   - **Độ tương phản AAA:** Nhãn số đếm và tên phân hệ đạt tỷ lệ tương phản $\ge 7:1$ cho tiêu đề và $\ge 4.5:1$ cho văn bản phụ.
+
+4. **Bản Tin Địa Phương & Nhịp Con Nước Thiên Văn (Local Briefing & Mekong Water Pulse):**
+   - **Nhịp sống Cửu Long:** Đồng bộ hiển thị chu kỳ thủy triều với thành phần chuẩn hóa `MekongWaterBadge`, thể hiện chính xác 4 trạng thái con nước (nước rong, nước kém, nước lớn, nước ròng) gắn với ngày âm lịch và tục ngữ đồng bằng.
+   - **Chính sách dữ liệu chân thực (CLAUDE.md §1.7):** Tuyệt đối không sinh dữ liệu giả mạo. Khi dịch vụ thời tiết hoặc tín hiệu ngoại vi gặp sự cố (`reading.status === 'unavailable'`), khối bản tin sụp đổ thanh lịch (Graceful Collapse) — ẩn hoàn toàn, không hiển thị khung rỗng hoặc skeleton.
+
+5. **Sổ Vàng OCOP Quốc Gia & Ký Sự Cộng Đồng (National OCOP Ledger & Community Feed):**
+   - **Chứng thư sắc phong:** Khung Sổ vàng OCOP trang trọng với hoa văn bảo an Guilloche độc bản và con dấu sáp đỏ nung Mang Thít.
+   - **Kỷ luật E-lite:** Chỉ công bố khung định nghĩa 3 hạng sao (3, 4, 5 sao) và lối vào `/ocop`; không tự ý trích xuất danh sách sản phẩm khi chưa có sự phê duyệt danh mục chính thức.
+   - **Nhật ký điền dã:** Thẻ chia sẻ cộng đồng `cm-card` loại bỏ 100% raw emoji, sử dụng hoàn toàn biểu tượng vector `<IconLine>` và viền Liquid Glass.
