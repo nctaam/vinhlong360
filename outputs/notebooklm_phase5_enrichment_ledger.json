@@ -1,0 +1,1270 @@
+{
+  "le-hoi-ok-om-bok": {
+    "hours": "07:00-22:00 (lễ chính 17:00 - 22:30)",
+    "best_time": "Đêm Rằm tháng 10 âm lịch khi ánh trăng lên đỉnh đầu (19:30 - 21:00)",
+    "waterway_access": "Tàu du lịch và thuyền tam bản cập bến sông Long Bình (phường 4), sau đó di chuyển đường bộ 3,5 km về Quần thể Danh thắng Ao Bà Om (phường 8).",
+    "aeo_schema_type": "Festival",
+    "cultural_notes": "Đại lễ Cúng Trăng của đồng bào Khmer diễn ra vào đêm Rằm tháng 10 âm lịch tại Quần thể Danh thắng Ao Bà Om; nghi thức tạ ơn Thần Mặt Trăng (Preah Chan) đã ban mùa màng thuận lợi; các vị Achar chủ trì nghi lễ đút cốm dẹp (Đút om-bok) cho trẻ nhỏ, kết hợp hội thả đèn gió (Bay Khome) và hoa đăng (Lôi Protip) lung linh mặt hồ.",
+    "visual_narrative": "Góc máy toàn cảnh quét mặt nước Ao Bà Om phản chiếu hàng vạn ngọn hoa đăng lung linh trong sương đêm; ánh trăng rằm soi sáng những bộ rễ cây sao, cây dầu cổ thụ hơn 100 năm tuổi; cận cảnh đôi tay vị Achar bốc nắm cốm dẹp thơm hương dừa nạo và đường thốt nốt trao cho em bé Khmer trong trang phục Sampot rực rỡ.",
+    "source_citations": [
+      {
+        "source_id": "SRC-TIER2-TV-037",
+        "title": "Đặc sắc Đêm hội Ok Om Bok của đồng bào Khmer tại Trà Vinh",
+        "url": "https://nhandan.vn/dac-sac-dem-hoi-ok-om-bok-cua-dong-bao-khmer-tai-tra-vinh-post845154.html",
+        "author_or_institution": "Báo Nhân Dân - Cơ quan Trung ương của Đảng Cộng sản Việt Nam",
+        "target_notebook": "mekong-360-t-p-2",
+        "tier": "TIER_2_SCHOLARLY",
+        "authority_weight": 0.95
+      },
+      {
+        "source_id": "SRC-TIER1-TV-020",
+        "title": "Lễ hội Cúng Trăng Ok Om Bok và Hội đua ghe Ngo truyền thống đồng bào Khmer Nam Bộ",
+        "url": "https://dantoc.vietnamtourism.gov.vn/le-hoi-ok-om-bok-tra-vinh-di-san-van-hoa-song-dong/",
+        "author_or_institution": "Ủy ban Dân tộc & Cổng thông tin du lịch quốc gia",
+        "target_notebook": "mekong-360-t-p-2",
+        "tier": "TIER_1_GOVERNMENT",
+        "authority_weight": 1
+      },
+      {
+        "source_id": "SRC-TIER1-TV-038",
+        "title": "Bảo tồn và phát huy bản sắc văn hóa truyền thống đồng bào dân tộc Khmer tỉnh Trà Vinh",
+        "url": "https://dantoc.vietnamtourism.gov.vn/bao-ton-phat-huy-ban-sac-van-hoa-dan-toc-khmer-tra-vinh/",
+        "author_or_institution": "Cục Du lịch Quốc gia Việt Nam - Bộ Văn hóa, Thể thao và Du lịch",
+        "target_notebook": "mekong-360-t-p-2",
+        "tier": "TIER_1_GOVERNMENT",
+        "authority_weight": 1.0
+      }
+    ],
+    "verifiedAt": "2026-09-13T16:30:00+07:00"
+  },
+  "tuan-le-van-hoa-du-lich-gan-voi-le-hoi-ok-om-bok": {
+    "hours": "08:00 - 22:00",
+    "best_time": "Buổi chiều tối từ 17:30 đến 21:30 các ngày diễn ra tuần lễ hội",
+    "waterway_access": "Thuyền chở khách cập bến sông Long Bình hoặc bến phà Cổ Chiên, kết nối xe buýt đưa đón trung tâm văn hóa hội chợ Ao Bà Om.",
+    "aeo_schema_type": "Festival",
+    "cultural_notes": "Chuỗi sự kiện văn hóa quy mô lớn kéo dài 7 ngày gắn liền với Lễ hội Ok Om Bok; không gian trưng bày văn hóa ẩm thực bánh dân gian ba dân tộc Kinh, Khmer, Hoa; triển lãm trang phục dân tộc, dàn nhạc ngũ âm Pinpeat và biểu diễn trang phục truyền thống.",
+    "visual_narrative": "Khung cảnh hội chợ nhộn nhịp ánh đèn rực rỡ; góc quay tầm mắt ghi lại các thiếu nữ Khmer trong trang phục Sbay óng ánh tơ tằm thêu kim tuyến; mâm xôi ngũ sắc và gian hàng mật hoa dừa Sokfarm thu hút đông đảo du khách ghé thưởng lãm.",
+    "source_citations": [
+      {
+        "source_id": "SRC-TIER2-TV-037",
+        "title": "Đặc sắc Đêm hội Ok Om Bok của đồng bào Khmer tại Trà Vinh",
+        "url": "https://nhandan.vn/dac-sac-dem-hoi-ok-om-bok-cua-dong-bao-khmer-tai-tra-vinh-post845154.html",
+        "author_or_institution": "Báo Nhân Dân - Cơ quan Trung ương của Đảng Cộng sản Việt Nam",
+        "target_notebook": "mekong-360-t-p-2",
+        "tier": "TIER_2_SCHOLARLY",
+        "authority_weight": 0.95
+      },
+      {
+        "source_id": "SRC-TIER1-TV-020",
+        "title": "Lễ hội Cúng Trăng Ok Om Bok và Hội đua ghe Ngo truyền thống đồng bào Khmer Nam Bộ",
+        "url": "https://dantoc.vietnamtourism.gov.vn/le-hoi-ok-om-bok-tra-vinh-di-san-van-hoa-song-dong/",
+        "author_or_institution": "Ủy ban Dân tộc & Cổng thông tin du lịch quốc gia",
+        "target_notebook": "mekong-360-t-p-2",
+        "tier": "TIER_1_GOVERNMENT",
+        "authority_weight": 1
+      },
+      {
+        "source_id": "SRC-TIER1-TV-038",
+        "title": "Bảo tồn và phát huy bản sắc văn hóa truyền thống đồng bào dân tộc Khmer tỉnh Trà Vinh",
+        "url": "https://dantoc.vietnamtourism.gov.vn/bao-ton-phat-huy-ban-sac-van-hoa-dan-toc-khmer-tra-vinh/",
+        "author_or_institution": "Cục Du lịch Quốc gia Việt Nam - Bộ Văn hóa, Thể thao và Du lịch",
+        "target_notebook": "mekong-360-t-p-2",
+        "tier": "TIER_1_GOVERNMENT",
+        "authority_weight": 1.0
+      }
+    ],
+    "verifiedAt": "2026-09-13T16:30:00+07:00"
+  },
+  "hoi-thi-ghe-ngo-mo-rong-tinh-tra-vinh-dua-ghe-ngo-truyen-thong-tra-vinh": {
+    "hours": "12:30 - 17:00",
+    "best_time": "Trưa ngày Rằm tháng 10 âm lịch từ 13:00 đến 16:30 (các lượt đua chung kết)",
+    "waterway_access": "Đường đua diễn ra trực tiếp trên dòng sông Long Bình (đoạn từ cầu Long Bình 1 đến cầu Long Bình 2); khán giả có thể xem từ khán đài bờ kè hoặc thuyền bè neo đậu ven sông.",
+    "aeo_schema_type": "SportsEvent",
+    "cultural_notes": "Giải đua ghe Ngo truyền thống (Um Tuk Ngo) quy tụ hơn 30 đội ghe đại diện các ngôi chùa Phật giáo Nam tông Khmer; thân ghe thon dài gần 30 mét khắc hình hoa văn rồng rắn và linh thú Naga; 50 đến 60 tay bơi cùng nhịp dầm theo tiếng còi hiệu và nhịp cồng chiêng vang dội sông nước.",
+    "visual_narrative": "Ống kính tele bắt trọn khoảnh khắc mũi ghe Ngo xé toang bọt nước trắng xóa trên sông Long Bình; cơ bắp cuồn cuộn của các chàng trai Khmer vung mái dầm đồng loạt trong ánh nắng trưa; tiếng reo hò cổ vũ của hàng vạn đồng bào hai bên bờ sông rợp bóng cờ hội ngũ sắc.",
+    "source_citations": [
+      {
+        "source_id": "SRC-TIER2-TV-037",
+        "title": "Đặc sắc Đêm hội Ok Om Bok của đồng bào Khmer tại Trà Vinh",
+        "url": "https://nhandan.vn/dac-sac-dem-hoi-ok-om-bok-cua-dong-bao-khmer-tai-tra-vinh-post845154.html",
+        "author_or_institution": "Báo Nhân Dân - Cơ quan Trung ương của Đảng Cộng sản Việt Nam",
+        "target_notebook": "mekong-360-t-p-2",
+        "tier": "TIER_2_SCHOLARLY",
+        "authority_weight": 0.95
+      },
+      {
+        "source_id": "SRC-TIER1-TV-020",
+        "title": "Lễ hội Cúng Trăng Ok Om Bok và Hội đua ghe Ngo truyền thống đồng bào Khmer Nam Bộ",
+        "url": "https://dantoc.vietnamtourism.gov.vn/le-hoi-ok-om-bok-tra-vinh-di-san-van-hoa-song-dong/",
+        "author_or_institution": "Ủy ban Dân tộc & Cổng thông tin du lịch quốc gia",
+        "target_notebook": "mekong-360-t-p-2",
+        "tier": "TIER_1_GOVERNMENT",
+        "authority_weight": 1
+      }
+    ],
+    "verifiedAt": "2026-09-13T16:30:00+07:00"
+  },
+  "le-chol-chhnam-thmay": {
+    "hours": "06:30 - 21:00",
+    "best_time": "Buổi sáng từ 07:30 đến 10:30 (nghi thức đắp núi cát và tắm Phật)",
+    "waterway_access": "Đò ngang và ca nô cập bến sông các cụm phum sóc Châu Thành, Càng Long, Trà Cú hoặc Cầu Kè.",
+    "aeo_schema_type": "Festival",
+    "cultural_notes": "Tết đón năm mới cổ truyền của người Khmer diễn ra trong 3 ngày cố định từ 13 đến 16 tháng 4 dương lịch; ngày đầu đón Maha Sangkran, ngày thứ hai làm lễ dâng cơm cho chư tăng (Wonbof), ngày thứ ba làm lễ tắm Phật (Lơn Săk); tín đồ đắp các ngọn núi cát (Pôn Phnum Khsach) xung quanh chính điện chùa để tích đức giải nghiệp.",
+    "visual_narrative": "Ánh sáng ban mai xuyên qua tàng cây thốt nốt rọi vào sân chùa cổ kính; người dân mặc lễ phục Khmer dâng mâm hoa sen trắng và tháp cốm thốt nốt lên bàn thờ Tam Bảo; những ngọn tháp cát đắp hình núi Tu-di được cắm cờ ngũ sắc bay phấp phới trong làn gió xuân phương Nam.",
+    "source_citations": [
+      {
+        "source_id": "SRC-TIER1-TV-038",
+        "title": "Bảo tồn và phát huy bản sắc văn hóa truyền thống đồng bào dân tộc Khmer tỉnh Trà Vinh",
+        "url": "https://dantoc.vietnamtourism.gov.vn/bao-ton-phat-huy-ban-sac-van-hoa-dan-toc-khmer-tra-vinh/",
+        "author_or_institution": "Cục Du lịch Quốc gia Việt Nam - Bộ Văn hóa, Thể thao và Du lịch",
+        "target_notebook": "mekong-360-t-p-2",
+        "tier": "TIER_1_GOVERNMENT",
+        "authority_weight": 1.0
+      },
+      {
+        "source_id": "SRC-TIER2-TV-021",
+        "title": "Phân tích chu kỳ văn hóa tín ngưỡng qua hai đại lễ Chôl Chnăm Thmây và Sêne Đôlta Khmer",
+        "url": "https://vass.gov.vn/nghien-cuu-dan-toc/chol-chnam-thmay-va-sene-dolta-khmer-tra-vinh",
+        "author_or_institution": "Viện Khoa học Xã hội vùng Nam Bộ",
+        "target_notebook": "mekong-360-t-p-2",
+        "tier": "TIER_2_SCHOLARLY",
+        "authority_weight": 0.9
+      }
+    ],
+    "verifiedAt": "2026-09-13T16:30:00+07:00"
+  },
+  "le-hoi-chol-chnam-thmay-tai-chua-ky-son": {
+    "hours": "07:00 - 20:30",
+    "best_time": "Ngày 14 và 15 tháng 4 dương lịch lúc 08:00 - 11:00",
+    "waterway_access": "Bến đò trên sông Măng Thít kết nối đò ngang về xã Loan Mỹ, thuận tiện cho du khách đi đường sông khám phá văn hóa Khmer cù lao.",
+    "aeo_schema_type": "Festival",
+    "cultural_notes": "Lễ hội đón Tết Chôl Chnăm Thmây tại chùa Kỳ Son xã Loan Mỹ; điểm giao thoa văn hóa giữa cộng đồng người Kinh và người Khmer; lễ hội tổ chức các trò chơi dân gian như kéo co, đập nồi đất, đẩy gậy và giao lưu dàn nhạc ngũ âm rộn rã sân chùa.",
+    "visual_narrative": "Góc máy ngang tầm mắt ghi lại khuôn viên chùa Kỳ Son rực rỡ sắc vàng mái ngói cong vút; các tăng sinh trẻ hòa tấu dàn cồng chiêng đồng và trống Sa dăm bập bùng; nụ cười rạng rỡ của cụ bà Khmer khoác khăn choàng Krama đứng cầu bình an bên gốc bồ đề cổ thụ.",
+    "source_citations": [
+      {
+        "source_id": "SRC-TIER1-TV-038",
+        "title": "Bảo tồn và phát huy bản sắc văn hóa truyền thống đồng bào dân tộc Khmer tỉnh Trà Vinh",
+        "url": "https://dantoc.vietnamtourism.gov.vn/bao-ton-phat-huy-ban-sac-van-hoa-dan-toc-khmer-tra-vinh/",
+        "author_or_institution": "Cục Du lịch Quốc gia Việt Nam - Bộ Văn hóa, Thể thao và Du lịch",
+        "target_notebook": "mekong-360-t-p-2",
+        "tier": "TIER_1_GOVERNMENT",
+        "authority_weight": 1.0
+      },
+      {
+        "source_id": "SRC-TIER2-TV-021",
+        "title": "Phân tích chu kỳ văn hóa tín ngưỡng qua hai đại lễ Chôl Chnăm Thmây và Sêne Đôlta Khmer",
+        "url": "https://vass.gov.vn/nghien-cuu-dan-toc/chol-chnam-thmay-va-sene-dolta-khmer-tra-vinh",
+        "author_or_institution": "Viện Khoa học Xã hội vùng Nam Bộ",
+        "target_notebook": "mekong-360-t-p-2",
+        "tier": "TIER_2_SCHOLARLY",
+        "authority_weight": 0.9
+      },
+      {
+        "source_id": "SRC-TIER1-VL-001",
+        "title": "Hồ sơ Di tích Lịch sử - Văn hóa Văn Thánh Miếu Vĩnh Long và Tụy Văn Lâu",
+        "url": "http://dsvh.gov.vn/di-tich-lich-su-van-hoa-van-thanh-mieu-vinh-long-3024",
+        "author_or_institution": "Cục Di sản Văn hóa - Bộ Văn hóa, Thể thao và Du lịch",
+        "target_notebook": "v-nh-long-v-nh-long-b-n-tre-tr",
+        "tier": "TIER_1_GOVERNMENT",
+        "authority_weight": 1
+      }
+    ],
+    "verifiedAt": "2026-09-13T16:30:00+07:00"
+  },
+  "sen-dolta": {
+    "hours": "06:00 - 19:30",
+    "best_time": "Buổi sáng sớm từ 06:30 đến 09:30 (lễ đặt bát dâng cơm chư tăng)",
+    "waterway_access": "Tuyến đò ngang qua các nhánh sông Cổ Chiên và sông Hậu dẫn vào trung tâm các ngôi chùa Phật giáo Nam tông.",
+    "aeo_schema_type": "Festival",
+    "cultural_notes": "Đại lễ báo hiếu cúng ông bà tổ tiên của đồng bào Khmer diễn ra từ ngày 29 tháng 8 đến mùng 1 tháng 9 âm lịch; biểu hiện sâu sắc đạo lý tri ân đấng sinh thành và tưởng nhớ tiền nhân; mỗi gia đình chuẩn bị bánh tét nếp cẩm, bánh gừng, chè thốt nốt mang đến chùa làm lễ cầu siêu (Bansukul) và tống tiễn tai ách trên thuyền bè kết bằng bẹ chuối.",
+    "visual_narrative": "Không gian thanh tịnh trầm mặc tại trai đường ngôi chùa Khmer lúc bình minh; hàng trăm bát đồng đựng cơm nếp dẻo thơm được chư tăng tụng kinh chúc phúc bằng tiếng Pali trầm ấm; khói hương trầm uốn lượn bên tháp đựng hài cốt người thân tạo nên khoảnh khắc thiêng liêng đầy xúc động.",
+    "source_citations": [
+      {
+        "source_id": "SRC-TIER1-TV-038",
+        "title": "Bảo tồn và phát huy bản sắc văn hóa truyền thống đồng bào dân tộc Khmer tỉnh Trà Vinh",
+        "url": "https://dantoc.vietnamtourism.gov.vn/bao-ton-phat-huy-ban-sac-van-hoa-dan-toc-khmer-tra-vinh/",
+        "author_or_institution": "Cục Du lịch Quốc gia Việt Nam - Bộ Văn hóa, Thể thao và Du lịch",
+        "target_notebook": "mekong-360-t-p-2",
+        "tier": "TIER_1_GOVERNMENT",
+        "authority_weight": 1.0
+      },
+      {
+        "source_id": "SRC-TIER2-TV-021",
+        "title": "Phân tích chu kỳ văn hóa tín ngưỡng qua hai đại lễ Chôl Chnăm Thmây và Sêne Đôlta Khmer",
+        "url": "https://vass.gov.vn/nghien-cuu-dan-toc/chol-chnam-thmay-va-sene-dolta-khmer-tra-vinh",
+        "author_or_institution": "Viện Khoa học Xã hội vùng Nam Bộ",
+        "target_notebook": "mekong-360-t-p-2",
+        "tier": "TIER_2_SCHOLARLY",
+        "authority_weight": 0.9
+      }
+    ],
+    "verifiedAt": "2026-09-13T16:30:00+07:00"
+  },
+  "le-hoi-chol-chnam-thmay-va-sen-dolta": {
+    "hours": "07:00 - 21:00",
+    "best_time": "Các ngày đại lễ theo chu kỳ lịch trăng và lịch dương truyền thống",
+    "waterway_access": "Hệ thống bến tàu thủy nội địa kết nối liên vùng qua sông Cổ Chiên và sông Hậu.",
+    "aeo_schema_type": "Festival",
+    "cultural_notes": "Chu kỳ văn hóa lễ hội tâm linh lớn trong năm của cộng đồng người Khmer Nam Bộ; Chôl Chnăm Thmây khởi đầu chu kỳ canh tác nông nghiệp mới, còn Sêne Đôlta khép lại vụ mùa với lòng tri ân nguồn cội; thể hiện nhân sinh quan gắn kết giữa con người, vũ trụ và quy luật tuần hoàn của đất trời châu thổ.",
+    "visual_narrative": "Bức tranh tương phản hai mùa lễ hội: mùa Chôl Chnăm Thmây rộn rã tiếng cười té nước gột rửa điều rủi và sắc màu rực rỡ hoa điệp vàng; mùa Sêne Đôlta sâu lắng với ánh nến lung linh soi bóng áo cà sa vàng cam của chư tăng trong màn sương thu miệt vườn.",
+    "source_citations": [
+      {
+        "source_id": "SRC-TIER1-TV-038",
+        "title": "Bảo tồn và phát huy bản sắc văn hóa truyền thống đồng bào dân tộc Khmer tỉnh Trà Vinh",
+        "url": "https://dantoc.vietnamtourism.gov.vn/bao-ton-phat-huy-ban-sac-van-hoa-dan-toc-khmer-tra-vinh/",
+        "author_or_institution": "Cục Du lịch Quốc gia Việt Nam - Bộ Văn hóa, Thể thao và Du lịch",
+        "target_notebook": "mekong-360-t-p-2",
+        "tier": "TIER_1_GOVERNMENT",
+        "authority_weight": 1.0
+      },
+      {
+        "source_id": "SRC-TIER2-TV-021",
+        "title": "Phân tích chu kỳ văn hóa tín ngưỡng qua hai đại lễ Chôl Chnăm Thmây và Sêne Đôlta Khmer",
+        "url": "https://vass.gov.vn/nghien-cuu-dan-toc/chol-chnam-thmay-va-sene-dolta-khmer-tra-vinh",
+        "author_or_institution": "Viện Khoa học Xã hội vùng Nam Bộ",
+        "target_notebook": "mekong-360-t-p-2",
+        "tier": "TIER_2_SCHOLARLY",
+        "authority_weight": 0.9
+      }
+    ],
+    "verifiedAt": "2026-09-13T16:30:00+07:00"
+  },
+  "le-hoi-dom-long-neak-ta": {
+    "hours": "07:30 - 18:00",
+    "best_time": "Buổi sáng lúc 08:00 - 11:30 (lễ nghinh Thần và dâng lễ vật)",
+    "waterway_access": "Xuồng ba lá hoặc đò máy rẽ vào các con rạch nhỏ phum sóc Trà Cú, Châu Thành, Cầu Kè.",
+    "aeo_schema_type": "Festival",
+    "cultural_notes": "Di sản văn hóa phi vật thể quốc gia công nhận năm 2024; lễ hội cúng Thần bảo hộ phum sóc (Néak Tà) của người Khmer diễn ra vào khoảng tháng 3 đến tháng 5 âm lịch trước mùa mưa; miếu thờ Néak Tà thường đặt dưới gốc cây cổ thụ đầu xóm; người dân dâng cúng hoa cau, trầu thuốc, chuối xiêm và làm lễ xin keo cầu cho mùa vụ tươi tốt, gia đạo an vui.",
+    "visual_narrative": "Khung cảnh cổ kính rợp bóng mát dưới gốc cây bồ đề hàng trăm năm tuổi nơi đặt ngôi miếu Néak Tà nhỏ rêu phong; các bô lão trong phum sóc trang trọng tấu khúc nhạc ngũ âm mở màn nghi thức; làn khói trầm mỏng manh lan tỏa giữa không gian thanh bình của cánh đồng lúa đang thì con gái.",
+    "source_citations": [
+      {
+        "source_id": "SRC-TIER1-TV-039",
+        "title": "Quyết định đưa Lễ hội Đom Lơng Néak Tà của người Khmer tỉnh Trà Vinh vào Danh mục Di sản văn hóa phi vật thể quốc gia",
+        "url": "http://dsvh.gov.vn/di-san-van-hoa-phi-vat-the-quoc-gia-le-hoi-dom-long-neak-ta-tra-vinh-3240",
+        "author_or_institution": "Cục Di sản Văn hóa - Bộ Văn hóa, Thể thao và Du lịch",
+        "target_notebook": "mekong-360-t-p-2",
+        "tier": "TIER_1_GOVERNMENT",
+        "authority_weight": 1.0
+      },
+      {
+        "source_id": "SRC-TIER1-TV-038",
+        "title": "Bảo tồn và phát huy bản sắc văn hóa truyền thống đồng bào dân tộc Khmer tỉnh Trà Vinh",
+        "url": "https://dantoc.vietnamtourism.gov.vn/bao-ton-phat-huy-ban-sac-van-hoa-dan-toc-khmer-tra-vinh/",
+        "author_or_institution": "Cục Du lịch Quốc gia Việt Nam - Bộ Văn hóa, Thể thao và Du lịch",
+        "target_notebook": "mekong-360-t-p-2",
+        "tier": "TIER_1_GOVERNMENT",
+        "authority_weight": 1.0
+      }
+    ],
+    "verifiedAt": "2026-09-13T16:30:00+07:00"
+  },
+  "le-hoi-cung-bien-my-long": {
+    "hours": "06:00 - 22:00",
+    "best_time": "Ngày 11 và 12 tháng 5 âm lịch, cao điểm lúc 14:00 - 16:30 lễ tống tàu ra biển",
+    "waterway_access": "Bến đò Mỹ Long (Cầu Ngang) mở luồng tàu thuyền ra cửa sông Cổ Chiên và biển Ba Động; tàu du lịch neo đậu tại ấp Bến Đáy.",
+    "aeo_schema_type": "Festival",
+    "cultural_notes": "Di sản văn hóa phi vật thể quốc gia tổ chức định kỳ ngày 11-12 tháng 5 âm lịch tại Miếu Bà Chúa Xứ Mỹ Long; hình thành từ thế kỷ XIX gắn với nghề đi biển đáy hàng khố; nghi thức tế lễ gồm giỗ Tiền hiền, nghinh Ông Nam Hải trên biển, chầu hát bội và cao trào tống chiếc tàu rồng chở đầy lương thực ra giữa biển khơi xua đuổi tai ương.",
+    "visual_narrative": "Đoàn thuyền đánh cá hàng trăm chiếc cắm cờ đỏ sao vàng rẽ sóng biển Cổ Chiên trong tiếng trống chiêng vang dội; chiếc tàu rồng tống quái sơn son thếp vàng bồng bềnh giữa sóng bạc đầu; hoàng hôn buông xuống mặt biển nhuộm tím bãi bồi Cồn Nghêu tạo nên bức tranh huyền ảo.",
+    "source_citations": [
+      {
+        "source_id": "SRC-TIER2-TV-040",
+        "title": "Ký sự Về miền Duyên Hải Trà Vinh - Tập 1: Làng ven biển Mỹ Long và Lễ hội Cúng Biển",
+        "url": "https://thvl.vn/ky-su-truyen-hinh-ve-mien-duyen-hai-tra-vinh-lang-ven-bien-my-long.html",
+        "author_or_institution": "Đài Phát thanh và Truyền hình Vĩnh Long (THVL)",
+        "target_notebook": "mekong-360-t-p-2",
+        "tier": "TIER_2_SCHOLARLY",
+        "authority_weight": 0.9
+      },
+      {
+        "source_id": "SRC-TIER1-TV-038",
+        "title": "Bảo tồn và phát huy bản sắc văn hóa truyền thống đồng bào dân tộc Khmer tỉnh Trà Vinh",
+        "url": "https://dantoc.vietnamtourism.gov.vn/bao-ton-phat-huy-ban-sac-van-hoa-dan-toc-khmer-tra-vinh/",
+        "author_or_institution": "Cục Du lịch Quốc gia Việt Nam - Bộ Văn hóa, Thể thao và Du lịch",
+        "target_notebook": "mekong-360-t-p-2",
+        "tier": "TIER_1_GOVERNMENT",
+        "authority_weight": 1.0
+      }
+    ],
+    "verifiedAt": "2026-09-13T16:30:00+07:00"
+  },
+  "le-hoi-nghinh-ong-binh-thang": {
+    "hours": "05:30 - 21:30",
+    "best_time": "Sáng ngày 16 tháng 6 âm lịch lúc 06:00 - 09:30 (lễ rước Nghinh Ông ra cửa biển)",
+    "waterway_access": "Cảng cá Bình Thắng (Bình Đại) trên cửa sông Ba Lai và sông Tiền; hàng trăm tàu đánh bắt xa bờ neo đậu tấp nập kết nối đường thủy thông suốt.",
+    "aeo_schema_type": "Festival",
+    "cultural_notes": "Di sản văn hóa phi vật thể quốc gia tại xã Bình Thắng diễn ra ngày 16-17 tháng 6 âm lịch; lễ hội lớn của ngư dân xứ dừa phụng thờ Nam Hải Tướng Quân; đoàn tàu rước trang hoàng lộng lẫy ra khơi làm lễ xin keo thỉnh linh hồn Cá Ông về Lăng Ông Bình Thắng, kết hợp diễn tuồng Hát Bội suốt 3 ngày đêm.",
+    "visual_narrative": "Góc quay từ mạn tàu bắt trọn cảnh bình minh trên cửa biển Ba Lai; hàng trăm lá cờ hội phấp phới trong gió mặn; khói trầm hương ngút ngàn từ bàn hương án đặt giữa mũi tàu trưởng đoàn; nụ cười rạng rỡ của những lão ngư dạn dày sương gió cầu mong một năm thuận buồm xuôi gió, tôm cá đầy khoang.",
+    "source_citations": [
+      {
+        "source_id": "SRC-TIER1-BT-041",
+        "title": "Lễ hội Nghinh Ông Bình Thắng huyện Bình Đại - Di sản văn hóa phi vật thể quốc gia",
+        "url": "https://dulichbentre.gov.vn/di-san-van-hoa/le-hoi-nghinh-ong-binh-thang",
+        "author_or_institution": "Sở Văn hóa, Thể thao và Du lịch tỉnh Bến Tre",
+        "target_notebook": "mekong-360-t-p-2",
+        "tier": "TIER_1_GOVERNMENT",
+        "authority_weight": 1.0
+      },
+      {
+        "source_id": "SRC-TIER1-BT-035",
+        "title": "Vùng nuôi nghêu, sò huyết và tôm quảng canh sinh thái ven biển Thạnh Phú - Bình Đại",
+        "url": "https://thuysan.bentre.gov.vn/mo-hinh-thuy-san/vung-nuoi-so-huyet-tom-quang-canh",
+        "author_or_institution": "Chi cục Thủy sản tỉnh Bến Tre",
+        "target_notebook": "mekong-360-t-p-2",
+        "tier": "TIER_1_GOVERNMENT",
+        "authority_weight": 1
+      }
+    ],
+    "verifiedAt": "2026-09-13T16:30:00+07:00"
+  },
+  "le-hoi-nghinh-ong-duyen-hai": {
+    "hours": "06:30 - 20:30",
+    "best_time": "Ngày 10 đến 12 tháng 3 âm lịch, sáng sớm lúc 07:00 - 10:00",
+    "waterway_access": "Cảng cá Láng Chim hoặc bến tàu Duyên Hải xuôi theo kênh xáng Long Toàn ra biển.",
+    "aeo_schema_type": "Festival",
+    "cultural_notes": "Lễ hội tâm linh miền biển duyên hải Tây Nam Bộ của ngư dân phường 1, phường 2 và xã Dân Thành; gắn bó mật thiết với luồng cá trích, cá khoai và tôm biển; nghi thức cầu siêu cho các hương linh tử nạn trên biển và biểu dương lòng can trường chinh phục sóng to gió lớn của ngư dân bám biển quê hương.",
+    "visual_narrative": "Bến cảng rợp bóng cờ hội đón những mẻ lưới đầu tiên trong ngày tế thần biển; mặt trời đỏ ối nhô lên từ đường chân trời biển Đông rọi sáng luồng tàu thuyền nối đuôi nhau ra khơi; không khí rộn rã tiếng còi tàu hòa cùng tiếng sóng vỗ rì rào bờ cát Ba Động.",
+    "source_citations": [
+      {
+        "source_id": "SRC-TIER2-TV-042",
+        "title": "Trường Long Hòa và Duyên Hải: Điểm tựa tâm linh nghề biển từ Lễ hội Nghinh Ông Lăng Cồn Tàu",
+        "url": "https://baovinhlong.com.vn/kinh-te/202605/truong-long-hoa-tap-trung-khai-thac-tiem-nang-du-lich-va-kinh-te-bien-108088d/",
+        "author_or_institution": "Báo Vĩnh Long",
+        "target_notebook": "mekong-360-t-p-2",
+        "tier": "TIER_2_SCHOLARLY",
+        "authority_weight": 0.9
+      },
+      {
+        "source_id": "SRC-TIER2-TV-040",
+        "title": "Ký sự Về miền Duyên Hải Trà Vinh - Tập 1: Làng ven biển Mỹ Long và Lễ hội Cúng Biển",
+        "url": "https://thvl.vn/ky-su-truyen-hinh-ve-mien-duyen-hai-tra-vinh-lang-ven-bien-my-long.html",
+        "author_or_institution": "Đài Phát thanh và Truyền hình Vĩnh Long (THVL)",
+        "target_notebook": "mekong-360-t-p-2",
+        "tier": "TIER_2_SCHOLARLY",
+        "authority_weight": 0.9
+      }
+    ],
+    "verifiedAt": "2026-09-13T16:30:00+07:00"
+  },
+  "le-hoi-nghinh-ong-lang-con-tau": {
+    "hours": "07:00 - 21:00",
+    "best_time": "Ngày 10 và 11 tháng 3 âm lịch lúc 07:30 - 11:00",
+    "waterway_access": "Tàu thuyền neo tại cửa biển Cồn Tàu (xã Trường Long Hòa), theo luồng lạch nước sâu tiếp cận di tích lăng miếu cổ.",
+    "aeo_schema_type": "Festival",
+    "cultural_notes": "Lễ hội truyền thống tại Lăng Cồn Tàu xã Trường Long Hòa; lăng lưu giữ bộ hài cốt cá voi khổng lồ trôi dạt vào bãi cát Cồn Tàu từ đầu thế kỷ XX; ngư dân địa phương tôn kính gọi bằng Ông, coi cá voi là vị cứu tinh linh thiêng cứu vớt tàu bè khi gặp giông bão; lễ hội tổ chức các trò chơi đẩy gậy, kéo co trên cát và bóng chuyền bãi biển.",
+    "visual_narrative": "Ngôi lăng thờ cổ kính nép mình bên rặng phi lao vi vút chắn cát ven biển Ba Động; bên trong lăng, bộ xương cá voi dài hàng chục mét được phủ vải điều trang trọng; ngoài sân, các ngư dân trẻ thi thố tài năng trong tiếng cổ vũ vang vọng bờ sóng biển phù sa.",
+    "source_citations": [
+      {
+        "source_id": "SRC-TIER2-TV-042",
+        "title": "Trường Long Hòa và Duyên Hải: Điểm tựa tâm linh nghề biển từ Lễ hội Nghinh Ông Lăng Cồn Tàu",
+        "url": "https://baovinhlong.com.vn/kinh-te/202605/truong-long-hoa-tap-trung-khai-thac-tiem-nang-du-lich-va-kinh-te-bien-108088d/",
+        "author_or_institution": "Báo Vĩnh Long",
+        "target_notebook": "mekong-360-t-p-2",
+        "tier": "TIER_2_SCHOLARLY",
+        "authority_weight": 0.9
+      },
+      {
+        "source_id": "SRC-TIER2-TV-040",
+        "title": "Ký sự Về miền Duyên Hải Trà Vinh - Tập 1: Làng ven biển Mỹ Long và Lễ hội Cúng Biển",
+        "url": "https://thvl.vn/ky-su-truyen-hinh-ve-mien-duyen-hai-tra-vinh-lang-ven-bien-my-long.html",
+        "author_or_institution": "Đài Phát thanh và Truyền hình Vĩnh Long (THVL)",
+        "target_notebook": "mekong-360-t-p-2",
+        "tier": "TIER_2_SCHOLARLY",
+        "authority_weight": 0.9
+      }
+    ],
+    "verifiedAt": "2026-09-13T16:30:00+07:00"
+  },
+  "le-cung-bien-dong-cao": {
+    "hours": "06:00 - 18:00",
+    "best_time": "Sáng ngày 11 tháng 5 âm lịch lúc 07:00 - 10:00",
+    "waterway_access": "Đò máy rẽ qua rạch Động Cao hướng ra cửa Cổ Chiên, phù hợp thuyền gỗ công suất nhỏ.",
+    "aeo_schema_type": "Festival",
+    "cultural_notes": "Nghi lễ cúng biển cổ xưa của cư dân xóm chài bãi cát Động Cao; nghi thức mộc mạc đơn sơ gồm mâm xôi gà luộc, hoa quả ngũ sắc và bình rượu nếp; cầu xin Mẹ Biển phù hộ cho tôm cá sinh sôi, người đi biển chân cứng đá mềm, khoang ghe đầy cá về cập bến bình an.",
+    "visual_narrative": "Bãi cát trải dài hoang sơ lúc triều xuống để lộ những bãi nghêu bãi sò tự nhiên; người dân xóm chài quần tụ dâng hương trước miếu cô hồn cạnh bờ rạch; ánh nắng mai dát vàng mặt nước lấp lánh như dát bạc trên bãi biển Động Cao.",
+    "source_citations": [
+      {
+        "source_id": "SRC-TIER2-TV-040",
+        "title": "Ký sự Về miền Duyên Hải Trà Vinh - Tập 1: Làng ven biển Mỹ Long và Lễ hội Cúng Biển",
+        "url": "https://thvl.vn/ky-su-truyen-hinh-ve-mien-duyen-hai-tra-vinh-lang-ven-bien-my-long.html",
+        "author_or_institution": "Đài Phát thanh và Truyền hình Vĩnh Long (THVL)",
+        "target_notebook": "mekong-360-t-p-2",
+        "tier": "TIER_2_SCHOLARLY",
+        "authority_weight": 0.9
+      },
+      {
+        "source_id": "SRC-TIER1-TV-038",
+        "title": "Bảo tồn và phát huy bản sắc văn hóa truyền thống đồng bào dân tộc Khmer tỉnh Trà Vinh",
+        "url": "https://dantoc.vietnamtourism.gov.vn/bao-ton-phat-huy-ban-sac-van-hoa-dan-toc-khmer-tra-vinh/",
+        "author_or_institution": "Cục Du lịch Quốc gia Việt Nam - Bộ Văn hóa, Thể thao và Du lịch",
+        "target_notebook": "mekong-360-t-p-2",
+        "tier": "TIER_1_GOVERNMENT",
+        "authority_weight": 1.0
+      }
+    ],
+    "verifiedAt": "2026-09-13T16:30:00+07:00"
+  },
+  "le-hoi-ngu-dan-thanh-hai-le-hoi-cau-ngu": {
+    "hours": "06:30 - 21:00",
+    "best_time": "Ngày 15 và 16 tháng 2 âm lịch lúc 07:30 - 10:30",
+    "waterway_access": "Bến cá Cồn Bửng (xã Thạnh Hải, Thạnh Phú); du khách có thể đi tàu thuyền dọc sông Hàm Luông ra biển.",
+    "aeo_schema_type": "Festival",
+    "cultural_notes": "Lễ hội Ngư dân Thạnh Hải tổ chức tại Lăng Ông Nam Hải ấp Thạnh Khương; đánh dấu ngày mở biển đón luồng tôm cá vụ xuân; các nghi lễ cúng Thần Nông, cúng Cá Ông và thả thuyền giấy ngũ sắc; dịp họp mặt thắt chặt tình đoàn kết tương trợ giữa các chủ tàu và bạn chài ven biển Thạnh Phú.",
+    "visual_narrative": "Khuôn viên lăng Ông ngập tràn cờ hoa rực rỡ bên bờ biển Cồn Bửng; hàng đoàn xe máy và thuyền chài tấp nập chở lễ vật về chiêm bái; gió biển lồng lộng thổi bay tà áo dài truyền thống của các mẹ, các chị trong ban khánh tiết tế lễ.",
+    "source_citations": [
+      {
+        "source_id": "SRC-TIER1-BT-050",
+        "title": "Bảo tồn đa dạng sinh học Khu bảo tồn thiên nhiên đất ngập nước Thạnh Phú",
+        "url": "https://stnmt.bentre.gov.vn/bao-ton-thien-nhien/khu-bao-ton-thanh-phu",
+        "author_or_institution": "Sở Tài nguyên và Môi trường tỉnh Bến Tre",
+        "target_notebook": "mekong-360-t-p-2",
+        "tier": "TIER_1_GOVERNMENT",
+        "authority_weight": 1.0
+      },
+      {
+        "source_id": "SRC-TIER1-BT-041",
+        "title": "Lễ hội Nghinh Ông Bình Thắng huyện Bình Đại - Di sản văn hóa phi vật thể quốc gia",
+        "url": "https://dulichbentre.gov.vn/di-san-van-hoa/le-hoi-nghinh-ong-binh-thang",
+        "author_or_institution": "Sở Văn hóa, Thể thao và Du lịch tỉnh Bến Tre",
+        "target_notebook": "mekong-360-t-p-2",
+        "tier": "TIER_1_GOVERNMENT",
+        "authority_weight": 1.0
+      }
+    ],
+    "verifiedAt": "2026-09-13T16:30:00+07:00"
+  },
+  "le-hoi-ky-yen-dinh-phu-le": {
+    "hours": "07:00 - 23:00",
+    "best_time": "Đêm 18 và 19 tháng 3 âm lịch lúc 19:00 - 22:30 (suất Hát Bội tuồng cổ)",
+    "waterway_access": "Thuyền chở khách theo sông Hàm Luông rẽ vào rạch Ba Tri, cập bến đò Phú Lễ cách đình 500m.",
+    "aeo_schema_type": "Festival",
+    "cultural_notes": "Lễ hội Kỳ Yên quy mô lớn hàng đầu vùng Ba Tri tổ chức tại Đình Phú Lễ (ngôi đình gỗ lim 10 gian xây dựng năm 1813); Lễ Kỳ Yên xuân (18-19/3 ÂL) và Kỳ Yên thu (18-19/11 ÂL); đầy đủ các nghi thức cổ truyền: thỉnh sắc Thần, lễ Tế Tiền hiền, Hậu hiền, lễ Xây chầu đại bội và diễn tuồng Hát Bội phục vụ bà con suốt 2 ngày đêm; kết hợp thưởng thức rượu nếp Phú Lễ hạ thổ 100 ngày trứ danh.",
+    "visual_narrative": "Gian tiền tế ngôi đình cổ lung linh hàng trăm ngọn nến sáp ong; hàng cột gỗ lim to một vòng tay ôm đen bóng soi bóng đoàn bô lão khăn đóng áo dài cung kính dâng rượu tế; ngoài sân đình rộn rã tiếng trống chầu Hát Bội điểm nhịp thưởng tài ba của các đào kép tuồng cổ.",
+    "source_citations": [
+      {
+        "source_id": "SRC-TIER1-BT-044",
+        "title": "Hồ sơ Di tích Quốc gia Đình Phú Lễ và Lễ hội Kỳ Yên truyền thống Ba Tri",
+        "url": "http://dsvh.gov.vn/di-tich-quoc-gia-dinh-phu-le-ben-tre-3092",
+        "author_or_institution": "Cục Di sản Văn hóa - Bộ Văn hóa, Thể thao và Du lịch",
+        "target_notebook": "v-nh-long-v-nh-long-b-n-tre-tr",
+        "tier": "TIER_1_GOVERNMENT",
+        "authority_weight": 1.0
+      },
+      {
+        "source_id": "SRC-TIER1-BT-054",
+        "title": "Phát triển chuỗi giá trị Làng nghề Rượu truyền thống Phú Lễ huyện Ba Tri",
+        "url": "https://socongthuong.bentre.gov.vn/lang-nghe-ruou-phu-le",
+        "author_or_institution": "Sở Công Thương tỉnh Bến Tre",
+        "target_notebook": "mekong-360-t-p-2",
+        "tier": "TIER_1_GOVERNMENT",
+        "authority_weight": 1.0
+      }
+    ],
+    "verifiedAt": "2026-09-13T16:30:00+07:00"
+  },
+  "le-ha-dien-dinh-tan-hoa": {
+    "hours": "06:30 - 20:00",
+    "best_time": "Sáng ngày 16 tháng 4 âm lịch lúc 07:00 - 10:00 (lễ cúng xuống đồng)",
+    "waterway_access": "Cập bến đò Cái Đôi trên sông Tiền thuộc phường Tân Hòa, thành phố Vĩnh Long.",
+    "aeo_schema_type": "Festival",
+    "cultural_notes": "Lễ hội Hạ Điền tại Đình Tân Hòa (Đình Cái Đôi); nghi thức thiêng liêng đánh dấu ngày người nông dân Nam Bộ xuống đồng gieo mạ cho vụ mùa hè thu; ban khánh tiết dâng mâm cơm lúa mới, xôi gà và hoa quả tạ ơn Thần Nông cùng các bậc Tiền hiền đã có công khai hoang lập ấp từ thế kỷ XIX.",
+    "visual_narrative": "Bàn thờ Thần Nông uy nghiêm nghi ngút khói trầm giữa gian võ ca đình Tân Hòa; cụ thủ từ áo dài khăn xếp chỉnh tề gõ ba hồi chuông lệnh mở màn nghi lễ; khung cảnh bến sông Cái Đôi hiền hòa rợp bóng dừa xanh mát đón dòng người trẩy hội bình dị.",
+    "source_citations": [
+      {
+        "source_id": "SRC-TIER2-VL-045",
+        "title": "Rộn ràng Lễ hội Hạ Điền – Kỳ Yên tại các di tích đình làng Nam Bộ tỉnh Vĩnh Long",
+        "url": "https://baovinhlong.com.vn/van-hoa-giai-tri/202606/ron-rang-le-hoi-ha-dien-ky-yen-40a25b5/",
+        "author_or_institution": "Báo Vĩnh Long",
+        "target_notebook": "v-nh-long-v-nh-long-b-n-tre-tr",
+        "tier": "TIER_2_SCHOLARLY",
+        "authority_weight": 0.9
+      },
+      {
+        "source_id": "SRC-TIER1-VL-001",
+        "title": "Hồ sơ Di tích Lịch sử - Văn hóa Văn Thánh Miếu Vĩnh Long và Tụy Văn Lâu",
+        "url": "http://dsvh.gov.vn/di-tich-lich-su-van-hoa-van-thanh-mieu-vinh-long-3024",
+        "author_or_institution": "Cục Di sản Văn hóa - Bộ Văn hóa, Thể thao và Du lịch",
+        "target_notebook": "v-nh-long-v-nh-long-b-n-tre-tr",
+        "tier": "TIER_1_GOVERNMENT",
+        "authority_weight": 1
+      }
+    ],
+    "verifiedAt": "2026-09-13T16:30:00+07:00"
+  },
+  "le-thuong-dien-dinh-tan-ngai": {
+    "hours": "07:00 - 20:30",
+    "best_time": "Ngày 16 và 17 tháng 10 âm lịch lúc 08:00 - 11:30",
+    "waterway_access": "Thuyền xuôi theo rạch Tân Ngãi từ sông Cổ Chiên vào bến đình Tân Ngãi cạnh chân cầu Mỹ Thuận.",
+    "aeo_schema_type": "Festival",
+    "cultural_notes": "Lễ hội Thượng Điền tại Đình Tân Ngãi (phường Tân Ngãi); nghi thức tạ ơn trời đất sau khi gặt hái xong vụ lúa mùa cuối năm; bà con nông dân tề tựu đóng góp gạo mới, nếp thơm làm lễ cúng Thần và thết đãi chòm xóm bữa cơm đoàn viên đầm ấm tình làng nghĩa xóm miệt vườn.",
+    "visual_narrative": "Khung cảnh sân đình rực rỡ sắc đỏ cờ hội; các bô lão dâng chén rượu nếp đầu mùa lên bàn thờ Thành hoàng; xa xa phía sau mái đao cong vút của ngôi đình là nhịp cầu Mỹ Thuận vươn mình qua sông Tiền lộng gió.",
+    "source_citations": [
+      {
+        "source_id": "SRC-TIER2-VL-045",
+        "title": "Rộn ràng Lễ hội Hạ Điền – Kỳ Yên tại các di tích đình làng Nam Bộ tỉnh Vĩnh Long",
+        "url": "https://baovinhlong.com.vn/van-hoa-giai-tri/202606/ron-rang-le-hoi-ha-dien-ky-yen-40a25b5/",
+        "author_or_institution": "Báo Vĩnh Long",
+        "target_notebook": "v-nh-long-v-nh-long-b-n-tre-tr",
+        "tier": "TIER_2_SCHOLARLY",
+        "authority_weight": 0.9
+      },
+      {
+        "source_id": "SRC-TIER1-VL-001",
+        "title": "Hồ sơ Di tích Lịch sử - Văn hóa Văn Thánh Miếu Vĩnh Long và Tụy Văn Lâu",
+        "url": "http://dsvh.gov.vn/di-tich-lich-su-van-hoa-van-thanh-mieu-vinh-long-3024",
+        "author_or_institution": "Cục Di sản Văn hóa - Bộ Văn hóa, Thể thao và Du lịch",
+        "target_notebook": "v-nh-long-v-nh-long-b-n-tre-tr",
+        "tier": "TIER_1_GOVERNMENT",
+        "authority_weight": 1
+      }
+    ],
+    "verifiedAt": "2026-09-13T16:30:00+07:00"
+  },
+  "le-hoi-ky-yen-ha-dien-dinh-tan-giai": {
+    "hours": "07:00 - 21:00",
+    "best_time": "Ngày 16 và 17 tháng 3 âm lịch lúc 08:00 - 11:00",
+    "waterway_access": "Cập bến sông Long Hồ hoặc bến phà phường 9 thành phố Vĩnh Long.",
+    "aeo_schema_type": "Festival",
+    "cultural_notes": "Lễ hội Kỳ Yên - Hạ Điền tại Đình Tân Giai; ngôi đình cổ phụng thờ Thần hoàng Bổn cảnh có sắc phong triều Nguyễn năm 1852; nghi thức tế lễ gồm rước Sắc thần du tuần quanh các nẻo đường làng, lễ Túc Yết lúc nửa đêm và lễ Đoàn Cả chính khóa cầu quốc thái dân an, mùa màng bội thu tươi tốt.",
+    "visual_narrative": "Đoàn rước kiệu Sắc thần rực rỡ lọng vàng, tàn quạt lụa và cờ ngũ hành đi giữa rặng nhãn cù lao; tiếng nhạc lễ Nam Bộ réo rắt trầm bổng hòa cùng tiếng chiêng đồng giòn giã thu hút đông đảo trẻ nhỏ và người dân chắp tay bái vọng.",
+    "source_citations": [
+      {
+        "source_id": "SRC-TIER2-VL-045",
+        "title": "Rộn ràng Lễ hội Hạ Điền – Kỳ Yên tại các di tích đình làng Nam Bộ tỉnh Vĩnh Long",
+        "url": "https://baovinhlong.com.vn/van-hoa-giai-tri/202606/ron-rang-le-hoi-ha-dien-ky-yen-40a25b5/",
+        "author_or_institution": "Báo Vĩnh Long",
+        "target_notebook": "v-nh-long-v-nh-long-b-n-tre-tr",
+        "tier": "TIER_2_SCHOLARLY",
+        "authority_weight": 0.9
+      },
+      {
+        "source_id": "SRC-TIER1-VL-001",
+        "title": "Hồ sơ Di tích Lịch sử - Văn hóa Văn Thánh Miếu Vĩnh Long và Tụy Văn Lâu",
+        "url": "http://dsvh.gov.vn/di-tich-lich-su-van-hoa-van-thanh-mieu-vinh-long-3024",
+        "author_or_institution": "Cục Di sản Văn hóa - Bộ Văn hóa, Thể thao và Du lịch",
+        "target_notebook": "v-nh-long-v-nh-long-b-n-tre-tr",
+        "tier": "TIER_1_GOVERNMENT",
+        "authority_weight": 1
+      }
+    ],
+    "verifiedAt": "2026-09-13T16:30:00+07:00"
+  },
+  "le-hoi-ky-yen": {
+    "hours": "07:00 - 22:00",
+    "best_time": "Rằm tháng 2 đến rằm tháng 4 âm lịch (mùa Kỳ Yên xuân) lúc 18:30 - 21:30",
+    "waterway_access": "Hệ thống mạng lưới sông ngòi rạch nước Nam Bộ đưa đón bà con bằng xuồng ba lá, đò máy cập bến các đình làng.",
+    "aeo_schema_type": "Festival",
+    "cultural_notes": "Tập quán hội Kỳ Yên (lễ cầu an) truyền thống của cư dân đồng bằng sông Cửu Long; mỗi năm tổ chức 2 kỳ vào mùa xuân và mùa thu; đình làng là trung tâm sinh hoạt văn hóa tín ngưỡng cộng đồng; nghi lễ bảo lưu hệ thống chức việc, thứ bậc hương chức làng xã cổ truyền và nghệ thuật Hát Bội diễn tuồng lịch sử.",
+    "visual_narrative": "Ngôi đình làng Nam Bộ mái ngói rêu phong nổi bật giữa vòm dừa nước xanh biếc; sân đình tấp nập người dân trẩy hội trong trang phục áo bà ba tươi tắn; mùi hương trầm và hoa sen thoang thoảng tạo cảm giác thanh bình tĩnh lặng nơi chốn thôn dã.",
+    "source_citations": [
+      {
+        "source_id": "SRC-TIER2-VL-045",
+        "title": "Rộn ràng Lễ hội Hạ Điền – Kỳ Yên tại các di tích đình làng Nam Bộ tỉnh Vĩnh Long",
+        "url": "https://baovinhlong.com.vn/van-hoa-giai-tri/202606/ron-rang-le-hoi-ha-dien-ky-yen-40a25b5/",
+        "author_or_institution": "Báo Vĩnh Long",
+        "target_notebook": "v-nh-long-v-nh-long-b-n-tre-tr",
+        "tier": "TIER_2_SCHOLARLY",
+        "authority_weight": 0.9
+      },
+      {
+        "source_id": "SRC-TIER1-BT-044",
+        "title": "Hồ sơ Di tích Quốc gia Đình Phú Lễ và Lễ hội Kỳ Yên truyền thống Ba Tri",
+        "url": "http://dsvh.gov.vn/di-tich-quoc-gia-dinh-phu-le-ben-tre-3092",
+        "author_or_institution": "Cục Di sản Văn hóa - Bộ Văn hóa, Thể thao và Du lịch",
+        "target_notebook": "v-nh-long-v-nh-long-b-n-tre-tr",
+        "tier": "TIER_1_GOVERNMENT",
+        "authority_weight": 1.0
+      }
+    ],
+    "verifiedAt": "2026-09-13T16:30:00+07:00"
+  },
+  "le-cung-mieu": {
+    "hours": "07:30 - 18:30",
+    "best_time": "Ngày 16 đến 18 tháng Giêng âm lịch lúc 08:00 - 11:30",
+    "waterway_access": "Đò chèo xuồng ba lá len lỏi trong các con rạch miệt vườn sông Tiền và sông Cổ Chiên.",
+    "aeo_schema_type": "Festival",
+    "cultural_notes": "Tập tục cúng miễu thổ thần, bà chúa miệt vườn (Thổ Công, Bà Cố Hỷ, Ngũ Hành Nương Nương) vào dịp đầu xuân năm mới; người dân trong xóm cùng nhau dọn dẹp miễu sạch sẽ, cúng xôi nếp gà luộc, hoa tươi và cầu xin cho xóm ấp bình an, mưa thuận gió hòa, cây trái sai cành trĩu quả.",
+    "visual_narrative": "Ngôi miễu nhỏ đơn sơ rợp bóng cây bưởi, cây nhãn trĩu quả bên bờ rạch nước; những làn khói hương uốn lượn bay lên đón gió xuân; tiếng chuyện trò rôm rả của các cô bác nhà vườn chia sẻ kinh nghiệm chăm sóc cây trái đầu năm.",
+    "source_citations": [
+      {
+        "source_id": "SRC-TIER2-VL-045",
+        "title": "Rộn ràng Lễ hội Hạ Điền – Kỳ Yên tại các di tích đình làng Nam Bộ tỉnh Vĩnh Long",
+        "url": "https://baovinhlong.com.vn/van-hoa-giai-tri/202606/ron-rang-le-hoi-ha-dien-ky-yen-40a25b5/",
+        "author_or_institution": "Báo Vĩnh Long",
+        "target_notebook": "v-nh-long-v-nh-long-b-n-tre-tr",
+        "tier": "TIER_2_SCHOLARLY",
+        "authority_weight": 0.9
+      },
+      {
+        "source_id": "SRC-TIER1-VL-001",
+        "title": "Hồ sơ Di tích Lịch sử - Văn hóa Văn Thánh Miếu Vĩnh Long và Tụy Văn Lâu",
+        "url": "http://dsvh.gov.vn/di-tich-lich-su-van-hoa-van-thanh-mieu-vinh-long-3024",
+        "author_or_institution": "Cục Di sản Văn hóa - Bộ Văn hóa, Thể thao và Du lịch",
+        "target_notebook": "v-nh-long-v-nh-long-b-n-tre-tr",
+        "tier": "TIER_1_GOVERNMENT",
+        "authority_weight": 1
+      }
+    ],
+    "verifiedAt": "2026-09-13T16:30:00+07:00"
+  },
+  "le-hoi-van-thanh-mieu": {
+    "hours": "07:00 - 19:30",
+    "best_time": "Ngày Đinh đầu tháng 2 âm lịch (Lễ Xuân Đinh) và tháng 8 âm lịch (Lễ Thu Đinh) lúc 08:00 - 10:30",
+    "waterway_access": "Bến thuyền cầu Bạch Đằng trên sông Long Hồ (phường 4), bước bộ 200m vào cổng tam quan Văn Thánh Miếu.",
+    "aeo_schema_type": "Festival",
+    "cultural_notes": "Di sản văn hóa quốc gia tôn vinh đạo học phương Nam khởi dựng năm 1864 do Đốc học Nguyễn Thông và Kinh lược sứ Phan Thanh Giản khởi xướng; định kỳ tổ chức lễ Xuân Đinh và Thu Đinh cúng Khổng Tử và các bậc Tiên hiền; Tụy Văn Lâu hoàn thành năm 1869 là nơi phụng thờ Phan Thanh Giản và hội tụ các danh sĩ yêu nước cuối thế kỷ XIX.",
+    "visual_narrative": "Tụy Văn Lâu cổ kính bằng gỗ lim uy nghiêm bên bờ sông Long Hồ phẳng lặng; ánh nắng ban mai rọi vào bức đại tự sơn thếp vàng; đoàn học sinh, sinh viên dâng hương thành kính trước ban thờ cụ Phan, tôn vinh truyền thống hiếu học của vùng đất học Vĩnh Long.",
+    "source_citations": [
+      {
+        "source_id": "SRC-TIER1-VL-001",
+        "title": "Hồ sơ Di tích Lịch sử - Văn hóa Văn Thánh Miếu Vĩnh Long và Tụy Văn Lâu",
+        "url": "http://dsvh.gov.vn/di-tich-lich-su-van-hoa-van-thanh-mieu-vinh-long-3024",
+        "author_or_institution": "Cục Di sản Văn hóa - Bộ Văn hóa, Thể thao và Du lịch",
+        "target_notebook": "v-nh-long-v-nh-long-b-n-tre-tr",
+        "tier": "TIER_1_GOVERNMENT",
+        "authority_weight": 1
+      },
+      {
+        "source_id": "SRC-TIER2-VL-046",
+        "title": "Lễ Xuân Đinh - Nét đẹp văn hóa truyền thống khuyến học tại Di tích Quốc gia Văn Thánh Miếu",
+        "url": "https://baovinhlong.com.vn/van-hoa-giai-tri/202603/le-xuan-dinh-net-dep-van-hoa-tai-di-tich-van-thanh-mieu-2023470/",
+        "author_or_institution": "Báo Vĩnh Long & Ban Quản lý Di tích Văn Thánh Miếu",
+        "target_notebook": "v-nh-long-v-nh-long-b-n-tre-tr",
+        "tier": "TIER_2_SCHOLARLY",
+        "authority_weight": 0.9
+      },
+      {
+        "source_id": "SRC-TIER2-VL-005",
+        "title": "Khảo cứu thân thế, sự nghiệp và bi kịch lịch sử của Tiến sĩ Phan Thanh Giản",
+        "url": "https://vass.gov.vn/tap-chi-nghien-cuu-lich-su/phan-thanh-gian-con-nguoi-va-thoi-dai",
+        "author_or_institution": "Tạp chí Nghiên cứu Lịch sử - Viện Hàn lâm Khoa học Xã hội Việt Nam",
+        "target_notebook": "v-nh-long-v-nh-long-b-n-tre-tr",
+        "tier": "TIER_2_SCHOLARLY",
+        "authority_weight": 0.9
+      }
+    ],
+    "verifiedAt": "2026-09-13T16:30:00+07:00"
+  },
+  "le-gio-phan-thanh-gian-tai-van-thanh-mieu": {
+    "hours": "07:30 - 18:00",
+    "best_time": "Sáng mùng 4 và mùng 5 tháng 7 âm lịch lúc 08:00 - 10:30",
+    "waterway_access": "Tàu du lịch sông Tiền xuôi dòng sông Long Hồ ghé bến tam quan Văn Thánh Miếu.",
+    "aeo_schema_type": "Festival",
+    "cultural_notes": "Lễ tưởng niệm ngày cụ Phan Thanh Giản (1796-1867) tuẫn tiết giữ trọn khí tiết vì dân vì nước; dòng họ Phan và hội khuyến học tổ chức trang trọng hàng năm; dịp vinh danh các nhà khoa học, giáo viên tiêu biểu và trao học bổng Phan Thanh Giản cho học sinh hiếu học vượt khó.",
+    "visual_narrative": "Khung cảnh trang nghiêm tĩnh lặng trước tượng đồng cụ Phan Thanh Giản; những đóa sen hồng thơm ngát dâng lên đài tưởng niệm; đôi câu đối cổ 'Khí phách ngút trời xanh / Tấm lòng soi trăng sáng' gợi nhắc bi kịch hào hùng của bậc đại thần trí sĩ.",
+    "source_citations": [
+      {
+        "source_id": "SRC-TIER2-VL-005",
+        "title": "Khảo cứu thân thế, sự nghiệp và bi kịch lịch sử của Tiến sĩ Phan Thanh Giản",
+        "url": "https://vass.gov.vn/tap-chi-nghien-cuu-lich-su/phan-thanh-gian-con-nguoi-va-thoi-dai",
+        "author_or_institution": "Tạp chí Nghiên cứu Lịch sử - Viện Hàn lâm Khoa học Xã hội Việt Nam",
+        "target_notebook": "v-nh-long-v-nh-long-b-n-tre-tr",
+        "tier": "TIER_2_SCHOLARLY",
+        "authority_weight": 0.9
+      },
+      {
+        "source_id": "SRC-TIER1-VL-001",
+        "title": "Hồ sơ Di tích Lịch sử - Văn hóa Văn Thánh Miếu Vĩnh Long và Tụy Văn Lâu",
+        "url": "http://dsvh.gov.vn/di-tich-lich-su-van-hoa-van-thanh-mieu-vinh-long-3024",
+        "author_or_institution": "Cục Di sản Văn hóa - Bộ Văn hóa, Thể thao và Du lịch",
+        "target_notebook": "v-nh-long-v-nh-long-b-n-tre-tr",
+        "tier": "TIER_1_GOVERNMENT",
+        "authority_weight": 1
+      },
+      {
+        "source_id": "SRC-TIER2-VL-046",
+        "title": "Lễ Xuân Đinh - Nét đẹp văn hóa truyền thống khuyến học tại Di tích Quốc gia Văn Thánh Miếu",
+        "url": "https://baovinhlong.com.vn/van-hoa-giai-tri/202603/le-xuan-dinh-net-dep-van-hoa-tai-di-tich-van-thanh-mieu-2023470/",
+        "author_or_institution": "Báo Vĩnh Long & Ban Quản lý Di tích Văn Thánh Miếu",
+        "target_notebook": "v-nh-long-v-nh-long-b-n-tre-tr",
+        "tier": "TIER_2_SCHOLARLY",
+        "authority_weight": 0.9
+      }
+    ],
+    "verifiedAt": "2026-09-13T16:30:00+07:00"
+  },
+  "le-gio-nguyen-dinh-chieu": {
+    "hours": "07:00 - 21:00",
+    "best_time": "Ngày mùng 3 tháng 7 âm lịch lúc 08:00 - 11:00 (lễ dâng hương kỷ niệm)",
+    "waterway_access": "Tuyến đò du lịch sông Ba Tri hoặc bến xe Ba Tri kết nối đường tỉnh 885 về Khu lưu niệm xã An Đức.",
+    "aeo_schema_type": "Festival",
+    "cultural_notes": "Kỷ niệm ngày mất của Danh nhân văn hóa thế giới UNESCO cụ Đồ Chiểu (1822-1888) tại Khu di tích quốc gia đặc biệt Mộ và Khu lưu niệm Nguyễn Đình Chiểu xã An Đức; sự kiện kết hợp hội thi kể thơ Lục Vân Tiên, thi đấu cờ tướng, viết thư pháp chữ Việt và bốc thuốc Nam miễn phí phục vụ nhân dân.",
+    "visual_narrative": "Quần thể công viên tượng đài cụ Đồ Chiểu rợp bóng cây xanh ngát; các em học sinh trong tà áo bà ba trắng say sưa ngâm nga trích đoạn Lục Vân Tiên cứu Kiều Nguyệt Nga; tiếng đàn bầu réo rắt bên mái đình thơ thanh thoát làm xao xuyến lòng lữ khách.",
+    "source_citations": [
+      {
+        "source_id": "SRC-TIER1-BT-010",
+        "title": "Hồ sơ Di tích Quốc gia Đặc biệt Mộ và Khu lưu niệm danh nhân Nguyễn Đình Chiểu",
+        "url": "http://dsvh.gov.vn/di-tich-quoc-gia-dac-biet-mo-va-khu-luu-niem-nguyen-dinh-chieu-3112",
+        "author_or_institution": "Cục Di sản Văn hóa & UBND tỉnh Bến Tre",
+        "target_notebook": "v-nh-long-v-nh-long-b-n-tre-tr",
+        "tier": "TIER_1_GOVERNMENT",
+        "authority_weight": 1
+      },
+      {
+        "source_id": "SRC-TIER1-BT-044",
+        "title": "Hồ sơ Di tích Quốc gia Đình Phú Lễ và Lễ hội Kỳ Yên truyền thống Ba Tri",
+        "url": "http://dsvh.gov.vn/di-tich-quoc-gia-dinh-phu-le-ben-tre-3092",
+        "author_or_institution": "Cục Di sản Văn hóa - Bộ Văn hóa, Thể thao và Du lịch",
+        "target_notebook": "v-nh-long-v-nh-long-b-n-tre-tr",
+        "tier": "TIER_1_GOVERNMENT",
+        "authority_weight": 1.0
+      }
+    ],
+    "verifiedAt": "2026-09-13T16:30:00+07:00"
+  },
+  "lang-ong-tien-quan-thong-che-dieu-bat-tuong-quan-nguyen-van-": {
+    "hours": "06:30 - 21:00",
+    "best_time": "Ngày mùng 3 và mùng 4 tháng Giêng âm lịch lúc 08:00 - 11:30",
+    "waterway_access": "Tàu du lịch cập bến chợ Trà Ôn trên ngã ba sông Hậu và sông Măng Thít, đi bộ 800m vào Lăng Ông.",
+    "aeo_schema_type": "Festival",
+    "cultural_notes": "Di sản văn hóa phi vật thể quốc gia tổ chức vào đầu xuân mùng 3-4 tháng Giêng âm lịch tại Lăng Ông Trà Ôn; tôn vinh Tiền quân Thống chế Điều bát Nguyễn Văn Tồn (Thạch Duồng, 1763-1820), danh tướng người Khmer có công mở cõi vùng Trà Ôn - Cầu Kè; lễ hội đặc sắc với sự hòa quyện điệu múa Sa dăm Khmer rộn ràng và nghệ thuật Hát Bội cung đình người Kinh.",
+    "visual_narrative": "Sân lăng Ông rực rỡ sắc cờ lọng ngũ sắc trong tiết trời xuân ấm áp; tiếng trống Sa dăm bập bùng hòa cùng điệu múa khỉ Hanuman uyển chuyển của các chàng trai Khmer; khói hương trầm tỏa thơm ngát trước lăng mộ cổ bằng đá ong rêu phong uy nghiêm.",
+    "source_citations": [
+      {
+        "source_id": "SRC-TIER2-VL-047",
+        "title": "Tổ chức Lễ hội Lăng Ông Thống chế Điều bát Nguyễn Văn Tồn tại Trà Ôn",
+        "url": "https://baovinhlong.com.vn/van-hoa-giai-tri/202601/to-chuc-dat-cay-uoc-nguyen-tai-lang-ong-4d140e2/",
+        "author_or_institution": "Báo Vĩnh Long & UBND huyện Trà Ôn",
+        "target_notebook": "v-nh-long-v-nh-long-b-n-tre-tr",
+        "tier": "TIER_2_SCHOLARLY",
+        "authority_weight": 0.9
+      },
+      {
+        "source_id": "SRC-TIER1-VL-001",
+        "title": "Hồ sơ Di tích Lịch sử - Văn hóa Văn Thánh Miếu Vĩnh Long và Tụy Văn Lâu",
+        "url": "http://dsvh.gov.vn/di-tich-lich-su-van-hoa-van-thanh-mieu-vinh-long-3024",
+        "author_or_institution": "Cục Di sản Văn hóa - Bộ Văn hóa, Thể thao và Du lịch",
+        "target_notebook": "v-nh-long-v-nh-long-b-n-tre-tr",
+        "tier": "TIER_1_GOVERNMENT",
+        "authority_weight": 1
+      }
+    ],
+    "verifiedAt": "2026-09-13T16:30:00+07:00"
+  },
+  "le-via-quoc-cong-tong-phuoc-hiep": {
+    "hours": "07:00 - 18:00",
+    "best_time": "Ngày mùng 2 và mùng 3 tháng 6 âm lịch lúc 08:00 - 10:30",
+    "waterway_access": "Bến đò sông Tiền phường Trường An hoặc phường Tân Ngãi thành phố Vĩnh Long.",
+    "aeo_schema_type": "Festival",
+    "cultural_notes": "Lễ tưởng niệm công đức Quốc công Tống Phước Hiệp, danh tướng thời các chúa Nguyễn có công chỉ huy dinh Long Hồ khai hoang lập ấp, giữ yên bờ cõi phương Nam giữa thế kỷ XVIII; ban tế tự dâng hương rượu tế cổ truyền, ôn lại truyền thống khai khẩn đất cù lao và bảo vệ chủ quyền biên cương lãnh thổ.",
+    "visual_narrative": "Ngôi đền miếu phụng thờ uy nghiêm dưới tán cây cổ thụ; các bô lão dâng văn tế ôn lại chiến công hiển hách năm xưa giữ yên vùng đất Long Hồ dinh; ánh mắt tự hào của các thế hệ trẻ Vĩnh Long đứng tề tựu trang nghiêm.",
+    "source_citations": [
+      {
+        "source_id": "SRC-TIER1-VL-001",
+        "title": "Hồ sơ Di tích Lịch sử - Văn hóa Văn Thánh Miếu Vĩnh Long và Tụy Văn Lâu",
+        "url": "http://dsvh.gov.vn/di-tich-lich-su-van-hoa-van-thanh-mieu-vinh-long-3024",
+        "author_or_institution": "Cục Di sản Văn hóa - Bộ Văn hóa, Thể thao và Du lịch",
+        "target_notebook": "v-nh-long-v-nh-long-b-n-tre-tr",
+        "tier": "TIER_1_GOVERNMENT",
+        "authority_weight": 1
+      },
+      {
+        "source_id": "SRC-TIER2-VL-045",
+        "title": "Rộn ràng Lễ hội Hạ Điền – Kỳ Yên tại các di tích đình làng Nam Bộ tỉnh Vĩnh Long",
+        "url": "https://baovinhlong.com.vn/van-hoa-giai-tri/202606/ron-rang-le-hoi-ha-dien-ky-yen-40a25b5/",
+        "author_or_institution": "Báo Vĩnh Long",
+        "target_notebook": "v-nh-long-v-nh-long-b-n-tre-tr",
+        "tier": "TIER_2_SCHOLARLY",
+        "authority_weight": 0.9
+      }
+    ],
+    "verifiedAt": "2026-09-13T16:30:00+07:00"
+  },
+  "le-vu-lan": {
+    "hours": "06:30 - 22:00",
+    "best_time": "Ngày 25 đến 28 tháng 7 âm lịch (cao điểm ngày 27-28 lúc 14:00 - 20:30)",
+    "waterway_access": "Bến đò Cầu Kè xuôi dòng sông Hậu rẽ vào kênh xáng Cầu Kè cập bến Chùa Ông Bổn.",
+    "aeo_schema_type": "Festival",
+    "cultural_notes": "Di sản văn hóa phi vật thể quốc gia Vu Lan Thắng Hội tại cụm di tích Chùa Ông Bổn (Vạn Niên Phong Cung, Cầu Kè); ngày hội đại đoàn kết giao thoa văn hóa tín ngưỡng Việt - Hoa - Khmer; nghi thức nghinh Ông Bổn du tuần khắp phum sóc, lễ cầu an cầu siêu cho bách tính, đài thí giàn và phát chẩn từ thiện hơn 20 tấn gạo cho người nghèo.",
+    "visual_narrative": "Đoàn rước kiệu Ông Bổn rực rỡ lọng gấm thêu rồng phượng đi giữa biển người hoan hỉ; tiếng chiêng lệnh và đội lân sư rồng uốn lượn ngoạn mục; đêm xuống, giàn thí thực rực sáng hàng ngàn ngọn nến lung linh trong không khí từ bi hỷ xả ấm áp tình người.",
+    "source_citations": [
+      {
+        "source_id": "SRC-TIER2-TV-043",
+        "title": "Vu Lan Thắng hội Cầu Kè - Di sản văn hóa phi vật thể kết tinh giao thoa văn hóa Việt - Hoa - Khmer",
+        "url": "https://baovinhlong.com.vn/van-hoa-giai-tri/202605/mot-ngay-o-thu-phu-dua-sap-cau-ke-5a63907/",
+        "author_or_institution": "Báo Vĩnh Long & Sở VHTTDL tỉnh Trà Vinh",
+        "target_notebook": "mekong-360-t-p-2",
+        "tier": "TIER_2_SCHOLARLY",
+        "authority_weight": 0.9
+      },
+      {
+        "source_id": "SRC-TIER1-TV-038",
+        "title": "Bảo tồn và phát huy bản sắc văn hóa truyền thống đồng bào dân tộc Khmer tỉnh Trà Vinh",
+        "url": "https://dantoc.vietnamtourism.gov.vn/bao-ton-phat-huy-ban-sac-van-hoa-dan-toc-khmer-tra-vinh/",
+        "author_or_institution": "Cục Du lịch Quốc gia Việt Nam - Bộ Văn hóa, Thể thao và Du lịch",
+        "target_notebook": "mekong-360-t-p-2",
+        "tier": "TIER_1_GOVERNMENT",
+        "authority_weight": 1.0
+      }
+    ],
+    "verifiedAt": "2026-09-13T16:30:00+07:00"
+  },
+  "le-cung-lau-ba-ram-thang-gieng": {
+    "hours": "06:30 - 20:00",
+    "best_time": "Rằm tháng Giêng âm lịch lúc 07:30 - 10:30",
+    "waterway_access": "Đò ngang trên sông Tiền hoặc rạch An Bình đưa khách cập bến Lầu Bà.",
+    "aeo_schema_type": "Festival",
+    "cultural_notes": "Lễ cúng Lầu Bà diễn ra vào dịp Tết Nguyên Tiêu rằm tháng Giêng âm lịch; tín ngưỡng thờ Nữ thần bảo hộ đất cù lao của người dân sông nước; bà con dâng cúng xôi chè, áo mão lụa điều và thả chim phóng sinh cầu cho gia đạo cả năm thuận buồm xuôi gió, tai qua nạn khỏi.",
+    "visual_narrative": "Lầu Bà uy nghiêm giữa bốn bề sóng nước sông Tiền rợp bóng cây bần; mâm quả tươi ngon cùng hoa cúc vàng rực rỡ đón khách hành hương tấp nập; những cánh chim bồ câu tung cánh bay vút lên bầu trời xuân xanh biếc tượng trưng cho khát vọng hòa bình ấm no.",
+    "source_citations": [
+      {
+        "source_id": "SRC-TIER1-VL-001",
+        "title": "Hồ sơ Di tích Lịch sử - Văn hóa Văn Thánh Miếu Vĩnh Long và Tụy Văn Lâu",
+        "url": "http://dsvh.gov.vn/di-tich-lich-su-van-hoa-van-thanh-mieu-vinh-long-3024",
+        "author_or_institution": "Cục Di sản Văn hóa - Bộ Văn hóa, Thể thao và Du lịch",
+        "target_notebook": "v-nh-long-v-nh-long-b-n-tre-tr",
+        "tier": "TIER_1_GOVERNMENT",
+        "authority_weight": 1
+      },
+      {
+        "source_id": "SRC-TIER2-VL-045",
+        "title": "Rộn ràng Lễ hội Hạ Điền – Kỳ Yên tại các di tích đình làng Nam Bộ tỉnh Vĩnh Long",
+        "url": "https://baovinhlong.com.vn/van-hoa-giai-tri/202606/ron-rang-le-hoi-ha-dien-ky-yen-40a25b5/",
+        "author_or_institution": "Báo Vĩnh Long",
+        "target_notebook": "v-nh-long-v-nh-long-b-n-tre-tr",
+        "tier": "TIER_2_SCHOLARLY",
+        "authority_weight": 0.9
+      }
+    ],
+    "verifiedAt": "2026-09-13T16:30:00+07:00"
+  },
+  "le-via-ba-co-hy": {
+    "hours": "07:00 - 18:30",
+    "best_time": "Rằm tháng 2 âm lịch lúc 08:00 - 11:00",
+    "waterway_access": "Xuồng tam bản luồn lách qua các con rạch miệt vườn đưa khách viếng miếu Bà.",
+    "aeo_schema_type": "Festival",
+    "cultural_notes": "Tín ngưỡng dân gian thờ Bà Cố Hỷ (vị nữ thần bảo hộ xóm ấp và nghề nông miệt vườn); lễ cúng được các bà, các mẹ trong xóm tổ chức chu đáo với bánh ít trần, bánh lá dừa và mâm ngũ quả; thể hiện lòng biết ơn đất đai màu mỡ đã chở che cư dân khai hoang qua hơn 200 năm.",
+    "visual_narrative": "Khói nhang trầm mặc bên am thờ cổ kính rợp bóng cây trứng cá; các mẹ già tóc bạc phơ chắp tay thành kính niệm Phật; không gian làng quê thanh bình vang vọng tiếng chim hót ríu rít đầu cành mận chín.",
+    "source_citations": [
+      {
+        "source_id": "SRC-TIER1-VL-001",
+        "title": "Hồ sơ Di tích Lịch sử - Văn hóa Văn Thánh Miếu Vĩnh Long và Tụy Văn Lâu",
+        "url": "http://dsvh.gov.vn/di-tich-lich-su-van-hoa-van-thanh-mieu-vinh-long-3024",
+        "author_or_institution": "Cục Di sản Văn hóa - Bộ Văn hóa, Thể thao và Du lịch",
+        "target_notebook": "v-nh-long-v-nh-long-b-n-tre-tr",
+        "tier": "TIER_1_GOVERNMENT",
+        "authority_weight": 1
+      },
+      {
+        "source_id": "SRC-TIER2-VL-045",
+        "title": "Rộn ràng Lễ hội Hạ Điền – Kỳ Yên tại các di tích đình làng Nam Bộ tỉnh Vĩnh Long",
+        "url": "https://baovinhlong.com.vn/van-hoa-giai-tri/202606/ron-rang-le-hoi-ha-dien-ky-yen-40a25b5/",
+        "author_or_institution": "Báo Vĩnh Long",
+        "target_notebook": "v-nh-long-v-nh-long-b-n-tre-tr",
+        "tier": "TIER_2_SCHOLARLY",
+        "authority_weight": 0.9
+      }
+    ],
+    "verifiedAt": "2026-09-13T16:30:00+07:00"
+  },
+  "festival-gach-gom-do-kinh-te-xanh-tinh-vinh-long-vinh-long": {
+    "hours": "08:00 - 22:30",
+    "best_time": "Buổi chiều tà lúc 16:30 - 20:30 khi các lò gạch được thắp sáng nghệ thuật",
+    "waterway_access": "Tàu du lịch đường thủy chạy dọc tuyến kênh Thầy Kay và sông Cổ Chiên, đưa khách chiêm ngưỡng toàn cảnh quần thể lò gạch đỏ nung từ mặt nước.",
+    "aeo_schema_type": "Festival",
+    "cultural_notes": "Festival quy mô cấp quốc gia tôn vinh Vương quốc gốm đỏ Mang Thít và đề án Di sản Đương đại Mang Thít; trưng bày hơn 1.000 tác phẩm gốm đất nung tinh xảo, tái hiện không gian nung gốm bằng củi trấu truyền thống của nghệ nhân trăm năm, kết hợp hội thảo phát triển kinh tế tuần hoàn và du lịch di sản xanh.",
+    "visual_narrative": "Khung cảnh ngoạn mục hàng trăm tòa tháp lò gạch hình chóp nhọn rực sáng lung linh bên dòng kênh Thầy Kay dưới ánh đèn nghệ thuật; làn khói trấu mỏng manh lượn lờ trong bóng hoàng hôn; mặt nước sông Cổ Chiên nhuộm đỏ sắc gạch nung tạo nên vẻ đẹp điện ảnh kỳ ảo khó quên.",
+    "source_citations": [
+      {
+        "source_id": "SRC-TIER1-VL-059",
+        "title": "Đề án Bảo tồn và Phát huy giá trị Di sản Đương đại Mang Thít thời kỳ 2021-2030 (QĐ số 1293/QĐ-UBND)",
+        "url": "https://vinhlong.gov.vn/van-ban-chi-dao/de-an-di-san-duong-dai-mang-thit",
+        "author_or_institution": "Ủy ban Nhân dân tỉnh Vĩnh Long",
+        "target_notebook": "ch-nh-s-ch-ph-p-lu-t-v-n-b-n-q",
+        "tier": "TIER_1_GOVERNMENT",
+        "authority_weight": 1.0
+      },
+      {
+        "source_id": "SRC-TIER2-VL-058",
+        "title": "Phát triển sản phẩm du lịch đặc thù từ Làng nghề Gạch gốm đỏ Mang Thít",
+        "url": "https://baovinhlong.com.vn/phong-su-ky-su/202604/phat-trien-san-pham-du-lich-dac-thu-tu-lang-nghe-gach-gom-7f54c8b/",
+        "author_or_institution": "Báo Vĩnh Long",
+        "target_notebook": "mekong-360-t-p-2",
+        "tier": "TIER_2_SCHOLARLY",
+        "authority_weight": 0.9
+      },
+      {
+        "source_id": "SRC-TIER2-VL-026",
+        "title": "Kỹ thuật nung gốm đỏ truyền thống Vĩnh Long: Thổ nhưỡng đất sét phù sa và ngọn lửa vỏ trấu",
+        "url": "https://vicas.org.vn/nghien-cuu/ky-thuat-nung-gom-do-vinh-long",
+        "author_or_institution": "Phân viện Nghiên cứu Văn hóa Nghệ thuật Quốc gia Việt Nam tại TP.HCM",
+        "target_notebook": "mekong-360-t-p-2",
+        "tier": "TIER_2_SCHOLARLY",
+        "authority_weight": 0.9
+      }
+    ],
+    "verifiedAt": "2026-09-13T16:30:00+07:00"
+  },
+  "festival-dua-ben-tre": {
+    "hours": "08:00 - 22:00",
+    "best_time": "Buổi tối lúc 18:30 - 21:30 (các chương trình biểu diễn nghệ thuật dừa)",
+    "waterway_access": "Du thuyền trên sông Bến Tre và sông Hàm Luông cập bến công viên tượng đài Đồng Khởi.",
+    "aeo_schema_type": "Festival",
+    "cultural_notes": "Lễ hội văn hóa tầm cỡ quốc tế định kỳ tổ chức nhằm tôn vinh cây dừa, người trồng dừa và các doanh nghiệp chế biến dừa xứ dừa; sự kiện quy tụ các không gian triển lãm 'Con đường dừa', hội thi ẩm thực 100 món ngon từ dừa, biểu diễn thời trang áo bà ba lụa dừa và giới thiệu các sản phẩm OCOP chế biến từ dừa xuất khẩu.",
+    "visual_narrative": "Đại lộ rợp bóng dừa rực rỡ sắc cờ hoa và thảm đèn nghệ thuật; hàng ngàn quả dừa xanh, dừa xiêm, dừa sáp được xếp thành hình rồng phượng khổng lồ; không gian thơm ngào ngạt mùi kẹo dừa nung mạch nha và nước cốt dừa béo ngậy mời gọi thực khách muôn phương.",
+    "source_citations": [
+      {
+        "source_id": "SRC-TIER1-BT-031",
+        "title": "Làng nghề Kẹo dừa Mỏ Cày - Tinh hoa chế biến dừa truyền thống xứ dừa Bến Tre",
+        "url": "https://socongthuong.bentre.gov.vn/lang-nghe-keo-dua-mo-cay",
+        "author_or_institution": "Sở Công Thương tỉnh Bến Tre",
+        "target_notebook": "mekong-360-t-p-2",
+        "tier": "TIER_1_GOVERNMENT",
+        "authority_weight": 1
+      },
+      {
+        "source_id": "SRC-TIER2-BT-067",
+        "title": "Kẹo dừa Bến Tre - Thương hiệu Bà Hai Tỏ và hành trình bảo vệ thương hiệu Việt trên trường quốc tế",
+        "url": "https://thvl.vn/keo-dua-ben-tre-ba-hai-to.html",
+        "author_or_institution": "Đài Phát thanh và Truyền hình Vĩnh Long (THVL)",
+        "target_notebook": "mekong-360-t-p-2",
+        "tier": "TIER_2_SCHOLARLY",
+        "authority_weight": 0.9
+      },
+      {
+        "source_id": "SRC-TIER2-BT-068",
+        "title": "Tinh hoa bếp Việt: Củ hũ dừa Bến Tre - Món ngon thanh đạm miền sông nước",
+        "url": "https://thvl.vn/tinh-hoa-bep-viet-cu-hu-dua-ben-tre-mon-ngon-mien-song-nuoc.html",
+        "author_or_institution": "Đài Phát thanh và Truyền hình Vĩnh Long (THVL)",
+        "target_notebook": "mekong-360-t-p-2",
+        "tier": "TIER_2_SCHOLARLY",
+        "authority_weight": 0.9
+      }
+    ],
+    "verifiedAt": "2026-09-13T16:30:00+07:00"
+  },
+  "festival-dua-sap-cau-ke-tra-vinh": {
+    "hours": "07:30 - 21:30",
+    "best_time": "Buổi sáng lúc 08:30 - 11:00 (hội thi dừa sáp ngon nhất) và chiều tối lúc 17:30 - 20:30",
+    "waterway_access": "Tàu du lịch sông Hậu rẽ vào kênh xáng Cầu Kè, cập bến Cầu Kè.",
+    "aeo_schema_type": "Festival",
+    "cultural_notes": "Sự kiện văn hóa du lịch chuyên đề tôn vinh nguồn gen đặc sản bản địa độc nhất vô nhị dừa sáp Cầu Kè (Makapuno); kết hợp khánh thành không gian Bảo tàng Dừa sáp; trưng bày các buồng dừa sáp trúng giải OCOP 5 sao, biểu diễn nghệ thuật chế biến sinh tố dừa sáp, dừa sáp sấy dẻo và hội thi món tráng miệng dân gian.",
+    "visual_narrative": "Mỗi trái dừa sáp bổ đôi để lộ lớp cơm dừa trắng ngần dày cộm xốp dẻo sánh như kem sữa; ống kính macro bắt cận cảnh thìa xúc từng miếng cơm dừa béo bùi ngập tràn mật hoa dừa thơm ngát; nụ cười rạng rỡ của nhà vườn Cầu Kè bên những quầy dừa sáp trĩu quả.",
+    "source_citations": [
+      {
+        "source_id": "SRC-TIER1-TV-036",
+        "title": "Quần thể Vườn Dừa sáp đặc sản Cầu Kè - Nguồn gen bản địa quý hiếm Trà Vinh",
+        "url": "https://snnptnt.travinh.gov.vn/cay-trong-dac-san/dua-sap-cau-ke",
+        "author_or_institution": "Sở Nông nghiệp và Phát triển Nông thôn tỉnh Trà Vinh",
+        "target_notebook": "mekong-360-t-p-2",
+        "tier": "TIER_1_GOVERNMENT",
+        "authority_weight": 1
+      },
+      {
+        "source_id": "SRC-TIER2-TV-070",
+        "title": "Chào buổi sáng: Bảo tàng Dừa Sáp Trà Vinh - Không gian văn hóa kết nối cộng đồng",
+        "url": "https://thvl.vn/chao-buoi-sang-04-01-2026-bao-tang-dua-sap-tra-vinh-khong-gian-van-hoa-ket-noi-cong-dong.html",
+        "author_or_institution": "Đài Phát thanh và Truyền hình Vĩnh Long (THVL)",
+        "target_notebook": "mekong-360-t-p-2",
+        "tier": "TIER_2_SCHOLARLY",
+        "authority_weight": 0.9
+      },
+      {
+        "source_id": "SRC-TIER2-TV-043",
+        "title": "Vu Lan Thắng hội Cầu Kè - Di sản văn hóa phi vật thể kết tinh giao thoa văn hóa Việt - Hoa - Khmer",
+        "url": "https://baovinhlong.com.vn/van-hoa-giai-tri/202605/mot-ngay-o-thu-phu-dua-sap-cau-ke-5a63907/",
+        "author_or_institution": "Báo Vĩnh Long & Sở VHTTDL tỉnh Trà Vinh",
+        "target_notebook": "mekong-360-t-p-2",
+        "tier": "TIER_2_SCHOLARLY",
+        "authority_weight": 0.9
+      }
+    ],
+    "verifiedAt": "2026-09-13T16:30:00+07:00"
+  },
+  "tet-doan-ngo": {
+    "hours": "06:00 - 21:30",
+    "best_time": "Trưa ngày mùng 5 tháng 5 âm lịch lúc 10:30 - 14:00 (mùa nước cạn cào ốc gạo và ăn bánh xèo)",
+    "waterway_access": "Xuồng máy đưa rước khách từ bến phà Cổ Chiên hoặc bến đò Chợ Lách cập bãi cồn cát Phú Đa và cù lao Tân Phong.",
+    "aeo_schema_type": "Festival",
+    "cultural_notes": "Tết Đoan Ngọ (ngày Tết diệt sâu bọ) mùng 5 tháng 5 âm lịch là ngày hội sông nước miệt vườn lớn nhất tại Chợ Lách và cồn Phú Đa; con nước ròng phơi bãi cát phù sa sông Cổ Chiên là lúc ốc gạo béo tròn ruột trắng tinh mẩy nhất; tập quán các gia đình rủ nhau cào ốc luộc sả ăn cùng bánh xèo hến và hoa quả đầu mùa.",
+    "visual_narrative": "Bến sông Cổ Chiên rộn rã tiếng cười nói của hàng trăm du khách lội nước cồn cát cào ốc; bên bờ rạch, những chảo gang bánh xèo xèo xèo bốc khói nghi ngút bên bếp củi than đước; màu vàng óng ả của bánh xèo nghệ điểm xuyết ruột ốc giòn sần sật cuốn rau rừng miệt cồn tươi rói.",
+    "source_citations": [
+      {
+        "source_id": "SRC-TIER2-BT-034",
+        "title": "Ẩm thực miệt vườn Cồn Phú Đa (Chợ Lách): Sinh thái ốc gạo sông Cổ Chiên và món Bánh xèo ốc gạo",
+        "url": "https://ctu.edu.vn/nghien-cuu-thuy-san/sinh-thai-oc-gao-con-phu-da-ben-tre",
+        "author_or_institution": "Khoa Nông nghiệp & Sinh học Ứng dụng - Đại học Cần Thơ",
+        "target_notebook": "mekong-360-t-p-2",
+        "tier": "TIER_2_SCHOLARLY",
+        "authority_weight": 0.9
+      },
+      {
+        "source_id": "SRC-TIER1-BT-033",
+        "title": "Vương quốc Cây giống và Hoa kiểng Cái Mơn - Chợ Lách: Trung tâm nhân giống sinh học Nam Bộ",
+        "url": "https://snnptnt.bentre.gov.vn/khuyen-nong/hoa-kieng-cai-mon-cho-lach",
+        "author_or_institution": "Sở Nông nghiệp và Phát triển Nông thôn tỉnh Bến Tre",
+        "target_notebook": "mekong-360-t-p-2",
+        "tier": "TIER_1_GOVERNMENT",
+        "authority_weight": 1
+      }
+    ],
+    "verifiedAt": "2026-09-13T16:30:00+07:00"
+  },
+  "hoi-cho-thuong-mai-cay-giong-hoa-kieng-cho-lach": {
+    "hours": "07:00 - 21:30",
+    "best_time": "Buổi sáng sớm từ 07:30 đến 10:30 khi sương mai còn đọng trên cành hoa",
+    "waterway_access": "Thuyền chở hàng và ca nô du lịch xuôi sông Tiền cập bến chợ Lách và làng hoa Cái Mơn.",
+    "aeo_schema_type": "ExhibitionEvent",
+    "cultural_notes": "Hội chợ triển lãm thường niên quy tụ hàng ngàn nghệ nhân sinh vật cảnh xứ dừa Cái Mơn - Chợ Lách; trưng bày hơn 15 triệu cây giống đầu dòng (sầu riêng Ri6, chôm chôm, bưởi da xanh) cùng các tác phẩm kiểng thú uốn tỉa hình 12 con giáp, bonsai mai vàng và cúc mâm xôi rực rỡ đón Tết.",
+    "visual_narrative": "Biển hoa bạt ngàn trải dài tít tắp ven bờ kênh Chợ Lách với đủ sắc vàng, đỏ, tím của cúc mâm xôi, mào gà, dạ yến thảo; các nghệ nhân chăm chút từng nhánh mai vàng thế trực, thế huyền; làn gió sông mát rượi thổi qua mang theo hương thơm ngát của ngàn hoa miệt vườn.",
+    "source_citations": [
+      {
+        "source_id": "SRC-TIER1-BT-033",
+        "title": "Vương quốc Cây giống và Hoa kiểng Cái Mơn - Chợ Lách: Trung tâm nhân giống sinh học Nam Bộ",
+        "url": "https://snnptnt.bentre.gov.vn/khuyen-nong/hoa-kieng-cai-mon-cho-lach",
+        "author_or_institution": "Sở Nông nghiệp và Phát triển Nông thôn tỉnh Bến Tre",
+        "target_notebook": "mekong-360-t-p-2",
+        "tier": "TIER_1_GOVERNMENT",
+        "authority_weight": 1
+      },
+      {
+        "source_id": "SRC-TIER2-BT-063",
+        "title": "Làng hoa Chợ Lách tất bật chuẩn bị cho thị trường hoa kiểng Tết Bính Ngọ",
+        "url": "https://thvl.vn/lang-hoa-cho-lach-tat-bat-chuan-bi-cho-thi-truong-tet-binh-ngo-2026.html",
+        "author_or_institution": "Đài Phát thanh và Truyền hình Vĩnh Long (THVL)",
+        "target_notebook": "mekong-360-t-p-2",
+        "tier": "TIER_2_SCHOLARLY",
+        "authority_weight": 0.9
+      }
+    ],
+    "verifiedAt": "2026-09-13T16:30:00+07:00"
+  },
+  "ngay-hoi-thanh-tra": {
+    "hours": "07:30 - 18:30",
+    "best_time": "Tháng Giêng đến tháng Ba âm lịch lúc 08:30 - 11:30 (mùa thanh trà chín vàng rực)",
+    "waterway_access": "Tàu du lịch từ bến phà Trà Ôn xuôi sông Hậu ghé xã Thiện Mỹ và Đông Thành.",
+    "aeo_schema_type": "Festival",
+    "cultural_notes": "Ngày hội nông sản miệt vườn tôn vinh trái thanh trà đặc sản hai dòng chua và ngọt ven sông Hậu; hội thi chế biến các món ẩm thực độc đáo từ thanh trà như mứt thanh trà dẻo, gà thả vườn hấp thanh trà, nước thanh trà ép đá thốt nốt giải nhiệt ngày hè oi bức.",
+    "visual_narrative": "Từng chùm thanh trà tròn vo màu vàng rực rỡ lúc lỉu trên cành lá xanh bóng; các thiếu nữ miệt vườn tay nâng niu giỏ quả chín mọng nước; giọt sương mai đọng trên vỏ quả lấp lánh dưới ánh nắng sớm phương Nam.",
+    "source_citations": [
+      {
+        "source_id": "SRC-TIER1-VL-065",
+        "title": "Trà Ôn Vĩnh Long: Điểm sáng phát triển du lịch sinh thái miệt vườn sông nước",
+        "url": "https://nongthon.vietnamtourism.gov.vn/vinh-long-tra-on-diem-sang-phat-trien-du-lich-sinh-thai-miet-vuon/",
+        "author_or_institution": "Cục Du lịch Quốc gia Việt Nam",
+        "target_notebook": "mekong-360-t-p-2",
+        "tier": "TIER_1_GOVERNMENT",
+        "authority_weight": 1.0
+      },
+      {
+        "source_id": "SRC-TIER1-VL-051",
+        "title": "Bảo tồn và phát triển Làng nghề truyền thống Bánh tráng Cù lao Mây xã Lục Sĩ Thành",
+        "url": "https://vinhlong.gov.vn/du-khach/lang-nghe-truyen-thong/banh-trang-cu-lao-may",
+        "author_or_institution": "Ủy ban Nhân dân tỉnh Vĩnh Long",
+        "target_notebook": "mekong-360-t-p-2",
+        "tier": "TIER_1_GOVERNMENT",
+        "authority_weight": 1.0
+      }
+    ],
+    "verifiedAt": "2026-09-13T16:30:00+07:00"
+  },
+  "lien-hoan-don-ca-tai-tu-nam-bo-tinh-ben-tre-ben-tre": {
+    "hours": "18:00 - 22:30",
+    "best_time": "Buổi tối lúc 19:00 - 22:00 trong không gian nhà rường miệt vườn",
+    "waterway_access": "Thuyền hoa du lịch trên sông Hàm Luông đưa đón tài tử và khán giả cập bến đình làng hoặc nhà cổ.",
+    "aeo_schema_type": "VisualArtsEvent",
+    "cultural_notes": "Liên hoan diễn xướng Di sản văn hóa phi vật thể đại diện của nhân loại Đờn ca tài tử Nam Bộ; quy tụ các câu lạc bộ tài tử tiêu biểu xứ Dừa Ba Tri - Giồng Trôm; so tài 20 bài bản tổ gồm 6 bài Bắc, 3 bài Nam, 4 bài Oán và 7 bài Ngự; hòa quyện tiếng đờn kìm sâu lắng, đờn tranh lảnh lót cùng giọng ca vọng cổ mượt mà ân tình.",
+    "visual_narrative": "Khung cảnh đêm trăng rằm soi sáng hiên nhà rường gỗ dừa cổ kính; ngọn đèn dầu măng-sông vàng dịu soi sáng khuôn mặt người nghệ nhân già nắn từng phím đờn kìm; tiếng đàn buông lả lướt quyện vào tiếng dừa xào xạc trong gió khuya sông nước.",
+    "source_citations": [
+      {
+        "source_id": "SRC-TIER2-VL-008",
+        "title": "Nghệ thuật Đờn ca tài tử Vĩnh Long: Từ Kinh lịch Quờn đến Di sản Văn hóa phi vật thể đại diện nhân loại",
+        "url": "https://ctu.edu.vn/nghien-cuu-khoa-hoc/don-ca-tai-tu-vinh-long-kinh-lich-quon",
+        "author_or_institution": "Khoa Văn hóa Nghệ thuật - Trường Đại học Cần Thơ",
+        "target_notebook": "v-nh-long-v-nh-long-b-n-tre-tr",
+        "tier": "TIER_2_SCHOLARLY",
+        "authority_weight": 0.9
+      },
+      {
+        "source_id": "SRC-TIER2-VL-062",
+        "title": "Đôi điều suy nghĩ về bảo tồn và phát huy nghệ thuật Đờn ca tài tử ở Vĩnh Long",
+        "url": "https://baovinhlong.com.vn/van-hoa-giai-tri/202312/doi-dieu-suy-nghi-ve-nghe-thuat-don-ca-tai-tu-o-vinh-long-3178360/",
+        "author_or_institution": "Báo Vĩnh Long",
+        "target_notebook": "v-nh-long-v-nh-long-b-n-tre-tr",
+        "tier": "TIER_2_SCHOLARLY",
+        "authority_weight": 0.9
+      }
+    ],
+    "verifiedAt": "2026-09-13T16:30:00+07:00"
+  },
+  "hoi-thi-don-ca-tai-tu-cai-luong-huyen-long-ho": {
+    "hours": "18:30 - 22:00",
+    "best_time": "Buổi tối lúc 19:00 - 21:30 các đêm chung kết",
+    "waterway_access": "Bến tàu du lịch cù lao An Bình rẽ vào các nhánh rạch Cái Cam và rạch Long Hồ.",
+    "aeo_schema_type": "VisualArtsEvent",
+    "cultural_notes": "Hội thi đờn ca tài tử truyền thống tại vùng đất Long Hồ, cái nôi khởi nguồn của phong trào canh tân ca ra bộ cuối thế kỷ XIX gắn liền tên tuổi quan Kinh lịch Nguyễn Văn Quờn và Tống Hữu Định; tôn vinh những giọng ca mộc mạc của người nông dân miệt vườn và ươm mầm các tài năng đờn ca cho các sân khấu cải lương chuyên nghiệp.",
+    "visual_narrative": "Sân khấu ngoài trời bên rặng nhãn cổ thụ cù lao; những chàng trai cô gái miệt vườn mộc mạc trong tà áo bà ba đen cất cao tiếng ca vọng cổ ngọt ngào; ánh mắt say mê của hàng trăm khán giả ngồi kín sân đình dõi theo từng nhịp song lang dứt khoát.",
+    "source_citations": [
+      {
+        "source_id": "SRC-TIER2-VL-008",
+        "title": "Nghệ thuật Đờn ca tài tử Vĩnh Long: Từ Kinh lịch Quờn đến Di sản Văn hóa phi vật thể đại diện nhân loại",
+        "url": "https://ctu.edu.vn/nghien-cuu-khoa-hoc/don-ca-tai-tu-vinh-long-kinh-lich-quon",
+        "author_or_institution": "Khoa Văn hóa Nghệ thuật - Trường Đại học Cần Thơ",
+        "target_notebook": "v-nh-long-v-nh-long-b-n-tre-tr",
+        "tier": "TIER_2_SCHOLARLY",
+        "authority_weight": 0.9
+      },
+      {
+        "source_id": "SRC-TIER2-VL-062",
+        "title": "Đôi điều suy nghĩ về bảo tồn và phát huy nghệ thuật Đờn ca tài tử ở Vĩnh Long",
+        "url": "https://baovinhlong.com.vn/van-hoa-giai-tri/202312/doi-dieu-suy-nghi-ve-nghe-thuat-don-ca-tai-tu-o-vinh-long-3178360/",
+        "author_or_institution": "Báo Vĩnh Long",
+        "target_notebook": "v-nh-long-v-nh-long-b-n-tre-tr",
+        "tier": "TIER_2_SCHOLARLY",
+        "authority_weight": 0.9
+      }
+    ],
+    "verifiedAt": "2026-09-13T16:30:00+07:00"
+  },
+  "hoi-thi-giong-ca-cai-luong-ut-tra-on": {
+    "hours": "19:00 - 22:30",
+    "best_time": "Buổi tối lúc 19:30 - 22:00 các đêm tranh tài giải Vàng Út Trà Ôn",
+    "waterway_access": "Bến đò Trà Ôn trên ngã ba sông Hậu, kết nối đường bộ thuận tiện.",
+    "aeo_schema_type": "VisualArtsEvent",
+    "cultural_notes": "Hội thi nghệ thuật truyền thống tưởng nhớ Đệ nhất danh ca vọng cổ NSND Út Trà Ôn (1919-2001), người con ưu tú của quê hương Trà Ôn; người sáng lập trường phái ca vọng cổ ngân dài bất hủ với bài ca 'Tình anh bán chiếu' năm 1960; hội thi thu hút các thí sinh yêu nghệ thuật cải lương từ khắp các tỉnh đồng bằng sông Cửu Long.",
+    "visual_narrative": "Tấm phông sân khấu lớn khắc họa hình ảnh NSND Út Trà Ôn ôm cây đờn ghi-ta phím lõm thân thương; thí sinh trẻ cất lên câu ca vọng cổ ngọt lịm 'Hò ơ... chiếu Cà Hôn dệt bằng lác đỏ...' khiến cả hội trường lặng đi vì xúc động bồi hồi.",
+    "source_citations": [
+      {
+        "source_id": "SRC-TIER2-VL-008",
+        "title": "Nghệ thuật Đờn ca tài tử Vĩnh Long: Từ Kinh lịch Quờn đến Di sản Văn hóa phi vật thể đại diện nhân loại",
+        "url": "https://ctu.edu.vn/nghien-cuu-khoa-hoc/don-ca-tai-tu-vinh-long-kinh-lich-quon",
+        "author_or_institution": "Khoa Văn hóa Nghệ thuật - Trường Đại học Cần Thơ",
+        "target_notebook": "v-nh-long-v-nh-long-b-n-tre-tr",
+        "tier": "TIER_2_SCHOLARLY",
+        "authority_weight": 0.9
+      },
+      {
+        "source_id": "SRC-TIER1-VL-028",
+        "title": "Nghề dệt chiếu Cà Hôn (Trà Côn, Trà Ôn) - Kỹ nghệ dệt lác thủ công của người Kinh và Khmer",
+        "url": "https://vinhlong.gov.vn/du-khach/lang-nghe/det-chieu-ca-hon",
+        "author_or_institution": "Sở Văn hóa, Thể thao và Du lịch tỉnh Vĩnh Long",
+        "target_notebook": "mekong-360-t-p-2",
+        "tier": "TIER_1_GOVERNMENT",
+        "authority_weight": 1
+      },
+      {
+        "source_id": "SRC-TIER2-VL-069",
+        "title": "Nghề dệt chiếu Cà Hôn và hành trình bảo tồn kỹ nghệ dệt lác thủ công truyền thống",
+        "url": "https://baovinhlong.com.vn/van-hoa-giai-tri/202605/khai-mo-tiem-nang-phat-trien-cong-nghiep-van-hoa-ky-3-lang-nghe-thuc-giac-ben-nhung-dong-song-6526ce6/",
+        "author_or_institution": "Báo Vĩnh Long",
+        "target_notebook": "mekong-360-t-p-2",
+        "tier": "TIER_2_SCHOLARLY",
+        "authority_weight": 0.9
+      }
+    ],
+    "verifiedAt": "2026-09-13T16:30:00+07:00"
+  },
+  "ngay-hoi-banh-dan-gian-nam-bo-ket-hop-hoi-cho-ocop-vinh-long-vinh-long": {
+    "hours": "07:30 - 22:00",
+    "best_time": "Buổi sáng lúc 08:30 - 11:00 và chiều tối lúc 17:00 - 21:00",
+    "waterway_access": "Cập bến tàu du lịch công viên sông Tiền (phường 1 thành phố Vĩnh Long).",
+    "aeo_schema_type": "FoodEvent",
+    "cultural_notes": "Ngày hội tôn vinh tinh hoa ẩm thực bánh lá và sản phẩm OCOP tỉnh Vĩnh Long; quy tụ hơn 100 nghệ nhân trình diễn trực tiếp nghệ thuật làm bánh tét ba nhân, bánh tráng nem cù lao Mây phơi sương, bánh ít trần nhân tôm thịt, bánh bò thốt nốt rễ tre xốp dẻo và bánh da lợn lá dứa thơm lừng.",
+    "visual_narrative": "Mâm bánh ngũ sắc bốc khói nghi ngút trên các chõ hấp lá chuối tươi; bàn tay khéo léo của nữ nghệ nhân thoăn thoắt gói chiếc bánh tét vuông vức bằng dây lác dẻo; đông đảo thực khách hào hứng thưởng thức từng miếng bánh ngọt bùi thơm hương nước cốt dừa nạo.",
+    "source_citations": [
+      {
+        "source_id": "SRC-TIER1-VL-051",
+        "title": "Bảo tồn và phát triển Làng nghề truyền thống Bánh tráng Cù lao Mây xã Lục Sĩ Thành",
+        "url": "https://vinhlong.gov.vn/du-khach/lang-nghe-truyen-thong/banh-trang-cu-lao-may",
+        "author_or_institution": "Ủy ban Nhân dân tỉnh Vĩnh Long",
+        "target_notebook": "mekong-360-t-p-2",
+        "tier": "TIER_1_GOVERNMENT",
+        "authority_weight": 1.0
+      },
+      {
+        "source_id": "SRC-TIER1-VL-029",
+        "title": "Làng nghề Bánh tráng nem Cù lao Mây (Lục Sĩ Thành, Trà Ôn) - Đặc sản tiến vua sông Hậu",
+        "url": "https://traon.vinhlong.gov.vn/lang-nghe-banh-trang-nem-cu-lao-may",
+        "author_or_institution": "Cổng thông tin điện tử huyện Trà Ôn - Vĩnh Long",
+        "target_notebook": "mekong-360-t-p-2",
+        "tier": "TIER_1_GOVERNMENT",
+        "authority_weight": 1
+      },
+      {
+        "source_id": "SRC-TIER1-VL-027",
+        "title": "Làng nghề Tàu hủ ky Mỹ Hòa (Thị xã Bình Minh) - Di sản Văn hóa Phi vật thể Quốc gia",
+        "url": "http://dsvh.gov.vn/di-san-lang-nghe-tau-hu-ky-my-hoa-binh-minh-3012",
+        "author_or_institution": "Cục Di sản Văn hóa - Bộ Văn hóa, Thể thao và Du lịch",
+        "target_notebook": "mekong-360-t-p-2",
+        "tier": "TIER_1_GOVERNMENT",
+        "authority_weight": 1
+      }
+    ],
+    "verifiedAt": "2026-09-13T16:30:00+07:00"
+  },
+  "tuan-le-van-hoa-am-thuc-an-hoi-2026": {
+    "hours": "08:00 - 22:00",
+    "best_time": "Buổi chiều tối lúc 17:30 - 21:30",
+    "waterway_access": "Bến du thuyền sông Bến Tre (phường An Hội) kết nối du lịch đường thủy từ TP.HCM về Bến Tre.",
+    "aeo_schema_type": "FoodEvent",
+    "cultural_notes": "Tuần lễ văn hóa ẩm thực và bánh dân gian xứ dừa tại phường An Hội; giới thiệu chuỗi giá trị món ngon từ dừa như gỏi củ hũ dừa tôm đất, tép rang dừa béo ngậy, cơm nấu trái dừa xiêm cùng các dòng kẹo dừa Mỏ Cày OCOP 4 sao và 5 sao.",
+    "visual_narrative": "Dọc bờ kè sông Bến Tre rực rỡ sắc cờ hoa và ánh đèn lồng lấp lánh; mùi nước cốt dừa ngào đường phèn thơm ngát tỏa khắp không gian; tiếng cười nói vui tươi của du khách thưởng thức đĩa bánh chuối nướng nước cốt dừa nóng hổi trong gió sông mát lành.",
+    "source_citations": [
+      {
+        "source_id": "SRC-TIER1-BT-031",
+        "title": "Làng nghề Kẹo dừa Mỏ Cày - Tinh hoa chế biến dừa truyền thống xứ dừa Bến Tre",
+        "url": "https://socongthuong.bentre.gov.vn/lang-nghe-keo-dua-mo-cay",
+        "author_or_institution": "Sở Công Thương tỉnh Bến Tre",
+        "target_notebook": "mekong-360-t-p-2",
+        "tier": "TIER_1_GOVERNMENT",
+        "authority_weight": 1
+      },
+      {
+        "source_id": "SRC-TIER2-BT-068",
+        "title": "Tinh hoa bếp Việt: Củ hũ dừa Bến Tre - Món ngon thanh đạm miền sông nước",
+        "url": "https://thvl.vn/tinh-hoa-bep-viet-cu-hu-dua-ben-tre-mon-ngon-mien-song-nuoc.html",
+        "author_or_institution": "Đài Phát thanh và Truyền hình Vĩnh Long (THVL)",
+        "target_notebook": "mekong-360-t-p-2",
+        "tier": "TIER_2_SCHOLARLY",
+        "authority_weight": 0.9
+      },
+      {
+        "source_id": "SRC-TIER2-BT-067",
+        "title": "Kẹo dừa Bến Tre - Thương hiệu Bà Hai Tỏ và hành trình bảo vệ thương hiệu Việt trên trường quốc tế",
+        "url": "https://thvl.vn/keo-dua-ben-tre-ba-hai-to.html",
+        "author_or_institution": "Đài Phát thanh và Truyền hình Vĩnh Long (THVL)",
+        "target_notebook": "mekong-360-t-p-2",
+        "tier": "TIER_2_SCHOLARLY",
+        "authority_weight": 0.9
+      }
+    ],
+    "verifiedAt": "2026-09-13T16:30:00+07:00"
+  },
+  "cho-hoa-tet": {
+    "hours": "06:00 - 23:00",
+    "best_time": "Từ ngày 25 đến 29 tháng Chạp âm lịch lúc 16:30 - 21:30 (trên bến dưới thuyền đón Tết)",
+    "waterway_access": "Tàu bè từ Chợ Lách, Sa Đéc xuôi sông Cổ Chiên cập kín bến kè sông Tiền và rạch Cầu Lầu.",
+    "aeo_schema_type": "ExhibitionEvent",
+    "cultural_notes": "Chợ hoa Tết cổ truyền tái hiện cảnh quan trên bến dưới thuyền đặc trưng của văn hóa sông nước Nam Bộ; ghe bầu chở đầy mai vàng, cúc mâm xôi, tắc kiểng từ Chợ Lách xuôi dòng cập bến thành phố Vĩnh Long; người dân tấp nập đi chợ hoa ngắm sắc xuân, chọn chậu mai đón Tết và cầu mong năm mới an khang thịnh vượng.",
+    "visual_narrative": "Bến sông ngập tràn sắc vàng rực của ngàn chậu mai và cúc mâm xôi trải dài tít tắp; hàng trăm ghe thuyền chở hoa đậu san sát nhấp nhô theo nhịp sóng phù sa; ánh hoàng hôn buông xuống dát vàng mặt nước tạo nên khung cảnh mùa xuân rộn rã ấm áp tình người.",
+    "source_citations": [
+      {
+        "source_id": "SRC-TIER1-BT-033",
+        "title": "Vương quốc Cây giống và Hoa kiểng Cái Mơn - Chợ Lách: Trung tâm nhân giống sinh học Nam Bộ",
+        "url": "https://snnptnt.bentre.gov.vn/khuyen-nong/hoa-kieng-cai-mon-cho-lach",
+        "author_or_institution": "Sở Nông nghiệp và Phát triển Nông thôn tỉnh Bến Tre",
+        "target_notebook": "mekong-360-t-p-2",
+        "tier": "TIER_1_GOVERNMENT",
+        "authority_weight": 1
+      },
+      {
+        "source_id": "SRC-TIER2-BT-063",
+        "title": "Làng hoa Chợ Lách tất bật chuẩn bị cho thị trường hoa kiểng Tết Bính Ngọ",
+        "url": "https://thvl.vn/lang-hoa-cho-lach-tat-bat-chuan-bi-cho-thi-truong-tet-binh-ngo-2026.html",
+        "author_or_institution": "Đài Phát thanh và Truyền hình Vĩnh Long (THVL)",
+        "target_notebook": "mekong-360-t-p-2",
+        "tier": "TIER_2_SCHOLARLY",
+        "authority_weight": 0.9
+      },
+      {
+        "source_id": "SRC-TIER1-VL-001",
+        "title": "Hồ sơ Di tích Lịch sử - Văn hóa Văn Thánh Miếu Vĩnh Long và Tụy Văn Lâu",
+        "url": "http://dsvh.gov.vn/di-tich-lich-su-van-hoa-van-thanh-mieu-vinh-long-3024",
+        "author_or_institution": "Cục Di sản Văn hóa - Bộ Văn hóa, Thể thao và Du lịch",
+        "target_notebook": "v-nh-long-v-nh-long-b-n-tre-tr",
+        "tier": "TIER_1_GOVERNMENT",
+        "authority_weight": 1
+      }
+    ],
+    "verifiedAt": "2026-09-13T16:30:00+07:00"
+  }
+}
