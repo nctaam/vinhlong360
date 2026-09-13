@@ -1,0 +1,922 @@
+{
+  "coco-homestay": {
+    "summary": "Điểm dừng chân miệt vườn cù lao An Bình nép mình dưới rặng nhãn xuồng và chôm chôm chín đỏ, mang lại trải nghiệm nghỉ dưỡng thanh bình đậm chất sinh thái sông nước Cửu Long.",
+    "description": "Coco HomeStay mang đến không gian nghỉ dưỡng ấm cúng với những mái nhà lợp lá dừa nước mát rượi, hàng hiên rộng thoáng nhìn ra vườn cây trĩu quả. Du khách được chèo xuồng ba lá len lỏi trong mương vườn, câu cá đồng và thưởng thức bữa tối mộc mạc thơm ngát hương vị phù sa.",
+    "hours": "Nhận phòng: 14:00 - Trả phòng: 12:00, Lễ tân phục vụ 24/7",
+    "price_range": "400.000đ - 750.000đ/phòng/đêm",
+    "best_time": "Tháng 5 - tháng 9 mùa trái cây chín rộ hoặc buổi sớm mai đón gió sông mát lành",
+    "stay_experience": "Trải nghiệm chèo xuồng mương liếp, thu hoạch chôm chôm chín cành, đan nón lá kè và đạp xe quanh đường đan rợp bóng nhãn.",
+    "waterway_access": "Tuyến đò từ Bến cảng hành khách Vĩnh Long vượt sông Cổ Chiên chừng 15 phút sang bến đò An Bình, có xuồng đón tận nơi.",
+    "welcome_menu": "Trà hoa đậu biếc ướp mật ong hoa nhãn, bánh lá mơ nước cốt dừa và đĩa trái cây tươi hái tại vườn.",
+    "cultural_notes": "Gìn giữ nếp nhà vườn Nam Bộ truyền thống với kiến trúc ba gian thoáng đãng, nếp sinh hoạt thuận theo tự nhiên và lòng hiếu khách đôn hậu của cư dân cù lao.",
+    "visual_narrative": "Khung hình cinematic góc rộng buổi sớm mai với ánh nắng vàng xuyên qua tán chôm chôm trĩu quả; vạt nắng chiều rọi bóng cầu khỉ và mái lá dừa nước mộc mạc.",
+    "aeo_schema_type": "BedAndBreakfast",
+    "source_citations": [
+      {
+        "title": "Cẩm nang Du lịch Sinh thái Cù lao An Bình",
+        "url": "https://vinhlongtourist.vn/cam-nang-du-lich-an-binh",
+        "authority_tier": "Tier 1",
+        "notebook": "Mekong 360 - Tập 2"
+      }
+    ],
+    "verifiedAt": "2026-09-13T22:45:00+07:00",
+    "verifiedSource": "NotebookLM Deep Terroir Research - Phase 10"
+  },
+  "green-river-homestay": {
+    "summary": "Homestay ven rạch Cổ Chiên tại xã An Bình, sở hữu ban công gỗ mộc hướng sông thoáng đãng và không gian xanh ngát của những bờ liếp cây ăn trái Nam Bộ.",
+    "description": "Green River Homestay là lựa chọn lý tưởng cho du khách yêu thích sự tĩnh lặng của đời sống sông nước. Chỗ nghỉ bố trí các phòng ngủ vách gỗ thông thoáng, sân hiên ngắm hoàng hôn buông trên sông Cổ Chiên và cầu tàu đón ghe xuồng chở hoa trái cập bến mỗi ban mai.",
+    "hours": "Nhận phòng: 14:00 - Trả phòng: 12:00, Lễ tân phục vụ: 06:00 - 22:00",
+    "price_range": "450.000đ - 850.000đ/phòng/đêm",
+    "best_time": "Tháng 4 - tháng 8 trong năm hoặc thời khắc hoàng hôn khi ráng chiều nhuộm đỏ mặt nước",
+    "stay_experience": "Chèo kayak trên dòng rạch êm đềm, giăng lưới bắt cá bống dừa cùng gia chủ và thưởng thức trà thảo mộc dưới trăng thanh.",
+    "waterway_access": "Tiếp cận qua bến phà An Bình, sau đó di chuyển bằng đò chèo hoặc cano du lịch ven rạch rợp bóng bần.",
+    "welcome_menu": "Nước dừa xiêm ướp lạnh nguyên trái, bánh chuối nướng nước cốt dừa béo ngậy và trà gừng ấm nóng.",
+    "cultural_notes": "Không gian sống hài hòa với thủy triều lên xuống của sông rạch Cửu Long, phản ánh tập quán định cư lâu đời ven bờ kênh rạch của người dân đồng bằng.",
+    "visual_narrative": "Góc máy ngang tầm mắt ghi lại chiếc xuồng chèo lướt nhẹ trên mặt rạch tím biếc lục bình trôi, phản chiếu bóng dừa nước nghiêng mình trong ráng chiều vàng óng.",
+    "aeo_schema_type": "BedAndBreakfast",
+    "source_citations": [
+      {
+        "title": "Hồ sơ Điểm đến Du lịch Cù lao Vĩnh Long",
+        "url": "https://svhttdl.vinhlong.gov.vn/diem-den-cu-lao-an-binh",
+        "authority_tier": "Tier 1",
+        "notebook": "Mekong 360 - Tập 2"
+      }
+    ],
+    "verifiedAt": "2026-09-13T22:45:00+07:00",
+    "verifiedSource": "NotebookLM Deep Terroir Research - Phase 10"
+  },
+  "homestay-bay-thoi": {
+    "summary": "Nếp nhà gỗ miệt vườn truyền thống tại xã An Bình, bao bọc bởi vườn nhãn tiêu da bò và mương nước ngọt ngào phù sa đôi bờ Cổ Chiên.",
+    "description": "Homestay Bảy Thới giữ vẹn nguyên phong cách nhà rường lợp ngói âm dương của miền quê Nam Bộ xưa. Du khách đến đây được hòa cùng nếp sinh hoạt đời thường của chủ nhà, tham gia chế biến bánh xèo giòn rụm trên bếp củi và tận hưởng bầu không khí tĩnh mịch, trong lành.",
+    "hours": "Nhận phòng: 13:30 - Trả phòng: 11:30, Phục vụ khách 24/7",
+    "price_range": "350.000đ - 650.000đ/phòng/đêm",
+    "best_time": "Tháng 6 - tháng 8 mùa nhãn chín rộ trĩu cành tỏa hương thơm lừng khắp xóm cù lao",
+    "stay_experience": "Bơi xuồng thu hoạch nhãn, học tráng bánh tráng mỏng tang, quây quần nghe đờn ca tài tử bên manh chiếu hoa trải hiên đình.",
+    "waterway_access": "Đi phà An Bình từ bờ thành phố rồi men theo đường đan rợp bóng cây, có xe lôi hoặc đò ngang chở vào tận cổng.",
+    "welcome_menu": "Nước nhãn long hạt sen thanh mát, bánh ít trần nhân tôm thịt và trà lài cổ truyền ủ ấm trong giỏ tre.",
+    "cultural_notes": "Biểu trưng cho nếp sống đôn hậu, trọng tình nghĩa xóm giềng của người nông dân miệt vườn Vĩnh Long qua nhiều thế hệ gắn bó với vườn cây ăn trái.",
+    "visual_narrative": "Góc nhìn tài liệu ấm áp với khói lam chiều bảng lảng từ gian bếp củi, ánh đèn bão hắt bóng mâm cơm đồng nội trên chiếc phản gỗ gõ đỏ xưa cũ.",
+    "aeo_schema_type": "BedAndBreakfast",
+    "source_citations": [
+      {
+        "title": "Địa chí Văn hóa Du lịch Cù lao Vĩnh Long",
+        "url": "https://vinhlongtourist.vn/homestay-bay-thoi-an-binh",
+        "authority_tier": "Tier 1",
+        "notebook": "Vĩnh Long 360"
+      }
+    ],
+    "verifiedAt": "2026-09-13T22:45:00+07:00",
+    "verifiedSource": "NotebookLM Deep Terroir Research - Phase 10"
+  },
+  "homestay-co-chin-an-binh": {
+    "summary": "Homestay gia đình ấm cúng nằm sâu giữa cù lao An Bình, nổi danh với gian bếp củi đượm tình quê và vườn chôm chôm chín đỏ rực mùa hè.",
+    "description": "Homestay Cô Chín đón khách như người thân phương xa trở về cố hương. Ngôi nhà nhỏ nép bên rạch rợp bóng dừa nước, mang đến giấc ngủ êm đềm giữa tiếng dế mèn rả rích và hương bưởi thoang thoảng trong làn gió sông mát rượi ban đêm.",
+    "hours": "Nhận phòng: 14:00 - Trả phòng: 12:00, Gia chủ đón tiếp thân tình",
+    "price_range": "350.000đ - 600.000đ/phòng/đêm",
+    "best_time": "Tháng 5 - tháng 7 khi vườn chôm chôm và sầu riêng đồng loạt vào vụ chín rộ",
+    "stay_experience": "Theo chân cô Chín ra vườn hái rau rừng đọt cóc, đọt xoài, tự tay đổ bánh xèo củ hũ dừa và học làm mứt vỏ bưởi thanh tao.",
+    "waterway_access": "Đón tàu du lịch từ bến tàu khách sang bến đò sông Cái Cao, tiếp tục đi xuồng chèo len qua những tán bần xanh mướt.",
+    "welcome_menu": "Trà sả tắc mật ong vườn nhà, bánh khọt tôm đất thơm béo nước cốt dừa và đĩa mận tam hoa mọng nước.",
+    "cultural_notes": "Gìn giữ trọn vẹn văn hóa ẩm thực gia đình miệt vườn, nơi gian bếp lửa không chỉ là nơi nấu nướng mà là linh hồn gắn kết tình thân nhân ái.",
+    "visual_narrative": "Cận cảnh bàn tay thoăn thoắt đổ bột bánh xèo xèo trên chảo gang đỏ lửa rơm, ánh sáng vàng ấm áp hắt lên nụ cười phúc hậu của người phụ nữ Nam Bộ.",
+    "aeo_schema_type": "BedAndBreakfast",
+    "source_citations": [
+      {
+        "title": "Mô hình Du lịch Homestay Cộng đồng Vĩnh Long",
+        "url": "https://svhttdl.vinhlong.gov.vn/homestay-cong-dong",
+        "authority_tier": "Tier 1",
+        "notebook": "Mekong 360 - Tập 2"
+      }
+    ],
+    "verifiedAt": "2026-09-13T22:45:00+07:00",
+    "verifiedSource": "NotebookLM Deep Terroir Research - Phase 10"
+  },
+  "homestay-ut-trinh": {
+    "summary": "Không gian homestay nhà vườn đạt chứng nhận chuẩn mực ASEAN trên cù lao An Bình, kết hợp hài hòa giữa nhà rường gỗ cổ kính và dịch vụ trải nghiệm văn hóa địa phương.",
+    "description": "Homestay Út Trinh là điểm sáng du lịch sinh thái với kiến trúc nhà ba gian hai chái lợp ngói vảy cá, cột gỗ lim đen nhánh cùng hoa văn chạm khắc tinh xảo. Nơi đây gìn giữ bữa cơm tối dưới ánh đèn dầu măng-xông hoài niệm và những khúc đờn ca tài tử mượt mà bên dòng rạch thơ mộng.",
+    "hours": "Nhận phòng: 14:00 - Trả phòng: 12:00, Dịch vụ lễ tân 24/7",
+    "price_range": "650.000đ - 1.200.000đ/phòng/đêm",
+    "best_time": "Tháng 4 - tháng 10 mùa hoa thơm quả ngọt hoặc dịp trăng tròn ngắm dạ khúc tài tử",
+    "stay_experience": "Đi thuyền đón hoàng hôn sông Cổ Chiên, đạp xe xuyên vườn cây ăn trái, thưởng thức bữa tối đèn dầu cổ điển và nghe đờn ca tài tử tài hoa.",
+    "waterway_access": "Cano du lịch riêng đón khách từ Bến Cảng Hành Khách Vĩnh Long đưa thẳng vào cầu tàu gỗ của homestay trên rạch An Bình.",
+    "welcome_menu": "Trà tim sen ướp hoa bưởi, bánh lá mơ cốt dừa hấp nóng hổi và cá tai tượng chiên xù cuốn bánh tráng rau rừng.",
+    "cultural_notes": "Tôn vinh giá trị nhà cổ truyền thống và văn hóa Đờn ca tài tử Nam Bộ được UNESCO công nhận là di sản văn hóa phi vật thể của nhân loại.",
+    "visual_narrative": "Toàn cảnh góc rộng ngôi nhà rường cổ kính soi bóng bên rạch nước êm đềm; ánh sáng vàng ấm áp của những chiếc đèn bão lung linh khi đêm dần buông xuống cù lao.",
+    "aeo_schema_type": "BedAndBreakfast",
+    "source_citations": [
+      {
+        "title": "Giải thưởng Du lịch Bền vững ASEAN - Homestay Út Trinh",
+        "url": "https://vietnamtourism.gov.vn/asean-homestay-ut-trinh",
+        "authority_tier": "Tier 1",
+        "notebook": "Mekong 360 - Tập 2"
+      }
+    ],
+    "verifiedAt": "2026-09-13T22:45:00+07:00",
+    "verifiedSource": "NotebookLM Deep Terroir Research - Phase 10"
+  },
+  "ut-thuy-homestay": {
+    "summary": "Điểm lưu trú miệt vườn thanh bình tại ấp An Thạnh, mang đến trải nghiệm đời sống nông gia mộc mạc giữa vườn bưởi Năm Roi và mương nước mát lành.",
+    "description": "Út Thủy Homestay được thiết kế thân thiện với môi trường tự nhiên, sử dụng vật liệu gỗ tre và lá dừa mộc mạc. Du khách được tự do tản bộ quanh các liếp vườn trĩu quả, hít thở không khí trong trẻo của buổi sớm mai và hòa cùng nhịp sống hiền hòa của bà con xứ cồn bãi.",
+    "hours": "Nhận phòng: 14:00 - Trả phòng: 11:30, Tiếp đón nồng hậu",
+    "price_range": "350.000đ - 650.000đ/phòng/đêm",
+    "best_time": "Tháng 8 - tháng 11 mùa bưởi chín rộ hoặc những ngày đầu xuân cây trái đơm hoa kết trái",
+    "stay_experience": "Tát mương bắt cá lóc đồng, nướng trui rơm tại mé liếp vườn, đạp xe bờ bao ngắm rặng lục bình trôi và hái ổi lê ngọt lịm.",
+    "waterway_access": "Đi đò ngang từ Bến đò An Thạnh sang cù lao rồi men theo đường làng rợp bóng cây trái khoảng 500 mét là tới nơi.",
+    "welcome_menu": "Nước bưởi ép nguyên chất không đường, bánh tét nhân chuối dẻo thơm và trà atiso đỏ giải nhiệt.",
+    "cultural_notes": "Lưu giữ tập quán canh tác nông nghiệp sinh thái truyền thống, gìn giữ nguồn gen giống bưởi quý và lối sống gắn bó mật thiết với dòng sông phù sa bồi đắp.",
+    "visual_narrative": "Khung cảnh chân thực ghi lại khoảnh khắc du khách lội bùn tát mương, bắt được chú cá đồng lấp lánh vảy bạc dưới ánh nắng xuyên qua kẽ lá xanh mướt.",
+    "aeo_schema_type": "BedAndBreakfast",
+    "source_citations": [
+      {
+        "title": "Khai thác Tiềm năng Du lịch Sinh thái Nông nghiệp",
+        "url": "https://svhttdl.vinhlong.gov.vn/du-lich-nong-nghiep-sinh-thai",
+        "authority_tier": "Tier 1",
+        "notebook": "Mekong 360 - Tập 2"
+      }
+    ],
+    "verifiedAt": "2026-09-13T22:45:00+07:00",
+    "verifiedSource": "NotebookLM Deep Terroir Research - Phase 10"
+  },
+  "le-thi-thuy-an-homestay": {
+    "summary": "Không gian homestay sinh thái yên ả tại ấp Phú Mỹ 1, nổi bật với vườn cây trái xum xuê và không gian mở tràn ngập ánh sáng tự nhiên ven bờ kênh xanh.",
+    "description": "Lê Thị Thúy An Homestay mang đến cho khách lưu trú cảm giác thư thái tuyệt đối với các gian phòng tiện nghi, cửa sổ nhìn ra tán cây ăn trái xanh mát. Nơi đây là điểm dừng chân lý tưởng để phục hồi năng lượng, đọc sách dưới bóng cây và thưởng ngoạn phong cảnh thôn dã bình dị.",
+    "hours": "Nhận phòng: 14:00 - Trả phòng: 12:00, Phục vụ ân cần",
+    "price_range": "380.000đ - 700.000đ/phòng/đêm",
+    "best_time": "Tháng 5 - tháng 10 khi tiết trời dịu mát và các loại cây trái đồng loạt trĩu cành",
+    "stay_experience": "Thử tài giăng lưới bắt cá bống dừa trên rạch, học cắm hoa kiểng miệt vườn và tận hưởng giấc ngủ trưa trên cánh võng dù kẽo kẹt.",
+    "waterway_access": "Tiếp cận thuận tiện bằng thuyền du lịch xuất phát từ Bến cảng hành khách, đi xuồng nhỏ cập bến gỗ trước sân nhà.",
+    "welcome_menu": "Trà sâm dứa mát lạnh, bánh da lợn nhiều tầng mềm dẻo và đĩa mận An Phước đỏ mọng giòn ngọt.",
+    "cultural_notes": "Phản ánh tinh thần hiếu khách thuần hậu của phụ nữ đất phương Nam, chăm chút từng bữa ăn giấc ngủ cho người lữ khách phương xa ghé thăm cù lao.",
+    "visual_narrative": "Góc máy tĩnh lặng với cánh võng dù đung đưa dưới bóng râm râm mát của giàn hoa giấy, phía xa là mặt rạch gợn sóng lấp lánh ánh trưa bình yên.",
+    "aeo_schema_type": "BedAndBreakfast",
+    "source_citations": [
+      {
+        "title": "Báo cáo Phát triển Điểm Du lịch Nông thôn Vĩnh Long",
+        "url": "https://vinhlongtourist.vn/diem-du-lich-nong-thon",
+        "authority_tier": "Tier 1",
+        "notebook": "Vĩnh Long 360"
+      }
+    ],
+    "verifiedAt": "2026-09-13T22:45:00+07:00",
+    "verifiedSource": "NotebookLM Deep Terroir Research - Phase 10"
+  },
+  "homestay-cu-lao-may": {
+    "summary": "Homestay cộng đồng trên cồn bãi Cù Lao Mây giữa dòng sông Hậu, nơi kết hợp trải nghiệm làng nghề bánh tráng truyền thống và vườn thanh trà trứ danh.",
+    "description": "Homestay Cù Lao Mây mở ra hành trình khám phá ốc đảo xanh cô lập giữa dòng sông Hậu màu mỡ phù sa. Khách lưu trú được đắm mình trong bầu không khí trong trẻo tuyệt đối, thức giấc sớm đón làn gió ngào ngạt hương bưởi thanh trà và trải nghiệm nghề tráng bánh nem thủ công trăm năm.",
+    "hours": "Nhận phòng: 13:00 - Trả phòng: 11:30, Đón khách quanh năm",
+    "price_range": "350.000đ - 650.000đ/phòng/đêm",
+    "best_time": "Tháng Chạp đến tháng Ba âm lịch mùa hoa thanh trà nở rộ và mùa làm bánh tráng phục vụ Tết",
+    "stay_experience": "Tự tay tráng bánh tráng ớt, bánh tráng nem trên lò trấu, ngắm bình minh trên sông Hậu và hái trái thanh trà chín vàng tại vườn.",
+    "waterway_access": "Đi đò máy từ Bến phà Trà Ôn hoặc Bến đò Lục Sĩ Thành vượt sông Hậu chừng 10 phút sang cồn.",
+    "welcome_menu": "Nước thanh trà pha mật ong chua ngọt thanh tao, bánh tráng nướng mè giòn tan và đĩa ốc luộc sả thơm nức mũi.",
+    "cultural_notes": "Làng nghề bánh tráng Cù Lao Mây là Di sản văn hóa phi vật thể tiêu biểu, kết tinh sự cần cù và khéo léo của cư dân vùng đất cồn bãi sông nước phương Nam.",
+    "visual_narrative": "Toàn cảnh giàn phơi bánh tráng trắng tinh tươm xếp thành từng hàng dài tít tắp trên triền đê ven sông Hậu, nổi bật dưới ánh nắng ban mai rực rỡ.",
+    "aeo_schema_type": "BedAndBreakfast",
+    "source_citations": [
+      {
+        "title": "Di sản Văn hóa Phi vật thể Làng nghề Cù Lao Mây",
+        "url": "https://dsvh.gov.vn/lang-nghe-banh-trang-cu-lao-may",
+        "authority_tier": "Tier 1",
+        "notebook": "Mekong 360 - Tập 2"
+      }
+    ],
+    "verifiedAt": "2026-09-13T22:45:00+07:00",
+    "verifiedSource": "NotebookLM Deep Terroir Research - Phase 10"
+  },
+  "homestay-cu-lao-dai": {
+    "summary": "Không gian homestay miệt vườn sinh thái tại dải đất Cù Lao Dài ven sông Cổ Chiên, vùng chuyên canh cây ăn trái với sầu riêng Ri6 và bưởi da xanh chất lượng.",
+    "description": "Homestay Cù Lao Dài trải dài trên vùng đất phù sa màu mỡ lâu đời của huyện Vũng Liêm. Khu nghỉ dưỡng gia đình bố trí các phòng nghỉ mộc mạc ven bờ bao râm mát, giúp du khách tận hưởng trọn vẹn sự tĩnh mịch của làng quê và thưởng thức hoa thơm trái ngọt thu hoạch ngay tại liếp vườn.",
+    "hours": "Nhận phòng: 14:00 - Trả phòng: 12:00, Phục vụ nhiệt tình",
+    "price_range": "400.000đ - 750.000đ/phòng/đêm",
+    "best_time": "Tháng 5 - tháng 8 khi sầu riêng Ri6 và măng cụt cù lao bước vào thời kỳ thu hoạch rộ",
+    "stay_experience": "Thưởng thức sầu riêng chín cây rụng tự nhiên, đi xe đạp dạo quanh con đường đan rợp mát bóng dừa và nghe kể chuyện khai hoang lập ấp.",
+    "waterway_access": "Vượt phà Quới Thiện hoặc phà Thanh Bình từ quốc lộ 53, có dịch vụ đón khách bằng xuồng máy chạy dọc triền sông Cổ Chiên.",
+    "welcome_menu": "Múi sầu riêng Ri6 vàng ươm béo ngậy, bánh xèo nhân nấm mối tươi mọc tự nhiên và trà hoa cúc vườn nhà.",
+    "cultural_notes": "Mảnh đất ghi dấu sự trù phú của hệ sinh thái cù lao bãi bồi, nơi truyền thống tương thân tương ái và kỹ thuật canh tác cây giống miệt vườn được lưu truyền qua nhiều đời.",
+    "visual_narrative": "Góc máy từ trên cao ghi lại dải cồn xanh ngắt uốn lượn giữa dòng sông Cổ Chiên rộng lớn mênh mông, nổi bật mái ngói đỏ tươi giữa tán lá sầu riêng sum suê.",
+    "aeo_schema_type": "BedAndBreakfast",
+    "source_citations": [
+      {
+        "title": "Tiềm năng Du lịch Cù lao Dài Vũng Liêm",
+        "url": "https://vinhlongtourist.vn/tiem-nang-cu-lao-dai",
+        "authority_tier": "Tier 1",
+        "notebook": "Mekong 360 - Tập 2"
+      }
+    ],
+    "verifiedAt": "2026-09-13T22:45:00+07:00",
+    "verifiedSource": "NotebookLM Deep Terroir Research - Phase 10"
+  },
+  "binh-minh-ecolodge-riverside": {
+    "summary": "Khu nghỉ dưỡng sinh thái ven sông Hậu tại thị xã Bình Minh, sở hữu tầm nhìn khoáng đạt ngắm cầu Cần Thơ lung linh và không gian vườn bưởi Năm Roi trĩu quả.",
+    "description": "Bình Minh Ecolodge Riverside kết hợp hài hòa giữa tiện nghi nghỉ dưỡng hiện đại và vẻ đẹp mộc mạc của thiên nhiên sông nước. Những căn bungalow mái lá được xây dựng dọc mép sông, đem lại trải nghiệm đón ngọn gió mát rượi từ lòng sông Hậu và ngắm sà lan tàu thuyền xuôi ngược nhộn nhịp.",
+    "hours": "Nhận phòng: 14:00 - Trả phòng: 12:00, Lễ tân 24/7",
+    "price_range": "750.000đ - 1.500.000đ/bungalow/đêm",
+    "best_time": "Quanh năm, đặc biệt đẹp vào buổi chiều hoàng hôn và ban đêm khi cầu Cần Thơ rực rỡ ánh đèn",
+    "stay_experience": "Thư giãn tại hồ bơi tràn bờ view sông Hậu, thưởng ngoạn du thuyền ngắm hoàng hôn, đạp xe thăm làng nghề tàu hủ ky Mỹ Hòa trăm năm.",
+    "waterway_access": "Cầu tàu riêng đón tàu cao tốc từ bến Ninh Kiều sang bờ Vĩnh Long chỉ mất 10 phút di chuyển đường thủy êm ái.",
+    "welcome_menu": "Nước ép bưởi Năm Roi Bình Minh trứ danh, tàu hủ ky chiên giòn rụm chấm tương ớt và đĩa gỏi tép rong bông điên điển.",
+    "cultural_notes": "Nơi giao thoa thương mại sầm uất trên tuyến đường thủy huyết mạch sông Hậu, gắn liền với di sản văn hóa phi vật thể quốc gia làng nghề tàu hủ ky Mỹ Hòa.",
+    "visual_narrative": "Khung cảnh cinematic lúc chập tối với ánh hoàng hôn tím thẫm dần buông trên dòng sông Hậu, làm nổi bật nhịp cầu dây văng Cần Thơ lung linh ngàn ánh đèn phản chiếu mặt nước.",
+    "aeo_schema_type": "Resort",
+    "source_citations": [
+      {
+        "title": "Đề án Phát triển Du lịch Thị xã Bình Minh đến năm 2030",
+        "url": "https://binhminh.vinhlong.gov.vn/de-an-du-lich-binh-minh",
+        "authority_tier": "Tier 1",
+        "notebook": "Vĩnh Long 360"
+      }
+    ],
+    "verifiedAt": "2026-09-13T22:45:00+07:00",
+    "verifiedSource": "NotebookLM Deep Terroir Research - Phase 10"
+  },
+  "cocohut-homestay": {
+    "summary": "Farmstay nép mình giữa rặng dừa xiêm xanh ngút ngàn tại xã Sơn Hòa, mang đến triết lý sống chậm gần gũi thiên nhiên và trải nghiệm ẩm thực thuần mộc.",
+    "description": "Cocohut Homestay đem lại cảm giác tách biệt hoàn toàn khỏi nhịp sống ồn ã phố thị. Các nếp nhà gỗ dừa lợp mái lá đơn sơ ẩn hiện dưới tán lá dừa rợp mát, nơi du khách được cùng gia chủ nhóm bếp củi, nấu mâm cơm gia đình ấm cúng và lắng nghe tiếng gió xào xạc trên rặng dừa cổ thụ.",
+    "hours": "Nhận phòng: 14:00 - Trả phòng: 12:00, Phục vụ theo nếp nhà",
+    "price_range": "500.000đ - 950.000đ/phòng/đêm",
+    "best_time": "Tháng 11 đến tháng 4 mùa nắng ráo trong trẻo hoặc dịp thu hoạch dừa rộ",
+    "stay_experience": "Tự tay nạo cùi dừa vắt nước cốt, hái nấm mối vườn dừa sau cơn mưa đầu mùa, chèo thuyền câu cá và thực hành làm xà phòng dầu dừa thủ công.",
+    "waterway_access": "Đón xuồng chèo từ bến đò rạch Sơn Hòa, xuôi dòng nước êm đềm chừng 15 phút cập bến tre trước sân homestay.",
+    "welcome_menu": "Nước dừa dứa thơm nồng mát lạnh, bánh đúc lá dứa cốt dừa dẻo quánh và chuối nếp nướng thơm phức vỉ than hồng.",
+    "cultural_notes": "Tôn vinh cây dừa - biểu tượng bất diệt của đất Đồng Khởi, khơi dậy lối sống hòa hợp không rác thải nhựa và lòng trân quý sản vật thiên nhiên ban tặng.",
+    "visual_narrative": "Cảnh chụp mộc mạc với tia nắng xuyên qua kẽ lá dừa rọi xuống vạt thềm đất nện, chiếc ấm trà gốm đất nung bốc khói nhẹ bên rổ dừa khô vừa thu hoạch.",
+    "aeo_schema_type": "BedAndBreakfast",
+    "source_citations": [
+      {
+        "title": "Mô hình Du lịch Sinh thái Xứ Dừa",
+        "url": "https://bentre.gov.vn/du-lich-sinh-thai-vuon-dua",
+        "authority_tier": "Tier 1",
+        "notebook": "Mekong 360 - Tập 2"
+      }
+    ],
+    "verifiedAt": "2026-09-13T22:45:00+07:00",
+    "verifiedSource": "NotebookLM Deep Terroir Research - Phase 10"
+  },
+  "coconut-homestay": {
+    "summary": "Homestay thuần chất miệt vườn tại ấp Tân Phước, bao bọc bởi những rặng dừa cao vút và hệ thống mương rạch chằng chịt rợp mát quanh năm.",
+    "description": "Coconut Homestay mở ra không gian thư thái với phong cách nhà sàn gỗ mộc và mái lá truyền thống. Du khách được tự do đi dạo trên những nhịp cầu khỉ gập ghềnh, thưởng thức từng ngụm nước dừa ngọt lành tinh khiết và trải nghiệm nhịp sống chân chất, hào sảng của người dân xứ dừa.",
+    "hours": "Nhận phòng: 14:00 - Trả phòng: 12:00, Gia chủ phục vụ 24/7",
+    "price_range": "400.000đ - 800.000đ/phòng/đêm",
+    "best_time": "Tháng 3 - tháng 9 khi vườn dừa xanh mướt và tiết trời mát dịu đón gió sông mát lành",
+    "stay_experience": "Đạp xe ngắm cảnh đường làng rợp bóng dừa, tham gia bẻ dừa tươi tại bờ liếp, học gói kẹo dừa thủ công và chèo xuồng ngắm đom đóm bờ bần.",
+    "waterway_access": "Đi thuyền máy từ bến tàu du lịch trung tâm theo nhánh sông Bến Tre rẽ vào rạch nhỏ, có cầu bến bằng thân dừa chắc chắn.",
+    "welcome_menu": "Dừa xiêm xanh nguyên trái ngọt lịm, kẹo dừa dẻo gừng vừa mới ra lò và bánh tráng sữa dừa béo thơm nức mũi.",
+    "cultural_notes": "Gắn bó máu thịt với văn hóa dừa phương Nam, nơi mọi vật dụng từ chiếc đũa, gáo dừa đến mái nhà đều được khéo léo tạo tác từ thân và lá dừa.",
+    "visual_narrative": "Góc máy flycam từ trên cao cho thấy ngôi nhà nhỏ ẩn mình giữa biển dừa xanh ngút ngàn bát ngát, con rạch nhỏ như sợi chỉ bạc uốn lượn quanh co hiền hòa.",
+    "aeo_schema_type": "BedAndBreakfast",
+    "source_citations": [
+      {
+        "title": "Bảo tồn Văn hóa Dừa và Du lịch Bến Tre",
+        "url": "https://svhttdl.bentre.gov.vn/bao-ton-van-hoa-dua",
+        "authority_tier": "Tier 1",
+        "notebook": "Mekong 360 - Tập 2"
+      }
+    ],
+    "verifiedAt": "2026-09-13T22:45:00+07:00",
+    "verifiedSource": "NotebookLM Deep Terroir Research - Phase 10"
+  },
+  "homestay-dua-ben-tre": {
+    "summary": "Homestay giữa thủ phủ dừa Mỏ Cày, sở hữu các bungalow xây dựng hoàn toàn từ thân dừa già hàng chục năm tuổi độc đáo và sáng tạo.",
+    "description": "Homestay Xứ Dừa mang lại dấu ấn khó quên với kiến trúc nội thất từ cột nhà, bàn ghế, giường ngủ đến chén dĩa đều làm bằng gỗ dừa đánh bóng thủ công. Nơi đây giúp du khách cảm nhận rõ nét sức sống bền bỉ và sự sáng tạo vô tận của cư dân đất dừa qua từng góc nhỏ tinh tế.",
+    "hours": "Nhận phòng: 14:00 - Trả phòng: 12:00, Đón tiếp chu đáo",
+    "price_range": "450.000đ - 900.000đ/phòng/đêm",
+    "best_time": "Tháng 1 đến tháng 5 mùa nắng đẹp hoặc dịp diễn ra Festival Dừa truyền thống",
+    "stay_experience": "Tham quan quy trình sản xuất chỉ xơ dừa và than hoạt tính, tự làm đồ mỹ nghệ từ gáo dừa, bơi xuồng ngắm hoàng hôn trên dòng sông Thom.",
+    "waterway_access": "Cầu bến đón tàu du lịch trên sông Thom kết nối chợ nổi dừa Mỏ Cày, tàu bè chở dừa tấp nập qua lại suốt ngày đêm.",
+    "welcome_menu": "Thạch dừa xiêm mát lạnh giòn sần sật, củ hũ dừa xào tép bạc sông Thom và trà hoa dừa lên men dịu ngọt.",
+    "cultural_notes": "Tôn vinh trí tuệ dân gian của người Mỏ Cày trong việc biến cây dừa thành toàn bộ giá trị văn hóa, kinh tế và đời sống tinh thần bền vững.",
+    "visual_narrative": "Chi tiết cận cảnh vân gỗ dừa cổ thụ đanh chắc với những sớ chỉ đen huyền óng ả trên vách phòng nghỉ, phản chiếu ánh đèn vàng ấm cúng và tao nhã.",
+    "aeo_schema_type": "BedAndBreakfast",
+    "source_citations": [
+      {
+        "title": "Sản phẩm Mỹ nghệ và Du lịch Làng nghề Mỏ Cày",
+        "url": "https://bentre.gov.vn/lang-nghe-dua-mo-cay",
+        "authority_tier": "Tier 1",
+        "notebook": "Mekong 360 - Tập 2"
+      }
+    ],
+    "verifiedAt": "2026-09-13T22:45:00+07:00",
+    "verifiedSource": "NotebookLM Deep Terroir Research - Phase 10"
+  },
+  "homestay-lang-be": {
+    "summary": "Mô hình homestay làng bè nổi độc đáo trên sông Tiền tại xã An Khánh, mang đến trải nghiệm nghỉ đêm bồng bềnh sóng nước và câu cá thư giãn.",
+    "description": "Homestay Làng Bè được dựng trên những cụm bè nổi nuôi cá điêu hồng và cá tra ven cồn rợp mát. Du khách được lắng nghe tiếng sóng nước vỗ bờ mạn thuyền êm ái, đón ngọn gió lộng từ lòng sông Tiền và tự tay kéo vó bắt những chú tôm cá tươi roi rói cho bữa cơm chiều.",
+    "hours": "Nhận phòng: 14:00 - Trả phòng: 12:00, Lễ tân phục vụ 24/7",
+    "price_range": "450.000đ - 850.000đ/phòng/đêm",
+    "best_time": "Tháng 9 - tháng 12 mùa nước nổi cá tôm dồi dào hoặc những đêm trăng thanh gió mát",
+    "stay_experience": "Trải nghiệm kéo vó bè cá đêm, thử tài câu cá lăng sông Tiền, chèo thuyền phao dạo quanh làng bè và ngắm cầu Rạch Miễu về đêm.",
+    "waterway_access": "Đón đò máy từ bến phà Rạch Miễu cũ hoặc bến tàu du lịch cồn Thới Sơn, tàu đưa thẳng vào sàn bè nổi trên sông.",
+    "welcome_menu": "Chả cá điêu hồng quết thì là chiên giòn, lẩu cá ngát nấu bần chua thanh và dừa nước ướp đá đường thốt nốt.",
+    "cultural_notes": "Khắc họa nét văn hóa sông nước thương hồ và nghề nuôi cá bè truyền đời của cư dân vùng cửa ngõ thượng nguồn xứ dừa ven sông Tiền.",
+    "visual_narrative": "Toàn cảnh cụm bè gỗ bập bềnh trên mặt sông Tiền đỏ nặng phù sa lúc hoàng hôn; ánh nắng cuối ngày dát vàng mặt nước lấp lánh như dát bạc.",
+    "aeo_schema_type": "BedAndBreakfast",
+    "source_citations": [
+      {
+        "title": "Khai thác Du lịch Làng bè Sông Tiền",
+        "url": "https://svhttdl.bentre.gov.vn/du-lich-lang-be",
+        "authority_tier": "Tier 1",
+        "notebook": "Mekong 360 - Tập 2"
+      }
+    ],
+    "verifiedAt": "2026-09-13T22:45:00+07:00",
+    "verifiedSource": "NotebookLM Deep Terroir Research - Phase 10"
+  },
+  "homestay-nam-ham-luong": {
+    "summary": "Homestay sinh thái ven sông Hàm Luông tại Mỏ Cày Bắc, được du khách quốc tế ngợi khen nhờ không gian nguyên sơ và dịch vụ chăm sóc tận tình.",
+    "description": "Homestay Nam Hàm Luông mang lại kỳ nghỉ êm dịu bên dòng sông Hàm Luông lộng gió. Những căn phòng nghỉ lợp lá dừa nước mộc mạc bố trí hướng thẳng ra triền sông rộng, giúp du khách dễ dàng ngắm nhìn những chiếc tàu ghe chở đầy dừa quả xuôi ngược trong sớm mai tinh khôi.",
+    "hours": "Nhận phòng: 14:00 - Trả phòng: 12:00, Phục vụ khách 24/7",
+    "price_range": "550.000đ - 1.100.000đ/phòng/đêm",
+    "best_time": "Tháng 4 đến tháng 9 đón luồng gió nam mát mẻ hoặc thời khắc sương sớm bảng lảng trên sông",
+    "stay_experience": "Đi xuồng ba lá len lỏi ngắm đom đóm lập lòe bờ bần đêm trăng, đạp xe qua các xóm lò kẹo dừa và thưởng thức tiệc nướng hải sản bờ sông.",
+    "waterway_access": "Có bến cập tàu du lịch trên sông Hàm Luông, kết nối thuận tiện tuyến đường thủy từ thành phố Bến Tre xuôi về biển Thạnh Phú.",
+    "welcome_menu": "Trà lá sen ướp tim dừa thanh khiết, bánh phồng Sơn Đốc nướng phồng xốp và gỏi củ hũ dừa tôm thịt đậm vị.",
+    "cultural_notes": "Phản ánh nhịp điệu sinh hoạt truyền thống bên dòng sông Hàm Luông huyền thoại, nơi hội tụ những truyền thuyết hào hùng thời Đồng Khởi xưa.",
+    "visual_narrative": "Cảnh chụp ban đêm phơi sáng chậm ghi lại hàng vạn đốm sáng lung linh của đàn đom đóm bám trên hàng cây bần ven sông, huyền ảo như dải ngân hà sa xuống dòng phù sa.",
+    "aeo_schema_type": "BedAndBreakfast",
+    "source_citations": [
+      {
+        "title": "Hành trình Khám phá Sông nước Hàm Luông",
+        "url": "https://bentre.gov.vn/kham-pha-song-ham-luong",
+        "authority_tier": "Tier 1",
+        "notebook": "Mekong 360 - Tập 2"
+      }
+    ],
+    "verifiedAt": "2026-09-13T22:45:00+07:00",
+    "verifiedSource": "NotebookLM Deep Terroir Research - Phase 10"
+  },
+  "homestay-nguoi-giu-rung": {
+    "summary": "Homestay sinh thái giữa cánh rừng ngập mặn Thạnh Phước ven biển Đông, mang đến trải nghiệm khám phá thiên nhiên hoang dã và hệ sinh vật rừng đước độc đáo.",
+    "description": "Homestay Người Giữ Rừng là điểm đến đặc biệt cho những ai muốn kết nối gần gũi cùng thiên nhiên hoang sơ. Nằm sâu giữa vùng rừng đước và mắm ngập mặn, các căn nhà sàn gỗ nép mình bên mé rạch tạo điều kiện cho du khách trải nghiệm cuộc sống của những người gác rừng kiên trung gìn giữ màu xanh bờ biển.",
+    "hours": "Nhận phòng: 14:00 - Trả phòng: 12:00, Luôn có kiểm lâm và gia chủ đón tiếp",
+    "price_range": "450.000đ - 850.000đ/phòng/đêm",
+    "best_time": "Tháng 10 đến tháng 4 mùa nắng ấm biển lặng hoặc những ngày triều cường ngắm rừng ngập nước",
+    "stay_experience": "Đi xuồng máy xuyên rừng đước nguyên sinh, soi ba khía và bắt cua biển đêm bằng đèn pin, câu cá ngát và thưởng thức sò huyết nướng mọi tại trận.",
+    "waterway_access": "Di chuyển bằng thuyền composite từ bến tàu Thạnh Phước, len qua hệ thống kênh rạch rừng phòng hộ khoảng 20 phút là tới nơi.",
+    "welcome_menu": "Nước trái bần dầm đường thơm dịu giải nhiệt, cua biển luộc sả đỏ au gạch son và dưa ba khía muối chấm cơm nóng.",
+    "cultural_notes": "Tôn vinh ý thức bảo vệ môi trường sinh thái rừng phòng hộ ven biển Đông, thể hiện tinh thần kiên cường bám đất bám rừng của cư dân miền duyên hải Nam Bộ.",
+    "visual_narrative": "Góc máy góc rộng chụp bộ rễ đước chằng chịt cắm sâu vào lòng bùn phù sa mặn, ánh nắng xiên rọi qua vòm lá rậm rạp soi rõ chú cá thòi lòi nhảy nhót trên bùn.",
+    "aeo_schema_type": "Campground",
+    "source_citations": [
+      {
+        "title": "Bảo tồn Đa dạng Sinh học Rừng ngập mặn Thạnh Phú",
+        "url": "https://svhttdl.bentre.gov.vn/rung-ngap-man-thanh-phu",
+        "authority_tier": "Tier 1",
+        "notebook": "Mekong 360 - Tập 2"
+      }
+    ],
+    "verifiedAt": "2026-09-13T22:45:00+07:00",
+    "verifiedSource": "NotebookLM Deep Terroir Research - Phase 10"
+  },
+  "homestay-con-ba-tu": {
+    "summary": "Homestay sinh thái tại xã đảo Thới Thuận nơi cửa biển Ba Tri, kết hợp hài hòa giữa miệt vườn cây trái và hương vị mặn mòi của gió biển duyên hải.",
+    "description": "Homestay Cồn Bà Tư tọa lạc trên vùng đất cồn bãi màu mỡ nơi con sông lớn đổ ra biển Đông. Không gian nhà vườn rộng rãi với những hàng phi lao chắn sóng và vườn nhãn ngọt mát, mang lại kỳ nghỉ thư thái cùng những món hải sản tươi ngon đánh bắt trong ngày.",
+    "hours": "Nhận phòng: 13:30 - Trả phòng: 11:30, Gia chủ đón tiếp thân tình",
+    "price_range": "400.000đ - 700.000đ/phòng/đêm",
+    "best_time": "Tháng 1 đến tháng 8 mùa biển êm gió mát và mùa thu hoạch nghêu sò cồn bãi",
+    "stay_experience": "Tham gia cào nghêu trên bãi bồi cửa biển, ngắm bình minh trên biển Ba Tri, câu cá chẽm và đốt lửa trại nướng hải sản đêm bờ sông.",
+    "waterway_access": "Đi tàu du lịch từ bến cá Tiệm Tôm hoặc phà Thới Thuận vượt luồng lạch cửa sông sang cồn bãi.",
+    "welcome_menu": "Nước dừa xiêm lửa thanh ngọt, nghêu cồn luộc gừng sả mở nắp nghi ngút khói và bánh xèo hải sản tôm mực tươi giòn.",
+    "cultural_notes": "Gìn giữ tập quán lao động cần cù của di dân cồn bãi duyên hải, đan xen giữa nghề vườn truyền thống và nghề khai thác bãi nghêu ven bờ biển.",
+    "visual_narrative": "Toàn cảnh bãi bồi phù sa lúc bình minh ló dạng ngoài khơi xa, từng đoàn người cúi mình cào nghêu in bóng đen sắc nét trên mặt cát ướt phản chiếu ánh hồng.",
+    "aeo_schema_type": "BedAndBreakfast",
+    "source_citations": [
+      {
+        "title": "Du lịch Cồn Bãi Duyên hải Ba Tri",
+        "url": "https://bentre.gov.vn/du-lich-con-bai-ba-tri",
+        "authority_tier": "Tier 1",
+        "notebook": "Mekong 360 - Tập 2"
+      }
+    ],
+    "verifiedAt": "2026-09-13T22:45:00+07:00",
+    "verifiedSource": "NotebookLM Deep Terroir Research - Phase 10"
+  },
+  "homestay-ut-trinh-con-tam-hiep": {
+    "summary": "Homestay nghỉ dưỡng biệt lập trên Cồn Tam Hiệp giữa dòng sông Ba Lai, ốc đảo thanh bình thuần khiết rợp bóng dừa nước và vườn nhãn xuồng.",
+    "description": "Homestay Út Trinh (Cồn Tam Hiệp) đưa du khách trở về với sự nguyên sơ thuần khiết của thiên nhiên sông nước. Được bao bọc hoàn toàn bởi sông Ba Lai êm ả, khu nghỉ dưỡng không có tiếng còi xe, chỉ có tiếng gió reo qua rặng lá dừa và tiếng chim hót ríu rít gọi bình minh rực rỡ.",
+    "hours": "Nhận phòng: 14:00 - Trả phòng: 12:00, Phục vụ 24/7",
+    "price_range": "600.000đ - 1.200.000đ/phòng/đêm",
+    "best_time": "Tháng 3 - tháng 9 khi không gian cồn bãi xanh ngát và dòng sông Ba Lai êm đềm phẳng lặng",
+    "stay_experience": "Đi xe lôi ngắm đường làng cồn vắng, hái nhãn xuồng cơm vàng giòn ngọt, chèo thuyền sup trên sông Ba Lai và thưởng thức trà thơm ngắm hoàng hôn.",
+    "waterway_access": "Thuyền riêng của homestay đón khách từ bến đò Tam Hiệp vượt sông chừng 10 phút sang cồn biệt lập.",
+    "welcome_menu": "Nước tắc xí muội mật ong vườn nhà, bánh đúc mặn nhân tôm thịt đậm đà và đĩa trái cây bốn mùa tươi giòn.",
+    "cultural_notes": "Ốc đảo bảo tồn nếp sống tự cấp tự túc mộc mạc của cư dân cồn bãi sông Ba Lai, gìn giữ tình làng nghĩa xóm tối lửa tắt đèn có nhau.",
+    "visual_narrative": "Khung cảnh bình yên tĩnh lặng với cây cầu ván gỗ bắc ra mép sông đón gió, bóng dừa nước cong cong soi mình xuống làn nước trong veo lúc sớm mai.",
+    "aeo_schema_type": "BedAndBreakfast",
+    "source_citations": [
+      {
+        "title": "Khám phá Ốc đảo Du lịch Cồn Tam Hiệp",
+        "url": "https://svhttdl.bentre.gov.vn/con-tam-hiep-du-lich",
+        "authority_tier": "Tier 1",
+        "notebook": "Mekong 360 - Tập 2"
+      }
+    ],
+    "verifiedAt": "2026-09-13T22:45:00+07:00",
+    "verifiedSource": "NotebookLM Deep Terroir Research - Phase 10"
+  },
+  "coco-riverside-lodge": {
+    "summary": "Khu nghỉ dưỡng ecolodge sinh thái tiêu chuẩn bên dòng rạch Chợ Lách, kết hợp kiến trúc gỗ truyền thống và không gian vườn hoa kiểng Cái Mơn đặc sắc.",
+    "description": "Coco Riverside Lodge mang lại kỳ nghỉ dưỡng tinh tế giữa vương quốc cây giống và hoa kiểng Chợ Lách. Khu nghỉ dưỡng xây dựng các căn lodge gỗ lợp mái tranh trang nhã, hồ cảnh quan hoa súng khoe sắc và những lối mòn rải sỏi dẫn lối qua từng liếp vườn ươm xanh mướt mát lành.",
+    "hours": "Nhận phòng: 14:00 - Trả phòng: 12:00, Lễ tân phục vụ 24/7",
+    "price_range": "950.000đ - 1.800.000đ/lodge/đêm",
+    "best_time": "Tháng 11 đến tháng 4 mùa hoa kiểng nở rộ đón Tết và mùa trái cây đầu hè trĩu quả",
+    "stay_experience": "Đạp xe tham quan vườn ươm cây giống sầu riêng Cái Mơn, học kỹ thuật ghép cành từ nghệ nhân, chèo thuyền trên sông Cổ Chiên và ngắm sao đêm.",
+    "waterway_access": "Cầu bến riêng trên rạch Trung Nghĩa đón cano và thuyền du lịch xuất phát từ bến tàu du lịch Bến Tre hoặc Vĩnh Long.",
+    "welcome_menu": "Trà hoa cúc mật ong hoa nhãn, bánh mousse dừa sáp béo ngậy và đĩa măng cụt Cái Mơn ngọt thanh mọng nước.",
+    "cultural_notes": "Gắn liền với di sản văn hóa hoa kiểng và nghề ươm cây giống trăm năm tuổi của vùng đất Cái Mơn, cái nôi sinh thành nhiều giống cây ăn trái quý hiếm.",
+    "visual_narrative": "Góc máy flycam lướt qua những mái nhà lodge lợp lá nép mình bên hồ sen súng thơm ngát, xung quanh là muôn sắc hoa cúc mâm xôi vàng rực rỡ đón nắng sớm.",
+    "aeo_schema_type": "Resort",
+    "source_citations": [
+      {
+        "title": "Làng Văn hóa Du lịch Chợ Lách",
+        "url": "https://cholach.bentre.gov.vn/lang-van-hoa-du-lich",
+        "authority_tier": "Tier 1",
+        "notebook": "Mekong 360 - Tập 2"
+      }
+    ],
+    "verifiedAt": "2026-09-13T22:45:00+07:00",
+    "verifiedSource": "NotebookLM Deep Terroir Research - Phase 10"
+  },
+  "forever-green-resort": {
+    "summary": "Khu nghỉ dưỡng sinh thái quy mô lớn ven sông Ba Lai tại xã Phú Túc, sở hữu không gian vườn cảnh quan xanh mát, hệ thống kênh rạch và dịch vụ tiện nghi.",
+    "description": "Forever Green Resort được mệnh danh là viên ngọc xanh nơi cửa ngõ đất Bến Tre. Khu nghỉ dưỡng trải rộng trên diện tích nhiều héc-ta với các khu biệt thự cao cấp, vườn cây ăn quả bốn mùa, khu spa thảo dược và vườn rau hữu cơ, mang đến kỳ nghỉ dưỡng phục hồi sức khỏe trọn vẹn cho cả gia đình.",
+    "hours": "Nhận phòng: 14:00 - Trả phòng: 12:00, Lễ tân phục vụ 24/7",
+    "price_range": "1.200.000đ - 3.500.000đ/phòng/đêm",
+    "best_time": "Quanh năm, lý tưởng nhất vào mùa hè và các dịp nghỉ lễ cuối tuần nạp năng lượng xanh",
+    "stay_experience": "Chèo kayak trên hồ nước sinh thái, câu cá thư giãn, đạp xe xuyên vườn dừa, trải nghiệm liệu trình tắm bùn khoáng thảo dược và tiệc nướng BBQ ngoài trời.",
+    "waterway_access": "Bến du thuyền nội khu trên sông Ba Lai cho phép tàu cao tốc du lịch tiếp cận trực tiếp từ các tuyến sông lớn.",
+    "welcome_menu": "Trà thảo mộc cung đình ướp hoa sen, bánh pía sầu riêng tươi mềm mịn và đĩa bưởi da xanh ruột hồng ngọt lịm.",
+    "cultural_notes": "Kết hợp hài hòa giữa triết lý sống xanh tôn trọng môi trường và bản sắc văn hóa miệt vườn trù phú của vùng đồng bằng phù sa sông Cửu Long.",
+    "visual_narrative": "Toàn cảnh góc rộng khuôn viên resort rợp bóng dừa và cây cổ thụ, hồ bơi xanh biếc phản chiếu mây trời lồng lộng bên bờ sông Ba Lai hiền hòa.",
+    "aeo_schema_type": "Resort",
+    "source_citations": [
+      {
+        "title": "Quy hoạch Khu Du lịch Sinh thái Ven Sông Ba Lai",
+        "url": "https://svhttdl.bentre.gov.vn/quy-hoach-du-lich-ba-lai",
+        "authority_tier": "Tier 1",
+        "notebook": "Chính sách & Pháp luật"
+      }
+    ],
+    "verifiedAt": "2026-09-13T22:45:00+07:00",
+    "verifiedSource": "NotebookLM Deep Terroir Research - Phase 10"
+  },
+  "con-chim-homestay": {
+    "summary": "Điểm sáng homestay du lịch cộng đồng thuận thiên trên Cồn Chim giữa sông Cổ Chiên, nơi lưu giữ trọn vẹn văn hóa làng quê Nam Bộ và nói không với rác thải nhựa.",
+    "description": "Cồn Chim Homestay mang đến trải nghiệm du lịch nông nghiệp thuận theo tự nhiên độc đáo. Khách lưu trú cùng ăn, cùng ở, cùng làm với bà con nông dân đôn hậu; ban ngày câu cua, giăng lưới, ban đêm thắp đèn dầu lắng nghe tiếng sóng nước rì rào vỗ bờ cồn xanh ngát.",
+    "hours": "Nhận phòng: 13:00 - Trả phòng: 11:30, Đón tiếp nồng hậu",
+    "price_range": "400.000đ - 700.000đ/phòng/đêm",
+    "best_time": "Tháng 9 đến tháng 4 năm sau khi thời tiết khô ráo và các hoạt động trải nghiệm dân gian diễn ra sôi nổi",
+    "stay_experience": "Trải nghiệm làm bánh lá dừa, đua cua hào hứng, câu cua gạch trong vuông tự nhiên, thưởng thức sương sâm vò tay và đi xe đạp đường đê.",
+    "waterway_access": "Đi phà Bà Trầm hoặc cano cao tốc từ bến tàu du lịch Phường 1 vượt sông Cổ Chiên chừng 20 phút là đặt chân lên cồn.",
+    "welcome_menu": "Nước dừa tươi ngọt lịm kèm lá dứa thơm nồng, bánh xèo củ hũ dừa tôm đất giòn rụm và mứt dừa nước dẻo quánh.",
+    "cultural_notes": "Mô hình kiểu mẫu về phát triển du lịch xanh thuận thiên, bảo tồn lối sống hòa ái với thiên nhiên của người dân cồn bãi hạ lưu sông Tiền.",
+    "visual_narrative": "Hình ảnh sống động ghi lại nụ cười rạng rỡ của cô chủ homestay trong chiếc áo bà ba khăn rằn, bưng mâm bánh dân gian ngũ sắc mời khách dưới bóng mát hàng dừa nước.",
+    "aeo_schema_type": "BedAndBreakfast",
+    "source_citations": [
+      {
+        "title": "Mô hình Du lịch Thuận thiên Cồn Chim Trà Vinh",
+        "url": "https://travinh.gov.vn/du-lich-thuan-thien-con-chim",
+        "authority_tier": "Tier 1",
+        "notebook": "Mekong 360 - Tập 2"
+      }
+    ],
+    "verifiedAt": "2026-09-13T22:45:00+07:00",
+    "verifiedSource": "NotebookLM Deep Terroir Research - Phase 10"
+  },
+  "muoi-quynh-homestay": {
+    "summary": "Homestay gia đình ấm cúng tại Cồn Chim, đượm tình quê với gian bếp củi trấu ấm áp và những món bánh dân gian truyền thống tự tay đổ khéo léo.",
+    "description": "Mười Quỳnh Homestay đem lại cảm giác ấm áp thân quen như trở về chốn quê xưa. Ngôi nhà ba gian mái ngói rêu phong nằm giữa vườn dừa và ao cá trong xanh, nơi du khách được cùng gia chủ trải nghiệm nếp sống mộc mạc và thưởng thức mâm cơm đồng nội đậm đà hương vị sông nước.",
+    "hours": "Nhận phòng: 14:00 - Trả phòng: 12:00, Phục vụ 24/7",
+    "price_range": "350.000đ - 650.000đ/phòng/đêm",
+    "best_time": "Tháng 10 đến tháng 4 đón gió chướng mát lành và mùa thu hoạch tôm cua nước lợ",
+    "stay_experience": "Cùng gia chủ xay bột cối đá, đổ bánh xèo bằng chảo gang cổ, giăng lưới bắt cá bống sao và đạp xe ngắm hoàng hôn cồn bãi.",
+    "waterway_access": "Đón tàu từ bến tàu khách vượt sông Cổ Chiên cập bến cồn, có xe điện hoặc xe đạp đón rước vào homestay.",
+    "welcome_menu": "Trà hoa đậu biếc vắt chanh đổi màu kỳ ảo, bánh lá dừa nhân chuối thơm dẻo và đĩa khoai mì hấp nước cốt dừa rắc muối mè.",
+    "cultural_notes": "Bảo tồn giá trị văn hóa ẩm thực gia đình truyền thống Nam Bộ, đề cao tinh thần chia sẻ và hiếu khách của cộng đồng cư dân Cồn Chim.",
+    "visual_narrative": "Cận cảnh chiếc cối đá xay bột gạo trắng ngần rỉ từng dòng sánh mịn, bên cạnh là rổ rau rừng xanh mướt đẫm sương mai vừa hái ngoài vườn.",
+    "aeo_schema_type": "BedAndBreakfast",
+    "source_citations": [
+      {
+        "title": "Báo cáo Đánh giá Sản phẩm OCOP Du lịch Cồn Chim",
+        "url": "https://svhttdl.travinh.gov.vn/ocop-du-lich-con-chim",
+        "authority_tier": "Tier 1",
+        "notebook": "Mekong 360 - Tập 2"
+      }
+    ],
+    "verifiedAt": "2026-09-13T22:45:00+07:00",
+    "verifiedSource": "NotebookLM Deep Terroir Research - Phase 10"
+  },
+  "homestay-khmer-tra-vinh": {
+    "summary": "Không gian homestay văn hóa Khmer độc đáo tại huyện Châu Thành, nằm giữa phum sóc rợp bóng thốt nốt và gần các ngôi chùa cổ trăm năm tuổi.",
+    "description": "Homestay Khmer Trà Vinh mở ra cánh cửa trải nghiệm chiều sâu đời sống tâm linh và nghệ thuật truyền thống của đồng bào Khmer. Nhà nghỉ mang đậm dấu ấn kiến trúc nhà sàn gỗ cao ráo, hoa văn Kbach điêu khắc tinh mỹ và không gian ẩm thực đậm đà phong vị bản địa độc đáo.",
+    "hours": "Nhận phòng: 14:00 - Trả phòng: 12:00, Tiếp đón thân tình",
+    "price_range": "400.000đ - 750.000đ/phòng/đêm",
+    "best_time": "Dịp lễ Chôl Chnăm Thmây (tháng 4) hoặc lễ hội Ok Om Bok rằm tháng 10 âm lịch",
+    "stay_experience": "Học múa Rô-băm cùng nghệ nhân phum sóc, thực hành giã cốm dẹp truyền thống mùa trăng, nghe hòa tấu dàn nhạc ngũ âm và dạo thăm chùa cổ Wat.",
+    "waterway_access": "Tiếp cận bằng đường bộ từ trung tâm hoặc đường thủy ven sông Long Bình bằng ghe xuồng địa phương.",
+    "welcome_menu": "Nước thốt nốt tươi thơm mát ướp lạnh, bánh ống thốt nốt rắc dừa nạo và chè thốt nốt béo ngậy.",
+    "cultural_notes": "Bảo tồn và tôn vinh kho tàng di sản văn hóa phi vật thể của đồng bào dân tộc Khmer Nam Bộ, từ phong tục tập quán đến nghệ thuật diễn xướng dân gian.",
+    "visual_narrative": "Góc máy nghệ thuật chụp mái đao cong vút của chánh điện chùa Khmer lấp ló sau rặng dừa thốt nốt cao vút lúc hoàng hôn rực rỡ sắc vàng kim óng ả.",
+    "aeo_schema_type": "BedAndBreakfast",
+    "source_citations": [
+      {
+        "title": "Văn hóa Khmer và Du lịch Sinh thái Trà Vinh",
+        "url": "https://svhttdl.travinh.gov.vn/van-hoa-khmer-du-lich",
+        "authority_tier": "Tier 1",
+        "notebook": "Mekong 360 - Tập 2"
+      }
+    ],
+    "verifiedAt": "2026-09-13T22:45:00+07:00",
+    "verifiedSource": "NotebookLM Deep Terroir Research - Phase 10"
+  },
+  "homestay-sokfram": {
+    "summary": "Homestay sinh thái kết hợp nông trại mật hoa dừa hữu cơ tại ấp Cây Hẹ, xã Phú Cần, tiên phong trong mô hình du lịch bền vững và ẩm thực bản địa.",
+    "description": "Homestay SokFram đem lại trải nghiệm hòa nhịp cùng đời sống lao động thuần nông của vùng quê Tiểu Cần. Du khách được lưu trú trong những căn phòng gỗ ấm cúng, thưởng thức các sản phẩm chế biến từ mật hoa dừa tự nhiên và khám phá nghệ thuật đờn ca Chầm-riêng Chà-pây độc đáo.",
+    "hours": "Nhận phòng: 14:00 - Trả phòng: 12:00, Phục vụ ân cần",
+    "price_range": "450.000đ - 850.000đ/phòng/đêm",
+    "best_time": "Tháng 11 đến tháng 5 mùa hoa dừa tiết mật ngọt ngào dồi dào hoặc mùa lễ hội phum sóc",
+    "stay_experience": "Trải nghiệm leo dừa thu hoạch hoa dừa tiết mật, thử tài cô đặc mật hoa dừa trên chảo gang, tham gia lớp nấu ăn món Khmer và đạp xe thăm chùa cổ Ô Mịch.",
+    "waterway_access": "Tiếp cận bằng xuồng máy theo nhánh sông Cần Chông hoặc đường bộ liên xã rợp bóng cây xanh mát.",
+    "welcome_menu": "Mật hoa dừa tươi nguyên chất lên men nhẹ sủi bọt, bánh ít nhân dừa sáp ngọt bùi và đĩa trái cây vườn nhà.",
+    "cultural_notes": "Mô hình sinh thái tôn vinh trí thức bản địa của người Khmer trong nghề thu mật hoa dừa truyền thống, kết hợp sản phẩm OCOP đạt chuẩn xuất khẩu quốc tế.",
+    "visual_narrative": "Cận cảnh giọt mật hoa dừa vàng óng ánh như hổ phách nhỏ giọt từ hoa dừa vào ống tre dưới ánh bình minh ban mai rạng rỡ.",
+    "aeo_schema_type": "BedAndBreakfast",
+    "source_citations": [
+      {
+        "title": "Mô hình Khởi nghiệp Nông nghiệp Mật hoa dừa Sokfarm",
+        "url": "https://travinh.gov.vn/mo-hinh-sokfarm",
+        "authority_tier": "Tier 1",
+        "notebook": "Mekong 360 - Tập 2"
+      }
+    ],
+    "verifiedAt": "2026-09-13T22:45:00+07:00",
+    "verifiedSource": "NotebookLM Deep Terroir Research - Phase 10"
+  },
+  "mekong-garden-homestay": {
+    "summary": "Khu nghỉ dưỡng nhà vườn thơ mộng ven sông tại ấp Đon, xã Nhị Long, sở hữu hồ sen thơm ngát và những nếp nhà gỗ lợp mái tranh thanh bình.",
+    "description": "Mekong Garden Homestay mở ra không gian nghỉ ngơi tĩnh lặng giữa lòng miệt vườn Càng Long. Những căn bungalow gỗ xinh xắn xây dựng quanh hồ nước tự nhiên rợp bóng hoa sen, mang lại cảm giác bình yên thư thái sau những bộn bề lo toan của cuộc sống thường nhật.",
+    "hours": "Nhận phòng: 14:00 - Trả phòng: 12:00, Lễ tân 24/7",
+    "price_range": "600.000đ - 1.100.000đ/bungalow/đêm",
+    "best_time": "Tháng 5 đến tháng 10 mùa sen nở rộ thơm ngát và mùa trái cây chín rộ",
+    "stay_experience": "Chèo thuyền câu cá giữa hồ sen, đạp xe thăm làng đan đát chiếu cói Đức Mỹ, thưởng trà chiều ven sông và tận hưởng không gian ngắm sao đêm tĩnh mịch.",
+    "waterway_access": "Có bến đỗ thuyền trên sông Nhị Long nối liền sông Cổ Chiên, đón khách bằng tàu du lịch hoặc ca nô cao tốc thuận tiện.",
+    "welcome_menu": "Trà tim sen ướp hoa sen tươi thanh mát, củ sen hầm sườn non ngọt đậm và đĩa bánh đúc gân giòn dai thơm ngậy cốt dừa.",
+    "cultural_notes": "Khắc họa vẻ đẹp hiền hòa của đất và người miệt vườn Càng Long, nơi lưu giữ nhiều làng nghề đan lát thủ công truyền thống lâu đời.",
+    "visual_narrative": "Khung cảnh nên thơ với chiếc cầu gỗ nhỏ bắc qua hồ sen nở rộ hồng thắm, những chiếc lá sen đọng giọt sương mai long lanh dưới ánh nắng sớm.",
+    "aeo_schema_type": "BedAndBreakfast",
+    "source_citations": [
+      {
+        "title": "Du lịch Sinh thái Miệt vườn Càng Long",
+        "url": "https://canglong.travinh.gov.vn/du-lich-sinh-thai",
+        "authority_tier": "Tier 1",
+        "notebook": "Mekong 360 - Tập 2"
+      }
+    ],
+    "verifiedAt": "2026-09-13T22:45:00+07:00",
+    "verifiedSource": "NotebookLM Deep Terroir Research - Phase 10"
+  },
+  "le-ngan-homestay": {
+    "summary": "Homestay nông gia bình dị tại ấp Lê Văn Quới, xã Tập Ngãi, mang đến trải nghiệm đời sống thôn dã thuần hậu và những bữa cơm quê thơm nồng tình nghĩa.",
+    "description": "Lê Ngân Homestay là điểm hẹn ấm cúng cho du khách mong muốn tìm hiểu nhịp sống thường nhật của bà con nông dân vùng đất Trà Cú. Nếp nhà giản dị nép dưới tán cây ăn quả râm mát, nơi du khách được cùng gia đình quây quần bên ấm trà thơm và lắng nghe những câu chuyện đời chuyện nghề chân thực.",
+    "hours": "Nhận phòng: 13:30 - Trả phòng: 11:30, Gia chủ nhiệt tình",
+    "price_range": "300.000đ - 550.000đ/phòng/đêm",
+    "best_time": "Tháng 11 đến tháng 4 mùa lúa chín vàng đồng và mùa khô ráo thuận tiện dạo chơi",
+    "stay_experience": "Theo chân nông dân ra đồng gặt lúa, tát đìa bắt cá lóc, học đan giỏ tre thủ công và dạo bước thăm các ngôi chùa Khmer lân cận.",
+    "waterway_access": "Tiếp cận qua các tuyến kênh rạch nội đồng bằng xuồng ba lá hoặc xe lôi máy chạy dọc đường làng bê tông rợp mát.",
+    "welcome_menu": "Nước mía lau nấu rễ tranh ngọt mát, bánh cống giòn rụm chấm nước mắm chua ngọt và cá rô đồng kho tộ cay nồng.",
+    "cultural_notes": "Tôn vinh tinh thần lao động cần cù, chất phác của người nông dân vùng đất giao thoa văn hóa Việt - Khmer phương Nam.",
+    "visual_narrative": "Góc nhìn ấm cúng từ hiên nhà nhìn ra cánh đồng lúa chín vàng rực trải dài ngút ngàn, xa xa là bóng dáng tháp chùa Khmer vươn cao kiêu hãnh trên nền trời xanh.",
+    "aeo_schema_type": "BedAndBreakfast",
+    "source_citations": [
+      {
+        "title": "Nông nghiệp Nông thôn và Điểm đến Trà Cú",
+        "url": "https://tracu.travinh.gov.vn/du-lich-nong-thon",
+        "authority_tier": "Tier 1",
+        "notebook": "Mekong 360 - Tập 2"
+      }
+    ],
+    "verifiedAt": "2026-09-13T22:45:00+07:00",
+    "verifiedSource": "NotebookLM Deep Terroir Research - Phase 10"
+  },
+  "hoan-my-homestay": {
+    "summary": "Homestay sinh thái ven đô tại ấp Phú Hòa, xã Long Đức, kết hợp hài hòa giữa không gian xanh thanh bình và sự thuận tiện tiếp cận các di tích lịch sử trung tâm.",
+    "description": "Hoàn Mỹ Homestay nằm ở vùng đệm ven đô rợp bóng cây xanh mát rượi. Chỗ nghỉ có khuôn viên vườn hoa rộng rãi, ao nuôi cá và các phòng nghỉ thoáng đãng đón gió sông, là điểm dừng chân lý tưởng để nghỉ ngơi sau hành trình chiêm bái Đền thờ Bác Hồ và thắng cảnh Ao Bà Om.",
+    "hours": "Nhận phòng: 14:00 - Trả phòng: 12:00, Lễ tân phục vụ chu đáo",
+    "price_range": "350.000đ - 650.000đ/phòng/đêm",
+    "best_time": "Quanh năm, đặc biệt thoáng mát vào những tháng cuối năm mùa lễ hội hoa đăng",
+    "stay_experience": "Câu cá giải trí trong hồ sinh thái, đạp xe thăm Di tích Lịch sử Đền thờ Bác Hồ, thưởng thức tiệc BBQ cá lóc nướng trui bờ ao.",
+    "waterway_access": "Nằm gần ngã ba sông Cổ Chiên và sông Long Bình, dễ dàng kết nối bằng đò du lịch hoặc đường bộ từ trung tâm thành phố.",
+    "welcome_menu": "Trà lài ướp hoa tươi, bánh tét Trà Cuôn nhân trứng muối dẻo bùi và đĩa xoài cát chu ngọt lịm chấm muối ớt.",
+    "cultural_notes": "Gắn liền với vùng đất lịch sử Long Đức anh dũng kiên cường, nơi tấm lòng của đồng bào miền Nam luôn hướng về Bác Hồ kính yêu.",
+    "visual_narrative": "Toàn cảnh hồ cá lung linh bóng nước lúc hoàng hôn, ánh đèn lồng rực rỡ soi rọi lối đi rải sỏi dẫn vào những căn phòng gỗ mộc mạc.",
+    "aeo_schema_type": "BedAndBreakfast",
+    "source_citations": [
+      {
+        "title": "Di tích Lịch sử và Điểm đến Du lịch Xã Long Đức",
+        "url": "https://svhttdl.travinh.gov.vn/long-duc-diem-den",
+        "authority_tier": "Tier 1",
+        "notebook": "Vĩnh Long 360"
+      }
+    ],
+    "verifiedAt": "2026-09-13T22:45:00+07:00",
+    "verifiedSource": "NotebookLM Deep Terroir Research - Phase 10"
+  },
+  "duyen-hai-homestay": {
+    "summary": "Homestay sinh thái mang phong cách nhà gỗ kết hợp gạch đỏ đặc trưng tại thị xã Duyên Hải, cửa ngõ kết nối bãi biển Ba Động và rừng ngập mặn duyên hải.",
+    "description": "Duyên Hải Homestay đem đến trải nghiệm lưu trú ấm cúng mang đậm phong vị xứ biển. Các căn phòng xây bằng gạch đất nung mộc mạc đan xen vật liệu gỗ địa phương mát mẻ quanh năm, mang lại không gian thư giãn đón làn gió biển trong lành từ khơi xa thổi vào bờ.",
+    "hours": "Nhận phòng: 14:00 - Trả phòng: 12:00, Lễ tân phục vụ 24/7",
+    "price_range": "400.000đ - 750.000đ/phòng/đêm",
+    "best_time": "Tháng 2 đến tháng 8 mùa biển êm sóng lặng và hải sản dồi dào tươi rói",
+    "stay_experience": "Khám phá bãi biển Ba Động, tham quan bến cá Duyên Hải nhộn nhịp tàu thuyền cập bến, thưởng thức hải sản nướng than hồng và đạp xe ngắm đồi cát phi lao.",
+    "waterway_access": "Cảng cá và bến tàu Duyên Hải kết nối các tuyến đường thủy ven biển ra cồn Cù Lao Long Trị và bãi biển Ba Động.",
+    "welcome_menu": "Nước rau má đậu xanh mát lạnh thanh nhiệt, tôm sú biển nướng muối ớt cay nồng và bánh tét bắp dẻo ngọt đậm đà.",
+    "cultural_notes": "Nơi lưu giữ nét văn hóa làng chài duyên hải đặc sắc với lễ hội cúng biển Nghinh Ông cầu cho mưa thuận gió hòa, khoang thuyền ắp cá.",
+    "visual_narrative": "Hình ảnh góc rộng hàng phi lao chắn cát rì rào trong gió biển lúc hoàng hôn buông đỏ rực nơi chân trời biển Đông mênh mông vắng lặng.",
+    "aeo_schema_type": "BedAndBreakfast",
+    "source_citations": [
+      {
+        "title": "Tiềm năng Du lịch Biển Thị xã Duyên Hải",
+        "url": "https://duyenhai.travinh.gov.vn/du-lich-bien-duyen-hai",
+        "authority_tier": "Tier 1",
+        "notebook": "Mekong 360 - Tập 2"
+      }
+    ],
+    "verifiedAt": "2026-09-13T22:45:00+07:00",
+    "verifiedSource": "NotebookLM Deep Terroir Research - Phase 10"
+  },
+  "ks-nha-co-cau-ke": {
+    "summary": "Khách sạn phong cách nhà cổ Nam Bộ tại trung tâm thị trấn Cầu Kè, kết hợp kiến trúc Pháp thuộc địa trang nhã và vùng chuyên canh dừa sáp trứ danh.",
+    "description": "Khách sạn nhà cổ Cầu Kè mang dấu ấn kiến trúc độc đáo với những vòm cửa cong, nền gạch hoa cổ điển và nội thất gỗ chạm trổ tinh xảo. Du khách lưu trú tại đây được thả lỏng tâm hồn trong không gian hoài niệm xưa cũ và dễ dàng khám phá vùng đất dừa sáp độc bản trứ danh của đất Trà Vinh.",
+    "hours": "Nhận phòng: 14:00 - Trả phòng: 12:00, Lễ tân phục vụ 24/7",
+    "price_range": "500.000đ - 1.200.000đ/phòng/đêm",
+    "best_time": "Tháng 7 - tháng 10 mùa dừa sáp bội thu và dịp diễn ra Lễ hội Vu Lan Thắng hội Chùa Ông Bổn",
+    "stay_experience": "Thưởng thức dừa sáp dầm sữa đá béo ngậy, tham quan Nhà cổ Huỳnh Kỳ trăm năm tuổi, chiêm bái các ngôi chùa cổ và đạp xe quanh thị trấn thanh bình.",
+    "waterway_access": "Bến tàu Cầu Kè trên sông Hậu kết nối các tour du lịch đường thủy từ Cần Thơ xuôi về Trà Vinh.",
+    "welcome_menu": "Ly dừa sáp Cầu Kè dầm sữa đá béo ngậy đặc sản, bánh chuối nướng cốt dừa và trà lài cổ điển thơm dịu.",
+    "cultural_notes": "Cầu Kè là vùng đất giao thoa tinh hoa ba nền văn hóa Kinh - Khmer - Hoa, nổi bật với di tích Nhà cổ Huỳnh Kỳ và thương hiệu dừa sáp Chỉ dẫn địa lý quốc gia.",
+    "visual_narrative": "Cận cảnh chi tiết hoa văn gạch bông cổ điển thời Pháp lát sàn, ánh nắng hắt qua khung cửa chớp gỗ tạo nên vệt sáng hoài niệm và sang trọng.",
+    "aeo_schema_type": "Hotel",
+    "source_citations": [
+      {
+        "title": "Hồ sơ Di tích Kiến trúc Nghệ thuật Nhà cổ Huỳnh Kỳ",
+        "url": "https://dsvh.gov.vn/di-tich-nha-co-huynh-ky-cau-ke",
+        "authority_tier": "Tier 1",
+        "notebook": "Vĩnh Long 360"
+      }
+    ],
+    "verifiedAt": "2026-09-13T22:45:00+07:00",
+    "verifiedSource": "NotebookLM Deep Terroir Research - Phase 10"
+  },
+  "nha-nghi-nha-co-dai-an": {
+    "summary": "Cơ sở lưu trú di sản trong khuôn viên khu du lịch Nhà Cổ Đại An tại Trà Cú, nơi lưu giữ tinh hoa kiến trúc nhà rường Nam Bộ và nếp sống cung đình xưa.",
+    "description": "Nhà nghỉ Nhà Cổ Đại An là điểm dừng chân đặc sắc với những gian nhà rường gỗ quý nguyên khối lợp ngói âm dương rêu phong. Không gian tĩnh mịch với hồ sen, vườn cây cổ thụ và hàng cột gỗ lim uy nghi mang lại cho du khách trải nghiệm như ngược dòng thời gian về một thế kỷ trước.",
+    "hours": "Nhận phòng: 14:00 - Trả phòng: 12:00, Phục vụ khách 24/7",
+    "price_range": "450.000đ - 900.000đ/phòng/đêm",
+    "best_time": "Tháng 10 đến tháng 4 mùa khô mát mẻ và dịp các lễ hội chùa Khmer Trà Cú tưng bừng",
+    "stay_experience": "Chiêm ngưỡng bộ bàn ghế cẩn ốc xà cừ cổ vật, dạo quanh vườn cây cổ thụ trăm năm, thăm chùa Cò Phnô Đôn và làng nghề đan đát truyền thống Đại An.",
+    "waterway_access": "Tiếp cận qua bến sông Trà Cú hoặc theo tuyến quốc lộ 54 rẽ vào đường liên xã Đại An.",
+    "welcome_menu": "Trà sen ướp tim sen cung đình, bánh tét lá cẩm ngũ sắc và đĩa chuối xiêm nướng mỡ hành thơm bùi đậm đà.",
+    "cultural_notes": "Bảo tồn nghệ thuật mộc tinh xảo của các phường thợ mộc tài ba Nam Bộ thế kỷ XIX, phản ánh chiều sâu văn hóa địa chí của vùng đất Trà Cú kiên cường.",
+    "visual_narrative": "Toàn cảnh góc rộng gian nhà chính với hàng cột gỗ lim bóng loáng đỡ mái đao ngói vảy cá cong vút, khói trầm hương thoang thoảng tạo không khí trang nghiêm cổ kính.",
+    "aeo_schema_type": "BedAndBreakfast",
+    "source_citations": [
+      {
+        "title": "Kiến trúc Nhà rường Nam Bộ và Di sản Trà Cú",
+        "url": "https://svhttdl.travinh.gov.vn/nha-co-dai-an",
+        "authority_tier": "Tier 1",
+        "notebook": "Vĩnh Long 360"
+      }
+    ],
+    "verifiedAt": "2026-09-13T22:45:00+07:00",
+    "verifiedSource": "NotebookLM Deep Terroir Research - Phase 10"
+  },
+  "ba-dong-beach-resort": {
+    "summary": "Khu nghỉ dưỡng ven biển Ba Động tại thị xã Duyên Hải, sở hữu bãi biển trải dài rợp bóng phi lao xanh ngắt và các phòng nghỉ view biển khoáng đạt.",
+    "description": "Ba Động Beach Resort mang lại kỳ nghỉ thư thái giữa thiên nhiên biển đảo nguyên sơ. Khu nghỉ dưỡng xây dựng các căn villa và phòng nghỉ tiện nghi hướng thẳng ra biển Đông, nơi du khách được ngắm bình minh tuyệt đẹp, dạo bước trên bãi cát mịn và thưởng thức hải sản tươi ngon đánh bắt trong ngày.",
+    "hours": "Nhận phòng: 14:00 - Trả phòng: 12:00, Lễ tân phục vụ 24/7",
+    "price_range": "650.000đ - 1.500.000đ/phòng/đêm",
+    "best_time": "Tháng 2 đến tháng 8 mùa biển êm sóng lặng và trời trong xanh ngắt",
+    "stay_experience": "Tắm biển Ba Động buổi sớm, ngắm bình minh trên biển Đông, thưởng thức tiệc BBQ hải sản đêm bờ biển và tham quan cánh đồng điện gió Duyên Hải.",
+    "waterway_access": "Đường thủy ven biển từ cảng Duyên Hải hoặc đường bộ theo quốc lộ 53 nối dài rẽ vào khu du lịch Ba Động.",
+    "welcome_menu": "Nước dừa dứa tươi mát lạnh, ghẹ biển hấp bia sả đỏ au chắc thịt và chù dẳn nướng mọi thơm phức hương vị biển.",
+    "cultural_notes": "Bãi biển Ba Động được người Pháp khai phá làm điểm nghỉ dưỡng từ đầu thế kỷ XX, gắn liền với huyền tích sông nước và đời sống ngư dân miền duyên hải.",
+    "visual_narrative": "Khung cảnh bình minh rạng rỡ với quả cầu lửa mặt trời từ từ nhô lên khỏi mặt biển Đông bao la, rọi ánh sáng vàng cam rực rỡ lên bờ cát và rặng phi lao xanh rì.",
+    "aeo_schema_type": "Resort",
+    "source_citations": [
+      {
+        "title": "Khu Du lịch Biển Ba Động - Điểm đến Duyên hải",
+        "url": "https://travinh.gov.vn/khu-du-lich-bien-ba-dong",
+        "authority_tier": "Tier 1",
+        "notebook": "Mekong 360 - Tập 2"
+      }
+    ],
+    "verifiedAt": "2026-09-13T22:45:00+07:00",
+    "verifiedSource": "NotebookLM Deep Terroir Research - Phase 10"
+  },
+  "resort-ben-tre-riverside": {
+    "summary": "Khu nghỉ dưỡng 4 sao cao cấp bên bờ sông Hàm Luông thơ mộng, kết hợp hài hòa giữa dịch vụ tiện nghi sang trọng và bản sắc sinh thái miệt vườn xứ dừa.",
+    "description": "Bến Tre Riverside Resort là biểu tượng nghỉ dưỡng chuẩn mực tại trung tâm thành phố ven sông Hàm Luông. Tọa lạc trên mảnh đất bến phà Hàm Luông lịch sử, resort mang đến không gian phòng nghỉ hiện đại view sông thoáng đãng, hồ bơi vô cực ngắm hoàng hôn và nhà hàng ẩm thực độc đáo chế biến từ dừa tươi.",
+    "hours": "Nhận phòng: 14:00 - Trả phòng: 12:00, Lễ tân phục vụ 24/7",
+    "price_range": "1.100.000đ - 2.800.000đ/phòng/đêm",
+    "best_time": "Quanh năm, đẹp nhất vào buổi chiều tà khi ráng hoàng hôn dát vàng trên dòng sông Hàm Luông",
+    "stay_experience": "Thư giãn tại hồ bơi vô cực ngắm tàu thuyền qua lại, thưởng thức cocktail dừa tại quầy bar ven sông, trải nghiệm du thuyền đêm và liệu trình spa dừa phục hồi sức khỏe.",
+    "waterway_access": "Bến du thuyền riêng trên sông Hàm Luông phục vụ cano và tàu du lịch đón trả khách theo tuyến đường thủy.",
+    "welcome_menu": "Cocktail dừa sáp dứa thanh mát, bánh flan dừa mềm mịn béo ngậy và đĩa gỏi tôm củ hũ dừa chuẩn vị hoàng gia.",
+    "cultural_notes": "Xây dựng trên nền bến phà Hàm Luông xưa, nơi ghi dấu những bước chuyển mình phát triển của đô thị xứ dừa và kết nối giao thương huyết mạch đôi bờ Nam Bắc.",
+    "visual_narrative": "Toàn cảnh hồ bơi vô cực phản chiếu ánh hoàng hôn rực rỡ trên mặt sông Hàm Luông mênh mông, những chiếc ghế dài tắm nắng sang trọng xếp dọc bờ rặng dừa xanh ngắt.",
+    "aeo_schema_type": "Resort",
+    "source_citations": [
+      {
+        "title": "Giới thiệu Điểm đến Bến Tre Riverside Resort",
+        "url": "https://svhttdl.bentre.gov.vn/ben-tre-riverside-resort",
+        "authority_tier": "Tier 1",
+        "notebook": "Mekong 360 - Tập 2"
+      }
+    ],
+    "verifiedAt": "2026-09-13T22:45:00+07:00",
+    "verifiedSource": "NotebookLM Deep Terroir Research - Phase 10"
+  },
+  "mekong-lodge-resort": {
+    "summary": "Khu nghỉ dưỡng bungalow sinh thái ẩn mình giữa miệt vườn cù lao An Bình, nổi bật với kiến trúc mộc mạc và phong cách phục vụ hòa hợp thiên nhiên.",
+    "description": "Mekong Lodge Resort mang đến trải nghiệm nghỉ dưỡng xanh biệt lập hoàn toàn với đời sống đô thị. Những căn bungalow riêng biệt xây bằng gạch đất nung và mái lá dừa nước bao quanh bởi vườn hoa nhiệt đới, mang lại giấc ngủ êm ái giữa tiếng chim hót và hương hoa bưởi thoang thoảng trong gió.",
+    "hours": "Nhận phòng: 14:00 - Trả phòng: 12:00, Lễ tân phục vụ 24/7",
+    "price_range": "900.000đ - 1.900.000đ/bungalow/đêm",
+    "best_time": "Tháng 4 đến tháng 9 mùa hoa trái sum suê rộ chín trên khắp các miệt vườn cù lao",
+    "stay_experience": "Đạp xe ngắm cảnh đường làng cù lao, chèo thuyền kayak trên rạch nhỏ rợp bóng dừa nước, học nấu ăn các món Nam Bộ và thư giãn tại hồ bơi sinh thái.",
+    "waterway_access": "Tàu du lịch chuyên biệt đưa đón khách từ bến tàu khách thành phố vượt sông Cổ Chiên cập bến gỗ riêng của resort.",
+    "welcome_menu": "Trà sả gừng mật ong hoa nhãn ấm nồng, bánh xèo tép rong giòn rụm và đĩa trái cây tươi hái ngay tại vườn nhà.",
+    "cultural_notes": "Tiêu biểu cho mô hình du lịch sinh thái không carbon, tôn trọng đa dạng sinh học và giữ gìn nét văn hóa miệt vườn cù lao An Bình nguyên bản.",
+    "visual_narrative": "Góc máy ngang ghi lại căn bungalow mái lá ấm cúng nép dưới tán cây mận và nhãn cổ thụ, con đường sỏi nhỏ nở rộ hoa mười giờ rực rỡ dưới nắng mai.",
+    "aeo_schema_type": "Resort",
+    "source_citations": [
+      {
+        "title": "Mô hình Du lịch Xanh Sinh thái Cù lao An Bình",
+        "url": "https://vinhlongtourist.vn/du-lich-xanh-an-binh",
+        "authority_tier": "Tier 1",
+        "notebook": "Mekong 360 - Tập 2"
+      }
+    ],
+    "verifiedAt": "2026-09-13T22:45:00+07:00",
+    "verifiedSource": "NotebookLM Deep Terroir Research - Phase 10"
+  },
+  "riverside-park-eco-resort": {
+    "summary": "Resort sinh thái ven sông tại xã Bình Hòa Phước, sở hữu hồ bơi ngoài trời hiện đại giữa khuôn viên vườn cây ăn trái và cảnh quan sông rạch hiền hòa.",
+    "description": "Riverside Park Eco Resort đem lại kỳ nghỉ dưỡng cân bằng trọn vẹn giữa thiên nhiên cù lao sông nước. Các phòng nghỉ và villa được bài trí trang nhã với ban công rộng mở đón gió sông, bao quanh bởi những mương vườn nhãn tiêu da bò và chôm chôm trĩu hạt soi bóng xuống làn nước trong lành.",
+    "hours": "Nhận phòng: 14:00 - Trả phòng: 12:00, Lễ tân 24/7",
+    "price_range": "800.000đ - 1.600.000đ/phòng/đêm",
+    "best_time": "Tháng 5 đến tháng 8 mùa trái chín rộ khắp các bờ liếp cù lao Bình Hòa Phước",
+    "stay_experience": "Tắm hồ bơi thư giãn view vườn cây, chèo xuồng dạo mương liếp, thưởng thức đờn ca tài tử đêm trăng và tham quan làng nghề gốm đỏ Mang Thít.",
+    "waterway_access": "Thuyền du lịch cập bến phao nổi an toàn ngay trước cổng resort trên nhánh sông Cổ Chiên lộng gió.",
+    "welcome_menu": "Nước dừa xiêm dứa mát ngọt, bánh chuối hấp nước cốt dừa dẻo quậy và cá tai tượng chiên xù nguyên vảy giòn rụm.",
+    "cultural_notes": "Gắn bó với vùng đất Bình Hòa Phước trứ danh về nghề làm vườn và nghệ thuật Đờn ca tài tử Nam Bộ lâu đời.",
+    "visual_narrative": "Góc máy rộng từ hồ bơi tràn bờ nhìn ra vườn cây ăn trái xanh mướt, ánh hoàng hôn phản chiếu mặt nước hồ bơi tạo nên mảng màu lung linh huyền ảo.",
+    "aeo_schema_type": "Resort",
+    "source_citations": [
+      {
+        "title": "Phát triển Điểm đến Du lịch Xã Bình Hòa Phước",
+        "url": "https://svhttdl.vinhlong.gov.vn/du-lich-binh-hoa-phuoc",
+        "authority_tier": "Tier 1",
+        "notebook": "Mekong 360 - Tập 2"
+      }
+    ],
+    "verifiedAt": "2026-09-13T22:45:00+07:00",
+    "verifiedSource": "NotebookLM Deep Terroir Research - Phase 10"
+  },
+  "vinh-sang-resort": {
+    "summary": "Khu du lịch và nghỉ dưỡng sinh thái giải trí quy mô trên cù lao An Bình, kết hợp hệ thống phòng nghỉ hướng sông và chuỗi hoạt động dân gian sôi động.",
+    "description": "Vinh Sang Resort là điểm đến vui chơi và nghỉ dưỡng quen thuộc của du khách muôn phương khi ghé thăm đất Vĩnh Long. Khuôn viên rộng lớn tích hợp các căn phòng nghỉ ven sông thoáng mát, vườn chim thiên nhiên và hàng chục trò chơi dân gian miệt vườn đặc sắc mang lại tiếng cười sảng khoái.",
+    "hours": "Nhận phòng: 14:00 - Trả phòng: 12:00, Lễ tân 24/7",
+    "price_range": "650.000đ - 1.300.000đ/phòng/đêm",
+    "best_time": "Quanh năm, sôi động và rộn ràng nhất vào các dịp nghỉ lễ và mùa trái cây chín hè",
+    "stay_experience": "Tát mương bắt cá trong trang phục áo bà ba, trượt cỏ, câu cá sấu, thưởng thức cá lóc nướng trui rơm và nghe đờn ca tài tử bên bờ sông Cổ Chiên.",
+    "waterway_access": "Bến tàu du lịch riêng đón các đoàn khách lớn từ Bến Cảng Hành Khách Vĩnh Long qua sông chỉ trong 10 phút.",
+    "welcome_menu": "Trà thảo dược mát gan thanh nhiệt, bánh khọt tôm đất giòn tan và lẩu mắm miệt vườn đậm đà ngát hương cá đồng.",
+    "cultural_notes": "Khơi dậy không gian văn hóa sinh hoạt dân dã và các trò chơi dân gian truyền thống của người dân vùng đồng bằng sông nước Cửu Long.",
+    "visual_narrative": "Khoảnh khắc vui tươi rộn rã của du khách trong trang phục áo bà ba đen lội mương bắt cá, nụ cười rạng ngời dưới ánh nắng trưa vàng rực của đất cù lao.",
+    "aeo_schema_type": "Resort",
+    "source_citations": [
+      {
+        "title": "Khu Du lịch Sinh thái Vinh Sang Vĩnh Long",
+        "url": "https://vinhlongtourist.vn/khu-du-lich-vinh-sang",
+        "authority_tier": "Tier 1",
+        "notebook": "Vĩnh Long 360"
+      }
+    ],
+    "verifiedAt": "2026-09-13T22:45:00+07:00",
+    "verifiedSource": "NotebookLM Deep Terroir Research - Phase 10"
+  },
+  "homestay-hai-cuong": {
+    "summary": "Homestay sinh thái tại Vũng Liêm, điểm dừng chân văn hóa trong tour du lịch tham quan Khu lưu niệm Thủ tướng Võ Văn Kiệt và làng dệt chiếu Cà Hôn.",
+    "description": "Homestay Hai Cường mang đến không gian lưu trú ấm cúng giữa lòng miệt vườn Vũng Liêm. Nơi đây là điểm kết nối du lịch sinh thái và văn hóa lịch sử, giúp du khách vừa tận hưởng giấc ngủ êm đềm trong gian nhà vườn vừa thuận tiện hành hương thăm các di tích cách mạng hào hùng của quê hương.",
+    "hours": "Nhận phòng: 13:30 - Trả phòng: 11:30, Gia chủ đón tiếp thân tình",
+    "price_range": "350.000đ - 650.000đ/phòng/đêm",
+    "best_time": "Tháng 11 đến tháng 4 mùa thời tiết khô mát và dịp kỷ niệm ngày sinh Thủ tướng Võ Văn Kiệt",
+    "stay_experience": "Tham quan Khu lưu niệm Võ Văn Kiệt, trải nghiệm dệt chiếu Cà Hôn cùng nghệ nhân Khmer, đạp xe qua những cánh đồng lúa xanh ngát và thưởng thức bánh xèo.",
+    "waterway_access": "Tiếp cận qua nhánh sông Vũng Liêm hoặc đường bộ từ quốc lộ 53 rất thuận tiện cho các đoàn xe du lịch.",
+    "welcome_menu": "Trà thảo mộc hoa cúc thanh lọc cơ thể, bánh ít trần nhân tôm thịt đậm đà và đĩa xoài cát Hòa Lộc ngọt thơm lừng.",
+    "cultural_notes": "Nằm trên vùng đất Vũng Liêm địa linh nhân kiệt, nơi hội tụ truyền thống yêu nước nồng nàn và bản sắc đoàn kết gắn bó giữa hai dân tộc Kinh - Khmer.",
+    "visual_narrative": "Góc máy chân thực ghi lại nếp nhà ngói đỏ rợp bóng vườn dừa xiêm, chiếc bàn đá dưới gốc cây cổ thụ nơi gia chủ và khách chuyện trò rôm rả bên ấm trà thơm.",
+    "aeo_schema_type": "BedAndBreakfast",
+    "source_citations": [
+      {
+        "title": "Tuyến Du lịch Di sản Văn hóa Vũng Liêm",
+        "url": "https://svhttdl.vinhlong.gov.vn/tuyen-du-lich-vung-liem",
+        "authority_tier": "Tier 1",
+        "notebook": "Vĩnh Long 360"
+      }
+    ],
+    "verifiedAt": "2026-09-13T22:45:00+07:00",
+    "verifiedSource": "NotebookLM Deep Terroir Research - Phase 10"
+  },
+  "homestay-hoa-thanh": {
+    "summary": "Homestay sinh thái nép mình bên vườn cam sành trĩu quả tại huyện Tam Bình, mang lại trải nghiệm khám phá vương quốc cam sành và sông nước bình yên.",
+    "description": "Homestay Hoà Thạnh mở ra không gian nghỉ dưỡng thanh bình giữa miệt vườn chuyên canh cam sành Tam Bình. Du khách được hít thở bầu không khí ngào ngạt hương hoa cam, tự tay thu hoạch những trái cam mọng nước và thưởng thức bữa cơm quê ấm cúng bên dòng kênh rợp mát bóng dừa nước.",
+    "hours": "Nhận phòng: 14:00 - Trả phòng: 12:00, Phục vụ chu đáo",
+    "price_range": "350.000đ - 650.000đ/phòng/đêm",
+    "best_time": "Tháng 9 đến tháng Chạp âm lịch mùa thu hoạch cam sành rộ cành tỏa hương ngát bờ mương",
+    "stay_experience": "Cắt cam sành tại liếp vườn, vắt nước cam tươi uống tại chỗ, chèo xuồng ba lá câu cá đồng và đạp xe thăm làng nghề bánh tráng Tam Bình.",
+    "waterway_access": "Hệ thống kênh rạch Tam Bình kết nối sông Măng Thít, thuyền nhỏ đưa khách cập tận cầu ván gỗ của homestay.",
+    "welcome_menu": "Nước cam sành Tam Bình nguyên chất ngọt thanh đậm vị, bánh tét nhân đậu mỡ béo bùi và đĩa ếch đồng xào lăn thơm phức.",
+    "cultural_notes": "Vùng đất Tam Bình trứ danh với thương hiệu Cam sành Tam Bình được bảo hộ Chỉ dẫn địa lý, khẳng định bàn tay lao động cần cù của người nông dân miền châu thổ.",
+    "visual_narrative": "Cận cảnh chùm cam sành vỏ xanh bóng loáng trĩu nặng trên cành ngả sát mặt nước mương vườn, phản chiếu những gợn sóng lăn tăn óng ánh nắng chiều.",
+    "aeo_schema_type": "BedAndBreakfast",
+    "source_citations": [
+      {
+        "title": "Chỉ dẫn Địa lý Cam sành Tam Bình và Du lịch Nông nghiệp",
+        "url": "https://vinhlongtourist.vn/cam-sanh-tam-binh",
+        "authority_tier": "Tier 1",
+        "notebook": "Mekong 360 - Tập 2"
+      }
+    ],
+    "verifiedAt": "2026-09-13T22:45:00+07:00",
+    "verifiedSource": "NotebookLM Deep Terroir Research - Phase 10"
+  },
+  "mekong-homestay-viet-nam": {
+    "summary": "Homestay gia đình tại Tam Bình chuyên phục vụ du khách trải nghiệm ẩm thực truyền thống và khám phá đời sống sông nước thôn dã mộc mạc.",
+    "description": "Mekong Homestay Việt Nam là điểm dừng chân bình dị tại ấp Phú Hữu Đông. Khu nghỉ dưỡng gia đình chú trọng bảo tồn các giá trị ẩm thực dân gian Nam Bộ, mang đến cho du khách những bữa cơm thơm dẻo nấu bằng gạo mới và những đêm chuyện trò ấm áp bên ánh đèn dầu hiền hòa.",
+    "hours": "Nhận phòng: 14:00 - Trả phòng: 12:00, Gia chủ đón tiếp nồng hậu",
+    "price_range": "350.000đ - 600.000đ/phòng/đêm",
+    "best_time": "Tháng 10 đến tháng 4 mùa thời tiết mát lành và mùa thu hoạch nông sản miệt vườn",
+    "stay_experience": "Cùng gia chủ đi chợ quê sớm mua cá đồng rau ghém, học nấu lẩu mắm cá linh bông điên điển và đạp xe dọc con đường đan rợp bóng dừa.",
+    "waterway_access": "Tiếp cận bằng ghe máy theo nhánh rạch Phú Hữu hoặc đường liên xã trải nhựa êm ái.",
+    "welcome_menu": "Trà hoa lài ướp mật ong, bánh da lợn lá dứa thơm lừng và tô canh chua cá lóc nấu bông điên điển đậm đà phong vị phù sa.",
+    "cultural_notes": "Tôn vinh bữa cơm gia đình Nam Bộ - nơi gắn kết tình làng nghĩa xóm và trao truyền những công thức nấu ăn dân gian qua nhiều thế hệ mẹ truyền con nối.",
+    "visual_narrative": "Mâm cơm đồng nội tròn trịa bày trên chiếc chiếu hoa trải giữa sân nhà, đĩa cá kho tộ bốc khói nghi ngút bên tô canh chua vàng rực bông điên điển mùa nước nổi.",
+    "aeo_schema_type": "BedAndBreakfast",
+    "source_citations": [
+      {
+        "title": "Văn hóa Ẩm thực Đồng quê Vĩnh Long",
+        "url": "https://svhttdl.vinhlong.gov.vn/van-hoa-am-thuc-dong-que",
+        "authority_tier": "Tier 1",
+        "notebook": "Mekong 360 - Tập 2"
+      }
+    ],
+    "verifiedAt": "2026-09-13T22:45:00+07:00",
+    "verifiedSource": "NotebookLM Deep Terroir Research - Phase 10"
+  },
+  "mekong-riverside-homestay": {
+    "summary": "Homestay ven bờ sông Hậu tại thị xã Bình Minh, sở hữu bến nước mộc mạc đón gió sông khoáng đạt và tầm nhìn rộng mở ngắm tàu thuyền tấp nập.",
+    "description": "Mekong Riverside Homestay tọa lạc ngay cửa ngõ giao thương đường thủy sầm uất ven sông Hậu. Những căn phòng nghỉ lợp lá dừa nước mát rượi có hàng hiên nhìn thẳng ra lòng sông rộng lớn, nơi du khách được ngắm bình minh trên sông nước và đón ngọn gió mát lành xua tan mọi mệt mỏi phố thị.",
+    "hours": "Nhận phòng: 14:00 - Trả phòng: 12:00, Phục vụ 24/7",
+    "price_range": "450.000đ - 850.000đ/phòng/đêm",
+    "best_time": "Quanh năm, đẹp nhất vào buổi sáng sớm đón bình minh và chiều muộn ngắm ráng hoàng hôn trên sông Hậu",
+    "stay_experience": "Ngắm bình minh trên bến sông Hậu, trải nghiệm đi phà vượt sông sang bến Ninh Kiều, thưởng thức hủ tiếu bò kho ven sông và câu cá đêm tĩnh lặng.",
+    "waterway_access": "Cầu bến bằng gỗ vát đón ca nô du lịch và đò máy từ bến Ninh Kiều vượt sông cập bến trực tiếp chỉ mất 10 phút.",
+    "welcome_menu": "Trà tắc mật ong hoa nhãn thơm mát, bánh tét nếp cẩm dẻo bùi và đĩa cá kèo kho rau răm ăn cùng cơm cháy đáy nồi thơm nức.",
+    "cultural_notes": "Gắn liền với đời sống bến nước thương hồ ven dòng sông Hậu - một trong hai nhánh sông huyết mạch nuôi dưỡng nền văn minh lúa nước Nam Bộ.",
+    "visual_narrative": "Góc máy ngang mặt nước bắt trọn khoảnh khắc chiếc xuồng ba lá chở đầy hoa cúc vàng rực lướt qua bến homestay dưới ánh bình minh ban mai dát vàng dòng sông Hậu.",
+    "aeo_schema_type": "BedAndBreakfast",
+    "source_citations": [
+      {
+        "title": "Du lịch Ven Sông Hậu và Cửa ngõ Bình Minh",
+        "url": "https://binhminh.vinhlong.gov.vn/du-lich-song-hau",
+        "authority_tier": "Tier 1",
+        "notebook": "Vĩnh Long 360"
+      }
+    ],
+    "verifiedAt": "2026-09-13T22:45:00+07:00",
+    "verifiedSource": "NotebookLM Deep Terroir Research - Phase 10"
+  },
+  "lo-lem-homestay": {
+    "summary": "Homestay boutique tiện nghi tại phường Long Châu, mang đến không gian nghỉ dưỡng thanh lịch, ban công thoáng đãng và vị trí thuận tiện khám phá trung tâm thành phố.",
+    "description": "Lọ Lem Homestay kết hợp khéo léo giữa phong cách thiết kế hiện đại và mảng xanh sân vườn dịu mát. Chỗ nghỉ có các phòng ngủ tinh tế đầy đủ tiện nghi, sân hiên rợp mát giàn hoa leo và ban công nhìn ra phố xá thanh bình, mang lại kỳ nghỉ nhẹ nhàng thoải mái cho du khách trẻ và gia đình.",
+    "hours": "Nhận phòng: 14:00 - Trả phòng: 12:00, Lễ tân phục vụ chu đáo",
+    "price_range": "400.000đ - 800.000đ/phòng/đêm",
+    "best_time": "Quanh năm, đặc biệt mát mẻ dễ chịu vào buổi chiều tối khi thành phố lên đèn",
+    "stay_experience": "Thưởng thức cà phê sáng trên ban công ngập nắng, tản bộ khám phá ẩm thực chợ đêm Vĩnh Long, đạp xe dạo công viên bờ kè sông Cổ Chiên thơ mộng.",
+    "waterway_access": "Dễ dàng kết nối với Bến Cảng Hành Khách Vĩnh Long chỉ cách 5 phút di chuyển để bắt các tuyến tàu du lịch cù lao.",
+    "welcome_menu": "Nước ép cam sành tươi mát lạnh, bánh bông lan trứng muối mềm thơm và đĩa mứt dừa non dẻo ngọt ngào.",
+    "cultural_notes": "Phản ánh nét giao thoa nhịp sống đô thị trẻ trung hiện đại nhưng vẫn lưu giữ trọn vẹn sự hiền hòa, mến khách đặc trưng của người dân xứ học Long Hồ dinh xưa.",
+    "visual_narrative": "Góc chụp từ ban công phòng nghỉ với những chậu cúc nhỏ xinh khoe sắc dưới nắng sớm, xa xa là bờ kè sông Cổ Chiên rợp bóng mát cây xanh thanh bình.",
+    "aeo_schema_type": "BedAndBreakfast",
+    "source_citations": [
+      {
+        "title": "Hệ thống Cơ sở Lưu trú Du lịch Thành phố Vĩnh Long",
+        "url": "https://vinhlongtourist.vn/co-so-luu-tru-tp-vinh-long",
+        "authority_tier": "Tier 1",
+        "notebook": "Vĩnh Long 360"
+      }
+    ],
+    "verifiedAt": "2026-09-13T22:45:00+07:00",
+    "verifiedSource": "NotebookLM Deep Terroir Research - Phase 10"
+  }
+}
