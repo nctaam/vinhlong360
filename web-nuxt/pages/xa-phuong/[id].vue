@@ -298,6 +298,20 @@ watch(() => route.fullPath, (next, previous) => {
 const goBack = () => goBackOr('/danh-ba')
 
 
+function sanitizeWardError(err: unknown): Record<string, unknown> | null {
+  if (!err) return null
+  const rec = (typeof err === 'object' && err !== null) ? (err as Record<string, unknown>) : {}
+  const status = Number(rec.statusCode || rec.status || (rec.response as any)?.status || 500)
+  const detail = typeof (rec.data as any)?.detail === 'string'
+    ? (rec.data as any).detail
+    : (status === 404 ? 'not_found' : '')
+  return {
+    statusCode: status,
+    data: { detail },
+    message: String(rec.message || err),
+  }
+}
+
 const {
   data: wardOverviewResult,
   error: wardOverviewError,
@@ -310,7 +324,7 @@ const {
     const overview = await apiFetch<WardOverviewResponse>(`/api/places/${encodedId.value}/overview`)
     return { generation, requestId, overview, failed: false, error: null } satisfies WardOverviewResult
   } catch (error) {
-    return { generation, requestId, overview: null, failed: true, error } satisfies WardOverviewResult
+    return { generation, requestId, overview: null, failed: true, error: sanitizeWardError(error) } satisfies WardOverviewResult
   }
 }, { watch: [id, () => route.fullPath], deep: false })
 
@@ -350,7 +364,7 @@ const {
       const carrier = await apiFetch<Record<string, unknown>>(`/api/entities/${encodedId.value}`)
       return { generation, requestId, carrier, error: null } satisfies WardPolicyCarrierResult
     } catch (error) {
-      return { generation, requestId, carrier: null, error } satisfies WardPolicyCarrierResult
+      return { generation, requestId, carrier: null, error: sanitizeWardError(error) } satisfies WardPolicyCarrierResult
     }
   },
   { watch: [id, () => route.fullPath], deep: false },
