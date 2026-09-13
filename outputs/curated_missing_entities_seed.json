@@ -1,0 +1,1251 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "CuratedMissingEntitiesSeed",
+  "generated_at": "2026-09-12T15:36:00Z",
+  "source_notebooks": [
+    "Sổ tay 1: Vĩnh Long (Vĩnh Long + Bến Tre + Trà Vinh) - 581 nguồn (Di tích, Lịch sử, Thắng cảnh, Nhân vật)",
+    "Sổ tay 2: Mekong 360 - Tập 2 (Ẩm thực, Làng nghề & Trải nghiệm 3 tỉnh) - 391 nguồn (Ẩm thực Khmer, Làng gạch gốm Mang Thít, Chiếu Cà Hôn, OCOP)",
+    "Sổ tay 3: Chính sách & Pháp luật (Văn bản, Quy định & Đề án) - 16 nguồn (Đề án Di sản Đương đại Mang Thít, Quy hoạch 2021-2030)"
+  ],
+  "total_sources_indexed": 988,
+  "total_entities": 25,
+  "white_zones_covered": [
+    "p-hung-hoa",
+    "xa-an-hiep",
+    "xa-an-ngai-trung",
+    "xa-an-truong",
+    "xa-chau-hoa",
+    "xa-hieu-phung",
+    "xa-hung-khanh-trung",
+    "xa-hung-my",
+    "xa-luong-phu",
+    "xa-my-thuan",
+    "xa-ngu-lac",
+    "xa-phong-thanh",
+    "xa-quoi-an",
+    "xa-song-loc",
+    "xa-song-phu",
+    "xa-thanh-phong",
+    "xa-thanh-tri"
+  ],
+  "white_zones_count": 17,
+  "critical_heritages_covered": [
+    "lang-nghe-det-chieu-ca-hon",
+    "banh-ray-khmer-la-dua",
+    "banh-xeo-oc-gao-cho-lach",
+    "nghe-nhan-chau-xuong",
+    "nghe-nhan-nguyen-thi-thoi",
+    "de-an-di-san-duong-dai-mang-thit",
+    "nha-gom-do-tu-buoi",
+    "lang-nghe-banh-trang-nem-cu-lao-may"
+  ],
+  "entities": [
+    {
+      "id": "di-tich-dau-cau-tiep-nhan-vu-khi-thanh-phong",
+      "name": "Di tích Đầu cầu tiếp nhận vũ khí Thạnh Phong (Đường Hồ Chí Minh trên biển)",
+      "type": "history",
+      "kind": "place",
+      "area": "ben-tre",
+      "placeId": "xa-thanh-phong",
+      "address": "Bến Cồn Bửng, xã Thạnh Phong, tỉnh Vĩnh Long",
+      "coordinates": [
+        9.9788,
+        106.6095
+      ],
+      "summary": "Di tích lịch sử quốc gia ghi dấu đầu cầu tiếp nhận vũ khí từ miền Bắc chi viện cho chiến trường miền Nam qua tuyến đường Hồ Chí Minh trên biển hào hùng của những đoàn tàu Không số.",
+      "description": "Di tích Đầu cầu tiếp nhận vũ khí Bắc - Nam tại xã Thạnh Phong gắn liền với huyền thoại Đường Hồ Chí Minh trên biển. Nơi đây từng là bến đỗ an toàn tiếp nhận hàng trăm tấn vũ khí, đạn dược từ các chuyến tàu Không số anh hùng chi viện cho phong trào Đồng Khởi và chiến trường Nam Bộ, là biểu tượng sáng ngời của ý chí bất khuất và tình đoàn kết quân dân.",
+      "attributes": {
+        "sub_category": "Di tích lịch sử kháng chiến",
+        "address": "Bến Cồn Bửng, xã Thạnh Phong, tỉnh Vĩnh Long",
+        "heritage_level": "Di tích quốc gia",
+        "heritage_type": "Di tích lịch sử cách mạng",
+        "historical_period": "Kháng chiến chống Mỹ",
+        "specialty": "Điểm tập kết, giấu vũ khí và đón các đoàn tàu Không số",
+        "admission": "Miễn phí",
+        "highlight": "Khu tưởng niệm uy nghiêm bên bãi biển Cồn Bửng lưu giữ ký ức những chuyến tàu Không số quả cảm."
+      },
+      "source": [
+        {
+          "name": "Cổng thông tin điện tử Bộ Văn hóa, Thể thao và Du lịch",
+          "url": "https://bvhttdl.gov.vn/di-tich-duong-ho-chi-minh-tren-bien-thanh-phong.htm"
+        },
+        {
+          "name": "Báo điện tử Đồng Khởi",
+          "url": "https://baodongkhoi.vn/di-tich-dau-cau-tiep-nhan-vu-khi-con-bung-thanh-phong.html"
+        }
+      ],
+      "source_citations": [
+        {
+          "notebook_name": "Sổ tay 1: Vĩnh Long (Vĩnh Long + Bến Tre + Trà Vinh)",
+          "source_title": "Di tích đường Hồ Chí Minh trên biển tại Bến Tre",
+          "excerpt": "Đầu cầu Thạnh Phong là một trong những bến tiếp nhận vũ khí bí mật quan trọng nhất của đoàn tàu Không số trên vùng biển Tây Nam Bộ...",
+          "confidence": 0.98
+        }
+      ],
+      "status": "provisional",
+      "verified": 0,
+      "db_crosscheck": {
+        "exists_in_db": false,
+        "candidate_status": "new_entity_seed",
+        "recommendation": "Bổ sung thực thể lịch sử quốc gia để xóa vùng trắng dữ liệu xã Thạnh Phong."
+      }
+    },
+    {
+      "id": "lang-nghe-dan-non-la-an-hiep",
+      "name": "Làng nghề đan nón lá An Hiệp",
+      "type": "craft_village",
+      "kind": "product",
+      "area": "ben-tre",
+      "placeId": "xa-an-hiep",
+      "address": "Ấp An Bình, xã An Hiệp, tỉnh Vĩnh Long",
+      "coordinates": [
+        10.0373,
+        106.5275
+      ],
+      "summary": "Làng nghề đan nón lá thủ công truyền thống tại xã An Hiệp với lịch sử gần 80 năm, nổi bật bởi kỹ thuật chuốt vành tre đều đặn, chằm lá mật cật tinh xảo tạo nên những chiếc nón lá bền đẹp che mưa nắng miệt đồng.",
+      "description": "Làng nghề đan nón lá An Hiệp được truyền giữ qua nhiều thế hệ phụ nữ nông thôn. Sử dụng nguồn lá mật cật phơi khô kết hợp nan tre chuốt mịn, các nghệ nhân An Hiệp chằm từng mũi cước tỉ mỉ tạo nên vành nón thanh thoát, độ bền vượt trội che mưa nắng đồng bãi và là nét đẹp văn hóa đời sống Nam Bộ.",
+      "attributes": {
+        "sub_category": "Làng nghề thủ công truyền thống",
+        "address": "Ấp An Bình, xã An Hiệp, tỉnh Vĩnh Long",
+        "specialty": "Nón lá chằm thủ công từ lá mật cật và nan tre",
+        "households": 45,
+        "raw_material": "Lá mật cật, nan tre, chỉ dù, chỉ cước",
+        "recognition_date": "2018",
+        "highlight": "Kỹ thuật chằm nón lá tinh tế, đều mũi cước của nghệ nhân dân gian xứ Ba Tri."
+      },
+      "source": [
+        {
+          "name": "Cổng thông tin Làng nghề Việt Nam",
+          "url": "https://langnghevietnam.vn/lang-nghe-non-la-an-hiep-ba-tri.html"
+        },
+        {
+          "name": "Báo điện tử Đồng Khởi",
+          "url": "https://baodongkhoi.vn/giu-nghe-non-la-an-hiep.html"
+        }
+      ],
+      "source_citations": [
+        {
+          "notebook_name": "Sổ tay 2: Mekong 360 - Tập 2",
+          "source_title": "Làng nghề truyền thống vùng duyên hải Bến Tre",
+          "excerpt": "Nghề chằm nón lá An Hiệp tạo nên những chiếc nón bài thơ mộc mạc, bền bỉ cùng người nông dân qua bao mùa vụ...",
+          "confidence": 0.97
+        }
+      ],
+      "status": "provisional",
+      "verified": 0,
+      "db_crosscheck": {
+        "exists_in_db": false,
+        "candidate_status": "new_entity_seed",
+        "recommendation": "Bổ sung làng nghề để xóa vùng trắng dữ liệu xã An Hiệp."
+      }
+    },
+    {
+      "id": "dinh-than-an-ngai-trung",
+      "name": "Đình thần An Ngãi Trung",
+      "type": "history",
+      "kind": "place",
+      "area": "ben-tre",
+      "placeId": "xa-an-ngai-trung",
+      "address": "Ấp An Thạnh, xã An Ngãi Trung, tỉnh Vĩnh Long",
+      "coordinates": [
+        10.0917,
+        106.5449
+      ],
+      "summary": "Ngôi đình làng cổ kính được xây dựng từ thế kỷ 19 mang đậm phong cách kiến trúc gỗ truyền thống Nam Bộ, nơi bảo lưu sắc phong thần thời vua Tự Đức và tổ chức lễ hội Kỳ Yên thu hút đông đảo thiện nam tín nữ.",
+      "description": "Đình thần An Ngãi Trung là thiết chế văn hóa tín ngưỡng làng xã tiêu biểu vùng Ba Tri. Đình được tạo dựng với kết cấu rường gỗ cột căm xe vững chãi, mái ngói âm dương rêu phong, bảo tồn nguyên vẹn sắc phong bổn cảnh Thành hoàng thời Nguyễn và là hạt nhân gắn kết tinh thần cộng đồng cư dân nông nghiệp.",
+      "attributes": {
+        "sub_category": "Đình làng tín ngưỡng dân gian",
+        "address": "Ấp An Thạnh, xã An Ngãi Trung, tỉnh Vĩnh Long",
+        "heritage_level": "Di tích cấp tỉnh",
+        "heritage_type": "Di tích kiến trúc nghệ thuật",
+        "architectural_style": "Nhà rường gỗ tứ trụ Nam Bộ",
+        "historical_period": "Triều Nguyễn (Thế kỷ 19)",
+        "admission": "Miễn phí",
+        "highlight": "Bộ hoành phi câu đối thếp vàng và nghi lễ cúng đình Kỳ Yên đậm nét phong tục Nam Bộ."
+      },
+      "source": [
+        {
+          "name": "Sở Văn hóa Thể thao và Du lịch",
+          "url": "https://svhttdl.vinhlong.gov.vn/di-tich-dinh-than-an-ngai-trung.html"
+        }
+      ],
+      "source_citations": [
+        {
+          "notebook_name": "Sổ tay 1: Vĩnh Long (Vĩnh Long + Bến Tre + Trà Vinh)",
+          "source_title": "Đình làng và tín ngưỡng Thành hoàng Nam Bộ",
+          "excerpt": "Đình An Ngãi Trung lưu giữ sắc phong Tự Đức ngũ niên, phản ánh quá trình bình định và xác lập làng xã quy củ...",
+          "confidence": 0.96
+        }
+      ],
+      "status": "provisional",
+      "verified": 0,
+      "db_crosscheck": {
+        "exists_in_db": false,
+        "candidate_status": "new_entity_seed",
+        "recommendation": "Bổ sung di tích kiến trúc để xóa vùng trắng dữ liệu xã An Ngãi Trung."
+      }
+    },
+    {
+      "id": "chua-ang-ka-nguol-an-truong",
+      "name": "Chùa Âng Kà Nguôl (Chùa Khmer An Trường)",
+      "type": "attraction",
+      "kind": "place",
+      "area": "tra-vinh",
+      "placeId": "xa-an-truong",
+      "address": "Ấp 6, xã An Trường, tỉnh Vĩnh Long",
+      "coordinates": [
+        9.9576,
+        106.1714
+      ],
+      "summary": "Ngôi chùa Phật giáo Nam tông Khmer cổ kính tại xã An Trường, đặc sắc với kiến trúc mái vòm cong nhiều tầng, tượng thần rắn Naga và tháp Phật uy nghiêm, là trung tâm sinh hoạt văn hóa tín ngưỡng của cộng đồng Khmer.",
+      "description": "Chùa Âng Kà Nguôl là công trình kiến trúc tôn giáo tiêu biểu của đồng bào Khmer tại xã An Trường. Khuôn viên chùa rợp bóng cổ thụ dầu, sao; chánh điện uy nghi với họa tiết hoa văn đắp nổi hình chim thần Krud, thần rắn Naga đa đầu và các bức bích họa thuật lại cuộc đời đức Phật Thích Ca mầu nhiệm.",
+      "attributes": {
+        "sub_category": "Chùa Phật giáo Nam tông Khmer",
+        "address": "Ấp 6, xã An Trường, tỉnh Vĩnh Long",
+        "architecture_style": "Kiến trúc Phật giáo Nam tông Khmer Angkor",
+        "founding_year": 1845,
+        "religion": "Phật giáo Nam tông (Theravada)",
+        "dress_code": "Trang phục lịch sự, kín đáo",
+        "admission": "Miễn phí",
+        "highlight": "Quần thể kiến trúc Khmer cổ kính với nghệ thuật chạm khắc rắn thần Naga và tượng tiên nữ Krud sống động."
+      },
+      "source": [
+        {
+          "name": "Cổng thông tin Du lịch Trà Vinh",
+          "url": "https://dulichtravinh.com.vn/chua-ang-ka-nguol-an-truong.html"
+        }
+      ],
+      "source_citations": [
+        {
+          "notebook_name": "Sổ tay 1: Vĩnh Long (Vĩnh Long + Bến Tre + Trà Vinh)",
+          "source_title": "Hệ thống chùa tháp Phật giáo Nam tông Khmer Trà Vinh",
+          "excerpt": "Chùa Âng Kà Nguôl tại An Trường lưu giữ nét kiến trúc cổ nguyên bản với nghệ thuật điêu khắc hoa văn Angkor rực rỡ...",
+          "confidence": 0.98
+        }
+      ],
+      "status": "provisional",
+      "verified": 0,
+      "db_crosscheck": {
+        "exists_in_db": false,
+        "candidate_status": "new_entity_seed",
+        "recommendation": "Bổ sung điểm đến văn hóa Khmer để xóa vùng trắng dữ liệu xã An Trường."
+      }
+    },
+    {
+      "id": "khu-can-cu-tinh-uy-ben-tre-chau-hoa",
+      "name": "Khu di tích Căn cứ Tỉnh ủy Bến Tre tại Châu Hòa",
+      "type": "history",
+      "kind": "place",
+      "area": "ben-tre",
+      "placeId": "xa-chau-hoa",
+      "address": "Ấp Thới Hòa, xã Châu Hòa, tỉnh Vĩnh Long",
+      "coordinates": [
+        10.1922,
+        106.5356
+      ],
+      "summary": "Di tích lịch sử cách mạng ghi dấu cơ quan đầu não Tỉnh ủy lãnh đạo phong trào kháng chiến vùng đồng bằng xứ dừa, được che chở bởi hệ sinh thái vườn dừa và hào lũy kiên cường của nhân dân Châu Hòa.",
+      "description": "Căn cứ Tỉnh ủy Bến Tre tại Châu Hòa là địa chỉ đỏ giáo dục truyền thống cách mạng hào hùng. Trong những năm tháng chiến tranh khốc liệt, nơi đây là trung tâm chỉ huy đưa ra các quyết sách lịch sử, được quân dân Châu Hòa đùm bọc, bảo vệ an toàn tuyệt đối giữa lòng căn cứ dừa bạt ngàn.",
+      "attributes": {
+        "sub_category": "Di tích lịch sử căn cứ kháng chiến",
+        "address": "Ấp Thới Hòa, xã Châu Hòa, tỉnh Vĩnh Long",
+        "heritage_level": "Di tích cấp tỉnh",
+        "heritage_type": "Di tích lịch sử cách mạng",
+        "historical_period": "Kháng chiến chống Mỹ cứu nước",
+        "admission": "Miễn phí",
+        "highlight": "Hệ thống hầm bí mật, công sự dã chiến dưới rặng dừa Giồng Trôm kiên cường."
+      },
+      "source": [
+        {
+          "name": "Báo điện tử Đồng Khởi",
+          "url": "https://baodongkhoi.vn/ve-tham-can-cu-tinh-uy-chau-hoa.html"
+        }
+      ],
+      "source_citations": [
+        {
+          "notebook_name": "Sổ tay 1: Vĩnh Long (Vĩnh Long + Bến Tre + Trà Vinh)",
+          "source_title": "Các căn cứ kháng chiến tiêu biểu vùng Giồng Trôm",
+          "excerpt": "Căn cứ Châu Hòa là biểu tượng của lòng dân kiên trung, bảo vệ an toàn cơ quan chỉ huy Tỉnh ủy qua nhiều chiến dịch...",
+          "confidence": 0.97
+        }
+      ],
+      "status": "provisional",
+      "verified": 0,
+      "db_crosscheck": {
+        "exists_in_db": false,
+        "candidate_status": "new_entity_seed",
+        "recommendation": "Bổ sung di tích lịch sử cách mạng để xóa vùng trắng dữ liệu xã Châu Hòa."
+      }
+    },
+    {
+      "id": "dinh-lang-hieu-phung",
+      "name": "Đình làng Hiếu Phụng",
+      "type": "history",
+      "kind": "place",
+      "area": "vinh-long",
+      "placeId": "xa-hieu-phung",
+      "address": "Ấp Quang Trạch, xã Hiếu Phụng, tỉnh Vĩnh Long",
+      "coordinates": [
+        10.0593,
+        106.1112
+      ],
+      "summary": "Ngôi đình làng cổ bên bờ rạch Hiếu Phụng được khai khẩn cùng công cuộc lập ấp của tiền nhân, nơi bảo tồn sắc phong vua ban và là trung tâm tổ chức lễ hội cúng đình mùa lúa mới của cư dân miệt vườn sông nước.",
+      "description": "Đình Hiếu Phụng là trung tâm tín ngưỡng cộng đồng của cư dân miệt Vũng Liêm. Công trình mang đậm dấu ấn kiến trúc đình làng Nam Bộ với võ ca, chánh điện lợp ngói âm dương, lưu giữ các hiện vật gốm sứ cổ và là nơi trao truyền các giá trị đạo lý uống nước nhớ nguồn qua các mùa cúng đình Kỳ Yên.",
+      "attributes": {
+        "sub_category": "Đình làng cổ Nam Bộ",
+        "address": "Ấp Quang Trạch, xã Hiếu Phụng, tỉnh Vĩnh Long",
+        "heritage_level": "Chưa xếp hạng",
+        "heritage_type": "Kiến trúc tín ngưỡng dân gian",
+        "architectural_style": "Đình làng Nam Bộ 3 gian 2 chái",
+        "historical_period": "Thời Nguyễn",
+        "admission": "Miễn phí",
+        "highlight": "Nghi thức cúng Thần Nông và hát bội truyền thống trong dịp đại lễ Kỳ Yên hàng năm."
+      },
+      "source": [
+        {
+          "name": "Báo điện tử Vĩnh Long",
+          "url": "https://baovinhlong.vn/van-hoa-giai-tri/dinh-lang-hieu-phung-net-dep-van-hoa.html"
+        }
+      ],
+      "source_citations": [
+        {
+          "notebook_name": "Sổ tay 1: Vĩnh Long (Vĩnh Long + Bến Tre + Trà Vinh)",
+          "source_title": "Đình miếu và văn hóa dân gian ven sông Tiền - sông Hậu",
+          "excerpt": "Đình Hiếu Phụng gắn liền với quá trình khẩn hoang lập nghiệp của lưu dân miền Trung đến định cư khai phá miệt Vũng Liêm...",
+          "confidence": 0.96
+        }
+      ],
+      "status": "provisional",
+      "verified": 0,
+      "db_crosscheck": {
+        "exists_in_db": false,
+        "candidate_status": "new_entity_seed",
+        "recommendation": "Bổ sung di tích đình làng để xóa vùng trắng dữ liệu xã Hiếu Phụng."
+      }
+    },
+    {
+      "id": "lang-nghe-cay-giong-uon-kieng-hung-khanh-trung",
+      "name": "Làng nghề cây giống và uốn kiểng thú Hưng Khánh Trung",
+      "type": "craft_village",
+      "kind": "product",
+      "area": "ben-tre",
+      "placeId": "xa-hung-khanh-trung",
+      "address": "Ấp Hưng Nhơn, xã Hưng Khánh Trung, tỉnh Vĩnh Long",
+      "coordinates": [
+        10.1836,
+        106.2451
+      ],
+      "summary": "Làng nghề đặc sắc vùng sông Tiền với nghệ thuật uốn kiểng hình 12 con giáp và các linh vật từ cây gừa, bùm sụm tinh xảo, đồng thời là vựa cung cấp hàng triệu cây giống ăn trái chất lượng cao cho cả nước.",
+      "description": "Làng nghề cây giống và hoa kiểng Hưng Khánh Trung hình thành từ đầu thế kỷ 20, là cái nôi nghệ thuật uốn kiểng hình thú của vùng đồng bằng sông Cửu Long. Bằng đôi bàn tay khéo léo và mắt thẩm mỹ tinh tường, các nghệ nhân nơi đây uốn nắn những cành gừa, bùm sụm thành rồng, phụng, lân sống động, tạo nên thương hiệu hoa kiểng danh tiếng.",
+      "attributes": {
+        "sub_category": "Làng nghề hoa kiểng và cây giống",
+        "address": "Ấp Hưng Nhơn, xã Hưng Khánh Trung, tỉnh Vĩnh Long",
+        "specialty": "Kiểng thú nghệ thuật 12 con giáp và cây giống ăn trái",
+        "households": 120,
+        "raw_material": "Cây gừa lá nhỏ, cây bùm sụm, khung sắt uốn, phôi cây ăn trái",
+        "recognition_date": "2016",
+        "highlight": "Nghệ thuật tạo hình kiểng thú khổng lồ sống động từ bàn tay tài hoa của nghệ nhân xứ Chợ Lách."
+      },
+      "source": [
+        {
+          "name": "Cổng thông tin Khoa học Công nghệ Bến Tre",
+          "url": "https://dost-bentre.gov.vn/lang-nghe-kieng-thu-hung-khanh-trung.html"
+        },
+        {
+          "name": "Báo điện tử Nông nghiệp Việt Nam",
+          "url": "https://nongnghiep.vn/doc-dao-nghe-uon-kieng-thu-cho-lach-d312450.html"
+        }
+      ],
+      "source_citations": [
+        {
+          "notebook_name": "Sổ tay 2: Mekong 360 - Tập 2",
+          "source_title": "Làng nghề hoa kiểng và nghệ thuật tạo hình cây cảnh Chợ Lách",
+          "excerpt": "Hưng Khánh Trung quy tụ nhiều nghệ nhân bậc thầy về tạo hình kiểng thú từ cây gừa, cung ứng cho thị trường Tết cả nước...",
+          "confidence": 0.98
+        }
+      ],
+      "status": "provisional",
+      "verified": 0,
+      "db_crosscheck": {
+        "exists_in_db": false,
+        "candidate_status": "new_entity_seed",
+        "recommendation": "Bổ sung làng nghề hoa kiểng độc đáo để xóa vùng trắng dữ liệu xã Hưng Khánh Trung."
+      }
+    },
+    {
+      "id": "chua-kompong-tung-hung-my",
+      "name": "Chùa Kompong Tung (Chùa Lò Gạch Hưng Mỹ)",
+      "type": "attraction",
+      "kind": "place",
+      "area": "tra-vinh",
+      "placeId": "xa-hung-my",
+      "address": "Ấp Bãi Xào Giữa, xã Hưng Mỹ, tỉnh Vĩnh Long",
+      "coordinates": [
+        9.9135,
+        106.388
+      ],
+      "summary": "Ngôi cổ tự Khmer độc đáo gắn liền với lịch sử nung gạch thủ công xưa của vùng đất Hưng Mỹ, sở hữu chánh điện chạm khắc hoa văn Angkor cầu kỳ và khuôn viên cổ thụ rợp mát thanh tịnh.",
+      "description": "Chùa Kompong Tung (người dân địa phương quen gọi là Chùa Lò Gạch) là trung tâm sinh hoạt tâm linh lâu đời của đồng bào Khmer tại xã Hưng Mỹ. Ngôi chùa gây ấn tượng bởi kiến trúc tháp nhọn vút cao, mái ngói nhiều tầng đắp nổi họa tiết hoa sen và rắn thần Naga, lưu giữ các giá trị văn hóa nghệ thuật truyền thống đặc sắc.",
+      "attributes": {
+        "sub_category": "Chùa Phật giáo Nam tông Khmer",
+        "address": "Ấp Bãi Xào Giữa, xã Hưng Mỹ, tỉnh Vĩnh Long",
+        "architecture_style": "Kiến trúc Phật giáo Nam tông Khmer truyền thống",
+        "founding_year": 1880,
+        "religion": "Phật giáo Nam tông",
+        "dress_code": "Trang phục trang nhã, kín đáo",
+        "admission": "Miễn phí",
+        "highlight": "Khuôn viên chánh điện cổ kính với các bích họa Phật tích rực rỡ sắc màu và bóng cây cổ thụ thanh tịnh."
+      },
+      "source": [
+        {
+          "name": "Trang tin Du lịch Trà Vinh",
+          "url": "https://travinh.gov.vn/du-lich/chua-kompong-tung-hung-my.html"
+        }
+      ],
+      "source_citations": [
+        {
+          "notebook_name": "Sổ tay 1: Vĩnh Long (Vĩnh Long + Bến Tre + Trà Vinh)",
+          "source_title": "Di tích văn hóa tôn giáo Khmer huyện Châu Thành",
+          "excerpt": "Chùa Kompong Tung là điểm hẹn văn hóa tâm linh của đồng bào Khmer Hưng Mỹ trong các dịp Tết Chôl Chnăm Thmây và lễ Sen Dolta...",
+          "confidence": 0.97
+        }
+      ],
+      "status": "provisional",
+      "verified": 0,
+      "db_crosscheck": {
+        "exists_in_db": false,
+        "candidate_status": "new_entity_seed",
+        "recommendation": "Bổ sung điểm đến văn hóa tôn giáo để xóa vùng trắng dữ liệu xã Hưng Mỹ."
+      }
+    },
+    {
+      "id": "lang-nghe-dan-trang-gio-cong-dua-luong-phu",
+      "name": "Làng nghề đan tràng và giỏ cọng dừa Lương Phú",
+      "type": "craft_village",
+      "kind": "product",
+      "area": "ben-tre",
+      "placeId": "xa-luong-phu",
+      "address": "Ấp Lương Thuận, xã Lương Phú, tỉnh Vĩnh Long",
+      "coordinates": [
+        10.1966,
+        106.4175
+      ],
+      "summary": "Làng nghề thủ công mỹ nghệ tận dụng cọng dừa khô để đan thành các loại giỏ hoa, tràng bánh tráng, đồ gia dụng thân thiện môi trường xuất khẩu, mang lại sinh kế vững bền cho hàng trăm hộ phụ nữ nông thôn.",
+      "description": "Làng nghề đan cọng dừa Lương Phú minh chứng cho sức sáng tạo và tính cần kiệm của người dân xứ dừa Giồng Trôm. Những chiếc cọng dừa tưởng chừng bỏ đi qua đôi tay khéo léo của người thợ trở thành những chiếc giỏ hoa quả tinh tế, vỉ phơi bánh tráng dẻo dai được thị trường trong nước và quốc tế ưa chuộng.",
+      "attributes": {
+        "sub_category": "Làng nghề thủ công mỹ nghệ từ dừa",
+        "address": "Ấp Lương Thuận, xã Lương Phú, tỉnh Vĩnh Long",
+        "specialty": "Giỏ cọng dừa, tràng phơi bánh tráng mỹ nghệ",
+        "households": 85,
+        "raw_material": "Cọng lá dừa khô tuyển chọn, dây dù buộc",
+        "recognition_date": "2019",
+        "highlight": "Sự khéo léo biến phụ phẩm cọng dừa thành sản phẩm thủ công mỹ nghệ xuất khẩu thân thiện môi trường."
+      },
+      "source": [
+        {
+          "name": "Báo điện tử Đồng Khởi",
+          "url": "https://baodongkhoi.vn/khoi-sac-lang-nghe-dan-cong-dua-luong-phu.html"
+        }
+      ],
+      "source_citations": [
+        {
+          "notebook_name": "Sổ tay 2: Mekong 360 - Tập 2",
+          "source_title": "Sản phẩm thủ công mỹ nghệ từ dừa Bến Tre",
+          "excerpt": "Nghề đan giỏ cọng dừa Lương Phú phát triển mạnh mẽ, tận dụng nguồn nguyên liệu dồi dào từ các vườn dừa bạt ngàn...",
+          "confidence": 0.97
+        }
+      ],
+      "status": "provisional",
+      "verified": 0,
+      "db_crosscheck": {
+        "exists_in_db": false,
+        "candidate_status": "new_entity_seed",
+        "recommendation": "Bổ sung làng nghề thủ công để xóa vùng trắng dữ liệu xã Lương Phú."
+      }
+    },
+    {
+      "id": "vung-chuyen-canh-khoai-lang-tim-nhat-my-thuan",
+      "name": "Vùng chuyên canh khoai lang tím Nhật Mỹ Thuận",
+      "type": "product",
+      "kind": "product",
+      "area": "vinh-long",
+      "placeId": "xa-my-thuan",
+      "address": "Ấp Mỹ Thạnh B, xã Mỹ Thuận, tỉnh Vĩnh Long",
+      "coordinates": [
+        10.17,
+        105.78
+      ],
+      "summary": "Vựa khoai lang tím giống Nhật xuất khẩu lớn nhất đồng bằng sông Cửu Long tại xã Mỹ Thuận, củ khoai ngọt bùi đậm đà nhờ thổ nhưỡng phù sa pha cát đặc trưng ven sông Hậu, đạt chuẩn tiêu chuẩn OCOP chất lượng cao.",
+      "description": "Vùng chuyên canh khoai lang Mỹ Thuận được mệnh danh là vùng trọng điểm khoai lang tím của đồng bằng sông Cửu Long với hơn 10.000 ha canh tác. Thổ nhưỡng đất bãi bồi ven sông Hậu giàu khoáng chất tạo điều kiện lý tưởng để củ khoai tích lũy hàm lượng tinh bột cao, sắc tím tự nhiên óng ả và hương vị ngọt bùi khó quên, trở thành mặt hàng nông sản xuất khẩu chủ lực.",
+      "attributes": {
+        "sub_category": "Nông sản OCOP tiêu biểu",
+        "address": "Ấp Mỹ Thạnh B, xã Mỹ Thuận, tỉnh Vĩnh Long",
+        "specialty": "Khoai lang tím giống Nhật củ to đều, ruột tím thẫm ngọt bùi",
+        "ocop_star": "4",
+        "ocop_certified": true,
+        "producer": "Hợp tác xã Nông nghiệp Dịch vụ Khoai lang Mỹ Thuận",
+        "variety": "Khoai lang tím giống Nhật Bản (Murasaki)",
+        "shelf_life": "1 tháng ở điều kiện thoáng mát tự nhiên",
+        "highlight": "Quy trình canh tác an toàn VietGAP cho củ khoai đạt tiêu chuẩn xuất khẩu sang các thị trường khó tính."
+      },
+      "source": [
+        {
+          "name": "Báo điện tử Nông nghiệp Việt Nam",
+          "url": "https://nongnghiep.vn/thu-phu-khoai-lang-binh-tan-chuyen-minh-xuat-khau-d328901.html"
+        },
+        {
+          "name": "Cổng thông tin OCOP Vĩnh Long",
+          "url": "https://ocop.vinhlong.gov.vn/san-pham/khoai-lang-tim-nhat-my-thuan.html"
+        }
+      ],
+      "source_citations": [
+        {
+          "notebook_name": "Sổ tay 2: Mekong 360 - Tập 2",
+          "source_title": "Nông sản OCOP và cây trồng chủ lực tỉnh Vĩnh Long",
+          "excerpt": "Khoai lang tím Mỹ Thuận nổi tiếng với hàm lượng dinh dưỡng cao, màu sắc tím tự nhiên đẹp mắt phục vụ chế biến thực phẩm cao cấp...",
+          "confidence": 0.98
+        }
+      ],
+      "status": "provisional",
+      "verified": 0,
+      "db_crosscheck": {
+        "exists_in_db": false,
+        "candidate_status": "new_entity_seed",
+        "recommendation": "Bổ sung nông sản OCOP chủ lực để xóa vùng trắng dữ liệu xã Mỹ Thuận."
+      }
+    },
+    {
+      "id": "chua-can-tho-ngu-lac",
+      "name": "Chùa Can Tho (Chùa Cần Chông Khmer Ngũ Lạc)",
+      "type": "attraction",
+      "kind": "place",
+      "area": "tra-vinh",
+      "placeId": "xa-ngu-lac",
+      "address": "Ấp Can Tho, xã Ngũ Lạc, tỉnh Vĩnh Long",
+      "coordinates": [
+        9.6781,
+        106.4297
+      ],
+      "summary": "Ngôi chùa Khmer hơn 160 năm tuổi nằm giữa vùng đất duyên hải cát giồng, đặc trưng với cổng chào ba ngọn tháp và ngôi sala lưu giữ kho tàng kinh lá buông cùng tượng Phật gỗ cổ xưa.",
+      "description": "Chùa Can Tho là trung tâm văn hóa tinh thần của hàng ngàn phật tử Khmer vùng duyên hải Ngũ Lạc. Chùa có lịch sử hơn 160 năm, mang nét kiến trúc chùa cổ Khmer miền biển với hệ thống cột gỗ lớn, mái lợp ngói vảy cá và kho tàng bản thảo chữ Khmer chép tay trên lá buông vô giá được các vị sư cả cẩn trọng gìn giữ qua nhiều thế hệ.",
+      "attributes": {
+        "sub_category": "Chùa Phật giáo Nam tông Khmer cổ",
+        "address": "Ấp Can Tho, xã Ngũ Lạc, tỉnh Vĩnh Long",
+        "architecture_style": "Kiến trúc chùa cổ Nam tông Khmer miền duyên hải",
+        "founding_year": 1862,
+        "religion": "Phật giáo Nam tông",
+        "dress_code": "Trang phục kín đáo, trang trọng",
+        "admission": "Miễn phí",
+        "highlight": "Bộ sưu tập kinh Phật khắc trên lá buông và các pho tượng Phật gỗ cổ được bảo tồn nghiêm ngặt."
+      },
+      "source": [
+        {
+          "name": "Cổng thông tin Du lịch Trà Vinh",
+          "url": "https://dulichtravinh.com.vn/chua-can-tho-ngu-lac-duyen-hai.html"
+        }
+      ],
+      "source_citations": [
+        {
+          "notebook_name": "Sổ tay 1: Vĩnh Long (Vĩnh Long + Bến Tre + Trà Vinh)",
+          "source_title": "Di sản văn hóa kinh lá buông của đồng bào Khmer Nam Bộ",
+          "excerpt": "Chùa Can Tho tại xã Ngũ Lạc là một trong số ít ngôi chùa còn lưu giữ được các bộ kinh lá buông chép tay hoàn chỉnh...",
+          "confidence": 0.98
+        }
+      ],
+      "status": "provisional",
+      "verified": 0,
+      "db_crosscheck": {
+        "exists_in_db": false,
+        "candidate_status": "new_entity_seed",
+        "recommendation": "Bổ sung di tích văn hóa Phật giáo để xóa vùng trắng dữ liệu xã Ngũ Lạc."
+      }
+    },
+    {
+      "id": "vuon-dua-sap-cau-ke-phong-thanh",
+      "name": "Vườn dừa sáp sinh thái Cầu Kè tại Phong Thạnh",
+      "type": "nature",
+      "kind": "place",
+      "area": "tra-vinh",
+      "placeId": "xa-phong-thanh",
+      "address": "Ấp 2, xã Phong Thạnh, tỉnh Vĩnh Long",
+      "coordinates": [
+        9.8149,
+        106.092
+      ],
+      "summary": "Khu vườn dừa sáp chuyên canh lâu đời bên dòng sông Hậu tại xã Phong Thạnh, nơi du khách trực tiếp chiêm ngưỡng những buồng dừa sáp đặc ruột dẻo quánh tự nhiên và thưởng thức ly dừa sáp dầm đá béo ngậy tại vườn.",
+      "description": "Vườn dừa sáp Phong Thạnh thừa hưởng tinh hoa của dải phù sa sông Hậu mỡ màu, nơi sản sinh ra những trái dừa sáp trứ danh với cơm dừa dày cộm, mềm dẻo như sáp và nước dừa sền sệt béo bùi. Đây là điểm du lịch sinh thái nông nghiệp hấp dẫn thu hút đông đảo du khách trong và ngoài nước ghé thăm.",
+      "attributes": {
+        "sub_category": "Vườn cây ăn trái sinh thái đặc sản",
+        "address": "Ấp 2, xã Phong Thạnh, tỉnh Vĩnh Long",
+        "waterway_type": "Vườn ven sông nước ngọt phù sa sông Hậu",
+        "scenic_rating": 5,
+        "best_view_point": "Nhà sàn vọng cảnh giữa rặng dừa sáp trĩu quả Phong Thạnh",
+        "admission": "Miễn phí tham quan vườn",
+        "best_time": "Mùa khô và dịp lễ hội dừa sáp tháng 7 đến tháng 8 hàng năm",
+        "highlight": "Trải nghiệm thưởng thức dừa sáp béo ngậy nức tiếng ngay tại gốc cây thổ nhưỡng Cầu Kè."
+      },
+      "source": [
+        {
+          "name": "Báo điện tử Trà Vinh",
+          "url": "https://baotravinh.vn/kinh-te/dua-sap-cau-ke-khang-dinh-vi-the-dac-san-d12459.html"
+        },
+        {
+          "name": "DulichToday",
+          "url": "https://dulichtoday.vn/kham-pha-tra-vinh/dac-san-dua-sap-cau-ke.html"
+        }
+      ],
+      "source_citations": [
+        {
+          "notebook_name": "Sổ tay 2: Mekong 360 - Tập 2",
+          "source_title": "Dừa sáp Cầu Kè – Đặc sản độc nhất vô nhị vùng đất Trà Vinh",
+          "excerpt": "Cầu Kè là xứ sở dừa sáp, trong đó các vườn dừa tại Phong Thạnh và lân cận cho tỷ lệ trái sáp cao nhất nhờ thổ nhưỡng đặc thù...",
+          "confidence": 0.99
+        }
+      ],
+      "status": "provisional",
+      "verified": 0,
+      "db_crosscheck": {
+        "exists_in_db": false,
+        "candidate_status": "new_entity_seed",
+        "recommendation": "Bổ sung điểm du lịch sinh thái nông nghiệp để xóa vùng trắng dữ liệu xã Phong Thạnh."
+      }
+    },
+    {
+      "id": "vung-chuyen-canh-sau-rieng-cu-lao-quoi-an",
+      "name": "Vùng chuyên canh sầu riêng và chôm chôm cù lao Quới An",
+      "type": "nature",
+      "kind": "place",
+      "area": "vinh-long",
+      "placeId": "xa-quoi-an",
+      "address": "Ấp Phước Thới, xã Quới An, tỉnh Vĩnh Long",
+      "coordinates": [
+        10.1369,
+        106.164
+      ],
+      "summary": "Dải cù lao miệt vườn bốn bề sông nước Cổ Chiên bao bọc với những vườn sầu riêng Ri6 và chôm chôm chín đỏ trĩu quả quanh năm, điểm dừng chân sinh thái lý tưởng cho du khách trải nghiệm hái trái cây tại vườn.",
+      "description": "Nằm giữa dòng sông Cổ Chiên, cù lao Quới An sở hữu diện tích hơn 500 ha chuyên canh cây ăn trái nhiệt đới với thổ nhưỡng đất cồn phì nhiêu quanh năm đón nhận dòng nước ngọt phù sa mát lành. Những vườn sầu riêng Ri6 cơm vàng hạt lép cùng rặng chôm chôm nhãn sum suê tạo nên cảnh sắc trù phú đậm chất miệt vườn Tây Nam Bộ.",
+      "attributes": {
+        "sub_category": "Vùng sinh thái miệt vườn cây ăn trái",
+        "address": "Ấp Phước Thới, xã Quới An, tỉnh Vĩnh Long",
+        "waterway_type": "Cù lao sông Cổ Chiên nước ngọt quanh năm",
+        "scenic_rating": 5,
+        "best_view_point": "Bến đò và chòi vọng cảnh đầu cồn Quới An",
+        "admission": "30.000–50.000đ vé vào vườn",
+        "best_time": "Mùa trái cây chín rộ từ tháng 5 đến tháng 8 dương lịch",
+        "highlight": "Trải nghiệm bơi xuồng ba lá len lỏi mương rạch hái sầu riêng Ri6 và chôm chôm chín cây ngọt lịm."
+      },
+      "source": [
+        {
+          "name": "Báo điện tử Vĩnh Long",
+          "url": "https://baovinhlong.vn/kinh-te/cu-lao-quoi-an-mua-trai-chin.html"
+        }
+      ],
+      "source_citations": [
+        {
+          "notebook_name": "Sổ tay 1: Vĩnh Long (Vĩnh Long + Bến Tre + Trà Vinh)",
+          "source_title": "Cù lao Dài và hệ sinh thái miệt vườn ven sông Cổ Chiên",
+          "excerpt": "Quới An cùng với các xã cù lao lân cận tạo nên vành đai cây ăn trái trù phú bậc nhất của miệt sông Cổ Chiên...",
+          "confidence": 0.98
+        }
+      ],
+      "status": "provisional",
+      "verified": 0,
+      "db_crosscheck": {
+        "exists_in_db": false,
+        "candidate_status": "new_entity_seed",
+        "recommendation": "Bổ sung điểm du lịch sinh thái miệt vườn để xóa vùng trắng dữ liệu xã Quới An."
+      }
+    },
+    {
+      "id": "chua-bang-trau-song-loc",
+      "name": "Chùa Bâng Trau (Chùa Khmer Song Lộc)",
+      "type": "attraction",
+      "kind": "place",
+      "area": "tra-vinh",
+      "placeId": "xa-song-loc",
+      "address": "Ấp Bâng Trau, xã Song Lộc, tỉnh Vĩnh Long",
+      "coordinates": [
+        9.8871,
+        106.2743
+      ],
+      "summary": "Ngôi chùa cổ Khmer xây dựng năm 1835 ẩn mình dưới rặng dầu cổ thụ trăm tuổi tại xã Song Lộc, lưu giữ các pho tượng Phật Thích Ca nhập niết bàn tôn nghiêm và trường dạy chữ ngữ văn Pali cho con em trong phum sóc.",
+      "description": "Chùa Bâng Trau là trung tâm tín ngưỡng và giáo dục truyền thống lâu đời của phum sóc Song Lộc. Chùa sở hữu kiến trúc tam cấp mái ngói Khmer hài hòa, các hàng cột đắp nổi tượng tiên nữ Krud nâng đỡ mái chùa thanh thoát, cùng không gian rợp mát bóng sao dầu tạo cảm giác tĩnh tại, tôn nghiêm cho du khách thập phương.",
+      "attributes": {
+        "sub_category": "Chùa Phật giáo Nam tông Khmer",
+        "address": "Ấp Bâng Trau, xã Song Lộc, tỉnh Vĩnh Long",
+        "architecture_style": "Kiến trúc chùa tháp Phật giáo Nam tông Khmer",
+        "founding_year": 1835,
+        "religion": "Phật giáo Nam tông",
+        "dress_code": "Trang phục lịch sự, đi nhẹ nói khẽ",
+        "admission": "Miễn phí",
+        "highlight": "Không gian thanh tịnh với hàng cây dầu cổ thụ rợp bóng và trường học tiếng Pali truyền thống."
+      },
+      "source": [
+        {
+          "name": "Cổng thông tin Du lịch Trà Vinh",
+          "url": "https://dulichtravinh.com.vn/chua-bang-trau-song-loc.html"
+        }
+      ],
+      "source_citations": [
+        {
+          "notebook_name": "Sổ tay 1: Vĩnh Long (Vĩnh Long + Bến Tre + Trà Vinh)",
+          "source_title": "Kiến trúc chùa Khmer và đời sống văn hóa phum sóc",
+          "excerpt": "Chùa Bâng Trau tại Song Lộc đóng vai trò như trung tâm bảo tồn ngôn ngữ và chữ viết Pali cho thế hệ trẻ Khmer địa phương...",
+          "confidence": 0.97
+        }
+      ],
+      "status": "provisional",
+      "verified": 0,
+      "db_crosscheck": {
+        "exists_in_db": false,
+        "candidate_status": "new_entity_seed",
+        "recommendation": "Bổ sung điểm đến tôn giáo văn hóa để xóa vùng trắng dữ liệu xã Song Lộc."
+      }
+    },
+    {
+      "id": "cho-dau-moi-nong-san-ba-cang-song-phu",
+      "name": "Chợ đầu mối nông sản và cam sành Ba Càng - Song Phú",
+      "type": "experience",
+      "kind": "experience",
+      "area": "vinh-long",
+      "placeId": "xa-song-phu",
+      "address": "Quốc lộ 1A, xã Song Phú, tỉnh Vĩnh Long",
+      "coordinates": [
+        10.1026,
+        105.8912
+      ],
+      "summary": "Khu chợ giao thương sầm uất trên tuyến Quốc lộ 1A thuộc xã Song Phú, đầu mối tập kết và phân phối hàng trăm tấn cam sành Tam Bình mọng nước cùng rau quả miệt vườn Tây Nam Bộ tỏa đi khắp cả nước mỗi ngày.",
+      "description": "Chợ Ba Càng tại xã Song Phú là trung tâm giao thương sầm uất bậc nhất của vựa cam sành Tam Bình. Ngay từ sáng sớm tinh sương, bến sông và mặt lộ nhộn nhịp xuồng ghe và xe tải chở đầy những sọt cam sành vỏ mỏng, mọng nước ngọt thanh, mang đến cho du khách trải nghiệm chân thực về nhịp sống thương hồ miệt vườn sông nước.",
+      "attributes": {
+        "sub_category": "Chợ truyền thống và trải nghiệm thương hồ",
+        "address": "Quốc lộ 1A, xã Song Phú, tỉnh Vĩnh Long",
+        "duration": "1–2 giờ tham quan sáng sớm",
+        "operator": "Ban Quản lý Chợ Ba Càng",
+        "admission": "Miễn phí",
+        "price_range": "20.000–35.000đ/kg cam sành",
+        "best_time": "4:00–8:00 sáng khi thương lái đổ cam tươi về bến",
+        "highlight": "Khung cảnh nhộn nhịp mua bán cam sành mọng nước ngọt thanh trứ danh xứ Tam Bình."
+      },
+      "source": [
+        {
+          "name": "Báo điện tử Vĩnh Long",
+          "url": "https://baovinhlong.vn/kinh-te/nhon-nhip-cho-dau-moi-ba-cang.html"
+        }
+      ],
+      "source_citations": [
+        {
+          "notebook_name": "Sổ tay 2: Mekong 360 - Tập 2",
+          "source_title": "Chợ đầu mối và văn hóa giao thương nông sản Nam Bộ",
+          "excerpt": "Ba Càng (xã Song Phú) là điểm trung chuyển huyết mạch của thương hiệu cam sành Tam Bình đi TP.HCM và các tỉnh...",
+          "confidence": 0.98
+        }
+      ],
+      "status": "provisional",
+      "verified": 0,
+      "db_crosscheck": {
+        "exists_in_db": false,
+        "candidate_status": "new_entity_seed",
+        "recommendation": "Bổ sung điểm trải nghiệm giao thương nông sản để xóa vùng trắng dữ liệu xã Song Phú."
+      }
+    },
+    {
+      "id": "vung-nuoi-so-huyet-tom-quang-canh-thanh-tri",
+      "name": "Vùng nuôi sò huyết và tôm sinh thái Thạnh Trị",
+      "type": "nature",
+      "kind": "place",
+      "area": "ben-tre",
+      "placeId": "xa-thanh-tri",
+      "address": "Ấp Thạnh Phước Đông, xã Thạnh Trị, tỉnh Vĩnh Long",
+      "coordinates": [
+        10.1938,
+        106.5972
+      ],
+      "summary": "Vùng bãi triều rừng ngập mặn trù phú ven cửa sông Cửa Đại tại xã Thạnh Trị, chuyên canh sò huyết béo mập và tôm sinh thái tự nhiên, tạo nên cảnh quan sông nước rừng đước hoang sơ mê hoặc du khách khám phá.",
+      "description": "Vùng bãi bồi Thạnh Trị nằm ở hạ lưu sông Cửa Đại với hệ sinh thái rừng ngập mặn đan xen bãi nghêu sò màu mỡ. Phương thức nuôi trồng thủy sản quảng canh thuận tự nhiên dưới tán rừng đước không chỉ bảo vệ bờ biển trước xâm thực mặn mà còn tạo ra sản phẩm sò huyết, tôm đất ngọt thịt đậm vị biển khơi.",
+      "attributes": {
+        "sub_category": "Vùng sinh thái bãi triều rừng ngập mặn",
+        "address": "Ấp Thạnh Phước Đông, xã Thạnh Trị, tỉnh Vĩnh Long",
+        "waterway_type": "Cửa biển nước lợ rừng ngập mặn ven cửa sông Cửa Đại",
+        "scenic_rating": 4,
+        "best_view_point": "Vọng lâu đầm nuôi sò huyết Thạnh Trị",
+        "admission": "Miễn phí",
+        "best_time": "Mùa gió chướng và mùa thu hoạch sò từ tháng 9 đến tháng 12",
+        "highlight": "Trải nghiệm lội bùn bắt sò huyết tươi rói và thưởng thức sò nướng mỡ hành ngay bên đầm."
+      },
+      "source": [
+        {
+          "name": "Báo điện tử Đồng Khởi",
+          "url": "https://baodongkhoi.vn/phat-trien-vung-nuoi-so-huyet-thanh-tri.html"
+        }
+      ],
+      "source_citations": [
+        {
+          "notebook_name": "Sổ tay 2: Mekong 360 - Tập 2",
+          "source_title": "Hải sản bãi bồi duyên hải Bình Đại",
+          "excerpt": "Bãi triều Thạnh Trị cung cấp nguồn giống và sò huyết thương phẩm chất lượng cao nhờ phù sa bồi đắp từ cửa sông Cửa Đại...",
+          "confidence": 0.97
+        }
+      ],
+      "status": "provisional",
+      "verified": 0,
+      "db_crosscheck": {
+        "exists_in_db": false,
+        "candidate_status": "new_entity_seed",
+        "recommendation": "Bổ sung điểm du lịch sinh thái biển để xóa vùng trắng dữ liệu xã Thạnh Trị."
+      }
+    },
+    {
+      "id": "chua-o-mich-hung-hoa",
+      "name": "Chùa Ô Mịch (Chùa Khmer Ô Mịch - Hùng Hòa)",
+      "type": "attraction",
+      "kind": "place",
+      "area": "tra-vinh",
+      "placeId": "p-hung-hoa",
+      "address": "Khóm Ô Mịch, phường Hùng Hoà, tỉnh Vĩnh Long",
+      "coordinates": [
+        9.7765,
+        106.2287
+      ],
+      "summary": "Ngôi chùa Khmer cổ danh tiếng tại phường Hùng Hoà, được bao bọc bởi rặng sao cổ thụ hàng trăm năm tuổi, nơi lưu giữ kiến trúc chánh điện lộng lẫy và là trung tâm tổ chức các vũ điệu Chhay-dăm rộn rã mùa lễ hội.",
+      "description": "Chùa Ô Mịch là niềm tự hào của đồng bào Khmer phường Hùng Hoà. Quần thể chùa được xây dựng từ đầu thế kỷ 19, nổi bật với ngôi chánh điện nhiều nếp mái nhọn vút mang họa tiết rắn Naga uy dũng. Chùa còn là nơi bảo tồn đội múa trống Chhay-dăm dân gian và dàn nhạc ngũ âm Pinpeat trứ danh từng đoạt nhiều giải thưởng văn hóa dân tộc.",
+      "attributes": {
+        "sub_category": "Chùa Phật giáo Nam tông Khmer cổ",
+        "address": "Khóm Ô Mịch, phường Hùng Hoà, tỉnh Vĩnh Long",
+        "architecture_style": "Kiến trúc Phật giáo Nam tông Khmer thế kỷ 19",
+        "founding_year": 1820,
+        "religion": "Phật giáo Nam tông",
+        "dress_code": "Trang phục kín đáo, tôn nghiêm",
+        "admission": "Miễn phí",
+        "highlight": "Đội múa trống Chhay-dăm cổ truyền và dàn nhạc ngũ âm đặc sắc của nghệ nhân chùa Ô Mịch."
+      },
+      "source": [
+        {
+          "name": "Cổng thông tin Du lịch Trà Vinh",
+          "url": "https://dulichtravinh.com.vn/chua-o-mich-tieu-can.html"
+        },
+        {
+          "name": "Báo điện tử Trà Vinh",
+          "url": "https://baotravinh.vn/van-hoa/ron-ra-tieng-trong-chhay-dam-chua-o-mich-d14210.html"
+        }
+      ],
+      "source_citations": [
+        {
+          "notebook_name": "Sổ tay 1: Vĩnh Long (Vĩnh Long + Bến Tre + Trà Vinh)",
+          "source_title": "Nghệ thuật múa dân gian và âm nhạc truyền thống Khmer",
+          "excerpt": "Chùa Ô Mịch tại Hùng Hòa là cái nôi gìn giữ nghệ thuật múa trống Chhay-dăm di sản văn hóa phi vật thể...",
+          "confidence": 0.99
+        }
+      ],
+      "status": "provisional",
+      "verified": 0,
+      "db_crosscheck": {
+        "exists_in_db": false,
+        "candidate_status": "new_entity_seed",
+        "recommendation": "Bổ sung điểm đến văn hóa Khmer để xóa vùng trắng dữ liệu phường Hùng Hoà."
+      }
+    },
+    {
+      "id": "lang-nghe-det-chieu-ca-hon",
+      "name": "Làng nghề dệt chiếu Cà Hôn (Cà Hom)",
+      "type": "craft_village",
+      "kind": "product",
+      "area": "vinh-long",
+      "placeId": "xa-tra-con",
+      "address": "Ấp Cà Hôn, xã Trà Côn, tỉnh Vĩnh Long",
+      "coordinates": [
+        10.0215,
+        105.9872
+      ],
+      "summary": "Di sản văn hóa phi vật thể quốc gia làng nghề dệt chiếu hơn 100 năm tuổi của đồng bào Khmer và người Kinh, nức tiếng với những đôi chiếu lác dệt hoa văn bền đẹp, nhuộm màu tự nhiên và dập go chắc tay.",
+      "description": "Làng nghề dệt chiếu Cà Hôn (Cà Hom) là di sản văn hóa phi vật thể quốc gia quý báu hình thành từ đầu thế kỷ 20. Trải qua hơn 100 năm thăng trầm, các nghệ nhân Khmer và Kinh nơi đây vẫn gìn giữ kỹ nghệ chẻ lác, phơi lác, nhuộm màu ngũ sắc và dệt chiếu hoa tinh xảo. Sản phẩm chiếu Cà Hôn với hơn 100 năm uy tín được ưa chuộng khắp Nam Bộ nhờ độ bền chặt, nằm êm mát lưng và hoa văn mang đậm nét giao thoa văn hóa sông nước.",
+      "attributes": {
+        "sub_category": "Làng nghề dệt chiếu truyền thống",
+        "address": "Ấp Cà Hôn, xã Trà Côn, tỉnh Vĩnh Long",
+        "specialty": "Chiếu hoa văn ngũ sắc, chiếu lác tự nhiên thủ công và dệt máy",
+        "households": 150,
+        "raw_material": "Cây lác nước lợ, dây gân, dây nhợ, phẩm màu nhuộm thảo mộc",
+        "recognition_date": "2014",
+        "highlight": "Kỹ nghệ nhuộm lác ngũ sắc và dập go hai người nhịp nhàng tạo nên hoa văn Khmer độc bản đã được công nhận Di sản phi vật thể quốc gia."
+      },
+      "source": [
+        {
+          "name": "Đài Tiếng nói Việt Nam (VOV4)",
+          "url": "https://vov4.vov.vn/chieu-ca-hom-di-san-van-hoa-cua-dong-bao-khmer.htm"
+        },
+        {
+          "name": "Báo điện tử Văn Hóa",
+          "url": "https://baovanhoa.vn/di-san/chieu-ca-hom-hon-que-nam-bo-d32145.html"
+        }
+      ],
+      "source_citations": [
+        {
+          "notebook_name": "Sổ tay 2: Mekong 360 - Tập 2",
+          "source_title": "Chiếu Cà Hom – Di sản văn hóa của đồng bào Khmer Trà Vinh | VOV4.VOV.VN",
+          "excerpt": "Cuối năm 2014, làng nghề được công nhận truyền thống và sau đó được Bộ VHTTDL đưa vào Danh mục Di sản văn hóa phi vật thể Quốc gia. Chiếu Cà Hom nức tiếng khắp vùng châu thổ với những đôi chiếu bền chặt được dệt từ sợi lác nước lợ...",
+          "confidence": 0.99
+        }
+      ],
+      "status": "provisional",
+      "verified": 0,
+      "db_crosscheck": {
+        "exists_in_db": false,
+        "candidate_status": "new_entity_seed",
+        "recommendation": "Bổ sung Di sản văn hóa phi vật thể quốc gia Làng nghề dệt chiếu Cà Hôn vào cơ sở dữ liệu."
+      }
+    },
+    {
+      "id": "banh-ray-khmer-la-dua",
+      "name": "Bánh rây Khmer (Bánh dứa Om-chơ-rơ-hây)",
+      "type": "dish",
+      "kind": "food",
+      "area": "tra-vinh",
+      "placeId": "xa-phong-thanh",
+      "address": "Ấp 2, xã Phong Thạnh, tỉnh Vĩnh Long",
+      "coordinates": [
+        9.8152,
+        106.0925
+      ],
+      "summary": "Món bánh dân gian truyền thống độc đáo của đồng bào Khmer Trà Vinh, bột nếp mịn hòa nước cốt lá dứa rây đều trên chảo nóng ôm trọn nhân cơm dừa xào ngọt béo, dâng cúng tạ ơn Thần Mặt Trăng trong lễ hội Ok Om Bok.",
+      "description": "Bánh rây (tiếng Khmer gọi là Om-chơ-rơ-hây, hay bánh dứa) là thức quà ẩm thực độc đáo bậc nhất của người Khmer. Người thợ dùng rây khéo léo rắc bột nếp pha màu lá dứa tươi vào chảo gang nóng thành lớp màng mỏng mịn như lụa, sau đó đặt phần nhân dừa nạo xào đường thốt nốt ngọt béo vào giữa rồi gấp tròn lại. Bánh thưởng thức khi còn nóng hổi, lan tỏa mùi thơm nếp mới quyện hương dứa ngan ngát.",
+      "attributes": {
+        "sub_category": "Bánh dân gian truyền thống Khmer",
+        "address": "Ấp 2, xã Phong Thạnh, tỉnh Vĩnh Long",
+        "origin": "Ẩm thực dân gian truyền thống của đồng bào dân tộc Khmer Trà Vinh",
+        "ingredients": [
+          "Bột nếp mịn",
+          "Nước cốt lá dứa",
+          "Cơm dừa nạo sợi",
+          "Đường thốt nốt",
+          "Muối hột"
+        ],
+        "specialty": "Vỏ bột nếp rây mỏng giòn thơm nức lá dứa cuộn nhân dừa béo ngậy ăn nóng",
+        "where_to_eat": "Các chợ quê Cầu Kè, Trà Cú và dịp đại lễ hội Ok Om Bok",
+        "cooking_method": "Rây bột nếp mịn qua rây vào chảo gang nóng, cho nhân dừa rồi cuộn tròn nhẹ tay",
+        "main_ingredient": "Bột nếp và cơm dừa tươi",
+        "price_range": "10.000–15.000đ/cái",
+        "best_time": "Ăn nóng vào buổi sớm hoặc dịp lễ hội rằm tháng 10 Ok Om Bok",
+        "highlight": "Hương vị nếp thơm lá dứa quyện dừa ngọt béo dâng cúng tạ ơn Thần Mặt Trăng trong ngày hội Ok Om Bok."
+      },
+      "source": [
+        {
+          "name": "DulichToday",
+          "url": "https://dulichtoday.vn/kham-pha-tra-vinh/mon-ngon-tra-vinh/banh-ray-tra-vinh.html"
+        },
+        {
+          "name": "Cổng thông tin ẩm thực Nam Bộ",
+          "url": "https://amthucnamkyminhhoa.vn/banh-ray-om-cho-ro-hay-khmer.html"
+        }
+      ],
+      "source_citations": [
+        {
+          "notebook_name": "Sổ tay 2: Mekong 360 - Tập 2",
+          "source_title": "Top 10 món ngon đặc sản Trà Vinh nổi tiếng gần xa - DulichToday",
+          "excerpt": "Bánh rây là món bánh dân gian truyền thống độc đáo thường xuất hiện trong các dịp lễ hội lớn của người Khmer như lễ hội Ok Om Bok. Bánh tượng trưng cho sự khéo léo của người thợ, dùng để cúng tạ ơn thần linh và làm quà biếu...",
+          "confidence": 0.99
+        }
+      ],
+      "status": "provisional",
+      "verified": 0,
+      "db_crosscheck": {
+        "exists_in_db": false,
+        "candidate_status": "new_entity_seed",
+        "recommendation": "Bổ sung món bánh đặc sản lễ hội Khmer Trà Vinh vào danh mục ẩm thực."
+      }
+    },
+    {
+      "id": "banh-xeo-oc-gao-cho-lach",
+      "name": "Bánh xèo ốc gạo Phú Đa",
+      "type": "dish",
+      "kind": "food",
+      "area": "ben-tre",
+      "placeId": "xa-phu-phung",
+      "address": "Cồn Phú Đa, xã Phú Phụng, tỉnh Vĩnh Long",
+      "coordinates": [
+        10.252,
+        106.155
+      ],
+      "summary": "Món ăn đặc sản độc nhất vô nhị của cồn Phú Đa trên dòng Cổ Chiên, vỏ bánh vàng giòn đượm nước cốt dừa ôm lấy phần nhân ốc gạo béo giòn sần sật xào hẹ và củ sắn, cuốn cùng mâm rau rừng xanh non mướt mát.",
+      "description": "Bánh xèo ốc gạo cồn Phú Đa là tinh hoa ẩm thực mùa nước sông Cổ Chiên. Thay vì dùng thịt ba rọi hay tôm, bánh xèo nơi đây sử dụng phần ruột ốc gạo ngọt lịm, giòn sần sật được đãi bắt tự nhiên từ các cồn cát phù sa. Vỏ bánh mỏng tang từ bột gạo ngâm xay mịn hòa nước cốt dừa béo bùi, vàng ươm màu bột nghệ, cuốn cùng lá cách, đọt bằng lăng, đọt bứa chấm nước mắm ớt chua ngọt tạo nên hương vị bùng nổ vị giác.",
+      "attributes": {
+        "sub_category": "Đặc sản sông nước dân dã",
+        "address": "Cồn Phú Đa, xã Phú Phụng, tỉnh Vĩnh Long",
+        "origin": "Ẩm thực dân gian cồn Phú Đa, huyện Chợ Lách",
+        "ingredients": [
+          "Ốc gạo sông Cổ Chiên",
+          "Bột gạo",
+          "Nước cốt dừa",
+          "Củ sắn xắt sợi",
+          "Giá đỗ",
+          "Hẹ",
+          "Rau rừng đọt bứa lá cách"
+        ],
+        "specialty": "Nhân ốc gạo giòn ngọt sần sật mùa tháng 5 âm lịch cuốn rau rừng chấm mắm chua ngọt",
+        "where_to_eat": "Các điểm du lịch sinh thái và nhà vườn tại cồn Phú Đa",
+        "cooking_method": "Tráng bột gạo mỏng trên chảo nóng, rải nhân ốc gạo xào củ sắn rồi gấp đôi chiên giòn hai mặt",
+        "main_ingredient": "Ốc gạo tươi sống sông Cổ Chiên",
+        "price_range": "40.000–60.000đ/cái",
+        "best_time": "Tháng 4 đến tháng 7 âm lịch, rộ nhất dịp Tết Đoan Ngọ mùng 5 tháng 5",
+        "highlight": "Sự kết hợp hoàn hảo giữa vị ngọt béo giòn của ốc gạo cồn phù sa và vị chát thơm của các loại rau rừng bản địa."
+      },
+      "source": [
+        {
+          "name": "Viet Fun Travel",
+          "url": "https://vietfuntravel.com.vn/blog/dac-san-ben-tre-banh-xeo-oc-gao.html"
+        },
+        {
+          "name": "Báo điện tử Cần Thơ",
+          "url": "https://baocantho.com.vn/ve-con-phu-da-thuong-thuc-banh-xeo-oc-gao-a120450.html"
+        }
+      ],
+      "source_citations": [
+        {
+          "notebook_name": "Sổ tay 2: Mekong 360 - Tập 2",
+          "source_title": "Đặc sản Bến Tre – Bánh xèo ốc gạo | Viet Fun Travel",
+          "excerpt": "Mùa ốc gạo kéo dài từ tháng 4 đến tháng 7 âm lịch hằng năm, thời điểm ốc ngon nhất là vào tháng 5 âm lịch dịp Tết Đoan Ngọ khi con ốc gạo béo tròn, thịt đầy đặn, giòn ngọt và ngậy nhất...",
+          "confidence": 0.99
+        }
+      ],
+      "status": "provisional",
+      "verified": 0,
+      "db_crosscheck": {
+        "exists_in_db": false,
+        "candidate_status": "new_entity_seed",
+        "recommendation": "Bổ sung món đặc sản mùa vụ cồn Phú Đa vào cơ sở dữ liệu ẩm thực."
+      }
+    },
+    {
+      "id": "nghe-nhan-chau-xuong",
+      "name": "Nghệ nhân Châu Xường (Tiền hiền Tàu hủ ky Mỹ Hòa)",
+      "type": "person",
+      "kind": "person",
+      "area": "vinh-long",
+      "placeId": "p-cai-von",
+      "address": "Khóm 6, phường Cái Vồn, tỉnh Vĩnh Long",
+      "coordinates": [
+        10.0531,
+        105.8294
+      ],
+      "summary": "Tiền hiền khai sáng làng nghề Tàu hủ ky Mỹ Hòa nức tiếng, người có công mang kỹ nghệ nấu sữa đậu nành và vớt váng đậu thủ công từ Quảng Đông sang lập nghiệp năm 1912 rồi truyền dạy cho cư dân địa phương.",
+      "description": "Cụ Châu Xường (gốc Quảng Đông) cùng hai người con trai là Châu Khoánh và Châu Sầm đến định cư tại vùng đất Mỹ Hòa vào khoảng năm 1912. Nhận thấy nguồn nước ngọt sông Hậu thanh khiết và lượng đậu nành dồi dào, cụ đã dựng lò nấu sữa đậu, dùng thanh trúc vớt từng lớp váng đậu mỏng phơi ráo, khai sinh ra làng nghề làm tàu hủ ky trăm năm tuổi được vinh danh Di sản phi vật thể quốc gia.",
+      "attributes": {
+        "role": "Nghệ nhân tiền hiền khai sáng làng nghề Tàu hủ ky Mỹ Hòa",
+        "birth_year": 1875,
+        "death_year": 1948,
+        "hometown": "Quảng Đông (Trung Quốc), lập nghiệp tại Mỹ Hòa",
+        "address": "Làng nghề Tàu hủ ky Mỹ Hòa, phường Cái Vồn, tỉnh Vĩnh Long",
+        "highlight": "Công lao khai phá và truyền dạy nghề làm tàu hủ ky thủ công tạo sinh kế cho hàng trăm hộ dân qua hơn một thế kỷ."
+      },
+      "source": [
+        {
+          "name": "Báo điện tử Vĩnh Long",
+          "url": "https://baovinhlong.vn/van-hoa-giai-tri/chuyen-lang-nghe-tau-hu-ky-my-hoa.html"
+        },
+        {
+          "name": "Cục Di sản Văn hóa",
+          "url": "https://disanvanhoa.gov.vn/nghe-lam-tau-hu-ky-my-hoa.html"
+        }
+      ],
+      "source_citations": [
+        {
+          "notebook_name": "Sổ tay 1: Vĩnh Long (Vĩnh Long + Bến Tre + Trà Vinh)",
+          "source_title": "Chuyện làng nghề tàu hủ ky Mỹ Hòa",
+          "excerpt": "Vào khoảng năm 1912, cụ Châu Xường cùng hai con trai mang nghề làm tàu hủ ky gia truyền đến lập nghiệp tại Mỹ Hòa, truyền dạy kỹ nghệ rút váng đậu bằng thanh tre thủ công cho bà con...",
+          "confidence": 0.99
+        }
+      ],
+      "status": "provisional",
+      "verified": 0,
+      "db_crosscheck": {
+        "exists_in_db": false,
+        "candidate_status": "new_entity_seed",
+        "recommendation": "Bổ sung thực thể nhân vật tiền hiền khai sáng làng nghề di sản quốc gia."
+      }
+    },
+    {
+      "id": "nghe-nhan-nguyen-thi-thoi",
+      "name": "Nghệ nhân Nguyễn Thị Thới",
+      "type": "person",
+      "kind": "person",
+      "area": "vinh-long",
+      "placeId": "p-cai-von",
+      "address": "Khóm 6, phường Cái Vồn, tỉnh Vĩnh Long",
+      "coordinates": [
+        10.0535,
+        105.829
+      ],
+      "summary": "Nghệ nhân giữ lửa gia truyền tiêu biểu của làng nghề di sản phi vật thể quốc gia Tàu hủ ky Mỹ Hòa, người gìn giữ lò đun trấu truyền thống và kỹ thuật vớt váng đậu vàng ươm mỏng đều suốt hơn nửa thế kỷ.",
+      "description": "Bà Nguyễn Thị Thới là thế hệ nghệ nhân gạo cội gìn giữ bí quyết gia truyền của làng nghề Tàu hủ ky Mỹ Hòa. Trải qua hơn 50 năm bên những dãy chảo gang đỏ lửa đun trấu, bà nắm vững bí quyết canh lửa liu riu, độ sôi của sữa đậu nành và độ chín của từng lớp váng đậu để vớt lên những miếng tàu hủ ky óng ánh, thơm ngậy và dẻo dai tự nhiên.",
+      "attributes": {
+        "role": "Nghệ nhân giữ lửa gia truyền làng nghề Tàu hủ ky Mỹ Hòa",
+        "birth_year": 1946,
+        "hometown": "Mỹ Hòa, thị xã Bình Minh, tỉnh Vĩnh Long",
+        "address": "Lò tàu hủ ky gia truyền Mỹ Hòa, phường Cái Vồn, tỉnh Vĩnh Long",
+        "highlight": "Hơn nửa thế kỷ giữ lửa lò trấu truyền thống, đào tạo nhiều thế hệ thợ trẻ tiếp nối di sản văn hóa phi vật thể quốc gia."
+      },
+      "source": [
+        {
+          "name": "Báo điện tử Vĩnh Long",
+          "url": "https://baovinhlong.vn/van-hoa-giai-tri/nghe-nhan-giu-lua-lang-nghe-my-hoa.html"
+        }
+      ],
+      "source_citations": [
+        {
+          "notebook_name": "Sổ tay 1: Vĩnh Long (Vĩnh Long + Bến Tre + Trà Vinh)",
+          "source_title": "Chuyện làng nghề tàu hủ ky Mỹ Hòa",
+          "excerpt": "Bà Nguyễn Thị Thới miệt mài giữ lửa cho những chiếc lò trấu hơn nửa thế kỷ qua, gìn giữ chuẩn mực chất lượng của từng mẻ tàu hủ ky truyền thống...",
+          "confidence": 0.98
+        }
+      ],
+      "status": "provisional",
+      "verified": 0,
+      "db_crosscheck": {
+        "exists_in_db": false,
+        "candidate_status": "new_entity_seed",
+        "recommendation": "Bổ sung nghệ nhân văn hóa phi vật thể tiêu biểu của làng nghề Tàu hủ ky."
+      }
+    },
+    {
+      "id": "de-an-di-san-duong-dai-mang-thit",
+      "name": "Đề án Di sản Đương đại Mang Thít (Bảo tồn 900 lò gạch)",
+      "type": "attraction",
+      "kind": "place",
+      "area": "vinh-long",
+      "placeId": "xa-nhon-phu",
+      "address": "Dọc kênh Thầy Cai, xã Nhơn Phú, tỉnh Vĩnh Long",
+      "coordinates": [
+        10.185,
+        106.035
+      ],
+      "summary": "Dự án trọng điểm quy mô 3.060 ha vùng lõi bảo tồn khoảng 900 lò gạch truyền thống dọc kênh Thầy Cai và sông Cổ Chiên, chuyển đổi từ lò gạch thủ công sang công viên bảo tàng di sản sinh thái đương đại quốc tế.",
+      "description": "Đề án Di sản Đương đại Mang Thít (được UBND tỉnh Vĩnh Long phê duyệt theo Quyết định số 1293/QĐ-UBND ngày 31/5/2023) là chiến lược bảo tồn quần thể khoảng 900 lò gạch gốm truyền thống có tuổi đời hàng trăm năm. Vùng di sản lõi rộng 3.060 ha cùng vùng đệm 5.000 ha được định hướng chuyển đổi thành công viên bảo tàng sinh thái đương đại, kết hợp triển lãm không gian sống ngoài trời, bảo tàng 3D thực tế ảo và du lịch cộng đồng 'mỗi nhà một sản phẩm'.",
+      "attributes": {
+        "sub_category": "Di sản công nghiệp và công viên sinh thái đương đại",
+        "address": "Dọc kênh Thầy Cai, xã Nhơn Phú, tỉnh Vĩnh Long",
+        "architecture_style": "Quần thể lò nung gạch hình chóp nón gốm đỏ truyền thống",
+        "founding_year": 2023,
+        "religion": "Giao thoa kỹ nghệ văn hóa Kinh - Khmer - Hoa",
+        "admission": "Miễn phí tham quan cảnh quan làng nghề và bờ kênh Thầy Cai",
+        "highlight": "Quần thể 900 lò gạch đỏ rực hình kim tự tháp phương Đông độc nhất vô nhị đang chuyển mình thành công viên di sản quốc tế.",
+        "specialty": "Bảo tồn kiến trúc lò nung gạch thủ công và phát triển du lịch sinh thái đương đại"
+      },
+      "source": [
+        {
+          "name": "Ủy ban nhân dân tỉnh Vĩnh Long",
+          "url": "https://vinhlong.gov.vn/quy-hoach-di-san-duong-dai-mang-thit.html"
+        },
+        {
+          "name": "Tạp chí Công Thương",
+          "url": "https://tapchicongthuong.vn/xay-dung-san-pham-du-lich-voi-de-an-di-san-duong-dai-mang-thit.htm"
+        }
+      ],
+      "source_citations": [
+        {
+          "notebook_name": "Sổ tay 3: Chính sách & Pháp luật (Văn bản, Quy định & Đề án)",
+          "source_title": "Xây dựng sản phẩm du lịch tỉnh Vĩnh Long với Đề án Di sản đương đại huyện Mang Thít",
+          "excerpt": "Quyết định số 1293/QĐ-UBND ngày 31/5/2023 phê duyệt Nhiệm vụ quy hoạch chung xây dựng khu Di sản đương đại Mang Thít đến năm 2045, bảo tồn khoảng 900 lò gạch truyền thống trên diện tích vùng lõi 3.060 ha...",
+          "confidence": 0.99
+        }
+      ],
+      "status": "provisional",
+      "verified": 0,
+      "db_crosscheck": {
+        "exists_in_db": false,
+        "candidate_status": "new_entity_seed",
+        "recommendation": "Bổ sung đề án bảo tồn di sản quy hoạch trọng điểm của tỉnh vào hệ thống dữ liệu."
+      }
+    },
+    {
+      "id": "nha-gom-do-tu-buoi",
+      "name": "Nhà gốm đỏ Tư Buôi (Kỷ lục Ngôi nhà gốm đỏ lớn nhất Việt Nam)",
+      "type": "attraction",
+      "kind": "place",
+      "area": "vinh-long",
+      "placeId": "p-thanh-duc",
+      "address": "Đường số 2, phường Thanh Đức, tỉnh Vĩnh Long",
+      "coordinates": [
+        10.2523,
+        105.9904
+      ],
+      "summary": "Ngôi nhà 3 gian 2 chái rộng 300m² được xây dựng hoàn toàn bằng gốm đỏ nung không men của Nghệ nhân Nguyễn Văn Buôi, công trình độc bản xác lập Kỷ lục Việt Nam tôn vinh tinh hoa làng nghề gốm Vĩnh Long.",
+      "description": "Ngôi nhà gốm đỏ Tư Buôi do Nghệ nhân Quốc gia Nguyễn Văn Buôi dày công kiến tạo trong nhiều năm. Toàn bộ các cấu kiện từ cột nhà, vì kèo, mái ngói đến các bức tranh phù điêu hoành tráng đều được chế tác từ đất sét nung đỏ hồng tự nhiên không men. Ngôi nhà đạt kỷ lục Việt Nam và là điểm đến văn hóa độc đáo tái hiện trọn vẹn hồn cốt của làng gốm Mang Thít.",
+      "attributes": {
+        "sub_category": "Công trình kiến trúc gốm nghệ thuật",
+        "address": "Đường số 2, phường Thanh Đức, tỉnh Vĩnh Long",
+        "architecture_style": "Kiến trúc nhà cổ 3 gian 2 chái Nam Bộ hoàn toàn bằng gốm đỏ",
+        "founding_year": 2019,
+        "admission": "30.000đ/vé tham quan",
+        "hours": "7:30–17:30 hằng ngày",
+        "highlight": "Xác lập Kỷ lục Việt Nam là Ngôi nhà 3 gian 2 chái truyền thống hoàn toàn bằng gốm đỏ Vĩnh Long lớn nhất Việt Nam."
+      },
+      "source": [
+        {
+          "name": "Báo điện tử Vĩnh Long",
+          "url": "https://baovinhlong.vn/du-lich/nha-gom-tu-buoi-diem-den-hap-dan.html"
+        },
+        {
+          "name": "Tổ chức Kỷ lục Việt Nam (VietKings)",
+          "url": "https://kyluc.vn/ky-luc/ngoi-nha-gom-do-lon-nhat-viet-nam.html"
+        }
+      ],
+      "source_citations": [
+        {
+          "notebook_name": "Sổ tay 1: Vĩnh Long (Vĩnh Long + Bến Tre + Trà Vinh)",
+          "source_title": "Đến nhà gốm Tư Buôi Vĩnh Long để khám phá nhiều sản phẩm độc đáo",
+          "excerpt": "Ông Nguyễn Văn Buôi dành tâm huyết xây dựng ngôi nhà 300m² theo kiến trúc 3 gian 2 chái Nam Bộ bằng gốm đỏ, xác lập Kỷ lục Việt Nam...",
+          "confidence": 0.99
+        }
+      ],
+      "status": "provisional",
+      "verified": 0,
+      "db_crosscheck": {
+        "exists_in_db": false,
+        "candidate_status": "new_entity_seed",
+        "recommendation": "Bổ sung điểm du lịch kiến trúc gốm đỏ tiêu biểu đã xác lập Kỷ lục Việt Nam."
+      }
+    },
+    {
+      "id": "lang-nghe-banh-trang-nem-cu-lao-may",
+      "name": "Làng nghề bánh tráng nem Cù lao Mây",
+      "type": "craft_village",
+      "kind": "product",
+      "area": "vinh-long",
+      "placeId": "xa-luc-si-thanh",
+      "address": "Ấp Tân Thạnh, xã Lục Sĩ Thành, tỉnh Vĩnh Long",
+      "coordinates": [
+        10.0267,
+        105.8752
+      ],
+      "summary": "Làng nghề bánh tráng truyền thống gần 100 năm trên cù lao Mây giữa sông Hậu, nổi danh khắp Nam Bộ với bánh tráng nem thủ công 100% bột gạo dẻo dai tự nhiên, không hàn the, phơi nắng gió miệt vườn trong lành.",
+      "description": "Làng nghề bánh tráng nem Cù lao Mây (xã Lục Sĩ Thành) được hình thành từ đầu thế kỷ 20. Trải qua bao thế hệ, người dân cù lao vẫn giữ vẹn nguyên phương pháp xay gạo, tráng bánh thủ công trên nồi hơi đun trấu và phơi trên những chiếc tràng đan bằng cọng dừa. Bánh tráng Cù lao Mây dẻo dai tự nhiên, không rách khi cuốn chả giò và là đặc sản nức tiếng mỗi dịp Tết đến xuân về.",
+      "attributes": {
+        "sub_category": "Làng nghề bánh tráng thủ công",
+        "address": "Ấp Tân Thạnh, xã Lục Sĩ Thành, tỉnh Vĩnh Long",
+        "specialty": "Bánh tráng nem thủ công, bánh tráng ngọt, bánh tráng nướng mè",
+        "households": 90,
+        "raw_material": "Gạo tẻ nàng thơm, mè trắng, nước cốt dừa, muối hột",
+        "recognition_date": "2010",
+        "highlight": "Bánh tráng nem tráng thủ công 100% từ bột gạo nguyên chất, mềm dẻo tự nhiên không sử dụng phụ gia hóa chất."
+      },
+      "source": [
+        {
+          "name": "Báo điện tử Vĩnh Long",
+          "url": "https://baovinhlong.vn/kinh-te/lang-nghe-banh-trang-cu-lao-may-vao-vu-tet.html"
+        }
+      ],
+      "source_citations": [
+        {
+          "notebook_name": "Sổ tay 2: Mekong 360 - Tập 2",
+          "source_title": "Làng nghề bánh tráng Cù lao Mây (Lục Sĩ)",
+          "excerpt": "Làng nghề tồn tại gần 100 năm, nổi tiếng nhất là sản phẩm bánh tráng nem tráng thủ công 100% từ bột gạo, mặn nhẹ tự nhiên, mềm dẻo không dùng hóa chất bảo quản...",
+          "confidence": 0.99
+        }
+      ],
+      "status": "provisional",
+      "verified": 0,
+      "db_crosscheck": {
+        "exists_in_db": false,
+        "candidate_status": "new_entity_seed",
+        "recommendation": "Bổ sung làng nghề bánh tráng truyền thống lâu đời trên cù lao Mây."
+      }
+    }
+  ]
+}
