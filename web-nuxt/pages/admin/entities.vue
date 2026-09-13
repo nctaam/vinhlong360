@@ -6,7 +6,7 @@
         <p class="ent-subtitle">{{ entities.length ? `${entities.length} kết quả` : '' }}</p>
       </div>
       <button type="button" class="admin-refresh" :disabled="loading" @click="fetchEntities()">
-        <span :class="{ 'refresh-spin': loading }">&#8635;</span> Làm mới
+        <span :class="{ 'refresh-spin': loading }"><IconLine name="rotate-cw" /></span> Làm mới
       </button>
     </div>
 
@@ -24,8 +24,8 @@
         <IconLine v-if="orphansOnly" name="check" /> Mồ côi
       </button>
       <button type="button" class="btn btn-primary" @click="openCreate">+ Tạo mới</button>
-      <button type="button" class="btn btn-outline btn-sm" :title="`Tải JSON (${entities.length} entity trang này)`" @click="exportJSON">&#x2B73; JSON ({{ entities.length }})</button>
-      <button type="button" class="btn btn-outline btn-sm" :title="`Tải CSV (${entities.length} entity trang này)`" @click="exportCSV">&#x2B73; CSV ({{ entities.length }})</button>
+      <button type="button" class="btn btn-outline btn-sm" :title="`Tải JSON (${entities.length} entity trang này)`" @click="exportJSON"><IconLine name="download" /> JSON ({{ entities.length }})</button>
+      <button type="button" class="btn btn-outline btn-sm" :title="`Tải CSV (${entities.length} entity trang này)`" @click="exportCSV"><IconLine name="download" /> CSV ({{ entities.length }})</button>
     </div>
 
     <!-- Phase 2: tổng quan theo danh mục (7 nhóm chủ trên 17 type) -->
@@ -127,7 +127,7 @@
                       decoding="async"
                       @error="(ev) => ((ev.target as HTMLImageElement).style.display = 'none')"
                     />
-                    <span v-else aria-hidden="true">&#x1F4F7;</span>
+                    <span v-else aria-hidden="true"><IconLine name="image" /></span>
                   </div>
                   <ImageDisclosure
                     :id="disclosureId"
@@ -186,7 +186,7 @@
             </td>
             <td class="admin-actions">
               <button type="button" class="btn-success" @click="openEdit(e)" :aria-label="`Sửa ${e.name}`">Sửa</button>
-              <button type="button" @click="cloneEntity(e)" title="Nhân bản" :aria-label="`Nhân bản ${e.name}`">&#128203;</button>
+              <button type="button" @click="cloneEntity(e)" title="Nhân bản" :aria-label="`Nhân bản ${e.name}`"><IconLine name="copy" /></button>
               <button type="button" class="btn-danger" :disabled="acting === e.id" @click="deleteEntity(e.id)" :aria-label="`Xóa ${e.name}`">Xóa</button>
             </td>
           </tr>
@@ -228,7 +228,7 @@
             <input id="ent-name" v-model="form.name" class="input" :class="{ error: fieldErrors.name }" placeholder="Tên" aria-label="Tên entity" :aria-invalid="!!fieldErrors.name" :aria-describedby="fieldErrors.name ? 'ent-name-err' : undefined" @input="clearFieldError('name'); checkDuplicate()" />
             <span v-if="fieldErrors.name" id="ent-name-err" class="form-error" role="alert">{{ fieldErrors.name }}</span>
             <div v-if="duplicates.length && !editingEntity" class="ent-dup-warn" role="alert">
-              <strong>&#9888; Có thể trùng:</strong>
+              <strong><IconLine name="alert-triangle" /> Có thể trùng:</strong>
               <span v-for="d in duplicates" :key="d.id" class="ent-dup-item">{{ d.name }} <span class="ent-dup-type">({{ d.type }})</span></span>
             </div>
           </div>
@@ -303,7 +303,7 @@
             <strong class="admin-label">Ảnh ({{ (form.images || []).length }}/10)</strong>
             <p class="sf-help" data-entity-image-policy>Chỉ dùng ảnh minh họa AI cho nội dung biên tập entity. Không dùng ảnh đánh giá, ảnh bài đăng hoặc ảnh người dùng.</p>
             <div v-if="!editorImageRows.length" class="img-row img-row-placeholder">
-              <span class="img-thumb ent-thumb-empty" aria-hidden="true">&#x1F4F7;</span>
+              <span class="img-thumb ent-thumb-empty" aria-hidden="true"><IconLine name="image" /></span>
               <ImageDisclosure :descriptor="editorPlaceholder" presentation="full" />
             </div>
             <div v-for="row in editorImageRows" :key="row.index" class="img-row" data-admin-entity-image-row>

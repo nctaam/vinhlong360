@@ -51,12 +51,12 @@ export const guideSections: GuideSection[] = [
   // ═══════════════════════════════════════════════════
   {
     id: 'tim-kiem',
-    icon: '🔍',
+    icon: 'search',
     title: 'Tìm kiếm & Khám phá',
     intro: 'Hệ thống tìm kiếm thông minh giúp bạn tìm địa điểm, sản phẩm, bài viết và người dùng chỉ trong vài giây. Hỗ trợ gợi ý khi gõ, tìm không dấu, và lọc theo nhiều tiêu chí.',
     topics: [
       {
-        icon: '🔎',
+        icon: 'search',
         title: 'Thanh tìm kiếm',
         desc: 'Thanh tìm kiếm nằm trên header mọi trang. Kết quả gợi ý hiện ngay khi bạn gõ (autocomplete) — không cần chờ nhấn Enter.',
         steps: [
@@ -100,7 +100,7 @@ export const guideSections: GuideSection[] = [
         linkLabel: 'Mở trang tìm kiếm',
       },
       {
-        icon: '📂',
+        icon: 'list',
         title: 'Duyệt theo danh mục',
         desc: 'Ngoài tìm kiếm, bạn có thể duyệt qua từng danh mục chuyên đề. Mỗi danh mục có bộ lọc và cách sắp xếp riêng.',
         subtopics: [
@@ -132,7 +132,7 @@ export const guideSections: GuideSection[] = [
             steps: [
               'Truy cập /ocop',
               'Lọc theo hạng sao: 3 sao, 4 sao, hoặc 5 sao',
-              'Phần "Vinh danh" hiển thị riêng các sản phẩm 5 sao (biểu tượng vương miện 👑)',
+              'Phần "Vinh danh" hiển thị riêng các sản phẩm 5 sao (biểu tượng vương miện danh dự)',
               'Lọc theo khu vực (3 vùng trước 7-2025: Vĩnh Long, Bến Tre, Trà Vinh)',
             ],
           },
@@ -148,7 +148,7 @@ export const guideSections: GuideSection[] = [
         didYouKnow: 'Trang Du lịch có chế độ "spotlight" — hiển thị 1 địa điểm nổi bật dạng card lớn giống tạp chí, xoay vòng theo dữ liệu.',
       },
       {
-        icon: '🍊',
+        icon: 'fruit',
         title: 'Đặc sản theo mùa',
         desc: 'Trang /theo-mua cho biết tháng hiện tại đang có gì hay, và cho phép xem bất kỳ tháng nào trong năm.',
         steps: [
@@ -167,7 +167,7 @@ export const guideSections: GuideSection[] = [
         linkLabel: 'Xem theo mùa',
       },
       {
-        icon: '🧭',
+        icon: 'compass',
         title: 'Khám phá theo chủ đề',
         desc: 'Bộ sưu tập theo sở thích: Ẩm thực, Thiên nhiên, Văn hóa, Làng nghề, Mua sắm — mỗi chủ đề có giới thiệu editorial và lọc theo khu vực.',
         steps: [
@@ -193,12 +193,12 @@ export const guideSections: GuideSection[] = [
   // ═══════════════════════════════════════════════════
   {
     id: 'ban-do',
-    icon: '🗺️',
+    icon: 'map',
     title: 'Bản đồ tương tác',
     intro: 'Bản đồ hiển thị hơn 500 địa điểm trên bản đồ tương tác. Lọc theo loại, nhấn vào điểm đánh dấu để xem thông tin nhanh và dẫn tới trang chi tiết.',
     topics: [
       {
-        icon: '📍',
+        icon: 'pin',
         title: 'Xem và điều hướng bản đồ',
         desc: 'Bản đồ dùng MapLibre (mã nguồn mở) với giao diện Việt hóa. Bạn có thể kéo, zoom, và nhấn vào từng điểm.',
         steps: [
@@ -260,18 +260,18 @@ export const guideSections: GuideSection[] = [
   // ═══════════════════════════════════════════════════
   {
     id: 'dia-diem',
-    icon: '📋',
+    icon: 'clipboard-list',
     title: 'Chi tiết địa điểm',
     intro: 'Mỗi địa điểm có trang riêng với thông tin đầy đủ: ảnh, liên hệ, mùa vụ, bản đồ vị trí, đánh giá cộng đồng, và các địa điểm liên quan.',
     topics: [
       {
-        icon: '📸', title: 'Thư viện ảnh',
+        icon: 'camera', title: 'Thư viện ảnh',
         desc: 'Ảnh bìa hiển thị ở đầu trang. Nhấn vào để mở lightbox toàn màn hình duyệt tất cả ảnh.',
-        steps: ['Nhấn vào ảnh bìa hoặc nút "X ảnh" để mở lightbox', 'Trong lightbox: nhấn ← → (hoặc vuốt trái/phải trên di động) để chuyển ảnh', 'Nhấn Esc hoặc nút ✕ để đóng lightbox', 'Ảnh trong lightbox hiển thị ở chất lượng cao nhất có sẵn'],
+        steps: ['Nhấn vào ảnh bìa hoặc nút "X ảnh" để mở lightbox', 'Trong lightbox: nhấn ← → (hoặc vuốt trái/phải trên di động) để chuyển ảnh', 'Nhấn Esc hoặc nút Đóng để đóng lightbox', 'Ảnh trong lightbox hiển thị ở chất lượng cao nhất có sẵn'],
         tips: ['Ảnh chỉ dùng nguồn bản quyền hợp lệ. Bạn có thể đóng góp ảnh bằng cách viết bài đánh giá kèm ảnh trong Cộng đồng.'],
       },
       {
-        icon: '📞', title: 'Thông tin liên hệ',
+        icon: 'phone', title: 'Thông tin liên hệ',
         desc: 'Phần đầu trang chi tiết hiển thị các thông tin thiết yếu để liên hệ và ghé thăm.',
         subtopics: [
           { title: 'Số điện thoại & Zalo', desc: 'Nhấn vào số điện thoại trên di động để gọi trực tiếp. Nếu có Zalo, biểu tượng Zalo sẽ hiện bên cạnh.' },
@@ -281,7 +281,7 @@ export const guideSections: GuideSection[] = [
         warnings: ['Trang chỉ giới thiệu — KHÔNG có chức năng đặt hàng/booking. Liên hệ trực tiếp cơ sở qua điện thoại hoặc Zalo.'],
       },
       {
-        icon: '📅', title: 'Mùa vụ & Thời điểm',
+        icon: 'calendar', title: 'Mùa vụ & Thời điểm',
         desc: 'Nhiều địa điểm/sản phẩm có tính mùa. Trang chi tiết hiển thị lưới 12 tháng và gợi ý thời điểm lý tưởng.',
         subtopics: [
           { title: 'Lưới 12 tháng', desc: 'Mỗi ô tháng có mã màu: xanh đậm = cao điểm, xanh nhạt = phù hợp, xám = không mùa. Giúp bạn chọn thời điểm ghé thăm tốt nhất.' },
@@ -290,7 +290,7 @@ export const guideSections: GuideSection[] = [
         seeAlso: [{ href: '#tim-kiem--đặc-sản-theo-mùa', label: 'Trang Theo mùa' }],
       },
       {
-        icon: '🔗', title: 'Địa điểm liên quan & Lân cận',
+        icon: 'share', title: 'Địa điểm liên quan & Lân cận',
         desc: 'Cuối trang chi tiết hiển thị hai phần gợi ý.',
         subtopics: [
           { title: 'Địa điểm liên quan', desc: 'Các địa điểm có mối quan hệ — ví dụ: "Chợ nổi Trà Ôn" liên quan đến "Cù lao Mây" vì cùng tuyến tham quan. Quan hệ do dữ liệu hệ thống quyết định (hơn 12.000 mối quan hệ).' },
@@ -298,21 +298,21 @@ export const guideSections: GuideSection[] = [
         ],
       },
       {
-        icon: '❤️', title: 'Lưu yêu thích',
-        desc: 'Nhấn nút ❤️ "Lưu" trên trang chi tiết để đánh dấu địa điểm yêu thích.',
-        steps: ['Nhấn nút ❤️ trên trang chi tiết bất kỳ địa điểm nào', 'Địa điểm được lưu vào bộ nhớ trình duyệt (không cần đăng nhập)', 'Nếu đã đăng nhập, danh sách yêu thích đồng bộ lên server — xem trên mọi thiết bị', 'Xem lại danh sách trong hồ sơ cá nhân (tab "Đã lưu")', 'Dùng danh sách này làm nguồn khi tạo lịch trình (tab "Đã lưu" trong trình tạo lịch trình)'],
+        icon: 'heart', title: 'Lưu yêu thích',
+        desc: 'Nhấn nút "Lưu" (biểu tượng trái tim) trên trang chi tiết để đánh dấu địa điểm yêu thích.',
+        steps: ['Nhấn nút Lưu trên trang chi tiết bất kỳ địa điểm nào', 'Địa điểm được lưu vào bộ nhớ trình duyệt (không cần đăng nhập)', 'Nếu đã đăng nhập, danh sách yêu thích đồng bộ lên server — xem trên mọi thiết bị', 'Xem lại danh sách trong hồ sơ cá nhân (tab "Đã lưu")', 'Dùng danh sách này làm nguồn khi tạo lịch trình (tab "Đã lưu" trong trình tạo lịch trình)'],
         tips: ['Lưu yêu thích trước khi tạo lịch trình — bạn sẽ có sẵn danh sách để chọn nhanh.', 'Yêu thích hoạt động cả khi chưa đăng nhập (lưu trên trình duyệt). Khi đăng nhập, danh sách tự động gộp và đồng bộ.'],
-        didYouKnow: 'Yêu thích dùng cơ chế "fire-and-forget" — nhấn ❤️ xong có thể rời trang ngay, dữ liệu vẫn đồng bộ lên server ở nền.',
+        didYouKnow: 'Yêu thích dùng cơ chế "fire-and-forget" — nhấn Lưu xong có thể rời trang ngay, dữ liệu vẫn đồng bộ lên server ở nền.',
         seeAlso: [{ href: '#lich-trinh', label: 'Tạo lịch trình từ yêu thích' }],
       },
       {
-        icon: '⭐', title: 'Đánh giá từ cộng đồng',
+        icon: 'star', title: 'Đánh giá từ cộng đồng',
         desc: 'Phần cuối trang chi tiết hiển thị các bài đánh giá từ thành viên cộng đồng.',
         steps: ['Cuộn xuống phần "Đánh giá" trên trang chi tiết', 'Đọc đánh giá từ người đã đến — kèm ảnh thực tế', 'Nhấn "Viết đánh giá" để đóng góp (cần đăng nhập)', 'Chọn điểm số (1–5 sao), viết nhận xét, đính kèm ảnh nếu có'],
         seeAlso: [{ href: '#cong-dong', label: 'Viết bài & đánh giá trong Cộng đồng' }],
       },
       {
-        icon: '🏷️', title: 'JSON-LD & SEO',
+        icon: 'tag', title: 'JSON-LD & SEO',
         desc: 'Mỗi trang chi tiết có dữ liệu cấu trúc JSON-LD (Schema.org) — khi chia sẻ link lên Zalo, Facebook, Google sẽ hiện ảnh, tên, mô tả đẹp và đầy đủ.',
         didYouKnow: 'Trang chi tiết đạt chuẩn TouristAttraction/LocalBusiness của Google — giúp hiện thông tin phong phú trên kết quả tìm kiếm Google.',
       },
@@ -329,12 +329,12 @@ export const guideSections: GuideSection[] = [
   // ═══════════════════════════════════════════════════
   {
     id: 'lich-trinh',
-    icon: '🗓️',
+    icon: 'route',
     title: 'Lịch trình',
     intro: 'Tạo lịch trình du lịch cá nhân hoặc duyệt lịch trình gợi ý sẵn có. Hệ thống tính quãng đường, thời gian di chuyển, và hiển thị trên bản đồ.',
     topics: [
       {
-        icon: '📝', title: 'Duyệt lịch trình gợi ý',
+        icon: 'file-text', title: 'Duyệt lịch trình gợi ý',
         desc: 'Các lịch trình được biên soạn sẵn theo khu vực, phù hợp cho người lần đầu đến.',
         steps: ['Truy cập /lich-trinh', 'Hero hiển thị số lượng lịch trình theo từng khu vực', 'Dùng chip lọc: 3 vùng trước 7-2025 (Vĩnh Long, Bến Tre, Trà Vinh), hoặc Tất cả', 'Nhấn vào card lịch trình để xem chi tiết: các điểm dừng, thời gian, quãng đường', 'Nhấn "Lưu" để lưu vào danh sách cá nhân'],
         subtopics: [
@@ -343,11 +343,11 @@ export const guideSections: GuideSection[] = [
         link: '/lich-trinh', linkLabel: 'Xem lịch trình gợi ý',
       },
       {
-        icon: '✏️', title: 'Tự tạo lịch trình',
+        icon: 'pencil', title: 'Tự tạo lịch trình',
         desc: 'Trình tạo lịch trình 3 bước cho phép bạn chọn điểm dừng, sắp xếp thứ tự, ghi chú, và xem trên bản đồ.',
         steps: ['Truy cập /tao-lich-trinh hoặc nhấn "Tạo lịch trình" từ menu', 'Giao diện chia 2 phần: bên trái là danh sách địa điểm để chọn, bên phải là lịch trình đang xây', 'Chọn tab "Tất cả" (tìm kiếm + lọc) hoặc "Đã lưu" (yêu thích)', 'Nhấn dấu "+" bên cạnh địa điểm để thêm vào lịch trình', 'Sắp xếp thứ tự bằng nút ↑↓ hoặc kéo thả', 'Thêm khung giờ (ví dụ "8:00–9:30") và ghi chú cho từng điểm dừng', 'Đặt tên cho lịch trình bằng cách nhấn vào tiêu đề ở đầu', 'Nhấn "Lưu" để lưu — lịch trình xuất hiện trong mục "Đã lưu" ở /lich-trinh'],
         subtopics: [
-          { title: 'Chọn từ danh sách yêu thích', desc: 'Tab "Đã lưu" (bên trái trình tạo) hiển thị những địa điểm bạn đã nhấn ❤️. Đây là cách nhanh nhất để tạo lịch trình.', steps: ['Chuyển sang tab "Đã lưu" trên panel bên trái', 'Nhấn "+" để thêm từng địa điểm yêu thích vào lịch trình', 'Hoặc nhấn "Tạo từ danh sách yêu thích" trên trang /lich-trinh để tự động thêm tất cả'] },
+          { title: 'Chọn từ danh sách yêu thích', desc: 'Tab "Đã lưu" (bên trái trình tạo) hiển thị những địa điểm bạn đã lưu yêu thích. Đây là cách nhanh nhất để tạo lịch trình.', steps: ['Chuyển sang tab "Đã lưu" trên panel bên trái', 'Nhấn "+" để thêm từng địa điểm yêu thích vào lịch trình', 'Hoặc nhấn "Tạo từ danh sách yêu thích" trên trang /lich-trinh để tự động thêm tất cả'] },
           { title: 'Bản đồ tuyến đường', desc: 'Phía dưới lịch trình hiển thị bản đồ với đường nối giữa các điểm dừng (polyline). Bản đồ cập nhật tự động khi bạn thêm, xóa, hoặc sắp xếp lại.' },
           { title: 'Thanh tiến trình 3 bước', desc: 'Trình tạo có thanh tiến trình: Bước 1 (chọn điểm) → Bước 2 (sắp xếp & ghi chú) → Bước 3 (xem lại & lưu). Bạn có thể quay lại bước trước bất kỳ lúc nào.' },
         ],
@@ -356,7 +356,7 @@ export const guideSections: GuideSection[] = [
         link: '/tao-lich-trinh', linkLabel: 'Mở trình tạo lịch trình',
       },
       {
-        icon: '🚗', title: 'Phương tiện & Khoảng cách',
+        icon: 'car', title: 'Phương tiện & Khoảng cách',
         desc: 'Chọn phương tiện di chuyển để hệ thống tính quãng đường và thời gian phù hợp.',
         subtopics: [
           { title: 'Ba lựa chọn phương tiện', desc: 'Ô tô, Xe máy, hoặc Xuồng. Nhấn biểu tượng phương tiện trong trình tạo lịch trình để chuyển đổi. Tổng quãng đường và thời gian cập nhật ngay.' },
@@ -364,7 +364,7 @@ export const guideSections: GuideSection[] = [
         ],
       },
       {
-        icon: '🔗', title: 'Chia sẻ & Công khai',
+        icon: 'share', title: 'Chia sẻ & Công khai',
         desc: 'Lịch trình đã lưu có thể đặt chế độ công khai hoặc riêng tư.',
         steps: ['Mở lịch trình đã lưu', 'Nhấn nút "Chia sẻ" để sao chép link hoặc mở native share trên di động', 'Gửi link cho bạn bè qua Zalo, Messenger, hoặc mạng xã hội', 'Bật "Công khai" nếu muốn hiện trên trang /lich-trinh cho mọi người'],
       },
@@ -382,12 +382,12 @@ export const guideSections: GuideSection[] = [
   // ═══════════════════════════════════════════════════
   {
     id: 'cong-dong',
-    icon: '👥',
+    icon: 'users',
     title: 'Cộng đồng',
     intro: 'Mạng xã hội mini dành cho du khách và người bản địa. Chia sẻ trải nghiệm, đánh giá địa điểm, hỏi đáp, và theo dõi nhau.',
     topics: [
       {
-        icon: '✍️', title: 'Viết bài',
+        icon: 'pencil', title: 'Viết bài',
         desc: 'Đăng bài chia sẻ, đánh giá, hỏi đáp, hoặc giới thiệu — mỗi loại có mục đích khác nhau.',
         steps: ['Truy cập /cong-dong và đăng nhập', 'Nhấn vào ô soạn bài ở đầu trang', 'Chọn loại bài: Chia sẻ, Đánh giá, Hỏi đáp, hoặc Giới thiệu', 'Viết nội dung (tối đa 500 ký tự, bộ đếm hiện ở góc)', 'Đính kèm ảnh: nhấn biểu tượng ảnh, chọn tối đa 5 ảnh', 'Gõ @ để tag người dùng hoặc địa điểm (dropdown gợi ý hiện ra)', 'Nhấn "Đăng" để xuất bản'],
         subtopics: [
@@ -399,17 +399,17 @@ export const guideSections: GuideSection[] = [
         didYouKnow: 'Điểm danh tiếng có cơ chế "diminishing returns" — cùng 1 loại đóng góp, bài thứ 10 cho ít điểm hơn bài thứ 1. Đa dạng hóa (viết + đánh giá + ảnh + khám phá) là cách tăng nhanh nhất.',
       },
       {
-        icon: '❤️', title: 'Tương tác với bài viết',
+        icon: 'heart', title: 'Tương tác với bài viết',
         desc: 'Thích, bình luận, lưu, chia sẻ lại — đầy đủ tương tác mạng xã hội.',
         subtopics: [
-          { title: 'Thích ❤️', desc: 'Nhấn biểu tượng ❤️ trên bài. Tác giả nhận thông báo. Mỗi lượt thích tính 1 điểm cho tác giả.' },
-          { title: 'Bình luận 💬', desc: 'Nhấn biểu tượng 💬 để mở khung bình luận. Gõ và nhấn Enter để gửi. Bình luận cũng hỗ trợ @mention.' },
-          { title: 'Lưu bài (bookmark) 🔖', desc: 'Nhấn biểu tượng 🔖 để lưu bài. Xem lại trong tab "Đã lưu" trên trang cộng đồng.' },
-          { title: 'Chia sẻ lại (repost) 🔁', desc: 'Nhấn biểu tượng chia sẻ lại để đăng lại bài (kèm trích dẫn tác giả gốc) lên feed.' },
+          { title: 'Thích (Yêu thích)', desc: 'Nhấn biểu tượng trái tim trên bài. Tác giả nhận thông báo. Mỗi lượt thích tính 1 điểm cho tác giả.' },
+          { title: 'Bình luận', desc: 'Nhấn biểu tượng bình luận để mở khung bình luận. Gõ và nhấn Enter để gửi. Bình luận cũng hỗ trợ @mention.' },
+          { title: 'Lưu bài (bookmark)', desc: 'Nhấn biểu tượng lưu để lưu bài. Xem lại trong tab "Đã lưu" trên trang cộng đồng.' },
+          { title: 'Chia sẻ lại (repost)', desc: 'Nhấn biểu tượng chia sẻ lại để đăng lại bài (kèm trích dẫn tác giả gốc) lên feed.' },
         ],
       },
       {
-        icon: '📰', title: 'Feed và bộ lọc',
+        icon: 'file-text', title: 'Feed và bộ lọc',
         desc: 'Feed cộng đồng có nhiều tab và bộ lọc.',
         subtopics: [
           { title: 'Bốn tab feed', desc: 'Mới nhất (tất cả bài mới), Nổi bật (bài nhiều tương tác), Đang theo dõi (chỉ từ người bạn follow), Đã lưu (bài bạn bookmark).' },
@@ -419,17 +419,17 @@ export const guideSections: GuideSection[] = [
         ],
       },
       {
-        icon: '👤', title: 'Theo dõi người dùng',
+        icon: 'user', title: 'Theo dõi người dùng',
         desc: 'Theo dõi thành viên khác để xem bài mới trong tab "Đang theo dõi".',
         steps: ['Nhấn nút "Theo dõi" trên card người dùng (sidebar phải) hoặc trên trang hồ sơ', 'Bài viết mới của họ sẽ hiện trong tab "Đang theo dõi"', 'Bỏ theo dõi: nhấn lại nút hoặc vào trang hồ sơ'],
         subtopics: [{ title: 'Gợi ý theo dõi', desc: 'Sidebar phải hiển thị "Gợi ý theo dõi" — những thành viên tích cực mà bạn chưa follow.' }],
       },
       {
-        icon: '🏆', title: 'Bảng xếp hạng & Cấp bậc',
+        icon: 'award', title: 'Bảng xếp hạng & Cấp bậc',
         desc: 'Hệ thống điểm danh tiếng và cấp bậc khuyến khích đóng góp chất lượng.',
         subtopics: [
-          { title: 'Bảng xếp hạng (/bang-xep-hang)', desc: 'Top thành viên theo điểm danh tiếng. Top 3 có huy chương vàng 🥇/bạc 🥈/đồng 🥉. Nhấn vào tên để xem hồ sơ.' },
-          { title: 'Bốn cấp bậc', desc: '🌱 Người mới (0-19 điểm), 🤝 Người đóng góp (20-79), 🌟 Đóng góp tích cực (80-199), 👑 Đại sứ (200+). Cấp hiện bên cạnh tên trên mọi bài viết.' },
+          { title: 'Bảng xếp hạng (/bang-xep-hang)', desc: 'Top thành viên theo điểm danh tiếng. Top 3 được vinh danh huy chương vàng (hạng Nhất) / bạc (hạng Nhì) / đồng (hạng Ba). Nhấn vào tên để xem hồ sơ.' },
+          { title: 'Bốn cấp bậc', desc: 'Cấp 1: Người mới (0-19 điểm), Cấp 2: Người đóng góp (20-79), Cấp 3: Đóng góp tích cực (80-199), Cấp 4: Đại sứ (200+). Cấp hiện bên cạnh tên trên mọi bài viết.' },
           { title: 'Huy hiệu thành tích', desc: 'Huy hiệu đặc biệt cho thành tựu: Nhà đánh giá (25+ đánh giá), Nhiếp ảnh gia (20+ ảnh), Hướng dẫn viên (5+ câu trả lời hay)...' },
         ],
         link: '/huong-dan-thanh-vien', linkLabel: 'Xem chi tiết cấp bậc & điểm',
@@ -449,12 +449,12 @@ export const guideSections: GuideSection[] = [
   // ═══════════════════════════════════════════════════
   {
     id: 'tai-khoan',
-    icon: '👤',
+    icon: 'user',
     title: 'Tài khoản & Cài đặt',
     intro: 'Đăng ký bằng số điện thoại, quản lý hồ sơ, bảo mật, thông báo, và quyền riêng tư — tất cả trong trang Cài đặt.',
     topics: [
       {
-        icon: '📱', title: 'Đăng ký & Đăng nhập',
+        icon: 'sliders', title: 'Đăng ký & Đăng nhập',
         desc: 'Dùng số điện thoại + OTP — không cần email. An toàn, nhanh, phù hợp với thói quen người Việt.',
         steps: ['Nhấn "Đăng nhập" ở góc phải trên header', 'Modal đăng nhập mở ra — nhập số điện thoại (10 số, bắt đầu 0)', 'Nhấn "Gửi mã" — hệ thống gửi OTP 6 số qua SMS', 'Nhập mã OTP vào 6 ô và nhấn "Xác nhận"', 'Lần đầu: hệ thống tạo tài khoản mới tự động. Bạn có thể đặt mật khẩu (hoặc bỏ qua)', 'Lần sau: nhập SĐT → OTP → đăng nhập ngay (hoặc dùng mật khẩu nếu đã đặt)'],
         subtopics: [
@@ -464,7 +464,7 @@ export const guideSections: GuideSection[] = [
         tips: ['OTP có hiệu lực 5 phút. Nếu không nhận được, kiểm tra tin nhắn SMS hoặc thử lại sau 60 giây.', 'Không cần đăng ký riêng — lần đầu nhập SĐT chưa có tài khoản, hệ thống tự tạo.'],
       },
       {
-        icon: '🖼️', title: 'Hồ sơ cá nhân',
+        icon: 'image', title: 'Hồ sơ cá nhân',
         desc: 'Cập nhật tên, ảnh đại diện, ảnh bìa, tiểu sử trong trang Cài đặt.',
         steps: ['Nhấn avatar/tên ở góc phải trên → chọn "Cài đặt" (hoặc vào /cai-dat)', 'Tab "Hồ sơ" mở mặc định', 'Nhấn vào vùng avatar để tải ảnh mới (JPEG/PNG/WebP, tự động resize)', 'Nhấn vào ảnh bìa để thay đổi', 'Sửa tên hiển thị và tiểu sử → nhấn "Lưu"'],
         subtopics: [
@@ -474,7 +474,7 @@ export const guideSections: GuideSection[] = [
         link: '/cai-dat', linkLabel: 'Mở Cài đặt',
       },
       {
-        icon: '🔒', title: 'Bảo mật',
+        icon: 'shield-check', title: 'Bảo mật',
         desc: 'Quản lý mật khẩu, phiên đăng nhập, và lịch sử đăng nhập. Tất cả trong tab "Bảo mật" của trang Cài đặt.',
         subtopics: [
           { title: 'Đặt/đổi mật khẩu', desc: 'Nếu chưa có mật khẩu, nhấn "Đặt mật khẩu". Nếu đã có, nhập mật khẩu cũ → mật khẩu mới → xác nhận.' },
@@ -483,17 +483,17 @@ export const guideSections: GuideSection[] = [
         ],
       },
       {
-        icon: '🔔', title: 'Thông báo',
+        icon: 'bell', title: 'Thông báo',
         desc: 'Xem thông báo hoạt động và tùy chỉnh loại thông báo muốn nhận.',
         subtopics: [
-          { title: 'Chuông thông báo trên header', desc: 'Biểu tượng 🔔 trên header hiện chấm đỏ khi có thông báo chưa đọc. Nhấn để xem 5 thông báo gần nhất trong dropdown.' },
+          { title: 'Chuông thông báo trên header', desc: 'Biểu tượng thông báo trên header hiện chấm đỏ khi có thông báo chưa đọc. Nhấn để xem 5 thông báo gần nhất trong dropdown.' },
           { title: 'Trang thông báo (/thong-bao)', desc: 'Xem tất cả thông báo. Lọc theo loại: Tất cả, Thích, Bình luận, Theo dõi, Nhắc đến. Thông báo nhóm: "A và 4 người khác đã thích bài viết". Nhấn "Đọc tất cả" để đánh dấu đã đọc.' },
           { title: 'Tùy chỉnh (/cai-dat → Thông báo)', desc: 'Bật/tắt từng loại thông báo: Thích, Bình luận, Nhắc đến, Theo dõi mới. Loại bị tắt sẽ không tạo thông báo nữa.' },
         ],
         link: '/thong-bao', linkLabel: 'Xem thông báo',
       },
       {
-        icon: '🚫', title: 'Vô hiệu hóa tài khoản',
+        icon: 'eye-off', title: 'Vô hiệu hóa tài khoản',
         desc: 'Tạm ngừng sử dụng mà không mất dữ liệu.',
         steps: ['Vào /cai-dat → tab "Bảo mật" → cuộn xuống phần "Vùng nguy hiểm"', 'Nhấn "Vô hiệu hóa tài khoản"', 'Tài khoản ẩn khỏi cộng đồng, bài viết vẫn giữ, phiên đăng nhập bị thu hồi', 'Khi muốn quay lại: đăng nhập bằng OTP — tài khoản tự động kích hoạt lại'],
         warnings: ['Vô hiệu hóa khác với xóa. Vô hiệu hóa = tạm ẩn, có thể kích hoạt lại bất kỳ lúc nào.'],
@@ -512,14 +512,14 @@ export const guideSections: GuideSection[] = [
   // ═══════════════════════════════════════════════════
   {
     id: 'cong-cu',
-    icon: '🛠️',
+    icon: 'settings',
     title: 'Công cụ tiện ích',
     intro: 'Các tính năng bổ trợ giúp trải nghiệm mượt mà hơn: chat AI, chế độ tối, lưu yêu thích, chia sẻ, tuyến đường gợi ý.',
     topics: [
       {
-        icon: '💬', title: 'Chat với trợ lý AI',
+        icon: 'message', title: 'Chat với trợ lý AI',
         desc: 'Trợ lý AI hiểu về du lịch, ẩm thực, văn hóa tỉnh Vĩnh Long hợp nhất (3 vùng trước 7-2025). Hỏi bất cứ điều gì.',
-        steps: ['Nhấn nút 💬 ở góc phải dưới màn hình (hiện trên mọi trang)', 'Cửa sổ chat mở ra với gợi ý câu hỏi (thay đổi theo trang bạn đang xem)', 'Gõ câu hỏi và nhấn Enter hoặc nút gửi', 'Trợ lý trả lời dạng streaming (từng chữ hiện ra)', 'Nhấn nút dừng nếu muốn ngắt giữa chừng', 'Nhấn nút 💬 lần nữa hoặc Esc để đóng'],
+        steps: ['Nhấn nút Trợ lý AI ở góc phải dưới màn hình (hiện trên mọi trang)', 'Cửa sổ chat mở ra với gợi ý câu hỏi (thay đổi theo trang bạn đang xem)', 'Gõ câu hỏi và nhấn Enter hoặc nút gửi', 'Trợ lý trả lời dạng streaming (từng chữ hiện ra)', 'Nhấn nút dừng nếu muốn ngắt giữa chừng', 'Nhấn nút đóng hoặc Esc để đóng'],
         subtopics: [
           { title: 'Gợi ý theo ngữ cảnh', desc: 'Khi đang ở trang "Chợ nổi Trà Ôn", gợi ý sẽ là: "Nên đi chợ nổi lúc mấy giờ?", "Có gì ăn ở đây?". Ở trang khác sẽ có gợi ý khác. Nhấn vào gợi ý để hỏi nhanh mà không cần gõ.' },
           { title: 'Ví dụ câu hỏi hay', desc: '"Đi Vĩnh Long 2 ngày nên đi đâu?", "Món gì ngon ở vùng Bến Tre (cũ)?", "Mùa nước nổi có gì thú vị?", "So sánh homestay ở Cù lao An Bình", "Quà mang về từ vùng Trà Vinh (cũ)".' },
@@ -529,13 +529,13 @@ export const guideSections: GuideSection[] = [
         didYouKnow: 'Gợi ý câu hỏi tự động thay đổi dựa trên trang bạn đang xem — hệ thống phân tích URL và nội dung trang để đưa ra gợi ý phù hợp nhất.',
       },
       {
-        icon: '🌙', title: 'Chế độ tối (Dark Mode)',
+        icon: 'moon', title: 'Chế độ tối (Dark Mode)',
         desc: 'Chuyển đổi giữa giao diện sáng và tối. Ghi nhớ lựa chọn.',
-        steps: ['Nhấn biểu tượng ☀️/🌙 trên header (bên trái nút Đăng nhập)', 'Giao diện chuyển đổi ngay lập tức — tất cả trang, bản đồ, card', 'Lựa chọn được lưu — lần sau mở lại vẫn giữ chế độ bạn chọn'],
+        steps: ['Nhấn nút chuyển đổi Sáng/Tối trên header (bên trái nút Đăng nhập)', 'Giao diện chuyển đổi ngay lập tức — tất cả trang, bản đồ, card', 'Lựa chọn được lưu — lần sau mở lại vẫn giữ chế độ bạn chọn'],
         tips: ['Chế độ tối giảm mỏi mắt khi duyệt buổi tối và tiết kiệm pin trên màn hình OLED.'],
       },
       {
-        icon: '📤', title: 'Chia sẻ trang',
+        icon: 'share', title: 'Chia sẻ trang',
         desc: 'Chia sẻ bất kỳ trang nào — SEO đầy đủ (ảnh, mô tả hiện khi paste link vào Zalo/Facebook).',
         subtopics: [
           { title: 'Chia sẻ địa điểm', desc: 'Trên trang chi tiết, nhấn nút "Chia sẻ" → sao chép link hoặc mở native share (trên di động). Link paste vào Zalo/Facebook hiện ảnh + mô tả tự động nhờ Open Graph metadata.' },
@@ -544,7 +544,7 @@ export const guideSections: GuideSection[] = [
         ],
       },
       {
-        icon: '🛣️', title: 'Tuyến đường gợi ý',
+        icon: 'map', title: 'Tuyến đường gợi ý',
         desc: 'Các tuyến du lịch biên soạn sẵn — phù hợp cho người đi tự túc bằng xe máy hoặc ô tô.',
         steps: ['Truy cập /tuyen-duong', 'Lọc theo khu vực (3 vùng trước 7-2025: Vĩnh Long, Bến Tre, Trà Vinh)', 'Mỗi tuyến gồm: tên, emoji, thời gian, quãng đường, danh sách điểm dừng', 'Đọc mẹo di chuyển ở cuối mỗi tuyến', 'Nhấn vào điểm dừng để xem chi tiết hoặc mở trên bản đồ'],
         tips: ['Tuyến đường là gợi ý — bạn có thể bỏ/thêm điểm dừng bằng cách tạo lịch trình riêng.'],
@@ -552,11 +552,11 @@ export const guideSections: GuideSection[] = [
         link: '/tuyen-duong', linkLabel: 'Xem tuyến đường',
       },
       {
-        icon: '⬆️', title: 'Cuộn lên đầu trang',
+        icon: 'arrow-up', title: 'Cuộn lên đầu trang',
         desc: 'Khi cuộn xuống xa, nút mũi tên ⬆️ hiện ở góc phải dưới. Nhấn để cuộn mượt về đầu trang. Nút tự ẩn khi bạn ở đầu trang.',
       },
       {
-        icon: '🎓', title: 'Onboarding cho thành viên mới',
+        icon: 'award', title: 'Onboarding cho thành viên mới',
         desc: 'Lần đầu đăng nhập, hệ thống hiện sheet hướng dẫn nhanh (OnboardingSheet) giới thiệu các tính năng chính. Sheet chỉ hiện 1 lần — sau đó bạn có thể tham khảo trang này.',
       },
     ],
@@ -572,12 +572,12 @@ export const guideSections: GuideSection[] = [
   // ═══════════════════════════════════════════════════
   {
     id: 'danh-ba',
-    icon: '🏛️',
+    icon: 'landmark',
     title: 'Thông tin hành chính',
     intro: 'Tra cứu thông tin liên hệ cơ quan hành chính, trang xã/phường, và các khu vực trong vùng.',
     topics: [
       {
-        icon: '📒', title: 'Danh bạ hành chính',
+        icon: 'book', title: 'Danh bạ hành chính',
         desc: 'Thông tin liên hệ UBND xã/phường: địa chỉ, số điện thoại, email, website.',
         steps: ['Truy cập /danh-ba', 'Chọn khu vực: Vĩnh Long, Bến Tre, hoặc Trà Vinh (trước 7-2025)', 'Chọn xã/phường từ dropdown', 'Xem thông tin liên hệ: địa chỉ, SĐT (nhấn để gọi), email, website', 'Nhấn "Xem trên bản đồ" để mở vị trí'],
         subtopics: [{ title: 'Báo thông tin sai', desc: 'Nếu phát hiện SĐT, địa chỉ sai — nhấn "Báo sai" để gửi yêu cầu cập nhật.' }],
@@ -585,7 +585,7 @@ export const guideSections: GuideSection[] = [
         link: '/danh-ba', linkLabel: 'Mở danh bạ',
       },
       {
-        icon: '🏘️', title: 'Trang xã/phường',
+        icon: 'building', title: 'Trang xã/phường',
         desc: 'Mỗi xã/phường có trang riêng với tóm tắt, sản phẩm nổi bật, địa điểm, và thông tin liên hệ.',
         subtopics: [
           { title: 'Cách truy cập', desc: 'Từ breadcrumb trên trang chi tiết (ví dụ: Vĩnh Long > Long Hồ > Phú Quới), nhấn vào tên xã/phường. Hoặc từ danh bạ.' },
@@ -593,8 +593,8 @@ export const guideSections: GuideSection[] = [
         ],
       },
       {
-        icon: '🗺️', title: 'Ba khu vực',
-        desc: 'Duyệt theo 3 vùng chính trước 7-2025: Vĩnh Long (🍊), Bến Tre (🥥), Trà Vinh (🛕).',
+        icon: 'map', title: 'Ba khu vực',
+        desc: 'Duyệt theo 3 vùng chính trước 7-2025: Vĩnh Long (vùng Đất Cam), Bến Tre (xứ Dừa Bến Tre), Trà Vinh (miền Chùa Tháp Trà Vinh).',
         steps: ['Nhấn vào khu vực ở footer hoặc truy cập /khu-vuc/vinh-long, /khu-vuc/ben-tre, /khu-vuc/tra-vinh', 'Xem tổng quan, địa điểm nổi bật, đặc sản riêng của vùng', 'Lọc danh sách theo loại hình hoặc mùa'],
       },
     ],
@@ -607,7 +607,7 @@ export const guideSections: GuideSection[] = [
 
 export const guideTroubleshooting: TroubleshootCategory[] = [
   {
-    icon: '🔐', title: 'Đăng nhập & Tài khoản',
+    icon: 'shield-check', title: 'Đăng nhập & Tài khoản',
     items: [
       { symptom: 'Không nhận được mã OTP', cause: 'SMS bị chặn bởi nhà mạng hoặc SĐT nhập sai.', fix: ['Kiểm tra lại SĐT (10 số, bắt đầu 0)', 'Chờ 60 giây rồi nhấn "Gửi lại mã"', 'Kiểm tra tin nhắn SMS (không phải tin rác)', 'Nếu vẫn không nhận được, thử SĐT khác hoặc liên hệ hỗ trợ'] },
       { symptom: 'Đăng nhập bằng mật khẩu bị sai', cause: 'Nhập sai mật khẩu hoặc chưa từng đặt mật khẩu.', fix: ['Dùng OTP để đăng nhập thay thế', 'Sau khi vào, đặt lại mật khẩu trong Cài đặt → Bảo mật'] },
@@ -615,14 +615,14 @@ export const guideTroubleshooting: TroubleshootCategory[] = [
     ] as TroubleshootItem[],
   },
   {
-    icon: '🗺️', title: 'Bản đồ & Hiển thị',
+    icon: 'map', title: 'Bản đồ & Hiển thị',
     items: [
       { symptom: 'Bản đồ trắng hoặc không tải', cause: 'Kết nối internet yếu hoặc trình duyệt cũ không hỗ trợ WebGL.', fix: ['Kiểm tra kết nối internet', 'Tải lại trang (Ctrl+R hoặc kéo xuống trên di động)', 'Dùng trình duyệt mới (Chrome, Firefox, Safari, Edge phiên bản mới nhất)', 'Tắt VPN nếu đang bật — một số VPN chặn tile bản đồ'] },
       { symptom: 'Không thấy địa điểm trên bản đồ', cause: 'Địa điểm chưa có tọa độ GPS hoặc bị ẩn bởi bộ lọc.', fix: ['Kiểm tra chip lọc phía trên bản đồ — đảm bảo loại hình đang bật', 'Zoom vào khu vực — điểm có thể nằm trong cụm (cluster)', 'Địa điểm không có tọa độ chỉ hiện trong danh sách, không trên bản đồ'] },
     ] as TroubleshootItem[],
   },
   {
-    icon: '✍️', title: 'Cộng đồng & Bài viết',
+    icon: 'pencil', title: 'Cộng đồng & Bài viết',
     items: [
       { symptom: 'Không đăng được bài', cause: 'Chưa đăng nhập, bài trống, hoặc vượt 500 ký tự.', fix: ['Đảm bảo đã đăng nhập (nút "Đăng nhập" biến mất khi đã đăng)', 'Kiểm tra bộ đếm ký tự — tối đa 500', 'Nếu đăng ảnh, đợi ảnh upload xong rồi mới nhấn "Đăng"'] },
       { symptom: 'Bài viết bị ẩn sau khi đăng', cause: 'Hệ thống kiểm duyệt phát hiện nội dung vi phạm.', fix: ['Kiểm tra nội dung có từ ngữ không phù hợp', 'Bài quảng cáo thương mại có thể bị ẩn', 'Liên hệ quản trị nếu cho rằng bài bị ẩn nhầm'] },
@@ -630,7 +630,7 @@ export const guideTroubleshooting: TroubleshootCategory[] = [
     ] as TroubleshootItem[],
   },
   {
-    icon: '📱', title: 'Hiển thị & Trình duyệt',
+    icon: 'sliders', title: 'Hiển thị & Trình duyệt',
     items: [
       { symptom: 'Trang hiển thị lỗi hoặc vỡ layout', cause: 'Trình duyệt cũ hoặc cache bị lỗi.', fix: ['Tải lại trang cứng: Ctrl+Shift+R (PC) hoặc kéo xuống giữ (di động)', 'Xóa cache trình duyệt cho vinhlong360.vn', 'Cập nhật trình duyệt lên phiên bản mới nhất'] },
       { symptom: 'Dark mode không lưu', cause: 'Trình duyệt chặn localStorage hoặc duyệt ẩn danh.', fix: ['Kiểm tra không ở chế độ duyệt ẩn danh (Incognito)', 'Cho phép cookie và localStorage cho vinhlong360.vn'] },

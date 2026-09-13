@@ -6,48 +6,48 @@
         <p class="admin-muted" style="margin-top: var(--space-1)">Kiểm duyệt candidate GPT-5.5 theo chính sách evidence-only trước khi cập nhật dữ liệu public.</p>
       </div>
       <button type="button" class="admin-refresh" :disabled="loading" @click="refreshAll(true)">
-        <span :class="{ 'refresh-spin': loading }">&#8635;</span> Làm mới
+        <span :class="{ 'refresh-spin': loading }"><IconLine name="rotate-cw" /></span> Làm mới
       </button>
     </div>
 
     <div v-if="summary" class="stat-grid dq-stats">
       <div class="stat-card">
-        <div class="stat-icon si-blue">&#127760;</div>
+        <div class="stat-icon si-blue"><IconLine name="globe" /></div>
         <div>
           <div class="stat-value">{{ summary.data?.public_entities || 0 }}</div>
           <div class="stat-label">Entity public</div>
         </div>
       </div>
       <div class="stat-card warn">
-        <div class="stat-icon si-orange">&#128218;</div>
+        <div class="stat-icon si-orange"><IconLine name="book" /></div>
         <div>
           <div class="stat-value">{{ summary.data?.missing_source || 0 }}</div>
           <div class="stat-label">Thiếu nguồn</div>
         </div>
       </div>
       <div class="stat-card warn">
-        <div class="stat-icon si-orange">&#128205;</div>
+        <div class="stat-icon si-orange"><IconLine name="pin" /></div>
         <div>
           <div class="stat-value">{{ summary.data?.missing_location || 0 }}</div>
           <div class="stat-label">Thiếu tọa độ</div>
         </div>
       </div>
       <div class="stat-card warn">
-        <div class="stat-icon si-orange">&#127963;</div>
+        <div class="stat-icon si-orange"><IconLine name="landmark" /></div>
         <div>
           <div class="stat-value">{{ summary.data?.missing_place_id_non_place || 0 }}</div>
           <div class="stat-label">Thiếu placeId</div>
         </div>
       </div>
       <div class="stat-card ok">
-        <div class="stat-icon si-green">&#9989;</div>
+        <div class="stat-icon si-green"><IconLine name="check-circle" /></div>
         <div>
           <div class="stat-value">{{ summary.candidates?.auto_apply || 0 }}</div>
           <div class="stat-label">Có thể auto-apply</div>
         </div>
       </div>
       <div class="stat-card">
-        <div class="stat-icon si-purple">&#128065;</div>
+        <div class="stat-icon si-purple"><IconLine name="eye" /></div>
         <div>
           <div class="stat-value">{{ summary.candidates?.needs_review || 0 }}</div>
           <div class="stat-label">Cần duyệt</div>

@@ -9,7 +9,7 @@
         </p>
       </div>
       <button type="button" class="admin-refresh" :disabled="loading" @click="fetchQueue()">
-        <span :class="{ 'refresh-spin': loading }">&#8635;</span> Làm mới
+        <span :class="{ 'refresh-spin': loading }"><IconLine name="rotate-cw" /></span> Làm mới
       </button>
     </div>
 
@@ -85,9 +85,9 @@
               <a
                 v-if="s.entity_id" :href="`/admin/entities?id=${s.entity_id}`" target="_blank"
                 rel="noopener" class="img-entity-link"
-              >Xem entity &#8599;</a>
+              >Xem entity <IconLine name="external-link" /></a>
               <a :href="s.candidate_url" target="_blank" rel="noopener nofollow" class="img-src-link">
-                Mở ảnh gốc &#8599;
+                Mở ảnh gốc <IconLine name="external-link" />
               </a>
             </div>
             <div v-if="s.status === 'rejected' && s.rejection_reason" class="img-detail img-reject-note">
@@ -124,7 +124,7 @@
       </div>
 
       <div v-else class="admin-empty-state">
-        <div class="admin-empty-state-icon">&#127752;</div>
+        <div class="admin-empty-state-icon"><IconLine name="image" /></div>
         <div class="admin-empty-state-text">
           {{ status === 'pending' ? 'Không có ứng viên ảnh nào chờ duyệt.' : 'Không có ứng viên nào.' }}
         </div>

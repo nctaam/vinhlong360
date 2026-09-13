@@ -6,9 +6,9 @@
         <p class="tk-subtitle">User hỏi gì, bot bí ở đâu, chi phí LLM</p>
       </div>
       <div class="tk-head-actions">
-        <button type="button" class="btn btn-outline btn-sm" :disabled="loading || !data.popular" @click="exportCSV">&#128190; Xuất CSV</button>
+        <button type="button" class="btn btn-outline btn-sm" :disabled="loading || !data.popular" @click="exportCSV"><IconLine name="download" /> Xuất CSV</button>
         <button type="button" class="admin-refresh" :disabled="loading" @click="fetchData">
-          <span :class="{ 'refresh-spin': loading }">&#8635;</span> Làm mới
+          <span :class="{ 'refresh-spin': loading }"><IconLine name="rotate-cw" /></span> Làm mới
         </button>
       </div>
     </div>
@@ -38,7 +38,7 @@
     <!-- Summary cards -->
     <div class="stat-grid">
       <div class="stat-card">
-        <div class="stat-icon si-blue">&#128172;</div>
+        <div class="stat-icon si-blue"><IconLine name="message" /></div>
         <div class="tk-stat-body">
           <div class="stat-value">{{ data.summary?.total_queries ?? '—' }}</div>
           <div class="stat-label">Tổng truy vấn</div>
@@ -46,21 +46,21 @@
         <svg v-if="sparkPoints.length > 1" class="tk-spark" viewBox="0 0 80 24" preserveAspectRatio="none" role="img" aria-label="Xu hướng entity 30 ngày"><title>Trend</title><polyline :points="sparkPoints" fill="none" stroke="rgb(var(--blue-rgb))" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" /></svg>
       </div>
       <div class="stat-card">
-        <div class="stat-icon si-purple">&#128161;</div>
+        <div class="stat-icon si-purple"><IconLine name="bulb" /></div>
         <div class="tk-stat-body">
           <div class="stat-value">{{ data.summary?.unique_queries ?? '—' }}</div>
           <div class="stat-label">Truy vấn khác nhau</div>
         </div>
       </div>
       <div class="stat-card" :class="{ 'status-warn': (data.gaps || []).length > 5 }">
-        <div class="stat-icon si-orange">&#128371;</div>
+        <div class="stat-icon si-orange"><IconLine name="chart" /></div>
         <div class="tk-stat-body">
           <div class="stat-value">{{ (data.gaps || []).length }}</div>
           <div class="stat-label">Knowledge gaps</div>
         </div>
       </div>
       <div class="stat-card">
-        <div class="stat-icon si-green">&#128176;</div>
+        <div class="stat-icon si-green"><IconLine name="tag" /></div>
         <div class="tk-stat-body">
           <div class="stat-value">
             {{ costTotal }}
@@ -89,7 +89,7 @@
           </li>
         </ol>
         <div v-else class="tk-empty">
-          <span class="tk-empty-icon">&#128172;</span>
+          <span class="tk-empty-icon"><IconLine name="message" /></span>
           <span>Chưa có dữ liệu truy vấn.</span>
         </div>
       </section>
@@ -105,12 +105,12 @@
             <span class="tk-rank">{{ i + 1 }}</span>
             <span class="tk-query">{{ label(it) }}</span>
             <span class="tk-hits">{{ count(it) }}</span>
-            <NuxtLink :to="`/admin/entities?q=${encodeURIComponent(String(label(it)))}`" class="tk-gap-action" title="Tìm entity">&#128269;</NuxtLink>
-            <NuxtLink to="/admin/entities?create=1" class="tk-gap-action" title="Tạo entity">&#10010;</NuxtLink>
+            <NuxtLink :to="`/admin/entities?q=${encodeURIComponent(String(label(it)))}`" class="tk-gap-action" title="Tìm entity"><IconLine name="search" /></NuxtLink>
+            <NuxtLink to="/admin/entities?create=1" class="tk-gap-action" title="Tạo entity"><IconLine name="plus" /></NuxtLink>
           </li>
         </ol>
         <div v-else class="tk-empty tk-empty-ok">
-          <span class="tk-empty-icon">&#9989;</span>
+          <span class="tk-empty-icon"><IconLine name="check-circle" /></span>
           <span>Không có gap — tốt!</span>
         </div>
       </section>
@@ -129,7 +129,7 @@
           </li>
         </ol>
         <div v-else class="tk-empty">
-          <span class="tk-empty-icon">&#128205;</span>
+          <span class="tk-empty-icon"><IconLine name="pin" /></span>
           <span>Chưa có dữ liệu xem entity.</span>
         </div>
       </section>

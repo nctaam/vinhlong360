@@ -6,7 +6,7 @@
         <p class="rpt-subtitle">Quản lý báo cáo vi phạm & sai thông tin</p>
       </div>
       <button type="button" class="admin-refresh" :disabled="loading" @click="fetchAll">
-        <span :class="{ 'refresh-spin': loading }">&#8635;</span> Làm mới
+        <span :class="{ 'refresh-spin': loading }"><IconLine name="rotate-cw" /></span> Làm mới
       </button>
     </div>
 

@@ -9,7 +9,7 @@
         <span v-if="total" class="cpl-progress-pill" role="status" aria-label="Tiến độ phân loại">
           {{ filtered.length }} / {{ total }} cần gán
         </span>
-        <button type="button" class="admin-refresh" :disabled="loading" @click="load"><span :class="{ 'refresh-spin': loading }">&#8635;</span> Làm mới</button>
+        <button type="button" class="admin-refresh" :disabled="loading" @click="load"><span :class="{ 'refresh-spin': loading }"><IconLine name="rotate-cw" /></span> Làm mới</button>
       </div>
     </div>
 
@@ -106,13 +106,13 @@
       </div>
 
       <div v-else-if="items.length && !filtered.length" class="admin-empty-state cpl-empty-miss">
-        <div class="admin-empty-state-icon">&#128269;</div>
+        <div class="admin-empty-state-icon"><IconLine name="search" /></div>
         <div class="admin-empty-state-text">Không tìm thấy</div>
         <div class="admin-empty-state-hint">Không có entity nào khớp bộ lọc. Thử bỏ bộ lọc hoặc tìm kiếm lại.</div>
       </div>
 
       <div v-else class="admin-empty-state cpl-empty-done">
-        <div class="admin-empty-state-icon">&#10004;</div>
+        <div class="admin-empty-state-icon"><IconLine name="check" /></div>
         <div class="admin-empty-state-text">Hoàn tất</div>
         <div class="admin-empty-state-hint">Không có entity nào chưa phân loại. Quay lại danh sách entities để xem toàn bộ.</div>
       </div>

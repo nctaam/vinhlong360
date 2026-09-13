@@ -6,13 +6,13 @@
         <p class="dash-subtitle">Tổng quan hệ thống vinhlong360</p>
       </div>
       <button type="button" class="admin-refresh" :disabled="loading" @click="fetchDashboard">
-        <span :class="{ 'refresh-spin': loading }">&#8635;</span> Làm mới
+        <span :class="{ 'refresh-spin': loading }"><IconLine name="rotate-cw" /></span> Làm mới
       </button>
     </div>
 
     <!-- Full error state when stats fetch fails entirely -->
     <div v-if="loadError && !loading" class="dash-error-state" role="alert">
-      <span class="dash-error-icon" aria-hidden="true">&#9888;</span>
+      <IconLine class="dash-error-icon" name="alert-triangle" />
       <div class="dash-error-body">
         <strong>Không thể tải dữ liệu dashboard</strong>
         <p>Kiểm tra kết nối mạng hoặc trạng thái backend.</p>
@@ -26,49 +26,49 @@
 
     <!-- Partial-degradation banner -->
     <div v-if="partialDegraded" class="dash-degraded" role="status">
-      <span class="dash-degraded-icon" aria-hidden="true">&#9888;</span>
+      <IconLine class="dash-degraded-icon" name="alert-triangle" />
       <span>Chưa tải được: {{ degradedDetail }} — bấm "Làm mới" để thử lại.</span>
     </div>
 
     <!-- Primary stats -->
     <div class="dash-stats" role="group" aria-label="Thống kê tổng quan">
       <div class="dash-stat-card" role="group" aria-label="Entities">
-        <div class="dash-stat-icon si-green" aria-hidden="true">&#127759;</div>
+        <div class="dash-stat-icon si-green" aria-hidden="true"><IconLine name="database" /></div>
         <div class="dash-stat-body">
           <div class="dash-stat-value">{{ stats.total_entities || 0 }}<span v-if="stats.entities_week" class="dash-delta">+{{ stats.entities_week }}</span></div>
           <div class="dash-stat-label">Entities</div>
         </div>
       </div>
       <div class="dash-stat-card">
-        <div class="dash-stat-icon si-blue" aria-hidden="true">&#127963;</div>
+        <div class="dash-stat-icon si-blue" aria-hidden="true"><IconLine name="landmark" /></div>
         <div class="dash-stat-body">
           <div class="dash-stat-value">{{ stats.total_places || 0 }}</div>
           <div class="dash-stat-label">Địa điểm HC</div>
         </div>
       </div>
       <div class="dash-stat-card">
-        <div class="dash-stat-icon si-purple" aria-hidden="true">&#128279;</div>
+        <div class="dash-stat-icon si-purple" aria-hidden="true"><IconLine name="share" /></div>
         <div class="dash-stat-body">
           <div class="dash-stat-value">{{ formatNum(stats.total_relationships) }}</div>
           <div class="dash-stat-label">Quan hệ</div>
         </div>
       </div>
       <div class="dash-stat-card">
-        <div class="dash-stat-icon si-orange" aria-hidden="true">&#128506;</div>
+        <div class="dash-stat-icon si-orange" aria-hidden="true"><IconLine name="map" /></div>
         <div class="dash-stat-body">
           <div class="dash-stat-value">{{ stats.total_itineraries || 0 }}</div>
           <div class="dash-stat-label">Lịch trình</div>
         </div>
       </div>
       <div v-if="stats.total_users" class="dash-stat-card">
-        <div class="dash-stat-icon si-indigo" aria-hidden="true">&#128101;</div>
+        <div class="dash-stat-icon si-indigo" aria-hidden="true"><IconLine name="users" /></div>
         <div class="dash-stat-body">
           <div class="dash-stat-value">{{ formatNum(stats.total_users) }}<span v-if="stats.users_week" class="dash-delta">+{{ stats.users_week }}</span></div>
           <div class="dash-stat-label">Users</div>
         </div>
       </div>
       <div v-if="stats.total_posts" class="dash-stat-card">
-        <div class="dash-stat-icon si-red" aria-hidden="true">&#128172;</div>
+        <div class="dash-stat-icon si-red" aria-hidden="true"><IconLine name="file-text" /></div>
         <div class="dash-stat-body">
           <div class="dash-stat-value">{{ formatNum(stats.total_posts) }}<span v-if="stats.posts_week" class="dash-delta">+{{ stats.posts_week }}</span></div>
           <div class="dash-stat-label">Bài viết</div>
@@ -82,11 +82,11 @@
         <span class="dash-alert-icon">{{ a.icon }}</span>
         <span class="dash-alert-num">{{ a.count }}</span>
         <span class="dash-alert-text">{{ a.label.replace(String(a.count) + ' ', '') }}</span>
-        <span class="dash-alert-arrow">&#8594;</span>
+        <span class="dash-alert-arrow"><IconLine name="arrow-right" /></span>
       </NuxtLink>
     </div>
     <div v-else-if="!loading" class="dash-all-clear">
-      <span>&#10003;</span> Không có mục nào cần xử lý
+      <IconLine name="check" /> Không có mục nào cần xử lý
     </div>
 
     <!-- System health -->
@@ -200,19 +200,19 @@
       <h2 class="admin-section-title">Thao tác nhanh</h2>
       <div class="dash-actions">
         <NuxtLink to="/admin/entities" class="dash-action">
-          <span class="dash-action-icon">&#128203;</span>
+          <span class="dash-action-icon"><IconLine name="clipboard-list" /></span>
           <span>Quản lý entities</span>
         </NuxtLink>
         <NuxtLink to="/admin/data-quality" class="dash-action">
-          <span class="dash-action-icon">&#128269;</span>
+          <span class="dash-action-icon"><IconLine name="shield-check" /></span>
           <span>Kiểm tra dữ liệu</span>
         </NuxtLink>
         <NuxtLink to="/admin/kiem-duyet" class="dash-action">
-          <span class="dash-action-icon">&#128737;</span>
+          <span class="dash-action-icon"><IconLine name="check-square" /></span>
           <span>Kiểm duyệt</span>
         </NuxtLink>
         <NuxtLink to="/admin/ai" class="dash-action">
-          <span class="dash-action-icon">&#129302;</span>
+          <span class="dash-action-icon"><IconLine name="cpu" /></span>
           <span>Knowledge Agent</span>
         </NuxtLink>
       </div>

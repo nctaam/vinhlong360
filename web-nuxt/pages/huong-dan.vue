@@ -10,7 +10,7 @@
           <a href="#bat-dau" class="snav-link" :class="{ active: activeId === 'bat-dau' }" @click.prevent="scrollTo('bat-dau')"><IconLine name="compass" /> Bắt đầu nhanh</a>
           <template v-for="s in filteredSections" :key="s.id">
             <a :href="`#${s.id}`" class="snav-link" :class="{ active: activeId === s.id }" @click.prevent="scrollTo(s.id)">
-              {{ s.icon }} {{ s.title }}
+              <IconLine :name="s.icon" /> {{ s.title }}
             </a>
           </template>
           <a href="#khac-phuc" class="snav-link" :class="{ active: activeId === 'khac-phuc' }" @click.prevent="scrollTo('khac-phuc')"><IconLine name="settings" /> Khắc phục sự cố</a>
@@ -46,14 +46,14 @@
         </div>
         <nav class="mobile-toc-nav" aria-label="Mục lục hướng dẫn">
           <a href="#bat-dau" @click.prevent="scrollTo('bat-dau')"><IconLine name="compass" /> Bắt đầu nhanh</a>
-          <a v-for="s in sections" :key="s.id" :href="`#${s.id}`" @click.prevent="scrollTo(s.id)">{{ s.icon }} {{ s.title }}</a>
+          <a v-for="s in sections" :key="s.id" :href="`#${s.id}`" @click.prevent="scrollTo(s.id)"><IconLine :name="s.icon" /> {{ s.title }}</a>
           <a href="#khac-phuc" @click.prevent="scrollTo('khac-phuc')"><IconLine name="settings" /> Khắc phục sự cố</a>
         </nav>
       </details>
 
       <!-- ==================== BẮT ĐẦU NHANH ==================== -->
       <section id="bat-dau" class="guide-section guide-quickstart reveal sediment-head">
-        <h2><span class="gs-icon" aria-hidden="true">🚀</span>Bắt đầu nhanh</h2>
+        <h2><IconLine name="compass" class="gs-icon" aria-hidden="true" />Bắt đầu nhanh</h2>
         <p class="section-intro">Lần đầu dùng vinhlong360? Chỉ cần 5 bước để khám phá đầy đủ.</p>
         <ol class="quickstart-steps">
           <li>
@@ -109,13 +109,13 @@
 
       <!-- ==================== SECTIONS ==================== -->
       <section v-for="s in filteredSections" :key="s.id" :id="s.id" class="guide-section reveal sediment-head">
-        <h2><span class="gs-icon" aria-hidden="true">{{ s.icon }}</span>{{ s.title }}</h2>
+        <h2><IconLine :name="s.icon" class="gs-icon" aria-hidden="true" />{{ s.title }}</h2>
         <p class="section-intro">{{ s.intro }}</p>
 
         <!-- Topics -->
         <details v-for="t in s.topics" :key="t.title" :id="`${s.id}--${slugify(t.title)}`" class="guide-topic" :open="!search">
           <summary class="topic-summary">
-            <span class="topic-icon" aria-hidden="true">{{ t.icon }}</span>
+            <span class="topic-icon" aria-hidden="true"><IconLine :name="t.icon" /></span>
             <span class="topic-title">{{ t.title }}</span>
             <IconLine name="chevron-down" class="topic-chevron" aria-hidden="true" />
           </summary>
@@ -189,13 +189,13 @@
            (declutter-3 T7: section Phím-tắt 11-hàng đã bỏ — thao tác đã rải trong
            từng mục; giữ 3 mẹo trọng yếu inline dưới đây) -->
       <section id="khac-phuc" class="guide-section reveal sediment-head">
-        <h2><span class="gs-icon" aria-hidden="true">🔧</span>Khắc phục sự cố</h2>
+        <h2><IconLine name="settings" class="gs-icon" aria-hidden="true" />Khắc phục sự cố</h2>
         <p class="section-intro">Gặp vấn đề khi sử dụng? Thử các giải pháp dưới đây trước khi liên hệ hỗ trợ.</p>
         <p class="section-intro"><strong>Mẹo nhanh:</strong> phím <kbd>Esc</kbd> đóng lightbox/chat, phím <kbd>←</kbd> <kbd>→</kbd> (hoặc vuốt) chuyển ảnh, gõ <kbd>@</kbd> khi soạn bài để tag người/địa điểm.</p>
 
         <details v-for="issue in troubleshooting" :key="issue.title" class="guide-topic" open>
           <summary class="topic-summary">
-            <span class="topic-icon" aria-hidden="true">{{ issue.icon }}</span>
+            <span class="topic-icon" aria-hidden="true"><IconLine :name="issue.icon" /></span>
             <span class="topic-title">{{ issue.title }}</span>
             <IconLine name="chevron-down" class="topic-chevron" aria-hidden="true" />
           </summary>
@@ -214,7 +214,7 @@
         </details>
 
         <div class="tip-box" style="margin-top: var(--space-4);">
-          <p class="tip-line"><span aria-hidden="true">💡</span> Nếu vẫn gặp sự cố, liên hệ qua trang <NuxtLink to="/lien-he">Liên hệ</NuxtLink> — mô tả lỗi, trình duyệt và thiết bị đang dùng.</p>
+          <p class="tip-line"><IconLine name="bulb" class="callout-icon" aria-hidden="true" /> Nếu vẫn gặp sự cố, liên hệ qua trang <NuxtLink to="/lien-he">Liên hệ</NuxtLink> — mô tả lỗi, trình duyệt và thiết bị đang dùng.</p>
         </div>
       </section>
 
@@ -369,7 +369,8 @@ useHead({
 .search-input:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 1px; }
 .sidebar-nav { display: flex; flex-direction: column; gap: 1px; }
 .snav-link {
-  display: block; padding: var(--space-2) var(--space-3);
+  display: flex; align-items: center; gap: var(--space-2);
+  padding: var(--space-2) var(--space-3);
   font-size: var(--text-xs); color: var(--muted); text-decoration: none;
   border-radius: var(--radius-control); transition: background .15s, color .15s;
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
@@ -433,7 +434,11 @@ useHead({
   font-size: var(--text-xl); margin: 0 0 var(--space-2);
   padding-bottom: var(--space-2); border-bottom: .5px solid var(--line);
 }
-.gs-icon { font-size: 1.15em; margin-right: var(--space-2); line-height: 1; }
+.gs-icon {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 1.25em; height: 1.25em; margin-right: var(--space-2);
+  color: var(--color-brand); flex-shrink: 0; line-height: 1;
+}
 .section-intro { color: var(--muted); font-size: var(--text-sm); line-height: var(--leading-relaxed); margin: 0 0 var(--space-5); }
 
 /* Topics (collapsible) */
@@ -449,7 +454,11 @@ useHead({
   user-select: none;
 }
 .topic-summary::-webkit-details-marker { display: none; }
-.topic-icon { font-size: 1.3rem; flex-shrink: 0; }
+.topic-icon {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 1.25rem; height: 1.25rem; flex-shrink: 0;
+  color: var(--color-brand);
+}
 .topic-title { flex: 1; }
 .topic-chevron { width: 14px; height: 14px; color: var(--muted); transition: transform .2s var(--ease-out-expo); flex-shrink: 0; }
 .guide-topic[open] > .topic-summary .topic-chevron { transform: rotate(180deg); }
@@ -612,7 +621,8 @@ useHead({
     padding: 0 var(--space-3) var(--space-3);
   }
   .mobile-toc-nav a {
-    display: block; padding: var(--space-2) var(--space-3);
+    display: flex; align-items: center; gap: var(--space-2);
+    padding: var(--space-2) var(--space-3);
     font-size: var(--text-sm); color: var(--ink); text-decoration: none;
     border-radius: var(--radius-control);
   }

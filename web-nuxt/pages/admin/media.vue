@@ -6,7 +6,7 @@
         <p class="media-subtitle">Tất cả hình ảnh từ các entity — lọc trùng lặp, thiếu credit</p>
       </div>
       <button type="button" class="admin-refresh" :disabled="loading" @click="fetchMedia()">
-        <span :class="{ 'refresh-spin': loading }">&#8635;</span> Làm mới
+        <span :class="{ 'refresh-spin': loading }"><IconLine name="rotate-cw" /></span> Làm mới
       </button>
     </div>
 
@@ -47,7 +47,7 @@
     <template v-else>
 
     <div v-if="!items.length" class="admin-empty-state">
-      <div class="admin-empty-state-icon">&#128247;</div>
+      <div class="admin-empty-state-icon"><IconLine name="image" /></div>
       <div class="admin-empty-state-text">Không có ảnh nào{{ filter !== 'all' ? ' với bộ lọc này' : '' }}</div>
     </div>
 
@@ -66,7 +66,7 @@
             decoding="async"
             @error="onImgError"
           />
-          <span v-else class="media-placeholder" aria-hidden="true">&#x1F4F7;</span>
+          <span v-else class="media-placeholder" aria-hidden="true"><IconLine name="image" /></span>
           <span v-if="item.usage_count > 1" class="media-dup-badge" title="Dùng bởi nhiều entity">{{ item.usage_count }}x</span>
         </div>
         <div class="media-card-info">
@@ -102,7 +102,7 @@
           decoding="async"
           @error="(event: Event) => ((event.target as HTMLImageElement).style.opacity = '.15')"
         />
-        <div v-else class="media-preview-placeholder" aria-hidden="true">&#128247;</div>
+        <div v-else class="media-preview-placeholder" aria-hidden="true"><IconLine name="image" /></div>
         <ImageDisclosure v-if="previewDescriptor" :id="mediaPreviewDisclosureId" :descriptor="previewDescriptor" presentation="full" />
         <div class="media-preview-meta">
           <div><strong>Entity:</strong> <NuxtLink :to="`/dia-diem/${previewItem.entity_id}`" target="_blank" rel="noopener">{{ previewItem.entity_name }}</NuxtLink> ({{ previewItem.entity_type }})</div>

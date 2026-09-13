@@ -5,7 +5,7 @@
         <h1>Duyệt tự học & Tiện ích</h1>
         <p class="dth-subtitle">Duyệt entity provisional và công cụ dữ liệu</p>
       </div>
-      <button type="button" class="admin-refresh" :disabled="loading" @click="loadProvisional()"><span :class="{ 'refresh-spin': loading }">&#8635;</span> Làm mới</button>
+      <button type="button" class="admin-refresh" :disabled="loading" @click="loadProvisional()"><span :class="{ 'refresh-spin': loading }"><IconLine name="rotate-cw" /></span> Làm mới</button>
     </div>
 
     <!-- 1) Provisional review -->
@@ -22,7 +22,7 @@
       </div>
       <template v-else>
         <div v-if="!provisional.length" class="dth-empty">
-          <span class="dth-empty-icon">&#9989;</span>
+          <span class="dth-empty-icon"><IconLine name="check-circle" /></span>
           <p>Tất cả entity tự học đã được duyệt.</p>
           <small class="admin-muted">Quay lại kiểm tra sau, hoặc tải nguồn dữ liệu để xem thống kê.</small>
         </div>
@@ -137,13 +137,13 @@
       <div class="dth-tools-grid">
         <button type="button" class="dth-tool-card" :disabled="exporting" @click="exportJson">
           <span v-if="exporting" class="dth-tool-spinner" aria-hidden="true"></span>
-          <span v-else class="dth-tool-icon">&#128230;</span>
+          <span v-else class="dth-tool-icon"><IconLine name="archive" /></span>
           <span class="dth-tool-label">{{ exporting ? 'Đang xuất...' : 'Export JSON (DB)' }}</span>
           <small>Tải data.json từ DB</small>
         </button>
         <button type="button" class="dth-tool-card" :disabled="loadingSources" @click="loadSources">
           <span v-if="loadingSources" class="dth-tool-spinner" aria-hidden="true"></span>
-          <span v-else class="dth-tool-icon">&#128218;</span>
+          <span v-else class="dth-tool-icon"><IconLine name="book" /></span>
           <span class="dth-tool-label">{{ loadingSources ? 'Đang tải...' : 'Xem nguồn dữ liệu' }}</span>
           <small>Thống kê theo nguồn</small>
         </button>

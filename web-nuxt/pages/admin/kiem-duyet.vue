@@ -6,7 +6,7 @@
         <p class="mod-subtitle">Duyệt bài viết cộng đồng (gồm bài bị gắn cờ tự động)</p>
       </div>
       <button type="button" class="admin-refresh" :disabled="loading" @click="fetchQueue()">
-        <span :class="{ 'refresh-spin': loading }">&#8635;</span> Làm mới
+        <span :class="{ 'refresh-spin': loading }"><IconLine name="rotate-cw" /></span> Làm mới
       </button>
     </div>
 
@@ -25,19 +25,19 @@
     <!-- Stats row -->
     <div class="stat-grid">
       <div class="stat-card" :class="{ 'status-warn': (modStats.pending || 0) > 0 }">
-        <div class="stat-icon si-orange">&#9203;</div>
+        <div class="stat-icon si-orange"><IconLine name="clock" /></div>
         <div><div class="stat-value">{{ modStats.pending || 0 }}</div><div class="stat-label">Chờ duyệt</div></div>
       </div>
       <div class="stat-card" :class="{ 'status-error': (modStats.flagged || 0) > 0 }">
-        <div class="stat-icon si-danger">&#9873;</div>
+        <div class="stat-icon si-danger"><IconLine name="flag" /></div>
         <div><div class="stat-value">{{ modStats.flagged || 0 }}</div><div class="stat-label">Gắn cờ</div></div>
       </div>
       <div class="stat-card status-ok">
-        <div class="stat-icon si-green">&#9989;</div>
+        <div class="stat-icon si-green"><IconLine name="check-circle" /></div>
         <div><div class="stat-value">{{ modStats.approved || 0 }}</div><div class="stat-label">Đã duyệt</div></div>
       </div>
       <div class="stat-card">
-        <div class="stat-icon si-muted">&#10060;</div>
+        <div class="stat-icon si-muted"><IconLine name="x-circle" /></div>
         <div><div class="stat-value">{{ modStats.rejected || 0 }}</div><div class="stat-label">Từ chối</div></div>
       </div>
     </div>
@@ -56,7 +56,7 @@
       <kbd>r</kbd> từ chối
       <kbd>p</kbd> xem trước
       <span v-if="sessionApproved || sessionRejected" class="mod-session-stats">
-        &#9679; Phiên này: <b class="mod-session-ok">{{ sessionApproved }}</b> duyệt, <b class="mod-session-rej">{{ sessionRejected }}</b> từ chối
+        • Phiên này: <b class="mod-session-ok">{{ sessionApproved }}</b> duyệt, <b class="mod-session-rej">{{ sessionRejected }}</b> từ chối
       </span>
     </div>
 
@@ -116,7 +116,7 @@
             <td colspan="7">
               <div class="mod-reject-container">
               <div class="mod-reject">
-                <span class="mod-reject-label" aria-hidden="true">&#9888; Lý do:</span>
+                <span class="mod-reject-label" aria-hidden="true"><IconLine name="alert-triangle" /> Lý do:</span>
                 <div class="mod-reason-presets">
                   <button v-for="r in REJECT_PRESETS" :key="r" type="button" class="mod-reason-chip" :class="{ active: rejectReason === r }" :title="REJECT_HINTS[r]" @click="rejectReason = rejectReason === r ? '' : r">{{ r }}</button>
                 </div>

@@ -43,8 +43,13 @@
     <header class="wp-hero" data-detail-region="identity" :class="`area-${data.place.area}`">
       <div class="wp-hero-motif" aria-hidden="true" v-html="heroMotif"></div>
       <div class="wp-hero-inner">
-        <span class="wp-level">{{ data.place.level === 'phuong' ? 'Phường' : 'Xã' }}</span>
-        <h1>{{ data.place.name }}</h1>
+        <div class="wp-hero-eyebrow-row">
+          <VernacularGlyph :name="terroirGlyphName" size="20" class="wp-hero-glyph" aria-hidden="true" />
+          <span class="wp-level">{{ data.place.level === 'phuong' ? 'Phường' : 'Xã' }}</span>
+        </div>
+        <h1>
+          <span>{{ data.place.name }}</span>
+        </h1>
         <p class="wp-region">
           <IconLine class="wp-region-icon" :name="areaMeta.icon" aria-hidden="true" />
           <NuxtLink :to="`/khu-vuc/${data.place.area}`">{{ areaMeta.name }}</NuxtLink>
@@ -159,7 +164,19 @@
       </aside>
 
       <div class="wp-main" data-detail-region="narrative">
-        <p v-if="data.place.summary" class="wp-summary">{{ data.place.summary }}</p>
+        <div v-if="data.place.summary" class="wp-summary-wrap">
+          <p class="wp-summary">
+            {{ data.place.summary }}
+            <TufteSidenote
+              :number="1"
+              :content="wardAcademicMarginalia.content"
+              :source-title="wardAcademicMarginalia.sourceTitle"
+              :source-url="wardAcademicMarginalia.sourceUrl"
+              notebook-id="v-nh-long-v-nh-long-b-n-tre-tr"
+              authority-tier="TIER_2_ACADEMIC"
+            />
+          </p>
+        </div>
 
         <WardTerroirDigest :place="data.place" />
 
@@ -225,6 +242,8 @@ import { describeEntityImages } from '~/utils/imageDescriptors'
 import { resolveFreshnessStatus, resolveSourceTier } from '~/utils/regionalColor'
 import ActionDock from '~/components/public/ActionDock.vue'
 import PageState from '~/components/public/PageState.vue'
+import TufteSidenote from '~/components/TufteSidenote.vue'
+import VernacularGlyph from '~/components/VernacularGlyph.vue'
 import { useWardDetailMap } from '~/composables/useWardDetailMap'
 
 useReveal()
@@ -503,6 +522,77 @@ const wardTrustConflicts = computed(() => {
   })
 })
 
+const terroirGlyphName = computed(() => {
+  const name = (data.value?.place?.name || '').toLowerCase()
+  const area = data.value?.place?.area || ''
+
+  if (name.includes('mang thít') || name.includes('mỹ an') || name.includes('nhơn phú') || name.includes('mỹ phước')) {
+    return 'mangthit-kiln'
+  }
+  if (name.includes('an bình') || name.includes('bình hòa') || name.includes('hòa ninh') || name.includes('đồng phú') || name.includes('cù lao')) {
+    return 'coconut-palm'
+  }
+  if (name.includes('trà ôn') || name.includes('chợ nổi') || name.includes('lục sĩ')) {
+    return 'three-plank-sampan'
+  }
+  if (name.includes('tam bình') || name.includes('bình minh')) {
+    return 'durian-orchard'
+  }
+  if (area === 'ben-tre') {
+    return 'water-coconut'
+  }
+  if (area === 'tra-vinh') {
+    return 'temple-roof'
+  }
+  return 'silt-current'
+})
+
+const wardAcademicMarginalia = computed(() => {
+  const name = (data.value?.place?.name || '').toLowerCase()
+  const area = data.value?.place?.area || ''
+
+  if (name.includes('mang thít') || name.includes('mỹ an') || name.includes('nhơn phú') || name.includes('mỹ phước')) {
+    return {
+      content: 'Dải phù sa mịn lắng đọng dọc sông Cổ Chiên tạo nên vỉa đất sét mộc dẻo quánh đặc thù — nền tảng nuôi dưỡng quần thể Di sản Đương đại Mang Thít với hơn 1.000 lò nung gạch gốm đỏ hình phễu độc nhất vô nhị.',
+      sourceTitle: 'Khảo sát Địa chí Văn hóa Vĩnh Long & Hồ sơ Di sản Lò gốm Mang Thít (NotebookLM Archive)',
+      sourceUrl: 'https://vinhlong360.vn/dia-diem/lang-gom-mang-thit',
+    }
+  }
+  if (name.includes('an bình') || name.includes('bình hòa') || name.includes('hòa ninh') || name.includes('đồng phú') || name.includes('cù lao')) {
+    return {
+      content: 'Cù lao An Bình được bồi đắp bởi hai nhánh sông lớn Cổ Chiên và Hàm Luông, quanh năm đón nguồn nước ngọt và phù sa màu mỡ; đây là cái nôi khởi phát mô hình du lịch sinh thái miệt vườn sông nước châu thổ Cửu Long từ đầu những năm 1980.',
+      sourceTitle: 'Sổ tay Điền dã Địa lý Du lịch Sinh thái ĐBSCL (NotebookLM Archive)',
+      sourceUrl: 'https://vinhlong360.vn/dia-diem/cu-lao-an-binh',
+    }
+  }
+  if (name.includes('trà ôn') || name.includes('lục sĩ')) {
+    return {
+      content: 'Nằm tại ngã ba sông Hậu và sông Mang Thít, Trà Ôn sở hữu thủy đạo giao thương huyết mạch, hình thành tập quán buôn bán trên ghe thuyền nông sản theo con nước lớn ròng từ thế kỷ XIX.',
+      sourceTitle: 'Tập san Văn hóa Dân gian & Chợ Nổi Sông Cửu Long',
+      sourceUrl: 'https://vinhlong360.vn/dia-diem/cho-noi-tra-on',
+    }
+  }
+  if (area === 'ben-tre') {
+    return {
+      content: 'Vùng đất cù lao hạ lưu sông Tiền với mạng lưới kênh rạch chằng chịt, đất phù sa pha cát và nước lợ theo mùa kiến tạo nên vương quốc dừa với hơn 70.000 ha vườn dừa ngút ngàn.',
+      sourceTitle: 'Địa chí Địa lý Bến Tre & Văn hóa Xứ Dừa',
+      sourceUrl: 'https://vinhlong360.vn/khu-vuc/ben-tre',
+    }
+  }
+  if (area === 'tra-vinh') {
+    return {
+      content: 'Vùng đất giồng cát ven biển cổ kẹp giữa hai cửa sông Cung Hầu và Định An, nơi hội tụ và giao thoa sâu sắc giữa các cộng đồng Kinh, Khmer, Hoa với hơn 140 ngôi chùa tháp Nam tông cổ kính.',
+      sourceTitle: 'Khảo cứu Văn hóa Chùa tháp & Dân tộc học Trà Vinh',
+      sourceUrl: 'https://vinhlong360.vn/khu-vuc/tra-vinh',
+    }
+  }
+  return {
+    content: 'Nằm ở tâm điểm châu thổ Cửu Long giữa hai nhánh Tiền Giang và Hậu Giang, địa bàn sở hữu mạng lưới thủy trình tự nhiên phong phú, định hình nếp sống thương hồ, làng nghề ven sông và nông nghiệp trù phú.',
+    sourceTitle: 'Tư liệu Địa chí Văn hóa Lịch sử Đồng bằng Sông Cửu Long (NotebookLM Core)',
+    sourceUrl: 'https://vinhlong360.vn/gioi-thieu',
+  }
+})
+
 function formatPop(n: number | string) {
   const value = typeof n === 'number' ? n : Number(n)
   if (!Number.isFinite(value)) return String(n)
@@ -693,6 +783,17 @@ useHead({
 .wp-hero-motif :deep(svg) { width: 100%; height: 100%; display: block; }
 .dark .wp-hero-motif { opacity: .08; }
 .wp-hero-inner { position: relative; z-index: 1; }
+.wp-hero-eyebrow-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-bottom: var(--space-1);
+}
+.wp-hero-glyph {
+  color: currentColor;
+  opacity: .9;
+  flex-shrink: 0;
+}
 .wp-level { font-size: var(--text-xs); text-transform: uppercase; letter-spacing: .06em; opacity: .85; font-weight: var(--weight-bold); }
 .wp-hero h1 { margin: var(--space-1) 0 var(--space-1); font-family: var(--font-editorial); font-size: clamp(1.7rem, 4.4vw, 2.2rem); font-weight: 600; letter-spacing: var(--tracking-tight); line-height: 1.1; }
 .wp-region { margin: 0; opacity: .9; font-size: var(--text-sm); }
@@ -707,7 +808,11 @@ useHead({
 .wp-stat-label { font-size: var(--text-xs); opacity: .8; text-transform: uppercase; letter-spacing: .03em; }
 
 /* Summary */
-.wp-summary { max-width: 72ch; font-size: var(--text-base); line-height: var(--leading-relaxed); color: var(--ink); margin: var(--space-5) 0 var(--space-1); display: -webkit-box; -webkit-line-clamp: 4; line-clamp: 4; -webkit-box-orient: vertical; overflow: hidden; }
+.wp-summary-wrap {
+  position: relative;
+  margin: var(--space-5) 0 var(--space-2);
+}
+.wp-summary { max-width: 72ch; font-size: var(--text-base); line-height: var(--leading-relaxed); color: var(--ink); margin: 0; }
 
 /* Map */
 .wp-map-sec { margin: var(--space-5) 0 var(--space-2); }

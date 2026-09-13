@@ -5,7 +5,7 @@
         <h1>Danh bạ hành chính</h1>
         <p class="db-subtitle">Nhập cơ quan công vụ (UBND/công an/...) theo xã/phường. <strong>Bắt buộc khai nguồn chính thống.</strong></p>
       </div>
-      <button type="button" class="admin-refresh" :disabled="loadingList" @click="loadFacilities"><span :class="{ 'refresh-spin': loadingList }">&#8635;</span> Làm mới</button>
+      <button type="button" class="admin-refresh" :disabled="loadingList" @click="loadFacilities"><span :class="{ 'refresh-spin': loadingList }"><IconLine name="rotate-cw" /></span> Làm mới</button>
     </div>
 
     <!-- Form -->
@@ -97,7 +97,7 @@
           </table>
         </div>
         <div v-else class="admin-empty-state">
-          <span class="admin-empty-state-icon" aria-hidden="true">&#127963;</span>
+          <span class="admin-empty-state-icon" aria-hidden="true"><IconLine name="landmark" /></span>
           <span class="admin-empty-state-text">Chưa có cơ quan nào</span>
           <span class="admin-empty-state-hint">Thêm cơ quan đầu tiên từ form phía trên.</span>
         </div>

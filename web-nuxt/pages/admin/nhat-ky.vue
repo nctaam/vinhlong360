@@ -6,7 +6,7 @@
         <p class="audit-subtitle">Lịch sử thao tác quản trị (mutation)</p>
       </div>
       <button type="button" class="admin-refresh" :disabled="loading" @click="fetchLog">
-        <span :class="{ 'refresh-spin': loading }">&#8635;</span> Làm mới
+        <span :class="{ 'refresh-spin': loading }"><IconLine name="rotate-cw" /></span> Làm mới
       </button>
     </div>
 

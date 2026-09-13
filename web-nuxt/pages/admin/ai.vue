@@ -5,7 +5,7 @@
         <h1>Knowledge Agent</h1>
         <p class="ai-subtitle">Giám sát LLM, cache, chi phí và subsystems</p>
       </div>
-      <button type="button" class="admin-refresh" :disabled="refreshing" @click="refreshAll"><span :class="{ 'refresh-spin': refreshing }">&#8635;</span> Làm mới</button>
+      <button type="button" class="admin-refresh" :disabled="refreshing" @click="refreshAll"><span :class="{ 'refresh-spin': refreshing }"><IconLine name="rotate-cw" /></span> Làm mới</button>
     </div>
 
     <div v-if="!health && !healthError" class="admin-loading" role="status" aria-label="Đang tải trạng thái agent"><div class="spinner"></div></div>
@@ -18,42 +18,42 @@
     <!-- Health Status -->
     <div class="stat-grid">
       <div class="stat-card">
-        <div class="stat-icon" :style="{ background: statusBg, color: statusColor }">&#9889;</div>
+        <div class="stat-icon" :style="{ background: statusBg, color: statusColor }"><IconLine name="zap" /></div>
         <div>
           <div class="stat-value" :style="{ color: statusColor }">{{ health?.status || '—' }}</div>
           <div class="stat-label">Trạng thái</div>
         </div>
       </div>
       <div class="stat-card">
-        <div class="stat-icon si-blue">&#128640;</div>
+        <div class="stat-icon si-blue"><IconLine name="send" /></div>
         <div>
           <div class="stat-value">{{ health?.version || '—' }}</div>
           <div class="stat-label">Phiên bản</div>
         </div>
       </div>
       <div class="stat-card">
-        <div class="stat-icon si-purple">&#129302;</div>
+        <div class="stat-icon si-purple"><IconLine name="cpu" /></div>
         <div>
           <div class="stat-value ai-model-val">{{ health?.model || health?.llm_api || '—' }}</div>
           <div class="stat-label">Model / API</div>
         </div>
       </div>
       <div class="stat-card">
-        <div class="stat-icon si-orange">&#128338;</div>
+        <div class="stat-icon si-orange"><IconLine name="clock" /></div>
         <div>
           <div class="stat-value">{{ uptime }}</div>
           <div class="stat-label">Uptime</div>
         </div>
       </div>
       <div class="stat-card">
-        <div class="stat-icon si-green">&#127760;</div>
+        <div class="stat-icon si-green"><IconLine name="globe" /></div>
         <div>
           <div class="stat-value">{{ health?.entities || '—' }}</div>
           <div class="stat-label">Entities (KB)</div>
         </div>
       </div>
       <div class="stat-card">
-        <div class="stat-icon si-teal">&#128190;</div>
+        <div class="stat-icon si-teal"><IconLine name="database" /></div>
         <div>
           <div class="stat-value">{{ health?.memory_mb || '—' }} MB</div>
           <div class="stat-label">Bộ nhớ</div>
@@ -181,7 +181,7 @@
         </div>
       </div>
       <p class="ai-cost-note">
-        <span class="ai-cost-note-icon" aria-hidden="true">&#8505;</span>
+        <IconLine class="ai-cost-note-icon" name="info" />
         <span>Agent tự động: <strong>{{ cost?.agent_budget?.enabled ? 'BẬT' : 'TẮT (mặc định)' }}</strong> —
         đổi qua .env AUTONOMOUS_AGENT_ENABLED + AUTONOMOUS_AGENT_MAX_CALLS_PER_DAY.</span>
       </p>
@@ -193,7 +193,7 @@
       <div class="ai-action-grid">
         <button type="button" class="ai-action-btn ai-action-primary" :disabled="triggerLoading" @click="triggerLearn">
           <span v-if="triggerLoading" class="ai-action-spinner" aria-hidden="true"></span>
-          <span v-else class="ai-action-icon">&#129504;</span>
+          <span v-else class="ai-action-icon"><IconLine name="cpu" /></span>
           <span>{{ triggerLoading ? 'Đang chạy...' : 'Trigger Learn' }}</span>
         </button>
         <button type="button" class="ai-action-btn ai-action-primary" :disabled="triageLoading" @click="triage">

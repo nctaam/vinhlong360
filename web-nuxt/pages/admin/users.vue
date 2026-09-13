@@ -7,10 +7,10 @@
       </div>
       <div class="usr-head-actions">
         <button type="button" class="admin-refresh" :disabled="loading || !displayedUsers.length" @click="exportCSV()">
-          <span aria-hidden="true">&#128229;</span> Xuất CSV
+          <span aria-hidden="true"><IconLine name="download" /></span> Xuất CSV
         </button>
         <button type="button" class="admin-refresh" :disabled="loading" @click="fetchUsers()">
-          <span :class="{ 'refresh-spin': loading }">&#8635;</span> Làm mới
+          <span :class="{ 'refresh-spin': loading }"><IconLine name="rotate-cw" /></span> Làm mới
         </button>
       </div>
     </div>
@@ -133,7 +133,7 @@
           <tr v-if="!displayedUsers.length">
             <td colspan="6" class="admin-empty-row">
               <div class="admin-empty-state">
-                <div class="admin-empty-state-icon">&#128101;</div>
+                <div class="admin-empty-state-icon"><IconLine name="users" /></div>
                 <div class="admin-empty-state-text">{{ users.length ? 'Không có user khớp bộ lọc trên trang này.' : 'Không có user nào.' }}</div>
                 <div class="admin-empty-state-hint">{{ users.length ? 'Thử đổi bộ lọc role hoặc xoá từ khoá tìm kiếm.' : 'Dùng ô tìm kiếm theo SĐT hoặc tên để bắt đầu.' }}</div>
               </div>
@@ -144,9 +144,9 @@
       </div>
 
       <nav class="admin-pagination" role="navigation" aria-label="Phân trang">
-        <button type="button" :disabled="page <= 1" @click="page--; fetchUsers()">&#8592; Trước</button>
+        <button type="button" :disabled="page <= 1" @click="page--; fetchUsers()"><IconLine name="arrow-left" /> Trước</button>
         <span class="admin-page-info">Trang {{ page }}</span>
-        <button type="button" :disabled="!hasNextPage" @click="page++; fetchUsers()">Sau &#8594;</button>
+        <button type="button" :disabled="!hasNextPage" @click="page++; fetchUsers()">Sau <IconLine name="arrow-right" /></button>
       </nav>
     </template>
 

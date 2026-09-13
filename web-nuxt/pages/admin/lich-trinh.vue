@@ -5,7 +5,7 @@
         <h1>Quản lý Lịch trình</h1>
         <p class="lt-subtitle">{{ itineraries.length ? `${itineraries.length} lịch trình` : '' }}</p>
       </div>
-      <button type="button" class="admin-refresh" :disabled="loading" @click="fetchItineraries"><span :class="{ 'refresh-spin': loading }">&#8635;</span> Làm mới</button>
+      <button type="button" class="admin-refresh" :disabled="loading" @click="fetchItineraries"><span :class="{ 'refresh-spin': loading }"><IconLine name="rotate-cw" /></span> Làm mới</button>
     </div>
 
     <div class="admin-toolbar">
@@ -45,7 +45,7 @@
                 </div>
               </td>
               <td>
-                <span v-if="it.duration" class="lt-duration"><span class="lt-duration-icon" aria-hidden="true">&#128338;</span> {{ it.duration }}</span>
+                <span v-if="it.duration" class="lt-duration"><span class="lt-duration-icon" aria-hidden="true"><IconLine name="clock" /></span> {{ it.duration }}</span>
                 <span v-else class="admin-td-muted">—</span>
               </td>
               <td>
@@ -59,7 +59,7 @@
             <tr v-if="!filteredItineraries.length">
               <td colspan="6" class="admin-empty-row">
                 <div class="admin-empty-state">
-                  <span class="admin-empty-state-icon" aria-hidden="true">&#128506;</span>
+                  <span class="admin-empty-state-icon" aria-hidden="true"><IconLine name="map" /></span>
                   <span class="admin-empty-state-text">Chưa có lịch trình. Tạo mới từ nút trên.</span>
                 </div>
               </td>
