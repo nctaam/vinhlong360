@@ -1,0 +1,2199 @@
+{
+  "mot-ngay-cu-lao-an-binh": {
+    "title": "Một ngày miệt vườn cù lao An Bình",
+    "duration": "1 ngày",
+    "area": "vinh-long",
+    "areas": [
+      "vinh-long"
+    ],
+    "best_departure_time": "05:45 sáng từ Cảng hành khách du lịch Vĩnh Long để đón ánh bình minh đầu tiên trên sông Cổ Chiên",
+    "waterway_transit": "Tàu du lịch xuất phát từ Cảng hành khách Vĩnh Long sang bến đò An Bình (15 phút), luồn lách xuồng chèo theo rạch Đồng Phú và mương liếp vườn cây rợp bóng",
+    "cultural_narrative": "Hành trình lắng đọng trọn vẹn nhịp sống cù lao An Bình – ốc đảo phù sa bốn mùa cây trái ngọt lành giữa bốn bề sông nước. Du khách thức giấc cùng hơi sương mặt sông Cổ Chiên, thưởng thức cá tai tượng chiên xù giòn rụm cuốn bánh tráng cù lao Mây, hái trái cây chín mọng tận cành và nghe đờn ca tài tử Nam Bộ ngân vang bên bờ rạch thanh bình.",
+    "budget_estimate": "650.000 – 950.000 đ/người (bao gồm tàu đò vượt sông, xuồng ba lá, cơm trưa miệt vườn và phòng nghỉ homestay)",
+    "summary": "Trọn một ngày sông nước miệt vườn cù lao An Bình: đón bình minh sông Cổ Chiên, luồn lách xuồng chèo rạch Đồng Phú, thưởng thức cá tai tượng chiên xù, tự tay hái chôm chôm chín cành và lắng đọng giấc ngủ đêm tại homestay miệt vườn.",
+    "aeo_schema_type": "TouristTrip",
+    "source_citations": [
+      {
+        "source_id": "SRC-TIER1-VL-025",
+        "title": "Đề án phát triển du lịch sinh thái cù lao An Bình giai đoạn 2021-2030",
+        "url": "https://vinhlong.gov.vn/du-lich/de-an-du-lich-cu-lao-an-binh",
+        "author_or_institution": "Sở Văn hóa, Thể thao và Du lịch tỉnh Vĩnh Long",
+        "target_notebook": "mekong-360-t-p-2",
+        "tier": "TIER_1_GOVERNMENT",
+        "authority_weight": 1.0
+      },
+      {
+        "source_id": "SRC-TIER2-THVL-005",
+        "title": "Ký sự Cù lao An Bình: Đất lành sinh thái và nếp sống mộc mạc bờ sông Tiền",
+        "url": "https://thvl.vn/du-lich/cu-lao-an-binh-dat-lanh-phu-sa",
+        "author_or_institution": "Đài Phát thanh và Truyền hình Vĩnh Long",
+        "target_notebook": "v-nh-long-v-nh-long-b-n-tre-tr",
+        "tier": "TIER_2_SCHOLARLY",
+        "authority_weight": 0.95
+      }
+    ],
+    "curated_stops": [
+      {
+        "id": "ngam-binh-minh-co-chien",
+        "time": "Sáng sớm",
+        "note": "Điểm dừng chân trải nghiệm văn hóa và cảnh quan tại ngam-binh-minh-co-chien"
+      },
+      {
+        "id": "cheo-xuong-rach-an-binh",
+        "time": "Sáng",
+        "note": "Điểm dừng chân trải nghiệm văn hóa và cảnh quan tại cheo-xuong-rach-an-binh"
+      },
+      {
+        "id": "ca-tai-tuong-chien-xu",
+        "time": "Trưa",
+        "note": "Cơm trưa miệt vườn"
+      },
+      {
+        "id": "hai-chom-chom-an-binh",
+        "time": "Chiều",
+        "note": "Theo mùa (T5–7)"
+      },
+      {
+        "id": "khu-du-lich-vinh-sang",
+        "time": "Xế chiều",
+        "note": "Điểm dừng chân trải nghiệm văn hóa và cảnh quan tại khu-du-lich-vinh-sang"
+      },
+      {
+        "id": "homestay-ut-trinh",
+        "time": "Tối",
+        "note": "Nghỉ đêm"
+      }
+    ],
+    "verifiedAt": "2026-09-13T18:30:00+07:00",
+    "verifiedSource": "NotebookLM Deep Terroir Research - Phase 7"
+  },
+  "cuoi-tuan-2-ngay": {
+    "title": "Weekend getaway 2 ngày",
+    "duration": "2 ngày",
+    "area": "vinh-long",
+    "areas": [
+      "vinh-long"
+    ],
+    "best_departure_time": "07:00 sáng Thứ Bảy từ trung tâm TP.HCM di chuyển qua cao tốc Trung Lương - Mỹ Thuận",
+    "waterway_transit": "Vượt sông Cổ Chiên qua bến phà Đình Khao hoặc thuê tàu gỗ từ Cảng du lịch Vĩnh Long sang cụm homestay cù lao An Bình",
+    "cultural_narrative": "Kỳ nghỉ cuối tuần phục hồi năng lượng giữa không gian sinh thái rợp bóng cây xanh và phù sa sông Tiền. Rời xa khói bụi đô thị, du khách cảm nhận nhịp sống chậm rãi của cư dân bản địa, thưởng thức nem nướng Vĩnh Long danh tiếng, chèo xuồng ngắm hoàng hôn đỏ ối trên sông Cổ Chiên và quây quần bên nồi lẩu mắm đậm đà hương đồng gió nội.",
+    "budget_estimate": "1.600.000 – 2.200.000 đ/người (đã bao gồm xe đưa đón khứ hồi, lưu trú resort sinh thái, 4 bữa ăn chính và vé trải nghiệm)",
+    "summary": "Kỳ nghỉ cuối tuần 2 ngày nạp năng lượng miệt vườn: vượt cầu Mỹ Thuận về xứ Vĩnh, thưởng thức nem nướng, chèo xuồng ngắm hoàng hôn sông Cổ Chiên, nghỉ đêm resort sinh thái và quây quần bên nồi lẩu mắm đậm đà phong vị phù sa.",
+    "aeo_schema_type": "TouristTrip",
+    "source_citations": [
+      {
+        "source_id": "SRC-TIER1-VL-026",
+        "title": "Quy hoạch phát triển du lịch nghỉ dưỡng cuối tuần tỉnh Vĩnh Long kết nối TP.HCM",
+        "url": "https://vinhlong.gov.vn/du-lich/nghi-duong-cuoi-tuan",
+        "author_or_institution": "Sở Văn hóa, Thể thao và Du lịch tỉnh Vĩnh Long",
+        "target_notebook": "ch-nh-s-ch-ph-p-lu-t-v-n-b-n-q",
+        "tier": "TIER_1_GOVERNMENT",
+        "authority_weight": 1.0
+      },
+      {
+        "source_id": "SRC-TIER2-BVL-006",
+        "title": "Về Vĩnh Long nạp năng lượng xanh: Xu hướng du lịch chậm miệt vườn cuối tuần",
+        "url": "https://baovinhlong.com.vn/du-lich/nghi-duong-xanh-vinh-long-2024",
+        "author_or_institution": "Báo Vĩnh Long",
+        "target_notebook": "v-nh-long-v-nh-long-b-n-tre-tr",
+        "tier": "TIER_2_SCHOLARLY",
+        "authority_weight": 0.9
+      }
+    ],
+    "curated_stops": [
+      {
+        "id": "cau-my-thuan",
+        "time": "Ngày 1 – 08:30 - 09:15",
+        "note": "Chiêm ngưỡng cầu dây văng Mỹ Thuận bắc qua sông Tiền nối nhịp đôi bờ"
+      },
+      {
+        "id": "nem-nuong-vinh-long",
+        "time": "Ngày 1 – 11:30 - 13:00",
+        "note": "Thưởng thức nem nướng than hoa thơm nức cuốn bánh tráng rau thơm"
+      },
+      {
+        "id": "cheo-xuong-ba-la",
+        "time": "Ngày 1 – 14:30 - 16:30",
+        "note": "Chèo xuồng ba lá thong thả luồn lách mương rạch rợp bóng bần cù lao"
+      },
+      {
+        "id": "resort-vinh-sang",
+        "time": "Ngày 1 – 17:00 - 18:30",
+        "note": "Nhận phòng bungalow hướng sông, tắm mát và dạo vườn cây ăn trái"
+      },
+      {
+        "id": "tham-quan-vuon-trai-cay",
+        "time": "Ngày 2 – 08:30 - 10:30",
+        "note": "Thăm vườn bưởi Năm Roi và nhãn xuồng cơm vàng, thưởng thức quả ngọt tại vườn"
+      },
+      {
+        "id": "lau-mam-mien-tay",
+        "time": "Ngày 2 – 11:30 - 13:30",
+        "note": "Bữa trưa lẩu mắm cá đồng nấu cà tím ăn kèm bông súng, điên điển giòn ngọt"
+      },
+      {
+        "id": "di-cho-dem-vinh-long",
+        "time": "Ngày 2 – 16:30 - 18:00",
+        "note": "Dạo chợ đêm bờ kè sông Cổ Chiên mua sắm đặc sản cam sành trước khi trở về"
+      }
+    ],
+    "verifiedAt": "2026-09-13T18:30:00+07:00",
+    "verifiedSource": "NotebookLM Deep Terroir Research - Phase 7"
+  },
+  "thien-nhien-phieu-luu-2-ngay": {
+    "title": "Thiên nhiên + phiêu lưu 2 ngày",
+    "duration": "2 ngày",
+    "area": "vinh-long",
+    "areas": [
+      "vinh-long"
+    ],
+    "best_departure_time": "06:30 sáng Ngày 1 để bắt kịp con nước ròng thuận lợi cho hoạt động tát mương bắt cá",
+    "waterway_transit": "Xuồng máy đuôi tôm và xuồng ba lá chèo tay qua hệ thống kênh rạch An Bình, vượt sóng sông Cổ Chiên bằng tàu composite",
+    "cultural_narrative": "Hành trình dã ngoại trải nghiệm chân thực cuộc sống của nông dân Nam Bộ xưa. Du khách mặc áo bà ba nâu, xắn quần lội bùn tát mương bắt cá lóc đồng, tự tay nướng trui cá bằng rơm vàng rực lửa giữa vườn cây, đạp xe trên những nẻo đường đan rợp bóng dừa và ngắm sao trời bên dòng sông đêm tĩnh mịch.",
+    "budget_estimate": "1.800.000 – 2.500.000 đ/người (gồm đồ bà ba, dụng cụ bắt cá, nướng trui tại chỗ, tàu thuyền và nghỉ đêm resort sinh thái)",
+    "summary": "2 ngày phiêu lưu sông nước miệt vườn: mặc áo bà ba tát mương bắt cá, nướng trui rơm vàng thơm nức, chèo xuồng vượt rạch, đạp xe quanh cù lao An Bình và thưởng thức tô cháo cá lóc rau đắng thanh mát giữa thiên nhiên phù sa.",
+    "aeo_schema_type": "TouristTrip",
+    "source_citations": [
+      {
+        "source_id": "SRC-TIER1-VL-027",
+        "title": "Sản phẩm du lịch trải nghiệm nông nghiệp sinh thái và văn hóa bản địa Vĩnh Long",
+        "url": "https://vinhlong.gov.vn/du-lich/trai-nghiem-nong-nghiep-sinh-thai",
+        "author_or_institution": "UBND tỉnh Vĩnh Long",
+        "target_notebook": "mekong-360-t-p-2",
+        "tier": "TIER_1_GOVERNMENT",
+        "authority_weight": 1.0
+      },
+      {
+        "source_id": "SRC-TIER2-VASS-006",
+        "title": "Văn hóa ẩm thực dân dã Nam Bộ: Kỹ thuật nướng trui rơm và sinh kế miệt vườn sông nước",
+        "url": "https://vass.gov.vn/nghien-cuu/am-thuc-nuong-trui-nam-bo",
+        "author_or_institution": "Viện Hàn lâm Khoa học Xã hội Việt Nam",
+        "target_notebook": "mekong-360-t-p-2",
+        "tier": "TIER_2_SCHOLARLY",
+        "authority_weight": 0.95
+      }
+    ],
+    "curated_stops": [
+      {
+        "id": "cheo-xuong-ba-la",
+        "time": "Ngày 1 – 08:30 - 10:00",
+        "note": "Học kỹ năng chèo xuồng ba lá giữ thăng bằng trên dòng rạch nhỏ An Bình"
+      },
+      {
+        "id": "ca-loc-nuong-trui",
+        "time": "Ngày 1 – 11:30 - 13:00",
+        "note": "Tự nướng trui cá lóc bằng rơm đồng, thưởng thức thịt cá ngọt thơm chấm muối ớt"
+      },
+      {
+        "id": "tat-muong-bat-ca",
+        "time": "Ngày 1 – 14:00 - 16:30",
+        "note": "Mặc áo bà ba be bờ tát gàu sòng bắt cá đồng dưới mương liếp"
+      },
+      {
+        "id": "mekong-lodge-resort",
+        "time": "Ngày 1 – 17:30 - 20:30",
+        "note": "Nghỉ ngơi tại khu sinh thái Mekong Lodge, tắm mát và ngắm cảnh bờ sông"
+      },
+      {
+        "id": "ngam-binh-minh-co-chien",
+        "time": "Ngày 2 – 06:00 - 07:00",
+        "note": "Đón luồng gió mát rượi và ánh dương rạng ngời trên sông Cổ Chiên"
+      },
+      {
+        "id": "cau-ca-miet-vuon",
+        "time": "Ngày 2 – 08:30 - 10:30",
+        "note": "Thử tài câu cá giải trí dưới bóng mát râm ran vườn nhãn cù lao"
+      },
+      {
+        "id": "lau-mam-mien-tay",
+        "time": "Ngày 2 – 11:30 - 13:00",
+        "note": "Dùng bữa trưa lẩu mắm đậm đà cá đồng tươi ngon ăn cùng bông súng"
+      },
+      {
+        "id": "tam-song",
+        "time": "Ngày 2 – 14:30 - 16:30",
+        "note": "Trải nghiệm tắm sông an toàn với áo phao trên bãi cồn phù sa sạch mát"
+      }
+    ],
+    "verifiedAt": "2026-09-13T18:30:00+07:00",
+    "verifiedSource": "NotebookLM Deep Terroir Research - Phase 7"
+  },
+  "dap-xe-1-ngay": {
+    "title": "Tour đạp xe 1 ngày",
+    "duration": "1 ngày",
+    "area": "vinh-long",
+    "areas": [
+      "vinh-long"
+    ],
+    "best_departure_time": "07:00 sáng khi không khí cù lao còn đẫm sương sớm và ánh nắng ban mai dịu mát",
+    "waterway_transit": "Xe đạp đưa lên phà An Bình hoặc phà Đình Khao sang cù lao, di chuyển hoàn toàn bằng xe đạp trên mạng lưới đường đan nông thôn 2m rợp bóng mát",
+    "cultural_narrative": "Cung đường đạp xe 20–30km lý tưởng dành cho những tâm hồn yêu thiên nhiên mộc mạc. Bánh xe lăn chầm chậm qua những cây cầu ván gập ghềnh, rẽ vào những bờ bao rợp bóng chôm chôm, nhãn xuồng và sầu riêng ngát hương. Dừng chân bên quán cóc ven đường uống trái dừa xiêm mát lịm và thưởng thức bánh xèo giòn rụm vừa tráng trên chảo gang đỏ lửa.",
+    "budget_estimate": "400.000 – 600.000 đ/người (gồm thuê xe đạp địa hình, vé phà qua sông, ăn trưa bánh xèo cù lao và nước dừa giải khát)",
+    "summary": "Hành trình đạp xe 20–30km quanh cù lao An Bình: vượt sông Cổ Chiên bằng phà, đạp xe thong thả qua đường đan rợp bóng vườn cây, thưởng thức bánh xèo giòn rụm và uống nước dừa tươi ngọt lịm giữa không gian sông nước tĩnh lặng.",
+    "aeo_schema_type": "TouristTrip",
+    "source_citations": [
+      {
+        "source_id": "SRC-TIER1-VL-028",
+        "title": "Phát triển tuyến du lịch xe đạp nông thôn cù lao An Bình thân thiện môi trường",
+        "url": "https://vinhlong.gov.vn/du-lich/tuyen-xe-dap-an-binh",
+        "author_or_institution": "Sở Giao thông Vận tải & Sở VHTTDL tỉnh Vĩnh Long",
+        "target_notebook": "mekong-360-t-p-2",
+        "tier": "TIER_1_GOVERNMENT",
+        "authority_weight": 1.0
+      },
+      {
+        "source_id": "SRC-TIER2-DK-006",
+        "title": "Đạp xe xuyên cù lao phù sa: Trải nghiệm nhịp thở êm đềm vùng đất chín rồng",
+        "url": "https://baodongkhoi.vn/du-lich/dap-xe-cu-lao-song-nuoc-2024",
+        "author_or_institution": "Báo Đồng Khởi",
+        "target_notebook": "mekong-360-t-p-2",
+        "tier": "TIER_2_SCHOLARLY",
+        "authority_weight": 0.9
+      }
+    ],
+    "curated_stops": [
+      {
+        "id": "vuot-song-co-chien",
+        "time": "07:00 - 07:45",
+        "note": "Vượt sông Cổ Chiên bằng phà An Bình, hít thở gió mát lành của mặt sông sớm mai"
+      },
+      {
+        "id": "dap-xe-cu-lao",
+        "time": "14:00 - 16:00",
+        "note": "Đạp xe chặng về theo đường đan ven rạch Đồng Phú ngắm rặng dừa nước"
+      },
+      {
+        "id": "tham-quan-vuon-trai-cay",
+        "time": "10:15 - 11:30",
+        "note": "Nghỉ chân tại vườn nhãn tiêu, tự tay hái từng chùm quả mọng ngọt mát lịm"
+      },
+      {
+        "id": "banh-xeo-cu-lao",
+        "time": "11:45 - 13:30",
+        "note": "Thưởng thức bánh xèo cù lao giòn rụm cuốn 20 loại rau rừng Nam Bộ"
+      },
+      {
+        "id": "dap-xe-cu-lao",
+        "time": "14:00 - 16:00",
+        "note": "Đạp xe chặng về theo đường đan ven rạch Đồng Phú ngắm rặng dừa nước"
+      },
+      {
+        "id": "nuoc-dua-tuoi-ben-tre",
+        "time": "16:15 - 17:00",
+        "note": "Giải khát bên bến phà bằng trái dừa dứa thơm ngát ngọt lành"
+      }
+    ],
+    "verifiedAt": "2026-09-13T18:30:00+07:00",
+    "verifiedSource": "NotebookLM Deep Terroir Research - Phase 7"
+  },
+  "lang-man-2-ngay": {
+    "title": "Nghỉ dưỡng lãng mạn 2 ngày",
+    "duration": "2 ngày",
+    "area": "vinh-long",
+    "areas": [
+      "vinh-long"
+    ],
+    "best_departure_time": "08:00 sáng Ngày 1 để tận hưởng trọn vẹn hành trình du thuyền riêng tư trên sông Cổ Chiên",
+    "waterway_transit": "Du thuyền riêng đón khách từ Cảng hành khách du lịch Vĩnh Long đưa thẳng về bến riêng khu nghỉ dưỡng ven sông",
+    "cultural_narrative": "Không gian nghỉ dưỡng biệt lập dành cho các cặp đôi tìm kiếm sự bình yên và lãng mạn. Giữa mênh mang sóng nước phù sa, hai người cùng ngắm hoàng hôn buông đỏ thắm chân trời trên boong thuyền gỗ, lắng nghe những điệu đàn tài tử sâu lắng dưới ánh trăng rằm cù lao và thưởng thức bữa tối thượng hạng với tôm càng xanh nướng mọi thơm phức.",
+    "budget_estimate": "2.200.000 – 3.200.000 đ/người (bao gồm bungalow cao cấp ven sông, du thuyền đưa đón riêng, bữa tối lãng mạn và thưởng thức đờn ca tài tử)",
+    "summary": "2 ngày nghỉ dưỡng lãng mạn giữa sông nước: du thuyền riêng lướt sóng sông Cổ Chiên, thưởng thức tôm càng xanh nướng mọi, chèo xuồng hoàng hôn, lắng nghe đờn ca tài tử đêm trăng và thức giấc đón bình minh huyền ảo giữa vườn cây phù sa.",
+    "aeo_schema_type": "TouristTrip",
+    "source_citations": [
+      {
+        "source_id": "SRC-TIER1-VL-029",
+        "title": "Định hướng phát triển sản phẩm du lịch cao cấp và nghỉ dưỡng ven sông tỉnh Vĩnh Long",
+        "url": "https://vinhlong.gov.vn/du-lich/nghi-duong-ven-song",
+        "author_or_institution": "Sở Văn hóa, Thể thao và Du lịch tỉnh Vĩnh Long",
+        "target_notebook": "mekong-360-t-p-2",
+        "tier": "TIER_1_GOVERNMENT",
+        "authority_weight": 1.0
+      },
+      {
+        "source_id": "SRC-TIER2-THVL-007",
+        "title": "Giai điệu tài tử trên dòng Cổ Chiên: Di sản văn hóa kết nối tâm hồn lữ khách",
+        "url": "https://thvl.vn/van-hoa/don-ca-tai-tu-song-co-chien",
+        "author_or_institution": "Đài Phát thanh và Truyền hình Vĩnh Long",
+        "target_notebook": "v-nh-long-v-nh-long-b-n-tre-tr",
+        "tier": "TIER_2_SCHOLARLY",
+        "authority_weight": 0.95
+      }
+    ],
+    "curated_stops": [
+      {
+        "id": "mekong-lodge-resort",
+        "time": "Ngày 1 – Sáng",
+        "note": "Check-in resort"
+      },
+      {
+        "id": "tom-cang-xanh-nuong",
+        "time": "Ngày 1 – Trưa",
+        "note": "Tôm càng xanh nướng"
+      },
+      {
+        "id": "cheo-xuong-ba-la",
+        "time": "Ngày 1 – Chiều",
+        "note": "Chèo xuồng đôi"
+      },
+      {
+        "id": "nghe-don-ca-tai-tu",
+        "time": "Ngày 1 – Tối",
+        "note": "Nghe đờn ca tài tử"
+      },
+      {
+        "id": "ngam-binh-minh-co-chien",
+        "time": "Ngày 2 – Sáng sớm",
+        "note": "Ngắm bình minh"
+      },
+      {
+        "id": "tham-quan-vuon-trai-cay",
+        "time": "Ngày 2 – Sáng",
+        "note": "Vào vườn trái cây"
+      },
+      {
+        "id": "ca-tai-tuong-chien-xu",
+        "time": "Ngày 2 – Trưa",
+        "note": "Cơm trưa miệt vườn"
+      }
+    ],
+    "verifiedAt": "2026-09-13T18:30:00+07:00",
+    "verifiedSource": "NotebookLM Deep Terroir Research - Phase 7"
+  },
+  "wellness-2-ngay": {
+    "title": "Wellness & thư giãn 2 ngày",
+    "duration": "2 ngày",
+    "area": "vinh-long",
+    "areas": [
+      "vinh-long"
+    ],
+    "best_departure_time": "08:30 sáng Ngày 1 để bắt đầu liệu trình thanh lọc cơ thể trong không gian xanh mát",
+    "waterway_transit": "Tàu thủy đưa đón chuyên biệt từ Cảng Vĩnh Long, hạn chế tiếng ồn cơ giới để bảo tồn sự tĩnh lặng tối đa",
+    "cultural_narrative": "Hành trình chăm sóc thân - tâm - trí lấy thiên nhiên miệt vườn làm nguồn năng lượng chữa lành. Du khách được hít thở bầu không khí tinh khôi rợp bóng cây cỏ, tập yoga đón bình minh trên sàn gỗ ven sông, thưởng thức các món ăn chay thuần khiết chế biến từ nông sản hữu cơ cù lao và ngâm chân thảo dược sả chanh gừng giải tỏa căng thẳng.",
+    "budget_estimate": "2.400.000 – 3.500.000 đ/người (bao gồm lớp yoga, thực đơn chay thực dưỡng, liệu trình ngâm chân thảo dược và phòng nghỉ cao cấp)",
+    "summary": "2 ngày wellness phục hồi sức khỏe: tập yoga đón bình minh trên sàn gỗ bờ sông Cổ Chiên, thưởng thức ẩm thực chay thực dưỡng, ngâm chân thảo dược sả gừng, chèo xuồng tịnh dưỡng và tắm mát giữa dòng phù sa trong lành.",
+    "aeo_schema_type": "TouristTrip",
+    "source_citations": [
+      {
+        "source_id": "SRC-TIER1-VL-030",
+        "title": "Đề án phát triển du lịch chăm sóc sức khỏe và du lịch xanh tỉnh Vĩnh Long 2025-2030",
+        "url": "https://vinhlong.gov.vn/du-lich/wellness-tourism-vinh-long",
+        "author_or_institution": "Sở Y tế & Sở VHTTDL tỉnh Vĩnh Long",
+        "target_notebook": "ch-nh-s-ch-ph-p-lu-t-v-n-b-n-q",
+        "tier": "TIER_1_GOVERNMENT",
+        "authority_weight": 1.0
+      },
+      {
+        "source_id": "SRC-TIER2-CTU-007",
+        "title": "Tiềm năng phát triển du lịch trị liệu và nghỉ dưỡng sinh thái nông nghiệp ĐBSCL",
+        "url": "https://sj.ctu.edu.vn/article/du-lich-tri-lieu-sinh-thai-dbscl",
+        "author_or_institution": "Tạp chí Khoa học Đại học Cần Thơ",
+        "target_notebook": "mekong-360-t-p-2",
+        "tier": "TIER_2_SCHOLARLY",
+        "authority_weight": 0.95
+      }
+    ],
+    "curated_stops": [
+      {
+        "id": "mekong-lodge-resort",
+        "time": "Ngày 1 – 09:30 - 11:30",
+        "note": "Nhận phòng sinh thái không sử dụng đồ nhựa một lần, uống nước thảo mộc thanh lọc"
+      },
+      {
+        "id": "cha-gio-chay",
+        "time": "Ngày 1 – 12:00 - 13:30",
+        "note": "Bữa trưa thực dưỡng thanh nhẹ với chả giò nấm củ năng cuốn bánh tráng gạo tẻ"
+      },
+      {
+        "id": "cheo-xuong-ba-la",
+        "time": "Ngày 1 – 15:00 - 16:30",
+        "note": "Chèo xuồng thiền tĩnh lặng trên con rạch vắng, lắng nghe tiếng chim ríu rít"
+      },
+      {
+        "id": "nghe-don-ca-tai-tu",
+        "time": "Ngày 1 – 19:30 - 21:00",
+        "note": "Thư giãn tinh thần bên tiếng đàn tranh và đàn kìm dìu dặt bờ sông"
+      },
+      {
+        "id": "ngam-binh-minh-co-chien",
+        "time": "Ngày 2 – 06:00 - 07:00",
+        "note": "Bài tập yoga và hít thở sâu trên sàn gỗ đón ánh dương ban mai tinh khôi"
+      },
+      {
+        "id": "chao-ca-loc-rau-dang",
+        "time": "Ngày 2 – 07:30 - 09:00",
+        "note": "Bữa sáng ấm bụng với tô cháo nóng hổi điểm xuyết vị đắng thanh giải nhiệt"
+      },
+      {
+        "id": "tam-song",
+        "time": "Ngày 2 – 10:00 - 11:30",
+        "note": "Mặc áo phao trải nghiệm tắm sông an toàn trong khu vực bãi cồn phù sa sạch mát"
+      }
+    ],
+    "verifiedAt": "2026-09-13T18:30:00+07:00",
+    "verifiedSource": "NotebookLM Deep Terroir Research - Phase 7"
+  },
+  "di-san-mang-thit-tra-vinh": {
+    "title": "Di sản gốm Mang Thít & văn hóa Khmer Trà Vinh",
+    "duration": "2 ngày",
+    "area": "lien-vung",
+    "areas": [
+      "lien-vung",
+      "vinh-long",
+      "tra-vinh"
+    ],
+    "best_departure_time": "07:00 sáng Ngày 1 từ TP Vĩnh Long xuôi đường tỉnh 902 dọc sông Mang Thít",
+    "waterway_transit": "Tàu thủy xuôi dòng kênh Thầy Kay ngắm nhìn quần thể hàng nghìn tháp lò gạch gốm đỏ, kết nối xe du lịch theo quốc lộ 53 sang trung tâm Trà Vinh",
+    "cultural_narrative": "Tuyến liên kết di sản độc đáo kết nối Vương quốc lò gạch đỏ Mang Thít với quần thể văn hóa tâm linh Phật giáo Nam tông Khmer. Du khách chiêm ngưỡng kiến trúc lò nung đất nung rực rỡ bên dòng Thầy Kay, tự tay chuốt gốm trên bàn xoay, viếng ngôi chùa Âng cổ kính hơn 1.000 năm tuổi soi bóng bên thắng cảnh Ao Bà Om huyền thoại và thưởng thức tô bún nước lèo đậm đà hương ngải bún.",
+    "budget_estimate": "1.500.000 – 2.000.000 đ/người (gồm tàu du lịch kênh Thầy Kay, trải nghiệm nặn gốm, khách sạn trung tâm Trà Vinh và ẩm thực Khmer)",
+    "summary": "2 ngày khám phá di sản liên vùng: ngắm quần thể vương quốc gạch gốm đỏ Mang Thít, tự tay vuốt gốm nung Thầy Kay, dạo bước dưới rặng sao dầu cổ thụ Ao Bà Om, chiêm bái Chùa Âng lộng lẫy và thưởng thức bún nước lèo cùng dừa sáp Cầu Kè.",
+    "aeo_schema_type": "TouristTrip",
+    "source_citations": [
+      {
+        "source_id": "SRC-TIER1-VL-005",
+        "title": "Đề án Di sản Đương đại Mang Thít: Bảo tồn và phát huy giá trị quần thể lò gạch gốm",
+        "url": "https://vinhlong.gov.vn/quy-hoach/di-san-duong-dai-mang-thit",
+        "author_or_institution": "UBND tỉnh Vĩnh Long",
+        "target_notebook": "ch-nh-s-ch-ph-p-lu-t-v-n-b-n-q",
+        "tier": "TIER_1_GOVERNMENT",
+        "authority_weight": 1.0
+      },
+      {
+        "source_id": "SRC-TIER1-TV-001",
+        "title": "Hồ sơ Di tích Lịch sử Văn hóa và Danh lam Thắng cảnh Ao Bà Om - Chùa Âng",
+        "url": "https://travinh.gov.vn/di-tich-quoc-gia/ao-ba-om-chua-ang",
+        "author_or_institution": "Sở Văn hóa, Thể thao và Du lịch Trà Vinh",
+        "target_notebook": "v-nh-long-v-nh-long-b-n-tre-tr",
+        "tier": "TIER_1_GOVERNMENT",
+        "authority_weight": 1.0
+      }
+    ],
+    "curated_stops": [
+      {
+        "id": "tham-lo-gach-mang-thit",
+        "time": "Ngày 1 – Sáng",
+        "note": "Điểm dừng chân trải nghiệm văn hóa và cảnh quan tại tham-lo-gach-mang-thit"
+      },
+      {
+        "id": "lang-gach-gom-mang-thit",
+        "time": "Ngày 1 – Chiều",
+        "note": "Điểm dừng chân trải nghiệm văn hóa và cảnh quan tại lang-gach-gom-mang-thit"
+      },
+      {
+        "id": "ao-ba-om",
+        "time": "Ngày 2 – Sáng",
+        "note": "Điểm dừng chân trải nghiệm văn hóa và cảnh quan tại ao-ba-om"
+      },
+      {
+        "id": "chua-ang",
+        "time": "Ngày 2 – Sáng",
+        "note": "Điểm dừng chân trải nghiệm văn hóa và cảnh quan tại chua-ang"
+      },
+      {
+        "id": "bun-nuoc-leo-tra-vinh",
+        "time": "Ngày 2 – Trưa",
+        "note": "Điểm dừng chân trải nghiệm văn hóa và cảnh quan tại bun-nuoc-leo-tra-vinh"
+      },
+      {
+        "id": "dua-sap-cau-ke",
+        "time": "Mua quà",
+        "note": "Đặc sản hiếm"
+      }
+    ],
+    "verifiedAt": "2026-09-13T18:30:00+07:00",
+    "verifiedSource": "NotebookLM Deep Terroir Research - Phase 7"
+  },
+  "lang-nghe-thu-cong-1-ngay": {
+    "title": "Tour làng nghề thủ công 1 ngày",
+    "duration": "1 ngày",
+    "area": "vinh-long",
+    "areas": [
+      "vinh-long"
+    ],
+    "best_departure_time": "07:00 sáng xuất phát đi dọc đường tỉnh 902 men theo dòng sông Mang Thít",
+    "waterway_transit": "Xe du lịch kết hợp đi phà Đình Khao và đò ngang cù lao Mây ghé làng nghề bánh tráng nức tiếng",
+    "cultural_narrative": "Hành trình tôn vinh bàn tay tài hoa của người thợ thủ công phương Nam. Du khách được tận mắt chứng kiến quy trình vuốt gốm đất sét đỏ trên bàn xoay thủ công, tự tay tráng bánh tráng nem cù lao Mây trên lò trấu nghi ngút khói và tìm hiểu kỹ thuật ủ đậu vớt váng tàu hủ ky Mỹ Hòa đạt chứng nhận Di sản văn hóa phi vật thể quốc gia.",
+    "budget_estimate": "550.000 – 750.000 đ/người (bao gồm phí trải nghiệm làm gốm, tráng bánh, ăn trưa và quà lưu niệm làng nghề)",
+    "summary": "1 ngày khám phá tinh hoa làng nghề đất Vĩnh: thăm lò gạch gốm đỏ nung Mang Thít, học nặn gốm đất sét trên bàn xoay, thưởng thức cá tai tượng chiên xù, tráng bánh tráng cù lao Mây và tìm hiểu làng nghề tàu hủ ky Mỹ Hòa trăm năm tuổi.",
+    "aeo_schema_type": "TouristTrip",
+    "source_citations": [
+      {
+        "source_id": "SRC-TIER1-VL-014",
+        "title": "Hồ sơ Di sản văn hóa phi vật thể quốc gia Nghề làm tàu hủ ky Mỹ Hòa",
+        "url": "http://dsvh.gov.vn/di-san-phi-vat-the-nghe-lam-tau-hu-ky-my-hoa-3180",
+        "author_or_institution": "Cục Di sản Văn hóa - Bộ Văn hóa, Thể thao và Du lịch",
+        "target_notebook": "mekong-360-t-p-2",
+        "tier": "TIER_1_GOVERNMENT",
+        "authority_weight": 1.0
+      },
+      {
+        "source_id": "SRC-TIER2-THVL-008",
+        "title": "Bàn tay tài hoa thợ thủ công đất Vĩnh: Nối dài mạch sống làng nghề trăm năm",
+        "url": "https://thvl.vn/van-hoa/lang-nghe-vinh-long-tram-nam",
+        "author_or_institution": "Đài Phát thanh và Truyền hình Vĩnh Long",
+        "target_notebook": "mekong-360-t-p-2",
+        "tier": "TIER_2_SCHOLARLY",
+        "authority_weight": 0.95
+      }
+    ],
+    "curated_stops": [
+      {
+        "id": "tham-lo-gach-co",
+        "time": "Sáng",
+        "note": "Lò gạch cổ Mang Thít"
+      },
+      {
+        "id": "lam-gom-mang-thit",
+        "time": "Giữa sáng",
+        "note": "Trải nghiệm làm gốm"
+      },
+      {
+        "id": "ca-tai-tuong-chien-xu",
+        "time": "Trưa",
+        "note": "Cơm trưa"
+      },
+      {
+        "id": "hoc-lam-banh-trang",
+        "time": "Chiều",
+        "note": "Học làm bánh tráng"
+      },
+      {
+        "id": "lang-tau-hu-ky-my-hoa",
+        "time": "Xế chiều",
+        "note": "Làng tàu hủ ky Mỹ Hòa"
+      }
+    ],
+    "verifiedAt": "2026-09-13T18:30:00+07:00",
+    "verifiedSource": "NotebookLM Deep Terroir Research - Phase 7"
+  },
+  "tp-vinh-long-nua-ngay": {
+    "title": "Khám phá TP Vĩnh Long nửa ngày",
+    "duration": "Nửa ngày",
+    "area": "vinh-long",
+    "areas": [
+      "vinh-long"
+    ],
+    "best_departure_time": "07:30 sáng bắt đầu từ Văn Thánh Miếu khi nắng sớm chiếu rọi Tụy Văn Lâu",
+    "waterway_transit": "Tuyến đường bộ nội thị dọc bờ kè sông Tiền và sông Cổ Chiên, thuận tiện xe máy hoặc ô tô",
+    "cultural_narrative": "Tour khám phá văn hiến và lịch sử đất phương Nam trong lòng thành phố Vĩnh Long. Lắng đọng tâm tư trước Văn Thánh Miếu – biểu tượng của đạo học Nam Kỳ khởi lập từ năm 1864, tìm hiểu hiện vật cổ tại Bảo tàng tỉnh và chiêm bái bảo tháp Chùa Phật Ngọc Xá Lợi cao 54 mét sừng sững bên chân cầu Mỹ Thuận.",
+    "budget_estimate": "250.000 – 400.000 đ/người (vé tham quan bảo tàng, hương đăng lễ Phật và thưởng thức nước cam sành giải khát)",
+    "summary": "Nửa ngày dạo quanh di tích lịch sử và danh lam TP Vĩnh Long: chiêm bái Văn Thánh Miếu và Tụy Văn Lâu cổ kính, tìm hiểu cổ vật tại Bảo tàng tỉnh, viếng Chùa Phật Ngọc Xá Lợi và thưởng thức ly cam sành Tam Bình mát lạnh bờ sông Cổ Chiên.",
+    "aeo_schema_type": "TouristTrip",
+    "source_citations": [
+      {
+        "source_id": "SRC-TIER1-VL-001",
+        "title": "Hồ sơ Di tích Lịch sử - Văn hóa Văn Thánh Miếu Vĩnh Long và Tụy Văn Lâu",
+        "url": "http://dsvh.gov.vn/di-tich-lich-su-van-hoa-van-thanh-mieu-vinh-long-3024",
+        "author_or_institution": "Cục Di sản Văn hóa - Bộ Văn hóa, Thể thao và Du lịch",
+        "target_notebook": "v-nh-long-v-nh-long-b-n-tre-tr",
+        "tier": "TIER_1_GOVERNMENT",
+        "authority_weight": 1.0
+      },
+      {
+        "source_id": "SRC-TIER2-BVL-001",
+        "title": "Văn Thánh Miếu Vĩnh Long: Nơi lưu giữ mạch nguồn đạo học phương Nam",
+        "url": "https://baovinhlong.com.vn/van-hoa/van-thanh-mieu-vinh-long-mach-nguon-dao-hoc",
+        "author_or_institution": "Báo Vĩnh Long",
+        "target_notebook": "v-nh-long-v-nh-long-b-n-tre-tr",
+        "tier": "TIER_2_SCHOLARLY",
+        "authority_weight": 0.95
+      }
+    ],
+    "curated_stops": [
+      {
+        "id": "van-thanh-mieu",
+        "time": "Sáng",
+        "note": "Điểm dừng chân trải nghiệm văn hóa và cảnh quan tại van-thanh-mieu"
+      },
+      {
+        "id": "bao-tang-vinh-long",
+        "time": "Sáng",
+        "note": "Điểm dừng chân trải nghiệm văn hóa và cảnh quan tại bao-tang-vinh-long"
+      },
+      {
+        "id": "chua-phat-ngoc-xa-loi",
+        "time": "Trưa",
+        "note": "Điểm dừng chân trải nghiệm văn hóa và cảnh quan tại chua-phat-ngoc-xa-loi"
+      },
+      {
+        "id": "cam-sanh-tam-binh",
+        "time": "Mua quà",
+        "note": "Điểm dừng chân trải nghiệm văn hóa và cảnh quan tại cam-sanh-tam-binh"
+      }
+    ],
+    "verifiedAt": "2026-09-13T18:30:00+07:00",
+    "verifiedSource": "NotebookLM Deep Terroir Research - Phase 7"
+  },
+  "tra-vinh-khmer-1-ngay": {
+    "title": "Trà Vinh Khmer 1 ngày",
+    "duration": "1 ngày",
+    "area": "tra-vinh",
+    "areas": [
+      "tra-vinh"
+    ],
+    "best_departure_time": "07:00 sáng đón ánh nắng xuyên qua tán sao dầu cổ thụ tại Ao Bà Om",
+    "waterway_transit": "Đường bộ nội thị thành phố Trà Vinh kết nối các phum sóc và chùa cổ bằng xe máy hoặc xe điện du lịch",
+    "cultural_narrative": "Hành trình đắm mình vào không gian văn hóa đặc sắc của đồng bào Khmer Nam Bộ. Dưới bóng mát râm ran của hàng trăm cây sao dầu cổ thụ hàng thế kỷ quanh Ao Bà Om, du khách chiêm ngưỡng nghệ thuật điêu khắc phù điêu tượng thần linh tại Chùa Âng, thăm Bảo tàng Văn hóa Khmer và thưởng thức tô bún nước lèo đậm đà kèm miếng bánh cống giòn rụm.",
+    "budget_estimate": "450.000 – 650.000 đ/người (vé tham quan bảo tàng, bữa trưa bún nước lèo, thưởng thức dừa sáp và bánh tét lá cẩm)",
+    "summary": "1 ngày trọn vẹn khám phá văn hóa Khmer Trà Vinh: dạo bước bờ Ao Bà Om ngắm rễ cây cổ thụ kỳ ảo, chiêm ngưỡng Chùa Âng nguy nga, thưởng thức bún nước lèo bốc khói, khám phá kiến trúc chùa cổ và nếm thử đòn bánh tét lá cẩm thơm ngậy.",
+    "aeo_schema_type": "TouristTrip",
+    "source_citations": [
+      {
+        "source_id": "SRC-TIER1-TV-001",
+        "title": "Hồ sơ Di tích Lịch sử Văn hóa và Danh lam Thắng cảnh Ao Bà Om - Chùa Âng",
+        "url": "https://travinh.gov.vn/di-tich-quoc-gia/ao-ba-om-chua-ang",
+        "author_or_institution": "Sở Văn hóa, Thể thao và Du lịch Trà Vinh",
+        "target_notebook": "v-nh-long-v-nh-long-b-n-tre-tr",
+        "tier": "TIER_1_GOVERNMENT",
+        "authority_weight": 1.0
+      },
+      {
+        "source_id": "SRC-TIER2-TV-001",
+        "title": "Đặc sắc kiến trúc và tín ngưỡng chùa Phật giáo Nam tông Khmer tại Trà Vinh",
+        "url": "https://baotravinh.vn/van-hoa/kien-truc-chua-khmer-tra-vinh",
+        "author_or_institution": "Báo Trà Vinh",
+        "target_notebook": "v-nh-long-v-nh-long-b-n-tre-tr",
+        "tier": "TIER_2_SCHOLARLY",
+        "authority_weight": 0.95
+      }
+    ],
+    "curated_stops": [
+      {
+        "id": "ao-ba-om",
+        "time": "Sáng sớm",
+        "note": "Ao Bà Om buổi sáng yên tĩnh"
+      },
+      {
+        "id": "chua-ang",
+        "time": "Sáng",
+        "note": "Chùa Âng cổ kính"
+      },
+      {
+        "id": "bun-nuoc-leo-tra-vinh",
+        "time": "Trưa",
+        "note": "Bún nước lèo"
+      },
+      {
+        "id": "tham-chua-khmer",
+        "time": "Chiều",
+        "note": "Tham quan chùa Khmer"
+      },
+      {
+        "id": "banh-tet-la-cam",
+        "time": "Mua quà",
+        "note": "Bánh tét lá cẩm"
+      }
+    ],
+    "verifiedAt": "2026-09-13T18:30:00+07:00",
+    "verifiedSource": "NotebookLM Deep Terroir Research - Phase 7"
+  },
+  "xu-dua-ben-tre": {
+    "title": "Xứ dừa Bến Tre 1 ngày",
+    "duration": "1 ngày",
+    "area": "ben-tre",
+    "areas": [
+      "ben-tre"
+    ],
+    "best_departure_time": "07:00 sáng xuất phát theo quốc lộ 60 vượt cầu Rạch Miễu về thủ phủ xứ dừa",
+    "waterway_transit": "Xuồng chèo dưới những rặng dừa nước rạch Mỏ Cày, kết hợp ô tô theo huyện lộ 17 xuyên qua miệt dừa bạt ngàn",
+    "cultural_narrative": "Hành trình trải nghiệm đời sống gắn liền với cây dừa của người dân xứ đảo dừa. Du khách theo chân nông dân vào rẫy hái dừa xiêm, xem kỹ thuật bóc vỏ dừa bằng mũi lao thép thoăn thoắt, tự tay quấy chảo kẹo dừa dẻo quánh mạch nha trên bếp lửa hồng và thưởng thức những ly mật hoa dừa thanh khiết ngọt ngào.",
+    "budget_estimate": "500.000 – 750.000 đ/người (gồm xuồng chèo, trải nghiệm làm kẹo dừa, bữa trưa cơm dừa tép rang và mua đặc sản kẹo dừa)",
+    "summary": "1 ngày trọn vẹn khám phá xứ dừa: theo chân nông dân vào rẫy dừa bạt ngàn, xem thu hoạch dừa xiêm, tự tay ngào và gói kẹo dừa Mỏ Cày trên chảo đồng, tham quan làng nghề chế biến dừa truyền thống và thưởng thức giọt mật hoa dừa thơm mát.",
+    "aeo_schema_type": "TouristTrip",
+    "source_citations": [
+      {
+        "source_id": "SRC-TIER1-BT-001",
+        "title": "Hồ sơ Làng nghề truyền thống sản xuất kẹo dừa Mỏ Cày Nam",
+        "url": "https://socongthuong.bentre.gov.vn/lang-nghe-keo-dua-mo-cay",
+        "author_or_institution": "Sở Công Thương Bến Tre",
+        "target_notebook": "mekong-360-t-p-2",
+        "tier": "TIER_1_GOVERNMENT",
+        "authority_weight": 1.0
+      },
+      {
+        "source_id": "SRC-TIER2-DK-003",
+        "title": "Nghề làm kẹo dừa Mỏ Cày: Giữ lửa di sản ẩm thực trăm năm xứ dừa",
+        "url": "https://baodongkhoi.vn/van-hoa/lang-nghe-keo-dua-mo-cay-tuyet-phung-2024",
+        "author_or_institution": "Báo Đồng Khởi",
+        "target_notebook": "mekong-360-t-p-2",
+        "tier": "TIER_2_SCHOLARLY",
+        "authority_weight": 0.9
+      }
+    ],
+    "curated_stops": [
+      {
+        "id": "thu-hoach-dua-mo-cay",
+        "time": "Sáng",
+        "note": "Điểm dừng chân trải nghiệm văn hóa và cảnh quan tại thu-hoach-dua-mo-cay"
+      },
+      {
+        "id": "lam-keo-dua-mo-cay",
+        "time": "Trưa",
+        "note": "Điểm dừng chân trải nghiệm văn hóa và cảnh quan tại lam-keo-dua-mo-cay"
+      },
+      {
+        "id": "lang-keo-dua-mo-cay",
+        "time": "Chiều",
+        "note": "Điểm dừng chân trải nghiệm văn hóa và cảnh quan tại lang-keo-dua-mo-cay"
+      },
+      {
+        "id": "mat-hoa-dua",
+        "time": "Mua quà",
+        "note": "OCOP 4 sao"
+      }
+    ],
+    "verifiedAt": "2026-09-13T18:30:00+07:00",
+    "verifiedSource": "NotebookLM Deep Terroir Research - Phase 7"
+  },
+  "nhiep-anh-1-ngay": {
+    "title": "Tour nhiếp ảnh 1 ngày",
+    "duration": "1 ngày",
+    "area": "vinh-long",
+    "areas": [
+      "vinh-long"
+    ],
+    "best_departure_time": "05:00 sáng xuất phát từ bến thuyền Trà Ôn để đón vầng dương ló rạng trên chợ nổi",
+    "waterway_transit": "Thuyền máy chuyên dụng di chuyển tốc độ linh hoạt theo góc sáng mặt trời trên sông Hậu, sông Cổ Chiên và rạch Thầy Kay",
+    "cultural_narrative": "Hành trình sáng tác nghệ thuật thị giác dành cho các nhiếp ảnh gia và người yêu ảnh đẹp. Đón luồng ánh sáng sớm tinh sương trên những cây bẹo chở đầy hoa trái ở chợ nổi Trà Ôn, bắt trọn khoảnh khắc khói lam chiều bảng lảng bay trên những ngọn tháp lò gạch đỏ cổ kính Mang Thít và ghi lại nhịp sống thanh bình của người dân cù lao sông Tiền.",
+    "budget_estimate": "800.000 – 1.200.000 đ/người (bao gồm thuê thuyền máy riêng chụp ảnh, ăn sáng chợ nổi, cơm trưa miệt vườn và nước uống suốt tuyến)",
+    "summary": "1 ngày săn ảnh di sản và nhịp sống sông nước: đón bình minh rực rỡ trên chợ nổi Trà Ôn, bắt trọn góc máy cinematic vương quốc lò gạch nung Mang Thít, chụp cận cảnh bàn tay người thợ gốm đỏ và hoàng hôn soi bóng cầu Mỹ Thuận huyền ảo.",
+    "aeo_schema_type": "TouristTrip",
+    "source_citations": [
+      {
+        "source_id": "SRC-TIER1-VL-005",
+        "title": "Đề án Di sản Đương đại Mang Thít: Bảo tồn và phát huy giá trị quần thể lò gạch gốm",
+        "url": "https://vinhlong.gov.vn/quy-hoach/di-san-duong-dai-mang-thit",
+        "author_or_institution": "UBND tỉnh Vĩnh Long",
+        "target_notebook": "ch-nh-s-ch-ph-p-lu-t-v-n-b-n-q",
+        "tier": "TIER_1_GOVERNMENT",
+        "authority_weight": 1.0
+      },
+      {
+        "source_id": "SRC-TIER2-THVL-003",
+        "title": "Góc nhìn di sản: Vẻ đẹp điêu khắc của làng gốm đỏ Mang Thít bên sông Thầy Kay",
+        "url": "https://thvl.vn/di-san/ve-dep-lang-gom-mang-thit",
+        "author_or_institution": "Đài Phát thanh và Truyền hình Vĩnh Long",
+        "target_notebook": "v-nh-long-v-nh-long-b-n-tre-tr",
+        "tier": "TIER_2_SCHOLARLY",
+        "authority_weight": 0.95
+      }
+    ],
+    "curated_stops": [
+      {
+        "id": "ngam-binh-minh-co-chien",
+        "time": "4h30 sáng",
+        "note": "Golden hour bình minh"
+      },
+      {
+        "id": "cho-noi-tra-on",
+        "time": "Sáng",
+        "note": "Chợ nổi Trà Ôn"
+      },
+      {
+        "id": "tham-lo-gach-co",
+        "time": "Giữa sáng",
+        "note": "Lò gạch cổ Mang Thít"
+      },
+      {
+        "id": "ca-tai-tuong-chien-xu",
+        "time": "Trưa",
+        "note": "Cơm trưa"
+      },
+      {
+        "id": "tham-quan-vuon-trai-cay",
+        "time": "Chiều",
+        "note": "Vườn trái cây"
+      },
+      {
+        "id": "cau-my-thuan",
+        "time": "Hoàng hôn",
+        "note": "Sunset cầu Mỹ Thuận"
+      }
+    ],
+    "verifiedAt": "2026-09-13T18:30:00+07:00",
+    "verifiedSource": "NotebookLM Deep Terroir Research - Phase 7"
+  },
+  "food-tour-vinh-long-1-ngay": {
+    "title": "Food tour Vĩnh Long 1 ngày",
+    "duration": "1 ngày",
+    "area": "vinh-long",
+    "areas": [
+      "vinh-long"
+    ],
+    "best_departure_time": "06:30 sáng nạp năng lượng tô bún mắm cá linh bốc khói nghi ngút tại trung tâm thành phố",
+    "waterway_transit": "Tuyến phố ẩm thực nội ô đường 1 Tháng 5, Lê Thái Tổ, Trần Đại Nghĩa và phố đi bộ chợ đêm Vĩnh Long",
+    "cultural_narrative": "Hành trình khám phá trọn vẹn bản đồ ẩm thực đất Vĩnh từ sáng tinh mơ tới đêm muộn. Mỗi món ăn là một câu chuyện thổ nhưỡng chắt chiu từ sản vật sông nước: tô bún mắm đậm đà cá đồng tươi rói, đĩa nem nướng cuốn bánh tráng cù lao Mây giòn ngọt, món bò tơ nướng ngói thơm nức mũi và chén chè bưởi ngọt bùi trứ danh bên bờ kè sông Cổ Chiên.",
+    "budget_estimate": "500.000 – 700.000 đ/người (thưởng thức đủ 6 món ngon đặc sản, đồ uống giải khát và quà ăn vặt)",
+    "summary": "1 ngày food tour thưởng thức trọn vẹn phong vị ẩm thực đất Vĩnh: mở màn với bún mắm cá linh đậm đà, ăn nhẹ cơm tấm sườn nướng, trưa cuốn nem nướng bánh hỏi, chiều thưởng thức bò tơ nướng ngói, dạo chợ đêm nhộn nhịp và tráng miệng chè bưởi ngọt ngào.",
+    "aeo_schema_type": "TouristTrip",
+    "source_citations": [
+      {
+        "source_id": "SRC-TIER1-VL-031",
+        "title": "Bản đồ văn hóa ẩm thực truyền thống và phát triển du lịch đêm tỉnh Vĩnh Long",
+        "url": "https://vinhlong.gov.vn/am-thuc/ban-do-am-thuc-vinh-long",
+        "author_or_institution": "Sở Công Thương & Sở VHTTDL tỉnh Vĩnh Long",
+        "target_notebook": "mekong-360-t-p-2",
+        "tier": "TIER_1_GOVERNMENT",
+        "authority_weight": 1.0
+      },
+      {
+        "source_id": "SRC-TIER2-THVL-009",
+        "title": "Hương vị ẩm thực sông nước Vĩnh Long: Từ gánh hàng rong đến bàn tiệc tao nhã",
+        "url": "https://thvl.vn/am-thuc/huong-vi-am-thuc-vinh-long",
+        "author_or_institution": "Đài Phát thanh và Truyền hình Vĩnh Long",
+        "target_notebook": "mekong-360-t-p-2",
+        "tier": "TIER_2_SCHOLARLY",
+        "authority_weight": 0.95
+      }
+    ],
+    "curated_stops": [
+      {
+        "id": "bun-mam-mien-tay",
+        "time": "Sáng",
+        "note": "Bún mắm sáng"
+      },
+      {
+        "id": "com-tam-suon-bi-cha",
+        "time": "Giữa sáng",
+        "note": "Ăn dặm cơm tấm"
+      },
+      {
+        "id": "nem-nuong-vinh-long",
+        "time": "Trưa",
+        "note": "Nem nướng cuốn bánh tráng"
+      },
+      {
+        "id": "bo-to-vinh-long",
+        "time": "Chiều",
+        "note": "Bò tơ nướng ngói"
+      },
+      {
+        "id": "di-cho-dem-vinh-long",
+        "time": "Tối",
+        "note": "Ăn vặt chợ đêm"
+      },
+      {
+        "id": "che-buoi-vinh-long",
+        "time": "Tráng miệng",
+        "note": "Chè bưởi Bình Minh"
+      }
+    ],
+    "verifiedAt": "2026-09-13T18:30:00+07:00",
+    "verifiedSource": "NotebookLM Deep Terroir Research - Phase 7"
+  },
+  "food-tour-ben-tre-1-ngay": {
+    "title": "Food tour Bến Tre 1 ngày",
+    "duration": "1 ngày",
+    "area": "ben-tre",
+    "areas": [
+      "ben-tre"
+    ],
+    "best_departure_time": "07:00 sáng thưởng thức tô bánh canh bột xắt vịt xiêm nước cốt dừa nức tiếng",
+    "waterway_transit": "Đường bộ qua các trục đường ẩm thực Hai Bà Trưng, Đồng Khởi TP Bến Tre và ghé thị trấn Mỏ Cày",
+    "cultural_narrative": "Cuộc du ngoạn vị giác qua vương quốc của những món ăn chế biến từ dừa. Người xứ dừa đã sáng tạo nên những hương vị ẩm thực độc nhất vô nhị: sợi bánh canh bột xắt gạo nàng thơm nấu thịt vịt xiêm béo ngậy nước cốt dừa, bánh xèo tôm sông giòn tan, kẹo dừa Mỏ Cày vừa ra lò ấm nóng và ly chè chuối nướng bọc nếp nướng thơm phức.",
+    "budget_estimate": "450.000 – 650.000 đ/người (thưởng thức trọn vẹn 5 món đặc sản xứ dừa và mua kẹo dừa làm quà)",
+    "summary": "1 ngày food tour xứ dừa độc đáo: ăn sáng bánh canh bột xắt vịt xiêm ngậy béo nước cốt dừa, trưa ăn bánh xèo tôm nhảy giòn tan, chiều tự tay làm kẹo dừa Mỏ Cày, uống nước dừa xiêm ngọt lịm và tối thưởng thức chè chuối nướng thơm lừng.",
+    "aeo_schema_type": "TouristTrip",
+    "source_citations": [
+      {
+        "source_id": "SRC-TIER1-BT-031",
+        "title": "Hồ sơ công nhận di sản ẩm thực món bánh canh bột xắt vịt xiêm nước cốt dừa Bến Tre",
+        "url": "https://dulichbentre.gov.vn/am-thuc/banh-canh-bot-xat-ben-tre",
+        "author_or_institution": "Sở Văn hóa, Thể thao và Du lịch Bến Tre",
+        "target_notebook": "mekong-360-t-p-2",
+        "tier": "TIER_1_GOVERNMENT",
+        "authority_weight": 1.0
+      },
+      {
+        "source_id": "SRC-TIER2-DK-007",
+        "title": "Vị béo thơm nước cốt dừa trong ẩm thực dân gian Bến Tre: Nét duyên khó cưỡng",
+        "url": "https://baodongkhoi.vn/am-thuc/vi-beo-nuoc-cot-dua-ben-tre",
+        "author_or_institution": "Báo Đồng Khởi",
+        "target_notebook": "mekong-360-t-p-2",
+        "tier": "TIER_2_SCHOLARLY",
+        "authority_weight": 0.9
+      }
+    ],
+    "curated_stops": [
+      {
+        "id": "banh-canh-ben-tre",
+        "time": "Sáng",
+        "note": "Bánh canh bột gạo"
+      },
+      {
+        "id": "banh-xeo-mien-tay",
+        "time": "Trưa",
+        "note": "Bánh xèo tôm nhảy"
+      },
+      {
+        "id": "lam-keo-dua-mo-cay",
+        "time": "Chiều",
+        "note": "Trải nghiệm + mua kẹo dừa"
+      },
+      {
+        "id": "nuoc-dua-tuoi-ben-tre",
+        "time": "Xế",
+        "note": "Giải khát nước dừa"
+      },
+      {
+        "id": "che-chuoi-nuong",
+        "time": "Tối",
+        "note": "Chè chuối nướng"
+      }
+    ],
+    "verifiedAt": "2026-09-13T18:30:00+07:00",
+    "verifiedSource": "NotebookLM Deep Terroir Research - Phase 7"
+  },
+  "cho-sang-nau-an-nua-ngay": {
+    "title": "Chợ sáng + nấu ăn nửa ngày",
+    "duration": "Nửa ngày",
+    "area": "vinh-long",
+    "areas": [
+      "vinh-long"
+    ],
+    "best_departure_time": "05:30 sáng đón luồng ghe thương hồ sớm tại chợ nổi Trà Ôn",
+    "waterway_transit": "Tàu gỗ nhỏ đón khách từ bến tàu Trà Ôn luồn lách giữa các ghe thuyền họp chợ ngã ba sông Hậu",
+    "cultural_narrative": "Lớp học ẩm thực thực tế bắt đầu từ không gian văn hóa chợ nổi đặc trưng phương Nam. Du khách cùng đầu bếp bản địa đi thuyền chọn mớ cá lóc đồng tươi roi rói, mớ rau điên điển vàng rực và đọt choại non mơn mởn, sau đó trở về gian bếp nhà vườn học bí quyết kho cá, nấu canh chua và cuốn gỏi cuốn tôm thịt đúng điệu.",
+    "budget_estimate": "350.000 – 500.000 đ/người (gồm thuyền đi chợ nổi, nguyên liệu thực phẩm, lớp dạy nấu ăn và bữa trưa)",
+    "summary": "Nửa ngày trải nghiệm từ chợ đến bàn ăn: đi thuyền máy đón chợ nổi Trà Ôn sớm mai, tự tay chọn nông sản tươi ngon, vào bếp miệt vườn học bí quyết nấu món truyền thống và thưởng thức thành quả món gỏi cuốn tôm thịt thanh đạm.",
+    "aeo_schema_type": "TouristTrip",
+    "source_citations": [
+      {
+        "source_id": "SRC-TIER1-VL-032",
+        "title": "Bảo tồn văn hóa Chợ nổi Trà Ôn và sản phẩm du lịch trải nghiệm nấu ăn miệt vườn",
+        "url": "https://vinhlong.gov.vn/du-lich/cho-noi-tra-on-cooking-class",
+        "author_or_institution": "Sở Văn hóa, Thể thao và Du lịch tỉnh Vĩnh Long",
+        "target_notebook": "mekong-360-t-p-2",
+        "tier": "TIER_1_GOVERNMENT",
+        "authority_weight": 1.0
+      },
+      {
+        "source_id": "SRC-TIER2-THVL-010",
+        "title": "Nét đẹp Chợ nổi Trà Ôn: Nơi hội tụ sản vật phù sa sông nước Nam Bộ",
+        "url": "https://thvl.vn/van-hoa/cho-noi-tra-on-san-vat-phu-sa",
+        "author_or_institution": "Đài Phát thanh và Truyền hình Vĩnh Long",
+        "target_notebook": "mekong-360-t-p-2",
+        "tier": "TIER_2_SCHOLARLY",
+        "authority_weight": 0.95
+      }
+    ],
+    "curated_stops": [
+      {
+        "id": "cho-noi-tra-on",
+        "time": "05:30 - 07:30",
+        "note": "Đi thuyền máy đón con nước sớm len lỏi giữa ghe hoa trái chợ nổi Trà Ôn"
+      },
+      {
+        "id": "hoc-nau-an-mien-tay",
+        "time": "08:30 - 11:00",
+        "note": "Học cách nêm nếm gia vị truyền thống, sơ chế cá đồng và pha nước mắm me"
+      },
+      {
+        "id": "goi-cuon-tom-thit",
+        "time": "11:30 - 13:00",
+        "note": "Thưởng thức gỏi cuốn tôm đất thịt ba chỉ luộc tự làm ăn kèm rau vườn nhà"
+      }
+    ],
+    "verifiedAt": "2026-09-13T18:30:00+07:00",
+    "verifiedSource": "NotebookLM Deep Terroir Research - Phase 7"
+  },
+  "tour-p07": {
+    "title": "Food tour 3 vùng",
+    "duration": "1–2 ngày",
+    "area": "lien-vung",
+    "areas": [
+      "lien-vung",
+      "vinh-long",
+      "ben-tre",
+      "tra-vinh"
+    ],
+    "best_departure_time": "07:00 sáng Ngày 1 bắt đầu từ các nhà vườn ẩm thực ven sông Tiền",
+    "waterway_transit": "Xe du lịch kết hợp vượt phà Đình Khao sang xứ dừa và phà Cổ Chiên sang Trà Vinh",
+    "cultural_narrative": "Tuyến ẩm thực tinh hoa liên kết Tam Vùng Vĩnh Long - Bến Tre - Trà Vinh. Hành trình dẫn dắt du khách đi qua những phong vị ẩm thực đặc sắc: trải nghiệm câu cá giải trí chế biến cá lóc nướng trui tại chỗ, thưởng thức dừa sáp Cầu Kè béo ngậy độc nhất vô nhị và học làm các loại bánh dân gian Nam Bộ như bánh tét, bánh tráng, bánh lá mơ thơm ngát mùi đồng ruộng.",
+    "budget_estimate": "750.000 – 1.100.000 đ/người (bao gồm phí trải nghiệm câu cá, thưởng thức dừa sáp, học làm bánh dân gian và ăn uống)",
+    "summary": "Food tour liên kết 3 vùng văn hóa ẩm thực: câu cá giải trí miệt vườn Vĩnh Long, thưởng thức món dừa sáp Cầu Kè Trà Vinh tiến vua và học làm các loại bánh dân gian truyền thống xứ dừa Bến Tre dẻo thơm.",
+    "aeo_schema_type": "TouristTrip",
+    "source_citations": [
+      {
+        "source_id": "SRC-TIER1-TV-036",
+        "title": "Quần thể Vườn Dừa sáp đặc sản Cầu Kè - Nguồn gen bản địa quý hiếm Trà Vinh",
+        "url": "https://snnptnt.travinh.gov.vn/cay-trong-dac-san/dua-sap-cau-ke",
+        "author_or_institution": "Sở Nông nghiệp và Phát triển Nông thôn Trà Vinh",
+        "target_notebook": "mekong-360-t-p-2",
+        "tier": "TIER_1_GOVERNMENT",
+        "authority_weight": 1.0
+      },
+      {
+        "source_id": "SRC-TIER2-DK-007",
+        "title": "Bánh dân gian Nam Bộ: Tinh hoa từ hạt gạo và dòng nước phù sa",
+        "url": "https://baodongkhoi.vn/van-hoa/banh-dan-gian-nam-bo-tinh-hoa",
+        "author_or_institution": "Báo Đồng Khởi",
+        "target_notebook": "mekong-360-t-p-2",
+        "tier": "TIER_2_SCHOLARLY",
+        "authority_weight": 0.9
+      }
+    ],
+    "curated_stops": [
+      {
+        "id": "cau-ca-miet-vuon",
+        "time": "08:00",
+        "note": "Câu cá miệt vườn"
+      },
+      {
+        "id": "dua-sap",
+        "time": "10:00",
+        "note": "Dừa sáp"
+      },
+      {
+        "id": "lam-banh-dan-gian",
+        "time": "12:00",
+        "note": "Học làm bánh dân gian Nam Bộ"
+      }
+    ],
+    "verifiedAt": "2026-09-13T18:30:00+07:00",
+    "verifiedSource": "NotebookLM Deep Terroir Research - Phase 7"
+  },
+  "gia-dinh-vui-1-ngay": {
+    "title": "Gia đình vui 1 ngày",
+    "duration": "1 ngày",
+    "area": "vinh-long",
+    "areas": [
+      "vinh-long"
+    ],
+    "best_departure_time": "07:30 sáng đưa gia đình lên tàu du lịch sang cù lao An Bình",
+    "waterway_transit": "Tàu du lịch an toàn trang bị áo phao đầy đủ từ Cảng du lịch Vĩnh Long sang khu du lịch Vinh Sang",
+    "cultural_narrative": "Chuyến dã ngoại cuối tuần ấm áp và giàu tính giáo dục dành cho gia đình nhiều thế hệ. Các bạn nhỏ được chạm tay vào bùn đất phù sa khi lội mương bắt cá, cha mẹ cùng ông bà thong thả dạo bước dưới bóng mát vườn chôm chôm chín đỏ, thưởng thức cá tai tượng chiên xù xòe cánh và kết thúc ngày vui bằng ly kem dừa ngọt lịm.",
+    "budget_estimate": "600.000 – 850.000 đ/người (vé trọn gói khu du lịch, đồ bà ba, trải nghiệm bắt cá, bữa trưa gia đình và kem dừa)",
+    "summary": "1 ngày vui chơi miệt vườn trọn vẹn cho cả gia đình: tham gia trò chơi dân gian sông nước tại khu sinh thái Vinh Sang, thưởng thức cá tai tượng chiên xù giòn rụm, cùng nhau lội mương tát cá, tự tay hái chôm chôm chín cây và ăn kem dừa mát lạnh.",
+    "aeo_schema_type": "TouristTrip",
+    "source_citations": [
+      {
+        "source_id": "SRC-TIER1-VL-025",
+        "title": "Mô hình du lịch sinh thái nông nghiệp trải nghiệm dành cho gia đình cù lao An Bình",
+        "url": "https://vinhlong.gov.vn/du-lich/du-lich-gia-dinh-an-binh",
+        "author_or_institution": "Sở Văn hóa, Thể thao và Du lịch tỉnh Vĩnh Long",
+        "target_notebook": "mekong-360-t-p-2",
+        "tier": "TIER_1_GOVERNMENT",
+        "authority_weight": 1.0
+      },
+      {
+        "source_id": "SRC-TIER2-BVL-006",
+        "title": "Du lịch gia đình về xứ cù lao: Kết nối tình thân giữa thiên nhiên xanh mát",
+        "url": "https://baovinhlong.com.vn/du-lich/du-lich-gia-dinh-cu-lao-2024",
+        "author_or_institution": "Báo Vĩnh Long",
+        "target_notebook": "v-nh-long-v-nh-long-b-n-tre-tr",
+        "tier": "TIER_2_SCHOLARLY",
+        "authority_weight": 0.9
+      }
+    ],
+    "curated_stops": [
+      {
+        "id": "tham-quan-vuon-trai-cay",
+        "time": "08:00 - 09:30",
+        "note": "Cả gia đình dạo vườn cây ăn trái, các bé tự tay hái trái chín ngọt mát"
+      },
+      {
+        "id": "cau-ca-miet-vuon",
+        "time": "09:45 - 11:30",
+        "note": "Trải nghiệm câu cá giải trí dưới bóng râm vườn nhãn An Bình"
+      },
+      {
+        "id": "banh-xeo-cu-lao",
+        "time": "11:45 - 13:00",
+        "note": "Bữa trưa ấm cúng với bánh xèo tép trấu giòn tan cuốn rau xanh"
+      },
+      {
+        "id": "lam-banh-dan-gian",
+        "time": "13:30 - 15:00",
+        "note": "Cả nhà cùng học xay bột cối đá nắn bánh lá mơ dẻo thơm"
+      },
+      {
+        "id": "khu-du-lich-vinh-sang",
+        "time": "15:15 - 17:00",
+        "note": "Tham gia trò chơi dân gian sông nước, đạp vịt và dạo cầu khỉ miệt vườn"
+      }
+    ],
+    "verifiedAt": "2026-09-13T18:30:00+07:00",
+    "verifiedSource": "NotebookLM Deep Terroir Research - Phase 7"
+  },
+  "mien-tay-3-ngay": {
+    "title": "Vòng quanh 3 khu vực trong 3 ngày",
+    "duration": "3 ngày",
+    "area": "lien-vung",
+    "areas": [
+      "lien-vung",
+      "vinh-long",
+      "ben-tre",
+      "tra-vinh"
+    ],
+    "best_departure_time": "06:30 sáng Ngày 1 xuất phát từ TP Vĩnh Long",
+    "waterway_transit": "Tuyến vành đai liên hoàn: Phà An Bình qua cù lao sông Tiền, phà Đình Khao sang Bến Tre, cầu Cổ Chiên sang Trà Vinh",
+    "cultural_narrative": "Đại hành trình liên kết trọn vẹn ba không gian văn hóa đặc sắc vùng châu thổ Cửu Long. Từ những vườn cây ăn trái trĩu quả cù lao An Bình, lữ khách vượt dòng sông Tiền sang xứ sở rợp bóng dừa Bến Tre học làm kẹo Mỏ Cày, rồi xuôi cầu Cổ Chiên về Trà Vinh chiêm ngưỡng quần thể chùa Khmer cổ kính soi bóng bên mặt gương Ao Bà Om thanh tịnh.",
+    "budget_estimate": "2.100.000 – 2.800.000 đ/người (gồm xe ô tô đưa đón, 2 đêm khách sạn/homestay, các bữa ăn đặc sản và vé tham quan)",
+    "summary": "Hành trình 3 ngày trọn vẹn 3 vùng đất: Ngày 1 miệt vườn cù lao An Bình chèo xuồng ăn cá tai tượng, Ngày 2 xứ dừa Bến Tre thăm Cồn Phụng và lò kẹo dừa Mỏ Cày, Ngày 3 văn hóa Khmer Trà Vinh viếng Chùa Hang, Ao Bà Om và thưởng thức bún nước lèo.",
+    "aeo_schema_type": "TouristTrip",
+    "source_citations": [
+      {
+        "source_id": "SRC-TIER1-VL-025",
+        "title": "Đề án liên kết xúc tiến du lịch 3 tỉnh Vĩnh Long - Bến Tre - Trà Vinh",
+        "url": "https://vinhlong.gov.vn/du-lich/lien-ket-3-tinh",
+        "author_or_institution": "UBND tỉnh Vĩnh Long",
+        "target_notebook": "ch-nh-s-ch-ph-p-lu-t-v-n-b-n-q",
+        "tier": "TIER_1_GOVERNMENT",
+        "authority_weight": 1.0
+      },
+      {
+        "source_id": "SRC-TIER2-ND-005",
+        "title": "Hành trình tam giác sông Tiền - sông Hậu: Mạch sống trù phú vùng đồng bằng",
+        "url": "https://nhandan.vn/du-lich/tam-giac-song-tien-song-hau-2024",
+        "author_or_institution": "Báo Nhân Dân",
+        "target_notebook": "mekong-360-t-p-2",
+        "tier": "TIER_2_SCHOLARLY",
+        "authority_weight": 0.95
+      }
+    ],
+    "curated_stops": [
+      {
+        "id": "cheo-xuong-rach-an-binh",
+        "time": "Ngày 1 – Sáng",
+        "note": "Điểm dừng chân trải nghiệm văn hóa và cảnh quan tại cheo-xuong-rach-an-binh"
+      },
+      {
+        "id": "ca-tai-tuong-chien-xu",
+        "time": "Ngày 1 – Trưa",
+        "note": "Cơm trưa miệt vườn"
+      },
+      {
+        "id": "khu-du-lich-vinh-sang",
+        "time": "Ngày 1 – Chiều",
+        "note": "Điểm dừng chân trải nghiệm văn hóa và cảnh quan tại khu-du-lich-vinh-sang"
+      },
+      {
+        "id": "con-phung-con-ong-dao-dua",
+        "time": "Ngày 2 – Sáng",
+        "note": "Điểm dừng chân trải nghiệm văn hóa và cảnh quan tại con-phung-con-ong-dao-dua"
+      },
+      {
+        "id": "lam-keo-dua-mo-cay",
+        "time": "Ngày 2 – Chiều",
+        "note": "Điểm dừng chân trải nghiệm văn hóa và cảnh quan tại lam-keo-dua-mo-cay"
+      },
+      {
+        "id": "tinh-dau-dua",
+        "time": "Ngày 2 – Mua quà",
+        "note": "OCOP 4 sao"
+      },
+      {
+        "id": "ao-ba-om",
+        "time": "Ngày 3 – Sáng",
+        "note": "Điểm dừng chân trải nghiệm văn hóa và cảnh quan tại ao-ba-om"
+      },
+      {
+        "id": "chua-ang",
+        "time": "Ngày 3 – Sáng",
+        "note": "Điểm dừng chân trải nghiệm văn hóa và cảnh quan tại chua-ang"
+      },
+      {
+        "id": "bun-nuoc-leo-tra-vinh",
+        "time": "Ngày 3 – Trưa",
+        "note": "Điểm dừng chân trải nghiệm văn hóa và cảnh quan tại bun-nuoc-leo-tra-vinh"
+      }
+    ],
+    "verifiedAt": "2026-09-13T18:30:00+07:00",
+    "verifiedSource": "NotebookLM Deep Terroir Research - Phase 7"
+  },
+  "dbscl-3-ngay-day-du": {
+    "title": "3 ngày trọn vẹn ĐBSCL",
+    "duration": "3 ngày",
+    "area": "lien-vung",
+    "areas": [
+      "lien-vung",
+      "vinh-long",
+      "ben-tre",
+      "tra-vinh"
+    ],
+    "best_departure_time": "06:30 sáng Ngày 1 đón gió sông Tiền bắt đầu hành trình xuyên tam giác phù sa",
+    "waterway_transit": "Kết hợp tàu thủy Cổ Chiên, phà Đình Khao, đò sang Cồn Phụng và cầu Cổ Chiên vượt dòng sông lớn",
+    "cultural_narrative": "Tuyến tham quan toàn diện dành cho lữ khách phương xa muốn cảm nhận sâu sắc nhất đời sống Nam Bộ. Hành trình là bản hòa tấu phong phú của tự nhiên và nhân văn: chèo xuồng hái trái cây cù lao, đạp xe đường làng, nghỉ đêm homestay vườn dừa, thăm di tích lịch sử Đạo Dừa, nếm bánh canh bột xắt, viếng chùa cổ Khmer và thưởng thức tô bún nước lèo trứ danh.",
+    "budget_estimate": "2.200.000 – 2.900.000 đ/người (trọn gói xe du lịch, 2 đêm khách sạn/homestay, hướng dẫn viên và trọn gói trải nghiệm)",
+    "summary": "Hành trình 3 ngày trải nghiệm trọn vẹn châu thổ Cửu Long: Ngày 1 Vĩnh Long chèo xuồng An Bình ngủ homestay, Ngày 2 Bến Tre thăm Cồn Phụng ăn bánh canh làm kẹo dừa Mỏ Cày, Ngày 3 Trà Vinh viếng Chùa Âng, Ao Bà Om và thưởng thức bún nước lèo truyền thống.",
+    "aeo_schema_type": "TouristTrip",
+    "source_citations": [
+      {
+        "source_id": "SRC-TIER1-VL-025",
+        "title": "Quy hoạch tuyến du lịch trọng điểm liên tỉnh đồng bằng sông Cửu Long",
+        "url": "https://vinhlong.gov.vn/du-lich/tuyen-du-lich-trong-diem-dbscl",
+        "author_or_institution": "Cục Du lịch Quốc gia Việt Nam",
+        "target_notebook": "mekong-360-t-p-2",
+        "tier": "TIER_1_GOVERNMENT",
+        "authority_weight": 1.0
+      },
+      {
+        "source_id": "SRC-TIER2-THVL-005",
+        "title": "Hồn quê phương Nam: Sức sống trường tồn của văn hóa miệt vườn sông nước",
+        "url": "https://thvl.vn/van-hoa/hon-que-phuong-nam",
+        "author_or_institution": "Đài Phát thanh và Truyền hình Vĩnh Long",
+        "target_notebook": "v-nh-long-v-nh-long-b-n-tre-tr",
+        "tier": "TIER_2_SCHOLARLY",
+        "authority_weight": 0.95
+      }
+    ],
+    "curated_stops": [
+      {
+        "id": "cheo-xuong-ba-la",
+        "time": "Ngày 1 – 08:30 - 10:00",
+        "note": "Chèo xuồng ba lá rạch cù lao An Bình rợp bóng mát mương liếp"
+      },
+      {
+        "id": "ca-tai-tuong-chien-xu",
+        "time": "Ngày 1 – 11:30 - 13:00",
+        "note": "Thưởng thức cá tai tượng chiên xù xòe cánh giòn rụm tại nhà vườn"
+      },
+      {
+        "id": "dap-xe-cu-lao",
+        "time": "Ngày 1 – 14:30 - 16:30",
+        "note": "Đạp xe dạo quanh xóm vườn rợp bóng nhãn và chôm chôm chín đỏ"
+      },
+      {
+        "id": "homestay-bay-thoi",
+        "time": "Ngày 1 – 17:30 - 20:30",
+        "note": "Nghỉ đêm tại homestay Bảy Thời, thưởng thức bữa cơm quê ấm cúng"
+      },
+      {
+        "id": "con-phung-con-ong-dao-dua",
+        "time": "Ngày 2 – 08:30 - 10:30",
+        "note": "Thăm đảo Cồn Phụng ngắm kiến trúc tháp Hòa Bình và đồ thủ công mỹ nghệ"
+      },
+      {
+        "id": "banh-canh-ben-tre",
+        "time": "Ngày 2 – 11:30 - 12:45",
+        "note": "Bữa trưa với bánh canh bột xắt vịt xiêm nước cốt dừa béo thơm"
+      },
+      {
+        "id": "lam-keo-dua-mo-cay",
+        "time": "Ngày 2 – 14:00 - 15:30",
+        "note": "Trải nghiệm kỹ thuật ngào và gói kẹo dừa thủ công tại Mỏ Cày"
+      },
+      {
+        "id": "ao-ba-om",
+        "time": "Ngày 3 – 08:30 - 10:00",
+        "note": "Tản bộ dưới bóng râm hàng sao dầu trăm tuổi quanh danh lam thắng cảnh Ao Bà Om"
+      },
+      {
+        "id": "tham-chua-khmer",
+        "time": "Ngày 3 – 10:15 - 11:30",
+        "note": "Viếng Chùa Hang Kompong Chray với kiến trúc cổng hang độc đáo"
+      },
+      {
+        "id": "bun-nuoc-leo-tra-vinh",
+        "time": "Ngày 3 – 12:00 - 13:15",
+        "note": "Thưởng thức tô bún nước lèo đậm đà cá lóc đồng rau ghém bắp chuối"
+      },
+      {
+        "id": "banh-tet-la-cam",
+        "time": "Ngày 3 – 13:30 - 14:30",
+        "note": "Thưởng thức bánh tét lá cẩm thơm dẻo và mua đặc sản làm quà"
+      }
+    ],
+    "verifiedAt": "2026-09-13T18:30:00+07:00",
+    "verifiedSource": "NotebookLM Deep Terroir Research - Phase 7"
+  },
+  "vinh-long-ben-tre-2-ngay": {
+    "title": "Vĩnh Long + Bến Tre 2 ngày",
+    "duration": "2 ngày",
+    "area": "lien-vung",
+    "areas": [
+      "lien-vung",
+      "vinh-long",
+      "ben-tre"
+    ],
+    "best_departure_time": "07:00 sáng Ngày 1 xuất phát từ bến tàu du lịch Vĩnh Long",
+    "waterway_transit": "Tàu thủy du lịch sông Cổ Chiên, phà Đình Khao kết nối QL57 sang Chợ Lách và phà Rạch Miễu cũ",
+    "cultural_narrative": "Sự kết hợp hoàn hảo giữa vương quốc trái cây cù lao sông Tiền và xứ sở rợp bóng dừa Bến Tre. Ngày thứ nhất du khách trải nghiệm không gian thiên nhiên miệt vườn xanh mát, chèo xuồng, ăn cá tai tượng và nghe đờn ca tài tử; ngày thứ hai sang xứ dừa chiêm bái di tích Đạo Dừa Cồn Phụng, ăn bánh xèo tôm nhảy và mua kẹo dừa gia truyền.",
+    "budget_estimate": "1.700.000 – 2.300.000 đ/người (gồm tàu du lịch, phà qua sông, homestay sinh thái, 4 bữa ăn chính và vé tham quan)",
+    "summary": "Combo sông nước 2 ngày hoàn hảo: Ngày 1 chèo xuồng An Bình hái trái cây vườn nghe đờn ca tài tử Vĩnh Long, Ngày 2 vượt phà Đình Khao sang xứ dừa Bến Tre thăm Cồn Phụng ăn bánh xèo tôm nhảy và tự tay gói kẹo dừa Mỏ Cày.",
+    "aeo_schema_type": "TouristTrip",
+    "source_citations": [
+      {
+        "source_id": "SRC-TIER1-VL-025",
+        "title": "Tuyến liên kết du lịch sông nước miệt vườn Vĩnh Long - Bến Tre",
+        "url": "https://vinhlong.gov.vn/du-lich/tuyen-vinh-long-ben-tre",
+        "author_or_institution": "Sở Văn hóa, Thể thao và Du lịch tỉnh Vĩnh Long & Bến Tre",
+        "target_notebook": "mekong-360-t-p-2",
+        "tier": "TIER_1_GOVERNMENT",
+        "authority_weight": 1.0
+      },
+      {
+        "source_id": "SRC-TIER2-DK-003",
+        "title": "Du lịch xanh liên tỉnh: Kết nối cù lao sông Tiền với vườn dừa Bến Tre",
+        "url": "https://baodongkhoi.vn/du-lich/du-lich-xanh-lien-tinh-2024",
+        "author_or_institution": "Báo Đồng Khởi",
+        "target_notebook": "mekong-360-t-p-2",
+        "tier": "TIER_2_SCHOLARLY",
+        "authority_weight": 0.9
+      }
+    ],
+    "curated_stops": [
+      {
+        "id": "cheo-xuong-ba-la",
+        "time": "Ngày 1 – 08:30 - 10:00",
+        "note": "Chèo xuồng ba lá len lỏi dưới tán thủy liễu rạch An Bình"
+      },
+      {
+        "id": "ca-tai-tuong-chien-xu",
+        "time": "Ngày 1 – 11:30 - 13:00",
+        "note": "Thưởng thức cá tai tượng chiên xù giòn rụm cuốn bánh tráng cù lao Mây"
+      },
+      {
+        "id": "tham-quan-vuon-trai-cay",
+        "time": "Ngày 1 – 14:00 - 16:00",
+        "note": "Dạo vườn chôm chôm, nhãn tiêu tự tay hái và ăn trái ngọt tại vườn"
+      },
+      {
+        "id": "nghe-don-ca-tai-tu",
+        "time": "Ngày 1 – 19:30 - 21:00",
+        "note": "Thưởng thức đờn ca tài tử Nam Bộ tại homestay bên ánh đèn măng-sông"
+      },
+      {
+        "id": "con-phung-con-ong-dao-dua",
+        "time": "Ngày 2 – 08:30 - 11:00",
+        "note": "Vượt sông sang đảo Cồn Phụng chiêm ngưỡng kiến trúc Đạo Dừa độc đáo"
+      },
+      {
+        "id": "banh-xeo-mien-tay",
+        "time": "Ngày 2 – 11:30 - 13:00",
+        "note": "Thưởng thức bánh xèo tôm đất củ hũ dừa giòn tan gói rau rừng"
+      },
+      {
+        "id": "dan-la-dua",
+        "time": "Ngày 2 – 14:00 - 15:30",
+        "note": "Trải nghiệm đan mũ nón chim muông bằng cọng lá dừa nước dẻo dai"
+      },
+      {
+        "id": "keo-dua-mo-cay-dish",
+        "time": "Ngày 2 – 16:00 - 17:00",
+        "note": "Thưởng thức kẹo dừa Mỏ Cày vừa ra lò dẻo quánh thơm nồng mùi sữa dừa"
+      }
+    ],
+    "verifiedAt": "2026-09-13T18:30:00+07:00",
+    "verifiedSource": "NotebookLM Deep Terroir Research - Phase 7"
+  },
+  "ba-lo-budget-3-ngay": {
+    "title": "Ba lô tiết kiệm 3 ngày",
+    "duration": "3 ngày",
+    "area": "lien-vung",
+    "areas": [
+      "lien-vung",
+      "vinh-long",
+      "ben-tre",
+      "tra-vinh"
+    ],
+    "best_departure_time": "06:30 sáng Ngày 1 bắt xe buýt liên tỉnh tại bến xe liên tỉnh phía Tây TP.HCM",
+    "waterway_transit": "Sử dụng phà Đình Khao, phà An Bình, xe buýt địa phương QL53, QL57 và xe đạp thuê tại homestay",
+    "cultural_narrative": "Cung đường dành riêng cho dân phượt ba lô và du khách trẻ ưa khám phá với chi phí tối ưu dưới 1,5 triệu đồng. Di chuyển bằng xe buýt và phà qua sông, ăn cơm tấm bình dân, ở homestay cộng đồng ấm cúng, đạp xe đường đan cù lao rợp bóng cây và thưởng thức tô bún nước lèo Trà Vinh trứ danh mà vẫn cảm nhận trọn vẹn vẻ đẹp mộc mạc của đất phương Nam.",
+    "budget_estimate": "1.200.000 – 1.500.000 đ/người (tối ưu chi phí bằng phương tiện công cộng, homestay cộng đồng và ẩm thực chợ truyền thống)",
+    "summary": "3 ngày phượt ba lô tiết kiệm khám phá tam giác phù sa: đi phà vượt sông Cổ Chiên, đạp xe đường đan cù lao An Bình, ăn cơm tấm bình dân, nghỉ homestay miệt vườn, dạo phố Bến Tre và viếng Chùa Âng Trà Vinh dưới 1,5 triệu đồng.",
+    "aeo_schema_type": "TouristTrip",
+    "source_citations": [
+      {
+        "source_id": "SRC-TIER1-VL-028",
+        "title": "Cẩm nang du lịch xanh và phương tiện giao thông công cộng tỉnh Vĩnh Long",
+        "url": "https://vinhlong.gov.vn/du-lich/cam-nang-xe-buyt-pha",
+        "author_or_institution": "Sở Giao thông Vận tải tỉnh Vĩnh Long",
+        "target_notebook": "ch-nh-s-ch-ph-p-lu-t-v-n-b-n-q",
+        "tier": "TIER_1_GOVERNMENT",
+        "authority_weight": 1.0
+      },
+      {
+        "source_id": "SRC-TIER2-TV-006",
+        "title": "Kinh nghiệm du lịch bụi Trà Vinh - Vĩnh Long - Bến Tre bằng phương tiện công cộng",
+        "url": "https://baotravinh.vn/du-lich/du-lich-bui-dbscl-2024",
+        "author_or_institution": "Báo Trà Vinh",
+        "target_notebook": "mekong-360-t-p-2",
+        "tier": "TIER_2_SCHOLARLY",
+        "authority_weight": 0.9
+      }
+    ],
+    "curated_stops": [
+      {
+        "id": "vuot-song-co-chien",
+        "time": "07:30 - 08:15",
+        "note": "Vượt sông Cổ Chiên bằng phà giá rẻ, ngắm cảnh sông nước mênh mông sáng sớm"
+      },
+      {
+        "id": "com-tam-suon-bi-cha",
+        "time": "08:30 - 09:15",
+        "note": "Ăn sáng đĩa cơm tấm sườn nướng nóng hổi tại quán cóc bình dân"
+      },
+      {
+        "id": "dap-xe-cu-lao",
+        "time": "09:30 - 12:00",
+        "note": "Thuê xe đạp giá rẻ dạo quanh các nẻo đường đan rợp bóng cây cù lao An Bình"
+      },
+      {
+        "id": "homestay-co-chin-an-binh",
+        "time": "12:30 - 15:30",
+        "note": "Nghỉ trưa và gửi hành lý tại homestay Cô Chín mộc mạc chân chất"
+      },
+      {
+        "id": "banh-canh-ben-tre",
+        "time": "Ngày 2 – 08:30 - 09:30",
+        "note": "Đi xe buýt liên tỉnh sang Bến Tre thưởng thức tô bánh canh bột xắt bình dân"
+      },
+      {
+        "id": "goi-cuon-tom-thit",
+        "time": "Ngày 2 – 11:30 - 12:30",
+        "note": "Bữa trưa thanh đạm với món gỏi cuốn tôm thịt chấm tương ngọt béo bùi"
+      },
+      {
+        "id": "dan-la-dua",
+        "time": "Ngày 2 – 14:00 - 16:00",
+        "note": "Học người dân địa phương đan mũ nón và cào cào bằng lá dừa nước miễn phí"
+      },
+      {
+        "id": "homestay-dua-ben-tre",
+        "time": "Ngày 2 – 17:30 - 20:30",
+        "note": "Nghỉ đêm homestay giá rẻ giữa vườn dừa, nghe ếch nhái râm ran đồng quê"
+      },
+      {
+        "id": "ao-ba-om",
+        "time": "Ngày 3 – 08:30 - 10:30",
+        "note": "Bắt xe buýt qua cầu Cổ Chiên sang Trà Vinh tản bộ ngắm rễ cây cổ thụ Ao Bà Om"
+      },
+      {
+        "id": "tham-chua-khmer",
+        "time": "Ngày 3 – 11:00 - 12:30",
+        "note": "Viếng chùa cổ Khmer uy nghiêm thanh tịnh trước khi đón xe buýt về lại bến"
+      }
+    ],
+    "verifiedAt": "2026-09-13T18:30:00+07:00",
+    "verifiedSource": "NotebookLM Deep Terroir Research - Phase 7"
+  },
+  "ben-tre-tong-tai-romantic-2day-001": {
+    "title": "Bến Tre 2N1Đ – Tổng tài đưa nữ chính về Vĩnh Long",
+    "duration": "2 ngày 1 đêm",
+    "area": "ben-tre",
+    "areas": [
+      "ben-tre",
+      "vinh-long"
+    ],
+    "best_departure_time": "07:30 sáng Thứ Bảy từ TP.HCM bằng xe riêng qua cao tốc Trung Lương",
+    "waterway_transit": "Du thuyền riêng ngắm hoàng hôn sông Tiền, xuồng ba lá lãng mạn Cồn Phụng và phà Đình Khao sang đất Vĩnh Long",
+    "cultural_narrative": "Hành trình lãng mạn theo phong cách điện ảnh dành cho cặp đôi muốn tìm kiếm trải nghiệm khác biệt. Từ khu nghỉ dưỡng resort 5 sao ẩn mình giữa rặng dừa xanh ngát, cùng dạo bước chợ đêm Bến Tre, thưởng thức kẹo dừa Mỏ Cày vừa ra lò đến hành trình du thuyền lướt sóng sông Cổ Chiên đưa nhau về xứ sở miệt vườn An Bình ngập tràn sắc hoa và quả ngọt.",
+    "budget_estimate": "2.500.000 – 3.800.000 đ/người (gồm resort 4-5 sao cao cấp, du thuyền riêng, bữa tối nến hoa bờ sông và xe đưa đón riêng)",
+    "summary": "Kỳ nghỉ 2 ngày 1 đêm đậm chất lãng mạn: nghỉ dưỡng resort Forever Green sang trọng giữa rặng dừa, du thuyền riêng lướt sóng sông Tiền, thưởng thức kẹo dừa Mỏ Cày, dạo chợ Bến Tre và vượt sông Cổ Chiên về xứ miệt vườn An Bình.",
+    "aeo_schema_type": "TouristTrip",
+    "source_citations": [
+      {
+        "source_id": "SRC-TIER1-BT-001",
+        "title": "Đề án phát triển sản phẩm du lịch nghỉ dưỡng cao cấp ven sông Bến Tre",
+        "url": "https://dulichbentre.gov.vn/du-lich-nghi-duong-cao-cap",
+        "author_or_institution": "Sở Văn hóa, Thể thao và Du lịch Bến Tre",
+        "target_notebook": "mekong-360-t-p-2",
+        "tier": "TIER_1_GOVERNMENT",
+        "authority_weight": 1.0
+      },
+      {
+        "source_id": "SRC-TIER2-DK-003",
+        "title": "Vẻ đẹp lãng mạn xứ dừa: Trải nghiệm du thuyền ngắm hoàng hôn trên sông Hàm Luông",
+        "url": "https://baodongkhoi.vn/du-lich/hoang-hon-song-ham-luong-2024",
+        "author_or_institution": "Báo Đồng Khởi",
+        "target_notebook": "mekong-360-t-p-2",
+        "tier": "TIER_2_SCHOLARLY",
+        "authority_weight": 0.9
+      }
+    ],
+    "curated_stops": [
+      {
+        "id": "placeholder-ben-tre-tong-tai-romantic-2day-001-1",
+        "time": "Ngày 1 – 08:00 - 09:30",
+        "note": "Xe riêng sang trọng lăn bánh qua cầu Rạch Miễu đón lữ khách về với xứ dừa"
+      },
+      {
+        "id": "con-phung-con-ong-dao-dua",
+        "time": "Ngày 1 – 10:00 - 12:00",
+        "note": "Du thuyền riêng cập bến đảo Cồn Phụng chiêm ngưỡng kiến trúc Đạo Dừa độc đáo"
+      },
+      {
+        "id": "cho-ben-tre",
+        "time": "Ngày 1 – 12:30 - 14:00",
+        "note": "Dạo phố cổ Bến Tre thưởng thức bữa trưa cơm dừa tép rang đậm đà phong vị"
+      },
+      {
+        "id": "keo-dua-mo-cay-dish",
+        "time": "Ngày 1 – 14:30 - 16:00",
+        "note": "Thưởng thức kẹo dừa Mỏ Cày dẻo quánh mạch nha vừa được cắt trên bàn gỗ"
+      },
+      {
+        "id": "forever-green-resort",
+        "time": "Ngày 1 – 16:30 - 20:30",
+        "note": "Nghỉ dưỡng villa sinh thái Forever Green, dùng bữa tối lãng mạn bên ánh nến"
+      },
+      {
+        "id": "placeholder-ben-tre-tong-tai-romantic-2day-001-6",
+        "time": "Ngày 2 – 06:30 - 07:30",
+        "note": "Đón bình minh tinh khôi rạng ngời giữa không gian vườn dừa yên tĩnh"
+      },
+      {
+        "id": "placeholder-ben-tre-tong-tai-romantic-2day-001-7",
+        "time": "Ngày 2 – 08:00 - 09:00",
+        "note": "Điểm tâm sáng buffet món ngon miệt vườn tại nhà hàng ven hồ lộng gió"
+      },
+      {
+        "id": "placeholder-ben-tre-tong-tai-romantic-2day-001-8",
+        "time": "Ngày 2 – 09:30 - 10:30",
+        "note": "Dạo bước chụp ảnh lưu niệm bên rặng dừa xanh và hồ bơi sinh thái"
+      },
+      {
+        "id": "placeholder-ben-tre-tong-tai-romantic-2day-001-9",
+        "time": "Ngày 2 – 11:00 - 12:00",
+        "note": "Thưởng thức lẩu tôm càng sông nấu chua ngọt thanh mát trước khi trả phòng"
+      },
+      {
+        "id": "lang-hoa-kieng-cai-mon-cho-lach",
+        "time": "Ngày 2 – 13:00 - 14:30",
+        "note": "Ghé vương quốc hoa kiểng Cái Mơn Chợ Lách ngắm bonsai và cây giống trứ danh"
+      },
+      {
+        "id": "tham-lang-hoa-cho-lach",
+        "time": "Ngày 2 – 14:45 - 16:00",
+        "note": "Trò chuyện cùng nghệ nhân ghép cành cây giống và mua chậu kiểng làm quà"
+      },
+      {
+        "id": "placeholder-ben-tre-tong-tai-romantic-2day-001-12",
+        "time": "Ngày 2 – 16:30 - 17:30",
+        "note": "Vượt phà Đình Khao sang đất Vĩnh Long ngắm hoàng hôn buông trên sông Cổ Chiên"
+      },
+      {
+        "id": "placeholder-ben-tre-tong-tai-romantic-2day-001-13",
+        "time": "Ngày 2 – 17:45 - 18:30",
+        "note": "Kết thúc hành trình lãng mạn ngọt ngào bên bờ sông Tiền thơ mộng"
+      }
+    ],
+    "verifiedAt": "2026-09-13T18:30:00+07:00",
+    "verifiedSource": "NotebookLM Deep Terroir Research - Phase 7"
+  },
+  "tour-p04": {
+    "title": "Tuyến 3N2Đ: Tam giác từ sông ra biển",
+    "duration": "3 ngày 2 đêm",
+    "area": "lien-vung",
+    "areas": [
+      "lien-vung",
+      "vinh-long",
+      "ben-tre",
+      "tra-vinh"
+    ],
+    "best_departure_time": "06:30 sáng Ngày 1 xuất phát từ chợ Bến Tre",
+    "waterway_transit": "Lộ trình giao thông huyết mạch kết nối QL60, cầu Cổ Chiên, QL53 và các bến cảng du lịch duyên hải Ba Động",
+    "cultural_narrative": "Tuyến du lịch chiến lược kết nối ba khu chợ trung tâm biểu tượng của vùng đồng bằng sông Cửu Long: chợ Bến Tre rực rỡ sắc màu xứ dừa, chợ Vĩnh Long sầm uất trên bến dưới thuyền bên ngã ba sông Tiền, và chợ Trà Vinh đậm đà bản sắc giao thoa Kinh - Khmer - Hoa. Hành trình dẫn dắt du khách đi từ chiều sâu miệt vườn phù sa ra đến bờ biển Đông lộng gió Ba Động.",
+    "budget_estimate": "2.300.000 – 3.200.000 đ/người (xe ô tô 3 ngày, 2 đêm khách sạn trung tâm thành phố và trải nghiệm ẩm thực chợ)",
+    "summary": "Hành trình chiến lược 3 ngày 2 đêm khám phá tam giác từ sông ra biển: tham quan chợ đầu mối Bến Tre xứ dừa, chợ trung tâm Vĩnh Long bên bờ sông Cổ Chiên và chợ Trà Vinh trù phú hải sản biển Đông.",
+    "aeo_schema_type": "TouristTrip",
+    "source_citations": [
+      {
+        "source_id": "SRC-TIER1-VL-025",
+        "title": "Chiến lược phát triển hành lang du lịch từ sông ra biển vùng duyên hải phía Đông ĐBSCL",
+        "url": "https://vinhlong.gov.vn/quy-hoach/hanh-lang-song-ra-bien",
+        "author_or_institution": "Bộ Văn hóa, Thể thao và Du lịch",
+        "target_notebook": "ch-nh-s-ch-ph-p-lu-t-v-n-b-n-q",
+        "tier": "TIER_1_GOVERNMENT",
+        "authority_weight": 1.0
+      },
+      {
+        "source_id": "SRC-TIER2-ND-005",
+        "title": "Tam giác kinh tế du lịch Vĩnh Long - Bến Tre - Trà Vinh: Khơi dậy tiềm năng sông biển",
+        "url": "https://nhandan.vn/kinh-te/tam-giac-kinh-te-du-lich-dbscl-2024",
+        "author_or_institution": "Báo Nhân Dân",
+        "target_notebook": "mekong-360-t-p-2",
+        "tier": "TIER_2_SCHOLARLY",
+        "authority_weight": 0.95
+      }
+    ],
+    "curated_stops": [
+      {
+        "id": "cho-ben-tre",
+        "time": "08:00",
+        "note": "Chợ Bến Tre"
+      },
+      {
+        "id": "cho-vinh-long",
+        "time": "10:00",
+        "note": "Chợ Vĩnh Long"
+      },
+      {
+        "id": "cho-tra-vinh-cho-trung-tam-tra-vinh",
+        "time": "12:00",
+        "note": "Chợ Trà Vinh (Chợ trung tâm)"
+      }
+    ],
+    "verifiedAt": "2026-09-13T18:30:00+07:00",
+    "verifiedSource": "NotebookLM Deep Terroir Research - Phase 7"
+  },
+  "tour-p01": {
+    "title": "Tuyến 1 ngày: Xứ Dừa - Cồn Phụng",
+    "duration": "1 ngày",
+    "area": "lien-vung",
+    "areas": [
+      "lien-vung",
+      "ben-tre"
+    ],
+    "best_departure_time": "07:30 sáng từ bến tàu du lịch Hùng Vương TP Bến Tre",
+    "waterway_transit": "Tàu du lịch vượt sông Tiền sang Cồn Phụng, đi xe ngựa trên đường làng và chèo xuồng rạch dừa nước",
+    "cultural_narrative": "Tuyến du lịch hoàn chỉnh kết nối các điểm đến biểu tượng xứ dừa Bến Tre. Du khách chiêm bái ngôi đình Bình Phụng cổ kính, thưởng thức kẹo dừa nóng hổi vừa ra lò, lắng nghe đờn ca tài tử Nam Bộ ngân nga bên bờ sông và trải nghiệm các trò chơi dân gian rộn rã tiếng cười tại khu du lịch Lan Vương.",
+    "budget_estimate": "650.000 – 900.000 đ/người (gồm tàu thuyền, xe ngựa, vé tham quan di tích, nghe đờn ca tài tử và ăn trưa)",
+    "summary": "1 ngày khám phá trọn vẹn xứ Dừa Cồn Phụng: viếng đình cổ Bình Phụng, trải nghiệm ngào kẹo dừa Mỏ Cày, chiêm bái di tích tâm linh Chùa Âng, nghe đờn ca tài tử Nam Bộ và vui chơi sông nước tại khu du lịch Lan Vương.",
+    "aeo_schema_type": "TouristTrip",
+    "source_citations": [
+      {
+        "source_id": "SRC-TIER1-BT-001",
+        "title": "Bảo tồn giá trị di sản văn hóa và phát triển du lịch bền vững tại Cồn Phụng",
+        "url": "https://dulichbentre.gov.vn/di-san-con-phung",
+        "author_or_institution": "Sở Văn hóa, Thể thao và Du lịch Bến Tre",
+        "target_notebook": "mekong-360-t-p-2",
+        "tier": "TIER_1_GOVERNMENT",
+        "authority_weight": 1.0
+      },
+      {
+        "source_id": "SRC-TIER2-DK-003",
+        "title": "Cồn Phụng - Ốc đảo xanh giữa dòng sông Tiền: Điểm hẹn văn hóa và sinh thái",
+        "url": "https://baodongkhoi.vn/du-lich/con-phung-oc-dao-xanh-2024",
+        "author_or_institution": "Báo Đồng Khởi",
+        "target_notebook": "mekong-360-t-p-2",
+        "tier": "TIER_2_SCHOLARLY",
+        "authority_weight": 0.9
+      }
+    ],
+    "curated_stops": [
+      {
+        "id": "dinh-binh-phung",
+        "time": "08:00",
+        "note": "Đình Bình Phụng"
+      },
+      {
+        "id": "keo-dua-mo-cay-dish",
+        "time": "10:00",
+        "note": "Kẹo dừa Mỏ Cày"
+      },
+      {
+        "id": "chua-ang",
+        "time": "12:00",
+        "note": "Chùa Âng"
+      },
+      {
+        "id": "nghe-don-ca-tai-tu",
+        "time": "14:00",
+        "note": "Nghe đờn ca tài tử"
+      },
+      {
+        "id": "khu-du-lich-lan-vuong",
+        "time": "16:00",
+        "note": "Khu du lịch Lan Vương"
+      }
+    ],
+    "verifiedAt": "2026-09-13T18:30:00+07:00",
+    "verifiedSource": "NotebookLM Deep Terroir Research - Phase 7"
+  },
+  "tour-p02": {
+    "title": "Tuyến 2N1Đ: An Bình - Mang Thít - Chợ Lách",
+    "duration": "2 ngày 1 đêm",
+    "area": "lien-vung",
+    "areas": [
+      "lien-vung",
+      "vinh-long",
+      "ben-tre"
+    ],
+    "best_departure_time": "06:45 sáng Ngày 1 xuất phát từ bến tàu Vĩnh Long",
+    "waterway_transit": "Ghe gỗ du lịch dọc sông Cổ Chiên rẽ vào sông Mang Thít, vượt phà Đình Khao sang QL57 về Cái Mơn Chợ Lách",
+    "cultural_narrative": "Tuyến du lịch di sản và miệt vườn kết nối ba địa danh vang danh sông nước. Du khách khởi đầu tại chợ nổi Vĩnh Long, nghỉ đêm tại homestay Ba Linh bên vườn cây trái An Bình, đi thuyền ngắm nhìn vương quốc gạch gốm đỏ Mang Thít nung lửa đỏ rực và kết thúc tại vương quốc cây giống hoa kiểng Chợ Lách với những chùm chôm chôm chín đỏ au.",
+    "budget_estimate": "1.500.000 – 2.100.000 đ/người (bao gồm ghe du lịch sông Mang Thít, homestay cù lao, 4 bữa ăn miệt vườn và trái cây thưởng thức tại vườn)",
+    "summary": "Hành trình 2 ngày 1 đêm kết nối 3 vùng di sản: ghé chợ Vĩnh Long nhộn nhịp, nghỉ đêm homestay Ba Linh cù lao An Bình, ngắm quần thể tháp lò gốm đỏ ven sông Mang Thít và thưởng thức chôm chôm Cái Mơn trĩu cành.",
+    "aeo_schema_type": "TouristTrip",
+    "source_citations": [
+      {
+        "source_id": "SRC-TIER1-VL-005",
+        "title": "Quy hoạch không gian du lịch Di sản Đương đại Mang Thít kết nối vùng cây giống Chợ Lách",
+        "url": "https://vinhlong.gov.vn/quy-hoach/khong-gian-mang-thit-cho-lach",
+        "author_or_institution": "Sở Xây dựng & Sở VHTTDL tỉnh Vĩnh Long",
+        "target_notebook": "ch-nh-s-ch-ph-p-lu-t-v-n-b-n-q",
+        "tier": "TIER_1_GOVERNMENT",
+        "authority_weight": 1.0
+      },
+      {
+        "source_id": "SRC-TIER2-DK-003",
+        "title": "Cái Mơn - Chợ Lách: Vương quốc cây giống hoa kiểng trăm năm bên dòng Cổ Chiên",
+        "url": "https://baodongkhoi.vn/nong-nghiep/cai-mon-cho-lach-vuong-quoc-hoa-kieng",
+        "author_or_institution": "Báo Đồng Khởi",
+        "target_notebook": "mekong-360-t-p-2",
+        "tier": "TIER_2_SCHOLARLY",
+        "authority_weight": 0.9
+      }
+    ],
+    "curated_stops": [
+      {
+        "id": "cho-vinh-long",
+        "time": "08:00",
+        "note": "Chợ Vĩnh Long"
+      },
+      {
+        "id": "ba-linh-homestay",
+        "time": "10:00",
+        "note": "Ba Linh Homestay"
+      },
+      {
+        "id": "song-mang-thit-vinh-long",
+        "time": "12:00",
+        "note": "Sông Mang Thít"
+      },
+      {
+        "id": "chom-chom-cai-mon",
+        "time": "14:00",
+        "note": "Chôm chôm Cái Mơn"
+      }
+    ],
+    "verifiedAt": "2026-09-13T18:30:00+07:00",
+    "verifiedSource": "NotebookLM Deep Terroir Research - Phase 7"
+  },
+  "tour-p03": {
+    "title": "Tuyến 2N1Đ: Khmer Trà Vinh - Dừa sáp - Ba Động",
+    "duration": "2 ngày 1 đêm",
+    "area": "tra-vinh",
+    "areas": [
+      "tra-vinh"
+    ],
+    "best_departure_time": "07:00 sáng Ngày 1 xuất phát từ trung tâm thành phố Trà Vinh",
+    "waterway_transit": "Đường bộ QL53 kết nối QL54 về huyện Cầu Kè, đường tỉnh 914 xuôi về cửa biển Cung Hầu bãi biển Ba Động",
+    "cultural_narrative": "Hành trình kết nối chiều sâu văn hóa Khmer Nam Bộ với vùng đất thủ phủ dừa sáp Cầu Kè và bờ biển hoang sơ Ba Động. Du khách tản bộ quanh thắng cảnh Ao Bà Om, viếng Chùa Hang với xưởng đục khắc gỗ tài hoa, thưởng thức trái dừa sáp đặc sản tiến vua và đón gió biển mát rượi nơi bãi bồi duyên hải thị xã Duyên Hải.",
+    "budget_estimate": "1.400.000 – 1.950.000 đ/người (gồm xe ô tô du lịch 2 ngày, khách sạn ven biển Ba Động, tiệc hải sản và dừa sáp Cầu Kè)",
+    "summary": "2 ngày 1 đêm khám phá nét duyên Trà Vinh: dạo bước thắng cảnh Ao Bà Om, viếng Chùa Hang Kompong Chray, tìm hiểu hiện vật bảo tàng, thưởng thức đặc sản dừa sáp Cầu Kè và đón gió biển mặn mòi tại bãi tắm Ba Động.",
+    "aeo_schema_type": "TouristTrip",
+    "source_citations": [
+      {
+        "source_id": "SRC-TIER1-TV-001",
+        "title": "Quy hoạch tổng thể phát triển du lịch tỉnh Trà Vinh định hướng ra biển Ba Động",
+        "url": "https://travinh.gov.vn/quy-hoach-du-lich/tuyen-cau-ke-ba-dong",
+        "author_or_institution": "Sở Văn hóa, Thể thao và Du lịch Trà Vinh",
+        "target_notebook": "ch-nh-s-ch-ph-p-lu-t-v-n-b-n-q",
+        "tier": "TIER_1_GOVERNMENT",
+        "authority_weight": 1.0
+      },
+      {
+        "source_id": "SRC-TIER2-TV-001",
+        "title": "Nét độc đáo của biển Ba Động và nguồn gen dừa sáp quý hiếm Cầu Kè",
+        "url": "https://baotravinh.vn/du-lich/bien-ba-dong-dua-sap-cau-ke",
+        "author_or_institution": "Báo Trà Vinh",
+        "target_notebook": "mekong-360-t-p-2",
+        "tier": "TIER_2_SCHOLARLY",
+        "authority_weight": 0.95
+      }
+    ],
+    "curated_stops": [
+      {
+        "id": "ao-ba-om",
+        "time": "08:00",
+        "note": "Ao Bà Om"
+      },
+      {
+        "id": "chua-hang-kompong-chray",
+        "time": "10:00",
+        "note": "Chùa Hang"
+      },
+      {
+        "id": "bao-tang-ben-tre",
+        "time": "12:00",
+        "note": "Bảo tàng Bến Tre"
+      },
+      {
+        "id": "xa-cau-ke",
+        "time": "14:00",
+        "note": "Xã Cầu Kè"
+      },
+      {
+        "id": "bien-ba-dong",
+        "time": "16:00",
+        "note": "Biển Ba Động"
+      }
+    ],
+    "verifiedAt": "2026-09-13T18:30:00+07:00",
+    "verifiedSource": "NotebookLM Deep Terroir Research - Phase 7"
+  },
+  "tour-p05": {
+    "title": "Mùa Ok Om Bok",
+    "duration": "1 ngày",
+    "area": "lien-vung",
+    "areas": [
+      "lien-vung",
+      "tra-vinh"
+    ],
+    "best_departure_time": "07:00 sáng ngày Rằm tháng 10 âm lịch",
+    "waterway_transit": "Đường bộ trung tâm TP Trà Vinh, đi bộ thưởng lãm lễ hội xung quanh thắng cảnh danh lam Ao Bà Om",
+    "cultural_narrative": "Tuyến chuyên đề lễ hội văn hóa độc sắc nhất trong năm của đồng bào Khmer. Du khách trải nghiệm không khí Đại lễ Cúng Trăng Ok Om Bok – Di sản văn hóa phi vật thể quốc gia, xem nghi thức đút cốm dẹp Om Bôk cầu mùa màng bội thu, ngắm hàng nghìn chiếc đèn hoa đăng Lôi Protip lung linh trôi trên mặt nước Ao Bà Om và cổ vũ giải đua ghe Ngo sôi động trên sông Long Bình.",
+    "budget_estimate": "550.000 – 800.000 đ/người (bao gồm mua cốm dẹp cúng trăng, thưởng thức ẩm thực chay hoa sen và vé xem hội hoa đăng)",
+    "summary": "1 ngày trọn vẹn sống trong không gian lễ hội Ok Om Bok: viếng thắng cảnh danh lam Ao Bà Om đêm trăng rằm, tìm hiểu di tích đình An Hội, thưởng thức bữa cơm chay Hoa Sen thanh tịnh và chiêm ngưỡng lễ hội thả hoa đăng rực rỡ sắc màu.",
+    "aeo_schema_type": "SpecialEvent",
+    "source_citations": [
+      {
+        "source_id": "SRC-TIER1-TV-037",
+        "title": "Hồ sơ Di sản văn hóa phi vật thể quốc gia Lễ hội Ok Om Bok của người Khmer Trà Vinh",
+        "url": "http://dsvh.gov.vn/di-san-phi-vat-the-le-hoi-ok-om-bok-tra-vinh-3195",
+        "author_or_institution": "Cục Di sản Văn hóa - Bộ Văn hóa, Thể thao và Du lịch",
+        "target_notebook": "v-nh-long-v-nh-long-b-n-tre-tr",
+        "tier": "TIER_1_GOVERNMENT",
+        "authority_weight": 1.0
+      },
+      {
+        "source_id": "SRC-TIER2-ND-003",
+        "title": "Đại lễ Ok Om Bok Trà Vinh: Tôn vinh nét đẹp văn hóa đoàn kết các dân tộc",
+        "url": "https://nhandan.vn/van-hoa/le-hoi-ok-om-bok-tra-vinh-2024",
+        "author_or_institution": "Báo Nhân Dân",
+        "target_notebook": "mekong-360-t-p-2",
+        "tier": "TIER_2_SCHOLARLY",
+        "authority_weight": 0.95
+      }
+    ],
+    "curated_stops": [
+      {
+        "id": "ao-ba-om",
+        "time": "08:00",
+        "note": "Ao Bà Om"
+      },
+      {
+        "id": "dinh-an-hoi",
+        "time": "10:00",
+        "note": "Đình An Hội"
+      },
+      {
+        "id": "am-thuc-chay-hoa-sen-vinh-long",
+        "time": "12:00",
+        "note": "Ẩm Thực Chay Hoa Sen"
+      },
+      {
+        "id": "bao-tang-ben-tre",
+        "time": "14:00",
+        "note": "Bảo tàng Bến Tre"
+      }
+    ],
+    "verifiedAt": "2026-09-13T18:30:00+07:00",
+    "verifiedSource": "NotebookLM Deep Terroir Research - Phase 7"
+  },
+  "tour-p06": {
+    "title": "Mùa Tết: Chợ Lách - Lăng Ông - An Bình",
+    "duration": "1 ngày",
+    "area": "lien-vung",
+    "areas": [
+      "lien-vung",
+      "vinh-long",
+      "ben-tre"
+    ],
+    "best_departure_time": "06:30 sáng tháng Chạp âm lịch khi chợ hoa kiểng Chợ Lách rực rỡ muôn hồng nghìn tía",
+    "waterway_transit": "Tuyến phà Đình Khao vượt sông Cổ Chiên kết nối QL57 sang vương quốc hoa kiểng Chợ Lách",
+    "cultural_narrative": "Tuyến du lịch mùa vụ Tết cổ truyền phương Nam. Du khách lạc bước giữa hàng triệu chậu hoa mai vàng, cúc mâm xôi rực rỡ tại Chợ Lách, ghé thắp hương cầu an tại Lăng Ông Tiền quân Thống chế Điều bát Nguyễn Văn Tồn và dạo quanh vườn cây trái trĩu cành cù lao An Bình trong làn gió xuân mơn man bờ sông.",
+    "budget_estimate": "500.000 – 750.000 đ/người (gồm vé phà, mua chậu hoa kiểng xuân, viếng lăng cầu lộc và ăn trưa bánh tét)",
+    "summary": "Tuyến du xuân mùa Tết cổ truyền: chiêm ngưỡng vương quốc hoa kiểng Cái Mơn - Chợ Lách khoe sắc rực rỡ, thắp hương cầu an đầu năm tại Lăng Ông Trà Ôn và tận hưởng làn gió xuân trong lành giữa miệt vườn cù lao An Bình.",
+    "aeo_schema_type": "SpecialEvent",
+    "source_citations": [
+      {
+        "source_id": "SRC-TIER1-BT-033",
+        "title": "Hội chợ hoa xuân và làng nghề cây giống hoa kiểng Chợ Lách phục vụ Tết Nguyên đán",
+        "url": "https://snnptnt.bentre.gov.vn/khuyen-nong/cho-hoa-xuan-cho-lach",
+        "author_or_institution": "Sở Nông nghiệp và Phát triển Nông thôn Bến Tre",
+        "target_notebook": "mekong-360-t-p-2",
+        "tier": "TIER_1_GOVERNMENT",
+        "authority_weight": 1.0
+      },
+      {
+        "source_id": "SRC-TIER2-DK-003",
+        "title": "Sắc xuân Chợ Lách: Nghệ nhân làng hoa đưa Tết về muôn nẻo đường đất nước",
+        "url": "https://baodongkhoi.vn/nong-nghiep/sac-xuan-lang-hoa-cho-lach-2024",
+        "author_or_institution": "Báo Đồng Khởi",
+        "target_notebook": "mekong-360-t-p-2",
+        "tier": "TIER_2_SCHOLARLY",
+        "authority_weight": 0.9
+      }
+    ],
+    "curated_stops": [
+      {
+        "id": "placeholder-tour-p06-1",
+        "time": "08:00",
+        "note": "Hoa Tết, lễ đầu năm, vườn/sông nước"
+      }
+    ],
+    "verifiedAt": "2026-09-13T18:30:00+07:00",
+    "verifiedSource": "NotebookLM Deep Terroir Research - Phase 7"
+  },
+  "tour-p08": {
+    "title": "Tour học đường di sản - nghề - Khmer",
+    "duration": "1–2 ngày",
+    "area": "lien-vung",
+    "areas": [
+      "lien-vung",
+      "vinh-long",
+      "ben-tre"
+    ],
+    "best_departure_time": "07:30 sáng Ngày 1 xuất phát từ trường học hoặc trung tâm văn hóa",
+    "waterway_transit": "Xe buýt du lịch kết hợp đi thuyền khảo sát thực địa làng nghề ven sông Mang Thít",
+    "cultural_narrative": "Chương trình dã ngoại giáo dục di sản thực chiến dành cho học sinh, sinh viên. Các em được trực tiếp lắng nghe lịch sử văn hiến tại Văn Thánh Miếu, quan sát cấu trúc hình học vòm lò gạch nung gốm đỏ Mang Thít, tìm hiểu hiện vật lịch sử tại Bảo tàng và chiêm ngưỡng kiến trúc đình làng Nam Bộ cổ kính tại Đình Bình Phụng.",
+    "budget_estimate": "450.000 – 650.000 đ/học sinh (gồm xe đưa đón, giáo cụ học tập, vé tham quan, bữa trưa dinh dưỡng và nước uống)",
+    "summary": "Tour trải nghiệm học đường bổ ích: tìm hiểu truyền thống đạo học tại Văn Thánh Miếu, khám phá di sản vương quốc lò gốm đỏ sông Mang Thít, nghiên cứu hiện vật lịch sử Bảo tàng và tìm hiểu kiến trúc đình làng Bình Phụng cổ truyền.",
+    "aeo_schema_type": "TouristTrip",
+    "source_citations": [
+      {
+        "source_id": "SRC-TIER1-VL-001",
+        "title": "Chương trình giáo dục di sản văn hóa địa phương trong trường học tỉnh Vĩnh Long",
+        "url": "https://vinhlong.gov.vn/giao-duc/giao-duc-di-san-van-hoa",
+        "author_or_institution": "Sở Giáo dục và Đào tạo & Sở VHTTDL tỉnh Vĩnh Long",
+        "target_notebook": "v-nh-long-v-nh-long-b-n-tre-tr",
+        "tier": "TIER_1_GOVERNMENT",
+        "authority_weight": 1.0
+      },
+      {
+        "source_id": "SRC-TIER2-BVL-001",
+        "title": "Đưa di sản vào trường học: Bồi đắp tình yêu quê hương cho thế hệ trẻ đất Vĩnh",
+        "url": "https://baovinhlong.com.vn/giao-duc/dua-di-san-vao-truong-hoc",
+        "author_or_institution": "Báo Vĩnh Long",
+        "target_notebook": "v-nh-long-v-nh-long-b-n-tre-tr",
+        "tier": "TIER_2_SCHOLARLY",
+        "authority_weight": 0.95
+      }
+    ],
+    "curated_stops": [
+      {
+        "id": "le-hoi-van-thanh-mieu",
+        "time": "08:00",
+        "note": "Lễ hội Văn Thánh Miếu"
+      },
+      {
+        "id": "song-mang-thit-vinh-long",
+        "time": "10:00",
+        "note": "Sông Mang Thít"
+      },
+      {
+        "id": "bao-tang-tinh-ben-tre",
+        "time": "12:00",
+        "note": "Bảo tàng Bến Tre"
+      },
+      {
+        "id": "dinh-binh-phung",
+        "time": "14:00",
+        "note": "Đình Bình Phụng"
+      }
+    ],
+    "verifiedAt": "2026-09-13T18:30:00+07:00",
+    "verifiedSource": "NotebookLM Deep Terroir Research - Phase 7"
+  },
+  "tour-p09": {
+    "title": "Phototrip: Gốm đỏ - Ao Bà Om - Ba Động",
+    "duration": "1–2 ngày",
+    "area": "lien-vung",
+    "areas": [
+      "lien-vung",
+      "vinh-long",
+      "tra-vinh"
+    ],
+    "best_departure_time": "05:00 sáng Ngày 1 săn ánh nắng xiên sớm mai rạch Thầy Kay",
+    "waterway_transit": "Xe ô tô bán tải chở trang thiết bị máy ảnh kết hợp thuyền máy nhỏ len lỏi rạch lò gạch Mang Thít",
+    "cultural_narrative": "Hành trình sáng tác nghệ thuật nhiếp ảnh đỉnh cao nối liền ba gam màu tương phản của đất phương Nam: sắc đỏ ấm nồng của vương quốc lò nung gốm Mang Thít, màu xanh rêu phong huyền ảo của rừng sao dầu cổ thụ Ao Bà Om và khoảng trời bao la ngút ngàn gió biển bên cánh đồng điện gió Ba Động.",
+    "budget_estimate": "900.000 – 1.400.000 đ/người (gồm xe di chuyển, thuyền săn ảnh bình minh, ăn uống đặc sản và phòng nghỉ)",
+    "summary": "Phototrip chuyên đề săn ảnh nghệ thuật: bắt trọn khoảnh khắc khói lò gạch gốm đỏ Mang Thít bên sông Thầy Kay, chụp rễ cây cổ thụ ma mị quanh Ao Bà Om và ngắm hoàng hôn rực rỡ trên bãi biển Ba Động duyên hải.",
+    "aeo_schema_type": "TouristTrip",
+    "source_citations": [
+      {
+        "source_id": "SRC-TIER1-VL-005",
+        "title": "Chỉ dẫn sáng tác nhiếp ảnh và nghệ thuật thị giác quần thể Di sản Gạch gốm Mang Thít",
+        "url": "https://vinhlong.gov.vn/van-hoa/sang-tac-nhiep-anh-mang-thit",
+        "author_or_institution": "Hội Văn học Nghệ thuật tỉnh Vĩnh Long",
+        "target_notebook": "ch-nh-s-ch-ph-p-lu-t-v-n-b-n-q",
+        "tier": "TIER_1_GOVERNMENT",
+        "authority_weight": 1.0
+      },
+      {
+        "source_id": "SRC-TIER2-TV-001",
+        "title": "Khoảnh khắc nghệ thuật Trà Vinh: Từ cổ thụ Ao Bà Om đến cánh đồng điện gió Ba Động",
+        "url": "https://baotravinh.vn/van-hoa/khoanh-khac-nghe-thuat-tra-vinh",
+        "author_or_institution": "Báo Trà Vinh",
+        "target_notebook": "mekong-360-t-p-2",
+        "tier": "TIER_2_SCHOLARLY",
+        "authority_weight": 0.95
+      }
+    ],
+    "curated_stops": [
+      {
+        "id": "placeholder-tour-p09-1",
+        "time": "08:00",
+        "note": "Hoàng hôn gốm, cổ thụ Ao Bà Om, bình minh Ba Động"
+      }
+    ],
+    "verifiedAt": "2026-09-13T18:30:00+07:00",
+    "verifiedSource": "NotebookLM Deep Terroir Research - Phase 7"
+  },
+  "tour-p10": {
+    "title": "MICE nhỏ/team building xứ Dừa",
+    "duration": "1 ngày",
+    "area": "ben-tre",
+    "areas": [
+      "ben-tre"
+    ],
+    "best_departure_time": "07:00 sáng xuất phát từ TP.HCM bằng xe du lịch 29-45 chỗ",
+    "waterway_transit": "Xe du lịch theo quốc lộ 60 qua cầu Rạch Miễu, di chuyển nội bộ bằng xuồng chèo và xe đạp trong khu du lịch sinh thái",
+    "cultural_narrative": "Chương trình gắn kết đội ngũ và hội thảo doanh nghiệp giữa thiên nhiên xứ dừa thoáng đãng. Rời xa văn phòng máy lạnh, các thành viên cùng tham gia thi chèo xuồng ba lá tiếp sức, vượt cầu khỉ đồng đội, tìm hiểu kiến trúc cổ truyền tại Đình Long Phụng và thưởng thức tiệc nướng dã ngoại với các món ngon miệt vườn đậm đà phong vị sông nước.",
+    "budget_estimate": "700.000 – 1.050.000 đ/khách (bao gồm xe du lịch khứ hồi, phòng hội nghị tiêu chuẩn, hoạt động team building và tiệc trưa)",
+    "summary": "1 ngày team building và hội thảo doanh nghiệp xứ dừa: sinh hoạt tập thể gắn kết đội ngũ tại khu sinh thái, thăm di tích lịch sử Đình Long Phụng, thưởng thức tiệc trưa ẩm thực dân gian và dạo bước chiêm bái Chùa Lò Gạch thanh tịnh.",
+    "aeo_schema_type": "TouristTrip",
+    "source_citations": [
+      {
+        "source_id": "SRC-TIER1-BT-001",
+        "title": "Chiến lược phát triển du lịch MICE và sự kiện cộng đồng sinh thái tỉnh Bến Tre",
+        "url": "https://dulichbentre.gov.vn/du-lich-mice-ben-tre",
+        "author_or_institution": "Sở Văn hóa, Thể thao và Du lịch Bến Tre",
+        "target_notebook": "mekong-360-t-p-2",
+        "tier": "TIER_1_GOVERNMENT",
+        "authority_weight": 1.0
+      },
+      {
+        "source_id": "SRC-TIER2-DK-003",
+        "title": "Team building miệt vườn: Lựa chọn lý tưởng tái tạo năng lượng cho doanh nghiệp",
+        "url": "https://baodongkhoi.vn/kinh-te/team-building-miet-vuon-2024",
+        "author_or_institution": "Báo Đồng Khởi",
+        "target_notebook": "mekong-360-t-p-2",
+        "tier": "TIER_2_SCHOLARLY",
+        "authority_weight": 0.9
+      }
+    ],
+    "curated_stops": [
+      {
+        "id": "dinh-long-phung",
+        "time": "08:00",
+        "note": "Đình Long Phụng"
+      },
+      {
+        "id": "placeholder-tour-p10-2",
+        "time": "10:00",
+        "note": "workshop"
+      },
+      {
+        "id": "placeholder-tour-p10-3",
+        "time": "12:00",
+        "note": "food"
+      },
+      {
+        "id": "chua-lo-gach",
+        "time": "14:00",
+        "note": "Chùa Lò Gạch"
+      }
+    ],
+    "verifiedAt": "2026-09-13T18:30:00+07:00",
+    "verifiedSource": "NotebookLM Deep Terroir Research - Phase 7"
+  },
+  "tour-p11": {
+    "title": "Du lịch xanh cộng đồng",
+    "duration": "1–2 ngày",
+    "area": "lien-vung",
+    "areas": [
+      "lien-vung",
+      "vinh-long",
+      "tra-vinh"
+    ],
+    "best_departure_time": "07:00 sáng Ngày 1 xuất phát từ bến tàu du lịch Vĩnh Long",
+    "waterway_transit": "Đò ngang qua sông Cổ Chiên, phà Bà Trầm cập đảo Cồn Chim và di chuyển bằng xe đạp nội bộ trên đảo",
+    "cultural_narrative": "Mô hình du lịch nông nghiệp thuận thiên tiêu biểu của vùng đồng bằng châu thổ. Du khách trải nghiệm cuộc sống 'nói không với rác thải nhựa' tại cù lao Cồn Chim, nơi người dân sống chan hòa cùng dòng nước mặn ngọt theo mùa: vụ tôm ôm cây lúa sạch, tự tay xay bột cối đá làm bánh tráng, thưởng thức hải sản nuôi sinh thái và nghỉ ngơi tại những gian nhà lá đón gió biển mát rượi.",
+    "budget_estimate": "1.200.000 – 1.700.000 đ/người (gồm đò sang cồn, xe đạp, homestay cộng đồng thuận thiên, các bữa ăn hữu cơ và quà OCOP)",
+    "summary": "1–2 ngày du lịch xanh cộng đồng thuận thiên: chèo xuồng miệt vườn cù lao An Bình, ghé làng nghề bánh phồng Phú Túc và trải nghiệm nếp sống không rác thải nhựa tại cù lao Cồn Chim thanh bình bên dòng Cổ Chiên.",
+    "aeo_schema_type": "TouristTrip",
+    "source_citations": [
+      {
+        "source_id": "SRC-TIER1-TV-009",
+        "title": "Mô hình du lịch nông nghiệp sinh thái thuận thiên Cồn Chim huyện Châu Thành",
+        "url": "https://travinh.gov.vn/du-lich/mo-hinh-thuan-thien-con-chim",
+        "author_or_institution": "Sở Văn hóa, Thể thao và Du lịch Trà Vinh",
+        "target_notebook": "mekong-360-t-p-2",
+        "tier": "TIER_1_GOVERNMENT",
+        "authority_weight": 1.0
+      },
+      {
+        "source_id": "SRC-TIER2-VASS-005",
+        "title": "Sinh kế thuận thiên và phát triển du lịch cộng đồng bền vững tại cù lao Cồn Chim",
+        "url": "https://vass.gov.vn/nghien-cuu/sinh-ke-thuan-thien-con-chim",
+        "author_or_institution": "Viện Hàn lâm Khoa học Xã hội Việt Nam",
+        "target_notebook": "mekong-360-t-p-2",
+        "tier": "TIER_2_SCHOLARLY",
+        "authority_weight": 0.95
+      }
+    ],
+    "curated_stops": [
+      {
+        "id": "cu-lao-an-binh",
+        "time": "08:00",
+        "note": "Cù lao An Bình"
+      },
+      {
+        "id": "p-phu-tuc",
+        "time": "10:00",
+        "note": "Phường Phú Túc"
+      },
+      {
+        "id": "con-chim",
+        "time": "12:00",
+        "note": "Cồn Chim"
+      }
+    ],
+    "verifiedAt": "2026-09-13T18:30:00+07:00",
+    "verifiedSource": "NotebookLM Deep Terroir Research - Phase 7"
+  },
+  "tour-p12": {
+    "title": "Tuyến tâm linh - lễ hội Nam Bộ",
+    "duration": "1 ngày",
+    "area": "lien-vung",
+    "areas": [
+      "lien-vung",
+      "vinh-long"
+    ],
+    "best_departure_time": "06:30 sáng bắt đầu hành trình chiêm bái các ngôi chùa cổ đầu xuân",
+    "waterway_transit": "Tuyến đường bộ kết nối nội ô thành phố Vĩnh Long với các đình chùa ven sông Tiền và sông Hậu",
+    "cultural_narrative": "Hành trình hành hương chiêm bái và tìm hiểu tín ngưỡng dân gian Nam Bộ. Du khách kính cẩn thắp nén tâm hương tại Thất Phủ Miếu (Chùa Ông) với nghệ thuật chạm khắc gốm men xanh tinh xảo, cảm nhận không khí trang nghiêm của Lễ hội Kỳ Yên đình làng cầu mưa thuận gió hòa, đón tết Nguyên Tiêu rực rỡ hoa đèn và viếng Chùa Khmer Phù Ly uy nghiêm trầm mặc.",
+    "budget_estimate": "400.000 – 600.000 đ/người (bao gồm hương hoa lễ chùa, bữa trưa cơm chay thanh tịnh và nước uống giải khát)",
+    "summary": "1 ngày chiêm bái tâm linh và lễ hội cổ truyền: viếng Thất Phủ Miếu (Chùa Ông) cổ kính, tìm hiểu nghi thức Lễ hội Kỳ Yên đình làng, cảm nhận không khí tết Nguyên Tiêu rực rỡ và chiêm ngưỡng Chùa Khmer Phù Ly uy nghiêm bên bờ sông.",
+    "aeo_schema_type": "TouristTrip",
+    "source_citations": [
+      {
+        "source_id": "SRC-TIER1-VL-003",
+        "title": "Di tích Lịch sử Văn hóa Thất Phủ Miếu (Chùa Ông Vĩnh Long) - Kiến trúc bang hội Hoa Nam",
+        "url": "https://vinhlong.gov.vn/du-khach/di-tich-lich-su/that-phu-mieu",
+        "author_or_institution": "UBND tỉnh Vĩnh Long - Cổng Thông tin Điện tử",
+        "target_notebook": "v-nh-long-v-nh-long-b-n-tre-tr",
+        "tier": "TIER_1_GOVERNMENT",
+        "authority_weight": 1.0
+      },
+      {
+        "source_id": "SRC-TIER2-VASS-001",
+        "title": "Tín ngưỡng dân gian và lễ hội đình miếu Nam Bộ: Bản sắc dung hợp văn hóa Việt - Hoa - Khmer",
+        "url": "https://vass.gov.vn/nghien-cuu/tin-nguong-dinh-mieu-nam-bo",
+        "author_or_institution": "Viện Hàn lâm Khoa học Xã hội Việt Nam",
+        "target_notebook": "mekong-360-t-p-2",
+        "tier": "TIER_2_SCHOLARLY",
+        "authority_weight": 0.95
+      }
+    ],
+    "curated_stops": [
+      {
+        "id": "chua-ong",
+        "time": "08:00",
+        "note": "Chùa Ông"
+      },
+      {
+        "id": "le-hoi-ky-yen",
+        "time": "10:00",
+        "note": "Lễ hội Kỳ Yên"
+      },
+      {
+        "id": "le-hoi-nguyen-tieu",
+        "time": "12:00",
+        "note": "Lễ hội Nguyên Tiêu"
+      },
+      {
+        "id": "chua-khmer-phu-ly",
+        "time": "14:00",
+        "note": "Chùa Khmer Phù Ly"
+      }
+    ],
+    "verifiedAt": "2026-09-13T18:30:00+07:00",
+    "verifiedSource": "NotebookLM Deep Terroir Research - Phase 7"
+  }
+}
