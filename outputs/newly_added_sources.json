@@ -1,0 +1,570 @@
+[
+  {
+    "source_id": "SRC-TIER1-VL-001",
+    "title": "Hồ sơ Di tích Lịch sử - Văn hóa Văn Thánh Miếu Vĩnh Long và Tụy Văn Lâu",
+    "author_or_institution": "Cục Di sản Văn hóa - Bộ Văn hóa, Thể thao và Du lịch",
+    "url": "http://dsvh.gov.vn/di-tich-lich-su-van-hoa-van-thanh-mieu-vinh-long-3024",
+    "publication_year": 2021,
+    "target_notebook": "v-nh-long-v-nh-long-b-n-tre-tr",
+    "tier": "TIER_1_GOVERNMENT",
+    "category": "ARCHAEOLOGY_HERITAGE",
+    "authority_weight": 1,
+    "extraction_scope": [
+      "van-thanh-mieu",
+      "le-hoi-van-thanh-mieu"
+    ],
+    "summary_digest": "Tài liệu di sản quốc gia công nhận Văn Thánh Miếu Vĩnh Long xây dựng năm 1864 do Đốc học Nguyễn Thông và Kinh lược sứ Phan Thanh Giản khởi xướng; Tụy Văn Lâu hoàn thành năm 1869 là nơi tôn vinh văn hiến và hội tụ sĩ phu Nam Kỳ."
+  },
+  {
+    "source_id": "SRC-TIER1-VL-002",
+    "title": "Quyết định xếp hạng Di tích Lịch sử - Kiến trúc nghệ thuật Chùa Tiên Châu (Tiên Châu Tự)",
+    "author_or_institution": "Sở Văn hóa, Thể thao và Du lịch tỉnh Vĩnh Long",
+    "url": "https://vinhlong.gov.vn/du-khach/di-tich-lich-su/chua-tien-chau",
+    "publication_year": 2022,
+    "target_notebook": "v-nh-long-v-nh-long-b-n-tre-tr",
+    "tier": "TIER_1_GOVERNMENT",
+    "category": "ARCHAEOLOGY_HERITAGE",
+    "authority_weight": 1,
+    "extraction_scope": [
+      "chua-tien-chau-tien-chau-tu"
+    ],
+    "summary_digest": "Hồ sơ khoa học xác định chùa Tiên Châu khởi lập khoảng năm 1750 trên bãi Tiên cù lao An Bình, trùng tu năm Gia Long thứ 3 (1799) và triều Minh Mạng, lưu giữ tượng Phật Di Đà bằng đất sét nung và hệ thống bao lam tứ linh chạm khắc tinh xảo."
+  },
+  {
+    "source_id": "SRC-TIER1-VL-003",
+    "title": "Di tích Lịch sử Văn hóa Thất Phủ Miếu (Chùa Ông Vĩnh Long) - Kiến trúc bang hội Hoa Nam",
+    "author_or_institution": "UBND tỉnh Vĩnh Long - Cổng Thông tin Điện tử",
+    "url": "https://vinhlong.gov.vn/du-khach/di-tich-lich-su/that-phu-mieu",
+    "publication_year": 2023,
+    "target_notebook": "v-nh-long-v-nh-long-b-n-tre-tr",
+    "tier": "TIER_1_GOVERNMENT",
+    "category": "ARCHAEOLOGY_HERITAGE",
+    "authority_weight": 1,
+    "extraction_scope": [
+      "that-phu-mieu-chua-ong-vinh-long",
+      "that-phu-mieu-chua-ong"
+    ],
+    "summary_digest": "Khảo tả chi tiết Thất Phủ Miếu khởi dựng năm 1892 bởi cộng đồng người Hoa thuộc 7 phủ Phúc Châu, Chương Châu, Tuyền Châu, Quảng Châu, Triều Châu, Quỳnh Châu và Ninh Ba; phụng thờ Quan Thánh Đế Quân với hệ thống vì kèo chạm lộng và gốm men xanh đặc trưng."
+  },
+  {
+    "source_id": "SRC-TIER1-VL-004",
+    "title": "Thân thế, sự nghiệp và di sản khẩn hoang Nam Bộ của Thoại Ngọc Hầu Nguyễn Văn Thoại",
+    "author_or_institution": "Viện Lịch sử Quân sự & Hội Khoa học Lịch sử Việt Nam",
+    "url": "https://vass.gov.vn/nghien-cuu-lich-su/thoai-ngoc-hau-va-dau-an-vung-liem-vinh-long",
+    "publication_year": 2021,
+    "target_notebook": "v-nh-long-v-nh-long-b-n-tre-tr",
+    "tier": "TIER_2_SCHOLARLY",
+    "category": "HISTORICAL_FIGURE",
+    "authority_weight": 0.9,
+    "extraction_scope": [
+      "thoai-ngoc-hau",
+      "khu-mo-than-nhan-thoai-ngoc-hau"
+    ],
+    "summary_digest": "Công trình nghiên cứu làm rõ nguồn gốc sinh thành của danh tướng Thoại Ngọc Hầu (1761-1829), quê gốc An Hải (Quảng Nam) nhưng gắn bó mật thiết với cù lao Dài (Vũng Liêm), nơi an táng thân mẫu Nguyễn Thị Tuyết và dưỡng mẫu Trương Thị Nghĩa."
+  },
+  {
+    "source_id": "SRC-TIER2-VL-005",
+    "title": "Khảo cứu thân thế, sự nghiệp và bi kịch lịch sử của Tiến sĩ Phan Thanh Giản",
+    "author_or_institution": "Tạp chí Nghiên cứu Lịch sử - Viện Hàn lâm Khoa học Xã hội Việt Nam",
+    "url": "https://vass.gov.vn/tap-chi-nghien-cuu-lich-su/phan-thanh-gian-con-nguoi-va-thoi-dai",
+    "publication_year": 2022,
+    "target_notebook": "v-nh-long-v-nh-long-b-n-tre-tr",
+    "tier": "TIER_2_SCHOLARLY",
+    "category": "HISTORICAL_FIGURE",
+    "authority_weight": 0.9,
+    "extraction_scope": [
+      "phan-thanh-gian"
+    ],
+    "summary_digest": "Khảo cứu làm rõ Phan Thanh Giản (1796-1867) sinh quán tại làng Bảo Thạnh, huyện Ba Tri (tỉnh Bến Tre), đỗ Tiến sĩ khai khoa Nam Kỳ năm 1826; làm Kinh lược sứ Nam Kỳ, tuẫn tiết tại thành Vĩnh Long năm 1867; được phụng thờ trang trọng tại Văn Thánh Miếu Vĩnh Long."
+  },
+  {
+    "source_id": "SRC-TIER1-VL-006",
+    "title": "Khu lưu niệm Giáo sư, Viện sĩ Trần Đại Nghĩa - Nhà khoa học quân sự kiệt xuất Nam Bộ",
+    "author_or_institution": "Cổng thông tin điện tử huyện Tam Bình - Vĩnh Long",
+    "url": "https://tambinh.vinhlong.gov.vn/di-tich-lich-su/khu-luu-niem-tran-dai-nghia",
+    "publication_year": 2023,
+    "target_notebook": "v-nh-long-v-nh-long-b-n-tre-tr",
+    "tier": "TIER_1_GOVERNMENT",
+    "category": "HISTORICAL_FIGURE",
+    "authority_weight": 1,
+    "extraction_scope": [
+      "tran-dai-nghia",
+      "khu-luu-niem-tran-dai-nghia"
+    ],
+    "summary_digest": "Hồ sơ lưu niệm ghi nhận cuộc đời Phạm Quang Lễ (GS.VS Trần Đại Nghĩa, 1913-1997) tại xã Tường Lộc, Tam Bình; người chế tạo súng Bazooka, SKZ và đạn bay phá bom nổ chậm đóng góp quyết định cho kháng chiến giải phóng dân tộc."
+  },
+  {
+    "source_id": "SRC-TIER1-VL-007",
+    "title": "Khu tưởng niệm Cố Thủ tướng Chính phủ Võ Văn Kiệt - Nhà lãnh đạo đổi mới của đất nước",
+    "author_or_institution": "Sở Văn hóa, Thể thao và Du lịch tỉnh Vĩnh Long",
+    "url": "https://vinhlong.gov.vn/du-khach/di-tich-lich-su/khu-tuong-niem-vo-van-kiet",
+    "publication_year": 2022,
+    "target_notebook": "v-nh-long-v-nh-long-b-n-tre-tr",
+    "tier": "TIER_1_GOVERNMENT",
+    "category": "HISTORICAL_FIGURE",
+    "authority_weight": 1,
+    "extraction_scope": [
+      "khu-luu-niem-thu-tuong-vo-van-kiet"
+    ],
+    "summary_digest": "Khu tưởng niệm tại thị trấn Vũng Liêm tôn vinh đồng chí Võ Văn Kiệt (Phan Văn Hòa, 1922-2008), người con ưu tú của quê hương Vĩnh Long, kiến trúc sư trưởng của nhiều công trình thế kỷ (đường dây 500kV Bắc - Nam, kênh T5 thoát lũ ra biển Tây)."
+  },
+  {
+    "source_id": "SRC-TIER2-VL-008",
+    "title": "Nghệ thuật Đờn ca tài tử Vĩnh Long: Từ Kinh lịch Quờn đến Di sản Văn hóa phi vật thể đại diện nhân loại",
+    "author_or_institution": "Khoa Văn hóa Nghệ thuật - Trường Đại học Cần Thơ",
+    "url": "https://ctu.edu.vn/nghien-cuu-khoa-hoc/don-ca-tai-tu-vinh-long-kinh-lich-quon",
+    "publication_year": 2023,
+    "target_notebook": "v-nh-long-v-nh-long-b-n-tre-tr",
+    "tier": "TIER_2_SCHOLARLY",
+    "category": "ARCHAEOLOGY_HERITAGE",
+    "authority_weight": 0.9,
+    "extraction_scope": [
+      "don-ca-tai-tu-nam-bo",
+      "tong-huu-dinh"
+    ],
+    "summary_digest": "Khảo luận học thuật về phong trào Đờn ca tài tử Nam Kỳ cuối thế kỷ XIX với công lao khởi xướng của quan Kinh lịch Nguyễn Văn Quờn (Kinh lịch Quờn) tại Vĩnh Long cùng Tống Hữu Định (thầy phó tổng Minh Thiện), đặt nền tảng canh tân ca ra bộ."
+  },
+  {
+    "source_id": "SRC-TIER1-BT-009",
+    "title": "Hồ sơ Di tích Quốc gia Đặc biệt Di tích Đồng Khởi Bến Tre (Định Thủy, Mỏ Cày Nam)",
+    "author_or_institution": "Cục Di sản Văn hóa - Bộ Văn hóa, Thể thao và Du lịch",
+    "url": "http://dsvh.gov.vn/di-tich-quoc-gia-dac-biet-di-tich-dong-khoi-ben-tre-3058",
+    "publication_year": 2021,
+    "target_notebook": "v-nh-long-v-nh-long-b-n-tre-tr",
+    "tier": "TIER_1_GOVERNMENT",
+    "category": "ARCHAEOLOGY_HERITAGE",
+    "authority_weight": 1,
+    "extraction_scope": [
+      "khu-di-tich-dong-khoi",
+      "khu-di-tich-quoc-gia-dac-biet-dong-khoi",
+      "dinh-ran-dinh-thuy"
+    ],
+    "summary_digest": "Hồ sơ khoa học khẳng định di tích lịch sử phong trào Đồng Khởi ngày 17/1/1960 tại xã Định Thủy (Mỏ Cày Nam, Bến Tre), gắn liền tên tuổi Nữ tướng Nguyễn Thị Định, Đội quân Tóc dài và các địa điểm Đình Rắn, cây Điệp lịch sử."
+  },
+  {
+    "source_id": "SRC-TIER1-BT-010",
+    "title": "Hồ sơ Di tích Quốc gia Đặc biệt Mộ và Khu lưu niệm danh nhân Nguyễn Đình Chiểu",
+    "author_or_institution": "Cục Di sản Văn hóa & UBND tỉnh Bến Tre",
+    "url": "http://dsvh.gov.vn/di-tich-quoc-gia-dac-biet-mo-va-khu-luu-niem-nguyen-dinh-chieu-3112",
+    "publication_year": 2022,
+    "target_notebook": "v-nh-long-v-nh-long-b-n-tre-tr",
+    "tier": "TIER_1_GOVERNMENT",
+    "category": "HISTORICAL_FIGURE",
+    "authority_weight": 1,
+    "extraction_scope": [
+      "khu-luu-niem-nguyen-dinh-chieu"
+    ],
+    "summary_digest": "Tài liệu xếp hạng Di tích Quốc gia đặc biệt và danh nhân văn hóa thế giới UNESCO vinh danh cụ Đồ Chiểu (1822-1888) tại xã An Đức, huyện Ba Tri; lưu giữ mộ phần cụ và phu nhân Lê Thị Điền, cùng tác phẩm bất hủ Lục Vân Tiên, Văn tế nghĩa sĩ Cần Giuộc."
+  },
+  {
+    "source_id": "SRC-TIER1-BT-011",
+    "title": "Khu Di tích Kiến trúc và Tín ngưỡng Đạo Dừa Cồn Phụng (Châu Thành, Bến Tre)",
+    "author_or_institution": "Sở Văn hóa, Thể thao và Du lịch tỉnh Bến Tre",
+    "url": "https://bentre.gov.vn/du-lich/di-tich-con-phung-ong-dao-dua",
+    "publication_year": 2023,
+    "target_notebook": "v-nh-long-v-nh-long-b-n-tre-tr",
+    "tier": "TIER_1_GOVERNMENT",
+    "category": "ARCHAEOLOGY_HERITAGE",
+    "authority_weight": 1,
+    "extraction_scope": [
+      "con-phung-con-ong-dao-dua"
+    ],
+    "summary_digest": "Khảo tả di tích tín ngưỡng Hòa Đồng Tôn Giáo do giáo chủ Nguyễn Thành Nam (1909-1990) sáng lập tại cù lao Cồn Phụng xã Tân Thạch; phân tích tháp Cửu Trùng Đài 9 tầng, sân Rồng Cửu Đỉnh, lư hương khổng lồ làm bằng mảnh gốm cổ."
+  },
+  {
+    "source_id": "SRC-TIER1-VL-012",
+    "title": "Quy hoạch tỉnh Vĩnh Long thời kỳ 2021-2030, tầm nhìn đến năm 2050 (Quyết định 1759/QĐ-TTg)",
+    "author_or_institution": "Cổng Thông tin Điện tử Chính phủ nước CHXHCN Việt Nam",
+    "url": "https://xaydungchinhsach.chinhphu.vn/quyet-dinh-1759-qd-ttg-quy-hoach-tinh-vinh-long-2021-2030-119231231184520112.htm",
+    "publication_year": 2023,
+    "target_notebook": "v-nh-long-v-nh-long-b-n-tre-tr",
+    "tier": "TIER_1_GOVERNMENT",
+    "category": "ADMIN_PLANNING",
+    "authority_weight": 1,
+    "extraction_scope": [
+      "vinh-long-province",
+      "de-an-di-san-duong-dai-mang-thit"
+    ],
+    "summary_digest": "Quyết định Thủ tướng Chính phủ định hướng phát triển Vĩnh Long thành trung tâm kinh tế nông nghiệp công nghệ cao, trung tâm du lịch sinh thái sông nước Cửu Long và phát triển không gian văn hóa di sản đương đại Mang Thít."
+  },
+  {
+    "source_id": "SRC-TIER1-TV-013",
+    "title": "Hồ sơ Di tích Lịch sử - Kiến trúc Nghệ thuật Chùa Âng (Wat Angkorajaborey) Trà Vinh",
+    "author_or_institution": "Cục Di sản Văn hóa - Bộ Văn hóa, Thể thao và Du lịch",
+    "url": "http://dsvh.gov.vn/di-tich-quoc-gia-chua-ang-wat-angkorajaborey-tra-vinh-3075",
+    "publication_year": 2021,
+    "target_notebook": "mekong-360-t-p-2",
+    "tier": "TIER_1_GOVERNMENT",
+    "category": "KHMER_CULTURE",
+    "authority_weight": 1,
+    "extraction_scope": [
+      "chua-ang",
+      "chua-ang-angkorajaborey"
+    ],
+    "summary_digest": "Hồ sơ di tích quốc gia công nhận Chùa Âng xây dựng từ thế kỷ thứ X (khoảng năm 990), là ngôi chùa cổ nhất Trà Vinh với kiến trúc Khmer truyền thống gồm mái ngói 3 tầng dốc đứng, phù điêu rồng thần Naga, tượng chim thần Krud và nữ thần Reahu."
+  },
+  {
+    "source_id": "SRC-TIER1-TV-014",
+    "title": "Danh lam Thắng cảnh Quần thể Ao Bà Om (Ao Vuông) và Di sản Cây cổ thụ trăm tuổi",
+    "author_or_institution": "Sở Văn hóa, Thể thao và Du lịch tỉnh Trà Vinh",
+    "url": "https://travinh.gov.vn/du-lich/danh-thang-ao-ba-om",
+    "publication_year": 2022,
+    "target_notebook": "mekong-360-t-p-2",
+    "tier": "TIER_1_GOVERNMENT",
+    "category": "KHMER_CULTURE",
+    "authority_weight": 1,
+    "extraction_scope": [
+      "khu-di-tich-ao-ba-om",
+      "khu-van-hoa-du-lich-ao-ba-om"
+    ],
+    "summary_digest": "Khảo sát địa chí về danh thắng Ao Bà Om tại phường 8, thành phố Trà Vinh; hồ nước ngọt hình chữ nhật rộng 300m x 500m bao quanh bởi hơn 500 cây sao, dầu cổ thụ hàng trăm năm tuổi với bộ rễ trồi kỳ vĩ; gắn liền huyền tích người phụ nữ Khmer đào ao giữ nước ngọt."
+  },
+  {
+    "source_id": "SRC-TIER1-TV-015",
+    "title": "Kiến trúc và điêu khắc Phật giáo Nam tông Chùa Hang (Wat Kompong Chrây) Châu Thành",
+    "author_or_institution": "Sở Văn hóa, Thể thao và Du lịch tỉnh Trà Vinh",
+    "url": "https://travinh.gov.vn/du-lich/chua-hang-kompong-chray",
+    "publication_year": 2023,
+    "target_notebook": "mekong-360-t-p-2",
+    "tier": "TIER_1_GOVERNMENT",
+    "category": "KHMER_CULTURE",
+    "authority_weight": 1,
+    "extraction_scope": [
+      "chua-hang",
+      "chua-hang-kompong-chray"
+    ],
+    "summary_digest": "Khảo tả Chùa Hang thành lập năm 1637 tại thị trấn Châu Thành; cổng phụ xây dạng vòm hang sâu độc nhất vô nhị; bên trong khuôn viên có xưởng điêu khắc gỗ thủ công của chư tăng và là nơi trú ngụ tự nhiên của hàng ngàn chim cò di cư."
+  },
+  {
+    "source_id": "SRC-TIER1-TV-016",
+    "title": "Hồ sơ Di tích Lịch sử Quốc gia Chùa Ông Mẹt (Wat Bodhisàlaraja) - Trung tâm Phật học Khmer",
+    "author_or_institution": "Cục Di sản Văn hóa - Bộ Văn hóa, Thể thao và Du lịch",
+    "url": "http://dsvh.gov.vn/di-tich-chua-ong-met-wat-bodhisalaraja-3081",
+    "publication_year": 2021,
+    "target_notebook": "mekong-360-t-p-2",
+    "tier": "TIER_1_GOVERNMENT",
+    "category": "KHMER_CULTURE",
+    "authority_weight": 1,
+    "extraction_scope": [
+      "chua-ong-met-botum-vong-sa-som-rong",
+      "chua-ong-met-bodonisaraj"
+    ],
+    "summary_digest": "Tài liệu di tích quốc gia công nhận Chùa Ông Mẹt thành lập khoảng năm 642, là trung tâm đào tạo Pali ngữ và văn hóa Khmer lâu đời nhất Nam Bộ; lưu giữ thư viện kinh lá buông và các công trình cột gỗ quý chạm khắc công phu."
+  },
+  {
+    "source_id": "SRC-TIER1-TV-017",
+    "title": "Di tích Nghệ thuật Chùa Cò (Wat Phnô Đôn / Nodol) và Vườn chim tự nhiên Trà Cú",
+    "author_or_institution": "Cổng thông tin điện tử huyện Trà Cú - Trà Vinh",
+    "url": "https://tracu.travinh.gov.vn/di-tich-chua-co-nodol",
+    "publication_year": 2022,
+    "target_notebook": "mekong-360-t-p-2",
+    "tier": "TIER_1_GOVERNMENT",
+    "category": "KHMER_CULTURE",
+    "authority_weight": 1,
+    "extraction_scope": [
+      "chua-co-nodol",
+      "chua-co-chua-nodol-chua-phno-don"
+    ],
+    "summary_digest": "Khảo sát di tích Chùa Cò khởi lập năm 1677 tại xã Đại An (Trà Cú); khuôn viên rợp bóng tre ngà và dầu cổ thụ nơi hàng chục ngàn loài chim cò quý hiếm về làm tổ; kiến trúc chánh điện đậm nét Angkor với tháp xá lợi vươn cao."
+  },
+  {
+    "source_id": "SRC-TIER1-TV-018",
+    "title": "Di sản Văn hóa Phi vật thể Quốc gia: Nghệ thuật Chầm-riêng Chà-pây của người Khmer Trà Vinh",
+    "author_or_institution": "Cục Di sản Văn hóa - Bộ Văn hóa, Thể thao và Du lịch",
+    "url": "http://dsvh.gov.vn/di-san-van-hoa-phi-vat-the-nghe-thuat-cham-rieng-cha-pay-tra-vinh-2945",
+    "publication_year": 2021,
+    "target_notebook": "mekong-360-t-p-2",
+    "tier": "TIER_1_GOVERNMENT",
+    "category": "KHMER_CULTURE",
+    "authority_weight": 1,
+    "extraction_scope": [
+      "cham-rieng-cha-pay",
+      "nghe-nhan-thach-mau"
+    ],
+    "summary_digest": "Hồ sơ vinh danh nghệ thuật diễn xướng độc tấu đàn Chà-pây Đơm-veng kết hợp tự sự ứng tác của người Khmer xã Tân Hiệp (Trà Cú); di sản văn hóa phi vật thể quốc gia cần bảo vệ khẩn cấp với vai trò của nghệ nhân ưu tú Thạch Mâu."
+  },
+  {
+    "source_id": "SRC-TIER2-TV-019",
+    "title": "Nghệ thuật Sân khấu Kịch múa Cổ điển Rô-băm của cộng đồng Khmer Trà Vinh",
+    "author_or_institution": "Viện Văn hóa Nghệ thuật Quốc gia Việt Nam",
+    "url": "https://vicas.org.vn/nghien-cuu/nghe-thuat-kich-mua-ro-bam-tra-vinh",
+    "publication_year": 2023,
+    "target_notebook": "mekong-360-t-p-2",
+    "tier": "TIER_2_SCHOLARLY",
+    "category": "KHMER_CULTURE",
+    "authority_weight": 0.9,
+    "extraction_scope": [
+      "nghe-thuat-mua-ro-bam",
+      "doan-ro-bam-ron-ron"
+    ],
+    "summary_digest": "Công trình nghiên cứu về kịch múa Rô-băm của người Khmer Nam Bộ, đoàn nghệ thuật Rô-băm Rôn Rôn (xã Đa Lộc, Châu Thành); phân tích tính nghi lễ cung đình, điệu múa nàng Chanh, chàng Chhôi và các trích đoạn sử thi Ramayana (Reamker)."
+  },
+  {
+    "source_id": "SRC-TIER1-TV-020",
+    "title": "Lễ hội Cúng Trăng Ok Om Bok và Hội đua ghe Ngo truyền thống đồng bào Khmer Nam Bộ",
+    "author_or_institution": "Ủy ban Dân tộc & Cổng thông tin du lịch quốc gia",
+    "url": "https://dantoc.vietnamtourism.gov.vn/le-hoi-ok-om-bok-tra-vinh-di-san-van-hoa-song-dong/",
+    "publication_year": 2023,
+    "target_notebook": "mekong-360-t-p-2",
+    "tier": "TIER_1_GOVERNMENT",
+    "category": "KHMER_CULTURE",
+    "authority_weight": 1,
+    "extraction_scope": [
+      "le-hoi-ok-om-bok",
+      "dua-ghe-ngo"
+    ],
+    "summary_digest": "Khảo tả đại lễ Ok Om Bok diễn ra vào rằm tháng 10 âm lịch hàng năm tại danh thắng Ao Bà Om; phân tích nghi thức đút cốm dẹp (Ak Ambok) tạ ơn Thần Mặt Trăng ban mùa màng tươi tốt, lễ thả hoa đăng (Lôi Pratip) và giải đua ghe Ngo sông Long Bình."
+  },
+  {
+    "source_id": "SRC-TIER2-TV-021",
+    "title": "Phân tích chu kỳ văn hóa tín ngưỡng qua hai đại lễ Chôl Chnăm Thmây và Sêne Đôlta Khmer",
+    "author_or_institution": "Viện Khoa học Xã hội vùng Nam Bộ",
+    "url": "https://vass.gov.vn/nghien-cuu-dan-toc/chol-chnam-thmay-va-sene-dolta-khmer-tra-vinh",
+    "publication_year": 2022,
+    "target_notebook": "mekong-360-t-p-2",
+    "tier": "TIER_2_SCHOLARLY",
+    "category": "KHMER_CULTURE",
+    "authority_weight": 0.9,
+    "extraction_scope": [
+      "le-hoi-chol-chnam-thmay",
+      "le-hoi-sene-dolta"
+    ],
+    "summary_digest": "Khảo luận học thuật phân định rõ Chôl Chnăm Thmây (lễ đón năm mới giữa tháng 4 dương lịch, lễ tắm Phật, đắp núi cát) và Sêne Đôlta (lễ cúng ông bà báo hiếu tổ tiên vào cuối tháng 8 đến đầu tháng 9 âm lịch), tránh việc gộp nhầm lẫn trong CSDL du lịch."
+  },
+  {
+    "source_id": "SRC-TIER2-TV-022",
+    "title": "Văn hóa ẩm thực dân gian Khmer Trà Vinh: Kỹ thuật nấu Bún nước lèo và Canh Chù dẳn",
+    "author_or_institution": "Tạp chí Văn hóa Dân gian - Viện Văn hóa Dân gian",
+    "url": "https://vass.gov.vn/van-hoa-am-thuc/bun-nuoc-leo-va-chu-dan-tra-vinh",
+    "publication_year": 2023,
+    "target_notebook": "mekong-360-t-p-2",
+    "tier": "TIER_2_SCHOLARLY",
+    "category": "MEKONG_ECOLOGY_OCOP",
+    "authority_weight": 0.9,
+    "extraction_scope": [
+      "bun-nuoc-leo-tra-vinh",
+      "canh-chu-dan-khmer"
+    ],
+    "summary_digest": "Khảo cứu công thức nước dùng bún nước lèo nấu từ mắm bò hóc (prohoc), củ ngải bún giã nhuyễn lọc lấy nước cốt trong, tép bạc đất luộc bóc vỏ; cùng nghệ thuật nấu canh Chù dẳn từ lá chùm ruột non, cà dĩa và cá lóc đồng."
+  },
+  {
+    "source_id": "SRC-TIER1-TV-023",
+    "title": "Làng nghề truyền thống Bánh tét Trà Cuôn - Bí quyết làng nghề trăm năm ven sông Cổ Chiên",
+    "author_or_institution": "Cổng Thông tin Điện tử huyện Cầu Ngang - Trà Vinh",
+    "url": "https://caungang.travinh.gov.vn/lang-nghe-banh-tet-tra-cuon",
+    "publication_year": 2023,
+    "target_notebook": "mekong-360-t-p-2",
+    "tier": "TIER_1_GOVERNMENT",
+    "category": "TRADITIONAL_CRAFT",
+    "authority_weight": 1,
+    "extraction_scope": [
+      "lang-nghe-banh-tet-tra-cuon",
+      "banh-tet-tra-cuon-co-huong"
+    ],
+    "summary_digest": "Khảo sát làng nghề bánh tét Trà Cuôn tại xã Kim Hòa (Cầu Ngang); quy trình ngâm nếp hạt tròn với nước cốt lá bồ ngót tạo màu xanh ngọc tự nhiên, nhân đậu xanh béo bùi bao quanh lòng đỏ trứng muối và thịt mỡ ướp ngũ vị hương."
+  },
+  {
+    "source_id": "SRC-TIER1-TV-024",
+    "title": "Sản phẩm OCOP 5 sao Mật hoa dừa Sokfarm Trà Vinh: Chuỗi giá trị tuần hoàn thích ứng mặn",
+    "author_or_institution": "Bộ Nông nghiệp và Phát triển Nông thôn - Cổng OCOP Quốc gia",
+    "url": "https://ocop.gov.vn/san-pham-ocop-5-sao-mat-hoa-dua-sokfarm-tra-vinh",
+    "publication_year": 2024,
+    "target_notebook": "mekong-360-t-p-2",
+    "tier": "TIER_1_GOVERNMENT",
+    "category": "MEKONG_ECOLOGY_OCOP",
+    "authority_weight": 1,
+    "extraction_scope": [
+      "mat-hoa-dua-sokfarm",
+      "sokfarm-tieu-can"
+    ],
+    "summary_digest": "Hồ sơ OCOP 5 sao quốc gia chứng nhận mật hoa dừa hữu cơ của HTX Sokfarm tại huyện Tiểu Cần; quy trình mát-xa thu mật thủ công trên búp hoa dừa, chế biến đường hoa dừa chỉ số đường huyết thấp (Low GI) đạt chuẩn xuất khẩu EU và Mỹ."
+  },
+  {
+    "source_id": "SRC-TIER1-VL-025",
+    "title": "Đề án Di sản Đương đại Mang Thít (Quyết định số 1293/QĐ-UBND tỉnh Vĩnh Long)",
+    "author_or_institution": "UBND tỉnh Vĩnh Long & Sở Kế hoạch và Đầu tư",
+    "url": "https://vinhlong.gov.vn/van-ban-chi-dao/quyet-dinh-1293-de-an-di-san-duong-dai-mang-thit",
+    "publication_year": 2021,
+    "target_notebook": "mekong-360-t-p-2",
+    "tier": "TIER_1_GOVERNMENT",
+    "category": "TRADITIONAL_CRAFT",
+    "authority_weight": 1,
+    "extraction_scope": [
+      "de-an-di-san-duong-dai-mang-thit",
+      "di-san-lo-gach-mang-thit-kenh-thay-cai"
+    ],
+    "summary_digest": "Đề án quy hoạch bảo tồn hơn 900 lò gạch gốm truyền thống trải dài dọc kênh Thầy Cai và sông Cổ Chiên tại Mang Thít; chuyển đổi mô hình lò gạch đất nung cổ truyền thành bảo tàng sinh thái công nghiệp ngoài trời độc bản Đông Nam Á."
+  },
+  {
+    "source_id": "SRC-TIER2-VL-026",
+    "title": "Kỹ thuật nung gốm đỏ truyền thống Vĩnh Long: Thổ nhưỡng đất sét phù sa và ngọn lửa vỏ trấu",
+    "author_or_institution": "Phân viện Nghiên cứu Văn hóa Nghệ thuật Quốc gia Việt Nam tại TP.HCM",
+    "url": "https://vicas.org.vn/nghien-cuu/ky-thuat-nung-gom-do-vinh-long",
+    "publication_year": 2022,
+    "target_notebook": "mekong-360-t-p-2",
+    "tier": "TIER_2_SCHOLARLY",
+    "category": "TRADITIONAL_CRAFT",
+    "authority_weight": 0.9,
+    "extraction_scope": [
+      "nha-gom-do-tu-buoi",
+      "di-san-lo-gach-mang-thit-kenh-thay-cai"
+    ],
+    "summary_digest": "Công trình nghiên cứu khoa học vật liệu gốm đỏ Vĩnh Long; phân tích hàm lượng khoáng oxit sắt đặc thù trong bùn phù sa sông Cổ Chiên tạo nên sắc đỏ tự nhiên không cần tráng men khi được nung bằng lò bầu đốt trấu liên tục 15-20 ngày đêm."
+  },
+  {
+    "source_id": "SRC-TIER1-VL-027",
+    "title": "Làng nghề Tàu hủ ky Mỹ Hòa (Thị xã Bình Minh) - Di sản Văn hóa Phi vật thể Quốc gia",
+    "author_or_institution": "Cục Di sản Văn hóa - Bộ Văn hóa, Thể thao và Du lịch",
+    "url": "http://dsvh.gov.vn/di-san-lang-nghe-tau-hu-ky-my-hoa-binh-minh-3012",
+    "publication_year": 2023,
+    "target_notebook": "mekong-360-t-p-2",
+    "tier": "TIER_1_GOVERNMENT",
+    "category": "TRADITIONAL_CRAFT",
+    "authority_weight": 1,
+    "extraction_scope": [
+      "nghe-nhan-chau-xuong",
+      "nghe-nhan-nguyen-thi-thoi",
+      "lang-nghe-tau-hu-ky-my-hoa"
+    ],
+    "summary_digest": "Hồ sơ ghi danh làng nghề làm tàu hủ ky xã Mỹ Hòa ven sông Cái Vồn; tôn vinh tiền hiền cụ Châu Xường khởi nghiệp đầu thế kỷ XX và nghệ nhân Nguyễn Thị Thới truyền giữ kỹ thuật vớt váng đậu nành nguyên chất trên chảo gang."
+  },
+  {
+    "source_id": "SRC-TIER1-VL-028",
+    "title": "Nghề dệt chiếu Cà Hôn (Trà Côn, Trà Ôn) - Kỹ nghệ dệt lác thủ công của người Kinh và Khmer",
+    "author_or_institution": "Sở Văn hóa, Thể thao và Du lịch tỉnh Vĩnh Long",
+    "url": "https://vinhlong.gov.vn/du-khach/lang-nghe/det-chieu-ca-hon",
+    "publication_year": 2022,
+    "target_notebook": "mekong-360-t-p-2",
+    "tier": "TIER_1_GOVERNMENT",
+    "category": "TRADITIONAL_CRAFT",
+    "authority_weight": 1,
+    "extraction_scope": [
+      "lang-nghe-det-chieu-ca-hon"
+    ],
+    "summary_digest": "Khảo sát làng nghề dệt chiếu lác Cà Hôn tại ấp Thâm Rôn, xã Trà Côn; sản phẩm chiếu hoa dệt từ cây lác nước mặn phơi sấy công phu, thể hiện sự giao thoa văn hóa lao động gắn bó keo sơn giữa hai dân tộc Kinh và Khmer."
+  },
+  {
+    "source_id": "SRC-TIER1-VL-029",
+    "title": "Làng nghề Bánh tráng nem Cù lao Mây (Lục Sĩ Thành, Trà Ôn) - Đặc sản tiến vua sông Hậu",
+    "author_or_institution": "Cổng thông tin điện tử huyện Trà Ôn - Vĩnh Long",
+    "url": "https://traon.vinhlong.gov.vn/lang-nghe-banh-trang-nem-cu-lao-may",
+    "publication_year": 2023,
+    "target_notebook": "mekong-360-t-p-2",
+    "tier": "TIER_1_GOVERNMENT",
+    "category": "TRADITIONAL_CRAFT",
+    "authority_weight": 1,
+    "extraction_scope": [
+      "lang-nghe-banh-trang-nem-cu-lao-may"
+    ],
+    "summary_digest": "Khảo tả làng nghề làm bánh tráng nem cù lao Mây hơn 100 năm tuổi giữa dòng sông Hậu; bánh tráng dẻo dai làm từ bột gạo lúa mùa, phơi nắng tự nhiên trên phên nứa vỉ buồm, phục vụ món gỏi cuốn Nam Bộ trứ danh."
+  },
+  {
+    "source_id": "SRC-TIER1-VL-030",
+    "title": "Vùng chuyên canh Khoai lang tím Nhật Bình Tân - Chỉ dẫn địa lý nông sản Vĩnh Long",
+    "author_or_institution": "Sở Nông nghiệp và Phát triển Nông thôn tỉnh Vĩnh Long",
+    "url": "https://sonnptnt.vinhlong.gov.vn/nong-san-chu-luc/khoai-lang-binh-tan",
+    "publication_year": 2023,
+    "target_notebook": "mekong-360-t-p-2",
+    "tier": "TIER_1_GOVERNMENT",
+    "category": "MEKONG_ECOLOGY_OCOP",
+    "authority_weight": 1,
+    "extraction_scope": [
+      "vung-chuyen-canh-khoai-lang-tim-nhat-my-thuan"
+    ],
+    "summary_digest": "Quy hoạch vùng trồng hơn 10.000 ha khoai lang tím giống Nhật Bản tại xã Mỹ Thuận, Tân Thành (Bình Tân); thổ nhưỡng phù sa pha cát giàu dinh dưỡng giúp củ khoai ngọt đậm, dẻo thơm và đạt tiêu chuẩn xuất khẩu chính ngạch."
+  },
+  {
+    "source_id": "SRC-TIER1-BT-031",
+    "title": "Làng nghề Kẹo dừa Mỏ Cày - Tinh hoa chế biến dừa truyền thống xứ dừa Bến Tre",
+    "author_or_institution": "Sở Công Thương tỉnh Bến Tre",
+    "url": "https://socongthuong.bentre.gov.vn/lang-nghe-keo-dua-mo-cay",
+    "publication_year": 2023,
+    "target_notebook": "mekong-360-t-p-2",
+    "tier": "TIER_1_GOVERNMENT",
+    "category": "TRADITIONAL_CRAFT",
+    "authority_weight": 1,
+    "extraction_scope": [
+      "lang-keo-dua-mo-cay"
+    ],
+    "summary_digest": "Tài liệu làng nghề truyền thống kẹo dừa thị trấn Mỏ Cày khởi thủy từ bà Nguyễn Thị Ngọc năm 1970; quy trình nấu mạch nha mộng lúa với nước cốt dừa rám đậm đặc, cô đặc trên chảo đồng và quấn bánh tráng xốp bọc ngoài."
+  },
+  {
+    "source_id": "SRC-TIER1-BT-032",
+    "title": "Di sản Văn hóa Phi vật thể Quốc gia: Nghề làm Bánh tráng Mỹ Lồng và Bánh phồng Sơn Đốc",
+    "author_or_institution": "Cục Di sản Văn hóa - Bộ Văn hóa, Thể thao và Du lịch",
+    "url": "http://dsvh.gov.vn/di-san-nghe-lam-banh-trang-my-long-banh-phong-son-doc-2988",
+    "publication_year": 2021,
+    "target_notebook": "mekong-360-t-p-2",
+    "tier": "TIER_1_GOVERNMENT",
+    "category": "TRADITIONAL_CRAFT",
+    "authority_weight": 1,
+    "extraction_scope": [
+      "lang-nghe-banh-trang-my-long",
+      "lang-nghe-banh-phong-son-doc"
+    ],
+    "summary_digest": "Hồ sơ quốc gia công nhận hai làng nghề di sản ẩm thực tại Giồng Trôm: bánh tráng gạo Mỹ Lồng béo ngậy mè trắng và nước cốt dừa; bánh phồng nếp Sơn Đốc quết cối đá phơi nắng sớm nở phồng giòn tan trên bếp than hồng."
+  },
+  {
+    "source_id": "SRC-TIER1-BT-033",
+    "title": "Vương quốc Cây giống và Hoa kiểng Cái Mơn - Chợ Lách: Trung tâm nhân giống sinh học Nam Bộ",
+    "author_or_institution": "Sở Nông nghiệp và Phát triển Nông thôn tỉnh Bến Tre",
+    "url": "https://snnptnt.bentre.gov.vn/khuyen-nong/hoa-kieng-cai-mon-cho-lach",
+    "publication_year": 2023,
+    "target_notebook": "mekong-360-t-p-2",
+    "tier": "TIER_1_GOVERNMENT",
+    "category": "MEKONG_ECOLOGY_OCOP",
+    "authority_weight": 1,
+    "extraction_scope": [
+      "lang-hoa-kieng-cai-mon-cho-lach",
+      "lang-nghe-cay-giong-uon-kieng-hung-khanh-trung"
+    ],
+    "summary_digest": "Đề án phát triển trung tâm cây giống Chợ Lách cung ứng hàng năm hơn 40 triệu cây ăn trái chất lượng cao (sầu riêng Ri6, chôm chôm rong-riêng); nghệ thuật uốn kiểng thú mai vàng độc đáo của các nghệ nhân làng hoa Hưng Khánh Trung."
+  },
+  {
+    "source_id": "SRC-TIER2-BT-034",
+    "title": "Ẩm thực miệt vườn Cồn Phú Đa (Chợ Lách): Sinh thái ốc gạo sông Cổ Chiên và món Bánh xèo ốc gạo",
+    "author_or_institution": "Khoa Nông nghiệp & Sinh học Ứng dụng - Đại học Cần Thơ",
+    "url": "https://ctu.edu.vn/nghien-cuu-thuy-san/sinh-thai-oc-gao-con-phu-da-ben-tre",
+    "publication_year": 2023,
+    "target_notebook": "mekong-360-t-p-2",
+    "tier": "TIER_2_SCHOLARLY",
+    "category": "MEKONG_ECOLOGY_OCOP",
+    "authority_weight": 0.9,
+    "extraction_scope": [
+      "banh-xeo-oc-gao-cho-lach",
+      "oc-gao-con-phu-da"
+    ],
+    "summary_digest": "Khảo sát sinh thái loài ốc gạo nước ngọt sinh sôi tại bãi cồn cát Phú Đa (xã Vĩnh Bình, Chợ Lách) vào dịp Tết Đoan Ngọ tháng 5 âm lịch; ruột ốc trắng béo ngậy xào cuốn bánh xèo bột gạo pha nước cốt dừa nạo."
+  },
+  {
+    "source_id": "SRC-TIER1-BT-035",
+    "title": "Vùng nuôi nghêu, sò huyết và tôm quảng canh sinh thái ven biển Thạnh Phú - Bình Đại",
+    "author_or_institution": "Chi cục Thủy sản tỉnh Bến Tre",
+    "url": "https://thuysan.bentre.gov.vn/mo-hinh-thuy-san/vung-nuoi-so-huyet-tom-quang-canh",
+    "publication_year": 2023,
+    "target_notebook": "mekong-360-t-p-2",
+    "tier": "TIER_1_GOVERNMENT",
+    "category": "MEKONG_ECOLOGY_OCOP",
+    "authority_weight": 1,
+    "extraction_scope": [
+      "vung-nuoi-so-huyet-tom-quang-canh-thanh-tri"
+    ],
+    "summary_digest": "Báo cáo kỹ thuật mô hình nuôi sò huyết và tôm quảng canh cải tiến kết hợp rừng ngập mặn tại Thạnh Trị, Bình Đại; chứng nhận thủy sản hữu cơ theo tiêu chuẩn quốc tế Naturland, bảo tồn hệ sinh thái bãi bồi cửa sông Hàm Luông."
+  },
+  {
+    "source_id": "SRC-TIER1-TV-036",
+    "title": "Quần thể Vườn Dừa sáp đặc sản Cầu Kè - Nguồn gen bản địa quý hiếm Trà Vinh",
+    "author_or_institution": "Sở Nông nghiệp và Phát triển Nông thôn tỉnh Trà Vinh",
+    "url": "https://snnptnt.travinh.gov.vn/cay-trong-dac-san/dua-sap-cau-ke",
+    "publication_year": 2023,
+    "target_notebook": "mekong-360-t-p-2",
+    "tier": "TIER_1_GOVERNMENT",
+    "category": "MEKONG_ECOLOGY_OCOP",
+    "authority_weight": 1,
+    "extraction_scope": [
+      "vuon-dua-sap-cau-ke-phong-thanh",
+      "dua-sap-cau-ke"
+    ],
+    "summary_digest": "Hồ sơ chỉ dẫn địa lý dừa sáp Cầu Kè (Makapuno); thổ nhưỡng phù sa đất giồng xã Phong Thạnh tạo nên độ xốp dẻo đặc quánh của cơm dừa; chỉ chiếm tỷ lệ 20-25% trên mỗi buồng dừa tự nhiên, là đặc sản quý bậc nhất Nam Bộ."
+  }
+]

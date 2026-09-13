@@ -64,7 +64,8 @@ export function profileOgImage(images?: string[] | null, fallback = DEFAULT_OG):
 }
 
 export function safeJsonLd(obj: unknown): string {
-  return JSON.stringify(obj).replace(/<\//g, '<\\/')
+  const target = (obj && typeof obj === 'object' && 'value' in obj) ? (obj as any).value : obj
+  return JSON.stringify(target).replace(/<\//g, '<\\/')
 }
 
 export function canonicalUrl(path = '/') {
