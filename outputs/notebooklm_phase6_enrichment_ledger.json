@@ -1,0 +1,1242 @@
+{
+  "mat-hoa-dua-va-duong-hoa-dua-tra-vinh-ocop-5-sao": {
+    "hours": "07:30 - 17:00 (Thứ Hai đến Thứ Bảy, tiếp đón khách tham quan và mua sản phẩm)",
+    "best_time": "Buổi sáng 07:00 - 09:30 khi công nhân thu mật hoa dừa tươi hoặc các tháng nắng từ tháng 12 đến tháng 4",
+    "waterway_access": "Đường thủy sông Cần Chông kết nối ra sông Hậu, tàu du lịch miệt vườn cập bến đò Tiểu Cần cách xưởng chế biến 1,5 km",
+    "aeo_schema_type": "Product",
+    "cultural_notes": "Sản phẩm OCOP 5 sao quốc gia đầu tiên của Trà Vinh do Sokfarm tiên phong phát triển. Kỹ thuật thu mật hoa dừa (massage hoa dừa để tiết mật) kế thừa bí quyết cổ truyền của đồng bào Khmer vùng Tiểu Cần kết hợp công nghệ cô đặc chân không ở nhiệt độ thấp 55 độ C, bảo toàn trọn vẹn khoáng chất, chỉ số đường huyết thấp (GI thấp), tạo bước đột phá nâng cao giá trị chuỗi kinh tế dừa thích ứng biến đổi khí hậu xâm nhập mặn.",
+    "visual_narrative": "Góc máy macro đặc tả giọt mật hoa dừa vàng óng như hổ phách chảy từ vết cắt hoa dừa vào ống tre, tương phản với nền xanh rợp bóng dừa miệt vườn Tiểu Cần trong nắng sớm phù sa.",
+    "source_citations": [
+      {
+        "source_id": "SRC-TIER1-TV-006",
+        "title": "Mô hình Mật hoa dừa Sokfarm Trà Vinh: Điển hình kinh tế xanh thích ứng biến đổi khí hậu và OCOP 5 sao",
+        "url": "https://snnptnt.travinh.gov.vn/ocop/mat-hoa-dua-sokfarm-ocop-5-sao",
+        "author_or_institution": "Sở Nông nghiệp và Phát triển Nông thôn Trà Vinh",
+        "target_notebook": "mekong-360-t-p-2",
+        "tier": "TIER_1_GOVERNMENT",
+        "authority_weight": 1.0
+      },
+      {
+        "source_id": "SRC-TIER2-ND-005",
+        "title": "Khai phóng giá trị hạt ngọc phù sa: Từ cây dừa nước đến giọt mật hoa dừa OCOP quốc gia",
+        "url": "https://nhandan.vn/kinh-te/khai-phong-gia-tri-mat-hoa-dua-tra-vinh-782190",
+        "author_or_institution": "Báo Nhân Dân",
+        "target_notebook": "mekong-360-t-p-2",
+        "tier": "TIER_2_SCHOLARLY",
+        "authority_weight": 0.95
+      }
+    ],
+    "id": "mat-hoa-dua-va-duong-hoa-dua-tra-vinh-ocop-5-sao",
+    "verifiedAt": "2026-09-13T17:30:00+07:00",
+    "verifiedSource": "NotebookLM Deep Terroir Research - Phase 6"
+  },
+  "nuoc-mam-ruoi-long-vinh": {
+    "hours": "07:00 - 18:00 (Mở cửa tất cả các ngày trong tuần)",
+    "best_time": "Vụ rươi nổi từ tháng 9 đến tháng 11 âm lịch (tháng mười rươi phát, tháng chín rươi gom) để thưởng thức mẻ nước mắm ủ chượp đầu mùa",
+    "waterway_access": "Đường thủy ven cửa biển Cung Hầu sông Cổ Chiên, ghe đò chuyên chở ghé bến cá Long Vinh thuận tiện bốc dỡ hải sản",
+    "aeo_schema_type": "Product",
+    "cultural_notes": "Đặc sản tiến vua vang danh xứ duyên hải Trà Vinh đạt chứng nhận OCOP 4 sao. Rươi biển (rồng đất) sinh sôi tự nhiên nơi rừng bần ngập mặn đáy bùn phù sa được ngư dân vớt bằng vợt lưới dày, ủ cùng muối hột Ba Động trong lu sành phơi nắng 6 đến 9 tháng. Nước mắm rươi chín có màu vàng óng cánh gián, hương thơm dịu nhẹ, hậu vị ngọt sâu đượm đà đạm tự nhiên, không gắt như mắm cá biển.",
+    "visual_narrative": "Góc máy cận cảnh dòng nước mắm rươi trong vắt màu mật ong sóng sánh rót vào chén gốm mộc, điểm vài lát ớt chỉ thiên đỏ rực bên đĩa thịt ba chỉ luộc và rau đồng xanh ngát.",
+    "source_citations": [
+      {
+        "source_id": "SRC-TIER1-TV-007",
+        "title": "Hồ sơ công nhận sản phẩm OCOP Trà Vinh: Nước mắm rươi Long Vinh đạt chuẩn 4 sao",
+        "url": "https://travinh.gov.vn/van-ban/quyet-dinh-cong-nhan-nuoc-mam-ruoi-long-vinh-ocop-4-sao",
+        "author_or_institution": "UBND Trà Vinh",
+        "target_notebook": "mekong-360-t-p-2",
+        "tier": "TIER_1_GOVERNMENT",
+        "authority_weight": 1.0
+      },
+      {
+        "source_id": "SRC-TIER2-THVL-003",
+        "title": "Hương vị phù sa duyên hải: Nghề ủ nước mắm rươi Long Vinh nức tiếng miền Tây",
+        "url": "https://thvl.vn/am-thuc/nuoc-mam-ruoi-long-vinh-tinh-hoa-rung-ngap-man",
+        "author_or_institution": "Đài Phát thanh và Truyền hình Vĩnh Long",
+        "target_notebook": "mekong-360-t-p-2",
+        "tier": "TIER_2_SCHOLARLY",
+        "authority_weight": 0.95
+      }
+    ],
+    "id": "nuoc-mam-ruoi-long-vinh",
+    "verifiedAt": "2026-09-13T17:30:00+07:00",
+    "verifiedSource": "NotebookLM Deep Terroir Research - Phase 6"
+  },
+  "keo-dua-tuyet-phung": {
+    "hours": "06:30 - 19:30 (Mở cửa hàng ngày phục vụ khách du lịch và mua buôn)",
+    "best_time": "Mùa lễ hội cuối năm và dịp cận Tết Nguyên đán khi xưởng đỏ lửa ngào kẹo thơm lừng suốt ngày đêm",
+    "waterway_access": "Tuyến đường thủy kênh rạch Mỏ Cày kết nối sông Hàm Luông, thuyền du lịch ghé bến sông trung tâm thị trấn Mỏ Cày đi bộ 200m vào xưởng",
+    "aeo_schema_type": "Product",
+    "cultural_notes": "Thương hiệu kẹo dừa gia truyền tiêu biểu đạt OCOP 4 sao tại thị trấn Mỏ Cày Nam. Kế thừa kỹ thuật cô đặc nước cốt dừa dẻo quánh với mạch nha nếp thơm, kẹo dừa Tuyết Phụng lưu giữ độ béo ngậy thanh ngọt tự nhiên, đa dạng hương vị sầu riêng, lá dứa, đậu phộng và cacao, là món quà ẩm thực biểu tượng của xứ sở dừa.",
+    "visual_narrative": "Khung hình tầm trung bắt nhịp đôi bàn tay thoăn thoắt của người thợ gói kẹo dừa trong lớp bánh tráng mỏng tang, khói bốc nghi ngút từ chảo đồng ngào dừa sôi lục bục trên bếp lửa.",
+    "source_citations": [
+      {
+        "source_id": "SRC-TIER1-BT-005",
+        "title": "Quyết định phê duyệt kết quả đánh giá, phân hạng sản phẩm OCOP Bến Tre: Kẹo dừa Tuyết Phụng đạt 4 sao",
+        "url": "https://bentre.gov.vn/van-ban/quyet-dinh-cong-nhan-ocop-keo-dua-tuyet-phung",
+        "author_or_institution": "UBND Bến Tre",
+        "target_notebook": "mekong-360-t-p-2",
+        "tier": "TIER_1_GOVERNMENT",
+        "authority_weight": 1.0
+      },
+      {
+        "source_id": "SRC-TIER2-DK-003",
+        "title": "Nghề làm kẹo dừa Mỏ Cày: Giữ lửa di sản ẩm thực trăm năm xứ dừa",
+        "url": "https://baodongkhoi.vn/van-hoa/lang-nghe-keo-dua-mo-cay-tuyet-phung-2024",
+        "author_or_institution": "Báo Đồng Khởi",
+        "target_notebook": "mekong-360-t-p-2",
+        "tier": "TIER_2_SCHOLARLY",
+        "authority_weight": 0.9
+      }
+    ],
+    "id": "keo-dua-tuyet-phung",
+    "verifiedAt": "2026-09-13T17:30:00+07:00",
+    "verifiedSource": "NotebookLM Deep Terroir Research - Phase 6"
+  },
+  "dua-sap-hoa-tan": {
+    "hours": "07:00 - 18:30 (Mở cửa đón khách mua trái và thưởng thức sinh tố tại vườn)",
+    "best_time": "Tháng 4 đến tháng 9 dương lịch thời tiết nắng ấm, cơm dừa dẻo quánh và tỷ lệ dừa sáp tự nhiên đạt đỉnh",
+    "waterway_access": "Đường thủy kênh Cầu Kè rẽ nhánh sông Hậu, ghe tam bản luồn lách mương liếp cập cầu ván dẫn thẳng vào vườn dừa Hòa Tân",
+    "aeo_schema_type": "Product",
+    "cultural_notes": "Sản phẩm OCOP 4 sao của Hợp tác xã Dừa sáp Hòa Tân (Cầu Kè). Thổ nhưỡng đất cát pha sét ven sông Hậu tạo nên tỷ lệ dừa sáp độc nhất vô nhị. Cơm dừa dày xốp, mềm dẻo như sáp, nước dừa sệt quánh thơm ngọt ngậy béo. Từng trái dừa đều được gắn tem truy xuất nguồn gốc QR code và kiểm định gõ âm thanh trước khi xuất bán.",
+    "visual_narrative": "Góc máy cận cảnh mũi muỗng múc từng thìa cơm dừa sáp trắng muốt đặc quánh như kem sữa, đọng giọt nước dừa sánh sệt óng ánh dưới ánh nắng miệt vườn Cầu Kè.",
+    "source_citations": [
+      {
+        "source_id": "SRC-TIER1-TV-008",
+        "title": "Đề án phát triển chuỗi giá trị dừa sáp Cầu Kè và chứng nhận OCOP 4 sao HTX Hòa Tân",
+        "url": "https://snnptnt.travinh.gov.vn/chuoi-gia-tri/dua-sap-hoa-tan-cau-ke",
+        "author_or_institution": "Sở Nông nghiệp và Phát triển Nông thôn Trà Vinh",
+        "target_notebook": "mekong-360-t-p-2",
+        "tier": "TIER_1_GOVERNMENT",
+        "authority_weight": 1.0
+      },
+      {
+        "source_id": "SRC-TIER2-CTU-004",
+        "title": "Nghiên cứu đặc tính sinh hóa và giá trị dinh dưỡng của nguồn gen dừa sáp Cầu Kè Trà Vinh",
+        "url": "https://sj.ctu.edu.vn/article/dac-tinh-sinh-hoa-dua-sap-cau-ke-tra-vinh",
+        "author_or_institution": "Tạp chí Khoa học Đại học Cần Thơ",
+        "target_notebook": "mekong-360-t-p-2",
+        "tier": "TIER_2_SCHOLARLY",
+        "authority_weight": 0.95
+      }
+    ],
+    "id": "dua-sap-hoa-tan",
+    "verifiedAt": "2026-09-13T17:30:00+07:00",
+    "verifiedSource": "NotebookLM Deep Terroir Research - Phase 6"
+  },
+  "gao-huu-co-long-hoa-hoa-minh-ocop-4-sao": {
+    "hours": "08:00 - 17:00 (Thứ Hai đến Thứ Bảy)",
+    "best_time": "Tháng 12 đến tháng 1 dương lịch mùa gặt lúa tôm trên đảo Cồn Chim để thưởng thức hạt gạo mới dẻo thơm ngát",
+    "waterway_access": "Đường thủy qua sông Cổ Chiên, phà Bà Trầm hoặc đò ngang Phước Vinh cập bến Cồn Chim (xã Hòa Minh) vận chuyển lúa gạo thuận tiện",
+    "aeo_schema_type": "Product",
+    "cultural_notes": "Gạo hữu cơ đạt chuẩn OCOP 4 sao canh tác theo mô hình con tôm ôm cây lúa thuận thiên tại xã đảo Long Hòa – Hòa Minh. Giống lúa ST24, ST25 được gieo cấy trên nền đất nuôi tôm sạch, không phân hóa học, không thuốc trừ sâu, chắt chiu phù sa mặn ngọt giao thoa của dòng Cổ Chiên. Hạt gạo thon dài trong suốt, khi nấu chín hạt cơm mềm dẻo, thơm ngào ngạt hương lá dứa tự nhiên.",
+    "visual_narrative": "Góc chụp top-down mâm cơm gạo lúa tôm xới vào bát gốm nung nghi ngút khói, từng hạt cơm trắng ngần căng bóng bên đĩa tôm càng sông kho tàu đỏ au đậm chất phù sa cù lao.",
+    "source_citations": [
+      {
+        "source_id": "SRC-TIER1-TV-009",
+        "title": "Công nhận gạo sạch lúa - tôm Cồn Chim Hòa Minh đạt tiêu chuẩn hữu cơ và chứng nhận OCOP 4 sao",
+        "url": "https://travinh.gov.vn/ocop/gao-huu-co-long-hoa-hoa-minh",
+        "author_or_institution": "UBND Trà Vinh",
+        "target_notebook": "mekong-360-t-p-2",
+        "tier": "TIER_1_GOVERNMENT",
+        "authority_weight": 1.0
+      },
+      {
+        "source_id": "SRC-TIER2-VASS-005",
+        "title": "Sinh kế thuận thiên vùng duyên hải: Mô hình tôm lúa hữu cơ bền vững tại cù lao Cồn Chim",
+        "url": "https://vass.gov.vn/nghien-cuu/sinh-ke-thuan-thien-con-chim-tra-vinh",
+        "author_or_institution": "Viện Hàn lâm Khoa học Xã hội Việt Nam",
+        "target_notebook": "mekong-360-t-p-2",
+        "tier": "TIER_2_SCHOLARLY",
+        "authority_weight": 0.95
+      }
+    ],
+    "id": "gao-huu-co-long-hoa-hoa-minh-ocop-4-sao",
+    "verifiedAt": "2026-09-13T17:30:00+07:00",
+    "verifiedSource": "NotebookLM Deep Terroir Research - Phase 6"
+  },
+  "cu-cai-muoi-chit-sa": {
+    "hours": "06:00 - 18:00 (Mở cửa tất cả các ngày trong tuần)",
+    "best_time": "Tháng Chạp đến tháng 3 âm lịch mùa thu hoạch củ cải trắng và phơi củ cải muối đón nắng giòn phương Nam",
+    "waterway_access": "Đường thủy rạch Cầu Kè dẫn ra sông Hậu, ghe thuyền thu mua nông sản ghé bến chợ Cầu Kè cách cơ sở chế biến 800m",
+    "aeo_schema_type": "Product",
+    "cultural_notes": "Sản phẩm OCOP 3 sao đặc sắc mang dấu ấn giao thoa văn hóa Hoa - Khmer tại huyện Cầu Kè. Củ cải trắng giống bản địa được chọn củ chắc nịch, ngâm muối hột theo tỷ lệ gia truyền rồi phơi dưới nắng gắt cho héo quắt, sau đó ủ lên men tự nhiên với đường thốt nốt. Xá bấu Chịt Sa giòn sần sật, mặn ngọt hài hòa, dùng nấu canh sườn, xào thịt hoặc ăn cùng cháo trắng lá dứa nức tiếng.",
+    "visual_narrative": "Góc máy chân thực ghi lại những giàn phơi củ cải muối màu nâu cánh gián trải dài dưới nắng vàng ruộm bên hiên nhà cổ, từng thớ củ cải teo đều dậy mùi thơm lên men nồng ấm.",
+    "source_citations": [
+      {
+        "source_id": "SRC-TIER1-TV-010",
+        "title": "Bảo tồn làng nghề truyền thống và công nhận OCOP xá bấu Chịt Sa Cầu Kè",
+        "url": "https://snnptnt.travinh.gov.vn/lang-nghe/cu-cai-muoi-chit-sa-cau-ke",
+        "author_or_institution": "Sở Nông nghiệp và Phát triển Nông thôn Trà Vinh",
+        "target_notebook": "mekong-360-t-p-2",
+        "tier": "TIER_1_GOVERNMENT",
+        "authority_weight": 1.0
+      },
+      {
+        "source_id": "SRC-TIER2-TV-006",
+        "title": "Vị mặn mòi xá bấu Chịt Sa: Món ăn dân dã nâng tầm đặc sản OCOP miền Tây",
+        "url": "https://baotravinh.vn/kinh-te/cu-cai-muoi-chit-sa-cau-ke-2024",
+        "author_or_institution": "Báo Trà Vinh",
+        "target_notebook": "mekong-360-t-p-2",
+        "tier": "TIER_2_SCHOLARLY",
+        "authority_weight": 0.9
+      }
+    ],
+    "id": "cu-cai-muoi-chit-sa",
+    "verifiedAt": "2026-09-13T17:30:00+07:00",
+    "verifiedSource": "NotebookLM Deep Terroir Research - Phase 6"
+  },
+  "banh-kep-thuy-kieu": {
+    "hours": "07:00 - 18:00 (Mở cửa các ngày trong tuần)",
+    "best_time": "Mùa du lịch miệt vườn từ tháng 5 đến tháng 9 hoặc dịp cận Tết cổ truyền khi lò bánh đỏ lửa liên tục",
+    "waterway_access": "Đường thủy ven sông Cổ Chiên kết nối hệ thống rạch Cầu Ngang, thuyền xuồng cập bến đò trung tâm thị trấn thuận lợi",
+    "aeo_schema_type": "Product",
+    "cultural_notes": "Sản phẩm OCOP 4 sao chế biến từ bột mì, trứng gà, nước cốt dừa tươi và mè đen rang thơm lừng. Khuôn bánh kẹp bằng gang trui dầu dừa nướng trên bếp than hoa rực hồng, thợ bánh gập vỏ giòn rụm hình nón hoặc cuốn tròn khi bánh vừa rỉ lửa. Bánh kẹp Thúy Kiều giữ trọn độ giòn tan, vị béo ngậy ngọt dịu đặc trưng Nam Bộ không gắt dầu.",
+    "visual_narrative": "Cận cảnh chiếc bánh kẹp hoa văn tổ ong vàng óng giòn rụm vừa được nhấc ra khỏi khuôn gang trên than hồng, lấm tấm hạt mè đen bóng thơm phức giữa làn khói bếp bảng lảng.",
+    "source_citations": [
+      {
+        "source_id": "SRC-TIER1-TV-011",
+        "title": "Đánh giá xếp hạng OCOP 4 sao sản phẩm Bánh kẹp Thúy Kiều huyện Cầu Ngang",
+        "url": "https://travinh.gov.vn/ocop/banh-kep-thuy-kieu-cau-ngang",
+        "author_or_institution": "UBND Trà Vinh",
+        "target_notebook": "mekong-360-t-p-2",
+        "tier": "TIER_1_GOVERNMENT",
+        "authority_weight": 1.0
+      },
+      {
+        "source_id": "SRC-TIER2-THVL-004",
+        "title": "Hương bánh quê hương: Giữ nghề bánh kẹp truyền thống xứ duyên hải",
+        "url": "https://thvl.vn/van-hoa/banh-kep-thuy-kieu-dac-san-que-huong",
+        "author_or_institution": "Đài Phát thanh và Truyền hình Vĩnh Long",
+        "target_notebook": "mekong-360-t-p-2",
+        "tier": "TIER_2_SCHOLARLY",
+        "authority_weight": 0.95
+      }
+    ],
+    "id": "banh-kep-thuy-kieu",
+    "verifiedAt": "2026-09-13T17:30:00+07:00",
+    "verifiedSource": "NotebookLM Deep Terroir Research - Phase 6"
+  },
+  "banh-tet-tu-quy-hai-ly": {
+    "hours": "06:00 - 20:00 (Mở cửa đón khách quanh năm, giao hàng toàn quốc)",
+    "best_time": "Tháng Chạp chuẩn bị đón Tết cổ truyền hoặc các dịp rằm lớn trong năm để cảm nhận hương nếp mới thơm dẻo",
+    "waterway_access": "Đường thủy tuyến sông Cổ Chiên ghé bến đò Trà Cuôn (xã Kim Hòa), cano du lịch cập bến cách cơ sở sản xuất 300m",
+    "aeo_schema_type": "Product",
+    "cultural_notes": "Thương hiệu bánh tét nổi tiếng vùng Trà Cuôn đạt chứng nhận OCOP 4 sao. Đòn bánh tét Hai Lý kết tinh nghệ thuật phối vị độc đáo với 4 loại nhân: đậu xanh thịt mỡ truyền thống, trứng muối bùi béo, chuối xiêm chín đỏ ngọt lịm và nhân thập cẩm nấm đông cô. Nếp dẻo thơm được ngâm nước cốt lá bồ ngót tạo màu xanh ngọc bích mướt mắt, gói chặt tay bằng lá chuối xiêm xanh mướt luộc liên tục 10 tiếng đồng hồ.",
+    "visual_narrative": "Khoanh bánh tét Tứ Quý cắt bằng dây lạt để lộ lớp nếp xanh màu ngọc bích ôm trọn nhân trứng muối vàng rực, thịt ba chỉ trong veo và đậu xanh mịn màng như tranh thủy mặc.",
+    "source_citations": [
+      {
+        "source_id": "SRC-TIER1-TV-012",
+        "title": "Hồ sơ OCOP 4 sao Bánh tét Tứ Quý Hai Lý: Chuẩn hóa chất lượng làng nghề Trà Cuôn",
+        "url": "https://snnptnt.travinh.gov.vn/ocop/banh-tet-tu-quy-hai-ly-tra-cuon",
+        "author_or_institution": "Sở Nông nghiệp và Phát triển Nông thôn Trà Vinh",
+        "target_notebook": "mekong-360-t-p-2",
+        "tier": "TIER_1_GOVERNMENT",
+        "authority_weight": 1.0
+      },
+      {
+        "source_id": "SRC-TIER2-ND-006",
+        "title": "Đòn bánh tét Trà Cuôn: Từ món ngon phum sóc đến thương hiệu ẩm thực quốc gia",
+        "url": "https://nhandan.vn/am-thuc/banh-tet-tra-cuon-hai-ly-791024",
+        "author_or_institution": "Báo Nhân Dân",
+        "target_notebook": "mekong-360-t-p-2",
+        "tier": "TIER_2_SCHOLARLY",
+        "authority_weight": 0.95
+      }
+    ],
+    "id": "banh-tet-tu-quy-hai-ly",
+    "verifiedAt": "2026-09-13T17:30:00+07:00",
+    "verifiedSource": "NotebookLM Deep Terroir Research - Phase 6"
+  },
+  "kho-ca-bong-lau-ca-du-do-ca-bong-cat-mot-nang-thanh-phong": {
+    "hours": "06:30 - 18:00 (Phục vụ khách mua trực tiếp tại bến cá hoặc đặt hàng đóng gói hút chân không)",
+    "best_time": "Tháng 11 đến tháng 4 năm sau vụ cá ngược dòng sông Cổ Chiên và biển êm sóng lặng",
+    "waterway_access": "Đường thủy ven cửa sông Hàm Luông và Cổ Chiên đổ ra Biển Đông, tàu cá cập bến Thạnh Phong bốc dỡ hải sản tươi sống",
+    "aeo_schema_type": "Product",
+    "cultural_notes": "Sản phẩm OCOP 4 sao của vùng ven biển Thạnh Phú. Cá bông lau, cá đù đỏ và cá bống cát tươi sống vừa đánh bắt từ biển về được làm sạch, ướp muối ớt cay dịu theo công thức ngư dân truyền đời, rồi phơi duy nhất một con nắng gắt trên giàn lưới cao cách mặt đất. Thịt cá se dẻo bên ngoài, ngọt mềm mọng nước bên trong, đậm đà vị ngọt tự nhiên của cá biển phù sa.",
+    "visual_narrative": "Góc máy rộng bao quát giàn phơi cá một nắng trải dài tít tắp đón gió biển lồng lộng tại bến Thạnh Phong, vảy cá lấp lánh ánh bạc dưới trời xanh bao la.",
+    "source_citations": [
+      {
+        "source_id": "SRC-TIER1-BT-006",
+        "title": "Quyết định công nhận sản phẩm OCOP 4 sao: Khô cá một nắng Thạnh Phong huyện Thạnh Phú",
+        "url": "https://bentre.gov.vn/van-ban/ocop-kho-ca-bong-lau-mot-nang-thanh-phong",
+        "author_or_institution": "UBND Bến Tre",
+        "target_notebook": "mekong-360-t-p-2",
+        "tier": "TIER_1_GOVERNMENT",
+        "authority_weight": 1.0
+      },
+      {
+        "source_id": "SRC-TIER2-DK-004",
+        "title": "Mặn mòi cá một nắng Thạnh Phong: Đưa hải sản biển Bến Tre vươn xa",
+        "url": "https://baodongkhoi.vn/kinh-te/ca-mot-nang-thanh-phong-thanh-phu-2024",
+        "author_or_institution": "Báo Đồng Khởi",
+        "target_notebook": "mekong-360-t-p-2",
+        "tier": "TIER_2_SCHOLARLY",
+        "authority_weight": 0.9
+      }
+    ],
+    "id": "kho-ca-bong-lau-ca-du-do-ca-bong-cat-mot-nang-thanh-phong",
+    "verifiedAt": "2026-09-13T17:30:00+07:00",
+    "verifiedSource": "NotebookLM Deep Terroir Research - Phase 6"
+  },
+  "kho-ca-bien-thanh-phu": {
+    "hours": "07:00 - 18:00 (Mở cửa tất cả các ngày trong tuần)",
+    "best_time": "Mùa khô từ tháng 12 đến tháng 4 nắng giòn, độ ẩm thấp, mẻ cá khô đạt độ dẻo và giữ trọn hương vị biển",
+    "waterway_access": "Đường thủy bến đò Cồn Bửng kết nối cửa sông Hàm Luông, ghe đánh bắt ven bờ ghé làng cá Thạnh Phú thuận tiện",
+    "aeo_schema_type": "Product",
+    "cultural_notes": "Sản phẩm OCOP 3 sao chế biến thủ công từ các loại cá mối, cá lưỡi trâu, cá chỉ vàng đánh bắt bằng lưới cào ven bờ biển Thạnh Phú. Cá được xẻ đôi, ngâm nước muối pha loãng rồi phơi nắng tự nhiên 2 đến 3 con nắng giòn. Không dùng chất bảo quản hay phẩm màu công nghiệp, thịt cá khô giữ màu trắng ngà tự nhiên, vị ngọt đậm đà, nướng than hoa thơm lừng.",
+    "visual_narrative": "Từng vỉ cá khô lưỡi trâu và cá mối vàng ươm xếp đều tăm tắp trên nong tre phơi dưới nắng hanh vàng ven bờ rừng ngập mặn Cồn Bửng.",
+    "source_citations": [
+      {
+        "source_id": "SRC-TIER1-BT-007",
+        "title": "Chứng nhận sản phẩm OCOP 3 sao Bến Tre: Khô cá biển Thạnh Phú",
+        "url": "https://snnptnt.bentre.gov.vn/ocop/kho-ca-bien-thanh-phu",
+        "author_or_institution": "Sở Nông nghiệp và Phát triển Nông thôn Bến Tre",
+        "target_notebook": "mekong-360-t-p-2",
+        "tier": "TIER_1_GOVERNMENT",
+        "authority_weight": 1.0
+      },
+      {
+        "source_id": "SRC-TIER2-DK-005",
+        "title": "Nghề xẻ khô cá biển Thạnh Phú: Giữ sinh kế xanh bên triền sóng mặn",
+        "url": "https://baodongkhoi.vn/kinh-te/nghe-xe-kho-ca-bien-thanh-phu-2024",
+        "author_or_institution": "Báo Đồng Khởi",
+        "target_notebook": "mekong-360-t-p-2",
+        "tier": "TIER_2_SCHOLARLY",
+        "authority_weight": 0.9
+      }
+    ],
+    "id": "kho-ca-bien-thanh-phu",
+    "verifiedAt": "2026-09-13T17:30:00+07:00",
+    "verifiedSource": "NotebookLM Deep Terroir Research - Phase 6"
+  },
+  "cua-bien-va-ngheu-thanh-phu": {
+    "hours": "05:30 - 18:30 (Mở cửa theo con nước biển, bán cua sống và nghêu tươi trong ngày)",
+    "best_time": "Vào các ngày con nước rằm và 30 âm lịch khi cua chắc thịt đầy gạch và nghêu mập ú",
+    "waterway_access": "Đường thủy luồng cửa đại Hàm Luông và Cổ Chiên, ghe cào nghêu và xuồng thu hoạch cua trong rừng đước cập bến thuận tiện",
+    "aeo_schema_type": "Product",
+    "cultural_notes": "Đặc sản thủy sản sinh thái đạt OCOP 4 sao huyện Thạnh Phú. Cua biển được nuôi thả tự nhiên trong tán rừng ngập mặn đước và mắm, nguồn thức ăn hoàn toàn tự nhiên từ cá tạp và giáp xác nhỏ, cho thịt chắc nịch, gạch son béo ngậy. Nghêu Thạnh Phú được nuôi trên các bãi bồi phù sa ven biển Cồn Bửng, vỏ mỏng ruột dày, nước luộc ngọt thanh đậm đà khoáng chất.",
+    "visual_narrative": "Cận cảnh con cua biển Thạnh Phú yếm đỏ au đầy gạch son buộc bằng cọng lác xanh mướt đặt cạnh rổ nghêu biển trắng phau mọng nước tươi ròng.",
+    "source_citations": [
+      {
+        "source_id": "SRC-TIER1-BT-008",
+        "title": "Quy hoạch phát triển thủy sản sinh thái ven biển và chứng nhận OCOP 4 sao Cua biển, Nghêu Thạnh Phú",
+        "url": "https://bentre.gov.vn/van-ban/phat-trien-thuy-san-sinh-thai-thanh-phu",
+        "author_or_institution": "UBND Bến Tre",
+        "target_notebook": "mekong-360-t-p-2",
+        "tier": "TIER_1_GOVERNMENT",
+        "authority_weight": 1.0
+      },
+      {
+        "source_id": "SRC-TIER2-CTU-005",
+        "title": "Đánh giá chất lượng sinh học và tiềm năng xuất khẩu cua biển sinh thái rừng ngập mặn Bến Tre",
+        "url": "https://sj.ctu.edu.vn/article/cua-bien-sinh-thai-rung-ngap-man-ben-tre",
+        "author_or_institution": "Tạp chí Khoa học Đại học Cần Thơ",
+        "target_notebook": "mekong-360-t-p-2",
+        "tier": "TIER_2_SCHOLARLY",
+        "authority_weight": 0.95
+      }
+    ],
+    "id": "cua-bien-va-ngheu-thanh-phu",
+    "verifiedAt": "2026-09-13T17:30:00+07:00",
+    "verifiedSource": "NotebookLM Deep Terroir Research - Phase 6"
+  },
+  "hop-tac-xa-thuy-san-thanh-loi-ngheu-thanh-hai-ocop": {
+    "hours": "06:00 - 17:30 (Mở cửa đón khách tham quan sân nghêu và thu mua thủy sản)",
+    "best_time": "Vào buổi sáng sớm con nước ròng để trực tiếp xuống bãi bồi cào nghêu và ngắm bình minh trên biển",
+    "waterway_access": "Đường thủy ven biển Thạnh Hải, tàu cá và ca nô du lịch cập trạm kiểm soát biên phòng Cồn Bửng",
+    "aeo_schema_type": "LocalBusiness",
+    "cultural_notes": "Mô hình hợp tác xã thủy sản cộng đồng tiêu biểu đạt chuẩn MSC (khai thác hải sản bền vững quốc tế) và chứng nhận OCOP. Quản lý hàng trăm héc-ta bãi bồi biển Thạnh Hải với phương thức khai thác nghêu luân phiên bền vững, bảo vệ hệ sinh thái bờ biển, tạo việc làm và thu nhập ổn định cho hàng nghìn hộ xã viên vùng ven biển.",
+    "visual_narrative": "Đoàn xã viên HTX Thạnh Lợi nón lá nhấp nhô cào nghêu trên bãi triều bạt ngàn lúc bình minh ló rạng, mặt cát lấp lánh vỏ nghêu trong ánh ban mai phản chiếu mặt biển.",
+    "source_citations": [
+      {
+        "source_id": "SRC-TIER1-BT-009",
+        "title": "Mô hình kinh tế tập thể điển hình: HTX Thủy sản Thạnh Lợi đạt chứng nhận nghề cá bền vững MSC và OCOP",
+        "url": "https://snnptnt.bentre.gov.vn/mo-hinh/htx-thuy-san-thanh-loi-msc-ocop",
+        "author_or_institution": "Sở Nông nghiệp và Phát triển Nông thôn Bến Tre",
+        "target_notebook": "mekong-360-t-p-2",
+        "tier": "TIER_1_GOVERNMENT",
+        "authority_weight": 1.0
+      },
+      {
+        "source_id": "SRC-TIER2-ND-007",
+        "title": "Bảo tồn nguồn lợi nghêu biển Bến Tre: Hướng đi bền vững từ chứng chỉ quốc tế MSC",
+        "url": "https://nhandan.vn/kinh-te/bao-ton-nguon-loi-ngheu-ben-tre-msc-783210",
+        "author_or_institution": "Báo Nhân Dân",
+        "target_notebook": "mekong-360-t-p-2",
+        "tier": "TIER_2_SCHOLARLY",
+        "authority_weight": 0.95
+      }
+    ],
+    "id": "hop-tac-xa-thuy-san-thanh-loi-ngheu-thanh-hai-ocop",
+    "verifiedAt": "2026-09-13T17:30:00+07:00",
+    "verifiedSource": "NotebookLM Deep Terroir Research - Phase 6"
+  },
+  "ca-bong-lau-mot-nang-binh-dai": {
+    "hours": "06:30 - 18:00 (Mở cửa hàng ngày tại cảng cá Bình Thắng)",
+    "best_time": "Tháng 11 đến tháng 3 âm lịch mùa cá bông lau từ biển ngược dòng sông Ba Lai và Cửa Đại đẻ trứng",
+    "waterway_access": "Đường thủy Cảng cá Bình Thắng, tàu ghe đánh bắt cá bông lau neo đậu tấp nập ngay chân cầu Bình Đại",
+    "aeo_schema_type": "Product",
+    "cultural_notes": "Đặc sản ẩm thực độc đáo của ngư dân cửa biển Bình Đại. Cá bông lau bắt từ dòng nước lợ sông Ba Lai có lớp da dày trơn bóng, thịt béo ngậy và thơm ngọt. Cá tươi được phi-lê thành từng lát dày bản, ướp muối ớt cay xè rồi hong dưới nắng biển chang chang. Khi chiên giòn, lớp mỡ cá tươm ra vàng rộm, dậy hương thơm nức mũi, ăn kèm cơm vắt hoặc canh chua điên điển.",
+    "visual_narrative": "Cận cảnh lát cá bông lau một nắng màu hổ phách tươm mỡ xèo xèo trong chảo gang bốc khói nghi ngút, bên cạnh chén nước mắm me dầm ớt cay xè mộc mạc.",
+    "source_citations": [
+      {
+        "source_id": "SRC-TIER1-BT-010",
+        "title": "Danh mục sản phẩm đặc sản làng nghề chế biến thủy hải sản Bình Đại",
+        "url": "https://bentre.gov.vn/thuy-san/dac-san-ca-bong-lau-binh-dai",
+        "author_or_institution": "UBND Bến Tre",
+        "target_notebook": "mekong-360-t-p-2",
+        "tier": "TIER_1_GOVERNMENT",
+        "authority_weight": 1.0
+      },
+      {
+        "source_id": "SRC-TIER2-DK-006",
+        "title": "Mùa săn cá bông lau cửa biển Bình Đại: Hương vị sông nước miền duyên hải",
+        "url": "https://baodongkhoi.vn/van-hoa/ca-bong-lau-mot-nang-binh-dai-2024",
+        "author_or_institution": "Báo Đồng Khởi",
+        "target_notebook": "mekong-360-t-p-2",
+        "tier": "TIER_2_SCHOLARLY",
+        "authority_weight": 0.9
+      }
+    ],
+    "id": "ca-bong-lau-mot-nang-binh-dai",
+    "verifiedAt": "2026-09-13T17:30:00+07:00",
+    "verifiedSource": "NotebookLM Deep Terroir Research - Phase 6"
+  },
+  "ca-doi-kho-mot-nang-binh-dai": {
+    "hours": "07:00 - 18:00 (Mở cửa tất cả các ngày trong tuần)",
+    "best_time": "Mùa gió chướng từ tháng 10 đến tháng 2 âm lịch khi đàn cá đối biển bơi vào các cửa sông phù sa nhiều thức ăn mập béo",
+    "waterway_access": "Đường thủy cửa sông Ba Lai ghé cảng cá Bình Đại, tàu thuyền vận chuyển hải sản cập cầu cảng thuận tiện",
+    "aeo_schema_type": "Product",
+    "cultural_notes": "Món khô hải sản trứ danh của vùng cửa sông ven biển Bình Đại. Cá đối cồi tươi sống được chọn lựa kỹ càng, mổ lưng bỏ ruột, rửa qua nước biển sạch rồi ngâm nước muối ớt nhẹ trước khi phơi dưới một nắng gắt rượi. Thịt cá đối săn chắc, thơm ngọt bùi béo tự nhiên, nướng than hoa hoặc chiên vàng chấm mắm gừng là món nhắm đượm tình làng chài.",
+    "visual_narrative": "Những con cá đối một nắng căng tròn xếp xòe hình cánh quạt trên mâm đan tre, ánh nắng biển rọi lên thớ thịt óng ả màu vàng tươi quyến rũ.",
+    "source_citations": [
+      {
+        "source_id": "SRC-TIER1-BT-011",
+        "title": "Xúc tiến thương mại các sản phẩm chế biến thủy hải sản khô huyện Bình Đại",
+        "url": "https://snnptnt.bentre.gov.vn/thuong-mai/ca-doi-kho-mot-nang-binh-dai",
+        "author_or_institution": "Sở Nông nghiệp và Phát triển Nông thôn Bến Tre",
+        "target_notebook": "mekong-360-t-p-2",
+        "tier": "TIER_1_GOVERNMENT",
+        "authority_weight": 1.0
+      },
+      {
+        "source_id": "SRC-TIER2-THVL-005",
+        "title": "Ẩm thực duyên hải: Cá đối một nắng đậm đà phong vị biển phương Nam",
+        "url": "https://thvl.vn/am-thuc/ca-doi-mot-nang-binh-dai",
+        "author_or_institution": "Đài Phát thanh và Truyền hình Vĩnh Long",
+        "target_notebook": "mekong-360-t-p-2",
+        "tier": "TIER_2_SCHOLARLY",
+        "authority_weight": 0.95
+      }
+    ],
+    "id": "ca-doi-kho-mot-nang-binh-dai",
+    "verifiedAt": "2026-09-13T17:30:00+07:00",
+    "verifiedSource": "NotebookLM Deep Terroir Research - Phase 6"
+  },
+  "tom-kho-hai-kham": {
+    "hours": "06:30 - 19:00 (Mở cửa tất cả các ngày trong tuần, phục vụ khách mua quà tặng)",
+    "best_time": "Tháng 11 đến tháng 3 âm lịch vụ tôm rộ mùa nước nổi và gió chướng biển Ba Động",
+    "waterway_access": "Đường thủy cửa biển Cung Hầu sông Cổ Chiên, ghe thu mua tôm cập bến cá thị xã Duyên Hải cách cơ sở 500m",
+    "aeo_schema_type": "Product",
+    "cultural_notes": "Thương hiệu tôm khô truyền thống đạt OCOP 3 sao tại vùng duyên hải Trà Vinh. Tôm đất sinh thái sống tự nhiên trong đầm rừng ngập mặn được luộc nước muối đúng độ lửa, phơi nắng tự nhiên trên giàn cao rồi bóc vỏ thủ công khéo léo. Tôm khô Hai Khâm giữ trọn màu đỏ cam tự nhiên, thịt dai ngọt đậm đà, không phẩm màu độc hại, là món quà biếu sang trọng nức tiếng.",
+    "visual_narrative": "Cận cảnh thau tôm khô đỏ au óng ả màu gạch tôm tự nhiên, từng con tôm đất cong đều tăm tắp, khô ráo và thơm nồng mùi biển cả.",
+    "source_citations": [
+      {
+        "source_id": "SRC-TIER1-TV-013",
+        "title": "Chứng nhận sản phẩm OCOP 3 sao: Tôm khô sinh thái Hai Khâm thị xã Duyên Hải",
+        "url": "https://travinh.gov.vn/ocop/tom-kho-hai-kham-duyen-hai",
+        "author_or_institution": "UBND Trà Vinh",
+        "target_notebook": "mekong-360-t-p-2",
+        "tier": "TIER_1_GOVERNMENT",
+        "authority_weight": 1.0
+      },
+      {
+        "source_id": "SRC-TIER2-TV-007",
+        "title": "Nghề làm tôm khô Duyên Hải: Đượm vị ngọt mặn phù sa rừng đước",
+        "url": "https://baotravinh.vn/kinh-te/tom-kho-hai-kham-duyen-hai-2024",
+        "author_or_institution": "Báo Trà Vinh",
+        "target_notebook": "mekong-360-t-p-2",
+        "tier": "TIER_2_SCHOLARLY",
+        "authority_weight": 0.9
+      }
+    ],
+    "id": "tom-kho-hai-kham",
+    "verifiedAt": "2026-09-13T17:30:00+07:00",
+    "verifiedSource": "NotebookLM Deep Terroir Research - Phase 6"
+  },
+  "nuoc-khoang-thien-nhien-sao-bien-starfiwa": {
+    "hours": "07:30 - 17:00 (Thứ Hai đến Thứ Bảy, tiếp nhận đơn hàng đóng thùng)",
+    "best_time": "Các tháng mùa khô nắng nóng từ tháng 1 đến tháng 5 nhu cầu giải khát và bù khoáng tăng cao",
+    "waterway_access": "Đường thủy kênh đào ven biển Duyên Hải kết nối luồng tàu biển Định An, thuận tiện vận chuyển sà lan hàng hóa",
+    "aeo_schema_type": "Product",
+    "cultural_notes": "Sản phẩm OCOP 4 sao độc đáo khai thác từ mạch nước ngầm khoáng sâu hàng trăm mét dưới lòng đất cổ duyên hải Trà Vinh. Nước khoáng Starfiwa giàu vi lượng tự nhiên như canxi, magie, kali, được xử lý qua hệ thống lọc siêu màng và tiệt trùng ozone hiện đại, đạt tiêu chuẩn nước uống đóng chai khắt khe phục vụ du lịch và xuất khẩu.",
+    "visual_narrative": "Góc chụp trong suốt đặc tả bọt khí khoáng li ti sủi tăm trong ly thủy tinh pha lê dưới ánh sáng tự nhiên, nền sau là dây chuyền đóng chai tự động đạt chuẩn GMP.",
+    "source_citations": [
+      {
+        "source_id": "SRC-TIER1-TV-014",
+        "title": "Công nhận sản phẩm OCOP 4 sao: Nước khoáng thiên nhiên Sao Biển Starfiwa",
+        "url": "https://snnptnt.travinh.gov.vn/ocop/nuoc-khoang-sao-bien-starfiwa",
+        "author_or_institution": "Sở Nông nghiệp và Phát triển Nông thôn Trà Vinh",
+        "target_notebook": "mekong-360-t-p-2",
+        "tier": "TIER_1_GOVERNMENT",
+        "authority_weight": 1.0
+      },
+      {
+        "source_id": "SRC-TIER2-THVL-006",
+        "title": "Doanh nghiệp khoa học công nghệ: Khai thác mạch khoáng ngầm duyên hải Trà Vinh",
+        "url": "https://thvl.vn/khoa-hoc-cong-nghe/nuoc-khoang-thien-nhien-starfiwa",
+        "author_or_institution": "Đài Phát thanh và Truyền hình Vĩnh Long",
+        "target_notebook": "mekong-360-t-p-2",
+        "tier": "TIER_2_SCHOLARLY",
+        "authority_weight": 0.95
+      }
+    ],
+    "id": "nuoc-khoang-thien-nhien-sao-bien-starfiwa",
+    "verifiedAt": "2026-09-13T17:30:00+07:00",
+    "verifiedSource": "NotebookLM Deep Terroir Research - Phase 6"
+  },
+  "buoi-da-xanh-giong-trom": {
+    "hours": "07:00 - 18:00 (Mở cửa phục vụ khách tham quan vườn và chọn bưởi tại gốc)",
+    "best_time": "Vào vụ thu hoạch chính từ tháng 8 đến tháng 11 âm lịch và vụ bưởi Tết cổ truyền quả căng mọng, tép bưởi ngọt đậm",
+    "waterway_access": "Đường thủy kênh rạch Giồng Trôm kết nối sông Ba Lai, ghe tam bản luồn lách cập bến nhà vườn thuận lợi",
+    "aeo_schema_type": "Product",
+    "cultural_notes": "Sản phẩm OCOP 4 sao và chỉ dẫn địa lý nức tiếng của xứ dừa Giồng Trôm. Đất phù sa ven sông Ba Lai bồi đắp quanh năm giúp cây bưởi phát triển tươi tốt, cho trái tròn đều, vỏ mỏng màu xanh tươi khi chín, tép bưởi màu hồng ánh ngọc, mọng nước, vị ngọt thanh không chua, ít hạt hoặc không hạt, là món quà sang trọng mùa lễ Tết.",
+    "visual_narrative": "Bàn tay nghệ nhân bóc tách từng múi bưởi da xanh hồng hào mọng nước lộ rõ các tép bưởi căng mọng lấp lánh như hạt ngọc bích trên đĩa sứ tráng men hoa sen.",
+    "source_citations": [
+      {
+        "source_id": "SRC-TIER1-BT-012",
+        "title": "Chỉ dẫn địa lý Bưởi Da Xanh Bến Tre và vùng chuyên canh OCOP 4 sao Giồng Trôm",
+        "url": "https://bentre.gov.vn/chi-dan-dia-ly/buoi-da-xanh-giong-trom",
+        "author_or_institution": "UBND Bến Tre",
+        "target_notebook": "mekong-360-t-p-2",
+        "tier": "TIER_1_GOVERNMENT",
+        "authority_weight": 1.0
+      },
+      {
+        "source_id": "SRC-TIER2-DK-007",
+        "title": "Chuỗi giá trị bưởi da xanh Bến Tre: Nâng tầm thương hiệu trái cây xuất khẩu",
+        "url": "https://baodongkhoi.vn/kinh-te/buoi-da-xanh-giong-trom-ocop-2024",
+        "author_or_institution": "Báo Đồng Khởi",
+        "target_notebook": "mekong-360-t-p-2",
+        "tier": "TIER_2_SCHOLARLY",
+        "authority_weight": 0.9
+      }
+    ],
+    "id": "buoi-da-xanh-giong-trom",
+    "verifiedAt": "2026-09-13T17:30:00+07:00",
+    "verifiedSource": "NotebookLM Deep Terroir Research - Phase 6"
+  },
+  "buoi-nam-roi-my-hoa": {
+    "hours": "07:00 - 18:30 (Mở cửa tất cả các ngày trong tuần đón khách trải nghiệm vườn)",
+    "best_time": "Tháng 8 đến tháng 12 âm lịch vào vụ bưởi chín rộ đón gió bấc, tép bưởi ráo nước và vị chua ngọt cân bằng đỉnh cao",
+    "waterway_access": "Đường thủy sông Hậu ghé bến đò Mỹ Hòa hoặc phà Bình Minh, cano du lịch cập thẳng bờ bao vườn bưởi",
+    "aeo_schema_type": "Product",
+    "cultural_notes": "Sản phẩm OCOP 4 sao và Chỉ dẫn địa lý quốc gia tiêu biểu của tỉnh Vĩnh Long. Vùng đất cù lao Mỹ Hòa nằm giữa hai nhánh sông Hậu và sông Trà Lạc quanh năm bồi lắng phù sa màu mỡ. Trái bưởi hình quả lê có núm đầu cuống, vỏ mỏng vàng ươm khi chín, tép bưởi róc múi, mọng nước, vị ngọt thanh chua dịu đặc trưng không lẫn với bất kỳ giống bưởi nào khác.",
+    "visual_narrative": "Góc máy góc rộng chụp liếp bưởi Năm Roi trĩu quả vàng ươm uốn cong cành sát mặt mương nước trong vắt rợp bóng lục bình trôi thanh bình.",
+    "source_citations": [
+      {
+        "source_id": "SRC-TIER1-VL-005",
+        "title": "Chỉ dẫn địa lý Bưởi Năm Roi Bình Minh: Bảo hộ nguồn gen và tiêu chuẩn chất lượng OCOP",
+        "url": "https://vinhlong.gov.vn/chi-dan-dia-ly/buoi-nam-roi-binh-minh",
+        "author_or_institution": "UBND tỉnh Vĩnh Long",
+        "target_notebook": "v-nh-long-v-nh-long-b-n-tre-tr",
+        "tier": "TIER_1_GOVERNMENT",
+        "authority_weight": 1.0
+      },
+      {
+        "source_id": "SRC-TIER2-THVL-007",
+        "title": "Vương quốc bưởi Năm Roi Mỹ Hòa: Thương hiệu nông sản vàng bên dòng sông Hậu",
+        "url": "https://thvl.vn/nong-nghiep/buoi-nam-roi-my-hoa-binh-minh",
+        "author_or_institution": "Đài Phát thanh và Truyền hình Vĩnh Long",
+        "target_notebook": "mekong-360-t-p-2",
+        "tier": "TIER_2_SCHOLARLY",
+        "authority_weight": 0.95
+      }
+    ],
+    "id": "buoi-nam-roi-my-hoa",
+    "verifiedAt": "2026-09-13T17:30:00+07:00",
+    "verifiedSource": "NotebookLM Deep Terroir Research - Phase 6"
+  },
+  "cam-sanh-tam-binh": {
+    "hours": "06:30 - 18:00 (Mở cửa phục vụ khách mua tại vườn và giao xe tải đường dài)",
+    "best_time": "Vụ mùa chính từ tháng 9 đến tháng 12 âm lịch và vụ cam nghịch tháng 3 đến tháng 5 âm lịch",
+    "waterway_access": "Đường thủy rạch Cái Ngang kết nối sông Măng Thít và sông Tiền, ghe đò chuyên chở cam sành cập tận liếp vườn",
+    "aeo_schema_type": "Product",
+    "cultural_notes": "Trái cây đặc sản tiến vua ghi nhận từ thế kỷ XIX của huyện Tam Bình, tỉnh Vĩnh Long. Đất sét pha phù sa màu mỡ dọc rạch Cái Ngang tạo nên trái cam sành vỏ sần sùi màu xanh đậm, ruột đỏ vàng óng ánh, mọng nước, vị ngọt đậm pha chút chua thanh dễ chịu. Nước cam sành Tam Bình dồi dào vitamin C tự nhiên, là thức uống bồi bổ sức khỏe hàng đầu vùng châu thổ phù sa.",
+    "visual_narrative": "Cận cảnh nửa quả cam sành Tam Bình vừa cắt đôi ứa nước ngọt lịm, tép cam đỏ vàng rực rỡ bên ly nước cam vắt sóng sánh hạt li ti dưới nắng sớm.",
+    "source_citations": [
+      {
+        "source_id": "SRC-TIER1-VL-006",
+        "title": "Đề án nâng cao chất lượng chuỗi giá trị Cam sành Tam Bình đạt tiêu chuẩn VietGAP và OCOP",
+        "url": "https://snnptnt.vinhlong.gov.vn/chuoi-gia-tri/cam-sanh-tam-binh",
+        "author_or_institution": "Sở Nông nghiệp và Phát triển Nông thôn tỉnh Vĩnh Long",
+        "target_notebook": "mekong-360-t-p-2",
+        "tier": "TIER_1_GOVERNMENT",
+        "authority_weight": 1.0
+      },
+      {
+        "source_id": "SRC-TIER2-BVL-003",
+        "title": "Vựa cam sành Tam Bình: Giữ vững thương hiệu trái cây giải nhiệt xứ Nam",
+        "url": "https://baovinhlong.com.vn/kinh-te/cam-sanh-tam-binh-2024",
+        "author_or_institution": "Báo Vĩnh Long",
+        "target_notebook": "v-nh-long-v-nh-long-b-n-tre-tr",
+        "tier": "TIER_2_SCHOLARLY",
+        "authority_weight": 0.9
+      }
+    ],
+    "id": "cam-sanh-tam-binh",
+    "verifiedAt": "2026-09-13T17:30:00+07:00",
+    "verifiedSource": "NotebookLM Deep Terroir Research - Phase 6"
+  },
+  "dua-sap-cau-ke-dac-san-ben-tre": {
+    "hours": "07:30 - 18:00 (Mở cửa tất cả các ngày trong tuần)",
+    "best_time": "Quanh năm, cao điểm từ tháng 5 đến tháng 8 mùa du lịch biển và miệt vườn xứ dừa",
+    "waterway_access": "Đường thủy bến đò Ba Tri ven sông Hàm Luông, thuyền bè ghé chợ trung tâm Ba Tri thuận tiện",
+    "aeo_schema_type": "Product",
+    "cultural_notes": "Sản phẩm OCOP 3 sao chế biến từ nguồn dừa dồi dào của huyện duyên hải Ba Tri. Các sản phẩm dầu dừa nguyên chất ép lạnh, kẹo dừa nướng, mứt dừa non và than dừa hoạt tính được sản xuất đồng bộ, tận dụng triệt để từng thành phần của cây dừa Bến Tre, mang lại giá trị gia tăng cao cho nông dân miệt biển.",
+    "visual_narrative": "Hũ dầu dừa nguyên chất trong suốt đóng nắp gỗ mộc đặt cạnh những thanh kẹo dừa nướng vàng giòn thơm ngậy trên bàn gỗ dừa thủ công tinh xảo.",
+    "source_citations": [
+      {
+        "source_id": "SRC-TIER1-BT-013",
+        "title": "Công nhận các sản phẩm chế biến từ dừa huyện Ba Tri đạt chuẩn OCOP 3 sao",
+        "url": "https://bentre.gov.vn/ocop/san-pham-dua-ba-tri",
+        "author_or_institution": "UBND Bến Tre",
+        "target_notebook": "mekong-360-t-p-2",
+        "tier": "TIER_1_GOVERNMENT",
+        "authority_weight": 1.0
+      },
+      {
+        "source_id": "SRC-TIER2-DK-008",
+        "title": "Đa dạng hóa sản phẩm từ dừa Ba Tri: Khẳng định sức sống cây dừa xứ biển",
+        "url": "https://baodongkhoi.vn/kinh-te/san-pham-dua-ba-tri-ocop-2024",
+        "author_or_institution": "Báo Đồng Khởi",
+        "target_notebook": "mekong-360-t-p-2",
+        "tier": "TIER_2_SCHOLARLY",
+        "authority_weight": 0.9
+      }
+    ],
+    "id": "dua-sap-cau-ke-dac-san-ben-tre",
+    "verifiedAt": "2026-09-13T17:30:00+07:00",
+    "verifiedSource": "NotebookLM Deep Terroir Research - Phase 6"
+  },
+  "gao-sach-tom-lua-thanh-phu-ocop": {
+    "hours": "07:30 - 17:30 (Thứ Hai đến Thứ Bảy, phân phối buôn và lẻ)",
+    "best_time": "Vụ lúa đông xuân từ tháng Chạp đến tháng Giêng khi hạt gạo mới gặt giữ độ dẻo và hương thơm ngọt ngào",
+    "waterway_access": "Đường thủy ven sông Cổ Chiên và Hàm Luông, sà lan bốc dỡ lúa gạo cập bến cảng cống đập Ba Lai thuận tiện",
+    "aeo_schema_type": "Product",
+    "cultural_notes": "Sản phẩm gạo sinh thái OCOP chất lượng cao canh tác trên vùng đất luân canh tôm - lúa huyện Thạnh Phú. Nhờ nuôi tôm mùa mặn và trồng lúa mùa ngọt, đất đai tự làm sạch sinh học, không tồn dư hóa chất. Hạt gạo dài, mẩy đều, nấu cơm dẻo mềm thơm phức, hàm lượng dinh dưỡng cao và an toàn tuyệt đối cho người tiêu dùng.",
+    "visual_narrative": "Bao tải gai đựng gạo lúa tôm in logo OCOP mộc mạc bên chiếc bát sành chứa đầy những hạt gạo thon dài trắng ngần lấp lánh như ngọc phù sa.",
+    "source_citations": [
+      {
+        "source_id": "SRC-TIER1-BT-014",
+        "title": "Chứng nhận sản phẩm OCOP Gạo sạch Tôm - Lúa Thạnh Phú an toàn sinh học",
+        "url": "https://snnptnt.bentre.gov.vn/ocop/gao-sach-tom-lua-thanh-phu",
+        "author_or_institution": "Sở Nông nghiệp và Phát triển Nông thôn Bến Tre",
+        "target_notebook": "mekong-360-t-p-2",
+        "tier": "TIER_1_GOVERNMENT",
+        "authority_weight": 1.0
+      },
+      {
+        "source_id": "SRC-TIER2-DK-009",
+        "title": "Hạt ngọc lúa tôm Thạnh Phú: Khẳng định uy tín thương hiệu nông sản sạch Bến Tre",
+        "url": "https://baodongkhoi.vn/kinh-te/gao-sach-tom-lua-thanh-phu-2024",
+        "author_or_institution": "Báo Đồng Khởi",
+        "target_notebook": "mekong-360-t-p-2",
+        "tier": "TIER_2_SCHOLARLY",
+        "authority_weight": 0.9
+      }
+    ],
+    "id": "gao-sach-tom-lua-thanh-phu-ocop",
+    "verifiedAt": "2026-09-13T17:30:00+07:00",
+    "verifiedSource": "NotebookLM Deep Terroir Research - Phase 6"
+  },
+  "gao-sach-lua-tom-thanh-phu": {
+    "hours": "07:00 - 18:00 (Mở cửa tất cả các ngày trong tuần)",
+    "best_time": "Tháng 12 đến tháng 2 dương lịch mùa gặt lúa hữu cơ trên nền đất nuôi tôm sạch",
+    "waterway_access": "Tuyến đường thủy kênh mương nội đồng Thạnh Phú kết nối bến phà Cầu Ván đi cano thuận tiện",
+    "aeo_schema_type": "Product",
+    "cultural_notes": "Sản phẩm gạo sạch nông nghiệp bền vững của vùng đất ven biển Thạnh Phú. Canh tác hoàn toàn theo quy trình hữu cơ khép kín, phụ phẩm từ tôm là nguồn phân hữu cơ tự nhiên nuôi dưỡng bông lúa trĩu hạt. Cơm nấu chín giữ nguyên độ ngọt tự nhiên, dẻo dai ngay cả khi để nguội, đạt tiêu chuẩn an toàn vệ sinh thực phẩm khắt khe.",
+    "visual_narrative": "Cận cảnh cánh đồng lúa chín vàng ươm rung rinh trong gió biển Thạnh Phú, đan xen rãnh mương nước lợ trong xanh nơi tôm sú sinh sôi tự nhiên.",
+    "source_citations": [
+      {
+        "source_id": "SRC-TIER1-BT-015",
+        "title": "Báo cáo mô hình canh tác lúa - tôm hữu cơ thích ứng biến đổi khí hậu huyện Thạnh Phú",
+        "url": "https://bentre.gov.vn/nong-nghiep/mo-hinh-lua-tom-thanh-phu",
+        "author_or_institution": "UBND Bến Tre",
+        "target_notebook": "mekong-360-t-p-2",
+        "tier": "TIER_1_GOVERNMENT",
+        "authority_weight": 1.0
+      },
+      {
+        "source_id": "SRC-TIER2-CTU-006",
+        "title": "Đánh giá chất lượng dinh dưỡng gạo sinh thái mô hình tôm - lúa Bến Tre",
+        "url": "https://sj.ctu.edu.vn/article/gao-sinh-thai-tom-lua-ben-tre",
+        "author_or_institution": "Tạp chí Khoa học Đại học Cần Thơ",
+        "target_notebook": "mekong-360-t-p-2",
+        "tier": "TIER_2_SCHOLARLY",
+        "authority_weight": 0.95
+      }
+    ],
+    "id": "gao-sach-lua-tom-thanh-phu",
+    "verifiedAt": "2026-09-13T17:30:00+07:00",
+    "verifiedSource": "NotebookLM Deep Terroir Research - Phase 6"
+  },
+  "nhan-an-binh-tam-binh": {
+    "hours": "06:30 - 18:00 (Mở cửa đón khách trải nghiệm hái nhãn tại vườn)",
+    "best_time": "Tháng 5 đến tháng 8 dương lịch vào mùa nhãn xuồng cơm vàng và nhãn Idor chín rộ trĩu cành",
+    "waterway_access": "Đường thủy cù lao An Bình sông Cổ Chiên, tàu du lịch cập bến phà An Bình rẽ vào các rạch nhỏ",
+    "aeo_schema_type": "Product",
+    "cultural_notes": "Đặc sản trái cây trứ danh của vùng cù lao sông Tiền và Tam Bình, tỉnh Vĩnh Long. Nhãn xuồng cơm vàng được phù sa bồi đắp cho cùi dày róc hạt, màu vàng ngà óng ánh, giòn ngọt thanh tao và ráo nước. Từng chùm nhãn nặng trĩu là kết tinh mồ hôi và kinh nghiệm chăm sóc tỉ mỉ của các nhà vườn miệt vườn Vĩnh Long.",
+    "visual_narrative": "Chùm nhãn xuồng cơm vàng vỏ căng bóng nâu nhạt vừa hái xuống cành, bóc lớp vỏ mỏng để lộ cùi nhãn trong veo dày dặn ứa nước ngọt lịm.",
+    "source_citations": [
+      {
+        "source_id": "SRC-TIER1-VL-007",
+        "title": "Bảo tồn và phát triển thương hiệu Nhãn xuồng cù lao An Bình tỉnh Vĩnh Long",
+        "url": "https://vinhlong.gov.vn/nong-nghiep/nhan-an-binh-vinh-long",
+        "author_or_institution": "UBND tỉnh Vĩnh Long",
+        "target_notebook": "v-nh-long-v-nh-long-b-n-tre-tr",
+        "tier": "TIER_1_GOVERNMENT",
+        "authority_weight": 1.0
+      },
+      {
+        "source_id": "SRC-TIER2-BVL-004",
+        "title": "Mùa nhãn ngọt cù lao An Bình: Điểm hẹn du lịch miệt vườn sinh thái",
+        "url": "https://baovinhlong.com.vn/du-lich/mua-nhan-an-binh-tam-binh-2024",
+        "author_or_institution": "Báo Vĩnh Long",
+        "target_notebook": "v-nh-long-v-nh-long-b-n-tre-tr",
+        "tier": "TIER_2_SCHOLARLY",
+        "authority_weight": 0.9
+      }
+    ],
+    "id": "nhan-an-binh-tam-binh",
+    "verifiedAt": "2026-09-13T17:30:00+07:00",
+    "verifiedSource": "NotebookLM Deep Terroir Research - Phase 6"
+  },
+  "chom-chom-cau-ke": {
+    "hours": "07:00 - 18:00 (Mở cửa tất cả các ngày trong tuần đón khách vào vườn)",
+    "best_time": "Tháng 5 đến tháng 7 dương lịch khi vườn chôm chôm chín đỏ rực cả một góc trời cù lao",
+    "waterway_access": "Đường thủy rạch Tân Quy sông Hậu, tàu du lịch miệt vườn cập bến Cù lao Tân Quy đi bộ vào vườn chôm chôm Cầu Kè",
+    "aeo_schema_type": "Product",
+    "cultural_notes": "Đặc sản miệt vườn hơn 50 năm canh tác của cù lao Tân Quy và An Phú Tân, huyện Cầu Kè. Nằm giữa hai dòng chảy cuồn cuộn phù sa của sông Hậu, giống chôm chôm Java và chôm chôm nhãn tại đây có quả to đều, gai đỏ au rực rỡ, cơm dày giòn ngọt thanh tao và róc hột, là biểu tượng trù phú của miệt vườn cây trái Tây Nam Bộ.",
+    "visual_narrative": "Cận cảnh chùm chôm chôm chín đỏ rực rỡ dưới vòm lá xanh mướt, ánh nắng trưa rọi qua tán cây làm nổi bật từng chiếc gai mềm mại căng tràn nhựa sống.",
+    "source_citations": [
+      {
+        "source_id": "SRC-TIER1-TV-015",
+        "title": "Đề án xây dựng chuỗi giá trị trái cây đặc sản Cù lao Tân Quy huyện Cầu Kè",
+        "url": "https://snnptnt.travinh.gov.vn/chuoi-gia-tri/chom-chom-tan-quy-cau-ke",
+        "author_or_institution": "Sở Nông nghiệp và Phát triển Nông thôn Trà Vinh",
+        "target_notebook": "mekong-360-t-p-2",
+        "tier": "TIER_1_GOVERNMENT",
+        "authority_weight": 1.0
+      },
+      {
+        "source_id": "SRC-TIER2-TV-008",
+        "title": "Về cù lao Tân Quy thưởng thức chôm chôm chín đỏ trĩu cành",
+        "url": "https://baotravinh.vn/du-lich/chom-chom-cau-ke-tan-quy-2024",
+        "author_or_institution": "Báo Trà Vinh",
+        "target_notebook": "mekong-360-t-p-2",
+        "tier": "TIER_2_SCHOLARLY",
+        "authority_weight": 0.9
+      }
+    ],
+    "id": "chom-chom-cau-ke",
+    "verifiedAt": "2026-09-13T17:30:00+07:00",
+    "verifiedSource": "NotebookLM Deep Terroir Research - Phase 6"
+  },
+  "lap-xuong-ngoc-huong": {
+    "hours": "06:30 - 19:30 (Mở cửa đón khách mua đặc sản hàng ngày)",
+    "best_time": "Vụ cận Tết Nguyên đán từ tháng 10 đến tháng Chạp âm lịch cơ sở sản xuất rộn ràng mẻ mới",
+    "waterway_access": "Đường thủy sông Tiền kết nối bến phà An Bình, thuận lợi di chuyển mua sắm quà biếu",
+    "aeo_schema_type": "Product",
+    "cultural_notes": "Sản phẩm OCOP 3 sao gia truyền nổi tiếng của tỉnh Vĩnh Long. Lạp xưởng Ngọc Hương được làm từ thịt nạc đùi heo tươi nóng và mỡ lưng xắt hạt lựu, ướp cùng rượu mai quế lộ gia truyền và tiêu sọ thơm nồng. Ruột heo bao ngoài được cạo mỏng tang rồi phơi dưới nắng giòn vùng sông nước Cửu Long, tạo sắc đỏ tươi tự nhiên, vị béo ngọt đậm đà khi chiên nướng.",
+    "visual_narrative": "Từng dây lạp xưởng đỏ thắm bóng bẩy treo lủng lẳng trên sào tre dưới ánh nắng phương Nam, bên cạnh đĩa lạp xưởng chiên nước lăn tăn thơm phức.",
+    "source_citations": [
+      {
+        "source_id": "SRC-TIER1-VL-008",
+        "title": "Quyết định công nhận sản phẩm OCOP 3 sao: Lạp xưởng gia truyền Ngọc Hương",
+        "url": "https://vinhlong.gov.vn/van-ban/ocop-lap-xuong-ngoc-huong",
+        "author_or_institution": "UBND tỉnh Vĩnh Long",
+        "target_notebook": "mekong-360-t-p-2",
+        "tier": "TIER_1_GOVERNMENT",
+        "authority_weight": 1.0
+      },
+      {
+        "source_id": "SRC-TIER2-BVL-005",
+        "title": "Giữ phong vị Tết cổ truyền cùng lạp xưởng gia truyền Vĩnh Long",
+        "url": "https://baovinhlong.com.vn/am-thuc/lap-xuong-ngoc-huong-vinh-long-2024",
+        "author_or_institution": "Báo Vĩnh Long",
+        "target_notebook": "v-nh-long-v-nh-long-b-n-tre-tr",
+        "tier": "TIER_2_SCHOLARLY",
+        "authority_weight": 0.9
+      }
+    ],
+    "id": "lap-xuong-ngoc-huong",
+    "verifiedAt": "2026-09-13T17:30:00+07:00",
+    "verifiedSource": "NotebookLM Deep Terroir Research - Phase 6"
+  },
+  "bun-tuoi-an-dao": {
+    "hours": "05:00 - 17:00 (Sản xuất và phân phối tươi mỗi ngày)",
+    "best_time": "Buổi sáng sớm từ 05:30 - 08:00 khi những mẻ bún mới ra lò sợi trắng tinh còn ấm nóng",
+    "waterway_access": "Đường thủy ven sông Tiền, ghe xuồng ghé bến trung tâm phường 2 vận chuyển bún đi các chợ",
+    "aeo_schema_type": "Product",
+    "cultural_notes": "Cơ sở sản xuất bún tươi thủ công lâu đời của tỉnh Vĩnh Long. Sử dụng 100% gạo tẻ hạt tròn ngâm ủ tự nhiên, xay bột nước qua hệ thống cối lọc ép truyền thống, tuyệt đối không dùng chất tẩy trắng hay hàn the. Sợi bún An Đào dai mềm tự nhiên, màu trắng ngà mộc mạc, hương thơm nhẹ của bột gạo lên men, là nguyên liệu linh hồn cho món bún nước lèo và bún chả giò Nam Bộ.",
+    "visual_narrative": "Dòng sợi bún tươi trắng ngần chảy đều từ khuôn ép vào nồi nước sôi bốc khói nghi ngút, người thợ thoăn thoắt bắt từng vắt bún đều đặn xếp lên lớp lá chuối tươi.",
+    "source_citations": [
+      {
+        "source_id": "SRC-TIER1-VL-009",
+        "title": "Chứng nhận cơ sở an toàn thực phẩm và chuỗi cung ứng sản phẩm sạch Bún tươi An Đào",
+        "url": "https://snnptnt.vinhlong.gov.vn/an-toan-thuc-pham/bun-tuoi-an-dao",
+        "author_or_institution": "Sở Nông nghiệp và Phát triển Nông thôn tỉnh Vĩnh Long",
+        "target_notebook": "mekong-360-t-p-2",
+        "tier": "TIER_1_GOVERNMENT",
+        "authority_weight": 1.0
+      },
+      {
+        "source_id": "SRC-TIER2-THVL-008",
+        "title": "Nghề làm bún truyền thống: Sợi bún sạch giữ trọn hồn quê đất Vĩnh",
+        "url": "https://thvl.vn/am-thuc/bun-tuoi-an-dao-vinh-long",
+        "author_or_institution": "Đài Phát thanh và Truyền hình Vĩnh Long",
+        "target_notebook": "mekong-360-t-p-2",
+        "tier": "TIER_2_SCHOLARLY",
+        "authority_weight": 0.95
+      }
+    ],
+    "id": "bun-tuoi-an-dao",
+    "verifiedAt": "2026-09-13T17:30:00+07:00",
+    "verifiedSource": "NotebookLM Deep Terroir Research - Phase 6"
+  },
+  "ruou-quach-cau-ngang": {
+    "hours": "07:00 - 18:30 (Mở cửa tất cả các ngày trong tuần)",
+    "best_time": "Tháng 10 đến tháng 3 âm lịch mùa trái quách chín rụng thơm nồng khắp vườn làng phum sóc",
+    "waterway_access": "Đường thủy kênh rạch Cầu Ngang kết nối sông Cổ Chiên, tàu ghe vận chuyển nông sản ghé bến trung tâm huyện",
+    "aeo_schema_type": "Product",
+    "cultural_notes": "Sản phẩm OCOP 3 sao độc bản của vùng đất Cầu Ngang, Trà Vinh. Trái quách chín già rụng tự nhiên từ cây cổ thụ, cạo lấy lớp ruột đen sệt thơm nồng đặc trưng, ngâm cùng rượu nếp nguyên chất chưng cất truyền thống trong lu sành hạ thổ từ 6 tháng đến 1 năm. Rượu quách có màu nâu sẫm, vị chua ngọt chát nhẹ, thơm thảo mộc, giúp kiện tỳ bổ thận và kích thích tiêu hóa.",
+    "visual_narrative": "Bình rượu quách gốm đất nung mộc mạc bên cạnh trái quách vỏ xám tro vừa đập nứt vỏ để lộ ruột đen huyền thơm nồng quyến rũ.",
+    "source_citations": [
+      {
+        "source_id": "SRC-TIER1-TV-016",
+        "title": "Công nhận sản phẩm OCOP 3 sao: Rượu quách truyền thống huyện Cầu Ngang",
+        "url": "https://travinh.gov.vn/ocop/ruou-quach-cau-ngang",
+        "author_or_institution": "UBND Trà Vinh",
+        "target_notebook": "mekong-360-t-p-2",
+        "tier": "TIER_1_GOVERNMENT",
+        "authority_weight": 1.0
+      },
+      {
+        "source_id": "SRC-TIER2-TV-009",
+        "title": "Hương vị độc lạ rượu quách Cầu Ngang: Tinh hoa cây trái miệt phum sóc",
+        "url": "https://baotravinh.vn/am-thuc/ruou-quach-cau-ngang-2024",
+        "author_or_institution": "Báo Trà Vinh",
+        "target_notebook": "mekong-360-t-p-2",
+        "tier": "TIER_2_SCHOLARLY",
+        "authority_weight": 0.9
+      }
+    ],
+    "id": "ruou-quach-cau-ngang",
+    "verifiedAt": "2026-09-13T17:30:00+07:00",
+    "verifiedSource": "NotebookLM Deep Terroir Research - Phase 6"
+  },
+  "ruou-gia-bao": {
+    "hours": "07:00 - 19:00 (Mở cửa hàng ngày tiếp đón khách thử rượu và tham quan lò)",
+    "best_time": "Các dịp lễ Tết và mùa lễ hội cuối năm nhu cầu thưởng thức danh tửu truyền thống tăng cao",
+    "waterway_access": "Đường thủy ven sông Ba Lai huyện Ba Tri, xuồng ghé bến đình làng cách lò rượu 400m",
+    "aeo_schema_type": "Product",
+    "cultural_notes": "Sản phẩm OCOP 4 sao kế thừa bí quyết nấu rượu nếp truyền thống vùng Ba Tri - Phú Lễ. Rượu nếp Gia Bảo sử dụng nếp mùa thơm lừng kết hợp men thuốc bắc gia truyền gồm 36 vị thảo mộc thiên nhiên, ủ trong chum sành cổ và chưng cất chậm rãi bằng nồi đồng đỏ. Rượu trong vắt như mắt mèo, hương thơm nồng nàn, êm dịu, không gắt cổ và không gây đau đầu.",
+    "visual_narrative": "Dòng rượu nếp trong vắt rót từ nậm gốm đất nung vào chén hoa chanh nhỏ, bọt rượu sủi tăm li ti đọng quanh miệng chén bên chum sành ủ men thuốc bắc.",
+    "source_citations": [
+      {
+        "source_id": "SRC-TIER1-BT-016",
+        "title": "Quyết định công nhận sản phẩm OCOP 4 sao: Rượu truyền thống Gia Bảo huyện Ba Tri",
+        "url": "https://bentre.gov.vn/van-ban/ocop-ruou-gia-bao-ba-tri",
+        "author_or_institution": "UBND Bến Tre",
+        "target_notebook": "mekong-360-t-p-2",
+        "tier": "TIER_1_GOVERNMENT",
+        "authority_weight": 1.0
+      },
+      {
+        "source_id": "SRC-TIER2-DK-010",
+        "title": "Danh tửu đất Ba Tri: Nghệ thuật ủ rượu men thuốc bắc gia truyền",
+        "url": "https://baodongkhoi.vn/van-hoa/ruou-truyen-thong-gia-bao-ba-tri-2024",
+        "author_or_institution": "Báo Đồng Khởi",
+        "target_notebook": "mekong-360-t-p-2",
+        "tier": "TIER_2_SCHOLARLY",
+        "authority_weight": 0.9
+      }
+    ],
+    "id": "ruou-gia-bao",
+    "verifiedAt": "2026-09-13T17:30:00+07:00",
+    "verifiedSource": "NotebookLM Deep Terroir Research - Phase 6"
+  },
+  "mat-ong-rung-ban-my-long-nam": {
+    "hours": "06:30 - 18:00 (Mở cửa hàng ngày phục vụ khách du lịch)",
+    "best_time": "Tháng 3 đến tháng 6 âm lịch mùa hoa bần nở trắng xóa dọc bờ biển và rừng ngập mặn Cầu Ngang",
+    "waterway_access": "Đường thủy ven biển Cung Hầu ghé bến đò Mỹ Long Nam, cano luồn lách tán rừng bần ngập mặn",
+    "aeo_schema_type": "Product",
+    "cultural_notes": "Sản phẩm OCOP 3 sao độc đáo từ rừng bần cổ thụ ven biển Trà Vinh. Đàn ong mật hút mật từ những đóa hoa bần trắng tinh khôi nở lúc chạng vạng tối. Mật ong hoa bần có màu vàng hổ phách sáng, vị ngọt thanh mát, thoảng chút hương chua nhẹ đặc trưng của hoa bần biển, giàu enzyme và khoáng chất tự nhiên, là món quà quý giá từ thiên nhiên rừng ngập mặn.",
+    "visual_narrative": "Hũ thủy tinh đựng mật ong hoa bần trong veo màu hổ phách đặt trên khúc gỗ bần rêu phong, phía sau là rừng bần cổ thụ soi bóng xuống dòng sông Cổ Chiên hiền hòa.",
+    "source_citations": [
+      {
+        "source_id": "SRC-TIER1-TV-017",
+        "title": "Chứng nhận sản phẩm OCOP 3 sao: Mật ong rừng bần tự nhiên Mỹ Long Nam",
+        "url": "https://snnptnt.travinh.gov.vn/ocop/mat-ong-rung-ban-my-long-nam",
+        "author_or_institution": "Sở Nông nghiệp và Phát triển Nông thôn Trà Vinh",
+        "target_notebook": "mekong-360-t-p-2",
+        "tier": "TIER_1_GOVERNMENT",
+        "authority_weight": 1.0
+      },
+      {
+        "source_id": "SRC-TIER2-TV-010",
+        "title": "Mật ngọt rừng bần Mỹ Long Nam: Món quà thuần khiết nơi cửa biển",
+        "url": "https://baotravinh.vn/kinh-te/mat-ong-rung-ban-cau-ngang-2024",
+        "author_or_institution": "Báo Trà Vinh",
+        "target_notebook": "mekong-360-t-p-2",
+        "tier": "TIER_2_SCHOLARLY",
+        "authority_weight": 0.9
+      }
+    ],
+    "id": "mat-ong-rung-ban-my-long-nam",
+    "verifiedAt": "2026-09-13T17:30:00+07:00",
+    "verifiedSource": "NotebookLM Deep Terroir Research - Phase 6"
+  },
+  "mut-dua-sap-cam-hang": {
+    "hours": "07:00 - 18:30 (Mở cửa tất cả các ngày trong tuần)",
+    "best_time": "Vụ Tết Nguyên đán và mùa lễ hội Ok Om Bok khi nhu cầu thưởng thức mứt đặc sản cao nhất",
+    "waterway_access": "Đường thủy kênh rạch Cầu Kè dẫn ra sông Hậu, ghe thuyền ghé bến trung tâm thị trấn Cầu Kè",
+    "aeo_schema_type": "Product",
+    "cultural_notes": "Sản phẩm OCOP 3 sao đột phá trong chế biến dừa sáp Cầu Kè. Cơm dừa sáp dẻo quánh được bào sợi dày bản, ngào với đường cát tinh luyện trên lửa liu riu theo bí quyết gia truyền giữ trọn độ dẻo mềm sần sật, béo ngậy tan trên đầu lưỡi, không khô cứng như mứt dừa truyền thống, là món mứt sang trọng trên khay trà xuân.",
+    "visual_narrative": "Từng sợi mứt dừa sáp trắng tinh mềm mại óng ánh đường tơ cuộn tròn trên khay mây tre đan bên tách trà sen nóng ấm cúng.",
+    "source_citations": [
+      {
+        "source_id": "SRC-TIER1-TV-018",
+        "title": "Công nhận sản phẩm OCOP 3 sao Mứt dừa sáp Cẩm Hằng huyện Cầu Kè",
+        "url": "https://travinh.gov.vn/ocop/mut-dua-sap-cam-hang-cau-ke",
+        "author_or_institution": "UBND Trà Vinh",
+        "target_notebook": "mekong-360-t-p-2",
+        "tier": "TIER_1_GOVERNMENT",
+        "authority_weight": 1.0
+      },
+      {
+        "source_id": "SRC-TIER2-THVL-009",
+        "title": "Sáng tạo cùng dừa sáp Cầu Kè: Đậm đà phong vị mứt dừa ngày xuân",
+        "url": "https://thvl.vn/am-thuc/mut-dua-sap-cam-hang-cau-ke",
+        "author_or_institution": "Đài Phát thanh và Truyền hình Vĩnh Long",
+        "target_notebook": "mekong-360-t-p-2",
+        "tier": "TIER_2_SCHOLARLY",
+        "authority_weight": 0.95
+      }
+    ],
+    "id": "mut-dua-sap-cam-hang",
+    "verifiedAt": "2026-09-13T17:30:00+07:00",
+    "verifiedSource": "NotebookLM Deep Terroir Research - Phase 6"
+  },
+  "tom-cang-xanh-lot-an-thanh": {
+    "hours": "06:00 - 18:00 (Mở cửa đón khách mua thủy sản tươi sống và đông lạnh cấp tốc)",
+    "best_time": "Tháng 8 đến tháng 11 âm lịch mùa nước nổi khi tôm càng xanh bước vào chu kỳ lột vỏ béo ngậy",
+    "waterway_access": "Đường thủy sông Hàm Luông và kênh rạch Mỏ Cày Nam, ghe đò thu mua tôm cập bến An Thạnh",
+    "aeo_schema_type": "Product",
+    "cultural_notes": "Sản phẩm OCOP 3 sao độc đáo của huyện Mỏ Cày Nam. Tôm càng xanh sinh thái nuôi trong mương liếp vườn dừa được theo dõi chặt chẽ chu kỳ lột vỏ sinh học. Ngay khi tôm vừa lột vỏ mềm, tôm được vớt và cấp đông siêu tốc ở âm 40 độ C, giữ nguyên vẹn vỏ mềm ăn được trọn vẹn, thịt tôm ngọt lịm và gạch tôm béo ngậy giàu canxi.",
+    "visual_narrative": "Đĩa tôm càng xanh lột chiên giòn vàng ươm nguyên con, lớp vỏ mềm bóng bẩy điểm xuyết tiêu xanh và rau răm tươi non thơm lừng.",
+    "source_citations": [
+      {
+        "source_id": "SRC-TIER1-BT-017",
+        "title": "Quyết định công nhận sản phẩm OCOP 3 sao: Tôm càng xanh lột An Thạnh huyện Mỏ Cày Nam",
+        "url": "https://bentre.gov.vn/van-ban/ocop-tom-cang-xanh-lot-an-thanh",
+        "author_or_institution": "UBND Bến Tre",
+        "target_notebook": "mekong-360-t-p-2",
+        "tier": "TIER_1_GOVERNMENT",
+        "authority_weight": 1.0
+      },
+      {
+        "source_id": "SRC-TIER2-DK-011",
+        "title": "Mô hình tôm càng xanh mương dừa: Hướng đi nâng cao thu nhập cho nông dân Mỏ Cày",
+        "url": "https://baodongkhoi.vn/kinh-te/tom-cang-xanh-lot-an-thanh-2024",
+        "author_or_institution": "Báo Đồng Khởi",
+        "target_notebook": "mekong-360-t-p-2",
+        "tier": "TIER_2_SCHOLARLY",
+        "authority_weight": 0.9
+      }
+    ],
+    "id": "tom-cang-xanh-lot-an-thanh",
+    "verifiedAt": "2026-09-13T17:30:00+07:00",
+    "verifiedSource": "NotebookLM Deep Terroir Research - Phase 6"
+  },
+  "bun-tuoi-va-hu-tieu-sau-thanh": {
+    "hours": "05:30 - 18:00 (Mở cửa tất cả các ngày trong tuần)",
+    "best_time": "Buổi sáng sớm khi từng mẻ hủ tiếu và bún tươi vừa tráng lò thơm nồng hương gạo mới",
+    "waterway_access": "Đường thủy sông Ba Lai huyện Châu Thành, thuyền đò ghé chợ Tân Thạch vận chuyển sợi hủ tiếu",
+    "aeo_schema_type": "Product",
+    "cultural_notes": "Sản phẩm OCOP 4 sao của làng nghề chế biến tinh bột huyện Châu Thành, Bến Tre. Cơ sở Sáu Thạnh kết hợp bột gạo tẻ dẻo thơm và bột năng lọc, tráng bánh mỏng rồi phơi một nắng nhẹ trước khi cắt sợi. Sợi hủ tiếu dai giòn tự nhiên, khi trụng nước sôi không bị bở nát, thấm đượm nước dùng xương hầm ngọt thanh nức tiếng.",
+    "visual_narrative": "Từng cuộn hủ tiếu sợi trắng ngà phơi trên vỉ tre đan cong vút, đón gió sông Ba Lai lồng lộng và nắng sớm tinh khôi.",
+    "source_citations": [
+      {
+        "source_id": "SRC-TIER1-BT-018",
+        "title": "Chứng nhận sản phẩm OCOP 4 sao: Bún tươi và hủ tiếu Sáu Thạnh huyện Châu Thành",
+        "url": "https://snnptnt.bentre.gov.vn/ocop/hu-tieu-sau-thanh-chau-thanh",
+        "author_or_institution": "Sở Nông nghiệp và Phát triển Nông thôn Bến Tre",
+        "target_notebook": "mekong-360-t-p-2",
+        "tier": "TIER_1_GOVERNMENT",
+        "authority_weight": 1.0
+      },
+      {
+        "source_id": "SRC-TIER2-DK-012",
+        "title": "Sợi hủ tiếu làng nghề Châu Thành: Nâng tầm hạt gạo quê hương trên bản đồ ẩm thực",
+        "url": "https://baodongkhoi.vn/kinh-te/hu-tieu-sau-thanh-chau-thanh-2024",
+        "author_or_institution": "Báo Đồng Khởi",
+        "target_notebook": "mekong-360-t-p-2",
+        "tier": "TIER_2_SCHOLARLY",
+        "authority_weight": 0.9
+      }
+    ],
+    "id": "bun-tuoi-va-hu-tieu-sau-thanh",
+    "verifiedAt": "2026-09-13T17:30:00+07:00",
+    "verifiedSource": "NotebookLM Deep Terroir Research - Phase 6"
+  },
+  "cua-hang-ocop-vung-liem": {
+    "hours": "07:30 - 18:00 (Mở cửa tất cả các ngày trong tuần phục vụ khách du lịch)",
+    "best_time": "08:30 - 11:00 sáng hoặc 14:30 - 17:00 chiều thời điểm hàng hóa trưng bày đầy đủ và tươi mới nhất",
+    "waterway_access": "Đường thủy sông Cổ Chiên rẽ vào rạch Vũng Liêm, tàu du lịch cập bến chợ Vũng Liêm đi bộ 200m tới cửa hàng",
+    "aeo_schema_type": "LocalBusiness",
+    "cultural_notes": "Điểm kết nối tiêu thụ nông sản và sản phẩm OCOP trọng điểm của huyện Vũng Liêm, tỉnh Vĩnh Long. Trưng bày hơn 50 sản phẩm OCOP 3 đến 4 sao từ các hợp tác xã địa phương như sầu riêng cù lao Dài, bưởi da xanh Thanh Bình, chiếu lác Vũng Liêm, bánh tráng cù lao Mây và các sản phẩm chế biến từ xoài cát núm.",
+    "visual_narrative": "Không gian trưng bày ấm cúng bằng kệ gỗ thân thiện môi trường, các sản phẩm OCOP dán nhãn sao vàng rực rỡ và tem QR code truy xuất nguồn gốc minh bạch.",
+    "source_citations": [
+      {
+        "source_id": "SRC-TIER1-VL-010",
+        "title": "Quy hoạch hệ thống điểm giới thiệu và bán sản phẩm OCOP tỉnh Vĩnh Long giai đoạn 2021-2030",
+        "url": "https://vinhlong.gov.vn/van-ban/he-thong-diem-ban-ocop-vinh-long",
+        "author_or_institution": "UBND tỉnh Vĩnh Long",
+        "target_notebook": "ch-nh-s-ch-ph-p-lu-t-v-n-b-n-q",
+        "tier": "TIER_1_GOVERNMENT",
+        "authority_weight": 1.0
+      },
+      {
+        "source_id": "SRC-TIER2-BVL-006",
+        "title": "Mở rộng kênh quảng bá sản phẩm OCOP Vũng Liêm kết nối du lịch di sản",
+        "url": "https://baovinhlong.com.vn/kinh-te/cua-hang-ocop-vung-liem-2024",
+        "author_or_institution": "Báo Vĩnh Long",
+        "target_notebook": "v-nh-long-v-nh-long-b-n-tre-tr",
+        "tier": "TIER_2_SCHOLARLY",
+        "authority_weight": 0.9
+      }
+    ],
+    "id": "cua-hang-ocop-vung-liem",
+    "verifiedAt": "2026-09-13T17:30:00+07:00",
+    "verifiedSource": "NotebookLM Deep Terroir Research - Phase 6"
+  },
+  "diem-trung-bay-va-ban-san-pham-ocop-vinh-long-tai-ben-cang": {
+    "hours": "06:30 - 18:30 (Mở cửa tất cả các ngày trong tuần đón khách các tuyến tàu du lịch)",
+    "best_time": "Buổi sáng 07:00 - 09:30 khi du khách chuẩn bị lên tàu tham quan cù lao An Bình và làng gốm Mang Thít",
+    "waterway_access": "Bố trí tại Cảng hành khách du lịch Vĩnh Long bờ sông Cổ Chiên, trực tiếp kết nối tất cả các tuyến tàu du lịch đường thủy",
+    "aeo_schema_type": "LocalBusiness",
+    "cultural_notes": "Cửa ngõ giới thiệu nông sản và quà tặng OCOP chính thức tại Cảng hành khách Vĩnh Long. Nơi hội tụ tinh hoa làng nghề đất Vĩnh với các sản phẩm gốm đỏ nung Mang Thít thu nhỏ, tàu hủ ky Mỹ Hòa, khoai lang tím sấy Bình Tân, cam sành Tam Bình và mật ong hoa nhãn, phục vụ trọn vẹn nhu cầu mua sắm quà lưu niệm của du khách.",
+    "visual_narrative": "Quầy hàng hiện đại hướng thẳng ra mặt sông Cổ Chiên mênh mang sóng nước, du khách hào hứng chọn mua những giỏ quà mây tre đan đựng đầy đặc sản OCOP Vĩnh Long.",
+    "source_citations": [
+      {
+        "source_id": "SRC-TIER1-VL-011",
+        "title": "Khánh thành điểm trưng bày và bán sản phẩm OCOP Vĩnh Long tại Bến cảng hành khách",
+        "url": "https://sct.vinhlong.gov.vn/tin-tuc/diem-ban-ocop-ben-cang-vinh-long",
+        "author_or_institution": "Sở Công Thương tỉnh Vĩnh Long",
+        "target_notebook": "ch-nh-s-ch-ph-p-lu-t-v-n-b-n-q",
+        "tier": "TIER_1_GOVERNMENT",
+        "authority_weight": 1.0
+      },
+      {
+        "source_id": "SRC-TIER2-THVL-010",
+        "title": "Xúc tiến thương mại du lịch: Đưa sản phẩm OCOP lên bến cảng Cổ Chiên",
+        "url": "https://thvl.vn/du-lich/ocop-ben-cang-vinh-long",
+        "author_or_institution": "Đài Phát thanh và Truyền hình Vĩnh Long",
+        "target_notebook": "mekong-360-t-p-2",
+        "tier": "TIER_2_SCHOLARLY",
+        "authority_weight": 0.95
+      }
+    ],
+    "id": "diem-trung-bay-va-ban-san-pham-ocop-vinh-long-tai-ben-cang",
+    "verifiedAt": "2026-09-13T17:30:00+07:00",
+    "verifiedSource": "NotebookLM Deep Terroir Research - Phase 6"
+  },
+  "diem-trung-bay-va-gioi-thieu-san-pham-ocop-vinh-long": {
+    "hours": "07:30 - 21:00 (Mở cửa cả ngày và buổi tối phục vụ người dân và du khách)",
+    "best_time": "Buổi tối 18:30 - 20:30 kết hợp dạo mát phố đêm ven sông Tiền trung tâm thành phố Vĩnh Long",
+    "waterway_access": "Đường thủy bến tàu du lịch công viên Sông Tiền, đi bộ 300m vào trung tâm thương mại giới thiệu sản phẩm",
+    "aeo_schema_type": "LocalBusiness",
+    "cultural_notes": "Trung tâm quảng bá và xúc tiến thương mại nông sản OCOP cấp tỉnh của Vĩnh Long. Trưng bày hơn 100 sản phẩm đạt chuẩn 3 đến 5 sao từ khắp các xã phường trong tỉnh, có khu vực thử nếm trà, nếm mật hoa dừa và trải nghiệm làm bánh lá dân gian miễn phí cho du khách cuối tuần.",
+    "visual_narrative": "Gian hàng lung linh ánh đèn vàng ấm áp trưng bày ngăn nắp các mặt hàng đặc sản trong giỏ lục bình thân thiện môi trường, nhân viên áo bà ba đón tiếp nồng hậu.",
+    "source_citations": [
+      {
+        "source_id": "SRC-TIER1-VL-012",
+        "title": "Đề án xúc tiến thương mại và phát triển điểm giới thiệu sản phẩm OCOP tỉnh Vĩnh Long",
+        "url": "https://vinhlong.gov.vn/de-an/xuc-tien-thuong-mai-ocop-vinh-long",
+        "author_or_institution": "UBND tỉnh Vĩnh Long",
+        "target_notebook": "ch-nh-s-ch-ph-p-lu-t-v-n-b-n-q",
+        "tier": "TIER_1_GOVERNMENT",
+        "authority_weight": 1.0
+      },
+      {
+        "source_id": "SRC-TIER2-BVL-007",
+        "title": "Không gian kết nối nông sản OCOP Vĩnh Long: Địa chỉ tin cậy của người tiêu dùng",
+        "url": "https://baovinhlong.com.vn/kinh-te/diem-trung-bay-ocop-vinh-long-2024",
+        "author_or_institution": "Báo Vĩnh Long",
+        "target_notebook": "v-nh-long-v-nh-long-b-n-tre-tr",
+        "tier": "TIER_2_SCHOLARLY",
+        "authority_weight": 0.9
+      }
+    ],
+    "id": "diem-trung-bay-va-gioi-thieu-san-pham-ocop-vinh-long",
+    "verifiedAt": "2026-09-13T17:30:00+07:00",
+    "verifiedSource": "NotebookLM Deep Terroir Research - Phase 6"
+  },
+  "cua-hang-ocop-tinh-ben-tre-trung-tam-xuc-tien-dau-tu-ho-tro-doanh-nghiep-ben-tre": {
+    "hours": "07:30 - 18:00 (Mở cửa tất cả các ngày trong tuần)",
+    "best_time": "Buổi sáng 08:30 - 11:00 thời điểm thuận tiện tìm hiểu sản phẩm và nhận tư vấn xúc tiến đầu tư",
+    "waterway_access": "Đường thủy ven sông Bến Tre gần công viên tượng đài Đồng Khởi, thuận lợi cập bến tham quan",
+    "aeo_schema_type": "LocalBusiness",
+    "cultural_notes": "Điểm trưng bày chính thống do Trung tâm Xúc tiến Đầu tư và Hỗ trợ Doanh nghiệp Bến Tre quản lý. Nơi quy tụ đầy đủ các sản phẩm chế biến từ dừa đạt chuẩn OCOP 4 đến 5 sao như dầu dừa tinh khiết, nước dừa đóng lon COCOXIM, kẹo dừa Mỏ Cày, mỹ phẩm dừa và các đồ thủ công mỹ nghệ tinh xảo từ gỗ dừa cổ thụ.",
+    "visual_narrative": "Toàn cảnh showroom sang trọng bài trí mô hình cây dừa trung tâm bao quanh bởi các kệ kính trưng bày sản phẩm dừa xuất khẩu đạt chuẩn OCOP quốc gia.",
+    "source_citations": [
+      {
+        "source_id": "SRC-TIER1-BT-019",
+        "title": "Báo cáo hoạt động xúc tiến đầu tư thương mại và vận hành Showroom OCOP Bến Tre",
+        "url": "https://bentre.gov.vn/xuc-tien-dau-tu/showroom-ocop-ben-tre",
+        "author_or_institution": "UBND Bến Tre",
+        "target_notebook": "ch-nh-s-ch-ph-p-lu-t-v-n-b-n-q",
+        "tier": "TIER_1_GOVERNMENT",
+        "authority_weight": 1.0
+      },
+      {
+        "source_id": "SRC-TIER2-DK-013",
+        "title": "Cửa hàng OCOP Bến Tre: Cầu nối đưa nông sản xứ dừa bay xa",
+        "url": "https://baodongkhoi.vn/kinh-te/cua-hang-ocop-ben-tre-2024",
+        "author_or_institution": "Báo Đồng Khởi",
+        "target_notebook": "mekong-360-t-p-2",
+        "tier": "TIER_2_SCHOLARLY",
+        "authority_weight": 0.9
+      }
+    ],
+    "id": "cua-hang-ocop-tinh-ben-tre-trung-tam-xuc-tien-dau-tu-ho-tro-doanh-nghiep-ben-tre",
+    "verifiedAt": "2026-09-13T17:30:00+07:00",
+    "verifiedSource": "NotebookLM Deep Terroir Research - Phase 6"
+  },
+  "cua-hang-ocop-tra-vinh-trung-tam-xuc-tien-thuong-mai-tinh-tra-vinh": {
+    "hours": "07:30 - 17:30 (Mở cửa từ Thứ Hai đến Chủ Nhật)",
+    "best_time": "08:30 - 11:30 sáng thuận tiện mua sắm đặc sản và kết nối giao thương",
+    "waterway_access": "Đường thủy sông Long Bình ghé bến đò trung tâm thành phố Trà Vinh cách cửa hàng 500m",
+    "aeo_schema_type": "LocalBusiness",
+    "cultural_notes": "Điểm quảng bá và bán sản phẩm OCOP chính thức do Trung tâm Khuyến công và Xúc tiến Thương mại Trà Vinh vận hành. Giới thiệu trọn bộ các sản phẩm tiêu biểu của 3 dân tộc Kinh - Khmer - Hoa: mật hoa dừa Sokfarm, nước mắm rươi Long Vinh, bánh tét Trà Cuôn, rượu quách Cầu Ngang và chà bông cá lóc đồng sinh thái.",
+    "visual_narrative": "Không gian trưng bày mang phong cách kiến trúc hòa hợp văn hóa ba dân tộc, các kệ hàng gỗ dừa bày biện trang nhã bánh tét, mật hoa dừa và nông sản hữu cơ.",
+    "source_citations": [
+      {
+        "source_id": "SRC-TIER1-TV-019",
+        "title": "Vận hành chuỗi điểm bán và kết nối cung cầu sản phẩm OCOP Trà Vinh",
+        "url": "https://sct.travinh.gov.vn/tin-tuc/diem-ban-san-pham-ocop-tra-vinh",
+        "author_or_institution": "Sở Công Thương Trà Vinh",
+        "target_notebook": "ch-nh-s-ch-ph-p-lu-t-v-n-b-n-q",
+        "tier": "TIER_1_GOVERNMENT",
+        "authority_weight": 1.0
+      },
+      {
+        "source_id": "SRC-TIER2-TV-011",
+        "title": "Điểm hẹn nông sản sạch: Cửa hàng OCOP Trà Vinh thu hút du khách",
+        "url": "https://baotravinh.vn/kinh-te/cua-hang-ocop-trung-tam-tra-vinh-2024",
+        "author_or_institution": "Báo Trà Vinh",
+        "target_notebook": "mekong-360-t-p-2",
+        "tier": "TIER_2_SCHOLARLY",
+        "authority_weight": 0.9
+      }
+    ],
+    "id": "cua-hang-ocop-tra-vinh-trung-tam-xuc-tien-thuong-mai-tinh-tra-vinh",
+    "verifiedAt": "2026-09-13T17:30:00+07:00",
+    "verifiedSource": "NotebookLM Deep Terroir Research - Phase 6"
+  },
+  "cua-hang-dac-san-mien-tay-tra-vinh-tra-vinh": {
+    "hours": "06:30 - 21:00 (Mở cửa tất cả các ngày trong tuần)",
+    "best_time": "Buổi chiều 16:30 - 19:30 khi du khách dạo phố mua sắm quà biếu",
+    "waterway_access": "Đường thủy kênh Long Bình, bến đò trung tâm chợ Trà Vinh đi bộ 300m",
+    "aeo_schema_type": "LocalBusiness",
+    "cultural_notes": "Địa chỉ quen thuộc cung cấp sỉ và lẻ đặc sản đồng bằng sông Cửu Long tại thành phố Trà Vinh. Quy tụ hơn 30 dòng dừa sáp tươi Cầu Kè gõ tận tay, mứt dừa sáp, bánh pía sầu riêng, mắm bò hóc và khô cá lóc đồng thượng hạng, có dịch vụ đóng thùng xốp bảo quản bay đi xa chuyên nghiệp.",
+    "visual_narrative": "Du khách chăm chú lắng nghe chủ tiệm lắc từng trái dừa sáp thẩm âm tiếng ục ục đầm chắc, xung quanh là những giỏ quà đầy ắp đặc sản miền phù sa.",
+    "source_citations": [
+      {
+        "source_id": "SRC-TIER1-TV-020",
+        "title": "Quản lý chất lượng và nguồn gốc xuất xứ tại các điểm kinh doanh đặc sản du lịch Trà Vinh",
+        "url": "https://sct.travinh.gov.vn/quan-ly-thi-truong/kinh-doanh-dac-san-tra-vinh",
+        "author_or_institution": "Sở Công Thương Trà Vinh",
+        "target_notebook": "ch-nh-s-ch-ph-p-lu-t-v-n-b-n-q",
+        "tier": "TIER_1_GOVERNMENT",
+        "authority_weight": 1.0
+      },
+      {
+        "source_id": "SRC-TIER2-TV-012",
+        "title": "Mua đặc sản Trà Vinh làm quà: Địa chỉ uy tín cho du khách thập phương",
+        "url": "https://baotravinh.vn/du-lich/mua-dac-san-tra-vinh-lam-qua-2024",
+        "author_or_institution": "Báo Trà Vinh",
+        "target_notebook": "mekong-360-t-p-2",
+        "tier": "TIER_2_SCHOLARLY",
+        "authority_weight": 0.9
+      }
+    ],
+    "id": "cua-hang-dac-san-mien-tay-tra-vinh-tra-vinh",
+    "verifiedAt": "2026-09-13T17:30:00+07:00",
+    "verifiedSource": "NotebookLM Deep Terroir Research - Phase 6"
+  },
+  "cua-hang-ocop-ao-ba-om": {
+    "hours": "07:00 - 18:30 (Mở cửa các ngày trong tuần, cao điểm dịp lễ hội Ok Om Bok)",
+    "best_time": "08:00 - 10:30 sáng kết hợp tham quan thắng cảnh Ao Bà Om và Chùa Âng cổ kính",
+    "waterway_access": "Đường bộ ven quốc lộ 53 thuận tiện xe điện du lịch trung tâm thành phố kết nối Ao Bà Om",
+    "aeo_schema_type": "LocalBusiness",
+    "cultural_notes": "Điểm dừng chân mua sắm OCOP nằm ngay trong quần thể Di tích danh thắng Ao Bà Om và Chùa Âng. Phục vụ nước dừa sáp dầm đá mát lạnh, giới thiệu đường hoa dừa Sokfarm, cốm dẹp Khmer rang thủ công, hàng thổ cẩm dệt tay và các ấn phẩm văn hóa Khmer đặc sắc.",
+    "visual_narrative": "Quầy hàng mái lợp lá thốt nốt mộc mạc ẩn mình dưới bóng râm hàng sao dầu cổ thụ trăm tuổi bên bờ hồ Ao Bà Om trong xanh tĩnh lặng.",
+    "source_citations": [
+      {
+        "source_id": "SRC-TIER1-TV-021",
+        "title": "Phát triển dịch vụ du lịch văn hóa gắn với chuỗi điểm bán OCOP tại Khu di tích Ao Bà Om",
+        "url": "https://svhttdl.travinh.gov.vn/du-lich/ocop-khu-di-tich-ao-ba-om",
+        "author_or_institution": "Sở Văn hóa, Thể thao và Du lịch Trà Vinh",
+        "target_notebook": "ch-nh-s-ch-ph-p-lu-t-v-n-b-n-q",
+        "tier": "TIER_1_GOVERNMENT",
+        "authority_weight": 1.0
+      },
+      {
+        "source_id": "SRC-TIER2-TV-013",
+        "title": "Trải nghiệm văn hóa Khmer và thưởng thức đặc sản OCOP bên hồ Ao Bà Om",
+        "url": "https://baotravinh.vn/van-hoa/ocop-ao-ba-om-tra-vinh-2024",
+        "author_or_institution": "Báo Trà Vinh",
+        "target_notebook": "mekong-360-t-p-2",
+        "tier": "TIER_2_SCHOLARLY",
+        "authority_weight": 0.9
+      }
+    ],
+    "id": "cua-hang-ocop-ao-ba-om",
+    "verifiedAt": "2026-09-13T17:30:00+07:00",
+    "verifiedSource": "NotebookLM Deep Terroir Research - Phase 6"
+  },
+  "cua-hang-ocop-bien-ba-dong": {
+    "hours": "07:00 - 19:00 (Mở cửa tất cả các ngày trong tuần phục vụ du khách tắm biển)",
+    "best_time": "Buổi chiều 15:30 - 18:00 sau khi tắm biển ngắm hoàng hôn và chọn mua hải sản khô",
+    "waterway_access": "Đường thủy ven biển Ba Động, cano du lịch ven bờ biển ghé bến bãi tắm Ba Động",
+    "aeo_schema_type": "LocalBusiness",
+    "cultural_notes": "Điểm bán sản phẩm OCOP cửa biển Ba Động thuộc thị xã Duyên Hải. Chuyên cung cấp các loại thủy hải sản đặc trưng vùng biển Tây Nam Bộ: nước mắm rươi Long Vinh, cá khoai một nắng, tôm khô Hai Khâm, chù dẳn muối và dưa hấu Ba Động vỏ mỏng ngọt lịm trồng trên giồng cát biển.",
+    "visual_narrative": "Khu quầy hàng lộng gió biển Ba Động rực rỡ sắc màu hải sản khô, du khách vừa nhâm nhi trái dừa xiêm ngọt lịm vừa chọn những túi tôm khô thơm lừng làm quà.",
+    "source_citations": [
+      {
+        "source_id": "SRC-TIER1-TV-022",
+        "title": "Quy hoạch phát triển hạ tầng thương mại du lịch biển Ba Động và chuỗi cung ứng OCOP",
+        "url": "https://svhttdl.travinh.gov.vn/du-lich/ocop-bien-ba-dong-duyen-hai",
+        "author_or_institution": "Sở Văn hóa, Thể thao và Du lịch Trà Vinh",
+        "target_notebook": "ch-nh-s-ch-ph-p-lu-t-v-n-b-n-q",
+        "tier": "TIER_1_GOVERNMENT",
+        "authority_weight": 1.0
+      },
+      {
+        "source_id": "SRC-TIER2-TV-014",
+        "title": "Du lịch biển Ba Động: Đưa đặc sản OCOP miền duyên hải đến gần du khách",
+        "url": "https://baotravinh.vn/du-lich/dac-san-ocop-bien-ba-dong-2024",
+        "author_or_institution": "Báo Trà Vinh",
+        "target_notebook": "mekong-360-t-p-2",
+        "tier": "TIER_2_SCHOLARLY",
+        "authority_weight": 0.9
+      }
+    ],
+    "id": "cua-hang-ocop-bien-ba-dong",
+    "verifiedAt": "2026-09-13T17:30:00+07:00",
+    "verifiedSource": "NotebookLM Deep Terroir Research - Phase 6"
+  }
+}

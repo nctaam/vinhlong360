@@ -75,7 +75,7 @@
     "extraction_scope": [
       "phan-thanh-gian"
     ],
-    "summary_digest": "Khảo cứu làm rõ Phan Thanh Giản (1796-1867) sinh quán tại làng Bảo Thạnh, huyện Ba Tri (tỉnh Bến Tre), đỗ Tiến sĩ khai khoa Nam Kỳ năm 1826; làm Kinh lược sứ Nam Kỳ, tuẫn tiết tại thành Vĩnh Long năm 1867; được phụng thờ trang trọng tại Văn Thánh Miếu Vĩnh Long."
+    "summary_digest": "Khảo cứu làm rõ Phan Thanh Giản (1796-1867) sinh quán tại làng Bảo Thạnh, huyện Ba Tri (Bến Tre), đỗ Tiến sĩ khai khoa Nam Kỳ năm 1826; làm Kinh lược sứ Nam Kỳ, tuẫn tiết tại thành Vĩnh Long năm 1867; được phụng thờ trang trọng tại Văn Thánh Miếu Vĩnh Long."
   },
   {
     "source_id": "SRC-TIER1-VL-006",
@@ -144,7 +144,7 @@
   {
     "source_id": "SRC-TIER1-BT-010",
     "title": "Hồ sơ Di tích Quốc gia Đặc biệt Mộ và Khu lưu niệm danh nhân Nguyễn Đình Chiểu",
-    "author_or_institution": "Cục Di sản Văn hóa & UBND tỉnh Bến Tre",
+    "author_or_institution": "Cục Di sản Văn hóa & UBND Bến Tre",
     "url": "http://dsvh.gov.vn/di-tich-quoc-gia-dac-biet-mo-va-khu-luu-niem-nguyen-dinh-chieu-3112",
     "publication_year": 2022,
     "target_notebook": "v-nh-long-v-nh-long-b-n-tre-tr",
@@ -159,7 +159,7 @@
   {
     "source_id": "SRC-TIER1-BT-011",
     "title": "Khu Di tích Kiến trúc và Tín ngưỡng Đạo Dừa Cồn Phụng (Châu Thành, Bến Tre)",
-    "author_or_institution": "Sở Văn hóa, Thể thao và Du lịch tỉnh Bến Tre",
+    "author_or_institution": "Sở Văn hóa, Thể thao và Du lịch Bến Tre",
     "url": "https://bentre.gov.vn/du-lich/di-tich-con-phung-ong-dao-dua",
     "publication_year": 2023,
     "target_notebook": "v-nh-long-v-nh-long-b-n-tre-tr",
@@ -206,7 +206,7 @@
   {
     "source_id": "SRC-TIER1-TV-014",
     "title": "Danh lam Thắng cảnh Quần thể Ao Bà Om (Ao Vuông) và Di sản Cây cổ thụ trăm tuổi",
-    "author_or_institution": "Sở Văn hóa, Thể thao và Du lịch tỉnh Trà Vinh",
+    "author_or_institution": "Sở Văn hóa, Thể thao và Du lịch Trà Vinh",
     "url": "https://travinh.gov.vn/du-lich/danh-thang-ao-ba-om",
     "publication_year": 2022,
     "target_notebook": "mekong-360-t-p-2",
@@ -222,7 +222,7 @@
   {
     "source_id": "SRC-TIER1-TV-015",
     "title": "Kiến trúc và điêu khắc Phật giáo Nam tông Chùa Hang (Wat Kompong Chrây) Châu Thành",
-    "author_or_institution": "Sở Văn hóa, Thể thao và Du lịch tỉnh Trà Vinh",
+    "author_or_institution": "Sở Văn hóa, Thể thao và Du lịch Trà Vinh",
     "url": "https://travinh.gov.vn/du-lich/chua-hang-kompong-chray",
     "publication_year": 2023,
     "target_notebook": "mekong-360-t-p-2",
@@ -476,7 +476,7 @@
   {
     "source_id": "SRC-TIER1-BT-031",
     "title": "Làng nghề Kẹo dừa Mỏ Cày - Tinh hoa chế biến dừa truyền thống xứ dừa Bến Tre",
-    "author_or_institution": "Sở Công Thương tỉnh Bến Tre",
+    "author_or_institution": "Sở Công Thương Bến Tre",
     "url": "https://socongthuong.bentre.gov.vn/lang-nghe-keo-dua-mo-cay",
     "publication_year": 2023,
     "target_notebook": "mekong-360-t-p-2",
@@ -507,7 +507,7 @@
   {
     "source_id": "SRC-TIER1-BT-033",
     "title": "Vương quốc Cây giống và Hoa kiểng Cái Mơn - Chợ Lách: Trung tâm nhân giống sinh học Nam Bộ",
-    "author_or_institution": "Sở Nông nghiệp và Phát triển Nông thôn tỉnh Bến Tre",
+    "author_or_institution": "Sở Nông nghiệp và Phát triển Nông thôn Bến Tre",
     "url": "https://snnptnt.bentre.gov.vn/khuyen-nong/hoa-kieng-cai-mon-cho-lach",
     "publication_year": 2023,
     "target_notebook": "mekong-360-t-p-2",
@@ -539,7 +539,7 @@
   {
     "source_id": "SRC-TIER1-BT-035",
     "title": "Vùng nuôi nghêu, sò huyết và tôm quảng canh sinh thái ven biển Thạnh Phú - Bình Đại",
-    "author_or_institution": "Chi cục Thủy sản tỉnh Bến Tre",
+    "author_or_institution": "Chi cục Thủy sản Bến Tre",
     "url": "https://thuysan.bentre.gov.vn/mo-hinh-thuy-san/vung-nuoi-so-huyet-tom-quang-canh",
     "publication_year": 2023,
     "target_notebook": "mekong-360-t-p-2",
@@ -554,7 +554,7 @@
   {
     "source_id": "SRC-TIER1-TV-036",
     "title": "Quần thể Vườn Dừa sáp đặc sản Cầu Kè - Nguồn gen bản địa quý hiếm Trà Vinh",
-    "author_or_institution": "Sở Nông nghiệp và Phát triển Nông thôn tỉnh Trà Vinh",
+    "author_or_institution": "Sở Nông nghiệp và Phát triển Nông thôn Trà Vinh",
     "url": "https://snnptnt.travinh.gov.vn/cay-trong-dac-san/dua-sap-cau-ke",
     "publication_year": 2023,
     "target_notebook": "mekong-360-t-p-2",

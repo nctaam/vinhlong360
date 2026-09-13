@@ -1,0 +1,802 @@
+[
+  {
+    "entity_id": "lang-nghe-gom-do-mang-thit",
+    "field": "description",
+    "hours": "07:30 - 17:00",
+    "best_time": "06:30 - 09:00 sáng hoặc 15:30 - 17:30 chiều hoàng hôn (ánh sáng rọi xiên qua miệng lò gạch)",
+    "waterway_access": "Tuyến du lịch đường thủy sông Cổ Chiên rẽ vào kênh Thầy Kay, tàu thuyền du lịch cập trực tiếp bến cầu tàu các xưởng gốm",
+    "aeo_schema_type": "TouristAttraction",
+    "enriched_value": "Làng nghề gốm đỏ Mang Thít nằm dọc dòng kênh Thầy Kay là cái nôi sản xuất gốm đất sét đỏ nung trứ danh của vùng đồng bằng sông Cửu Long. Với nguồn đất sét phù sa mịn màng và kỹ thuật nung vỏ trấu truyền đời, các sản phẩm gốm đỏ Mang Thít mang sắc đỏ gạch nung tự nhiên độc bản, không tráng men nhưng bóng mịn và có độ bền vượt thời gian.",
+    "cultural_depth_notes": "Hình thành từ đầu thế kỷ XX, nghề làm gốm và gạch tại Mang Thít từng đạt cực thịnh với hàng ngàn lò nung rực lửa đêm ngày. Nét độc đáo của gốm Mang Thít là nung bằng trấu trong những lò hình tháp tròn khổng lồ cao 9-12m, tạo nên hiện tượng loang màu khói trấu tự nhiên trên bề mặt đất nung.",
+    "visual_narrative": "Góc máy flycam tầm trung lướt dọc bờ kênh Thầy Kay soi bóng hàng trăm nóc lò gạch gốm đỏ hình nấm khổng lồ; chi tiết cận cảnh bàn tay nghệ nhân xoay chuốt chiếc bình hoa gốm trên bàn xoay thủ công với bụi đất phù sa bay trong vệt nắng sớm.",
+    "source_citations": [
+      {
+        "title": "Đề án Di sản Đương đại Mang Thít và Làng nghề Gốm đỏ",
+        "url": "https://vinhlong.gov.vn/di-san-mang-thit",
+        "notebook_id": "v-nh-long-v-nh-long-b-n-tre-tr",
+        "tier": "TIER_1_GOVERNMENT",
+        "authority_weight": 1.0
+      }
+    ]
+  },
+  {
+    "entity_id": "lang-nghe-gach-gom-mang-thit-vuong-quoc-do",
+    "field": "description",
+    "hours": "07:00 - 17:30",
+    "best_time": "07:00 - 09:30 sáng",
+    "waterway_access": "Bến tàu du lịch kênh Thầy Kay kết nối tuyến sông Mang Thít và sông Cổ Chiên",
+    "aeo_schema_type": "TouristAttraction",
+    "enriched_value": "Làng nghề Gạch Gốm Mang Thít, còn được xưng tụng là 'Vương quốc Đỏ', là quần thể di sản công nghiệp gạch gốm thủ công lớn nhất Đông Nam Á. Trải dài trên diện tích gần 3.000 ha thuộc các xã Mỹ Phước, Mỹ An, Nhơn Phú, nơi đây bảo tồn gần 1.500 lò nung cổ kính mang kiến trúc mái vòm đặc thù tựa những phế tích đền tháp cổ.",
+    "cultural_depth_notes": "Quá trình hình thành 'Vương quốc Đỏ' gắn liền với sự giao thoa văn hóa giữa người Kinh và thợ thủ công người Hoa từ cuối thế kỷ XIX. Lò nung được xây hoàn toàn bằng gạch thẻ nung kết dính bằng bùn phù sa, lưu giữ ký ức lao động miệt mài của bao thế hệ thợ lò.",
+    "visual_narrative": "Toàn cảnh 'Vương quốc Đỏ' trong sương sớm mai với những vòm lò gạch rêu phong nhuốm màu thời gian soi bóng xuống dòng kênh hiền hòa; vệt khói lam chiều bảng lảng quyện vào rặng dừa nước ven bờ.",
+    "source_citations": [
+      {
+        "title": "Hồ sơ Quy hoạch Bảo tồn Vùng Di sản Đương đại Mang Thít",
+        "url": "https://vinhlong.gov.vn/quy-hoach/di-san-duong-dai-mang-thit",
+        "notebook_id": "v-nh-long-v-nh-long-b-n-tre-tr",
+        "tier": "TIER_1_GOVERNMENT",
+        "authority_weight": 1.0
+      }
+    ]
+  },
+  {
+    "entity_id": "vung-di-san-duong-dai-mang-thit-vuong-quoc-lo-gach",
+    "field": "description",
+    "hours": "06:00 - 18:00 (không gian mở)",
+    "best_time": "06:30 - 08:30 sáng hoặc 16:00 - 17:30 chiều",
+    "waterway_access": "Tuyến cano, du thuyền đường sông xuất phát từ Bến cảng hành khách Vĩnh Long xuôi theo sông Cổ Chiên",
+    "aeo_schema_type": "TouristAttraction",
+    "enriched_value": "Vùng Di sản Đương đại Mang Thít là không gian bảo tồn văn hóa - sinh thái quy mô quốc tế, chuyển hóa cụm lò gạch gốm truyền thống sông Thầy Kay thành điểm đến di sản kiến trúc sống động. Đề án quy hoạch bảo vệ diện tích lõi hơn 3.000 ha nhằm tôn vinh giá trị văn hóa vật thể và phi vật thể của làng nghề trăm tuổi.",
+    "cultural_depth_notes": "Được tỉnh phê duyệt đề án bảo tồn và phát huy giá trị di sản, nơi đây hướng tới mục tiêu phát triển du lịch di sản sinh thái bền vững, kết nối hài hòa giữa nghệ thuật đương đại, làng nghề thủ công và đời sống cư dân bản địa.",
+    "visual_narrative": "Khung hình điện ảnh rộng cinematic panorama đón ánh bình minh rạng rỡ trên triền sông Thầy Kay, làm bừng sáng sắc đỏ nung trầm ấm của hàng trăm lò gạch nằm xen kẽ những vườn dừa và mương nước tự nhiên.",
+    "source_citations": [
+      {
+        "title": "Đề án Di sản Đương đại Mang Thít - Quyết định UBND tỉnh",
+        "url": "https://vinhlong.gov.vn/van-ban/de-an-di-san-mang-thit",
+        "notebook_id": "ch-nh-s-ch-ph-p-lu-t-v-n-b-n-q",
+        "tier": "TIER_1_GOVERNMENT",
+        "authority_weight": 1.0
+      }
+    ]
+  },
+  {
+    "entity_id": "nha-gom-do-tu-buoi",
+    "field": "description",
+    "hours": "07:30 - 18:00 (mở cửa hàng ngày)",
+    "best_time": "08:00 - 10:30 sáng hoặc 14:30 - 16:30 chiều",
+    "waterway_access": "Đường bộ đường tỉnh 902 hoặc cập đò máy tại bến sông Thầy Kay",
+    "aeo_schema_type": "TouristAttraction",
+    "enriched_value": "Ngôi nhà gốm đỏ Tư Buôi tại xã Mỹ Phước, huyện Mang Thít là công trình kiến trúc độc bản đạt Kỷ lục Việt Nam cho ngôi nhà làm bằng gốm đỏ lớn nhất. Ngôi nhà 3 gian 2 chái truyền thống Nam Bộ được nghệ nhân Nguyễn Văn Buôi (Tư Buôi) xây dựng hoàn toàn từ hàng vạn viên gốm đỏ đất nung và các tác phẩm điêu khắc gốm tinh xảo.",
+    "cultural_depth_notes": "Toàn bộ cột, kèo, hoành phi, câu đối và phù điêu trang trí trong nhà tái hiện các tích xưa của văn hóa Nam Bộ như hội làng, cây đa, bến đò và lễ hội cổ truyền. Công trình là sự tri ân tâm huyết của người thợ già với nghề gốm quê hương.",
+    "visual_narrative": "Chi tiết kiến trúc mái ngói gốm đỏ uốn lượn sắc sảo; hàng cột gốm bóng loáng chạm khắc hoa văn rồng phụng tinh tế dưới ánh sáng ấm cúng của không gian nhà rường Nam Bộ.",
+    "source_citations": [
+      {
+        "title": "Xác lập Kỷ lục Việt Nam: Ngôi nhà gốm đỏ lớn nhất của nghệ nhân Tư Buôi",
+        "url": "https://vinhlong.gov.vn/du-lich/nha-gom-tu-buoi",
+        "notebook_id": "v-nh-long-v-nh-long-b-n-tre-tr",
+        "tier": "TIER_1_GOVERNMENT",
+        "authority_weight": 1.0
+      }
+    ]
+  },
+  {
+    "entity_id": "lo-gach-mang-thit",
+    "field": "description",
+    "hours": "07:00 - 17:00",
+    "best_time": "07:00 - 09:00 sáng (ánh ban mai chiếu vào lòng vòm lò nung)",
+    "waterway_access": "Cập thuyền nan hoặc đò ngang bờ kênh Thầy Kay",
+    "aeo_schema_type": "TouristAttraction",
+    "enriched_value": "Cụm Lò gạch Mang Thít là điểm tham quan kiến trúc lò nung thủ công cổ truyền độc đáo. Mỗi lò nung như một pháo đài gạch hình nón cụt tròn trịa, rỗng ruột, với vòm trần mở đón ánh sáng tự nhiên, là bối cảnh chụp ảnh nghệ thuật và tìm hiểu quy trình hóa đất sét thành gạch nung bền bỉ.",
+    "cultural_depth_notes": "Một mẻ gạch nung trong lò truyền thống mất từ 25 đến 30 ngày đêm, đòi hỏi kinh nghiệm xem lửa và giữ khói trấu chuẩn xác của các bác thợ cả. Lò gạch vừa là công xưởng sản xuất vừa là biểu tượng tâm hồn cần cù của người lao động miệt vườn.",
+    "visual_narrative": "Tia sáng mặt trời chiếu dọi thẳng từ cửa vòm đỉnh lò xuống nền đất nung đỏ rực tạo hiệu ứng luồng sáng thần thoại; bề mặt gạch phủ lớp muối đất loang lổ đầy tính mỹ thuật trừu tượng.",
+    "source_citations": [
+      {
+        "title": "Kỹ thuật nung lò truyền thống vùng gạch gốm Mang Thít",
+        "url": "https://vinhlong.gov.vn/van-hoa/ky-thuat-lo-gach-mang-thit",
+        "notebook_id": "v-nh-long-v-nh-long-b-n-tre-tr",
+        "tier": "TIER_1_GOVERNMENT",
+        "authority_weight": 1.0
+      }
+    ]
+  },
+  {
+    "entity_id": "lang-nghe-cham-non-la-long-ho",
+    "field": "description",
+    "hours": "07:00 - 17:30",
+    "best_time": "08:00 - 10:30 sáng xem nghệ nhân chuốt vành và chằm nón",
+    "waterway_access": "Tuyến đò ngang sông Cổ Chiên sang các ấp cù lao Long Hồ",
+    "aeo_schema_type": "LocalBusiness",
+    "enriched_value": "Làng nghề chằm nón lá Long Hồ là làng nghề thủ công truyền thống trăm năm tuổi tại các xã cù lao ven sông Tiền và sông Cổ Chiên. Chiếc nón lá Long Hồ thanh nhã, đều mũi cước, lá nón được xử lý phẳng phiu trắng ngà, vừa che mưa che nắng cho người đi làm đồng vừa là món quà lưu niệm mang dấu ấn miệt vườn đặc trưng.",
+    "cultural_depth_notes": "Nghề chằm nón lá đòi hỏi sự kiên nhẫn và khéo léo qua các công đoạn: phơi lá kè, ủi lá bằng lưỡi ủi nóng, chuốt vành trúc và chằm từng đường kim mũi cước sít sao để nón không bị thấm nước mưa.",
+    "visual_narrative": "Đôi bàn tay thoăn thoắt của bà cụ nghệ nhân luồn sợi cước qua từng lớp lá nón trắng muốt; chiếc nón hoàn thiện đội đầu tỏa bóng râm dịu dàng trên bến đò sông nước phù sa.",
+    "source_citations": [
+      {
+        "title": "Làng nghề truyền thống chằm nón lá Long Hồ",
+        "url": "https://vinhlong.gov.vn/lang-nghe/cham-non-la-long-ho",
+        "notebook_id": "mekong-360-t-p-2",
+        "tier": "TIER_1_GOVERNMENT",
+        "authority_weight": 1.0
+      }
+    ]
+  },
+  {
+    "entity_id": "lang-nghe-dan-non-la-tt-long-ho",
+    "field": "description",
+    "hours": "07:30 - 17:00",
+    "best_time": "08:30 - 11:00 sáng",
+    "waterway_access": "Đường bộ tỉnh lộ 904 kết hợp đường thủy rạch Long Hồ",
+    "aeo_schema_type": "LocalBusiness",
+    "enriched_value": "Làng nghề đan nón lá Thị trấn Long Hồ là cái nôi gìn giữ kỹ nghệ chằm nón lá ba luồng chỉ cổ truyền. Nón lá tại đây được đan bằng khung nón 16 vành chuẩn mực, lá nón chọn lọc từ vùng lá buông hoặc lá mật cật bền chắc, nhẹ êm khi đội.",
+    "cultural_depth_notes": "Từng vành nón đan kết từ công phu vót tre tỉ mẩn; khi soi nón dưới ánh mặt trời, giữa hai lớp lá thường được lồng các hình vẽ hoa sen hoặc phong cảnh sông nước Cửu Long tinh xảo.",
+    "visual_narrative": "Góc chụp ngược sáng chiếc nón lá lộ rõ hoa văn ẩn mờ bên trong hai lớp lá; các liếp nón lá phơi trắng dọc khoảng sân rợp bóng cây ăn trái.",
+    "source_citations": [
+      {
+        "title": "Bảo tồn kỹ nghệ nón lá Long Hồ truyền thống",
+        "url": "https://vinhlong.gov.vn/van-hoa/non-la-tt-long-ho",
+        "notebook_id": "mekong-360-t-p-2",
+        "tier": "TIER_1_GOVERNMENT",
+        "authority_weight": 1.0
+      }
+    ]
+  },
+  {
+    "entity_id": "lang-nghe-dan-lat-may-tre-phu-le",
+    "field": "description",
+    "hours": "07:00 - 17:30",
+    "best_time": "08:00 - 10:30 sáng",
+    "waterway_access": "Tuyến tỉnh lộ 885 kết hợp đường thủy rạch Ba Tri",
+    "aeo_schema_type": "LocalBusiness",
+    "enriched_value": "Làng nghề đan lát mây tre Phú Lễ (huyện Ba Tri) là làng nghề đan rổ, rá, thúng, sàng nổi danh lâu đời của vùng đất giồng cát duyên hải. Sản phẩm mây tre Phú Lễ đan dày khít, cạp vành mây dẻo dai và được hun khói rơm tạo lớp vỏ chống mối mọt tự nhiên không hóa chất.",
+    "cultural_depth_notes": "Gắn liền với không gian văn hóa di tích Đình Phú Lễ và nghệ thuật Hát Sắc bùa, nghề đan lát nơi đây là phương kế mưu sinh truyền đời của các gia đình nông dân lúc nông nhàn suốt hơn hai thế kỷ.",
+    "visual_narrative": "Hình ảnh những chiếc nong, thúng tre đan hình hoa thị xếp đều tăm tắp bên hiên nhà cổ; đôi mắt sáng của người thợ già thoăn thoắt chuốt sợi mây óng ả.",
+    "source_citations": [
+      {
+        "title": "Địa chí Làng nghề truyền thống đan lát Phú Lễ",
+        "url": "https://bentre.gov.vn/lang-nghe/dan-lat-phu-le",
+        "notebook_id": "mekong-360-t-p-2",
+        "tier": "TIER_1_GOVERNMENT",
+        "authority_weight": 1.0
+      }
+    ]
+  },
+  {
+    "entity_id": "lang-nghe-dan-gio-cong-dua-hung-phong",
+    "field": "description",
+    "hours": "07:30 - 17:00",
+    "best_time": "08:00 - 11:00 sáng",
+    "waterway_access": "Đò ngang bến phà Hưng Phong sang Cù lao Ốc giữa dòng sông Hàm Luông",
+    "aeo_schema_type": "LocalBusiness",
+    "enriched_value": "Làng nghề đan giỏ cọng dừa Hưng Phong tọa lạc trên Cù lao Ốc (xã Hưng Phong, Giồng Trôm) là sáng tạo độc đáo biến gân lá cọng dừa phơi khô thành các loại giỏ hoa, làn đi chợ và hộp quà tặng xuất khẩu sang nhiều nước trên thế giới.",
+    "cultural_depth_notes": "Sống giữa bốn bề sông nước bạt ngàn dừa, người dân Hưng Phong tận dụng cọng lá dừa dẻo dai chuốt sạch, luộc nước sôi và đan kết bằng kỹ thuật móc nan hoa độc đáo, tạo công ăn việc làm cho hàng ngàn phụ nữ nông thôn.",
+    "visual_narrative": "Khung cảnh thanh bình trên cù lao sông Hàm Luông với những bọc cọng dừa vàng rơm phơi dọc triền đê; các sản phẩm giỏ dừa đa dạng mẫu mã trang trí xinh xắn tại gian trưng bày sinh thái.",
+    "source_citations": [
+      {
+        "title": "Làng nghề đan giỏ cọng dừa Hưng Phong Cù lao Ốc",
+        "url": "https://bentre.gov.vn/lang-nghe/gio-cong-dua-hung-phong",
+        "notebook_id": "mekong-360-t-p-2",
+        "tier": "TIER_1_GOVERNMENT",
+        "authority_weight": 1.0
+      }
+    ]
+  },
+  {
+    "entity_id": "lang-nghe-dan-luc-binh-ngai-tu-binh-ninh",
+    "field": "description",
+    "hours": "07:00 - 17:30",
+    "best_time": "08:00 - 10:30 sáng ngắm thảm lục bình phơi nắng ven đê",
+    "waterway_access": "Tuyến rạch Măng Thít nối sông Cổ Chiên, thuận tiện thuyền ghe thu gom nông sản",
+    "aeo_schema_type": "LocalBusiness",
+    "enriched_value": "Làng nghề đan lục bình Ngãi Tứ – Bình Ninh (huyện Tam Bình) là trung tâm biến cây lục bình trôi dạt trên sông rạch thành các sản phẩm thủ công mỹ nghệ cao cấp như thảm, đệm, giỏ xách và đồ nội thất xuất khẩu đạt giá trị kinh tế cao.",
+    "cultural_depth_notes": "Thân cây lục bình cắt bỏ rễ và lá, phơi khô dưới nắng giòn từ 4 đến 5 ngày cho đến khi có màu vàng nâu cánh gián rồi được bện theo kiểu xương cá hoặc đan hạt gạo, vừa mềm mại vừa dẻo dai thân thiện môi trường.",
+    "visual_narrative": "Bến sông phủ kín những bó lục bình khô vàng óng đón nắng rực rỡ; người thợ đan khéo léo phối sợi lục bình với khung sắt tạo dáng chiếc ghế thư giãn sang trọng.",
+    "source_citations": [
+      {
+        "title": "Phát triển Làng nghề đan lục bình Ngãi Tứ Bình Ninh",
+        "url": "https://vinhlong.gov.vn/lang-nghe/dan-luc-binh-ngai-tu",
+        "notebook_id": "mekong-360-t-p-2",
+        "tier": "TIER_1_GOVERNMENT",
+        "authority_weight": 1.0
+      }
+    ]
+  },
+  {
+    "entity_id": "lang-dan-lat-duc-my-cang-long",
+    "field": "description",
+    "hours": "07:00 - 17:00",
+    "best_time": "08:00 - 10:30 sáng",
+    "waterway_access": "Tuyến quốc lộ 53 rẽ vào xã Đức Mỹ, kết nối bến sông Càng Long",
+    "aeo_schema_type": "LocalBusiness",
+    "enriched_value": "Làng Đan Lát Đức Mỹ (huyện Càng Long) là làng nghề đan lát tre trúc truyền thống nổi danh của khu vực Trà Vinh. Các sản phẩm cần xé, xảo tre, bội gà và nôi trẻ em tại đây được đan từ những cây tre gai già, độ dẻo cao và chịu được sức nặng hàng trăm ký nông sản.",
+    "cultural_depth_notes": "Nghề đan cần xé Đức Mỹ gắn liền với sự phát triển của các vựa trái cây và chợ đầu mối Nam Bộ, là cầu nối vận chuyển hàng triệu tấn cam sành, bưởi, dưa hấu tỏa đi khắp các vùng miền.",
+    "visual_narrative": "Những chồng cần xé tre cao ngất ngưởng xếp đều như tường thành bên bờ kinh xanh mát; thanh âm chẻ tre, vót nan nhịp nhàng rộn rã xóm làng.",
+    "source_citations": [
+      {
+        "title": "Hồ sơ Làng nghề đan lát truyền thống Đức Mỹ",
+        "url": "https://travinh.gov.vn/lang-nghe/dan-lat-duc-my",
+        "notebook_id": "mekong-360-t-p-2",
+        "tier": "TIER_1_GOVERNMENT",
+        "authority_weight": 1.0
+      }
+    ]
+  },
+  {
+    "entity_id": "lang-nghe-dan-dat-dai-an",
+    "field": "description",
+    "hours": "07:00 - 17:30",
+    "best_time": "08:00 - 11:00 sáng",
+    "waterway_access": "Tuyến đường tỉnh 914 rẽ vào xã Đại An, Trà Cú",
+    "aeo_schema_type": "LocalBusiness",
+    "enriched_value": "Làng nghề đan đát Đại An (huyện Trà Cú) là làng nghề thủ công cổ truyền của đồng bào Khmer, chuyên chế tác các nông cụ và ngư cụ sinh thái như lờ, đó, xơng, xập, rổ, thúng phục vụ lối sống đánh bắt cá đồng tự nhiên trên đồng ruộng ngập lũ.",
+    "cultural_depth_notes": "Kỹ thuật đan đát tre nứa của người Khmer Đại An kế thừa kho tàng tri thức bản địa thích ứng với hệ sinh thái ngập nước, mỗi ngư cụ được tính toán mắt đan chính xác để chỉ bắt cá lớn và phóng sinh cá con.",
+    "visual_narrative": "Cụ ông Khmer ngồi trước bậc thềm nhà sàn thoăn thoắt gài nan chiếc xơng bắt cá; những chiếc lờ tre hun khói màu hổ phách xếp ngay ngắn dưới bóng cây thốt nốt.",
+    "source_citations": [
+      {
+        "title": "Bảo tồn làng nghề đan đát truyền thống Khmer Đại An",
+        "url": "https://travinh.gov.vn/van-hoa/dan-dat-dai-an",
+        "notebook_id": "mekong-360-t-p-2",
+        "tier": "TIER_1_GOVERNMENT",
+        "authority_weight": 1.0
+      }
+    ]
+  },
+  {
+    "entity_id": "lang-se-loi-lac-va-dan-lat-vung-liem",
+    "field": "description",
+    "hours": "07:30 - 17:00",
+    "best_time": "08:00 - 10:30 sáng",
+    "waterway_access": "Đường tỉnh 902 dọc sông Mang Thít kết nối đò ngang các cù lao Vũng Liêm",
+    "aeo_schema_type": "LocalBusiness",
+    "enriched_value": "Làng se lõi lác và đan lát Vũng Liêm bảo tồn kỹ nghệ thủ công se sợi lác tự nhiên thành dây lõi bền dai để dệt thảm và đan các sản phẩm mỹ nghệ xuất khẩu. Sợi lác nước lợ Vũng Liêm dẻo thơm mùi thảo mộc, giữ màu sáng và kháng nấm mốc tự nhiên.",
+    "cultural_depth_notes": "Từ những cánh đồng lác ven sông ngập mặn thời xưa, người dân Vũng Liêm đã sáng tạo ra khung xe lác quay tay để bện các sợi lác mảnh thành sợi thừng dẻo dai, phục vụ đóng đáy và đan chiếu bền chắc.",
+    "visual_narrative": "Chiếc guồng quay se lác gỗ quay tròn nhịp nhàng cuốn những sợi lác xanh mướt thành cuộn dây vàng ươm; nụ cười rạng rỡ của người thợ làng nghề bên mái hiên ngát hương cỏ lác.",
+    "source_citations": [
+      {
+        "title": "Nghề se lõi lác truyền thống huyện Vũng Liêm",
+        "url": "https://vinhlong.gov.vn/lang-nghe/se-loi-lac-vung-liem",
+        "notebook_id": "mekong-360-t-p-2",
+        "tier": "TIER_1_GOVERNMENT",
+        "authority_weight": 1.0
+      }
+    ]
+  },
+  {
+    "entity_id": "lang-nghe-bo-choi-my-an",
+    "field": "description",
+    "hours": "07:00 - 17:30",
+    "best_time": "08:00 - 11:00 sáng",
+    "waterway_access": "Tuyến sông Cổ Chiên qua phà Chợ Lách hoặc đường bộ quốc lộ 57",
+    "aeo_schema_type": "LocalBusiness",
+    "enriched_value": "Làng nghề bó chổi Mỹ An (xã Mỹ An, huyện Chợ Lách) nổi danh với sản phẩm chổi cọng dừa và chổi bông sậy bền chặt, quét sạch bụi đất mịn màng mà không làm xước sàn nhà, là vật dụng thân thương trong mọi nếp nhà phương Nam.",
+    "cultural_depth_notes": "Bông sậy sau khi trổ cờ trên các bãi bồi ven sông được cắt về phơi khô, tước sợi và bó chặt bằng dây kẽm hoặc cọng dừa theo kỹ thuật chằng chéo gia truyền, tạo nên cây chổi xòe đều và bền bỉ suốt nhiều năm.",
+    "visual_narrative": "Những hàng chổi bông sậy vàng óng xòe cánh như nan quạt phơi khắp các nẻo đường làng rợp bóng cây ăn trái; nghệ nhân thoăn thoắt xiết dây kẽm bằng bàn đạp gỗ truyền thống.",
+    "source_citations": [
+      {
+        "title": "Làng nghề truyền thống bó chổi Mỹ An Chợ Lách",
+        "url": "https://bentre.gov.vn/lang-nghe/bo-choi-my-an",
+        "notebook_id": "mekong-360-t-p-2",
+        "tier": "TIER_1_GOVERNMENT",
+        "authority_weight": 1.0
+      }
+    ]
+  },
+  {
+    "entity_id": "lang-nghe-dong-ghe-xuong-an-dinh",
+    "field": "description",
+    "hours": "07:00 - 17:30",
+    "best_time": "08:30 - 11:00 sáng",
+    "waterway_access": "Bến sông Hàm Luông và kênh rạch An Định, tàu ghe cập ụ hạ thủy trực tiếp",
+    "aeo_schema_type": "LocalBusiness",
+    "enriched_value": "Làng Nghề Đóng Ghe Xuồng An Định (xã An Định, huyện Mỏ Cày Nam) là làng nghề mộc thủy truyền thống danh tiếng, chuyên đóng các loại ghe tam bản, xuồng ba lá và thuyền du lịch gỗ sao, gỗ dầu phục vụ giao thương và sinh hoạt sông nước Cửu Long.",
+    "cultural_depth_notes": "Nghề đóng ghe xuồng tại An Định đòi hỏi bí quyết uốn ván bằng lửa ngọn dừa, xảm trét kẽ hở bằng dầu rái trộn chai để thân tàu kín nước tuyệt đối, lướt êm trên các luồng sóng lớn của sông Tiền, sông Hậu.",
+    "visual_narrative": "Khung sườn chiếc ghe tam bản bằng gỗ sao uốn cong mềm mại nằm trên ụ gỗ bên mé sông; mùi mạt cưa thơm ngát quyện với mùi dầu rái ấm nồng lan tỏa khắp xưởng mộc ven bờ.",
+    "source_citations": [
+      {
+        "title": "Làng nghề đóng ghe xuồng truyền thống An Định",
+        "url": "https://bentre.gov.vn/lang-nghe/dong-ghe-xuong-an-dinh",
+        "notebook_id": "mekong-360-t-p-2",
+        "tier": "TIER_1_GOVERNMENT",
+        "authority_weight": 1.0
+      }
+    ]
+  },
+  {
+    "entity_id": "lang-tau-hu-ky-my-hoa",
+    "field": "description",
+    "hours": "05:00 - 18:00 (các lò nấu đỏ lửa từ sáng sớm)",
+    "best_time": "06:00 - 08:30 sáng (thời điểm nghệ nhân vớt các màng tàu hủ ky vàng óng đầu tiên)",
+    "waterway_access": "Đường thủy qua sông Hậu cập bến phà Bình Minh hoặc đường bộ theo quốc lộ 1A",
+    "aeo_schema_type": "TouristAttraction",
+    "enriched_value": "Làng nghề tàu hủ ky Mỹ Hòa (thị xã Bình Minh) là Di sản văn hóa phi vật thể Quốc gia, cái nôi sản sinh món tàu hủ ky trứ danh khắp Nam Bộ. Hơn một thế kỷ qua, các lò đun nơi đây luôn đỏ lửa chế biến từ hạt đậu nành thuần khiết thành những miếng tàu hủ ky lá, tàu hủ ky cọng thơm béo ngậy.",
+    "cultural_depth_notes": "Do các bậc tiền nhân người Hoa mang đến vùng đất ven sông Hậu từ đầu thế kỷ XX, tàu hủ ky Mỹ Hòa đạt độ dẻo dai đặc biệt nhờ kỹ thuật canh độ sôi chảo gang và độ ẩm tự nhiên của gió sông Hậu, là nguyên liệu cốt lõi của ẩm thực chay thanh đạm.",
+    "visual_narrative": "Hơi nước nghi ngút bốc lên từ dãy chảo gang sôi liu riu; nghệ nhân khéo léo dùng thanh trúc tách lớp màng váng đậu mỏng tang giơ cao óng ánh sắc vàng tơ tằm rồi vắt lên sào phơi.",
+    "source_citations": [
+      {
+        "title": "Di sản văn hóa phi vật thể Quốc gia: Nghề làm tàu hủ ky Mỹ Hòa",
+        "url": "https://dsvh.gov.vn/di-san-tau-hu-ky-my-hoa",
+        "notebook_id": "mekong-360-t-p-2",
+        "tier": "TIER_1_GOVERNMENT",
+        "authority_weight": 1.0
+      }
+    ]
+  },
+  {
+    "entity_id": "lang-nghe-lam-tau-hu-ky",
+    "field": "description",
+    "hours": "05:30 - 17:30",
+    "best_time": "07:00 - 09:30 sáng",
+    "waterway_access": "Tuyến tham quan đường sông kết hợp chợ nổi Cái Răng và cù lao Bình Minh",
+    "aeo_schema_type": "LocalBusiness",
+    "enriched_value": "Làng nghề làm tàu hủ ky Bình Minh là không gian bảo tồn di sản thủ công ẩm thực độc đáo. Đến đây, du khách được trải nghiệm tận mắt quy trình xay đậu, nấu sữa trên lò than củi và thử tài vớt váng tàu hủ ky bằng nẹp trúc dẻo dai.",
+    "cultural_depth_notes": "Sản phẩm tàu hủ ky gồm nhiều loại: tàu hủ ky miếng dẻo, tàu hủ ky ốc, cọng khô và cọng giòn. Mỗi loại đòi hỏi thời gian tạo màng váng và nhiệt độ lửa khác nhau để giữ trọn vẹn vị ngọt bùi của đạm đậu nành hữu cơ.",
+    "visual_narrative": "Dãy sào phơi tàu hủ ky vàng rực trải dài dưới ánh nắng mai rực rỡ; góc bếp củi đượm than hồng ấm cúng lưu giữ nét văn hóa sinh hoạt ẩm thực truyền thống.",
+    "source_citations": [
+      {
+        "title": "Địa chí Làng nghề tàu hủ ky xã Mỹ Hòa thị xã Bình Minh",
+        "url": "https://vinhlong.gov.vn/lang-nghe/tau-hu-ky-my-hoa",
+        "notebook_id": "mekong-360-t-p-2",
+        "tier": "TIER_1_GOVERNMENT",
+        "authority_weight": 1.0
+      }
+    ]
+  },
+  {
+    "entity_id": "tau-hu-ky-my-hoa-chien-gion",
+    "field": "description",
+    "hours": "06:30 - 21:00",
+    "best_time": "Thưởng thức nóng giòn ăn kèm chao môn hoặc cuốn rau sống bánh tráng",
+    "waterway_access": "Các nhà hàng và quán ăn ven sông Hậu tại Bình Minh",
+    "aeo_schema_type": "FoodEstablishment",
+    "enriched_value": "Tàu hủ ky Mỹ Hòa chiên giòn là món ngon biểu tượng của ẩm thực thanh đạm Vĩnh Long. Miếng tàu hủ ky tươi thả vào chảo dầu sôi phồng rộp vàng óng, cắn vào giòn tan rôm rốp, béo ngậy vị đậu nành tự nhiên và chấm cùng nước tương ớt hoặc chao chùa đậm đà.",
+    "cultural_depth_notes": "Món ăn phản ánh tinh hoa ẩm thực chay Nam Bộ, được các đầu bếp sáng tạo thành nhiều món tiệc cao cấp như tàu hủ ky cuộn nấm bào ngư, chả giò tàu hủ ky hay lẩu nấm dưỡng sinh miệt vườn.",
+    "visual_narrative": "Đĩa tàu hủ ky chiên vàng ruộm bốc khói nghi ngút bên đĩa rau răm, dưa leo thái lát và chén nước chấm sa tế đỏ au kích thích mọi giác quan ẩm thực.",
+    "source_citations": [
+      {
+        "title": "Mỹ vị ẩm thực chay: Tàu hủ ky Mỹ Hòa chiên giòn",
+        "url": "https://vinhlong.gov.vn/am-thuc/tau-hu-ky-chien-gion",
+        "notebook_id": "mekong-360-t-p-2",
+        "tier": "TIER_1_GOVERNMENT",
+        "authority_weight": 1.0
+      }
+    ]
+  },
+  {
+    "entity_id": "lang-nghe-banh-trang-nem-cu-lao-may",
+    "field": "description",
+    "hours": "06:00 - 17:00",
+    "best_time": "07:30 - 10:00 sáng (ngắm hàng ngàn liếp bánh tráng phơi dọc triền đê cù lao)",
+    "waterway_access": "Đò ngang qua sông Hậu từ bến đò Trà Ôn cập Cù lao Lục Sĩ Thành",
+    "aeo_schema_type": "LocalBusiness",
+    "enriched_value": "Làng nghề bánh tráng nem Cù lao Mây (xã Lục Sĩ Thành, Trà Ôn) là làng nghề làm bánh tráng có lịch sử hơn 100 năm giữa lòng sông Hậu. Bánh tráng Cù lao Mây nức tiếng với nhiều chủng loại: bánh tráng nem dẻo mịn cuốn chả giò giòn rụm, bánh tráng ớt cay nồng, bánh tráng sữa béo ngậy và bánh tráng ngọt nướng phồng.",
+    "cultural_depth_notes": "Bánh tráng nem cù lao được làm từ gạo lúa mùa ngâm nở xay bột tươi tráng mỏng tang trên nồi hơi nước rồi dùng que tre trải đều lên liếp phơi nắng gió tự nhiên của dòng sông Hậu, không dùng bất kỳ chất bảo quản nào.",
+    "visual_narrative": "Khung cảnh như tranh vẽ với hàng trăm chiếc liếp bánh tráng đan bằng tre phơi thẳng tắp dọc bờ sông Hậu xanh biếc; nghệ nhân tay thoăn thoắt gỡ bánh dẻo dai nguyên vẹn.",
+    "source_citations": [
+      {
+        "title": "Di sản Làng nghề Bánh tráng nem Cù lao Mây Trà Ôn",
+        "url": "https://vinhlong.gov.vn/lang-nghe/banh-trang-nem-cu-lao-may",
+        "notebook_id": "mekong-360-t-p-2",
+        "tier": "TIER_1_GOVERNMENT",
+        "authority_weight": 1.0
+      }
+    ]
+  },
+  {
+    "entity_id": "lang-nghe-banh-trang-tam-binh",
+    "field": "description",
+    "hours": "06:30 - 17:00",
+    "best_time": "08:00 - 10:30 sáng",
+    "waterway_access": "Tuyến đường sông qua sông Cái Ngang và đường tỉnh 905",
+    "aeo_schema_type": "LocalBusiness",
+    "enriched_value": "Làng nghề bánh tráng Tam Bình gìn giữ bí quyết tráng bánh mỏng đều từ hạt gạo nếp địa phương pha chút mè đen và hành hoa. Bánh tráng Tam Bình khi nướng chín phồng rộp, thơm nức mũi mùi gạo mới và vị bùi ngậy của mè rang giòn.",
+    "cultural_depth_notes": "Nghề làm bánh tráng tại Tam Bình gắn liền với tục cúng giỗ và ngày Tết cổ truyền, là món quà quê mộc mạc gói trọn ân tình của đất phù sa màu mỡ sông Măng Thít.",
+    "visual_narrative": "Chiếc bánh tráng tròn xoe nổi hạt mè đen đều tăm tắp trên liếp tre vàng nhạt; lò tráng bánh rực than hồng với mùi hương bột gạo mới lan tỏa thơm nức.",
+    "source_citations": [
+      {
+        "title": "Làng nghề bánh tráng truyền thống huyện Tam Bình",
+        "url": "https://vinhlong.gov.vn/lang-nghe/banh-trang-tam-binh",
+        "notebook_id": "mekong-360-t-p-2",
+        "tier": "TIER_1_GOVERNMENT",
+        "authority_weight": 1.0
+      }
+    ]
+  },
+  {
+    "entity_id": "quan-banh-canh-ben-co-tra-vinh",
+    "field": "description",
+    "hours": "06:00 - 21:00 (đông khách nhất vào buổi sáng và giờ cơm chiều)",
+    "best_time": "07:00 - 08:30 sáng thưởng thức tô bánh canh nóng hổi nguyên vị",
+    "waterway_access": "Đường bộ quốc lộ 53 ngay chân cầu Bến Có (xã Nguyệt Hóa, Càng Long)",
+    "aeo_schema_type": "FoodEstablishment",
+    "enriched_value": "Quán Bánh Canh Bến Có tọa lạc tại ấp Bến Có, xã Nguyệt Hóa là thương hiệu ẩm thực danh tiếng bậc nhất của khu vực Trà Vinh, hình thành từ những năm 1980. Tô bánh canh Bến Có đậm đà với sợi bánh canh trong dai làm từ bột gạo lọc, nước dùng hầm xương heo ngọt thanh tự nhiên và đĩa lòng heo tươi ngon đầy đặn.",
+    "cultural_depth_notes": "Bí quyết của Bánh Canh Bến Có nằm ở khâu luộc lòng heo vừa chín tới giữ độ giòn sần sật, nước súp trong vắt không béo ngậy ăn kèm nước mắm ớt hiểm cốt dừa nguyên chất cay nồng quyến rũ.",
+    "visual_narrative": "Tô bánh canh đầy ắp thịt bắp, cật, tim, dồi heo rắc hành ngò xanh mướt và tiêu sọ thơm nồng; đĩa bánh canh bốc khói nghi ngút bên chén nước mắm ớt đỏ tươi đậm đà.",
+    "source_citations": [
+      {
+        "title": "Đặc sản ẩm thực Bánh Canh Bến Có Trà Vinh",
+        "url": "https://travinh.gov.vn/am-thuc/banh-canh-ben-co",
+        "notebook_id": "mekong-360-t-p-2",
+        "tier": "TIER_1_GOVERNMENT",
+        "authority_weight": 1.0
+      }
+    ]
+  },
+  {
+    "entity_id": "bun-nuoc-leo-tra-vinh",
+    "field": "description",
+    "hours": "06:00 - 20:30 (các quán bún nước lèo mở cửa cả ngày)",
+    "best_time": "Buổi sáng 06:30 - 08:30 hoặc chiều tà đón gió sông mát mẻ",
+    "waterway_access": "Tập trung tại trung tâm thành phố và các bến chợ ven sông Long Bình",
+    "aeo_schema_type": "FoodEstablishment",
+    "enriched_value": "Bún Nước Lèo Trà Vinh là món ăn quốc hồn quốc túy kết tinh từ sự giao thoa văn hóa ba dân tộc Khmer, Kinh và Hoa. Nước lèo được nấu từ mắm bò hóc (prohok) ủ rục rây lấy nước trong, hòa quyện cùng ngải bún giã nhuyễn khử mùi tanh, sả đập dập và vị ngọt thanh của thịt cá lóc đồng luộc rỉa bỏ xương.",
+    "cultural_depth_notes": "Khác với bún mắm vùng khác, nước lèo Trà Vinh trong và thanh nhẹ, khi ăn dọn kèm đĩa rau ghém phong phú gồm bắp chuối, rau muống chẻ, bông súng, hẹ và giá sống, thêm vài miếng thịt heo quay giòn da vàng ươm và huyết nếp bùi ngậy.",
+    "visual_narrative": "Tô bún nước lèo bốc khói thơm nồng hương ngải bún; màu trắng của sợi bún tươi nổi bật trên nền nước dùng hổ phách trong veo, xếp bên trên là miếng cá lóc đồng trắng ngần và thịt heo quay bì giòn rụm.",
+    "source_citations": [
+      {
+        "title": "Văn hóa ẩm thực Bún Nước Lèo Trà Vinh",
+        "url": "https://travinh.gov.vn/am-thuc/bun-nuoc-leo",
+        "notebook_id": "mekong-360-t-p-2",
+        "tier": "TIER_1_GOVERNMENT",
+        "authority_weight": 1.0
+      }
+    ]
+  },
+  {
+    "entity_id": "quan-bun-nuoc-leo-cho-tra-vinh-tra-vinh",
+    "field": "description",
+    "hours": "05:30 - 18:30",
+    "best_time": "06:00 - 08:00 sáng khám phá nhịp sống ẩm thực chợ truyền thống",
+    "waterway_access": "Chợ trung tâm Trà Vinh ngay cạnh sông Long Bình thơ mộng",
+    "aeo_schema_type": "FoodEstablishment",
+    "enriched_value": "Quán bún nước lèo chợ Trà Vinh là điểm hẹn ẩm thực trăm năm của người dân địa phương và du khách thập phương. Tọa lạc trong lòng chợ nhà lồng cổ kính, quán phục vụ những tô bún nước lèo nguyên bản nấu bằng nồi đất nung giữ trọn độ nóng sốt và hương vị ngải bún đặc trưng.",
+    "cultural_depth_notes": "Ngồi ăn bún nước lèo giữa chợ mai, lắng nghe tiếng chào mua bán rộn rã bằng tiếng Việt xen lẫn tiếng Khmer đôn hậu là trải nghiệm văn hóa đời thường vô giá của vùng đất giồng cát cổ.",
+    "visual_narrative": "Nồi nước lèo sôi lục bục trên bếp than hồng tỏa khói ngát hương sả và ngải bún; người bán thoăn thoắt xếp rau ghém bắp chuối vào tô gốm mộc mạc mời thực khách.",
+    "source_citations": [
+      {
+        "title": "Khám phá ẩm thực dân dã Bún nước lèo chợ Trà Vinh",
+        "url": "https://travinh.gov.vn/du-lich/am-thuc-cho-tra-vinh",
+        "notebook_id": "mekong-360-t-p-2",
+        "tier": "TIER_1_GOVERNMENT",
+        "authority_weight": 1.0
+      }
+    ]
+  },
+  {
+    "entity_id": "bun-nuoc-leo-cang-long",
+    "field": "description",
+    "hours": "06:00 - 18:00",
+    "best_time": "Buổi sáng 06:30 - 08:30",
+    "waterway_access": "Đường bộ quốc lộ 53 tại ngã ba thị trấn Càng Long",
+    "aeo_schema_type": "FoodEstablishment",
+    "enriched_value": "Bún Nước Lèo Càng Long mang đậm sắc thái ẩm thực miệt vườn với vị ngọt đậm của cá lóc đồng nướng trui rỉa thịt xào sơ với sả bằm và ớt hiểm. Nước lèo tại đây đậm vị sả ớt hòa quyện cùng nước luộc tép bạc sông ngọt lịm.",
+    "cultural_depth_notes": "Người Càng Long khi thưởng thức bún nước lèo thường ăn kèm bánh cóng giòn rụm nhân đậu xanh tép đồng hoặc chả giò chiên nóng, tạo nên sự cân bằng hoàn hảo giữa độ mềm dai của bún và độ giòn tan của bánh.",
+    "visual_narrative": "Tô bún chan nước lèo óng ánh váng mỡ cá lóc đồng tự nhiên; chiếc bánh cóng vàng giòn đặt cạnh đĩa rau ghém tươi non xanh mướt dầm ớt bằm cay nồng xé lưỡi.",
+    "source_citations": [
+      {
+        "title": "Hương vị ẩm thực Bún nước lèo Càng Long",
+        "url": "https://travinh.gov.vn/am-thuc/bun-nuoc-leo-cang-long",
+        "notebook_id": "mekong-360-t-p-2",
+        "tier": "TIER_1_GOVERNMENT",
+        "authority_weight": 1.0
+      }
+    ]
+  },
+  {
+    "entity_id": "bun-nuoc-leo-tieu-can",
+    "field": "description",
+    "hours": "06:00 - 18:00",
+    "best_time": "07:00 - 09:00 sáng",
+    "waterway_access": "Tuyến sông Cần Chông kết nối thị trấn Cầu Quan và Tiểu Cần",
+    "aeo_schema_type": "FoodEstablishment",
+    "enriched_value": "Bún Nước Lèo Tiểu Cần là biến tấu độc đáo của ẩm thực vùng đồng bào Khmer huyện Tiểu Cần, trứ danh với nước dùng trong veo, thoang thoảng hương mắm prohok ủ kỹ và vị thơm cay của củ ngải bún tươi giã tay mịn màng.",
+    "cultural_depth_notes": "Điểm đặc biệt ở Tiểu Cần là cá lóc nấu bún phải là cá lóc đồng bắt ở các lung bàu tự nhiên, thịt cá chắc nịch không bở, sau khi luộc chín được ướp với nghệ tươi tạo màu vàng óng tự nhiên.",
+    "visual_narrative": "Thịt cá lóc ướp nghệ vàng tươi xếp khéo léo trên mặt tô bún; nước dùng trong vắt tỏa hương thơm thanh khiết của thảo mộc tự nhiên giữa sớm mai miệt vườn.",
+    "source_citations": [
+      {
+        "title": "Bản sắc ẩm thực bún nước lèo Tiểu Cần",
+        "url": "https://travinh.gov.vn/am-thuc/bun-nuoc-leo-tieu-can",
+        "notebook_id": "mekong-360-t-p-2",
+        "tier": "TIER_1_GOVERNMENT",
+        "authority_weight": 1.0
+      }
+    ]
+  },
+  {
+    "entity_id": "lang-nghe-com-dep-ba-so",
+    "field": "description",
+    "hours": "06:00 - 18:00 (vào vụ giã cốm nhộn nhịp nhất dịp rằm tháng 10 Âm lịch)",
+    "best_time": "Mùa lễ hội Ok Om Bok (tháng 10 Âm lịch) hoặc 08:00 - 11:00 sáng hàng ngày",
+    "waterway_access": "Đường tỉnh 915 ven sông Hậu qua xã Nhị Trường, Cầu Ngang",
+    "aeo_schema_type": "LocalBusiness",
+    "enriched_value": "Làng nghề Cốm Dẹp Ba So (xã Nhị Trường, huyện Cầu Ngang) là làng nghề chế biến món cốm dẹp truyền thống trứ danh của người Khmer Trà Vinh. Cốm dẹp Ba So được làm từ hạt nếp nương vừa đỏ đuôi gặt về rang vừa chín tới trong nồi đất rồi giã thủ công bằng chày đôi dập dồn nhịp nhàng.",
+    "cultural_depth_notes": "Cốm dẹp là vật phẩm cúng trăng thiêng liêng nhất trong Lễ hội Ok Om Bok để tạ ơn Thần Mặt Trăng (Preah Chan) đã bảo bọc mùa màng. Cốm dẹp sau khi sàng sảy sạch trấu được trộn cùng nước dừa tươi, đường thốt nốt và dừa nạo sợi béo bùi ngào ngạt.",
+    "visual_narrative": "Nhịp chày đôi của đôi nam nữ Khmer giã cốm dồn dập bên cối đá; hạt nếp xanh non dẹp mỏng tỏa hương thơm ngát của đồng lúa mùa quyện cùng vị ngọt béo ngậy của dừa nạo tươi.",
+    "source_citations": [
+      {
+        "title": "Làng nghề truyền thống Cốm Dẹp Ba So Nhị Trường",
+        "url": "https://travinh.gov.vn/lang-nghe/com-dep-ba-so",
+        "notebook_id": "mekong-360-t-p-2",
+        "tier": "TIER_1_GOVERNMENT",
+        "authority_weight": 1.0
+      }
+    ]
+  },
+  {
+    "entity_id": "mam-bo-hoc-prohok",
+    "field": "description",
+    "hours": "07:30 - 20:00",
+    "best_time": "Thưởng thức mắm sống trộn tỏi ớt dầm nước cốt chanh ăn kèm khế chua chuối chát",
+    "waterway_access": "Các cơ sở chế biến mắm truyền thống tại Trà Cú, Châu Thành và Duyên Hải",
+    "aeo_schema_type": "LocalBusiness",
+    "enriched_value": "Mắm Bò Hóc (Prohok) là di sản gia vị lên men linh hồn của ẩm thực Khmer Nam Bộ. Được chế biến từ cá nước ngọt tươi ngon (cá sặc, cá lóc, cá linh) làm sạch ruột, đánh vảy, ngâm muối hột và ủ lên men tự nhiên trong các lu sành từ 6 tháng đến hàng năm.",
+    "cultural_depth_notes": "Mắm prohok không chỉ là thực phẩm dự trữ mùa lũ của đồng bào mà còn là 'linh hồn vị giác' tạo nên chiều sâu hương vị cho các món canh chua som lo, bún nước lèo và các món xào miệt vườn không thể trộn lẫn.",
+    "visual_narrative": "Hũ mắm bò hóc màu nâu sẫm mở nắp tỏa hương thơm đặc trưng nồng nàn; đĩa mắm prohok dầm ớt xiêm rừng, tỏi đập dập ăn kèm đĩa rau rừng, đọt xoài non và cà pháo giòn tan.",
+    "source_citations": [
+      {
+        "title": "Di sản gia vị văn hóa Khmer: Nghệ thuật ủ mắm Prohok",
+        "url": "https://travinh.gov.vn/van-hoa/mam-bo-hoc-prohok",
+        "notebook_id": "mekong-360-t-p-2",
+        "tier": "TIER_1_GOVERNMENT",
+        "authority_weight": 1.0
+      }
+    ]
+  },
+  {
+    "entity_id": "dac-san-mam-bo-hoc-tra-cuon",
+    "field": "description",
+    "hours": "07:00 - 18:00",
+    "best_time": "08:00 - 11:30 sáng",
+    "waterway_access": "Quốc lộ 53 ấp Trà Cuôn, xã Kim Hòa, huyện Cầu Ngang",
+    "aeo_schema_type": "LocalBusiness",
+    "enriched_value": "Đặc sản Mắm Bò Hóc Trà Cuôn (xã Kim Hòa, Cầu Ngang) nức tiếng với kỹ nghệ ủ mắm cá sặc đồng rút xương gia truyền. Nhờ công thức ủ thính gạo rang vàng thơm lừng và tỷ lệ muối biển hạt tinh khiết, mắm Trà Cuôn có vị mặn thanh, ngọt hậu béo bùi và hậu vị nồng ấm kéo dài.",
+    "cultural_depth_notes": "Nằm cạnh làng nghề bánh tét trứ danh, các cơ sở sản xuất mắm bò hóc Trà Cuôn duy trì quy trình ủ lu sành truyền thống đạt chuẩn an toàn vệ sinh thực phẩm và được nhiều du khách chọn làm quà đặc sản quý.",
+    "visual_narrative": "Dãy lu sành ủ mắm thẳng tắp dưới mái hiên rợp bóng dừa mát rượi; mâm cơm gia đình Khmer đầm ấm với chén mắm chưng trứng thịt béo ngậy ăn cùng cơm gạo lúa mùa nóng hổi.",
+    "source_citations": [
+      {
+        "title": "Nghề ủ mắm bò hóc truyền thống Trà Cuôn Cầu Ngang",
+        "url": "https://travinh.gov.vn/am-thuc/mam-bo-hoc-tra-cuon",
+        "notebook_id": "mekong-360-t-p-2",
+        "tier": "TIER_1_GOVERNMENT",
+        "authority_weight": 1.0
+      }
+    ]
+  },
+  {
+    "entity_id": "lang-nghe-che-tac-mat-na-khmer-nguyet-hoa",
+    "field": "description",
+    "hours": "07:30 - 17:00",
+    "best_time": "08:30 - 11:00 sáng xem nghệ nhân vẽ màu và thếp vàng mão trang phục",
+    "waterway_access": "Đường bộ từ trung tâm thành phố theo quốc lộ 53 khoảng 4 km",
+    "aeo_schema_type": "LocalBusiness",
+    "enriched_value": "Làng nghề chế tác mặt nạ và phục trang Khmer Nguyệt Hóa (huyện Châu Thành) là nơi bảo tồn nghệ thuật tạo hình mão miện, mặt nạ chằn Yeak, khỉ thần Hanuman và phục trang múa sân khấu cổ điển Rô-băm, Dù-kê độc đáo bậc nhất Việt Nam.",
+    "cultural_depth_notes": "Nghệ nhân dùng kỹ thuật bồi giấy đất sét, đắp nổi hoa văn Kbach tinh xảo rồi sơn son thếp vàng công phu. Mỗi chiếc mặt nạ là một tác phẩm nghệ thuật tâm linh phản ánh thế giới thần thoại trong sử thi Reamker.",
+    "visual_narrative": "Cận cảnh nét cọ sơn son thếp vàng tỉ mỉ của nghệ nhân Khmer lên chiếc mặt nạ chằn Yeak mắt lồi răng nanh oai nghiêm; những chiếc mão vua chúa rực rỡ sắc màu treo lộng lẫy trong xưởng thủ công.",
+    "source_citations": [
+      {
+        "title": "Bảo tồn nghệ thuật chế tác mão mặt nạ Khmer Nguyệt Hóa",
+        "url": "https://travinh.gov.vn/van-hoa/mat-na-khmer-nguyet-hoa",
+        "notebook_id": "mekong-360-t-p-2",
+        "tier": "TIER_1_GOVERNMENT",
+        "authority_weight": 1.0
+      }
+    ]
+  },
+  {
+    "entity_id": "lang-nghe-dan-chapay-phu-can",
+    "field": "description",
+    "hours": "07:30 - 17:00",
+    "best_time": "08:30 - 11:00 sáng lắng nghe tiếng đàn Chà pây mộc mạc",
+    "waterway_access": "Tuyến quốc lộ 54 kết hợp đường huyện đi xã Phú Cần, Tiểu Cần",
+    "aeo_schema_type": "LocalBusiness",
+    "enriched_value": "Làng nghề chế tác đàn Chầm-riêng Chà-pây Phú Cần (xã Phú Cần, Tiểu Cần) gắn liền với Di sản văn hóa phi vật thể Quốc gia Nghệ thuật trình diễn Chầm-riêng Chà-pây của người Khmer. Cây đàn Chà-pây Ba-sắc hai dây có thùng đàn hình lá bồ đề độc bản, cần đàn dài vút tạo nên âm sắc trầm bổng du dương.",
+    "cultural_depth_notes": "Đàn được chế tác từ gỗ ngô đồng hoặc gỗ mít già phơi khô tự nhiên để mặt đàn cộng hưởng âm thanh vang xa. Tiếng đàn Chà-pây nâng đỡ lời ca kể chuyện sử thi dân gian, giáo huấn đạo đức làm người đôn hậu của đồng bào.",
+    "visual_narrative": "Nghệ nhân già Khmer ngồi ôm cây đàn Chà-pây hình lá đề so dây bên khung cửa sổ nhà sàn; thanh âm réo rắt ngân vang hòa vào tiếng gió rì rào qua ngọn dừa xanh.",
+    "source_citations": [
+      {
+        "title": "Di sản phi vật thể Quốc gia: Nghệ thuật Chầm-riêng Chà-pây Phú Cần",
+        "url": "https://dsvh.gov.vn/di-san-chapay-phu-can",
+        "notebook_id": "mekong-360-t-p-2",
+        "tier": "TIER_1_GOVERNMENT",
+        "authority_weight": 1.0
+      }
+    ]
+  },
+  {
+    "entity_id": "lang-nghe-che-bien-hai-san-kho-thanh-phong",
+    "field": "description",
+    "hours": "06:00 - 18:00",
+    "best_time": "07:30 - 10:00 sáng đón các mẻ khô cá biển tươi phơi giàn nắng sớm",
+    "waterway_access": "Cảng cá Thạnh Phong và luồng lạch biển Đông ven cửa sông Hàm Luông",
+    "aeo_schema_type": "LocalBusiness",
+    "enriched_value": "Làng nghề chế biến hải sản khô Thạnh Phong (huyện Thạnh Phú) là làng nghề chế biến hải sản lâu đời ven biển Đông. Nơi đây chuyên sản xuất các loại khô cá khoai, cá đù một nắng, mực ống khô, tôm khô sinh thái từ nguồn hải sản đánh bắt trong ngày của ngư dân địa phương.",
+    "cultural_depth_notes": "Cá sau khi cặp bến được xẻ thịt, rửa nước biển tinh khiết và ướp muối vừa ăn rồi phơi trên các giàn lưới cách mặt đất để đón trọn cái nắng và gió biển mặn mòi, giữ trọn vị ngọt thơm tự nhiên của cá biển.",
+    "visual_narrative": "Những giàn phơi cá khoai trắng bạc trải dài tít tắp ven bờ biển sóng vỗ dập dềnh; mùi thơm đặc trưng của tôm khô và mực một nắng lan tỏa trong làn gió biển trong lành.",
+    "source_citations": [
+      {
+        "title": "Làng nghề chế biến hải sản khô Thạnh Phong Thạnh Phú",
+        "url": "https://bentre.gov.vn/lang-nghe/hai-san-kho-thanh-phong",
+        "notebook_id": "mekong-360-t-p-2",
+        "tier": "TIER_1_GOVERNMENT",
+        "authority_weight": 1.0
+      }
+    ]
+  },
+  {
+    "entity_id": "lau-ca-linh-bong-dien-dien",
+    "field": "description",
+    "hours": "10:00 - 22:00",
+    "best_time": "Mùa nước nổi phù sa (tháng 9 đến tháng 11 Dương lịch hàng năm)",
+    "waterway_access": "Hệ thống nhà hàng sinh thái ven sông Tiền, sông Cổ Chiên và sông Hậu",
+    "aeo_schema_type": "FoodEstablishment",
+    "enriched_value": "Lẩu cá linh bông điên điển là món ăn huyền thoại biểu trưng cho mùa nước nổi của vùng đất Cửu Long. Cá linh non đầu mùa xương mềm, thịt ngọt béo ngậy được nấu lẩu chua me thanh mát cùng những chùm hoa điên điển vàng rực hái ven bờ sông rạch.",
+    "cultural_depth_notes": "Khi con nước đỏ phù sa từ thượng nguồn đổ về, cá linh non theo dòng nước tràn vào đồng ruộng; món lẩu cá linh kết hợp vị béo của cá, vị chua thanh của me, giòn ngọt nhẫn đắng nhẹ của hoa điên điển chấm nước mắm nhĩ ớt hiểm là tinh hoa ẩm thực thiên nhiên ban tặng.",
+    "visual_narrative": "Nồi lẩu chua bốc khói sôi sùng sục ngập tràn sắc vàng rực của bông điên điển và bông súng tím; những chú cá linh non óng ánh vảy bạc thả vào nồi lẩu chín tới giữ trọn vị ngọt thơm.",
+    "source_citations": [
+      {
+        "title": "Mỹ vị ẩm thực mùa nước nổi: Lẩu cá linh bông điên điển",
+        "url": "https://vinhlong.gov.vn/am-thuc/lau-ca-linh-dien-dien",
+        "notebook_id": "mekong-360-t-p-2",
+        "tier": "TIER_1_GOVERNMENT",
+        "authority_weight": 1.0
+      }
+    ]
+  },
+  {
+    "entity_id": "lau-mam-mien-tay",
+    "field": "description",
+    "hours": "10:00 - 21:30",
+    "best_time": "Buổi trưa hoặc chiều tối ấm cúng cùng gia đình, bạn bè",
+    "waterway_access": "Các nhà hàng ẩm thực miệt vườn bờ sông Cổ Chiên và cù lao An Bình",
+    "aeo_schema_type": "FoodEstablishment",
+    "enriched_value": "Lẩu Mắm Miệt Vườn là đỉnh cao giao hòa ẩm thực đồng bằng sông Cửu Long. Nước lẩu nấu từ cốt mắm cá sặc và mắm cá linh ủ kỹ, hòa cùng nước dừa xiêm ngọt lịm, sả băm thơm nồng và ăn kèm thịt ba rọi, cá hú, tôm càng cùng hơn 20 loại rau đồng thảo mộc tươi non.",
+    "cultural_depth_notes": "Sự phong phú của đĩa rau lẩu mắm phản ánh thảm thực vật trù phú của đất cù lao: bông súng, kèo nèo, rau muống, đọt nhãn lồng, bắp chuối, rau đắng, điên điển, so đũa... tạo nên bữa tiệc ngũ sắc hài hòa âm dương.",
+    "visual_narrative": "Mâm lẩu mắm thịnh soạn với đĩa rau đồng nội xanh mướt cao ngất ngưởng bao quanh nồi nước lẩu nâu sánh thơm lừng; tôm càng đỏ son và miếng cá da trơn béo ngậy nhúng trong làn nước lẩu đậm đà.",
+    "source_citations": [
+      {
+        "title": "Tinh hoa ẩm thực sông nước: Nét văn hóa Lẩu Mắm Nam Bộ",
+        "url": "https://vinhlong.gov.vn/am-thuc/lau-mam-miet-vuon",
+        "notebook_id": "mekong-360-t-p-2",
+        "tier": "TIER_1_GOVERNMENT",
+        "authority_weight": 1.0
+      }
+    ]
+  },
+  {
+    "entity_id": "quan-chao-ca-ro-dong-cho-cau-ke-tra-vinh",
+    "field": "description",
+    "hours": "06:00 - 19:00",
+    "best_time": "06:30 - 08:30 sáng thưởng thức tô cháo nóng ấm bụng",
+    "waterway_access": "Chợ trung tâm Cầu Kè ven sông Hậu",
+    "aeo_schema_type": "FoodEstablishment",
+    "enriched_value": "Quán cháo cá rô đồng chợ Cầu Kè là điểm dừng chân ẩm thực mộc mạc trứ danh. Cháo được nấu từ gạo nàng thơm rang vàng nở bung cánh hoa, cá rô mề béo tròn bắt từ mương vườn luộc chín rỉa thịt xào hành thơm nức rồi thả vào nồi cháo sôi ùng ục.",
+    "cultural_depth_notes": "Tô cháo cá rô đồng ăn kèm đĩa rau đắng đất tươi non mọc hoang sau vườn và gừng già thái sợi chỉ mảnh. Vị đắng ngọt của rau hòa quyện vị béo bùi của cá rô đồng giúp giải nhiệt và giải cảm hiệu quả theo y thực dân gian.",
+    "visual_narrative": "Tô cháo cá rô đồng rắc tiêu sọ cay nồng và hành phi vàng rộm; bên cạnh là đĩa rau đắng đất mọng nước xanh ngắt chấm nước mắm cốt dừa nguyên chất.",
+    "source_citations": [
+      {
+        "title": "Ẩm thực dân dã Cháo cá rô đồng xứ Cầu Kè",
+        "url": "https://travinh.gov.vn/am-thuc/chao-ca-ro-cau-ke",
+        "notebook_id": "mekong-360-t-p-2",
+        "tier": "TIER_1_GOVERNMENT",
+        "authority_weight": 1.0
+      }
+    ]
+  },
+  {
+    "entity_id": "quan-co-tu-lau-mam-xa-hoa-ninh-vinh-long",
+    "field": "description",
+    "hours": "09:30 - 20:30",
+    "best_time": "11:00 - 13:30 trưa kết hợp tour tham quan vườn cây ăn trái cù lao An Bình",
+    "waterway_access": "Tàu du lịch cập bến kênh Hòa Ninh, cù lao An Bình",
+    "aeo_schema_type": "FoodEstablishment",
+    "enriched_value": "Quán Lẩu Mắm Cô Tư tại xã Hòa Ninh, cù lao An Bình là điểm hẹn ẩm thực sinh thái miệt vườn trứ danh. Nằm nép mình dưới bóng mát râm ran của vườn chôm chôm và nhãn xuồng, quán phục vụ món lẩu mắm cá linh đồng với các loại rau đồng nội được hái trực tiếp từ vườn nhà.",
+    "cultural_depth_notes": "Không gian ẩm thực mang đậm chất đờn ca tài tử sông nước, nơi thực khách vừa thưởng thức lẩu mắm đậm đà vừa lắng nghe câu hò điệu lý mộc mạc của các nghệ nhân tài tử địa phương.",
+    "visual_narrative": "Bàn ăn bằng gỗ mộc mạc kê sát mé rạch rợp bóng dừa nước; nồi lẩu mắm sôi khói nghi ngút bên mâm trái cây tráng miệng chôm chôm chín đỏ au vừa hái tại vườn.",
+    "source_citations": [
+      {
+        "title": "Trải nghiệm ẩm thực sinh thái cù lao An Bình: Quán Cô Tư",
+        "url": "https://vinhlong.gov.vn/du-lich/lau-mam-co-tu-hoa-ninh",
+        "notebook_id": "mekong-360-t-p-2",
+        "tier": "TIER_1_GOVERNMENT",
+        "authority_weight": 1.0
+      }
+    ]
+  },
+  {
+    "entity_id": "lang-keo-dua-mo-cay",
+    "field": "description",
+    "hours": "07:00 - 18:30 (các lò kẹo hoạt động liên tục đón khách tham quan)",
+    "best_time": "08:00 - 11:00 sáng xem nghệ nhân quấy chảo mạch nha và gói kẹo nóng",
+    "waterway_access": "Tuyến sông Thom kết nối sông Hàm Luông và sông Cổ Chiên",
+    "aeo_schema_type": "TouristAttraction",
+    "enriched_value": "Làng nghề kẹo dừa Mỏ Cày (thị trấn Mỏ Cày, huyện Mỏ Cày Nam) là cái nôi khởi nguồn của thương hiệu kẹo dừa Bến Tre từ những năm 1970 do bà Nguyễn Thị Ngọc sáng chế. Kẹo dừa Mỏ Cày dẻo thơm, béo ngậy từ nước cốt dừa tươi nguyên chất hòa quyện mạch nha nếp thơm lừng.",
+    "cultural_depth_notes": "Trải qua nửa thế kỷ phát triển, làng nghề kẹo dừa Mỏ Cày đã kết hợp kỹ thuật truyền thống với bao bì hiện đại, tạo nên hàng chục hương vị đa dạng: kẹo dừa đậu phộng, kẹo dừa sầu riêng, lá dứa, ca cao phục vụ thị trường trong nước và xuất khẩu.",
+    "visual_narrative": "Chảo kẹo dừa quánh đặc màu cánh gián tỏa hương thơm béo ngậy trên bếp lò rực than; đôi tay thoăn thoắt của thiếu nữ gói từng viên kẹo dừa vuông vức trong lớp bánh tráng mỏng tan.",
+    "source_citations": [
+      {
+        "title": "Địa chí Làng nghề truyền thống Kẹo dừa Mỏ Cày",
+        "url": "https://bentre.gov.vn/lang-nghe/keo-dua-mo-cay",
+        "notebook_id": "mekong-360-t-p-2",
+        "tier": "TIER_1_GOVERNMENT",
+        "authority_weight": 1.0
+      }
+    ]
+  },
+  {
+    "entity_id": "lang-nghe-chi-xo-dua-khanh-thanh-tan",
+    "field": "description",
+    "hours": "07:00 - 17:30",
+    "best_time": "08:00 - 10:30 sáng",
+    "waterway_access": "Tuyến rạch Khánh Thạnh Tân nối sông Hàm Luông, sà lan chuyên chở dừa tấp nập",
+    "aeo_schema_type": "LocalBusiness",
+    "enriched_value": "Làng nghề chỉ xơ dừa Khánh Thạnh Tân (huyện Mỏ Cày Bắc) là trung tâm tái chế vỏ dừa khô thành các sản phẩm công nghiệp sinh thái bền vững. Vỏ dừa được đập dập tách lấy chỉ xơ dừa bện thành dây thừng xơ dừa, thảm dệt chống xói mòn và mụn dừa làm phân bón hữu cơ xuất khẩu sang nhiều quốc gia.",
+    "cultural_depth_notes": "Nghề chế biến chỉ xơ dừa thể hiện tư duy kinh tế tuần hoàn xuất sắc của cư dân xứ dừa, không bỏ sót bất kỳ phụ phẩm nào từ trái dừa, mang lại thu nhập ổn định cho hàng ngàn hộ gia đình nông dân.",
+    "visual_narrative": "Những núi vỏ dừa vàng óng trải dài ven sông sừng sững; máy xé sợi hoạt động nhịp nhàng nhả ra từng bó chỉ xơ dừa óng ả phơi đầy trên các triền đê ngập nắng.",
+    "source_citations": [
+      {
+        "title": "Kinh tế tuần hoàn Làng nghề chỉ xơ dừa Khánh Thạnh Tân",
+        "url": "https://bentre.gov.vn/lang-nghe/chi-xo-dua-khanh-thanh-tan",
+        "notebook_id": "mekong-360-t-p-2",
+        "tier": "TIER_1_GOVERNMENT",
+        "authority_weight": 1.0
+      }
+    ]
+  },
+  {
+    "entity_id": "lang-nghe-san-xuat-chi-xo-dua-an-thanh",
+    "field": "description",
+    "hours": "07:00 - 17:30",
+    "best_time": "08:30 - 11:00 sáng",
+    "waterway_access": "Ngay bờ sông Thom thuộc xã An Thạnh, huyện Mỏ Cày Nam",
+    "aeo_schema_type": "LocalBusiness",
+    "enriched_value": "Làng nghề sản xuất chỉ xơ dừa An Thạnh nằm dọc đôi bờ sông Thom là cụm công nghiệp chế biến dừa nhộn nhịp bậc nhất khu vực Bến Tre. Hàng trăm cơ sở sản xuất tại đây vận hành liên tục chuỗi cung ứng: dừa khô cập bến ghe, tách vỏ, bóc xơ, dệt thảm xơ dừa và ép khối mụn dừa xuất khẩu.",
+    "cultural_depth_notes": "Sông Thom đoạn qua An Thạnh là 'chợ nổi chỉ xơ dừa' độc nhất vô nhị ở Việt Nam, nơi dòng sông không chỉ chở phù sa mà chở cả sự sung túc và bản lĩnh vươn tầm quốc tế của cây dừa đồng bằng.",
+    "visual_narrative": "Sà lan dừa khô neo đậu san sát hai bên bờ sông Thom rợp bóng dừa; các cuộn thảm chỉ xơ dừa vàng ruộm bốc dỡ nhộn nhịp lên tàu hàng viễn dương.",
+    "source_citations": [
+      {
+        "title": "Phát triển cụm công nghiệp Làng nghề chỉ xơ dừa An Thạnh",
+        "url": "https://bentre.gov.vn/kinh-te/chi-xo-dua-an-thanh",
+        "notebook_id": "mekong-360-t-p-2",
+        "tier": "TIER_1_GOVERNMENT",
+        "authority_weight": 1.0
+      }
+    ]
+  },
+  {
+    "entity_id": "vicosap-keo-dua-sap-ocop-5-sao",
+    "field": "description",
+    "hours": "07:30 - 17:30 (showroom và xưởng chế biến đón khách tham quan)",
+    "best_time": "08:30 - 11:00 sáng hoặc 14:00 - 16:30 chiều",
+    "waterway_access": "Đường bộ tỉnh lộ 915 tại xã Thạnh Phú, huyện Cầu Kè ven sông Hậu",
+    "aeo_schema_type": "Product",
+    "enriched_value": "Vicosap (Công ty TNHH Chế biến Dừa Sáp Cầu Kè) là chủ thể sản xuất sản phẩm Kẹo Dừa Sáp đạt chứng nhận OCOP 5 sao Quốc gia danh giá. Ứng dụng công nghệ sấy thăng hoa và cô đặc chân không hiện đại, Vicosap đã nâng tầm trái dừa sáp Cầu Kè quý hiếm thành các dòng kẹo dừa sáp nguyên chất, sữa chua dừa sáp sấy giòn xuất khẩu sang Nhật Bản, Mỹ và châu Âu.",
+    "cultural_depth_notes": "Đột phá của Vicosap giải quyết bài toán bảo quản trái dừa sáp tươi vốn chỉ để được vài ngày sau thu hoạch, mở ra hướng đi bền vững cho nông dân vùng chuyên canh dừa sáp Cầu Kè.",
+    "visual_narrative": "Bao bì sản phẩm OCOP 5 sao sang trọng in hình trái dừa sáp Makapuno; viên kẹo dừa sáp trắng ngà mịn màng tan ngay đầu lưỡi để lại dư vị béo ngậy ngọt thanh tao nhã.",
+    "source_citations": [
+      {
+        "title": "Chứng nhận Sản phẩm OCOP 5 sao Quốc gia Kẹo dừa sáp Vicosap",
+        "url": "https://travinh.gov.vn/ocop/vicosap-dua-sap-5-sao",
+        "notebook_id": "mekong-360-t-p-2",
+        "tier": "TIER_1_GOVERNMENT",
+        "authority_weight": 1.0
+      }
+    ]
+  },
+  {
+    "entity_id": "hop-tac-xa-buoi-nam-roi-my-hoa",
+    "field": "description",
+    "hours": "07:00 - 17:30",
+    "best_time": "08:00 - 11:00 sáng ghé thăm vườn bưởi trĩu quả thu hoạch",
+    "waterway_access": "Đường thủy ven sông Hậu tại xã Mỹ Hòa, thị xã Bình Minh",
+    "aeo_schema_type": "LocalBusiness",
+    "enriched_value": "Hợp tác xã Bưởi Năm Roi Mỹ Hòa (thị xã Bình Minh) là vùng chuyên canh và đại diện chỉ dẫn địa lý Bưởi Năm Roi trứ danh của tỉnh Vĩnh Long. Bưởi Năm Roi Mỹ Hòa quả hình trái lê, vỏ mỏng vàng ươm khi chín, tép bưởi mọng nước róc vỏ hoàn toàn không hạt, vị ngọt thanh mát xen chút chua dịu đầu lưỡi.",
+    "cultural_depth_notes": "Được bồi đắp bởi lớp phù sa màu mỡ ven sông Hậu, giống bưởi Năm Roi trồng tại đất Mỹ Hòa đạt chất lượng hảo hạng nhất, đã được cấp bảo hộ Chỉ dẫn Địa lý Quốc gia và tiêu chuẩn VietGAP xuất khẩu toàn cầu.",
+    "visual_narrative": "Vườn bưởi Năm Roi xanh mướt trĩu cành soi bóng bên dòng mương rạch; chùm bưởi da vàng bóng mượt bổ đôi lộ rõ những múi bưởi mọng nước óng ánh như ngọc trai.",
+    "source_citations": [
+      {
+        "title": "Chỉ dẫn Địa lý Bưởi Năm Roi Mỹ Hòa Bình Minh",
+        "url": "https://vinhlong.gov.vn/nong-nghiep/buoi-nam-roi-my-hoa",
+        "notebook_id": "mekong-360-t-p-2",
+        "tier": "TIER_1_GOVERNMENT",
+        "authority_weight": 1.0
+      }
+    ]
+  }
+]

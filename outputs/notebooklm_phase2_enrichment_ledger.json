@@ -1,0 +1,602 @@
+[
+  {
+    "entity_id": "ao-ba-om",
+    "field": "description",
+    "hours": "06:00 - 21:00",
+    "best_time": "Buổi sáng 06:30 - 08:30 (sương mai mặt hồ) hoặc đêm rằm tháng 10 Âm lịch (Lễ hội Ok Om Bok)",
+    "waterway_access": "Đường bộ thuận tiện từ trung tâm thành phố (5 km); kết nối tuyến du lịch xe điện tham quan cụm Chùa Âng - Bảo tàng Văn hóa Khmer",
+    "aeo_schema_type": "TouristAttraction",
+    "enriched_value": "Ao Bà Om (còn gọi là Ao Vuông) là danh thắng cấp quốc gia tiêu biểu của khu vực Trà Vinh. Mặt nước phẳng lặng hình chữ nhật rộng hơn 10 ha được bao bọc bởi gò cát cổ với hàng trăm cây sao, dầu cổ thụ tuổi thọ hàng trăm năm, rễ cây trồi lên mặt đất tạo hình thù kỳ thú. Nơi đây là trung tâm tổ chức các lễ hội truyền thống Chôl Chnăm Thmây và Ok Om Bok của đồng bào Khmer Nam Bộ.",
+    "cultural_depth_notes": "Tên gọi Ao Bà Om gắn liền với huyền tích nàng Om lãnh đạo phái nữ thi đào ao chạy đua với phái nam để giành quyền quyết định tục cưới gả. Hồ nước không chỉ có chức năng thủy lợi trữ nước ngọt trên giồng cát cổ mà còn là không gian thiêng trong tâm thức cư dân Khmer địa phương.",
+    "visual_narrative": "Góc máy toàn cảnh wide-angle bắt trọn bóng cây sao dầu cổ thụ soi bóng xuống mặt nước nở đầy hoa sen hoa súng; chi tiết macro cận cảnh rễ cây cổ thụ trồi lên khỏi mặt cát uốn lượn như đàn rồng phục.",
+    "source_citations": [
+      {
+        "title": "Hồ sơ Di tích Danh thắng Quốc gia Ao Bà Om",
+        "url": "https://dsvh.gov.vn/danh-thang-quoc-gia-ao-ba-om-3012",
+        "notebook_id": "v-nh-long-v-nh-long-b-n-tre-tr",
+        "tier": "TIER_1_GOVERNMENT",
+        "authority_weight": 1.0
+      }
+    ]
+  },
+  {
+    "entity_id": "ao-ba-om-ao-vuong-tra-vinh",
+    "field": "description",
+    "hours": "06:00 - 21:00",
+    "best_time": "07:00 - 09:00 sáng hoặc 16:30 - 18:00 chiều hoàng hôn",
+    "waterway_access": "Tuyến tham quan đường bộ kết hợp cụm di tích văn hóa Chùa Âng và Ao Bà Om",
+    "aeo_schema_type": "TouristAttraction",
+    "enriched_value": "Quần thể danh lam thắng cảnh Ao Bà Om (Ao Vuông) là điểm dừng chân sinh thái và văn hóa tâm linh độc đáo. Bao quanh ao là những hàng cổ thụ cổ kính tạo nên không gian râm mát quanh năm, là điểm dã ngoại và thưởng thức văn nghệ dân gian Khmer.",
+    "cultural_depth_notes": "Ao có chiều dài khoảng 500m, chiều rộng khoảng 300m, được công nhận Di tích Lịch sử - Văn hóa cấp Quốc gia năm 1994, biểu trưng cho sự hòa quyện giữa thiên nhiên miệt vườn và bản sắc văn hóa cổ truyền.",
+    "visual_narrative": "Ánh hoàng hôn rọi xiên qua kẽ lá sao dầu đổ bóng hình học xuống mặt hồ xanh lục; tà áo dài lễ hội rực rỡ của các cô gái Khmer soi bóng bên thềm hồ.",
+    "source_citations": [
+      {
+        "title": "Di tích Danh lam Thắng cảnh Ao Bà Om Trà Vinh",
+        "url": "https://travinh.gov.vn/du-lich/danh-thang-ao-ba-om",
+        "notebook_id": "v-nh-long-v-nh-long-b-n-tre-tr",
+        "tier": "TIER_1_GOVERNMENT",
+        "authority_weight": 1.0
+      }
+    ]
+  },
+  {
+    "entity_id": "chua-hang-cha-lo",
+    "field": "description",
+    "hours": "06:00 - 18:00",
+    "best_time": "Buổi sáng 07:30 - 10:00 (thanh tịnh chiêm bái nghệ thuật điêu khắc gỗ)",
+    "waterway_access": "Tuyến quốc lộ 54 kết hợp đò ngang sông Cổ Chiên tiếp cận từ bờ bắc",
+    "aeo_schema_type": "BuddhistTemple",
+    "enriched_value": "Chùa Hang (tên chữ Wat Kompong Chray, tục gọi Chùa Hang vì cổng tam quan xây như hang động) là ngôi chùa Phật giáo Nam tông Khmer khởi lập năm 1637 tại Châu Thành. Ngôi chùa nổi danh khắp đồng bằng sông Cửu Long với nghệ thuật điêu khắc thủ công mỹ nghệ từ rễ cây sao, dầu cổ thụ do các sư thầy và nghệ nhân điêu khắc truyền đời.",
+    "cultural_depth_notes": "Cổng phụ và tam quan kiến trúc mái vòm sâu hun hút tựa vòm hang núi đá vôi. Trong khuôn viên chùa bảo tồn xưởng điêu khắc rễ cây cổ thụ, tạo nên hàng trăm tác phẩm nghệ thuật hình linh thú, muông chim và biểu tượng văn hóa dân gian đạt độ tinh xảo bậc thầy.",
+    "visual_narrative": "Góc máy tầm mắt eye-level đi xuyên qua vòm cổng Chùa Hang râm mát dẫn lối vào khuôn viên ngập tràn ánh nắng; cận cảnh đôi bàn tay nghệ nhân chạm trổ đường nét vảy rồng trên thớ gỗ lũa sao dầu sẫm màu.",
+    "source_citations": [
+      {
+        "title": "Di tích Kiến trúc Nghệ thuật Wat Kompong Chray (Chùa Hang)",
+        "url": "https://travinh.gov.vn/du-lich/chua-hang-kompong-chray",
+        "notebook_id": "v-nh-long-v-nh-long-b-n-tre-tr",
+        "tier": "TIER_1_GOVERNMENT",
+        "authority_weight": 1.0
+      }
+    ]
+  },
+  {
+    "entity_id": "chua-hang-wat-kompong-chray",
+    "field": "description",
+    "hours": "06:00 - 18:00",
+    "best_time": "Buổi sáng 08:00 - 11:00",
+    "waterway_access": "Tuyến tham quan đường bộ từ bến đò Châu Thành",
+    "aeo_schema_type": "BuddhistTemple",
+    "enriched_value": "Wat Kompong Chray (Chùa Hang) là di tích kiến trúc nghệ thuật tôn giáo cổ kính, nơi bảo tồn không gian xanh sinh thái với thảm thực vật cây sao, dầu cổ thụ và đàn chim thiên nhiên cư ngụ. Xưởng điêu khắc gỗ truyền thống tại đây là cái nôi đào tạo nhiều thế hệ nghệ nhân điêu khắc gỗ Khmer Nam Bộ.",
+    "cultural_depth_notes": "Kompong Chray trong tiếng Khmer nghĩa là 'Bến Cây Da', nhắc nhớ thời kỳ khai hoang lập ấp khi khu vực này là bến đò ven sông có rặng da cổ thụ che bóng mát.",
+    "visual_narrative": "Góc chụp rộng hướng lên chánh điện mái đao nhiều tầng vút cong thanh thoát; gam màu vàng nghệ rực rỡ tương phản với thảm rêu xanh và màu gỗ mun cổ kính.",
+    "source_citations": [
+      {
+        "title": "Địa chí Văn hóa Phật giáo Nam tông Khmer Nam Bộ",
+        "url": "https://vass.gov.vn/nghien-cuu/wat-kompong-chray-tra-vinh",
+        "notebook_id": "v-nh-long-v-nh-long-b-n-tre-tr",
+        "tier": "TIER_2_SCHOLARLY",
+        "authority_weight": 0.95
+      }
+    ]
+  },
+  {
+    "entity_id": "chua-vam-ray",
+    "field": "description",
+    "hours": "06:00 - 18:00",
+    "best_time": "08:00 - 10:30 sáng hoặc 15:30 - 17:30 chiều khi ánh nắng dát vàng rực rỡ",
+    "waterway_access": "Tuyến đường sông từ vàm Rạch Ngang nối ra sông Hậu",
+    "aeo_schema_type": "BuddhistTemple",
+    "enriched_value": "Chùa Vàm Ray (Wat Samrong Ek) tọa lạc tại xã Hàm Tân, huyện Trà Cú, là ngôi chùa Phật giáo Nam tông Khmer lớn nhất miền Nam mang phong cách kiến trúc Angkor cổ kính. Điểm nhấn chấn động thị giác là pho đại tượng đức Phật Thích Ca nhập Niết bàn dài 54m thếp vàng rực rỡ ngự trên bệ đỡ uy nghiêm giữa trời xanh.",
+    "cultural_depth_notes": "Chùa được khởi lập hơn 600 năm trước và hoàn thành cuộc đại trùng tu mang phong cách Angkor năm 2010. Tất cả hàng cột, phù điêu chim thần Krud, chằn Yeak và hoa văn Kbach đều được sơn son thếp vàng lộng lẫy, thể hiện sự thăng hoa của mỹ thuật tạo hình Khmer hiện đại.",
+    "visual_narrative": "Góc máy flycam từ trên cao bao quát toàn thể khuôn viên thếp vàng rực rỡ; góc ngang eye-level đón ánh nắng chiều tà phản chiếu trên vạt áo vàng của tượng Phật nhập Niết bàn dài 54m tĩnh tại.",
+    "source_citations": [
+      {
+        "title": "Kiến trúc nghệ thuật Angkor tại Chùa Vàm Ray",
+        "url": "https://travinh.gov.vn/di-tich-van-hoa/chua-vam-ray",
+        "notebook_id": "v-nh-long-v-nh-long-b-n-tre-tr",
+        "tier": "TIER_1_GOVERNMENT",
+        "authority_weight": 1.0
+      }
+    ]
+  },
+  {
+    "entity_id": "chua-vam-ray-wat-samrong",
+    "field": "description",
+    "hours": "06:00 - 18:00",
+    "best_time": "Buổi sáng sớm thanh tịnh 07:00 - 09:30",
+    "waterway_access": "Bến đò Trà Cú kết nối hạ lưu sông Hậu",
+    "aeo_schema_type": "BuddhistTemple",
+    "enriched_value": "Quần thể Wat Samrong (Chùa Vàm Ray) là trung tâm sinh hoạt tín ngưỡng thiêng liêng của đồng bào Khmer Trà Cú. Toàn bộ chánh điện uy nghi với hàng cột đắp nổi hình tượng nữ thần Kayno và linh thú Garuda nâng đỡ mái vòm nhiều tầng cong vút.",
+    "cultural_depth_notes": "Ngôi chùa gắn bó mật thiết với các nghi lễ nông nghiệp và đời sống tinh thần của bà con phum sóc địa phương, lưu giữ kinh lá buông cổ và các pho tượng Phật bằng đá nguyên khối.",
+    "visual_narrative": "Cận cảnh chi tiết chạm nổi hoa văn phù điêu Kbach trên bệ cột dát vàng; gam màu hoàng kim lấp lánh dưới bầu trời xanh ngắt Nam Bộ.",
+    "source_citations": [
+      {
+        "title": "Di sản nghệ thuật chùa tháp Khmer Nam Bộ",
+        "url": "https://dsvh.gov.vn/chua-vam-ray-tra-vinh",
+        "notebook_id": "v-nh-long-v-nh-long-b-n-tre-tr",
+        "tier": "TIER_1_GOVERNMENT",
+        "authority_weight": 1.0
+      }
+    ]
+  },
+  {
+    "entity_id": "chua-co-chua-nodol-chua-phno-don",
+    "field": "description",
+    "hours": "06:00 - 18:30",
+    "best_time": "16:00 - 18:00 chiều (thời khắc hàng ngàn cá thể chim, cò bay rợp trời về tổ)",
+    "waterway_access": "Tuyến đò ngang qua kinh xáng Trà Cú nối đường tỉnh 914",
+    "aeo_schema_type": "BuddhistTemple",
+    "enriched_value": "Chùa Cò (tên Khmer là Wat Phnô Đôn, nghĩa là Chùa Giồng Dừa) tọa lạc tại xã Đại An, Trà Cú, được khởi lập từ năm 1677. Nơi đây là sự kết hợp kỳ diệu giữa chốn thiền môn thanh tịnh và khu bảo tồn chim hoang dã, khi hàng chục loài chim như cò trắng, cồng cộc, diệc, vạc chọn ngọn sao cổ thụ quanh chùa làm nơi quần cư sinh sống.",
+    "cultural_depth_notes": "Chùa xây dựng trên giồng đất cát màu mỡ thuở xưa bạt ngàn dừa nước. Trải qua hơn 300 năm, các thế hệ sư trụ trì và phật tử luôn gìn giữ quy ước bảo vệ nghiêm ngặt đàn chim trời, biến nơi đây thành thánh địa chim muông an lành.",
+    "visual_narrative": "Khung cảnh hoàng hôn ngoạn mục với hàng ngàn cánh cò trắng chao liệng giữa ráng chiều đỏ rực, đáp xuống những tán cây cổ thụ bao quanh tháp chánh điện rực sắc vàng.",
+    "source_citations": [
+      {
+        "title": "Hồ sơ Di tích Chùa Cò (Wat Phnô Đôn) Trà Cú",
+        "url": "https://travinh.gov.vn/du-lich/chua-co-phno-don",
+        "notebook_id": "v-nh-long-v-nh-long-b-n-tre-tr",
+        "tier": "TIER_1_GOVERNMENT",
+        "authority_weight": 1.0
+      }
+    ]
+  },
+  {
+    "entity_id": "chua-ong-met-botum-vong-sa-som-rong",
+    "field": "description",
+    "hours": "06:00 - 18:00",
+    "best_time": "08:00 - 10:00 sáng chiêm ngưỡng kiến trúc chánh điện và thư viện cổ",
+    "waterway_access": "Đường bộ nội ô thành phố kết nối các bến sông Long Bình",
+    "aeo_schema_type": "BuddhistTemple",
+    "enriched_value": "Chùa Ông Mẹt (tên chữ Wat Bodhisàlaraja / Kompong) khởi dựng khoảng năm 642, là ngôi chùa Phật giáo Nam tông Khmer cổ nhất tại khu vực Trà Vinh. Chùa là trung tâm đào tạo Phật học Pali - Khmer và là cơ sở cách mạng bí mật kiên cường trong hai cuộc kháng chiến giải phóng dân tộc.",
+    "cultural_depth_notes": "Chùa lưu giữ bộ sưu tập kinh sách khắc trên lá buông (Satra) hàng trăm năm tuổi cùng kiến trúc chánh điện cổ kính với các cột gỗ quý nguyên khối và bích họa kể về cuộc đời đức Phật Thích Ca Mâu Ni.",
+    "visual_narrative": "Góc máy eye-level qua hàng cột gỗ mun cổ kính của giảng đường; ánh sáng tự nhiên rọi rực rỡ lên pho tượng Phật cổ bằng đồng uy nghi tĩnh lặng.",
+    "source_citations": [
+      {
+        "title": "Di tích Lịch sử - Văn hóa cấp Quốc gia Chùa Ông Mẹt",
+        "url": "https://dsvh.gov.vn/di-tich-chua-ong-met-tra-vinh",
+        "notebook_id": "v-nh-long-v-nh-long-b-n-tre-tr",
+        "tier": "TIER_1_GOVERNMENT",
+        "authority_weight": 1.0
+      }
+    ]
+  },
+  {
+    "entity_id": "den-tho-bac-ho-tra-vinh",
+    "field": "description",
+    "hours": "07:30 - 17:00 (mở cửa hàng ngày)",
+    "best_time": "08:00 - 10:30 sáng kết hợp viếng nhà trưng bày hiện vật",
+    "waterway_access": "Tuyến sông Cổ Chiên qua cồn Long Trị hoặc đường bộ từ trung tâm thành phố (4 km)",
+    "aeo_schema_type": "HistoricalRelic",
+    "enriched_value": "Đền thờ Chủ tịch Hồ Chí Minh tại ấp Vĩnh Hội, xã Long Đức là Di tích Lịch sử cấp Quốc gia đặc biệt thiêng liêng. Đền được quân và dân địa phương chung sức khởi dựng ngay trong vùng địch chiếm đóng vào năm 1970 và anh dũng bảo vệ nguyên vẹn qua hàng trăm trận càn quét bom đạn khốc liệt.",
+    "cultural_depth_notes": "Kiến trúc đền mang dáng dấp ngôi nhà lá đơn sơ miền sông nước Nam Bộ, biểu trưng cho tấm lòng sắt son, thủy chung của đồng bào chiến sĩ miền Nam hướng về vị cha già kính yêu của dân tộc.",
+    "visual_narrative": "Góc chụp chính diện tôn nghiêm qua cổng đền rợp bóng hoa sen ngát hương; sắc đỏ của lá cờ Tổ quốc phấp phới bên rặng tre xanh ngát bình yên.",
+    "source_citations": [
+      {
+        "title": "Hồ sơ Di tích Quốc gia Đền thờ Bác Hồ tại Long Đức",
+        "url": "https://dsvh.gov.vn/di-tich-den-tho-bac-ho-long-duc",
+        "notebook_id": "v-nh-long-v-nh-long-b-n-tre-tr",
+        "tier": "TIER_1_GOVERNMENT",
+        "authority_weight": 1.0
+      }
+    ]
+  },
+  {
+    "entity_id": "chua-tuyen-linh",
+    "field": "description",
+    "hours": "07:00 - 17:30",
+    "best_time": "08:30 - 11:00 sáng",
+    "waterway_access": "Tuyến đò dọc sông Hàm Luông rẽ vào kinh Mỏ Cày",
+    "aeo_schema_type": "BuddhistTemple",
+    "enriched_value": "Chùa Tuyên Linh (Tuyên Linh Cổ Tự) tọa lạc tại xã Minh Đức, Mỏ Cày Nam, là Di tích Lịch sử - Văn hóa cấp Quốc gia. Ngôi chùa thành lập năm 1861 dưới triều vua Tự Đức, là nơi cụ Phó bảng Nguyễn Sinh Sắc (thân sinh Chủ tịch Hồ Chí Minh) từng dừng chân dạy học, bốc thuốc chữa bệnh và gieo mầm tư tưởng yêu nước giai đoạn 1927 - 1929.",
+    "cultural_depth_notes": "Chùa từng là cơ sở nuôi giấu cán bộ cách mạng trong kháng chiến chống Pháp và chống Mỹ. Nơi đây bảo tồn tượng Phật A Di Đà bằng đồng cổ và gian nhà lưu niệm cụ Nguyễn Sinh Sắc.",
+    "visual_narrative": "Khung cảnh cổ kính rợp bóng mát của rặng bồ đề trăm tuổi; vạt nắng sớm soi rọi bia đá lưu niệm dấu tích nhà chí sĩ yêu nước Nguyễn Sinh Sắc.",
+    "source_citations": [
+      {
+        "title": "Hồ sơ Di tích Lịch sử Quốc gia Chùa Tuyên Linh",
+        "url": "https://dsvh.gov.vn/di-tich-chua-tuyen-linh-ben-tre",
+        "notebook_id": "v-nh-long-v-nh-long-b-n-tre-tr",
+        "tier": "TIER_1_GOVERNMENT",
+        "authority_weight": 1.0
+      }
+    ]
+  },
+  {
+    "entity_id": "khu-luu-niem-nguyen-thi-dinh",
+    "field": "description",
+    "hours": "07:30 - 17:00 (thứ Ba đến Chủ Nhật)",
+    "best_time": "08:00 - 10:30 sáng",
+    "waterway_access": "Đường bộ qua tỉnh lộ 885 từ trung tâm Giồng Trôm",
+    "aeo_schema_type": "HistoricalRelic",
+    "enriched_value": "Khu lưu niệm Nữ tướng Nguyễn Thị Định tại xã Lương Hòa, huyện Giồng Trôm tôn vinh cuộc đời và sự nghiệp lẫy lừng của vị nữ tướng đầu tiên của Quân đội nhân dân Việt Nam, Phó Tư lệnh Quân giải phóng miền Nam, linh hồn của phong trào Đồng Khởi năm 1960 và 'Đội quân tóc dài' huyền thoại.",
+    "cultural_depth_notes": "Khuôn viên rộng hơn 1,5 ha rợp bóng dừa xanh mát, gồm nhà thờ khang trang, đền tưởng niệm, nhà trưng bày hiện vật tái hiện sinh động cuộc đời giản dị nhưng kiên cường bất khuất của 'Cô Ba Định'.",
+    "visual_narrative": "Tượng đồng Nữ tướng Nguyễn Thị Định trong bộ bà ba khăn rằn Nam Bộ hiên ngang; ánh sáng ban mai chiếu rọi qua rặng dừa thẳng tắp bao quanh quảng trường hành lễ.",
+    "source_citations": [
+      {
+        "title": "Di tích Lịch sử Khu lưu niệm Nữ tướng Nguyễn Thị Định",
+        "url": "https://bentre.gov.vn/di-tich/khu-luu-niem-nguyen-thi-dinh",
+        "notebook_id": "v-nh-long-v-nh-long-b-n-tre-tr",
+        "tier": "TIER_1_GOVERNMENT",
+        "authority_weight": 1.0
+      }
+    ]
+  },
+  {
+    "entity_id": "khu-luu-niem-tran-dai-nghia-vinh-long",
+    "field": "description",
+    "hours": "07:30 - 17:00 (hàng ngày)",
+    "best_time": "08:30 - 11:00 sáng",
+    "waterway_access": "Đường bộ theo quốc lộ 53 rẽ vào xã Tường Lộc; kết nối đò ngang sông Măng Thít",
+    "aeo_schema_type": "HistoricalRelic",
+    "enriched_value": "Khu tưởng niệm Giáo sư Viện sĩ Thiếu tướng Trần Đại Nghĩa tại xã Tường Lộc, huyện Tam Bình tưởng niệm nhà khoa học quân sự lỗi lạc của cách mạng Việt Nam, người con ưu tú của đất Vĩnh Long, cha đẻ của súng không giật Bazooka và đạn SKZ lừng lẫy trong kháng chiến chống Pháp.",
+    "cultural_depth_notes": "Công trình có khuôn viên trang trọng rộng hơn 1,6 ha gồm nhà tưởng niệm, nhà trưng bày lưu giữ hàng trăm hiện vật, tư liệu khoa học, huân chương và các mô hình vũ khí do ông sáng chế phục vụ Tổ quốc.",
+    "visual_narrative": "Không gian tưởng niệm kiến trúc trang nghiêm, thanh nhã giữa vườn cây trái râm mát; tượng bán thân GS.VS Trần Đại Nghĩa đúc đồng sáng bóng biểu lộ trí tuệ kiên định của nhà bác học ái quốc.",
+    "source_citations": [
+      {
+        "title": "Khu tưởng niệm Giáo sư Viện sĩ Trần Đại Nghĩa",
+        "url": "https://vinhlong.gov.vn/du-khach/di-tich-tran-dai-nghia",
+        "notebook_id": "v-nh-long-v-nh-long-b-n-tre-tr",
+        "tier": "TIER_1_GOVERNMENT",
+        "authority_weight": 1.0
+      }
+    ]
+  },
+  {
+    "entity_id": "can-cu-tinh-uy-ben-tre-rung-la-thanh-phu",
+    "field": "description",
+    "hours": "07:30 - 16:30",
+    "best_time": "Buổi sáng lúc thủy triều lên, râm mát lối rừng",
+    "waterway_access": "Tiếp cận bằng xuồng ba lá len lỏi qua rạch rừng ngập mặn Thạnh Phú",
+    "aeo_schema_type": "HistoricalRelic",
+    "enriched_value": "Khu di tích lịch sử Căn cứ Tỉnh ủy Bến Tre tại Rừng lá Thạnh Phong - Thạnh Phú là căn cứ kháng chiến kiên cường giữa rừng ngập mặn ngập nước ven biển Đông. Nơi đây che chở cơ quan đầu não của Tỉnh ủy lãnh đạo phong trào cách mạng qua nhiều giai đoạn kháng chiến khốc liệt.",
+    "cultural_depth_notes": "Hệ sinh thái rừng cóc, rừng đước và dừa nước ken dày đặc tạo thành địa đạo nổi thiên nhiên che chở cho các hầm bí mật, trạm cứu thương và xưởng in tài liệu cách mạng.",
+    "visual_narrative": "Con xuồng ba lá lướt nhẹ giữa hai bờ dừa nước xanh biếc tỏa bóng râm mát; ánh nắng xiên qua tán rừng đước chiếu rọi vào lối vào hầm bí mật phục dựng kiên cố.",
+    "source_citations": [
+      {
+        "title": "Di tích Lịch sử Căn cứ Rừng lá Thạnh Phú",
+        "url": "https://bentre.gov.vn/di-tich/can-cu-rung-la-thanh-phu",
+        "notebook_id": "v-nh-long-v-nh-long-b-n-tre-tr",
+        "tier": "TIER_1_GOVERNMENT",
+        "authority_weight": 1.0
+      }
+    ]
+  },
+  {
+    "entity_id": "bao-tang-ben-tre",
+    "field": "description",
+    "hours": "07:30 - 11:30 và 13:30 - 17:00 (mở cửa các ngày trong tuần)",
+    "best_time": "08:30 - 10:30 sáng",
+    "waterway_access": "Tuyến tham quan đường bộ ven sông Bến Tre",
+    "aeo_schema_type": "TouristAttraction",
+    "enriched_value": "Bảo tàng Bến Tre tọa lạc tại số 146 đường Hùng Vương, phường An Hội, nguyên là dinh thự của quan Tỉnh trưởng xây dựng đầu thế kỷ 20 mang phong cách kiến trúc thuộc địa Pháp cổ kính. Nơi đây lưu giữ và trưng bày hơn 5.000 tư liệu, hiện vật lịch sử tự nhiên, văn hóa dân tộc và dấu ấn truyền thống cách mạng Đồng Khởi.",
+    "cultural_depth_notes": "Tòa nhà 2 tầng với hành lang cuốn vòm thanh lịch, bao quanh bởi vườn cây cổ thụ râm mát, từng là nơi lưu lại dấu ấn lịch sử hào hùng trong cuộc Tổng tiến công và nổi dậy Xuân Mậu Thân 1968.",
+    "visual_narrative": "Tòa biệt thự Pháp sơn vàng cổ điển với cửa chớp xanh nổi bật bên bờ sông râm mát; góc chụp hành lang vòm đón ánh sáng tự nhiên mềm mại.",
+    "source_citations": [
+      {
+        "title": "Hồ sơ Di sản Bảo tàng Bến Tre",
+        "url": "https://baotangbentre.vn/gioi-thieu",
+        "notebook_id": "v-nh-long-v-nh-long-b-n-tre-tr",
+        "tier": "TIER_1_GOVERNMENT",
+        "authority_weight": 1.0
+      }
+    ]
+  },
+  {
+    "entity_id": "chua-o-mich-hung-hoa",
+    "field": "description",
+    "hours": "06:00 - 18:00",
+    "best_time": "07:30 - 09:30 sáng",
+    "waterway_access": "Đường bộ qua quốc lộ 60 kết nối đò ngang sông Cổ Chiên",
+    "aeo_schema_type": "BuddhistTemple",
+    "enriched_value": "Chùa Ô Mịch (Wat Ratanadiparamkoskeo) tại xã Hùng Hòa, Tiểu Cần là ngôi chùa cổ Phật giáo Nam tông Khmer với kiến trúc mái ngói nhiều tầng đắp nổi tinh xảo, phản ánh tài hoa tạo hình của các nghệ nhân Khmer xưa.",
+    "cultural_depth_notes": "Chùa có khuôn viên thanh tịnh rợp bóng cây thốt nốt và sao dầu, là nơi lưu giữ văn hóa truyền thống và tổ chức các lớp dạy chữ Khmer miễn phí cho con em địa phương.",
+    "visual_narrative": "Đường nét phù điêu chằn Yeak oai nghiêm nơi cổng tam quan; gam màu vàng cam ấm áp phản chiếu trên mái chùa đón tia nắng ban mai.",
+    "source_citations": [
+      {
+        "title": "Kiến trúc chùa cổ Khmer Tiểu Cần",
+        "url": "https://travinh.gov.vn/di-tich/chua-o-mich",
+        "notebook_id": "v-nh-long-v-nh-long-b-n-tre-tr",
+        "tier": "TIER_1_GOVERNMENT",
+        "authority_weight": 1.0
+      }
+    ]
+  },
+  {
+    "entity_id": "cu-lao-an-binh",
+    "field": "description",
+    "hours": "06:00 - 21:00 (các điểm homestay và vườn trái cây mở quanh năm)",
+    "best_time": "Mùa trái chín từ tháng 5 đến tháng 9 Dương lịch (chôm chôm, sầu riêng, bòn bon chín rộ)",
+    "waterway_access": "Bến phà An Bình (từ trung tâm TP Vĩnh Long sang chỉ mất 5 phút) hoặc thuê tàu du lịch tham quan len lỏi rạch nhỏ",
+    "aeo_schema_type": "NatureReserve",
+    "enriched_value": "Cù lao An Bình gồm 4 xã nằm trọn giữa đôi bờ phù sa sông Cổ Chiên và sông Tiền. Đây là 'thủ phủ miệt vườn' trứ danh của Vĩnh Long với những vườn cây trĩu quả quanh năm (sầu riêng Ri6, chôm chôm, nhãn xuồng) và hệ thống homestay miệt vườn kiểu mẫu đạt chuẩn du lịch ASEAN.",
+    "cultural_depth_notes": "Cù lao hình thành từ bãi bồi phù sa cổ ngàn đời của sông Tiền, nếp sống thuần hậu mến khách gắn liền với văn hóa đờn ca tài tử Nam Bộ và các món ẩm thực dân dã như cá tai tượng chiên xù, ốc nướng tiêu.",
+    "visual_narrative": "Xuồng chèo tay lướt nhẹ dưới rặng bần trĩu quả ven rạch rợp bóng mát; vườn chôm chôm chín đỏ rực rỡ dưới nắng trưa lung linh mặt nước sông phù sa.",
+    "source_citations": [
+      {
+        "title": "Quy hoạch phát triển du lịch sinh thái Cù lao An Bình",
+        "url": "https://vinhlong.gov.vn/du-lich/cu-lao-an-binh",
+        "notebook_id": "v-nh-long-v-nh-long-b-n-tre-tr",
+        "tier": "TIER_1_GOVERNMENT",
+        "authority_weight": 1.0
+      }
+    ]
+  },
+  {
+    "entity_id": "cho-noi-tra-on-dc",
+    "field": "description",
+    "hours": "04:30 - 09:00 sáng (họp chợ sôi động nhất từ 05:00 - 07:00)",
+    "best_time": "05:30 - 07:00 sáng (ngắm bình minh trên sông Hậu và trải nghiệm trọn vẹn cảnh giao thương nhộn nhịp)",
+    "waterway_access": "Xuất phát từ bến tàu thị trấn Trà Ôn bằng đò máy hoặc thuyền du lịch",
+    "aeo_schema_type": "Market",
+    "enriched_value": "Chợ Nổi Trà Ôn là chợ nổi hạ lưu cuối cùng trên dòng sông Hậu trước khi đổ ra biển lớn, nằm ngay ngã ba giao thoa với sông Măng Thít. Chợ nổi giữ nguyên vẹn nét sinh hoạt thương hồ truyền thống với hàng trăm ghe bầu chở đầy trái cây, nông sản chào hàng bằng cây 'bẹo' độc đáo.",
+    "cultural_depth_notes": "trứ danh với món bún bò cay Trà Ôn bán ngay trên những chiếc ghe nhỏ chòng chành sóng nước, tô bún nóng hổi thơm nồng ớt sa tế và thịt bò mềm ăn cùng bắp chuối thái mỏng tạo nên trải nghiệm ẩm thực sông nước độc bản.",
+    "visual_narrative": "Bình minh rực rỡ nhuộm vàng mặt nước sông Hậu mênh mang; hàng chục chiếc ghe chở cam sành, dưa hấu xếp lớp chen nhau, khói nghi ngút bốc lên từ chiếc ghe bán bún bò sớm mai.",
+    "source_citations": [
+      {
+        "title": "Văn hóa thương hồ Chợ nổi Trà Ôn",
+        "url": "https://vinhlong.gov.vn/du-lich/cho-noi-tra-on",
+        "notebook_id": "v-nh-long-v-nh-long-b-n-tre-tr",
+        "tier": "TIER_1_GOVERNMENT",
+        "authority_weight": 1.0
+      }
+    ]
+  },
+  {
+    "entity_id": "cho-noi-dua-song-thom-mo-cay",
+    "field": "description",
+    "hours": "05:00 - 17:00 (giao thương dừa tấp nập cả ngày theo con nước)",
+    "best_time": "08:00 - 11:00 sáng khi các sà lan dừa cập bến nhộn nhịp",
+    "waterway_access": "Tuyến sông Thom kết nối sông Hàm Luông và sông Cổ Chiên",
+    "aeo_schema_type": "Market",
+    "enriched_value": "Chợ Nổi Dừa Sông Thom tại xã An Thạnh, Mỏ Cày Nam là chợ nổi chuyên doanh dừa quy mô lớn nhất Việt Nam. Dọc hai bờ sông Thom dài hơn 3 km là hàng trăm cơ sở sơ chế dừa, chỉ xơ dừa, than thiêu kết với hàng ngàn tấn dừa nguyên liệu được vận chuyển bốc dỡ nhộn nhịp trên bến dưới thuyền mỗi ngày.",
+    "cultural_depth_notes": "Sông Thom là huyết mạch kinh tế của xứ dừa, nơi hội tụ kỹ nghệ chế biến dừa tinh xảo từ cơm dừa ép dầu, dừa gọt vỏ xuất khẩu đến chỉ xơ dừa bện thảm và than hoạt tính gáo dừa.",
+    "visual_narrative": "Góc máy toàn cảnh nhìn dọc sông Thom với các sà lan chất đầy dừa khô ngút mắt; làn nước sông phản chiếu ánh nắng lấp lánh bên những rặng dừa xanh mướt.",
+    "source_citations": [
+      {
+        "title": "Địa chí Kinh tế và Du lịch Chợ nổi dừa Sông Thom",
+        "url": "https://bentre.gov.vn/kinh-te/cho-noi-dua-song-thom",
+        "notebook_id": "v-nh-long-v-nh-long-b-n-tre-tr",
+        "tier": "TIER_1_GOVERNMENT",
+        "authority_weight": 1.0
+      }
+    ]
+  },
+  {
+    "entity_id": "bien-con-bung-thanh-phu-ben-tre",
+    "field": "description",
+    "hours": "06:00 - 18:30",
+    "best_time": "Buổi chiều 15:00 - 17:30 đón gió biển mát rượi và ngắm hoàng hôn",
+    "waterway_access": "Đường bộ qua quốc lộ 57 hướng ra mũi cồn Thạnh Phú ven biển",
+    "aeo_schema_type": "NatureReserve",
+    "enriched_value": "Biển Cồn Bửng (còn gọi là bãi biển Thạnh Phú) là bãi biển phù sa nguyên sơ trải dài hơn 10 km bên bờ biển Đông. Nơi đây hấp dẫn du khách bởi không gian biển lộng gió, những rặng phi lao xanh rì, cánh đồng nghêu tự nhiên và nguồn hải sản tươi ngon phong phú như cua biển, ốc hương, tôm sú.",
+    "cultural_depth_notes": "Khu vực Cồn Bửng còn gắn liền với di tích lịch sử Đầu cầu tiếp nhận vũ khí đường Hồ Chí Minh trên biển (bến Thạnh Phong), nơi những con tàu không số anh dũng cập bến chi viện cho chiến trường miền Nam.",
+    "visual_narrative": "Bãi cát phù sa mịn màng trải dài tít tắp phản chiếu ánh bạc của sóng biển; ngọn gió biển làm lay động rặng phi lao xanh rì trong ráng chiều vàng rực.",
+    "source_citations": [
+      {
+        "title": "Du lịch sinh thái biển Cồn Bửng Thạnh Phú",
+        "url": "https://bentre.gov.vn/du-lich/bien-con-bung",
+        "notebook_id": "v-nh-long-v-nh-long-b-n-tre-tr",
+        "tier": "TIER_1_GOVERNMENT",
+        "authority_weight": 1.0
+      }
+    ]
+  },
+  {
+    "entity_id": "bai-boi-rung-ngap-man-ba-tri-ben-tre",
+    "field": "description",
+    "hours": "07:00 - 17:30",
+    "best_time": "Buổi sáng sớm khi thủy triều xuống để quan sát chim di cư",
+    "waterway_access": "Tuyến đò từ cửa sông Ba Lai hoặc sông Hàm Luông hướng ra cửa biển",
+    "aeo_schema_type": "NatureReserve",
+    "enriched_value": "Bãi bồi và rừng ngập mặn Ba Tri là vùng đất ngập nước ven biển trù phú có diện tích hàng ngàn hecta. Hệ sinh thái rừng ngập mặn ở đây gồm cây bần, đước, mắm phát triển xanh tốt, là vành đai xanh phòng hộ chắn sóng và là nơi sinh sản của nhiều loài thủy sản quý giá cùng đàn chim di cư quốc tế.",
+    "cultural_depth_notes": "Vùng bãi bồi là địa bàn sinh kế bền vững của ngư dân địa phương với nghề cào nghêu, nuôi sò huyết và đánh bắt hải sản tự nhiên tôn trọng quy luật con nước.",
+    "visual_narrative": "Toàn cảnh bãi bồi bùn phù sa lấp lánh ánh mai; đàn chim sải cánh trắng xóa bay trên nền rừng đước bạt ngàn xanh ngắt.",
+    "source_citations": [
+      {
+        "title": "Đa dạng sinh học rừng ngập mặn ven biển Ba Tri",
+        "url": "https://bentre.gov.vn/tai-nguyen-moi-truong/rung-ngap-man-ba-tri",
+        "notebook_id": "v-nh-long-v-nh-long-b-n-tre-tr",
+        "tier": "TIER_1_GOVERNMENT",
+        "authority_weight": 1.0
+      }
+    ]
+  },
+  {
+    "entity_id": "cu-lao-may-cu-lao-luc-si-thanh",
+    "field": "description",
+    "hours": "06:00 - 20:00",
+    "best_time": "08:00 - 11:00 sáng khám phá làng nghề tráng bánh truyền thống",
+    "waterway_access": "Bến phà Lục Sĩ Thành hoặc tàu đò ngang qua sông Hậu",
+    "aeo_schema_type": "NatureReserve",
+    "enriched_value": "Cù Lao Mây (xã Lục Sĩ Thành và Phú Thành, Trà Ôn) là dải đất phù sa dài hơn 15 km nổi giữa dòng sông Hậu hiền hòa. Cù lao nổi danh với làng nghề bánh tráng truyền thống trăm năm tuổi, vườn cây ăn trái quanh năm trĩu quả và không khí trong lành, mộc mạc đậm chất Nam Bộ.",
+    "cultural_depth_notes": "Cù lao mang tên chiến sĩ Lục Sĩ Thành hy sinh anh dũng bảo vệ quê hương. Nghề tráng bánh tráng nem, bánh tráng ngọt ở đây duy trì phương pháp xay bột gạo thủ công và phơi bánh trên phên nứa dưới nắng tự nhiên.",
+    "visual_narrative": "Hàng trăm vỉ bánh tráng tròn đều tăm tắp phơi mình trên các giàn nứa chạy dọc đường làng rợp bóng mát; nụ cười chất phác của bà má Nam Bộ bên lò tráng bánh bốc khói ấm áp.",
+    "source_citations": [
+      {
+        "title": "Địa chí Làng nghề truyền thống Cù Lao Mây",
+        "url": "https://vinhlong.gov.vn/lang-nghe/banh-trang-cu-lao-may",
+        "notebook_id": "v-nh-long-v-nh-long-b-n-tre-tr",
+        "tier": "TIER_1_GOVERNMENT",
+        "authority_weight": 1.0
+      }
+    ]
+  },
+  {
+    "entity_id": "cay-goi-nuoc-di-san-ben-tre",
+    "field": "description",
+    "hours": "Tự do tham quan cả ngày",
+    "best_time": "08:00 - 10:00 sáng hoặc 16:00 - 17:30 chiều",
+    "waterway_access": "Tuyến tham quan đường bộ Châu Thành kết hợp đò kênh rạch",
+    "aeo_schema_type": "NatureReserve",
+    "enriched_value": "Cây Gội Nước Cổ Thụ Di Sản tại Châu Thành là cây di sản thiên nhiên quý hiếm có tuổi thọ hơn 300 năm. Thân cây khổng lồ nhiều người ôm không xuể với tán lá sum suê vươn cao tỏa bóng mát, là nhân chứng sống qua bao biến thiên lịch sử của vùng đất cồn bãi ven sông.",
+    "cultural_depth_notes": "Cây được Hội Bảo vệ Thiên nhiên và Môi trường Việt Nam công nhận là Cây Di sản Việt Nam, là niềm tự hào và biểu tượng trường tồn của cộng đồng cư dân xứ dừa.",
+    "visual_narrative": "Góc chụp từ thấp hướng lên tán lá rộng lớn đan xen ánh nắng; thân gỗ gồ ghề rêu phong bạc màu thời gian toát lên vẻ uy nghiêm vững chãi.",
+    "source_citations": [
+      {
+        "title": "Cây Di sản Việt Nam tại Bến Tre",
+        "url": "https://vacne.org.vn/cay-di-san-ben-tre",
+        "notebook_id": "v-nh-long-v-nh-long-b-n-tre-tr",
+        "tier": "TIER_2_SCHOLARLY",
+        "authority_weight": 0.9
+      }
+    ]
+  },
+  {
+    "entity_id": "ben-cang-hanh-khach-vinh-long",
+    "field": "description",
+    "hours": "05:30 - 19:30 hàng ngày",
+    "best_time": "07:00 - 08:30 sáng (thời điểm xuất bến lý tưởng của các tour du thuyền cù lao)",
+    "waterway_access": "Đầu mối giao thông thủy trọng điểm ngay trung tâm thành phố bên bờ sông Cổ Chiên",
+    "aeo_schema_type": "CivicStructure",
+    "enriched_value": "Bến Cảng Hành Khách Vĩnh Long (nằm trên đường 30 Tháng 4, Phường 1) là trung tâm điều phối giao thông đường thủy và đón trả khách du lịch lớn nhất tỉnh. Từ đây, du khách dễ dàng bắt các chuyến tàu du lịch, ca nô tham quan Cù lao An Bình, làng gốm Mang Thít và chợ nổi.",
+    "cultural_depth_notes": "Bến cảng là cửa ngõ giao thương sông nước sầm uất từ thời phong kiến đến nay, chứng kiến bao thế hệ thương hồ giao lưu kinh tế giữa Vĩnh Long và các tỉnh lân cận.",
+    "visual_narrative": "Toàn cảnh bến thuyền tấp nập với những con tàu gỗ sơn viền đỏ truyền thống dập dềnh bên cầu cảng; dòng sông Cổ Chiên đỏ nặng phù sa cuộn trôi về phía chân trời.",
+    "source_citations": [
+      {
+        "title": "Quy hoạch hạ tầng cảng bến du lịch đường thủy Vĩnh Long",
+        "url": "https://vinhlong.gov.vn/giao-thong/ben-cang-hanh-khach",
+        "notebook_id": "v-nh-long-v-nh-long-b-n-tre-tr",
+        "tier": "TIER_1_GOVERNMENT",
+        "authority_weight": 1.0
+      }
+    ]
+  },
+  {
+    "entity_id": "lang-banh-trang-my-long",
+    "field": "description",
+    "hours": "06:00 - 16:30",
+    "best_time": "07:30 - 10:30 sáng (lúc các lò bánh hoạt động nhộn nhịp nhất và phơi bánh đầy sân)",
+    "waterway_access": "Đường bộ tỉnh lộ 885 hoặc đò ngang qua rạch Giồng Trôm",
+    "aeo_schema_type": "LocalBusiness",
+    "enriched_value": "Làng nghề bánh tráng Mỹ Lồng tại xã Mỹ Thạnh, huyện Giồng Trôm là Di sản Văn hóa phi vật thể quốc gia có lịch sử hơn 100 năm. Bánh tráng Mỹ Lồng nức danh bởi vị béo ngậy của nước cốt dừa đậm đặc hòa quyện cùng bột gạo nếp sáp dẻo thơm, rắc mè rang vàng ruộm khi nướng trên than hồng phồng xốp giòn tan.",
+    "cultural_depth_notes": "Bí quyết độc bản của người Mỹ Lồng nằm ở tỷ lệ pha nước cốt dừa xiêm nguyên chất vào bột gạo và kỹ thuật dùng gáo dừa láng bánh tròn mỏng tăm tắp, rồi phơi trên phên lá dừa nước đón nắng gió trong lành.",
+    "visual_narrative": "Cận cảnh chiếc bánh tráng phồng tròn trên vỉ than hồng đỏ rực thơm lừng; hàng trăm phên bánh tráng phơi nối dài tăm tắp dưới rặng dừa xanh biếc.",
+    "source_citations": [
+      {
+        "title": "Quyết định công nhận Di sản phi vật thể Quốc gia Bánh tráng Mỹ Lồng",
+        "url": "https://dsvh.gov.vn/di-san-banh-trang-my-long",
+        "notebook_id": "mekong-360-t-p-2",
+        "tier": "TIER_1_GOVERNMENT",
+        "authority_weight": 1.0
+      }
+    ]
+  },
+  {
+    "entity_id": "lang-nghe-banh-phong-son-doc",
+    "field": "description",
+    "hours": "05:00 - 16:00",
+    "best_time": "06:00 - 09:00 sáng (thời khắc quết bánh và cán bánh nhộn nhịp tiếng chày đôi)",
+    "waterway_access": "Tuyến tỉnh lộ 885 kết nối đò ngang sông Giồng Trôm",
+    "aeo_schema_type": "LocalBusiness",
+    "enriched_value": "Làng nghề bánh phồng Sơn Đốc tại xã Hưng Nhượng, Giồng Trôm là Di sản Văn hóa phi vật thể quốc gia trứ danh với món bánh phồng nếp quết chày đôi truyền thống. Bánh làm từ nếp xôi đồ chín trộn với nước cốt dừa và đường cát, sau đó quết nhuyễn bằng cối đá, cán mỏng phơi khô; khi nướng phồng to gấp đôi, xốp mềm béo ngọt tan trên đầu lưỡi.",
+    "cultural_depth_notes": "Nghề làm bánh phồng Sơn Đốc ra đời hơn một thế kỷ trước. Nhịp chày giã nếp vang vọng khắp xóm thôn mỗi độ Tết đến xuân về đã trở thành âm thanh ký ức thiêng liêng của văn hóa miệt vườn xứ dừa.",
+    "visual_narrative": "Nhịp chày đôi thoăn thoắt nhịp nhàng của hai nghệ nhân bên cối đá bốc hơi nếp thơm lừng; tay thoăn thoắt trở bánh trên giàn nướng than đượm sắc đỏ ấm áp.",
+    "source_citations": [
+      {
+        "title": "Di sản phi vật thể Quốc gia Làng nghề Bánh phồng Sơn Đốc",
+        "url": "https://dsvh.gov.vn/di-san-banh-phong-son-doc",
+        "notebook_id": "mekong-360-t-p-2",
+        "tier": "TIER_1_GOVERNMENT",
+        "authority_weight": 1.0
+      }
+    ]
+  },
+  {
+    "entity_id": "lang-nghe-banh-tet-tra-cuon",
+    "field": "description",
+    "hours": "06:00 - 20:00 (hoạt động nhộn nhịp suốt cả ngày)",
+    "best_time": "08:00 - 11:00 sáng xem nghệ nhân gói bánh tam sắc lá chuối xiêm",
+    "waterway_access": "Đường bộ quốc lộ 53 tại ấp Trà Cuôn, xã Kim Hòa, huyện Cầu Ngang",
+    "aeo_schema_type": "LocalBusiness",
+    "enriched_value": "Làng nghề bánh tét Trà Cuôn (xã Kim Hòa, Cầu Ngang) là thương hiệu ẩm thực trứ danh của vùng đất Trà Vinh. Đòn bánh tét Trà Cuôn nổi bật với màu nếp xanh ngọc tự nhiên từ nước cốt lá bồ ngót, hạt nếp dẻo thơm bọc lấy nhân đậu xanh bùi béo, thịt mỡ ướp hành muối và lòng đỏ trứng muối béo ngậy đậm đà.",
+    "cultural_depth_notes": "Khởi xướng từ những năm 1970 bởi bàn tay khéo léo của người phụ nữ Khmer Hai Lý, bí quyết bánh tét Trà Cuôn nằm ở khâu đãi nếp kỹ, tẩm ướp nhân thịt mỡ cân đối và gói chặt tay bằng lá chuối xiêm xanh, nấu lửa củi rền suốt 8 - 10 tiếng.",
+    "visual_narrative": "Mặt cắt khoanh bánh tét ngũ sắc tuyệt đẹp lộ rõ nhân đậu xanh vàng ruộm bao bọc quả trứng muối đỏ son và hạt nếp xanh ngọc óng ánh; nồi bánh tét khổng lồ sôi ùng ục trên bếp củi ấm cúng.",
+    "source_citations": [
+      {
+        "title": "Thương hiệu OCOP Làng nghề Bánh tét Trà Cuôn",
+        "url": "https://travinh.gov.vn/ocop/banh-tet-tra-cuon",
+        "notebook_id": "mekong-360-t-p-2",
+        "tier": "TIER_1_GOVERNMENT",
+        "authority_weight": 1.0
+      }
+    ]
+  },
+  {
+    "entity_id": "lang-nghe-det-chieu-ca-hon",
+    "field": "description",
+    "hours": "07:00 - 17:00",
+    "best_time": "08:00 - 10:30 sáng (ngắm sợi lác nhuộm màu sặc sỡ phơi dọc đường làng)",
+    "waterway_access": "Tuyến đò ngang sông Cà Hôn rẽ từ sông Hậu",
+    "aeo_schema_type": "LocalBusiness",
+    "enriched_value": "Làng nghề dệt chiếu Cà Hôn (Cà Hom) tại xã Hàm Tân, huyện Trà Cú là làng nghề dệt chiếu lác cổ truyền hàng trăm năm tuổi của đồng bào Khmer. Chiếu Cà Hôn bền đẹp, sợi lác bóng mịn, dệt hoa văn chữ nổi và họa tiết trang trí phong phú, giữ ấm về mùa đông và mát rượi về mùa hè.",
+    "cultural_depth_notes": "Sợi lác sau khi thu hoạch được chẻ mỏng, phơi khô rồi nhuộm các màu xanh, đỏ, vàng, tím bắt mắt trước khi đưa lên khung dệt đôi dập chày nhịp nhàng. Chiếu Cà Hôn là sính lễ không thể thiếu trong phong tục cưới hỏi truyền thống Khmer.",
+    "visual_narrative": "Những bó lác nhuộm ngũ sắc xòe tròn như những đóa hoa khổng lồ phơi dọc bờ kinh xanh mát; đôi tay người phụ nữ Khmer thoăn thoắt dập khung cửi trong căn nhà sàn ấm cúng.",
+    "source_citations": [
+      {
+        "title": "Hồ sơ Làng nghề Dệt chiếu truyền thống Cà Hôn",
+        "url": "https://travinh.gov.vn/lang-nghe/det-chieu-ca-hon",
+        "notebook_id": "mekong-360-t-p-2",
+        "tier": "TIER_1_GOVERNMENT",
+        "authority_weight": 1.0
+      }
+    ]
+  },
+  {
+    "entity_id": "lang-nghe-bun-suong",
+    "field": "description",
+    "hours": "06:00 - 19:00",
+    "best_time": "Buổi sáng 06:30 - 08:30 hoặc chiều 16:30 - 18:30",
+    "waterway_access": "Đường bộ trung tâm thành phố kết nối các trục lộ chính",
+    "aeo_schema_type": "LocalBusiness",
+    "enriched_value": "Làng nghề chế biến bún suông (còn gọi là bún đuông) là nét độc đáo bậc nhất của ẩm thực Trà Vinh. Sợi suông được làm từ tôm tươi quết nhuyễn nêm tỏi, hạt tiêu, vo thành từng sợi thuôn dài tựa con đuông nặn trực tiếp vào nồi nước dùng nấu từ xương ống và tương hạt thơm lừng ngọt đậm.",
+    "cultural_depth_notes": "Món ăn hòa quyện vị ngọt tự nhiên của tôm đất, nước dùng chua thanh nhẹ của me chín và tương hạt xay nhuyễn, ăn kèm rau muống chẻ, bắp chuối và chén tương ớt xay đặc trưng Nam Bộ.",
+    "visual_narrative": "Tô bún suông đầy đặn với những sợi chả tôm màu cam hồng uốn lượn bên cạnh miếng thịt ba chỉ thái mỏng và nước dùng trong veo nghi ngút khói; dĩa rau thơm tươi rói kèm theo.",
+    "source_citations": [
+      {
+        "title": "Nghệ thuật ẩm thực Bún Suông Trà Vinh",
+        "url": "https://travinh.gov.vn/am-thuc/bun-suong",
+        "notebook_id": "mekong-360-t-p-2",
+        "tier": "TIER_1_GOVERNMENT",
+        "authority_weight": 1.0
+      }
+    ]
+  },
+  {
+    "entity_id": "dua-sap-tra-vinh",
+    "field": "description",
+    "hours": "07:30 - 21:00 (các điểm bán và hợp tác xã mở cửa hàng ngày)",
+    "best_time": "Thưởng thức dừa sáp dầm đá sữa tươi vào buổi trưa hoặc chiều giải nhiệt",
+    "waterway_access": "Vùng chuyên canh Cầu Kè ven sông Hậu, thuận tiện đường bộ lẫn thuyền ghe du lịch",
+    "aeo_schema_type": "LocalBusiness",
+    "enriched_value": "Dừa sáp Cầu Kè Trà Vinh (Makapuno) là đặc sản trái cây độc bản quý hiếm bậc nhất Việt Nam, được bảo hộ chỉ dẫn địa lý và đạt chứng nhận OCOP 5 sao quốc gia. Khác với dừa thường, cơm dừa sáp dày cộm xốp dẻo chiếm trọn gáo dừa, nước dừa sệt như kẹo chỉ thơm béo ngậy.",
+    "cultural_depth_notes": "Theo ghi chép địa chí, giống dừa sáp do một vị sư người Khmer mang từ Campuchia về trồng tại chùa Chợ huyện Cầu Kè từ những năm 1924. Nhờ thổ nhưỡng phù sa pha cát và tiểu khí hậu đặc thù ven sông Hậu, cây dừa sáp phát triển và cho chất lượng cơm dừa dẻo quánh độc nhất vô nhị.",
+    "visual_narrative": "Mặt cắt trái dừa sáp đặc quánh lớp cơm dày trắng ngà; ly sinh tố dừa sáp béo ngậy rắc đậu phộng rang vàng giòn rụm bên cạnh trái dừa sáp nguyên vỏ xanh bóng.",
+    "source_citations": [
+      {
+        "title": "Chỉ dẫn địa lý và Tiêu chuẩn OCOP Quốc gia Dừa sáp Cầu Kè",
+        "url": "https://travinh.gov.vn/ocop/dua-sap-cau-ke-5-sao",
+        "notebook_id": "mekong-360-t-p-2",
+        "tier": "TIER_1_GOVERNMENT",
+        "authority_weight": 1.0
+      }
+    ]
+  },
+  {
+    "entity_id": "cho-ben-tre-cho-trung-tam-ben-tre",
+    "field": "description",
+    "hours": "04:00 - 18:30 (chợ đêm mở tiếp tục từ 17:30 - 22:30)",
+    "best_time": "06:00 - 08:30 sáng (khám phá chợ truyền thống) hoặc 18:30 - 21:00 (chợ đêm ẩm thực ven sông)",
+    "waterway_access": "Bến tàu du lịch Bến Tre ngay cạnh chợ bên bờ sông Bến Tre thơ mộng",
+    "aeo_schema_type": "Market",
+    "enriched_value": "Chợ Bến Tre (chợ trung tâm) tọa lạc ngay bờ bắc sông Bến Tre thuộc phường An Hội, là trung tâm mua bán sầm uất lâu đời nhất xứ dừa. Chợ là trung tâm trù phú hội tụ nông sản miệt vườn, hải sản tươi sống biển Thạnh Phú, Ba Tri và bạt ngàn các sản phẩm thủ công chế biến từ cây dừa.",
+    "cultural_depth_notes": "Hình thành từ bến chợ sông xưa thời Pháp thuộc, Chợ Bến Tre ngày nay lưu giữ nhịp sống giao thương văn minh nhưng vẫn vẹn nguyên phong thái đôn hậu của người dân xứ dừa; dãy phố chợ đêm ven sông lung linh ánh đèn là điểm hẹn văn hóa ẩm thực đặc sắc.",
+    "visual_narrative": "Quang cảnh nhộn nhịp ven sông Bến Tre với những chiếc ghe chở chuối xiêm, trái cây dập dềnh sóng nước cập bến chợ sáng sớm; các gian hàng kẹo dừa, bánh phồng rực rỡ sắc màu trong lòng chợ.",
+    "source_citations": [
+      {
+        "title": "Địa chí Thương mại và Du lịch Chợ Bến Tre",
+        "url": "https://bentre.gov.vn/du-lich/cho-ben-tre",
+        "notebook_id": "mekong-360-t-p-2",
+        "tier": "TIER_1_GOVERNMENT",
+        "authority_weight": 1.0
+      }
+    ]
+  }
+]
