@@ -183,7 +183,7 @@ export default defineNuxtConfig({
 
   routeRules: {
     '/admin/**': { ssr: false },
-    '/api/v1/terroir/**': { proxy: '' },
+    '/api/v1/terroir/**': { proxy: false as any },
     '/api/**': { proxy: `${apiBase}/api/**` },
     '/auth/**': { proxy: `${apiBase}/auth/**` },
     '/chat/**': { proxy: `${apiBase}/chat/**` },
