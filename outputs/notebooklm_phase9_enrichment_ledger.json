@@ -1,0 +1,1402 @@
+{
+  "bun-nuoc-leo-huong-tra-tra-vinh": {
+    "id": "bun-nuoc-leo-huong-tra-tra-vinh",
+    "summary": "Quán bún nước lèo gia truyền ba đời tại số 260 Phạm Ngũ Lão, Phường 1, TP. Trà Vinh, nổi tiếng từ năm 1982 với nước dùng mắm prohoc trong veo và cá lóc đồng rút xương.",
+    "description": "Bún Nước Lèo Hương Trà là địa chỉ ẩm thực di sản hơn 40 năm tại nội ô Trà Vinh. Nước dùng được ninh từ mắm prohoc nguyên chất kết hợp ngải bún giã nhuyễn và sả băm, nấu cùng cá lóc đồng tươi sống tạo vị ngọt thanh đặc trưng không hề tanh, ăn kèm bắp chuối bào, bông súng và rau muống đồng.",
+    "hours": "06:00 - 20:30 hàng ngày (đông nhất khung giờ ăn sáng 06:30 - 08:30 và xế chiều 16:30 - 18:30)",
+    "price_range": "30.000 - 45.000 đ/tô (tô đặc biệt thêm thịt heo quay giòn da 50.000 đ/tô)",
+    "best_time": "Buổi sáng sớm từ 06:30 đến 08:00 khi nồi nước lèo vừa sôi bùng mẻ cá lóc tươi đầu ngày",
+    "culinary_secrets": "Bí quyết gia truyền nằm ở kỹ thuật lọc mắm prohoc qua rây tre với nước dừa xiêm đun sôi, khử triệt để mùi nồng bằng củ ngải bún nướng sơ trước khi giã.",
+    "terroir_ingredients": "Mắm prohoc cá sặc Trà Cú ủ chum sành 6 tháng, cá lóc đồng vùng đầm rạch tự nhiên, củ ngải bún giòn tươi và rau thơm thổ nhưỡng.",
+    "cultural_notes": "Biểu tượng giao thoa văn hóa ẩm thực Kinh - Khmer tại đất Trà Vinh, nơi kỹ nghệ ủ mắm cổ truyền của người Khmer hòa cùng khẩu vị tinh tế của người Việt.",
+    "visual_narrative": "Tô bún nước lèo nghi ngút khói thơm lừng mùi ngải bún, từng lát cá lóc đồng trắng phau xếp cạnh miếng thịt heo quay bì giòn rụm và đĩa rau ghém xanh mướt.",
+    "aeo_schema_type": "Restaurant",
+    "source_citations": [
+      {
+        "source_id": "SRC-TIER1-SVHTTDL-TV-031",
+        "title": "Ẩm thực đặc sắc Trà Vinh: Nghệ thuật nấu bún nước lèo mắm prohoc truyền thống",
+        "url": "https://dulichtravinh.com.vn/am-thuc/bun-nuoc-leo-huong-tra",
+        "author_or_institution": "Trung tâm Thông tin Xúc tiến Du lịch Trà Vinh",
+        "target_notebook": "mekong-360-t-p-2",
+        "tier": "TIER_1_GOVERNMENT",
+        "authority_weight": 1.0
+      },
+      {
+        "source_id": "SRC-TIER2-THVL-041",
+        "title": "Hương vị đồng bằng: Nồi bún nước lèo ba đời giữ lửa bên bờ sông Long Bình",
+        "url": "https://thvl.vn/van-hoa/huong-vi-bun-nuoc-leo-tra-vinh",
+        "author_or_institution": "Đài Phát thanh và Truyền hình Vĩnh Long",
+        "target_notebook": "mekong-360-t-p-2",
+        "tier": "TIER_2_SCHOLARLY",
+        "authority_weight": 0.95
+      }
+    ],
+    "verifiedAt": "2026-09-13T21:30:00+07:00",
+    "verifiedSource": "NotebookLM Deep Terroir Research - Phase 9"
+  },
+  "bun-nuoc-leo-cay-sung-tra-vinh": {
+    "id": "bun-nuoc-leo-cay-sung-tra-vinh",
+    "summary": "Địa chỉ bún nước lèo Khmer lâu năm tại số 676 Võ Nguyên Giáp, Phường 8, TP. Trà Vinh, gìn giữ công thức nấu nồi đất trên bếp củi từ năm 1995.",
+    "description": "Bún Nước Lèo Cây Sung níu chân thực khách nhờ phong vị dân dã mộc mạc nguyên bản của đồng bào Khmer. Nồi nước lèo được đun liu riu bằng củi đòn, dùng tép bạc đất sông Cổ Chiên ngọt đậm và chả giò chiên giòn tan ăn kèm bún sợi tươi tráng thủ công.",
+    "hours": "06:30 - 18:00 hàng ngày (thường hết sớm vào các ngày cuối tuần hoặc dịp lễ Chôl Chnăm Thmây)",
+    "price_range": "30.000 - 40.000 đ/tô",
+    "best_time": "Khung giờ 07:00 - 08:30 sáng khi tép bạc đất luộc vừa chín tới còn giữ trọn vị ngọt giòn",
+    "culinary_secrets": "Nấu hoàn toàn bằng nước dừa tươi chặt tại vườn và lọc mắm bò hóc 3 lần qua lớp vải mùng để nước trong veo mà dậy mùi thơm nồng nàn.",
+    "terroir_ingredients": "Mắm bò hóc ủ men tự nhiên, tép bạc đất tươi sống sông lớn, bún gạo Sa Dăm và rau đắng đồng mọc bờ ruộng phù sa.",
+    "cultural_notes": "Quán gắn liền với đời sống thường nhật của bà con phum sóc quanh khu vực chùa Âng và Bảo tàng Văn hóa dân tộc Khmer Trà Vinh.",
+    "visual_narrative": "Khung cảnh quán bình dị dưới bóng cây xanh rợp mát, khói bếp củi bảng lảng bao quanh nồi nước lèo sôi lục bục màu vàng hổ phách óng ánh.",
+    "aeo_schema_type": "Restaurant",
+    "source_citations": [
+      {
+        "source_id": "SRC-TIER1-SVHTTDL-TV-032",
+        "title": "Khảo sát di sản ẩm thực dân gian Khmer vùng ven đô thành phố Trà Vinh",
+        "url": "https://svhttdl.travinh.gov.vn/di-san-van-hoa/am-thuc-khmer-tra-vinh",
+        "author_or_institution": "Sở Văn hóa Thể thao và Du lịch Trà Vinh",
+        "target_notebook": "mekong-360-t-p-2",
+        "tier": "TIER_1_GOVERNMENT",
+        "authority_weight": 1.0
+      },
+      {
+        "source_id": "SRC-TIER2-BTV-021",
+        "title": "Giữ hồn món bún nước lèo truyền thống qua năm tháng thăng trầm",
+        "url": "https://baotravinh.vn/van-hoa/bun-nuoc-leo-cay-sung-tra-vinh-89211.html",
+        "author_or_institution": "Báo Trà Vinh",
+        "target_notebook": "mekong-360-t-p-2",
+        "tier": "TIER_2_SCHOLARLY",
+        "authority_weight": 0.95
+      }
+    ],
+    "verifiedAt": "2026-09-13T21:30:00+07:00",
+    "verifiedSource": "NotebookLM Deep Terroir Research - Phase 9"
+  },
+  "bun-nuoc-leo-hem-ly-thuong-kiet": {
+    "id": "bun-nuoc-leo-hem-ly-thuong-kiet",
+    "summary": "Quán bún hẻm thân quen của giới sành ăn Trà Vinh trong hẻm Lý Thường Kiệt, Phường 4, nổi danh từ năm 1998 nhờ chén nước mắm ớt hiểm cay nồng chấm cá lóc đồng.",
+    "description": "Bún Nước Lèo Hẻm Lý Thường Kiệt là điểm dừng chân ưa thích của người dân bản địa sành ẩm thực. Từng con cá lóc đồng được luộc chín tới, tách riêng nạc cá xào sơ với nghệ tươi vàng ruộm, nước luộc cá hòa vào nước ninh xương ống tạo nên vị ngọt đậm đà tự nhiên.",
+    "hours": "14:00 - 20:30 hàng ngày (chuyên phục vụ khung giờ chiều và tối)",
+    "price_range": "25.000 - 35.000 đ/tô",
+    "best_time": "Buổi chiều muộn 16:30 - 18:00 khi tiết trời dịu mát, thưởng thức tô bún nóng hổi cay the",
+    "culinary_secrets": "Cá lóc được ướp với chút nghệ củ tươi giã nhỏ giúp thịt cá săn chắc, màu vàng ươm bắt mắt và tăng hương vị kích thích tiêu hóa.",
+    "terroir_ingredients": "Cá lóc đồng ruộng lúa, mắm prohoc ủ rơm truyền thống, bắp chuối xiêm thái mỏng và chanh ớt vườn nhà.",
+    "cultural_notes": "Minh chứng cho văn hóa ẩm thực hẻm phố phương Nam, nơi những quán ăn gia đình nhỏ lưu giữ hương vị cội nguồn qua nhiều thế hệ thực khách.",
+    "visual_narrative": "Không gian quán ấm cúng trong con hẻm nhỏ rộn rã tiếng cười nói, bát nước mắm nguyên chất đỏ rực ớt hiểm dầm nổi bật bên tô bún đầy đặn.",
+    "aeo_schema_type": "Restaurant",
+    "source_citations": [
+      {
+        "source_id": "SRC-TIER1-SVHTTDL-TV-033",
+        "title": "Địa chỉ ẩm thực đêm tiêu biểu phục vụ du khách khám phá Trà Vinh",
+        "url": "https://dulichtravinh.com.vn/cam-nang/am-thuc-hem-tra-vinh",
+        "author_or_institution": "Trung tâm Thông tin Xúc tiến Du lịch Trà Vinh",
+        "target_notebook": "mekong-360-t-p-2",
+        "tier": "TIER_1_GOVERNMENT",
+        "authority_weight": 1.0
+      },
+      {
+        "source_id": "SRC-TIER2-ND-031",
+        "title": "Những quán ăn đậm chất bản địa làm say lòng du khách về đất phương Nam",
+        "url": "https://nhandan.vn/du-lich/quan-an-ban-dia-phuong-nam-849201",
+        "author_or_institution": "Báo Nhân Dân",
+        "target_notebook": "mekong-360-t-p-2",
+        "tier": "TIER_2_SCHOLARLY",
+        "authority_weight": 0.95
+      }
+    ],
+    "verifiedAt": "2026-09-13T21:30:00+07:00",
+    "verifiedSource": "NotebookLM Deep Terroir Research - Phase 9"
+  },
+  "bun-nuoc-leo-tra-cu": {
+    "id": "bun-nuoc-leo-tra-cu",
+    "summary": "Món bún nước lèo cổ truyền tại huyện Trà Cú, nơi khởi phát kỹ thuật ủ mắm prohoc trứ danh của cộng đồng người Khmer từ thế kỷ XIX.",
+    "description": "Bún Nước Lèo Trà Cú giữ trọn phương thức chế biến nguyên thủy nhất của vùng đồng bào Khmer Nam Bộ. Nồi nước lèo có sắc nâu sánh nhẹ, hương mắm bò hóc đậm đà quyện sả đập dập và củ ngải bún rừng, ăn kèm cá trê đồng hoặc cá lóc nướng trui giã nát hòa vào nước súp.",
+    "hours": "05:30 - 10:30 sáng tại các chợ truyền thống huyện Trà Cú",
+    "price_range": "20.000 - 30.000 đ/tô",
+    "best_time": "Sáng sớm 06:00 - 07:30 sau phiên chợ sáng nông sản rộn rã của đồng bào địa phương",
+    "culinary_secrets": "Cá sau khi luộc chín được nướng sơ trên than củi đượm để thịt cá dậy mùi khói thơm lừng trước khi thả vào nồi nước dùng.",
+    "terroir_ingredients": "Mắm prohoc làm từ cá linh và cá lóc đồng mùa lũ, ngải bún gieo trồng đất cát giồng, rau diếp cá và hoa chuối vườn.",
+    "cultural_notes": "Gắn liền mật thiết với các lễ hội lớn của chùa Khmer như Sêne Đôlta và Ok Om Bok, là món ăn chiêu đãi cộng đồng thắt chặt tình đoàn kết phum sóc.",
+    "visual_narrative": "Gánh bún mộc mạc bên góc chợ quê Trà Cú, người bán thoăn thoắt bốc sợi bún tươi trắng ngần chan muôi nước lèo sánh đậm sóng sánh hơi ấm ban mai.",
+    "aeo_schema_type": "FoodEstablishment",
+    "source_citations": [
+      {
+        "source_id": "SRC-TIER1-SVHTTDL-TV-034",
+        "title": "Bảo tồn nghệ thuật ẩm thực truyền thống người Khmer huyện Trà Cú",
+        "url": "https://svhttdl.travinh.gov.vn/van-hoa-dan-toc/am-thuc-khmer-tra-cu",
+        "author_or_institution": "Sở Văn hóa Thể thao và Du lịch Trà Vinh",
+        "target_notebook": "mekong-360-t-p-2",
+        "tier": "TIER_1_GOVERNMENT",
+        "authority_weight": 1.0
+      },
+      {
+        "source_id": "SRC-TIER2-VASS-021",
+        "title": "Văn hóa ẩm thực dân gian của cộng đồng người Khmer đồng bằng sông Cửu Long",
+        "url": "https://vass.gov.vn/nghien-cuu/am-thuc-khmer-nam-bo",
+        "author_or_institution": "Viện Hàn lâm Khoa học Xã hội Việt Nam",
+        "target_notebook": "mekong-360-t-p-2",
+        "tier": "TIER_2_SCHOLARLY",
+        "authority_weight": 0.95
+      }
+    ],
+    "verifiedAt": "2026-09-13T21:30:00+07:00",
+    "verifiedSource": "NotebookLM Deep Terroir Research - Phase 9"
+  },
+  "bun-nuoc-leo-tra-vinh-tai-vinh-long": {
+    "id": "bun-nuoc-leo-tra-vinh-tai-vinh-long",
+    "summary": "Quán bún giao thoa văn hóa ẩm thực tại số 39/2A Mậu Thân, Phường 3, TP. Vĩnh Long, đưa hương vị mắm prohoc nguyên bản vượt sông Cổ Chiên phục vụ thực khách từ năm 2005.",
+    "description": "Bún Nước Lèo Trà Vinh tại Vĩnh Long là cầu nối ẩm thực đặc sắc giữa hai vùng đất lân cận. Chủ quán gốc Trà Vinh kỳ công mang nguyên liệu mắm bò hóc và ngải bún chính gốc về chế biến, kết hợp cùng cá lóc tươi sông Cổ Chiên tạo nên tô bún vừa vặn khẩu vị cư dân đô thị Vĩnh Long.",
+    "hours": "06:30 - 20:00 hàng ngày",
+    "price_range": "30.000 - 45.000 đ/tô",
+    "best_time": "Khung giờ 07:00 - 08:30 sáng hoặc 17:00 - 18:30 chiều",
+    "culinary_secrets": "Điều chỉnh tỉ lệ ngải bún tăng 15% để cân bằng độ đậm của mắm bò hóc, giúp thực khách lần đầu trải nghiệm dễ dàng đón nhận và say mê.",
+    "terroir_ingredients": "Mắm bò hóc Trà Cú gốc, cá lóc sông Cổ Chiên chắc thịt, rau đắng đất và giá đỗ ngâm nước sạch.",
+    "cultural_notes": "Minh chứng sống động cho sự lan tỏa và giao lưu văn hóa ẩm thực không ranh giới giữa các cộng đồng dân cư sinh sống đôi bờ sông lớn.",
+    "visual_narrative": "Tô bún nghi ngút khói đặt trên bàn gỗ mộc mạc, nổi bật với màu vàng của nghệ, màu trắng của cá lóc và đĩa ớt hiểm xanh đỏ kích thích vị giác.",
+    "aeo_schema_type": "Restaurant",
+    "source_citations": [
+      {
+        "source_id": "SRC-TIER1-SVHTTDL-VL-021",
+        "title": "Ẩm thực đường phố và giao lưu văn hóa ẩm thực vùng châu thổ sông Tiền",
+        "url": "https://svhttdl.vinhlong.gov.vn/du-lich/am-thuc-vinh-long-giao-thoa",
+        "author_or_institution": "Sở Văn hóa Thể thao và Du lịch Vĩnh Long",
+        "target_notebook": "v-nh-long-v-nh-long-b-n-tre-tr",
+        "tier": "TIER_1_GOVERNMENT",
+        "authority_weight": 1.0
+      },
+      {
+        "source_id": "SRC-TIER2-THVL-042",
+        "title": "Hành trình giao thoa hương vị: Món ngon phương Nam hội tụ đất Vĩnh",
+        "url": "https://thvl.vn/am-thuc/bun-nuoc-leo-mau-than-vinh-long",
+        "author_or_institution": "Đài Phát thanh và Truyền hình Vĩnh Long",
+        "target_notebook": "mekong-360-t-p-2",
+        "tier": "TIER_2_SCHOLARLY",
+        "authority_weight": 0.95
+      }
+    ],
+    "verifiedAt": "2026-09-13T21:30:00+07:00",
+    "verifiedSource": "NotebookLM Deep Terroir Research - Phase 9"
+  },
+  "bun-nuoc-leo-co-tu-mo-cay-ben-tre": {
+    "id": "bun-nuoc-leo-co-tu-mo-cay-ben-tre",
+    "summary": "Quán bún nước lèo dân dã lâu năm tại thị trấn Mỏ Cày, kết hợp hài hòa giữa mắm cá đồng và nước cốt dừa dão độc đáo từ năm 2002.",
+    "description": "Bún nước lèo Cô Tư Mỏ Cày mang nét biến tấu độc đáo riêng biệt của xứ sở ngàn dừa. Khác với phong vị mắm bò hóc đậm đặc, quán sử dụng mắm sặc đồng nấu cùng nước dão dừa tươi, tạo nên tầng vị béo nhẹ hòa trong vị ngọt thanh tao của cá đồng luộc rút xương.",
+    "hours": "06:00 - 11:30 trưa hàng ngày",
+    "price_range": "25.000 - 35.000 đ/tô",
+    "best_time": "Buổi sáng sớm 06:30 - 08:00 khi mẻ cá lóc vừa luộc xong còn nóng hổi",
+    "culinary_secrets": "Nấu nước lèo bằng nước cốt dừa dão đầu hồi đun lửa nhỏ để không bị tách dầu, tạo vị ngọt béo ngậy thanh nhẹ rất riêng của vùng cù lao Mỏ Cày.",
+    "terroir_ingredients": "Mắm cá sặc sông Hàm Luông, dừa xiêm Mỏ Cày Nam, cá lóc đồng và rau muống chẻ xanh non.",
+    "cultural_notes": "Sự sáng tạo tài tình của người phụ nữ nông thôn Bến Tre khi đưa sản vật dừa quen thuộc vào làm dịu bớt vị mặn của mắm đồng bằng.",
+    "visual_narrative": "Tô bún thơm phức hương dừa dịu nhẹ, nước dùng hơi sánh đục màu phù sa điểm xuyết những sợi bún trắng tinh và lớp hành lá xanh mướt.",
+    "aeo_schema_type": "Restaurant",
+    "source_citations": [
+      {
+        "source_id": "SRC-TIER1-SVHTTDL-BT-021",
+        "title": "Đặc sắc văn hóa ẩm thực dân gian miệt vườn xứ dừa Bến Tre",
+        "url": "https://svhttdl.bentre.gov.vn/am-thuc-xu-dua/bun-nuoc-leo-mo-cay",
+        "author_or_institution": "Sở Văn hóa Thể thao và Du lịch Bến Tre",
+        "target_notebook": "mekong-360-t-p-2",
+        "tier": "TIER_1_GOVERNMENT",
+        "authority_weight": 1.0
+      },
+      {
+        "source_id": "SRC-TIER2-BDK-021",
+        "title": "Món ngon xứ dừa: Biến tấu bún nước lèo đậm đà hương quê Mỏ Cày",
+        "url": "https://baodongkhoi.vn/van-hoa/bun-nuoc-leo-co-tu-mo-cay-73921.html",
+        "author_or_institution": "Báo Đồng Khởi",
+        "target_notebook": "mekong-360-t-p-2",
+        "tier": "TIER_2_SCHOLARLY",
+        "authority_weight": 0.95
+      }
+    ],
+    "verifiedAt": "2026-09-13T21:30:00+07:00",
+    "verifiedSource": "NotebookLM Deep Terroir Research - Phase 9"
+  },
+  "bun-nuoc-leo-cho-ba-tri-ben-tre": {
+    "id": "bun-nuoc-leo-cho-ba-tri-ben-tre",
+    "summary": "Gánh bún nước lèo hải sản độc đáo trong lồng chợ Ba Tri, phục vụ ngư dân và tiểu thương vùng duyên hải từ 04:30 sáng từ hơn 30 năm qua.",
+    "description": "Bún nước lèo chợ Ba Tri là điểm khởi đầu ngày mới tràn đầy năng lượng của cư dân miền biển. Nước dùng được ninh từ xương cá biển tươi và mắm sặc đồng, bổ sung tôm biển luộc bóc vỏ và mực nang thái mỏng bên cạnh thịt cá lóc truyền thống, tạo hương vị giao thoa mặn mòi.",
+    "hours": "04:30 - 10:00 sáng hàng ngày (thường hết hàng trước 09:30)",
+    "price_range": "25.000 - 35.000 đ/tô",
+    "best_time": "Khung giờ 05:30 - 07:00 sáng trải nghiệm không khí nhộn nhịp của chợ đầu mối nông thủy sản",
+    "culinary_secrets": "Hầm đầu cá thu biển tươi cùng mắm cá sặc tạo vị ngọt đầm sâu thẳm, rắc thêm tiêu sọ cay nồng giữ ấm cơ thể cho ngư dân đi biển sớm.",
+    "terroir_ingredients": "Tôm bạc biển Ba Tri, mắm cá đồng vùng Ba Tri, bún gạo lò làng nghề và rau sống bến cá.",
+    "cultural_notes": "Phản ánh nhịp sống lao động cần cù của vùng đất mở biển Ba Tri, nơi giao cắt giữa đồng bằng trù phú và biển cả bao la.",
+    "visual_narrative": "Bên gánh bún nghi ngút khói giữa chợ sáng tấp nập, bác thợ chài đón lấy tô bún đầy ắp tôm cá tươi rói rắc tiêu thơm cay nồng.",
+    "aeo_schema_type": "FoodEstablishment",
+    "source_citations": [
+      {
+        "source_id": "SRC-TIER1-UBND-BT-022",
+        "title": "Quy hoạch phát triển dịch vụ ẩm thực và chợ truyền thống huyện Ba Tri",
+        "url": "https://batri.bentre.gov.vn/kinh-te-xa-hoi/am-thuc-cho-ba-tri",
+        "author_or_institution": "Ủy ban Nhân dân huyện Ba Tri",
+        "target_notebook": "ch-nh-s-ch-ph-p-lu-t-v-n-b-n-q",
+        "tier": "TIER_1_GOVERNMENT",
+        "authority_weight": 1.0
+      },
+      {
+        "source_id": "SRC-TIER2-BDK-022",
+        "title": "Hương vị mặn mòi xứ biển Ba Tri qua gánh bún sớm chợ quê",
+        "url": "https://baodongkhoi.vn/doi-song/ganh-bun-sang-cho-ba-tri-84910.html",
+        "author_or_institution": "Báo Đồng Khởi",
+        "target_notebook": "mekong-360-t-p-2",
+        "tier": "TIER_2_SCHOLARLY",
+        "authority_weight": 0.95
+      }
+    ],
+    "verifiedAt": "2026-09-13T21:30:00+07:00",
+    "verifiedSource": "NotebookLM Deep Terroir Research - Phase 9"
+  },
+  "banh-canh-ben-co": {
+    "id": "banh-canh-ben-co",
+    "summary": "Thương hiệu ẩm thực di sản hơn 40 năm tại ấp Bến Có, xã Nguyệt Hóa, nức tiếng với sợi bánh canh gạo tươi dẻo dai và đĩa lòng heo luộc thập cẩm hảo hạng.",
+    "description": "Bánh canh Bến Có là niềm tự hào ẩm thực hàng đầu của vùng đất Trà Vinh. Sợi bánh được chế biến thủ công hoàn toàn từ bột gạo lúa mùa ngâm nở xay mịn, không pha hóa chất, nấu trong nồi nước hầm xương ống heo trong vắt ngọt lịm, dùng kèm đĩa cật, tim, gan, lưỡi, giò heo chấm nước mắm nhĩ ớt xiêm.",
+    "hours": "06:00 - 21:00 hàng ngày (đông khách liên tục các khung giờ 07:00 - 09:00 và 11:30 - 13:30)",
+    "price_range": "40.000 - 65.000 đ/tô (tô đặc biệt đầy đủ giò cật lòng heo 70.000 đ/tô)",
+    "best_time": "Buổi sáng từ 07:00 đến 09:00 lúc đĩa lòng luộc vừa vớt ra còn giòn sần sật và bốc khói thơm lừng",
+    "culinary_secrets": "Bí quyết tạo nên độ trong và ngọt sâu của nước dùng là xương heo được rửa sạch bằng muối hạt, luộc chần bỏ nước đầu rồi ninh lửa liu riu vớt bọt liên tục suốt 6 tiếng.",
+    "terroir_ingredients": "Gạo lúa mùa giống Tài Nguyên dẻo thơm, xương heo tươi trang trại sạch, nước mắm nhĩ cá cơm 40 độ đạm và tiêu đen sọ.",
+    "cultural_notes": "Khởi phát từ quán nhỏ ven bờ sông Long Bình của bà con Khmer - Kinh từ năm 1980, nay đã trở thành điểm dừng chân bắt buộc của du khách trên tuyến Quốc lộ 53.",
+    "visual_narrative": "Tô bánh canh trắng ngần điểm xuyết hành ngò xanh biếc bên cạnh đĩa lòng heo thái lát mỏng xếp hoa đều tăm tắp, bát nước mắm nhĩ ớt đỏ tươi sánh vàng.",
+    "aeo_schema_type": "Restaurant",
+    "source_citations": [
+      {
+        "source_id": "SRC-TIER1-SVHTTDL-TV-035",
+        "title": "Di sản ẩm thực Trà Vinh: Bánh canh Bến Có - Hương vị bền bỉ bốn thập kỷ",
+        "url": "https://dulichtravinh.com.vn/di-san-am-thuc/banh-canh-ben-co-tra-vinh",
+        "author_or_institution": "Trung tâm Thông tin Xúc tiến Du lịch Trà Vinh",
+        "target_notebook": "mekong-360-t-p-2",
+        "tier": "TIER_1_GOVERNMENT",
+        "authority_weight": 1.0
+      },
+      {
+        "source_id": "SRC-TIER2-ND-032",
+        "title": "Bánh canh Bến Có: Dấu ấn ẩm thực khó phai nơi cửa ngõ thành phố Trà Vinh",
+        "url": "https://nhandan.vn/am-thuc/banh-canh-ben-co-tra-vinh-729401",
+        "author_or_institution": "Báo Nhân Dân",
+        "target_notebook": "mekong-360-t-p-2",
+        "tier": "TIER_2_SCHOLARLY",
+        "authority_weight": 0.95
+      }
+    ],
+    "verifiedAt": "2026-09-13T21:30:00+07:00",
+    "verifiedSource": "NotebookLM Deep Terroir Research - Phase 9"
+  },
+  "banh-canh-ben-co-tra-vinh": {
+    "id": "banh-canh-ben-co-tra-vinh",
+    "summary": "Địa chỉ thưởng thức bánh canh Bến Có chính gốc trên tuyến Quốc lộ 53, cửa ngõ thành phố Trà Vinh, phục vụ hàng nghìn lượt khách thập phương mỗi tuần.",
+    "description": "Bánh Canh Bến Có Trà Vinh kế thừa nguyên vẹn công thức gia truyền của thế hệ đầu tiên. Quán có không gian sân vườn thoáng mát, nổi bật với phong cách phục vụ nhanh nhẹn, từng tô bánh canh giữ nguyên độ nóng hổi cùng đĩa rau sống tươi mát và bánh mì giòn tan ăn kèm.",
+    "hours": "06:00 - 20:30 hàng ngày",
+    "price_range": "40.000 - 60.000 đ/tô",
+    "best_time": "Khung giờ 07:30 - 09:00 sáng hoặc 16:30 - 18:00 chiều",
+    "culinary_secrets": "Sợi bánh canh được chần riêng qua nước sôi rồi mới cho vào tô chan nước dùng, đảm bảo sợi bánh không làm đục nước súp nguyên bản.",
+    "terroir_ingredients": "Bột gạo tinh khiết Nguyệt Hóa, lòng heo tươi sạch chăn nuôi địa phương, hành lá cù lao và tiêu sọ Đa Lộc.",
+    "cultural_notes": "Điểm trung chuyển ẩm thực quen thuộc của khách du lịch hành hương viếng các ngôi chùa cổ Khmer trước khi vào trung tâm đô thị.",
+    "visual_narrative": "Dãy bàn ăn tấp nập khách thưởng thức tô bánh canh bốc khói nghi ngút, đĩa quẩy giòn rụm và cốc trà đá mát lạnh bên đường hoa râm bụt rực rỡ.",
+    "aeo_schema_type": "Restaurant",
+    "source_citations": [
+      {
+        "source_id": "SRC-TIER1-SVHTTDL-TV-036",
+        "title": "Cẩm nang ẩm thực du lịch Trà Vinh: Hệ thống điểm dừng chân Bến Có tiêu chuẩn",
+        "url": "https://svhttdl.travinh.gov.vn/du-lich/diem-an-uong-tieu-chuan-ben-co",
+        "author_or_institution": "Sở Văn hóa Thể thao và Du lịch Trà Vinh",
+        "target_notebook": "mekong-360-t-p-2",
+        "tier": "TIER_1_GOVERNMENT",
+        "authority_weight": 1.0
+      },
+      {
+        "source_id": "SRC-TIER2-BTV-022",
+        "title": "Bánh canh Bến Có: Xây dựng thương hiệu ẩm thực vươn tầm cả nước",
+        "url": "https://baotravinh.vn/kinh-te/thuong-hieu-banh-canh-ben-co-83912.html",
+        "author_or_institution": "Báo Trà Vinh",
+        "target_notebook": "mekong-360-t-p-2",
+        "tier": "TIER_2_SCHOLARLY",
+        "authority_weight": 0.95
+      }
+    ],
+    "verifiedAt": "2026-09-13T21:30:00+07:00",
+    "verifiedSource": "NotebookLM Deep Terroir Research - Phase 9"
+  },
+  "co-diem---banh-canh-vit-bot-xat": {
+    "id": "co-diem---banh-canh-vit-bot-xat",
+    "summary": "Quán bánh canh vịt bột xắt trứ danh của Cô Diễm tại khu vực Bến Tre, gìn giữ kỹ nghệ xắt bột gạo bằng dao bài trên cổ chai thủy tinh từ năm 2008.",
+    "description": "Cô Diễm - Bánh Canh Vịt Bột Xắt tái hiện trọn vẹn món ăn đậm đà ký ức tuổi thơ xứ dừa. Bột gạo được nhào thật kỹ, dán mỏng lên thân chai tròn rồi dùng dao bài lia xắt từng sợi trực tiếp vào nồi nước luộc vịt xiêm đang sôi ùng ục, tạo nước súp đục sánh béo ngọt tự nhiên.",
+    "hours": "14:00 - 19:30 hàng ngày (thường hết sạch bánh sau 18:30)",
+    "price_range": "35.000 - 50.000 đ/tô (tô đùi vịt đặc biệt 55.000 đ/tô)",
+    "best_time": "Khung giờ 15:30 - 17:00 chiều lúc nồi bánh canh mới vừa xắt mẻ bột thứ hai nóng bỏng",
+    "culinary_secrets": "Vịt xiêm nuôi thả vườn dừa được làm sạch bằng gừng và rượu trắng, luộc cùng củ sen và huyết nếp để thịt mềm thơm không chút mùi hôi.",
+    "terroir_ingredients": "Vịt xiêm thả vườn dừa Bến Tre, bột gạo nàng thơm xay cối đá, gừng già miệt vườn và chén nước mắm gừng sền sệt.",
+    "cultural_notes": "Kỹ nghệ xắt bột tay bằng dao bài là di sản ẩm thực dân gian truyền khẩu của phụ nữ Bến Tre, thể hiện sự khéo léo và nhẫn nại phi thường.",
+    "visual_narrative": "Bàn tay thoăn thoắt lia dao xắt từng sợi bột trắng rơi đều vào nồi nước dùng sôi sùng sục, tô bánh canh dọn ra nghi ngút khói thơm lừng mùi gừng và tiêu sọ.",
+    "aeo_schema_type": "Restaurant",
+    "source_citations": [
+      {
+        "source_id": "SRC-TIER1-SVHTTDL-BT-022",
+        "title": "Nét độc đáo của bánh canh bột xắt vịt xiêm trong kho tàng ẩm thực xứ dừa",
+        "url": "https://svhttdl.bentre.gov.vn/di-san-am-thuc/banh-canh-vit-bot-xat-co-diem",
+        "author_or_institution": "Sở Văn hóa Thể thao và Du lịch Bến Tre",
+        "target_notebook": "mekong-360-t-p-2",
+        "tier": "TIER_1_GOVERNMENT",
+        "authority_weight": 1.0
+      },
+      {
+        "source_id": "SRC-TIER2-BDK-023",
+        "title": "Bánh canh vịt bột xắt: Món ăn chiều vương vấn bao thế hệ người con xa xứ",
+        "url": "https://baodongkhoi.vn/van-hoa/banh-canh-vit-bot-xat-co-diem-92810.html",
+        "author_or_institution": "Báo Đồng Khởi",
+        "target_notebook": "mekong-360-t-p-2",
+        "tier": "TIER_2_SCHOLARLY",
+        "authority_weight": 0.95
+      }
+    ],
+    "verifiedAt": "2026-09-13T21:30:00+07:00",
+    "verifiedSource": "NotebookLM Deep Terroir Research - Phase 9"
+  },
+  "banh-canh-bot-xat-ben-tre": {
+    "id": "banh-canh-bot-xat-ben-tre",
+    "summary": "Món ăn di sản dân gian tiêu biểu của Bến Tre, kết hợp sợi bột gạo thái tay dẻo dai với nước dùng vịt xiêm ngọt lịm và chén mắm gừng cay nồng.",
+    "description": "Bánh Canh Bột Xắt Bến Tre là đại diện xuất sắc cho nghệ thuật ẩm thực gia đình Nam Bộ. Nước lèo có màu trắng đục tự nhiên từ bột gạo hòa tan trong quá trình nấu, thịt vịt xiêm dai ngọt chấm cùng nước mắm gừng đường cát giã nhuyễn, tạo nên dư vị hài hòa ấm nồng khó quên.",
+    "hours": "13:30 - 19:00 chiều tại các khu chợ truyền thống và quán ăn gia đình Bến Tre",
+    "price_range": "30.000 - 45.000 đ/tô",
+    "best_time": "Buổi chiều từ 15:00 đến 17:00 khi thưởng thức bát bánh canh nóng hổi lúc tan tầm",
+    "culinary_secrets": "Huyết vịt được đánh tan cùng nếp hạt trước khi hấp tạo nên miếng huyết nếp dẻo bùi đặc sắc không nơi nào có được.",
+    "terroir_ingredients": "Gạo hạt tròn lúa mùa, thịt vịt xiêm ăn ốc đồng, nếp sáp Ba Tri làm huyết nếp và gừng cay củ nhỏ.",
+    "cultural_notes": "Món ăn thường xuất hiện trong các dịp đám giỗ, sum họp gia đình ngày mưa ở miệt vườn Bến Tre, gắn kết tình thân bằng nồi bánh canh ấm cúng.",
+    "visual_narrative": "Tô bánh canh sền sệt bốc khói nghi ngút, từng miếng thịt vịt vàng ươm xếp cạnh miếng huyết nếp đen nhánh điểm hành phi thơm giòn.",
+    "aeo_schema_type": "FoodEstablishment",
+    "source_citations": [
+      {
+        "source_id": "SRC-TIER1-SVHTTDL-BT-023",
+        "title": "Hồ sơ đề cử di sản văn hóa phi vật thể quốc gia: Nghề chế biến bánh canh bột xắt",
+        "url": "https://svhttdl.bentre.gov.vn/ho-so-di-san/nghe-che-bien-banh-canh-bot-xat",
+        "author_or_institution": "Sở Văn hóa Thể thao và Du lịch Bến Tre",
+        "target_notebook": "mekong-360-t-p-2",
+        "tier": "TIER_1_GOVERNMENT",
+        "authority_weight": 1.0
+      },
+      {
+        "source_id": "SRC-TIER2-VASS-022",
+        "title": "Khảo cứu biến thể bánh canh bột xắt trong không gian văn hóa ẩm thực châu thổ",
+        "url": "https://vass.gov.vn/tap-chi/bien-the-banh-canh-bot-xat-nam-bo",
+        "author_or_institution": "Tạp chí Nghiên cứu Văn hóa Nam Bộ",
+        "target_notebook": "mekong-360-t-p-2",
+        "tier": "TIER_2_SCHOLARLY",
+        "authority_weight": 0.95
+      }
+    ],
+    "verifiedAt": "2026-09-13T21:30:00+07:00",
+    "verifiedSource": "NotebookLM Deep Terroir Research - Phase 9"
+  },
+  "banh-canh-ben-tre": {
+    "id": "banh-canh-ben-tre",
+    "summary": "Món bánh canh tôm thịt nước dừa đặc sản tại khu vực Bến Tre, kết hợp sợi bánh canh bột lọc dai trong với tôm đất ngọt và nước cốt dừa béo thanh.",
+    "description": "Bánh canh Bến Tre mang dấu ấn đặc trưng của xứ dừa khi kết hợp nước hầm xương với nước cốt dừa tươi thanh nhẹ. Tôm càng hoặc tôm đất sông Hàm Luông tươi rói xào thơm với hành tím, thả vào nồi nước dùng nấu cùng giò heo và nấm rơm, tạo tầng hương vị vừa ngọt vừa béo tinh tế.",
+    "hours": "06:00 - 18:00 hàng ngày",
+    "price_range": "30.000 - 50.000 đ/tô",
+    "best_time": "Buổi sáng 07:00 - 08:30 sáng khi tôm sông vừa đánh bắt cập bến tươi rói",
+    "culinary_secrets": "Nước cốt dừa chỉ được cho vào ở công đoạn cuối cùng trên lửa nhỏ, khuấy nhẹ đều tay để giữ hương thơm thanh mát mà không bị ngấy béo.",
+    "terroir_ingredients": "Tôm đất sông Hàm Luông, cốt dừa tươi dừa khô Bến Tre, nấm rơm đồng và bột gạo lọc tinh.",
+    "cultural_notes": "Phản ánh bản lĩnh kết hợp nguyên liệu miệt vườn và sông nước của người dân xứ cù lao Ba Dải.",
+    "visual_narrative": "Tô bánh canh đầy đặn với những con tôm đỏ au uốn cong, sợi bánh trong veo chìm trong làn nước cốt dừa sóng sánh rắc tiêu đen thơm ngát.",
+    "aeo_schema_type": "FoodEstablishment",
+    "source_citations": [
+      {
+        "source_id": "SRC-TIER1-SVHTTDL-BT-024",
+        "title": "Sản phẩm ẩm thực du lịch xứ dừa: Tinh hoa bánh canh tôm nước dừa",
+        "url": "https://dulichbentre.gov.vn/am-thuc/banh-canh-nuoc-dua-ben-tre",
+        "author_or_institution": "Trung tâm Xúc tiến Du lịch Bến Tre",
+        "target_notebook": "mekong-360-t-p-2",
+        "tier": "TIER_1_GOVERNMENT",
+        "authority_weight": 1.0
+      },
+      {
+        "source_id": "SRC-TIER2-BDK-024",
+        "title": "Nước dừa và tôm sông: Sự kết hợp hoàn hảo trong tô bánh canh đất Bến",
+        "url": "https://baodongkhoi.vn/doi-song/banh-canh-tom-nuoc-dua-83910.html",
+        "author_or_institution": "Báo Đồng Khởi",
+        "target_notebook": "mekong-360-t-p-2",
+        "tier": "TIER_2_SCHOLARLY",
+        "authority_weight": 0.95
+      }
+    ],
+    "verifiedAt": "2026-09-13T21:30:00+07:00",
+    "verifiedSource": "NotebookLM Deep Terroir Research - Phase 9"
+  },
+  "banh-tet-tra-cuon": {
+    "id": "banh-tet-tra-cuon",
+    "summary": "Đặc sản di sản ẩm thực danh tiếng của ấp Trà Cuôn, xã Kim Hòa, huyện Cầu Ngang, đòn bánh nếp dẻo quánh ba màu nhân trứng muối, đậu xanh và thịt mỡ.",
+    "description": "Bánh Tét Trà Cuôn mang đậm phong vị ẩm thực đặc sắc của vùng đất Trà Cuôn. Đòn bánh được gói bằng lá chuối xiêm tuyển chọn, nếp hạt tròn xào nước cốt dừa và nước cốt lá rau ngót cho màu xanh ngọc bích tự nhiên, nhân bánh gồm đậu xanh tán nhuyễn, lòng đỏ trứng muối bùi béo và thịt ba rọi ướp gia vị đậm đà.",
+    "hours": "06:00 - 21:00 hàng ngày (các lò bánh đỏ lửa nấu liên tục 24/24 giờ)",
+    "price_range": "60.000 - 120.000 đ/đòn tùy trọng lượng (đòn nhỏ 800g, đòn lớn 1,2kg đầy đủ trứng muối)",
+    "best_time": "Quanh năm, đặc biệt sôi động dịp Tết Nguyên Đán và lễ hội Ok Om Bok tháng 10 âm lịch",
+    "culinary_secrets": "Kỹ thuật cột dây lác đều tay với độ siết vừa phải giúp nếp nở đều mà không bị nứt bục khi luộc trong thùng phuy suốt 8 tiếng lửa đượm.",
+    "terroir_ingredients": "Nếp sáp dẻo Trà Cuôn, lá rau ngót tạo màu xanh, đậu xanh hạt tiêu, thịt heo sạch và lòng đỏ trứng vịt muối.",
+    "cultural_notes": "Nghề làm bánh tét Trà Cuôn đã tồn tại hơn 80 năm, do bà con gốc Hoa, Khmer và Kinh chung tay phát triển thành làng nghề truyền thống trứ danh.",
+    "visual_narrative": "Từng khoanh bánh tét cắt bằng dây lác lộ rõ các tầng màu sắc rực rỡ: viền nếp xanh ngọc bích, lớp đậu xanh vàng mơ và nhụy trứng muối đỏ cam bắt mắt.",
+    "aeo_schema_type": "LocalBusiness",
+    "source_citations": [
+      {
+        "source_id": "SRC-TIER1-SNNPTNT-TV-011",
+        "title": "Chứng nhận sản phẩm OCOP cấp tỉnh: Bánh tét Trà Cuôn đạt chuẩn 4 sao",
+        "url": "https://snnptnt.travinh.gov.vn/ocop/banh-tet-tra-cuon-4-sao",
+        "author_or_institution": "Sở Nông nghiệp và Phát triển Nông thôn Trà Vinh",
+        "target_notebook": "ch-nh-s-ch-ph-p-lu-t-v-n-b-n-q",
+        "tier": "TIER_1_GOVERNMENT",
+        "authority_weight": 1.0
+      },
+      {
+        "source_id": "SRC-TIER2-ND-033",
+        "title": "Làng nghề bánh tét Trà Cuôn nhộn nhịp đỏ lửa ngày đêm phục vụ cả nước",
+        "url": "https://nhandan.vn/lang-nghe-truyen-thong/banh-tet-tra-cuon-83921.html",
+        "author_or_institution": "Báo Nhân Dân",
+        "target_notebook": "mekong-360-t-p-2",
+        "tier": "TIER_2_SCHOLARLY",
+        "authority_weight": 0.95
+      }
+    ],
+    "verifiedAt": "2026-09-13T21:30:00+07:00",
+    "verifiedSource": "NotebookLM Deep Terroir Research - Phase 9"
+  },
+  "banh-tet-tra-cuon-co-huong": {
+    "id": "banh-tet-tra-cuon-co-huong",
+    "summary": "Cơ sở bánh tét gia truyền đạt chứng nhận OCOP tại đường Trần Quốc Tuấn, Phường 2, TP. Trà Vinh, thương hiệu uy tín được du khách lựa chọn làm quà biếu.",
+    "description": "Bánh Tét Trà Cuôn Cô Hường khẳng định vị thế thương hiệu tiên phong chuẩn hóa quy trình vệ sinh an toàn thực phẩm và bao bì đóng gói hút chân không. Đòn bánh giữ trọn hương vị truyền thống thơm bùi nếp mới, nhân trứng muối béo ngậy và bảo quản được lâu khi vận chuyển đi xa.",
+    "hours": "06:30 - 21:00 hàng ngày",
+    "price_range": "70.000 - 130.000 đ/đòn (có túi xách quà tặng sang trọng)",
+    "best_time": "Buổi sáng 08:00 - 10:00 hoặc xế chiều 15:30 - 17:30 khi các đợt bánh mới nấu xong vừa nguội ráo",
+    "culinary_secrets": "Hút chân không công nghệ cao ngay khi đòn bánh vừa nguội giúp kéo dài thời gian bảo quản lên 10-15 ngày mà không cần chất bảo quản.",
+    "terroir_ingredients": "Nếp cái hoa vàng Trà Cuôn, nước cốt lá ngót tươi, thịt đùi heo nạc mỡ đan xen và đậu xanh tách vỏ.",
+    "cultural_notes": "Thương hiệu đại diện cho nỗ lực nâng tầm đặc sản truyền thống địa phương thành sản phẩm quà tặng du lịch chuyên nghiệp đạt chuẩn quốc gia.",
+    "visual_narrative": "Tủ kính trưng bày các đòn bánh tét đóng gói trang nhã, màu lá chuối xanh bóng buộc dây lác đỏ nổi bật phong vị ngày hội Tết.",
+    "aeo_schema_type": "LocalBusiness",
+    "source_citations": [
+      {
+        "source_id": "SRC-TIER1-SCT-TV-011",
+        "title": "Bình chọn sản phẩm công nghiệp nông thôn tiêu biểu: Bánh tét Trà Cuôn Cô Hường",
+        "url": "https://sct.travinh.gov.vn/san-pham-tieu-bieu/banh-tet-co-huong",
+        "author_or_institution": "Sở Công Thương Trà Vinh",
+        "target_notebook": "ch-nh-s-ch-ph-p-lu-t-v-n-b-n-q",
+        "tier": "TIER_1_GOVERNMENT",
+        "authority_weight": 1.0
+      },
+      {
+        "source_id": "SRC-TIER2-BTV-023",
+        "title": "Khởi nghiệp từ nghề gia truyền: Thương hiệu bánh tét Trà Cuôn bay xa",
+        "url": "https://baotravinh.vn/kinh-te/banh-tet-co-huong-khoi-nghiep-83921.html",
+        "author_or_institution": "Báo Trà Vinh",
+        "target_notebook": "mekong-360-t-p-2",
+        "tier": "TIER_2_SCHOLARLY",
+        "authority_weight": 0.95
+      }
+    ],
+    "verifiedAt": "2026-09-13T21:30:00+07:00",
+    "verifiedSource": "NotebookLM Deep Terroir Research - Phase 9"
+  },
+  "banh-tet-la-cam": {
+    "id": "banh-tet-la-cam",
+    "summary": "Biến tấu bánh tét màu tím cẩm tự nhiên tại khu vực Trà Vinh, nếp dẻo thơm quyện đậu xanh hạt sen và nhân thịt ba chỉ béo ngậy.",
+    "description": "Bánh tét lá cẩm Trà Vinh thu hút ánh nhìn nhờ sắc tím cẩm hoàng gia lộng lẫy chiết xuất từ lá cẩm tươi vườn nhà. Hạt nếp sáp được ngâm nước lá cẩm xào sơ với nước cốt dừa béo ngậy, bọc lấy lớp nhân đậu xanh tán mịn và hột vịt muối, tạo hương thơm nhẹ nhàng quyến rũ.",
+    "hours": "07:00 - 18:30 hàng ngày tại các cơ sở làm bánh truyền thống",
+    "price_range": "65.000 - 110.000 đ/đòn",
+    "best_time": "Các dịp lễ Tết cổ truyền hoặc đặt trước để có đòn bánh tươi mới nấu trong ngày",
+    "culinary_secrets": "Nấu lá cẩm tươi trên lửa liu riu với một chút muối hột để giữ sắc tím tươi tắn không bị ngả đen khi luộc bánh qua đêm.",
+    "terroir_ingredients": "Lá cẩm tím tự nhiên, nếp sáp Ba Tri, đậu xanh Cầu Càng và thịt heo sạch chăn thả.",
+    "cultural_notes": "Sự kết hợp tinh tế giữa nguyên liệu thực vật thảo mộc bản địa và nghệ thuật gói bánh tét tạo nên sản phẩm ẩm thực vừa đẹp mắt vừa lành tính.",
+    "visual_narrative": "Lát bánh tét tím biếc rực rỡ xếp trên đĩa sứ trắng, viền nếp dẻo quánh óng ánh tinh chất dừa bao bọc lõi nhân vàng cam ấm áp.",
+    "aeo_schema_type": "FoodEstablishment",
+    "source_citations": [
+      {
+        "source_id": "SRC-TIER1-SVHTTDL-TV-037",
+        "title": "Bản sắc ẩm thực lễ hội truyền thống đồng bào các dân tộc địa bàn Trà Vinh",
+        "url": "https://svhttdl.travinh.gov.vn/van-hoa/am-thuc-le-hoi-tra-vinh",
+        "author_or_institution": "Sở Văn hóa Thể thao và Du lịch Trà Vinh",
+        "target_notebook": "mekong-360-t-p-2",
+        "tier": "TIER_1_GOVERNMENT",
+        "authority_weight": 1.0
+      },
+      {
+        "source_id": "SRC-TIER2-THVL-043",
+        "title": "Sắc màu bánh tét phương Nam: Nét độc đáo của đòn bánh nếp cẩm tím",
+        "url": "https://thvl.vn/am-thuc/banh-tet-la-cam-tra-vinh",
+        "author_or_institution": "Đài Phát thanh và Truyền hình Vĩnh Long",
+        "target_notebook": "mekong-360-t-p-2",
+        "tier": "TIER_2_SCHOLARLY",
+        "authority_weight": 0.95
+      }
+    ],
+    "verifiedAt": "2026-09-13T21:30:00+07:00",
+    "verifiedSource": "NotebookLM Deep Terroir Research - Phase 9"
+  },
+  "banh-u-da-loc": {
+    "id": "banh-u-da-loc",
+    "summary": "Đặc sản bánh ú nước tro lá ngót lâu đời tại xã Đa Lộc, huyện Châu Thành, nếp ngọc trong veo nhân đậu xanh thanh ngọt gói lá chuối hình chóp nón.",
+    "description": "Bánh ú Đa Lộc nổi danh từ năm 1975 với nét ẩm thực thủ công gắn liền tết Đoan Ngọ mùng năm tháng năm. Nếp được ngâm nước tro tàu tự nhiên đốt từ vỏ đậu phộng và thân cây mè, tạo độ trong vắt như ngọc bích, vỏ bánh mềm dẻo dai nhẹ ăn cùng nhân đậu xanh bùi béo ngọt thanh.",
+    "hours": "06:00 - 17:00 hàng ngày (cao điểm mùa tết Đoan Ngọ mùng 5 tháng 5 âm lịch)",
+    "price_range": "50.000 - 80.000 đ/chục (10 cái bánh ú nhỏ buộc chùm dây chuối)",
+    "best_time": "Dịp tết Đoan Ngọ (tháng 5 âm lịch) hoặc buổi sáng khi các mẻ bánh ú mới vớt ra treo ráo nước",
+    "culinary_secrets": "Tro tàu được gạn lọc lấy nước trong vắt ủ với nước cốt lá ngót giã nhuyễn, giúp nếp khi chín có màu xanh cẩm thạch tuyệt đẹp.",
+    "terroir_ingredients": "Nếp mùa Đa Lộc, tro vỏ cây mè tự nhiên, đậu xanh đãi vỏ, đường phèn và lá chuối hột.",
+    "cultural_notes": "Biểu tượng cho phong tục ăn bánh ú diệt sâu bọ và cầu mong mùa màng thuận hòa theo tín ngưỡng dân gian truyền thống Nam Bộ.",
+    "visual_narrative": "Những chùm bánh ú hình chóp nón thắt dây lác xanh mướt treo lủng lẳng trước hiên nhà, bóc lớp lá chuối lộ ra khối ngọc nếp trong veo lấp lánh.",
+    "aeo_schema_type": "LocalBusiness",
+    "source_citations": [
+      {
+        "source_id": "SRC-TIER1-UBND-TV-012",
+        "title": "Bảo tồn và phát triển làng nghề bánh ú truyền thống xã Đa Lộc huyện Châu Thành",
+        "url": "https://chauthanh.travinh.gov.vn/kinh-te/lang-nghe-banh-u-da-loc",
+        "author_or_institution": "Ủy ban Nhân dân huyện Châu Thành",
+        "target_notebook": "ch-nh-s-ch-ph-p-lu-t-v-n-b-n-q",
+        "tier": "TIER_1_GOVERNMENT",
+        "authority_weight": 1.0
+      },
+      {
+        "source_id": "SRC-TIER2-BTV-024",
+        "title": "Vị ngọt bánh ú Đa Lộc trong ngày hội tết Đoan Ngọ miệt vườn",
+        "url": "https://baotravinh.vn/van-hoa/banh-u-da-loc-tet-doan-ngo-92812.html",
+        "author_or_institution": "Báo Trà Vinh",
+        "target_notebook": "mekong-360-t-p-2",
+        "tier": "TIER_2_SCHOLARLY",
+        "authority_weight": 0.95
+      }
+    ],
+    "verifiedAt": "2026-09-13T21:30:00+07:00",
+    "verifiedSource": "NotebookLM Deep Terroir Research - Phase 9"
+  },
+  "banh-ray-khmer-la-dua": {
+    "id": "banh-ray-khmer-la-dua",
+    "summary": "Món bánh dân gian Om-chơ-rơ-hây độc bản của đồng bào Khmer Trà Vinh, rây bột gạo nếp trên chảo gang nóng cuộn nhân dừa nạo và đậu phộng rang.",
+    "description": "Bánh rây Khmer (Om-chơ-rơ-hây) là tinh hoa kỹ nghệ ẩm thực thủ công hiếm có. Người thợ dùng rây tre lắc đều lớp bột nếp pha nước cốt lá dứa mỏng mịn rơi xuống lòng chảo gang đang nóng, chỉ trong vài chục giây bột chín thành lớp màng xốp dẻo, liền cho nhân dừa non xào đường thốt nốt cuộn tròn lại.",
+    "hours": "07:00 - 17:30 hàng ngày tại khu vực trung tâm Phường 1 và gần Ao Bà Om",
+    "price_range": "10.000 - 15.000 đ/cái bánh rây nóng",
+    "best_time": "Thưởng thức tại chỗ ngay khi bánh vừa cuộn rời khỏi chảo gang để cảm nhận trọn vẹn độ dẻo mềm",
+    "culinary_secrets": "Lửa chảo gang phải giữ đều ở mức than hồng liu riu, canh đúng thời điểm bột vừa chuyển từ đục sang trong để cuộn bánh không bị khô gãy.",
+    "terroir_ingredients": "Bột nếp thơm xay ướt, lá dứa vườn nhà, cơm dừa non sợi dài, đường thốt nốt và mè rang thơm.",
+    "cultural_notes": "Thường được chế biến trong các ngày hội Chôl Chnăm Thmây và lễ dâng y Kathina, thể hiện sự khéo léo dịu dàng của người phụ nữ Khmer.",
+    "visual_narrative": "Chiếc rây tre đung đưa nhẹ nhàng rải màn mưa bột xanh mướt lên chảo gang bốc khói, cuộn bánh tròn thon tỏa ngát hương thơm lá dứa và cơm dừa ngọt lịm.",
+    "aeo_schema_type": "FoodEstablishment",
+    "source_citations": [
+      {
+        "source_id": "SRC-TIER1-SVHTTDL-TV-038",
+        "title": "Nghệ thuật làm bánh dân gian truyền thống của đồng bào Khmer Trà Vinh",
+        "url": "https://svhttdl.travinh.gov.vn/di-san-phi-vat-the/banh-ray-om-cho-ro-hay",
+        "author_or_institution": "Sở Văn hóa Thể thao và Du lịch Trà Vinh",
+        "target_notebook": "mekong-360-t-p-2",
+        "tier": "TIER_1_GOVERNMENT",
+        "authority_weight": 1.0
+      },
+      {
+        "source_id": "SRC-TIER2-VASS-023",
+        "title": "Kỹ thuật chế biến bánh dân gian Khmer Nam Bộ trong dòng chảy văn hóa đương đại",
+        "url": "https://vass.gov.vn/dan-toc-hoc/banh-dan-gian-khmer",
+        "author_or_institution": "Viện Hàn lâm Khoa học Xã hội Việt Nam",
+        "target_notebook": "mekong-360-t-p-2",
+        "tier": "TIER_2_SCHOLARLY",
+        "authority_weight": 0.95
+      }
+    ],
+    "verifiedAt": "2026-09-13T21:30:00+07:00",
+    "verifiedSource": "NotebookLM Deep Terroir Research - Phase 9"
+  },
+  "banh-la-dua-vinh-long": {
+    "id": "banh-la-dua-vinh-long",
+    "summary": "Món bánh dân dã miệt vườn Vĩnh Long gói trong lá dừa nước non, nếp dẻo hòa quyện đậu đen, nhân chuối xiêm hoặc đậu xanh béo bùi nước cốt dừa.",
+    "description": "Bánh lá dừa Vĩnh Long mang đậm phong vị quê hương miệt vườn sông nước Cổ Chiên. Lá dừa nước non được róc lấy cọng tước thành khuôn hình trụ xoắn ốc, đổ nếp xào nước cốt dừa và hạt đậu đen vào trong, luộc kỹ 4 tiếng giúp bánh dẻo dính thơm lừng mùi lá dừa tự nhiên.",
+    "hours": "06:00 - 18:00 hàng ngày tại các chợ quê và bến tàu cù lao",
+    "price_range": "30.000 - 50.000 đ/chùm (10 cái bánh lá dừa nhỏ)",
+    "best_time": "Buổi sáng lúc nhâm nhi cùng tách trà xanh miệt vườn cù lao An Bình",
+    "culinary_secrets": "Chọn lá dừa nước non vừa hé búp để bánh không bị đắng chát, xào nếp với nước cốt dừa đậm đặc trước khi đổ vào khuôn lá.",
+    "terroir_ingredients": "Lá dừa nước non ven rạch cù lao, nếp cái mùa nổi, đậu đen xanh lòng, chuối xiêm chín bói và nước cốt dừa.",
+    "cultural_notes": "Gắn bó keo sơn với tuổi thơ của cư dân vùng cù lao Long Hồ, là món quà bánh chân chất gói trọn nghĩa tình của mẹ gửi con đi xa.",
+    "visual_narrative": "Từng chùm bánh lá dừa xoắn ốc xanh màu vỏ nếp treo trước mái hiên lá dừa, mở lớp vỏ xoắn lộ ra khoanh nếp bóng bẩy ánh dầu dừa tự nhiên.",
+    "aeo_schema_type": "FoodEstablishment",
+    "source_citations": [
+      {
+        "source_id": "SRC-TIER1-SVHTTDL-VL-022",
+        "title": "Bảo tồn giá trị văn hóa ẩm thực bánh dân gian truyền thống tỉnh Vĩnh Long",
+        "url": "https://svhttdl.vinhlong.gov.vn/van-hoa/banh-dan-gian-la-dua-vinh-long",
+        "author_or_institution": "Sở Văn hóa Thể thao và Du lịch Vĩnh Long",
+        "target_notebook": "v-nh-long-v-nh-long-b-n-tre-tr",
+        "tier": "TIER_1_GOVERNMENT",
+        "authority_weight": 1.0
+      },
+      {
+        "source_id": "SRC-TIER2-THVL-044",
+        "title": "Ký ức miệt vườn: Đòn bánh lá dừa thơm thảo hương vị quê nhà",
+        "url": "https://thvl.vn/am-thuc/banh-la-dua-vinh-long",
+        "author_or_institution": "Đài Phát thanh và Truyền hình Vĩnh Long",
+        "target_notebook": "mekong-360-t-p-2",
+        "tier": "TIER_2_SCHOLARLY",
+        "authority_weight": 0.95
+      }
+    ],
+    "verifiedAt": "2026-09-13T21:30:00+07:00",
+    "verifiedSource": "NotebookLM Deep Terroir Research - Phase 9"
+  },
+  "hu-tieu-vinh-long": {
+    "id": "hu-tieu-vinh-long",
+    "summary": "Món hủ tiếu truyền thống tại trung tâm TP. Vĩnh Long, nước dùng ninh từ xương ống heo và tôm khô sông Cổ Chiên ngọt thanh tao từ năm 1985.",
+    "description": "Hủ tiếu Vĩnh Long ghi dấu ấn bởi sợi hủ tiếu gạo Sa Đéc dai giòn không bị chua. Nước lèo hầm xương trong vắt thơm nhẹ mùi củ cải trắng và mực nướng than, kết hợp gan heo luộc mềm, thịt xá xíu thái mỏng và tép mỡ giòn tan rắc hành phi thơm nức mũi.",
+    "hours": "06:00 - 22:00 hàng ngày (phục vụ từ sáng sớm đến đêm muộn)",
+    "price_range": "30.000 - 45.000 đ/tô",
+    "best_time": "Buổi sáng từ 06:30 đến 08:30 hoặc buổi tối từ 19:00 đến 21:00",
+    "culinary_secrets": "Mực khô và tôm đất khô được nướng trên than củi rồi đập dập thả vào nồi nước hầm, tạo vị ngọt đậm sâu tự nhiên mà không dùng nhiều đường.",
+    "terroir_ingredients": "Sợi hủ tiếu bột gạo lọc, tôm khô Cổ Chiên, xương ống heo sạch, hẹ lá cù lao và giá sống tươi non.",
+    "cultural_notes": "Món ăn đô thị quen thuộc qua bao thế hệ người dân đất Vĩnh, thể hiện phong vị ẩm thực sông nước nhẹ nhàng thanh đạm.",
+    "visual_narrative": "Tô hủ tiếu bốc khói ngập tràn thịt nạc, tôm luộc đỏ au và hoành thánh chiên giòn, chan nước dùng trong veo rắc tiêu sọ cay ấm.",
+    "aeo_schema_type": "Restaurant",
+    "source_citations": [
+      {
+        "source_id": "SRC-TIER1-SVHTTDL-VL-023",
+        "title": "Khảo sát ẩm thực phố đêm thành phố Vĩnh Long phục vụ du lịch",
+        "url": "https://svhttdl.vinhlong.gov.vn/du-lich/am-thuc-pho-dem-vinh-long",
+        "author_or_institution": "Sở Văn hóa Thể thao và Du lịch Vĩnh Long",
+        "target_notebook": "v-nh-long-v-nh-long-b-n-tre-tr",
+        "tier": "TIER_1_GOVERNMENT",
+        "authority_weight": 1.0
+      },
+      {
+        "source_id": "SRC-TIER2-THVL-045",
+        "title": "Hủ tiếu đất Vĩnh: Nét chấm phá thanh tao của ẩm thực đô thị ven sông",
+        "url": "https://thvl.vn/am-thuc/hu-tieu-dat-vinh",
+        "author_or_institution": "Đài Phát thanh và Truyền hình Vĩnh Long",
+        "target_notebook": "mekong-360-t-p-2",
+        "tier": "TIER_2_SCHOLARLY",
+        "authority_weight": 0.95
+      }
+    ],
+    "verifiedAt": "2026-09-13T21:30:00+07:00",
+    "verifiedSource": "NotebookLM Deep Terroir Research - Phase 9"
+  },
+  "hu-tieu-sa-dec-chu-tu-gan-cho-phu-hung-ben-tre": {
+    "id": "hu-tieu-sa-dec-chu-tu-gan-cho-phu-hung-ben-tre",
+    "summary": "Quán hủ tiếu Sa Đéc gia truyền của Chú Tư gần chợ Phú Hưng, Bến Tre, sợi bánh dai trong sốt khô chua ngọt bí truyền từ năm 1996.",
+    "description": "Hủ tiếu Sa Đéc Chú Tư chinh phục thực khách bằng món hủ tiếu khô trộn nước xốt đặc chế. Sợi bánh hủ tiếu được trụng vừa tới dai giòn sần sật, trộn xốt tương đen gia truyền kết hợp gan heo bùi béo, tim cật giòn ngọt và một chén nước súp xương hầm riêng biệt thơm ngào ngạt.",
+    "hours": "06:00 - 11:00 sáng hàng ngày (thường hết chỗ ngồi lúc 07:30)",
+    "price_range": "35.000 - 50.000 đ/tô",
+    "best_time": "Buổi sáng 06:30 - 08:00 khi các đợt sốt trộn vừa nấu ấm nóng",
+    "culinary_secrets": "Nước sốt trộn khô được pha chế theo tỉ lệ bí mật giữa tương đen hột, giấm tiều lên men và mật mía tự nhiên tạo vị chua mặn ngọt hài hòa.",
+    "terroir_ingredients": "Sợi hủ tiếu bột gạo Sa Đéc chính hiệu, tim cật heo tươi chợ sớm Phú Hưng, tỏi phi tép mỡ thơm lừng.",
+    "cultural_notes": "Một điểm hẹn quen thuộc gắn liền với nhịp sống tiểu thương chợ Phú Hưng và người lao động khu vực ven đô thành phố Bến Tre.",
+    "visual_narrative": "Tô hủ tiếu khô bóng bẩy lớp sốt sẫm màu phủ đầy hành phi vàng ruộm, bên cạnh bát nước dùng bốc khói rực rỡ lát thịt xá xíu hồng hào.",
+    "aeo_schema_type": "Restaurant",
+    "source_citations": [
+      {
+        "source_id": "SRC-TIER1-UBND-BT-023",
+        "title": "Đánh giá an toàn thực phẩm các cơ sở kinh doanh dịch vụ ăn uống xã Phú Hưng",
+        "url": "https://tpbt.bentre.gov.vn/an-toan-thuc-pham/quan-an-phu-hung",
+        "author_or_institution": "Ủy ban Nhân dân thành phố Bến Tre",
+        "target_notebook": "ch-nh-s-ch-ph-p-lu-t-v-n-b-n-q",
+        "tier": "TIER_1_GOVERNMENT",
+        "authority_weight": 1.0
+      },
+      {
+        "source_id": "SRC-TIER2-BDK-025",
+        "title": "Quán hủ tiếu sáng chợ Phú Hưng níu chân người sành ẩm thực",
+        "url": "https://baodongkhoi.vn/doi-song/hu-tieu-chu-tu-phu-hung-84912.html",
+        "author_or_institution": "Báo Đồng Khởi",
+        "target_notebook": "mekong-360-t-p-2",
+        "tier": "TIER_2_SCHOLARLY",
+        "authority_weight": 0.95
+      }
+    ],
+    "verifiedAt": "2026-09-13T21:30:00+07:00",
+    "verifiedSource": "NotebookLM Deep Terroir Research - Phase 9"
+  },
+  "hu-tieu-pate-ben-tre": {
+    "id": "hu-tieu-pate-ben-tre",
+    "summary": "Độc sản ẩm thực sáng tạo của Bến Tre, kết hợp sợi hủ tiếu dai với chả pate thủ công làm từ thịt nạc và da heo giòn sần sật từ năm 2000.",
+    "description": "Hủ Tiếu Pate Bến Tre là món ăn độc nhất vô nhị chỉ có ở xứ sở dừa xiêm. Tên gọi pate ở đây thực chất là loại giò thủ đặc biệt làm từ thịt nạc heo, da heo, tiêu sọ và gia vị thảo mộc luộc ép chặt; khi xắt lát mỏng thả vào tô hủ tiếu nóng sẽ tươm vị béo giòn thơm lừng kích thích giác quan.",
+    "hours": "06:00 - 11:30 sáng và 16:00 - 21:00 tối",
+    "price_range": "35.000 - 55.000 đ/tô (có bán pate lát đóng cây mang về 180.000 đ/kg)",
+    "best_time": "Buổi sáng 07:00 - 08:30 sáng khi cây pate mới cắt lát đầu tiên tươi nguyên hương vị",
+    "culinary_secrets": "Cây chả pate được gói bằng lá chuối hột luộc chín trong 4 tiếng rồi ép tạ đá qua đêm để đạt độ giòn dai tự nhiên không hàn the.",
+    "terroir_ingredients": "Thịt heo nạc dăm, da heo làm sạch tỉ mỉ, hạt tiêu đen Phú Khánh, nấm mèo và lá chuối vườn.",
+    "cultural_notes": "Sáng tạo ẩm thực độc đáo của nghệ nhân xứ dừa, biến tấu món giò thủ truyền thống thành điểm nhấn đặc sắc cho tô hủ tiếu bình dân.",
+    "visual_narrative": "Những lát chả pate vân mỡ tròn đều xếp cạnh lát thịt bắp hoa trên nền sợi hủ tiếu trắng ngần, chan nước dùng ngọt thanh trong vắt.",
+    "aeo_schema_type": "Restaurant",
+    "source_citations": [
+      {
+        "source_id": "SRC-TIER1-SVHTTDL-BT-025",
+        "title": "Khám phá độc sản ẩm thực Bến Tre: Hủ tiếu pate độc sản riêng có vùng Nam Bộ",
+        "url": "https://dulichbentre.gov.vn/am-thuc/hu-tieu-pate-ben-tre",
+        "author_or_institution": "Trung tâm Xúc tiến Du lịch Bến Tre",
+        "target_notebook": "mekong-360-t-p-2",
+        "tier": "TIER_1_GOVERNMENT",
+        "authority_weight": 1.0
+      },
+      {
+        "source_id": "SRC-TIER2-ND-034",
+        "title": "Hủ tiếu pate: Món ăn lạ miệng mang đậm nét sáng tạo của người Bến Tre",
+        "url": "https://nhandan.vn/am-thuc/hu-tieu-pate-ben-tre-849210",
+        "author_or_institution": "Báo Nhân Dân",
+        "target_notebook": "mekong-360-t-p-2",
+        "tier": "TIER_2_SCHOLARLY",
+        "authority_weight": 0.95
+      }
+    ],
+    "verifiedAt": "2026-09-13T21:30:00+07:00",
+    "verifiedSource": "NotebookLM Deep Terroir Research - Phase 9"
+  },
+  "hu-tieu-soi-no-cong": {
+    "id": "hu-tieu-soi-no-cong",
+    "summary": "Làng nghề làm sợi hủ tiếu truyền thống Nô Công tại Trà Vinh, sản phẩm OCOP 3 sao với quy trình tráng bánh trấu thủ công trên phên tre từ năm 1990.",
+    "description": "Hủ tiếu sợi Nô Công giữ gìn nghề tráng bánh hủ tiếu bằng lò trấu truyền thống của đồng bào địa phương. Bột gạo ngâm nở xay cối đá được tráng mỏng trên nồi hơi, phơi trên phên tre đón nắng gió đồng bằng rồi cắt thành từng sợi đều tăm tắp, dai giòn tự nhiên không dùng hàn the hay chất tẩy trắng.",
+    "hours": "05:00 - 16:30 hàng ngày tại xưởng sản xuất và các quầy phân phối",
+    "price_range": "30.000 - 45.000 đ/kg sợi hủ tiếu tươi đóng gói OCOP",
+    "best_time": "Buổi sáng 08:00 - 11:00 lúc hàng trăm phên bánh hủ tiếu phơi trải dài trắng ngần dưới nắng sớm",
+    "culinary_secrets": "Bí quyết phơi bánh đến độ se mặt vừa phải trên phên tre để khi đưa vào máy cắt thủ công sợi hủ tiếu không bị dính bết hay gãy vụn.",
+    "terroir_ingredients": "Gạo thuần nông địa phương, nước giếng khơi trong lành và trấu đốt lò tự nhiên.",
+    "cultural_notes": "Làng nghề Nô Công gìn giữ việc làm và thu nhập ổn định cho hàng trăm lao động Khmer - Kinh, bảo tồn nét đẹp văn hóa nghề thủ công miệt vườn.",
+    "visual_narrative": "Khung cảnh sân phơi ngập tràn những phên bánh hủ tiếu trắng phau đón gió, người thợ thoăn thoắt xếp bánh cuộn từng bó sợi dẻo dai óng ả.",
+    "aeo_schema_type": "LocalBusiness",
+    "source_citations": [
+      {
+        "source_id": "SRC-TIER1-SNNPTNT-TV-012",
+        "title": "Chứng nhận sản phẩm làng nghề truyền thống: Hủ tiếu sợi Nô Công đạt chuẩn OCOP 3 sao",
+        "url": "https://snnptnt.travinh.gov.vn/ocop/hu-tieu-soi-no-cong",
+        "author_or_institution": "Sở Nông nghiệp và Phát triển Nông thôn Trà Vinh",
+        "target_notebook": "ch-nh-s-ch-ph-p-lu-t-v-n-b-n-q",
+        "tier": "TIER_1_GOVERNMENT",
+        "authority_weight": 1.0
+      },
+      {
+        "source_id": "SRC-TIER2-BTV-025",
+        "title": "Bền bỉ lò hủ tiếu Nô Công giữ lửa nghề truyền thống xứ Trà",
+        "url": "https://baotravinh.vn/lang-nghe/hu-tieu-no-cong-84920.html",
+        "author_or_institution": "Báo Trà Vinh",
+        "target_notebook": "mekong-360-t-p-2",
+        "tier": "TIER_2_SCHOLARLY",
+        "authority_weight": 0.95
+      }
+    ],
+    "verifiedAt": "2026-09-13T21:30:00+07:00",
+    "verifiedSource": "NotebookLM Deep Terroir Research - Phase 9"
+  },
+  "hu-tieu-xi-quach-a-linh-tra-vinh": {
+    "id": "hu-tieu-xi-quach-a-linh-tra-vinh",
+    "summary": "Quán hủ tiếu xí quách Quảng Đông danh tiếng tại đường Lê Lợi, TP. Trà Vinh, nổi bật với khúc xương ống hầm mềm rục tủy béo ngọt từ năm 2004.",
+    "description": "Hủ Tiếu Xí Quách A Linh là điểm hẹn không thể bỏ qua của người mê món xương hầm đậm chất Hoa kiều. Mỗi tô hủ tiếu dọn ra kèm một đĩa xí quách lớn ngập thịt gân mềm nhừ, tủy xương ngọt lịm chấm muối tiêu chanh hoặc tương ớt sa tế cay xé lưỡi, nước dùng ninh từ xương tủy đậm đà khó cưỡng.",
+    "hours": "16:00 - 23:00 hàng ngày (chuyên phục vụ ăn tối và ăn đêm)",
+    "price_range": "40.000 - 70.000 đ/tô (tô đặc biệt kèm đĩa xí quách khủng 75.000 đ)",
+    "best_time": "Buổi tối từ 18:30 đến 21:00 thưởng thức khúc xí quách nóng hổi giữa tiết trời se lạnh",
+    "culinary_secrets": "Hầm xương ống liên tục 8 tiếng với gừng củ nướng và hoa hồi trên lửa than để tủy xương tan chảy tạo độ ngọt ngào tự nhiên cho nước súp.",
+    "terroir_ingredients": "Xương ống heo tươi nhập lò sớm, gia vị thảo mộc Triều Châu, tiêu đen xay nhỏ và hành hoa tươi.",
+    "cultural_notes": "Dấu ấn rõ nét của cộng đồng người Hoa Trà Vinh trong việc dung nạp và phát triển ẩm thực đường phố về đêm tại các đô thị Nam Bộ.",
+    "visual_narrative": "Đĩa xí quách đồ sộ nghi ngút khói với khúc xương lớn đầy ắp thịt gân mọng nước, thực khách thích thú dùng ống hút hút cạn dòng tủy xương béo ngậy.",
+    "aeo_schema_type": "Restaurant",
+    "source_citations": [
+      {
+        "source_id": "SRC-TIER1-SVHTTDL-TV-039",
+        "title": "Ẩm thực phố đi bộ và chợ đêm thành phố Trà Vinh: Điểm đến ẩm thực A Linh",
+        "url": "https://dulichtravinh.com.vn/am-thuc-dem/hu-tieu-xi-quach-a-linh",
+        "author_or_institution": "Trung tâm Thông tin Xúc tiến Du lịch Trà Vinh",
+        "target_notebook": "mekong-360-t-p-2",
+        "tier": "TIER_1_GOVERNMENT",
+        "authority_weight": 1.0
+      },
+      {
+        "source_id": "SRC-TIER2-THVL-046",
+        "title": "Đêm Trà Vinh ấm nồng với tô hủ tiếu xí quách gia truyền A Linh",
+        "url": "https://thvl.vn/am-thuc/hu-tieu-xi-quach-tra-vinh",
+        "author_or_institution": "Đài Phát thanh và Truyền hình Vĩnh Long",
+        "target_notebook": "mekong-360-t-p-2",
+        "tier": "TIER_2_SCHOLARLY",
+        "authority_weight": 0.95
+      }
+    ],
+    "verifiedAt": "2026-09-13T21:30:00+07:00",
+    "verifiedSource": "NotebookLM Deep Terroir Research - Phase 9"
+  },
+  "quan-hu-tieu-nguoi-hoa-khu-phuong-1-tra-vinh": {
+    "id": "quan-hu-tieu-nguoi-hoa-khu-phuong-1-tra-vinh",
+    "summary": "Không gian ẩm thực di sản gốc Triều Châu tại khu phố người Hoa, đường Lê Lợi, Phường 1, TP. Trà Vinh, gìn giữ xe hủ tiếu gõ thùng gỗ hơn 60 năm qua.",
+    "description": "Quán hủ tiếu người Hoa khu Phường 1 được ví như bảo tàng sống về văn hóa ẩm thực gốc Phúc Kiến - Triều Châu. Chiếc xe hủ tiếu gỗ mun cổ kính chạm khắc tích xưa, nồi nước lèo thơm ngào ngạt mùi tôm khô, xương hầm và xá xíu đỏ au, ăn cùng hoành thánh nhân tôm tươi gói tay khéo léo.",
+    "hours": "06:00 - 11:00 sáng và 16:30 - 21:30 tối",
+    "price_range": "35.000 - 55.000 đ/tô",
+    "best_time": "Sáng sớm 06:30 - 08:00 ngồi ngắm nhịp sống phố cổ người Hoa Trà Vinh thức giấc",
+    "culinary_secrets": "Bí quyết tráng vỏ hoành thánh siêu mỏng vàng ươm từ trứng gà ta và nước tro dừa, nhân thịt quết nhuyễn với tôm biển tạo độ giòn sần sật.",
+    "terroir_ingredients": "Tôm đất bến cá Trà Vinh, thịt nạc heo quết dẻo, sợi mì trứng tươi kéo sợi thủ công và cải ngọt non.",
+    "cultural_notes": "Lưu giữ ký ức di cư và cộng cư hơn ba thế kỷ của người Hoa tại khu phố chợ cổ Phường 1, làm phong phú diện mạo đa sắc tộc Trà Vinh.",
+    "visual_narrative": "Ánh đèn vàng ấm áp hắt lên chiếc xe hủ tiếu gỗ mun bóng nước sơn cổ điển, ông chủ người Hoa thoăn thoắt trụng vợt mì tung lên không trung điệu nghệ.",
+    "aeo_schema_type": "Restaurant",
+    "source_citations": [
+      {
+        "source_id": "SRC-TIER1-SVHTTDL-TV-040",
+        "title": "Bảo tồn giá trị kiến trúc và ẩm thực khu phố cổ người Hoa thành phố Trà Vinh",
+        "url": "https://svhttdl.travinh.gov.vn/di-san-do-thi/pho-nguoi-hoa-tra-vinh",
+        "author_or_institution": "Sở Văn hóa Thể thao và Du lịch Trà Vinh",
+        "target_notebook": "v-nh-long-v-nh-long-b-n-tre-tr",
+        "tier": "TIER_1_GOVERNMENT",
+        "authority_weight": 1.0
+      },
+      {
+        "source_id": "SRC-TIER2-ND-035",
+        "title": "Dấu ấn văn hóa ẩm thực Triều Châu bên dòng sông Long Bình",
+        "url": "https://nhandan.vn/van-hoa/am-thuc-trieu-chau-tra-vinh-839210",
+        "author_or_institution": "Báo Nhân Dân",
+        "target_notebook": "mekong-360-t-p-2",
+        "tier": "TIER_2_SCHOLARLY",
+        "authority_weight": 0.95
+      }
+    ],
+    "verifiedAt": "2026-09-13T21:30:00+07:00",
+    "verifiedSource": "NotebookLM Deep Terroir Research - Phase 9"
+  },
+  "chao-am-tra-vinh": {
+    "id": "chao-am-tra-vinh",
+    "summary": "Món cháo di sản dân gian trứ danh của Trà Vinh từ thế kỷ XIX, nấu từ cá lóc đồng xào nghệ, tôm khô đập dập và trứng cá vàng ươm ăn kèm rau đắng đất.",
+    "description": "Cháo Ám Trà Vinh là món ăn cầu kỳ bậc nhất trong kho tàng ẩm thực đồng quê phương Nam. Tên gọi 'cháo ám' bắt nguồn từ tích người con dâu nấu món cháo cá lóc ngon đến mức mẹ chồng khó tính cũng phải tấm tắc khen ngợi. Nồi cháo nấu bằng gạo mùa rang thơm, cá lóc đồng luộc gỡ thịt xào hành nghệ, ăn cùng chén mắm tôm nguyên chất dầm ớt hiểm và đĩa rau đắng tươi non.",
+    "hours": "06:00 - 18:00 hàng ngày tại các quán ẩm thực truyền thống Trà Vinh",
+    "price_range": "25.000 - 45.000 đ/tô",
+    "best_time": "Buổi sáng sớm hoặc chiều mưa rỉ rả khi thưởng thức tô cháo nóng hổi giải cảm ấm bụng",
+    "culinary_secrets": "Gạo được rang vàng trên chảo gang trước khi nấu để hạt cháo nở hoa không bị nát nhừ, nước luộc cá dùng nấu cháo tạo vị ngọt đậm sâu.",
+    "terroir_ingredients": "Cá lóc đồng ruộng lúa, trứng cá lóc bùi ngậy, nghệ củ tươi, rau đắng đất mọc bờ ruộng và bắp chuối ghém.",
+    "cultural_notes": "Chứa đựng giá trị nhân văn sâu sắc về đạo hiếu thảo và sự hòa hợp gia đình trong văn hóa làng xã Nam Bộ xưa.",
+    "visual_narrative": "Tô cháo bốc khói màu vàng óng của nghệ tươi, từng miếng thịt cá lóc trắng ngần điểm trứng cá vàng ruộm rắc tiêu đen thơm nồng nàn.",
+    "aeo_schema_type": "FoodEstablishment",
+    "source_citations": [
+      {
+        "source_id": "SRC-TIER1-SVHTTDL-TV-041",
+        "title": "Kho tàng di sản ẩm thực dân gian: Sự tích và nghệ thuật nấu cháo ám Trà Vinh",
+        "url": "https://dulichtravinh.com.vn/di-san-am-thuc/chao-am-tra-vinh",
+        "author_or_institution": "Trung tâm Thông tin Xúc tiến Du lịch Trà Vinh",
+        "target_notebook": "mekong-360-t-p-2",
+        "tier": "TIER_1_GOVERNMENT",
+        "authority_weight": 1.0
+      },
+      {
+        "source_id": "SRC-TIER2-VASS-024",
+        "title": "Ý nghĩa biểu trưng và tích xưa trong văn hóa ẩm thực dân gian Nam Bộ",
+        "url": "https://vass.gov.vn/van-hoa-dan-gian/chao-am-nam-bo",
+        "author_or_institution": "Viện Hàn lâm Khoa học Xã hội Việt Nam",
+        "target_notebook": "mekong-360-t-p-2",
+        "tier": "TIER_2_SCHOLARLY",
+        "authority_weight": 0.95
+      }
+    ],
+    "verifiedAt": "2026-09-13T21:30:00+07:00",
+    "verifiedSource": "NotebookLM Deep Terroir Research - Phase 9"
+  },
+  "chao-am-ba-nam-tra-vinh": {
+    "id": "chao-am-ba-nam-tra-vinh",
+    "summary": "Quán cháo ám gia truyền của Bà Năm tại số 56 Lê Lợi, Phường 1, TP. Trà Vinh, gìn giữ công thức nấu cháo ám cá lóc đồng chuẩn vị hơn 50 năm qua.",
+    "description": "Cháo Ám Bà Năm là địa chỉ đỏ của những ai muốn thưởng thức hương vị cháo ám nguyên bản nhất xứ Trà. Bà Năm đích thân lựa từng con cá lóc đồng tươi sống, thịt cá được gỡ bỏ hết xương dăm xào săn cùng hành tỏi phi và nghệ củ, rắc thêm chút hành phi giòn tan và tiêu sọ thơm lừng.",
+    "hours": "06:00 - 11:30 sáng hàng ngày",
+    "price_range": "30.000 - 45.000 đ/tô",
+    "best_time": "Buổi sáng 06:30 - 08:00 khi mẻ cháo gạo rang đầu tiên vừa chín tới thơm ngào ngạt",
+    "culinary_secrets": "Gỡ sạch hoàn toàn xương dăm bằng nhíp thủ công, phần đầu và lòng cá lóc được giữ nguyên độ giòn béo phục vụ cho thực khách sành ăn.",
+    "terroir_ingredients": "Cá lóc đồng sông Long Bình, gạo lúa mùa rang vàng, nghệ tươi Ba Se và đọt rau đắng non tơ.",
+    "cultural_notes": "Quán ăn gia đình tiêu biểu lưu giữ nét văn hóa ẩm thực truyền thống qua ba thế hệ mẹ truyền con nối tại nội ô Trà Vinh.",
+    "visual_narrative": "Nụ cười đôn hậu của bà cụ tóc bạc bên nồi cháo gang sôi lục bục, múc từng muôi cháo đặc sánh vàng ươm vào tô sứ cổ xưa.",
+    "aeo_schema_type": "Restaurant",
+    "source_citations": [
+      {
+        "source_id": "SRC-TIER1-SVHTTDL-TV-042",
+        "title": "Khảo sát và ghi danh nghệ nhân ẩm thực dân gian thành phố Trà Vinh",
+        "url": "https://svhttdl.travinh.gov.vn/nghe-nhan/chao-am-ba-nam-tra-vinh",
+        "author_or_institution": "Sở Văn hóa Thể thao và Du lịch Trà Vinh",
+        "target_notebook": "mekong-360-t-p-2",
+        "tier": "TIER_1_GOVERNMENT",
+        "authority_weight": 1.0
+      },
+      {
+        "source_id": "SRC-TIER2-BTV-026",
+        "title": "Nửa thế kỷ giữ hồn tô cháo ám truyền thống nơi góc phố Lê Lợi",
+        "url": "https://baotravinh.vn/doi-song/chao-am-ba-nam-tra-vinh-84910.html",
+        "author_or_institution": "Báo Trà Vinh",
+        "target_notebook": "mekong-360-t-p-2",
+        "tier": "TIER_2_SCHOLARLY",
+        "authority_weight": 0.95
+      }
+    ],
+    "verifiedAt": "2026-09-13T21:30:00+07:00",
+    "verifiedSource": "NotebookLM Deep Terroir Research - Phase 9"
+  },
+  "chao-am-cho-chau-thanh-tra-vinh": {
+    "id": "chao-am-cho-chau-thanh-tra-vinh",
+    "summary": "Quán cháo ám dân dã trong khu ẩm thực chợ Châu Thành, phục vụ bà con tiểu thương và khách đi đường tô cháo cá lóc nóng hổi từ năm 1992.",
+    "description": "Cháo Ám chợ Châu Thành mang đậm chất ẩm thực chợ quê mộc mạc và chân thành. Tô cháo đầy ắp thịt cá lóc đồng xào nghệ, chan chút mắm tôm pha chanh tỏi ớt sủi bọt trắng, nhúng nắm rau đắng đất tươi rói vào làn cháo nóng bốc hơi nghi ngút, tạo nên trải nghiệm ẩm thực ấm áp.",
+    "hours": "05:30 - 10:30 sáng hàng ngày",
+    "price_range": "20.000 - 30.000 đ/tô",
+    "best_time": "Sáng sớm 06:00 - 07:30 cảm nhận trọn vẹn nhịp sống chợ phiên nông thôn thanh bình",
+    "culinary_secrets": "Mắm tôm nguyên chất được dầm cùng ớt hiểm chín cây và nước cốt chanh tươi sủi bọt, tạo độ thơm nồng tương phản hoàn hảo với vị ngọt thanh của cháo cá.",
+    "terroir_ingredients": "Cá lóc đồng bắt từ ruộng lúa Châu Thành, gạo mùa xay vỡ, mắm tôm vùng biển Duyên Hải và rau đắng đất ruộng.",
+    "cultural_notes": "Nơi hội tụ nếp sinh hoạt cộng đồng ấm áp của cư dân ngoại thành Trà Vinh, nơi câu chuyện xóm làng bắt đầu bên tô cháo sáng.",
+    "visual_narrative": "Tô cháo cá bốc khói ngập tràn sắc vàng của nghệ và màu xanh non của đọt rau đắng đất, thực khách xuýt xoa vừa thổi vừa ăn giữa sương sớm miệt vườn.",
+    "aeo_schema_type": "FoodEstablishment",
+    "source_citations": [
+      {
+        "source_id": "SRC-TIER1-UBND-TV-013",
+        "title": "Chương trình phát triển chợ nông thôn gắn với văn hóa ẩm thực huyện Châu Thành",
+        "url": "https://chauthanh.travinh.gov.vn/kinh-te/am-thuc-cho-chau-thanh",
+        "author_or_institution": "Ủy ban Nhân dân huyện Châu Thành",
+        "target_notebook": "ch-nh-s-ch-ph-p-lu-t-v-n-b-n-q",
+        "tier": "TIER_1_GOVERNMENT",
+        "authority_weight": 1.0
+      },
+      {
+        "source_id": "SRC-TIER2-BTV-027",
+        "title": "Thưởng thức cháo ám chợ quê Châu Thành đượm tình đồng bãi",
+        "url": "https://baotravinh.vn/van-hoa/chao-am-cho-chau-thanh-84912.html",
+        "author_or_institution": "Báo Trà Vinh",
+        "target_notebook": "mekong-360-t-p-2",
+        "tier": "TIER_2_SCHOLARLY",
+        "authority_weight": 0.95
+      }
+    ],
+    "verifiedAt": "2026-09-13T21:30:00+07:00",
+    "verifiedSource": "NotebookLM Deep Terroir Research - Phase 9"
+  },
+  "ca-chay-tra-on": {
+    "id": "ca-chay-tra-on",
+    "summary": "Sản vật thủy sản quý hiếm của vùng hợp lưu sông Hậu và sông Mang Thít tại Trà Ôn, Vĩnh Long, nổi danh với thịt thơm ngọt và cặp trứng bùi ngậy vào mùa gió chướng.",
+    "description": "Cá cháy Trà Ôn là sản vật thổ nhưỡng độc nhất vô nhị của dòng sông Hậu đoạn qua xã Tích Thiện. Loài cá chỉ xuất hiện từ tháng chạp đến tháng tư âm lịch khi nước lợ dâng cao, thân dẹp vảy trắng bạc lấp lánh; thịt cá ngọt lịm pha chút béo thanh tao, chế biến thành ba món đỉnh cao: nấu canh chua bần, nướng trui và kho rim rục xương.",
+    "hours": "Phục vụ theo mùa đánh bắt (cao điểm từ tháng 12 đến tháng 4 âm lịch hàng năm)",
+    "price_range": "200.000 - 450.000 đ/kg cá cháy tươi sống tùy kích cỡ và trứng",
+    "best_time": "Mùa gió chướng từ tháng giêng đến tháng ba âm lịch khi cá cháy ôm trọn cặp trứng vàng rực",
+    "culinary_secrets": "Nấu canh chua cá cháy dứt khoát phải dùng trái bần chín cây ven sông Hậu để vị chua thanh dịu làm tôn bật vị béo ngọt của thịt cá.",
+    "terroir_ingredients": "Cá cháy nước lợ hợp lưu sông Hậu, trái bần chín cây sông Mang Thít, bông điên điển và ngò om miệt vườn.",
+    "cultural_notes": "Sản vật tiến vua thuở xưa của đất phương Nam, gắn liền với câu ca dao 'Trà Ôn cá cháy đậm đà / Bần chua nấu chín nhớ nhà khôn nguôi'.",
+    "visual_narrative": "Tô canh chua cá cháy nghi ngút khói nổi bật với những lát cá trắng bạc ôm cặp trứng vàng ươm, nước canh chua bần sóng sánh điểm bông điên điển vàng rực.",
+    "aeo_schema_type": "LocalBusiness",
+    "source_citations": [
+      {
+        "source_id": "SRC-TIER1-SNNPTNT-VL-011",
+        "title": "Bảo tồn và khai thác bền vững nguồn lợi thủy sản đặc sản cá cháy Trà Ôn",
+        "url": "https://snnptnt.vinhlong.gov.vn/thuy-san/ca-chay-tra-on",
+        "author_or_institution": "Sở Nông nghiệp và Phát triển Nông thôn Vĩnh Long",
+        "target_notebook": "ch-nh-s-ch-ph-p-lu-t-v-n-b-n-q",
+        "tier": "TIER_1_GOVERNMENT",
+        "authority_weight": 1.0
+      },
+      {
+        "source_id": "SRC-TIER2-THVL-047",
+        "title": "Huyền tích cá cháy sông Hậu: Món quà quý của mùa gió chướng Trà Ôn",
+        "url": "https://thvl.vn/am-thuc/ca-chay-tra-on-vinh-long",
+        "author_or_institution": "Đài Phát thanh và Truyền hình Vĩnh Long",
+        "target_notebook": "mekong-360-t-p-2",
+        "tier": "TIER_2_SCHOLARLY",
+        "authority_weight": 0.95
+      }
+    ],
+    "verifiedAt": "2026-09-13T21:30:00+07:00",
+    "verifiedSource": "NotebookLM Deep Terroir Research - Phase 9"
+  },
+  "ca-chay-song-hau": {
+    "id": "ca-chay-song-hau",
+    "summary": "Món ngon thủy sản tự nhiên của dòng sông Hậu chảy qua vùng đất Vĩnh Long, nổi bật với hương vị béo ngọt độc đáo giao hòa giữa nước ngọt và nước lợ.",
+    "description": "Cá cháy sông Hậu sống ở vùng biển sâu nhưng ngược dòng nước lợ về sông Hậu đẻ trứng mỗi mùa xuân. Thịt cá mềm mại, ngọt nước tự nhiên và giàu dưỡng chất, là món ăn chiêu đãi khách quý bậc nhất của người dân các cù lao ven sông Hậu thuộc huyện Trà Ôn.",
+    "hours": "10:00 - 21:00 hàng ngày tại các nhà hàng ven sông mùa thu hoạch cá",
+    "price_range": "150.000 - 300.000 đ/phần ăn cho 2-4 người",
+    "best_time": "Tháng 1 đến tháng 3 dương lịch vào mùa cá cháy ngược dòng sinh sản",
+    "culinary_secrets": "Cá cháy nhiều xương dăm nên khi nướng trui phải khía xéo thật dày thân cá và nướng đều lửa than để xương cá giòn rụm dễ ăn.",
+    "terroir_ingredients": "Cá cháy tự nhiên sông Hậu, than đước nướng cá, muối ớt hột giã cay xè và rau đọt cóc non.",
+    "cultural_notes": "Tượng trưng cho sự hào sảng và kỳ diệu của thiên nhiên châu thổ Cửu Long ban tặng cho vùng hợp lưu sông rạch trù phú.",
+    "visual_narrative": "Con cá cháy nướng than rơm vàng ruộm tỏa khói thơm ngào ngạt, thớ thịt trắng ngần tươm mỡ béo ngậy chấm vào chén muối ớt đỏ au.",
+    "aeo_schema_type": "FoodEstablishment",
+    "source_citations": [
+      {
+        "source_id": "SRC-TIER1-SVHTTDL-VL-024",
+        "title": "Ẩm thực sông nước Vĩnh Long: Độc đáo sản vật cá cháy mùa xuân",
+        "url": "https://dulichvinhlong.gov.vn/am-thuc/ca-chay-song-hau",
+        "author_or_institution": "Trung tâm Thông tin Xúc tiến Du lịch Vĩnh Long",
+        "target_notebook": "v-nh-long-v-nh-long-b-n-tre-tr",
+        "tier": "TIER_1_GOVERNMENT",
+        "authority_weight": 1.0
+      },
+      {
+        "source_id": "SRC-TIER2-ND-036",
+        "title": "Về Trà Ôn thưởng thức cá cháy sông Hậu mùa xuân sang",
+        "url": "https://nhandan.vn/am-thuc/ca-chay-song-hau-tra-on-83921",
+        "author_or_institution": "Báo Nhân Dân",
+        "target_notebook": "mekong-360-t-p-2",
+        "tier": "TIER_2_SCHOLARLY",
+        "authority_weight": 0.95
+      }
+    ],
+    "verifiedAt": "2026-09-13T21:30:00+07:00",
+    "verifiedSource": "NotebookLM Deep Terroir Research - Phase 9"
+  },
+  "ca-chay-tra-on-rim-kho": {
+    "id": "ca-chay-tra-on-rim-kho",
+    "summary": "Món ăn ẩm thực truyền thống rục xương kỳ công của huyện Trà Ôn, kho rim cá cháy trong nồi đất với nước mía và nước dừa xiêm suốt 8 tiếng lửa than.",
+    "description": "Cá cháy Trà Ôn rim/kho là giải pháp chế biến đỉnh cao khắc phục đặc điểm nhiều xương dăm của loài cá quý. Cá được ướp nước mắm nhĩ, đường thốt nốt, hạt tiêu và riềng lát, xếp vào ơ đất lót mía cây rồi châm nước dừa xiêm ninh nhỏ lửa ròng rã suốt 8 đến 10 tiếng cho đến khi xương cá mềm rục như bột mà thịt vẫn săn chắc đậm đà.",
+    "hours": "Phục vụ theo đơn đặt hàng trước tại các homestay và nhà hàng ẩm thực Trà Ôn",
+    "price_range": "180.000 - 350.000 đ/nồi đất kho rim (dành cho 3-5 người ăn)",
+    "best_time": "Bữa cơm trưa hoặc chiều ấm cúng bên mâm cơm gia đình miệt vườn",
+    "culinary_secrets": "Lót mía cây chẻ mỏng dưới đáy nồi đất vừa chống khét vừa tạo vị ngọt thanh dịu ngấm sâu vào từng thớ thịt cá cháy.",
+    "terroir_ingredients": "Cá cháy Tích Thiện, nước dừa xiêm tươi, mía lau ngọt mát, nước mắm nhĩ gia truyền và tiêu đen sọ.",
+    "cultural_notes": "Kỹ thuật kho rục xương bằng nồi đất thể hiện tri thức dân gian đúc kết hàng trăm năm của cư dân miệt vườn sông Tiền, sông Hậu.",
+    "visual_narrative": "Nồi đất cá cháy kho rim màu cánh gián óng ả, nước sốt sền sệt sôi tăm tắp tỏa hương thơm nồng nàn của tiêu sọ và nước dừa cô đặc.",
+    "aeo_schema_type": "FoodEstablishment",
+    "source_citations": [
+      {
+        "source_id": "SRC-TIER1-SVHTTDL-VL-025",
+        "title": "Bảo tồn tri thức dân gian trong nghệ thuật chế biến ẩm thực truyền thống Vĩnh Long",
+        "url": "https://svhttdl.vinhlong.gov.vn/tri-thuc-dan-gian/ca-chay-kho-rim",
+        "author_or_institution": "Sở Văn hóa Thể thao và Du lịch Vĩnh Long",
+        "target_notebook": "v-nh-long-v-nh-long-b-n-tre-tr",
+        "tier": "TIER_1_GOVERNMENT",
+        "authority_weight": 1.0
+      },
+      {
+        "source_id": "SRC-TIER2-THVL-048",
+        "title": "Đậm đà ơ cá cháy kho rục xương nức tiếng đất Trà Ôn",
+        "url": "https://thvl.vn/am-thuc/ca-chay-kho-ruc-tra-on",
+        "author_or_institution": "Đài Phát thanh và Truyền hình Vĩnh Long",
+        "target_notebook": "mekong-360-t-p-2",
+        "tier": "TIER_2_SCHOLARLY",
+        "authority_weight": 0.95
+      }
+    ],
+    "verifiedAt": "2026-09-13T21:30:00+07:00",
+    "verifiedSource": "NotebookLM Deep Terroir Research - Phase 9"
+  },
+  "bun-mam-vinh-long": {
+    "id": "bun-mam-vinh-long",
+    "summary": "Món bún mắm đồng bằng sông Cửu Long đậm đà tại Vĩnh Long, nấu từ mắm cá linh và cá sặc đồng hòa quyện nước dừa tươi ăn kèm tôm càng sông Cổ Chiên.",
+    "description": "Bún mắm Vĩnh Long mang hương vị nồng nàn quyến rũ đặc trưng của châu thổ trù phú. Nồi nước lèo là sự phối trộn tinh tế giữa mắm cá linh ủ men tự nhiên và mắm cá sặc thơm lừng lọc kỹ, nấu cùng sả băm, cà tím và nấm rơm. Tô bún đầy đặn tôm càng xanh, mực tươi, thịt heo quay bì giòn và đĩa rau đồng hơn mười loại tươi non.",
+    "hours": "07:00 - 21:00 hàng ngày",
+    "price_range": "35.000 - 55.000 đ/tô (tô đặc biệt tôm càng xanh 60.000 đ/tô)",
+    "best_time": "Buổi trưa từ 11:30 đến 13:00 hoặc buổi tối mát trời từ 18:00 đến 20:00",
+    "culinary_secrets": "Thả từng nhánh sả đập dập và cọng sả phi vào nồi nước lèo ngay lúc sôi để khử mùi gắt của mắm, giữ lại vị ngọt hậu đằm thắm.",
+    "terroir_ingredients": "Mắm cá linh mùa nước nổi, tôm càng sông Cổ Chiên, cà tím vườn nhà, bông súng ma và rau đắng đồng.",
+    "cultural_notes": "Bản giao hưởng ẩm thực phương Nam quy tụ trọn vẹn sản vật đất và nước của vùng châu thổ chín rồng màu mỡ.",
+    "visual_narrative": "Tô bún mắm màu nâu óng ả điểm xuyết sắc đỏ tươi của tôm càng, màu tím mọng của cà tím và màu vàng giòn của thịt heo quay bên rổ rau sống ngập tràn.",
+    "aeo_schema_type": "Restaurant",
+    "source_citations": [
+      {
+        "source_id": "SRC-TIER1-SVHTTDL-VL-026",
+        "title": "Ẩm thực sông nước Vĩnh Long: Hương vị bún mắm đồng bằng sông Cửu Long",
+        "url": "https://dulichvinhlong.gov.vn/am-thuc/bun-mam-vinh-long",
+        "author_or_institution": "Trung tâm Thông tin Xúc tiến Du lịch Vĩnh Long",
+        "target_notebook": "v-nh-long-v-nh-long-b-n-tre-tr",
+        "tier": "TIER_1_GOVERNMENT",
+        "authority_weight": 1.0
+      },
+      {
+        "source_id": "SRC-TIER2-THVL-049",
+        "title": "Nồng nàn hương vị bún mắm đất Vĩnh: Đậm đà bản sắc phù sa hơn 50 năm",
+        "url": "https://thvl.vn/am-thuc/bun-mam-dat-vinh",
+        "author_or_institution": "Đài Phát thanh và Truyền hình Vĩnh Long",
+        "target_notebook": "mekong-360-t-p-2",
+        "tier": "TIER_2_SCHOLARLY",
+        "authority_weight": 0.95
+      }
+    ],
+    "verifiedAt": "2026-09-13T21:30:00+07:00",
+    "verifiedSource": "NotebookLM Deep Terroir Research - Phase 9"
+  },
+  "chuoi-nuong-gia-truyen": {
+    "id": "chuoi-nuong-gia-truyen",
+    "summary": "Quán chuối nếp nướng than hồng gia truyền tại TP. Vĩnh Long từ năm 1990, nếp giòn vỏ dẻo lòng chan nước cốt dừa béo ngậy rắc mỡ hành thơm phức.",
+    "description": "Chuối Nướng Gia Truyền là món quà vặt đường phố quyến rũ bao thế hệ người dân Vĩnh Long. Trái chuối xiêm chín muồi được bọc một lớp xôi nếp dẻo trộn nước cốt dừa, quấn bên ngoài lớp lá chuối tươi rồi nướng từ từ trên vỉ than củi đượm; khi chín vỏ nếp vàng rộm giòn tan, chan nước cốt dừa nấu bột báng và mỡ hành lá thơm ngậy.",
+    "hours": "13:00 - 18:30 chiều hàng ngày (thường bán hết sớm vào những ngày se lạnh)",
+    "price_range": "10.000 - 15.000 đ/phần (gồm 1 trái chuối nướng cắt khoanh chan ngập nước cốt dừa)",
+    "best_time": "Khung giờ 15:00 - 17:00 chiều lúc vỉ chuối nướng đang xèo xèo thơm nức cả góc phố",
+    "culinary_secrets": "Xôi nếp bọc chuối phải đồ vừa chín tới với nước cốt dừa đậm đặc để khi nướng than vỏ ngoài giòn rụm mà bên trong nếp vẫn giữ độ dẻo mềm.",
+    "terroir_ingredients": "Chuối xiêm chín bói vườn cù lao An Bình, nếp sáp dẻo, nước cốt dừa khô tươi nạo và hành lá non.",
+    "cultural_notes": "Món ăn vặt đường phố bình dị từng được vinh danh trong danh sách các món tráng miệng hấp dẫn bậc nhất hành tinh.",
+    "visual_narrative": "Trên vỉ than hồng đỏ lửa, những trái chuối bọc nếp cháy xém lá chuối tỏa khói ngào ngạt, người bán nhanh tay cắt khoanh chan muôi nước cốt dừa trắng muốt sánh mịn.",
+    "aeo_schema_type": "FoodEstablishment",
+    "source_citations": [
+      {
+        "source_id": "SRC-TIER1-SVHTTDL-VL-027",
+        "title": "Ẩm thực đường phố Vĩnh Long: Sức hút của món chuối nếp nướng dân dã",
+        "url": "https://dulichvinhlong.gov.vn/am-thuc/chuoi-nuong-vinh-long",
+        "author_or_institution": "Trung tâm Thông tin Xúc tiến Du lịch Vĩnh Long",
+        "target_notebook": "v-nh-long-v-nh-long-b-n-tre-tr",
+        "tier": "TIER_1_GOVERNMENT",
+        "authority_weight": 1.0
+      },
+      {
+        "source_id": "SRC-TIER2-THVL-050",
+        "title": "Món quà vặt tuổi thơ: Hương vị chuối nếp nướng than hồng đất Vĩnh",
+        "url": "https://thvl.vn/doi-song/chuoi-nep-nuong-vinh-long",
+        "author_or_institution": "Đài Phát thanh và Truyền hình Vĩnh Long",
+        "target_notebook": "mekong-360-t-p-2",
+        "tier": "TIER_2_SCHOLARLY",
+        "authority_weight": 0.95
+      }
+    ],
+    "verifiedAt": "2026-09-13T21:30:00+07:00",
+    "verifiedSource": "NotebookLM Deep Terroir Research - Phase 9"
+  },
+  "chuoi-dap-nuoc-cot-dua": {
+    "id": "chuoi-dap-nuoc-cot-dua",
+    "summary": "Món ăn vặt đường phố độc đáo của Bến Tre, chuối xiêm xanh đập dẹp nướng than giòn chan nước cốt dừa đặc quánh ngậy béo từ năm 1995.",
+    "description": "Chuối Đập Nước Cốt Dừa là món ăn vặt mộc mạc biểu trưng cho lối sống thanh tao của người dân xứ dừa. Trái chuối xiêm hườm vừa chín tới được lột vỏ nướng sơ, cho vào bao đập dẹp rồi nướng lại trên than hồng cho săn giòn hai mặt, chấm ngập trong chén nước cốt dừa nấu hành lá ngọt mặn bùi béo.",
+    "hours": "14:00 - 19:00 chiều hàng ngày dọc bờ hồ Trúc Giang và các cổng trường học Bến Tre",
+    "price_range": "10.000 - 15.000 đ/dĩa (gồm 3-4 miếng chuối đập nướng nóng)",
+    "best_time": "Buổi xế chiều 16:00 - 17:30 khi gió mát thổi qua rặng dừa và đĩa chuối vừa nướng xong giòn rụm",
+    "culinary_secrets": "Chuối phải chọn đúng loại chuối xiêm chín hườm vỏ còn hơi xanh để nướng lên có độ dẻo chua nhẹ tự nhiên, không bị nhũn nát.",
+    "terroir_ingredients": "Chuối xiêm vườn dừa Bến Tre, nước cốt dừa nạo già, đường cát vàng, hành lá tươi và mè rang.",
+    "cultural_notes": "Ký ức ngọt ngào gắn bó với tuổi học trò của bao thế hệ thanh thiếu niên xứ dừa Đồng Khởi.",
+    "visual_narrative": "Bếp than củi nhỏ ven vỉa hè bập bùng lửa đỏ, từng miếng chuối nướng vàng ươm thơm lừng rưới đẫm lớp nước cốt dừa bóng bẩy rắc hành xanh mướt.",
+    "aeo_schema_type": "FoodEstablishment",
+    "source_citations": [
+      {
+        "source_id": "SRC-TIER1-SVHTTDL-BT-026",
+        "title": "Ẩm thực đường phố xứ dừa: Món chuối đập nước cốt dừa thơm nồng ký ức",
+        "url": "https://dulichbentre.gov.vn/am-thuc/chuoi-dap-nuoc-cot-dua",
+        "author_or_institution": "Trung tâm Xúc tiến Du lịch Bến Tre",
+        "target_notebook": "mekong-360-t-p-2",
+        "tier": "TIER_1_GOVERNMENT",
+        "authority_weight": 1.0
+      },
+      {
+        "source_id": "SRC-TIER2-BDK-026",
+        "title": "Chuối đập nước cốt dừa: Món quà chiều mộc mạc làm say lòng người",
+        "url": "https://baodongkhoi.vn/van-hoa/chuoi-dap-nuoc-cot-dua-ben-tre-84920.html",
+        "author_or_institution": "Báo Đồng Khởi",
+        "target_notebook": "mekong-360-t-p-2",
+        "tier": "TIER_2_SCHOLARLY",
+        "authority_weight": 0.95
+      }
+    ],
+    "verifiedAt": "2026-09-13T21:30:00+07:00",
+    "verifiedSource": "NotebookLM Deep Terroir Research - Phase 9"
+  },
+  "che-chuoi-nuong": {
+    "id": "che-chuoi-nuong",
+    "summary": "Món tráng miệng truyền thống đậm đà phong vị Bến Tre, kết hợp chuối nếp nướng thơm mùi khói trong chén chè cốt dừa bột báng ngọt thanh.",
+    "description": "Chè chuối nướng Bến Tre nâng tầm món chuối nướng đường phố thành món chè tráng miệng thanh nhã. Từng khoanh chuối bọc nếp nướng vàng giòn được thả vào nồi chè cốt dừa đun cùng bột báng, bột khoai và đường thốt nốt, rắc đậu phộng rang giã dập thơm lừng béo bùi khó cưỡng.",
+    "hours": "14:30 - 21:00 hàng ngày tại các quán chè truyền thống Bến Tre",
+    "price_range": "15.000 - 25.000 đ/chén",
+    "best_time": "Buổi tối 18:30 - 20:30 thưởng thức chén chè ấm áp sau bữa cơm chiều",
+    "culinary_secrets": "Nấu nước cốt dừa với lá dứa tươi và một nhúm muối bọt giúp nước chè có độ béo đầm sâu mà không bao giờ gây cảm giác gắt ngọt.",
+    "terroir_ingredients": "Chuối xiêm nướng than, cốt dừa Bến Tre, bột báng dẻo trong, đường thốt nốt và đậu phộng rang giòn.",
+    "cultural_notes": "Thể hiện sự biến hóa phong phú và tài tình của người phụ nữ Bến Tre trong việc chế biến các món ngọt từ quả chuối và trái dừa.",
+    "visual_narrative": "Chén chè trắng ngà sóng sánh nước cốt dừa đặc quánh, những khoanh chuối nếp nướng nổi bồng bềnh điểm xuyết hạt bột báng trong veo và đậu phộng vàng ươm.",
+    "aeo_schema_type": "FoodEstablishment",
+    "source_citations": [
+      {
+        "source_id": "SRC-TIER1-SVHTTDL-BT-027",
+        "title": "Di sản văn hóa ẩm thực các món chè truyền thống xứ sở dừa Bến Tre",
+        "url": "https://svhttdl.bentre.gov.vn/am-thuc/cac-mon-che-xu-dua",
+        "author_or_institution": "Sở Văn hóa Thể thao và Du lịch Bến Tre",
+        "target_notebook": "mekong-360-t-p-2",
+        "tier": "TIER_1_GOVERNMENT",
+        "authority_weight": 1.0
+      },
+      {
+        "source_id": "SRC-TIER2-BDK-027",
+        "title": "Ngọt ngào hương vị chè chuối nướng xứ dừa những chiều tan trường",
+        "url": "https://baodongkhoi.vn/doi-song/che-chuoi-nuong-ben-tre-84922.html",
+        "author_or_institution": "Báo Đồng Khởi",
+        "target_notebook": "mekong-360-t-p-2",
+        "tier": "TIER_2_SCHOLARLY",
+        "authority_weight": 0.95
+      }
+    ],
+    "verifiedAt": "2026-09-13T21:30:00+07:00",
+    "verifiedSource": "NotebookLM Deep Terroir Research - Phase 9"
+  },
+  "chuoi-ta-qua": {
+    "id": "chuoi-ta-qua",
+    "summary": "Giống chuối khổng lồ độc lạ trứ danh của huyện Cầu Kè, Trà Vinh, quả dài 35-45 cm nặng hơn 1 kg luộc quấn dây chuối ruột dẻo quánh ngọt lịm.",
+    "description": "Chuối tá quạ Trà Cú và Cầu Kè là giống chuối đặc sản kỳ thú bậc nhất đất phương Nam. Chuối không ăn chín tự nhiên như chuối thường mà phải đợi già quả, dùng dây chuối quấn chặt quanh vỏ rồi luộc trên lửa củi suốt 4 tiếng; khi cắt khoanh nạc chuối dẻo thơm màu vàng cam đậm, vị ngọt bùi pha chút dẻo như sáp.",
+    "hours": "07:00 - 17:00 hàng ngày tại các vựa trái cây đặc sản Cầu Kè và TP. Trà Vinh",
+    "price_range": "20.000 - 35.000 đ/trái chuối tá quạ tươi; chuối luộc chín 25.000 - 40.000 đ/trái",
+    "best_time": "Vào vụ thu hoạch chính từ tháng 8 đến tháng 12 âm lịch hàng năm",
+    "culinary_secrets": "Bắt buộc phải quấn dây chuối hoặc dây chuối bện thật chặt quanh quả trước khi luộc để ruột chuối không bị nứt toác và giữ trọn độ dẻo ngọt tự nhiên.",
+    "terroir_ingredients": "Đất phù sa cồn bãi Cầu Kè, nguồn nước ngọt sông Hậu dồi dào và giống chuối quý bản địa.",
+    "cultural_notes": "Gắn liền với các truyền thuyết dân gian về vùng đất phì nhiêu màu mỡ Cầu Kè nơi cỏ cây hoa trái phát triển to lớn lạ thường.",
+    "visual_narrative": "Trái chuối khổng lồ to bằng bắp tay người lớn được luộc chín vàng ươm, cắt từng khoanh tròn dẻo quánh vàng rực như sáp ong thơm nức mũi.",
+    "aeo_schema_type": "LocalBusiness",
+    "source_citations": [
+      {
+        "source_id": "SRC-TIER1-SNNPTNT-TV-013",
+        "title": "Bảo tồn nguồn gen giống chuối tá quạ đặc sản quý hiếm huyện Cầu Kè",
+        "url": "https://snnptnt.travinh.gov.vn/cay-an-trai/chuoi-ta-qua-cau-ke",
+        "author_or_institution": "Sở Nông nghiệp và Phát triển Nông thôn Trà Vinh",
+        "target_notebook": "ch-nh-s-ch-ph-p-lu-t-v-n-b-n-q",
+        "tier": "TIER_1_GOVERNMENT",
+        "authority_weight": 1.0
+      },
+      {
+        "source_id": "SRC-TIER2-BTV-028",
+        "title": "Kỳ lạ giống chuối tá quạ khổng lồ độc nhất vô nhị đất Trà Vinh",
+        "url": "https://baotravinh.vn/nong-nghiep/chuoi-ta-qua-tra-vinh-84925.html",
+        "author_or_institution": "Báo Trà Vinh",
+        "target_notebook": "mekong-360-t-p-2",
+        "tier": "TIER_2_SCHOLARLY",
+        "authority_weight": 0.95
+      }
+    ],
+    "verifiedAt": "2026-09-13T21:30:00+07:00",
+    "verifiedSource": "NotebookLM Deep Terroir Research - Phase 9"
+  },
+  "banh-dua-giong-luong": {
+    "id": "banh-dua-giong-luong",
+    "summary": "Đặc sản bánh dừa truyền thống trăm năm của xã Đại Điền, huyện Thạnh Phú, Bến Tre, gói nếp dẻo trộn cơm dừa nạo và đậu xanh trong lá dừa nước hình trụ.",
+    "description": "Bánh dừa Giồng Luông là món bánh di sản cổ truyền hơn 100 năm của vùng biển Thạnh Phú. Người thợ dùng lá dừa nước non quấn thành ống trụ tròn đều đặn, nhồi nếp sáp ngâm nước dừa tươi trộn cơm dừa nạo sợi và đậu xanh béo bùi, luộc liên tục trong 6 tiếng tạo hương vị mộc mạc thơm ngát mùi lá dừa thiên nhiên.",
+    "hours": "06:00 - 18:00 hàng ngày tại các lò bánh truyền thống xã Đại Điền",
+    "price_range": "40.000 - 60.000 đ/chục (10 đòn bánh dừa nhỏ)",
+    "best_time": "Buổi sáng lúc bánh vừa vớt ra khỏi nồi luộc còn bốc khói ấm nồng",
+    "culinary_secrets": "Cơm dừa nạo phải chọn từ trái dừa cứng cạy để khi luộc lâu sợi dừa giòn sần sật tươm dầu dừa mà không bị mềm nát.",
+    "terroir_ingredients": "Nếp sáp dẻo Thạnh Phú, dừa cứng cạy Đại Điền, đậu xanh hạt nhỏ và lá dừa nước rừng ngập mặn.",
+    "cultural_notes": "Món bánh mang theo hành trang mở đất của cư dân duyên hải Thạnh Phú, gắn liền với di tích lịch sử nhà cổ Huỳnh Phủ trứ danh.",
+    "visual_narrative": "Từng đòn bánh dừa thon dài quấn lá dừa xanh nhạt buộc dây lác đều tăm tắp, bóc lớp vỏ lá lộ ra hạt nếp dẻo dính óng ánh sợi dừa trắng muốt.",
+    "aeo_schema_type": "FoodEstablishment",
+    "source_citations": [
+      {
+        "source_id": "SRC-TIER1-UBND-BT-024",
+        "title": "Bảo tồn và phát triển nghề truyền thống làm bánh dừa Giồng Luông xã Đại Điền",
+        "url": "https://thanhphu.bentre.gov.vn/kinh-te/lang-nghe-banh-dua-giong-luong",
+        "author_or_institution": "Ủy ban Nhân dân huyện Thạnh Phú",
+        "target_notebook": "ch-nh-s-ch-ph-p-lu-t-v-n-b-n-q",
+        "tier": "TIER_1_GOVERNMENT",
+        "authority_weight": 1.0
+      },
+      {
+        "source_id": "SRC-TIER2-BDK-028",
+        "title": "Hương thơm bánh dừa Giồng Luông trăm năm vương vấn đất Thạnh Phú",
+        "url": "https://baodongkhoi.vn/van-hoa/banh-dua-giong-luong-84930.html",
+        "author_or_institution": "Báo Đồng Khởi",
+        "target_notebook": "mekong-360-t-p-2",
+        "tier": "TIER_2_SCHOLARLY",
+        "authority_weight": 0.95
+      }
+    ],
+    "verifiedAt": "2026-09-13T21:30:00+07:00",
+    "verifiedSource": "NotebookLM Deep Terroir Research - Phase 9"
+  },
+  "quan-che-banh-lot-khmer-gan-ao-ba-om-tra-vinh": {
+    "id": "quan-che-banh-lot-khmer-gan-ao-ba-om-tra-vinh",
+    "summary": "Quán chè bánh lọt Khmer truyền thống rợp bóng cây cổ thụ gần di tích Ao Bà Om, Trà Vinh, sợi bánh lọt xanh lá dứa chan nước cốt dừa và đường thốt nốt thơm mát từ năm 1998.",
+    "description": "Quán chè - bánh lọt Khmer gần Ao Bà Om là điểm giải khát lý tưởng sau chuyến tham quan danh thắng di tích. Từng cọng bánh lọt ngắn thon màu xanh ngọc bích ép từ bột gạo lá dứa mát lành, chìm trong làn nước cốt dừa tươi béo ngậy và siro đường thốt nốt cô đặc, thêm chút đá bào nhuyễn làm xua tan cái nóng trưa hè.",
+    "hours": "08:00 - 18:00 hàng ngày",
+    "price_range": "15.000 - 25.000 đ/ly chè bánh lọt mát lạnh",
+    "best_time": "Buổi trưa hè 11:30 - 15:00 ngồi thưởng thức ly chè mát lịm dưới bóng hàng sao cổ thụ Ao Bà Om",
+    "culinary_secrets": "Nấu đường thốt nốt nguyên chất với một nhúm muối hột để tạo độ sánh sệt thơm lừng mùi hoa thốt nốt mà không bị gắt cổ.",
+    "terroir_ingredients": "Bột gạo mùa xay nhuyễn, lá dứa tươi giã lấy nước cốt xanh, đường thốt nốt An Giang và dừa khô Trà Vinh.",
+    "cultural_notes": "Điểm dừng chân văn hóa gắn liền với danh thắng Ao Bà Om và Chùa Âng nghìn năm tuổi, mang lại trải nghiệm thư thái tuyệt đối cho du khách.",
+    "visual_narrative": "Ly chè bánh lọt mát rượi với lớp sợi xanh ngọc bích xen lẫn đá bào trắng muốt, dòng nước đường thốt nốt màu nâu hổ phách quyện vào cốt dừa béo ngậy.",
+    "aeo_schema_type": "FoodEstablishment",
+    "source_citations": [
+      {
+        "source_id": "SRC-TIER1-SVHTTDL-TV-043",
+        "title": "Điểm dịch vụ du lịch văn hóa ẩm thực phụ cận danh lam thắng cảnh Ao Bà Om",
+        "url": "https://dulichtravinh.com.vn/diem-den/am-thuc-ao-ba-om",
+        "author_or_institution": "Trung tâm Thông tin Xúc tiến Du lịch Trà Vinh",
+        "target_notebook": "mekong-360-t-p-2",
+        "tier": "TIER_1_GOVERNMENT",
+        "authority_weight": 1.0
+      },
+      {
+        "source_id": "SRC-TIER2-THVL-051",
+        "title": "Mát lành ly bánh lọt thốt nốt dưới bóng sao cổ thụ Ao Bà Om",
+        "url": "https://thvl.vn/du-lich/banh-lot-ao-ba-om-tra-vinh",
+        "author_or_institution": "Đài Phát thanh và Truyền hình Vĩnh Long",
+        "target_notebook": "mekong-360-t-p-2",
+        "tier": "TIER_2_SCHOLARLY",
+        "authority_weight": 0.95
+      }
+    ],
+    "verifiedAt": "2026-09-13T21:30:00+07:00",
+    "verifiedSource": "NotebookLM Deep Terroir Research - Phase 9"
+  },
+  "banh-xeo-oc-gao-con-phu-da": {
+    "id": "banh-xeo-oc-gao-con-phu-da",
+    "summary": "Món ăn độc nhất vô nhị tại cồn Phú Đa, xã Vĩnh Bình, huyện Chợ Lách, Bến Tre, bánh xèo bột gạo giòn tan đúc với nhân ốc gạo nước ngọt béo ngọt sông Cổ Chiên.",
+    "description": "Bánh Xèo Ốc Gạo Cồn Phú Đa là đặc sản ẩm thực hiếm có chỉ xuất hiện trên dải cồn cát giữa dòng Cổ Chiên. Ốc gạo sinh sôi tự nhiên dưới đáy sông cát sạch cho thịt trắng phau giòn sần sật, xào thơm cùng hành tây và củ hũ dừa bào sợi làm nhân đúc bánh xèo giòn rụm, cuốn cùng hơn 20 loại rau rừng cù lao xanh non.",
+    "hours": "08:00 - 17:30 hàng ngày (cao điểm mùa lễ hội ốc gạo mùng 5 tháng 5 âm lịch)",
+    "price_range": "50.000 - 80.000 đ/cái bánh xèo ốc gạo lớn đầy ắp nhân",
+    "best_time": "Vào dịp tết Đoan Ngọ tháng 5 âm lịch khi ốc gạo cồn Phú Đa mập ú và ôm bọc trứng béo nhất",
+    "culinary_secrets": "Ốc gạo luộc sơ khêu ruột xào nhanh tay trên lửa lớn với tiêu sọ và hành tím để giữ độ giòn ngọt tự nhiên mà không bị dai.",
+    "terroir_ingredients": "Ốc gạo tự nhiên cồn cát Phú Đa, củ hũ dừa non Chợ Lách, bột gạo lúa mùa pha nước cốt dừa và rau rừng cù lao.",
+    "cultural_notes": "Sản vật ẩm thực gắn bó mật thiết với hệ sinh thái đáy sông cát Cổ Chiên và lễ hội văn hóa sông nước truyền thống Chợ Lách.",
+    "visual_narrative": "Chiếc bánh xèo vàng rực giòn rụm xèo xèo trên chảo gang lớn, lộ rõ những con ốc gạo trắng tinh đan xen củ hũ dừa bào sợi bên rổ rau rừng tươi mát.",
+    "aeo_schema_type": "Restaurant",
+    "source_citations": [
+      {
+        "source_id": "SRC-TIER1-SVHTTDL-BT-028",
+        "title": "Lễ hội trái cây ngon an toàn và đặc sản ẩm thực cồn Phú Đa huyện Chợ Lách",
+        "url": "https://svhttdl.bentre.gov.vn/le-hoi/banh-xeo-oc-gao-con-phu-da",
+        "author_or_institution": "Sở Văn hóa Thể thao và Du lịch Bến Tre",
+        "target_notebook": "mekong-360-t-p-2",
+        "tier": "TIER_1_GOVERNMENT",
+        "authority_weight": 1.0
+      },
+      {
+        "source_id": "SRC-TIER2-BDK-029",
+        "title": "Độc đáo bánh xèo ốc gạo cồn Phú Đa: Hương vị sông nước Cổ Chiên",
+        "url": "https://baodongkhoi.vn/am-thuc/banh-xeo-oc-gao-cho-lach-84925.html",
+        "author_or_institution": "Báo Đồng Khởi",
+        "target_notebook": "mekong-360-t-p-2",
+        "tier": "TIER_2_SCHOLARLY",
+        "authority_weight": 0.95
+      }
+    ],
+    "verifiedAt": "2026-09-13T21:30:00+07:00",
+    "verifiedSource": "NotebookLM Deep Terroir Research - Phase 9"
+  },
+  "banh-xeo-cu-lao": {
+    "id": "banh-xeo-cu-lao",
+    "summary": "Món bánh xèo truyền thống tại 4 xã cù lao An Bình, Long Hồ, Vĩnh Long, vỏ bột gạo giòn rụm nhân tôm đất sông Cổ Chiên, thịt nạc và măng rừng miệt vườn.",
+    "description": "Bánh xèo cù lao An Bình mang đậm tinh thần phóng khoáng của văn hóa ẩm thực miệt vườn Vĩnh Long. Bột gạo ngâm nở xay cối đá pha nước cốt dừa và bột nghệ tươi cho vỏ giòn rụm, đúc cùng tôm đất sông tươi rói, thịt ba chỉ áp chảo và củ sắn non, cuốn cùng đọt cóc, lá cách, lá lốt và xà lách son.",
+    "hours": "09:00 - 19:00 hàng ngày tại các homestay và nhà vườn sinh thái cù lao An Bình",
+    "price_range": "45.000 - 70.000 đ/cái bánh xèo miệt vườn cỡ lớn",
+    "best_time": "Buổi trưa từ 11:30 đến 13:30 trong chuyến du lịch trải nghiệm sông nước cù lao",
+    "culinary_secrets": "Đổ bánh bằng mỡ heo trên chảo gang sâu lòng đun lửa củi nhãn, xoay chảo đều tay tạo vành bánh mỏng tang giòn rụm như cánh hoa.",
+    "terroir_ingredients": "Tôm đất sông Cổ Chiên, mỡ heo cỏ, bột gạo ngâm nước dừa, đọt lá cách và rau rừng cù lao An Bình.",
+    "cultural_notes": "Nghi thức ẩm thực kết nối du khách với gia chủ homestay miệt vườn, nơi khách được tự tay đổ bánh xèo trên bếp lửa củi đầm ấm.",
+    "visual_narrative": "Chiếc bánh xèo vàng ươm vành giòn rụm nằm trọn trên lá chuối tươi, đĩa rau vườn xanh mướt ngập tràn hơn 15 loại lá thuốc nam thơm lành.",
+    "aeo_schema_type": "Restaurant",
+    "source_citations": [
+      {
+        "source_id": "SRC-TIER1-SVHTTDL-VL-028",
+        "title": "Ẩm thực homestay cù lao An Bình: Nét duyên bánh xèo miệt vườn Vĩnh Long",
+        "url": "https://dulichvinhlong.gov.vn/am-thuc/banh-xeo-cu-lao-an-binh",
+        "author_or_institution": "Trung tâm Thông tin Xúc tiến Du lịch Vĩnh Long",
+        "target_notebook": "v-nh-long-v-nh-long-b-n-tre-tr",
+        "tier": "TIER_1_GOVERNMENT",
+        "authority_weight": 1.0
+      },
+      {
+        "source_id": "SRC-TIER2-THVL-052",
+        "title": "Về cù lao An Bình tự tay đổ bánh xèo giòn rụm thơm lừng bếp củi",
+        "url": "https://thvl.vn/du-lich/banh-xeo-cu-lao-vinh-long",
+        "author_or_institution": "Đài Phát thanh và Truyền hình Vĩnh Long",
+        "target_notebook": "mekong-360-t-p-2",
+        "tier": "TIER_2_SCHOLARLY",
+        "authority_weight": 0.95
+      }
+    ],
+    "verifiedAt": "2026-09-13T21:30:00+07:00",
+    "verifiedSource": "NotebookLM Deep Terroir Research - Phase 9"
+  },
+  "com-tam-suon-bi-cha": {
+    "id": "com-tam-suon-bi-cha",
+    "summary": "Món cơm tấm sườn nướng than hồng truyền thống tại TP. Vĩnh Long, hạt tấm nhuyễn dẻo thơm ăn cùng miếng sườn ướp mật ong đậm đà từ năm 1988.",
+    "description": "Cơm tấm sườn bì chả là món ăn kinh điển trong nhịp sống ẩm thực đô thị Vĩnh Long. Hạt tấm gạo lúa mùa nấu chín xới tơi xốp, miếng sườn cốt lết dày dặn ướp mật ong hoa nhãn và sả tỏi nướng than hồng đượm khói, ăn kèm chả trứng chưng vàng óng, bì heo trộn thính thơm và chén nước mắm chua ngọt sóng sánh.",
+    "hours": "06:00 - 21:30 hàng ngày (đông khách giờ ăn sáng và ăn tối)",
+    "price_range": "30.000 - 48.000 đ/dĩa (dĩa sườn bì chả ốp la đặc biệt 55.000 đ)",
+    "best_time": "Buổi sáng 06:30 - 08:00 hoặc buổi chiều muộn 17:30 - 19:00",
+    "culinary_secrets": "Sườn cốt lết được ướp với mật ong hoa nhãn cù lao và nước mắm nhĩ trước nửa ngày, nướng than đượm lửa vừa để sườn ngậm nước không bị khô cứng.",
+    "terroir_ingredients": "Gạo tấm Tài Nguyên xay nhuyễn, mật ong hoa nhãn cù lao An Bình, sườn heo tươi, thính gạo rang vàng và mỡ hành phi giòn.",
+    "cultural_notes": "Phản ánh đời sống ẩm thực đường phố năng động và gắn bó mật thiết với thói quen ăn sáng của cư dân đô thị Vĩnh Long.",
+    "visual_narrative": "Dĩa cơm tấm trắng ngần bốc khói dẻo thơm, miếng sườn nướng than bóng bẩy màu caramen đặt cạnh lát chả trứng vàng ươm và muỗng mỡ hành xanh óng ánh.",
+    "aeo_schema_type": "Restaurant",
+    "source_citations": [
+      {
+        "source_id": "SRC-TIER1-SVHTTDL-VL-029",
+        "title": "Ẩm thực đường phố đô thị Vĩnh Long: Hương vị cơm tấm sườn nướng truyền thống",
+        "url": "https://dulichvinhlong.gov.vn/am-thuc/com-tam-vinh-long",
+        "author_or_institution": "Trung tâm Thông tin Xúc tiến Du lịch Vĩnh Long",
+        "target_notebook": "v-nh-long-v-nh-long-b-n-tre-tr",
+        "tier": "TIER_1_GOVERNMENT",
+        "authority_weight": 1.0
+      },
+      {
+        "source_id": "SRC-TIER2-THVL-053",
+        "title": "Hấp dẫn đĩa cơm tấm sườn bì chả đất Vĩnh nức lòng thực khách",
+        "url": "https://thvl.vn/am-thuc/com-tam-dat-vinh",
+        "author_or_institution": "Đài Phát thanh và Truyền hình Vĩnh Long",
+        "target_notebook": "mekong-360-t-p-2",
+        "tier": "TIER_2_SCHOLARLY",
+        "authority_weight": 0.95
+      }
+    ],
+    "verifiedAt": "2026-09-13T21:30:00+07:00",
+    "verifiedSource": "NotebookLM Deep Terroir Research - Phase 9"
+  }
+}
