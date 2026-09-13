@@ -7,7 +7,7 @@
           <input v-model="search" type="search" enterkeyhint="search" placeholder="Tìm trong hướng dẫn..." aria-label="Tìm trong hướng dẫn" class="search-input" />
         </div>
         <nav class="sidebar-nav" aria-label="Mục lục hướng dẫn">
-          <a href="#bat-dau" class="snav-link" :class="{ active: activeId === 'bat-dau' }" @click.prevent="scrollTo('bat-dau')"><IconLine name="sparkles" /> Bắt đầu nhanh</a>
+          <a href="#bat-dau" class="snav-link" :class="{ active: activeId === 'bat-dau' }" @click.prevent="scrollTo('bat-dau')"><IconLine name="compass" /> Bắt đầu nhanh</a>
           <template v-for="s in filteredSections" :key="s.id">
             <a :href="`#${s.id}`" class="snav-link" :class="{ active: activeId === s.id }" @click.prevent="scrollTo(s.id)">
               {{ s.icon }} {{ s.title }}
@@ -45,7 +45,7 @@
           <input v-model="search" type="search" placeholder="Tìm trong hướng dẫn..." aria-label="Tìm trong hướng dẫn" class="search-input" />
         </div>
         <nav class="mobile-toc-nav" aria-label="Mục lục hướng dẫn">
-          <a href="#bat-dau" @click.prevent="scrollTo('bat-dau')"><IconLine name="sparkles" /> Bắt đầu nhanh</a>
+          <a href="#bat-dau" @click.prevent="scrollTo('bat-dau')"><IconLine name="compass" /> Bắt đầu nhanh</a>
           <a v-for="s in sections" :key="s.id" :href="`#${s.id}`" @click.prevent="scrollTo(s.id)">{{ s.icon }} {{ s.title }}</a>
           <a href="#khac-phuc" @click.prevent="scrollTo('khac-phuc')"><IconLine name="settings" /> Khắc phục sự cố</a>
         </nav>

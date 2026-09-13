@@ -1,8 +1,8 @@
 <template>
   <div class="ai-besttime">
-    <div class="ai-besttime-head sediment-head"><h3>Thời điểm tốt nhất</h3><span class="ai-label"><IconLine name="sparkles" class="emoji-chip" /> AI gợi ý</span></div>
+    <div class="ai-besttime-head sediment-head"><h3>Thời điểm tốt nhất</h3><span class="ai-label"><IconLine name="calendar" class="emoji-chip" /> AI gợi ý</span></div>
     <button type="button" v-if="!result && !loading && !errored" class="ai-toggle-btn" @click="load">
-      <IconLine name="sparkles" class="btn-sparkle" aria-hidden="true" />
+      <IconLine name="calendar" class="btn-sparkle" aria-hidden="true" />
       <span>Xem gợi ý AI</span>
     </button>
     <div v-else-if="loading" class="ai-loading" role="status" aria-label="Đang tải">

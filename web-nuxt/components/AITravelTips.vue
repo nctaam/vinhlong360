@@ -3,7 +3,7 @@
     <button type="button" class="ai-tips-header sediment-head" @click="toggle" :aria-expanded="expanded">
       <h3>Gợi ý cho bạn</h3>
       <span class="ai-tips-header-right">
-        <span class="ai-label"><IconLine name="sparkles" class="emoji-chip" /> AI gợi ý</span>
+        <span class="ai-label"><IconLine name="bulb" class="emoji-chip" /> AI gợi ý</span>
         <span class="ai-toggle"><IconLine :name="expanded ? 'chevron-up' : 'chevron-down'" aria-hidden="true" /></span>
       </span>
     </button>

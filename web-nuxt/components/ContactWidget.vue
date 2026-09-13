@@ -238,7 +238,12 @@ onUnmounted(() => { if (copyTimer) clearTimeout(copyTimer) })
 
 /* Website link */
 .cw-website {
-  display: block;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  min-height: 44px;
+  padding: var(--space-2) var(--space-3);
   text-align: center;
   font-size: var(--text-xs);
   color: var(--muted);
@@ -246,6 +251,7 @@ onUnmounted(() => { if (copyTimer) clearTimeout(copyTimer) })
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  border-radius: var(--radius-control);
 }
 .cw-website:hover { color: var(--color-action); text-decoration: underline; }
 

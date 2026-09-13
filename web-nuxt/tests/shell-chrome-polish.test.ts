@@ -9,4 +9,10 @@ describe('Public Shell Polish', () => {
     expect(shellCss).toContain('--glass-frosted-nav')
     expect(shellCss).toContain('--radius-control-refined')
   })
+
+  it('equips desktop .public-shell-command-row .auth-btn with >= 44x44px touch target expansion', () => {
+    expect(shellCss).toMatch(/\.public-shell-command-row\s+\.auth-btn\s*\{[^}]*position:\s*relative;/)
+    expect(shellCss).toMatch(/\.public-shell-command-row\s+\.auth-btn::before\s*\{[^}]*min-height:\s*44px;/)
+    expect(shellCss).toMatch(/\.public-shell-command-row\s+\.auth-btn::before\s*\{[^}]*min-width:\s*44px;/)
+  })
 })

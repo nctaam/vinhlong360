@@ -87,7 +87,7 @@ describe('SEO & Editorial Craft Guardrails', () => {
 
   it('AI best-time and travel-tips panels eliminate raw glyphs and use purpose-driven radius-control', () => {
     const bestTime = doc('components/AIBestTime.vue')
-    expect(bestTime).toContain('<IconLine name="sparkles" class="btn-sparkle"')
+    expect(bestTime).toContain('<IconLine name="calendar" class="btn-sparkle"')
     expect(bestTime).toContain('<IconLine name="alert-triangle"')
     expect(bestTime).toContain('<IconLine name="repeat"')
     expect(bestTime).toContain('var(--radius-control)')

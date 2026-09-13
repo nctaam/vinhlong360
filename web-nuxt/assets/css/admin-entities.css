@@ -27,14 +27,14 @@
 .type-badge[data-type="attraction"] { background: rgba(var(--color-action-rgb), .1); color: var(--success); }
 .type-badge[data-type="dish"] { background: rgba(var(--warning-rgb),.1); color: var(--warning); }
 .type-badge[data-type="product"] { background: rgba(var(--blue-rgb),.1); color: rgb(var(--blue-rgb)); }
-.type-badge[data-type="accommodation"] { background: rgba(var(--purple-rgb),.1); color: rgb(var(--purple-rgb)); }
+.type-badge[data-type="accommodation"] { background: rgba(var(--river-rgb), .1); color: var(--river-600); }
 .type-badge[data-type="nature"] { background: rgba(var(--sys-green-rgb), .1); color: rgb(var(--sys-green-rgb)); }
 .type-badge[data-type="experience"] { background: rgba(var(--warning-rgb),.1); color: var(--warning); }
 .type-badge[data-type="craft_village"] { background: rgba(var(--sys-brown-rgb), .1); color: rgb(var(--sys-brown-rgb)); }
 .type-badge[data-type="event"] { background: rgba(var(--danger-rgb),.1); color: var(--error); }
 .type-badge[data-type="drink"] { background: rgba(var(--teal-rgb),.1); color: rgb(var(--teal-rgb)); }
 .type-badge[data-type="place"] { background: rgba(var(--gray-rgb),.1); color: var(--muted); }
-.dark .type-badge[data-type="accommodation"] { background: rgba(var(--purple-rgb),.15); color: rgb(var(--purple-rgb)); }
+.dark .type-badge[data-type="accommodation"] { background: rgba(var(--river-rgb), .15); color: var(--river-600); }
 .dark .type-badge[data-type="nature"] { background: rgba(var(--sys-green-rgb), .15); color: rgb(var(--sys-green-rgb)); }
 .dark .type-badge[data-type="craft_village"] { background: rgba(var(--sys-brown-rgb), .15); color: rgb(var(--accent-rgb)); }
 .dark .type-badge[data-type="drink"] { background: rgba(var(--teal-rgb),.15); color: rgb(var(--blue-rgb)); }
@@ -189,7 +189,7 @@
 .dark .type-badge[data-type="attraction"] { background: rgba(var(--color-action-rgb), .15); }
 .dark .type-badge[data-type="dish"] { background: rgba(var(--warning-rgb),.15); color: var(--warning); }
 .dark .type-badge[data-type="product"] { background: rgba(var(--blue-rgb),.15); }
-.dark .type-badge[data-type="accommodation"] { background: rgba(var(--purple-rgb),.15); }
+.dark .type-badge[data-type="accommodation"] { background: rgba(var(--river-rgb), .15); }
 .dark .type-badge[data-type="nature"] { background: rgba(var(--sys-green-rgb), .15); }
 .dark .type-badge[data-type="experience"] { background: rgba(var(--warning-rgb),.15); color: var(--accent-text); }
 .dark .type-badge[data-type="craft_village"] { background: rgba(var(--sys-brown-rgb), .15); }

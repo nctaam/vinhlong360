@@ -1,6 +1,22 @@
 import { describe, it, expect } from 'vitest'
-import { readFileSync } from 'node:fs'
-import { resolve } from 'node:path'
+import { readFileSync, readdirSync, statSync } from 'node:fs'
+import { resolve, join } from 'node:path'
+
+function getVueFiles(dir: string): string[] {
+  let results: string[] = []
+  if (!dir) return results
+  const list = readdirSync(dir)
+  for (const file of list) {
+    const filePath = join(dir, file)
+    const stat = statSync(filePath)
+    if (stat && stat.isDirectory()) {
+      results = results.concat(getVueFiles(filePath))
+    } else if (file.endsWith('.vue')) {
+      results.push(filePath)
+    }
+  }
+  return results
+}
 
 describe('Homepage Anti-AI-Slop Craftsmanship & Terroir Depth', () => {
   const homeCss = readFileSync(resolve(__dirname, '../assets/css/home-nocturne.css'), 'utf8')
@@ -47,5 +63,37 @@ describe('Homepage Anti-AI-Slop Craftsmanship & Terroir Depth', () => {
     const dossierVue = readFileSync(resolve(__dirname, '../components/home/HomeFeatureDossier.vue'), 'utf8')
     expect(dossierVue).not.toContain('name="sparkle"')
     expect(dossierVue).toMatch(/name="(flame|leaf)"/)
+  })
+
+  it('enforces platform-wide eradication of AI sparkles across all Vue files', () => {
+    const rootDir = resolve(__dirname, '..')
+    const vueFiles = [
+      ...getVueFiles(resolve(rootDir, 'components')),
+      ...getVueFiles(resolve(rootDir, 'pages')),
+      ...getVueFiles(resolve(rootDir, 'layouts')),
+      resolve(rootDir, 'app.vue'),
+      resolve(rootDir, 'error.vue'),
+    ]
+
+    const bannedPatterns = [
+      /name=["']sparkles?["']/,
+      /icon-name=["']sparkles?["']/,
+      /icon:\s*["']sparkles?["']/,
+      /auto_awesome/,
+    ]
+
+    for (const filePath of vueFiles) {
+      const content = readFileSync(filePath, 'utf8')
+      const relPath = filePath.replace(rootDir, '').replace(/^[\\/]/, '')
+      if (relPath === 'components/IconLine.vue' || relPath === 'components\\IconLine.vue') continue
+      for (const pattern of bannedPatterns) {
+        expect(content, `File ${relPath} contains banned AI sparkle pattern ${pattern}!`).not.toMatch(pattern)
+      }
+    }
+  })
+
+  it('purges residual 4-pointed sparkle vector definition from IconLine.vue dictionary', () => {
+    const iconLineSrc = readFileSync(resolve(__dirname, '../components/IconLine.vue'), 'utf8')
+    expect(iconLineSrc).not.toMatch(/sparkles:\s*W\(/)
   })
 })

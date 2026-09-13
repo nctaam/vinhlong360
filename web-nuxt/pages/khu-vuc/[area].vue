@@ -49,7 +49,7 @@
     <CatalogInterstitial
       v-if="typeStats.length"
       :fact="`${areaMeta?.name} quy tụ ${typeStats.length} loại hình khác nhau — từ trải nghiệm miệt vườn đến ẩm thực, lưu trú và làng nghề.`"
-      icon-name="sparkles"
+      icon-name="compass"
       variant="warm"
       :links="[
         { to: `/du-lich?vung=${areaKey}`, label: `Du lịch ${areaMeta?.name}` },

@@ -27,6 +27,34 @@ function toggle(key: string) {
     : [...props.modelValue, key]
   emit('update:modelValue', next)
 }
+
+const EMOJI_TO_ICON: Record<string, string> = {
+  '\u{1F33E}': 'sprout',
+  '\u{1F3FA}': 'vase',
+  '\u{1F372}': 'bowl',
+  '\u{1F6F6}': 'compass',
+  '\u{1F3E1}': 'home',
+  '\u2B50': 'star',
+  '\u{1F31F}': 'star',
+  '\u{1F4CD}': 'pin',
+  '\u{1F389}': 'lantern',
+  '\u{1F3DB}\uFE0F': 'landmark',
+  '\u{1F3DB}': 'landmark',
+  '\u{1F333}': 'leaf',
+  '\u{1F33F}': 'leaf',
+  '\u2615': 'coffee',
+  '\u{1F3E8}': 'building',
+  '\u{1F381}': 'gift',
+  '\u{1F6A4}': 'route',
+}
+
+function resolveIcon(f: FilterOption): string | null {
+  if (f.iconName) return f.iconName
+  if (!f.icon) return null
+  const trimmed = f.icon.trim()
+  if (/^[a-z0-9-]+$/.test(trimmed)) return trimmed
+  return EMOJI_TO_ICON[trimmed] || null
+}
 </script>
 
 <template>
@@ -39,8 +67,7 @@ function toggle(key: string) {
       :aria-pressed="modelValue.includes(f.key)"
       @click="toggle(f.key)"
     >
-      <span v-if="f.iconName" class="fc-icon" aria-hidden="true"><IconLine :name="f.iconName" /></span>
-      <span v-else-if="f.icon" class="fc-icon" aria-hidden="true">{{ f.icon }}</span>
+      <span v-if="resolveIcon(f)" class="fc-icon" aria-hidden="true"><IconLine :name="resolveIcon(f)!" /></span>
       <span class="fc-label">{{ f.label }}</span>
       <span v-if="f.sublabel" class="fc-sublabel">{{ f.sublabel }}</span>
       <span v-if="f.count != null" class="fc-count">{{ f.count }}</span>

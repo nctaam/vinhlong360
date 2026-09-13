@@ -132,7 +132,7 @@ const badges = [
   { id: 'explorer', icon: 'compass', label: 'Người khám phá', req: '10 địa điểm khác nhau' },
   { id: 'popular', icon: 'heart', label: 'Được yêu thích', req: '20 người theo dõi' },
   { id: 'quality', icon: 'trophy', label: 'Nội dung chất lượng', req: '50 lượt thích' },
-  { id: 'allrounder', icon: 'sparkles', label: 'Đa năng', req: '3+ địa điểm, 5+ đánh giá, 3+ ảnh' },
+  { id: 'allrounder', icon: 'award', label: 'Đa năng', req: '3+ địa điểm, 5+ đánh giá, 3+ ảnh' },
 ]
 
 const tips = [

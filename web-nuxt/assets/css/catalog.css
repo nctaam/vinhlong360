@@ -1793,6 +1793,8 @@
 
 .catalog-aeo-plaque__frame {
   border-radius: var(--radius-surface-refined, 14px);
-  box-shadow: var(--shadow-card-ambient);
+  border: 1px solid var(--border-liquid-glass, var(--color-border));
+  border-left: 4px solid var(--alluvial-gold, var(--color-material-amber));
+  box-shadow: var(--shadow-card-ambient), 0 0 0 1px var(--border-liquid-glass);
 }
 

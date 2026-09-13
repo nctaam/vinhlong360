@@ -598,7 +598,7 @@ useHead(() => {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: radial-gradient(circle at 34% 30%, rgba(var(--secondary-rgb), .95), rgba(var(--color-brand-rgb), .9) 72%);
+  background: radial-gradient(circle at 34% 30%, rgba(var(--clay-rgb), .95), rgba(var(--color-brand-rgb), .9) 72%);
   clip-path: polygon(
     50% 0%, 61% 7%, 74% 3%, 82% 13%, 95% 15%, 96% 28%, 100% 38%,
     92% 48%, 100% 58%, 96% 68%, 95% 81%, 82% 83%, 74% 93%, 61% 89%,

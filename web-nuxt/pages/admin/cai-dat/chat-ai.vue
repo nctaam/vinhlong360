@@ -18,7 +18,7 @@
           <AdminSettingsForm :category="'chat'" :fields="chatFields" @saved="reload" />
         </section>
         <section class="cs-section">
-          <h2 class="cs-section-title"><IconLine name="sparkles" /> Gợi ý AI</h2>
+          <h2 class="cs-section-title"><IconLine name="bulb" /> Gợi ý AI</h2>
           <AdminSettingsForm :category="'ai'" :fields="aiFields" @saved="reload" />
         </section>
       </div>

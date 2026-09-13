@@ -288,8 +288,8 @@ const hasMore = computed(() => queue.value.length < total.value)
 function badgeOf(s: string) { return BADGES[s] || { label: s, cls: 'mb-pending' } }
 
 const EMPTY_STATES: Record<string, { icon: string; text: string }> = {
-  review: { icon: 'sparkles', text: 'Hàng đợi đã sạch. Tốt lắm!' },
-  pending: { icon: 'sparkles', text: 'Không có bài nào đang chờ duyệt.' },
+  review: { icon: 'shield-check', text: 'Hàng đợi đã sạch. Tốt lắm!' },
+  pending: { icon: 'shield', text: 'Không có bài nào đang chờ duyệt.' },
   flagged: { icon: 'check', text: 'Không có bài nào bị gắn cờ.' },
   approved: { icon: 'file-text', text: 'Chưa có bài viết nào đã duyệt.' },
   rejected: { icon: 'file-text', text: 'Chưa có bài viết nào bị từ chối.' },

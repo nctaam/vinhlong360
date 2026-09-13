@@ -213,7 +213,7 @@ function currentAuthenticatedOwner() {
 
 const steps = [
   { key: 'region', label: 'Khu vực', title: 'Bạn muốn bắt đầu từ đâu?', description: 'Chọn một khu vực để sắp xếp nội dung gần với bạn hơn.', icon: 'pin' },
-  { key: 'interests', label: 'Sở thích', title: 'Bạn thường tìm gì?', description: 'Chọn tối đa ba mối quan tâm. Bạn có thể đổi lại bất cứ lúc nào.', icon: 'sparkles' },
+  { key: 'interests', label: 'Sở thích', title: 'Bạn thường tìm gì?', description: 'Chọn tối đa ba mối quan tâm. Bạn có thể đổi lại bất cứ lúc nào.', icon: 'heart' },
   { key: 'location', label: 'Vị trí', title: 'Thêm một lớp gợi ý?', description: 'Tùy chọn: dùng vị trí gần đúng một lần, không lưu tọa độ.', icon: 'locate' },
 ] as const
 

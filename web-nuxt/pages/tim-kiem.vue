@@ -184,7 +184,7 @@
         </div>
 
         <div class="zero-result-curated-wrap" aria-label="Gợi ý tìm kiếm phổ biến">
-          <p class="zero-result-curated-label"><IconLine name="sparkles" aria-hidden="true" /> Gợi ý chủ đề phổ biến:</p>
+          <p class="zero-result-curated-label"><IconLine name="compass" aria-hidden="true" /> Gợi ý chủ đề phổ biến:</p>
           <div class="scroll-row trending-row">
             <button
               v-for="(chip, i) in trendingChips"

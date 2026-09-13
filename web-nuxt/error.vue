@@ -18,13 +18,6 @@
             <line x1="110" y1="86" x2="126" y2="86" stroke="var(--clay-400)" stroke-width="3.5" stroke-linecap="round" />
             <path d="M80 122 Q100 116 120 122" stroke="var(--clay-400)" stroke-width="3" fill="none" stroke-linecap="round" />
           </g>
-          <!-- decorative sparkles (như EmptyState) -->
-          <g fill="var(--accent)" class="illust-sparkles">
-            <path class="spark spark-1" d="M155 45 l3 8 8 3 -8 3 -3 8 -3 -8 -8 -3 8 -3z" />
-            <path class="spark spark-2" d="M40 55 l2 6 6 2 -6 2 -2 6 -2 -6 -6 -2 6 -2z" />
-            <path class="spark spark-3" d="M160 140 l2 5 5 2 -5 2 -2 5 -2 -5 -5 -2 5 -2z" />
-            <path class="spark spark-4" d="M44 142 l2 5 5 2 -5 2 -2 5 -2 -5 -5 -2 5 -2z" />
-          </g>
         </svg>
       </div>
       <h1 class="error-code" :aria-label="`Lỗi ${error?.statusCode || 500}`">{{ error?.statusCode || 500 }}</h1>
@@ -134,15 +127,10 @@ useSeoMeta({
 .error-content { text-align: center; max-width: 460px; animation: errorIn .6s var(--ease-out-expo) both; }
 @keyframes errorIn { from { opacity: 0; transform: translateY(16px) scale(.96); } to { opacity: 1; transform: translateY(0) scale(1); } }
 @keyframes errorPartIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-@keyframes sparkTwinkle { 0%, 100% { opacity: .25; transform: scale(.9); } 50% { opacity: .7; transform: scale(1.05); } }
 
 .error-illust { width: 160px; margin: 0 auto var(--space-4); }
 .error-illust svg { width: 100%; height: auto; }
 .illust-halo { transition: opacity .3s var(--ease-out); }
-.illust-sparkles .spark { transform-box: fill-box; transform-origin: center; animation: sparkTwinkle 3.2s var(--ease-in-out) infinite; }
-.illust-sparkles .spark-2 { animation-delay: .8s; }
-.illust-sparkles .spark-3 { animation-delay: 1.6s; }
-.illust-sparkles .spark-4 { animation-delay: 2.4s; }
 
 .error-code {
   font-size: clamp(3rem, 12vw, 5rem);
@@ -242,7 +230,6 @@ useSeoMeta({
   .error-msg,
   .error-discovery,
   .error-actions { animation: none; }
-  .illust-sparkles .spark { animation: none; }
   .error-actions .btn,
   .error-link-pill,
   .error-search-input { transition: none; }

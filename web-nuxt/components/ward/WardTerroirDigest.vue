@@ -8,7 +8,7 @@
     <header class="ward-terroir-digest__header">
       <div class="ward-terroir-digest__meta-row">
         <div class="ward-terroir-digest__badge">
-          <IconLine name="sparkles" aria-hidden="true" />
+          <IconLine name="file-text" aria-hidden="true" />
           <span>Hồ sơ Thực địa Bản xứ · Địa hạt {{ placeName }}</span>
         </div>
         <span class="ward-terroir-digest__stamp">

@@ -22,11 +22,13 @@ const props = withDefaults(defineProps<{
   sourceTitle?: string | null
   sourceUrl?: string | null
   verifiedAt?: string | null
+  byline?: string | null
 }>(), {
   compact: false,
   sourceTitle: '',
   sourceUrl: '',
   verifiedAt: '',
+  byline: '',
 })
 
 const SOURCE_META = Object.freeze({

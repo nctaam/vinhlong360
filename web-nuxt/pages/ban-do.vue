@@ -6,7 +6,7 @@
       <div class="catalog-hero-inner map-hero-inner">
         <span class="catalog-hero-icon" aria-hidden="true"><IconLine name="map" /></span>
         <div>
-          <span class="dateline-eyebrow">Bản đồ sống · Tỉnh Vĩnh Long hợp nhất (3 vùng trước 7-2025)</span>
+          <span class="dateline-eyebrow">Bản đồ sống · Tỉnh Vĩnh Long hợp nhất (3 vùng trước 7-2025) · 10.254° N, 105.972° E</span>
           <h1>Bản đồ</h1>
           <p>So sánh vị trí bằng bản đồ, đối chiếu bằng danh sách và địa chỉ ngay cả khi tile không tải.</p>
         </div>
@@ -39,17 +39,47 @@
               <span>{{ preset.label }}</span>
             </button>
           </div>
-          <button
-            type="button"
-            class="map-contrast-toggle"
-            :class="{ 'is-high': outdoorContrast }"
-            :aria-pressed="outdoorContrast"
-            title="Tăng tương phản để dễ nhìn dưới nắng ngoài trời"
-            @click="outdoorContrast = !outdoorContrast"
-          >
-            <IconLine :name="outdoorContrast ? 'sun' : 'bulb'" aria-hidden="true" />
-            <span>{{ outdoorContrast ? 'Tương phản ngoài trời: BẬT' : 'Độ tương phản thực địa' }}</span>
-          </button>
+          <div class="map-field-actions" role="group" aria-label="Thao tác một tay & tương phản ngoài trời">
+            <button
+              type="button"
+              class="map-zoom-btn"
+              aria-label="Phóng to bản đồ"
+              title="Phóng to bản đồ (thao tác 1 tay)"
+              @click="zoomIn"
+            >
+              <IconLine name="plus" aria-hidden="true" />
+            </button>
+            <button
+              type="button"
+              class="map-zoom-btn"
+              aria-label="Thu nhỏ bản đồ"
+              title="Thu nhỏ bản đồ (thao tác 1 tay)"
+              @click="zoomOut"
+            >
+              <IconLine name="minus" aria-hidden="true" />
+            </button>
+            <button
+              type="button"
+              class="map-terroir-gps-btn"
+              title="Tâm điểm thổ nhưỡng Mang Thít (10.254° N, 105.972° E)"
+              aria-label="Định vị tâm điểm thổ nhưỡng 10.254° N, 105.972° E"
+              @click="resetToTerroirEpicenter"
+            >
+              <IconLine name="pin" aria-hidden="true" />
+              <span>10.254° N, 105.972° E</span>
+            </button>
+            <button
+              type="button"
+              class="map-contrast-toggle"
+              :class="{ 'is-high': outdoorContrast }"
+              :aria-pressed="outdoorContrast"
+              title="Tăng tương phản để dễ nhìn dưới nắng ngoài trời"
+              @click="outdoorContrast = !outdoorContrast"
+            >
+              <IconLine :name="outdoorContrast ? 'sun' : 'bulb'" aria-hidden="true" />
+              <span>{{ outdoorContrast ? 'Tương phản ngoài trời: BẬT' : 'Độ tương phản thực địa' }}</span>
+            </button>
+          </div>
         </div>
         <div v-if="hasActiveFilters" class="active-filter-ledger" role="region" aria-label="Bộ lọc đang áp dụng">
           <span class="afl-heading">Đang lọc:</span>
@@ -169,6 +199,23 @@ const quickWaterPresets = [
 
 function toggleWaterPreset(presetId: 'river' | 'pottery' | 'ferry') {
   activeWaterPreset.value = activeWaterPreset.value === presetId ? 'all' : presetId
+}
+
+function zoomIn() {
+  const current = searchView.state.value.viewport || { center: [105.972, 10.254], zoom: 10 }
+  const newZoom = Math.min(18, (current.zoom || 10) + 1)
+  searchView.setViewport({ center: current.center, zoom: newZoom })
+}
+
+function zoomOut() {
+  const current = searchView.state.value.viewport || { center: [105.972, 10.254], zoom: 10 }
+  const newZoom = Math.max(5, (current.zoom || 10) - 1)
+  searchView.setViewport({ center: current.center, zoom: newZoom })
+}
+
+function resetToTerroirEpicenter() {
+  searchView.setViewport({ center: [105.972, 10.254], zoom: 12 })
+  scopeAnnouncement.value = 'Đã định vị về tâm điểm thổ nhưỡng Mang Thít (10.254° N, 105.972° E).'
 }
 
 function filterTypes(value: unknown) {
@@ -422,12 +469,60 @@ useHead({
   color: var(--color-on-action, var(--white));
   font-weight: var(--weight-semibold);
 }
+.map-field-actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+.map-zoom-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 44px;
+  min-height: 44px;
+  padding: var(--space-2);
+  font-size: var(--text-sm);
+  color: var(--muted);
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-pill, 999px);
+  cursor: pointer;
+  transition: background 0.2s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.2s cubic-bezier(0.16, 1, 0.3, 1), color 0.2s cubic-bezier(0.16, 1, 0.3, 1), transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.map-zoom-btn:hover { background: var(--bg-warm); border-color: var(--border); color: var(--ink); transform: translateY(-1px); }
+.map-zoom-btn:active { transform: scale(0.96); }
+
+.map-terroir-gps-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  min-height: 44px;
+  padding: var(--space-1) var(--space-3);
+  font-size: var(--text-xs);
+  font-family: var(--font-mono, monospace);
+  color: var(--muted);
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-pill, 999px);
+  cursor: pointer;
+  transition: background 0.2s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.2s cubic-bezier(0.16, 1, 0.3, 1), color 0.2s cubic-bezier(0.16, 1, 0.3, 1), transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.map-terroir-gps-btn:hover { background: var(--bg-warm); border-color: var(--border); color: var(--ink); transform: translateY(-1px); }
+.map-terroir-gps-btn:active { transform: scale(0.96); }
+
 [data-outdoor-contrast="high"] .map-filters {
   border: 2px solid var(--color-brand);
   box-shadow: var(--shadow-md);
   background: var(--card);
 }
 [data-outdoor-contrast="high"] .map-quick-preset-btn {
+  border: 2px solid var(--color-brand);
+  font-weight: var(--weight-bold);
+  color: var(--color-text);
+}
+[data-outdoor-contrast="high"] .map-zoom-btn,
+[data-outdoor-contrast="high"] .map-terroir-gps-btn {
   border: 2px solid var(--color-brand);
   font-weight: var(--weight-bold);
   color: var(--color-text);

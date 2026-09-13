@@ -1,6 +1,6 @@
 <template>
   <div v-if="searchExpansionEnabled" class="ai-search-assist" :data-color-recipe="colorRecipe || undefined">
-    <button type="button" v-if="!aiReply && !loading && !errored" class="ai-toggle-btn ai-toggle-btn-emoji" @click="load"><IconLine name="sparkles" class="emoji-chip" /> Gợi ý AI cho "{{ query }}"</button>
+    <button type="button" v-if="!aiReply && !loading && !errored" class="ai-toggle-btn ai-toggle-btn-emoji" @click="load"><IconLine name="compass" class="emoji-chip" /> Gợi ý AI cho "{{ query }}"</button>
     <div v-else-if="loading" class="ai-loading ai-loading-padded" role="status" aria-label="Đang tải gợi ý"><div class="spinner spinner-center"></div></div>
     <div v-else-if="errored" class="ai-error" role="status">
       <IconLine name="alert-triangle" class="ai-error-icon" aria-hidden="true" />

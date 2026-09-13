@@ -8,7 +8,7 @@
     <div class="detail-aeo-summary__badge">
       <div class="detail-aeo-summary__badge-group">
         <span class="detail-aeo-summary__pill">
-          <IconLine name="sparkles" aria-hidden="true" />
+          <IconLine name="compass" aria-hidden="true" />
           <span>30s Thực địa · Góc nhìn Bản địa</span>
         </span>
         <span class="detail-aeo-summary__stamp">
@@ -61,7 +61,7 @@
       </div>
     </div>
 
-    <div class="detail-aeo-summary__footer">
+    <div v-if="tideCue && tideCue !== 'unavailable'" class="detail-aeo-summary__footer">
       <span class="detail-aeo-summary__tide-cue">
         <IconLine name="droplet" aria-hidden="true" />
         <span>{{ tideCue }}</span>
@@ -137,19 +137,19 @@ const tideCue = computed(() => {
   padding: var(--space-5);
   border-radius: var(--radius-sheet);
   background: var(--color-canvas);
-  border: 1px solid var(--color-border);
+  border: 1px solid var(--border-liquid-glass, var(--color-border));
   border-top: 3px solid var(--color-material-clay);
-  box-shadow: 0 2px 8px -2px rgba(var(--black-rgb), 0.05), 0 0 0 1px rgba(var(--white-rgb), 0.5);
+  box-shadow: 0 2px 8px -2px rgba(var(--black-rgb), 0.05), 0 0 0 1px var(--border-liquid-glass, rgba(var(--white-rgb), 0.5));
   contain: layout style;
   transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.25s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .detail-aeo-summary:hover {
-  box-shadow: 0 4px 14px -2px rgba(var(--black-rgb), 0.08), 0 0 0 1px rgba(var(--white-rgb), 0.7);
+  box-shadow: 0 4px 14px -2px rgba(var(--black-rgb), 0.08), 0 0 0 1px var(--border-liquid-glass, rgba(var(--white-rgb), 0.7));
 }
 
 .detail-aeo-summary[data-material-accent="amber"] {
-  border-top-color: var(--color-material-amber);
+  border-top-color: var(--alluvial-gold, var(--color-material-amber));
 }
 
 .detail-aeo-summary[data-material-accent="leaf"] {
@@ -161,7 +161,7 @@ const tideCue = computed(() => {
 }
 
 .dark .detail-aeo-summary {
-  box-shadow: 0 1px 3px rgba(var(--black-rgb), 0.2), 0 0 0 1px rgba(var(--white-rgb), 0.08);
+  box-shadow: 0 1px 3px rgba(var(--black-rgb), 0.2), 0 0 0 1px var(--border-liquid-glass, rgba(var(--white-rgb), 0.08));
 }
 
 .detail-aeo-summary__badge {

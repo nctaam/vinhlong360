@@ -15,7 +15,7 @@
           </button>
 
           <header class="disclosure-header">
-            <span class="disclosure-kicker"><IconLine name="sparkles" aria-hidden="true" /> Gợi ý có giải thích</span>
+            <span class="disclosure-kicker"><IconLine name="info" aria-hidden="true" /> Gợi ý có giải thích</span>
             <h2 id="why-this-title">Vì sao bạn thấy nội dung này?</h2>
             <p>Chúng tôi chỉ hiển thị những tín hiệu khái quát dùng để sắp xếp gợi ý.</p>
           </header>
