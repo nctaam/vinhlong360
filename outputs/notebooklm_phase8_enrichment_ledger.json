@@ -1,0 +1,1264 @@
+{
+  "ben-cang-hanh-khach-vinh-long": {
+    "id": "ben-cang-hanh-khach-vinh-long",
+    "summary": "Bến cảng hành khách trung tâm tại Số 01 Ngô Quyền, Phường 1, TP. Vĩnh Long, cửa ngõ đường thủy đón tàu cao tốc và cano du lịch sông Cổ Chiên.",
+    "description": "Bến Cảng Hành Khách Vĩnh Long giữ vai trò cửa ngõ giao thương đường thủy trọng điểm, đón các tuyến tàu cao tốc, cano du lịch và thuyền gỗ kết nối trung tâm đô thị với 4 xã cù lao An Bình và các cồn bãi sinh thái trên sông Cổ Chiên.",
+    "hours": "06:00 - 18:30 hàng ngày (các tuyến cano và tàu du lịch chạy theo hợp đồng và khung giờ cố định)",
+    "price_range": "30.000 - 80.000 đ/lượt tàu sang cù lao; thuê cano du lịch trọn gói 500.000 - 1.500.000 đ/chuyến",
+    "best_time": "Sáng sớm 06:30 - 08:30 xuất bến đi cù lao An Bình ngắm sương sớm hoặc 16:00 - 17:30 ngắm hoàng hôn sông Cổ Chiên",
+    "waterway_access": "Tọa độ thủy diện bờ hữu sông Cổ Chiên tại Km 13+200, bố trí cầu dẫn nổi tải trọng 5 tấn đón tàu cao tốc, cano 24 chỗ và tàu gỗ du lịch 40 chỗ cập mạn an toàn.",
+    "transit_guidance": "Kết nối đường bộ qua đường Ngô Quyền và đường Phan Bội Châu; cách Bến xe Vĩnh Long khoảng 2,8 km; thuận tiện đi xe ôm, taxi hoặc xe buýt nội tỉnh tuyến số 01.",
+    "cultural_notes": "Đóng vai trò cửa ngõ giao thương đường thủy sầm uất hàng thế kỷ của xứ Long Hồ dinh xưa, nay là đầu mối du lịch đường sông kết nối các cù lao sinh thái với trung tâm đô thị.",
+    "visual_narrative": "Góc máy toàn cảnh góc rộng ghi lại cảnh cano rẽ sóng trắng xóa trên mặt sông Cổ Chiên lấp lánh ánh bình minh, phía xa là rặng bần xanh rì của cù lao An Bình.",
+    "aeo_schema_type": "TouristAttraction",
+    "source_citations": [
+      {
+        "source_id": "SRC-TIER1-SGTVT-VL-001",
+        "title": "Công bố vùng nước cảng bến thủy nội địa tiếp nhận phương tiện thủy hành khách tỉnh Vĩnh Long",
+        "url": "https://sgtvt.vinhlong.gov.vn/van-ban/cong-bo-vung-nuoc-cang-hanh-khach-vinh-long",
+        "author_or_institution": "Sở Giao thông Vận tải Vĩnh Long",
+        "notebook_id": "v-nh-long-v-nh-long-b-n-tre-tr",
+        "target_notebook": "v-nh-long-v-nh-long-b-n-tre-tr",
+        "tier": "TIER_1_GOVERNMENT",
+        "authority_weight": 1.0
+      },
+      {
+        "source_id": "SRC-TIER2-ND-010",
+        "title": "Đánh thức tiềm năng du lịch sông nước miệt vườn cù lao Vĩnh Long",
+        "url": "https://nhandan.vn/du-lich/danh-thuc-tiem-nang-du-lich-song-nuoc-vinh-long-739201",
+        "author_or_institution": "Báo Nhân Dân",
+        "notebook_id": "v-nh-long-v-nh-long-b-n-tre-tr",
+        "target_notebook": "v-nh-long-v-nh-long-b-n-tre-tr",
+        "tier": "TIER_2_SCHOLARLY",
+        "authority_weight": 0.95
+      }
+    ],
+    "verifiedAt": "2026-09-13T19:00:00+07:00",
+    "verifiedSource": "NotebookLM Deep Terroir Research - Phase 2"
+  },
+  "ben-pha-dinh-khao-vinh-long": {
+    "id": "ben-pha-dinh-khao-vinh-long",
+    "summary": "Bến phà huyết mạch trên Quốc lộ 57 vượt luồng sông Cổ Chiên nối khu vực Long Hồ sang vùng miệt vườn Chợ Lách.",
+    "description": "Bến Phà Đình Khao kết nối giao thông đường bộ xuyên suốt giữa Vĩnh Long và Chợ Lách qua dòng Cổ Chiên rộng lớn. Hệ thống phà tải trọng 100 đến 200 tấn vận hành liên tục ngày đêm, trung chuyển hàng triệu lượt khách và nông sản mỗi năm.",
+    "hours": "Vận hành liên tục 24/24 giờ hàng ngày (ban ngày 10-15 phút/chuyến; từ 22:00 đến 04:00 cách 30-45 phút/chuyến)",
+    "price_range": "2.000 đ/người đi bộ; 6.000 đ/xe máy; 25.000 - 45.000 đ/ô tô con dưới 9 chỗ",
+    "best_time": "Khung giờ 05:30 - 07:00 buổi sáng ngắm bình minh trên sông hoặc 16:30 - 18:00 chiều tà tránh lưu lượng xe cao điểm",
+    "waterway_access": "Vị trí bến tại Km 2+800 Quốc lộ 57, hai đầu bến vượt luồng sông Cổ Chiên rộng hơn 1.200 m với hệ thống phao phà 100 tấn và 200 tấn vận hành liên tục.",
+    "transit_guidance": "Tuyến giao thông huyết mạch trên Quốc lộ 57 kết nối khu vực Long Hồ sang vùng Chợ Lách; kết nối trực tiếp xe khách và xe tải trung chuyển nông sản miệt vườn.",
+    "cultural_notes": "Mang đậm dấu ấn giao thương sông nước miệt vườn; nơi lưu chuyển hàng triệu tấn trái cây giống Chợ Lách sang bờ Vĩnh Long để đi khắp các tỉnh thành cả nước.",
+    "visual_narrative": "Góc máy trung cảnh chụp từ mạn phà Đình Khao lúc ráng chiều buông xuống mặt sông mênh mông, những chiếc xe máy chở đầy giỏ hoa kiểng và sầu riêng ngược xuôi.",
+    "aeo_schema_type": "CivicStructure",
+    "source_citations": [
+      {
+        "source_id": "SRC-TIER1-SGTVT-VL-002",
+        "title": "Thông báo phương án tổ chức vận tải hành khách và hàng hóa qua Bến phà Đình Khao",
+        "url": "https://sgtvt.vinhlong.gov.vn/thong-bao/phuong-an-van-tai-pha-dinh-khao",
+        "author_or_institution": "Sở Giao thông Vận tải Vĩnh Long",
+        "target_notebook": "v-nh-long-v-nh-long-b-n-tre-tr",
+        "tier": "TIER_1_GOVERNMENT",
+        "authority_weight": 1.0
+      },
+      {
+        "source_id": "SRC-TIER2-BGT-001",
+        "title": "Bảo đảm giao thông thông suốt tại Bến phà Đình Khao nối đôi bờ Cổ Chiên",
+        "url": "https://baogiaothong.vn/bao-dam-giao-thong-pha-dinh-khao-1922305121045231.htm",
+        "author_or_institution": "Báo Giao Thông",
+        "target_notebook": "v-nh-long-v-nh-long-b-n-tre-tr",
+        "tier": "TIER_2_SCHOLARLY",
+        "authority_weight": 0.95
+      }
+    ],
+    "verifiedAt": "2026-09-13T19:00:00+07:00",
+    "verifiedSource": "NotebookLM Deep Terroir Research - Phase 8"
+  },
+  "ben-pha-an-binh-vinh-long": {
+    "id": "ben-pha-an-binh-vinh-long",
+    "summary": "Bến phà dân sinh và du lịch bên bờ sông Cổ Chiên tại Phường 1, TP. Vĩnh Long, kết nối trực tiếp sang 4 xã cù lao An Bình.",
+    "description": "Bến Phà An Bình nằm đối diện cù lao xanh An Bình, giữ vai trò nhịp cầu giao thương và du lịch không thể thiếu của cư dân miệt vườn. Đò máy và phà khách xuất bến đều đặn chở du khách tham quan các vườn chôm chôm, nhãn xuồng và homestay sinh thái.",
+    "hours": "04:30 - 22:30 hàng ngày (tần suất 10-15 phút/chuyến đón khách du lịch và cư dân địa phương)",
+    "price_range": "2.000 đ/người đi bộ; 5.000 đ/xe đạp; 6.000 đ/xe máy; 15.000 đ/xe ba gác",
+    "best_time": "Buổi sáng 06:00 - 08:00 khi ghe xuồng chở trái cây tấp nập qua sông sang chợ Vĩnh Long hoặc hoàng hôn 17:00",
+    "waterway_access": "Bố trí tại bờ sông Cổ Chiên đối diện cù lao An Bình, cầu phao thép nổi neo đậu đón các đò máy 30-50 khách vượt khoảng cách sông 600 m an toàn.",
+    "transit_guidance": "Điểm kết nối nhanh từ trung tâm Phường 1 sang 4 xã cù lao (An Bình, Bình Hòa Phước, Hòa Ninh, Đồng Phú); bến bờ Vĩnh Long nằm sát công viên Sông Tiền.",
+    "cultural_notes": "Huyết mạch dân sinh và du lịch của cư dân 4 xã cù lao; lưu giữ nét sinh hoạt qua phà mộc mạc của xứ sở vườn cây ăn trái quanh năm trĩu quả.",
+    "visual_narrative": "Góc máy thấp ghi lại cảnh chiếc đò gỗ sơn màu lam rẽ sóng chở đoàn khách du lịch đội nón lá qua cù lao giữa đôi bờ rợp bóng rặng bần xanh ngát.",
+    "aeo_schema_type": "CivicStructure",
+    "source_citations": [
+      {
+        "source_id": "SRC-TIER1-UBND-VL-003",
+        "title": "Quy hoạch phát triển mạng lưới vận tải hành khách đường thủy nội địa tỉnh Vĩnh Long",
+        "url": "https://vinhlong.gov.vn/quy-hoach/van-tai-thuy-noi-dia-an-binh",
+        "author_or_institution": "Ủy ban Nhân dân Tỉnh Vĩnh Long",
+        "target_notebook": "v-nh-long-v-nh-long-b-n-tre-tr",
+        "tier": "TIER_1_GOVERNMENT",
+        "authority_weight": 1.0
+      },
+      {
+        "source_id": "SRC-TIER2-BVL-002",
+        "title": "Nhịp sống đôi bờ sông Cổ Chiên qua những chuyến phà An Bình",
+        "url": "https://baovinhlong.vn/van-hoa-du-lich/nhip-song-pha-an-binh-312045/",
+        "author_or_institution": "Báo Vĩnh Long",
+        "target_notebook": "v-nh-long-v-nh-long-b-n-tre-tr",
+        "tier": "TIER_2_SCHOLARLY",
+        "authority_weight": 0.95
+      }
+    ],
+    "verifiedAt": "2026-09-13T19:00:00+07:00",
+    "verifiedSource": "NotebookLM Deep Terroir Research - Phase 8"
+  },
+  "ben-pha-tran-phu-can-tho-vinh-long-vinh-long": {
+    "id": "ben-pha-tran-phu-can-tho-vinh-long-vinh-long",
+    "summary": "Bến phà dân sinh vượt sông Hậu kết nối khu vực Bình Minh sang bến Ninh Kiều và bờ Trần Phú của Cần Thơ.",
+    "description": "Bến Phà Trần Phú lưu giữ nhịp sống giao thương sông nước Nam Bộ truyền thống vượt dòng sông Hậu mênh mông. Hành khách qua phà vừa di chuyển thuận tiện giữa trung tâm Bình Minh và Cần Thơ vừa có dịp ngắm nhìn cầu Cần Thơ hùng vĩ phía thượng lưu.",
+    "hours": "04:00 - 22:00 hàng ngày (tần suất 15-20 phút/chuyến; phà đêm chạy cách 30 phút)",
+    "price_range": "3.000 đ/người đi bộ; 8.000 đ/xe máy; 30.000 - 50.000 đ/ô tô con",
+    "best_time": "Khoảng 05:00 - 06:30 sáng ngắm tàu thuyền tấp nập trên sông Hậu hoặc 18:00 - 20:00 ngắm ánh đèn lung linh từ Cần Thơ",
+    "waterway_access": "Cầu bến bố trí tại bờ hữu sông Hậu thuộc vùng Bình Minh, luồng phà vượt ngang lòng sông rộng 1.000 m sang bến Ninh Kiều và bờ Trần Phú.",
+    "transit_guidance": "Kết nối trung tâm Bình Minh với quận Ninh Kiều; phương án di chuyển thú vị ngắm cảnh sông nước thay thế việc đi vòng qua cầu Cần Thơ dài 8 km.",
+    "cultural_notes": "Từng là bến phà huyết mạch chứng kiến lịch sử giao thương Nam Bộ trước khi cầu Cần Thơ khánh thành năm 2010; hiện giữ vai trò trung chuyển dân sinh và trải nghiệm sông nước.",
+    "visual_narrative": "Góc ảnh toàn cảnh từ boong phà hướng về cầu Cần Thơ sừng sững phía thượng lưu, ánh đèn đường ven bờ Bình Minh hòa cùng nhịp sóng gợn lăn tăn.",
+    "aeo_schema_type": "CivicStructure",
+    "source_citations": [
+      {
+        "source_id": "SRC-TIER1-SGTVT-VL-004",
+        "title": "Quản lý khai thác tuyến vận tải hành khách đường thủy Bình Minh - Cần Thơ",
+        "url": "https://sgtvt.vinhlong.gov.vn/van-tai-thuy/tuyen-binh-minh-can-tho",
+        "author_or_institution": "Sở Giao thông Vận tải Vĩnh Long",
+        "target_notebook": "v-nh-long-v-nh-long-b-n-tre-tr",
+        "tier": "TIER_1_GOVERNMENT",
+        "authority_weight": 1.0
+      },
+      {
+        "source_id": "SRC-TIER2-BCT-001",
+        "title": "Ký ức bến phà sông Hậu và nhịp sống giao thương đôi bờ Cần Thơ - Vĩnh Long",
+        "url": "https://baocantho.com.vn/ky-uc-ben-pha-song-hau-doi-bo-a142019.html",
+        "author_or_institution": "Báo Cần Thơ",
+        "target_notebook": "v-nh-long-v-nh-long-b-n-tre-tr",
+        "tier": "TIER_2_SCHOLARLY",
+        "authority_weight": 0.95
+      }
+    ],
+    "verifiedAt": "2026-09-13T19:00:00+07:00",
+    "verifiedSource": "NotebookLM Deep Terroir Research - Phase 8"
+  },
+  "ben-tau-du-lich-tp-ben-tre-ben-tre": {
+    "id": "ben-tau-du-lich-tp-ben-tre-ben-tre",
+    "summary": "Bến tàu du lịch trung tâm ven đường Hùng Vương, phường An Hội, điểm khởi hành các tour du thuyền sông Chẹt Sậy và rạch Bến Tre.",
+    "description": "Bến tàu Du lịch Bến Tre đón tiếp du khách khởi hành các tuyến du lịch đường sông khám phá miền quê rợp bóng dừa. Cầu tàu kiên cố tiếp nhận tàu du lịch đưa đón khách đến các làng nghề kẹo dừa, cồn Ốc và vườn trái cây sinh thái.",
+    "hours": "06:30 - 18:00 hàng ngày (nhận hợp đồng tour đêm ngắm đom đóm rạch Chẹt Sậy đến 21:00)",
+    "price_range": "150.000 - 350.000 đ/khách (tùy tour tham quan cồn rạch); thuê tàu riêng 800.000 - 2.500.000 đ/chuyến",
+    "best_time": "07:30 - 09:30 sáng đón luồng gió mát rạch Bến Tre hoặc 15:30 - 17:30 chiều ngắm hoàng hôn rạch Hàm Luông",
+    "waterway_access": "Tọa độ bến tại ngã ba sông Chẹt Sậy và rạch Bến Tre, cầu tàu bê tông cốt thép đón cùng lúc 10 tàu du lịch tải trọng 20-50 khách.",
+    "transit_guidance": "Bố trí ven đường Hùng Vương thuộc phường An Hội; dễ dàng đón taxi, xe điện du lịch hoặc xe buýt liên tỉnh từ bến xe trung tâm Bến Tre cách 3 km.",
+    "cultural_notes": "Trọng điểm xuất phát của các tuyến tour du lịch sinh thái sông nước xứ dừa; kết nối du khách đến các lò kẹo dừa thủ công, vườn bưởi da xanh và cồn bãi nguyên sinh.",
+    "visual_narrative": "Đặc tả dãy tàu gỗ du lịch mũi nhọn viền đỏ neo đậu san sát bên bờ kè rợp bóng dừa nước, ánh phản chiếu của dòng nước phù sa lấp lánh dưới nắng vàng.",
+    "aeo_schema_type": "TouristAttraction",
+    "source_citations": [
+      {
+        "source_id": "SRC-TIER1-SVHTTDL-BT-001",
+        "title": "Đề án phát triển du lịch đường sông kết nối các cù lao sinh thái Bến Tre",
+        "url": "https://svhttdl.bentre.gov.vn/du-lich/de-an-du-lich-duong-song-ben-tre",
+        "author_or_institution": "Sở Văn hóa Thể thao và Du lịch Bến Tre",
+        "target_notebook": "mekong-360-t-p-2",
+        "tier": "TIER_1_GOVERNMENT",
+        "authority_weight": 1.0
+      },
+      {
+        "source_id": "SRC-TIER2-BDK-001",
+        "title": "Bến tàu du lịch Bến Tre: Cửa ngõ đưa du khách khám phá chiều sâu xứ dừa",
+        "url": "https://baodongkhoi.vn/ben-tau-du-lich-kham-pha-xu-dua-24012023.html",
+        "author_or_institution": "Báo Đồng Khởi",
+        "target_notebook": "mekong-360-t-p-2",
+        "tier": "TIER_2_SCHOLARLY",
+        "authority_weight": 0.95
+      }
+    ],
+    "verifiedAt": "2026-09-13T19:00:00+07:00",
+    "verifiedSource": "NotebookLM Deep Terroir Research - Phase 8"
+  },
+  "ben-pha-ham-luong-ben-tre": {
+    "id": "ben-pha-ham-luong-ben-tre",
+    "summary": "Bến phà dân sinh hoài niệm vượt sông Hàm Luông nối thành phố Bến Tre với vùng cù lao Mỏ Cày.",
+    "description": "Bến phà Hàm Luông gắn liền với ký ức giao thương sông nước một thời của vùng đất ba dải cù lao. Ngày nay bến phà phục vụ nhu cầu đi lại dân sinh và mang đến trải nghiệm ngắm dòng sông Hàm Luông lộng gió cho người đi bộ và xe hai bánh.",
+    "hours": "05:00 - 21:00 hàng ngày (phục vụ người đi bộ, xe 2 bánh và đò du lịch)",
+    "price_range": "3.000 đ/người đi bộ; 7.000 đ/xe máy",
+    "best_time": "06:00 - 07:30 sáng ngắm dòng sông Hàm Luông lộng gió hoặc 17:00 ngắm hoàng hôn miệt cù lao",
+    "waterway_access": "Vị trí bến đò dân sinh đặt tại khu vực Bình Phú và Tân Thạch, vượt sông Hàm Luông với các đò máy công suất 30-40 mã lực.",
+    "transit_guidance": "Dành cho người dân và khách du lịch trải nghiệm sông nước giữa thành phố Bến Tre và cù lao Mỏ Cày; các phương tiện ô tô di chuyển qua cầu Hàm Luông trên Quốc lộ 60.",
+    "cultural_notes": "Gợi nhớ ký ức bến phà Hàm Luông lịch sử từng là điểm trung chuyển trọng yếu trước năm 2010; ngày nay là không gian hoài niệm thanh bình của cư dân miệt vườn.",
+    "visual_narrative": "Góc máy trung cảnh ghi lại bóng con đò nhỏ băng qua sông Hàm Luông rộng lớn trong làn sương sớm mờ ảo, phía xa mờ hiện hình bóng cầu Hàm Luông hiện đại.",
+    "aeo_schema_type": "CivicStructure",
+    "source_citations": [
+      {
+        "source_id": "SRC-TIER1-SGTVT-BT-002",
+        "title": "Phương án duy trì và quản lý an toàn bến khách ngang sông Hàm Luông",
+        "url": "https://sgtvt.bentre.gov.vn/an-toan-giao-thong/ben-khach-ham-luong",
+        "author_or_institution": "Sở Giao thông Vận tải Bến Tre",
+        "target_notebook": "mekong-360-t-p-2",
+        "tier": "TIER_1_GOVERNMENT",
+        "authority_weight": 1.0
+      },
+      {
+        "source_id": "SRC-TIER2-BDK-002",
+        "title": "Chuyện bến phà Hàm Luông xưa và sức sống mới đôi bờ sông quê",
+        "url": "https://baodongkhoi.vn/chuyen-ben-pha-ham-luong-xua-08032022.html",
+        "author_or_institution": "Báo Đồng Khởi",
+        "target_notebook": "mekong-360-t-p-2",
+        "tier": "TIER_2_SCHOLARLY",
+        "authority_weight": 0.95
+      }
+    ],
+    "verifiedAt": "2026-09-13T19:00:00+07:00",
+    "verifiedSource": "NotebookLM Deep Terroir Research - Phase 8"
+  },
+  "ben-pha-tan-phu-chau-thanh-ben-tre": {
+    "id": "ben-pha-tan-phu-chau-thanh-ben-tre",
+    "summary": "Bến phà ngang sông Hàm Luông và sông Ba Lai kết nối khu vực Châu Thành sang vương quốc hoa quả Cái Mơn Chợ Lách.",
+    "description": "Bến phà Tân Phú tạo tuyến đường ngang chiến lược rút ngắn khoảng cách giữa Châu Thành và Chợ Lách. Đây là đầu mối trung chuyển quan trọng đưa hoa kiểng, cây giống và các loại trái cây sầu riêng, chôm chôm đặc sản đi tiêu thụ khắp các vùng.",
+    "hours": "04:30 - 21:30 hàng ngày (tần suất 15 phút/chuyến; giờ cao điểm 10 phút/chuyến)",
+    "price_range": "2.000 đ/người; 5.000 đ/xe đạp; 7.000 đ/xe máy; 25.000 - 40.000 đ/xe ba gác và ô tô nhỏ",
+    "best_time": "07:00 - 09:00 sáng vào mùa thu hoạch sầu riêng, chôm chôm tháng 5 đến tháng 8 hàng năm",
+    "waterway_access": "Cầu phao thép nổi bố trí hai đầu bến Tân Phú và Tiên Long, vượt sông Ba Lai và sông Hàm Luông thượng lưu luồng sâu an toàn.",
+    "transit_guidance": "Tuyến đường ngang chiến lược nối khu vực Châu Thành sang vùng hoa quả Cái Mơn Chợ Lách; rút ngắn 20 km so với đi vòng đường Quốc lộ 57B và Quốc lộ 60.",
+    "cultural_notes": "Cửa ngõ vận chuyển hoa kiểng, cây giống và trái cây sầu riêng đặc sản; nhịp cầu nối giao thương nghĩa tình giữa hai vùng đất trù phú bậc nhất xứ dừa.",
+    "visual_narrative": "Góc ảnh chụp cận cảnh những giỏ sầu riêng Cái Mơn đầy gai thơm nức chất đầy trên xe máy người nông dân đang chờ phà sang bờ Châu Thành.",
+    "aeo_schema_type": "CivicStructure",
+    "source_citations": [
+      {
+        "source_id": "SRC-TIER1-SGTVT-BT-003",
+        "title": "Nâng cấp tải trọng bến phà Tân Phú phục vụ vận chuyển nông sản Cái Mơn Chợ Lách",
+        "url": "https://sgtvt.bentre.gov.vn/du-an/nang-cap-ben-pha-tan-phu",
+        "author_or_institution": "Sở Giao thông Vận tải Bến Tre",
+        "target_notebook": "mekong-360-t-p-2",
+        "tier": "TIER_1_GOVERNMENT",
+        "authority_weight": 1.0
+      },
+      {
+        "source_id": "SRC-TIER2-BCT-003",
+        "title": "Mùa trái ngọt trên những chuyến phà Tân Phú miệt vườn Chợ Lách",
+        "url": "https://baocantho.com.vn/mua-trai-ngot-qua-pha-tan-phu-a151208.html",
+        "author_or_institution": "Báo Cần Thơ",
+        "target_notebook": "mekong-360-t-p-2",
+        "tier": "TIER_2_SCHOLARLY",
+        "authority_weight": 0.95
+      }
+    ],
+    "verifiedAt": "2026-09-13T19:00:00+07:00",
+    "verifiedSource": "NotebookLM Deep Terroir Research - Phase 8"
+  },
+  "ben-pha-dai-ngai-dau-cau-quan-tra-vinh-tra-vinh": {
+    "id": "ben-pha-dai-ngai-dau-cau-quan-tra-vinh-tra-vinh",
+    "summary": "Bến phà vượt hai nhánh sông Hậu qua Cù lao Dung trên trục Quốc lộ 60 nối vùng Cầu Quan với Sóc Trăng.",
+    "description": "Bến phà Đại Ngãi chốt giữ điểm kết nối đường thủy chiến lược trên hành lang duyên hải Quốc lộ 60. Các chuyến phà thép kiên cố vượt luồng sông Hậu đưa đón hành khách qua Cù lao Dung trong khi chờ dự án cầu Đại Ngãi hoàn thành.",
+    "hours": "04:00 - 21:30 hàng ngày (tần suất 20-30 phút/chuyến vượt hai luồng sông Hậu qua Cù lao Dung)",
+    "price_range": "3.000 đ/người; 8.000 đ/xe máy; 35.000 - 65.000 đ/ô tô con 4-7 chỗ",
+    "best_time": "Sáng 06:00 - 08:00 khi thủy triều dâng cao hoặc 16:30 - 18:00 ngắm mặt trời lặn trên cửa biển sông Hậu",
+    "waterway_access": "Cầu bến tại bờ Cầu Quan (vùng Tiểu Cần), tiếp nhận phà thép 100 tấn và 200 tấn chạy hai chặng: Cầu Quan - Cù lao Dung và Cù lao Dung - Đại Ngãi.",
+    "transit_guidance": "Điểm chốt giao thông cuối cùng trên Quốc lộ 60 nối Trà Vinh sang Sóc Trăng và Bạc Liêu qua đường thủy; sắp được nâng tầm bởi đại công trình Cầu Đại Ngãi.",
+    "cultural_notes": "Bến phà vượt sông lớn lâu đời ở miền hạ lưu sông Hậu; chứa đựng bề dày lịch sử khai hoang mở cõi và giao lưu văn hóa ba dân tộc Kinh - Khmer - Hoa.",
+    "visual_narrative": "Góc máy flycam nhìn từ trên cao bao quát luồng phà vượt sóng sông Hậu mênh mông, chia cắt hai bờ phù sa xanh ngát bóng dừa nước của Cù lao Dung.",
+    "aeo_schema_type": "CivicStructure",
+    "source_citations": [
+      {
+        "source_id": "SRC-TIER1-BGTVT-004",
+        "title": "Báo cáo nghiên cứu khả thi dự án đầu tư xây dựng cầu Đại Ngãi trên Quốc lộ 60",
+        "url": "https://mt.gov.vn/vn/tin-tuc/du-an-cau-dai-ngai-quoc-lo-60",
+        "author_or_institution": "Bộ Giao thông Vận tải",
+        "target_notebook": "ch-nh-s-ch-ph-p-lu-t-v-n-b-n-q",
+        "tier": "TIER_1_GOVERNMENT",
+        "authority_weight": 1.0
+      },
+      {
+        "source_id": "SRC-TIER2-BTV-001",
+        "title": "Ký ức bến phà Đại Ngãi và khát vọng nối liền đôi bờ sông Hậu",
+        "url": "https://baotravinh.vn/kinh-te/ky-uc-pha-dai-ngai-doi-bo-song-hau-28104.html",
+        "author_or_institution": "Báo Trà Vinh",
+        "target_notebook": "v-nh-long-v-nh-long-b-n-tre-tr",
+        "tier": "TIER_2_SCHOLARLY",
+        "authority_weight": 0.95
+      }
+    ],
+    "verifiedAt": "2026-09-13T19:00:00+07:00",
+    "verifiedSource": "NotebookLM Deep Terroir Research - Phase 8"
+  },
+  "cang-ca-binh-thang": {
+    "id": "cang-ca-binh-thang",
+    "summary": "Cảng cá biển sầm uất tại xã Bình Thắng ven cửa sông Cửa Đại, trung tâm hậu cần nghề cá lớn của vùng biển Bình Đại.",
+    "description": "Cảng cá Bình Thắng là đầu mối tiếp nhận hàng trăm tàu đánh bắt xa bờ cập bến mỗi rạng đông. Cầu cảng nhộn nhịp cảnh mua bán hải sản tươi sống và là nơi gìn giữ truyền thống lễ hội Nghinh Ông Thủy Tướng lâu đời của ngư dân miền biển.",
+    "hours": "Hoạt động 24/24 giờ; nhộn nhịp nhất từ 02:00 sáng đến 08:00 sáng khi đoàn tàu đánh bắt xa bờ cập cảng",
+    "price_range": "Vào cửa tự do; giá cá mực tươi mua sỉ tại bến dao động từ 50.000 - 250.000 đ/kg theo loại",
+    "best_time": "03:30 - 06:00 rạng sáng đón tàu cá cập bến và chứng kiến phiên chợ hải sản đầu ngày tấp nập",
+    "waterway_access": "Luồng hàng hải cửa sông Cửa Đại sâu 4,5 m, cầu cảng bê tông dài hơn 300 m tiếp nhận cùng lúc hàng trăm tàu cá xa bờ công suất trên 400 mã lực.",
+    "transit_guidance": "Vị trí tại xã Bình Thắng ven biển Bình Đại; kết nối đường bộ qua Đường tỉnh 883; cách trung tâm Bến Tre khoảng 50 km về phía đông.",
+    "cultural_notes": "Thương cảng đánh bắt thủy hải sản quy mô lớn của vùng biển xứ dừa với truyền thống nghề biển hàng trăm năm; nơi diễn ra Lễ hội Nghinh Ông Thủy Tướng cầu quốc thái dân an vào tháng 6 âm lịch.",
+    "visual_narrative": "Ánh đèn pha công suất lớn rực sáng cả một góc vịnh biển lúc rạng đông, soi rọi những khay mực nang, cá thu ánh bạc lấp lánh vừa được ngư dân bốc dỡ lên cầu cảng.",
+    "aeo_schema_type": "TouristAttraction",
+    "source_citations": [
+      {
+        "source_id": "SRC-TIER1-SNNPTNT-BT-004",
+        "title": "Quy hoạch phát triển hệ thống cảng cá và khu neo đậu tránh trú bão cho tàu cá khu vực Bến Tre",
+        "url": "https://snnptnt.bentre.gov.vn/thuy-san/quy-hoach-cang-ca-binh-thang",
+        "author_or_institution": "Sở Nông nghiệp và Phát triển Nông thôn Bến Tre",
+        "target_notebook": "ch-nh-s-ch-ph-p-lu-t-v-n-b-n-q",
+        "tier": "TIER_1_GOVERNMENT",
+        "authority_weight": 1.0
+      },
+      {
+        "source_id": "SRC-TIER2-ND-011",
+        "title": "Nhịp sống lao động biển đảo tại cảng cá Bình Thắng cửa biển Bình Đại",
+        "url": "https://nhandan.vn/kinh-te/nhip-song-cang-ca-binh-thang-ben-tre-690214",
+        "author_or_institution": "Báo Nhân Dân",
+        "target_notebook": "mekong-360-t-p-2",
+        "tier": "TIER_2_SCHOLARLY",
+        "authority_weight": 0.95
+      }
+    ],
+    "verifiedAt": "2026-09-13T19:00:00+07:00",
+    "verifiedSource": "NotebookLM Deep Terroir Research - Phase 8"
+  },
+  "vuot-song-co-chien": {
+    "id": "vuot-song-co-chien",
+    "summary": "Trải nghiệm vượt sông Cổ Chiên bằng phà và đò máy, thưởng ngoạn sóng nước phù sa và rặng bần xanh ngát đôi bờ.",
+    "description": "Hành trình vượt sông Cổ Chiên đưa du khách hòa vào không gian sông nước bao la của dòng hạ lưu sông Tiền. Từ mạn phà hoặc ghe đò, du khách chiêm ngưỡng cảnh ghe xuồng tấp nập, những vạt bần xanh biếc và thấp thoáng mái lò gốm Mang Thít trầm mặc.",
+    "hours": "05:00 - 21:00 hàng ngày (kết hợp các chuyến phà và đò du lịch địa phương)",
+    "price_range": "6.000 - 15.000 đ/lượt phà; tour trải nghiệm chèo thuyền ba lá 80.000 - 150.000 đ/người",
+    "best_time": "06:00 - 08:00 sáng khi mặt nước sông tĩnh lặng hoặc 17:00 ngắm ráng chiều đỏ rực trên dòng Cổ Chiên",
+    "waterway_access": "Tuyến đường thủy trên dòng chính sông Cổ Chiên nối Vĩnh Long, Bến Tre và Trà Vinh, luồng sâu cho phép tàu thuyền và cano du lịch hoạt động an toàn bốn mùa.",
+    "transit_guidance": "Du khách xuất phát từ Bến cảng hành khách Vĩnh Long hoặc bến đò An Bình; kết nối thuận lợi với các điểm homestay miệt vườn và làng gốm Mang Thít.",
+    "cultural_notes": "Dòng sông Cổ Chiên là nhánh hạ lưu hùng vĩ của sông Tiền, nuôi dưỡng nguồn phù sa dồi dào cho các miệt vườn trù phú và vùng đất sét gốm đỏ đặc trưng.",
+    "visual_narrative": "Góc nhìn từ mạn thuyền ghi lại dòng nước đỏ nặng phù sa cuộn trôi, hai bên bờ thấp thoáng những hàng bần trĩu quả và mái lò gốm đỏ rực màu gạch nung.",
+    "aeo_schema_type": "TouristAttraction",
+    "source_citations": [
+      {
+        "source_id": "SRC-TIER1-SVHTTDL-VL-005",
+        "title": "Sản phẩm du lịch đặc thù sông nước cù lao và làng nghề gốm đỏ sông Cổ Chiên",
+        "url": "https://svhttdl.vinhlong.gov.vn/du-lich/san-pham-du-lich-song-co-chien",
+        "author_or_institution": "Sở Văn hóa Thể thao và Du lịch Vĩnh Long",
+        "target_notebook": "v-nh-long-v-nh-long-b-n-tre-tr",
+        "tier": "TIER_1_GOVERNMENT",
+        "authority_weight": 1.0
+      },
+      {
+        "source_id": "SRC-TIER2-TCDL-001",
+        "title": "Mênh mang sóng nước Cổ Chiên: Hành trình trải nghiệm văn hóa thổ nhưỡng Nam Bộ",
+        "url": "https://tapchidulich.gov.vn/hanh-trinh-song-nuoc-co-chien-dbscl-2023.html",
+        "author_or_institution": "Tạp chí Du lịch",
+        "target_notebook": "v-nh-long-v-nh-long-b-n-tre-tr",
+        "tier": "TIER_2_SCHOLARLY",
+        "authority_weight": 0.95
+      }
+    ],
+    "verifiedAt": "2026-09-13T19:00:00+07:00",
+    "verifiedSource": "NotebookLM Deep Terroir Research - Phase 8"
+  },
+  "tuyen-song-co-chien-hoang-hon-bo-ke-vinh-long": {
+    "id": "tuyen-song-co-chien-hoang-hon-bo-ke-vinh-long",
+    "summary": "Tuyến du thuyền ngắm hoàng hôn khởi hành từ bến cảng trung tâm lướt dọc kè sông Cổ Chiên và thưởng thức trà chiều.",
+    "description": "Tuyến tàu du lịch hoàng hôn đưa du khách dạo quanh mũi cồn Cổ Chiên và bờ kè thành phố Vĩnh Long lúc ráng chiều buông xuống. Du khách thưởng thức trà sen thơm ngát, trái cây miệt vườn và lắng nghe giai điệu đờn ca tài tử êm dịu trên sóng nước.",
+    "hours": "16:00 - 19:30 hàng ngày (xuất bến phục vụ tour ngắm hoàng hôn và dùng trà chiều)",
+    "price_range": "120.000 - 250.000 đ/khách (bao gồm vé tàu, trà sen và trái cây miệt vườn tươi)",
+    "best_time": "17:00 - 18:30 chiều tà khi ánh hoàng hôn ngả sắc cam tím trên dòng sông Tiền và sông Cổ Chiên",
+    "waterway_access": "Khởi hành từ cầu tàu du lịch Bến Cảng Hành Khách Vĩnh Long, lướt êm ả dọc theo tuyến kè Phường 1, Phường 2 và vòng quanh mũi cồn Cổ Chiên.",
+    "transit_guidance": "Điểm đón khách nằm ngay trung tâm thành phố Vĩnh Long tại đường Lưu Văn Liệt và Ngô Quyền; dễ dàng đỗ xe ô tô tại bãi đỗ bến cảng.",
+    "cultural_notes": "Tận hưởng không gian sông nước thanh bình, lắng nghe điệu đờn ca tài tử Nam Bộ ngân vang trên sóng nước trong thời khắc ngày tàn thư thái.",
+    "visual_narrative": "Khung hình panorama góc rộng bắt trọn khoảnh khắc mặt trời đỏ ối lặn dần sau rặng dừa nước, phản chiếu sắc vàng óng ả lên thân cầu Mỹ Thuận phía xa xăm.",
+    "aeo_schema_type": "TouristAttraction",
+    "source_citations": [
+      {
+        "source_id": "SRC-TIER1-TTXTDL-VL-006",
+        "title": "Tour du lịch ngắm hoàng hôn và thưởng thức đờn ca tài tử trên sông Cổ Chiên",
+        "url": "https://vinhlongtourist.vn/tours/hoang-hon-song-co-chien",
+        "author_or_institution": "Trung tâm Thông tin Xúc tiến Du lịch Vĩnh Long",
+        "target_notebook": "v-nh-long-v-nh-long-b-n-tre-tr",
+        "tier": "TIER_1_GOVERNMENT",
+        "authority_weight": 1.0
+      },
+      {
+        "source_id": "SRC-TIER2-BVL-003",
+        "title": "Ngắm hoàng hôn bờ kè Vĩnh Long: Sản phẩm du lịch đêm hấp dẫn trên sông Cổ Chiên",
+        "url": "https://baovinhlong.vn/du-lich/ngam-hoang-hon-song-co-chien-320914/",
+        "author_or_institution": "Báo Vĩnh Long",
+        "target_notebook": "v-nh-long-v-nh-long-b-n-tre-tr",
+        "tier": "TIER_2_SCHOLARLY",
+        "authority_weight": 0.95
+      }
+    ],
+    "verifiedAt": "2026-09-13T19:00:00+07:00",
+    "verifiedSource": "NotebookLM Deep Terroir Research - Phase 8"
+  },
+  "ben-xe-vinh-long-trung-tam-vinh-long": {
+    "id": "ben-xe-vinh-long-trung-tam-vinh-long",
+    "summary": "Bến xe khách trung tâm tại Số 01E Đinh Tiên Hoàng, Phường 8, đầu mối vận tải đường bộ liên tỉnh và xe buýt nội tỉnh.",
+    "description": "Bến xe Vĩnh Long giữ vai trò trung tâm phân phối luồng hành khách đường bộ của tỉnh. Bến tiếp nhận các hãng xe khách chất lượng cao đi TP.HCM, các tỉnh Đông Nam Bộ cùng mạng lưới xe buýt tỏa đi Trà Ôn, Vũng Liêm và Cần Thơ.",
+    "hours": "Mở cửa 24/24 giờ hàng ngày (quầy vé xe liên tỉnh hoạt động 04:30 - 21:00; tuyến xe buýt nội tỉnh từ 05:30 - 18:30)",
+    "price_range": "Vé xe buýt nội tỉnh 12.000 - 25.000 đ/lượt; vé xe khách đi TP.HCM 140.000 - 200.000 đ/vé",
+    "best_time": "06:00 - 08:30 sáng đón xe buýt đi các vườn trái cây hoặc 13:30 - 15:30 chiều đi tuyến liên tỉnh",
+    "waterway_access": "Vị trí cách Bến Cảng Hành Khách Vĩnh Long khoảng 2,8 km theo đường Đinh Tiên Hoàng; dễ dàng bắt xe ôm hoặc taxi trung chuyển ra bến tàu.",
+    "transit_guidance": "Đầu mối giao thông trung tâm tại Số 01E Đinh Tiên Hoàng, Phường 8; tập trung đầy đủ các tuyến xe buýt nội tỉnh đi Trà Ôn, Vũng Liêm và xe buýt liên tỉnh sang Cần Thơ, Bến Tre.",
+    "cultural_notes": "Cửa ngõ vận tải đường bộ trung tâm của tỉnh Vĩnh Long; giữ vai trò phân luồng hàng vạn lượt hành khách mỗi ngày kết nối các vùng kinh tế trọng điểm phía Nam.",
+    "visual_narrative": "Góc máy trung cảnh chụp khu vực sân bến rộng lớn với đoàn xe khách giường nằm màu cam Phương Trang và xe buýt xanh xuất bến đón bình minh đầu ngày.",
+    "aeo_schema_type": "BusStation",
+    "source_citations": [
+      {
+        "source_id": "SRC-TIER1-SGTVT-VL-007",
+        "title": "Quyết định công bố xếp loại Bến xe khách Vĩnh Long đạt chuẩn bến xe loại 1 toàn quốc",
+        "url": "https://sgtvt.vinhlong.gov.vn/van-ban/cong-bo-ben-xe-khach-vinh-long-loai-1",
+        "author_or_institution": "Sở Giao thông Vận tải Vĩnh Long",
+        "target_notebook": "ch-nh-s-ch-ph-p-lu-t-v-n-b-n-q",
+        "tier": "TIER_1_GOVERNMENT",
+        "authority_weight": 1.0
+      },
+      {
+        "source_id": "SRC-TIER2-BVL-004",
+        "title": "Nâng cao chất lượng phục vụ hành khách tại Bến xe trung tâm thành phố Vĩnh Long",
+        "url": "https://baovinhlong.vn/kinh-te/nang-cao-chat-luong-ben-xe-vinh-long-304192/",
+        "author_or_institution": "Báo Vĩnh Long",
+        "target_notebook": "v-nh-long-v-nh-long-b-n-tre-tr",
+        "tier": "TIER_2_SCHOLARLY",
+        "authority_weight": 0.95
+      }
+    ],
+    "verifiedAt": "2026-09-13T19:00:00+07:00",
+    "verifiedSource": "NotebookLM Deep Terroir Research - Phase 8"
+  },
+  "ben-xe-ben-tre-trung-tam-ben-tre": {
+    "id": "ben-xe-ben-tre-trung-tam-ben-tre",
+    "summary": "Bến xe trung tâm tại Số 303 Đoàn Hoàng Minh, phường Phú Khương, đầu mối xe khách liên tỉnh và mạng lưới buýt xứ dừa.",
+    "description": "Bến xe Bến Tre điều phối mạng lưới giao thông đường bộ kết nối thành phố Bến Tre với các huyện cù lao và các trung tâm kinh tế lớn. Sân bến khang trang với các quầy vé hiện đại phục vụ hành khách di chuyển an toàn và thuận tiện.",
+    "hours": "Mở cửa 24/24 giờ hàng ngày (các nhà xe Phương Trang, Thịnh Phát, Minh Tâm chạy tuyến TP.HCM xuất bến 03:30 - 20:00)",
+    "price_range": "Vé xe buýt 15.000 - 30.000 đ/lượt; vé xe limousine và xe khách chất lượng cao đi TP.HCM 120.000 - 170.000 đ/vé",
+    "best_time": "05:00 - 07:30 sáng thuận lợi bắt các chuyến xe buýt tỏa đi miệt vườn Chợ Lách hoặc biển Ba Tri, Bình Đại",
+    "waterway_access": "Vị trí cách Bến tàu du lịch TP. Bến Tre trên đường Hùng Vương khoảng 3,2 km theo trục đường Đoàn Hoàng Minh và Nguyễn Thị Định.",
+    "transit_guidance": "Thiết lập tại Số 303 Đoàn Hoàng Minh, phường Phú Khương; đầu mối của mạng lưới xe buýt tỏa khắp các vùng Châu Thành, Mỏ Cày, Giồng Trôm, Ba Tri, Thạnh Phú.",
+    "cultural_notes": "Trọng điểm luân chuyển hành khách và bưu phẩm của ba dải cù lao xứ dừa; nơi tiếp đón hàng triệu lượt du khách trong và ngoài nước hàng năm.",
+    "visual_narrative": "Góc ảnh chụp từ phòng chờ bến xe nhìn ra dãy xe buýt đỏ vàng nối đuôi nhau sẵn sàng chở khách về miền rợp bóng dừa xanh mát.",
+    "aeo_schema_type": "BusStation",
+    "source_citations": [
+      {
+        "source_id": "SRC-TIER1-SGTVT-BT-005",
+        "title": "Công bố biểu đồ chạy xe các tuyến vận tải hành khách cố định liên tỉnh xuất bến Bến Tre",
+        "url": "https://sgtvt.bentre.gov.vn/van-tai-duong-bo/bieu-do-chay-xe-ben-xe-ben-tre",
+        "author_or_institution": "Sở Giao thông Vận tải Bến Tre",
+        "target_notebook": "ch-nh-s-ch-ph-p-lu-t-v-n-b-n-q",
+        "tier": "TIER_1_GOVERNMENT",
+        "authority_weight": 1.0
+      },
+      {
+        "source_id": "SRC-TIER2-BDK-003",
+        "title": "Bến xe Bến Tre bảo đảm phục vụ nhu cầu đi lại an toàn, văn minh của nhân dân",
+        "url": "https://baodongkhoi.vn/ben-xe-ben-tre-phuc-vu-di-lai-an-toan-12052023.html",
+        "author_or_institution": "Báo Đồng Khởi",
+        "target_notebook": "mekong-360-t-p-2",
+        "tier": "TIER_2_SCHOLARLY",
+        "authority_weight": 0.95
+      }
+    ],
+    "verifiedAt": "2026-09-13T19:00:00+07:00",
+    "verifiedSource": "NotebookLM Deep Terroir Research - Phase 8"
+  },
+  "ben-xe-tra-vinh-ben-xe-trung-tam-tra-vinh": {
+    "id": "ben-xe-tra-vinh-ben-xe-trung-tam-tra-vinh",
+    "summary": "Bến xe khách trung tâm tại Số 559 Quốc lộ 54, Phường 9, đầu mối xe khách chất lượng cao và xe buýt tỏa đi các huyện ven biển.",
+    "description": "Bến xe Trà Vinh là cửa ngõ giao thông đường bộ đón tiếp du khách bước vào không gian văn hóa chùa cổ Khmer và vùng duyên hải trù phú. Bến vận hành 7 tuyến buýt nội tỉnh kết nối thông suốt các trung tâm văn hóa và khu du lịch sinh thái.",
+    "hours": "03:30 - 22:30 hàng ngày (các tuyến xe buýt hoạt động từ 05:00 - 18:00; xe khách liên tỉnh xuất bến xuyên suốt)",
+    "price_range": "Vé xe buýt nội tỉnh 15.000 - 35.000 đ/lượt; vé xe khách giường nằm đi TP.HCM 160.000 - 220.000 đ/vé",
+    "best_time": "06:00 - 08:00 sáng đón xe buýt đi cụm chùa Khmer Cầu Kè, Tiểu Cần hoặc biển Ba Động Duyên Hải",
+    "waterway_access": "Vị trí cách bến tàu du lịch Ao Bà Om khoảng 4 km và cách bến phà Đại Ngãi khoảng 35 km theo trục Quốc lộ 54 và Quốc lộ 60.",
+    "transit_guidance": "Bố trí tại Số 559 Quốc lộ 54, Phường 9; trung tâm điều phối 7 tuyến xe buýt nội tỉnh kết nối tất cả các vùng ven biển và trung tâm văn hóa Khmer Trà Vinh.",
+    "cultural_notes": "Cửa ngõ giao thông trọng yếu mở lối du khách bước vào không gian văn hóa chùa cổ Khmer độc đáo và vùng đồng bằng ven biển phù sa trù phú.",
+    "visual_narrative": "Khung ảnh góc rộng bắt trọn hình ảnh cổng bến xe Trà Vinh với bảng chỉ dẫn song ngữ Việt - Khmer độc đáo trong nắng sớm miền cát giồng.",
+    "aeo_schema_type": "BusStation",
+    "source_citations": [
+      {
+        "source_id": "SRC-TIER1-SGTVT-TV-006",
+        "title": "Quy hoạch phân luồng các tuyến xe buýt và xe khách liên tỉnh tại Bến xe khách Trà Vinh",
+        "url": "https://sgtvt.travinh.gov.vn/van-ban/quy-hoach-ben-xe-khach-tra-vinh",
+        "author_or_institution": "Sở Giao thông Vận tải Trà Vinh",
+        "target_notebook": "ch-nh-s-ch-ph-p-lu-t-v-n-b-n-q",
+        "tier": "TIER_1_GOVERNMENT",
+        "authority_weight": 1.0
+      },
+      {
+        "source_id": "SRC-TIER2-BTV-002",
+        "title": "Hiện đại hóa hạ tầng giao thông bến bãi đáp ứng nhu cầu kết nối du lịch Trà Vinh",
+        "url": "https://baotravinh.vn/giao-thong/hien-dai-hoa-ben-xe-khach-tra-vinh-29104.html",
+        "author_or_institution": "Báo Trà Vinh",
+        "target_notebook": "v-nh-long-v-nh-long-b-n-tre-tr",
+        "tier": "TIER_2_SCHOLARLY",
+        "authority_weight": 0.95
+      }
+    ],
+    "verifiedAt": "2026-09-13T19:00:00+07:00",
+    "verifiedSource": "NotebookLM Deep Terroir Research - Phase 8"
+  },
+  "ben-xe-mien-tay-hcm": {
+    "id": "ben-xe-mien-tay-hcm",
+    "summary": "Bến xe khách liên tỉnh phía Tây tại 395 Kinh Dương Vương, quận Bình Tân, đầu mối xuất phát chính về các tỉnh đồng bằng sông Cửu Long.",
+    "description": "Bến xe liên tỉnh phía Tây tại TP.HCM là đầu mối vận tải hành khách đối ngoại quy mô lớn kết nối thành phố mang tên Bác với các tỉnh Tây Nam Bộ. Các tuyến xe xuất bến liên tục đưa đón hàng vạn lượt người dân và khách du lịch mỗi ngày.",
+    "hours": "Mở cửa liên tục 24/24 giờ quanh năm (tần suất các chuyến xe về Vĩnh Long, Bến Tre, Trà Vinh cách 15-30 phút/chuyến)",
+    "price_range": "Vé xe giường nằm 120.000 - 220.000 đ/vé tùy chặng đến các tỉnh đồng bằng sông Cửu Long",
+    "best_time": "Xuất phát sáng sớm 05:00 - 07:00 để đến Vĩnh Long hoặc Bến Tre trước 09:30 sáng, kịp lịch trình tham quan trong ngày",
+    "waterway_access": "Kết nối đường bộ ra Đại lộ Võ Văn Kiệt và Cao tốc TP.HCM - Trung Lương; không trực tiếp tiếp giáp đường thủy đồng bằng.",
+    "transit_guidance": "Bố trí tại 395 Kinh Dương Vương, phường An Lạc, quận Bình Tân; đón trả khách bằng mạng lưới xe buýt đô thị số 14, 39, 102 và tuyến metro tương lai.",
+    "cultural_notes": "Đầu mối giao thông đối ngoại lớn của đô thị phương Nam kết nối với các tỉnh Tây Nam Bộ; biểu tượng thân thương của hàng triệu người con châu thổ đi học tập và làm việc.",
+    "visual_narrative": "Góc máy flycam toàn cảnh bến xe lúc chập tối rực rỡ ánh đèn led của hàng trăm chiếc xe khách màu sắc rực rỡ xếp hàng ngay ngắn đón khách về quê.",
+    "aeo_schema_type": "BusStation",
+    "source_citations": [
+      {
+        "source_id": "SRC-TIER1-SGTVT-HCM-008",
+        "title": "Báo cáo thường niên quản lý hoạt động vận tải liên tỉnh tại Bến xe khách phía Tây",
+        "url": "https://sgtvt.hochiminhcity.gov.vn/van-tai/hoat-dong-ben-xe-mien-tay",
+        "author_or_institution": "Sở Giao thông Vận tải Thành phố Hồ Chí Minh",
+        "target_notebook": "ch-nh-s-ch-ph-p-lu-t-v-n-b-n-q",
+        "tier": "TIER_1_GOVERNMENT",
+        "authority_weight": 1.0
+      },
+      {
+        "source_id": "SRC-TIER2-BGT-002",
+        "title": "Nhộn nhịp những chuyến xe nghĩa tình từ bến xe cửa ngõ phía Tây về châu thổ sông Tiền, sông Hậu",
+        "url": "https://baogiaothong.vn/nhip-song-ben-xe-mien-tay-ve-dbscl-192240120153012.htm",
+        "author_or_institution": "Báo Giao Thông",
+        "target_notebook": "v-nh-long-v-nh-long-b-n-tre-tr",
+        "tier": "TIER_2_SCHOLARLY",
+        "authority_weight": 0.95
+      }
+    ],
+    "verifiedAt": "2026-09-13T19:00:00+07:00",
+    "verifiedSource": "NotebookLM Deep Terroir Research - Phase 8"
+  },
+  "tram-xe-buyt-noi-tinh-ben-xe-ben-tre-diem-dau-cac-tuyen-buyt-ben-tre": {
+    "id": "tram-xe-buyt-noi-tinh-ben-xe-ben-tre-diem-dau-cac-tuyen-buyt-ben-tre",
+    "summary": "Trạm điều hành xe buýt tại sảnh bến xe Bến Tre, điểm đầu của 8 tuyến xe buýt tỏa khắp các huyện cù lao.",
+    "description": "Trạm xe buýt điều hành Bến Tre kết nối mạng lưới giao thông công cộng từ trung tâm tỉnh lỵ đến Ba Tri, Bình Đại, Thạnh Phú, Mỏ Cày và Chợ Lách. Dịch vụ xe buýt văn minh giúp người dân và du khách đi lại thuận tiện với chi phí tiết kiệm.",
+    "hours": "05:15 - 17:45 hàng ngày (tần suất 15 - 25 phút/chuyến theo từng tuyến buýt số 01 đến 08)",
+    "price_range": "12.000 - 32.000 đ/lượt tùy cự ly di chuyển nội tỉnh",
+    "best_time": "06:00 - 08:30 sáng khi thời tiết mát mẻ, xe thông thoáng, phù hợp di chuyển tham quan các huyện",
+    "waterway_access": "Bố trí tại sảnh trước bến xe liên tỉnh; kết nối xe ôm ra bến phà Tân Phú hoặc bến phà Rạch Miễu cũ thuận tiện.",
+    "transit_guidance": "Điểm xuất phát của 8 tuyến xe buýt: Tuyến 01 (đi Phà Đình Khao - Vĩnh Long), Tuyến 02 (đi Tiệm Tôm - Ba Tri), Tuyến 03 (đi Bình Đại), Tuyến 04 (đi Thạnh Phú), Tuyến 08 (đi Chợ Lách).",
+    "cultural_notes": "Hệ thống vận tải hành khách công cộng văn minh, thân thiện với môi trường; hỗ trợ đắc lực cho học sinh, người cao tuổi và du khách ba lô trải nghiệm miệt vườn.",
+    "visual_narrative": "Hình ảnh người dân trật tự xếp hàng bước lên chuyến xe buýt xanh lộ trình Bến Tre - Phà Đình Khao, phía trước kính lái dán bảng lộ trình bằng chữ rõ nét.",
+    "aeo_schema_type": "BusStation",
+    "source_citations": [
+      {
+        "source_id": "SRC-TIER1-SGTVT-BT-007",
+        "title": "Biểu giá vé và lộ trình chi tiết các tuyến xe buýt công cộng khu vực Bến Tre",
+        "url": "https://sgtvt.bentre.gov.vn/xe-buyt/lo-trinh-gia-ve-xe-buyt-ben-tre",
+        "author_or_institution": "Sở Giao thông Vận tải Bến Tre",
+        "target_notebook": "ch-nh-s-ch-ph-p-lu-t-v-n-b-n-q",
+        "tier": "TIER_1_GOVERNMENT",
+        "authority_weight": 1.0
+      },
+      {
+        "source_id": "SRC-TIER2-BDK-004",
+        "title": "Xe buýt Bến Tre: Lựa chọn xanh, an toàn và tiết kiệm cho người dân và du khách",
+        "url": "https://baodongkhoi.vn/xe-buyt-ben-tre-lua-chon-xanh-15082023.html",
+        "author_or_institution": "Báo Đồng Khởi",
+        "target_notebook": "mekong-360-t-p-2",
+        "tier": "TIER_2_SCHOLARLY",
+        "authority_weight": 0.95
+      }
+    ],
+    "verifiedAt": "2026-09-13T19:00:00+07:00",
+    "verifiedSource": "NotebookLM Deep Terroir Research - Phase 8"
+  },
+  "diem-xe-buyt-phuong-trang-vinh-long-can-tho-tuyen-lien-tinh-vinh-long": {
+    "id": "diem-xe-buyt-phuong-trang-vinh-long-can-tho-tuyen-lien-tinh-vinh-long",
+    "summary": "Điểm đón trả khách xe buýt Phương Trang liên tỉnh Vĩnh Long – Cần Thơ trên trục Quốc lộ 1A.",
+    "description": "Tuyến xe buýt liên tỉnh chất lượng cao kết nối Phường 8 thành phố Vĩnh Long qua khu vực Bình Minh sang trung tâm thành phố Cần Thơ. Xe vận hành liên tục với tần suất 15 đến 20 phút một chuyến, mang lại sự tiện lợi cho người dân đi lại làm việc và học tập.",
+    "hours": "05:30 - 22:30 hàng ngày (tần suất đều đặn 15-20 phút/chuyến)",
+    "price_range": "15.000 - 35.000 đ/lượt (theo cự ly chặng Vĩnh Long - Bình Minh - Cần Thơ)",
+    "best_time": "Buổi sáng 06:30 - 08:30 hoặc chiều 15:30 - 17:30 ngắm quang cảnh vượt cầu Cần Thơ hùng vĩ",
+    "waterway_access": "Điểm dừng tiếp cận gần Bến phà Bình Minh và Bến tàu du lịch Bình Minh cách 3 km.",
+    "transit_guidance": "Điểm trung chuyển dọc Quốc lộ 1A kết nối Phường 8, khu vực Bình Minh và Bến xe Trung tâm Cần Thơ; trang bị xe buýt hiện đại máy lạnh và wifi miễn phí.",
+    "cultural_notes": "Mô hình xe buýt liên tỉnh kiểu mẫu thúc đẩy liên kết vùng kinh tế đô thị đôi bờ sông Hậu; giúp người dân hai địa phương đi lại, học tập và làm việc nhanh chóng.",
+    "visual_narrative": "Chiếc xe buýt màu cam đặc trưng di chuyển êm ái trên Quốc lộ 1A qua vườn bưởi Năm Roi Bình Minh rợp mát trong ánh nắng mai rực rỡ.",
+    "aeo_schema_type": "BusStation",
+    "source_citations": [
+      {
+        "source_id": "SRC-TIER1-SGTVT-VL-008",
+        "title": "Khai trương tuyến xe buýt liên tỉnh không trợ giá Vĩnh Long - Cần Thơ",
+        "url": "https://sgtvt.vinhlong.gov.vn/tin-tuc/khai-truong-xe-buyt-vinh-long-can-tho",
+        "author_or_institution": "Sở Giao thông Vận tải Vĩnh Long",
+        "target_notebook": "ch-nh-s-ch-ph-p-lu-t-v-n-b-n-q",
+        "tier": "TIER_1_GOVERNMENT",
+        "authority_weight": 1.0
+      },
+      {
+        "source_id": "SRC-TIER2-BGT-003",
+        "title": "Tuyến buýt liên tỉnh Phương Trang Vĩnh Long - Cần Thơ nâng cao chất lượng phục vụ",
+        "url": "https://baogiaothong.vn/tuyen-buyt-futa-vinh-long-can-tho-192230712093011.htm",
+        "author_or_institution": "Báo Giao Thông",
+        "target_notebook": "v-nh-long-v-nh-long-b-n-tre-tr",
+        "tier": "TIER_2_SCHOLARLY",
+        "authority_weight": 0.95
+      }
+    ],
+    "verifiedAt": "2026-09-13T19:00:00+07:00",
+    "verifiedSource": "NotebookLM Deep Terroir Research - Phase 8"
+  },
+  "ben-xe-vung-liem-vinh-long": {
+    "id": "ben-xe-vung-liem-vinh-long",
+    "summary": "Bến xe khách tại Tỉnh lộ 902, trung tâm Vũng Liêm, kết nối các tuyến xe buýt đi TP Vĩnh Long và xe khách liên tỉnh.",
+    "description": "Bến Xe Vũng Liêm phục vụ nhu cầu đi lại của người dân vùng đất ngã ba sông giàu truyền thống văn hóa. Bến là điểm đón trả khách của tuyến xe buýt số 02 và các chuyến xe khách đi TP.HCM, tạo điều kiện thuận lợi cho du khách về thăm Khu lưu niệm Thủ tướng Võ Văn Kiệt.",
+    "hours": "05:00 - 18:00 hàng ngày (xe buýt nội tỉnh số 02 chạy 05:30 - 17:30; xe khách đi TP.HCM xuất bến buổi sáng)",
+    "price_range": "Vé xe buýt 15.000 - 25.000 đ/lượt; vé xe khách giường nằm 150.000 - 180.000 đ/vé",
+    "best_time": "07:00 - 09:00 sáng đến thăm Khu tưởng niệm Thủ tướng Võ Văn Kiệt và chùa Hạnh Phúc Tăng",
+    "waterway_access": "Cách bến đò Vũng Liêm qua sông Cổ Chiên khoảng 1,5 km; kết nối các tuyến ghe đò chở lúa gạo và dừa sáp.",
+    "transit_guidance": "Bố trí ven Tỉnh lộ 902 và Quốc lộ 53; kết nối thông suốt giữa TP Vĩnh Long với các xã Nam Vũng Liêm và khu vực Càng Long của Trà Vinh.",
+    "cultural_notes": "Trung tâm giao thông xứ sở ngã ba sông nơi giao thoa giữa đất Vĩnh Long và Trà Vinh; quê hương của đồng chí Võ Văn Kiệt với những công trình văn hóa ý nghĩa.",
+    "visual_narrative": "Góc chụp từ sân bến xe rợp bóng cây xanh nhìn ra hàng quán cà phê cóc thơm nức hương cà phê pha phin buổi sáng miệt quê.",
+    "aeo_schema_type": "BusStation",
+    "source_citations": [
+      {
+        "source_id": "SRC-TIER1-UBND-VL-009",
+        "title": "Quy hoạch trung tâm giao thông vận tải và bến xe khách khu vực Vũng Liêm",
+        "url": "https://vinhlong.gov.vn/quy-hoach/ben-xe-vung-liem",
+        "author_or_institution": "Ủy ban Nhân dân Tỉnh Vĩnh Long",
+        "target_notebook": "ch-nh-s-ch-ph-p-lu-t-v-n-b-n-q",
+        "tier": "TIER_1_GOVERNMENT",
+        "authority_weight": 1.0
+      },
+      {
+        "source_id": "SRC-TIER2-BVL-005",
+        "title": "Giao thông Vũng Liêm khởi sắc kết nối du lịch lịch sử và miệt vườn sinh thái",
+        "url": "https://baovinhlong.vn/kinh-te/giao-thong-vung-liem-khoi-sac-319201/",
+        "author_or_institution": "Báo Vĩnh Long",
+        "target_notebook": "v-nh-long-v-nh-long-b-n-tre-tr",
+        "tier": "TIER_2_SCHOLARLY",
+        "authority_weight": 0.95
+      }
+    ],
+    "verifiedAt": "2026-09-13T19:00:00+07:00",
+    "verifiedSource": "NotebookLM Deep Terroir Research - Phase 8"
+  },
+  "ben-xe-tra-on-tich-thien-vinh-long": {
+    "id": "ben-xe-tra-on-tich-thien-vinh-long",
+    "summary": "Bến xe khách trên trục Quốc lộ 54 ven sông Hậu, phục vụ tuyến buýt đi TP Vĩnh Long và các xe đò liên xã.",
+    "description": "Bến Xe Trà Ôn là đầu mối vận tải đường bộ của vùng chuyên canh cam sành Tam Bình và vựa lúa ven sông Hậu. Vị trí bến nằm gần chợ nổi Trà Ôn và bến đò dân sinh, thuận tiện cho việc trung chuyển hàng hóa và hành khách.",
+    "hours": "05:00 - 17:30 hàng ngày (xe buýt số 03 từ TP Vĩnh Long đến Trà Ôn hoạt động đều đặn)",
+    "price_range": "Vé xe buýt 18.000 - 30.000 đ/lượt; vé xe khách đi TP.HCM 140.000 - 170.000 đ/vé",
+    "best_time": "05:30 - 07:30 sáng đón bình minh chợ nổi Trà Ôn trên sông Hậu",
+    "waterway_access": "Cách bến đò Trà Ôn và khu vực chợ nổi Trà Ôn chỉ 800 m; dễ dàng đi bộ hoặc đi xe ôm ra bờ sông Hậu.",
+    "transit_guidance": "Bố trí trên trục Quốc lộ 54 ven sông Hậu; đón đầu luồng giao thông từ Vĩnh Long sang Cầu Kè và vùng Bình Minh.",
+    "cultural_notes": "Vùng đất gắn liền trong bài vọng cổ Tình Anh Bán Chiếu; đầu mối trung chuyển của vùng cam sành Tam Bình và vựa lúa trù phú ven sông Hậu.",
+    "visual_narrative": "Khung cảnh bến xe tấp nập buổi sáng sớm với những sọt cam sành vỏ xanh óng ả được chuyển từ các miệt vườn lân cận lên khoang xe khách.",
+    "aeo_schema_type": "BusStation",
+    "source_citations": [
+      {
+        "source_id": "SRC-TIER1-SGTVT-VL-010",
+        "title": "Công bố mở rộng và nâng cấp tuyến xe buýt số 03 Vĩnh Long - Trà Ôn",
+        "url": "https://sgtvt.vinhlong.gov.vn/van-ban/nang-cap-tuyen-xe-buyt-vinh-long-tra-on",
+        "author_or_institution": "Sở Giao thông Vận tải Vĩnh Long",
+        "target_notebook": "ch-nh-s-ch-ph-p-lu-t-v-n-b-n-q",
+        "tier": "TIER_1_GOVERNMENT",
+        "authority_weight": 1.0
+      },
+      {
+        "source_id": "SRC-TIER2-BVL-006",
+        "title": "Nhịp sống Trà Ôn trên bến dưới thuyền ven dòng sông Hậu",
+        "url": "https://baovinhlong.vn/van-hoa-du-lich/nhip-song-tra-on-315802/",
+        "author_or_institution": "Báo Vĩnh Long",
+        "target_notebook": "v-nh-long-v-nh-long-b-n-tre-tr",
+        "tier": "TIER_2_SCHOLARLY",
+        "authority_weight": 0.95
+      }
+    ],
+    "verifiedAt": "2026-09-13T19:00:00+07:00",
+    "verifiedSource": "NotebookLM Deep Terroir Research - Phase 8"
+  },
+  "ben-xe-cho-lach-ben-tre": {
+    "id": "ben-xe-cho-lach-ben-tre",
+    "summary": "Bến xe trung tâm vùng hoa kiểng Cái Mơn Chợ Lách trên Quốc lộ 57, điểm đón tuyến xe buýt số 08 đi TP Bến Tre và Phà Đình Khao.",
+    "description": "Bến xe Chợ Lách đóng vai trò trung chuyển quan trọng tại thủ phủ cây giống hoa kiểng Cái Mơn. Tuyến xe buýt số 08 chạy liên tục nối bến xe với Bến phà Đình Khao sang bờ Vĩnh Long, giúp du khách dễ dàng khám phá các vườn sầu riêng và làng nghề hoa kiểng.",
+    "hours": "05:00 - 17:30 hàng ngày (xe buýt số 08 nối TP Bến Tre - Chợ Lách - Phà Đình Khao chạy 20 phút/chuyến)",
+    "price_range": "Vé xe buýt 15.000 - 32.000 đ/lượt; xe đưa rước liên tỉnh 130.000 - 160.000 đ/vé",
+    "best_time": "07:30 - 10:00 sáng tham quan vương quốc hoa kiểng, cây giống Cái Mơn và các vườn sầu riêng",
+    "waterway_access": "Cách bến phà Đình Khao sang Vĩnh Long 14 km và cách bến phà Tân Phú 18 km theo Quốc lộ 57.",
+    "transit_guidance": "Bố trí tại trung tâm Chợ Lách; kết nối trực tiếp xe buýt số 08 và mạng lưới xe đò liên xã phục vụ nhà vườn Cái Mơn.",
+    "cultural_notes": "Thủ phủ cây giống và hoa kiểng lớn của vùng đất phù sa; đầu mối vận chuyển cây xanh, cây ăn trái và hoa cúc mâm xôi đi khắp mọi miền tổ quốc mỗi dịp xuân về.",
+    "visual_narrative": "Góc ảnh rực rỡ sắc màu chụp từ cổng bến xe Chợ Lách với hàng trăm chậu hoa giấy ngũ sắc và cây kiểng bon-sai xếp hàng chờ xe tải chuyên dụng.",
+    "aeo_schema_type": "BusStation",
+    "source_citations": [
+      {
+        "source_id": "SRC-TIER1-SGTVT-BT-008",
+        "title": "Quy hoạch luồng tuyến vận tải phục vụ làng nghề cây giống hoa kiểng Chợ Lách",
+        "url": "https://sgtvt.bentre.gov.vn/quy-hoach/luong-tuyen-cho-lach",
+        "author_or_institution": "Sở Giao thông Vận tải Bến Tre",
+        "target_notebook": "ch-nh-s-ch-ph-p-lu-t-v-n-b-n-q",
+        "tier": "TIER_1_GOVERNMENT",
+        "authority_weight": 1.0
+      },
+      {
+        "source_id": "SRC-TIER2-BDK-005",
+        "title": "Chợ Lách rộn ràng những chuyến xe chở hoa kiểng ngày xuân",
+        "url": "https://baodongkhoi.vn/cho-lach-ron-rang-xe-cho-hoa-kieng-20012023.html",
+        "author_or_institution": "Báo Đồng Khởi",
+        "target_notebook": "mekong-360-t-p-2",
+        "tier": "TIER_2_SCHOLARLY",
+        "authority_weight": 0.95
+      }
+    ],
+    "verifiedAt": "2026-09-13T19:00:00+07:00",
+    "verifiedSource": "NotebookLM Deep Terroir Research - Phase 8"
+  },
+  "ben-xe-ba-tri-ben-tre": {
+    "id": "ben-xe-ba-tri-ben-tre",
+    "summary": "Bến xe khách trung tâm vùng duyên hải Ba Tri ven Tỉnh lộ 885, điểm cuối của tuyến xe buýt số 02 từ TP Bến Tre.",
+    "description": "Bến xe Ba Tri kết nối giao thông giữa trung tâm thành phố và vùng duyên hải phía đông xứ dừa. Bến đón các chuyến xe khách đi TP.HCM và xe buýt đưa đón du khách về viếng Khu di tích Mộ nhà thơ Nguyễn Đình Chiểu.",
+    "hours": "04:30 - 18:00 hàng ngày (các chuyến xe buýt số 02 chạy từ 05:00 - 17:30; xe khách đi TP.HCM xuất bến liên tục)",
+    "price_range": "Vé xe buýt 18.000 - 35.000 đ/lượt; vé xe khách 130.000 - 170.000 đ/vé",
+    "best_time": "06:30 - 08:30 sáng ghé thăm Di tích Mộ nhà thơ Nguyễn Đình Chiểu và Chợ cá Ba Tri",
+    "waterway_access": "Cách Cảng cá Tiệm Tôm và cửa biển Ba Lai khoảng 12 km theo Tỉnh lộ 885.",
+    "transit_guidance": "Bố trí tại trung tâm Ba Tri; điểm cuối của tuyến xe buýt số 02 từ TP Bến Tre và tuyến xe buýt liên vùng đi Giồng Trôm.",
+    "cultural_notes": "Vùng đất địa linh nhân kiệt duyên hải phía đông; nơi an nghỉ của danh nhân văn hóa thế giới Nguyễn Đình Chiểu và cụ Võ Trường Toản.",
+    "visual_narrative": "Khung hình tư liệu ghi lại nhịp sống bình dị của người dân vùng biển Ba Tri đội nón lá mang theo hải sản khô lên xe buýt về thành phố.",
+    "aeo_schema_type": "BusStation",
+    "source_citations": [
+      {
+        "source_id": "SRC-TIER1-SGTVT-BT-009",
+        "title": "Phê duyệt quy hoạch bến xe khách Ba Tri đáp ứng tiêu chuẩn loại 3",
+        "url": "https://sgtvt.bentre.gov.vn/quy-hoach/ben-xe-khach-ba-tri",
+        "author_or_institution": "Sở Giao thông Vận tải Bến Tre",
+        "target_notebook": "ch-nh-s-ch-ph-p-lu-t-v-n-b-n-q",
+        "tier": "TIER_1_GOVERNMENT",
+        "authority_weight": 1.0
+      },
+      {
+        "source_id": "SRC-TIER2-BDK-006",
+        "title": "Ba Tri phát triển đồng bộ giao thông đường bộ hướng biển",
+        "url": "https://baodongkhoi.vn/ba-tri-phat-trien-giao-thong-huong-bien-18042023.html",
+        "author_or_institution": "Báo Đồng Khởi",
+        "target_notebook": "mekong-360-t-p-2",
+        "tier": "TIER_2_SCHOLARLY",
+        "authority_weight": 0.95
+      }
+    ],
+    "verifiedAt": "2026-09-13T19:00:00+07:00",
+    "verifiedSource": "NotebookLM Deep Terroir Research - Phase 8"
+  },
+  "ben-xe-mo-cay-nam-ben-tre": {
+    "id": "ben-xe-mo-cay-nam-ben-tre",
+    "summary": "Bến xe khách trên trục Quốc lộ 60 tại trung tâm Mỏ Cày Nam, kết nối xe buýt đi TP Bến Tre và vùng Thạnh Phú.",
+    "description": "Bến xe Mỏ Cày Nam là điểm trung chuyển trọng điểm trên hành lang kinh tế Quốc lộ 60. Nơi đây kết nối thuận lợi du khách đến Di tích Quốc gia đặc biệt Đồng Khởi Định Thủy và các cơ sở chế biến dừa truyền thống.",
+    "hours": "05:00 - 17:30 hàng ngày (các tuyến xe buýt đi TP Bến Tre và Thạnh Phú hoạt động 20 phút/chuyến)",
+    "price_range": "Vé xe buýt 15.000 - 28.000 đ/lượt; vé xe khách đi TP.HCM 120.000 - 160.000 đ/vé",
+    "best_time": "08:00 - 10:00 sáng tham quan Khu di tích Quốc gia đặc biệt Đồng Khởi Định Thủy",
+    "waterway_access": "Cách tuyến kênh xáng Mỏ Cày khoảng 1 km; thuận lợi kết nối ghe chở dừa và bến tàu du lịch sinh thái.",
+    "transit_guidance": "Bố trí trên trục Quốc lộ 60 huyết mạch; trung tâm kết nối giữa TP Bến Tre với vùng duyên hải Thạnh Phú và cầu Cổ Chiên đi Trà Vinh.",
+    "cultural_notes": "Thủ phủ chế biến dừa truyền thống với chợ nổi dừa trên dòng Thom; cái nôi của phong trào Đồng Khởi năm 1960 anh dũng.",
+    "visual_narrative": "Góc máy trung cảnh đặc tả dòng xe máy chở những buồng dừa khô tròn trĩnh tấp nập ngang qua cổng bến xe trong bóng mát rặng dừa xanh.",
+    "aeo_schema_type": "BusStation",
+    "source_citations": [
+      {
+        "source_id": "SRC-TIER1-SGTVT-BT-010",
+        "title": "Đầu tư nâng cấp Bến xe khách Mỏ Cày Nam trên tuyến hành lang Quốc lộ 60",
+        "url": "https://sgtvt.bentre.gov.vn/du-an/ben-xe-mo-cay-nam",
+        "author_or_institution": "Sở Giao thông Vận tải Bến Tre",
+        "target_notebook": "ch-nh-s-ch-ph-p-lu-t-v-n-b-n-q",
+        "tier": "TIER_1_GOVERNMENT",
+        "authority_weight": 1.0
+      },
+      {
+        "source_id": "SRC-TIER2-BDK-007",
+        "title": "Mỏ Cày Nam vững bước phát triển hạ tầng thương mại dịch vụ xứ dừa",
+        "url": "https://baodongkhoi.vn/mo-cay-nam-ha-tang-thuong-mai-28092022.html",
+        "author_or_institution": "Báo Đồng Khởi",
+        "target_notebook": "mekong-360-t-p-2",
+        "tier": "TIER_2_SCHOLARLY",
+        "authority_weight": 0.95
+      }
+    ],
+    "verifiedAt": "2026-09-13T19:00:00+07:00",
+    "verifiedSource": "NotebookLM Deep Terroir Research - Phase 8"
+  },
+  "ben-xe-cau-ke-tra-vinh": {
+    "id": "ben-xe-cau-ke-tra-vinh",
+    "summary": "Bến xe khách tại trung tâm Cầu Kè ven Tỉnh lộ 911, cửa ngõ đón khách tham quan vùng chuyên canh dừa sáp và chùa Khmer.",
+    "description": "Bến xe Cầu Kè phục vụ hành khách đi lại giữa thủ phủ dừa sáp và các vùng lân cận trên Quốc lộ 54. Bến là điểm xuất phát thuận tiện để du khách về dự Lễ hội Vu Lan Thắng Hội và thưởng thức món dừa sáp dẻo quánh trứ danh.",
+    "hours": "05:00 - 18:00 hàng ngày (các tuyến xe buýt và xe khách liên tỉnh hoạt động theo khung giờ biểu)",
+    "price_range": "Vé xe buýt 15.000 - 30.000 đ/lượt; vé xe khách đi TP.HCM 150.000 - 190.000 đ/vé",
+    "best_time": "07:30 - 09:30 sáng vào mùa Vu Lan (tháng 7 âm lịch) trúng dịp Lễ hội Vu Lan Thắng Hội Chùa Ông Bổn",
+    "waterway_access": "Cách bờ sông Hậu khoảng 4 km và cách kênh Cầu Kè 500 m; luồng ghe đò chở dừa sáp tấp nập.",
+    "transit_guidance": "Bố trí tại trung tâm Cầu Kè trên Tỉnh lộ 911; kết nối trực tiếp với Quốc lộ 54 đi Trà Ôn (Vĩnh Long) và Tiểu Cần (Trà Vinh).",
+    "cultural_notes": "Thủ phủ dừa sáp đặc trưng xứ Trà Vinh; trung tâm sinh hoạt tín ngưỡng lâu đời của cộng đồng người Hoa và người Khmer Nam Bộ.",
+    "visual_narrative": "Hình ảnh quầy bán đặc sản dừa sáp Cầu Kè ngay trước bến xe, những trái dừa sáp đặc ruột dẻo quánh được bọc cẩn thận giao cho hành khách.",
+    "aeo_schema_type": "BusStation",
+    "source_citations": [
+      {
+        "source_id": "SRC-TIER1-SGTVT-TV-011",
+        "title": "Thông báo mở luồng tuyến xe khách Cầu Kè - Thành phố Hồ Chí Minh",
+        "url": "https://sgtvt.travinh.gov.vn/van-ban/luong-tuyen-cau-ke-hcm",
+        "author_or_institution": "Sở Giao thông Vận tải Trà Vinh",
+        "target_notebook": "ch-nh-s-ch-ph-p-lu-t-v-n-b-n-q",
+        "tier": "TIER_1_GOVERNMENT",
+        "authority_weight": 1.0
+      },
+      {
+        "source_id": "SRC-TIER2-BTV-003",
+        "title": "Cầu Kè phát huy thế mạnh vùng chuyên canh cây ăn trái đặc sản dừa sáp",
+        "url": "https://baotravinh.vn/kinh-te/cau-ke-phat-huy-the-manh-dua-sap-30120.html",
+        "author_or_institution": "Báo Trà Vinh",
+        "target_notebook": "v-nh-long-v-nh-long-b-n-tre-tr",
+        "tier": "TIER_2_SCHOLARLY",
+        "authority_weight": 0.95
+      }
+    ],
+    "verifiedAt": "2026-09-13T19:00:00+07:00",
+    "verifiedSource": "NotebookLM Deep Terroir Research - Phase 8"
+  },
+  "ben-xe-cau-ngang-tra-vinh": {
+    "id": "ben-xe-cau-ngang-tra-vinh",
+    "summary": "Bến xe khách trên trục Quốc lộ 53 tại khu vực Cầu Ngang, điểm dừng tuyến buýt số 04 đi thị xã Duyên Hải.",
+    "description": "Bến xe Cầu Ngang là cửa ngõ trung chuyển chính từ thành phố Trà Vinh đi các vùng ven biển phía nam. Bến nằm trên trục giao thông đi qua làng nghề bánh tét Trà Cuôn gia truyền và làng biển Mỹ Long.",
+    "hours": "05:00 - 18:00 hàng ngày (xe buýt số 04 kết nối TP Trà Vinh - Cầu Ngang - Duyên Hải)",
+    "price_range": "Vé xe buýt 18.000 - 32.000 đ/lượt; vé xe khách đi TP.HCM 150.000 - 190.000 đ/vé",
+    "best_time": "08:00 - 10:00 sáng kết hợp thưởng thức bánh tét Trà Cuôn gia truyền dọc Quốc lộ 53",
+    "waterway_access": "Cách bến đò Mỹ Long qua sông Cổ Chiên khoảng 6 km; thuận lợi đi đò máy ngắm rừng bần sinh thái.",
+    "transit_guidance": "Bố trí trên trục Quốc lộ 53 tại khu vực Cầu Ngang; cửa ngõ trung chuyển chính từ TP Trà Vinh đi thị xã Duyên Hải và biển Ba Động.",
+    "cultural_notes": "Quê hương của làng nghề bánh tét Trà Cuôn trứ danh và Lễ hội Nghinh Ông Mỹ Long di sản văn hóa phi vật thể quốc gia.",
+    "visual_narrative": "Góc chụp những xâu bánh tét Trà Cuôn lá chuối xanh mướt cột dây lác ngũ sắc treo lủng lẳng trước các sạp hàng ven lối vào bến xe.",
+    "aeo_schema_type": "BusStation",
+    "source_citations": [
+      {
+        "source_id": "SRC-TIER1-SGTVT-TV-012",
+        "title": "Phê duyệt kế hoạch nâng cấp Bến xe khách Cầu Ngang phục vụ kết nối du lịch biển",
+        "url": "https://sgtvt.travinh.gov.vn/quy-hoach/ben-xe-khach-cau-ngang",
+        "author_or_institution": "Sở Giao thông Vận tải Trà Vinh",
+        "target_notebook": "ch-nh-s-ch-ph-p-lu-t-v-n-b-n-q",
+        "tier": "TIER_1_GOVERNMENT",
+        "authority_weight": 1.0
+      },
+      {
+        "source_id": "SRC-TIER2-BTV-004",
+        "title": "Cầu Ngang phát triển hạ tầng giao thông kết nối các làng nghề truyền thống",
+        "url": "https://baotravinh.vn/giao-thong/cau-ngang-phat-trien-ha-tang-28912.html",
+        "author_or_institution": "Báo Trà Vinh",
+        "target_notebook": "v-nh-long-v-nh-long-b-n-tre-tr",
+        "tier": "TIER_2_SCHOLARLY",
+        "authority_weight": 0.95
+      }
+    ],
+    "verifiedAt": "2026-09-13T19:00:00+07:00",
+    "verifiedSource": "NotebookLM Deep Terroir Research - Phase 8"
+  },
+  "ben-xe-tieu-can-tra-vinh": {
+    "id": "ben-xe-tieu-can-tra-vinh",
+    "summary": "Bến xe khách ven Quốc lộ 60 tại khu vực Tiểu Cần, điểm dừng chân của tuyến buýt số 02 nối TP Trà Vinh với bến phà Đại Ngãi.",
+    "description": "Bến xe Tiểu Cần giữ vai trò điều phối giao thông công cộng trên tuyến hành lang Quốc lộ 60 hướng ra sông Hậu. Vị trí bến gần xưởng mật hoa dừa Sokfarm và cụm chùa cổ Khmer Kompong Chrây rợp bóng cây dầu cổ thụ.",
+    "hours": "05:00 - 18:00 hàng ngày (xe buýt số 02 nối TP Trà Vinh - Tiểu Cần - Cầu Quan hoạt động liên tục)",
+    "price_range": "Vé xe buýt 15.000 - 28.000 đ/lượt; vé xe khách đi TP.HCM 140.000 - 180.000 đ/vé",
+    "best_time": "07:00 - 09:00 sáng tham quan xưởng mật hoa dừa Sokfarm và chùa Kompong Chrây (Chùa Hang)",
+    "waterway_access": "Cách bến phà Đại Ngãi 18 km theo Quốc lộ 60; gần ngã ba sông Cần Chông kết nối ra sông Hậu.",
+    "transit_guidance": "Bố trí ven Quốc lộ 60 tại khu vực Tiểu Cần; điểm dừng chân quan trọng trên trục hành lang kinh tế ven biển Tây Nam Bộ.",
+    "cultural_notes": "Trung tâm văn hóa Khmer giàu truyền thống với những ngôi chùa cổ kính rợp bóng cây dầu cổ thụ; cái nôi của sản phẩm mật hoa dừa OCOP 5 sao quốc gia.",
+    "visual_narrative": "Chiếc xe buýt lướt êm qua cổng vòm kiến trúc Khmer Angkor chạm khắc tinh xảo của ngôi chùa cổ nằm sát vách bến xe Tiểu Cần.",
+    "aeo_schema_type": "BusStation",
+    "source_citations": [
+      {
+        "source_id": "SRC-TIER1-SGTVT-TV-013",
+        "title": "Quy hoạch bến bãi đậu xe phục vụ vận tải hành khách khu vực Tiểu Cần",
+        "url": "https://sgtvt.travinh.gov.vn/van-ban/quy-hoach-ben-xe-tieu-can",
+        "author_or_institution": "Sở Giao thông Vận tải Trà Vinh",
+        "target_notebook": "ch-nh-s-ch-ph-p-lu-t-v-n-b-n-q",
+        "tier": "TIER_1_GOVERNMENT",
+        "authority_weight": 1.0
+      },
+      {
+        "source_id": "SRC-TIER2-BTV-005",
+        "title": "Tiểu Cần chuyển mình mạnh mẽ với diện mạo đô thị xanh văn minh",
+        "url": "https://baotravinh.vn/kinh-te/tieu-can-chuyen-minh-do-thi-xanh-31405.html",
+        "author_or_institution": "Báo Trà Vinh",
+        "target_notebook": "v-nh-long-v-nh-long-b-n-tre-tr",
+        "tier": "TIER_2_SCHOLARLY",
+        "authority_weight": 0.95
+      }
+    ],
+    "verifiedAt": "2026-09-13T19:00:00+07:00",
+    "verifiedSource": "NotebookLM Deep Terroir Research - Phase 8"
+  },
+  "ben-xe-tra-cu-tra-vinh": {
+    "id": "ben-xe-tra-cu-tra-vinh",
+    "summary": "Bến xe khách tại trung tâm Trà Cú ven Tỉnh lộ 914, đầu mối xe buýt số 03 và xe khách liên tỉnh đi vùng duyên hải Định An.",
+    "description": "Bến xe Trà Cú là điểm trung chuyển giao thông trọng yếu tại vùng đất tập trung nhiều chùa Phật giáo Nam tông Khmer. Bến đón các chuyến xe buýt và xe khách đưa du khách về chiêm bái Chùa Vàm Ray nguy nga.",
+    "hours": "05:00 - 18:30 hàng ngày (xe buýt số 03 nối TP Trà Vinh - Trà Cú - Định An)",
+    "price_range": "Vé xe buýt 18.000 - 35.000 đ/lượt; vé xe khách đi TP.HCM 150.000 - 200.000 đ/vé",
+    "best_time": "08:00 - 10:30 sáng chiêm bái Chùa Vàm Ray rực rỡ tượng Phật Thích Ca nhập niết bàn ngoài trời",
+    "waterway_access": "Cách cảng cá Định An và luồng tàu Định An qua cửa sông Hậu khoảng 15 km.",
+    "transit_guidance": "Bố trí trên trục Tỉnh lộ 914 và Quốc lộ 53 mở rộng; đầu mối xe khách và xe buýt đi các xã cù lao và vùng đầm nuôi tôm duyên hải.",
+    "cultural_notes": "Vùng đất có đông đảo đồng bào Khmer với hơn 60 ngôi chùa Phật giáo Nam tông; không gian diễn ra lễ hội Chôl Chnăm Thmây và Ok Om Bok sôi nổi.",
+    "visual_narrative": "Góc ảnh góc rộng ghi lại sân bến xe rợp cờ hoa Phật giáo ngũ sắc vào dịp lễ hội, những chàng trai cô gái Khmer trong trang phục xăm-pốt truyền thống.",
+    "aeo_schema_type": "BusStation",
+    "source_citations": [
+      {
+        "source_id": "SRC-TIER1-SGTVT-TV-014",
+        "title": "Kế hoạch nâng cấp mạng lưới giao thông công cộng phục vụ du lịch văn hóa Trà Cú",
+        "url": "https://sgtvt.travinh.gov.vn/van-ban/giao-thong-cong-cong-tra-cu",
+        "author_or_institution": "Sở Giao thông Vận tải Trà Vinh",
+        "target_notebook": "ch-nh-s-ch-ph-p-lu-t-v-n-b-n-q",
+        "tier": "TIER_1_GOVERNMENT",
+        "authority_weight": 1.0
+      },
+      {
+        "source_id": "SRC-TIER2-BTV-006",
+        "title": "Nét đẹp văn hóa lễ hội Khmer bên những nẻo đường Trà Cú",
+        "url": "https://baotravinh.vn/van-hoa/net-dep-van-hoa-tra-cu-32109.html",
+        "author_or_institution": "Báo Trà Vinh",
+        "target_notebook": "v-nh-long-v-nh-long-b-n-tre-tr",
+        "tier": "TIER_2_SCHOLARLY",
+        "authority_weight": 0.95
+      }
+    ],
+    "verifiedAt": "2026-09-13T19:00:00+07:00",
+    "verifiedSource": "NotebookLM Deep Terroir Research - Phase 8"
+  },
+  "ben-xe-duyen-hai-tx-duyen-hai-tra-vinh": {
+    "id": "ben-xe-duyen-hai-tx-duyen-hai-tra-vinh",
+    "summary": "Bến xe khách trung tâm thị xã Duyên Hải ven Quốc lộ 53, điểm đón trả khách đi Khu du lịch Biển Ba Động và Rừng ngập mặn.",
+    "description": "Bến xe Duyên Hải là đầu mối giao thông đường bộ cực đông nam của đất Trà Vinh. Từ bến xe, hành khách dễ dàng bắt các chuyến xe nội vùng ra bãi biển Ba Động, di tích bến Cồn Tàu và các cánh đồng điện gió ven biển.",
+    "hours": "04:30 - 19:30 hàng ngày (xe buýt số 04 kết nối liên tục từ sáng sớm đến chập tối)",
+    "price_range": "Vé xe buýt 20.000 - 40.000 đ/lượt; vé xe khách giường nằm đi TP.HCM 170.000 - 230.000 đ/vé",
+    "best_time": "06:00 - 08:00 sáng bắt xe đi Khu du lịch Biển Ba Động và Rừng ngập mặn Duyên Hải",
+    "waterway_access": "Cách Kênh đào Trà Vinh (Kênh Quan Chánh Bố) 5 km và cách Bến tiếp nhận vũ khí Cồn Tàu đường Hồ Chí Minh trên biển 8 km.",
+    "transit_guidance": "Bố trí tại trung tâm thị xã Duyên Hải ven Quốc lộ 53; điểm trung chuyển hành khách về phía cực đông nam đất Trà Vinh.",
+    "cultural_notes": "Vùng đất giàu truyền thống cách mạng với huyền thoại Đường Hồ Chí Minh trên biển; trung tâm năng lượng điện gió và nuôi trồng thủy hải sản công nghệ cao.",
+    "visual_narrative": "Góc chụp từ bến xe nhìn về phía chân trời xa xăm, nơi những trụ tua-bin điện gió khổng lồ màu trắng vươn cao trên nền trời biển xanh biếc.",
+    "aeo_schema_type": "BusStation",
+    "source_citations": [
+      {
+        "source_id": "SRC-TIER1-SGTVT-TV-015",
+        "title": "Công bố hoạt động bến xe khách thị xã Duyên Hải đạt tiêu chuẩn bến xe loại 3",
+        "url": "https://sgtvt.travinh.gov.vn/van-ban/cong-bo-ben-xe-duyen-hai",
+        "author_or_institution": "Sở Giao thông Vận tải Trà Vinh",
+        "target_notebook": "ch-nh-s-ch-ph-p-lu-t-v-n-b-n-q",
+        "tier": "TIER_1_GOVERNMENT",
+        "authority_weight": 1.0
+      },
+      {
+        "source_id": "SRC-TIER2-BTV-007",
+        "title": "Thị xã Duyên Hải bứt phá kinh tế biển từ hạ tầng giao thông kết nối liên vùng",
+        "url": "https://baotravinh.vn/kinh-te/duyen-hai-but-pha-kinh-te-bien-30514.html",
+        "author_or_institution": "Báo Trà Vinh",
+        "target_notebook": "v-nh-long-v-nh-long-b-n-tre-tr",
+        "tier": "TIER_2_SCHOLARLY",
+        "authority_weight": 0.95
+      }
+    ],
+    "verifiedAt": "2026-09-13T19:00:00+07:00",
+    "verifiedSource": "NotebookLM Deep Terroir Research - Phase 8"
+  },
+  "cau-my-thuan": {
+    "id": "cau-my-thuan",
+    "summary": "Cây cầu dây văng đầu tiên của Việt Nam vượt dòng sông Tiền trên Quốc lộ 1A, công trình biểu tượng kết nối Tiền Giang và Vĩnh Long.",
+    "description": "Cầu Mỹ Thuận bắc qua sông Tiền khánh thành năm 2000, mở ra kỷ nguyên phát triển vượt bậc cho giao thông đồng bằng sông Cửu Long. Cùng với cầu Mỹ Thuận 2 hiện đại trên tuyến cao tốc, cụm công trình tạo nên diện mạo kỳ vĩ cho cửa ngõ đón chào du khách.",
+    "hours": "Lưu thông thông suốt 24/24 giờ hàng ngày (công trình giao thông cầu đường bộ huyết mạch Quốc lộ 1A và Cao tốc Trung Lương - Mỹ Thuận - Cần Thơ)",
+    "price_range": "Miễn phí lưu thông qua Cầu Mỹ Thuận 1 trên Quốc lộ 1A; thu phí tự động ETC đối với các phương tiện ô tô trên tuyến cao tốc Cầu Mỹ Thuận 2 theo quy định",
+    "best_time": "05:30 - 07:00 sáng ngắm bình minh trên sông Tiền hoặc 17:30 - 19:30 tối chiêm ngưỡng hệ thống đèn led nghệ thuật lung linh",
+    "waterway_access": "Tĩnh không thông thuyền cấp đặc biệt cao 37,5 m và chiều rộng thông thuyền 110 m, cho phép tàu biển tải trọng đến 10.000 tấn lưu thông an toàn trên sông Tiền.",
+    "transit_guidance": "Kết nối tỉnh Tiền Giang và tỉnh Vĩnh Long; là cửa ngõ giao thông đường bộ huyết mạch đầu tiên bước vào vùng bán đảo Cà Mau và Tây Nam Bộ.",
+    "cultural_notes": "Cầu Mỹ Thuận 1 khánh thành năm 2000 là cây cầu dây văng đầu tiên của Việt Nam, dấu mốc lịch sử chấm dứt cảnh lụy phà trăm năm của nhân dân châu thổ Cửu Long.",
+    "visual_narrative": "Góc ảnh flycam chụp toàn cảnh hai nhịp cầu dây văng Mỹ Thuận 1 và Mỹ Thuận 2 song song sừng sững vượt sông Tiền, dây cáp văng xòe quạt kiêu hãnh trong ráng chiều cam rực.",
+    "aeo_schema_type": "TouristAttraction",
+    "source_citations": [
+      {
+        "source_id": "SRC-TIER1-BGTVT-016",
+        "title": "Khánh thành công trình Cầu Mỹ Thuận 2 và đường dẫn hai đầu cầu nối đôi bờ sông Tiền",
+        "url": "https://mt.gov.vn/vn/tin-tuc/khanh-thanh-cau-my-thuan-2-cao-toc",
+        "author_or_institution": "Bộ Giao thông Vận tải",
+        "target_notebook": "ch-nh-s-ch-ph-p-lu-t-v-n-b-n-q",
+        "tier": "TIER_1_GOVERNMENT",
+        "authority_weight": 1.0
+      },
+      {
+        "source_id": "SRC-TIER2-ND-012",
+        "title": "Cầu Mỹ Thuận: Dấu mốc lịch sử nối nhịp bờ vui đôi bờ sông Tiền",
+        "url": "https://nhandan.vn/kinh-te/cau-my-thuan-dau-moc-lich-su-song-tien-689104",
+        "author_or_institution": "Báo Nhân Dân",
+        "target_notebook": "v-nh-long-v-nh-long-b-n-tre-tr",
+        "tier": "TIER_2_SCHOLARLY",
+        "authority_weight": 0.95
+      }
+    ],
+    "verifiedAt": "2026-09-13T19:00:00+07:00",
+    "verifiedSource": "NotebookLM Deep Terroir Research - Phase 8"
+  },
+  "cau-can-tho": {
+    "id": "cau-can-tho",
+    "summary": "Cầu dây văng nhịp chính dài vượt sông Hậu trên Quốc lộ 1A, kết nối khu vực Bình Minh thuộc Vĩnh Long với thành phố Cần Thơ.",
+    "description": "Cầu Cần Thơ sừng sững vượt dòng sông Hậu mênh mông với tháp cầu cao 171 mét. Công trình kết nối liên hoàn mạng lưới giao thông đường bộ giữa đôi bờ sông Hậu, trở thành điểm chiêm ngưỡng bình minh và cảnh đêm rực rỡ sắc màu.",
+    "hours": "Lưu thông thông suốt 24/24 giờ hàng ngày (công trình cầu dây văng vượt sông Hậu trên Quốc lộ 1A)",
+    "price_range": "Miễn phí hoàn toàn cho tất cả các loại phương tiện đường bộ lưu thông qua cầu",
+    "best_time": "05:00 - 06:30 sáng ngắm sương mù lãng đãng trên sông Hậu hoặc 18:00 - 20:00 ngắm toàn cảnh thành phố đôi bờ lên đèn",
+    "waterway_access": "Tĩnh không thông thuyền cao 39 m và luồng hàng hải rộng 300 m, đón nhận tàu biển trọng tải 10.000 - 20.000 tấn ra vào hệ thống cảng sông Hậu.",
+    "transit_guidance": "Kết nối vùng Bình Minh (Vĩnh Long) và quận Cái Răng (Cần Thơ); kết nối trực tiếp xe khách, xe buýt liên tỉnh và phương tiện cá nhân qua sông Hậu.",
+    "cultural_notes": "Cây cầu dây văng có nhịp chính dài ở Đông Nam Á khi khánh thành năm 2010; biểu tượng kiên cường vươn mình của vùng đất đồng bằng sông Cửu Long.",
+    "visual_narrative": "Khung ảnh góc thấp từ bờ kè Bình Minh hướng lên tháp cầu chữ Y ngược cao 171 m, những sợi cáp văng trắng muốt soi bóng xuống dòng sông Hậu cuồn cuộn sóng phù sa.",
+    "aeo_schema_type": "TouristAttraction",
+    "source_citations": [
+      {
+        "source_id": "SRC-TIER1-BGTVT-017",
+        "title": "Hồ sơ hoàn công và quản lý vận hành khai thác công trình Cầu Cần Thơ",
+        "url": "https://mt.gov.vn/vn/tin-tuc/quan-ly-van-hanh-cau-can-tho",
+        "author_or_institution": "Bộ Giao thông Vận tải",
+        "target_notebook": "ch-nh-s-ch-ph-p-lu-t-v-n-b-n-q",
+        "tier": "TIER_1_GOVERNMENT",
+        "authority_weight": 1.0
+      },
+      {
+        "source_id": "SRC-TIER2-BGT-004",
+        "title": "Cầu Cần Thơ hơn một thập kỷ nối nhịp phát triển đôi bờ sông Hậu",
+        "url": "https://baogiaothong.vn/cau-can-tho-hon-mot-thap-ky-noi-nhip-phat-trien-192200424103015.htm",
+        "author_or_institution": "Báo Giao Thông",
+        "target_notebook": "v-nh-long-v-nh-long-b-n-tre-tr",
+        "tier": "TIER_2_SCHOLARLY",
+        "authority_weight": 0.95
+      }
+    ],
+    "verifiedAt": "2026-09-13T19:00:00+07:00",
+    "verifiedSource": "NotebookLM Deep Terroir Research - Phase 8"
+  },
+  "cau-lang-chim": {
+    "id": "cau-lang-chim",
+    "summary": "Cầu đường bộ trên Quốc lộ 53 vượt kênh Láng Chim, điểm dừng chân ngắm cảnh sinh thái ngập mặn trên đường đi biển Ba Động.",
+    "description": "Cầu Láng Chim bắc qua nhánh kênh sinh thái nối sông Cổ Chiên với vùng đầm tôm duyên hải. Đứng trên cầu lúc chiều tà, du khách được ngắm nhìn khung cảnh thanh bình của những cánh chim chao lượn trên rặng bần xanh rì.",
+    "hours": "Lưu thông 24/24 giờ hàng ngày (phục vụ phương tiện đường bộ lưu thông trên Quốc lộ 53)",
+    "price_range": "Miễn phí lưu thông đường bộ",
+    "best_time": "06:00 - 08:00 sáng hoặc 16:30 - 18:00 chiều ngắm đàn chim bay về tổ tại vùng sinh thái ngập mặn",
+    "waterway_access": "Vượt kênh Láng Chim kết nối luồng thủy nội địa từ sông Cổ Chiên ra đầm tôm và vùng rừng ngập mặn duyên hải Trà Vinh.",
+    "transit_guidance": "Bố trí trên trục Quốc lộ 53 giữa vùng Cầu Ngang và thị xã Duyên Hải; điểm dừng chân chụp ảnh thiên nhiên đặc sắc cho người đi đường.",
+    "cultural_notes": "Tên gọi Láng Chim gắn liền với vùng đầm lầy trũng sinh thái ngập mặn ngàn đời, nơi tụ hội của nhiều loài chim quý và chim di cư mùa gió chướng.",
+    "visual_narrative": "Góc máy tele bắt khoảnh khắc đàn cò trắng tung cánh bay ngang qua thành cầu Láng Chim trong ráng chiều vàng rực rỡ của vùng duyên hải.",
+    "aeo_schema_type": "TouristAttraction",
+    "source_citations": [
+      {
+        "source_id": "SRC-TIER1-SGTVT-TV-018",
+        "title": "Báo cáo kiểm định an toàn và duy tu cầu Láng Chim trên Quốc lộ 53",
+        "url": "https://sgtvt.travinh.gov.vn/du-tu/cau-lang-chim-quoc-lo-53",
+        "author_or_institution": "Sở Giao thông Vận tải Trà Vinh",
+        "target_notebook": "ch-nh-s-ch-ph-p-lu-t-v-n-b-n-q",
+        "tier": "TIER_1_GOVERNMENT",
+        "authority_weight": 1.0
+      },
+      {
+        "source_id": "SRC-TIER2-BTV-008",
+        "title": "Hệ sinh thái ngập mặn Láng Chim: Vẻ đẹp hoang sơ vùng duyên hải Trà Vinh",
+        "url": "https://baotravinh.vn/du-lich/he-sinh-thai-ngap-man-lang-chim-27104.html",
+        "author_or_institution": "Báo Trà Vinh",
+        "target_notebook": "v-nh-long-v-nh-long-b-n-tre-tr",
+        "tier": "TIER_2_SCHOLARLY",
+        "authority_weight": 0.95
+      }
+    ],
+    "verifiedAt": "2026-09-13T19:00:00+07:00",
+    "verifiedSource": "NotebookLM Deep Terroir Research - Phase 8"
+  },
+  "cau-truong-long-hoa": {
+    "id": "cau-truong-long-hoa",
+    "summary": "Cầu vượt kênh biển trên tuyến đường ven biển dẫn thẳng ra Khu du lịch Biển Ba Động và bến Cồn Tàu huyền thoại.",
+    "description": "Cầu Trường Long Hòa nối liền các xóm ấp bãi ngang ven biển thuộc xã bán đảo Trường Long Hòa. Cây cầu tạo điều kiện đi lại êm thuận cho các đoàn xe du lịch ra ngắm biển Ba Động và các rặng phi lao chắn sóng.",
+    "hours": "Lưu thông tự do 24/24 giờ hàng ngày",
+    "price_range": "Miễn phí lưu thông đường bộ",
+    "best_time": "05:30 - 07:30 sáng đón gió biển trong lành hoặc 16:30 chiều tà mát rượi",
+    "waterway_access": "Bắc qua nhánh kênh thông ra biển Đông, cho phép các ghe thuyền nan của ngư dân bãi ngang neo đậu tránh sóng.",
+    "transit_guidance": "Bố trí trên tuyến đường ven biển dẫn thẳng ra Bãi biển Ba Động và Khu di tích Bến Cồn Tàu; kết nối giao thông êm thuận cho xe du lịch và xe máy.",
+    "cultural_notes": "Nhịp cầu nối liền các ấp bãi ngang ven biển, mang lại sức sống đổi thay cho đời sống diêm dân và ngư dân xã bán đảo Trường Long Hòa.",
+    "visual_narrative": "Khung cảnh cầu bê tông thanh thoát uốn lượn qua những rặng phi lao xanh rì chắn gió cát, phía trước mở ra chân trời biển Đông mênh mông lộng gió.",
+    "aeo_schema_type": "TouristAttraction",
+    "source_citations": [
+      {
+        "source_id": "SRC-TIER1-SGTVT-TV-019",
+        "title": "Đầu tư xây dựng tuyến đường và cầu giao thông ven biển Trường Long Hòa",
+        "url": "https://sgtvt.travinh.gov.vn/du-an/cau-truong-long-hoa-ven-bien",
+        "author_or_institution": "Sở Giao thông Vận tải Trà Vinh",
+        "target_notebook": "ch-nh-s-ch-ph-p-lu-t-v-n-b-n-q",
+        "tier": "TIER_1_GOVERNMENT",
+        "authority_weight": 1.0
+      },
+      {
+        "source_id": "SRC-TIER2-BTV-009",
+        "title": "Trường Long Hòa đổi thay từ những công trình giao thông huyết mạch",
+        "url": "https://baotravinh.vn/kinh-te/truong-long-hoa-doi-thay-31092.html",
+        "author_or_institution": "Báo Trà Vinh",
+        "target_notebook": "v-nh-long-v-nh-long-b-n-tre-tr",
+        "tier": "TIER_2_SCHOLARLY",
+        "authority_weight": 0.95
+      }
+    ],
+    "verifiedAt": "2026-09-13T19:00:00+07:00",
+    "verifiedSource": "NotebookLM Deep Terroir Research - Phase 8"
+  },
+  "quan-ca-ong-bo-song-co-chien-khu-vuc-ben-pha-co-chien-tra-vinh": {
+    "id": "quan-ca-ong-bo-song-co-chien-khu-vuc-ben-pha-co-chien-tra-vinh",
+    "summary": "Quán ăn ẩm thực miệt vườn ven đê sông Cổ Chiên gần chân cầu Cổ Chiên, chuyên các món cá đồng và cá sông tươi ngon.",
+    "description": "Quán cá đồng bờ sông Cổ Chiên mang đến trải nghiệm ẩm thực dân dã đậm đà phong vị sông nước. Quán phục vụ các món cá ngát nấu chua, cá lăng kho tộ và tép trấu xào bông điên điển tươi rói giữa không gian lộng gió sông.",
+    "hours": "08:30 - 21:00 hàng ngày (phục vụ khách du lịch, cánh tài xế và khách trung chuyển qua sông)",
+    "price_range": "80.000 - 220.000 đ/món (cá ngát nấu chua, cá lăng kho tộ, tép trấu xào bông điên điển)",
+    "best_time": "11:00 - 13:30 trưa nghỉ chân ăn trưa hoặc 17:00 - 19:30 tối ngắm gió sông mát lạnh",
+    "waterway_access": "Vị trí quán ven bờ đê sông Cổ Chiên cách cầu Cổ Chiên 1,2 km; có cầu tàu gỗ đón cano và ghe câu cá ghé mạn.",
+    "transit_guidance": "Bố trí từ Quốc lộ 60 rẽ vào đường bờ đê; điểm dừng chân ăn uống đậm nét miệt vườn cho hành khách di chuyển giữa Bến Tre và Trà Vinh.",
+    "cultural_notes": "Lưu giữ phong vị ẩm thực cá đồng mùa nước nổi; nơi khách phương xa được thưởng thức vị tươi ngọt của tôm cá sông Cổ Chiên.",
+    "visual_narrative": "Đặc tả nồi lẩu cá ngát măng chua sôi sùng sục trên bếp cồn dã chiến, xung quanh bày đĩa rau muống đồng, bông so đũa và chén nước mắm ớt cay nồng.",
+    "aeo_schema_type": "LocalBusiness",
+    "source_citations": [
+      {
+        "source_id": "SRC-TIER1-SVHTTDL-TV-020",
+        "title": "Ẩm thực dân dã ven sông Cổ Chiên: Điểm dừng chân hấp dẫn tuyến du lịch liên tỉnh",
+        "url": "https://svhttdl.travinh.gov.vn/am-thuc/ca-dong-song-co-chien",
+        "author_or_institution": "Sở Văn hóa Thể thao và Du lịch Trà Vinh",
+        "target_notebook": "mekong-360-t-p-2",
+        "tier": "TIER_1_GOVERNMENT",
+        "authority_weight": 1.0
+      },
+      {
+        "source_id": "SRC-TIER2-BTV-010",
+        "title": "Thưởng thức cá đồng ven sông Cổ Chiên dưới chân cầu nối đôi bờ",
+        "url": "https://baotravinh.vn/am-thuc/ca-dong-ven-song-co-chien-29014.html",
+        "author_or_institution": "Báo Trà Vinh",
+        "target_notebook": "mekong-360-t-p-2",
+        "tier": "TIER_2_SCHOLARLY",
+        "authority_weight": 0.95
+      }
+    ],
+    "verifiedAt": "2026-09-13T19:00:00+07:00",
+    "verifiedSource": "NotebookLM Deep Terroir Research - Phase 8"
+  },
+  "quan-an-song-hau-ben-do-tra-on-vinh-long": {
+    "id": "quan-an-song-hau-ben-do-tra-on-vinh-long",
+    "summary": "Quán ăn ven bến đò Trà Ôn bên bờ sông Hậu, phục vụ các món đặc sản cá cháy Trà Ôn và lẩu mắm đồng quê.",
+    "description": "Quán Ăn Sông Hậu tại bến đò Trà Ôn là điểm dừng chân thưởng thức ẩm thực lý tưởng của du khách. Quán phục vụ món cá cháy kho lạt bần chua đặc trưng mùa gió chướng cùng nguồn cá sông Hậu tươi sống trong khung cảnh ngắm sông nước thanh bình.",
+    "hours": "08:30 - 21:30 hàng ngày (đón khách ăn trưa và dùng bữa tối ven sông)",
+    "price_range": "90.000 - 250.000 đ/người (đặc sản cá cháy Trà Ôn, cá he kho lạt bần chua, lẩu mắm đồng quê)",
+    "best_time": "11:30 - 13:00 trưa đón gió sông Hậu lộng mát hoặc 17:30 ngắm hoàng hôn ngã ba sông Mang Thít - sông Hậu",
+    "waterway_access": "Vị trí sát bến đò Trà Ôn, có bến neo đậu bằng cọc tre và vè xốp cho ghe đò du khách cập bờ trực tiếp.",
+    "transit_guidance": "Cách bến xe Trà Ôn 700 m; thuận tiện đi bộ hoặc đi xe ôm từ trung tâm thị trấn Trà Ôn ra quán ăn.",
+    "cultural_notes": "Thương hiệu ẩm thực gắn liền với đặc sản cá cháy Trà Ôn quý hiếm vào mùa gió chướng; điểm giao lưu văn hóa ẩm thực sông nước Vĩnh Long.",
+    "visual_narrative": "Góc máy trung cảnh từ chòi lá ven sông nhìn ra khúc sông Hậu bao la, trên bàn ăn dọn mâm cá cháy kho rim thơm phức cùng rổ rau đồng xanh mướt.",
+    "aeo_schema_type": "LocalBusiness",
+    "source_citations": [
+      {
+        "source_id": "SRC-TIER1-TTXTDL-VL-021",
+        "title": "Ẩm thực cá cháy Trà Ôn và nét đẹp văn hóa miệt vườn ven sông Hậu",
+        "url": "https://vinhlongtourist.vn/am-thuc/ca-chay-tra-on",
+        "author_or_institution": "Trung tâm Thông tin Xúc tiến Du lịch Vĩnh Long",
+        "target_notebook": "v-nh-long-v-nh-long-b-n-tre-tr",
+        "tier": "TIER_1_GOVERNMENT",
+        "authority_weight": 1.0
+      },
+      {
+        "source_id": "SRC-TIER2-BVL-007",
+        "title": "Hương vị cá cháy Trà Ôn say lòng thực khách phương xa",
+        "url": "https://baovinhlong.vn/am-thuc/huong-vi-ca-chay-tra-on-318920/",
+        "author_or_institution": "Báo Vĩnh Long",
+        "target_notebook": "v-nh-long-v-nh-long-b-n-tre-tr",
+        "tier": "TIER_2_SCHOLARLY",
+        "authority_weight": 0.95
+      }
+    ],
+    "verifiedAt": "2026-09-13T19:00:00+07:00",
+    "verifiedSource": "NotebookLM Deep Terroir Research - Phase 8"
+  },
+  "quan-hu-tieu-go-khu-vuc-cau-ham-luong-ben-tre": {
+    "id": "quan-hu-tieu-go-khu-vuc-cau-ham-luong-ben-tre",
+    "summary": "Điểm tâm sáng và ăn khuya bình dân tại đường gom chân cầu Hàm Luông, chuyên hủ tiếu giò nạc xương hầm ngọt thanh.",
+    "description": "Quán hủ tiếu gõ chân cầu Hàm Luông là địa chỉ ẩm thực quen thuộc của người dân và tài xế đường dài. Tô hủ tiếu nóng hổi với nước dùng hầm xương ngọt thanh và thịt sườn đậm đà mang lại nguồn năng lượng ấm áp cho chuyến đi.",
+    "hours": "05:00 - 10:00 sáng và 16:30 - 22:00 tối hàng ngày",
+    "price_range": "25.000 - 45.000 đ/tô (hủ tiếu sườn non, giò nạc, hoành thánh tôm thịt)",
+    "best_time": "06:00 - 07:30 sáng điểm tâm trước khi khởi hành đi Mỏ Cày hoặc 18:30 - 20:30 ăn khuya mát mẻ",
+    "waterway_access": "Vị trí cách bờ sông Hàm Luông 300 m; thuận tiện cho khách đi đò bến phà xưa ghé ăn điểm tâm.",
+    "transit_guidance": "Bố trí ngay đường gom chân cầu Hàm Luông phía bờ thành phố Bến Tre; có sân rộng đỗ xe máy và ô tô con an toàn.",
+    "cultural_notes": "Nét văn hóa ẩm thực bình dân thân quen của người lao động và tài xế đường dài; nước dùng ninh xương hầm củ cải ngọt thanh đậm đà.",
+    "visual_narrative": "Khói trắng bốc lên nghi ngút từ nồi nước lèo sôi sùng sục trên xe hủ tiếu inox, bàn tay thoăn thoắt của chủ quán trụng sợi hủ tiếu dai bóng loáng.",
+    "aeo_schema_type": "LocalBusiness",
+    "source_citations": [
+      {
+        "source_id": "SRC-TIER1-SVHTTDL-BT-022",
+        "title": "Ẩm thực đường phố Bến Tre: Nét chấm phá bình dị của xứ sở dừa xanh",
+        "url": "https://svhttdl.bentre.gov.vn/am-thuc/am-thuc-duong-pho-ben-tre",
+        "author_or_institution": "Sở Văn hóa Thể thao và Du lịch Bến Tre",
+        "target_notebook": "mekong-360-t-p-2",
+        "tier": "TIER_1_GOVERNMENT",
+        "authority_weight": 1.0
+      },
+      {
+        "source_id": "SRC-TIER2-BDK-008",
+        "title": "Tô hủ tiếu nóng chân cầu Hàm Luông ấm lòng người đi sớm về khuya",
+        "url": "https://baodongkhoi.vn/hu-tieu-chan-cau-ham-luong-14022023.html",
+        "author_or_institution": "Báo Đồng Khởi",
+        "target_notebook": "mekong-360-t-p-2",
+        "tier": "TIER_2_SCHOLARLY",
+        "authority_weight": 0.95
+      }
+    ],
+    "verifiedAt": "2026-09-13T19:00:00+07:00",
+    "verifiedSource": "NotebookLM Deep Terroir Research - Phase 8"
+  },
+  "nha-hang-hai-san-lung-cot-cau-gan-cot-cau-co-chien-tra-vinh": {
+    "id": "nha-hang-hai-san-lung-cot-cau-gan-cot-cau-co-chien-tra-vinh",
+    "summary": "Điểm dừng chân ẩm thực hải sản tươi sống ven bờ sông Cổ Chiên ngay nhánh rẽ chân cầu Cổ Chiên phía bờ Trà Vinh.",
+    "description": "Nhà hàng hải sản ven chân cầu Cổ Chiên phục vụ nguồn hải sản tươi ngon từ các vùng biển duyên hải đưa về. Du khách vừa thưởng thức tôm càng hấp nước dừa, cua biển nướng mọi vừa ngắm nhìn ánh hoàng hôn rực rỡ trên cầu Cổ Chiên.",
+    "hours": "09:30 - 22:00 hàng ngày (đón khách đoàn du lịch và khách lẻ qua cầu Cổ Chiên)",
+    "price_range": "120.000 - 350.000 đ/người (tôm càng xanh hấp nước dừa, cua biển nướng mọi, nghêu hấp sả)",
+    "best_time": "11:00 - 13:30 trưa hoặc 17:30 - 20:00 tối ngắm ánh đèn lung linh từ thân cầu Cổ Chiên vắt qua sông",
+    "waterway_access": "Vị trí sát bờ sông Cổ Chiên gần trụ cầu dẫn phía nam, có cầu cảng nhỏ cho tàu du lịch đường sông ghé thưởng thức hải sản.",
+    "transit_guidance": "Từ Quốc lộ 60 vừa qua trạm thu phí cầu Cổ Chiên rẽ nhánh phải 200 m; bãi đậu xe rộng rãi tiếp nhận xe khách 45 chỗ.",
+    "cultural_notes": "Cửa ngõ ẩm thực chào đón du khách đặt chân đến đất Trà Vinh; hội tụ các sản vật hải sản tươi sống từ các huyện duyên hải đưa về.",
+    "visual_narrative": "Góc ảnh chụp bàn tiệc hải sản ngoài trời trong ráng chiều vàng rực, phía sau lưng là nhịp cầu Cổ Chiên trắng muốt uốn lượn trên nền trời hoàng hôn.",
+    "aeo_schema_type": "LocalBusiness",
+    "source_citations": [
+      {
+        "source_id": "SRC-TIER1-SVHTTDL-TV-023",
+        "title": "Ẩm thực hải sản duyên hải Trà Vinh: Điểm dừng chân chân cầu Cổ Chiên",
+        "url": "https://svhttdl.travinh.gov.vn/am-thuc/hai-san-chan-cau-co-chien",
+        "author_or_institution": "Sở Văn hóa Thể thao và Du lịch Trà Vinh",
+        "target_notebook": "mekong-360-t-p-2",
+        "tier": "TIER_1_GOVERNMENT",
+        "authority_weight": 1.0
+      },
+      {
+        "source_id": "SRC-TIER2-BTV-011",
+        "title": "Thưởng thức hải sản tươi ngon cửa sông Cổ Chiên",
+        "url": "https://baotravinh.vn/am-thuc/hai-san-chan-cau-co-chien-28045.html",
+        "author_or_institution": "Báo Trà Vinh",
+        "target_notebook": "mekong-360-t-p-2",
+        "tier": "TIER_2_SCHOLARLY",
+        "authority_weight": 0.95
+      }
+    ],
+    "verifiedAt": "2026-09-13T19:00:00+07:00",
+    "verifiedSource": "NotebookLM Deep Terroir Research - Phase 8"
+  },
+  "quan-oc-co-ba-gan-cau-my-thuan-phia-vinh-long": {
+    "id": "quan-oc-co-ba-gan-cau-my-thuan-phia-vinh-long",
+    "summary": "Quán ốc và đặc sản đồng quê bình dân ven đường gom chân cầu Mỹ Thuận bờ Vĩnh Long, phục vụ ăn chiều và ăn khuya.",
+    "description": "Quán Ốc Cô Ba dưới chân cầu Mỹ Thuận là điểm hẹn ẩm thực đêm yêu thích với các món ốc bươu nướng tiêu xanh, ốc len xào dừa béo ngậy. Không gian quán thoáng mát hướng ra sông Tiền và lung linh ánh đèn led từ cầu Mỹ Thuận.",
+    "hours": "15:00 - 23:00 hàng ngày (phục vụ ăn chiều và ăn khuya)",
+    "price_range": "50.000 - 150.000 đ/đĩa (ốc bươu nướng tiêu xanh, ốc len xào dừa, sò huyết cháy tỏi)",
+    "best_time": "17:30 - 21:00 tối không khí mát mẻ, ngắm cầu Mỹ Thuận lên đèn rực rỡ sắc màu",
+    "waterway_access": "Vị trí cách bờ sông Tiền 150 m theo tuyến đường nhánh chân cầu; gần bến ghe thu mua ốc đồng địa phương.",
+    "transit_guidance": "Bố trí trên đường gom chân cầu Mỹ Thuận thuộc khu vực Tân Hội; cách nút giao Quốc lộ 1A và Quốc lộ 80 chỉ 500 m.",
+    "cultural_notes": "Địa chỉ ẩm thực đêm được ưa chuộng của người đi đường và du khách; đặc trưng với nước sốt tiêu đen sệt cay nồng và dừa nạo béo ngậy miệt sông Tiền.",
+    "visual_narrative": "Đĩa ốc bươu nướng mỡ hành tiêu xanh xèo xèo trên bếp than hồng rực, làn khói thơm ngào ngạt lan tỏa dưới ánh đèn vàng ấm áp của quán nhỏ ven đường.",
+    "aeo_schema_type": "LocalBusiness",
+    "source_citations": [
+      {
+        "source_id": "SRC-TIER1-TTXTDL-VL-024",
+        "title": "Ẩm thực đêm sông Tiền: Điểm hẹn ẩm thực chân cầu Mỹ Thuận",
+        "url": "https://vinhlongtourist.vn/am-thuc/am-thuc-dem-chan-cau-my-thuan",
+        "author_or_institution": "Trung tâm Thông tin Xúc tiến Du lịch Vĩnh Long",
+        "target_notebook": "v-nh-long-v-nh-long-b-n-tre-tr",
+        "tier": "TIER_1_GOVERNMENT",
+        "authority_weight": 1.0
+      },
+      {
+        "source_id": "SRC-TIER2-BVL-008",
+        "title": "Vị ngon ốc bươu nướng tiêu xanh chân cầu Mỹ Thuận",
+        "url": "https://baovinhlong.vn/am-thuc/oc-buou-nuong-tieu-chan-cau-my-thuan-321402/",
+        "author_or_institution": "Báo Vĩnh Long",
+        "target_notebook": "v-nh-long-v-nh-long-b-n-tre-tr",
+        "tier": "TIER_2_SCHOLARLY",
+        "authority_weight": 0.95
+      }
+    ],
+    "verifiedAt": "2026-09-13T19:00:00+07:00",
+    "verifiedSource": "NotebookLM Deep Terroir Research - Phase 8"
+  }
+}
