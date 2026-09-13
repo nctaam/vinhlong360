@@ -1,5 +1,11 @@
 <template>
-  <section class="page" data-color-system="tri-region-v1" data-page-recipe="map" :data-outdoor-contrast="outdoorContrast ? 'high' : 'normal'">
+  <section
+    class="page"
+    data-color-system="tri-region-v1"
+    data-page-recipe="map"
+    :data-outdoor-contrast="outdoorContrast ? 'high' : 'normal'"
+    :class="{ 'is-fullbleed': isFullBleed }"
+  >
     <Breadcrumb :items="[{ label: 'Trang chủ', to: '/' }, { label: 'Bản đồ' }]" :json-ld="true" />
 
     <section class="catalog-hero cat-map">
@@ -25,7 +31,7 @@
           aria-label="Lọc theo loại địa điểm"
           @update:model-value="onTypeFilterChange"
         />
-        <div class="map-field-dock" role="toolbar" aria-label="Tiện ích thực địa & lọc chuyên đề">
+        <div class="map-field-dock map-floating-thumb-dock" role="toolbar" aria-label="Tiện ích thực địa & lọc chuyên đề">
           <div class="map-quick-presets" role="group" aria-label="Lọc theo đặc trưng sông nước">
             <button
               v-for="preset in quickWaterPresets"
@@ -79,6 +85,18 @@
               <IconLine :name="outdoorContrast ? 'sun' : 'bulb'" aria-hidden="true" />
               <span>{{ outdoorContrast ? 'Tương phản ngoài trời: BẬT' : 'Độ tương phản thực địa' }}</span>
             </button>
+            <button
+              type="button"
+              class="map-fullbleed-toggle"
+              :class="{ 'is-active': isFullBleed }"
+              :aria-pressed="isFullBleed"
+              title="Khám phá bản đồ tràn viền"
+              aria-label="Bản đồ tràn viền"
+              @click="isFullBleed = !isFullBleed"
+            >
+              <IconLine :name="isFullBleed ? 'minimize' : 'maximize'" aria-hidden="true" />
+              <span>{{ isFullBleed ? 'Thu gọn' : 'Tràn viền' }}</span>
+            </button>
           </div>
         </div>
         <div v-if="hasActiveFilters" class="active-filter-ledger" role="region" aria-label="Bộ lọc đang áp dụng">
@@ -119,6 +137,7 @@
         :viewport="searchView.state.value.viewport"
         :viewport-pending="searchView.viewportPending.value"
         map-state="partial"
+        :outdoor-contrast="outdoorContrast"
         :panel="searchView.state.value.panel"
         :scroll-key="searchView.state.value.scrollKey"
         @select="searchView.selectResult"
@@ -135,6 +154,7 @@
       :viewport="searchView.state.value.viewport"
       :viewport-pending="searchView.viewportPending.value"
       :map-state="mapNetworkState"
+      :outdoor-contrast="outdoorContrast"
       :panel="searchView.state.value.panel"
       :scroll-key="searchView.state.value.scrollKey"
       @select="searchView.selectResult"
@@ -189,6 +209,7 @@ const { favorites } = useFavorites()
 const mapNetworkState = ref<'ready' | 'offline'>('ready')
 const scopeAnnouncement = ref('')
 const outdoorContrast = ref(false)
+const isFullBleed = ref(false)
 const activeWaterPreset = ref<'all' | 'river' | 'pottery' | 'ferry'>('all')
 
 const quickWaterPresets = [
@@ -415,7 +436,8 @@ useHead({
   letter-spacing: var(--tracking-caps);
   text-transform: uppercase;
 }
-.map-field-dock {
+.map-field-dock,
+.map-floating-thumb-dock {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
@@ -424,6 +446,72 @@ useHead({
   margin-top: var(--space-3);
   padding-top: var(--space-3);
   border-top: 1px dashed var(--line);
+}
+@media (max-width: 768px) {
+  .map-floating-thumb-dock {
+    position: fixed;
+    bottom: calc(env(safe-area-inset-bottom) + 72px);
+    right: 16px;
+    z-index: var(--z-overlay-raised);
+    max-width: min(calc(100vw - 32px), 480px);
+    background: color-mix(in srgb, var(--card) 95%, transparent);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-sheet);
+    box-shadow: var(--shadow-lg), 0 8px 30px rgba(var(--black-rgb), 0.18);
+    padding: var(--space-2) var(--space-3);
+    margin-top: 0;
+    border-top: 1px solid var(--line);
+  }
+}
+.is-fullbleed,
+.page.is-fullbleed {
+  max-width: 100vw;
+  width: 100vw;
+  margin-inline: calc(50% - 50vw);
+  padding-inline: 0;
+}
+.page.is-fullbleed .catalog-hero {
+  padding-block: var(--space-3);
+  padding-inline: var(--space-4);
+  margin-bottom: var(--space-2);
+}
+.page.is-fullbleed .controls.map-filters {
+  padding-inline: var(--space-4);
+}
+.page.is-fullbleed :deep(.map-list-surface) {
+  margin-top: 0;
+  border-radius: 0;
+  border-inline: none;
+  height: calc(100dvh - 140px);
+  min-height: calc(100dvh - 140px);
+}
+.page.is-fullbleed :deep(.map-list-surface__body) {
+  height: calc(100% - 48px);
+}
+.page.is-fullbleed :deep(.map-list-surface__map-pane) {
+  height: 100%;
+  min-height: 100%;
+}
+.page.is-fullbleed :deep(.map-list-surface__map) {
+  height: 100%;
+}
+@media (min-width: 769px) {
+  .page.is-fullbleed .map-floating-thumb-dock {
+    position: fixed;
+    bottom: calc(env(safe-area-inset-bottom) + 72px);
+    right: 16px;
+    z-index: var(--z-overlay-raised);
+    background: color-mix(in srgb, var(--card) 95%, transparent);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-sheet);
+    box-shadow: var(--shadow-lg), 0 8px 30px rgba(var(--black-rgb), 0.18);
+    padding: var(--space-2) var(--space-3);
+    margin-top: 0;
+  }
 }
 .map-quick-presets { display: flex; flex-wrap: wrap; gap: var(--space-2); }
 .map-quick-preset-btn {
@@ -467,6 +555,27 @@ useHead({
   background: var(--color-brand);
   border-color: var(--color-brand);
   color: var(--color-on-action, var(--white));
+  font-weight: var(--weight-semibold);
+}
+.map-fullbleed-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  min-height: 44px;
+  padding: var(--space-1) var(--space-3);
+  font-size: var(--text-xs);
+  color: var(--muted);
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-pill, 999px);
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.map-fullbleed-toggle:hover { background: var(--bg-warm); color: var(--ink); }
+.map-fullbleed-toggle.is-active {
+  background: color-mix(in srgb, var(--color-brand) 15%, var(--card));
+  border-color: var(--color-brand);
+  color: var(--color-brand);
   font-weight: var(--weight-semibold);
 }
 .map-field-actions {
@@ -527,12 +636,28 @@ useHead({
   font-weight: var(--weight-bold);
   color: var(--color-text);
 }
-[data-outdoor-contrast="high"] .map-contrast-toggle {
+[data-outdoor-contrast="high"] .map-contrast-toggle,
+[data-outdoor-contrast="high"] .map-fullbleed-toggle {
   border: 2px solid var(--color-brand);
   font-weight: var(--weight-bold);
 }
 [data-outdoor-contrast="high"] .result-meta {
   font-weight: var(--weight-bold);
   color: var(--color-text);
+}
+[data-outdoor-contrast="high"] :deep(.maplibregl-canvas),
+[data-outdoor-contrast="high"] .maplibregl-canvas {
+  filter: contrast(1.28) saturate(1.15);
+}
+[data-outdoor-contrast="high"] :deep(.map-locator-marker),
+[data-outdoor-contrast="high"] .map-locator-marker {
+  border: 4px solid var(--ink);
+  box-shadow: 0 0 0 2px var(--card), 0 6px 20px rgba(var(--black-rgb), 0.5);
+}
+[data-outdoor-contrast="high"] :deep(.maplibregl-popup-content),
+[data-outdoor-contrast="high"] .maplibregl-popup-content {
+  border: 2px solid var(--color-brand);
+  box-shadow: 0 8px 24px rgba(var(--black-rgb), 0.5);
+  background: var(--card);
 }
 </style>

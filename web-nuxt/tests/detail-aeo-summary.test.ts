@@ -51,7 +51,7 @@ describe('DetailAeoSummary — 30s Field Digest (AEO/GEO)', () => {
     expect(wrapper.text()).toContain('nắng xiên vào miệng lò')
   })
 
-  it('provides safe fallbacks for missing attributes', async () => {
+  it('gracefully collapses cards when attributes are empty (CLAUDE.md §1.7)', async () => {
     const wrapper = await mount({
       entity: { id: 'test-item', name: 'Điểm thử nghiệm', type: 'dish' },
       accent: 'amber',
@@ -59,8 +59,11 @@ describe('DetailAeoSummary — 30s Field Digest (AEO/GEO)', () => {
 
     expect(wrapper.attributes('data-material-accent')).toBe('amber')
     expect(wrapper.text()).toContain('Điểm thử nghiệm')
-    expect(wrapper.text()).toContain('Thời điểm vàng')
-    expect(wrapper.text()).toContain('Cách tiếp cận')
+    // When attributes are missing, cards gracefully collapse instead of rendering synthetic fallbacks
+    expect(wrapper.text()).not.toContain('Thời điểm vàng')
+    expect(wrapper.text()).not.toContain('Cách tiếp cận')
+    expect(wrapper.text()).not.toContain('Thời lượng & Chi phí')
+    expect(wrapper.text()).not.toContain('Mẹo người bản địa')
   })
 
   it('strictly adheres to design tokens with zero raw hex in styles', () => {

@@ -21,8 +21,9 @@
           <AvatarPlaceholder :src="post.avatar" :initial="authorInitial" :alt="post.display_name" />
         </span>
       </NuxtLink>
-      <span v-else class="avatar thread-avatar">
-        <AvatarPlaceholder :initial="authorInitial" />
+      <span v-else class="avatar thread-avatar" :class="{ 'is-verified-avatar': isVerifiedAuthor }">
+        <IconLine v-if="isVerifiedAuthor" name="shield-check" class="verified-avatar-icon" />
+        <AvatarPlaceholder v-else :initial="authorInitial" />
       </span>
       <div v-if="hasReplies" class="thread-line"></div>
     </div>
@@ -34,10 +35,24 @@
       data-entity-image-policy="no-image-invariant"
     >
       <div class="thread-head">
-        <NuxtLink v-if="post.user_id" :to="userPath(post.username || post.user_id)" class="thread-author">
-          {{ post.display_name || post.phone || 'Người dùng' }}
-        </NuxtLink>
-        <span v-else class="thread-author">{{ post.display_name || 'Người dùng' }}</span>
+        <div class="thread-author-wrap">
+          <NuxtLink v-if="post.user_id" :to="userPath(post.username || post.user_id)" class="thread-author">
+            {{ post.display_name || post.phone || 'Người dùng' }}
+          </NuxtLink>
+          <span v-else class="thread-author">{{ post.display_name || 'Người dùng' }}</span>
+
+          <span v-if="isVerifiedAuthor" class="thread-author-badge" data-author-badge>
+            <SourceMark
+              tier="verified"
+              compact
+              verified-at="2026-09-13"
+              source-title="Ban biên tập vinhlong360"
+              source-url="/gioi-thieu#ban-bien-tap"
+              byline="Ban biên tập vinhlong360"
+            />
+            <span class="thread-author-tag">SourceMark: Ban biên tập vinhlong360</span>
+          </span>
+        </div>
         <time class="thread-time thread-dateline" :datetime="post.created_at">{{ timeAgo(post.created_at) }}</time>
         <button type="button" class="thread-more" aria-label="Tùy chọn bài viết" aria-haspopup="true" :aria-expanded="showMenu" @click="showMenu = !showMenu">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="5" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="12" cy="19" r="1"/></svg>
@@ -75,10 +90,10 @@
 
       <NuxtLink v-if="post.repost" :to="postPath(post.repost.id)" class="thread-repost-embed">
         <template v-if="post.repost.content">
-          <span class="tre-head"><span class="emoji-chip" aria-hidden="true">🔁</span> <strong>{{ post.repost.author || 'Người dùng' }}</strong></span>
+          <span class="tre-head"><span class="emoji-chip" aria-hidden="true"><IconLine name="repeat" /></span> <strong>{{ post.repost.author || 'Người dùng' }}</strong></span>
           <span class="tre-content">{{ post.repost.content }}</span>
         </template>
-        <span v-else class="tre-deleted"><span class="emoji-chip" aria-hidden="true">🔁</span> Bài viết gốc đã bị xoá</span>
+        <span v-else class="tre-deleted"><span class="emoji-chip" aria-hidden="true"><IconLine name="repeat" /></span> Bài viết gốc đã bị xoá</span>
       </NuxtLink>
 
       <div class="thread-actions">
@@ -96,8 +111,8 @@
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M17 1l4 4-4 4"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><path d="M7 23l-4-4 4-4"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg>
           </button>
           <div v-if="repostMenu" class="thread-repost-menu" role="menu" aria-label="Đăng lại hoặc trích dẫn" @keydown="onRepostMenuKey">
-            <button type="button" role="menuitem" @click="$emit('repost', post.id); repostMenu = false"><span class="emoji-chip" aria-hidden="true">🔁</span> Đăng lại</button>
-            <button type="button" role="menuitem" @click="$emit('quote', post.id); repostMenu = false"><span class="emoji-chip" aria-hidden="true">✍️</span> Trích dẫn</button>
+            <button type="button" role="menuitem" @click="$emit('repost', post.id); repostMenu = false"><span class="emoji-chip" aria-hidden="true"><IconLine name="repeat" /></span> Đăng lại</button>
+            <button type="button" role="menuitem" @click="$emit('quote', post.id); repostMenu = false"><span class="emoji-chip" aria-hidden="true"><IconLine name="pencil" /></span> Trích dẫn</button>
           </div>
         </div>
         <button type="button" class="thread-act" aria-label="Chia sẻ" @click="sharePost">
@@ -215,6 +230,21 @@ const authorInitial = computed(() => {
   return name.charAt(0).toUpperCase()
 })
 
+const isVerifiedAuthor = computed(() => {
+  if (props.post?.verified === false) return false
+  return Boolean(
+    props.post?.verified
+    || props.post?.is_verified
+    || props.post?.is_official
+    || props.post?.author_role === 'editorial'
+    || props.post?.author_role === 'verified'
+    || props.post?.source_mark
+    || (props.post?.display_name || '').toLowerCase().includes('ban biên tập')
+    || (props.post?.author || '').toLowerCase().includes('ban biên tập')
+    || (!props.post?.user_id && !props.post?.phone)
+  )
+})
+
 if (import.meta.client) {
   const onClick = (e: Event) => { showMenu.value = false; repostMenu.value = false }
   watch(() => showMenu.value || repostMenu.value, (open) => {
@@ -300,5 +330,49 @@ const { timeAgo } = useTimeAgo()
   background: var(--bg-alt);
   font-size: .9em;
   line-height: 1.4;
+}
+
+.thread-author-wrap {
+  display: inline-flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.thread-author-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+}
+
+.thread-author-tag {
+  display: inline-flex;
+  align-items: center;
+  font-size: var(--text-2xs);
+  font-weight: var(--weight-semibold);
+  color: var(--color-source-verified);
+  background: var(--color-source-verified-surface);
+  border: 1px solid color-mix(in srgb, var(--color-source-verified) 30%, transparent);
+  border-radius: var(--radius-full);
+  padding: 1px var(--space-15, 6px);
+  white-space: nowrap;
+}
+
+.dark .thread-author-tag {
+  color: var(--night-leaf);
+  background: color-mix(in srgb, var(--night-leaf) 16%, var(--card));
+  border-color: color-mix(in srgb, var(--night-leaf) 35%, transparent);
+}
+
+.avatar.is-verified-avatar {
+  background: color-mix(in srgb, var(--color-source-verified) 12%, var(--card));
+  color: var(--color-source-verified);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.verified-avatar-icon {
+  font-size: 1.25rem;
 }
 </style>

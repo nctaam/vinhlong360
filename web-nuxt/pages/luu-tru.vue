@@ -147,7 +147,7 @@
         </template>
       </EmptyState>
       <SkeletonGrid v-else-if="!data" :count="6" />
-      <div v-else-if="filtered.length" class="grid">
+      <div v-else-if="filtered.length" class="grid grid--asymmetric stay-grid">
         <EntityCard v-for="e in filtered" :key="e.id" :entity="e" />
       </div>
       <EmptyState v-else icon-name="home" title="Chưa thấy nơi ở phù hợp" message="Thử đổi khu vực hoặc từ khóa khác xem sao nhé." hint="Bỏ bộ lọc khu vực để xem nơi ở khắp tỉnh — từ cù lao ven sông Tiền tới các xã ven biển.">

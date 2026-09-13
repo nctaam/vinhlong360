@@ -161,6 +161,12 @@
               </dd>
             </div>
             <div class="lvn-dl-row">
+              <dt>Con nước</dt>
+              <dd>
+                <MekongWaterBadge :lunar-day="selectedFacts.lunar.day" compact />
+              </dd>
+            </div>
+            <div class="lvn-dl-row">
               <dt>Can chi ngày</dt>
               <dd data-lvn-detail-canchi-day>{{ selectedFacts.canChiDay }}</dd>
             </div>
@@ -315,6 +321,11 @@
       cta-to="/theo-mua"
       cta-label="Xem hướng dẫn du lịch theo mùa"
     />
+
+    <blockquote class="pull-quote">
+      Theo con trăng mà nhìn con nước Cửu Long — ngày sóc ngày vọng con nước rong tràn bờ bãi, ngày huyền con nước kém lắng đọng phù sa; nhịp trăng ngàn đời là nhịp thở của miệt vườn Vĩnh Long.
+      <cite>— Ban biên tập vinhlong360 · Ký sự nông lịch sông nước</cite>
+    </blockquote>
 
     <!-- Ranh giới trung thực: nói rõ trang tính gì và cố ý không nói gì -->
     <section v-once class="block lvn-block lvn-scope">
@@ -921,6 +932,29 @@ useHead(() => ({
 /* --- Ranh giới trung thực --- */
 .lvn-scope p { max-width: var(--measure-read); color: var(--ink-secondary); line-height: var(--leading-relaxed); }
 .lvn-source { font-size: var(--text-sm); color: var(--ink-tertiary); }
+
+/* --- Trích dẫn tạp san --- */
+.pull-quote {
+  font-family: var(--font-editorial);
+  font-style: italic;
+  font-size: clamp(1.15rem, 1rem + 1vw, 1.6rem);
+  line-height: var(--leading-snug);
+  color: var(--ink);
+  border-left: 3px solid var(--alluvial-gold);
+  padding: var(--space-3) var(--space-4);
+  margin: var(--space-6) 0;
+  background: color-mix(in srgb, var(--alluvial-gold) 5%, transparent);
+  border-radius: 0 var(--radius-surface, 12px) var(--radius-surface, 12px) 0;
+}
+
+.pull-quote cite {
+  display: block;
+  font-family: var(--font-sans);
+  font-size: var(--text-sm);
+  font-style: normal;
+  color: var(--ink-secondary);
+  margin-top: var(--space-2);
+}
 
 /* --- Cross links: hàng, không phải card bo tròn --- */
 .lvn-cross-links { display: grid; grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr)); gap: 0 var(--space-6); }

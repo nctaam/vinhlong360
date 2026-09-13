@@ -252,7 +252,7 @@ defineEmits<{
   display: inline-flex;
   align-items: center;
   gap: var(--space-1);
-  min-height: 32px;
+  min-height: 44px;
   padding: 0 var(--space-2);
   border-radius: var(--radius-control);
   transition: color .2s, background .2s;

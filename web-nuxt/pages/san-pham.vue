@@ -167,7 +167,7 @@
         </template>
       </EmptyState>
       <SkeletonGrid v-else-if="!data" :count="6" />
-      <div v-else-if="filtered.length" :class="viewMode === 'list' ? 'list-view' : 'grid'">
+      <div v-else-if="filtered.length" :class="viewMode === 'list' ? 'list-view' : 'grid grid--asymmetric product-grid'">
         <EntityCard v-for="e in visible" :key="e.id" :entity="e" :season-filter="seasonFilter" />
       </div>
       <EmptyState v-else icon-name="fruit" title="Không tìm thấy sản phẩm" message="Thử chọn tháng khác hoặc bỏ bộ lọc OCOP.">

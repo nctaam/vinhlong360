@@ -34,10 +34,13 @@
         <div class="season-moment-text">
           <strong>Tháng {{ month }} — <em>{{ seasonQuarter.tag }}</em></strong>
           <p>{{ seasonQuarter.note }}</p>
-          <span class="season-tide-cue">
-            <IconLine name="ship" aria-hidden="true" />
-            <span>{{ seasonalTideCue }}</span>
-          </span>
+          <div class="season-tide-wrap">
+            <MekongWaterBadge :lunar-month="month" :lunar-day="15" />
+            <span class="season-tide-cue">
+              <IconLine name="ship" aria-hidden="true" />
+              <span>{{ seasonalTideCue }}</span>
+            </span>
+          </div>
         </div>
       </div>
 
@@ -171,6 +174,10 @@
       <p>Vùng đồng bằng sông Cửu Long có khí hậu nhiệt đới gió mùa với hai mùa rõ rệt. <strong>Mùa khô</strong> (tháng 12–4) trời nắng ấm, ít mưa, nhiệt độ 25–32°C — đây là thời gian lý tưởng nhất để du lịch, đạp xe và tham quan làng nghề. <strong>Mùa mưa</strong> (tháng 5–11) có những cơn mưa rào buổi chiều nhưng sáng thường còn nắng đẹp, và đây lại là mùa trái cây rộ nhất.</p>
 
       <div class="sediment-head"><h2>Mùa nước nổi — trải nghiệm độc đáo</h2></div>
+      <blockquote class="pull-quote">
+        Từ tháng 8 đến tháng 11, nước từ thượng nguồn Mekong tràn về mang theo phù sa màu mỡ — mùa nước nổi không phải thiên tai mà là nhịp thở tự nhiên nuôi dưỡng đất mẹ và con người châu thổ.
+        <cite>— Ban biên tập vinhlong360 · Ký sự thổ nhưỡng</cite>
+      </blockquote>
       <p>Từ tháng 8 đến tháng 11, nước từ thượng nguồn Mekong đổ về làm mực nước sông dâng cao, tràn vào đồng ruộng. Đây không phải thiên tai mà là nhịp sống tự nhiên mang phù sa màu mỡ cho vụ lúa kế tiếp. Mùa nước nổi mang đến những đặc sản mùa vụ không đâu có: cá linh non kho mía, bông điên điển xào tỏi, lẩu mắm bông súng, chuột đồng quay lu.</p>
       <p>Đi xuồng giữa đồng nước mênh mông, hái bông điên điển vàng rực hay tát mương bắt cá là trải nghiệm chỉ có trong vài tháng ngắn ngủi mỗi năm — và chỉ ở xứ ngập nước này.</p>
 
@@ -544,10 +551,24 @@ useHead(() => {
 .ring-notch {
   position: absolute; z-index: 2; left: 50%; top: 50%;
   width: 26px; height: 26px; margin: -13px 0 0 -13px;
+  min-width: 44px; min-height: 44px;
   background: none; border: none; padding: 0; cursor: pointer; border-radius: 50%;
   transform: rotate(var(--notch-angle)) translateY(-43px);
   -webkit-tap-highlight-color: transparent;
   transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.ring-notch::before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  min-width: 44px;
+  min-height: 44px;
+  width: 44px;
+  height: 44px;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  pointer-events: auto;
 }
 .ring-notch:active {
   transform: rotate(var(--notch-angle)) translateY(-43px) scale(0.92);
@@ -568,6 +589,36 @@ useHead(() => {
 .season-moment-text strong { display: block; font-size: var(--text-base); font-weight: var(--weight-semibold); color: var(--ink); }
 .season-moment-text strong em { font-family: var(--font-editorial); font-style: italic; font-weight: 500; color: var(--color-brand); }
 .season-moment-text p { margin: var(--space-1) 0 0; font-size: var(--text-sm); color: var(--muted); line-height: var(--leading-relaxed); }
+
+.season-tide-wrap {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin-top: var(--space-2);
+}
+
+.pull-quote {
+  font-family: var(--font-editorial);
+  font-style: italic;
+  font-size: clamp(1.25rem, 1rem + 1.2vw, 1.8rem);
+  line-height: var(--leading-snug);
+  color: var(--ink);
+  border-left: 3px solid var(--alluvial-gold);
+  padding: var(--space-3) var(--space-4);
+  margin: var(--space-editorial, 2rem) 0;
+  background: color-mix(in srgb, var(--alluvial-gold) 4%, transparent);
+  border-radius: 0 var(--radius-surface, 12px) var(--radius-surface, 12px) 0;
+}
+
+.pull-quote cite {
+  display: block;
+  font-family: var(--font-sans);
+  font-size: var(--text-sm);
+  font-style: normal;
+  color: var(--muted);
+  margin-top: var(--space-2);
+}
 
 .season-tide-cue {
   display: inline-flex;
@@ -735,7 +786,18 @@ useHead(() => {
   display: flex; align-items: flex-end; justify-content: center; padding-bottom: 4px;
   color: var(--ink); font-size: var(--text-2xs); font-weight: var(--weight-semibold);
   font-variant-numeric: tabular-nums;
+  min-height: 44px; min-width: 44px;
   transition: filter .2s var(--ease-out), transform .2s var(--ease-out-expo);
+}
+.stl-cell::before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  min-width: 44px;
+  min-height: 44px;
+  transform: translate(-50%, -50%);
+  pointer-events: auto;
 }
 .stl-cell.q-spring  { background: var(--secondary); }
 .stl-cell.q-bloom   { background: color-mix(in srgb, var(--accent) 60%, var(--secondary)); }
@@ -795,14 +857,16 @@ useHead(() => {
   .season-ring-emoji { font-size: 1.8rem; }
   /* Ring shrank 108→76px (radius 54→38px); re-anchor notches so ticks still
      sit right on the smaller ring's edge instead of floating outside it. */
-  .ring-notch { width: 22px; height: 22px; margin: -11px 0 0 -11px; transform: rotate(var(--notch-angle)) translateY(-29px); }
+  .ring-notch { width: 22px; height: 22px; margin: -11px 0 0 -11px; min-width: 44px; min-height: 44px; transform: rotate(var(--notch-angle)) translateY(-29px); }
+  .ring-notch::before { width: 44px; height: 44px; min-width: 44px; min-height: 44px; }
 }
 @media (max-width: 640px) {
   .month-grid { grid-template-columns: repeat(3, 1fr); }
   .month-grid .quick-pick { padding: var(--space-5) var(--space-2); min-height: 48px; }
   .b2b-callout { grid-template-columns: auto 1fr; }
   .b2b-callout-link { grid-column: 1 / -1; justify-content: center; }
-  .stl-cell { font-size: var(--text-2xs, 11px); }
+  .stl-cell { font-size: var(--text-2xs, 11px); min-height: 44px; min-width: 44px; }
+  .stl-cell::before { min-width: 44px; min-height: 44px; }
   .stl-legend { gap: var(--space-1) var(--space-3); }
 }
 @media (max-width: 480px) {

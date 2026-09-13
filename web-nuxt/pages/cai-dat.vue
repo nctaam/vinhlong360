@@ -843,7 +843,7 @@ onUnmounted(() => {
 .notif-pref-icon { font-size: 1.25rem; flex-shrink: 0; }
 .notif-pref-info strong { display: block; font-size: var(--text-sm); }
 .notif-pref-info .sf-hint { display: block; margin-top: .1rem; }
-.toggle { appearance: none; width: 40px; height: 22px; background: var(--muted); border-radius: 11px; position: relative; cursor: pointer; transition: background .25s var(--ease-out); flex-shrink: 0; min-height: 44px; padding: 11px 0; box-sizing: content-box; margin: 0; }
+.toggle { appearance: none; width: 40px; min-width: 44px; height: 22px; background: var(--muted); border-radius: 11px; position: relative; cursor: pointer; transition: background .25s var(--ease-out); flex-shrink: 0; min-height: 44px; padding: 11px 0; box-sizing: content-box; margin: 0; }
 .toggle::after { content: ''; position: absolute; top: 2px; left: 2px; width: 18px; height: 18px; background: var(--white, var(--white)); border-radius: 50%; transition: transform .25s var(--ease-out-expo); box-shadow: 0 1px 3px rgba(var(--black-rgb),.15); }
 .toggle:checked { background: var(--color-action); }
 .toggle:checked::after { transform: translateX(18px); }

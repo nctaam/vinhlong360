@@ -380,6 +380,40 @@
   margin-block-start: var(--space-5);
 }
 
+@container catalog-results (min-width: 48rem) {
+  [data-page-recipe="discovery"] .catalog-result-surface:not(.list-view) > .catalog-result-item:first-child,
+  .catalog-result-surface:not(.list-view) > .catalog-result-item:first-child {
+    grid-column: span 2;
+  }
+  [data-page-recipe="discovery"] .catalog-result-surface:not(.list-view) > .catalog-result-item:first-child .cover-img,
+  .catalog-result-surface:not(.list-view) > .catalog-result-item:first-child .cover-img {
+    aspect-ratio: 21 / 9;
+  }
+  [data-page-recipe="discovery"] .catalog-result-surface:not(.list-view) > .catalog-result-item:first-child h3,
+  .catalog-result-surface:not(.list-view) > .catalog-result-item:first-child h3 {
+    font-size: var(--text-lg);
+  }
+  [data-page-recipe="discovery"] .catalog-result-surface:not(.list-view) > .catalog-result-item:first-child .summary,
+  .catalog-result-surface:not(.list-view) > .catalog-result-item:first-child .summary {
+    -webkit-line-clamp: 3;
+  }
+}
+
+@container (min-width: 48rem) {
+  .catalog-result-surface:not(.list-view) > .catalog-result-item:first-child {
+    grid-column: span 2;
+  }
+  .catalog-result-surface:not(.list-view) > .catalog-result-item:first-child .cover-img {
+    aspect-ratio: 21 / 9;
+  }
+  .catalog-result-surface:not(.list-view) > .catalog-result-item:first-child h3 {
+    font-size: var(--text-lg);
+  }
+  .catalog-result-surface:not(.list-view) > .catalog-result-item:first-child .summary {
+    -webkit-line-clamp: 3;
+  }
+}
+
 [data-page-recipe="discovery"] .catalog-result-item[data-entity-contract="entity-row"] {
   grid-column: 1 / -1;
 }

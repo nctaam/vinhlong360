@@ -42,6 +42,7 @@
           <path class="moon-lit" :d="todayMoonPath" />
         </svg>
         <span class="lunar-ribbon-label">Trăng <strong>{{ todayLunar.day }}/30</strong></span>
+        <MekongWaterBadge :lunar-day="todayLunar.day" compact />
         <div class="lunar-ribbon-track">
           <button
             v-for="tick in ribbonTicks" :key="tick.id"
@@ -163,7 +164,10 @@
     <section v-once class="page-article reveal">
       <div class="sediment-head sediment-head-first"><h2>Sự kiện tại Vĩnh Long</h2></div>
       <p>Ngoài các lễ hội truyền thống, các vùng của tỉnh Vĩnh Long hợp nhất (gồm khu vực Bến Tre và Trà Vinh trước 7-2025) ngày càng có nhiều sự kiện văn hoá, thể thao và du lịch hiện đại. Hội chợ nông sản, festival ẩm thực, giải chạy marathon, triển lãm nghệ thuật và các chương trình xúc tiến du lịch được tổ chức thường xuyên, đặc biệt vào dịp cuối tuần và các ngày lễ lớn.</p>
-      <blockquote class="pull-quote">Thưởng thức ẩm thực đường phố, xem trình diễn nghề truyền thống, mua sản phẩm OCOP trực tiếp từ nhà sản xuất, hoặc tham gia hoạt động cộng đồng cùng người dân bản địa — cùng một vùng đất, cách hiện đại để gặp nó.</blockquote>
+      <blockquote class="pull-quote">
+        Thưởng thức ẩm thực đường phố, xem trình diễn nghề truyền thống, mua sản phẩm OCOP trực tiếp từ nhà sản xuất, hoặc tham gia hoạt động cộng đồng cùng người dân bản địa — cùng một vùng đất, cách hiện đại để gặp nó.
+        <cite>— Ban biên tập vinhlong360 · Ký sự sự kiện</cite>
+      </blockquote>
     </section>
 
     <!-- Divider -->
@@ -221,6 +225,7 @@
               <span v-if="e.place_name" class="event-place"><IconLine name="pin" /> {{ e.place_name }}</span>
               <span v-if="getArea(e)" class="event-area"><IconLine :name="AREA_META[getArea(e)]?.icon || 'pin'" /> {{ AREA_META[getArea(e)]?.name }}</span>
               <span v-if="dateRange(e)" class="event-dates"><IconLine name="calendar" /> {{ dateRange(e) }}</span>
+              <MekongWaterBadge v-if="eventStart(e)" :date="eventStart(e)" compact />
             </div>
           </div>
           <div v-if="eventImageUrl(e)" class="event-media">

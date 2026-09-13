@@ -129,7 +129,7 @@
         :state="catalogContinuityState"
         :retry="refreshCatalog"
       >
-        <div :class="['catalog-result-surface', viewMode === 'list' ? 'list-view' : 'grid']">
+        <div :class="['catalog-result-surface', viewMode === 'list' ? 'list-view' : 'grid grid--asymmetric']">
           <div
             v-for="e in visible"
             :key="e.id"
@@ -141,7 +141,7 @@
           </div>
         </div>
       </PageState>
-      <div v-else-if="filtered.length" :class="['catalog-result-surface', viewMode === 'list' ? 'list-view' : 'grid']">
+      <div v-else-if="filtered.length" :class="['catalog-result-surface', viewMode === 'list' ? 'list-view' : 'grid grid--asymmetric']">
         <div
           v-for="e in visible"
           :key="e.id"

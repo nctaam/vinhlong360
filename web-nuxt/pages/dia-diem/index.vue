@@ -109,7 +109,7 @@
       </div>
 
       <CatalogInterstitial
-        fact="Tỉnh Vĩnh Long hợp nhất (3 vùng trước 7-2025) có hơn 1.500 điểm đến, đặc sản và dịch vụ — từ cù lao xanh mát đến làng nghề trăm năm, tất cả được xác minh và cập nhật liên tục."
+        fact="Tỉnh Vĩnh Long hợp nhất (3 vùng trước 7-2025) có hơn 1.500 điểm đến, đặc sản và dịch vụ — từ cù lao xanh mát đến làng nghề trăm năm, được ban biên tập tổng hợp và cập nhật liên tục."
         icon-name="chart"
         variant="warm"
         :links="[{ to: '/ban-do', label: 'Xem bản đồ' }, { to: '/du-lich', label: 'Du lịch sinh thái' }]"
@@ -587,10 +587,12 @@ useHead(() => ({
   font-weight: var(--weight-medium);
 }
 .dd-af-chip {
+  position: relative;
   display: inline-flex;
   align-items: center;
   gap: var(--space-1);
-  min-height: 32px;
+  min-height: 44px;
+  min-width: 44px;
   padding: var(--space-1) var(--space-2h);
   border-radius: var(--radius-full);
   border: 1px solid var(--color-action-border);
@@ -601,14 +603,25 @@ useHead(() => ({
   cursor: pointer;
   transition: background .2s var(--ease-out), transform .2s var(--ease-out-expo);
 }
+.dd-af-chip::before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  min-width: 44px;
+  min-height: 44px;
+}
 .dd-af-chip:hover {
   background: var(--color-action-surface-hover);
 }
 .dd-af-chip:active { transform: scale(.95); transition-duration: .08s; }
 .dd-af-chip:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
 .dd-af-clear {
+  position: relative;
   margin-left: auto;
-  min-height: 32px;
+  min-height: 44px;
+  min-width: 44px;
   background: none;
   border: none;
   color: var(--color-text-muted);
@@ -620,6 +633,15 @@ useHead(() => ({
   text-decoration: underline;
   text-underline-offset: 2px;
   transition: color .2s var(--ease-out), transform .2s var(--ease-out-expo);
+}
+.dd-af-clear::before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  min-width: 44px;
+  min-height: 44px;
 }
 .dd-af-clear:hover {
   color: var(--color-action);

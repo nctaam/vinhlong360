@@ -24,12 +24,12 @@ function readFile(relPath: string): string {
 }
 
 describe('Mốc 108: Disclosure Semantics & Universal Page Title Authority (WCAG 2.2 SC 2.4.2 & SC 4.1.2)', () => {
-  describe('Universal Page Title Coverage (100% of 74 pages)', () => {
+  describe('Universal Page Title Coverage (100% of 75 pages)', () => {
     const pagesDir = path.join(BASE_DIR, 'pages')
     const pageFiles = getFiles(pagesDir, f => f.endsWith('.vue'))
 
-    it('bảo đảm toàn bộ 74 trang đều khai báo title (qua useHead hoặc useSeoMeta)', () => {
-      expect(pageFiles.length).toBe(74)
+    it('bảo đảm toàn bộ 75 trang đều khai báo title (qua useHead hoặc useSeoMeta)', () => {
+      expect(pageFiles.length).toBe(75)
       const missingTitles: string[] = []
 
       pageFiles.forEach(file => {

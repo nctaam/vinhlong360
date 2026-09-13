@@ -27,8 +27,8 @@
       {{ quickSummary }}
     </p>
 
-    <div class="detail-aeo-summary__grid">
-      <div class="detail-aeo-summary__card">
+    <div v-if="goldenHour || transitInfo || durationAndCost || localTip" class="detail-aeo-summary__grid">
+      <div v-if="goldenHour" class="detail-aeo-summary__card">
         <div class="detail-aeo-summary__card-head">
           <IconLine name="sun" class="detail-aeo-summary__icon" aria-hidden="true" />
           <span class="detail-aeo-summary__label">Thời điểm vàng</span>
@@ -36,7 +36,7 @@
         <p class="detail-aeo-summary__value">{{ goldenHour }}</p>
       </div>
 
-      <div class="detail-aeo-summary__card">
+      <div v-if="transitInfo" class="detail-aeo-summary__card">
         <div class="detail-aeo-summary__card-head">
           <IconLine name="compass" class="detail-aeo-summary__icon" aria-hidden="true" />
           <span class="detail-aeo-summary__label">Cách tiếp cận</span>
@@ -44,7 +44,7 @@
         <p class="detail-aeo-summary__value">{{ transitInfo }}</p>
       </div>
 
-      <div class="detail-aeo-summary__card">
+      <div v-if="durationAndCost" class="detail-aeo-summary__card">
         <div class="detail-aeo-summary__card-head">
           <IconLine name="clock" class="detail-aeo-summary__icon" aria-hidden="true" />
           <span class="detail-aeo-summary__label">Thời lượng &amp; Chi phí</span>
@@ -52,7 +52,7 @@
         <p class="detail-aeo-summary__value">{{ durationAndCost }}</p>
       </div>
 
-      <div class="detail-aeo-summary__card">
+      <div v-if="localTip" class="detail-aeo-summary__card">
         <div class="detail-aeo-summary__card-head">
           <IconLine name="lightbulb" class="detail-aeo-summary__icon" aria-hidden="true" />
           <span class="detail-aeo-summary__label">Mẹo người bản địa</span>
@@ -89,33 +89,28 @@ const quickSummary = computed(() => {
 
 const goldenHour = computed(() => {
   if (attrs.value.best_time) return String(attrs.value.best_time)
-  if (attrs.value.hours) return "Mở cửa: " + attrs.value.hours + " (đẹp nhất lúc 7h-9h hoặc 16h-17h30)"
-  if (props.entity?.type === 'craft_village') return 'Sáng sớm 7h00 - 10h00 khi nghệ nhân vào mẻ gốm/dệt chiếu'
-  if (props.entity?.type === 'experience') return '7h30 - 10h00 hoặc 15h30 - 17h30 tránh nắng gắt trên sông'
-  if (props.entity?.type === 'dish') return 'Bữa sáng 6h30 - 8h30 hoặc chiều tà 16h00 - 19h00'
-  return 'Buổi sáng dịu mát 7h30 - 10h00 hoặc hoàng hôn bên sông'
+  if (attrs.value.hours) return "Mở cửa: " + String(attrs.value.hours)
+  return ''
 })
 
 const transitInfo = computed(() => {
   if (attrs.value.transport) return String(attrs.value.transport)
-  if (attrs.value.vehicle_access) return "Đường đến: " + attrs.value.vehicle_access
-  if (props.entity?.place_area === 'an-binh') return 'Qua phà An Bình (xe máy/ô tô), đi đường đan rợp bóng cây trái'
-  if (props.entity?.place_area === 'mang-thit') return 'Đường tỉnh 902 hoặc theo thuyền dọc kênh Thầy Cai'
-  return 'Đường nhựa ô tô vào tận nơi hoặc chuyển đò ngang qua sông'
+  if (attrs.value.vehicle_access) return "Đường đến: " + String(attrs.value.vehicle_access)
+  return ''
 })
 
 const durationAndCost = computed(() => {
-  const duration = attrs.value.suggested_duration || 'Khoảng 1.5 - 2.5 giờ'
-  const cost = attrs.value.price || attrs.value.fee || attrs.value.price_range || 'Miễn phí hoặc chi tiêu tự do'
-  return duration + " · " + cost
+  const duration = attrs.value.suggested_duration ? String(attrs.value.suggested_duration) : ''
+  const cost = (attrs.value.price || attrs.value.fee || attrs.value.price_range)
+    ? String(attrs.value.price || attrs.value.fee || attrs.value.price_range)
+    : ''
+  if (duration && cost) return duration + " · " + cost
+  return duration || cost || ''
 })
 
 const localTip = computed(() => {
   if (attrs.value.local_tip) return String(attrs.value.local_tip)
-  if (props.entity?.type === 'craft_village') return 'Nên xin phép trước khi chụp ảnh thợ lò gốm đang làm việc'
-  if (props.entity?.type === 'experience') return 'Chuẩn bị tiền mặt lẻ để mua vé đò và thưởng thức trái cây miệt vườn'
-  if (props.entity?.type === 'dish') return 'Hỏi người bản địa món ăn kèm hoặc rau đồng đúng mùa nước'
-  return 'Mang mũ nón che nắng và mang theo bình nước cá nhân khi đi bộ'
+  return ''
 })
 
 const tideCue = computed(() => {
@@ -126,7 +121,7 @@ const tideCue = computed(() => {
   if (props.entity?.place_area === 'mang-thit') {
     return 'Dọc kênh Thầy Cai: Thuyền ghe tấp nập theo con nước lớn; đường 902 cao ráo thông thoáng'
   }
-  return 'Nhịp sống sông nước: Khởi hành buổi sớm ngắm bình minh trên sông Tiền & Cổ Chiên'
+  return ''
 })
 </script>
 
@@ -136,9 +131,8 @@ const tideCue = computed(() => {
   margin: var(--space-6) 0;
   padding: var(--space-5);
   border-radius: var(--radius-sheet);
-  background: var(--color-canvas);
-  border: 1px solid var(--border-liquid-glass, var(--color-border));
-  border-top: 3px solid var(--color-material-clay);
+  background: rgba(var(--alluvial-gold-rgb), 0.05);
+  border: 1.5px solid var(--alluvial-gold);
   box-shadow: 0 2px 8px -2px rgba(var(--black-rgb), 0.05), 0 0 0 1px var(--border-liquid-glass, rgba(var(--white-rgb), 0.5));
   contain: layout style;
   transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.25s cubic-bezier(0.16, 1, 0.3, 1);
@@ -148,19 +142,8 @@ const tideCue = computed(() => {
   box-shadow: 0 4px 14px -2px rgba(var(--black-rgb), 0.08), 0 0 0 1px var(--border-liquid-glass, rgba(var(--white-rgb), 0.7));
 }
 
-.detail-aeo-summary[data-material-accent="amber"] {
-  border-top-color: var(--alluvial-gold, var(--color-material-amber));
-}
-
-.detail-aeo-summary[data-material-accent="leaf"] {
-  border-top-color: var(--color-material-leaf);
-}
-
-.detail-aeo-summary[data-material-accent="river"] {
-  border-top-color: var(--color-material-river);
-}
-
 .dark .detail-aeo-summary {
+  background: rgba(var(--alluvial-gold-rgb), 0.08);
   box-shadow: 0 1px 3px rgba(var(--black-rgb), 0.2), 0 0 0 1px var(--border-liquid-glass, rgba(var(--white-rgb), 0.08));
 }
 

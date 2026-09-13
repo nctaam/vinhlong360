@@ -62,6 +62,29 @@ export function generateCategoryPlaceholder(entityId: string | number, category:
   // gradientTransform rotate() works in the gradient's bounding-box space (0..1),
   // so rotate around its centre (0.5, 0.5). radialGradient 'hl' = vầng sáng góc
   // trên-trái tạo chiều sâu (đỡ phẳng).
+  // Category-specific subtle terroir backdrop lineart
+  let terroirBackdrop = ''
+  if (category === 'craft' || category === 'economy') {
+    // Mang Thít brick kiln dome outline
+    terroirBackdrop = `<path d="M290,240 C290,140 340,95 365,95 C390,95 440,140 440,240" fill="none" stroke="rgba(255,255,255,0.08)" stroke-width="1.5" stroke-dasharray="4 3"/>`
+  } else if (category === 'attraction' || category === 'history') {
+    // Heritage pagoda eave arc
+    terroirBackdrop = `<path d="M110,40 C190,68 270,68 350,40 C320,48 260,56 110,40 Z" fill="rgba(255,255,255,0.06)"/>`
+  } else if (category === 'nature' || category === 'product' || category === 'dish') {
+    // Sinuous orchard leaf / coconut frond curves
+    terroirBackdrop = `<path d="M390,240 C365,160 305,100 220,70" fill="none" stroke="rgba(255,255,255,0.07)" stroke-width="1.6"/><path d="M390,240 C345,180 295,130 205,110" fill="none" stroke="rgba(255,255,255,0.05)" stroke-width="1.2"/>`
+  } else if (category === 'itinerary') {
+    // Exploration trail waypoint curve
+    terroirBackdrop = `<path d="M30,55 C120,35 200,95 320,65 C360,55 380,80 390,95" fill="none" stroke="rgba(255,255,255,0.12)" stroke-width="1.4" stroke-dasharray="5 4"/><circle cx="320" cy="65" r="3" fill="rgba(255,255,255,0.3)"/>`
+  }
+
+  // Sinuous alluvial contour wave variations (Mekong river currents)
+  const wave1Y = 170 + (h % 15)
+  const wave2Y = 200 + ((h >>> 4) % 15)
+  const wave1 = `<path d="M0,${wave1Y} C90,${wave1Y - 15} 170,${wave1Y + 15} 260,${wave1Y - 5} C330,${wave1Y - 18} 370,${wave1Y + 10} 400,${wave1Y} L400,240 L0,240 Z" fill="rgba(255,255,255,0.065)"/>`
+  const wave2 = `<path d="M0,${wave2Y} C110,${wave2Y - 12} 210,${wave2Y + 14} 310,${wave2Y - 8} C360,${wave2Y - 14} 385,${wave2Y + 6} 400,${wave2Y} L400,240 L0,240 Z" fill="rgba(0,0,0,0.075)"/>`
+  const watermark = `<text x="16" y="226" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,sans-serif" font-size="8" font-weight="600" letter-spacing="1.5" fill="rgba(255,255,255,0.22)">BẢN SẮC NAM BỘ</text>`
+
   const svg =
     `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 240" preserveAspectRatio="xMidYMid slice">` +
     `<defs>` +
@@ -80,6 +103,10 @@ export function generateCategoryPlaceholder(entityId: string | number, category:
     `<rect width="400" height="240" fill="url(#g)"/>` +
     `<rect width="400" height="240" fill="url(#hl)"/>` +
     `<rect width="400" height="240" fill="url(#grain)"/>` +
+    terroirBackdrop +
+    wave1 +
+    wave2 +
+    watermark +
     `</svg>`
 
   // Single quotes inside the url(): the value lands in a double-quoted SSR

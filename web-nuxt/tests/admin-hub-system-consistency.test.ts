@@ -67,12 +67,12 @@ describe('Admin Hub & Complete 74-Page System Consistency (Moc 135)', () => {
     }
   })
 
-  describe('Full 74-Page Catalog Coverage', () => {
+  describe('Full 75-Page Catalog Coverage', () => {
     const pagesDir = resolve(__dirname, '../pages')
     const allPages = getVueFiles(pagesDir)
 
-    it('contains all 74 application pages across public and admin domains', () => {
-      expect(allPages.length).toBe(74)
+    it('contains all 75 application pages across public and admin domains', () => {
+      expect(allPages.length).toBe(75)
     })
 
     it('enforces Clean Code SFC line ceilings on the largest core pages', () => {

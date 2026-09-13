@@ -318,6 +318,18 @@
       </aside>
 
       <article class="detail-main" data-detail-region="narrative" aria-label="Thông tin chi tiết">
+        <!-- Prominent SourceMark verified badge at the top of the heritage article -->
+        <div class="article-sourcemark-bar" data-article-sourcemark>
+          <SourceMark
+            :tier="trustTier"
+            :source-title="trustSourceTitle"
+            :source-url="trustSourceUrl"
+            :verified-at="trustVerifiedAt"
+            compact
+          />
+          <span class="article-sourcemark-label">SourceMark: <strong>Ban biên tập vinhlong360</strong></span>
+        </div>
+
         <!-- Highlights quét nhanh (Baymard: 78% site thiếu; chống info bị chôn dưới fold) -->
         <div v-if="hasHighlights" class="highlights">
           <a v-if="zaloLink" class="hl hl-action" data-color-role="action-secondary" data-contact-action="zalo" :href="zaloLink" target="_blank" rel="nofollow noopener" :aria-label="`Nhắn Zalo ${entity.name}`" @click="trackContact('zalo')"><IconLine name="message" aria-hidden="true" /> Zalo</a>

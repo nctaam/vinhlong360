@@ -136,21 +136,21 @@ Vĩnh Long 360 không phải là một danh bạ du lịch thương mại thông
 Hệ thống được kiến tạo dựa trên việc tổng hòa 4 đỉnh cao thiết kế biên tập và bảo tàng thế giới:
 
 ### 2.1. Rijksmuseum (Amsterdam) — Tôn Nghiêm Di Sản & Tỷ Lệ Vàng 62/38
-- **62/38 Asymmetric Hero Dossier:** Tiêu điểm di sản chiếm ~62% chiều rộng khung nhìn (7/12 cột lưới desktop), 38% còn lại dành riêng cho thẻ thuyết minh tư liệu (Archival Dossier Card), trích đoạn sử liệu và chứng thư nguồn gốc.
+- **62/38 Asymmetric Hero Dossier & Lead Hero Card span-2:** Tiêu điểm di sản chiếm ~62% chiều rộng khung nhìn (7/12 cột lưới desktop), hoặc dạng Lead Hero Card trải rộng 2 cột (span-2) với tỷ lệ ảnh 21:9 chuẩn điện ảnh tư liệu; 38% còn lại dành riêng cho thẻ thuyết minh tư liệu (Archival Dossier Card), trích đoạn sử liệu và chứng thư nguồn gốc.
 - **Museum-Grade Airy Whitespace:** Không gian đệm rộng rãi (`clamp(2.5rem, 5vw, 5rem)`), loại bỏ hoàn toàn các khung viền dày đặc gây phân tán thị giác.
 
 ### 2.2. National Geographic — Tính Xác Thực Thực Địa & Hồ Sơ Dữ Liệu Chân Thực
 - **Verified GPS Coordinates:** Tọa độ vệ tinh chính xác tới 3 chữ số thập phân (ví dụ: `10.254° N, 105.972° E` tại Làng gốm Mang Thít) được hiển thị với kiểu chữ Monospace tinh tế.
-- **SourceMark & FreshnessLine:** Nhãn nguồn kiểm định chính thức từ các cơ quan quản lý nhà nước (Sở VHTTDL, Viện Khảo cổ học) kèm mốc thời gian cập nhật thực địa.
+- **SourceMark & FreshnessLine:** Nhãn nguồn kiểm định chính thức từ các cơ quan quản lý nhà nước (Sở VHTTDL, Viện Khảo cổ học) kèm mốc thời gian cập nhật thực địa: `SourceMark: Ban biên tập vinhlong360`.
 - **Không Ngôn Từ Sáo Rỗng:** Tuyệt đối không dùng mỹ từ quảng cáo rỗng tuyếch; chỉ sử dụng câu từ trung tính, đĩnh đạc và mang hàm lượng tri thức cao.
 
 ### 2.3. Visit Oslo & Switzerland Tourism — Terroir Tình Huống & Chính Sách Dữ Liệu Trung Thực
-- **Situational Terroir Briefing:** Dải thông tin thời gian thực phản ánh nhịp sống đồng bằng: chu kỳ con nước sông Cổ Chiên (+1.42m triều cường / nước ròng), lịch trăng nông nghiệp và tiết khí mùa vụ miệt vườn.
-- **CLAUDE.md §1.7 Unavailable Policy:** Khi cảm biến ngoại vi hoặc dịch vụ bên thứ ba mất tín hiệu, toàn bộ khối giao diện sụp đổ một cách thanh lịch (Graceful Collapse) — tuyệt đối KHÔNG dựng khung rỗng (empty state placeholder) và KHÔNG bịa đặt số liệu giả mạo.
+- **Situational Terroir Briefing & MekongWaterBadge:** Dải thông tin thời gian thực phản ánh nhịp sống đồng bằng: chu kỳ con nước sông Cổ Chiên (+1.42m triều cường / nước ròng), lịch trăng nông nghiệp, 4 trạng thái con nước (nước rong, nước kém, nước lớn, nước ròng) và tiết khí mùa vụ miệt vườn.
+- **CLAUDE.md §1.7 Unavailable Policy (Graceful Collapse):** Khi cảm biến ngoại vi hoặc dịch vụ bên thứ ba mất tín hiệu, toàn bộ khối giao diện sụp đổ một cách thanh lịch (Graceful Collapse) — tuyệt đối KHÔNG dựng khung rỗng (empty state placeholder) và KHÔNG bịa đặt số liệu giả mạo.
 
 ### 2.4. Monocle & Kinfolk — Nghệ Thuật Ấn Loát & Lưới Biên Tập Kép
-- **1.35:1 Dual-Rail Feed:** Bố cục hai dải nội dung song hành bất đối xứng (Dòng sự kiện lễ hội vs Làng nghề & Sản vật đang hoạt động), phân tách bằng đường kẻ tóc 1px hairline (`var(--divider-subtle)`).
-- **Kỷ Luật Ấn Loát Nghiêm Ngặt:** Sự kết hợp hài hòa giữa font có chân cổ điển `Lora` và font không chân `Be Vietnam Pro`, tạo nên nhịp đọc trang trọng của một ấn phẩm lữ hành cao cấp.
+- **1.35:1 Dual-Rail Feed & Asymmetric Flow:** Bố cục hai dải nội dung song hành bất đối xứng (Dòng sự kiện lễ hội vs Làng nghề & Sản vật đang hoạt động), phân tách bằng đường kẻ tóc 1px hairline (`var(--divider-subtle)`).
+- **Kỷ Luật Ấn Loát Nghiêm Ngặt:** Sự kết hợp hài hòa giữa font có chân cổ điển `Lora` và font không chân `Be Vietnam Pro`, tạo nên nhịp đọc trang trọng của một ấn phẩm lữ hành cao cấp. Khối trích dẫn cổ điển kèm thẻ `<cite>` attribution.
 - **Thang Bán Kính Ngữ Nghĩa (Semantic Radius Scale):** Chuẩn hóa 4 bậc bán kính cố định (8px, 12px, 20px, 9999px), cấm triệt để các góc bo tùy tiện.
 
 ---
@@ -165,13 +165,13 @@ Bảng màu được chưng cất từ thổ nhưỡng, sông ngòi và văn hó
 | **Dòng Chảy** | Sông Tiền & Cổ Chiên Deep | `#004e74` (`--river-600`) | Hành động chính (Primary Action), nút lệnh điều hướng | >= 7.0:1 (AAA) trên Bến Cloud |
 | **Đất Nung** | Đất Nung Mang Thít | `#b95f38` (`--mangthit-500`) | Nhãn di sản, viền gốm nung thủ công, con dấu OCOP | >= 4.5:1 trên nền giấy sáng |
 | **Lò Gạch** | Đất Nung Lò Gạch | `#95402b` (`--mangthit-600`) | Bản sắc thương hiệu di sản, thẻ danh mục di tích | >= 7.0:1 (AAA) trên Bến Cloud |
-| **Phù Sa** | Phù Sa Cổ Chiên (Silt Gold) | `#c99446` (`--harvest-600`) | Viền thẻ AEO Answer Plaque, điểm nhấn mùa vụ | Cảnh báo / Nhấn mạnh |
+| **Phù Sa** | Phù Sa Cổ Chiên (Silt Gold) | `#c99446` (`--harvest-600` / `var(--alluvial-gold)`) | Viền thẻ AEO Provenance Plaque, viền vàng phù sa, điểm nhấn mùa vụ | Cảnh báo / Bảo chứng |
 | **Mùa Vàng** | Vàng Lúa Chín | `#d99b26` (`--harvest-500`) | Tem sao OCOP, chỉ báo lễ hội thời vụ | Điểm sáng đồ họa |
-| **Miệt Vườn** | Xanh Cù Lao An Bình | `#1b8844` (`--orchard-500`) | Nhãn dữ liệu đã xác thực (SourceMark), sinh thái | >= 4.5:1 trên nền giấy sáng |
+| **Miệt Vườn** | Xanh Cù Lao An Bình | `#1b8844` (`--orchard-500`) | Nhãn nguồn kiểm định (SourceMark), sinh thái | >= 4.5:1 trên nền giấy sáng |
 | **Tán Dừa** | Xanh Vườn Cây Ăn Trái | `#2c5e43` (`--orchard-600`) | Trạng thái tin cậy, huy hiệu bảo chứng nguồn gốc | >= 7.0:1 (AAA) trên Bến Cloud |
 | **Nền Giấy** | Bến Cloud (Paper Silt) | `#faf9f7` (`--alluvial-paper`) | Mặt sàn chính (Canvas Sáng), chống chói mắt ngoài trời | Nền dịu mắt chống lóa |
 | **Mặt Bàn** | Phù Sa Mộc (Surface) | `#f4ede0` (`--alluvial-surface`) | Thẻ nội dung, thẻ di sản, panel điều hướng | Phân tầng bề mặt |
-| **Mực Thảo** | Mực Than Củi Mekong | `#181e28` (`--mekong-ink`) | Văn bản chính chế độ sáng, tiêu đề di sản | >= 12.0:1 (AAA Vượt Ngưỡng) |
+| **Mực Thảo** | Mực Than Củi Mekong | `#181e28` (`--mekong-ink`) | Văn bản chính chế độ sáng, tiêu đề di sản, route headers | >= 12.0:1 (AAA Vượt Ngưỡng) |
 | **Đêm Sông** | Đêm Nocturne (Canvas Đêm) | `#071210` (`--night-canvas`) | Nền mặt sàn chế độ tối, chiều sâu màn đêm miệt vườn | Chống mỏi mắt tuyệt đối |
 | **Bề Mặt Đêm** | Bề Mặt Nocturne | `#111d1b` (`--night-surface`) | Bề mặt thẻ đêm, dock điều hướng ban đêm | Phân cấp độ sâu đêm |
 | **Nổi Đêm** | Khối Nổi Nocturne | `#1d2927` (`--night-raised`) | Hộp thoại, thẻ nổi trên nền đêm | Phân tầng chiều sâu đêm |
@@ -181,6 +181,14 @@ Bảng màu được chưng cất từ thổ nhưỡng, sông ngòi và văn hó
 - **Đổ Bóng Hữu Cơ Mekong Charcoal Ink:** Đổ bóng nhiều tầng (`--shadow-xs` đến `--shadow-xl`), sử dụng màu mực than củi tự nhiên `rgba(var(--mekong-ink-rgb, 8, 26, 22), ...)` thay thế cho bóng mờ xám bẩn AI (Box-Shadow Mush).
 - **Thanh Trừng SaaS Gradients:** Đã thanh trừng triệt để mã tím SaaS `#5B6CC4` khỏi token `--cat-accommodation`, thay thế bằng dải màu sông nước thanh tao `linear-gradient(135deg, var(--river-700), var(--river-600))`.
 
+### 3.2. Tiêu Chuẩn Tương Phản WCAG 2.2 AAA Cho Tuyến Hành Trình & Chế Độ Đêm
+- **WCAG AAA Contrast >= 7:1 cho Tiêu Đề Tuyến Hành Trình (Route Headers):**
+  * Lớp phủ tiêu đề tuyến Bến Tre `.route-header.area-ben-tre` sử dụng màu mực than củi `color: var(--mekong-ink);` (thay vì màu xanh nhạt cũ 1.71:1) nhằm xác lập tỷ lệ tương phản vượt trội > 10:1 (vượt chuẩn AAA 7:1).
+  * Tiêu đề các phân khu Tam Vùng (`.route-header.area-sa-dec`, `.route-header.area-co-chien`, `.route-header.area-tra-on`) duy trì độ tương phản >= 7:1 trên nền Bến Cloud `#faf9f7`.
+- **Độ Tương Phản Chế Độ Tối (Dark Mode Contrast Tuning):**
+  * Token chữ phụ trong chế độ Nocturne `--ink-tertiary` được tinh chỉnh từ 4.45:1 lên > 5.5:1 trên nền `--night-surface` `#111d1b`.
+  * Đảm bảo văn bản phụ, nhãn thời gian và chú thích ảnh luôn đạt chuẩn tiếp cận quốc tế trong điều kiện thiếu sáng.
+
 ---
 
 ## 4. Kiến Trúc Ấn Loát Biên Tập (Typographic Architecture)
@@ -189,7 +197,7 @@ Hệ thống ấn loát được xây dựng trên sự bổ trợ tương hỗ 
 
 - **Display & Tiêu Đề Biên Tập (Headlines):**
   - Font: **`Lora`** (Serif cổ điển, track-tight `-0.02em`, tương phản nét thanh nét đậm sắc sảo).
-  - Phục vụ cho: Tiêu đề trang, tên di tích, câu trích dẫn văn hóa, tên danh nhân, tiêu đề chương mục.
+  - Phục vụ cho: Tiêu đề trang, tên di tích, câu trích dẫn văn hóa, tên danh nhân, tiêu đề chương mục (`.desc-heading`, `.desc-subheading`, `h1`, `h2`, `h3`).
   - Phân cấp:
     * `headline-xl`: 40px / 48px, weight 700, letter-spacing -0.02em.
     * `headline-lg`: 32px / 38px, weight 700, letter-spacing -0.01em.
@@ -207,7 +215,9 @@ Hệ thống ấn loát được xây dựng trên sự bổ trợ tương hỗ 
 - **Dữ Liệu Vệ Tinh & Chỉ Dấu Lưu Trữ (Monospace Metadata):**
   - Font: `ui-monospace, SFMono-Regular, Menlo, Consolas, monospace`.
   - Phục vụ cho: Tọa độ GPS (`10.254° N, 105.972° E`), mã hồ sơ di sản (e.g. `MS-84/VHTT-VL`), mốc thời gian ISO.
-- **Độ Rộng Dòng Biên Tập:** Giới hạn nghiêm ngặt `max-width: 65ch` (`--measure-read: 68ch`) nhằm bảo toàn công thái học đọc thoải mái nhất cho mắt người.
+- **Độ Rộng Dòng Biên Tập Tối Ưu (Monocle Reading Measure):**
+  - Giới hạn nghiêm ngặt trong khoảng **65-70ch** (`max-width: var(--measure-read);` cố định tại 68ch) cho các khối nội dung thuyết minh `.entity-description` và `.extra-content` trên `dia-diem/[id].vue`, `bai-viet/[id].vue`, `[...slug].vue`.
+  - Đảm bảo mắt người di chuyển êm dịu, không bị mỏi khi chuyển dòng trong bài viết dài.
 - **LỆNH CẤM FONT:** Cấm triệt để font `Times New Roman` (đã có test tự động `platform-typography-anti-slop.test.ts` kiểm soát 100% stylesheets). Cấm `Inter`, `Roboto`, `Arial` làm tiêu đề di sản.
 
 ---
@@ -218,9 +228,9 @@ Dứt khoát chấm dứt việc gán `border-radius` bừa bãi hoặc lạm d�
 
 | Token | Giá Trị | Đối Tượng Áp Dụng | Ý Nghĩa Ngữ Nghĩa |
 |---|---|---|---|
-| `--radius-control` | `8px` | Nút bấm (Button), ô nhập dữ liệu (Input), chip lọc (Filter Pill) | Khối điều khiển nhỏ gọn, sắc sảo, công thái học ngón tay |
+| `--radius-control` | `8px` | Nút bấm (Button), ô nhập dữ liệu (Input), chip lọc (Tactile Filter Pill) | Khối điều khiển nhỏ gọn, sắc sảo, công thái học ngón tay |
 | `--radius-surface` | `12px` | Thẻ danh mục (Card), thẻ di sản, panel thông tin AEO | Bề mặt chứa nội dung thứ cấp, gốm nung mộc |
-| `--radius-sheet` | `20px` | Khung tiêu điểm Hero, modal dossier, bảng trượt drawer | Tấm nền lớn mang tính bảo bọc, kiến trúc mở |
+| `--radius-sheet` | `20px` | Khung tiêu điểm Hero, modal dossier, bảng trượt drawer, dock nổi | Tấm nền lớn mang tính bảo bọc, kiến trúc mở |
 | `--radius-full` | `9999px` | Avatar cá nhân, huy hiệu trạng thái tròn, chỉ báo pin sóng | Duy nhất cho các biểu tượng tròn đối xứng |
 
 *Ghi chú:* Tuyệt đối không tái phạm việc sử dụng thang đo cũ R30.8 (`--radius-none/xs/sm/md/lg/xl`).
@@ -229,45 +239,113 @@ Dứt khoát chấm dứt việc gán `border-radius` bừa bãi hoặc lạm d�
 
 ## 6. Đặc Tả Thành Phần & Công Thái Học Bản Địa (Component Specifications)
 
-### 6.1. Vùng Chạm Cảm Ứng Tối Thiểu (Touch Targets >= 44x44px)
-Mọi phần tử tương tác trên toàn hệ thống (nút chuyển theme, nút chuyển danh mục, liên kết thanh điều hướng, nút đóng drawer, chips lọc tiện ích) đều bắt buộc tuân thủ kích thước vùng chạm tối thiểu **44x44px** (theo chuẩn WCAG 2.5.8 và Apple HIG), thông qua kích thước hiển thị trực tiếp hoặc vùng chạm vô hình mở rộng `::after`.
+### 6.1. Vùng Chạm Cảm Ứng Tối Thiểu (Touch Targets >= 44x44px) & Tactile Filter Pills
+- Mọi phần tử tương tác trên toàn hệ thống bắt buộc tuân thủ kích thước vùng chạm tối thiểu **44x44px** (theo chuẩn WCAG 2.5.8 và Apple HIG):
+  * **Tactile Filter Pills:** Các chips lọc danh mục `.dd-af-chip`, `.dd-af-clear`, `.fc-chip`, `.mode-pill` phải thực thi `min-height: 44px; min-width: 44px;` hoặc sử dụng pseudo-element `::before` / `::after` với vùng phủ mở rộng (`inset: -6px`) chống bấm trượt khi thao tác di động.
+  * **Map Marker Hitboxes:** Điểm ghim định vị `.map-locator-marker` được mở rộng vùng chạm cảm ứng từ 34px lên tối thiểu `44x44px` thông qua `.map-locator-marker::before`.
+  * **Floating Thumb Dock Controls:** Mọi nút bấm trong thanh điều khiển nổi của bản đồ đều có diện tích tiếp xúc ngón tay >= 44x44px.
 
-### 6.2. Thẻ Thuyết Minh Di Sản (Asymmetric Heritage Dossier Card)
-- Nằm trong bố cục 62/38 tại Hero hoặc đầu trang di sản.
-- Viền mỏng gốm nung `color-mix(in srgb, var(--mangthit-500) 24%, transparent)`.
-- Nền giấy mộc phù sa với hoa văn hạt cát siêu mịn (`--grain`).
-- Nhãn phân loại chữ in hoa nhỏ (`label-md`), tiêu đề serif `Lora`, và đoạn trích dẫn nguồn lịch sử có giá trị thẩm định.
+### 6.2. Thẻ Dẫn Chuyện Lead Hero Card (Span-2) & Thẻ Thuyết Minh Asymmetric Dossier
+- **Lead Hero Card (span-2):** Đặt tại vị trí đầu tiên ($n = 0$) của lưới danh mục (`du-lich.vue`, `am-thuc.vue`, `luu-tru.vue`, `san-pham.vue`, `dia-diem/index.vue`).
+  * Chiếm 2 cột trên desktop (`grid-column: span 2;`).
+  * Ảnh bìa dẫn chuyện chuẩn tỷ lệ điện ảnh tư liệu **21:9** (`aspect-ratio: 21 / 9; object-fit: cover;`).
+  * Tích hợp nhãn phân loại trang trọng, tiêu đề Lora thanh lịch và trích đoạn ngắn gợi mở.
+- **Asymmetric Heritage Dossier Card:**
+  * Bố cục 62/38 tại Hero trang chủ hoặc đầu trang chi tiết.
+  * Viền mỏng gốm nung `color-mix(in srgb, var(--mangthit-500) 24%, transparent)`.
+  * Nền giấy mộc phù sa với hoa văn hạt cát siêu mịn (`--grain`).
+  * Nhãn phân loại chữ in hoa nhỏ (`label-md`), tiêu đề serif `Lora`, và đoạn trích dẫn nguồn lịch sử có giá trị thẩm định.
 
-### 6.3. Bảng Tóm Tắt AEO Answer Plaque
-- Thiết kế riêng cho bộ máy tìm kiếm AI (Perplexity, ChatGPT, Gemini) và người dùng đọc lướt.
-- Viền vàng phù sa Cổ Chiên 1px (`#c99446`).
-- Chứa 3 gạch đầu dòng cô đọng nhất về di tích, kèm trích dẫn văn bản quy hoạch/quyết định xếp hạng chính thức.
-- Biểu tượng nhận diện: Vector tri thức `psychology_alt` hoặc `menu_book` (thay thế triệt để icon sparkle `auto_awesome`).
+### 6.3. Bảng Bảo Chứng AEO Provenance Plaque & Chính Sách Dữ Liệu Chân Thực
+- **Cấu Trúc & Thẩm Mỹ:**
+  * Thiết kế riêng cho bộ máy tìm kiếm AI (Perplexity, ChatGPT, Gemini) và người dùng đọc lướt.
+  * Viền vàng Phù Sa Cổ Chiên sắc nét `#c99446` (`var(--alluvial-gold)` / `var(--harvest-600)`), độ dày 1.5px: `border: 1.5px solid #c99446;`.
+  * Nền sáng ấm phủ nhẹ: `background: rgba(201, 148, 70, 0.05);` phối cùng bo góc `--radius-surface` (12px).
+  * Chứa 3 gạch đầu dòng cô đọng nhất về di tích/điểm đến, kèm trích dẫn văn bản quy hoạch hoặc quyết định xếp hạng chính thức.
+  * Biểu tượng nhận diện: Vector tri thức `psychology_alt` hoặc `menu_book` (thay thế triệt để icon sparkle `auto_awesome`).
+- **Thẻ Nhãn Nguồn Thẩm Định (SourceMark Attribution):**
+  * Nhãn xác thực minh bạch hiển thị rõ ràng: `SourceMark: Ban biên tập vinhlong360`.
+  * Tuân thủ tuyệt đối quy tắc chống AI-slop R40.3: Không tự ý gán nhãn chứng nhận thực địa khống khi chưa có dấu mốc thời gian ISO `attributes.verifiedAt`.
+- **Chính Sách Không Dữ Liệu Giả Mạo (Graceful Collapse per CLAUDE.md §1.7):**
+  * Tuyệt đối cấm tạo dữ liệu fallback bịa đặt trong `DetailAeoSummary.vue` hoặc các trang chi tiết.
+  * Khi điểm đến không có tóm tắt AEO hoặc thiếu số liệu ngoại vi, thành phần phải **sụp đổ thanh lịch (Graceful Collapse)** — tự động ẩn toàn bộ thẻ thay vì hiển thị dữ liệu giả định, text lấp chỗ trống ("Chưa có dữ liệu"), hoặc khung xương skeleton xám.
 
 ### 6.4. Sổ Vàng OCOP Quốc Gia (National OCOP Gold Book)
 - Trình bày trang trọng như chứng thư sắc phong chất lượng với hoa văn bảo an Guilloche độc bản.
 - Con dấu nung Mang Thít dập chìm bảo chứng hạng sao (3 sao, 4 sao, 5 sao).
-- Phím nhảy hạng sao chuẩn công thái học chuyển động êm ái.
+- Phím nhảy hạng sao chuẩn công thái học chuyển động êm ái với touch target 44px (`star-jump-btn`).
+- Tuyệt đối cấm emoji ngôi sao ⭐, bắt buộc sử dụng vector SVG chuẩn `<IconLine name="star" />`.
 
-### 6.5. Bản Đồ Di Sản & Không Gian Thực Địa (Interactive Terroir Map)
-- Thiết kế điều khiển một tay tối ưu vùng ngón tay cái (Thumb Zone).
-- Chế độ tương phản cao ngoài nắng chói (High-Contrast Sunlight Mode) sử dụng màu nền ấm `#FAF9F7` chống lóa.
-- Hiển thị tọa độ GPS thực địa và nhãn kiểm chứng thực địa SourceMark.
+### 6.5. Bản Đồ Di Sản Tràn Viền & Công Thái Học Thực Địa (Interactive Terroir Map & Field Ergonomics)
+- **Full-Bleed Cartography (Bản Đồ Tràn Viền):**
+  * Giao diện bản đồ số trên `pages/ban-do.vue` và `pages/tuyen-duong.vue` mở rộng tràn toàn bộ khung nhìn (edge-to-edge), không bị gò bó bởi các khung hộp cố định, tạo cảm giác đắm chìm vào không gian đồng bằng châu thổ.
+- **Floating Thumb Dock (`.map-floating-thumb-dock`):**
+  * Thanh điều khiển nổi gắn đáy màn hình trên thiết bị di động, neo tại vị trí công thái học ngón tay cái:
+    `bottom: calc(env(safe-area-inset-bottom) + 72px); right: 16px; z-index: 30;`.
+  * Tập trung các hành động cốt lõi một tay: bộ lọc điểm đến nhanh, phóng to/thu nhỏ, bật chế độ tương phản ngoài trời, và chọn mực nước triều cường.
+  * Mọi nút bấm trong dock đều đảm bảo touch target >= 44x44px.
+- **Outdoor High-Contrast Sunlight Mode (Chế Độ Tương Phản Ngoài Nắng):**
+  * Kích hoạt qua nút gạt `aria-pressed` trên thanh điều khiển.
+  * Áp dụng bộ lọc quang học mạnh mẽ lên lớp bản đồ:
+    `[data-outdoor-contrast="high"] .maplibregl-canvas { filter: contrast(1.28) saturate(1.15); }`.
+  * Đường viền marker được tô đậm nét với viền đen/trắng dày tương phản cao, popup bản đồ chuyển sang nền Bến Cloud chống lóa `#faf9f7`, giúp du khách dễ dàng đọc bản đồ trực tiếp dưới nắng gắt miền Tây.
+
+### 6.6. Khối Trích Dẫn Monocle & Khổ Đọc Ký Sự (Monocle Pull-Quotes & Reading Measure)
+- **Classic Lora Pull-Quotes:**
+  * Đoạn trích dẫn văn hóa, ca dao tục ngữ hoặc nhận định lịch sử được định dạng bằng font có chân `Lora` in nghiêng sang trọng:
+    `.pull-quote { font-family: var(--font-editorial); font-style: italic; border-left: 2px solid #c99446; padding-left: 1.25rem; }`.
+  * Phần ghi nguồn gốc bắt buộc sử dụng thẻ `<cite>` attribution với font `Be Vietnam Pro`, cỡ chữ `body-sm`, mang sắc độ mực than củi Mekong.
+- **Khổ Đọc Monocle (65-70ch):**
+  * Đảm bảo mọi đoạn văn ký sự lữ khách đều tuân thủ độ rộng vàng 65-70 ký tự, tránh tình trạng tràn ngang toàn màn hình gây tán thị lực.
+
+### 6.7. Huy Hiệu Chu Kỳ Con Nước Mekong (`MekongWaterBadge`) & Tác Giả Thực Địa
+- **MekongWaterBadge (Chu Kỳ Thủy Triều Đồng Bằng):**
+  * Thành phần độc bản hiển thị trạng thái con nước Cửu Long gắn với nhịp sống và phương tiện di chuyển đường thủy:
+    1. **Nước rong (Spring tide):** Triều cường mạnh vào các ngày rằm (15 âm lịch) và đầu tháng (30/mùng 1 âm lịch).
+    2. **Nước kém (Neap tide):** Biên độ triều nhỏ vào các ngày mùng 7-8 và 22-23 âm lịch.
+    3. **Nước lớn (High tide):** Nước sông dâng đầy, ghe xuồng thuận tiện cập bến vườn cây trái.
+    4. **Nước ròng (Low tide):** Nước cạn lộ bãi phù sa, ghe thuyền chú ý mớn nước luồng lạch.
+  * Tích hợp thông tin ngày âm lịch (`lunar_date`) và mốc cao độ triều (+1.42m).
+- **Huy Hiệu Tác Giả Thực Địa (Field Author Badge):**
+  * Ghi nhận tác giả ký sự với huy hiệu định danh minh bạch `SourceMark: Ban biên tập vinhlong360`.
+  * Thay thế ảnh đại diện mạng xã hội ẩn danh bằng nhãn thẩm định đáng tin cậy.
+- **Tuyệt Đối Cấm Raw Emojis Trong Thẻ Cộng Đồng (PostCard.vue):**
+  * Cấm triệt để việc chèn emoji Unicode trực tiếp (như 🚀, 🔥, 🏝️, 👍) vào thẻ ký sự cộng đồng UGC và bài viết du khách.
+  * Mọi trạng thái tương tác, huy hiệu và chỉ báo danh mục bắt buộc sử dụng icon vector SVG chuẩn hóa từ hệ thống `<IconLine>`.
 
 ---
 
 ## 7. Bố Cục Biên Tập & Nhịp Điệu Không Gian (Layout Principles & Macro-Rhythm)
 
+### 7.1. Bố Cục Tạp Chí Cho Nhóm Danh Mục & Tuyến Ẩm Thực Chuyên Biệt (Catalog Magazine Layout)
+- **Nhịp Điệu Bất Đối Xứng (Asymmetric Flow):**
+  * Xóa bỏ hoàn toàn lưới chia 3-4 cột bằng chằn kiểu SaaS trên tất cả các trang danh mục (`du-lich.vue`, `am-thuc.vue`, `luu-tru.vue`, `san-pham.vue`, `dia-diem/index.vue`).
+  * Áp dụng bố cục so le bất đối xứng: Thẻ dẫn chuyện Lead Hero Card span-2 ở đầu trang (tỷ lệ ảnh 21:9), nối tiếp bởi cụm thẻ đôi lệch nhịp, xen kẽ với các dải trích đoạn tư liệu (editorial interruption dividers) tạo nhịp đọc thú vị.
+- **Tuyến Khám Phá Ẩm Thực Mekong Chuyên Biệt (`/am-thuc`):**
+  * Tuyến trang dành riêng cho văn hóa ẩm thực Cửu Long: cá tai tượng chiên xù, khoai lang Bình Tân, bưởi Năm Roi Bình Minh, bánh tráng cù lao Lục Sĩ Thành, lẩu mắm miệt vườn.
+  * Tích hợp bộ lọc mùa nông sản, vị trí nhà vườn, và chứng chỉ OCOP ẩm thực bản địa.
+- **Bộ Lọc Tactile Filter Pills:**
+  * Dải nút lọc danh mục dạng viên thuốc xúc giác (pill shape) với diện tích chạm >= 44x44px.
+  * Trạng thái được chọn kích hoạt nền đất nung Mang Thít (`--mangthit-600`) hoặc xanh sông Cổ Chiên (`--river-600`) với chữ tương phản cao, phản hồi nhấn `scale(0.98)`.
+
+### 7.2. Tập San Ký Sự Văn Hóa, Sự Kiện & Lịch Vạn Niên (Culture, Events & Field Notes Chronicle)
+- Chuyển hóa toàn diện cụm trang văn hóa: `pages/su-kien.vue`, `pages/le-hoi.vue`, `pages/theo-mua.vue`, `pages/lich-van-nien.vue`, `pages/cong-dong.vue`.
+- Trình bày như một tập san địa chí văn hóa lữ hành:
+  * Sự kiện gắn liền với chu kỳ con nước và tiết khí mùa vụ nông nghiệp Cửu Long thông qua `MekongWaterBadge`.
+  * Trích đoạn danh ngôn, hò đối đáp và ký sự văn học sử dụng font `Lora` in nghiêng với viền vàng Phù Sa.
+  * Dòng thời gian văn hóa tuyến tính có nhịp điệu thở, tránh việc dồn toa sự kiện như danh sách lịch làm việc công sở.
+
+### 7.3. Lưới 12 Cột Đáp Ứng & Nhịp Thở Vĩ Mô (Responsive Grid & Macro-Rhythm)
 - **Lưới 12 Cột Đáp Ứng (Responsive 12-Column Grid):**
-  - Desktop (>= 1024px): 12 cột, lề trang 32px, khoảng cách cột (gutter) 20px. Max-width ghim tại 1280px.
-  - Tablet (768px - 1023px): 8 cột, lề trang 24px, khoảng cách cột 16px.
-  - Mobile (< 768px): 4 cột, lề trang 16px, khoảng cách cột 12px. Toàn bộ bố cục 62/38 và 1.35:1 sụp đổ tuần tự thành luồng 1 cột duy nhất.
+  * Desktop (>= 1024px): 12 cột, lề trang 32px, khoảng cách cột (gutter) 20px. Max-width ghim tại 1280px.
+  * Tablet (768px - 1023px): 8 cột, lề trang 24px, khoảng cách cột 16px.
+  * Mobile (< 768px): 4 cột, lề trang 16px, khoảng cách cột 12px. Toàn bộ bố cục so le sụp đổ tuần tự thành luồng 1 cột duy nhất, kích hoạt Floating Thumb Dock.
 - **Nhịp Thở Vĩ Mô (Macro-Rhythm):**
-  - Khoảng cách giữa các khối nội dung lớn sử dụng hàm kẹp chuyển động mượt mà: `clamp(2.5rem, 5vw, 5rem)`.
-  - Phân cách giữa các tiểu mục trong cùng khối: 24px đến 32px.
+  * Khoảng cách giữa các khối nội dung lớn sử dụng hàm kẹp chuyển động mượt mà: `clamp(2.5rem, 5vw, 5rem)`.
+  * Phân cách giữa các tiểu mục trong cùng khối: 24px đến 32px.
 - **Dải Điều Hướng & Mobile Dock:**
-  - Header trong suốt nhẹ dạng Frosted Glass (`backdrop-filter: blur(16px)`).
-  - Thanh Mobile Dock gắn đáy nằm trọn trong vùng ngón tay cái, dành sẵn khoảng trống an toàn cho thiết bị di động (`env(safe-area-inset-bottom)`).
+  * Header trong suốt nhẹ dạng Frosted Glass (`backdrop-filter: blur(16px)`).
+  * Thanh Mobile Dock gắn đáy nằm trọn trong vùng ngón tay cái, dành sẵn khoảng trống an toàn cho thiết bị di động (`env(safe-area-inset-bottom)`).
 
 ---
 
@@ -295,9 +373,10 @@ Nhằm giữ vững danh dự và linh hồn bản địa của nền tảng, 10
 2. ❌ **CẤM Dải Màu Tím / Xanh Neon SaaS:**
    - Tuyệt đối không dùng gradient tím-hồng-xanh neon kiểu Silicon Valley. Màu sắc bắt buộc phải cắm rễ từ thổ nhưỡng Tam Vùng.
 3. ❌ **CẤM Bố Cục 3-4 Thẻ Bằng Chằn Vô Cảm (Equal-Column Slop):**
-   - Không xếp 3 hoặc 4 card giống hệt nhau dàn hàng ngang. Phải dùng Asymmetric Hero 62/38, Dual-Rail 1.35:1, hoặc dòng chảy so le (Zig-Zag).
-4. ❌ **CẤM Số Liệu Thống Kê Bịa Đặt & Đánh Giá Giả:**
-   - Tuyệt đối không tự bịa các con số: *"10,000+ du khách hài lòng"*, *"99.9% uy tín"*, *"5.0 sao từ 1,200 đánh giá"*. Nếu không có dữ liệu thực, ẩn hoàn toàn khối hiển thị.
+   - Không xếp 3 hoặc 4 card giống hệt nhau dàn hàng ngang. Phải dùng Asymmetric Hero 62/38, Lead Hero Card span-2 (tỷ lệ 21:9), Dual-Rail 1.35:1, hoặc dòng chảy so le (Zig-Zag).
+4. ❌ **CẤM Số Liệu Thống Kê Bịa Đặt, Đánh Giá Giả & Fallback Ảo:**
+   - Tuyệt đối không tự bịa các con số: *"10,000+ du khách hài lòng"*, *"99.9% uy tín"*, *"5.0 sao từ 1,200 đánh giá"*.
+   - Tuyệt đối tuân thủ chính sách sụp đổ thanh lịch (Graceful Collapse per CLAUDE.md §1.7): Nếu không có dữ liệu thực hoặc API lỗi, ẩn hoàn toàn khối hiển thị, cấm dựng khung rỗng skeleton hoặc sinh fallback ảo.
 5. ❌ **CẤM Từ Ngữ Quảng Cáo Sáo Rỗng Của AI:**
    - Cấm các khẩu hiệu rỗng tuyếch: *"Nâng tầm trải nghiệm"*, *"Hành trình bất tận"*, *"Đỉnh cao di sản"*, *"Seamless discovery"*, *"Next-gen travel"*. Phải dùng tên địa danh, phong vị và ngôn ngữ thực chứng của Vĩnh Long.
 6. ❌ **CẤM Bẫy Thương Mại & Booking Trực Tuyến (Vi phạm CLAUDE.md §1.4):**
@@ -305,10 +384,12 @@ Nhằm giữ vững danh dự và linh hồn bản địa của nền tảng, 10
 7. ❌ **CẤM Tàn Dư Địa Giới Cũ & Claim Đồng Cấp (Vi phạm CLAUDE.md §0 & §1.6):**
    - Cấm nhắc tên cấp huyện đã giải thể như *"Huyện Tam Bình"*, *"Huyện Mang Thít"*. Toàn tỉnh Vĩnh Long mới là hành chính 2 cấp (1 tỉnh -> 124 xã/phường).
    - Cấm gọi *"Tỉnh Bến Tre"*, *"Tỉnh Trà Vinh"* như những tỉnh thành độc lập ngoài văn cảnh lịch sử có chú thích "cũ/trước 7-2025".
-8. ❌ **CẤM Byline Khai Khống & Giả Danh (Vi phạm CLAUDE.md §1.7):**
-   - Cấm ghi byline cá nhân hoặc giả danh cơ quan nhà nước kiểu *"© 2024 Vĩnh Long Department of Tourism"*. Byline tổ chức chuẩn mực duy nhất là: **`Ban biên tập vinhlong360`**.
-9. ❌ **CẤM Đen Tuyền `#000000` & Trắng Chói `#FFFFFF`:**
+8. ❌ **CẤM Byline Khai Khống & Tuyên Bố Xác Minh Khống (Vi phạm CLAUDE.md §1.7 & R40.3):**
+   - Cấm ghi byline cá nhân hoặc giả danh cơ quan nhà nước kiểu *"© 2024 Vĩnh Long Department of Tourism"*. Byline tổ chức chuẩn mực duy nhất là: **`SourceMark: Ban biên tập vinhlong360`**.
+    - Cấm tuyệt đối mọi tuyên bố xác thực khống khi trường `attributes.verifiedAt` chưa có mốc thời gian thực địa hợp lệ.
+9. ❌ **CẤM Đen Tuyền `#000000`, Trắng Chói `#FFFFFF` & Raw Emoji Trong Thẻ Bài:**
    - Mặt nền sáng phải là Bến Cloud `#FAF9F7` chống chói mắt dưới nắng Mekong. Mặt chữ sáng phải là Mực Than Củi `#181E28`. Mặt nền tối phải là Đêm Nocturne `#071210`.
+   - Cấm triệt để raw emojis trong thẻ bài cộng đồng `PostCard.vue` và UGC — chỉ sử dụng icon vector `<IconLine>`.
 10. ❌ **CẤM Fallback Font `Times New Roman`:**
     - Cấm triệt để `Times New Roman` trong mọi stylesheet và thiết kế. Tiêu đề chỉ dùng `Lora`, giao diện dùng `Be Vietnam Pro`.
 
@@ -322,16 +403,24 @@ Nhằm giữ vững danh dự và linh hồn bản địa của nền tảng, 10
 |---|---|---|---|
 | Màu Hành Động Sông | `primary` / `overridePrimaryColor` | `--river-600` / `--color-action` | `#004e74` / `#006798` |
 | Màu Đất Nung Di Sản | `secondary` / `overrideSecondaryColor` | `--mangthit-600` / `--color-brand` | `#95402b` / `#b95f38` |
-| Màu Phù Sa Cổ Chiên | `tertiary` / `overrideTertiaryColor` | `--harvest-600` / `--color-warning` | `#c99446` |
+| Màu Phù Sa Cổ Chiên | `tertiary` / `overrideTertiaryColor` | `--harvest-600` / `--alluvial-gold` | `#c99446` |
 | Màu Sinh Thái Miệt Vườn | `accent-green` / `customColor` | `--orchard-600` / `--color-success` | `#1b8844` / `#2c5e43` |
 | Mặt Nền Bến Cloud | `surface` / `surface-warm` | `--alluvial-paper` / `--color-canvas` | `#faf9f7` |
 | Mặt Bàn Phù Sa Mộc | `surface-container` | `--alluvial-surface` / `--color-surface-subtle` | `#f4ede0` |
 | Mặt Nền Đêm Nocturne | `background` (dark mode) | `--night-canvas` | `#071210` |
-| Mực Than Củi Chữ | `on-surface` | `--mekong-ink` / `--color-text` | `#181e28` |
+| Mực Than Củi Chữ & Route Header | `on-surface` | `--mekong-ink` / `.route-header.area-ben-tre` | `#181e28` (Tương phản AAA > 10:1) |
 | Font Tiêu Đề Lớn | `headlineFont` / `headlineFontFamily` | `--font-editorial` | `'Lora', serif` |
 | Font Thân Bài & Nút | `bodyFont` / `bodyFontFamily` | `--font-sans` | `'Be Vietnam Pro', sans-serif` |
-| Bo Góc Khối Điều Khiển | `roundness: ROUND_EIGHT` | `--radius-control` | `8px` |
+| Khổ Đọc Ký Sự Monocle | - | `--measure-read` | `68ch` (tối ưu 65-70ch) |
+| Bo Góc Khối Điều Khiển & Filter Pills | `roundness: ROUND_EIGHT` | `--radius-control` | `8px` (Touch target >= 44x44px) |
 | Bo Góc Thẻ Bề Mặt | `roundness: ROUND_TWELVE` | `--radius-surface` | `12px` |
 | Bo Góc Tấm Nền Lớn | - | `--radius-sheet` | `20px` |
 | Viền Thủy Tinh Lỏng | - | `--border-liquid-glass` | `oklch(100% 0 0 / 0.12)` |
 | Đổ Bóng Than Củi | - | `--shadow-sm..xl` | `rgba(var(--mekong-ink-rgb, 8, 26, 22), ...)` |
+| Thẻ Dẫn Chuyện Catalog | - | `.grid--asymmetric > .card:first-child` | `grid-column: span 2;` (ảnh 21:9) |
+| Khay Điều Khiển Nổi Bản Đồ | - | `.map-floating-thumb-dock` | `bottom: calc(env(safe-area-inset-bottom) + 72px);` |
+| Bộ Lọc Bản Đồ Nắng Gắt | - | `[data-outdoor-contrast="high"] .maplibregl-canvas` | `filter: contrast(1.28) saturate(1.15);` |
+| Huy Hiệu Chu Kỳ Con Nước | - | `MekongWaterBadge` | 4 trạng thái: nước rong/kém/lớn/ròng |
+| Khối Trích Dẫn Monocle | - | `.pull-quote` | `font-family: var(--font-editorial); italic; border-left: 2px solid #c99446;` |
+| Bảng Bảo Chứng AEO | - | `.aeo-provenance-plaque` | `border: 1.5px solid #c99446; background: rgba(201,148,70,0.05);` |
+| Thẻ Nguồn Thẩm Định | - | `SourceMark` | `SourceMark: Ban biên tập vinhlong360` |

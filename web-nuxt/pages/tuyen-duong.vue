@@ -155,7 +155,10 @@
           <div class="route-links">
             <NuxtLink :to="`/khu-vuc/${r.area}`" class="btn btn-outline btn-sm"><IconLine name="pin" /> {{ AREA_META[r.area]?.name }}</NuxtLink>
             <NuxtLink :to="{ path: '/tao-lich-trinh', query: { title: r.name } }" class="btn btn-ghost btn-sm"><IconLine name="plus" /> Lập lịch trình</NuxtLink>
-            <NuxtLink to="/ban-do" no-prefetch class="btn btn-ghost btn-sm"><IconLine name="map" /> Xem bản đồ</NuxtLink>
+            <button type="button" class="btn btn-ghost btn-sm route-preview-btn" @click="openRoutePreview(r)">
+              <IconLine name="map" /> Bản đồ lộ trình
+            </button>
+            <NuxtLink to="/ban-do" no-prefetch class="btn btn-ghost btn-sm"><IconLine name="compass" /> Xem bản đồ</NuxtLink>
             <NuxtLink to="/lien-he" class="btn btn-ghost btn-sm route-contact-cta"><IconLine name="phone" /> Hỏi HTX/homestay dọc tuyến</NuxtLink>
           </div>
         </div>
@@ -177,12 +180,185 @@
 
     <!-- Cross-links -->
     <CatalogCrossLinks subtitle="Tiếp tục hành trình Vĩnh Long của bạn" />
+
+    <!-- Interactive Route Preview Modal -->
+    <Teleport to="body">
+      <div
+        v-if="previewRoute"
+        class="route-modal-backdrop"
+        role="presentation"
+        @click.self="closeRoutePreview"
+      >
+        <div
+          class="route-preview-dialog"
+          role="dialog"
+          aria-modal="true"
+          :aria-labelledby="'route-preview-title-' + previewRoute.id"
+        >
+          <header class="route-preview-header" :class="`area-${previewRoute.area}`">
+            <div class="route-preview-header-copy">
+              <span class="route-preview-kicker">
+                {{ AREA_META[previewRoute.area]?.name || 'Lộ trình khám phá' }} · {{ previewRoute.duration }} · {{ previewRoute.distance }}
+              </span>
+              <h2 :id="'route-preview-title-' + previewRoute.id" class="route-preview-title">
+                {{ previewRoute.name }}
+              </h2>
+            </div>
+            <button
+              type="button"
+              class="route-preview-close"
+              aria-label="Đóng bản đồ lộ trình"
+              @click="closeRoutePreview"
+            >
+              <IconLine name="x" aria-hidden="true" />
+            </button>
+          </header>
+
+          <div class="route-preview-body">
+            <!-- Map Waypoint Canvas -->
+            <div class="route-preview-map-pane">
+              <div class="route-preview-map-canvas" role="region" aria-label="Sơ đồ trạm dừng">
+                <svg
+                  viewBox="0 0 600 320"
+                  class="route-map-svg"
+                  preserveAspectRatio="xMidYMid meet"
+                  role="img"
+                  aria-label="Sơ đồ không gian các điểm dừng"
+                >
+                  <defs>
+                    <linearGradient id="routeWaterGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                      <stop offset="0%" stop-color="var(--river-600)" stop-opacity="0.1" />
+                      <stop offset="100%" stop-color="var(--color-material-river, var(--color-action))" stop-opacity="0.22" />
+                    </linearGradient>
+                  </defs>
+                  <rect width="100%" height="100%" fill="var(--bg-alt)" rx="12" />
+                  <path
+                    d="M 0 110 Q 150 70 300 130 T 600 120 L 600 200 Q 450 240 300 190 T 0 210 Z"
+                    fill="url(#routeWaterGradient)"
+                  />
+                  <path
+                    :d="routeSvgPath(previewRoute.stops)"
+                    class="route-path-line"
+                    fill="none"
+                    stroke="var(--color-action)"
+                    stroke-width="3"
+                    stroke-dasharray="6 4"
+                  />
+                  <g
+                    v-for="(stop, idx) in previewRoute.stops"
+                    :key="idx"
+                    class="route-waypoint-pin"
+                    :class="{ 'is-active': selectedStopIndex === idx }"
+                    tabindex="0"
+                    role="button"
+                    :aria-label="`Trạm ${idx + 1}: ${stop.name}`"
+                    @click="selectedStopIndex = idx"
+                    @keydown.enter="selectedStopIndex = idx"
+                    @keydown.space.prevent="selectedStopIndex = idx"
+                  >
+                    <circle
+                      :cx="stopCoords(idx, previewRoute.stops.length)[0]"
+                      :cy="stopCoords(idx, previewRoute.stops.length)[1]"
+                      r="16"
+                      class="waypoint-circle"
+                    />
+                    <text
+                      :x="stopCoords(idx, previewRoute.stops.length)[0]"
+                      :y="stopCoords(idx, previewRoute.stops.length)[1] + 5"
+                      text-anchor="middle"
+                      class="waypoint-num"
+                    >{{ idx + 1 }}</text>
+                    <text
+                      :x="stopCoords(idx, previewRoute.stops.length)[0]"
+                      :y="stopCoords(idx, previewRoute.stops.length)[1] + (idx % 2 === 0 ? -22 : 28)"
+                      text-anchor="middle"
+                      class="waypoint-name-label"
+                    >{{ stop.name }}</text>
+                  </g>
+                </svg>
+              </div>
+
+              <!-- Selected Waypoint Card -->
+              <div v-if="currentPreviewStop" class="route-waypoint-info-card">
+                <div class="waypoint-card-header">
+                  <span class="waypoint-order-badge">Trạm dừng số {{ selectedStopIndex + 1 }} / {{ previewRoute.stops.length }}</span>
+                  <div class="waypoint-card-nav">
+                    <button
+                      type="button"
+                      class="btn btn-outline btn-sm"
+                      :disabled="selectedStopIndex === 0"
+                      aria-label="Xem trạm trước"
+                      @click="selectedStopIndex = Math.max(0, selectedStopIndex - 1)"
+                    >
+                      <IconLine name="arrow-left" aria-hidden="true" /> Trước
+                    </button>
+                    <button
+                      type="button"
+                      class="btn btn-outline btn-sm"
+                      :disabled="selectedStopIndex >= previewRoute.stops.length - 1"
+                      aria-label="Xem trạm tiếp theo"
+                      @click="selectedStopIndex = Math.min(previewRoute.stops.length - 1, selectedStopIndex + 1)"
+                    >
+                      Sau <IconLine name="arrow-right" aria-hidden="true" />
+                    </button>
+                  </div>
+                </div>
+                <h3 class="waypoint-card-title">{{ currentPreviewStop.name }}</h3>
+                <p v-if="currentPreviewStop.note" class="waypoint-card-note">
+                  {{ currentPreviewStop.note }}
+                </p>
+              </div>
+            </div>
+
+            <!-- Waypoint List Sidebar -->
+            <div class="route-preview-sidebar">
+              <h3 class="route-preview-sidebar-title">Lộ trình di chuyển</h3>
+              <ol class="route-preview-stops-rail">
+                <li
+                  v-for="(stop, idx) in previewRoute.stops"
+                  :key="idx"
+                  class="preview-rail-item"
+                  :class="{ 'is-selected': selectedStopIndex === idx }"
+                  tabindex="0"
+                  role="button"
+                  @click="selectedStopIndex = idx"
+                  @keydown.enter="selectedStopIndex = idx"
+                  @keydown.space.prevent="selectedStopIndex = idx"
+                >
+                  <span class="preview-rail-badge">{{ idx + 1 }}</span>
+                  <div class="preview-rail-meta">
+                    <strong>{{ stop.name }}</strong>
+                    <span v-if="stop.note">{{ stop.note }}</span>
+                  </div>
+                </li>
+              </ol>
+              <div class="route-preview-dialog-actions">
+                <NuxtLink
+                  :to="{ path: '/tao-lich-trinh', query: { title: previewRoute.name } }"
+                  class="btn btn-primary btn-sm preview-action-btn"
+                  @click="closeRoutePreview"
+                >
+                  <IconLine name="plus" /> Lập lịch trình tuyến này
+                </NuxtLink>
+                <NuxtLink
+                  to="/ban-do"
+                  class="btn btn-outline btn-sm preview-action-btn"
+                  @click="closeRoutePreview"
+                >
+                  <IconLine name="compass" /> Mở bản đồ toàn cảnh
+                </NuxtLink>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </Teleport>
   </section>
 </template>
 
 <script setup lang="ts">
 import { AREA_META } from '~/composables/useConstants'
-import { DEFAULT_ROUTES, type RouteDef } from '~/utils/routesContent'
+import { DEFAULT_ROUTES, type RouteDef, type RouteStop } from '~/utils/routesContent'
 
 useReveal()
 const { f: pc } = usePageContent('tuyen_duong')
@@ -243,6 +419,54 @@ function routeIcon(r: RouteDef): string {
   return AREA_META[r.area]?.icon || 'route'
 }
 
+const previewRoute = ref<RouteDef | null>(null)
+const selectedStopIndex = ref(0)
+const currentPreviewStop = computed<RouteStop | null>(() => {
+  if (!previewRoute.value || !previewRoute.value.stops) return null
+  return previewRoute.value.stops[selectedStopIndex.value] || null
+})
+
+function openRoutePreview(r: RouteDef) {
+  previewRoute.value = r
+  selectedStopIndex.value = 0
+}
+
+function closeRoutePreview() {
+  previewRoute.value = null
+}
+
+function stopCoords(index: number, total: number): [number, number] {
+  if (total <= 1) return [300, 160]
+  const progress = index / (total - 1)
+  const x = 70 + progress * 460
+  const wave = Math.sin(progress * Math.PI * 2) * 45
+  const alt = (index % 2 === 1 ? 20 : -20)
+  const y = 160 + wave + alt
+  return [Math.round(x), Math.round(y)]
+}
+
+function routeSvgPath(stops?: any[]): string {
+  if (!stops || !stops.length) return ''
+  return stops.map((_, i) => {
+    const [x, y] = stopCoords(i, stops.length)
+    return `${i === 0 ? 'M' : 'L'} ${x} ${y}`
+  }).join(' ')
+}
+
+function onModalKeydown(event: KeyboardEvent) {
+  if (event.key === 'Escape' && previewRoute.value) {
+    closeRoutePreview()
+  }
+}
+
+onMounted(() => {
+  window.addEventListener('keydown', onModalKeydown)
+})
+
+onBeforeUnmount(() => {
+  window.removeEventListener('keydown', onModalKeydown)
+})
+
 useSeoMeta({
   ogType: 'website',
   title: () => pc('seo_title') || 'Tuyến đường gợi ý Vĩnh Long — vinhlong360',
@@ -293,7 +517,17 @@ useHead(() => {
 .route-emoji { font-size: var(--text-2xl); display: inline-flex; align-items: center; justify-content: center; color: currentColor; }
 .chip-area-icon { margin-right: .25rem; font-size: .95em; }
 .route-header.area-vinh-long { background: var(--cat-experience); }
-.route-header.area-ben-tre { background: var(--cat-product); }
+.route-header.area-ben-tre {
+  background: var(--cat-product);
+  color: var(--mekong-ink);
+}
+.route-header.area-ben-tre h3,
+.route-header.area-ben-tre .route-name,
+.route-header.area-ben-tre .route-meta,
+.route-header.area-ben-tre .route-emoji {
+  color: var(--mekong-ink);
+  text-shadow: none;
+}
 .route-header.area-tra-vinh { background: var(--cat-attraction); }
 .route-header.area-lien-vung { background: linear-gradient(135deg, var(--river-600), var(--amber-600) 55%, var(--clay-600)); }
 /* Route name — editorial italic for the poetic ones, small but distinctive
@@ -317,8 +551,8 @@ useHead(() => {
   display: inline-flex; align-items: center; gap: var(--space-1);
   font-size: var(--text-xs); font-weight: var(--weight-semibold); color: var(--secondary-fg);
   background: rgba(var(--secondary-rgb), .1); border: .5px solid rgba(var(--secondary-rgb), .22);
-  padding: var(--space-1) var(--space-3); border-radius: var(--radius-pill, 999px);
-  margin-bottom: var(--space-4); min-height: 30px;
+  padding: var(--space-2) var(--space-3); border-radius: var(--radius-pill, 999px);
+  margin-bottom: var(--space-4); min-height: 44px;
   transition: background .25s var(--ease-out), border-color .25s var(--ease-out);
 }
 .route-season-tag:hover { background: rgba(var(--secondary-rgb), .18); border-color: rgba(var(--secondary-rgb), .35); }
@@ -497,5 +731,331 @@ useHead(() => {
 @media (max-width: 640px) {
   .route-vignette { height: 52px; }
   .rv-labels { font-size: var(--text-2xs, 11px); }
+}
+
+/* ── Interactive Route Preview Modal ── */
+.route-preview-btn {
+  color: var(--color-action);
+}
+.route-preview-btn:hover {
+  background: rgba(var(--color-action-rgb), 0.1);
+}
+.route-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(var(--black-rgb), 0.65);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: var(--space-4);
+  animation: modalFadeIn 0.2s var(--ease-out);
+}
+@keyframes modalFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+.route-preview-dialog {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sheet);
+  box-shadow: var(--shadow-xl);
+  width: 100%;
+  max-width: 920px;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  animation: dialogSlideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+@keyframes dialogSlideUp {
+  from { transform: translateY(16px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+.route-preview-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-4) var(--space-6);
+  color: var(--text-on-dark, var(--white));
+  background: var(--color-action);
+}
+.route-preview-header.area-vinh-long { background: var(--cat-experience); }
+.route-preview-header.area-ben-tre {
+  background: var(--cat-product);
+  color: var(--mekong-ink);
+}
+.route-preview-header.area-ben-tre .route-preview-title,
+.route-preview-header.area-ben-tre .route-preview-kicker,
+.route-preview-header.area-ben-tre .route-preview-close {
+  color: var(--mekong-ink);
+}
+.route-preview-header.area-tra-vinh { background: var(--cat-attraction); }
+.route-preview-header.area-lien-vung { background: linear-gradient(135deg, var(--river-600), var(--amber-600) 55%, var(--clay-600)); }
+.route-preview-kicker {
+  display: block;
+  font-size: var(--text-xs);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-caps);
+  opacity: 0.9;
+}
+.route-preview-title {
+  margin: 0;
+  font-size: var(--text-xl);
+  font-family: var(--font-editorial);
+  font-style: italic;
+  font-weight: var(--weight-bold);
+}
+.route-preview-close {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  min-width: 44px;
+  min-height: 44px;
+  border-radius: var(--radius-pill, 999px);
+  background: rgba(var(--white-rgb), 0.2);
+  color: currentColor;
+  border: none;
+  cursor: pointer;
+  transition: background 0.2s var(--ease-out);
+}
+.route-preview-close:hover {
+  background: rgba(var(--white-rgb), 0.35);
+}
+.route-preview-close:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 2px;
+}
+.route-preview-body {
+  display: grid;
+  grid-template-columns: 1.4fr 1fr;
+  gap: var(--space-4);
+  padding: var(--space-5);
+  overflow-y: auto;
+  max-height: calc(90vh - 80px);
+}
+.route-preview-map-pane {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+.route-preview-map-canvas {
+  background: var(--bg-alt);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-surface);
+  overflow: hidden;
+}
+.route-map-svg {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+.route-path-line {
+  stroke-linecap: round;
+  animation: routeDash 20s linear infinite;
+}
+@keyframes routeDash {
+  to { stroke-dashoffset: -100; }
+}
+.route-waypoint-pin {
+  cursor: pointer;
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  outline: none;
+}
+.waypoint-circle {
+  fill: var(--card);
+  stroke: var(--color-action);
+  stroke-width: 3;
+  transition: all 0.2s var(--ease-out);
+}
+.waypoint-num {
+  font-size: 11px;
+  font-weight: var(--weight-bold);
+  fill: var(--ink);
+}
+.waypoint-name-label {
+  font-size: 11px;
+  font-weight: var(--weight-medium);
+  fill: var(--muted);
+  pointer-events: none;
+}
+.route-waypoint-pin:hover .waypoint-circle,
+.route-waypoint-pin:focus-visible .waypoint-circle {
+  fill: var(--color-action);
+  transform: scale(1.15);
+  transform-origin: center;
+}
+.route-waypoint-pin:hover .waypoint-num,
+.route-waypoint-pin:focus-visible .waypoint-num {
+  fill: var(--color-on-action, var(--white));
+}
+.route-waypoint-pin:hover .waypoint-name-label,
+.route-waypoint-pin:focus-visible .waypoint-name-label {
+  fill: var(--color-action);
+  font-weight: var(--weight-bold);
+}
+.route-waypoint-pin.is-active .waypoint-circle {
+  fill: var(--color-action);
+  stroke: var(--card);
+  stroke-width: 4;
+  filter: drop-shadow(0 0 6px rgba(var(--color-action-rgb), 0.5));
+}
+.route-waypoint-pin.is-active .waypoint-num {
+  fill: var(--color-on-action, var(--white));
+}
+.route-waypoint-pin.is-active .waypoint-name-label {
+  fill: var(--color-action);
+  font-weight: var(--weight-bold);
+}
+.route-waypoint-info-card {
+  background: var(--bg-alt);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-surface);
+  padding: var(--space-4);
+}
+.waypoint-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--space-2);
+}
+.waypoint-order-badge {
+  font-size: var(--text-2xs);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-caps);
+  font-weight: var(--weight-bold);
+  color: var(--color-brand);
+}
+.waypoint-card-nav {
+  display: flex;
+  gap: var(--space-2);
+}
+.waypoint-card-nav .btn {
+  min-height: 44px;
+}
+.waypoint-card-title {
+  margin: 0 0 var(--space-1);
+  font-size: var(--text-base);
+  font-weight: var(--weight-bold);
+  color: var(--ink);
+}
+.waypoint-card-note {
+  margin: 0;
+  font-size: var(--text-sm);
+  color: var(--muted);
+}
+.route-preview-sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+.route-preview-sidebar-title {
+  margin: 0;
+  font-size: var(--text-sm);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-caps);
+  font-weight: var(--weight-bold);
+  color: var(--muted);
+}
+.route-preview-stops-rail {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  max-height: 280px;
+  overflow-y: auto;
+}
+.preview-rail-item {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-2);
+  padding: var(--space-2);
+  border-radius: var(--radius-control);
+  cursor: pointer;
+  min-height: 44px;
+  transition: background 0.2s var(--ease-out);
+  outline: none;
+}
+.preview-rail-item:hover {
+  background: var(--overlay-subtle);
+}
+.preview-rail-item:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 1px;
+}
+.preview-rail-item.is-selected {
+  background: color-mix(in srgb, var(--color-action) 12%, var(--card));
+  border: 1px solid var(--color-action);
+}
+.preview-rail-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  min-width: 24px;
+  min-height: 24px;
+  border-radius: 50%;
+  font-size: var(--text-2xs);
+  font-weight: var(--weight-bold);
+  background: var(--bg-alt);
+  color: var(--color-action);
+  border: 1px solid var(--line);
+}
+.preview-rail-item.is-selected .preview-rail-badge {
+  background: var(--color-action);
+  color: var(--color-on-action, var(--white));
+  border-color: var(--color-action);
+}
+.preview-rail-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+.preview-rail-meta strong {
+  font-size: var(--text-sm);
+  color: var(--ink);
+}
+.preview-rail-meta span {
+  font-size: var(--text-xs);
+  color: var(--muted);
+}
+.route-preview-dialog-actions {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  margin-top: auto;
+  padding-top: var(--space-3);
+  border-top: 1px solid var(--line);
+}
+.preview-action-btn {
+  min-height: 44px;
+}
+.dark .route-modal-backdrop {
+  background: rgba(var(--black-rgb), 0.75);
+}
+.dark .route-preview-dialog {
+  background: var(--card);
+  border-color: var(--line);
+}
+.dark .waypoint-num {
+  fill: var(--ink);
+}
+.dark .preview-rail-item:hover {
+  background: var(--overlay-light);
+}
+@media (max-width: 768px) {
+  .route-preview-body {
+    grid-template-columns: 1fr;
+  }
+  .route-preview-dialog {
+    max-height: 95vh;
+  }
 }
 </style>

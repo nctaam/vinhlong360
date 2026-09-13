@@ -39,7 +39,7 @@ const RENDERABLE_ENTITY_SOURCE_COMBINATIONS = new Set([
   'placeholder|generated-placeholder|entity-placeholder',
 ])
 
-const CANONICAL_LEGACY_ENTITY_IMAGE_PATTERN = /^\/img\/entities\/[a-z0-9]+(?:-[a-z0-9]+)*\.webp$/
+const CANONICAL_LEGACY_ENTITY_IMAGE_PATTERN = /^\/img\/entities\/[a-z0-9]+(?:-+[a-z0-9]+)*\.webp$/
 
 function isValidPort(port: string): boolean {
   if (port.length > 5 || !/^[0-9]+$/.test(port)) return false

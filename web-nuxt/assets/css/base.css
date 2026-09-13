@@ -370,6 +370,7 @@ html.js .reveal { opacity: 0; transform: translateY(30px) scale(.985); }
 .revealed .scroll-row > *:nth-child(8), .revealed .grid > *:nth-child(8), .revealed .sidebar-list > *:nth-child(8), .revealed .quick-picks > *:nth-child(8) { animation-delay: .4s; }
 .map-popup-link { font-weight: 700; color: var(--color-action-hover); }
 .map-locator-marker {
+  position: relative;
   width: 34px;
   height: 34px;
   padding: 0;
@@ -380,6 +381,14 @@ html.js .reveal { opacity: 0; transform: translateY(30px) scale(.985); }
   cursor: pointer;
   transform: rotate(-45deg);
   transition: transform .2s var(--ease-out-expo), background .2s var(--ease-out), box-shadow .2s var(--ease-out);
+}
+.map-locator-marker::before {
+  content: '';
+  position: absolute;
+  inset: -6px;
+  min-width: 44px;
+  min-height: 44px;
+  border-radius: 50%;
 }
 .map-locator-marker[data-material-accent="clay"] { background: var(--color-material-clay); }
 .map-locator-marker[data-material-accent="leaf"] { background: var(--color-material-leaf); }
@@ -397,6 +406,19 @@ html.js .reveal { opacity: 0; transform: translateY(30px) scale(.985); }
   transform: rotate(-45deg) scale(1.24);
   background: var(--accent);
   box-shadow: 0 0 0 4px color-mix(in srgb, var(--accent) 26%, transparent), 0 7px 20px rgba(var(--black-rgb), .34);
+}
+/* Outdoor High-Contrast Mode */
+[data-outdoor-contrast="high"] .maplibregl-canvas {
+  filter: contrast(1.28) saturate(1.15);
+}
+[data-outdoor-contrast="high"] .map-locator-marker {
+  border-width: 4px;
+  border-color: var(--ink);
+  box-shadow: 0 0 0 2px var(--card), 0 6px 20px rgba(var(--black-rgb), .5);
+}
+[data-outdoor-contrast="high"] .maplibregl-popup-content {
+  border: 2px solid var(--color-brand);
+  box-shadow: 0 8px 24px rgba(var(--black-rgb), .5);
 }
 .map-locator-marker:hover:not(.is-selected) {
   transform: rotate(-45deg) scale(1.12);
@@ -810,6 +832,15 @@ a.thread-author:hover { color: var(--color-action); }
    "Lịch trình chi tiết". Same size/margin regardless of level. */
 .route-map-section h2, .route-map-section h3 { font-size: 1.05rem; margin: 0 0 var(--space-3); }
 .route-map { height: 340px; border-radius: var(--radius); border: .5px solid var(--line); z-index: 0; }
+.route-marker { position: relative; }
+.route-marker::before {
+  content: "";
+  position: absolute;
+  inset: -8px;
+  min-width: 44px;
+  min-height: 44px;
+  border-radius: 50%;
+}
 .route-marker .rm-num { width: 28px; height: 28px; border-radius: 50%; background: var(--color-action); color: var(--color-on-action); font-weight: 800; font-size: var(--text-xs); display: flex; align-items: center; justify-content: center; border: 2px solid var(--white); box-shadow: 0 1px 4px rgba(var(--black-rgb), .3); }
 
 

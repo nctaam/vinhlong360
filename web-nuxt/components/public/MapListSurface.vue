@@ -4,6 +4,7 @@
     data-map-list-surface
     :data-panel="panel"
     :data-map-state="effectiveMapState"
+    :data-outdoor-contrast="outdoorContrast ? 'high' : undefined"
   >
     <header class="map-list-surface__toolbar">
       <p aria-live="polite">{{ results.length }} kết quả · danh sách là nguồn đối chiếu chính</p>
@@ -136,12 +137,14 @@ const props = withDefaults(defineProps<{
   panel?: 'list' | 'map'
   scrollKey?: string
   viewportPending?: boolean
+  outdoorContrast?: boolean
 }>(), {
   selectedId: undefined,
   viewport: undefined,
   panel: 'list',
   scrollKey: undefined,
   viewportPending: false,
+  outdoorContrast: false,
 })
 
 const emit = defineEmits<{
