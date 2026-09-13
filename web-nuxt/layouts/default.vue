@@ -1,5 +1,13 @@
 <template>
-  <div class="public-shell" data-public-shell="nocturne">
+  <div
+    class="public-shell"
+    data-public-shell="nocturne"
+    :class="[
+      livingAmbientDayClass,
+      `tide-pulse-${tide.tidePhase}`,
+      `flow-${tide.waterFlowState}`
+    ]"
+  >
     <a href="#main-content" class="skip-link">Bỏ qua điều hướng</a>
     <div class="public-shell-chrome" :class="{ scrolled: topbarScrolled }">
       <ShellPublicContextBar />
@@ -14,6 +22,39 @@
 
           <div class="auth-area">
             <ShellThemeModeControl />
+            <button
+              type="button"
+              class="theme-mode-btn a11y-mode-toggle"
+              :class="{ 'is-active': isElderMode }"
+              :aria-pressed="isElderMode"
+              aria-label="Chế độ Kính Lão Điền Dã 125% (Alt+E)"
+              title="Chế độ Kính Lão Điền Dã (Alt+E)"
+              @click="toggleElderMode()"
+            >
+              <VernacularGlyph name="elder-glasses" :size="18" aria-hidden="true" />
+            </button>
+            <button
+              type="button"
+              class="theme-mode-btn a11y-mode-toggle"
+              :class="{ 'is-active': isHighGlare }"
+              :aria-pressed="isHighGlare"
+              aria-label="Chế độ Nắng Gắt Ngoài Trời (Alt+S)"
+              title="Chế độ Nắng Gắt Ngoài Trời (Alt+S)"
+              @click="toggleHighGlare()"
+            >
+              <VernacularGlyph name="sun-glare" :size="18" aria-hidden="true" />
+            </button>
+            <button
+              type="button"
+              class="theme-mode-btn a11y-mode-toggle eco-mode-toggle"
+              :class="{ 'is-active': isEcoTerroir }"
+              :aria-pressed="isEcoTerroir"
+              aria-label="Chế độ Sinh Thái Sông Nước (Eco-Terroir Mode)"
+              title="Chế độ Sinh Thái Sông Nước (Eco-Mode)"
+              @click="toggleEcoMode()"
+            >
+              <VernacularGlyph name="eco-routing" :size="18" aria-hidden="true" />
+            </button>
             <template v-if="clientReady">
               <template v-if="isLoggedIn">
                 <LazyNotificationBell />
@@ -74,6 +115,10 @@
 
     <noscript class="noscript-banner">Trang web này cần JavaScript để hoạt động. Vui lòng bật JavaScript trong trình duyệt.</noscript>
 
+    <ClientOnly>
+      <OfflineTerroirPanel :is-offline="isOffline" />
+    </ClientOnly>
+
     <main id="main-content" role="main" tabindex="-1">
       <slot />
     </main>
@@ -86,6 +131,7 @@
       <LazyOnboardingSheet />
       <LazyToastContainer />
       <LazyJourneyBar />
+      <SearchDrawer v-model:open="searchDrawerOpen" />
     </template>
 
     <footer class="site-footer" role="contentinfo">
@@ -128,9 +174,22 @@
 </template>
 
 <script setup lang="ts">
+import { useCognitiveTerroir } from '~/composables/useCognitiveTerroir'
+
 const route = useRoute()
 const { isLoggedIn, user } = useAuth()
 const { get: ss } = useSiteSettings()
+const { tide, isOffline, isElderMode, isHighGlare, isEcoTerroir, toggleElderMode, toggleHighGlare, toggleEcoMode } = useCognitiveTerroir()
+const searchDrawerOpen = ref(false)
+
+const currentHour = ref(new Date().getHours())
+const livingAmbientDayClass = computed(() => {
+  const h = currentHour.value
+  if (h >= 5 && h < 10) return 'ambient-dawn'
+  if (h >= 10 && h < 16) return 'ambient-noon'
+  if (h >= 16 && h < 19) return 'ambient-dusk'
+  return 'ambient-night'
+})
 const brandSitePrefix = computed(() => {
   const raw = String(ss('branding.site_name', 'vinhlong360') || 'vinhlong')
   const cleaned = raw.replace(/\b360\b/gi, '').replace(/[-–—\s]+$/, '').trim()
@@ -327,27 +386,88 @@ useScrollFade()
 const topbarScrolled = ref(false)
 let scrollRaf = 0
 function onPageScroll() {
+  if (isEcoTerroir.value) {
+    if (scrollRaf) {
+      cancelAnimationFrame(scrollRaf)
+      scrollRaf = 0
+    }
+    topbarScrolled.value = window.scrollY > 8
+    return
+  }
   if (!scrollRaf) scrollRaf = requestAnimationFrame(() => { scrollRaf = 0; topbarScrolled.value = window.scrollY > 8 })
+}
+
+function isEditableFocused(): boolean {
+  if (typeof document === 'undefined') return false
+  const el = document.activeElement as HTMLElement | null
+  if (!el) return false
+  const tag = el.tagName.toLowerCase()
+  return tag === 'input' || tag === 'textarea' || tag === 'select' || el.isContentEditable
+}
+
+function navigateSection(direction: 'next' | 'prev') {
+  if (typeof document === 'undefined') return
+  const sections = Array.from(document.querySelectorAll<HTMLElement>('main#main-content section, main#main-content article.block, main#main-content [data-catalog-section]'))
+    .filter(s => s.offsetHeight > 0)
+  if (!sections.length) return
+
+  const currentScroll = window.scrollY + 80
+  let targetSection: HTMLElement | undefined
+
+  if (direction === 'next') {
+    targetSection = sections.find(s => s.offsetTop > currentScroll)
+  } else {
+    targetSection = [...sections].reverse().find(s => s.offsetTop < currentScroll - 120)
+  }
+
+  if (targetSection) {
+    targetSection.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    if (!targetSection.hasAttribute('tabindex')) {
+      targetSection.setAttribute('tabindex', '-1')
+    }
+    targetSection.focus({ preventScroll: true })
+  } else if (direction === 'prev') {
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+    const main = document.getElementById('main-content')
+    main?.focus({ preventScroll: true })
+  }
 }
 
 const onDoc = (e: MouseEvent) => {
   if (!(e.target as HTMLElement)?.closest('.public-shell-header')) catalogOpen.value = false
 }
-const onEsc = (e: KeyboardEvent) => {
+
+const onGlobalKeydown = (e: KeyboardEvent) => {
   if (e.key === 'Escape') {
     catalogOpen.value = false
     closeNav()
+    searchDrawerOpen.value = false
+    return
+  }
+
+  if (!isEditableFocused() && !e.ctrlKey && !e.altKey && !e.metaKey) {
+    if (e.key === 'j' || e.key === 'J') {
+      e.preventDefault()
+      navigateSection('next')
+    } else if (e.key === 'k' || e.key === 'K') {
+      e.preventDefault()
+      navigateSection('prev')
+    } else if (e.key === '/') {
+      e.preventDefault()
+      searchDrawerOpen.value = true
+    }
   }
 }
+
 onMounted(() => {
   document.addEventListener('click', onDoc)
-  document.addEventListener('keydown', onEsc)
+  document.addEventListener('keydown', onGlobalKeydown)
   window.addEventListener('scroll', onPageScroll, { passive: true })
   topbarScrolled.value = window.scrollY > 8
 })
 onUnmounted(() => {
   document.removeEventListener('click', onDoc)
-  document.removeEventListener('keydown', onEsc)
+  document.removeEventListener('keydown', onGlobalKeydown)
   window.removeEventListener('scroll', onPageScroll)
   cancelAnimationFrame(scrollRaf)
   document.body.style.overflow = ''

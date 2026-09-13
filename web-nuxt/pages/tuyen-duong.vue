@@ -1058,4 +1058,45 @@ useHead(() => {
     max-height: 95vh;
   }
 }
+
+/* ── High-Glare Outdoor Contrast Mode (>= 14:1) ── */
+[data-outdoor-contrast="high"] .route-card {
+  border: 2px solid var(--contrast-glare-border);
+  background: var(--contrast-glare-bg);
+  box-shadow: none;
+}
+[data-outdoor-contrast="high"] .route-preview-dialog {
+  border: 2px solid var(--contrast-glare-border);
+  background: var(--contrast-glare-bg);
+}
+[data-outdoor-contrast="high"] .route-preview-map-canvas {
+  filter: var(--contrast-glare-map-filter, contrast(1.6) saturate(1.2) brightness(0.95));
+}
+[data-outdoor-contrast="high"] .route-map-svg {
+  background: var(--contrast-glare-bg);
+}
+[data-outdoor-contrast="high"] .route-path-line {
+  stroke: var(--contrast-glare-border) !important;
+  stroke-width: 4px !important;
+  stroke-dasharray: none !important;
+}
+[data-outdoor-contrast="high"] .waypoint-circle {
+  fill: var(--contrast-glare-bg) !important;
+  stroke: var(--contrast-glare-border) !important;
+  stroke-width: 3px !important;
+}
+[data-outdoor-contrast="high"] .route-waypoint-pin.is-active .waypoint-circle {
+  fill: var(--contrast-glare-fg) !important;
+}
+[data-outdoor-contrast="high"] .waypoint-num {
+  fill: var(--contrast-glare-fg) !important;
+  font-weight: 700 !important;
+}
+[data-outdoor-contrast="high"] .route-waypoint-pin.is-active .waypoint-num {
+  fill: var(--contrast-glare-bg) !important;
+}
+[data-outdoor-contrast="high"] .waypoint-name-label {
+  fill: var(--contrast-glare-fg) !important;
+  font-weight: 700 !important;
+}
 </style>

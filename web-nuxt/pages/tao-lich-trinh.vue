@@ -319,7 +319,7 @@
           @delete="deletePlan"
         />
 
-        <PlannerMobilePassModal
+        <PocketPassModal
           v-model:open="showPassModal"
           :title="planTitle"
           :stops="stops"
@@ -350,6 +350,7 @@ import ActionDock from '~/components/public/ActionDock.vue'
 import MekongWaterBadge from '~/components/MekongWaterBadge.vue'
 import PlannerRiverTransitWarning from '~/components/planner/PlannerRiverTransitWarning.vue'
 import PlannerMobilePassModal from '~/components/planner/PlannerMobilePassModal.vue'
+import PocketPassModal from '~/components/PocketPassModal.vue'
 import type { PlanStop, SavedPlan } from '~/utils/plannerSnapshots'
 import { usePlannerStopOperations } from '~/composables/usePlannerStopOperations'
 import { usePlannerServerPlans, LS_PLANS } from '~/composables/usePlannerServerPlans'

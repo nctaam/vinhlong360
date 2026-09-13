@@ -368,6 +368,7 @@
   --grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23g)'/%3E%3C/svg%3E");
   --scrim-hero: linear-gradient(to top, rgba(8, 9, 12, .84) 0%, rgba(8, 9, 12, .40) 46%, rgba(8, 9, 12, .10) 100%);
   --measure-read: 68ch;              /* editorial body measure */
+  --line-height-relaxed: 1.625;      /* relaxed editorial reading line height */
   --space-editorial: clamp(3rem, 2rem + 5vw, 6rem); /* vertical rhythm between story sections */
   --ease-cinematic: cubic-bezier(.22, 1, .36, 1);
   --dur-kenburns: 20s;
@@ -461,6 +462,38 @@
   --space-inline:      var(--space-2);
   --space-inline-sm:   var(--space-1);
   --space-component:   var(--space-3);
+
+  /* ── FIBONACCI SPACING SCALE (Aldine & Macro-Rhythm Breathing Space) ── */
+  --space-fib-1: 8px;
+  --space-fib-2: 13px;
+  --space-fib-3: 21px;
+  --space-fib-4: 34px;
+  --space-fib-5: 55px;
+  --space-fib-6: 89px;
+
+  /* ── ELDER READING MODE (Chế Độ Kính Lão Điền Dã - 125%) ── */
+  --font-scale-elder: 1.25;
+  --line-height-elder: 2.0;
+  --elder-stroke: 3px;
+  --elder-touch-target: 52px;
+  --elder-contrast-ratio: 10.5;
+
+  /* ── HIGH-GLARE SUNLIGHT MODE (Chế Độ Nắng Gắt Ngoài Trời >= 14:1) ── */
+  --contrast-glare-bg: #ffffff;
+  --contrast-glare-fg: #000000;
+  --contrast-glare-border: #12100e;
+  --contrast-glare-accent: #b95f38;
+  --contrast-glare-gold: #704b06;
+  --contrast-glare-river: #003652;
+  --contrast-glare-map-filter: contrast(1.6) saturate(1.2) brightness(0.95);
+  --contrast-glare-accent-text: #4a1b0a;
+
+  /* ── WCAG 2.2 AAA SC 2.4.13 Double-Ring Focus Tokens ── */
+  --focus-ring-inner: #ffffff;
+  --focus-ring-outer: #b95f38;
+  --focus-ring-width: 2px;
+  --focus-ring-offset: 2px;
+  --focus-double-ring: 0 0 0 2px var(--focus-ring-inner), 0 0 0 4px var(--focus-ring-outer);
 
   /* ── Semantic font-size role aliases ── */
   --font-size-label:     var(--text-2xs);
@@ -584,6 +617,12 @@
   --ease-bounce: cubic-bezier(.16, 1, .3, 1);
   --ease-out-expo: cubic-bezier(.16, 1, .3, 1);
   --ease-soft: cubic-bezier(.2, 1, .4, 1);
+  /* ── LIVING AMBIENT KINETICS & TERROIR FLOW ── */
+  --ease-terroir-flow: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-spring-snap: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-tide-pulse: cubic-bezier(0.4, 0, 0.2, 1);
+  --duration-terroir: 600ms;
+  --duration-sheet: 400ms;
   /* M3-aligned duration scale (16 tokens, 50ms increments) */
   --dur-short1: 50ms;   --dur-short2: 100ms;  --dur-short3: 150ms;  --dur-short4: 200ms;
   --dur-medium1: 250ms; --dur-medium2: 300ms; --dur-medium3: 350ms; --dur-medium4: 400ms;
@@ -729,6 +768,9 @@
   --color-on-action: var(--night-canvas);
   --color-brand: var(--night-clay);
   --color-focus: var(--night-amber);
+  --focus-ring-inner: #ffffff;
+  --focus-ring-outer: var(--alluvial-gold, #c99446);
+  --focus-double-ring: 0 0 0 2px var(--focus-ring-inner), 0 0 0 4px var(--focus-ring-outer);
   --color-success: var(--night-leaf);
   --color-warning: var(--night-amber);
   --color-error: var(--night-error);
@@ -1080,3 +1122,11 @@
   --season-tint: rgba(181,101,29,.05);
   --season-hero-gradient: linear-gradient(135deg, rgba(181,101,29,.06), rgba(232,163,61,.06));
 }
+
+/* ── High-Glare Outdoor Contrast Mode Tokens ── */
+[data-outdoor-contrast="high"] {
+  --focus-ring-inner: #ffffff;
+  --focus-ring-outer: #000000;
+  --focus-double-ring: 0 0 0 2px #ffffff, 0 0 0 5px #000000;
+}
+

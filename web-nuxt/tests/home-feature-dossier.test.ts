@@ -20,9 +20,9 @@ afterEach(() => {
 const BASE_DESCRIPTOR: ImageDescriptor = {
   url: '/img/spread/song-nuoc.webp',
   alt: 'Sông nước Cổ Chiên',
-  source_class: 'verified',
+  source_class: 'ai-generated',
   source_kind: 'entity-editorial',
-  disclosure_key: 'fieldwork-photograph',
+  disclosure_key: 'entity-ai',
   short_label: 'Ảnh thực địa',
   full_disclosure: 'Ảnh chụp thực địa bởi Ban biên tập vinhlong360.',
   credit: 'VinhLong360',
@@ -144,11 +144,11 @@ describe('HomeFeatureDossier — Empirical Stress Testing', () => {
       // Action links
       const actions = wrapper.findAll('[data-home-feature-action]')
       expect(actions).toHaveLength(2)
-      expect(actions[0].attributes('href')).toBe('/dia-diem/mang-thit')
-      expect(actions[1].attributes('href')).toBe('/tao-lich-trinh?add=mang-thit')
+      expect(actions[0]?.attributes('href')).toBe('/dia-diem/mang-thit')
+      expect(actions[1]?.attributes('href')).toBe('/tao-lich-trinh?add=mang-thit')
 
       // Coords link
-      const coordsLink = wrapper.get('.home-feature-dossier__coords--link')
+      const coordsLink = wrapper.find('.home-feature-dossier__coords--link')
       expect(coordsLink.exists()).toBe(true)
       expect(coordsLink.attributes('href')).toBe('/ban-do?selected=mang-thit')
     })

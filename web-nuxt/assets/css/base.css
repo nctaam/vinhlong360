@@ -96,6 +96,7 @@ select:-webkit-autofill {
 :where(a[href], button, input, select, textarea, summary,
        [tabindex]:not([tabindex="-1"]), :target, h2, h3) {
   scroll-margin-top: calc(var(--header-h) + 0.5rem);
+  scroll-margin-bottom: calc(var(--shell-public-bottom-nav-reserved-height, 64px) + 0.75rem);
 }
 
 a { color: inherit; text-decoration: none; text-decoration-skip-ink: auto; }
@@ -230,8 +231,22 @@ h4 { font-size: var(--text-lg);  line-height: var(--lh-lg);  letter-spacing: var
 .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; }
 a:focus-visible, button:focus-visible, [role="button"]:focus-visible,
 input:not([type="hidden"]):focus-visible, textarea:focus-visible, select:focus-visible,
-[tabindex]:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
+[tabindex]:focus-visible {
+  outline: 2px solid var(--focus-ring-outer);
+  outline-offset: 2px;
+  box-shadow: 0 0 0 2px var(--focus-ring-inner);
+}
 a:focus:not(:focus-visible), button:focus:not(:focus-visible) { outline: none; }
+
+@media (forced-colors: active) {
+  a:focus-visible, button:focus-visible, [role="button"]:focus-visible,
+  input:not([type="hidden"]):focus-visible, textarea:focus-visible, select:focus-visible,
+  [tabindex]:focus-visible {
+    outline: 3px solid Highlight !important;
+    outline-offset: 2px !important;
+    box-shadow: none !important;
+  }
+}
 
 /* ── Global touch target baseline (WCAG 2.5.8) ── */
 :where(a[href], button, [role="button"], input:not([type="hidden"]), select, textarea, summary) { min-height: var(--touch-min); }
@@ -409,7 +424,8 @@ html.js .reveal { opacity: 0; transform: translateY(30px) scale(.985); }
 }
 /* Outdoor High-Contrast Mode */
 [data-outdoor-contrast="high"] .maplibregl-canvas {
-  filter: contrast(1.28) saturate(1.15);
+  filter: contrast(1.6) saturate(1.2) brightness(0.95);
+  filter: var(--contrast-glare-map-filter, contrast(1.6) saturate(1.2) brightness(0.95));
 }
 [data-outdoor-contrast="high"] .map-locator-marker {
   border-width: 4px;
@@ -1167,3 +1183,173 @@ html[data-theme="parchment"] { color-scheme: light; }
   .stop-time-input { font-size: max(16px, .85rem); }
   .stop-note-input { font-size: max(16px, .85rem); }
 }
+
+/* ============================================================
+   CHẾ ĐỘ KÍNH LÃO ĐIỀN DÃ (ELDER READING MODE - 125%)
+   Kích hoạt qua [data-reading-mode="elder"] hoặc [data-elder-mode="true"]
+   Tuân thủ Hiến pháp Thiết kế v2.0 §9.1 & WCAG 2.2 AAA
+   ============================================================ */
+
+:where(html[data-reading-mode="elder"], html[data-elder-mode="true"]) {
+  /* 1. Kế thừa và ghi đè các token kích thước toàn cục */
+  --touch-min: var(--elder-touch-target, 52px);
+  --a11y-text-scale: var(--font-scale-elder, 1.25);
+
+  /* Nâng kích thước font gốc thân văn lên 125% (16px -> 20px) */
+  font-size: calc(100% * var(--font-scale-elder, 1.25));
+}
+
+/* 2. Quy tắc phóng to font chữ Lora / Biên tập & Giãn dòng 2.0 */
+:where(html[data-reading-mode="elder"], html[data-elder-mode="true"]) :where(
+  .editorial-body,
+  .prose,
+  article,
+  .reading-content,
+  [data-reading-article],
+  .detail-desc,
+  .tufte-sidenote-content
+) {
+  font-size: calc(1.05rem * var(--font-scale-elder, 1.25));
+}
+
+:where(html[data-reading-mode="elder"], html[data-elder-mode="true"]) :where(
+  p,
+  .editorial-body p,
+  .prose p,
+  article p,
+  [data-reading-article] p,
+  .detail-desc p,
+  main p
+) {
+  line-height: var(--line-height-elder, 2.0) !important;
+  letter-spacing: 0.015em;
+}
+
+/* 3. Cưỡng bức vùng chạm tối thiểu >= 52px trên mọi phần tử tương tác */
+:where(html[data-reading-mode="elder"], html[data-elder-mode="true"]) :where(
+  a[href]:not(.skip-link),
+  button,
+  [role="button"],
+  input:not([type="hidden"]),
+  select,
+  textarea,
+  summary,
+  .btn,
+  .nav-toggle,
+  .auth-btn,
+  .theme-btn,
+  .settings-tab,
+  .action-btn
+) {
+  min-height: var(--elder-touch-target, 52px);
+  min-width: var(--elder-touch-target, 52px);
+  border-width: var(--elder-stroke, 3px);
+}
+
+/* 4. Tăng nét vẽ icon và glyph bản địa lên 2.4px - 3px */
+:where(html[data-reading-mode="elder"], html[data-elder-mode="true"]) :where(
+  .vernacular-glyph,
+  .line-icon svg,
+  svg.line-icon,
+  svg.fs-icon,
+  .public-shell-header svg
+) {
+  stroke-width: var(--elder-stroke, 3px) !important;
+}
+
+/* 5. Triệt tiêu chuyển động phức tạp & đưa transition về mờ nhẹ 150ms (§9.1) */
+:where(html[data-reading-mode="elder"], html[data-elder-mode="true"]) * {
+  transform: none !important;
+  animation-duration: 0.01ms !important;
+  animation-iteration-count: 1 !important;
+  transition: opacity 150ms ease, background-color 150ms ease, border-color 150ms ease !important;
+  scroll-behavior: auto !important;
+}
+
+/* ============================================================
+   CHẾ ĐỘ NẮNG GẮT MIỀN TÂY (HIGH-GLARE SUNLIGHT MODE >= 14:1)
+   Kích hoạt qua [data-outdoor-contrast="high"] trên <html>
+   Tuân thủ Hiến pháp Thiết kế v2.0 §9.2 & WCAG 2.2 AAA
+   ============================================================ */
+
+html[data-outdoor-contrast="high"] {
+  /* 1. Remap Semantic Tokens sang Quang Học Tương Phản Cực Đại */
+  --color-canvas: var(--contrast-glare-bg);
+  --color-surface: var(--contrast-glare-bg);
+  --color-surface-subtle: var(--contrast-glare-bg);
+  --color-surface-raised: var(--contrast-glare-bg);
+  --color-text: var(--contrast-glare-fg);
+  --color-text-muted: var(--contrast-glare-border);
+  --color-border: var(--contrast-glare-border);
+  --color-border-strong: var(--contrast-glare-border);
+  --color-action: var(--contrast-glare-river);
+  --color-warning: var(--contrast-glare-gold);
+  --color-brand: var(--contrast-glare-accent-text, var(--contrast-glare-accent));
+
+  /* 2. Triệt tiêu viền kính & bóng đổ mờ đục */
+  --border-liquid-glass: 2px solid var(--contrast-glare-border);
+  --shadow-xs: none;
+  --shadow-sm: none;
+  --shadow-md: none;
+  --shadow-lg: none;
+  --shadow-xl: none;
+}
+
+/* 3. Triệt tiêu toàn bộ backdrop-filter trên toàn bộ tài liệu */
+html[data-outdoor-contrast="high"] *,
+html[data-outdoor-contrast="high"] *::before,
+html[data-outdoor-contrast="high"] *::after {
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+/* 4. Chuyển nền bán trong suốt sang nền trắng đặc và viền than 2px */
+html[data-outdoor-contrast="high"] .public-shell-header,
+html[data-outdoor-contrast="high"] .public-shell-chrome,
+html[data-outdoor-contrast="high"] .public-shell-catalog,
+html[data-outdoor-contrast="high"] .map-floating-thumb-dock,
+html[data-outdoor-contrast="high"] .route-card,
+html[data-outdoor-contrast="high"] .card,
+html[data-outdoor-contrast="high"] .btn {
+  background: var(--contrast-glare-bg) !important;
+  border: 2px solid var(--contrast-glare-border) !important;
+  box-shadow: none !important;
+  color: var(--contrast-glare-fg) !important;
+  opacity: 1 !important;
+}
+
+/* ============================================================
+   CHẾ ĐỘ SINH THÁI SÔNG NƯỚC (ECO-TERROIR MODE — GREEN WEB WSG)
+   Kích hoạt qua [data-eco-mode="true"] trên <html>
+   Tuân thủ Hiến pháp Thiết kế v2.0 Chương 10 & Green Web WSG
+   ============================================================ */
+
+html[data-eco-mode="true"] {
+  /* Giảm xung nhịp hoạt họa để tiết kiệm điện năng cho CPU/GPU */
+  --duration-terroir: 0.001ms !important;
+  --duration-sheet: 0.001ms !important;
+  --dur-kenburns: 0.001ms !important;
+}
+
+/* Tạm dừng toàn bộ các animation liên tục nặng nề */
+html[data-eco-mode="true"] .public-shell,
+html[data-eco-mode="true"] [class*="tide-pulse-"],
+html[data-eco-mode="true"] [class*="flow-"],
+html[data-eco-mode="true"] .cover-img,
+html[data-eco-mode="true"] .ambient-dawn,
+html[data-eco-mode="true"] .ambient-noon,
+html[data-eco-mode="true"] .ambient-dusk,
+html[data-eco-mode="true"] .ambient-night {
+  animation: none !important;
+  transition-delay: 0s !important;
+}
+
+/* Áp dụng content-visibility để tối ưu hóa hiệu năng render danh sách thẻ */
+html[data-eco-mode="true"] .card,
+html[data-eco-mode="true"] .editorial-dossier-card,
+html[data-eco-mode="true"] [data-catalog-section] {
+  content-visibility: auto;
+  contain-intrinsic-size: 0 320px;
+}
+
+

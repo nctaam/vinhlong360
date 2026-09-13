@@ -169,7 +169,7 @@
       </NuxtErrorBoundary>
     </div>
 
-    <PlannerMobilePassModal
+    <PocketPassModal
       v-model:open="showPassModal"
       :title="itineraryTitle"
       :stops="modalStops"
@@ -207,6 +207,7 @@ import { fetchRoute, formatDistance, formatDuration, type TransportMode, type Ro
 import MekongWaterBadge from '~/components/MekongWaterBadge.vue'
 import PlannerRiverTransitWarning from '~/components/planner/PlannerRiverTransitWarning.vue'
 import PlannerMobilePassModal from '~/components/planner/PlannerMobilePassModal.vue'
+import PocketPassModal from '~/components/PocketPassModal.vue'
 
 useReveal()
 

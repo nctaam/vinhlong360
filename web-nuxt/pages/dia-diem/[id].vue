@@ -338,12 +338,32 @@
           <span v-if="entity.attributes?.hours" class="hl"><IconLine name="clock" aria-hidden="true" /> {{ entity.attributes.hours }}</span>
           <span v-if="addressText" class="hl"><IconLine name="pin" aria-hidden="true" /> {{ addressText }}</span>
         </div>
-        <p class="lead">{{ entity.summary }}</p>
+        <p class="lead">
+          {{ entity.summary }}
+          <TufteSidenote
+            v-if="trustSourceTitle"
+            note-number="1"
+            :authority-tier="trustTier || 'official'"
+            :source-title="trustSourceTitle"
+            :source-url="trustSourceUrl || undefined"
+            notebook-id="NOTEBOOK-VL-HERITAGE-01"
+            content="Tư liệu khảo cứu thực địa và trích lục địa chí được đối soát theo chuẩn kiểm định đa tầng vinhlong360."
+          />
+        </p>
 
         <!-- Highlight tagline -->
         <blockquote v-if="entity.attributes?.highlight" class="entity-highlight">
           <p>{{ entity.attributes.highlight }}</p>
         </blockquote>
+
+        <!-- Green Tourism Criteria badge -->
+        <div class="green-tourism-badge" data-green-tourism="vinhlong">
+          <VernacularGlyph name="green-lotus" class="gt-icon" aria-hidden="true" />
+          <div class="gt-content">
+            <strong class="gt-label">Tiêu chí Du lịch Xanh Vĩnh Long</strong>
+            <p class="gt-sub">Thực hành du lịch sinh thái trách nhiệm · Bảo tồn văn hóa dòng sông và miệt vườn Cửu Long</p>
+          </div>
+        </div>
 
         <!-- Hộp Tóm tắt Thực địa 30s & AEO -->
         <DetailAeoSummary :entity="entity" :accent="detailMaterialAccent" />
@@ -532,6 +552,8 @@
 </template>
 
 <script setup lang="ts">
+import TufteSidenote from '~/components/TufteSidenote.vue'
+import VernacularGlyph from '~/components/VernacularGlyph.vue'
 import { ocopBadgeLabel, ocopStars as ocopStarsOf } from '~/utils/ocop'
 import type { Entity } from '~/types'
 import type { ImageDescriptor } from '~/types/image'
@@ -1055,3 +1077,39 @@ useHead({
 
 <!-- detail.css nạp theo route (bỏ khỏi global entry.css; phần dùng-chung ở detail-shared.css) -->
 <style src="~/assets/css/detail.css"></style>
+
+<style scoped>
+.green-tourism-badge {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  margin: var(--space-4) 0;
+  border-radius: var(--radius-control);
+  background: var(--color-surface-subtle);
+  border: 1px solid var(--color-border);
+  max-width: var(--measure-read);
+}
+.green-tourism-badge .gt-icon {
+  flex-shrink: 0;
+  width: 28px;
+  height: 28px;
+  color: var(--color-brand);
+}
+.green-tourism-badge .gt-content {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.green-tourism-badge .gt-label {
+  font-size: var(--text-sm);
+  font-weight: var(--weight-bold);
+  color: var(--color-text);
+}
+.green-tourism-badge .gt-sub {
+  margin: 0;
+  font-size: var(--text-xs);
+  color: var(--color-text-muted);
+  line-height: var(--leading-normal);
+}
+</style>

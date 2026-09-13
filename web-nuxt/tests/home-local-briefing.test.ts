@@ -118,7 +118,7 @@ describe('HomeLocalBriefing — Empirical Stress Testing', () => {
       apiFetchMock.mockResolvedValue(MEASURED_PAYLOAD)
       const wrapper = await mountBriefing()
 
-      const tideSection = wrapper.get('.home-local-briefing__tide')
+      const tideSection = wrapper.find('.home-local-briefing__tide')
       expect(tideSection.exists()).toBe(true)
       expect(tideSection.attributes('data-tide-phase')).toMatch(/^(rong|kem|chuyen)$/)
       expect(tideSection.attributes('data-lunar-day')).toBeDefined()
@@ -126,7 +126,7 @@ describe('HomeLocalBriefing — Empirical Stress Testing', () => {
       const tideBadge = wrapper.get('.home-local-briefing__tide-badge')
       expect(tideBadge.text()).toMatch(/^Kỳ Nước (rong|kém|chuyển)$/)
 
-      const mwb = wrapper.get('[data-water-badge]')
+      const mwb = wrapper.find('[data-water-badge]')
       expect(mwb.exists()).toBe(true)
       expect(mwb.attributes('data-tide-state')).toMatch(/^(rong|kem|chuyen)$/)
     })
@@ -152,7 +152,7 @@ describe('HomeLocalBriefing — Empirical Stress Testing', () => {
       apiFetchMock.mockResolvedValue(MEASURED_PAYLOAD)
       const wrapper = await mountBriefing()
 
-      const link = wrapper.get('.home-local-briefing__link')
+      const link = wrapper.find('.home-local-briefing__link')
       expect(link.exists()).toBe(true)
       expect(link.attributes('href')).toMatch(/^\/theo-mua\?mua=[1-9][0-2]?$/)
     })

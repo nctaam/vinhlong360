@@ -1,42 +1,40 @@
 <template>
   <div class="error-page" data-color-system="tri-region-v1">
     <div class="error-content" role="alert">
+      <!-- Mekong Cultural Visual: Bến Đò Lỡ Chuyến -->
       <div class="error-illust" aria-hidden="true">
-        <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
-          <!-- warm clay halo + nested calm circle -->
-          <circle cx="100" cy="100" r="80" fill="var(--bg-warm)" class="illust-halo" />
-          <circle cx="100" cy="100" r="55" fill="var(--bg)" />
-          <g v-if="is404" class="illust-face">
-            <!-- 404: nhân vật mơ màng / ngủ — nét mềm, thân thiện -->
-            <path d="M72 86 q8 -8 16 0" stroke="var(--clay-400)" stroke-width="3.5" fill="none" stroke-linecap="round" />
-            <path d="M112 86 q8 -8 16 0" stroke="var(--clay-400)" stroke-width="3.5" fill="none" stroke-linecap="round" />
-            <path d="M78 120 Q100 110 122 120" stroke="var(--clay-400)" stroke-width="3" fill="none" stroke-linecap="round" />
-          </g>
-          <g v-else class="illust-face">
-            <!-- 500/khác: nhân vật trầm tư — mắt nhắm nhẹ + miệng đăm chiêu -->
-            <line x1="74" y1="86" x2="90" y2="86" stroke="var(--clay-400)" stroke-width="3.5" stroke-linecap="round" />
-            <line x1="110" y1="86" x2="126" y2="86" stroke="var(--clay-400)" stroke-width="3.5" stroke-linecap="round" />
-            <path d="M80 122 Q100 116 120 122" stroke="var(--clay-400)" stroke-width="3" fill="none" stroke-linecap="round" />
-          </g>
-        </svg>
+        <div class="illust-halo">
+          <VernacularGlyph name="three-plank-sampan" :size="64" accent="clay" />
+        </div>
       </div>
-      <h1 class="error-code" :aria-label="`Lỗi ${error?.statusCode || 500}`">{{ error?.statusCode || 500 }}</h1>
-      <p class="error-msg">{{ message }}</p>
 
-      <!-- 404: gợi ý khám phá nhanh (discovery links — không phải form chốt đơn) -->
+      <!-- Cultural Heritage Narrative -->
+      <h1 class="error-heading">
+        {{ is404 ? 'Bến Đò Lỡ Chuyến · Xin Quý Khách Thong Thả Đợi Chuyến Sau' : 'Con Nước Tạm Đứng · Xin Quý Khách Chờ Trong Giây Lát' }}
+      </h1>
+
+      <p class="error-msg">
+        {{ is404 ? 'Dòng sông Cổ Chiên mênh mông nghìn năm con nước lớn ròng. Đôi khi lối rẽ bạn tìm tạm thời đổi bến hoặc con nước chưa kịp đưa thuyền cập bến. Xin mời thong thả quay về bến chính hoặc chọn một ngả đường sông nước thân quen dưới đây.' : message }}
+      </p>
+
+      <!-- 404: Tìm kiếm nhanh & Lối rẽ về bến an toàn -->
       <div v-if="is404" class="error-discovery">
-        <p class="error-discovery-label">Có thể bạn muốn:</p>
         <div class="error-search" role="search">
           <input
             v-model="q"
             type="search"
             class="error-search-input"
-            placeholder="Tìm điều bạn cần"
+            placeholder="Tìm di sản, món ngon, bến đò…"
             aria-label="Tìm kiếm trên vinhlong360"
             @keyup.enter="goSearch"
           />
-          <button type="button" class="btn btn-primary error-search-btn" @click="goSearch">Tìm</button>
+          <button type="button" class="error-search-btn" @click="goSearch">
+            <IconLine name="search" aria-hidden="true" />
+            <span>Tìm</span>
+          </button>
         </div>
+
+        <p class="error-discovery-label">Hoặc chọn các ngả đường sông nước thân quen:</p>
         <nav class="error-links" aria-label="Liên kết phổ biến">
           <NuxtLink v-for="l in popularLinks" :key="l.to" :to="l.to" class="error-link-pill">
             <IconLine v-if="l.icon" :name="l.icon" class="error-link-pill__icon" />
@@ -45,24 +43,92 @@
         </nav>
       </div>
 
-      <div class="error-actions">
-        <button type="button" class="btn btn-primary" @click="handleError">Về trang chủ</button>
-        <button type="button" v-if="!is404" class="btn btn-outline" @click="retry">Thử lại</button>
+      <!-- 4 Safe Haven Waypoint Cards -->
+      <div class="safe-haven-grid">
+        <button type="button" class="safe-haven-card haven-primary" @click="handleError">
+          <IconLine name="home" aria-hidden="true" />
+          <div>
+            <strong>Về Bến Chính</strong>
+            <small>Trang chủ Di sản Vĩnh Long 360</small>
+          </div>
+        </button>
+
+        <NuxtLink to="/ban-do" class="safe-haven-card">
+          <IconLine name="map" aria-hidden="true" />
+          <div>
+            <strong>Bản Đồ Thủy Thổ</strong>
+            <small>Tọa độ GPS &amp; Cẩm nang bến bãi</small>
+          </div>
+        </NuxtLink>
+
+        <NuxtLink to="/am-thuc" class="safe-haven-card">
+          <IconLine name="bowl" aria-hidden="true" />
+          <div>
+            <strong>Ký Sự Ẩm Thực</strong>
+            <small>Hương vị miệt vườn phù sa</small>
+          </div>
+        </NuxtLink>
+
+        <NuxtLink to="/danh-ba" class="safe-haven-card">
+          <IconLine name="phone" aria-hidden="true" />
+          <div>
+            <strong>Danh Bạ Cứu Hộ</strong>
+            <small>Số điện thoại bến phà &amp; y tế 24/7</small>
+          </div>
+        </NuxtLink>
       </div>
+
+      <!-- Actions & Offline Rescue Trigger -->
+      <div class="error-actions">
+        <button type="button" class="btn btn-primary" @click="handleError">
+          <IconLine name="home" aria-hidden="true" />
+          <span>Về trang chủ</span>
+        </button>
+        <button type="button" v-if="!is404" class="btn btn-outline" @click="retry">
+          <IconLine name="repeat" aria-hidden="true" />
+          <span>Thử lại</span>
+        </button>
+        <button
+          type="button"
+          class="btn btn-offline-trigger"
+          aria-label="Kích hoạt bảng cứu hộ ngoại tuyến"
+          @click="showOfflinePanel = true"
+        >
+          <VernacularGlyph name="three-plank-sampan" :size="18" accent="silt" />
+          <span>Chế độ Cứu hộ Ngoại tuyến</span>
+        </button>
+      </div>
+
+      <!-- Offline Terroir Panel Modal Triggered when Requested -->
+      <ClientOnly>
+        <OfflineTerroirPanel
+          v-model:open="showOfflinePanel"
+          :is-offline="true"
+          @close="showOfflinePanel = false"
+        />
+      </ClientOnly>
+
+      <!-- Technical Status at Footer -->
+      <footer class="error-technical-footer">
+        <span class="error-code-badge">Mã trạng thái: {{ error?.statusCode || 500 }}</span>
+      </footer>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
+import { ref, computed, onMounted } from 'vue'
 import { captureClientError, installGlobalErrorCapture } from '~/composables/useClientError'
+
 const props = defineProps<{ error: { statusCode?: number; message?: string; url?: string } }>()
 
 const is404 = computed(() => props.error?.statusCode === 404)
-
+const showOfflinePanel = ref(false)
 const q = ref('')
+
 const popularLinks = [
   { label: 'Du lịch', to: '/du-lich', icon: 'compass' },
-  { label: 'Ẩm thực', to: '/san-pham', icon: 'bowl' },
+  { label: 'Ẩm thực', to: '/am-thuc', icon: 'bowl' },
   { label: 'Sự kiện', to: '/su-kien', icon: 'calendar' },
   { label: 'OCOP', to: '/ocop', icon: 'gift' },
 ]
@@ -72,15 +138,13 @@ function goSearch() {
   if (term) navigateTo(`/tim-kiem?q=${encodeURIComponent(term)}`)
 }
 
-// P3: báo lỗi fatal về backend (best-effort). Bỏ qua 404 (định tuyến bình thường,
-// tránh spam). Chỉ chạy client-side; composable đã tự guard SSR + opt-out.
 onMounted(() => {
   try {
     installGlobalErrorCapture()
     const code = props.error?.statusCode
     if (code !== 404) {
       captureClientError(
-        `error.vue: HTTP ${code ?? 'unknown'}`,
+        `error.vue: HTTP ${code}`,
         props.error?.message || `status ${code}`,
         { statusCode: code, url: props.error?.url },
       )
@@ -94,7 +158,7 @@ const message = computed(() => {
   const code = props.error?.statusCode
   if (code === 404) return 'Trang bạn tìm kiếm hiện không còn ở địa chỉ này. Bạn thử tìm kiếm lại hoặc quay về trang chủ nhé!'
   if (code === 403) return 'Bạn chưa có quyền vào đây. Liên hệ hỗ trợ nếu cần nha.'
-  return 'Có lỗi gì đó trên máy chủ. Chúng tôi đang sửa chữa, bạn thử lại trong tý nhé!'
+  return 'Có lỗi gì đó trên máy chủ. Chúng tôi đang sửa chữa, bạn thử lại trong giây lát nhé!'
 })
 
 function handleError() {
@@ -122,133 +186,232 @@ useSeoMeta({
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: var(--space-10) var(--space-5);
-}
-.error-content { text-align: center; max-width: 460px; animation: errorIn .6s var(--ease-out-expo) both; }
-@keyframes errorIn { from { opacity: 0; transform: translateY(16px) scale(.96); } to { opacity: 1; transform: translateY(0) scale(1); } }
-@keyframes errorPartIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-
-.error-illust { width: 160px; margin: 0 auto var(--space-4); }
-.error-illust svg { width: 100%; height: auto; }
-.illust-halo { transition: opacity .3s var(--ease-out); }
-
-.error-code {
-  font-size: clamp(3rem, 12vw, 5rem);
-  margin: 0;
-  line-height: 1;
-  font-weight: var(--weight-extrabold);
-  letter-spacing: var(--tracking-tighter);
-  color: var(--color-brand);
-  animation: errorPartIn .5s var(--ease-out-expo) .1s both;
-}
-.error-msg {
-  font-size: var(--text-base);
-  color: var(--muted);
-  margin: var(--space-3) 0 0;
-  line-height: var(--leading-relaxed);
-  animation: errorPartIn .5s var(--ease-out-expo) .2s both;
+  padding: var(--space-fib-5) var(--space-fib-3);
+  background: var(--color-canvas);
+  color: var(--color-text);
 }
 
-/* 404 discovery block */
-.error-discovery { margin-top: var(--space-5); animation: errorPartIn .5s var(--ease-out-expo) .3s both; }
-.error-discovery-label { font-size: var(--text-sm); color: var(--ink-tertiary); margin: 0 0 var(--space-2); }
-.error-search { display: flex; gap: var(--space-2); justify-content: center; flex-wrap: wrap; margin-bottom: var(--space-3); }
-.error-search-input {
-  flex: 1 1 200px;
-  min-width: 0;
-  max-width: 280px;
-  padding: 10px 16px;
-  min-height: 44px;
-  border: .5px solid var(--border-input, var(--border));
+.error-content {
+  width: 100%;
+  max-width: 680px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: var(--space-fib-3);
+}
+
+.error-illust {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.illust-halo {
+  width: 110px;
+  height: 110px;
   border-radius: var(--radius-full);
-  background: var(--card, var(--bg));
-  color: var(--ink);
-  font-size: .9rem;
-  transition: border-color .25s var(--ease-out), box-shadow .3s var(--ease-out-expo);
+  background: color-mix(in srgb, var(--color-material-clay) 12%, var(--color-surface));
+  border: 1.5px solid var(--alluvial-gold);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: var(--shadow-md);
 }
-.error-search-input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px rgba(var(--accent-rgb), .25); }
-.error-search-input:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 1px; }
-.error-search-btn { flex: 0 0 auto; padding: 0 var(--space-5); min-height: 44px; }
-.error-links { display: flex; flex-wrap: wrap; gap: var(--space-2); justify-content: center; }
+
+.error-heading {
+  margin: 0;
+  font-family: var(--font-editorial, 'Lora', serif);
+  font-size: var(--font-size-headline);
+  font-weight: var(--weight-title);
+  color: var(--color-text);
+  line-height: 1.35;
+}
+
+.error-msg {
+  margin: 0;
+  font-size: var(--font-size-body);
+  color: var(--color-text-muted);
+  line-height: 1.65;
+  max-width: 58ch;
+}
+
+.error-discovery {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-fib-2);
+}
+
+.error-search {
+  display: flex;
+  gap: var(--space-fib-1);
+  width: 100%;
+  max-width: 480px;
+  margin-inline: auto;
+}
+
+.error-search-input {
+  flex: 1;
+  min-height: 44px;
+  padding: 0 var(--space-fib-3);
+  font-family: var(--font-body, inherit);
+  font-size: var(--font-size-body);
+  color: var(--color-text);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-control);
+  outline: none;
+}
+
+.error-search-input:focus {
+  border-color: var(--alluvial-gold);
+}
+
+.error-search-btn {
+  min-width: 44px;
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: 0 var(--space-fib-3);
+  background: var(--color-action);
+  color: var(--sand-50);
+  border: none;
+  border-radius: var(--radius-control);
+  font-weight: var(--weight-title-sm);
+  cursor: pointer;
+}
+
+.error-discovery-label {
+  margin: var(--space-fib-1) 0 0;
+  font-size: var(--font-size-caption);
+  color: var(--color-text-muted);
+}
+
+.error-links {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--space-fib-1);
+}
+
 .error-link-pill {
   display: inline-flex;
   align-items: center;
-  gap: var(--space-2);
+  gap: 6px;
   min-height: 44px;
-  padding: var(--space-2) var(--space-4);
-  border: .5px solid var(--line);
+  padding: 0 var(--space-fib-3);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
   border-radius: var(--radius-full);
-  background: var(--bg-warm);
-  color: var(--ink);
-  font-size: var(--text-sm);
-  font-weight: var(--weight-semibold);
+  color: var(--color-text);
   text-decoration: none;
-  transition: transform .35s var(--ease-out-expo), border-color .3s var(--ease-out), background .3s var(--ease-out), box-shadow .3s var(--ease-out);
+  font-size: var(--font-size-caption);
+  transition: all 0.15s ease;
 }
-.error-link-pill__icon {
-  font-size: 1.05em;
-  color: var(--accent);
+
+.error-link-pill:hover {
+  background: var(--color-surface-raised);
+  border-color: var(--alluvial-gold);
 }
-.error-link-pill:hover { transform: translateY(-1px); border-color: var(--color-action); box-shadow: var(--shadow-sm); }
-.error-link-pill:active { transform: scale(.96); }
-.error-link-pill:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
+
+.safe-haven-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: var(--space-fib-2);
+  width: 100%;
+  margin: var(--space-fib-2) 0;
+}
+
+.safe-haven-card {
+  display: flex;
+  align-items: center;
+  gap: var(--space-fib-2);
+  min-height: 52px;
+  padding: var(--space-fib-2) var(--space-fib-3);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-surface);
+  color: var(--color-text);
+  text-decoration: none;
+  text-align: left;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.safe-haven-card:hover {
+  background: var(--color-surface-raised);
+  border-color: var(--alluvial-gold);
+}
+
+.safe-haven-card strong {
+  display: block;
+  font-size: var(--font-size-body);
+}
+
+.safe-haven-card small {
+  display: block;
+  font-size: var(--font-size-label);
+  color: var(--color-text-muted);
+}
 
 .error-actions {
   display: flex;
   flex-wrap: wrap;
-  gap: var(--space-3);
   justify-content: center;
-  margin-top: var(--space-6);
-  animation: errorPartIn .5s var(--ease-out-expo) .4s both;
-}
-.error-actions .btn { transition: transform .35s var(--ease-out-expo), box-shadow .35s var(--ease-out-expo); }
-.error-actions .btn:hover { transform: translateY(-1px); box-shadow: var(--shadow-md); }
-.error-actions .btn:active { transform: scale(.95); transition-duration: .08s; }
-
-/* Dark mode: solid primary pigment + SVG legibility */
-.dark .error-code { color: var(--color-brand); }
-.dark .illust-halo { opacity: .9; }
-.dark .illust-face { stroke-opacity: 1; }
-.dark .error-link-pill { background: var(--bg-alt, var(--bg-warm)); border-color: var(--border); }
-.dark .error-link-pill:hover { border-color: var(--color-action); }
-.dark .error-search-input { background: var(--card, var(--bg-alt)); border-color: var(--border); }
-.dark .error-search-input:focus { border-color: var(--color-action); box-shadow: 0 0 0 3px rgba(var(--color-action-rgb), .25); }
-
-/* Mobile: stack actions + search vertically, generous touch targets */
-@media (max-width: 520px) {
-  .error-page { min-height: 60vh; padding: var(--space-8) var(--space-4); }
-  .error-actions { flex-direction: column; align-items: stretch; }
-  .error-actions .btn { width: 100%; min-width: 140px; }
-  .error-search { flex-direction: column; align-items: stretch; }
-  .error-search-input { max-width: none; }
-  .error-search-btn { width: 100%; }
+  gap: var(--space-fib-2);
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .error-content,
-  .error-code,
-  .error-msg,
-  .error-discovery,
-  .error-actions { animation: none; }
-  .error-actions .btn,
-  .error-link-pill,
-  .error-search-input { transition: none; }
-}
-@media (forced-colors: active) {
-  .error-code { -webkit-text-fill-color: Highlight; background: none; }
-  .error-illust circle, .error-illust line, .error-illust path { stroke: CanvasText; }
-  .illust-halo { fill: Canvas; }
-  .error-search-input { border: 1px solid ButtonBorder; }
-  .error-link-pill { border: 1px solid ButtonText; }
-  .error-actions .btn { border: 1px solid ButtonText; }
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-fib-1);
+  min-height: 44px;
+  padding: 0 var(--space-fib-4);
+  border-radius: var(--radius-control);
+  font-size: var(--font-size-body);
+  font-weight: var(--weight-title-sm);
+  cursor: pointer;
+  text-decoration: none;
+  transition: all 0.15s ease;
 }
 
-/* Sàn 16px cho ô nhập trên thiết bị cảm ứng. Khối sàn chung ở
-   base.css dùng bộ chọn TRẦN (input/select/textarea, độ đặc hiệu
-   0,0,1) nên mọi quy tắc theo lớp — kể cả quy tắc ngay trên — đều
-   thắng nó. Dưới 16px thì iOS Safari tự phóng to khi chạm vào ô và
-   không tự thu lại. max() giữ nguyên ý định cỡ chữ ở màn hình chuột. */
-@media (pointer: coarse) {
-  .error-search-input { font-size: max(16px, .9rem); }
+.btn-primary {
+  background: var(--color-action);
+  color: var(--sand-50);
+  border: none;
+}
+
+.btn-outline {
+  background: var(--color-surface);
+  color: var(--color-text);
+  border: 1px solid var(--color-border);
+}
+
+.btn-offline-trigger {
+  background: var(--color-surface);
+  color: var(--color-material-clay);
+  border: 1.5px solid var(--alluvial-gold);
+}
+
+.btn-offline-trigger:hover {
+  background: var(--color-surface-raised);
+}
+
+.error-technical-footer {
+  margin-top: var(--space-fib-3);
+  font-size: var(--font-size-label);
+  color: var(--color-text-muted);
+}
+
+.error-code-badge {
+  font-family: monospace;
+  padding: 2px 6px;
+  background: var(--color-surface-subtle);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-control);
 }
 </style>

@@ -183,6 +183,7 @@ export default defineNuxtConfig({
 
   routeRules: {
     '/admin/**': { ssr: false },
+    '/api/v1/terroir/**': { proxy: '' },
     '/api/**': { proxy: `${apiBase}/api/**` },
     '/auth/**': { proxy: `${apiBase}/auth/**` },
     '/chat/**': { proxy: `${apiBase}/chat/**` },
@@ -253,7 +254,7 @@ export default defineNuxtConfig({
           'X-Content-Type-Options': 'nosniff',
           'X-Frame-Options': 'SAMEORIGIN',
           'Referrer-Policy': 'strict-origin-when-cross-origin',
-          'Permissions-Policy': 'geolocation=(), microphone=(), camera=(), payment=()',
+          'Permissions-Policy': 'geolocation=(self), microphone=(), camera=(), payment=()',
           'Strict-Transport-Security': 'max-age=31536000; includeSubDomains',
         },
       },

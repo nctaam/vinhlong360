@@ -173,6 +173,7 @@ import PageState from '~/components/public/PageState.vue'
 import type { Entity } from '~/types'
 import type { MapViewport } from '~/types/publicExperience'
 import { normalizeCoords } from '~/composables/useCoords'
+import { useCognitiveTerroir } from '~/composables/useCognitiveTerroir'
 import { viewportTileBounds } from '~/utils/publicStateUrl'
 
 type MapListResult = Entity & {
@@ -206,9 +207,13 @@ const route = useRoute()
 const router = useRouter()
 const searchView = useSearchViewState()
 const { favorites } = useFavorites()
+const terroir = useCognitiveTerroir()
 const mapNetworkState = ref<'ready' | 'offline'>('ready')
 const scopeAnnouncement = ref('')
-const outdoorContrast = ref(false)
+const outdoorContrast = computed({
+  get: () => terroir.isHighGlare.value,
+  set: (val: boolean) => terroir.toggleHighGlare(val),
+})
 const isFullBleed = ref(false)
 const activeWaterPreset = ref<'all' | 'river' | 'pottery' | 'ferry'>('all')
 
@@ -647,7 +652,7 @@ useHead({
 }
 [data-outdoor-contrast="high"] :deep(.maplibregl-canvas),
 [data-outdoor-contrast="high"] .maplibregl-canvas {
-  filter: contrast(1.28) saturate(1.15);
+  filter: var(--contrast-glare-map-filter, contrast(1.6) saturate(1.2) brightness(0.95));
 }
 [data-outdoor-contrast="high"] :deep(.map-locator-marker),
 [data-outdoor-contrast="high"] .map-locator-marker {

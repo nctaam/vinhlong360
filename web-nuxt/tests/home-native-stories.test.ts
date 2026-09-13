@@ -63,7 +63,7 @@ describe('HomeNativeStories — Empirical Stress Testing', () => {
 
   it('ensures interactive links and callout actions fulfill touch target ergonomics', async () => {
     const wrapper = await mountStories()
-    const action = wrapper.get('.home-story-callout__action')
+    const action = wrapper.find('.home-story-callout__action')
     expect(action.exists()).toBe(true)
     expect(action.attributes('href')).toBe('/kham-pha')
 
