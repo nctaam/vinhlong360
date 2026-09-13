@@ -19,8 +19,16 @@
       </template>
     </ClientOnly>
     <nav class="home-continuation__links" aria-label="Bước tiếp theo">
-      <NuxtLink to="/ban-do">Mở bản đồ</NuxtLink>
-      <NuxtLink to="/lich-trinh">Xem lịch trình</NuxtLink>
+      <NuxtLink to="/ban-do" class="home-continuation__link">
+        <IconLine name="map" aria-hidden="true" />
+        <span>Mở bản đồ</span>
+        <IconLine name="arrow-right" class="home-continuation__arrow" aria-hidden="true" />
+      </NuxtLink>
+      <NuxtLink to="/lich-trinh" class="home-continuation__link">
+        <IconLine name="calendar" aria-hidden="true" />
+        <span>Xem lịch trình</span>
+        <IconLine name="arrow-right" class="home-continuation__arrow" aria-hidden="true" />
+      </NuxtLink>
     </nav>
   </section>
 </template>

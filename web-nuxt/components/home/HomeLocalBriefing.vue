@@ -341,6 +341,15 @@ const seasonLink = computed(() => `/theo-mua?mua=${currentMonth.value}`)
   color: var(--color-action);
   font-size: var(--text-sm);
   text-decoration: none;
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), color var(--duration-fast) var(--ease-out);
+}
+
+.home-local-briefing__link:hover {
+  color: var(--color-brand);
+}
+
+.home-local-briefing__link:active {
+  transform: scale(0.98);
 }
 
 .hlb-arrow {
