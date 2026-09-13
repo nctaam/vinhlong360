@@ -5,7 +5,10 @@
          bỏ catalog-hero cat-org lai tạp trên trang pháp lý) -->
     <section class="brand-masthead about-masthead">
       <div class="bm-inner">
-        <p class="bm-eyebrow"><span class="bm-tick" aria-hidden="true"></span>Hồ sơ pháp lý · Cập nhật {{ doc.updated_date }}</p>
+        <div class="bm-header-seal">
+          <p class="bm-eyebrow"><span class="bm-tick" aria-hidden="true"></span>Hồ sơ pháp lý · Cập nhật {{ doc.updated_date }}</p>
+          <SourceMark tier="official" />
+        </div>
         <h1>{{ doc.title }}</h1>
         <p class="bm-sub">{{ doc.seo_description }}</p>
       </div>
@@ -109,3 +112,52 @@ useHead(() => ({
 </script>
 
 <style src="~/assets/css/legal.css"></style>
+
+<style scoped>
+.bm-header-seal {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+  margin: 0 0 var(--space-3);
+}
+.bm-header-seal .bm-eyebrow { margin: 0; }
+
+.legal-disclosure h2,
+.legal-disclosure h3 {
+  font-family: var(--font-editorial, 'Lora', serif);
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.legal-section h2 {
+  font-family: var(--font-editorial, 'Lora', serif);
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.legal-toc-link {
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+}
+
+.legal-metadata {
+  border: 1px solid var(--line);
+  box-shadow: var(--shadow-xs);
+}
+
+.legal-table-wrap {
+  border: 1px solid var(--line);
+  box-shadow: var(--shadow-xs);
+}
+
+.dark .legal-metadata {
+  background: var(--bg-alt);
+  border-color: var(--line);
+}
+.dark .legal-table-wrap {
+  border-color: var(--line);
+}
+</style>

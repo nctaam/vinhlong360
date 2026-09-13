@@ -5,7 +5,10 @@
     <!-- Brand masthead — same river→clay wash family as Giới thiệu. -->
     <section class="brand-masthead contact-masthead">
       <div class="bm-inner">
-        <p class="bm-eyebrow"><span class="bm-tick" aria-hidden="true"></span>Liên hệ</p>
+        <div class="bm-header-seal">
+          <p class="bm-eyebrow"><span class="bm-tick" aria-hidden="true"></span>Liên hệ</p>
+          <SourceMark tier="official" />
+        </div>
         <h1>{{ pc('hero_title') }}</h1>
         <p class="bm-sub">{{ pc('hero_subtitle') }}</p>
         <p class="bm-sla"><span aria-hidden="true">●</span> Người thật đọc từng tin nhắn, không phải chatbot. Yêu cầu sửa thông tin có mã tra cứu và hạn cập nhật riêng.</p>
@@ -33,12 +36,18 @@
         <p class="card-note">Hoặc nhắn Zalo: <strong>{{ zaloName }}</strong></p>
       </section>
 
-      <section class="contact-card card-correction">
-        <div class="card-icon" aria-hidden="true"><span class="card-icon-vector"><IconLine name="pencil" /></span></div>
+      <!-- Cổng hiệu đính công dân & Trách nhiệm giải trình độc lập (Civic Correction Bridge Card) -->
+      <section class="contact-card card-correction card-correction--prominent">
+        <div class="correction-card-header">
+          <div class="card-icon" aria-hidden="true"><span class="card-icon-vector"><IconLine name="pencil" /></span></div>
+          <span class="ombudsman-tag">Trách nhiệm giải trình · Ombudsman</span>
+        </div>
         <h2>Sửa thông tin chưa đúng</h2>
         <p>Số điện thoại, địa chỉ, giờ mở cửa… hiển thị sai? Gửi yêu cầu có mã tra cứu — bạn theo dõi được từng bước và biết trước khi nào có cập nhật.</p>
-        <div class="card-action">
-          <NuxtLink to="/yeu-cau/sua-thong-tin" class="btn btn-primary">Gửi yêu cầu sửa thông tin</NuxtLink>
+        <p class="card-ombudsman-desc">Mọi đề xuất đính chính di tích, toạ độ thực địa, tiện ích du lịch và sản phẩm OCOP đều được đối chiếu công tâm theo quy trình thẩm định 3 tầng.</p>
+        <div class="card-action correction-actions">
+          <NuxtLink to="/yeu-cau/sua-thong-tin" class="btn btn-primary"><IconLine name="pencil" /> Gửi yêu cầu sửa thông tin</NuxtLink>
+          <NuxtLink to="/yeu-cau/tra-cuu" class="btn btn-outline"><IconLine name="tag" /> Tra cứu tiến độ yêu cầu</NuxtLink>
         </div>
         <p class="card-note"><NuxtLink to="/yeu-cau/tra-cuu">Tra cứu yêu cầu đã gửi</NuxtLink> bằng mã trên biên nhận.</p>
       </section>
@@ -169,6 +178,15 @@ useHead(() => ({
   background-blend-mode: overlay, normal;
 }
 .bm-inner { flex: 1 1 auto; min-width: 0; max-width: var(--measure-read); }
+.bm-header-seal {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+  margin: 0 0 var(--space-3);
+}
+.bm-header-seal .bm-eyebrow { margin: 0; }
 .bm-eyebrow {
   display: flex; align-items: center; gap: var(--space-2);
   font-family: var(--font-sans); font-size: var(--text-2xs); font-weight: 700;
@@ -301,6 +319,58 @@ useHead(() => ({
   background: color-mix(in srgb, var(--accent) 4%, var(--card));
 }
 
+.card-correction--prominent {
+  border-color: var(--mangthit-500);
+  border-width: 1.5px;
+  background: color-mix(in srgb, var(--mangthit-500) 4%, var(--card));
+  box-shadow: var(--shadow-sm);
+}
+
+.correction-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  margin-bottom: var(--space-3);
+  flex-wrap: wrap;
+}
+.correction-card-header .card-icon {
+  margin-bottom: 0;
+}
+
+.ombudsman-tag {
+  font-family: var(--font-sans);
+  font-size: var(--text-2xs);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-caps);
+  color: var(--mangthit-500);
+  background: color-mix(in srgb, var(--mangthit-500) 10%, transparent);
+  padding: var(--space-1) var(--space-3);
+  border-radius: var(--radius-pill, 999px);
+  border: 1px solid color-mix(in srgb, var(--mangthit-500) 24%, transparent);
+}
+
+.card-ombudsman-desc {
+  font-size: var(--text-xs);
+  color: var(--ink-secondary);
+  line-height: var(--leading-snug);
+  margin-bottom: var(--space-3);
+}
+
+.correction-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+}
+
+.contact-card .card-note a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+}
+
 @media (min-width: 640px) {
   /* Intentional hierarchy: primary claim and correction cards full-width, then a row of
      actionable cards (general + partner), then a row of informational
@@ -337,6 +407,15 @@ useHead(() => ({
 .dark .contact-card:hover { box-shadow: var(--shadow-lg); border-color: rgba(var(--white-rgb),.1); }
 .dark .card-report:hover, .dark .card-privacy:hover { box-shadow: var(--shadow-xs); border-color: var(--line); }
 .dark .card-claim { background: color-mix(in srgb, var(--accent) 10%, var(--bg-alt)); border-color: rgba(var(--accent-rgb), .35); }
+.dark .card-correction--prominent {
+  background: color-mix(in srgb, var(--mangthit-500) 10%, var(--bg-alt));
+  border-color: rgba(var(--secondary-rgb), .45);
+}
+.dark .ombudsman-tag {
+  color: var(--clay-400);
+  background: color-mix(in srgb, var(--clay-400) 12%, transparent);
+  border-color: color-mix(in srgb, var(--clay-400) 30%, transparent);
+}
 .dark .contact-card p { color: var(--ink-secondary); }
 .dark .contact-card h2 { color: var(--ink); }
 .dark .card-icon { background: rgba(var(--white-rgb),.04); border-color: var(--line); }

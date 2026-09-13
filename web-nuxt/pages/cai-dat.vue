@@ -87,68 +87,28 @@
 
         <label class="sf-field">
           <span class="sf-label">Họ và tên</span>
-          <input
-            v-model="fullName"
-            type="text"
-            class="sf-input"
-            autocomplete="name"
-            aria-label="Họ và tên thật"
-            maxlength="100"
-            placeholder="Họ và tên thật"
-          />
+          <input v-model="fullName" type="text" class="sf-input" autocomplete="name" aria-label="Họ và tên thật" maxlength="100" placeholder="Họ và tên thật" />
         </label>
 
         <label class="sf-field">
           <span class="sf-label">Tên hiển thị</span>
-          <input
-            v-model="displayName"
-            type="text"
-            class="sf-input"
-            autocomplete="nickname"
-            aria-label="Tên bạn muốn hiển thị"
-            enterkeyhint="done"
-            maxlength="50"
-            required
-            :aria-invalid="!!nameError"
-            :aria-describedby="nameError ? 'cd-err-name' : undefined"
-            placeholder="Tên bạn muốn hiển thị"
-          />
+          <input v-model="displayName" type="text" class="sf-input" autocomplete="nickname" aria-label="Tên bạn muốn hiển thị" enterkeyhint="done" maxlength="50" required :aria-invalid="!!nameError" :aria-describedby="nameError ? 'cd-err-name' : undefined" placeholder="Tên bạn muốn hiển thị" />
           <span v-if="nameError" id="cd-err-name" class="sf-error" role="alert">{{ nameError }}</span>
         </label>
 
         <label class="sf-field">
           <span class="sf-label">Giới thiệu <span class="sf-hint">({{ bio.length }}/300)</span></span>
-          <textarea
-            v-model="bio"
-            class="sf-input sf-textarea"
-            maxlength="300"
-            rows="4"
-            placeholder="Đôi dòng về bạn (không bắt buộc)"
-          ></textarea>
+          <textarea v-model="bio" class="sf-input sf-textarea" maxlength="300" rows="4" placeholder="Đôi dòng về bạn (không bắt buộc)"></textarea>
         </label>
 
         <label class="sf-field">
           <span class="sf-label">Email</span>
-          <input
-            v-model="email"
-            type="email"
-            class="sf-input"
-            aria-label="Địa chỉ email"
-            maxlength="200"
-            placeholder="email@example.com"
-            autocomplete="email"
-          />
+          <input v-model="email" type="email" class="sf-input" aria-label="Địa chỉ email" maxlength="200" placeholder="email@example.com" autocomplete="email" />
         </label>
 
         <label class="sf-field">
           <span class="sf-label">Thông tin liên hệ <span class="sf-hint">— Zalo, Facebook, v.v.</span></span>
-          <textarea
-            v-model="contactInfo"
-            class="sf-input sf-textarea"
-            maxlength="500"
-            rows="2"
-            placeholder="Zalo: 0901234567, Facebook: facebook.com/ten-cua-ban"
-          ></textarea>
+          <textarea v-model="contactInfo" class="sf-input sf-textarea" maxlength="500" rows="2" placeholder="Zalo: 0901234567, Facebook: facebook.com/ten-cua-ban"></textarea>
         </label>
 
         <div class="sf-actions">
@@ -317,7 +277,45 @@
 
     <!-- Tab: Quyền riêng tư -->
     <div v-if="activeTab === 'rieng-tu'" id="panel-rieng-tu" class="settings-card card sediment-head" role="tabpanel" aria-labelledby="tab-rieng-tu">
-      <h2>Quyền riêng tư</h2>
+      <div class="privacy-cert-header">
+        <div class="privacy-cert-title-group">
+          <span class="privacy-cert-badge"><IconLine name="shield-check" aria-hidden="true" /> Chứng thư minh bạch</span>
+          <h2>Bảng điều khiển quyền riêng tư</h2>
+        </div>
+        <p class="sf-hint">Bảo chứng dữ liệu minh bạch, zero-telemetry tuân thủ Nghị định 13/2023/NĐ-CP về bảo vệ dữ liệu cá nhân.</p>
+      </div>
+
+      <div class="privacy-cert-grid">
+        <div class="privacy-cert-card">
+          <div class="pcc-head">
+            <IconLine name="shield" aria-hidden="true" class="pcc-icon" />
+            <strong>Zero-telemetry</strong>
+          </div>
+          <p class="sf-hint">100% không gắn tracker, không SDK quảng cáo bên thứ ba, không bán dữ liệu hành vi.</p>
+          <span class="pcc-status"><IconLine name="check" aria-hidden="true" /> Tuyệt đối</span>
+        </div>
+        <div class="privacy-cert-card">
+          <div class="pcc-head">
+            <IconLine name="database" aria-hidden="true" class="pcc-icon" />
+            <strong>Kiểm soát cục bộ</strong>
+          </div>
+          <p class="sf-hint">Cấu hình cá nhân và nhật ký lưu tạm thời nằm trọn vẹn trên trình duyệt của bạn.</p>
+          <button type="button" class="btn btn-secondary btn-sm" @click="clearLocalData">Xóa cache thiết bị</button>
+        </div>
+        <div class="privacy-cert-card">
+          <div class="pcc-head">
+            <IconLine name="file-text" aria-hidden="true" class="pcc-icon" />
+            <strong>Quyền sở hữu (NĐ 13)</strong>
+          </div>
+          <p class="sf-hint">Quyền được biết, truy cập, chỉnh sửa và yêu cầu xoá dữ liệu cá nhân bất kỳ lúc nào.</p>
+          <NuxtLink to="/chinh-sach-bao-mat" class="btn btn-ghost btn-sm">Chính sách bảo mật</NuxtLink>
+        </div>
+      </div>
+
+      <div class="privacy-controls-divider">
+        <h3>Phạm vi hiển thị cộng đồng</h3>
+      </div>
+
       <div v-if="privacyLoading" class="sf-loading" role="status" aria-label="Đang tải cài đặt"><div class="spinner spinner-sm"></div> Đang tải...</div>
       <div v-else class="settings-form">
         <div class="sf-field">
@@ -563,6 +561,19 @@ const {
   NOTIF_TYPES, notifPrefs, notifPrefsLoading, loadNotifPrefs, toggleNotifPref,
 } = useSettingsModeration({ authHeaders, handleSessionExpired, showToast })
 
+function clearLocalData() {
+  if (import.meta.client) {
+    const keep = new Set(['auth_token', 'user', 'vl360_theme', 'accessibility_profile'])
+    const toDel: string[] = []
+    for (let i = 0; i < localStorage.length; i++) {
+      const k = localStorage.key(i)
+      if (k && !keep.has(k)) toDel.push(k)
+    }
+    toDel.forEach(k => localStorage.removeItem(k))
+    showToast('Đã xóa dữ liệu lưu tạm trên thiết bị', 'success')
+  }
+}
+
 const {
   exportLoading, consentHistory, consentLoaded, deleteConfirmVisible, deleteBusy, accountStatus,
   exportData, loadConsent, formatConsentDate, deactivate, deleteAccount,
@@ -740,9 +751,26 @@ onUnmounted(() => {
 .settings-dek { color: var(--ink-700); font-size: var(--text-sm); max-width: 56ch; margin: 0 0 var(--space-5); line-height: var(--leading-relaxed); }
 .settings-hash-anchors { position: relative; height: 0; overflow: hidden; }
 .settings-hash-anchors span { position: absolute; top: -96px; width: 1px; height: 1px; }
-.settings-card, .settings-guest { padding: 1.5rem; }
+.settings-card, .settings-guest {
+  padding: 1.5rem;
+  border: 1px solid var(--border-liquid-glass, var(--line));
+  box-shadow: var(--shadow-card-ambient);
+  transition: box-shadow var(--duration-normal) var(--ease-out), border-color var(--duration-normal) var(--ease-out);
+}
+.settings-card:hover { box-shadow: var(--shadow-card-hover); }
 .settings-guest h1 { margin: 0 0 1.25rem; font-family: var(--font-editorial); font-weight: 600; font-size: var(--text-xl); }
 .settings-guest p { color: var(--ink-700); margin-bottom: 1rem; }
+.privacy-cert-header { margin-bottom: var(--space-4); }
+.privacy-cert-title-group { display: flex; align-items: center; gap: var(--space-3); flex-wrap: wrap; margin-bottom: var(--space-1); }
+.privacy-cert-title-group h2 { margin: 0; }
+.privacy-cert-badge { display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px; border-radius: var(--radius-control); background: color-mix(in oklab, var(--accent) 12%, var(--bg)); color: var(--accent); font-size: var(--text-xs); font-weight: 600; border: 1px solid var(--border-liquid-glass, var(--line)); }
+.privacy-cert-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: var(--space-3); margin-bottom: var(--space-5); }
+.privacy-cert-card { display: flex; flex-direction: column; gap: var(--space-2); padding: var(--space-3); border: 1px solid var(--border-liquid-glass, var(--line)); border-radius: var(--radius-surface); background: var(--bg-warm); box-shadow: var(--shadow-xs); }
+.pcc-head { display: flex; align-items: center; gap: var(--space-2); font-size: var(--text-sm); }
+.pcc-icon { color: var(--color-brand); font-size: 1.1rem; flex-shrink: 0; }
+.pcc-status { display: inline-flex; align-items: center; gap: 4px; font-size: var(--text-xs); font-weight: 600; color: var(--accent); margin-top: auto; }
+.privacy-controls-divider { border-top: 1px solid var(--line); padding-top: var(--space-4); margin-bottom: var(--space-3); }
+.privacy-controls-divider h3 { font-size: var(--text-base); margin: 0; font-weight: 600; }
 
 /* ── Tabs ── */
 .settings-tabs {

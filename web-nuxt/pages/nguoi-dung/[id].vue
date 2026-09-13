@@ -49,16 +49,19 @@
           <span :class="['profile-chip', profile.is_private ? 'is-private' : 'is-public']">
             {{ profile.is_private ? 'Hồ sơ riêng tư' : 'Hồ sơ công khai' }}
           </span>
+          <span v-if="isVerifiedContributor" class="profile-chip is-verified">
+            <IconLine name="shield-check" class="icon-inline" aria-hidden="true" /> Đã kiểm chứng thực địa
+          </span>
           <span v-if="isSelf" class="profile-chip is-self">Hồ sơ của bạn</span>
           <span v-else-if="isFollowing" class="profile-chip is-following">Đang theo dõi</span>
         </div>
         <p v-if="profile.bio" class="profile-bio">{{ profile.bio }}</p>
         <div v-if="profile.reputation" class="profile-reputation">
           <NuxtLink to="/huong-dan-thanh-vien" class="rep-level" :data-level="profile.reputation.level" title="Xem hướng dẫn cấp bậc">
-            {{ levelIcon(profile.reputation.level) }} {{ profile.reputation.level_label }}
+            <IconLine :name="levelIcon(profile.reputation.level)" class="rep-level-icon" aria-hidden="true" /> {{ profile.reputation.level_label }}
           </NuxtLink>
           <span v-for="b in profile.reputation.badges" :key="b.id" class="rep-badge" :title="b.label">
-            {{ b.icon }} {{ b.label }}
+            <IconLine :name="badgeIconName(b.id)" class="rep-badge-icon" aria-hidden="true" /> {{ b.label }}
           </span>
         </div>
         <div v-if="profile.reputation" class="xp-bar-wrap">
@@ -80,7 +83,7 @@
               <div v-for="a in cat.items" :key="a.id"
                    class="bs-card" :class="{ 'bs-earned': a.earned, 'bs-locked': !a.earned }"
                    :title="a.description">
-                <span class="bs-icon" aria-hidden="true">{{ a.icon }}</span>
+                <span class="bs-icon" aria-hidden="true"><IconLine :name="achievementIconName(a.id)" /></span>
                 <div class="bs-info">
                   <strong class="bs-label">{{ a.name }}</strong>
                   <span v-if="a.earned" class="bs-date">{{ a.unlocked_at ? timeAgo(a.unlocked_at) : 'Đã đạt' }}</span>
@@ -269,7 +272,7 @@
           </div>
           <div v-else-if="timelineItems.length" class="timeline-feed">
             <article v-for="item in timelineItems" :key="item.type + '-' + (item.data?.id || item.data?.target_id) + '-' + item.created_at" class="timeline-item">
-              <span class="tl-icon" aria-hidden="true">{{ timelineIcon(item.type) }}</span>
+              <span class="tl-icon" aria-hidden="true"><IconLine :name="timelineIconName(item.type)" /></span>
               <div class="tl-body">
                 <p class="tl-text">
                   <template v-if="item.type === 'post'">
@@ -505,6 +508,21 @@ const {
   initial, joinDate, profileCompletion, displayName, emptyHint,
 } = useUserProfilePresentation({ profile, isSelf })
 
+const isVerifiedContributor = computed(() => Boolean(profile.value && (profile.value.is_verified || (profile.value.reputation?.level && profile.value.reputation.level >= 2) || totalContributions.value >= 10)))
+
+const badgeIconMap: Record<string, string> = { first_review: 'pencil', review_master: 'award', photographer: 'camera', explorer: 'compass', popular: 'heart', quality: 'trophy', allrounder: 'award', traveler: 'compass', local: 'home', veteran: 'landmark' }
+function badgeIconName(badgeId?: string): string { return (badgeId && badgeIconMap[badgeId]) || 'award' }
+
+const achIconMap: Record<string, string> = { first_post: 'pencil', writer_10: 'file-text', reviewer_5: 'list', review_master: 'award', photographer: 'camera', explorer_5: 'compass', explorer_20: 'map', local_3: 'home', social_10: 'users', social_50: 'heart', helpful_5: 'bulb', streak_7: 'flame', streak_30: 'shield-check', veteran_6m: 'trophy', allrounder: 'award' }
+function achievementIconName(achId?: string): string { return (achId && achIconMap[achId]) || 'award' }
+
+function timelineIconName(type: string): string {
+  if (type === 'post') return 'pencil'
+  if (type === 'review') return 'star'
+  if (type === 'follow') return 'users'
+  return 'pin'
+}
+
 const {
   posts, loading, postsFetchFailed, filteredPosts,
   fetchPosts, toggleLike, toggleBookmark, deletePost,
@@ -670,24 +688,14 @@ const userProfileSchema = computed(() => {
 
 <style scoped>
 .profile-reputation { display: flex; flex-wrap: wrap; gap: .4rem; margin: .25rem 0 .75rem; }
-.rep-level {
-  display: inline-flex;
-  align-items: center;
-  min-height: 36px;
-  font-weight: var(--weight-semibold);
-  font-size: var(--text-sm);
-  padding: .2rem .65rem;
-  border-radius: 999px;
-  background: color-mix(in srgb, var(--accent) 16%, var(--bg-alt));
-  color: var(--accent-text, var(--ink));
-  text-decoration: none;
-  transition: filter .2s var(--ease-out), transform .15s var(--ease-out);
-}
+.rep-level { display: inline-flex; align-items: center; gap: var(--space-1); min-height: 44px; font-weight: var(--weight-semibold); font-size: var(--text-sm); padding: .2rem .75rem; border-radius: var(--radius-pill, 999px); background: color-mix(in srgb, var(--accent) 16%, var(--bg-alt)); color: var(--accent-text, var(--ink)); text-decoration: none; transition: filter .2s var(--ease-out), transform .15s var(--ease-out); }
 .rep-level:hover { filter: brightness(1.1); }
 .rep-level:active { transform: scale(.96); }
 .rep-level:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
 .rep-level[data-level="4"] { background: color-mix(in srgb, gold 28%, var(--bg-alt)); }
-.rep-badge { font-size: var(--text-xs); padding: .2rem .55rem; border-radius: 999px; background: var(--bg-alt); border: 1px solid var(--border); color: var(--ink-700); }
+.rep-level-icon { width: 16px; height: 16px; flex-shrink: 0; }
+.rep-badge { display: inline-flex; align-items: center; gap: 4px; font-size: var(--text-xs); min-height: 32px; padding: .2rem .55rem; border-radius: var(--radius-pill, 999px); background: var(--bg-alt); border: 1px solid var(--border); color: var(--ink-700); }
+.rep-badge-icon { width: 13px; height: 13px; flex-shrink: 0; }
 .xp-bar-wrap { display: flex; align-items: center; gap: var(--space-2); margin-top: var(--space-1); }
 .xp-bar { flex: 1; height: 6px; background: var(--line); border-radius: var(--radius-pill, 999px); overflow: hidden; }
 .xp-fill { height: 100%; background: linear-gradient(90deg, var(--color-brand), var(--accent)); border-radius: var(--radius-pill, 999px); }
@@ -753,6 +761,7 @@ const userProfileSchema = computed(() => {
 .profile-chip.is-private { border-color: color-mix(in srgb, var(--warning) 28%, var(--line)); color: var(--warning); }
 .profile-chip.is-self,
 .profile-chip.is-following { background: color-mix(in srgb, var(--color-brand) 10%, var(--card)); border-color: color-mix(in srgb, var(--color-brand) 30%, var(--line)); color: var(--color-brand); }
+.profile-chip.is-verified { background: color-mix(in srgb, var(--alluvial-gold) 12%, var(--card)); border-color: color-mix(in srgb, var(--alluvial-gold) 35%, var(--line)); color: var(--ink); gap: var(--space-1); }
 .profile-more-wrap { position: relative; }
 .btn-icon { min-width: 44px; min-height: 44px; display: inline-flex; align-items: center; justify-content: center; padding: .3rem .5rem; letter-spacing: 2px; font-weight: 700; }
 .profile-more-menu { position: absolute; right: 0; top: 100%; margin-top: var(--space-1); background: var(--card); border: 1px solid var(--line); border-radius: var(--radius-surface); box-shadow: var(--shadow-md); z-index: var(--z-dropdown); min-width: 160px; overflow: hidden; }

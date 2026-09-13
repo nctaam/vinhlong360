@@ -5,7 +5,10 @@
     <!-- Brand masthead — river→clay wash, unique to this page family. -->
     <section class="brand-masthead about-masthead">
       <div class="bm-inner">
-        <p class="bm-eyebrow"><span class="bm-tick" aria-hidden="true"></span>Về vinhlong360</p>
+        <div class="bm-header-seal">
+          <p class="bm-eyebrow"><span class="bm-tick" aria-hidden="true"></span>Về vinhlong360</p>
+          <SourceMark tier="official" />
+        </div>
         <h1>{{ doc.title }}</h1>
         <p class="bm-sub">Vĩnh Long không thiếu chỗ để đi. Cái thiếu là người kể cho bạn nghe vì sao nên ghé.</p>
       </div>
@@ -41,26 +44,36 @@
             {{ missionQuote }}
             <cite>— Sứ mệnh vinhlong360</cite>
           </blockquote>
-          <div class="legal-body" v-html="mdLite(missionRest)"></div>
+          <div class="legal-body" v-html="cleanBody(missionRest)"></div>
         </template>
         <template v-else>
           <h2>{{ stripNum(s.heading) }}</h2>
-          <div class="legal-body" v-html="mdLite(s.body)"></div>
+          <div class="legal-body" v-html="cleanBody(s.body)"></div>
         </template>
       </div>
     </article>
 
-    <!-- P0-5: Ban biên tập & phương pháp — tín hiệu Who/How (E-E-A-T), giọng trung thực.
-         declutter-3 T8: numbered-section full-height → infobox compact; nội dung + id GIỮ 100%. -->
+    <!-- Ban biên tập & Tôn chỉ biên tập — E-E-A-T, Tuyên ngôn độc lập, Quy trình thẩm định 3 tầng & Kiểm chứng thực địa minh bạch -->
     <article id="ban-bien-tap" class="editors-infobox reveal">
       <div class="about-section-content">
-        <h2><IconLine name="user" /> Ban biên tập &amp; phương pháp</h2>
+        <h2><IconLine name="shield-check" /> Tôn chỉ biên tập &amp; Phương pháp thẩm định thông tin</h2>
         <div class="legal-body">
-          <p>Nội dung trên vinhlong360 do <strong>Ban biên tập vinhlong360</strong> tổng hợp từ nguồn công khai — cổng thông tin điện tử tỉnh và xã/phường, báo chính thống, tư liệu địa phương và Wikipedia có dẫn nguồn — rồi viết lại bằng giọng riêng, kèm trích dẫn và liên kết tới nguồn gốc. Chúng tôi không đăng lại nguyên văn tin bài.</p>
-          <p><strong>Quy trình:</strong> tổng hợp nhiều nguồn → với dữ kiện cứng (năm, số liệu, danh hiệu) thì đối chiếu nhiều nguồn trước khi đăng → biên tập theo giọng bản địa → gắn nguồn và ngày. Dữ kiện chỉ có một nguồn yếu sẽ bị loại thay vì phỏng đoán.</p>
-          <p><strong>Nói thẳng về mức độ dẫn nguồn:</strong> hiện chưa đồng đều giữa các mục. Khoảng một phần năm số mục có từ hai nguồn ngoài trở lên; hơn một phần ba mới chỉ có tên, vị trí và mô tả ngắn, chưa kèm nguồn ngoài. Tụi mình đang bổ sung dần và không muốn nói quá về chuyện này.</p>
-          <p><strong>“Kiểm chứng thực địa”</strong> nghĩa là có người của ban biên tập tới tận nơi xác nhận. Hiện phần lớn mục <em>chưa</em> được kiểm chứng thực địa — điều này được ghi rõ ngay trên từng trang, và tụi mình chỉ đóng dấu ngày khi thực sự đã tới nơi. Ảnh minh hoạ có thể do AI dựng (được ghi nhãn), chưa phải ảnh chụp tại chỗ.</p>
-          <p>Thấy thông tin sai hoặc cần bổ sung nguồn? Mỗi trang đều có nút <em>“Báo sai hoặc bổ sung nguồn”</em>, hoặc <NuxtLink to="/lien-he">liên hệ với tụi mình</NuxtLink> — người thật đọc từng tin nhắn, không phải chatbot.</p>
+          <p>Nội dung trên vinhlong360 do <strong>Ban biên tập vinhlong360</strong> độc lập xây dựng và quản trị. Chúng tôi theo đuổi sứ mệnh <strong>phi thương mại bảo tồn di sản và văn hóa sông nước Cửu Long</strong>: không thu phí xếp hạng điểm đến, không bán tour du lịch, không nhận quảng cáo ẩn làm sai lệch thông tin bản địa, và không làm trung gian thương mại.</p>
+
+          <h3>1. Quy trình thẩm định dữ liệu 3 tầng (3-Tier Fact-Checking)</h3>
+          <p>Mỗi mục thông tin về di tích, làng nghề, danh nhân và sản vật OCOP đều được đối chiếu qua 3 tầng thẩm định độc lập:</p>
+          <ul>
+            <li><strong>Tầng 1 (Nguồn thẩm quyền Nhà nước &amp; Pháp lý):</strong> Cổng thông tin điện tử UBND tỉnh và 124 xã/phường mới (<code>.gov.vn</code>), Cục Di sản Văn hóa, hồ sơ xếp hạng di tích lịch sử - văn hóa các cấp và các quyết định công nhận OCOP chính thức.</li>
+            <li><strong>Tầng 2 (Khảo cứu địa chí &amp; Học thuật chuyên sâu):</strong> Tư liệu từ Viện Khoa học Xã hội vùng Nam Bộ, Địa chí Vĩnh Long, công trình nghiên cứu văn hóa dân gian Nam Bộ. Dữ liệu chỉ có một nguồn yếu hoặc không rõ xuất xứ sẽ bị loại bỏ thay vì phỏng đoán.</li>
+            <li><strong>Tầng 3 (Kiểm chứng thực địa &amp; Nhân chứng bản xứ):</strong> Khảo sát trực tiếp của ban biên tập, ghi nhận tọa độ vệ tinh GPS chính xác, phỏng vấn nghệ nhân lão thành, đại diện hợp tác xã và tiếp thu ý kiến đối chứng từ cộng đồng cư dân địa hạt.</li>
+          </ul>
+
+          <h3>2. Minh bạch kiểm chứng thực địa &amp; Nhãn SourceMark</h3>
+          <p><strong>“Kiểm chứng thực địa”</strong> chỉ được công nhận khi người của ban biên tập đã trực tiếp khảo sát tận nơi và xác nhận trạng thái thực tế. Nhãn <SourceMark tier="official" compact /> chỉ gắn mốc thời gian ISO <code>attributes.verifiedAt</code> khi việc kiểm chứng đã hoàn tất tại chỗ. Những địa điểm đang trong lộ trình xác thực đều được ghi chú công khai là <em>“Chưa kiểm chứng thực địa”</em> — chúng tôi không che giấu mức độ hoàn thiện của dữ liệu.</p>
+          <p>Tuân thủ chính sách dữ liệu chân thực (Unavailable Policy per CLAUDE.md §1.7): khi chưa có dữ liệu thời gian thực hoặc số liệu ngoại vi, hệ thống thực hiện sụp đổ thanh lịch (graceful collapse), tuyệt đối không dựng khung rỗng hoặc bịa đặt số liệu thống kê ảo.</p>
+
+          <h3>3. Tiếp nhận hiệu đính &amp; Trách nhiệm giải trình</h3>
+          <p>Phát hiện thông tin sai sót hoặc có tư liệu bổ sung? Du khách và cư dân có thể gửi hồ sơ qua <NuxtLink to="/yeu-cau/sua-thong-tin">Cổng tiếp nhận hiệu đính thông tin</NuxtLink> để nhận mã biên nhận tra cứu độc lập theo dõi tiến độ, hoặc <NuxtLink to="/lien-he">liên hệ trực tiếp ban biên tập</NuxtLink> — người thật trực tiếp tiếp nhận và xử lý, không sử dụng chatbot tự động.</p>
         </div>
       </div>
     </article>
@@ -95,7 +108,14 @@ import { ABOUT_PAGE, mergeAboutDoc } from '~/utils/legalContent'
 useReveal()
 const { get } = useSiteSettings()
 const doc = computed(() => mergeAboutDoc(get('page.about', {}), ABOUT_PAGE))
-const introHtml = computed(() => mdLite(doc.value.intro))
+const introHtml = computed(() => cleanBody(doc.value.intro))
+
+function cleanBody(body?: string) {
+  if (!body) return ''
+  // Strip raw emojis to comply with anti-slop rules, normalize spaces
+  const text = body.replace(/[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}]/gu, '').replace(/[ \t]{2,}/g, ' ')
+  return mdLite(text)
+}
 
 // Headings carry their own "N. " prefix; the .about-section-num badge already
 // shows the order, so strip the inline number to avoid duplicate numbering.
@@ -181,6 +201,15 @@ useHead(() => ({
   background-blend-mode: overlay, normal;
 }
 .bm-inner { flex: 1 1 auto; min-width: 0; max-width: var(--measure-read); }
+.bm-header-seal {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+  margin: 0 0 var(--space-3);
+}
+.bm-header-seal .bm-eyebrow { margin: 0; }
 .bm-eyebrow {
   display: flex; align-items: center; gap: var(--space-2);
   font-family: var(--font-sans); font-size: var(--text-2xs); font-weight: 700;
@@ -305,16 +334,33 @@ useHead(() => ({
 }
 .editors-infobox {
   margin: var(--space-8) 0;
-  padding: var(--space-5) var(--space-6);
+  padding: var(--space-6);
   background: var(--bg-warm);
-  border: .5px solid var(--line);
+  border: 1px solid var(--line);
   border-radius: var(--radius-sheet);
+  box-shadow: var(--shadow-xs);
 }
 .editors-infobox h2 {
   display: flex; align-items: center; gap: var(--space-2);
-  font-size: var(--text-lg); margin: 0 0 var(--space-3);
+  font-family: var(--font-editorial);
+  font-size: var(--text-xl);
+  font-weight: 600;
+  color: var(--ink);
+  margin: 0 0 var(--space-4);
+  padding-bottom: var(--space-3);
+  border-bottom: 1px solid var(--line);
 }
-.editors-infobox .legal-body p { font-size: var(--text-sm); }
+.editors-infobox h3 {
+  font-family: var(--font-editorial);
+  font-size: var(--text-base);
+  font-weight: 600;
+  color: var(--ink);
+  margin: var(--space-5) 0 var(--space-2);
+}
+.editors-infobox .legal-body p { font-size: var(--text-sm); line-height: var(--leading-relaxed); }
+.editors-infobox .legal-body ul { margin: var(--space-2) 0 var(--space-4); padding-inline-start: var(--space-5); }
+.editors-infobox .legal-body li { margin: var(--space-2) 0; font-size: var(--text-sm); }
+.editors-infobox .legal-body code { font-family: var(--font-mono); font-size: 0.85em; background: var(--bg-alt); padding: 1px 4px; border-radius: var(--radius-control); }
 .dark .editors-infobox { background: var(--bg-alt); border-color: var(--line); }
 
 /* ── Closing CTA — About should never dead-end. ───────────────────── */

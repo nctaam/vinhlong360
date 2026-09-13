@@ -145,7 +145,7 @@ function printPass() {
   font-weight: var(--weight-bold);
   text-transform: uppercase;
   letter-spacing: var(--tracking-caps);
-  color: var(--color-material-clay);
+  color: var(--mangthit-500, var(--color-material-clay));
 }
 
 .planner-pass-modal__offline-pill {
@@ -171,13 +171,30 @@ function printPass() {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 2rem;
-  height: 2rem;
+  min-width: 44px;
+  min-height: 44px;
+  width: 44px;
+  height: 44px;
   border-radius: var(--radius-pill, 999px);
   border: 1px solid var(--color-border);
   background: transparent;
   color: var(--color-text-muted);
   cursor: pointer;
+  transition: background .2s ease, color .2s ease;
+}
+
+.planner-pass-modal__close:hover {
+  background: rgba(var(--black-rgb), 0.05);
+  color: var(--color-text);
+}
+
+.dark .planner-pass-modal__close:hover {
+  background: rgba(var(--white-rgb), 0.1);
+}
+
+.planner-pass-modal__close:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 2px;
 }
 
 .planner-pass-modal__card {
@@ -227,13 +244,14 @@ function printPass() {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 1.5rem;
-  height: 1.5rem;
+  width: 1.75rem;
+  height: 1.75rem;
   border-radius: var(--radius-pill, 999px);
-  background: var(--color-material-clay);
-  color: var(--color-canvas);
+  background: var(--mangthit-500, var(--color-material-clay));
+  color: var(--white);
   font-size: var(--text-xs);
   font-weight: var(--weight-bold);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--mangthit-500) 25%, transparent);
   flex-shrink: 0;
 }
 
@@ -269,27 +287,51 @@ function printPass() {
 .planner-pass-modal__btn-print {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: var(--space-1);
+  min-height: 44px;
   padding: var(--space-2) var(--space-4);
-  border-radius: var(--radius-pill, 999px);
+  border-radius: var(--radius-control, 8px);
   border: 1px solid var(--color-border);
   background: var(--color-canvas);
   color: var(--color-text);
   font-size: var(--text-sm);
   font-weight: var(--weight-medium);
   cursor: pointer;
+  transition: background .2s ease, border-color .2s ease;
+}
+
+.planner-pass-modal__btn-print:hover {
+  background: rgba(var(--black-rgb), 0.04);
+}
+
+.dark .planner-pass-modal__btn-print:hover {
+  background: rgba(var(--white-rgb), 0.08);
+}
+
+.planner-pass-modal__btn-print:focus-visible,
+.planner-pass-modal__btn-done:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 2px;
 }
 
 .planner-pass-modal__btn-done {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
+  min-height: 44px;
   padding: var(--space-2) var(--space-4);
-  border-radius: var(--radius-pill, 999px);
+  border-radius: var(--radius-control, 8px);
   border: none;
-  background: var(--color-material-clay);
-  color: var(--color-canvas);
+  background: var(--mangthit-500, var(--color-material-clay));
+  color: var(--white);
   font-size: var(--text-sm);
   font-weight: var(--weight-medium);
   cursor: pointer;
+  transition: opacity .2s ease;
+}
+
+.planner-pass-modal__btn-done:hover {
+  opacity: 0.9;
 }
 </style>

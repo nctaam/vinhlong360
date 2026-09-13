@@ -15,6 +15,9 @@
           <span class="itin-eyebrow"><IconLine :name="areaMeta.icon" /> {{ areaMeta.name }} · {{ itinerary.duration }}</span>
           <h1>{{ itineraryTitle }}</h1>
           <p>{{ itinerary.stops?.length || 0 }} điểm dừng — hình dạng một ngày trọn vẹn, từ sương sớm mặt sông tới lúc nắng ngả màu mật ong.</p>
+          <div class="itin-water-badge-row">
+            <MekongWaterBadge :interactive="false" show-description />
+          </div>
         </div>
       </div>
 
@@ -39,6 +42,15 @@
       <ClientOnly>
         <SaveButton :entity="itinerarySaveShape" :show-label="true" />
         <ShareButton :title="itineraryTitle" :text="itinerary.summary || itinerary.description" />
+        <button
+          type="button"
+          class="btn btn-outline btn-sm btn-export-pass"
+          aria-label="Xuất thẻ hành trình bỏ túi"
+          @click="showPassModal = true"
+        >
+          <IconLine name="ticket" aria-hidden="true" />
+          <span>Thẻ bỏ túi</span>
+        </button>
         <button type="button" class="btn btn-ghost btn-sm" aria-label="Báo cáo lịch trình" @click="openReport('entity', id)"><IconLine name="flag" /> Báo cáo</button>
       </ClientOnly>
       <NuxtLink to="/tao-lich-trinh" no-prefetch class="btn btn-outline btn-sm"><IconLine name="plus" aria-hidden="true" /> Tự tạo lịch trình</NuxtLink>
@@ -79,6 +91,8 @@
       </div>
     </ClientOnly>
 
+    <PlannerRiverTransitWarning v-if="itinerary.stops?.length" :stops="itinerary.stops" />
+
     <div class="sediment-head timeline-head">
       <h2>Lịch trình chi tiết</h2>
     </div>
@@ -103,7 +117,13 @@
                 <NuxtLink v-if="stopIdentity(stop)" :to="entityPath(stopIdentity(stop))" class="stop-link">{{ stop.name || stopIdentity(stop) }}</NuxtLink>
                 <span v-else>{{ stop.name || 'Điểm dừng' }}</span>
               </h3>
-              <span v-if="stop.type" class="step-type-label">{{ typeLabel(stop.type) }}</span>
+              <div class="step-badge-row">
+                <span v-if="stop.type" class="step-type-label">{{ typeLabel(stop.type) }}</span>
+                <span v-if="isMangThitStop(stop)" class="step-mangthit-badge">
+                  <IconLine name="award" aria-hidden="true" />
+                  <span>Di sản Mang Thít</span>
+                </span>
+              </div>
               <p v-if="stop.summary" class="summary">{{ stop.summary }}</p>
               <p v-if="stop.note" class="step-note-callout"><IconLine name="bulb" class="tnc-icon" aria-hidden="true" /><span>{{ stop.note }}</span></p>
             </div>
@@ -148,6 +168,12 @@
         </ClientOnly>
       </NuxtErrorBoundary>
     </div>
+
+    <PlannerMobilePassModal
+      v-model:open="showPassModal"
+      :title="itineraryTitle"
+      :stops="modalStops"
+    />
   </section>
   <div v-else-if="pending" class="page" data-color-system="tri-region-v1">
     <SkeletonList :count="4" />
@@ -178,6 +204,9 @@
 import type { Itinerary, Entity} from '~/types'
 import { TYPE_META, AREA_META } from '~/composables/useConstants'
 import { fetchRoute, formatDistance, formatDuration, type TransportMode, type RouteResult, type RouteLeg } from '~/composables/useRouting'
+import MekongWaterBadge from '~/components/MekongWaterBadge.vue'
+import PlannerRiverTransitWarning from '~/components/planner/PlannerRiverTransitWarning.vue'
+import PlannerMobilePassModal from '~/components/planner/PlannerMobilePassModal.vue'
 
 useReveal()
 
@@ -189,6 +218,20 @@ const encodedId = encodePathId(id)
 const goBack = () => goBackOr('/lich-trinh')
 
 const { openReport } = useReport()
+const showPassModal = ref(false)
+
+const modalStops = computed(() => {
+  return (itinerary.value?.stops || []).map((s: any, i: number) => ({
+    id: String(s.id || s.entityId || s.entity_id || `stop-${i}`),
+    name: s.name || `Điểm dừng ${i + 1}`,
+    place_name: s.place_name || s.place || '',
+  }))
+})
+
+function isMangThitStop(stop: any) {
+  const text = `${stop?.name || ''} ${stop?.summary || ''} ${stop?.note || ''} ${stop?.place_name || ''}`.toLowerCase()
+  return text.includes('mang thít') || text.includes('gốm') || text.includes('thầy cai')
+}
 
 const itineraryAsyncData = useAsyncData(`itinerary-${id}`, () =>
   apiFetch<Itinerary>(`/api/itineraries/${encodedId}`)
@@ -300,7 +343,7 @@ const sunArcDots = computed(() => {
     const h = hours[i]
     const pct = h != null
       ? Math.min(98, Math.max(2, ((h - 5) / 15) * 100)) // 5:00–20:00 span → 0–100%
-      : (known.length ? (i / Math.max(1, stops.length - 1)) * 100 : 50)
+      : (i / (stops.length - 1 || 1)) * 100
     return { name: s.name || stopIdentity(s), pct }
   })
 })
@@ -578,11 +621,23 @@ if (itinerary.value && !itinerary.value.error) {
 }
 .dark .day-arc-dot { background: var(--card); box-shadow: 0 0 0 2px var(--color-brand) inset, 0 1px 3px rgba(var(--black-rgb),.4); }
 
+.itin-water-badge-row {
+  margin-top: var(--space-3);
+  display: flex;
+  align-items: center;
+}
+
 .itin-actions { display: flex; gap: var(--space-2); flex-wrap: wrap; margin: var(--space-4) 0; }
-.itin-actions .btn { transition: transform .35s var(--ease-out-expo), box-shadow .35s var(--ease-out-expo); }
+.itin-actions .btn { min-height: 44px; min-width: 44px; transition: transform .35s var(--ease-out-expo), box-shadow .35s var(--ease-out-expo); }
 .itin-actions .btn:hover { transform: translateY(-1px); box-shadow: var(--shadow-xs); }
 .itin-actions .btn:active { transform: scale(.95); transition-duration: .08s; }
 .itin-actions .btn:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
+
+.btn-export-pass {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+}
 
 /* Mode selector panel: snug card-like container */
 .transport-mode-spaced {
@@ -607,6 +662,13 @@ if (itinerary.value && !itinerary.value.error) {
 
 /* Section head introducing the timeline (WCAG 1.3.1: was h1→h3, this restores h2) */
 .timeline-head { margin: var(--space-5) 0 var(--space-2); }
+.timeline-head h2 {
+  font-family: var(--font-serif, var(--font-editorial));
+  font-size: var(--text-xl);
+  font-weight: var(--weight-bold);
+  color: var(--color-text);
+  letter-spacing: -0.01em;
+}
 .timeline { list-style: none; margin: 0; padding: 0 0 0 24px; position: relative; }
 /* Branded vertical journey spine */
 .timeline::before {
@@ -617,8 +679,8 @@ if (itinerary.value && !itinerary.value.error) {
   bottom: 6px;
   width: 3px;
   border-radius: 2px;
-  background: linear-gradient(180deg, var(--color-brand) 0%, rgba(var(--color-brand-rgb), .35) 100%);
-  opacity: .4;
+  background: linear-gradient(180deg, var(--mangthit-500, var(--color-brand)) 0%, rgba(var(--color-brand-rgb), .35) 100%);
+  opacity: .5;
 }
 /* ── Timeline chapter divider — "chapters of the day" (§3). Quiet hairline +
    small serif label, reusing the sediment-head tick recipe so it reads as
@@ -627,7 +689,7 @@ if (itinerary.value && !itinerary.value.error) {
 .timeline-chapter:first-child { margin-top: 0; }
 .tc-label {
   position: relative; display: inline-flex; align-items: center; gap: var(--space-2);
-  font-family: var(--font-editorial); font-size: var(--text-2xs); font-weight: 600;
+  font-family: var(--font-serif, var(--font-editorial)); font-size: var(--text-2xs); font-weight: 600;
   text-transform: uppercase; letter-spacing: var(--tracking-caps); color: var(--muted);
   padding-left: var(--space-3);
 }
@@ -639,6 +701,25 @@ if (itinerary.value && !itinerary.value.error) {
 .dark .tc-label::before { background: linear-gradient(180deg, var(--river-legacy-dark) 0%, var(--amber-500) 52%, var(--clay-400) 100%); }
 
 .step { position: relative; }
+.step-time {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-bottom: var(--space-1);
+}
+.step-index {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-sans);
+  font-size: var(--text-xs);
+  font-weight: var(--weight-bold);
+  background: var(--mangthit-500, var(--color-material-clay));
+  color: var(--white);
+  padding: 1px var(--space-2);
+  border-radius: var(--radius-pill, 999px);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--mangthit-500) 25%, transparent);
+}
 /* Connector dot anchoring each step to the spine */
 .step::before {
   content: "";
@@ -648,19 +729,44 @@ if (itinerary.value && !itinerary.value.error) {
   width: 9px;
   height: 9px;
   border-radius: 50%;
-  background: var(--color-brand);
-  box-shadow: 0 0 0 3px var(--bg);
+  background: var(--mangthit-500, var(--color-material-clay));
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--mangthit-500) 30%, transparent);
   z-index: 1;
 }
-.step-card { display: flex; gap: var(--space-3); align-items: flex-start; padding: var(--space-4); background: var(--card); border: .5px solid var(--line); border-radius: var(--radius-sheet); box-shadow: var(--shadow-xs); transition: transform .35s var(--ease-out-expo), box-shadow .35s var(--ease-out-expo), border-color .3s var(--ease-out); }
+.step-card {
+  display: flex;
+  gap: var(--space-3);
+  align-items: flex-start;
+  padding: var(--space-4);
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-left: 3px solid var(--mangthit-500, var(--color-material-clay));
+  border-radius: var(--radius-surface, 12px);
+  box-shadow: var(--shadow-xs);
+  transition: transform .35s var(--ease-out-expo), box-shadow .35s var(--ease-out-expo), border-color .3s var(--ease-out);
+}
 .step-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); border-color: var(--border); }
 .step-card:active { transform: scale(.97); transition-duration: .08s; }
 .step-emoji { font-size: 1.6rem; line-height: 1; transition: transform .35s var(--ease-out-expo); }
 .step-card:hover .step-emoji { transform: scale(1.1) rotate(-3deg); }
+.step-content h3 {
+  font-family: var(--font-serif, var(--font-editorial));
+  font-size: var(--text-base);
+  font-weight: var(--weight-semibold);
+  margin: 0 0 var(--space-1);
+}
 .stop-link { color: var(--ink); font-weight: var(--weight-semibold); transition: color .3s var(--ease-out); border-radius: var(--radius-control); }
 .stop-link:hover { color: var(--color-action); }
 .stop-link:active { opacity: .7; }
 .stop-link:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
+
+.step-badge-row {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin-bottom: var(--space-1);
+}
 
 /* Type label as scannable badge pill */
 .step-type-label {
@@ -668,8 +774,26 @@ if (itinerary.value && !itinerary.value.error) {
   padding: 2px var(--space-2);
   border-radius: var(--radius-pill, 999px);
   line-height: 1.4;
+  font-size: var(--text-2xs);
 }
 .dark .step-type-label { background: rgba(var(--white-rgb),.06); }
+
+.step-mangthit-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: var(--text-2xs);
+  font-weight: var(--weight-semibold);
+  color: var(--mangthit-500);
+  background: color-mix(in srgb, var(--mangthit-500) 10%, transparent);
+  border: 1px solid color-mix(in srgb, var(--mangthit-500) 25%, transparent);
+  border-radius: var(--radius-pill, 999px);
+  padding: 1px var(--space-2);
+}
+.dark .step-mangthit-badge {
+  background: color-mix(in srgb, var(--mangthit-500) 16%, transparent);
+  border-color: color-mix(in srgb, var(--mangthit-500) 35%, transparent);
+}
 
 /* Summary contrast lift in dark mode */
 .dark .step-card .summary { color: rgba(var(--white-rgb),.72); }
@@ -794,5 +918,19 @@ if (itinerary.value && !itinerary.value.error) {
   .timeline::before { background: var(--ink-tertiary); }
   .timeline-chapter { break-after: avoid; }
   .step-note-callout { background: none; border-left: 2px solid var(--ink-tertiary); }
+}
+
+:deep(.route-marker .rm-num) {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--mangthit-500, var(--color-material-clay));
+  color: var(--white);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 12px;
+  box-shadow: 0 1px 3px rgba(var(--black-rgb), 0.3);
 }
 </style>

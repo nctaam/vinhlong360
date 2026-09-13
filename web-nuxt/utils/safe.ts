@@ -206,9 +206,14 @@ export function goBackOr(fallback: string) {
   }
 }
 
-/** Emoji icon for a user reputation level (1–4). */
+/** Semantic icon name for a user reputation level (1–4: sprout, users, award, trophy). */
 export function levelIcon(level: number): string {
-  return (['', '🌱', '🤝', '🌟', '👑'][level]) || '🌱'
+  return (['', 'sprout', 'users', 'award', 'trophy'][level]) || 'sprout'
+}
+
+/** Semantic title for a user reputation honor tier (1–4). */
+export function levelTierTitle(level: number): string {
+  return (['', 'Khởi hành', 'Thực địa', 'Nòng cốt', 'Đại sứ bản địa'][level]) || 'Khởi hành'
 }
 
 /** Build a dialable tel: href, stripping dots/spaces/parens (keeps leading +). */

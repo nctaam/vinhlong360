@@ -844,6 +844,12 @@ const extraContentSections = computed(() => {
   const a = entity.value?.attributes
   if (!a) return []
   const sections: { icon: string; title: string; text: string }[] = []
+  if (a.cultural_notes && typeof a.cultural_notes === 'string')
+    sections.push({ icon: 'landmark', title: 'Khảo cứu Văn hóa Thổ nhưỡng', text: a.cultural_notes })
+  if (a.visual_narrative && typeof a.visual_narrative === 'string')
+    sections.push({ icon: 'camera', title: 'Chỉ dẫn Thị giác Thổ nhưỡng', text: a.visual_narrative })
+  if (a.waterway_access && typeof a.waterway_access === 'string')
+    sections.push({ icon: 'route', title: 'Tiếp cận Đường thủy', text: a.waterway_access })
   if (a.significance && typeof a.significance === 'string')
     sections.push({ icon: 'landmark', title: 'Ý nghĩa', text: a.significance })
   if (a.atmosphere && typeof a.atmosphere === 'string')

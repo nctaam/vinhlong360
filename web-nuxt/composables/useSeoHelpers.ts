@@ -247,7 +247,7 @@ export function buildEntityDetailSchemaGraph(options: EntityDetailSchemaOptions)
   const e = options.entity
   if (!e) return null
 
-  const ldType = TYPE_TO_SCHEMA[e.type] || 'TouristAttraction'
+  const ldType = e.attributes?.aeo_schema_type || e.attributes?.schema_type || TYPE_TO_SCHEMA[e.type] || 'TouristAttraction'
   const entityUrl = entityDetailUrl(e.id)
   const areaName = options.areaName || ''
   const typeLabel = options.typeLabel || ''
@@ -274,13 +274,21 @@ export function buildEntityDetailSchemaGraph(options: EntityDetailSchemaOptions)
   if (e.attributes?.phone) ld.telephone = e.attributes.phone
   const sameAs = [e.attributes?.website, e.quality?.source_url].filter(Boolean)
   if (sameAs.length) ld.sameAs = sameAs.length === 1 ? sameAs[0] : sameAs
-  if (e.quality?.source_url) {
+  if (Array.isArray(e.attributes?.source_citations) && e.attributes.source_citations.length) {
+    ld.citation = e.attributes.source_citations.map((c: any) => ({
+      '@type': 'CreativeWork',
+      name: c.title || c.url,
+      url: c.url,
+    }))
+  } else if (e.quality?.source_url) {
     ld.citation = {
       '@type': 'CreativeWork',
       name: e.quality?.source_title || e.quality.source_url,
       url: e.quality.source_url,
     }
   }
+  if (e.attributes?.cultural_notes) ld.disambiguatingDescription = e.attributes.cultural_notes
+  if (e.attributes?.visual_narrative) ld.abstract = e.attributes.visual_narrative
   if (e.attributes?.address) ld.address.streetAddress = e.attributes.address
   const geoCoords = normalizeCoords(e.coordinates)
   if (geoCoords) {

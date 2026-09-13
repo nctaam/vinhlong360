@@ -10,10 +10,13 @@
       <span class="planner-river-transit__icon" aria-hidden="true">
         <IconLine name="ship" />
       </span>
-      <div>
-        <h3 id="river-transit-title" class="planner-river-transit__title">
-          Lưu ý đò phà & nhịp sông nước thực địa
-        </h3>
+      <div class="planner-river-transit__meta">
+        <div class="planner-river-transit__title-row">
+          <h3 id="river-transit-title" class="planner-river-transit__title">
+            Lưu ý đò phà &amp; nhịp sông nước thực địa
+          </h3>
+          <MekongWaterBadge :interactive="false" compact />
+        </div>
         <p class="planner-river-transit__dek">
           Hành trình của bạn có chặng qua sông Tiền / Cổ Chiên hoặc các cù lao miệt vườn.
         </p>
@@ -31,42 +34,57 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
+import MekongWaterBadge from '~/components/MekongWaterBadge.vue'
 
 const props = defineProps<{
-  stops: Array<{ id: string; name: string; place_area?: string; place_name?: string; attributes?: Record<string, any> }>
+  stops: Array<{ id?: string; name?: string; place_area?: string; place_name?: string; attributes?: Record<string, any> }>
 }>()
 
 const hasRiverTransit = computed(() => {
   if (!props.stops || props.stops.length < 2) return false
   const areas = new Set(props.stops.map(s => s.place_area).filter(Boolean))
-  const hasIsland = props.stops.some(s =>
-    s.place_area === 'an-binh' ||
-    (s.name && s.name.toLowerCase().includes('cù lao')) ||
-    (s.place_name && (s.place_name.toLowerCase().includes('an bình') || s.place_name.toLowerCase().includes('cù lao')))
-  )
-  return areas.size >= 2 || hasIsland
+  const hasWaterCrossing = props.stops.some(s => {
+    const text = `${s.name || ''} ${s.place_name || ''} ${s.place_area || ''}`.toLowerCase()
+    return (
+      s.place_area === 'an-binh' ||
+      s.place_area === 'mang-thit' ||
+      text.includes('cù lao') ||
+      text.includes('an bình') ||
+      text.includes('đình khao') ||
+      text.includes('thầy cai') ||
+      text.includes('chợ lách') ||
+      text.includes('phà') ||
+      text.includes('đò')
+    )
+  })
+  return areas.size >= 2 || hasWaterCrossing
 })
 
 const transitTips = computed(() => {
   const tips: string[] = []
-  const hasAnBinh = props.stops.some(s =>
-    s.place_area === 'an-binh' ||
-    (s.place_name && s.place_name.toLowerCase().includes('an bình')) ||
-    (s.name && s.name.toLowerCase().includes('an bình'))
-  )
-  const hasMangThit = props.stops.some(s =>
-    s.place_area === 'mang-thit' ||
-    (s.place_name && s.place_name.toLowerCase().includes('mang thít')) ||
-    (s.name && s.name.toLowerCase().includes('mang thít'))
-  )
+  const hasAnBinh = props.stops.some(s => {
+    const text = `${s.name || ''} ${s.place_name || ''} ${s.place_area || ''}`.toLowerCase()
+    return s.place_area === 'an-binh' || text.includes('an bình') || text.includes('cù lao')
+  })
+  const hasDinhKhao = props.stops.some(s => {
+    const text = `${s.name || ''} ${s.place_name || ''} ${s.place_area || ''}`.toLowerCase()
+    return text.includes('đình khao') || text.includes('chợ lách') || text.includes('bến tre')
+  })
+  const hasMangThit = props.stops.some(s => {
+    const text = `${s.name || ''} ${s.place_name || ''} ${s.place_area || ''}`.toLowerCase()
+    return s.place_area === 'mang-thit' || text.includes('mang thít') || text.includes('thầy cai') || text.includes('gốm')
+  })
 
   if (hasAnBinh) {
-    tips.push('Phà An Bình hoạt động liên tục từ 4h30 đến 22h00; ban đêm sau 22h chuyển sang chuyến giãn cách hoặc đò bao.')
+    tips.push('Phà An Bình (sông Cổ Chiên): Hoạt động liên tục từ 4h30 đến 22h00; ban đêm sau 22h chuyển sang chuyến giãn cách (30–45 phút) hoặc đò bao.')
+  }
+  if (hasDinhKhao || (!hasAnBinh && !hasMangThit)) {
+    tips.push('Phà Đình Khao (nối Vĩnh Long – Chợ Lách Bến Tre trên QL57 qua sông Cổ Chiên): Vận hành 24/24 liên tục; giờ cao điểm (6h30–8h00 và 16h30–18h00) có thể ùn ứ xe ô tô, nên chủ động thời gian.')
   }
   if (hasMangThit) {
-    tips.push('Tuyến kênh Thầy Cai và các lò gốm Mang Thít thuận tiện đi thuyền vào buổi sáng khi con nước lớn.')
+    tips.push('Tuyến kênh Thầy Cai và các lò gốm Mang Thít thuận tiện đi thuyền vào buổi sáng khi con nước lớn (triều dâng); tránh giờ nước ròng cạn đáy bùn.')
   }
-  tips.push('Lưu ý con nước rằm và mùng 1 (triều cường): các tuyến đường đan ven rạch có thể ngập nhẹ vào giờ đỉnh triều.')
+  tips.push('Lưu ý nhịp triều cường sông Cổ Chiên: Con nước rằm và mùng 1 có thể gây ngập nhẹ các tuyến đường đan ven rạch cù lao vào giờ đỉnh triều.')
   tips.push('Nên chuẩn bị tiền mặt lẻ mệnh giá nhỏ để mua vé phà và qua các đò ngang dọc tuyến cù lao.')
   return tips
 })
@@ -110,8 +128,21 @@ const transitTips = computed(() => {
   background: rgba(var(--white-rgb), 0.08);
 }
 
+.planner-river-transit__meta {
+  flex: 1;
+  min-width: 0;
+}
+
+.planner-river-transit__title-row {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin-bottom: var(--space-1);
+}
+
 .planner-river-transit__title {
-  margin: 0 0 var(--space-1);
+  margin: 0;
   font-family: var(--font-editorial);
   font-size: var(--text-base);
   font-weight: var(--weight-bold);

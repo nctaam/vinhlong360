@@ -313,6 +313,46 @@ Dứt khoát chấm dứt việc gán `border-radius` bừa bãi hoặc lạm d�
   * Cấm triệt để việc chèn emoji Unicode trực tiếp (như 🚀, 🔥, 🏝️, 👍) vào thẻ ký sự cộng đồng UGC và bài viết du khách.
   * Mọi trạng thái tương tác, huy hiệu và chỉ báo danh mục bắt buộc sử dụng icon vector SVG chuẩn hóa từ hệ thống `<IconLine>`.
 
+### 6.8. Thẻ Hành Trình Bỏ Túi (Pocket Field Journal Card — `PlannerMobilePassModal.vue`)
+- **Tỷ lệ & Kích thước Sheet:** Thiết kế dạng thẻ thông hành bỏ túi tối ưu cho màn hình di động, chiều rộng tối đa `480px` (`max-width: 480px`), bo góc chuẩn `--radius-sheet` (20px), nền Bến Cloud `--alluvial-paper` (`#faf9f7`) với lớp lót mờ nhẹ (`backdrop-filter: blur(4px)`).
+- **Huy hiệu Định Danh Thực Địa:**
+  * Huy hiệu bản sắc Đất nung Mang Thít (`.planner-pass-modal__pill`): `color: var(--mangthit-500); font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em;`.
+  * Huy hiệu khả dụng ngoại tuyến (`.planner-pass-modal__offline-pill`): nền pha xanh sông nước `color-mix(in srgb, var(--river-600) 10%, transparent)`, chữ `--river-600` (`#004e74`).
+- **Dòng Chặng Lộ Trình Tuyến Tính (Linear Route Timeline):**
+  * Mỗi điểm dừng đánh số thứ tự trong vòng tròn đất nung Mang Thít (`width: 24px; height: 24px; border-radius: 9999px; background: var(--mangthit-500); color: #ffffff;`).
+  * Tên điểm đến hiển thị bằng chữ đậm mực than củi Mekong (`#181e28`), kèm địa danh xã/phường chuẩn 2 cấp.
+  * Đường kẻ đứt quãng nối giữa các chặng (`border-bottom: 1px dashed var(--color-border)`).
+- **Khối Cứu Hộ & Hạ Tầng Đường Thủy Bản Địa:**
+  * Thông tin thường trực cứu hộ cứu nạn và đầu mối phà vượt sông Cổ Chiên: *"Phà An Bình (24/7) · Hotline 0270 3822 188"*.
+- **Hành Động Công Thái Học:**
+  * Nút in / xuất file PDF bỏ túi (`.planner-pass-modal__btn-print`) và nút hoàn tất có diện tích chạm chuẩn >= 44x44px, phản hồi nhún nhẹ `scale(0.98)`.
+
+### 6.9. Niên Giám Bản Địa & Bục Vinh Danh Cộng Đồng (Monocle Gazetteer & Contributor Podium)
+- **Cứu Hộ Du Lịch 24/7 (`dir-emergency-card`):**
+  * Khối thẻ ưu tiên viền bắt sáng Liquid Glass hoặc viền nung Mang Thít, icon biểu tượng khiên bảo vệ `shield`, nút gọi khẩn cấp nổi bật `min-height: 44px;` liên kết trực tiếp `tel:` đầu số 0270.
+- **Bảng Lựa Chọn Tam Vùng & 124 Xã/Phường:**
+  * Thanh chọn nhanh 3 vùng bản địa (Vĩnh Long, Bến Tre, Trà Vinh) hiển thị số lượng xã/phường trực thuộc, điều hướng mượt mà không tải lại trang.
+- **Bục Vinh Danh Top 3 Đại Sứ Bản Xứ (`.bxh-podium`):**
+  * Thiết kế theo phong cách trang trọng của bảo tàng và ấn phẩm Monocle, phân cấp 3 bậc danh dự:
+    - Hạng 1: Đỉnh bục trung tâm, viền vàng Phù Sa Cổ Chiên (`#c99446`), biểu tượng vương miện/huy hiệu đại sứ.
+    - Hạng 2 & 3: Hai bên cân đối với sắc độ đất nung và xanh sông nước.
+  * Tên thành viên dùng font Lora nghệ thuật, điểm danh tiếng minh bạch, trích dẫn triết lý đồng hành lữ khách (không dùng hoạt ảnh game hoá rẻ tiền).
+
+### 6.10. Portfolio Tuyển Tập Di Sản & Trung Tâm Tài Khoản (Heritage Collections & Account Space)
+- **Bộ Sưu Tập Scrim Đổ Bóng Than Củi Đa Tầng:**
+  * Lớp phủ nền modal và ảnh bìa sử dụng mực than củi Mekong tự nhiên `rgba(var(--mekong-ink-rgb, 8, 26, 22), 0.6)` kết hợp độ mờ quang học `backdrop-filter: blur(16px)`.
+  * Viền bao ngoài mỗi thẻ sưu tập được dát viền bắt sáng Liquid Glass `oklch(100% 0 0 / 0.12)`.
+- **Đồng Hồ Sẵn Sàng Hồ Sơ (Account Readiness Meter):**
+  * Thước đo điểm uy tín (0-100) dạng bán nguyệt hoặc thanh đo xúc giác trang trọng, hiển thị cấp bậc gắn bó thực địa và danh mục chứng chỉ bảo mật.
+
+### 6.11. Tôn Chỉ Biên Tập & Tra Cứu Hiệu Đính Minh Bạch (Civic Charter & Case Tracking)
+- **Tuyên Ngôn Biên Tập & Cổng Giới Thiệu (`about-masthead`):**
+  * Dải chuyển màu sông Tiền sang đất nung lò gạch Mang Thít, hoa văn sóng nước Mekong tối giản dạng SVG vector.
+  * Khối Ban biên tập (`#ban-bien-tap`) công khai 100% phương pháp luận khai thác dữ liệu, tình trạng kiểm chứng thực địa và cam kết phi thương mại.
+- **Biên Nhận Tra Cứu Hiệu Đính 2 Lớp (`yeu-cau/tra-cuu.vue`):**
+  * Ô nhập Mã tra cứu công khai và Mã một lần (One-time capability key) bảo mật.
+  * Giao thức xác thực bảo mật gửi qua POST body, không lưu trên URL, thông báo lỗi trung tính nhằm vô hiệu hoá kỹ thuật đoán mã (enumeration attack).
+
 ---
 
 ## 7. Bố Cục Biên Tập & Nhịp Điệu Không Gian (Layout Principles & Macro-Rhythm)
@@ -424,3 +464,13 @@ Nhằm giữ vững danh dự và linh hồn bản địa của nền tảng, 10
 | Khối Trích Dẫn Monocle | - | `.pull-quote` | `font-family: var(--font-editorial); italic; border-left: 2px solid #c99446;` |
 | Bảng Bảo Chứng AEO | - | `.aeo-provenance-plaque` | `border: 1.5px solid #c99446; background: rgba(201,148,70,0.05);` |
 | Thẻ Nguồn Thẩm Định | - | `SourceMark` | `SourceMark: Ban biên tập vinhlong360` |
+| Thẻ Thông Hành Bỏ Túi | `surface-container-lowest` | `.planner-pass-modal__sheet` | `max-width: 480px; border-radius: 20px;` |
+| Huy Hiệu Thực Địa Thẻ | `secondary` (`#b95f38`) | `.planner-pass-modal__pill` | Font Be Vietnam Pro, bold, uppercase |
+| Vòng Đánh Số Chặng | `secondary` (`#b95f38`) | `.planner-pass-modal__step-num` | `width: 24px; height: 24px; border-radius: 9999px;` |
+| Hotline Cứu Hộ 24/7 | `error` / `terracotta` | `.dir-emergency-card` | Nền Bến Cloud, viền 1.5px Mang Thít / Phù Sa |
+| Nút Gọi Khẩn Cấp | `primary` (`#004e74`) | `.dir-emergency-call` | `min-height: 44px; display: inline-flex;` |
+| Bục Vinh Danh Top 3 | `tertiary` (`#c99446`) | `.bxh-podium .podium-1` | Viền vàng Phù Sa, số hạng font Lora |
+| Lớp Scrim Than Củi | `night-surface` | `.cover-scrim` / Modal backdrop | `rgba(24, 30, 40, 0.6); backdrop-filter: blur(16px);` |
+| Viền Bắt Sáng Thẻ Lưu | `border-liquid-glass` | `.saved-grid .saved-card` | `oklch(100% 0 0 / 0.12)` |
+| Khối Ban Biên Tập | `surface-container-low` | `.editors-infobox` | Nền `#f8f3e9`, viền gốm nung, font Lora/Be Vietnam |
+| Khung Tra Cứu Hiệu Đính | `surface-container` | `.case-lookup` | Bo góc 12px, nút tra cứu River Blue 44px |

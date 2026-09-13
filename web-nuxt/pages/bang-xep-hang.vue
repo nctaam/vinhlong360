@@ -31,6 +31,26 @@
       cta-label="Tìm hiểu quy chế tích điểm &amp; vinh danh"
     />
 
+    <!-- 4 Tiers of Honor: Bốn Cấp Bậc Danh Dự Đồng Hành -->
+    <div class="honor-tiers-strip" role="region" aria-label="Bốn cấp bậc danh dự cộng đồng">
+      <div class="honor-tier-item tier-1">
+        <span class="tier-badge"><IconLine name="sprout" aria-hidden="true" /> Khởi hành</span>
+        <span class="tier-range">0 – 19 điểm</span>
+      </div>
+      <div class="honor-tier-item tier-2">
+        <span class="tier-badge"><IconLine name="users" aria-hidden="true" /> Thực địa</span>
+        <span class="tier-range">20 – 79 điểm</span>
+      </div>
+      <div class="honor-tier-item tier-3">
+        <span class="tier-badge"><IconLine name="award" aria-hidden="true" /> Nòng cốt</span>
+        <span class="tier-range">80 – 199 điểm</span>
+      </div>
+      <div class="honor-tier-item tier-4">
+        <span class="tier-badge"><IconLine name="trophy" aria-hidden="true" /> Đại sứ bản địa</span>
+        <span class="tier-range">≥ 200 điểm</span>
+      </div>
+    </div>
+
     <div class="bxh-filters">
       <input v-model="q" type="search" enterkeyhint="search" placeholder="Tìm thành viên…" aria-label="Tìm thành viên" class="bxh-search" />
       <FilterChips :filters="periodFilters" :model-value="[period]" single-select
@@ -84,7 +104,7 @@
             <span class="podium-rank" aria-hidden="true">{{ m.rank }}</span>
             <span class="avatar podium-avatar">{{ (m.display_name || '?').charAt(0).toUpperCase() }}</span>
             <span class="podium-name">{{ m.display_name }}</span>
-            <span class="podium-level">{{ levelIcon(m.level) }} {{ m.level_label }}</span>
+            <span class="podium-level"><IconLine :name="levelIcon(m.level)" aria-hidden="true" /> {{ m.level_label }}</span>
             <span class="podium-points">{{ m.points }}<small>điểm</small></span>
             <span class="podium-quote">{{ podiumQuote(m) }}</span>
           </NuxtLink>
@@ -101,7 +121,7 @@
             <span class="bxh-main">
               <span class="bxh-name">{{ m.display_name }}</span>
               <span class="bxh-meta">
-                <span class="bxh-level">{{ levelIcon(m.level) }} {{ m.level_label }}</span>
+                <span class="bxh-level"><IconLine :name="levelIcon(m.level)" aria-hidden="true" /> {{ m.level_label }}</span>
                 <span class="bxh-sub">{{ m.reviews }} đánh giá · {{ m.posts }} bài</span>
               </span>
             </span>
@@ -235,14 +255,60 @@ useHead(() => ({
 .bxh-rank-3 { background: var(--medal-bronze); }
 .bxh-avatar { width: 44px; height: 44px; display: inline-flex; align-items: center; justify-content: center; border-radius: 50%; background: var(--color-brand); color: var(--color-on-action, var(--white)); font-weight: var(--weight-semibold); flex-shrink: 0; }
 .bxh-main { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: .1rem; }
-.bxh-name { font-weight: var(--weight-semibold); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.bxh-name { font-family: var(--font-editorial); font-weight: var(--weight-semibold); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .bxh-meta { display: flex; flex-wrap: wrap; gap: var(--space-2); font-size: var(--text-xs); color: var(--muted); }
-.bxh-level { color: var(--ink-700); }
+.bxh-level { color: var(--ink-700); display: inline-flex; align-items: center; gap: 4px; }
 .bxh-points { flex-shrink: 0; font-size: var(--text-lg); font-weight: var(--weight-bold); color: var(--color-brand); display: flex; flex-direction: column; align-items: center; line-height: 1; font-variant-numeric: tabular-nums; }
 .bxh-points small { font-size: var(--text-xs); font-weight: var(--weight-normal); color: var(--muted); }
 @media (max-width: 480px) {
   .bxh-row { padding: var(--space-3) var(--space-2); gap: var(--space-2); }
   .bxh-name { font-size: var(--text-sm); }
+}
+
+/* ── 4 Honor Tiers Strip ── */
+.honor-tiers-strip {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--space-2);
+  margin-block: var(--space-4) var(--space-4);
+  padding: var(--space-3);
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sheet);
+}
+@media (min-width: 640px) {
+  .honor-tiers-strip {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+.honor-tier-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: var(--space-2);
+  border-radius: var(--radius-control);
+  background: var(--card);
+  border: 1px solid var(--line);
+}
+.tier-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  font-size: var(--text-xs);
+  font-weight: var(--weight-bold);
+  color: var(--ink);
+}
+.tier-range {
+  font-size: var(--text-2xs);
+  color: var(--muted);
+}
+.tier-4 {
+  border-color: var(--alluvial-gold);
+  background: linear-gradient(180deg, rgba(var(--color-brand-rgb), 0.08), var(--card));
+}
+.tier-4 .tier-badge {
+  color: var(--color-brand);
 }
 
 /* ── Masthead eyebrow — "Sổ vàng cộng đồng" ─────────────────────────────────
@@ -270,11 +336,16 @@ useHead(() => ({
 .podium-link:hover { border-color: var(--color-action); transform: translateY(-2px); box-shadow: var(--shadow-sm); }
 .podium-link:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
 .podium-link:active { transform: scale(.98); transition-duration: .08s; }
-/* Huy chương giữa (rank #1) nhô cao hơn — cả desktop lẫn mobile so le */
+/* Huy chương giữa (rank #1) nhô cao hơn — viền vàng Phù Sa Cổ Chiên sắc nét */
 .podium-1 { order: 2; }
 .podium-2 { order: 1; }
 .podium-3 { order: 3; }
-.podium-1 .podium-link { padding-top: var(--space-6); background: linear-gradient(180deg, color-mix(in srgb, var(--medal-gold) 8%, var(--card)) 0%, var(--card) 60%); }
+.podium-1 .podium-link {
+  padding-top: var(--space-6);
+  border: 1.5px solid var(--alluvial-gold);
+  box-shadow: 0 4px 16px rgba(var(--color-brand-rgb), 0.12), var(--shadow-sm);
+  background: linear-gradient(180deg, color-mix(in srgb, var(--alluvial-gold) 12%, var(--card)) 0%, var(--card) 60%);
+}
 .podium-rank {
   font-family: var(--font-editorial); font-size: var(--text-2xl); font-weight: 600; line-height: 1;
   font-variant-numeric: tabular-nums; color: var(--muted);
@@ -289,8 +360,8 @@ useHead(() => ({
 .podium-3 .podium-rank { background: var(--medal-bronze); }
 .podium-avatar { width: 56px; height: 56px; font-size: var(--text-lg); }
 .podium-1 .podium-avatar { width: 68px; height: 68px; font-size: var(--text-xl); }
-.podium-name { font-weight: var(--weight-semibold); overflow-wrap: anywhere; }
-.podium-level { font-size: var(--text-xs); color: var(--ink-700); }
+.podium-name { font-family: var(--font-editorial); font-size: var(--text-base); font-weight: 600; overflow-wrap: anywhere; }
+.podium-level { font-size: var(--text-xs); color: var(--ink-700); display: inline-flex; align-items: center; gap: 4px; }
 .podium-points { font-size: var(--text-lg); font-weight: var(--weight-bold); color: var(--color-brand); line-height: 1; font-variant-numeric: tabular-nums; margin-top: var(--space-1); }
 .podium-points small { font-size: var(--text-2xs); font-weight: var(--weight-normal); color: var(--muted); margin-left: 2px; }
 /* Trích dẫn tự động — .pull-quote-lite: serif, italic, cỡ nhỏ hơn bản gốc */

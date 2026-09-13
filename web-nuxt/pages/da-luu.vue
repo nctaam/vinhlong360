@@ -79,8 +79,9 @@
         <div v-if="entitiesError && !entitiesLoading" class="saved-inline-warning" role="status">
           Không thể đồng bộ từ hệ thống, đang hiển thị dữ liệu khả dụng trên thiết bị này.
         </div>
-        <div v-if="entitiesLoading" class="saved-skeletons">
-          <div v-for="i in 4" :key="i" class="skeleton-box saved-card-skel"></div>
+        <div v-if="entitiesLoading" class="saved-quiet-loading" role="status" aria-live="polite">
+          <span class="spinner spinner-sm" aria-hidden="true"></span>
+          <span>Đang đồng bộ địa điểm đã lưu...</span>
         </div>
         <div v-else-if="filteredEntities.length" class="saved-grid">
           <SavedEntityCard v-for="item in filteredEntities" :key="item.id" :item="item">
@@ -105,21 +106,27 @@
             <div class="saved-suggestions-block">
               <span class="saved-suggestions-title">Gợi ý khám phá khởi đầu Tam giác Phù sa:</span>
               <div class="saved-suggestions-grid">
-                <NuxtLink to="/dia-diem?q=Mang+Thít" class="saved-sugg-card">
-                  <span class="sugg-badge sugg-clay">Mang Thít</span>
-                  <strong>Lò gạch gốm đỏ ven sông</strong>
+                <NuxtLink to="/dia-diem?q=Mang+Thít" class="saved-sugg-card saved-sugg-lead">
+                  <div class="sugg-top">
+                    <span class="sugg-badge sugg-clay">Mang Thít</span>
+                    <span class="sugg-terroir">Vương quốc gốm đỏ</span>
+                  </div>
+                  <strong class="sugg-lead-title">Lò gạch gốm đỏ ven sông Thầy Kay</strong>
+                  <p class="sugg-lead-desc">Quần thể di sản lò gạch thủ công nung đỏ truyền thống trải dài bên dòng sông Cổ Chiên và kinh Thầy Kay.</p>
                   <span class="sugg-sub">Di sản làng nghề · ~14km</span>
                 </NuxtLink>
-                <NuxtLink to="/dia-diem?q=An+Bình" class="saved-sugg-card">
-                  <span class="sugg-badge sugg-leaf">Long Hồ</span>
-                  <strong>Cù lao An Bình miệt vườn</strong>
-                  <span class="sugg-sub">Vườn sinh thái · 10p phà</span>
-                </NuxtLink>
-                <NuxtLink to="/dia-diem?q=Trà+Ôn" class="saved-sugg-card">
-                  <span class="sugg-badge sugg-river">Trà Ôn</span>
-                  <strong>Chợ nổi ngã ba sông Hậu</strong>
-                  <span class="sugg-sub">Giao thương sông nước · ~38km</span>
-                </NuxtLink>
+                <div class="saved-sugg-secondary">
+                  <NuxtLink to="/dia-diem?q=An+Bình" class="saved-sugg-card">
+                    <span class="sugg-badge sugg-leaf">Cù lao An Bình</span>
+                    <strong>Cù lao An Bình miệt vườn sinh thái</strong>
+                    <span class="sugg-sub">Vườn trái cây bốn mùa · 10p phà Cổ Chiên</span>
+                  </NuxtLink>
+                  <NuxtLink to="/dia-diem?q=Trà+Ôn" class="saved-sugg-card">
+                    <span class="sugg-badge sugg-river">Trà Ôn</span>
+                    <strong>Chợ nổi ngã ba sông Hậu</strong>
+                    <span class="sugg-sub">Văn hóa sông nước Cửu Long · ~38km</span>
+                  </NuxtLink>
+                </div>
               </div>
             </div>
           </div>
@@ -155,8 +162,9 @@
           <div v-if="postsError && !postsLoading" class="saved-inline-warning" role="status">
             Chưa thể tải bookmark bài viết. Bạn có thể thử đồng bộ lại.
           </div>
-          <div v-if="postsLoading" class="saved-skeletons">
-            <div v-for="i in 4" :key="i" class="skeleton-box saved-card-skel"></div>
+          <div v-if="postsLoading" class="saved-quiet-loading" role="status" aria-live="polite">
+            <span class="spinner spinner-sm" aria-hidden="true"></span>
+            <span>Đang đồng bộ bài viết đã lưu...</span>
           </div>
           <div v-else-if="filteredPosts.length" class="saved-posts-list">
             <div v-for="post in filteredPosts" :key="post.id" class="saved-post card">
@@ -208,8 +216,9 @@
           <div v-if="itinerariesError && !itinerariesLoading" class="saved-inline-warning" role="status">
             Chưa thể tải lịch trình. Bạn có thể thử đồng bộ lại.
           </div>
-          <div v-if="itinerariesLoading" class="saved-skeletons">
-            <div v-for="i in 3" :key="i" class="skeleton-box saved-card-skel"></div>
+          <div v-if="itinerariesLoading" class="saved-quiet-loading" role="status" aria-live="polite">
+            <span class="spinner spinner-sm" aria-hidden="true"></span>
+            <span>Đang đồng bộ lịch trình đã lưu...</span>
           </div>
           <div v-else-if="filteredItineraries.length" class="saved-posts-list">
             <div v-for="plan in filteredItineraries" :key="plan.id" class="saved-post card">
@@ -587,8 +596,11 @@ useHead(() => ({
   gap: .75rem; margin-bottom: 1rem;
 }
 .saved-overview-item {
-  min-height: 88px; padding: .85rem 1rem; border: 1px solid var(--line);
-  border-radius: var(--radius-sheet); background: var(--card); display: flex; flex-direction: column; justify-content: space-between;
+  min-height: 88px; padding: .85rem 1rem;
+  border: 1px solid var(--border-liquid-glass, var(--line));
+  border-radius: var(--radius-sheet); background: var(--card);
+  box-shadow: var(--shadow-card-ambient);
+  display: flex; flex-direction: column; justify-content: space-between;
 }
 .saved-overview-item span { color: var(--muted); font-size: .78rem; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; }
 .saved-overview-item strong { font-size: 1.25rem; line-height: 1.1; }
@@ -620,7 +632,7 @@ useHead(() => ({
 .saved-tab.active { color: var(--color-action); border-bottom-color: var(--color-action); font-weight: 600; }
 .saved-tab-count {
   display: inline-block; margin-left: .35rem;
-  background: var(--bg-alt); padding: 0 5px; border-radius: var(--radius-full);
+  background: var(--bg-alt); padding: 0 5px; border-radius: var(--radius-pill, 999px);
   font-size: .75rem; font-weight: 600; color: var(--muted);
 }
 .saved-tab.active .saved-tab-count { background: rgba(var(--color-action-rgb), .12); color: var(--color-action); }
@@ -634,7 +646,7 @@ useHead(() => ({
   display: inline-flex; align-items: center; justify-content: center;
   border: none; background: none;
   color: var(--muted); cursor: pointer; font-size: .95rem;
-  border-radius: var(--radius-full);
+  border-radius: var(--radius-pill, 999px);
   transition: background var(--duration-fast) var(--ease-out),
               color var(--duration-fast) var(--ease-out),
               transform var(--duration-fast) var(--ease-out);
@@ -645,7 +657,17 @@ useHead(() => ({
 
 /* Posts list */
 .saved-posts-list { display: flex; flex-direction: column; gap: .5rem; }
-.saved-post { padding: .75rem 1rem; display: flex; align-items: center; gap: .5rem; }
+.saved-post {
+  padding: .75rem 1rem; display: flex; align-items: center; gap: .5rem;
+  border: 1px solid var(--border-liquid-glass, var(--line));
+  border-radius: var(--radius-surface);
+  box-shadow: var(--shadow-sm);
+  transition: transform var(--duration-fast) var(--ease-out), box-shadow var(--duration-fast) var(--ease-out);
+}
+.saved-post:hover {
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-card-hover);
+}
 .saved-post-link {
   text-decoration: none; color: var(--ink); display: block; flex: 1; min-width: 0;
   border-radius: var(--radius-control);
@@ -662,18 +684,26 @@ useHead(() => ({
   color: var(--muted); font-size: .85rem; line-height: 1.4;
 }
 
-/* Skeletons & empty */
-.saved-skeletons { display: flex; flex-direction: column; gap: .5rem; }
-.saved-card-skel { height: 64px; border-radius: var(--radius-surface); }
+/* Quiet loading & empty */
+.saved-quiet-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  padding: var(--space-6) var(--space-4);
+  color: var(--muted);
+  font-size: var(--text-sm);
+}
 .saved-empty { color: var(--muted); font-size: .9rem; text-align: center; padding: 2rem 1rem; display: flex; flex-direction: column; align-items: center; gap: .75rem; }
 .saved-empty p { margin: 0; }
 
 .saved-empty-catalyst {
   padding: var(--space-6) var(--space-4);
   background: var(--card);
-  border: 1px dashed var(--line);
+  border: 1px solid var(--border-liquid-glass, var(--line));
   border-radius: var(--radius-sheet);
-  max-width: 680px;
+  box-shadow: var(--shadow-card-ambient);
+  max-width: 720px;
   margin: 0 auto;
 }
 .saved-catalyst-box {
@@ -689,7 +719,7 @@ useHead(() => ({
   background: var(--color-brand-surface);
   width: 48px;
   height: 48px;
-  border-radius: var(--radius-full);
+  border-radius: var(--radius-pill, 999px);
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -724,9 +754,46 @@ useHead(() => ({
 }
 .saved-suggestions-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: 1.35fr 1fr;
   gap: var(--space-3);
   width: 100%;
+  align-items: stretch;
+}
+.saved-sugg-secondary {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+.saved-sugg-lead {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  border-left: 3px solid var(--mangthit-500);
+}
+.sugg-top {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+.sugg-terroir {
+  font-size: var(--text-2xs, 10px);
+  color: var(--muted);
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: .04em;
+}
+.sugg-lead-title {
+  font-family: var(--font-editorial, Lora, serif);
+  font-size: var(--text-sm, 14px);
+  color: var(--ink);
+  line-height: 1.35;
+  margin-top: var(--space-1);
+}
+.sugg-lead-desc {
+  font-size: var(--text-xs, 12px);
+  color: var(--muted);
+  line-height: 1.4;
+  margin: var(--space-1) 0;
 }
 .saved-sugg-card {
   display: flex;
@@ -735,16 +802,19 @@ useHead(() => ({
   min-height: 44px;
   padding: var(--space-3);
   background: var(--bg-alt);
-  border: 1px solid var(--line);
+  border: 1px solid var(--border-liquid-glass, var(--line));
   border-radius: var(--radius-surface);
   text-decoration: none;
   text-align: left;
+  box-shadow: var(--shadow-xs);
   transition: transform var(--duration-fast) var(--ease-out),
-              border-color var(--duration-fast) var(--ease-out);
+              border-color var(--duration-fast) var(--ease-out),
+              box-shadow var(--duration-fast) var(--ease-out);
 }
 .saved-sugg-card:hover {
   transform: translateY(-2px);
   border-color: var(--color-action);
+  box-shadow: var(--shadow-card-hover);
 }
 .saved-sugg-card:active {
   transform: scale(.98);
@@ -767,7 +837,7 @@ useHead(() => ({
   font-size: var(--text-2xs, 10px);
   font-weight: var(--weight-bold);
   padding: 1px 6px;
-  border-radius: var(--radius-full);
+  border-radius: var(--radius-pill, 999px);
 }
 .sugg-clay { background: var(--color-brand-surface); color: var(--color-brand); }
 .sugg-leaf { background: color-mix(in srgb, var(--color-material-leaf) 14%, transparent); color: var(--color-material-leaf); }

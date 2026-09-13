@@ -235,19 +235,19 @@ useFilterUrl({ vung: areaFilter, nhip: paceFilter }, { vung: 'all', nhip: 'all' 
 // ── Day-arc strip (signature ambient device, §10) — 4 fixed time-of-day
 // marks, no per-stop data on the list page (that's the detail page's job).
 const DAY_MARKS = [
-  { key: 'dawn', icon: 'cloud-sun', glyph: '🌅', label: 'Sáng sớm', pct: 6 },
-  { key: 'noon', icon: 'sun', glyph: '☀️', label: 'Trưa', pct: 37 },
-  { key: 'afternoon', icon: 'cloud', glyph: '🌤️', label: 'Chiều', pct: 68 },
-  { key: 'dusk', icon: 'haze', glyph: '🌇', label: 'Hoàng hôn', pct: 94 },
+  { key: 'dawn', icon: 'cloud-sun', label: 'Sáng sớm', pct: 6 },
+  { key: 'noon', icon: 'sun', label: 'Trưa', pct: 37 },
+  { key: 'afternoon', icon: 'cloud', label: 'Chiều', pct: 68 },
+  { key: 'dusk', icon: 'haze', label: 'Hoàng hôn', pct: 94 },
 ]
 
 // ── Pace chips — "how much time do you have" as the first filter axis,
 // computed client-side from itinerary.duration string heuristics (no schema
 // change, per B2/additive-first).
 const PACE_DEFS = [
-  { key: 'half', icon: 'clock', glyph: '🌤️', label: 'Nửa ngày' },
-  { key: 'full', icon: 'sun', glyph: '☀️', label: 'Trọn ngày' },
-  { key: 'multi', icon: 'calendar', glyph: '🌅', label: 'Nhiều ngày' },
+  { key: 'half', icon: 'clock', label: 'Nửa ngày' },
+  { key: 'full', icon: 'sun', label: 'Trọn ngày' },
+  { key: 'multi', icon: 'calendar', label: 'Nhiều ngày' },
 ] as const
 type PaceKey = typeof PACE_DEFS[number]['key']
 

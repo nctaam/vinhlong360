@@ -29,7 +29,10 @@
         ><IconLine :name="f.icon" class="tb-filter-icon" /> {{ f.label }}</button>
       </div>
 
-      <SkeletonList v-if="loading && !items.length" :count="6" />
+      <div v-if="loading && !items.length" class="tb-quiet-loading" role="status" aria-live="polite">
+        <span class="spinner spinner-sm" aria-hidden="true"></span>
+        <span>Đang kiểm tra hộp thư thông báo...</span>
+      </div>
       <EmptyState v-else-if="fetchError && !items.length" icon-name="alert-triangle" tone="error" title="Không thể tải thông báo" message="Không kết nối được máy chủ. Kiểm tra mạng và thử lại.">
         <template #actions><button type="button" class="btn btn-outline btn-sm" @click="load">Thử lại</button></template>
       </EmptyState>
@@ -251,6 +254,7 @@ useHead(() => ({
 <style scoped>
 .tb-page { max-width: 640px; margin: 0 auto; }
 .tb-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: var(--space-4); gap: var(--space-3); }
+.tb-head .btn { min-height: 44px; display: inline-flex; align-items: center; }
 .tb-head-text { min-width: 0; }
 .tb-head h1 { margin: 0; font-family: var(--font-editorial); font-weight: 600; }
 /* Local page masthead eyebrow — small-caps dateline + hairline tick, matches
@@ -270,9 +274,27 @@ useHead(() => ({
    interactive content per the HTML spec (see EntityCard's .card-save, which
    sits alongside its NuxtLink for the same reason), so pulling the dismiss
    button out avoids invalid nesting and any native-navigation ambiguity. */
-.tb-item { position: relative; display: flex; align-items: flex-start; gap: var(--space-3); width: 100%; padding: var(--space-3); background: var(--card); border: .5px solid var(--line); border-radius: var(--radius-sheet); transition: background .2s var(--ease-out), border-color .2s var(--ease-out); }
-.tb-item:hover { background: var(--bg-alt); }
+.tb-item {
+  position: relative; display: flex; align-items: flex-start; gap: var(--space-3); width: 100%;
+  padding: var(--space-3); background: var(--card);
+  border: 1px solid var(--border-liquid-glass, var(--line));
+  border-radius: var(--radius-sheet);
+  box-shadow: var(--shadow-card-ambient);
+  transition: background .2s var(--ease-out), border-color .2s var(--ease-out), box-shadow .2s var(--ease-out);
+}
+.tb-item:hover {
+  background: var(--bg-alt);
+  box-shadow: var(--shadow-card-hover);
+}
 .tb-item.unread { border-color: var(--color-action); background: var(--color-action-surface); }
+.tb-quiet-loading {
+  display: flex; align-items: center; justify-content: center; gap: var(--space-3);
+  padding: var(--space-6) var(--space-4);
+  color: var(--ink-700); font-size: var(--text-sm);
+  background: var(--card); border: 1px solid var(--border-liquid-glass, var(--line));
+  border-radius: var(--radius-sheet);
+  box-shadow: var(--shadow-card-ambient);
+}
 /* Tri-province sediment tick — left-edge hairline echo of the site-wide
    river→amber→clay thread (same recipe as EntityCard .card-rule / PostCard
    .thread-rule), so the notification list ties into the shared system. */
@@ -283,6 +305,7 @@ useHead(() => ({
 }
 .tb-item-link {
   display: flex; align-items: flex-start; gap: var(--space-3); flex: 1; min-width: 0;
+  min-height: 44px;
   text-align: left; text-decoration: none; color: inherit; cursor: pointer;
   border-radius: var(--radius-control);
   transition: opacity var(--duration-fast) var(--ease-out);
@@ -319,7 +342,9 @@ useHead(() => ({
 .tb-filters { display: flex; gap: var(--space-2); margin-bottom: var(--space-4); overflow-x: auto; padding-bottom: var(--space-1); scrollbar-width: none; }
 .tb-filters::-webkit-scrollbar { display: none; }
 .tb-filters .chip {
-  white-space: nowrap; display: inline-flex; align-items: center; gap: .35rem;
+  min-height: 44px;
+  padding: 0 var(--space-3);
+  white-space: nowrap; display: inline-flex; align-items: center; justify-content: center; gap: .35rem;
   transition: transform var(--duration-fast) var(--ease-out), background-color var(--duration-fast), border-color var(--duration-fast);
 }
 .tb-filters .chip:active { transform: scale(.96); }
@@ -327,7 +352,8 @@ useHead(() => ({
 .tb-filter-icon { font-size: 1em; flex-shrink: 0; }
 
 /* ── Dark mode ── */
-.dark .tb-item { background: var(--bg-alt); border-color: var(--line); }
+.dark .tb-item { background: var(--bg-alt); border-color: var(--border-liquid-glass, var(--line)); }
+.dark .tb-quiet-loading { background: var(--bg-alt); border-color: var(--border-liquid-glass, var(--line)); }
 .dark .tb-item:hover { background: color-mix(in srgb, var(--bg-alt) 80%, var(--ink) 5%); }
 .dark .tb-item.unread { background: var(--color-action-surface); border-color: var(--color-action); }
 .dark .tb-item::before { background: linear-gradient(180deg, var(--river-legacy-dark) 0%, var(--amber-500) 52%, var(--clay-400) 100%); }

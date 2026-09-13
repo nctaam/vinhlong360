@@ -27,6 +27,10 @@
       <div class="itinerary-badge-row">
         <span v-if="itinerary.duration" class="itinerary-duration-badge">{{ itinerary.duration }}</span>
         <span class="itinerary-stops-badge">{{ stopCount }} điểm dừng</span>
+        <span v-if="isMangThitHeritage" class="itinerary-heritage-badge">
+          <IconLine name="shield" aria-hidden="true" />
+          <span>Di sản Mang Thít</span>
+        </span>
       </div>
       <p class="summary card-teaser">{{ itinerary.summary || itinerary.description || '' }}</p>
     </div>
@@ -78,6 +82,21 @@ const stopCount = computed(() => props.itinerary.stops?.length ?? props.itinerar
 // Dateline eyebrow echoes the Story Card pattern ({LOẠI} · {KHU VỰC}) so itinerary cards
 // read as the same "spec-tag" idiom as EntityCard, not a bespoke label.
 const dateline = computed(() => `Lịch trình · ${areaName.value}`)
+
+const isMangThitHeritage = computed(() => {
+  const area = String(props.itinerary.area || '').toLowerCase()
+  const title = String(props.itinerary.title || props.itinerary.name || '').toLowerCase()
+  const summary = String(props.itinerary.summary || props.itinerary.description || '').toLowerCase()
+  const areas = Array.isArray(props.itinerary.areas) ? props.itinerary.areas.map(String).map(s => s.toLowerCase()) : []
+  return (
+    area.includes('mang-thit') ||
+    areas.some(a => a.includes('mang-thit')) ||
+    title.includes('mang thít') ||
+    title.includes('gốm') ||
+    summary.includes('mang thít') ||
+    summary.includes('lò gốm')
+  )
+})
 </script>
 
 <style scoped>
@@ -94,6 +113,52 @@ const dateline = computed(() => `Lịch trình · ${areaName.value}`)
 }
 .dark .card-rule { background: linear-gradient(90deg, var(--river-legacy-dark) 0%, var(--amber-500) 52%, var(--clay-400) 100%); }
 .card-teaser { color: var(--muted); }
+
+.itinerary-badge-row {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin-bottom: var(--space-2);
+}
+
+.itinerary-duration-badge,
+.itinerary-stops-badge {
+  display: inline-flex;
+  align-items: center;
+  font-size: var(--text-2xs);
+  font-weight: var(--weight-medium);
+  padding: 2px var(--space-2);
+  border-radius: var(--radius-pill, 999px);
+  background: var(--bg-alt);
+  color: var(--muted);
+  border: 1px solid var(--line);
+}
+
+.itinerary-heritage-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: var(--text-2xs);
+  font-weight: var(--weight-semibold);
+  padding: 2px var(--space-2);
+  border-radius: var(--radius-pill, 999px);
+  background: color-mix(in srgb, var(--mangthit-500) 12%, transparent);
+  color: var(--mangthit-500);
+  border: 1px solid color-mix(in srgb, var(--mangthit-500) 28%, transparent);
+}
+
+.dark .itinerary-duration-badge,
+.dark .itinerary-stops-badge {
+  background: rgba(var(--white-rgb), 0.05);
+  border-color: var(--line);
+}
+
+.dark .itinerary-heritage-badge {
+  background: color-mix(in srgb, var(--mangthit-500) 18%, transparent);
+  border-color: color-mix(in srgb, var(--mangthit-500) 40%, transparent);
+}
+
 /* grain overlay — turns the flat generated-placeholder gradient into an intentional
    illustration instead of a bare gradient (anti-slop tell #1) */
 .cover-grain {

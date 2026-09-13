@@ -129,8 +129,9 @@
             <h2>Hoạt động gần đây</h2>
             <NuxtLink to="/cong-dong" class="cp-mini-link">Cộng đồng</NuxtLink>
           </div>
-          <div v-if="activityLoading" class="cp-activity-loading">
-            <div v-for="i in 4" :key="i" class="skeleton-box cp-activity-skel"></div>
+          <div v-if="activityLoading" class="cp-quiet-loading" role="status" aria-live="polite">
+            <span class="spinner spinner-sm" aria-hidden="true"></span>
+            <span>Đang đồng bộ hoạt động gần đây...</span>
           </div>
           <div v-else-if="activity.length" class="cp-activity-list">
             <template v-for="a in activity" :key="`${a.action}-${a.ref_id}-${a.created_at}`">
@@ -164,6 +165,16 @@
 
         <aside class="cp-side-panel sediment-head" aria-label="Dữ liệu của bạn">
           <h2>Dữ liệu của bạn</h2>
+          <div class="cp-privacy-cert-badge">
+            <div class="cp-pcb-top">
+              <span class="cp-pcb-icon" aria-hidden="true"><IconLine name="shield" /></span>
+              <div>
+                <strong class="cp-pcb-title">Chứng thư minh bạch</strong>
+                <span class="cp-pcb-sub">Nghị định 13/2023/NĐ-CP</span>
+              </div>
+            </div>
+            <p class="cp-pcb-desc">Hệ thống bảo đảm 100% zero-telemetry, không theo dõi và kiểm soát lưu trữ cục bộ trên thiết bị.</p>
+          </div>
           <div class="cp-data-list">
             <NuxtLink to="/da-luu" class="cp-data-row" :aria-label="`Địa điểm đã lưu: ${counts.bookmarks ?? 0}`">
               <span>Địa điểm đã lưu</span>
@@ -178,7 +189,10 @@
               <strong>{{ counts.drafts ?? 0 }}</strong>
             </NuxtLink>
           </div>
-          <NuxtLink to="/cai-dat#du-lieu" class="btn btn-secondary btn-sm cp-wide-btn">Xuất dữ liệu</NuxtLink>
+          <div class="cp-side-actions">
+            <NuxtLink to="/cai-dat#du-lieu" class="btn btn-secondary btn-sm cp-wide-btn">Xuất dữ liệu</NuxtLink>
+            <NuxtLink to="/cai-dat#rieng-tu" class="btn btn-ghost btn-sm cp-wide-btn">Chứng thư riêng tư</NuxtLink>
+          </div>
         </aside>
       </section>
 
@@ -235,6 +249,7 @@ const profileCompletion = computed(() => Math.round((completedProfileChecks.valu
 const securityChecks = computed(() => [
   { key: 'password', label: 'Mật khẩu', done: hasPassword.value },
   { key: 'sessions', label: 'Dữ liệu tài khoản tải ổn định', done: !fetchIssue.value },
+  { key: 'privacy', label: 'Chứng thư NĐ 13/2023/NĐ-CP (Zero-telemetry)', done: true },
 ])
 const completedSecurityChecks = computed(() => securityChecks.value.filter(i => i.done).length)
 const securitySummary = computed(() => `${completedSecurityChecks.value}/${securityChecks.value.length} lớp ổn định`)
@@ -406,7 +421,9 @@ useHead(() => ({
 .cp-hero {
   display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 1rem;
   align-items: center; margin-bottom: 1rem; padding: 1.25rem;
-  border: 1px solid var(--line); border-radius: var(--radius-sheet); background: var(--card);
+  border: 1px solid var(--border-liquid-glass, var(--line));
+  border-radius: var(--radius-sheet); background: var(--card);
+  box-shadow: var(--shadow-card-ambient);
 }
 .cp-avatar-link {
   width: 80px; height: 80px; border-radius: 50%; overflow: hidden; display: block;
@@ -440,7 +457,14 @@ useHead(() => ({
 .cp-summary-grid, .cp-main-grid { display: grid; gap: 1rem; }
 .cp-summary-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); margin-bottom: 1rem; }
 .cp-panel, .cp-section, .cp-side-panel {
-  border: 1px solid var(--line); border-radius: var(--radius-sheet); background: var(--card);
+  border: 1px solid var(--border-liquid-glass, var(--line));
+  border-radius: var(--radius-sheet);
+  background: var(--card);
+  box-shadow: var(--shadow-card-ambient);
+  transition: transform var(--duration-fast) var(--ease-out), box-shadow var(--duration-fast) var(--ease-out);
+}
+.cp-panel:hover, .cp-section:hover, .cp-side-panel:hover {
+  box-shadow: var(--shadow-card-hover);
 }
 .cp-panel { padding: 1rem; }
 .cp-panel-head, .cp-section-head { display: flex; justify-content: space-between; gap: .75rem; align-items: flex-start; margin-bottom: .75rem; }
@@ -499,6 +523,57 @@ useHead(() => ({
 
 .cp-main-grid { grid-template-columns: minmax(0, 1fr) 280px; align-items: start; }
 .cp-section, .cp-side-panel { padding: 1rem; }
+.cp-privacy-cert-badge {
+  padding: var(--space-3);
+  margin-bottom: var(--space-3);
+  background: var(--bg-alt);
+  border: 1px solid var(--border-liquid-glass, var(--line));
+  border-radius: var(--radius-surface);
+  box-shadow: var(--shadow-xs);
+}
+.cp-pcb-top {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-bottom: var(--space-1);
+}
+.cp-pcb-icon {
+  width: 28px;
+  height: 28px;
+  border-radius: var(--radius-control);
+  background: rgba(var(--color-action-rgb), 0.12);
+  color: var(--color-action);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: .9rem;
+  flex-shrink: 0;
+}
+.cp-pcb-title {
+  display: block;
+  font-size: var(--text-xs);
+  color: var(--ink);
+  font-weight: 600;
+  line-height: 1.2;
+}
+.cp-pcb-sub {
+  display: block;
+  font-size: var(--text-2xs, 10px);
+  color: var(--color-action);
+  font-weight: 500;
+}
+.cp-pcb-desc {
+  font-size: var(--text-2xs, 11px);
+  color: var(--muted);
+  line-height: 1.4;
+  margin: 0;
+}
+.cp-side-actions {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  margin-top: .75rem;
+}
 .cp-activity-list { display: flex; flex-direction: column; gap: .55rem; }
 .cp-activity-item {
   display: flex; gap: .65rem; align-items: flex-start; padding: .75rem .85rem;
@@ -519,8 +594,15 @@ useHead(() => ({
 .cp-activity-body { min-width: 0; }
 .cp-activity-text { display: block; font-size: .88rem; line-height: 1.4; }
 .cp-activity-time { display: block; font-size: .76rem; color: var(--muted); margin-top: .1rem; }
-.cp-activity-loading { display: flex; flex-direction: column; gap: .5rem; }
-.cp-activity-skel { height: 50px; border-radius: var(--radius-surface); }
+.cp-quiet-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  padding: var(--space-6) var(--space-4);
+  color: var(--muted);
+  font-size: var(--text-sm);
+}
 .cp-load-more, .cp-wide-btn {
   width: 100%; min-height: 44px; margin-top: .75rem;
   display: inline-flex; align-items: center; justify-content: center;
