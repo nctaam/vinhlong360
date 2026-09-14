@@ -9,7 +9,7 @@ afterEach(() => {
 })
 
 describe('Home Visual Prominence & Photo-to-Text Balance', () => {
-  it('ensures HomeNativeStories stories are visually driven with images and no text wall exceeds 200 chars', async () => {
+  it('ensures HomeNativeStories stories are visually driven with images and no text wall exceeds 150 chars', async () => {
     const wrapper = await mountSuspended(HomeNativeStories, {
       global: { stubs: { IconLine: true } },
     })
@@ -19,10 +19,10 @@ describe('Home Visual Prominence & Photo-to-Text Balance', () => {
     const images = wrapper.findAll('img.home-story-card__img')
     expect(images.length).toBeGreaterThanOrEqual(2)
 
-    // Paragraph brevity check to avoid "text desert"
+    // Paragraph brevity check to avoid text desert and ensure punchy reading
     const paragraphs = wrapper.findAll('p')
     for (const p of paragraphs) {
-      expect(p.text().length).toBeLessThan(200)
+      expect(p.text().length).toBeLessThan(150)
     }
   })
 
@@ -48,5 +48,9 @@ describe('Home Visual Prominence & Photo-to-Text Balance', () => {
 
     const mediaImgs = wrapper.findAll('.home-category-index__media-img')
     expect(mediaImgs.length).toBe(fakeGroups.primary.length)
+
+    for (const group of fakeGroups.primary) {
+      expect(group.hint.length).toBeLessThanOrEqual(100)
+    }
   })
 })

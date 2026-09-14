@@ -27,7 +27,7 @@
             <cite class="home-story-card__cite">Ký sự Điền dã · Ban biên tập VinhLong360</cite>
           </blockquote>
           <h3>Nhịp chèo trên rạch An Bình</h3>
-          <p>Xuôi dòng rạch nhỏ dưới bóng bần cổ thụ, nương theo nhịp con nước lớn ròng rẽ lối vào những vườn chôm chôm, sầu riêng chín rộ.</p>
+          <p>Xuôi dòng rạch nhỏ dưới bóng bần cổ thụ, nương theo nhịp con nước lớn ròng rẽ lối vào những vườn cây trái chín rộ.</p>
         </div>
       </NuxtLink>
 
@@ -47,7 +47,7 @@
           <span class="home-story-card__scrim" />
           <div class="home-story-card__content">
             <h3>Trăm năm giữ lửa Măng Thít</h3>
-            <p>Khói lam bảng lảng trên dòng kênh Thầy Cai, nơi những lò gạch gốm đỏ nung trấu gìn giữ kỹ nghệ tạo tác của bao đời nghệ nhân.</p>
+            <p>Khói lam bảng lảng trên kênh Thầy Cai, nơi lò gốm đỏ nung trấu gìn giữ kỹ nghệ tạo tác của bao đời nghệ nhân.</p>
           </div>
         </NuxtLink>
 
@@ -56,7 +56,7 @@
             <IconLine name="bulb" />
           </div>
           <h4>Tàng thư khảo cứu điền dã</h4>
-          <p>Ghi chép thực địa về phong thổ, con nước, nếp sống bến bờ và truyền thống ẩm thực Vĩnh Long xưa và nay.</p>
+          <p>Ghi chép thực địa về phong thổ, con nước, nếp sống bến bờ và truyền thống ẩm thực Vĩnh Long.</p>
           <NuxtLink to="/kham-pha" class="home-story-callout__action">
             Xem tuyển tập <IconLine name="arrow-right" />
           </NuxtLink>
