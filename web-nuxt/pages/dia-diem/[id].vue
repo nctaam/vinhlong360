@@ -66,6 +66,10 @@
         :entity-image-descriptors="entityImageDescriptors"
         :has-entity-images="hasEntityImages"
       />
+      <div v-if="entity.attributes?.image_author" class="dc-photo-credit" data-photo-credit>
+        <IconLine name="camera" class="dc-credit-icon" aria-hidden="true" />
+        <span>Ảnh: {{ entity.attributes.image_author }}<template v-if="entity.attributes?.image_source"> · Nguồn: {{ entity.attributes.image_source }}</template></span>
+      </div>
       <ImageDisclosure :id="heroDisclosureId" :descriptor="heroDescriptor" presentation="short" class="dc-disclosure" />
     </div>
 

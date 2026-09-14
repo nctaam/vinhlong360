@@ -79,7 +79,7 @@ describe('Image Governance & Visual Asset Suite (100% Full Coverage)', () => {
     expect(missingImages.length).toBe(0)
   })
 
-  it('verifies iconic enriched heritage entities have authentic CC provenance metadata in SQLite', () => {
+  it('verifies iconic enriched heritage entities have authentic provenance metadata in SQLite', () => {
     const enrichedIconicIds = [
       'khu-di-tich-ao-ba-om',
       'cau-my-thuan',
@@ -105,15 +105,57 @@ describe('Image Governance & Visual Asset Suite (100% Full Coverage)', () => {
       const attrs = JSON.parse(row.attributes || '{}')
       expect(attrs.image_author, `Entity ${id} must have author`).toBeDefined()
       expect(attrs.image_author.length).toBeGreaterThan(1)
-      expect(attrs.image_license, `Entity ${id} must have open license`).toBeDefined()
-      expect(attrs.image_license).toMatch(/CC|Public Domain|Creative Commons/i)
-      expect(attrs.image_source_url, `Entity ${id} must have source URL`).toBeDefined()
-      expect(attrs.image_source_url).toMatch(/^https:\/\/commons\.wikimedia\.org/i)
+      expect(attrs.image_license, `Entity ${id} must have license`).toBeDefined()
+      expect(attrs.image_license).toMatch(/CC|Public Domain|Creative Commons|Tư liệu|Báo|Cổng TTĐT/i)
+      const hasSource = Boolean(attrs.image_source || attrs.image_source_url)
+      expect(hasSource, `Entity ${id} must have image_source or image_source_url`).toBe(true)
 
       const assetPath = path.join(publicImgDir, `${id}.webp`)
       expect(fs.existsSync(assetPath)).toBe(true)
       const stat = fs.statSync(assetPath)
       expect(stat.size).toBeGreaterThan(1024) // > 1KB
+    }
+  })
+
+  it('verifies documentary journalistic photos have local WebP and authentic author/source attribution', () => {
+    const documentaryIds = [
+      'van-thanh-mieu',
+      'dinh-long-ho',
+      'chua-tien-chau-tien-chau-tu',
+      'lo-gach-mang-thit',
+      'khu-luu-niem-thu-tuong-vo-van-kiet',
+      'khu-luu-niem-tran-dai-nghia-vinh-long',
+      'chua-phat-ngoc-xa-loi',
+      'khu-di-tich-ao-ba-om',
+      'chua-ang-angkorajaborey',
+      'den-tho-bac-ho-tra-vinh',
+      'chua-hang-kompong-chray',
+      'lang-nghe-banh-trang-my-long',
+      'lang-nghe-banh-phong-son-doc',
+      'con-phung-con-ong-dao-dua',
+      'nha-tho-cai-mon',
+      'lang-nghe-det-chieu-ca-hon',
+    ]
+
+    for (const id of documentaryIds) {
+      const row = db.prepare(`SELECT id, images, attributes FROM entities WHERE id = ?`).get(id) as { id: string; images: string; attributes: string }
+      expect(row, `Entity ${id} must exist in DB`).toBeDefined()
+
+      const images = JSON.parse(row.images)
+      expect(images[0]).toBe(`/img/entities/${id}.webp`)
+
+      const attrs = JSON.parse(row.attributes || '{}')
+      expect(attrs.image_author, `Entity ${id} must have author`).toBeDefined()
+      expect(attrs.image_author.length).toBeGreaterThan(1)
+      expect(attrs.image_source, `Entity ${id} must have publication source`).toBeDefined()
+      expect(attrs.image_source.length).toBeGreaterThan(1)
+      expect(attrs.image_type).toBe('documentary')
+      expect(attrs.is_verified_photo).toBe(true)
+
+      const assetPath = path.join(publicImgDir, `${id}.webp`)
+      expect(fs.existsSync(assetPath), `WebP for ${id} must exist locally`).toBe(true)
+      const stat = fs.statSync(assetPath)
+      expect(stat.size, `WebP for ${id} must be > 1KB`).toBeGreaterThan(1024)
     }
   })
 
