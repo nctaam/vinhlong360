@@ -19,10 +19,10 @@ describe('Home Visual Prominence & Photo-to-Text Balance', () => {
     const images = wrapper.findAll('img.home-story-card__img')
     expect(images.length).toBeGreaterThanOrEqual(2)
 
-    // Paragraph brevity check to avoid text desert and ensure punchy reading
+    // Paragraph brevity check to avoid text desert and ensure punchy reading (< 120 chars)
     const paragraphs = wrapper.findAll('p')
     for (const p of paragraphs) {
-      expect(p.text().length).toBeLessThan(150)
+      expect(p.text().length).toBeLessThan(120)
     }
   })
 
@@ -50,7 +50,7 @@ describe('Home Visual Prominence & Photo-to-Text Balance', () => {
     expect(mediaImgs.length).toBe(fakeGroups.primary.length)
 
     for (const group of fakeGroups.primary) {
-      expect(group.hint.length).toBeLessThanOrEqual(100)
+      expect(group.hint.length).toBeLessThanOrEqual(80)
     }
   })
 })
