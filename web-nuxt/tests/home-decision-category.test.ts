@@ -10,4 +10,10 @@ describe('Home Decision Ledger and Category Index', () => {
     expect(homeCss).toContain('.home-category-index__primary-link:hover')
     expect(homeCss).toContain('--shadow-card-hover')
   })
+
+  it('enforces haptic active feedback and spring snap transitions on interactive ledger and category elements', () => {
+    expect(homeCss).toContain('.home-decision-ledger__link:active')
+    expect(homeCss).toContain('transform: scale(0.98)')
+    expect(homeCss).toContain('cubic-bezier(0.16, 1, 0.3, 1)')
+  })
 })
