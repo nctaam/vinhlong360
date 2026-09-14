@@ -309,15 +309,15 @@ const { f: pc } = usePageContent('su_kien')
 
 const q = ref('')
 const areaFilter = ref('all')
-const statusFilter = ref('all')
+const statusFilter = ref('upcoming')
 const view = ref('list')
 
-useFilterUrl({ vung: areaFilter, trang_thai: statusFilter }, { vung: 'all', trang_thai: 'all' })
+useFilterUrl({ vung: areaFilter, trang_thai: statusFilter }, { vung: 'all', trang_thai: 'upcoming' })
 
 const statusFilterOptions = [
-  { key: 'all', label: 'Tất cả' },
   { key: 'upcoming', label: 'Sắp diễn ra', iconName: 'calendar' },
-  { key: 'past', label: 'Đã qua', iconName: 'clipboard-list' },
+  { key: 'past', label: 'Đã qua / Lưu trữ', iconName: 'clipboard-list' },
+  { key: 'all', label: 'Tất cả' },
 ]
 
 const todayStr = new Date().toISOString().slice(0, 10)

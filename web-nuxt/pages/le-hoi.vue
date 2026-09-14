@@ -343,6 +343,7 @@ const statusFilterOptions = [
   { key: 'all', label: 'Tất cả' },
   { key: 'now', label: 'Đang diễn ra', iconName: 'flame' },
   { key: 'soon', label: 'Sắp khai mạc', iconName: 'clock' },
+  { key: 'concluded', label: 'Hẹn mùa hội 2027', iconName: 'calendar' },
 ]
 
 const activeFilterCount = computed(() => {
@@ -475,7 +476,7 @@ function hideImageError(ev: Event | string) {
 
 const todayStr = new Date().toISOString().slice(0, 10)
 
-function eventStatus(e: Entity): '' | 'now' | 'soon' {
+function eventStatus(e: Entity): '' | 'now' | 'soon' | 'concluded' {
   const attrs = e.attributes || {}
   const ds = eventStart(e)
   if (!ds) return ''
@@ -485,10 +486,15 @@ function eventStatus(e: Entity): '' | 'now' | 'soon' {
     const days = Math.round((new Date(ds + 'T00:00:00').getTime() - new Date(todayStr + 'T00:00:00').getTime()) / 86400000)
     if (days <= 14) return 'soon'
   }
+  if (todayStr > de) return 'concluded'
   return ''
 }
 
-const STATUS_LABEL: Record<string, string> = { now: 'Đang diễn ra', soon: 'Sắp khai mạc' }
+const STATUS_LABEL: Record<string, string> = {
+  now: 'Đang diễn ra',
+  soon: 'Sắp khai mạc',
+  concluded: 'Đã qua mùa 2026 · Hẹn mùa hội 2027',
+}
 
 
 
@@ -714,8 +720,13 @@ useHead(() => {
      3× (~8.4s) on first paint, then rest still like every other settled badge. */
   animation: lehoi-status-pulse 2.8s var(--ease-out-expo) 3;
 }
+.lehoi-status.status-concluded {
+  background: var(--surface-secondary);
+  color: var(--text-muted);
+}
 .dark .lehoi-status.status-soon { background: rgba(var(--accent-rgb), .22); color: var(--accent); }
 .dark .lehoi-status.status-now { background: rgba(var(--secondary-rgb), .22); color: var(--secondary); }
+.dark .lehoi-status.status-concluded { background: var(--surface-secondary); color: var(--text-muted); }
 @keyframes lehoi-status-pulse {
   0%, 100% { box-shadow: 0 0 0 0 rgba(var(--secondary-rgb), .0); }
   50% { box-shadow: 0 0 0 4px rgba(var(--secondary-rgb), .12); }
