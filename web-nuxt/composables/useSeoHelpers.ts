@@ -271,7 +271,24 @@ export function buildEntityDetailSchemaGraph(options: EntityDetailSchemaOptions)
   }
 
   const imageObject = descriptorToImageObject(options.heroDescriptor)
-  if (imageObject) ld.image = imageObject
+  if (imageObject) {
+    if (e.attributes?.is_verified_photo && e.attributes?.image_author) {
+      const author = String(e.attributes.image_author).trim()
+      const source = String(e.attributes.image_source || '').trim()
+      const credit = source ? `${author} · ${source}` : author
+      imageObject.caption = `Ảnh: ${credit}`
+      imageObject.description = `${e.name} — Ảnh tư liệu: ${credit}`
+      imageObject.creator = {
+        '@type': 'Person',
+        name: author,
+      }
+      imageObject.creditText = credit
+      imageObject.copyrightNotice = `Ảnh tư liệu báo chí: ${credit}`
+      imageObject.license = `${SITE_URL}/dieu-khoan-su-dung`
+      imageObject.acquireLicensePage = `${SITE_URL}/lien-he`
+    }
+    ld.image = imageObject
+  }
   if (e.attributes?.phone) ld.telephone = e.attributes.phone
   const sameAs = [e.attributes?.website, e.quality?.source_url].filter(Boolean)
   if (sameAs.length) ld.sameAs = sameAs.length === 1 ? sameAs[0] : sameAs

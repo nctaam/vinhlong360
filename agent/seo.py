@@ -435,6 +435,29 @@ def _is_jsonld_entity_image_descriptor(
     )
 
 
+def _enrich_image_license_fields(
+    obj: dict[str, Any],
+    attrs: dict[str, Any],
+    entity_name: str,
+) -> None:
+    if not (
+        attrs.get("is_verified_photo") is True
+        and attrs.get("image_type") == "documentary"
+        and attrs.get("image_author")
+    ):
+        return
+    author = str(attrs["image_author"]).strip()
+    source = str(attrs.get("image_source") or "").strip()
+    credit = f"{author} · {source}" if source else author
+    obj["caption"] = f"Ảnh: {credit}"
+    obj["description"] = f"{entity_name} — Ảnh tư liệu: {credit}"
+    obj["creator"] = {"@type": "Person", "name": author}
+    obj["creditText"] = credit
+    obj["copyrightNotice"] = f"Ảnh tư liệu báo chí: {credit}"
+    obj["license"] = f"{SITE}/dieu-khoan-su-dung"
+    obj["acquireLicensePage"] = f"{SITE}/lien-he"
+
+
 def _build_descriptor_image_objects(
     entity: dict[str, Any],
     attrs: dict[str, Any],
@@ -459,6 +482,7 @@ def _build_descriptor_image_objects(
             {},
             descriptor=descriptor,
         )
+        _enrich_image_license_fields(obj, attrs, entity_name)
         out.append({key: value for key, value in obj.items() if value not in (None, "", [], {})})
     return out
 
@@ -679,16 +703,36 @@ def _jsonld_event_location(ld: dict[str, Any], place: dict[str, Any] | None, coo
     ld["location"] = loc
 
 
+def _jsonld_event_dates(ld: dict[str, Any], entity: dict[str, Any], attrs: dict[str, Any]) -> None:
+    # P1-6: data thực dùng date_start/date_end (public_api) — trước chỉ đọc startDate camelCase
+    for d in (attrs.get("startDate"), attrs.get("date_start"), attrs.get("date"), entity.get("startDate")):
+        if d:
+            ld["startDate"] = d
+            break
+    for e in (attrs.get("endDate"), attrs.get("date_end"), entity.get("endDate")):
+        if e:
+            ld["endDate"] = e
+            break
+
+
+def _jsonld_event_offers(ld: dict[str, Any], entity: dict[str, Any], attrs: dict[str, Any]) -> None:
+    fee = str(attrs.get("fee") or attrs.get("price_range") or "").lower()
+    free_terms = ("miễn phí", "free", "không thu phí", "0")
+    if not fee or any(w in fee for w in free_terms):
+        ld["isAccessibleForFree"] = True
+        entity_url = ld.get("url") or f"{SITE}/dia-diem/{entity.get('id')}"
+        ld["offers"] = {
+            "@type": "Offer",
+            "price": "0",
+            "priceCurrency": "VND",
+            "availability": "https://schema.org/InStock",
+            "url": entity_url,
+        }
+
+
 def _jsonld_event(ld: dict[str, Any], entity: dict[str, Any], attrs: dict[str, Any],
                   place: dict[str, Any] | None, coordinates: Any) -> None:
-    # P1-6: data thực dùng date_start/date_end (public_api) — trước chỉ đọc startDate camelCase
-    date_value = (attrs.get("startDate") or attrs.get("date_start")
-                  or attrs.get("date") or entity.get("startDate"))
-    if date_value:
-        ld["startDate"] = date_value
-    end_value = attrs.get("endDate") or attrs.get("date_end") or entity.get("endDate")
-    if end_value:
-        ld["endDate"] = end_value
+    _jsonld_event_dates(ld, entity, attrs)
     ld["eventStatus"] = "https://schema.org/EventScheduled"
     ld["eventAttendanceMode"] = "https://schema.org/OfflineEventAttendanceMode"
     if attrs.get("organizer"):
@@ -697,6 +741,7 @@ def _jsonld_event(ld: dict[str, Any], entity: dict[str, Any], attrs: dict[str, A
     capacity = attrs.get("capacity")
     if isinstance(capacity, int) and capacity > 0:
         ld["maximumAttendeeCapacity"] = capacity
+    _jsonld_event_offers(ld, entity, attrs)
 
 
 def _jsonld_type_fields(ld: dict[str, Any], schema_type: str, entity: dict[str, Any],
