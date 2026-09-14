@@ -667,18 +667,6 @@ useHead({
 /* ═══════════════════════════════════════════════════
    HERO DISPLAY & PROTECTED CONSUMER CONTRACT
    ═══════════════════════════════════════════════════ */
-.home .hero h1 {
-  font-family: var(--font-editorial);
-  font-weight: 600;
-  font-size: clamp(2.75rem, 1.6rem + 5.6vw, 5.4rem);
-  letter-spacing: -.02em;
-  text-shadow: 0 2px 28px rgba(var(--black-rgb),.42);
-  max-width: 15ch;
-  text-wrap: balance;
-}
-.home .hero-sub { font-family: var(--font-editorial); font-size: clamp(1.08rem, 1rem + .5vw, 1.3rem); line-height: 1.5; opacity: .95; max-width: 600px; margin: var(--space-4) 0 0; text-shadow: 0 1px 8px rgba(var(--black-rgb),.22); }
-.dark .home .hero-sub { opacity: 1; font-weight: 400; }
-
 /* Premium search capsule */
 .home .hero-search {
   padding: var(--space-1);

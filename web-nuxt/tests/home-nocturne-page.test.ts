@@ -575,4 +575,11 @@ describe('homepage Existing Screen Evolution B1', () => {
     expect(community.text()).toContain('Đang được nhắc:')
     expect(community.text()).not.toContain('Trending:')
   })
+
+  it('keeps index.vue free of duplicate hero h1 and hero-sub typography styles', async () => {
+    const fs = await import('node:fs')
+    const content = fs.readFileSync('pages/index.vue', 'utf-8')
+    expect(content).not.toContain('.home .hero h1 {')
+    expect(content).not.toContain('.home .hero-sub {')
+  })
 })
