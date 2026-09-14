@@ -131,95 +131,74 @@
 
   <main class="max-w-[1360px] mx-auto px-4 sm:px-6 lg:px-8 py-8 lg:py-12 space-y-16 lg:space-y-24">
 
-    <!-- SECTION 1: PANORAMIC VISUAL HERO LEAD (65% PHOTO DOMINANCE) -->
-    <section class="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center">
-      
-      <!-- Left Column (40% width - 5 cols) -->
-      <div class="lg:col-span-5 space-y-5">
-        <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-papyrus-warm border fine-border text-[11px] font-mono text-terracotta font-semibold uppercase tracking-wider">
-          <span class="w-1.5 h-1.5 rounded-full bg-terracotta"></span>
+    <!-- SECTION 1: HERO MASTHEAD (WIDESCREEN PANORAMIC STAGE) -->
+    <section class="relative w-full aspect-[16/9] sm:aspect-[21/9] min-h-[460px] lg:min-h-[540px] rounded-3xl overflow-hidden border fine-border shadow-md group">
+      <!-- Full-Bleed Panorama Photo -->
+      <img 
+        src="https://lh3.googleusercontent.com/aida/AEtjO1WL80sNjG2wzX6KSwqtLzWLzEpdZ_nI8Pl3iIcwU5yAJQuWYSNYJ-f9wOD319iWOsM5dYNk32ljzgNKzMTzs7F0lBp72oDBlJ5N98xot_O4Q-2XYD6KM-1JiS1E8j-zr5MZWUI4RSCmmiq48EW8tdi-ORp8j-AhzZ_pbSEWJcuxGBgaUDQPs-UBiJTWqNB-Wh0h-29Zvd1tYi2LfieD7I3qJJsUWf3ZthYw7Umc7v207ZLZltjZBOcCKw8K" 
+        alt="Hoàng hôn sông Cổ Chiên và vương quốc lò gạch Măng Thít" 
+        class="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-1000 ease-out"
+      />
+      <!-- Optical Depth Gradients -->
+      <div class="absolute inset-0 bg-gradient-to-t from-charcoal-ink/95 via-charcoal-ink/35 to-transparent"></div>
+      <div class="absolute inset-0 bg-gradient-to-r from-charcoal-ink/80 via-transparent to-transparent hidden sm:block"></div>
+
+      <!-- Top Badges -->
+      <div class="absolute top-5 left-5 sm:top-6 sm:left-6 flex items-center gap-2">
+        <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full liquid-pill text-white text-[11px] font-mono font-semibold uppercase tracking-wider">
+          <span class="w-1.5 h-1.5 rounded-full bg-alluvial animate-pulse"></span>
           <span>KHẢO CỨU ĐIỀN DÃ · VĨNH LONG</span>
         </div>
+      </div>
 
-        <h1 class="font-serif text-3xl sm:text-4xl lg:text-[44px] font-bold leading-[1.18] text-charcoal-ink tracking-normal">
+      <!-- Floating Polaroid Inset (Top Right) -->
+      <div class="absolute top-5 right-5 sm:top-6 sm:right-6 hidden sm:flex items-center gap-3 p-2 rounded-xl liquid-pill border border-white/20 shadow-xl backdrop-blur-md">
+        <img 
+          src="https://lh3.googleusercontent.com/aida-public/AB6AXuCyCbgJl1axlP5oF4RerFPCHl8SG4nop0RNg6n6bIleC256VwufUy-C_3m1QSSeW43L0ksAO9c5M4ti0NoPPRL_eg9SOejqLjorWz3qlu_HIozJ9h07n9kqyLCINksMA6WLA9yLa1AwmiSp_kzjnWMC0gdFshimHvAppyTqMHEw3j6RNB1XxcQ4g3nW7j_i4hziHNg0cBt_fzbVcDqma8UK3cpTcYL5gUlpt3Ht80KJCSqlnD7Qj1WkbWpVjTKy8Brbchs01Jd20kcx" 
+          alt="Ghe tam bản sớm mai" 
+          class="w-12 h-12 rounded-lg object-cover"
+        />
+        <div class="pr-2 text-left">
+          <p class="text-[11px] font-mono text-white/90">10.254°N · 105.972°E</p>
+          <p class="text-[10px] font-sans text-alluvial">Sương sớm An Bình</p>
+        </div>
+      </div>
+
+      <!-- Floating Ethereal Glass Capsule (Bottom Left) -->
+      <div class="absolute bottom-5 left-5 right-5 sm:right-auto sm:bottom-7 sm:left-7 max-w-xl p-5 sm:p-6 rounded-2xl liquid-pill space-y-3 shadow-2xl">
+        <h1 class="font-serif text-2xl sm:text-3xl lg:text-4xl font-bold leading-tight text-white tracking-normal drop-shadow-sm">
           Đất Bãi Bồi Phù Sa & Trăm Năm Di Sản.
         </h1>
 
-        <p class="text-[15px] text-ink-muted leading-relaxed font-light">
-          Hành trình khám phá vương quốc gốm Măng Thít và miệt vườn Cù lao An Bình.
+        <p class="text-[13px] sm:text-[14px] text-white/85 leading-relaxed font-light line-clamp-2">
+          Khảo cứu gốm Măng Thít và miệt vườn An Bình.
         </p>
 
         <!-- Tactile Search Capsule -->
-        <div class="p-1.5 bg-white rounded-lg border fine-border shadow-sm flex items-center gap-2 max-w-md">
-          <div class="flex items-center gap-2 pl-3 flex-1 text-ink-muted">
-            <span class="material-symbols-outlined text-[18px]">search</span>
-            <input type="text" placeholder="Tìm cù lao, vòm lò gạch, bến đò..." class="w-full bg-transparent text-[13px] text-charcoal-ink placeholder-ink-muted focus:outline-none" />
+        <div class="p-1 bg-white/95 rounded-lg border fine-border shadow-sm flex items-center gap-2 max-w-md">
+          <div class="flex items-center gap-2 pl-2.5 flex-1 text-ink-muted">
+            <span class="material-symbols-outlined text-[16px]">search</span>
+            <input type="text" placeholder="Tìm cù lao, vòm lò gạch, bến đò..." class="w-full bg-transparent text-[12px] text-charcoal-ink placeholder-ink-muted focus:outline-none" />
           </div>
-          <button class="px-4 py-2 rounded bg-terracotta hover:bg-terracotta-dark text-white text-[13px] font-semibold transition-colors flex items-center gap-1 shadow-sm">
+          <button class="px-3.5 py-1.5 rounded bg-terracotta hover:bg-terracotta-dark text-white text-[12px] font-semibold transition-colors flex items-center gap-1 shadow-sm">
             <span>Khám phá</span>
-            <span class="material-symbols-outlined text-[15px]">arrow_forward</span>
+            <span class="material-symbols-outlined text-[14px]">arrow_forward</span>
           </button>
         </div>
 
-        <!-- Scholarly Citation Box -->
-        <blockquote class="p-3.5 rounded-lg bg-papyrus-warm border-l-4 border-terracotta text-[13px] text-charcoal-ink italic leading-snug">
-          “Dòng sông chở che ký ức của tổ tông xứ cù lao.”
-          <footer class="mt-1 text-[11px] font-sans not-italic text-terracotta font-semibold text-right">— Sơn Nam</footer>
-        </blockquote>
-
-        <!-- Archival Meta Indicators -->
-        <div class="pt-2 flex items-center justify-between text-[11px] font-mono text-ink-muted border-t fine-border">
-          <span>124 XÃ/PHƯỜNG SỐ HÓA</span>
-          <span>10.254°N · 105.972°E</span>
+        <!-- Scholarly Citation & Coords -->
+        <div class="pt-1 flex items-center justify-between text-[11px] text-white/70 font-mono border-t border-white/15">
+          <span class="italic font-serif">“Dòng sông chở che ký ức cù lao.” — Sơn Nam</span>
+          <span class="hidden sm:inline">124 XÃ/PHƯỜNG</span>
         </div>
       </div>
-
-      <!-- Right Column: Dual-Photo Composition (60% width - 7 cols) -->
-      <div class="lg:col-span-7 relative">
-        <!-- Main Panoramic 16:9 Photography -->
-        <div class="relative w-full aspect-[16/10] sm:aspect-[16/9] rounded-xl overflow-hidden border fine-border shadow-lg bg-papyrus-warm group">
-          <img 
-            src="https://lh3.googleusercontent.com/aida/AEtjO1WL80sNjG2wzX6KSwqtLzWLzEpdZ_nI8Pl3iIcwU5yAJQuWYSNYJ-f9wOD319iWOsM5dYNk32ljzgNKzMTzs7F0lBp72oDBlJ5N98xot_O4Q-2XYD6KM-1JiS1E8j-zr5MZWUI4RSCmmiq48EW8tdi-ORp8j-AhzZ_pbSEWJcuxGBgaUDQPs-UBiJTWqNB-Wh0h-29Zvd1tYi2LfieD7I3qJJsUWf3ZthYw7Umc7v207ZLZltjZBOcCKw8K" 
-            alt="Hoàng hôn vương quốc lò gạch Măng Thít và dòng Cổ Chiên" 
-            class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-          />
-          <div class="absolute inset-0 bg-gradient-to-t from-charcoal-ink/70 via-transparent to-transparent pointer-events-none"></div>
-
-          <!-- Top Badge -->
-          <div class="absolute top-4 right-4 liquid-pill px-3 py-1.5 rounded-full text-white text-[12px] font-mono flex items-center gap-2 shadow-md">
-            <span class="w-2 h-2 rounded-full bg-alluvial animate-pulse"></span>
-            <span>HỒ SƠ KHẢO SÁT: VL-MT-042</span>
-          </div>
-
-          <!-- Bottom Legend -->
-          <div class="absolute bottom-4 right-4 text-right text-white drop-shadow hidden sm:block">
-            <p class="font-serif text-lg font-bold">Vương quốc gốm đỏ Thầy Cai</p>
-            <p class="text-[12px] font-mono text-papyrus/80">Kênh Thầy Cai · Sông Cổ Chiên</p>
-          </div>
-        </div>
-
-        <!-- Floating Polaroid Inset Card -->
-        <div class="absolute -bottom-6 -left-4 sm:left-6 p-2 bg-white/95 backdrop-blur-md rounded-lg shadow-xl border fine-border max-w-[210px] sm:max-w-[240px] transform -rotate-1 hover:rotate-0 transition-transform duration-300">
-          <div class="aspect-[4/3] rounded overflow-hidden mb-2 bg-papyrus-warm">
-            <img 
-              src="https://lh3.googleusercontent.com/aida-public/AB6AXuCyCbgJl1axlP5oF4RerFPCHl8SG4nop0RNg6n6bIleC256VwufUy-C_3m1QSSeW43L0ksAO9c5M4ti0NoPPRL_eg9SOejqLjorWz3qlu_HIozJ9h07n9kqyLCINksMA6WLA9yLa1AwmiSp_kzjnWMC0gdFshimHvAppyTqMHEw3j6RNB1XxcQ4g3nW7j_i4hziHNg0cBt_fzbVcDqma8UK3cpTcYL5gUlpt3Ht80KJCSqlnD7Qj1WkbWpVjTKy8Brbchs01Jd20kcx" 
-              alt="Ghe tam bản rẽ nước sớm mai An Bình" 
-              class="w-full h-full object-cover"
-            />
-          </div>
-          <p class="text-[11px] font-bold text-charcoal-ink font-serif">Ghe tam bản rẽ nước sớm mai</p>
-          <p class="text-[10px] font-mono text-terracotta">[10.254°N 105.972°E]</p>
-        </div>
-
-      </div>
-
     </section>
 
-    <!-- SECTION 2: BỘ TỨ KHÔNG GIAN VĂN HÓA SÔNG NƯỚC (FULL-BLEED PHOTO PORTALS) -->
-    <section id="section-quadrant" class="space-y-6 pt-4">
+    <!-- SECTION 2: BỘ TỨ KHÔNG GIAN VĂN HÓA SÔNG NƯỚC (ASYMMETRIC BENTO PORTALS) -->
+    <section id="section-quadrant" class="space-y-6 pt-2">
       
       <!-- Section Header -->
-      <div class="flex flex-col md:flex-row md:items-end justify-between border-b fine-border pb-3 gap-2">
+      <div class="flex items-end justify-between border-b fine-border pb-3">
         <div>
           <div class="flex items-center gap-2 text-[11px] font-mono text-terracotta font-semibold uppercase tracking-wider mb-1">
             <span class="w-2 h-2 rounded-full bg-terracotta"></span>
@@ -229,16 +208,14 @@
             Bộ Tứ Không Gian Sông Nước
           </h2>
         </div>
-        <p class="text-[13px] text-ink-muted">
-          Bốn tiểu vùng phù sa nguyên bản dọc đôi bờ Cổ Chiên.
-        </p>
+        <span class="text-[12px] font-mono text-ink-muted hidden sm:inline">4 TIỂU VÙNG</span>
       </div>
 
-      <!-- 2x2 Full-Bleed Photo Portals (100% Visual Coverage) -->
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-6 lg:gap-8">
+      <!-- Asymmetric Bento Grid -->
+      <div class="grid grid-cols-1 md:grid-cols-12 gap-5 lg:gap-6">
         
-        <!-- Portal 1: Cu Lao An Binh -->
-        <article class="relative aspect-[16/10] sm:aspect-[3/2] rounded-2xl border fine-border overflow-hidden shadow-sm hover:shadow-xl transition-all duration-500 group cursor-pointer bg-papyrus-warm">
+        <!-- Portal 1: Cu Lao An Binh (60% width) -->
+        <article class="md:col-span-7 relative aspect-[16/10] rounded-2xl border fine-border overflow-hidden shadow-sm hover:shadow-xl transition-all duration-500 group cursor-pointer bg-papyrus-warm">
           <img 
             src="https://lh3.googleusercontent.com/aida-public/AB6AXuA2_knE4Kw8gQG7jn_seXMe4QdUXyxhz0XstEd--G0zmjQyfniwICMc4hQGfolCqb1D6mDF2wveKtQWVAS_XW5vklLw7IorYAC1cRph4MIDvZPuclBmJVcvB2t9Y2MEUyZQrM79JN8Zi-6XzINtA7TOeJk6pb7UGmD32uZVCgU-kZDkexXkRMLKb5yDMcWGqXyBQ99XNpluDveaMSG5XPVPEJy0LTmMpN2CY8wYDPSsIUj9bELF2UcDfjMsVZI5_9uXoWRyHGp-RkRW" 
             alt="Miệt Vườn Cù Lao An Bình" 
@@ -248,31 +225,25 @@
           
           <div class="absolute top-4 left-4 liquid-pill px-3 py-1 rounded-full text-white text-[11px] font-mono tracking-wider flex items-center gap-1.5">
             <span class="w-1.5 h-1.5 rounded-full bg-alluvial"></span>
-            <span>01 · MIỆT VƯỜN AN BÌNH</span>
-          </div>
-          <div class="absolute top-4 right-4 bg-black/60 backdrop-blur-md px-2.5 py-1 rounded text-[11px] font-mono text-white/90">
-            MS: VL-AB-01
+            <span>01 · AN BÌNH</span>
           </div>
 
-          <div class="absolute bottom-0 inset-x-0 p-6 flex flex-col justify-end space-y-1.5">
+          <div class="absolute bottom-0 inset-x-0 p-5 sm:p-6 flex flex-col justify-end space-y-1">
             <h3 class="font-serif text-2xl sm:text-3xl font-bold text-white drop-shadow-sm group-hover:text-alluvial transition-colors">
               Cù Lao An Bình
             </h3>
-            <p class="text-[14px] text-white/80 line-clamp-1 font-light">
-              Bốn bề sông Tiền ngọt mát, nôi cây trái trù phú.
+            <p class="text-[13px] text-white/80 line-clamp-1 font-light">
+              Bốn bề sông Tiền ngọt mát.
             </p>
             <div class="pt-2 flex items-center justify-between text-white/90 border-t border-white/20 text-[12px]">
-              <span class="font-mono text-alluvial font-semibold">BƯỞI NĂM ROI · CHÔM CHÔM</span>
-              <span class="inline-flex items-center gap-1 font-medium group-hover:translate-x-1 transition-transform">
-                
-                <span class="material-symbols-outlined text-[15px]">arrow_forward</span>
-              </span>
+              <span class="font-mono text-alluvial font-semibold">BƯỞI NĂM ROI</span>
+              <span class="material-symbols-outlined text-[15px]">arrow_forward</span>
             </div>
           </div>
         </article>
 
-        <!-- Portal 2: Mang Thit Kiln Kingdom -->
-        <article class="relative aspect-[16/10] sm:aspect-[3/2] rounded-2xl border fine-border overflow-hidden shadow-sm hover:shadow-xl transition-all duration-500 group cursor-pointer bg-papyrus-warm">
+        <!-- Portal 2: Mang Thit (40% width) -->
+        <article class="md:col-span-5 relative aspect-[4/3] sm:aspect-auto rounded-2xl border fine-border overflow-hidden shadow-sm hover:shadow-xl transition-all duration-500 group cursor-pointer bg-papyrus-warm">
           <img 
             src="https://lh3.googleusercontent.com/aida-public/AB6AXuBhfEqsVJilqU47D5EdNTOZMyLrfF5B72Lg_oFHC0S00cUACpWruAVe7L7dPZsaOLknjFYEBXp6Li8xZu82swu9RnQenyTxzzyVkPz6F48_aiGKTvq-rEz-79jQavKoMdDucSvmdQwmq1CWrODh3hm55kLnStJkNNIlIxXrQmT3coaLGgypp2IUhpqCKzmrVjfiupn2Zh1OKnEidBnfj-h4k4y2g7YiOO5bk5v2QdCjAmPqKCsgLa5DONc2Q67TchZlNpTY1HWNEjn1" 
             alt="Vương Quốc Gốm Đỏ Măng Thít" 
@@ -282,31 +253,25 @@
           
           <div class="absolute top-4 left-4 liquid-pill px-3 py-1 rounded-full text-white text-[11px] font-mono tracking-wider flex items-center gap-1.5">
             <span class="w-1.5 h-1.5 rounded-full bg-terracotta"></span>
-            <span>02 · VƯƠNG QUỐC LỬA</span>
-          </div>
-          <div class="absolute top-4 right-4 bg-black/60 backdrop-blur-md px-2.5 py-1 rounded text-[11px] font-mono text-white/90">
-            MS: VL-MT-042
+            <span>02 · MĂNG THÍT</span>
           </div>
 
-          <div class="absolute bottom-0 inset-x-0 p-6 flex flex-col justify-end space-y-1.5">
-            <h3 class="font-serif text-2xl sm:text-3xl font-bold text-white drop-shadow-sm group-hover:text-alluvial transition-colors">
+          <div class="absolute bottom-0 inset-x-0 p-5 sm:p-6 flex flex-col justify-end space-y-1">
+            <h3 class="font-serif text-2xl font-bold text-white drop-shadow-sm group-hover:text-alluvial transition-colors">
               Gốm Đỏ Măng Thít
             </h3>
-            <p class="text-[14px] text-white/80 line-clamp-1 font-light">
-              Hàng nghìn lò gạch nung trấu ven kênh Thầy Cai.
+            <p class="text-[13px] text-white/80 line-clamp-1 font-light">
+              Lò nung ven kênh Thầy Cai.
             </p>
             <div class="pt-2 flex items-center justify-between text-white/90 border-t border-white/20 text-[12px]">
-              <span class="font-mono text-alluvial font-semibold">1.500+ LÒ NUNG VÒM CỔ</span>
-              <span class="inline-flex items-center gap-1 font-medium group-hover:translate-x-1 transition-transform">
-                
-                <span class="material-symbols-outlined text-[15px]">arrow_forward</span>
-              </span>
+              <span class="font-mono text-alluvial font-semibold">1.500+ LÒ NUNG CỔ</span>
+              <span class="material-symbols-outlined text-[15px]">arrow_forward</span>
             </div>
           </div>
         </article>
 
-        <!-- Portal 3: Khmer Sacred Heritage -->
-        <article class="relative aspect-[16/10] sm:aspect-[3/2] rounded-2xl border fine-border overflow-hidden shadow-sm hover:shadow-xl transition-all duration-500 group cursor-pointer bg-papyrus-warm">
+        <!-- Portal 3: Khmer Sacred Heritage (40% width) -->
+        <article class="md:col-span-5 relative aspect-[4/3] sm:aspect-auto rounded-2xl border fine-border overflow-hidden shadow-sm hover:shadow-xl transition-all duration-500 group cursor-pointer bg-papyrus-warm">
           <img 
             src="https://lh3.googleusercontent.com/aida/AEtjO1XLyeqw9SdRCl2TB4oI8XZVessrSvyfwrVKWANytvU_gu0xt4IgrY9gbKTh5igIVPntA0CCWIK2Ex268Xiv9dEa3SsDj9zIx4NY28QURY6DTphsh8nUx4mGd_NEvnsTW6HoZWPxIzAAS075w_Z26BlYqAIlssxNP3dZqhiP7UrfkqnfWVp_ClndsA232x8d9_GVzlKhpj_cfBstjrAAf4tgmBJxIQbRR7o7VhF0KKJPjtPW1xkGg0DeyqrJ" 
             alt="Trầm Tích Khmer & Đình Miếu Cổ" 
@@ -316,31 +281,25 @@
           
           <div class="absolute top-4 left-4 liquid-pill px-3 py-1 rounded-full text-white text-[11px] font-mono tracking-wider flex items-center gap-1.5">
             <span class="w-1.5 h-1.5 rounded-full bg-alluvial"></span>
-            <span>03 · TRẦM TÍCH TÍN NGƯỠNG</span>
-          </div>
-          <div class="absolute top-4 right-4 bg-black/60 backdrop-blur-md px-2.5 py-1 rounded text-[11px] font-mono text-white/90">
-            MS: VL-KM-108
+            <span>03 · CHÙA CỔ</span>
           </div>
 
-          <div class="absolute bottom-0 inset-x-0 p-6 flex flex-col justify-end space-y-1.5">
-            <h3 class="font-serif text-2xl sm:text-3xl font-bold text-white drop-shadow-sm group-hover:text-alluvial transition-colors">
-              Chùa Cổ & Văn Thánh
+          <div class="absolute bottom-0 inset-x-0 p-5 sm:p-6 flex flex-col justify-end space-y-1">
+            <h3 class="font-serif text-2xl font-bold text-white drop-shadow-sm group-hover:text-alluvial transition-colors">
+              Chùa Cổ Âng
             </h3>
-            <p class="text-[14px] text-white/80 line-clamp-1 font-light">
-              Mái chùa cong vút rợp bóng sao dầu cổ thụ.
+            <p class="text-[13px] text-white/80 line-clamp-1 font-light">
+              Mái cong rợp bóng sao dầu.
             </p>
             <div class="pt-2 flex items-center justify-between text-white/90 border-t border-white/20 text-[12px]">
-              <span class="font-mono text-alluvial font-semibold">CHÙA CỔ ÂNG · DI TÍCH 1864</span>
-              <span class="inline-flex items-center gap-1 font-medium group-hover:translate-x-1 transition-transform">
-                
-                <span class="material-symbols-outlined text-[15px]">arrow_forward</span>
-              </span>
+              <span class="font-mono text-alluvial font-semibold">DI TÍCH 1864</span>
+              <span class="material-symbols-outlined text-[15px]">arrow_forward</span>
             </div>
           </div>
         </article>
 
-        <!-- Portal 4: River Gastronomy -->
-        <article class="relative aspect-[16/10] sm:aspect-[3/2] rounded-2xl border fine-border overflow-hidden shadow-sm hover:shadow-xl transition-all duration-500 group cursor-pointer bg-papyrus-warm">
+        <!-- Portal 4: River Gastronomy (60% width) -->
+        <article class="md:col-span-7 relative aspect-[16/10] rounded-2xl border fine-border overflow-hidden shadow-sm hover:shadow-xl transition-all duration-500 group cursor-pointer bg-papyrus-warm">
           <img 
             src="https://lh3.googleusercontent.com/aida/AEtjO1XvwiqtEJat_nltTbu6nfKC7WSCnnGZsIgSADSjRxbZYw7ilVdduSU9LkaBhEK6s1uKHXGh_MfMKtqpYppzAasq1zSYBI46Xa8AlfhNLZTDnNFWr9xNnRNAJNV5He7KyowBvVA5yaJyPKIbIQZqYBv8mi9zHdaW_BjGY-OuzufSXbkS_6xLHisy3PjHg08FziTDlnTRqBmNXwfeer8UbBtsJ1qn5Pt0TMYOAxKICS8pcImvmSJfjay4kYw" 
             alt="Hương Vị Bến Sông & Chợ Nổi" 
@@ -350,25 +309,19 @@
           
           <div class="absolute top-4 left-4 liquid-pill px-3 py-1 rounded-full text-white text-[11px] font-mono tracking-wider flex items-center gap-1.5">
             <span class="w-1.5 h-1.5 rounded-full bg-terracotta"></span>
-            <span>04 · THỦY VỊ DÂN DÃ</span>
-          </div>
-          <div class="absolute top-4 right-4 bg-black/60 backdrop-blur-md px-2.5 py-1 rounded text-[11px] font-mono text-white/90">
-            MS: VL-AM-04
+            <span>04 · THỦY VỊ</span>
           </div>
 
-          <div class="absolute bottom-0 inset-x-0 p-6 flex flex-col justify-end space-y-1.5">
+          <div class="absolute bottom-0 inset-x-0 p-5 sm:p-6 flex flex-col justify-end space-y-1">
             <h3 class="font-serif text-2xl sm:text-3xl font-bold text-white drop-shadow-sm group-hover:text-alluvial transition-colors">
               Hương Vị Bến Sông
             </h3>
-            <p class="text-[14px] text-white/80 line-clamp-1 font-light">
-              Cá tai tượng chiên xù cuốn bánh tráng rau rừng.
+            <p class="text-[13px] text-white/80 line-clamp-1 font-light">
+              Cá tai tượng cuốn rau rừng.
             </p>
             <div class="pt-2 flex items-center justify-between text-white/90 border-t border-white/20 text-[12px]">
-              <span class="font-mono text-alluvial font-semibold">CHỢ NỔI · CAM SÀNH TAM BÌNH</span>
-              <span class="inline-flex items-center gap-1 font-medium group-hover:translate-x-1 transition-transform">
-                
-                <span class="material-symbols-outlined text-[15px]">arrow_forward</span>
-              </span>
+              <span class="font-mono text-alluvial font-semibold">CHỢ NỔI TRÀ ÔN</span>
+              <span class="material-symbols-outlined text-[15px]">arrow_forward</span>
             </div>
           </div>
         </article>
@@ -377,8 +330,8 @@
 
     </section>
 
-    <!-- SECTION 3: KÝ SỰ PHÙ SA THỰC ĐỊA (100% PHOTO-ESSAY SPREAD) -->
-    <section id="section-chronicles" class="space-y-6 pt-4">
+    <!-- SECTION 3: KÝ SỰ PHÙ SA THỰC ĐỊA (3-COLUMN VISUAL TRIPTYCH) -->
+    <section id="section-chronicles" class="space-y-6 pt-2">
       
       <!-- Section Header -->
       <div class="border-b fine-border pb-3 flex items-center justify-between">
@@ -391,88 +344,89 @@
             Ký Sự Phù Sa Thực Địa
           </h2>
         </div>
-        <span class="text-[12px] font-mono text-ink-muted">3 PHÓNG SỰ</span>
+        <span class="text-[12px] font-mono text-ink-muted hidden sm:inline">3 PHÓNG SỰ</span>
       </div>
 
-      <div class="space-y-6">
+      <!-- 3-Column Visual Triptych Grid -->
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
 
         <!-- Chronicle 1 -->
-        <article class="bg-white rounded-2xl border fine-border p-5 shadow-sm hover:shadow-md transition-shadow">
-          <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center">
-            <div class="lg:col-span-5 space-y-2">
-              <span class="px-2 py-0.5 rounded bg-papyrus-warm text-terracotta font-mono font-bold text-[11px]">KÝ SỰ 01 · AN BÌNH</span>
-              <h3 class="font-serif text-xl sm:text-2xl font-bold text-charcoal-ink leading-snug">
-                Nhịp chèo rạch sương sớm An Bình
-              </h3>
-              <p class="text-[14px] text-charcoal-ink leading-relaxed font-light">
-                Mái dầm lão nông Bảy Triều luồn lách qua rạch dừa nước nương theo con nước lớn ròng.
-              </p>
-            </div>
-            <div class="lg:col-span-7">
-              <div class="relative w-full aspect-[16/10] rounded-xl overflow-hidden border fine-border bg-papyrus-warm group">
-                <img 
-                  src="https://lh3.googleusercontent.com/aida-public/AB6AXuAksvm7eLY9nKwLy2SSahIrs5nx1M54PH23ltt0oyD-IyfRV9Rmi8Axj5jcnW-N1TEukfTJfWJdNCepOLE84NaUvTU_emmW1MYevnK5_3vj2zm6XsYLn67YfY71tKTLVXX-wBfmsm8p6ZGTuKx4Q9RoRSIHRRgE_8PPp5N0x_pfoo99Inb_qvFbdomoofUI5f0fbT46p3ll_oO1-80jYnlLWlFRYhlahwE1V09cNpgiKjoRf9kYjddXKBLaoaemzExkn7uBxDkU-Bo1" 
-                  alt="Ghe tam bản luồn lách rạch dừa nước sương sớm" 
-                  class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
-                />
-                <div class="absolute bottom-0 inset-x-0 p-2.5 bg-gradient-to-t from-charcoal-ink/80 to-transparent">
-                  <p class="text-[11px] font-mono text-white">Ghe tam bản An Bình · 10°16'44"N 105°58'31"E</p>
-                </div>
-              </div>
+        <article class="relative aspect-[3/4] rounded-2xl overflow-hidden border fine-border shadow-sm hover:shadow-xl transition-all duration-500 group cursor-pointer bg-papyrus-warm">
+          <img 
+            src="https://lh3.googleusercontent.com/aida-public/AB6AXuAksvm7eLY9nKwLy2SSahIrs5nx1M54PH23ltt0oyD-IyfRV9Rmi8Axj5jcnW-N1TEukfTJfWJdNCepOLE84NaUvTU_emmW1MYevnK5_3vj2zm6XsYLn67YfY71tKTLVXX-wBfmsm8p6ZGTuKx4Q9RoRSIHRRgE_8PPp5N0x_pfoo99Inb_qvFbdomoofUI5f0fbT46p3ll_oO1-80jYnlLWlFRYhlahwE1V09cNpgiKjoRf9kYjddXKBLaoaemzExkn7uBxDkU-Bo1" 
+            alt="Ghe tam bản luồn lách rạch dừa nước sương sớm" 
+            class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out"
+          />
+          <div class="absolute inset-0 bg-gradient-to-t from-charcoal-ink/95 via-charcoal-ink/35 to-transparent"></div>
+          
+          <div class="absolute top-4 left-4 liquid-pill px-3 py-1 rounded-full text-white text-[11px] font-mono tracking-wider">
+            KÝ SỰ 01
+          </div>
+
+          <div class="absolute bottom-0 inset-x-0 p-5 flex flex-col justify-end space-y-1">
+            <h3 class="font-serif text-xl font-bold text-white drop-shadow-sm group-hover:text-alluvial transition-colors">
+              Rạch An Bình
+            </h3>
+            <p class="text-[13px] text-white/80 line-clamp-1 font-light">
+              Mái dầm nương con nước lớn ròng.
+            </p>
+            <div class="pt-1.5 text-alluvial text-[11px] font-mono border-t border-white/20 flex items-center justify-between">
+              <span>AN BÌNH</span>
+              <span class="material-symbols-outlined text-[15px]">arrow_forward</span>
             </div>
           </div>
         </article>
 
         <!-- Chronicle 2 -->
-        <article class="bg-white rounded-2xl border fine-border p-5 shadow-sm hover:shadow-md transition-shadow">
-          <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center">
-            <div class="lg:col-span-5 space-y-2">
-              <span class="px-2 py-0.5 rounded bg-papyrus-warm text-terracotta font-mono font-bold text-[11px]">KÝ SỰ 02 · MĂNG THÍT</span>
-              <h3 class="font-serif text-xl sm:text-2xl font-bold text-charcoal-ink leading-snug">
-                Trăm năm giữ lửa gốm đỏ Cổ Chiên
-              </h3>
-              <p class="text-[14px] text-charcoal-ink leading-relaxed font-light">
-                Đất sa bồi ủ men đỏ mộc qua 28 ngày đêm rực lửa trấu trong lòng vòm nung cổ.
-              </p>
-            </div>
-            <div class="lg:col-span-7">
-              <div class="relative w-full aspect-[16/10] rounded-xl overflow-hidden border fine-border bg-papyrus-warm group">
-                <img 
-                  src="https://lh3.googleusercontent.com/aida-public/AB6AXuCglvYEavIVZHtzd-21aRVmeEvpeI_jsGIjgA0o58okp4PAcQ3KgL5NpF0p_vDqMX7A2whmz9x8fjhdHA4yx3YoYVR5roD158jXqEds7wm_SHx3Rc0WHd04CrfISjKmZ3NQSwI6YWFolLMNmu_MTjrbeRy_wgkXSc_eign-nya-JOPGY2Oi07j4hSrluVvy5bLsckt8V2506uMU4qhskHBeNG4z_G8-sQRsRiQBO-3I0zjQlso0LBw4gE85-cWtCRddEG_KAnkwR8Gg" 
-                  alt="Vòm lò nung gốm đỏ rực lửa Măng Thít" 
-                  class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
-                />
-                <div class="absolute bottom-0 inset-x-0 p-2.5 bg-gradient-to-t from-charcoal-ink/80 to-transparent">
-                  <p class="text-[11px] font-mono text-white">Vòm lò rực lửa Măng Thít · 1.100°C · 28 ngày</p>
-                </div>
-              </div>
+        <article class="relative aspect-[3/4] rounded-2xl overflow-hidden border fine-border shadow-sm hover:shadow-xl transition-all duration-500 group cursor-pointer bg-papyrus-warm">
+          <img 
+            src="https://lh3.googleusercontent.com/aida-public/AB6AXuCglvYEavIVZHtzd-21aRVmeEvpeI_jsGIjgA0o58okp4PAcQ3KgL5NpF0p_vDqMX7A2whmz9x8fjhdHA4yx3YoYVR5roD158jXqEds7wm_SHx3Rc0WHd04CrfISjKmZ3NQSwI6YWFolLMNmu_MTjrbeRy_wgkXSc_eign-nya-JOPGY2Oi07j4hSrluVvy5bLsckt8V2506uMU4qhskHBeNG4z_G8-sQRsRiQBO-3I0zjQlso0LBw4gE85-cWtCRddEG_KAnkwR8Gg" 
+            alt="Vòm lò nung gốm đỏ rực lửa Măng Thít" 
+            class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out"
+          />
+          <div class="absolute inset-0 bg-gradient-to-t from-charcoal-ink/95 via-charcoal-ink/35 to-transparent"></div>
+          
+          <div class="absolute top-4 left-4 liquid-pill px-3 py-1 rounded-full text-white text-[11px] font-mono tracking-wider">
+            KÝ SỰ 02
+          </div>
+
+          <div class="absolute bottom-0 inset-x-0 p-5 flex flex-col justify-end space-y-1">
+            <h3 class="font-serif text-xl font-bold text-white drop-shadow-sm group-hover:text-alluvial transition-colors">
+              Lửa gốm Măng Thít
+            </h3>
+            <p class="text-[13px] text-white/80 line-clamp-1 font-light">
+              Đất sa bồi ủ men đỏ 28 ngày rực lửa.
+            </p>
+            <div class="pt-1.5 text-alluvial text-[11px] font-mono border-t border-white/20 flex items-center justify-between">
+              <span>MĂNG THÍT · 1.100°C</span>
+              <span class="material-symbols-outlined text-[15px]">arrow_forward</span>
             </div>
           </div>
         </article>
 
         <!-- Chronicle 3 -->
-        <article class="bg-white rounded-2xl border fine-border p-5 shadow-sm hover:shadow-md transition-shadow">
-          <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center">
-            <div class="lg:col-span-5 space-y-2">
-              <span class="px-2 py-0.5 rounded bg-papyrus-warm text-alluvial font-mono font-bold text-[11px]">KÝ SỰ 03 · BẾN SÔNG</span>
-              <h3 class="font-serif text-xl sm:text-2xl font-bold text-charcoal-ink leading-snug">
-                Tiếng đàn kìm đêm rằm bến Cổ Chiên
-              </h3>
-              <p class="text-[14px] text-charcoal-ink leading-relaxed font-light">
-                Chiếu hoa trải hiên nhà gỗ ven bến sông, phím lõm ngân vang điệu hoài lang tha thiết.
-              </p>
-            </div>
-            <div class="lg:col-span-7">
-              <div class="relative w-full aspect-[16/10] rounded-xl overflow-hidden border fine-border bg-papyrus-warm group">
-                <img 
-                  src="https://lh3.googleusercontent.com/aida/AEtjO1UoAysKjFwQLbCUNoaaTSVY0cGFjYkhgIRSlyxbIOumhpti7wXyQItsgxplf5U9rTtpt363H0K7-RXxdzYykfBNVW7gET_2TfTOoXwyAUEhpY1NPKKZz609AAQlVN4OSyn6MH8MCRrVXBeqBrH81fiIJfiPUUGtNUi61mEEDzQqeVRGyfvCYGrS0meqla8MCggNesJTeks863PkzWBfFEDmbRwU1RJ4sqY_HXFNWNV9Z8L6aCaksyjSsuPa" 
-                  alt="Diễn xướng đờn ca tài tử hiên nhà gỗ ven sông Cổ Chiên" 
-                  class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
-                />
-                <div class="absolute bottom-0 inset-x-0 p-2.5 bg-gradient-to-t from-charcoal-ink/80 to-transparent">
-                  <p class="text-[11px] font-mono text-white">Đờn ca tài tử hiên nhà ven sông Cổ Chiên</p>
-                </div>
-              </div>
+        <article class="relative aspect-[3/4] rounded-2xl overflow-hidden border fine-border shadow-sm hover:shadow-xl transition-all duration-500 group cursor-pointer bg-papyrus-warm">
+          <img 
+            src="https://lh3.googleusercontent.com/aida/AEtjO1UoAysKjFwQLbCUNoaaTSVY0cGFjYkhgIRSlyxbIOumhpti7wXyQItsgxplf5U9rTtpt363H0K7-RXxdzYykfBNVW7gET_2TfTOoXwyAUEhpY1NPKKZz609AAQlVN4OSyn6MH8MCRrVXBeqBrH81fiIJfiPUUGtNUi61mEEDzQqeVRGyfvCYGrS0meqla8MCggNesJTeks863PkzWBfFEDmbRwU1RJ4sqY_HXFNWNV9Z8L6aCaksyjSsuPa" 
+            alt="Diễn xướng đờn ca tài tử hiên nhà gỗ ven sông Cổ Chiên" 
+            class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out"
+          />
+          <div class="absolute inset-0 bg-gradient-to-t from-charcoal-ink/95 via-charcoal-ink/35 to-transparent"></div>
+          
+          <div class="absolute top-4 left-4 liquid-pill px-3 py-1 rounded-full text-white text-[11px] font-mono tracking-wider">
+            KÝ SỰ 03
+          </div>
+
+          <div class="absolute bottom-0 inset-x-0 p-5 flex flex-col justify-end space-y-1">
+            <h3 class="font-serif text-xl font-bold text-white drop-shadow-sm group-hover:text-alluvial transition-colors">
+              Đờn kìm bến sông
+            </h3>
+            <p class="text-[13px] text-white/80 line-clamp-1 font-light">
+              Chiếu hoa ven bến, phím lõm ngân vang.
+            </p>
+            <div class="pt-1.5 text-alluvial text-[11px] font-mono border-t border-white/20 flex items-center justify-between">
+              <span>DI SẢN UNESCO</span>
+              <span class="material-symbols-outlined text-[15px]">arrow_forward</span>
             </div>
           </div>
         </article>
@@ -481,20 +435,20 @@
 
     </section>
 
-    <!-- SECTION 4: TÀNG THƯ ĐIỀN DÃ BỎ TÚI (POCKET HERITAGE 6-PHOTO MOSAIC) -->
+    <!-- SECTION 4: TÀNG THƯ ĐIỀN DÃ BỎ TÚI (8-PHOTO MUSEUM LIGHTBOX GRID) -->
     <section id="pocket-museum" class="pt-4 border-t fine-border">
-      <div class="flex flex-col sm:flex-row sm:items-center justify-between mb-5 gap-2">
+      <div class="flex items-center justify-between mb-4">
         <div class="flex items-center gap-2">
           <span class="w-2 h-2 rounded-full bg-alluvial"></span>
           <h2 class="font-serif text-xl sm:text-2xl font-bold text-charcoal-ink">
-            Tàng Thư Điền Dã Bỏ Túi · Visual Vignettes
+            Tàng Thư Điền Dã · 8 Khoảnh Khắc
           </h2>
         </div>
-        <span class="text-[11px] font-mono text-ink-muted">Tư liệu thực địa 2024</span>
+        <span class="text-[11px] font-mono text-ink-muted hidden sm:inline">VINHLONG360 · 2024</span>
       </div>
 
-      <!-- 6-Photo Responsive Grid (2 cols mobile, 3 tablet, 6 desktop) -->
-      <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-4">
+      <!-- 8-Photo Lightbox Grid -->
+      <div class="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-3">
         
         <!-- Vignette 1 -->
         <div class="relative aspect-[4/5] rounded-xl overflow-hidden border fine-border shadow-sm group bg-papyrus-warm cursor-pointer">
@@ -503,9 +457,9 @@
             alt="Bưởi Năm Roi Mỹ Hòa" 
             class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
           />
-          <div class="absolute inset-0 bg-gradient-to-t from-charcoal-ink/90 via-transparent to-transparent flex flex-col justify-end p-2.5">
-            <span class="text-[11px] text-white font-medium font-serif leading-tight">Bưởi Năm Roi Mỹ Hòa</span>
-            <span class="text-[9px] font-mono text-alluvial font-semibold">[MS: VL-01]</span>
+          <div class="absolute inset-0 bg-gradient-to-t from-charcoal-ink/90 via-transparent to-transparent flex flex-col justify-end p-2">
+            <span class="text-[10px] text-white font-medium font-serif leading-tight">Bưởi Năm Roi</span>
+            <span class="text-[8px] font-mono text-alluvial">[MS: VL-01]</span>
           </div>
         </div>
 
@@ -513,12 +467,12 @@
         <div class="relative aspect-[4/5] rounded-xl overflow-hidden border fine-border shadow-sm group bg-papyrus-warm cursor-pointer">
           <img 
             src="https://lh3.googleusercontent.com/aida/AEtjO1UR3TfkV2wOxhWLP8tCYlFo5ZqD5RFsQ79XPMm8ahF4ymwL1c-tX6CyFnwteeVuLButuXstvct_t_HqB1-M0_mZSyrxOZX3qS4XAx7cokpjnwancw0cvVjzNAogeN4O7LgcDRU3hmHKHdHjtpCia1YETrMNPkHo1_prAQsuey5pgnxgTpr3mho9sOFg3pL7ABZXK8xRxFuIjkQbYsIwvrPEOlEG30F01DIdajIXaPOJyV9e7FwchuxwcR5y" 
-            alt="Kênh Thầy Cai rợp bóng gạch" 
+            alt="Kênh Thầy Cai" 
             class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
           />
-          <div class="absolute inset-0 bg-gradient-to-t from-charcoal-ink/90 via-transparent to-transparent flex flex-col justify-end p-2.5">
-            <span class="text-[11px] text-white font-medium font-serif leading-tight">Kênh Thầy Cai</span>
-            <span class="text-[9px] font-mono text-terracotta font-semibold">[MS: VL-02]</span>
+          <div class="absolute inset-0 bg-gradient-to-t from-charcoal-ink/90 via-transparent to-transparent flex flex-col justify-end p-2">
+            <span class="text-[10px] text-white font-medium font-serif leading-tight">Kênh Thầy Cai</span>
+            <span class="text-[8px] font-mono text-terracotta">[MS: VL-02]</span>
           </div>
         </div>
 
@@ -526,12 +480,12 @@
         <div class="relative aspect-[4/5] rounded-xl overflow-hidden border fine-border shadow-sm group bg-papyrus-warm cursor-pointer">
           <img 
             src="https://lh3.googleusercontent.com/aida/AEtjO1Vy41omCCCC5D1B4tpRgi_XCaVtMshvh6fO57eXai34dcjofp6vOHRAg2ksvkhdYPhzQar8xiCuLEd2561CVLxE4GXDUdRcwjUpojGIfRrL57eGmMzL-7tUjm4sdm3L5Wbi8xm85LNjuFi0JZf8__Dgco7jt4fXbt0JJGj4kXsMYHeCsFnfDb3V7xoOLBhg5lCF7R8YpuaYO5ySaWnmCTs05ysYEcZi65T9H5Bf7ZwdwaJp-mp4mslNgvni" 
-            alt="Dạ khúc Cổ Chiên đêm rằm" 
+            alt="Dạ khúc Cổ Chiên" 
             class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
           />
-          <div class="absolute inset-0 bg-gradient-to-t from-charcoal-ink/90 via-transparent to-transparent flex flex-col justify-end p-2.5">
-            <span class="text-[11px] text-white font-medium font-serif leading-tight">Dạ khúc Cổ Chiên</span>
-            <span class="text-[9px] font-mono text-alluvial font-semibold">[MS: VL-03]</span>
+          <div class="absolute inset-0 bg-gradient-to-t from-charcoal-ink/90 via-transparent to-transparent flex flex-col justify-end p-2">
+            <span class="text-[10px] text-white font-medium font-serif leading-tight">Dạ khúc Cổ Chiên</span>
+            <span class="text-[8px] font-mono text-alluvial">[MS: VL-03]</span>
           </div>
         </div>
 
@@ -539,55 +493,82 @@
         <div class="relative aspect-[4/5] rounded-xl overflow-hidden border fine-border shadow-sm group bg-papyrus-warm cursor-pointer">
           <img 
             src="https://lh3.googleusercontent.com/aida/AEtjO1W5b2JpMNpdZpZqomsrnu9q3QcIJ7-_Y-IOPVCr9C3HH75EJKC-fH8VyNqRPYRLhcP0SZlxgdxvJlLvGNQvsy6hOLbhn_m1Ev7XEQovdsp00cz5dAvgwGhpIbbKktVMO_jt5Nxy_gHAC2ixtHwen7kDTR_Njzppxyv4bFpvzSYWh2MU6BVS7kH6n_VZwJRwibWmOsK8gppQp3NNvt98BEvoyqbrf8kNHe0bmumkoZIUlN-YaG4stVWZvXKc" 
-            alt="Vườn chôm chôm Bình Hòa Phước" 
+            alt="Chôm chôm An Bình" 
             class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
           />
-          <div class="absolute inset-0 bg-gradient-to-t from-charcoal-ink/90 via-transparent to-transparent flex flex-col justify-end p-2.5">
-            <span class="text-[11px] text-white font-medium font-serif leading-tight">Vườn chôm chôm An Bình</span>
-            <span class="text-[9px] font-mono text-river-azure font-semibold">[MS: VL-04]</span>
+          <div class="absolute inset-0 bg-gradient-to-t from-charcoal-ink/90 via-transparent to-transparent flex flex-col justify-end p-2">
+            <span class="text-[10px] text-white font-medium font-serif leading-tight">Chôm chôm An Bình</span>
+            <span class="text-[8px] font-mono text-river-azure">[MS: VL-04]</span>
           </div>
         </div>
 
-        <!-- Vignette 5 (New) -->
+        <!-- Vignette 5 -->
         <div class="relative aspect-[4/5] rounded-xl overflow-hidden border fine-border shadow-sm group bg-papyrus-warm cursor-pointer">
           <img 
             src="https://lh3.googleusercontent.com/aida/AEtjO1WL80sNjG2wzX6KSwqtLzWLzEpdZ_nI8Pl3iIcwU5yAJQuWYSNYJ-f9wOD319iWOsM5dYNk32ljzgNKzMTzs7F0lBp72oDBlJ5N98xot_O4Q-2XYD6KM-1JiS1E8j-zr5MZWUI4RSCmmiq48EW8tdi-ORp8j-AhzZ_pbSEWJcuxGBgaUDQPs-UBiJTWqNB-Wh0h-29Zvd1tYi2LfieD7I3qJJsUWf3ZthYw7Umc7v207ZLZltjZBOcCKw8K" 
-            alt="Thủy diện Trà Ôn" 
+            alt="Chợ nổi Trà Ôn" 
             class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
           />
-          <div class="absolute inset-0 bg-gradient-to-t from-charcoal-ink/90 via-transparent to-transparent flex flex-col justify-end p-2.5">
-            <span class="text-[11px] text-white font-medium font-serif leading-tight">Thủy diện Trà Ôn</span>
-            <span class="text-[9px] font-mono text-terracotta font-semibold">[MS: VL-05]</span>
+          <div class="absolute inset-0 bg-gradient-to-t from-charcoal-ink/90 via-transparent to-transparent flex flex-col justify-end p-2">
+            <span class="text-[10px] text-white font-medium font-serif leading-tight">Chợ nổi Trà Ôn</span>
+            <span class="text-[8px] font-mono text-terracotta">[MS: VL-05]</span>
           </div>
         </div>
 
-        <!-- Vignette 6 (New) -->
+        <!-- Vignette 6 -->
         <div class="relative aspect-[4/5] rounded-xl overflow-hidden border fine-border shadow-sm group bg-papyrus-warm cursor-pointer">
           <img 
             src="https://lh3.googleusercontent.com/aida-public/AB6AXuBhfEqsVJilqU47D5EdNTOZMyLrfF5B72Lg_oFHC0S00cUACpWruAVe7L7dPZsaOLknjFYEBXp6Li8xZu82swu9RnQenyTxzzyVkPz6F48_aiGKTvq-rEz-79jQavKoMdDucSvmdQwmq1CWrODh3hm55kLnStJkNNIlIxXrQmT3coaLGgypp2IUhpqCKzmrVjfiupn2Zh1OKnEidBnfj-h4k4y2g7YiOO5bk5v2QdCjAmPqKCsgLa5DONc2Q67TchZlNpTY1HWNEjn1" 
-            alt="Bàn xoay thủ công" 
+            alt="Bàn xoay gốm" 
             class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
           />
-          <div class="absolute inset-0 bg-gradient-to-t from-charcoal-ink/90 via-transparent to-transparent flex flex-col justify-end p-2.5">
-            <span class="text-[11px] text-white font-medium font-serif leading-tight">Bàn xoay gốm đỏ</span>
-            <span class="text-[9px] font-mono text-alluvial font-semibold">[MS: VL-06]</span>
+          <div class="absolute inset-0 bg-gradient-to-t from-charcoal-ink/90 via-transparent to-transparent flex flex-col justify-end p-2">
+            <span class="text-[10px] text-white font-medium font-serif leading-tight">Bàn xoay gốm</span>
+            <span class="text-[8px] font-mono text-alluvial">[MS: VL-06]</span>
+          </div>
+        </div>
+
+        <!-- Vignette 7 -->
+        <div class="relative aspect-[4/5] rounded-xl overflow-hidden border fine-border shadow-sm group bg-papyrus-warm cursor-pointer">
+          <img 
+            src="https://lh3.googleusercontent.com/aida/AEtjO1XLyeqw9SdRCl2TB4oI8XZVessrSvyfwrVKWANytvU_gu0xt4IgrY9gbKTh5igIVPntA0CCWIK2Ex268Xiv9dEa3SsDj9zIx4NY28QURY6DTphsh8nUx4mGd_NEvnsTW6HoZWPxIzAAS075w_Z26BlYqAIlssxNP3dZqhiP7UrfkqnfWVp_ClndsA232x8d9_GVzlKhpj_cfBstjrAAf4tgmBJxIQbRR7o7VhF0KKJPjtPW1xkGg0DeyqrJ" 
+            alt="Chùa Cổ Âng" 
+            class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+          />
+          <div class="absolute inset-0 bg-gradient-to-t from-charcoal-ink/90 via-transparent to-transparent flex flex-col justify-end p-2">
+            <span class="text-[10px] text-white font-medium font-serif leading-tight">Chùa Cổ Âng</span>
+            <span class="text-[8px] font-mono text-alluvial">[MS: VL-07]</span>
+          </div>
+        </div>
+
+        <!-- Vignette 8 -->
+        <div class="relative aspect-[4/5] rounded-xl overflow-hidden border fine-border shadow-sm group bg-papyrus-warm cursor-pointer">
+          <img 
+            src="https://lh3.googleusercontent.com/aida/AEtjO1UoAysKjFwQLbCUNoaaTSVY0cGFjYkhgIRSlyxbIOumhpti7wXyQItsgxplf5U9rTtpt363H0K7-RXxdzYykfBNVW7gET_2TfTOoXwyAUEhpY1NPKKZz609AAQlVN4OSyn6MH8MCRrVXBeqBrH81fiIJfiPUUGtNUi61mEEDzQqeVRGyfvCYGrS0meqla8MCggNesJTeks863PkzWBfFEDmbRwU1RJ4sqY_HXFNWNV9Z8L6aCaksyjSsuPa" 
+            alt="Đờn ca ven sông" 
+            class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+          />
+          <div class="absolute inset-0 bg-gradient-to-t from-charcoal-ink/90 via-transparent to-transparent flex flex-col justify-end p-2">
+            <span class="text-[10px] text-white font-medium font-serif leading-tight">Đờn ca ven sông</span>
+            <span class="text-[8px] font-mono text-alluvial">[MS: VL-08]</span>
           </div>
         </div>
 
       </div>
     </section>
 
-    <!-- SECTION 5: THƯỚC ĐO THỦY TRIỀU -->
-    <section id="tidal-advisory" class="p-4 sm:p-5 rounded-2xl bg-papyrus-warm border fine-border flex flex-col sm:flex-row items-center justify-between gap-4">
+    <!-- SECTION 5: THƯỚC ĐO THỦY TRIỀU & TỌA ĐỘ THỰC ĐỊA -->
+    <section id="tidal-advisory" class="p-3.5 sm:p-4 rounded-2xl bg-[#181e28] text-white border fine-border flex flex-col sm:flex-row items-center justify-between gap-3 shadow-lg">
       <div class="flex items-center gap-3">
-        <span class="w-2.5 h-2.5 rounded-full bg-river-azure animate-pulse"></span>
-        <div>
-          <h4 class="font-serif text-[15px] font-bold text-charcoal-ink">Thước Đo Thủy Triều · Bến Cổ Chiên</h4>
-          <p class="text-[12px] text-ink-muted">Mực nước: +1.42m (Nước Lớn) · Phù hợp ghe tam bản rẽ rạch.</p>
+        <span class="w-2.5 h-2.5 rounded-full bg-alluvial animate-pulse"></span>
+        <div class="flex items-center gap-3 text-[12px] font-mono">
+          <span class="font-bold text-alluvial">BẾN CỔ CHIÊN · NƯỚC LỚN +1.42M</span>
+          <span class="text-white/40">|</span>
+          <span class="text-white/80">GIỜ VÀNG NHIẾP ẢNH: 17:45</span>
         </div>
       </div>
-      <div class="flex items-center gap-2 text-[11px] font-mono text-river-azure bg-white px-3 py-1.5 rounded-lg border fine-border">
-        <span>CẬP NHẬT 10 PHÚT TRƯỚC</span>
+      <div class="flex items-center gap-2 text-[11px] font-mono text-white/70">
+        <span>TỌA ĐỘ: 10.254°N 105.972°E</span>
       </div>
     </section>
 
@@ -610,9 +591,16 @@
           <p class="text-[13px] text-ink-muted leading-relaxed">
             Hệ thống tàng thư số hóa di sản văn hóa, nông nghiệp miệt vườn và trầm tích gốm đỏ tỉnh Vĩnh Long. Một dự án phi thương mại phụng sự nghiên cứu thực địa.
           </p>
-          <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded bg-white border fine-border text-[11px] font-mono text-terracotta font-semibold">
-            <span class="material-symbols-outlined text-[14px]">verified</span>
-            <span>SourceMark: VinhLong360 Điền dã 2024</span>
+          <div class="flex items-center gap-3">
+            <img 
+              src="https://lh3.googleusercontent.com/aida-public/AB6AXuCglvYEavIVZHtzd-21aRVmeEvpeI_jsGIjgA0o58okp4PAcQ3KgL5NpF0p_vDqMX7A2whmz9x8fjhdHA4yx3YoYVR5roD158jXqEds7wm_SHx3Rc0WHd04CrfISjKmZ3NQSwI6YWFolLMNmu_MTjrbeRy_wgkXSc_eign-nya-JOPGY2Oi07j4hSrluVvy5bLsckt8V2506uMU4qhskHBeNG4z_G8-sQRsRiQBO-3I0zjQlso0LBw4gE85-cWtCRddEG_KAnkwR8Gg" 
+              alt="Men gốm đỏ nung trấu Măng Thít" 
+              class="w-10 h-10 rounded-lg object-cover border fine-border shadow-sm flex-shrink-0"
+            />
+            <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded bg-white border fine-border text-[11px] font-mono text-terracotta font-semibold">
+              <span class="material-symbols-outlined text-[14px]">verified</span>
+              <span>SourceMark: VinhLong360 Điền dã 2024</span>
+            </div>
           </div>
         </div>
 
