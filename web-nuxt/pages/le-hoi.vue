@@ -721,12 +721,12 @@ useHead(() => {
   animation: lehoi-status-pulse 2.8s var(--ease-out-expo) 3;
 }
 .lehoi-status.status-concluded {
-  background: var(--surface-secondary);
+  background: var(--bg-alt);
   color: var(--text-muted);
 }
 .dark .lehoi-status.status-soon { background: rgba(var(--accent-rgb), .22); color: var(--accent); }
 .dark .lehoi-status.status-now { background: rgba(var(--secondary-rgb), .22); color: var(--secondary); }
-.dark .lehoi-status.status-concluded { background: var(--surface-secondary); color: var(--text-muted); }
+.dark .lehoi-status.status-concluded { background: var(--bg-alt); color: var(--text-muted); }
 @keyframes lehoi-status-pulse {
   0%, 100% { box-shadow: 0 0 0 0 rgba(var(--secondary-rgb), .0); }
   50% { box-shadow: 0 0 0 4px rgba(var(--secondary-rgb), .12); }

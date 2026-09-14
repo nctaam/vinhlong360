@@ -301,7 +301,7 @@ export async function detectBatteryCondition(): Promise<BatteryCondition> {
     const battery = await navAny.getBattery()
     const level = battery.level
     const charging = battery.charging
-    const isLowBattery = level <= 0.20 && !charging
+    const isLowBattery = level < 0.20 && !charging
     return {
       level: Math.round(level * 100) / 100,
       charging,

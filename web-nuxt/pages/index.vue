@@ -667,6 +667,8 @@ useHead({
 /* ═══════════════════════════════════════════════════
    HERO DISPLAY & PROTECTED CONSUMER CONTRACT
    ═══════════════════════════════════════════════════ */
+.home .hero-main h1 { letter-spacing: -.02em; }
+
 /* Premium search capsule */
 .home .hero-search {
   padding: var(--space-1);

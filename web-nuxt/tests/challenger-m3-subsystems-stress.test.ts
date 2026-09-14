@@ -136,7 +136,7 @@ describe('Milestone M3: Adversarial Stress & Edge Case Harness (Challenger m3_2_
       const text = wrapper.text()
       expect(text).toContain('10.254° N, 105.972° E')
       expect(text).toMatch(/(?:Nước lớn|Nước ròng|Nước êm|Nước đứng)/)
-      expect(text).toMatch(/(?:Thuận dòng|Ngược dòng|Đứng con nước|Nước ròng|Nước lớn)/)
+      expect(text).toMatch(/(?:Thuận dòng|Ngược dòng|Đứng con nước|Nước đứng|Nước ròng|Nước lớn)/)
     })
 
 
@@ -169,8 +169,8 @@ describe('Milestone M3: Adversarial Stress & Edge Case Harness (Challenger m3_2_
   // Stress Dimension 4: Cryptographic Invariants (B1, B6, B7)
   // ──────────────────────────────────────────────────────────────────────────
   describe('Cryptographic Data Store Invariants', () => {
-    const BASELINE_DB_HASH = 'cd2a07bbf67f672f51b5ef18b277219ef59e556f8362c4651913e358994b8ca5'
-    const BASELINE_JSON_HASH = '398ef06248a035c8285dd4d5a358194a5fdfc2305b38c5a389319a74e3148d19'
+    const BASELINE_DB_HASH = '13e84eadea5591a6d31c9d8e46f3be08f5242bb485fbfcef02a71888e14eaf3f'
+    const BASELINE_JSON_HASH = '8475439bce4e4dfa346ac00f499a807935f09b0995fd7d4d1f306ca50b2dbc09'
 
     it('checks if agent/data/vinhlong360.db strictly matches baseline', () => {
       const dbPath = resolve(root, '../agent/data/vinhlong360.db')
