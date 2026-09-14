@@ -26,8 +26,8 @@
             <p class="home-story-card__quote-text">“Phù sa Cổ Chiên nuôi lớn những rặng bần, rặng dừa và bồi đắp tâm hồn hào sảng của đất cù lao qua bao thế hệ.”</p>
             <cite class="home-story-card__cite">Ký sự Điền dã · Ban biên tập VinhLong360</cite>
           </blockquote>
-          <h3>Hơi thở miền sông nước</h3>
-          <p>Cùng xuôi dòng kênh rạch chằng chịt, lắng nghe tiếng chèo khua nước và khám phá nếp nhà dung dị của người dân miệt vườn.</p>
+          <h3>Nhịp chèo trên rạch An Bình</h3>
+          <p>Xuôi dòng rạch nhỏ dưới bóng bần cổ thụ, nương theo nhịp con nước lớn ròng rẽ lối vào những vườn chôm chôm, sầu riêng chín rộ.</p>
         </div>
       </NuxtLink>
 
@@ -46,8 +46,8 @@
           >
           <span class="home-story-card__scrim" />
           <div class="home-story-card__content">
-            <h3>Bóng dừa vươn cao</h3>
-            <p>Dưới tán lá xanh mát, cuộc sống trôi qua tĩnh lặng, êm đềm như một khúc ca dao.</p>
+            <h3>Trăm năm giữ lửa Măng Thít</h3>
+            <p>Khói lam bảng lảng trên dòng kênh Thầy Cai, nơi những lò gạch gốm đỏ nung trấu gìn giữ kỹ nghệ tạo tác của bao đời nghệ nhân.</p>
           </div>
         </NuxtLink>
 
@@ -55,8 +55,8 @@
           <div class="home-story-callout__badge">
             <IconLine name="bulb" />
           </div>
-          <h4>Khám phá thêm giai thoại</h4>
-          <p>Đọc những câu chuyện chưa từng được kể về đất và người Vĩnh Long.</p>
+          <h4>Tàng thư khảo cứu điền dã</h4>
+          <p>Ghi chép thực địa về phong thổ, con nước, nếp sống bến bờ và truyền thống ẩm thực Vĩnh Long xưa và nay.</p>
           <NuxtLink to="/kham-pha" class="home-story-callout__action">
             Xem tuyển tập <IconLine name="arrow-right" />
           </NuxtLink>

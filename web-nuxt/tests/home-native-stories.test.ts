@@ -33,16 +33,19 @@ describe('HomeNativeStories — Empirical Stress Testing', () => {
     const wrapper = await mountStories()
     const primary = wrapper.find('.home-story-card--primary')
     expect(primary.exists()).toBe(true)
-    expect(primary.text()).toContain('Hơi thở miền sông nước')
+    expect(primary.text()).toContain('Nhịp chèo trên rạch An Bình')
+    expect(primary.text()).not.toContain('Hơi thở miền sông nước')
     expect(primary.text()).toContain('Ký sự Điền dã · Ban biên tập VinhLong360')
 
     const secondary = wrapper.find('.home-story-card--secondary')
     expect(secondary.exists()).toBe(true)
-    expect(secondary.text()).toContain('Bóng dừa vươn cao')
+    expect(secondary.text()).toContain('Trăm năm giữ lửa Măng Thít')
+    expect(secondary.text()).not.toContain('như một khúc ca dao')
 
     const callout = wrapper.find('.home-story-callout')
     expect(callout.exists()).toBe(true)
-    expect(callout.text()).toContain('Khám phá thêm giai thoại')
+    expect(callout.text()).toContain('Tàng thư khảo cứu điền dã')
+    expect(callout.text()).not.toContain('chưa từng được kể')
   })
 
   it('handles image error events gracefully with fallback without infinite recursion', async () => {
