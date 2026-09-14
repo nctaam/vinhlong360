@@ -262,6 +262,13 @@ Toàn bộ 10 phân hệ cấu thành nền tảng Vĩnh Long 360 đều phục 
     - Trang 404/500 "Bến Đò Lỡ Chuyến": Bức họa bến sông Cổ Chiên sương sớm mờ ảo, lời tự tình ấm áp giải thích con nước lớn ròng, 4 lối rẽ an toàn về bến chính.
     - Bảng Chỉ Dẫn Điền Dã Ngoại Tuyến (`OfflineTerroirPanel.vue`): Tự thích ứng khi mất kết nối mạng, hiển thị danh bạ cứu hộ cục bộ, lịch triều thiên văn tính toán trước và cẩm nang điền dã an toàn.
 
+### 6.11. Hiến Pháp Trang Chủ Kiệt Tác Di Sản (Homepage Masterpiece Constitution)
+Trang chủ (`pages/index.vue`) đóng vai trò mỏ neo thiết kế (The Master Anchor & Pinnacle) điều phối dòng chảy trải nghiệm của toàn nền tảng, dung hợp 4 chuẩn mực quốc tế:
+- **Tôn Nghiêm Di Sản Chuẩn Rijksmuseum:** Khối Hero Dossier (`HomeFeatureDossier.vue`) và Sổ vàng OCOP (`HomeOcopLedger.vue`) tuân thủ tỷ lệ vàng 62/38, chứng thư hoa văn bảo an Guilloche, con dấu sáp Mang Thít và khung viền Liquid Glass `oklch(100% 0 0 / 0.12)`.
+- **Xác Thực Thực Địa Chuẩn National Geographic:** 100% thực thể trên trang chủ hiển thị tọa độ GPS thực tế (`10.254° N, 105.972° E`), tem nguồn kiểm định `SourceMark` và vạch tươi mới `FreshnessLine`.
+- **Bối Cảnh Thủy Thổ Chuẩn Visit Oslo:** Bản tin địa phương `HomeLocalBriefing.vue` phản ánh nhịp triều thiên văn sông Cổ Chiên (nước rong/kém), thời tiết bản địa và sụp đổ thanh lịch (§1.7) khi cảm biến offline.
+- **Nghệ Thuật Ấn Loát Chuẩn Monocle:** Ký sự bản địa `HomeNativeStories.vue` bố cục bất đối xứng, kết hợp kiểu chữ Lora và Be Vietnam Pro, trích dẫn điền dã pull-quote và nhãn danh mục xúc giác 120 FPS.
+
 ---
 
 ## Chương 7: Bộ Ký Tự Bản Địa (32 Vernacular Glyphs)

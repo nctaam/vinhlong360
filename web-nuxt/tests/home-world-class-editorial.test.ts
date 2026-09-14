@@ -27,4 +27,13 @@ describe('Homepage World-Class Editorial Benchmark & Anti-AI-Slop', () => {
       expect(dossierVue.toLowerCase()).not.toContain(kw)
     }
   })
+
+  it('formalizes Chapter 6.11 Homepage Masterpiece Constitution in DESIGN.md', () => {
+    const designMd = readFileSync(resolve(__dirname, '../DESIGN.md'), 'utf8')
+    expect(designMd).toContain('### 6.11. Hiến Pháp Trang Chủ Kiệt Tác Di Sản (Homepage Masterpiece Constitution)')
+    expect(designMd).toContain('Rijksmuseum')
+    expect(designMd).toContain('National Geographic')
+    expect(designMd).toContain('Visit Oslo')
+    expect(designMd).toContain('Monocle')
+  })
 })
