@@ -16,4 +16,10 @@ describe('Home Decision Ledger and Category Index', () => {
     expect(homeCss).toContain('transform: scale(0.98)')
     expect(homeCss).toContain('cubic-bezier(0.16, 1, 0.3, 1)')
   })
+
+  it('eradicates generic AI-slop filler "Trải nghiệm phong phú" from category header', () => {
+    const categoryVue = readFileSync(resolve(__dirname, '../components/home/HomeCategoryIndex.vue'), 'utf8')
+    expect(categoryVue).not.toContain('Trải nghiệm phong phú')
+    expect(categoryVue).toContain('Không gian bản địa')
+  })
 })
