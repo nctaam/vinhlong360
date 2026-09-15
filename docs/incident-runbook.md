@@ -1,6 +1,6 @@
 # Runbook sự cố dữ liệu cá nhân (GĐ5.7)
 
-> **STATUS (2026-07-07): active — đã truth-sync.** Bổ sung cảnh báo bẫy `TOTP_ENC_KEY` trước bước rotate và tên service/SSH đúng (`vl-agent`, `root@`); quy trình 72h giữ nguyên hiệu lực.
+> STATUS: active (2026-09-15) — Runbook ứng phó sự cố dữ liệu cá nhân (quy trình 72h NĐ356/2025).
 
 > Theo Luật BVDLCN 91/2025/QH15 + NĐ356/2025: thông báo cơ quan có thẩm quyền (Bộ Công an/A05)
 > trong **72 giờ** kể từ khi phát hiện rò rỉ dữ liệu cá nhân; thông báo người dùng bị ảnh hưởng

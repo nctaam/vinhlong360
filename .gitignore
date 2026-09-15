@@ -42,8 +42,20 @@ temp_analysis.txt
 # Local verification scratch (regenerable; keep out of the source tree)
 .tmp-*
 .tmp-*/
-.pytest-tmp-*
-.pytest-tmp-*/
+.pytest-*
+.pytest-*/
+*.pytest-*
+*.pytest-*/
+.pytest_*
+.pytest_*/
+.pytest_cache/
+.ruff_cache/
+.agents/
+*.patch
+outputs/pilot-acceptance-*
+outputs/backend-regression-*
+outputs/runtime-evidence-*
+outputs/design_md_b64.txt
 
 # Worktrees (parallel sessions)
 vl360-*/

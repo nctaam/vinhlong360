@@ -1,6 +1,6 @@
 # anti-ai-writing-style.md — Claude biết cách tôi KHÔNG muốn AI viết
 
-> STATUS (2026-07-07): active — file dán vào Claude Desktop (Project knowledge). Áp cho MỌI nội dung viết cho vinhlong360 (mô tả điểm đến, bài viết, caption, tài liệu).
+> STATUS: active (2026-09-15) — Hướng dẫn văn phong biên tập chống AI-slop cho Claude Desktop.
 > SINH TỪ nguồn chuẩn: docs/toi-uu-chong-ai-va-google-spam-playbook.md §4 + docs/standards/50-content.md. Khi nguồn đổi → sinh lại.
 
 ## Nguyên tắc gốc

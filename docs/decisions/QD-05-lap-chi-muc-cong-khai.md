@@ -1,4 +1,4 @@
-> STATUS: active
+> STATUS: active (2026-09-15) — Quyết định lập chỉ mục công khai (public_indexing).
 Authority: config/release-authority.json
 
 # QD-05 — Lập chỉ mục công khai (`public_indexing`)
@@ -7,7 +7,7 @@ Authority: config/release-authority.json
 > khi site có mặt trước công chúng; một agent điền §7 ở đây là tự cấp cho mình quyền
 > công bố.
 
-`decision_key`: `public_indexing` · Cổng liên quan: `docs/QUYET-DINH-DANG-CHO.md` mục B7
+`decision_key`: `public_indexing` · Cổng liên quan: chính sách phát hành
 
 ---
 
@@ -58,7 +58,7 @@ và ranh giới thương mại chưa được chủ/luật sư chốt; deploy ch
 monitoring chưa chứng minh alerting; backup chưa qua restore.
 
 **Chưa kiểm được:** hồ sơ này **không** đo lại số trang đủ chất lượng để lập chỉ mục.
-Con số 405 trang index / ~1.200 noindex ghi ở `docs/QUYET-DINH-DANG-CHO.md` mục B7 là số
+Con số 405 trang index / ~1.200 noindex ghi ở chính sách phát hành là số
 đo của một phiên khác; tôi không tự đo lại trong phiên này nên không dùng nó làm căn cứ
 quyết định.
 

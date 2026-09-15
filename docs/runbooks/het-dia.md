@@ -1,4 +1,4 @@
-> STATUS (2026-08-05): active
+> STATUS: active (2026-09-15) — Runbook ứng phó sự cố hết đĩa trên VPS và máy dev.
 
 # Hết đĩa — VPS hoặc máy dev
 

@@ -1,6 +1,6 @@
 # Developer Setup Guide
 
-> **STATUS (2026-07-07): active — đã truth-sync.** Setup steps remain valid; §3 now restricts `database.py --replace` to fresh clones only (backup first per CLAUDE.md B1/B7).
+> STATUS: active (2026-09-15) — Hướng dẫn cài đặt môi trường phát triển local (FastAPI, Nuxt, Docker Postgres).
 
 Get vinhlong360 running locally for development.
 

@@ -1,0 +1,2165 @@
+[
+  {
+    "id": "cu-lao-my-hoa",
+    "name": "Cù lao Mỹ Hòa",
+    "type": "nature",
+    "placeId": "p-binh-minh",
+    "summary": "Nằm giữa dòng sông Hậu hiền hòa như một chiếc bè trái cây khổng lồ — bưởi Năm Roi vàng ươm rủ chùm từ cành thấp, mùi hương ngọt nhẹ lan tỏa khắp vườn. Đây là vùng chuyên canh bưởi Năm Roi danh tiếng của Bình Minh, nơi trái cây ngon bởi đất phù sa màu mỡ bồi đắp quanh năm. Đi đò từ bờ ra cù lao, ngắm sông nước mênh mang, ghé vào vườn hái bưởi tươi ăn tại chỗ — múi vàng, vị ngọt pha chua thanh, ít hạt, tép bưởi căng mọng. Hỏi chủ vườn mua thẳng để có giá tốt và trái tươi nhất."
+  },
+  {
+    "id": "du-lich-vuon-chu-7-gat-vlt",
+    "name": "Du lịch vườn chú 7 Gặt",
+    "type": "attraction",
+    "placeId": "xa-an-binh",
+    "summary": "Tham quan vườn trái cây, ăn uống đồng quê: gà, cá lóc, lươn, ếch, cá tai tượng, óc bu. Giờ 7:00-18:00."
+  },
+  {
+    "id": "vung-cam-sanh-tra-on",
+    "name": "Vùng cam sành Trà Ôn",
+    "type": "craft_village",
+    "placeId": "xa-hoa-binh",
+    "summary": "Vùng đất Trà Ôn trải dài từ Thới Hòa đến Tân Mỹ là quê hương của những vườn cam sành xanh mướt, trái to tròn, vỏ sần sùi đặc trưng ẩn chứa bên trong múi cơm vàng óng, mọng nước và ngọt sắc đến tê đầu lưỡi. Thu hoạch rộ từ tháng 11 đến tháng 2 âm lịch, cả vùng rực lên màu vàng cam trải khắp triền vườn. Bạn có thể ghé trực tiếp các nhà vườn để tự tay hái cam, uống ly nước cam vắt tươi ngay tại chỗ và mua cam nguyên thùng giá rẻ hơn thành phố nhiều lần."
+  },
+  {
+    "id": "di-san-duong-dai-mang-thit",
+    "name": "Di sản đương đại Mang Thít",
+    "type": "history",
+    "placeId": "xa-nhon-phu",
+    "summary": "Đề án 'Di sản đương đại Mang Thít' được tỉnh Vĩnh Long phê duyệt, diện tích 3.060ha thuộc 4 xã Mỹ Phước, Mỹ An, Nhơn Phú và Hòa Tịnh. Khu vực bảo tồn cụm lò gạch gốm cổ hàng trăm năm gắn với phát triển du lịch sinh thái và văn hóa."
+  },
+  {
+    "id": "cu-lao-dai-cu-lao-thanh-binh-quoi-thien",
+    "name": "Cù lao Dài (Cù lao Thanh Bình - Quới Thiện)",
+    "type": "nature",
+    "placeId": "xa-quoi-thien",
+    "summary": "Dải cù lao phù sa màu mỡ nằm giữa sông Cổ Chiên, trải dài qua hai xã Thanh Bình và Quới Thiện, vùng Vũng Liêm, cách thành phố Vĩnh Long khoảng 30 km. Điểm đến sinh thái miệt vườn với vườn sầu riêng, xoài, bưởi; các làng nghề truyền thống; di tích khu mộ thân nhân Thoại Ngọc Hầu và trải nghiệm homestay ven sông đặc sắc."
+  },
+  {
+    "id": "khu-du-lich-cho-noi-tra-on",
+    "name": "Khu du lịch Chợ nổi Trà Ôn",
+    "type": "attraction",
+    "placeId": "xa-luc-si-thanh",
+    "summary": "Chợ nổi Trà Ôn họp trên sông Hậu, ghe bầu chở trái cây, nông sản neo nhộn nhịp từ sáng sớm. Du khách đi đò tham quan, mua trái cây tươi, thưởng thức ẩm thực ngay trên ghe."
+  },
+  {
+    "id": "ca-phi-sa-ot-thanh-phuoc",
+    "name": "Cá phi sả ớt Thạnh Phước",
+    "type": "product",
+    "placeId": "xa-thanh-phuoc",
+    "summary": "Sản phẩm chế biến từ cá rô phi nuôi sinh thái tại xã Thạnh Phước, được ướp gia vị sả và ớt, đóng gói hút chân không và cấp đông. Phân loại theo kích cỡ 2-4 con/kg. Sản lượng 100-150kg/tháng, đang chờ công nhận OCOP 3 sao năm 2024. Sản phẩm do HTX Thủy sản sinh thái Thạnh Phước sản xuất, mang lại giá trị kinh tế gấp 3 lần so với cá phi thương phẩm thông thường."
+  },
+  {
+    "id": "htx-thuy-san-sinh-thai-thanh-phuoc",
+    "name": "HTX Thủy sản sinh thái Thạnh Phước",
+    "type": "product",
+    "placeId": "xa-thanh-phuoc",
+    "summary": "Hợp tác xã thành lập năm 2017, chuyên nuôi trồng và chế biến cá rô phi sinh thái. Sản phẩm chính là cá phi sả ớt đóng gói hút chân không, đang được xét công nhận OCOP 3 sao năm 2024. Sản phẩm có giá trị kinh tế cao gấp 3 lần cá phi thương phẩm thông thường, tạo việc làm cho hơn 50 thành viên trong cộng đồng địa phương."
+  },
+  {
+    "id": "con-chim",
+    "name": "Cồn Chim",
+    "type": "nature",
+    "placeId": "xa-hoa-minh",
+    "summary": "Cồn sinh thái trên sông Hậu thuộc tỉnh Vĩnh Long, nơi hệ sinh thái rừng ngập mặn và sông nước còn giữ nét hoang sơ."
+  },
+  {
+    "id": "cong-ty-tnhh-du-lich-sinh-thai-bao-duyen",
+    "name": "Công ty TNHH Du lịch Sinh thái Bảo Duyên",
+    "type": "organization",
+    "placeId": "p-phu-khuong",
+    "summary": "Doanh nghiệp du lịch tại Bến Tre, chuyên vận hành dịch vụ tour và homestay."
+  },
+  {
+    "id": "cua-cung-hau-tra-vinh",
+    "name": "Cửa Cung Hầu",
+    "type": "nature",
+    "placeId": "xa-nhi-long",
+    "summary": "(cửa biển, 18 km). Cửa biển phía Bắc vùng Trà Vinh, nơi nhánh sông Cổ Chiên đổ ra biển. Là ngư trường khai thác thủy sản ven bờ quan trọng; khu vực có rừng ngập mặn Cồn Bần được bảo vệ với hệ sinh thái đặc trưng cửa sông. Điểm ngắm cảnh đẹp: Cồn Bần xã Hiệp Thạnh, Duyên Hải — đi thuyền qua rừng bần ven cửa sông. Đánh giá cảnh quan: 3/5."
+  },
+  {
+    "id": "cua-dai-cua-song-my-thosong-tien-ben-tre",
+    "name": "Cửa Đại (cửa sông Mỹ Tho/sông Tiền)",
+    "type": "nature",
+    "placeId": "p-phu-khuong",
+    "summary": "(cửa biển, 6 km). Cửa biển lớn nhất phía bắc tỉnh Vĩnh Long (giáp Tiền Giang), nơi sông Tiền đổ ra Biển Đông. Vùng cửa sông rộng lớn, hệ sinh thái ngập mặn đa dạng, là bãi đẻ và nuôi dưỡng nhiều loài thủy sản. Điểm xuất phát tour biển đảo. Điểm ngắm cảnh đẹp: Mũi Cửa Đại, xã Thừa Đức, Bình Đại – nhìn ra biển, thấy tàu thuyền ra vào. Đánh giá cảnh quan: 4/5."
+  },
+  {
+    "id": "tet-doan-ngo",
+    "name": "Tết Đoan Ngọ",
+    "type": "event",
+    "placeId": "p-long-chau",
+    "summary": "(mùng 5 tháng 5 Âm lịch) ở Vĩnh Long, ăn cơm rượu, trái cây giết sâu bọ trong người. Chợ bán cơm rượu, trái mận, vải — phong tục dân gian đặc trưng."
+  },
+  {
+    "id": "mat-hoa-dua-va-duong-hoa-dua-tra-vinh-ocop-5-sao",
+    "name": "Mật hoa dừa và đường hoa dừa Trà Vinh (OCOP 5 sao)",
+    "type": "product",
+    "placeId": "p-tieu-can",
+    "summary": "Sản phẩm OCOP đạt 5 sao cấp quốc gia của tỉnh Vĩnh Long, được sản xuất từ hoa dừa theo quy trình truyền thống. Bao gồm mật hoa dừa và đường hoa dừa, được bày bán tại Homestay SokFram xã Phú Cần và các điểm du lịch trong vùng Tiểu Cần."
+  },
+  {
+    "id": "rung-duoc-long-khanh",
+    "name": "Rừng đước Long Khánh",
+    "type": "nature",
+    "placeId": "xa-long-thanh",
+    "summary": "Khu sinh thái rừng ngập mặn rộng gần 700ha tại xã Long Khánh, huyện Duyên Hải — một trong những khu rừng đước nguyên sinh đặc trưng của Nam Bộ."
+  },
+  {
+    "id": "rung-ngap-man-hiep-thanh-duyen-hai-tra-vinh",
+    "name": "Rừng ngập mặn Hiệp Thạnh - Gò Công Biển",
+    "type": "nature",
+    "placeId": "xa-long-huu",
+    "summary": "Rừng ngập mặn ven biển tại xã Hiệp Thạnh, huyện Duyên Hải — một phần hệ sinh thái 6.100 ha rừng phòng hộ ven biển Trà Vinh với đước, mắm, bần, dừa nước."
+  },
+  {
+    "id": "song-hau-doan-cua-dinh-an-tra-vinh",
+    "name": "Sông Hậu đoạn cửa Định An",
+    "type": "nature",
+    "placeId": "xa-nhi-long",
+    "summary": "(cửa biển, 25 km). Cửa biển lớn nhất tỉnh Vĩnh Long, nơi sông Hậu đổ ra Biển Đông. Lịch sử là tuyến đường thủy xuất khẩu gạo thời Pháp thuộc. Là bãi đẻ và sinh trưởng của nhiều loài cá biển, tôm; hệ sinh thái cửa sông điển hình vùng Đồng bằng sông Cửu Long. Điểm ngắm cảnh đẹp: Mũi Cồn Cát thuộc xã Trường Long Hòa, Duyên Hải — ngắm tàu thuyền ra vào và vùng ngập mặn ven cửa sông. Đánh giá cảnh quan: 4/5."
+  },
+  {
+    "id": "tram-xe-buyt-noi-tinh-ben-xe-ben-tre-diem-dau-cac-tuyen-buyt-ben-tre",
+    "name": "Trạm xe buýt nội tỉnh – Bến xe Bến Tre (điểm đầu các tuyến buýt)",
+    "type": "facility",
+    "placeId": "p-phu-khuong",
+    "summary": "Trạm xe buýt. Tại 303 Đoàn Hoàng Minh, Phường Phú Khương, TP. Bến Tre (cùng địa điểm bến xe khách). Tuyến: Tuyến 02: Bến Tre – Ba Tri (Tiệm Tôm); Tuyến 03: Bến Tre – Phà Tân Phú (Châu Thành); Tuyến 04: Bến Tre – Phà Cầu Ván (Thạnh Phú); Tuyến 07: Bến Tre – Ngã ba Sơn Đốc (Giồng Trôm); Tuyến 08: Bến Tre – Phà Đình Khao (Chợ Lách sang Vĩnh Long). Giờ: 5:00 – 17:30 tất cả các ngày."
+  },
+  {
+    "id": "vuon-dua-sinh-thai-cau-ke-tra-vinh",
+    "name": "Vườn dừa sinh thái Cầu Kè",
+    "type": "experience",
+    "placeId": "xa-cau-ke",
+    "summary": "Vườn dừa sáp sinh thái tại Cầu Kè, tỉnh Vĩnh Long, nơi du khách trải nghiệm tham quan và tìm hiểu về cây dừa sáp."
+  },
+  {
+    "id": "bai-bien-ba-tri",
+    "name": "Bãi biển Ba Tri",
+    "type": "nature",
+    "placeId": "p-ba-tri",
+    "summary": "Bãi biển ở Ba Tri, Bến Tre, là điểm đến ven biển tự nhiên của vùng đồng bằng sông Cửu Long với cảnh quan sông nước, rừng phòng hộ và hệ sinh thái rừng ngập mặn đặc trưng Nam Bộ."
+  },
+  {
+    "id": "buoi-da-xanh-giong-trom",
+    "name": "Bưởi Da Xanh Giồng Trôm",
+    "type": "product",
+    "placeId": "xa-giong-trom",
+    "summary": "Bưởi da xanh (green pomelo) đặc sản của huyện Giồng Trôm, được Hợp tác xã Bưởi da xanh Giồng Trôm chứng nhận OCOP 4 sao – mức cao nhất trong các sản phẩm OCOP địa phương. Trái to, vỏ xanh, múi ngọt mọng nước, là sản phẩm nông nghiệp chủ lực của huyện, trồng nhiều ở các xã ven sông và cồn như Cồn Ốc."
+  },
+  {
+    "id": "con-cai-ga",
+    "name": "Cồn Cái Gà",
+    "type": "nature",
+    "placeId": "xa-cho-lach",
+    "summary": "Khu vực vui chơi giải trí và du lịch sinh thái tại cồn Cái Gà, thuộc xã Long Thới, là điểm du lịch cộng đồng gắn với chương trình OCOP huyện Chợ Lách."
+  },
+  {
+    "id": "con-oc-hung-phong",
+    "name": "Cồn Ốc (Hưng Phong)",
+    "type": "nature",
+    "placeId": "xa-phuoc-long",
+    "summary": "Cồn nổi lớn nhất trên sông Hàm Luông với diện tích khoảng 647 ha, mỗi năm được phù sa bồi đắp thêm."
+  },
+  {
+    "id": "con-quy-song-tien-chau-thanh-ben-tre",
+    "name": "Cồn Quy (Sông Tiền - Châu Thành)",
+    "type": "nature",
+    "placeId": "p-phu-tuc",
+    "summary": "Cách trung tâm thành phố Bến Tre 22 km theo đường sông. Cồn Quy có lịch sử hình thành trên trăm năm."
+  },
+  {
+    "id": "con-tam-hiep-dao-tam-hiep",
+    "name": "Cồn Tam Hiệp (đảo Tam Hiệp)",
+    "type": "nature",
+    "placeId": "xa-phu-thuan",
+    "summary": "Cồn Tam Hiệp thuộc huyện Bình Đại là điểm du lịch sinh thái, nơi có thể tham quan vườn vải và cây dược liệu, trải nghiệm làm bánh tráng giòn, chèo xuồng qua các con rạch và thưởng thức đặc sản địa phương."
+  },
+  {
+    "id": "con-tan-qui",
+    "name": "Cồn Tân Qui",
+    "type": "nature",
+    "placeId": "xa-an-phu-tan",
+    "summary": "Cồn nằm trên sông, có vườn trái cây với nhiều loại đặc trưng Vĩnh Long như vú sữa, chôm chôm, sầu riêng, măng cụt."
+  },
+  {
+    "id": "con-tan-quy-cu-lao-tan-quy",
+    "name": "Cồn Tân Quy (Cù lao Tân Quy)",
+    "type": "nature",
+    "placeId": "xa-an-phu-tan",
+    "summary": "Cồn đất nằm tiếp giáp ranh giới Sóc Trăng và Vĩnh Long, được ví như 'ốc đảo xanh mát' với vườn trái cây phong phú gồm vú sữa, chôm chôm, sầu riêng, măng cụt."
+  },
+  {
+    "id": "con-thanh-long",
+    "name": "Cồn Thành Long",
+    "type": "nature",
+    "placeId": "xa-thanh-thoi",
+    "summary": "Khu du lịch sinh thái rộng 111 hecta với vườn dừa xanh mát và nhiều vườn cây ăn trái trù phú, nằm giữa sông nước Vĩnh Long."
+  },
+  {
+    "id": "cu-lao-tan-quy-cang-long-tra-vinh",
+    "name": "Khu du lịch sinh thái Cù Lao Tân Quy",
+    "type": "experience",
+    "placeId": "p-cang-long",
+    "summary": "Điểm du lịch sinh thái trên Cù Lao Tân Quy, trải nghiệm miệt vườn sông nước và cây trái Trà Vinh."
+  },
+  {
+    "id": "du-lich-sinh-thai-bien-thanh-phu",
+    "name": "Du lịch sinh thái biển Thạnh Phú",
+    "type": "experience",
+    "placeId": "xa-thanh-phu",
+    "summary": "Mô hình du lịch sinh thái biển khai thác tiềm năng vùng ven biển huyện Thạnh Phú, kết hợp tham quan bãi biển Cồn Bửng, trải nghiệm đánh bắt thủy sản, thưởng thức đặc sản biển và khám phá hệ sinh thái rừng ngập mặn ven biển."
+  },
+  {
+    "id": "du-lich-sinh-thai-miet-vuon-mo-cay-bac",
+    "name": "Du lịch sinh thái miệt vườn Mỏ Cày Bắc",
+    "type": "nature",
+    "placeId": "xa-tan-thanh-binh",
+    "summary": "Vùng cù lao Minh nằm giữa hai sông Hàm Luông và Cổ Chiên, đất đai màu mỡ nhờ phù sa bồi đắp quanh năm."
+  },
+  {
+    "id": "du-lich-sinh-thai-nam-son",
+    "name": "Du lịch sinh thái Nam Sơn",
+    "type": "experience",
+    "placeId": "xa-an-phu-tan",
+    "summary": "Khu du lịch sinh thái diện tích 3,8ha tại ấp An Trại, xã An Phú Tân, Cầu Kè."
+  },
+  {
+    "id": "du-lich-sinh-thai-san-chim-vam-ho-trai-nghiem-thuyen-rung",
+    "name": "Du lịch sinh thái Sân chim Vàm Hồ - trải nghiệm thuyền rừng",
+    "type": "experience",
+    "placeId": "p-ben-tre",
+    "summary": "Trải nghiệm tham quan căn cứ kháng chiến và chèo thuyền qua rừng già ngập mặn tại sân chim Vàm Hồ, xã Tân Mỹ."
+  },
+  {
+    "id": "homestay-bep-nam-bo-xua-con-chim",
+    "name": "Homestay Bếp Nam Bộ Xưa (Cồn Chim)",
+    "type": "accommodation",
+    "placeId": "xa-hoa-minh",
+    "summary": "Homestay nằm trên Cồn Chim, xã Hòa Minh, Châu Thành, cung cấp không gian nghỉ ngơi mộc mạc yên tĩnh và trải nghiệm ẩm thực Nam Bộ truyền thống."
+  },
+  {
+    "id": "homestay-nam-ham-luong",
+    "name": "Homestay Nam Hàm Luông",
+    "type": "accommodation",
+    "placeId": "p-ben-tre",
+    "summary": "Homestay sinh thái tại khu vực huyện Mỏ Cày Bắc, nằm gần sông Hàm Luông, được khách đánh giá cao với điểm 9.4/10 trên các nền tảng đặt phòng quốc tế."
+  },
+  {
+    "id": "homestay-tu-pha-con-chim",
+    "name": "Homestay Tư Pha (Cồn Chim)",
+    "type": "accommodation",
+    "placeId": "xa-hoa-minh",
+    "summary": "Homestay sinh thái nằm tại ấp Cồn Chim, Xã Hòa Minh, Châu Thành."
+  },
+  {
+    "id": "htx-nong-nghiep-thong-hoa-dua-sap",
+    "name": "HTX Nông nghiệp Thông Hòa - Dừa sáp",
+    "type": "craft_village",
+    "placeId": "xa-tam-ngai",
+    "summary": "Hợp tác xã nông nghiệp chuyên sản xuất và kinh doanh dừa sáp Cầu Kè, đạt tiêu chuẩn xuất khẩu sang châu Âu và Trung Quốc."
+  },
+  {
+    "id": "khu-bao-ve-canh-quan-rung-ngap-man-thanh-phu",
+    "name": "Khu bảo vệ cảnh quan rừng ngập mặn Thạnh Phú",
+    "type": "nature",
+    "placeId": "xa-thanh-phu",
+    "summary": "Khu bảo tồn thiên nhiên rừng ngập mặn ven biển cù lao Minh với hệ sinh thái đa dạng, ghi nhận khoảng 152 loài chim, 27 loài bò sát, 16 loài thú."
+  },
+  {
+    "id": "khu-du-lich-sinh-thai-con-thanh-long",
+    "name": "Khu du lịch sinh thái Cồn Thành Long",
+    "type": "nature",
+    "placeId": "xa-thanh-thoi",
+    "summary": "Khu du lịch sinh thái rộng 111 hecta tại ấp Thành Long, xã Thành Thới A, huyện Mỏ Cày Nam, với vườn dừa xanh mát và vườn cây ăn trái, là điểm trải nghiệm miệt vườn đặc trưng của vùng sông nước Bến Tre."
+  },
+  {
+    "id": "khu-du-lich-sinh-thai-nguoi-giu-rung",
+    "name": "Khu du lịch sinh thái Người Giữ Rừng",
+    "type": "nature",
+    "placeId": "xa-thanh-phuoc",
+    "summary": "Nông trại sinh thái rộng khoảng 25ha nằm trong hệ sinh thái rừng ngập mặn ven biển Bình Đại."
+  },
+  {
+    "id": "lang-nghe-thach-dua-hung-phong",
+    "name": "Làng nghề thạch dừa Hưng Phong",
+    "type": "craft_village",
+    "placeId": "p-ben-tre",
+    "summary": "Làng nghề sản xuất thạch dừa thô tại xã Hưng Phong (Cồn Ốc), huyện Giồng Trôm. Khu vực có gần 500 ha dừa, hơn 60 cơ sở sản xuất với trên 600 lao động."
+  },
+  {
+    "id": "lang-nghe-thu-cong-my-nghe-tu-dua-tai-tan-thach",
+    "name": "Làng nghề thủ công mỹ nghệ từ dừa tại Tân Thạch",
+    "type": "craft_village",
+    "placeId": "p-phu-tuc",
+    "summary": "Các cơ sở sản xuất đồ lưu niệm và thủ công mỹ nghệ từ cây dừa và vỏ trái dừa tập trung tại khu vực Cồn Phụng, xã Tân Thạch."
+  },
+  {
+    "id": "maison-du-pays-de-ben-tre",
+    "name": "Maison du Pays de Bến Tre",
+    "type": "accommodation",
+    "placeId": "xa-tan-hao",
+    "summary": "Homestay Maison du Pays de Bến Tre, tại Xã Thạnh Phú Đông, tỉnh Vĩnh Long."
+  },
+  {
+    "id": "mat-ong-rung-ban-my-long-nam",
+    "name": "Mật ong rừng bần Mỹ Long Nam",
+    "type": "product",
+    "placeId": "xa-my-long",
+    "summary": "Sản phẩm OCOP 3 sao của Hộ sản xuất Nguyễn Văn Bao tại xã Mỹ Long Nam. Mật ong được thu hoạch từ đàn ong tự nhiên trong rừng bần ven biển, không tác động đến hệ sinh thái rừng. Là sản phẩm đặc trưng khai thác lợi thế vùng nguyên liệu tự nhiên ven biển Cầu Ngang."
+  },
+  {
+    "id": "ngay-hoi-van-hoa-the-thao-va-du-lich-huyen-cho-lach-ben-tre",
+    "name": "Ngày hội Văn hóa - Thể thao và Du lịch Chợ Lách",
+    "type": "event",
+    "placeId": "p-phu-khuong",
+    "summary": "Triển lãm và thi hoa kiếng, cây cảnh nghệ thuật trước thềm Tết Nguyên Đán. Hội thi chế tác tiểu cảnh, bonsai, cây ghép hoa đặc sản của vùng Chợ Lách."
+  },
+  {
+    "id": "nhon-thanh-homestay",
+    "name": "Nhơn Thạnh Homestay",
+    "type": "accommodation",
+    "placeId": "p-phu-khuong",
+    "summary": "Homestay sinh thái tại Xã Nhơn Thạnh, Thành Phố Bến Tre, Gần khu Vực An Nhơn, với Không Gian Thoáng Đãng, Nhìn Ra Vườn Cây."
+  },
+  {
+    "id": "rooster-mekong-resort",
+    "name": "Rooster Mekong Resort",
+    "type": "accommodation",
+    "placeId": "xa-dong-khoi",
+    "summary": "Khu nghỉ dưỡng sinh thái có diện tích hơn 2 ha nằm bên dòng sông Mê Kông, thuộc ấp An Hòa, xã Long Thới."
+  },
+  {
+    "id": "rung-ngap-man-binh-dai",
+    "name": "Rừng ngập mặn Bình Đại",
+    "type": "nature",
+    "placeId": "p-binh-dai",
+    "summary": "Hệ sinh thái rừng ngập mặn với diện tích lớn tại huyện Bình Đại, gồm các loài cây đước, đưng, bần, mắm, phi lao."
+  },
+  {
+    "id": "rung-tram-cang-long-tra-vinh",
+    "name": "Rừng tràm Trà Vinh - Khu vực Càng Long",
+    "type": "nature",
+    "placeId": "xa-nhi-long",
+    "summary": "Khu rừng tràm thuộc huyện Càng Long, tỉnh Vĩnh Long, mang hệ sinh thái đặc trưng của vùng đất ngập nước ĐBSCL."
+  },
+  {
+    "id": "san-chim-vam-ho-ben-tre",
+    "name": "Khu Bảo Tồn Loài - Sinh Cảnh Sân Chim Vàm Hồ",
+    "type": "nature",
+    "placeId": "p-ba-tri",
+    "summary": "Sân chim Vàm Hồ trải dọc ven sông Ba Lai, là điểm du lịch sinh thái được hình thành từ tháng 5-1986 do đàn chim trước ở Cù lao Đất, xã An Hiệp, huyện Ba Tri di cư tới."
+  },
+  {
+    "id": "sau-rieng-cap-dong-chanh-thu",
+    "name": "Sầu riêng cấp đông Chánh Thu",
+    "type": "product",
+    "placeId": "xa-cho-lach",
+    "summary": "Sản phẩm sầu riêng cấp đông của Công ty TNHH XNK Trái cây Chánh Thu — một trong những sản phẩm OCOP tiêu biểu của huyện Chợ Lách — đã được xuất khẩu ra thị trường quốc tế."
+  },
+  {
+    "id": "vam-tac-thu-rung-ban-song-co-chien-tra-vinh",
+    "name": "Vàm Tắc Thủ - Rừng bần ven sông Cổ Chiên",
+    "type": "nature",
+    "placeId": "xa-hoa-minh",
+    "summary": "Vùng rừng bần ven sông Cổ Chiên, sinh thái tự nhiên đặc trưng của Trà Vinh với cảnh quan cửa sông xanh mát."
+  },
+  {
+    "id": "vuon-cay-an-trai-mo-cay-bac",
+    "name": "Vườn cây ăn trái Mỏ Cày Bắc",
+    "type": "nature",
+    "placeId": "xa-nhuan-phu-tan",
+    "summary": "Vùng đất Cù lao Minh nằm giữa sông Hàm Luông và sông Cổ Chiên, được phù sa bồi đắp tạo nên những vườn cây ăn trái xanh tươi quanh năm."
+  },
+  {
+    "id": "vuon-chom-chom-ba-ngoi",
+    "name": "Vườn chôm chôm Ba Ngói",
+    "type": "nature",
+    "placeId": "p-ben-tre",
+    "summary": "Vườn chôm chôm rộng hơn 10.000 m² nằm gần cồn Phú Đa, kết hợp du lịch trải nghiệm với các hoạt động cào ốc gạo và thưởng thức bánh xèo hến đặc sản địa phương."
+  },
+  {
+    "id": "xa-kim-hoa-diem-du-lich-sinh-thai-song-nuoc",
+    "name": "Xã Kim Hòa - Điểm du lịch sinh thái sông nước",
+    "type": "nature",
+    "placeId": "xa-vinh-kim",
+    "summary": "Xã Kim Hòa nằm ở phía bắc vùng Cầu Ngang, cách trung tâm Cầu Ngang 13km."
+  },
+  {
+    "id": "xoai-tu-quy-va-cua-bien-thanh-phong-ocop",
+    "name": "Xoài tứ quý và cua biển Thạnh Phong (OCOP)",
+    "type": "product",
+    "placeId": "xa-an-qui",
+    "summary": "Xoài tứ quý và cua biển do Hợp tác xã Dịch vụ Nông nghiệp Thạnh Phong cung cấp, đạt chứng nhận OCOP."
+  },
+  {
+    "id": "cu-lao-minh",
+    "name": "Cù lao Minh",
+    "type": "nature",
+    "placeId": "p-mo-cay",
+    "summary": "Phù sa hai dòng Hàm Luông và Cổ Chiên bồi đắp cù lao Minh thành dải đất gần chín trăm sáu mươi km vuông — chiếm bốn mươi phần trăm diện tích tỉnh Bến Tre (cũ), trải hơn tám mươi cây số từ vườn cây giống Chợ Lách ra tận biển Thạnh Phú."
+  },
+  {
+    "id": "cho-cho-lach",
+    "name": "Chợ Chợ Lách",
+    "type": "attraction",
+    "placeId": "xa-cho-lach",
+    "summary": "Ghé chợ Chợ Lách, Bến Tre, khách mua được cây giống và hoa tươi ngay giữa vùng cây giống, hoa kiểng lớn nhất ĐBSCL. Vào chợ miễn phí."
+  },
+  {
+    "id": "sau-rieng-cai-mon",
+    "name": "Sầu riêng Cái Mơn",
+    "type": "product",
+    "placeId": "xa-vinh-thanh",
+    "summary": "Khoảng năm 1910, một thầy dạy Nho từ Campuchia mang giống sầu riêng đầu tiên về trồng tại Vĩnh Thành (Chợ Lách) — giống \"Sữa Bò\" cơm vàng nhạt, hạt lép, thơm sữa. Nay 1.350 ha sầu riêng Cái Mơn đã được cấp chỉ dẫn địa lý (2020), sản lượng khoảng 11.000 tấn/năm."
+  },
+  {
+    "id": "deja-vu-cafe",
+    "name": "Deja Vu Cafe",
+    "type": "cafe",
+    "placeId": "p-tra-vinh",
+    "summary": "Trong khuôn viên khu sinh thái Huỳnh Kha ở Trà Vinh, Deja Vu Cafe dọn cà phê giữa cây cối thay vì phố xá."
+  },
+  {
+    "id": "xa-cho-lach",
+    "name": "Xã Chợ Lách",
+    "type": "place",
+    "placeId": "xa-cho-lach",
+    "summary": "Xã Chợ Lách thuộc huyện Chợ Lách, tỉnh Bến Tre, ra đời khi TT Chợ Lách, xã Hòa Nghĩa và xã Long Thới nhập lại."
+  },
+  {
+    "id": "xa-dai-dien",
+    "name": "Xã Đại Điền",
+    "type": "place",
+    "placeId": "xa-dai-dien",
+    "summary": "Xã Đại Điền thuộc tỉnh Vĩnh Long, sáp nhập từ xã Phú Khánh, xã Tân Phong, xã Thới Thạnh và xã Đại Điền của huyện Thạnh Phú."
+  },
+  {
+    "id": "quyt-duong-cau-ke",
+    "name": "Quýt đường Cầu Kè",
+    "type": "craft_village",
+    "placeId": "p-tra-vinh",
+    "summary": "Vùng nước ngọt ven sông Hậu ở Cầu Kè cho ra giống quýt đường vỏ mỏng, tép mọng, ngọt thanh không chua — cùng cam sành, bưởi da xanh tạo nên vựa trái cây lớn phía tây tỉnh Vĩnh Long."
+  },
+  {
+    "id": "xa-hung-khanh-trung",
+    "name": "Xã Hưng Khánh Trung",
+    "type": "place",
+    "placeId": "xa-hung-khanh-trung",
+    "summary": "Xã Hưng Khánh Trung thuộc huyện Chợ Lách + H, tỉnh Bến Tre, ra đời khi xã Vĩnh Hòa, xã Hưng Khánh Trung B (H."
+  },
+  {
+    "id": "vinh-long-1-day-backpacker",
+    "name": "Vĩnh Long 1 ngày – Cù lao + Làng gốm",
+    "type": "itinerary",
+    "placeId": "xa-nhon-phu",
+    "summary": "Hành trình 1 ngày backpacker từ TP.HCM đến Vĩnh Long: xuất phát 5h sáng, qua phà Đình Khao, khám phá cù lao Bình Hòa Phước, vườn trái cây, đò chèo kênh rạch và gốm Mang Thít. Tổng chi phí khoảng 250.000–330.000 VNĐ/người, về lại TP.HCM trước 21h. Phù hợp khách ưa trải nghiệm thực tế, không cần đặt tour."
+  },
+  {
+    "id": "xa-phu-phung",
+    "name": "Xã Phú Phụng",
+    "type": "place",
+    "placeId": "xa-phu-phung",
+    "summary": "Xã Phú Phụng thuộc tỉnh Vĩnh Long, sáp nhập từ xã Sơn Định, xã Vĩnh Bình và xã Phú Phụng của huyện Chợ Lách."
+  },
+  {
+    "id": "ben-tre-vam-ho-birdwatching-t9-t3",
+    "name": "Bến Tre – Ngắm chim Vàm Hồ tháng 9–3",
+    "type": "itinerary",
+    "placeId": "p-phu-khuong",
+    "summary": "Hành trình 2 ngày khám phá thiên nhiên Bến Tre dành cho người yêu birdwatching: thức dậy lúc 4h30 để đến sân chim Vàm Hồ ngắm hàng ngàn cò, vạc, diệc bay về tổ lúc bình minh; xuyên rừng đước Long Khánh nghe chim hót; chiều thả hồn ở Cồn Phụng; tối thưởng thức kẹo dừa thủ công. Mùa cao điểm tháng 9 đến tháng 3, chi phí khoảng 600.000–900.000 đồng/người."
+  },
+  {
+    "id": "itinerary-cai-mon-tet-ben-tre",
+    "name": "Làng hoa Cái Mơn dịp Tết – Bến Tre",
+    "type": "itinerary",
+    "placeId": "p-phu-khuong",
+    "summary": "Hành trình 1 ngày khám phá làng hoa Cái Mơn và Chợ Lách (Bến Tre) dịp tháng 12. Tháng 1, thời điểm vườn ươm rực rỡ hoa cúc, hoa hồng, hoa lan chuẩn bị cho Tết Nguyên Đán."
+  },
+  {
+    "id": "ben-tre-1-ngay-con-phuong-tphcm",
+    "name": "Bến Tre 1 ngày – Cồn Phụng từ TP.HCM",
+    "type": "itinerary",
+    "placeId": "p-phu-khuong",
+    "summary": "Hành trình 1 ngày xuất phát từ TP.HCM lúc 6h sáng, khám phá Cồn Phụng. Bến Tre với vườn dừa xanh mát, xưởng kẹo dừa truyền thống, đi xuồng ba lá trên kênh rạch."
+  },
+  {
+    "id": "cua-hang-thuc-pham-an-toan-hoa-sao",
+    "name": "Cửa hàng thực phẩm an toàn Hoa Sao",
+    "type": "attraction",
+    "placeId": "p-long-chau",
+    "summary": "Cửa hàng Hoa Sao chuyên phân phối thực phẩm an toàn, sản phẩm nông nghiệp sạch có chứng nhận tại Vĩnh Long."
+  },
+  {
+    "id": "khu-du-lich-sinh-thai-anh-ba-khia",
+    "name": "Khu du lịch sinh thái Anh Ba Khía",
+    "type": "attraction",
+    "placeId": "p-binh-dai",
+    "summary": "Khu du lịch sinh thái được chọn là nơi ra mắt Chi hội Du lịch Bình Đại (5/2026)."
+  },
+  {
+    "id": "xa-vinh-thanh",
+    "name": "Xã Vĩnh Thành",
+    "type": "place",
+    "placeId": "xa-long-thanh",
+    "summary": "Xã Vĩnh Thành, tỉnh Vĩnh Long, hình thành từ sáp nhập xã Phú Sơn, xã Tân Thiềng và xã Vĩnh Thành thuộc huyện Chợ Lách."
+  },
+  {
+    "id": "mua-trai-cay-chin-roi",
+    "name": "Mùa trái cây chín rộ",
+    "type": "experience",
+    "placeId": "xa-an-binh",
+    "summary": "Tại miệt vườn cù lao An Bình và Chợ Lách: chôm chôm, sầu riêng, măng cụt, nhãn, xoài. Giá rẻ, trái ngon nhất trong năm — thời điểm lý tưởng đi miệt vườn."
+  },
+  {
+    "id": "cu-lao-may-tra-on",
+    "name": "Cù Lao Mây Trà Ôn",
+    "type": "nature",
+    "placeId": "xa-luc-si-thanh",
+    "summary": "Cù lao rộng khoảng 4.000 ha giữa sông Hậu — vườn cam sành, bưởi, chôm chôm trải dài hai xã Lục Sỹ Thành và Phú Thành, huyện Trà Ôn."
+  },
+  {
+    "id": "lang-banh-trang-tra-on",
+    "name": "Làng Bánh Tráng Trà Ôn",
+    "type": "craft_village",
+    "placeId": "p-tra-on",
+    "summary": "Làng nghề hơn 100 năm trên Cù Lao Mây — 71 hộ tráng bánh thủ công — từ bánh tráng nem truyền thống đến bánh tráng thanh long, lá dứa, củ dền đủ sắc."
+  },
+  {
+    "id": "lang-det-chieu-cu-lao-dai",
+    "name": "Làng Dệt Chiếu Cù Lao Dài",
+    "type": "craft_village",
+    "placeId": "xa-quoi-thien",
+    "summary": "Ấp Bình Thủy trên Cù Lao Dài — làng nghề dệt chiếu lác truyền thống giữa sông Cổ Chiên — du khách tham gia cắt lác, phơi lác, ngồi khung dệt."
+  },
+  {
+    "id": "khu-sinh-thai-nha-xua-long-ho",
+    "name": "Khu Sinh Thái Nhà Xưa Long Hồ",
+    "type": "experience",
+    "placeId": "p-phuoc-hau",
+    "summary": "Khu du lịch sinh thái kiến trúc nhà ba gian truyền thống Tây Nam Bộ bên kênh Ông Mê, xã Phước Hậu, Long Hồ, Vĩnh Long."
+  },
+  {
+    "id": "khu-du-lich-sinh-thai-hoang-hao",
+    "name": "Khu Du Lịch Sinh Thái Hoàng Hảo",
+    "type": "experience",
+    "placeId": "p-long-chau",
+    "summary": "Khu sinh thái rộng hơn 70ha trên quốc lộ 57, cách phà Đình Khao 2km, với cảnh quan ruộng lúa, ao sen, nhiều tiểu cảnh."
+  },
+  {
+    "id": "diem-trung-bay-va-gioi-thieu-san-pham-ocop-vinh-long",
+    "name": "Điểm trưng bày và giới thiệu sản phẩm OCOP Vĩnh Long",
+    "type": "product",
+    "placeId": "p-long-chau",
+    "summary": "Cửa hàng trưng bày và giới thiệu các sản phẩm nông nghiệp và sản phẩm OCOP (One Commune One Product) của tỉnh Vĩnh Long. Nơi đây tập hợp các đặc sản địa phương đạt chứng nhận OCOP 3–4 sao từ khắp các xã, phường trong tỉnh. Mở cửa từ 8:00 đến 22:00 hàng ngày."
+  },
+  {
+    "id": "du-lich-sinh-thai-sala",
+    "name": "Du lịch sinh thái Sala",
+    "type": "attraction",
+    "placeId": "xa-an-binh",
+    "summary": "Khu du lịch sinh thái rộng 20 hecta tại Vĩnh Long với nhiều không gian xanh và trò chơi dân gian vùng Tây Nam Bộ."
+  },
+  {
+    "id": "khu-du-lich-s-mo-farm-cuu-long",
+    "name": "Somo Farm Cửu Long",
+    "type": "attraction",
+    "placeId": "xa-an-binh",
+    "summary": "Somo Farm Cửu Long tại Cái Nhum, Mang Thít — điểm du lịch sinh thái được tỉnh công nhận năm 2023, OCOP 4 sao. Kiến trúc lấy cảm hứng từ lò gạch truyền thống vùng \"vương quốc gạch ngói\" Mang Thít."
+  },
+  {
+    "id": "long-ho",
+    "name": "Long Hồ",
+    "type": "nature",
+    "placeId": "p-long-ho",
+    "summary": "Vùng đất trù phú bao quanh TP Vĩnh Long, với vườn trái cây sum suê và đời sống miệt vườn yên bình."
+  },
+  {
+    "id": "cu-lao-may",
+    "name": "Cù lao Mây",
+    "type": "nature",
+    "placeId": "p-long-chau",
+    "summary": "Khu vực cù lao thuộc Trà Ôn, Vĩnh Long, được mệnh danh là \"đảo ngọc\" nhờ lợi thế phát triển du lịch sinh thái miệt vườn."
+  },
+  {
+    "id": "diem-du-lich-sinh-thai-tu-do",
+    "name": "Điểm du lịch sinh thái Tư Dô",
+    "type": "attraction",
+    "placeId": "p-long-chau",
+    "summary": "Điểm du lịch sinh thái miệt vườn tại cồn Công, Vĩnh Long, nổi bật với vườn chôm chôm chất lượng cao."
+  },
+  {
+    "id": "diem-du-lich-sinh-thai-tam-trong",
+    "name": "Điểm du lịch sinh thái Tám Trong",
+    "type": "attraction",
+    "placeId": "p-long-chau",
+    "summary": "Điểm du lịch sinh thái miệt vườn ở đầu cồn Công, Vĩnh Long nhờ cây trái quanh năm, ao nuôi cá và khu ẩm thực dân dã."
+  },
+  {
+    "id": "khu-du-lich-sinh-thai-miet-vuon-vinh-sang",
+    "name": "Khu du lịch sinh thái miệt vườn Vinh Sang",
+    "type": "attraction",
+    "placeId": "p-long-chau",
+    "summary": "Khu sinh thái 2,2 ha trên cù lao An Bình, Long Hồ — ven sông Cổ Chiên. Câu cá sấu, cưỡi đà điểu, chèo xuồng, vườn chim 12 loài, đờn ca tài tử."
+  },
+  {
+    "id": "khu-du-lich-sinh-thai-huynh-kha",
+    "name": "Khu du lịch sinh thái Huỳnh Kha",
+    "type": "nature",
+    "placeId": "p-tra-vinh",
+    "summary": "Khu sinh thái rộng hơn 57.000 m² tại phường 4, TP Trà Vinh — nhà hàng sức chứa trên 1.000 khách, khu vui chơi dưới nước, trò chơi dân gian, đi thuyền trên kênh rạch."
+  },
+  {
+    "id": "ngay-hoi-thanh-tra",
+    "name": "Ngày hội Thanh trà",
+    "type": "event",
+    "placeId": "p-binh-minh",
+    "summary": "Sự kiện quảng bá đặc sản thanh trà được tổ chức trước thềm Tuần lễ Văn hóa, thể thao và du lịch tỉnh Vĩnh Long."
+  },
+  {
+    "id": "trai-quach-tra-vinh",
+    "name": "Trái Quách Trà Vinh",
+    "type": "product",
+    "placeId": "p-tra-vinh",
+    "summary": "Loại trái cây đặc hữu của Trà Vinh, hình cầu cứng, ruột vàng có vị chua thanh ngọt mát và mùi thơm đặc trưng."
+  },
+  {
+    "id": "oc-gao-cu-lao-dai",
+    "name": "Ốc gạo Cù Lao Dài",
+    "type": "dish",
+    "placeId": "xa-quoi-thien",
+    "summary": "Ốc gạo sông Cổ Chiên vùng Cù Lao Dài, Vũng Liêm — thịt trắng ngần, giòn sần sật, béo ngọt. Mùa ngon nhất: tháng 4-5 âm lịch khi ốc trưởng thành."
+  },
+  {
+    "id": "nghe-don-ca-tai-tu",
+    "name": "Nghe đờn ca tài tử",
+    "type": "experience",
+    "placeId": "xa-an-binh",
+    "summary": "Thưởng thức đờn ca tài tử Nam Bộ — di sản văn hóa phi vật thể nhân loại (UNESCO, 5/12/2013) — do nghệ nhân biểu diễn tại homestay, khu du lịch sinh thái hoặc trên ghe."
+  },
+  {
+    "id": "peace-farm",
+    "name": "Peace Farm",
+    "type": "experience",
+    "placeId": "xa-an-binh",
+    "summary": "Trải nghiệm nông nghiệp tại Peace Farm, Vĩnh Long: tham quan cơ sở sản xuất nông sản, tìm hiểu quy trình canh tác."
+  },
+  {
+    "id": "du-lich-vuon-chu-7-gat",
+    "name": "Du lịch vườn chú 7 Gắt",
+    "type": "experience",
+    "placeId": "xa-an-binh",
+    "summary": "Trải nghiệm vườn trái cây và ẩm thực đồng quê tại vườn chú 7 Gắt, Vĩnh Long: thưởng thức gà, cá lóc, lươn, ếch, cá tai tượng."
+  },
+  {
+    "id": "nha-vuon-tu-hien",
+    "name": "Nhà vườn Tư Hiền",
+    "type": "experience",
+    "placeId": "p-long-chau",
+    "summary": "Nhà vườn trồng chôm chôm trên cù lao An Bình, nơi có thể tham quan, hái trái cây và thưởng thức tại vườn."
+  },
+  {
+    "id": "nha-co-huynh-phu-thanh-phu",
+    "name": "Nhà Cổ Huỳnh Phủ Thạnh Phú",
+    "type": "history",
+    "placeId": "xa-dai-dien",
+    "summary": "Mười bốn năm xây dựng (1890–1904), Tri huyện Huỳnh Ngọc Khiêm dựng nên ngôi nhà cổ kiểu xuyên trính rộng hơn 500 m² giữa vườn cây Đại Điền, Thạnh Phú — Di tích Kiến trúc Nghệ thuật cấp quốc gia từ 2011."
+  },
+  {
+    "id": "somo-farm-cuu-long",
+    "name": "Somo Farm Cửu Long - lưu trú sinh thái",
+    "type": "accommodation",
+    "placeId": "xa-cai-nhum",
+    "summary": "Khách sạn Somo Farm Cửu Long - lưu trú sinh thái, tại Thị trấn Cái Nhum, 4 sao, Vĩnh Long."
+  },
+  {
+    "id": "homestay-con-ba-tu",
+    "name": "Homestay Cồn Bà Tư",
+    "type": "accommodation",
+    "placeId": "xa-thoi-thuan",
+    "summary": "Homestay sinh thái tại Xã Thới Thuận, Tọa Lạc Trên Cồn Sông Nước, Địa Chỉ số 85 ấp Thới Hòa 2."
+  },
+  {
+    "id": "lo-lem-homestay",
+    "name": "Lọ Lem Homestay",
+    "type": "accommodation",
+    "placeId": "p-long-chau",
+    "summary": "Homestay tại Vĩnh Long, có ban công, sân hiên, chỗ đậu xe riêng miễn phí và Wi-Fi miễn phí."
+  },
+  {
+    "id": "bao-tang-dua-sap-tra-vinh",
+    "name": "Bảo tàng dừa sáp Trà Vinh",
+    "type": "attraction",
+    "placeId": "xa-cau-ke",
+    "summary": "Ở thủ phủ dừa sáp Cầu Kè, bảo tàng dừa sáp Trà Vinh là bảo tàng đầu tiên của Việt Nam dành riêng cho một loại trái cây."
+  },
+  {
+    "id": "con-thanh-long-mo-cay-nam",
+    "name": "Cồn Thành Long Mỏ Cày Nam",
+    "type": "attraction",
+    "placeId": "xa-thanh-thoi",
+    "summary": "Khu sinh thái miệt vườn rộng 111ha trên dòng sông Cổ Chiên, gồm nhiều cồn nhỏ hợp thành (Cồn Nẩy, Cồn Chen, Cồn Cát)."
+  },
+  {
+    "id": "cho-noi-tra-on",
+    "name": "Đi chợ nổi Trà Ôn lúc rạng sáng",
+    "type": "experience",
+    "placeId": "xa-luc-si-thanh",
+    "summary": "Từ 3–4 giờ sáng, khi con nước lớn dâng, hàng trăm ghe thuyền tụ về ngã ba sông Hậu và sông Mang Thít — chợ nổi Trà Ôn họp theo con nước chứ không theo giờ cố định, trải dài hơn 300 m dọc sông. Đông nhất lúc 5–6 giờ sáng khi ghe vườn từ nhiều tỉnh mang trái cây, nông sản lên bán sỉ giữa sông."
+  },
+  {
+    "id": "cu-lao-dai-vung-liem",
+    "name": "Cù Lao Dài Vũng Liêm",
+    "type": "nature",
+    "placeId": "xa-quoi-thien",
+    "summary": "Cù Lao Dài là dải đất phù sa dài khoảng 20 km nằm trên sông Cổ Chiên, thuộc hai xã Thanh Bình và Quới Thiện, tỉnh Vĩnh Long, cách thành phố Vĩnh Long hơn 30 km. Vùng đất này gắn liền với danh thần Thoại Ngọc Hầu — người có công khai phá từ thời vua Gia Long, với quần thể mộ thân nhân được xếp hạng di tích lịch sử văn hóa cấp tỉnh năm 2017."
+  },
+  {
+    "id": "nha-dua-cocohome",
+    "name": "Nhà dừa CocoHome",
+    "type": "accommodation",
+    "placeId": "xa-phu-phung",
+    "summary": "Homestay xây hoàn toàn bằng dừa — tường dừa, mái dừa, nội thất dừa — trải nghiệm xứ dừa Bến Tre từ trong ra ngoài."
+  },
+  {
+    "id": "ut-an---vuon-am-thuc",
+    "name": "Út An - Vườn Ẩm Thực",
+    "type": "restaurant",
+    "placeId": "p-son-dong",
+    "summary": "Giữa Phường 6, Bến Tre, nhà hàng Út An - Vườn Ẩm Thực dọn món theo lối vườn sinh thái tại số 8 khu phố Bình Khởi."
+  },
+  {
+    "id": "lang-be---am-thuc-du-lich-sinh-thai",
+    "name": "Làng Bè - Ẩm Thực & Du Lịch Sinh Thái",
+    "type": "restaurant",
+    "placeId": "p-phu-tuc",
+    "summary": "Về xã An Khánh, Bến Tre, Làng Bè - Ẩm Thực & Du Lịch Sinh Thái dọn các món sinh thái kiểu Vĩnh Long cho khách vừa ăn vừa nghỉ chân."
+  },
+  {
+    "id": "khu-du-lich-sinh-thai-deja-vu-huynh-kha",
+    "name": "Khu Du Lịch Sinh Thái Déjà Vu Huỳnh Kha",
+    "type": "restaurant",
+    "placeId": "p-long-duc",
+    "summary": "Ăn giữa vườn cây thay vì phòng máy lạnh — đó là kiểu phục vụ của khu sinh thái Déjà Vu Huỳnh Kha trên đường Dương Duy Khương, phường 4, Trà Vinh."
+  },
+  {
+    "id": "somo-farm-cuu-long-mang-thit",
+    "name": "Somo Farm Cửu Long - trải nghiệm nông nghiệp",
+    "type": "experience",
+    "placeId": "xa-cai-nhum",
+    "summary": "Một ngày tại SomoFarm Cửu Long, bạn sẽ được hóa thân thành người con Vĩnh Long thực thụ với những hoạt động trải nghiệm đặc trưng đầy thú vị như câu cá, bơi thuyền, tát mương bắt cá, chăm sóc và thu hoạch rau củ, trái cây."
+  },
+  {
+    "id": "khu-du-lich-truong-huy",
+    "name": "Khu du lịch Trường Huy",
+    "type": "nature",
+    "placeId": "p-thanh-duc",
+    "summary": "Khu du lịch sinh thái và vui chơi giải trí gần trung tâm Vĩnh Long, có hồ nước, vườn cảnh và nhiều hoạt động ngoài trời."
+  },
+  {
+    "id": "con-phu-da",
+    "name": "Cồn Phú Đa",
+    "type": "nature",
+    "placeId": "xa-phu-phung",
+    "summary": "Nổi lên giữa sông Cổ Chiên như một mảnh vườn nhiệt đới thu nhỏ — trái cây chín muột trên cành, mùi hoa bưởi thoang thoảng theo gió và tiếng ốc gạo khua nhẹ trong thùng của người làng nghề. Đây là một trong số ít nơi còn lưu giữ nghề nuôi ốc gạo truyền thống, sản vật đặc trưng chỉ có ở vùng Chợ Lách này."
+  },
+  {
+    "id": "cu-lao-dai",
+    "name": "Cù lao Dài",
+    "type": "nature",
+    "placeId": "xa-quoi-thien",
+    "summary": "Dải phù sa dài khoảng 20 km giữa sông Cổ Chiên, trải qua hai xã Thanh Bình và Quới Thiện của Vũng Liêm — nơi xoài cát núm thơm lừng theo mùa và hến sông vị ngọt riêng không lẫn."
+  },
+  {
+    "id": "con-oc",
+    "name": "Cồn Ốc",
+    "type": "nature",
+    "placeId": "xa-giong-trom",
+    "summary": "Cồn nổi lớn nhất sông Hàm Luông — 647 ha trải dài 8,3 km thuộc xã Hưng Phong, Giồng Trôm — nơi vườn dừa ông Đỗ Thành Thưởng giữ hơn 20 giống dừa khác nhau."
+  },
+  {
+    "id": "con-ho",
+    "name": "Cồn Hô",
+    "type": "nature",
+    "placeId": "p-cang-long",
+    "summary": "Còn giữ nguyên vẹn vẻ hoang sơ hiếm có giữa thời đại phát triển ồn ào — không bảng hiệu quảng cáo, không đám đông chen chúc, chỉ có cây xanh, đất phù sa và dòng sông êm ả chảy. Đặt chân lên cồn là đặt chân vào thế giới khác: vườn cây ăn trái xanh rì, bướm bay lượn, tiếng chim hót rộn ràng và những người dân chân chất đón khách bằng nụ cười."
+  },
+  {
+    "id": "nha-xua-cai-cuong",
+    "name": "Nhà xưa Cai Cường",
+    "type": "nature",
+    "placeId": "p-long-ho",
+    "summary": "Đứng sừng sững trên cù lao An Bình như một chứng nhân thời gian — ngôi nhà cổ Nam Bộ hơn trăm tuổi với cột gỗ lim đen bóng, mái ngói rêu phong và nội thất xưa còn nguyên vẹn khiến mỗi góc đều như trang sách lịch sử. Vườn cây ăn trái xung quanh cho phép du khách hái ăn thoải mái và chụp ảnh giữa không gian miệt vườn thứ thiệt."
+  },
+  {
+    "id": "nhom-don-ca-tai-tu-bong-hong-vang",
+    "name": "Nhóm đờn ca tài tử Bông Hồng Vàng",
+    "type": "attraction",
+    "placeId": "p-long-chau",
+    "summary": "Một trong những nhóm đờn ca tài tử hoạt động lâu năm ở Vĩnh Long — biểu diễn phục vụ du khách tại các điểm homestay và nhà vườn trên cù lao, giữ nếp hát bội, hò điệu lý Nam Bộ đã được UNESCO công nhận."
+  },
+  {
+    "id": "banh-trang-nem-cu-lao-luc-si",
+    "name": "Bánh tráng nem cù lao Lục Sĩ",
+    "type": "product",
+    "placeId": "xa-luc-si-thanh",
+    "summary": "Trăm năm nay, dân cù lao Mây ở xã Lục Sĩ Thành mỗi sáng tráng bột gạo trên vải căng miệng nồi — mười lăm giây một cái, phơi hai nắng là xong — bánh tráng nem mỏng đều dẻo dai, không hóa chất bảo quản."
+  },
+  {
+    "id": "sau-rieng-ri-6-long-ho",
+    "name": "Sầu riêng Ri 6 Long Hồ",
+    "type": "product",
+    "placeId": "p-thanh-duc",
+    "summary": "Năm 1990, ông Nguyễn Minh Châu ở ấp Phước Định, xã Bình Hòa Phước mua sáu cây giống sầu riêng với giá 30 giạ lúa rồi ghép cành — giống Ri 6 ra đời từ đó, đoạt giải nhất Hội thi trái cây ngon Đồng bằng sông Cửu Long năm 1999."
+  },
+  {
+    "id": "oc-gao-con-phu-da-hap-sa",
+    "name": "Ốc Gạo Cồn Phú Đa Hấp Sả",
+    "type": "dish",
+    "placeId": "xa-thanh-thoi",
+    "summary": "Luộc chín lật vỏ, dưới yếm con ốc lộ ra cục mỡ nhỏ tròn trắng giống hạt gạo — cái tên ốc gạo ra đời từ đó. Ốc gạo cồn Phú Đa sống trên bãi cát giữa sông Cổ Chiên thuộc xã Vĩnh Bình, Chợ Lách, thịt trắng dày dai ngọt và không nhớt. Ngon nhất từ tháng 5 đến tháng 7 âm lịch, hấp cùng sả gừng lá ổi rồi chấm muối tiêu chanh."
+  },
+  {
+    "id": "cua-hang-qua-tang-dac-san-ben-tre-mekong-delta-ben-tre",
+    "name": "Cửa hàng Quà Tặng & Đặc Sản Bến Tre - Mekong Delta",
+    "type": "attraction",
+    "placeId": "p-phu-tuc",
+    "summary": "Shop lưu niệm tại Bến Ninh Kiều khu vực Cồn Phụng, Xã Tân Thạch, Huyện Châu Thành, Bến Tre."
+  },
+  {
+    "id": "song-long-ho-vinh-long",
+    "name": "Sông Long Hồ",
+    "type": "nature",
+    "placeId": "p-thanh-duc",
+    "summary": "(sông, 28 km). Chảy qua Long Hồ và tiếp giáp thành phố Vĩnh Long. Tên gọi gắn liền với vùng đất Long Hồ Dinh – trung tâm hành chính của đàng Trong thế kỷ 18. Là trục giao thông thủy nội địa kết nối các xã vườn cù lao. Điểm ngắm cảnh đẹp: Bến đò Long Hồ và đoạn qua xã Phước Hậu nhìn ra vườn bưởi da xanh. Đánh giá cảnh quan: 4/5."
+  },
+  {
+    "id": "rach-tra-ngoa-vinh-long",
+    "name": "Rạch Trà Ngoa",
+    "type": "nature",
+    "placeId": "xa-nhon-phu",
+    "summary": "(rạch, 9 km). Rạch nhỏ chạy qua xã Trà Ngoa và khu vực cù lao An Bình, tạo ra hệ thống đường thủy chằng chịt trong cù lao. Gắn liền với làng nghề trồng dâu nuôi tằm và nghề hái trái cây trên cù lao. Là tuyến xuồng chèo đặc trưng trong tour du lịch homestay cù lao. Điểm ngắm cảnh đẹp: Bến xuồng tại ấp An Bình – cù lao An Bình, nhìn vào vườn chôm chôm hai bên bờ rạch. Đánh giá cảnh quan: 4/5."
+  },
+  {
+    "id": "song-ba-lai-ben-tre",
+    "name": "Sông Ba Lai",
+    "type": "nature",
+    "placeId": "xa-chau-hung",
+    "summary": "(sông, 55 km). Từng là nhánh sông Tiền, nay đã bị ngăn bởi đập Ba Lai (hoàn thành 2002) để ngăn mặn. Khu vực thượng lưu đập trở thành hồ nước ngọt nhân tạo lớn nhất Bến Tre, cung cấp nước sinh hoạt và nông nghiệp cho ba huyện. Điểm ngắm cảnh đẹp: Cống đập Ba Lai (huyện Bình Đại) – công trình thủy lợi lớn, kết hợp cảnh quan sông nước. Đánh giá cảnh quan: 3/5."
+  },
+  {
+    "id": "kenh-bong-bot-tra-vinh",
+    "name": "Kênh Bông Bót",
+    "type": "nature",
+    "placeId": "xa-nhi-long",
+    "summary": "(kênh, 22 km). Kênh đào quan trọng trong hệ thống thủy lợi Cầu Kè, tên gắn liền với địa danh lịch sử kháng chiến chống Pháp trong vùng. Kết nối vùng trồng lúa và vườn cây ăn trái với các chợ đầu mối, là tuyến vận chuyển trái cây đặc sản địa phương. Điểm ngắm cảnh đẹp: Chợ nổi nhỏ đầu kênh gần Cầu Kè vào buổi sáng sớm. Đánh giá cảnh quan: 3/5."
+  },
+  {
+    "id": "am-thuc-san-vuon-1985-vinh-long",
+    "name": "Ẩm Thực Sân Vườn 1985",
+    "type": "restaurant",
+    "placeId": "xa-nhon-phu",
+    "summary": "Tại TP. Vĩnh Long, không gian sân vườn cây xanh đèn dây trang trí hoài cổ Nam Bộ, 50-70 chỗ. Chuyên món đồng quê: cá kèo nướng muối ớt, bông súng, tôm đất. Món đặc sắc: cá kèo nướng muối ớt ăn kèm rau đồng."
+  },
+  {
+    "id": "chua-long-thanh-ben-tre",
+    "name": "Chùa Long Thạnh (Giồng Trôm)",
+    "type": "attraction",
+    "placeId": "p-phu-khuong",
+    "summary": "Tôn giáo: Phật giáo. Thành lập: Thế kỷ 19. Kiến trúc chùa Nam Bộ xưa, tượng Phật Di Lặc ngoài trời lớn, vườn cây xanh mát, ao sen, tháp thờ xây dựng theo phong cách truyền thống. Thờ: Phật Di Lặc, Quan Thế Âm Bồ Tát. Lễ hội: Lễ Phật Đản, Lễ Vu Lan, Tết Thượng Nguyên (15/1 âm lịch)."
+  },
+  {
+    "id": "nha-tho-cai-mon-ben-tre",
+    "name": "Nhà thờ Cái Mơn (Chợ Lách)",
+    "type": "attraction",
+    "placeId": "xa-vinh-thanh",
+    "summary": "Tháp chuông 9 tầng nặng 800 tấn, cao 54 m — nhà thờ Cái Mơn ở xã Vĩnh Thành, Chợ Lách khởi dựng từ năm 1702, được xem là nhà thờ Công giáo cổ nhất xứ Nam Kỳ. Kiến trúc Roman thể hiện qua vòm tròn, tường dày, mái ngói đỏ bao quanh hành lang, ô thông gió gạch hoa và nội thất gỗ chạm khắc tinh xảo."
+  },
+  {
+    "id": "ca-phe-vuon-cau-khu-con-phung-con-phuoc-vinh-long",
+    "name": "Cà phê Vườn Cau (khu Cồn Phụng – Cồn Phước)",
+    "type": "cafe",
+    "placeId": "xa-an-binh",
+    "summary": "Cà phê sân vườn tại Cồn Phước (Cồn Lát), xã Bình Hòa Phước, Long Hồ. Không gian vườn dừa yên tĩnh, ghe chèo qua lại xung quanh."
+  },
+  {
+    "id": "nha-hang-lang-be-ben-tre-ben-tre",
+    "name": "Nhà hàng Làng Bè Bến Tre",
+    "type": "restaurant",
+    "placeId": "xa-tan-phu",
+    "summary": "Nhà hàng trên bè ở Bến Tre — cá đồng, cá sông, tôm càng xanh vùng sông nước miệt vườn."
+  },
+  {
+    "id": "khu-du-lich-sinh-thai-vinh-sang-cu-lao-an-binh",
+    "name": "Khu Du Lịch Sinh Thái Vinh Sang",
+    "type": "experience",
+    "placeId": "xa-an-binh",
+    "summary": "Khu du lịch Vinh Sang là điểm du lịch sinh thái tại miệt vườn Vĩnh Long."
+  },
+  {
+    "id": "khu-du-lich-sinh-thai-truong-huy-vinh-long",
+    "name": "Khu Du Lịch Sinh Thái Trường Huy",
+    "type": "experience",
+    "placeId": "p-long-chau",
+    "summary": "Một trong những địa điểm du lịch Vĩnh Long vô cùng."
+  },
+  {
+    "id": "quan-kem-sinh-to-thanh-binh-tra-vinh",
+    "name": "Quán kem - sinh tố Thanh Bình",
+    "type": "cafe",
+    "placeId": "xa-nhi-long",
+    "summary": "Quán kem dừa sáp Trà Vinh, đặc sản vùng đặc biệt, phục vụ kem tươi và sinh tố trái cây."
+  },
+  {
+    "id": "chom-chom-cai-mon",
+    "name": "Chôm chôm Cái Mơn",
+    "type": "product",
+    "placeId": "xa-cho-lach",
+    "summary": "Bóc lớp vỏ đỏ gai mềm ra cơm trắng ngần bám sát hạt, ngọt thanh giòn nước — chôm chôm Chợ Lách chiếm 3.400 ha vườn cây, thu hoạch khoảng 67.200 tấn mỗi năm. Chín rộ từ tháng 5 đến tháng 8, đúng mùa vào vườn Cái Mơn hái tươi là ngon nhất."
+  },
+  {
+    "id": "cua-hang-dac-san-mekong",
+    "name": "Cửa hàng đặc sản Mekong",
+    "type": "attraction",
+    "placeId": "p-long-chau",
+    "summary": "Cửa hàng đặc sản tại 92 Nguyễn Thị Minh Khai, phường Long Châu — trái cây tươi, bưởi sấy, kẹo dừa, mứt và quà tặng vùng ĐBSCL."
+  },
+  {
+    "id": "tour-dem-miet-vuon-vinh-long",
+    "name": "Tour Đêm Miệt Vườn Vĩnh Long",
+    "type": "experience",
+    "placeId": "p-long-chau",
+    "summary": "Tour đêm trải nghiệm văn hóa miệt vườn Nam Bộ, thưởng thức đờn ca tài tử, ẩm thực đặc sản."
+  },
+  {
+    "id": "tour-cai-thia-lang-xoai-cat-hoa-loc",
+    "name": "Tour Cái Thia - Làng Xoài Cát Hòa Lộc",
+    "type": "experience",
+    "placeId": "p-long-chau",
+    "summary": "Tour 1 ngày khám phá thị trấn Cái Thia và làng xoài Cát Hòa Lộc, huyện Tam Bình — trải nghiệm văn hóa miệt vườn sông nước."
+  },
+  {
+    "id": "khu-pho-am-thuc-bo-ho",
+    "name": "Khu phố ẩm thực Bờ Hồ",
+    "type": "restaurant",
+    "placeId": "p-an-hoi",
+    "summary": "Khu ẩm thực sầm uất dọc bờ Hồ Trúc Giang, nhiều quán ăn đặc sản Bến Tre: bánh xèo xứ dừa, hải sản, ẩm thực miệt vườn."
+  },
+  {
+    "id": "khu-du-lich-sinh-thai-chin-song-thanh-phu",
+    "name": "Khu Du Lịch Sinh Thái Chín Sông Thạnh Phú",
+    "type": "attraction",
+    "placeId": "xa-thanh-phu",
+    "summary": "Khu du lịch sinh thái tại xã Bình Thạnh, mở cửa 7h–22h. Cung cấp các hoạt động trải nghiệm miệt vườn: tát mương bắt cá, ngồi thuyền vỏ lãi, câu tôm, đu dây giăng, đi cầu khỉ và chạy mô tô nước."
+  },
+  {
+    "id": "san-chim-vam-ho-ba-tri",
+    "name": "Sân Chim Vàm Hồ Ba Tri",
+    "type": "nature",
+    "placeId": "p-ben-tre",
+    "summary": "Nông trại du lịch sinh thái kiêm sân chim rộng hơn 67ha bên hữu ngạn sông Ba Lai, Bến Tre."
+  },
+  {
+    "id": "mat-ong-hoa-dua-ben-tre",
+    "name": "Mật Ong Hoa Dừa Bến Tre",
+    "type": "product",
+    "placeId": "p-ben-tre",
+    "summary": "Sản phẩm mật ong đặc trưng của Bến Tre, thu từ hoa dừa và các vườn cây ăn trái phong phú vùng sông nước. Đạt OCOP 4 sao (Công ty Mật ong Tín Phát), màu vàng nhạt đến vàng nâu, mùi thơm đặc trưng."
+  },
+  {
+    "id": "banh-xeo-hen-cu-lao-dai",
+    "name": "Bánh Xèo Hến Cù Lao Dài",
+    "type": "dish",
+    "placeId": "p-phuoc-hau",
+    "summary": "Đặc sản ẩm thực của Cù Lao Dài với hến sông Cổ Chiên mập mạp, béo ngậy làm nhân bánh xèo."
+  },
+  {
+    "id": "khu-du-lich-truong-huy-long-ho",
+    "name": "Khu Du Lịch Trường Huy Long Hồ",
+    "type": "experience",
+    "placeId": "p-thanh-duc",
+    "summary": "Khu sinh thái diện tích 35ha tại xã Thanh Đức, Long Hồ, cách cầu Mỹ Thuận hơn 5km."
+  },
+  {
+    "id": "khu-du-lich-an-khanh",
+    "name": "Khu du lịch An Khánh",
+    "type": "attraction",
+    "placeId": "p-phu-tuc",
+    "summary": "Khu du lịch sinh thái miệt vườn nằm gần cầu Rạch Miễu, thuộc ấp An Thới B, xã An Khánh."
+  },
+  {
+    "id": "lang-be-an-khanh",
+    "name": "Làng Bè An Khánh",
+    "type": "attraction",
+    "placeId": "p-phu-tuc",
+    "summary": "Làng Bè nằm tại ấp Mỹ An, xã An Khánh, Châu Thành, là điểm tham quan miễn phí với khung cảnh sông nước miệt vườn đặc trưng vùng đồng bằng sông Cửu Long."
+  },
+  {
+    "id": "vuon-trai-cay-cai-mon",
+    "name": "Vườn trái cây Cái Mơn",
+    "type": "attraction",
+    "placeId": "xa-vinh-thanh",
+    "summary": "Điểm du lịch miệt vườn đặc trưng nhất tại xã Vĩnh Thành, được Sách Kỷ lục Việt Nam công nhận là nơi sản xuất giống cây ăn trái lớn nhất cả nước."
+  },
+  {
+    "id": "lang-nghe-cay-giong-cho-lach",
+    "name": "Làng nghề cây giống Chợ Lách",
+    "type": "craft_village",
+    "placeId": "xa-cho-lach",
+    "summary": "Huyện Chợ Lách có 31 làng nghề truyền thống sản xuất cây giống, hoa kiểng với hàng nghìn hộ dân tham gia, cung cấp hơn 17 triệu cây giống và 12 triệu sản phẩm hoa kiểng các loại mỗi năm cho thị trường cả nước."
+  },
+  {
+    "id": "lang-van-hoa-du-lich-cho-lach",
+    "name": "Làng Văn hóa Du lịch Chợ Lách",
+    "type": "experience",
+    "placeId": "xa-cho-lach",
+    "summary": "Mô hình làng văn hóa du lịch cộng đồng gắn với chương trình OCOP, thuộc nhóm sản phẩm dịch vụ du lịch nông thôn."
+  },
+  {
+    "id": "vuon-kieng-thu-nam-cong",
+    "name": "Vườn kiểng thú Năm Công",
+    "type": "attraction",
+    "placeId": "xa-cho-lach",
+    "summary": "Vườn kiểng thú của nghệ nhân Nguyễn Văn Công (Năm Công) tại Cái Mơn, Chợ Lách — hơn 40 năm tạo hình hàng trăm tác phẩm từ cây kiểng, từng trưng bày tại Gardens by the Bay Singapore."
+  },
+  {
+    "id": "dong-trung-ha-thao-say-thang-hoa-drc",
+    "name": "Đông trùng hạ thảo sấy thăng hoa DRC",
+    "type": "product",
+    "placeId": "xa-huong-my",
+    "summary": "Sản phẩm đông trùng hạ thảo sấy thăng hoa của Công ty TNHH Nấm sinh học DRC, được chứng nhận OCOP 3 sao đợt 1 năm 2024 tại Mỏ Cày Nam. Sản phẩm nông nghiệp công nghệ cao ứng dụng kỹ thuật nuôi cấy nấm sinh học tại địa phương."
+  },
+  {
+    "id": "banh-trang-cu-lao-may-lang-nghe-banh-trang",
+    "name": "Bánh Tráng Cù Lao Mây (Làng nghề bánh tráng)",
+    "type": "craft_village",
+    "placeId": "p-tra-on",
+    "summary": "Làng nghề bánh tráng lâu đời tại Cù Lao Mây, Trà Ôn."
+  },
+  {
+    "id": "banh-trang-ngot-le-hang",
+    "name": "Bánh tráng Ngọt Lệ Hằng",
+    "type": "product",
+    "placeId": "p-tra-on",
+    "summary": "Sản phẩm bánh tráng OCOP cấp tỉnh từ làng nghề Cù Lao Mây, Vĩnh Long."
+  },
+  {
+    "id": "hop-tac-xa-cam-phuong-thuy",
+    "name": "Hợp tác xã cam Phương Thúy",
+    "type": "product",
+    "placeId": "p-tra-on",
+    "summary": "Sản phẩm cam OCOP 3 sao được công nhận năm 2021, trồng theo tiêu chuẩn VietGAP và hữu cơ tại Vĩnh Long. Là một trong những sản phẩm nông nghiệp tiêu biểu của địa phương."
+  },
+  {
+    "id": "khu-du-lich-sinh-thai-hoang-quan",
+    "name": "Khu Du Lịch Sinh Thái Hoàng Quân",
+    "type": "attraction",
+    "placeId": "p-cai-von",
+    "summary": "Khu du lịch sinh thái tại Mỹ Hòa, TX Bình Minh. Miễn phí vào cửa, mở cửa cả ngày."
+  },
+  {
+    "id": "vuon-thanh-tra-dong-thanh",
+    "name": "Vườn thanh trà Đông Thành",
+    "type": "nature",
+    "placeId": "p-dong-thanh",
+    "summary": "Vùng trồng thanh trà ngọt đặc hữu chỉ có chất lượng tốt khi trồng trên đất Đông Thành ven rạch Cái Vồn."
+  },
+  {
+    "id": "man-an-phuoc-ocop",
+    "name": "Mận An Phước (OCOP)",
+    "type": "product",
+    "placeId": "xa-tan-luoc",
+    "summary": "Sản phẩm mận An Phước đạt chứng nhận OCOP 4 sao của HTX Cây ăn trái An Thới, xã Tân An Thạnh. Là đặc sản trái cây của Bình Tân, được nâng hạng từ 3 sao lên 4 sao OCOP."
+  },
+  {
+    "id": "dua-hau-tan-hung-ocop",
+    "name": "Dưa hấu Tân Hưng (OCOP)",
+    "type": "product",
+    "placeId": "xa-an-binh",
+    "summary": "Sản phẩm dưa hấu đạt chứng nhận OCOP của HTX Nông nghiệp - Cây ăn trái Tân Hưng, xã Tân Hưng."
+  },
+  {
+    "id": "vu-sua-hoang-kim-thanh-binh-ocop",
+    "name": "Vú sữa hoàng kim Thanh Bình (OCOP)",
+    "type": "product",
+    "placeId": "xa-an-binh",
+    "summary": "Sản phẩm vú sữa hoàng kim đạt chứng nhận OCOP của HTX Sản xuất dịch vụ nông nghiệp Thanh Bình, Bình Tân."
+  },
+  {
+    "id": "khu-du-lich-truong-an",
+    "name": "Khu du lịch Trường An",
+    "type": "attraction",
+    "placeId": "p-tan-ngai",
+    "summary": "Khu du lịch sinh thái nghỉ dưỡng rộng 16ha nằm bên bờ sông Tiền, với hệ thống cầu cảnh, ao hồ, hoa kiểng, 11 biệt thự 30 phòng tiêu chuẩn 2 sao, nhà hàng sức chứa 400 khách, hồ bơi, sân tennis, câu cá và các môn thể thao dưới nước như lướt ván, du thuyền, kayak."
+  },
+  {
+    "id": "khu-du-lich-sinh-thai-nha-xua",
+    "name": "Khu du lịch sinh thái Nhà Xưa",
+    "type": "attraction",
+    "placeId": "p-phuoc-hau",
+    "summary": "Khu du lịch sinh thái bảo tồn kiến trúc nhà xưa và văn hóa dân gian vùng đồng bằng sông Cửu Long."
+  },
+  {
+    "id": "vuon-cay-an-trai-miet-vuon-long-ho",
+    "name": "Vườn cây ăn trái miệt vườn Long Hồ",
+    "type": "nature",
+    "placeId": "p-long-chau",
+    "summary": "Vùng miệt vườn trù phú với nhiều loại cây ăn trái đặc sản như chôm chôm, nhãn, sầu riêng trải dài trên các cù lao và xã ven sông thuộc Long Hồ."
+  },
+  {
+    "id": "vuon-trai-cay-dac-san-long-ho",
+    "name": "Vườn trái cây đặc sản Long Hồ",
+    "type": "nature",
+    "placeId": "p-long-chau",
+    "summary": "Huyện Long Hồ với vùng trái cây đặc sản phong phú gồm chôm chôm, nhãn, sầu riêng và thanh long."
+  },
+  {
+    "id": "lang-nghe-gom-truyen-thong-long-ho",
+    "name": "Làng nghề gốm truyền thống Long Hồ",
+    "type": "craft_village",
+    "placeId": "p-thanh-duc",
+    "summary": "Nghề gốm truyền thống tại khu vực Long Hồ, Vĩnh Long được bảo tồn và phát huy gắn với du lịch homestay."
+  },
+  {
+    "id": "cu-lao-an-binh-bao-gom-xa-dong-phu",
+    "name": "Cù lao An Bình (bao gồm xã Đồng Phú)",
+    "type": "nature",
+    "placeId": "xa-an-binh",
+    "summary": "Khu du lịch sinh thái sông nước miệt vườn nằm giữa sông Hàm Luông và sông Cổ Chiên, diện tích khoảng 60 km², gồm 4 xã: An Bình, Bình Hòa Phước, Hòa Ninh và Đồng Phú."
+  },
+  {
+    "id": "lang-nghe-det-chieu-vung-liem",
+    "name": "Làng nghề dệt chiếu Vũng Liêm",
+    "type": "craft_village",
+    "placeId": "p-phuoc-hau",
+    "summary": "Làng nghề truyền thống dệt chiếu tại vùng Vũng Liêm, được đưa vào tour du lịch kết hợp tham quan Khu lưu niệm Võ Văn Kiệt và Cù Lao Dài."
+  },
+  {
+    "id": "vuon-trai-cay-cu-lao-dai",
+    "name": "Vườn trái cây Cù Lao Dài",
+    "type": "nature",
+    "placeId": "xa-quoi-thien",
+    "summary": "Vùng vườn trái cây đặc sản phong phú trên Cù Lao Dài, Vũng Liêm, với các loại trái cây như sầu riêng, chôm chôm, măng cụt."
+  },
+  {
+    "id": "lang-nghe-dan-chieu-va-lam-banh-xe-may-tre",
+    "name": "Làng nghề đan chiếu và làm bánh xe mây tre",
+    "type": "craft_village",
+    "placeId": "xa-quoi-thien",
+    "summary": "Làng nghề truyền thống trên Cù Lao Dài (xã Thanh Bình, Quới Thiện) với nghề đan chiếu và làm bánh xe bằng mây tre."
+  },
+  {
+    "id": "khu-du-lich-sala",
+    "name": "Khu du lịch Sala",
+    "type": "attraction",
+    "placeId": "p-tam-binh",
+    "summary": "Khu du lịch sinh thái rộng 20 hecta với nhiều không gian xanh và các trò chơi dân gian vùng Tây Nam Bộ truyền thống như cầu khỉ, đu dây, câu cá, chèo xuồng, cùng các trò chơi hiện đại như đạp vịt, chèo thuyền hơi, bóng nước."
+  },
+  {
+    "id": "khu-du-lich-sinh-thai-sala",
+    "name": "Khu du lịch sinh thái Sala",
+    "type": "nature",
+    "placeId": "p-tam-binh",
+    "summary": "Khu du lịch sinh thái rộng 20 ha tại xã Mỹ Thạnh Trung, tổng đầu tư hơn 40 tỷ đồng, cách trung tâm TP."
+  },
+  {
+    "id": "cam-sanh-tra-on",
+    "name": "Cam sành Trà Ôn",
+    "type": "product",
+    "placeId": "p-tra-on",
+    "summary": "Đặc sản trái cây đặc trưng của Trà Ôn, trồng chủ yếu ở các vườn dọc sông Hậu và trên Cù Lao Mây."
+  },
+  {
+    "id": "khu-du-lich-cho-noi-tra-on-ap-long-hung",
+    "name": "Khu du lịch Chợ Nổi Trà Ôn (Ấp Long Hưng)",
+    "type": "attraction",
+    "placeId": "xa-luc-si-thanh",
+    "summary": "Điểm du lịch mới hình thành tại ấp Long Hưng, xã Lục Sĩ Thành, cho phép du khách trải nghiệm không khí chợ nổi trên sông, chèo thuyền, tham quan vườn cây ăn trái, mê cung cây xanh, khu picnic và ngắm nhà gỗ trang trí truyền thống."
+  },
+  {
+    "id": "banh-trang-ngot-le-hang-htx-banh-trang-cu-lao-may",
+    "name": "Bánh tráng Ngọt Lệ Hằng (HTX bánh tráng Cù Lao Mây)",
+    "type": "product",
+    "placeId": "xa-luc-si-thanh",
+    "summary": "Sản phẩm bánh tráng ngọt của Hợp tác xã bánh tráng Cù Lao Mây được UBND tỉnh Vĩnh Long công nhận đạt chuẩn OCOP, đã xuất khẩu sang nhiều quốc gia như Nhật Bản, Pháp, Mỹ, Đài Loan."
+  },
+  {
+    "id": "kho-ca-loc-phu-thanh",
+    "name": "Khô cá lóc Phú Thành",
+    "type": "product",
+    "placeId": "xa-luc-si-thanh",
+    "summary": "Đặc sản khô cá lóc của xã Phú Thành trên Cù Lao Mây, được sản xuất từ cá lóc tươi nuôi tại địa phương, là sản phẩm thủy sản đặc trưng của vùng cù lao sông Hậu thuộc Trà Ôn."
+  },
+  {
+    "id": "vuon-dua-xiem-xanh-ap-thanh-hoa-1",
+    "name": "Vườn dừa xiêm xanh ấp Thành Hóa 1",
+    "type": "nature",
+    "placeId": "xa-tan-thanh-binh",
+    "summary": "Vườn dừa xiêm xanh nằm trong tuyến du lịch thành phố Bến Tre - Mỏ Cày Bắc - Mỏ Cày Nam, là điểm tham quan sinh thái miệt vườn đặc trưng của xã Tân Thành Bình."
+  },
+  {
+    "id": "rung-ngap-man-long-vinh-duyen-hai",
+    "name": "Rừng ngập mặn Long Vĩnh - Duyên Hải",
+    "type": "nature",
+    "placeId": "p-duyen-hai",
+    "summary": "Hệ sinh thái rừng ngập mặn trải dài trên các xã Long Vĩnh, Đông Hải, Long Khánh với rừng đước tại Long Khánh rộng 882 ha."
+  },
+  {
+    "id": "khu-du-lich-sinh-thai-vung-dao-duyen-hai",
+    "name": "Khu du lịch sinh thái vùng đảo Duyên Hải",
+    "type": "nature",
+    "placeId": "p-duyen-hai",
+    "summary": "Vùng đảo gồm 4 xã thuộc Duyên Hải với tổng diện tích tự nhiên khoảng 21.159 ha, dân số 36.368 người."
+  },
+  {
+    "id": "oc-gao-phu-da",
+    "name": "Ốc gạo Phú Đa",
+    "type": "dish",
+    "placeId": "xa-phu-phung",
+    "summary": "Ốc gạo sông Cổ Chiên quanh cồn Phú Đa, Chợ Lách — ruột trắng tinh, béo bùi, ít nhớt — mùa ngon nhất tháng 5-7 âm lịch."
+  },
+  {
+    "id": "khu-du-lich-dai-loc",
+    "name": "Khu du lịch Đại Lộc",
+    "type": "attraction",
+    "placeId": "p-an-hoi",
+    "summary": "Khu sinh thái dã ngoại 20.000 m² tại ấp Sơn Châu, xã Sơn Định, Chợ Lách — vườn sầu riêng, bưởi da xanh, chôm chôm, nhà sàn kiểu nhà rong, đờn ca tài tử."
+  },
+  {
+    "id": "hu-tieu-ba-phu",
+    "name": "Hủ Tiếu Ba Phú",
+    "type": "dish",
+    "placeId": "xa-phu-phung",
+    "summary": "Quán hủ tiếu tại xã Phú Phụng, nằm trên Quốc lộ 57, điểm ăn uống đặc trưng của Chợ Lách."
+  },
+  {
+    "id": "diem-du-lich-ba-ngoi-con-phu-da",
+    "name": "Điểm du lịch Ba Ngói - Cồn Phú Đa",
+    "type": "attraction",
+    "placeId": "xa-phu-phung",
+    "summary": "Điểm du lịch sinh thái Ba Ngói nằm ở cồn Phú Đa, xã Vĩnh Bình, với vườn cây trái trĩu cành nhiều chủng loại."
+  },
+  {
+    "id": "oc-gao-vinh-binh",
+    "name": "Ốc gạo Vĩnh Bình",
+    "type": "dish",
+    "placeId": "xa-phu-phung",
+    "summary": "Ốc gạo khai thác tự nhiên tại Cồn Phú Đa, xã Vĩnh Bình, Chợ Lách — HTX chỉ thu hoạch từ Tết Đoan ngọ đến tháng 8 âm lịch, tháng 1-4 cấm bắt để ốc sinh sản."
+  },
+  {
+    "id": "con-du-lich-cai-ga",
+    "name": "Cồn Du Lịch Cái Gà",
+    "type": "nature",
+    "placeId": "xa-cho-lach",
+    "summary": "Cồn thiên nhiên nằm trên sông thuộc xã Long Thới, được quy hoạch phát triển thành khu du lịch sinh thái trong dự án Làng Văn hóa Du lịch Chợ Lách."
+  },
+  {
+    "id": "hoi-cho-thuong-mai-cay-giong-hoa-kieng-cho-lach",
+    "name": "Hội Chợ Thương Mại Cây Giống Hoa Kiểng Chợ Lách",
+    "type": "event",
+    "placeId": "xa-cho-lach",
+    "summary": "Hội chợ thương mại thường niên chuyên về cây giống và hoa kiểng của Chợ Lách, quy tụ các nhà vườn trong và ngoài vùng trưng bày, mua bán cây giống, hoa kiểng, sản phẩm nông nghiệp đặc trưng của vùng 'Vương quốc cây giống và hoa kiểng'."
+  },
+  {
+    "id": "dap-xe-miet-vuon",
+    "name": "Đạp xe khám phá miệt vườn An Bình",
+    "type": "experience",
+    "placeId": "xa-an-binh",
+    "summary": "Mượn chiếc xe đạp chạy chậm qua đường làng miệt vườn An Bình (Vĩnh Long), len giữa vườn cây trái rồi tạt ngang lò gạch, nhà cổ."
+  },
+  {
+    "id": "buoi-da-xanh-cho-lach",
+    "name": "Bưởi da xanh Chợ Lách",
+    "type": "product",
+    "placeId": "xa-cho-lach",
+    "summary": "Ruột hồng nhạt, ít hạt, ngọt thanh — bưởi da xanh Bến Tre đạt chỉ dẫn địa lý, OCOP 4 sao, đã xuất khẩu chính thức sang Hoa Kỳ."
+  },
+  {
+    "id": "vuon-chom-chom-ong-chin-hoan",
+    "name": "Vườn chôm chôm ông Chín Hoán",
+    "type": "attraction",
+    "placeId": "p-long-chau",
+    "summary": "Vườn chôm chôm tại cù lao An Bình, tỉnh Vĩnh Long, nơi du khách hái và thưởng thức chôm chôm tại gốc cây."
+  },
+  {
+    "id": "nha-san-ong-muoi-day",
+    "name": "Nhà sàn ông Mười Đầy",
+    "type": "attraction",
+    "placeId": "p-long-chau",
+    "summary": "Nhà sàn gỗ giữa vườn trái cây cù lao An Bình — tham quan, hái trái, ăn cơm đồng quê, hoặc ngủ qua đêm bên kênh rạch."
+  },
+  {
+    "id": "vuon-trai-cay-be-sau",
+    "name": "Vườn trái cây Bé Sáu",
+    "type": "attraction",
+    "placeId": "p-long-chau",
+    "summary": "Vườn trái cây trên cù lao An Bình, tỉnh Vĩnh Long, nơi du khách vào vườn hái và thưởng thức trái cây tại chỗ."
+  },
+  {
+    "id": "vuon-trai-cay-bi-bo",
+    "name": "Vườn trái cây Bi Bo",
+    "type": "attraction",
+    "placeId": "p-long-chau",
+    "summary": "Vườn trái cây tại cù lao An Bình, tỉnh Vĩnh Long, nơi du khách vào vườn hái và thưởng thức trái cây tại chỗ."
+  },
+  {
+    "id": "nam-khanh",
+    "name": "Năm Khanh",
+    "type": "attraction",
+    "placeId": "p-long-chau",
+    "summary": "Điểm du lịch sinh thái miệt vườn tại cồn Công, Vĩnh Long, cùng khu vực với Tư Dô và Tám Trong."
+  },
+  {
+    "id": "ngay-hoi-trai-cay",
+    "name": "Ngày hội trái cây",
+    "type": "event",
+    "placeId": "xa-an-binh",
+    "summary": "Tổ chức hàng năm tại cù lao An Bình, trưng bày và bán đặc sản trái cây vùng: chôm chôm, sầu riêng, măng cụt, nhãn. Có các cuộc thi gọt trái cây, trình diễn ẩm thực."
+  },
+  {
+    "id": "sau-rieng-ri6",
+    "name": "Sầu riêng Ri6",
+    "type": "product",
+    "placeId": "p-tam-binh",
+    "summary": "Ông Sáu Ri (Nguyễn Minh Châu) ở Long Hồ tuyển chọn giống sầu riêng này, nổi danh từ hội thi trái cây ĐBSCL 1999. Cơm vàng dày, thơm, 40% quả không hạt — đặc sản Vĩnh Long."
+  },
+  {
+    "id": "thanh-tra-binh-minh",
+    "name": "Thanh trà Bình Minh",
+    "type": "product",
+    "placeId": "p-binh-minh",
+    "summary": "Xứ Bình Minh, Vĩnh Long có trái thanh trà chua ngọt, chỉ rộ sau Tết — dầm đường, làm mứt hay nấu canh đều hợp."
+  },
+  {
+    "id": "thanh-tra",
+    "name": "Thanh trà",
+    "type": "product",
+    "placeId": "p-long-chau",
+    "summary": "Đặc sản trái cây của Vĩnh Long, mang hương vị thanh mát và vị ngọt tự nhiên."
+  },
+  {
+    "id": "khu-du-lich-vinh-sang",
+    "name": "Khu du lịch Vinh Sang",
+    "type": "attraction",
+    "placeId": "xa-an-binh",
+    "summary": "Khu du lịch sinh thái 60.000 m² trên cù lao An Bình, Long Hồ — đua ngựa, cưỡi đà điểu, trượt cỏ, tát mương bắt cá giữa vườn trái cây."
+  },
+  {
+    "id": "khu-du-lich-vuon-sinh-thai-ba-ngoi",
+    "name": "Khu Du Lịch Vườn Sinh Thái Ba Ngói",
+    "type": "attraction",
+    "placeId": "p-ben-tre",
+    "summary": "Khu du lịch sinh thái nằm bên sông Cổ Chiên, bao quanh bởi vườn cây trái như sầu riêng và chôm chôm."
+  },
+  {
+    "id": "vuon-trai-cay-6-tan-cu-lao-an-binh",
+    "name": "Vườn Trái Cây 6 Tấn – Cù Lao An Bình",
+    "type": "experience",
+    "placeId": "xa-an-binh",
+    "summary": "Vườn trái cây trên cù lao An Bình, trải nghiệm tham quan vườn và thưởng thức trái cây theo mùa."
+  },
+  {
+    "id": "khu-sinh-thai-gio-duoc-thanh-phu-ben-tre",
+    "name": "Khu Sinh Thái Gió Đước",
+    "type": "experience",
+    "placeId": "xa-thanh-phu",
+    "summary": "Khu sinh thái ven biển Thạnh Phú — đi cầu treo, cầu gỗ xuyên rừng đước ngập mặn, chèo thuyền, câu cá và nghỉ đêm giữa thiên nhiên hoang sơ."
+  },
+  {
+    "id": "con-phu-da-song-co-chien-cho-lach-ben-tre",
+    "name": "Cồn Phú Đa (Sông Cổ Chiên - Chợ Lách)",
+    "type": "nature",
+    "placeId": "xa-phu-phung",
+    "summary": "Cồn bồi giữa sông Cổ Chiên thuộc xã Vĩnh Bình, Chợ Lách — nơi duy nhất ở Bến Tre có ốc gạo sinh sống tự nhiên, dân gọi \"xứ sở ốc gạo\"."
+  },
+  {
+    "id": "cam-xoan-tra-on",
+    "name": "Cam xoàn Trà Ôn",
+    "type": "product",
+    "placeId": "p-tra-on",
+    "summary": "Vỏ mỏng trơn, ruột vàng tươi mọng nước, vị ngọt thanh — cam xoàn Trà Ôn nặng 250–300 g/trái, là giống cam đặc sản vùng Trà Ôn, Vĩnh Long. Vườn cam đang áp dụng tiêu chuẩn VietGAP, mỗi hecta mang lại 200–250 triệu đồng/năm cho nhà vườn."
+  },
+  {
+    "id": "chom-chom-cho-lach",
+    "name": "Chôm chôm Chợ Lách",
+    "type": "product",
+    "placeId": "xa-cho-lach",
+    "summary": "Chôm chôm vùng Chợ Lách — huyện trồng cây ăn trái lớn nhất Bến Tre. Giống Java và Tiến Cường cơm dày tróc hạt, mùa thu hoạch tháng 5-8."
+  },
+  {
+    "id": "chom-chom-con-tan-quy",
+    "name": "Chôm chôm Cồn Tân Quy",
+    "type": "product",
+    "placeId": "p-tra-vinh",
+    "summary": "Giữa sông Hậu đoạn giáp ranh Trà Vinh — Vĩnh Long, cù lao Tân Quy rộng 929 hecta phủ kín vườn trái — chôm chôm đỏ rực xen lẫn măng cụt, sầu riêng, mít tố nữ."
+  },
+  {
+    "id": "cay-giong-hoa-kieng-cho-lach",
+    "name": "Cây giống, hoa kiểng Chợ Lách",
+    "type": "product",
+    "placeId": "xa-cho-lach",
+    "summary": "Hơn 8.000 hộ trên 1.538 ha sản xuất 17–20 triệu cây giống mỗi năm — Chợ Lách là vựa cây giống và hoa kiểng lớn nhất Việt Nam, nghề hình thành hơn một thế kỷ từ khi nhà bác học Trương Vĩnh Ký mang giống về vùng đất này."
+  },
+  {
+    "id": "mia-tra-vinh",
+    "name": "Mía Trà Vinh",
+    "type": "product",
+    "placeId": "xa-cau-ke",
+    "summary": "Mía từng là cây nguyên liệu quan trọng ở một số vùng ngọt của Trà Vinh, gắn với sản xuất nông nghiệp hàng hóa địa phương."
+  },
+  {
+    "id": "banh-trang-nem-cu-lao-may",
+    "name": "Bánh tráng nem Cù Lao Mây",
+    "type": "product",
+    "placeId": "xa-luc-si-thanh",
+    "summary": "Bánh tráng nem Cù Lao Mây — làng nghề hơn 100 năm tuổi tại xã Lục Sỹ Thành, Trà Ôn — tráng bằng hơi nước 10 giây, dẻo mỏng đặc trưng."
+  },
+  {
+    "id": "tom-su-sinh-thai-tra-vinh",
+    "name": "Tôm sú sinh thái Trà Vinh",
+    "type": "product",
+    "placeId": "p-tra-vinh",
+    "summary": "Tôm sú nuôi dưới tán rừng ngập mặn ven biển Trà Vinh — mô hình tôm-rừng bền vững trên 5.700 ha. Thịt chắc, vị ngọt tự nhiên, không dùng kháng sinh."
+  },
+  {
+    "id": "gao-huu-co-quang-tri-tra-vinh-st",
+    "name": "Gạo hữu cơ Quảng Trị - Trà Vinh (ST)",
+    "type": "product",
+    "placeId": "p-tra-vinh",
+    "summary": "Gạo chất lượng cao sản xuất theo hướng an toàn, là nhóm sản phẩm OCOP của Trà Vinh trong tái cơ cấu nông nghiệp."
+  },
+  {
+    "id": "bon-bon-cho-lach",
+    "name": "Bòn bon Chợ Lách",
+    "type": "product",
+    "placeId": "xa-phu-phung",
+    "summary": "Bòn bon là loại trái cây đặc sản có mặt lâu đời ở vùng Cái Mơn - Chợ Lách, được ưa thích nhờ vị ngọt thanh và mùi thơm nhẹ."
+  },
+  {
+    "id": "sa-po-che-cho-lach",
+    "name": "Sa pô chê Chợ Lách",
+    "type": "product",
+    "placeId": "xa-cho-lach",
+    "summary": "Sa pô chê Chợ Lách — trái to giống dây Bến Tre, ruột nâu mềm mịn, ngọt đậm thơm — hái tại vườn miệt vườn Chợ Lách quanh năm."
+  },
+  {
+    "id": "mot-ngay-lam-nong-dan",
+    "name": "Một ngày làm nông dân Vĩnh Long",
+    "type": "experience",
+    "placeId": "xa-an-binh",
+    "summary": "Mặc bà ba, tát mương bắt cá, hái rau vườn, nấu cơm đồng quê — gói trải nghiệm trọn ngày sống như nông dân miệt vườn cù lao An Bình."
+  },
+  {
+    "id": "goi-cuon-tom-thit",
+    "name": "Gỏi cuốn tôm thịt",
+    "type": "dish",
+    "placeId": "xa-an-binh",
+    "summary": "Cuốn bánh tráng mỏng với tôm luộc, thịt ba chỉ, bún, rau sống, rau thơm miệt vườn."
+  },
+  {
+    "id": "dap-xe-cu-lao",
+    "name": "Đạp xe cù lao",
+    "type": "experience",
+    "placeId": "xa-an-binh",
+    "summary": "Đạp xe đạp dọc đường làng cù lao An Bình qua vườn cây, cầu khỉ, nhà cổ."
+  },
+  {
+    "id": "cau-ca-miet-vuon",
+    "name": "Câu cá miệt vườn",
+    "type": "experience",
+    "placeId": "xa-an-binh",
+    "summary": "Trải nghiệm câu cá tại ao vườn, kênh rạch cù lao hoặc hồ câu sinh thái — bắt cá lóc, cá rô, cá trê, nướng than ăn tại chỗ."
+  },
+  {
+    "id": "hoc-nau-an-mien-tay",
+    "name": "Học nấu ăn Vĩnh Long",
+    "type": "experience",
+    "placeId": "xa-an-binh",
+    "summary": "Buổi sáng theo đầu bếp homestay đi chợ chọn nguyên liệu tươi sống, rồi về vườn cù lao học nấu cá tai tượng chiên xù, canh chua, bánh xèo và ngồi ăn ngay dưới tán cây."
+  },
+  {
+    "id": "tat-muong-bat-ca",
+    "name": "Tát mương bắt cá",
+    "type": "experience",
+    "placeId": "xa-an-binh",
+    "summary": "Trải nghiệm tát mương bắt cá kiểu nông dân miệt vườn: dùng thau, nơm hoặc lưới bắt cá dưới mương vườn."
+  },
+  {
+    "id": "di-ghe-tam-ban",
+    "name": "Đi ghe tam bản",
+    "type": "experience",
+    "placeId": "xa-cho-lach",
+    "summary": "Ngồi ghe tam bản (thuyền gỗ có mái che) dạo chơi dọc sông và kênh rạch vùng Chợ Lách."
+  },
+  {
+    "id": "tham-lang-hoa-cho-lach",
+    "name": "Tham quan làng hoa Chợ Lách",
+    "type": "experience",
+    "placeId": "xa-cho-lach",
+    "summary": "Thăm làng hoa kiểng lớn nhất ĐBSCL tại Chợ Lách, Bến Tre."
+  },
+  {
+    "id": "di-cho-dem-vinh-long",
+    "name": "Đi chợ đêm Vĩnh Long",
+    "type": "experience",
+    "placeId": "p-long-chau",
+    "summary": "Dạo chợ đêm ven sông TP Vĩnh Long, mua sắm hàng thủ công, thưởng thức ẩm thực đường phố: bánh tráng nướng, ốc luộc, chè, sinh tố trái cây."
+  },
+  {
+    "id": "hai-chom-chom-an-binh",
+    "name": "Hái chôm chôm tại vườn An Bình",
+    "type": "experience",
+    "placeId": "xa-an-binh",
+    "summary": "Trải nghiệm du lịch sinh thái thú vị trên cù lao. Du khách đi bộ qua cầu khỉ, vào vườn chôm chôm chín đỏ, tự tay hái và thưởng thức tại chỗ. Mùa chôm chôm chính tháng 5–7, trái ngọt lịm."
+  },
+  {
+    "id": "tham-quan-vuon-cam-tra-on",
+    "name": "Tham quan & hái cam vườn Trà Ôn",
+    "type": "experience",
+    "placeId": "p-tra-on",
+    "summary": "Tham quan và hái cam vườn Trà Ôn — đi sâu vào vùng cam sành Trà Ôn, tự tay hái cam chín vàng ăn tại vườn. Chủ vườn hướng dẫn cách phân biệt cam ngon, kể chuyện nông nghiệp. Mua cam tươi mang về với giá vườn."
+  },
+  {
+    "id": "chua-kompong-ksan",
+    "name": "Chùa Kompong Ksan",
+    "type": "history",
+    "placeId": "xa-tra-cu",
+    "summary": "Bước vào Kompong Ksan là bước vào một thế giới khác — nơi màu vàng rực rỡ của mái chùa Khmer sáng lên giữa vườn cây xanh mướt, những tượng thần Naga uốn lượn dọc cầu thang và tranh tường kể chuyện Phật pháp bằng ngôn ngữ màu sắc thuần thục."
+  },
+  {
+    "id": "ben-xe-cho-lach-ben-tre",
+    "name": "Bến xe Chợ Lách",
+    "type": "facility",
+    "placeId": "xa-cho-lach",
+    "summary": "Bến xe. Tại Khu Phố 1, Thị trấn Chợ Lách, huyện Chợ Lách, Bến Tre. Tuyến: Chợ Lách – Bến Tre (trung tâm) qua cầu Hàm Luông, Chợ Lách – Phà Đình Khao (sang Vĩnh Long). Giờ: 5:00 – 17:30."
+  },
+  {
+    "id": "nha-bia-tuong-niem-truong-vinh-ky",
+    "name": "Nhà bia tưởng niệm Trương Vĩnh Ký",
+    "type": "history",
+    "placeId": "xa-vinh-thanh",
+    "summary": "Bia đá xanh cao 2,5 m tại Cái Mơn, Chợ Lách — khắc ba ngôn ngữ (Pháp, Hán, Việt) tưởng niệm Petrus Trương Vĩnh Ký (1837-1898). Di tích văn hóa cấp tỉnh (2019)."
+  },
+  {
+    "id": "khu-mo-than-nhan-thoai-ngoc-hau-cu-lao-dai",
+    "name": "Khu mộ thân nhân Thoại Ngọc Hầu (Cù Lao Dài)",
+    "type": "history",
+    "placeId": "p-phuoc-hau",
+    "summary": "Khu mộ cổ trên Cù Lao Dài, Vũng Liêm do chính danh thần Thoại Ngọc Hầu xây dựng năm 1828 cho thân mẫu Nguyễn Thị Tuyết, em gái Nguyễn Thị Định và cha mẹ vợ (Châu Vĩnh Huy, Đỗ Thị Toán). Được UBND tỉnh Vĩnh Long xếp hạng Di tích lịch sử - văn hóa cấp tỉnh năm 2017."
+  },
+  {
+    "id": "khu-di-tich-mo-than-mau-va-duong-mau-thoai-ngoc-hau",
+    "name": "Khu di tích mộ thân mẫu và cha mẹ vợ Thoại Ngọc Hầu (hoặc Quần thể mộ thân nhân Thoại Ngọc Hầu)",
+    "type": "history",
+    "placeId": "xa-quoi-thien",
+    "summary": "Năm 1828, danh thần Thoại Ngọc Hầu đứng ra xây hai khu mộ cho thân mẫu Nguyễn Thị Tuyết và cha mẹ vợ (Châu Vĩnh Huy, Đỗ Thị Toán) tại ấp Thái Bình trên Cù Lao Dài — mộ xây bằng vôi ô dước cẩn gốm sứ, thuộc những công trình đầu triều Nguyễn hiếm hoi còn lại ở Nam Bộ."
+  },
+  {
+    "id": "khu-luu-niem-truong-vinh-ky",
+    "name": "Khu lưu niệm Trương Vĩnh Ký",
+    "type": "history",
+    "placeId": "xa-vinh-thanh",
+    "summary": "Khu lưu niệm Petrus Trương Vĩnh Ký tại xã Vĩnh Thành, Chợ Lách — quê hương của nhà bác học thông thạo 26 ngôn ngữ. Thuộc Làng Văn hóa du lịch Chợ Lách."
+  },
+  {
+    "id": "htx-cam-sanh-tra-on",
+    "name": "HTX cam sành Trà Ôn",
+    "type": "craft_village",
+    "placeId": "p-tra-on",
+    "summary": "Hợp tác xã liên kết nhà vườn trồng cam sành huyện Trà Ôn — vùng cam lớn nhất Vĩnh Long với hơn 7.000 ha. Sản phẩm cam sành VietGAP đạt OCOP 3 sao."
+  },
+  {
+    "id": "trien-lam-hoi-cho-nong-nghiep-cong-nghe-cao-ben-tre-ben-tre",
+    "name": "Triển lãm - Hội chợ Nông nghiệp Công nghệ cao Bến Tre",
+    "type": "event",
+    "placeId": "p-phu-khuong",
+    "summary": "Trình diễn công nghệ tưới nhỏ giọт, nhà màng, canh tác dừa hữu cơ công nghệ cao."
+  },
+  {
+    "id": "binh-minh-ecolodge-riverside",
+    "name": "Bình Minh Ecolodge Riverside",
+    "type": "accommodation",
+    "placeId": "p-cai-von",
+    "summary": "Ecolodge ven sông tại phường Cái Vồn, thị xã Bình Minh — nghỉ giữa vườn cây, nghe tiếng sóng sông Hậu."
+  },
+  {
+    "id": "diem-du-lich-nha-dua-cocohome",
+    "name": "Điểm du lịch nhà dừa CocoHome",
+    "type": "accommodation",
+    "placeId": "xa-an-binh",
+    "summary": "Điểm du lịch sinh thái nhà dừa CocoHome tại Xã Hòa Ninh, Long Hồ, Đạt Chứng Nhận OCOP."
+  },
+  {
+    "id": "mekong-pottery-homestay",
+    "name": "Mekong Pottery Homestay",
+    "type": "accommodation",
+    "placeId": "p-thanh-duc",
+    "summary": "Homestay tại Xã Thanh Đức, Long Hồ, Thiết Kế Sử Dụng Chủ Yếu Chất Liệu Gạch và Đất Nung Truyền Thống."
+  },
+  {
+    "id": "homestay-hai-cuong",
+    "name": "Homestay Hai Cường",
+    "type": "accommodation",
+    "placeId": "p-phuoc-hau",
+    "summary": "Homestay sinh thái tại vùng Vũng Liêm, được đưa vào tour du lịch chính thức kết hợp tham quan Khu lưu niệm Võ Văn Kiệt, chùa Hạnh Phúc Tăng, làng nghề dệt chiếu và vườn cây ăn trái Cù Lao Dài."
+  },
+  {
+    "id": "homestay-cu-lao-dai",
+    "name": "Homestay Cù Lao Dài",
+    "type": "accommodation",
+    "placeId": "xa-quoi-thien",
+    "summary": "Các mô hình homestay sinh thái tại Cù Lao Dài (xã Thanh Bình, Quới Thiện, Vũng Liêm) phục vụ du khách trong và ngoài nước."
+  },
+  {
+    "id": "coco-riverside-lodge-trung-nghia",
+    "name": "Coco Riverside Lodge Trung Nghĩa",
+    "type": "accommodation",
+    "placeId": "p-phuoc-hau",
+    "summary": "Homestay sinh thái được thành lập năm 2013 tại ấp Trung Nghĩa, Vũng Liêm, do ông Hữu Lê sáng lập."
+  },
+  {
+    "id": "mekong-homestay-viet-nam",
+    "name": "Mekong Homestay Việt Nam",
+    "type": "accommodation",
+    "placeId": "p-phuoc-hau",
+    "summary": "Homestay tại Tam Bình chuyên phục vụ du khách với ẩm thực Việt truyền thống."
+  },
+  {
+    "id": "du-lich-sinh-thai-cu-lao-may-nam-khanh",
+    "name": "Du lịch sinh thái Cù Lao Mây – Năm Khanh",
+    "type": "accommodation",
+    "placeId": "xa-luc-si-thanh",
+    "summary": "Homestay Du lịch sinh thái Cù Lao Mây – Năm Khanh, tại Ấp Phú Xuân, xã Phú Thành, tỉnh Vĩnh Long."
+  },
+  {
+    "id": "homestay-cu-lao-may",
+    "name": "Homestay Cù Lao Mây",
+    "type": "accommodation",
+    "placeId": "xa-luc-si-thanh",
+    "summary": "Mô hình homestay sinh thái phát triển tại xã Lục Sĩ Thành, được khai trương năm 2023 như một trong hai điểm du lịch mới của Trà Ôn."
+  },
+  {
+    "id": "duyen-hai-homestay",
+    "name": "Duyên Hải Homestay",
+    "type": "accommodation",
+    "placeId": "p-duyen-hai",
+    "summary": "Homestay sinh thái mang phong cách nhà gỗ mộc mạc kết hợp gạch đỏ đặc trưng, nằm giữa vườn cây ăn trái xanh mát."
+  },
+  {
+    "id": "farmstay-sinh-thai-nguyen-gia",
+    "name": "Farmstay Sinh Thái Nguyễn Gia",
+    "type": "accommodation",
+    "placeId": "xa-vinh-thanh",
+    "summary": "Nhà nghỉ Farmstay Sinh Thái Nguyễn Gia, tại 9/16 Thanh Tân, xã Tân Thiềng, Bến Tre."
+  },
+  {
+    "id": "khu-du-lich-sinh-thai-nam-son",
+    "name": "Khu Du Lịch Sinh Thái Nam Sơn",
+    "type": "accommodation",
+    "placeId": "xa-an-phu-tan",
+    "summary": "Homestay Khu Du Lịch Sinh Thái Nam Sơn, tại Ấp An Trại, xã An Phú Tân, Trà Vinh."
+  },
+  {
+    "id": "homestay-sokfram",
+    "name": "Homestay SokFram",
+    "type": "accommodation",
+    "placeId": "p-tieu-can",
+    "summary": "Homestay 3 phòng tại ấp Cây Hẹ, Xã Phú Cần. Cung Cấp Trải Nghiệm Thu Hoạch và Chế Biến Mật Hoa Dừa, Lớp Học Nấu Ăn Truyền Thống."
+  },
+  {
+    "id": "homestay-ut-trinh",
+    "name": "Homestay Út Trinh",
+    "type": "accommodation",
+    "placeId": "xa-an-binh",
+    "summary": "Nhà vườn 4 phòng trên cù lao An Bình — ngủ giữa vườn trái cây, chèo xuồng, ăn cơm nhà vườn với chủ nhà."
+  },
+  {
+    "id": "homestay-khmer-tra-vinh",
+    "name": "Homestay Khmer Trà Vinh",
+    "type": "accommodation",
+    "placeId": "xa-chau-thanh",
+    "summary": "Homestay trong khuôn viên gia đình Khmer, nhà sàn gỗ truyền thống."
+  },
+  {
+    "id": "homestay-co-chin-an-binh",
+    "name": "Homestay Cô Chín",
+    "type": "accommodation",
+    "placeId": "xa-an-binh",
+    "summary": "Homestay gia đình nằm sâu trong cù lao An Bình, giữa vườn nhãn và chôm chôm."
+  },
+  {
+    "id": "mekong-lodge-resort",
+    "name": "Mekong Lodge Resort",
+    "type": "accommodation",
+    "placeId": "xa-an-binh",
+    "summary": "Resort sinh thái giữa vườn cây cù lao An Bình, phòng bungalow gỗ lợp lá, hồ bơi ngoài trời."
+  },
+  {
+    "id": "ben-tre-farm-stay",
+    "name": "Ben Tre Farm Stay",
+    "type": "accommodation",
+    "placeId": "p-ben-tre",
+    "summary": "Farmstay được nhiều du khách biết đến nhờ không gian nông thôn gần trung tâm, phù hợp nghỉ ngơi và tham gia hoạt động miệt vườn."
+  },
+  {
+    "id": "vinh-sang-resort",
+    "name": "Vinh Sang Resort",
+    "type": "accommodation",
+    "placeId": "xa-an-binh",
+    "summary": "Khu du lịch nghỉ dưỡng trên cù lao An Bình, với không gian miệt vườn sông nước và nhiều hoạt động trải nghiệm ở Vĩnh Long."
+  },
+  {
+    "id": "coco-happy-farm",
+    "name": "Coco Happy Farm",
+    "type": "accommodation",
+    "placeId": "p-ben-tre",
+    "summary": "Ghé xứ dừa Bến Tre mà muốn ngủ kiểu nông trại, Coco Happy Farm có phòng nhà nghỉ sinh thái giá 500.000–1.200.000 đồng/phòng/đêm."
+  },
+  {
+    "id": "coco-farmstay",
+    "name": "Coco Farmstay",
+    "type": "accommodation",
+    "placeId": "p-an-hoi",
+    "summary": "Điểm lưu trú du lịch gắn với vườn dừa và sinh hoạt nông nghiệp, được nhiều du khách biết đến khi về vùng quê Bến Tre."
+  },
+  {
+    "id": "phuong-thao-homestay",
+    "name": "Phương Thảo Homestay",
+    "type": "accommodation",
+    "placeId": "xa-an-binh",
+    "summary": "Đây là homestay ở cù lao An Bình, có vườn cây trái, bữa ăn gia đình và không khí yên bình ven sông."
+  },
+  {
+    "id": "ba-linh-homestay",
+    "name": "Ba Linh Homestay",
+    "type": "accommodation",
+    "placeId": "xa-an-binh",
+    "summary": "Homestay nhà vườn lâu năm trên cù lao An Bình — kiểu lưu trú mộc mạc giữa vườn cây, gần bến đò qua sông Tiền."
+  },
+  {
+    "id": "ngoc-phuong-homestay",
+    "name": "Ngọc Phương Homestay",
+    "type": "accommodation",
+    "placeId": "xa-an-binh",
+    "summary": "Một địa chỉ lưu trú du lịch có thật và được nhiều du khách biết đến ở An Bình nhờ khung cảnh vườn cây và trải nghiệm Vĩnh Long gần gũi."
+  },
+  {
+    "id": "mekong-riverside-homestay",
+    "name": "Mekong Riverside Homestay",
+    "type": "accommodation",
+    "placeId": "p-binh-minh",
+    "summary": "Homestay ven sông khá ở khu vực Bình Minh nhờ không gian miệt vườn, bến nước và thường xuất hiện trên các nền tảng đặt phòng quốc tế."
+  },
+  {
+    "id": "coco-homestay",
+    "name": "Coco HomeStay",
+    "type": "accommodation",
+    "placeId": "xa-an-binh",
+    "summary": "Cơ sở lưu trú miệt vườn trên cù lao An Bình với không gian xanh, gần gũi và phù hợp trải nghiệm cuộc sống Vĩnh Long."
+  },
+  {
+    "id": "green-river-homestay",
+    "name": "Green River Homestay",
+    "type": "accommodation",
+    "placeId": "xa-an-binh",
+    "summary": "Homestay ven sông trên cù lao An Bình, với không khí thư giãn, khung cảnh cây trái và trải nghiệm sinh hoạt địa phương."
+  },
+  {
+    "id": "forever-green-resort",
+    "name": "Forever Green Resort",
+    "type": "accommodation",
+    "placeId": "p-phu-tuc",
+    "summary": "Resort sinh thái quy mô lớn ở cửa ngõ Bến Tre, có nhiều mảng xanh, kênh rạch và dịch vụ nghỉ dưỡng - sự kiện."
+  },
+  {
+    "id": "con-chim-homestay",
+    "name": "Cồn Chim Homestay",
+    "type": "accommodation",
+    "placeId": "xa-chau-thanh",
+    "summary": "Mô hình homestay cộng đồng của Trà Vinh, với trải nghiệm miệt vườn, đời sống sông nước và văn hóa bản địa."
+  },
+  {
+    "id": "ut-thuy-homestay",
+    "name": "Út Thủy Homestay",
+    "type": "accommodation",
+    "placeId": "p-long-ho",
+    "summary": "Homestay tại Ấp An Thạnh, xã Long Hồ, Vĩnh Long. Có vườn cây, không khí làng quê và ăn uống tại chỗ theo yêu cầu."
+  },
+  {
+    "id": "le-thi-thuy-an-homestay",
+    "name": "Lê Thị Thúy An Homestay",
+    "type": "accommodation",
+    "placeId": "p-long-ho",
+    "summary": "Vườn cây và không gian yên tĩnh là điểm giữ chân khách ở Lê Thị Thúy An Homestay, ấp Phú Mỹ 1, xã Long Hồ (Vĩnh Long)."
+  },
+  {
+    "id": "cocohut-homestay",
+    "name": "Cocohut Homestay",
+    "type": "accommodation",
+    "placeId": "xa-an-binh",
+    "summary": "Một đêm ở nhà vườn ấp Hòa Trung, xã Sơn Hòa (Vĩnh Long) — Cocohut Homestay đón khách theo kiểu nghỉ cùng nhà dân giữa miệt vườn."
+  },
+  {
+    "id": "homestay-lang-be",
+    "name": "Homestay Làng Bè",
+    "type": "accommodation",
+    "placeId": "xa-an-binh",
+    "summary": "Về ấp An Thới B, xã An Khánh (Vĩnh Long), Homestay Làng Bè nhận khách nghỉ lại tại nhà số 81B/6B."
+  },
+  {
+    "id": "suonsia-homestay",
+    "name": "SuonSia Homestay",
+    "type": "accommodation",
+    "placeId": "xa-cau-ke",
+    "summary": "Đời sống nông thôn vùng có đông đồng bào Khmer ở xã Cầu Kè, Trà Vinh diễn ra ngay quanh chỗ nghỉ của khách SuonSia Homestay tại ấp Bà My."
+  },
+  {
+    "id": "mekong-garden-homestay",
+    "name": "Mekong Garden Homestay",
+    "type": "accommodation",
+    "placeId": "xa-nhi-long",
+    "summary": "Vườn cây bao quanh nếp nhà ở ấp Đon, xã Nhị Long, Trà Vinh — Mekong Garden Homestay đón khách nghỉ theo kiểu nhà vườn ven sông."
+  },
+  {
+    "id": "homestay-ut-trinh-con-tam-hiep",
+    "name": "Homestay Út Trinh (Cồn Tam Hiệp)",
+    "type": "accommodation",
+    "placeId": "xa-phu-thuan",
+    "summary": "Ra cồn Tam Hiệp ngủ một đêm giữa xứ dừa — Homestay Út Trinh đón khách tại tổ 9, ấp 1, xã Phú Thuận, khu vực Bến Tre."
+  },
+  {
+    "id": "homestay-nguoi-giu-rung",
+    "name": "Homestay Người Giữ Rừng",
+    "type": "accommodation",
+    "placeId": "xa-thanh-phuoc",
+    "summary": "Giữa vùng rừng ngập mặn ven biển xã Thạnh Phước, Bến Tre, Homestay Người Giữ Rừng ở ấp Tân An cho khách ngủ lại sát mé rừng."
+  },
+  {
+    "id": "coconut-homestay",
+    "name": "Coconut Homestay",
+    "type": "accommodation",
+    "placeId": "xa-tan-phu",
+    "summary": "Giữa vườn dừa Bến Tre, Coconut Homestay đón khách nghỉ lại tại số 66 ấp Tân Phước."
+  },
+  {
+    "id": "co-so-san-xuat-peace-farm",
+    "name": "Cơ sở sản xuất Peace Farm",
+    "type": "experience",
+    "placeId": "p-long-chau",
+    "summary": "Cơ sở sản xuất và kinh doanh nông sản, trải nghiệm nông nghiệp, giờ 7:00-18:00."
+  },
+  {
+    "id": "sau-rieng-say-thang-hoa-sau-ri",
+    "name": "Sầu riêng sấy thăng hoa Sáu Ri",
+    "type": "product",
+    "placeId": "p-long-chau",
+    "summary": "Sản phẩm sầu riêng sấy thăng hoa OCOP 5 sao của Công ty TNHH Sáu Ri, Long Hồ. Đây là một trong hai sản phẩm OCOP 5 sao của tỉnh Vĩnh Long, chế biến từ sầu riêng địa phương bằng công nghệ sấy thăng hoa giữ nguyên hương vị."
+  },
+  {
+    "id": "chom-chom-binh-hoa-phuoc-rambutan",
+    "name": "Chôm chôm Bình Hòa Phước (Rambutan)",
+    "type": "product",
+    "placeId": "xa-an-binh",
+    "summary": "Trái chôm chôm đặc sản trồng trên cù lao An Bình, thuộc xã Bình Hòa Phước. Hợp tác xã chôm chôm Bình Hòa Phước đã được chứng nhận sản phẩm OCOP 4 sao. Là một trong những sản phẩm nông nghiệp tiêu biểu của tỉnh Vĩnh Long, được xuất khẩu và tiêu thụ rộng rãi."
+  },
+  {
+    "id": "vuon-trai-cay-6-tan",
+    "name": "Vườn trái cây 6 Tấn",
+    "type": "attraction",
+    "placeId": "p-long-chau",
+    "summary": "Vườn trái cây phục vụ tham quan, hái và thưởng thức trái cây miệt vườn ở cù lao An Bình, tỉnh Vĩnh Long."
+  },
+  {
+    "id": "vuon-trai-cay-tam-loc",
+    "name": "Vườn trái cây Tám Lộc",
+    "type": "attraction",
+    "placeId": "p-long-chau",
+    "summary": "Vườn trái cây trên cù lao An Bình, Vĩnh Long — tham quan vườn, hái và thưởng thức trái cây tại chỗ."
+  },
+  {
+    "id": "tham-quan-vuon-trai-cay",
+    "name": "Tham quan vườn trái cây",
+    "type": "experience",
+    "placeId": "xa-an-binh",
+    "summary": "Vào vườn trái cây cù lao An Bình, nghe chủ vườn giới thiệu kỹ thuật trồng và tự tay hái trái ăn tại chỗ."
+  },
+  {
+    "id": "nha-thuyen-nam-cao-homestay",
+    "name": "Nhà Thuyền Năm Cao (Homestay)",
+    "type": "accommodation",
+    "placeId": "xa-binh-phuoc",
+    "summary": "Căn nhà hình du thuyền do ông Cao Văn Năm (Năm Cao) xây dựng trên hồ nước, chiều ngang 13 m, dài 30 m, 3 tầng với 7 phòng ngủ, 1 phòng khách."
+  },
+  {
+    "id": "coco-home",
+    "name": "Coco Home",
+    "type": "accommodation",
+    "placeId": "p-long-ho",
+    "summary": "Vườn dừa, lối trang trí xinh hợp chụp ảnh, thêm wifi — Coco Home gom đủ về một homestay ở ấp Hòa Quí, xã Long Hồ, Vĩnh Long."
+  },
+  {
+    "id": "khu-du-lich-nha-xua-va-homestay-ut-trinh",
+    "name": "Khu du lịch nhà xưa và homestay Út Trinh",
+    "type": "attraction",
+    "placeId": "p-long-ho",
+    "summary": "Đến homestay Út Trinh trên cù lao An Bình là chọn cách du lịch chậm theo đúng nghĩa — ngủ trên chõng tre kẽo kẹt tiếng võng, thức dậy với tiếng chim hót và mùi khói bếp từ mâm cơm quê đơn giản mà ngon đến xúc động."
+  },
+  {
+    "id": "lang-du-lich-cong-dong-cai-ngang",
+    "name": "Làng du lịch cộng đồng Cái Ngang",
+    "type": "attraction",
+    "placeId": "p-long-ho",
+    "summary": "Cho bạn sống đúng một ngày của người Vĩnh Long — buổi sáng ra vườn hái rau, trưa xuống bếp học nấu canh chua cá kèo hay bánh xèo miệt vườn, chiều chèo xuồng trên kênh xanh ngắt rồi tối ngồi bên hiên nhà nghe chủ nhà kể chuyện đồng nội. Không có màn trình diễn, không có kịch bản du lịch — chỉ là cuộc sống thật của người dân ven sông Vĩnh Long."
+  },
+  {
+    "id": "riverside-park-eco-resort",
+    "name": "Riverside Park Eco Resort",
+    "type": "accommodation",
+    "placeId": "p-long-ho",
+    "summary": "Resort sinh thái tọa lạc tại Số 283 Bình Hòa II, Bình Hòa Phước. Có Hồ Bơi, Vườn Cây, View Sông, Bữa Sáng, Nhà Hàng và Bãi Đỗ Xe."
+  },
+  {
+    "id": "nha-nghi-dl-sinh-thai-hoang-hao",
+    "name": "Nhà nghỉ DL sinh thái Hoàng Hảo",
+    "type": "accommodation",
+    "placeId": "p-long-ho",
+    "summary": "Khuôn viên xanh ven QL57 ở xã Long Hồ, Vĩnh Long là điểm nhận diện của Nhà nghỉ DL sinh thái Hoàng Hảo. Giá phòng 200.000–400.000 đ/đêm, có bãi đỗ xe."
+  },
+  {
+    "id": "quan-chi-yen---trai-cay-dia",
+    "name": "Quán Chị Yến - Trái Cây Dĩa",
+    "type": "restaurant",
+    "placeId": "p-son-dong",
+    "summary": "Trái cây dĩa là món làm nên danh xưng của Quán Chị Yến trên Đường Tỉnh 884, xã Sơn Đông, Bến Tre."
+  },
+  {
+    "id": "vuon-buoi-xanh-vietgap-tu-o",
+    "name": "Vườn bưởi xanh VietGAP Từ Ô",
+    "type": "nature",
+    "placeId": "p-tieu-can",
+    "summary": "Vườn bưởi xanh đạt chứng nhận VietGAP tại ấp Từ Ô, xã Phú Cần, Tiểu Cần."
+  },
+  {
+    "id": "vuon-sau-rieng-bay-thao",
+    "name": "Vườn Sầu Riêng Bảy Thảo",
+    "type": "attraction",
+    "placeId": "xa-vinh-thanh",
+    "summary": "Vườn sầu riêng 5 ha tại Vĩnh Thành, Chợ Lách — khoảng 500 cây lâu năm trồng theo VietGAP, du khách vào vườn hái trái tại chỗ và thưởng thức sầu riêng Cái Mơn."
+  },
+  {
+    "id": "cheo-xuong-ba-la",
+    "name": "Chèo xuồng ba lá",
+    "type": "experience",
+    "placeId": "xa-an-binh",
+    "summary": "Tự tay chèo xuồng ba lá truyền thống len lỏi theo các kênh rạch nhỏ giữa vườn cây cù lao An Bình."
+  },
+  {
+    "id": "du-lich-sinh-thai-cong-dong-thanh-phong-ben-tre",
+    "name": "Du Lịch Sinh Thái Cộng Đồng Thạnh Phong",
+    "type": "experience",
+    "placeId": "xa-an-qui",
+    "summary": "Ở cùng gia đình ngư dân Thạnh Phong, sáng sớm theo họ thả lưới bắt cua rồi nấu ăn ngay bờ rạch — mô hình du lịch cộng đồng do hợp tác xã xã Thạnh Phong vận hành giữa vùng rừng ngập mặn ven biển Thạnh Phú."
+  },
+  {
+    "id": "cua-bien-thanh-phu",
+    "name": "Cua biển Thạnh Phú",
+    "type": "product",
+    "placeId": "xa-an-qui",
+    "summary": "Cua biển nuôi dưới tán rừng ngập mặn Thạnh Phú — HTX Dịch vụ Nông nghiệp Thạnh Phong sản xuất, đạt OCOP. Thịt chắc, ngọt tự nhiên từ vùng biển sạch ven cửa sông."
+  },
+  {
+    "id": "mango-home-ben-tre",
+    "name": "Mango Home Bến Tre",
+    "type": "accommodation",
+    "placeId": "xa-giao-long",
+    "summary": "Homestay phong cách hiện đại giữa vườn xoài Châu Thành, Bến Tre."
+  },
+  {
+    "id": "gao-tan-tien",
+    "name": "Gạo Tân Tiến",
+    "type": "product",
+    "placeId": "p-phuoc-hau",
+    "summary": "Sản phẩm gạo Tân Tiến và gạo sấy Nhật Quỳnh của Tam Bình đạt chứng nhận OCOP 4 sao. Là sản phẩm nông nghiệp chủ lực thể hiện thế mạnh sản xuất lúa gạo của vùng đồng bằng sông Cửu Long tại địa phương Tam Bình, Vĩnh Long."
+  },
+  {
+    "id": "lang-hoa-kieng-va-cay-giong-cho-lach",
+    "name": "Làng hoa kiểng và cây giống Chợ Lách",
+    "type": "craft_village",
+    "placeId": "xa-cho-lach",
+    "summary": "Huyện Chợ Lách - trong đó có xã Phú Phụng - là vùng sản xuất hoa kiểng và cây giống lớn nhất cả nước."
+  },
+  {
+    "id": "sau-rieng-cap-dong-cho-lach",
+    "name": "Sầu riêng cấp đông Chợ Lách",
+    "type": "product",
+    "placeId": "xa-cho-lach",
+    "summary": "Sản phẩm OCOP sầu riêng cấp đông của Công ty TNHH XNK Trái cây Chánh Thu, sản xuất tại huyện Chợ Lách."
+  },
+  {
+    "id": "homestay-dua-ben-tre",
+    "name": "Homestay Xứ Dừa",
+    "type": "accommodation",
+    "placeId": "p-mo-cay",
+    "summary": "Homestay giữa vườn dừa Mỏ Cày, nhà sàn gỗ dừa truyền thống."
+  },
+  {
+    "id": "muoi-quynh-homestay",
+    "name": "Mười Quỳnh Homestay",
+    "type": "accommodation",
+    "placeId": "xa-chau-thanh",
+    "summary": "Homestay có thật trong cụm du lịch cộng đồng Cồn Chim, phù hợp cho khách muốn ở cùng dân địa phương và trải nghiệm sinh hoạt Vĩnh Long."
+  },
+  {
+    "id": "homestay-hoa-thanh",
+    "name": "Homestay Hoà Thạnh",
+    "type": "accommodation",
+    "placeId": "p-phuoc-hau",
+    "summary": "Điểm lưu trú homestay sinh thái tại Tam Bình, Vĩnh Long, nơi có thể trải nghiệm cuộc sống nông thôn, tham quan vườn trái cây, chèo xuồng trên kênh rạch và thưởng thức ẩm thực địa phương trong không gian gần gũi thiên nhiên."
+  },
+  {
+    "id": "homestay-bay-thoi",
+    "name": "Homestay Bảy Thới",
+    "type": "accommodation",
+    "placeId": "xa-an-binh",
+    "summary": "Homestay bình dân nằm trong vườn cây ăn trái cù lao An Bình."
+  },
+  {
+    "id": "nam-thanh-homestay",
+    "name": "Năm Thành Homestay",
+    "type": "accommodation",
+    "placeId": "xa-an-binh",
+    "summary": "Vườn trái cây vây quanh chỗ ngủ ở cù lao An Bình — Năm Thành Homestay, số 172/9 ấp Bình Lương, Vĩnh Long, giá 300.000–600.000 đồng/đêm."
+  },
+  {
+    "id": "hoan-my-homestay",
+    "name": "Hoàn Mỹ Homestay",
+    "type": "accommodation",
+    "placeId": "p-long-duc",
+    "summary": "Chạy về ấp Phú Hòa, Phường Long Đức sẽ gặp Hoàn Mỹ Homestay — chỗ nghỉ kiểu ở cùng nhà dân, gần trung tâm Trà Vinh."
+  },
+  {
+    "id": "le-ngan-homestay",
+    "name": "Lê Ngân Homestay",
+    "type": "accommodation",
+    "placeId": "p-tap-ngai",
+    "summary": "Ở trọ kiểu nhà dân giữa vùng quê Tập Ngãi của Trà Vinh, Lê Ngân Homestay tại ấp Lê Văn Quới nhận khách qua số điện thoại 09111177761."
+  },
+  {
+    "id": "phuoc-thanh-iv-tourist-area",
+    "name": "Phước Thành IV Tourist Area",
+    "type": "accommodation",
+    "placeId": "xa-an-binh",
+    "summary": "Điểm lưu trú kết hợp du lịch sinh thái rất quen thuộc ở cù lao An Bình, nổi bật với nhà vườn, ao cá và trải nghiệm ẩm thực miệt vườn."
+  },
+  {
+    "id": "con-oc-giong-trom-ben-tre",
+    "name": "Cồn Ốc (Giồng Trôm)",
+    "type": "nature",
+    "placeId": "xa-luong-hoa",
+    "summary": "Cồn nổi lớn nhất trên sông Hàm Luông — rộng khoảng 647 ha tại xã Hưng Phong, Giồng Trôm. Vườn dừa núm, dừa dứa trù phú, du lịch sinh thái miệt vườn hoang sơ."
+  },
+  {
+    "id": "keo-dua-tan-thach",
+    "name": "Kẹo dừa Tân Thạch",
+    "type": "product",
+    "placeId": "p-phu-tuc",
+    "summary": "Trên Cồn Phụng, xã Tân Thạch, hàng chục lò nấu kẹo dừa mở cửa cho du khách xem thợ khuấy nước cốt dừa sánh với mạch nha trên bếp lửa, rồi tự tay gói từng viên kẹo còn nóng."
+  },
+  {
+    "id": "sau-rieng-cho-lach",
+    "name": "Sầu riêng Chợ Lách",
+    "type": "product",
+    "placeId": "xa-cho-lach",
+    "summary": "Chợ Lách trồng hơn 6.600 ha sầu riêng — huyện trồng nhiều nhất Bến Tre. Giống chính Ri 6 và Monthong, chỉ dẫn địa lý số 00080 (2021). Công ty Chánh Thu chế biến sầu riêng cấp đông đạt OCOP xuất khẩu."
+  },
+  {
+    "id": "bo-salon-tre-ocop-tri-canh",
+    "name": "Bộ salon tre OCOP Trì Cảnh",
+    "type": "product",
+    "placeId": "xa-ham-giang",
+    "summary": "Sản phẩm thủ công làm từ tre tự nhiên do cơ sở Trì Cảnh sản xuất tại xã Hàm Giang, đạt chứng nhận OCOP 4 sao cấp tỉnh Trà Vinh (cũ). Từng đoạt giải nhất cấp tỉnh và giải ba khu vực đồng bằng sông Cửu Long hạng mục sản phẩm công nghiệp nông thôn tiêu biểu. Được ưa chuộng trang trí resort, homestay du lịch khắp cả nước."
+  },
+  {
+    "id": "mam-tep-chua",
+    "name": "Mắm tép chua",
+    "type": "product",
+    "placeId": "p-ben-tre",
+    "summary": "Đặc sản mắm tép chua thơm ngon của Bến Tre, sản phẩm nông nghiệp đặc trưng vùng ĐBSCL."
+  },
+  {
+    "id": "nha-tho-cai-mon",
+    "name": "Nhà thờ Cái Mơn",
+    "type": "history",
+    "placeId": "xa-vinh-thanh",
+    "summary": "Bia đá tại chỗ ghi giáo xứ Cái Mơn tiên khởi từ 1702 — hơn ba trăm năm trước, các tu sĩ dòng Phan Sinh đã lập cứ điểm truyền giáo ở vùng đất Chợ Lách ven sông Hàm Luông, nơi nhà bác học Trương Vĩnh Ký chào đời năm 1837."
+  },
+  {
+    "id": "nha-tho-giao-xu-cai-nhum",
+    "name": "Nhà thờ Giáo xứ Cái Nhum",
+    "type": "history",
+    "placeId": "xa-cho-lach",
+    "summary": "Nhà thờ Công giáo tại xã Long Thới, Chợ Lách — họ đạo thành lập năm 1731, một trong những giáo xứ lâu đời nhất Nam Bộ. Nhà thờ hiện tại (đời thứ 5) xây lại năm 1951."
+  },
+  {
+    "id": "dinh-dai-dien",
+    "name": "Đình Đại Điền",
+    "type": "history",
+    "placeId": "xa-dai-dien",
+    "summary": "Năm Tự Đức thứ năm (1852), triều đình sắc phong cho đình Đại Điền ở huyện Thạnh Phú — gần hai thế kỷ sau, đình vẫn là nơi cúng kỳ yên, hạ điền, thượng điền của dân hai xã Đại Điền và Tân Phong."
+  },
+  {
+    "id": "di-san-duong-dai-mang-thit-tuyen-sinh-thai-kenh-thuy-lo",
+    "name": "Khu Di Sản Đương Đại Mang Thít – Tuyến Sinh Thái Kênh Thủy Lộ",
+    "type": "nature",
+    "placeId": "xa-cai-nhum",
+    "summary": "Khu Di sản đương đại Mang Thít, Vĩnh Long, gắn với tuyến sinh thái kênh thủy lộ và hệ thống lò gạch truyền thống."
+  },
+  {
+    "id": "vuon-chom-chom-thay-ha",
+    "name": "Vườn chôm chôm thầy Hà",
+    "type": "attraction",
+    "placeId": "xa-phu-phung",
+    "summary": "Vườn chôm chôm du lịch phổ biến trong cụm điểm tham quan Sơn Định - Vĩnh Bình - Phú Phụng."
+  },
+  {
+    "id": "con-quy",
+    "name": "Cồn Quy",
+    "type": "nature",
+    "placeId": "p-phu-tuc",
+    "summary": "Cù lao xanh mướt giữa sông Tiền, nơi thời gian như chậm lại theo nhịp chèo đò và tiếng lá dừa xào xạc."
+  },
+  {
+    "id": "cho-hoa-tet",
+    "name": "Chợ hoa Tết",
+    "type": "event",
+    "placeId": "xa-phu-phung",
+    "summary": "Ven sông TP Vĩnh Long, bày bán mai vàng, cúc, thược dược, kiểng từ Chợ Lách và Sa Đéc. Không khí nhộn nhịp cuối năm, du khách và dân địa phương tấp nập chọn hoa."
+  },
+  {
+    "id": "khu-can-cu-tinh-uy-ben-tre-chau-hoa",
+    "name": "Khu di tích Căn cứ Tỉnh ủy Bến Tre tại Châu Hòa",
+    "type": "history",
+    "placeId": "xa-chau-hoa",
+    "summary": "Di tích lịch sử cách mạng ghi dấu cơ quan đầu não Tỉnh ủy lãnh đạo phong trào kháng chiến vùng đồng bằng xứ dừa, được che chở bởi hệ sinh thái vườn dừa và hào lũy kiên cường của nhân dân Châu Hòa."
+  },
+  {
+    "id": "dinh-lang-hieu-phung",
+    "name": "Đình làng Hiếu Phụng",
+    "type": "history",
+    "placeId": "xa-hieu-phung",
+    "summary": "Ngôi đình làng cổ bên bờ rạch Hiếu Phụng được khai khẩn cùng công cuộc lập ấp của tiền nhân, nơi bảo tồn sắc phong vua ban và là trung tâm tổ chức lễ hội cúng đình mùa lúa mới của cư dân miệt vườn sông nước."
+  },
+  {
+    "id": "vung-chuyen-canh-sau-rieng-cu-lao-quoi-an",
+    "name": "Vùng chuyên canh sầu riêng và chôm chôm cù lao Quới An",
+    "type": "nature",
+    "placeId": "xa-quoi-an",
+    "summary": "Dải cù lao miệt vườn bốn bề sông nước Cổ Chiên bao bọc với những vườn sầu riêng Ri6 và chôm chôm chín đỏ trĩu quả quanh năm, điểm dừng chân sinh thái lý tưởng cho du khách trải nghiệm hái trái cây tại vườn."
+  },
+  {
+    "id": "cho-dau-moi-nong-san-ba-cang-song-phu",
+    "name": "Chợ đầu mối nông sản và cam sành Ba Càng - Song Phú",
+    "type": "experience",
+    "placeId": "xa-song-phu",
+    "summary": "Khu chợ giao thương sầm uất trên tuyến Quốc lộ 1A thuộc xã Song Phú, đầu mối tập kết và phân phối hàng trăm tấn cam sành Tam Bình mọng nước cùng rau quả miệt vườn Tây Nam Bộ tỏa đi khắp cả nước mỗi ngày."
+  }
+]

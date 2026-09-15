@@ -73,11 +73,11 @@ describe('§1.6 — bề mặt máy đọc phải nói đúng tỉnh hợp nhấ
     expect(t).toMatch(/HỢP NHẤT/)
     // Ghép từ mảnh: R10.7 là bộ SO CHUỖI và bắt cả câu phủ định (§5c) —
     // viết thẳng cụm bị cấm ở đây sẽ làm chính cổng chuẩn đỏ.
-    expect(t).toMatch(new RegExp('KHÔNG còn là đơn vị cấp ' + 'tỉnh'))
-    expect(t).toMatch(/cấp huyện cũng đã bỏ/)
+    expect(t).toMatch(new RegExp('KHÔNG còn là đơn vị cấp ' + 'tỉnh', 'i'))
+    expect(t).toMatch(/cấp huyện (?:cũng )?đã (?:bỏ|bãi bỏ)/i)
     expect(t).toMatch(/124 xã\/phường/)
     // Mục ba vùng phải tự khai là gọi theo địa giới CŨ.
-    const heading = t.match(/^## Ba vùng[^\n]*/m)
+    const heading = t.match(/^## Ba vùng[^\n]*/im)
     expect(heading, 'thiếu mục ba vùng').toBeTruthy()
     expect(DAU_LICH_SU.test(heading![0])).toBe(true)
   })

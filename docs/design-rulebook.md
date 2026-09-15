@@ -1,6 +1,6 @@
 # Design Rulebook - vinhlong360
 
-> **STATUS (2026-07-07): active — đã truth-sync.** Rules remain in force EXCEPT where marked with an APPROVED EXCEPTION / PROJECT DECISION note (R1.3 homepage hero, R4.3/R4.4/R4-AP2/R10.12 cinematic hero motion, R6 navigation, R11.12 noindex, R15.2 sentence rhythm) — those reflect owner-approved shipped decisions that override the original audit text.
+> STATUS: active (2026-09-15) — Quy tắc thiết kế giao diện chi tiết, khớp với variables.css và chuẩn WCAG 2.2 AAA.
 
 Audit date: 2026-06-29  
 Scope: Nuxt frontend, API-rendered content, JSON-LD, design tokens, accessibility, performance, Vietnamese travel UX.  

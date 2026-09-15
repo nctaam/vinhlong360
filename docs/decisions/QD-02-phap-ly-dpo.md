@@ -1,4 +1,4 @@
-> STATUS: active
+> STATUS: active (2026-09-15) — Quyết định pháp lý / DPO (legal).
 Authority: config/release-authority.json
 
 # QD-02 — Pháp lý / DPO (`legal`)
@@ -7,7 +7,7 @@ Authority: config/release-authority.json
 > mà không một agent nào và không một tài liệu nội bộ nào trả lời thay được — nó cần
 > người có tư cách pháp lý. Một agent điền §7 ở đây là bịa ra ý kiến pháp lý.
 
-`decision_key`: `legal` · Nguồn hỏi: `docs/2026-08-22-cau-hoi-cho-luat-su.md`
+`decision_key`: `legal`
 
 ---
 

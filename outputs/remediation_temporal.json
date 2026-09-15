@@ -1,0 +1,3881 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "VinhLong360 Temporal Consistency & Festival Audit Remediation Ledger",
+  "metadata": {
+    "generated_at": "2026-09-12T15:34:14Z",
+    "audit_version": "1.0.0",
+    "author": "worker_temporal (teamwork_preview_worker)",
+    "parent_conversation_id": "93e24800-c01d-4c88-bf9e-c9c29a2823bb",
+    "original_request_path": "c:\\Users\\NCTaam\\Documents\\vinhlong360-correction-case-pilot\\.agents\\ORIGINAL_REQUEST.md",
+    "scope": "Comprehensive 6-field temporal cross-check across all 67 entities of type 'event'",
+    "governance_mandates": [
+      "STRICT READ-ONLY: Production database agent/data/vinhlong360.db and web/data.json untouched.",
+      "CIRCUIT BREAKER PRESERVED: attributes.month in agent/public_api.py actively protects 21 unverified festival dates.",
+      "SIX-FIELD SYNCHRONOUS HARMONIZATION: Remediation covers lunar_date, date_start, date_end, summary, description, and season."
+    ],
+    "reference_surveys": [
+      "docs/2026-08-07-bang-quyet-dinh-ngay-le-hoi-am-duong.md",
+      ".agents/spec_miner_survey_3/survey_gis_specs.md §3",
+      "agent/lunar_calendar.py",
+      "CLAUDE.md §1.6, §1.7, §5c"
+    ]
+  },
+  "summary_statistics": {
+    "total_event_entities": 67,
+    "classification_breakdown": {
+      "group_a_consistent": 12,
+      "group_b_technical_drift": 3,
+      "group_c_logical_contradiction": 14,
+      "group_e_prose_date_start": 7,
+      "group_fixed_solar": 31
+    },
+    "circuit_breaker_metrics": {
+      "total_blocked_events": 21,
+      "active_live_iso_events": 36,
+      "prose_date_events": 10
+    },
+    "remediation_ledger_entries_count": 24
+  },
+  "solar_lunar_conversion_matrix_2026": [
+    {
+      "event_marker": "Mùng 1 Tết Bính Ngọ",
+      "lunar_day": 1,
+      "lunar_month": 1,
+      "lunar_year": 2026,
+      "lunar_date_str": "01/01/2026 ÂL",
+      "gregorian_iso": "2026-02-17",
+      "gregorian_formatted": "17/02/2026",
+      "day_of_week": "Thứ Ba",
+      "can_chi_day": "Nhâm Tuất",
+      "julian_day_number": 2461089,
+      "cultural_context": "Tết Nguyên Đán 2026 (Bính Ngọ)"
+    },
+    {
+      "event_marker": "Mùng 3 tháng Giêng",
+      "lunar_day": 3,
+      "lunar_month": 1,
+      "lunar_year": 2026,
+      "lunar_date_str": "03/01/2026 ÂL",
+      "gregorian_iso": "2026-02-19",
+      "gregorian_formatted": "19/02/2026",
+      "day_of_week": "Thứ Năm",
+      "can_chi_day": "Giáp Tý",
+      "julian_day_number": 2461091,
+      "cultural_context": "Lăng Tiền quân Thống chế Điều bát Nguyễn Văn Tồn (kỳ khai mạc)"
+    },
+    {
+      "event_marker": "Mùng 4 tháng Giêng",
+      "lunar_day": 4,
+      "lunar_month": 1,
+      "lunar_year": 2026,
+      "lunar_date_str": "04/01/2026 ÂL",
+      "gregorian_iso": "2026-02-20",
+      "gregorian_formatted": "20/02/2026",
+      "day_of_week": "Thứ Sáu",
+      "can_chi_day": "Ất Sửu",
+      "julian_day_number": 2461092,
+      "cultural_context": "Lăng Tiền quân Thống chế Điều bát Nguyễn Văn Tồn (kỳ chính lễ)"
+    },
+    {
+      "event_marker": "Rằm tháng Giêng (15/1)",
+      "lunar_day": 15,
+      "lunar_month": 1,
+      "lunar_year": 2026,
+      "lunar_date_str": "15/01/2026 ÂL",
+      "gregorian_iso": "2026-03-03",
+      "gregorian_formatted": "03/03/2026",
+      "day_of_week": "Thứ Ba",
+      "can_chi_day": "Bính Tý",
+      "julian_day_number": 2461103,
+      "cultural_context": "Lễ hội Nguyên Tiêu, Lễ cúng Lầu Bà, Lễ vía Bà Cố Hỷ (chính lễ)"
+    },
+    {
+      "event_marker": "16 tháng Giêng",
+      "lunar_day": 16,
+      "lunar_month": 1,
+      "lunar_year": 2026,
+      "lunar_date_str": "16/01/2026 ÂL",
+      "gregorian_iso": "2026-03-04",
+      "gregorian_formatted": "04/03/2026",
+      "day_of_week": "Thứ Tư",
+      "can_chi_day": "Đinh Sửu",
+      "julian_day_number": 2461104,
+      "cultural_context": "Lễ cúng Miếu (khởi lễ)"
+    },
+    {
+      "event_marker": "17 tháng Giêng",
+      "lunar_day": 17,
+      "lunar_month": 1,
+      "lunar_year": 2026,
+      "lunar_date_str": "17/01/2026 ÂL",
+      "gregorian_iso": "2026-03-05",
+      "gregorian_formatted": "05/03/2026",
+      "day_of_week": "Thứ Năm",
+      "can_chi_day": "Mậu Dần",
+      "julian_day_number": 2461105,
+      "cultural_context": "Lễ cúng Miếu (ngày giữa)"
+    },
+    {
+      "event_marker": "18 tháng Giêng",
+      "lunar_day": 18,
+      "lunar_month": 1,
+      "lunar_year": 2026,
+      "lunar_date_str": "18/01/2026 ÂL",
+      "gregorian_iso": "2026-03-06",
+      "gregorian_formatted": "06/03/2026",
+      "day_of_week": "Thứ Sáu",
+      "can_chi_day": "Kỷ Mão",
+      "julian_day_number": 2461106,
+      "cultural_context": "Lễ cúng Miếu (hoàn lễ)"
+    },
+    {
+      "event_marker": "Rằm tháng 2 (15/2)",
+      "lunar_day": 15,
+      "lunar_month": 2,
+      "lunar_year": 2026,
+      "lunar_date_str": "15/02/2026 ÂL",
+      "gregorian_iso": "2026-04-02",
+      "gregorian_formatted": "02/04/2026",
+      "day_of_week": "Thứ Năm",
+      "can_chi_day": "Bính Ngọ",
+      "julian_day_number": 2461133,
+      "cultural_context": "Lễ hội Cầu Ngư / Lăng Cồn Tàu (kỳ 1)"
+    },
+    {
+      "event_marker": "16 tháng 2",
+      "lunar_day": 16,
+      "lunar_month": 2,
+      "lunar_year": 2026,
+      "lunar_date_str": "16/02/2026 ÂL",
+      "gregorian_iso": "2026-04-03",
+      "gregorian_formatted": "03/04/2026",
+      "day_of_week": "Thứ Sáu",
+      "can_chi_day": "Đinh Mùi",
+      "julian_day_number": 2461134,
+      "cultural_context": "Lễ hội Kỳ Yên Nam Bộ (ngày đầu)"
+    },
+    {
+      "event_marker": "17 tháng 2",
+      "lunar_day": 17,
+      "lunar_month": 2,
+      "lunar_year": 2026,
+      "lunar_date_str": "17/02/2026 ÂL",
+      "gregorian_iso": "2026-04-04",
+      "gregorian_formatted": "04/04/2026",
+      "day_of_week": "Thứ Bảy",
+      "can_chi_day": "Mậu Thân",
+      "julian_day_number": 2461135,
+      "cultural_context": "Lễ hội Kỳ Yên Nam Bộ (ngày tạ)"
+    },
+    {
+      "event_marker": "Xuân Đinh (mùng 6 tháng 2)",
+      "lunar_day": 6,
+      "lunar_month": 2,
+      "lunar_year": 2026,
+      "lunar_date_str": "06/02/2026 ÂL",
+      "gregorian_iso": "2026-03-24",
+      "gregorian_formatted": "24/03/2026",
+      "day_of_week": "Thứ Ba",
+      "can_chi_day": "Đinh Dậu",
+      "julian_day_number": 2461124,
+      "cultural_context": "Lễ Xuân Đinh Văn Thánh Miếu (ngày Đinh đầu tiên tháng 2 ÂL)"
+    },
+    {
+      "event_marker": "Mùng 10 tháng 3",
+      "lunar_day": 10,
+      "lunar_month": 3,
+      "lunar_year": 2026,
+      "lunar_date_str": "10/03/2026 ÂL",
+      "gregorian_iso": "2026-04-26",
+      "gregorian_formatted": "26/04/2026",
+      "day_of_week": "Chủ Nhật",
+      "can_chi_day": "Canh Ngọ",
+      "julian_day_number": 2461157,
+      "cultural_context": "Giỗ Tổ Hùng Vương"
+    },
+    {
+      "event_marker": "11 tháng 3",
+      "lunar_day": 11,
+      "lunar_month": 3,
+      "lunar_year": 2026,
+      "lunar_date_str": "11/03/2026 ÂL",
+      "gregorian_iso": "2026-04-27",
+      "gregorian_formatted": "27/04/2026",
+      "day_of_week": "Thứ Hai",
+      "can_chi_day": "Tân Mùi",
+      "julian_day_number": 2461158,
+      "cultural_context": "Lễ hội Nghinh Ông Duyên Hải / Cồn Tàu"
+    },
+    {
+      "event_marker": "12 tháng 3",
+      "lunar_day": 12,
+      "lunar_month": 3,
+      "lunar_year": 2026,
+      "lunar_date_str": "12/03/2026 ÂL",
+      "gregorian_iso": "2026-04-28",
+      "gregorian_formatted": "28/04/2026",
+      "day_of_week": "Thứ Ba",
+      "can_chi_day": "Nhâm Thân",
+      "julian_day_number": 2461159,
+      "cultural_context": "Lễ hội Nghinh Ông Duyên Hải (bế mạc)"
+    },
+    {
+      "event_marker": "14 tháng 3",
+      "lunar_day": 14,
+      "lunar_month": 3,
+      "lunar_year": 2026,
+      "lunar_date_str": "14/03/2026 ÂL",
+      "gregorian_iso": "2026-04-30",
+      "gregorian_formatted": "30/04/2026",
+      "day_of_week": "Thứ Năm",
+      "can_chi_day": "Giáp Tuất",
+      "julian_day_number": 2461161,
+      "cultural_context": "Đình Tân Hoa (khởi lễ Thần Hoàng theo một số nguồn)"
+    },
+    {
+      "event_marker": "15 tháng 3",
+      "lunar_day": 15,
+      "lunar_month": 3,
+      "lunar_year": 2026,
+      "lunar_date_str": "15/03/2026 ÂL",
+      "gregorian_iso": "2026-05-01",
+      "gregorian_formatted": "01/05/2026",
+      "day_of_week": "Thứ Sáu",
+      "can_chi_day": "Ất Hợi",
+      "julian_day_number": 2461162,
+      "cultural_context": "Đình Tân Hoa (kỳ tế xuân)"
+    },
+    {
+      "event_marker": "16 tháng 3",
+      "lunar_day": 16,
+      "lunar_month": 3,
+      "lunar_year": 2026,
+      "lunar_date_str": "16/03/2026 ÂL",
+      "gregorian_iso": "2026-05-02",
+      "gregorian_formatted": "02/05/2026",
+      "day_of_week": "Thứ Bảy",
+      "can_chi_day": "Bính Tý",
+      "julian_day_number": 2461163,
+      "cultural_context": "Lễ hội Kỳ Yên Hạ điền Đình Tân Giai (ngày 1)"
+    },
+    {
+      "event_marker": "17 tháng 3",
+      "lunar_day": 17,
+      "lunar_month": 3,
+      "lunar_year": 2026,
+      "lunar_date_str": "17/03/2026 ÂL",
+      "gregorian_iso": "2026-05-03",
+      "gregorian_formatted": "03/05/2026",
+      "day_of_week": "Chủ Nhật",
+      "can_chi_day": "Đinh Sửu",
+      "julian_day_number": 2461164,
+      "cultural_context": "Lễ hội Kỳ Yên Hạ điền Đình Tân Giai (ngày 2)"
+    },
+    {
+      "event_marker": "18 tháng 3",
+      "lunar_day": 18,
+      "lunar_month": 3,
+      "lunar_year": 2026,
+      "lunar_date_str": "18/03/2026 ÂL",
+      "gregorian_iso": "2026-05-04",
+      "gregorian_formatted": "04/05/2026",
+      "day_of_week": "Thứ Hai",
+      "can_chi_day": "Mậu Dần",
+      "julian_day_number": 2461165,
+      "cultural_context": "Lễ hội Kỳ Yên Đình Phú Lễ (ngày 1)"
+    },
+    {
+      "event_marker": "19 tháng 3",
+      "lunar_day": 19,
+      "lunar_month": 3,
+      "lunar_year": 2026,
+      "lunar_date_str": "19/03/2026 ÂL",
+      "gregorian_iso": "2026-05-05",
+      "gregorian_formatted": "05/05/2026",
+      "day_of_week": "Thứ Ba",
+      "can_chi_day": "Kỷ Mão",
+      "julian_day_number": 2461166,
+      "cultural_context": "Lễ hội Kỳ Yên Đình Phú Lễ (ngày 2)"
+    },
+    {
+      "event_marker": "23 tháng 3",
+      "lunar_day": 23,
+      "lunar_month": 3,
+      "lunar_year": 2026,
+      "lunar_date_str": "23/03/2026 ÂL",
+      "gregorian_iso": "2026-05-09",
+      "gregorian_formatted": "09/05/2026",
+      "day_of_week": "Thứ Bảy",
+      "can_chi_day": "Quý Mùi",
+      "julian_day_number": 2461170,
+      "cultural_context": "Lễ vía Bà Chúa Xứ (khởi lễ nếu theo tháng 3 ÂL)"
+    },
+    {
+      "event_marker": "27 tháng 3",
+      "lunar_day": 27,
+      "lunar_month": 3,
+      "lunar_year": 2026,
+      "lunar_date_str": "27/03/2026 ÂL",
+      "gregorian_iso": "2026-05-13",
+      "gregorian_formatted": "13/05/2026",
+      "day_of_week": "Thứ Tư",
+      "can_chi_day": "Đinh Hợi",
+      "julian_day_number": 2461174,
+      "cultural_context": "Lễ vía Bà Chúa Xứ (hoàn lễ nếu theo tháng 3 ÂL)"
+    },
+    {
+      "event_marker": "16 tháng 4",
+      "lunar_day": 16,
+      "lunar_month": 4,
+      "lunar_year": 2026,
+      "lunar_date_str": "16/04/2026 ÂL",
+      "gregorian_iso": "2026-06-01",
+      "gregorian_formatted": "01/06/2026",
+      "day_of_week": "Thứ Hai",
+      "can_chi_day": "Bính Ngọ",
+      "julian_day_number": 2461193,
+      "cultural_context": "Lễ Hạ điền Đình Tân Hoa (theo lunar_date) / Đình Hòa Tịnh"
+    },
+    {
+      "event_marker": "23 tháng 4",
+      "lunar_day": 23,
+      "lunar_month": 4,
+      "lunar_year": 2026,
+      "lunar_date_str": "23/04/2026 ÂL",
+      "gregorian_iso": "2026-06-08",
+      "gregorian_formatted": "08/06/2026",
+      "day_of_week": "Thứ Hai",
+      "can_chi_day": "Quý Sửu",
+      "julian_day_number": 2461200,
+      "cultural_context": "Lễ vía Bà Chúa Xứ (kỳ tháng 4 ÂL theo truyền thống Châu Đốc/Nam Bộ)"
+    },
+    {
+      "event_marker": "27 tháng 4",
+      "lunar_day": 27,
+      "lunar_month": 4,
+      "lunar_year": 2026,
+      "lunar_date_str": "27/04/2026 ÂL",
+      "gregorian_iso": "2026-06-12",
+      "gregorian_formatted": "12/06/2026",
+      "day_of_week": "Thứ Sáu",
+      "can_chi_day": "Đinh Tỵ",
+      "julian_day_number": 2461204,
+      "cultural_context": "Lễ vía Bà Chúa Xứ (hoàn lễ tháng 4 ÂL)"
+    },
+    {
+      "event_marker": "Mùng 5 tháng 5",
+      "lunar_day": 5,
+      "lunar_month": 5,
+      "lunar_year": 2026,
+      "lunar_date_str": "05/05/2026 ÂL",
+      "gregorian_iso": "2026-06-19",
+      "gregorian_formatted": "19/06/2026",
+      "day_of_week": "Thứ Sáu",
+      "can_chi_day": "Giáp Tý",
+      "julian_day_number": 2461211,
+      "cultural_context": "Tết Đoan Ngọ (Tết giết sâu bọ)"
+    },
+    {
+      "event_marker": "11 tháng 5",
+      "lunar_day": 11,
+      "lunar_month": 5,
+      "lunar_year": 2026,
+      "lunar_date_str": "11/05/2026 ÂL",
+      "gregorian_iso": "2026-06-25",
+      "gregorian_formatted": "25/06/2026",
+      "day_of_week": "Thứ Năm",
+      "can_chi_day": "Canh Ngọ",
+      "julian_day_number": 2461217,
+      "cultural_context": "Lễ hội Cúng biển Mỹ Long / Cúng biển Động Cao (ngày 1)"
+    },
+    {
+      "event_marker": "12 tháng 5",
+      "lunar_day": 12,
+      "lunar_month": 5,
+      "lunar_year": 2026,
+      "lunar_date_str": "12/05/2026 ÂL",
+      "gregorian_iso": "2026-06-26",
+      "gregorian_formatted": "26/06/2026",
+      "day_of_week": "Thứ Sáu",
+      "can_chi_day": "Tân Mùi",
+      "julian_day_number": 2461218,
+      "cultural_context": "Lễ hội Cúng biển Mỹ Long / Cúng biển Động Cao (chính lễ nghinh thủy tướng)"
+    },
+    {
+      "event_marker": "Mùng 2 tháng 6",
+      "lunar_day": 2,
+      "lunar_month": 6,
+      "lunar_year": 2026,
+      "lunar_date_str": "02/06/2026 ÂL",
+      "gregorian_iso": "2026-07-15",
+      "gregorian_formatted": "15/07/2026",
+      "day_of_week": "Thứ Tư",
+      "can_chi_day": "Canh Dần",
+      "julian_day_number": 2461237,
+      "cultural_context": "Lễ vía Quốc công Thống binh Điều bát Tống Phước Hiệp (ngày 1)"
+    },
+    {
+      "event_marker": "Mùng 3 tháng 6",
+      "lunar_day": 3,
+      "lunar_month": 6,
+      "lunar_year": 2026,
+      "lunar_date_str": "03/06/2026 ÂL",
+      "gregorian_iso": "2026-07-16",
+      "gregorian_formatted": "16/07/2026",
+      "day_of_week": "Thứ Năm",
+      "can_chi_day": "Tân Mão",
+      "julian_day_number": 2461238,
+      "cultural_context": "Lễ vía Quốc công Thống binh Điều bát Tống Phước Hiệp (chính tế)"
+    },
+    {
+      "event_marker": "15 tháng 6",
+      "lunar_day": 15,
+      "lunar_month": 6,
+      "lunar_year": 2026,
+      "lunar_date_str": "15/06/2026 ÂL",
+      "gregorian_iso": "2026-07-28",
+      "gregorian_formatted": "28/07/2026",
+      "day_of_week": "Thứ Ba",
+      "can_chi_day": "Quý Mão",
+      "julian_day_number": 2461250,
+      "cultural_context": "Lễ giỗ Phan Thanh Giản (theo trường lunar_date cũ)"
+    },
+    {
+      "event_marker": "16 tháng 6",
+      "lunar_day": 16,
+      "lunar_month": 6,
+      "lunar_year": 2026,
+      "lunar_date_str": "16/06/2026 ÂL",
+      "gregorian_iso": "2026-07-29",
+      "gregorian_formatted": "29/07/2026",
+      "day_of_week": "Thứ Tư",
+      "can_chi_day": "Giáp Thìn",
+      "julian_day_number": 2461251,
+      "cultural_context": "Lễ hội Nghinh Ông Bình Thắng"
+    },
+    {
+      "event_marker": "Mùng 3 tháng 7",
+      "lunar_day": 3,
+      "lunar_month": 7,
+      "lunar_year": 2026,
+      "lunar_date_str": "03/07/2026 ÂL",
+      "gregorian_iso": "2026-08-15",
+      "gregorian_formatted": "15/08/2026",
+      "day_of_week": "Thứ Bảy",
+      "can_chi_day": "Tân Dậu",
+      "julian_day_number": 2461268,
+      "cultural_context": "Lễ giỗ Nguyễn Đình Chiểu (nếu theo âm lịch - lưu ý nguồn lịch sử là dương lịch)"
+    },
+    {
+      "event_marker": "Mùng 4 tháng 7",
+      "lunar_day": 4,
+      "lunar_month": 7,
+      "lunar_year": 2026,
+      "lunar_date_str": "04/07/2026 ÂL",
+      "gregorian_iso": "2026-08-16",
+      "gregorian_formatted": "16/08/2026",
+      "day_of_week": "Chủ Nhật",
+      "can_chi_day": "Nhâm Tuất",
+      "julian_day_number": 2461269,
+      "cultural_context": "Lễ giỗ Phan Thanh Giản tại Tụy Văn Lâu Văn Thánh Miếu (ngày 1 - chính thức)"
+    },
+    {
+      "event_marker": "Mùng 5 tháng 7",
+      "lunar_day": 5,
+      "lunar_month": 7,
+      "lunar_year": 2026,
+      "lunar_date_str": "05/07/2026 ÂL",
+      "gregorian_iso": "2026-08-17",
+      "gregorian_formatted": "17/08/2026",
+      "day_of_week": "Thứ Hai",
+      "can_chi_day": "Quý Hợi",
+      "julian_day_number": 2461270,
+      "cultural_context": "Lễ giỗ Phan Thanh Giản tại Tụy Văn Lâu Văn Thánh Miếu (ngày 2 - chính thức)"
+    },
+    {
+      "event_marker": "Rằm tháng 7 (15/7)",
+      "lunar_day": 15,
+      "lunar_month": 7,
+      "lunar_year": 2026,
+      "lunar_date_str": "15/07/2026 ÂL",
+      "gregorian_iso": "2026-08-27",
+      "gregorian_formatted": "27/08/2026",
+      "day_of_week": "Thứ Năm",
+      "can_chi_day": "Quý Dậu",
+      "julian_day_number": 2461280,
+      "cultural_context": "Đại lễ Vu Lan Báo hiếu; Lễ hội Lăng Cồn Tàu (kỳ 2)"
+    },
+    {
+      "event_marker": "25 tháng 7",
+      "lunar_day": 25,
+      "lunar_month": 7,
+      "lunar_year": 2026,
+      "lunar_date_str": "25/07/2026 ÂL",
+      "gregorian_iso": "2026-09-06",
+      "gregorian_formatted": "06/09/2026",
+      "day_of_week": "Chủ Nhật",
+      "can_chi_day": "Quý Mùi",
+      "julian_day_number": 2461290,
+      "cultural_context": "Vu Lan Thắng Hội Cầu Kè (khai mạc)"
+    },
+    {
+      "event_marker": "28 tháng 7",
+      "lunar_day": 28,
+      "lunar_month": 7,
+      "lunar_year": 2026,
+      "lunar_date_str": "28/07/2026 ÂL",
+      "gregorian_iso": "2026-09-09",
+      "gregorian_formatted": "09/09/2026",
+      "day_of_week": "Thứ Tư",
+      "can_chi_day": "Bính Tuất",
+      "julian_day_number": 2461293,
+      "cultural_context": "Vu Lan Thắng Hội Cầu Kè (bế mạc)"
+    },
+    {
+      "event_marker": "Rằm tháng 8 (15/8)",
+      "lunar_day": 15,
+      "lunar_month": 8,
+      "lunar_year": 2026,
+      "lunar_date_str": "15/08/2026 ÂL",
+      "gregorian_iso": "2026-09-25",
+      "gregorian_formatted": "25/09/2026",
+      "day_of_week": "Thứ Sáu",
+      "can_chi_day": "Nhâm Dần",
+      "julian_day_number": 2461309,
+      "cultural_context": "Tết Trung Thu / Lễ hội Lồng Đèn"
+    },
+    {
+      "event_marker": "Thu Đinh (20 tháng 8)",
+      "lunar_day": 20,
+      "lunar_month": 8,
+      "lunar_year": 2026,
+      "lunar_date_str": "20/08/2026 ÂL",
+      "gregorian_iso": "2026-09-30",
+      "gregorian_formatted": "30/09/2026",
+      "day_of_week": "Thứ Tư",
+      "can_chi_day": "Đinh Mùi",
+      "julian_day_number": 2461314,
+      "cultural_context": "Lễ Thu Đinh Văn Thánh Miếu (ngày Đinh cuối tháng 8 ÂL)"
+    },
+    {
+      "event_marker": "29 tháng 8",
+      "lunar_day": 29,
+      "lunar_month": 8,
+      "lunar_year": 2026,
+      "lunar_date_str": "29/08/2026 ÂL",
+      "gregorian_iso": "2026-10-09",
+      "gregorian_formatted": "09/10/2026",
+      "day_of_week": "Thứ Sáu",
+      "can_chi_day": "Bính Thìn",
+      "julian_day_number": 2461323,
+      "cultural_context": "Lễ hội Sen Dolta của đồng bào Khmer (ngày đầu)"
+    },
+    {
+      "event_marker": "Mùng 1 tháng 9",
+      "lunar_day": 1,
+      "lunar_month": 9,
+      "lunar_year": 2026,
+      "lunar_date_str": "01/09/2026 ÂL",
+      "gregorian_iso": "2026-10-10",
+      "gregorian_formatted": "10/10/2026",
+      "day_of_week": "Thứ Bảy",
+      "can_chi_day": "Đinh Tỵ",
+      "julian_day_number": 2461324,
+      "cultural_context": "Lễ hội Sen Dolta của đồng bào Khmer (ngày hoàn mãn)"
+    },
+    {
+      "event_marker": "12 tháng 10",
+      "lunar_day": 12,
+      "lunar_month": 10,
+      "lunar_year": 2026,
+      "lunar_date_str": "12/10/2026 ÂL",
+      "gregorian_iso": "2026-11-20",
+      "gregorian_formatted": "20/11/2026",
+      "day_of_week": "Thứ Sáu",
+      "can_chi_day": "Mậu Tuất",
+      "julian_day_number": 2461365,
+      "cultural_context": "Lễ giỗ các trung thần liệt tử tại Văn Thánh Miếu (ngày 1)"
+    },
+    {
+      "event_marker": "13 tháng 10",
+      "lunar_day": 13,
+      "lunar_month": 10,
+      "lunar_year": 2026,
+      "lunar_date_str": "13/10/2026 ÂL",
+      "gregorian_iso": "2026-11-21",
+      "gregorian_formatted": "21/11/2026",
+      "day_of_week": "Thứ Bảy",
+      "can_chi_day": "Kỷ Hợi",
+      "julian_day_number": 2461366,
+      "cultural_context": "Lễ giỗ các trung thần liệt tử tại Văn Thánh Miếu (ngày 2)"
+    },
+    {
+      "event_marker": "Rằm tháng 10 (15/10)",
+      "lunar_day": 15,
+      "lunar_month": 10,
+      "lunar_year": 2026,
+      "lunar_date_str": "15/10/2026 ÂL",
+      "gregorian_iso": "2026-11-23",
+      "gregorian_formatted": "23/11/2026",
+      "day_of_week": "Thứ Hai",
+      "can_chi_day": "Tân Sửu",
+      "julian_day_number": 2461368,
+      "cultural_context": "Đại lễ Ok Om Bok (Lễ Cúng Trăng), Hội đua ghe Ngo"
+    },
+    {
+      "event_marker": "16 tháng 10",
+      "lunar_day": 16,
+      "lunar_month": 10,
+      "lunar_year": 2026,
+      "lunar_date_str": "16/10/2026 ÂL",
+      "gregorian_iso": "2026-11-24",
+      "gregorian_formatted": "24/11/2026",
+      "day_of_week": "Thứ Ba",
+      "can_chi_day": "Nhâm Dần",
+      "julian_day_number": 2461369,
+      "cultural_context": "Lễ Thượng điền Đình Tân Ngãi (ngày 1); Đình Hòa Tịnh"
+    },
+    {
+      "event_marker": "17 tháng 10",
+      "lunar_day": 17,
+      "lunar_month": 10,
+      "lunar_year": 2026,
+      "lunar_date_str": "17/10/2026 ÂL",
+      "gregorian_iso": "2026-11-25",
+      "gregorian_formatted": "25/11/2026",
+      "day_of_week": "Thứ Tư",
+      "can_chi_day": "Quý Mão",
+      "julian_day_number": 2461370,
+      "cultural_context": "Lễ Thượng điền Đình Tân Ngãi (ngày 2)"
+    }
+  ],
+  "circuit_breaker_blocked_events_21": [
+    {
+      "entity_id": "festival-dua-sap-cau-ke-tra-vinh",
+      "entity_name": "Festival Dừa Sáp Cầu Kè",
+      "error_code": "ERR_CIRCUIT_BREAKER_BLOCKED",
+      "date_start_iso": "2026-08-10",
+      "date_start_month": 8,
+      "attribute_month": 3,
+      "season_months": [
+        8
+      ],
+      "circuit_breaker_rationale": "Cầu dao attributes.month chặn sự kiện khỏi danh sách sắp diễn ra và homepage vì tháng công bố date_start không khớp với month heuristic."
+    },
+    {
+      "entity_id": "ngay-hoi-van-hoa-the-thao-va-du-lich-huyen-cho-lach-ben-tre",
+      "entity_name": "Ngày hội Văn hóa - Thể thao và Du lịch Chợ Lách",
+      "error_code": "ERR_CIRCUIT_BREAKER_BLOCKED",
+      "date_start_iso": "2026-07-10",
+      "date_start_month": 7,
+      "attribute_month": 1,
+      "season_months": [
+        1,
+        2
+      ],
+      "circuit_breaker_rationale": "Cầu dao attributes.month chặn sự kiện khỏi danh sách sắp diễn ra và homepage vì tháng công bố date_start không khớp với month heuristic."
+    },
+    {
+      "entity_id": "hoi-cho-xuc-tien-thuong-mai-du-lich-vinh-long-dip-tet-nguyen-dan-vinh-long",
+      "entity_name": "Hội chợ Xúc tiến Thương mại Du lịch Vĩnh Long (dịp Tết Nguyên Đán)",
+      "error_code": "ERR_CIRCUIT_BREAKER_BLOCKED",
+      "date_start_iso": "2026-02-10",
+      "date_start_month": 2,
+      "attribute_month": 1,
+      "season_months": [
+        1,
+        2
+      ],
+      "circuit_breaker_rationale": "Cầu dao attributes.month chặn sự kiện khỏi danh sách sắp diễn ra và homepage vì tháng công bố date_start không khớp với month heuristic."
+    },
+    {
+      "entity_id": "tuan-le-van-hoa-the-thao-va-du-lich-tinh-vinh-long-vinh-long",
+      "entity_name": "Tuần lễ Văn hóa, Thể thao và Du lịch tỉnh Vĩnh Long",
+      "error_code": "ERR_CIRCUIT_BREAKER_BLOCKED",
+      "date_start_iso": "2026-07-15",
+      "date_start_month": 7,
+      "attribute_month": 4,
+      "season_months": [
+        7
+      ],
+      "circuit_breaker_rationale": "Cầu dao attributes.month chặn sự kiện khỏi danh sách sắp diễn ra và homepage vì tháng công bố date_start không khớp với month heuristic."
+    },
+    {
+      "entity_id": "hoi-cho-xuc-tien-thuong-mai-san-pham-cong-nghiep-nong-thon-va-ocop-vinh-long-gan-voi-ok-om-bok-vinh-long",
+      "entity_name": "Hội chợ Xúc tiến Thương mại – Sản phẩm Công nghiệp Nông thôn và OCOP Vĩnh Long (gắn với Ok Om Bok)",
+      "error_code": "ERR_CIRCUIT_BREAKER_BLOCKED",
+      "date_start_iso": "2026-11-20",
+      "date_start_month": 11,
+      "attribute_month": 10,
+      "season_months": [
+        10,
+        11
+      ],
+      "circuit_breaker_rationale": "Cầu dao attributes.month chặn sự kiện khỏi danh sách sắp diễn ra và homepage vì tháng công bố date_start không khớp với month heuristic."
+    },
+    {
+      "entity_id": "hoi-cho-dac-san-vung-mien-khu-vuc-dbscl-vinh-long-vinh-long",
+      "entity_name": "Hội chợ Đặc sản Vùng miền khu vực ĐBSCL – Vĩnh Long",
+      "error_code": "ERR_CIRCUIT_BREAKER_BLOCKED",
+      "date_start_iso": "2026-10-15",
+      "date_start_month": 10,
+      "attribute_month": 11,
+      "season_months": [
+        10
+      ],
+      "circuit_breaker_rationale": "Cầu dao attributes.month chặn sự kiện khỏi danh sách sắp diễn ra và homepage vì tháng công bố date_start không khớp với month heuristic."
+    },
+    {
+      "entity_id": "hoi-cho-thuong-mai-du-lich-ben-tre-ben-tre",
+      "entity_name": "Hội chợ Thương mại - Du lịch Bến Tre",
+      "error_code": "ERR_CIRCUIT_BREAKER_BLOCKED",
+      "date_start_iso": "2026-07-20",
+      "date_start_month": 7,
+      "attribute_month": 4,
+      "season_months": [
+        7
+      ],
+      "circuit_breaker_rationale": "Cầu dao attributes.month chặn sự kiện khỏi danh sách sắp diễn ra và homepage vì tháng công bố date_start không khớp với month heuristic."
+    },
+    {
+      "entity_id": "hoi-cho-thuong-mai-du-lich-tinh-tra-vinh-tra-vinh",
+      "entity_name": "Hội chợ Thương mại - Du lịch tỉnh Trà Vinh",
+      "error_code": "ERR_CIRCUIT_BREAKER_BLOCKED",
+      "date_start_iso": "2026-08-15",
+      "date_start_month": 8,
+      "attribute_month": 4,
+      "season_months": [
+        8
+      ],
+      "circuit_breaker_rationale": "Cầu dao attributes.month chặn sự kiện khỏi danh sách sắp diễn ra và homepage vì tháng công bố date_start không khớp với month heuristic."
+    },
+    {
+      "entity_id": "hoi-thi-san-pham-ocop-va-dac-san-ben-tre-ben-tre",
+      "entity_name": "Hội thi Sản phẩm OCOP và Đặc sản Bến Tre",
+      "error_code": "ERR_CIRCUIT_BREAKER_BLOCKED",
+      "date_start_iso": "2026-09-20",
+      "date_start_month": 9,
+      "attribute_month": 11,
+      "season_months": [
+        9
+      ],
+      "circuit_breaker_rationale": "Cầu dao attributes.month chặn sự kiện khỏi danh sách sắp diễn ra và homepage vì tháng công bố date_start không khớp với month heuristic."
+    },
+    {
+      "entity_id": "tuan-le-du-lich-tra-vinh-kham-pha-xu-dua-tra-vinh",
+      "entity_name": "Tuần lễ Du lịch Trà Vinh - Khám phá Xứ Dừa",
+      "error_code": "ERR_CIRCUIT_BREAKER_BLOCKED",
+      "date_start_iso": "2026-09-10",
+      "date_start_month": 9,
+      "attribute_month": 6,
+      "season_months": [
+        9
+      ],
+      "circuit_breaker_rationale": "Cầu dao attributes.month chặn sự kiện khỏi danh sách sắp diễn ra và homepage vì tháng công bố date_start không khớp với month heuristic."
+    },
+    {
+      "entity_id": "giai-ban-marathon-vinh-long-mo-rong-hanh-trinh-trai-tim-mekong-vinh-long",
+      "entity_name": "Giải Bán Marathon Vĩnh Long Mở rộng – Hành trình Trái tim Mekong",
+      "error_code": "ERR_CIRCUIT_BREAKER_BLOCKED",
+      "date_start_iso": "2026-03-08",
+      "date_start_month": 3,
+      "attribute_month": 4,
+      "season_months": [
+        3
+      ],
+      "circuit_breaker_rationale": "Cầu dao attributes.month chặn sự kiện khỏi danh sách sắp diễn ra và homepage vì tháng công bố date_start không khớp với month heuristic."
+    },
+    {
+      "entity_id": "giai-vo-dich-xe-dap-tinh-vinh-long-mo-rong-vinh-long",
+      "entity_name": "Giải Vô địch Xe đạp Tỉnh Vĩnh Long Mở rộng",
+      "error_code": "ERR_CIRCUIT_BREAKER_BLOCKED",
+      "date_start_iso": "2026-05-15",
+      "date_start_month": 5,
+      "attribute_month": 4,
+      "season_months": [
+        4
+      ],
+      "circuit_breaker_rationale": "Cầu dao attributes.month chặn sự kiện khỏi danh sách sắp diễn ra và homepage vì tháng công bố date_start không khớp với month heuristic."
+    },
+    {
+      "entity_id": "giai-marathon-ben-tre-xu-dua-ben-tre",
+      "entity_name": "Giải Marathon Bến Tre - Xứ Dừa",
+      "error_code": "ERR_CIRCUIT_BREAKER_BLOCKED",
+      "date_start_iso": "2026-04-05",
+      "date_start_month": 4,
+      "attribute_month": 12,
+      "season_months": [
+        4
+      ],
+      "circuit_breaker_rationale": "Cầu dao attributes.month chặn sự kiện khỏi danh sách sắp diễn ra và homepage vì tháng công bố date_start không khớp với month heuristic."
+    },
+    {
+      "entity_id": "giai-marathon-tra-vinh-tra-vinh-marathon-tra-vinh",
+      "entity_name": "Giải Marathon Trà Vinh (Tra Vinh Marathon)",
+      "error_code": "ERR_CIRCUIT_BREAKER_BLOCKED",
+      "date_start_iso": "2026-03-22",
+      "date_start_month": 3,
+      "attribute_month": 8,
+      "season_months": [
+        3
+      ],
+      "circuit_breaker_rationale": "Cầu dao attributes.month chặn sự kiện khỏi danh sách sắp diễn ra và homepage vì tháng công bố date_start không khớp với month heuristic."
+    },
+    {
+      "entity_id": "trien-lam-hoi-cho-nong-nghiep-cong-nghe-cao-ben-tre-ben-tre",
+      "entity_name": "Triển lãm - Hội chợ Nông nghiệp Công nghệ cao Bến Tre",
+      "error_code": "ERR_CIRCUIT_BREAKER_BLOCKED",
+      "date_start_iso": "2026-05-10",
+      "date_start_month": 5,
+      "attribute_month": 9,
+      "season_months": [
+        5
+      ],
+      "circuit_breaker_rationale": "Cầu dao attributes.month chặn sự kiện khỏi danh sách sắp diễn ra và homepage vì tháng công bố date_start không khớp với month heuristic."
+    },
+    {
+      "entity_id": "giai-dua-ghe-ngo-truyen-thong-tinh-ben-tre-ben-tre",
+      "entity_name": "Giải Đua Ghe Ngo truyền thống tỉnh Bến Tre",
+      "error_code": "ERR_CIRCUIT_BREAKER_BLOCKED",
+      "date_start_iso": "2026-11-22",
+      "date_start_month": 11,
+      "attribute_month": 10,
+      "season_months": [
+        11
+      ],
+      "circuit_breaker_rationale": "Cầu dao attributes.month chặn sự kiện khỏi danh sách sắp diễn ra và homepage vì tháng công bố date_start không khớp với month heuristic."
+    },
+    {
+      "entity_id": "le-hoi-van-hoa-the-thao-du-lich-dong-bao-khmer-nam-bo-tinh-tra-vinh-tra-vinh",
+      "entity_name": "Lễ hội Văn hóa - Thể thao - Du lịch đồng bào Khmer Nam Bộ tỉnh Trà Vinh",
+      "error_code": "ERR_CIRCUIT_BREAKER_BLOCKED",
+      "date_start_iso": "2026-11-20",
+      "date_start_month": 11,
+      "attribute_month": 12,
+      "season_months": [
+        11
+      ],
+      "circuit_breaker_rationale": "Cầu dao attributes.month chặn sự kiện khỏi danh sách sắp diễn ra và homepage vì tháng công bố date_start không khớp với month heuristic."
+    },
+    {
+      "entity_id": "giai-the-thao-dan-toc-quoc-phong-tinh-tra-vinh-tra-vinh",
+      "entity_name": "Giải Thể thao Dân tộc - Quốc phòng tỉnh Trà Vinh",
+      "error_code": "ERR_CIRCUIT_BREAKER_BLOCKED",
+      "date_start_iso": "2026-09-01",
+      "date_start_month": 9,
+      "attribute_month": 7,
+      "season_months": [
+        9
+      ],
+      "circuit_breaker_rationale": "Cầu dao attributes.month chặn sự kiện khỏi danh sách sắp diễn ra và homepage vì tháng công bố date_start không khớp với month heuristic."
+    },
+    {
+      "entity_id": "lien-hoan-don-ca-tai-tu-nam-bo-tinh-ben-tre-ben-tre",
+      "entity_name": "Liên hoan Đờn ca Tài tử Nam Bộ tỉnh Bến Tre",
+      "error_code": "ERR_CIRCUIT_BREAKER_BLOCKED",
+      "date_start_iso": "2026-10-05",
+      "date_start_month": 10,
+      "attribute_month": 6,
+      "season_months": [
+        10
+      ],
+      "circuit_breaker_rationale": "Cầu dao attributes.month chặn sự kiện khỏi danh sách sắp diễn ra và homepage vì tháng công bố date_start không khớp với month heuristic."
+    },
+    {
+      "entity_id": "lien-hoan-van-nghe-quan-chung-tinh-tra-vinh-tra-vinh",
+      "entity_name": "Liên hoan Văn nghệ Quần chúng tỉnh Trà Vinh",
+      "error_code": "ERR_CIRCUIT_BREAKER_BLOCKED",
+      "date_start_iso": "2026-08-01",
+      "date_start_month": 8,
+      "attribute_month": 9,
+      "season_months": [
+        8
+      ],
+      "circuit_breaker_rationale": "Cầu dao attributes.month chặn sự kiện khỏi danh sách sắp diễn ra và homepage vì tháng công bố date_start không khớp với month heuristic."
+    },
+    {
+      "entity_id": "festival-gach-gom-do-kinh-te-xanh-tinh-vinh-long-vinh-long",
+      "entity_name": "Festival Gạch Gốm Đỏ – Kinh tế Xanh tỉnh Vĩnh Long",
+      "error_code": "ERR_CIRCUIT_BREAKER_BLOCKED",
+      "date_start_iso": "2026-10-25",
+      "date_start_month": 10,
+      "attribute_month": 11,
+      "season_months": [
+        10
+      ],
+      "circuit_breaker_rationale": "Cầu dao attributes.month chặn sự kiện khỏi danh sách sắp diễn ra và homepage vì tháng công bố date_start không khớp với month heuristic."
+    }
+  ],
+  "khmer_orthography_standardization": {
+    "sen_dolta": {
+      "canonical_choice": "Sen Dolta",
+      "variants_in_db": [
+        "Sen Dolta (5 thực thể)",
+        "Sen Đôn Ta (1 thực thể)",
+        "Sene Dolta (tài liệu nội bộ)"
+      ],
+      "rule": "Thống nhất chuẩn hiển thị 'Sen Dolta' trên toàn hệ sinh thái; thiết lập 'Sen Đôn Ta' và 'Sene Dolta' làm alias tìm kiếm."
+    },
+    "chol_chnam_thmay": {
+      "canonical_choice": "Chol Chnam Thmay",
+      "variants_in_db": [
+        "Chol Chnam Thmay (8 thực thể)",
+        "Chôl Chnăm Thmây (3 thực thể)"
+      ],
+      "rule": "Thống nhất chuẩn hiển thị 'Chol Chnam Thmay'; giữ 'Chôl Chnăm Thmây' làm alias ngữ âm."
+    },
+    "ok_om_bok": {
+      "canonical_choice": "Ok Om Bok",
+      "variants_in_db": [
+        "Ok Om Bok (25 thực thể)",
+        "Oóc-Om-Bóc (2 thực thể)",
+        "Ok-om-bok (1 thực thể)"
+      ],
+      "rule": "Thống nhất chuẩn hiển thị 'Ok Om Bok'; các dạng khác chuyển thành từ khóa tìm kiếm phụ."
+    }
+  },
+  "remediation_ledger": [
+    {
+      "entity_id": "le-cung-mieu",
+      "entity_name": "Lễ cúng Miếu",
+      "group": "B",
+      "error_code": "ERR_TEMPORAL_CONFLICT_B",
+      "severity": "medium",
+      "affected_fields": [
+        "attributes.date_start",
+        "attributes.date_end"
+      ],
+      "current_values": {
+        "lunar_date": "16–18 tháng Giêng âm lịch",
+        "date_start": "2026-03-05",
+        "date_end": "2026-03-07",
+        "summary": "Miễu Ông, miễu Bà, miễu Cô Hồn ở làng quê Nam Bộ nhận lễ dâng của người dân theo từng ngày vía linh thiêng trong năm — một nhịp thờ cúng dân gian gắn liền với đời sống tâm linh xóm làng.",
+        "season": {
+          "peak": [],
+          "text": "Chưa xác định mùa vụ",
+          "months": [
+            3
+          ]
+        }
+      },
+      "proposed_values": {
+        "date_start": "2026-03-04",
+        "date_end": "2026-03-06",
+        "rationale": "16-18 tháng Giêng ÂL 2026 quy đổi dương lịch chính xác là 04-06/03/2026 (16/1=04/03, 17/1=05/03, 18/1=06/03). DB đang lệch +1 ngày."
+      },
+      "remediation_status": "automatable",
+      "risk_level": "low"
+    },
+    {
+      "entity_id": "le-thuong-dien-dinh-tan-ngai",
+      "entity_name": "Lễ Thượng điền Đình Tân Ngãi",
+      "group": "B",
+      "error_code": "ERR_TEMPORAL_CONFLICT_B",
+      "severity": "high",
+      "affected_fields": [
+        "attributes.date_start",
+        "attributes.date_end"
+      ],
+      "current_values": {
+        "lunar_date": "16–17 tháng 10 âm lịch",
+        "date_start": "2026-11-15",
+        "date_end": "2026-11-16",
+        "summary": "Lễ hội truyền thống tổ chức hàng năm tại Đình Tân Ngãi vào ngày 16-17 tháng 10 âm lịch, tạ ơn sau vụ mùa thu hoạch.",
+        "season": {
+          "peak": [
+            11
+          ],
+          "text": "Lễ Thượng điền Đình Tân Ngãi tổ chức ngày 16-17 tháng 10 âm lịch, thường rơi vào tháng 11-12 dương lịch. Đây là dịp tạ ơn sau vụ mùa, cao điểm thường vào tháng 11.",
+          "months": [
+            11,
+            12
+          ]
+        }
+      },
+      "proposed_values": {
+        "date_start": "2026-11-24",
+        "date_end": "2026-11-25",
+        "rationale": "16-17 tháng 10 ÂL 2026 quy đổi thiên văn chính xác là 24-25/11/2026. DB ghi ngày 15-16/11 (lệch -9 ngày). Tất cả 4 trường văn bản và tư liệu di tích Đình Tân Ngãi đều xác nhận Thượng điền 16-17/10 ÂL."
+      },
+      "remediation_status": "automatable",
+      "risk_level": "low"
+    },
+    {
+      "entity_id": "le-hoi-dom-long-neak-ta",
+      "entity_name": "Lễ hội Đom Lơng Néak Tà",
+      "group": "B",
+      "error_code": "ERR_TEMPORAL_CONFLICT_B",
+      "severity": "high",
+      "affected_fields": [
+        "attributes.date_start",
+        "attributes.date_end",
+        "attributes.lunar_date"
+      ],
+      "current_values": {
+        "lunar_date": "Cuối tháng 3 – đầu tháng 4 âm lịch",
+        "date_start": "2026-10-08",
+        "date_end": "2026-10-10",
+        "summary": "Khi đất trời giao mùa từ nắng sang mưa, người Khmer tổ chức Đom Lơng Néak Tà — lễ cúng Thần Đất cầu mưa và mùa màng bội thu.",
+        "season": {
+          "peak": [
+            5
+          ],
+          "text": "Lễ hội Đom Lơng Néak Tà diễn ra vào thời điểm giao mùa từ nắng sang mưa, khoảng tháng 4-5. Cao điểm thường vào tháng 5, khi cộng đồng cầu mưa thuận gió hòa và mùa màng tốt tươi.",
+          "months": [
+            4,
+            5
+          ]
+        }
+      },
+      "proposed_values": {
+        "date_start": null,
+        "date_end": null,
+        "lunar_date": "Tháng 3–5 âm lịch (tùy từng phum sóc)",
+        "rationale": "DB ghi ngày 2026-10-08 lệch khoảng 5 tháng so với chu kỳ mùa khô (cuối tháng 3 - đầu tháng 4 ÂL). Theo Quyết định 22/02/2024 của Bộ VHTTDL công nhận DSVH phi vật thể quốc gia, lễ Đom Lơng Néak Tà do từng phum sóc tự chọn ngày trong tháng 3, 4, 5 ÂL. Khuyến nghị bỏ ngày ISO cứng để tránh phát tán ngày bịa vào .ics."
+      },
+      "decision_matrix": [
+        {
+          "option": "a",
+          "label": "Bỏ ngày cứng date_start/date_end (Khuyến nghị chuẩn di sản)",
+          "proposed_date_start": null,
+          "proposed_date_end": null
+        },
+        {
+          "option": "b",
+          "label": "Gán ngày đại diện năm 2026 (cuối tháng 3 ÂL)",
+          "proposed_date_start": "2026-05-16",
+          "proposed_date_end": "2026-05-17"
+        }
+      ],
+      "remediation_status": "requires_decision",
+      "risk_level": "requires_owner_approval"
+    },
+    {
+      "entity_id": "le-gio-nguyen-dinh-chieu",
+      "entity_name": "Lễ giỗ Nguyễn Đình Chiểu",
+      "group": "C",
+      "c_reference": "C-1",
+      "error_code": "ERR_TEMPORAL_CONFLICT_C",
+      "severity": "critical",
+      "affected_fields": [
+        "attributes.lunar_date",
+        "attributes.date_start",
+        "attributes.date_end",
+        "entities.summary",
+        "entities.season"
+      ],
+      "current_values": {
+        "lunar_date": "Mùng 3 tháng 7 âm lịch",
+        "date_start": "2026-07-03",
+        "date_end": "2026-07-03",
+        "summary": "Lễ giỗ nhà thơ yêu nước Nguyễn Đình Chiểu tổ chức hằng năm vào ngày 3 tháng 7 âm lịch tại khu lăng mộ xã An Đức, Ba Tri.",
+        "season": {
+          "peak": [
+            8
+          ],
+          "text": "Lễ giỗ Nguyễn Đình Chiểu tổ chức hằng năm vào ngày 3 tháng 7 âm lịch, thường rơi vào tháng 7-8 dương lịch. Cao điểm tham dự thường vào tháng 8.",
+          "months": [
+            7,
+            8
+          ]
+        }
+      },
+      "rationale": "Bẫy ngược đời: Cụ Đồ Chiểu sinh 1/7/1822, mất 3/7/1888 - đều là DƯƠNG LỊCH. Tỉnh Bến Tre lấy 1/7 dương lịch làm Ngày hội truyền thống văn hóa tỉnh. date_start trong DB (03/07/2026) là HOÀN TOÀN ĐÚNG, nhưng 4 trường kia bị gắn nhầm 'âm lịch'. Sửa script tự động theo lunar_date sẽ phá vỡ ngày đúng thành 15/08/2026.",
+      "decision_matrix": [
+        {
+          "option": "a",
+          "label": "Chốt ngày 3/7 DƯƠNG LỊCH (Khuyến nghị): Giữ date_start, xoá lunar_date, sửa summary/desc/season về dương lịch",
+          "proposed_date_start": "2026-07-03",
+          "proposed_date_end": "2026-07-03",
+          "proposed_lunar_date": null,
+          "proposed_season_months": [
+            7
+          ]
+        },
+        {
+          "option": "b",
+          "label": "Chốt theo 3/7 ÂM LỊCH: Đổi date_start sang 2026-08-15",
+          "proposed_date_start": "2026-08-15",
+          "proposed_date_end": "2026-08-15",
+          "proposed_lunar_date": "Mùng 3 tháng 7 âm lịch",
+          "proposed_season_months": [
+            8
+          ]
+        }
+      ],
+      "remediation_status": "requires_owner_approval",
+      "risk_level": "requires_owner_approval"
+    },
+    {
+      "entity_id": "le-gio-phan-thanh-gian-tai-van-thanh-mieu",
+      "entity_name": "Lễ giỗ Phan Thanh Giản tại Văn Thánh Miếu",
+      "group": "C",
+      "c_reference": "C-2",
+      "error_code": "ERR_TEMPORAL_CONFLICT_C",
+      "severity": "critical",
+      "affected_fields": [
+        "attributes.lunar_date",
+        "attributes.date_start",
+        "attributes.date_end",
+        "entities.summary",
+        "entities.season"
+      ],
+      "current_values": {
+        "lunar_date": "15 tháng 6 âm lịch",
+        "date_start": "2026-08-04",
+        "date_end": "2026-08-04",
+        "summary": "Lễ giỗ hàng năm tưởng nhớ danh thần Phan Thanh Giản - người chủ xướng xây dựng Văn Thánh Miếu Vĩnh Long, tổ chức vào mùng 4-5 tháng 7 âm lịch tại Văn Thánh Miếu, Phường 4, TP Vĩnh Long.",
+        "season": {
+          "peak": [
+            8
+          ],
+          "text": "Lễ giỗ Phan Thanh Giản tại Văn Thánh Miếu Vĩnh Long thường diễn ra vào tháng 8. Đây là dịp tưởng niệm danh nhân và thu hút người dân địa phương tham dự.",
+          "months": [
+            8
+          ]
+        }
+      },
+      "rationale": "Summary và Description đều ghi 'mùng 4-5 tháng 7 âm lịch'. Báo Vĩnh Long và Bảo tàng Vĩnh Long xác nhận lễ vía cụ Phan tại Tụy Văn Lâu diễn ra mùng 4-5 tháng 7 ÂL (= 16-17/08/2026). Trường lunar_date ghi 15/6 ÂL và date_start ghi 04/08/2026 (= 22/6 ÂL) hoàn toàn sai lệch.",
+      "decision_matrix": [
+        {
+          "option": "a",
+          "label": "Theo mùng 4-5 tháng 7 ÂL (Khuyến nghị chuẩn di tích): 2026-08-16..17",
+          "proposed_date_start": "2026-08-16",
+          "proposed_date_end": "2026-08-17",
+          "proposed_lunar_date": "Mùng 4–5 tháng 7 âm lịch",
+          "proposed_season_months": [
+            8
+          ]
+        },
+        {
+          "option": "b",
+          "label": "Theo 15 tháng 6 ÂL (lunar_date cũ): 2026-07-28",
+          "proposed_date_start": "2026-07-28",
+          "proposed_date_end": "2026-07-28",
+          "proposed_lunar_date": "15 tháng 6 âm lịch",
+          "proposed_season_months": [
+            7
+          ]
+        }
+      ],
+      "remediation_status": "requires_owner_approval",
+      "risk_level": "requires_owner_approval"
+    },
+    {
+      "entity_id": "le-hoi-van-thanh-mieu",
+      "entity_name": "Lễ hội Văn Thánh Miếu",
+      "group": "C",
+      "c_reference": "C-3",
+      "error_code": "ERR_TEMPORAL_CONFLICT_C",
+      "severity": "critical",
+      "affected_fields": [
+        "attributes.lunar_date",
+        "attributes.date_start",
+        "attributes.date_end",
+        "entities.summary",
+        "entities.season"
+      ],
+      "current_values": {
+        "lunar_date": "Rằm tháng 2 âm lịch",
+        "date_start": "2026-03-10",
+        "date_end": "2026-03-12",
+        "summary": "Lễ hội truyền thống diễn ra tại Văn Thánh Miếu, tỉnh Vĩnh Long, nhằm tôn vinh Khổng Tử và truyền thống hiếu học.",
+        "season": {
+          "peak": [],
+          "text": "Lễ Xuân Đinh, sự kiện giáo dục - văn hóa",
+          "months": [
+            3
+          ]
+        }
+      },
+      "rationale": "Văn Thánh Miếu Vĩnh Long tổ chức Lễ Xuân Đinh vào ngày Đinh đầu tiên của tháng 2 ÂL (DSVH phi vật thể quốc gia 2024). Đây là lịch Can-Chi nổi. Năm 2026 rơi vào ngày Đinh Dậu = 24/03/2026. Giá trị DB đang ghi ngày bịa 10-12/03/2026.",
+      "decision_matrix": [
+        {
+          "option": "a",
+          "label": "Tính chuẩn theo Can-Chi năm 2026: 24/03/2026 (Đinh Dậu)",
+          "proposed_date_start": "2026-03-24",
+          "proposed_date_end": "2026-03-24",
+          "proposed_lunar_date": "Ngày Đinh đầu tiên tháng 2 âm lịch (Lễ Xuân Đinh)"
+        },
+        {
+          "option": "b",
+          "label": "Chuyển sang mô hình can-chi, bỏ ngày cứng date_start",
+          "proposed_date_start": null,
+          "proposed_date_end": null,
+          "proposed_lunar_date": "Ngày Đinh đầu tiên tháng 2 âm lịch"
+        }
+      ],
+      "remediation_status": "requires_owner_approval",
+      "risk_level": "requires_owner_approval"
+    },
+    {
+      "entity_id": "le-via-ba-co-hy",
+      "entity_name": "Lễ Vía Bà Cố Hỷ",
+      "group": "C",
+      "c_reference": "C-4",
+      "error_code": "ERR_TEMPORAL_CONFLICT_C",
+      "severity": "critical",
+      "affected_fields": [
+        "attributes.lunar_date",
+        "attributes.date_start",
+        "attributes.date_end",
+        "entities.summary",
+        "entities.season"
+      ],
+      "current_values": {
+        "lunar_date": "Rằm tháng 2 âm lịch",
+        "date_start": "2026-04-03",
+        "date_end": "2026-04-03",
+        "summary": "Lễ hội dân gian tổ chức hằng năm vào ngày rằm tháng Giêng âm lịch tại Lầu Bà Cố Hỷ (Thượng Động Nương Nương), ấp Ba Động.",
+        "season": {
+          "peak": [
+            2
+          ],
+          "text": "Lễ Vía Bà Cố Hỷ diễn ra vào Rằm tháng Giêng âm lịch, thường rơi vào tháng 2 dương lịch. Đây là thời điểm chính để người dân hành hương, cúng viếng và cầu an.",
+          "months": [
+            2
+          ]
+        }
+      },
+      "rationale": "4 trường (summary, description, season.text, season.months=[2]) đều khẳng định chính lễ là Rằm tháng Giêng ÂL (15/1 ÂL = 03/03/2026). Chỉ duy nhất lunar_date ghi rằm tháng 2 và date_start ghi 03/04 (lệch đúng 1 tháng). Tư liệu Di tích lịch sử Lầu Bà Cố Hỷ (Ba Động) xác nhận chính lễ rằm tháng Giêng.",
+      "decision_matrix": [
+        {
+          "option": "a",
+          "label": "Chốt Rằm tháng Giêng ÂL (Khuyến nghị): 2026-03-03",
+          "proposed_date_start": "2026-03-03",
+          "proposed_date_end": "2026-03-04",
+          "proposed_lunar_date": "Rằm tháng Giêng âm lịch",
+          "proposed_season_months": [
+            3
+          ]
+        },
+        {
+          "option": "b",
+          "label": "Giữ Rằm tháng 2 ÂL: 2026-04-02",
+          "proposed_date_start": "2026-04-02",
+          "proposed_date_end": "2026-04-03",
+          "proposed_lunar_date": "Rằm tháng 2 âm lịch",
+          "proposed_season_months": [
+            4
+          ]
+        }
+      ],
+      "remediation_status": "requires_owner_approval",
+      "risk_level": "requires_owner_approval"
+    },
+    {
+      "entity_id": "le-hoi-ngu-dan-thanh-hai-le-hoi-cau-ngu",
+      "entity_name": "Lễ hội Ngư dân Thạnh Hải (Lễ hội cầu ngư)",
+      "group": "C",
+      "c_reference": "C-5",
+      "error_code": "ERR_TEMPORAL_CONFLICT_C",
+      "severity": "critical",
+      "affected_fields": [
+        "attributes.lunar_date",
+        "attributes.date_start",
+        "attributes.date_end",
+        "entities.summary",
+        "entities.season"
+      ],
+      "current_values": {
+        "lunar_date": "15–16 tháng 2 âm lịch",
+        "date_start": "2026-03-10",
+        "date_end": "2026-03-12",
+        "summary": "Lễ hội của ngư dân vùng biển Thạnh Phú tổ chức vào ngày 15–16 tháng âm lịch hàng năm tại khu vực Cồn Bửng – Thạnh Hải.",
+        "season": {
+          "peak": [
+            2
+          ],
+          "text": "Lễ hội cầu ngư của ngư dân Thạnh Hải thường diễn ra vào rằm tháng Giêng âm lịch, khoảng tháng 2 dương lịch. Đây là dịp cầu mùa biển thuận lợi, mưa thuận gió hòa.",
+          "months": [
+            2
+          ]
+        }
+      },
+      "rationale": "Bốn trường bốn đáp án: lunar_date ghi 15-16/2 ÂL; summary khuyết hẳn số tháng ('15-16 tháng âm lịch'); season.text ghi rằm tháng Giêng; date_start ghi 10/03/2026 (= 22/1 ÂL). Cần người am hiểu địa phương chốt số tháng và sửa lỗi chính tả summary.",
+      "decision_matrix": [
+        {
+          "option": "a",
+          "label": "Chốt 15-16 tháng 2 ÂL: 2026-04-02..03",
+          "proposed_date_start": "2026-04-02",
+          "proposed_date_end": "2026-04-03"
+        },
+        {
+          "option": "b",
+          "label": "Chốt Rằm tháng Giêng ÂL: 2026-03-03",
+          "proposed_date_start": "2026-03-03",
+          "proposed_date_end": "2026-03-04"
+        }
+      ],
+      "remediation_status": "requires_owner_approval",
+      "risk_level": "requires_owner_approval"
+    },
+    {
+      "entity_id": "le-hoi-nghinh-ong-lang-con-tau",
+      "entity_name": "Lễ hội Nghinh Ông Lăng Cồn Tàu",
+      "group": "C",
+      "c_reference": "C-6",
+      "error_code": "ERR_TEMPORAL_CONFLICT_C",
+      "severity": "critical",
+      "affected_fields": [
+        "attributes.lunar_date",
+        "attributes.date_start",
+        "attributes.date_end",
+        "entities.summary",
+        "entities.season"
+      ],
+      "current_values": {
+        "lunar_date": "10–11 tháng 3 âm lịch",
+        "date_start": "2026-04-26",
+        "date_end": "2026-04-27",
+        "summary": "Lễ hội truyền thống của ngư dân ven biển tại Lăng Ông Cồn Tàu, tổ chức hàng năm vào ngày 15 tháng 2 và 15 tháng 7 âm lịch.",
+        "season": {
+          "peak": [
+            3
+          ],
+          "text": "Lễ hội tổ chức hằng năm vào ngày 15 tháng 2 âm lịch, thường rơi vào khoảng tháng 2-3 dương lịch. Thời điểm cao điểm là đúng kỳ lễ chính.",
+          "months": [
+            2,
+            3
+          ]
+        }
+      },
+      "rationale": "lunar_date ghi 10-11/3 ÂL (= 26-27/04/2026), nhưng summary và description lại mô tả lễ tổ chức 2 kỳ vào 15 tháng 2 và 15 tháng 7 ÂL.",
+      "decision_matrix": [
+        {
+          "option": "a",
+          "label": "Chốt 1 kỳ tháng 3 ÂL (theo date_start hiện tại): 2026-04-26..27",
+          "proposed_date_start": "2026-04-26",
+          "proposed_date_end": "2026-04-27"
+        },
+        {
+          "option": "b",
+          "label": "Chốt 2 kỳ thực địa 15/2 và 15/7 ÂL: Kỳ 1 02/04/2026, Kỳ 2 27/08/2026",
+          "proposed_date_start": "2026-04-02",
+          "proposed_date_end": "2026-04-03"
+        }
+      ],
+      "remediation_status": "requires_owner_approval",
+      "risk_level": "requires_owner_approval"
+    },
+    {
+      "entity_id": "le-hoi-nghinh-ong-duyen-hai",
+      "entity_name": "Lễ hội Nghinh Ông Duyên Hải",
+      "group": "C",
+      "c_reference": "C-7",
+      "error_code": "ERR_TEMPORAL_CONFLICT_C",
+      "severity": "critical",
+      "affected_fields": [
+        "attributes.lunar_date",
+        "attributes.date_start",
+        "attributes.date_end",
+        "entities.summary",
+        "entities.season"
+      ],
+      "current_values": {
+        "lunar_date": "10–12 tháng 3 âm lịch",
+        "date_start": "2026-04-26",
+        "date_end": "2026-04-28",
+        "summary": "Lễ hội tín ngưỡng dân gian của ngư dân ven biển Duyên Hải, thờ cúng Cá Ông (cá voi) - vị thần bảo hộ ngư dân trên biển.",
+        "season": {
+          "peak": [],
+          "text": "Chưa xác định mùa vụ",
+          "months": [
+            4
+          ]
+        }
+      },
+      "rationale": "Mâu thuẫn giữa lunar_date (10-12/3 ÂL = 26-28/04/2026) và description (20-21/2 ÂL = 07-08/04/2026). Nguồn ngoài chủ yếu là Cúng biển Mỹ Long (11-13/5 ÂL), nghi ngờ bị gán ngày phỏng đoán.",
+      "decision_matrix": [
+        {
+          "option": "a",
+          "label": "Giữ 10-12/3 ÂL: 2026-04-26..28",
+          "proposed_date_start": "2026-04-26",
+          "proposed_date_end": "2026-04-28"
+        },
+        {
+          "option": "b",
+          "label": "Theo 20-21/2 ÂL: 2026-04-07..08",
+          "proposed_date_start": "2026-04-07",
+          "proposed_date_end": "2026-04-08"
+        },
+        {
+          "option": "c",
+          "label": "Bỏ ngày cứng date_start (Khuyến nghị)",
+          "proposed_date_start": null,
+          "proposed_date_end": null
+        }
+      ],
+      "remediation_status": "requires_owner_approval",
+      "risk_level": "requires_owner_approval"
+    },
+    {
+      "entity_id": "le-ha-dien-dinh-tan-hoa",
+      "entity_name": "Lễ Hạ điền Đình Tân Hoa",
+      "group": "C",
+      "c_reference": "C-8",
+      "error_code": "ERR_TEMPORAL_CONFLICT_C",
+      "severity": "critical",
+      "affected_fields": [
+        "attributes.lunar_date",
+        "attributes.date_start",
+        "attributes.date_end",
+        "entities.summary",
+        "entities.season"
+      ],
+      "current_values": {
+        "lunar_date": "16 tháng 4 âm lịch",
+        "date_start": "2026-06-01",
+        "date_end": "2026-06-02",
+        "summary": "Lễ hội truyền thống tổ chức hàng năm tại Đình Tân Hoa, xã Tân Hòa, TP Vĩnh Long vào ngày 14-15 tháng 3 âm lịch.",
+        "season": {
+          "peak": [
+            4
+          ],
+          "text": "Lễ Hạ điền Đình Tân Hoa thường diễn ra vào tháng 3 âm lịch, tương ứng khoảng tháng 3-4 dương lịch. Thời điểm cao điểm thường rơi vào tháng 4.",
+          "months": [
+            3,
+            4
+          ]
+        }
+      },
+      "rationale": "Xung đột hiển thị nghiêm trọng nhất hệ thống: date_start ghi 01/06/2026 (tháng 6) trong khi lưới mùa vụ ngay bên dưới tô sáng tháng 3 và 4 (theo summary 14-15/3 ÂL). Nguồn ngoài ghi Thượng điền 11-12/9 ÂL và Thần Hoàng 12-13/3 ÂL.",
+      "decision_matrix": [
+        {
+          "option": "a",
+          "label": "Theo 14-15/3 ÂL (Khớp lưới mùa vụ): 2026-04-30..2026-05-01",
+          "proposed_date_start": "2026-04-30",
+          "proposed_date_end": "2026-05-01",
+          "proposed_lunar_date": "14–15 tháng 3 âm lịch"
+        },
+        {
+          "option": "b",
+          "label": "Theo 16/4 ÂL (theo date_start hiện tại): 2026-06-01..02",
+          "proposed_date_start": "2026-06-01",
+          "proposed_date_end": "2026-06-02",
+          "proposed_lunar_date": "16 tháng 4 âm lịch"
+        },
+        {
+          "option": "c",
+          "label": "Theo nguồn thực địa (12-13/3 ÂL): 2026-04-28..29",
+          "proposed_date_start": "2026-04-28",
+          "proposed_date_end": "2026-04-29",
+          "proposed_lunar_date": "12–13 tháng 3 âm lịch"
+        }
+      ],
+      "remediation_status": "requires_owner_approval",
+      "risk_level": "requires_owner_approval"
+    },
+    {
+      "entity_id": "le-hoi-ky-yen",
+      "entity_name": "Lễ hội Kỳ Yên",
+      "group": "C",
+      "c_reference": "C-9",
+      "error_code": "ERR_TEMPORAL_CONFLICT_C",
+      "severity": "critical",
+      "affected_fields": [
+        "attributes.lunar_date",
+        "attributes.date_start",
+        "attributes.date_end",
+        "entities.summary",
+        "entities.season"
+      ],
+      "current_values": {
+        "lunar_date": "16–17 tháng 2 âm lịch",
+        "date_start": "2026-03-15",
+        "date_end": "2026-03-17",
+        "summary": "Kỳ Yên là lễ tế Thần Thành Hoàng lớn nhất trong năm ở các đình làng Nam Bộ — kéo dài hai ngày một đêm với nghi thức cầu quốc thái dân an, mưa thuận gió hòa. Nhạc lễ cổ truyền vang lên, đoàn múa bóng rỗi rực rỡ sắc màu, bàn thờ chưng đầy lễ vật công phu. Ban đêm, sân đình chiếu hát bội hoặc cải lương phục vụ dân làng tới tận khuya.",
+        "season": {
+          "peak": [],
+          "text": "Chưa xác định mùa vụ",
+          "months": [
+            3
+          ]
+        }
+      },
+      "rationale": "Thực thể phong tục chung của mọi ngôi đình Nam Bộ. Mỗi đình có một ngày riêng (Tân Giai 16-17/3 ÂL, Phú Lễ 18-19/3 ÂL). Gán một ngày cứng cho thực thể này là tạo ra ngày bịa cho hàng vạn người xem.",
+      "decision_matrix": [
+        {
+          "option": "a",
+          "label": "Bỏ ngày cứng date_start (Khuyến nghị văn hóa sâu sắc)",
+          "proposed_date_start": null,
+          "proposed_date_end": null,
+          "proposed_lunar_date": "Rải rác tháng Giêng đến tháng 11 âm lịch (tùy từng đình)"
+        },
+        {
+          "option": "b",
+          "label": "Giữ ngày đại diện 16-17/2 ÂL: 2026-04-03..04",
+          "proposed_date_start": "2026-04-03",
+          "proposed_date_end": "2026-04-04"
+        }
+      ],
+      "remediation_status": "requires_owner_approval",
+      "risk_level": "requires_owner_approval"
+    },
+    {
+      "entity_id": "le-hoi-chol-chnam-thmay-va-sen-dolta",
+      "entity_name": "Lễ hội Chol Chnam Thmay và Sen Dolta",
+      "group": "C",
+      "c_reference": "C-13",
+      "error_code": "ERR_TEMPORAL_CONFLICT_C",
+      "severity": "critical",
+      "affected_fields": [
+        "attributes.lunar_date",
+        "attributes.date_start",
+        "attributes.date_end",
+        "entities.summary",
+        "entities.season"
+      ],
+      "current_values": {
+        "lunar_date": "Chol Chnam Thmay: 13–16/4 DL; Sen Dolta: 29/8–1/9 ÂL",
+        "date_start": "2026-04-13",
+        "date_end": "2026-04-16",
+        "summary": "Hai lễ hội truyền thống lớn nhất trong năm của đồng bào Khmer tại huyện Trà Cú.",
+        "season": {
+          "peak": [
+            4,
+            10
+          ],
+          "text": "Chol Chnam Thmay diễn ra vào tháng 4, còn Sen Dolta thường rơi vào khoảng tháng 9-10 dương lịch. Đây là hai thời điểm quan trọng trong năm của đồng bào Khmer Trà Vinh.",
+          "months": [
+            4,
+            9,
+            10
+          ]
+        }
+      },
+      "rationale": "Gộp hai lễ hội cách nhau nửa năm vào một entity. date_start chỉ ghi được Chol Chnam Thmay (tháng 4), file .ics hoàn toàn mất lễ Sen Dolta (tháng 10). Hệ thống đã có entity riêng cho từng lễ.",
+      "decision_matrix": [
+        {
+          "option": "a",
+          "label": "Tách thành 2 entity hoặc xoá vì trùng lặp (Khuyến nghị)",
+          "action": "split_or_deprecate"
+        },
+        {
+          "option": "b",
+          "label": "Bỏ ngày cứng date_start, chuyển thành bài viết tổng quan văn hóa Khmer Trà Cú",
+          "proposed_date_start": null,
+          "proposed_date_end": null
+        }
+      ],
+      "remediation_status": "requires_owner_approval",
+      "risk_level": "requires_owner_approval"
+    },
+    {
+      "entity_id": "le-hoi-chol-chnam-thmay-tai-chua-ky-son",
+      "entity_name": "Lễ hội Chol Chnam Thmay tại chùa Kỳ Son",
+      "group": "C",
+      "c_reference": "C-14",
+      "error_code": "ERR_TEMPORAL_CONFLICT_C",
+      "severity": "critical",
+      "affected_fields": [
+        "attributes.lunar_date",
+        "attributes.date_start",
+        "attributes.date_end",
+        "entities.summary",
+        "entities.season"
+      ],
+      "current_values": {
+        "lunar_date": "13–15 tháng 4 dương lịch (cố định)",
+        "date_start": "2026-04-13",
+        "date_end": "2026-04-16",
+        "summary": "Lễ Tết Năm mới của người Khmer tổ chức hàng năm từ ngày 13 đến 15 tháng 4 tại chùa Kỳ Son.",
+        "season": {
+          "peak": [
+            4
+          ],
+          "text": "Lễ hội Chol Chnam Thmay tại chùa Kỳ Son tổ chức từ ngày 13 đến 15 tháng 4 hằng năm. Đây là dịp cao điểm để trải nghiệm văn hóa Khmer tại Vĩnh Long.",
+          "months": [
+            4
+          ]
+        }
+      },
+      "rationale": "Lệch đuôi nhẹ: lunar_date ghi 13-15/4 nhưng date_end là 2026-04-16 (4 ngày). Chú ý đây là ngày DƯƠNG LỊCH, tuyệt đối không chạy qua bộ quy đổi âm lịch.",
+      "decision_matrix": [
+        {
+          "option": "a",
+          "label": "Chuẩn hoá 13–15/4 (Khớp summary): date_end=2026-04-15",
+          "proposed_date_start": "2026-04-13",
+          "proposed_date_end": "2026-04-15"
+        },
+        {
+          "option": "b",
+          "label": "Chuẩn hoá 13–16/4: date_end=2026-04-16",
+          "proposed_date_start": "2026-04-13",
+          "proposed_date_end": "2026-04-16"
+        }
+      ],
+      "remediation_status": "requires_owner_approval",
+      "risk_level": "requires_owner_approval"
+    },
+    {
+      "entity_id": "le-chol-chhnam-thmay",
+      "entity_name": "Lễ Chôl Chhnam Thmây",
+      "group": "C",
+      "c_reference": "C-14-variant",
+      "error_code": "ERR_TEMPORAL_CONFLICT_C",
+      "severity": "critical",
+      "affected_fields": [
+        "attributes.lunar_date",
+        "attributes.date_start",
+        "attributes.date_end",
+        "entities.summary",
+        "entities.season"
+      ],
+      "current_values": {
+        "lunar_date": "13–16 tháng 4 dương lịch (cố định)",
+        "date_start": "2026-04-13",
+        "date_end": "2026-04-16",
+        "summary": "Chôl Chhnam Thmây — Tết năm mới của người Khmer Nam Bộ — là ba ngày hội lớn nhất năm diễn ra từ 13 đến 15 tháng 4.",
+        "season": {
+          "peak": [
+            4
+          ],
+          "text": "Chôl Chhnam Thmây là Tết năm mới của người Khmer Nam Bộ, diễn ra hằng năm từ ngày 13 đến 15 tháng 4. Đây là thời điểm cao điểm với các nghi lễ tại chùa và sinh hoạt cộng đồng.",
+          "months": [
+            4
+          ]
+        }
+      },
+      "rationale": "Summary ghi '13 đến 15 tháng 4' trong khi lunar_date và date_end ghi '13-16'. Cần chuẩn hóa văn phong summary đồng bộ.",
+      "decision_matrix": [
+        {
+          "option": "a",
+          "label": "Đồng bộ summary thành '13 đến 16 tháng 4'",
+          "proposed_summary_update": true
+        },
+        {
+          "option": "b",
+          "label": "Đồng bộ date_end thành '2026-04-15'",
+          "proposed_date_end": "2026-04-15"
+        }
+      ],
+      "remediation_status": "requires_owner_approval",
+      "risk_level": "requires_owner_approval"
+    },
+    {
+      "entity_id": "le-hoi-nguyen-tieu",
+      "entity_name": "Lễ hội Nguyên Tiêu",
+      "group": "C",
+      "c_reference": "C-Window-1",
+      "error_code": "ERR_TEMPORAL_CONFLICT_C",
+      "severity": "critical",
+      "affected_fields": [
+        "attributes.lunar_date",
+        "attributes.date_start",
+        "attributes.date_end",
+        "entities.summary",
+        "entities.season"
+      ],
+      "current_values": {
+        "lunar_date": "Rằm tháng Giêng âm lịch",
+        "date_start": "2026-03-02",
+        "date_end": "2026-03-03",
+        "summary": "Đêm Rằm tháng Giêng, các khu phố người Hoa ở Vĩnh Long bừng sáng trong Lễ hội Nguyên Tiêu — còn gọi là lễ Cúng Ông Bảo.",
+        "season": {
+          "peak": [
+            2
+          ],
+          "text": "Lễ hội Nguyên Tiêu diễn ra vào Rằm tháng Giêng âm lịch, thường rơi vào tháng 2 dương lịch. Đây là thời điểm cao điểm của các hoạt động tín ngưỡng và sinh hoạt văn hóa người Hoa.",
+          "months": [
+            2
+          ]
+        }
+      },
+      "rationale": "Cửa sổ ngày 2026-03-02..03 ôm ngày rằm 03/03/2026 là đúng tập tục. Tuy nhiên trường season.text ghi 'tháng 2 dương lịch' và months=[2], cần cập nhật sang tháng 3 cho năm 2026.",
+      "decision_matrix": [
+        {
+          "option": "a",
+          "label": "Cập nhật season.months=[3], season.peak=[3] và mô tả tháng 3 DL",
+          "proposed_season_months": [
+            3
+          ],
+          "proposed_season_peak": [
+            3
+          ]
+        }
+      ],
+      "remediation_status": "requires_owner_approval",
+      "risk_level": "requires_owner_approval"
+    },
+    {
+      "entity_id": "le-hoi-nguyen-tieu-o-tra-cu",
+      "entity_name": "Lễ hội Nguyên tiêu ở Trà Cú",
+      "group": "C",
+      "c_reference": "C-Window-2",
+      "error_code": "ERR_TEMPORAL_CONFLICT_C",
+      "severity": "critical",
+      "affected_fields": [
+        "attributes.lunar_date",
+        "attributes.date_start",
+        "attributes.date_end",
+        "entities.summary",
+        "entities.season"
+      ],
+      "current_values": {
+        "lunar_date": "Rằm tháng Giêng âm lịch",
+        "date_start": "2026-03-02",
+        "date_end": "2026-03-03",
+        "summary": "Lễ hội truyền thống hơn 120 năm tuổi, được công nhận Di sản văn hóa phi vật thể quốc gia ngày 3/3/2026.",
+        "season": {
+          "peak": [],
+          "text": "Rằm tháng Giêng âm lịch / theo lịch tổ chức địa phương",
+          "months": [
+            3
+          ]
+        }
+      },
+      "rationale": "Cửa sổ ngày 2026-03-02..03 ôm ngày rằm 03/03/2026 (ngày công nhận DSVH quốc gia). Khớp hoàn toàn logic.",
+      "decision_matrix": [
+        {
+          "option": "a",
+          "label": "Giữ nguyên ngày và xác nhận tính hợp lệ của cửa sổ ngày rằm",
+          "status": "verified_valid_window"
+        }
+      ],
+      "remediation_status": "requires_owner_approval",
+      "risk_level": "requires_owner_approval"
+    },
+    {
+      "entity_id": "tet-doan-ngo",
+      "entity_name": "Tết Đoan Ngọ",
+      "group": "E",
+      "error_code": "ERR_PROSE_DATE_START",
+      "severity": "low",
+      "affected_fields": [
+        "attributes.date_start",
+        "attributes.lunar_date"
+      ],
+      "current_values": {
+        "date_start": "5 tháng 5 âm lịch (khoảng tháng 6 dương lịch)",
+        "lunar_date": "Mùng 5 tháng 5 âm lịch",
+        "summary": "(mùng 5 tháng 5 Âm lịch) ở Vĩnh Long, ăn cơm rượu, trái cây giết sâu bọ trong người. Chợ bán cơm rượu, trái mận, vải — phong tục dân gian đặc trưng."
+      },
+      "proposed_values": {
+        "oracle_2026_equivalent": "2026-06-19",
+        "action": "Giữ mô tả văn xuôi nếu không công bố .ics, hoặc chuyển đổi sang 2026-06-19 khi dự án quyết định mở lịch."
+      },
+      "remediation_status": "documented_safe_from_ics",
+      "risk_level": "low"
+    },
+    {
+      "entity_id": "tet-nguyen-dan-mien-tay",
+      "entity_name": "Tết Nguyên Đán miền Tây",
+      "group": "E",
+      "error_code": "ERR_PROSE_DATE_START",
+      "severity": "low",
+      "affected_fields": [
+        "attributes.date_start",
+        "attributes.lunar_date"
+      ],
+      "current_values": {
+        "date_start": "Tháng 1 âm lịch (khoảng tháng 1-2 dương lịch)",
+        "lunar_date": "Mùng 1 tháng Giêng âm lịch",
+        "summary": "Tết cổ truyền Vĩnh Long — gói bánh tét lá chuối, nấu nồi thịt kho nước dừa, đi chợ hoa trên sông và thắp hương nơi bến nước."
+      },
+      "proposed_values": {
+        "oracle_2026_equivalent": "2026-02-17",
+        "action": "Lưu ý vi phạm CLAUDE.md §1.6 mang filler 'mien-tay', cần đổi id/tên thành Tết Nguyên Đán Vĩnh Long. Ngày 2026: 2026-02-17."
+      },
+      "remediation_status": "documented_safe_from_ics",
+      "risk_level": "low"
+    },
+    {
+      "entity_id": "le-vu-lan",
+      "entity_name": "Lễ Vu Lan",
+      "group": "E",
+      "error_code": "ERR_PROSE_DATE_START",
+      "severity": "low",
+      "affected_fields": [
+        "attributes.date_start",
+        "attributes.lunar_date"
+      ],
+      "current_values": {
+        "date_start": "Rằm tháng 7 âm lịch (khoảng tháng 8 dương lịch)",
+        "lunar_date": "Rằm tháng 7 âm lịch",
+        "summary": "Đại lễ Vu Lan (Rằm tháng 7 Âm lịch) tại các chùa Vĩnh Long, cúng chay, phóng sinh, thả đèn hoa đăng trên sông."
+      },
+      "proposed_values": {
+        "oracle_2026_equivalent": "2026-08-27",
+        "action": "Rằm tháng 7 ÂL 2026 = 2026-08-27. Giữ nguyên prose hoặc gán ISO khi mở lịch."
+      },
+      "remediation_status": "documented_safe_from_ics",
+      "risk_level": "low"
+    },
+    {
+      "entity_id": "le-gio-to-hung-vuong",
+      "entity_name": "Lễ Giỗ Tổ Hùng Vương",
+      "group": "E",
+      "error_code": "ERR_PROSE_DATE_START",
+      "severity": "low",
+      "affected_fields": [
+        "attributes.date_start",
+        "attributes.lunar_date"
+      ],
+      "current_values": {
+        "date_start": "10 tháng 3 âm lịch (khoảng tháng 4 dương lịch)",
+        "lunar_date": "Mùng 10 tháng 3 âm lịch",
+        "summary": "Ngày Giỗ Tổ Hùng Vương (10/3 Âm lịch) được tổ chức trang trọng tại đền thờ và các cơ quan."
+      },
+      "proposed_values": {
+        "oracle_2026_equivalent": "2026-04-26",
+        "action": "Mùng 10 tháng 3 ÂL 2026 = 2026-04-26 (Chủ nhật). Chuẩn bị sẵn ngày ISO nếu công bố."
+      },
+      "remediation_status": "documented_safe_from_ics",
+      "risk_level": "low"
+    },
+    {
+      "entity_id": "le-hoi-cau-ngu",
+      "entity_name": "Lễ hội Cầu Ngư",
+      "group": "E",
+      "error_code": "ERR_PROSE_DATE_START",
+      "severity": "low",
+      "affected_fields": [
+        "attributes.date_start",
+        "attributes.lunar_date"
+      ],
+      "current_values": {
+        "date_start": "Tháng 2 âm lịch",
+        "lunar_date": "Rằm tháng 2 âm lịch",
+        "summary": "Lễ Cúng biển truyền thống của ngư dân ven biển Ba Động, Duyên Hải — tế lễ Cá Ông tại miếu Bà Chúa Xứ, rước thuyền, múa lân, hát bội, cầu biển lặng gió hiền."
+      },
+      "proposed_values": {
+        "oracle_2026_equivalent": "2026-04-02",
+        "action": "Nghi vấn trùng lặp với le-via-ba-co-hy và le-cung-lau-ba-ram-thang-gieng (cùng diễn ra tại Ba Động). Cần xem xét gộp entity."
+      },
+      "remediation_status": "documented_safe_from_ics",
+      "risk_level": "low"
+    },
+    {
+      "entity_id": "le-hoi-long-den",
+      "entity_name": "Lễ hội Lồng Đèn",
+      "group": "E",
+      "error_code": "ERR_PROSE_DATE_START",
+      "severity": "low",
+      "affected_fields": [
+        "attributes.date_start",
+        "attributes.lunar_date"
+      ],
+      "current_values": {
+        "date_start": "Rằm tháng 8 âm lịch (khoảng tháng 9-10 dương lịch)",
+        "lunar_date": "Rằm tháng 8 âm lịch",
+        "summary": "Đêm Trung Thu rằm tháng 8 âm lịch — đoàn rước đèn lồng diễu hành qua các tuyến phố trung tâm Vĩnh Long, kèm múa lân, phá cỗ trông trăng và phát quà cho trẻ em."
+      },
+      "proposed_values": {
+        "oracle_2026_equivalent": "2026-09-25",
+        "action": "Rằm tháng 8 ÂL 2026 = 2026-09-25 (Thứ Sáu, Tết Trung Thu)."
+      },
+      "remediation_status": "documented_safe_from_ics",
+      "risk_level": "low"
+    },
+    {
+      "entity_id": "le-hoi-ba-chua-xu",
+      "entity_name": "Lễ hội Bà Chúa Xứ",
+      "group": "E",
+      "error_code": "ERR_PROSE_DATE_START",
+      "severity": "low",
+      "affected_fields": [
+        "attributes.date_start",
+        "attributes.lunar_date"
+      ],
+      "current_values": {
+        "date_start": "23-27 tháng 4 âm lịch (khoảng tháng 5-6 dương lịch)",
+        "lunar_date": "23–27 tháng 3 âm lịch",
+        "summary": "Năm ngày từ 23 đến 27 tháng 4 âm lịch, các miếu Bà trong vùng Vĩnh Long – Trà Vinh vào lễ vía Bà Chúa Xứ với cúng bái, hầu bóng và hội chợ."
+      },
+      "proposed_values": {
+        "oracle_2026_equivalent": "Tháng 3 ÂL = 09-13/05/2026; Tháng 4 ÂL = 08-12/06/2026",
+        "action": "Xung đột giữa date_start (ghi tháng 4 ÂL) và lunar_date (ghi tháng 3 ÂL). Cần chốt tháng chính xác trước khi gán ISO."
+      },
+      "remediation_status": "documented_safe_from_ics",
+      "risk_level": "low"
+    }
+  ],
+  "audit_registry_67_events": [
+    {
+      "id": "cho-hoa-tet",
+      "name": "Chợ hoa Tết",
+      "group": "FIXED_SOLAR",
+      "group_description": "Fixed solar date or non-lunar modern event",
+      "place_id": "xa-phu-phung",
+      "area": "ben-tre",
+      "fields": {
+        "lunar_date": null,
+        "date_start": "23-30 tháng Chạp âm lịch (khoảng cuối tháng 1 dương lịch)",
+        "date_end": null,
+        "summary": "Ven sông TP Vĩnh Long, bày bán mai vàng, cúc, thược dược, kiểng từ Chợ Lách và Sa Đéc. Không khí nhộn nhịp cuối năm, du khách và dân địa phương tấp nập chọn hoa.",
+        "description": "Chợ hoa Tết ven sông TP Vĩnh Long, bày bán mai vàng, cúc, thược dược, kiểng từ Chợ Lách và Sa Đéc. Không khí nhộn nhịp cuối năm, du khách và dân địa phương tấp nập chọn hoa.",
+        "season": {
+          "peak": [
+            1
+          ],
+          "text": "",
+          "months": [
+            1,
+            2
+          ]
+        },
+        "month_attribute": null
+      },
+      "circuit_breaker": {
+        "is_iso_date": false,
+        "is_blocked_by_month_heuristic": false,
+        "backend_action": "SUPPRESSED_PROSE_FORMAT"
+      }
+    },
+    {
+      "id": "festival-dua-ben-tre",
+      "name": "Festival Dừa Bến Tre",
+      "group": "FIXED_SOLAR",
+      "group_description": "Fixed solar date or non-lunar modern event",
+      "place_id": "p-ben-tre",
+      "area": "ben-tre",
+      "fields": {
+        "lunar_date": null,
+        "date_start": "Tổ chức định kỳ (2-3 năm/lần), khoảng tháng 4 dương lịch",
+        "date_end": null,
+        "summary": "Lễ hội lớn nhất xứ dừa, tổ chức 5 kỳ (2009-2019) — từ năm 2012 nâng cấp quy mô quốc gia, quy tụ các tỉnh trồng dừa Việt Nam và thành viên Hiệp hội Dừa thế giới.",
+        "description": "Lễ hội lớn nhất xứ dừa, tổ chức định kỳ 3-5 năm tại Trung tâm Văn hóa tỉnh Bến Tre. Đã qua 5 kỳ: 2009, 2010, 2012, 2015, 2019.\n\nLần I (2009) và lần II (2010) quy mô địa phương. Từ lần III (2012) được Chính phủ đồng ý nâng cấp thành Festival cấp quốc gia. Lần IV (7-13/4/2015) có 10 tỉnh trồng dừa Việt Nam và đại diện Hiệp hội Dừa thế giới tham gia. Lần V (16-20/11/2019) là kỳ gần nhất.\n\nHoạt động chính: triển lãm sản phẩm dừa, thi trèo dừa, chế biến kẹo dừa, hội thảo ngành dừa, biểu diễn văn nghệ và ẩm thực đường phố xứ dừa.",
+        "season": {
+          "peak": [
+            4
+          ],
+          "text": "",
+          "months": [
+            4
+          ]
+        },
+        "month_attribute": null
+      },
+      "circuit_breaker": {
+        "is_iso_date": false,
+        "is_blocked_by_month_heuristic": false,
+        "backend_action": "SUPPRESSED_PROSE_FORMAT"
+      }
+    },
+    {
+      "id": "festival-dua-sap-cau-ke-tra-vinh",
+      "name": "Festival Dừa Sáp Cầu Kè",
+      "group": "FIXED_SOLAR",
+      "group_description": "Fixed solar date or non-lunar modern event",
+      "place_id": "xa-cau-ke",
+      "area": "tra-vinh",
+      "fields": {
+        "lunar_date": null,
+        "date_start": "2026-08-10",
+        "date_end": "2026-08-15",
+        "summary": "Mỗi cuối tháng 8 tại Cầu Kè (Trà Vinh), Quảng trường huyện rực đèn tôn vinh dừa sáp — giống cơm đặc sánh mà Hòa thượng Thạch Sô mang từ Campuchia về trồng năm 1924.",
+        "description": "Mỗi cuối tháng 8 tại Cầu Kè (Trà Vinh), Quảng trường huyện rực đèn tôn vinh dừa sáp. Giống cơm đặc sánh mà Hòa thượng Thạch Sô mang từ Campuchia về trồng năm 1924. Festival kéo dài bảy ngày, lồng ghép Tuần lễ Vu Lan Thắng hội — lễ hội Hoa-Khmer vừa được công nhận di sản văn hóa phi vật thể Quốc gia năm 2024. Hội thi 100 món từ dừa sáp, hội chợ OCOP và hội thảo chuỗi giá trị nông sản thu hơn 43.000 lượt khách trong mùa đầu mở hội.",
+        "season": {
+          "peak": [],
+          "text": "Chưa xác định mùa vụ",
+          "months": [
+            8
+          ]
+        },
+        "month_attribute": 3
+      },
+      "circuit_breaker": {
+        "is_iso_date": true,
+        "is_blocked_by_month_heuristic": true,
+        "backend_action": "BLOCKED_FROM_UPCOMING_AND_HOMEPAGE"
+      }
+    },
+    {
+      "id": "festival-gach-gom-do-kinh-te-xanh-tinh-vinh-long-vinh-long",
+      "name": "Festival Gạch Gốm Đỏ – Kinh tế Xanh tỉnh Vĩnh Long",
+      "group": "FIXED_SOLAR",
+      "group_description": "Fixed solar date or non-lunar modern event",
+      "place_id": "xa-nhon-phu",
+      "area": "vinh-long",
+      "fields": {
+        "lunar_date": null,
+        "date_start": "2026-10-25",
+        "date_end": "2026-10-30",
+        "summary": "Giữa rừng lò gạch đỏ trăm tuổi dọc kinh Thầy Cai, Festival Gạch Gốm Đỏ – Kinh tế Xanh tỉnh Vĩnh Long lần I (16–23/11/2024) thắp sáng 'vương quốc' Mang Thít.",
+        "description": "Giữa rừng lò gạch đỏ trăm tuổi dọc kinh Thầy Cai, Festival Gạch Gốm Đỏ. Kinh tế Xanh tỉnh Vĩnh Long lần I (16–23/11/2024) thắp sáng 'vương quốc' Mang Thít. Sân khấu nổi trên chiếc sà lan 3.000 tấn neo giữa làng nghề, hội chợ 700–800 gian hàng công thương – nông nghiệp – du lịch mở rộng ra đường Võ Văn Kiệt. Phó Thủ tướng Hồ Đức Phớc dự khai mạc; kỷ lục Việt Nam 102 món từ tàu hủ ky ra đời ngay tại đây. Festival gắn với Đề án Di sản đương đại Mang Thít 3.",
+        "season": {
+          "peak": [],
+          "text": "Chưa xác định mùa vụ",
+          "months": [
+            10
+          ]
+        },
+        "month_attribute": 11
+      },
+      "circuit_breaker": {
+        "is_iso_date": true,
+        "is_blocked_by_month_heuristic": true,
+        "backend_action": "BLOCKED_FROM_UPCOMING_AND_HOMEPAGE"
+      }
+    },
+    {
+      "id": "giai-ban-marathon-vinh-long-mo-rong-hanh-trinh-trai-tim-mekong-vinh-long",
+      "name": "Giải Bán Marathon Vĩnh Long Mở rộng – Hành trình Trái tim Mekong",
+      "group": "FIXED_SOLAR",
+      "group_description": "Fixed solar date or non-lunar modern event",
+      "place_id": "xa-nhon-phu",
+      "area": "vinh-long",
+      "fields": {
+        "lunar_date": null,
+        "date_start": "2026-03-08",
+        "date_end": "2026-03-08",
+        "summary": "Cung đường chạy ven sông nước Vĩnh Long đặc trưng, qua các địa danh du lịch TP Vĩnh Long.",
+        "description": "Cung đường chạy ven sông nước Vĩnh Long đặc trưng, qua các địa danh du lịch TP Vĩnh Long. Hơn 2.100 vận động viên tham gia năm 2025, các cự ly 21km – 10km – 5km. Sự kiện thể thao thường niên kết hợp quảng bá du lịch và văn hóa sông nước Vĩnh Long.",
+        "season": {
+          "peak": [],
+          "text": "Chưa xác định mùa vụ",
+          "months": [
+            3
+          ]
+        },
+        "month_attribute": 4
+      },
+      "circuit_breaker": {
+        "is_iso_date": true,
+        "is_blocked_by_month_heuristic": true,
+        "backend_action": "BLOCKED_FROM_UPCOMING_AND_HOMEPAGE"
+      }
+    },
+    {
+      "id": "giai-dua-ghe-ngo-truyen-thong-tinh-ben-tre-ben-tre",
+      "name": "Giải Đua Ghe Ngo truyền thống tỉnh Bến Tre",
+      "group": "A",
+      "group_description": "Consistent (6 fields aligned or valid window enclosing feast day)",
+      "place_id": "p-phu-khuong",
+      "area": "ben-tre",
+      "fields": {
+        "lunar_date": "Rằm tháng 10 âm lịch (dịp Ok Om Bok)",
+        "date_start": "2026-11-22",
+        "date_end": "2026-11-24",
+        "summary": "Hàng chục chiếc ghe ngo với 40-60 tay chèo/chiếc tranh tài trên sông Bến Tre. Gắn liền với dịp lễ Ok Om Bok của cộng đồng Khmer Nam Bộ, mang đậm bản sắc văn hóa.",
+        "description": "Hàng chục chiếc ghe ngo với 40-60 tay chèo/chiếc tranh tài trên sông Bến Tre. Gắn liền với dịp lễ Ok Om Bok của cộng đồng Khmer Nam Bộ, mang đậm bản sắc văn hóa. Không khí hội hè sôi động, lễ cúng Trăng và thả đèn nước bên bờ sông.",
+        "season": {
+          "peak": [
+            11
+          ],
+          "text": "Giải Đua Ghe Ngo truyền thống thường diễn ra vào dịp lễ hội văn hóa Khmer, phổ biến nhất là khoảng tháng 11. Đây là thời điểm cao điểm để xem các đội ghe ngo tranh tài trên sông.",
+          "months": [
+            11
+          ]
+        },
+        "month_attribute": 10
+      },
+      "circuit_breaker": {
+        "is_iso_date": true,
+        "is_blocked_by_month_heuristic": true,
+        "backend_action": "BLOCKED_FROM_UPCOMING_AND_HOMEPAGE"
+      }
+    },
+    {
+      "id": "giai-marathon-ben-tre-xu-dua-ben-tre",
+      "name": "Giải Marathon Bến Tre - Xứ Dừa",
+      "group": "FIXED_SOLAR",
+      "group_description": "Fixed solar date or non-lunar modern event",
+      "place_id": "p-phu-khuong",
+      "area": "ben-tre",
+      "fields": {
+        "lunar_date": null,
+        "date_start": "2026-04-05",
+        "date_end": "2026-04-05",
+        "summary": "Cung đường chạy ven sông Bến Tre qua vườn dừa, cảnh quan đặc trưng Vĩnh Long. Các cự ly 5km, 10km, 21km (half marathon) và 42km (full marathon).",
+        "description": "Cung đường chạy ven sông Bến Tre qua vườn dừa, cảnh quan đặc trưng Vĩnh Long. Các cự ly 5km, 10km, 21km (half marathon) và 42km (full marathon). Giải thưởng tiền mặt, quy tụ vận động viên từ nhiều tỉnh thành và quốc tế.",
+        "season": {
+          "peak": [],
+          "text": "Chưa xác định mùa vụ",
+          "months": [
+            4
+          ]
+        },
+        "month_attribute": 12
+      },
+      "circuit_breaker": {
+        "is_iso_date": true,
+        "is_blocked_by_month_heuristic": true,
+        "backend_action": "BLOCKED_FROM_UPCOMING_AND_HOMEPAGE"
+      }
+    },
+    {
+      "id": "giai-marathon-tra-vinh-tra-vinh-marathon-tra-vinh",
+      "name": "Giải Marathon Trà Vinh (Tra Vinh Marathon)",
+      "group": "FIXED_SOLAR",
+      "group_description": "Fixed solar date or non-lunar modern event",
+      "place_id": "xa-nhi-long",
+      "area": "tra-vinh",
+      "fields": {
+        "lunar_date": null,
+        "date_start": "2026-03-22",
+        "date_end": "2026-03-22",
+        "summary": "Cung đường chạy qua các con đường xanh mát đặc trưng của Thành phố Cây xanh Trà Vinh.",
+        "description": "Cung đường chạy qua các con đường xanh mát đặc trưng của Thành phố Cây xanh Trà Vinh. Các hạng mục 5km, 10km, 21km (Half Marathon) và 42km (Full Marathon). Kết hợp quảng bá du lịch và văn hóa Khmer Nam Bộ.",
+        "season": {
+          "peak": [],
+          "text": "Chưa xác định mùa vụ",
+          "months": [
+            3
+          ]
+        },
+        "month_attribute": 8
+      },
+      "circuit_breaker": {
+        "is_iso_date": true,
+        "is_blocked_by_month_heuristic": true,
+        "backend_action": "BLOCKED_FROM_UPCOMING_AND_HOMEPAGE"
+      }
+    },
+    {
+      "id": "giai-the-thao-dan-toc-quoc-phong-tinh-tra-vinh-tra-vinh",
+      "name": "Giải Thể thao Dân tộc - Quốc phòng tỉnh Trà Vinh",
+      "group": "FIXED_SOLAR",
+      "group_description": "Fixed solar date or non-lunar modern event",
+      "place_id": "xa-nhi-long",
+      "area": "tra-vinh",
+      "fields": {
+        "lunar_date": null,
+        "date_start": "2026-09-01",
+        "date_end": "2026-09-03",
+        "summary": "Các môn thể thao dân tộc: đẩy gậy, kéo co, bóng chuyền, cờ tướng. Thi đấu điền kinh và thể thao thành tích cao cấp tỉnh.",
+        "description": "Các môn thể thao dân tộc: đẩy gậy, kéo co, bóng chuyền, cờ tướng. Thi đấu điền kinh và thể thao thành tích cao cấp tỉnh. Gắn với kỷ niệm ngày thành lập Quân đội Nhân dân Việt Nam (22/12) và các mốc lịch sử.",
+        "season": {
+          "peak": [],
+          "text": "Chưa xác định mùa vụ",
+          "months": [
+            9
+          ]
+        },
+        "month_attribute": 7
+      },
+      "circuit_breaker": {
+        "is_iso_date": true,
+        "is_blocked_by_month_heuristic": true,
+        "backend_action": "BLOCKED_FROM_UPCOMING_AND_HOMEPAGE"
+      }
+    },
+    {
+      "id": "giai-vo-dich-xe-dap-tinh-vinh-long-mo-rong-vinh-long",
+      "name": "Giải Vô địch Xe đạp Tỉnh Vĩnh Long Mở rộng",
+      "group": "FIXED_SOLAR",
+      "group_description": "Fixed solar date or non-lunar modern event",
+      "place_id": "xa-nhon-phu",
+      "area": "vinh-long",
+      "fields": {
+        "lunar_date": null,
+        "date_start": "2026-05-15",
+        "date_end": "2026-05-17",
+        "summary": "Tổ chức thường niên, năm 2025 gắn với kỷ niệm 50 năm Giải phóng miền Nam quy tụ 138 vận động viên.",
+        "description": "Tổ chức thường niên, năm 2025 gắn với kỷ niệm 50 năm Giải phóng miền Nam quy tụ 138 vận động viên. Thi đấu cả hai nội dung: đua đường trường cá nhân và đồng đội. Là sự kiện thể thao quần chúng truyền thống, kết hợp với các hoạt động Tuần lễ Văn hóa tỉnh.",
+        "season": {
+          "peak": [
+            4
+          ],
+          "text": "Giải năm 2025 gắn với dịp kỷ niệm 30/4 nên thời điểm tổ chức phù hợp là tháng 4. Đây là giai đoạn cuối mùa khô, thuận lợi cho hoạt động thể thao ngoài trời.",
+          "months": [
+            4
+          ]
+        },
+        "month_attribute": 4
+      },
+      "circuit_breaker": {
+        "is_iso_date": true,
+        "is_blocked_by_month_heuristic": true,
+        "backend_action": "BLOCKED_FROM_UPCOMING_AND_HOMEPAGE"
+      }
+    },
+    {
+      "id": "hoi-cho-dac-san-vung-mien-khu-vuc-dbscl-vinh-long-vinh-long",
+      "name": "Hội chợ Đặc sản Vùng miền khu vực ĐBSCL – Vĩnh Long",
+      "group": "FIXED_SOLAR",
+      "group_description": "Fixed solar date or non-lunar modern event",
+      "place_id": "p-long-chau",
+      "area": "vinh-long",
+      "fields": {
+        "lunar_date": null,
+        "date_start": "2026-10-15",
+        "date_end": "2026-10-20",
+        "summary": "Quy mô 250 gian hàng từ hơn 100 đơn vị doanh nghiệp và HTX 13 tỉnh ĐBSCL. Trưng bày và mua bán nông sản, thủy sản, sản phẩm OCOP đặc trưng vùng sông nước.",
+        "description": "Quy mô 250 gian hàng từ hơn 100 đơn vị doanh nghiệp và HTX 13 tỉnh ĐBSCL. Trưng bày và mua bán nông sản, thủy sản, sản phẩm OCOP đặc trưng vùng sông nước. Kết nối xúc tiến thương mại cấp vùng, xúc tiến đầu tư vào nông nghiệp và du lịch Vĩnh Long.",
+        "season": {
+          "peak": [],
+          "text": "Chưa xác định mùa vụ",
+          "months": [
+            10
+          ]
+        },
+        "month_attribute": 11
+      },
+      "circuit_breaker": {
+        "is_iso_date": true,
+        "is_blocked_by_month_heuristic": true,
+        "backend_action": "BLOCKED_FROM_UPCOMING_AND_HOMEPAGE"
+      }
+    },
+    {
+      "id": "hoi-cho-lua-gao-va-xuc-tien-thuong-mai-du-lich",
+      "name": "Hội chợ Lúa gạo và xúc tiến Thương mại - Du lịch",
+      "group": "FIXED_SOLAR",
+      "group_description": "Fixed solar date or non-lunar modern event",
+      "place_id": "p-tra-vinh",
+      "area": "tra-vinh",
+      "fields": {
+        "lunar_date": null,
+        "date_start": "2026-12-10",
+        "date_end": "2026-12-15",
+        "summary": "Sự kiện được tổ chức gắn với lễ hội Ok-om-bok ở Trà Vinh, quy tụ nhiều doanh nghiệp và gian hàng trưng bày sản phẩm.",
+        "description": "Sự kiện được tổ chức gắn với lễ hội Ok-om-bok ở Trà Vinh, quy tụ nhiều doanh nghiệp và gian hàng trưng bày sản phẩm. Hoạt động này nhằm quảng bá thương mại và du lịch của tỉnh.",
+        "season": {
+          "peak": [
+            11
+          ],
+          "text": "Hội chợ thường tổ chức gắn với lễ hội Ok Om Bok tại Trà Vinh, vào khoảng tháng 11. Đây là dịp cao điểm quảng bá sản phẩm, thương mại và du lịch địa phương.",
+          "months": [
+            11
+          ]
+        },
+        "month_attribute": null
+      },
+      "circuit_breaker": {
+        "is_iso_date": true,
+        "is_blocked_by_month_heuristic": false,
+        "backend_action": "ACTIVE_PUBLIC_EXPORT"
+      }
+    },
+    {
+      "id": "hoi-cho-thuong-mai-cay-giong-hoa-kieng-cho-lach",
+      "name": "Hội Chợ Thương Mại Cây Giống Hoa Kiểng Chợ Lách",
+      "group": "FIXED_SOLAR",
+      "group_description": "Fixed solar date or non-lunar modern event",
+      "place_id": "xa-cho-lach",
+      "area": "ben-tre",
+      "fields": {
+        "lunar_date": null,
+        "date_start": "2026-02-05",
+        "date_end": "2026-02-15",
+        "summary": "Hội chợ thương mại thường niên chuyên về cây giống và hoa kiểng của Chợ Lách, quy tụ các nhà vườn trong và ngoài vùng trưng bày, mua bán cây giống, hoa kiểng, sản phẩm nông nghiệp đặc trưng của vùng 'Vương quốc cây giống và hoa kiểng'.",
+        "description": "Hội chợ thương mại thường niên chuyên về cây giống và hoa kiểng của Chợ Lách, quy tụ các nhà vườn trong và ngoài vùng trưng bày, mua bán cây giống. Hoa kiểng, sản phẩm nông nghiệp đặc trưng của vùng 'Vương quốc cây giống và hoa kiểng'.",
+        "season": {
+          "peak": [
+            1,
+            2
+          ],
+          "text": "Hội chợ cây giống, hoa kiểng Chợ Lách thường sôi động nhất vào vụ hoa Tết. Tháng 1 đến tháng 2 là thời điểm nhiều nhà vườn trưng bày và giao thương mạnh.",
+          "months": [
+            1,
+            2
+          ]
+        },
+        "month_attribute": null
+      },
+      "circuit_breaker": {
+        "is_iso_date": true,
+        "is_blocked_by_month_heuristic": false,
+        "backend_action": "ACTIVE_PUBLIC_EXPORT"
+      }
+    },
+    {
+      "id": "hoi-cho-thuong-mai-du-lich-ben-tre-ben-tre",
+      "name": "Hội chợ Thương mại - Du lịch Bến Tre",
+      "group": "FIXED_SOLAR",
+      "group_description": "Fixed solar date or non-lunar modern event",
+      "place_id": "p-phu-khuong",
+      "area": "ben-tre",
+      "fields": {
+        "lunar_date": null,
+        "date_start": "2026-07-20",
+        "date_end": "2026-07-25",
+        "summary": "Gian hàng OCOP và đặc sản các tỉnh ĐBSCL quy tụ hàng trăm doanh nghiệp. Kết nối giao thương, ký kết hợp đồng phân phối sản phẩm dừa và nông sản.",
+        "description": "Gian hàng OCOP và đặc sản các tỉnh ĐBSCL quy tụ hàng trăm doanh nghiệp. Kết nối giao thương, ký kết hợp đồng phân phối sản phẩm dừa và nông sản. Khu ẩm thực đặc sản Vĩnh Long và chương trình khuyến mãi lớn.",
+        "season": {
+          "peak": [],
+          "text": "Chưa xác định mùa vụ",
+          "months": [
+            7
+          ]
+        },
+        "month_attribute": 4
+      },
+      "circuit_breaker": {
+        "is_iso_date": true,
+        "is_blocked_by_month_heuristic": true,
+        "backend_action": "BLOCKED_FROM_UPCOMING_AND_HOMEPAGE"
+      }
+    },
+    {
+      "id": "hoi-cho-thuong-mai-du-lich-tinh-tra-vinh-tra-vinh",
+      "name": "Hội chợ Thương mại - Du lịch tỉnh Trà Vinh",
+      "group": "FIXED_SOLAR",
+      "group_description": "Fixed solar date or non-lunar modern event",
+      "place_id": "xa-nhi-long",
+      "area": "tra-vinh",
+      "fields": {
+        "lunar_date": null,
+        "date_start": "2026-08-15",
+        "date_end": "2026-08-20",
+        "summary": "Trưng bày và xúc tiến sản phẩm OCOP, đặc sản địa phương như bưởi da xanh, dừa sáp Cầu Kè.",
+        "description": "Trưng bày và xúc tiến sản phẩm OCOP, đặc sản địa phương như bưởi da xanh, dừa sáp Cầu Kè. Kết nối giao thương giữa doanh nghiệp Trà Vinh và các tỉnh ĐBSCL. Khu vực ẩm thực đặc trưng ba dân tộc Kinh - Khmer - Hoa.",
+        "season": {
+          "peak": [],
+          "text": "Chưa xác định mùa vụ",
+          "months": [
+            8
+          ]
+        },
+        "month_attribute": 4
+      },
+      "circuit_breaker": {
+        "is_iso_date": true,
+        "is_blocked_by_month_heuristic": true,
+        "backend_action": "BLOCKED_FROM_UPCOMING_AND_HOMEPAGE"
+      }
+    },
+    {
+      "id": "hoi-cho-xuc-tien-thuong-mai-du-lich-vinh-long-dip-tet-nguyen-dan-vinh-long",
+      "name": "Hội chợ Xúc tiến Thương mại Du lịch Vĩnh Long (dịp Tết Nguyên Đán)",
+      "group": "FIXED_SOLAR",
+      "group_description": "Fixed solar date or non-lunar modern event",
+      "place_id": "xa-nhon-phu",
+      "area": "vinh-long",
+      "fields": {
+        "lunar_date": null,
+        "date_start": "2026-02-10",
+        "date_end": "2026-02-16",
+        "summary": "Hội chợ đầu năm quảng bá sản phẩm OCOP và đặc sản Vĩnh Long phục vụ nhu cầu Tết.",
+        "description": "Hội chợ đầu năm quảng bá sản phẩm OCOP và đặc sản Vĩnh Long phục vụ nhu cầu Tết. Kết hợp xúc tiến du lịch homestay, miệt vườn và tour sông nước mùa xuân. Năm 2026 tổ chức từ 29/1 đến 5/2, là hoạt động thường niên đầu năm của tỉnh.",
+        "season": {
+          "peak": [
+            1,
+            2
+          ],
+          "text": "Hội chợ diễn ra vào dịp Tết Nguyên Đán, thường rơi vào tháng 1 hoặc tháng 2 dương lịch. Đây là thời điểm cao điểm mua sắm đặc sản và sản phẩm OCOP.",
+          "months": [
+            1,
+            2
+          ]
+        },
+        "month_attribute": 1
+      },
+      "circuit_breaker": {
+        "is_iso_date": true,
+        "is_blocked_by_month_heuristic": true,
+        "backend_action": "BLOCKED_FROM_UPCOMING_AND_HOMEPAGE"
+      }
+    },
+    {
+      "id": "hoi-cho-xuc-tien-thuong-mai-san-pham-cong-nghiep-nong-thon-va-ocop-vinh-long-gan-voi-ok-om-bok-vinh-long",
+      "name": "Hội chợ Xúc tiến Thương mại – Sản phẩm Công nghiệp Nông thôn và OCOP Vĩnh Long (gắn với Ok Om Bok)",
+      "group": "FIXED_SOLAR",
+      "group_description": "Fixed solar date or non-lunar modern event",
+      "place_id": "xa-nhon-phu",
+      "area": "vinh-long",
+      "fields": {
+        "lunar_date": null,
+        "date_start": "2026-11-20",
+        "date_end": "2026-11-25",
+        "summary": "300 gian hàng gồm sản phẩm OCOP, công nghiệp nông thôn, khởi nghiệp sáng tạo và đặc sản 3 miền.",
+        "description": "300 gian hàng gồm sản phẩm OCOP, công nghiệp nông thôn, khởi nghiệp sáng tạo và đặc sản 3 miền. 20 gian hàng khởi nghiệp và 10 gian hàng sản phẩm đồng bào dân tộc thiểu số. Kết hợp với chuỗi hoạt động lễ hội Ok Om Bok – Đua ghe Ngo và văn hóa Khmer Nam Bộ.",
+        "season": {
+          "peak": [
+            11
+          ],
+          "text": "Hội chợ gắn với lễ Ok Om Bok của đồng bào Khmer, thường diễn ra vào rằm tháng 10 âm lịch, tương ứng khoảng tháng 10 hoặc 11 dương lịch. Cao điểm thường là tháng 11.",
+          "months": [
+            10,
+            11
+          ]
+        },
+        "month_attribute": 10
+      },
+      "circuit_breaker": {
+        "is_iso_date": true,
+        "is_blocked_by_month_heuristic": true,
+        "backend_action": "BLOCKED_FROM_UPCOMING_AND_HOMEPAGE"
+      }
+    },
+    {
+      "id": "hoi-thi-don-ca-tai-tu-cai-luong-huyen-long-ho",
+      "name": "Hội thi Đờn ca tài tử - cải lương Long Hồ",
+      "group": "FIXED_SOLAR",
+      "group_description": "Fixed solar date or non-lunar modern event",
+      "place_id": "p-long-ho",
+      "area": "vinh-long",
+      "fields": {
+        "lunar_date": null,
+        "date_start": "2026-09-20",
+        "date_end": "2026-09-22",
+        "summary": "Hội thi biểu diễn đờn ca tài tử và cải lương tổ chức tại Long Hồ, tỉnh Vĩnh Long.",
+        "description": "Hội thi biểu diễn đờn ca tài tử và cải lương tổ chức tại Long Hồ, tỉnh Vĩnh Long. Nhằm phát hiện tài năng và thúc đẩy phong trào văn nghệ quần chúng tại địa phương.",
+        "season": {
+          "peak": [],
+          "text": "Chưa xác định mùa vụ",
+          "months": [
+            9
+          ]
+        },
+        "month_attribute": null
+      },
+      "circuit_breaker": {
+        "is_iso_date": true,
+        "is_blocked_by_month_heuristic": false,
+        "backend_action": "ACTIVE_PUBLIC_EXPORT"
+      }
+    },
+    {
+      "id": "hoi-thi-ghe-ngo-mo-rong-tinh-tra-vinh-dua-ghe-ngo-truyen-thong-tra-vinh",
+      "name": "Hội thi Ghe Ngo mở rộng tỉnh Trà Vinh (Đua Ghe Ngo truyền thống)",
+      "group": "A",
+      "group_description": "Consistent (6 fields aligned or valid window enclosing feast day)",
+      "place_id": "xa-nhi-long",
+      "area": "tra-vinh",
+      "fields": {
+        "lunar_date": "Rằm tháng 10 âm lịch (dịp Ok Om Bok)",
+        "date_start": "2026-11-22",
+        "date_end": "2026-11-24",
+        "summary": "Mỗi rằm tháng 10, sông Long Bình TP Trà Vinh dậy tiếng trống khai mạc Hội thi Ghe Ngo mở rộng — ngày hội đua ghe lớn nhất của đồng bào Khmer.",
+        "description": "Mỗi rằm tháng 10, sông Long Bình TP Trà Vinh dậy tiếng trống khai mạc Hội thi Ghe Ngo mở rộng — ngày hội đua ghe lớn nhất của đồng bào Khmer. Cuộc đua gắn với lễ Ok Om Bok (cúng Trăng), di sản phi vật thể quốc gia. Ghe ngo dài gần 30 mét, mũi uốn cong hình Naga, chở 40–60 tay chèo từ các chùa Khmer tranh tài ba nội dung 800m và 1.000m. Giải 2024 quy tụ 9 đội, Càng Long toàn thắng cả ba.",
+        "season": {
+          "peak": [
+            11
+          ],
+          "text": "Đua Ghe Ngo truyền thống Trà Vinh thường tổ chức gắn với lễ hội Ok Om Bok vào tháng 11. Đây là thời điểm cao điểm với các đội ghe ngo Khmer tranh tài sôi nổi.",
+          "months": [
+            11
+          ]
+        },
+        "month_attribute": 11
+      },
+      "circuit_breaker": {
+        "is_iso_date": true,
+        "is_blocked_by_month_heuristic": false,
+        "backend_action": "ACTIVE_PUBLIC_EXPORT"
+      }
+    },
+    {
+      "id": "hoi-thi-giong-ca-cai-luong-ut-tra-on",
+      "name": "Hội thi giọng ca cải lương Út Trà Ôn",
+      "group": "FIXED_SOLAR",
+      "group_description": "Fixed solar date or non-lunar modern event",
+      "place_id": "p-tra-on",
+      "area": "vinh-long",
+      "fields": {
+        "lunar_date": null,
+        "date_start": "2026-10-10",
+        "date_end": "2026-10-12",
+        "summary": "Hội thi giọng ca cải lương mang tên NSND Út Trà Ôn — Đài THVL tổ chức định kỳ, tìm kiếm tài năng vọng cổ khắp Đồng bằng sông Cửu Long.",
+        "description": "Tên hội thi lấy từ NSND Út Trà Ôn (Nguyễn Thành Út, 1919-2001) — nghệ sĩ sinh tại ấp Đồng Hậu, Trà Ôn, được tôn xưng \"ông hoàng vọng cổ\" với giọng ca trầm ấm, nức danh sân khấu cải lương miền Nam.\n\nĐài Truyền hình Vĩnh Long (THVL) tổ chức định kỳ, nhằm tìm kiếm và tôn vinh các giọng ca cải lương tài năng từ các tỉnh Đồng bằng sông Cửu Long. Thí sinh thi ca vọng cổ, trích đoạn cải lương kinh điển.\n\nSự kiện gắn với Trà Ôn — nơi đã sản sinh nhiều nghệ sĩ cải lương nổi danh.",
+        "season": {
+          "peak": [],
+          "text": "Chưa xác định mùa vụ",
+          "months": [
+            10
+          ]
+        },
+        "month_attribute": null
+      },
+      "circuit_breaker": {
+        "is_iso_date": true,
+        "is_blocked_by_month_heuristic": false,
+        "backend_action": "ACTIVE_PUBLIC_EXPORT"
+      }
+    },
+    {
+      "id": "hoi-thi-san-pham-ocop-va-dac-san-ben-tre-ben-tre",
+      "name": "Hội thi Sản phẩm OCOP và Đặc sản Bến Tre",
+      "group": "FIXED_SOLAR",
+      "group_description": "Fixed solar date or non-lunar modern event",
+      "place_id": "p-phu-khuong",
+      "area": "ben-tre",
+      "fields": {
+        "lunar_date": null,
+        "date_start": "2026-09-20",
+        "date_end": "2026-09-25",
+        "summary": "Đánh giá, công nhận và trao chứng nhận OCOP 3-4 sao hàng năm cho sản phẩm mới. Gian hàng trưng bày, giới thiệu hàng trăm sản phẩm OCOP tiêu biểu toàn tỉnh.",
+        "description": "Đánh giá, công nhận và trao chứng nhận OCOP 3-4 sao hàng năm cho sản phẩm mới. Gian hàng trưng bày, giới thiệu hàng trăm sản phẩm OCOP tiêu biểu toàn tỉnh. Hội thảo kết nối chuỗi cung ứng, xúc tiến thương mại sản phẩm nông thôn.",
+        "season": {
+          "peak": [],
+          "text": "Chưa xác định mùa vụ",
+          "months": [
+            9
+          ]
+        },
+        "month_attribute": 11
+      },
+      "circuit_breaker": {
+        "is_iso_date": true,
+        "is_blocked_by_month_heuristic": true,
+        "backend_action": "BLOCKED_FROM_UPCOMING_AND_HOMEPAGE"
+      }
+    },
+    {
+      "id": "lang-ong-tien-quan-thong-che-dieu-bat-tuong-quan-nguyen-van-",
+      "name": "Lễ hội Lăng Ông Tiền quân Thống chế Điều bát Nguyễn Văn Tồn",
+      "group": "A",
+      "group_description": "Consistent (6 fields aligned or valid window enclosing feast day)",
+      "place_id": "p-long-chau",
+      "area": "vinh-long",
+      "fields": {
+        "lunar_date": "Mùng 3–4 tháng Giêng âm lịch",
+        "date_start": "2026-02-19",
+        "date_end": "2026-02-20",
+        "summary": "Lễ hội truyền thống hằng năm vào mùng 3–4 tháng Giêng âm lịch tại Lăng Ông, ấp Giồng Thanh Bạch, xã Thiện Mỹ, Trà Ôn, tỉnh Vĩnh Long.",
+        "description": "Lễ hội truyền thống hằng năm vào mùng 3–4 tháng Giêng âm lịch tại Lăng Ông, ấp Giồng Thanh Bạch, xã Thiện Mỹ, Trà Ôn, tỉnh Vĩnh Long. Tưởng nhớ Nguyễn Văn Tồn (Thạch Duồng, 1763–1820), danh tướng gốc Khmer phục vụ chúa Nguyễn Ánh, được phong Tiền quân Thống chế Điều bát, có công khai khẩn vùng Trà Ôn–Mân Thít và đào kênh Vĩnh Tế.",
+        "season": {
+          "peak": [
+            2
+          ],
+          "text": "",
+          "months": [
+            2
+          ]
+        },
+        "month_attribute": null
+      },
+      "circuit_breaker": {
+        "is_iso_date": true,
+        "is_blocked_by_month_heuristic": false,
+        "backend_action": "ACTIVE_PUBLIC_EXPORT"
+      }
+    },
+    {
+      "id": "le-chol-chhnam-thmay",
+      "name": "Lễ Chôl Chhnam Thmây",
+      "group": "C",
+      "group_description": "Logical Contradiction (cross-field divergence, requires governance decision)",
+      "place_id": "p-long-chau",
+      "area": "vinh-long",
+      "fields": {
+        "lunar_date": "13–16 tháng 4 dương lịch (cố định)",
+        "date_start": "2026-04-13",
+        "date_end": "2026-04-16",
+        "summary": "Chôl Chhnam Thmây — Tết năm mới của người Khmer Nam Bộ — là ba ngày hội lớn nhất năm diễn ra từ 13 đến 15 tháng 4.",
+        "description": "Chôl Chhnam Thmây — Tết năm mới của người Khmer Nam Bộ — là ba ngày hội lớn nhất năm diễn ra từ 13 đến 15 tháng 4. Cả phum sóc rộn ràng trong tiếng trống sadăm, người người mặc trang phục truyền thống màu sắc rực rỡ cùng nhau rước đại lịch mới, dâng lễ cúng Têvađa và tắm Phật bằng nước hoa thơm. Không khí vừa trang nghiêm vừa tràn ngập tiếng cười, múa hát và những mâm lễ vật đặc trưng Khmer.",
+        "season": {
+          "peak": [
+            4
+          ],
+          "text": "Chôl Chhnam Thmây là Tết năm mới của người Khmer Nam Bộ, diễn ra hằng năm từ ngày 13 đến 15 tháng 4. Đây là thời điểm cao điểm với các nghi lễ tại chùa và sinh hoạt cộng đồng.",
+          "months": [
+            4
+          ]
+        },
+        "month_attribute": null
+      },
+      "circuit_breaker": {
+        "is_iso_date": true,
+        "is_blocked_by_month_heuristic": false,
+        "backend_action": "ACTIVE_PUBLIC_EXPORT"
+      }
+    },
+    {
+      "id": "le-cung-bien-dong-cao",
+      "name": "Lễ Cúng biển Động Cao",
+      "group": "A",
+      "group_description": "Consistent (6 fields aligned or valid window enclosing feast day)",
+      "place_id": "xa-dong-hai",
+      "area": "tra-vinh",
+      "fields": {
+        "lunar_date": "11–12 tháng 5 âm lịch",
+        "date_start": "2026-06-25",
+        "date_end": "2026-06-27",
+        "summary": "Lễ hội cúng biển truyền thống của ngư dân xã Đông Hải, thị xã Duyên Hải, gắn với tín ngưỡng thờ thần biển và cầu mong mưa thuận gió hòa, tôm cá đầy khoang.",
+        "description": "Lễ hội cúng biển truyền thống của ngư dân xã Đông Hải, thị xã Duyên Hải, gắn với tín ngưỡng thờ thần biển và cầu mong mưa thuận gió hòa, tôm cá đầy khoang. Là nét văn hóa dân gian đặc sắc của cộng đồng ngư dân ven biển Trà Vinh.",
+        "season": {
+          "peak": [],
+          "text": "Chưa xác định mùa vụ",
+          "months": [
+            6
+          ]
+        },
+        "month_attribute": null
+      },
+      "circuit_breaker": {
+        "is_iso_date": true,
+        "is_blocked_by_month_heuristic": false,
+        "backend_action": "ACTIVE_PUBLIC_EXPORT"
+      }
+    },
+    {
+      "id": "le-cung-lau-ba-ram-thang-gieng",
+      "name": "Lễ cúng Lầu Bà rằm tháng Giêng",
+      "group": "A",
+      "group_description": "Consistent (6 fields aligned or valid window enclosing feast day)",
+      "place_id": "p-truong-long-hoa",
+      "area": "tra-vinh",
+      "fields": {
+        "lunar_date": "Rằm tháng Giêng âm lịch",
+        "date_start": "2026-03-03",
+        "date_end": "2026-03-03",
+        "summary": "Lễ hội tín ngưỡng dân gian diễn ra vào ngày rằm âm lịch hàng năm tại Lầu Bà (Lầu Bà Cố Hỷ), Phường Trường Long Hòa.",
+        "description": "Lễ hội tín ngưỡng dân gian diễn ra vào ngày rằm âm lịch hàng năm tại Lầu Bà (Lầu Bà Cố Hỷ), Phường Trường Long Hòa. Hàng vạn khách hành hương đổ về từ các tỉnh lân cận đến cầu bình an, tài lộc. Đây là sinh hoạt tín ngưỡng lâu đời gắn với cộng đồng ngư dân vùng biển Trường Long Hòa.",
+        "season": {
+          "peak": [
+            2
+          ],
+          "text": "Lễ cúng Lầu Bà diễn ra vào Rằm tháng Giêng âm lịch, thường rơi vào tháng 2 dương lịch. Đây là thời điểm chính để người dân đến cúng viếng, cầu an.",
+          "months": [
+            2
+          ]
+        },
+        "month_attribute": null
+      },
+      "circuit_breaker": {
+        "is_iso_date": true,
+        "is_blocked_by_month_heuristic": false,
+        "backend_action": "ACTIVE_PUBLIC_EXPORT"
+      }
+    },
+    {
+      "id": "le-cung-mieu",
+      "name": "Lễ cúng miễu",
+      "group": "B",
+      "group_description": "Technical Drift (computational offset, automatable correction)",
+      "place_id": "p-long-chau",
+      "area": "vinh-long",
+      "fields": {
+        "lunar_date": "16–18 tháng Giêng âm lịch",
+        "date_start": "2026-03-05",
+        "date_end": "2026-03-07",
+        "summary": "Miễu Ông, miễu Bà, miễu Cô Hồn ở làng quê Nam Bộ nhận lễ dâng của người dân theo từng ngày vía linh thiêng trong năm — một nhịp thờ cúng dân gian gắn liền với đời sống tâm linh xóm làng.",
+        "description": "Ở làng quê Nam Bộ, người dân dâng lễ lên miễu Ông, miễu Bà hay miễu Cô Hồn theo từng ngày vía linh thiêng trong năm. Không khí lễ vừa trang nghiêm vừa ấm cúng: khói nhang quyện trong gió chiều, tiếng đọc kinh ngân vang, mâm lễ bày biện cầu kỳ tươm tất. Với du khách, đây là dịp hiểu sâu về tín ngưỡng thờ Thần, thờ Mẫu — nếp dân gian thuần phác còn được giữ nơi những ngôi miễu nhỏ ven làng.",
+        "season": {
+          "peak": [],
+          "text": "Chưa xác định mùa vụ",
+          "months": [
+            3
+          ]
+        },
+        "month_attribute": null
+      },
+      "circuit_breaker": {
+        "is_iso_date": true,
+        "is_blocked_by_month_heuristic": false,
+        "backend_action": "ACTIVE_PUBLIC_EXPORT"
+      }
+    },
+    {
+      "id": "le-gio-nguyen-dinh-chieu",
+      "name": "Lễ giỗ Nguyễn Đình Chiểu",
+      "group": "C",
+      "group_description": "Logical Contradiction (cross-field divergence, requires governance decision)",
+      "place_id": "p-ba-tri",
+      "area": "ben-tre",
+      "fields": {
+        "lunar_date": "Mùng 3 tháng 7 âm lịch",
+        "date_start": "2026-07-03",
+        "date_end": "2026-07-03",
+        "summary": "Lễ giỗ nhà thơ yêu nước Nguyễn Đình Chiểu tổ chức hằng năm vào ngày 3 tháng 7 âm lịch tại khu lăng mộ xã An Đức, Ba Tri.",
+        "description": "Lễ giỗ nhà thơ yêu nước Nguyễn Đình Chiểu tổ chức hằng năm vào ngày 3 tháng 7 âm lịch tại khu lăng mộ xã An Đức, Ba Tri. Đây là sự kiện văn hóa - lịch sử quan trọng.",
+        "season": {
+          "peak": [
+            8
+          ],
+          "text": "Lễ giỗ Nguyễn Đình Chiểu tổ chức hằng năm vào ngày 3 tháng 7 âm lịch, thường rơi vào tháng 7-8 dương lịch. Cao điểm tham dự thường vào tháng 8.",
+          "months": [
+            7,
+            8
+          ]
+        },
+        "month_attribute": null
+      },
+      "circuit_breaker": {
+        "is_iso_date": true,
+        "is_blocked_by_month_heuristic": false,
+        "backend_action": "ACTIVE_PUBLIC_EXPORT"
+      }
+    },
+    {
+      "id": "le-gio-phan-thanh-gian-tai-van-thanh-mieu",
+      "name": "Lễ giỗ Phan Thanh Giản tại Văn Thánh Miếu",
+      "group": "C",
+      "group_description": "Logical Contradiction (cross-field divergence, requires governance decision)",
+      "place_id": "p-phuoc-hau",
+      "area": "vinh-long",
+      "fields": {
+        "lunar_date": "15 tháng 6 âm lịch",
+        "date_start": "2026-08-04",
+        "date_end": "2026-08-04",
+        "summary": "Lễ giỗ hàng năm tưởng nhớ danh thần Phan Thanh Giản - người chủ xướng xây dựng Văn Thánh Miếu Vĩnh Long, tổ chức vào mùng 4-5 tháng 7 âm lịch tại Văn Thánh Miếu, Phường 4, TP Vĩnh Long.",
+        "description": "Lễ giỗ hàng năm tưởng nhớ danh thần Phan Thanh Giản - người chủ xướng xây dựng Văn Thánh Miếu Vĩnh Long. Tổ chức vào mùng 4-5 tháng 7 âm lịch tại Văn Thánh Miếu, Phường 4, TP Vĩnh Long. Ngoài ra còn có lễ tế Khổng Tử vào ngày Xuân Đinh (tháng 2) và Thu Đinh (tháng 8) âm lịch hàng năm.",
+        "season": {
+          "peak": [
+            8
+          ],
+          "text": "Lễ giỗ Phan Thanh Giản tại Văn Thánh Miếu Vĩnh Long thường diễn ra vào tháng 8. Đây là dịp tưởng niệm danh nhân và thu hút người dân địa phương tham dự.",
+          "months": [
+            8
+          ]
+        },
+        "month_attribute": null
+      },
+      "circuit_breaker": {
+        "is_iso_date": true,
+        "is_blocked_by_month_heuristic": false,
+        "backend_action": "ACTIVE_PUBLIC_EXPORT"
+      }
+    },
+    {
+      "id": "le-gio-to-hung-vuong",
+      "name": "Lễ Giỗ Tổ Hùng Vương",
+      "group": "E",
+      "group_description": "Prose date_start (unstructured start date, suppressed from .ics)",
+      "place_id": "p-long-chau",
+      "area": "vinh-long",
+      "fields": {
+        "lunar_date": "Mùng 10 tháng 3 âm lịch",
+        "date_start": "10 tháng 3 âm lịch (khoảng tháng 4 dương lịch)",
+        "date_end": null,
+        "summary": "Ngày Giỗ Tổ Hùng Vương (10/3 Âm lịch) được tổ chức trang trọng tại đền thờ và các cơ quan.",
+        "description": "Ngày Giỗ Tổ Hùng Vương (10/3 Âm lịch) được tổ chức trang trọng tại đền thờ và các cơ quan. Lễ dâng hương, thi gói bánh chưng bánh giầy, các hoạt động văn hóa cộng đồng.",
+        "season": {
+          "peak": [
+            4
+          ],
+          "text": "",
+          "months": [
+            4
+          ]
+        },
+        "month_attribute": null
+      },
+      "circuit_breaker": {
+        "is_iso_date": false,
+        "is_blocked_by_month_heuristic": false,
+        "backend_action": "SUPPRESSED_PROSE_FORMAT"
+      }
+    },
+    {
+      "id": "le-ha-dien-dinh-tan-hoa",
+      "name": "Lễ Hạ điền Đình Tân Hoa",
+      "group": "C",
+      "group_description": "Logical Contradiction (cross-field divergence, requires governance decision)",
+      "place_id": "p-tan-ngai",
+      "area": "vinh-long",
+      "fields": {
+        "lunar_date": "16 tháng 4 âm lịch",
+        "date_start": "2026-06-01",
+        "date_end": "2026-06-02",
+        "summary": "Lễ hội truyền thống tổ chức hàng năm tại Đình Tân Hoa, xã Tân Hòa, TP Vĩnh Long vào ngày 14-15 tháng 3 âm lịch.",
+        "description": "Lễ hội truyền thống tổ chức hàng năm tại Đình Tân Hoa, xã Tân Hòa, TP Vĩnh Long vào ngày 14-15 tháng 3 âm lịch. Đây là nghi lễ nông nghiệp cổ truyền của cộng đồng địa phương mang đậm bản sắc văn hóa Nam Bộ.",
+        "season": {
+          "peak": [
+            4
+          ],
+          "text": "Lễ Hạ điền Đình Tân Hoa thường diễn ra vào tháng 3 âm lịch, tương ứng khoảng tháng 3-4 dương lịch. Thời điểm cao điểm thường rơi vào tháng 4.",
+          "months": [
+            3,
+            4
+          ]
+        },
+        "month_attribute": null
+      },
+      "circuit_breaker": {
+        "is_iso_date": true,
+        "is_blocked_by_month_heuristic": false,
+        "backend_action": "ACTIVE_PUBLIC_EXPORT"
+      }
+    },
+    {
+      "id": "le-hoi-ba-chua-xu",
+      "name": "Lễ hội Bà Chúa Xứ",
+      "group": "E",
+      "group_description": "Prose date_start (unstructured start date, suppressed from .ics)",
+      "place_id": "xa-hoa-minh",
+      "area": "tra-vinh",
+      "fields": {
+        "lunar_date": "23–27 tháng 3 âm lịch",
+        "date_start": "23-27 tháng 4 âm lịch (khoảng tháng 5-6 dương lịch)",
+        "date_end": null,
+        "summary": "Năm ngày từ 23 đến 27 tháng 4 âm lịch, các miếu Bà trong vùng Vĩnh Long – Trà Vinh vào lễ vía Bà Chúa Xứ với cúng bái, hầu bóng và hội chợ.",
+        "description": "Điểm ghi nhận trong hồ sơ đặt ở xã Hòa Minh, khu vực Trà Vinh; dịp lễ rơi vào khoảng tháng 5–6 dương lịch. Đây là lớp tín ngưỡng dân gian phổ biến ở Nam Bộ: người dân tới miếu cúng Bà, xem hầu bóng rồi ghé hội chợ quanh lễ.",
+        "season": {
+          "peak": [
+            4
+          ],
+          "text": "",
+          "months": [
+            4,
+            5
+          ]
+        },
+        "month_attribute": null
+      },
+      "circuit_breaker": {
+        "is_iso_date": false,
+        "is_blocked_by_month_heuristic": false,
+        "backend_action": "SUPPRESSED_PROSE_FORMAT"
+      }
+    },
+    {
+      "id": "le-hoi-cau-ngu",
+      "name": "Lễ hội Cầu Ngư",
+      "group": "E",
+      "group_description": "Prose date_start (unstructured start date, suppressed from .ics)",
+      "place_id": "p-duyen-hai",
+      "area": "tra-vinh",
+      "fields": {
+        "lunar_date": "Rằm tháng 2 âm lịch",
+        "date_start": "Tháng 2 âm lịch",
+        "date_end": null,
+        "summary": "Lễ Cúng biển truyền thống của ngư dân ven biển Ba Động, Duyên Hải — tế lễ Cá Ông tại miếu Bà Chúa Xứ, rước thuyền, múa lân, hát bội, cầu biển lặng gió hiền.",
+        "description": "Lễ Cúng biển truyền thống của ngư dân ven biển Ba Động, huyện Duyên Hải — một trong 3 lễ Cúng biển dọc bờ biển Trà Vinh (cùng Mỹ Long và Hiệp Thạnh).\n\nTâm điểm: lễ tế Cá Ông (cá voi — Nam Hải Đại tướng quân) tại miếu Bà Chúa Xứ, ấp Động Cao, xã Đông Hải. Ngư dân rước thuyền rồng ra biển nghinh thần, dâng lễ vật, đốt nhang khấn nguyện.\n\nPhần hội: múa lân, hát bội, đua thuyền, nhảy bao bố, bắt vịt bịt mắt. Diễn ra khoảng tháng 2 âm lịch — trước khi ngư dân mở mùa đánh bắt mới. Miễn phí tham dự.",
+        "season": {
+          "peak": [
+            2
+          ],
+          "text": "",
+          "months": [
+            2,
+            3
+          ]
+        },
+        "month_attribute": null
+      },
+      "circuit_breaker": {
+        "is_iso_date": false,
+        "is_blocked_by_month_heuristic": false,
+        "backend_action": "SUPPRESSED_PROSE_FORMAT"
+      }
+    },
+    {
+      "id": "le-hoi-chol-chnam-thmay-tai-chua-ky-son",
+      "name": "Lễ hội Chol Chnam Thmay tại chùa Kỳ Son",
+      "group": "C",
+      "group_description": "Logical Contradiction (cross-field divergence, requires governance decision)",
+      "place_id": "xa-ngai-tu",
+      "area": "vinh-long",
+      "fields": {
+        "lunar_date": "13–15 tháng 4 dương lịch (cố định)",
+        "date_start": "2026-04-13",
+        "date_end": "2026-04-16",
+        "summary": "Lễ Tết Năm mới của người Khmer tổ chức hàng năm từ ngày 13 đến 15 tháng 4 tại chùa Kỳ Son.",
+        "description": "Lễ Tết Năm mới của người Khmer tổ chức hàng năm từ ngày 13 đến 15 tháng 4 tại chùa Kỳ Son. Ngoài ra còn có lễ Sen Dolta (29-30 tháng 8 âm lịch) và lễ Oóc-Om-Bóc (rằm tháng 10 âm lịch). Đây là các lễ hội truyền thống quan trọng nhất của cộng đồng người Khmer Tam Bình.",
+        "season": {
+          "peak": [
+            4
+          ],
+          "text": "Lễ hội Chol Chnam Thmay tại chùa Kỳ Son tổ chức từ ngày 13 đến 15 tháng 4 hằng năm. Đây là dịp cao điểm để trải nghiệm văn hóa Khmer tại Vĩnh Long.",
+          "months": [
+            4
+          ]
+        },
+        "month_attribute": null
+      },
+      "circuit_breaker": {
+        "is_iso_date": true,
+        "is_blocked_by_month_heuristic": false,
+        "backend_action": "ACTIVE_PUBLIC_EXPORT"
+      }
+    },
+    {
+      "id": "le-hoi-chol-chnam-thmay-va-sen-dolta",
+      "name": "Lễ hội Chol Chnam Thmay và Sen Dolta",
+      "group": "C",
+      "group_description": "Logical Contradiction (cross-field divergence, requires governance decision)",
+      "place_id": "xa-tra-cu",
+      "area": "tra-vinh",
+      "fields": {
+        "lunar_date": "Chol Chnam Thmay: 13–16/4 DL; Sen Dolta: 29/8–1/9 ÂL",
+        "date_start": "2026-04-13",
+        "date_end": "2026-04-16",
+        "summary": "Hai lễ hội truyền thống lớn nhất trong năm của đồng bào Khmer tại huyện Trà Cú.",
+        "description": "Hai lễ hội truyền thống lớn nhất trong năm của đồng bào Khmer tại huyện Trà Cú. Chol Chnam Thmay là Tết năm mới Khmer (tháng 4 dương lịch), tổ chức tại các chùa Khmer như Vàm Ray và Nôdol với nghi lễ tắm tượng Phật, múa truyền thống, phát quà. Sen Dolta (tháng 9-10 âm lịch) là lễ cúng ông bà tổ tiên theo tín ngưỡng Phật giáo Nam tông Khmer, diễn ra sôi nổi tại các chùa và phum sóc trong toàn huyện.",
+        "season": {
+          "peak": [
+            4,
+            10
+          ],
+          "text": "Chol Chnam Thmay diễn ra vào tháng 4, còn Sen Dolta thường rơi vào khoảng tháng 9-10 dương lịch. Đây là hai thời điểm quan trọng trong năm của đồng bào Khmer Trà Vinh.",
+          "months": [
+            4,
+            9,
+            10
+          ]
+        },
+        "month_attribute": null
+      },
+      "circuit_breaker": {
+        "is_iso_date": true,
+        "is_blocked_by_month_heuristic": false,
+        "backend_action": "ACTIVE_PUBLIC_EXPORT"
+      }
+    },
+    {
+      "id": "le-hoi-cung-bien-my-long",
+      "name": "Lễ hội cúng biển Mỹ Long",
+      "group": "A",
+      "group_description": "Consistent (6 fields aligned or valid window enclosing feast day)",
+      "place_id": "xa-my-long",
+      "area": "tra-vinh",
+      "fields": {
+        "lunar_date": "11–12 tháng 5 âm lịch",
+        "date_start": "2026-06-25",
+        "date_end": "2026-06-27",
+        "summary": "Cứ đến ngày 11 và 12 tháng Năm âm lịch, vùng biển Mỹ Long lại rộn ràng với Lễ hội Nghinh Ông — lễ tế cửa biển Nam Hải lớn nhất Trà Vinh.",
+        "description": "Cứ đến ngày 11 và 12 tháng Năm âm lịch, vùng biển Mỹ Long lại rộn ràng với Lễ hội Nghinh Ông — lễ tế cửa biển Nam Hải lớn nhất Trà Vinh. Đoàn thuyền đánh cá trang hoàng cờ hoa rực rỡ xuất bến ra khơi rước Ông về làng giữa tiếng hò reo và pháo sáng lung linh. Trên bờ, nghi lễ tế tiên hiền trang trọng tiếp nối lễ tống quái — thả thuyền giấy ra biển xua tà mang điềm lành về. Cả vùng bờ biển trở thành lễ hội sống động, vừa linh thiêng vừa đầy màu sắc.",
+        "season": {
+          "peak": [
+            6
+          ],
+          "text": "Lễ hội cúng biển Mỹ Long diễn ra ngày 11-12 tháng 5 âm lịch, thường rơi vào tháng 6-7 dương lịch. Cao điểm thường vào tháng 6 với các nghi thức Nghinh Ông và hoạt động cộng đồng.",
+          "months": [
+            6,
+            7
+          ]
+        },
+        "month_attribute": null
+      },
+      "circuit_breaker": {
+        "is_iso_date": true,
+        "is_blocked_by_month_heuristic": false,
+        "backend_action": "ACTIVE_PUBLIC_EXPORT"
+      }
+    },
+    {
+      "id": "le-hoi-dom-long-neak-ta",
+      "name": "Lễ hội Đom Lơng Néak Tà",
+      "group": "B",
+      "group_description": "Technical Drift (computational offset, automatable correction)",
+      "place_id": "p-vung-liem",
+      "area": "vinh-long",
+      "fields": {
+        "lunar_date": "Cuối tháng 3 – đầu tháng 4 âm lịch",
+        "date_start": "2026-10-08",
+        "date_end": "2026-10-10",
+        "summary": "Khi đất trời giao mùa từ nắng sang mưa, người Khmer tổ chức Đom Lơng Néak Tà — lễ cúng Thần Đất cầu mưa và mùa màng bội thu.",
+        "description": "Khi đất trời giao mùa từ nắng sang mưa, người Khmer tổ chức Đom Lơng Néak Tà — lễ cúng Thần Đất cầu mưa và mùa màng bội thu. Không gian lễ hội mang đậm màu sắc tâm linh nông nghiệp ngàn đời: cây nêu dựng giữa làng, lễ vật dâng bày tươm tất, thầy cúng đọc kinh trong tiếng nhạc ngũ âm vang vọng. Rồi tiếng chiêng trống nổi lên, điệu múa trống Sadăm bắt đầu — cả phum sóc bước vào hội lớn.",
+        "season": {
+          "peak": [
+            5
+          ],
+          "text": "Lễ hội Đom Lơng Néak Tà diễn ra vào thời điểm giao mùa từ nắng sang mưa, khoảng tháng 4-5. Cao điểm thường vào tháng 5, khi cộng đồng cầu mưa thuận gió hòa và mùa màng tốt tươi.",
+          "months": [
+            4,
+            5
+          ]
+        },
+        "month_attribute": null
+      },
+      "circuit_breaker": {
+        "is_iso_date": true,
+        "is_blocked_by_month_heuristic": false,
+        "backend_action": "ACTIVE_PUBLIC_EXPORT"
+      }
+    },
+    {
+      "id": "le-hoi-ky-yen",
+      "name": "Lễ hội Kỳ Yên",
+      "group": "C",
+      "group_description": "Logical Contradiction (cross-field divergence, requires governance decision)",
+      "place_id": "p-long-chau",
+      "area": "vinh-long",
+      "fields": {
+        "lunar_date": "16–17 tháng 2 âm lịch",
+        "date_start": "2026-03-15",
+        "date_end": "2026-03-17",
+        "summary": "Kỳ Yên là lễ tế Thần Thành Hoàng lớn nhất trong năm ở các đình làng Nam Bộ — kéo dài hai ngày một đêm với nghi thức cầu quốc thái dân an, mưa thuận gió hòa. Nhạc lễ cổ truyền vang lên, đoàn múa bóng rỗi rực rỡ sắc màu, bàn thờ chưng đầy lễ vật công phu. Ban đêm, sân đình chiếu hát bội hoặc cải lương phục vụ dân làng tới tận khuya.",
+        "description": "Ở các đình làng Nam Bộ, Kỳ Yên là lễ tế Thần Thành Hoàng lớn nhất trong năm, kéo dài hai ngày một đêm. Các nghi thức diễn ra trang trọng, cầu quốc thái dân an, mưa thuận gió hòa cho cả vùng. Nhạc lễ cổ truyền vang lên, đoàn múa bóng rỗi rực rỡ sắc màu, bàn thờ chưng đầy lễ vật công phu — dựng nên một khung cảnh lễ hội đình làng đậm hồn cốt. Ban đêm, sân đình chiếu hát bội hoặc cải lương phục vụ dân làng tới tận khuya.",
+        "season": {
+          "peak": [],
+          "text": "Chưa xác định mùa vụ",
+          "months": [
+            3
+          ]
+        },
+        "month_attribute": null
+      },
+      "circuit_breaker": {
+        "is_iso_date": true,
+        "is_blocked_by_month_heuristic": false,
+        "backend_action": "ACTIVE_PUBLIC_EXPORT"
+      }
+    },
+    {
+      "id": "le-hoi-ky-yen-dinh-phu-le",
+      "name": "Lễ hội Kỳ Yên đình Phú Lễ",
+      "group": "A",
+      "group_description": "Consistent (6 fields aligned or valid window enclosing feast day)",
+      "place_id": "xa-tan-xuan",
+      "area": "ben-tre",
+      "fields": {
+        "lunar_date": "18–19 tháng 3 âm lịch",
+        "date_start": "2026-05-04",
+        "date_end": "2026-05-05",
+        "summary": "Lễ hội truyền thống tổ chức hàng năm vào ngày 18-19 tháng 3 âm lịch tại đình Phú Lễ, cầu cho mưa thuận gió hòa, ngư nghiệp thuận lợi.",
+        "description": "Lễ hội truyền thống tổ chức hàng năm vào ngày 18-19 tháng 3 âm lịch tại đình Phú Lễ, cầu cho mưa thuận gió hòa, ngư nghiệp thuận lợi. Lễ hội có các hoạt động văn hóa như múa rối nước truyền thống và đờn ca tài tử Nam Bộ.",
+        "season": {
+          "peak": [],
+          "text": "Theo lịch đình",
+          "months": [
+            5
+          ]
+        },
+        "month_attribute": null
+      },
+      "circuit_breaker": {
+        "is_iso_date": true,
+        "is_blocked_by_month_heuristic": false,
+        "backend_action": "ACTIVE_PUBLIC_EXPORT"
+      }
+    },
+    {
+      "id": "le-hoi-ky-yen-ha-dien-dinh-tan-giai",
+      "name": "Lễ hội Kỳ Yên - Hạ Điền Đình Tân Giai",
+      "group": "A",
+      "group_description": "Consistent (6 fields aligned or valid window enclosing feast day)",
+      "place_id": "p-phuoc-hau",
+      "area": "vinh-long",
+      "fields": {
+        "lunar_date": "16–17 tháng 3 âm lịch",
+        "date_start": "2026-05-02",
+        "date_end": "2026-05-03",
+        "summary": "Lễ hội truyền thống tổ chức hàng năm tại Đình Tân Giai, Phường 3, vào ngày 16-17 tháng 3 âm lịch (khoảng tháng 4 dương lịch).",
+        "description": "Lễ hội truyền thống tổ chức hàng năm tại Đình Tân Giai, Phường 3, vào ngày 16-17 tháng 3 âm lịch (khoảng tháng 4 dương lịch). Gồm 3 nghi lễ chính: Khai Kinh đàng, Túc yết và Chánh tế. Đông đảo người dân địa phương và thập phương đến dâng hương bái tế cầu bình an, mùa màng tốt tươi.",
+        "season": {
+          "peak": [
+            4
+          ],
+          "text": "Lễ hội Kỳ Yên - Hạ Điền Đình Tân Giai tổ chức ngày 16-17 tháng 3 âm lịch, thường rơi vào tháng 3-4 dương lịch. Cao điểm thường vào tháng 4 với các nghi thức cầu an, cầu mùa.",
+          "months": [
+            3,
+            4
+          ]
+        },
+        "month_attribute": null
+      },
+      "circuit_breaker": {
+        "is_iso_date": true,
+        "is_blocked_by_month_heuristic": false,
+        "backend_action": "ACTIVE_PUBLIC_EXPORT"
+      }
+    },
+    {
+      "id": "le-hoi-long-den",
+      "name": "Lễ hội Lồng Đèn (Trung Thu)",
+      "group": "E",
+      "group_description": "Prose date_start (unstructured start date, suppressed from .ics)",
+      "place_id": "p-long-chau",
+      "area": "vinh-long",
+      "fields": {
+        "lunar_date": "Rằm tháng 8 âm lịch",
+        "date_start": "Rằm tháng 8 âm lịch (khoảng tháng 9-10 dương lịch)",
+        "date_end": null,
+        "summary": "Đêm Trung Thu rằm tháng 8 âm lịch — đoàn rước đèn lồng diễu hành qua các tuyến phố trung tâm Vĩnh Long, kèm múa lân, phá cỗ trông trăng và phát quà cho trẻ em.",
+        "description": "Đêm Trung Thu rằm tháng 8 âm lịch — tổ chức tại khu vực trung tâm thành phố Vĩnh Long.\n\nĐoàn rước đèn lồng diễu hành qua các tuyến phố chính, trẻ em cầm đèn ông sao, đèn cá chép, đèn kéo quân. Múa lân sư rồng dọc đường, trống lân vang khắp phố.\n\nCác chùa, đoàn thể, doanh nghiệp tổ chức phá cỗ trông trăng, phát bánh trung thu và quà cho hàng trăm thiếu nhi. Thư viện Nguyễn Đình Chiểu và Bảo tàng Vĩnh Long thường có chương trình riêng.",
+        "season": {
+          "peak": [
+            9
+          ],
+          "text": "",
+          "months": [
+            9
+          ]
+        },
+        "month_attribute": null
+      },
+      "circuit_breaker": {
+        "is_iso_date": false,
+        "is_blocked_by_month_heuristic": false,
+        "backend_action": "SUPPRESSED_PROSE_FORMAT"
+      }
+    },
+    {
+      "id": "le-hoi-nghinh-ong-binh-thang",
+      "name": "Lễ hội Nghinh Ông Bình Thắng",
+      "group": "A",
+      "group_description": "Consistent (6 fields aligned or valid window enclosing feast day)",
+      "place_id": "p-binh-dai",
+      "area": "ben-tre",
+      "fields": {
+        "lunar_date": "16 tháng 6 âm lịch",
+        "date_start": "2026-07-29",
+        "date_end": "2026-07-30",
+        "summary": "Lễ hội Nghinh Ông lớn nhất Bình Đại tổ chức hàng năm vào ngày 16 tháng 6 âm lịch tại Lăng Ông xã Bình Thắng.",
+        "description": "Lễ hội Nghinh Ông lớn nhất Bình Đại tổ chức hàng năm vào ngày 16 tháng 6 âm lịch tại Lăng Ông xã Bình Thắng. Trong ngày hội, tàu thuyền đánh cá tập trung neo đậu để tế lễ, vui chơi, là lễ hội truyền thống của ngư dân vùng biển.",
+        "season": {
+          "peak": [
+            7
+          ],
+          "text": "Lễ hội Nghinh Ông Bình Thắng tổ chức ngày 16 tháng 6 âm lịch, thường rơi vào tháng 7-8 dương lịch. Cao điểm thường vào tháng 7 với các nghi thức cầu ngư của ngư dân vùng biển Bình Đại.",
+          "months": [
+            7,
+            8
+          ]
+        },
+        "month_attribute": null
+      },
+      "circuit_breaker": {
+        "is_iso_date": true,
+        "is_blocked_by_month_heuristic": false,
+        "backend_action": "ACTIVE_PUBLIC_EXPORT"
+      }
+    },
+    {
+      "id": "le-hoi-nghinh-ong-duyen-hai",
+      "name": "Lễ hội Nghinh Ông Duyên Hải",
+      "group": "C",
+      "group_description": "Logical Contradiction (cross-field divergence, requires governance decision)",
+      "place_id": "p-duyen-hai",
+      "area": "tra-vinh",
+      "fields": {
+        "lunar_date": "10–12 tháng 3 âm lịch",
+        "date_start": "2026-04-26",
+        "date_end": "2026-04-28",
+        "summary": "Lễ hội tín ngưỡng dân gian của ngư dân ven biển Duyên Hải, thờ cúng Cá Ông (cá voi) - vị thần bảo hộ ngư dân trên biển.",
+        "description": "Lễ hội tín ngưỡng dân gian của ngư dân ven biển Duyên Hải, thờ cúng Cá Ông (cá voi) - vị thần bảo hộ ngư dân trên biển. Tổ chức hằng năm vào ngày 20-21 tháng 2 âm lịch với nghi lễ rước linh vị Cá Ông ra biển, đoàn thuyền rực rỡ cờ hoa, cùng các hoạt động đua thuyền và văn nghệ dân gian. Đây là di sản văn hóa phi vật thể tiêu biểu của vùng Trà Vinh.",
+        "season": {
+          "peak": [],
+          "text": "Chưa xác định mùa vụ",
+          "months": [
+            4
+          ]
+        },
+        "month_attribute": null
+      },
+      "circuit_breaker": {
+        "is_iso_date": true,
+        "is_blocked_by_month_heuristic": false,
+        "backend_action": "ACTIVE_PUBLIC_EXPORT"
+      }
+    },
+    {
+      "id": "le-hoi-nghinh-ong-lang-con-tau",
+      "name": "Lễ hội Nghinh Ông Lăng Cồn Tàu",
+      "group": "C",
+      "group_description": "Logical Contradiction (cross-field divergence, requires governance decision)",
+      "place_id": "p-truong-long-hoa",
+      "area": "tra-vinh",
+      "fields": {
+        "lunar_date": "10–11 tháng 3 âm lịch",
+        "date_start": "2026-04-26",
+        "date_end": "2026-04-27",
+        "summary": "Lễ hội truyền thống của ngư dân ven biển tại Lăng Ông Cồn Tàu, tổ chức hàng năm vào ngày 15 tháng 2 và 15 tháng 7 âm lịch.",
+        "description": "Lễ hội truyền thống của ngư dân ven biển tại Lăng Ông Cồn Tàu, tổ chức hàng năm vào ngày 15 tháng 2 và 15 tháng 7 âm lịch. Nghi thức cúng tế Ông Nam Hải (cá Ông) cầu mưa thuận gió hòa, mùa đánh bắt bội thu. Đông đảo ngư dân và du khách trong vùng tham dự.",
+        "season": {
+          "peak": [
+            3
+          ],
+          "text": "Lễ hội tổ chức hằng năm vào ngày 15 tháng 2 âm lịch, thường rơi vào khoảng tháng 2-3 dương lịch. Thời điểm cao điểm là đúng kỳ lễ chính.",
+          "months": [
+            2,
+            3
+          ]
+        },
+        "month_attribute": null
+      },
+      "circuit_breaker": {
+        "is_iso_date": true,
+        "is_blocked_by_month_heuristic": false,
+        "backend_action": "ACTIVE_PUBLIC_EXPORT"
+      }
+    },
+    {
+      "id": "le-hoi-ngu-dan-thanh-hai-le-hoi-cau-ngu",
+      "name": "Lễ hội Ngư dân Thạnh Hải (Lễ hội cầu ngư)",
+      "group": "C",
+      "group_description": "Logical Contradiction (cross-field divergence, requires governance decision)",
+      "place_id": "xa-thanh-hai",
+      "area": "ben-tre",
+      "fields": {
+        "lunar_date": "15–16 tháng 2 âm lịch",
+        "date_start": "2026-03-10",
+        "date_end": "2026-03-12",
+        "summary": "Lễ hội của ngư dân vùng biển Thạnh Phú tổ chức vào ngày 15–16 tháng âm lịch hàng năm tại khu vực Cồn Bửng – Thạnh Hải.",
+        "description": "Lễ hội của ngư dân vùng biển Thạnh Phú tổ chức vào ngày 15–16 tháng âm lịch hàng năm tại khu vực Cồn Bửng – Thạnh Hải. Lễ hội mang đậm bản sắc văn hóa ngư nghiệp miền biển, cầu cho mưa thuận gió hòa, tôm cá đầy khoang.",
+        "season": {
+          "peak": [
+            2
+          ],
+          "text": "Lễ hội cầu ngư của ngư dân Thạnh Hải thường diễn ra vào rằm tháng Giêng âm lịch, khoảng tháng 2 dương lịch. Đây là dịp cầu mùa biển thuận lợi, mưa thuận gió hòa.",
+          "months": [
+            2
+          ]
+        },
+        "month_attribute": null
+      },
+      "circuit_breaker": {
+        "is_iso_date": true,
+        "is_blocked_by_month_heuristic": false,
+        "backend_action": "ACTIVE_PUBLIC_EXPORT"
+      }
+    },
+    {
+      "id": "le-hoi-nguyen-tieu",
+      "name": "Lễ hội Nguyên Tiêu",
+      "group": "C",
+      "group_description": "Logical Contradiction (cross-field divergence, requires governance decision)",
+      "place_id": "p-long-chau",
+      "area": "vinh-long",
+      "fields": {
+        "lunar_date": "Rằm tháng Giêng âm lịch",
+        "date_start": "2026-03-02",
+        "date_end": "2026-03-03",
+        "summary": "Đêm Rằm tháng Giêng, các khu phố người Hoa ở Vĩnh Long bừng sáng trong Lễ hội Nguyên Tiêu — còn gọi là lễ Cúng Ông Bảo.",
+        "description": "Đêm Rằm tháng Giêng, các khu phố người Hoa ở Vĩnh Long bừng sáng trong Lễ hội Nguyên Tiêu — còn gọi là lễ Cúng Ông Bảo. Đèn lồng đỏ treo kín từng con hẻm, khói nhang nghi ngút tỏa từ hội quán cổ kính, tiếng trống lân náo nhiệt xua đi tà khí mở đầu năm mới an lành. Đây là đêm thiêng nhất để cộng đồng người Hoa cầu tài lộc, bình an cho gia đình cả năm. Có thể thỉnh đèn lồng, thử các món ăn truyền thống người Hoa và hòa vào đoàn rước lân rực rỡ qua phố.",
+        "season": {
+          "peak": [
+            2
+          ],
+          "text": "Lễ hội Nguyên Tiêu diễn ra vào Rằm tháng Giêng âm lịch, thường rơi vào tháng 2 dương lịch. Đây là thời điểm cao điểm của các hoạt động tín ngưỡng và sinh hoạt văn hóa người Hoa.",
+          "months": [
+            2
+          ]
+        },
+        "month_attribute": null
+      },
+      "circuit_breaker": {
+        "is_iso_date": true,
+        "is_blocked_by_month_heuristic": false,
+        "backend_action": "ACTIVE_PUBLIC_EXPORT"
+      }
+    },
+    {
+      "id": "le-hoi-nguyen-tieu-o-tra-cu",
+      "name": "Lễ hội Nguyên tiêu ở Trà Cú",
+      "group": "C",
+      "group_description": "Logical Contradiction (cross-field divergence, requires governance decision)",
+      "place_id": "xa-dai-an",
+      "area": "tra-vinh",
+      "fields": {
+        "lunar_date": "Rằm tháng Giêng âm lịch",
+        "date_start": "2026-03-02",
+        "date_end": "2026-03-03",
+        "summary": "Lễ hội truyền thống hơn 120 năm tuổi, được công nhận Di sản văn hóa phi vật thể quốc gia ngày 3/3/2026.",
+        "description": "Lễ hội truyền thống hơn 120 năm tuổi, được công nhận Di sản văn hóa phi vật thể quốc gia ngày 3/3/2026. Khởi nguồn từ cộng đồng người Hoa, nay trở thành ngày hội chung của ba dân tộc Hoa - Kinh - Khmer. Tổ chức tại nhiều cơ sở tín ngưỡng gồm Phước Thắng Cung, Bảo An miếu, Thánh thất Đại An, Tân Hưng Cung. Nghi thức rải gạo muối xua điều xấu, cầu bình an thịnh vượng.",
+        "season": {
+          "peak": [],
+          "text": "Rằm tháng Giêng âm lịch / theo lịch tổ chức địa phương",
+          "months": [
+            3
+          ]
+        },
+        "month_attribute": null
+      },
+      "circuit_breaker": {
+        "is_iso_date": true,
+        "is_blocked_by_month_heuristic": false,
+        "backend_action": "ACTIVE_PUBLIC_EXPORT"
+      }
+    },
+    {
+      "id": "le-hoi-ok-om-bok",
+      "name": "Lễ hội Ok Om Bok",
+      "group": "A",
+      "group_description": "Consistent (6 fields aligned or valid window enclosing feast day)",
+      "place_id": "p-nguyet-hoa",
+      "area": "tra-vinh",
+      "fields": {
+        "lunar_date": "Rằm tháng 10 âm lịch",
+        "date_start": "2026-11-22",
+        "date_end": "2026-11-24",
+        "summary": "Cúng Trăng rằm tháng 10 — lễ hội Khmer lớn nhất Trà Vinh, di sản văn hóa phi vật thể quốc gia — đua ghe ngo trên Ao Bà Om với 50-60 tay chèo mỗi thuyền.",
+        "description": "Ok Om Bok — Cúng Trăng — diễn ra rằm tháng 10 âm lịch, một trong ba lễ hội lớn của đồng bào Khmer Nam Bộ (cùng Sen Dolta và Chôl Chnăm Thmây). Người Khmer tạ ơn Mặt Trăng đã ban cho mùa màng tốt tươi, dâng cốm dẹp và trái cây dưới ánh trăng rằm.\n\nSôi động nhất là đua ghe ngo — thuyền dài 22-24 m, rộng 1,2 m, 50-60 tay chèo đồng loạt. Tổ chức tại khu Văn hóa — Du lịch Ao Bà Om, phường 8, TP Trà Vinh.\n\nĐược công nhận di sản văn hóa phi vật thể quốc gia. Hằng năm gắn với Tuần lễ Văn hóa — Du lịch Trà Vinh: hội chợ ẩm thực, múa Khmer, bóng chuyền dân tộc.",
+        "season": {
+          "peak": [],
+          "text": "Rằm tháng 10 âm lịch; thường tổ chức thành tuần lễ văn hóa - thể thao - du lịch",
+          "months": [
+            11
+          ]
+        },
+        "month_attribute": null
+      },
+      "circuit_breaker": {
+        "is_iso_date": true,
+        "is_blocked_by_month_heuristic": false,
+        "backend_action": "ACTIVE_PUBLIC_EXPORT"
+      }
+    },
+    {
+      "id": "le-hoi-van-hoa-the-thao-du-lich-dong-bao-khmer-nam-bo-tinh-tra-vinh-tra-vinh",
+      "name": "Lễ hội Văn hóa - Thể thao - Du lịch đồng bào Khmer Nam Bộ tỉnh Trà Vinh",
+      "group": "FIXED_SOLAR",
+      "group_description": "Fixed solar date or non-lunar modern event",
+      "place_id": "xa-nhi-long",
+      "area": "tra-vinh",
+      "fields": {
+        "lunar_date": null,
+        "date_start": "2026-11-20",
+        "date_end": "2026-11-24",
+        "summary": "Mỗi tháng 11, khoảng hai mươi nghìn người đổ về Ao Bà Om — di tích quốc gia tại Trà Vinh — xem múa Rô Băm, nghe trống Sadăm và đua ghe ngo.",
+        "description": "Mỗi tháng 11, khoảng hai mươi nghìn người đổ về Ao Bà Om — di tích quốc gia tại Trà Vinh — xem múa Rô Băm, nghe trống Sadăm và đua ghe ngo. Nhiều ngày lễ diễn ra cạnh Bảo tàng Văn hóa dân tộc Khmer với hơn 800 hiện vật. Gian hàng dệt chiếu, điêu khắc gỗ chùa Khmer và sân khấu Dù Kê xen hội thi thể thao dân tộc; đồng bào Kinh, Khmer, Hoa cùng về dự.",
+        "season": {
+          "peak": [],
+          "text": "Chưa xác định mùa vụ",
+          "months": [
+            11
+          ]
+        },
+        "month_attribute": 12
+      },
+      "circuit_breaker": {
+        "is_iso_date": true,
+        "is_blocked_by_month_heuristic": true,
+        "backend_action": "BLOCKED_FROM_UPCOMING_AND_HOMEPAGE"
+      }
+    },
+    {
+      "id": "le-hoi-van-thanh-mieu",
+      "name": "Lễ hội Văn Thánh Miếu",
+      "group": "C",
+      "group_description": "Logical Contradiction (cross-field divergence, requires governance decision)",
+      "place_id": "p-phuoc-hau",
+      "area": "vinh-long",
+      "fields": {
+        "lunar_date": "Rằm tháng 2 âm lịch",
+        "date_start": "2026-03-10",
+        "date_end": "2026-03-12",
+        "summary": "Lễ hội truyền thống diễn ra tại Văn Thánh Miếu, tỉnh Vĩnh Long, nhằm tôn vinh Khổng Tử và truyền thống hiếu học.",
+        "description": "Lễ hội truyền thống diễn ra tại Văn Thánh Miếu, tỉnh Vĩnh Long, nhằm tôn vinh Khổng Tử và truyền thống hiếu học của vùng đất. Đây là sinh hoạt mang đậm nét văn hóa Nho giáo tại Nam Bộ, nơi được mệnh danh Quốc Tử Giám của Nam Bộ.",
+        "season": {
+          "peak": [],
+          "text": "Lễ Xuân Đinh, sự kiện giáo dục - văn hóa",
+          "months": [
+            3
+          ]
+        },
+        "month_attribute": null
+      },
+      "circuit_breaker": {
+        "is_iso_date": true,
+        "is_blocked_by_month_heuristic": false,
+        "backend_action": "ACTIVE_PUBLIC_EXPORT"
+      }
+    },
+    {
+      "id": "le-thuong-dien-dinh-tan-ngai",
+      "name": "Lễ Thượng điền Đình Tân Ngãi",
+      "group": "B",
+      "group_description": "Technical Drift (computational offset, automatable correction)",
+      "place_id": "p-tan-ngai",
+      "area": "vinh-long",
+      "fields": {
+        "lunar_date": "16–17 tháng 10 âm lịch",
+        "date_start": "2026-11-15",
+        "date_end": "2026-11-16",
+        "summary": "Lễ hội truyền thống tổ chức hàng năm tại Đình Tân Ngãi vào ngày 16-17 tháng 10 âm lịch, tạ ơn sau vụ mùa thu hoạch.",
+        "description": "Lễ hội truyền thống tổ chức hàng năm tại Đình Tân Ngãi vào ngày 16-17 tháng 10 âm lịch, tạ ơn sau vụ mùa thu hoạch. Là một trong hai lễ cúng lớn của đình.",
+        "season": {
+          "peak": [
+            11
+          ],
+          "text": "Lễ Thượng điền Đình Tân Ngãi tổ chức ngày 16-17 tháng 10 âm lịch, thường rơi vào tháng 11-12 dương lịch. Đây là dịp tạ ơn sau vụ mùa, cao điểm thường vào tháng 11.",
+          "months": [
+            11,
+            12
+          ]
+        },
+        "month_attribute": null
+      },
+      "circuit_breaker": {
+        "is_iso_date": true,
+        "is_blocked_by_month_heuristic": false,
+        "backend_action": "ACTIVE_PUBLIC_EXPORT"
+      }
+    },
+    {
+      "id": "le-via-ba-co-hy",
+      "name": "Lễ Vía Bà Cố Hỷ",
+      "group": "C",
+      "group_description": "Logical Contradiction (cross-field divergence, requires governance decision)",
+      "place_id": "p-truong-long-hoa",
+      "area": "tra-vinh",
+      "fields": {
+        "lunar_date": "Rằm tháng 2 âm lịch",
+        "date_start": "2026-04-03",
+        "date_end": "2026-04-03",
+        "summary": "Lễ hội dân gian tổ chức hằng năm vào ngày rằm tháng Giêng âm lịch tại Lầu Bà Cố Hỷ (Thượng Động Nương Nương), ấp Ba Động.",
+        "description": "Lễ hội dân gian tổ chức hằng năm vào ngày rằm tháng Giêng âm lịch tại Lầu Bà Cố Hỷ (Thượng Động Nương Nương), ấp Ba Động. Hàng nghìn người dân địa phương và khách thập phương đến dâng hương, cầu bình an.",
+        "season": {
+          "peak": [
+            2
+          ],
+          "text": "Lễ Vía Bà Cố Hỷ diễn ra vào Rằm tháng Giêng âm lịch, thường rơi vào tháng 2 dương lịch. Đây là thời điểm chính để người dân hành hương, cúng viếng và cầu an.",
+          "months": [
+            2
+          ]
+        },
+        "month_attribute": null
+      },
+      "circuit_breaker": {
+        "is_iso_date": true,
+        "is_blocked_by_month_heuristic": false,
+        "backend_action": "ACTIVE_PUBLIC_EXPORT"
+      }
+    },
+    {
+      "id": "le-via-quoc-cong-tong-phuoc-hiep",
+      "name": "Lễ vía Quốc công Tống Phước Hiệp",
+      "group": "A",
+      "group_description": "Consistent (6 fields aligned or valid window enclosing feast day)",
+      "place_id": "p-phuoc-hau",
+      "area": "vinh-long",
+      "fields": {
+        "lunar_date": "Mùng 2–3 tháng 6 âm lịch",
+        "date_start": "2026-07-15",
+        "date_end": "2026-07-16",
+        "summary": "Lễ giỗ danh thần Tống Phước Hiệp tổ chức hằng năm vào mùng 2–3 tháng 6 âm lịch tại Đình Tân Giai, Phường 3, TP Vĩnh Long.",
+        "description": "Lễ giỗ danh thần Tống Phước Hiệp tổ chức hằng năm vào mùng 2–3 tháng 6 âm lịch tại Đình Tân Giai, Phường 3, TP Vĩnh Long. Tống Phước Hiệp (?–1776) là Lưu thủ Long Hồ dinh — vị quan đầu tiên cai quản vùng đất nay là Vĩnh Long, có công lớn trong việc khai khẩn, ổn định dân sinh và kháng cự ngoại xâm. Chúa Nguyễn truy phong ông tước Hữu phủ Quốc công.",
+        "season": {
+          "peak": [
+            7
+          ],
+          "text": "",
+          "months": [
+            7
+          ]
+        },
+        "month_attribute": null
+      },
+      "circuit_breaker": {
+        "is_iso_date": true,
+        "is_blocked_by_month_heuristic": false,
+        "backend_action": "ACTIVE_PUBLIC_EXPORT"
+      }
+    },
+    {
+      "id": "le-vu-lan",
+      "name": "Lễ Vu Lan",
+      "group": "E",
+      "group_description": "Prose date_start (unstructured start date, suppressed from .ics)",
+      "place_id": "p-long-chau",
+      "area": "vinh-long",
+      "fields": {
+        "lunar_date": "Rằm tháng 7 âm lịch",
+        "date_start": "Rằm tháng 7 âm lịch (khoảng tháng 8 dương lịch)",
+        "date_end": null,
+        "summary": "Đại lễ Vu Lan (Rằm tháng 7 Âm lịch) tại các chùa Vĩnh Long, cúng chay, phóng sinh, thả đèn hoa đăng trên sông.",
+        "description": "Đại lễ Vu Lan (Rằm tháng 7 Âm lịch) tại các chùa Vĩnh Long, cúng chay, phóng sinh, thả đèn hoa đăng trên sông. Mùa báo hiếu, nhiều hoạt động từ thiện và lễ cầu siêu.",
+        "season": {
+          "peak": [
+            8
+          ],
+          "text": "",
+          "months": [
+            8
+          ]
+        },
+        "month_attribute": null
+      },
+      "circuit_breaker": {
+        "is_iso_date": false,
+        "is_blocked_by_month_heuristic": false,
+        "backend_action": "SUPPRESSED_PROSE_FORMAT"
+      }
+    },
+    {
+      "id": "lien-hoan-don-ca-tai-tu-nam-bo-tinh-ben-tre-ben-tre",
+      "name": "Liên hoan Đờn ca Tài tử Nam Bộ tỉnh Bến Tre",
+      "group": "FIXED_SOLAR",
+      "group_description": "Fixed solar date or non-lunar modern event",
+      "place_id": "p-phu-khuong",
+      "area": "ben-tre",
+      "fields": {
+        "lunar_date": null,
+        "date_start": "2026-10-05",
+        "date_end": "2026-10-07",
+        "summary": "Mỗi mùa hè, Liên hoan Đờn ca Tài tử Nam Bộ tỉnh Bến Tre quy tụ hàng trăm nghệ nhân và câu lạc bộ về tranh tài suốt ba ngày.",
+        "description": "Mỗi mùa hè, Liên hoan Đờn ca Tài tử Nam Bộ tỉnh Bến Tre quy tụ hàng trăm nghệ nhân và câu lạc bộ về tranh tài suốt ba ngày. Đờn ca tài tử — loại hình được UNESCO ghi danh Di sản văn hóa phi vật thể đại diện của nhân loại năm 2013 — vang lên từ Nhà hát Bến Tre và các điểm diễn luân phiên. Tiếng kìm, tiếng cò, tiếng tranh hòa cùng giọng vọng cổ mộc mạc, giữ cho dòng nhạc tài tử miệt vườn sống mãi trong đời sống xứ dừa.",
+        "season": {
+          "peak": [],
+          "text": "Chưa xác định mùa vụ",
+          "months": [
+            10
+          ]
+        },
+        "month_attribute": 6
+      },
+      "circuit_breaker": {
+        "is_iso_date": true,
+        "is_blocked_by_month_heuristic": true,
+        "backend_action": "BLOCKED_FROM_UPCOMING_AND_HOMEPAGE"
+      }
+    },
+    {
+      "id": "lien-hoan-van-nghe-quan-chung-tinh-tra-vinh-tra-vinh",
+      "name": "Liên hoan Văn nghệ Quần chúng tỉnh Trà Vinh",
+      "group": "FIXED_SOLAR",
+      "group_description": "Fixed solar date or non-lunar modern event",
+      "place_id": "xa-nhi-long",
+      "area": "tra-vinh",
+      "fields": {
+        "lunar_date": null,
+        "date_start": "2026-08-01",
+        "date_end": "2026-08-03",
+        "summary": "Các tiết mục nghệ thuật truyền thống ba dân tộc Kinh, Khmer, Hoa tranh tài. Hát đờn ca tài tử Nam Bộ - Di sản văn hóa phi vật thể UNESCO.",
+        "description": "Các tiết mục nghệ thuật truyền thống ba dân tộc Kinh, Khmer, Hoa tranh tài. Hát đờn ca tài tử Nam Bộ - Di sản văn hóa phi vật thể UNESCO. Cầu nối bảo tồn và phát huy nghệ thuật dân gian địa phương.",
+        "season": {
+          "peak": [],
+          "text": "Chưa xác định mùa vụ",
+          "months": [
+            8
+          ]
+        },
+        "month_attribute": 9
+      },
+      "circuit_breaker": {
+        "is_iso_date": true,
+        "is_blocked_by_month_heuristic": true,
+        "backend_action": "BLOCKED_FROM_UPCOMING_AND_HOMEPAGE"
+      }
+    },
+    {
+      "id": "ngay-hoi-banh-dan-gian-nam-bo-ket-hop-hoi-cho-ocop-vinh-long-vinh-long",
+      "name": "Ngày hội Bánh dân gian Nam Bộ kết hợp Hội chợ OCOP – Vĩnh Long",
+      "group": "FIXED_SOLAR",
+      "group_description": "Fixed solar date or non-lunar modern event",
+      "place_id": "p-long-chau",
+      "area": "vinh-long",
+      "fields": {
+        "lunar_date": null,
+        "date_start": "2026-04-28",
+        "date_end": "2026-05-02",
+        "summary": "Hội thi làm bánh dân gian Nam Bộ với hàng chục loại bánh truyền thống từ các huyện tỉnh.",
+        "description": "Hội thi làm bánh dân gian Nam Bộ với hàng chục loại bánh truyền thống từ các huyện tỉnh. Hội chợ xúc tiến thương mại sản phẩm OCOP và đặc sản vùng miền hơn 350 gian hàng. Năm 2025 là lần thứ XII, được tổ chức thường niên và mang bản sắc ẩm thực Vĩnh Long đặc trưng.",
+        "season": {
+          "peak": [],
+          "text": "Chưa xác định mùa vụ",
+          "months": [
+            4,
+            5
+          ]
+        },
+        "month_attribute": 4
+      },
+      "circuit_breaker": {
+        "is_iso_date": true,
+        "is_blocked_by_month_heuristic": false,
+        "backend_action": "ACTIVE_PUBLIC_EXPORT"
+      }
+    },
+    {
+      "id": "ngay-hoi-thanh-tra",
+      "name": "Ngày hội Thanh trà",
+      "group": "FIXED_SOLAR",
+      "group_description": "Fixed solar date or non-lunar modern event",
+      "place_id": "p-binh-minh",
+      "area": "vinh-long",
+      "fields": {
+        "lunar_date": null,
+        "date_start": "2026-09-15",
+        "date_end": "2026-09-17",
+        "summary": "Sự kiện quảng bá đặc sản thanh trà được tổ chức trước thềm Tuần lễ Văn hóa, thể thao và du lịch tỉnh Vĩnh Long.",
+        "description": "Sự kiện quảng bá đặc sản thanh trà được tổ chức trước thềm Tuần lễ Văn hóa, thể thao và du lịch tỉnh Vĩnh Long. Ngày hội diễn ra tại Bình Minh, Vĩnh Long, nhằm giới thiệu và tôn vinh giá trị trái thanh trà đặc sản địa phương.",
+        "season": {
+          "peak": [
+            1,
+            2
+          ],
+          "text": "Ngày hội quảng bá thanh trà thường gắn với thời điểm trước thềm các hoạt động văn hóa, du lịch đầu năm. Cao điểm trải nghiệm và mua đặc sản thường rơi vào dịp cận Tết.",
+          "months": [
+            12,
+            1,
+            2
+          ]
+        },
+        "month_attribute": null
+      },
+      "circuit_breaker": {
+        "is_iso_date": true,
+        "is_blocked_by_month_heuristic": false,
+        "backend_action": "ACTIVE_PUBLIC_EXPORT"
+      }
+    },
+    {
+      "id": "ngay-hoi-trai-cay",
+      "name": "Ngày hội trái cây",
+      "group": "FIXED_SOLAR",
+      "group_description": "Fixed solar date or non-lunar modern event",
+      "place_id": "xa-an-binh",
+      "area": "vinh-long",
+      "fields": {
+        "lunar_date": null,
+        "date_start": "Khoảng tháng 6-7 dương lịch (mùa trái cây)",
+        "date_end": null,
+        "summary": "Tổ chức hàng năm tại cù lao An Bình, trưng bày và bán đặc sản trái cây vùng: chôm chôm, sầu riêng, măng cụt, nhãn. Có các cuộc thi gọt trái cây, trình diễn ẩm thực.",
+        "description": "Ngày hội trái cây tổ chức hàng năm tại cù lao An Bình, trưng bày và bán đặc sản trái cây vùng: chôm chôm, sầu riêng, măng cụt, nhãn. Có các cuộc thi gọt trái cây, trình diễn ẩm thực.",
+        "season": {
+          "peak": [
+            6
+          ],
+          "text": "",
+          "months": [
+            6,
+            7
+          ]
+        },
+        "month_attribute": null
+      },
+      "circuit_breaker": {
+        "is_iso_date": false,
+        "is_blocked_by_month_heuristic": false,
+        "backend_action": "SUPPRESSED_PROSE_FORMAT"
+      }
+    },
+    {
+      "id": "ngay-hoi-van-hoa-the-thao-va-du-lich-huyen-cho-lach-ben-tre",
+      "name": "Ngày hội Văn hóa - Thể thao và Du lịch Chợ Lách",
+      "group": "FIXED_SOLAR",
+      "group_description": "Fixed solar date or non-lunar modern event",
+      "place_id": "p-phu-khuong",
+      "area": "ben-tre",
+      "fields": {
+        "lunar_date": null,
+        "date_start": "2026-07-10",
+        "date_end": "2026-07-12",
+        "summary": "Triển lãm và thi hoa kiếng, cây cảnh nghệ thuật trước thềm Tết Nguyên Đán. Hội thi chế tác tiểu cảnh, bonsai, cây ghép hoa đặc sản của vùng Chợ Lách.",
+        "description": "Triển lãm và thi hoa kiếng, cây cảnh nghệ thuật trước thềm Tết Nguyên Đán. Hội thi chế tác tiểu cảnh, bonsai, cây ghép hoa đặc sản của vùng Chợ Lách. Tham quan làng nghề hoa kiếng và vườn cây giống đặc trưng nhất miền Nam.",
+        "season": {
+          "peak": [
+            1,
+            2
+          ],
+          "text": "Sự kiện gắn với mùa hoa kiểng trước Tết Nguyên Đán. Thời điểm phù hợp nhất là tháng 1 đến tháng 2 khi làng hoa Chợ Lách vào vụ cao điểm.",
+          "months": [
+            1,
+            2
+          ]
+        },
+        "month_attribute": 1
+      },
+      "circuit_breaker": {
+        "is_iso_date": true,
+        "is_blocked_by_month_heuristic": true,
+        "backend_action": "BLOCKED_FROM_UPCOMING_AND_HOMEPAGE"
+      }
+    },
+    {
+      "id": "sen-dolta",
+      "name": "Sen Dolta",
+      "group": "A",
+      "group_description": "Consistent (6 fields aligned or valid window enclosing feast day)",
+      "place_id": "p-tra-vinh",
+      "area": "tra-vinh",
+      "fields": {
+        "lunar_date": "29 tháng 8 – 1 tháng 9 âm lịch",
+        "date_start": "2026-10-09",
+        "date_end": "2026-10-11",
+        "summary": "Một trong ba lễ hội dân gian lớn trong năm của đồng bào Khmer Nam Bộ, bên cạnh Ok Om Bok và Chôl Chnăm Thmây.",
+        "description": "Một trong ba lễ hội dân gian lớn trong năm của đồng bào Khmer Nam Bộ, bên cạnh Ok Om Bok và Chôl Chnăm Thmây. Lễ hội diễn ra vào tháng 8 âm lịch Khmer, mang ý nghĩa tưởng nhớ tổ tiên và cầu nguyện cho người đã khuất.",
+        "season": {
+          "peak": [
+            10
+          ],
+          "text": "Sen Dolta thường diễn ra vào cuối tháng 8 đến đầu tháng 9 âm lịch, tương ứng khoảng tháng 9-10 dương lịch. Cao điểm thường rơi vào tháng 10 với các nghi thức tưởng nhớ tổ tiên.",
+          "months": [
+            9,
+            10
+          ]
+        },
+        "month_attribute": null
+      },
+      "circuit_breaker": {
+        "is_iso_date": true,
+        "is_blocked_by_month_heuristic": false,
+        "backend_action": "ACTIVE_PUBLIC_EXPORT"
+      }
+    },
+    {
+      "id": "tet-doan-ngo",
+      "name": "Tết Đoan Ngọ",
+      "group": "E",
+      "group_description": "Prose date_start (unstructured start date, suppressed from .ics)",
+      "place_id": "p-long-chau",
+      "area": "vinh-long",
+      "fields": {
+        "lunar_date": "Mùng 5 tháng 5 âm lịch",
+        "date_start": "5 tháng 5 âm lịch (khoảng tháng 6 dương lịch)",
+        "date_end": null,
+        "summary": "(mùng 5 tháng 5 Âm lịch) ở Vĩnh Long, ăn cơm rượu, trái cây giết sâu bọ trong người. Chợ bán cơm rượu, trái mận, vải — phong tục dân gian đặc trưng.",
+        "description": "Tết Đoan Ngọ (mùng 5 tháng 5 Âm lịch) ở Vĩnh Long, ăn cơm rượu, trái cây giết sâu bọ trong người. Chợ bán cơm rượu, trái mận, vải — phong tục dân gian đặc trưng.",
+        "season": {
+          "peak": [
+            6
+          ],
+          "text": "",
+          "months": [
+            6
+          ]
+        },
+        "month_attribute": null
+      },
+      "circuit_breaker": {
+        "is_iso_date": false,
+        "is_blocked_by_month_heuristic": false,
+        "backend_action": "SUPPRESSED_PROSE_FORMAT"
+      }
+    },
+    {
+      "id": "tet-nguyen-dan-mien-tay",
+      "name": "Tết Nguyên Đán Vĩnh Long",
+      "group": "E",
+      "group_description": "Prose date_start (unstructured start date, suppressed from .ics)",
+      "place_id": "p-long-chau",
+      "area": "vinh-long",
+      "fields": {
+        "lunar_date": "Mùng 1 tháng Giêng âm lịch",
+        "date_start": "Tháng 1 âm lịch (khoảng tháng 1-2 dương lịch)",
+        "date_end": null,
+        "summary": "Tết cổ truyền Vĩnh Long — gói bánh tét lá chuối, nấu nồi thịt kho nước dừa, đi chợ hoa trên sông và thắp hương nơi bến nước.",
+        "description": "Ở vùng Đồng bằng sông Cửu Long, Tết Nguyên đán gói mình trong lá chuối và khói bếp bến nước.\n\nTrước Tết, cả nhà quây quần gói bánh tét bằng lá chuối tươi, khác bánh chưng vuông miền Bắc. Bến Tre có bánh tét lá cẩm, Trà Vinh có bánh tét Trà Cuôn xanh lá bồ ngót.\n\nMâm cỗ Tết: thịt kho nước dừa tươi với trứng vịt (dân gọi thịt kho rệu), canh khổ qua dồn thịt, dưa giá, củ kiệu, tôm khô.\n\nChợ hoa Tết trên sông nhộn nhịp từ 23 tháng Chạp — ghe chở mai vàng, cúc đại đóa, quất cảnh dọc các bến sông.",
+        "season": {
+          "peak": [
+            1,
+            2
+          ],
+          "text": "",
+          "months": [
+            1,
+            2
+          ]
+        },
+        "month_attribute": null
+      },
+      "circuit_breaker": {
+        "is_iso_date": false,
+        "is_blocked_by_month_heuristic": false,
+        "backend_action": "SUPPRESSED_PROSE_FORMAT"
+      }
+    },
+    {
+      "id": "trien-lam-hoi-cho-nong-nghiep-cong-nghe-cao-ben-tre-ben-tre",
+      "name": "Triển lãm - Hội chợ Nông nghiệp Công nghệ cao Bến Tre",
+      "group": "FIXED_SOLAR",
+      "group_description": "Fixed solar date or non-lunar modern event",
+      "place_id": "p-phu-khuong",
+      "area": "ben-tre",
+      "fields": {
+        "lunar_date": null,
+        "date_start": "2026-05-10",
+        "date_end": "2026-05-15",
+        "summary": "Trình diễn công nghệ tưới nhỏ giọт, nhà màng, canh tác dừa hữu cơ công nghệ cao.",
+        "description": "Trình diễn công nghệ tưới nhỏ giọт, nhà màng, canh tác dừa hữu cơ công nghệ cao. Kết nối đầu tư và chuyển giao kỹ thuật cho nông dân trồng dừa, ca cao, bưởi da xanh. Hội thảo chuyên đề về ứng phó biến đổi khí hậu và phát triển nông nghiệp bền vững.",
+        "season": {
+          "peak": [],
+          "text": "Chưa xác định mùa vụ",
+          "months": [
+            5
+          ]
+        },
+        "month_attribute": 9
+      },
+      "circuit_breaker": {
+        "is_iso_date": true,
+        "is_blocked_by_month_heuristic": true,
+        "backend_action": "BLOCKED_FROM_UPCOMING_AND_HOMEPAGE"
+      }
+    },
+    {
+      "id": "tuan-le-du-lich-tra-vinh-kham-pha-xu-dua-tra-vinh",
+      "name": "Tuần lễ Du lịch Trà Vinh - Khám phá Xứ Dừa",
+      "group": "FIXED_SOLAR",
+      "group_description": "Fixed solar date or non-lunar modern event",
+      "place_id": "xa-nhi-long",
+      "area": "tra-vinh",
+      "fields": {
+        "lunar_date": null,
+        "date_start": "2026-09-10",
+        "date_end": "2026-09-15",
+        "summary": "Kích cầu du lịch hè với tour khám phá chùa Khmer, vườn dừa, biển Ba Động. Giảm giá dịch vụ tham quan, lưu trú và ẩm thực đặc sản từ các đơn vị tham gia.",
+        "description": "Kích cầu du lịch hè với tour khám phá chùa Khmer, vườn dừa, biển Ba Động. Giảm giá dịch vụ tham quan, lưu trú và ẩm thực đặc sản từ các đơn vị tham gia. Chương trình Famtrip cho báo chí và KOL du lịch quảng bá hình ảnh tỉnh.",
+        "season": {
+          "peak": [],
+          "text": "Tết Đoan Ngọ, hè, sự kiện đô thị",
+          "months": [
+            9
+          ]
+        },
+        "month_attribute": 6
+      },
+      "circuit_breaker": {
+        "is_iso_date": true,
+        "is_blocked_by_month_heuristic": true,
+        "backend_action": "BLOCKED_FROM_UPCOMING_AND_HOMEPAGE"
+      }
+    },
+    {
+      "id": "tuan-le-van-hoa-am-thuc-an-hoi-2026",
+      "name": "Tuần lễ Văn hoá - Ẩm thực phường An Hội",
+      "group": "FIXED_SOLAR",
+      "group_description": "Fixed solar date or non-lunar modern event",
+      "place_id": "p-an-hoi",
+      "area": "ben-tre",
+      "fields": {
+        "lunar_date": null,
+        "date_start": "2026-06-13",
+        "date_end": "2026-06-19",
+        "summary": "Từ 13 đến 19 tháng 6 năm 2026, Công viên An Hội bên dòng sông Cổ Chiên trở thành đại tiệc văn hóa và ẩm thực lớn nhất Vĩnh Long năm nay.",
+        "description": "Từ 13 đến 19 tháng 6 năm 2026, Công viên An Hội bên dòng sông Cổ Chiên trở thành đại tiệc văn hóa và ẩm thực lớn nhất Vĩnh Long năm nay. Hàng chục gian hàng đặc sản quy tụ: từ kẹo dừa, bánh tráng phồng đến mắm Vĩnh Long, tôm khô — tất cả trong một buổi chiều dạo phố. Song song là màn trình diễn nghề thủ công dân gian truyền thống và các tiết mục nghệ thuật đặc sắc của xứ dừa diễn ra mỗi tối.",
+        "season": {
+          "peak": [
+            6
+          ],
+          "text": "",
+          "months": [
+            6
+          ]
+        },
+        "month_attribute": null
+      },
+      "circuit_breaker": {
+        "is_iso_date": true,
+        "is_blocked_by_month_heuristic": false,
+        "backend_action": "ACTIVE_PUBLIC_EXPORT"
+      }
+    },
+    {
+      "id": "tuan-le-van-hoa-du-lich-gan-voi-le-hoi-ok-om-bok",
+      "name": "Tuần lễ Văn hóa, du lịch gắn với lễ hội Ok Om Bok",
+      "group": "FIXED_SOLAR",
+      "group_description": "Fixed solar date or non-lunar modern event",
+      "place_id": "p-tra-vinh",
+      "area": "tra-vinh",
+      "fields": {
+        "lunar_date": null,
+        "date_start": "2026-11-20",
+        "date_end": "2026-11-24",
+        "summary": "Chuỗi hoạt động hàng năm quanh rằm tháng 10 âm lịch tại Trà Vinh — gắn với lễ hội Ok Om Bok (di sản văn hóa phi vật thể quốc gia). Đua ghe ngo, thả đèn nước, liên hoan ẩm thực.",
+        "description": "Chuỗi hoạt động văn hóa, thể thao, du lịch hàng năm quanh rằm tháng 10 âm lịch — gắn với lễ hội Ok Om Bok (cúng trăng) của đồng bào Khmer, di sản văn hóa phi vật thể quốc gia.\n\nTổ chức tại Ao Bà Om (di tích lịch sử-danh lam cấp quốc gia) và các điểm trung tâm TP Trà Vinh. Điểm nhấn: đua ghe ngo trên sông Long Bình, thả đèn nước và đèn trời, liên hoan ẩm thực Nam Bộ, hội thi văn nghệ dân gian Khmer.\n\nTrò chơi dân gian: kéo co, đập nồi đất, đẩy gậy, leo cột mỡ, bóng chuyền. Thu hút hơn 80.000 người mỗi kỳ, trong đó nhiều du khách trong và ngoài nước.",
+        "season": {
+          "peak": [
+            11
+          ],
+          "text": "Diễn ra vào tháng 11, gắn với lễ hội Ok Om Bok của đồng bào Khmer. Đây là thời điểm cao điểm với nhiều hoạt động văn hóa, du lịch và thể thao tại Trà Vinh.",
+          "months": [
+            11
+          ]
+        },
+        "month_attribute": null
+      },
+      "circuit_breaker": {
+        "is_iso_date": true,
+        "is_blocked_by_month_heuristic": false,
+        "backend_action": "ACTIVE_PUBLIC_EXPORT"
+      }
+    },
+    {
+      "id": "tuan-le-van-hoa-the-thao-va-du-lich-tinh-vinh-long-vinh-long",
+      "name": "Tuần lễ Văn hóa, Thể thao và Du lịch tỉnh Vĩnh Long",
+      "group": "FIXED_SOLAR",
+      "group_description": "Fixed solar date or non-lunar modern event",
+      "place_id": "xa-nhon-phu",
+      "area": "vinh-long",
+      "fields": {
+        "lunar_date": null,
+        "date_start": "2026-07-15",
+        "date_end": "2026-07-22",
+        "summary": "Lễ hội đường phố (carnival diễu hành) quy mô lớn tại trung tâm TP Vĩnh Long. Đua ghe tam bản trên sông, biểu diễn dù lượn và múa rối nước.",
+        "description": "Lễ hội đường phố (carnival diễu hành) quy mô lớn tại trung tâm TP Vĩnh Long. Đua ghe tam bản trên sông, biểu diễn dù lượn và múa rối nước. Chuỗi hoạt động văn nghệ đường phố hàng đêm, triển lãm ảnh và các môn thể thao quần chúng.",
+        "season": {
+          "peak": [],
+          "text": "Chưa xác định mùa vụ",
+          "months": [
+            7
+          ]
+        },
+        "month_attribute": 4
+      },
+      "circuit_breaker": {
+        "is_iso_date": true,
+        "is_blocked_by_month_heuristic": true,
+        "backend_action": "BLOCKED_FROM_UPCOMING_AND_HOMEPAGE"
+      }
+    }
+  ]
+}

@@ -1,6 +1,6 @@
 # about-me.md — Claude hiểu bạn là ai
 
-> STATUS (2026-07-07): active — file dán vào Claude Desktop (Settings → Personalization, hoặc Project knowledge).
+> STATUS: active (2026-09-15) — Cấu hình thông tin người dùng cho Claude Desktop.
 > SINH TỪ nguồn chuẩn: CLAUDE.md + memory dự án. Khi nguồn đổi → sinh lại file này, đừng sửa lệch hai nơi.
 
 ## Tôi là ai

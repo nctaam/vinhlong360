@@ -1,4 +1,4 @@
-> STATUS: active
+> STATUS: active (2026-09-15) — Quyết định nơi lưu trữ dữ liệu (residency).
 Authority: config/release-authority.json
 
 # QD-04 — Nơi lưu trữ dữ liệu (`residency`)
@@ -7,7 +7,7 @@ Authority: config/release-authority.json
 > về hạ tầng thật, không phải một giá trị cấu hình đọc ra được từ mã — một agent điền §7
 > ở đây là khai một sự thật hạ tầng mà nó không có cách nào kiểm chứng.
 
-`decision_key`: `residency` · Finding gốc: F-16 (`docs/audit-toan-du-an-2026-08.md:239`)
+`decision_key`: `residency` · Finding gốc: F-16
 
 ---
 
@@ -98,7 +98,7 @@ trường trên máy chủ thật thì chỉ chủ dự án biết. Đây cùng 
   `docs/2026-08-22-cau-hoi-cho-luat-su.md` §4 tính theo phần trăm doanh thu.
 - **Trang chính sách bảo mật**: không công bố được nơi lưu trữ và danh sách bên xử lý cho
   tới khi có hồ sơ này.
-- **F-16** (`docs/audit-toan-du-an-2026-08.md:239`) — một trong 28 P1 ở
+- **F-16** — một trong 28 P1 ở
   `config/release-authority.json:33`.
 
 ## 5. NẾU KHÔNG QUYẾT

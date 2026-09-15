@@ -1,5 +1,5 @@
 # Backend — Tiêu chuẩn vinhlong360
-> **STATUS (2026-07-07): active — bản 1.0 (SP0).**
+> STATUS: active (2026-09-15) — Tiêu chuẩn backend FastAPI, Pydantic, SQLAlchemy.
 
 ## Mốc tham chiếu
 PEP 8 + ruff full-ruleset (đích SP3: E,F,W,I,N,UP,B,S,C90) · FastAPI best practices · api-contract.md · backend-audit 8 chiều (127 finding) · B3/B4 CLAUDE.md.

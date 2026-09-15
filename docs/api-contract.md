@@ -1,6 +1,6 @@
 # VinhLong360 API Contract
 
-> **STATUS (2026-07-07): active — đã truth-sync.** Type enum synced to the 18-type registry; auth/admin path prefixes corrected to the actual routes (`/auth/*`, `/admin/*`); 2FA/trusted-devices endpoints added.
+> STATUS: active (2026-09-15) — Hợp đồng giao diện API giữa FastAPI và Nuxt (18 entity types, Auth, Admin, AEO/terroir).
 
 Date: 2026-06-12 (updated 2026-07-30)
 Status: Baseline endpoints reflect production; the Phase 2A schedule contract is implemented locally, default-off, and not deployed.

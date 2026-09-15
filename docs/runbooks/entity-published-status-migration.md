@@ -1,6 +1,6 @@
 # Entity Published-Status Migration Runbook
 
-> STATUS: active safety runbook; Stage B, Stage C, rollback, deployment, export reconciliation, and indexing changes each require separately scoped authorization.
+> STATUS: active (2026-09-15) — Runbook migration trạng thái xuất bản thực thể.
 
 All executable blocks in this runbook target PowerShell 7+ on Windows. Assign every owner-supplied placeholder to a quoted variable before invoking a command. Do not paste angle-bracket placeholders directly into command arguments.
 

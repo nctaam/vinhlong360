@@ -1,4 +1,4 @@
-> STATUS: active
+> STATUS: active (2026-09-15) — Sổ hồ sơ quyết định thẩm quyền phát hành.
 Authority: config/release-authority.json
 
 # Sổ hồ sơ quyết định — `docs/decisions/`
@@ -20,8 +20,7 @@ mô tả trong `web-nuxt/utils/legalContent.ts:63-68`. Không có chỗ nào ghi
 đổi ra sao, ai chịu hậu quả, và cần bằng chứng nào mới được ký. Thư mục này là chỗ đó.
 
 Sáu hồ sơ — bốn khoản của `decision_required_items`, cộng hai khoản về người
-(chủ sở hữu dịch vụ, chủ sở hữu phát hành/staging) mà `docs/audit-toan-du-an-2026-08.md:834`
-đòi trước khi mở pilot:
+(chủ sở hữu dịch vụ, chủ sở hữu phát hành/staging) mà hồ sơ kiểm toán dự án đòi trước khi mở pilot:
 
 | Mã | Hồ sơ | `decision_key` | Trạng thái |
 |---|---|---|---|

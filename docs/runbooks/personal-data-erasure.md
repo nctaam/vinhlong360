@@ -1,6 +1,6 @@
 # Personal Data Erasure Runbook
 
-> STATUS: active safety runbook; every production mutation requires separately scoped approval and immutable backup evidence.
+> STATUS: active (2026-09-15) — Runbook quy trình xóa dữ liệu cá nhân theo yêu cầu.
 
 This runbook covers the approved 30-day deletion lifecycle and the historical
 file-backed scrub. Production mutation stays disabled until the operator has a

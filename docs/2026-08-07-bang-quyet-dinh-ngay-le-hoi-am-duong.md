@@ -1,4 +1,4 @@
-> STATUS: active
+> STATUS: active (2026-09-15) — Bảng quyết định đối chiếu 6 trường ngày tháng cho 67 sự kiện/lễ hội truyền thống.
 > Ngày lập: 2026-08-07 · Phạm vi: 67 entity `type=event` · **Tài liệu PHÂN TÍCH — chưa sửa một dòng dữ liệu nào.**
 > Người quyết: chủ dự án. Cách dùng: đọc §3 → điền cột **CHỐT** ở §6 → lúc đó mới mở task sửa.
 

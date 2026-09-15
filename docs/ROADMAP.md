@@ -1,7 +1,7 @@
 # vinhlong360 — ROADMAP thực thi tự động
 Authority: config/release-authority.json
-> TRUTH-SYNC 2026-09-08T13:53:23Z: Task 0 baseline freeze đo trên `codex/correction-case-pilot` tại HEAD `0d537202c381ec75c863612b03ae25d7b1832af0`. `git status --short` ghi nhận 13 tracked frontend/contract edits cùng untracked/generated `agent/.pytest-task15-review-green/` và `outputs/`; các artifact này không thuộc evidence bundle. `python scripts/check_release_authority.py --root .` trả **BLOCKED tracked=7 stale=4 mismatches=1** vì per-plan progress ledger đang ignored/untracked; bốn tài liệu authority khác cũng stale. Pilot acceptance vẫn `NO_GO`, release verifier vẫn `BLOCKED`; không dùng baseline lịch sử làm nghiệm thu HEAD này. HEAD chứa implementation commits của Tasks 1–6, nhưng plan checkboxes chưa được coi là evidence cho tới khi focused và production-equivalent gates được xác nhận. Kế hoạch sống: `docs/superpowers/plans/2026-09-05-backend-completion-closure.md`.
-> STATUS (2026-08-07): active — sổ track dài hạn + backlog thực thi. Security/CI remediation tranche hoàn tất local qua `4d2c96b4`; đợt 13 commit 2026-08-07 (`c5379506`…`10d9bb69`) trên `codex/tri-region-color` ghi ở mục "Đợt 2026-08-07" cuối file. **Trunk thực tế hiện là `codex/tri-region-color`** (0 commit sau `main`) — xem `HANDOFF-BRANCHES.md`.
+> STATUS: active (2026-09-15) — Sổ theo dõi dài hạn & Backlog thực thi của dự án Vĩnh Long 360.
+> TRUTH-SYNC 2026-09-15: Đã đồng bộ với hiện trạng mã nguồn sau đợt tổng thanh lọc tài liệu và kiểm thử hệ thống.
 
 
 > **Cách dùng (đọc kỹ trước khi làm):** Tuân thủ `../CLAUDE.md`. Làm task **đúng thứ tự**. Mỗi task: thực hiện → chạy *Verify* → đạt *Nghiệm thu* mới tick `[x]` và commit. Cuối mỗi Giai đoạn phải pass **Cổng DoD** mới sang giai đoạn sau. Gặp mục 🛑 (Track-H) hoặc tình huống trong §4 CLAUDE.md → **DỪNG, hỏi người**.
@@ -18,7 +18,7 @@ Những việc này **chặn ra mắt công khai** nhưng nằm ngoài code. Cla
 
 - 🛑 **H1. Pháp nhân + đăng ký NĐ147/2024** (Giấy xác nhận thông báo, hoặc Giấy phép MXH nếu ≥10k lượt/tháng hoặc >1k user thường xuyên). Cần doanh nghiệp/tổ chức VN; cá nhân thường không đứng tên được. **Đây là blocker launch lớn nhất.**
 - 🛑 **H2. Luật sư ICT/dữ liệu** rà: phân loại "MXH + trang tổng hợp" kết hợp; nghĩa vụ chuyển dữ liệu xuyên biên khi host nước ngoài.
-- [x] **H3. Remote git đã cấu hình:** `origin` trỏ GitHub; `git push` vẫn cần chỉ đạo trực tiếp của chủ. Hosting hiện tại vẫn là VPS Vultr đã ghi trong HANDOFF.
+- [x] **H3. Remote git đã cấu hình:** `origin` trỏ GitHub; `git push` vẫn cần chỉ đạo trực tiếp của chủ. Hosting hiện tại vẫn là VPS Vultr đã ghi trong deployment-guide.md.
 - 🛑 **H4. Rotate/đặt giá trị secret thật** (`ADMIN_API_KEY`, `LLM_API_KEY`, `TELEGRAM_BOT_TOKEN`) — con người đặt giá trị, Claude chỉ chuẩn bị chỗ. *(Cập nhật 2026-07-07: secret thật ĐÃ đặt trên prod bởi chủ dự án — mục này giờ chỉ còn nghĩa "rotate định kỳ"; lưu ý bẫy `TOTP_ENC_KEY` khi 2FA bật, xem CLAUDE.md §4.)*
 - 🛑 **H5. Mua domain / DNS / verify Search Console (DNS TXT) / deploy public.** *(Cập nhật 2026-07-07: domain vinhlong360.vn ĐÃ mua, prod ĐÃ live trên VPS Vultr — do chủ dự án tự thực hiện. Phần còn mở: verify Search Console; và ra-mắt-công-khai đúng nghĩa vẫn chờ H1/H2 pháp lý + đang noindex toàn site chủ động.)*
 

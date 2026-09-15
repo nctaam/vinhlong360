@@ -1,5 +1,5 @@
 # UI/Design — Tiêu chuẩn vinhlong360
-> **STATUS (2026-07-07): active — bản 1.0 (SP0).** design-rulebook.md là NGUỒN đầy đủ; file này chỉ liệt phần GATE ĐƯỢC + ngoại lệ chính danh.
+> STATUS: active (2026-09-15) — Tiêu chuẩn mỹ thuật Anti-Slop, Design Tokens và A11y WCAG 2.2 AAA.
 
 ## Mốc tham chiếu
 Apple HIG + Material 3 (values đã trích trong design-guidelines) · design-rulebook.md (đã truth-sync) · motif phù-sa (sediment-head/divider/tick).

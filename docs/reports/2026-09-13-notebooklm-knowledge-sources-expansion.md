@@ -1,6 +1,6 @@
 # Báo Cáo Mở Rộng Kho Tri Thức Thẩm Quyền Cao Cho NotebookLM (70 Nguồn Tier 1 & Tier 2)
 
-> **STATUS:** DONE  
+> STATUS: active (2026-09-15) — Danh mục mở rộng nguồn tri thức thẩm quyền cao cho NotebookLM.
 > **Ngày lập:** 13/09/2026  
 > **Mục tiêu:** Mở rộng và làm sâu sắc kho tri thức số cho hệ thống 3 Sổ tay Google NotebookLM của dự án Vĩnh Long 360, phục vụ công tác đối chứng thực địa, làm giàu E-E-A-T, tối ưu hóa AEO/GEO Semantic Graph và chống ảo giác thông tin (anti-hallucination).  
 > **Bộ lọc thẩm quyền:** Tuân thủ tuyệt đối **Bộ lọc 3 Lớp (3-Tier Authority Filter)** — 100% nguồn thuộc Tier 1 (Cơ quan Nhà nước, Cổng TTĐT cấp Bộ/Tỉnh) và Tier 2 (Viện nghiên cứu, Trường đại học, Cơ quan Báo chí chính thống). Tuyệt đối **0%** blog tự do, mạng xã hội, tổng hợp thương mại.

@@ -1,4 +1,4 @@
-> STATUS: active
+> STATUS: active (2026-09-15) — Quyết định chủ sở hữu dịch vụ (service_owner).
 Authority: config/release-authority.json
 
 # QD-01 — Chủ sở hữu dịch vụ (`service_owner`)

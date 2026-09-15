@@ -1,4 +1,4 @@
-> STATUS: active
+> STATUS: active (2026-09-15) — Runbook launch-safety closed rollback.
 
 # Launch-Safety Closed Rollback
 

@@ -1,5 +1,5 @@
 # Docs & Workflow — Tiêu chuẩn vinhlong360
-> **STATUS (2026-07-07): active — bản 1.0 (SP0).**
+> STATUS: active (2026-09-15) — Tiêu chuẩn tài liệu và quy tắc quản trị STATUS.
 
 ## Mốc tham chiếu
 Bài học truth-sync 2026-07-07 (89 finding, 25 file archive vì chuẩn không có răng) · CLAUDE.md §3.6.

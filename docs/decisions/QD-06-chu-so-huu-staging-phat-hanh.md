@@ -1,4 +1,4 @@
-> STATUS: active
+> STATUS: active (2026-09-15) — Quyết định chủ sở hữu staging / phát hành (release_owner).
 Authority: config/release-authority.json
 
 # QD-06 — Chủ sở hữu staging / phát hành (`release_owner`)
@@ -7,7 +7,6 @@ Authority: config/release-authority.json
 > `CLAUDE.md` §4; một agent điền §7 ở đây là tự cấp cho mình quyền phát hành.
 
 `decision_key`: `release_owner` · Findings gốc: F-13, F-14, F-15
-(`docs/audit-toan-du-an-2026-08.md:236-238`)
 
 ---
 

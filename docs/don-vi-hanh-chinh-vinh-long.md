@@ -1,6 +1,6 @@
 # Đơn vị hành chính tỉnh Vĩnh Long (mới) — tham chiếu
 
-> **STATUS (2026-07-11): active — danh mục vận hành đã truth-sync.** Số liệu khớp `web/data.json` hiện hành (125 place = 1 tỉnh + **35 phường + 89 xã**).
+> STATUS: active (2026-09-15) — Danh mục vận hành chuẩn 124 xã/phường (35 phường + 89 xã) của tỉnh Vĩnh Long sáp nhập.
 
 > **Căn cứ pháp lý nền:** **Nghị quyết 1687/NQ-UBTVQH15**, được Cổng "Xây dựng chính sách" – chinhphu.vn tổng hợp tại:
 > https://xaydungchinhsach.chinhphu.vn/sap-xep-dvhc-danh-sach-124-xa-phuong-cua-tinh-vinh-long-moi-119250623091001322.htm

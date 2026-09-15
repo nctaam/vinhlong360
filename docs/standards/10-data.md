@@ -1,5 +1,5 @@
 # Data — Tiêu chuẩn vinhlong360
-> **STATUS (2026-07-07): active — bản 1.0 (SP0).**
+> STATUS: active (2026-09-15) — Tiêu chuẩn toàn vẹn dữ liệu.
 
 ## Mốc tham chiếu
 Schema.org (type mapping đã dùng trong seo.py) · nguyên tắc anti-hallucination (CLAUDE.md §1.7, B7) · entity-content-model.md (17 type STI-with-registry) · chính sách tên tỉnh CLAUDE.md §1.6.

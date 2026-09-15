@@ -38,7 +38,23 @@ export function buildImageMeta(descriptor?: ImageDescriptor | null): ImageMeta {
   }
 }
 
-export function descriptorToImageObject(descriptor?: ImageDescriptor | null) {
+export interface ImageObject {
+  '@type': string
+  contentUrl: string
+  caption?: string
+  description?: string
+  creator?: {
+    '@type': string
+    name: string
+  } | string
+  creditText?: string
+  copyrightNotice?: string
+  license?: string
+  acquireLicensePage?: string
+  [key: string]: any
+}
+
+export function descriptorToImageObject(descriptor?: ImageDescriptor | null): ImageObject | null {
   const contentUrl = absoluteMetadataImageUrl(descriptor)
   if (!contentUrl || !descriptor || descriptor.source_class === 'placeholder') return null
   return {

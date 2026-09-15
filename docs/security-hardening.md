@@ -1,6 +1,6 @@
 # Security Hardening Guide — vinhlong360
 
-> **STATUS (2026-07-07): active — đã truth-sync.** §2 "Critical Fixes" are all implemented (marked ✅ below); guardrails/PII masking are ACTIVE (the old "dormant / HAS_GUARDRAILS flag" description was wrong — HAS_* are try-import Python vars, see `docs/developer-setup.md` §10); §3.4 SSH hardening now carries a mandatory-prerequisite warning.
+> STATUS: active (2026-09-15) — Quy chuẩn gia cố an ninh hạ tầng và ứng dụng.
 > Date: 2026-06-27 | Audience: Solo dev / future contributors
 
 ---

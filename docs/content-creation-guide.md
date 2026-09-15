@@ -1,6 +1,6 @@
 # Hướng dẫn tạo nội dung chất lượng cao
 
-> **STATUS (2026-07-07): active — đã truth-sync.** Ảnh CHỈ AI-generated qua `scripts/gen_image.py` (UGC/stock/Wikimedia đều CẤM); template + ví dụ đã align nguyên tắc viết của `docs/toi-uu-chong-ai-va-google-spam-playbook.md` (§4); chuẩn độ dài align cổng index `is_index_worthy` (agent/seo.py); địa danh theo mô hình 2 cấp (124 xã/phường, không huyện).
+> STATUS: active (2026-09-15) — Hướng dẫn sáng tác nội dung biên tập di sản chất lượng cao và quy tắc ảnh AI.
 
 > Ngày cập nhật: 07/07/2026 | Dành cho: người nhập liệu, quản trị nội dung
 > Tài liệu này hướng dẫn cách tạo và chỉnh sửa nội dung entity trên vinhlong360.vn

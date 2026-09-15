@@ -1,5 +1,5 @@
 # Content — Tiêu chuẩn vinhlong360
-> **STATUS (2026-07-07): active — bản 1.0 (SP0).**
+> STATUS: active (2026-09-15) — Tiêu chuẩn biên tập nội dung, E-E-A-T và chống bịa đặt.
 
 ## Mốc tham chiếu
 E-E-A-T · docs/toi-uu-chong-ai-va-google-spam-playbook.md (giọng đặc-thù-Vĩnh-Long) · cổng index P0-1 (agent/seo.py: INDEX_RICH_WORDS = 130 từ).

@@ -1,6 +1,6 @@
 # Runbook vận hành — Correction Case Pilot
 
-> STATUS: active
+> STATUS: active (2026-09-15) — Runbook vận hành Correction Case Pilot.
 > Chủ sở hữu dịch vụ: **Ban biên tập vinhlong360** (owner_ref đặt qua `CASE_SERVICE_OWNER_REF`).
 > Phạm vi: tiếp nhận – xử lý – đăng – kiểm chứng yêu cầu sửa thông tin. KHÔNG gồm khiếu nại nội dung, khôi phục tài khoản, an toàn (các kênh đó vẫn qua email, nói rõ trên `/lien-he`).
 

@@ -1,5 +1,5 @@
 # Deployment Guide — vinhlong360
-> STATUS (2026-07-10): active — hướng dẫn deploy tham chiếu.
+> STATUS: active (2026-09-15) — Hướng dẫn triển khai production thực tế trên VPS (systemd, nginx, SSL).
 
 
 Production deployment to VPS using the tarball flow (proven since 2026-06-18).

@@ -1,6 +1,6 @@
 # B2G Partnership — Pitch Template
 
-> **STATUS (2026-07-07): active — đã truth-sync.** Số liệu đối chiếu `web/data.json` 2026-07-07; mọi claim "đã xác minh" / "cập nhật tự động" đã gỡ theo chốt trust (CLAUDE.md §1.7) — kiểm chứng thực địa nay là hạng mục ĐỀ XUẤT HỢP TÁC (mục 2.1). KHÔNG thêm lại các claim này khi `verifiedAt` chưa phủ.
+> STATUS: active (2026-09-15) — Mẫu hồ sơ đề xuất hợp tác B2G với chính quyền địa phương (không thương mại hóa, không bán vé).
 
 > Ngày soạn: 27/06/2026 | Cập nhật: 07/07/2026 | Phiên bản: 1.1
 > Tài liệu nội bộ — template cho chủ dự án sử dụng khi tiếp cận đối tác cơ quan nhà nước

@@ -1,4 +1,4 @@
-> STATUS (2026-08-05): active
+> STATUS: active (2026-09-15) — Runbook xử lý lỗi deploy và quy trình rollback.
 
 # Deploy xong site lỗi
 
@@ -299,4 +299,4 @@ nhất ở trên đều đến từ sự cố thật, và chúng chỉ hữu íc
 - [launch-safety-rollback.md](launch-safety-rollback.md) — 11 phase, ngữ nghĩa evidence, diễn tập local.
 - [db-khong-len.md](db-khong-len.md) — khi `agent_ready` trả 503 hoặc cổng migration đỏ.
 - [het-dia.md](het-dia.md) — khi deploy xong mà prod vẫn bản cũ.
-- [../HANDOFF.md](../HANDOFF.md) — §5 quy trình deploy, §6 gotcha SSR-fetch.
+- [../deployment-guide.md](../deployment-guide.md) — Quy trình triển khai VPS, build Nitro & gotcha môi trường.

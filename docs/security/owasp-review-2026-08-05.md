@@ -1,4 +1,4 @@
-> STATUS: active — rà soát OWASP Top 10 (2021) trên code thật, ngày 2026-08-05.
+> STATUS: active (2026-09-15) — Rà soát an ninh OWASP Top 10 trên mã nguồn thực tế.
 > Người rà: agent trong worktree `.worktrees/tri-region-color`. Không sửa code, chỉ đọc + chạy kiểm chứng.
 > Mọi kết luận đều kèm `path:line`. Chỗ nào không có bằng chứng thì ghi thẳng "chưa kiểm được".
 

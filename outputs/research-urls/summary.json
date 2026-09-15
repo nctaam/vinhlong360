@@ -1,0 +1,53 @@
+{
+  "files_scanned": 31,
+  "total_url_occurrences": 8245,
+  "unique_urls": 2119,
+  "duplicate_occurrences": 6126,
+  "files": [
+    "docs/2026-08-21-danh-gia-toan-du-an.md",
+    "docs/archive/bao_cao_chien_luoc_nghien_cuu_12_chieu_vl_tv_bt.md",
+    "docs/archive/bao_cao_chuyen_sau_dia_diem_le_hoi_van_hoa_vl_tv_bt.md",
+    "docs/archive/bao_cao_nghien_cuu_da_nguon_6_tang_vl_tv_bt.md",
+    "docs/archive/bao_cao_nghien_cuu_van_hoa_du_lich_vinh_long_tra_vinh_ben_tre_2025_2026.md",
+    "docs/archive/data-verification-report.md",
+    "docs/archive/design-research-2026-06-27.md",
+    "docs/data-verification-claims.csv",
+    "docs/data-verification-fixes.sql",
+    "docs/data-verification-matrix.csv",
+    "docs/data-verification-sources.csv",
+    "docs/data-verification-web-log.csv",
+    "docs/research/baovinhlong_du_lich_evidence_matrix_2025_2026.csv",
+    "docs/research/baovinhlong_du_lich_urls_2025_2026.csv",
+    "docs/research/corpus-van-hoa-du-lich-vl-2026-06.md",
+    "docs/research/danh_muc_chuyen_sau_dia_diem_le_hoi_van_hoa_vl_tv_bt.csv",
+    "docs/research/nghien_cuu_12_chieu_ban_do_diem_tuyen.geojson",
+    "docs/research/nghien_cuu_12_chieu_canh_tranh_dbscl.csv",
+    "docs/research/nghien_cuu_12_chieu_catalog_62_tai_nguyen.csv",
+    "docs/research/nghien_cuu_12_chieu_kpi_du_lieu_can_thu_thap.csv",
+    "docs/research/nghien_cuu_12_chieu_ma_tran_san_pham.csv",
+    "docs/research/nghien_cuu_12_chieu_phan_khuc_khach.csv",
+    "docs/research/nghien_cuu_12_chieu_rui_ro_bao_ton_moi_truong.csv",
+    "docs/research/nghien_cuu_12_chieu_thu_muc_nguon_mo_rong.csv",
+    "docs/research/nghien_cuu_6_tang_danh_gia_tai_nguyen.csv",
+    "docs/research/nghien_cuu_6_tang_diem_den_toa_do.csv",
+    "docs/research/nghien_cuu_6_tang_ma_tran_tuyen_khong_gian.csv",
+    "docs/research/nghien_cuu_6_tang_thu_muc_nguon.csv",
+    "docs/research/thvl_du_lich_urls.csv",
+    "docs/superpowers/specs/2026-07-27-vinhlong360-professional-ui-research-design.md",
+    "docs/travel-platform-ux-research.md"
+  ],
+  "category_counts": {
+    "research_corpus": {
+      "occurrences": 844,
+      "unique_urls": 365
+    },
+    "research_report": {
+      "occurrences": 293,
+      "unique_urls": 226
+    },
+    "verification": {
+      "occurrences": 7108,
+      "unique_urls": 1757
+    }
+  }
+}

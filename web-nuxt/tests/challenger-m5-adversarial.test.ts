@@ -103,7 +103,7 @@ describe('Challenger M5: Empirical Adversarial Stress Test Suite', () => {
   // Challenge 1: Eco-Mode Toggling & State Persistence Under Simulated Battery Levels
   // ──────────────────────────────────────────────────────────────────────────
   describe('1. Eco-Mode Toggling & Battery Boundary Transitions', () => {
-    it('boundary test: level 0.20 and discharging triggers isLowBattery = true', async () => {
+    it('boundary test: level 0.20 and discharging does NOT trigger isLowBattery', async () => {
       Object.defineProperty(global, 'navigator', {
         value: {
           getBattery: vi.fn().mockResolvedValue({
@@ -118,8 +118,8 @@ describe('Challenger M5: Empirical Adversarial Stress Test Suite', () => {
       const battery = await detectBatteryCondition()
       expect(battery.level).toBe(0.20)
       expect(battery.charging).toBe(false)
-      expect(battery.isLowBattery).toBe(true)
-      expect(battery.watchIntervalMs).toBe(60000)
+      expect(battery.isLowBattery).toBe(false)
+      expect(battery.watchIntervalMs).toBe(5000)
     })
 
     it('boundary test: level 0.2001 and discharging does NOT trigger isLowBattery', async () => {
@@ -136,8 +136,8 @@ describe('Challenger M5: Empirical Adversarial Stress Test Suite', () => {
 
       const battery = await detectBatteryCondition()
       expect(battery.level).toBe(0.20) // Math.round(0.2001 * 100)/100 = 0.2
-      // Raw check in detectBatteryCondition: level <= 0.20
-      // 0.2001 <= 0.20 is false
+      // Raw check in detectBatteryCondition: level < 0.20
+      // 0.2001 < 0.20 is false
       expect(battery.isLowBattery).toBe(false)
       expect(battery.watchIntervalMs).toBe(5000)
     })

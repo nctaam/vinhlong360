@@ -1,4 +1,4 @@
-> STATUS: active
+> STATUS: active (2026-09-15) — Quyết định idempotency SMS / rủi ro at-least-once (provider).
 Authority: config/release-authority.json
 
 # QD-03 — Idempotency nhà cung cấp SMS, hay chấp nhận rủi ro at-least-once (`provider`)
@@ -7,7 +7,7 @@ Authority: config/release-authority.json
 > idempotency hoặc risk acceptance **được ký**"* — một agent điền chữ ký vào đó là tạo ra
 > một bản chấp nhận rủi ro mà không có ai thật sự chấp nhận rủi ro.
 
-`decision_key`: `provider` · Finding gốc: F-53 (`docs/audit-toan-du-an-2026-08.md:250`)
+`decision_key`: `provider` · Finding gốc: F-53
 
 ---
 

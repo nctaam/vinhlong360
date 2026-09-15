@@ -1,6 +1,6 @@
 # Nghiên cứu toàn diện: Apple HIG + Google Material Design 3 + Figma
 
-> **STATUS (2026-07-07): active — đã truth-sync.** Tham chiếu HIG/M3/Figma còn giá trị; riêng mọi khuyến nghị nạp Google Fonts (Be Vietnam Pro, preconnect fonts.googleapis) và Material Symbols trong doc này bị OVERRIDE — stack đã ship là font self-host + IconLine.vue, xem ghi chú ⚠️ tại D10.
+> STATUS: active (2026-09-15) — Nghiên cứu đối chiếu quy chuẩn thiết kế quốc tế (Apple HIG, Google Material Design 3, Figma).
 
 > Ngày: 2026-06-27 | Nguồn: developer.apple.com/design, design.google, help.figma.com
 > Mục đích: Tham chiếu thiết kế cho vinhlong360.vn (web-first, CSS thuần, solo dev)

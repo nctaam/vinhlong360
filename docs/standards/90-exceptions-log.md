@@ -1,5 +1,5 @@
 # Nhật ký ngoại lệ & SKIP — vinhlong360
-> **STATUS (2026-07-07): active — file máy-ghi (COMMITTED, không gitignore).**
+> STATUS: active (2026-09-15) — Nhật ký ngoại lệ và SKIP (COMMITTED, không gitignore).
 
 ## Ngoại lệ rule đã ký (chủ dự án)
 - 2026-07-07 · R30.5 season-ring 22px (hình học — đo thực nghiệm 11/12 tap sai khi nới 44px); month-grid = fallback a11y.

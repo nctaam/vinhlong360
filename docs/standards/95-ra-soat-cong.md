@@ -1,4 +1,4 @@
-> STATUS (2026-08-05): active
+> STATUS: active (2026-09-15) — Đánh giá tính xác thực của 28 cổng nghiệm thu tự động.
 
 # 95 — Rà soát cổng: cổng nào ĐỌC nội dung, cổng nào chỉ kiểm sự có mặt
 

@@ -1,8 +1,8 @@
 # Ops — Tiêu chuẩn vinhlong360
-> **STATUS (2026-07-07): active — bản 1.0 (SP0).**
+> STATUS: active (2026-09-15) — Tiêu chuẩn vận hành, deployment, sao lưu an toàn.
 
 ## Mốc tham chiếu
-CLAUDE.md §2 (B1/B7/B8) · HANDOFF.md runbook · hạ tầng thật: VPS 1GB, systemd vl-agent/vl-nuxt/vl-bot, SSH root@ (key vinhlong_vps), PG prod + SQLite dev.
+CLAUDE.md §2 (B1/B7/B8) · docs/deployment-guide.md · hạ tầng thật: VPS 1GB, systemd vl-agent/vl-nuxt/vl-bot, SSH root@ (key vinhlong_vps), PG prod + SQLite dev.
 
 ## Quy tắc
 | Rule | Phát biểu | Tầng | Cách đo |

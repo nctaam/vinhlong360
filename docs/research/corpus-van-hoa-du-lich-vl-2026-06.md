@@ -1,6 +1,6 @@
 # Corpus nghiên cứu văn hoá – du lịch Vĩnh Long (gộp 4 báo cáo, 06/2026)
 
-> **STATUS (2026-07-11): active có giới hạn — chỉ mục + tổng hợp của 4 báo cáo nghiên cứu bàn giấy (17/06/2026).** File này gộp/định vị 4 báo cáo; **toàn văn 4 bản gốc được giữ nguyên trong `docs/archive/`** để tra cứu. Corpus còn nguyên giá trị TƯ LIỆU (điểm đến, lễ hội, mùa vụ, tài nguyên bản địa), nhưng đọc như tư liệu — KHÔNG như khung chỉ đạo.
+> STATUS: active (2026-09-15) có giới hạn — Chỉ mục và tổng hợp tư liệu văn hóa địa phương.
 >
 > **⚠️ 4 điều KHÔNG lấy từ corpus này** (viết THỜI 3 TỈNH RIÊNG, trước sáp nhập 07/2025 + trước định vị mới):
 > 1. Khung định vị "ĐBSCL / miền Tây / 3 tên" — định vị hiện hành là **Vĩnh-Long-tỉnh-mới** (CLAUDE.md §1.6).

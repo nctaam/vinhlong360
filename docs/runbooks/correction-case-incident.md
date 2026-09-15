@@ -1,6 +1,6 @@
 # Runbook sự cố — Correction Case Pilot
 
-> STATUS: active
+> STATUS: active (2026-09-15) — Runbook xử lý sự cố Correction Case Pilot.
 > Nguyên tắc xuyên suốt: **fail-closed, không bịa trạng thái, không xoá bằng chứng.** Mọi lệnh phá dữ liệu bị cấm theo CLAUDE.md §B7.
 
 ## 1. Kiểm chứng projection thất bại hàng loạt (case kẹt `applied`, promise `recovery`)

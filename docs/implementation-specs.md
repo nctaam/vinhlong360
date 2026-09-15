@@ -1,5 +1,5 @@
 # Implementation Specs — Tổng hợp từ nghiên cứu
-> STATUS (2026-07-10): active — tổng hợp spec từ nghiên cứu, tham chiếu.
+> STATUS: active (2026-09-15) — Đặc tả kỹ thuật tổng hợp từ nghiên cứu thiết kế và công thái học.
 
 
 > **File này tổng hợp các specs HÀNH ĐỘNG từ nguồn thiết kế đang hoạt động và tư liệu lịch sử.**
@@ -213,7 +213,7 @@
 - Ảnh: CHỈ AI-generated (cx/gpt-5.5-image) — KHÔNG stock/UGC/Wikimedia
 - Phone: format 0xxx.xxx.xxx hoặc +84
 - Season: dùng month range "1-12" hoặc "all"
-- Coordinates: phải trong bounding box 3 tỉnh (lat 9.6-10.5, lng 105.8-106.8)
+- Coordinates: phải trong bounding box tỉnh Vĩnh Long mới [lat 9.0–10.6, lng 105.6–107.1] (khớp R10.4)
 
 ---
 
@@ -224,4 +224,4 @@
 | `design-guidelines-apple-google-figma.md` | 1384 | Apple HIG values, M3 component specs, Figma patterns | Cần giá trị cụ thể (spacing, color, typography) |
 | `archive/design-research-2026-06-27.md` (**ARCHIVED**) | 1033 | Historical provenance của gap analysis vs Apple/M3/WCAG | Chỉ tra cứu WHY lịch sử; không lấy làm backlog |
 | `travel-platform-ux-research.md` | 904 | So sánh 5 platforms (GYG/Klook/Google/TA/Airbnb) | Cần context pattern nào platform nào dùng |
-| `research/` (thư mục) | 1260 | Nghiên cứu văn hóa-du lịch 3 tỉnh (BVL corpus, 6 tầng, 12 chiều) | Cần enrichment content cho entities |
+| `research/` (thư mục) | 1260 | Nghiên cứu văn hóa-du lịch địa phương (BVL corpus, 6 tầng, 12 chiều) | Cần enrichment content cho entities |

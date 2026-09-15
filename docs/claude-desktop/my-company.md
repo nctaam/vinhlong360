@@ -1,6 +1,6 @@
 # my-company.md — Claude hiểu mục tiêu và định hướng dự án
 
-> STATUS (2026-07-07): active — file dán vào Claude Desktop (Project knowledge của Project "vinhlong360").
+> STATUS: active (2026-09-15) — Định vị và mục tiêu dự án cho Claude Desktop.
 > SINH TỪ nguồn chuẩn: CLAUDE.md §0-§1 + docs/standards/. Khi nguồn đổi → sinh lại file này.
 
 ## Dự án là gì

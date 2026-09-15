@@ -2,7 +2,7 @@
 
 # PLAYBOOK TỐI ƯU SÂU — vinhlong360.vn
 
-> **STATUS (2026-07-07): active — đã truth-sync.** Đã gắn marker trạng thái (✅ ship / ⏳ mở) cho từng hạng mục — nhiều mục ship NGAY 2026-07-06 (cùng ngày sinh playbook) + declutter đợt 1-3 (2026-07-06/07); các anchor `path:line` đo trước đợt ship nên nhiều anchor đã trôi — grep lại trước khi sửa tiếp. **Override:** mọi khuyến nghị ảnh UGC / ảnh chụp thật CTV (§7 bước 3-4, P1-8 bước 3, bảng §6 hàng "Ảnh thật") bị chốt ảnh AI-only của chủ dự án bác — KHÔNG thực thi; khuyến nghị chi tiết first-hand bằng TEXT vẫn hiệu lực. Lưu ý thêm: noindex TOÀN SITE đang bật chủ động từ 2026-07-06 (`NUXT_PUBLIC_SITE_NOINDEX`, commit `afd6f73`) — hàng rào tạm mạnh hơn cổng P0-1; chỉ mở khi chủ dự án quyết.
+> STATUS: active (2026-09-15) — Playbook tối ưu hóa chất lượng bài viết, chống AI-slop và xây dựng uy tín E-E-A-T.
 
 ## "Độ đặc thù Vĩnh Long + trải nghiệm bản địa thật là thứ đồng thời đánh bại cả việc-bị-đọc-như-AI lẫn Google-spam"
 

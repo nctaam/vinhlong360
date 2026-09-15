@@ -1,6 +1,6 @@
 # Runbook cutover legacy JSONL — Correction Case Pilot
 
-> STATUS: active
+> STATUS: active (2026-09-15) — Runbook cutover legacy JSONL.
 > Kế hoạch này KHÔNG tự cho phép nhập thật/đóng băng trên production (Review Protocol mục 4). Mọi bước mutate cần lệnh trực tiếp của chủ dự án, backup trước (B1), và chạy trên đích được nêu tên tường minh.
 
 ## Nguyên tắc

@@ -2,7 +2,7 @@
 
 Authority: config/release-authority.json
 
-> STATUS: active — updated 2026-09-02. Documents the `--postgres-proof` flag, the
+> STATUS: active (2026-09-15) — Runbook nghiệm thu proof-first closed-pilot.
 > four attestation roles, the independent countersigner, and the honest limits of
 > a signature held on the same machine as the editor.
 

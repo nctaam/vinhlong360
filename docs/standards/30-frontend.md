@@ -1,5 +1,5 @@
 # Frontend — Tiêu chuẩn vinhlong360
-> **STATUS (2026-07-07): active — bản 1.0 (SP0).**
+> STATUS: active (2026-09-15) — Tiêu chuẩn frontend Nuxt 3, Vue 3, TypeScript.
 
 ## Mốc tham chiếu
 Vue Style Guide · WCAG 2.2 AA · design system đã chốt (CSS thuần + tokens, KHÔNG Tailwind) · IconLine.vue (~37 icon).

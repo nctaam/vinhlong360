@@ -1,4 +1,4 @@
-> STATUS (2026-08-05): active
+> STATUS: active (2026-09-15) — Runbook chẩn đoán và xử lý sự cố Postgres / kết nối DB.
 
 # DB không lên — Postgres chết hoặc app không kết nối được
 
@@ -342,5 +342,5 @@ Không có `FAIL` mới thì mới coi là xong — DB hay chết lại lần ha
 
 - [het-dia.md](het-dia.md) — nhánh D, và là nguyên nhân gốc hay gặp nhất.
 - [deploy-hong.md](deploy-hong.md) — khi lỗi schema lộ ra ngay giữa lúc deploy.
-- [../HANDOFF.md](../HANDOFF.md) — §5 deploy/migration, §7 luồng dữ liệu.
+- [../deployment-guide.md](../deployment-guide.md) — Hướng dẫn triển khai, migration & cấu hình dịch vụ.
 - [../incident-runbook.md](../incident-runbook.md) — khi sự cố DB có kèm nghi vấn rò rỉ dữ liệu.

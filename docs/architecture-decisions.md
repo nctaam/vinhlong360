@@ -1,9 +1,9 @@
 # VinhLong360 Architecture Decisions
 
-> **STATUS (2026-07-07): active — đã truth-sync.** Decision 1's `web/` inventory corrected (`admin*.html` removed in GĐ6.1; `data.json` is a kept export, not a removal candidate); decisions 17–19 added (AI-only images, Vĩnh-Long-specific positioning + noindex, work-source governance).
+> STATUS: active (2026-09-15) — Hồ sơ Quyết định Kiến trúc (ADR 1–19) đã đồng bộ với hệ thống hiện hành.
 
-Date: 2026-06-12 (updated 2026-07-07)
-Status: Accepted — reflects decisions through 2026-07-07
+Date: 2026-06-12 (updated 2026-09-15)
+Status: Accepted — reflects decisions through 2026-09-15
 
 ## Decisions
 
@@ -105,7 +105,7 @@ Redis
 
 19. **Work-source governance** (2026-07-07).
     - Priority of work sources: (1) direct owner instruction in-session → (2) approved spec/plan in `docs/superpowers/` → (3) `docs/ROADMAP.md` backlog.
-    - ROADMAP is a long-term tracker + backlog, no longer a mandatory sequential task list. Docs under `docs/archive/` are history — never execute them.
+    - ROADMAP is a long-term tracker + backlog, no longer a mandatory sequential task list. Obsolete historical docs were purged in 2026-09.
 
 ## Non-goals (updated)
 

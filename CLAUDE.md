@@ -1,9 +1,9 @@
 # CLAUDE.md — Hiến pháp thực thi cho dự án vinhlong360
 
+> STATUS: active (2026-09-15) — Hiến pháp thực thi tối cao cho dự án vinhlong360.
 > File này được nạp mỗi phiên. Nó là **giao thức bắt buộc** khi làm việc trên dự án.
-> Cập nhật lớn 2026-07-07 (đợt "truth-sync"): đồng bộ với 3 bước ngoặt — sáp nhập 1 tỉnh, định vị Vĩnh-Long-đặc-thù, ảnh AI-only. Tài liệu cũ mâu thuẫn với file này → file này thắng.
->
-> **Branch-specific continuation:** khi đang ở branch `codex/correction-case-pilot`, đọc `docs/superpowers/handoffs/2026-08-18-claude-code-desktop-correction-case-pilot.md` trước khi hành động.
+> Cập nhật lớn 2026-07-07 (đợt "truth-sync") và đợt tổng thanh lọc chuẩn hóa 2026-09-15.
+> Mọi tài liệu cũ hoặc đề xuất mâu thuẫn với file này → file này luôn luôn thắng.
 
 Authority: config/release-authority.json
 
@@ -50,7 +50,7 @@ MXH du lịch/OCOP/cộng đồng cho **tỉnh Vĩnh Long MỚI** (sáp nhập V
 - **`git push` / tạo remote** (cần URL người cấp), **rotate/đặt giá trị secret thật** (lưu ý bẫy: rotate khi 2FA bật mà chưa đặt `TOTP_ENC_KEY` = khoá vĩnh viễn user 2FA).
 - **Xoá file/thư mục/dữ liệu** không có chỉ đạo rõ.
 - **Thao tác phát sinh chi phí** (dịch vụ trả phí, tier trả phí).
-- **Deploy lên prod** — chỉ khi chủ dự án yêu cầu; khi được lệnh thì theo runbook trong `docs/HANDOFF.md`.
+- **Deploy lên prod** — chỉ khi chủ dự án yêu cầu; khi được lệnh thì theo runbook trong `docs/deployment-guide.md` và `docs/runbooks/`.
 - Khi **tiêu chí nghiệm thu không thể đạt** sau 2 lần thử, hoặc yêu cầu mâu thuẫn với bất biến §2.
 - **Gửi/đăng tài liệu đối ngoại** (pitch B2G, bài PR) — nội dung phải qua chủ dự án, đặc biệt mọi claim số liệu/xác-minh (§1.7).
 
@@ -72,7 +72,7 @@ python scripts/install_hooks.py          # cài pre-commit tiêu chuẩn (1 lầ
 python scripts/scorecard.py              # đồng hồ world-class (điểm/chiều; không được tụt)
 cd web-nuxt; npm run dev                 # dev frontend (cổng 3000)
 cd web-nuxt; npm run build               # build frontend
-cd web-nuxt; npx vitest run              # 130 file / 2.151 test — KHÔNG bỏ qua (xem 5d)
+cd web-nuxt; npx vitest run              # 210+ file / 2.797+ tests — KHÔNG bỏ qua (xem 5d)
 cd web-nuxt; npm run typecheck           # nuxt typecheck — KHÔNG bỏ qua (xem 5d)
 python scripts/gen_image.py --prompt "..." --out web-nuxt/public/img/x.webp   # ảnh AI (cần IMAGE_API_KEY)
 ```
