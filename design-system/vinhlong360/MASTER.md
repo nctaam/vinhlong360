@@ -2,8 +2,7 @@
 
 > **Trạng thái:** `approved-design` - Adaptive Nocturne Heritage đã được chủ dự án chốt ngày 2026-07-31.
 > **Phạm vi:** toàn bộ public, tài khoản riêng tư và AdminCP.
-> **Quy tắc kế thừa:** khi thiết kế một trang, đọc file này trước rồi đọc `pages/<page>.md`. Quy tắc trong file trang chỉ được ghi đè khi có nêu rõ lý do.
-> **Nguồn thẩm quyền:** [`docs/superpowers/specs/2026-07-31-nocturne-heritage-adaptive-public-design.md`](../../docs/superpowers/specs/2026-07-31-nocturne-heritage-adaptive-public-design.md).
+> **Nguồn thẩm quyền:** [`web-nuxt/DESIGN.md`](../../web-nuxt/DESIGN.md).
 
 ## 1. Định hướng
 
