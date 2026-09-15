@@ -167,7 +167,7 @@
       </div>
 
       <!-- Floating Ethereal Glass Capsule (Bottom Left) -->
-      <div class="absolute bottom-5 left-5 right-5 sm:right-auto sm:bottom-7 sm:left-7 max-w-xl p-5 sm:p-6 rounded-2xl liquid-pill space-y-3.5 shadow-2xl">
+      <div class="absolute bottom-5 left-5 right-5 sm:right-auto sm:bottom-7 sm:left-7 max-w-xl p-5 sm:p-6 rounded-2xl liquid-pill space-y-3 shadow-2xl">
         <h1 class="font-serif text-2xl sm:text-3xl lg:text-4xl font-bold leading-tight text-white tracking-normal drop-shadow-md">
           Đất Bãi Bồi 
           <span class="inline-flex items-center align-middle mx-1 w-8 h-8 sm:w-9 sm:h-9 rounded-full overflow-hidden border border-alluvial shadow-md">
@@ -182,19 +182,32 @@
             <span class="material-symbols-outlined text-[16px]">search</span>
             <input type="text" placeholder="Tìm cù lao, vòm lò gạch, bến đò..." class="w-full bg-transparent text-[12px] text-charcoal-ink placeholder-ink-muted focus:outline-none" />
           </div>
-          <button class="px-3.5 py-1.5 rounded bg-terracotta hover:bg-terracotta-dark text-white text-[12px] font-semibold transition-colors flex items-center gap-1 shadow-sm">
-            <span>Tìm</span>
-            <span class="material-symbols-outlined text-[14px]">arrow_forward</span>
+          <button class="p-2 rounded bg-terracotta hover:bg-terracotta-dark text-white text-[12px] font-semibold transition-colors flex items-center justify-center shadow-sm" aria-label="Tìm kiếm">
+            <span class="material-symbols-outlined text-[16px]">arrow_forward</span>
           </button>
-        </div>
-
-        <!-- Scholarly Citation -->
-        <div class="pt-1 flex items-center justify-between text-[11px] text-white/70 font-mono border-t border-white/15">
-          <span class="italic font-serif">“Dòng sông chở che ký ức cù lao.” — Sơn Nam</span>
-          <span class="text-alluvial font-semibold">10.254°N 105.972°E</span>
         </div>
       </div>
     </section>
+
+    <!-- TACTILE PERSPECTIVE SWITCHER -->
+    <div class="flex items-center justify-between border-b fine-border pb-3 -mt-6 sm:-mt-8">
+      <div class="flex items-center gap-2 overflow-x-auto no-scrollbar py-1">
+        <button class="px-3.5 py-1.5 rounded-full bg-charcoal-ink text-papyrus text-[11px] font-mono font-medium shadow-sm flex items-center gap-1.5 border border-white/10">
+          <span class="w-1.5 h-1.5 rounded-full bg-alluvial animate-pulse"></span>
+          <span>KHẢO CỨU</span>
+        </button>
+        <button class="px-3.5 py-1.5 rounded-full bg-white/80 hover:bg-white text-charcoal-ink text-[11px] font-mono font-medium transition-colors border fine-border">
+          <span>THỦY TRÌNH</span>
+        </button>
+        <button class="px-3.5 py-1.5 rounded-full bg-white/80 hover:bg-white text-charcoal-ink text-[11px] font-mono font-medium transition-colors border fine-border">
+          <span>124 XÃ/PHƯỜNG</span>
+        </button>
+      </div>
+      <div class="hidden md:flex items-center gap-2 text-[11px] font-mono text-ink-muted">
+        <span class="w-2 h-2 rounded-full bg-orchard"></span>
+        <span>ĐÌNH KHAO: THÔNG LUỒNG</span>
+      </div>
+    </div>
 
     <!-- SECTION 2: BỘ TỨ KHÔNG GIAN VĂN HÓA SÔNG NƯỚC (ASYMMETRIC BENTO PORTALS) -->
     <section id="section-quadrant" class="space-y-6 pt-2">
@@ -226,7 +239,7 @@
           </div>
 
           <div class="absolute top-4 right-4 liquid-pill px-2.5 py-1 rounded text-[10px] font-mono text-alluvial font-semibold">
-            12° BRIX · PHÙ SA NGỌT
+            12° BRIX
           </div>
 
           <div class="absolute bottom-0 inset-x-0 p-5 sm:p-6 flex flex-col justify-end space-y-1">
@@ -255,15 +268,15 @@
           </div>
 
           <div class="absolute top-4 right-4 liquid-pill px-2.5 py-1 rounded text-[10px] font-mono text-terracotta font-semibold">
-            1.100°C · 28 NGÀY Ủ
+            1.100°C · 28 NGÀY
           </div>
 
           <div class="absolute bottom-0 inset-x-0 p-5 sm:p-6 flex flex-col justify-end space-y-1">
             <h3 class="font-serif text-2xl font-bold text-white drop-shadow-sm group-hover:text-alluvial transition-colors">
-              Gốm Đỏ Măng Thít
+              Gốm Măng Thít
             </h3>
             <div class="pt-2 flex items-center justify-between text-white/90 border-t border-white/20 text-[12px]">
-              <span class="font-mono text-alluvial font-semibold">1.500+ LÒ NUNG CỔ</span>
+              <span class="font-mono text-alluvial font-semibold">1.500+ LÒ CỔ</span>
               <span class="material-symbols-outlined text-[15px]">arrow_forward</span>
             </div>
           </div>
@@ -289,7 +302,7 @@
 
           <div class="absolute bottom-0 inset-x-0 p-5 sm:p-6 flex flex-col justify-end space-y-1">
             <h3 class="font-serif text-2xl font-bold text-white drop-shadow-sm group-hover:text-alluvial transition-colors">
-              Chùa Cổ Âng
+              Chùa Âng
             </h3>
             <div class="pt-2 flex items-center justify-between text-white/90 border-t border-white/20 text-[12px]">
               <span class="font-mono text-alluvial font-semibold">RỪNG SAO 300 NĂM</span>
@@ -313,15 +326,15 @@
           </div>
 
           <div class="absolute top-4 right-4 liquid-pill px-2.5 py-1 rounded text-[10px] font-mono text-terracotta font-semibold">
-            14 LOẠI RAU RỪNG
+            14 LOẠI RAU
           </div>
 
           <div class="absolute bottom-0 inset-x-0 p-5 sm:p-6 flex flex-col justify-end space-y-1">
             <h3 class="font-serif text-2xl sm:text-3xl font-bold text-white drop-shadow-sm group-hover:text-alluvial transition-colors">
-              Hương Vị Bến Sông
+              Thủy Vị Bến Sông
             </h3>
             <div class="pt-2 flex items-center justify-between text-white/90 border-t border-white/20 text-[12px]">
-              <span class="font-mono text-alluvial font-semibold">CÁ TAI TƯỢNG XÒE VÂY</span>
+              <span class="font-mono text-alluvial font-semibold">CÁ TAI TƯỢNG</span>
               <span class="material-symbols-outlined text-[15px]">arrow_forward</span>
             </div>
           </div>
@@ -364,7 +377,7 @@
               Rạch An Bình
             </h3>
             <div class="pt-1.5 text-alluvial text-[11px] font-mono border-t border-white/20 flex items-center justify-between">
-              <span>MÁI DẦM CON NƯỚC</span>
+              <span>TAM BẢN · 4 KM</span>
               <span class="material-symbols-outlined text-[15px]">arrow_forward</span>
             </div>
           </div>
@@ -385,10 +398,10 @@
 
           <div class="absolute bottom-0 inset-x-0 p-5 flex flex-col justify-end space-y-1">
             <h3 class="font-serif text-xl font-bold text-white drop-shadow-sm group-hover:text-alluvial transition-colors">
-              Lửa gốm Măng Thít
+              Gốm Măng Thít
             </h3>
             <div class="pt-1.5 text-alluvial text-[11px] font-mono border-t border-white/20 flex items-center justify-between">
-              <span>1.100°C VÒM NUNG</span>
+              <span>VÒM NUNG · 1.5 KM</span>
               <span class="material-symbols-outlined text-[15px]">arrow_forward</span>
             </div>
           </div>
@@ -409,7 +422,7 @@
 
           <div class="absolute bottom-0 inset-x-0 p-5 flex flex-col justify-end space-y-1">
             <h3 class="font-serif text-xl font-bold text-white drop-shadow-sm group-hover:text-alluvial transition-colors">
-              Đờn kìm bến sông
+              Đờn ca bến sông
             </h3>
             <div class="pt-1.5 text-alluvial text-[11px] font-mono border-t border-white/20 flex items-center justify-between">
               <span>DI SẢN UNESCO</span>
@@ -429,7 +442,10 @@
           <span class="w-2 h-2 rounded-full bg-alluvial"></span>
           <h2 class="font-serif text-xl sm:text-2xl font-bold text-charcoal-ink">Tàng Thư Điền Dã</h2>
         </div>
-        
+        <div class="hidden sm:flex items-center gap-2 text-[11px] font-mono">
+          <span class="px-2.5 py-0.5 rounded-full bg-charcoal-ink text-white font-semibold">TẤT CẢ (8)</span>
+          <span class="px-2.5 py-0.5 rounded-full bg-papyrus-warm text-ink-muted border fine-border">OCOP 4-5★</span>
+        </div>
       </div>
 
       <!-- 8-Photo Lightbox Grid -->
@@ -478,11 +494,11 @@
         <div class="relative aspect-[4/5] rounded-xl overflow-hidden border fine-border shadow-sm group bg-papyrus-warm cursor-pointer">
           <img 
             src="https://lh3.googleusercontent.com/aida-public/AB6AXuA2_knE4Kw8gQG7jn_seXMe4QdUXyxhz0XstEd--G0zmjQyfniwICMc4hQGfolCqb1D6mDF2wveKtQWVAS_XW5vklLw7IorYAC1cRph4MIDvZPuclBmJVcvB2t9Y2MEUyZQrM79JN8Zi-6XzINtA7TOeJk6pb7UGmD32uZVCgU-kZDkexXkRMLKb5yDMcWGqXyBQ99XNpluDveaMSG5XPVPEJy0LTmMpN2CY8wYDPSsIUj9bELF2UcDfjMsVZI5_9uXoWRyHGp-RkRW" 
-            alt="Chôm chôm An Bình" 
+            alt="Vườn chôm chôm" 
             class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
           />
           <div class="absolute inset-0 bg-gradient-to-t from-charcoal-ink/90 via-transparent to-transparent flex flex-col justify-end p-2">
-            <span class="text-[10px] text-white font-medium font-serif leading-tight">Chôm chôm An Bình</span>
+            <span class="text-[10px] text-white font-medium font-serif leading-tight">Vườn chôm chôm</span>
             <span class="text-[8px] font-mono text-river-azure">[MS: VL-04]</span>
           </div>
         </div>
@@ -517,11 +533,11 @@
         <div class="relative aspect-[4/5] rounded-xl overflow-hidden border fine-border shadow-sm group bg-papyrus-warm cursor-pointer">
           <img 
             src="https://lh3.googleusercontent.com/aida/AEtjO1XLyeqw9SdRCl2TB4oI8XZVessrSvyfwrVKWANytvU_gu0xt4IgrY9gbKTh5igIVPntA0CCWIK2Ex268Xiv9dEa3SsDj9zIx4NY28QURY6DTphsh8nUx4mGd_NEvnsTW6HoZWPxIzAAS075w_Z26BlYqAIlssxNP3dZqhiP7UrfkqnfWVp_ClndsA232x8d9_GVzlKhpj_cfBstjrAAf4tgmBJxIQbRR7o7VhF0KKJPjtPW1xkGg0DeyqrJ" 
-            alt="Chùa Cổ Âng" 
+            alt="Chùa Âng" 
             class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
           />
           <div class="absolute inset-0 bg-gradient-to-t from-charcoal-ink/90 via-transparent to-transparent flex flex-col justify-end p-2">
-            <span class="text-[10px] text-white font-medium font-serif leading-tight">Chùa Cổ Âng</span>
+            <span class="text-[10px] text-white font-medium font-serif leading-tight">Chùa Âng</span>
             <span class="text-[8px] font-mono text-alluvial">[MS: VL-07]</span>
           </div>
         </div>
@@ -530,11 +546,11 @@
         <div class="relative aspect-[4/5] rounded-xl overflow-hidden border fine-border shadow-sm group bg-papyrus-warm cursor-pointer">
           <img 
             src="https://lh3.googleusercontent.com/aida/AEtjO1UoAysKjFwQLbCUNoaaTSVY0cGFjYkhgIRSlyxbIOumhpti7wXyQItsgxplf5U9rTtpt363H0K7-RXxdzYykfBNVW7gET_2TfTOoXwyAUEhpY1NPKKZz609AAQlVN4OSyn6MH8MCRrVXBeqBrH81fiIJfiPUUGtNUi61mEEDzQqeVRGyfvCYGrS0meqla8MCggNesJTeks863PkzWBfFEDmbRwU1RJ4sqY_HXFNWNV9Z8L6aCaksyjSsuPa" 
-            alt="Đờn ca ven sông" 
+            alt="Đờn ca tài tử" 
             class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
           />
           <div class="absolute inset-0 bg-gradient-to-t from-charcoal-ink/90 via-transparent to-transparent flex flex-col justify-end p-2">
-            <span class="text-[10px] text-white font-medium font-serif leading-tight">Đờn ca ven sông</span>
+            <span class="text-[10px] text-white font-medium font-serif leading-tight">Đờn ca tài tử</span>
             <span class="text-[8px] font-mono text-alluvial">[MS: VL-08]</span>
           </div>
         </div>
