@@ -205,11 +205,11 @@ function toggleBookmark(target: { id: string; title: string; coverSrc?: string }
 const leadItem: CuratedLead = {
   id: 'de-an-di-san-duong-dai-mang-thit',
   title: 'Quần Thể Di Sản Lò Gạch Gốm Đỏ Mang Thít',
-  badge: 'Di sản Đương đại Sống · Kênh Thầy Cai',
+  badge: '16:30 – 17:45 · Hoàng hôn vòm gốm Kênh Thầy Cai',
   location: 'Huyện Mang Thít, Vĩnh Long',
   coordinates: "10°15'N · 105°58'E",
   desc: 'Quần thể gần 900 vòm gốm tháp chuông đỏ rực dọc kênh Thầy Cai, di sản đương đại sống bên bờ Cổ Chiên.',
-  bestTime: '16:00 – 17:30 hoàng hôn đổ bóng vòm gốm',
+  bestTime: '16:30 – 17:45 hoàng hôn vòm gốm',
   highlight: 'Thử tài nặn gốm & thăm Nhà Gốm Tư Buôi',
   coverSrc: '/img/entities/de-an-di-san-duong-dai-mang-thit.webp',
   to: '/dia-diem/de-an-di-san-duong-dai-mang-thit',
@@ -355,7 +355,7 @@ function onImgFallback(e: Event) {
     rgba(var(--black-rgb), 0.55) 50%,
     rgba(var(--black-rgb), 0.78) 65%,
     rgba(var(--black-rgb), 0.92) 85%,
-    rgba(var(--black-rgb), 0.96) 100%
+    rgba(var(--black-rgb), 0.88) 100%
   );
   pointer-events: none;
 }
@@ -605,7 +605,7 @@ function onImgFallback(e: Event) {
     rgba(var(--black-rgb), 0.55) 50%,
     rgba(var(--black-rgb), 0.78) 65%,
     rgba(var(--black-rgb), 0.92) 85%,
-    rgba(var(--black-rgb), 0.96) 100%
+    rgba(var(--black-rgb), 0.88) 100%
   );
   pointer-events: none;
   z-index: 1;

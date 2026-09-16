@@ -12,6 +12,7 @@ const files = {
   stays: resolve(webNuxt, 'components/home/HomeRiversideStays.vue'),
   companion: resolve(webNuxt, 'components/home/HomeTravelCompanion.vue'),
   planner: resolve(webNuxt, 'components/home/HomeTravelPlanner.vue'),
+  anchors: resolve(webNuxt, 'components/home/HomeIntentAnchors.vue'),
   index: resolve(webNuxt, 'pages/index.vue'),
   homeNocturneCss: resolve(webNuxt, 'assets/css/home-nocturne.css'),
   baseCss: resolve(webNuxt, 'assets/css/base.css'),
@@ -22,6 +23,8 @@ const showcaseContent = readFileSync(files.showcase, 'utf8')
 const culinaryContent = readFileSync(files.culinary, 'utf8')
 const staysContent = readFileSync(files.stays, 'utf8')
 const companionContent = readFileSync(files.companion, 'utf8')
+const plannerContent = readFileSync(files.planner, 'utf8')
+const anchorsContent = readFileSync(files.anchors, 'utf8')
 const indexContent = readFileSync(files.index, 'utf8')
 const homeNocturneCss = readFileSync(files.homeNocturneCss, 'utf8')
 const baseCss = readFileSync(files.baseCss, 'utf8')
@@ -81,6 +84,22 @@ describe('Challenger M3: Empirical Adversarial Stress Verification Suite', () =>
       expect(parseInt(compQuickHotlineMatch![1], 10)).toBeGreaterThanOrEqual(48)
     })
 
+    it('enforces min-height >= 44px on HomeTravelPlanner tabs and actions', () => {
+      const tabMatch = plannerContent.match(/\.home-planner-tab-btn\s*\{[\s\S]*?min-height:\s*(\d+)px;/)
+      expect(tabMatch).not.toBeNull()
+      expect(parseInt(tabMatch![1], 10)).toBeGreaterThanOrEqual(44)
+
+      const actionMatch = plannerContent.match(/\.home-planner-card__actions\s+\.btn\s*\{[\s\S]*?min-height:\s*(\d+)px;/)
+      expect(actionMatch).not.toBeNull()
+      expect(parseInt(actionMatch![1], 10)).toBeGreaterThanOrEqual(44)
+    })
+
+    it('enforces min-height >= 44px on HomeIntentAnchors', () => {
+      const anchorMatch = anchorsContent.match(/\.home-intent-anchor\s*\{[\s\S]*?min-height:\s*(\d+)px;/)
+      expect(anchorMatch).not.toBeNull()
+      expect(parseInt(anchorMatch![1], 10)).toBeGreaterThanOrEqual(44)
+    })
+
     it('enforces min-height >= 44px on pages/index.vue interactive filters and chips', () => {
       const heroFilterMatch = homeNocturneCss.match(/\.home\s+\.hero-filter-pill\s*\{[\s\S]*?min-height:\s*var\(--touch-min,\s*(\d+)px\);[\s\S]*?min-width:\s*(\d+)px;/)
       expect(heroFilterMatch).not.toBeNull()
@@ -114,7 +133,7 @@ describe('Challenger M3: Empirical Adversarial Stress Verification Suite', () =>
   })
 
   // ─── STRESS TEST 3: Description Lengths Across All Cards (<= 120 chars / 2 lines) ───
-  describe('Stress Test 3: Description Lengths Across All Cards', () => {
+  describe('Stress Test 3: Description Lengths and Line Clamping Across All Cards', () => {
     it('verifies HomeCuratedShowcase lead description and satellite summaries are <= 120 chars', () => {
       const leadDescMatch = showcaseContent.match(/desc:\s*['"]([^'"]+)['"]/)
       expect(leadDescMatch).not.toBeNull()
@@ -127,23 +146,77 @@ describe('Challenger M3: Empirical Adversarial Stress Verification Suite', () =>
       }
 
       expect(showcaseContent).toMatch(/\.home-curated-satellite__summary\s*\{[\s\S]*?-webkit-line-clamp:\s*2;/)
+      expect(showcaseContent).toMatch(/\.home-curated-satellite__summary\s*\{[\s\S]*?-webkit-box-orient:\s*vertical;/)
+      expect(showcaseContent).toMatch(/\.home-curated-satellite__summary\s*\{[\s\S]*?display:\s*-webkit-box;/)
     })
 
     it('verifies HomeCulinaryTrail cards maintain visual-first architecture with 0 text-wall descriptions', () => {
       expect(culinaryContent).not.toContain('home-culinary-card__desc')
     })
 
-    it('verifies HomeRiversideStays homestay descriptions are <= 120 chars', () => {
+    it('verifies HomeRiversideStays homestay and folk experience descriptions are <= 120 chars', () => {
       const stayDescs = [...staysContent.matchAll(/desc:\s*['"]([^'"]+)['"]/g)].map(m => m[1])
-      expect(stayDescs.length).toBeGreaterThanOrEqual(3)
+      expect(stayDescs.length).toBeGreaterThanOrEqual(6)
       for (const d of stayDescs) {
         expect(d.length).toBeLessThanOrEqual(120)
+      }
+
+      expect(staysContent).toMatch(/\.home-stay-card__desc\s*\{[\s\S]*?-webkit-line-clamp:\s*2;/)
+      expect(staysContent).toMatch(/\.home-stay-card__desc\s*\{[\s\S]*?-webkit-box-orient:\s*vertical;/)
+      expect(staysContent).toMatch(/\.home-stay-card__desc\s*\{[\s\S]*?display:\s*-webkit-box;/)
+    })
+
+    it('verifies HomeTravelCompanion card descriptions are <= 120 chars', () => {
+      const cardDescs = [...companionContent.matchAll(/<p class="home-companion-card__desc">\s*([\s\S]*?)\s*<\/p>/g)].map(m => m[1].replace(/\s+/g, ' ').trim())
+      expect(cardDescs.length).toBe(4)
+      for (const cd of cardDescs) {
+        expect(cd.length).toBeLessThanOrEqual(120)
+      }
+    })
+
+    it('verifies HomeIntentAnchors hint strings are concise (<= 120 chars)', () => {
+      const hints = [...anchorsContent.matchAll(/hint:\s*['"]([^'"]+)['"]/g)].map(m => m[1])
+      expect(hints.length).toBe(5)
+      for (const h of hints) {
+        expect(h.length).toBeLessThanOrEqual(120)
       }
     })
   })
 
-  // ─── STRESS TEST 4: Prohibited Generic AI Slop Phrases ───
-  describe('Stress Test 4: Prohibited Generic AI Slop Phrases', () => {
+  // ─── STRESS TEST 4: Cognitive Tidal Route Hours (08:30–13:30 and 15:00–18:00) ───
+  describe('Stress Test 4: Cognitive Tidal Route Hours (08:30–13:30 and 15:00–18:00)', () => {
+    it('verifies High tide is 08:30–13:30 and Low tide is 15:00–18:00 in pages/index.vue tidePhaseInfo', () => {
+      expect(indexContent).toMatch(/08:30[–-]13:30/)
+      expect(indexContent).toMatch(/15:00[–-]18:00/)
+      expect(indexContent).toContain('Tuyến thuyền rạch dừa nước Cù Lao An Bình & vườn trái cây trĩu quả')
+      expect(indexContent).toContain('Tuyến xe vương quốc gốm Kênh Thầy Cai & chùa Khmer cổ')
+    })
+
+    it('verifies High tide 08:30–13:30 and Low tide 15:00–18:00 in HomeTravelCompanion.vue', () => {
+      expect(companionContent).toMatch(/Nước lớn\s*\(08:30[–-]13:30\)/)
+      expect(companionContent).toMatch(/Nước ròng\s*\(15:00[–-]18:00\)/)
+    })
+  })
+
+  // ─── STRESS TEST 5: Dual Hotlines Verification ((0270) 3822 305 and 0270 3822 994) ───
+  describe('Stress Test 5: Dual Hotlines Verification ((0270) 3822 305 and 0270 3822 994)', () => {
+    it('verifies HomeTravelCompanion includes water rescue hotline (0270) 3822 305 and tel:+842703822305', () => {
+      expect(companionContent).toContain('(0270) 3822 305')
+      expect(companionContent).toContain('tel:+842703822305')
+    })
+
+    it('verifies HomeTravelCompanion includes traveler support hotline 0270 3822 994 and tel:+842703822994', () => {
+      expect(companionContent).toContain('0270 3822 994')
+      expect(companionContent).toContain('tel:+842703822994')
+    })
+
+    it('verifies quick utility bar contains both emergency hotline buttons', () => {
+      expect(companionContent).toMatch(/class="home-companion-quick-hotlines"[\s\S]*?\(0270\) 3822 305[\s\S]*?0270 3822 994/)
+    })
+  })
+
+  // ─── STRESS TEST 6: Prohibited Generic AI Slop Phrases ───
+  describe('Stress Test 6: Prohibited Generic AI Slop Phrases', () => {
     const prohibitedPhrases = [
       'nâng tầm trải nghiệm',
       'hành trình vô tận',
@@ -162,6 +235,8 @@ describe('Challenger M3: Empirical Adversarial Stress Verification Suite', () =>
       { name: 'HomeCulinaryTrail', content: culinaryContent },
       { name: 'HomeRiversideStays', content: staysContent },
       { name: 'HomeTravelCompanion', content: companionContent },
+      { name: 'HomeTravelPlanner', content: plannerContent },
+      { name: 'HomeIntentAnchors', content: anchorsContent },
       { name: 'pages/index.vue', content: indexContent },
     ]
 
@@ -176,8 +251,8 @@ describe('Challenger M3: Empirical Adversarial Stress Verification Suite', () =>
     }
   })
 
-  // ─── STRESS TEST 5: Zero Audio/Video Autoplay Elements ───
-  describe('Stress Test 5: Zero Audio/Video Autoplay Elements', () => {
+  // ─── STRESS TEST 7: Zero Audio/Video Autoplay Elements ───
+  describe('Stress Test 7: Zero Audio/Video Autoplay Elements', () => {
     it('verifies 0 <audio>, 0 <video>, 0 autoplay, and 0 new Audio() across application source', () => {
       const audioRegex = /<audio\b/i
       const videoRegex = /<video\b/i
@@ -209,8 +284,8 @@ describe('Challenger M3: Empirical Adversarial Stress Verification Suite', () =>
     })
   })
 
-  // ─── STRESS TEST 6: Zero Raw Hex Colors (#...) in Newly Edited Components ───
-  describe('Stress Test 6: Zero Raw Hex Colors (#...) in Newly Edited Components', () => {
+  // ─── STRESS TEST 8: Zero Raw Hex Colors (#...) in Newly Edited Components ───
+  describe('Stress Test 8: Zero Raw Hex Colors (#...) in Newly Edited Components', () => {
     it('verifies zero raw hex colors across newly edited components', () => {
       const hexPattern = /#(?:[0-9a-fA-F]{3,4}|[0-9a-fA-F]{6}|[0-9a-fA-F]{8})\b/g
       const components = [
@@ -218,6 +293,8 @@ describe('Challenger M3: Empirical Adversarial Stress Verification Suite', () =>
         { name: 'HomeCulinaryTrail', content: culinaryContent },
         { name: 'HomeRiversideStays', content: staysContent },
         { name: 'HomeTravelCompanion', content: companionContent },
+        { name: 'HomeTravelPlanner', content: plannerContent },
+        { name: 'HomeIntentAnchors', content: anchorsContent },
         { name: 'pages/index.vue', content: indexContent },
       ]
 

@@ -260,7 +260,7 @@
   --glass-subtle: rgba(var(--ink-rgb), .02);
   --glass-light: rgba(var(--ink-rgb), .04);
   --glass-border: rgba(var(--ink-rgb), .08);
-  --border-liquid-glass: oklch(100% 0 0 / 0.12);
+  --border-liquid-glass: oklch(100% 0 0 / 0.16);
   --glass-medium: rgba(var(--ink-rgb), .10);
   /* External brands */
   --brand-zalo: #0068FF;

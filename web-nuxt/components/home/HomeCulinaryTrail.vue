@@ -95,8 +95,8 @@ const SIGNATURE_DISHES: readonly CulinaryDish[] = [
   {
     id: 'ca-tai-tuong-chien-xu',
     name: 'Cá Tai Tượng Chiên Xù Cuốn Bánh Tráng Cù Lao',
-    badge: 'Đệ nhất mỹ vị sông Tiền',
-    origin: 'Cù Lao An Bình & Sông Cổ Chiên',
+    badge: 'Cá tai tượng sông Tiền',
+    origin: 'Cá tai tượng sông Tiền',
     guide: 'Đệ nhất mỹ vị sông Tiền vảy giòn rụm màu cánh gián, cuốn bánh tráng nem cù lao và rau thơm miệt vườn.',
     reputableVenue: 'Quán Chín Thảo · KDL Vinh Sang · Homestay Út Trinh',
     venues: 'Quán Cá Tai Tượng Chín Thảo · KDL Vinh Sang · Homestay Út Trinh',
@@ -108,8 +108,8 @@ const SIGNATURE_DISHES: readonly CulinaryDish[] = [
   {
     id: 'banh-xeo-hen-cu-lao-dai',
     name: 'Bánh Xèo Hến Cổ Chiên (Cù Lao Dài)',
-    badge: 'Đặc sản độc bản bãi cồn',
-    origin: 'Cù Lao Dài, Vũng Liêm',
+    badge: 'Hến cào Vũng Liêm',
+    origin: 'Hến cào Vũng Liêm',
     guide: 'Vỏ bánh giòn rụm tráng mỏng, nhân hến ngọt xào củ hủ dừa sông Cổ Chiên cuốn cùng 15 loại rau rừng.',
     reputableVenue: 'Quán Bánh Xèo Hến Ba Năm · Các nhà vườn Cù Lao Dài',
     venues: 'Quán Bánh Xèo Hến Ba Năm · Các nhà vườn sông Cổ Chiên',
@@ -121,8 +121,8 @@ const SIGNATURE_DISHES: readonly CulinaryDish[] = [
   {
     id: 'khoai-lang-mam-song-cuon-la-cach',
     name: 'Khoai Lang Chấm Mắm Sống Cuốn Lá Cách',
-    badge: 'Huy chương Vàng Ẩm thực Nam Bộ',
-    origin: 'Vựa khoai Bình Tân',
+    badge: 'Khoai lang tím Bình Tân OCOP 4 sao',
+    origin: 'Khoai lang tím Bình Tân OCOP 4 sao',
     guide: 'Khoai lang tím Bình Tân bùi ngọt hòa quyện mắm cá linh đậm đà, gói trong lá cách thơm cay độc đáo.',
     reputableVenue: 'Điểm dừng chân Bình Tân · Nhà Dừa Cocohome Cù Lao',
     venues: 'Điểm dừng chân Bình Tân · Nhà hàng miệt vườn Cù Lao An Bình',
@@ -134,8 +134,8 @@ const SIGNATURE_DISHES: readonly CulinaryDish[] = [
   {
     id: 'chao-cua-dong',
     name: 'Lẩu Cua Đồng Phù Sa (Cháo Cua Đồng)',
-    badge: 'Vị ngọt ruộng đồng Tây Nam Bộ',
-    origin: 'Long Hồ & Trà Ôn',
+    badge: 'Cua đồng Tam Bình',
+    origin: 'Cua đồng Tam Bình',
     guide: 'Nồi lẩu riêu cua đồng ngọt thanh tự nhiên, nhúng kèm rau đay mồng tơi tươi non thanh mát miệt vườn.',
     reputableVenue: 'Phố ẩm thực Bờ kè Phường 1 · Quán cá đồng Long Hồ',
     venues: 'Phố ẩm thực bờ kè Phường 1 (TP Vĩnh Long) · Quán cá đồng Long Hồ',
@@ -147,7 +147,7 @@ const SIGNATURE_DISHES: readonly CulinaryDish[] = [
   {
     id: 'oc-lac-hap-la-gung',
     name: 'Ốc Lác Nướng Tiêu Xanh / Hấp Lá Gừng',
-    badge: 'Đậm đà phong vị bến đò',
+    badge: 'Ốc lác bến sông Cổ Chiên',
     origin: 'Bờ kè sông Cổ Chiên',
     guide: 'Ốc mương vườn béo giòn sần sật, nướng tiêu cay nồng hoặc hấp gừng thơm lừng bên bến sông Cổ Chiên.',
     reputableVenue: 'Phố ăn vặt bờ kè sông Cổ Chiên · Bến phà Đình Khao',

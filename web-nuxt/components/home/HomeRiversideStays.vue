@@ -239,6 +239,7 @@ function onImgFallback(e: Event) {
 /* Full-Bleed Photographic Lookbook Card (100% photo visual area) */
 .home-stay-card {
   position: relative;
+  aspect-ratio: 16 / 9;
   min-height: 480px;
   display: flex;
   flex-direction: column;
@@ -267,6 +268,7 @@ function onImgFallback(e: Event) {
   inset: 0;
   width: 100%;
   height: 100%;
+  aspect-ratio: 16 / 9;
   object-fit: cover;
   transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
   z-index: 0;

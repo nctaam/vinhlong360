@@ -47,11 +47,11 @@
             />
             <div class="hero-multisearch" role="group" aria-label="Bộ lọc nhanh lữ hành">
               <div class="hero-multisearch__row">
-                <span class="hero-multisearch__label">Loại hình:</span>
-                <NuxtLink to="/du-lich" class="hero-filter-pill">Điểm đến</NuxtLink>
-                <NuxtLink to="/luu-tru" class="hero-filter-pill">Homestay</NuxtLink>
-                <NuxtLink to="/kham-pha/am-thuc" class="hero-filter-pill">Món ngon</NuxtLink>
-                <NuxtLink to="/lich-trinh" class="hero-filter-pill">Lịch trình</NuxtLink>
+                <span class="hero-multisearch__label">Mục đích:</span>
+                <NuxtLink to="/tim-kiem?q=sinh+th%C3%A1i" class="hero-filter-pill">Sinh Thái</NuxtLink>
+                <NuxtLink to="/tim-kiem?q=di+s%E1%BA%A3n" class="hero-filter-pill">Di Sản</NuxtLink>
+                <NuxtLink to="/kham-pha/am-thuc" class="hero-filter-pill">Ẩm Thực</NuxtLink>
+                <NuxtLink to="/luu-tru" class="hero-filter-pill">Nghỉ Dưỡng</NuxtLink>
               </div>
               <div class="hero-multisearch__row">
                 <span class="hero-multisearch__label">Thời lượng:</span>
@@ -445,19 +445,21 @@ const { get: ss } = useSiteSettings()
 const tidePhaseInfo = computed(() => {
   const now = new Date()
   const hours = now.getHours()
-  const isMorningTide = hours >= 6 && hours <= 12
+  const minutes = now.getMinutes()
+  const timeDec = hours + minutes / 60
+  const isMorningTide = timeDec >= 6 && timeDec < 14
   if (isMorningTide) {
     return {
       phase: 'high',
-      title: 'Nước lớn (Triều dâng)',
-      desc: 'Mực nước Cổ Chiên dâng cao · Thuận tiện tàu du lịch, chèo xuồng miệt vườn & chợ nổi',
+      title: 'Nước lớn (08:30–13:30)',
+      desc: 'Tuyến thuyền rạch dừa nước Cù Lao An Bình & vườn trái cây trĩu quả',
       badge: 'Nước lớn thuận dòng',
     }
   }
   return {
     phase: 'low',
-    title: 'Nước ròng (Triều kiệt)',
-    desc: 'Sông êm dịu, bãi bồi phù sa lộ rõ · Thích hợp tát mương bắt cá & ngắm hoàng hôn bãi cồn',
+    title: 'Nước ròng (15:00–18:00)',
+    desc: 'Tuyến xe vương quốc gốm Kênh Thầy Cai & chùa Khmer cổ',
     badge: 'Nước ròng cồn bãi',
   }
 })

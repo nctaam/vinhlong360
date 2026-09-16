@@ -20,16 +20,28 @@
           <strong>Phà Đình Khao:</strong> Hoạt động 24/24h (Long Hồ ↔ Chợ Lách) · <em>Bình thường</em>
         </span>
       </div>
-      <a
-        href="tel:+842703822305"
-        class="home-hotline-btn home-hotline-btn--quick"
-        aria-label="Gọi hotline Cứu hộ đường thủy 24/7: 0270.3822.305"
-      >
-        <div class="home-hotline-btn__call">
-          <IconLine name="phone" />
-          <span class="home-hotline-btn__num">Cứu hộ 24/7: 0270.3822.305</span>
-        </div>
-      </a>
+      <div class="home-companion-quick-hotlines">
+        <a
+          href="tel:+842703822305"
+          class="home-hotline-btn home-hotline-btn--quick"
+          aria-label="Gọi hotline Cứu hộ đường thủy 24/7: (0270) 3822 305"
+        >
+          <div class="home-hotline-btn__call">
+            <IconLine name="phone" />
+            <span class="home-hotline-btn__num">(0270) 3822 305</span>
+          </div>
+        </a>
+        <a
+          href="tel:+842703822994"
+          class="home-hotline-btn home-hotline-btn--quick"
+          aria-label="Gọi hotline Hỗ trợ du khách 24/7: 0270 3822 994"
+        >
+          <div class="home-hotline-btn__call">
+            <IconLine name="shield-check" />
+            <span class="home-hotline-btn__num">0270 3822 994</span>
+          </div>
+        </a>
+      </div>
     </div>
 
     <div class="home-travel-companion__grid">
@@ -108,25 +120,25 @@
             <IconLine name="sun" />
           </span>
           <div>
-            <span class="home-companion-card__badge home-companion-card__badge--info">Thời tiết lữ hành</span>
-            <h3 class="home-companion-card__title">Thời Tiết Bến Sông & Luồng Tàu</h3>
+            <span class="home-companion-card__badge home-companion-card__badge--info">Thời tiết & Thủy triều</span>
+            <h3 class="home-companion-card__title">Thời Tiết & Lộ Trình Con Nước</h3>
           </div>
         </div>
         <p class="home-companion-card__desc">
-          Nắng ấm chan hòa, gió sông Cổ Chiên mát rượi. Luồng tàu du lịch thông suốt, thuận lợi du ngoạn sông nước.
+          Lộ trình nhật triều: Nước lớn (08:30–13:30) đi rạch dừa Cù Lao; Nước ròng (15:00–18:00) khám phá vòm gốm Mang Thít.
         </p>
         <div class="home-companion-card__meta">
           <div class="home-companion-meta-row">
-            <IconLine name="sun" />
-            <span><strong>Nhiệt độ:</strong> 28°C – 32°C (Nắng dịu, gió thoảng)</span>
-          </div>
-          <div class="home-companion-meta-row">
             <IconLine name="route" />
-            <span><strong>Luồng tàu:</strong> Thông suốt các nhánh rạch Cù Lao</span>
+            <span><strong>Nước lớn (08:30–13:30):</strong> Rạch dừa nước Cù Lao An Bình & vườn trái cây</span>
           </div>
           <div class="home-companion-meta-row">
-            <IconLine name="bulb" />
-            <span><strong>Mẹo đi xuồng:</strong> Buổi sáng 08:00 - 11:00 nước lớn êm ả</span>
+            <IconLine name="map" />
+            <span><strong>Nước ròng (15:00–18:00):</strong> Vương quốc gốm Kênh Thầy Cai & chùa Khmer cổ</span>
+          </div>
+          <div class="home-companion-meta-row">
+            <IconLine name="sun" />
+            <span><strong>Thời tiết bến sông:</strong> 28°C – 32°C (Nắng dịu, gió thoảng)</span>
           </div>
         </div>
         <NuxtLink to="/theo-mua" class="home-companion-card__link">
@@ -187,13 +199,20 @@ interface EmergencyContact {
 const HOTLINES: readonly EmergencyContact[] = [
   {
     name: 'Cứu hộ Đường thủy CSGT (24/7)',
-    phone: '0270 3822 305',
+    phone: '(0270) 3822 305',
     telUri: 'tel:+842703822305',
     scope: 'Sự cố đò phà, tàu thuyền sông Tiền & Cổ Chiên',
     priority: true,
   },
   {
-    name: 'Cứu hộ Du lịch Vĩnh Long 360',
+    name: 'Cứu hộ & Hỗ trợ Du khách Vĩnh Long',
+    phone: '0270 3822 994',
+    telUri: 'tel:+842703822994',
+    scope: 'Cứu hộ du khách, hỗ trợ an toàn thực địa 24/7',
+    priority: true,
+  },
+  {
+    name: 'Tư vấn Du lịch Vĩnh Long 360',
     phone: '0270 3822 188',
     telUri: 'tel:+842703822188',
     scope: 'Tư vấn thực địa, phản ánh chất lượng dịch vụ',
@@ -514,6 +533,13 @@ const HOTLINES: readonly EmergencyContact[] = [
   font-style: normal;
   color: var(--orchard-600);
   font-weight: var(--weight-semibold);
+}
+
+.home-companion-quick-hotlines {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  flex-wrap: wrap;
 }
 
 .home-hotline-btn--quick {
