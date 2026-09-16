@@ -11,6 +11,27 @@
       </div>
     </div>
 
+    <!-- Compact Frosted Glass Quick Utility Banner -->
+    <div class="home-companion-quick-utility" role="region" aria-label="Thông báo khẩn và trạng thái luồng tuyến">
+      <div class="home-companion-utility-pill">
+        <span class="home-companion-utility-pill__pulse" aria-hidden="true" />
+        <IconLine name="route" />
+        <span class="home-companion-utility-pill__text">
+          <strong>Phà Đình Khao:</strong> Hoạt động 24/24h (Long Hồ ↔ Chợ Lách) · <em>Bình thường</em>
+        </span>
+      </div>
+      <a
+        href="tel:+842703822305"
+        class="home-hotline-btn home-hotline-btn--quick"
+        aria-label="Gọi hotline Cứu hộ đường thủy 24/7: 0270.3822.305"
+      >
+        <div class="home-hotline-btn__call">
+          <IconLine name="phone" />
+          <span class="home-hotline-btn__num">Cứu hộ 24/7: 0270.3822.305</span>
+        </div>
+      </a>
+    </div>
+
     <div class="home-travel-companion__grid">
       <!-- 1. Bến Phà Đình Khao -->
       <article class="home-companion-card" data-companion-ferry="dinh-khao">
@@ -24,7 +45,7 @@
           </div>
         </div>
         <p class="home-companion-card__desc">
-          Vượt sông Cổ Chiên (1.200m), kết nối TP Vĩnh Long và huyện Chợ Lách (Bến Tre). Phà tải trọng 100–200 tấn vận hành liên tục cả ngày lẫn đêm.
+          Vượt sông Cổ Chiên (1.200m), nối TP Vĩnh Long & Chợ Lách. Phà 100–200 tấn vận hành liên tục cả ngày lẫn đêm.
         </p>
         <div class="home-companion-card__meta">
           <div class="home-companion-meta-row">
@@ -58,7 +79,7 @@
           </div>
         </div>
         <p class="home-companion-card__desc">
-          Bến thuyền Công viên Sông Tiền sang 4 xã Cù Lao An Bình (cự ly 600m). Cung cấp đò máy, cano du lịch tham quan vườn cây và rạch nhỏ.
+          Bến thuyền Công viên Sông Tiền sang cù lao An Bình (600m). Đò máy, cano du lịch tham quan vườn cây rạch nhỏ.
         </p>
         <div class="home-companion-card__meta">
           <div class="home-companion-meta-row">
@@ -92,7 +113,7 @@
           </div>
         </div>
         <p class="home-companion-card__desc">
-          Khí hậu nhiệt đới nắng ấm chan hòa, gió sông Cổ Chiên thổi mát rượi. Luồng tàu du lịch thông thoáng, thuận lợi cho mọi chuyến du ngoạn sông nước.
+          Nắng ấm chan hòa, gió sông Cổ Chiên mát rượi. Luồng tàu du lịch thông suốt, thuận lợi du ngoạn sông nước.
         </p>
         <div class="home-companion-card__meta">
           <div class="home-companion-meta-row">
@@ -318,6 +339,10 @@ const HOTLINES: readonly EmergencyContact[] = [
   color: var(--color-text);
   line-height: 1.55;
   opacity: 0.9;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 
 .home-companion-card__meta {
@@ -434,5 +459,89 @@ const HOTLINES: readonly EmergencyContact[] = [
 .home-hotline-btn--priority .home-hotline-btn__call {
   background: color-mix(in srgb, var(--color-error) 14%, transparent);
   color: var(--color-error);
+}
+
+/* Compact Frosted Glass Quick Utility Banner */
+.home-companion-quick-utility {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  background: rgba(var(--white-rgb), 0.05);
+  border: 1px solid var(--border-liquid-glass);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-radius: var(--radius-surface);
+  box-shadow: var(--shadow-card-ambient);
+  margin-block-start: var(--space-4);
+}
+
+.home-companion-utility-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--text-xs);
+  color: var(--color-text);
+}
+
+.home-companion-utility-pill .line-icon {
+  color: var(--color-brand);
+}
+
+.home-companion-utility-pill__pulse {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--orchard-600);
+  box-shadow: 0 0 8px rgba(var(--white-rgb), 0.4);
+  animation: companion-pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  flex-shrink: 0;
+}
+
+@keyframes companion-pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.5; transform: scale(0.9); }
+}
+
+.home-companion-utility-pill__text strong {
+  color: var(--color-text);
+  font-weight: var(--weight-bold);
+}
+
+.home-companion-utility-pill__text em {
+  font-style: normal;
+  color: var(--orchard-600);
+  font-weight: var(--weight-semibold);
+}
+
+.home-hotline-btn--quick {
+  min-height: 48px;
+  padding: var(--space-2) var(--space-4);
+  background: rgba(var(--black-rgb), 0.75);
+  border: 1px solid var(--border-liquid-glass);
+  border-radius: var(--radius-pill, 9999px);
+  text-decoration: none;
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  color: var(--surface-white);
+  transition: transform 0.2s ease, background-color 0.2s ease;
+}
+
+.home-hotline-btn--quick:hover {
+  transform: translateY(-1px);
+  background: rgba(var(--black-rgb), 0.85);
+  border-color: var(--alluvial-gold);
+}
+
+.home-hotline-btn--quick .home-hotline-btn__call {
+  background: transparent;
+  color: var(--alluvial-gold);
+  padding: 0;
+}
+
+.home-hotline-btn--quick .line-icon {
+  color: var(--alluvial-gold);
 }
 </style>

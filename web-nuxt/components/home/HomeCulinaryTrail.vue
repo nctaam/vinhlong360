@@ -41,8 +41,11 @@
 
         <!-- Floating Top Bar -->
         <div class="home-culinary-card__top">
-          <span class="home-culinary-card__rank">#0{{ index + 1 }}</span>
-          <span class="home-culinary-card__badge">{{ dish.badge }}</span>
+          <div class="home-culinary-card__top-left">
+            <span class="home-culinary-card__rank">#0{{ index + 1 }}</span>
+            <span class="home-culinary-card__badge">{{ dish.badge }}</span>
+          </div>
+          <span v-if="dish.priceRange" class="home-culinary-card__price-badge">{{ dish.priceRange }}</span>
         </div>
 
         <!-- Overlaid Bottom Content (<= 25% card height) -->
@@ -55,7 +58,7 @@
           <!-- Reputable Venue Pill Badge -->
           <div class="home-culinary-card__venue-pill">
             <IconLine name="pin" />
-            <span>{{ dish.venues }}</span>
+            <span>{{ dish.reputableVenue || dish.venues }}</span>
           </div>
 
           <div class="home-culinary-card__action home-culinary-card__footer">
@@ -80,7 +83,9 @@ interface CulinaryDish {
   readonly badge: string
   readonly origin: string
   readonly guide: string
+  readonly reputableVenue: string
   readonly venues: string
+  readonly priceRange: string
   readonly coverSrc: string
   readonly to: string
   readonly mapTo: string
@@ -93,7 +98,9 @@ const SIGNATURE_DISHES: readonly CulinaryDish[] = [
     badge: 'Đệ nhất mỹ vị sông Tiền',
     origin: 'Cù Lao An Bình & Sông Cổ Chiên',
     guide: 'Đệ nhất mỹ vị sông Tiền vảy giòn rụm màu cánh gián, cuốn bánh tráng nem cù lao và rau thơm miệt vườn.',
+    reputableVenue: 'Quán Chín Thảo · KDL Vinh Sang · Homestay Út Trinh',
     venues: 'Quán Cá Tai Tượng Chín Thảo · KDL Vinh Sang · Homestay Út Trinh',
+    priceRange: '150.000đ – 250.000đ/con',
     coverSrc: '/img/entities/ca-tai-tuong-chien-xu.webp',
     to: '/dia-diem/ca-tai-tuong-chien-xu',
     mapTo: '/ban-do?selected=ca-tai-tuong-chien-xu',
@@ -104,7 +111,9 @@ const SIGNATURE_DISHES: readonly CulinaryDish[] = [
     badge: 'Đặc sản độc bản bãi cồn',
     origin: 'Cù Lao Dài, Vũng Liêm',
     guide: 'Vỏ bánh giòn rụm tráng mỏng, nhân hến ngọt xào củ hủ dừa sông Cổ Chiên cuốn cùng 15 loại rau rừng.',
+    reputableVenue: 'Quán Bánh Xèo Hến Ba Năm · Các nhà vườn Cù Lao Dài',
     venues: 'Quán Bánh Xèo Hến Ba Năm · Các nhà vườn sông Cổ Chiên',
+    priceRange: '45.000đ – 70.000đ/cái',
     coverSrc: '/img/entities/banh-xeo-hen-cu-lao-dai.webp',
     to: '/dia-diem/banh-xeo-hen-cu-lao-dai',
     mapTo: '/ban-do?selected=banh-xeo-hen-cu-lao-dai',
@@ -115,7 +124,9 @@ const SIGNATURE_DISHES: readonly CulinaryDish[] = [
     badge: 'Huy chương Vàng Ẩm thực Nam Bộ',
     origin: 'Vựa khoai Bình Tân',
     guide: 'Khoai lang tím Bình Tân bùi ngọt hòa quyện mắm cá linh đậm đà, gói trong lá cách thơm cay độc đáo.',
+    reputableVenue: 'Điểm dừng chân Bình Tân · Nhà Dừa Cocohome Cù Lao',
     venues: 'Điểm dừng chân Bình Tân · Nhà hàng miệt vườn Cù Lao An Bình',
+    priceRange: '30.000đ – 50.000đ/phần',
     coverSrc: '/img/entities/khoai-lang-mam-song-cuon-la-cach.webp',
     to: '/dia-diem/khoai-lang-mam-song-cuon-la-cach',
     mapTo: '/ban-do?selected=khoai-lang-mam-song-cuon-la-cach',
@@ -126,7 +137,9 @@ const SIGNATURE_DISHES: readonly CulinaryDish[] = [
     badge: 'Vị ngọt ruộng đồng Tây Nam Bộ',
     origin: 'Long Hồ & Trà Ôn',
     guide: 'Nồi lẩu riêu cua đồng ngọt thanh tự nhiên, nhúng kèm rau đay mồng tơi tươi non thanh mát miệt vườn.',
+    reputableVenue: 'Phố ẩm thực Bờ kè Phường 1 · Quán cá đồng Long Hồ',
     venues: 'Phố ẩm thực bờ kè Phường 1 (TP Vĩnh Long) · Quán cá đồng Long Hồ',
+    priceRange: '120.000đ – 180.000đ/nồi',
     coverSrc: '/img/entities/chao-cua-dong.webp',
     to: '/dia-diem/chao-cua-dong',
     mapTo: '/ban-do?selected=chao-cua-dong',
@@ -137,7 +150,9 @@ const SIGNATURE_DISHES: readonly CulinaryDish[] = [
     badge: 'Đậm đà phong vị bến đò',
     origin: 'Bờ kè sông Cổ Chiên',
     guide: 'Ốc mương vườn béo giòn sần sật, nướng tiêu cay nồng hoặc hấp gừng thơm lừng bên bến sông Cổ Chiên.',
+    reputableVenue: 'Phố ăn vặt bờ kè sông Cổ Chiên · Bến phà Đình Khao',
     venues: 'Phố ăn vặt bờ kè sông Cổ Chiên · Bến phà Đình Khao',
+    priceRange: '50.000đ – 80.000đ/dĩa',
     coverSrc: '/img/entities/oc-lac-hap-la-gung.webp',
     to: '/dia-diem/oc-lac-hap-la-gung',
     mapTo: '/ban-do?selected=oc-lac-hap-la-gung',
@@ -238,12 +253,10 @@ function onImgFallback(e: Event) {
   inset: 0;
   background: linear-gradient(
     180deg,
-    rgba(var(--black-rgb), 0.25) 0%,
-    rgba(var(--black-rgb), 0.08) 30%,
-    rgba(var(--black-rgb), 0.55) 50%,
-    rgba(var(--black-rgb), 0.78) 65%,
-    rgba(var(--black-rgb), 0.92) 85%,
-    rgba(var(--black-rgb), 0.95) 100%
+    rgba(var(--black-rgb), 0.15) 0%,
+    rgba(var(--black-rgb), 0.45) 45%,
+    rgba(var(--black-rgb), 0.85) 75%,
+    rgba(var(--black-rgb), 0.96) 100%
   );
   pointer-events: none;
   z-index: 1;
@@ -256,7 +269,14 @@ function onImgFallback(e: Event) {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: var(--space-2);
   padding: var(--space-3) var(--space-4);
+}
+
+.home-culinary-card__top-left {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
 }
 
 .home-culinary-card__rank {
@@ -287,6 +307,23 @@ function onImgFallback(e: Event) {
   box-shadow: var(--shadow-card-ambient);
   font-size: 11px;
   font-weight: var(--weight-semibold);
+}
+
+.home-culinary-card__price-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 10px;
+  background: rgba(var(--black-rgb), 0.78);
+  color: var(--alluvial-gold);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border: 1px solid var(--border-liquid-glass);
+  border-radius: var(--radius-pill, 9999px);
+  box-shadow: var(--shadow-card-ambient);
+  font-family: var(--font-mono, monospace);
+  font-size: 11px;
+  font-weight: var(--weight-bold);
+  letter-spacing: 0.02em;
 }
 
 /* Bottom Overlay (<= 25% card height) */

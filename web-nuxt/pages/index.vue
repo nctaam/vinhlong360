@@ -27,6 +27,18 @@
           <span class="hero-kicker" data-color-role="brand"><span class="hero-kicker-dot" aria-hidden="true"></span>{{ ss('homepage.hero_kicker', 'Du lịch & Đặc sản Vĩnh Long') }}</span>
           <h1>{{ seasonalTagline }}</h1>
           <p class="hero-sub">{{ ss('homepage.hero_subtitle', 'Tìm điểm đến, món ngon, lễ hội và lịch trình phù hợp cho chuyến đi Vĩnh Long hôm nay.') }}</p>
+          <div class="hero-cognitive-banner" role="region" aria-label="Khuyến nghị thủy triều và thời vụ lữ hành">
+            <div class="hero-cognitive-chip hero-cognitive-chip--tide">
+              <span class="hero-cognitive-chip__dot" :class="'hero-cognitive-chip__dot--' + tidePhaseInfo.phase" aria-hidden="true" />
+              <strong class="hero-cognitive-chip__title">{{ tidePhaseInfo.title }}</strong>
+              <span class="hero-cognitive-chip__sep" aria-hidden="true">·</span>
+              <span class="hero-cognitive-chip__desc">{{ tidePhaseInfo.desc }}</span>
+            </div>
+            <div class="hero-cognitive-chip hero-cognitive-chip--fruit">
+              <IconLine name="leaf" class="hero-cognitive-chip__icon" aria-hidden="true" />
+              <span class="hero-cognitive-chip__fruit-text">{{ seasonalFruitHighlight }}</span>
+            </div>
+          </div>
           <div class="hero-search-island" role="search" aria-label="Tìm kiếm và bộ lọc nhanh lữ hành">
             <SearchAutocomplete
               class="hero-search hero-ac"
@@ -429,6 +441,37 @@ import { useId } from 'vue'
 useReveal()
 const { get: ss } = useSiteSettings()
 
+// Cognitive Contextual Indicators (Astronomical Tide & Seasonality)
+const tidePhaseInfo = computed(() => {
+  const now = new Date()
+  const hours = now.getHours()
+  const isMorningTide = hours >= 6 && hours <= 12
+  if (isMorningTide) {
+    return {
+      phase: 'high',
+      title: 'Nước lớn (Triều dâng)',
+      desc: 'Mực nước Cổ Chiên dâng cao · Thuận tiện tàu du lịch, chèo xuồng miệt vườn & chợ nổi',
+      badge: 'Nước lớn thuận dòng',
+    }
+  }
+  return {
+    phase: 'low',
+    title: 'Nước ròng (Triều kiệt)',
+    desc: 'Sông êm dịu, bãi bồi phù sa lộ rõ · Thích hợp tát mương bắt cá & ngắm hoàng hôn bãi cồn',
+    badge: 'Nước ròng cồn bãi',
+  }
+})
+
+const seasonalFruitHighlight = computed(() => {
+  const month = new Date().getMonth() + 1
+  if (month >= 5 && month <= 8) {
+    return 'Mùa chôm chôm chín đỏ & sầu riêng Ri6 An Bình'
+  } else if (month >= 9 && month <= 11) {
+    return 'Mùa bưởi Năm Roi Bình Minh & cá linh non mùa nước nổi'
+  }
+  return 'Mùa cam sành ngọt Tam Bình & sắc hoa gốm đỏ Mang Thít'
+})
+
 const { homepageDecisionActions } = useJourneyActions()
 
 const { favorites } = useFavorites()
@@ -778,5 +821,68 @@ useHead({
 .for-you-row { align-items: stretch; }
 .fy-disclosure { max-width: 60px; color: var(--muted); overflow-wrap: anywhere; }
 .fy-disclosure :deep([data-short-label]) { font-size: var(--text-2xs); font-weight: var(--weight-semibold); line-height: 1.15; }
+
+/* ═══════════════════════════════════════════════════
+   COGNITIVE CONTEXTUAL BANNER (ASTRONOMICAL TIDE & SEASONS)
+   ═══════════════════════════════════════════════════ */
+.hero-cognitive-banner {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+  padding: 6px 14px;
+  border-radius: var(--radius-pill, 9999px);
+  background: rgba(var(--white-rgb), 0.08);
+  border: 1px solid var(--border-liquid-glass);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  margin-bottom: var(--space-4);
+  width: fit-content;
+}
+
+.hero-cognitive-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: var(--text-xs);
+  color: var(--surface-white);
+}
+
+.hero-cognitive-chip__dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.hero-cognitive-chip__dot--high {
+  background: var(--river-600);
+  box-shadow: 0 0 8px rgba(var(--white-rgb), 0.4);
+}
+
+.hero-cognitive-chip__dot--low {
+  background: var(--alluvial-gold);
+  box-shadow: 0 0 8px rgba(var(--alluvial-gold-rgb), 0.4);
+}
+
+.hero-cognitive-chip__title {
+  font-weight: var(--weight-bold);
+  color: var(--surface-white);
+}
+
+.hero-cognitive-chip__sep {
+  opacity: 0.6;
+}
+
+.hero-cognitive-chip__desc {
+  opacity: 0.9;
+}
+
+.hero-cognitive-chip--fruit {
+  padding-left: var(--space-2);
+  border-left: 1px solid var(--border-liquid-glass);
+  color: var(--alluvial-gold);
+  font-weight: var(--weight-medium);
+}
 </style>
 <style src="~/assets/css/home-nocturne.css"></style>

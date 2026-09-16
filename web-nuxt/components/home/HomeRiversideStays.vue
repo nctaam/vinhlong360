@@ -41,6 +41,10 @@
         <!-- Floating Top Badge -->
         <div class="home-stay-card__top">
           <span class="home-stay-card__badge">{{ stay.badge }}</span>
+          <span v-if="stay.ecoBadge" class="home-stay-card__eco-badge">
+            <IconLine name="shield-check" />
+            <span>{{ stay.ecoBadge }}</span>
+          </span>
         </div>
 
         <!-- Overlaid Bottom Content (<= 25% card height) -->
@@ -50,13 +54,18 @@
               <IconLine name="pin" />
               <span>{{ stay.area }}</span>
             </span>
-            <span class="home-stay-card__type">{{ stay.typeLabel }}</span>
+            <span class="home-stay-card__price"><strong>{{ stay.price }}</strong></span>
           </div>
 
           <h3 class="home-stay-card__title">
             <NuxtLink :to="stay.to">{{ stay.name }}</NuxtLink>
           </h3>
           <p class="home-stay-card__desc">{{ stay.desc }}</p>
+
+          <div v-if="stay.balconyHighlight" class="home-stay-card__balcony-pill">
+            <IconLine name="eye" />
+            <span>{{ stay.balconyHighlight }}</span>
+          </div>
 
           <div class="home-stay-card__perks">
             <span v-for="perk in stay.perks" :key="perk" class="home-stay-card__perk">
@@ -111,6 +120,9 @@ interface CuratedHomestay {
   readonly id: string
   readonly name: string
   readonly badge: string
+  readonly ecoBadge: string
+  readonly balconyHighlight: string
+  readonly price: string
   readonly area: string
   readonly typeLabel: string
   readonly desc: string
@@ -130,6 +142,9 @@ const CURATED_HOMESTAYS: readonly CuratedHomestay[] = [
     id: 'homestay-ut-trinh',
     name: 'Út Trinh Homestay (ASEAN Standard)',
     badge: 'Chuẩn Homestay ASEAN',
+    ecoBadge: 'Chứng nhận Sinh Thái ASEAN',
+    balconyHighlight: 'Ban công gỗ hướng sông Cổ Chiên lộng gió',
+    price: 'Từ 650.000đ/đêm',
     area: 'Xã Hòa Ninh, Cù Lao An Bình',
     typeLabel: 'Nhà Rường Nam Bộ',
     desc: 'Nhà rường gỗ quý cổ kính dưới bóng nhãn cù lao An Bình, trải nghiệm nấu bánh xèo và nghe đờn ca bến sông.',
@@ -141,6 +156,9 @@ const CURATED_HOMESTAYS: readonly CuratedHomestay[] = [
     id: 'mekong-riverside-homestay',
     name: 'Mekong Riverside Homestay',
     badge: 'View Sông Hậu Lộng Gió',
+    ecoBadge: 'Vườn sinh thái không rác thải',
+    balconyHighlight: 'Hiên tre ngắm lục bình trôi và cano lướt sóng',
+    price: 'Từ 450.000đ/đêm',
     area: 'Thị xã Bình Minh, Vĩnh Long',
     typeLabel: 'Eco-Lodge Ven Sông',
     desc: 'Eco-lodge ven sông Hậu lộng gió, đón khách bằng cano riêng và ngắm hoàng hôn rực rỡ bên bến đò Bình Minh.',
@@ -152,6 +170,9 @@ const CURATED_HOMESTAYS: readonly CuratedHomestay[] = [
     id: 'ba-linh-homestay',
     name: 'Ba Linh Homestay Cù Lao',
     badge: 'Không Gian Vườn Cây Xưa',
+    ecoBadge: 'Nông nghiệp hữu cơ tuần hoàn',
+    balconyHighlight: 'Võng nằm sát mé nước, ngắm hoàng hôn đỏ ối',
+    price: 'Từ 380.000đ/đêm',
     area: 'Xã An Bình, Long Hồ',
     typeLabel: 'Vườn Trái Cây Gia Đình',
     desc: 'Nhà vườn truyền thống rợp bóng dừa nước, mâm cơm miệt vườn mẹ nấu và những đêm trăng thanh bình cù lao.',
@@ -261,12 +282,10 @@ function onImgFallback(e: Event) {
   inset: 0;
   background: linear-gradient(
     180deg,
-    rgba(var(--black-rgb), 0.25) 0%,
-    rgba(var(--black-rgb), 0.08) 30%,
-    rgba(var(--black-rgb), 0.55) 50%,
-    rgba(var(--black-rgb), 0.78) 65%,
-    rgba(var(--black-rgb), 0.92) 85%,
-    rgba(var(--black-rgb), 0.95) 100%
+    rgba(var(--black-rgb), 0.15) 0%,
+    rgba(var(--black-rgb), 0.45) 45%,
+    rgba(var(--black-rgb), 0.85) 75%,
+    rgba(var(--black-rgb), 0.96) 100%
   );
   pointer-events: none;
   z-index: 1;
@@ -276,6 +295,10 @@ function onImgFallback(e: Event) {
 .home-stay-card__top {
   position: relative;
   z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
   padding: var(--space-3) var(--space-4);
 }
 
@@ -292,6 +315,27 @@ function onImgFallback(e: Event) {
   box-shadow: var(--shadow-card-ambient);
   font-size: 11px;
   font-weight: var(--weight-bold);
+}
+
+.home-stay-card__eco-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 10px;
+  background: rgba(var(--black-rgb), 0.78);
+  color: var(--alluvial-gold);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border: 1px solid var(--border-liquid-glass);
+  border-radius: var(--radius-pill, 9999px);
+  box-shadow: var(--shadow-card-ambient);
+  font-size: 11px;
+  font-weight: var(--weight-bold);
+}
+
+.home-stay-card__eco-badge .line-icon {
+  color: var(--alluvial-gold);
+  font-size: 10px;
 }
 
 /* Bottom Content Overlay (<= 25% card height) */
@@ -324,9 +368,30 @@ function onImgFallback(e: Event) {
   color: var(--surface-white);
 }
 
-.home-stay-card__type {
+.home-stay-card__price {
+  font-family: var(--font-mono, monospace);
+  font-size: var(--text-xs);
+  color: var(--alluvial-gold);
+  font-weight: var(--weight-bold);
+}
+
+.home-stay-card__balcony-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 10px;
+  background: rgba(var(--black-rgb), 0.65);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border: 1px solid var(--border-liquid-glass);
+  border-radius: var(--radius-pill, 9999px);
+  font-size: 11px;
   color: var(--surface-white);
-  opacity: 0.85;
+  width: fit-content;
+}
+
+.home-stay-card__balcony-pill .line-icon {
+  color: var(--alluvial-gold);
 }
 
 .home-stay-card__title {
@@ -354,6 +419,10 @@ function onImgFallback(e: Event) {
   opacity: 0.9;
   line-height: 1.45;
   text-shadow: 0 1px 2px rgba(var(--black-rgb), 0.4);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 
 .home-stay-card__perks {
