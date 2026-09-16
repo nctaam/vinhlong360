@@ -193,7 +193,7 @@ function onImgFallback(e: Event) {
   max-width: var(--maxw);
   margin-inline: auto;
   padding-inline: var(--space-5);
-  padding-block: var(--space-8);
+  padding-block: clamp(var(--space-fib-4), 6vw, var(--space-fib-5));
 }
 
 .home-riverside-stays__eyebrow {
@@ -211,8 +211,8 @@ function onImgFallback(e: Event) {
 .home-riverside-stays__stays-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-  gap: var(--space-5);
-  margin-block-start: var(--space-6);
+  gap: var(--space-fib-4);
+  margin-block-start: var(--space-fib-4);
 }
 
 /* Full-Bleed Photographic Lookbook Card (100% photo visual area) */
@@ -223,10 +223,10 @@ function onImgFallback(e: Event) {
   flex-direction: column;
   justify-content: space-between;
   background: var(--color-canvas);
-  border: 1px solid var(--color-border);
+  border: 1px solid var(--border-liquid-glass, var(--color-border));
   border-radius: var(--radius-surface);
   overflow: hidden;
-  box-shadow: 0 2px 8px rgba(var(--black-rgb), 0.08);
+  box-shadow: var(--shadow-card-ambient);
   transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.2s ease, box-shadow 0.25s ease;
 }
 
@@ -285,10 +285,11 @@ function onImgFallback(e: Event) {
   padding: 3px 10px;
   background: rgba(var(--black-rgb), 0.78);
   color: var(--surface-white); /* WCAG 2.2 AAA >= 11:1 compliant */
-  backdrop-filter: blur(6px);
-  -webkit-backdrop-filter: blur(6px);
-  border: 1px solid rgba(var(--white-rgb), 0.2);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border: 1px solid var(--border-liquid-glass);
   border-radius: var(--radius-pill, 9999px);
+  box-shadow: var(--shadow-card-ambient);
   font-size: 11px;
   font-weight: var(--weight-bold);
 }
@@ -368,10 +369,11 @@ function onImgFallback(e: Event) {
   gap: 4px;
   padding: 2px 8px;
   background: rgba(var(--black-rgb), 0.65);
-  backdrop-filter: blur(4px);
-  -webkit-backdrop-filter: blur(4px);
-  border: 1px solid rgba(var(--white-rgb), 0.15);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border: 1px solid var(--border-liquid-glass);
   border-radius: var(--radius-pill, 9999px);
+  box-shadow: var(--shadow-card-ambient);
   font-size: 11px;
   color: var(--surface-white);
 }
@@ -413,11 +415,12 @@ function onImgFallback(e: Event) {
 
 /* Folk Experiences Strip */
 .home-riverside-stays__experiences {
-  margin-block-start: var(--space-8);
+  margin-block-start: var(--space-fib-5);
   padding: var(--space-5);
   background: var(--color-surface);
-  border: 1px solid var(--color-border);
+  border: 1px solid var(--border-liquid-glass, var(--color-border));
   border-radius: var(--radius-surface);
+  box-shadow: var(--shadow-card-ambient);
 }
 
 .home-riverside-stays__exp-header {
@@ -437,7 +440,7 @@ function onImgFallback(e: Event) {
 .home-riverside-stays__exp-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-  gap: var(--space-4);
+  gap: var(--space-fib-3);
 }
 
 .home-exp-card {
@@ -446,7 +449,9 @@ function onImgFallback(e: Event) {
   gap: var(--space-3);
   padding: var(--space-3);
   background: var(--color-canvas);
+  border: 1px solid var(--border-liquid-glass, var(--color-border));
   border-radius: var(--radius-control);
+  box-shadow: var(--shadow-card-ambient);
 }
 
 .home-exp-card__icon {

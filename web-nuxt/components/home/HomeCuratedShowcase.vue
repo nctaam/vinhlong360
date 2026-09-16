@@ -135,10 +135,13 @@
 
           <!-- Overlaid Bottom Content (<= 25% card height) -->
           <div class="home-curated-satellite__overlay home-curated-satellite__content">
-            <span class="home-curated-satellite__area">
-              <IconLine name="pin" />
-              <span>{{ item.area }}</span>
-            </span>
+            <div class="home-curated-satellite__meta">
+              <span class="home-curated-satellite__area">
+                <IconLine name="pin" />
+                <span>{{ item.area }}</span>
+              </span>
+              <span v-if="item.coordinates" class="home-curated-satellite__coords">{{ item.coordinates }}</span>
+            </div>
             <h4 class="home-curated-satellite__title">
               <NuxtLink :to="item.to">{{ item.title }}</NuxtLink>
             </h4>
@@ -177,6 +180,7 @@ interface CuratedSatellite {
   readonly title: string
   readonly tag: string
   readonly area: string
+  readonly coordinates?: string
   readonly summary: string
   readonly coverSrc: string
   readonly to: string
@@ -218,6 +222,7 @@ const satelliteItems: readonly CuratedSatellite[] = [
     title: 'Cù Lao An Bình & Vườn Trái Cây',
     tag: 'Sinh thái Miệt vườn',
     area: 'Long Hồ',
+    coordinates: '10.273° N, 105.986° E',
     summary: 'Miệt vườn trái cây ngút ngàn, sầu riêng Ri6 chín bùi và rạch dừa nước thanh bình giữa sông Tiền.',
     coverSrc: '/img/entities/cu-lao-an-binh.webp',
     to: '/dia-diem/cu-lao-an-binh',
@@ -227,6 +232,7 @@ const satelliteItems: readonly CuratedSatellite[] = [
     title: 'Chợ Nổi Trà Ôn Sông Hậu',
     tag: 'Thương hồ Sông nước',
     area: 'Trà Ôn',
+    coordinates: '9.962° N, 105.918° E',
     summary: 'Thương hồ sông Hậu họp chợ theo con nước sớm, rộn ràng tiếng cười nói và cây bẹo mời chào sản vật.',
     coverSrc: '/img/entities/khu-du-lich-cho-noi-tra-on.webp',
     to: '/dia-diem/khu-du-lich-cho-noi-tra-on',
@@ -236,6 +242,7 @@ const satelliteItems: readonly CuratedSatellite[] = [
     title: 'Chùa Hạnh Phúc Tăng (Sanghamangala)',
     tag: 'Tâm linh Di sản',
     area: 'Vũng Liêm',
+    coordinates: '10.121° N, 106.183° E',
     summary: 'Ngôi chùa Khmer cổ kính từ năm 632, kiến trúc tháp nhọn trầm mặc dưới bóng sao dầu nghìn năm.',
     coverSrc: '/img/entities/chua-shanghamangala-khmer-vung-liem.webp',
     to: '/dia-diem/chua-shanghamangala-khmer-vung-liem',
@@ -245,6 +252,7 @@ const satelliteItems: readonly CuratedSatellite[] = [
     title: 'KDL Sinh Thái Miệt Vườn Vinh Sang',
     tag: 'Điền dã Dân gian',
     area: 'An Bình, Long Hồ',
+    coordinates: '10.268° N, 105.992° E',
     summary: 'Trải nghiệm tát mương bắt cá, chèo xuồng mương liếp và nghe đờn ca tài tử bên vườn dừa trĩu quả.',
     coverSrc: '/img/entities/khu-du-lich-sinh-thai-miet-vuon-vinh-sang.webp',
     to: '/dia-diem/khu-du-lich-sinh-thai-miet-vuon-vinh-sang',
@@ -265,7 +273,7 @@ function onImgFallback(e: Event) {
   max-width: var(--maxw);
   margin-inline: auto;
   padding-inline: var(--space-5);
-  padding-block: var(--space-8);
+  padding-block: clamp(var(--space-fib-4), 6vw, var(--space-fib-5));
 }
 
 .home-curated-showcase__eyebrow {
@@ -283,8 +291,8 @@ function onImgFallback(e: Event) {
 .home-curated-showcase__layout {
   display: grid;
   grid-template-columns: 1fr;
-  gap: var(--space-6);
-  margin-block-start: var(--space-6);
+  gap: var(--space-fib-4);
+  margin-block-start: var(--space-fib-4);
 }
 
 @media (min-width: 960px) {
@@ -299,10 +307,10 @@ function onImgFallback(e: Event) {
   display: flex;
   flex-direction: column;
   background: var(--color-surface);
-  border: 1px solid var(--color-border);
+  border: 1px solid var(--border-liquid-glass, var(--color-border));
   border-radius: var(--radius-surface);
   overflow: hidden;
-  box-shadow: 0 4px 20px rgba(var(--black-rgb), 0.06);
+  box-shadow: var(--shadow-card-ambient);
   transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.25s ease, border-color 0.25s ease;
 }
 
@@ -368,10 +376,11 @@ function onImgFallback(e: Event) {
   padding: var(--space-1h) var(--space-3);
   background: rgba(var(--black-rgb), 0.75);
   color: var(--surface-white);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  border: 1px solid rgba(var(--white-rgb), 0.2);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border: 1px solid var(--border-liquid-glass);
   border-radius: var(--radius-pill, 9999px);
+  box-shadow: var(--shadow-card-ambient);
   font-size: var(--text-xs);
   font-weight: var(--weight-bold);
   letter-spacing: 0.02em;
@@ -390,9 +399,10 @@ function onImgFallback(e: Event) {
   border-radius: 50%;
   background: rgba(var(--black-rgb), 0.75);
   color: var(--surface-white);
-  border: 1px solid rgba(var(--white-rgb), 0.25);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid var(--border-liquid-glass);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  box-shadow: var(--shadow-card-ambient);
   cursor: pointer;
   font-size: 1.1rem;
   transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1),
@@ -459,7 +469,8 @@ function onImgFallback(e: Event) {
 
 .home-curated-lead__coords {
   font-family: var(--font-mono, monospace);
-  color: rgba(var(--white-rgb), 0.85);
+  color: var(--alluvial-gold);
+  font-weight: var(--weight-medium);
 }
 
 .home-curated-lead__title {
@@ -534,7 +545,7 @@ function onImgFallback(e: Event) {
 .home-curated-satellites {
   display: grid;
   grid-template-columns: 1fr;
-  gap: var(--space-4);
+  gap: var(--space-fib-3);
 }
 
 @media (min-width: 640px) {
@@ -551,10 +562,10 @@ function onImgFallback(e: Event) {
   flex-direction: column;
   justify-content: space-between;
   background: var(--color-canvas);
-  border: 1px solid var(--color-border);
+  border: 1px solid var(--border-liquid-glass, var(--color-border));
   border-radius: var(--radius-surface);
   overflow: hidden;
-  box-shadow: 0 1px 4px rgba(var(--black-rgb), 0.08);
+  box-shadow: var(--shadow-card-ambient);
   transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
@@ -614,12 +625,13 @@ function onImgFallback(e: Event) {
   padding: 3px 10px;
   background: rgba(var(--black-rgb), 0.78);
   color: var(--surface-white);
-  border: 1px solid rgba(var(--white-rgb), 0.2);
+  border: 1px solid var(--border-liquid-glass);
   border-radius: var(--radius-pill, 9999px);
   font-size: 11px;
   font-weight: var(--weight-bold);
-  backdrop-filter: blur(6px);
-  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  box-shadow: var(--shadow-card-ambient);
 }
 
 /* Bottom Content Overlay (<= 25% card height) */
@@ -631,6 +643,20 @@ function onImgFallback(e: Event) {
   gap: var(--space-1h);
   padding: var(--space-4);
   color: var(--surface-white);
+}
+
+.home-curated-satellite__meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+}
+
+.home-curated-satellite__coords {
+  font-family: var(--font-mono, monospace);
+  font-size: 11px;
+  color: var(--alluvial-gold);
+  font-weight: var(--weight-medium);
 }
 
 .home-curated-satellite__area {

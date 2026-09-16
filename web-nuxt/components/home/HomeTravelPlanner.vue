@@ -158,7 +158,7 @@ const activeItinerary = computed(() => {
   max-width: var(--maxw);
   margin-inline: auto;
   padding-inline: var(--space-5);
-  padding-block: var(--space-8);
+  padding-block: clamp(var(--space-fib-4), 6vw, var(--space-fib-5));
 }
 
 .home-travel-planner__eyebrow {
@@ -177,7 +177,7 @@ const activeItinerary = computed(() => {
   display: flex;
   flex-wrap: wrap;
   gap: var(--space-3);
-  margin-block: var(--space-6) var(--space-4);
+  margin-block: var(--space-fib-4) var(--space-fib-3);
 }
 
 .home-planner-tab-btn {
@@ -187,7 +187,7 @@ const activeItinerary = computed(() => {
   gap: var(--space-3);
   padding: var(--space-2) var(--space-5);
   background: var(--color-surface);
-  border: 1px solid var(--color-border);
+  border: 1px solid var(--border-liquid-glass, var(--color-border));
   border-radius: var(--radius-pill, 9999px);
   color: var(--color-text);
   font-family: inherit;
@@ -235,9 +235,9 @@ const activeItinerary = computed(() => {
   gap: var(--space-6);
   padding: clamp(var(--space-5), 4vw, var(--space-8));
   background: var(--color-surface);
-  border: 1px solid var(--color-border);
+  border: 1px solid var(--border-liquid-glass, var(--color-border));
   border-radius: var(--radius-surface);
-  box-shadow: 0 4px 20px rgba(var(--black-rgb), 0.06);
+  box-shadow: var(--shadow-card-ambient);
 }
 
 .home-planner-card__header {

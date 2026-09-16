@@ -72,3 +72,7 @@ scratch-axe-detail.json
 web-nuxt/public/maplibre-gl-csp-worker.js
 web-nuxt/public/maplibre-gl-csp.js
 web-nuxt/public/maplibre-gl.css
+
+# Local Stitch design cache
+.stitch/
+

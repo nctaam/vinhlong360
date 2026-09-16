@@ -158,7 +158,7 @@ function onImgFallback(e: Event) {
   max-width: var(--maxw);
   margin-inline: auto;
   padding-inline: var(--space-5);
-  padding-block: var(--space-8);
+  padding-block: clamp(var(--space-fib-4), 6vw, var(--space-fib-5));
 }
 
 .home-culinary-trail__eyebrow {
@@ -176,8 +176,8 @@ function onImgFallback(e: Event) {
 .home-culinary-trail__grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: var(--space-5);
-  margin-block-start: var(--space-6);
+  gap: var(--space-fib-4);
+  margin-block-start: var(--space-fib-4);
 }
 
 @media (min-width: 1024px) {
@@ -193,10 +193,10 @@ function onImgFallback(e: Event) {
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  border: 1px solid var(--color-border);
+  border: 1px solid var(--border-liquid-glass, var(--color-border));
   border-radius: var(--radius-surface);
   overflow: hidden;
-  box-shadow: 0 2px 8px rgba(var(--black-rgb), 0.08);
+  box-shadow: var(--shadow-card-ambient);
   transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.2s ease, box-shadow 0.25s ease;
   background: var(--color-canvas);
 }
@@ -266,10 +266,11 @@ function onImgFallback(e: Event) {
   padding: 3px 10px;
   background: rgba(var(--black-rgb), 0.78);
   color: var(--surface-white);
-  backdrop-filter: blur(6px);
-  -webkit-backdrop-filter: blur(6px);
-  border: 1px solid rgba(var(--white-rgb), 0.2);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border: 1px solid var(--border-liquid-glass);
   border-radius: var(--radius-pill, 9999px);
+  box-shadow: var(--shadow-card-ambient);
   font-family: var(--font-mono, monospace);
   font-size: var(--text-xs);
   font-weight: var(--weight-bold);
@@ -279,10 +280,11 @@ function onImgFallback(e: Event) {
   padding: 3px 10px;
   background: rgba(var(--black-rgb), 0.78);
   color: var(--surface-white);
-  backdrop-filter: blur(6px);
-  -webkit-backdrop-filter: blur(6px);
-  border: 1px solid rgba(var(--white-rgb), 0.2);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border: 1px solid var(--border-liquid-glass);
   border-radius: var(--radius-pill, 9999px);
+  box-shadow: var(--shadow-card-ambient);
   font-size: 11px;
   font-weight: var(--weight-semibold);
 }
@@ -330,11 +332,12 @@ function onImgFallback(e: Event) {
   align-items: center;
   gap: 6px;
   padding: 4px 10px;
-  background: rgba(var(--black-rgb), 0.65);
-  border: 1px solid rgba(var(--white-rgb), 0.2);
-  backdrop-filter: blur(4px);
-  -webkit-backdrop-filter: blur(4px);
+  background: rgba(var(--black-rgb), 0.70);
+  border: 1px solid var(--border-liquid-glass);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
   border-radius: var(--radius-pill, 9999px);
+  box-shadow: var(--shadow-card-ambient);
   font-size: 11px;
   color: var(--surface-white);
   width: fit-content;
