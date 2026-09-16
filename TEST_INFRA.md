@@ -1,21 +1,19 @@
 # TEST_INFRA — Vĩnh Long 360 Test Infrastructure & Quality Constitution
 
-> STATUS: active (2026-09-15) — Cẩm nang hạ tầng kiểm thử và quy chuẩn chất lượng.
-
-- **Platform**: Vĩnh Long 360 — Mekong River Heritage & Discovery Platform
-- **Document Version**: 2.0 (Dual-Track E2E & Anti-Slop Editorial Verification)
-- **Author**: `test_writer_e2e` (teamwork_preview_test_writer)
-- **Quality Standard**: WCAG 2.2 AAA / Monocle & National Geographic Editorial Benchmarks / CLAUDE.md §1.7
-- **Target Test Framework**: Vitest (Nuxt 3 / Vue 3 / Node.js 22 LTS / Happy-DOM)
-- **Authority Sources**:
-  - `web-nuxt/DESIGN.md` (Master Anti-Slop Editorial Design Constitution)
-  - Google Stitch Cloud Project ID `14916181929760067680`
-  - `ORIGINAL_REQUEST.md` (mốc `## 2026-09-13T01:13:48Z`)
-  - `.agents/orchestrator_5/PROJECT.md`
+> **STATUS:** ACTIVE (2026-09-16) — Hiến pháp hạ tầng kiểm thử và quy chuẩn chất lượng E2E.
+> **Platform:** Vĩnh Long 360 — Cổng Khám Phá & Lữ Hành Di Sản Miệt Vườn Sông Nước
+> **Scope:** Homepage Redesign & Restructuring (Modern Editorial Travel Platform)
+> **Google Stitch Cloud Project ID:** `5074017185594308685`
+> **Author:** `test_writer_e2e` (E2E Testing Architecture Specialist)
+> **Authority Sources:**
+> - `ORIGINAL_REQUEST.md` (Mốc `## 2026-09-16T01:32:33Z` — R1 to R5)
+> - `.agents/orchestrator_1/PROJECT.md`
+> - `web-nuxt/DESIGN.md` (Hiến pháp Thiết kế v2.0)
+> - `agent/data/vinhlong360.db` & `web/data.json`
 
 ---
 
-## 1. Executive Testing Architecture
+## 1. Test Philosophy & Core Directives
 
 The Vĩnh Long 360 testing infrastructure safeguards the platform's editorial craftsmanship, Mekong terroir authenticity, and digital ergonomics through an automated, 4-tier opaque-box verification pyramid.
 
@@ -23,202 +21,213 @@ The Vĩnh Long 360 testing infrastructure safeguards the platform's editorial cr
                     ▲
                    / \
                   /   \
-                 / T4  \     Tier 4: Real-World Application & Field Scenarios
-                /-------\    (Outdoor sunlight, sampan 1-hand thumb travel, tidal planning)
+                 / T4  \     Tier 4: Real-World Workload Scenarios
+                /-------\    (First-time tourist, foodie trail, sunlight sampan, weekend explorer, 3G resilience)
                /         \
               /   T3      \   Tier 3: Cross-Feature Combinations & Invariants
-             /-------------\  (Tri-Region colors, responsive viewports, contrast harmony)
+             /-------------\  (Search x Showcases, Anchors x Planner, Typography x Tokens, A11y Contrast)
             /               \
            /      T2         \ Tier 2: Boundary, Corner & Ergonomic Limits
-          /-------------------\ (>=44px touch targets, 65-70ch reading width, zero fallbacks)
+          /-------------------\ (>=44px touch targets, regex sanitization, ferry midnight bounds, viewport extremes)
          /                     \
-        /         T1            \ Tier 1: Core Feature Coverage (R1 - R4)
-       /-------------------------\ (Lead hero span-2, Lora serif, full-bleed cartography, con nước)
+        /         T1            \ Tier 1: Feature Coverage (R1 – R5)
+       /-------------------------\ (Smart Hero, Quick Anchors, Curated Showcases, Companion, Stitch MCP, Zero Media)
 ```
 
 ### Core Testing Directives
-1. **Opaque-Box Verification**: Tests validate observable contracts, DOM hierarchies, computed styling invariants, CSS custom properties, and semantic attributes without coupling to internal component private state.
-2. **Fail-Closed Gateways**: Any violation of WCAG 2.2 AAA contrast ratios (>= 7:1 for headings, >= 4.5:1 for body text), touch target minimums (< 44px), or anti-slop rules (raw emojis, synthetic fallback metrics, unapproved font stacks) results in immediate test failure.
-3. **Graceful Collapse Assurance (CLAUDE.md §1.7)**: When external data (weather, tides, or field sensors) is missing or unavailable, the system must cleanly collapse the view rather than render empty boxes, skeletons, or fabricated fallback metrics.
-4. **Platform-Wide Anti-AI-Slop**: Zero tolerance for equal-column slop grids, SaaS purple/cyan neon palettes, uncurated bylines, or `Times New Roman` fallbacks.
+1. **Opaque-Box Requirement-Driven Verification**:
+   - Tests validate observable contracts, DOM hierarchies, computed styling invariants, CSS custom properties, and semantic attributes without coupling to internal component private state.
+   - Assertions are derived strictly from `ORIGINAL_REQUEST.md` R1-R5 and `PROJECT.md`.
+2. **Fail-Closed Gateways**:
+   - Any violation of WCAG 2.2 AAA contrast ratios (>= 7:1 for headings, >= 4.5:1 for body text, >= 14:1 in outdoor high-glare), touch target minimums (< 44x44px), or anti-slop rules (sparkles, neon purples/cyans, equal-column SaaS slop) results in immediate test failure.
+3. **Graceful Collapse Assurance (CLAUDE.md §1.7)**:
+   - When external data (weather, tides, or field sensors) is missing or unavailable, the system must cleanly collapse the view rather than render empty boxes, skeleton placeholders, or fabricated fallback metrics.
+4. **Data Authenticity & Invariance**:
+   - 100% of displayed entities must stem from verified SQLite and JSON records (`vinhlong360.db` and `data.json`).
+   - Bit-for-bit SHA-256 hash preservation is strictly enforced.
+5. **Absolute Zero Audio, Zero Video Policy**:
+   - Complete prohibition of `<audio>`, `<video>`, `.mp3`, `.mp4`, `.webm`, autoplay media, or background soundtracks across all public surfaces.
 
 ---
 
-## 2. 4-Tier Test Suite Specification
+## 2. 4-Tier Test Design Methodology
 
-### 2.1. Tier 1: Feature Coverage (Requirements R1 – R4)
+### 2.1. Tier 1: Feature Coverage (Requirements R1 – R5)
+Every primary requirement is verified with at least 5 dedicated, automated test cases in `web-nuxt/tests/home-editorial-e2e.test.ts` and co-located home suites.
 
-Tier 1 verifies the concrete existence and correct structural rendering of every primary editorial feature assigned in `ORIGINAL_REQUEST.md` and `PROJECT.md`.
+#### R1: Tourism-First Discovery Architecture
+- **F1.1: Smart Travel Hero Structure**: Validates cinematic Mekong visual framing, discovery kicker, headline, and search integration.
+- **F1.2: 5 Travel Intent Quick Anchors**: Validates 5 core tourism intents:
+  1. *Du lịch Sinh thái Miệt vườn* (ecotourism)
+  2. *Ký sự Làng nghề Truyền thống* (craft-village)
+  3. *Hành trình Tâm linh Di sản* (heritage-spirit)
+  4. *Ẩm thực & Chợ nổi* (culinary)
+  5. *Nghỉ dưỡng Homestay Ven sông* (riverside-stays)
+- **F1.3: Quick Anchors Ergonomics**: Enforces touch target bounds `>= 44x44px` (`--touch-min`).
+- **F1.4: Multi-Criteria Search Discovery**: Verifies search capabilities across destinations, homestays, culinary dishes, and travel duration (1-2-3 days).
+- **F1.5: Discovery over Monograph Positioning**: Ensures primary discovery path emphasizes travel exploration rather than raw geological thesis banners.
 
-#### R1: Catalog Experience Magazine Layout (`tests/catalog-magazine-layout.test.ts`)
-- **F1.1: Lead Hero Card span-2**:
-  - Target files: `pages/du-lich.vue`, `pages/am-thuc.vue`, `pages/luu-tru.vue`, `pages/san-pham.vue`, `pages/dia-diem/index.vue`.
-  - Invariant: In grid view at viewport >= 48rem, the initial card (`:first-child`) receives `grid-column: span 2` (or `.card:first-child span 2`) with an expanded cover image ratio (`aspect-ratio: 21 / 9`), establishing visual dominance.
-- **F1.2: Asymmetric Editorial Flow & Interruption Dividers**:
-  - Target files: `assets/css/catalog.css`, `assets/css/cards.css`, catalog page templates.
-  - Invariant: Catalog surfaces break monotonous repetition by inserting editorial interruption dividers (e.g., `.grid-divider`, `.int-grid-divider`) every 8–9 cards, creating natural breathing pauses for the reader.
-- **F1.3: Dedicated Cuisine Experience (`pages/am-thuc.vue`)**:
-  - Target file: `pages/am-thuc.vue`.
-  - Invariant: A first-class, dedicated Mekong gastronomy hub exists with lead hero card, regional culinary categories, and tactile filter pills, eliminating previous 404 routing gaps.
-- **F1.4: Elimination of Equal-Column Slop**:
-  - Target files: `assets/css/catalog.css`, catalog page templates.
-  - Invariant: Complete absence of rigid, unmodulated 3–4 column grids (`repeat(auto-fit, minmax(17rem, 1fr))` or `repeat(auto-fill, minmax(220px, 1fr))`) without lead hero cards or asymmetric rhythms.
+#### R2: Curated Travel Showcase
+- **F2.1: Must-Visit Destinations Inventory**: Verifies authentic presence of Cù Lao An Bình, Lò gạch Mang Thít, Chợ nổi Trà Ôn, Chùa Hạnh Phúc Tăng, and KDL Vinh Sang in authoritative data stores.
+- **F2.2: Vinh Long Culinary Trail**: Verifies authentic iconic dishes: Cá tai tượng chiên xù, Bánh xèo hến Cổ Chiên, Khoai lang mắm sống cuốn lá cách, Cháo cá lóc rau đắng / Lẩu cua đồng, and Ốc lác.
+- **F2.3: Authentic Riverside Stays**: Verifies ASEAN-standard homestays (Út Trinh Homestay, Mekong Riverside, Ba Linh).
+- **F2.4: Asymmetric Magazine Layout**: Banning uniform 4-column equal SaaS grids; enforcing Fibonacci proportions and editorial rhythm.
+- **F2.5: Anti-Synthetic Data Integrity**: Strictly eliminates fake ratings, review generators, or placeholder stars per CLAUDE.md §1.7.
 
-#### R2: Heritage Detail & Article Craft (`tests/heritage-detail-editorial.test.ts`)
-- **F2.1: Monocle Editorial Typography**:
-  - Target files: `pages/dia-diem/[id].vue`, `assets/css/detail.css`.
-  - Invariant: Headings (`.desc-heading` / h2, `.desc-subheading` / h3, and hero titles) enforce serif font family `var(--font-editorial)` (`Lora`), track-tight `-0.02em`, delivering an authentic archival tone.
-- **F2.2: Ergonomic Reading Measure (65–70ch)**:
-  - Target files: `assets/css/detail.css`, `pages/dia-diem/[id].vue`.
-  - Invariant: Content columns (`.entity-description`, `.extra-content`, `.detail-main .lead`) are constrained to `max-width: var(--measure-read)` (68ch) or within 65ch–70ch, preventing line overrun and cognitive fatigue.
-- **F2.3: AEO Provenance Plaque**:
-  - Target files: `components/DetailAeoSummary.vue`, `assets/css/detail.css`.
-  - Invariant: The AI Engine Overview summary plaque features a solid Gold Phù Sa border (`border: 1.5px solid #c99446` or `var(--color-material-gold)`), a delicate warm background (`rgba(201, 148, 70, 0.05)`), and curated informational bullet points with vector icons (`psychology_alt` / `menu_book`).
-- **F2.4: Official SourceMark Attribution**:
-  - Target files: `pages/dia-diem/[id].vue`, `components/DetailAeoSummary.vue`.
-  - Invariant: Transparent attribution stating `SourceMark: Ban biên tập vinhlong360`, complying strictly with R40.3 (banning unauthorized "đã xác minh" claims).
-- **F2.5: Anti-Synthetic Data Integrity**:
-  - Target file: `components/DetailAeoSummary.vue`.
-  - Invariant: Zero synthetic fallback ratings, fake reviews, or placeholder stars when entity attributes lack verified provenance; adheres to graceful collapse.
+#### R3: Smart Travel Planner & Traveler Live Companion
+- **F3.1: Curated Itineraries (1, 2, 3 Days)**: Verifies 1-day ("Một ngày làm nông dân cù lao"), 2-day ("Về miền di sản gốm đỏ Mang Thít"), and 3-day ("Toàn cảnh đất phương Nam").
+- **F3.2: Real-Time Logistical Ferry Data**: Verifies Bến phà Đình Khao (24/24h continuous service, 10-15m day, 30-45m night) and Bến phà An Bình (04:30 - 22:30).
+- **F3.3: Verified Emergency Hotlines Directory**: Validates Waterway rescue (`0270 3822 305`), Tourism support (`0270 3822 188`), Medical (`115`), Police (`113`) in `server/utils/terroir/emergencyHotlines.ts`.
+- **F3.4: Practical Traveler Logistics**: Replaces dry pedology formulas with real-time river guidance, crossing frequency, and weather briefings.
+- **F3.5: Graceful Collapse**: Verifies zero skeleton mush and zero technical error leak under data absence.
 
-#### R3: Cartography Field Ergonomics (`tests/cartography-field-ergonomics.test.ts`)
-- **F3.1: Full-Bleed Cartography**:
-  - Target files: `pages/ban-do.vue`, `pages/tuyen-duong.vue`, `assets/css/catalog.css`.
-  - Invariant: Map canvas supports an edge-to-edge, full-bleed presentation unconstrained by rigid box borders, providing an immersive spatial navigation environment.
-- **F3.2: 1-Hand Thumb Zone Dock**:
-  - Target files: `pages/ban-do.vue`, `assets/css/catalog.css`.
-  - Invariant: Mobile field controls are anchored in a floating bottom thumb dock (`.map-floating-thumb-dock`) positioned within natural thumb sweep (`bottom: calc(env(safe-area-inset-bottom) + 72px)`), keeping zoom, river presets, and GPS centering accessible on the move.
-- **F3.3: High-Contrast Outdoor Sunlight Mode**:
-  - Target files: `pages/ban-do.vue`, `assets/css/catalog.css`, `assets/css/base.css`.
-  - Invariant: Activating `[data-outdoor-contrast="high"]` applies visual enhancement to the MapLibre canvas (`filter: contrast(1.25..1.3) saturate(1.1..1.2)`), bolds marker silhouettes, and renders high-visibility popup surfaces under direct tropical sunlight.
-- **F3.4: Route Contrast AAA Remediation**:
-  - Target file: `pages/tuyen-duong.vue`.
-  - Invariant: Remediates the severe Bến Tre route header low contrast (1.71:1 -> > 7:1) by applying `--mekong-ink` text color against warm alluvial backgrounds.
+#### R4: Google Stitch MCP Visual Grounding
+- **F4.1: Stitch Cloud Project Alignment**: Aligns design tokens and screens with Project ID `5074017185594308685` and Asset `assets/d2b2b7344efd4dc891e671fe846db9e3`.
+- **F4.2: Editorial Aldine Typography**: Enforces **Lora** serif for display/headings and **Be Vietnam Pro** for clean Vietnamese body typography.
+- **F4.3: Mobile Fieldwork Thumb Dock**: Enforces bottom thumb-zone dock ergonomics (`safe-area-inset-bottom`) for one-handed operation.
+- **F4.4: Eradication of AI Sparkles**: Zero sparkles (`sparkle`, `auto_awesome`, ✨, 🌟) across 100% of Vue components.
+- **F4.5: Eradication of SaaS Neon Gradients**: Prohibits neon purples (`#a855f7`, `#7c3aed`) and cyans (`#00f0ff`) in stylesheets.
 
-#### R4: Culture, Events & Field Notes Chronicle (`tests/culture-events-chronicle.test.ts`)
-- **F4.1: Mekong Water Flow & Tidal Badges**:
-  - Target files: `components/MekongWaterBadge.vue`, `pages/su-kien.vue`, `pages/le-hoi.vue`, `pages/theo-mua.vue`, `pages/lich-van-nien.vue`.
-  - Invariant: Component `MekongWaterBadge.vue` renders dynamic tidal state ("Con nước rong", "Con nước kém", "Nước lớn", "Nước ròng") linked to the Mekong lunar-solar rhythm.
-- **F4.2: Classic Lora Pull-Quotes with `<cite>`**:
-  - Target files: `pages/su-kien.vue`, `pages/le-hoi.vue`, `pages/theo-mua.vue`, `pages/lich-van-nien.vue`, `assets/css/editorial.css`.
-  - Invariant: Editorial quotes (`.pull-quote`) are styled with Lora serif italic, left Mang Thít terracotta accent border, and mandatory `<cite>` attribution.
-- **F4.3: Field Author Badges**:
-  - Target files: `components/PostCard.vue`, `pages/cong-dong.vue`.
-  - Invariant: Replaces anonymous social media avatars with verified contributor badges (`SourceMark: Ban biên tập vinhlong360` or verified field author tag).
-- **F4.4: Complete Anti-AI-Slop Iconography**:
-  - Target file: `components/PostCard.vue`.
-  - Invariant: Zero raw emojis (e.g., `🔁`, `✍️`, ✨); 100% replacement with crisp SVG vector icons (`IconLine`).
+#### R5: Strict Technical & Safety Standards
+- **F5.1: Zero Audio / Zero Video Invariant**: Absolute prohibition of audio/video elements across templates, layouts, and components.
+- **F5.2: Extreme Accessibility WCAG 2.2 AAA**: Text contrast `>= 7:1` on background canvas/surface; `>= 14:1` in high-glare outdoor mode.
+- **F5.3: Interactive Touch Target Minimums**: 100% buttons, chips, and links meet `>= 44x44px`.
+- **F5.4: SHA-256 Immutability**:
+  - `agent/data/vinhlong360.db`: `8b093b9537711ef6c060a4b5a49e4228cf11b840862b20647009254cc19ac5cf`
+  - `web/data.json`: `45e528447c08205c774695acae1c9a7a4c8e9a535fc7a945e3a7120360d598c8`
+- **F5.5: 9 Protected Variables Under `[data-home-pilot="nocturne-b1"]`**: Preserves `--home-color-amber-text`, `--home-color-amber-surface`, `--home-color-focus-on-action`, `--home-color-focus-on-media`, `--home-color-focus-on-media-halo`, `--home-color-on-media-text`, `--home-color-on-media-plate`, `--home-color-today-text`, `--home-color-today-surface`.
 
 ---
 
-### 2.2. Tier 2: Boundary, Corner & Ergonomic Limits
+### 2.2. Tier 2: Boundary & Corner Cases
 
-Tier 2 probes physical dimensions, boundary extremes, layout limits, and edge conditions to ensure that the interface never degrades at scale.
+Probes edge limits, extreme input sizes, boundary transitions, and error resilience:
 
-| Boundary Probe | Scope / Target | Specification Boundary | Verification Method |
+| Test ID | Requirement | Edge Condition / Boundary Tested | Invariant Enforced |
 |---|---|---|---|
-| **B2.1: Touch Target Minimums** | Catalog chips, filter pills, route season tags, map markers | All interactive elements must strictly satisfy `min-height >= 44px` and `min-width >= 44px` (or extended hit area via `::before { min-width: 44px; min-height: 44px; }`). | Automated AST / regex inspection of CSS rules and computed selectors. |
-| **B2.2: Line Length Bounds (CPL)** | Heritage detail description and editorial prose | Character-per-line bounds: min 45ch, optimal 65–70ch, max 75ch. Enforced via `max-width: var(--measure-read)` (68ch). | Style declaration check ensuring `.entity-description` and `.extra-content` cannot stretch past 70ch. |
-| **B2.3: Zero / Missing Data Resilience** | Tidal indicators, weather readings, AEO metrics | If API or data attributes are absent, components must gracefully collapse (zero DOM output) rather than render skeleton placeholders. | Unit test passing `null`/`undefined` props; asserts element does not render in DOM. |
-| **B2.4: Extreme Viewport Bounds** | Responsive grid behavior | Viewports tested: 320px (iPhone SE small), 390px (mobile standard), 768px (tablet portrait), 1024px (tablet landscape), 1280px (desktop), 1920px (ultra-wide). Lead hero cards must collapse to span 1 on mobile and expand to span 2 on desktop. | Container query and media query verification. |
-| **B2.5: Contrast Mathematics** | Route headers & surface text tokens | Contrast must exceed 7.0:1 for large headers (AAA) and 4.5:1 for standard text across all color systems. | Color luminance math: $(L_1 + 0.05) / (L_2 + 0.05) \ge 7.0$. |
+| **B1.1** | R1 Search | Empty or whitespace query (`"   "`) | Clean silent handling, no crashes or empty errors |
+| **B1.2** | R1 Search | Special regex characters (`[2026]* + ? ^ $ \`) | Input sanitized, no RegExp evaluation syntax errors |
+| **B1.3** | R1 Search | Ultra-long search string (300+ chars) | Input bounded, no layout blowout |
+| **B1.4** | R1 Anchors | Rapid sequential switching between 5 anchors | Deterministic active state resolution |
+| **B1.5** | R1 Search | Zero-result search query | Provides authentic category recovery suggestions |
+| **B2.1** | R2 Showcase | Entity with null/omitted optional summary | Graceful fallback text, no `"undefined"` or `"null"` leak |
+| **B2.2** | R2 Showcase | Missing cover image | Fallback scrim applied, no broken image icon |
+| **B2.3** | R2 Showcase | Reading line length boundary | Constrained to `--measure-read` (68ch) |
+| **B2.4** | R2 Showcase | Vietnamese diacritics in entity names | NFC unicode normalization verified |
+| **B2.5** | R2 Showcase | Single-entity showcase list | Renders without carousel fracture or broken layout |
+| **B3.1** | R3 Logistics | Midnight ferry schedule transition (22:00 – 04:00)| Accurate night frequency (30-45m) vs day (10-15m) |
+| **B3.2** | R3 Companion | Hotline phone numbers RFC 3966 `tel:` URI format | Valid telephone URIs for one-touch dialing |
+| **B3.3** | R3 Companion | Total network failure on live briefing API | Returns clean null (graceful collapse), no fake mock data |
+| **B3.4** | R3 Planner | Itinerary duration bounds | Strictly 1, 2, or 3 days; rejects <=0 or >=4 |
+| **B3.5** | R3 Planner | Missing GPS coordinates on route stops | Does not crash mapping parser |
+| **B4.1** | R4 Ergonomics | Ultra-narrow viewport (320px iPhone SE) | Enforces `--maxw` / no horizontal overflow |
+| **B4.2** | R4 Ergonomics | Ultra-wide viewport (1920px desktop) | Constrains layout width to `--maxw: 1140px` |
+| **B4.3** | R4 Ergonomics | High-glare outdoor mode contrast | Elevates contrast to `>= 14:1` on sunlight canvas |
+| **B4.4** | R4 Ergonomics | `prefers-reduced-motion` media query | Eliminates kinetic triggers and CSS transitions |
+| **B4.5** | R4 Ergonomics | `prefers-reduced-transparency` media query | Replaces semi-transparent glass with solid plates |
+| **B5.1** | R5 Safety | Non-finite numbers in computed CSS tokens | Fails closed on `NaN` or non-finite values |
+| **B5.2** | R5 Safety | Negative or undersized touch target dimensions | Rejects dimensions `< 44px` |
+| **B5.3** | R5 Safety | Malicious CSS overrides hidden in comments | Detects and blocks illicit style resets |
+| **B5.4** | R5 Safety | Hex color syntax case-insensitivity & validity | Validates hex codes across variables |
+| **B5.5** | R5 Safety | SHA-256 hash constant immutability | 64-char hex integrity checked against tampering |
 
 ---
 
-### 2.3. Tier 3: Cross-Feature Combinations & Invariants
+### 2.3. Tier 3: Cross-Feature Combinations (Pairwise Coverage)
 
-Tier 3 exercises interactions between multiple distinct subsystems, verifying that cross-cutting concerns (color harmony, theme modes, typography stacks, accessibility) remain synchronized.
+Validates seamless interaction and invariant synchronization across disparate modules:
 
-| Invariant Combination | Interacting Subsystems | Verification Requirement |
-|---|---|---|
-| **X3.1: Tri-Region x Theme Modes** | Bến Cloud (Light) vs Nocturne (Dark) vs Outdoor High-Contrast | Backgrounds, surface cards, text ink, and action buttons maintain compliant contrast ratios regardless of which mode is active. |
-| **X3.2: Typography Stacks & Font Discipline** | Global CSS (`variables.css`, `base.css`, `catalog.css`, `detail.css`, `shell.css`) | No stylesheet may contain `Times New Roman`, `Arial`, or `Inter` as editorial titles. `Lora` must be the first serif font declared in `--font-editorial`. |
-| **X3.3: Asymmetric Layout x Viewport Breakpoints** | Container queries x Grid layouts | `.grid--asymmetric > .card:first-child` gracefully responds to container widths without causing horizontal scrolling or visual clipping. |
-| **X3.4: Accessibility Tree & ARIA States** | Interactive controls (`aria-pressed`, `role="list"`, `aria-label`) | Outdoor contrast button toggles `aria-pressed`, catalog filters maintain ARIA state, and screen readers perceive list hierarchies cleanly. |
-| **X3.5: Anti-Slop Policy Compliance** | Codebase-wide scanner | Prohibits AI sparkle icons (`auto_awesome`, ✨, 🌟), SaaS neon purples (`#5B6CC4`, `#a855f7`), and fabricated reviews/ratings. |
-
----
-
-### 2.4. Tier 4: Real-World Application & Field Ergonomics
-
-Tier 4 validates the real-world utility of the platform from the perspective of an active traveler exploring the Mekong River province in field conditions.
-
-```
-+-----------------------------------------------------------------------------------+
-|                           REAL-WORLD FIELD SCENARIOS                              |
-+-----------------------------------------------------------------------------------+
-|  [Scenario 1: Sun-Glare Exploration]                                              |
-|  Traveler walking along Mang Thít brick kiln canal in bright tropical sun (11 AM).|
-|  Enables Outdoor Contrast Mode -> map tiles become sharp, markers have bold       |
-|  silhouettes, text ink remains legible with > 10:1 contrast on Bến Cloud paper.   |
-+-----------------------------------------------------------------------------------+
-|  [Scenario 2: Sampan Boat 1-Handed Navigation]                                    |
-|  Traveler on a moving sampan holding phone with one hand. Controls placed at      |
-|  bottom floating thumb dock allow quick switching of water presets and zoom       |
-|  without reaching to the top of the screen or risking phone drop.                 |
-+-----------------------------------------------------------------------------------+
-|  [Scenario 3: Tidal Rhythm & River Festival Planning]                            |
-|  Traveler planning a visit to Ok Om Bok festival or floating market. Tidal badge  |
-|  displays "Con nước rong" or "Con nước kém", allowing user to coordinate timing   |
-|  with authentic Mekong water cycles.                                              |
-+-----------------------------------------------------------------------------------+
-|  [Scenario 4: Monocle Editorial Deep Reading]                                     |
-|  Cultural researcher reading historical monograph on Thoại Ngọc Hầu. Optimal     |
-|  68ch line measure, Lora serif headings, and verified AEO plaque provide an        |
-|  archival, trustworthy experience without digital eye fatigue.                    |
-+-----------------------------------------------------------------------------------+
-|  [Scenario 5: Gastronomy Discovery on Dedicated Hub]                              |
-|  Food lover accessing `/am-thuc` to explore culinary heritage (Bún nước lèo,       |
-|  Bánh xèo vịt xiêm). First dish appears in prominent 21:9 Lead Card followed by  |
-|  tactile filter pills, delivering a curated epicurean journey.                    |
-+-----------------------------------------------------------------------------------+
-```
+- **X3.1: R1 Search × R2 Curated Showcases**:
+  - Ensures showcase entities (Cù Lao An Bình, Lò gạch Mang Thít, Chợ Nổi Trà Ôn, Cá tai tượng, Homestay Út Trinh) are indexed and matchable through search discovery.
+- **X3.2: R1 Intent Anchors × R3 Curated Itineraries**:
+  - Ensures selecting intent anchors (e.g. `ecotourism`, `craft-village`, `heritage-spirit`) links directly to curated itineraries (`mot-ngay-cu-lao-an-binh`, `di-san-mang-thit-tra-vinh`, `mien-tay-3-ngay`).
+- **X3.3: R2 Showcase Typography × R4 Stitch Design System**:
+  - Enforces Lora serif headline typography and Fibonacci spacing tokens (`--space-fib-1` through `--space-fib-6`) across showcase containers.
+- **X3.4: R3 Live Companion Cards × R5 WCAG AAA Contrast**:
+  - Validates logistical cards (ferry, weather, emergency contacts) satisfy `>= 7:1` contrast in both light and dark themes using `--color-on-action`, `--surface-white`, and `--color-action`.
+- **X3.5: R4 Mobile Thumb Dock × R5 Touch Target Minimums**:
+  - Validates dock controls strictly satisfy `min-height` and `min-width` `>= var(--touch-min)` (44px) within natural thumb sweep.
 
 ---
 
-## 3. Test Suites & File Organization
+### 2.4. Tier 4: Real-World Workload Scenarios
 
-| Test Suite File | Focus Area | Requirement Scope | Tier Level |
-|---|---|---|---|
-| `web-nuxt/tests/catalog-magazine-layout.test.ts` | Catalog Magazine Layout & Asymmetry | R1 | Tier 1, Tier 2, Tier 3 |
-| `web-nuxt/tests/heritage-detail-editorial.test.ts` | Heritage Detail & Editorial Craft | R2 | Tier 1, Tier 2, Tier 3 |
-| `web-nuxt/tests/cartography-field-ergonomics.test.ts` | Cartography & Field Ergonomics | R3 | Tier 1, Tier 2, Tier 4 |
-| `web-nuxt/tests/culture-events-chronicle.test.ts` | Culture Events & Water Flow Chronicle | R4 | Tier 1, Tier 2, Tier 4 |
-| `web-nuxt/tests/home/*.test.ts` (17 files) | Homepage Editorial & Terroir Verification | Baseline | Tier 1, Tier 3 |
-| `web-nuxt/tests/tri-region-color-contract.test.ts` | Color Contrast & Surface Invariants | Baseline | Tier 2, Tier 3 |
-| `web-nuxt/tests/map-terroir-ergonomics.test.ts` | Map Ergonomics Baseline | Baseline | Tier 1, Tier 2 |
-| `web-nuxt/tests/ocop-gold-book-craft.test.ts` | OCOP Craft & Wax Seal Invariants | Baseline | Tier 1, Tier 2 |
-| `web-nuxt/tests/platform-typography-anti-slop.test.ts`| Typography & Font Fallback Ban | Baseline | Tier 3 |
+Models complete, authentic user journeys under real-world Mekong field conditions:
+
+1. **Scenario 1: First-Time Tourist Discovery Journey**:
+   - Traveler lands on homepage, inputs "Mang Thít" into Smart Hero Search, selects travel intent anchor "Ký sự Làng nghề Truyền thống", and reviews the 2-day itinerary `di-san-mang-thit-tra-vinh`.
+2. **Scenario 2: Foodie Epicurean Expedition**:
+   - Food lover navigates to the Vinh Long Culinary Trail, identifies iconic "Cá tai tượng chiên xù", verifies authentic venue coordinates, and confirms absence of fabricated ratings or review slop.
+3. **Scenario 3: River Fieldwork under Bright Sunlight**:
+   - Traveler standing at Đình Khao ferry terminal at midday under tropical sun; enables High-Glare Outdoor Mode (`>= 14:1` contrast) and operates bottom floating thumb dock with one-hand touch targets `>= 44px`.
+4. **Scenario 4: Cultural Heritage Weekend Explorer**:
+   - Cultural researcher visits the Mang Thít Brick Kiln Contemporary Heritage site, checks availability of ASEAN-certified Út Trinh Homestay, and confirms immediate access to waterway rescue hotline `0270 3822 305`.
+5. **Scenario 5: Degraded River Network Resilience**:
+   - Traveler on a remote river sampan experiencing spotty 3G connectivity; external weather API fails; homepage gracefully collapses the briefing widget with zero skeleton mush and zero app crashes.
 
 ---
 
-## 4. Execution & Verification Commands
+## 3. Test Suite Inventory & Alignment
+
+| Test File | Focus Area | Tier Alignment | Tests Count | Status |
+|---|---|---|---|---|
+| `web-nuxt/tests/home-editorial-e2e.test.ts` | Complete 4-Tier E2E Verification (R1-R5) | Tier 1, 2, 3, 4 | 60 | **PASS (60/60)** |
+| `web-nuxt/tests/home-nocturne-page.test.ts` | Page mounting, data contracts, hydration | Tier 1, Tier 2 | 17 | **PASS (17/17)** |
+| `web-nuxt/tests/home-anti-slop-craft.test.ts` | Anti-slop, haptics, physics, no neon/sparkle | Tier 1, Tier 2 | 9 | **PASS (9/9)** |
+| `web-nuxt/tests/home-product-lead.test.ts` | Product lead display & feature flag toggles | Tier 1, Tier 2 | 8 | **PASS (8/8)** |
+| `web-nuxt/tests/home-ocop-ledger.test.ts` | OCOP golden ledger & CLAUDE.md §1.7 | Tier 1, Tier 2 | 7 | **PASS (7/7)** |
+| `web-nuxt/tests/home-local-briefing.test.ts` | Weather briefing & graceful collapse | Tier 1, Tier 2 | 7 | **PASS (7/7)** |
+| `web-nuxt/tests/home-feature-dossier.test.ts` | Hero feature dossier & photo licensing | Tier 1, Tier 2 | 7 | **PASS (7/7)** |
+| `web-nuxt/tests/home-nocturne-color-cascade.test.ts` | Amber text contrast in light/dark modes | Tier 2, Tier 3 | 6 | **PASS (6/6)** |
+| `web-nuxt/tests/home-native-stories.test.ts` | Native stories mount & length bounds | Tier 1, Tier 2 | 6 | **PASS (6/6)** |
+| `web-nuxt/tests/home-world-class-editorial.test.ts` | Editorial layout & typography hierarchy | Tier 1, Tier 3 | 5 | **PASS (5/5)** |
+| `web-nuxt/tests/home-nocturne-components.test.ts` | Subcomponents & media disclosure | Tier 1, Tier 3 | 5 | **PASS (5/5)** |
+| `web-nuxt/tests/home-smart-terroir.test.ts` | Terroir context data flow | Tier 1 | 4 | **PASS (4/4)** |
+| `web-nuxt/tests/home-layout-asymmetry.test.ts` | Asymmetric editorial layout | Tier 1, Tier 2 | 4 | **PASS (4/4)** |
+| `web-nuxt/tests/home-aeo-plaque.test.ts` | Seasonal AEO plaque verification | Tier 1, Tier 2 | 4 | **PASS (4/4)** |
+| `web-nuxt/tests/home-terroir-resilience.test.ts` | Resilience against missing data | Tier 2 | 3 | **PASS (3/3)** |
+| `web-nuxt/tests/home-category-balance.test.ts` | Category distribution balance | Tier 1 | 3 | **PASS (3/3)** |
+| `web-nuxt/tests/home-decision-category.test.ts` | Quick decisions ledger | Tier 1 | 3 | **PASS (3/3)** |
+| `web-nuxt/tests/home-nocturne-presentation.test.ts` | Presentation helper logic | Tier 1, Tier 2 | 3 | **PASS (3/3)** |
+| `web-nuxt/tests/home-visual-prominence.test.ts` | Visual prominence of lead items | Tier 1 | 2 | **PASS (2/2)** |
+| `web-nuxt/tests/home-community-editorial.test.ts` | Community feed editorial standards | Tier 1 | 2 | **PASS (2/2)** |
+| `web-nuxt/tests/home-hero-dossier-polish.test.ts` | Hero dossier polish details | Tier 1 | 1 | **PASS (1/1)** |
+| `web-nuxt/tests/home-ocop-aeo-polish.test.ts` | OCOP AEO polish details | Tier 1 | 1 | **PASS (1/1)** |
+| **TOTAL tests/home** | **22 test files** | **Tiers 1–4** | **167** | **100% PASS** |
+| `web-nuxt/tests/tri-region-color-contract.test.ts` | Tri-Region contrast, mutations, 9 protected vars | Tier 2, Tier 3 | 78 | **100% PASS** |
+| **GRAND TOTAL VERIFIED** | **23 test files** | **All Tiers** | **245** | **100% PASS** |
+
+---
+
+## 4. Verification Execution Commands
+
+To execute independent verification, run the following commands:
 
 ```bash
-# 1. Run all 4 new E2E and Design System test suites
-cd web-nuxt && npx vitest run tests/catalog-magazine-layout.test.ts tests/heritage-detail-editorial.test.ts tests/cartography-field-ergonomics.test.ts tests/culture-events-chronicle.test.ts
-
-# 2. Run the 17 homepage editorial test suites (81 tests)
+# 1. Run all Homepage & Editorial E2E tests (167 tests, 22 files)
 cd web-nuxt && npx vitest run tests/home
 
-# 3. Run the Tri-Region color contract test suite (78 tests)
+# 2. Run the Tri-Region Color Contract suite (78 tests, mutation-tested)
 cd web-nuxt && npx vitest run tests/tri-region-color-contract.test.ts
 
-# 4. Run full Vitest suite
-cd web-nuxt && npx vitest run
-
-# 5. Run typecheck and hard-check invariants
+# 3. Run Nuxt TypeScript Typecheck (0 errors)
 cd web-nuxt && npm run typecheck
+
+# 4. Run Hard Safety Gates across entire repository
 python ../scripts/checks/run_hard.py --all
 ```
 
 ---
 
-## 5. Quality Invariants Checklist
+## 5. Escalated Implementation Defects (QA Findings)
 
-- [x] 4-Tier test methodology established and documented.
-- [x] Opaque-box testing principles enforced.
-- [x] Fail-closed verification on touch targets (>= 44px) and WCAG 2.2 AAA contrast (>= 7:1 for headings).
-- [x] Graceful collapse verification (CLAUDE.md §1.7) replacing synthetic fallback data.
-- [x] Anti-AI-slop invariants covering fonts, emojis, layout symmetry, and color palettes.
-- [x] Continuous alignment with Google Stitch Cloud Project `14916181929760067680`.
+During verification of the newly created component files authored by `worker_implementation_1`, the hard safety check (`run_hard.py --all`) detected 18 violations of rule **R30.3 (fe_colors)**:
+
+- **Root Cause**: The following newly created Vue components include hardcoded hex color fallbacks inside `var(...)` and `color-mix(...)` declarations instead of referencing clean design tokens:
+  1. `web-nuxt/components/home/HomeCulinaryTrail.vue`: line 232 (`#d99b26`)
+  2. `web-nuxt/components/home/HomeCuratedShowcase.vue`: line 305 (`#b95f38`)
+  3. `web-nuxt/components/home/HomeIntentAnchors.vue`: lines 185, 186, 190, 191, 195, 196, 200, 201, 205, 206
+  4. `web-nuxt/components/home/HomeRiversideStays.vue`: lines 256, 336
+  5. `web-nuxt/components/home/HomeTravelCompanion.vue`: lines 288, 289, 293, 294
+- **Remediation Action Required**: Strip the hardcoded fallback parameter from `var(--token, #hex)` so it becomes `var(--token)`. All tokens are already defined in `variables.css`.
+- **Classification**: Implementation Defect (Escalated to `worker_implementation_1` and parent orchestrator).

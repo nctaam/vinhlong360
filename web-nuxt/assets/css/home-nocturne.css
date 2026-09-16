@@ -2655,3 +2655,59 @@ html.js .home .hero-enter h1::after { animation: hero-underline-draw .8s var(--e
   color: var(--color-text);
   letter-spacing: -0.005em;
 }
+
+/* ═══════════════════════════════════════════════════
+   SMART TRAVEL HERO MULTI-CRITERIA SEARCH FILTERS
+   ═══════════════════════════════════════════════════ */
+.home .hero-multisearch {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  margin-block-start: var(--space-3);
+}
+
+.home .hero-multisearch__row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.home .hero-multisearch__label {
+  font-size: var(--text-xs);
+  color: var(--color-text-muted);
+  font-weight: var(--weight-bold);
+  min-width: 64px;
+}
+
+.home .hero-filter-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: var(--touch-min, 44px);
+  padding-inline: var(--space-3);
+  padding-block: var(--space-1);
+  font-size: var(--text-xs);
+  font-weight: var(--weight-semibold);
+  color: var(--color-text);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-pill, 9999px);
+  text-decoration: none;
+  box-shadow: 0 1px 3px rgba(var(--black-rgb), 0.04);
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1),
+              border-color var(--duration-fast) var(--ease-out),
+              color var(--duration-fast) var(--ease-out),
+              background-color var(--duration-fast) var(--ease-out);
+}
+
+.home .hero-filter-pill:hover {
+  border-color: var(--color-brand);
+  color: var(--color-brand);
+  transform: translateY(-1px);
+}
+
+.home .hero-filter-pill:active {
+  transform: scale(0.98);
+}
+

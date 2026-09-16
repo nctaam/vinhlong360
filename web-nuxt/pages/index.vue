@@ -32,6 +32,21 @@
             data-color-role="action-primary"
             :placeholder="ss('homepage.search_placeholder', 'Tìm điểm đến, món ngon, lịch trình…')"
           />
+          <div class="hero-multisearch" role="group" aria-label="Bộ lọc nhanh lữ hành">
+            <div class="hero-multisearch__row">
+              <span class="hero-multisearch__label">Loại hình:</span>
+              <NuxtLink to="/du-lich" class="hero-filter-pill">Điểm đến</NuxtLink>
+              <NuxtLink to="/luu-tru" class="hero-filter-pill">Homestay</NuxtLink>
+              <NuxtLink to="/kham-pha/am-thuc" class="hero-filter-pill">Món ngon</NuxtLink>
+              <NuxtLink to="/lich-trinh" class="hero-filter-pill">Lịch trình</NuxtLink>
+            </div>
+            <div class="hero-multisearch__row">
+              <span class="hero-multisearch__label">Thời lượng:</span>
+              <NuxtLink to="/lich-trinh/mot-ngay-cu-lao-an-binh" class="hero-filter-pill">1 Ngày</NuxtLink>
+              <NuxtLink to="/lich-trinh/di-san-mang-thit-tra-vinh" class="hero-filter-pill">2N1Đ</NuxtLink>
+              <NuxtLink to="/lich-trinh/mien-tay-3-ngay" class="hero-filter-pill">3N2Đ</NuxtLink>
+            </div>
+          </div>
           <NuxtLink to="/ban-do?near=1" class="hero-nearby"><IconLine name="pin" /> Tìm quanh tôi</NuxtLink>
           <div class="hero-terroir-chips" role="region" aria-label="Gợi ý thực địa Vĩnh Long">
             <span class="hero-terroir-chips__label">Khám phá nhanh:</span>
@@ -64,11 +79,15 @@
           :map-to="hfMapTo"
         />
       </div>
+      <HomeIntentAnchors />
     </section>
 
     <div class="home-river-divider" aria-hidden="true" />
 
-    <HomeNativeStories v-if="!homeFailed" />
+    <HomeCuratedShowcase v-if="!homeFailed" />
+    <HomeCulinaryTrail v-if="!homeFailed" />
+    <HomeRiversideStays v-if="!homeFailed" />
+    <HomeTravelPlanner v-if="!homeFailed" />
 
     <div class="home-quick-decisions" data-home-section="quick-decisions">
       <HomeDecisionLedger :entries="homePresentation.decisionEntries" />
@@ -119,6 +138,7 @@
     </section>
 
     <div class="home-signals" data-home-section="signals">
+      <HomeTravelCompanion />
       <HomeLocalBriefing />
 
       <section v-if="upcomingEventList.length || seasonalList.length" class="block reveal" aria-label="Tín hiệu địa phương" data-material-accent="amber">
@@ -358,6 +378,12 @@ import HomeProductLead from '~/components/home/HomeProductLead.vue'
 import HomeOcopLedger from '~/components/home/HomeOcopLedger.vue'
 import HomeCommunityFeed from '~/components/home/HomeCommunityFeed.vue'
 import HomeContinuation from '~/components/home/HomeContinuation.vue'
+import HomeIntentAnchors from '~/components/home/HomeIntentAnchors.vue'
+import HomeCuratedShowcase from '~/components/home/HomeCuratedShowcase.vue'
+import HomeCulinaryTrail from '~/components/home/HomeCulinaryTrail.vue'
+import HomeRiversideStays from '~/components/home/HomeRiversideStays.vue'
+import HomeTravelPlanner from '~/components/home/HomeTravelPlanner.vue'
+import HomeTravelCompanion from '~/components/home/HomeTravelCompanion.vue'
 import ImageDisclosure from '~/components/ImageDisclosure.vue'
 import { describeEntityImages, describeEntityPlaceholder } from '~/utils/imageDescriptors'
 import { createHomeNocturnePresentation } from '~/utils/homeNocturnePresentation'
