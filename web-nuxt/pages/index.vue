@@ -95,8 +95,9 @@
           :map-to="hfMapTo"
         />
       </div>
-      <HomeIntentAnchors />
     </section>
+
+    <HomeIntentAnchors />
 
     <div class="home-river-divider" aria-hidden="true" />
 

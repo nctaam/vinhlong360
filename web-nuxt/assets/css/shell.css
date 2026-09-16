@@ -13,11 +13,11 @@
   position: sticky;
   top: 0;
   z-index: var(--z-sticky);
-  border-bottom: 1px solid var(--color-border);
-  background: color-mix(in srgb, var(--color-surface) 94%, transparent);
-  -webkit-backdrop-filter: var(--glass-frosted-nav, saturate(1.15) blur(14px));
-  backdrop-filter: var(--glass-frosted-nav, saturate(1.15) blur(14px));
-  transition: box-shadow var(--duration-normal) var(--ease-out);
+  border-bottom: 1px solid var(--border-liquid-glass, var(--color-border));
+  background: color-mix(in srgb, var(--color-surface) 88%, transparent);
+  -webkit-backdrop-filter: var(--glass-frosted-nav, saturate(1.2) blur(18px));
+  backdrop-filter: var(--glass-frosted-nav, saturate(1.2) blur(18px));
+  transition: box-shadow var(--duration-normal) var(--ease-out), background-color var(--duration-normal) var(--ease-out);
   padding-top: env(safe-area-inset-top, 0px);
 }
 
@@ -197,6 +197,21 @@
   flex: 1 1 480px;
   max-width: 620px;
   margin-inline: auto;
+  transition: opacity 0.3s cubic-bezier(0.16, 1, 0.3, 1),
+              transform 0.3s cubic-bezier(0.16, 1, 0.3, 1),
+              max-width 0.35s cubic-bezier(0.16, 1, 0.3, 1),
+              margin 0.35s cubic-bezier(0.16, 1, 0.3, 1),
+              visibility 0.3s ease;
+}
+
+/* On Homepage Hero: gently collapse topbar search to prevent duplicate search collision with Hero Search Island */
+.public-shell-chrome.is-home-page:not(.scrolled) .public-shell-search {
+  opacity: 0;
+  visibility: hidden;
+  max-width: 0;
+  pointer-events: none;
+  transform: translateY(-6px) scale(0.96);
+  margin-inline: 0;
 }
 
 .public-shell-search input {

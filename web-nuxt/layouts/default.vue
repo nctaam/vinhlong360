@@ -9,7 +9,7 @@
     ]"
   >
     <a href="#main-content" class="skip-link">Bỏ qua điều hướng</a>
-    <div class="public-shell-chrome" :class="{ scrolled: topbarScrolled }">
+    <div class="public-shell-chrome" :class="{ scrolled: topbarScrolled, 'is-home-page': route.path === '/' }">
       <ShellPublicContextBar />
       <header class="public-shell-header" role="banner">
         <div class="public-shell-command-row">

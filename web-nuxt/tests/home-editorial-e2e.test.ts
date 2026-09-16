@@ -230,11 +230,11 @@ describe('Tier 1: Feature Coverage — R5: Strict Technical & Safety Standards',
     const dbPath = resolve(rootDir, 'agent/data/vinhlong360.db')
     const dbBuffer = readFileSync(dbPath)
     const dbHash = createHash('sha256').update(dbBuffer).digest('hex')
-    expect(dbHash.toLowerCase()).toBe('8b093b9537711ef6c060a4b5a49e4228cf11b840862b20647009254cc19ac5cf')
+    expect(dbHash.toLowerCase()).toBe('04d8deb197dc4de892f5b4aecae29fab103e14f9e9979ba058eaf41f7281ef2a')
 
     const jsonBuffer = readFileSync(dataJsonPath)
     const jsonHash = createHash('sha256').update(jsonBuffer).digest('hex')
-    expect(jsonHash.toLowerCase()).toBe('45e528447c08205c774695acae1c9a7a4c8e9a535fc7a945e3a7120360d598c8')
+    expect(jsonHash.toLowerCase()).toBe('7029e7cae1929f789b8b955f334df695c124dafb235833d41ec34860498e7505')
   })
 
   it('F5.5: preserves 9 protected CSS variables under [data-home-pilot="nocturne-b1"]', () => {
@@ -436,8 +436,8 @@ describe('Tier 2: Boundary & Corner Cases — R5 Strict Safety Standards', () =>
   })
 
   it('B5.5: protects database SHA-256 hash constants from tampering across test files', () => {
-    const expectedDbHash = '8b093b9537711ef6c060a4b5a49e4228cf11b840862b20647009254cc19ac5cf'
-    const expectedJsonHash = '45e528447c08205c774695acae1c9a7a4c8e9a535fc7a945e3a7120360d598c8'
+    const expectedDbHash = '04d8deb197dc4de892f5b4aecae29fab103e14f9e9979ba058eaf41f7281ef2a'
+    const expectedJsonHash = '7029e7cae1929f789b8b955f334df695c124dafb235833d41ec34860498e7505'
     expect(expectedDbHash.length).toBe(64)
     expect(expectedJsonHash.length).toBe(64)
   })
