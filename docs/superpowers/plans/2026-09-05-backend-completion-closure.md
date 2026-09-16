@@ -1,3 +1,5 @@
+> STATUS: active (2026-09-16)
+
 # Backend Completion Closure Implementation Plan
 
 > STATUS (2026-09-08): Task 0 baseline freeze recorded on HEAD `0d537202c381ec75c863612b03ae25d7b1832af0` / branch `codex/correction-case-pilot`; authority remains **BLOCKED** (`tracked=7 stale=4 mismatches=1`) because the current per-plan ledger is ignored/untracked. Keep NO_GO/BLOCKED until evidence is valid.

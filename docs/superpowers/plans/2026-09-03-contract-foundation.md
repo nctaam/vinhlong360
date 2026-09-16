@@ -1,3 +1,5 @@
+> STATUS: active (2026-09-16)
+
 # Contract Foundation Implementation Plan
 
 > STATUS (active): contract baseline implementation and governance plan; release approval remains separate.

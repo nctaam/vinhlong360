@@ -1,3 +1,5 @@
+> STATUS: active (2026-09-16)
+
 # Kế Hoạch Triển Khai: Tối Ưu Hóa Trang Chủ Sâu Sắc, Tinh Tế & Chống AI-Slop Toàn Diện (Kết Hợp Google Stitch)
 
 > STATUS (2026-09-12): proposed — kế hoạch chi tiết chống AI-slop và đồng bộ Google Stitch.

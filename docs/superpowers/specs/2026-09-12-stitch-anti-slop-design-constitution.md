@@ -1,3 +1,5 @@
+> STATUS: active (2026-09-16)
+
 # Hiến Pháp Thiết Kế Vĩnh Long 360: Tinh Thần Thổ Nhưỡng & Chống AI-Slop Toàn Diện
 
 > STATUS (2026-09-12): active — chuẩn Stitch Taste Design và Google Stitch MCP.

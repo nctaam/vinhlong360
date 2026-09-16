@@ -1,3 +1,5 @@
+> STATUS: active (2026-09-16)
+
 # Task 8 P1 Review Remediation Implementation Plan
 
 > STATUS: complete
