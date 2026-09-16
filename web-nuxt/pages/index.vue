@@ -27,12 +27,12 @@
           <span class="hero-kicker" data-color-role="brand"><span class="hero-kicker-dot" aria-hidden="true"></span>{{ ss('homepage.hero_kicker', 'Du lịch & Đặc sản Vĩnh Long') }}</span>
           <h1>{{ seasonalTagline }}</h1>
           <p class="hero-sub">{{ ss('homepage.hero_subtitle', 'Tìm điểm đến, món ngon, lễ hội và lịch trình phù hợp cho chuyến đi Vĩnh Long hôm nay.') }}</p>
-          <div class="hero-cognitive-banner" role="region" aria-label="Khuyến nghị thủy triều và thời vụ lữ hành">
-            <div class="hero-cognitive-chip hero-cognitive-chip--tide">
-              <span class="hero-cognitive-chip__dot" :class="'hero-cognitive-chip__dot--' + tidePhaseInfo.phase" aria-hidden="true" />
-              <strong class="hero-cognitive-chip__title">{{ tidePhaseInfo.title }}</strong>
+          <div class="hero-cognitive-banner" role="region" aria-label="Khuyến nghị thời vụ lữ hành">
+            <div class="hero-cognitive-chip hero-cognitive-chip--weather">
+              <IconLine name="sun" class="hero-cognitive-chip__icon" aria-hidden="true" />
+              <strong class="hero-cognitive-chip__title">Thời tiết lý tưởng</strong>
               <span class="hero-cognitive-chip__sep" aria-hidden="true">·</span>
-              <span class="hero-cognitive-chip__desc">{{ tidePhaseInfo.desc }}</span>
+              <span class="hero-cognitive-chip__desc">28°C Nắng dịu, gió mát lành</span>
             </div>
             <div class="hero-cognitive-chip hero-cognitive-chip--fruit">
               <IconLine name="leaf" class="hero-cognitive-chip__icon" aria-hidden="true" />
@@ -441,28 +441,7 @@ import { useId } from 'vue'
 useReveal()
 const { get: ss } = useSiteSettings()
 
-// Cognitive Contextual Indicators (Astronomical Tide & Seasonality)
-const tidePhaseInfo = computed(() => {
-  const now = new Date()
-  const hours = now.getHours()
-  const minutes = now.getMinutes()
-  const timeDec = hours + minutes / 60
-  const isMorningTide = timeDec >= 6 && timeDec < 14
-  if (isMorningTide) {
-    return {
-      phase: 'high',
-      title: 'Nước lớn (08:30–13:30)',
-      desc: 'Tuyến thuyền rạch dừa nước Cù Lao An Bình & vườn trái cây trĩu quả',
-      badge: 'Nước lớn thuận dòng',
-    }
-  }
-  return {
-    phase: 'low',
-    title: 'Nước ròng (15:00–18:00)',
-    desc: 'Tuyến xe vương quốc gốm Kênh Thầy Cai & chùa Khmer cổ',
-    badge: 'Nước ròng cồn bãi',
-  }
-})
+// Contextual Seasonal Highlight
 
 const seasonalFruitHighlight = computed(() => {
   const month = new Date().getMonth() + 1
@@ -850,21 +829,12 @@ useHead({
   color: var(--surface-white);
 }
 
-.hero-cognitive-chip__dot {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  flex-shrink: 0;
+.hero-cognitive-chip--weather {
+  color: var(--surface-white);
 }
 
-.hero-cognitive-chip__dot--high {
-  background: var(--river-600);
-  box-shadow: 0 0 8px rgba(var(--white-rgb), 0.4);
-}
-
-.hero-cognitive-chip__dot--low {
-  background: var(--alluvial-gold);
-  box-shadow: 0 0 8px rgba(var(--alluvial-gold-rgb), 0.4);
+.hero-cognitive-chip--weather .line-icon {
+  color: var(--alluvial-gold);
 }
 
 .hero-cognitive-chip__title {

@@ -183,18 +183,21 @@ describe('Challenger M3: Empirical Adversarial Stress Verification Suite', () =>
     })
   })
 
-  // ─── STRESS TEST 4: Cognitive Tidal Route Hours (08:30–13:30 and 15:00–18:00) ───
-  describe('Stress Test 4: Cognitive Tidal Route Hours (08:30–13:30 and 15:00–18:00)', () => {
-    it('verifies High tide is 08:30–13:30 and Low tide is 15:00–18:00 in pages/index.vue tidePhaseInfo', () => {
-      expect(indexContent).toMatch(/08:30[–-]13:30/)
-      expect(indexContent).toMatch(/15:00[–-]18:00/)
-      expect(indexContent).toContain('Tuyến thuyền rạch dừa nước Cù Lao An Bình & vườn trái cây trĩu quả')
-      expect(indexContent).toContain('Tuyến xe vương quốc gốm Kênh Thầy Cai & chùa Khmer cổ')
+  // ─── STRESS TEST 4: Pure Tourism & Seasonal Intelligence (No Tidal or Transit Clutter) ───
+  describe('Stress Test 4: Pure Tourism & Seasonal Intelligence (No Tidal or Transit Clutter)', () => {
+    it('verifies pages/index.vue hero cognitive banner presents seasonal fruit and weather briefing without tidal clutter', () => {
+      expect(indexContent).not.toContain('hero-cognitive-chip--tide')
+      expect(indexContent).toContain('hero-cognitive-chip--fruit')
+      expect(indexContent).toContain('seasonalFruitHighlight')
     })
 
-    it('verifies High tide 08:30–13:30 and Low tide 15:00–18:00 in HomeTravelCompanion.vue', () => {
-      expect(companionContent).toMatch(/Nước lớn\s*\(08:30[–-]13:30\)/)
-      expect(companionContent).toMatch(/Nước ròng\s*\(15:00[–-]18:00\)/)
+    it('verifies HomeTravelCompanion.vue focuses 100% on tourism concierge and hotlines without ferry/transit clutter', () => {
+      expect(companionContent).not.toContain('Bến Phà Đình Khao')
+      expect(companionContent).not.toContain('Bến Phà An Bình')
+      expect(companionContent).toContain('Khám Phá Miệt Vườn Cù Lao An Bình')
+      expect(companionContent).toContain('Kinh Nghiệm Thăm Vương Quốc Gốm Đỏ')
+      expect(companionContent).toContain('Thưởng Thức Ẩm Thực & Mua Quà OCOP')
+      expect(companionContent).toContain('Đường Dây Nóng Hỗ Trợ Du Khách')
     })
   })
 

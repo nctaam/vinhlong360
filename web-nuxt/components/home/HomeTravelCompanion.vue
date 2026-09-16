@@ -1,23 +1,23 @@
 <template>
-  <section class="home-travel-companion block reveal" aria-label="Tiện Ích Du Khách Thực Địa Vĩnh Long" data-home-travel-companion>
+  <section class="home-travel-companion block reveal" aria-label="Cẩm Nang Du Khách Thực Địa & Hotline 24/7" data-home-travel-companion>
     <div class="home-travel-companion__head section-head">
       <div class="sh-text">
         <span class="home-travel-companion__eyebrow" data-color-role="brand">
           <IconLine name="phone" />
-          <span>Traveler Live Companion · Thực địa thông suốt</span>
+          <span>Cẩm Nang Thực Địa · Hỗ Trợ 24/7</span>
         </span>
-        <h2>Tiện Ích Du Khách <em class="editorial-italic-accent" aria-hidden="true">Thực Địa</em></h2>
-        <p class="sh-sub">Cập nhật lịch vận hành bến phà, luồng tàu du lịch sông Cổ Chiên và danh bạ cứu hộ, hỗ trợ lữ khách 24/7.</p>
+        <h2>Cẩm Nang Du Khách <em class="editorial-italic-accent" aria-hidden="true">Thực Địa</em></h2>
+        <p class="sh-sub">Kinh nghiệm miệt vườn cù lao, làng gốm di sản, ẩm thực bản địa OCOP và tổng đài hỗ trợ lữ khách 24/7.</p>
       </div>
     </div>
 
     <!-- Compact Frosted Glass Quick Utility Banner -->
-    <div class="home-companion-quick-utility" role="region" aria-label="Thông báo khẩn và trạng thái luồng tuyến">
+    <div class="home-companion-quick-utility" role="region" aria-label="Hỗ trợ du khách và đường dây nóng 24/7">
       <div class="home-companion-utility-pill">
         <span class="home-companion-utility-pill__pulse" aria-hidden="true" />
-        <IconLine name="route" />
+        <IconLine name="phone" />
         <span class="home-companion-utility-pill__text">
-          <strong>Phà Đình Khao:</strong> Hoạt động 24/24h (Long Hồ ↔ Chợ Lách) · <em>Bình thường</em>
+          <strong>Hỗ trợ lữ khách:</strong> Trung tâm tư vấn & hướng dẫn thực địa Vĩnh Long 360 · <em>Trực tuyến 24/7</em>
         </span>
       </div>
       <div class="home-companion-quick-hotlines">
@@ -45,104 +45,104 @@
     </div>
 
     <div class="home-travel-companion__grid">
-      <!-- 1. Bến Phà Đình Khao -->
-      <article class="home-companion-card" data-companion-ferry="dinh-khao">
+      <!-- 1. Cẩm Nang Miệt Vườn Cù Lao An Bình -->
+      <article class="home-companion-card" data-companion-guide="an-binh">
         <div class="home-companion-card__header">
           <span class="home-companion-card__icon" aria-hidden="true">
-            <IconLine name="route" />
+            <IconLine name="leaf" />
           </span>
           <div>
-            <span class="home-companion-card__badge home-companion-card__badge--active">Hoạt động 24/24h</span>
-            <h3 class="home-companion-card__title">Bến Phà Đình Khao (QL57)</h3>
+            <span class="home-companion-card__badge home-companion-card__badge--active">Kinh nghiệm bản địa</span>
+            <h3 class="home-companion-card__title">Khám Phá Miệt Vườn Cù Lao An Bình</h3>
           </div>
         </div>
         <p class="home-companion-card__desc">
-          Vượt sông Cổ Chiên (1.200m), nối TP Vĩnh Long & Chợ Lách. Phà 100–200 tấn vận hành liên tục cả ngày lẫn đêm.
+          Kinh nghiệm thưởng thức trái cây chín cây tận vườn, chèo xuồng ngắm rạch bần và đạp xe đường làng rợp bóng mát.
         </p>
         <div class="home-companion-card__meta">
           <div class="home-companion-meta-row">
             <IconLine name="clock" />
-            <span><strong>Ban ngày:</strong> 10–15 phút/chuyến</span>
+            <span><strong>Thời điểm đẹp:</strong> Sáng sớm 07:00 – 10:30 (trời mát, trái mới hái)</span>
           </div>
           <div class="home-companion-meta-row">
-            <IconLine name="moon" />
-            <span><strong>Đêm (22:00 – 04:00):</strong> 30–45 phút/chuyến</span>
+            <IconLine name="leaf" />
+            <span><strong>Mùa trái rộ:</strong> Chôm chôm, sầu riêng Ri6, nhãn xuồng cơm vàng</span>
+          </div>
+          <div class="home-companion-meta-row">
+            <IconLine name="pin" />
+            <span><strong>Trải nghiệm:</strong> Tự tay hái trái, tát mương bắt cá, đờn ca tài tử</span>
+          </div>
+        </div>
+        <NuxtLink to="/dia-diem/cu-lao-an-binh-long-ho" class="home-companion-card__link">
+          <span>Xem hướng dẫn khám phá Cù Lao An Bình</span>
+          <IconLine name="arrow-right" aria-hidden="true" />
+        </NuxtLink>
+      </article>
+
+      <!-- 2. Chiêm Ngưỡng Vương Quốc Gốm Đỏ -->
+      <article class="home-companion-card" data-companion-guide="mang-thit">
+        <div class="home-companion-card__header">
+          <span class="home-companion-card__icon" aria-hidden="true">
+            <IconLine name="map" />
+          </span>
+          <div>
+            <span class="home-companion-card__badge home-companion-card__badge--scheduled">Di sản đương đại</span>
+            <h3 class="home-companion-card__title">Kinh Nghiệm Thăm Vương Quốc Gốm Đỏ</h3>
+          </div>
+        </div>
+        <p class="home-companion-card__desc">
+          Check-in vòm lò gạch trăm năm bên dòng Kênh Thầy Cai, thăm Nhà Gốm Tư Buôi độc bản và lưu ý gìn giữ di sản.
+        </p>
+        <div class="home-companion-card__meta">
+          <div class="home-companion-meta-row">
+            <IconLine name="sun" />
+            <span><strong>Giờ vàng ảnh đẹp:</strong> 16:30 – 17:45 (hoàng hôn xiên vòm gốm)</span>
+          </div>
+          <div class="home-companion-meta-row">
+            <IconLine name="map" />
+            <span><strong>Điểm tiêu biểu:</strong> Lò gạch Kênh Thầy Cai, lò gạch Nhơn Phú</span>
+          </div>
+          <div class="home-companion-meta-row">
+            <IconLine name="shield-check" />
+            <span><strong>Lưu ý di sản:</strong> Đi lại nhẹ nhàng, không leo trèo vòm gạch cổ</span>
+          </div>
+        </div>
+        <NuxtLink to="/dia-diem/lang-gom-mang-thit" class="home-companion-card__link">
+          <span>Xem cẩm nang tham quan làng gốm di sản</span>
+          <IconLine name="arrow-right" aria-hidden="true" />
+        </NuxtLink>
+      </article>
+
+      <!-- 3. Thưởng Thức Ẩm Thực & Quà OCOP -->
+      <article class="home-companion-card" data-companion-guide="ocop">
+        <div class="home-companion-card__header">
+          <span class="home-companion-card__icon" aria-hidden="true">
+            <IconLine name="tag" />
+          </span>
+          <div>
+            <span class="home-companion-card__badge home-companion-card__badge--info">Mỹ vị & Đặc sản</span>
+            <h3 class="home-companion-card__title">Thưởng Thức Ẩm Thực & Mua Quà OCOP</h3>
+          </div>
+        </div>
+        <p class="home-companion-card__desc">
+          Mẹo thưởng thức cá tai tượng chiên xù đúng điệu, chọn bưởi Năm Roi Mỹ Hòa mọng nước và khoai lang tím Bình Tân.
+        </p>
+        <div class="home-companion-card__meta">
+          <div class="home-companion-meta-row">
+            <IconLine name="heart" />
+            <span><strong>Món ngon phải thử:</strong> Cá tai tượng chiên xù, ốc bươu hấp tiêu</span>
           </div>
           <div class="home-companion-meta-row">
             <IconLine name="tag" />
-            <span><strong>Giá vé:</strong> Xe máy 6.000đ · Ô tô từ 25.000đ</span>
+            <span><strong>Đặc sản OCOP:</strong> Bưởi Năm Roi, khoai lang sấy, trà hoa cúc</span>
+          </div>
+          <div class="home-companion-meta-row">
+            <IconLine name="pin" />
+            <span><strong>Điểm mua uy tín:</strong> Chợ Vĩnh Long, HTX Bưởi Năm Roi Mỹ Hòa</span>
           </div>
         </div>
-        <NuxtLink to="/dia-diem/ben-pha-dinh-khao-vinh-long" class="home-companion-card__link">
-          <span>Xem tọa độ & hướng dẫn lên phà</span>
-          <IconLine name="arrow-right" aria-hidden="true" />
-        </NuxtLink>
-      </article>
-
-      <!-- 2. Bến Phà An Bình & Bến Tàu Du Lịch -->
-      <article class="home-companion-card" data-companion-ferry="an-binh">
-        <div class="home-companion-card__header">
-          <span class="home-companion-card__icon" aria-hidden="true">
-            <IconLine name="map" />
-          </span>
-          <div>
-            <span class="home-companion-card__badge home-companion-card__badge--scheduled">04:30 – 22:30 hàng ngày</span>
-            <h3 class="home-companion-card__title">Bến Phà An Bình & Bến Tàu</h3>
-          </div>
-        </div>
-        <p class="home-companion-card__desc">
-          Bến thuyền Công viên Sông Tiền sang cù lao An Bình (600m). Đò máy, cano du lịch tham quan vườn cây rạch nhỏ.
-        </p>
-        <div class="home-companion-card__meta">
-          <div class="home-companion-meta-row">
-            <IconLine name="clock" />
-            <span><strong>Tần suất:</strong> 10–15 phút/chuyến đò qua cù lao</span>
-          </div>
-          <div class="home-companion-meta-row">
-            <IconLine name="route" />
-            <span><strong>Tàu du lịch:</strong> Bến tàu đón cano đi rạch dừa nước</span>
-          </div>
-          <div class="home-companion-meta-row">
-            <IconLine name="phone" />
-            <span><strong>Điều phối phà:</strong> 0270 3822 514</span>
-          </div>
-        </div>
-        <NuxtLink to="/dia-diem/ben-pha-an-binh-vinh-long" class="home-companion-card__link">
-          <span>Xem lộ trình qua cù lao An Bình</span>
-          <IconLine name="arrow-right" aria-hidden="true" />
-        </NuxtLink>
-      </article>
-
-      <!-- 3. Thời Tiết & Luồng Tuyến Sông Nước -->
-      <article class="home-companion-card" data-companion-navigation>
-        <div class="home-companion-card__header">
-          <span class="home-companion-card__icon" aria-hidden="true">
-            <IconLine name="sun" />
-          </span>
-          <div>
-            <span class="home-companion-card__badge home-companion-card__badge--info">Thời tiết & Thủy triều</span>
-            <h3 class="home-companion-card__title">Thời Tiết & Lộ Trình Con Nước</h3>
-          </div>
-        </div>
-        <p class="home-companion-card__desc">
-          Lộ trình nhật triều: Nước lớn (08:30–13:30) đi rạch dừa Cù Lao; Nước ròng (15:00–18:00) khám phá vòm gốm Mang Thít.
-        </p>
-        <div class="home-companion-card__meta">
-          <div class="home-companion-meta-row">
-            <IconLine name="route" />
-            <span><strong>Nước lớn (08:30–13:30):</strong> Rạch dừa nước Cù Lao An Bình & vườn trái cây</span>
-          </div>
-          <div class="home-companion-meta-row">
-            <IconLine name="map" />
-            <span><strong>Nước ròng (15:00–18:00):</strong> Vương quốc gốm Kênh Thầy Cai & chùa Khmer cổ</span>
-          </div>
-          <div class="home-companion-meta-row">
-            <IconLine name="sun" />
-            <span><strong>Thời tiết bến sông:</strong> 28°C – 32°C (Nắng dịu, gió thoảng)</span>
-          </div>
-        </div>
-        <NuxtLink to="/theo-mua" class="home-companion-card__link">
-          <span>Xem cẩm nang du lịch theo mùa vụ</span>
+        <NuxtLink to="/kham-pha/am-thuc" class="home-companion-card__link">
+          <span>Khám phá bản đồ ẩm thực & quà tặng OCOP</span>
           <IconLine name="arrow-right" aria-hidden="true" />
         </NuxtLink>
       </article>
@@ -159,7 +159,7 @@
           </div>
         </div>
         <p class="home-companion-card__desc">
-          Kết nối trực tiếp lực lượng cứu nạn đường thủy và trung tâm tư vấn du lịch Vĩnh Long khi cần trợ giúp thực địa.
+          Kết nối trực tiếp trung tâm thông tin du lịch và các lực lượng cứu hộ thực địa Vĩnh Long khi cần trợ giúp 24/7.
         </p>
 
         <div class="home-companion-hotlines-list">
