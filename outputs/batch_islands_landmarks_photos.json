@@ -1,0 +1,202 @@
+[
+  {
+    "entity_id": "can-cu-cach-mang-cai-ngang-vinh-long",
+    "image": "web-nuxt/public/img/entities/can-cu-cach-mang-cai-ngang-vinh-long.webp",
+    "author": "Trần Phước",
+    "source": "Báo Vĩnh Long",
+    "caption": "Hệ thống công sự, hầm bí mật và hào chiến đấu ẩn mình dưới những tán tràm rợp bóng tại Căn cứ Cách mạng Cái Ngang, Tam Bình, biểu tượng quật cường thời kháng chiến.",
+    "license": "Bản quyền thuộc tác giả và Báo Vĩnh Long"
+  },
+  {
+    "entity_id": "di-tich-can-cu-khu-uy-sai-gon-gia-dinh",
+    "image": "web-nuxt/public/img/entities/di-tich-can-cu-khu-uy-sai-gon-gia-dinh.webp",
+    "author": "Hữu Hiệp",
+    "source": "Báo Đồng Khởi",
+    "caption": "Khu căn cứ kháng chiến Y4 ẩn mình giữa rừng dừa bạt ngàn Mỏ Cày Bắc, nơi lãnh đạo phong trào cách mạng đô thị Sài Gòn - Gia Định trong những năm tháng hào hùng.",
+    "license": "Bản quyền thuộc tác giả và Báo Đồng Khởi"
+  },
+  {
+    "entity_id": "di-tich-duong-ho-chi-minh-tren-bien-thanh-phu",
+    "image": "web-nuxt/public/img/entities/di-tich-duong-ho-chi-minh-tren-bien-thanh-phu.webp",
+    "author": "Thanh Đồng",
+    "source": "Báo Đồng Khởi",
+    "caption": "Tượng đài và chứng tích lịch sử đầu cầu tiếp nhận vũ khí chi viện chiến trường miền Nam bằng đường biển tại cồn Bửng, xã Thạnh Hải.",
+    "license": "Bản quyền thuộc tác giả và Báo Đồng Khởi"
+  },
+  {
+    "entity_id": "khu-di-tich-can-cu-tinh-uy-tra-vinh",
+    "image": "web-nuxt/public/img/entities/khu-di-tich-can-cu-tinh-uy-tra-vinh.webp",
+    "author": "Bá Thi",
+    "source": "Báo Trà Vinh",
+    "caption": "Di tích lịch sử Căn cứ Tỉnh ủy Trà Vinh tại ấp Giồng Giếng, nơi ghi dấu những chiến công hiển hách của quân và dân trong kháng chiến bảo vệ Tổ quốc.",
+    "license": "Bản quyền thuộc tác giả và Báo Trà Vinh"
+  },
+  {
+    "entity_id": "cau-my-thuan",
+    "image": "web-nuxt/public/img/entities/cau-my-thuan.webp",
+    "author": "Minh Triết",
+    "source": "Báo Vĩnh Long",
+    "caption": "Nhịp cầu dây văng Mỹ Thuận kiêu hãnh vươn mình qua dòng Tiền Giang mênh mông phù sa, nối liền đôi bờ huyết mạch giao thương của vùng đồng bằng sông Cửu Long.",
+    "license": "Bản quyền thuộc tác giả và Báo Vĩnh Long"
+  },
+  {
+    "entity_id": "bao-tang-vinh-long",
+    "image": "web-nuxt/public/img/entities/bao-tang-vinh-long.webp",
+    "author": "Huỳnh Biển",
+    "source": "Báo Vĩnh Long",
+    "caption": "Không gian trưng bày cổ vật Óc Eo, gốm đỏ Mang Thít và hiện vật lịch sử văn hóa Long Hồ Dinh bên bờ sông Tiền thơ mộng.",
+    "license": "Bản quyền thuộc tác giả và Báo Vĩnh Long"
+  },
+  {
+    "entity_id": "bao-tang-ben-tre",
+    "image": "web-nuxt/public/img/entities/bao-tang-ben-tre.webp",
+    "author": "Phúc Lộc",
+    "source": "Báo Đồng Khởi",
+    "caption": "Kiến trúc dinh thự cổ Bạch Dinh theo phong cách Pháp soi bóng bên sông Hàm Luông, lưu giữ hàng ngàn hiện vật phong trào Đồng Khởi hào hùng.",
+    "license": "Bản quyền thuộc tác giả và Báo Đồng Khởi"
+  },
+  {
+    "entity_id": "bao-tang-van-hoa-dan-toc-khmer-tra-vinh",
+    "image": "web-nuxt/public/img/entities/bao-tang-van-hoa-dan-toc-khmer-tra-vinh.webp",
+    "author": "Sơn Tuyên",
+    "source": "Báo Trà Vinh",
+    "caption": "Kiến trúc truyền thống độc đáo mang đậm phong cách Khmer đối diện thắng cảnh Ao Bà Om, trưng bày nhạc cụ ngũ âm, trang phục và di sản văn hóa phum sóc.",
+    "license": "Bản quyền thuộc tác giả và Báo Trà Vinh"
+  },
+  {
+    "entity_id": "mo-va-khu-luu-niem-nha-giao-vo-truong-toan",
+    "image": "web-nuxt/public/img/entities/mo-va-khu-luu-niem-nha-giao-vo-truong-toan.webp",
+    "author": "Ánh Nguyệt",
+    "source": "Báo Đồng Khởi",
+    "caption": "Khu lăng mộ trang nghiêm và thanh tịnh của bậc Vạn thế sư biểu xứ Gia Định, nhà giáo Võ Trường Toản tại vùng đất Ba Tri thanh bình.",
+    "license": "Bản quyền thuộc tác giả và Báo Đồng Khởi"
+  },
+  {
+    "entity_id": "cho-noi-tra-on-dc",
+    "image": "web-nuxt/public/img/entities/cho-noi-tra-on-dc.webp",
+    "author": "Hùng Phi",
+    "source": "Báo Vĩnh Long",
+    "caption": "Sáng sớm tấp nập trên dòng sông Hậu tại Chợ Nổi Trà Ôn, những cây bẹo treo trái cây miệt vườn đón ghe thuyền buôn bán rộn rã.",
+    "license": "Bản quyền thuộc tác giả và Báo Vĩnh Long"
+  },
+  {
+    "entity_id": "cho-noi-dua-song-thom-mo-cay",
+    "image": "web-nuxt/public/img/entities/cho-noi-dua-song-thom-mo-cay.webp",
+    "author": "Hữu Trí",
+    "source": "Báo Đồng Khởi",
+    "caption": "Dòng kênh Sông Thom nhộn nhịp tàu ghe chở đầy dừa trái, dừa giống và phụ phẩm từ dừa, chợ đầu mối giao thương dừa sầm uất bậc nhất Nam Bộ.",
+    "license": "Bản quyền thuộc tác giả và Báo Đồng Khởi"
+  },
+  {
+    "entity_id": "nha-tho-chinh-toa-vinh-long",
+    "image": "web-nuxt/public/img/entities/nha-tho-chinh-toa-vinh-long.webp",
+    "author": "Đăng Khoa",
+    "source": "Báo Vĩnh Long",
+    "caption": "Ngôi thánh đường cổ kính mang kiến trúc Roman giao hòa nét Á Đông uy nghiêm tọa lạc tại trung tâm thành phố Vĩnh Long.",
+    "license": "Bản quyền thuộc tác giả và Báo Vĩnh Long"
+  },
+  {
+    "entity_id": "nha-tho-cai-mon-cho-lach",
+    "image": "web-nuxt/public/img/entities/nha-tho-cai-mon-cho-lach.webp",
+    "author": "Hoàng Mai",
+    "source": "Báo Đồng Khởi",
+    "caption": "Tháp chuông thanh thoát của họ đạo Cái Mơn có bề dày hơn 300 năm lịch sử, cái nôi công giáo và quê hương nhà bác học Trương Vĩnh Ký.",
+    "license": "Bản quyền thuộc tác giả và Báo Đồng Khởi"
+  },
+  {
+    "entity_id": "cu-lao-dai-cu-lao-thanh-binh-quoi-thien",
+    "image": "web-nuxt/public/img/entities/cu-lao-dai-cu-lao-thanh-binh-quoi-thien.webp",
+    "author": "Quang Vinh",
+    "source": "Báo Vĩnh Long",
+    "caption": "Cù lao phù sa xanh mướt giữa dòng sông Cổ Chiên thuộc Vũng Liêm, thủ phủ sầu riêng, chôm chôm và làng nghề dệt chiếu lát truyền thống.",
+    "license": "Bản quyền thuộc tác giả và Báo Vĩnh Long"
+  },
+  {
+    "entity_id": "cu-lao-my-hoa",
+    "image": "web-nuxt/public/img/entities/cu-lao-my-hoa.webp",
+    "author": "Nguyễn Bách",
+    "source": "Báo Vĩnh Long",
+    "caption": "Vùng đất trù phú bên dòng sông Hậu thuộc Bình Minh, bạt ngàn vườn bưởi Năm Roi trĩu quả cùng làng nghề tàu hũ ky hơn trăm năm tuổi.",
+    "license": "Bản quyền thuộc tác giả và Báo Vĩnh Long"
+  },
+  {
+    "entity_id": "con-chim",
+    "image": "web-nuxt/public/img/entities/con-chim.webp",
+    "author": "Hữu Huệ",
+    "source": "Cổng TTĐT Trà Vinh",
+    "caption": "Không gian du lịch sinh thái nông nghiệp thuận thiên độc đáo giữa sông Cổ Chiên, nơi du khách tận hưởng nếp sống miệt vườn chân chất và mộc mạc.",
+    "license": "Bản quyền thuộc tác giả và Cổng TTĐT Trà Vinh"
+  },
+  {
+    "entity_id": "con-tan-qui",
+    "image": "web-nuxt/public/img/entities/con-tan-qui.webp",
+    "author": "Thạch Thảo",
+    "source": "Báo Trà Vinh",
+    "caption": "Cù lao trái cây trứ danh sông Hậu thuộc Cầu Kè, mùa vụ ngập tràn chôm chôm, măng cụt, dừa sáp và các điểm du lịch sinh thái sông nước.",
+    "license": "Bản quyền thuộc tác giả và Báo Trà Vinh"
+  },
+  {
+    "entity_id": "con-oc-hung-phong",
+    "image": "web-nuxt/public/img/entities/con-oc-hung-phong.webp",
+    "author": "Văn Minh",
+    "source": "Báo Đồng Khởi",
+    "caption": "Ốc đảo xanh bạt ngàn vườn dừa giống quý, bưởi da xanh và nghề thủ công mỹ nghệ từ gỗ dừa ven dòng sông Hàm Luông, Giồng Trôm.",
+    "license": "Bản quyền thuộc tác giả và Báo Đồng Khởi"
+  },
+  {
+    "entity_id": "con-quy-song-tien-chau-thanh-ben-tre",
+    "image": "web-nuxt/public/img/entities/con-quy-song-tien-chau-thanh-ben-tre.webp",
+    "author": "Tuyết Hiền",
+    "source": "Báo Đồng Khởi",
+    "caption": "Cồn cát sinh thái trong bộ tứ linh Long - Lân - Quy - Phụng trên sông Tiền, rợp bóng dừa nước, vườn cây ăn trái và đờn ca tài tử Nam Bộ.",
+    "license": "Bản quyền thuộc tác giả và Báo Đồng Khởi"
+  },
+  {
+    "entity_id": "con-tam-hiep-dao-tam-hiep",
+    "image": "web-nuxt/public/img/entities/con-tam-hiep-dao-tam-hiep.webp",
+    "author": "Cẩm Trúc",
+    "source": "Báo Đồng Khởi",
+    "caption": "Đảo cù lao độc lập giữa hạ lưu sông Tiền thuộc Bình Đại, trù phú với đặc sản nhãn xuồng cơm vàng, chôm chôm và không khí trong lành miền sông nước.",
+    "license": "Bản quyền thuộc tác giả và Báo Đồng Khởi"
+  },
+  {
+    "entity_id": "bai-bien-con-bung-thanh-hai",
+    "image": "web-nuxt/public/img/entities/bai-bien-con-bung-thanh-hai.webp",
+    "author": "Minh Mừng",
+    "source": "Báo Đồng Khởi",
+    "caption": "Bãi biển phù sa hoang sơ trải dài với hàng phi lao chắn sóng lộng gió tại Thạnh Phú, thiên đường hải sản tươi sống và ốc viết mùa gió chướng.",
+    "license": "Bản quyền thuộc tác giả và Báo Đồng Khởi"
+  },
+  {
+    "entity_id": "bai-bien-mo-o-truong-long-hoa-tra-vinh",
+    "image": "web-nuxt/public/img/entities/bai-bien-mo-o-truong-long-hoa-tra-vinh.webp",
+    "author": "Thanh Điền",
+    "source": "Báo Trà Vinh",
+    "caption": "Bãi bồi phù sa ven biển Duyên Hải với vẻ đẹp khoáng đạt của rừng ngập mặn giao hòa biển Đông, nơi đón bình minh rực rỡ miền duyên hải.",
+    "license": "Bản quyền thuộc tác giả và Báo Trà Vinh"
+  },
+  {
+    "entity_id": "rung-duoc-long-khanh",
+    "image": "web-nuxt/public/img/entities/rung-duoc-long-khanh.webp",
+    "author": "Hoàng Vũ",
+    "source": "Báo Trà Vinh",
+    "caption": "Hệ sinh thái rừng ngập mặn đước và mắm bạt ngàn ven cửa sông Cung Hầu, lá chắn xanh kiên cường phòng hộ bão gió và ngôi nhà của tôm cá phù sa.",
+    "license": "Bản quyền thuộc tác giả và Báo Trà Vinh"
+  },
+  {
+    "entity_id": "rung-ngap-man-phong-ho-binh-dai-ben-tre",
+    "image": "web-nuxt/public/img/entities/rung-ngap-man-phong-ho-binh-dai-ben-tre.webp",
+    "author": "Quốc Hùng",
+    "source": "Cổng TTĐT Bến Tre",
+    "caption": "Thảm rừng ngập mặn ven biển Bình Đại che chắn đê biển, tạo sinh cảnh trù phú cho các loài thủy hải sản và chim di cư mùa sinh sản.",
+    "license": "Bản quyền thuộc tác giả và Cổng TTĐT Bến Tre"
+  },
+  {
+    "entity_id": "canh-dong-muoi-bao-thanh",
+    "image": "web-nuxt/public/img/entities/canh-dong-muoi-bao-thanh.webp",
+    "author": "Phương Thảo",
+    "source": "Cổng TTĐT Bến Tre",
+    "caption": "Những ô ruộng muối trắng tinh lấp lánh dưới nắng chói chang ven biển Ba Tri, kết tinh giọt mồ hôi và hương vị mặn mòi của diêm dân xứ biển.",
+    "license": "Bản quyền thuộc tác giả và Cổng TTĐT Bến Tre"
+  }
+]

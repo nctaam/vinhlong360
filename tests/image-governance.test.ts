@@ -330,7 +330,35 @@ describe('Image Governance & Visual Asset Suite (100% Full Coverage)', () => {
       'festival-gach-gom-do-kinh-te-xanh-tinh-vinh-long-vinh-long',
       'ngay-hoi-van-hoa-the-thao-va-du-lich-huyen-cho-lach-ben-tre',
       'ngay-hoi-banh-dan-gian-nam-bo-ket-hop-hoi-cho-ocop-vinh-long-vinh-long',
+      // 25 Islands, Revolutionary Relics & Museums across Tam Vùng (Batch 8)
+      'can-cu-cach-mang-cai-ngang-vinh-long',
+      'di-tich-can-cu-khu-uy-sai-gon-gia-dinh',
+      'di-tich-duong-ho-chi-minh-tren-bien-thanh-phu',
+      'khu-di-tich-can-cu-tinh-uy-tra-vinh',
+      'cau-my-thuan',
+      'bao-tang-vinh-long',
+      'bao-tang-ben-tre',
+      'bao-tang-van-hoa-dan-toc-khmer-tra-vinh',
+      'mo-va-khu-luu-niem-nha-giao-vo-truong-toan',
+      'cho-noi-tra-on-dc',
+      'cho-noi-dua-song-thom-mo-cay',
+      'nha-tho-chinh-toa-vinh-long',
+      'nha-tho-cai-mon-cho-lach',
+      'cu-lao-dai-cu-lao-thanh-binh-quoi-thien',
+      'cu-lao-my-hoa',
+      'con-chim',
+      'con-tan-qui',
+      'con-oc-hung-phong',
+      'con-quy-song-tien-chau-thanh-ben-tre',
+      'con-tam-hiep-dao-tam-hiep',
+      'bai-bien-con-bung-thanh-hai',
+      'bai-bien-mo-o-truong-long-hoa-tra-vinh',
+      'rung-duoc-long-khanh',
+      'rung-ngap-man-phong-ho-binh-dai-ben-tre',
+      'canh-dong-muoi-bao-thanh',
     ]
+
+    expect(documentaryIds.length).toBe(229)
 
     for (const id of documentaryIds) {
       const row = db.prepare(`SELECT id, images, attributes FROM entities WHERE id = ?`).get(id) as { id: string; images: string; attributes: string }
