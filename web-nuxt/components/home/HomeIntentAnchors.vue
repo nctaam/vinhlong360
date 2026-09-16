@@ -19,8 +19,20 @@
           data-intent-anchor
           role="listitem"
         >
-          <span class="home-intent-anchor__icon" :class="`home-intent-anchor__icon--${anchor.accent}`" aria-hidden="true">
-            <IconLine :name="anchor.icon" />
+          <span class="home-intent-anchor__media">
+            <img
+              class="home-intent-anchor__avatar"
+              :src="anchor.avatarSrc"
+              :alt="anchor.label"
+              width="38"
+              height="38"
+              loading="lazy"
+              decoding="async"
+              @error="onAvatarFallback"
+            >
+            <span class="home-intent-anchor__icon-badge" :class="`home-intent-anchor__icon-badge--${anchor.accent}`" aria-hidden="true">
+              <IconLine :name="anchor.icon" />
+            </span>
           </span>
           <span class="home-intent-anchor__content">
             <strong class="home-intent-anchor__label">{{ anchor.label }}</strong>
@@ -42,6 +54,7 @@ interface IntentAnchor {
   readonly hint: string
   readonly to: string
   readonly icon: string
+  readonly avatarSrc: string
   readonly accent: 'orchard' | 'mangthit' | 'river' | 'amber' | 'clay'
 }
 
@@ -49,44 +62,57 @@ const INTENT_ANCHORS: readonly IntentAnchor[] = [
   {
     key: 'eco-orchard',
     label: 'Du lịch Sinh thái Miệt vườn',
-    hint: 'Vườn chôm chôm, sầu riêng Ri6 trĩu quả cù lao An Bình',
+    hint: 'Vườn chôm chôm, sầu riêng Ri6 cù lao An Bình',
     to: '/tim-kiem?q=sinh+th%C3%A1i+mi%E1%BB%87t+v%C6%B0%E1%BB%9Dn',
     icon: 'sprout',
+    avatarSrc: '/img/entities/cu-lao-an-binh.webp',
     accent: 'orchard',
   },
   {
     key: 'heritage-craft',
     label: 'Ký sự Làng nghề Truyền thống',
-    hint: 'Lò gạch gốm đỏ Mang Thít & làng dệt chiếu, đan lát',
+    hint: 'Lò gạch gốm đỏ Mang Thít & làng đan lát',
     to: '/tim-kiem?q=l%C3%A0ng+ngh%E1%BB%81+g%E1%BB%91m',
     icon: 'vase',
+    avatarSrc: '/img/entities/de-an-di-san-duong-dai-mang-thit.webp',
     accent: 'mangthit',
   },
   {
     key: 'spiritual-culture',
     label: 'Hành trình Tâm linh Di sản',
-    hint: 'Chùa Khmer Hạnh Phúc Tăng (Phù Ly), Văn Thánh Miếu',
+    hint: 'Chùa Khmer Hạnh Phúc Tăng, Văn Thánh Miếu',
     to: '/tim-kiem?q=t%C3%A2m+linh+di+s%E1%BA%A3n',
     icon: 'landmark',
+    avatarSrc: '/img/entities/chua-shanghamangala-khmer-vung-liem.webp',
     accent: 'clay',
   },
   {
     key: 'culinary-market',
     label: 'Ẩm thực & Chợ nổi',
-    hint: 'Cá tai tượng chiên xù, bánh xèo hến & Chợ nổi Trà Ôn',
+    hint: 'Cá tai tượng chiên xù, bánh xèo & Chợ nổi Trà Ôn',
     to: '/kham-pha/am-thuc',
     icon: 'bowl',
+    avatarSrc: '/img/entities/ca-tai-tuong-chien-xu.webp',
     accent: 'amber',
   },
   {
     key: 'riverside-homestay',
     label: 'Nghỉ dưỡng Homestay Ven sông',
-    hint: 'Homestay Út Trinh, Mekong Riverside & đờn ca tài tử',
+    hint: 'Homestay Út Trinh, Mekong Riverside & đờn ca',
     to: '/luu-tru',
     icon: 'home',
+    avatarSrc: '/img/entities/homestay-ut-trinh.webp',
     accent: 'river',
   },
 ]
+
+function onAvatarFallback(e: Event) {
+  const img = e.target as HTMLImageElement
+  if (img && !img.dataset.fallbackApplied) {
+    img.dataset.fallbackApplied = 'true'
+    img.src = '/img/spread/song-nuoc.webp'
+  }
+}
 </script>
 
 <style scoped>
@@ -139,10 +165,10 @@ const INTENT_ANCHORS: readonly IntentAnchor[] = [
   align-items: center;
   gap: var(--space-3);
   min-height: 48px;
-  padding: var(--space-3) var(--space-4);
+  padding: var(--space-2) var(--space-4) var(--space-2) var(--space-2);
   background: var(--color-surface);
   border: 1px solid var(--color-border);
-  border-radius: var(--radius-surface);
+  border-radius: var(--radius-pill, 999px);
   color: var(--color-text);
   text-decoration: none;
   box-shadow: 0 1px 3px rgba(var(--black-rgb), 0.04);
@@ -167,44 +193,44 @@ const INTENT_ANCHORS: readonly IntentAnchor[] = [
   outline-offset: 2px;
 }
 
-.home-intent-anchor__icon {
+.home-intent-anchor__media {
+  position: relative;
+  width: 38px;
+  height: 38px;
+  flex-shrink: 0;
+}
+
+.home-intent-anchor__avatar {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  object-fit: cover;
+  display: block;
+  border: 1.5px solid var(--color-surface);
+  box-shadow: 0 1px 3px rgba(var(--black-rgb), 0.12);
+}
+
+.home-intent-anchor__icon-badge {
+  position: absolute;
+  bottom: -2px;
+  right: -2px;
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 40px;
-  height: 40px;
-  flex-shrink: 0;
-  border-radius: var(--radius-control);
-  background: var(--color-canvas);
-  color: var(--color-text);
-  font-size: 1.2rem;
-  transition: background-color 0.2s ease, color 0.2s ease;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  font-size: 10px;
+  box-shadow: 0 1px 2px rgba(var(--black-rgb), 0.15);
 }
 
-.home-intent-anchor__icon--orchard {
-  color: var(--orchard-600);
-  background: color-mix(in srgb, var(--orchard-600) 12%, transparent);
-}
-
-.home-intent-anchor__icon--mangthit {
-  color: var(--mangthit-600);
-  background: color-mix(in srgb, var(--mangthit-600) 12%, transparent);
-}
-
-.home-intent-anchor__icon--clay {
-  color: var(--clay-600);
-  background: color-mix(in srgb, var(--clay-600) 12%, transparent);
-}
-
-.home-intent-anchor__icon--amber {
-  color: var(--harvest-700);
-  background: color-mix(in srgb, var(--harvest-700) 12%, transparent);
-}
-
-.home-intent-anchor__icon--river {
-  color: var(--river-600);
-  background: color-mix(in srgb, var(--river-600) 12%, transparent);
-}
+.home-intent-anchor__icon-badge--orchard { color: var(--orchard-600); }
+.home-intent-anchor__icon-badge--mangthit { color: var(--mangthit-600); }
+.home-intent-anchor__icon-badge--clay { color: var(--clay-600); }
+.home-intent-anchor__icon-badge--amber { color: var(--harvest-700); }
+.home-intent-anchor__icon-badge--river { color: var(--river-600); }
 
 .home-intent-anchor__content {
   display: flex;

@@ -27,27 +27,31 @@
           <span class="hero-kicker" data-color-role="brand"><span class="hero-kicker-dot" aria-hidden="true"></span>{{ ss('homepage.hero_kicker', 'Du lịch & Đặc sản Vĩnh Long') }}</span>
           <h1>{{ seasonalTagline }}</h1>
           <p class="hero-sub">{{ ss('homepage.hero_subtitle', 'Tìm điểm đến, món ngon, lễ hội và lịch trình phù hợp cho chuyến đi Vĩnh Long hôm nay.') }}</p>
-          <SearchAutocomplete
-            class="hero-search hero-ac"
-            data-color-role="action-primary"
-            :placeholder="ss('homepage.search_placeholder', 'Tìm điểm đến, món ngon, lịch trình…')"
-          />
-          <div class="hero-multisearch" role="group" aria-label="Bộ lọc nhanh lữ hành">
-            <div class="hero-multisearch__row">
-              <span class="hero-multisearch__label">Loại hình:</span>
-              <NuxtLink to="/du-lich" class="hero-filter-pill">Điểm đến</NuxtLink>
-              <NuxtLink to="/luu-tru" class="hero-filter-pill">Homestay</NuxtLink>
-              <NuxtLink to="/kham-pha/am-thuc" class="hero-filter-pill">Món ngon</NuxtLink>
-              <NuxtLink to="/lich-trinh" class="hero-filter-pill">Lịch trình</NuxtLink>
+          <div class="hero-search-island" role="search" aria-label="Tìm kiếm và bộ lọc nhanh lữ hành">
+            <SearchAutocomplete
+              class="hero-search hero-ac"
+              data-color-role="action-primary"
+              :placeholder="ss('homepage.search_placeholder', 'Tìm điểm đến, món ngon, lịch trình…')"
+            />
+            <div class="hero-multisearch" role="group" aria-label="Bộ lọc nhanh lữ hành">
+              <div class="hero-multisearch__row">
+                <span class="hero-multisearch__label">Loại hình:</span>
+                <NuxtLink to="/du-lich" class="hero-filter-pill">Điểm đến</NuxtLink>
+                <NuxtLink to="/luu-tru" class="hero-filter-pill">Homestay</NuxtLink>
+                <NuxtLink to="/kham-pha/am-thuc" class="hero-filter-pill">Món ngon</NuxtLink>
+                <NuxtLink to="/lich-trinh" class="hero-filter-pill">Lịch trình</NuxtLink>
+              </div>
+              <div class="hero-multisearch__row">
+                <span class="hero-multisearch__label">Thời lượng:</span>
+                <NuxtLink to="/lich-trinh/mot-ngay-cu-lao-an-binh" class="hero-filter-pill">1 Ngày</NuxtLink>
+                <NuxtLink to="/lich-trinh/di-san-mang-thit-tra-vinh" class="hero-filter-pill">2N1Đ</NuxtLink>
+                <NuxtLink to="/lich-trinh/mien-tay-3-ngay" class="hero-filter-pill">3N2Đ</NuxtLink>
+              </div>
             </div>
-            <div class="hero-multisearch__row">
-              <span class="hero-multisearch__label">Thời lượng:</span>
-              <NuxtLink to="/lich-trinh/mot-ngay-cu-lao-an-binh" class="hero-filter-pill">1 Ngày</NuxtLink>
-              <NuxtLink to="/lich-trinh/di-san-mang-thit-tra-vinh" class="hero-filter-pill">2N1Đ</NuxtLink>
-              <NuxtLink to="/lich-trinh/mien-tay-3-ngay" class="hero-filter-pill">3N2Đ</NuxtLink>
+            <div class="hero-search-island__footer">
+              <NuxtLink to="/ban-do?near=1" class="hero-nearby"><IconLine name="pin" /> Tìm quanh tôi</NuxtLink>
             </div>
           </div>
-          <NuxtLink to="/ban-do?near=1" class="hero-nearby"><IconLine name="pin" /> Tìm quanh tôi</NuxtLink>
           <div class="hero-terroir-chips" role="region" aria-label="Gợi ý thực địa Vĩnh Long">
             <span class="hero-terroir-chips__label">Khám phá nhanh:</span>
             <NuxtLink

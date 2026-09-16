@@ -15,9 +15,9 @@
       </NuxtLink>
     </div>
 
-    <!-- Asymmetric Editorial Layout 62/38 -->
+    <!-- Asymmetric Editorial Layout 62/38 Mosaic -->
     <div class="home-curated-showcase__layout">
-      <!-- 62% Lead Heritage Showcase: Lò gạch Mang Thít -->
+      <!-- 62% Lead Heritage Showcase: Lò gạch Mang Thít (80% photo visual area) -->
       <article class="home-curated-lead" data-curated-lead>
         <div class="home-curated-lead__media-container">
           <img
@@ -31,51 +31,68 @@
             @error="onImgFallback"
           >
           <div class="home-curated-lead__scrim" aria-hidden="true" />
-          <div class="home-curated-lead__badge">
-            <IconLine name="flame" />
-            <span>{{ leadItem.badge }}</span>
-          </div>
-        </div>
-
-        <div class="home-curated-lead__body">
-          <div class="home-curated-lead__meta">
-            <span class="home-curated-lead__location">
-              <IconLine name="pin" />
-              <span>{{ leadItem.location }}</span>
-            </span>
-            <span class="home-curated-lead__coords">{{ leadItem.coordinates }}</span>
-          </div>
-
-          <h3 class="home-curated-lead__title">
-            <NuxtLink :to="leadItem.to">{{ leadItem.title }}</NuxtLink>
-          </h3>
-          <p class="home-curated-lead__desc">{{ leadItem.desc }}</p>
-
-          <div class="home-curated-lead__tips">
-            <div class="home-curated-lead__tip">
-              <IconLine name="sun" />
-              <span><strong>Thời điểm đẹp nhất:</strong> {{ leadItem.bestTime }}</span>
+          
+          <div class="home-curated-lead__top-bar">
+            <div class="home-curated-lead__badge">
+              <IconLine name="flame" />
+              <span>{{ leadItem.badge }}</span>
             </div>
-            <div class="home-curated-lead__tip">
-              <IconLine name="camera" />
-              <span><strong>Trải nghiệm độc bản:</strong> {{ leadItem.highlight }}</span>
-            </div>
+
+            <!-- Interactive Bookmark Button -->
+            <button
+              type="button"
+              class="home-bookmark-btn"
+              :class="{ 'is-saved': isItemSaved(leadItem.id) }"
+              :aria-label="isItemSaved(leadItem.id) ? `Bỏ lưu ${leadItem.title}` : `Lưu ${leadItem.title}`"
+              :aria-pressed="isItemSaved(leadItem.id)"
+              @click.prevent.stop="toggleBookmark(leadItem)"
+            >
+              <IconLine :name="isItemSaved(leadItem.id) ? 'heart' : 'bookmark'" />
+              <span class="sr-only">{{ isItemSaved(leadItem.id) ? 'Đã lưu' : 'Lưu điểm đến' }}</span>
+            </button>
           </div>
 
-          <div class="home-curated-lead__actions">
-            <NuxtLink :to="leadItem.to" class="btn btn-primary" data-color-role="action-primary">
-              <span>Khám phá di sản</span>
-              <IconLine name="arrow-right" aria-hidden="true" />
-            </NuxtLink>
-            <NuxtLink :to="leadItem.mapTo" class="btn btn-outline" data-color-role="action-secondary">
-              <IconLine name="map" />
-              <span>Mở bản đồ thực địa</span>
-            </NuxtLink>
+          <div class="home-curated-lead__overlay">
+            <div class="home-curated-lead__meta">
+              <span class="home-curated-lead__location">
+                <IconLine name="pin" />
+                <span>{{ leadItem.location }}</span>
+              </span>
+              <span class="home-curated-lead__coords">{{ leadItem.coordinates }}</span>
+            </div>
+
+            <h3 class="home-curated-lead__title">
+              <NuxtLink :to="leadItem.to">{{ leadItem.title }}</NuxtLink>
+            </h3>
+            
+            <p class="home-curated-lead__desc">{{ leadItem.desc }}</p>
+
+            <div class="home-curated-lead__tips">
+              <span class="home-curated-lead__tip">
+                <IconLine name="sun" />
+                <span><strong>Đẹp nhất:</strong> {{ leadItem.bestTime }}</span>
+              </span>
+              <span class="home-curated-lead__tip">
+                <IconLine name="camera" />
+                <span><strong>Điểm nhấn:</strong> {{ leadItem.highlight }}</span>
+              </span>
+            </div>
+
+            <div class="home-curated-lead__actions">
+              <NuxtLink :to="leadItem.to" class="btn btn-primary" data-color-role="action-primary">
+                <span>Khám phá di sản</span>
+                <IconLine name="arrow-right" aria-hidden="true" />
+              </NuxtLink>
+              <NuxtLink :to="leadItem.mapTo" class="btn btn-outline" data-color-role="action-secondary">
+                <IconLine name="map" />
+                <span>Mở bản đồ</span>
+              </NuxtLink>
+            </div>
           </div>
         </div>
       </article>
 
-      <!-- 38% Satellite Cards (2x2 Grid) -->
+      <!-- 38% Satellite Cards (2x2 Grid, Full-Bleed 100% Photo with Bottom Scrim) -->
       <div class="home-curated-satellites">
         <article
           v-for="item in satelliteItems"
@@ -83,20 +100,41 @@
           class="home-curated-satellite"
           data-curated-satellite
         >
-          <div class="home-curated-satellite__media">
-            <img
-              class="home-curated-satellite__img"
-              :src="item.coverSrc"
-              :alt="item.title"
-              width="480"
-              height="320"
-              loading="lazy"
-              decoding="async"
-              @error="onImgFallback"
-            >
+          <!-- Full-Bleed Satellite Photo (100% of card) -->
+          <img
+            class="home-curated-satellite__img"
+            :src="item.coverSrc"
+            :alt="item.title"
+            width="480"
+            height="360"
+            loading="lazy"
+            decoding="async"
+            @error="onImgFallback"
+          >
+
+          <!-- Bottom Gradient Scrim -->
+          <div class="home-curated-satellite__scrim" aria-hidden="true" />
+
+          <!-- Floating Top Bar -->
+          <div class="home-curated-satellite__top">
             <span class="home-curated-satellite__tag">{{ item.tag }}</span>
+
+            <!-- Satellite Bookmark Button -->
+            <button
+              type="button"
+              class="home-bookmark-btn home-bookmark-btn--sm"
+              :class="{ 'is-saved': isItemSaved(item.id) }"
+              :aria-label="isItemSaved(item.id) ? `Bỏ lưu ${item.title}` : `Lưu ${item.title}`"
+              :aria-pressed="isItemSaved(item.id)"
+              @click.prevent.stop="toggleBookmark(item)"
+            >
+              <IconLine :name="isItemSaved(item.id) ? 'heart' : 'bookmark'" />
+              <span class="sr-only">{{ isItemSaved(item.id) ? 'Đã lưu' : 'Lưu điểm đến' }}</span>
+            </button>
           </div>
-          <div class="home-curated-satellite__content">
+
+          <!-- Overlaid Bottom Content (<= 25% card height) -->
+          <div class="home-curated-satellite__overlay home-curated-satellite__content">
             <span class="home-curated-satellite__area">
               <IconLine name="pin" />
               <span>{{ item.area }}</span>
@@ -118,6 +156,7 @@
 
 <script setup lang="ts">
 import IconLine from '~/components/IconLine.vue'
+import { useFavorites } from '~/composables/useFavorites'
 
 interface CuratedLead {
   readonly id: string
@@ -143,15 +182,31 @@ interface CuratedSatellite {
   readonly to: string
 }
 
+const { isSaved, toggle } = useFavorites()
+
+function isItemSaved(id: string): boolean {
+  return isSaved(id)
+}
+
+function toggleBookmark(target: { id: string; title: string; coverSrc?: string }) {
+  toggle({
+    id: target.id,
+    name: target.title,
+    title: target.title,
+    type: 'attraction',
+    image: target.coverSrc,
+  })
+}
+
 const leadItem: CuratedLead = {
   id: 'de-an-di-san-duong-dai-mang-thit',
   title: 'Quần Thể Di Sản Lò Gạch Gốm Đỏ Mang Thít',
   badge: 'Di sản Đương đại Sống · Kênh Thầy Cai',
   location: 'Huyện Mang Thít, Vĩnh Long',
   coordinates: '10.183° N, 106.096° E',
-  desc: 'Gần 900 lò gạch gốm truyền thống hình vòm tháp chuông trải dọc bờ sông Cổ Chiên và kênh Thầy Cai — được ví như "những kim tự tháp đỏ phương Đông" có tuổi đời hơn một thế kỷ.',
+  desc: 'Quần thể gần 900 vòm gốm tháp chuông đỏ rực dọc kênh Thầy Cai, di sản đương đại sống bên bờ Cổ Chiên.',
   bestTime: '16:00 – 17:30 hoàng hôn đổ bóng vòm gốm',
-  highlight: 'Thử tài nặn gốm đỏ tại xưởng gốm thủ công Thầy Kay & thăm Nhà Gốm Tư Buôi',
+  highlight: 'Thử tài nặn gốm & thăm Nhà Gốm Tư Buôi',
   coverSrc: '/img/entities/de-an-di-san-duong-dai-mang-thit.webp',
   to: '/dia-diem/de-an-di-san-duong-dai-mang-thit',
   mapTo: '/ban-do?selected=de-an-di-san-duong-dai-mang-thit',
@@ -163,7 +218,7 @@ const satelliteItems: readonly CuratedSatellite[] = [
     title: 'Cù Lao An Bình & Vườn Trái Cây',
     tag: 'Sinh thái Miệt vườn',
     area: 'Long Hồ',
-    summary: 'Thủ phủ cây ăn trái nhiệt đới: chôm chôm chín rộ, sầu riêng Ri6 Bình Hòa Phước và mương rạch dừa nước.',
+    summary: 'Miệt vườn trái cây ngút ngàn, sầu riêng Ri6 chín bùi và rạch dừa nước thanh bình giữa sông Tiền.',
     coverSrc: '/img/entities/cu-lao-an-binh.webp',
     to: '/dia-diem/cu-lao-an-binh',
   },
@@ -172,7 +227,7 @@ const satelliteItems: readonly CuratedSatellite[] = [
     title: 'Chợ Nổi Trà Ôn Sông Hậu',
     tag: 'Thương hồ Sông nước',
     area: 'Trà Ôn',
-    summary: 'Nét sinh hoạt giao thương độc bản theo con nước lớn rạng sáng, ghe thuyền buôn bán rộn ràng cây bẹo.',
+    summary: 'Thương hồ sông Hậu họp chợ theo con nước sớm, rộn ràng tiếng cười nói và cây bẹo mời chào sản vật.',
     coverSrc: '/img/entities/khu-du-lich-cho-noi-tra-on.webp',
     to: '/dia-diem/khu-du-lich-cho-noi-tra-on',
   },
@@ -181,7 +236,7 @@ const satelliteItems: readonly CuratedSatellite[] = [
     title: 'Chùa Hạnh Phúc Tăng (Sanghamangala)',
     tag: 'Tâm linh Di sản',
     area: 'Vũng Liêm',
-    summary: 'Ngôi chùa Phật giáo Nam tông Khmer cổ kính nhất Vĩnh Long khởi lập năm 632 rợp bóng sao dầu trăm tuổi.',
+    summary: 'Ngôi chùa Khmer cổ kính từ năm 632, kiến trúc tháp nhọn trầm mặc dưới bóng sao dầu nghìn năm.',
     coverSrc: '/img/entities/chua-shanghamangala-khmer-vung-liem.webp',
     to: '/dia-diem/chua-shanghamangala-khmer-vung-liem',
   },
@@ -190,7 +245,7 @@ const satelliteItems: readonly CuratedSatellite[] = [
     title: 'KDL Sinh Thái Miệt Vườn Vinh Sang',
     tag: 'Điền dã Dân gian',
     area: 'An Bình, Long Hồ',
-    summary: 'Hóa thân nông dân tát mương bắt cá đồng, chèo xuồng ba lá mương liếp và thưởng thức đờn ca tài tử.',
+    summary: 'Trải nghiệm tát mương bắt cá, chèo xuồng mương liếp và nghe đờn ca tài tử bên vườn dừa trĩu quả.',
     coverSrc: '/img/entities/khu-du-lich-sinh-thai-miet-vuon-vinh-sang.webp',
     to: '/dia-diem/khu-du-lich-sinh-thai-miet-vuon-vinh-sang',
   },
@@ -239,7 +294,7 @@ function onImgFallback(e: Event) {
   }
 }
 
-/* 62% Lead Card */
+/* 80% Lead Photo Mosaic Tile */
 .home-curated-lead {
   display: flex;
   flex-direction: column;
@@ -248,7 +303,7 @@ function onImgFallback(e: Event) {
   border-radius: var(--radius-surface);
   overflow: hidden;
   box-shadow: 0 4px 20px rgba(var(--black-rgb), 0.06);
-  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.25s ease;
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.25s ease, border-color 0.25s ease;
 }
 
 .home-curated-lead:hover {
@@ -260,37 +315,58 @@ function onImgFallback(e: Event) {
 .home-curated-lead__media-container {
   position: relative;
   width: 100%;
-  aspect-ratio: 16 / 10;
+  height: 100%;
+  min-height: 520px;
   overflow: hidden;
   background: var(--color-canvas);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
 }
 
 .home-curated-lead__img {
+  position: absolute;
+  inset: 0;
   width: 100%;
   height: 100%;
   object-fit: cover;
-  transition: transform 0.4s ease;
+  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .home-curated-lead:hover .home-curated-lead__img {
-  transform: scale(1.03);
+  transform: scale(1.04);
 }
 
 .home-curated-lead__scrim {
   position: absolute;
   inset: 0;
-  background: linear-gradient(180deg, rgba(var(--black-rgb), 0.1) 0%, rgba(var(--black-rgb), 0.65) 100%);
+  background: linear-gradient(
+    180deg,
+    rgba(var(--black-rgb), 0.25) 0%,
+    rgba(var(--black-rgb), 0.08) 30%,
+    rgba(var(--black-rgb), 0.55) 50%,
+    rgba(var(--black-rgb), 0.78) 65%,
+    rgba(var(--black-rgb), 0.92) 85%,
+    rgba(var(--black-rgb), 0.96) 100%
+  );
+  pointer-events: none;
+}
+
+.home-curated-lead__top-bar {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-4);
 }
 
 .home-curated-lead__badge {
-  position: absolute;
-  top: var(--space-4);
-  left: var(--space-4);
   display: inline-flex;
   align-items: center;
   gap: var(--space-2);
   padding: var(--space-1h) var(--space-3);
-  background: rgba(var(--black-rgb), 0.72);
+  background: rgba(var(--black-rgb), 0.75);
   color: var(--surface-white);
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
@@ -302,15 +378,61 @@ function onImgFallback(e: Event) {
 }
 
 .home-curated-lead__badge .line-icon {
-  color: var(--mangthit-500);
+  color: var(--surface-white);
 }
 
-.home-curated-lead__body {
+.home-bookmark-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 44px;
+  min-height: 44px;
+  border-radius: 50%;
+  background: rgba(var(--black-rgb), 0.75);
+  color: var(--surface-white);
+  border: 1px solid rgba(var(--white-rgb), 0.25);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  cursor: pointer;
+  font-size: 1.1rem;
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1),
+              background-color 0.2s ease,
+              color 0.2s ease;
+}
+
+.home-bookmark-btn:hover {
+  transform: scale(1.1);
+  color: var(--coral-error);
+  background: rgba(var(--black-rgb), 0.9);
+}
+
+.home-bookmark-btn:active {
+  transform: scale(0.95);
+}
+
+.home-bookmark-btn.is-saved {
+  color: var(--coral-error);
+  background: rgba(var(--black-rgb), 0.85);
+  border-color: color-mix(in srgb, var(--coral-error) 40%, transparent);
+}
+
+.home-bookmark-btn--sm {
+  min-width: 44px;
+  min-height: 44px;
+  position: absolute;
+  top: var(--space-2);
+  right: var(--space-2);
+  z-index: 2;
+}
+
+.home-curated-lead__overlay {
+  position: relative;
+  z-index: 2;
+  padding: var(--space-6);
   display: flex;
   flex-direction: column;
-  flex: 1;
-  padding: var(--space-6);
-  gap: var(--space-4);
+  gap: var(--space-3);
+  color: var(--surface-white);
 }
 
 .home-curated-lead__meta {
@@ -320,20 +442,24 @@ function onImgFallback(e: Event) {
   justify-content: space-between;
   gap: var(--space-2);
   font-size: var(--text-xs);
-  color: var(--color-text-muted);
+  color: rgba(var(--white-rgb), 0.85);
 }
 
 .home-curated-lead__location {
   display: inline-flex;
   align-items: center;
   gap: var(--space-1);
-  color: var(--color-brand);
+  color: var(--surface-white);
   font-weight: var(--weight-bold);
+}
+
+.home-curated-lead__location .line-icon {
+  color: var(--surface-white);
 }
 
 .home-curated-lead__coords {
   font-family: var(--font-mono, monospace);
-  color: var(--color-text-muted);
+  color: rgba(var(--white-rgb), 0.85);
 }
 
 .home-curated-lead__title {
@@ -344,54 +470,46 @@ function onImgFallback(e: Event) {
 }
 
 .home-curated-lead__title a {
-  color: var(--color-text);
+  color: var(--surface-white);
   text-decoration: none;
   transition: color 0.2s ease;
 }
 
 .home-curated-lead__title a:hover {
-  color: var(--color-brand);
+  color: var(--alluvial-gold);
 }
 
 .home-curated-lead__desc {
   margin: 0;
   font-size: var(--text-sm);
-  line-height: 1.6;
-  color: var(--color-text);
-  opacity: 0.9;
+  line-height: 1.55;
+  color: rgba(var(--white-rgb), 0.92);
 }
 
 .home-curated-lead__tips {
   display: flex;
-  flex-direction: column;
-  gap: var(--space-2);
-  padding: var(--space-3) var(--space-4);
-  background: var(--color-canvas);
-  border-radius: var(--radius-control);
-  border-left: 3px solid var(--color-brand);
+  flex-wrap: wrap;
+  gap: var(--space-2) var(--space-4);
+  font-size: var(--text-xs);
+  color: rgba(var(--white-rgb), 0.8);
 }
 
 .home-curated-lead__tip {
-  display: flex;
-  align-items: flex-start;
-  gap: var(--space-2);
-  font-size: var(--text-xs);
-  color: var(--color-text);
-  line-height: 1.45;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1h);
 }
 
 .home-curated-lead__tip .line-icon {
-  color: var(--color-brand);
+  color: var(--surface-white);
   flex-shrink: 0;
-  margin-top: 2px;
 }
 
 .home-curated-lead__actions {
   display: flex;
   flex-wrap: wrap;
   gap: var(--space-3);
-  margin-top: auto;
-  padding-top: var(--space-2);
+  margin-top: var(--space-2);
 }
 
 .home-curated-lead__actions .btn {
@@ -419,67 +537,100 @@ function onImgFallback(e: Event) {
   gap: var(--space-4);
 }
 
-@media (min-width: 640px) and (max-width: 959px) {
+@media (min-width: 640px) {
   .home-curated-satellites {
     grid-template-columns: repeat(2, 1fr);
   }
 }
 
+/* Full-Bleed Satellite Card (100% Photo visual area) */
 .home-curated-satellite {
-  display: grid;
-  grid-template-columns: 120px 1fr;
-  gap: var(--space-4);
-  align-items: center;
-  padding: var(--space-3);
-  background: var(--color-surface);
+  position: relative;
+  min-height: 380px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  background: var(--color-canvas);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-surface);
-  box-shadow: 0 1px 4px rgba(var(--black-rgb), 0.04);
+  overflow: hidden;
+  box-shadow: 0 1px 4px rgba(var(--black-rgb), 0.08);
   transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
 .home-curated-satellite:hover {
   transform: translateY(-2px);
   border-color: color-mix(in srgb, var(--mangthit-600) 40%, var(--color-border));
-  box-shadow: 0 6px 18px rgba(var(--black-rgb), 0.08);
+  box-shadow: 0 6px 18px rgba(var(--black-rgb), 0.16);
 }
 
 .home-curated-satellite:active {
   transform: scale(0.98);
 }
 
-.home-curated-satellite__media {
-  position: relative;
-  width: 120px;
-  height: 96px;
-  border-radius: var(--radius-control);
-  overflow: hidden;
-  background: var(--color-canvas);
-}
-
+/* Photo fills 100% of card */
 .home-curated-satellite__img {
+  position: absolute;
+  inset: 0;
   width: 100%;
   height: 100%;
   object-fit: cover;
+  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  z-index: 0;
+}
+
+.home-curated-satellite:hover .home-curated-satellite__img {
+  transform: scale(1.04);
+}
+
+/* Bottom Gradient Scrim Overlay */
+.home-curated-satellite__scrim {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    180deg,
+    rgba(var(--black-rgb), 0.25) 0%,
+    rgba(var(--black-rgb), 0.08) 30%,
+    rgba(var(--black-rgb), 0.55) 50%,
+    rgba(var(--black-rgb), 0.78) 65%,
+    rgba(var(--black-rgb), 0.92) 85%,
+    rgba(var(--black-rgb), 0.96) 100%
+  );
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* Floating Top Bar */
+.home-curated-satellite__top {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-3);
 }
 
 .home-curated-satellite__tag {
-  position: absolute;
-  bottom: 4px;
-  left: 4px;
-  padding: 1px 6px;
-  background: rgba(var(--black-rgb), 0.75);
+  padding: 3px 10px;
+  background: rgba(var(--black-rgb), 0.78);
   color: var(--surface-white);
+  border: 1px solid rgba(var(--white-rgb), 0.2);
   border-radius: var(--radius-pill, 9999px);
-  font-size: 10px;
+  font-size: 11px;
   font-weight: var(--weight-bold);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
 }
 
-.home-curated-satellite__content {
+/* Bottom Content Overlay (<= 25% card height) */
+.home-curated-satellite__overlay {
+  position: relative;
+  z-index: 2;
   display: flex;
   flex-direction: column;
-  gap: 3px;
-  min-width: 0;
+  gap: var(--space-1h);
+  padding: var(--space-4);
+  color: var(--surface-white);
 }
 
 .home-curated-satellite__area {
@@ -487,31 +638,39 @@ function onImgFallback(e: Event) {
   align-items: center;
   gap: 4px;
   font-size: 11px;
-  color: var(--color-brand);
+  color: var(--surface-white);
   font-weight: var(--weight-bold);
+}
+
+.home-curated-satellite__area .line-icon {
+  color: var(--surface-white);
 }
 
 .home-curated-satellite__title {
   margin: 0;
   font-family: var(--font-editorial-display);
-  font-size: var(--text-base);
-  line-height: 1.3;
+  font-size: var(--text-sm);
+  line-height: 1.35;
 }
 
 .home-curated-satellite__title a {
-  color: var(--color-text);
+  color: var(--surface-white);
   text-decoration: none;
+  text-shadow: 0 1px 3px rgba(var(--black-rgb), 0.5);
+  transition: opacity 0.2s ease;
 }
 
 .home-curated-satellite__title a:hover {
-  color: var(--color-brand);
+  opacity: 0.85;
 }
 
 .home-curated-satellite__summary {
   margin: 0;
   font-size: var(--text-xs);
-  color: var(--color-text-muted);
-  line-height: 1.4;
+  color: var(--surface-white);
+  opacity: 0.9;
+  line-height: 1.45;
+  text-shadow: 0 1px 2px rgba(var(--black-rgb), 0.4);
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
@@ -524,14 +683,15 @@ function onImgFallback(e: Event) {
   gap: 4px;
   font-size: var(--text-xs);
   font-weight: var(--weight-bold);
-  color: var(--color-action);
-  text-decoration: none;
-  margin-top: 2px;
+  color: var(--surface-white);
+  text-decoration: underline;
+  text-shadow: 0 1px 2px rgba(var(--black-rgb), 0.4);
+  margin-top: auto;
   min-height: var(--touch-min, 44px);
   min-width: var(--touch-min, 44px);
 }
 
 .home-curated-satellite__link:hover {
-  text-decoration: underline;
+  opacity: 0.85;
 }
 </style>
