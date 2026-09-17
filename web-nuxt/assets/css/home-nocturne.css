@@ -3056,6 +3056,10 @@ html.js .home .hero-enter h1::after { animation: hero-underline-draw .8s var(--e
   box-shadow: 0 4px 12px rgba(var(--black-rgb), 0.08);
 }
 
+[data-home-pilot="nocturne-b1"] .hero-cognitive-chip:active {
+  transform: scale(0.97);
+}
+
 
 [data-home-pilot="nocturne-b1"] .hero-cognitive-chip__icon {
   width: 14px;

@@ -34,5 +34,9 @@ describe('Homepage Smart Terroir Elevation & Ergonomics', () => {
     expect(homeCss).toMatch(/\[data-home-pilot="nocturne-b1"\]\s*\.hero-search-island/)
     expect(homeCss).toMatch(/\.hero-cognitive-chip:hover/)
   })
+
+  it('enforces tactile active scale on hero cognitive chips', () => {
+    expect(homeCss).toMatch(/\[data-home-pilot="nocturne-b1"\]\s+\.hero-cognitive-chip:active\s*\{[^}]*transform:\s*scale\(0\.97\)/)
+  })
 })
 
