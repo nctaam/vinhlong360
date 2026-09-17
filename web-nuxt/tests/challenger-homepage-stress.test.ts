@@ -321,18 +321,18 @@ describe('Challenger 1: Empirical Adversarial Stress & Edge Case Harness', () =>
   // OBJECTIVE 2: Bit-for-bit SHA-256 Invariance
   // ───────────────────────────────────────────────────────────────────────────
   describe('Objective 2: Bit-for-Bit SHA-256 Invariance of Database and Data JSON', () => {
-    it('asserts vinhlong360.db exactly matches canonical hash 647ca4e9c6eec332e1a01c1d8972d604ed16e1a92cbb49f6a8ee2e6a2be2a855', () => {
+    it('asserts vinhlong360.db exactly matches canonical hash 6d704e409bd0779b434734346301a02cfc39c5285f2dae6ad4e2157108212106', () => {
       const dbPath = resolve(root, 'agent/data/vinhlong360.db')
       const dbBytes = readFileSync(dbPath)
       const hash = createHash('sha256').update(dbBytes).digest('hex')
-      expect(hash.toLowerCase()).toBe('647ca4e9c6eec332e1a01c1d8972d604ed16e1a92cbb49f6a8ee2e6a2be2a855')
+      expect(hash.toLowerCase()).toBe('6d704e409bd0779b434734346301a02cfc39c5285f2dae6ad4e2157108212106')
     })
 
-    it('asserts web/data.json exactly matches canonical hash 60612633ef2ab77d10670224273e8f259c530c9f8bc5337789e29d376a620429', () => {
+    it('asserts web/data.json exactly matches canonical hash 5dd5e98fb16749ac221a0f03ec41ce3db262ea1e747141126da763dc7b752022', () => {
       const jsonPath = resolve(root, 'web/data.json')
       const jsonBytes = readFileSync(jsonPath)
       const hash = createHash('sha256').update(jsonBytes).digest('hex')
-      expect(hash.toLowerCase()).toBe('60612633ef2ab77d10670224273e8f259c530c9f8bc5337789e29d376a620429')
+      expect(hash.toLowerCase()).toBe('5dd5e98fb16749ac221a0f03ec41ce3db262ea1e747141126da763dc7b752022')
     })
   })
 })

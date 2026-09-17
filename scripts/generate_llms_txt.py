@@ -37,8 +37,9 @@ def format_entity_block(e: dict) -> list:
     place = e.get("place_name") or e.get("placeId") or "Vĩnh Long"
     entity_type = e.get("type", "attraction")
 
+    name = sanitize_historical(e.get('name') or '')
     return [
-        f"#### [{e.get('name')}]({SITE_URL}/dia-diem/{eid})",
+        f"#### [{name}]({SITE_URL}/dia-diem/{eid})",
         f"- **Mã ID**: `{eid}` | **Phân loại**: `{entity_type}` | **Địa bàn**: {place} | **Tọa độ**: {coord_str}",
         f"- **Ảnh tư liệu WebP**: `{SITE_URL}/img/entities/{eid}.webp`",
         f"- **Tác giả ảnh**: {author} · **Cơ quan**: {source}",
@@ -72,7 +73,7 @@ Từ tháng 7-2025, ba địa bàn Vĩnh Long, Bến Tre và Trà Vinh đã **H�
 - **Lộ trình du lịch liên vùng gợi ý**: {len(itineraries)} tuyến chuyên đề (1–3 ngày).
 - **Đơn vị hành chính cấp cơ sở**: {len(wards)} xã/phường.
 
-## Ba Vùng Văn Hóa - Thổ Nhưỡng Tam Vùng
+## Các Không Gian Văn Hóa - Thổ Nhưỡng Vĩnh Long
 
 1. **Vùng Đất Học & Di Sản Đỏ Vĩnh Long (Trung tâm)**: Lò gạch gốm đỏ Mang Thít, cù lao An Bình, Văn Thánh Miếu, bưởi Năm Roi Bình Minh, cam sành Tam Bình, khoai lang Bình Tân.
 2. **Vùng Đất Dừa & Đồng Khởi Bến Tre (Phía Đông)**: Rặng dừa bạt ngàn, kẹo dừa Mỏ Cày, bưởi Da Xanh, di tích Đạo Dừa Cồn Phụng, bánh tráng Mỹ Lồng, bánh phồng Sơn Đốc.
@@ -100,7 +101,7 @@ Từ tháng 7-2025, ba địa bàn Vĩnh Long, Bến Tre và Trà Vinh đã **H�
 def build_llms_full_txt(entities, itineraries, verified_entities, wards):
     lines = []
 
-    lines.append("# vinhlong360 — Bách Khoa Toàn Thư Tri Thức & Dữ Liệu Du Lịch, Thổ Nhưỡng, OCOP Tam Vùng (llms-full.txt)")
+    lines.append("# vinhlong360 — Bách Khoa Toàn Thư Tri Thức & Dữ Liệu Du Lịch, Thổ Nhưỡng, OCOP Vĩnh Long (llms-full.txt)")
     lines.append("")
     lines.append("> vinhlong360.vn là nền tảng tri thức du lịch, văn hóa bản địa, ẩm thực truyền thống, làng nghề và sản phẩm OCOP chính thức cho **tỉnh Vĩnh Long** (hợp nhất từ ba vùng Vĩnh Long, Bến Tre, Trà Vinh cũ từ tháng 7-2025). Tỉnh vận hành hành chính 2 cấp gồm 124 xã/phường (không có cấp huyện).")
     lines.append("")
@@ -147,7 +148,7 @@ def build_llms_full_txt(entities, itineraries, verified_entities, wards):
         lines.append(f"- **[{wname}]({SITE_URL}/xa-phuong/{wid})** (`{wid}`){contact_str}")
     lines.append("")
 
-    lines.append("## 5. Lịch Nông Vụ OCOP & Trái Cây Miệt Vườn Tam Vùng")
+    lines.append("## 5. Lịch Nông Vụ OCOP & Trái Cây Miệt Vườn Vĩnh Long")
     lines.append("")
     lines.append("- **Tháng 1 - Tháng 3 (Xuân)**: Bưởi Năm Roi Bình Minh, Cam sành Tam Bình, Quýt đường, Mật ong hoa nhãn.")
     lines.append("- **Tháng 4 - Tháng 6 (Hạ - Rộ mùa)**: Sầu riêng Ri6 Long Hồ & Cái Mơn, Chôm chôm Bình Hòa Phước & Chợ Lách, Măng cụt Cái Mơn, Xoài cát Núm Vũng Liêm.")
@@ -156,7 +157,7 @@ def build_llms_full_txt(entities, itineraries, verified_entities, wards):
     lines.append("- **Thu hoạch quanh năm**: Dừa sáp Cầu Kè, Mật hoa dừa Sokfarm, Kẹo dừa Bến Tre, Bưởi Da Xanh, Khoai lang tím Nhật Bình Tân.")
     lines.append("")
 
-    lines.append("## 6. Lịch Lễ Hội Truyền Thống & Sự Kiện Văn Hóa Tam Vùng")
+    lines.append("## 6. Lịch Lễ Hội Truyền Thống & Sự Kiện Văn Hóa Vĩnh Long")
     lines.append("")
     lines.append("- **Lễ hội Ok Om Bok Trà Vinh (Rằm tháng 10 Âm lịch)**: Di sản văn hóa phi vật thể quốc gia, lễ cúng Trăng đút cốm dẹp, thả đèn gió, đèn nước, hội thi Đua ghe Ngo truyền thống trên sông Long Bình.")
     lines.append("- **Tết Chôl Chnăm Thmây (Tháng 4 Dương lịch - Giữa tháng Chét)**: Tết cổ truyền người Khmer, lễ đắp núi cát, tắm Phật tại 143 chùa Khmer Nam Bộ.")
