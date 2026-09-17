@@ -208,6 +208,11 @@ function onAvatarFallback(e: Event) {
   display: block;
   border: 1.5px solid var(--color-surface);
   box-shadow: 0 1px 3px rgba(var(--black-rgb), 0.12);
+  transition: transform 0.25s var(--ease-out);
+}
+
+.home-intent-anchor:hover .home-intent-anchor__avatar {
+  transform: scale(1.06);
 }
 
 .home-intent-anchor__icon-badge {

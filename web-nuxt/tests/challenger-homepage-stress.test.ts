@@ -270,6 +270,15 @@ describe('Challenger 1: Empirical Adversarial Stress & Edge Case Harness', () =>
     })
   })
 
+  describe('Adversarial Test 6: HomeIntentAnchors Ergonomics & Micro-motion', () => {
+    it('enforces touch target >= 48px, focus-visible, and avatar hover micro-motion on HomeIntentAnchors', () => {
+      const anchorsContent = readFileSync(resolve(webNuxt, 'components/home/HomeIntentAnchors.vue'), 'utf8')
+      expect(anchorsContent).toMatch(/min-height:\s*48px/)
+      expect(anchorsContent).toMatch(/\.home-intent-anchor:focus-visible/)
+      expect(anchorsContent).toMatch(/\.home-intent-anchor:hover\s+\.home-intent-anchor__avatar\s*\{[\s\S]*?transform:\s*scale\(1\.06\)/)
+    })
+  })
+
   // ───────────────────────────────────────────────────────────────────────────
   // OBJECTIVE 2: Bit-for-bit SHA-256 Invariance
   // ───────────────────────────────────────────────────────────────────────────
