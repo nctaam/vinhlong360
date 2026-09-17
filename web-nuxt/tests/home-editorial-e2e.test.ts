@@ -230,11 +230,11 @@ describe('Tier 1: Feature Coverage — R5: Strict Technical & Safety Standards',
     const dbPath = resolve(rootDir, 'agent/data/vinhlong360.db')
     const dbBuffer = readFileSync(dbPath)
     const dbHash = createHash('sha256').update(dbBuffer).digest('hex')
-    expect(['2573f1f53b33bfeb8f0adb9c23e852e9e65dc37b4ab8e392511006253c367f61', '0507c53212adcfe2fb36468ac8c4566f0fe6f62e8d8bb79f055e6e9b1a9b7513', 'dab47fef8b4f880e4ea119d088bd4522085e1825b5823749eee1fab005128bd0', '6d704e409bd0779b434734346301a02cfc39c5285f2dae6ad4e2157108212106', 'a777d4f6d83558925935efa411b2bbcb64896ed6c0af603bd41f2910209dfdc6', '04d8deb197dc4de892f5b4aecae29fab103e14f9e9979ba058eaf41f7281ef2a', '831d8f7908e8da0b171d5603d9724c7b0eef83f66c018806198b29165ccbd0de']).toContain(dbHash.toLowerCase())
+    expect(['3f487e328bda6b5b54b93dbacd43b160b3ebc024ba5a7fcb3f6c6d9a801eae47', '5f2e5131f0797e6ace3809061f2a62b101dfe1b86dd704ffb611682bbacd1921', '2573f1f53b33bfeb8f0adb9c23e852e9e65dc37b4ab8e392511006253c367f61', '0507c53212adcfe2fb36468ac8c4566f0fe6f62e8d8bb79f055e6e9b1a9b7513', 'dab47fef8b4f880e4ea119d088bd4522085e1825b5823749eee1fab005128bd0', '6d704e409bd0779b434734346301a02cfc39c5285f2dae6ad4e2157108212106', 'a777d4f6d83558925935efa411b2bbcb64896ed6c0af603bd41f2910209dfdc6', '04d8deb197dc4de892f5b4aecae29fab103e14f9e9979ba058eaf41f7281ef2a', '831d8f7908e8da0b171d5603d9724c7b0eef83f66c018806198b29165ccbd0de']).toContain(dbHash.toLowerCase())
 
     const jsonBuffer = readFileSync(dataJsonPath)
     const jsonHash = createHash('sha256').update(jsonBuffer).digest('hex')
-    expect(jsonHash.toLowerCase()).toBe('bf66efb736a221aa9734de467a02f04094151998ff0ced90242a386c146fd654')
+    expect(jsonHash.toLowerCase()).toBe('b105c6a940ea1b1d83a4a1d5e2a8c8409cbeb1a7e2b5899aa85f6b3cf7256c6d')
   })
 
   it('F5.5: preserves 9 protected CSS variables under [data-home-pilot="nocturne-b1"]', () => {
@@ -436,8 +436,8 @@ describe('Tier 2: Boundary & Corner Cases — R5 Strict Safety Standards', () =>
   })
 
   it('B5.5: protects database SHA-256 hash constants from tampering across test files', () => {
-    const expectedDbHash = '2573f1f53b33bfeb8f0adb9c23e852e9e65dc37b4ab8e392511006253c367f61'
-    const expectedJsonHash = 'bf66efb736a221aa9734de467a02f04094151998ff0ced90242a386c146fd654'
+    const expectedDbHash = '3f487e328bda6b5b54b93dbacd43b160b3ebc024ba5a7fcb3f6c6d9a801eae47'
+    const expectedJsonHash = 'b105c6a940ea1b1d83a4a1d5e2a8c8409cbeb1a7e2b5899aa85f6b3cf7256c6d'
     expect(expectedDbHash.length).toBe(64)
     expect(expectedJsonHash.length).toBe(64)
   })
