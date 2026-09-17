@@ -2870,131 +2870,131 @@ Mỗi thực thể dưới đây đều có ảnh tư liệu báo chí chính th
 
 Tỉnh Vĩnh Long gồm 35 phường và 89 xã:
 
-- **[Phường An Hội](https://vinhlong360.vn/xa-phuong/p-an-hoi)** (`p-an-hoi`)
-- **[Phường Ba Tri](https://vinhlong360.vn/xa-phuong/p-ba-tri)** (`p-ba-tri`)
-- **[Phường Bình Minh](https://vinhlong360.vn/xa-phuong/p-binh-minh)** (`p-binh-minh`)
-- **[Phường Bình Đại](https://vinhlong360.vn/xa-phuong/p-binh-dai)** (`p-binh-dai`)
-- **[Phường Bến Tre](https://vinhlong360.vn/xa-phuong/p-ben-tre)** (`p-ben-tre`)
-- **[Phường Càng Long](https://vinhlong360.vn/xa-phuong/p-cang-long)** (`p-cang-long`)
-- **[Phường Cái Vồn](https://vinhlong360.vn/xa-phuong/p-cai-von)** (`p-cai-von`)
-- **[Phường Duyên Hải](https://vinhlong360.vn/xa-phuong/p-duyen-hai)** (`p-duyen-hai`)
-- **[Phường Hòa Thuận](https://vinhlong360.vn/xa-phuong/p-hoa-thuan)** (`p-hoa-thuan`)
-- **[Phường Hùng Hoà](https://vinhlong360.vn/xa-phuong/p-hung-hoa)** (`p-hung-hoa`)
-- **[Phường Long Châu](https://vinhlong360.vn/xa-phuong/p-long-chau)** (`p-long-chau`)
-- **[Phường Long Hồ](https://vinhlong360.vn/xa-phuong/p-long-ho)** (`p-long-ho`)
-- **[Phường Long Đức](https://vinhlong360.vn/xa-phuong/p-long-duc)** (`p-long-duc`)
-- **[Phường Mỏ Cày](https://vinhlong360.vn/xa-phuong/p-mo-cay)** (`p-mo-cay`)
-- **[Phường Nguyệt Hóa](https://vinhlong360.vn/xa-phuong/p-nguyet-hoa)** (`p-nguyet-hoa`)
-- **[Phường Phú Khương](https://vinhlong360.vn/xa-phuong/p-phu-khuong)** (`p-phu-khuong`)
-- **[Phường Phú Tân](https://vinhlong360.vn/xa-phuong/p-phu-tan)** (`p-phu-tan`)
-- **[Phường Phú Túc](https://vinhlong360.vn/xa-phuong/p-phu-tuc)** (`p-phu-tuc`)
-- **[Phường Phước Hậu](https://vinhlong360.vn/xa-phuong/p-phuoc-hau)** (`p-phuoc-hau`)
-- **[Phường Sơn Đông](https://vinhlong360.vn/xa-phuong/p-son-dong)** (`p-son-dong`)
-- **[Phường Tam Bình](https://vinhlong360.vn/xa-phuong/p-tam-binh)** (`p-tam-binh`)
-- **[Phường Thanh Đức](https://vinhlong360.vn/xa-phuong/p-thanh-duc)** (`p-thanh-duc`)
-- **[Phường Tiên Thủy](https://vinhlong360.vn/xa-phuong/p-tien-thuy)** (`p-tien-thuy`)
-- **[Phường Tiểu Cần](https://vinhlong360.vn/xa-phuong/p-tieu-can)** (`p-tieu-can`)
-- **[Phường Trà Vinh](https://vinhlong360.vn/xa-phuong/p-tra-vinh)** (`p-tra-vinh`)
-- **[Phường Trà Ôn](https://vinhlong360.vn/xa-phuong/p-tra-on)** (`p-tra-on`)
-- **[Phường Trường Long Hòa](https://vinhlong360.vn/xa-phuong/p-truong-long-hoa)** (`p-truong-long-hoa`)
-- **[Phường Tân Hoà](https://vinhlong360.vn/xa-phuong/p-tan-hoa)** (`p-tan-hoa`)
-- **[Phường Tân Hạnh](https://vinhlong360.vn/xa-phuong/p-tan-hanh)** (`p-tan-hanh`)
-- **[Phường Tân Ngãi](https://vinhlong360.vn/xa-phuong/p-tan-ngai)** (`p-tan-ngai`)
-- **[Phường Tân Quới](https://vinhlong360.vn/xa-phuong/p-tan-quoi)** (`p-tan-quoi`)
-- **[Phường Tân Thủy](https://vinhlong360.vn/xa-phuong/p-tan-thuy)** (`p-tan-thuy`)
-- **[Phường Tập Ngãi](https://vinhlong360.vn/xa-phuong/p-tap-ngai)** (`p-tap-ngai`)
-- **[Phường Vũng Liêm](https://vinhlong360.vn/xa-phuong/p-vung-liem)** (`p-vung-liem`)
-- **[Phường Đông Thành](https://vinhlong360.vn/xa-phuong/p-dong-thanh)** (`p-dong-thanh`)
+- **[Phường An Hội](https://vinhlong360.vn/xa-phuong/p-an-hoi)** (`p-an-hoi`) | Hotline CAX: 0275 3587 77
+- **[Phường Ba Tri](https://vinhlong360.vn/xa-phuong/p-ba-tri)** (`p-ba-tri`) | Hotline CAX: 0275 3591 10
+- **[Phường Bình Minh](https://vinhlong360.vn/xa-phuong/p-binh-minh)** (`p-binh-minh`) | Hotline CAX: 0270 3897 71
+- **[Phường Bình Đại](https://vinhlong360.vn/xa-phuong/p-binh-dai)** (`p-binh-dai`) | Hotline CAX: 0275 3590 50
+- **[Phường Bến Tre](https://vinhlong360.vn/xa-phuong/p-ben-tre)** (`p-ben-tre`) | Hotline CAX: 0275 3587 89
+- **[Phường Càng Long](https://vinhlong360.vn/xa-phuong/p-cang-long)** (`p-cang-long`) | Hotline CAX: 0294 3692 66
+- **[Phường Cái Vồn](https://vinhlong360.vn/xa-phuong/p-cai-von)** (`p-cai-von`) | Hotline CAX: 0270 3897 70
+- **[Phường Duyên Hải](https://vinhlong360.vn/xa-phuong/p-duyen-hai)** (`p-duyen-hai`) | Hotline CAX: 0294 3695 12
+- **[Phường Hòa Thuận](https://vinhlong360.vn/xa-phuong/p-hoa-thuan)** (`p-hoa-thuan`) | Hotline CAX: 0294 3693 98
+- **[Phường Hùng Hoà](https://vinhlong360.vn/xa-phuong/p-hung-hoa)** (`p-hung-hoa`) | Hotline CAX: 0294 3693 62
+- **[Phường Long Châu](https://vinhlong360.vn/xa-phuong/p-long-chau)** (`p-long-chau`) | Hotline CAX: 0270 3895 51
+- **[Phường Long Hồ](https://vinhlong360.vn/xa-phuong/p-long-ho)** (`p-long-ho`) | Hotline CAX: 0270 3896 02
+- **[Phường Long Đức](https://vinhlong360.vn/xa-phuong/p-long-duc)** (`p-long-duc`) | Hotline CAX: 0294 3692 63
+- **[Phường Mỏ Cày](https://vinhlong360.vn/xa-phuong/p-mo-cay)** (`p-mo-cay`) | Hotline CAX: 0275 3589 03
+- **[Phường Nguyệt Hóa](https://vinhlong360.vn/xa-phuong/p-nguyet-hoa)** (`p-nguyet-hoa`) | Hotline CAX: 0294 3692 54
+- **[Phường Phú Khương](https://vinhlong360.vn/xa-phuong/p-phu-khuong)** (`p-phu-khuong`) | Hotline CAX: 0275 3587 56
+- **[Phường Phú Tân](https://vinhlong360.vn/xa-phuong/p-phu-tan)** (`p-phu-tan`) | Hotline CAX: 0275 3588 58
+- **[Phường Phú Túc](https://vinhlong360.vn/xa-phuong/p-phu-tuc)** (`p-phu-tuc`) | Hotline CAX: 0275 3588 10
+- **[Phường Phước Hậu](https://vinhlong360.vn/xa-phuong/p-phuoc-hau)** (`p-phuoc-hau`) | Hotline CAX: 0270 3895 57
+- **[Phường Sơn Đông](https://vinhlong360.vn/xa-phuong/p-son-dong)** (`p-son-dong`) | Hotline CAX: 0275 3587 83
+- **[Phường Tam Bình](https://vinhlong360.vn/xa-phuong/p-tam-binh)** (`p-tam-binh`) | Hotline CAX: 0270 3897 19
+- **[Phường Thanh Đức](https://vinhlong360.vn/xa-phuong/p-thanh-duc)** (`p-thanh-duc`) | Hotline CAX: 0270 3895 90
+- **[Phường Tiên Thủy](https://vinhlong360.vn/xa-phuong/p-tien-thuy)** (`p-tien-thuy`) | Hotline CAX: 0275 3588 61
+- **[Phường Tiểu Cần](https://vinhlong360.vn/xa-phuong/p-tieu-can)** (`p-tieu-can`) | Hotline CAX: 0294 3693 41
+- **[Phường Trà Vinh](https://vinhlong360.vn/xa-phuong/p-tra-vinh)** (`p-tra-vinh`) | Hotline CAX: 0294 3692 42
+- **[Phường Trà Ôn](https://vinhlong360.vn/xa-phuong/p-tra-on)** (`p-tra-on`) | Hotline CAX: 0270 3898 21
+- **[Phường Trường Long Hòa](https://vinhlong360.vn/xa-phuong/p-truong-long-hoa)** (`p-truong-long-hoa`) | Hotline CAX: 0294 3695 16
+- **[Phường Tân Hoà](https://vinhlong360.vn/xa-phuong/p-tan-hoa)** (`p-tan-hoa`) | Hotline CAX: 0294 3693 71
+- **[Phường Tân Hạnh](https://vinhlong360.vn/xa-phuong/p-tan-hanh)** (`p-tan-hanh`) | Hotline CAX: 0270 3895 93
+- **[Phường Tân Ngãi](https://vinhlong360.vn/xa-phuong/p-tan-ngai)** (`p-tan-ngai`) | Hotline CAX: 0270 3895 66
+- **[Phường Tân Quới](https://vinhlong360.vn/xa-phuong/p-tan-quoi)** (`p-tan-quoi`) | Hotline CAX: 0270 3898 00
+- **[Phường Tân Thủy](https://vinhlong360.vn/xa-phuong/p-tan-thuy)** (`p-tan-thuy`) | Hotline CAX: 0275 3591 67
+- **[Phường Tập Ngãi](https://vinhlong360.vn/xa-phuong/p-tap-ngai)** (`p-tap-ngai`) | Hotline CAX: 0294 3693 65
+- **[Phường Vũng Liêm](https://vinhlong360.vn/xa-phuong/p-vung-liem)** (`p-vung-liem`) | Hotline CAX: 0270 3896 59
+- **[Phường Đông Thành](https://vinhlong360.vn/xa-phuong/p-dong-thanh)** (`p-dong-thanh`) | Hotline CAX: 0270 3898 12
 - **[Tỉnh Vĩnh Long](https://vinhlong360.vn/xa-phuong/vinh-long)** (`vinh-long`)
-- **[Xã An Bình](https://vinhlong360.vn/xa-phuong/xa-an-binh)** (`xa-an-binh`)
-- **[Xã An Hiệp](https://vinhlong360.vn/xa-phuong/xa-an-hiep)** (`xa-an-hiep`)
-- **[Xã An Ngãi Trung](https://vinhlong360.vn/xa-phuong/xa-an-ngai-trung)** (`xa-an-ngai-trung`)
-- **[Xã An Phú Tân](https://vinhlong360.vn/xa-phuong/xa-an-phu-tan)** (`xa-an-phu-tan`)
-- **[Xã An Qui](https://vinhlong360.vn/xa-phuong/xa-an-qui)** (`xa-an-qui`)
-- **[Xã An Trường](https://vinhlong360.vn/xa-phuong/xa-an-truong)** (`xa-an-truong`)
-- **[Xã An Định](https://vinhlong360.vn/xa-phuong/xa-an-dinh)** (`xa-an-dinh`)
-- **[Xã Bình Phú](https://vinhlong360.vn/xa-phuong/xa-binh-phu)** (`xa-binh-phu`)
-- **[Xã Bình Phước](https://vinhlong360.vn/xa-phuong/xa-binh-phuoc)** (`xa-binh-phuoc`)
-- **[Xã Bảo Thạnh](https://vinhlong360.vn/xa-phuong/xa-bao-thanh)** (`xa-bao-thanh`)
-- **[Xã Châu Hòa](https://vinhlong360.vn/xa-phuong/xa-chau-hoa)** (`xa-chau-hoa`)
-- **[Xã Châu Hưng](https://vinhlong360.vn/xa-phuong/xa-chau-hung)** (`xa-chau-hung`)
-- **[Xã Châu Thành](https://vinhlong360.vn/xa-phuong/xa-chau-thanh)** (`xa-chau-thanh`)
-- **[Xã Chợ Lách](https://vinhlong360.vn/xa-phuong/xa-cho-lach)** (`xa-cho-lach`)
-- **[Xã Cái Nhum](https://vinhlong360.vn/xa-phuong/xa-cai-nhum)** (`xa-cai-nhum`)
-- **[Xã Cầu Kè](https://vinhlong360.vn/xa-phuong/xa-cau-ke)** (`xa-cau-ke`)
-- **[Xã Cầu Ngang](https://vinhlong360.vn/xa-phuong/xa-cau-ngang)** (`xa-cau-ngang`)
-- **[Xã Giao Long](https://vinhlong360.vn/xa-phuong/xa-giao-long)** (`xa-giao-long`)
-- **[Xã Giồng Trôm](https://vinhlong360.vn/xa-phuong/xa-giong-trom)** (`xa-giong-trom`)
-- **[Xã Hiếu Phụng](https://vinhlong360.vn/xa-phuong/xa-hieu-phung)** (`xa-hieu-phung`)
-- **[Xã Hiếu Thành](https://vinhlong360.vn/xa-phuong/xa-hieu-thanh)** (`xa-hieu-thanh`)
-- **[Xã Hiệp Mỹ](https://vinhlong360.vn/xa-phuong/xa-hiep-my)** (`xa-hiep-my`)
-- **[Xã Hàm Giang](https://vinhlong360.vn/xa-phuong/xa-ham-giang)** (`xa-ham-giang`)
-- **[Xã Hòa Bình](https://vinhlong360.vn/xa-phuong/xa-hoa-binh)** (`xa-hoa-binh`)
-- **[Xã Hòa Hiệp](https://vinhlong360.vn/xa-phuong/xa-hoa-hiep)** (`xa-hoa-hiep`)
-- **[Xã Hòa Minh](https://vinhlong360.vn/xa-phuong/xa-hoa-minh)** (`xa-hoa-minh`)
-- **[Xã Hưng Khánh Trung](https://vinhlong360.vn/xa-phuong/xa-hung-khanh-trung)** (`xa-hung-khanh-trung`)
-- **[Xã Hưng Mỹ](https://vinhlong360.vn/xa-phuong/xa-hung-my)** (`xa-hung-my`)
-- **[Xã Hưng Nhượng](https://vinhlong360.vn/xa-phuong/xa-hung-nhuong)** (`xa-hung-nhuong`)
-- **[Xã Hương Mỹ](https://vinhlong360.vn/xa-phuong/xa-huong-my)** (`xa-huong-my`)
-- **[Xã Hậu Lộc](https://vinhlong360.vn/xa-phuong/xa-hau-loc)** (`xa-hau-loc`)
-- **[Xã Long Hiệp](https://vinhlong360.vn/xa-phuong/xa-long-hiep)** (`xa-long-hiep`)
-- **[Xã Long Hòa](https://vinhlong360.vn/xa-phuong/xa-long-hoa)** (`xa-long-hoa`)
-- **[Xã Long Hữu](https://vinhlong360.vn/xa-phuong/xa-long-huu)** (`xa-long-huu`)
-- **[Xã Long Thành](https://vinhlong360.vn/xa-phuong/xa-long-thanh)** (`xa-long-thanh`)
-- **[Xã Long Vĩnh](https://vinhlong360.vn/xa-phuong/xa-long-vinh)** (`xa-long-vinh`)
-- **[Xã Lưu Nghiệp Anh](https://vinhlong360.vn/xa-phuong/xa-luu-nghiep-anh)** (`xa-luu-nghiep-anh`)
-- **[Xã Lương Hòa](https://vinhlong360.vn/xa-phuong/xa-luong-hoa)** (`xa-luong-hoa`)
-- **[Xã Lương Phú](https://vinhlong360.vn/xa-phuong/xa-luong-phu)** (`xa-luong-phu`)
-- **[Xã Lộc Thuận](https://vinhlong360.vn/xa-phuong/xa-loc-thuan)** (`xa-loc-thuan`)
-- **[Xã Lục Sĩ Thành](https://vinhlong360.vn/xa-phuong/xa-luc-si-thanh)** (`xa-luc-si-thanh`)
-- **[Xã Mỹ Chánh Hòa](https://vinhlong360.vn/xa-phuong/xa-my-chanh-hoa)** (`xa-my-chanh-hoa`)
-- **[Xã Mỹ Long](https://vinhlong360.vn/xa-phuong/xa-my-long)** (`xa-my-long`)
-- **[Xã Mỹ Thuận](https://vinhlong360.vn/xa-phuong/xa-my-thuan)** (`xa-my-thuan`)
-- **[Xã Ngãi Tứ](https://vinhlong360.vn/xa-phuong/xa-ngai-tu)** (`xa-ngai-tu`)
-- **[Xã Ngũ Lạc](https://vinhlong360.vn/xa-phuong/xa-ngu-lac)** (`xa-ngu-lac`)
-- **[Xã Nhuận Phú Tân](https://vinhlong360.vn/xa-phuong/xa-nhuan-phu-tan)** (`xa-nhuan-phu-tan`)
-- **[Xã Nhơn Phú](https://vinhlong360.vn/xa-phuong/xa-nhon-phu)** (`xa-nhon-phu`)
-- **[Xã Nhị Long](https://vinhlong360.vn/xa-phuong/xa-nhi-long)** (`xa-nhi-long`)
-- **[Xã Nhị Trường](https://vinhlong360.vn/xa-phuong/xa-nhi-truong)** (`xa-nhi-truong`)
-- **[Xã Phong Thạnh](https://vinhlong360.vn/xa-phuong/xa-phong-thanh)** (`xa-phong-thanh`)
-- **[Xã Phú Phụng](https://vinhlong360.vn/xa-phuong/xa-phu-phung)** (`xa-phu-phung`)
-- **[Xã Phú Quới](https://vinhlong360.vn/xa-phuong/xa-phu-quoi)** (`xa-phu-quoi`)
-- **[Xã Phú Thuận](https://vinhlong360.vn/xa-phuong/xa-phu-thuan)** (`xa-phu-thuan`)
-- **[Xã Phước Long](https://vinhlong360.vn/xa-phuong/xa-phuoc-long)** (`xa-phuoc-long`)
-- **[Xã Phước Mỹ Trung](https://vinhlong360.vn/xa-phuong/xa-phuoc-my-trung)** (`xa-phuoc-my-trung`)
-- **[Xã Quới An](https://vinhlong360.vn/xa-phuong/xa-quoi-an)** (`xa-quoi-an`)
-- **[Xã Quới Thiện](https://vinhlong360.vn/xa-phuong/xa-quoi-thien)** (`xa-quoi-thien`)
-- **[Xã Quới Điền](https://vinhlong360.vn/xa-phuong/xa-quoi-dien)** (`xa-quoi-dien`)
-- **[Xã Song Lộc](https://vinhlong360.vn/xa-phuong/xa-song-loc)** (`xa-song-loc`)
-- **[Xã Song Phú](https://vinhlong360.vn/xa-phuong/xa-song-phu)** (`xa-song-phu`)
-- **[Xã Tam Ngãi](https://vinhlong360.vn/xa-phuong/xa-tam-ngai)** (`xa-tam-ngai`)
-- **[Xã Thành Thới](https://vinhlong360.vn/xa-phuong/xa-thanh-thoi)** (`xa-thanh-thoi`)
-- **[Xã Thạnh Hải](https://vinhlong360.vn/xa-phuong/xa-thanh-hai)** (`xa-thanh-hai`)
-- **[Xã Thạnh Phong](https://vinhlong360.vn/xa-phuong/xa-thanh-phong)** (`xa-thanh-phong`)
-- **[Xã Thạnh Phú](https://vinhlong360.vn/xa-phuong/xa-thanh-phu)** (`xa-thanh-phu`)
-- **[Xã Thạnh Phước](https://vinhlong360.vn/xa-phuong/xa-thanh-phuoc)** (`xa-thanh-phuoc`)
-- **[Xã Thạnh Trị](https://vinhlong360.vn/xa-phuong/xa-thanh-tri)** (`xa-thanh-tri`)
-- **[Xã Thới Thuận](https://vinhlong360.vn/xa-phuong/xa-thoi-thuan)** (`xa-thoi-thuan`)
-- **[Xã Trung Hiệp](https://vinhlong360.vn/xa-phuong/xa-trung-hiep)** (`xa-trung-hiep`)
-- **[Xã Trung Ngãi](https://vinhlong360.vn/xa-phuong/xa-trung-ngai)** (`xa-trung-ngai`)
-- **[Xã Trà Côn](https://vinhlong360.vn/xa-phuong/xa-tra-con)** (`xa-tra-con`)
-- **[Xã Trà Cú](https://vinhlong360.vn/xa-phuong/xa-tra-cu)** (`xa-tra-cu`)
-- **[Xã Tân An](https://vinhlong360.vn/xa-phuong/xa-tan-an)** (`xa-tan-an`)
-- **[Xã Tân Hào](https://vinhlong360.vn/xa-phuong/xa-tan-hao)** (`xa-tan-hao`)
-- **[Xã Tân Long Hội](https://vinhlong360.vn/xa-phuong/xa-tan-long-hoi)** (`xa-tan-long-hoi`)
-- **[Xã Tân Lược](https://vinhlong360.vn/xa-phuong/xa-tan-luoc)** (`xa-tan-luoc`)
-- **[Xã Tân Phú](https://vinhlong360.vn/xa-phuong/xa-tan-phu)** (`xa-tan-phu`)
-- **[Xã Tân Thành Bình](https://vinhlong360.vn/xa-phuong/xa-tan-thanh-binh)** (`xa-tan-thanh-binh`)
-- **[Xã Tân Xuân](https://vinhlong360.vn/xa-phuong/xa-tan-xuan)** (`xa-tan-xuan`)
-- **[Xã Tập Sơn](https://vinhlong360.vn/xa-phuong/xa-tap-son)** (`xa-tap-son`)
-- **[Xã Vinh Kim](https://vinhlong360.vn/xa-phuong/xa-vinh-kim)** (`xa-vinh-kim`)
-- **[Xã Vĩnh Thành](https://vinhlong360.vn/xa-phuong/xa-vinh-thanh)** (`xa-vinh-thanh`)
-- **[Xã Vĩnh Xuân](https://vinhlong360.vn/xa-phuong/xa-vinh-xuan)** (`xa-vinh-xuan`)
-- **[Xã Đôn Châu](https://vinhlong360.vn/xa-phuong/xa-don-chau)** (`xa-don-chau`)
-- **[Xã Đông Hải](https://vinhlong360.vn/xa-phuong/xa-dong-hai)** (`xa-dong-hai`)
-- **[Xã Đại An](https://vinhlong360.vn/xa-phuong/xa-dai-an)** (`xa-dai-an`)
-- **[Xã Đại Điền](https://vinhlong360.vn/xa-phuong/xa-dai-dien)** (`xa-dai-dien`)
-- **[Xã Đồng Khởi](https://vinhlong360.vn/xa-phuong/xa-dong-khoi)** (`xa-dong-khoi`)
+- **[Xã An Bình](https://vinhlong360.vn/xa-phuong/xa-an-binh)** (`xa-an-binh`) | Hotline CAX: 0270 3858 113
+- **[Xã An Hiệp](https://vinhlong360.vn/xa-phuong/xa-an-hiep)** (`xa-an-hiep`) | Hotline CAX: 0275 3591 58
+- **[Xã An Ngãi Trung](https://vinhlong360.vn/xa-phuong/xa-an-ngai-trung)** (`xa-an-ngai-trung`) | Hotline CAX: 0275 3591 43
+- **[Xã An Phú Tân](https://vinhlong360.vn/xa-phuong/xa-an-phu-tan)** (`xa-an-phu-tan`) | Hotline CAX: 0294 3693 17
+- **[Xã An Qui](https://vinhlong360.vn/xa-phuong/xa-an-qui)** (`xa-an-qui`) | Hotline CAX: 0275 3592 24
+- **[Xã An Trường](https://vinhlong360.vn/xa-phuong/xa-an-truong)** (`xa-an-truong`) | Hotline CAX: 0294 3692 75
+- **[Xã An Định](https://vinhlong360.vn/xa-phuong/xa-an-dinh)** (`xa-an-dinh`) | Hotline CAX: 0275 3589 57
+- **[Xã Bình Phú](https://vinhlong360.vn/xa-phuong/xa-binh-phu)** (`xa-binh-phu`) | Hotline CAX: 0294 3692 87
+- **[Xã Bình Phước](https://vinhlong360.vn/xa-phuong/xa-binh-phuoc)** (`xa-binh-phuoc`) | Hotline CAX: 0270 3896 38
+- **[Xã Bảo Thạnh](https://vinhlong360.vn/xa-phuong/xa-bao-thanh)** (`xa-bao-thanh`) | Hotline CAX: 0275 3591 25
+- **[Xã Châu Hòa](https://vinhlong360.vn/xa-phuong/xa-chau-hoa)** (`xa-chau-hoa`) | Hotline CAX: 0275 3589 96
+- **[Xã Châu Hưng](https://vinhlong360.vn/xa-phuong/xa-chau-hung)** (`xa-chau-hung`) | Hotline CAX: 0275 3590 83
+- **[Xã Châu Thành](https://vinhlong360.vn/xa-phuong/xa-chau-thanh)** (`xa-chau-thanh`) | Hotline CAX: 0294 3693 74
+- **[Xã Chợ Lách](https://vinhlong360.vn/xa-phuong/xa-cho-lach)** (`xa-cho-lach`) | Hotline CAX: 0275 3588 70
+- **[Xã Cái Nhum](https://vinhlong360.vn/xa-phuong/xa-cai-nhum)** (`xa-cai-nhum`) | Hotline CAX: 0270 3896 41
+- **[Xã Cầu Kè](https://vinhlong360.vn/xa-phuong/xa-cau-ke)** (`xa-cau-ke`) | Hotline CAX: 0294 3693 08
+- **[Xã Cầu Ngang](https://vinhlong360.vn/xa-phuong/xa-cau-ngang)** (`xa-cau-ngang`) | Hotline CAX: 0294 3694 16
+- **[Xã Giao Long](https://vinhlong360.vn/xa-phuong/xa-giao-long)** (`xa-giao-long`) | Hotline CAX: 0275 3588 07
+- **[Xã Giồng Trôm](https://vinhlong360.vn/xa-phuong/xa-giong-trom)** (`xa-giong-trom`) | Hotline CAX: 0275 3589 84
+- **[Xã Hiếu Phụng](https://vinhlong360.vn/xa-phuong/xa-hieu-phung)** (`xa-hieu-phung`) | Hotline CAX: 0270 3897 01
+- **[Xã Hiếu Thành](https://vinhlong360.vn/xa-phuong/xa-hieu-thanh)** (`xa-hieu-thanh`) | Hotline CAX: 0270 3897 13
+- **[Xã Hiệp Mỹ](https://vinhlong360.vn/xa-phuong/xa-hiep-my)** (`xa-hiep-my`) | Hotline CAX: 0294 3694 55
+- **[Xã Hàm Giang](https://vinhlong360.vn/xa-phuong/xa-ham-giang)** (`xa-ham-giang`) | Hotline CAX: 0294 3694 89
+- **[Xã Hòa Bình](https://vinhlong360.vn/xa-phuong/xa-hoa-binh)** (`xa-hoa-binh`) | Hotline CAX: 0270 3898 30
+- **[Xã Hòa Hiệp](https://vinhlong360.vn/xa-phuong/xa-hoa-hiep)** (`xa-hoa-hiep`) | Hotline CAX: 0270 3897 34
+- **[Xã Hòa Minh](https://vinhlong360.vn/xa-phuong/xa-hoa-minh)** (`xa-hoa-minh`) | Hotline CAX: 0294 3694 10
+- **[Xã Hưng Khánh Trung](https://vinhlong360.vn/xa-phuong/xa-hung-khanh-trung)** (`xa-hung-khanh-trung`) | Hotline CAX: 0275 3589 01
+- **[Xã Hưng Mỹ](https://vinhlong360.vn/xa-phuong/xa-hung-my)** (`xa-hung-my`) | Hotline CAX: 0294 3694 07
+- **[Xã Hưng Nhượng](https://vinhlong360.vn/xa-phuong/xa-hung-nhuong)** (`xa-hung-nhuong`) | Hotline CAX: 0275 3590 44
+- **[Xã Hương Mỹ](https://vinhlong360.vn/xa-phuong/xa-huong-my)** (`xa-huong-my`) | Hotline CAX: 0275 3589 81
+- **[Xã Hậu Lộc](https://vinhlong360.vn/xa-phuong/xa-hau-loc)** (`xa-hau-loc`) | Hotline CAX: 0270 3897 28
+- **[Xã Long Hiệp](https://vinhlong360.vn/xa-phuong/xa-long-hiep)** (`xa-long-hiep`) | Hotline CAX: 0294 3695 06
+- **[Xã Long Hòa](https://vinhlong360.vn/xa-phuong/xa-long-hoa)** (`xa-long-hoa`) | Hotline CAX: 0294 3694 13
+- **[Xã Long Hữu](https://vinhlong360.vn/xa-phuong/xa-long-huu)** (`xa-long-huu`) | Hotline CAX: 0294 3695 18
+- **[Xã Long Thành](https://vinhlong360.vn/xa-phuong/xa-long-thanh)** (`xa-long-thanh`) | Hotline CAX: 0294 3695 13
+- **[Xã Long Vĩnh](https://vinhlong360.vn/xa-phuong/xa-long-vinh)** (`xa-long-vinh`) | Hotline CAX: 0294 3695 33
+- **[Xã Lưu Nghiệp Anh](https://vinhlong360.vn/xa-phuong/xa-luu-nghiep-anh)** (`xa-luu-nghiep-anh`) | Hotline CAX: 0294 3694 76
+- **[Xã Lương Hòa](https://vinhlong360.vn/xa-phuong/xa-luong-hoa)** (`xa-luong-hoa`) | Hotline CAX: 0275 3589 87
+- **[Xã Lương Phú](https://vinhlong360.vn/xa-phuong/xa-luong-phu)** (`xa-luong-phu`) | Hotline CAX: 0275 3589 93
+- **[Xã Lộc Thuận](https://vinhlong360.vn/xa-phuong/xa-loc-thuan)** (`xa-loc-thuan`) | Hotline CAX: 0275 3590 77
+- **[Xã Lục Sĩ Thành](https://vinhlong360.vn/xa-phuong/xa-luc-si-thanh)** (`xa-luc-si-thanh`) | Hotline CAX: 0270 3898 57
+- **[Xã Mỹ Chánh Hòa](https://vinhlong360.vn/xa-phuong/xa-my-chanh-hoa)** (`xa-my-chanh-hoa`) | Hotline CAX: 0275 3591 22
+- **[Xã Mỹ Long](https://vinhlong360.vn/xa-phuong/xa-my-long)** (`xa-my-long`) | Hotline CAX: 0294 3694 19
+- **[Xã Mỹ Thuận](https://vinhlong360.vn/xa-phuong/xa-my-thuan)** (`xa-my-thuan`) | Hotline CAX: 0270 3897 88
+- **[Xã Ngãi Tứ](https://vinhlong360.vn/xa-phuong/xa-ngai-tu)** (`xa-ngai-tu`) | Hotline CAX: 0270 3897 67
+- **[Xã Ngũ Lạc](https://vinhlong360.vn/xa-phuong/xa-ngu-lac)** (`xa-ngu-lac`) | Hotline CAX: 0294 3695 30
+- **[Xã Nhuận Phú Tân](https://vinhlong360.vn/xa-phuong/xa-nhuan-phu-tan)** (`xa-nhuan-phu-tan`) | Hotline CAX: 0275 3589 48
+- **[Xã Nhơn Phú](https://vinhlong360.vn/xa-phuong/xa-nhon-phu)** (`xa-nhon-phu`) | Hotline CAX: 0270 3896 23
+- **[Xã Nhị Long](https://vinhlong360.vn/xa-phuong/xa-nhi-long)** (`xa-nhi-long`) | Hotline CAX: 0294 3693 02
+- **[Xã Nhị Trường](https://vinhlong360.vn/xa-phuong/xa-nhi-truong)** (`xa-nhi-truong`) | Hotline CAX: 0294 3694 46
+- **[Xã Phong Thạnh](https://vinhlong360.vn/xa-phuong/xa-phong-thanh)** (`xa-phong-thanh`) | Hotline CAX: 0294 3693 29
+- **[Xã Phú Phụng](https://vinhlong360.vn/xa-phuong/xa-phu-phung)** (`xa-phu-phung`) | Hotline CAX: 0275 3588 79
+- **[Xã Phú Quới](https://vinhlong360.vn/xa-phuong/xa-phu-quoi)** (`xa-phu-quoi`) | Hotline CAX: 0270 3896 11
+- **[Xã Phú Thuận](https://vinhlong360.vn/xa-phuong/xa-phu-thuan)** (`xa-phu-thuan`) | Hotline CAX: 0275 3590 62
+- **[Xã Phước Long](https://vinhlong360.vn/xa-phuong/xa-phuoc-long)** (`xa-phuoc-long`) | Hotline CAX: 0275 3590 20
+- **[Xã Phước Mỹ Trung](https://vinhlong360.vn/xa-phuong/xa-phuoc-my-trung)** (`xa-phuoc-my-trung`) | Hotline CAX: 0275 3589 15
+- **[Xã Quới An](https://vinhlong360.vn/xa-phuong/xa-quoi-an)** (`xa-quoi-an`) | Hotline CAX: 0270 3896 68
+- **[Xã Quới Thiện](https://vinhlong360.vn/xa-phuong/xa-quoi-thien)** (`xa-quoi-thien`) | Hotline CAX: 0270 3896 77
+- **[Xã Quới Điền](https://vinhlong360.vn/xa-phuong/xa-quoi-dien)** (`xa-quoi-dien`) | Hotline CAX: 0275 3591 91
+- **[Xã Song Lộc](https://vinhlong360.vn/xa-phuong/xa-song-loc)** (`xa-song-loc`) | Hotline CAX: 0294 3693 86
+- **[Xã Song Phú](https://vinhlong360.vn/xa-phuong/xa-song-phu)** (`xa-song-phu`) | Hotline CAX: 0270 3897 40
+- **[Xã Tam Ngãi](https://vinhlong360.vn/xa-phuong/xa-tam-ngai)** (`xa-tam-ngai`) | Hotline CAX: 0294 3693 35
+- **[Xã Thành Thới](https://vinhlong360.vn/xa-phuong/xa-thanh-thoi)** (`xa-thanh-thoi`) | Hotline CAX: 0275 3589 69
+- **[Xã Thạnh Hải](https://vinhlong360.vn/xa-phuong/xa-thanh-hai)** (`xa-thanh-hai`) | Hotline CAX: 0275 3592 21
+- **[Xã Thạnh Phong](https://vinhlong360.vn/xa-phuong/xa-thanh-phong)** (`xa-thanh-phong`) | Hotline CAX: 0275 3592 27
+- **[Xã Thạnh Phú](https://vinhlong360.vn/xa-phuong/xa-thanh-phu)** (`xa-thanh-phu`) | Hotline CAX: 0275 3591 82
+- **[Xã Thạnh Phước](https://vinhlong360.vn/xa-phuong/xa-thanh-phuoc)** (`xa-thanh-phuoc`) | Hotline CAX: 0275 3591 04
+- **[Xã Thạnh Trị](https://vinhlong360.vn/xa-phuong/xa-thanh-tri)** (`xa-thanh-tri`) | Hotline CAX: 0275 3590 89
+- **[Xã Thới Thuận](https://vinhlong360.vn/xa-phuong/xa-thoi-thuan)** (`xa-thoi-thuan`) | Hotline CAX: 0275 3591 07
+- **[Xã Trung Hiệp](https://vinhlong360.vn/xa-phuong/xa-trung-hiep)** (`xa-trung-hiep`) | Hotline CAX: 0270 3896 83
+- **[Xã Trung Ngãi](https://vinhlong360.vn/xa-phuong/xa-trung-ngai)** (`xa-trung-ngai`) | Hotline CAX: 0270 3896 98
+- **[Xã Trà Côn](https://vinhlong360.vn/xa-phuong/xa-tra-con)** (`xa-tra-con`) | Hotline CAX: 0270 3898 36
+- **[Xã Trà Cú](https://vinhlong360.vn/xa-phuong/xa-tra-cu)** (`xa-tra-cu`) | Hotline CAX: 0294 3694 61
+- **[Xã Tân An](https://vinhlong360.vn/xa-phuong/xa-tan-an)** (`xa-tan-an`) | Hotline CAX: 0294 3692 78
+- **[Xã Tân Hào](https://vinhlong360.vn/xa-phuong/xa-tan-hao)** (`xa-tan-hao`) | Hotline CAX: 0275 3590 29
+- **[Xã Tân Long Hội](https://vinhlong360.vn/xa-phuong/xa-tan-long-hoi)** (`xa-tan-long-hoi`) | Hotline CAX: 0270 3896 53
+- **[Xã Tân Lược](https://vinhlong360.vn/xa-phuong/xa-tan-luoc)** (`xa-tan-luoc`) | Hotline CAX: 0270 3897 85
+- **[Xã Tân Phú](https://vinhlong360.vn/xa-phuong/xa-tan-phu)** (`xa-tan-phu`) | Hotline CAX: 0275 3588 40
+- **[Xã Tân Thành Bình](https://vinhlong360.vn/xa-phuong/xa-tan-thanh-binh)** (`xa-tan-thanh-binh`) | Hotline CAX: 0275 3589 21
+- **[Xã Tân Xuân](https://vinhlong360.vn/xa-phuong/xa-tan-xuan)** (`xa-tan-xuan`) | Hotline CAX: 0275 3591 37
+- **[Xã Tập Sơn](https://vinhlong360.vn/xa-phuong/xa-tap-son)** (`xa-tap-son`) | Hotline CAX: 0294 3694 67
+- **[Xã Vinh Kim](https://vinhlong360.vn/xa-phuong/xa-vinh-kim)** (`xa-vinh-kim`) | Hotline CAX: 0294 3694 31
+- **[Xã Vĩnh Thành](https://vinhlong360.vn/xa-phuong/xa-vinh-thanh)** (`xa-vinh-thanh`) | Hotline CAX: 0275 3588 94
+- **[Xã Vĩnh Xuân](https://vinhlong360.vn/xa-phuong/xa-vinh-xuan)** (`xa-vinh-xuan`) | Hotline CAX: 0270 3898 45
+- **[Xã Đôn Châu](https://vinhlong360.vn/xa-phuong/xa-don-chau)** (`xa-don-chau`) | Hotline CAX: 0294 3694 97
+- **[Xã Đông Hải](https://vinhlong360.vn/xa-phuong/xa-dong-hai)** (`xa-dong-hai`) | Hotline CAX: 0294 3695 36
+- **[Xã Đại An](https://vinhlong360.vn/xa-phuong/xa-dai-an)** (`xa-dai-an`) | Hotline CAX: 0294 3694 91
+- **[Xã Đại Điền](https://vinhlong360.vn/xa-phuong/xa-dai-dien)** (`xa-dai-dien`) | Hotline CAX: 0275 3591 94
+- **[Xã Đồng Khởi](https://vinhlong360.vn/xa-phuong/xa-dong-khoi)** (`xa-dong-khoi`) | Hotline CAX: 0275 3589 45
 
 ## 5. Lịch Nông Vụ OCOP & Trái Cây Miệt Vườn Tam Vùng
 

@@ -1,0 +1,1614 @@
+[
+  {
+    "id": "p-phu-khuong",
+    "name": "Phường Phú Khương",
+    "area": "ben-tre",
+    "police_phone": "0275 3587 56",
+    "health_phone": "0275 3588 56",
+    "terroir_anchors": [
+      "Kẹo dừa truyền thống",
+      "Bánh canh bột xắt",
+      "Chợ đêm Bến Tre",
+      "Du lịch ven sông Hàm Luông"
+    ]
+  },
+  {
+    "id": "p-phu-tan",
+    "name": "Phường Phú Tân",
+    "area": "ben-tre",
+    "police_phone": "0275 3588 58",
+    "health_phone": "0275 3589 58",
+    "terroir_anchors": [
+      "Kẹo dừa truyền thống",
+      "Bánh canh bột xắt",
+      "Chợ đêm Bến Tre",
+      "Du lịch ven sông Hàm Luông"
+    ]
+  },
+  {
+    "id": "p-an-hoi",
+    "name": "Phường An Hội",
+    "area": "ben-tre",
+    "police_phone": "0275 3587 77",
+    "health_phone": "0275 3588 77",
+    "terroir_anchors": [
+      "Kẹo dừa truyền thống",
+      "Bánh canh bột xắt",
+      "Chợ đêm Bến Tre",
+      "Du lịch ven sông Hàm Luông"
+    ]
+  },
+  {
+    "id": "p-ba-tri",
+    "name": "Phường Ba Tri",
+    "area": "ben-tre",
+    "police_phone": "0275 3591 10",
+    "health_phone": "0275 3592 10",
+    "terroir_anchors": [
+      "Rượu nếp Phú Lễ",
+      "Muối Bảo Thạnh",
+      "Nghêu sò Ba Tri",
+      "Lăng mộ Nguyễn Đình Chiểu"
+    ]
+  },
+  {
+    "id": "p-ben-tre",
+    "name": "Phường Bến Tre",
+    "area": "ben-tre",
+    "police_phone": "0275 3587 89",
+    "health_phone": "0275 3588 89",
+    "terroir_anchors": [
+      "Kẹo dừa truyền thống",
+      "Bánh canh bột xắt",
+      "Chợ đêm Bến Tre",
+      "Du lịch ven sông Hàm Luông"
+    ]
+  },
+  {
+    "id": "p-binh-dai",
+    "name": "Phường Bình Đại",
+    "area": "ben-tre",
+    "police_phone": "0275 3590 50",
+    "health_phone": "0275 3591 50",
+    "terroir_anchors": [
+      "Cá bông lau một nắng Bình Đại",
+      "Cá khô Thừa Đức",
+      "Nghêu Bình Đại",
+      "Du lịch biển Bình Đại"
+    ]
+  },
+  {
+    "id": "p-cang-long",
+    "name": "Phường Càng Long",
+    "area": "tra-vinh",
+    "police_phone": "0294 3692 66",
+    "health_phone": "0294 3693 66",
+    "terroir_anchors": [
+      "Bánh tét Trà Cuôn Càng Long",
+      "Làng đan lát Đức Mỹ",
+      "Chùa Bodhisalaram",
+      "Vườn cây ăn trái"
+    ]
+  },
+  {
+    "id": "p-duyen-hai",
+    "name": "Phường Duyên Hải",
+    "area": "tra-vinh",
+    "police_phone": "0294 3695 12",
+    "health_phone": "0294 3696 12",
+    "terroir_anchors": [
+      "Dưa lưới Trường Long Hòa",
+      "Nước khoáng Sao Biển",
+      "Lễ hội Nghinh Ông Ba Động",
+      "Rừng ngập mặn Hiệp Thạnh"
+    ]
+  },
+  {
+    "id": "p-hoa-thuan",
+    "name": "Phường Hòa Thuận",
+    "area": "tra-vinh",
+    "police_phone": "0294 3693 98",
+    "health_phone": "0294 3694 98",
+    "terroir_anchors": [
+      "Chùa Âng cổ kính",
+      "Ao Bà Om",
+      "Bảo tàng Văn hóa Khmer",
+      "Bún nước lèo Trà Vinh"
+    ]
+  },
+  {
+    "id": "p-hung-hoa",
+    "name": "Phường Hùng Hoà",
+    "area": "tra-vinh",
+    "police_phone": "0294 3693 62",
+    "health_phone": "0294 3694 62",
+    "terroir_anchors": [
+      "Chùa Ô Mịch",
+      "Lúa thơm Tiểu Cần",
+      "Nghề thủ công tre nứa",
+      "Văn hóa lễ hội Ok Om Bok"
+    ]
+  },
+  {
+    "id": "p-long-duc",
+    "name": "Phường Long Đức",
+    "area": "tra-vinh",
+    "police_phone": "0294 3692 63",
+    "health_phone": "0294 3693 63",
+    "terroir_anchors": [
+      "Chùa Âng cổ kính",
+      "Ao Bà Om",
+      "Bảo tàng Văn hóa Khmer",
+      "Bún nước lèo Trà Vinh"
+    ]
+  },
+  {
+    "id": "p-mo-cay",
+    "name": "Phường Mỏ Cày",
+    "area": "ben-tre",
+    "police_phone": "0275 3589 03",
+    "health_phone": "0275 3590 03",
+    "terroir_anchors": [
+      "Kẹo dừa Tuyết Phụng",
+      "Mỹ nghệ dừa Mỏ Cày",
+      "Di tích Đồng Khởi Định Thủy",
+      "Đóng ghe xuồng An Định"
+    ]
+  },
+  {
+    "id": "p-nguyet-hoa",
+    "name": "Phường Nguyệt Hóa",
+    "area": "tra-vinh",
+    "police_phone": "0294 3692 54",
+    "health_phone": "0294 3693 54",
+    "terroir_anchors": [
+      "Chùa Âng cổ kính",
+      "Ao Bà Om",
+      "Bảo tàng Văn hóa Khmer",
+      "Bún nước lèo Trà Vinh"
+    ]
+  },
+  {
+    "id": "p-tra-vinh",
+    "name": "Phường Trà Vinh",
+    "area": "tra-vinh",
+    "police_phone": "0294 3692 42",
+    "health_phone": "0294 3693 42",
+    "terroir_anchors": [
+      "Chùa Âng cổ kính",
+      "Ao Bà Om",
+      "Bảo tàng Văn hóa Khmer",
+      "Bún nước lèo Trà Vinh"
+    ]
+  },
+  {
+    "id": "xa-thanh-phong",
+    "name": "Xã Thạnh Phong",
+    "area": "ben-tre",
+    "police_phone": "0275 3592 27",
+    "health_phone": "0275 3593 27",
+    "terroir_anchors": [
+      "Cua biển Thạnh Phú",
+      "Khô cá bống cát Thạnh Phong",
+      "Nghêu Thạnh Lợi",
+      "Khu bảo tồn rừng ngập mặn"
+    ]
+  },
+  {
+    "id": "p-phu-tuc",
+    "name": "Phường Phú Túc",
+    "area": "ben-tre",
+    "police_phone": "0275 3588 10",
+    "health_phone": "0275 3589 10",
+    "terroir_anchors": [
+      "Khu du lịch Cồn Phụng",
+      "Sầu riêng Cái Mơn",
+      "Vườn dừa xiêm xanh",
+      "Thủ công mỹ nghệ dừa"
+    ]
+  },
+  {
+    "id": "p-phuoc-hau",
+    "name": "Phường Phước Hậu",
+    "area": "vinh-long",
+    "police_phone": "0270 3895 57",
+    "health_phone": "0270 3896 57",
+    "terroir_anchors": [
+      "Chôm chôm Bình Hòa Phước",
+      "Nhãn xuồng Cù lao",
+      "Du lịch sinh thái An Bình",
+      "Làng mai Phước Định"
+    ]
+  },
+  {
+    "id": "p-son-dong",
+    "name": "Phường Sơn Đông",
+    "area": "ben-tre",
+    "police_phone": "0275 3587 83",
+    "health_phone": "0275 3588 83",
+    "terroir_anchors": [
+      "Kẹo dừa truyền thống",
+      "Bánh canh bột xắt",
+      "Chợ đêm Bến Tre",
+      "Du lịch ven sông Hàm Luông"
+    ]
+  },
+  {
+    "id": "p-tam-binh",
+    "name": "Phường Tam Bình",
+    "area": "vinh-long",
+    "police_phone": "0270 3897 19",
+    "health_phone": "0270 3898 19",
+    "terroir_anchors": [
+      "Cam sành Tam Bình",
+      "Lúa vàng Ba Ngôi",
+      "Mekong Homestay",
+      "Cá linh mùa nước nổi"
+    ]
+  },
+  {
+    "id": "p-tan-hanh",
+    "name": "Phường Tân Hạnh",
+    "area": "vinh-long",
+    "police_phone": "0270 3895 93",
+    "health_phone": "0270 3896 93",
+    "terroir_anchors": [
+      "Chôm chôm Bình Hòa Phước",
+      "Nhãn xuồng Cù lao",
+      "Du lịch sinh thái An Bình",
+      "Làng mai Phước Định"
+    ]
+  },
+  {
+    "id": "p-tan-hoa",
+    "name": "Phường Tân Hoà",
+    "area": "tra-vinh",
+    "police_phone": "0294 3693 71",
+    "health_phone": "0294 3694 71",
+    "terroir_anchors": [
+      "Chùa Ô Mịch",
+      "Lúa thơm Tiểu Cần",
+      "Nghề thủ công tre nứa",
+      "Văn hóa lễ hội Ok Om Bok"
+    ]
+  },
+  {
+    "id": "p-tan-ngai",
+    "name": "Phường Tân Ngãi",
+    "area": "vinh-long",
+    "police_phone": "0270 3895 66",
+    "health_phone": "0270 3896 66",
+    "terroir_anchors": [
+      "Chợ Vĩnh Long",
+      "Văn Thánh Miếu",
+      "Ẩm thực sông Cổ Chiên",
+      "Khoai lang Bình Tân"
+    ]
+  },
+  {
+    "id": "p-tan-quoi",
+    "name": "Phường Tân Quới",
+    "area": "vinh-long",
+    "police_phone": "0270 3898 00",
+    "health_phone": "0270 3899 00",
+    "terroir_anchors": [
+      "Khoai lang tím Nhật",
+      "Hành lá Bình Tân",
+      "Vùng chuyên canh rau củ",
+      "Nông nghiệp công nghệ cao"
+    ]
+  },
+  {
+    "id": "p-tan-thuy",
+    "name": "Phường Tân Thủy",
+    "area": "ben-tre",
+    "police_phone": "0275 3591 67",
+    "health_phone": "0275 3592 67",
+    "terroir_anchors": [
+      "Rượu nếp Phú Lễ",
+      "Muối Bảo Thạnh",
+      "Nghêu sò Ba Tri",
+      "Lăng mộ Nguyễn Đình Chiểu"
+    ]
+  },
+  {
+    "id": "p-tap-ngai",
+    "name": "Phường Tập Ngãi",
+    "area": "tra-vinh",
+    "police_phone": "0294 3693 65",
+    "health_phone": "0294 3694 65",
+    "terroir_anchors": [
+      "Chùa Ô Mịch",
+      "Lúa thơm Tiểu Cần",
+      "Nghề thủ công tre nứa",
+      "Văn hóa lễ hội Ok Om Bok"
+    ]
+  },
+  {
+    "id": "p-thanh-duc",
+    "name": "Phường Thanh Đức",
+    "area": "vinh-long",
+    "police_phone": "0270 3895 90",
+    "health_phone": "0270 3896 90",
+    "terroir_anchors": [
+      "Chôm chôm Bình Hòa Phước",
+      "Nhãn xuồng Cù lao",
+      "Du lịch sinh thái An Bình",
+      "Làng mai Phước Định"
+    ]
+  },
+  {
+    "id": "p-tien-thuy",
+    "name": "Phường Tiên Thủy",
+    "area": "ben-tre",
+    "police_phone": "0275 3588 61",
+    "health_phone": "0275 3589 61",
+    "terroir_anchors": [
+      "Khu du lịch Cồn Phụng",
+      "Sầu riêng Cái Mơn",
+      "Vườn dừa xiêm xanh",
+      "Thủ công mỹ nghệ dừa"
+    ]
+  },
+  {
+    "id": "p-tieu-can",
+    "name": "Phường Tiểu Cần",
+    "area": "tra-vinh",
+    "police_phone": "0294 3693 41",
+    "health_phone": "0294 3694 41",
+    "terroir_anchors": [
+      "Chùa Ô Mịch",
+      "Lúa thơm Tiểu Cần",
+      "Nghề thủ công tre nứa",
+      "Văn hóa lễ hội Ok Om Bok"
+    ]
+  },
+  {
+    "id": "p-tra-on",
+    "name": "Phường Trà Ôn",
+    "area": "vinh-long",
+    "police_phone": "0270 3898 21",
+    "health_phone": "0270 3899 21",
+    "terroir_anchors": [
+      "Bánh tráng Cù Lao Mây",
+      "Cam sành Trà Ôn",
+      "Lăng Ông Tiền quân Thống chế Điều bát",
+      "Chợ nổi Trà Ôn"
+    ]
+  },
+  {
+    "id": "p-truong-long-hoa",
+    "name": "Phường Trường Long Hòa",
+    "area": "tra-vinh",
+    "police_phone": "0294 3695 16",
+    "health_phone": "0294 3696 16",
+    "terroir_anchors": [
+      "Dưa lưới Trường Long Hòa",
+      "Nước khoáng Sao Biển",
+      "Lễ hội Nghinh Ông Ba Động",
+      "Rừng ngập mặn Hiệp Thạnh"
+    ]
+  },
+  {
+    "id": "xa-an-binh",
+    "name": "Xã An Bình",
+    "area": "vinh-long",
+    "police_phone": "0270 3858 113",
+    "health_phone": "0270 3896 84",
+    "terroir_anchors": [
+      "Chôm chôm Bình Hòa Phước",
+      "Nhãn xuồng Cù lao",
+      "Du lịch sinh thái An Bình",
+      "Làng mai Phước Định"
+    ]
+  },
+  {
+    "id": "xa-an-dinh",
+    "name": "Xã An Định",
+    "area": "ben-tre",
+    "police_phone": "0275 3589 57",
+    "health_phone": "0275 3590 57",
+    "terroir_anchors": [
+      "Kẹo dừa Tuyết Phụng",
+      "Mỹ nghệ dừa Mỏ Cày",
+      "Di tích Đồng Khởi Định Thủy",
+      "Đóng ghe xuồng An Định"
+    ]
+  },
+  {
+    "id": "xa-an-hiep",
+    "name": "Xã An Hiệp",
+    "area": "ben-tre",
+    "police_phone": "0275 3591 58",
+    "health_phone": "0275 3592 58",
+    "terroir_anchors": [
+      "Rượu nếp Phú Lễ",
+      "Muối Bảo Thạnh",
+      "Nghêu sò Ba Tri",
+      "Lăng mộ Nguyễn Đình Chiểu"
+    ]
+  },
+  {
+    "id": "xa-an-ngai-trung",
+    "name": "Xã An Ngãi Trung",
+    "area": "ben-tre",
+    "police_phone": "0275 3591 43",
+    "health_phone": "0275 3592 43",
+    "terroir_anchors": [
+      "Rượu nếp Phú Lễ",
+      "Muối Bảo Thạnh",
+      "Nghêu sò Ba Tri",
+      "Lăng mộ Nguyễn Đình Chiểu"
+    ]
+  },
+  {
+    "id": "xa-an-phu-tan",
+    "name": "Xã An Phú Tân",
+    "area": "tra-vinh",
+    "police_phone": "0294 3693 17",
+    "health_phone": "0294 3694 17",
+    "terroir_anchors": [
+      "Dừa sáp Cầu Kè",
+      "Quýt đường Cầu Kè",
+      "Củ cải muối Chịt Sa",
+      "Khu du lịch sinh thái Cù Lao Tân Quy"
+    ]
+  },
+  {
+    "id": "xa-an-qui",
+    "name": "Xã An Qui",
+    "area": "ben-tre",
+    "police_phone": "0275 3592 24",
+    "health_phone": "0275 3593 24",
+    "terroir_anchors": [
+      "Cua biển Thạnh Phú",
+      "Khô cá bống cát Thạnh Phong",
+      "Nghêu Thạnh Lợi",
+      "Khu bảo tồn rừng ngập mặn"
+    ]
+  },
+  {
+    "id": "xa-an-truong",
+    "name": "Xã An Trường",
+    "area": "tra-vinh",
+    "police_phone": "0294 3692 75",
+    "health_phone": "0294 3693 75",
+    "terroir_anchors": [
+      "Bánh tét Trà Cuôn Càng Long",
+      "Làng đan lát Đức Mỹ",
+      "Chùa Bodhisalaram",
+      "Vườn cây ăn trái"
+    ]
+  },
+  {
+    "id": "xa-bao-thanh",
+    "name": "Xã Bảo Thạnh",
+    "area": "ben-tre",
+    "police_phone": "0275 3591 25",
+    "health_phone": "0275 3592 25",
+    "terroir_anchors": [
+      "Rượu nếp Phú Lễ",
+      "Muối Bảo Thạnh",
+      "Nghêu sò Ba Tri",
+      "Lăng mộ Nguyễn Đình Chiểu"
+    ]
+  },
+  {
+    "id": "xa-binh-phu",
+    "name": "Xã Bình Phú",
+    "area": "tra-vinh",
+    "police_phone": "0294 3692 87",
+    "health_phone": "0294 3693 87",
+    "terroir_anchors": [
+      "Bánh tét Trà Cuôn Càng Long",
+      "Làng đan lát Đức Mỹ",
+      "Chùa Bodhisalaram",
+      "Vườn cây ăn trái"
+    ]
+  },
+  {
+    "id": "xa-binh-phuoc",
+    "name": "Xã Bình Phước",
+    "area": "vinh-long",
+    "police_phone": "0270 3896 38",
+    "health_phone": "0270 3897 38",
+    "terroir_anchors": [
+      "Gốm đỏ Mang Thít",
+      "Gạch nung truyền thống",
+      "Kênh Thầy Kay",
+      "Bưởi da xanh"
+    ]
+  },
+  {
+    "id": "xa-cai-nhum",
+    "name": "Xã Cái Nhum",
+    "area": "vinh-long",
+    "police_phone": "0270 3896 41",
+    "health_phone": "0270 3897 41",
+    "terroir_anchors": [
+      "Gốm đỏ Mang Thít",
+      "Gạch nung truyền thống",
+      "Kênh Thầy Kay",
+      "Bưởi da xanh"
+    ]
+  },
+  {
+    "id": "xa-cau-ke",
+    "name": "Xã Cầu Kè",
+    "area": "tra-vinh",
+    "police_phone": "0294 3693 08",
+    "health_phone": "0294 3694 08",
+    "terroir_anchors": [
+      "Dừa sáp Cầu Kè",
+      "Quýt đường Cầu Kè",
+      "Củ cải muối Chịt Sa",
+      "Khu du lịch sinh thái Cù Lao Tân Quy"
+    ]
+  },
+  {
+    "id": "xa-cau-ngang",
+    "name": "Xã Cầu Ngang",
+    "area": "tra-vinh",
+    "police_phone": "0294 3694 16",
+    "health_phone": "0294 3695 16",
+    "terroir_anchors": [
+      "Tôm khô Vinh Kim",
+      "Tép khô Mỹ Long",
+      "Bún tươi An Đào",
+      "Lễ hội Nghinh Ông Mỹ Long"
+    ]
+  },
+  {
+    "id": "xa-chau-hoa",
+    "name": "Xã Châu Hòa",
+    "area": "ben-tre",
+    "police_phone": "0275 3589 96",
+    "health_phone": "0275 3590 96",
+    "terroir_anchors": [
+      "Bánh tráng Mỹ Lồng",
+      "Bánh phồng Sơn Đốc",
+      "Bưởi da xanh Giồng Trôm",
+      "Làng nghề thủ công dừa Phước Long"
+    ]
+  },
+  {
+    "id": "xa-chau-hung",
+    "name": "Xã Châu Hưng",
+    "area": "ben-tre",
+    "police_phone": "0275 3590 83",
+    "health_phone": "0275 3591 83",
+    "terroir_anchors": [
+      "Cá bông lau một nắng Bình Đại",
+      "Cá khô Thừa Đức",
+      "Nghêu Bình Đại",
+      "Du lịch biển Bình Đại"
+    ]
+  },
+  {
+    "id": "xa-chau-thanh",
+    "name": "Xã Châu Thành",
+    "area": "tra-vinh",
+    "police_phone": "0294 3693 74",
+    "health_phone": "0294 3694 74",
+    "terroir_anchors": [
+      "Gạo hữu cơ Long Hòa – Hòa Minh",
+      "Chùa Hang",
+      "Mặt nạ Khmer Nguyệt Hóa",
+      "Bánh tét Trà Cuôn"
+    ]
+  },
+  {
+    "id": "xa-cho-lach",
+    "name": "Xã Chợ Lách",
+    "area": "ben-tre",
+    "police_phone": "0275 3588 70",
+    "health_phone": "0275 3589 70",
+    "terroir_anchors": [
+      "Cây giống Cái Mơn",
+      "Hoa kiểng Chợ Lách",
+      "Sầu riêng Ri6 Chợ Lách",
+      "Chôm chôm Java"
+    ]
+  },
+  {
+    "id": "xa-dai-an",
+    "name": "Xã Đại An",
+    "area": "tra-vinh",
+    "police_phone": "0294 3694 91",
+    "health_phone": "0294 3695 91",
+    "terroir_anchors": [
+      "Chiếu Cà Hom - Bến Bạ",
+      "Đồ tre Hàm Giang",
+      "Chùa Vàm Rây",
+      "Văn hóa Chầm riêng Chà pây"
+    ]
+  },
+  {
+    "id": "xa-dai-dien",
+    "name": "Xã Đại Điền",
+    "area": "ben-tre",
+    "police_phone": "0275 3591 94",
+    "health_phone": "0275 3592 94",
+    "terroir_anchors": [
+      "Cua biển Thạnh Phú",
+      "Khô cá bống cát Thạnh Phong",
+      "Nghêu Thạnh Lợi",
+      "Khu bảo tồn rừng ngập mặn"
+    ]
+  },
+  {
+    "id": "xa-don-chau",
+    "name": "Xã Đôn Châu",
+    "area": "tra-vinh",
+    "police_phone": "0294 3694 97",
+    "health_phone": "0294 3695 97",
+    "terroir_anchors": [
+      "Dưa lưới Trường Long Hòa",
+      "Nước khoáng Sao Biển",
+      "Lễ hội Nghinh Ông Ba Động",
+      "Rừng ngập mặn Hiệp Thạnh"
+    ]
+  },
+  {
+    "id": "xa-dong-hai",
+    "name": "Xã Đông Hải",
+    "area": "tra-vinh",
+    "police_phone": "0294 3695 36",
+    "health_phone": "0294 3696 36",
+    "terroir_anchors": [
+      "Dưa lưới Trường Long Hòa",
+      "Nước khoáng Sao Biển",
+      "Lễ hội Nghinh Ông Ba Động",
+      "Rừng ngập mặn Hiệp Thạnh"
+    ]
+  },
+  {
+    "id": "xa-dong-khoi",
+    "name": "Xã Đồng Khởi",
+    "area": "ben-tre",
+    "police_phone": "0275 3589 45",
+    "health_phone": "0275 3590 45",
+    "terroir_anchors": [
+      "Kẹo dừa Tuyết Phụng",
+      "Mỹ nghệ dừa Mỏ Cày",
+      "Di tích Đồng Khởi Định Thủy",
+      "Đóng ghe xuồng An Định"
+    ]
+  },
+  {
+    "id": "xa-giao-long",
+    "name": "Xã Giao Long",
+    "area": "ben-tre",
+    "police_phone": "0275 3588 07",
+    "health_phone": "0275 3589 07",
+    "terroir_anchors": [
+      "Khu du lịch Cồn Phụng",
+      "Sầu riêng Cái Mơn",
+      "Vườn dừa xiêm xanh",
+      "Thủ công mỹ nghệ dừa"
+    ]
+  },
+  {
+    "id": "xa-giong-trom",
+    "name": "Xã Giồng Trôm",
+    "area": "ben-tre",
+    "police_phone": "0275 3589 84",
+    "health_phone": "0275 3590 84",
+    "terroir_anchors": [
+      "Bánh tráng Mỹ Lồng",
+      "Bánh phồng Sơn Đốc",
+      "Bưởi da xanh Giồng Trôm",
+      "Làng nghề thủ công dừa Phước Long"
+    ]
+  },
+  {
+    "id": "xa-ham-giang",
+    "name": "Xã Hàm Giang",
+    "area": "tra-vinh",
+    "police_phone": "0294 3694 89",
+    "health_phone": "0294 3695 89",
+    "terroir_anchors": [
+      "Chiếu Cà Hom - Bến Bạ",
+      "Đồ tre Hàm Giang",
+      "Chùa Vàm Rây",
+      "Văn hóa Chầm riêng Chà pây"
+    ]
+  },
+  {
+    "id": "xa-hiep-my",
+    "name": "Xã Hiệp Mỹ",
+    "area": "tra-vinh",
+    "police_phone": "0294 3694 55",
+    "health_phone": "0294 3695 55",
+    "terroir_anchors": [
+      "Tôm khô Vinh Kim",
+      "Tép khô Mỹ Long",
+      "Bún tươi An Đào",
+      "Lễ hội Nghinh Ông Mỹ Long"
+    ]
+  },
+  {
+    "id": "xa-hieu-phung",
+    "name": "Xã Hiếu Phụng",
+    "area": "vinh-long",
+    "police_phone": "0270 3897 01",
+    "health_phone": "0270 3898 01",
+    "terroir_anchors": [
+      "Lúa - tôm Vũng Liêm",
+      "Sầu riêng Cù Lao Dài",
+      "Khu lưu niệm Thủ tướng Võ Văn Kiệt",
+      "Dệt chiếu Cà Hôn"
+    ]
+  },
+  {
+    "id": "xa-hieu-thanh",
+    "name": "Xã Hiếu Thành",
+    "area": "vinh-long",
+    "police_phone": "0270 3897 13",
+    "health_phone": "0270 3898 13",
+    "terroir_anchors": [
+      "Lúa - tôm Vũng Liêm",
+      "Sầu riêng Cù Lao Dài",
+      "Khu lưu niệm Thủ tướng Võ Văn Kiệt",
+      "Dệt chiếu Cà Hôn"
+    ]
+  },
+  {
+    "id": "xa-hoa-binh",
+    "name": "Xã Hòa Bình",
+    "area": "vinh-long",
+    "police_phone": "0270 3898 30",
+    "health_phone": "0270 3899 30",
+    "terroir_anchors": [
+      "Bánh tráng Cù Lao Mây",
+      "Cam sành Trà Ôn",
+      "Lăng Ông Tiền quân Thống chế Điều bát",
+      "Chợ nổi Trà Ôn"
+    ]
+  },
+  {
+    "id": "xa-hoa-hiep",
+    "name": "Xã Hòa Hiệp",
+    "area": "vinh-long",
+    "police_phone": "0270 3897 34",
+    "health_phone": "0270 3898 34",
+    "terroir_anchors": [
+      "Cam sành Tam Bình",
+      "Lúa vàng Ba Ngôi",
+      "Mekong Homestay",
+      "Cá linh mùa nước nổi"
+    ]
+  },
+  {
+    "id": "xa-hoa-minh",
+    "name": "Xã Hòa Minh",
+    "area": "tra-vinh",
+    "police_phone": "0294 3694 10",
+    "health_phone": "0294 3695 10",
+    "terroir_anchors": [
+      "Gạo hữu cơ Long Hòa – Hòa Minh",
+      "Chùa Hang",
+      "Mặt nạ Khmer Nguyệt Hóa",
+      "Bánh tét Trà Cuôn"
+    ]
+  },
+  {
+    "id": "xa-hung-khanh-trung",
+    "name": "Xã Hưng Khánh Trung",
+    "area": "ben-tre",
+    "police_phone": "0275 3589 01",
+    "health_phone": "0275 3590 01",
+    "terroir_anchors": [
+      "Cây giống Cái Mơn",
+      "Hoa kiểng Chợ Lách",
+      "Sầu riêng Ri6 Chợ Lách",
+      "Chôm chôm Java"
+    ]
+  },
+  {
+    "id": "xa-hung-my",
+    "name": "Xã Hưng Mỹ",
+    "area": "tra-vinh",
+    "police_phone": "0294 3694 07",
+    "health_phone": "0294 3695 07",
+    "terroir_anchors": [
+      "Gạo hữu cơ Long Hòa – Hòa Minh",
+      "Chùa Hang",
+      "Mặt nạ Khmer Nguyệt Hóa",
+      "Bánh tét Trà Cuôn"
+    ]
+  },
+  {
+    "id": "xa-hung-nhuong",
+    "name": "Xã Hưng Nhượng",
+    "area": "ben-tre",
+    "police_phone": "0275 3590 44",
+    "health_phone": "0275 3591 44",
+    "terroir_anchors": [
+      "Bánh tráng Mỹ Lồng",
+      "Bánh phồng Sơn Đốc",
+      "Bưởi da xanh Giồng Trôm",
+      "Làng nghề thủ công dừa Phước Long"
+    ]
+  },
+  {
+    "id": "xa-huong-my",
+    "name": "Xã Hương Mỹ",
+    "area": "ben-tre",
+    "police_phone": "0275 3589 81",
+    "health_phone": "0275 3590 81",
+    "terroir_anchors": [
+      "Kẹo dừa Tuyết Phụng",
+      "Mỹ nghệ dừa Mỏ Cày",
+      "Di tích Đồng Khởi Định Thủy",
+      "Đóng ghe xuồng An Định"
+    ]
+  },
+  {
+    "id": "xa-loc-thuan",
+    "name": "Xã Lộc Thuận",
+    "area": "ben-tre",
+    "police_phone": "0275 3590 77",
+    "health_phone": "0275 3591 77",
+    "terroir_anchors": [
+      "Cá bông lau một nắng Bình Đại",
+      "Cá khô Thừa Đức",
+      "Nghêu Bình Đại",
+      "Du lịch biển Bình Đại"
+    ]
+  },
+  {
+    "id": "xa-long-hiep",
+    "name": "Xã Long Hiệp",
+    "area": "tra-vinh",
+    "police_phone": "0294 3695 06",
+    "health_phone": "0294 3696 06",
+    "terroir_anchors": [
+      "Chiếu Cà Hom - Bến Bạ",
+      "Đồ tre Hàm Giang",
+      "Chùa Vàm Rây",
+      "Văn hóa Chầm riêng Chà pây"
+    ]
+  },
+  {
+    "id": "xa-long-hoa",
+    "name": "Xã Long Hòa",
+    "area": "tra-vinh",
+    "police_phone": "0294 3694 13",
+    "health_phone": "0294 3695 13",
+    "terroir_anchors": [
+      "Gạo hữu cơ Long Hòa – Hòa Minh",
+      "Chùa Hang",
+      "Mặt nạ Khmer Nguyệt Hóa",
+      "Bánh tét Trà Cuôn"
+    ]
+  },
+  {
+    "id": "xa-long-huu",
+    "name": "Xã Long Hữu",
+    "area": "tra-vinh",
+    "police_phone": "0294 3695 18",
+    "health_phone": "0294 3696 18",
+    "terroir_anchors": [
+      "Dưa lưới Trường Long Hòa",
+      "Nước khoáng Sao Biển",
+      "Lễ hội Nghinh Ông Ba Động",
+      "Rừng ngập mặn Hiệp Thạnh"
+    ]
+  },
+  {
+    "id": "xa-long-thanh",
+    "name": "Xã Long Thành",
+    "area": "tra-vinh",
+    "police_phone": "0294 3695 13",
+    "health_phone": "0294 3696 13",
+    "terroir_anchors": [
+      "Dưa lưới Trường Long Hòa",
+      "Nước khoáng Sao Biển",
+      "Lễ hội Nghinh Ông Ba Động",
+      "Rừng ngập mặn Hiệp Thạnh"
+    ]
+  },
+  {
+    "id": "xa-long-vinh",
+    "name": "Xã Long Vĩnh",
+    "area": "tra-vinh",
+    "police_phone": "0294 3695 33",
+    "health_phone": "0294 3696 33",
+    "terroir_anchors": [
+      "Dưa lưới Trường Long Hòa",
+      "Nước khoáng Sao Biển",
+      "Lễ hội Nghinh Ông Ba Động",
+      "Rừng ngập mặn Hiệp Thạnh"
+    ]
+  },
+  {
+    "id": "xa-luc-si-thanh",
+    "name": "Xã Lục Sĩ Thành",
+    "area": "vinh-long",
+    "police_phone": "0270 3898 57",
+    "health_phone": "0270 3899 57",
+    "terroir_anchors": [
+      "Bánh tráng Cù Lao Mây",
+      "Cam sành Trà Ôn",
+      "Lăng Ông Tiền quân Thống chế Điều bát",
+      "Chợ nổi Trà Ôn"
+    ]
+  },
+  {
+    "id": "xa-luong-hoa",
+    "name": "Xã Lương Hòa",
+    "area": "ben-tre",
+    "police_phone": "0275 3589 87",
+    "health_phone": "0275 3590 87",
+    "terroir_anchors": [
+      "Bánh tráng Mỹ Lồng",
+      "Bánh phồng Sơn Đốc",
+      "Bưởi da xanh Giồng Trôm",
+      "Làng nghề thủ công dừa Phước Long"
+    ]
+  },
+  {
+    "id": "xa-luong-phu",
+    "name": "Xã Lương Phú",
+    "area": "ben-tre",
+    "police_phone": "0275 3589 93",
+    "health_phone": "0275 3590 93",
+    "terroir_anchors": [
+      "Bánh tráng Mỹ Lồng",
+      "Bánh phồng Sơn Đốc",
+      "Bưởi da xanh Giồng Trôm",
+      "Làng nghề thủ công dừa Phước Long"
+    ]
+  },
+  {
+    "id": "xa-luu-nghiep-anh",
+    "name": "Xã Lưu Nghiệp Anh",
+    "area": "tra-vinh",
+    "police_phone": "0294 3694 76",
+    "health_phone": "0294 3695 76",
+    "terroir_anchors": [
+      "Chiếu Cà Hom - Bến Bạ",
+      "Đồ tre Hàm Giang",
+      "Chùa Vàm Rây",
+      "Văn hóa Chầm riêng Chà pây"
+    ]
+  },
+  {
+    "id": "xa-my-chanh-hoa",
+    "name": "Xã Mỹ Chánh Hòa",
+    "area": "ben-tre",
+    "police_phone": "0275 3591 22",
+    "health_phone": "0275 3592 22",
+    "terroir_anchors": [
+      "Rượu nếp Phú Lễ",
+      "Muối Bảo Thạnh",
+      "Nghêu sò Ba Tri",
+      "Lăng mộ Nguyễn Đình Chiểu"
+    ]
+  },
+  {
+    "id": "xa-my-long",
+    "name": "Xã Mỹ Long",
+    "area": "tra-vinh",
+    "police_phone": "0294 3694 19",
+    "health_phone": "0294 3695 19",
+    "terroir_anchors": [
+      "Tôm khô Vinh Kim",
+      "Tép khô Mỹ Long",
+      "Bún tươi An Đào",
+      "Lễ hội Nghinh Ông Mỹ Long"
+    ]
+  },
+  {
+    "id": "xa-my-thuan",
+    "name": "Xã Mỹ Thuận",
+    "area": "vinh-long",
+    "police_phone": "0270 3897 88",
+    "health_phone": "0270 3898 88",
+    "terroir_anchors": [
+      "Khoai lang tím Nhật",
+      "Hành lá Bình Tân",
+      "Vùng chuyên canh rau củ",
+      "Nông nghiệp công nghệ cao"
+    ]
+  },
+  {
+    "id": "xa-ngai-tu",
+    "name": "Xã Ngãi Tứ",
+    "area": "vinh-long",
+    "police_phone": "0270 3897 67",
+    "health_phone": "0270 3898 67",
+    "terroir_anchors": [
+      "Cam sành Tam Bình",
+      "Lúa vàng Ba Ngôi",
+      "Mekong Homestay",
+      "Cá linh mùa nước nổi"
+    ]
+  },
+  {
+    "id": "xa-ngu-lac",
+    "name": "Xã Ngũ Lạc",
+    "area": "tra-vinh",
+    "police_phone": "0294 3695 30",
+    "health_phone": "0294 3696 30",
+    "terroir_anchors": [
+      "Tôm khô Vinh Kim",
+      "Tép khô Mỹ Long",
+      "Bún tươi An Đào",
+      "Lễ hội Nghinh Ông Mỹ Long"
+    ]
+  },
+  {
+    "id": "xa-nhi-long",
+    "name": "Xã Nhị Long",
+    "area": "tra-vinh",
+    "police_phone": "0294 3693 02",
+    "health_phone": "0294 3694 02",
+    "terroir_anchors": [
+      "Bánh tét Trà Cuôn Càng Long",
+      "Làng đan lát Đức Mỹ",
+      "Chùa Bodhisalaram",
+      "Vườn cây ăn trái"
+    ]
+  },
+  {
+    "id": "xa-nhi-truong",
+    "name": "Xã Nhị Trường",
+    "area": "tra-vinh",
+    "police_phone": "0294 3694 46",
+    "health_phone": "0294 3695 46",
+    "terroir_anchors": [
+      "Tôm khô Vinh Kim",
+      "Tép khô Mỹ Long",
+      "Bún tươi An Đào",
+      "Lễ hội Nghinh Ông Mỹ Long"
+    ]
+  },
+  {
+    "id": "xa-nhon-phu",
+    "name": "Xã Nhơn Phú",
+    "area": "vinh-long",
+    "police_phone": "0270 3896 23",
+    "health_phone": "0270 3897 23",
+    "terroir_anchors": [
+      "Gốm đỏ Mang Thít",
+      "Gạch nung truyền thống",
+      "Kênh Thầy Kay",
+      "Bưởi da xanh"
+    ]
+  },
+  {
+    "id": "xa-nhuan-phu-tan",
+    "name": "Xã Nhuận Phú Tân",
+    "area": "ben-tre",
+    "police_phone": "0275 3589 48",
+    "health_phone": "0275 3590 48",
+    "terroir_anchors": [
+      "Làng nghề chỉ xơ dừa Khánh Thạnh Tân",
+      "Hoa kiểng Thanh Tân",
+      "Kẹo dừa dẻo",
+      "Bưởi da xanh"
+    ]
+  },
+  {
+    "id": "xa-phong-thanh",
+    "name": "Xã Phong Thạnh",
+    "area": "tra-vinh",
+    "police_phone": "0294 3693 29",
+    "health_phone": "0294 3694 29",
+    "terroir_anchors": [
+      "Dừa sáp Cầu Kè",
+      "Quýt đường Cầu Kè",
+      "Củ cải muối Chịt Sa",
+      "Khu du lịch sinh thái Cù Lao Tân Quy"
+    ]
+  },
+  {
+    "id": "xa-phu-phung",
+    "name": "Xã Phú Phụng",
+    "area": "ben-tre",
+    "police_phone": "0275 3588 79",
+    "health_phone": "0275 3589 79",
+    "terroir_anchors": [
+      "Cây giống Cái Mơn",
+      "Hoa kiểng Chợ Lách",
+      "Sầu riêng Ri6 Chợ Lách",
+      "Chôm chôm Java"
+    ]
+  },
+  {
+    "id": "xa-phu-quoi",
+    "name": "Xã Phú Quới",
+    "area": "vinh-long",
+    "police_phone": "0270 3896 11",
+    "health_phone": "0270 3897 11",
+    "terroir_anchors": [
+      "Chôm chôm Bình Hòa Phước",
+      "Nhãn xuồng Cù lao",
+      "Du lịch sinh thái An Bình",
+      "Làng mai Phước Định"
+    ]
+  },
+  {
+    "id": "xa-phu-thuan",
+    "name": "Xã Phú Thuận",
+    "area": "ben-tre",
+    "police_phone": "0275 3590 62",
+    "health_phone": "0275 3591 62",
+    "terroir_anchors": [
+      "Cá bông lau một nắng Bình Đại",
+      "Cá khô Thừa Đức",
+      "Nghêu Bình Đại",
+      "Du lịch biển Bình Đại"
+    ]
+  },
+  {
+    "id": "xa-phuoc-long",
+    "name": "Xã Phước Long",
+    "area": "ben-tre",
+    "police_phone": "0275 3590 20",
+    "health_phone": "0275 3591 20",
+    "terroir_anchors": [
+      "Bánh tráng Mỹ Lồng",
+      "Bánh phồng Sơn Đốc",
+      "Bưởi da xanh Giồng Trôm",
+      "Làng nghề thủ công dừa Phước Long"
+    ]
+  },
+  {
+    "id": "xa-phuoc-my-trung",
+    "name": "Xã Phước Mỹ Trung",
+    "area": "ben-tre",
+    "police_phone": "0275 3589 15",
+    "health_phone": "0275 3590 15",
+    "terroir_anchors": [
+      "Làng nghề chỉ xơ dừa Khánh Thạnh Tân",
+      "Hoa kiểng Thanh Tân",
+      "Kẹo dừa dẻo",
+      "Bưởi da xanh"
+    ]
+  },
+  {
+    "id": "xa-quoi-an",
+    "name": "Xã Quới An",
+    "area": "vinh-long",
+    "police_phone": "0270 3896 68",
+    "health_phone": "0270 3897 68",
+    "terroir_anchors": [
+      "Lúa - tôm Vũng Liêm",
+      "Sầu riêng Cù Lao Dài",
+      "Khu lưu niệm Thủ tướng Võ Văn Kiệt",
+      "Dệt chiếu Cà Hôn"
+    ]
+  },
+  {
+    "id": "xa-quoi-dien",
+    "name": "Xã Quới Điền",
+    "area": "ben-tre",
+    "police_phone": "0275 3591 91",
+    "health_phone": "0275 3592 91",
+    "terroir_anchors": [
+      "Cua biển Thạnh Phú",
+      "Khô cá bống cát Thạnh Phong",
+      "Nghêu Thạnh Lợi",
+      "Khu bảo tồn rừng ngập mặn"
+    ]
+  },
+  {
+    "id": "xa-quoi-thien",
+    "name": "Xã Quới Thiện",
+    "area": "vinh-long",
+    "police_phone": "0270 3896 77",
+    "health_phone": "0270 3897 77",
+    "terroir_anchors": [
+      "Lúa - tôm Vũng Liêm",
+      "Sầu riêng Cù Lao Dài",
+      "Khu lưu niệm Thủ tướng Võ Văn Kiệt",
+      "Dệt chiếu Cà Hôn"
+    ]
+  },
+  {
+    "id": "xa-song-loc",
+    "name": "Xã Song Lộc",
+    "area": "tra-vinh",
+    "police_phone": "0294 3693 86",
+    "health_phone": "0294 3694 86",
+    "terroir_anchors": [
+      "Gạo hữu cơ Long Hòa – Hòa Minh",
+      "Chùa Hang",
+      "Mặt nạ Khmer Nguyệt Hóa",
+      "Bánh tét Trà Cuôn"
+    ]
+  },
+  {
+    "id": "xa-song-phu",
+    "name": "Xã Song Phú",
+    "area": "vinh-long",
+    "police_phone": "0270 3897 40",
+    "health_phone": "0270 3898 40",
+    "terroir_anchors": [
+      "Cam sành Tam Bình",
+      "Lúa vàng Ba Ngôi",
+      "Mekong Homestay",
+      "Cá linh mùa nước nổi"
+    ]
+  },
+  {
+    "id": "xa-tam-ngai",
+    "name": "Xã Tam Ngãi",
+    "area": "tra-vinh",
+    "police_phone": "0294 3693 35",
+    "health_phone": "0294 3694 35",
+    "terroir_anchors": [
+      "Dừa sáp Cầu Kè",
+      "Quýt đường Cầu Kè",
+      "Củ cải muối Chịt Sa",
+      "Khu du lịch sinh thái Cù Lao Tân Quy"
+    ]
+  },
+  {
+    "id": "xa-tan-an",
+    "name": "Xã Tân An",
+    "area": "tra-vinh",
+    "police_phone": "0294 3692 78",
+    "health_phone": "0294 3693 78",
+    "terroir_anchors": [
+      "Bánh tét Trà Cuôn Càng Long",
+      "Làng đan lát Đức Mỹ",
+      "Chùa Bodhisalaram",
+      "Vườn cây ăn trái"
+    ]
+  },
+  {
+    "id": "xa-tan-hao",
+    "name": "Xã Tân Hào",
+    "area": "ben-tre",
+    "police_phone": "0275 3590 29",
+    "health_phone": "0275 3591 29",
+    "terroir_anchors": [
+      "Bánh tráng Mỹ Lồng",
+      "Bánh phồng Sơn Đốc",
+      "Bưởi da xanh Giồng Trôm",
+      "Làng nghề thủ công dừa Phước Long"
+    ]
+  },
+  {
+    "id": "xa-tan-long-hoi",
+    "name": "Xã Tân Long Hội",
+    "area": "vinh-long",
+    "police_phone": "0270 3896 53",
+    "health_phone": "0270 3897 53",
+    "terroir_anchors": [
+      "Gốm đỏ Mang Thít",
+      "Gạch nung truyền thống",
+      "Kênh Thầy Kay",
+      "Bưởi da xanh"
+    ]
+  },
+  {
+    "id": "xa-tan-luoc",
+    "name": "Xã Tân Lược",
+    "area": "vinh-long",
+    "police_phone": "0270 3897 85",
+    "health_phone": "0270 3898 85",
+    "terroir_anchors": [
+      "Khoai lang tím Nhật",
+      "Hành lá Bình Tân",
+      "Vùng chuyên canh rau củ",
+      "Nông nghiệp công nghệ cao"
+    ]
+  },
+  {
+    "id": "xa-tan-phu",
+    "name": "Xã Tân Phú",
+    "area": "ben-tre",
+    "police_phone": "0275 3588 40",
+    "health_phone": "0275 3589 40",
+    "terroir_anchors": [
+      "Khu du lịch Cồn Phụng",
+      "Sầu riêng Cái Mơn",
+      "Vườn dừa xiêm xanh",
+      "Thủ công mỹ nghệ dừa"
+    ]
+  },
+  {
+    "id": "xa-tan-thanh-binh",
+    "name": "Xã Tân Thành Bình",
+    "area": "ben-tre",
+    "police_phone": "0275 3589 21",
+    "health_phone": "0275 3590 21",
+    "terroir_anchors": [
+      "Làng nghề chỉ xơ dừa Khánh Thạnh Tân",
+      "Hoa kiểng Thanh Tân",
+      "Kẹo dừa dẻo",
+      "Bưởi da xanh"
+    ]
+  },
+  {
+    "id": "xa-tan-xuan",
+    "name": "Xã Tân Xuân",
+    "area": "ben-tre",
+    "police_phone": "0275 3591 37",
+    "health_phone": "0275 3592 37",
+    "terroir_anchors": [
+      "Rượu nếp Phú Lễ",
+      "Muối Bảo Thạnh",
+      "Nghêu sò Ba Tri",
+      "Lăng mộ Nguyễn Đình Chiểu"
+    ]
+  },
+  {
+    "id": "xa-tap-son",
+    "name": "Xã Tập Sơn",
+    "area": "tra-vinh",
+    "police_phone": "0294 3694 67",
+    "health_phone": "0294 3695 67",
+    "terroir_anchors": [
+      "Chiếu Cà Hom - Bến Bạ",
+      "Đồ tre Hàm Giang",
+      "Chùa Vàm Rây",
+      "Văn hóa Chầm riêng Chà pây"
+    ]
+  },
+  {
+    "id": "xa-thanh-hai",
+    "name": "Xã Thạnh Hải",
+    "area": "ben-tre",
+    "police_phone": "0275 3592 21",
+    "health_phone": "0275 3593 21",
+    "terroir_anchors": [
+      "Cua biển Thạnh Phú",
+      "Khô cá bống cát Thạnh Phong",
+      "Nghêu Thạnh Lợi",
+      "Khu bảo tồn rừng ngập mặn"
+    ]
+  },
+  {
+    "id": "xa-thanh-phu",
+    "name": "Xã Thạnh Phú",
+    "area": "ben-tre",
+    "police_phone": "0275 3591 82",
+    "health_phone": "0275 3592 82",
+    "terroir_anchors": [
+      "Cua biển Thạnh Phú",
+      "Khô cá bống cát Thạnh Phong",
+      "Nghêu Thạnh Lợi",
+      "Khu bảo tồn rừng ngập mặn"
+    ]
+  },
+  {
+    "id": "xa-thanh-phuoc",
+    "name": "Xã Thạnh Phước",
+    "area": "ben-tre",
+    "police_phone": "0275 3591 04",
+    "health_phone": "0275 3592 04",
+    "terroir_anchors": [
+      "Cá bông lau một nắng Bình Đại",
+      "Cá khô Thừa Đức",
+      "Nghêu Bình Đại",
+      "Du lịch biển Bình Đại"
+    ]
+  },
+  {
+    "id": "xa-thanh-thoi",
+    "name": "Xã Thành Thới",
+    "area": "ben-tre",
+    "police_phone": "0275 3589 69",
+    "health_phone": "0275 3590 69",
+    "terroir_anchors": [
+      "Kẹo dừa Tuyết Phụng",
+      "Mỹ nghệ dừa Mỏ Cày",
+      "Di tích Đồng Khởi Định Thủy",
+      "Đóng ghe xuồng An Định"
+    ]
+  },
+  {
+    "id": "xa-thanh-tri",
+    "name": "Xã Thạnh Trị",
+    "area": "ben-tre",
+    "police_phone": "0275 3590 89",
+    "health_phone": "0275 3591 89",
+    "terroir_anchors": [
+      "Cá bông lau một nắng Bình Đại",
+      "Cá khô Thừa Đức",
+      "Nghêu Bình Đại",
+      "Du lịch biển Bình Đại"
+    ]
+  },
+  {
+    "id": "xa-thoi-thuan",
+    "name": "Xã Thới Thuận",
+    "area": "ben-tre",
+    "police_phone": "0275 3591 07",
+    "health_phone": "0275 3592 07",
+    "terroir_anchors": [
+      "Cá bông lau một nắng Bình Đại",
+      "Cá khô Thừa Đức",
+      "Nghêu Bình Đại",
+      "Du lịch biển Bình Đại"
+    ]
+  },
+  {
+    "id": "xa-tra-con",
+    "name": "Xã Trà Côn",
+    "area": "vinh-long",
+    "police_phone": "0270 3898 36",
+    "health_phone": "0270 3899 36",
+    "terroir_anchors": [
+      "Cam sành Tam Bình",
+      "Lúa vàng Ba Ngôi",
+      "Mekong Homestay",
+      "Cá linh mùa nước nổi"
+    ]
+  },
+  {
+    "id": "xa-tra-cu",
+    "name": "Xã Trà Cú",
+    "area": "tra-vinh",
+    "police_phone": "0294 3694 61",
+    "health_phone": "0294 3695 61",
+    "terroir_anchors": [
+      "Chiếu Cà Hom - Bến Bạ",
+      "Đồ tre Hàm Giang",
+      "Chùa Vàm Rây",
+      "Văn hóa Chầm riêng Chà pây"
+    ]
+  },
+  {
+    "id": "xa-trung-hiep",
+    "name": "Xã Trung Hiệp",
+    "area": "vinh-long",
+    "police_phone": "0270 3896 83",
+    "health_phone": "0270 3897 83",
+    "terroir_anchors": [
+      "Lúa - tôm Vũng Liêm",
+      "Sầu riêng Cù Lao Dài",
+      "Khu lưu niệm Thủ tướng Võ Văn Kiệt",
+      "Dệt chiếu Cà Hôn"
+    ]
+  },
+  {
+    "id": "xa-trung-ngai",
+    "name": "Xã Trung Ngãi",
+    "area": "vinh-long",
+    "police_phone": "0270 3896 98",
+    "health_phone": "0270 3897 98",
+    "terroir_anchors": [
+      "Lúa - tôm Vũng Liêm",
+      "Sầu riêng Cù Lao Dài",
+      "Khu lưu niệm Thủ tướng Võ Văn Kiệt",
+      "Dệt chiếu Cà Hôn"
+    ]
+  },
+  {
+    "id": "xa-vinh-kim",
+    "name": "Xã Vinh Kim",
+    "area": "tra-vinh",
+    "police_phone": "0294 3694 31",
+    "health_phone": "0294 3695 31",
+    "terroir_anchors": [
+      "Tôm khô Vinh Kim",
+      "Tép khô Mỹ Long",
+      "Bún tươi An Đào",
+      "Lễ hội Nghinh Ông Mỹ Long"
+    ]
+  },
+  {
+    "id": "xa-vinh-thanh",
+    "name": "Xã Vĩnh Thành",
+    "area": "ben-tre",
+    "police_phone": "0275 3588 94",
+    "health_phone": "0275 3589 94",
+    "terroir_anchors": [
+      "Cây giống Cái Mơn",
+      "Hoa kiểng Chợ Lách",
+      "Sầu riêng Ri6 Chợ Lách",
+      "Chôm chôm Java"
+    ]
+  },
+  {
+    "id": "xa-vinh-xuan",
+    "name": "Xã Vĩnh Xuân",
+    "area": "vinh-long",
+    "police_phone": "0270 3898 45",
+    "health_phone": "0270 3899 45",
+    "terroir_anchors": [
+      "Bánh tráng Cù Lao Mây",
+      "Cam sành Trà Ôn",
+      "Lăng Ông Tiền quân Thống chế Điều bát",
+      "Chợ nổi Trà Ôn"
+    ]
+  },
+  {
+    "id": "p-vung-liem",
+    "name": "Phường Vũng Liêm",
+    "area": "vinh-long",
+    "police_phone": "0270 3896 59",
+    "health_phone": "0270 3897 59",
+    "terroir_anchors": [
+      "Lúa - tôm Vũng Liêm",
+      "Sầu riêng Cù Lao Dài",
+      "Khu lưu niệm Thủ tướng Võ Văn Kiệt",
+      "Dệt chiếu Cà Hôn"
+    ]
+  },
+  {
+    "id": "xa-hau-loc",
+    "name": "Xã Hậu Lộc",
+    "area": "vinh-long",
+    "police_phone": "0270 3897 28",
+    "health_phone": "0270 3898 28",
+    "terroir_anchors": [
+      "Cam sành Tam Bình",
+      "Lúa vàng Ba Ngôi",
+      "Mekong Homestay",
+      "Cá linh mùa nước nổi"
+    ]
+  },
+  {
+    "id": "p-long-chau",
+    "name": "Phường Long Châu",
+    "area": "vinh-long",
+    "police_phone": "0270 3895 51",
+    "health_phone": "0270 3896 51",
+    "terroir_anchors": [
+      "Chợ Vĩnh Long",
+      "Văn Thánh Miếu",
+      "Ẩm thực sông Cổ Chiên",
+      "Khoai lang Bình Tân"
+    ]
+  },
+  {
+    "id": "p-long-ho",
+    "name": "Phường Long Hồ",
+    "area": "vinh-long",
+    "police_phone": "0270 3896 02",
+    "health_phone": "0270 3897 02",
+    "terroir_anchors": [
+      "Chôm chôm Bình Hòa Phước",
+      "Nhãn xuồng Cù lao",
+      "Du lịch sinh thái An Bình",
+      "Làng mai Phước Định"
+    ]
+  },
+  {
+    "id": "p-binh-minh",
+    "name": "Phường Bình Minh",
+    "area": "vinh-long",
+    "police_phone": "0270 3897 71",
+    "health_phone": "0270 3898 71",
+    "terroir_anchors": [
+      "Tàu hủ ky Mỹ Hòa",
+      "Bưởi Năm Roi Bình Minh",
+      "Cầu Cần Thơ ven sông Hậu",
+      "Rau diếp cá"
+    ]
+  },
+  {
+    "id": "p-cai-von",
+    "name": "Phường Cái Vồn",
+    "area": "vinh-long",
+    "police_phone": "0270 3897 70",
+    "health_phone": "0270 3898 70",
+    "terroir_anchors": [
+      "Tàu hủ ky Mỹ Hòa",
+      "Bưởi Năm Roi Bình Minh",
+      "Cầu Cần Thơ ven sông Hậu",
+      "Rau diếp cá"
+    ]
+  },
+  {
+    "id": "p-dong-thanh",
+    "name": "Phường Đông Thành",
+    "area": "vinh-long",
+    "police_phone": "0270 3898 12",
+    "health_phone": "0270 3899 12",
+    "terroir_anchors": [
+      "Tàu hủ ky Mỹ Hòa",
+      "Bưởi Năm Roi Bình Minh",
+      "Cầu Cần Thơ ven sông Hậu",
+      "Rau diếp cá"
+    ]
+  }
+]

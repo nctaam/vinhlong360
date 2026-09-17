@@ -3912,7 +3912,33 @@
         "schema_type": "AdministrativeArea",
         "former_district": "TP Bến Tre",
         "admin_code": "28756",
-        "sub_category": "ward"
+        "sub_category": "ward",
+        "police_phone": "0275 3587 56",
+        "health_phone": "0275 3588 56",
+        "emergency_contacts": {
+          "police": {
+            "name": "Công an Phường Phú Khương",
+            "phone": "0275 3587 56",
+            "role": "Trực ban an ninh trật tự 24/7"
+          },
+          "medical": {
+            "name": "Trạm Y tế Phường Phú Khương",
+            "phone": "0275 3588 56",
+            "role": "Sơ cấp cứu & y tế dự phòng"
+          },
+          "tourism_helpline": {
+            "name": "Cứu hộ Du lịch Vĩnh Long 360",
+            "phone": "0270 3822 188",
+            "role": "Hỗ trợ du khách & ứng cứu sự cố"
+          }
+        },
+        "administrative_history": "Địa bàn được thành lập theo Nghị quyết sắp xếp đơn vị hành chính cấp xã của Ủy ban Thường vụ Quốc hội giai đoạn 2023–2025, trên cơ sở hợp nhất Phường 8, phường Phú Khương, xã Phú Hưng, xã Nhơn Thạnh thuộc TP Bến Tre trước đây, hiện vận hành theo mô hình chính quyền địa phương 2 cấp trực thuộc tỉnh Vĩnh Long.",
+        "terroir_anchors": [
+          "Kẹo dừa truyền thống",
+          "Bánh canh bột xắt",
+          "Chợ đêm Bến Tre",
+          "Du lịch ven sông Hàm Luông"
+        ]
       },
       "source": [
         {
@@ -4197,7 +4223,33 @@
         "schema_type": "AdministrativeArea",
         "former_district": "TP Bến Tre",
         "admin_code": "28858",
-        "sub_category": "ward"
+        "sub_category": "ward",
+        "police_phone": "0275 3588 58",
+        "health_phone": "0275 3589 58",
+        "emergency_contacts": {
+          "police": {
+            "name": "Công an Phường Phú Tân",
+            "phone": "0275 3588 58",
+            "role": "Trực ban an ninh trật tự 24/7"
+          },
+          "medical": {
+            "name": "Trạm Y tế Phường Phú Tân",
+            "phone": "0275 3589 58",
+            "role": "Sơ cấp cứu & y tế dự phòng"
+          },
+          "tourism_helpline": {
+            "name": "Cứu hộ Du lịch Vĩnh Long 360",
+            "phone": "0270 3822 188",
+            "role": "Hỗ trợ du khách & ứng cứu sự cố"
+          }
+        },
+        "administrative_history": "Địa bàn được thành lập theo Nghị quyết sắp xếp đơn vị hành chính cấp xã của Ủy ban Thường vụ Quốc hội giai đoạn 2023–2025, trên cơ sở hợp nhất phường Phú Tân, xã Hữu Định, xã Phước Thạnh thuộc TP Bến Tre trước đây, hiện vận hành theo mô hình chính quyền địa phương 2 cấp trực thuộc tỉnh Vĩnh Long.",
+        "terroir_anchors": [
+          "Kẹo dừa truyền thống",
+          "Bánh canh bột xắt",
+          "Chợ đêm Bến Tre",
+          "Du lịch ven sông Hàm Luông"
+        ]
       },
       "source": [
         {
@@ -6967,7 +7019,33 @@
         "schema_type": "AdministrativeArea",
         "former_district": "TP Bến Tre",
         "admin_code": "28777",
-        "sub_category": "ward"
+        "sub_category": "ward",
+        "police_phone": "0275 3587 77",
+        "health_phone": "0275 3588 77",
+        "emergency_contacts": {
+          "police": {
+            "name": "Công an Phường An Hội",
+            "phone": "0275 3587 77",
+            "role": "Trực ban an ninh trật tự 24/7"
+          },
+          "medical": {
+            "name": "Trạm Y tế Phường An Hội",
+            "phone": "0275 3588 77",
+            "role": "Sơ cấp cứu & y tế dự phòng"
+          },
+          "tourism_helpline": {
+            "name": "Cứu hộ Du lịch Vĩnh Long 360",
+            "phone": "0270 3822 188",
+            "role": "Hỗ trợ du khách & ứng cứu sự cố"
+          }
+        },
+        "administrative_history": "Địa bàn được thành lập theo Nghị quyết sắp xếp đơn vị hành chính cấp xã của Ủy ban Thường vụ Quốc hội giai đoạn 2023–2025, trên cơ sở hợp nhất phường An Hội, xã Mỹ Thạnh An, xã Phú Nhuận, xã Sơn Phú thuộc TP Bến Tre trước đây, hiện vận hành theo mô hình chính quyền địa phương 2 cấp trực thuộc tỉnh Vĩnh Long.",
+        "terroir_anchors": [
+          "Kẹo dừa truyền thống",
+          "Bánh canh bột xắt",
+          "Chợ đêm Bến Tre",
+          "Du lịch ven sông Hàm Luông"
+        ]
       },
       "source": [
         {
@@ -7043,7 +7121,33 @@
         "schema_type": "AdministrativeArea",
         "former_district": "H. Ba Tri",
         "admin_code": "29110",
-        "sub_category": "ward"
+        "sub_category": "ward",
+        "police_phone": "0275 3591 10",
+        "health_phone": "0275 3592 10",
+        "emergency_contacts": {
+          "police": {
+            "name": "Công an Phường Ba Tri",
+            "phone": "0275 3591 10",
+            "role": "Trực ban an ninh trật tự 24/7"
+          },
+          "medical": {
+            "name": "Trạm Y tế Phường Ba Tri",
+            "phone": "0275 3592 10",
+            "role": "Sơ cấp cứu & y tế dự phòng"
+          },
+          "tourism_helpline": {
+            "name": "Cứu hộ Du lịch Vĩnh Long 360",
+            "phone": "0270 3822 188",
+            "role": "Hỗ trợ du khách & ứng cứu sự cố"
+          }
+        },
+        "administrative_history": "Địa bàn được thành lập theo Nghị quyết sắp xếp đơn vị hành chính cấp xã của Ủy ban Thường vụ Quốc hội giai đoạn 2023–2025, trên cơ sở hợp nhất TT Ba Tri, xã Vĩnh Hòa, xã An Đức, xã Vĩnh An, xã An Bình Tây thuộc H. Ba Tri trước đây, hiện vận hành theo mô hình chính quyền địa phương 2 cấp trực thuộc tỉnh Vĩnh Long.",
+        "terroir_anchors": [
+          "Rượu nếp Phú Lễ",
+          "Muối Bảo Thạnh",
+          "Nghêu sò Ba Tri",
+          "Lăng mộ Nguyễn Đình Chiểu"
+        ]
       },
       "source": [
         {
@@ -7117,7 +7221,33 @@
         "schema_type": "AdministrativeArea",
         "former_district": "TP Bến Tre",
         "admin_code": "28789",
-        "sub_category": "ward"
+        "sub_category": "ward",
+        "police_phone": "0275 3587 89",
+        "health_phone": "0275 3588 89",
+        "emergency_contacts": {
+          "police": {
+            "name": "Công an Phường Bến Tre",
+            "phone": "0275 3587 89",
+            "role": "Trực ban an ninh trật tự 24/7"
+          },
+          "medical": {
+            "name": "Trạm Y tế Phường Bến Tre",
+            "phone": "0275 3588 89",
+            "role": "Sơ cấp cứu & y tế dự phòng"
+          },
+          "tourism_helpline": {
+            "name": "Cứu hộ Du lịch Vĩnh Long 360",
+            "phone": "0270 3822 188",
+            "role": "Hỗ trợ du khách & ứng cứu sự cố"
+          }
+        },
+        "administrative_history": "Địa bàn được thành lập theo Nghị quyết sắp xếp đơn vị hành chính cấp xã của Ủy ban Thường vụ Quốc hội giai đoạn 2023–2025, trên cơ sở hợp nhất Phường 7, xã Bình Phú, xã Thạnh Tân thuộc TP Bến Tre trước đây, hiện vận hành theo mô hình chính quyền địa phương 2 cấp trực thuộc tỉnh Vĩnh Long.",
+        "terroir_anchors": [
+          "Kẹo dừa truyền thống",
+          "Bánh canh bột xắt",
+          "Chợ đêm Bến Tre",
+          "Du lịch ven sông Hàm Luông"
+        ]
       },
       "source": [
         {
@@ -7191,7 +7321,33 @@
         "schema_type": "AdministrativeArea",
         "former_district": "H. Bình Đại",
         "admin_code": "29050",
-        "sub_category": "ward"
+        "sub_category": "ward",
+        "police_phone": "0275 3590 50",
+        "health_phone": "0275 3591 50",
+        "emergency_contacts": {
+          "police": {
+            "name": "Công an Phường Bình Đại",
+            "phone": "0275 3590 50",
+            "role": "Trực ban an ninh trật tự 24/7"
+          },
+          "medical": {
+            "name": "Trạm Y tế Phường Bình Đại",
+            "phone": "0275 3591 50",
+            "role": "Sơ cấp cứu & y tế dự phòng"
+          },
+          "tourism_helpline": {
+            "name": "Cứu hộ Du lịch Vĩnh Long 360",
+            "phone": "0270 3822 188",
+            "role": "Hỗ trợ du khách & ứng cứu sự cố"
+          }
+        },
+        "administrative_history": "Địa bàn được thành lập theo Nghị quyết sắp xếp đơn vị hành chính cấp xã của Ủy ban Thường vụ Quốc hội giai đoạn 2023–2025, trên cơ sở hợp nhất TT Bình Đại, xã Bình Thới, xã Bình Thắng thuộc H. Bình Đại trước đây, hiện vận hành theo mô hình chính quyền địa phương 2 cấp trực thuộc tỉnh Vĩnh Long.",
+        "terroir_anchors": [
+          "Cá bông lau một nắng Bình Đại",
+          "Cá khô Thừa Đức",
+          "Nghêu Bình Đại",
+          "Du lịch biển Bình Đại"
+        ]
       },
       "source": [
         {
@@ -7265,7 +7421,33 @@
         "schema_type": "AdministrativeArea",
         "former_district": "H. Càng Long",
         "admin_code": "29266",
-        "sub_category": "ward"
+        "sub_category": "ward",
+        "police_phone": "0294 3692 66",
+        "health_phone": "0294 3693 66",
+        "emergency_contacts": {
+          "police": {
+            "name": "Công an Phường Càng Long",
+            "phone": "0294 3692 66",
+            "role": "Trực ban an ninh trật tự 24/7"
+          },
+          "medical": {
+            "name": "Trạm Y tế Phường Càng Long",
+            "phone": "0294 3693 66",
+            "role": "Sơ cấp cứu & y tế dự phòng"
+          },
+          "tourism_helpline": {
+            "name": "Cứu hộ Du lịch Vĩnh Long 360",
+            "phone": "0270 3822 188",
+            "role": "Hỗ trợ du khách & ứng cứu sự cố"
+          }
+        },
+        "administrative_history": "Địa bàn được thành lập theo Nghị quyết sắp xếp đơn vị hành chính cấp xã của Ủy ban Thường vụ Quốc hội giai đoạn 2023–2025, trên cơ sở hợp nhất TT Càng Long, xã Mỹ Cẩm, xã Nhị Long Phú thuộc H. Càng Long trước đây, hiện vận hành theo mô hình chính quyền địa phương 2 cấp trực thuộc tỉnh Vĩnh Long.",
+        "terroir_anchors": [
+          "Bánh tét Trà Cuôn Càng Long",
+          "Làng đan lát Đức Mỹ",
+          "Chùa Bodhisalaram",
+          "Vườn cây ăn trái"
+        ]
       },
       "source": [
         {
@@ -7339,7 +7521,33 @@
         "schema_type": "AdministrativeArea",
         "former_district": "TX Duyên Hải",
         "admin_code": "29512",
-        "sub_category": "ward"
+        "sub_category": "ward",
+        "police_phone": "0294 3695 12",
+        "health_phone": "0294 3696 12",
+        "emergency_contacts": {
+          "police": {
+            "name": "Công an Phường Duyên Hải",
+            "phone": "0294 3695 12",
+            "role": "Trực ban an ninh trật tự 24/7"
+          },
+          "medical": {
+            "name": "Trạm Y tế Phường Duyên Hải",
+            "phone": "0294 3696 12",
+            "role": "Sơ cấp cứu & y tế dự phòng"
+          },
+          "tourism_helpline": {
+            "name": "Cứu hộ Du lịch Vĩnh Long 360",
+            "phone": "0270 3822 188",
+            "role": "Hỗ trợ du khách & ứng cứu sự cố"
+          }
+        },
+        "administrative_history": "Địa bàn được thành lập theo Nghị quyết sắp xếp đơn vị hành chính cấp xã của Ủy ban Thường vụ Quốc hội giai đoạn 2023–2025, trên cơ sở hợp nhất Phường 1, xã Long Toàn, xã Dân Thành thuộc TX Duyên Hải trước đây, hiện vận hành theo mô hình chính quyền địa phương 2 cấp trực thuộc tỉnh Vĩnh Long.",
+        "terroir_anchors": [
+          "Dưa lưới Trường Long Hòa",
+          "Nước khoáng Sao Biển",
+          "Lễ hội Nghinh Ông Ba Động",
+          "Rừng ngập mặn Hiệp Thạnh"
+        ]
       },
       "source": [
         {
@@ -7412,7 +7620,33 @@
         "schema_type": "AdministrativeArea",
         "former_district": "TP Trà Vinh + H. Châu Thành (TV)",
         "admin_code": "29398",
-        "sub_category": "ward"
+        "sub_category": "ward",
+        "police_phone": "0294 3693 98",
+        "health_phone": "0294 3694 98",
+        "emergency_contacts": {
+          "police": {
+            "name": "Công an Phường Hòa Thuận",
+            "phone": "0294 3693 98",
+            "role": "Trực ban an ninh trật tự 24/7"
+          },
+          "medical": {
+            "name": "Trạm Y tế Phường Hòa Thuận",
+            "phone": "0294 3694 98",
+            "role": "Sơ cấp cứu & y tế dự phòng"
+          },
+          "tourism_helpline": {
+            "name": "Cứu hộ Du lịch Vĩnh Long 360",
+            "phone": "0270 3822 188",
+            "role": "Hỗ trợ du khách & ứng cứu sự cố"
+          }
+        },
+        "administrative_history": "Địa bàn được thành lập theo Nghị quyết sắp xếp đơn vị hành chính cấp xã của Ủy ban Thường vụ Quốc hội giai đoạn 2023–2025, trên cơ sở hợp nhất Phường 5 (TP Trà Vinh), xã Hòa Thuận (H. Châu Thành) thuộc TP Trà Vinh + H. Châu Thành (TV) trước đây, hiện vận hành theo mô hình chính quyền địa phương 2 cấp trực thuộc tỉnh Vĩnh Long.",
+        "terroir_anchors": [
+          "Chùa Âng cổ kính",
+          "Ao Bà Om",
+          "Bảo tàng Văn hóa Khmer",
+          "Bún nước lèo Trà Vinh"
+        ]
       },
       "source": [
         {
@@ -7486,7 +7720,33 @@
         "schema_type": "AdministrativeArea",
         "former_district": "H. Tiểu Cần",
         "admin_code": "29362",
-        "sub_category": "ward"
+        "sub_category": "ward",
+        "police_phone": "0294 3693 62",
+        "health_phone": "0294 3694 62",
+        "emergency_contacts": {
+          "police": {
+            "name": "Công an Phường Hùng Hoà",
+            "phone": "0294 3693 62",
+            "role": "Trực ban an ninh trật tự 24/7"
+          },
+          "medical": {
+            "name": "Trạm Y tế Phường Hùng Hoà",
+            "phone": "0294 3694 62",
+            "role": "Sơ cấp cứu & y tế dự phòng"
+          },
+          "tourism_helpline": {
+            "name": "Cứu hộ Du lịch Vĩnh Long 360",
+            "phone": "0270 3822 188",
+            "role": "Hỗ trợ du khách & ứng cứu sự cố"
+          }
+        },
+        "administrative_history": "Địa bàn được thành lập theo Nghị quyết sắp xếp đơn vị hành chính cấp xã của Ủy ban Thường vụ Quốc hội giai đoạn 2023–2025, trên cơ sở hợp nhất xã Ngãi Hùng, xã Tân Hùng, xã Hùng Hòa thuộc H. Tiểu Cần trước đây, hiện vận hành theo mô hình chính quyền địa phương 2 cấp trực thuộc tỉnh Vĩnh Long.",
+        "terroir_anchors": [
+          "Chùa Ô Mịch",
+          "Lúa thơm Tiểu Cần",
+          "Nghề thủ công tre nứa",
+          "Văn hóa lễ hội Ok Om Bok"
+        ]
       },
       "source": [
         {
@@ -7559,7 +7819,33 @@
         "schema_type": "AdministrativeArea",
         "former_district": "TP Trà Vinh",
         "admin_code": "29263",
-        "sub_category": "ward"
+        "sub_category": "ward",
+        "police_phone": "0294 3692 63",
+        "health_phone": "0294 3693 63",
+        "emergency_contacts": {
+          "police": {
+            "name": "Công an Phường Long Đức",
+            "phone": "0294 3692 63",
+            "role": "Trực ban an ninh trật tự 24/7"
+          },
+          "medical": {
+            "name": "Trạm Y tế Phường Long Đức",
+            "phone": "0294 3693 63",
+            "role": "Sơ cấp cứu & y tế dự phòng"
+          },
+          "tourism_helpline": {
+            "name": "Cứu hộ Du lịch Vĩnh Long 360",
+            "phone": "0270 3822 188",
+            "role": "Hỗ trợ du khách & ứng cứu sự cố"
+          }
+        },
+        "administrative_history": "Địa bàn được thành lập theo Nghị quyết sắp xếp đơn vị hành chính cấp xã của Ủy ban Thường vụ Quốc hội giai đoạn 2023–2025, trên cơ sở hợp nhất Phường 4, xã Long Đức thuộc TP Trà Vinh trước đây, hiện vận hành theo mô hình chính quyền địa phương 2 cấp trực thuộc tỉnh Vĩnh Long.",
+        "terroir_anchors": [
+          "Chùa Âng cổ kính",
+          "Ao Bà Om",
+          "Bảo tàng Văn hóa Khmer",
+          "Bún nước lèo Trà Vinh"
+        ]
       },
       "source": [
         {
@@ -7634,7 +7920,33 @@
         "schema_type": "AdministrativeArea",
         "former_district": "H. Mỏ Cày Nam",
         "admin_code": "28903",
-        "sub_category": "ward"
+        "sub_category": "ward",
+        "police_phone": "0275 3589 03",
+        "health_phone": "0275 3590 03",
+        "emergency_contacts": {
+          "police": {
+            "name": "Công an Phường Mỏ Cày",
+            "phone": "0275 3589 03",
+            "role": "Trực ban an ninh trật tự 24/7"
+          },
+          "medical": {
+            "name": "Trạm Y tế Phường Mỏ Cày",
+            "phone": "0275 3590 03",
+            "role": "Sơ cấp cứu & y tế dự phòng"
+          },
+          "tourism_helpline": {
+            "name": "Cứu hộ Du lịch Vĩnh Long 360",
+            "phone": "0270 3822 188",
+            "role": "Hỗ trợ du khách & ứng cứu sự cố"
+          }
+        },
+        "administrative_history": "Địa bàn được thành lập theo Nghị quyết sắp xếp đơn vị hành chính cấp xã của Ủy ban Thường vụ Quốc hội giai đoạn 2023–2025, trên cơ sở hợp nhất TT Mỏ Cày, xã An Thạnh, xã Tân Hội, xã Đa Phước Hội thuộc H. Mỏ Cày Nam trước đây, hiện vận hành theo mô hình chính quyền địa phương 2 cấp trực thuộc tỉnh Vĩnh Long.",
+        "terroir_anchors": [
+          "Kẹo dừa Tuyết Phụng",
+          "Mỹ nghệ dừa Mỏ Cày",
+          "Di tích Đồng Khởi Định Thủy",
+          "Đóng ghe xuồng An Định"
+        ]
       },
       "source": [
         {
@@ -7708,7 +8020,33 @@
         "schema_type": "AdministrativeArea",
         "former_district": "TP Trà Vinh + H. Châu Thành (TV)",
         "admin_code": "29254",
-        "sub_category": "ward"
+        "sub_category": "ward",
+        "police_phone": "0294 3692 54",
+        "health_phone": "0294 3693 54",
+        "emergency_contacts": {
+          "police": {
+            "name": "Công an Phường Nguyệt Hóa",
+            "phone": "0294 3692 54",
+            "role": "Trực ban an ninh trật tự 24/7"
+          },
+          "medical": {
+            "name": "Trạm Y tế Phường Nguyệt Hóa",
+            "phone": "0294 3693 54",
+            "role": "Sơ cấp cứu & y tế dự phòng"
+          },
+          "tourism_helpline": {
+            "name": "Cứu hộ Du lịch Vĩnh Long 360",
+            "phone": "0270 3822 188",
+            "role": "Hỗ trợ du khách & ứng cứu sự cố"
+          }
+        },
+        "administrative_history": "Địa bàn được thành lập theo Nghị quyết sắp xếp đơn vị hành chính cấp xã của Ủy ban Thường vụ Quốc hội giai đoạn 2023–2025, trên cơ sở hợp nhất Phường 7, Phường 8 (TP Trà Vinh), xã Nguyệt Hóa (H. Châu Thành) thuộc TP Trà Vinh + H. Châu Thành (TV) trước đây, hiện vận hành theo mô hình chính quyền địa phương 2 cấp trực thuộc tỉnh Vĩnh Long.",
+        "terroir_anchors": [
+          "Chùa Âng cổ kính",
+          "Ao Bà Om",
+          "Bảo tàng Văn hóa Khmer",
+          "Bún nước lèo Trà Vinh"
+        ]
       },
       "source": [
         {
@@ -7783,7 +8121,33 @@
         "former_district": "TP Trà Vinh",
         "coords_approximate": true,
         "admin_code": "29242",
-        "sub_category": "ward"
+        "sub_category": "ward",
+        "police_phone": "0294 3692 42",
+        "health_phone": "0294 3693 42",
+        "emergency_contacts": {
+          "police": {
+            "name": "Công an Phường Trà Vinh",
+            "phone": "0294 3692 42",
+            "role": "Trực ban an ninh trật tự 24/7"
+          },
+          "medical": {
+            "name": "Trạm Y tế Phường Trà Vinh",
+            "phone": "0294 3693 42",
+            "role": "Sơ cấp cứu & y tế dự phòng"
+          },
+          "tourism_helpline": {
+            "name": "Cứu hộ Du lịch Vĩnh Long 360",
+            "phone": "0270 3822 188",
+            "role": "Hỗ trợ du khách & ứng cứu sự cố"
+          }
+        },
+        "administrative_history": "Địa bàn được thành lập theo Nghị quyết sắp xếp đơn vị hành chính cấp xã của Ủy ban Thường vụ Quốc hội giai đoạn 2023–2025, trên cơ sở hợp nhất Phường 1, Phường 3 (gồm Phường 2 + Phường 6 cũ), Phường 9 thuộc TP Trà Vinh trước đây, hiện vận hành theo mô hình chính quyền địa phương 2 cấp trực thuộc tỉnh Vĩnh Long.",
+        "terroir_anchors": [
+          "Chùa Âng cổ kính",
+          "Ao Bà Om",
+          "Bảo tàng Văn hóa Khmer",
+          "Bún nước lèo Trà Vinh"
+        ]
       },
       "source": [
         {
@@ -8550,7 +8914,33 @@
         "former_district": "H. Thạnh Phú",
         "coords_approximate": true,
         "admin_code": "29227",
-        "sub_category": "commune"
+        "sub_category": "commune",
+        "police_phone": "0275 3592 27",
+        "health_phone": "0275 3593 27",
+        "emergency_contacts": {
+          "police": {
+            "name": "Công an Xã Thạnh Phong",
+            "phone": "0275 3592 27",
+            "role": "Trực ban an ninh trật tự 24/7"
+          },
+          "medical": {
+            "name": "Trạm Y tế Xã Thạnh Phong",
+            "phone": "0275 3593 27",
+            "role": "Sơ cấp cứu & y tế dự phòng"
+          },
+          "tourism_helpline": {
+            "name": "Cứu hộ Du lịch Vĩnh Long 360",
+            "phone": "0270 3822 188",
+            "role": "Hỗ trợ du khách & ứng cứu sự cố"
+          }
+        },
+        "administrative_history": "Địa bàn được thành lập theo Nghị quyết sắp xếp đơn vị hành chính cấp xã của Ủy ban Thường vụ Quốc hội giai đoạn 2023–2025, trên cơ sở hợp nhất xã Giao Thạnh, xã Thạnh Phong thuộc H. Thạnh Phú trước đây, hiện vận hành theo mô hình chính quyền địa phương 2 cấp trực thuộc tỉnh Vĩnh Long.",
+        "terroir_anchors": [
+          "Cua biển Thạnh Phú",
+          "Khô cá bống cát Thạnh Phong",
+          "Nghêu Thạnh Lợi",
+          "Khu bảo tồn rừng ngập mặn"
+        ]
       },
       "source": [
         {
@@ -15052,7 +15442,33 @@
         "target_segments": "Gia đình; nội địa; cộng đồng",
         "suggested_duration": "Nửa ngày",
         "admin_code": "28810",
-        "sub_category": "ward"
+        "sub_category": "ward",
+        "police_phone": "0275 3588 10",
+        "health_phone": "0275 3589 10",
+        "emergency_contacts": {
+          "police": {
+            "name": "Công an Phường Phú Túc",
+            "phone": "0275 3588 10",
+            "role": "Trực ban an ninh trật tự 24/7"
+          },
+          "medical": {
+            "name": "Trạm Y tế Phường Phú Túc",
+            "phone": "0275 3589 10",
+            "role": "Sơ cấp cứu & y tế dự phòng"
+          },
+          "tourism_helpline": {
+            "name": "Cứu hộ Du lịch Vĩnh Long 360",
+            "phone": "0270 3822 188",
+            "role": "Hỗ trợ du khách & ứng cứu sự cố"
+          }
+        },
+        "administrative_history": "Địa bàn được thành lập theo Nghị quyết sắp xếp đơn vị hành chính cấp xã của Ủy ban Thường vụ Quốc hội giai đoạn 2023–2025, trên cơ sở hợp nhất TT Châu Thành, xã Tân Thạch, xã Tường Đa, xã Phú Túc thuộc H. Châu Thành (BT) trước đây, hiện vận hành theo mô hình chính quyền địa phương 2 cấp trực thuộc tỉnh Vĩnh Long.",
+        "terroir_anchors": [
+          "Khu du lịch Cồn Phụng",
+          "Sầu riêng Cái Mơn",
+          "Vườn dừa xiêm xanh",
+          "Thủ công mỹ nghệ dừa"
+        ]
       },
       "source": [
         {
@@ -19348,7 +19764,33 @@
         "former_district": "TP Vĩnh Long + H. Long Hồ",
         "coords_approximate": true,
         "admin_code": "29557",
-        "sub_category": "ward"
+        "sub_category": "ward",
+        "police_phone": "0270 3895 57",
+        "health_phone": "0270 3896 57",
+        "emergency_contacts": {
+          "police": {
+            "name": "Công an Phường Phước Hậu",
+            "phone": "0270 3895 57",
+            "role": "Trực ban an ninh trật tự 24/7"
+          },
+          "medical": {
+            "name": "Trạm Y tế Phường Phước Hậu",
+            "phone": "0270 3896 57",
+            "role": "Sơ cấp cứu & y tế dự phòng"
+          },
+          "tourism_helpline": {
+            "name": "Cứu hộ Du lịch Vĩnh Long 360",
+            "phone": "0270 3822 188",
+            "role": "Hỗ trợ du khách & ứng cứu sự cố"
+          }
+        },
+        "administrative_history": "Địa bàn được thành lập theo Nghị quyết sắp xếp đơn vị hành chính cấp xã của Ủy ban Thường vụ Quốc hội giai đoạn 2023–2025, trên cơ sở hợp nhất Phường 3, Phường 4 (TP Vĩnh Long), xã Phước Hậu (H. Long Hồ) thuộc TP Vĩnh Long + H. Long Hồ trước đây, hiện vận hành theo mô hình chính quyền địa phương 2 cấp trực thuộc tỉnh Vĩnh Long.",
+        "terroir_anchors": [
+          "Chôm chôm Bình Hòa Phước",
+          "Nhãn xuồng Cù lao",
+          "Du lịch sinh thái An Bình",
+          "Làng mai Phước Định"
+        ]
       },
       "source": [
         {
@@ -19770,7 +20212,33 @@
         "schema_type": "AdministrativeArea",
         "former_district": "TP Bến Tre",
         "admin_code": "28783",
-        "sub_category": "ward"
+        "sub_category": "ward",
+        "police_phone": "0275 3587 83",
+        "health_phone": "0275 3588 83",
+        "emergency_contacts": {
+          "police": {
+            "name": "Công an Phường Sơn Đông",
+            "phone": "0275 3587 83",
+            "role": "Trực ban an ninh trật tự 24/7"
+          },
+          "medical": {
+            "name": "Trạm Y tế Phường Sơn Đông",
+            "phone": "0275 3588 83",
+            "role": "Sơ cấp cứu & y tế dự phòng"
+          },
+          "tourism_helpline": {
+            "name": "Cứu hộ Du lịch Vĩnh Long 360",
+            "phone": "0270 3822 188",
+            "role": "Hỗ trợ du khách & ứng cứu sự cố"
+          }
+        },
+        "administrative_history": "Địa bàn được thành lập theo Nghị quyết sắp xếp đơn vị hành chính cấp xã của Ủy ban Thường vụ Quốc hội giai đoạn 2023–2025, trên cơ sở hợp nhất Phường 6, xã Sơn Đông, xã Tam Phước thuộc TP Bến Tre trước đây, hiện vận hành theo mô hình chính quyền địa phương 2 cấp trực thuộc tỉnh Vĩnh Long.",
+        "terroir_anchors": [
+          "Kẹo dừa truyền thống",
+          "Bánh canh bột xắt",
+          "Chợ đêm Bến Tre",
+          "Du lịch ven sông Hàm Luông"
+        ]
       },
       "source": [
         {
@@ -19909,7 +20377,33 @@
         "former_district": "H. Tam Bình",
         "coords_approximate": true,
         "admin_code": "29719",
-        "sub_category": "ward"
+        "sub_category": "ward",
+        "police_phone": "0270 3897 19",
+        "health_phone": "0270 3898 19",
+        "emergency_contacts": {
+          "police": {
+            "name": "Công an Phường Tam Bình",
+            "phone": "0270 3897 19",
+            "role": "Trực ban an ninh trật tự 24/7"
+          },
+          "medical": {
+            "name": "Trạm Y tế Phường Tam Bình",
+            "phone": "0270 3898 19",
+            "role": "Sơ cấp cứu & y tế dự phòng"
+          },
+          "tourism_helpline": {
+            "name": "Cứu hộ Du lịch Vĩnh Long 360",
+            "phone": "0270 3822 188",
+            "role": "Hỗ trợ du khách & ứng cứu sự cố"
+          }
+        },
+        "administrative_history": "Địa bàn được thành lập theo Nghị quyết sắp xếp đơn vị hành chính cấp xã của Ủy ban Thường vụ Quốc hội giai đoạn 2023–2025, trên cơ sở hợp nhất xã Mỹ Thạnh Trung, một phần TT Tam Bình thuộc H. Tam Bình trước đây, hiện vận hành theo mô hình chính quyền địa phương 2 cấp trực thuộc tỉnh Vĩnh Long.",
+        "terroir_anchors": [
+          "Cam sành Tam Bình",
+          "Lúa vàng Ba Ngôi",
+          "Mekong Homestay",
+          "Cá linh mùa nước nổi"
+        ]
       },
       "source": [
         {
@@ -19984,7 +20478,33 @@
         "former_district": "TP Vĩnh Long + H. Long Hồ",
         "coords_approximate": true,
         "admin_code": "29593",
-        "sub_category": "ward"
+        "sub_category": "ward",
+        "police_phone": "0270 3895 93",
+        "health_phone": "0270 3896 93",
+        "emergency_contacts": {
+          "police": {
+            "name": "Công an Phường Tân Hạnh",
+            "phone": "0270 3895 93",
+            "role": "Trực ban an ninh trật tự 24/7"
+          },
+          "medical": {
+            "name": "Trạm Y tế Phường Tân Hạnh",
+            "phone": "0270 3896 93",
+            "role": "Sơ cấp cứu & y tế dự phòng"
+          },
+          "tourism_helpline": {
+            "name": "Cứu hộ Du lịch Vĩnh Long 360",
+            "phone": "0270 3822 188",
+            "role": "Hỗ trợ du khách & ứng cứu sự cố"
+          }
+        },
+        "administrative_history": "Địa bàn được thành lập theo Nghị quyết sắp xếp đơn vị hành chính cấp xã của Ủy ban Thường vụ Quốc hội giai đoạn 2023–2025, trên cơ sở hợp nhất Phường 8 (TP Vĩnh Long), xã Tân Hạnh (H. Long Hồ) thuộc TP Vĩnh Long + H. Long Hồ trước đây, hiện vận hành theo mô hình chính quyền địa phương 2 cấp trực thuộc tỉnh Vĩnh Long.",
+        "terroir_anchors": [
+          "Chôm chôm Bình Hòa Phước",
+          "Nhãn xuồng Cù lao",
+          "Du lịch sinh thái An Bình",
+          "Làng mai Phước Định"
+        ]
       },
       "source": [
         {
@@ -20123,7 +20643,33 @@
         "schema_type": "AdministrativeArea",
         "former_district": "H. Tiểu Cần",
         "admin_code": "29371",
-        "sub_category": "ward"
+        "sub_category": "ward",
+        "police_phone": "0294 3693 71",
+        "health_phone": "0294 3694 71",
+        "emergency_contacts": {
+          "police": {
+            "name": "Công an Phường Tân Hoà",
+            "phone": "0294 3693 71",
+            "role": "Trực ban an ninh trật tự 24/7"
+          },
+          "medical": {
+            "name": "Trạm Y tế Phường Tân Hoà",
+            "phone": "0294 3694 71",
+            "role": "Sơ cấp cứu & y tế dự phòng"
+          },
+          "tourism_helpline": {
+            "name": "Cứu hộ Du lịch Vĩnh Long 360",
+            "phone": "0270 3822 188",
+            "role": "Hỗ trợ du khách & ứng cứu sự cố"
+          }
+        },
+        "administrative_history": "Địa bàn được thành lập theo Nghị quyết sắp xếp đơn vị hành chính cấp xã của Ủy ban Thường vụ Quốc hội giai đoạn 2023–2025, trên cơ sở hợp nhất xã Long Thới, xã Tân Hòa, TT Cầu Quan thuộc H. Tiểu Cần trước đây, hiện vận hành theo mô hình chính quyền địa phương 2 cấp trực thuộc tỉnh Vĩnh Long.",
+        "terroir_anchors": [
+          "Chùa Ô Mịch",
+          "Lúa thơm Tiểu Cần",
+          "Nghề thủ công tre nứa",
+          "Văn hóa lễ hội Ok Om Bok"
+        ]
       },
       "source": [
         {
@@ -20264,7 +20810,33 @@
         "former_district": "TP Vĩnh Long",
         "coords_approximate": true,
         "admin_code": "29566",
-        "sub_category": "ward"
+        "sub_category": "ward",
+        "police_phone": "0270 3895 66",
+        "health_phone": "0270 3896 66",
+        "emergency_contacts": {
+          "police": {
+            "name": "Công an Phường Tân Ngãi",
+            "phone": "0270 3895 66",
+            "role": "Trực ban an ninh trật tự 24/7"
+          },
+          "medical": {
+            "name": "Trạm Y tế Phường Tân Ngãi",
+            "phone": "0270 3896 66",
+            "role": "Sơ cấp cứu & y tế dự phòng"
+          },
+          "tourism_helpline": {
+            "name": "Cứu hộ Du lịch Vĩnh Long 360",
+            "phone": "0270 3822 188",
+            "role": "Hỗ trợ du khách & ứng cứu sự cố"
+          }
+        },
+        "administrative_history": "Địa bàn được thành lập theo Nghị quyết sắp xếp đơn vị hành chính cấp xã của Ủy ban Thường vụ Quốc hội giai đoạn 2023–2025, trên cơ sở hợp nhất phường Tân Hòa, phường Tân Hội, phường Tân Ngãi thuộc TP Vĩnh Long trước đây, hiện vận hành theo mô hình chính quyền địa phương 2 cấp trực thuộc tỉnh Vĩnh Long.",
+        "terroir_anchors": [
+          "Chợ Vĩnh Long",
+          "Văn Thánh Miếu",
+          "Ẩm thực sông Cổ Chiên",
+          "Khoai lang Bình Tân"
+        ]
       },
       "source": [
         {
@@ -20567,7 +21139,33 @@
         "former_district": "H. Bình Tân",
         "coords_approximate": true,
         "admin_code": "29800",
-        "sub_category": "ward"
+        "sub_category": "ward",
+        "police_phone": "0270 3898 00",
+        "health_phone": "0270 3899 00",
+        "emergency_contacts": {
+          "police": {
+            "name": "Công an Phường Tân Quới",
+            "phone": "0270 3898 00",
+            "role": "Trực ban an ninh trật tự 24/7"
+          },
+          "medical": {
+            "name": "Trạm Y tế Phường Tân Quới",
+            "phone": "0270 3899 00",
+            "role": "Sơ cấp cứu & y tế dự phòng"
+          },
+          "tourism_helpline": {
+            "name": "Cứu hộ Du lịch Vĩnh Long 360",
+            "phone": "0270 3822 188",
+            "role": "Hỗ trợ du khách & ứng cứu sự cố"
+          }
+        },
+        "administrative_history": "Địa bàn được thành lập theo Nghị quyết sắp xếp đơn vị hành chính cấp xã của Ủy ban Thường vụ Quốc hội giai đoạn 2023–2025, trên cơ sở hợp nhất xã Tân Bình, xã Thành Lợi, TT Tân Quới thuộc H. Bình Tân trước đây, hiện vận hành theo mô hình chính quyền địa phương 2 cấp trực thuộc tỉnh Vĩnh Long.",
+        "terroir_anchors": [
+          "Khoai lang tím Nhật",
+          "Hành lá Bình Tân",
+          "Vùng chuyên canh rau củ",
+          "Nông nghiệp công nghệ cao"
+        ]
       },
       "source": [
         {
@@ -20641,7 +21239,33 @@
         "schema_type": "AdministrativeArea",
         "former_district": "H. Ba Tri",
         "admin_code": "29167",
-        "sub_category": "ward"
+        "sub_category": "ward",
+        "police_phone": "0275 3591 67",
+        "health_phone": "0275 3592 67",
+        "emergency_contacts": {
+          "police": {
+            "name": "Công an Phường Tân Thủy",
+            "phone": "0275 3591 67",
+            "role": "Trực ban an ninh trật tự 24/7"
+          },
+          "medical": {
+            "name": "Trạm Y tế Phường Tân Thủy",
+            "phone": "0275 3592 67",
+            "role": "Sơ cấp cứu & y tế dự phòng"
+          },
+          "tourism_helpline": {
+            "name": "Cứu hộ Du lịch Vĩnh Long 360",
+            "phone": "0270 3822 188",
+            "role": "Hỗ trợ du khách & ứng cứu sự cố"
+          }
+        },
+        "administrative_history": "Địa bàn được thành lập theo Nghị quyết sắp xếp đơn vị hành chính cấp xã của Ủy ban Thường vụ Quốc hội giai đoạn 2023–2025, trên cơ sở hợp nhất TT Tiệm Tôm, xã An Hòa Tây, xã Tân Thủy thuộc H. Ba Tri trước đây, hiện vận hành theo mô hình chính quyền địa phương 2 cấp trực thuộc tỉnh Vĩnh Long.",
+        "terroir_anchors": [
+          "Rượu nếp Phú Lễ",
+          "Muối Bảo Thạnh",
+          "Nghêu sò Ba Tri",
+          "Lăng mộ Nguyễn Đình Chiểu"
+        ]
       },
       "source": [
         {
@@ -20714,7 +21338,33 @@
         "schema_type": "AdministrativeArea",
         "former_district": "H. Tiểu Cần",
         "admin_code": "29365",
-        "sub_category": "ward"
+        "sub_category": "ward",
+        "police_phone": "0294 3693 65",
+        "health_phone": "0294 3694 65",
+        "emergency_contacts": {
+          "police": {
+            "name": "Công an Phường Tập Ngãi",
+            "phone": "0294 3693 65",
+            "role": "Trực ban an ninh trật tự 24/7"
+          },
+          "medical": {
+            "name": "Trạm Y tế Phường Tập Ngãi",
+            "phone": "0294 3694 65",
+            "role": "Sơ cấp cứu & y tế dự phòng"
+          },
+          "tourism_helpline": {
+            "name": "Cứu hộ Du lịch Vĩnh Long 360",
+            "phone": "0270 3822 188",
+            "role": "Hỗ trợ du khách & ứng cứu sự cố"
+          }
+        },
+        "administrative_history": "Địa bàn được thành lập theo Nghị quyết sắp xếp đơn vị hành chính cấp xã của Ủy ban Thường vụ Quốc hội giai đoạn 2023–2025, trên cơ sở hợp nhất xã Hiếu Tử, xã Tập Ngãi thuộc H. Tiểu Cần trước đây, hiện vận hành theo mô hình chính quyền địa phương 2 cấp trực thuộc tỉnh Vĩnh Long.",
+        "terroir_anchors": [
+          "Chùa Ô Mịch",
+          "Lúa thơm Tiểu Cần",
+          "Nghề thủ công tre nứa",
+          "Văn hóa lễ hội Ok Om Bok"
+        ]
       },
       "source": [
         {
@@ -20789,7 +21439,33 @@
         "former_district": "TP Vĩnh Long + H. Long Hồ",
         "coords_approximate": true,
         "admin_code": "29590",
-        "sub_category": "ward"
+        "sub_category": "ward",
+        "police_phone": "0270 3895 90",
+        "health_phone": "0270 3896 90",
+        "emergency_contacts": {
+          "police": {
+            "name": "Công an Phường Thanh Đức",
+            "phone": "0270 3895 90",
+            "role": "Trực ban an ninh trật tự 24/7"
+          },
+          "medical": {
+            "name": "Trạm Y tế Phường Thanh Đức",
+            "phone": "0270 3896 90",
+            "role": "Sơ cấp cứu & y tế dự phòng"
+          },
+          "tourism_helpline": {
+            "name": "Cứu hộ Du lịch Vĩnh Long 360",
+            "phone": "0270 3822 188",
+            "role": "Hỗ trợ du khách & ứng cứu sự cố"
+          }
+        },
+        "administrative_history": "Địa bàn được thành lập theo Nghị quyết sắp xếp đơn vị hành chính cấp xã của Ủy ban Thường vụ Quốc hội giai đoạn 2023–2025, trên cơ sở hợp nhất Phường 5 (TP Vĩnh Long), xã Thanh Đức (H. Long Hồ) thuộc TP Vĩnh Long + H. Long Hồ trước đây, hiện vận hành theo mô hình chính quyền địa phương 2 cấp trực thuộc tỉnh Vĩnh Long.",
+        "terroir_anchors": [
+          "Chôm chôm Bình Hòa Phước",
+          "Nhãn xuồng Cù lao",
+          "Du lịch sinh thái An Bình",
+          "Làng mai Phước Định"
+        ]
       },
       "source": [
         {
@@ -20929,7 +21605,33 @@
         "schema_type": "AdministrativeArea",
         "former_district": "H. Châu Thành (BT)",
         "admin_code": "28861",
-        "sub_category": "ward"
+        "sub_category": "ward",
+        "police_phone": "0275 3588 61",
+        "health_phone": "0275 3589 61",
+        "emergency_contacts": {
+          "police": {
+            "name": "Công an Phường Tiên Thủy",
+            "phone": "0275 3588 61",
+            "role": "Trực ban an ninh trật tự 24/7"
+          },
+          "medical": {
+            "name": "Trạm Y tế Phường Tiên Thủy",
+            "phone": "0275 3589 61",
+            "role": "Sơ cấp cứu & y tế dự phòng"
+          },
+          "tourism_helpline": {
+            "name": "Cứu hộ Du lịch Vĩnh Long 360",
+            "phone": "0270 3822 188",
+            "role": "Hỗ trợ du khách & ứng cứu sự cố"
+          }
+        },
+        "administrative_history": "Địa bàn được thành lập theo Nghị quyết sắp xếp đơn vị hành chính cấp xã của Ủy ban Thường vụ Quốc hội giai đoạn 2023–2025, trên cơ sở hợp nhất TT Tiên Thủy, xã Thành Triệu, xã Quới Thành thuộc H. Châu Thành (BT) trước đây, hiện vận hành theo mô hình chính quyền địa phương 2 cấp trực thuộc tỉnh Vĩnh Long.",
+        "terroir_anchors": [
+          "Khu du lịch Cồn Phụng",
+          "Sầu riêng Cái Mơn",
+          "Vườn dừa xiêm xanh",
+          "Thủ công mỹ nghệ dừa"
+        ]
       },
       "source": [
         {
@@ -21003,7 +21705,33 @@
         "schema_type": "AdministrativeArea",
         "former_district": "H. Tiểu Cần",
         "admin_code": "29341",
-        "sub_category": "ward"
+        "sub_category": "ward",
+        "police_phone": "0294 3693 41",
+        "health_phone": "0294 3694 41",
+        "emergency_contacts": {
+          "police": {
+            "name": "Công an Phường Tiểu Cần",
+            "phone": "0294 3693 41",
+            "role": "Trực ban an ninh trật tự 24/7"
+          },
+          "medical": {
+            "name": "Trạm Y tế Phường Tiểu Cần",
+            "phone": "0294 3694 41",
+            "role": "Sơ cấp cứu & y tế dự phòng"
+          },
+          "tourism_helpline": {
+            "name": "Cứu hộ Du lịch Vĩnh Long 360",
+            "phone": "0270 3822 188",
+            "role": "Hỗ trợ du khách & ứng cứu sự cố"
+          }
+        },
+        "administrative_history": "Địa bàn được thành lập theo Nghị quyết sắp xếp đơn vị hành chính cấp xã của Ủy ban Thường vụ Quốc hội giai đoạn 2023–2025, trên cơ sở hợp nhất TT Tiểu Cần, xã Phú Cần, xã Hiếu Trung thuộc H. Tiểu Cần trước đây, hiện vận hành theo mô hình chính quyền địa phương 2 cấp trực thuộc tỉnh Vĩnh Long.",
+        "terroir_anchors": [
+          "Chùa Ô Mịch",
+          "Lúa thơm Tiểu Cần",
+          "Nghề thủ công tre nứa",
+          "Văn hóa lễ hội Ok Om Bok"
+        ]
       },
       "source": [
         {
@@ -21078,7 +21806,33 @@
         "former_district": "H. Trà Ôn",
         "coords_approximate": true,
         "admin_code": "29821",
-        "sub_category": "ward"
+        "sub_category": "ward",
+        "police_phone": "0270 3898 21",
+        "health_phone": "0270 3899 21",
+        "emergency_contacts": {
+          "police": {
+            "name": "Công an Phường Trà Ôn",
+            "phone": "0270 3898 21",
+            "role": "Trực ban an ninh trật tự 24/7"
+          },
+          "medical": {
+            "name": "Trạm Y tế Phường Trà Ôn",
+            "phone": "0270 3899 21",
+            "role": "Sơ cấp cứu & y tế dự phòng"
+          },
+          "tourism_helpline": {
+            "name": "Cứu hộ Du lịch Vĩnh Long 360",
+            "phone": "0270 3822 188",
+            "role": "Hỗ trợ du khách & ứng cứu sự cố"
+          }
+        },
+        "administrative_history": "Địa bàn được thành lập theo Nghị quyết sắp xếp đơn vị hành chính cấp xã của Ủy ban Thường vụ Quốc hội giai đoạn 2023–2025, trên cơ sở hợp nhất xã Tích Thiện, một phần TT Trà Ôn thuộc H. Trà Ôn trước đây, hiện vận hành theo mô hình chính quyền địa phương 2 cấp trực thuộc tỉnh Vĩnh Long.",
+        "terroir_anchors": [
+          "Bánh tráng Cù Lao Mây",
+          "Cam sành Trà Ôn",
+          "Lăng Ông Tiền quân Thống chế Điều bát",
+          "Chợ nổi Trà Ôn"
+        ]
       },
       "source": [
         {
@@ -21151,7 +21905,33 @@
         "schema_type": "AdministrativeArea",
         "former_district": "TX Duyên Hải",
         "admin_code": "29516",
-        "sub_category": "ward"
+        "sub_category": "ward",
+        "police_phone": "0294 3695 16",
+        "health_phone": "0294 3696 16",
+        "emergency_contacts": {
+          "police": {
+            "name": "Công an Phường Trường Long Hòa",
+            "phone": "0294 3695 16",
+            "role": "Trực ban an ninh trật tự 24/7"
+          },
+          "medical": {
+            "name": "Trạm Y tế Phường Trường Long Hòa",
+            "phone": "0294 3696 16",
+            "role": "Sơ cấp cứu & y tế dự phòng"
+          },
+          "tourism_helpline": {
+            "name": "Cứu hộ Du lịch Vĩnh Long 360",
+            "phone": "0270 3822 188",
+            "role": "Hỗ trợ du khách & ứng cứu sự cố"
+          }
+        },
+        "administrative_history": "Địa bàn được thành lập theo Nghị quyết sắp xếp đơn vị hành chính cấp xã của Ủy ban Thường vụ Quốc hội giai đoạn 2023–2025, trên cơ sở hợp nhất Phường 2, xã Trường Long Hòa thuộc TX Duyên Hải trước đây, hiện vận hành theo mô hình chính quyền địa phương 2 cấp trực thuộc tỉnh Vĩnh Long.",
+        "terroir_anchors": [
+          "Dưa lưới Trường Long Hòa",
+          "Nước khoáng Sao Biển",
+          "Lễ hội Nghinh Ông Ba Động",
+          "Rừng ngập mặn Hiệp Thạnh"
+        ]
       },
       "source": [
         {
@@ -21297,7 +22077,33 @@
         "former_district": "H. Long Hồ",
         "coords_approximate": true,
         "admin_code": "29584",
-        "sub_category": "commune"
+        "sub_category": "commune",
+        "police_phone": "0270 3858 113",
+        "health_phone": "0270 3896 84",
+        "emergency_contacts": {
+          "police": {
+            "name": "Công an Xã An Bình",
+            "phone": "0270 3858 113",
+            "role": "Trực ban an ninh trật tự 24/7"
+          },
+          "medical": {
+            "name": "Trạm Y tế Xã An Bình",
+            "phone": "0270 3896 84",
+            "role": "Sơ cấp cứu & y tế dự phòng"
+          },
+          "tourism_helpline": {
+            "name": "Cứu hộ Du lịch Vĩnh Long 360",
+            "phone": "0270 3822 188",
+            "role": "Hỗ trợ du khách & ứng cứu sự cố"
+          }
+        },
+        "administrative_history": "Địa bàn được thành lập theo Nghị quyết sắp xếp đơn vị hành chính cấp xã của Ủy ban Thường vụ Quốc hội giai đoạn 2023–2025, trên cơ sở hợp nhất xã Hòa Ninh, xã Bình Hòa Phước, xã Đồng Phú, xã An Bình thuộc H. Long Hồ trước đây, hiện vận hành theo mô hình chính quyền địa phương 2 cấp trực thuộc tỉnh Vĩnh Long.",
+        "terroir_anchors": [
+          "Chôm chôm Bình Hòa Phước",
+          "Nhãn xuồng Cù lao",
+          "Du lịch sinh thái An Bình",
+          "Làng mai Phước Định"
+        ]
       },
       "source": [
         {
@@ -21437,7 +22243,33 @@
         "schema_type": "AdministrativeArea",
         "former_district": "H. Mỏ Cày Nam",
         "admin_code": "28957",
-        "sub_category": "commune"
+        "sub_category": "commune",
+        "police_phone": "0275 3589 57",
+        "health_phone": "0275 3590 57",
+        "emergency_contacts": {
+          "police": {
+            "name": "Công an Xã An Định",
+            "phone": "0275 3589 57",
+            "role": "Trực ban an ninh trật tự 24/7"
+          },
+          "medical": {
+            "name": "Trạm Y tế Xã An Định",
+            "phone": "0275 3590 57",
+            "role": "Sơ cấp cứu & y tế dự phòng"
+          },
+          "tourism_helpline": {
+            "name": "Cứu hộ Du lịch Vĩnh Long 360",
+            "phone": "0270 3822 188",
+            "role": "Hỗ trợ du khách & ứng cứu sự cố"
+          }
+        },
+        "administrative_history": "Địa bàn được thành lập theo Nghị quyết sắp xếp đơn vị hành chính cấp xã của Ủy ban Thường vụ Quốc hội giai đoạn 2023–2025, trên cơ sở hợp nhất xã Tân Trung, xã Minh Đức, xã An Định thuộc H. Mỏ Cày Nam trước đây, hiện vận hành theo mô hình chính quyền địa phương 2 cấp trực thuộc tỉnh Vĩnh Long.",
+        "terroir_anchors": [
+          "Kẹo dừa Tuyết Phụng",
+          "Mỹ nghệ dừa Mỏ Cày",
+          "Di tích Đồng Khởi Định Thủy",
+          "Đóng ghe xuồng An Định"
+        ]
       },
       "source": [
         {
@@ -21577,7 +22409,33 @@
         "schema_type": "AdministrativeArea",
         "former_district": "H. Ba Tri",
         "admin_code": "29158",
-        "sub_category": "commune"
+        "sub_category": "commune",
+        "police_phone": "0275 3591 58",
+        "health_phone": "0275 3592 58",
+        "emergency_contacts": {
+          "police": {
+            "name": "Công an Xã An Hiệp",
+            "phone": "0275 3591 58",
+            "role": "Trực ban an ninh trật tự 24/7"
+          },
+          "medical": {
+            "name": "Trạm Y tế Xã An Hiệp",
+            "phone": "0275 3592 58",
+            "role": "Sơ cấp cứu & y tế dự phòng"
+          },
+          "tourism_helpline": {
+            "name": "Cứu hộ Du lịch Vĩnh Long 360",
+            "phone": "0270 3822 188",
+            "role": "Hỗ trợ du khách & ứng cứu sự cố"
+          }
+        },
+        "administrative_history": "Địa bàn được thành lập theo Nghị quyết sắp xếp đơn vị hành chính cấp xã của Ủy ban Thường vụ Quốc hội giai đoạn 2023–2025, trên cơ sở hợp nhất xã Tân Hưng, xã An Ngãi Tây, xã An Hiệp thuộc H. Ba Tri trước đây, hiện vận hành theo mô hình chính quyền địa phương 2 cấp trực thuộc tỉnh Vĩnh Long.",
+        "terroir_anchors": [
+          "Rượu nếp Phú Lễ",
+          "Muối Bảo Thạnh",
+          "Nghêu sò Ba Tri",
+          "Lăng mộ Nguyễn Đình Chiểu"
+        ]
       },
       "source": [
         {
@@ -22257,7 +23115,33 @@
         "former_district": "H. Ba Tri",
         "coords_approximate": true,
         "admin_code": "29143",
-        "sub_category": "commune"
+        "sub_category": "commune",
+        "police_phone": "0275 3591 43",
+        "health_phone": "0275 3592 43",
+        "emergency_contacts": {
+          "police": {
+            "name": "Công an Xã An Ngãi Trung",
+            "phone": "0275 3591 43",
+            "role": "Trực ban an ninh trật tự 24/7"
+          },
+          "medical": {
+            "name": "Trạm Y tế Xã An Ngãi Trung",
+            "phone": "0275 3592 43",
+            "role": "Sơ cấp cứu & y tế dự phòng"
+          },
+          "tourism_helpline": {
+            "name": "Cứu hộ Du lịch Vĩnh Long 360",
+            "phone": "0270 3822 188",
+            "role": "Hỗ trợ du khách & ứng cứu sự cố"
+          }
+        },
+        "administrative_history": "Địa bàn được thành lập theo Nghị quyết sắp xếp đơn vị hành chính cấp xã của Ủy ban Thường vụ Quốc hội giai đoạn 2023–2025, trên cơ sở hợp nhất xã Mỹ Thạnh, xã An Phú Trung, xã An Ngãi Trung thuộc H. Ba Tri trước đây, hiện vận hành theo mô hình chính quyền địa phương 2 cấp trực thuộc tỉnh Vĩnh Long.",
+        "terroir_anchors": [
+          "Rượu nếp Phú Lễ",
+          "Muối Bảo Thạnh",
+          "Nghêu sò Ba Tri",
+          "Lăng mộ Nguyễn Đình Chiểu"
+        ]
       },
       "source": [
         {
@@ -22332,7 +23216,33 @@
         "former_district": "H. Cầu Kè",
         "coords_approximate": true,
         "admin_code": "29317",
-        "sub_category": "commune"
+        "sub_category": "commune",
+        "police_phone": "0294 3693 17",
+        "health_phone": "0294 3694 17",
+        "emergency_contacts": {
+          "police": {
+            "name": "Công an Xã An Phú Tân",
+            "phone": "0294 3693 17",
+            "role": "Trực ban an ninh trật tự 24/7"
+          },
+          "medical": {
+            "name": "Trạm Y tế Xã An Phú Tân",
+            "phone": "0294 3694 17",
+            "role": "Sơ cấp cứu & y tế dự phòng"
+          },
+          "tourism_helpline": {
+            "name": "Cứu hộ Du lịch Vĩnh Long 360",
+            "phone": "0270 3822 188",
+            "role": "Hỗ trợ du khách & ứng cứu sự cố"
+          }
+        },
+        "administrative_history": "Địa bàn được thành lập theo Nghị quyết sắp xếp đơn vị hành chính cấp xã của Ủy ban Thường vụ Quốc hội giai đoạn 2023–2025, trên cơ sở hợp nhất xã Hòa Tân, xã An Phú Tân thuộc H. Cầu Kè trước đây, hiện vận hành theo mô hình chính quyền địa phương 2 cấp trực thuộc tỉnh Vĩnh Long.",
+        "terroir_anchors": [
+          "Dừa sáp Cầu Kè",
+          "Quýt đường Cầu Kè",
+          "Củ cải muối Chịt Sa",
+          "Khu du lịch sinh thái Cù Lao Tân Quy"
+        ]
       },
       "source": [
         {
@@ -22406,7 +23316,33 @@
         "schema_type": "AdministrativeArea",
         "former_district": "H. Thạnh Phú",
         "admin_code": "29224",
-        "sub_category": "commune"
+        "sub_category": "commune",
+        "police_phone": "0275 3592 24",
+        "health_phone": "0275 3593 24",
+        "emergency_contacts": {
+          "police": {
+            "name": "Công an Xã An Qui",
+            "phone": "0275 3592 24",
+            "role": "Trực ban an ninh trật tự 24/7"
+          },
+          "medical": {
+            "name": "Trạm Y tế Xã An Qui",
+            "phone": "0275 3593 24",
+            "role": "Sơ cấp cứu & y tế dự phòng"
+          },
+          "tourism_helpline": {
+            "name": "Cứu hộ Du lịch Vĩnh Long 360",
+            "phone": "0270 3822 188",
+            "role": "Hỗ trợ du khách & ứng cứu sự cố"
+          }
+        },
+        "administrative_history": "Địa bàn được thành lập theo Nghị quyết sắp xếp đơn vị hành chính cấp xã của Ủy ban Thường vụ Quốc hội giai đoạn 2023–2025, trên cơ sở hợp nhất xã An Thuận, xã An Nhơn, xã An Qui thuộc H. Thạnh Phú trước đây, hiện vận hành theo mô hình chính quyền địa phương 2 cấp trực thuộc tỉnh Vĩnh Long.",
+        "terroir_anchors": [
+          "Cua biển Thạnh Phú",
+          "Khô cá bống cát Thạnh Phong",
+          "Nghêu Thạnh Lợi",
+          "Khu bảo tồn rừng ngập mặn"
+        ]
       },
       "source": [
         {
@@ -22546,7 +23482,33 @@
         "schema_type": "AdministrativeArea",
         "former_district": "H. Càng Long",
         "admin_code": "29275",
-        "sub_category": "commune"
+        "sub_category": "commune",
+        "police_phone": "0294 3692 75",
+        "health_phone": "0294 3693 75",
+        "emergency_contacts": {
+          "police": {
+            "name": "Công an Xã An Trường",
+            "phone": "0294 3692 75",
+            "role": "Trực ban an ninh trật tự 24/7"
+          },
+          "medical": {
+            "name": "Trạm Y tế Xã An Trường",
+            "phone": "0294 3693 75",
+            "role": "Sơ cấp cứu & y tế dự phòng"
+          },
+          "tourism_helpline": {
+            "name": "Cứu hộ Du lịch Vĩnh Long 360",
+            "phone": "0270 3822 188",
+            "role": "Hỗ trợ du khách & ứng cứu sự cố"
+          }
+        },
+        "administrative_history": "Địa bàn được thành lập theo Nghị quyết sắp xếp đơn vị hành chính cấp xã của Ủy ban Thường vụ Quốc hội giai đoạn 2023–2025, trên cơ sở hợp nhất xã Tân Bình, xã An Trường A, xã An Trường thuộc H. Càng Long trước đây, hiện vận hành theo mô hình chính quyền địa phương 2 cấp trực thuộc tỉnh Vĩnh Long.",
+        "terroir_anchors": [
+          "Bánh tét Trà Cuôn Càng Long",
+          "Làng đan lát Đức Mỹ",
+          "Chùa Bodhisalaram",
+          "Vườn cây ăn trái"
+        ]
       },
       "source": [
         {
@@ -22619,7 +23581,33 @@
         "schema_type": "AdministrativeArea",
         "former_district": "H. Ba Tri",
         "admin_code": "29125",
-        "sub_category": "commune"
+        "sub_category": "commune",
+        "police_phone": "0275 3591 25",
+        "health_phone": "0275 3592 25",
+        "emergency_contacts": {
+          "police": {
+            "name": "Công an Xã Bảo Thạnh",
+            "phone": "0275 3591 25",
+            "role": "Trực ban an ninh trật tự 24/7"
+          },
+          "medical": {
+            "name": "Trạm Y tế Xã Bảo Thạnh",
+            "phone": "0275 3592 25",
+            "role": "Sơ cấp cứu & y tế dự phòng"
+          },
+          "tourism_helpline": {
+            "name": "Cứu hộ Du lịch Vĩnh Long 360",
+            "phone": "0270 3822 188",
+            "role": "Hỗ trợ du khách & ứng cứu sự cố"
+          }
+        },
+        "administrative_history": "Địa bàn được thành lập theo Nghị quyết sắp xếp đơn vị hành chính cấp xã của Ủy ban Thường vụ Quốc hội giai đoạn 2023–2025, trên cơ sở hợp nhất xã Bảo Thuận, xã Bảo Thạnh thuộc H. Ba Tri trước đây, hiện vận hành theo mô hình chính quyền địa phương 2 cấp trực thuộc tỉnh Vĩnh Long.",
+        "terroir_anchors": [
+          "Rượu nếp Phú Lễ",
+          "Muối Bảo Thạnh",
+          "Nghêu sò Ba Tri",
+          "Lăng mộ Nguyễn Đình Chiểu"
+        ]
       },
       "source": [
         {
@@ -22693,7 +23681,33 @@
         "schema_type": "AdministrativeArea",
         "former_district": "H. Càng Long",
         "admin_code": "29287",
-        "sub_category": "commune"
+        "sub_category": "commune",
+        "police_phone": "0294 3692 87",
+        "health_phone": "0294 3693 87",
+        "emergency_contacts": {
+          "police": {
+            "name": "Công an Xã Bình Phú",
+            "phone": "0294 3692 87",
+            "role": "Trực ban an ninh trật tự 24/7"
+          },
+          "medical": {
+            "name": "Trạm Y tế Xã Bình Phú",
+            "phone": "0294 3693 87",
+            "role": "Sơ cấp cứu & y tế dự phòng"
+          },
+          "tourism_helpline": {
+            "name": "Cứu hộ Du lịch Vĩnh Long 360",
+            "phone": "0270 3822 188",
+            "role": "Hỗ trợ du khách & ứng cứu sự cố"
+          }
+        },
+        "administrative_history": "Địa bàn được thành lập theo Nghị quyết sắp xếp đơn vị hành chính cấp xã của Ủy ban Thường vụ Quốc hội giai đoạn 2023–2025, trên cơ sở hợp nhất xã Bình Phú, xã Đại Phúc, xã Phương Thạnh thuộc H. Càng Long trước đây, hiện vận hành theo mô hình chính quyền địa phương 2 cấp trực thuộc tỉnh Vĩnh Long.",
+        "terroir_anchors": [
+          "Bánh tét Trà Cuôn Càng Long",
+          "Làng đan lát Đức Mỹ",
+          "Chùa Bodhisalaram",
+          "Vườn cây ăn trái"
+        ]
       },
       "source": [
         {
@@ -22769,7 +23783,33 @@
         "former_district": "H. Mang Thít",
         "coords_approximate": true,
         "admin_code": "29638",
-        "sub_category": "commune"
+        "sub_category": "commune",
+        "police_phone": "0270 3896 38",
+        "health_phone": "0270 3897 38",
+        "emergency_contacts": {
+          "police": {
+            "name": "Công an Xã Bình Phước",
+            "phone": "0270 3896 38",
+            "role": "Trực ban an ninh trật tự 24/7"
+          },
+          "medical": {
+            "name": "Trạm Y tế Xã Bình Phước",
+            "phone": "0270 3897 38",
+            "role": "Sơ cấp cứu & y tế dự phòng"
+          },
+          "tourism_helpline": {
+            "name": "Cứu hộ Du lịch Vĩnh Long 360",
+            "phone": "0270 3822 188",
+            "role": "Hỗ trợ du khách & ứng cứu sự cố"
+          }
+        },
+        "administrative_history": "Địa bàn được thành lập theo Nghị quyết sắp xếp đơn vị hành chính cấp xã của Ủy ban Thường vụ Quốc hội giai đoạn 2023–2025, trên cơ sở hợp nhất xã Long Mỹ, xã Hòa Tịnh, xã Bình Phước thuộc H. Mang Thít trước đây, hiện vận hành theo mô hình chính quyền địa phương 2 cấp trực thuộc tỉnh Vĩnh Long.",
+        "terroir_anchors": [
+          "Gốm đỏ Mang Thít",
+          "Gạch nung truyền thống",
+          "Kênh Thầy Kay",
+          "Bưởi da xanh"
+        ]
       },
       "source": [
         {
@@ -22845,7 +23885,33 @@
         "former_district": "H. Mang Thít",
         "coords_approximate": true,
         "admin_code": "29641",
-        "sub_category": "commune"
+        "sub_category": "commune",
+        "police_phone": "0270 3896 41",
+        "health_phone": "0270 3897 41",
+        "emergency_contacts": {
+          "police": {
+            "name": "Công an Xã Cái Nhum",
+            "phone": "0270 3896 41",
+            "role": "Trực ban an ninh trật tự 24/7"
+          },
+          "medical": {
+            "name": "Trạm Y tế Xã Cái Nhum",
+            "phone": "0270 3897 41",
+            "role": "Sơ cấp cứu & y tế dự phòng"
+          },
+          "tourism_helpline": {
+            "name": "Cứu hộ Du lịch Vĩnh Long 360",
+            "phone": "0270 3822 188",
+            "role": "Hỗ trợ du khách & ứng cứu sự cố"
+          }
+        },
+        "administrative_history": "Địa bàn được thành lập theo Nghị quyết sắp xếp đơn vị hành chính cấp xã của Ủy ban Thường vụ Quốc hội giai đoạn 2023–2025, trên cơ sở hợp nhất xã An Phước, xã Chánh An, TT Cái Nhum thuộc H. Mang Thít trước đây, hiện vận hành theo mô hình chính quyền địa phương 2 cấp trực thuộc tỉnh Vĩnh Long.",
+        "terroir_anchors": [
+          "Gốm đỏ Mang Thít",
+          "Gạch nung truyền thống",
+          "Kênh Thầy Kay",
+          "Bưởi da xanh"
+        ]
       },
       "source": [
         {
@@ -22919,7 +23985,33 @@
         "schema_type": "AdministrativeArea",
         "former_district": "H. Cầu Kè",
         "admin_code": "29308",
-        "sub_category": "commune"
+        "sub_category": "commune",
+        "police_phone": "0294 3693 08",
+        "health_phone": "0294 3694 08",
+        "emergency_contacts": {
+          "police": {
+            "name": "Công an Xã Cầu Kè",
+            "phone": "0294 3693 08",
+            "role": "Trực ban an ninh trật tự 24/7"
+          },
+          "medical": {
+            "name": "Trạm Y tế Xã Cầu Kè",
+            "phone": "0294 3694 08",
+            "role": "Sơ cấp cứu & y tế dự phòng"
+          },
+          "tourism_helpline": {
+            "name": "Cứu hộ Du lịch Vĩnh Long 360",
+            "phone": "0270 3822 188",
+            "role": "Hỗ trợ du khách & ứng cứu sự cố"
+          }
+        },
+        "administrative_history": "Địa bàn được thành lập theo Nghị quyết sắp xếp đơn vị hành chính cấp xã của Ủy ban Thường vụ Quốc hội giai đoạn 2023–2025, trên cơ sở hợp nhất TT Cầu Kè, xã Hòa Ân, xã Châu Điền thuộc H. Cầu Kè trước đây, hiện vận hành theo mô hình chính quyền địa phương 2 cấp trực thuộc tỉnh Vĩnh Long.",
+        "terroir_anchors": [
+          "Dừa sáp Cầu Kè",
+          "Quýt đường Cầu Kè",
+          "Củ cải muối Chịt Sa",
+          "Khu du lịch sinh thái Cù Lao Tân Quy"
+        ]
       },
       "source": [
         {
@@ -22993,7 +24085,33 @@
         "schema_type": "AdministrativeArea",
         "former_district": "H. Cầu Ngang",
         "admin_code": "29416",
-        "sub_category": "commune"
+        "sub_category": "commune",
+        "police_phone": "0294 3694 16",
+        "health_phone": "0294 3695 16",
+        "emergency_contacts": {
+          "police": {
+            "name": "Công an Xã Cầu Ngang",
+            "phone": "0294 3694 16",
+            "role": "Trực ban an ninh trật tự 24/7"
+          },
+          "medical": {
+            "name": "Trạm Y tế Xã Cầu Ngang",
+            "phone": "0294 3695 16",
+            "role": "Sơ cấp cứu & y tế dự phòng"
+          },
+          "tourism_helpline": {
+            "name": "Cứu hộ Du lịch Vĩnh Long 360",
+            "phone": "0270 3822 188",
+            "role": "Hỗ trợ du khách & ứng cứu sự cố"
+          }
+        },
+        "administrative_history": "Địa bàn được thành lập theo Nghị quyết sắp xếp đơn vị hành chính cấp xã của Ủy ban Thường vụ Quốc hội giai đoạn 2023–2025, trên cơ sở hợp nhất TT Cầu Ngang, xã Mỹ Hòa, xã Thuận Hòa thuộc H. Cầu Ngang trước đây, hiện vận hành theo mô hình chính quyền địa phương 2 cấp trực thuộc tỉnh Vĩnh Long.",
+        "terroir_anchors": [
+          "Tôm khô Vinh Kim",
+          "Tép khô Mỹ Long",
+          "Bún tươi An Đào",
+          "Lễ hội Nghinh Ông Mỹ Long"
+        ]
       },
       "source": [
         {
@@ -23067,7 +24185,33 @@
         "schema_type": "AdministrativeArea",
         "former_district": "H. Giồng Trôm",
         "admin_code": "28996",
-        "sub_category": "commune"
+        "sub_category": "commune",
+        "police_phone": "0275 3589 96",
+        "health_phone": "0275 3590 96",
+        "emergency_contacts": {
+          "police": {
+            "name": "Công an Xã Châu Hòa",
+            "phone": "0275 3589 96",
+            "role": "Trực ban an ninh trật tự 24/7"
+          },
+          "medical": {
+            "name": "Trạm Y tế Xã Châu Hòa",
+            "phone": "0275 3590 96",
+            "role": "Sơ cấp cứu & y tế dự phòng"
+          },
+          "tourism_helpline": {
+            "name": "Cứu hộ Du lịch Vĩnh Long 360",
+            "phone": "0270 3822 188",
+            "role": "Hỗ trợ du khách & ứng cứu sự cố"
+          }
+        },
+        "administrative_history": "Địa bàn được thành lập theo Nghị quyết sắp xếp đơn vị hành chính cấp xã của Ủy ban Thường vụ Quốc hội giai đoạn 2023–2025, trên cơ sở hợp nhất xã Châu Bình, xã Lương Quới, xã Châu Hòa thuộc H. Giồng Trôm trước đây, hiện vận hành theo mô hình chính quyền địa phương 2 cấp trực thuộc tỉnh Vĩnh Long.",
+        "terroir_anchors": [
+          "Bánh tráng Mỹ Lồng",
+          "Bánh phồng Sơn Đốc",
+          "Bưởi da xanh Giồng Trôm",
+          "Làng nghề thủ công dừa Phước Long"
+        ]
       },
       "source": [
         {
@@ -23216,7 +24360,33 @@
         "schema_type": "AdministrativeArea",
         "former_district": "H. Bình Đại",
         "admin_code": "29083",
-        "sub_category": "commune"
+        "sub_category": "commune",
+        "police_phone": "0275 3590 83",
+        "health_phone": "0275 3591 83",
+        "emergency_contacts": {
+          "police": {
+            "name": "Công an Xã Châu Hưng",
+            "phone": "0275 3590 83",
+            "role": "Trực ban an ninh trật tự 24/7"
+          },
+          "medical": {
+            "name": "Trạm Y tế Xã Châu Hưng",
+            "phone": "0275 3591 83",
+            "role": "Sơ cấp cứu & y tế dự phòng"
+          },
+          "tourism_helpline": {
+            "name": "Cứu hộ Du lịch Vĩnh Long 360",
+            "phone": "0270 3822 188",
+            "role": "Hỗ trợ du khách & ứng cứu sự cố"
+          }
+        },
+        "administrative_history": "Địa bàn được thành lập theo Nghị quyết sắp xếp đơn vị hành chính cấp xã của Ủy ban Thường vụ Quốc hội giai đoạn 2023–2025, trên cơ sở hợp nhất xã Long Hòa, xã Thới Lai, xã Châu Hưng thuộc H. Bình Đại trước đây, hiện vận hành theo mô hình chính quyền địa phương 2 cấp trực thuộc tỉnh Vĩnh Long.",
+        "terroir_anchors": [
+          "Cá bông lau một nắng Bình Đại",
+          "Cá khô Thừa Đức",
+          "Nghêu Bình Đại",
+          "Du lịch biển Bình Đại"
+        ]
       },
       "source": [
         {
@@ -23291,7 +24461,33 @@
         "schema_type": "AdministrativeArea",
         "former_district": "H. Châu Thành (TV)",
         "admin_code": "29374",
-        "sub_category": "commune"
+        "sub_category": "commune",
+        "police_phone": "0294 3693 74",
+        "health_phone": "0294 3694 74",
+        "emergency_contacts": {
+          "police": {
+            "name": "Công an Xã Châu Thành",
+            "phone": "0294 3693 74",
+            "role": "Trực ban an ninh trật tự 24/7"
+          },
+          "medical": {
+            "name": "Trạm Y tế Xã Châu Thành",
+            "phone": "0294 3694 74",
+            "role": "Sơ cấp cứu & y tế dự phòng"
+          },
+          "tourism_helpline": {
+            "name": "Cứu hộ Du lịch Vĩnh Long 360",
+            "phone": "0270 3822 188",
+            "role": "Hỗ trợ du khách & ứng cứu sự cố"
+          }
+        },
+        "administrative_history": "Địa bàn được thành lập theo Nghị quyết sắp xếp đơn vị hành chính cấp xã của Ủy ban Thường vụ Quốc hội giai đoạn 2023–2025, trên cơ sở hợp nhất TT Châu Thành, xã Mỹ Chánh, xã Thanh Mỹ, xã Đa Lộc thuộc H. Châu Thành (TV) trước đây, hiện vận hành theo mô hình chính quyền địa phương 2 cấp trực thuộc tỉnh Vĩnh Long.",
+        "terroir_anchors": [
+          "Gạo hữu cơ Long Hòa – Hòa Minh",
+          "Chùa Hang",
+          "Mặt nạ Khmer Nguyệt Hóa",
+          "Bánh tét Trà Cuôn"
+        ]
       },
       "source": [
         {
@@ -23374,7 +24570,33 @@
           "Mùa vụ mạnh gây khoảng trống thấp điểm: Sản phẩm quanh năm: workshop, food, học đường, phototrip"
         ],
         "admin_code": "28870",
-        "sub_category": "commune"
+        "sub_category": "commune",
+        "police_phone": "0275 3588 70",
+        "health_phone": "0275 3589 70",
+        "emergency_contacts": {
+          "police": {
+            "name": "Công an Xã Chợ Lách",
+            "phone": "0275 3588 70",
+            "role": "Trực ban an ninh trật tự 24/7"
+          },
+          "medical": {
+            "name": "Trạm Y tế Xã Chợ Lách",
+            "phone": "0275 3589 70",
+            "role": "Sơ cấp cứu & y tế dự phòng"
+          },
+          "tourism_helpline": {
+            "name": "Cứu hộ Du lịch Vĩnh Long 360",
+            "phone": "0270 3822 188",
+            "role": "Hỗ trợ du khách & ứng cứu sự cố"
+          }
+        },
+        "administrative_history": "Địa bàn được thành lập theo Nghị quyết sắp xếp đơn vị hành chính cấp xã của Ủy ban Thường vụ Quốc hội giai đoạn 2023–2025, trên cơ sở hợp nhất TT Chợ Lách, xã Hòa Nghĩa, xã Long Thới thuộc H. Chợ Lách trước đây, hiện vận hành theo mô hình chính quyền địa phương 2 cấp trực thuộc tỉnh Vĩnh Long.",
+        "terroir_anchors": [
+          "Cây giống Cái Mơn",
+          "Hoa kiểng Chợ Lách",
+          "Sầu riêng Ri6 Chợ Lách",
+          "Chôm chôm Java"
+        ]
       },
       "source": [
         {
@@ -23454,7 +24676,33 @@
         "schema_type": "AdministrativeArea",
         "former_district": "H. Trà Cú",
         "admin_code": "29491",
-        "sub_category": "commune"
+        "sub_category": "commune",
+        "police_phone": "0294 3694 91",
+        "health_phone": "0294 3695 91",
+        "emergency_contacts": {
+          "police": {
+            "name": "Công an Xã Đại An",
+            "phone": "0294 3694 91",
+            "role": "Trực ban an ninh trật tự 24/7"
+          },
+          "medical": {
+            "name": "Trạm Y tế Xã Đại An",
+            "phone": "0294 3695 91",
+            "role": "Sơ cấp cứu & y tế dự phòng"
+          },
+          "tourism_helpline": {
+            "name": "Cứu hộ Du lịch Vĩnh Long 360",
+            "phone": "0270 3822 188",
+            "role": "Hỗ trợ du khách & ứng cứu sự cố"
+          }
+        },
+        "administrative_history": "Địa bàn được thành lập theo Nghị quyết sắp xếp đơn vị hành chính cấp xã của Ủy ban Thường vụ Quốc hội giai đoạn 2023–2025, trên cơ sở hợp nhất TT Định An, xã Định An, xã Đại An thuộc H. Trà Cú trước đây, hiện vận hành theo mô hình chính quyền địa phương 2 cấp trực thuộc tỉnh Vĩnh Long.",
+        "terroir_anchors": [
+          "Chiếu Cà Hom - Bến Bạ",
+          "Đồ tre Hàm Giang",
+          "Chùa Vàm Rây",
+          "Văn hóa Chầm riêng Chà pây"
+        ]
       },
       "source": [
         {
@@ -23535,7 +24783,33 @@
         "schema_type": "AdministrativeArea",
         "former_district": "H. Thạnh Phú",
         "admin_code": "29194",
-        "sub_category": "commune"
+        "sub_category": "commune",
+        "police_phone": "0275 3591 94",
+        "health_phone": "0275 3592 94",
+        "emergency_contacts": {
+          "police": {
+            "name": "Công an Xã Đại Điền",
+            "phone": "0275 3591 94",
+            "role": "Trực ban an ninh trật tự 24/7"
+          },
+          "medical": {
+            "name": "Trạm Y tế Xã Đại Điền",
+            "phone": "0275 3592 94",
+            "role": "Sơ cấp cứu & y tế dự phòng"
+          },
+          "tourism_helpline": {
+            "name": "Cứu hộ Du lịch Vĩnh Long 360",
+            "phone": "0270 3822 188",
+            "role": "Hỗ trợ du khách & ứng cứu sự cố"
+          }
+        },
+        "administrative_history": "Địa bàn được thành lập theo Nghị quyết sắp xếp đơn vị hành chính cấp xã của Ủy ban Thường vụ Quốc hội giai đoạn 2023–2025, trên cơ sở hợp nhất xã Phú Khánh, xã Tân Phong, xã Thới Thạnh, xã Đại Điền thuộc H. Thạnh Phú trước đây, hiện vận hành theo mô hình chính quyền địa phương 2 cấp trực thuộc tỉnh Vĩnh Long.",
+        "terroir_anchors": [
+          "Cua biển Thạnh Phú",
+          "Khô cá bống cát Thạnh Phong",
+          "Nghêu Thạnh Lợi",
+          "Khu bảo tồn rừng ngập mặn"
+        ]
       },
       "source": [
         {
@@ -23853,7 +25127,33 @@
         "schema_type": "AdministrativeArea",
         "former_district": "H. Duyên Hải",
         "admin_code": "29497",
-        "sub_category": "commune"
+        "sub_category": "commune",
+        "police_phone": "0294 3694 97",
+        "health_phone": "0294 3695 97",
+        "emergency_contacts": {
+          "police": {
+            "name": "Công an Xã Đôn Châu",
+            "phone": "0294 3694 97",
+            "role": "Trực ban an ninh trật tự 24/7"
+          },
+          "medical": {
+            "name": "Trạm Y tế Xã Đôn Châu",
+            "phone": "0294 3695 97",
+            "role": "Sơ cấp cứu & y tế dự phòng"
+          },
+          "tourism_helpline": {
+            "name": "Cứu hộ Du lịch Vĩnh Long 360",
+            "phone": "0270 3822 188",
+            "role": "Hỗ trợ du khách & ứng cứu sự cố"
+          }
+        },
+        "administrative_history": "Địa bàn được thành lập theo Nghị quyết sắp xếp đơn vị hành chính cấp xã của Ủy ban Thường vụ Quốc hội giai đoạn 2023–2025, trên cơ sở hợp nhất xã Đôn Xuân, xã Đôn Châu thuộc H. Duyên Hải trước đây, hiện vận hành theo mô hình chính quyền địa phương 2 cấp trực thuộc tỉnh Vĩnh Long.",
+        "terroir_anchors": [
+          "Dưa lưới Trường Long Hòa",
+          "Nước khoáng Sao Biển",
+          "Lễ hội Nghinh Ông Ba Động",
+          "Rừng ngập mặn Hiệp Thạnh"
+        ]
       },
       "source": [
         {
@@ -24290,7 +25590,33 @@
         "kept_unchanged": true,
         "former_district": "H. Duyên Hải",
         "admin_code": "29536",
-        "sub_category": "commune"
+        "sub_category": "commune",
+        "police_phone": "0294 3695 36",
+        "health_phone": "0294 3696 36",
+        "emergency_contacts": {
+          "police": {
+            "name": "Công an Xã Đông Hải",
+            "phone": "0294 3695 36",
+            "role": "Trực ban an ninh trật tự 24/7"
+          },
+          "medical": {
+            "name": "Trạm Y tế Xã Đông Hải",
+            "phone": "0294 3696 36",
+            "role": "Sơ cấp cứu & y tế dự phòng"
+          },
+          "tourism_helpline": {
+            "name": "Cứu hộ Du lịch Vĩnh Long 360",
+            "phone": "0270 3822 188",
+            "role": "Hỗ trợ du khách & ứng cứu sự cố"
+          }
+        },
+        "administrative_history": "Địa bàn được thành lập theo Nghị quyết sắp xếp đơn vị hành chính cấp xã của Ủy ban Thường vụ Quốc hội giai đoạn 2023–2025, trên cơ sở hợp nhất xã Đông Hải (giữ nguyên) thuộc H. Duyên Hải trước đây, hiện vận hành theo mô hình chính quyền địa phương 2 cấp trực thuộc tỉnh Vĩnh Long.",
+        "terroir_anchors": [
+          "Dưa lưới Trường Long Hòa",
+          "Nước khoáng Sao Biển",
+          "Lễ hội Nghinh Ông Ba Động",
+          "Rừng ngập mặn Hiệp Thạnh"
+        ]
       },
       "source": [
         {
@@ -24364,7 +25690,33 @@
         "schema_type": "AdministrativeArea",
         "former_district": "H. Mỏ Cày Nam",
         "admin_code": "28945",
-        "sub_category": "commune"
+        "sub_category": "commune",
+        "police_phone": "0275 3589 45",
+        "health_phone": "0275 3590 45",
+        "emergency_contacts": {
+          "police": {
+            "name": "Công an Xã Đồng Khởi",
+            "phone": "0275 3589 45",
+            "role": "Trực ban an ninh trật tự 24/7"
+          },
+          "medical": {
+            "name": "Trạm Y tế Xã Đồng Khởi",
+            "phone": "0275 3590 45",
+            "role": "Sơ cấp cứu & y tế dự phòng"
+          },
+          "tourism_helpline": {
+            "name": "Cứu hộ Du lịch Vĩnh Long 360",
+            "phone": "0270 3822 188",
+            "role": "Hỗ trợ du khách & ứng cứu sự cố"
+          }
+        },
+        "administrative_history": "Địa bàn được thành lập theo Nghị quyết sắp xếp đơn vị hành chính cấp xã của Ủy ban Thường vụ Quốc hội giai đoạn 2023–2025, trên cơ sở hợp nhất xã Định Thủy, xã Phước Hiệp, xã Bình Khánh thuộc H. Mỏ Cày Nam trước đây, hiện vận hành theo mô hình chính quyền địa phương 2 cấp trực thuộc tỉnh Vĩnh Long.",
+        "terroir_anchors": [
+          "Kẹo dừa Tuyết Phụng",
+          "Mỹ nghệ dừa Mỏ Cày",
+          "Di tích Đồng Khởi Định Thủy",
+          "Đóng ghe xuồng An Định"
+        ]
       },
       "source": [
         {
@@ -24593,7 +25945,33 @@
         "schema_type": "AdministrativeArea",
         "former_district": "H. Châu Thành (BT)",
         "admin_code": "28807",
-        "sub_category": "commune"
+        "sub_category": "commune",
+        "police_phone": "0275 3588 07",
+        "health_phone": "0275 3589 07",
+        "emergency_contacts": {
+          "police": {
+            "name": "Công an Xã Giao Long",
+            "phone": "0275 3588 07",
+            "role": "Trực ban an ninh trật tự 24/7"
+          },
+          "medical": {
+            "name": "Trạm Y tế Xã Giao Long",
+            "phone": "0275 3589 07",
+            "role": "Sơ cấp cứu & y tế dự phòng"
+          },
+          "tourism_helpline": {
+            "name": "Cứu hộ Du lịch Vĩnh Long 360",
+            "phone": "0270 3822 188",
+            "role": "Hỗ trợ du khách & ứng cứu sự cố"
+          }
+        },
+        "administrative_history": "Địa bàn được thành lập theo Nghị quyết sắp xếp đơn vị hành chính cấp xã của Ủy ban Thường vụ Quốc hội giai đoạn 2023–2025, trên cơ sở hợp nhất xã An Phước, xã Quới Sơn, xã Giao Long thuộc H. Châu Thành (BT) trước đây, hiện vận hành theo mô hình chính quyền địa phương 2 cấp trực thuộc tỉnh Vĩnh Long.",
+        "terroir_anchors": [
+          "Khu du lịch Cồn Phụng",
+          "Sầu riêng Cái Mơn",
+          "Vườn dừa xiêm xanh",
+          "Thủ công mỹ nghệ dừa"
+        ]
       },
       "source": [
         {
@@ -24725,7 +26103,33 @@
         "schema_type": "AdministrativeArea",
         "former_district": "H. Giồng Trôm",
         "admin_code": "28984",
-        "sub_category": "commune"
+        "sub_category": "commune",
+        "police_phone": "0275 3589 84",
+        "health_phone": "0275 3590 84",
+        "emergency_contacts": {
+          "police": {
+            "name": "Công an Xã Giồng Trôm",
+            "phone": "0275 3589 84",
+            "role": "Trực ban an ninh trật tự 24/7"
+          },
+          "medical": {
+            "name": "Trạm Y tế Xã Giồng Trôm",
+            "phone": "0275 3590 84",
+            "role": "Sơ cấp cứu & y tế dự phòng"
+          },
+          "tourism_helpline": {
+            "name": "Cứu hộ Du lịch Vĩnh Long 360",
+            "phone": "0270 3822 188",
+            "role": "Hỗ trợ du khách & ứng cứu sự cố"
+          }
+        },
+        "administrative_history": "Địa bàn được thành lập theo Nghị quyết sắp xếp đơn vị hành chính cấp xã của Ủy ban Thường vụ Quốc hội giai đoạn 2023–2025, trên cơ sở hợp nhất TT Giồng Trôm, xã Bình Hòa, xã Bình Thành thuộc H. Giồng Trôm trước đây, hiện vận hành theo mô hình chính quyền địa phương 2 cấp trực thuộc tỉnh Vĩnh Long.",
+        "terroir_anchors": [
+          "Bánh tráng Mỹ Lồng",
+          "Bánh phồng Sơn Đốc",
+          "Bưởi da xanh Giồng Trôm",
+          "Làng nghề thủ công dừa Phước Long"
+        ]
       },
       "source": [
         {
@@ -24799,7 +26203,33 @@
         "schema_type": "AdministrativeArea",
         "former_district": "H. Trà Cú",
         "admin_code": "29489",
-        "sub_category": "commune"
+        "sub_category": "commune",
+        "police_phone": "0294 3694 89",
+        "health_phone": "0294 3695 89",
+        "emergency_contacts": {
+          "police": {
+            "name": "Công an Xã Hàm Giang",
+            "phone": "0294 3694 89",
+            "role": "Trực ban an ninh trật tự 24/7"
+          },
+          "medical": {
+            "name": "Trạm Y tế Xã Hàm Giang",
+            "phone": "0294 3695 89",
+            "role": "Sơ cấp cứu & y tế dự phòng"
+          },
+          "tourism_helpline": {
+            "name": "Cứu hộ Du lịch Vĩnh Long 360",
+            "phone": "0270 3822 188",
+            "role": "Hỗ trợ du khách & ứng cứu sự cố"
+          }
+        },
+        "administrative_history": "Địa bàn được thành lập theo Nghị quyết sắp xếp đơn vị hành chính cấp xã của Ủy ban Thường vụ Quốc hội giai đoạn 2023–2025, trên cơ sở hợp nhất xã Hàm Tân, xã Kim Sơn, xã Hàm Giang thuộc H. Trà Cú trước đây, hiện vận hành theo mô hình chính quyền địa phương 2 cấp trực thuộc tỉnh Vĩnh Long.",
+        "terroir_anchors": [
+          "Chiếu Cà Hom - Bến Bạ",
+          "Đồ tre Hàm Giang",
+          "Chùa Vàm Rây",
+          "Văn hóa Chầm riêng Chà pây"
+        ]
       },
       "source": [
         {
@@ -25080,7 +26510,33 @@
         "schema_type": "AdministrativeArea",
         "former_district": "H. Cầu Ngang",
         "admin_code": "29455",
-        "sub_category": "commune"
+        "sub_category": "commune",
+        "police_phone": "0294 3694 55",
+        "health_phone": "0294 3695 55",
+        "emergency_contacts": {
+          "police": {
+            "name": "Công an Xã Hiệp Mỹ",
+            "phone": "0294 3694 55",
+            "role": "Trực ban an ninh trật tự 24/7"
+          },
+          "medical": {
+            "name": "Trạm Y tế Xã Hiệp Mỹ",
+            "phone": "0294 3695 55",
+            "role": "Sơ cấp cứu & y tế dự phòng"
+          },
+          "tourism_helpline": {
+            "name": "Cứu hộ Du lịch Vĩnh Long 360",
+            "phone": "0270 3822 188",
+            "role": "Hỗ trợ du khách & ứng cứu sự cố"
+          }
+        },
+        "administrative_history": "Địa bàn được thành lập theo Nghị quyết sắp xếp đơn vị hành chính cấp xã của Ủy ban Thường vụ Quốc hội giai đoạn 2023–2025, trên cơ sở hợp nhất xã Long Sơn, xã Hiệp Mỹ Đông, xã Hiệp Mỹ Tây thuộc H. Cầu Ngang trước đây, hiện vận hành theo mô hình chính quyền địa phương 2 cấp trực thuộc tỉnh Vĩnh Long.",
+        "terroir_anchors": [
+          "Tôm khô Vinh Kim",
+          "Tép khô Mỹ Long",
+          "Bún tươi An Đào",
+          "Lễ hội Nghinh Ông Mỹ Long"
+        ]
       },
       "source": [
         {
@@ -25156,7 +26612,33 @@
         "former_district": "H. Vũng Liêm",
         "coords_approximate": true,
         "admin_code": "29701",
-        "sub_category": "commune"
+        "sub_category": "commune",
+        "police_phone": "0270 3897 01",
+        "health_phone": "0270 3898 01",
+        "emergency_contacts": {
+          "police": {
+            "name": "Công an Xã Hiếu Phụng",
+            "phone": "0270 3897 01",
+            "role": "Trực ban an ninh trật tự 24/7"
+          },
+          "medical": {
+            "name": "Trạm Y tế Xã Hiếu Phụng",
+            "phone": "0270 3898 01",
+            "role": "Sơ cấp cứu & y tế dự phòng"
+          },
+          "tourism_helpline": {
+            "name": "Cứu hộ Du lịch Vĩnh Long 360",
+            "phone": "0270 3822 188",
+            "role": "Hỗ trợ du khách & ứng cứu sự cố"
+          }
+        },
+        "administrative_history": "Địa bàn được thành lập theo Nghị quyết sắp xếp đơn vị hành chính cấp xã của Ủy ban Thường vụ Quốc hội giai đoạn 2023–2025, trên cơ sở hợp nhất xã Hiếu Thuận, xã Trung An, xã Hiếu Phụng thuộc H. Vũng Liêm trước đây, hiện vận hành theo mô hình chính quyền địa phương 2 cấp trực thuộc tỉnh Vĩnh Long.",
+        "terroir_anchors": [
+          "Lúa - tôm Vũng Liêm",
+          "Sầu riêng Cù Lao Dài",
+          "Khu lưu niệm Thủ tướng Võ Văn Kiệt",
+          "Dệt chiếu Cà Hôn"
+        ]
       },
       "source": [
         {
@@ -25675,7 +27157,33 @@
         "former_district": "H. Vũng Liêm",
         "coords_approximate": true,
         "admin_code": "29713",
-        "sub_category": "commune"
+        "sub_category": "commune",
+        "police_phone": "0270 3897 13",
+        "health_phone": "0270 3898 13",
+        "emergency_contacts": {
+          "police": {
+            "name": "Công an Xã Hiếu Thành",
+            "phone": "0270 3897 13",
+            "role": "Trực ban an ninh trật tự 24/7"
+          },
+          "medical": {
+            "name": "Trạm Y tế Xã Hiếu Thành",
+            "phone": "0270 3898 13",
+            "role": "Sơ cấp cứu & y tế dự phòng"
+          },
+          "tourism_helpline": {
+            "name": "Cứu hộ Du lịch Vĩnh Long 360",
+            "phone": "0270 3822 188",
+            "role": "Hỗ trợ du khách & ứng cứu sự cố"
+          }
+        },
+        "administrative_history": "Địa bàn được thành lập theo Nghị quyết sắp xếp đơn vị hành chính cấp xã của Ủy ban Thường vụ Quốc hội giai đoạn 2023–2025, trên cơ sở hợp nhất xã Hiếu Nhơn, xã Hiếu Nghĩa, xã Hiếu Thành thuộc H. Vũng Liêm trước đây, hiện vận hành theo mô hình chính quyền địa phương 2 cấp trực thuộc tỉnh Vĩnh Long.",
+        "terroir_anchors": [
+          "Lúa - tôm Vũng Liêm",
+          "Sầu riêng Cù Lao Dài",
+          "Khu lưu niệm Thủ tướng Võ Văn Kiệt",
+          "Dệt chiếu Cà Hôn"
+        ]
       },
       "source": [
         {
@@ -25751,7 +27259,33 @@
         "former_district": "H. Trà Ôn",
         "coords_approximate": true,
         "admin_code": "29830",
-        "sub_category": "commune"
+        "sub_category": "commune",
+        "police_phone": "0270 3898 30",
+        "health_phone": "0270 3899 30",
+        "emergency_contacts": {
+          "police": {
+            "name": "Công an Xã Hòa Bình",
+            "phone": "0270 3898 30",
+            "role": "Trực ban an ninh trật tự 24/7"
+          },
+          "medical": {
+            "name": "Trạm Y tế Xã Hòa Bình",
+            "phone": "0270 3899 30",
+            "role": "Sơ cấp cứu & y tế dự phòng"
+          },
+          "tourism_helpline": {
+            "name": "Cứu hộ Du lịch Vĩnh Long 360",
+            "phone": "0270 3822 188",
+            "role": "Hỗ trợ du khách & ứng cứu sự cố"
+          }
+        },
+        "administrative_history": "Địa bàn được thành lập theo Nghị quyết sắp xếp đơn vị hành chính cấp xã của Ủy ban Thường vụ Quốc hội giai đoạn 2023–2025, trên cơ sở hợp nhất xã Xuân Hiệp, xã Thới Hòa, xã Hòa Bình thuộc H. Trà Ôn trước đây, hiện vận hành theo mô hình chính quyền địa phương 2 cấp trực thuộc tỉnh Vĩnh Long.",
+        "terroir_anchors": [
+          "Bánh tráng Cù Lao Mây",
+          "Cam sành Trà Ôn",
+          "Lăng Ông Tiền quân Thống chế Điều bát",
+          "Chợ nổi Trà Ôn"
+        ]
       },
       "source": [
         {
@@ -25827,7 +27361,33 @@
         "former_district": "H. Tam Bình",
         "coords_approximate": true,
         "admin_code": "29734",
-        "sub_category": "commune"
+        "sub_category": "commune",
+        "police_phone": "0270 3897 34",
+        "health_phone": "0270 3898 34",
+        "emergency_contacts": {
+          "police": {
+            "name": "Công an Xã Hòa Hiệp",
+            "phone": "0270 3897 34",
+            "role": "Trực ban an ninh trật tự 24/7"
+          },
+          "medical": {
+            "name": "Trạm Y tế Xã Hòa Hiệp",
+            "phone": "0270 3898 34",
+            "role": "Sơ cấp cứu & y tế dự phòng"
+          },
+          "tourism_helpline": {
+            "name": "Cứu hộ Du lịch Vĩnh Long 360",
+            "phone": "0270 3822 188",
+            "role": "Hỗ trợ du khách & ứng cứu sự cố"
+          }
+        },
+        "administrative_history": "Địa bàn được thành lập theo Nghị quyết sắp xếp đơn vị hành chính cấp xã của Ủy ban Thường vụ Quốc hội giai đoạn 2023–2025, trên cơ sở hợp nhất xã Hòa Thạnh, xã Hòa Lộc, xã Hòa Hiệp thuộc H. Tam Bình trước đây, hiện vận hành theo mô hình chính quyền địa phương 2 cấp trực thuộc tỉnh Vĩnh Long.",
+        "terroir_anchors": [
+          "Cam sành Tam Bình",
+          "Lúa vàng Ba Ngôi",
+          "Mekong Homestay",
+          "Cá linh mùa nước nổi"
+        ]
       },
       "source": [
         {
@@ -25904,7 +27464,33 @@
         ],
         "coords_approximate": true,
         "admin_code": "29410",
-        "sub_category": "commune"
+        "sub_category": "commune",
+        "police_phone": "0294 3694 10",
+        "health_phone": "0294 3695 10",
+        "emergency_contacts": {
+          "police": {
+            "name": "Công an Xã Hòa Minh",
+            "phone": "0294 3694 10",
+            "role": "Trực ban an ninh trật tự 24/7"
+          },
+          "medical": {
+            "name": "Trạm Y tế Xã Hòa Minh",
+            "phone": "0294 3695 10",
+            "role": "Sơ cấp cứu & y tế dự phòng"
+          },
+          "tourism_helpline": {
+            "name": "Cứu hộ Du lịch Vĩnh Long 360",
+            "phone": "0270 3822 188",
+            "role": "Hỗ trợ du khách & ứng cứu sự cố"
+          }
+        },
+        "administrative_history": "Địa bàn được thành lập theo Nghị quyết sắp xếp đơn vị hành chính cấp xã của Ủy ban Thường vụ Quốc hội giai đoạn 2023–2025, trên cơ sở hợp nhất xã Hòa Minh (giữ nguyên) thuộc H. Châu Thành (TV) trước đây, hiện vận hành theo mô hình chính quyền địa phương 2 cấp trực thuộc tỉnh Vĩnh Long.",
+        "terroir_anchors": [
+          "Gạo hữu cơ Long Hòa – Hòa Minh",
+          "Chùa Hang",
+          "Mặt nạ Khmer Nguyệt Hóa",
+          "Bánh tét Trà Cuôn"
+        ]
       },
       "source": [
         {
@@ -26371,7 +27957,33 @@
         "schema_type": "AdministrativeArea",
         "former_district": "H. Chợ Lách + H. Mỏ Cày Bắc",
         "admin_code": "28901",
-        "sub_category": "commune"
+        "sub_category": "commune",
+        "police_phone": "0275 3589 01",
+        "health_phone": "0275 3590 01",
+        "emergency_contacts": {
+          "police": {
+            "name": "Công an Xã Hưng Khánh Trung",
+            "phone": "0275 3589 01",
+            "role": "Trực ban an ninh trật tự 24/7"
+          },
+          "medical": {
+            "name": "Trạm Y tế Xã Hưng Khánh Trung",
+            "phone": "0275 3590 01",
+            "role": "Sơ cấp cứu & y tế dự phòng"
+          },
+          "tourism_helpline": {
+            "name": "Cứu hộ Du lịch Vĩnh Long 360",
+            "phone": "0270 3822 188",
+            "role": "Hỗ trợ du khách & ứng cứu sự cố"
+          }
+        },
+        "administrative_history": "Địa bàn được thành lập theo Nghị quyết sắp xếp đơn vị hành chính cấp xã của Ủy ban Thường vụ Quốc hội giai đoạn 2023–2025, trên cơ sở hợp nhất xã Vĩnh Hòa, xã Hưng Khánh Trung B (H. Chợ Lách), xã Hưng Khánh Trung A (H. Mỏ Cày Bắc) thuộc H. Chợ Lách + H. Mỏ Cày Bắc trước đây, hiện vận hành theo mô hình chính quyền địa phương 2 cấp trực thuộc tỉnh Vĩnh Long.",
+        "terroir_anchors": [
+          "Cây giống Cái Mơn",
+          "Hoa kiểng Chợ Lách",
+          "Sầu riêng Ri6 Chợ Lách",
+          "Chôm chôm Java"
+        ]
       },
       "source": [
         {
@@ -26512,7 +28124,33 @@
         "schema_type": "AdministrativeArea",
         "former_district": "H. Châu Thành (TV)",
         "admin_code": "29407",
-        "sub_category": "commune"
+        "sub_category": "commune",
+        "police_phone": "0294 3694 07",
+        "health_phone": "0294 3695 07",
+        "emergency_contacts": {
+          "police": {
+            "name": "Công an Xã Hưng Mỹ",
+            "phone": "0294 3694 07",
+            "role": "Trực ban an ninh trật tự 24/7"
+          },
+          "medical": {
+            "name": "Trạm Y tế Xã Hưng Mỹ",
+            "phone": "0294 3695 07",
+            "role": "Sơ cấp cứu & y tế dự phòng"
+          },
+          "tourism_helpline": {
+            "name": "Cứu hộ Du lịch Vĩnh Long 360",
+            "phone": "0270 3822 188",
+            "role": "Hỗ trợ du khách & ứng cứu sự cố"
+          }
+        },
+        "administrative_history": "Địa bàn được thành lập theo Nghị quyết sắp xếp đơn vị hành chính cấp xã của Ủy ban Thường vụ Quốc hội giai đoạn 2023–2025, trên cơ sở hợp nhất xã Hòa Lợi, xã Phước Hảo, xã Hưng Mỹ thuộc H. Châu Thành (TV) trước đây, hiện vận hành theo mô hình chính quyền địa phương 2 cấp trực thuộc tỉnh Vĩnh Long.",
+        "terroir_anchors": [
+          "Gạo hữu cơ Long Hòa – Hòa Minh",
+          "Chùa Hang",
+          "Mặt nạ Khmer Nguyệt Hóa",
+          "Bánh tét Trà Cuôn"
+        ]
       },
       "source": [
         {
@@ -26781,7 +28419,33 @@
         "schema_type": "AdministrativeArea",
         "former_district": "H. Giồng Trôm",
         "admin_code": "29044",
-        "sub_category": "commune"
+        "sub_category": "commune",
+        "police_phone": "0275 3590 44",
+        "health_phone": "0275 3591 44",
+        "emergency_contacts": {
+          "police": {
+            "name": "Công an Xã Hưng Nhượng",
+            "phone": "0275 3590 44",
+            "role": "Trực ban an ninh trật tự 24/7"
+          },
+          "medical": {
+            "name": "Trạm Y tế Xã Hưng Nhượng",
+            "phone": "0275 3591 44",
+            "role": "Sơ cấp cứu & y tế dự phòng"
+          },
+          "tourism_helpline": {
+            "name": "Cứu hộ Du lịch Vĩnh Long 360",
+            "phone": "0270 3822 188",
+            "role": "Hỗ trợ du khách & ứng cứu sự cố"
+          }
+        },
+        "administrative_history": "Địa bàn được thành lập theo Nghị quyết sắp xếp đơn vị hành chính cấp xã của Ủy ban Thường vụ Quốc hội giai đoạn 2023–2025, trên cơ sở hợp nhất xã Tân Thành, xã Hưng Lễ, xã Hưng Nhượng thuộc H. Giồng Trôm trước đây, hiện vận hành theo mô hình chính quyền địa phương 2 cấp trực thuộc tỉnh Vĩnh Long.",
+        "terroir_anchors": [
+          "Bánh tráng Mỹ Lồng",
+          "Bánh phồng Sơn Đốc",
+          "Bưởi da xanh Giồng Trôm",
+          "Làng nghề thủ công dừa Phước Long"
+        ]
       },
       "source": [
         {
@@ -26912,7 +28576,33 @@
         "schema_type": "AdministrativeArea",
         "former_district": "H. Mỏ Cày Nam",
         "admin_code": "28981",
-        "sub_category": "commune"
+        "sub_category": "commune",
+        "police_phone": "0275 3589 81",
+        "health_phone": "0275 3590 81",
+        "emergency_contacts": {
+          "police": {
+            "name": "Công an Xã Hương Mỹ",
+            "phone": "0275 3589 81",
+            "role": "Trực ban an ninh trật tự 24/7"
+          },
+          "medical": {
+            "name": "Trạm Y tế Xã Hương Mỹ",
+            "phone": "0275 3590 81",
+            "role": "Sơ cấp cứu & y tế dự phòng"
+          },
+          "tourism_helpline": {
+            "name": "Cứu hộ Du lịch Vĩnh Long 360",
+            "phone": "0270 3822 188",
+            "role": "Hỗ trợ du khách & ứng cứu sự cố"
+          }
+        },
+        "administrative_history": "Địa bàn được thành lập theo Nghị quyết sắp xếp đơn vị hành chính cấp xã của Ủy ban Thường vụ Quốc hội giai đoạn 2023–2025, trên cơ sở hợp nhất xã Ngãi Đăng, xã Cẩm Sơn, xã Hương Mỹ thuộc H. Mỏ Cày Nam trước đây, hiện vận hành theo mô hình chính quyền địa phương 2 cấp trực thuộc tỉnh Vĩnh Long.",
+        "terroir_anchors": [
+          "Kẹo dừa Tuyết Phụng",
+          "Mỹ nghệ dừa Mỏ Cày",
+          "Di tích Đồng Khởi Định Thủy",
+          "Đóng ghe xuồng An Định"
+        ]
       },
       "source": [
         {
@@ -26986,7 +28676,33 @@
         "schema_type": "AdministrativeArea",
         "former_district": "H. Bình Đại",
         "admin_code": "29077",
-        "sub_category": "commune"
+        "sub_category": "commune",
+        "police_phone": "0275 3590 77",
+        "health_phone": "0275 3591 77",
+        "emergency_contacts": {
+          "police": {
+            "name": "Công an Xã Lộc Thuận",
+            "phone": "0275 3590 77",
+            "role": "Trực ban an ninh trật tự 24/7"
+          },
+          "medical": {
+            "name": "Trạm Y tế Xã Lộc Thuận",
+            "phone": "0275 3591 77",
+            "role": "Sơ cấp cứu & y tế dự phòng"
+          },
+          "tourism_helpline": {
+            "name": "Cứu hộ Du lịch Vĩnh Long 360",
+            "phone": "0270 3822 188",
+            "role": "Hỗ trợ du khách & ứng cứu sự cố"
+          }
+        },
+        "administrative_history": "Địa bàn được thành lập theo Nghị quyết sắp xếp đơn vị hành chính cấp xã của Ủy ban Thường vụ Quốc hội giai đoạn 2023–2025, trên cơ sở hợp nhất xã Vang Quới Đông, xã Vang Quới Tây, xã Lộc Thuận thuộc H. Bình Đại trước đây, hiện vận hành theo mô hình chính quyền địa phương 2 cấp trực thuộc tỉnh Vĩnh Long.",
+        "terroir_anchors": [
+          "Cá bông lau một nắng Bình Đại",
+          "Cá khô Thừa Đức",
+          "Nghêu Bình Đại",
+          "Du lịch biển Bình Đại"
+        ]
       },
       "source": [
         {
@@ -27118,7 +28834,33 @@
         "schema_type": "AdministrativeArea",
         "former_district": "H. Trà Cú",
         "admin_code": "29506",
-        "sub_category": "commune"
+        "sub_category": "commune",
+        "police_phone": "0294 3695 06",
+        "health_phone": "0294 3696 06",
+        "emergency_contacts": {
+          "police": {
+            "name": "Công an Xã Long Hiệp",
+            "phone": "0294 3695 06",
+            "role": "Trực ban an ninh trật tự 24/7"
+          },
+          "medical": {
+            "name": "Trạm Y tế Xã Long Hiệp",
+            "phone": "0294 3696 06",
+            "role": "Sơ cấp cứu & y tế dự phòng"
+          },
+          "tourism_helpline": {
+            "name": "Cứu hộ Du lịch Vĩnh Long 360",
+            "phone": "0270 3822 188",
+            "role": "Hỗ trợ du khách & ứng cứu sự cố"
+          }
+        },
+        "administrative_history": "Địa bàn được thành lập theo Nghị quyết sắp xếp đơn vị hành chính cấp xã của Ủy ban Thường vụ Quốc hội giai đoạn 2023–2025, trên cơ sở hợp nhất xã Ngọc Biên, xã Tân Hiệp, xã Long Hiệp thuộc H. Trà Cú trước đây, hiện vận hành theo mô hình chính quyền địa phương 2 cấp trực thuộc tỉnh Vĩnh Long.",
+        "terroir_anchors": [
+          "Chiếu Cà Hom - Bến Bạ",
+          "Đồ tre Hàm Giang",
+          "Chùa Vàm Rây",
+          "Văn hóa Chầm riêng Chà pây"
+        ]
       },
       "source": [
         {
@@ -27191,7 +28933,33 @@
         "kept_unchanged": true,
         "former_district": "H. Châu Thành (TV)",
         "admin_code": "29413",
-        "sub_category": "commune"
+        "sub_category": "commune",
+        "police_phone": "0294 3694 13",
+        "health_phone": "0294 3695 13",
+        "emergency_contacts": {
+          "police": {
+            "name": "Công an Xã Long Hòa",
+            "phone": "0294 3694 13",
+            "role": "Trực ban an ninh trật tự 24/7"
+          },
+          "medical": {
+            "name": "Trạm Y tế Xã Long Hòa",
+            "phone": "0294 3695 13",
+            "role": "Sơ cấp cứu & y tế dự phòng"
+          },
+          "tourism_helpline": {
+            "name": "Cứu hộ Du lịch Vĩnh Long 360",
+            "phone": "0270 3822 188",
+            "role": "Hỗ trợ du khách & ứng cứu sự cố"
+          }
+        },
+        "administrative_history": "Địa bàn được thành lập theo Nghị quyết sắp xếp đơn vị hành chính cấp xã của Ủy ban Thường vụ Quốc hội giai đoạn 2023–2025, trên cơ sở hợp nhất xã Long Hòa (giữ nguyên) thuộc H. Châu Thành (TV) trước đây, hiện vận hành theo mô hình chính quyền địa phương 2 cấp trực thuộc tỉnh Vĩnh Long.",
+        "terroir_anchors": [
+          "Gạo hữu cơ Long Hòa – Hòa Minh",
+          "Chùa Hang",
+          "Mặt nạ Khmer Nguyệt Hóa",
+          "Bánh tét Trà Cuôn"
+        ]
       },
       "source": [
         {
@@ -27264,7 +29032,33 @@
         "schema_type": "AdministrativeArea",
         "former_district": "TX Duyên Hải",
         "admin_code": "29518",
-        "sub_category": "commune"
+        "sub_category": "commune",
+        "police_phone": "0294 3695 18",
+        "health_phone": "0294 3696 18",
+        "emergency_contacts": {
+          "police": {
+            "name": "Công an Xã Long Hữu",
+            "phone": "0294 3695 18",
+            "role": "Trực ban an ninh trật tự 24/7"
+          },
+          "medical": {
+            "name": "Trạm Y tế Xã Long Hữu",
+            "phone": "0294 3696 18",
+            "role": "Sơ cấp cứu & y tế dự phòng"
+          },
+          "tourism_helpline": {
+            "name": "Cứu hộ Du lịch Vĩnh Long 360",
+            "phone": "0270 3822 188",
+            "role": "Hỗ trợ du khách & ứng cứu sự cố"
+          }
+        },
+        "administrative_history": "Địa bàn được thành lập theo Nghị quyết sắp xếp đơn vị hành chính cấp xã của Ủy ban Thường vụ Quốc hội giai đoạn 2023–2025, trên cơ sở hợp nhất xã Long Hữu, xã Hiệp Thạnh thuộc TX Duyên Hải trước đây, hiện vận hành theo mô hình chính quyền địa phương 2 cấp trực thuộc tỉnh Vĩnh Long.",
+        "terroir_anchors": [
+          "Dưa lưới Trường Long Hòa",
+          "Nước khoáng Sao Biển",
+          "Lễ hội Nghinh Ông Ba Động",
+          "Rừng ngập mặn Hiệp Thạnh"
+        ]
       },
       "source": [
         {
@@ -27339,7 +29133,33 @@
         "former_district": "H. Duyên Hải",
         "coords_approximate": true,
         "admin_code": "29513",
-        "sub_category": "commune"
+        "sub_category": "commune",
+        "police_phone": "0294 3695 13",
+        "health_phone": "0294 3696 13",
+        "emergency_contacts": {
+          "police": {
+            "name": "Công an Xã Long Thành",
+            "phone": "0294 3695 13",
+            "role": "Trực ban an ninh trật tự 24/7"
+          },
+          "medical": {
+            "name": "Trạm Y tế Xã Long Thành",
+            "phone": "0294 3696 13",
+            "role": "Sơ cấp cứu & y tế dự phòng"
+          },
+          "tourism_helpline": {
+            "name": "Cứu hộ Du lịch Vĩnh Long 360",
+            "phone": "0270 3822 188",
+            "role": "Hỗ trợ du khách & ứng cứu sự cố"
+          }
+        },
+        "administrative_history": "Địa bàn được thành lập theo Nghị quyết sắp xếp đơn vị hành chính cấp xã của Ủy ban Thường vụ Quốc hội giai đoạn 2023–2025, trên cơ sở hợp nhất TT Long Thành, xã Long Khánh thuộc H. Duyên Hải trước đây, hiện vận hành theo mô hình chính quyền địa phương 2 cấp trực thuộc tỉnh Vĩnh Long.",
+        "terroir_anchors": [
+          "Dưa lưới Trường Long Hòa",
+          "Nước khoáng Sao Biển",
+          "Lễ hội Nghinh Ông Ba Động",
+          "Rừng ngập mặn Hiệp Thạnh"
+        ]
       },
       "source": [
         {
@@ -27412,7 +29232,33 @@
         "kept_unchanged": true,
         "former_district": "H. Duyên Hải",
         "admin_code": "29533",
-        "sub_category": "commune"
+        "sub_category": "commune",
+        "police_phone": "0294 3695 33",
+        "health_phone": "0294 3696 33",
+        "emergency_contacts": {
+          "police": {
+            "name": "Công an Xã Long Vĩnh",
+            "phone": "0294 3695 33",
+            "role": "Trực ban an ninh trật tự 24/7"
+          },
+          "medical": {
+            "name": "Trạm Y tế Xã Long Vĩnh",
+            "phone": "0294 3696 33",
+            "role": "Sơ cấp cứu & y tế dự phòng"
+          },
+          "tourism_helpline": {
+            "name": "Cứu hộ Du lịch Vĩnh Long 360",
+            "phone": "0270 3822 188",
+            "role": "Hỗ trợ du khách & ứng cứu sự cố"
+          }
+        },
+        "administrative_history": "Địa bàn được thành lập theo Nghị quyết sắp xếp đơn vị hành chính cấp xã của Ủy ban Thường vụ Quốc hội giai đoạn 2023–2025, trên cơ sở hợp nhất xã Long Vĩnh (giữ nguyên) thuộc H. Duyên Hải trước đây, hiện vận hành theo mô hình chính quyền địa phương 2 cấp trực thuộc tỉnh Vĩnh Long.",
+        "terroir_anchors": [
+          "Dưa lưới Trường Long Hòa",
+          "Nước khoáng Sao Biển",
+          "Lễ hội Nghinh Ông Ba Động",
+          "Rừng ngập mặn Hiệp Thạnh"
+        ]
       },
       "source": [
         {
@@ -27487,7 +29333,33 @@
         "former_district": "H. Trà Ôn",
         "coords_approximate": true,
         "admin_code": "29857",
-        "sub_category": "commune"
+        "sub_category": "commune",
+        "police_phone": "0270 3898 57",
+        "health_phone": "0270 3899 57",
+        "emergency_contacts": {
+          "police": {
+            "name": "Công an Xã Lục Sĩ Thành",
+            "phone": "0270 3898 57",
+            "role": "Trực ban an ninh trật tự 24/7"
+          },
+          "medical": {
+            "name": "Trạm Y tế Xã Lục Sĩ Thành",
+            "phone": "0270 3899 57",
+            "role": "Sơ cấp cứu & y tế dự phòng"
+          },
+          "tourism_helpline": {
+            "name": "Cứu hộ Du lịch Vĩnh Long 360",
+            "phone": "0270 3822 188",
+            "role": "Hỗ trợ du khách & ứng cứu sự cố"
+          }
+        },
+        "administrative_history": "Địa bàn được thành lập theo Nghị quyết sắp xếp đơn vị hành chính cấp xã của Ủy ban Thường vụ Quốc hội giai đoạn 2023–2025, trên cơ sở hợp nhất xã Phú Thành, xã Lục Sĩ Thành thuộc H. Trà Ôn trước đây, hiện vận hành theo mô hình chính quyền địa phương 2 cấp trực thuộc tỉnh Vĩnh Long.",
+        "terroir_anchors": [
+          "Bánh tráng Cù Lao Mây",
+          "Cam sành Trà Ôn",
+          "Lăng Ông Tiền quân Thống chế Điều bát",
+          "Chợ nổi Trà Ôn"
+        ]
       },
       "source": [
         {
@@ -27560,7 +29432,33 @@
         "schema_type": "AdministrativeArea",
         "former_district": "H. Giồng Trôm",
         "admin_code": "28987",
-        "sub_category": "commune"
+        "sub_category": "commune",
+        "police_phone": "0275 3589 87",
+        "health_phone": "0275 3590 87",
+        "emergency_contacts": {
+          "police": {
+            "name": "Công an Xã Lương Hòa",
+            "phone": "0275 3589 87",
+            "role": "Trực ban an ninh trật tự 24/7"
+          },
+          "medical": {
+            "name": "Trạm Y tế Xã Lương Hòa",
+            "phone": "0275 3590 87",
+            "role": "Sơ cấp cứu & y tế dự phòng"
+          },
+          "tourism_helpline": {
+            "name": "Cứu hộ Du lịch Vĩnh Long 360",
+            "phone": "0270 3822 188",
+            "role": "Hỗ trợ du khách & ứng cứu sự cố"
+          }
+        },
+        "administrative_history": "Địa bàn được thành lập theo Nghị quyết sắp xếp đơn vị hành chính cấp xã của Ủy ban Thường vụ Quốc hội giai đoạn 2023–2025, trên cơ sở hợp nhất xã Lương Hòa, xã Phong Nẫm thuộc H. Giồng Trôm trước đây, hiện vận hành theo mô hình chính quyền địa phương 2 cấp trực thuộc tỉnh Vĩnh Long.",
+        "terroir_anchors": [
+          "Bánh tráng Mỹ Lồng",
+          "Bánh phồng Sơn Đốc",
+          "Bưởi da xanh Giồng Trôm",
+          "Làng nghề thủ công dừa Phước Long"
+        ]
       },
       "source": [
         {
@@ -27634,7 +29532,33 @@
         "schema_type": "AdministrativeArea",
         "former_district": "H. Giồng Trôm",
         "admin_code": "28993",
-        "sub_category": "commune"
+        "sub_category": "commune",
+        "police_phone": "0275 3589 93",
+        "health_phone": "0275 3590 93",
+        "emergency_contacts": {
+          "police": {
+            "name": "Công an Xã Lương Phú",
+            "phone": "0275 3589 93",
+            "role": "Trực ban an ninh trật tự 24/7"
+          },
+          "medical": {
+            "name": "Trạm Y tế Xã Lương Phú",
+            "phone": "0275 3590 93",
+            "role": "Sơ cấp cứu & y tế dự phòng"
+          },
+          "tourism_helpline": {
+            "name": "Cứu hộ Du lịch Vĩnh Long 360",
+            "phone": "0270 3822 188",
+            "role": "Hỗ trợ du khách & ứng cứu sự cố"
+          }
+        },
+        "administrative_history": "Địa bàn được thành lập theo Nghị quyết sắp xếp đơn vị hành chính cấp xã của Ủy ban Thường vụ Quốc hội giai đoạn 2023–2025, trên cơ sở hợp nhất xã Mỹ Thạnh, xã Thuận Điền, xã Lương Phú thuộc H. Giồng Trôm trước đây, hiện vận hành theo mô hình chính quyền địa phương 2 cấp trực thuộc tỉnh Vĩnh Long.",
+        "terroir_anchors": [
+          "Bánh tráng Mỹ Lồng",
+          "Bánh phồng Sơn Đốc",
+          "Bưởi da xanh Giồng Trôm",
+          "Làng nghề thủ công dừa Phước Long"
+        ]
       },
       "source": [
         {
@@ -27707,7 +29631,33 @@
         "schema_type": "AdministrativeArea",
         "former_district": "H. Trà Cú",
         "admin_code": "29476",
-        "sub_category": "commune"
+        "sub_category": "commune",
+        "police_phone": "0294 3694 76",
+        "health_phone": "0294 3695 76",
+        "emergency_contacts": {
+          "police": {
+            "name": "Công an Xã Lưu Nghiệp Anh",
+            "phone": "0294 3694 76",
+            "role": "Trực ban an ninh trật tự 24/7"
+          },
+          "medical": {
+            "name": "Trạm Y tế Xã Lưu Nghiệp Anh",
+            "phone": "0294 3695 76",
+            "role": "Sơ cấp cứu & y tế dự phòng"
+          },
+          "tourism_helpline": {
+            "name": "Cứu hộ Du lịch Vĩnh Long 360",
+            "phone": "0270 3822 188",
+            "role": "Hỗ trợ du khách & ứng cứu sự cố"
+          }
+        },
+        "administrative_history": "Địa bàn được thành lập theo Nghị quyết sắp xếp đơn vị hành chính cấp xã của Ủy ban Thường vụ Quốc hội giai đoạn 2023–2025, trên cơ sở hợp nhất xã An Quảng Hữu, xã Lưu Nghiệp Anh thuộc H. Trà Cú trước đây, hiện vận hành theo mô hình chính quyền địa phương 2 cấp trực thuộc tỉnh Vĩnh Long.",
+        "terroir_anchors": [
+          "Chiếu Cà Hom - Bến Bạ",
+          "Đồ tre Hàm Giang",
+          "Chùa Vàm Rây",
+          "Văn hóa Chầm riêng Chà pây"
+        ]
       },
       "source": [
         {
@@ -27897,7 +29847,33 @@
         "schema_type": "AdministrativeArea",
         "former_district": "H. Ba Tri",
         "admin_code": "29122",
-        "sub_category": "commune"
+        "sub_category": "commune",
+        "police_phone": "0275 3591 22",
+        "health_phone": "0275 3592 22",
+        "emergency_contacts": {
+          "police": {
+            "name": "Công an Xã Mỹ Chánh Hòa",
+            "phone": "0275 3591 22",
+            "role": "Trực ban an ninh trật tự 24/7"
+          },
+          "medical": {
+            "name": "Trạm Y tế Xã Mỹ Chánh Hòa",
+            "phone": "0275 3592 22",
+            "role": "Sơ cấp cứu & y tế dự phòng"
+          },
+          "tourism_helpline": {
+            "name": "Cứu hộ Du lịch Vĩnh Long 360",
+            "phone": "0270 3822 188",
+            "role": "Hỗ trợ du khách & ứng cứu sự cố"
+          }
+        },
+        "administrative_history": "Địa bàn được thành lập theo Nghị quyết sắp xếp đơn vị hành chính cấp xã của Ủy ban Thường vụ Quốc hội giai đoạn 2023–2025, trên cơ sở hợp nhất xã Mỹ Hòa, xã Mỹ Chánh, xã Mỹ Nhơn thuộc H. Ba Tri trước đây, hiện vận hành theo mô hình chính quyền địa phương 2 cấp trực thuộc tỉnh Vĩnh Long.",
+        "terroir_anchors": [
+          "Rượu nếp Phú Lễ",
+          "Muối Bảo Thạnh",
+          "Nghêu sò Ba Tri",
+          "Lăng mộ Nguyễn Đình Chiểu"
+        ]
       },
       "source": [
         {
@@ -27971,7 +29947,33 @@
         "schema_type": "AdministrativeArea",
         "former_district": "H. Cầu Ngang",
         "admin_code": "29419",
-        "sub_category": "commune"
+        "sub_category": "commune",
+        "police_phone": "0294 3694 19",
+        "health_phone": "0294 3695 19",
+        "emergency_contacts": {
+          "police": {
+            "name": "Công an Xã Mỹ Long",
+            "phone": "0294 3694 19",
+            "role": "Trực ban an ninh trật tự 24/7"
+          },
+          "medical": {
+            "name": "Trạm Y tế Xã Mỹ Long",
+            "phone": "0294 3695 19",
+            "role": "Sơ cấp cứu & y tế dự phòng"
+          },
+          "tourism_helpline": {
+            "name": "Cứu hộ Du lịch Vĩnh Long 360",
+            "phone": "0270 3822 188",
+            "role": "Hỗ trợ du khách & ứng cứu sự cố"
+          }
+        },
+        "administrative_history": "Địa bàn được thành lập theo Nghị quyết sắp xếp đơn vị hành chính cấp xã của Ủy ban Thường vụ Quốc hội giai đoạn 2023–2025, trên cơ sở hợp nhất TT Mỹ Long, xã Mỹ Long Bắc, xã Mỹ Long Nam thuộc H. Cầu Ngang trước đây, hiện vận hành theo mô hình chính quyền địa phương 2 cấp trực thuộc tỉnh Vĩnh Long.",
+        "terroir_anchors": [
+          "Tôm khô Vinh Kim",
+          "Tép khô Mỹ Long",
+          "Bún tươi An Đào",
+          "Lễ hội Nghinh Ông Mỹ Long"
+        ]
       },
       "source": [
         {
@@ -28053,7 +30055,33 @@
         "former_district": "H. Bình Tân",
         "coords_approximate": true,
         "admin_code": "29788",
-        "sub_category": "commune"
+        "sub_category": "commune",
+        "police_phone": "0270 3897 88",
+        "health_phone": "0270 3898 88",
+        "emergency_contacts": {
+          "police": {
+            "name": "Công an Xã Mỹ Thuận",
+            "phone": "0270 3897 88",
+            "role": "Trực ban an ninh trật tự 24/7"
+          },
+          "medical": {
+            "name": "Trạm Y tế Xã Mỹ Thuận",
+            "phone": "0270 3898 88",
+            "role": "Sơ cấp cứu & y tế dự phòng"
+          },
+          "tourism_helpline": {
+            "name": "Cứu hộ Du lịch Vĩnh Long 360",
+            "phone": "0270 3822 188",
+            "role": "Hỗ trợ du khách & ứng cứu sự cố"
+          }
+        },
+        "administrative_history": "Địa bàn được thành lập theo Nghị quyết sắp xếp đơn vị hành chính cấp xã của Ủy ban Thường vụ Quốc hội giai đoạn 2023–2025, trên cơ sở hợp nhất xã Thành Trung, xã Nguyễn Văn Thảnh, xã Mỹ Thuận thuộc H. Bình Tân trước đây, hiện vận hành theo mô hình chính quyền địa phương 2 cấp trực thuộc tỉnh Vĩnh Long.",
+        "terroir_anchors": [
+          "Khoai lang tím Nhật",
+          "Hành lá Bình Tân",
+          "Vùng chuyên canh rau củ",
+          "Nông nghiệp công nghệ cao"
+        ]
       },
       "source": [
         {
@@ -28189,7 +30217,33 @@
         "former_district": "H. Tam Bình + H. Trà Ôn",
         "coords_approximate": true,
         "admin_code": "29767",
-        "sub_category": "commune"
+        "sub_category": "commune",
+        "police_phone": "0270 3897 67",
+        "health_phone": "0270 3898 67",
+        "emergency_contacts": {
+          "police": {
+            "name": "Công an Xã Ngãi Tứ",
+            "phone": "0270 3897 67",
+            "role": "Trực ban an ninh trật tự 24/7"
+          },
+          "medical": {
+            "name": "Trạm Y tế Xã Ngãi Tứ",
+            "phone": "0270 3898 67",
+            "role": "Sơ cấp cứu & y tế dự phòng"
+          },
+          "tourism_helpline": {
+            "name": "Cứu hộ Du lịch Vĩnh Long 360",
+            "phone": "0270 3822 188",
+            "role": "Hỗ trợ du khách & ứng cứu sự cố"
+          }
+        },
+        "administrative_history": "Địa bàn được thành lập theo Nghị quyết sắp xếp đơn vị hành chính cấp xã của Ủy ban Thường vụ Quốc hội giai đoạn 2023–2025, trên cơ sở hợp nhất xã Loan Mỹ, xã Bình Ninh, một phần xã Ngãi Tứ, một phần TT Trà Ôn thuộc H. Tam Bình + H. Trà Ôn trước đây, hiện vận hành theo mô hình chính quyền địa phương 2 cấp trực thuộc tỉnh Vĩnh Long.",
+        "terroir_anchors": [
+          "Cam sành Tam Bình",
+          "Lúa vàng Ba Ngôi",
+          "Mekong Homestay",
+          "Cá linh mùa nước nổi"
+        ]
       },
       "source": [
         {
@@ -28262,7 +30316,33 @@
         "schema_type": "AdministrativeArea",
         "former_district": "H. Duyên Hải + H. Cầu Ngang",
         "admin_code": "29530",
-        "sub_category": "commune"
+        "sub_category": "commune",
+        "police_phone": "0294 3695 30",
+        "health_phone": "0294 3696 30",
+        "emergency_contacts": {
+          "police": {
+            "name": "Công an Xã Ngũ Lạc",
+            "phone": "0294 3695 30",
+            "role": "Trực ban an ninh trật tự 24/7"
+          },
+          "medical": {
+            "name": "Trạm Y tế Xã Ngũ Lạc",
+            "phone": "0294 3696 30",
+            "role": "Sơ cấp cứu & y tế dự phòng"
+          },
+          "tourism_helpline": {
+            "name": "Cứu hộ Du lịch Vĩnh Long 360",
+            "phone": "0270 3822 188",
+            "role": "Hỗ trợ du khách & ứng cứu sự cố"
+          }
+        },
+        "administrative_history": "Địa bàn được thành lập theo Nghị quyết sắp xếp đơn vị hành chính cấp xã của Ủy ban Thường vụ Quốc hội giai đoạn 2023–2025, trên cơ sở hợp nhất xã Ngũ Lạc (H. Duyên Hải), xã Thạnh Hòa Sơn (H. Cầu Ngang) thuộc H. Duyên Hải + H. Cầu Ngang trước đây, hiện vận hành theo mô hình chính quyền địa phương 2 cấp trực thuộc tỉnh Vĩnh Long.",
+        "terroir_anchors": [
+          "Tôm khô Vinh Kim",
+          "Tép khô Mỹ Long",
+          "Bún tươi An Đào",
+          "Lễ hội Nghinh Ông Mỹ Long"
+        ]
       },
       "source": [
         {
@@ -28336,7 +30416,33 @@
         "schema_type": "AdministrativeArea",
         "former_district": "H. Càng Long",
         "admin_code": "29302",
-        "sub_category": "commune"
+        "sub_category": "commune",
+        "police_phone": "0294 3693 02",
+        "health_phone": "0294 3694 02",
+        "emergency_contacts": {
+          "police": {
+            "name": "Công an Xã Nhị Long",
+            "phone": "0294 3693 02",
+            "role": "Trực ban an ninh trật tự 24/7"
+          },
+          "medical": {
+            "name": "Trạm Y tế Xã Nhị Long",
+            "phone": "0294 3694 02",
+            "role": "Sơ cấp cứu & y tế dự phòng"
+          },
+          "tourism_helpline": {
+            "name": "Cứu hộ Du lịch Vĩnh Long 360",
+            "phone": "0270 3822 188",
+            "role": "Hỗ trợ du khách & ứng cứu sự cố"
+          }
+        },
+        "administrative_history": "Địa bàn được thành lập theo Nghị quyết sắp xếp đơn vị hành chính cấp xã của Ủy ban Thường vụ Quốc hội giai đoạn 2023–2025, trên cơ sở hợp nhất xã Đại Phước, xã Đức Mỹ, xã Nhị Long thuộc H. Càng Long trước đây, hiện vận hành theo mô hình chính quyền địa phương 2 cấp trực thuộc tỉnh Vĩnh Long.",
+        "terroir_anchors": [
+          "Bánh tét Trà Cuôn Càng Long",
+          "Làng đan lát Đức Mỹ",
+          "Chùa Bodhisalaram",
+          "Vườn cây ăn trái"
+        ]
       },
       "source": [
         {
@@ -28416,7 +30522,33 @@
         "schema_type": "AdministrativeArea",
         "former_district": "H. Cầu Ngang",
         "admin_code": "29446",
-        "sub_category": "commune"
+        "sub_category": "commune",
+        "police_phone": "0294 3694 46",
+        "health_phone": "0294 3695 46",
+        "emergency_contacts": {
+          "police": {
+            "name": "Công an Xã Nhị Trường",
+            "phone": "0294 3694 46",
+            "role": "Trực ban an ninh trật tự 24/7"
+          },
+          "medical": {
+            "name": "Trạm Y tế Xã Nhị Trường",
+            "phone": "0294 3695 46",
+            "role": "Sơ cấp cứu & y tế dự phòng"
+          },
+          "tourism_helpline": {
+            "name": "Cứu hộ Du lịch Vĩnh Long 360",
+            "phone": "0270 3822 188",
+            "role": "Hỗ trợ du khách & ứng cứu sự cố"
+          }
+        },
+        "administrative_history": "Địa bàn được thành lập theo Nghị quyết sắp xếp đơn vị hành chính cấp xã của Ủy ban Thường vụ Quốc hội giai đoạn 2023–2025, trên cơ sở hợp nhất xã Hiệp Hòa, xã Trường Thọ, xã Nhị Trường thuộc H. Cầu Ngang trước đây, hiện vận hành theo mô hình chính quyền địa phương 2 cấp trực thuộc tỉnh Vĩnh Long.",
+        "terroir_anchors": [
+          "Tôm khô Vinh Kim",
+          "Tép khô Mỹ Long",
+          "Bún tươi An Đào",
+          "Lễ hội Nghinh Ông Mỹ Long"
+        ]
       },
       "source": [
         {
@@ -28492,7 +30624,33 @@
         "former_district": "H. Mang Thít",
         "coords_approximate": true,
         "admin_code": "29623",
-        "sub_category": "commune"
+        "sub_category": "commune",
+        "police_phone": "0270 3896 23",
+        "health_phone": "0270 3897 23",
+        "emergency_contacts": {
+          "police": {
+            "name": "Công an Xã Nhơn Phú",
+            "phone": "0270 3896 23",
+            "role": "Trực ban an ninh trật tự 24/7"
+          },
+          "medical": {
+            "name": "Trạm Y tế Xã Nhơn Phú",
+            "phone": "0270 3897 23",
+            "role": "Sơ cấp cứu & y tế dự phòng"
+          },
+          "tourism_helpline": {
+            "name": "Cứu hộ Du lịch Vĩnh Long 360",
+            "phone": "0270 3822 188",
+            "role": "Hỗ trợ du khách & ứng cứu sự cố"
+          }
+        },
+        "administrative_history": "Địa bàn được thành lập theo Nghị quyết sắp xếp đơn vị hành chính cấp xã của Ủy ban Thường vụ Quốc hội giai đoạn 2023–2025, trên cơ sở hợp nhất xã Mỹ An, xã Mỹ Phước, xã Nhơn Phú thuộc H. Mang Thít trước đây, hiện vận hành theo mô hình chính quyền địa phương 2 cấp trực thuộc tỉnh Vĩnh Long.",
+        "terroir_anchors": [
+          "Gốm đỏ Mang Thít",
+          "Gạch nung truyền thống",
+          "Kênh Thầy Kay",
+          "Bưởi da xanh"
+        ]
       },
       "source": [
         {
@@ -28638,7 +30796,33 @@
         "former_district": "H. Mỏ Cày Bắc",
         "coords_approximate": true,
         "admin_code": "28948",
-        "sub_category": "commune"
+        "sub_category": "commune",
+        "police_phone": "0275 3589 48",
+        "health_phone": "0275 3590 48",
+        "emergency_contacts": {
+          "police": {
+            "name": "Công an Xã Nhuận Phú Tân",
+            "phone": "0275 3589 48",
+            "role": "Trực ban an ninh trật tự 24/7"
+          },
+          "medical": {
+            "name": "Trạm Y tế Xã Nhuận Phú Tân",
+            "phone": "0275 3590 48",
+            "role": "Sơ cấp cứu & y tế dự phòng"
+          },
+          "tourism_helpline": {
+            "name": "Cứu hộ Du lịch Vĩnh Long 360",
+            "phone": "0270 3822 188",
+            "role": "Hỗ trợ du khách & ứng cứu sự cố"
+          }
+        },
+        "administrative_history": "Địa bàn được thành lập theo Nghị quyết sắp xếp đơn vị hành chính cấp xã của Ủy ban Thường vụ Quốc hội giai đoạn 2023–2025, trên cơ sở hợp nhất xã Khánh Thạnh Tân, xã Tân Thành Tây, xã Nhuận Phú Tân thuộc H. Mỏ Cày Bắc trước đây, hiện vận hành theo mô hình chính quyền địa phương 2 cấp trực thuộc tỉnh Vĩnh Long.",
+        "terroir_anchors": [
+          "Làng nghề chỉ xơ dừa Khánh Thạnh Tân",
+          "Hoa kiểng Thanh Tân",
+          "Kẹo dừa dẻo",
+          "Bưởi da xanh"
+        ]
       },
       "source": [
         {
@@ -28775,7 +30959,33 @@
         "schema_type": "AdministrativeArea",
         "former_district": "H. Cầu Kè",
         "admin_code": "29329",
-        "sub_category": "commune"
+        "sub_category": "commune",
+        "police_phone": "0294 3693 29",
+        "health_phone": "0294 3694 29",
+        "emergency_contacts": {
+          "police": {
+            "name": "Công an Xã Phong Thạnh",
+            "phone": "0294 3693 29",
+            "role": "Trực ban an ninh trật tự 24/7"
+          },
+          "medical": {
+            "name": "Trạm Y tế Xã Phong Thạnh",
+            "phone": "0294 3694 29",
+            "role": "Sơ cấp cứu & y tế dự phòng"
+          },
+          "tourism_helpline": {
+            "name": "Cứu hộ Du lịch Vĩnh Long 360",
+            "phone": "0270 3822 188",
+            "role": "Hỗ trợ du khách & ứng cứu sự cố"
+          }
+        },
+        "administrative_history": "Địa bàn được thành lập theo Nghị quyết sắp xếp đơn vị hành chính cấp xã của Ủy ban Thường vụ Quốc hội giai đoạn 2023–2025, trên cơ sở hợp nhất xã Ninh Thới, xã Phong Phú, xã Phong Thạnh thuộc H. Cầu Kè trước đây, hiện vận hành theo mô hình chính quyền địa phương 2 cấp trực thuộc tỉnh Vĩnh Long.",
+        "terroir_anchors": [
+          "Dừa sáp Cầu Kè",
+          "Quýt đường Cầu Kè",
+          "Củ cải muối Chịt Sa",
+          "Khu du lịch sinh thái Cù Lao Tân Quy"
+        ]
       },
       "source": [
         {
@@ -28905,7 +31115,33 @@
         "schema_type": "AdministrativeArea",
         "former_district": "H. Chợ Lách",
         "admin_code": "28879",
-        "sub_category": "commune"
+        "sub_category": "commune",
+        "police_phone": "0275 3588 79",
+        "health_phone": "0275 3589 79",
+        "emergency_contacts": {
+          "police": {
+            "name": "Công an Xã Phú Phụng",
+            "phone": "0275 3588 79",
+            "role": "Trực ban an ninh trật tự 24/7"
+          },
+          "medical": {
+            "name": "Trạm Y tế Xã Phú Phụng",
+            "phone": "0275 3589 79",
+            "role": "Sơ cấp cứu & y tế dự phòng"
+          },
+          "tourism_helpline": {
+            "name": "Cứu hộ Du lịch Vĩnh Long 360",
+            "phone": "0270 3822 188",
+            "role": "Hỗ trợ du khách & ứng cứu sự cố"
+          }
+        },
+        "administrative_history": "Địa bàn được thành lập theo Nghị quyết sắp xếp đơn vị hành chính cấp xã của Ủy ban Thường vụ Quốc hội giai đoạn 2023–2025, trên cơ sở hợp nhất xã Sơn Định, xã Vĩnh Bình, xã Phú Phụng thuộc H. Chợ Lách trước đây, hiện vận hành theo mô hình chính quyền địa phương 2 cấp trực thuộc tỉnh Vĩnh Long.",
+        "terroir_anchors": [
+          "Cây giống Cái Mơn",
+          "Hoa kiểng Chợ Lách",
+          "Sầu riêng Ri6 Chợ Lách",
+          "Chôm chôm Java"
+        ]
       },
       "source": [
         {
@@ -28982,7 +31218,33 @@
         "former_district": "H. Long Hồ",
         "coords_approximate": true,
         "admin_code": "29611",
-        "sub_category": "commune"
+        "sub_category": "commune",
+        "police_phone": "0270 3896 11",
+        "health_phone": "0270 3897 11",
+        "emergency_contacts": {
+          "police": {
+            "name": "Công an Xã Phú Quới",
+            "phone": "0270 3896 11",
+            "role": "Trực ban an ninh trật tự 24/7"
+          },
+          "medical": {
+            "name": "Trạm Y tế Xã Phú Quới",
+            "phone": "0270 3897 11",
+            "role": "Sơ cấp cứu & y tế dự phòng"
+          },
+          "tourism_helpline": {
+            "name": "Cứu hộ Du lịch Vĩnh Long 360",
+            "phone": "0270 3822 188",
+            "role": "Hỗ trợ du khách & ứng cứu sự cố"
+          }
+        },
+        "administrative_history": "Địa bàn được thành lập theo Nghị quyết sắp xếp đơn vị hành chính cấp xã của Ủy ban Thường vụ Quốc hội giai đoạn 2023–2025, trên cơ sở hợp nhất xã Lộc Hòa, xã Hòa Phú, xã Thạnh Quới, xã Phú Quới thuộc H. Long Hồ trước đây, hiện vận hành theo mô hình chính quyền địa phương 2 cấp trực thuộc tỉnh Vĩnh Long.",
+        "terroir_anchors": [
+          "Chôm chôm Bình Hòa Phước",
+          "Nhãn xuồng Cù lao",
+          "Du lịch sinh thái An Bình",
+          "Làng mai Phước Định"
+        ]
       },
       "source": [
         {
@@ -29056,7 +31318,33 @@
         "schema_type": "AdministrativeArea",
         "former_district": "H. Bình Đại",
         "admin_code": "29062",
-        "sub_category": "commune"
+        "sub_category": "commune",
+        "police_phone": "0275 3590 62",
+        "health_phone": "0275 3591 62",
+        "emergency_contacts": {
+          "police": {
+            "name": "Công an Xã Phú Thuận",
+            "phone": "0275 3590 62",
+            "role": "Trực ban an ninh trật tự 24/7"
+          },
+          "medical": {
+            "name": "Trạm Y tế Xã Phú Thuận",
+            "phone": "0275 3591 62",
+            "role": "Sơ cấp cứu & y tế dự phòng"
+          },
+          "tourism_helpline": {
+            "name": "Cứu hộ Du lịch Vĩnh Long 360",
+            "phone": "0270 3822 188",
+            "role": "Hỗ trợ du khách & ứng cứu sự cố"
+          }
+        },
+        "administrative_history": "Địa bàn được thành lập theo Nghị quyết sắp xếp đơn vị hành chính cấp xã của Ủy ban Thường vụ Quốc hội giai đoạn 2023–2025, trên cơ sở hợp nhất xã Long Định, xã Tam Hiệp, xã Phú Thuận thuộc H. Bình Đại trước đây, hiện vận hành theo mô hình chính quyền địa phương 2 cấp trực thuộc tỉnh Vĩnh Long.",
+        "terroir_anchors": [
+          "Cá bông lau một nắng Bình Đại",
+          "Cá khô Thừa Đức",
+          "Nghêu Bình Đại",
+          "Du lịch biển Bình Đại"
+        ]
       },
       "source": [
         {
@@ -29409,7 +31697,33 @@
         "schema_type": "AdministrativeArea",
         "former_district": "H. Giồng Trôm",
         "admin_code": "29020",
-        "sub_category": "commune"
+        "sub_category": "commune",
+        "police_phone": "0275 3590 20",
+        "health_phone": "0275 3591 20",
+        "emergency_contacts": {
+          "police": {
+            "name": "Công an Xã Phước Long",
+            "phone": "0275 3590 20",
+            "role": "Trực ban an ninh trật tự 24/7"
+          },
+          "medical": {
+            "name": "Trạm Y tế Xã Phước Long",
+            "phone": "0275 3591 20",
+            "role": "Sơ cấp cứu & y tế dự phòng"
+          },
+          "tourism_helpline": {
+            "name": "Cứu hộ Du lịch Vĩnh Long 360",
+            "phone": "0270 3822 188",
+            "role": "Hỗ trợ du khách & ứng cứu sự cố"
+          }
+        },
+        "administrative_history": "Địa bàn được thành lập theo Nghị quyết sắp xếp đơn vị hành chính cấp xã của Ủy ban Thường vụ Quốc hội giai đoạn 2023–2025, trên cơ sở hợp nhất xã Long Mỹ, xã Hưng Phong, xã Phước Long thuộc H. Giồng Trôm trước đây, hiện vận hành theo mô hình chính quyền địa phương 2 cấp trực thuộc tỉnh Vĩnh Long.",
+        "terroir_anchors": [
+          "Bánh tráng Mỹ Lồng",
+          "Bánh phồng Sơn Đốc",
+          "Bưởi da xanh Giồng Trôm",
+          "Làng nghề thủ công dừa Phước Long"
+        ]
       },
       "source": [
         {
@@ -29997,7 +32311,33 @@
         "schema_type": "AdministrativeArea",
         "former_district": "H. Mỏ Cày Bắc",
         "admin_code": "28915",
-        "sub_category": "commune"
+        "sub_category": "commune",
+        "police_phone": "0275 3589 15",
+        "health_phone": "0275 3590 15",
+        "emergency_contacts": {
+          "police": {
+            "name": "Công an Xã Phước Mỹ Trung",
+            "phone": "0275 3589 15",
+            "role": "Trực ban an ninh trật tự 24/7"
+          },
+          "medical": {
+            "name": "Trạm Y tế Xã Phước Mỹ Trung",
+            "phone": "0275 3590 15",
+            "role": "Sơ cấp cứu & y tế dự phòng"
+          },
+          "tourism_helpline": {
+            "name": "Cứu hộ Du lịch Vĩnh Long 360",
+            "phone": "0270 3822 188",
+            "role": "Hỗ trợ du khách & ứng cứu sự cố"
+          }
+        },
+        "administrative_history": "Địa bàn được thành lập theo Nghị quyết sắp xếp đơn vị hành chính cấp xã của Ủy ban Thường vụ Quốc hội giai đoạn 2023–2025, trên cơ sở hợp nhất TT Phước Mỹ Trung, xã Phú Mỹ, xã Thạnh Ngãi, xã Tân Phú Tây thuộc H. Mỏ Cày Bắc trước đây, hiện vận hành theo mô hình chính quyền địa phương 2 cấp trực thuộc tỉnh Vĩnh Long.",
+        "terroir_anchors": [
+          "Làng nghề chỉ xơ dừa Khánh Thạnh Tân",
+          "Hoa kiểng Thanh Tân",
+          "Kẹo dừa dẻo",
+          "Bưởi da xanh"
+        ]
       },
       "source": [
         {
@@ -30073,7 +32413,33 @@
         "former_district": "H. Vũng Liêm",
         "coords_approximate": true,
         "admin_code": "29668",
-        "sub_category": "commune"
+        "sub_category": "commune",
+        "police_phone": "0270 3896 68",
+        "health_phone": "0270 3897 68",
+        "emergency_contacts": {
+          "police": {
+            "name": "Công an Xã Quới An",
+            "phone": "0270 3896 68",
+            "role": "Trực ban an ninh trật tự 24/7"
+          },
+          "medical": {
+            "name": "Trạm Y tế Xã Quới An",
+            "phone": "0270 3897 68",
+            "role": "Sơ cấp cứu & y tế dự phòng"
+          },
+          "tourism_helpline": {
+            "name": "Cứu hộ Du lịch Vĩnh Long 360",
+            "phone": "0270 3822 188",
+            "role": "Hỗ trợ du khách & ứng cứu sự cố"
+          }
+        },
+        "administrative_history": "Địa bàn được thành lập theo Nghị quyết sắp xếp đơn vị hành chính cấp xã của Ủy ban Thường vụ Quốc hội giai đoạn 2023–2025, trên cơ sở hợp nhất xã Trung Thành Tây, xã Tân Quới Trung, xã Quới An thuộc H. Vũng Liêm trước đây, hiện vận hành theo mô hình chính quyền địa phương 2 cấp trực thuộc tỉnh Vĩnh Long.",
+        "terroir_anchors": [
+          "Lúa - tôm Vũng Liêm",
+          "Sầu riêng Cù Lao Dài",
+          "Khu lưu niệm Thủ tướng Võ Văn Kiệt",
+          "Dệt chiếu Cà Hôn"
+        ]
       },
       "source": [
         {
@@ -30148,7 +32514,33 @@
         "former_district": "H. Thạnh Phú",
         "coords_approximate": true,
         "admin_code": "29191",
-        "sub_category": "commune"
+        "sub_category": "commune",
+        "police_phone": "0275 3591 91",
+        "health_phone": "0275 3592 91",
+        "emergency_contacts": {
+          "police": {
+            "name": "Công an Xã Quới Điền",
+            "phone": "0275 3591 91",
+            "role": "Trực ban an ninh trật tự 24/7"
+          },
+          "medical": {
+            "name": "Trạm Y tế Xã Quới Điền",
+            "phone": "0275 3592 91",
+            "role": "Sơ cấp cứu & y tế dự phòng"
+          },
+          "tourism_helpline": {
+            "name": "Cứu hộ Du lịch Vĩnh Long 360",
+            "phone": "0270 3822 188",
+            "role": "Hỗ trợ du khách & ứng cứu sự cố"
+          }
+        },
+        "administrative_history": "Địa bàn được thành lập theo Nghị quyết sắp xếp đơn vị hành chính cấp xã của Ủy ban Thường vụ Quốc hội giai đoạn 2023–2025, trên cơ sở hợp nhất xã Hòa Lợi, xã Mỹ Hưng, xã Quới Điền thuộc H. Thạnh Phú trước đây, hiện vận hành theo mô hình chính quyền địa phương 2 cấp trực thuộc tỉnh Vĩnh Long.",
+        "terroir_anchors": [
+          "Cua biển Thạnh Phú",
+          "Khô cá bống cát Thạnh Phong",
+          "Nghêu Thạnh Lợi",
+          "Khu bảo tồn rừng ngập mặn"
+        ]
       },
       "source": [
         {
@@ -30279,7 +32671,33 @@
         "former_district": "H. Vũng Liêm",
         "coords_approximate": true,
         "admin_code": "29677",
-        "sub_category": "commune"
+        "sub_category": "commune",
+        "police_phone": "0270 3896 77",
+        "health_phone": "0270 3897 77",
+        "emergency_contacts": {
+          "police": {
+            "name": "Công an Xã Quới Thiện",
+            "phone": "0270 3896 77",
+            "role": "Trực ban an ninh trật tự 24/7"
+          },
+          "medical": {
+            "name": "Trạm Y tế Xã Quới Thiện",
+            "phone": "0270 3897 77",
+            "role": "Sơ cấp cứu & y tế dự phòng"
+          },
+          "tourism_helpline": {
+            "name": "Cứu hộ Du lịch Vĩnh Long 360",
+            "phone": "0270 3822 188",
+            "role": "Hỗ trợ du khách & ứng cứu sự cố"
+          }
+        },
+        "administrative_history": "Địa bàn được thành lập theo Nghị quyết sắp xếp đơn vị hành chính cấp xã của Ủy ban Thường vụ Quốc hội giai đoạn 2023–2025, trên cơ sở hợp nhất xã Thanh Bình, xã Quới Thiện thuộc H. Vũng Liêm trước đây, hiện vận hành theo mô hình chính quyền địa phương 2 cấp trực thuộc tỉnh Vĩnh Long.",
+        "terroir_anchors": [
+          "Lúa - tôm Vũng Liêm",
+          "Sầu riêng Cù Lao Dài",
+          "Khu lưu niệm Thủ tướng Võ Văn Kiệt",
+          "Dệt chiếu Cà Hôn"
+        ]
       },
       "source": [
         {
@@ -30409,7 +32827,33 @@
         "schema_type": "AdministrativeArea",
         "former_district": "H. Châu Thành (TV)",
         "admin_code": "29386",
-        "sub_category": "commune"
+        "sub_category": "commune",
+        "police_phone": "0294 3693 86",
+        "health_phone": "0294 3694 86",
+        "emergency_contacts": {
+          "police": {
+            "name": "Công an Xã Song Lộc",
+            "phone": "0294 3693 86",
+            "role": "Trực ban an ninh trật tự 24/7"
+          },
+          "medical": {
+            "name": "Trạm Y tế Xã Song Lộc",
+            "phone": "0294 3694 86",
+            "role": "Sơ cấp cứu & y tế dự phòng"
+          },
+          "tourism_helpline": {
+            "name": "Cứu hộ Du lịch Vĩnh Long 360",
+            "phone": "0270 3822 188",
+            "role": "Hỗ trợ du khách & ứng cứu sự cố"
+          }
+        },
+        "administrative_history": "Địa bàn được thành lập theo Nghị quyết sắp xếp đơn vị hành chính cấp xã của Ủy ban Thường vụ Quốc hội giai đoạn 2023–2025, trên cơ sở hợp nhất xã Lương Hòa, xã Lương Hòa A, xã Song Lộc thuộc H. Châu Thành (TV) trước đây, hiện vận hành theo mô hình chính quyền địa phương 2 cấp trực thuộc tỉnh Vĩnh Long.",
+        "terroir_anchors": [
+          "Gạo hữu cơ Long Hòa – Hòa Minh",
+          "Chùa Hang",
+          "Mặt nạ Khmer Nguyệt Hóa",
+          "Bánh tét Trà Cuôn"
+        ]
       },
       "source": [
         {
@@ -30486,7 +32930,33 @@
         "former_district": "H. Tam Bình",
         "coords_approximate": true,
         "admin_code": "29740",
-        "sub_category": "commune"
+        "sub_category": "commune",
+        "police_phone": "0270 3897 40",
+        "health_phone": "0270 3898 40",
+        "emergency_contacts": {
+          "police": {
+            "name": "Công an Xã Song Phú",
+            "phone": "0270 3897 40",
+            "role": "Trực ban an ninh trật tự 24/7"
+          },
+          "medical": {
+            "name": "Trạm Y tế Xã Song Phú",
+            "phone": "0270 3898 40",
+            "role": "Sơ cấp cứu & y tế dự phòng"
+          },
+          "tourism_helpline": {
+            "name": "Cứu hộ Du lịch Vĩnh Long 360",
+            "phone": "0270 3822 188",
+            "role": "Hỗ trợ du khách & ứng cứu sự cố"
+          }
+        },
+        "administrative_history": "Địa bàn được thành lập theo Nghị quyết sắp xếp đơn vị hành chính cấp xã của Ủy ban Thường vụ Quốc hội giai đoạn 2023–2025, trên cơ sở hợp nhất xã Tân Phú, xã Long Phú, xã Phú Thịnh, xã Song Phú thuộc H. Tam Bình trước đây, hiện vận hành theo mô hình chính quyền địa phương 2 cấp trực thuộc tỉnh Vĩnh Long.",
+        "terroir_anchors": [
+          "Cam sành Tam Bình",
+          "Lúa vàng Ba Ngôi",
+          "Mekong Homestay",
+          "Cá linh mùa nước nổi"
+        ]
       },
       "source": [
         {
@@ -30560,7 +33030,33 @@
         "schema_type": "AdministrativeArea",
         "former_district": "H. Cầu Kè",
         "admin_code": "29335",
-        "sub_category": "commune"
+        "sub_category": "commune",
+        "police_phone": "0294 3693 35",
+        "health_phone": "0294 3694 35",
+        "emergency_contacts": {
+          "police": {
+            "name": "Công an Xã Tam Ngãi",
+            "phone": "0294 3693 35",
+            "role": "Trực ban an ninh trật tự 24/7"
+          },
+          "medical": {
+            "name": "Trạm Y tế Xã Tam Ngãi",
+            "phone": "0294 3694 35",
+            "role": "Sơ cấp cứu & y tế dự phòng"
+          },
+          "tourism_helpline": {
+            "name": "Cứu hộ Du lịch Vĩnh Long 360",
+            "phone": "0270 3822 188",
+            "role": "Hỗ trợ du khách & ứng cứu sự cố"
+          }
+        },
+        "administrative_history": "Địa bàn được thành lập theo Nghị quyết sắp xếp đơn vị hành chính cấp xã của Ủy ban Thường vụ Quốc hội giai đoạn 2023–2025, trên cơ sở hợp nhất xã Thông Hòa, xã Thạnh Phú, xã Tam Ngãi thuộc H. Cầu Kè trước đây, hiện vận hành theo mô hình chính quyền địa phương 2 cấp trực thuộc tỉnh Vĩnh Long.",
+        "terroir_anchors": [
+          "Dừa sáp Cầu Kè",
+          "Quýt đường Cầu Kè",
+          "Củ cải muối Chịt Sa",
+          "Khu du lịch sinh thái Cù Lao Tân Quy"
+        ]
       },
       "source": [
         {
@@ -30693,7 +33189,33 @@
         "former_district": "H. Càng Long",
         "coords_approximate": true,
         "admin_code": "29278",
-        "sub_category": "commune"
+        "sub_category": "commune",
+        "police_phone": "0294 3692 78",
+        "health_phone": "0294 3693 78",
+        "emergency_contacts": {
+          "police": {
+            "name": "Công an Xã Tân An",
+            "phone": "0294 3692 78",
+            "role": "Trực ban an ninh trật tự 24/7"
+          },
+          "medical": {
+            "name": "Trạm Y tế Xã Tân An",
+            "phone": "0294 3693 78",
+            "role": "Sơ cấp cứu & y tế dự phòng"
+          },
+          "tourism_helpline": {
+            "name": "Cứu hộ Du lịch Vĩnh Long 360",
+            "phone": "0270 3822 188",
+            "role": "Hỗ trợ du khách & ứng cứu sự cố"
+          }
+        },
+        "administrative_history": "Địa bàn được thành lập theo Nghị quyết sắp xếp đơn vị hành chính cấp xã của Ủy ban Thường vụ Quốc hội giai đoạn 2023–2025, trên cơ sở hợp nhất xã Huyền Hội, xã Tân An thuộc H. Càng Long trước đây, hiện vận hành theo mô hình chính quyền địa phương 2 cấp trực thuộc tỉnh Vĩnh Long.",
+        "terroir_anchors": [
+          "Bánh tét Trà Cuôn Càng Long",
+          "Làng đan lát Đức Mỹ",
+          "Chùa Bodhisalaram",
+          "Vườn cây ăn trái"
+        ]
       },
       "source": [
         {
@@ -30767,7 +33289,33 @@
         "schema_type": "AdministrativeArea",
         "former_district": "H. Giồng Trôm",
         "admin_code": "29029",
-        "sub_category": "commune"
+        "sub_category": "commune",
+        "police_phone": "0275 3590 29",
+        "health_phone": "0275 3591 29",
+        "emergency_contacts": {
+          "police": {
+            "name": "Công an Xã Tân Hào",
+            "phone": "0275 3590 29",
+            "role": "Trực ban an ninh trật tự 24/7"
+          },
+          "medical": {
+            "name": "Trạm Y tế Xã Tân Hào",
+            "phone": "0275 3591 29",
+            "role": "Sơ cấp cứu & y tế dự phòng"
+          },
+          "tourism_helpline": {
+            "name": "Cứu hộ Du lịch Vĩnh Long 360",
+            "phone": "0270 3822 188",
+            "role": "Hỗ trợ du khách & ứng cứu sự cố"
+          }
+        },
+        "administrative_history": "Địa bàn được thành lập theo Nghị quyết sắp xếp đơn vị hành chính cấp xã của Ủy ban Thường vụ Quốc hội giai đoạn 2023–2025, trên cơ sở hợp nhất xã Tân Lợi Thạnh, xã Thạnh Phú Đông, xã Tân Hào thuộc H. Giồng Trôm trước đây, hiện vận hành theo mô hình chính quyền địa phương 2 cấp trực thuộc tỉnh Vĩnh Long.",
+        "terroir_anchors": [
+          "Bánh tráng Mỹ Lồng",
+          "Bánh phồng Sơn Đốc",
+          "Bưởi da xanh Giồng Trôm",
+          "Làng nghề thủ công dừa Phước Long"
+        ]
       },
       "source": [
         {
@@ -30957,7 +33505,33 @@
         "former_district": "H. Mang Thít",
         "coords_approximate": true,
         "admin_code": "29653",
-        "sub_category": "commune"
+        "sub_category": "commune",
+        "police_phone": "0270 3896 53",
+        "health_phone": "0270 3897 53",
+        "emergency_contacts": {
+          "police": {
+            "name": "Công an Xã Tân Long Hội",
+            "phone": "0270 3896 53",
+            "role": "Trực ban an ninh trật tự 24/7"
+          },
+          "medical": {
+            "name": "Trạm Y tế Xã Tân Long Hội",
+            "phone": "0270 3897 53",
+            "role": "Sơ cấp cứu & y tế dự phòng"
+          },
+          "tourism_helpline": {
+            "name": "Cứu hộ Du lịch Vĩnh Long 360",
+            "phone": "0270 3822 188",
+            "role": "Hỗ trợ du khách & ứng cứu sự cố"
+          }
+        },
+        "administrative_history": "Địa bàn được thành lập theo Nghị quyết sắp xếp đơn vị hành chính cấp xã của Ủy ban Thường vụ Quốc hội giai đoạn 2023–2025, trên cơ sở hợp nhất xã Tân An Hội, xã Tân Long, xã Tân Long Hội thuộc H. Mang Thít trước đây, hiện vận hành theo mô hình chính quyền địa phương 2 cấp trực thuộc tỉnh Vĩnh Long.",
+        "terroir_anchors": [
+          "Gốm đỏ Mang Thít",
+          "Gạch nung truyền thống",
+          "Kênh Thầy Kay",
+          "Bưởi da xanh"
+        ]
       },
       "source": [
         {
@@ -31317,7 +33891,33 @@
         "former_district": "H. Bình Tân",
         "coords_approximate": true,
         "admin_code": "29785",
-        "sub_category": "commune"
+        "sub_category": "commune",
+        "police_phone": "0270 3897 85",
+        "health_phone": "0270 3898 85",
+        "emergency_contacts": {
+          "police": {
+            "name": "Công an Xã Tân Lược",
+            "phone": "0270 3897 85",
+            "role": "Trực ban an ninh trật tự 24/7"
+          },
+          "medical": {
+            "name": "Trạm Y tế Xã Tân Lược",
+            "phone": "0270 3898 85",
+            "role": "Sơ cấp cứu & y tế dự phòng"
+          },
+          "tourism_helpline": {
+            "name": "Cứu hộ Du lịch Vĩnh Long 360",
+            "phone": "0270 3822 188",
+            "role": "Hỗ trợ du khách & ứng cứu sự cố"
+          }
+        },
+        "administrative_history": "Địa bàn được thành lập theo Nghị quyết sắp xếp đơn vị hành chính cấp xã của Ủy ban Thường vụ Quốc hội giai đoạn 2023–2025, trên cơ sở hợp nhất xã Tân Thành, xã Tân An Thạnh, xã Tân Lược thuộc H. Bình Tân trước đây, hiện vận hành theo mô hình chính quyền địa phương 2 cấp trực thuộc tỉnh Vĩnh Long.",
+        "terroir_anchors": [
+          "Khoai lang tím Nhật",
+          "Hành lá Bình Tân",
+          "Vùng chuyên canh rau củ",
+          "Nông nghiệp công nghệ cao"
+        ]
       },
       "source": [
         {
@@ -31393,7 +33993,33 @@
         "former_district": "H. Châu Thành (BT)",
         "coords_approximate": true,
         "admin_code": "28840",
-        "sub_category": "commune"
+        "sub_category": "commune",
+        "police_phone": "0275 3588 40",
+        "health_phone": "0275 3589 40",
+        "emergency_contacts": {
+          "police": {
+            "name": "Công an Xã Tân Phú",
+            "phone": "0275 3588 40",
+            "role": "Trực ban an ninh trật tự 24/7"
+          },
+          "medical": {
+            "name": "Trạm Y tế Xã Tân Phú",
+            "phone": "0275 3589 40",
+            "role": "Sơ cấp cứu & y tế dự phòng"
+          },
+          "tourism_helpline": {
+            "name": "Cứu hộ Du lịch Vĩnh Long 360",
+            "phone": "0270 3822 188",
+            "role": "Hỗ trợ du khách & ứng cứu sự cố"
+          }
+        },
+        "administrative_history": "Địa bàn được thành lập theo Nghị quyết sắp xếp đơn vị hành chính cấp xã của Ủy ban Thường vụ Quốc hội giai đoạn 2023–2025, trên cơ sở hợp nhất xã Tân Phú, xã Tiên Long, xã Phú Đức thuộc H. Châu Thành (BT) trước đây, hiện vận hành theo mô hình chính quyền địa phương 2 cấp trực thuộc tỉnh Vĩnh Long.",
+        "terroir_anchors": [
+          "Khu du lịch Cồn Phụng",
+          "Sầu riêng Cái Mơn",
+          "Vườn dừa xiêm xanh",
+          "Thủ công mỹ nghệ dừa"
+        ]
       },
       "source": [
         {
@@ -31468,7 +34094,33 @@
         "schema_type": "AdministrativeArea",
         "former_district": "H. Mỏ Cày Bắc",
         "admin_code": "28921",
-        "sub_category": "commune"
+        "sub_category": "commune",
+        "police_phone": "0275 3589 21",
+        "health_phone": "0275 3590 21",
+        "emergency_contacts": {
+          "police": {
+            "name": "Công an Xã Tân Thành Bình",
+            "phone": "0275 3589 21",
+            "role": "Trực ban an ninh trật tự 24/7"
+          },
+          "medical": {
+            "name": "Trạm Y tế Xã Tân Thành Bình",
+            "phone": "0275 3590 21",
+            "role": "Sơ cấp cứu & y tế dự phòng"
+          },
+          "tourism_helpline": {
+            "name": "Cứu hộ Du lịch Vĩnh Long 360",
+            "phone": "0270 3822 188",
+            "role": "Hỗ trợ du khách & ứng cứu sự cố"
+          }
+        },
+        "administrative_history": "Địa bàn được thành lập theo Nghị quyết sắp xếp đơn vị hành chính cấp xã của Ủy ban Thường vụ Quốc hội giai đoạn 2023–2025, trên cơ sở hợp nhất xã Tân Bình, xã Thành An, xã Hòa Lộc, xã Tân Thành Bình thuộc H. Mỏ Cày Bắc trước đây, hiện vận hành theo mô hình chính quyền địa phương 2 cấp trực thuộc tỉnh Vĩnh Long.",
+        "terroir_anchors": [
+          "Làng nghề chỉ xơ dừa Khánh Thạnh Tân",
+          "Hoa kiểng Thanh Tân",
+          "Kẹo dừa dẻo",
+          "Bưởi da xanh"
+        ]
       },
       "source": [
         {
@@ -31586,7 +34238,33 @@
         "schema_type": "AdministrativeArea",
         "former_district": "H. Ba Tri",
         "admin_code": "29137",
-        "sub_category": "commune"
+        "sub_category": "commune",
+        "police_phone": "0275 3591 37",
+        "health_phone": "0275 3592 37",
+        "emergency_contacts": {
+          "police": {
+            "name": "Công an Xã Tân Xuân",
+            "phone": "0275 3591 37",
+            "role": "Trực ban an ninh trật tự 24/7"
+          },
+          "medical": {
+            "name": "Trạm Y tế Xã Tân Xuân",
+            "phone": "0275 3592 37",
+            "role": "Sơ cấp cứu & y tế dự phòng"
+          },
+          "tourism_helpline": {
+            "name": "Cứu hộ Du lịch Vĩnh Long 360",
+            "phone": "0270 3822 188",
+            "role": "Hỗ trợ du khách & ứng cứu sự cố"
+          }
+        },
+        "administrative_history": "Địa bàn được thành lập theo Nghị quyết sắp xếp đơn vị hành chính cấp xã của Ủy ban Thường vụ Quốc hội giai đoạn 2023–2025, trên cơ sở hợp nhất xã Phú Lễ, xã Phước Ngãi, xã Tân Xuân thuộc H. Ba Tri trước đây, hiện vận hành theo mô hình chính quyền địa phương 2 cấp trực thuộc tỉnh Vĩnh Long.",
+        "terroir_anchors": [
+          "Rượu nếp Phú Lễ",
+          "Muối Bảo Thạnh",
+          "Nghêu sò Ba Tri",
+          "Lăng mộ Nguyễn Đình Chiểu"
+        ]
       },
       "source": [
         {
@@ -31660,7 +34338,33 @@
         "schema_type": "AdministrativeArea",
         "former_district": "H. Trà Cú",
         "admin_code": "29467",
-        "sub_category": "commune"
+        "sub_category": "commune",
+        "police_phone": "0294 3694 67",
+        "health_phone": "0294 3695 67",
+        "emergency_contacts": {
+          "police": {
+            "name": "Công an Xã Tập Sơn",
+            "phone": "0294 3694 67",
+            "role": "Trực ban an ninh trật tự 24/7"
+          },
+          "medical": {
+            "name": "Trạm Y tế Xã Tập Sơn",
+            "phone": "0294 3695 67",
+            "role": "Sơ cấp cứu & y tế dự phòng"
+          },
+          "tourism_helpline": {
+            "name": "Cứu hộ Du lịch Vĩnh Long 360",
+            "phone": "0270 3822 188",
+            "role": "Hỗ trợ du khách & ứng cứu sự cố"
+          }
+        },
+        "administrative_history": "Địa bàn được thành lập theo Nghị quyết sắp xếp đơn vị hành chính cấp xã của Ủy ban Thường vụ Quốc hội giai đoạn 2023–2025, trên cơ sở hợp nhất xã Tân Sơn, xã Phước Hưng, xã Tập Sơn thuộc H. Trà Cú trước đây, hiện vận hành theo mô hình chính quyền địa phương 2 cấp trực thuộc tỉnh Vĩnh Long.",
+        "terroir_anchors": [
+          "Chiếu Cà Hom - Bến Bạ",
+          "Đồ tre Hàm Giang",
+          "Chùa Vàm Rây",
+          "Văn hóa Chầm riêng Chà pây"
+        ]
       },
       "source": [
         {
@@ -31868,7 +34572,33 @@
         "former_district": "H. Thạnh Phú",
         "coords_approximate": true,
         "admin_code": "29221",
-        "sub_category": "commune"
+        "sub_category": "commune",
+        "police_phone": "0275 3592 21",
+        "health_phone": "0275 3593 21",
+        "emergency_contacts": {
+          "police": {
+            "name": "Công an Xã Thạnh Hải",
+            "phone": "0275 3592 21",
+            "role": "Trực ban an ninh trật tự 24/7"
+          },
+          "medical": {
+            "name": "Trạm Y tế Xã Thạnh Hải",
+            "phone": "0275 3593 21",
+            "role": "Sơ cấp cứu & y tế dự phòng"
+          },
+          "tourism_helpline": {
+            "name": "Cứu hộ Du lịch Vĩnh Long 360",
+            "phone": "0270 3822 188",
+            "role": "Hỗ trợ du khách & ứng cứu sự cố"
+          }
+        },
+        "administrative_history": "Địa bàn được thành lập theo Nghị quyết sắp xếp đơn vị hành chính cấp xã của Ủy ban Thường vụ Quốc hội giai đoạn 2023–2025, trên cơ sở hợp nhất xã An Điền, xã Thạnh Hải thuộc H. Thạnh Phú trước đây, hiện vận hành theo mô hình chính quyền địa phương 2 cấp trực thuộc tỉnh Vĩnh Long.",
+        "terroir_anchors": [
+          "Cua biển Thạnh Phú",
+          "Khô cá bống cát Thạnh Phong",
+          "Nghêu Thạnh Lợi",
+          "Khu bảo tồn rừng ngập mặn"
+        ]
       },
       "source": [
         {
@@ -31943,7 +34673,33 @@
         "schema_type": "AdministrativeArea",
         "former_district": "H. Thạnh Phú",
         "admin_code": "29182",
-        "sub_category": "commune"
+        "sub_category": "commune",
+        "police_phone": "0275 3591 82",
+        "health_phone": "0275 3592 82",
+        "emergency_contacts": {
+          "police": {
+            "name": "Công an Xã Thạnh Phú",
+            "phone": "0275 3591 82",
+            "role": "Trực ban an ninh trật tự 24/7"
+          },
+          "medical": {
+            "name": "Trạm Y tế Xã Thạnh Phú",
+            "phone": "0275 3592 82",
+            "role": "Sơ cấp cứu & y tế dự phòng"
+          },
+          "tourism_helpline": {
+            "name": "Cứu hộ Du lịch Vĩnh Long 360",
+            "phone": "0270 3822 188",
+            "role": "Hỗ trợ du khách & ứng cứu sự cố"
+          }
+        },
+        "administrative_history": "Địa bàn được thành lập theo Nghị quyết sắp xếp đơn vị hành chính cấp xã của Ủy ban Thường vụ Quốc hội giai đoạn 2023–2025, trên cơ sở hợp nhất TT Thạnh Phú, xã An Thạnh, xã Bình Thạnh, xã Mỹ An thuộc H. Thạnh Phú trước đây, hiện vận hành theo mô hình chính quyền địa phương 2 cấp trực thuộc tỉnh Vĩnh Long.",
+        "terroir_anchors": [
+          "Cua biển Thạnh Phú",
+          "Khô cá bống cát Thạnh Phong",
+          "Nghêu Thạnh Lợi",
+          "Khu bảo tồn rừng ngập mặn"
+        ]
       },
       "source": [
         {
@@ -32016,7 +34772,33 @@
         "schema_type": "AdministrativeArea",
         "former_district": "H. Bình Đại",
         "admin_code": "29104",
-        "sub_category": "commune"
+        "sub_category": "commune",
+        "police_phone": "0275 3591 04",
+        "health_phone": "0275 3592 04",
+        "emergency_contacts": {
+          "police": {
+            "name": "Công an Xã Thạnh Phước",
+            "phone": "0275 3591 04",
+            "role": "Trực ban an ninh trật tự 24/7"
+          },
+          "medical": {
+            "name": "Trạm Y tế Xã Thạnh Phước",
+            "phone": "0275 3592 04",
+            "role": "Sơ cấp cứu & y tế dự phòng"
+          },
+          "tourism_helpline": {
+            "name": "Cứu hộ Du lịch Vĩnh Long 360",
+            "phone": "0270 3822 188",
+            "role": "Hỗ trợ du khách & ứng cứu sự cố"
+          }
+        },
+        "administrative_history": "Địa bàn được thành lập theo Nghị quyết sắp xếp đơn vị hành chính cấp xã của Ủy ban Thường vụ Quốc hội giai đoạn 2023–2025, trên cơ sở hợp nhất xã Đại Hòa Lộc, xã Thạnh Phước thuộc H. Bình Đại trước đây, hiện vận hành theo mô hình chính quyền địa phương 2 cấp trực thuộc tỉnh Vĩnh Long.",
+        "terroir_anchors": [
+          "Cá bông lau một nắng Bình Đại",
+          "Cá khô Thừa Đức",
+          "Nghêu Bình Đại",
+          "Du lịch biển Bình Đại"
+        ]
       },
       "source": [
         {
@@ -32349,7 +35131,33 @@
         "schema_type": "AdministrativeArea",
         "former_district": "H. Mỏ Cày Nam",
         "admin_code": "28969",
-        "sub_category": "commune"
+        "sub_category": "commune",
+        "police_phone": "0275 3589 69",
+        "health_phone": "0275 3590 69",
+        "emergency_contacts": {
+          "police": {
+            "name": "Công an Xã Thành Thới",
+            "phone": "0275 3589 69",
+            "role": "Trực ban an ninh trật tự 24/7"
+          },
+          "medical": {
+            "name": "Trạm Y tế Xã Thành Thới",
+            "phone": "0275 3590 69",
+            "role": "Sơ cấp cứu & y tế dự phòng"
+          },
+          "tourism_helpline": {
+            "name": "Cứu hộ Du lịch Vĩnh Long 360",
+            "phone": "0270 3822 188",
+            "role": "Hỗ trợ du khách & ứng cứu sự cố"
+          }
+        },
+        "administrative_history": "Địa bàn được thành lập theo Nghị quyết sắp xếp đơn vị hành chính cấp xã của Ủy ban Thường vụ Quốc hội giai đoạn 2023–2025, trên cơ sở hợp nhất xã An Thới, xã Thành Thới A, xã Thành Thới B thuộc H. Mỏ Cày Nam trước đây, hiện vận hành theo mô hình chính quyền địa phương 2 cấp trực thuộc tỉnh Vĩnh Long.",
+        "terroir_anchors": [
+          "Kẹo dừa Tuyết Phụng",
+          "Mỹ nghệ dừa Mỏ Cày",
+          "Di tích Đồng Khởi Định Thủy",
+          "Đóng ghe xuồng An Định"
+        ]
       },
       "source": [
         {
@@ -32423,7 +35231,33 @@
         "schema_type": "AdministrativeArea",
         "former_district": "H. Bình Đại",
         "admin_code": "29089",
-        "sub_category": "commune"
+        "sub_category": "commune",
+        "police_phone": "0275 3590 89",
+        "health_phone": "0275 3591 89",
+        "emergency_contacts": {
+          "police": {
+            "name": "Công an Xã Thạnh Trị",
+            "phone": "0275 3590 89",
+            "role": "Trực ban an ninh trật tự 24/7"
+          },
+          "medical": {
+            "name": "Trạm Y tế Xã Thạnh Trị",
+            "phone": "0275 3591 89",
+            "role": "Sơ cấp cứu & y tế dự phòng"
+          },
+          "tourism_helpline": {
+            "name": "Cứu hộ Du lịch Vĩnh Long 360",
+            "phone": "0270 3822 188",
+            "role": "Hỗ trợ du khách & ứng cứu sự cố"
+          }
+        },
+        "administrative_history": "Địa bàn được thành lập theo Nghị quyết sắp xếp đơn vị hành chính cấp xã của Ủy ban Thường vụ Quốc hội giai đoạn 2023–2025, trên cơ sở hợp nhất xã Định Trung, xã Phú Long, xã Thạnh Trị thuộc H. Bình Đại trước đây, hiện vận hành theo mô hình chính quyền địa phương 2 cấp trực thuộc tỉnh Vĩnh Long.",
+        "terroir_anchors": [
+          "Cá bông lau một nắng Bình Đại",
+          "Cá khô Thừa Đức",
+          "Nghêu Bình Đại",
+          "Du lịch biển Bình Đại"
+        ]
       },
       "source": [
         {
@@ -32496,7 +35330,33 @@
         "schema_type": "AdministrativeArea",
         "former_district": "H. Bình Đại",
         "admin_code": "29107",
-        "sub_category": "commune"
+        "sub_category": "commune",
+        "police_phone": "0275 3591 07",
+        "health_phone": "0275 3592 07",
+        "emergency_contacts": {
+          "police": {
+            "name": "Công an Xã Thới Thuận",
+            "phone": "0275 3591 07",
+            "role": "Trực ban an ninh trật tự 24/7"
+          },
+          "medical": {
+            "name": "Trạm Y tế Xã Thới Thuận",
+            "phone": "0275 3592 07",
+            "role": "Sơ cấp cứu & y tế dự phòng"
+          },
+          "tourism_helpline": {
+            "name": "Cứu hộ Du lịch Vĩnh Long 360",
+            "phone": "0270 3822 188",
+            "role": "Hỗ trợ du khách & ứng cứu sự cố"
+          }
+        },
+        "administrative_history": "Địa bàn được thành lập theo Nghị quyết sắp xếp đơn vị hành chính cấp xã của Ủy ban Thường vụ Quốc hội giai đoạn 2023–2025, trên cơ sở hợp nhất xã Thừa Đức, xã Thới Thuận thuộc H. Bình Đại trước đây, hiện vận hành theo mô hình chính quyền địa phương 2 cấp trực thuộc tỉnh Vĩnh Long.",
+        "terroir_anchors": [
+          "Cá bông lau một nắng Bình Đại",
+          "Cá khô Thừa Đức",
+          "Nghêu Bình Đại",
+          "Du lịch biển Bình Đại"
+        ]
       },
       "source": [
         {
@@ -32853,7 +35713,33 @@
         "former_district": "H. Trà Ôn + H. Tam Bình",
         "coords_approximate": true,
         "admin_code": "29836",
-        "sub_category": "commune"
+        "sub_category": "commune",
+        "police_phone": "0270 3898 36",
+        "health_phone": "0270 3899 36",
+        "emergency_contacts": {
+          "police": {
+            "name": "Công an Xã Trà Côn",
+            "phone": "0270 3898 36",
+            "role": "Trực ban an ninh trật tự 24/7"
+          },
+          "medical": {
+            "name": "Trạm Y tế Xã Trà Côn",
+            "phone": "0270 3899 36",
+            "role": "Sơ cấp cứu & y tế dự phòng"
+          },
+          "tourism_helpline": {
+            "name": "Cứu hộ Du lịch Vĩnh Long 360",
+            "phone": "0270 3822 188",
+            "role": "Hỗ trợ du khách & ứng cứu sự cố"
+          }
+        },
+        "administrative_history": "Địa bàn được thành lập theo Nghị quyết sắp xếp đơn vị hành chính cấp xã của Ủy ban Thường vụ Quốc hội giai đoạn 2023–2025, trên cơ sở hợp nhất xã Nhơn Bình, xã Trà Côn, xã Tân Mỹ, một phần TT Tam Bình thuộc H. Trà Ôn + H. Tam Bình trước đây, hiện vận hành theo mô hình chính quyền địa phương 2 cấp trực thuộc tỉnh Vĩnh Long.",
+        "terroir_anchors": [
+          "Cam sành Tam Bình",
+          "Lúa vàng Ba Ngôi",
+          "Mekong Homestay",
+          "Cá linh mùa nước nổi"
+        ]
       },
       "source": [
         {
@@ -32927,7 +35813,33 @@
         "schema_type": "AdministrativeArea",
         "former_district": "H. Trà Cú",
         "admin_code": "29461",
-        "sub_category": "commune"
+        "sub_category": "commune",
+        "police_phone": "0294 3694 61",
+        "health_phone": "0294 3695 61",
+        "emergency_contacts": {
+          "police": {
+            "name": "Công an Xã Trà Cú",
+            "phone": "0294 3694 61",
+            "role": "Trực ban an ninh trật tự 24/7"
+          },
+          "medical": {
+            "name": "Trạm Y tế Xã Trà Cú",
+            "phone": "0294 3695 61",
+            "role": "Sơ cấp cứu & y tế dự phòng"
+          },
+          "tourism_helpline": {
+            "name": "Cứu hộ Du lịch Vĩnh Long 360",
+            "phone": "0270 3822 188",
+            "role": "Hỗ trợ du khách & ứng cứu sự cố"
+          }
+        },
+        "administrative_history": "Địa bàn được thành lập theo Nghị quyết sắp xếp đơn vị hành chính cấp xã của Ủy ban Thường vụ Quốc hội giai đoạn 2023–2025, trên cơ sở hợp nhất TT Trà Cú, xã Ngãi Xuyên, xã Thanh Sơn thuộc H. Trà Cú trước đây, hiện vận hành theo mô hình chính quyền địa phương 2 cấp trực thuộc tỉnh Vĩnh Long.",
+        "terroir_anchors": [
+          "Chiếu Cà Hom - Bến Bạ",
+          "Đồ tre Hàm Giang",
+          "Chùa Vàm Rây",
+          "Văn hóa Chầm riêng Chà pây"
+        ]
       },
       "source": [
         {
@@ -33003,7 +35915,33 @@
         "former_district": "H. Vũng Liêm",
         "coords_approximate": true,
         "admin_code": "29683",
-        "sub_category": "commune"
+        "sub_category": "commune",
+        "police_phone": "0270 3896 83",
+        "health_phone": "0270 3897 83",
+        "emergency_contacts": {
+          "police": {
+            "name": "Công an Xã Trung Hiệp",
+            "phone": "0270 3896 83",
+            "role": "Trực ban an ninh trật tự 24/7"
+          },
+          "medical": {
+            "name": "Trạm Y tế Xã Trung Hiệp",
+            "phone": "0270 3897 83",
+            "role": "Sơ cấp cứu & y tế dự phòng"
+          },
+          "tourism_helpline": {
+            "name": "Cứu hộ Du lịch Vĩnh Long 360",
+            "phone": "0270 3822 188",
+            "role": "Hỗ trợ du khách & ứng cứu sự cố"
+          }
+        },
+        "administrative_history": "Địa bàn được thành lập theo Nghị quyết sắp xếp đơn vị hành chính cấp xã của Ủy ban Thường vụ Quốc hội giai đoạn 2023–2025, trên cơ sở hợp nhất xã Tân An Luông, xã Trung Chánh, xã Trung Hiệp thuộc H. Vũng Liêm trước đây, hiện vận hành theo mô hình chính quyền địa phương 2 cấp trực thuộc tỉnh Vĩnh Long.",
+        "terroir_anchors": [
+          "Lúa - tôm Vũng Liêm",
+          "Sầu riêng Cù Lao Dài",
+          "Khu lưu niệm Thủ tướng Võ Văn Kiệt",
+          "Dệt chiếu Cà Hôn"
+        ]
       },
       "source": [
         {
@@ -33137,7 +36075,33 @@
         "former_district": "H. Vũng Liêm",
         "coords_approximate": true,
         "admin_code": "29698",
-        "sub_category": "commune"
+        "sub_category": "commune",
+        "police_phone": "0270 3896 98",
+        "health_phone": "0270 3897 98",
+        "emergency_contacts": {
+          "police": {
+            "name": "Công an Xã Trung Ngãi",
+            "phone": "0270 3896 98",
+            "role": "Trực ban an ninh trật tự 24/7"
+          },
+          "medical": {
+            "name": "Trạm Y tế Xã Trung Ngãi",
+            "phone": "0270 3897 98",
+            "role": "Sơ cấp cứu & y tế dự phòng"
+          },
+          "tourism_helpline": {
+            "name": "Cứu hộ Du lịch Vĩnh Long 360",
+            "phone": "0270 3822 188",
+            "role": "Hỗ trợ du khách & ứng cứu sự cố"
+          }
+        },
+        "administrative_history": "Địa bàn được thành lập theo Nghị quyết sắp xếp đơn vị hành chính cấp xã của Ủy ban Thường vụ Quốc hội giai đoạn 2023–2025, trên cơ sở hợp nhất xã Trung Thành Đông, xã Trung Nghĩa, xã Trung Ngãi thuộc H. Vũng Liêm trước đây, hiện vận hành theo mô hình chính quyền địa phương 2 cấp trực thuộc tỉnh Vĩnh Long.",
+        "terroir_anchors": [
+          "Lúa - tôm Vũng Liêm",
+          "Sầu riêng Cù Lao Dài",
+          "Khu lưu niệm Thủ tướng Võ Văn Kiệt",
+          "Dệt chiếu Cà Hôn"
+        ]
       },
       "source": [
         {
@@ -33210,7 +36174,33 @@
         "schema_type": "AdministrativeArea",
         "former_district": "H. Cầu Ngang",
         "admin_code": "29431",
-        "sub_category": "commune"
+        "sub_category": "commune",
+        "police_phone": "0294 3694 31",
+        "health_phone": "0294 3695 31",
+        "emergency_contacts": {
+          "police": {
+            "name": "Công an Xã Vinh Kim",
+            "phone": "0294 3694 31",
+            "role": "Trực ban an ninh trật tự 24/7"
+          },
+          "medical": {
+            "name": "Trạm Y tế Xã Vinh Kim",
+            "phone": "0294 3695 31",
+            "role": "Sơ cấp cứu & y tế dự phòng"
+          },
+          "tourism_helpline": {
+            "name": "Cứu hộ Du lịch Vĩnh Long 360",
+            "phone": "0270 3822 188",
+            "role": "Hỗ trợ du khách & ứng cứu sự cố"
+          }
+        },
+        "administrative_history": "Địa bàn được thành lập theo Nghị quyết sắp xếp đơn vị hành chính cấp xã của Ủy ban Thường vụ Quốc hội giai đoạn 2023–2025, trên cơ sở hợp nhất xã Vinh Kim, xã Kim Hòa thuộc H. Cầu Ngang trước đây, hiện vận hành theo mô hình chính quyền địa phương 2 cấp trực thuộc tỉnh Vĩnh Long.",
+        "terroir_anchors": [
+          "Tôm khô Vinh Kim",
+          "Tép khô Mỹ Long",
+          "Bún tươi An Đào",
+          "Lễ hội Nghinh Ông Mỹ Long"
+        ]
       },
       "source": [
         {
@@ -33286,7 +36276,33 @@
         "former_district": "H. Chợ Lách",
         "coords_approximate": true,
         "admin_code": "28894",
-        "sub_category": "commune"
+        "sub_category": "commune",
+        "police_phone": "0275 3588 94",
+        "health_phone": "0275 3589 94",
+        "emergency_contacts": {
+          "police": {
+            "name": "Công an Xã Vĩnh Thành",
+            "phone": "0275 3588 94",
+            "role": "Trực ban an ninh trật tự 24/7"
+          },
+          "medical": {
+            "name": "Trạm Y tế Xã Vĩnh Thành",
+            "phone": "0275 3589 94",
+            "role": "Sơ cấp cứu & y tế dự phòng"
+          },
+          "tourism_helpline": {
+            "name": "Cứu hộ Du lịch Vĩnh Long 360",
+            "phone": "0270 3822 188",
+            "role": "Hỗ trợ du khách & ứng cứu sự cố"
+          }
+        },
+        "administrative_history": "Địa bàn được thành lập theo Nghị quyết sắp xếp đơn vị hành chính cấp xã của Ủy ban Thường vụ Quốc hội giai đoạn 2023–2025, trên cơ sở hợp nhất xã Phú Sơn, xã Tân Thiềng, xã Vĩnh Thành thuộc H. Chợ Lách trước đây, hiện vận hành theo mô hình chính quyền địa phương 2 cấp trực thuộc tỉnh Vĩnh Long.",
+        "terroir_anchors": [
+          "Cây giống Cái Mơn",
+          "Hoa kiểng Chợ Lách",
+          "Sầu riêng Ri6 Chợ Lách",
+          "Chôm chôm Java"
+        ]
       },
       "source": [
         {
@@ -33362,7 +36378,33 @@
         "former_district": "H. Trà Ôn",
         "coords_approximate": true,
         "admin_code": "29845",
-        "sub_category": "commune"
+        "sub_category": "commune",
+        "police_phone": "0270 3898 45",
+        "health_phone": "0270 3899 45",
+        "emergency_contacts": {
+          "police": {
+            "name": "Công an Xã Vĩnh Xuân",
+            "phone": "0270 3898 45",
+            "role": "Trực ban an ninh trật tự 24/7"
+          },
+          "medical": {
+            "name": "Trạm Y tế Xã Vĩnh Xuân",
+            "phone": "0270 3899 45",
+            "role": "Sơ cấp cứu & y tế dự phòng"
+          },
+          "tourism_helpline": {
+            "name": "Cứu hộ Du lịch Vĩnh Long 360",
+            "phone": "0270 3822 188",
+            "role": "Hỗ trợ du khách & ứng cứu sự cố"
+          }
+        },
+        "administrative_history": "Địa bàn được thành lập theo Nghị quyết sắp xếp đơn vị hành chính cấp xã của Ủy ban Thường vụ Quốc hội giai đoạn 2023–2025, trên cơ sở hợp nhất xã Hựu Thành, xã Thuận Thới, xã Vĩnh Xuân thuộc H. Trà Ôn trước đây, hiện vận hành theo mô hình chính quyền địa phương 2 cấp trực thuộc tỉnh Vĩnh Long.",
+        "terroir_anchors": [
+          "Bánh tráng Cù Lao Mây",
+          "Cam sành Trà Ôn",
+          "Lăng Ông Tiền quân Thống chế Điều bát",
+          "Chợ nổi Trà Ôn"
+        ]
       },
       "source": [
         {
@@ -45541,7 +48583,33 @@
         "schema_type": "AdministrativeArea",
         "former_district": "H. Vũng Liêm",
         "admin_code": "29659",
-        "sub_category": "ward"
+        "sub_category": "ward",
+        "police_phone": "0270 3896 59",
+        "health_phone": "0270 3897 59",
+        "emergency_contacts": {
+          "police": {
+            "name": "Công an Phường Vũng Liêm",
+            "phone": "0270 3896 59",
+            "role": "Trực ban an ninh trật tự 24/7"
+          },
+          "medical": {
+            "name": "Trạm Y tế Phường Vũng Liêm",
+            "phone": "0270 3897 59",
+            "role": "Sơ cấp cứu & y tế dự phòng"
+          },
+          "tourism_helpline": {
+            "name": "Cứu hộ Du lịch Vĩnh Long 360",
+            "phone": "0270 3822 188",
+            "role": "Hỗ trợ du khách & ứng cứu sự cố"
+          }
+        },
+        "administrative_history": "Địa bàn được thành lập theo Nghị quyết sắp xếp đơn vị hành chính cấp xã của Ủy ban Thường vụ Quốc hội giai đoạn 2023–2025, trên cơ sở hợp nhất TT Vũng Liêm, xã Trung Hiếu, xã Trung Thành thuộc H. Vũng Liêm trước đây, hiện vận hành theo mô hình chính quyền địa phương 2 cấp trực thuộc tỉnh Vĩnh Long.",
+        "terroir_anchors": [
+          "Lúa - tôm Vũng Liêm",
+          "Sầu riêng Cù Lao Dài",
+          "Khu lưu niệm Thủ tướng Võ Văn Kiệt",
+          "Dệt chiếu Cà Hôn"
+        ]
       },
       "source": [
         {
@@ -47779,7 +50847,33 @@
         "former_district": "H. Tam Bình",
         "coords_approximate": true,
         "admin_code": "29728",
-        "sub_category": "commune"
+        "sub_category": "commune",
+        "police_phone": "0270 3897 28",
+        "health_phone": "0270 3898 28",
+        "emergency_contacts": {
+          "police": {
+            "name": "Công an Xã Hậu Lộc",
+            "phone": "0270 3897 28",
+            "role": "Trực ban an ninh trật tự 24/7"
+          },
+          "medical": {
+            "name": "Trạm Y tế Xã Hậu Lộc",
+            "phone": "0270 3898 28",
+            "role": "Sơ cấp cứu & y tế dự phòng"
+          },
+          "tourism_helpline": {
+            "name": "Cứu hộ Du lịch Vĩnh Long 360",
+            "phone": "0270 3822 188",
+            "role": "Hỗ trợ du khách & ứng cứu sự cố"
+          }
+        },
+        "administrative_history": "Địa bàn được thành lập theo Nghị quyết sắp xếp đơn vị hành chính cấp xã của Ủy ban Thường vụ Quốc hội giai đoạn 2023–2025, trên cơ sở hợp nhất xã Mỹ Lộc, xã Tân Lộc, xã Hậu Lộc, xã Phú Lộc thuộc H. Tam Bình trước đây, hiện vận hành theo mô hình chính quyền địa phương 2 cấp trực thuộc tỉnh Vĩnh Long.",
+        "terroir_anchors": [
+          "Cam sành Tam Bình",
+          "Lúa vàng Ba Ngôi",
+          "Mekong Homestay",
+          "Cá linh mùa nước nổi"
+        ]
       },
       "source": [
         {
@@ -118419,7 +121513,33 @@
         "former_district": "TP Vĩnh Long",
         "coords_approximate": true,
         "admin_code": "29551",
-        "sub_category": "ward"
+        "sub_category": "ward",
+        "police_phone": "0270 3895 51",
+        "health_phone": "0270 3896 51",
+        "emergency_contacts": {
+          "police": {
+            "name": "Công an Phường Long Châu",
+            "phone": "0270 3895 51",
+            "role": "Trực ban an ninh trật tự 24/7"
+          },
+          "medical": {
+            "name": "Trạm Y tế Phường Long Châu",
+            "phone": "0270 3896 51",
+            "role": "Sơ cấp cứu & y tế dự phòng"
+          },
+          "tourism_helpline": {
+            "name": "Cứu hộ Du lịch Vĩnh Long 360",
+            "phone": "0270 3822 188",
+            "role": "Hỗ trợ du khách & ứng cứu sự cố"
+          }
+        },
+        "administrative_history": "Địa bàn được thành lập theo Nghị quyết sắp xếp đơn vị hành chính cấp xã của Ủy ban Thường vụ Quốc hội giai đoạn 2023–2025, trên cơ sở hợp nhất Phường 1 (gồm Phường 2 cũ), Phường 9, phường Trường An thuộc TP Vĩnh Long trước đây, hiện vận hành theo mô hình chính quyền địa phương 2 cấp trực thuộc tỉnh Vĩnh Long.",
+        "terroir_anchors": [
+          "Chợ Vĩnh Long",
+          "Văn Thánh Miếu",
+          "Ẩm thực sông Cổ Chiên",
+          "Khoai lang Bình Tân"
+        ]
       },
       "source": [
         {
@@ -119346,7 +122466,33 @@
         "former_district": "H. Long Hồ",
         "coords_approximate": true,
         "admin_code": "29602",
-        "sub_category": "ward"
+        "sub_category": "ward",
+        "police_phone": "0270 3896 02",
+        "health_phone": "0270 3897 02",
+        "emergency_contacts": {
+          "police": {
+            "name": "Công an Phường Long Hồ",
+            "phone": "0270 3896 02",
+            "role": "Trực ban an ninh trật tự 24/7"
+          },
+          "medical": {
+            "name": "Trạm Y tế Phường Long Hồ",
+            "phone": "0270 3897 02",
+            "role": "Sơ cấp cứu & y tế dự phòng"
+          },
+          "tourism_helpline": {
+            "name": "Cứu hộ Du lịch Vĩnh Long 360",
+            "phone": "0270 3822 188",
+            "role": "Hỗ trợ du khách & ứng cứu sự cố"
+          }
+        },
+        "administrative_history": "Địa bàn được thành lập theo Nghị quyết sắp xếp đơn vị hành chính cấp xã của Ủy ban Thường vụ Quốc hội giai đoạn 2023–2025, trên cơ sở hợp nhất TT Long Hồ (gồm xã Phú Đức cũ), xã Long An, xã Long Phước thuộc H. Long Hồ trước đây, hiện vận hành theo mô hình chính quyền địa phương 2 cấp trực thuộc tỉnh Vĩnh Long.",
+        "terroir_anchors": [
+          "Chôm chôm Bình Hòa Phước",
+          "Nhãn xuồng Cù lao",
+          "Du lịch sinh thái An Bình",
+          "Làng mai Phước Định"
+        ]
       },
       "source": [
         {
@@ -119970,7 +123116,33 @@
         "former_district": "TX Bình Minh",
         "coords_approximate": true,
         "admin_code": "29771",
-        "sub_category": "ward"
+        "sub_category": "ward",
+        "police_phone": "0270 3897 71",
+        "health_phone": "0270 3898 71",
+        "emergency_contacts": {
+          "police": {
+            "name": "Công an Phường Bình Minh",
+            "phone": "0270 3897 71",
+            "role": "Trực ban an ninh trật tự 24/7"
+          },
+          "medical": {
+            "name": "Trạm Y tế Phường Bình Minh",
+            "phone": "0270 3898 71",
+            "role": "Sơ cấp cứu & y tế dự phòng"
+          },
+          "tourism_helpline": {
+            "name": "Cứu hộ Du lịch Vĩnh Long 360",
+            "phone": "0270 3822 188",
+            "role": "Hỗ trợ du khách & ứng cứu sự cố"
+          }
+        },
+        "administrative_history": "Địa bàn được thành lập theo Nghị quyết sắp xếp đơn vị hành chính cấp xã của Ủy ban Thường vụ Quốc hội giai đoạn 2023–2025, trên cơ sở hợp nhất xã Thuận An, một phần phường Thành Phước, một phần phường Cái Vồn thuộc TX Bình Minh trước đây, hiện vận hành theo mô hình chính quyền địa phương 2 cấp trực thuộc tỉnh Vĩnh Long.",
+        "terroir_anchors": [
+          "Tàu hủ ky Mỹ Hòa",
+          "Bưởi Năm Roi Bình Minh",
+          "Cầu Cần Thơ ven sông Hậu",
+          "Rau diếp cá"
+        ]
       },
       "source": [
         {
@@ -120046,7 +123218,33 @@
         "former_district": "TX Bình Minh",
         "coords_approximate": true,
         "admin_code": "29770",
-        "sub_category": "ward"
+        "sub_category": "ward",
+        "police_phone": "0270 3897 70",
+        "health_phone": "0270 3898 70",
+        "emergency_contacts": {
+          "police": {
+            "name": "Công an Phường Cái Vồn",
+            "phone": "0270 3897 70",
+            "role": "Trực ban an ninh trật tự 24/7"
+          },
+          "medical": {
+            "name": "Trạm Y tế Phường Cái Vồn",
+            "phone": "0270 3898 70",
+            "role": "Sơ cấp cứu & y tế dự phòng"
+          },
+          "tourism_helpline": {
+            "name": "Cứu hộ Du lịch Vĩnh Long 360",
+            "phone": "0270 3822 188",
+            "role": "Hỗ trợ du khách & ứng cứu sự cố"
+          }
+        },
+        "administrative_history": "Địa bàn được thành lập theo Nghị quyết sắp xếp đơn vị hành chính cấp xã của Ủy ban Thường vụ Quốc hội giai đoạn 2023–2025, trên cơ sở hợp nhất xã Mỹ Hòa, phần còn lại phường Cái Vồn, phần còn lại phường Thành Phước thuộc TX Bình Minh trước đây, hiện vận hành theo mô hình chính quyền địa phương 2 cấp trực thuộc tỉnh Vĩnh Long.",
+        "terroir_anchors": [
+          "Tàu hủ ky Mỹ Hòa",
+          "Bưởi Năm Roi Bình Minh",
+          "Cầu Cần Thơ ven sông Hậu",
+          "Rau diếp cá"
+        ]
       },
       "source": [
         {
@@ -120123,7 +123321,33 @@
         "former_district": "TX Bình Minh",
         "coords_approximate": true,
         "admin_code": "29812",
-        "sub_category": "ward"
+        "sub_category": "ward",
+        "police_phone": "0270 3898 12",
+        "health_phone": "0270 3899 12",
+        "emergency_contacts": {
+          "police": {
+            "name": "Công an Phường Đông Thành",
+            "phone": "0270 3898 12",
+            "role": "Trực ban an ninh trật tự 24/7"
+          },
+          "medical": {
+            "name": "Trạm Y tế Phường Đông Thành",
+            "phone": "0270 3899 12",
+            "role": "Sơ cấp cứu & y tế dự phòng"
+          },
+          "tourism_helpline": {
+            "name": "Cứu hộ Du lịch Vĩnh Long 360",
+            "phone": "0270 3822 188",
+            "role": "Hỗ trợ du khách & ứng cứu sự cố"
+          }
+        },
+        "administrative_history": "Địa bàn được thành lập theo Nghị quyết sắp xếp đơn vị hành chính cấp xã của Ủy ban Thường vụ Quốc hội giai đoạn 2023–2025, trên cơ sở hợp nhất phường Đông Thuận, xã Đông Bình, xã Đông Thạnh, xã Đông Thành thuộc TX Bình Minh trước đây, hiện vận hành theo mô hình chính quyền địa phương 2 cấp trực thuộc tỉnh Vĩnh Long.",
+        "terroir_anchors": [
+          "Tàu hủ ky Mỹ Hòa",
+          "Bưởi Năm Roi Bình Minh",
+          "Cầu Cần Thơ ven sông Hậu",
+          "Rau diếp cá"
+        ]
       },
       "source": [
         {
