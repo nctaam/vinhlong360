@@ -299,6 +299,13 @@ describe('Challenger 1: Empirical Adversarial Stress & Edge Case Harness', () =>
     })
   })
 
+  describe('Adversarial Test 9: Journey Action Rail Active Tactile Response', () => {
+    it('enforces active tactile scale on journey action buttons', () => {
+      const railContent = readFileSync(resolve(webNuxt, 'components/JourneyActionRail.vue'), 'utf8')
+      expect(railContent).toMatch(/\.journey-action:active\s*\{[^}]*transform:\s*scale\(0\.98\)/)
+    })
+  })
+
   // ───────────────────────────────────────────────────────────────────────────
   // OBJECTIVE 2: Bit-for-bit SHA-256 Invariance
   // ───────────────────────────────────────────────────────────────────────────

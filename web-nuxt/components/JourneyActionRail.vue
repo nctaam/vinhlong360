@@ -79,6 +79,9 @@ withDefaults(defineProps<{
   border-color: rgba(var(--color-action-rgb), .38);
   box-shadow: var(--shadow-xs);
 }
+.journey-action:active {
+  transform: scale(0.98);
+}
 .journey-action:focus-visible {
   outline: 2px solid var(--color-focus);
   outline-offset: 2px;
