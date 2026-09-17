@@ -2991,6 +2991,26 @@ html.js .home .hero-enter h1::after { animation: hero-underline-draw .8s var(--e
   border-radius: var(--radius-control);
 }
 
+.tt-chip:active {
+  transform: scale(0.96);
+}
+
+.tt-chip:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 2px;
+  border-radius: var(--radius-pill, 9999px);
+}
+
+.community-seed-card:active {
+  transform: scale(0.98);
+}
+
+.community-seed-card:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 2px;
+  border-radius: var(--radius-surface);
+}
+
 /* ═══════════════════════════════════════════════════
    HERO COGNITIVE BANNER (Seasonal & Weather Signals)
    ═══════════════════════════════════════════════════ */

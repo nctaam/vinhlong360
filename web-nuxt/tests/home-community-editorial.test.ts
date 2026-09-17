@@ -20,4 +20,11 @@ describe('Community Feed Editorial Field Notes Craft', () => {
   it('enforces focus-visible rings on community dispatches cards', () => {
     expect(homeCss).toMatch(/\.home-community-dispatches\s+\.cm-card:focus-visible/)
   })
+
+  it('enforces tactile active scale and focus visible on community trending tags and seed cards', () => {
+    expect(homeCss).toMatch(/\.tt-chip:active\s*\{[^}]*transform:\s*scale\(0\.96\)/)
+    expect(homeCss).toMatch(/\.tt-chip:focus-visible\s*\{[^}]*outline:\s*2px\s+solid\s+var\(--color-focus\)/)
+    expect(homeCss).toMatch(/\.community-seed-card:active\s*\{[^}]*transform:\s*scale\(0\.98\)/)
+    expect(homeCss).toMatch(/\.community-seed-card:focus-visible\s*\{[^}]*outline:\s*2px\s+solid\s+var\(--color-focus\)/)
+  })
 })
