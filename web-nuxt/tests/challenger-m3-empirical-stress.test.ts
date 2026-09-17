@@ -60,6 +60,13 @@ describe('Challenger M3: Empirical Adversarial Stress Verification Suite', () =>
       expect(val).toBeGreaterThanOrEqual(44)
     })
 
+    it('verifies HomeCuratedShowcase lead and satellite cards have focus-visible rings and active tactile feedback', () => {
+      expect(showcaseContent).toMatch(/\.home-curated-lead:focus-visible/)
+      expect(showcaseContent).toMatch(/\.home-curated-lead:active/)
+      expect(showcaseContent).toMatch(/\.home-curated-satellite:focus-visible/)
+      expect(showcaseContent).toMatch(/\.home-curated-satellite__link:active/)
+    })
+
     it('enforces min-height >= 44px on HomeCulinaryTrail and HomeRiversideStays actions', () => {
       const culinaryBtnMatch = culinaryContent.match(/\.home-culinary-card__btn\s*\{[\s\S]*?min-height:\s*(\d+)px;/)
       expect(culinaryBtnMatch).not.toBeNull()

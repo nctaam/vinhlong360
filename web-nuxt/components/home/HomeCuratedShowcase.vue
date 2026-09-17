@@ -342,6 +342,16 @@ function onImgFallback(e: Event) {
   border-color: color-mix(in srgb, var(--mangthit-600) 45%, var(--color-border));
 }
 
+.home-curated-lead:active {
+  transform: scale(0.99);
+}
+
+.home-curated-lead:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 3px;
+  border-radius: var(--radius-surface);
+}
+
 .home-curated-lead__media-container {
   position: relative;
   width: 100%;
@@ -611,6 +621,12 @@ function onImgFallback(e: Event) {
   transform: scale(0.98);
 }
 
+.home-curated-satellite:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 3px;
+  border-radius: var(--radius-surface);
+}
+
 /* Photo fills 100% of card */
 .home-curated-satellite__img {
   position: absolute;
@@ -671,6 +687,11 @@ function onImgFallback(e: Event) {
   backdrop-filter: blur(20px) saturate(180%);
   -webkit-backdrop-filter: blur(20px) saturate(180%);
   box-shadow: var(--shadow-card-ambient);
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), background-color 0.2s ease;
+}
+
+.home-curated-satellite:hover .home-curated-satellite__terroir-badge {
+  transform: translateY(-1px);
 }
 
 .home-curated-satellite__tag {
@@ -787,6 +808,10 @@ function onImgFallback(e: Event) {
 
 .home-curated-satellite__link:hover {
   opacity: 0.85;
+}
+
+.home-curated-satellite__link:active {
+  transform: scale(0.96);
 }
 
 .home-curated-satellite__link:focus-visible {
