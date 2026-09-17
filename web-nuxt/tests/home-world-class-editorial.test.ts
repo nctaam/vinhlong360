@@ -36,4 +36,10 @@ describe('Homepage World-Class Editorial Benchmark & Anti-AI-Slop', () => {
     expect(designMd).toContain('Visit Oslo')
     expect(designMd).toContain('Monocle')
   })
+
+  it('enforces balanced text wrapping and tabular numerals across homepage headings', () => {
+    expect(homeCss).toMatch(/text-wrap:\s*balance/)
+    expect(homeCss).toMatch(/font-variant-numeric:\s*tabular-nums/)
+  })
 })
+

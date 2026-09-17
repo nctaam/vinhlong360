@@ -48,6 +48,20 @@
   background: color-mix(in srgb, var(--color-brand) 55%, transparent);
 }
 
+/* ═══════════════════════════════════════════════════
+   EDITORIAL TYPOGRAPHY: BALANCED HEADINGS & TABULAR NUMS
+   ═══════════════════════════════════════════════════ */
+[data-home-pilot="nocturne-b1"] :is(h1, h2, h3, .section-head h2, .home-curated-lead__title, .home-culinary-card__title, .home-product-lead__name) {
+  text-wrap: balance;
+  text-wrap: pretty;
+  line-height: var(--leading-snug, 1.35);
+}
+
+[data-home-pilot="nocturne-b1"] :is(.home-feature-dossier__coords, .home-context-line__time, [data-geo-coordinates], .hero-cognitive-chip, .cm-stat) {
+  font-variant-numeric: tabular-nums;
+}
+
+
 /* MỘT công thức khung duy nhất, giống `.block` (base.css:182):
    max-width + padding-inline. Trước đây các mục này dùng `width: min(--maxw,
    100% - space-10)` — trên desktop cho nội dung ở x=65 trong khi `.block` ở x=85.
