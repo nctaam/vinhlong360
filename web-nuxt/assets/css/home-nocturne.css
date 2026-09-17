@@ -2504,6 +2504,12 @@ html.js .home .hero-enter h1::after { animation: hero-underline-draw .8s var(--e
   transform: scale(0.98);
 }
 
+[data-home-pilot="nocturne-b1"] .home-story-card:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 3px;
+  border-radius: var(--radius-surface);
+}
+
 [data-home-pilot="nocturne-b1"] .home-story-card--primary {
   min-height: 380px;
 }
@@ -2653,9 +2659,14 @@ html.js .home .hero-enter h1::after { animation: hero-underline-draw .8s var(--e
   color: var(--color-brand);
 }
 
+[data-home-pilot="nocturne-b1"] .home-story-callout__action:active {
+  transform: scale(0.98);
+}
+
 [data-home-pilot="nocturne-b1"] .home-story-callout__action:focus-visible {
   outline: 2px solid var(--color-focus);
   outline-offset: 2px;
+  border-radius: var(--radius-control);
 }
 
 /* ═══════════════════════════════════════════════════

@@ -1,6 +1,10 @@
+import { readFileSync } from 'node:fs'
+import { resolve } from 'node:path'
 import { mountSuspended } from '@nuxt/test-utils/runtime'
 import { afterEach, describe, expect, it } from 'vitest'
 import HomeNativeStories from '../components/home/HomeNativeStories.vue'
+
+const homeNocturneCss = readFileSync(resolve(__dirname, '../assets/css/home-nocturne.css'), 'utf-8')
 
 const wrappers: Array<{ unmount: () => void }> = []
 afterEach(() => {
@@ -85,5 +89,11 @@ describe('HomeNativeStories — Empirical Stress Testing', () => {
     expect(html).not.toContain('undefined')
     expect(html).not.toContain('null')
     expect(html).not.toContain('NaN')
+  })
+
+  it('verifies home-story-card and callout action have focus-visible rings and active state in home-nocturne.css', () => {
+    expect(homeNocturneCss).toMatch(/\[data-home-pilot="nocturne-b1"\]\s+\.home-story-card:focus-visible\s*\{[\s\S]*?outline:\s*2px solid var\(--color-focus\)/)
+    expect(homeNocturneCss).toMatch(/\[data-home-pilot="nocturne-b1"\]\s+\.home-story-callout__action:focus-visible\s*\{[\s\S]*?outline:\s*2px solid var\(--color-focus\)/)
+    expect(homeNocturneCss).toMatch(/\[data-home-pilot="nocturne-b1"\]\s+\.home-story-callout__action:active\s*\{[\s\S]*?transform:\s*scale\(0\.98\)/)
   })
 })
