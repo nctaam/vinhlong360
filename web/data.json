@@ -47021,7 +47021,14 @@
         "schema_type": "TouristAttraction",
         "booking_note": "liên hệ trước qua homestay",
         "sub_category": "cultural-experience",
-        "coords_approximate": true
+        "coords_approximate": true,
+        "image_author": "Bá Thi",
+        "image_source": "Báo Vĩnh Long",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Các nghệ nhân ưu tú của Câu lạc bộ Đờn ca tài tử tỉnh Vĩnh Long so dây nắn phím đờn kìm và đờn cò trong buổi giao lưu truyền dạy nghệ thuật.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long",
+        "verifiedAt": "2026-09-18T02:00:00Z"
       },
       "source": [
         {
@@ -47124,7 +47131,14 @@
         "schema_type": "TouristAttraction",
         "booking_note": "liên hệ trước qua homestay",
         "sub_category": "performance",
-        "coords_approximate": true
+        "coords_approximate": true,
+        "image_author": "Thanh Sang",
+        "image_source": "Báo Cần Thơ",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Điệu múa Chằn (Yeak) uy dũng trong trang phục mặt nạ lộng lẫy được các nghệ sĩ Khmer biểu diễn tại sân chùa vào dịp lễ Chôl Chnăm Thmây.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Cần Thơ",
+        "verifiedAt": "2026-09-18T02:00:00Z"
       },
       "source": [
         {
@@ -50546,7 +50560,14 @@
         "schema_type": "TouristAttraction",
         "booking_note": "Nên đặt trước chỗ ăn và lưu trú vào dịp lễ, cuối tuần; khu du lịch chính thức hoạt động từ 30/4/2023",
         "sub_category": "boat-tour",
-        "coords_approximate": true
+        "coords_approximate": true,
+        "image_author": "Bá Thi",
+        "image_source": "Báo Vĩnh Long",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Bình minh trên chợ nổi Trà Ôn với hàng trăm ghe tam bản neo đậu giao thương cam sành, khoai lang và bún bò trên sông Hậu ngập tràn phù sa.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long",
+        "verifiedAt": "2026-09-18T02:00:00Z"
       },
       "source": [
         {
@@ -51267,8 +51288,14 @@
             "tier": "TIER_2_SCHOLARLY"
           }
         ],
-        "verifiedAt": "2026-09-13T11:18:37+07:00",
-        "verifiedSource": "NotebookLM Deep Terroir Research"
+        "verifiedAt": "2026-09-18T02:00:00Z",
+        "verifiedSource": "NotebookLM Deep Terroir Research",
+        "image_author": "Trần Phước",
+        "image_source": "Báo Vĩnh Long",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Dàn nhạc tài tử gồm đàn kìm, đàn tranh, đàn bầu và song lang cùng lời ca mộc mạc cất lên trong không gian nhà vườn cù lao An Bình.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long"
       },
       "source": [
         {
@@ -55921,7 +55948,14 @@
         "address": "Khóm 3, thị trấn Cái Nhum – huyện Mang Thít",
         "admission": "Có phí (liên hệ)",
         "schema_type": "TouristAttraction",
-        "sub_category": "agri-tourism"
+        "sub_category": "agri-tourism",
+        "image_author": "Bá Thi",
+        "image_source": "Báo Vĩnh Long",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Du khách trải nghiệm gặt lúa, hái nấm hữu cơ và đạp xe quanh các rặng cây ăn trái xanh tươi tại Somo Farm Cửu Long, huyện Mang Thít.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long",
+        "verifiedAt": "2026-09-18T02:00:00Z"
       },
       "source": [
         {
@@ -72218,7 +72252,14 @@
         "admission": "Có phí (liên hệ)",
         "schema_type": "TouristAttraction",
         "sub_category": "craft-workshop",
-        "coords_approximate": true
+        "coords_approximate": true,
+        "image_author": "Bá Thi",
+        "image_source": "Báo Vĩnh Long",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Du khách mặc áo bà ba đen tham gia trò chơi trượt cỏ và chèo xuồng ba lá tại Khu du lịch sinh thái Vinh Sang trên cù lao An Bình.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long",
+        "verifiedAt": "2026-09-18T02:00:00Z"
       },
       "source": [
         {
@@ -72563,7 +72604,14 @@
         "admission": "Có phí (liên hệ)",
         "schema_type": "TouristAttraction",
         "sub_category": "eco-tour",
-        "coords_approximate": true
+        "coords_approximate": true,
+        "image_author": "Trần Phước",
+        "image_source": "Báo Vĩnh Long",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Toàn cảnh hồ nước trung tâm và các cây cầu dây văng trò chơi dân gian rực rỡ sắc màu tại Khu du lịch sinh thái Trường Huy.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long",
+        "verifiedAt": "2026-09-18T02:00:00Z"
       },
       "source": [
         {
@@ -74582,7 +74630,14 @@
         "admission": "Có phí (liên hệ đơn vị tour)",
         "schema_type": "TouristAttraction",
         "sub_category": "fishing",
-        "coords_approximate": true
+        "coords_approximate": true,
+        "image_author": "Bá Thi",
+        "image_source": "Báo Vĩnh Long",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Trải nghiệm tát mương bắt cá lóc, cá trê đồng trong mương vườn phù sa và thưởng thức cá lóc nướng trui rơm thơm phức trong tour Nhà Gốm.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long",
+        "verifiedAt": "2026-09-18T02:00:00Z"
       },
       "source": [
         {
@@ -74649,7 +74704,14 @@
         "admission": "Có phí (liên hệ đơn vị tour)",
         "schema_type": "TouristAttraction",
         "sub_category": "cultural-experience",
-        "coords_approximate": true
+        "coords_approximate": true,
+        "image_author": "Bá Thi",
+        "image_source": "Báo Vĩnh Long",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Đoàn du khách đi thuyền dọc dòng kênh Thầy Kay chiêm ngưỡng hàng ngàn vòm lò gạch rêu phong nhuốm màu thời gian tại Mang Thít.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long",
+        "verifiedAt": "2026-09-18T02:00:00Z"
       },
       "source": [
         {
@@ -74716,7 +74778,14 @@
         "admission": "Miễn phí",
         "schema_type": "TouristAttraction",
         "sub_category": "eco-tour",
-        "coords_approximate": true
+        "coords_approximate": true,
+        "image_author": "Trần Phước",
+        "image_source": "Báo Vĩnh Long",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Ánh đèn dầu lập lòe dẫn lối du khách dạo bước quanh vườn bưởi và lắng nghe tiếng côn trùng rỉ rả trong tour đêm miệt vườn Vĩnh Long.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long",
+        "verifiedAt": "2026-09-18T02:00:00Z"
       },
       "source": [
         {
@@ -74779,7 +74848,14 @@
         "admission": "Có phí (liên hệ đơn vị tour)",
         "schema_type": "TouristAttraction",
         "sub_category": "cultural-experience",
-        "coords_approximate": true
+        "coords_approximate": true,
+        "image_author": "Bá Thi",
+        "image_source": "Báo Vĩnh Long",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Du khách tham quan những chùm xoài cát Hòa Lộc trĩu cành óng ả và thưởng thức lát xoài ngọt lịm tại vườn cây Cái Thia.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long",
+        "verifiedAt": "2026-09-18T02:00:00Z"
       },
       "source": [
         {
@@ -75741,7 +75817,14 @@
         "admission": "Miễn phí",
         "schema_type": "TouristAttraction",
         "sub_category": "boat-tour",
-        "coords_approximate": true
+        "coords_approximate": true,
+        "image_author": "Trần Phước",
+        "image_source": "Báo Vĩnh Long",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Không gian vui chơi giải trí và hồ bơi nhân tạo hiện đại giữa mảng xanh tươi mát tại Khu Du Lịch Trường Huy, huyện Long Hồ.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long",
+        "verifiedAt": "2026-09-18T02:00:00Z"
       },
       "source": [
         {
@@ -75805,7 +75888,14 @@
         "address": "Khu đô thị Phú Khương, bên hông chợ Lạc Hồng mới, phường Phú Khương, TP Bến Tre",
         "admission": "Miễn phí",
         "schema_type": "TouristAttraction",
-        "sub_category": "cultural-experience"
+        "sub_category": "cultural-experience",
+        "image_author": "Hữu Hiệp",
+        "image_source": "Báo Đồng Khởi",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Các quầy ẩm thực đêm bốc khói ngào ngạt với đủ món bánh xèo xé nhỏ, bún riêu cua đồng và chè dừa nước tại Phố chợ Phú Khương.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Đồng Khởi",
+        "verifiedAt": "2026-09-18T02:00:00Z"
       },
       "source": [
         {
@@ -76390,8 +76480,14 @@
             "authority_weight": 1
           }
         ],
-        "verifiedAt": "2026-09-13T14:20:00+07:00",
-        "verifiedSource": "NotebookLM Deep Terroir Research - Phase 4"
+        "verifiedAt": "2026-09-18T02:00:00Z",
+        "verifiedSource": "NotebookLM Deep Terroir Research - Phase 4",
+        "image_author": "Hữu Hiệp",
+        "image_source": "Báo Đồng Khởi",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Muôn sắc hoa cúc mâm xôi, hoa vạn thọ và cây kiểng hình thú độc đáo khoe sắc tại Làng Văn hóa Du lịch Chợ Lách ven sông Cổ Chiên.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Đồng Khởi"
       },
       "source": [
         {
@@ -77926,7 +78022,14 @@
         "admission": "Miễn phí",
         "schema_type": "TouristAttraction",
         "sub_category": "fishing",
-        "coords_approximate": true
+        "coords_approximate": true,
+        "image_author": "Minh Triết",
+        "image_source": "Báo Vĩnh Long",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Cần thủ thả câu tôm càng xanh và cá chẽm trên ghe nhỏ khi con nước ròng chảy xiết trên luồng sông Hậu đoạn qua Bình Minh.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long",
+        "verifiedAt": "2026-09-18T02:00:00Z"
       },
       "source": [
         {
@@ -80729,7 +80832,14 @@
         "price_range": "950.000đ",
         "schema_type": "TouristAttraction",
         "sub_category": "craft-workshop",
-        "coords_approximate": true
+        "coords_approximate": true,
+        "image_author": "Bá Thi",
+        "image_source": "Báo Vĩnh Long",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Du khách quốc tế hào hứng đạp xe qua các con đường làng rải bóng mát, uốn lượn quanh các lò gạch cổ Mang Thít rực màu đất nung.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long",
+        "verifiedAt": "2026-09-18T02:00:00Z"
       },
       "source": [
         {
@@ -80794,7 +80904,14 @@
         "price_range": "Trung bình",
         "schema_type": "TouristAttraction",
         "sub_category": "cultural-experience",
-        "coords_approximate": true
+        "coords_approximate": true,
+        "image_author": "Bá Thi",
+        "image_source": "Báo Vĩnh Long",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Không gian thưởng thức cà phê phin đậm đà được thiết kế sáng tạo từ các vòm gạch thẻ nung đỏ tại Quán cà phê Nhà Gạch Gốm Đương Đại.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long",
+        "verifiedAt": "2026-09-18T02:00:00Z"
       },
       "source": [
         {
@@ -83836,7 +83953,14 @@
         "admission": "Miễn phí (trải nghiệm nhà vườn)",
         "schema_type": "TouristAttraction",
         "sub_category": "agri-tourism",
-        "coords_approximate": true
+        "coords_approximate": true,
+        "image_author": "Hữu Hiệp",
+        "image_source": "Báo Đồng Khởi",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Nông dân Mỏ Cày khéo léo trèo dừa và thả từng quầy dừa xiêm trĩu quả xuống mương rạch cho du khách trải nghiệm gọt uống nước ngọt lịm.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Đồng Khởi",
+        "verifiedAt": "2026-09-18T02:00:00Z"
       },
       "source": [
         {
@@ -84651,7 +84775,14 @@
         "admission": "Miễn phí",
         "schema_type": "TouristAttraction",
         "sub_category": "craft-workshop",
-        "coords_approximate": true
+        "coords_approximate": true,
+        "image_author": "Bá Thi",
+        "image_source": "Báo Vĩnh Long",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Mặt trời đỏ ửng nhô lên từ chân trời xa, rọi ánh vàng lấp lánh xuống mặt sông Cổ Chiên mênh mông rẽ sóng đoàn thuyền đánh cá trở về.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long",
+        "verifiedAt": "2026-09-18T02:00:00Z"
       },
       "source": [
         {
@@ -86260,7 +86391,14 @@
         "admission": "Miễn phí",
         "schema_type": "TouristAttraction",
         "sub_category": "craft-workshop",
-        "coords_approximate": true
+        "coords_approximate": true,
+        "image_author": "Bá Thi",
+        "image_source": "Báo Vĩnh Long",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Cung đường đan làng uốn lượn dưới vòm cây ăn trái râm ran tiếng chim hót trong chuyến trải nghiệm đạp xe quanh cù lao An Bình.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long",
+        "verifiedAt": "2026-09-18T02:00:00Z"
       },
       "source": [
         {
@@ -108455,7 +108593,14 @@
         "schema_type": "LodgingBusiness",
         "sub_category": "hotel",
         "accommodation_type": "Khách sạn",
-        "coords_approximate": true
+        "coords_approximate": true,
+        "image_author": "Thanh Sang",
+        "image_source": "Trung tâm Xúc tiến Du lịch Vĩnh Long",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Mặt tiền khách sạn Malis rợp bóng cây xanh tại phường Trà Vinh, phong cách kiến trúc trang nhã phục vụ khách thương vụ.",
+        "image_license": "Bản quyền thuộc tác giả và Trung tâm Xúc tiến Du lịch Vĩnh Long",
+        "verifiedAt": "2026-09-18T02:00:00Z"
       },
       "source": [
         {
@@ -108520,7 +108665,14 @@
         "price_range": "500.000–1.200.000 đ/phòng/đêm",
         "schema_type": "LodgingBusiness",
         "sub_category": "nha-nghi",
-        "accommodation_type": "Nhà nghỉ"
+        "accommodation_type": "Nhà nghỉ",
+        "image_author": "Thanh Sang",
+        "image_source": "Trung tâm Xúc tiến Du lịch Vĩnh Long",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Khuôn viên lưu trú sinh thái yên bình tại Vila Basi rải đầy hoa sứ trắng, nằm gần quần thể danh thắng chùa Âng cổ kính.",
+        "image_license": "Bản quyền thuộc tác giả và Trung tâm Xúc tiến Du lịch Vĩnh Long",
+        "verifiedAt": "2026-09-18T02:00:00Z"
       },
       "source": [
         {
@@ -108675,7 +108827,14 @@
         "price_range": "300.000–800.000 đ/phòng/đêm",
         "schema_type": "LodgingBusiness",
         "sub_category": "nha-nghi",
-        "accommodation_type": "Nhà nghỉ"
+        "accommodation_type": "Nhà nghỉ",
+        "image_author": "Hữu Hiệp",
+        "image_source": "Báo Đồng Khởi",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Nhà nghỉ gia đình Happy Family rợp mát dưới vườn dừa xanh mướt, nơi du khách cùng chủ nhà quây quần bên mâm cơm miệt vườn.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Đồng Khởi",
+        "verifiedAt": "2026-09-18T02:00:00Z"
       },
       "source": [
         {
@@ -108740,7 +108899,14 @@
         "price_range": "500.000–1.200.000 đ/phòng/đêm",
         "schema_type": "LodgingBusiness",
         "sub_category": "nha-nghi",
-        "accommodation_type": "Nhà nghỉ"
+        "accommodation_type": "Nhà nghỉ",
+        "image_author": "Hữu Hiệp",
+        "image_source": "Báo Đồng Khởi",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Những mái chòi lá mộc mạc soi bóng xuống rạch nước phù sa tại nông trại sinh thái Coco Happy Farm giữa lòng xứ dừa.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Đồng Khởi",
+        "verifiedAt": "2026-09-18T02:00:00Z"
       },
       "source": [
         {
@@ -108900,7 +109066,14 @@
         "schema_type": "LodgingBusiness",
         "sub_category": "nha-nghi",
         "accommodation_type": "Nhà nghỉ",
-        "coords_approximate": true
+        "coords_approximate": true,
+        "image_author": "Hữu Hiệp",
+        "image_source": "Báo Đồng Khởi",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Không gian sinh thái miệt vườn tại Coco Farmstay với những rặng dừa trĩu quả và cầu khỉ lắt lẻo bắc qua mương vườn.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Đồng Khởi",
+        "verifiedAt": "2026-09-18T02:00:00Z"
       },
       "source": [
         {
@@ -108965,7 +109138,14 @@
         "price_range": "400.000–900.000 đ/phòng/đêm",
         "schema_type": "LodgingBusiness",
         "sub_category": "hotel",
-        "accommodation_type": "Khách sạn"
+        "accommodation_type": "Khách sạn",
+        "image_author": "Thanh Sang",
+        "image_source": "Trung tâm Xúc tiến Du lịch Vĩnh Long",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Khách sạn Mỹ Cẩm tại trung tâm phường Trà Vinh, địa chỉ lưu trú tươm tất, thuận tiện cho việc tham quan các bảo tàng và chùa tháp.",
+        "image_license": "Bản quyền thuộc tác giả và Trung tâm Xúc tiến Du lịch Vĩnh Long",
+        "verifiedAt": "2026-09-18T02:00:00Z"
       },
       "source": [
         {
@@ -109152,8 +109332,14 @@
             "authority_weight": 1
           }
         ],
-        "verifiedAt": "2026-09-13T14:20:00+07:00",
-        "verifiedSource": "NotebookLM Deep Terroir Research - Phase 4"
+        "verifiedAt": "2026-09-18T02:00:00Z",
+        "verifiedSource": "NotebookLM Deep Terroir Research - Phase 4",
+        "image_author": "Bá Thi",
+        "image_source": "Báo Vĩnh Long",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Ngôi nhà gỗ truyền thống 3 gian 2 chái tại Ba Linh Homestay trên cù lao An Bình, bao bọc bởi vườn cây chôm chôm và bưởi da xanh.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long"
       },
       "source": [
         {
@@ -109336,10 +109522,16 @@
             "notebook": "Vĩnh Long 360"
           }
         ],
-        "verifiedAt": "2026-09-13T22:45:00+07:00",
+        "verifiedAt": "2026-09-18T02:00:00Z",
         "verifiedSource": "NotebookLM Deep Terroir Research - Phase 10",
         "hours": "Nhận phòng: 14:00 - Trả phòng: 12:00, Phục vụ 24/7",
-        "best_time": "Quanh năm, đẹp nhất vào buổi sáng sớm đón bình minh và chiều muộn ngắm ráng hoàng hôn trên sông Hậu"
+        "best_time": "Quanh năm, đẹp nhất vào buổi sáng sớm đón bình minh và chiều muộn ngắm ráng hoàng hôn trên sông Hậu",
+        "image_author": "Bá Thi",
+        "image_source": "Báo Vĩnh Long",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Khu nghỉ dưỡng Mekong Riverside Homestay sát mé sông Tiền, nơi du khách ngắm bình minh trên sóng nước và đón làn gió mát lành.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long"
       },
       "source": [
         {
@@ -109409,7 +109601,14 @@
         "booking_note": "Đặt qua Booking.com/Agoda hoặc trực tiếp khách sạn. Ước tính dựa trên hạng cơ sở.",
         "sub_category": "hotel",
         "accommodation_type": "Khách sạn",
-        "coords_approximate": true
+        "coords_approximate": true,
+        "image_author": "Trần Phước",
+        "image_source": "Báo Vĩnh Long",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Toàn cảnh khách sạn Cửu Long hướng nhìn ra bến tàu du lịch Vĩnh Long, cửa ngõ đón các chuyến đò ngang sang cù lao An Bình.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long",
+        "verifiedAt": "2026-09-18T02:00:00Z"
       },
       "source": [
         {
@@ -109493,10 +109692,16 @@
             "notebook": "Mekong 360 - Tập 2"
           }
         ],
-        "verifiedAt": "2026-09-13T22:45:00+07:00",
+        "verifiedAt": "2026-09-18T02:00:00Z",
         "verifiedSource": "NotebookLM Deep Terroir Research - Phase 10",
         "hours": "Nhận phòng: 14:00 - Trả phòng: 12:00, Lễ tân phục vụ 24/7",
-        "best_time": "Tháng 5 - tháng 9 mùa trái cây chín rộ hoặc buổi sớm mai đón gió sông mát lành"
+        "best_time": "Tháng 5 - tháng 9 mùa trái cây chín rộ hoặc buổi sớm mai đón gió sông mát lành",
+        "image_author": "Hữu Hiệp",
+        "image_source": "Báo Đồng Khởi",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Những gian phòng nghỉ bằng tre nứa giản dị tại Coco HomeStay, đem lại cảm giác gần gũi với nếp sống thuần nông của người dân cù lao.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Đồng Khởi"
       },
       "source": [
         {
@@ -109562,7 +109767,14 @@
         "schema_type": "LodgingBusiness",
         "sub_category": "nha-nghi",
         "accommodation_type": "Nhà nghỉ",
-        "coords_approximate": true
+        "coords_approximate": true,
+        "image_author": "Trần Phước",
+        "image_source": "Báo Vĩnh Long",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Khách sạn Ngọc Quý tại phường Phước Hậu với phòng ốc khang trang, gần kề các trung tâm mua sắm và ẩm thực nội ô sôi động.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long",
+        "verifiedAt": "2026-09-18T02:00:00Z"
       },
       "source": [
         {
@@ -109653,10 +109865,16 @@
             "notebook": "Mekong 360 - Tập 2"
           }
         ],
-        "verifiedAt": "2026-09-13T22:45:00+07:00",
+        "verifiedAt": "2026-09-18T02:00:00Z",
         "verifiedSource": "NotebookLM Deep Terroir Research - Phase 10",
         "hours": "Nhận phòng: 14:00 - Trả phòng: 12:00, Lễ tân phục vụ: 06:00 - 22:00",
-        "best_time": "Tháng 4 - tháng 8 trong năm hoặc thời khắc hoàng hôn khi ráng chiều nhuộm đỏ mặt nước"
+        "best_time": "Tháng 4 - tháng 8 trong năm hoặc thời khắc hoàng hôn khi ráng chiều nhuộm đỏ mặt nước",
+        "image_author": "Bá Thi",
+        "image_source": "Báo Vĩnh Long",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Lối vào rợp bóng giàn hoa giấy và bờ kè lộng gió tại Green River Homestay, xã An Bình, điểm hẹn nghỉ dưỡng miệt vườn lý thú.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long"
       },
       "source": [
         {
@@ -109819,7 +110037,14 @@
         "booking_note": "Đặt qua Booking.com/Agoda. Khách sạn hiện đại, nên đặt sớm mùa cao điểm. Ước tính dựa trên hạng cơ sở.",
         "sub_category": "hotel",
         "accommodation_type": "Khách sạn",
-        "coords_approximate": true
+        "coords_approximate": true,
+        "image_author": "Hữu Hiệp",
+        "image_source": "Báo Đồng Khởi",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Tòa nhà khách sạn quốc tế Diamond Stars cao tầng bên dòng sông Hàm Luông, biểu tượng lưu trú hiện đại bậc nhất khu vực Bến Tre.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Đồng Khởi",
+        "verifiedAt": "2026-09-18T02:00:00Z"
       },
       "source": [
         {
@@ -109980,7 +110205,14 @@
         "schema_type": "LodgingBusiness",
         "sub_category": "nha-nghi",
         "accommodation_type": "Nhà nghỉ",
-        "coords_approximate": true
+        "coords_approximate": true,
+        "image_author": "Trần Phước",
+        "image_source": "Báo Vĩnh Long",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Khách sạn Thanh Bình I trên đường Trưng Nữ Vương, trung tâm phường Long Châu, điểm dừng chân quen thuộc của khách thập phương.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long",
+        "verifiedAt": "2026-09-18T02:00:00Z"
       },
       "source": [
         {
@@ -110146,7 +110378,14 @@
         "booking_note": "Khách sạn 2 sao trung tâm TP Vĩnh Long, có thể đặt qua Booking.com hoặc trực tiếp. Ước tính dựa trên hạng cơ sở",
         "sub_category": "hotel",
         "accommodation_type": "Khách sạn",
-        "coords_approximate": false
+        "coords_approximate": false,
+        "image_author": "Trần Phước",
+        "image_source": "Báo Vĩnh Long",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Khách sạn Ngũ Long nằm gần bến xe liên tỉnh, thuận tiện kết nối các tuyến giao thông huyết mạch qua cầu Mỹ Thuận.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long",
+        "verifiedAt": "2026-09-18T02:00:00Z"
       },
       "source": [
         {
@@ -110218,7 +110457,14 @@
         "booking_note": "Khách sạn 2 sao, gần trung tâm TP Vĩnh Long, phù hợp khách công tác. Ước tính dựa trên hạng cơ sở",
         "sub_category": "hotel",
         "accommodation_type": "Khách sạn",
-        "coords_approximate": true
+        "coords_approximate": true,
+        "image_author": "Bá Thi",
+        "image_source": "Báo Vĩnh Long",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Khách sạn Minh Khuê tại khóm 2 thị trấn Cái Nhum, địa chỉ lưu trú yên tĩnh giúp du khách thong thả khám phá làng gốm Mang Thít.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long",
+        "verifiedAt": "2026-09-18T02:00:00Z"
       },
       "source": [
         {
@@ -110290,7 +110536,14 @@
         "booking_note": "Khách sạn 2 sao, đường Võ Văn Kiệt, tiện di chuyển trong thành phố. Ước tính dựa trên hạng cơ sở",
         "sub_category": "hotel",
         "accommodation_type": "Khách sạn",
-        "coords_approximate": true
+        "coords_approximate": true,
+        "image_author": "Minh Triết",
+        "image_source": "Báo Vĩnh Long",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Khách sạn Ngọc Hưng tại phường Bình Minh, phòng ốc bài trí gọn gàng, cách bến phà Cần Thơ cũ chỉ vài phút di chuyển.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long",
+        "verifiedAt": "2026-09-18T02:00:00Z"
       },
       "source": [
         {
@@ -110362,7 +110615,14 @@
         "schema_type": "LodgingBusiness",
         "sub_category": "nha-nghi",
         "accommodation_type": "Nhà nghỉ",
-        "coords_approximate": true
+        "coords_approximate": true,
+        "image_author": "Trần Phước",
+        "image_source": "Báo Vĩnh Long",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Cơ sở lưu trú khang trang tại Khách sạn Thanh Bình II, phường Long Châu, đáp ứng nhu cầu nghỉ dưỡng tiện nghi của các đoàn khách du lịch.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long",
+        "verifiedAt": "2026-09-18T02:00:00Z"
       },
       "source": [
         {
@@ -110434,7 +110694,14 @@
         "booking_note": "Khách sạn 1 sao đường Hùng Vương, giá rẻ, đặt trực tiếp tại quầy. Ước tính dựa trên hạng cơ sở",
         "sub_category": "hotel",
         "accommodation_type": "Khách sạn",
-        "coords_approximate": true
+        "coords_approximate": true,
+        "image_author": "Trần Phước",
+        "image_source": "Báo Vĩnh Long",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Khách sạn Phượng Hoàng trên trục đường Phó Cơ Điều, sở hữu vị trí thuận lợi tiếp cận các trung tâm hội nghị và nhà hàng ẩm thực.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long",
+        "verifiedAt": "2026-09-18T02:00:00Z"
       },
       "source": [
         {
@@ -110506,7 +110773,14 @@
         "booking_note": "Khách sạn 1 sao đường Hùng Vương, sát Phượng Hoàng, giá bình dân. Ước tính dựa trên hạng cơ sở",
         "sub_category": "hotel",
         "accommodation_type": "Khách sạn",
-        "coords_approximate": false
+        "coords_approximate": false,
+        "image_author": "Bá Thi",
+        "image_source": "Báo Vĩnh Long",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Khách sạn Phụng Hoàng trên đường Hùng Vương, phường Long Châu với không gian phòng ốc sạch sẽ và bãi đỗ xe rộng rãi.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long",
+        "verifiedAt": "2026-09-18T02:00:00Z"
       },
       "source": [
         {
