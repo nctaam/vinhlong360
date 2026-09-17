@@ -29,6 +29,7 @@
       >
         <span class="home-planner-tab-btn__badge">{{ it.durationBadge }}</span>
         <span class="home-planner-tab-btn__title">{{ it.shortTitle }}</span>
+        <span class="home-planner-tab-btn__terroir">{{ it.terroir }}</span>
       </button>
     </div>
 
@@ -36,10 +37,27 @@
     <div v-if="activeItinerary" class="home-planner-card" data-active-itinerary>
       <div class="home-planner-card__header">
         <div class="home-planner-card__title-group">
-          <span class="home-planner-card__badge">
-            <IconLine name="calendar" />
-            <span>{{ activeItinerary.durationLabel }}</span>
-          </span>
+          <div class="home-planner-card__meta-badges">
+            <span class="home-planner-card__badge">
+              <IconLine name="calendar" />
+              <span>{{ activeItinerary.durationLabel }}</span>
+            </span>
+            <span class="home-planner-card__terroir-badge">
+              <IconLine name="map" />
+              <span>{{ activeItinerary.terroir }}</span>
+            </span>
+            <!-- Fieldwork Certification Seal -->
+            <span class="home-planner-card__seal" title="Đã đối soát thực địa">
+              <IconLine name="shield-check" />
+              <span>Bảo chứng thực địa</span>
+            </span>
+          </div>
+
+          <div class="home-planner-card__trust">
+            <SourceMark tier="official" source-title="Ban biên tập Vĩnh Long 360" compact />
+            <FreshnessLine status="fresh" updated-label="Thực địa 2026" />
+          </div>
+
           <h3 class="home-planner-card__title">{{ activeItinerary.title }}</h3>
           <p class="home-planner-card__theme">{{ activeItinerary.theme }}</p>
         </div>
@@ -81,6 +99,8 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
 import IconLine from '~/components/IconLine.vue'
+import SourceMark from '~/components/SourceMark.vue'
+import FreshnessLine from '~/components/FreshnessLine.vue'
 
 interface ItineraryStop {
   readonly time: string
@@ -92,6 +112,7 @@ interface CuratedItinerary {
   readonly id: string
   readonly durationBadge: string
   readonly shortTitle: string
+  readonly terroir: string
   readonly durationLabel: string
   readonly title: string
   readonly theme: string
@@ -104,6 +125,7 @@ const ITINERARIES: readonly CuratedItinerary[] = [
     id: 'mot-ngay-cu-lao-an-binh',
     durationBadge: '1 Ngày',
     shortTitle: 'Nông Dân Cù Lao',
+    terroir: 'Xanh Cù Lao',
     durationLabel: '07:30 – 17:00 (1 Ngày)',
     title: 'Một Ngày Làm Nông Dân Cù Lao & Hái Trái Cây Sông Cổ Chiên',
     theme: 'Trải nghiệm sông nước miệt vườn thanh bình, thưởng ngoạn vườn chôm chôm chín cây và ẩm thực cá tai tượng chiên xù.',
@@ -119,6 +141,7 @@ const ITINERARIES: readonly CuratedItinerary[] = [
     id: 'di-san-mang-thit-tra-vinh',
     durationBadge: '2N1Đ',
     shortTitle: 'Gốm Đỏ Mang Thít',
+    terroir: 'Đất nung Mang Thít',
     durationLabel: '2 Ngày 1 Đêm',
     title: 'Về Miền Di Sản Gốm Đỏ Mang Thít & Đêm Đờn Ca Tài Tử Cù Lao',
     theme: 'Chiêm ngưỡng kỳ quan Vương quốc Đỏ trăm năm tuổi, tự tay nặn gốm nung thủ công và lắng đọng cùng khúc ca tài tử bên sông.',
@@ -134,6 +157,7 @@ const ITINERARIES: readonly CuratedItinerary[] = [
     id: 'mien-tay-3-ngay',
     durationBadge: '3N2Đ',
     shortTitle: 'Toàn Cảnh Đất Phương Nam',
+    terroir: 'Phù Sa Cổ Chiên',
     durationLabel: '3 Ngày 2 Đêm',
     title: 'Toàn Cảnh Đất Phương Nam: Sinh Thái, Làng Nghề & Văn Hóa Tâm Linh',
     theme: 'Đại hành trình liên kết tam giác văn hóa Vĩnh Long – Trà Vinh – Bến Tre từ sông ra biển lớn.',
@@ -223,6 +247,20 @@ const activeItinerary = computed(() => {
   font-weight: var(--weight-bold);
 }
 
+.home-planner-tab-btn__terroir {
+  font-size: 11px;
+  color: var(--alluvial-gold);
+  font-weight: var(--weight-bold);
+  padding: 1px 6px;
+  border-radius: var(--radius-pill, 9999px);
+  background: rgba(var(--black-rgb), 0.08);
+}
+
+.home-planner-tab-btn.is-active .home-planner-tab-btn__terroir {
+  color: var(--surface-white);
+  background: rgba(var(--white-rgb), 0.22);
+}
+
 .home-planner-tab-btn.is-active .home-planner-tab-btn__badge {
   background: rgba(var(--white-rgb), 0.22);
   color: var(--surface-white);
@@ -261,6 +299,46 @@ const activeItinerary = computed(() => {
   flex-direction: column;
   gap: var(--space-2);
   flex: 1;
+}
+
+.home-planner-card__meta-badges {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.home-planner-card__terroir-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1h);
+  padding: 3px 10px;
+  background: color-mix(in srgb, var(--mangthit-600) 12%, transparent);
+  color: var(--mangthit-600);
+  border-radius: var(--radius-pill, 9999px);
+  font-size: var(--text-xs);
+  font-weight: var(--weight-bold);
+}
+
+.home-planner-card__seal {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: 3px 10px;
+  background: color-mix(in srgb, var(--orchard-600) 12%, transparent);
+  color: var(--orchard-600);
+  border-radius: var(--radius-pill, 9999px);
+  font-size: var(--text-xs);
+  font-weight: var(--weight-bold);
+  border: 1px solid color-mix(in srgb, var(--orchard-600) 30%, transparent);
+}
+
+.home-planner-card__trust {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+  margin-block-start: var(--space-1);
 }
 
 .home-planner-card__badge {

@@ -15,12 +15,13 @@
       </NuxtLink>
     </div>
 
-    <!-- Riverside Retreat Lookbook: 3 Featured Certified Homestays (Full-Bleed Widescreen) -->
+    <!-- Riverside Retreat Lookbook: 3 Featured Certified Homestays (Asymmetric Editorial Grid) -->
     <div class="home-riverside-stays__stays-grid">
       <article
-        v-for="stay in CURATED_HOMESTAYS"
+        v-for="(stay, index) in CURATED_HOMESTAYS"
         :key="stay.id"
         class="home-stay-card"
+        :class="{ 'home-stay-card--lead': index === 0 }"
         data-homestay-card
       >
         <!-- Full-Bleed Homestay Photo (100% of card) -->
@@ -40,7 +41,10 @@
 
         <!-- Floating Top Badge -->
         <div class="home-stay-card__top">
-          <span class="home-stay-card__badge">{{ stay.badge }}</span>
+          <div class="home-stay-card__top-left">
+            <span class="home-stay-card__terroir">{{ stay.terroir }}</span>
+            <span class="home-stay-card__badge">{{ stay.badge }}</span>
+          </div>
           <span v-if="stay.ecoBadge" class="home-stay-card__eco-badge">
             <IconLine name="shield-check" />
             <span>{{ stay.ecoBadge }}</span>
@@ -49,6 +53,11 @@
 
         <!-- Overlaid Bottom Content (<= 25% card height) -->
         <div class="home-stay-card__overlay home-stay-card__body">
+          <div class="home-stay-card__trust">
+            <SourceMark tier="official" source-title="Chuẩn Homestay ASEAN" compact />
+            <FreshnessLine status="fresh" updated-label="Thực địa 2026" />
+          </div>
+
           <div class="home-stay-card__meta">
             <span class="home-stay-card__area">
               <IconLine name="pin" />
@@ -115,10 +124,13 @@
 
 <script setup lang="ts">
 import IconLine from '~/components/IconLine.vue'
+import SourceMark from '~/components/SourceMark.vue'
+import FreshnessLine from '~/components/FreshnessLine.vue'
 
 interface CuratedHomestay {
   readonly id: string
   readonly name: string
+  readonly terroir: string
   readonly badge: string
   readonly ecoBadge: string
   readonly balconyHighlight: string
@@ -141,6 +153,7 @@ const CURATED_HOMESTAYS: readonly CuratedHomestay[] = [
   {
     id: 'homestay-ut-trinh',
     name: 'Út Trinh Homestay (ASEAN Standard)',
+    terroir: 'Xanh Cù Lao',
     badge: 'Chuẩn Homestay ASEAN',
     ecoBadge: 'Chứng nhận Sinh Thái ASEAN',
     balconyHighlight: 'Ban công gỗ hướng sông Cổ Chiên lộng gió',
@@ -155,6 +168,7 @@ const CURATED_HOMESTAYS: readonly CuratedHomestay[] = [
   {
     id: 'mekong-riverside-homestay',
     name: 'Mekong Riverside Homestay',
+    terroir: 'Phù Sa Cổ Chiên',
     badge: 'View Sông Hậu Lộng Gió',
     ecoBadge: 'Vườn sinh thái không rác thải',
     balconyHighlight: 'Hiên tre ngắm lục bình trôi và cano lướt sóng',
@@ -169,6 +183,7 @@ const CURATED_HOMESTAYS: readonly CuratedHomestay[] = [
   {
     id: 'ba-linh-homestay',
     name: 'Ba Linh Homestay Cù Lao',
+    terroir: 'Xanh Cù Lao',
     badge: 'Không Gian Vườn Cây Xưa',
     ecoBadge: 'Nông nghiệp hữu cơ tuần hoàn',
     balconyHighlight: 'Võng nằm sát mé nước, ngắm hoàng hôn đỏ ối',
@@ -231,9 +246,20 @@ function onImgFallback(e: Event) {
 
 .home-riverside-stays__stays-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  grid-template-columns: 1fr;
   gap: var(--space-fib-4);
   margin-block-start: var(--space-fib-4);
+}
+
+@media (min-width: 960px) {
+  .home-riverside-stays__stays-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .home-stay-card--lead {
+    grid-column: span 2;
+    min-height: 520px;
+  }
 }
 
 /* Full-Bleed Photographic Lookbook Card (100% photo visual area) */
@@ -302,6 +328,36 @@ function onImgFallback(e: Event) {
   justify-content: space-between;
   gap: var(--space-2);
   padding: var(--space-3) var(--space-4);
+}
+
+.home-stay-card__top-left {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+}
+
+.home-stay-card__terroir {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 10px;
+  background: rgba(var(--black-rgb), 0.78);
+  color: var(--alluvial-gold);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border: 1px solid var(--border-liquid-glass);
+  border-radius: var(--radius-pill, 9999px);
+  box-shadow: var(--shadow-card-ambient);
+  font-size: 11px;
+  font-weight: var(--weight-bold);
+}
+
+.home-stay-card__trust {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-1h);
+  margin-bottom: var(--space-1);
 }
 
 .home-stay-card__badge {

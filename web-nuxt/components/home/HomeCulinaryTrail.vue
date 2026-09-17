@@ -43,6 +43,7 @@
         <div class="home-culinary-card__top">
           <div class="home-culinary-card__top-left">
             <span class="home-culinary-card__rank">#0{{ index + 1 }}</span>
+            <span class="home-culinary-card__terroir">{{ dish.terroir }}</span>
             <span class="home-culinary-card__badge">{{ dish.badge }}</span>
           </div>
           <span v-if="dish.priceRange" class="home-culinary-card__price-badge">{{ dish.priceRange }}</span>
@@ -50,6 +51,10 @@
 
         <!-- Overlaid Bottom Content (<= 25% card height) -->
         <div class="home-culinary-card__overlay home-culinary-card__body">
+          <div class="home-culinary-card__trust">
+            <SourceMark tier="verified" source-title="Mỹ vị bản địa uy tín" compact />
+            <FreshnessLine status="fresh" updated-label="Thực địa 2026" />
+          </div>
           <span class="home-culinary-card__origin">{{ dish.origin }}</span>
           <h3 class="home-culinary-card__title">
             <NuxtLink :to="dish.to">{{ dish.name }}</NuxtLink>
@@ -76,10 +81,13 @@
 
 <script setup lang="ts">
 import IconLine from '~/components/IconLine.vue'
+import SourceMark from '~/components/SourceMark.vue'
+import FreshnessLine from '~/components/FreshnessLine.vue'
 
 interface CulinaryDish {
   readonly id: string
   readonly name: string
+  readonly terroir: string
   readonly badge: string
   readonly origin: string
   readonly guide: string
@@ -95,6 +103,7 @@ const SIGNATURE_DISHES: readonly CulinaryDish[] = [
   {
     id: 'ca-tai-tuong-chien-xu',
     name: 'Cá Tai Tượng Chiên Xù Cuốn Bánh Tráng Cù Lao',
+    terroir: 'Phù Sa Cổ Chiên',
     badge: 'Cá tai tượng sông Tiền',
     origin: 'Cá tai tượng sông Tiền',
     guide: 'Đệ nhất mỹ vị sông Tiền vảy giòn rụm màu cánh gián, cuốn bánh tráng nem cù lao và rau thơm miệt vườn.',
@@ -108,6 +117,7 @@ const SIGNATURE_DISHES: readonly CulinaryDish[] = [
   {
     id: 'banh-xeo-hen-cu-lao-dai',
     name: 'Bánh Xèo Hến Cổ Chiên (Cù Lao Dài)',
+    terroir: 'Phù Sa Cổ Chiên',
     badge: 'Hến cào Vũng Liêm',
     origin: 'Hến cào Vũng Liêm',
     guide: 'Vỏ bánh giòn rụm tráng mỏng, nhân hến ngọt xào củ hủ dừa sông Cổ Chiên cuốn cùng 15 loại rau rừng.',
@@ -121,6 +131,7 @@ const SIGNATURE_DISHES: readonly CulinaryDish[] = [
   {
     id: 'khoai-lang-mam-song-cuon-la-cach',
     name: 'Khoai Lang Chấm Mắm Sống Cuốn Lá Cách',
+    terroir: 'Đất nung Mang Thít',
     badge: 'Khoai lang tím Bình Tân OCOP 4 sao',
     origin: 'Khoai lang tím Bình Tân OCOP 4 sao',
     guide: 'Khoai lang tím Bình Tân bùi ngọt hòa quyện mắm cá linh đậm đà, gói trong lá cách thơm cay độc đáo.',
@@ -134,6 +145,7 @@ const SIGNATURE_DISHES: readonly CulinaryDish[] = [
   {
     id: 'chao-cua-dong',
     name: 'Lẩu Cua Đồng Phù Sa (Cháo Cua Đồng)',
+    terroir: 'Xanh Cù Lao',
     badge: 'Cua đồng Tam Bình',
     origin: 'Cua đồng Tam Bình',
     guide: 'Nồi lẩu riêu cua đồng ngọt thanh tự nhiên, nhúng kèm rau đay mồng tơi tươi non thanh mát miệt vườn.',
@@ -147,6 +159,7 @@ const SIGNATURE_DISHES: readonly CulinaryDish[] = [
   {
     id: 'oc-lac-hap-la-gung',
     name: 'Ốc Lác Nướng Tiêu Xanh / Hấp Lá Gừng',
+    terroir: 'Phù Sa Cổ Chiên',
     badge: 'Ốc lác bến sông Cổ Chiên',
     origin: 'Bờ kè sông Cổ Chiên',
     guide: 'Ốc mương vườn béo giòn sần sật, nướng tiêu cay nồng hoặc hấp gừng thơm lừng bên bến sông Cổ Chiên.',
@@ -296,6 +309,19 @@ function onImgFallback(e: Event) {
   font-weight: var(--weight-bold);
 }
 
+.home-culinary-card__terroir {
+  padding: 3px 8px;
+  background: rgba(var(--black-rgb), 0.78);
+  color: var(--alluvial-gold);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border: 1px solid var(--border-liquid-glass);
+  border-radius: var(--radius-pill, 9999px);
+  box-shadow: var(--shadow-card-ambient);
+  font-size: 11px;
+  font-weight: var(--weight-bold);
+}
+
 .home-culinary-card__badge {
   padding: 3px 10px;
   background: rgba(var(--black-rgb), 0.78);
@@ -307,6 +333,14 @@ function onImgFallback(e: Event) {
   box-shadow: var(--shadow-card-ambient);
   font-size: 11px;
   font-weight: var(--weight-semibold);
+}
+
+.home-culinary-card__trust {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-1h);
+  margin-bottom: var(--space-1);
 }
 
 .home-culinary-card__price-badge {

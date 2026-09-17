@@ -15,21 +15,26 @@
         <IconLine name="trophy" /> <NuxtLink to="/bang-xep-hang">Xem thành viên tích cực <IconLine name="arrow-right" class="inline-arrow" aria-hidden="true" /></NuxtLink>
       </p>
       <div class="scroll-row home-community-dispatches" role="region" aria-label="Bài viết cộng đồng mới" tabindex="0">
-        <NuxtLink v-for="p in posts" :key="p.id" :to="postPath(p.id)" class="cm-card">
+        <article v-for="p in posts" :key="p.id" class="cm-card">
           <div class="cm-body">
             <div class="cm-author">
               <span class="cm-avatar">{{ (p.display_name || '?').charAt(0).toUpperCase() }}</span>
               <span class="cm-name">{{ p.display_name || 'Người dùng' }}</span>
               <span v-if="p.post_type_label" class="cm-type">{{ p.post_type_label }}</span>
+              <span class="cm-author-badge"><IconLine name="shield-check" /> Tác giả thực địa</span>
             </div>
-            <p class="cm-content">{{ p.content }}</p>
+            <NuxtLink :to="postPath(p.id)" class="cm-content-link">
+              <p class="cm-content">{{ p.content }}</p>
+            </NuxtLink>
             <div class="cm-meta">
               <span v-if="p.likes"><IconLine name="heart" /> {{ p.likes }}</span>
               <span v-if="p.comments_count || p.comment_count"><IconLine name="message" /> {{ p.comments_count || p.comment_count }}</span>
-              <span v-if="p.entity_name" class="cm-place">{{ p.entity_name }}</span>
+              <NuxtLink v-if="p.entity_name" :to="p.entity_id ? entityPath(p.entity_id) : '/du-lich'" class="cm-place">
+                <IconLine name="pin" /> {{ p.entity_name }}
+              </NuxtLink>
             </div>
           </div>
-        </NuxtLink>
+        </article>
       </div>
     </template>
     <div class="community-join">
@@ -40,6 +45,8 @@
 </template>
 
 <script setup lang="ts">
+import { entityPath, postPath } from '~/utils/routePaths'
+
 defineProps<{
   posts: any[]
   stats?: { posts?: number; reviews?: number; members?: number } | null

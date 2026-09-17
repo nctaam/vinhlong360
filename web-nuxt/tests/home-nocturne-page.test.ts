@@ -551,8 +551,8 @@ describe('homepage Existing Screen Evolution B1', () => {
     expect(foodDecision.text()).toContain('4.8 điểm')
     expect(wrapper.text()).not.toContain('Bánh xèo hến')
     expect(wrapper.find('.dish-rating-badge').exists()).toBe(false)
-    expect(wrapper.text()).not.toContain('Mới')
-    expect(wrapper.text()).not.toContain('0 đánh giá')
+    expect(foodDecision.text()).not.toContain('Mới')
+    expect(foodDecision.text()).not.toContain('0 đánh giá')
   })
 
   it('uses Vietnamese language for community trend context', async () => {

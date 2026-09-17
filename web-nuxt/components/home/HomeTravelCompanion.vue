@@ -274,7 +274,7 @@ const HOTLINES: readonly EmergencyContact[] = [
   gap: var(--space-4);
   padding: var(--space-5);
   background: var(--color-surface);
-  border: 1px solid var(--color-border);
+  border: 1px solid var(--border-liquid-glass, var(--color-border));
   border-radius: var(--radius-surface);
   box-shadow: 0 2px 8px rgba(var(--black-rgb), 0.04);
   transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.2s ease, box-shadow 0.25s ease;
@@ -419,7 +419,7 @@ const HOTLINES: readonly EmergencyContact[] = [
   gap: var(--space-3);
   padding: var(--space-2) var(--space-3);
   background: var(--color-canvas);
-  border: 1px solid var(--color-border);
+  border: 1px solid var(--border-liquid-glass, var(--color-border));
   border-radius: var(--radius-control);
   text-decoration: none;
   color: var(--color-text);

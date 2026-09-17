@@ -33,9 +33,10 @@
           <div class="home-curated-lead__scrim" aria-hidden="true" />
           
           <div class="home-curated-lead__top-bar">
+            <!-- Terroir badge and capture time -->
             <div class="home-curated-lead__badge">
               <IconLine name="flame" />
-              <span>{{ leadItem.badge }}</span>
+              <span>{{ leadItem.terroir }} · {{ leadItem.badge }}</span>
             </div>
 
             <!-- Interactive Bookmark Button -->
@@ -53,6 +54,11 @@
           </div>
 
           <div class="home-curated-lead__overlay">
+            <div class="home-curated-lead__trust">
+              <SourceMark tier="official" source-title="Sở VHTTDL Vĩnh Long" verified-at="2026-09-01" compact />
+              <FreshnessLine status="fresh" updated-label="Mùa vụ 2026" />
+            </div>
+
             <div class="home-curated-lead__meta">
               <span class="home-curated-lead__location">
                 <IconLine name="pin" />
@@ -117,7 +123,10 @@
 
           <!-- Floating Top Bar -->
           <div class="home-curated-satellite__top">
-            <span class="home-curated-satellite__tag">{{ item.tag }}</span>
+            <div class="home-curated-satellite__top-badges">
+              <span class="home-curated-satellite__tag">{{ item.tag }}</span>
+              <span class="home-curated-satellite__terroir-badge">{{ item.terroir }}</span>
+            </div>
 
             <!-- Satellite Bookmark Button -->
             <button
@@ -135,6 +144,10 @@
 
           <!-- Overlaid Bottom Content (<= 25% card height) -->
           <div class="home-curated-satellite__overlay home-curated-satellite__content">
+            <div class="home-curated-satellite__trust">
+              <SourceMark tier="official" compact />
+              <FreshnessLine status="fresh" updated-label="2026" />
+            </div>
             <div class="home-curated-satellite__meta">
               <span class="home-curated-satellite__area">
                 <IconLine name="pin" />
@@ -159,11 +172,14 @@
 
 <script setup lang="ts">
 import IconLine from '~/components/IconLine.vue'
+import SourceMark from '~/components/SourceMark.vue'
+import FreshnessLine from '~/components/FreshnessLine.vue'
 import { useFavorites } from '~/composables/useFavorites'
 
 interface CuratedLead {
   readonly id: string
   readonly title: string
+  readonly terroir: string
   readonly badge: string
   readonly location: string
   readonly coordinates: string
@@ -178,6 +194,7 @@ interface CuratedLead {
 interface CuratedSatellite {
   readonly id: string
   readonly title: string
+  readonly terroir: string
   readonly tag: string
   readonly area: string
   readonly coordinates?: string
@@ -205,6 +222,7 @@ function toggleBookmark(target: { id: string; title: string; coverSrc?: string }
 const leadItem: CuratedLead = {
   id: 'de-an-di-san-duong-dai-mang-thit',
   title: 'Quần Thể Di Sản Lò Gạch Gốm Đỏ Mang Thít',
+  terroir: 'Đất nung Mang Thít',
   badge: '16:30 – 17:45 · Hoàng hôn vòm gốm Kênh Thầy Cai',
   location: 'Huyện Mang Thít, Vĩnh Long',
   coordinates: "10°15'N · 105°58'E",
@@ -220,6 +238,7 @@ const satelliteItems: readonly CuratedSatellite[] = [
   {
     id: 'cu-lao-an-binh',
     title: 'Cù Lao An Bình & Vườn Trái Cây',
+    terroir: 'Xanh Cù Lao',
     tag: 'Sinh thái Miệt vườn',
     area: 'Long Hồ',
     coordinates: "10°16'N · 105°59'E",
@@ -230,6 +249,7 @@ const satelliteItems: readonly CuratedSatellite[] = [
   {
     id: 'khu-du-lich-cho-noi-tra-on',
     title: 'Chợ Nổi Trà Ôn Sông Hậu',
+    terroir: 'Phù Sa Cổ Chiên',
     tag: 'Thương hồ Sông nước',
     area: 'Trà Ôn',
     coordinates: "9°58'N · 105°55'E",
@@ -240,6 +260,7 @@ const satelliteItems: readonly CuratedSatellite[] = [
   {
     id: 'chua-shanghamangala-khmer-vung-liem',
     title: 'Chùa Hạnh Phúc Tăng (Sanghamangala)',
+    terroir: 'Phù Sa Cổ Chiên',
     tag: 'Tâm linh Di sản',
     area: 'Vũng Liêm',
     coordinates: "10°07'N · 106°11'E",
@@ -250,6 +271,7 @@ const satelliteItems: readonly CuratedSatellite[] = [
   {
     id: 'khu-du-lich-sinh-thai-miet-vuon-vinh-sang',
     title: 'KDL Sinh Thái Miệt Vườn Vinh Sang',
+    terroir: 'Xanh Cù Lao',
     tag: 'Điền dã Dân gian',
     area: 'An Bình, Long Hồ',
     coordinates: "10°16'N · 105°59'E",
@@ -621,6 +643,26 @@ function onImgFallback(e: Event) {
   padding: var(--space-3);
 }
 
+.home-curated-satellite__top-badges {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1h);
+  flex-wrap: wrap;
+}
+
+.home-curated-satellite__terroir-badge {
+  padding: 3px 8px;
+  background: rgba(var(--black-rgb), 0.78);
+  color: var(--alluvial-gold);
+  border: 1px solid var(--border-liquid-glass);
+  border-radius: var(--radius-pill, 9999px);
+  font-size: 11px;
+  font-weight: var(--weight-semibold);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  box-shadow: var(--shadow-card-ambient);
+}
+
 .home-curated-satellite__tag {
   padding: 3px 10px;
   background: rgba(var(--black-rgb), 0.78);
@@ -632,6 +674,22 @@ function onImgFallback(e: Event) {
   backdrop-filter: blur(20px) saturate(180%);
   -webkit-backdrop-filter: blur(20px) saturate(180%);
   box-shadow: var(--shadow-card-ambient);
+}
+
+.home-curated-lead__trust {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+  margin-bottom: var(--space-1);
+}
+
+.home-curated-satellite__trust {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-1h);
+  margin-bottom: 2px;
 }
 
 /* Bottom Content Overlay (<= 25% card height) */
