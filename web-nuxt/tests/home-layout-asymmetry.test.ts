@@ -23,4 +23,8 @@ describe('Homepage Editorial Layout Asymmetry & Terroir Craft', () => {
   it('preserves clean token discipline without AI SaaS neon purples or cyan', () => {
     expect(homeCss).not.toMatch(/#a855f7|#8b5cf6|#00f0ff/i)
   })
+
+  it('enforces tactile active micro-interactions on product lead media plate', () => {
+    expect(homeCss).toMatch(/\.home-product-lead__media:active\s*\{[\s\S]*?transform:\s*scale\(0\.99\)/)
+  })
 })

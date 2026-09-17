@@ -1517,6 +1517,10 @@
   outline-offset: 2px;
 }
 
+[data-home-pilot="nocturne-b1"] .home-product-lead__media:active {
+  transform: scale(0.99);
+}
+
 [data-home-pilot="nocturne-b1"] .home-product-lead__media img {
   display: block;
   inline-size: 100%;
