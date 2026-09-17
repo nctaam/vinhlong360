@@ -1,4 +1,4 @@
-# vinhlong360 — Bách Khoa Toàn Thư Tri Thức & Dữ Liệu Du Lịch, Thổ Nhưỡng, OCOP Tam Vùng (llms-full.txt)
+# vinhlong360 — Bách Khoa Toàn Thư Tri Thức & Dữ Liệu Du Lịch, Thổ Nhưỡng, OCOP Vĩnh Long (llms-full.txt)
 
 > vinhlong360.vn là nền tảng tri thức du lịch, văn hóa bản địa, ẩm thực truyền thống, làng nghề và sản phẩm OCOP chính thức cho **tỉnh Vĩnh Long** (hợp nhất từ ba vùng Vĩnh Long, Bến Tre, Trà Vinh cũ từ tháng 7-2025). Tỉnh vận hành hành chính 2 cấp gồm 124 xã/phường (không có cấp huyện).
 
@@ -2996,7 +2996,7 @@ Tỉnh Vĩnh Long gồm 35 phường và 89 xã:
 - **[Xã Đại Điền](https://vinhlong360.vn/xa-phuong/xa-dai-dien)** (`xa-dai-dien`) | Hotline CAX: 0275 3591 94
 - **[Xã Đồng Khởi](https://vinhlong360.vn/xa-phuong/xa-dong-khoi)** (`xa-dong-khoi`) | Hotline CAX: 0275 3589 45
 
-## 5. Lịch Nông Vụ OCOP & Trái Cây Miệt Vườn Tam Vùng
+## 5. Lịch Nông Vụ OCOP & Trái Cây Miệt Vườn Vĩnh Long
 
 - **Tháng 1 - Tháng 3 (Xuân)**: Bưởi Năm Roi Bình Minh, Cam sành Tam Bình, Quýt đường, Mật ong hoa nhãn.
 - **Tháng 4 - Tháng 6 (Hạ - Rộ mùa)**: Sầu riêng Ri6 Long Hồ & Cái Mơn, Chôm chôm Bình Hòa Phước & Chợ Lách, Măng cụt Cái Mơn, Xoài cát Núm Vũng Liêm.
@@ -3004,7 +3004,7 @@ Tỉnh Vĩnh Long gồm 35 phường và 89 xã:
 - **Tháng 8 - Tháng 11 (Mùa nước nổi phù sa)**: Bông điên điển, Cá linh, Cá cháy Trà Ôn, Bông súng đồng.
 - **Thu hoạch quanh năm**: Dừa sáp Cầu Kè, Mật hoa dừa Sokfarm, Kẹo dừa Bến Tre, Bưởi Da Xanh, Khoai lang tím Nhật Bình Tân.
 
-## 6. Lịch Lễ Hội Truyền Thống & Sự Kiện Văn Hóa Tam Vùng
+## 6. Lịch Lễ Hội Truyền Thống & Sự Kiện Văn Hóa Vĩnh Long
 
 - **Lễ hội Ok Om Bok Trà Vinh (Rằm tháng 10 Âm lịch)**: Di sản văn hóa phi vật thể quốc gia, lễ cúng Trăng đút cốm dẹp, thả đèn gió, đèn nước, hội thi Đua ghe Ngo truyền thống trên sông Long Bình.
 - **Tết Chôl Chnăm Thmây (Tháng 4 Dương lịch - Giữa tháng Chét)**: Tết cổ truyền người Khmer, lễ đắp núi cát, tắm Phật tại 143 chùa Khmer Nam Bộ.

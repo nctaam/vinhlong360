@@ -76,7 +76,7 @@
                 <VernacularGlyph name="mangthit-kiln" :size="16" accent="clay" />
                 <span>Khu vực</span>
               </h3>
-              <div class="search-drawer-chips" role="group" aria-label="Chọn tiểu vùng">
+              <div class="search-drawer-chips" role="group" aria-label="Chọn khu vực">
                 <button
                   v-for="region in REGIONS"
                   :key="region.key"
@@ -258,7 +258,7 @@ const inputRef = ref<HTMLInputElement | null>(null)
 const closeBtnRef = ref<HTMLButtonElement | null>(null)
 
 const REGIONS = [
-  { key: 'all' as const, label: 'Tất cả 3 vùng' },
+  { key: 'all' as const, label: 'Toàn tỉnh Vĩnh Long' },
   { key: 'mang-thit' as const, label: 'Mang Thít (Đất nung)' },
   { key: 'cu-lao-an-binh' as const, label: 'Cù lao An Bình (Miệt vườn)' },
   { key: 'co-chien' as const, label: 'Sông Cổ Chiên (Sông nước)' },

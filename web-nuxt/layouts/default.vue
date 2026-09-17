@@ -10,7 +10,15 @@
   >
     <a href="#main-content" class="skip-link">Bỏ qua điều hướng</a>
     <div class="public-shell-chrome" :class="{ scrolled: topbarScrolled, 'is-home-page': route.path === '/' }">
-      <ShellPublicContextBar />
+      <div
+        class="sr-only"
+        data-public-context-line
+        :data-location-mode="envelope.location.mode"
+        role="region"
+        aria-label="Ngữ cảnh địa bàn"
+      >
+        Tỉnh Vĩnh Long
+      </div>
       <header class="public-shell-header" role="banner">
         <div class="public-shell-command-row">
           <NuxtLink class="brand" to="/" aria-label="Về trang chủ vinhlong360">
@@ -152,6 +160,7 @@
 import { useCognitiveTerroir } from '~/composables/useCognitiveTerroir'
 
 const route = useRoute()
+const { envelope } = usePublicContextEnvelope()
 const { isLoggedIn, user } = useAuth()
 const { get: ss } = useSiteSettings()
 const { tide, isOffline, isEcoTerroir } = useCognitiveTerroir()

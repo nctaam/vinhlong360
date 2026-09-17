@@ -101,9 +101,9 @@ Vĩnh Long 360 không phải là một tập hợp các trang web ghép nối l�
 
 ---
 
-## Chương 2: Hệ Thống Mã Màu & Thổ Nhưỡng Tam Vùng
+## Chương 2: Hệ Thống Mã Màu & Thổ Nhưỡng Vĩnh Long
 
-### 2.1. Bảng Màu Thổ Nhưỡng Tam Vùng Bất Biến (Terroir Color Palette)
+### 2.1. Bảng Màu Thổ Nhưỡng Vĩnh Long Bất Biến (Terroir Color Palette)
 Hệ thống màu sắc được chưng cất trực tiếp từ phù sa, đất sét nung lò gạch, vườn cây trái cù lao và làn nước sông Tiền - sông Cổ Chiên:
 
 | Nhóm Màu | Tên Thổ Nhưỡng | Token Chuẩn | Mã Hex | Tương Phản WCAG 2.2 |
@@ -130,7 +130,7 @@ Hệ thống màu sắc được chưng cất trực tiếp từ phù sa, đất
 ### 2.2. Viền Thủy Tinh Lỏng & Đổ Bóng Hữu Cơ
 - **Liquid Glass Border:** `oklch(100% 0 0 / 0.12)` (`--border-liquid-glass`). Đường viền tinh thể thủy tinh mỏng bắt sáng tự nhiên trên mép card và dock điều hướng, thay thế viền xám đục.
 - **Đổ Bóng Than Củi Tự Nhiên:** Đổ bóng nhiều tầng (`--shadow-xs` đến `--shadow-xl`), sử dụng màu mực than củi tự nhiên `rgba(var(--mekong-ink-rgb, 8, 26, 22), ...)` thay thế cho bóng mờ xám bẩn AI.
-- **Bảo Vệ Hợp Đồng Màu Sắc:** 100% tuân thủ 78 hợp đồng màu sắc Tam Vùng; nghiêm cấm tạo thêm bất kỳ mã màu thô nào ngoài danh mục (`check-tri-region-color-debt.mjs` đạt token debt = 0).
+- **Bảo Vệ Hợp Đồng Màu Sắc:** 100% tuân thủ 78 hợp đồng màu sắc Vĩnh Long; nghiêm cấm tạo thêm bất kỳ mã màu thô nào ngoài danh mục (`check-tri-region-color-debt.mjs` đạt token debt = 0).
 
 ---
 
@@ -221,7 +221,7 @@ Toàn bộ 10 phân hệ cấu thành nền tảng Vĩnh Long 360 đều phục 
 
 2. **Khay Tìm Kiếm Đa Chiều Thực Địa Slide-Over (`components/SearchDrawer.vue`):**
    - Khay trượt bên phải rộng 480px trên desktop (100% full-height trên mobile), bo góc `--radius-sheet` (20px), viền Liquid Glass.
-   - Tìm kiếm kết hợp: Tên di sản, bộ lọc nhanh Tam Vùng (Vĩnh Long, Bến Tre, Trà Vinh), chip lọc con nước (nước rong/kém/lớn/ròng).
+   - Tìm kiếm kết hợp: Tên di sản, bộ lọc nhanh địa bàn Vĩnh Long (Mang Thít, Cù lao An Bình, Sông Cổ Chiên), chip lọc con nước (nước rong/kém/lớn/ròng).
    - AEO Provenance Answer Plaques hiển thị tọa độ GPS và nhãn SourceMark. Focus trap khép kín, phím Escape đóng khay.
 
 3. **Thẻ Hành Trình Thực Địa Bỏ Túi (`components/PocketPassModal.vue`):**
@@ -250,7 +250,7 @@ Toàn bộ 10 phân hệ cấu thành nền tảng Vĩnh Long 360 đều phục 
 
 8. **Niên Giám Danh Bạ & Cổng Dân Sự Minh Bạch (`pages/danh-ba.vue`, `gioi-thieu.vue`, `lien-he.vue`):**
    - Khối Cứu Hộ Du Lịch 24/7 với nút gọi khẩn cấp `tel: 0270` nổi bật, touch target >= 44px.
-   - Bảng lựa chọn Tam Vùng và danh bạ 124 xã/phường chuẩn hóa 2 cấp. Bục vinh danh Top 3 Đại sứ Bản xứ trang nghiêm.
+   - Bảng danh bạ 124 xã/phường chuẩn hóa 2 cấp. Bục vinh danh Top 3 Đại sứ Bản xứ trang nghiêm.
    - Khối Ban Biên Tập công khai phương pháp luận thẩm định và cam kết phi thương mại.
 
 9. **Không Gian Người Dùng & Kho Lưu Trữ Di Sản (`pages/tai-khoan.vue`, `da-luu.vue`):**
