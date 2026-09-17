@@ -216,7 +216,13 @@ describe('Challenger M3: Empirical Adversarial Stress Verification Suite', () =>
     it('verifies quick utility bar contains both emergency hotline buttons', () => {
       expect(companionContent).toMatch(/class="home-companion-quick-hotlines"[\s\S]*?\(0270\) 3822 305[\s\S]*?0270 3822 994/)
     })
+
+    it('verifies HomeTravelCompanion quick hotline buttons have focus-visible and active states', () => {
+      expect(companionContent).toMatch(/\.home-hotline-btn--quick:active/)
+      expect(companionContent).toMatch(/\.home-hotline-btn--quick:focus-visible/)
+    })
   })
+
 
   // ─── STRESS TEST 6: Prohibited Generic AI Slop Phrases ───
   describe('Stress Test 6: Prohibited Generic AI Slop Phrases', () => {

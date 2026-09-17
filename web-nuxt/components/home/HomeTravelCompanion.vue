@@ -571,6 +571,15 @@ const HOTLINES: readonly EmergencyContact[] = [
   border-color: var(--alluvial-gold);
 }
 
+.home-hotline-btn--quick:active {
+  transform: scale(0.96);
+}
+
+.home-hotline-btn--quick:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 2px;
+}
+
 .home-hotline-btn--quick .home-hotline-btn__call {
   background: transparent;
   color: var(--alluvial-gold);
