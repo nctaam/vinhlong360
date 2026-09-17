@@ -11,7 +11,7 @@
       @click="selectMode(mode.value, $event)"
     >
       <IconLine :name="mode.value === 'dark' ? 'moon' : 'sun'" aria-hidden="true" />
-      <span class="theme-mode-label">{{ mode.label }}</span>
+      <span class="theme-mode-label sr-only">{{ mode.label }}</span>
     </button>
   </div>
 </template>
