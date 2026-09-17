@@ -10,4 +10,9 @@ describe('OCOP Ledger & AEO Plaque Visual Polish', () => {
     expect(homeCss).toContain('home-ocop__frame')
     expect(catalogCss).toContain('catalog-aeo-plaque')
   })
+
+  it('enforces rotational micro-tilt on wax seal and refined tier elevation', () => {
+    expect(homeCss).toMatch(/\[data-home-pilot="nocturne-b1"\]\s+\.home-ocop__frame:hover\s+\.wax-seal\s*\{[\s\S]*?transform:\s*rotate\(-3deg\)\s+scale\(1\.05\)/)
+    expect(homeCss).toMatch(/\[data-home-pilot="nocturne-b1"\]\s+\.home-ocop__tier:hover\s*\{[\s\S]*?transform:\s*translateY\(-2px\)/)
+  })
 })
