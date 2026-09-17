@@ -288,6 +288,12 @@ function onImgFallback(e: Event) {
   transform: scale(0.98);
 }
 
+.home-stay-card:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 3px;
+  border-radius: var(--radius-surface);
+}
+
 /* Full-Bleed Image Fills 100% of Card */
 .home-stay-card__img {
   position: absolute;
@@ -591,6 +597,10 @@ function onImgFallback(e: Event) {
   transform: translateY(-2px);
   border-color: color-mix(in srgb, var(--river-600) 40%, var(--color-border));
   box-shadow: 0 8px 20px rgba(var(--black-rgb), 0.08);
+}
+
+.home-exp-card:active {
+  transform: scale(0.98);
 }
 
 .home-exp-card__icon {

@@ -172,6 +172,11 @@ describe('Challenger M3: Empirical Adversarial Stress Verification Suite', () =>
       expect(staysContent).toMatch(/\.home-stay-card__desc\s*\{[\s\S]*?display:\s*-webkit-box;/)
     })
 
+    it('verifies HomeRiversideStays cards and folk experiences have focus-visible rings and active tactile feedback', () => {
+      expect(staysContent).toMatch(/\.home-stay-card:focus-visible/)
+      expect(staysContent).toMatch(/\.home-exp-card:active/)
+    })
+
     it('verifies HomeTravelCompanion card descriptions are <= 120 chars', () => {
       const cardDescs = [...companionContent.matchAll(/<p class="home-companion-card__desc">\s*([\s\S]*?)\s*<\/p>/g)].map(m => m[1].replace(/\s+/g, ' ').trim())
       expect(cardDescs.length).toBe(4)
