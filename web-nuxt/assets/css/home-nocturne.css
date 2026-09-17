@@ -61,6 +61,43 @@
   font-variant-numeric: tabular-nums;
 }
 
+/* ═══════════════════════════════════════════════════
+   DEGRADED RECOVERY STATE: RIVERSIDE RECOVERY MOTIF
+   ═══════════════════════════════════════════════════ */
+[data-home-pilot="nocturne-b1"] [data-home-section="recovery"] {
+  border-radius: var(--radius-surface);
+  transition: opacity 0.25s ease;
+}
+
+[data-home-pilot="nocturne-b1"] [data-home-section="recovery"] .btn {
+  min-height: var(--touch-min, 44px);
+  padding: var(--space-2) var(--space-5);
+  border: 1px solid var(--color-brand);
+  border-radius: var(--radius-control);
+  background: var(--color-surface);
+  color: var(--color-brand);
+  font-weight: var(--weight-medium);
+  box-shadow: var(--shadow-card-ambient);
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1),
+              background-color 0.2s ease,
+              box-shadow 0.2s ease;
+}
+
+[data-home-pilot="nocturne-b1"] [data-home-section="recovery"] .btn:hover {
+  background: color-mix(in srgb, var(--color-brand) 8%, var(--color-surface));
+  box-shadow: 0 4px 12px rgba(var(--black-rgb), 0.08);
+}
+
+[data-home-pilot="nocturne-b1"] [data-home-section="recovery"] .btn:active {
+  transform: scale(0.96);
+}
+
+[data-home-pilot="nocturne-b1"] [data-home-section="recovery"] .btn:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 2px;
+}
+
+
 
 /* MỘT công thức khung duy nhất, giống `.block` (base.css:182):
    max-width + padding-inline. Trước đây các mục này dùng `width: min(--maxw,

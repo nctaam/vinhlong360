@@ -21,4 +21,13 @@ describe('Mekong Terroir Resilience & Astronomical Tide Integrity', () => {
   it('strictly adheres to CLAUDE.md §1.7 unavailable policy (no empty frames or fake data)', () => {
     expect(briefingVue).toContain("v-if=\"reading.status !== 'unavailable'\"")
   })
+
+  it('elevates degraded recovery state with cultural riverside motif and tactile retry control', () => {
+    const indexVue = readFileSync(resolve(__dirname, '../pages/index.vue'), 'utf8')
+    const homeCss = readFileSync(resolve(__dirname, '../assets/css/home-nocturne.css'), 'utf8')
+    expect(indexVue).toContain('Bến đò chờ con nước')
+    expect(indexVue).toMatch(/refreshHome\(\)/)
+    expect(homeCss).toMatch(/\[data-home-section="recovery"\]/)
+  })
 })
+

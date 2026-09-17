@@ -130,12 +130,13 @@
 
     <!-- Degraded/empty fallback -->
     <section v-if="homeFailed" class="block reveal" data-home-section="recovery">
-      <EmptyState :tone="homeError ? 'error' : 'empty'" title="Đang cập nhật nội dung" :message="homeError ? 'Mạng chậm một chút rồi. Bạn thử tải lại giúp tụi mình nhé!' : 'Tụi mình đang bổ sung điểm đến và đặc sản cho khu vực này. Quay lại sau nhé!'">
+      <EmptyState :tone="homeError ? 'error' : 'empty'" title="Bến đò chờ con nước · Đang cập nhật nội dung" :message="homeError ? 'Mạng chậm một chút rồi. Bạn thử tải lại giúp tụi mình nhé!' : 'Tụi mình đang bổ sung điểm đến và đặc sản cho khu vực này. Quay lại sau nhé!'">
         <template #actions>
           <button v-if="homeError" type="button" class="btn btn-outline" @click="refreshHome()">Tải lại</button>
         </template>
       </EmptyState>
     </section>
+
 
     <!-- Skeleton -->
     <section v-if="homeLoadingSkeleton" class="block reveal" aria-hidden="true" data-home-section="recovery">
