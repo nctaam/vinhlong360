@@ -3,7 +3,7 @@
     <div class="home-intent-anchors__inner">
       <div class="home-intent-anchors__header">
         <span class="home-intent-anchors__eyebrow">
-          <IconLine name="compass" />
+          <IconLine name="compass" aria-hidden="true" />
           <span>Lối rẽ lữ hành</span>
         </span>
         <h2 class="home-intent-anchors__title">Nhu Cầu Khám Phá Nhanh</h2>

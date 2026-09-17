@@ -72,7 +72,13 @@ describe('HomeNativeStories — Empirical Stress Testing', () => {
     const wrapper = await mountStories()
     const action = wrapper.find('.home-story-callout__action')
     expect(action.exists()).toBe(true)
-    expect(action.attributes('href')).toBe('/kham-pha')
+    expect(action.attributes('href')).toBe('/du-lich')
+
+    const primary = wrapper.find('.home-story-card--primary')
+    expect(primary.attributes('href')).toBe('/dia-diem/cu-lao-an-binh')
+
+    const secondary = wrapper.find('.home-story-card--secondary')
+    expect(secondary.attributes('href')).toBe('/dia-diem/de-an-di-san-duong-dai-mang-thit')
 
     const links = wrapper.findAll('a')
     expect(links.length).toBeGreaterThanOrEqual(3)

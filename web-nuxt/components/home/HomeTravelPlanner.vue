@@ -3,7 +3,7 @@
     <div class="home-travel-planner__head section-head">
       <div class="sh-text">
         <span class="home-travel-planner__eyebrow" data-color-role="brand">
-          <IconLine name="route" />
+          <IconLine name="route" aria-hidden="true" />
           <span>Kế hoạch Lữ hành · Tinh tuyển thời gian</span>
         </span>
         <h2>Gợi Ý Lịch Trình <em class="editorial-italic-accent" aria-hidden="true">Tinh Tuyển</em></h2>
@@ -39,16 +39,16 @@
         <div class="home-planner-card__title-group">
           <div class="home-planner-card__meta-badges">
             <span class="home-planner-card__badge">
-              <IconLine name="calendar" />
+              <IconLine name="calendar" aria-hidden="true" />
               <span>{{ activeItinerary.durationLabel }}</span>
             </span>
             <span class="home-planner-card__terroir-badge">
-              <IconLine name="map" />
+              <IconLine name="map" aria-hidden="true" />
               <span>{{ activeItinerary.terroir }}</span>
             </span>
             <!-- Fieldwork Certification Seal -->
             <span class="home-planner-card__seal" title="Đã đối soát thực địa">
-              <IconLine name="shield-check" />
+              <IconLine name="shield-check" aria-hidden="true" />
               <span>Bảo chứng thực địa</span>
             </span>
           </div>
@@ -67,7 +67,7 @@
             <IconLine name="arrow-right" aria-hidden="true" />
           </NuxtLink>
           <NuxtLink to="/tao-lich-trinh" class="btn btn-outline" data-color-role="action-secondary">
-            <IconLine name="pencil" />
+            <IconLine name="pencil" aria-hidden="true" />
             <span>Tùy chỉnh lịch trình riêng</span>
           </NuxtLink>
         </div>

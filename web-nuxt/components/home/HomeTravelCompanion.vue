@@ -3,7 +3,7 @@
     <div class="home-travel-companion__head section-head">
       <div class="sh-text">
         <span class="home-travel-companion__eyebrow" data-color-role="brand">
-          <IconLine name="phone" />
+          <IconLine name="phone" aria-hidden="true" />
           <span>Cẩm Nang Thực Địa · Hỗ Trợ 24/7</span>
         </span>
         <h2>Cẩm Nang Du Khách <em class="editorial-italic-accent" aria-hidden="true">Thực Địa</em></h2>
@@ -15,7 +15,7 @@
     <div class="home-companion-quick-utility" role="region" aria-label="Hỗ trợ du khách và đường dây nóng 24/7">
       <div class="home-companion-utility-pill">
         <span class="home-companion-utility-pill__pulse" aria-hidden="true" />
-        <IconLine name="phone" />
+        <IconLine name="phone" aria-hidden="true" />
         <span class="home-companion-utility-pill__text">
           <strong>Hỗ trợ lữ khách:</strong> Trung tâm tư vấn & hướng dẫn thực địa Vĩnh Long 360 · <em>Trực tuyến 24/7</em>
         </span>
@@ -27,7 +27,7 @@
           aria-label="Gọi hotline Cứu hộ đường thủy 24/7: (0270) 3822 305"
         >
           <div class="home-hotline-btn__call">
-            <IconLine name="phone" />
+            <IconLine name="phone" aria-hidden="true" />
             <span class="home-hotline-btn__num">(0270) 3822 305</span>
           </div>
         </a>
@@ -37,7 +37,7 @@
           aria-label="Gọi hotline Hỗ trợ du khách 24/7: 0270 3822 994"
         >
           <div class="home-hotline-btn__call">
-            <IconLine name="shield-check" />
+            <IconLine name="shield-check" aria-hidden="true" />
             <span class="home-hotline-btn__num">0270 3822 994</span>
           </div>
         </a>
@@ -61,15 +61,15 @@
         </p>
         <div class="home-companion-card__meta">
           <div class="home-companion-meta-row">
-            <IconLine name="clock" />
+            <IconLine name="clock" aria-hidden="true" />
             <span><strong>Thời điểm đẹp:</strong> Sáng sớm 07:00 – 10:30 (trời mát, trái mới hái)</span>
           </div>
           <div class="home-companion-meta-row">
-            <IconLine name="leaf" />
+            <IconLine name="leaf" aria-hidden="true" />
             <span><strong>Mùa trái rộ:</strong> Chôm chôm, sầu riêng Ri6, nhãn xuồng cơm vàng</span>
           </div>
           <div class="home-companion-meta-row">
-            <IconLine name="pin" />
+            <IconLine name="pin" aria-hidden="true" />
             <span><strong>Trải nghiệm:</strong> Tự tay hái trái, tát mương bắt cá, đờn ca tài tử</span>
           </div>
         </div>
@@ -83,7 +83,7 @@
       <article class="home-companion-card" data-companion-guide="mang-thit">
         <div class="home-companion-card__header">
           <span class="home-companion-card__icon" aria-hidden="true">
-            <IconLine name="map" />
+            <IconLine name="map" aria-hidden="true" />
           </span>
           <div>
             <span class="home-companion-card__badge home-companion-card__badge--scheduled">Di sản đương đại</span>
@@ -95,15 +95,15 @@
         </p>
         <div class="home-companion-card__meta">
           <div class="home-companion-meta-row">
-            <IconLine name="sun" />
+            <IconLine name="sun" aria-hidden="true" />
             <span><strong>Giờ vàng ảnh đẹp:</strong> 16:30 – 17:45 (hoàng hôn xiên vòm gốm)</span>
           </div>
           <div class="home-companion-meta-row">
-            <IconLine name="map" />
+            <IconLine name="map" aria-hidden="true" />
             <span><strong>Điểm tiêu biểu:</strong> Lò gạch Kênh Thầy Cai, lò gạch Nhơn Phú</span>
           </div>
           <div class="home-companion-meta-row">
-            <IconLine name="shield-check" />
+            <IconLine name="shield-check" aria-hidden="true" />
             <span><strong>Lưu ý di sản:</strong> Đi lại nhẹ nhàng, không leo trèo vòm gạch cổ</span>
           </div>
         </div>
@@ -117,7 +117,7 @@
       <article class="home-companion-card" data-companion-guide="ocop">
         <div class="home-companion-card__header">
           <span class="home-companion-card__icon" aria-hidden="true">
-            <IconLine name="tag" />
+            <IconLine name="tag" aria-hidden="true" />
           </span>
           <div>
             <span class="home-companion-card__badge home-companion-card__badge--info">Mỹ vị & Đặc sản</span>
@@ -129,15 +129,15 @@
         </p>
         <div class="home-companion-card__meta">
           <div class="home-companion-meta-row">
-            <IconLine name="heart" />
+            <IconLine name="heart" aria-hidden="true" />
             <span><strong>Món ngon phải thử:</strong> Cá tai tượng chiên xù, ốc bươu hấp tiêu</span>
           </div>
           <div class="home-companion-meta-row">
-            <IconLine name="tag" />
+            <IconLine name="tag" aria-hidden="true" />
             <span><strong>Đặc sản OCOP:</strong> Bưởi Năm Roi, khoai lang sấy, trà hoa cúc</span>
           </div>
           <div class="home-companion-meta-row">
-            <IconLine name="pin" />
+            <IconLine name="pin" aria-hidden="true" />
             <span><strong>Điểm mua uy tín:</strong> Chợ Vĩnh Long, HTX Bưởi Năm Roi Mỹ Hòa</span>
           </div>
         </div>
@@ -151,7 +151,7 @@
       <article class="home-companion-card home-companion-card--hotlines" data-companion-hotlines>
         <div class="home-companion-card__header">
           <span class="home-companion-card__icon home-companion-card__icon--emergency" aria-hidden="true">
-            <IconLine name="shield-check" />
+            <IconLine name="shield-check" aria-hidden="true" />
           </span>
           <div>
             <span class="home-companion-card__badge home-companion-card__badge--alert">Hỗ trợ khẩn cấp 24/7</span>
@@ -175,7 +175,7 @@
               <span class="home-hotline-btn__scope">{{ hl.scope }}</span>
             </div>
             <div class="home-hotline-btn__call">
-              <IconLine name="phone" />
+              <IconLine name="phone" aria-hidden="true" />
               <span class="home-hotline-btn__num">{{ hl.phone }}</span>
             </div>
           </a>

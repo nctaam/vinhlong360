@@ -3,7 +3,7 @@
     <div class="home-culinary-trail__head section-head">
       <div class="sh-text">
         <span class="home-culinary-trail__eyebrow" data-color-role="brand">
-          <IconLine name="bowl" />
+          <IconLine name="bowl" aria-hidden="true" />
           <span>Ký sự Ẩm thực Cửu Long · Vị ngon đất phù sa</span>
         </span>
         <h2>Thiên Đường Ẩm Thực <em class="editorial-italic-accent" aria-hidden="true">Miệt Vườn</em></h2>
@@ -62,13 +62,13 @@
 
           <!-- Reputable Venue Pill Badge -->
           <div class="home-culinary-card__venue-pill">
-            <IconLine name="pin" />
+            <IconLine name="pin" aria-hidden="true" />
             <span>{{ dish.reputableVenue || dish.venues }}</span>
           </div>
 
           <div class="home-culinary-card__action home-culinary-card__footer">
             <NuxtLink :to="dish.mapTo" class="home-culinary-card__btn">
-              <IconLine name="map" />
+              <IconLine name="map" aria-hidden="true" />
               <span>Xem đường đi & Tọa độ quán</span>
               <IconLine name="arrow-right" class="home-culinary-card__arrow" aria-hidden="true" />
             </NuxtLink>

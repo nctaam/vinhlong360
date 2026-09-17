@@ -1,322 +1,322 @@
 [
   {
-    "entity_id": "binh-minh-ecolodge-riverside",
-    "image": "web-nuxt/public/img/entities/binh-minh-ecolodge-riverside.webp",
-    "author": "Trần Phước",
-    "source": "Báo Vĩnh Long",
-    "caption": "Khu nghỉ dưỡng sinh thái Bình Minh Ecolodge Riverside yên bình nép mình bên ngã ba sông Hậu, mang đến trải nghiệm ngắm cầu Cần Thơ về đêm tuyệt đẹp.",
-    "license": "Bản quyền thuộc tác giả và Báo Vĩnh Long"
-  },
-  {
-    "entity_id": "khu-du-lich-somo-farm-cuu-long",
-    "image": "web-nuxt/public/img/entities/khu-du-lich-somo-farm-cuu-long.webp",
-    "author": "Bá Dũng",
-    "source": "Báo Vĩnh Long",
-    "caption": "Không gian nghỉ dưỡng Somo Farm Cửu Long với những cụm bungalow tái hiện kiến trúc lò gạch gốm đỏ độc đáo giữa miệt vườn Mang Thít thanh bình.",
-    "license": "Bản quyền thuộc tác giả và Báo Vĩnh Long"
-  },
-  {
-    "entity_id": "homestay-cu-lao-dai",
-    "image": "web-nuxt/public/img/entities/homestay-cu-lao-dai.webp",
-    "author": "Quang Vinh",
-    "source": "Báo Vĩnh Long",
-    "caption": "Nhà vườn Cù Lao Dài rợp bóng cây ăn trái và vườn tiêu xanh tốt, nơi du khách tận hưởng không khí miệt vườn trong lành của cù lao sông Cổ Chiên.",
-    "license": "Bản quyền thuộc tác giả và Báo Vĩnh Long"
-  },
-  {
-    "entity_id": "coco-riverside-lodge-trung-nghia",
-    "image": "web-nuxt/public/img/entities/coco-riverside-lodge-trung-nghia.webp",
-    "author": "Hữu Toàn",
-    "source": "Báo Vĩnh Long",
-    "caption": "Khu nghỉ dưỡng Coco Riverside Lodge với dãy nhà sàn mộc mạc soi bóng ven kênh rạch Trung Nghĩa, điểm đến lý tưởng cho du khách quốc tế trải nghiệm đời sống bản địa.",
-    "license": "Bản quyền thuộc tác giả và Báo Vĩnh Long"
-  },
-  {
-    "entity_id": "mekong-homestay-viet-nam",
-    "image": "web-nuxt/public/img/entities/mekong-homestay-viet-nam.webp",
-    "author": "Minh Triết",
-    "source": "Báo Vĩnh Long",
-    "caption": "Du khách nước ngoài quây quần thưởng thức bữa cơm gia đình nấu theo phong cách ẩm thực Nam Bộ truyền thống tại Mekong Homestay Tam Bình.",
-    "license": "Bản quyền thuộc tác giả và Báo Vĩnh Long"
-  },
-  {
-    "entity_id": "du-lich-sinh-thai-cu-lao-may-nam-khanh",
-    "image": "web-nuxt/public/img/entities/du-lich-sinh-thai-cu-lao-may-nam-khanh.webp",
-    "author": "Lê Tấn",
-    "source": "Báo Vĩnh Long",
-    "caption": "Điểm du lịch sinh thái Năm Khanh trên cù lao Lục Sĩ Thành với rặng chôm chôm, bưởi Năm Roi trĩu quả và những món ngon dân dã vùng nước lợ.",
-    "license": "Bản quyền thuộc tác giả và Báo Vĩnh Long"
-  },
-  {
-    "entity_id": "khu-du-lich-sinh-thai-nam-son",
-    "image": "web-nuxt/public/img/entities/khu-du-lich-sinh-thai-nam-son.webp",
-    "author": "Phương Thảo",
-    "source": "Báo Trà Vinh",
-    "caption": "Khu du lịch sinh thái Nam Sơn rợp bóng dừa sáp và vườn măng cụt trĩu cành bên dải cù lao trù phú ven dòng sông Hậu xã An Phú Tân.",
-    "license": "Bản quyền thuộc tác giả và Báo Trà Vinh"
-  },
-  {
-    "entity_id": "resort-vinh-sang",
-    "image": "web-nuxt/public/img/entities/resort-vinh-sang.webp",
-    "author": "Ngọc Trảng",
-    "source": "Báo Vĩnh Long",
-    "caption": "Khu nghỉ dưỡng sinh thái Vĩnh Sang trải rộng bên bờ sông Cổ Chiên cù lao An Bình, cung cấp chuỗi trò chơi dân gian và dịch vụ lưu trú miệt vườn sôi động.",
-    "license": "Bản quyền thuộc tác giả và Báo Vĩnh Long"
-  },
-  {
-    "entity_id": "homestay-co-chin-an-binh",
-    "image": "web-nuxt/public/img/entities/homestay-co-chin-an-binh.webp",
-    "author": "Nguyễn Thịnh",
-    "source": "Báo Vĩnh Long",
-    "caption": "Gian nhà ngói ba gian ấm cúng rợp bóng vườn nhãn tại Homestay Cô Chín, nơi du khách cùng chủ nhà hái rau bắt cá và đổ bánh xèo truyền thống.",
-    "license": "Bản quyền thuộc tác giả và Báo Vĩnh Long"
-  },
-  {
-    "entity_id": "homestay-con-ba-tu",
-    "image": "web-nuxt/public/img/entities/homestay-con-ba-tu.webp",
+    "entity_id": "ks-nh-hung-vuong",
+    "image": "web-nuxt/public/img/entities/ks-nh-hung-vuong.webp",
     "author": "Hữu Hiệp",
     "source": "Báo Đồng Khởi",
-    "caption": "Homestay Cồn Bà Tư xã đảo Thới Thuận đón làn gió mặn mòi nơi cửa biển Ba Tri, kết hợp trải nghiệm nuôi sò huyết và nghỉ ngơi trong những căn chòi lá dừa nước.",
+    "caption": "Mặt tiền khách sạn và nhà hàng Hùng Vương tọa lạc trên trục lộ trung tâm phường An Hội với sảnh đón tiếp thoáng đãng.",
     "license": "Bản quyền thuộc tác giả và Báo Đồng Khởi"
   },
   {
-    "entity_id": "nha-dua-cocohome",
-    "image": "web-nuxt/public/img/entities/nha-dua-cocohome.webp",
-    "author": "Thành Châu",
-    "source": "Báo Đồng Khởi",
-    "caption": "Công trình Nhà dừa CocoHome độc đáo xây dựng hoàn toàn từ hàng ngàn thân dừa lão và gáo dừa mỹ nghệ, minh chứng cho tình yêu và sáng tạo gắn với cây dừa.",
-    "license": "Bản quyền thuộc tác giả và Báo Đồng Khởi"
-  },
-  {
-    "entity_id": "tra-vinh-palace-hotel",
-    "image": "web-nuxt/public/img/entities/tra-vinh-palace-hotel.webp",
+    "entity_id": "khach-san-anh-hong-mang-thit",
+    "image": "web-nuxt/public/img/entities/khach-san-anh-hong-mang-thit.webp",
     "author": "Bá Thi",
-    "source": "Báo Trà Vinh",
-    "caption": "Khách sạn Trà Vinh Palace với kiến trúc hiện đại, tọa lạc ngay vị trí trung tâm thuận tiện kết nối các di tích lịch sử và danh lam thắng cảnh tiêu biểu.",
-    "license": "Bản quyền thuộc tác giả và Báo Trà Vinh"
-  },
-  {
-    "entity_id": "khach-san-diamond-stars",
-    "image": "web-nuxt/public/img/entities/khach-san-diamond-stars.webp",
-    "author": "Phương Thảo",
-    "source": "Báo Đồng Khởi",
-    "caption": "Khách sạn Diamond Stars vươn cao bên bờ sông Bến Tre với tầm nhìn toàn cảnh dải cù lao xanh ngát và dịch vụ lưu trú chuẩn quốc tế.",
-    "license": "Bản quyền thuộc tác giả và Báo Đồng Khởi"
-  },
-  {
-    "entity_id": "mekong-hotel-restaurant",
-    "image": "web-nuxt/public/img/entities/mekong-hotel-restaurant.webp",
-    "author": "Thu Huyền",
-    "source": "Báo Đồng Khởi",
-    "caption": "Tổ hợp nghỉ dưỡng và ẩm thực Mekong Hotel tọa lạc trên đại lộ Đồng Khởi, phục vụ đa dạng các món đặc sản thủy hải sản tươi sống vùng hạ lưu.",
-    "license": "Bản quyền thuộc tác giả và Báo Đồng Khởi"
-  },
-  {
-    "entity_id": "lo-lem-homestay",
-    "image": "web-nuxt/public/img/entities/lo-lem-homestay.webp",
-    "author": "Bá Dũng",
     "source": "Báo Vĩnh Long",
-    "caption": "Lọ Lem Homestay với phong cách thiết kế xanh mát, gần gũi thiên nhiên, mang lại không gian thư giãn yên tĩnh cho du khách giữa lòng đô thị Long Châu.",
+    "caption": "Khách sạn Ánh Hồng tại khóm 1 xã Cái Nhum, điểm dừng chân thuận tiện cho du khách khảo sát di sản gốm đỏ Mang Thít.",
     "license": "Bản quyền thuộc tác giả và Báo Vĩnh Long"
   },
   {
-    "entity_id": "van-trang-hotel",
-    "image": "web-nuxt/public/img/entities/van-trang-hotel.webp",
+    "entity_id": "khach-san-nghia-hiep",
+    "image": "web-nuxt/public/img/entities/khach-san-nghia-hiep.webp",
     "author": "Trần Phước",
     "source": "Báo Vĩnh Long",
-    "caption": "Khách sạn Vân Trang trên đường Nguyễn Huệ phường Long Châu với hệ thống phòng ốc sạch sẽ, điểm dừng chân tin cậy của khách công vụ và du lịch.",
+    "caption": "Không gian lưu trú giản dị, sạch sẽ tại khách sạn Nghĩa Hiệp thuộc ấp Mỹ An, xã Bình Ninh phục vụ bà con thương hồ và du khách.",
     "license": "Bản quyền thuộc tác giả và Báo Vĩnh Long"
   },
   {
-    "entity_id": "hotel-phuoc-thinh",
-    "image": "web-nuxt/public/img/entities/hotel-phuoc-thinh.webp",
-    "author": "Quang Vinh",
-    "source": "Báo Vĩnh Long",
-    "caption": "Khách sạn Phước Thịnh tọa lạc gần chợ đầu mối và bến tàu du lịch Vĩnh Long, thuận lợi cho các tour tham quan đường thủy khám phá các cồn bãi.",
-    "license": "Bản quyền thuộc tác giả và Báo Vĩnh Long"
-  },
-  {
-    "entity_id": "khach-san-hoang-khiem",
-    "image": "web-nuxt/public/img/entities/khach-san-hoang-khiem.webp",
+    "entity_id": "khach-san-khoi-hoa",
+    "image": "web-nuxt/public/img/entities/khach-san-khoi-hoa.webp",
     "author": "Minh Triết",
     "source": "Báo Vĩnh Long",
-    "caption": "Không gian phòng nghỉ thoáng đãng và dịch vụ chu đáo tại Khách Sạn Hoàng Khiêm, địa chỉ lưu trú quen thuộc của du khách khi về thăm miền quê sông nước.",
+    "caption": "Khách sạn Khôi Hoa tại ấp Đông Hậu, phường Bình Minh với hệ thống phòng nghỉ tiện nghi bên bờ sông Hậu tấp nập ghe thuyền.",
     "license": "Bản quyền thuộc tác giả và Báo Vĩnh Long"
   },
   {
-    "entity_id": "homestay-hai-cuong",
-    "image": "web-nuxt/public/img/entities/homestay-hai-cuong.webp",
-    "author": "Hữu Toàn",
-    "source": "Báo Vĩnh Long",
-    "caption": "Nhà nghỉ dưỡng sinh thái Homestay Hai Cường nép mình bên vườn sầu riêng trĩu quả Vũng Liêm, đem lại trải nghiệm sống chậm chân chất đậm tình đất phù sa.",
-    "license": "Bản quyền thuộc tác giả và Báo Vĩnh Long"
-  },
-  {
-    "entity_id": "khach-san-binh-minh",
-    "image": "web-nuxt/public/img/entities/khach-san-binh-minh.webp",
-    "author": "Lê Tấn",
-    "source": "Báo Vĩnh Long",
-    "caption": "Khách sạn Bình Minh nằm ngay trục lộ giao thông kết nối các vùng chuyên canh cây có múi, phục vụ du khách khám phá thủ phủ bưởi Năm Roi ven sông Hậu.",
-    "license": "Bản quyền thuộc tác giả và Báo Vĩnh Long"
-  },
-  {
-    "entity_id": "cheo-xuong-rach-an-binh",
-    "image": "web-nuxt/public/img/entities/cheo-xuong-rach-an-binh.webp",
-    "author": "Ngọc Trảng",
-    "source": "Báo Vĩnh Long",
-    "caption": "Trải nghiệm chèo xuồng ba lá len lỏi dưới bóng râm mát rượi của những rặng dừa nước cù lao An Bình, cảm nhận nhịp sống êm đềm của vùng đồng bằng châu thổ.",
-    "license": "Bản quyền thuộc tác giả và Báo Vĩnh Long"
-  },
-  {
-    "entity_id": "lam-banh-dan-gian",
-    "image": "web-nuxt/public/img/entities/lam-banh-dan-gian.webp",
-    "author": "Bá Dũng",
-    "source": "Báo Vĩnh Long",
-    "caption": "Khách du lịch thích thú trải nghiệm công đoạn xay bột cối đá, nạo dừa và gói các loại bánh lá dứa, bánh tét dân gian dưới sự hướng dẫn của nghệ nhân ẩm thực.",
-    "license": "Bản quyền thuộc tác giả và Báo Vĩnh Long"
-  },
-  {
-    "entity_id": "mua-trai-cay-chin-roi",
-    "image": "web-nuxt/public/img/entities/mua-trai-cay-chin-roi.webp",
-    "author": "Trần Phước",
-    "source": "Báo Vĩnh Long",
-    "caption": "Du khách tự tay hái và thưởng thức những chùm chôm chôm, sầu riêng chín cây ngọt lịm vào mùa trái cây chín rộ tại các vườn sinh thái miệt vườn ven sông Cổ Chiên.",
-    "license": "Bản quyền thuộc tác giả và Báo Vĩnh Long"
-  },
-  {
-    "entity_id": "mua-nuoc-noi-dbscl",
-    "image": "web-nuxt/public/img/entities/mua-nuoc-noi-dbscl.webp",
-    "author": "Quang Vinh",
-    "source": "Báo Vĩnh Long",
-    "caption": "Mùa nước nổi đem nguồn cá tôm dồi dào và sắc vàng bông điên điển tràn ngập các cánh đồng châu thổ, bức tranh thiên nhiên kỳ vĩ hàng năm của miền Tây Nam Bộ.",
-    "license": "Bản quyền thuộc tác giả và Báo Vĩnh Long"
-  },
-  {
-    "entity_id": "khu-sinh-thai-nha-xua-long-ho",
-    "image": "web-nuxt/public/img/entities/khu-sinh-thai-nha-xua-long-ho.webp",
+    "entity_id": "khach-san-duc-dao",
+    "image": "web-nuxt/public/img/entities/khach-san-duc-dao.webp",
     "author": "Minh Triết",
     "source": "Báo Vĩnh Long",
-    "caption": "Kiến trúc nhà cổ ba gian hai chái bằng gỗ quý trăm năm tuổi soi bóng bên hồ sen tại Khu Sinh Thái Nhà Xưa, lưu giữ nếp sống tao nhã của bậc tiền nhân.",
+    "caption": "Khuôn viên đón khách tại khách sạn Đức Đào, phường Bình Minh, kết nối thuận lợi với chợ đầu mối xà lách xoong và bưởi Năm Roi.",
     "license": "Bản quyền thuộc tác giả và Báo Vĩnh Long"
   },
   {
-    "entity_id": "khu-du-lich-sinh-thai-hoang-hao",
-    "image": "web-nuxt/public/img/entities/khu-du-lich-sinh-thai-hoang-hao.webp",
-    "author": "Hữu Toàn",
-    "source": "Báo Vĩnh Long",
-    "caption": "Khuôn viên sinh thái rộng lớn của Hoàng Hảo với các hồ câu cá giải trí, cầu khỉ và vườn cây ăn trái, điểm dã ngoại cuối tuần hấp dẫn cho các gia đình.",
-    "license": "Bản quyền thuộc tác giả và Báo Vĩnh Long"
-  },
-  {
-    "entity_id": "nghe-don-ca-tai-tu",
-    "image": "web-nuxt/public/img/entities/nghe-don-ca-tai-tu.webp",
-    "author": "Ngọc Trảng",
-    "source": "Báo Vĩnh Long",
-    "caption": "Buổi hòa tấu đờn ca tài tử Nam Bộ trong không gian nhà vườn thanh tịnh, tiếng đờn kìm, đờn tranh réo rắt quyện cùng giọng ca vọng cổ mượt mà sâu lắng.",
-    "license": "Bản quyền thuộc tác giả và Báo Vĩnh Long"
-  },
-  {
-    "entity_id": "tham-chua-khmer",
-    "image": "web-nuxt/public/img/entities/tham-chua-khmer.webp",
-    "author": "Bá Thi",
-    "source": "Báo Trà Vinh",
-    "caption": "Du khách chiêm bái và tìm hiểu nghệ thuật kiến trúc hoa văn phù điêu tinh xảo tại các ngôi chùa Phật giáo Nam tông Khmer cổ kính rợp bóng cây cổ thụ.",
-    "license": "Bản quyền thuộc tác giả và Báo Trà Vinh"
-  },
-  {
-    "entity_id": "peace-farm",
-    "image": "web-nuxt/public/img/entities/peace-farm.webp",
-    "author": "Lê Tấn",
-    "source": "Báo Vĩnh Long",
-    "caption": "Mô hình nông trại sinh thái tuần hoàn Peace Farm giáo dục trải nghiệm trồng rau sạch, ủ phân hữu cơ và bảo tồn đa dạng sinh học cho thế hệ trẻ.",
-    "license": "Bản quyền thuộc tác giả và Báo Vĩnh Long"
-  },
-  {
-    "entity_id": "du-lich-vuon-chu-7-gat",
-    "image": "web-nuxt/public/img/entities/du-lich-vuon-chu-7-gat.webp",
-    "author": "Nguyễn Thịnh",
-    "source": "Báo Vĩnh Long",
-    "caption": "Du khách nghỉ chân dưới giàn cây ăn trái sum sê và thưởng thức đặc sản ốc nướng tiêu, cá lóc nướng trui tại điểm du lịch vườn Chú 7 Gắt cù lao An Bình.",
-    "license": "Bản quyền thuộc tác giả và Báo Vĩnh Long"
-  },
-  {
-    "entity_id": "nha-vuon-tu-hien",
-    "image": "web-nuxt/public/img/entities/nha-vuon-tu-hien.webp",
-    "author": "Trần Phước",
-    "source": "Báo Vĩnh Long",
-    "caption": "Lối đi rợp bóng mát giữa vườn chôm chôm chín đỏ trĩu cành tại Nhà vườn Tư Hiền, điểm đón khách dã ngoại sinh thái nổi tiếng bên bờ sông Cổ Chiên.",
-    "license": "Bản quyền thuộc tác giả và Báo Vĩnh Long"
-  },
-  {
-    "entity_id": "vuon-dua-sinh-thai-cau-ke-tra-vinh",
-    "image": "web-nuxt/public/img/entities/vuon-dua-sinh-thai-cau-ke-tra-vinh.webp",
-    "author": "Phương Thảo",
-    "source": "Báo Trà Vinh",
-    "caption": "Du khách trải nghiệm khám phá vườn dừa sáp trĩu quả trăm năm tuổi và thưởng thức ly sinh tố dừa sáp béo ngậy đặc sản ngay dưới bóng mát rặng dừa Cầu Kè.",
-    "license": "Bản quyền thuộc tác giả và Báo Trà Vinh"
-  },
-  {
-    "entity_id": "cu-lao-tan-quy-cang-long-tra-vinh",
-    "image": "web-nuxt/public/img/entities/cu-lao-tan-quy-cang-long-tra-vinh.webp",
-    "author": "Bá Thi",
-    "source": "Báo Trà Vinh",
-    "caption": "Dải đất Cù Lao Tân Quy màu mỡ nổi giữa dòng sông Hậu quanh năm phù sa bồi đắp, vương quốc trái cây nức tiếng với chôm chôm, sầu riêng và măng cụt.",
-    "license": "Bản quyền thuộc tác giả và Báo Trà Vinh"
-  },
-  {
-    "entity_id": "du-lich-sinh-thai-bien-thanh-phu",
-    "image": "web-nuxt/public/img/entities/du-lich-sinh-thai-bien-thanh-phu.webp",
+    "entity_id": "khach-san-hoai-phu",
+    "image": "web-nuxt/public/img/entities/khach-san-hoai-phu.webp",
     "author": "Hữu Hiệp",
     "source": "Báo Đồng Khởi",
-    "caption": "Khám phá dải rừng ngập mặn và thưởng thức hải sản tươi rói đánh bắt trong ngày tại các chòi sinh thái ven biển Thạnh Phú.",
+    "caption": "Mặt tiền khách sạn Hoài Phú tại khu phố 6, phường Phú Khương với kiến trúc hiện đại, gần các tuyến xe buýt liên tỉnh.",
     "license": "Bản quyền thuộc tác giả và Báo Đồng Khởi"
   },
   {
-    "entity_id": "du-lich-sinh-thai-san-chim-vam-ho-trai-nghiem-thuyen-rung",
-    "image": "web-nuxt/public/img/entities/du-lich-sinh-thai-san-chim-vam-ho-trai-nghiem-thuyen-rung.webp",
-    "author": "Thành Châu",
+    "entity_id": "nha-nghi-quynh-phuc",
+    "image": "web-nuxt/public/img/entities/nha-nghi-quynh-phuc.webp",
+    "author": "Hữu Hiệp",
     "source": "Báo Đồng Khởi",
-    "caption": "Thuyền lướt nhẹ đưa du khách xuyên qua cánh rừng chà là gai và đước ngập mặn Sân chim Vàm Hồ, chiêm ngưỡng hàng vạn cánh chim trời bay về tổ lúc hoàng hôn.",
+    "caption": "Nhà nghỉ Quỳnh Phúc trên trục đường Nguyễn Thị Định, phường Phú Khương, cung cấp dịch vụ lưu trú bình dân cho khách lữ hành.",
     "license": "Bản quyền thuộc tác giả và Báo Đồng Khởi"
   },
   {
-    "entity_id": "xuong-thu-cong-cocohand-vuon-dua-huu-co",
-    "image": "web-nuxt/public/img/entities/xuong-thu-cong-cocohand-vuon-dua-huu-co.webp",
-    "author": "Cẩm Trúc",
+    "entity_id": "nha-hang-phuong-thuy-1",
+    "image": "web-nuxt/public/img/entities/nha-hang-phuong-thuy-1.webp",
+    "author": "Bá Thi",
+    "source": "Báo Vĩnh Long",
+    "caption": "Tổ hợp nhà hàng và lưu trú Phương Thủy 1 tại số 1 Phan Bội Châu, phường 1, hướng tầm nhìn khoáng đạt ra ngã ba sông Cổ Chiên.",
+    "license": "Bản quyền thuộc tác giả và Báo Vĩnh Long"
+  },
+  {
+    "entity_id": "nha-nghi-thanh-thao",
+    "image": "web-nuxt/public/img/entities/nha-nghi-thanh-thao.webp",
+    "author": "Trần Phước",
+    "source": "Báo Vĩnh Long",
+    "caption": "Nhà nghỉ Thanh Thảo tại phường Long Châu với phòng ốc tươm tất, yên tĩnh, phù hợp cho khách lưu trú công tác ngắn ngày.",
+    "license": "Bản quyền thuộc tác giả và Báo Vĩnh Long"
+  },
+  {
+    "entity_id": "nha-nghi-phuong-nam",
+    "image": "web-nuxt/public/img/entities/nha-nghi-phuong-nam.webp",
+    "author": "Thanh Sang",
+    "source": "Trung tâm Xúc tiến Du lịch Vĩnh Long",
+    "caption": "Khuôn viên nhà nghỉ Phương Nam tại phường Trà Vinh, rợp bóng mát cây xanh và gần các ngôi chùa cổ Khmer độc đáo.",
+    "license": "Bản quyền thuộc tác giả và Trung tâm Xúc tiến Du lịch Vĩnh Long"
+  },
+  {
+    "entity_id": "ba-dong-beach-resort",
+    "image": "web-nuxt/public/img/entities/ba-dong-beach-resort.webp",
+    "author": "Thanh Sang",
+    "source": "Báo Cần Thơ",
+    "caption": "Dãy bungalow nép mình dưới rặng phi lao lộng gió tại Ba Động Beach Resort, phường Duyên Hải, trông ra bãi biển cát đen phù sa.",
+    "license": "Bản quyền thuộc tác giả và Báo Cần Thơ"
+  },
+  {
+    "entity_id": "mekong-lodge-resort",
+    "image": "web-nuxt/public/img/entities/mekong-lodge-resort.webp",
+    "author": "Bá Thi",
+    "source": "Báo Vĩnh Long",
+    "caption": "Nhà nghỉ sinh thái bằng gỗ lợp lá dừa nước tại Mekong Lodge Resort, xã An Bình, giữa những liếp vườn chôm chôm và nhãn xuồng.",
+    "license": "Bản quyền thuộc tác giả và Báo Vĩnh Long"
+  },
+  {
+    "entity_id": "khach-san-cuu-long",
+    "image": "web-nuxt/public/img/entities/khach-san-cuu-long.webp",
+    "author": "Trần Phước",
+    "source": "Báo Vĩnh Long",
+    "caption": "Sảnh lễ tân khách sạn Cửu Long tại phường Long Châu, điểm dừng chân lịch sự phục vụ khách đoàn tham quan miệt vườn.",
+    "license": "Bản quyền thuộc tác giả và Báo Vĩnh Long"
+  },
+  {
+    "entity_id": "khach-san-chieu-hung",
+    "image": "web-nuxt/public/img/entities/khach-san-chieu-hung.webp",
+    "author": "Bá Thi",
+    "source": "Báo Vĩnh Long",
+    "caption": "Khách sạn Chiêu Hùng trên đường Gia Long, khu 1 thị trấn Trà Ôn, thuận tiện tham quan chợ nổi Trà Ôn vào sáng sớm.",
+    "license": "Bản quyền thuộc tác giả và Báo Vĩnh Long"
+  },
+  {
+    "entity_id": "khach-san-trung-tinh",
+    "image": "web-nuxt/public/img/entities/khach-san-trung-tinh.webp",
+    "author": "Bá Thi",
+    "source": "Báo Vĩnh Long",
+    "caption": "Khách sạn Trung Tính tại khu 3 xã Trà Ôn, không gian nghỉ ngơi thoáng mát gần các vườn cam sành trĩu quả.",
+    "license": "Bản quyền thuộc tác giả và Báo Vĩnh Long"
+  },
+  {
+    "entity_id": "khach-san-vin-vinh-long",
+    "image": "web-nuxt/public/img/entities/khach-san-vin-vinh-long.webp",
+    "author": "Trần Phước",
+    "source": "Báo Vĩnh Long",
+    "caption": "Kiến trúc hiện đại của khách sạn Vin Vĩnh Long tại khu phố thương mại shophouse Phạm Thái Bường, phường Phước Hậu.",
+    "license": "Bản quyền thuộc tác giả và Báo Vĩnh Long"
+  },
+  {
+    "entity_id": "khach-san-binh-dai",
+    "image": "web-nuxt/public/img/entities/khach-san-binh-dai.webp",
+    "author": "Hữu Hiệp",
     "source": "Báo Đồng Khởi",
-    "caption": "Du khách tự tay ghép tranh nghệ thuật từ gáo dừa và tham quan vườn dừa canh tác hữu cơ xanh mướt tại xưởng thủ công Cocohand.",
+    "caption": "Khách sạn Bình Đại tại ấp Bình Hòa, cửa ngõ dẫn ra cảng cá và các vựa thủy hải sản tươi sống vùng cửa sông Tiền.",
     "license": "Bản quyền thuộc tác giả và Báo Đồng Khởi"
   },
   {
-    "entity_id": "con-ngheu-my-long",
-    "image": "web-nuxt/public/img/entities/con-ngheu-my-long.webp",
-    "author": "Hoàng Vũ",
-    "source": "Báo Trà Vinh",
-    "caption": "Trải nghiệm theo chân ngư dân lội bãi bồi ven biển cào nghêu và bắt sò huyết trên dải cồn cát tự nhiên Cồn Nghêu Mỹ Long khi thủy triều rút xuống.",
-    "license": "Bản quyền thuộc tác giả và Báo Trà Vinh"
-  },
-  {
-    "entity_id": "con-thanh-long",
-    "image": "web-nuxt/public/img/entities/con-thanh-long.webp",
-    "author": "Bảo Toàn",
+    "entity_id": "oasis-hotel",
+    "image": "web-nuxt/public/img/entities/oasis-hotel.webp",
+    "author": "Hữu Hiệp",
     "source": "Báo Đồng Khởi",
-    "caption": "Cồn Thành Long xanh mướt ngút ngàn với những rặng dừa dứa thơm mát và vườn nhãn xuồng cơm vàng trĩu quả ven dòng sông Hàm Luông thơ mộng.",
+    "caption": "Bể bơi ngoài trời xanh mát bao quanh bởi rặng dừa tại Oasis Hotel thuộc phường Bến Tre, mang phong cách nghỉ dưỡng thư thái.",
     "license": "Bản quyền thuộc tác giả và Báo Đồng Khởi"
   },
   {
-    "entity_id": "khu-bao-ve-canh-quan-rung-ngap-man-thanh-phu",
-    "image": "web-nuxt/public/img/entities/khu-bao-ve-canh-quan-rung-ngap-man-thanh-phu.webp",
-    "author": "Trọng Tuệ",
+    "entity_id": "vilabasi-hotel",
+    "image": "web-nuxt/public/img/entities/vilabasi-hotel.webp",
+    "author": "Thanh Sang",
+    "source": "Trung tâm Xúc tiến Du lịch Vĩnh Long",
+    "caption": "Không gian sinh thái mộc mạc với lối đi rải sỏi tại Vilabasi Hotel, phường Trà Vinh, thích hợp cho du khách ưa chuộng thiên nhiên.",
+    "license": "Bản quyền thuộc tác giả và Trung tâm Xúc tiến Du lịch Vĩnh Long"
+  },
+  {
+    "entity_id": "ben-tre-farm-stay",
+    "image": "web-nuxt/public/img/entities/ben-tre-farm-stay.webp",
+    "author": "Hữu Hiệp",
     "source": "Báo Đồng Khởi",
-    "caption": "Hệ sinh thái rừng phòng hộ ngập mặn ven biển Thạnh Phú xanh tươi với bạt ngàn cây đước, mắm, giữ vai trò lá chắn xanh chắn sóng bảo vệ bờ biển.",
+    "caption": "Các gian nhà chòi mộc mạc soi bóng xuống ao sen tại Ben Tre Farm Stay thuộc phường Bến Tre, nơi du khách trải nghiệm hái trái cây.",
     "license": "Bản quyền thuộc tác giả và Báo Đồng Khởi"
   },
   {
-    "entity_id": "rung-ngap-man-hiep-thanh-duyen-hai-tra-vinh",
-    "image": "web-nuxt/public/img/entities/rung-ngap-man-hiep-thanh-duyen-hai-tra-vinh.webp",
-    "author": "Minh Đăng",
-    "source": "Báo Trà Vinh",
-    "caption": "Cánh rừng ngập mặn Hiệp Thạnh kiên cường bám rễ giữ đất phù sa nơi cửa biển Ba Động, không gian sinh thái hoang sơ hấp dẫn bước chân khám phá thiên nhiên.",
-    "license": "Bản quyền thuộc tác giả và Báo Trà Vinh"
+    "entity_id": "cho-ben-tre",
+    "image": "web-nuxt/public/img/entities/cho-ben-tre.webp",
+    "author": "Hữu Hiệp",
+    "source": "Báo Đồng Khởi",
+    "caption": "Quang cảnh giao thương nhộn nhịp tại nhà lồng Chợ Bến Tre bên bờ sông Chẽ, ngập tràn các quầy dừa xiêm, trái cây và bánh kẹo.",
+    "license": "Bản quyền thuộc tác giả và Báo Đồng Khởi"
+  },
+  {
+    "entity_id": "du-lich-sinh-thai-nam-son",
+    "image": "web-nuxt/public/img/entities/du-lich-sinh-thai-nam-son.webp",
+    "author": "Thanh Sang",
+    "source": "Trung tâm Xúc tiến Du lịch Vĩnh Long",
+    "caption": "Du khách bơi xuồng ba lá len lỏi dưới bóng mát râm ran tại điểm du lịch sinh thái Nam Sơn, ấp An Trại, xã An Phú Tân.",
+    "license": "Bản quyền thuộc tác giả và Trung tâm Xúc tiến Du lịch Vĩnh Long"
+  },
+  {
+    "entity_id": "quan-tan-tan",
+    "image": "web-nuxt/public/img/entities/quan-tan-tan.webp",
+    "author": "Trần Phước",
+    "source": "Báo Vĩnh Long",
+    "caption": "Bàn ăn phục vụ các món thủy sản tươi sống và lẩu mắm đậm đà tại quán Tân Tân, phường Long Châu bên rặng cây xanh mát.",
+    "license": "Bản quyền thuộc tác giả và Báo Vĩnh Long"
+  },
+  {
+    "entity_id": "buffet-nuong-kachu",
+    "image": "web-nuxt/public/img/entities/buffet-nuong-kachu.webp",
+    "author": "Bá Thi",
+    "source": "Báo Vĩnh Long",
+    "caption": "Quầy tự chọn phong phú thịt ướp gia vị nướng than hoa và hải sản đồng quê tại quán Buffet Nướng Kachu, phường Long Châu.",
+    "license": "Bản quyền thuộc tác giả và Báo Vĩnh Long"
+  },
+  {
+    "entity_id": "quan-pho-91",
+    "image": "web-nuxt/public/img/entities/quan-pho-91.webp",
+    "author": "Trần Phước",
+    "source": "Báo Vĩnh Long",
+    "caption": "Tô phở bò bắp hoa bốc khói nghi ngút ngào ngạt hương thảo quả và hồi tại Quán Phở 91, địa chỉ quen thuộc của người dân nội ô.",
+    "license": "Bản quyền thuộc tác giả và Báo Vĩnh Long"
+  },
+  {
+    "entity_id": "quan-lau-ga-noi-nha-san",
+    "image": "web-nuxt/public/img/entities/quan-lau-ga-noi-nha-san.webp",
+    "author": "Bá Thi",
+    "source": "Báo Vĩnh Long",
+    "caption": "Nồi lẩu gà nòi nấu măng chua cay và đĩa thịt gà ta săn chắc luộc chấm muối ớt tiêu tại Quán Lẩu Gà Nòi Nhà Sàn, phường Long Châu.",
+    "license": "Bản quyền thuộc tác giả và Báo Vĩnh Long"
+  },
+  {
+    "entity_id": "quan-lau-tai-co",
+    "image": "web-nuxt/public/img/entities/quan-lau-tai-co.webp",
+    "author": "Trần Phước",
+    "source": "Báo Vĩnh Long",
+    "caption": "Mâm lẩu cá ngát măng chua và cá bông lau kho tộ thơm nức mũi phục vụ thực khách tại Quán Lẩu Tài Có, phường Long Châu.",
+    "license": "Bản quyền thuộc tác giả và Báo Vĩnh Long"
+  },
+  {
+    "entity_id": "quan-met-bun-dau-mam-tom",
+    "image": "web-nuxt/public/img/entities/quan-met-bun-dau-mam-tom.webp",
+    "author": "Bá Thi",
+    "source": "Báo Vĩnh Long",
+    "caption": "Mẹt bún đậu đầy đặn với chả cốm chiên giòn, thịt chân giò luộc và chén mắm tôm Thanh Hóa đánh bông sủi bọt tại quán Mẹt.",
+    "license": "Bản quyền thuộc tác giả và Báo Vĩnh Long"
+  },
+  {
+    "entity_id": "nhom-bong-hong-vang",
+    "image": "web-nuxt/public/img/entities/nhom-bong-hong-vang.webp",
+    "author": "Trần Phước",
+    "source": "Báo Vĩnh Long",
+    "caption": "Buổi sinh hoạt giao lưu văn nghệ phục vụ cộng đồng và thiện nguyện của các thành viên Nhóm Bông Hồng Vàng tại phường Long Châu.",
+    "license": "Bản quyền thuộc tác giả và Báo Vĩnh Long"
+  },
+  {
+    "entity_id": "cau-lac-bo-du-lich-cuu-long",
+    "image": "web-nuxt/public/img/entities/cau-lac-bo-du-lich-cuu-long.webp",
+    "author": "Bá Thi",
+    "source": "Báo Vĩnh Long",
+    "caption": "Các hướng dẫn viên và thành viên Câu lạc bộ Du lịch Cửu Long thảo luận lộ trình khảo sát tour cù lao An Bình và Mang Thít.",
+    "license": "Bản quyền thuộc tác giả và Báo Vĩnh Long"
+  },
+  {
+    "entity_id": "cau-lac-bo-trung-tam-van-hoa-thong-tin-vinh-long",
+    "image": "web-nuxt/public/img/entities/cau-lac-bo-trung-tam-van-hoa-thong-tin-vinh-long.webp",
+    "author": "Trần Phước",
+    "source": "Báo Vĩnh Long",
+    "caption": "Không gian sinh hoạt nghệ thuật và triển lãm ảnh thời sự tại Câu lạc bộ Trung tâm Văn hóa Thông tin Vĩnh Long, phường Long Châu.",
+    "license": "Bản quyền thuộc tác giả và Báo Vĩnh Long"
+  },
+  {
+    "entity_id": "quan-buffet-lau-nuong-kachu",
+    "image": "web-nuxt/public/img/entities/quan-buffet-lau-nuong-kachu.webp",
+    "author": "Bá Thi",
+    "source": "Báo Vĩnh Long",
+    "caption": "Bếp than hồng đỏ rực cùng các đĩa tôm sông, mực tươi và nấm kim châm tại quán Buffet lẩu nướng Kachu trên đường nội ô.",
+    "license": "Bản quyền thuộc tác giả và Báo Vĩnh Long"
+  },
+  {
+    "entity_id": "com-nieu-nam-bo",
+    "image": "web-nuxt/public/img/entities/com-nieu-nam-bo.webp",
+    "author": "Trần Phước",
+    "source": "Báo Vĩnh Long",
+    "caption": "Bữa cơm niêu đất đượm vị đồng quê với cá bống dừa kho quéo, canh chua cá lóc bông điên điển tại Cơm Niêu Nam Bộ, phường Long Châu.",
+    "license": "Bản quyền thuộc tác giả và Báo Vĩnh Long"
+  },
+  {
+    "entity_id": "nghe-thuat-hat-boi-tinh-vinh-long",
+    "image": "web-nuxt/public/img/entities/nghe-thuat-hat-boi-tinh-vinh-long.webp",
+    "author": "Bá Thi",
+    "source": "Báo Vĩnh Long",
+    "caption": "Nghệ nhân Hát Bội Vĩnh Long hóa trang mặt nạ tuồng cổ rực rỡ và trình diễn trích đoạn tại đình làng vào dịp lễ Kỳ Yên.",
+    "license": "Bản quyền thuộc tác giả và Báo Vĩnh Long"
+  },
+  {
+    "entity_id": "cau-lac-bo-don-ca-tai-tu-huyen-vung-liem",
+    "image": "web-nuxt/public/img/entities/cau-lac-bo-don-ca-tai-tu-huyen-vung-liem.webp",
+    "author": "Trần Phước",
+    "source": "Báo Vĩnh Long",
+    "caption": "Các nghệ nhân đờn ca tài tử Vũng Liêm hòa tấu ngón đòn kìm, đờn tranh và nhịp song lang bên bờ sông Vũng Liêm êm đềm.",
+    "license": "Bản quyền thuộc tác giả và Báo Vĩnh Long"
+  },
+  {
+    "entity_id": "cau-lac-bo-don-ca-tai-tu-huyen-long-ho",
+    "image": "web-nuxt/public/img/entities/cau-lac-bo-don-ca-tai-tu-huyen-long-ho.webp",
+    "author": "Bá Thi",
+    "source": "Báo Vĩnh Long",
+    "caption": "Nghệ nhân Câu lạc bộ đờn ca tài tử Long Hồ ngân vang 20 bản tổ truyền thống trong khuôn viên rợp bóng vườn nhãn cù lao An Bình.",
+    "license": "Bản quyền thuộc tác giả và Báo Vĩnh Long"
+  },
+  {
+    "entity_id": "cau-lac-bo-don-ca-tai-tu-huyen-tam-binh",
+    "image": "web-nuxt/public/img/entities/cau-lac-bo-don-ca-tai-tu-huyen-tam-binh.webp",
+    "author": "Trần Phước",
+    "source": "Báo Vĩnh Long",
+    "caption": "Buổi sinh hoạt giao lưu tài tử tài hoa của các ngón đờn kìm và đờn bầu tại Câu lạc bộ đờn ca tài tử Tam Bình.",
+    "license": "Bản quyền thuộc tác giả và Báo Vĩnh Long"
+  },
+  {
+    "entity_id": "cau-lac-bo-don-ca-tai-tu-huyen-tra-on",
+    "image": "web-nuxt/public/img/entities/cau-lac-bo-don-ca-tai-tu-huyen-tra-on.webp",
+    "author": "Bá Thi",
+    "source": "Báo Vĩnh Long",
+    "caption": "Các tài tử miệt vườn hội tụ về thị trấn Trà Ôn so dây nắn phím những điệu Nam xuân, Nam ai mộc mạc bên dòng kinh Trà Ôn.",
+    "license": "Bản quyền thuộc tác giả và Báo Vĩnh Long"
+  },
+  {
+    "entity_id": "cau-lac-bo-don-ca-tai-tu-huyen-mang-thit",
+    "image": "web-nuxt/public/img/entities/cau-lac-bo-don-ca-tai-tu-huyen-mang-thit.webp",
+    "author": "Bá Thi",
+    "source": "Báo Vĩnh Long",
+    "caption": "Tiếng đờn kìm và lời ca vọng cổ mộc mạc của các nghệ nhân đờn ca tài tử Mang Thít bên dòng kinh Thầy Kay quanh các lò gạch cổ.",
+    "license": "Bản quyền thuộc tác giả và Báo Vĩnh Long"
+  },
+  {
+    "entity_id": "cau-lac-bo-don-ca-tai-tu-thi-xa-binh-minh",
+    "image": "web-nuxt/public/img/entities/cau-lac-bo-don-ca-tai-tu-thi-xa-binh-minh.webp",
+    "author": "Minh Triết",
+    "source": "Báo Vĩnh Long",
+    "caption": "Buổi hòa tấu nhạc tài tử tài hoa của Câu lạc bộ đờn ca tài tử Bình Minh bên bờ sông Hậu ráng chiều đỏ rực.",
+    "license": "Bản quyền thuộc tác giả và Báo Vĩnh Long"
   }
 ]

@@ -3,7 +3,7 @@
     <div class="home-curated-showcase__head section-head">
       <div class="sh-text">
         <span class="home-curated-showcase__eyebrow" data-color-role="brand">
-          <IconLine name="landmark" />
+          <IconLine name="landmark" aria-hidden="true" />
           <span>Kỳ quan sông nước · Di sản sống</span>
         </span>
         <h2>Top Điểm Đến <em class="editorial-italic-accent" aria-hidden="true">Phải Đến</em></h2>
@@ -35,7 +35,7 @@
           <div class="home-curated-lead__top-bar">
             <!-- Terroir badge and capture time -->
             <div class="home-curated-lead__badge">
-              <IconLine name="flame" />
+              <IconLine name="flame" aria-hidden="true" />
               <span>{{ leadItem.terroir }} · {{ leadItem.badge }}</span>
             </div>
 
@@ -48,7 +48,7 @@
               :aria-pressed="isItemSaved(leadItem.id)"
               @click.prevent.stop="toggleBookmark(leadItem)"
             >
-              <IconLine :name="isItemSaved(leadItem.id) ? 'heart' : 'bookmark'" />
+              <IconLine :name="isItemSaved(leadItem.id) ? 'heart' : 'bookmark'" aria-hidden="true" />
               <span class="sr-only">{{ isItemSaved(leadItem.id) ? 'Đã lưu' : 'Lưu điểm đến' }}</span>
             </button>
           </div>
@@ -61,7 +61,7 @@
 
             <div class="home-curated-lead__meta">
               <span class="home-curated-lead__location">
-                <IconLine name="pin" />
+                <IconLine name="pin" aria-hidden="true" />
                 <span>{{ leadItem.location }}</span>
               </span>
               <span class="home-curated-lead__coords">{{ leadItem.coordinates }}</span>
@@ -75,11 +75,11 @@
 
             <div class="home-curated-lead__tips">
               <span class="home-curated-lead__tip">
-                <IconLine name="sun" />
+                <IconLine name="sun" aria-hidden="true" />
                 <span><strong>Đẹp nhất:</strong> {{ leadItem.bestTime }}</span>
               </span>
               <span class="home-curated-lead__tip">
-                <IconLine name="camera" />
+                <IconLine name="camera" aria-hidden="true" />
                 <span><strong>Điểm nhấn:</strong> {{ leadItem.highlight }}</span>
               </span>
             </div>
@@ -90,7 +90,7 @@
                 <IconLine name="arrow-right" aria-hidden="true" />
               </NuxtLink>
               <NuxtLink :to="leadItem.mapTo" class="btn btn-outline" data-color-role="action-secondary">
-                <IconLine name="map" />
+                <IconLine name="map" aria-hidden="true" />
                 <span>Mở bản đồ</span>
               </NuxtLink>
             </div>
@@ -137,7 +137,7 @@
               :aria-pressed="isItemSaved(item.id)"
               @click.prevent.stop="toggleBookmark(item)"
             >
-              <IconLine :name="isItemSaved(item.id) ? 'heart' : 'bookmark'" />
+              <IconLine :name="isItemSaved(item.id) ? 'heart' : 'bookmark'" aria-hidden="true" />
               <span class="sr-only">{{ isItemSaved(item.id) ? 'Đã lưu' : 'Lưu điểm đến' }}</span>
             </button>
           </div>
@@ -150,7 +150,7 @@
             </div>
             <div class="home-curated-satellite__meta">
               <span class="home-curated-satellite__area">
-                <IconLine name="pin" />
+                <IconLine name="pin" aria-hidden="true" />
                 <span>{{ item.area }}</span>
               </span>
               <span v-if="item.coordinates" class="home-curated-satellite__coords">{{ item.coordinates }}</span>

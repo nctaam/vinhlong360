@@ -7,7 +7,7 @@
 - 124 đơn vị hành chính trực thuộc gồm 35 phường và 89 xã.
 - Cấp huyện đã bãi bỏ; các địa danh huyện cũ (Long Hồ, Mang Thít, Ba Tri, Châu Thành, Càng Long, Cầu Kè, Trà Cú...) chỉ mang giá trị lịch sử và chỉ dẫn vị trí địa lý dân gian.
 
-## 2. Danh Mục 744 Thực Thể Xác Minh Ảnh Tư Liệu Báo Chí & Giấy Phép Google Images
+## 2. Danh Mục 784 Thực Thể Xác Minh Ảnh Tư Liệu Báo Chí & Giấy Phép Google Images
 
 Mỗi thực thể dưới đây đều có ảnh tư liệu báo chí chính thống được lưu trữ nội bộ chuẩn WebP, tích hợp siêu dữ liệu Schema.org `ImageObject` với đầy đủ bản quyền (`creator`, `creditText`, `copyrightNotice`, `license`, `acquireLicensePage`).
 
@@ -157,6 +157,13 @@ Mỗi thực thể dưới đây đều có ảnh tư liệu báo chí chính th
 - **Tác giả ảnh**: Quang Vinh · **Cơ quan**: Báo Vĩnh Long
 - **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
 - **Tóm lược**: Làng nghề thủ công mỹ nghệ đan từ cây lục bình (bèo tây) tạo ra giỏ, túi, đệm với hoa văn tinh xảo. Tập trung tại hai xã Ngãi Tứ và Bình Ninh, là sinh kế truyền thống của phụ nữ địa phương và là sản phẩm OCOP xuất khẩu.
+
+#### [Chợ Bến Tre](https://vinhlong360.vn/dia-diem/cho-ben-tre)
+- **Mã ID**: `cho-ben-tre` | **Phân loại**: `experience` | **Địa bàn**: p-an-hoi | **Tọa độ**: [10.2350, 106.3760]
+- **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/cho-ben-tre.webp`
+- **Tác giả ảnh**: Hữu Hiệp · **Cơ quan**: Báo Đồng Khởi
+- **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
+- **Tóm lược**: Tại phường An Hội là trái tim thương mại của xứ Dừa — nơi mùi thơm kẹo dừa Thanh Long quyện với tiếng rao hàng và màu vàng óng của bánh tráng phơi sương. Quầy nào cũng chất đầy đặc sản: dừa sáp béo ngậy, mứt dừa giòn rụm, rượu dừa ngọt dịu. Len lỏi qua từng dãy hàng, bạn không chỉ mua đồ mà còn chạm vào nhịp sống thật của người Bến Tre — chân chất, ấm áp và mộc mà đáng yêu. Dành ít nhất một buổi sáng để ăn hủ tiếu tươi ngay trong chợ trước khi mua quà về nhà.
 
 #### [Làng nghề dệt chiếu Cà Hom - Bến Bạ](https://vinhlong360.vn/dia-diem/lang-nghe-det-chieu-ca-hom-ben-ba)
 - **Mã ID**: `lang-nghe-det-chieu-ca-hom-ben-ba` | **Phân loại**: `craft_village` | **Địa bàn**: xa-tra-cu | **Tọa độ**: [9.6997, 106.2732]
@@ -1012,6 +1019,13 @@ Mỗi thực thể dưới đây đều có ảnh tư liệu báo chí chính th
 - **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
 - **Tóm lược**: Vùng cù lao Minh nằm giữa hai sông Hàm Luông và Cổ Chiên, đất đai màu mỡ nhờ phù sa bồi đắp quanh năm.
 
+#### [Du lịch sinh thái Nam Sơn](https://vinhlong360.vn/dia-diem/du-lich-sinh-thai-nam-son)
+- **Mã ID**: `du-lich-sinh-thai-nam-son` | **Phân loại**: `experience` | **Địa bàn**: xa-an-phu-tan | **Tọa độ**: [9.8627, 106.0262]
+- **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/du-lich-sinh-thai-nam-son.webp`
+- **Tác giả ảnh**: Thanh Sang · **Cơ quan**: Trung tâm Xúc tiến Du lịch Vĩnh Long
+- **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
+- **Tóm lược**: Khu du lịch sinh thái diện tích 3,8ha tại ấp An Trại, xã An Phú Tân, Cầu Kè.
+
 #### [Du lịch sinh thái Sân chim Vàm Hồ - trải nghiệm thuyền rừng](https://vinhlong360.vn/dia-diem/du-lich-sinh-thai-san-chim-vam-ho-trai-nghiem-thuyen-rung)
 - **Mã ID**: `du-lich-sinh-thai-san-chim-vam-ho-trai-nghiem-thuyen-rung` | **Phân loại**: `experience` | **Địa bàn**: p-ben-tre | **Tọa độ**: [10.2415, 106.3759]
 - **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/du-lich-sinh-thai-san-chim-vam-ho-trai-nghiem-thuyen-rung.webp`
@@ -1838,6 +1852,20 @@ Mỗi thực thể dưới đây đều có ảnh tư liệu báo chí chính th
 - **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
 - **Tóm lược**: Chạy Quốc lộ 60 ngang Ấp 1, xã Sơn Đông (Bến Tre), khách có thể tấp vô Hoa Sứ Coffee — quán cà phê kiêm luôn món ốc.
 
+#### [Quán Tân Tân](https://vinhlong360.vn/dia-diem/quan-tan-tan)
+- **Mã ID**: `quan-tan-tan` | **Phân loại**: `experience` | **Địa bàn**: p-long-chau | **Tọa độ**: [10.2539, 105.9722]
+- **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/quan-tan-tan.webp`
+- **Tác giả ảnh**: Trần Phước · **Cơ quan**: Báo Vĩnh Long
+- **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
+- **Tóm lược**: Quán ăn tại Vĩnh Long phục vụ cơm gia đình, phù hợp với nhu cầu ăn uống hằng ngày của khách địa phương.
+
+#### [Buffet Nướng Kachu](https://vinhlong360.vn/dia-diem/buffet-nuong-kachu)
+- **Mã ID**: `buffet-nuong-kachu` | **Phân loại**: `experience` | **Địa bàn**: p-long-chau | **Tọa độ**: [10.2539, 105.9722]
+- **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/buffet-nuong-kachu.webp`
+- **Tác giả ảnh**: Bá Thi · **Cơ quan**: Báo Vĩnh Long
+- **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
+- **Tóm lược**: Địa điểm buffet nướng ở Vĩnh Long, được giới thiệu như một lựa chọn ăn uống giá rẻ với nhiều món thịt nướng.
+
 #### [Phở Lữ Hải](https://vinhlong360.vn/dia-diem/pho-lu-hai)
 - **Mã ID**: `pho-lu-hai` | **Phân loại**: `restaurant` | **Địa bàn**: p-son-dong | **Tọa độ**: [10.2714, 106.3394]
 - **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/pho-lu-hai.webp`
@@ -1865,6 +1893,13 @@ Mỗi thực thể dưới đây đều có ảnh tư liệu báo chí chính th
 - **Tác giả ảnh**: Thanh Điền · **Cơ quan**: Báo Trà Vinh
 - **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
 - **Tóm lược**: Quán cà phê kết hợp pizza tại 2 Nguyễn Thái Học, phường 1, thành phố Trà Vinh.
+
+#### [Quán Phở 91](https://vinhlong360.vn/dia-diem/quan-pho-91)
+- **Mã ID**: `quan-pho-91` | **Phân loại**: `experience` | **Địa bàn**: p-long-chau | **Tọa độ**: [10.2542, 105.9628]
+- **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/quan-pho-91.webp`
+- **Tác giả ảnh**: Trần Phước · **Cơ quan**: Báo Vĩnh Long
+- **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
+- **Tóm lược**: Quán phở bò truyền thống tại Vĩnh Long, nổi bật với vị nước dùng đậm đà và phong cách phục vụ quen thuộc.
 
 #### [Vy's House Drinks & Tea - 2 Tháng 9](https://vinhlong360.vn/dia-diem/vys-house-drinks-tea---2-thang-9)
 - **Mã ID**: `vys-house-drinks-tea---2-thang-9` | **Phân loại**: `restaurant` | **Địa bàn**: p-long-chau | **Tọa độ**: [10.2542, 105.9628]
@@ -2293,6 +2328,27 @@ Mỗi thực thể dưới đây đều có ảnh tư liệu báo chí chính th
 - **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
 - **Tóm lược**: Làng nghề gốm đỏ ở Mang Thít, tỉnh Vĩnh Long, nằm dọc bờ sông Cổ Chiên.
 
+#### [Quán Lẩu Gà Nòi Nhà Sàn](https://vinhlong360.vn/dia-diem/quan-lau-ga-noi-nha-san)
+- **Mã ID**: `quan-lau-ga-noi-nha-san` | **Phân loại**: `experience` | **Địa bàn**: p-long-chau | **Tọa độ**: [10.2542, 105.9628]
+- **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/quan-lau-ga-noi-nha-san.webp`
+- **Tác giả ảnh**: Bá Thi · **Cơ quan**: Báo Vĩnh Long
+- **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
+- **Tóm lược**: Quán ăn ở Vĩnh Long với món lẩu gà nòi, được giới thiệu là có hương vị riêng giữa lòng sông nước Vĩnh Long.
+
+#### [Quán Lẩu Tài Có](https://vinhlong360.vn/dia-diem/quan-lau-tai-co)
+- **Mã ID**: `quan-lau-tai-co` | **Phân loại**: `experience` | **Địa bàn**: p-long-chau | **Tọa độ**: [10.2542, 105.9628]
+- **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/quan-lau-tai-co.webp`
+- **Tác giả ảnh**: Trần Phước · **Cơ quan**: Báo Vĩnh Long
+- **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
+- **Tóm lược**: Quán ăn tại Vĩnh Long chuyên phục vụ lẩu cá chẽm gia truyền, địa chỉ quen thuộc của thực khách địa phương.
+
+#### [Quán Mẹt – Bún Đậu Mắm Tôm](https://vinhlong360.vn/dia-diem/quan-met-bun-dau-mam-tom)
+- **Mã ID**: `quan-met-bun-dau-mam-tom` | **Phân loại**: `experience` | **Địa bàn**: p-long-chau | **Tọa độ**: [10.2542, 105.9628]
+- **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/quan-met-bun-dau-mam-tom.webp`
+- **Tác giả ảnh**: Bá Thi · **Cơ quan**: Báo Vĩnh Long
+- **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
+- **Tóm lược**: Quán ăn ở Vĩnh Long chuyên món bún đậu mắm tôm, mang hương vị Hà Thành nhưng được phục vụ ngay tại địa phương này.
+
 #### [Làng gạch gốm đỏ Mang Thít](https://vinhlong360.vn/dia-diem/lang-gach-gom-do-mang-thit)
 - **Mã ID**: `lang-gach-gom-do-mang-thit` | **Phân loại**: `craft_village` | **Địa bàn**: xa-nhon-phu | **Tọa độ**: [10.1790, 106.1060]
 - **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/lang-gach-gom-do-mang-thit.webp`
@@ -2433,6 +2489,13 @@ Mỗi thực thể dưới đây đều có ảnh tư liệu báo chí chính th
 - **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
 - **Tóm lược**: Canh chua me nấu cá linh non mùa nước nổi, bông điên điển vàng rực — vị chua thanh ngọt tự nhiên, chỉ có từ tháng 8 đến tháng 11 hằng năm.
 
+#### [Nhóm Bông Hồng Vàng](https://vinhlong360.vn/dia-diem/nhom-bong-hong-vang)
+- **Mã ID**: `nhom-bong-hong-vang` | **Phân loại**: `experience` | **Địa bàn**: p-long-chau | **Tọa độ**: [10.0635, 105.8262]
+- **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/nhom-bong-hong-vang.webp`
+- **Tác giả ảnh**: Trần Phước · **Cơ quan**: Báo Vĩnh Long
+- **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
+- **Tóm lược**: Nhóm đờn ca tài tử đang hoạt động tại Vĩnh Long, phục vụ biểu diễn văn nghệ cho du khách và người dân.
+
 #### [Nước dừa tươi Bến Tre](https://vinhlong360.vn/dia-diem/nuoc-dua-tuoi-ben-tre)
 - **Mã ID**: `nuoc-dua-tuoi-ben-tre` | **Phân loại**: `dish` | **Địa bàn**: p-mo-cay | **Tọa độ**: [10.2359, 106.3672]
 - **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/nuoc-dua-tuoi-ben-tre.webp`
@@ -2468,12 +2531,89 @@ Mỗi thực thể dưới đây đều có ảnh tư liệu báo chí chính th
 - **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
 - **Tóm lược**: Trải nghiệm vườn trái cây và ẩm thực đồng quê tại vườn chú 7 Gắt, Vĩnh Long: thưởng thức gà, cá lóc, lươn, ếch, cá tai tượng.
 
+#### [Câu lạc bộ Du lịch Cửu Long](https://vinhlong360.vn/dia-diem/cau-lac-bo-du-lich-cuu-long)
+- **Mã ID**: `cau-lac-bo-du-lich-cuu-long` | **Phân loại**: `experience` | **Địa bàn**: p-long-chau | **Tọa độ**: [10.2542, 105.9628]
+- **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/cau-lac-bo-du-lich-cuu-long.webp`
+- **Tác giả ảnh**: Bá Thi · **Cơ quan**: Báo Vĩnh Long
+- **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
+- **Tóm lược**: Câu lạc bộ đờn ca tài tử ở Vĩnh Long, hình thành theo hướng bán chuyên nghiệp để phục vụ nhu cầu du lịch.
+
+#### [Câu lạc bộ Trung tâm Văn hóa Thông tin Vĩnh Long](https://vinhlong360.vn/dia-diem/cau-lac-bo-trung-tam-van-hoa-thong-tin-vinh-long)
+- **Mã ID**: `cau-lac-bo-trung-tam-van-hoa-thong-tin-vinh-long` | **Phân loại**: `experience` | **Địa bàn**: p-long-chau | **Tọa độ**: [10.2542, 105.9628]
+- **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/cau-lac-bo-trung-tam-van-hoa-thong-tin-vinh-long.webp`
+- **Tác giả ảnh**: Trần Phước · **Cơ quan**: Báo Vĩnh Long
+- **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
+- **Tóm lược**: Câu lạc bộ đờn ca tài tử thuộc Trung tâm Văn hóa Thông tin tỉnh Vĩnh Long, đầu mối bảo tồn phong trào ĐCTT.
+
+#### [Quán Buffet lẩu nướng Kachu](https://vinhlong360.vn/dia-diem/quan-buffet-lau-nuong-kachu)
+- **Mã ID**: `quan-buffet-lau-nuong-kachu` | **Phân loại**: `experience` | **Địa bàn**: p-long-chau | **Tọa độ**: [10.2542, 105.9628]
+- **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/quan-buffet-lau-nuong-kachu.webp`
+- **Tác giả ảnh**: Bá Thi · **Cơ quan**: Báo Vĩnh Long
+- **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
+- **Tóm lược**: Lẩu sôi và vỉ nướng tính trọn suất 100.000–200.000 đồng/người là công thức của Quán Buffet lẩu nướng Kachu ở phường Long Châu, Vĩnh Long.
+
+#### [Cơm Niêu Nam Bộ](https://vinhlong360.vn/dia-diem/com-nieu-nam-bo)
+- **Mã ID**: `com-nieu-nam-bo` | **Phân loại**: `experience` | **Địa bàn**: p-long-chau | **Tọa độ**: [10.2542, 105.9628]
+- **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/com-nieu-nam-bo.webp`
+- **Tác giả ảnh**: Trần Phước · **Cơ quan**: Báo Vĩnh Long
+- **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
+- **Tóm lược**: Quán ăn phục vụ các món cơm Việt, đặc biệt là cơm niêu và món ăn dân dã Vĩnh Long tại khu vực Long Khánh.
+
 #### [Nhà vườn Tư Hiền](https://vinhlong360.vn/dia-diem/nha-vuon-tu-hien)
 - **Mã ID**: `nha-vuon-tu-hien` | **Phân loại**: `experience` | **Địa bàn**: p-long-chau | **Tọa độ**: [10.2542, 105.9628]
 - **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/nha-vuon-tu-hien.webp`
 - **Tác giả ảnh**: Trần Phước · **Cơ quan**: Báo Vĩnh Long
 - **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
 - **Tóm lược**: Nhà vườn trồng chôm chôm trên cù lao An Bình, nơi có thể tham quan, hái trái cây và thưởng thức tại vườn.
+
+#### [Nghệ thuật hát bội tỉnh Vĩnh Long](https://vinhlong360.vn/dia-diem/nghe-thuat-hat-boi-tinh-vinh-long)
+- **Mã ID**: `nghe-thuat-hat-boi-tinh-vinh-long` | **Phân loại**: `experience` | **Địa bàn**: p-long-chau | **Tọa độ**: [10.2542, 105.9628]
+- **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/nghe-thuat-hat-boi-tinh-vinh-long.webp`
+- **Tác giả ảnh**: Bá Thi · **Cơ quan**: Báo Vĩnh Long
+- **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
+- **Tóm lược**: Loại hình nghệ thuật truyền thống của tỉnh Vĩnh Long được ghi nhận là di sản văn hóa phi vật thể quốc gia.
+
+#### [Câu lạc bộ đờn ca tài tử Vũng Liêm](https://vinhlong360.vn/dia-diem/cau-lac-bo-don-ca-tai-tu-huyen-vung-liem)
+- **Mã ID**: `cau-lac-bo-don-ca-tai-tu-huyen-vung-liem` | **Phân loại**: `experience` | **Địa bàn**: p-vung-liem | **Tọa độ**: [10.0686, 106.1664]
+- **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/cau-lac-bo-don-ca-tai-tu-huyen-vung-liem.webp`
+- **Tác giả ảnh**: Trần Phước · **Cơ quan**: Báo Vĩnh Long
+- **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
+- **Tóm lược**: Câu lạc bộ đờn ca tài tử tiêu biểu tại Vũng Liêm, tỉnh Vĩnh Long.
+
+#### [Câu lạc bộ đờn ca tài tử Long Hồ](https://vinhlong360.vn/dia-diem/cau-lac-bo-don-ca-tai-tu-huyen-long-ho)
+- **Mã ID**: `cau-lac-bo-don-ca-tai-tu-huyen-long-ho` | **Phân loại**: `experience` | **Địa bàn**: p-long-chau | **Tọa độ**: [10.2542, 105.9628]
+- **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/cau-lac-bo-don-ca-tai-tu-huyen-long-ho.webp`
+- **Tác giả ảnh**: Bá Thi · **Cơ quan**: Báo Vĩnh Long
+- **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
+- **Tóm lược**: Câu lạc bộ đờn ca tài tử tại Long Hồ, tỉnh Vĩnh Long, là điểm sinh hoạt văn nghệ nơi các nghệ nhân và người yêu nhạc tài tử cùng tập luyện.
+
+#### [Câu lạc bộ đờn ca tài tử Tam Bình](https://vinhlong360.vn/dia-diem/cau-lac-bo-don-ca-tai-tu-huyen-tam-binh)
+- **Mã ID**: `cau-lac-bo-don-ca-tai-tu-huyen-tam-binh` | **Phân loại**: `experience` | **Địa bàn**: p-long-chau | **Tọa độ**: [10.2542, 105.9628]
+- **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/cau-lac-bo-don-ca-tai-tu-huyen-tam-binh.webp`
+- **Tác giả ảnh**: Trần Phước · **Cơ quan**: Báo Vĩnh Long
+- **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
+- **Tóm lược**: Câu lạc bộ đờn ca tài tử tại Tam Bình, tỉnh Vĩnh Long, nơi các nghệ nhân và người yêu nhạc tài tử sinh hoạt.
+
+#### [Câu lạc bộ đờn ca tài tử Trà Ôn](https://vinhlong360.vn/dia-diem/cau-lac-bo-don-ca-tai-tu-huyen-tra-on)
+- **Mã ID**: `cau-lac-bo-don-ca-tai-tu-huyen-tra-on` | **Phân loại**: `experience` | **Địa bàn**: p-long-chau | **Tọa độ**: [10.2542, 105.9628]
+- **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/cau-lac-bo-don-ca-tai-tu-huyen-tra-on.webp`
+- **Tác giả ảnh**: Bá Thi · **Cơ quan**: Báo Vĩnh Long
+- **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
+- **Tóm lược**: Câu lạc bộ đờn ca tài tử ở Trà Ôn, tỉnh Vĩnh Long, phục vụ phong trào văn nghệ quần chúng tại địa phương.
+
+#### [Câu lạc bộ đờn ca tài tử Mang Thít](https://vinhlong360.vn/dia-diem/cau-lac-bo-don-ca-tai-tu-huyen-mang-thit)
+- **Mã ID**: `cau-lac-bo-don-ca-tai-tu-huyen-mang-thit` | **Phân loại**: `experience` | **Địa bàn**: xa-nhon-phu | **Tọa độ**: [10.2542, 105.9628]
+- **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/cau-lac-bo-don-ca-tai-tu-huyen-mang-thit.webp`
+- **Tác giả ảnh**: Bá Thi · **Cơ quan**: Báo Vĩnh Long
+- **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
+- **Tóm lược**: Câu lạc bộ đờn ca tài tử tại Mang Thít, tỉnh Vĩnh Long, điểm sinh hoạt nghệ thuật tiêu biểu.
+
+#### [Câu lạc bộ đờn ca tài tử Bình Minh](https://vinhlong360.vn/dia-diem/cau-lac-bo-don-ca-tai-tu-thi-xa-binh-minh)
+- **Mã ID**: `cau-lac-bo-don-ca-tai-tu-thi-xa-binh-minh` | **Phân loại**: `experience` | **Địa bàn**: p-binh-minh | **Tọa độ**: [10.2542, 105.9628]
+- **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/cau-lac-bo-don-ca-tai-tu-thi-xa-binh-minh.webp`
+- **Tác giả ảnh**: Minh Triết · **Cơ quan**: Báo Vĩnh Long
+- **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
+- **Tóm lược**: Câu lạc bộ đờn ca tài tử tại Bình Minh, tỉnh Vĩnh Long.
 
 #### [Lò cơm Cửu Long](https://vinhlong360.vn/dia-diem/lo-com-cuu-long)
 - **Mã ID**: `lo-com-cuu-long` | **Phân loại**: `dish` | **Địa bàn**: p-long-chau | **Tọa độ**: [10.1697, 105.9268]
@@ -4169,6 +4309,13 @@ Mỗi thực thể dưới đây đều có ảnh tư liệu báo chí chính th
 - **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
 - **Tóm lược**: Làng nghề kẹo dừa gốc tại Mỏ Cày — nơi bà Nguyễn Thị Ngọc sáng tạo viên kẹo dừa đầu tiên từ thập niên 1930. Hơn 180 cơ sở sản xuất toàn tỉnh.
 
+#### [KS-NH Hùng Vương](https://vinhlong360.vn/dia-diem/ks-nh-hung-vuong)
+- **Mã ID**: `ks-nh-hung-vuong` | **Phân loại**: `accommodation` | **Địa bàn**: p-an-hoi | **Tọa độ**: [10.2346, 106.3755]
+- **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/ks-nh-hung-vuong.webp`
+- **Tác giả ảnh**: Hữu Hiệp · **Cơ quan**: Báo Đồng Khởi
+- **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
+- **Tóm lược**: Giữa phường An Hội, TP Bến Tre, nhà nghỉ KS-NH Hùng Vương đón khách tại số 148 đường Hùng Vương. Điện thoại liên hệ: 0275 382 2408.
+
 #### [Tuần lễ Văn hóa, Thể thao và Du lịch tỉnh Vĩnh Long](https://vinhlong360.vn/dia-diem/tuan-le-van-hoa-the-thao-va-du-lich-tinh-vinh-long-vinh-long)
 - **Mã ID**: `tuan-le-van-hoa-the-thao-va-du-lich-tinh-vinh-long-vinh-long` | **Phân loại**: `event` | **Địa bàn**: xa-nhon-phu | **Tọa độ**: [10.2542, 105.9628]
 - **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/tuan-le-van-hoa-the-thao-va-du-lich-tinh-vinh-long-vinh-long.webp`
@@ -4323,6 +4470,48 @@ Mỗi thực thể dưới đây đều có ảnh tư liệu báo chí chính th
 - **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
 - **Tóm lược**: Giáo sư, Viện sĩ, Thiếu tướng, Anh hùng Lao động Trần Đại Nghĩa (1913–1997), tên thật Phạm Quang Lễ, sinh tại xã Tường Lộc, Tam Bình.
 
+#### [Khách sạn Ánh Hồng (Mang Thít)](https://vinhlong360.vn/dia-diem/khach-san-anh-hong-mang-thit)
+- **Mã ID**: `khach-san-anh-hong-mang-thit` | **Phân loại**: `accommodation` | **Địa bàn**: xa-cai-nhum | **Tọa độ**: [10.2013, 106.1215]
+- **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/khach-san-anh-hong-mang-thit.webp`
+- **Tác giả ảnh**: Bá Thi · **Cơ quan**: Báo Vĩnh Long
+- **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
+- **Tóm lược**: Miệt Mang Thít của Vĩnh Long có Ánh Hồng — khách sạn 1 sao đặt tại Khóm 1, xã Cái Nhum.
+
+#### [Khách sạn Nghĩa Hiệp](https://vinhlong360.vn/dia-diem/khach-san-nghia-hiep)
+- **Mã ID**: `khach-san-nghia-hiep` | **Phân loại**: `accommodation` | **Địa bàn**: xa-ngai-tu | **Tọa độ**: [10.2542, 105.9628]
+- **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/khach-san-nghia-hiep.webp`
+- **Tác giả ảnh**: Trần Phước · **Cơ quan**: Báo Vĩnh Long
+- **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
+- **Tóm lược**: Về xã Bình Ninh, vùng quê Vĩnh Long, khách có một chỗ ngủ đêm hạng cơ bản: khách sạn 1 sao Nghĩa Hiệp ở ấp Mỹ An.
+
+#### [Khách sạn Khôi Hoa](https://vinhlong360.vn/dia-diem/khach-san-khoi-hoa)
+- **Mã ID**: `khach-san-khoi-hoa` | **Phân loại**: `accommodation` | **Địa bàn**: p-binh-minh | **Tọa độ**: [10.2542, 105.9628]
+- **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/khach-san-khoi-hoa.webp`
+- **Tác giả ảnh**: Minh Triết · **Cơ quan**: Báo Vĩnh Long
+- **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
+- **Tóm lược**: Hai sao là hạng ghi nhận của Khách sạn Khôi Hoa tại số 5115 ấp Đông Hậu, phường Bình Minh, Vĩnh Long.
+
+#### [Khách sạn Đức Đào](https://vinhlong360.vn/dia-diem/khach-san-duc-dao)
+- **Mã ID**: `khach-san-duc-dao` | **Phân loại**: `accommodation` | **Địa bàn**: p-binh-minh | **Tọa độ**: [10.2542, 105.9628]
+- **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/khach-san-duc-dao.webp`
+- **Tác giả ảnh**: Minh Triết · **Cơ quan**: Báo Vĩnh Long
+- **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
+- **Tóm lược**: Xếp hạng 1 sao, Khách sạn Đức Đào đón khách ở số 5938/1, phường Bình Minh, Vĩnh Long. Đặt phòng qua số 0703 741 646.
+
+#### [Khách sạn Hoài Phú](https://vinhlong360.vn/dia-diem/khach-san-hoai-phu)
+- **Mã ID**: `khach-san-hoai-phu` | **Phân loại**: `accommodation` | **Địa bàn**: p-phu-khuong | **Tọa độ**: [10.2346, 106.3742]
+- **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/khach-san-hoai-phu.webp`
+- **Tác giả ảnh**: Hữu Hiệp · **Cơ quan**: Báo Đồng Khởi
+- **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
+- **Tóm lược**: Khách sạn nằm tại Tổ 1A, khu Phố 6, Phường Phú Khương, Thành Phố Bến Tre, Phục Vụ Khách Du Lịch trong và Ngoài Nước với Mức giá Bình Dân.
+
+#### [Nhà nghỉ Quỳnh Phúc](https://vinhlong360.vn/dia-diem/nha-nghi-quynh-phuc)
+- **Mã ID**: `nha-nghi-quynh-phuc` | **Phân loại**: `accommodation` | **Địa bàn**: p-phu-khuong | **Tọa độ**: [10.0795, 106.2867]
+- **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/nha-nghi-quynh-phuc.webp`
+- **Tác giả ảnh**: Hữu Hiệp · **Cơ quan**: Báo Đồng Khởi
+- **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
+- **Tóm lược**: Nhà nghỉ bình dân tại Phường Phú Khương, Thành Phố Bến Tre, với Phòng Nghỉ Sạch Sẽ, Thoáng Mát, Phù Hợp cho Khách Công Tác và Du Lịch.
+
 #### [Mekong Hotel & Restaurant](https://vinhlong360.vn/dia-diem/mekong-hotel-restaurant)
 - **Mã ID**: `mekong-hotel-restaurant` | **Phân loại**: `accommodation` | **Địa bàn**: p-phu-khuong | **Tọa độ**: [10.2342, 106.3687]
 - **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/mekong-hotel-restaurant.webp`
@@ -4336,6 +4525,13 @@ Mỗi thực thể dưới đây đều có ảnh tư liệu báo chí chính th
 - **Tác giả ảnh**: Trần Phước · **Cơ quan**: Báo Vĩnh Long
 - **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
 - **Tóm lược**: Khu nghỉ dưỡng sinh thái ven sông Hậu tại thị xã Bình Minh, sở hữu tầm nhìn khoáng đạt ngắm cầu Cần Thơ lung linh và không gian vườn bưởi Năm Roi trĩu quả.
+
+#### [Nhà hàng Phương Thủy 1](https://vinhlong360.vn/dia-diem/nha-hang-phuong-thuy-1)
+- **Mã ID**: `nha-hang-phuong-thuy-1` | **Phân loại**: `accommodation` | **Địa bàn**: p-long-chau | **Tọa độ**: [10.2539, 105.9722]
+- **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/nha-hang-phuong-thuy-1.webp`
+- **Tác giả ảnh**: Bá Thi · **Cơ quan**: Báo Vĩnh Long
+- **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
+- **Tóm lược**: Nhà nghỉ Nhà hàng Phương Thủy 1, tại 1 Phan Bội Châu, Phường 1, TP Vĩnh Long.
 
 #### [Điểm du lịch nhà dừa CocoHome](https://vinhlong360.vn/dia-diem/diem-du-lich-nha-dua-cocohome)
 - **Mã ID**: `diem-du-lich-nha-dua-cocohome` | **Phân loại**: `accommodation` | **Địa bàn**: xa-an-binh | **Tọa độ**: [10.2542, 105.9628]
@@ -4428,12 +4624,26 @@ Mỗi thực thể dưới đây đều có ảnh tư liệu báo chí chính th
 - **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
 - **Tóm lược**: Homestay sinh thái kết hợp nông trại mật hoa dừa hữu cơ tại ấp Cây Hẹ, xã Phú Cần, tiên phong trong mô hình du lịch bền vững và ẩm thực bản địa.
 
+#### [Nhà nghỉ Thanh Thảo](https://vinhlong360.vn/dia-diem/nha-nghi-thanh-thao)
+- **Mã ID**: `nha-nghi-thanh-thao` | **Phân loại**: `accommodation` | **Địa bàn**: p-long-chau | **Tọa độ**: [10.2539, 105.9722]
+- **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/nha-nghi-thanh-thao.webp`
+- **Tác giả ảnh**: Trần Phước · **Cơ quan**: Báo Vĩnh Long
+- **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
+- **Tóm lược**: Nhà nghỉ bình dân trung tâm TP Vĩnh Long, phòng máy lạnh sạch sẽ, gần chợ Vĩnh Long.
+
 #### [Khách sạn Hàm Luông](https://vinhlong360.vn/dia-diem/khach-san-ham-luong)
 - **Mã ID**: `khach-san-ham-luong` | **Phân loại**: `accommodation` | **Địa bàn**: p-ben-tre | **Tọa độ**: [10.2339, 106.3689]
 - **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/khach-san-ham-luong.webp`
 - **Tác giả ảnh**: Kim Phượng · **Cơ quan**: Cổng TTĐT Bến Tre
 - **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
 - **Tóm lược**: Khách sạn 2 sao trung tâm TP Bến Tre, phòng tiện nghi cơ bản, vị trí thuận tiện gần bến phà và chợ.
+
+#### [Nhà nghỉ Phương Nam](https://vinhlong360.vn/dia-diem/nha-nghi-phuong-nam)
+- **Mã ID**: `nha-nghi-phuong-nam` | **Phân loại**: `accommodation` | **Địa bàn**: p-tra-vinh | **Tọa độ**: [10.0795, 106.2867]
+- **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/nha-nghi-phuong-nam.webp`
+- **Tác giả ảnh**: Thanh Sang · **Cơ quan**: Trung tâm Xúc tiến Du lịch Vĩnh Long
+- **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
+- **Tóm lược**: Nhà nghỉ bình dân trung tâm TP Trà Vinh, phòng sạch sẽ tiện nghi cơ bản.
 
 #### [Khu nghỉ dưỡng Vĩnh Sang](https://vinhlong360.vn/dia-diem/resort-vinh-sang)
 - **Mã ID**: `resort-vinh-sang` | **Phân loại**: `accommodation` | **Địa bàn**: xa-an-binh | **Tọa độ**: [10.2704, 105.9537]
@@ -4469,6 +4679,76 @@ Mỗi thực thể dưới đây đều có ảnh tư liệu báo chí chính th
 - **Tác giả ảnh**: Nguyễn Thịnh · **Cơ quan**: Báo Vĩnh Long
 - **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
 - **Tóm lược**: Homestay gia đình ấm cúng nằm sâu giữa cù lao An Bình, nổi danh với gian bếp củi đượm tình quê và vườn chôm chôm chín đỏ rực mùa hè.
+
+#### [Ba Động Beach Resort](https://vinhlong360.vn/dia-diem/ba-dong-beach-resort)
+- **Mã ID**: `ba-dong-beach-resort` | **Phân loại**: `accommodation` | **Địa bàn**: p-duyen-hai | **Tọa độ**: [9.6621, 106.5179]
+- **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/ba-dong-beach-resort.webp`
+- **Tác giả ảnh**: Thanh Sang · **Cơ quan**: Báo Cần Thơ
+- **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
+- **Tóm lược**: Khu nghỉ dưỡng ven biển Ba Động tại thị xã Duyên Hải, sở hữu bãi biển trải dài rợp bóng phi lao xanh ngắt và các phòng nghỉ view biển khoáng đạt.
+
+#### [Mekong Lodge Resort](https://vinhlong360.vn/dia-diem/mekong-lodge-resort)
+- **Mã ID**: `mekong-lodge-resort` | **Phân loại**: `accommodation` | **Địa bàn**: xa-an-binh | **Tọa độ**: [10.2733, 105.9870]
+- **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/mekong-lodge-resort.webp`
+- **Tác giả ảnh**: Bá Thi · **Cơ quan**: Báo Vĩnh Long
+- **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
+- **Tóm lược**: Khu nghỉ dưỡng bungalow sinh thái ẩn mình giữa miệt vườn cù lao An Bình, nổi bật với kiến trúc mộc mạc và phong cách phục vụ hòa hợp thiên nhiên.
+
+#### [Khách sạn Cửu Long](https://vinhlong360.vn/dia-diem/khach-san-cuu-long)
+- **Mã ID**: `khach-san-cuu-long` | **Phân loại**: `accommodation` | **Địa bàn**: p-long-chau | **Tọa độ**: [10.2576, 105.9718]
+- **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/khach-san-cuu-long.webp`
+- **Tác giả ảnh**: Trần Phước · **Cơ quan**: Báo Vĩnh Long
+- **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
+- **Tóm lược**: Khách sạn 3 sao trung tâm TP Vĩnh Long, phòng rộng rãi view sông Cổ Chiên.
+
+#### [Khách sạn Chiêu Hùng](https://vinhlong360.vn/dia-diem/khach-san-chieu-hung)
+- **Mã ID**: `khach-san-chieu-hung` | **Phân loại**: `accommodation` | **Địa bàn**: p-tra-on | **Tọa độ**: [10.2542, 105.9628]
+- **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/khach-san-chieu-hung.webp`
+- **Tác giả ảnh**: Bá Thi · **Cơ quan**: Báo Vĩnh Long
+- **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
+- **Tóm lược**: Về xã Trà Ôn, Vĩnh Long, khách có một chỗ nghỉ hạng 1 sao mang tên Khách sạn Chiêu Hùng ở số 20A Gia Long, khu I. Điện thoại: 0703770246.
+
+#### [Khách sạn Trung Tính](https://vinhlong360.vn/dia-diem/khach-san-trung-tinh)
+- **Mã ID**: `khach-san-trung-tinh` | **Phân loại**: `accommodation` | **Địa bàn**: p-tra-on | **Tọa độ**: [10.2563, 105.9689]
+- **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/khach-san-trung-tinh.webp`
+- **Tác giả ảnh**: Bá Thi · **Cơ quan**: Báo Vĩnh Long
+- **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
+- **Tóm lược**: Hạng một sao, Khách sạn Trung Tính đón khách tại số 100A1 Thống Chế Điều Bát, khu 3, xã Trà Ôn (Vĩnh Long).
+
+#### [Khách Sạn Vin Vĩnh Long](https://vinhlong360.vn/dia-diem/khach-san-vin-vinh-long)
+- **Mã ID**: `khach-san-vin-vinh-long` | **Phân loại**: `accommodation` | **Địa bàn**: p-phuoc-hau | **Tọa độ**: [10.2539, 105.9722]
+- **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/khach-san-vin-vinh-long.webp`
+- **Tác giả ảnh**: Trần Phước · **Cơ quan**: Báo Vĩnh Long
+- **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
+- **Tóm lược**: Tại PG2-08A và PG2-18 Phạm Thái Bường, Phường Phước Hậu, TP Vĩnh Long, 2 sao, Vĩnh Long.
+
+#### [Khách sạn Bình Đại](https://vinhlong360.vn/dia-diem/khach-san-binh-dai)
+- **Mã ID**: `khach-san-binh-dai` | **Phân loại**: `accommodation` | **Địa bàn**: p-ben-tre | **Tọa độ**: [10.2415, 106.3759]
+- **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/khach-san-binh-dai.webp`
+- **Tác giả ảnh**: Hữu Hiệp · **Cơ quan**: Báo Đồng Khởi
+- **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
+- **Tóm lược**: Trên đường Nguyễn Thị Định, ấp Bình Hòa (Bến Tre), khách sạn Bình Đại đón khách với chuẩn 2 sao. Đặt phòng, hỏi giá qua số 02752239666.
+
+#### [Oasis Hotel](https://vinhlong360.vn/dia-diem/oasis-hotel)
+- **Mã ID**: `oasis-hotel` | **Phân loại**: `accommodation` | **Địa bàn**: p-ben-tre | **Tọa độ**: [10.2295, 106.3655]
+- **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/oasis-hotel.webp`
+- **Tác giả ảnh**: Hữu Hiệp · **Cơ quan**: Báo Đồng Khởi
+- **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
+- **Tóm lược**: Điểm lưu trú được nhiều du khách quốc tế biết tới nhờ không gian vườn thoáng, hồ bơi và vị trí gần trung tâm thành phố Bến Tre.
+
+#### [Vilabasi Hotel](https://vinhlong360.vn/dia-diem/vilabasi-hotel)
+- **Mã ID**: `vilabasi-hotel` | **Phân loại**: `accommodation` | **Địa bàn**: p-tra-vinh | **Tọa độ**: [9.9359, 106.2717]
+- **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/vilabasi-hotel.webp`
+- **Tác giả ảnh**: Thanh Sang · **Cơ quan**: Trung tâm Xúc tiến Du lịch Vĩnh Long
+- **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
+- **Tóm lược**: Khách sạn tại TP. Trà Vinh, vị trí trung tâm thuận tiện đi chùa, chợ và các điểm tham quan lân cận.
+
+#### [Ben Tre Farm Stay](https://vinhlong360.vn/dia-diem/ben-tre-farm-stay)
+- **Mã ID**: `ben-tre-farm-stay` | **Phân loại**: `accommodation` | **Địa bàn**: p-ben-tre | **Tọa độ**: [10.2161, 106.3741]
+- **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/ben-tre-farm-stay.webp`
+- **Tác giả ảnh**: Hữu Hiệp · **Cơ quan**: Báo Đồng Khởi
+- **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
+- **Tóm lược**: Farmstay được nhiều du khách biết đến nhờ không gian nông thôn gần trung tâm, phù hợp nghỉ ngơi và tham gia hoạt động miệt vườn.
 
 #### [Vinh Sang Resort](https://vinhlong360.vn/dia-diem/vinh-sang-resort)
 - **Mã ID**: `vinh-sang-resort` | **Phân loại**: `accommodation` | **Địa bàn**: xa-an-binh | **Tọa độ**: [10.2542, 105.9628]

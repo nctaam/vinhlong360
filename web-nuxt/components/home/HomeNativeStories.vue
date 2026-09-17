@@ -9,7 +9,7 @@
     </div>
     <div class="home-native-stories__grid">
       <!-- Story 1: Left Lead Feature -->
-      <NuxtLink to="/kham-pha" class="home-story-card home-story-card--primary">
+      <NuxtLink to="/dia-diem/cu-lao-an-binh" class="home-story-card home-story-card--primary">
         <img
           src="/img/spread/cu-lao-an-binh.webp"
           alt="Làng du lịch cộng đồng cù lao An Bình"
@@ -33,7 +33,7 @@
 
       <!-- Story 2 & 3: Right Stack -->
       <div class="home-native-stories__side">
-        <NuxtLink to="/kham-pha" class="home-story-card home-story-card--secondary">
+        <NuxtLink to="/dia-diem/de-an-di-san-duong-dai-mang-thit" class="home-story-card home-story-card--secondary">
           <img
             src="/img/spread/song-nuoc.webp"
             alt="Vườn dừa nước & phù sa Cổ Chiên"
@@ -52,13 +52,13 @@
         </NuxtLink>
 
         <div class="home-story-callout">
-          <div class="home-story-callout__badge">
+          <div class="home-story-callout__badge" aria-hidden="true">
             <IconLine name="bulb" />
           </div>
           <h4>Tàng thư khảo cứu điền dã</h4>
           <p>Ghi chép thực địa về phong thổ, con nước, nếp sống bến bờ và truyền thống ẩm thực Vĩnh Long.</p>
-          <NuxtLink to="/kham-pha" class="home-story-callout__action">
-            Xem tuyển tập <IconLine name="arrow-right" />
+          <NuxtLink to="/du-lich" class="home-story-callout__action" aria-label="Xem tuyển tập tàng thư khảo cứu điền dã">
+            Xem tuyển tập <IconLine name="arrow-right" aria-hidden="true" />
           </NuxtLink>
         </div>
       </div>

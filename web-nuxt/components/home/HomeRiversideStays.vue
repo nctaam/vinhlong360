@@ -3,7 +3,7 @@
     <div class="home-riverside-stays__head section-head">
       <div class="sh-text">
         <span class="home-riverside-stays__eyebrow" data-color-role="brand">
-          <IconLine name="home" />
+          <IconLine name="home" aria-hidden="true" />
           <span>Lưu trú sinh thái & Điền dã Nam Bộ</span>
         </span>
         <h2>Homestay Sông Nước & <em class="editorial-italic-accent" aria-hidden="true">Đêm Trăng Tài Tử</em></h2>
@@ -46,7 +46,7 @@
             <span class="home-stay-card__badge">{{ stay.badge }}</span>
           </div>
           <span v-if="stay.ecoBadge" class="home-stay-card__eco-badge">
-            <IconLine name="shield-check" />
+            <IconLine name="shield-check" aria-hidden="true" />
             <span>{{ stay.ecoBadge }}</span>
           </span>
         </div>
@@ -60,7 +60,7 @@
 
           <div class="home-stay-card__meta">
             <span class="home-stay-card__area">
-              <IconLine name="pin" />
+              <IconLine name="pin" aria-hidden="true" />
               <span>{{ stay.area }}</span>
             </span>
             <span class="home-stay-card__price"><strong>{{ stay.price }}</strong></span>
@@ -72,20 +72,20 @@
           <p class="home-stay-card__desc">{{ stay.desc }}</p>
 
           <div v-if="stay.balconyHighlight" class="home-stay-card__balcony-pill">
-            <IconLine name="eye" />
+            <IconLine name="eye" aria-hidden="true" />
             <span>{{ stay.balconyHighlight }}</span>
           </div>
 
           <div class="home-stay-card__perks">
             <span v-for="perk in stay.perks" :key="perk" class="home-stay-card__perk">
-              <IconLine name="check" />
+              <IconLine name="check" aria-hidden="true" />
               <span>{{ perk }}</span>
             </span>
           </div>
 
           <div class="home-stay-card__action">
             <NuxtLink :to="stay.to" class="btn btn-outline" data-color-role="action-secondary">
-              <IconLine name="phone" />
+              <IconLine name="phone" aria-hidden="true" />
               <span>Liên hệ lưu trú & Trải nghiệm</span>
               <IconLine name="arrow-right" aria-hidden="true" />
             </NuxtLink>
