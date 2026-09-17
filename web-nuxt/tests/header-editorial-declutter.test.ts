@@ -1,6 +1,7 @@
 import { mountSuspended } from '@nuxt/test-utils/runtime'
 import { describe, expect, it } from 'vitest'
 import SearchAutocomplete from '../components/SearchAutocomplete.vue'
+import PublicContextBar from '../components/shell/PublicContextBar.vue'
 import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 
@@ -35,5 +36,21 @@ describe('Header Editorial De-clutter - Task 3: Quiet Utility Cluster', () => {
     expect(css).toMatch(/\.public-shell-command-row\s+\.auth-btn\s*\{[^}]*background:\s*transparent;/)
   })
 })
+
+describe('Header Editorial De-clutter - Task 4: Minimalist Regional Folio', () => {
+  it('renders public context bar with muted editorial pulse and clean borderless select', async () => {
+    const wrapper = await mountSuspended(PublicContextBar)
+    expect(wrapper.find('[data-public-context-line]').exists()).toBe(true)
+    expect(wrapper.find('.public-context-pulse').exists()).toBe(true)
+    expect(wrapper.find('select').exists()).toBe(true)
+    expect(wrapper.find('.public-context-control').exists()).toBe(true)
+  })
+
+  it('keeps public context bar whisper quiet with max-height 24px in shell.css', () => {
+    const css = readFileSync(resolve(__dirname, '../assets/css/shell.css'), 'utf8')
+    expect(css).toMatch(/\.public-context-bar\s*\{[^}]*max-height:\s*24px;/)
+  })
+})
+
 
 
