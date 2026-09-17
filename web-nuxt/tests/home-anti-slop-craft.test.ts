@@ -96,4 +96,12 @@ describe('Homepage Anti-AI-Slop Craftsmanship & Terroir Depth', () => {
     const iconLineSrc = readFileSync(resolve(__dirname, '../components/IconLine.vue'), 'utf8')
     expect(iconLineSrc).not.toMatch(/sparkles:\s*W\(/)
   })
+
+  it('defines refined browser surfaces for selection and scrollbars on homepage', () => {
+    expect(homeCss).toContain('[data-home-pilot="nocturne-b1"] ::selection')
+    expect(homeCss).toContain('scrollbar-width')
+    expect(homeCss).toContain('scrollbar-color')
+    expect(homeCss).toContain('caret-color')
+  })
 })
+
