@@ -4,7 +4,7 @@
       <div class="sh-text">
         <span class="home-travel-planner__eyebrow" data-color-role="brand">
           <IconLine name="route" />
-          <span>Smart Travel Planner · Tối ưu thời gian</span>
+          <span>Kế hoạch Lữ hành · Tinh tuyển thời gian</span>
         </span>
         <h2>Gợi Ý Lịch Trình <em class="editorial-italic-accent" aria-hidden="true">Tinh Tuyển</em></h2>
         <p class="sh-sub">3 phương án lộ trình được thiết kế chuẩn xác từ kinh nghiệm thực địa, giúp bạn khám phá trọn vẹn tinh hoa Vĩnh Long theo quỹ thời gian cá nhân.</p>

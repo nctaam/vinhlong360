@@ -433,13 +433,18 @@ function onImgFallback(e: Event) {
 }
 
 .home-bookmark-btn:hover {
-  transform: scale(1.1);
+  transform: scale(1.08);
   color: var(--coral-error);
   background: rgba(var(--black-rgb), 0.9);
 }
 
 .home-bookmark-btn:active {
-  transform: scale(0.95);
+  transform: scale(0.92);
+}
+
+.home-bookmark-btn:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 2px;
 }
 
 .home-bookmark-btn.is-saved {

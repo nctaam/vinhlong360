@@ -86,7 +86,7 @@
           <div class="home-stay-card__action">
             <NuxtLink :to="stay.to" class="btn btn-outline" data-color-role="action-secondary">
               <IconLine name="phone" />
-              <span>Đặt phòng & Trải nghiệm</span>
+              <span>Liên hệ lưu trú & Trải nghiệm</span>
               <IconLine name="arrow-right" aria-hidden="true" />
             </NuxtLink>
           </div>
