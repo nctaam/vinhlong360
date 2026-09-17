@@ -58,7 +58,9 @@ def test_export_manifest_declares_cursor_and_checksums(monkeypatch):
     assert "excluded_secrets" in bundle.manifest
 
 
-def test_media_delete_receipt_is_keyed_and_idempotent(monkeypatch):
+def test_media_delete_receipt_is_keyed_and_idempotent(isolated_sqlite_db, monkeypatch):
+    monkeypatch.setattr(storage, "db", isolated_sqlite_db)
+    isolated_sqlite_db.initialize()
     _reset_media_receipts()
     calls = []
     monkeypatch.setattr(storage.storage, "delete", lambda key: calls.append(key))
@@ -83,14 +85,19 @@ def test_registry_rejects_unknown_keys_and_strategy_enums(tmp_path):
         load_lifecycle_registry(invalid)
 
 
-def test_browser_instruction_lists_shipped_keys():
+def test_browser_instruction_lists_shipped_keys(isolated_sqlite_db, monkeypatch):
     from control_plane.lifecycle import issue_browser_clear_instruction
+    import control_plane.lifecycle as lifecycle
+    monkeypatch.setattr(lifecycle, "db", isolated_sqlite_db)
+    isolated_sqlite_db.initialize()
     instruction = issue_browser_clear_instruction("user-1")
     assert {"vl360_favorites", "vl360_recent", "vl360_post_draft", "vl360_recent_searches",
             "vinhlong360:public-search-entries:v2", "chat_sid"} <= set(instruction["keys"])
 
 
-def test_failed_media_receipt_can_retry(monkeypatch):
+def test_failed_media_receipt_can_retry(isolated_sqlite_db, monkeypatch):
+    monkeypatch.setattr(storage, "db", isolated_sqlite_db)
+    isolated_sqlite_db.initialize()
     _reset_media_receipts()
     calls = []
     def fail_once(key):
@@ -113,22 +120,29 @@ def test_manifest_marks_degraded_when_external_adapter_unavailable(monkeypatch):
     assert bundle.manifest["degraded"] is True
 
 
-def test_media_object_failure_still_runs_cdn_and_retries(monkeypatch):
-    _reset_media_receipts()
+def test_media_object_failure_still_runs_cdn_and_retries(isolated_sqlite_db, monkeypatch):
     import storage
+    monkeypatch.setattr(storage, "db", isolated_sqlite_db)
+    isolated_sqlite_db.initialize()
+    _reset_media_receipts()
     calls = []
     monkeypatch.setattr(storage.storage, "delete", lambda key: (_ for _ in ()).throw(RuntimeError("object")))
     result = storage.delete_media_with_receipt("u-cdn", "k", cdn_purge=lambda key: calls.append(key))
     assert result["status"] == "failed" and result["cdn_status"] == "deleted" and calls == ["k"]
 
 
-def test_browser_inventory_includes_journey_thread():
+def test_browser_inventory_includes_journey_thread(isolated_sqlite_db, monkeypatch):
     from control_plane.lifecycle import issue_browser_clear_instruction
+    import control_plane.lifecycle as lifecycle
+    monkeypatch.setattr(lifecycle, "db", isolated_sqlite_db)
+    isolated_sqlite_db.initialize()
     assert "vl360:journey-thread:v1" in issue_browser_clear_instruction("u")["keys"]
 
 
-def test_media_without_cdn_adapter_is_not_verified(monkeypatch):
+def test_media_without_cdn_adapter_is_not_verified(isolated_sqlite_db, monkeypatch):
     import storage
+    monkeypatch.setattr(storage, "db", isolated_sqlite_db)
+    isolated_sqlite_db.initialize()
     _reset_media_receipts()
     monkeypatch.setattr(storage.storage, "delete", lambda key: None)
     receipt = storage.delete_media_with_receipt("u-no-cdn", "k")
