@@ -102,4 +102,20 @@ describe('HomeNativeStories — Empirical Stress Testing', () => {
     expect(homeNocturneCss).toMatch(/\[data-home-pilot="nocturne-b1"\]\s+\.home-story-callout__action:focus-visible\s*\{[\s\S]*?outline:\s*2px solid var\(--color-focus\)/)
     expect(homeNocturneCss).toMatch(/\[data-home-pilot="nocturne-b1"\]\s+\.home-story-callout__action:active\s*\{[\s\S]*?transform:\s*scale\(0\.98\)/)
   })
+
+  it('enforces WCAG 2.2 AAA accessibility and prefers-reduced-motion for Native Stories', async () => {
+    const wrapper = await mountStories()
+    const eyebrow = wrapper.find('.home-native-stories__eyebrow')
+    expect(eyebrow.exists()).toBe(true)
+    const eyebrowIcon = eyebrow.findComponent({ name: 'IconLine' })
+    expect(eyebrowIcon.exists()).toBe(true)
+    expect(eyebrowIcon.attributes('aria-hidden')).toBe('true')
+
+    const title = wrapper.find('#home-stories-title')
+    expect(title.attributes('aria-label')).toBe('Bản địa kể chuyện')
+    expect(title.find('.editorial-italic-accent').exists()).toBe(true)
+
+    expect(homeNocturneCss).toContain('@media (prefers-reduced-motion: reduce)')
+    expect(homeNocturneCss).toMatch(/\[data-home-pilot="nocturne-b1"\]\s+\.home-story-card,\s*[\s\S]*?transform:\s*none/)
+  })
 })

@@ -1,8 +1,8 @@
 <template>
   <section class="home-native-stories" data-home-section="native-stories" aria-labelledby="home-stories-title">
     <div class="home-native-stories__header">
-      <span class="home-native-stories__eyebrow">Ký sự thổ nhưỡng · Hồn cốt phù sa</span>
-      <h2 id="home-stories-title">Bản địa kể chuyện</h2>
+      <span class="home-native-stories__eyebrow"><IconLine name="book" aria-hidden="true" /><span>Ký sự thổ nhưỡng · Hồn cốt phù sa</span></span>
+      <h2 id="home-stories-title" aria-label="Bản địa kể chuyện">Bản địa <em class="editorial-italic-accent" aria-hidden="true">kể chuyện</em></h2>
       <p class="home-native-stories__lead">
         Những câu chuyện chân thực từ nếp sống mộc mạc, nơi dòng sông hiền hòa ôm ấp những phận người và giá trị di sản.
       </p>
@@ -53,7 +53,7 @@
 
         <div class="home-story-callout">
           <div class="home-story-callout__badge" aria-hidden="true">
-            <IconLine name="bulb" />
+            <IconLine name="bulb" aria-hidden="true" />
           </div>
           <h4>Tàng thư khảo cứu điền dã</h4>
           <p>Ghi chép thực địa về phong thổ, con nước, nếp sống bến bờ và truyền thống ẩm thực Vĩnh Long.</p>

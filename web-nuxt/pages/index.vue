@@ -46,7 +46,7 @@
               :placeholder="ss('homepage.search_placeholder', 'Tìm điểm đến, món ngon, lịch trình…')"
             />
             <div class="hero-search-island__footer">
-              <NuxtLink to="/ban-do?near=1" class="hero-nearby"><IconLine name="pin" /> Tìm quanh tôi</NuxtLink>
+              <NuxtLink to="/ban-do?near=1" class="hero-nearby"><IconLine name="pin" aria-hidden="true" /> Tìm quanh tôi</NuxtLink>
               <span class="hero-search-island__hint">
                 <IconLine name="compass" class="hero-search-island__hint-icon" aria-hidden="true" />
                 <span>Nhập tên điểm đến, di sản hoặc món đặc sản</span>
@@ -215,7 +215,7 @@
           </div>
 
           <div v-if="seasonalList.length" class="happening-section">
-            <p class="happening-label" data-material-accent="amber"><IconLine name="calendar" /> Đang vào mùa tháng {{ currentMonth }}</p>
+            <p class="happening-label" data-material-accent="amber"><IconLine name="calendar" aria-hidden="true" /> Đang vào mùa tháng {{ currentMonth }}</p>
             <!-- ul/li: role="listitem" trên NuxtLink ghi đè vai trò link của thẻ <a>
                  và xoá luôn tên khả truy cập (listitem là name-from-author). -->
             <ul class="home-season-ledger" aria-label="Đặc sản theo mùa">
@@ -304,7 +304,7 @@
         <EmptyState tone="empty" title="Cộng đồng đang khởi động"
           message="Chưa có bài viết nổi bật tuần này — bạn là người kể chuyện đầu tiên nhé!">
           <template #actions>
-            <NuxtLink to="/cong-dong" class="btn btn-outline"><IconLine name="message" /> Tham gia cộng đồng</NuxtLink>
+            <NuxtLink to="/cong-dong" class="btn btn-outline"><IconLine name="message" aria-hidden="true" /> Tham gia cộng đồng</NuxtLink>
           </template>
           <div class="community-seed-prompts" aria-label="Gợi ý chủ đề chia sẻ">
             <p class="community-seed-label">Gợi ý chủ đề người Vĩnh Long đang quan tâm:</p>
