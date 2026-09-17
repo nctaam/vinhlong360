@@ -670,3 +670,35 @@ def test_lead_ocop_star_khong_bat_chu_so_lac():
     assert _lead_ocop_star({"id": "y", "attributes": {"ocop_star": 4}}) == 4
     # Không có dấu hiệu OCOP nào.
     assert _lead_ocop_star({"id": "z", "attributes": {"rating": 4.5}}) == 0
+
+
+def test_tourism_types_khong_chua_dish():
+    """R20.7: _TOURISM_TYPES cho mục experiences trên trang chủ không chứa món ăn
+    (món ăn có riêng top_dishes và seasonal)."""
+    from public_api import _TOURISM_TYPES
+    assert "dish" not in _TOURISM_TYPES
+    assert "accommodation" not in _TOURISM_TYPES
+    assert "attraction" in _TOURISM_TYPES
+    assert "experience" in _TOURISM_TYPES
+
+
+def test_homepage_score_uu_tien_bieu_tuong_di_san_vinh_long():
+    """R20.7: _homepage_score chấm điểm ưu tiên cho biểu tượng văn hóa di sản Vĩnh Long."""
+    from public_api import _homepage_score
+    e_mang_thit = {
+        "id": "de-an-di-san-duong-dai-mang-thit",
+        "name": "Đề án Di sản Đương đại Mang Thít",
+        "type": "attraction",
+        "area": "vinh-long",
+        "summary": "Bảo tồn hơn 900 lò gạch gốm đỏ độc bản.",
+        "attributes": {"rating": 5.0},
+    }
+    e_generic = {
+        "id": "generic-attraction",
+        "name": "Điểm tham quan chung",
+        "type": "attraction",
+        "summary": "Bảo tồn hơn 900 lò gạch gốm đỏ độc bản.",
+        "attributes": {"rating": 5.0},
+    }
+    assert _homepage_score(e_mang_thit, 9) > _homepage_score(e_generic, 9)
+

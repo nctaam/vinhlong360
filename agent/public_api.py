@@ -1693,8 +1693,22 @@ async def public_stats(response: Response):
 
 # ── Homepage curated feed ──────────────────────────────────────────
 
-_TOURISM_TYPES = {"experience", "attraction", "dish", "nature", "craft_village",
-                  "history", "accommodation", "event"}
+_TOURISM_TYPES = {"experience", "attraction", "nature", "craft_village", "history"}
+
+_VINH_LONG_HERITAGE_ICONS = {
+    "de-an-di-san-duong-dai-mang-thit",
+    "lo-gach-mang-thit",
+    "lang-nghe-gach-gom-mang-thit-vuong-quoc-do",
+    "lang-gach-gom-mang-thit",
+    "lang-nghe-gom-do-mang-thit",
+    "cu-lao-an-binh",
+    "dap-xe-miet-vuon",
+    "cheo-xuong-rach-an-binh",
+    "cho-noi-tra-on",
+    "chua-tien-chau-tien-chau-tu",
+    "nha-gom-do-tu-buoi",
+    "nha-gom-tu-buoi",
+}
 
 
 def _parse_event_iso_date(attrs: dict, *keys: str):
@@ -1733,6 +1747,12 @@ def _homepage_score(e: dict, month: int) -> float:
         s += 1.0
     if e["name"].lower().strip() in _GENERIC_NAMES:
         s -= 5.0
+    eid = e.get("id", "")
+    area = e.get("area") or e.get("place_area") or (e.get("attributes") or {}).get("area")
+    if eid in _VINH_LONG_HERITAGE_ICONS or any(icon in eid for icon in ("mang-thit", "an-binh", "tra-on", "tien-chau", "tu-buoi")):
+        s += 3.0
+    elif area in ("vinh-long", "vinh_long"):
+        s += 1.0
     return s
 
 

@@ -534,7 +534,69 @@ const itineraries = computed(() => homeData.value?.itineraries || [])
 const upcomingEvents = computed(() => homeData.value?.upcoming_events || [])
 const seasonalTagline = computed(() => homeData.value?.seasonal_tagline || 'Khám phá Vĩnh Long theo cách của người bản địa')
 
-const SPOTLIGHT_TYPE_WEIGHT: Record<string, number> = { experience: 3, place: 2, dish: 1, product: 0 }
+const HERO_ELIGIBLE_TYPES = new Set(['attraction', 'experience', 'nature', 'craft_village', 'history', 'place'])
+
+const HERO_ICONIC_IDS = new Set([
+  'de-an-di-san-duong-dai-mang-thit',
+  'lo-gach-mang-thit',
+  'lang-nghe-gach-gom-mang-thit-vuong-quoc-do',
+  'lang-gach-gom-mang-thit',
+  'lang-nghe-gom-do-mang-thit',
+  'cu-lao-an-binh',
+  'dap-xe-miet-vuon',
+  'cheo-xuong-rach-an-binh',
+  'cho-noi-tra-on',
+  'chua-tien-chau-tien-chau-tu',
+  'nha-gom-do-tu-buoi',
+  'nha-gom-tu-buoi',
+  'chua-ong-that-phu-mieu',
+  'khu-du-lich-vinh-sang',
+])
+
+function getHeroPriorityScore(entity: any): number {
+  if (!entity || !entity.id) return -100
+  const type = String(entity.type || '').toLowerCase()
+  if (!HERO_ELIGIBLE_TYPES.has(type)) return -100
+
+  let score = 10
+  const id = String(entity.id).toLowerCase()
+  const name = String(entity.name || entity.title || '').toLowerCase()
+  const area = String(entity.area || entity.place_area || entity.attributes?.area || entity.attributes?.province || '').toLowerCase()
+
+  if (HERO_ICONIC_IDS.has(id)) {
+    score += 30
+  } else if (
+    id.includes('mang-thit') ||
+    id.includes('an-binh') ||
+    id.includes('tra-on') ||
+    id.includes('tien-chau') ||
+    id.includes('tu-buoi') ||
+    name.includes('mang thít') ||
+    name.includes('an bình') ||
+    name.includes('trà ôn') ||
+    name.includes('tiên châu') ||
+    name.includes('tư buôi')
+  ) {
+    score += 25
+  }
+
+  if (area === 'vinh-long' || area === 'vinh_long') {
+    score += 15
+  }
+
+  if (type === 'attraction' || type === 'craft_village') score += 5
+  else if (type === 'experience' || type === 'nature') score += 4
+
+  if (entity.images?.length || entity.image || entity.image_descriptor || entity.attributes?.is_verified_photo) {
+    score += 5
+  }
+
+  if ((entity.summary || '').length > 60) score += 2
+
+  return score
+}
+
+const SPOTLIGHT_TYPE_WEIGHT: Record<string, number> = { experience: 3, attraction: 2, nature: 2, craft_village: 2, place: 2, dish: 1, product: 0 }
 const spotlight = computed<any>(() => {
   const pool = [...experiences.value.slice(0, 8), ...productsAll.value.slice(0, 8)]
   if (!pool.length) return null
@@ -547,7 +609,19 @@ const spotlight = computed<any>(() => {
 })
 const spotId = computed(() => spotlight.value?.id)
 
-const heroFeature = computed<any>(() => experiences.value.find((e: any) => e.id !== spotId.value) || spotlight.value || null)
+const heroFeature = computed<any>(() => {
+  const pool = [...experiences.value, ...(homeData.value?.experiences || [])]
+  const valid = pool.filter((e: any) => e && HERO_ELIGIBLE_TYPES.has(String(e.type || '').toLowerCase()))
+  if (!valid.length) {
+    const fallbackPool = [...(homeData.value?.upcoming_events || []), ...(homeData.value?.seasonal || [])]
+      .filter((e: any) => e && HERO_ELIGIBLE_TYPES.has(String(e.type || '').toLowerCase()))
+    if (fallbackPool.length) {
+      return fallbackPool.reduce((best, cur) => (getHeroPriorityScore(cur) > getHeroPriorityScore(best) ? cur : best))
+    }
+    return null
+  }
+  return valid.reduce((best, cur) => (getHeroPriorityScore(cur) > getHeroPriorityScore(best) ? cur : best))
+})
 const hfMeta = computed(() => heroFeature.value ? (TYPE_META[heroFeature.value.type] || { icon: 'pin', label: heroFeature.value.type, cat: 'place' }) : null)
 const heroFeatureDescriptor = computed<ImageDescriptor>(() => {
   const descriptor = heroFeature.value ? describeEntityImages(heroFeature.value)[0] : null
