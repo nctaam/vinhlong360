@@ -154,6 +154,12 @@ describe('Challenger M3: Empirical Adversarial Stress Verification Suite', () =>
       expect(culinaryContent).not.toContain('home-culinary-card__desc')
     })
 
+    it('verifies HomeCulinaryTrail cards and actions have focus-visible rings and active states', () => {
+      expect(culinaryContent).toMatch(/\.home-culinary-card:focus-visible/)
+      expect(culinaryContent).toMatch(/\.home-culinary-card__btn:active/)
+      expect(culinaryContent).toMatch(/\.home-culinary-card__venue-pill[\s\S]*?transition/)
+    })
+
     it('verifies HomeRiversideStays homestay and folk experience descriptions are <= 120 chars', () => {
       const stayDescs = [...staysContent.matchAll(/desc:\s*['"]([^'"]+)['"]/g)].map(m => m[1])
       expect(stayDescs.length).toBeGreaterThanOrEqual(6)

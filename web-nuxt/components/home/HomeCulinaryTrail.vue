@@ -245,6 +245,12 @@ function onImgFallback(e: Event) {
   transform: scale(0.98);
 }
 
+.home-culinary-card:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 3px;
+  border-radius: var(--radius-surface);
+}
+
 /* Macro Food Photo Fills 100% of Card */
 .home-culinary-card__img {
   position: absolute;
@@ -418,6 +424,12 @@ function onImgFallback(e: Event) {
   font-size: 11px;
   color: var(--surface-white);
   width: fit-content;
+  transition: transform 0.2s ease, border-color 0.2s ease;
+}
+
+.home-culinary-card:hover .home-culinary-card__venue-pill {
+  transform: translateY(-1px);
+  border-color: var(--alluvial-gold);
 }
 
 .home-culinary-card__venue-pill .line-icon {
@@ -445,6 +457,10 @@ function onImgFallback(e: Event) {
 .home-culinary-card__btn:hover {
   text-decoration: underline;
   transform: translateX(2px);
+}
+
+.home-culinary-card__btn:active {
+  transform: scale(0.98);
 }
 
 .home-culinary-card__btn:focus-visible {
