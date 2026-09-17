@@ -568,6 +568,11 @@ function onImgFallback(e: Event) {
   transform: scale(0.98);
 }
 
+.home-curated-lead__actions .btn:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 2px;
+}
+
 /* 38% Satellite Cards */
 .home-curated-satellites {
   display: grid;
@@ -782,5 +787,18 @@ function onImgFallback(e: Event) {
 
 .home-curated-satellite__link:hover {
   opacity: 0.85;
+}
+
+.home-curated-satellite__link:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 2px;
+  border-radius: var(--radius-control);
+}
+
+.home-curated-satellite__title a:focus-visible,
+.home-curated-lead__title a:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 2px;
+  border-radius: var(--radius-control);
 }
 </style>

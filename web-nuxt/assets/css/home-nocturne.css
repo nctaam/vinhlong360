@@ -206,6 +206,11 @@
   transform: scale(0.96);
 }
 
+[data-home-pilot="nocturne-b1"] .hero-terroir-chip:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 2px;
+}
+
 [data-home-pilot="nocturne-b1"] :is(a, button, input):focus-visible {
   outline: 2px solid var(--color-focus);
   outline-offset: var(--space-1);
@@ -241,10 +246,20 @@
   background: var(--color-surface-raised);
 }
 
+[data-home-pilot="nocturne-b1"] .home-feature-dossier__media:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: -2px;
+}
+
 [data-home-pilot="nocturne-b1"] .home-feature-dossier__media img {
   width: 100%;
   height: 100%;
   object-fit: cover;
+  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+[data-home-pilot="nocturne-b1"] .home-feature-dossier__media:hover img {
+  transform: scale(1.025);
 }
 
 [data-home-pilot="nocturne-b1"] .home-feature-dossier__media--empty {
@@ -747,6 +762,26 @@
   border-block-end: 1px solid var(--color-border);
   color: var(--color-text);
   text-decoration: none;
+  transition: border-color 0.2s ease;
+}
+
+[data-home-pilot="nocturne-b1"] .home-season-row:hover {
+  border-color: var(--color-action);
+}
+
+[data-home-pilot="nocturne-b1"] .home-season-row:hover .home-season-row__action {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+[data-home-pilot="nocturne-b1"] .home-season-row:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 2px;
+  border-radius: var(--radius-control);
+}
+
+[data-home-pilot="nocturne-b1"] .home-season-row:active {
+  transform: scale(0.99);
 }
 
 [data-home-pilot="nocturne-b1"] .home-season-row__body {
@@ -820,6 +855,16 @@
 [data-home-pilot="nocturne-b1"] :is(.event-mini, .dish-item, .fy-chip):hover {
   transform: none;
   border-color: var(--color-action);
+}
+
+[data-home-pilot="nocturne-b1"] .event-mini:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 2px;
+  border-radius: var(--radius-control);
+}
+
+[data-home-pilot="nocturne-b1"] .event-mini:active {
+  transform: scale(0.99);
 }
 
 [data-home-pilot="nocturne-b1"] .home-continuation {
@@ -931,6 +976,12 @@
 
 [data-home-pilot="nocturne-b1"] .home-continuation__links a:active {
   transform: scale(0.98);
+}
+
+[data-home-pilot="nocturne-b1"] .home-continuation__links a:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 2px;
+  border-radius: var(--radius-control);
 }
 
 @container home-lead (max-width: 52rem) {
@@ -1319,8 +1370,10 @@
   margin: 0;
   padding: var(--space-3) var(--space-3) var(--space-2);
   background: var(--color-surface);
-  border: 1px solid var(--color-border);
+  border: 1px solid var(--border-liquid-glass, var(--color-border));
   border-radius: var(--radius-surface);
+  box-shadow: var(--shadow-card-ambient);
+  transition: box-shadow 0.25s ease, border-color 0.2s ease;
 }
 
 [data-home-pilot="nocturne-b1"] .home-product-lead__media {
@@ -1331,6 +1384,11 @@
   border-radius: var(--radius-control);
 }
 
+[data-home-pilot="nocturne-b1"] .home-product-lead__media:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 2px;
+}
+
 [data-home-pilot="nocturne-b1"] .home-product-lead__media img {
   display: block;
   inline-size: 100%;
@@ -1338,6 +1396,11 @@
                                 aspect-ratio CSS nếu height không phải auto */
   aspect-ratio: 16 / 9;
   object-fit: cover;
+  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+[data-home-pilot="nocturne-b1"] .home-product-lead__media:hover img {
+  transform: scale(1.025);
 }
 
 [data-home-pilot="nocturne-b1"] .home-product-lead__media--empty {
@@ -1414,6 +1477,17 @@
   font-weight: var(--weight-bold);
   color: var(--color-action);
   text-decoration: none;
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+[data-home-pilot="nocturne-b1"] .home-product-lead__cta:active {
+  transform: scale(0.98);
+}
+
+[data-home-pilot="nocturne-b1"] .home-product-lead__cta:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 2px;
+  border-radius: var(--radius-control);
 }
 
 [data-home-pilot="nocturne-b1"] .home-product-lead__arrow {
@@ -1954,15 +2028,25 @@ html.js .home .hero-enter h1::after { animation: hero-underline-draw .8s var(--e
   background: var(--bg-alt); border: .5px solid var(--line); border-radius: var(--radius-full);
   font-size: var(--text-xs); font-weight: var(--weight-semibold); color: var(--color-source-community);
   text-decoration: none; min-height: 44px;
-  transition: background .2s var(--ease-out), border-color .2s var(--ease-out);
+  transition: background .2s var(--ease-out), border-color .2s var(--ease-out), transform .15s ease;
 }
 .tt-chip:hover { background: var(--bg-warm); border-color: var(--color-action-border); }
+.tt-chip:active { transform: scale(0.96); }
+.tt-chip:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 2px;
+}
 .dark .tt-chip { background: rgba(var(--white-rgb),.06); border-color: rgba(var(--white-rgb),.1); }
 .dark .tt-chip:hover { background: rgba(var(--white-rgb),.1); }
 
 .home-leaders-teaser { display: flex; align-items: center; gap: var(--space-2); margin: 0 0 var(--space-4); font-size: var(--text-sm); font-weight: var(--weight-semibold); }
 .home-leaders-teaser a { color: var(--color-action); text-decoration: none; }
 .home-leaders-teaser a:hover { text-decoration: underline; }
+.home-leaders-teaser a:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 2px;
+  border-radius: var(--radius-control);
+}
 .see-all .inline-arrow,
 .home-leaders-teaser a .inline-arrow {
   display: inline-block;
@@ -2700,6 +2784,12 @@ html.js .home .hero-enter h1::after { animation: hero-underline-draw .8s var(--e
   display: block;
 }
 
+.home-community-dispatches .cm-content-link:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 2px;
+  border-radius: var(--radius-control);
+}
+
 .home-community-dispatches .cm-author-badge {
   display: inline-flex;
   align-items: center;
@@ -2726,6 +2816,12 @@ html.js .home .hero-enter h1::after { animation: hero-underline-draw .8s var(--e
 .home-community-dispatches a.cm-place:hover {
   text-decoration: underline;
   color: var(--color-brand);
+}
+
+.home-community-dispatches a.cm-place:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 2px;
+  border-radius: var(--radius-control);
 }
 
 /* ═══════════════════════════════════════════════════

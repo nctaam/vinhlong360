@@ -398,6 +398,12 @@ function onImgFallback(e: Event) {
   opacity: 0.85;
 }
 
+.home-culinary-card__title a:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 2px;
+  border-radius: var(--radius-control);
+}
+
 .home-culinary-card__venue-pill {
   display: inline-flex;
   align-items: center;
@@ -439,6 +445,12 @@ function onImgFallback(e: Event) {
 .home-culinary-card__btn:hover {
   text-decoration: underline;
   transform: translateX(2px);
+}
+
+.home-culinary-card__btn:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 2px;
+  border-radius: var(--radius-control);
 }
 
 .home-culinary-card__arrow {
