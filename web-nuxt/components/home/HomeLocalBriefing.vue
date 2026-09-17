@@ -315,6 +315,16 @@ const seasonLink = computed(() => `/theo-mua?mua=${currentMonth.value}`)
   background: var(--color-surface);
   color: var(--color-text);
   letter-spacing: .02em;
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+.home-local-briefing__tide-badge:hover {
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-xs);
+}
+
+.home-local-briefing__tide-badge:active {
+  transform: scale(0.96);
 }
 
 .home-local-briefing__tide-badge[data-tide-phase="rong"] {

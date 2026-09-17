@@ -1,6 +1,8 @@
 import { clearNuxtData } from '#app'
 import { mountSuspended } from '@nuxt/test-utils/runtime'
 import { defineComponent, h, nextTick } from 'vue'
+import { readFileSync } from 'node:fs'
+import { resolve } from 'node:path'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import HomeLocalBriefing from '../components/home/HomeLocalBriefing.vue'
 import { resetWeatherCacheClock } from '../composables/useWeather'
@@ -155,6 +157,14 @@ describe('HomeLocalBriefing — Empirical Stress Testing', () => {
       const link = wrapper.find('.home-local-briefing__link')
       expect(link.exists()).toBe(true)
       expect(link.attributes('href')).toMatch(/^\/theo-mua\?mua=[1-9][0-2]?$/)
+    })
+  })
+
+  describe('Adverse Scenario 5: Tactile ergonomics on tide badge', () => {
+    it('enforces tactile feedback and elevation on tide badge', () => {
+      const briefingContent = readFileSync(resolve(__dirname, '../components/home/HomeLocalBriefing.vue'), 'utf8')
+      expect(briefingContent).toMatch(/\.home-local-briefing__tide-badge:hover/)
+      expect(briefingContent).toMatch(/\.home-local-briefing__tide-badge:active/)
     })
   })
 })
