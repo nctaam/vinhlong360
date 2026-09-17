@@ -306,6 +306,17 @@ describe('Challenger 1: Empirical Adversarial Stress & Edge Case Harness', () =>
     })
   })
 
+  describe('Adversarial Test 10: For-You Personalized Strip Ergonomics', () => {
+    it('enforces active tactile scale and double-ring focus indicator on for-you chips', () => {
+      expect(homeNocturneCss).toMatch(/\.fy-chip:active\s*\{[^}]*transform:\s*scale\(0\.98\)/)
+      expect(homeNocturneCss).toMatch(/\.fy-chip:focus-visible\s*\{[^}]*outline:\s*2px\s+solid\s+var\(--color-focus\)/)
+    })
+
+    it('enforces subtle thumbnail zoom micro-motion on for-you chip hover', () => {
+      expect(homeNocturneCss).toMatch(/\.fy-chip:hover\s+\.fy-thumb\s+img\s*\{[^}]*transform:\s*scale\(1\.06\)/)
+    })
+  })
+
   // ───────────────────────────────────────────────────────────────────────────
   // OBJECTIVE 2: Bit-for-bit SHA-256 Invariance
   // ───────────────────────────────────────────────────────────────────────────
