@@ -877,7 +877,7 @@
 }
 
 [data-home-pilot="nocturne-b1"] .home-season-row:active {
-  transform: scale(0.99);
+  transform: scale(0.98);
 }
 
 [data-home-pilot="nocturne-b1"] .home-season-row__body {
@@ -992,7 +992,7 @@
 }
 
 [data-home-pilot="nocturne-b1"] .event-mini:active {
-  transform: scale(0.99);
+  transform: scale(0.98);
 }
 
 [data-home-pilot="nocturne-b1"] .home-continuation {

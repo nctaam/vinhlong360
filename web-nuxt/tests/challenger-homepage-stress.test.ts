@@ -287,6 +287,18 @@ describe('Challenger 1: Empirical Adversarial Stress & Edge Case Harness', () =>
     })
   })
 
+  describe('Adversarial Test 8: Event Mini & Seasonal Signal Tactile Ergonomics', () => {
+    it('enforces active tactile scale and double-ring focus indicator on event mini cards', () => {
+      expect(homeNocturneCss).toMatch(/\.event-mini:active\s*\{[^}]*transform:\s*scale\(0\.98\)/)
+      expect(homeNocturneCss).toMatch(/\.event-mini:focus-visible\s*\{[^}]*outline:\s*2px\s+solid\s+var\(--color-focus\)/)
+    })
+
+    it('enforces active tactile scale and double-ring focus indicator on seasonal signal rows', () => {
+      expect(homeNocturneCss).toMatch(/\.home-season-row:active\s*\{[^}]*transform:\s*scale\(0\.98\)/)
+      expect(homeNocturneCss).toMatch(/\.home-season-row:focus-visible\s*\{[^}]*outline:\s*2px\s+solid\s+var\(--color-focus\)/)
+    })
+  })
+
   // ───────────────────────────────────────────────────────────────────────────
   // OBJECTIVE 2: Bit-for-bit SHA-256 Invariance
   // ───────────────────────────────────────────────────────────────────────────
