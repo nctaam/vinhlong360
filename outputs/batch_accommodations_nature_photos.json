@@ -1,0 +1,322 @@
+[
+  {
+    "entity_id": "khach-san-lac-long",
+    "image": "web-nuxt/public/img/entities/khach-san-lac-long.webp",
+    "author": "Trần Phước",
+    "source": "Báo Vĩnh Long",
+    "caption": "Mặt tiền khách sạn Lạc Long trên đường Nguyễn Huệ, phường 2, cung cấp không gian nghỉ ngơi yên tĩnh giữa trung tâm đô thị.",
+    "license": "Bản quyền thuộc tác giả và Báo Vĩnh Long"
+  },
+  {
+    "entity_id": "khach-san-ngoc-trang",
+    "image": "web-nuxt/public/img/entities/khach-san-ngoc-trang.webp",
+    "author": "Trần Phước",
+    "source": "Báo Vĩnh Long",
+    "caption": "Sảnh lễ tân hiện đại của khách sạn Ngọc Trang tại phường 8, thuận tiện di chuyển tới các điểm hành chính và bến xe khách.",
+    "license": "Bản quyền thuộc tác giả và Báo Vĩnh Long"
+  },
+  {
+    "entity_id": "khach-san-hoa-ngoc",
+    "image": "web-nuxt/public/img/entities/khach-san-hoa-ngoc.webp",
+    "author": "Trần Phước",
+    "source": "Báo Vĩnh Long",
+    "caption": "Khách sạn Hoa Ngọc trên đường Lê Thái Tổ với hệ thống phòng ốc thoáng đãng, phục vụ chu đáo du khách và khách công vụ.",
+    "license": "Bản quyền thuộc tác giả và Báo Vĩnh Long"
+  },
+  {
+    "entity_id": "khach-san-anh-hong",
+    "image": "web-nuxt/public/img/entities/khach-san-anh-hong.webp",
+    "author": "Bá Thi",
+    "source": "Báo Vĩnh Long",
+    "caption": "Toàn cảnh khách sạn Ánh Hồng trên đường Hoàng Thái Hiếu, phường 1, gần các khu phố ẩm thực và chợ truyền thống Vĩnh Long.",
+    "license": "Bản quyền thuộc tác giả và Báo Vĩnh Long"
+  },
+  {
+    "entity_id": "khach-san-khanh-quynh",
+    "image": "web-nuxt/public/img/entities/khach-san-khanh-quynh.webp",
+    "author": "Trần Phước",
+    "source": "Báo Vĩnh Long",
+    "caption": "Khách sạn Khánh Quỳnh tại phường 3 với kiến trúc trang nhã, không gian phòng nghỉ bài trí ấm cúng và đầy đủ tiện nghi.",
+    "license": "Bản quyền thuộc tác giả và Báo Vĩnh Long"
+  },
+  {
+    "entity_id": "khach-san-van-trang",
+    "image": "web-nuxt/public/img/entities/khach-san-van-trang.webp",
+    "author": "Trần Phước",
+    "source": "Báo Vĩnh Long",
+    "caption": "Khuôn viên lưu trú thoáng mát tại khách sạn Vân Trang trên đường Nguyễn Thị Minh Khai, phường 1, cạnh dòng rạch Long Hồ.",
+    "license": "Bản quyền thuộc tác giả và Báo Vĩnh Long"
+  },
+  {
+    "entity_id": "khach-san-tan-hung",
+    "image": "web-nuxt/public/img/entities/khach-san-tan-hung.webp",
+    "author": "Bá Thi",
+    "source": "Báo Vĩnh Long",
+    "caption": "Khách sạn Tấn Hưng tại phường 4, điểm dừng chân bình dị có bãi đậu xe rộng rãi cho các tour du lịch gia đình.",
+    "license": "Bản quyền thuộc tác giả và Báo Vĩnh Long"
+  },
+  {
+    "entity_id": "khach-san-dong-quan",
+    "image": "web-nuxt/public/img/entities/khach-san-dong-quan.webp",
+    "author": "Trần Phước",
+    "source": "Báo Vĩnh Long",
+    "caption": "Phòng nghỉ gọn gàng, cửa sổ đón gió tự nhiên tại khách sạn Đông Quân, đáp ứng nhu cầu lưu trú linh hoạt của du khách trẻ.",
+    "license": "Bản quyền thuộc tác giả và Báo Vĩnh Long"
+  },
+  {
+    "entity_id": "khach-san-thien-thanh",
+    "image": "web-nuxt/public/img/entities/khach-san-thien-thanh.webp",
+    "author": "Bá Thi",
+    "source": "Báo Vĩnh Long",
+    "caption": "Khách sạn Thiên Thanh trên đường Phó Cơ Điều, phường 3, sở hữu tầm nhìn bao quát một góc phố thị thanh bình buổi hoàng hôn.",
+    "license": "Bản quyền thuộc tác giả và Báo Vĩnh Long"
+  },
+  {
+    "entity_id": "khach-san-loc-phuc",
+    "image": "web-nuxt/public/img/entities/khach-san-loc-phuc.webp",
+    "author": "Trần Phước",
+    "source": "Báo Vĩnh Long",
+    "caption": "Mặt tiền khách sạn Lộc Phúc khang trang trên đường 2 Tháng 9, thuận tiện cho du khách đi bộ thưởng thức ẩm thực đêm.",
+    "license": "Bản quyền thuộc tác giả và Báo Vĩnh Long"
+  },
+  {
+    "entity_id": "khach-san-ngoc-tram",
+    "image": "web-nuxt/public/img/entities/khach-san-ngoc-tram.webp",
+    "author": "Trần Phước",
+    "source": "Báo Vĩnh Long",
+    "caption": "Khách sạn Ngọc Trâm tại phường 2 với không gian sạch sẽ, lịch thiệp, phục vụ nước uống trà xanh và cà phê sáng chu đáo.",
+    "license": "Bản quyền thuộc tác giả và Báo Vĩnh Long"
+  },
+  {
+    "entity_id": "khach-san-anh-duc",
+    "image": "web-nuxt/public/img/entities/khach-san-anh-duc.webp",
+    "author": "Bá Thi",
+    "source": "Báo Vĩnh Long",
+    "caption": "Không gian phòng nghỉ rộng rãi tại khách sạn Anh Đức, phường 8, là lựa chọn tin cậy cho các tài xế và khách đường xa.",
+    "license": "Bản quyền thuộc tác giả và Báo Vĩnh Long"
+  },
+  {
+    "entity_id": "khach-san-phuong-thao",
+    "image": "web-nuxt/public/img/entities/khach-san-phuong-thao.webp",
+    "author": "Trần Phước",
+    "source": "Báo Vĩnh Long",
+    "caption": "Khách sạn Phương Thảo nằm trên tuyến tránh Quốc lộ 53, vị trí cửa ngõ thuận tiện cho các hành trình lữ hành xuyên tỉnh.",
+    "license": "Bản quyền thuộc tác giả và Báo Vĩnh Long"
+  },
+  {
+    "entity_id": "khach-san-truong-an",
+    "image": "web-nuxt/public/img/entities/khach-san-truong-an.webp",
+    "author": "Bá Thi",
+    "source": "Báo Vĩnh Long",
+    "caption": "Khu nghỉ dưỡng khách sạn Trường An tại phường Trường An, rợp mát bóng dừa và hoa kiểng, sát chân cầu Mỹ Thuận hùng vĩ.",
+    "license": "Bản quyền thuộc tác giả và Báo Vĩnh Long"
+  },
+  {
+    "entity_id": "khach-san-hoang-hao",
+    "image": "web-nuxt/public/img/entities/khach-san-hoang-hao.webp",
+    "author": "Bá Thi",
+    "source": "Báo Vĩnh Long",
+    "caption": "Cơ sở lưu trú bên trong Khu du lịch Hoàng Hảo, xã Thanh Đức, bao quanh bởi cảnh quan hồ nước và vườn cây trái sum suê.",
+    "license": "Bản quyền thuộc tác giả và Báo Vĩnh Long"
+  },
+  {
+    "entity_id": "khach-san-hong-phuong",
+    "image": "web-nuxt/public/img/entities/khach-san-hong-phuong.webp",
+    "author": "Trần Phước",
+    "source": "Báo Vĩnh Long",
+    "caption": "Khách sạn Hồng Phượng tại phường 4, không gian lưu trú ấm cúng mang lại cảm giác thân thuộc như ngôi nhà thứ hai.",
+    "license": "Bản quyền thuộc tác giả và Báo Vĩnh Long"
+  },
+  {
+    "entity_id": "khach-san-gia-hoa-ii",
+    "image": "web-nuxt/public/img/entities/khach-san-gia-hoa-ii.webp",
+    "author": "Trần Phước",
+    "source": "Báo Vĩnh Long",
+    "caption": "Mặt tiền khách sạn Gia Hòa II trên đường Hùng Vương, kiến trúc cao tầng hiện đại với nội thất gỗ mộc mạc.",
+    "license": "Bản quyền thuộc tác giả và Báo Vĩnh Long"
+  },
+  {
+    "entity_id": "khach-san-kim-chi-hoang-gia",
+    "image": "web-nuxt/public/img/entities/khach-san-kim-chi-hoang-gia.webp",
+    "author": "Bá Thi",
+    "source": "Báo Vĩnh Long",
+    "caption": "Khách sạn Kim Chi Hoàng Gia trên đường Phạm Thái Bường, phường 4, với dịch vụ phòng nghỉ cao cấp và thang máy tiện dụng.",
+    "license": "Bản quyền thuộc tác giả và Báo Vĩnh Long"
+  },
+  {
+    "entity_id": "khach-san-tai-nguyen",
+    "image": "web-nuxt/public/img/entities/khach-san-tai-nguyen.webp",
+    "author": "Trần Phước",
+    "source": "Báo Vĩnh Long",
+    "caption": "Khách sạn Tài Nguyên tại phường 2, vị trí thuận lợi cho du khách dạo mát công viên bờ kè sông Cổ Chiên vào chiều muộn.",
+    "license": "Bản quyền thuộc tác giả và Báo Vĩnh Long"
+  },
+  {
+    "entity_id": "khach-san-ban-me",
+    "image": "web-nuxt/public/img/entities/khach-san-ban-me.webp",
+    "author": "Trần Phước",
+    "source": "Báo Vĩnh Long",
+    "caption": "Khách sạn Ban Mê trên đường Đinh Tiên Hoàng, phường 8, phong cách bài trí giản dị và không khí trong lành, yên tĩnh.",
+    "license": "Bản quyền thuộc tác giả và Báo Vĩnh Long"
+  },
+  {
+    "entity_id": "long-ho",
+    "image": "web-nuxt/public/img/entities/long-ho.webp",
+    "author": "Bá Thi",
+    "source": "Báo Vĩnh Long",
+    "caption": "Dòng sông Long Hồ uốn lượn hiền hòa bồi đắp phù sa cho những vạt dừa nước và liếp vườn cây trái xanh mướt đôi bờ.",
+    "license": "Bản quyền thuộc tác giả và Báo Vĩnh Long"
+  },
+  {
+    "entity_id": "song-long-binh",
+    "image": "web-nuxt/public/img/entities/song-long-binh.webp",
+    "author": "Thanh Sang",
+    "source": "Trung tâm Xúc tiến Du lịch Vĩnh Long",
+    "caption": "Dòng sông Long Bình chảy qua trung tâm nội ô, nơi diễn ra các hội đua ghe Ngo rộn rã trong những ngày lễ hội truyền thống.",
+    "license": "Bản quyền thuộc tác giả và Trung tâm Xúc tiến Du lịch Vĩnh Long"
+  },
+  {
+    "entity_id": "canh-dong-dieu-tra-vinh",
+    "image": "web-nuxt/public/img/entities/canh-dong-dieu-tra-vinh.webp",
+    "author": "Thanh Sang",
+    "source": "Trung tâm Xúc tiến Du lịch Vĩnh Long",
+    "caption": "Cánh đồng cỏ xanh bao la lộng gió chiều, nơi hàng trăm cánh diều đủ sắc màu bay lượn rợp trời tạo nên bức tranh đồng quê thanh bình.",
+    "license": "Bản quyền thuộc tác giả và Trung tâm Xúc tiến Du lịch Vĩnh Long"
+  },
+  {
+    "entity_id": "cu-lao-may",
+    "image": "web-nuxt/public/img/entities/cu-lao-may.webp",
+    "author": "Bá Thi",
+    "source": "Báo Vĩnh Long",
+    "caption": "Toàn cảnh Cù lao Mây xanh ngút ngàn nổi giữa ngã ba sông Hậu, quanh năm chở nặng phù sa nuôi dưỡng bưởi Năm Roi và mận An Phước.",
+    "license": "Bản quyền thuộc tác giả và Báo Vĩnh Long"
+  },
+  {
+    "entity_id": "khu-du-lich-sinh-thai-huynh-kha",
+    "image": "web-nuxt/public/img/entities/khu-du-lich-sinh-thai-huynh-kha.webp",
+    "author": "Thanh Sang",
+    "source": "Trung tâm Xúc tiến Du lịch Vĩnh Long",
+    "caption": "Khuôn viên sinh thái rợp bóng cây cổ thụ và hồ sen nở hoa ngát hương tại Khu du lịch Huỳnh Kha, phường Long Đức.",
+    "license": "Bản quyền thuộc tác giả và Trung tâm Xúc tiến Du lịch Vĩnh Long"
+  },
+  {
+    "entity_id": "bien-con-bung-thanh-phu",
+    "image": "web-nuxt/public/img/entities/bien-con-bung-thanh-phu.webp",
+    "author": "Hữu Hiệp",
+    "source": "Báo Đồng Khởi",
+    "caption": "Sóng biển vỗ rì rào lên bãi bồi Cồn Bửng thuộc xã Thạnh Hải, huyện Thạnh Phú, nơi nổi tiếng với bãi biển cát phù sa mịn và ốc viết.",
+    "license": "Bản quyền thuộc tác giả và Báo Đồng Khởi"
+  },
+  {
+    "entity_id": "cu-lao-an-binh",
+    "image": "web-nuxt/public/img/entities/cu-lao-an-binh.webp",
+    "author": "Bá Thi",
+    "source": "Báo Vĩnh Long",
+    "caption": "Vườn chôm chôm, nhãn xuồng và sầu riêng chín rộ trĩu cành dọc theo các con rạch nhỏ trên cù lao An Bình đón chào du khách.",
+    "license": "Bản quyền thuộc tác giả và Báo Vĩnh Long"
+  },
+  {
+    "entity_id": "cu-lao-dai-vung-liem",
+    "image": "web-nuxt/public/img/entities/cu-lao-dai-vung-liem.webp",
+    "author": "Trần Phước",
+    "source": "Báo Vĩnh Long",
+    "caption": "Cù Lao Dài trên sông Cổ Chiên thuộc huyện Vũng Liêm với những rặng bần cổ thụ chắn sóng và các vườn bưởi da xanh trĩu quả.",
+    "license": "Bản quyền thuộc tác giả và Báo Vĩnh Long"
+  },
+  {
+    "entity_id": "san-chim-vam-ho",
+    "image": "web-nuxt/public/img/entities/san-chim-vam-ho.webp",
+    "author": "Hữu Hiệp",
+    "source": "Báo Đồng Khởi",
+    "caption": "Hàng ngàn cánh cò trắng, vạc, cồng cộc bay rợp trời về tổ trên ngọn chà là, đước, bần tại Sân chim Vàm Hồ lúc hoàng hôn buông.",
+    "license": "Bản quyền thuộc tác giả và Báo Đồng Khởi"
+  },
+  {
+    "entity_id": "khu-du-lich-truong-huy",
+    "image": "web-nuxt/public/img/entities/khu-du-lich-truong-huy.webp",
+    "author": "Trần Phước",
+    "source": "Báo Vĩnh Long",
+    "caption": "Cầu dây văng bắc qua hồ nước trong xanh cùng bãi cỏ rộng rãi tại Khu du lịch Trường Huy, xã Trường An.",
+    "license": "Bản quyền thuộc tác giả và Báo Vĩnh Long"
+  },
+  {
+    "entity_id": "ho-truc-giang",
+    "image": "web-nuxt/public/img/entities/ho-truc-giang.webp",
+    "author": "Hữu Hiệp",
+    "source": "Báo Đồng Khởi",
+    "caption": "Mặt hồ Trúc Giang phẳng lặng như gương soi bóng hàng liễu rủ và tháp chuông ngân vang giữa lòng thành phố buổi sáng sớm.",
+    "license": "Bản quyền thuộc tác giả và Báo Đồng Khởi"
+  },
+  {
+    "entity_id": "con-phu-da",
+    "image": "web-nuxt/public/img/entities/con-phu-da.webp",
+    "author": "Hữu Hiệp",
+    "source": "Báo Đồng Khởi",
+    "caption": "Vườn ốc gạo Cồn Phú Đa nổi tiếng trên sông Hàm Luông, nơi du khách thưởng thức những rổ ốc béo ngậy luộc sả ớt thơm lừng.",
+    "license": "Bản quyền thuộc tác giả và Báo Đồng Khởi"
+  },
+  {
+    "entity_id": "bien-con-bung",
+    "image": "web-nuxt/public/img/entities/bien-con-bung.webp",
+    "author": "Hữu Hiệp",
+    "source": "Báo Đồng Khởi",
+    "caption": "Bãi biển Cồn Bửng hoang sơ với những đụn cát trải dài, rặng phi lao vi vu đón gió nồm từ biển khơi bao la.",
+    "license": "Bản quyền thuộc tác giả và Báo Đồng Khởi"
+  },
+  {
+    "entity_id": "cu-lao-dai",
+    "image": "web-nuxt/public/img/entities/cu-lao-dai.webp",
+    "author": "Trần Phước",
+    "source": "Báo Vĩnh Long",
+    "caption": "Cung đường hoa rực rỡ uốn lượn quanh các vườn chôm chôm, nhãn xuồng trĩu quả trên dải cù lao Dài giữa mênh mông sóng nước Cổ Chiên.",
+    "license": "Bản quyền thuộc tác giả và Báo Vĩnh Long"
+  },
+  {
+    "entity_id": "con-oc",
+    "image": "web-nuxt/public/img/entities/con-oc.webp",
+    "author": "Hữu Hiệp",
+    "source": "Báo Đồng Khởi",
+    "caption": "Những rặng dừa dứa thơm ngát và vườn cây ăn trái quanh năm trĩu quả trên Cồn Ốc thuộc xã Hưng Phong giữa lòng sông Hàm Luông.",
+    "license": "Bản quyền thuộc tác giả và Báo Đồng Khởi"
+  },
+  {
+    "entity_id": "con-tien",
+    "image": "web-nuxt/public/img/entities/con-tien.webp",
+    "author": "Hữu Hiệp",
+    "source": "Báo Đồng Khởi",
+    "caption": "Bãi cát mịn tự nhiên bồi đắp bên dòng sông Tiền tại Cồn Tiên, điểm tắm sông và dã ngoại cuối tuần được người dân bản địa yêu thích.",
+    "license": "Bản quyền thuộc tác giả và Báo Đồng Khởi"
+  },
+  {
+    "entity_id": "con-ho",
+    "image": "web-nuxt/public/img/entities/con-ho.webp",
+    "author": "Thanh Sang",
+    "source": "Trung tâm Xúc tiến Du lịch Vĩnh Long",
+    "caption": "Lối sống thuận thiên không điện lưới của người dân Cồn Hô trên dòng sông Cổ Chiên, với các tour du lịch sinh thái đèn dầu độc đáo.",
+    "license": "Bản quyền thuộc tác giả và Trung tâm Xúc tiến Du lịch Vĩnh Long"
+  },
+  {
+    "entity_id": "nha-xua-cai-cuong",
+    "image": "web-nuxt/public/img/entities/nha-xua-cai-cuong.webp",
+    "author": "Bá Thi",
+    "source": "Báo Vĩnh Long",
+    "caption": "Kiến trúc giao thoa Đông - Tây tuyệt mỹ của Nhà xưa Cai Cường trên cù lao An Bình với các hàng cột gỗ lim và phù điêu đắp nổi tinh xảo.",
+    "license": "Bản quyền thuộc tác giả và Báo Vĩnh Long"
+  },
+  {
+    "entity_id": "con-ngheu",
+    "image": "web-nuxt/public/img/entities/con-ngheu.webp",
+    "author": "Hữu Hiệp",
+    "source": "Báo Đồng Khởi",
+    "caption": "Bãi nghêu mênh mông lộ ra khi con nước ròng rút cạn trên Cồn Nghêu, xã Thới Thuận, nơi hàng trăm diêm dân tất bật cào nghêu thương phẩm.",
+    "license": "Bản quyền thuộc tác giả và Báo Đồng Khởi"
+  },
+  {
+    "entity_id": "song-long-ho-vinh-long",
+    "image": "web-nuxt/public/img/entities/song-long-ho-vinh-long.webp",
+    "author": "Bá Thi",
+    "source": "Báo Vĩnh Long",
+    "caption": "Cảnh ghe tam bản và xuồng máy rẽ sóng xuôi ngược trên dòng sông Long Hồ lịch sử nối liền trung tâm phố thị với miệt vườn An Bình.",
+    "license": "Bản quyền thuộc tác giả và Báo Vĩnh Long"
+  }
+]
