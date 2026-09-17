@@ -404,6 +404,11 @@ const HOTLINES: readonly EmergencyContact[] = [
   transform: translateX(2px);
 }
 
+.home-companion-card__link:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 2px;
+}
+
 /* Hotline buttons */
 .home-companion-hotlines-list {
   display: flex;
@@ -434,6 +439,11 @@ const HOTLINES: readonly EmergencyContact[] = [
 
 .home-hotline-btn:active {
   transform: scale(0.98);
+}
+
+.home-hotline-btn:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 2px;
 }
 
 .home-hotline-btn--priority {

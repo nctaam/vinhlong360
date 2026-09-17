@@ -231,6 +231,11 @@ const activeItinerary = computed(() => {
   transform: scale(0.98);
 }
 
+.home-planner-tab-btn:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 2px;
+}
+
 .home-planner-tab-btn.is-active {
   background: var(--color-brand);
   color: var(--surface-white);
@@ -394,6 +399,11 @@ const activeItinerary = computed(() => {
   transform: scale(0.98);
 }
 
+.home-planner-card__actions .btn:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 2px;
+}
+
 /* Timeline */
 .home-planner-card__stops {
   display: flex;
@@ -421,8 +431,16 @@ const activeItinerary = computed(() => {
   gap: var(--space-3);
   padding: var(--space-4);
   background: var(--color-canvas);
-  border: 1px solid var(--color-border);
+  border: 1px solid var(--border-liquid-glass, var(--color-border));
   border-radius: var(--radius-surface);
+  box-shadow: var(--shadow-card-ambient);
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.home-planner-stop:hover {
+  transform: translateY(-2px);
+  border-color: color-mix(in srgb, var(--color-brand) 40%, var(--color-border));
+  box-shadow: 0 8px 20px rgba(var(--black-rgb), 0.08);
 }
 
 .home-planner-stop__marker {

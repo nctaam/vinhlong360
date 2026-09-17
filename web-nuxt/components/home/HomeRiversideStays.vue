@@ -540,6 +540,11 @@ function onImgFallback(e: Event) {
   transform: scale(0.98);
 }
 
+.home-stay-card__action .btn:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 2px;
+}
+
 /* Folk Experiences Strip */
 .home-riverside-stays__experiences {
   margin-block-start: var(--space-fib-5);
@@ -577,21 +582,34 @@ function onImgFallback(e: Event) {
   padding: var(--space-3);
   background: var(--color-canvas);
   border: 1px solid var(--border-liquid-glass, var(--color-border));
-  border-radius: var(--radius-control);
+  border-radius: var(--radius-surface);
   box-shadow: var(--shadow-card-ambient);
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.2s ease, box-shadow 0.25s ease;
+}
+
+.home-exp-card:hover {
+  transform: translateY(-2px);
+  border-color: color-mix(in srgb, var(--river-600) 40%, var(--color-border));
+  box-shadow: 0 8px 20px rgba(var(--black-rgb), 0.08);
 }
 
 .home-exp-card__icon {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 36px;
-  height: 36px;
+  width: 38px;
+  height: 38px;
   flex-shrink: 0;
   border-radius: var(--radius-control);
   background: color-mix(in srgb, var(--river-600) 12%, transparent);
   color: var(--river-600);
-  font-size: 1.1rem;
+  font-size: 1.15rem;
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), background-color 0.2s ease;
+}
+
+.home-exp-card:hover .home-exp-card__icon {
+  transform: scale(1.08);
+  background: color-mix(in srgb, var(--river-600) 20%, transparent);
 }
 
 .home-exp-card__content {

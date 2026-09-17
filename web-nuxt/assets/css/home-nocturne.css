@@ -465,6 +465,12 @@
   transform: scale(0.98);
 }
 
+[data-home-pilot="nocturne-b1"] .home-decision-ledger__link:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 2px;
+  border-radius: var(--radius-control);
+}
+
 [data-home-pilot="nocturne-b1"] .home-decision-ledger__arrow {
   display: inline-flex;
   align-items: center;
@@ -520,6 +526,12 @@
   color: var(--color-text);
   text-decoration: none;
   transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), background var(--duration-fast) var(--ease-out), box-shadow 0.2s ease;
+}
+
+[data-home-pilot="nocturne-b1"] :is(.home-category-index__primary-link, .home-category-index__utility-link):focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: -2px;
+  z-index: 2;
 }
 
 [data-home-pilot="nocturne-b1"] .home-category-index__card {
@@ -1571,6 +1583,12 @@
   );
   box-shadow: inset 0 2px 6px rgba(var(--black-rgb), .28), 0 4px 14px -6px color-mix(in srgb, var(--mangthit-700) 50%, transparent);
   animation: seal-stamp .4s var(--ease-out-expo) both;
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.3s ease;
+}
+
+[data-home-pilot="nocturne-b1"] .home-ocop__frame:hover .wax-seal {
+  transform: scale(1.05) rotate(1.5deg);
+  box-shadow: inset 0 2px 6px rgba(var(--black-rgb), .28), 0 8px 20px -4px color-mix(in srgb, var(--mangthit-700) 65%, transparent);
 }
 
 [data-home-pilot="nocturne-b1"] .wax-seal-notches {
@@ -1648,6 +1666,14 @@
   flex-direction: column;
   align-items: center;
   gap: var(--space-1);
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-surface);
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), background-color 0.2s ease;
+}
+
+[data-home-pilot="nocturne-b1"] .home-ocop__tier:hover {
+  transform: translateY(-2px);
+  background: color-mix(in srgb, var(--color-surface-raised) 70%, transparent);
 }
 
 [data-home-pilot="nocturne-b1"] .home-ocop__stars {
@@ -1694,6 +1720,12 @@
 
 [data-home-pilot="nocturne-b1"] .home-ocop__cta:active {
   transform: scale(0.98);
+}
+
+[data-home-pilot="nocturne-b1"] .home-ocop__cta:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 4px;
+  border-radius: var(--radius-control);
 }
 
 [data-home-pilot="nocturne-b1"] .home-ocop__cta:hover .home-ocop__arrow {
