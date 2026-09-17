@@ -47,6 +47,7 @@
           <div class="auth-area">
             <ShellThemeModeControl />
             <ShellDisplaySettingsPopover />
+            <span class="header-divider" aria-hidden="true"></span>
             <template v-if="clientReady">
               <template v-if="isLoggedIn">
                 <LazyNotificationBell />

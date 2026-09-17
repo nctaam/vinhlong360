@@ -11,7 +11,7 @@
       @click="toggleOpen"
     >
       <VernacularGlyph name="field-compass" :size="16" aria-hidden="true" />
-      <span class="display-settings-trigger-text">Trợ năng</span>
+      <span class="display-settings-trigger-text sr-only-md-down">Trợ năng</span>
       <span v-if="hasActiveMode" class="display-settings-counter" aria-label="Số chế độ đang bật">
         {{ activeCount }}
       </span>

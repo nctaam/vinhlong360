@@ -28,3 +28,12 @@ describe('Header Editorial De-clutter - Task 2: Seamless Editorial Navigation', 
   })
 })
 
+describe('Header Editorial De-clutter - Task 3: Quiet Utility Cluster', () => {
+  it('equips auth area with optical divider and ghost login button in shell.css', () => {
+    const css = readFileSync(resolve(__dirname, '../assets/css/shell.css'), 'utf8')
+    expect(css).toMatch(/\.header-divider\s*\{[^}]*width:\s*1px;/)
+    expect(css).toMatch(/\.public-shell-command-row\s+\.auth-btn\s*\{[^}]*background:\s*transparent;/)
+  })
+})
+
+
