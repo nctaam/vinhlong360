@@ -199,7 +199,7 @@ function expectedTokens(target: '.auth-btn' | '.chat-fab', property: string) {
 function isNeutralProtectedValue(property: string, value: string) {
   const normalized = value.replace(/\s*!important\s*$/i, '').trim().toLowerCase()
   if ((property === 'fill' || property === 'stroke') && normalized === 'currentcolor') return true
-  return /^(?:none|0(?:\s+none)?)$/.test(normalized)
+  return /^(?:none|transparent|0(?:\s+none)?)$/.test(normalized)
 }
 
 function expectSemanticCascade(sources: CssSource[], target: '.auth-btn' | '.chat-fab') {
