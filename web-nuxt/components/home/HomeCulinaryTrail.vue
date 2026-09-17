@@ -9,7 +9,7 @@
         <h2>Thiên Đường Ẩm Thực <em class="editorial-italic-accent" aria-hidden="true">Miệt Vườn</em></h2>
         <p class="sh-sub">5 món ăn trứ danh đã làm say lòng bao thế hệ lữ khách, kết tinh từ cá tôm sông Cổ Chiên và rau vườn phù sa màu mỡ.</p>
       </div>
-      <NuxtLink to="/kham-pha/am-thuc" class="see-all">
+      <NuxtLink to="/am-thuc" class="see-all">
         <span>Xem trọn bộ 120 món ngon di sản</span>
         <IconLine name="arrow-right" class="inline-arrow" aria-hidden="true" />
       </NuxtLink>

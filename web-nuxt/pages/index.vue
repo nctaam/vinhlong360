@@ -94,6 +94,7 @@
     <HomeCulinaryTrail v-if="!homeFailed" />
     <HomeRiversideStays v-if="!homeFailed" />
     <HomeTravelPlanner v-if="!homeFailed" />
+    <HomeNativeStories v-if="!homeFailed" />
 
     <div class="home-quick-decisions" data-home-section="quick-decisions">
       <HomeDecisionLedger :entries="homePresentation.decisionEntries" />

@@ -11,7 +11,6 @@ Constraints:
 """
 
 import json
-import os
 import re
 import sqlite3
 import sys
@@ -24,7 +23,7 @@ REPO_ROOT = Path(__file__).resolve().parent.parent
 AGENT_DIR = REPO_ROOT / "agent"
 sys.path.insert(0, str(AGENT_DIR))
 
-from public_api import _event_date_reliable, _parse_event_iso_date
+from public_api import _event_date_reliable
 import lunar_calendar
 
 DB_PATH = REPO_ROOT / "agent" / "data" / "vinhlong360.db"

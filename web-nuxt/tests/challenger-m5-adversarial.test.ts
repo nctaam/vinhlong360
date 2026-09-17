@@ -298,9 +298,10 @@ describe('Challenger M5: Empirical Adversarial Stress Test Suite', () => {
 
     it('verifies layouts/default.vue suspends Living Ambient RAF loop when isEcoTerroir is active', () => {
       expect(defaultVue).toMatch(/if\s*\(isEcoTerroir\.value\)\s*\{[\s\S]*cancelAnimationFrame/)
-      expect(defaultVue).toMatch(/toggleEcoMode\(\)/)
-      expect(defaultVue).toMatch(/class="[^"]*eco-mode-toggle[^"]*"/)
-      expect(defaultVue).toMatch(/:aria-pressed="isEcoTerroir"/)
+      const shellVue = defaultVue + readFileSync(resolve(root, 'components/shell/DisplaySettingsPopover.vue'), 'utf-8')
+      expect(shellVue).toMatch(/toggleEcoMode\(\)/)
+      expect(shellVue).toMatch(/class="[^"]*eco-mode-toggle[^"]*"/)
+      expect(shellVue).toMatch(/:aria-pressed="isEcoTerroir"/)
     })
   })
 

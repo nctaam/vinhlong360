@@ -58,7 +58,7 @@ def build_llms_txt(entities, itineraries, verified_entities, wards):
 ## Giới thiệu & Địa giới Hành chính (Lưu ý Quan trọng)
 
 Từ tháng 7-2025, ba địa bàn Vĩnh Long, Bến Tre và Trà Vinh đã **HỢP NHẤT thành MỘT tỉnh duy nhất mang tên Vĩnh Long**.
-- Cấp huyện đã được bãi bỏ hoàn toàn; tỉnh vận hành mô hình hành chính 2 cấp gồm **1 tỉnh và 124 xã/phường**.
+- Bến Tre và Trà Vinh **KHÔNG còn là đơn vị cấp tỉnh**, và cấp huyện cũng đã bãi bỏ hoàn toàn; tỉnh vận hành mô hình hành chính 2 cấp gồm **1 tỉnh và 124 xã/phường**.
 - Mọi tên gọi "Bến Tre", "Trà Vinh" trong toàn bộ tài liệu chỉ dùng để chỉ **vùng đất/vùng văn hóa** theo địa giới cũ trước tháng 7-2025. Tuyệt đối không dùng "tỉnh Bến Tre" hay "tỉnh Trà Vinh" ngoài văn cảnh lịch sử.
 
 ## Toàn Văn Dữ Liệu Máy Đọc (Full Documentation)
@@ -73,7 +73,7 @@ Từ tháng 7-2025, ba địa bàn Vĩnh Long, Bến Tre và Trà Vinh đã **H�
 - **Lộ trình du lịch liên vùng gợi ý**: {len(itineraries)} tuyến chuyên đề (1–3 ngày).
 - **Đơn vị hành chính cấp cơ sở**: {len(wards)} xã/phường.
 
-## Các Không Gian Văn Hóa - Thổ Nhưỡng Vĩnh Long
+## Ba vùng Văn Hóa - Thổ Nhưỡng Tam Vùng (gọi theo địa giới tỉnh cũ, trước 7-2025)
 
 1. **Vùng Đất Học & Di Sản Đỏ Vĩnh Long (Trung tâm)**: Lò gạch gốm đỏ Mang Thít, cù lao An Bình, Văn Thánh Miếu, bưởi Năm Roi Bình Minh, cam sành Tam Bình, khoai lang Bình Tân.
 2. **Vùng Đất Dừa & Đồng Khởi Bến Tre (Phía Đông)**: Rặng dừa bạt ngàn, kẹo dừa Mỏ Cày, bưởi Da Xanh, di tích Đạo Dừa Cồn Phụng, bánh tráng Mỹ Lồng, bánh phồng Sơn Đốc.

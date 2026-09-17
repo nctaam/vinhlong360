@@ -200,6 +200,8 @@ export default defineNuxtConfig({
     '/events': { redirect: { to: '/su-kien', statusCode: 301 } },
     '/map': { redirect: { to: '/ban-do', statusCode: 301 } },
     '/explore': { redirect: { to: '/du-lich', statusCode: 301 } },
+    '/kham-pha': { redirect: { to: '/du-lich', statusCode: 301 } },
+    '/kham-pha/am-thuc': { redirect: { to: '/am-thuc', statusCode: 301 } },
   },
 
   experimental: {

@@ -109,7 +109,7 @@
             </div>
             <button
               type="button"
-              class="display-settings-toggle-btn"
+              class="display-settings-toggle-btn eco-mode-toggle"
               :class="{ 'is-checked': isEcoTerroir }"
               :aria-pressed="isEcoTerroir"
               aria-label="Bật hoặc tắt Chế độ Sinh Thái Sông Nước (Eco-Mode)"

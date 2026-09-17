@@ -90,7 +90,7 @@ const INTENT_ANCHORS: readonly IntentAnchor[] = [
     key: 'culinary-market',
     label: 'Ẩm thực & Chợ nổi',
     hint: 'Cá tai tượng chiên xù, bánh xèo & Chợ nổi Trà Ôn',
-    to: '/kham-pha/am-thuc',
+    to: '/am-thuc',
     icon: 'bowl',
     avatarSrc: '/img/entities/ca-tai-tuong-chien-xu.webp',
     accent: 'amber',
