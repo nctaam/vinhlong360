@@ -2740,6 +2740,10 @@ html.js .home .hero-enter h1::after { animation: hero-underline-draw .8s var(--e
   color: var(--color-text-muted);
 }
 
+.home .hero-filter-pill {
+  min-height: var(--touch-min, 44px);
+}
+
 /* ═══════════════════════════════════════════════════
    FLOATING FROSTED-GLASS SMART TRAVEL SEARCH ISLAND
    ═══════════════════════════════════════════════════ */

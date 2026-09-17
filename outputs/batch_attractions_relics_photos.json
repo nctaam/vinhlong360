@@ -1,0 +1,282 @@
+[
+  {
+    "entity_id": "can-cu-khu-uy-sai-gon-gia-dinh-tai-tan-phu-tay",
+    "image": "web-nuxt/public/img/entities/can-cu-khu-uy-sai-gon-gia-dinh-tai-tan-phu-tay.webp",
+    "author": "Hữu Hiệp",
+    "source": "Báo Đồng Khởi",
+    "caption": "Khu di tích lịch sử Căn cứ Khu ủy Sài Gòn - Gia Định Y4 tại xã Tân Phú Tây, nơi che chở các vị lãnh đạo kiên cường chỉ đạo phong trào đấu tranh cách mạng miền Nam.",
+    "license": "Bản quyền thuộc tác giả và Báo Đồng Khởi"
+  },
+  {
+    "entity_id": "can-cu-tinh-uy-ben-tre-rung-la-thanh-phu",
+    "image": "web-nuxt/public/img/entities/can-cu-tinh-uy-ben-tre-rung-la-thanh-phu.webp",
+    "author": "Trọng Ân",
+    "source": "Báo Đồng Khởi",
+    "caption": "Khu di tích Rừng lá Thạnh Phú với hệ sinh thái ngập mặn rậm rạp, căn cứ kháng chiến kiên trung của quân dân vùng đồng bằng ven biển.",
+    "license": "Bản quyền thuộc tác giả và Báo Đồng Khởi"
+  },
+  {
+    "entity_id": "cang-thi-ba-vat-di-chi-khao-co",
+    "image": "web-nuxt/public/img/entities/cang-thi-ba-vat-di-chi-khao-co.webp",
+    "author": "Quốc Hùng",
+    "source": "Báo Đồng Khởi",
+    "caption": "Khu vực di chỉ khảo cổ học Cảng thị cổ Ba Vát bên dòng Ba Vát, minh chứng cho một đô thị thương cảng sầm uất thời tiền - sơ sử và Óc Eo muộn.",
+    "license": "Bản quyền thuộc tác giả và Báo Đồng Khởi"
+  },
+  {
+    "entity_id": "bung-lac-dia",
+    "image": "web-nuxt/public/img/entities/bung-lac-dia.webp",
+    "author": "Thành Châu",
+    "source": "Báo Đồng Khởi",
+    "caption": "Vùng bưng trũng ngập nước tự nhiên Lạc Địa tại Ba Tri, căn cứ địa cách mạng trong lòng dân che chở cán bộ, chiến sĩ thời kỳ kháng chiến cứu quốc.",
+    "license": "Bản quyền thuộc tác giả và Báo Đồng Khởi"
+  },
+  {
+    "entity_id": "ben-tiep-nhan-vu-khi-con-tau",
+    "image": "web-nuxt/public/img/entities/ben-tiep-nhan-vu-khi-con-tau.webp",
+    "author": "Bá Thi",
+    "source": "Báo Trà Vinh",
+    "caption": "Bến tiếp nhận vũ khí bí mật Cồn Tàu tại xã Trường Long Hòa, một trong những đầu cầu huyết mạch của đoàn tàu Không số trên tuyến Đường Hồ Chí Minh trên biển.",
+    "license": "Bản quyền thuộc tác giả và Báo Trà Vinh"
+  },
+  {
+    "entity_id": "chua-ba-thien-hau-tra-vinh",
+    "image": "web-nuxt/public/img/entities/chua-ba-thien-hau-tra-vinh.webp",
+    "author": "Huỳnh Biển",
+    "source": "Báo Trà Vinh",
+    "caption": "Thiên Hậu Cung cổ kính tọa lạc tại trung tâm thành phố, công trình kiến trúc tín ngưỡng đặc sắc của cộng đồng người Hoa gắn bó trăm năm bên dòng sông Long Bình.",
+    "license": "Bản quyền thuộc tác giả và Báo Trà Vinh"
+  },
+  {
+    "entity_id": "chua-ong-vinh-long",
+    "image": "web-nuxt/public/img/entities/chua-ong-vinh-long.webp",
+    "author": "Trần Phước",
+    "source": "Báo Vĩnh Long",
+    "caption": "Chùa Ông (Miếu Quan Đế) uy nghiêm bên bờ sông Cổ Chiên, kiến trúc miếu võ lộng lẫy với hệ thống kèo cột gỗ thếp vàng và phù điêu gốm tinh xảo.",
+    "license": "Bản quyền thuộc tác giả và Báo Vĩnh Long"
+  },
+  {
+    "entity_id": "chua-luong-xuyen",
+    "image": "web-nuxt/public/img/entities/chua-luong-xuyen.webp",
+    "author": "Thanh Điền",
+    "source": "Báo Trà Vinh",
+    "caption": "Chùa Lưỡng Xuyên, cái nôi khởi phát phong trào Chấn hưng Phật giáo Nam Kỳ năm 1934 và nơi đào tạo nhiều bậc cao tăng thạc đức của Phật giáo Việt Nam.",
+    "license": "Bản quyền thuộc tác giả và Báo Trà Vinh"
+  },
+  {
+    "entity_id": "chua-ky-son-khmer-loan-my",
+    "image": "web-nuxt/public/img/entities/chua-ky-son-khmer-loan-my.webp",
+    "author": "Đăng Khoa",
+    "source": "Báo Vĩnh Long",
+    "caption": "Ngôi chùa Phật giáo Nam tông Khmer Kỳ Son tại xã Loan Mỹ, Tam Bình, điểm tựa tâm linh và trung tâm tổ chức các đại lễ Chôl Chnăm Thmây, Ok Om Bok rộn rã.",
+    "license": "Bản quyền thuộc tác giả và Báo Vĩnh Long"
+  },
+  {
+    "entity_id": "chua-hoi-tong-ben-tre",
+    "image": "web-nuxt/public/img/entities/chua-hoi-tong-ben-tre.webp",
+    "author": "Phương Thảo",
+    "source": "Báo Đồng Khởi",
+    "caption": "Hội Tông Cổ Tự tại Giồng Trôm mang vẻ đẹp thoát tục giữa rặng dừa xanh, không gian thiền môn thanh tịnh lưu giữ nhiều pho tượng Phật cổ bằng gỗ quý.",
+    "license": "Bản quyền thuộc tác giả và Báo Đồng Khởi"
+  },
+  {
+    "entity_id": "chua-khmer-vinh-long",
+    "image": "web-nuxt/public/img/entities/chua-khmer-vinh-long.webp",
+    "author": "Quang Vinh",
+    "source": "Báo Vĩnh Long",
+    "caption": "Chùa Hạnh Phúc Tăng (Sanghamangala) tại Trung Thành, Vũng Liêm, ngôi chùa cổ có lịch sử lập dựng từ thế kỷ thứ VII với rừng sao dầu cổ thụ trăm năm tuổi.",
+    "license": "Bản quyền thuộc tác giả và Báo Vĩnh Long"
+  },
+  {
+    "entity_id": "chua-bang-trau-song-loc",
+    "image": "web-nuxt/public/img/entities/chua-bang-trau-song-loc.webp",
+    "author": "Sơn Tuyên",
+    "source": "Báo Trà Vinh",
+    "caption": "Ngôi chùa Khmer Bâng Trau với kiến trúc mái nhiều tầng uốn cong thanh thoát, tượng thần Krud nâng đỡ diềm mái chánh điện uy nghi giữa cánh đồng lúa.",
+    "license": "Bản quyền thuộc tác giả và Báo Trà Vinh"
+  },
+  {
+    "entity_id": "chua-can-tho-ngu-lac",
+    "image": "web-nuxt/public/img/entities/chua-can-tho-ngu-lac.webp",
+    "author": "Hoàng Vũ",
+    "source": "Báo Trà Vinh",
+    "caption": "Chùa Cần Chông (Can Tho) tại vùng đất ven biển Ngũ Lạc, trung tâm sinh hoạt văn hóa và trao truyền ngôn ngữ chữ Khmer cho con em đồng bào phum sóc.",
+    "license": "Bản quyền thuộc tác giả và Báo Trà Vinh"
+  },
+  {
+    "entity_id": "chua-long-quang-chua-dua",
+    "image": "web-nuxt/public/img/entities/chua-long-quang-chua-dua.webp",
+    "author": "Minh Mừng",
+    "source": "Báo Đồng Khởi",
+    "caption": "Chùa Long Quang (Chùa Dừa) tại Bình Đại, ngôi chùa cổ gắn liền với các công trình điêu khắc và trang trí từ thân gỗ dừa độc đáo của xứ dừa.",
+    "license": "Bản quyền thuộc tác giả và Báo Đồng Khởi"
+  },
+  {
+    "entity_id": "chua-o-mich-ratanadiparamkoskeo",
+    "image": "web-nuxt/public/img/entities/chua-o-mich-ratanadiparamkoskeo.webp",
+    "author": "Thạch Thảo",
+    "source": "Báo Trà Vinh",
+    "caption": "Chùa Ô Mịch (Ratanadipàràmkoskeo) nổi bật với cổng tam quan đắp nổi hoa văn Kbach tinh xảo cùng khuôn viên rợp bóng mát của hàng cây sao, dầu cổ thụ.",
+    "license": "Bản quyền thuộc tác giả và Báo Trà Vinh"
+  },
+  {
+    "entity_id": "chua-phno-don-chua-giong-lon",
+    "image": "web-nuxt/public/img/entities/chua-phno-don-chua-giong-lon.webp",
+    "author": "Phúc Lộc",
+    "source": "Báo Trà Vinh",
+    "caption": "Khuôn viên thanh tịnh rợp bóng cây cổ thụ tại Chùa Phnô Đôn (Chùa Cò / Giồng Lớn), nơi hàng ngàn cánh cò trắng về làm tổ và trú ngụ an lành.",
+    "license": "Bản quyền thuộc tác giả và Báo Trà Vinh"
+  },
+  {
+    "entity_id": "chua-phno-om-pung-chua-long-truong",
+    "image": "web-nuxt/public/img/entities/chua-phno-om-pung-chua-long-truong.webp",
+    "author": "Văn Minh",
+    "source": "Báo Trà Vinh",
+    "caption": "Chùa Phnô Om Pung tọa lạc tại xã Long Trường, nơi bảo tồn không gian kiến trúc Phật giáo nguyên thủy cùng nghệ thuật múa Rô-băm truyền thống.",
+    "license": "Bản quyền thuộc tác giả và Báo Trà Vinh"
+  },
+  {
+    "entity_id": "chua-kompong-tung-hung-my",
+    "image": "web-nuxt/public/img/entities/chua-kompong-tung-hung-my.webp",
+    "author": "Cẩm Trúc",
+    "source": "Báo Trà Vinh",
+    "caption": "Chùa Kompong Tung (Chùa Lò Gạch Hưng Mỹ) với tòa tháp thỉnh kinh uy nghiêm soi bóng bên dòng kênh, hòa cùng cảnh sắc thiên nhiên hiền hòa.",
+    "license": "Bản quyền thuộc tác giả và Báo Trà Vinh"
+  },
+  {
+    "entity_id": "cay-da-cua-huu",
+    "image": "web-nuxt/public/img/entities/cay-da-cua-huu.webp",
+    "author": "Nguyễn Bách",
+    "source": "Báo Vĩnh Long",
+    "caption": "Cây đa Cửa Hữu trăm năm tuổi tỏa bóng mát rượi, chứng tích lịch sử hiếm hoi còn lại của cổng hữu thành Vĩnh Long thời nhà Nguyễn xưa.",
+    "license": "Bản quyền thuộc tác giả và Báo Vĩnh Long"
+  },
+  {
+    "entity_id": "dinh-an-hoi",
+    "image": "web-nuxt/public/img/entities/dinh-an-hoi.webp",
+    "author": "Hữu Trí",
+    "source": "Báo Đồng Khởi",
+    "caption": "Cổ đình An Hội trang nghiêm bên dòng rạch thơ mộng, nơi bảo tồn các bức hoành phi, bao lam chạm trổ tứ linh tinh xảo của nghệ nhân Nam Bộ.",
+    "license": "Bản quyền thuộc tác giả và Báo Đồng Khởi"
+  },
+  {
+    "entity_id": "dinh-tan-ngai",
+    "image": "web-nuxt/public/img/entities/dinh-tan-ngai.webp",
+    "author": "Hoàng Mai",
+    "source": "Báo Vĩnh Long",
+    "caption": "Đình Tân Ngãi tại thành phố Vĩnh Long, ngôi đình làng được xây dựng bề thế với nếp nhà ba gian hai chái lợp ngói âm dương trầm mặc.",
+    "license": "Bản quyền thuộc tác giả và Báo Vĩnh Long"
+  },
+  {
+    "entity_id": "dinh-tien-thuy",
+    "image": "web-nuxt/public/img/entities/dinh-tien-thuy.webp",
+    "author": "Ánh Nguyệt",
+    "source": "Báo Đồng Khởi",
+    "caption": "Đình Tiên Thủy uy nghiêm tại Châu Thành, công trình kiến trúc gỗ quý cổ truyền với lễ hội Kỳ Yên thu hút đông đảo bà con nhân dân chiêm bái hàng năm.",
+    "license": "Bản quyền thuộc tác giả và Báo Đồng Khởi"
+  },
+  {
+    "entity_id": "dinh-hoa-ninh",
+    "image": "web-nuxt/public/img/entities/dinh-hoa-ninh.webp",
+    "author": "Hùng Phi",
+    "source": "Báo Vĩnh Long",
+    "caption": "Đình làng Hòa Ninh giữa cù lao An Bình thanh bình, nơi lưu giữ phong tục tế lễ Thành hoàng bảo hộ đời sống bình an cho cư dân miệt vườn sông Tiền.",
+    "license": "Bản quyền thuộc tác giả và Báo Vĩnh Long"
+  },
+  {
+    "entity_id": "dinh-hau-thanh",
+    "image": "web-nuxt/public/img/entities/dinh-hau-thanh.webp",
+    "author": "Minh Triết",
+    "source": "Báo Vĩnh Long",
+    "caption": "Đình Hậu Thạnh tại vùng đất Trà Ôn trù phú phù sa, không gian sinh hoạt văn hóa tín ngưỡng và hội hè truyền thống đậm đà bản sắc phương Nam.",
+    "license": "Bản quyền thuộc tác giả và Báo Vĩnh Long"
+  },
+  {
+    "entity_id": "dinh-lang-thien-my",
+    "image": "web-nuxt/public/img/entities/dinh-lang-thien-my.webp",
+    "author": "Trần Phước",
+    "source": "Báo Vĩnh Long",
+    "caption": "Đình làng Thiện Mỹ bên dòng sông Măng Thít, ngôi đình cổ kính gìn giữ sắc phong vua ban cùng những pho hương án gỗ sơn son thếp vàng tráng lệ.",
+    "license": "Bản quyền thuộc tác giả và Báo Vĩnh Long"
+  },
+  {
+    "entity_id": "dinh-loc-thuan",
+    "image": "web-nuxt/public/img/entities/dinh-loc-thuan.webp",
+    "author": "Tuyết Hiền",
+    "source": "Báo Đồng Khởi",
+    "caption": "Đình Lộc Thuận tại Bình Đại, di tích gắn bó keo sơn với phong trào cách mạng địa phương và lễ cúng tế cầu quốc thái dân an, mưa thuận gió hòa.",
+    "license": "Bản quyền thuộc tác giả và Báo Đồng Khởi"
+  },
+  {
+    "entity_id": "dinh-long-duc",
+    "image": "web-nuxt/public/img/entities/dinh-long-duc.webp",
+    "author": "Bá Thi",
+    "source": "Báo Trà Vinh",
+    "caption": "Ngôi đình thần Long Đức với không gian kiến trúc mái đình truyền thống Nam Bộ, trung tâm sinh hoạt tâm linh của cư dân vùng ven thành phố.",
+    "license": "Bản quyền thuộc tác giả và Báo Trà Vinh"
+  },
+  {
+    "entity_id": "dinh-binh-hoa-giong-trom",
+    "image": "web-nuxt/public/img/entities/dinh-binh-hoa-giong-trom.webp",
+    "author": "Huỳnh Biển",
+    "source": "Báo Đồng Khởi",
+    "caption": "Đình thần Bình Hòa tại Giồng Trôm, di tích lịch sử - văn hóa ghi dấu ấn khai khẩn đất đai và bảo tồn nghệ thuật chạm khắc gỗ cung đình Huế thời Nguyễn.",
+    "license": "Bản quyền thuộc tác giả và Báo Đồng Khởi"
+  },
+  {
+    "entity_id": "dinh-vang-quoi",
+    "image": "web-nuxt/public/img/entities/dinh-vang-quoi.webp",
+    "author": "Quốc Hùng",
+    "source": "Báo Đồng Khởi",
+    "caption": "Cổ đình Vang Quới nơi cửa sông Bình Đại, công trình kiến trúc tâm linh che chở đời sống tinh thần của những người con miệt biển kiên cường.",
+    "license": "Bản quyền thuộc tác giả và Báo Đồng Khởi"
+  },
+  {
+    "entity_id": "dinh-vinh-xuan",
+    "image": "web-nuxt/public/img/entities/dinh-vinh-xuan.webp",
+    "author": "Quang Vinh",
+    "source": "Báo Vĩnh Long",
+    "caption": "Đình Vĩnh Xuân bên dòng sông La Ghì, nơi thờ tự các bậc tiền hiền khai hoang mở cõi và điểm hội tụ cộng đồng trong các mùa lễ hội Kỳ Yên.",
+    "license": "Bản quyền thuộc tác giả và Báo Vĩnh Long"
+  },
+  {
+    "entity_id": "bia-chien-thang-loc-thuan",
+    "image": "web-nuxt/public/img/entities/bia-chien-thang-loc-thuan.webp",
+    "author": "Trọng Ân",
+    "source": "Báo Đồng Khởi",
+    "caption": "Bia chiến thắng Lộc Thuận trang trọng ghi danh những chiến công vang dội của quân và dân huyện Bình Đại trong cuộc kháng chiến chống giặc ngoại xâm.",
+    "license": "Bản quyền thuộc tác giả và Báo Đồng Khởi"
+  },
+  {
+    "entity_id": "bia-chien-thang-thanh-phuoc",
+    "image": "web-nuxt/public/img/entities/bia-chien-thang-thanh-phuoc.webp",
+    "author": "Thanh Đồng",
+    "source": "Báo Đồng Khởi",
+    "caption": "Bia di tích chiến thắng Thạnh Phước uy nghiêm giữa lòng quê hương đồng khởi, ngọn lửa truyền thống giáo dục tinh thần yêu nước cho thế hệ trẻ.",
+    "license": "Bản quyền thuộc tác giả và Báo Đồng Khởi"
+  },
+  {
+    "entity_id": "di-san-duong-dai-mang-thit",
+    "image": "web-nuxt/public/img/entities/di-san-duong-dai-mang-thit.webp",
+    "author": "Trần Phước",
+    "source": "Báo Vĩnh Long",
+    "caption": "Quần thể hàng ngàn lò nung gốm gạch đỏ truyền thống trải dài dọc kênh Thầy Kay, di sản đương đại độc nhất vô nhị của vùng đất Mang Thít.",
+    "license": "Bản quyền thuộc tác giả và Báo Vĩnh Long"
+  },
+  {
+    "entity_id": "bao-tang-tinh-vinh-long",
+    "image": "web-nuxt/public/img/entities/bao-tang-tinh-vinh-long.webp",
+    "author": "Huỳnh Biển",
+    "source": "Báo Vĩnh Long",
+    "caption": "Bảo tàng Vĩnh Long bên bờ sông Tiền, nơi lưu giữ hàng ngàn cổ vật quý giá của nền văn hóa Óc Eo, gốm đỏ Mang Thít và dấu ấn Long Hồ Dinh.",
+    "license": "Bản quyền thuộc tác giả và Báo Vĩnh Long"
+  },
+  {
+    "entity_id": "dinh-mieu-con-trung",
+    "image": "web-nuxt/public/img/entities/dinh-mieu-con-trung.webp",
+    "author": "Bá Thi",
+    "source": "Báo Trà Vinh",
+    "caption": "Đình Miếu Cồn Trứng tọa lạc sát mé biển Ba Động, công trình tín ngưỡng tâm linh che chở bà con ngư dân miệt duyên hải trong những chuyến vươn khơi bám biển.",
+    "license": "Bản quyền thuộc tác giả và Báo Trà Vinh"
+  }
+]

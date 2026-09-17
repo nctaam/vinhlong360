@@ -356,9 +356,45 @@ describe('Image Governance & Visual Asset Suite (100% Full Coverage)', () => {
       'rung-duoc-long-khanh',
       'rung-ngap-man-phong-ho-binh-dai-ben-tre',
       'canh-dong-muoi-bao-thanh',
+      // 35 Cultural Attractions, Ancient Pagodas & Historical Relics (Batch 9)
+      'can-cu-khu-uy-sai-gon-gia-dinh-tai-tan-phu-tay',
+      'can-cu-tinh-uy-ben-tre-rung-la-thanh-phu',
+      'cang-thi-ba-vat-di-chi-khao-co',
+      'bung-lac-dia',
+      'ben-tiep-nhan-vu-khi-con-tau',
+      'chua-ba-thien-hau-tra-vinh',
+      'chua-ong-vinh-long',
+      'chua-luong-xuyen',
+      'chua-ky-son-khmer-loan-my',
+      'chua-hoi-tong-ben-tre',
+      'chua-khmer-vinh-long',
+      'chua-bang-trau-song-loc',
+      'chua-can-tho-ngu-lac',
+      'chua-long-quang-chua-dua',
+      'chua-o-mich-ratanadiparamkoskeo',
+      'chua-phno-don-chua-giong-lon',
+      'chua-phno-om-pung-chua-long-truong',
+      'chua-kompong-tung-hung-my',
+      'cay-da-cua-huu',
+      'dinh-an-hoi',
+      'dinh-tan-ngai',
+      'dinh-tien-thuy',
+      'dinh-hoa-ninh',
+      'dinh-hau-thanh',
+      'dinh-lang-thien-my',
+      'dinh-loc-thuan',
+      'dinh-long-duc',
+      'dinh-binh-hoa-giong-trom',
+      'dinh-vang-quoi',
+      'dinh-vinh-xuan',
+      'bia-chien-thang-loc-thuan',
+      'bia-chien-thang-thanh-phuoc',
+      'di-san-duong-dai-mang-thit',
+      'bao-tang-tinh-vinh-long',
+      'dinh-mieu-con-trung',
     ]
 
-    expect(documentaryIds.length).toBe(229)
+    expect(documentaryIds.length).toBe(264)
 
     for (const id of documentaryIds) {
       const row = db.prepare(`SELECT id, images, attributes FROM entities WHERE id = ?`).get(id) as { id: string; images: string; attributes: string }
