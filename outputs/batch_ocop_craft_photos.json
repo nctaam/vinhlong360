@@ -1,0 +1,322 @@
+[
+  {
+    "entity_id": "lang-gach-gom-mang-thit",
+    "image": "web-nuxt/public/img/entities/lang-gach-gom-mang-thit.webp",
+    "author": "Bá Dũng",
+    "source": "Báo Vĩnh Long",
+    "caption": "Những lò gạch gốm đỏ rực rỡ hình tháp tròn soi bóng bên dòng kênh Thầy Kay, chứng tích hơn 100 năm của làng nghề thủ công Mang Thít.",
+    "license": "Bản quyền thuộc tác giả và Báo Vĩnh Long"
+  },
+  {
+    "entity_id": "lang-nghe-gach-gom-mang-thit-vuong-quoc-do",
+    "image": "web-nuxt/public/img/entities/lang-nghe-gach-gom-mang-thit-vuong-quoc-do.webp",
+    "author": "Trần Phước",
+    "source": "Báo Vĩnh Long",
+    "caption": "Vương quốc gạch gốm đỏ Mang Thít với quần thể hàng nghìn lò nung nung gạch thủ công bằng trấu, tạo nên bức tranh di sản đương đại độc đáo bên sông Cổ Chiên.",
+    "license": "Bản quyền thuộc tác giả và Báo Vĩnh Long"
+  },
+  {
+    "entity_id": "nha-gom-tu-buoi",
+    "image": "web-nuxt/public/img/entities/nha-gom-tu-buoi.webp",
+    "author": "Nguyễn Thịnh",
+    "source": "Báo Vĩnh Long",
+    "caption": "Ngôi nhà gốm Tư Buôi độc nhất vô nhị được ốp bằng hàng ngàn chi tiết gốm đỏ mỹ nghệ, tôn vinh tinh hoa bàn tay tài hoa của nghệ nhân gốm Vĩnh Long.",
+    "license": "Bản quyền thuộc tác giả và Báo Vĩnh Long"
+  },
+  {
+    "entity_id": "lang-nghe-lam-tau-hu-ky",
+    "image": "web-nuxt/public/img/entities/lang-nghe-lam-tau-hu-ky.webp",
+    "author": "Minh Triết",
+    "source": "Báo Vĩnh Long",
+    "caption": "Làng nghề làm tàu hủ ky Mỹ Hòa đỏ lửa thâu đêm bên chảo đậu nành sôi sùng sục, di sản văn hóa phi vật thể quốc gia lưu giữ kỹ nghệ truyền đời.",
+    "license": "Bản quyền thuộc tác giả và Báo Vĩnh Long"
+  },
+  {
+    "entity_id": "lang-nghe-det-chieu-ca-hom-ben-ba",
+    "image": "web-nuxt/public/img/entities/lang-nghe-det-chieu-ca-hom-ben-ba.webp",
+    "author": "Bá Thi",
+    "source": "Báo Trà Vinh",
+    "caption": "Khung dệt chiếu thủ công Cà Hom rộn rã nhịp thoi đưa, nơi đồng bào Khmer khéo léo dệt nên những tấm chiếu hoa bền đẹp nổi tiếng khắp miền Tây.",
+    "license": "Bản quyền thuộc tác giả và Báo Trà Vinh"
+  },
+  {
+    "entity_id": "lang-nghe-dan-non-la-tt-long-ho",
+    "image": "web-nuxt/public/img/entities/lang-nghe-dan-non-la-tt-long-ho.webp",
+    "author": "Hữu Toàn",
+    "source": "Báo Vĩnh Long",
+    "caption": "Những vành nón lá trắng muốt được các mẹ các chị chăm chút từng mũi kim tỉ mỉ tại làng nghề đan nón lá truyền thống thị trấn Long Hồ.",
+    "license": "Bản quyền thuộc tác giả và Báo Vĩnh Long"
+  },
+  {
+    "entity_id": "lang-nghe-tom-kho-vinh-kim",
+    "image": "web-nuxt/public/img/entities/lang-nghe-tom-kho-vinh-kim.webp",
+    "author": "Thanh Hòa",
+    "source": "Báo Trà Vinh",
+    "caption": "Sân phơi tôm khô Vinh Kim đỏ au dưới nắng vàng, đặc sản tôm đất tự nhiên nức tiếng bởi vị ngọt đậm đà và thớ thịt săn chắc khó nơi nào sánh kịp.",
+    "license": "Bản quyền thuộc tác giả và Báo Trà Vinh"
+  },
+  {
+    "entity_id": "lang-nghe-tieu-thu-cong-nghiep-tre-ham-giang-co-so-tri-canh",
+    "image": "web-nuxt/public/img/entities/lang-nghe-tieu-thu-cong-nghiep-tre-ham-giang-co-so-tri-canh.webp",
+    "author": "Quốc Khởi",
+    "source": "Báo Trà Vinh",
+    "caption": "Nghệ nhân cơ sở Trì Cảnh uốn nắn từng thanh tre già thành những bộ bàn ghế, giường chõng tinh xảo của làng nghề tiểu thủ công nghiệp Hàm Giang.",
+    "license": "Bản quyền thuộc tác giả và Báo Trà Vinh"
+  },
+  {
+    "entity_id": "lang-mai-vang-phuoc-dinh",
+    "image": "web-nuxt/public/img/entities/lang-mai-vang-phuoc-dinh.webp",
+    "author": "Quang Vinh",
+    "source": "Báo Vĩnh Long",
+    "caption": "Làng mai vàng Phước Định trứ danh với hàng ngàn gốc mai cổ thụ bạc tỷ được các nghệ nhân uốn tỉa dáng thế công phu đón chào mùa xuân miệt vườn.",
+    "license": "Bản quyền thuộc tác giả và Báo Vĩnh Long"
+  },
+  {
+    "entity_id": "cong-ty-tnhh-tra-vinh-farm-sokfarm",
+    "image": "web-nuxt/public/img/entities/cong-ty-tnhh-tra-vinh-farm-sokfarm.webp",
+    "author": "Phương Thảo",
+    "source": "Báo Trà Vinh",
+    "caption": "Quy trình thu mật hoa dừa thủ công tự nhiên tại Sokfarm, mô hình nông nghiệp bản địa đạt chuẩn hữu cơ quốc tế vươn tầm xuất khẩu.",
+    "license": "Bản quyền thuộc tác giả và Báo Trà Vinh"
+  },
+  {
+    "entity_id": "lang-nghe-truyen-thong-phu-le",
+    "image": "web-nuxt/public/img/entities/lang-nghe-truyen-thong-phu-le.webp",
+    "author": "Hữu Hiệp",
+    "source": "Báo Đồng Khởi",
+    "caption": "Hương rượu nếp Phú Lễ nồng đượm men ủ thảo mộc cổ truyền kết hợp cùng kỹ nghệ đan đát giỏ lán mang đậm bản sắc văn hóa Ba Tri.",
+    "license": "Bản quyền thuộc tác giả và Báo Đồng Khởi"
+  },
+  {
+    "entity_id": "lang-nghe-hoa-kieng-thanh-tan",
+    "image": "web-nuxt/public/img/entities/lang-nghe-hoa-kieng-thanh-tan.webp",
+    "author": "Thành Châu",
+    "source": "Báo Đồng Khởi",
+    "caption": "Không gian làng nghề hoa kiểng Thanh Tân rực rỡ sắc màu quanh năm, trung tâm ươm tạo cây giống và cây thế nghệ thuật nức tiếng vùng cù lao.",
+    "license": "Bản quyền thuộc tác giả và Báo Đồng Khởi"
+  },
+  {
+    "entity_id": "lang-nghe-bo-choi-my-an",
+    "image": "web-nuxt/public/img/entities/lang-nghe-bo-choi-my-an.webp",
+    "author": "Lê Tấn",
+    "source": "Báo Vĩnh Long",
+    "caption": "Bàn tay thoăn thoắt tước cọng dừa và bện chổi của những người thợ làng nghề bó chổi Mỹ An, sản phẩm mộc mạc gắn bó với nếp nhà Nam Bộ.",
+    "license": "Bản quyền thuộc tác giả và Báo Vĩnh Long"
+  },
+  {
+    "entity_id": "lang-nghe-chi-xo-dua-khanh-thanh-tan",
+    "image": "web-nuxt/public/img/entities/lang-nghe-chi-xo-dua-khanh-thanh-tan.webp",
+    "author": "Thu Huyền",
+    "source": "Báo Đồng Khởi",
+    "caption": "Những kiện chỉ xơ dừa vàng óng được phân loại và cuộn tròn tại Khánh Thạnh Tân, biến vỏ dừa thô mộc thành nguồn nguyên liệu sinh thái giá trị cao.",
+    "license": "Bản quyền thuộc tác giả và Báo Đồng Khởi"
+  },
+  {
+    "entity_id": "lang-nghe-dan-dat-dai-an",
+    "image": "web-nuxt/public/img/entities/lang-nghe-dan-dat-dai-an.webp",
+    "author": "Minh Đăng",
+    "source": "Báo Trà Vinh",
+    "caption": "Nghề đan lát tre trúc truyền thống Đại An với các sản phẩm nia, thúng, xọt phục vụ sinh hoạt dân dã và xuất khẩu mỹ nghệ vùng đồng bào Khmer.",
+    "license": "Bản quyền thuộc tác giả và Báo Trà Vinh"
+  },
+  {
+    "entity_id": "lang-nghe-thach-dua-hung-phong",
+    "image": "web-nuxt/public/img/entities/lang-nghe-thach-dua-hung-phong.webp",
+    "author": "Cẩm Trúc",
+    "source": "Báo Đồng Khởi",
+    "caption": "Quy trình lên men nước dừa già thành những tảng thạch dừa trắng ngần, giòn dai tự nhiên tại làng nghề Hưng Phong trên dải cù lao Cồn Ốc.",
+    "license": "Bản quyền thuộc tác giả và Báo Đồng Khởi"
+  },
+  {
+    "entity_id": "lang-nghe-thu-cong-my-nghe-dua-mo-cay-nam",
+    "image": "web-nuxt/public/img/entities/lang-nghe-thu-cong-my-nghe-dua-mo-cay-nam.webp",
+    "author": "Trọng Tuệ",
+    "source": "Báo Đồng Khởi",
+    "caption": "Nghệ nhân Mỏ Cày Nam chạm khắc tinh tế từng thớ gỗ dừa, gáo dừa già thành những tác phẩm mỹ nghệ gia dụng và lưu niệm độc đáo.",
+    "license": "Bản quyền thuộc tác giả và Báo Đồng Khởi"
+  },
+  {
+    "entity_id": "lang-nghe-dong-ghe-xuong-an-dinh",
+    "image": "web-nuxt/public/img/entities/lang-nghe-dong-ghe-xuong-an-dinh.webp",
+    "author": "Kim Loan",
+    "source": "Báo Đồng Khởi",
+    "caption": "Xưởng đóng ghe xuồng An Định rộn vang tiếng búa đục gõ bào, giữ vững nghề mộc đóng xuồng tam bản vượt sóng nước chở nặng phù sa Cửu Long.",
+    "license": "Bản quyền thuộc tác giả và Báo Đồng Khởi"
+  },
+  {
+    "entity_id": "lang-nghe-che-tac-mat-na-khmer-nguyet-hoa",
+    "image": "web-nuxt/public/img/entities/lang-nghe-che-tac-mat-na-khmer-nguyet-hoa.webp",
+    "author": "Sơn Tha",
+    "source": "Báo Trà Vinh",
+    "caption": "Nghệ nhân tỉ mỉ đắp khuôn và vẽ sơn màu cho mặt nạ Chhay-dăm, Reamker của nghệ thuật sân khấu Rô-băm truyền thống tại Nguyệt Hóa.",
+    "license": "Bản quyền thuộc tác giả và Báo Trà Vinh"
+  },
+  {
+    "entity_id": "lang-banh-trang-tra-on",
+    "image": "web-nuxt/public/img/entities/lang-banh-trang-tra-on.webp",
+    "author": "Ngọc Trảng",
+    "source": "Báo Vĩnh Long",
+    "caption": "Sân phơi bánh tráng nem, bánh tráng ngọt Cù Lao Mây trải dài trắng ngần bên bờ sông Hậu, làng nghề trăm năm nức tiếng đất Trà Ôn.",
+    "license": "Bản quyền thuộc tác giả và Báo Vĩnh Long"
+  },
+  {
+    "entity_id": "buoi-da-xanh",
+    "image": "web-nuxt/public/img/entities/buoi-da-xanh.webp",
+    "author": "Phương Thảo",
+    "source": "Báo Đồng Khởi",
+    "caption": "Trái bưởi da xanh vỏ xanh mỏng, ruột hồng đỏ mọng nước và ngọt thanh tự nhiên, nông sản chủ lực đạt tiêu chuẩn chất lượng xuất khẩu.",
+    "license": "Bản quyền thuộc tác giả và Báo Đồng Khởi"
+  },
+  {
+    "entity_id": "tep-kho-my-long",
+    "image": "web-nuxt/public/img/entities/tep-kho-my-long.webp",
+    "author": "Hoàng Vũ",
+    "source": "Báo Trà Vinh",
+    "caption": "Mẻ tép khô Mỹ Long phơi nắng giòn đều, sắc cam óng ánh đậm đà vị mặn mòi gió biển của thị trấn duyên hải Cầu Ngang.",
+    "license": "Bản quyền thuộc tác giả và Báo Trà Vinh"
+  },
+  {
+    "entity_id": "ruou-truyen-thong-cuu-long-cuu-long-my-tuu",
+    "image": "web-nuxt/public/img/entities/ruou-truyen-thong-cuu-long-cuu-long-my-tuu.webp",
+    "author": "Hữu Tài",
+    "source": "Báo Vĩnh Long",
+    "caption": "Dòng rượu truyền thống Cửu Long Mỹ Tửu ủ men thảo mộc hạ thổ công phu tại Somo Farm Cửu Long, đặc sản OCOP đạt chuẩn thượng hạng.",
+    "license": "Bản quyền thuộc tác giả và Báo Vĩnh Long"
+  },
+  {
+    "entity_id": "dua-luoi-truong-long-hoa",
+    "image": "web-nuxt/public/img/entities/dua-luoi-truong-long-hoa.webp",
+    "author": "Văn Trí",
+    "source": "Báo Trà Vinh",
+    "caption": "Dưa lưới Trường Long Hòa vân lưới đều đặn, thịt giòn ngọt thanh mát được canh tác công nghệ cao trong nhà màng đạt chứng nhận OCOP 4 sao.",
+    "license": "Bản quyền thuộc tác giả và Báo Trà Vinh"
+  },
+  {
+    "entity_id": "chom-chom-cau-ke",
+    "image": "web-nuxt/public/img/entities/chom-chom-cau-ke.webp",
+    "author": "Bá Thi",
+    "source": "Báo Trà Vinh",
+    "caption": "Những chùm chôm chôm Java chín đỏ rực cành trên cù lao Tân Quy xã An Phú Tân, trái ngọt phù sa bồi đắp quanh năm tươi tốt.",
+    "license": "Bản quyền thuộc tác giả và Báo Trà Vinh"
+  },
+  {
+    "entity_id": "nuoc-khoang-thien-nhien-sao-bien-starfiwa",
+    "image": "web-nuxt/public/img/entities/nuoc-khoang-thien-nhien-sao-bien-starfiwa.webp",
+    "author": "Phạm Hữu",
+    "source": "Báo Trà Vinh",
+    "caption": "Nước khoáng thiên nhiên Sao Biển Starfiwa khai thác từ nguồn khoáng ngầm sâu ven biển Thạnh Phú - Duyên Hải, đạt chứng nhận OCOP 4 sao chất lượng cao.",
+    "license": "Bản quyền thuộc tác giả và Báo Trà Vinh"
+  },
+  {
+    "entity_id": "banh-kep-thuy-kieu",
+    "image": "web-nuxt/public/img/entities/banh-kep-thuy-kieu.webp",
+    "author": "Thanh Trúc",
+    "source": "Báo Đồng Khởi",
+    "caption": "Bánh kẹp cuốn Thúy Kiều giòn rụm với hương vị nước cốt dừa béo ngậy pha hạt mè rang, sản phẩm quà quê OCOP 4 sao nức tiếng Mỏ Cày Nam.",
+    "license": "Bản quyền thuộc tác giả và Báo Đồng Khởi"
+  },
+  {
+    "entity_id": "banh-tet-tu-quy-hai-ly",
+    "image": "web-nuxt/public/img/entities/banh-tet-tu-quy-hai-ly.webp",
+    "author": "Ngọc Diễm",
+    "source": "Báo Trà Vinh",
+    "caption": "Đòn bánh tét Tứ Quý cơ sở Hai Lý đạt chứng nhận OCOP 4 sao với nhân thập cẩm đậu xanh, trứng muối, lạp xưởng và nếp dẻo thơm lừng.",
+    "license": "Bản quyền thuộc tác giả và Báo Trà Vinh"
+  },
+  {
+    "entity_id": "bun-tuoi-an-dao",
+    "image": "web-nuxt/public/img/entities/bun-tuoi-an-dao.webp",
+    "author": "Kim Ngân",
+    "source": "Báo Trà Vinh",
+    "caption": "Sợi bún tươi An Đào dẻo dai làm từ hạt gạo nàng thơm nguyên chất theo quy trình khép kín an toàn vệ sinh thực phẩm tại Cầu Ngang.",
+    "license": "Bản quyền thuộc tác giả và Báo Trà Vinh"
+  },
+  {
+    "entity_id": "buoi-da-xanh-giong-trom",
+    "image": "web-nuxt/public/img/entities/buoi-da-xanh-giong-trom.webp",
+    "author": "Bảo Toàn",
+    "source": "Báo Đồng Khởi",
+    "caption": "Vườn bưởi da xanh trĩu quả của Hợp tác xã nông nghiệp Giồng Trôm, đặc sản OCOP 4 sao xuất khẩu nổi danh khắp thị trường trong và ngoài nước.",
+    "license": "Bản quyền thuộc tác giả và Báo Đồng Khởi"
+  },
+  {
+    "entity_id": "ca-bong-lau-mot-nang-binh-dai",
+    "image": "web-nuxt/public/img/entities/ca-bong-lau-mot-nang-binh-dai.webp",
+    "author": "Minh Nhân",
+    "source": "Báo Đồng Khởi",
+    "caption": "Cá bông lau một nắng Bình Đại tươi ngon ướp muối ớt vừa vị, phơi một nắng vừa tới để giữ trọn vẹn độ béo ngậy và vị ngọt bùi của thớ cá sông.",
+    "license": "Bản quyền thuộc tác giả và Báo Đồng Khởi"
+  },
+  {
+    "entity_id": "ca-kho-dac-san-thanh-phong-ocop",
+    "image": "web-nuxt/public/img/entities/ca-kho-dac-san-thanh-phong-ocop.webp",
+    "author": "Hữu Hiệp",
+    "source": "Báo Đồng Khởi",
+    "caption": "Các loại khô cá đặc sản Thạnh Phong được phơi đón nắng gió biển Thạnh Phú, sản phẩm OCOP chế biến sạch giữ trọn phong vị biển khơi.",
+    "license": "Bản quyền thuộc tác giả và Báo Đồng Khởi"
+  },
+  {
+    "entity_id": "cua-bien-va-ngheu-thanh-phu",
+    "image": "web-nuxt/public/img/entities/cua-bien-va-ngheu-thanh-phu.webp",
+    "author": "Thành Lập",
+    "source": "Báo Đồng Khởi",
+    "caption": "Cua biển thịt chắc nịch và nghêu sạch sinh thái vùng bãi bồi Thạnh Phú, đặc sản OCOP 4 sao trứ danh của vùng duyên hải phương Nam.",
+    "license": "Bản quyền thuộc tác giả và Báo Đồng Khởi"
+  },
+  {
+    "entity_id": "cu-cai-muoi-chit-sa",
+    "image": "web-nuxt/public/img/entities/cu-cai-muoi-chit-sa.webp",
+    "author": "Bá Dũng",
+    "source": "Báo Trà Vinh",
+    "caption": "Món củ cải muối Chịt Sa giòn sần sật của đồng bào Khmer Cầu Kè, bí quyết ủ muối gia truyền đạt chứng nhận OCOP 3 sao đặc trưng.",
+    "license": "Bản quyền thuộc tác giả và Báo Trà Vinh"
+  },
+  {
+    "entity_id": "dua-sap-hoa-tan",
+    "image": "web-nuxt/public/img/entities/dua-sap-hoa-tan.webp",
+    "author": "Trần Điền",
+    "source": "Báo Trà Vinh",
+    "caption": "Trái dừa sáp Hòa Tân bổ đôi lộ lớp cơm dừa dày quánh mềm dẻo như bơ sữa, nông sản đặc sản OCOP 4 sao quý hiếm vùng đất Cầu Kè.",
+    "license": "Bản quyền thuộc tác giả và Báo Trà Vinh"
+  },
+  {
+    "entity_id": "gao-huu-co-long-hoa-hoa-minh-ocop-4-sao",
+    "image": "web-nuxt/public/img/entities/gao-huu-co-long-hoa-hoa-minh-ocop-4-sao.webp",
+    "author": "Hải Triều",
+    "source": "Báo Trà Vinh",
+    "caption": "Hạt gạo hữu cơ mô hình tôm - lúa Long Hòa – Hòa Minh trắng trong thơm ngát, sản phẩm OCOP 4 sao canh tác hoàn toàn thuận tự nhiên.",
+    "license": "Bản quyền thuộc tác giả và Báo Trà Vinh"
+  },
+  {
+    "entity_id": "hoa-cuc-mam-xoi-long-thoi",
+    "image": "web-nuxt/public/img/entities/hoa-cuc-mam-xoi-long-thoi.webp",
+    "author": "Phương Thảo",
+    "source": "Báo Đồng Khởi",
+    "caption": "Những chậu cúc mâm xôi Long Thới tròn xoe vàng ươm bung nở đón Tết, nông sản hoa kiểng trứ danh đất Chợ Lách khoe sắc khắp miền Nam.",
+    "license": "Bản quyền thuộc tác giả và Báo Đồng Khởi"
+  },
+  {
+    "entity_id": "keo-dua-tuyet-phung",
+    "image": "web-nuxt/public/img/entities/keo-dua-tuyet-phung.webp",
+    "author": "Quang Duy",
+    "source": "Báo Đồng Khởi",
+    "caption": "Kẹo dừa Tuyết Phụng Mỏ Cày Nam dẻo thơm ngậy béo hương nước cốt dừa và sầu riêng, thương hiệu OCOP 4 sao tiêu biểu của xứ dừa.",
+    "license": "Bản quyền thuộc tác giả và Báo Đồng Khởi"
+  },
+  {
+    "entity_id": "lap-xuong-ngoc-huong",
+    "image": "web-nuxt/public/img/entities/lap-xuong-ngoc-huong.webp",
+    "author": "Thu Ba",
+    "source": "Báo Trà Vinh",
+    "caption": "Lạp xưởng tươi nạc đỏ au đượm vị mai quế lộ của cơ sở Ngọc Hương tại Cầu Kè, sản phẩm OCOP 3 sao thơm ngon được ưa chuộng dịp lễ Tết.",
+    "license": "Bản quyền thuộc tác giả và Báo Trà Vinh"
+  },
+  {
+    "entity_id": "mat-ong-rung-ban-my-long-nam",
+    "image": "web-nuxt/public/img/entities/mat-ong-rung-ban-my-long-nam.webp",
+    "author": "Văn Hùng",
+    "source": "Báo Trà Vinh",
+    "caption": "Giọt mật ong rừng bần nguyên chất vàng sánh thu hoạch từ những cánh rừng ngập mặn Mỹ Long Nam, sản phẩm OCOP 3 sao giàu dưỡng chất thiên nhiên.",
+    "license": "Bản quyền thuộc tác giả và Báo Trà Vinh"
+  }
+]
