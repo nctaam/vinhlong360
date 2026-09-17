@@ -47,6 +47,14 @@ mockNuxtImport('useAdminPrefs', () => () => ({
   setPref: mocks.setPref,
 }))
 
+vi.mock('../components/OnboardingSheet.vue', () => ({ default: { name: 'OnboardingSheet', render: () => null } }))
+vi.mock('../components/AuthModal.vue', () => ({ default: { name: 'AuthModal', render: () => null } }))
+vi.mock('../components/ChatWidget.vue', () => ({ default: { name: 'ChatWidget', render: () => null } }))
+vi.mock('../components/JourneyBar.vue', () => ({ default: { name: 'JourneyBar', render: () => null } }))
+vi.mock('../components/ScrollToTop.vue', () => ({ default: { name: 'ScrollToTop', render: () => null } }))
+vi.mock('../components/ToastContainer.vue', () => ({ default: { name: 'ToastContainer', render: () => null } }))
+vi.mock('../components/ConfirmDialog.vue', () => ({ default: { name: 'ConfirmDialog', render: () => null } }))
+
 const wrappers: Array<{ unmount: () => void }> = []
 
 function mountAdminLayout() {
@@ -88,6 +96,11 @@ function mountDefaultLayout() {
         LazyToastContainer: true,
         UserMenu: true,
         LazyUserMenu: true,
+        JourneyBar: true,
+        LazyJourneyBar: true,
+        SearchDrawer: true,
+        LazySearchDrawer: true,
+        OfflineTerroirPanel: true,
         SearchAutocomplete: true,
         ShellPublicBottomNav: true,
         ShellPublicContextBar: { template: '<div data-public-context-line />' },

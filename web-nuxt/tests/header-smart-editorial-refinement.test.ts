@@ -2,6 +2,7 @@ import { mockNuxtImport, mountSuspended } from '@nuxt/test-utils/runtime'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { ref } from 'vue'
 import ThemeModeControl from '../components/shell/ThemeModeControl.vue'
+import PublicContextBar from '../components/shell/PublicContextBar.vue'
 import DefaultLayout from '../layouts/default.vue'
 
 const colorMode = vi.hoisted(() => ({ value: 'dark' as unknown, preference: 'dark' as unknown }))
@@ -22,6 +23,14 @@ mockNuxtImport('useAuth', () => () => ({
 mockNuxtImport('useAuthModal', () => () => ({ open: ref(false) }))
 mockNuxtImport('useSeasonTheme', () => () => undefined)
 mockNuxtImport('useScrollFade', () => () => undefined)
+
+vi.mock('../components/OnboardingSheet.vue', () => ({ default: { name: 'OnboardingSheet', render: () => null } }))
+vi.mock('../components/AuthModal.vue', () => ({ default: { name: 'AuthModal', render: () => null } }))
+vi.mock('../components/ChatWidget.vue', () => ({ default: { name: 'ChatWidget', render: () => null } }))
+vi.mock('../components/JourneyBar.vue', () => ({ default: { name: 'JourneyBar', render: () => null } }))
+vi.mock('../components/ScrollToTop.vue', () => ({ default: { name: 'ScrollToTop', render: () => null } }))
+vi.mock('../components/ToastContainer.vue', () => ({ default: { name: 'ToastContainer', render: () => null } }))
+vi.mock('../components/ConfirmDialog.vue', () => ({ default: { name: 'ConfirmDialog', render: () => null } }))
 
 const wrappers: Array<{ unmount: () => void }> = []
 
@@ -60,30 +69,30 @@ describe('Header Smart Editorial Refinement - Task 2: Unified Navigation Bar', (
       global: {
         stubs: {
           ClientOnly: { template: '<div><slot /></div>' },
-          AuthModal: { template: '<div></div>' },
-          LazyAuthModal: { template: '<div></div>' },
-          ChatWidget: { template: '<div></div>' },
-          LazyChatWidget: { template: '<div></div>' },
-          ConfirmDialog: { template: '<div></div>' },
-          LazyConfirmDialog: { template: '<div></div>' },
-          NotificationBell: { template: '<div></div>' },
-          LazyNotificationBell: { template: '<div></div>' },
-          OnboardingSheet: { template: '<div></div>' },
-          LazyOnboardingSheet: { template: '<div></div>' },
-          ScrollToTop: { template: '<div></div>' },
-          LazyScrollToTop: { template: '<div></div>' },
-          ToastContainer: { template: '<div></div>' },
-          LazyToastContainer: { template: '<div></div>' },
-          JourneyBar: { template: '<div></div>' },
-          LazyJourneyBar: { template: '<div></div>' },
-          SearchDrawer: { template: '<div></div>' },
-          LazySearchDrawer: { template: '<div></div>' },
-          UserMenu: { template: '<div></div>' },
-          LazyUserMenu: { template: '<div></div>' },
-          SearchAutocomplete: { template: '<div></div>' },
-          ShellPublicBottomNav: { template: '<div></div>' },
+          AuthModal: true,
+          LazyAuthModal: true,
+          ChatWidget: true,
+          LazyChatWidget: true,
+          ConfirmDialog: true,
+          LazyConfirmDialog: true,
+          NotificationBell: true,
+          LazyNotificationBell: true,
+          OnboardingSheet: true,
+          LazyOnboardingSheet: true,
+          ScrollToTop: true,
+          LazyScrollToTop: true,
+          ToastContainer: true,
+          LazyToastContainer: true,
+          JourneyBar: true,
+          LazyJourneyBar: true,
+          SearchDrawer: true,
+          LazySearchDrawer: true,
+          UserMenu: true,
+          LazyUserMenu: true,
+          SearchAutocomplete: true,
+          ShellPublicBottomNav: true,
           ShellPublicContextBar: { template: '<div data-public-context-line />' },
-          OfflineTerroirPanel: { template: '<div></div>' },
+          OfflineTerroirPanel: true,
         },
       },
     })
@@ -113,30 +122,30 @@ describe('Header Smart Editorial Refinement - Task 3: Harmonious Utility Cluster
       global: {
         stubs: {
           ClientOnly: { template: '<div><slot /></div>' },
-          AuthModal: { template: '<div></div>' },
-          LazyAuthModal: { template: '<div></div>' },
-          ChatWidget: { template: '<div></div>' },
-          LazyChatWidget: { template: '<div></div>' },
-          ConfirmDialog: { template: '<div></div>' },
-          LazyConfirmDialog: { template: '<div></div>' },
-          NotificationBell: { template: '<div></div>' },
-          LazyNotificationBell: { template: '<div></div>' },
-          OnboardingSheet: { template: '<div></div>' },
-          LazyOnboardingSheet: { template: '<div></div>' },
-          ScrollToTop: { template: '<div></div>' },
-          LazyScrollToTop: { template: '<div></div>' },
-          ToastContainer: { template: '<div></div>' },
-          LazyToastContainer: { template: '<div></div>' },
-          JourneyBar: { template: '<div></div>' },
-          LazyJourneyBar: { template: '<div></div>' },
-          SearchDrawer: { template: '<div></div>' },
-          LazySearchDrawer: { template: '<div></div>' },
-          UserMenu: { template: '<div></div>' },
-          LazyUserMenu: { template: '<div></div>' },
-          SearchAutocomplete: { template: '<div></div>' },
-          ShellPublicBottomNav: { template: '<div></div>' },
+          AuthModal: true,
+          LazyAuthModal: true,
+          ChatWidget: true,
+          LazyChatWidget: true,
+          ConfirmDialog: true,
+          LazyConfirmDialog: true,
+          NotificationBell: true,
+          LazyNotificationBell: true,
+          OnboardingSheet: true,
+          LazyOnboardingSheet: true,
+          ScrollToTop: true,
+          LazyScrollToTop: true,
+          ToastContainer: true,
+          LazyToastContainer: true,
+          JourneyBar: true,
+          LazyJourneyBar: true,
+          SearchDrawer: true,
+          LazySearchDrawer: true,
+          UserMenu: true,
+          LazyUserMenu: true,
+          SearchAutocomplete: true,
+          ShellPublicBottomNav: true,
           ShellPublicContextBar: { template: '<div data-public-context-line />' },
-          OfflineTerroirPanel: { template: '<div></div>' },
+          OfflineTerroirPanel: true,
         },
       },
     })
@@ -146,5 +155,17 @@ describe('Header Smart Editorial Refinement - Task 3: Harmonious Utility Cluster
     expect(authArea.find('[data-theme-control]').exists()).toBe(true)
     expect(authArea.find('.display-settings-trigger').exists()).toBe(true)
     expect(authArea.find('.auth-btn').exists()).toBe(true)
+  })
+})
+
+describe('Header Smart Editorial Refinement - Task 4: Refined Editorial Folio', () => {
+  it('renders the public context bar as a refined editorial folio with accessible controls', async () => {
+    const wrapper = await mountSuspended(PublicContextBar)
+    wrappers.push(wrapper)
+
+    expect(wrapper.get('[data-public-context-line]').exists()).toBe(true)
+    expect(wrapper.get('.public-context-label').text()).toBe('Tam Vùng Di Sản')
+    expect(wrapper.find('select').exists()).toBe(true)
+    expect(wrapper.find('.public-context-control').exists()).toBe(true)
   })
 })
