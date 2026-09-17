@@ -98,7 +98,7 @@ describe('Header Smart Editorial Refinement - Task 2: Unified Navigation Bar', (
     })
     wrappers.push(wrapper)
 
-    const nav = wrapper.get('.public-shell-inline-nav')
+    const nav = wrapper.find('.public-shell-inline-nav')
     expect(nav.exists()).toBe(true)
 
     const links = nav.findAll('a')
@@ -163,7 +163,7 @@ describe('Header Smart Editorial Refinement - Task 4: Refined Editorial Folio', 
     const wrapper = await mountSuspended(PublicContextBar)
     wrappers.push(wrapper)
 
-    expect(wrapper.get('[data-public-context-line]').exists()).toBe(true)
+    expect(wrapper.find('[data-public-context-line]').exists()).toBe(true)
     expect(wrapper.get('.public-context-label').text()).toBe('Tam Vùng Di Sản')
     expect(wrapper.find('select').exists()).toBe(true)
     expect(wrapper.find('.public-context-control').exists()).toBe(true)
