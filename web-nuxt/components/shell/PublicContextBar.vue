@@ -8,8 +8,9 @@
   >
     <div class="public-context-inner">
       <div class="public-context-copy">
-        <IconLine name="locate" aria-hidden="true" />
-        <span class="public-context-label">Khu vực đang ưu tiên</span>
+        <span class="public-context-pulse" aria-hidden="true">●</span>
+        <span class="public-context-label">Tam Vùng Di Sản</span>
+        <span class="public-context-separator" aria-hidden="true">/</span>
         <strong class="public-context-current">{{ currentRegionLabel }}</strong>
       </div>
 

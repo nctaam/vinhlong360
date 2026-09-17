@@ -22,39 +22,7 @@
 
           <div class="auth-area">
             <ShellThemeModeControl />
-            <button
-              type="button"
-              class="theme-mode-btn a11y-mode-toggle"
-              :class="{ 'is-active': isElderMode }"
-              :aria-pressed="isElderMode"
-              aria-label="Chế độ Kính Lão Điền Dã 125% (Alt+E)"
-              title="Chế độ Kính Lão Điền Dã (Alt+E)"
-              @click="toggleElderMode()"
-            >
-              <VernacularGlyph name="elder-glasses" :size="18" aria-hidden="true" />
-            </button>
-            <button
-              type="button"
-              class="theme-mode-btn a11y-mode-toggle"
-              :class="{ 'is-active': isHighGlare }"
-              :aria-pressed="isHighGlare"
-              aria-label="Chế độ Nắng Gắt Ngoài Trời (Alt+S)"
-              title="Chế độ Nắng Gắt Ngoài Trời (Alt+S)"
-              @click="toggleHighGlare()"
-            >
-              <VernacularGlyph name="sun-glare" :size="18" aria-hidden="true" />
-            </button>
-            <button
-              type="button"
-              class="theme-mode-btn a11y-mode-toggle eco-mode-toggle"
-              :class="{ 'is-active': isEcoTerroir }"
-              :aria-pressed="isEcoTerroir"
-              aria-label="Chế độ Sinh Thái Sông Nước (Eco-Terroir Mode)"
-              title="Chế độ Sinh Thái Sông Nước (Eco-Mode)"
-              @click="toggleEcoMode()"
-            >
-              <VernacularGlyph name="eco-routing" :size="18" aria-hidden="true" />
-            </button>
+            <ShellDisplaySettingsPopover />
             <template v-if="clientReady">
               <template v-if="isLoggedIn">
                 <LazyNotificationBell />
@@ -179,7 +147,7 @@ import { useCognitiveTerroir } from '~/composables/useCognitiveTerroir'
 const route = useRoute()
 const { isLoggedIn, user } = useAuth()
 const { get: ss } = useSiteSettings()
-const { tide, isOffline, isElderMode, isHighGlare, isEcoTerroir, toggleElderMode, toggleHighGlare, toggleEcoMode } = useCognitiveTerroir()
+const { tide, isOffline, isEcoTerroir } = useCognitiveTerroir()
 const searchDrawerOpen = ref(false)
 
 const currentHour = ref(new Date().getHours())
