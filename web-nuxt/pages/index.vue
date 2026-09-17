@@ -39,29 +39,18 @@
               <span class="hero-cognitive-chip__fruit-text">{{ seasonalFruitHighlight }}</span>
             </div>
           </div>
-          <div class="hero-search-island" role="search" aria-label="Tìm kiếm và bộ lọc nhanh lữ hành">
+          <div class="hero-search-island" role="search" aria-label="Tìm kiếm lữ hành">
             <SearchAutocomplete
               class="hero-search hero-ac"
               data-color-role="action-primary"
               :placeholder="ss('homepage.search_placeholder', 'Tìm điểm đến, món ngon, lịch trình…')"
             />
-            <div class="hero-multisearch" role="group" aria-label="Bộ lọc nhanh lữ hành">
-              <div class="hero-multisearch__row">
-                <span class="hero-multisearch__label">Mục đích:</span>
-                <NuxtLink to="/tim-kiem?q=sinh+th%C3%A1i" class="hero-filter-pill">Sinh Thái</NuxtLink>
-                <NuxtLink to="/tim-kiem?q=di+s%E1%BA%A3n" class="hero-filter-pill">Di Sản</NuxtLink>
-                <NuxtLink to="/kham-pha/am-thuc" class="hero-filter-pill">Ẩm Thực</NuxtLink>
-                <NuxtLink to="/luu-tru" class="hero-filter-pill">Nghỉ Dưỡng</NuxtLink>
-              </div>
-              <div class="hero-multisearch__row">
-                <span class="hero-multisearch__label">Thời lượng:</span>
-                <NuxtLink to="/lich-trinh/mot-ngay-cu-lao-an-binh" class="hero-filter-pill">1 Ngày</NuxtLink>
-                <NuxtLink to="/lich-trinh/di-san-mang-thit-tra-vinh" class="hero-filter-pill">2N1Đ</NuxtLink>
-                <NuxtLink to="/lich-trinh/mien-tay-3-ngay" class="hero-filter-pill">3N2Đ</NuxtLink>
-              </div>
-            </div>
             <div class="hero-search-island__footer">
               <NuxtLink to="/ban-do?near=1" class="hero-nearby"><IconLine name="pin" /> Tìm quanh tôi</NuxtLink>
+              <span class="hero-search-island__hint">
+                <IconLine name="compass" class="hero-search-island__hint-icon" aria-hidden="true" />
+                <span>Nhập tên điểm đến, di sản hoặc món đặc sản</span>
+              </span>
             </div>
           </div>
           <div class="hero-terroir-chips" role="region" aria-label="Gợi ý thực địa Vĩnh Long">

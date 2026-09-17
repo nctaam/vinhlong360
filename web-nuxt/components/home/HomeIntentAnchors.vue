@@ -167,7 +167,7 @@ function onAvatarFallback(e: Event) {
   min-height: 48px;
   padding: var(--space-2) var(--space-4) var(--space-2) var(--space-2);
   background: var(--color-surface);
-  border: 1px solid var(--color-border);
+  border: 1px solid var(--border-liquid-glass, var(--color-border));
   border-radius: var(--radius-pill, 999px);
   color: var(--color-text);
   text-decoration: none;
