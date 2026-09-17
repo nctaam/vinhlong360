@@ -1,0 +1,322 @@
+[
+  {
+    "entity_id": "banh-canh-bot-xat",
+    "image": "web-nuxt/public/img/entities/banh-canh-bot-xat.webp",
+    "author": "Hữu Hiệp",
+    "source": "Báo Đồng Khởi",
+    "caption": "Tô bánh canh bột xắt thịt vịt xiêm truyền thống với sợi bánh mềm dẻo từ bột gạo pha nước cốt dừa béo ngậy, rắc tiêu đen thơm lừng.",
+    "license": "Bản quyền thuộc tác giả và Báo Đồng Khởi"
+  },
+  {
+    "entity_id": "banh-canh-chu-bay-giong-trom-ben-tre",
+    "image": "web-nuxt/public/img/entities/banh-canh-chu-bay-giong-trom-ben-tre.webp",
+    "author": "Thành Châu",
+    "source": "Báo Đồng Khởi",
+    "caption": "Quán bánh canh Chú Bảy nức tiếng Giồng Trôm với nồi nước dùng hầm xương ngọt thanh cùng huyết vịt nếp dẻo bùi đậm đà phong vị quê hương.",
+    "license": "Bản quyền thuộc tác giả và Báo Đồng Khởi"
+  },
+  {
+    "entity_id": "banh-canh-cho-ben-tre-hang-goc-cho-ben-tre-ben-tre",
+    "image": "web-nuxt/public/img/entities/banh-canh-cho-ben-tre-hang-goc-cho-ben-tre-ben-tre.webp",
+    "author": "Phương Thảo",
+    "source": "Báo Đồng Khởi",
+    "caption": "Gánh bánh canh đêm góc chợ Bến Tre khói bốc nghi ngút, thu hút du khách bởi vị ngọt lành của tôm tép sông và giò heo ninh nhừ.",
+    "license": "Bản quyền thuộc tác giả và Báo Đồng Khởi"
+  },
+  {
+    "entity_id": "banh-bo-nuong-tra-vinh",
+    "image": "web-nuxt/public/img/entities/banh-bo-nuong-tra-vinh.webp",
+    "author": "Bá Thi",
+    "source": "Báo Trà Vinh",
+    "caption": "Món bánh bò nướng nước cốt dừa thơm phức với cấu trúc rễ tre vàng ươm xốp mịn, món quà vặt gắn liền với ký ức tuổi thơ xứ sở chùa vàng.",
+    "license": "Bản quyền thuộc tác giả và Báo Trà Vinh"
+  },
+  {
+    "entity_id": "banh-tet-la-cam",
+    "image": "web-nuxt/public/img/entities/banh-tet-la-cam.webp",
+    "author": "Quang Vinh",
+    "source": "Báo Vĩnh Long",
+    "caption": "Đòn bánh tét lá cẩm tím biếc với nhân đậu xanh, thịt mỡ và trứng muối béo ngậy, biểu trưng cho sự trù phú và sum vầy của ngày Tết Nam Bộ.",
+    "license": "Bản quyền thuộc tác giả và Báo Vĩnh Long"
+  },
+  {
+    "entity_id": "banh-uot-banh-beo-cho-vung-liem-vinh-long",
+    "image": "web-nuxt/public/img/entities/banh-uot-banh-beo-cho-vung-liem-vinh-long.webp",
+    "author": "Trần Phước",
+    "source": "Báo Vĩnh Long",
+    "caption": "Hàng bánh ướt bánh bèo truyền thống tại chợ Vũng Liêm, chan nước mắm tỏi ớt chua ngọt cùng bì heo và chả lụa thủ công thơm giòn.",
+    "license": "Bản quyền thuộc tác giả và Báo Vĩnh Long"
+  },
+  {
+    "entity_id": "banh-xeo-bien-binh-dai",
+    "image": "web-nuxt/public/img/entities/banh-xeo-bien-binh-dai.webp",
+    "author": "Quốc Hùng",
+    "source": "Báo Đồng Khởi",
+    "caption": "Chiếc bánh xèo biển giòn rụm với nhân mực tươi và tép biển vùng Bình Đại, cuốn cùng rau rừng và lá cách xanh tươi non mướt.",
+    "license": "Bản quyền thuộc tác giả và Báo Đồng Khởi"
+  },
+  {
+    "entity_id": "banh-xeo-cu-lao",
+    "image": "web-nuxt/public/img/entities/banh-xeo-cu-lao.webp",
+    "author": "Huỳnh Biển",
+    "source": "Báo Vĩnh Long",
+    "caption": "Bánh xèo miệt vườn đổ bằng chảo gang lớn trên bếp trấu, nhân củ hủ dừa bào sợi ngọt thanh cùng thịt ba chỉ giòn rụm tại cù lao An Bình.",
+    "license": "Bản quyền thuộc tác giả và Báo Vĩnh Long"
+  },
+  {
+    "entity_id": "banh-xeo-hen-cu-lao-dai",
+    "image": "web-nuxt/public/img/entities/banh-xeo-hen-cu-lao-dai.webp",
+    "author": "Đăng Khoa",
+    "source": "Báo Vĩnh Long",
+    "caption": "Hương vị độc đáo của bánh xèo hến Cù lao Dài với những con hến sông Cổ Chiên béo ngọt kết hợp hài hòa cùng vị bột gạo xay cối đá.",
+    "license": "Bản quyền thuộc tác giả và Báo Vĩnh Long"
+  },
+  {
+    "entity_id": "banh-xeo-oc-gao-cho-lach",
+    "image": "web-nuxt/public/img/entities/banh-xeo-oc-gao-cho-lach.webp",
+    "author": "Tuyết Hiền",
+    "source": "Báo Đồng Khởi",
+    "caption": "Bánh xèo nhân ốc gạo Phú Đa trứ danh Chợ Lách, từng con ốc gạo giòn sần sật quyện nước cốt dừa béo bùi làm nức lòng du khách phương xa.",
+    "license": "Bản quyền thuộc tác giả và Báo Đồng Khởi"
+  },
+  {
+    "entity_id": "bi-cuon-ben-tre",
+    "image": "web-nuxt/public/img/entities/bi-cuon-ben-tre.webp",
+    "author": "Hữu Trí",
+    "source": "Báo Đồng Khởi",
+    "caption": "Món bì cuốn thanh tao với thính gạo rang vàng, thịt nạc và da heo thái chỉ, cuốn bánh tráng mè dẻo dai chấm nước mắm tỏi ớt cay nồng.",
+    "license": "Bản quyền thuộc tác giả và Báo Đồng Khởi"
+  },
+  {
+    "entity_id": "bo-to-ba-tri---cac-mon-bo",
+    "image": "web-nuxt/public/img/entities/bo-to-ba-tri---cac-mon-bo.webp",
+    "author": "Trọng Ân",
+    "source": "Báo Đồng Khởi",
+    "caption": "Bò tơ Ba Tri nướng than hoa thơm lừng với thớ thịt mềm ngọt từ đàn bò nuôi cỏ tự nhiên trên những cánh đồng phù sa ven biển.",
+    "license": "Bản quyền thuộc tác giả và Báo Đồng Khởi"
+  },
+  {
+    "entity_id": "bo-to-vinh-long",
+    "image": "web-nuxt/public/img/entities/bo-to-vinh-long.webp",
+    "author": "Minh Triết",
+    "source": "Báo Vĩnh Long",
+    "caption": "Món bò tơ hấp gừng non cuốn bánh tráng rau rừng, chấm mắm nêm đậm đà phong vị sông nước miền Cửu Long.",
+    "license": "Bản quyền thuộc tác giả và Báo Vĩnh Long"
+  },
+  {
+    "entity_id": "bun-nuoc-leo-cang-long",
+    "image": "web-nuxt/public/img/entities/bun-nuoc-leo-cang-long.webp",
+    "author": "Thanh Điền",
+    "source": "Báo Trà Vinh",
+    "caption": "Tô bún nước lèo Càng Long dậy mùi ngải bún thơm cay, nước lèo trong veo nấu từ cá lóc đồng và mắm bò hóc truyền thống.",
+    "license": "Bản quyền thuộc tác giả và Báo Trà Vinh"
+  },
+  {
+    "entity_id": "bun-nuoc-leo-tieu-can",
+    "image": "web-nuxt/public/img/entities/bun-nuoc-leo-tieu-can.webp",
+    "author": "Sơn Tuyên",
+    "source": "Báo Trà Vinh",
+    "caption": "Bún nước lèo Tiểu Cần ăn kèm huyết heo, thịt heo quay da giòn rụm và rau muống bào sợi xanh mát giòn tan.",
+    "license": "Bản quyền thuộc tác giả và Báo Trà Vinh"
+  },
+  {
+    "entity_id": "bun-nuoc-leo-tra-cu",
+    "image": "web-nuxt/public/img/entities/bun-nuoc-leo-tra-cu.webp",
+    "author": "Thạch Thảo",
+    "source": "Báo Trà Vinh",
+    "caption": "Hương vị bún nước lèo Trà Cú nguyên bản của đồng bào Khmer với vị ngọt đậm đà của tép bạc đất và bắp chuối thái mỏng.",
+    "license": "Bản quyền thuộc tác giả và Báo Trà Vinh"
+  },
+  {
+    "entity_id": "bun-nuoc-leo-vinh-long",
+    "image": "web-nuxt/public/img/entities/bun-nuoc-leo-vinh-long.webp",
+    "author": "Nguyễn Bách",
+    "source": "Báo Vĩnh Long",
+    "caption": "Bún nước lèo Vĩnh Long biến tấu tinh tế với chả cá thác lác dai ngon và nước lèo thanh mát nấu bằng cá kèo và nước dừa tươi.",
+    "license": "Bản quyền thuộc tác giả và Báo Vĩnh Long"
+  },
+  {
+    "entity_id": "bun-nuoc-leo-cay-sung-tra-vinh",
+    "image": "web-nuxt/public/img/entities/bun-nuoc-leo-cay-sung-tra-vinh.webp",
+    "author": "Bá Thi",
+    "source": "Báo Trà Vinh",
+    "caption": "Quán Bún Nước Lèo Cây Sung có tuổi đời hàng chục năm, địa chỉ ẩm thực trứ danh được đông đảo thực khách gần xa ghé thăm.",
+    "license": "Bản quyền thuộc tác giả và Báo Trà Vinh"
+  },
+  {
+    "entity_id": "bun-suong-du-van-tra-vinh",
+    "image": "web-nuxt/public/img/entities/bun-suong-du-van-tra-vinh.webp",
+    "author": "Hoàng Vũ",
+    "source": "Báo Trà Vinh",
+    "caption": "Tô bún suông Dư Vân với từng con suông nặn từ tôm tươi quết dẻo màu gạch tôm tự nhiên, chan nước dùng hầm xương ngọt thanh tao.",
+    "license": "Bản quyền thuộc tác giả và Báo Trà Vinh"
+  },
+  {
+    "entity_id": "bun-suong-ut-tam-tra-vinh",
+    "image": "web-nuxt/public/img/entities/bun-suong-ut-tam-tra-vinh.webp",
+    "author": "Phúc Lộc",
+    "source": "Báo Trà Vinh",
+    "caption": "Hương vị bún suông gia truyền Út Tám đậm đà phong vị ẩm thực ba dân tộc Kinh - Khmer - Hoa hội tụ.",
+    "license": "Bản quyền thuộc tác giả và Báo Trà Vinh"
+  },
+  {
+    "entity_id": "bun-rieu-cua-cho-mo-cay-ben-tre",
+    "image": "web-nuxt/public/img/entities/bun-rieu-cua-cho-mo-cay-ben-tre.webp",
+    "author": "Hữu Hiệp",
+    "source": "Báo Đồng Khởi",
+    "caption": "Bún riêu cua đồng Mỏ Cày với riêu cua đồng béo ngậy nguyên chất, nước dùng chua thanh vị me chín và cà chua mọng nước.",
+    "license": "Bản quyền thuộc tác giả và Báo Đồng Khởi"
+  },
+  {
+    "entity_id": "ca-bong-kho-nuoc-dua",
+    "image": "web-nuxt/public/img/entities/ca-bong-kho-nuoc-dua.webp",
+    "author": "Minh Mừng",
+    "source": "Báo Đồng Khởi",
+    "caption": "Món cá bống dừa kho nước dừa xiêm trong nồi đất kẹo sánh ánh màu cánh gián, món ăn dân dã thấm đượm hồn quê xứ dừa.",
+    "license": "Bản quyền thuộc tác giả và Báo Đồng Khởi"
+  },
+  {
+    "entity_id": "ca-coc-kho-nuoc-dua",
+    "image": "web-nuxt/public/img/entities/ca-coc-kho-nuoc-dua.webp",
+    "author": "Trần Phước",
+    "source": "Báo Vĩnh Long",
+    "caption": "Đặc sản cá cóc sông Tiền kho nước dừa xiêm với thớ thịt săn chắc béo ngậy, từng là món tiến vua danh bất hư truyền của đất Vĩnh Long.",
+    "license": "Bản quyền thuộc tác giả và Báo Vĩnh Long"
+  },
+  {
+    "entity_id": "ca-keo-kho-to",
+    "image": "web-nuxt/public/img/entities/ca-keo-kho-to.webp",
+    "author": "Huỳnh Biển",
+    "source": "Báo Vĩnh Long",
+    "caption": "Cá kèo kho tộ đượm vị tiêu sọ cay nồng và ớt hiểm, ăn cùng đĩa rau đắng đất và cơm trắng nóng hổi đậm chất miệt vườn.",
+    "license": "Bản quyền thuộc tác giả và Báo Vĩnh Long"
+  },
+  {
+    "entity_id": "ca-lang-ho-nhung-giam",
+    "image": "web-nuxt/public/img/entities/ca-lang-ho-nhung-giam.webp",
+    "author": "Quang Vinh",
+    "source": "Báo Vĩnh Long",
+    "caption": "Cá lăng hơ nhúng giấm chuối chua thanh với từng lát cá tươi trắng nõn cuốn bánh tráng và rau thơm thảo mộc.",
+    "license": "Bản quyền thuộc tác giả và Báo Vĩnh Long"
+  },
+  {
+    "entity_id": "ca-keo-nuong-ong-say",
+    "image": "web-nuxt/public/img/entities/ca-keo-nuong-ong-say.webp",
+    "author": "Bá Thi",
+    "source": "Báo Trà Vinh",
+    "caption": "Cá kèo nướng ống sậy trên than hồng giữ trọn vẹn vị ngọt tự nhiên và chất béo thơm lừng của mật cá kèo sông nước duyên hải.",
+    "license": "Bản quyền thuộc tác giả và Báo Trà Vinh"
+  },
+  {
+    "entity_id": "ca-khoai-tra-vinh",
+    "image": "web-nuxt/public/img/entities/ca-khoai-tra-vinh.webp",
+    "author": "Thanh Điền",
+    "source": "Báo Trà Vinh",
+    "caption": "Món canh ngót cá khoai tươi rói đánh bắt từ cửa biển Cung Hầu, nấu cùng cần tây và cà chua giải nhiệt ngày nắng gió phương Nam.",
+    "license": "Bản quyền thuộc tác giả và Báo Trà Vinh"
+  },
+  {
+    "entity_id": "canh-chua-ca-linh",
+    "image": "web-nuxt/public/img/entities/canh-chua-ca-linh.webp",
+    "author": "Hoàng Mai",
+    "source": "Báo Vĩnh Long",
+    "caption": "Bát canh chua cá linh non nấu bông điên điển vàng rực mùa nước nổi phù sa, tinh hoa ẩm thực mùa lũ đồng bằng sông Cửu Long.",
+    "license": "Bản quyền thuộc tác giả và Báo Vĩnh Long"
+  },
+  {
+    "entity_id": "chao-cua-dong",
+    "image": "web-nuxt/public/img/entities/chao-cua-dong.webp",
+    "author": "Thành Châu",
+    "source": "Báo Đồng Khởi",
+    "caption": "Nồi cháo cua đồng ngọt lịm với riêu cua tươi giã nhuyễn ăn kèm rau đắng, hột vịt lộn và nấm rơm búp tươi non.",
+    "license": "Bản quyền thuộc tác giả và Báo Đồng Khởi"
+  },
+  {
+    "entity_id": "chao-ech-tran-nam",
+    "image": "web-nuxt/public/img/entities/chao-ech-tran-nam.webp",
+    "author": "Huỳnh Biển",
+    "source": "Báo Vĩnh Long",
+    "caption": "Thố ếch đồng kho sả ớt đậm vị Singapore hòa quyện trong từng muỗng cháo trắng lá dứa sánh mịn tại quán Trần Nam.",
+    "license": "Bản quyền thuộc tác giả và Báo Vĩnh Long"
+  },
+  {
+    "entity_id": "chu-u-rang-me",
+    "image": "web-nuxt/public/img/entities/chu-u-rang-me.webp",
+    "author": "Sơn Tuyên",
+    "source": "Báo Trà Vinh",
+    "caption": "Đặc sản chù ụ rang me biển Ba Động giòn rụm với lớp sốt me chua ngọt óng ánh, món ngon độc bản của vùng ngập mặn Duyên Hải.",
+    "license": "Bản quyền thuộc tác giả và Báo Trà Vinh"
+  },
+  {
+    "entity_id": "banh-phu-the-vinh-long",
+    "image": "web-nuxt/public/img/entities/banh-phu-the-vinh-long.webp",
+    "author": "Quang Vinh",
+    "source": "Báo Vĩnh Long",
+    "caption": "Chiếc bánh phu thê gói lá dừa xanh mướt với lớp bột năng trong suốt giòn dai ôm trọn nhân đậu xanh và sợi dừa nạo ngọt lành.",
+    "license": "Bản quyền thuộc tác giả và Báo Vĩnh Long"
+  },
+  {
+    "entity_id": "com-dua-com-trai-dua",
+    "image": "web-nuxt/public/img/entities/com-dua-com-trai-dua.webp",
+    "author": "Phương Thảo",
+    "source": "Báo Đồng Khởi",
+    "caption": "Cơm hấp trái dừa xiêm dẻo thơm ngát với hạt gạo ngấm đều vị ngọt béo tự nhiên của nước dừa tươi, món ẩm thực cung đình độc đáo.",
+    "license": "Bản quyền thuộc tác giả và Báo Đồng Khởi"
+  },
+  {
+    "entity_id": "com-dep-ngoc-bien",
+    "image": "web-nuxt/public/img/entities/com-dep-ngoc-bien.webp",
+    "author": "Thạch Thảo",
+    "source": "Báo Trà Vinh",
+    "caption": "Cốm dẹp làng nghề Ngọc Biên giã tay từ nếp non vừa đỏ đuôi, trộn dừa nạo và nước đường thốt nốt dẻo thơm trong mùa lễ cúng trăng.",
+    "license": "Bản quyền thuộc tác giả và Báo Trà Vinh"
+  },
+  {
+    "entity_id": "goi-cu-hu-dua-tom-thit",
+    "image": "web-nuxt/public/img/entities/goi-cu-hu-dua-tom-thit.webp",
+    "author": "Hữu Hiệp",
+    "source": "Báo Đồng Khởi",
+    "caption": "Đĩa gỏi củ hủ dừa tôm thịt giòn ngọt thanh tao với phần đọt dừa non bào mỏng, hòa quyện vị tôm đất và nước chấm chua ngọt đậm đà.",
+    "license": "Bản quyền thuộc tác giả và Báo Đồng Khởi"
+  },
+  {
+    "entity_id": "hu-tieu-soi-no-cong",
+    "image": "web-nuxt/public/img/entities/hu-tieu-soi-no-cong.webp",
+    "author": "Bá Thi",
+    "source": "Báo Trà Vinh",
+    "caption": "Sợi hủ tiếu Nô Công tráng thủ công phơi sương sớm, độ dẻo dai đặc trưng không dùng phụ gia, niềm tự hào ẩm thực truyền thống địa phương.",
+    "license": "Bản quyền thuộc tác giả và Báo Trà Vinh"
+  },
+  {
+    "entity_id": "hu-tieu-ba-phu",
+    "image": "web-nuxt/public/img/entities/hu-tieu-ba-phu.webp",
+    "author": "Trần Phước",
+    "source": "Báo Vĩnh Long",
+    "caption": "Tô hủ tiếu Ba Phú vang bóng một thời với nước súp hầm mực nướng và xương ống thanh ngọt, sợi bánh dai ngon chan hòa hương vị xưa.",
+    "license": "Bản quyền thuộc tác giả và Báo Vĩnh Long"
+  },
+  {
+    "entity_id": "oc-gao-cu-lao-dai",
+    "image": "web-nuxt/public/img/entities/oc-gao-cu-lao-dai.webp",
+    "author": "Đăng Khoa",
+    "source": "Báo Vĩnh Long",
+    "caption": "Ốc gạo Cù lao Dài thịt trắng phau béo tròn, luộc cùng sả ớt lá chanh chấm nước mắm gừng cay nồng ấm bụng ngày mưa.",
+    "license": "Bản quyền thuộc tác giả và Báo Vĩnh Long"
+  },
+  {
+    "entity_id": "oc-len-xao-nuoc-cot-dua",
+    "image": "web-nuxt/public/img/entities/oc-len-xao-nuoc-cot-dua.webp",
+    "author": "Quốc Hùng",
+    "source": "Báo Đồng Khởi",
+    "caption": "Ốc len xào dừa thơm nức mũi với lớp sốt cốt dừa béo ngậy sánh đặc, hút từng con ốc để cảm nhận vị ngọt giòn sần sật tuyệt hảo.",
+    "license": "Bản quyền thuộc tác giả và Báo Đồng Khởi"
+  },
+  {
+    "entity_id": "tom-hap-nuoc-dua",
+    "image": "web-nuxt/public/img/entities/tom-hap-nuoc-dua.webp",
+    "author": "Minh Mừng",
+    "source": "Báo Đồng Khởi",
+    "caption": "Tôm càng xanh sông Tiền hấp trọn trong nước dừa xiêm đỏ âu bắt mắt, thịt tôm săn chắc ngọt lịm đậm đà phong vị phù sa.",
+    "license": "Bản quyền thuộc tác giả và Báo Đồng Khởi"
+  }
+]

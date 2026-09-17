@@ -164,7 +164,8 @@ describe('Header Smart Editorial Refinement - Task 4: Refined Editorial Folio', 
     wrappers.push(wrapper)
 
     expect(wrapper.find('[data-public-context-line]').exists()).toBe(true)
-    expect(wrapper.get('.public-context-label').text()).toBe('Tam Vùng Di Sản')
+    expect(wrapper.find('.public-context-label').exists()).toBe(false)
+    expect(wrapper.find('.public-context-current').exists()).toBe(true)
     expect(wrapper.find('select').exists()).toBe(true)
     expect(wrapper.find('.public-context-control').exists()).toBe(true)
   })

@@ -23,7 +23,7 @@
             <div class="search-drawer-title-group">
               <div class="search-drawer-eyebrow">
                 <VernacularGlyph name="mekong-boat-eye" :size="18" accent="silt" />
-                <span id="search-drawer-desc">Chỉ mục Thực địa &amp; Tam Vùng</span>
+                <span id="search-drawer-desc">Chỉ mục Điểm đến &amp; Khu vực</span>
               </div>
               <h2 id="search-drawer-title" class="search-drawer-heading">
                 Tìm kiếm Điền dã
@@ -70,11 +70,11 @@
 
           <!-- Multi-dimensional Filter Groups -->
           <div class="search-drawer-filters">
-            <!-- Dimension 1: Tam Vùng -->
+            <!-- Dimension 1: Khu vực -->
             <section class="search-drawer-filter-group" aria-labelledby="filter-region-label">
               <h3 id="filter-region-label" class="search-drawer-filter-label">
                 <VernacularGlyph name="mangthit-kiln" :size="16" accent="clay" />
-                <span>Tam Vùng Địa Linh</span>
+                <span>Khu vực</span>
               </h3>
               <div class="search-drawer-chips" role="group" aria-label="Chọn tiểu vùng">
                 <button
@@ -197,7 +197,7 @@
                   Không có dữ liệu thực địa nào khớp với từ khóa <em>"{{ searchQuery.trim() }}"</em> theo tiêu chí lọc hiện tại.
                 </template>
                 <template v-else>
-                  Không có điểm đến nào thỏa mãn đồng thời các bộ lọc Tam Vùng, Mùa vụ và Con nước đã chọn.
+                  Không có điểm đến nào thỏa mãn đồng thời các bộ lọc Khu vực, Mùa vụ và Con nước đã chọn.
                 </template>
               </p>
               <button
