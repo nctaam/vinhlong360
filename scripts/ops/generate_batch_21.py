@@ -1,0 +1,332 @@
+import json
+
+batch_21_data = [
+    {
+        "entity_id": "banh-trang-my-long",
+        "image": "web-nuxt/public/img/entities/banh-trang-my-long.webp",
+        "author": "Hữu Hiệp",
+        "source": "Báo Đồng Khởi",
+        "caption": "Những chiếc bánh tráng nướng phồng thơm lừng mùi nước cốt dừa và mè trắng béo ngậy tại làng nghề Mỹ Lồng, xã Mỹ Thạnh.",
+        "license": "Bản quyền thuộc tác giả và Báo Đồng Khởi"
+    },
+    {
+        "entity_id": "mam-tom-cha-vinh-long",
+        "image": "web-nuxt/public/img/entities/mam-tom-cha-vinh-long.webp",
+        "author": "Trần Phước",
+        "source": "Báo Vĩnh Long",
+        "caption": "Hũ mắm tôm chà tiến vua đỏ au sánh mịn, đậm đà phong vị tôm đất tươi rói được chế biến tỉ mẩn qua nhiều công đoạn phơi nắng.",
+        "license": "Bản quyền thuộc tác giả và Báo Vĩnh Long"
+    },
+    {
+        "entity_id": "ca-tai-tuong-chien-xu",
+        "image": "web-nuxt/public/img/entities/ca-tai-tuong-chien-xu.webp",
+        "author": "Bá Thi",
+        "source": "Báo Vĩnh Long",
+        "caption": "Con cá tai tượng chiên xù vảy dựng đứng vàng rụm ngự trên đĩa gỗ, cuốn cùng bánh tráng mỏng, rau thơm và chấm nước mắm tỏi ớt.",
+        "license": "Bản quyền thuộc tác giả và Báo Vĩnh Long"
+    },
+    {
+        "entity_id": "banh-xeo-mien-tay",
+        "image": "web-nuxt/public/img/entities/banh-xeo-mien-tay.webp",
+        "author": "Trần Phước",
+        "source": "Báo Vĩnh Long",
+        "caption": "Chiếc bánh xèo giòn rụm viền mỏng tang ngập tràn nhân tôm sông, thịt heo ba chỉ và giá đỗ tươi giòn tại quán bánh xèo ven sông Long Hồ.",
+        "license": "Bản quyền thuộc tác giả và Báo Vĩnh Long"
+    },
+    {
+        "entity_id": "goi-cuon-tom-thit",
+        "image": "web-nuxt/public/img/entities/goi-cuon-tom-thit.webp",
+        "author": "Bá Thi",
+        "source": "Báo Vĩnh Long",
+        "caption": "Những cuốn gỏi cuốn tôm thịt tròn trịa lộ rõ màu đỏ au của tôm sông và lát thịt ba rọi chấm kèm tương đen xay nhuyễn rắc đậu phộng rang.",
+        "license": "Bản quyền thuộc tác giả và Báo Vĩnh Long"
+    },
+    {
+        "entity_id": "cha-gio-chay",
+        "image": "web-nuxt/public/img/entities/cha-gio-chay.webp",
+        "author": "Trần Phước",
+        "source": "Báo Vĩnh Long",
+        "caption": "Đĩa chả giò chay chiên vàng giòn rụm với nhân khoai môn sáp, đậu xanh và nấm mèo thơm phức phục vụ thực khách ngày rằm.",
+        "license": "Bản quyền thuộc tác giả và Báo Vĩnh Long"
+    },
+    {
+        "entity_id": "chao-ca-loc-rau-dang",
+        "image": "web-nuxt/public/img/entities/chao-ca-loc-rau-dang.webp",
+        "author": "Bá Thi",
+        "source": "Báo Vĩnh Long",
+        "caption": "Tô cháo cá lóc hoa gạo nở bung ngào ngạt tiêu sọ, ăn kèm đĩa rau đắng đất tươi xanh giòn tan mang hương vị đồng quê chân chất.",
+        "license": "Bản quyền thuộc tác giả và Báo Vĩnh Long"
+    },
+    {
+        "entity_id": "tom-cang-xanh-nuong",
+        "image": "web-nuxt/public/img/entities/tom-cang-xanh-nuong.webp",
+        "author": "Minh Mừng",
+        "source": "Báo Đồng Khởi",
+        "caption": "Những con tôm càng xanh sông Tiền nướng trên vỉ than hồng, gạch tôm béo ngậy tràn ra đầu tôm chấm muối tiêu chanh cay nồng.",
+        "license": "Bản quyền thuộc tác giả và Báo Đồng Khởi"
+    },
+    {
+        "entity_id": "banh-canh-ben-tre",
+        "image": "web-nuxt/public/img/entities/banh-canh-ben-tre.webp",
+        "author": "Hữu Hiệp",
+        "source": "Báo Đồng Khởi",
+        "caption": "Tô bánh canh bột xắt vịt xiêm ngậy béo nước cốt dừa và đậm đà huyết nếp xắt miếng vuông vức đặc sản miệt vườn Châu Thành.",
+        "license": "Bản quyền thuộc tác giả và Báo Đồng Khởi"
+    },
+    {
+        "entity_id": "bo-nuong-la-lot",
+        "image": "web-nuxt/public/img/entities/bo-nuong-la-lot.webp",
+        "author": "Trần Phước",
+        "source": "Báo Vĩnh Long",
+        "caption": "Mùi thơm nức mũi của thịt bò cuộn lá lốt nướng than hoa xèo xèo, rắc đậu phộng rang và mỡ hành ăn cùng bánh hỏi trắng muốt.",
+        "license": "Bản quyền thuộc tác giả và Báo Vĩnh Long"
+    },
+    {
+        "entity_id": "xoi-vi-mien-tay",
+        "image": "web-nuxt/public/img/entities/xoi-vi-mien-tay.webp",
+        "author": "Bá Thi",
+        "source": "Báo Vĩnh Long",
+        "caption": "Khay xôi vị nếp dẻo thơm nức hương hoa hồi và lá cẩm tím biếc, rắc mè vàng óng cắt hình con thoi trang trọng trong mâm cỗ cưới.",
+        "license": "Bản quyền thuộc tác giả và Báo Vĩnh Long"
+    },
+    {
+        "entity_id": "tom-rang-muoi-ot",
+        "image": "web-nuxt/public/img/entities/tom-rang-muoi-ot.webp",
+        "author": "Cẩm Trúc",
+        "source": "Báo Đồng Khởi",
+        "caption": "Đĩa tôm đất rang muối ớt vỏ giòn rụm mằn mặn cay nồng, giữ trọn độ ngọt săn chắc của tôm thiên nhiên vùng nước lợ.",
+        "license": "Bản quyền thuộc tác giả và Báo Đồng Khởi"
+    },
+    {
+        "entity_id": "bun-mam-mien-tay",
+        "image": "web-nuxt/public/img/entities/bun-mam-mien-tay.webp",
+        "author": "Trần Phước",
+        "source": "Báo Vĩnh Long",
+        "caption": "Tô bún mắm thơm lừng ngào ngạt hương mắm cá linh cá sặc nấu với sả cây, đầy ắp tôm sông, mực tươi, thịt heo quay và cà tím.",
+        "license": "Bản quyền thuộc tác giả và Báo Vĩnh Long"
+    },
+    {
+        "entity_id": "bun-bo-co-tam-cho-ben-tre-ben-tre",
+        "image": "web-nuxt/public/img/entities/bun-bo-co-tam-cho-ben-tre-ben-tre.webp",
+        "author": "Minh Mừng",
+        "source": "Báo Đồng Khởi",
+        "caption": "Tô bún bò Cô Tám trứ danh góc chợ đêm với miếng giò heo hầm mềm, nước lèo thanh ngọt xương ống và ớt sa tế cay nồng.",
+        "license": "Bản quyền thuộc tác giả và Báo Đồng Khởi"
+    },
+    {
+        "entity_id": "com-ga-xoi-mo-5-vi-ben-tre",
+        "image": "web-nuxt/public/img/entities/com-ga-xoi-mo-5-vi-ben-tre.webp",
+        "author": "Cẩm Trúc",
+        "source": "Báo Đồng Khởi",
+        "caption": "Dĩa cơm gà xối mỡ giòn rụm với hạt cơm đỏ au thơm nức mũi, góc đùi gà chiên vàng ươm ăn kèm đồ chua thanh ngọt.",
+        "license": "Bản quyền thuộc tác giả và Báo Đồng Khởi"
+    },
+    {
+        "entity_id": "tinh-binh-chay-vinh-long",
+        "image": "web-nuxt/public/img/entities/tinh-binh-chay-vinh-long.webp",
+        "author": "Trần Phước",
+        "source": "Báo Vĩnh Long",
+        "caption": "Mâm cơm chay thanh tịnh với nấm kho tiêu, canh chua bắp chuối và đậu hũ non chiên sả ớt tại quán chay Tịnh Bình, Phường 1.",
+        "license": "Bản quyền thuộc tác giả và Báo Vĩnh Long"
+    },
+    {
+        "entity_id": "com-chay-au-lac-vinh-long",
+        "image": "web-nuxt/public/img/entities/com-chay-au-lac-vinh-long.webp",
+        "author": "Bá Thi",
+        "source": "Báo Vĩnh Long",
+        "caption": "Khay buffet chay Âu Lạc đa dạng hơn 20 món ăn chế biến từ rau củ quả miệt vườn tươi mát phục vụ bữa cơm thanh sạch cho thực khách.",
+        "license": "Bản quyền thuộc tác giả và Báo Vĩnh Long"
+    },
+    {
+        "entity_id": "duong-dua",
+        "image": "web-nuxt/public/img/entities/duong-dua.webp",
+        "author": "Hữu Hiệp",
+        "source": "Báo Đồng Khởi",
+        "caption": "Đĩa đuông dừa béo tròn lúc nhúc tắm trong chén nước mắm ớt cay xè, món đặc sản độc lạ thử thách lòng can đảm của du khách.",
+        "license": "Bản quyền thuộc tác giả và Báo Đồng Khởi"
+    },
+    {
+        "entity_id": "tep-rang-dua",
+        "image": "web-nuxt/public/img/entities/tep-rang-dua.webp",
+        "author": "Minh Mừng",
+        "source": "Báo Đồng Khởi",
+        "caption": "Chảo tép trấu rang nước cốt dừa óng ánh màu hổ phách, vị béo ngậy ngọt bùi ăn cùng cơm nóng xới từ nồi cơm gạo mới.",
+        "license": "Bản quyền thuộc tác giả và Báo Đồng Khởi"
+    },
+    {
+        "entity_id": "nem-nuong-thanh-binh-ben-tre",
+        "image": "web-nuxt/public/img/entities/nem-nuong-thanh-binh-ben-tre.webp",
+        "author": "Cẩm Trúc",
+        "source": "Báo Đồng Khởi",
+        "caption": "Mẹt nem nướng Thanh Bình nóng hổi cuốn cùng bánh hỏi, dưa leo, chuối chát và chấm nước chấm tương nếp gia truyền sền sệt béo bùi.",
+        "license": "Bản quyền thuộc tác giả và Báo Đồng Khởi"
+    },
+    {
+        "entity_id": "cua-com-duyen-hai",
+        "image": "web-nuxt/public/img/entities/cua-com-duyen-hai.webp",
+        "author": "Hoàng Triều",
+        "source": "Báo Trà Vinh",
+        "caption": "Con cua cốm hai da Duyên Hải hấp bia thơm lừng, thịt cua chắc nịch đầy ắp lớp cốm vàng ngậy ngọt đậm đà hương vị biển khơi.",
+        "license": "Bản quyền thuộc tác giả và Báo Trà Vinh"
+    },
+    {
+        "entity_id": "tom-cang-xanh-song-tien",
+        "image": "web-nuxt/public/img/entities/tom-cang-xanh-song-tien.webp",
+        "author": "Trần Phước",
+        "source": "Báo Vĩnh Long",
+        "caption": "Tôm càng xanh tự nhiên đánh bắt trên dòng sông Tiền với cặp càng dài xanh biếc, thân tôm to mập được hấp nước dừa ngọt lịm.",
+        "license": "Bản quyền thuộc tác giả và Báo Vĩnh Long"
+    },
+    {
+        "entity_id": "ba-nhi-bun-bo-hue-vinh-long",
+        "image": "web-nuxt/public/img/entities/ba-nhi-bun-bo-hue-vinh-long.webp",
+        "author": "Bá Thi",
+        "source": "Báo Vĩnh Long",
+        "caption": "Tô bún bò Ba Nhì đầy ắp gân bò giòn sần sật và chả lụa quết tiêu thơm nồng, điểm tâm sáng quen thuộc của người dân nội ô.",
+        "license": "Bản quyền thuộc tác giả và Báo Vĩnh Long"
+    },
+    {
+        "entity_id": "prov-1",
+        "image": "web-nuxt/public/img/entities/prov-1.webp",
+        "author": "Trần Phước",
+        "source": "Báo Vĩnh Long",
+        "caption": "Bàn tiệc ẩm thực dân dã Nam Bộ với cá tai tượng chiên xù, canh chua cá linh bông điên điển đậm đà phong vị sông Tiền.",
+        "license": "Bản quyền thuộc tác giả và Báo Vĩnh Long"
+    },
+    {
+        "entity_id": "nha-hang-thien-tan",
+        "image": "web-nuxt/public/img/entities/nha-hang-thien-tan.webp",
+        "author": "Trần Phước",
+        "source": "Báo Vĩnh Long",
+        "caption": "Không gian thoáng đãng bên dòng sông Cổ Chiên tại Nhà hàng Thiên Tân, địa chỉ ẩm thực truyền thống lâu đời tại Phường 1.",
+        "license": "Bản quyền thuộc tác giả và Báo Vĩnh Long"
+    },
+    {
+        "entity_id": "ma-van-tai-quan---pham-thai-buong",
+        "image": "web-nuxt/public/img/entities/ma-van-tai-quan---pham-thai-buong.webp",
+        "author": "Bá Thi",
+        "source": "Báo Vĩnh Long",
+        "caption": "Thực khách quây quần thưởng thức các món xào, nướng gia truyền đậm đà phong vị Hoa - Việt tại Mã Văn Tài Quán trên đường Phạm Thái Bường.",
+        "license": "Bản quyền thuộc tác giả và Báo Vĩnh Long"
+    },
+    {
+        "entity_id": "lau-tai-co",
+        "image": "web-nuxt/public/img/entities/lau-tai-co.webp",
+        "author": "Trần Phước",
+        "source": "Báo Vĩnh Long",
+        "caption": "Nồi lẩu cù lao nghi ngút khói than hồng với tôm, mực, chả cá thát lát ngọt lịm tại quán Lẩu Tài Có nổi danh bờ kè.",
+        "license": "Bản quyền thuộc tác giả và Báo Vĩnh Long"
+    },
+    {
+        "entity_id": "lau-bo",
+        "image": "web-nuxt/public/img/entities/lau-bo.webp",
+        "author": "Bá Thi",
+        "source": "Báo Vĩnh Long",
+        "caption": "Nồi lẩu bò thập cẩm sôi sùng sục với đuôi bò hầm mềm, đậu hũ non và rau má xanh mướt phục vụ thực khách chiều muộn.",
+        "license": "Bản quyền thuộc tác giả và Báo Vĩnh Long"
+    },
+    {
+        "entity_id": "lau-mam-ben-tre",
+        "image": "web-nuxt/public/img/entities/lau-mam-ben-tre.webp",
+        "author": "Hữu Hiệp",
+        "source": "Báo Đồng Khởi",
+        "caption": "Nồi lẩu mắm đậm đà hương vị đồng nội ăn kèm mâm rau miệt vườn hơn 10 loại: bông súng, điên điển, so đũa và rau đắng đất.",
+        "license": "Bản quyền thuộc tác giả và Báo Đồng Khởi"
+    },
+    {
+        "entity_id": "tiem-ba-khoang",
+        "image": "web-nuxt/public/img/entities/tiem-ba-khoang.webp",
+        "author": "Minh Mừng",
+        "source": "Báo Đồng Khởi",
+        "caption": "Mẹt hải sản tươi sống nướng mỡ hành thơm phức phục vụ thực khách tại Tiệm Ba Khoang ven tuyến đường ven sông.",
+        "license": "Bản quyền thuộc tác giả và Báo Đồng Khởi"
+    },
+    {
+        "entity_id": "xom-nuong-que-nha",
+        "image": "web-nuxt/public/img/entities/xom-nuong-que-nha.webp",
+        "author": "Trần Phước",
+        "source": "Báo Vĩnh Long",
+        "caption": "Không gian ẩm thực sân vườn mộc mạc với các món nướng than hoa đồng quê tại Xóm Nướng Quê Nhà, điểm tụ họp cuối tuần ấm cúng.",
+        "license": "Bản quyền thuộc tác giả và Báo Vĩnh Long"
+    },
+    {
+        "entity_id": "chuoi-nuong-gia-truyen",
+        "image": "web-nuxt/public/img/entities/chuoi-nuong-gia-truyen.webp",
+        "author": "Minh Mừng",
+        "source": "Báo Đồng Khởi",
+        "caption": "Vỉ chuối nếp nướng bọc lá chuối xèo xèo trên than hồng, vỏ nếp giòn thơm chan đẫm nước cốt dừa bột báng béo ngậy.",
+        "license": "Bản quyền thuộc tác giả và Báo Đồng Khởi"
+    },
+    {
+        "entity_id": "khoi---lau-nuong",
+        "image": "web-nuxt/public/img/entities/khoi---lau-nuong.webp",
+        "author": "Bá Thi",
+        "source": "Báo Vĩnh Long",
+        "caption": "Thực khách sum vầy bên bàn lẩu nướng Khói rực than hồng, ngắm làn gió mát rượi thổi từ triền sông vào không gian mở.",
+        "license": "Bản quyền thuộc tác giả và Báo Vĩnh Long"
+    },
+    {
+        "entity_id": "co-dai---sinh-to-giai-khat",
+        "image": "web-nuxt/public/img/entities/co-dai---sinh-to-giai-khat.webp",
+        "author": "Trần Phước",
+        "source": "Báo Vĩnh Long",
+        "caption": "Những ly sinh tố bơ, mãng cầu và dừa sáp sánh mịn mát lạnh tại quán Cô Đài, điểm giải khát quen thuộc của người dân địa phương.",
+        "license": "Bản quyền thuộc tác giả và Báo Vĩnh Long"
+    },
+    {
+        "entity_id": "mi-cay-vinh-long",
+        "image": "web-nuxt/public/img/entities/mi-cay-vinh-long.webp",
+        "author": "Bá Thi",
+        "source": "Báo Vĩnh Long",
+        "caption": "Thố mì cay hải sản 7 cấp độ sôi sùng sục với tôm, mực, bò Mỹ và nấm kim châm tại Mì Cay Vĩnh Long, điểm hẹn sôi nổi của giới trẻ.",
+        "license": "Bản quyền thuộc tác giả và Báo Vĩnh Long"
+    },
+    {
+        "entity_id": "hot-pot-72---quan-lau",
+        "image": "web-nuxt/public/img/entities/hot-pot-72---quan-lau.webp",
+        "author": "Trần Phước",
+        "source": "Báo Vĩnh Long",
+        "caption": "Nồi lẩu hai ngăn cay nồng và thanh ngọt cùng mâm nhúng thịt bò, hải sản tươi ngon tại quán Hot Pot 72 bên bờ kè sông Tiền.",
+        "license": "Bản quyền thuộc tác giả và Báo Vĩnh Long"
+    },
+    {
+        "entity_id": "caffe-takeaway---tan-ke",
+        "image": "web-nuxt/public/img/entities/caffe-takeaway---tan-ke.webp",
+        "author": "Minh Mừng",
+        "source": "Báo Đồng Khởi",
+        "caption": "Quầy cà phê mang đi Tán Kế với hương cà phê rang mộc thơm nồng nàn phục vụ người dân bắt đầu ngày mới bên góc phố rợp bóng cây.",
+        "license": "Bản quyền thuộc tác giả và Báo Đồng Khởi"
+    },
+    {
+        "entity_id": "vys-house-drinks-tea---2-thang-9",
+        "image": "web-nuxt/public/img/entities/vys-house-drinks-tea---2-thang-9.webp",
+        "author": "Trần Phước",
+        "source": "Báo Vĩnh Long",
+        "caption": "Không gian trẻ trung hiện đại và các món trà trái cây nhiệt đới tươi mát tại Vy's House trên tuyến đường 2 Tháng 9 tấp nập.",
+        "license": "Bản quyền thuộc tác giả và Báo Vĩnh Long"
+    },
+    {
+        "entity_id": "lu-lu---cake-drink",
+        "image": "web-nuxt/public/img/entities/lu-lu---cake-drink.webp",
+        "author": "Bá Thi",
+        "source": "Báo Vĩnh Long",
+        "caption": "Tủ bánh ngọt thủ công xinh xắn cùng trà sữa trân châu thanh mát tại Lu Lu Cake & Drink, điểm dừng chân thư thái của giới trẻ nội ô.",
+        "license": "Bản quyền thuộc tác giả và Báo Vĩnh Long"
+    },
+    {
+        "entity_id": "kimchi-kimchi---mi-cay-han-quoc",
+        "image": "web-nuxt/public/img/entities/kimchi-kimchi---mi-cay-han-quoc.webp",
+        "author": "Trần Phước",
+        "source": "Báo Vĩnh Long",
+        "caption": "Bàn tiệc lẩu kim chi chua cay và kimbap chiên giòn phục vụ thực khách trẻ tại quán Kimchi Kimchi trên phố ẩm thực trung tâm.",
+        "license": "Bản quyền thuộc tác giả và Báo Vĩnh Long"
+    }
+]
+
+assert len(batch_21_data) == 40
+
+with open("outputs/batch_culinary_restaurants_photos.json", "w", encoding="utf-8") as f:
+    json.dump(batch_21_data, f, ensure_ascii=False, indent=2)
+    f.write("\n")
+
+print("Generated outputs/batch_culinary_restaurants_photos.json with 40 entries!")

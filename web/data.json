@@ -27303,7 +27303,14 @@
         "schema_type": "Restaurant",
         "review_count": 10,
         "sub_category": "restaurant",
-        "coords_approximate": true
+        "coords_approximate": true,
+        "image_author": "Minh Mừng",
+        "image_source": "Báo Đồng Khởi",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Quầy cà phê mang đi Tán Kế với hương cà phê rang mộc thơm nồng nàn phục vụ người dân bắt đầu ngày mới bên góc phố rợp bóng cây.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Đồng Khởi",
+        "verifiedAt": "2026-09-18T00:30:00Z"
       },
       "source": [
         {
@@ -27854,7 +27861,14 @@
         "schema_type": "Restaurant",
         "review_count": 3,
         "sub_category": "restaurant",
-        "coords_approximate": true
+        "coords_approximate": true,
+        "image_author": "Minh Mừng",
+        "image_source": "Báo Đồng Khởi",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Mẹt hải sản tươi sống nướng mỡ hành thơm phức phục vụ thực khách tại Tiệm Ba Khoang ven tuyến đường ven sông.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Đồng Khởi",
+        "verifiedAt": "2026-09-18T00:30:00Z"
       },
       "source": [
         {
@@ -31734,7 +31748,14 @@
         "schema_type": "Restaurant",
         "review_count": 17,
         "sub_category": "restaurant",
-        "coords_approximate": true
+        "coords_approximate": true,
+        "image_author": "Trần Phước",
+        "image_source": "Báo Vĩnh Long",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Không gian trẻ trung hiện đại và các món trà trái cây nhiệt đới tươi mát tại Vy's House trên tuyến đường 2 Tháng 9 tấp nập.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long",
+        "verifiedAt": "2026-09-18T00:30:00Z"
       },
       "source": [
         {
@@ -34440,7 +34461,14 @@
         "specialty": "Ẩm thực Vĩnh Long",
         "schema_type": "Restaurant",
         "sub_category": "restaurant",
-        "coords_approximate": true
+        "coords_approximate": true,
+        "image_author": "Trần Phước",
+        "image_source": "Báo Vĩnh Long",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Không gian thoáng đãng bên dòng sông Cổ Chiên tại Nhà hàng Thiên Tân, địa chỉ ẩm thực truyền thống lâu đời tại Phường 1.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long",
+        "verifiedAt": "2026-09-18T00:30:00Z"
       },
       "source": [
         {
@@ -36719,7 +36747,14 @@
         "specialty": "Ẩm thực Vĩnh Long",
         "schema_type": "Restaurant",
         "review_count": 15,
-        "sub_category": "restaurant"
+        "sub_category": "restaurant",
+        "image_author": "Bá Thi",
+        "image_source": "Báo Vĩnh Long",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Thực khách quây quần thưởng thức các món xào, nướng gia truyền đậm đà phong vị Hoa - Việt tại Mã Văn Tài Quán trên đường Phạm Thái Bường.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long",
+        "verifiedAt": "2026-09-18T00:30:00Z"
       },
       "source": [
         {
@@ -37082,7 +37117,14 @@
         "schema_type": "Restaurant",
         "review_count": 15,
         "sub_category": "restaurant",
-        "coords_approximate": true
+        "coords_approximate": true,
+        "image_author": "Bá Thi",
+        "image_source": "Báo Vĩnh Long",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Tủ bánh ngọt thủ công xinh xắn cùng trà sữa trân châu thanh mát tại Lu Lu Cake & Drink, điểm dừng chân thư thái của giới trẻ nội ô.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long",
+        "verifiedAt": "2026-09-18T00:30:00Z"
       },
       "source": [
         {
@@ -37773,7 +37815,14 @@
         "schema_type": "Restaurant",
         "review_count": 14,
         "sub_category": "nhau",
-        "coords_approximate": true
+        "coords_approximate": true,
+        "image_author": "Bá Thi",
+        "image_source": "Báo Vĩnh Long",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Thực khách sum vầy bên bàn lẩu nướng Khói rực than hồng, ngắm làn gió mát rượi thổi từ triền sông vào không gian mở.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long",
+        "verifiedAt": "2026-09-18T00:30:00Z"
       },
       "source": [
         {
@@ -38026,7 +38075,14 @@
         "schema_type": "Restaurant",
         "review_count": 12,
         "sub_category": "nhau",
-        "coords_approximate": true
+        "coords_approximate": true,
+        "image_author": "Trần Phước",
+        "image_source": "Báo Vĩnh Long",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Nồi lẩu cù lao nghi ngút khói than hồng với tôm, mực, chả cá thát lát ngọt lịm tại quán Lẩu Tài Có nổi danh bờ kè.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long",
+        "verifiedAt": "2026-09-18T00:30:00Z"
       },
       "source": [
         {
@@ -38424,7 +38480,14 @@
         "schema_type": "Restaurant",
         "review_count": 10,
         "sub_category": "seafood_river",
-        "coords_approximate": true
+        "coords_approximate": true,
+        "image_author": "Trần Phước",
+        "image_source": "Báo Vĩnh Long",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Bàn tiệc lẩu kim chi chua cay và kimbap chiên giòn phục vụ thực khách trẻ tại quán Kimchi Kimchi trên phố ẩm thực trung tâm.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long",
+        "verifiedAt": "2026-09-18T00:30:00Z"
       },
       "source": [
         {
@@ -38558,7 +38621,14 @@
         "schema_type": "Restaurant",
         "review_count": 7,
         "sub_category": "restaurant",
-        "coords_approximate": true
+        "coords_approximate": true,
+        "image_author": "Trần Phước",
+        "image_source": "Báo Vĩnh Long",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Không gian ẩm thực sân vườn mộc mạc với các món nướng than hoa đồng quê tại Xóm Nướng Quê Nhà, điểm tụ họp cuối tuần ấm cúng.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long",
+        "verifiedAt": "2026-09-18T00:30:00Z"
       },
       "source": [
         {
@@ -38688,7 +38758,14 @@
         "schema_type": "Restaurant",
         "review_count": 8,
         "sub_category": "nhau",
-        "coords_approximate": false
+        "coords_approximate": false,
+        "image_author": "Bá Thi",
+        "image_source": "Báo Vĩnh Long",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Nồi lẩu bò thập cẩm sôi sùng sục với đuôi bò hầm mềm, đậu hũ non và rau má xanh mướt phục vụ thực khách chiều muộn.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long",
+        "verifiedAt": "2026-09-18T00:30:00Z"
       },
       "source": [
         {
@@ -39165,7 +39242,14 @@
         "specialty": "Cá, Lươn, Lẩu",
         "price_range": "100.000đ",
         "schema_type": "Restaurant",
-        "sub_category": "nhau"
+        "sub_category": "nhau",
+        "image_author": "Hữu Hiệp",
+        "image_source": "Báo Đồng Khởi",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Nồi lẩu mắm đậm đà hương vị đồng nội ăn kèm mâm rau miệt vườn hơn 10 loại: bông súng, điên điển, so đũa và rau đắng đất.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Đồng Khởi",
+        "verifiedAt": "2026-09-18T00:30:00Z"
       },
       "source": [
         {
@@ -45126,7 +45210,14 @@
         "schema_type": "Recipe",
         "sub_category": "rice-paper",
         "coords_approximate": true,
-        "recognition_village": "UBND BT công nhận 2004, HH Làng nghề VN 2008"
+        "recognition_village": "UBND BT công nhận 2004, HH Làng nghề VN 2008",
+        "image_author": "Hữu Hiệp",
+        "image_source": "Báo Đồng Khởi",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Những chiếc bánh tráng nướng phồng thơm lừng mùi nước cốt dừa và mè trắng béo ngậy tại làng nghề Mỹ Lồng, xã Mỹ Thạnh.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Đồng Khởi",
+        "verifiedAt": "2026-09-18T00:30:00Z"
       },
       "source": [
         {
@@ -45297,7 +45388,14 @@
         "price_range": "80.000–120.000 đ/hũ",
         "schema_type": "Recipe",
         "sub_category": "fermented-condiment",
-        "coords_approximate": true
+        "coords_approximate": true,
+        "image_author": "Trần Phước",
+        "image_source": "Báo Vĩnh Long",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Hũ mắm tôm chà tiến vua đỏ au sánh mịn, đậm đà phong vị tôm đất tươi rói được chế biến tỉ mẩn qua nhiều công đoạn phơi nắng.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long",
+        "verifiedAt": "2026-09-18T00:30:00Z"
       },
       "source": [
         {
@@ -51453,7 +51551,14 @@
         "schema_type": "Restaurant",
         "review_count": 7,
         "sub_category": "restaurant",
-        "coords_approximate": true
+        "coords_approximate": true,
+        "image_author": "Bá Thi",
+        "image_source": "Báo Vĩnh Long",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Thố mì cay hải sản 7 cấp độ sôi sùng sục với tôm, mực, bò Mỹ và nấm kim châm tại Mì Cay Vĩnh Long, điểm hẹn sôi nổi của giới trẻ.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long",
+        "verifiedAt": "2026-09-18T00:30:00Z"
       },
       "source": [
         {
@@ -52271,7 +52376,14 @@
         "schema_type": "Restaurant",
         "review_count": 6,
         "sub_category": "seafood_river",
-        "coords_approximate": true
+        "coords_approximate": true,
+        "image_author": "Trần Phước",
+        "image_source": "Báo Vĩnh Long",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Những ly sinh tố bơ, mãng cầu và dừa sáp sánh mịn mát lạnh tại quán Cô Đài, điểm giải khát quen thuộc của người dân địa phương.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long",
+        "verifiedAt": "2026-09-18T00:30:00Z"
       },
       "source": [
         {
@@ -52359,11 +52471,17 @@
             "authority_weight": 0.95
           }
         ],
-        "verifiedAt": "2026-09-13T21:30:00+07:00",
+        "verifiedAt": "2026-09-18T00:30:00Z",
         "verifiedSource": "NotebookLM Deep Terroir Research - Phase 9",
         "hours": "13:00 - 18:30 chiều hàng ngày (thường bán hết sớm vào những ngày se lạnh)",
         "price_range": "10.000 - 15.000 đ/phần (gồm 1 trái chuối nướng cắt khoanh chan ngập nước cốt dừa)",
-        "best_time": "Khung giờ 15:00 - 17:00 chiều lúc vỉ chuối nướng đang xèo xèo thơm nức cả góc phố"
+        "best_time": "Khung giờ 15:00 - 17:00 chiều lúc vỉ chuối nướng đang xèo xèo thơm nức cả góc phố",
+        "image_author": "Minh Mừng",
+        "image_source": "Báo Đồng Khởi",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Vỉ chuối nếp nướng bọc lá chuối xèo xèo trên than hồng, vỏ nếp giòn thơm chan đẫm nước cốt dừa bột báng béo ngậy.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Đồng Khởi"
       },
       "source": [
         {
@@ -52555,7 +52673,14 @@
         "schema_type": "Restaurant",
         "review_count": 5,
         "sub_category": "nhau",
-        "coords_approximate": true
+        "coords_approximate": true,
+        "image_author": "Trần Phước",
+        "image_source": "Báo Vĩnh Long",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Nồi lẩu hai ngăn cay nồng và thanh ngọt cùng mâm nhúng thịt bò, hải sản tươi ngon tại quán Hot Pot 72 bên bờ kè sông Tiền.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long",
+        "verifiedAt": "2026-09-18T00:30:00Z"
       },
       "source": [
         {
@@ -93610,7 +93735,14 @@
         "price_range": "150.000–250.000 đ/con (~800g)",
         "schema_type": "Recipe",
         "sub_category": "noodle-soup",
-        "coords_approximate": true
+        "coords_approximate": true,
+        "image_author": "Bá Thi",
+        "image_source": "Báo Vĩnh Long",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Con cá tai tượng chiên xù vảy dựng đứng vàng rụm ngự trên đĩa gỗ, cuốn cùng bánh tráng mỏng, rau thơm và chấm nước mắm tỏi ớt.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long",
+        "verifiedAt": "2026-09-18T00:30:00Z"
       },
       "source": [
         {
@@ -93796,7 +93928,14 @@
         "price_range": "15.000–30.000 đ/cái",
         "schema_type": "Recipe",
         "sub_category": "pancake",
-        "coords_approximate": true
+        "coords_approximate": true,
+        "image_author": "Trần Phước",
+        "image_source": "Báo Vĩnh Long",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Chiếc bánh xèo giòn rụm viền mỏng tang ngập tràn nhân tôm sông, thịt heo ba chỉ và giá đỗ tươi giòn tại quán bánh xèo ven sông Long Hồ.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long",
+        "verifiedAt": "2026-09-18T00:30:00Z"
       },
       "source": [
         {
@@ -93959,7 +94098,14 @@
         "price_range": "5.000–8.000 đ/cuốn",
         "schema_type": "Recipe",
         "sub_category": "noodle-soup",
-        "coords_approximate": true
+        "coords_approximate": true,
+        "image_author": "Bá Thi",
+        "image_source": "Báo Vĩnh Long",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Những cuốn gỏi cuốn tôm thịt tròn trịa lộ rõ màu đỏ au của tôm sông và lát thịt ba rọi chấm kèm tương đen xay nhuyễn rắc đậu phộng rang.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long",
+        "verifiedAt": "2026-09-18T00:30:00Z"
       },
       "source": [
         {
@@ -94023,7 +94169,14 @@
         "price_range": "5.000–10.000 đ/cuốn",
         "schema_type": "Recipe",
         "sub_category": "noodle-soup",
-        "coords_approximate": true
+        "coords_approximate": true,
+        "image_author": "Trần Phước",
+        "image_source": "Báo Vĩnh Long",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Đĩa chả giò chay chiên vàng giòn rụm với nhân khoai môn sáp, đậu xanh và nấm mèo thơm phức phục vụ thực khách ngày rằm.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long",
+        "verifiedAt": "2026-09-18T00:30:00Z"
       },
       "source": [
         {
@@ -94087,7 +94240,14 @@
         "price_range": "30.000–50.000 đ/tô",
         "schema_type": "Recipe",
         "sub_category": "congee",
-        "coords_approximate": true
+        "coords_approximate": true,
+        "image_author": "Bá Thi",
+        "image_source": "Báo Vĩnh Long",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Tô cháo cá lóc hoa gạo nở bung ngào ngạt tiêu sọ, ăn kèm đĩa rau đắng đất tươi xanh giòn tan mang hương vị đồng quê chân chất.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long",
+        "verifiedAt": "2026-09-18T00:30:00Z"
       },
       "source": [
         {
@@ -94274,7 +94434,14 @@
         "price_range": "300.000–500.000 đ/kg",
         "schema_type": "Recipe",
         "sub_category": "hotpot-grill",
-        "coords_approximate": true
+        "coords_approximate": true,
+        "image_author": "Minh Mừng",
+        "image_source": "Báo Đồng Khởi",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Những con tôm càng xanh sông Tiền nướng trên vỉ than hồng, gạch tôm béo ngậy tràn ra đầu tôm chấm muối tiêu chanh cay nồng.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Đồng Khởi",
+        "verifiedAt": "2026-09-18T00:30:00Z"
       },
       "source": [
         {
@@ -94359,10 +94526,16 @@
             "authority_weight": 0.95
           }
         ],
-        "verifiedAt": "2026-09-13T21:30:00+07:00",
+        "verifiedAt": "2026-09-18T00:30:00Z",
         "verifiedSource": "NotebookLM Deep Terroir Research - Phase 9",
         "hours": "06:00 - 18:00 hàng ngày",
-        "best_time": "Buổi sáng 07:00 - 08:30 sáng khi tôm sông vừa đánh bắt cập bến tươi rói"
+        "best_time": "Buổi sáng 07:00 - 08:30 sáng khi tôm sông vừa đánh bắt cập bến tươi rói",
+        "image_author": "Hữu Hiệp",
+        "image_source": "Báo Đồng Khởi",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Tô bánh canh bột xắt vịt xiêm ngậy béo nước cốt dừa và đậm đà huyết nếp xắt miếng vuông vức đặc sản miệt vườn Châu Thành.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Đồng Khởi"
       },
       "source": [
         {
@@ -94428,7 +94601,14 @@
         "price_range": "40.000–70.000 đ/phần",
         "schema_type": "Recipe",
         "sub_category": "noodle-soup",
-        "coords_approximate": true
+        "coords_approximate": true,
+        "image_author": "Trần Phước",
+        "image_source": "Báo Vĩnh Long",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Mùi thơm nức mũi của thịt bò cuộn lá lốt nướng than hoa xèo xèo, rắc đậu phộng rang và mỡ hành ăn cùng bánh hỏi trắng muốt.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long",
+        "verifiedAt": "2026-09-18T00:30:00Z"
       },
       "source": [
         {
@@ -94487,7 +94667,14 @@
         "price_range": "10.000–20.000 đ/gói",
         "schema_type": "Recipe",
         "sub_category": "noodle-soup",
-        "coords_approximate": true
+        "coords_approximate": true,
+        "image_author": "Bá Thi",
+        "image_source": "Báo Vĩnh Long",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Khay xôi vị nếp dẻo thơm nức hương hoa hồi và lá cẩm tím biếc, rắc mè vàng óng cắt hình con thoi trang trọng trong mâm cỗ cưới.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long",
+        "verifiedAt": "2026-09-18T00:30:00Z"
       },
       "source": [
         {
@@ -94715,7 +94902,14 @@
         "price_range": "80.000–150.000 đ/dĩa",
         "schema_type": "Recipe",
         "sub_category": "seafood",
-        "coords_approximate": true
+        "coords_approximate": true,
+        "image_author": "Cẩm Trúc",
+        "image_source": "Báo Đồng Khởi",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Đĩa tôm đất rang muối ớt vỏ giòn rụm mằn mặn cay nồng, giữ trọn độ ngọt săn chắc của tôm thiên nhiên vùng nước lợ.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Đồng Khởi",
+        "verifiedAt": "2026-09-18T00:30:00Z"
       },
       "source": [
         {
@@ -114774,7 +114968,14 @@
         "price_range": "35.000–55.000 đ/tô",
         "schema_type": "Recipe",
         "sub_category": "noodle-soup",
-        "coords_approximate": true
+        "coords_approximate": true,
+        "image_author": "Trần Phước",
+        "image_source": "Báo Vĩnh Long",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Tô bún mắm thơm lừng ngào ngạt hương mắm cá linh cá sặc nấu với sả cây, đầy ắp tôm sông, mực tươi, thịt heo quay và cà tím.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long",
+        "verifiedAt": "2026-09-18T00:30:00Z"
       },
       "source": [
         {
@@ -115666,7 +115867,14 @@
         "schema_type": "Recipe",
         "sub_category": "pho_bun",
         "daily_capacity": "120-150 tô",
-        "coords_approximate": true
+        "coords_approximate": true,
+        "image_author": "Minh Mừng",
+        "image_source": "Báo Đồng Khởi",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Tô bún bò Cô Tám trứ danh góc chợ đêm với miếng giò heo hầm mềm, nước lèo thanh ngọt xương ống và ớt sa tế cay nồng.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Đồng Khởi",
+        "verifiedAt": "2026-09-18T00:30:00Z"
       },
       "source": [
         {
@@ -119516,7 +119724,14 @@
         "sub_category": "com_binh_dan",
         "local_favorite": "yes",
         "seating_capacity": "khoảng 50 chỗ",
-        "coords_approximate": true
+        "coords_approximate": true,
+        "image_author": "Cẩm Trúc",
+        "image_source": "Báo Đồng Khởi",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Dĩa cơm gà xối mỡ giòn rụm với hạt cơm đỏ au thơm nức mũi, góc đùi gà chiên vàng ươm ăn kèm đồ chua thanh ngọt.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Đồng Khởi",
+        "verifiedAt": "2026-09-18T00:30:00Z"
       },
       "source": [
         {
@@ -125470,7 +125685,14 @@
         "schema_type": "Recipe",
         "sub_category": "vegetarian_ethnic",
         "vegan_friendly": "yes",
-        "coords_approximate": true
+        "coords_approximate": true,
+        "image_author": "Trần Phước",
+        "image_source": "Báo Vĩnh Long",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Mâm cơm chay thanh tịnh với nấm kho tiêu, canh chua bắp chuối và đậu hũ non chiên sả ớt tại quán chay Tịnh Bình, Phường 1.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long",
+        "verifiedAt": "2026-09-18T00:30:00Z"
       },
       "source": [
         {
@@ -125518,7 +125740,14 @@
         "schema_type": "Recipe",
         "sub_category": "vegetarian_ethnic",
         "vegan_friendly": "yes",
-        "coords_approximate": true
+        "coords_approximate": true,
+        "image_author": "Bá Thi",
+        "image_source": "Báo Vĩnh Long",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Khay buffet chay Âu Lạc đa dạng hơn 20 món ăn chế biến từ rau củ quả miệt vườn tươi mát phục vụ bữa cơm thanh sạch cho thực khách.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long",
+        "verifiedAt": "2026-09-18T00:30:00Z"
       },
       "source": [
         {
@@ -126077,7 +126306,14 @@
         "schema_type": "Recipe",
         "sub_category": "insect-specialty",
         "where_to_eat": "Các nhà hàng ẩm thực đặc sản Bến Tre, chợ địa phương",
-        "coords_approximate": true
+        "coords_approximate": true,
+        "image_author": "Hữu Hiệp",
+        "image_source": "Báo Đồng Khởi",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Đĩa đuông dừa béo tròn lúc nhúc tắm trong chén nước mắm ớt cay xè, món đặc sản độc lạ thử thách lòng can đảm của du khách.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Đồng Khởi",
+        "verifiedAt": "2026-09-18T00:30:00Z"
       },
       "source": [
         {
@@ -126147,7 +126383,14 @@
         "specialty": "Cá, Cơm",
         "schema_type": "Recipe",
         "sub_category": "rice-dish",
-        "coords_approximate": true
+        "coords_approximate": true,
+        "image_author": "Minh Mừng",
+        "image_source": "Báo Đồng Khởi",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Chảo tép trấu rang nước cốt dừa óng ánh màu hổ phách, vị béo ngậy ngọt bùi ăn cùng cơm nóng xới từ nồi cơm gạo mới.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Đồng Khởi",
+        "verifiedAt": "2026-09-18T00:30:00Z"
       },
       "source": [
         {
@@ -126198,7 +126441,14 @@
         "schema_type": "Recipe",
         "sub_category": "street_food",
         "years_in_business": "12+ năm",
-        "coords_approximate": true
+        "coords_approximate": true,
+        "image_author": "Cẩm Trúc",
+        "image_source": "Báo Đồng Khởi",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Mẹt nem nướng Thanh Bình nóng hổi cuốn cùng bánh hỏi, dưa leo, chuối chát và chấm nước chấm tương nếp gia truyền sền sệt béo bùi.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Đồng Khởi",
+        "verifiedAt": "2026-09-18T00:30:00Z"
       },
       "source": [
         {
@@ -127153,7 +127403,14 @@
         "schema_type": "Recipe",
         "sub_category": "rice-dish",
         "where_to_eat": "Các nhà hàng hải sản thị xã Duyên Hải, chợ Long Hữu",
-        "coords_approximate": true
+        "coords_approximate": true,
+        "image_author": "Hoàng Triều",
+        "image_source": "Báo Trà Vinh",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Con cua cốm hai da Duyên Hải hấp bia thơm lừng, thịt cua chắc nịch đầy ắp lớp cốm vàng ngậy ngọt đậm đà hương vị biển khơi.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Trà Vinh",
+        "verifiedAt": "2026-09-18T00:30:00Z"
       },
       "source": [
         {
@@ -128629,7 +128886,14 @@
         "schema_type": "Recipe",
         "sub_category": "dessert",
         "where_to_eat": "Hùng Biển (135A/8, ấp Long Thuận A, xã Long Phước); Thiên Tân (56E Phạm Thái Bường, P.4)",
-        "coords_approximate": true
+        "coords_approximate": true,
+        "image_author": "Trần Phước",
+        "image_source": "Báo Vĩnh Long",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Tôm càng xanh tự nhiên đánh bắt trên dòng sông Tiền với cặp càng dài xanh biếc, thân tôm to mập được hấp nước dừa ngọt lịm.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long",
+        "verifiedAt": "2026-09-18T00:30:00Z"
       },
       "source": [
         {
@@ -128997,7 +129261,14 @@
         "price_range": "25.000–50.000 đ/tô",
         "schema_type": "Recipe",
         "sub_category": "pho_bun",
-        "coords_approximate": true
+        "coords_approximate": true,
+        "image_author": "Bá Thi",
+        "image_source": "Báo Vĩnh Long",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Tô bún bò Ba Nhì đầy ắp gân bò giòn sần sật và chả lụa quết tiêu thơm nồng, điểm tâm sáng quen thuộc của người dân nội ô.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long",
+        "verifiedAt": "2026-09-18T00:30:00Z"
       },
       "source": [
         {
@@ -129129,7 +129400,14 @@
         "contact": {
           "zalo": "0900000000"
         },
-        "sub_category": "traditional-dish"
+        "sub_category": "traditional-dish",
+        "image_author": "Trần Phước",
+        "image_source": "Báo Vĩnh Long",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Bàn tiệc ẩm thực dân dã Nam Bộ với cá tai tượng chiên xù, canh chua cá linh bông điên điển đậm đà phong vị sông Tiền.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long",
+        "verifiedAt": "2026-09-18T00:30:00Z"
       },
       "source": [
         {
