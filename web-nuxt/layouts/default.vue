@@ -36,18 +36,6 @@
             >
               {{ item.label }}
             </NuxtLink>
-            <button
-              type="button"
-              class="public-shell-catalog-button"
-              :class="{ active: catalogOpen }"
-              :aria-expanded="catalogOpen"
-              aria-controls="main-nav"
-              aria-label="Danh mục nội dung"
-              @click="catalogOpen = !catalogOpen"
-            >
-              Danh mục
-              <IconLine name="chevron-down" aria-hidden="true" />
-            </button>
           </nav>
 
           <SearchAutocomplete class="topbar-search public-shell-search" />
@@ -84,7 +72,7 @@
         </div>
 
         <div class="nav-backdrop" :class="{ show: mobileNav, closing: navClosing }" aria-hidden="true" @click="closeNav()"></div>
-        <nav id="main-nav" class="public-shell-catalog" aria-label="Danh mục nội dung" :class="{ open: mobileNav || catalogOpen, closing: navClosing }" @keydown="onNavKeydown">
+        <nav id="main-nav" class="public-shell-catalog" aria-label="Danh mục nội dung" :class="{ open: mobileNav, closing: navClosing }" @keydown="onNavKeydown">
           <section v-for="g in navGroups" :key="g.label" class="public-shell-catalog-group">
             <NuxtLink v-if="g.to" :to="g.to" class="public-shell-catalog-heading" :class="{ active: isActive(g) }" :aria-current="isActive(g) ? 'page' : undefined" @click="closeAll">{{ g.label }}</NuxtLink>
             <template v-else>
@@ -227,12 +215,22 @@ const DEFAULT_NAV_GROUPS: Array<{ label: string; to?: string; children?: { to: s
 const navGroups = computed(() => ss('navigation.nav_groups', DEFAULT_NAV_GROUPS) as typeof DEFAULT_NAV_GROUPS)
 const primaryNavItems = [
   { to: '/du-lich', label: 'Khám phá' },
-  { to: '/ban-do', label: 'Gần bạn' },
-  { to: '/cong-dong', label: 'Cộng đồng' },
+  { to: '/dia-diem', label: 'Điểm đến' },
+  { to: '/am-thuc', label: 'Ẩm thực & OCOP' },
   { to: '/lich-trinh', label: 'Lịch trình' },
+  { to: '/ban-do', label: 'Bản đồ' },
 ] as const
 
 function isPrimaryActive(path: string) {
+  if (path === '/am-thuc') {
+    return route.path === '/am-thuc' || route.path.startsWith('/am-thuc/')
+      || route.path === '/ocop' || route.path.startsWith('/ocop/')
+      || route.path === '/san-pham' || route.path.startsWith('/san-pham/')
+  }
+  if (path === '/lich-trinh') {
+    return route.path === '/lich-trinh' || route.path.startsWith('/lich-trinh/')
+      || route.path === '/tao-lich-trinh' || route.path.startsWith('/tao-lich-trinh/')
+  }
   return route.path === path || route.path.startsWith(`${path}/`)
 }
 

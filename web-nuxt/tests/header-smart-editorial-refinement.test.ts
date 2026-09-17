@@ -103,11 +103,11 @@ describe('Header Smart Editorial Refinement - Task 2: Unified Navigation Bar', (
 
     const links = nav.findAll('a')
     const hrefs = links.map(l => l.attributes('href'))
-    expect(hrefs).toEqual(['/du-lich', '/ban-do', '/cong-dong', '/lich-trinh'])
+    expect(hrefs).toEqual(['/du-lich', '/dia-diem', '/am-thuc', '/lich-trinh', '/ban-do'])
     expect(hrefs).not.toContain('/') // Không lặp lại Trang chủ vì Logo đã dẫn về '/'
 
-    // Nút Danh mục được tích hợp liền mạch
-    expect(nav.find('.public-shell-catalog-button').exists()).toBe(true)
+    // Nút Danh mục riêng biệt đã được loại bỏ, các chuyên mục cốt lõi đưa trực tiếp ra menu chính
+    expect(nav.find('.public-shell-catalog-button').exists()).toBe(false)
 
     // Không còn tầng task row thứ 3 cồng kềnh
     expect(wrapper.find('.public-shell-task-row').exists()).toBe(false)
