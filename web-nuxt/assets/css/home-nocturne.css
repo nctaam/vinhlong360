@@ -2918,6 +2918,12 @@ html.js .home .hero-enter h1::after { animation: hero-underline-draw .8s var(--e
   transform: scale(0.98);
 }
 
+.home-community-dispatches .cm-card:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 3px;
+  border-radius: var(--radius-surface);
+}
+
 .home-community-dispatches .cm-content {
   font-family: var(--font-editorial);
   font-style: italic;

@@ -16,4 +16,8 @@ describe('Community Feed Editorial Field Notes Craft', () => {
     expect(homeCss).toContain('.home-community-dispatches')
     expect(homeCss).toMatch(/\.home-community-dispatches[\s\S]*?--font-editorial/)
   })
+
+  it('enforces focus-visible rings on community dispatches cards', () => {
+    expect(homeCss).toMatch(/\.home-community-dispatches\s+\.cm-card:focus-visible/)
+  })
 })
