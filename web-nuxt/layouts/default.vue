@@ -18,6 +18,30 @@
             <span class="tld">{{ ss('branding.logo_suffix', '.vn') }}</span>
           </NuxtLink>
 
+          <nav class="public-shell-inline-nav" aria-label="Điều hướng chính">
+            <NuxtLink
+              v-for="item in primaryNavItems"
+              :key="item.to"
+              :to="item.to"
+              :class="{ active: isPrimaryActive(item.to) }"
+              :aria-current="isPrimaryActive(item.to) ? 'page' : undefined"
+            >
+              {{ item.label }}
+            </NuxtLink>
+            <button
+              type="button"
+              class="public-shell-catalog-button"
+              :class="{ active: catalogOpen }"
+              :aria-expanded="catalogOpen"
+              aria-controls="main-nav"
+              aria-label="Danh mục nội dung"
+              @click="catalogOpen = !catalogOpen"
+            >
+              Danh mục
+              <IconLine name="chevron-down" aria-hidden="true" />
+            </button>
+          </nav>
+
           <SearchAutocomplete class="topbar-search public-shell-search" />
 
           <div class="auth-area">
@@ -47,24 +71,6 @@
 
           <button type="button" class="nav-toggle public-shell-menu-button" :aria-expanded="mobileNav" aria-haspopup="true" aria-controls="main-nav" aria-label="Mở danh mục" @click="mobileNav ? closeNav() : (mobileNav = true)">
             <IconLine :name="mobileNav ? 'x' : 'menu'" />
-          </button>
-        </div>
-
-        <div class="public-shell-task-row">
-          <nav class="public-shell-task-nav" aria-label="Tác vụ chính">
-            <NuxtLink
-              v-for="item in primaryNavItems"
-              :key="item.to"
-              :to="item.to"
-              :class="{ active: isPrimaryActive(item.to) }"
-              :aria-current="isPrimaryActive(item.to) ? 'page' : undefined"
-            >
-              {{ item.label }}
-            </NuxtLink>
-          </nav>
-          <button type="button" class="public-shell-catalog-button" :class="{ active: catalogOpen }" :aria-expanded="catalogOpen" aria-controls="main-nav" @click="catalogOpen = !catalogOpen">
-            Danh mục
-            <IconLine name="chevron-down" aria-hidden="true" />
           </button>
         </div>
 
@@ -210,7 +216,6 @@ const DEFAULT_NAV_GROUPS: Array<{ label: string; to?: string; children?: { to: s
 ]
 const navGroups = computed(() => ss('navigation.nav_groups', DEFAULT_NAV_GROUPS) as typeof DEFAULT_NAV_GROUPS)
 const primaryNavItems = [
-  { to: '/', label: 'Trang chủ' },
   { to: '/du-lich', label: 'Khám phá' },
   { to: '/ban-do', label: 'Gần bạn' },
   { to: '/cong-dong', label: 'Cộng đồng' },
@@ -218,7 +223,6 @@ const primaryNavItems = [
 ] as const
 
 function isPrimaryActive(path: string) {
-  if (path === '/') return route.path === '/'
   return route.path === path || route.path.startsWith(`${path}/`)
 }
 
