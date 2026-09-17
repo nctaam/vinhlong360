@@ -32,4 +32,9 @@ describe('Home Hero & Feature Dossier Polish', () => {
     expect(indexVue).toContain('chua-tien-chau-tien-chau-tu')
     expect(indexVue).toContain('nha-gom-do-tu-buoi')
   })
+
+  it('enforces tactile active micro-interactions on feature dossier media and coords link', () => {
+    expect(homeCss).toMatch(/\.home-feature-dossier__media:active\s*\{[\s\S]*?transform:\s*scale\(0\.99\)/)
+    expect(homeCss).toMatch(/\.home-feature-dossier__coords--link:active\s*\{[\s\S]*?transform:\s*scale\(0\.96\)/)
+  })
 })
