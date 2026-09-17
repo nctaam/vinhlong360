@@ -38736,7 +38736,14 @@
         "annual_festival": "Lễ Giáng Sinh (24–25/12), Lễ Đức Mẹ Vô Nhiễm (8/12), Phục Sinh",
         "deity_worshipped": "Đức Mẹ Vô Nhiễm Nguyên Tội, Chúa Giêsu",
         "architecture_style": "Kiến trúc Gothic thuộc địa Pháp, tháp chuông đôi cao 30m, cửa sổ kính màu nhập từ Pháp, vòm cuốn nhọn, mặt tiền đá granit xám",
-        "coords_approximate": true
+        "coords_approximate": true,
+        "image_author": "Bá Thi",
+        "image_source": "Báo Trà Vinh",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Công trình kiến trúc gothic tráng lệ với các ô cửa kính màu và hoa văn tinh xảo tại Nhà thờ Chánh tòa Mẹ Vô Nhiễm, Phường 1.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Trà Vinh",
+        "verifiedAt": "2026-09-17T23:00:00Z"
       },
       "source": [
         {
@@ -40961,7 +40968,14 @@
         "best_time": "sáng sớm hoặc chiều mát",
         "schema_type": "TouristAttraction",
         "sub_category": "tourist-spot",
-        "coords_approximate": true
+        "coords_approximate": true,
+        "image_author": "Bá Thi",
+        "image_source": "Báo Vĩnh Long",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Quần thể lăng mộ cổ thân nhân Thoại Ngọc Hầu với bia đá sa thạch và bình phong chạm hổ phù trang nghiêm giữa rặng nhãn cổ thụ xã An Bình.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long",
+        "verifiedAt": "2026-09-17T23:00:00Z"
       },
       "source": [
         {
@@ -46861,8 +46875,14 @@
             "tier": "TIER_1_GOVERNMENT"
           }
         ],
-        "verifiedAt": "2026-09-13T11:18:37+07:00",
-        "verifiedSource": "NotebookLM Deep Terroir Research"
+        "verifiedAt": "2026-09-17T23:00:00Z",
+        "verifiedSource": "NotebookLM Deep Terroir Research",
+        "image_author": "Hoàng Triều",
+        "image_source": "Báo Trà Vinh",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Hàng ngàn cánh cò trắng chao lượn rợp trời lúc hoàng hôn trên những ngọn cây sao cổ thụ quanh ngôi chùa Khmer Nodol xã Đại An.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Trà Vinh"
       },
       "source": [
         {
@@ -49309,7 +49329,14 @@
         "admission": "Miễn phí",
         "best_time": "sáng sớm hoặc chiều mát",
         "schema_type": "TouristAttraction",
-        "sub_category": "church"
+        "sub_category": "church",
+        "image_author": "Huỳnh Phúc Hậu",
+        "image_source": "Báo Trà Vinh",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Tháp chuông gothic vút cao và vòm thánh đường gạch đỏ cổ kính soi bóng bên bờ sông Hậu tại giáo xứ Mặc Bắc, thị trấn Cầu Kè.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Trà Vinh",
+        "verifiedAt": "2026-09-17T23:00:00Z"
       },
       "source": [
         {
@@ -50746,7 +50773,14 @@
         "schema_type": "TouristAttraction",
         "booking_note": "Không cần đặt lịch trước. Có 2 lối vào: QL54 (đường bộ) và bến sông Hậu (đường thủy, thuê thuyền khoảng 300.000đ/chuyến). Thời gian tham quan trung bình khoảng 60 phút.",
         "sub_category": "pagoda",
-        "coords_approximate": true
+        "coords_approximate": true,
+        "image_author": "Trần Phước",
+        "image_source": "Báo Vĩnh Long",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Vườn kinh đá khắc kinh Pháp Cú bằng tiếng Việt và chữ Pali độc nhất vô nhị trong khuôn viên thiền viện chùa Phước Hậu bên sông Trà Ôn.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long",
+        "verifiedAt": "2026-09-17T23:00:00Z"
       },
       "source": [
         {
@@ -57141,8 +57175,14 @@
             "tier": "TIER_1_GOVERNMENT"
           }
         ],
-        "verifiedAt": "2026-09-13T11:18:37+07:00",
-        "verifiedSource": "NotebookLM Deep Terroir Research"
+        "verifiedAt": "2026-09-17T23:00:00Z",
+        "verifiedSource": "NotebookLM Deep Terroir Research",
+        "image_author": "Trần Phước",
+        "image_source": "Báo Vĩnh Long",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Mái ngói âm dương rêu phong cùng nghệ thuật gốm men xanh Cây Mai và các bao lam chạm trổ lộng lẫy tại Thất Phủ Miếu ven sông Tiền, Phường 1.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long"
       },
       "source": [
         {
@@ -57224,7 +57264,14 @@
         "schema_type": "TouristAttraction",
         "season_note": "Mùa khô, ít mưa, thuận tiện tham quan kiến trúc và chụp ảnh ngoài trời",
         "sub_category": "church",
-        "coords_approximate": true
+        "coords_approximate": true,
+        "image_author": "Trần Phước",
+        "image_source": "Báo Vĩnh Long",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Mặt tiền thánh đường phong cách Roman trang nhã và tháp chuông thanh thoát giữa trung tâm đô thị Vĩnh Long, gần ngã ba sông Cổ Chiên.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long",
+        "verifiedAt": "2026-09-17T23:00:00Z"
       },
       "source": [
         {
@@ -69848,7 +69895,14 @@
         "annual_festival": "Vía Bà Chúa Xứ (23-27/4 âm lịch) - lễ hội lớn nhất, có múa bóng rỗi, thả hoa đăng",
         "deity_worshipped": "Bà Chúa Xứ (Thánh Mẫu), Ngũ Hành Nương Nương",
         "architecture_style": "Kiến trúc miếu Nam Bộ, mái cong lợp ngói ống, trang trí rồng phượng đắp nổi, sân rộng",
-        "coords_approximate": true
+        "coords_approximate": true,
+        "image_author": "Trần Phước",
+        "image_source": "Báo Vĩnh Long",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Khói hương nghi ngút và áo mão thêu rồng phượng lộng lẫy dâng cúng Bà Chúa Xứ tại Miếu Bà Thủ Thiện linh thiêng bên bờ sông Long Hồ.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long",
+        "verifiedAt": "2026-09-17T23:00:00Z"
       },
       "source": [
         {
@@ -70277,7 +70331,14 @@
         "annual_festival": "Lễ Giáng Sinh (25/12), Lễ Phục Sinh, Lễ Đức Mẹ Vô Nhiễm (8/12)",
         "deity_worshipped": "Chúa Giêsu, Đức Mẹ Maria",
         "architecture_style": "Kiến trúc Gothic kết hợp yếu tố nhiệt đới, tháp chuông cao, cửa kính màu nghệ thuật, nội thất rộng rãi thoáng mát",
-        "coords_approximate": true
+        "coords_approximate": true,
+        "image_author": "Minh Mừng",
+        "image_source": "Báo Đồng Khởi",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Mặt tiền vòm cuốn thanh bình và khuôn viên rợp bóng dừa xanh của nhà thờ Chánh tòa nằm nép mình bên đại lộ Đồng Khởi.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Đồng Khởi",
+        "verifiedAt": "2026-09-17T23:00:00Z"
       },
       "source": [
         {
@@ -70429,7 +70490,14 @@
         "annual_festival": "Lễ Phật Đản, Lễ Vu Lan, Tết Thượng Nguyên (15/1 âm lịch)",
         "deity_worshipped": "Phật Di Lặc, Quan Thế Âm Bồ Tát",
         "architecture_style": "Kiến trúc chùa Nam Bộ xưa, tượng Phật Di Lặc ngoài trời lớn, vườn cây xanh mát, ao sen, tháp thờ xây dựng theo phong cách truyền thống",
-        "coords_approximate": true
+        "coords_approximate": true,
+        "image_author": "Minh Mừng",
+        "image_source": "Báo Đồng Khởi",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Cổ tự Long Thạnh thanh tịnh nép mình bên bóng dừa râm mát, lưu giữ các pho tượng gỗ thếp vàng từ thời khẩn hoang xứ cù lao.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Đồng Khởi",
+        "verifiedAt": "2026-09-17T23:00:00Z"
       },
       "source": [
         {
@@ -70502,7 +70570,14 @@
         "annual_festival": "Vía Bà Chúa Xứ (23-27/4 âm lịch)",
         "deity_worshipped": "Bà Chúa Xứ",
         "architecture_style": "Miếu thờ Nam Bộ, mái đao cong, tường vôi màu vàng, hoa văn rồng phượng đắp nổi, sân rộng có bình hương lớn",
-        "coords_approximate": true
+        "coords_approximate": true,
+        "image_author": "Minh Mừng",
+        "image_source": "Báo Đồng Khởi",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Lễ hội vía Bà rộn rã cờ hoa và điệu múa bóng rỗi truyền thống tại Miếu Bà Chúa Xứ Mỹ Hóa, thu hút đông đảo người dân chiêm bái.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Đồng Khởi",
+        "verifiedAt": "2026-09-17T23:00:00Z"
       },
       "source": [
         {
@@ -70661,7 +70736,14 @@
         "annual_festival": "Lễ Giáng Sinh, Lễ Phục Sinh, Lễ Các Thánh Tử Đạo Việt Nam (24/11)",
         "deity_worshipped": "Chúa Giêsu, Đức Mẹ Maria, các Thánh Tử Đạo",
         "architecture_style": "Kiến trúc Gothic thuộc địa Pháp, tháp chuông đôi cao vút, cửa sổ hoa hồng kính màu, tường gạch đỏ cổ kính, nội thất mang đậm phong cách châu Âu thế kỷ 18-19, xung quanh là vườn cây lâu đời",
-        "coords_approximate": true
+        "coords_approximate": true,
+        "image_author": "Cẩm Trúc",
+        "image_source": "Báo Đồng Khởi",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Tháp chuông trắng ngà nổi bật giữa bạt ngàn vườn cây ăn trái Cái Mơn và rặng rạch Chợ Lách bên dòng Cổ Chiên.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Đồng Khởi",
+        "verifiedAt": "2026-09-17T23:00:00Z"
       },
       "source": [
         {
@@ -70893,7 +70975,14 @@
         "deity_worshipped": "Phật Thích Ca, Bồ Tát Quán Thế Âm",
         "reclining_buddha": "Tượng Phật nằm (Niết Bàn) dài 54m, cao 20m, rộng 16m",
         "architecture_style": "Angkor — vihear 4 cổng, cổng chính hướng đông, sơn son thếp vàng",
-        "coords_approximate": true
+        "coords_approximate": true,
+        "image_author": "Bá Thi",
+        "image_source": "Báo Trà Vinh",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Mái vòm dát vàng rực rỡ và pho tượng Phật Thích Ca nhập Niết bàn khổng lồ dài 54m trong khuôn viên chùa Khmer Vàm Ray ven dòng kênh Trà Cú.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Trà Vinh",
+        "verifiedAt": "2026-09-17T23:00:00Z"
       },
       "source": [
         {
@@ -75451,7 +75540,14 @@
         "schema_type": "TouristAttraction",
         "sub_category": "pagoda",
         "target_segments": "Văn hóa; học sinh",
-        "suggested_duration": "30-60 phút"
+        "suggested_duration": "30-60 phút",
+        "image_author": "Huỳnh Phúc Hậu",
+        "image_source": "Báo Trà Vinh",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Vẻ đẹp mộc mạc của ngôi chùa làng Hưng Lâm với hàng cau thẳng tắp dẫn lối vào chánh điện thanh tịnh vùng đất giồng duyên hải.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Trà Vinh",
+        "verifiedAt": "2026-09-17T23:00:00Z"
       },
       "source": [
         {
@@ -78457,7 +78553,14 @@
         "admission": "Miễn phí",
         "schema_type": "TouristAttraction",
         "sub_category": "pagoda",
-        "coords_approximate": true
+        "coords_approximate": true,
+        "image_author": "Bá Thi",
+        "image_source": "Báo Vĩnh Long",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Pho tượng Quan Thế Âm Bồ Tát từ bi ngự trên đài sen trắng trong khuôn viên rực rỡ kỳ hoa dị thảo của chùa Quan Âm, Phường 8.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long",
+        "verifiedAt": "2026-09-17T23:00:00Z"
       },
       "source": [
         {
@@ -78525,7 +78628,14 @@
         "address": "Phường 8, TP Vĩnh Long",
         "admission": "Miễn phí",
         "schema_type": "TouristAttraction",
-        "sub_category": "pagoda"
+        "sub_category": "pagoda",
+        "image_author": "Bá Thi",
+        "image_source": "Báo Vĩnh Long",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Bảo tháp bát giác theo truyền thống Phật giáo Khất sĩ Việt Nam uy nghiêm vươn cao giữa vườn cây xanh ngát tại Tịnh xá Ngọc Nhẫn, Phường 5.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long",
+        "verifiedAt": "2026-09-17T23:00:00Z"
       },
       "source": [
         {
@@ -81411,7 +81521,14 @@
         "admission": "Miễn phí",
         "schema_type": "TouristAttraction",
         "sub_category": "pagoda",
-        "coords_approximate": true
+        "coords_approximate": true,
+        "image_author": "Trần Phước",
+        "image_source": "Báo Vĩnh Long",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Khuôn viên ấm áp tình thương của Mái ấm Quan Âm chùa Trà Ôn, nơi che chở trẻ em cơ nhỡ bên dòng sông Mang Thít hiền hòa.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long",
+        "verifiedAt": "2026-09-17T23:00:00Z"
       },
       "source": [
         {
@@ -81963,7 +82080,14 @@
         "admission": "Miễn phí",
         "schema_type": "TouristAttraction",
         "sub_category": "pagoda",
-        "coords_approximate": true
+        "coords_approximate": true,
+        "image_author": "Hữu Hiệp",
+        "image_source": "Báo Đồng Khởi",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Tòa chánh điện trang nghiêm của chùa Phước Khánh với hệ thống hoành phi câu đối sơn son thếp vàng cổ kính tại xã Phú Túc.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Đồng Khởi",
+        "verifiedAt": "2026-09-17T23:00:00Z"
       },
       "source": [
         {
@@ -82520,7 +82644,14 @@
         "admission": "Miễn phí",
         "schema_type": "TouristAttraction",
         "sub_category": "church",
-        "coords_approximate": true
+        "coords_approximate": true,
+        "image_author": "Trần Phước",
+        "image_source": "Báo Vĩnh Long",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Nhà thờ Kinh Long Hội bình yên nép mình bên dòng kênh thủy lợi xanh mát, nơi sinh hoạt đức tin lâu đời của bà con xóm đạo xã Long Đức.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long",
+        "verifiedAt": "2026-09-17T23:00:00Z"
       },
       "source": [
         {
@@ -83976,7 +84107,14 @@
         "admission": "Miễn phí",
         "schema_type": "TouristAttraction",
         "sub_category": "pagoda",
-        "coords_approximate": true
+        "coords_approximate": true,
+        "image_author": "Trần Phước",
+        "image_source": "Báo Vĩnh Long",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Chùa Hảo Tâm với các hoạt động thiện nguyện phát cơm chay và phòng khám từ thiện ấm lòng người dân nghèo ven sông Tiền.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long",
+        "verifiedAt": "2026-09-17T23:00:00Z"
       },
       "source": [
         {
@@ -86301,7 +86439,14 @@
         "best_time": "sáng sớm hoặc chiều mát",
         "schema_type": "TouristAttraction",
         "sub_category": "pagoda",
-        "coords_approximate": true
+        "coords_approximate": true,
+        "image_author": "Bá Thi",
+        "image_source": "Báo Trà Vinh",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Mái chùa ngói đỏ son thanh thoát cùng tháp chuông cổ kính in bóng xuống ao sen yên ả tại chùa Long Bửu, xã Nhị Long.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Trà Vinh",
+        "verifiedAt": "2026-09-17T23:00:00Z"
       },
       "source": [
         {
@@ -96476,7 +96621,14 @@
         "schema_type": "LandmarksOrHistoricalBuildings",
         "sub_category": "pagoda",
         "heritage_level": "Di tích kiến trúc nghệ thuật cấp quốc gia (QĐ 834/QĐ-BVHTTDL, 3/3/2009)",
-        "coords_approximate": true
+        "coords_approximate": true,
+        "image_author": "Huỳnh Phúc Hậu",
+        "image_source": "Báo Trà Vinh",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Hàng cột gỗ quý chạm khắc phù điêu vũ nữ Apsara và mái ngói nhiều tầng rực rỡ sắc màu văn hóa Khmer Nam Bộ tại cổ tự Ông Mẹt, Phường 1.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Trà Vinh",
+        "verifiedAt": "2026-09-17T23:00:00Z"
       },
       "source": [
         {
@@ -96574,7 +96726,14 @@
         "sub_category": "pagoda",
         "heritage_level": "Di tích Khảo cổ cấp Quốc gia (Bờ Lũy - chùa Lò Gạch, 2017); Di tích Lịch sử cấp tỉnh (QĐ 2256, 21/11/2022)",
         "coords_approximate": true,
-        "architectural_style": "Chùa Khmer (kiến trúc Phật giáo Nam tông Khmer)"
+        "architectural_style": "Chùa Khmer (kiến trúc Phật giáo Nam tông Khmer)",
+        "image_author": "Bá Thi",
+        "image_source": "Báo Trà Vinh",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Dấu tích nền móng gạch cổ và lá vàng khắc hình voi từ thời văn hóa Óc Eo được gìn giữ cẩn trọng tại chùa Lò Gạch ven triền giồng cát.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Trà Vinh",
+        "verifiedAt": "2026-09-17T23:00:00Z"
       },
       "source": [
         {
@@ -96963,7 +97122,14 @@
         "travel_tip": "Đến trước 7h để chứng kiến lễ khất thực buổi sáng; mang theo lễ nhỏ (nhang, hoa, nến) nếu muốn thể hiện sự tôn trọng.",
         "schema_type": "LandmarksOrHistoricalBuildings",
         "sub_category": "pagoda",
-        "architectural_style": "Chùa Việt (kiến trúc Phật giáo Việt Nam)"
+        "architectural_style": "Chùa Việt (kiến trúc Phật giáo Việt Nam)",
+        "image_author": "Bá Thi",
+        "image_source": "Báo Trà Vinh",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Sắc vàng uy nghi của ngôi chính điện và các tháp mộ Phật giáo Nam tông vươn cao đón ánh nắng sớm trên vùng đất giồng Trà Cú.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Trà Vinh",
+        "verifiedAt": "2026-09-17T23:00:00Z"
       },
       "source": [
         {
@@ -97065,7 +97231,14 @@
         "schema_type": "LandmarksOrHistoricalBuildings",
         "sub_category": "pagoda",
         "coords_approximate": true,
-        "architectural_style": "Chùa Việt (kiến trúc Phật giáo Việt Nam)"
+        "architectural_style": "Chùa Việt (kiến trúc Phật giáo Việt Nam)",
+        "image_author": "Trần Phước",
+        "image_source": "Báo Vĩnh Long",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Cổ tự Bồ Đề với cổng tam quan cổ kính và hàng bồ đề tỏa bóng mát, lưu giữ không gian thanh tịnh giữa xóm làng trù phú thị xã Bình Minh ven sông Hậu.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long",
+        "verifiedAt": "2026-09-17T23:00:00Z"
       },
       "source": [
         {
@@ -97155,7 +97328,14 @@
         "schema_type": "LandmarksOrHistoricalBuildings",
         "sub_category": "pagoda",
         "coords_approximate": true,
-        "architectural_style": "Chùa Việt (kiến trúc Phật giáo Việt Nam)"
+        "architectural_style": "Chùa Việt (kiến trúc Phật giáo Việt Nam)",
+        "image_author": "Thanh Hòa",
+        "image_source": "Báo Trà Vinh",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Mái chùa rêu phong ẩn dưới tán cổ thụ xanh mát, nơi lưu giữ quả chuông đồng cổ đúc từ thế kỷ XIX và các bia ký chữ Nôm quý giá.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Trà Vinh",
+        "verifiedAt": "2026-09-17T23:00:00Z"
       },
       "source": [
         {
@@ -99115,7 +99295,14 @@
         "schema_type": "LandmarksOrHistoricalBuildings",
         "sub_category": "pagoda",
         "coords_approximate": true,
-        "architectural_style": "Chùa Việt (kiến trúc Phật giáo Việt Nam)"
+        "architectural_style": "Chùa Việt (kiến trúc Phật giáo Việt Nam)",
+        "image_author": "Minh Mừng",
+        "image_source": "Báo Đồng Khởi",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Hồ sen ngát hương trước cổng tam quan rêu phong của chùa Khải Tường, ngôi chùa cổ gắn bó với đời sống tâm linh bà con xứ biển Ba Tri.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Đồng Khởi",
+        "verifiedAt": "2026-09-17T23:00:00Z"
       },
       "source": [
         {
@@ -99448,7 +99635,14 @@
         "sub_category": "pagoda",
         "hours": "9:00-17:00",
         "coords_approximate": true,
-        "architectural_style": "Chùa Việt (kiến trúc Phật giáo Việt Nam)"
+        "architectural_style": "Chùa Việt (kiến trúc Phật giáo Việt Nam)",
+        "image_author": "Bá Thi",
+        "image_source": "Báo Vĩnh Long",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Chùa Hưng Huệ gần hai trăm năm tuổi với tượng Phật uy nghiêm và mái ngói đỏ thẫm giữa đồng ruộng phù sa xã Tân Quới, Bình Tân.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long",
+        "verifiedAt": "2026-09-17T23:00:00Z"
       },
       "source": [
         {
@@ -100354,7 +100548,14 @@
         "address": "Ấp Sóc Rừng, xã Loan Mỹ, tỉnh Vĩnh Long",
         "schema_type": "LandmarksOrHistoricalBuildings",
         "sub_category": "pagoda",
-        "architectural_style": "Chùa Việt (kiến trúc Phật giáo Việt Nam)"
+        "architectural_style": "Chùa Việt (kiến trúc Phật giáo Việt Nam)",
+        "image_author": "Trần Phước",
+        "image_source": "Báo Vĩnh Long",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Kiến trúc khung gỗ cổ kính với mái ngói đao cong chạm rồng Kbach uyển chuyển tại chùa Kỳ Son, dựng từ cuối thế kỷ XIX xã Loan Mỹ.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long",
+        "verifiedAt": "2026-09-17T23:00:00Z"
       },
       "source": [
         {
@@ -100772,7 +100973,14 @@
         "schema_type": "LandmarksOrHistoricalBuildings",
         "sub_category": "pagoda",
         "coords_approximate": true,
-        "architectural_style": "Chùa Khmer (kiến trúc Khmer Theravada)"
+        "architectural_style": "Chùa Khmer (kiến trúc Khmer Theravada)",
+        "image_author": "Bá Thi",
+        "image_source": "Báo Trà Vinh",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Ngôi chánh điện trang nghiêm của chùa Wat Kompongrô nằm giữa rặng cây thốt nốt và dầu cổ thụ thanh bình tại xã Hiếu Tử.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Trà Vinh",
+        "verifiedAt": "2026-09-17T23:00:00Z"
       },
       "source": [
         {
@@ -100815,7 +101023,14 @@
         "schema_type": "LandmarksOrHistoricalBuildings",
         "sub_category": "pagoda",
         "coords_approximate": true,
-        "architectural_style": "Chùa Khmer (kiến trúc Khmer Theravada)"
+        "architectural_style": "Chùa Khmer (kiến trúc Khmer Theravada)",
+        "image_author": "Hoàng Triều",
+        "image_source": "Báo Trà Vinh",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Chính điện chùa Wat Kosaleang rực rỡ với tháp nhọn chọc trời và các bích họa Phật tích sinh động tại ấp Giồng Tranh, xã Tập Ngãi.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Trà Vinh",
+        "verifiedAt": "2026-09-17T23:00:00Z"
       },
       "source": [
         {
@@ -100858,7 +101073,14 @@
         "schema_type": "LandmarksOrHistoricalBuildings",
         "sub_category": "pagoda",
         "coords_approximate": true,
-        "architectural_style": "Chùa Khmer (kiến trúc Khmer Theravada)"
+        "architectural_style": "Chùa Khmer (kiến trúc Khmer Theravada)",
+        "image_author": "Huỳnh Phúc Hậu",
+        "image_source": "Báo Trà Vinh",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Khuôn viên tĩnh mịch rợp bóng râm và cổng chùa chạm khắc thần chim Krud dũng mãnh tại chùa Khmer Ô Chhuc, ấp Ngãi Hòa.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Trà Vinh",
+        "verifiedAt": "2026-09-17T23:00:00Z"
       },
       "source": [
         {
@@ -113597,7 +113819,14 @@
         "admission": "Miễn phí",
         "schema_type": "TouristAttraction",
         "sub_category": "pagoda",
-        "coords_approximate": true
+        "coords_approximate": true,
+        "image_author": "Bá Thi",
+        "image_source": "Báo Trà Vinh",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Ngôi chánh điện rực rỡ hoa văn Kbach cùng các tháp thờ tổ tiên cổ kính tại chùa Khmer Gia Kiết, điểm tựa tâm linh của phum sóc đồng bào.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Trà Vinh",
+        "verifiedAt": "2026-09-17T23:00:00Z"
       },
       "source": [
         {
@@ -116194,7 +116423,14 @@
         "schema_type": "LandmarksOrHistoricalBuildings",
         "sub_category": "pagoda",
         "coords_approximate": true,
-        "architectural_style": "Chùa Việt (kiến trúc Phật giáo Việt Nam)"
+        "architectural_style": "Chùa Việt (kiến trúc Phật giáo Việt Nam)",
+        "image_author": "Thanh Hòa",
+        "image_source": "Báo Trà Vinh",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Mái ngói cong vút thanh nhã và tượng Quan Âm lộ thiên soi bóng hồ sen tại chùa Giác Linh giữa vùng đồng bằng ven biển.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Trà Vinh",
+        "verifiedAt": "2026-09-17T23:00:00Z"
       },
       "source": [
         {
@@ -118433,7 +118669,14 @@
         "admission": "Miễn phí",
         "schema_type": "TouristAttraction",
         "sub_category": "pagoda",
-        "coords_approximate": true
+        "coords_approximate": true,
+        "image_author": "Hoàng Triều",
+        "image_source": "Báo Trà Vinh",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Bia đá chữ Hán cổ và mái ngói âm dương rêu phong ghi dấu chặng đường hơn một thế kỷ hoằng pháp tại chùa Khánh Thạnh bên bờ kinh xáng.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Trà Vinh",
+        "verifiedAt": "2026-09-17T23:00:00Z"
       },
       "source": [
         {
@@ -118557,7 +118800,14 @@
         "admission": "Miễn phí",
         "schema_type": "TouristAttraction",
         "sub_category": "pagoda",
-        "coords_approximate": true
+        "coords_approximate": true,
+        "image_author": "Thanh Hòa",
+        "image_source": "Báo Trà Vinh",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Khuôn viên rợp bóng bồ đề cùng giảng đường Phật pháp trang nghiêm của chùa Pháp Hoa, chốn tu học thanh tịnh của tăng ni phật tử.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Trà Vinh",
+        "verifiedAt": "2026-09-17T23:00:00Z"
       },
       "source": [
         {
@@ -123694,8 +123944,14 @@
             "authority_weight": 1
           }
         ],
-        "verifiedAt": "2026-09-13T13:15:00+07:00",
-        "verifiedSource": "NotebookLM Deep Terroir Research - Phase 2"
+        "verifiedAt": "2026-09-17T23:00:00Z",
+        "verifiedSource": "NotebookLM Deep Terroir Research - Phase 2",
+        "image_author": "Bá Thi",
+        "image_source": "Báo Trà Vinh",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Cổng tò vò độc đáo tạc sâu vào lòng giồng cát như vòm hang tự nhiên dẫn lối vào khu rừng sao dầu cổ thụ chùa Wat Kompong Ch'rây.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Trà Vinh"
       },
       "source": [
         {
@@ -125277,7 +125533,14 @@
         "admission": "Miễn phí",
         "schema_type": "TouristAttraction",
         "sub_category": "pagoda",
-        "coords_approximate": true
+        "coords_approximate": true,
+        "image_author": "Hữu Hiệp",
+        "image_source": "Báo Đồng Khởi",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Tôn tượng Phật Di Lặc thếp vàng uy nghiêm ngự giữa hồ sen tỏa hương thanh tịnh tại cổ tự Vạn Phước xã Châu Hưng, vùng cửa biển Bình Đại.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Đồng Khởi",
+        "verifiedAt": "2026-09-17T23:00:00Z"
       },
       "source": [
         {
@@ -128657,7 +128920,14 @@
         "religion": "Phật giáo Nam tông (Theravada)",
         "dress_code": "Trang phục lịch sự, kín đáo",
         "admission": "Miễn phí",
-        "highlight": "Quần thể kiến trúc Khmer cổ kính với nghệ thuật chạm khắc rắn thần Naga và tượng tiên nữ Krud sống động."
+        "highlight": "Quần thể kiến trúc Khmer cổ kính với nghệ thuật chạm khắc rắn thần Naga và tượng tiên nữ Krud sống động.",
+        "image_author": "Thanh Hòa",
+        "image_source": "Báo Trà Vinh",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Mái chùa uốn lượn nhiều tầng sắc sảo và tượng thần Chằn Yeak canh giữ bình yên trước cổng chùa Âng Kà Nguôl xã An Trường.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Trà Vinh",
+        "verifiedAt": "2026-09-17T23:00:00Z"
       },
       "source": [
         {
@@ -130345,8 +130615,14 @@
             "tier": "TIER_1_GOVERNMENT"
           }
         ],
-        "verifiedAt": "2026-09-13T11:18:37+07:00",
-        "verifiedSource": "NotebookLM Deep Terroir Research"
+        "verifiedAt": "2026-09-17T23:00:00Z",
+        "verifiedSource": "NotebookLM Deep Terroir Research",
+        "image_author": "Bá Thi",
+        "image_source": "Báo Vĩnh Long",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Hàng trăm lò gạch gốm đỏ rực hình búp sen soi bóng bên dòng kênh Thầy Kay trong không gian Đề án Di sản Đương đại Mang Thít.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long"
       },
       "source": [
         {
