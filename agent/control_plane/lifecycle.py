@@ -501,7 +501,7 @@ def _default_registry() -> LifecycleRegistry:
     except Exception:
         # Keep import safe during packaging, while the on-disk registry remains
         # the source of truth and is validated by tests/readiness.
-        return LifecycleRegistry((SinkSpec("postgres", "users.id", "personal", "postgres", "postgres", None, "strong"),))
+        return LifecycleRegistry((SinkSpec("postgres", "users.id", "personal", "table-manifest", "transactional", None, "strong"),))
 
 
 lifecycle_registry = _default_registry()

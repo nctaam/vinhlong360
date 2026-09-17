@@ -323,3 +323,18 @@ def test_media_receipt_is_durable_after_process_cache_loss(isolated_sqlite_db, m
     assert first["status"] == "deleted"
     assert second["status"] == "deleted"
     assert calls == ["objects/durable.webp"]
+
+
+def test_default_registry_fallback_has_valid_strategies(monkeypatch):
+    import control_plane.lifecycle as lifecycle
+
+    def _raise(p):
+        raise FileNotFoundError(f"not found: {p}")
+
+    monkeypatch.setattr(lifecycle, "load_lifecycle_registry", _raise)
+    reg = lifecycle._default_registry()
+    assert len(reg.policies) == 1
+    assert reg.policies[0].name == "postgres"
+    assert reg.policies[0].erase_strategy == "transactional"
+    assert reg.policies[0].export_strategy == "table-manifest"
+
