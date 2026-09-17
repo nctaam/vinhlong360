@@ -28,4 +28,11 @@ describe('Homepage Smart Terroir Elevation & Ergonomics', () => {
     expect(briefingVue).toContain('home-local-briefing__tide')
     expect(briefingVue).toContain('Nhịp nước sông Cửu Long')
   })
+
+  it('elevates hero search island and cognitive weather banner ambiance with liquid glass', () => {
+    expect(homeCss).toMatch(/\[data-home-pilot="nocturne-b1"\]\s*\.hero-cognitive-banner/)
+    expect(homeCss).toMatch(/\[data-home-pilot="nocturne-b1"\]\s*\.hero-search-island/)
+    expect(homeCss).toMatch(/\.hero-cognitive-chip:hover/)
+  })
 })
+
