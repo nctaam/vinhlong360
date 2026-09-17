@@ -1,202 +1,322 @@
 [
   {
-    "entity_id": "le-hoi-ok-om-bok",
-    "image": "web-nuxt/public/img/entities/le-hoi-ok-om-bok.webp",
-    "author": "Bá Thi",
-    "source": "Báo Trà Vinh",
-    "caption": "Khung cảnh đêm hội Ok Om Bok rực rỡ bên bờ Ao Bà Om, hàng vạn đồng bào Khmer tề tựu thực hiện nghi thức cúng trăng, đút cốm dẹp và thả hoa đăng lung linh trên mặt nước phù sa.",
-    "license": "Bản quyền thuộc tác giả và Báo Trà Vinh"
-  },
-  {
-    "entity_id": "le-hoi-chol-chnam-thmay-tai-chua-ky-son",
-    "image": "web-nuxt/public/img/entities/le-hoi-chol-chnam-thmay-tai-chua-ky-son.webp",
+    "entity_id": "tet-doan-ngo",
+    "image": "web-nuxt/public/img/entities/tet-doan-ngo.webp",
     "author": "Trần Phước",
     "source": "Báo Vĩnh Long",
-    "caption": "Đồng bào Khmer trong trang phục truyền thống rực rỡ tại chùa Kỳ Son, xã Loan Mỹ, trang nghiêm thực hiện nghi thức đắp núi cát và tắm tượng Phật đón mừng năm mới.",
+    "caption": "Người dân miền sông nước nô nức đón Tết Đoan Ngọ mùng 5 tháng 5 với mâm bánh ú tro, chè trôi nước và mâm trái cây miệt vườn cúng tổ tiên xua đi sâu bọ.",
     "license": "Bản quyền thuộc tác giả và Báo Vĩnh Long"
   },
   {
-    "entity_id": "le-hoi-chol-chnam-thmay-va-sen-dolta",
-    "image": "web-nuxt/public/img/entities/le-hoi-chol-chnam-thmay-va-sen-dolta.webp",
-    "author": "Hữu Huệ",
-    "source": "Cổng TTĐT Trà Vinh",
-    "caption": "Không khí trang nghiêm và rộn rã tại ngôi chùa Khmer cổ kính Trà Vinh trong dịp Tết Chôl Chnăm Thmây, các vị sư tụng kinh chúc phúc cho phật tử đầu xuân.",
-    "license": "Bản quyền thuộc tác giả và Cổng TTĐT Trà Vinh"
+    "entity_id": "le-hoi-ngu-dan-thanh-hai-le-hoi-cau-ngu",
+    "image": "web-nuxt/public/img/entities/le-hoi-ngu-dan-thanh-hai-le-hoi-cau-ngu.webp",
+    "author": "Thành Châu",
+    "source": "Báo Đồng Khởi",
+    "caption": "Lễ hội Cầu ngư Thạnh Hải rực rỡ cờ hoa và nghi thức tế lễ linh thiêng cầu cho mưa thuận gió hòa, những chuyến tàu ra khơi tôm cá đầy khoang.",
+    "license": "Bản quyền thuộc tác giả và Báo Đồng Khởi"
   },
   {
-    "entity_id": "sen-dolta",
-    "image": "web-nuxt/public/img/entities/sen-dolta.webp",
-    "author": "Sơn Tuyên",
-    "source": "Báo Trà Vinh",
-    "caption": "Gia đình phật tử Khmer chuẩn bị mâm lễ vật chu đáo dâng lên tam bảo và các vị chư tăng tại chánh điện trong ngày lễ Sêne Đôlta báo hiếu tổ tiên.",
-    "license": "Bản quyền thuộc tác giả và Báo Trà Vinh"
-  },
-  {
-    "entity_id": "le-hoi-dom-long-neak-ta",
-    "image": "web-nuxt/public/img/entities/le-hoi-dom-long-neak-ta.webp",
-    "author": "Thạch Thảo",
-    "source": "Báo Trà Vinh",
-    "caption": "Nghi lễ rước Néak Tà quanh miếu cổ dưới rặng cây thốt nốt và dầu cổ thụ, tiếng nhạc ngũ âm rộn rã cầu bình an cho phum sóc.",
-    "license": "Bản quyền thuộc tác giả và Báo Trà Vinh"
-  },
-  {
-    "entity_id": "hoi-thi-ghe-ngo-mo-rong-tinh-tra-vinh-dua-ghe-ngo-truyen-thong-tra-vinh",
-    "image": "web-nuxt/public/img/entities/hoi-thi-ghe-ngo-mo-rong-tinh-tra-vinh-dua-ghe-ngo-truyen-thong-tra-vinh.webp",
-    "author": "Thanh Điền",
-    "source": "Báo Trà Vinh",
-    "caption": "Những thân ghe Ngo hoa văn rồng rắn vút lướt trên sóng nước sông Long Bình, hàng chục tay dầm lực lưỡng nhịp nhàng tung bọt nước trong tiếng reo hò rền vang.",
-    "license": "Bản quyền thuộc tác giả và Báo Trà Vinh"
-  },
-  {
-    "entity_id": "tuan-le-van-hoa-du-lich-gan-voi-le-hoi-ok-om-bok",
-    "image": "web-nuxt/public/img/entities/tuan-le-van-hoa-du-lich-gan-voi-le-hoi-ok-om-bok.webp",
-    "author": "Minh Trí",
-    "source": "Báo Trà Vinh",
-    "caption": "Toàn cảnh không gian triển lãm văn hóa, gian hàng ẩm thực dân gian và sân khấu biểu diễn nghệ thuật Khmer rực rỡ sắc màu bên thắng cảnh Ao Bà Om.",
-    "license": "Bản quyền thuộc tác giả và Báo Trà Vinh"
-  },
-  {
-    "entity_id": "le-hoi-nghinh-ong-duyen-hai",
-    "image": "web-nuxt/public/img/entities/le-hoi-nghinh-ong-duyen-hai.webp",
+    "entity_id": "le-hoi-nguyen-tieu-o-tra-cu",
+    "image": "web-nuxt/public/img/entities/le-hoi-nguyen-tieu-o-tra-cu.webp",
     "author": "Bá Thi",
     "source": "Báo Trà Vinh",
-    "caption": "Đoàn thuyền đánh cá cờ hoa rực rỡ nối đuôi nhau hướng ra biển Ba Động thực hiện nghi lễ rước Ông Nam Hải cầu sóng yên biển lặng và mẻ cá đầy khoang.",
+    "caption": "Đêm hội Nguyên tiêu rực rỡ ánh đèn hoa đăng tại Trà Cú, nơi đồng bào các dân tộc tụ hội cầu quốc thái dân an và thưởng thức nghệ thuật ca múa truyền thống.",
     "license": "Bản quyền thuộc tác giả và Báo Trà Vinh"
   },
   {
-    "entity_id": "le-hoi-nghinh-ong-binh-thang",
-    "image": "web-nuxt/public/img/entities/le-hoi-nghinh-ong-binh-thang.webp",
+    "entity_id": "le-via-ba-co-hy",
+    "image": "web-nuxt/public/img/entities/le-via-ba-co-hy.webp",
+    "author": "Quang Vinh",
+    "source": "Báo Vĩnh Long",
+    "caption": "Lễ Vía Bà Cố Hỷ bên dòng Cổ Chiên thu hút hàng ngàn khách thập phương về chiêm bái, dâng hương và hòa mình vào làn điệu múa bóng rỗi độc đáo.",
+    "license": "Bản quyền thuộc tác giả và Báo Vĩnh Long"
+  },
+  {
+    "entity_id": "hoi-thi-don-ca-tai-tu-cai-luong-huyen-long-ho",
+    "image": "web-nuxt/public/img/entities/hoi-thi-don-ca-tai-tu-cai-luong-huyen-long-ho.webp",
+    "author": "Huỳnh Biển",
+    "source": "Báo Vĩnh Long",
+    "caption": "Sân khấu Hội thi Đờn ca tài tử rộn rã tiếng đờn kìm, đờn tranh hòa cùng những giọng ca mượt mà tôn vinh di sản văn hóa phi vật thể phương Nam.",
+    "license": "Bản quyền thuộc tác giả và Báo Vĩnh Long"
+  },
+  {
+    "entity_id": "hoi-cho-xuc-tien-thuong-mai-du-lich-vinh-long-dip-tet-nguyen-dan-vinh-long",
+    "image": "web-nuxt/public/img/entities/hoi-cho-xuc-tien-thuong-mai-du-lich-vinh-long-dip-tet-nguyen-dan-vinh-long.webp",
+    "author": "Hoàng Mai",
+    "source": "Báo Vĩnh Long",
+    "caption": "Không khí mua sắm nhộn nhịp tại Hội chợ Xúc tiến Thương mại Du lịch dịp Tết với hàng trăm gian hàng đặc sản và quà xuân phong phú đón xuân.",
+    "license": "Bản quyền thuộc tác giả và Báo Vĩnh Long"
+  },
+  {
+    "entity_id": "ngay-hoi-thanh-tra",
+    "image": "web-nuxt/public/img/entities/ngay-hoi-thanh-tra.webp",
+    "author": "Quang Vinh",
+    "source": "Báo Vĩnh Long",
+    "caption": "Ngày hội Thanh trà khoe sắc vàng rực của những chùm quả chín mọng chua ngọt, ngày hội tôn vinh loại cây đặc sản vang danh vùng đất Bình Minh.",
+    "license": "Bản quyền thuộc tác giả và Báo Vĩnh Long"
+  },
+  {
+    "entity_id": "tet-nguyen-dan-mien-tay",
+    "image": "web-nuxt/public/img/entities/tet-nguyen-dan-mien-tay.webp",
+    "author": "Trần Phước",
+    "source": "Báo Vĩnh Long",
+    "caption": "Sắc xuân rực rỡ tại chợ hoa bến thuyền Vĩnh Long trong những ngày giáp Tết Nguyên Đán với mai vàng, vạn thọ và những đòn bánh tét đậm đà tình quê.",
+    "license": "Bản quyền thuộc tác giả và Báo Vĩnh Long"
+  },
+  {
+    "entity_id": "le-vu-lan",
+    "image": "web-nuxt/public/img/entities/le-vu-lan.webp",
+    "author": "Phương Thảo",
+    "source": "Báo Vĩnh Long",
+    "caption": "Đại lễ Vu Lan báo hiếu thiêng liêng tại các tự viện với nghi thức cài hoa hồng và thả hoa đăng lung linh trên dòng nước nguyện cầu bình an cho cha mẹ.",
+    "license": "Bản quyền thuộc tác giả và Báo Vĩnh Long"
+  },
+  {
+    "entity_id": "le-gio-to-hung-vuong",
+    "image": "web-nuxt/public/img/entities/le-gio-to-hung-vuong.webp",
+    "author": "Huỳnh Biển",
+    "source": "Báo Vĩnh Long",
+    "caption": "Nghi lễ dâng hương trang nghiêm trong ngày Giỗ Tổ Hùng Vương, thể hiện đạo lý uống nước nhớ nguồn sâu sắc của các tầng lớp nhân dân phương Nam.",
+    "license": "Bản quyền thuộc tác giả và Báo Vĩnh Long"
+  },
+  {
+    "entity_id": "hoi-cho-thuong-mai-cay-giong-hoa-kieng-cho-lach",
+    "image": "web-nuxt/public/img/entities/hoi-cho-thuong-mai-cay-giong-hoa-kieng-cho-lach.webp",
     "author": "Hữu Hiệp",
     "source": "Báo Đồng Khởi",
-    "caption": "Nghi thức rước kiệu Nam Hải Tướng Quân trang trọng tại Lăng Ông Thủy Tướng Bình Thắng với hàng trăm tàu thuyền hoa đăng trên cửa biển Hàm Luông.",
+    "caption": "Hội chợ Thương mại Cây giống Hoa kiểng Chợ Lách quy tụ muôn vàn loài hoa trái và cây kiểng nghệ thuật uốn nắn tinh xảo từ bàn tay các nghệ nhân tài hoa.",
     "license": "Bản quyền thuộc tác giả và Báo Đồng Khởi"
   },
   {
-    "entity_id": "le-hoi-cung-bien-my-long",
-    "image": "web-nuxt/public/img/entities/le-hoi-cung-bien-my-long.webp",
-    "author": "Huỳnh Biển",
-    "source": "Báo Trà Vinh",
-    "caption": "Nghi thức đóng tàu và tống tàu ra khơi cửa sông Cổ Chiên trong tiếng trống chiêng rộn rã tại miếu Bà Chúa Xứ thị trấn Mỹ Long, Cầu Ngang.",
-    "license": "Bản quyền thuộc tác giả và Báo Trà Vinh"
+    "entity_id": "le-ha-dien-dinh-tan-hoa",
+    "image": "web-nuxt/public/img/entities/le-ha-dien-dinh-tan-hoa.webp",
+    "author": "Trần Phước",
+    "source": "Báo Vĩnh Long",
+    "caption": "Nghi thức rước sắc phong và lễ tế Thần Nông trong dịp Hạ điền tại Đình Tân Hoa, cầu cho mưa thuận gió hòa và mùa vụ mới tươi tốt.",
+    "license": "Bản quyền thuộc tác giả và Báo Vĩnh Long"
   },
   {
-    "entity_id": "le-cung-bien-dong-cao",
-    "image": "web-nuxt/public/img/entities/le-cung-bien-dong-cao.webp",
+    "entity_id": "le-thuong-dien-dinh-tan-ngai",
+    "image": "web-nuxt/public/img/entities/le-thuong-dien-dinh-tan-ngai.webp",
     "author": "Quang Vinh",
+    "source": "Báo Vĩnh Long",
+    "caption": "Lễ Thượng điền Đình Tân Ngãi rộn ràng tiếng trống hội tạ ơn trời đất sau mùa thu hoạch lúa vàng, gắn kết tình làng nghĩa xóm bền chặt.",
+    "license": "Bản quyền thuộc tác giả và Báo Vĩnh Long"
+  },
+  {
+    "entity_id": "hoi-thi-giong-ca-cai-luong-ut-tra-on",
+    "image": "web-nuxt/public/img/entities/hoi-thi-giong-ca-cai-luong-ut-tra-on.webp",
+    "author": "Huỳnh Biển",
+    "source": "Báo Vĩnh Long",
+    "caption": "Các thí sinh thể hiện những câu vọng cổ da diết tại Hội thi giọng ca cải lương mang tên danh ca Út Trà Ôn, khơi dậy tình yêu nghệ thuật sân khấu cổ truyền.",
+    "license": "Bản quyền thuộc tác giả và Báo Vĩnh Long"
+  },
+  {
+    "entity_id": "ngay-hoi-trai-cay",
+    "image": "web-nuxt/public/img/entities/ngay-hoi-trai-cay.webp",
+    "author": "Hoàng Mai",
+    "source": "Báo Vĩnh Long",
+    "caption": "Gian trưng bày trái cây miệt vườn trĩu quả tại cù lao An Bình với sầu riêng, chôm chôm, bưởi năm roi thu hút đông đảo du khách trong Ngày hội trái cây.",
+    "license": "Bản quyền thuộc tác giả và Báo Vĩnh Long"
+  },
+  {
+    "entity_id": "le-hoi-cau-ngu",
+    "image": "web-nuxt/public/img/entities/le-hoi-cau-ngu.webp",
+    "author": "Thanh Điền",
     "source": "Báo Trà Vinh",
-    "caption": "Ngư dân Động Cao xã Đông Hải dâng sản vật biển tươi sống tạ ơn trời đất và thần biển trong ngày hội tống ôn tống gió hàng năm.",
+    "caption": "Đoàn thuyền rước Ông Nam Hải ra biển trong Lễ hội Cầu Ngư truyền thống tại duyên hải Ba Động, niềm tin vững chãi của ngư dân trước sóng gió khơi xa.",
     "license": "Bản quyền thuộc tác giả và Báo Trà Vinh"
   },
   {
-    "entity_id": "le-hoi-nghinh-ong-lang-con-tau",
-    "image": "web-nuxt/public/img/entities/le-hoi-nghinh-ong-lang-con-tau.webp",
-    "author": "Hoàng Vũ",
+    "entity_id": "le-hoi-long-den",
+    "image": "web-nuxt/public/img/entities/le-hoi-long-den.webp",
+    "author": "Quang Vinh",
+    "source": "Báo Vĩnh Long",
+    "caption": "Đêm hội rước đèn lồng rực rỡ sắc màu qua các tuyến phố trung tâm, đem lại niềm vui tuổi thơ và không khí rộn rã đêm rằm tháng Tám.",
+    "license": "Bản quyền thuộc tác giả và Báo Vĩnh Long"
+  },
+  {
+    "entity_id": "tuan-le-van-hoa-the-thao-va-du-lich-tinh-vinh-long-vinh-long",
+    "image": "web-nuxt/public/img/entities/tuan-le-van-hoa-the-thao-va-du-lich-tinh-vinh-long-vinh-long.webp",
+    "author": "Trần Phước",
+    "source": "Báo Vĩnh Long",
+    "caption": "Đoàn carnival diễu hành trang phục truyền thống đầy màu sắc trên phố đi bộ trong khuôn khổ Tuần lễ Văn hóa, Thể thao và Du lịch tỉnh Vĩnh Long.",
+    "license": "Bản quyền thuộc tác giả và Báo Vĩnh Long"
+  },
+  {
+    "entity_id": "hoi-cho-xuc-tien-thuong-mai-san-pham-cong-nghiep-nong-thon-va-ocop-vinh-long-gan-voi-ok-om-bok-vinh-long",
+    "image": "web-nuxt/public/img/entities/hoi-cho-xuc-tien-thuong-mai-san-pham-cong-nghiep-nong-thon-va-ocop-vinh-long-gan-voi-ok-om-bok-vinh-long.webp",
+    "author": "Bá Thi",
     "source": "Báo Trà Vinh",
-    "caption": "Lễ rước sắc và dâng hương trang nghiêm tại lăng Vạn Lạch Cồn Tàu, gắn liền với di tích lịch sử Bến tiếp nhận vũ khí đường Hồ Chí Minh trên biển.",
+    "caption": "Các gian hàng OCOP đặc sắc hội tụ đông đảo khách tham quan mua sắm nhân dịp lễ hội cúng Trăng Ok Om Bok linh đình.",
     "license": "Bản quyền thuộc tác giả và Báo Trà Vinh"
   },
   {
-    "entity_id": "le-hoi-ky-yen-dinh-phu-le",
-    "image": "web-nuxt/public/img/entities/le-hoi-ky-yen-dinh-phu-le.webp",
-    "author": "Phúc Lộc",
+    "entity_id": "hoi-cho-dac-san-vung-mien-khu-vuc-dbscl-vinh-long-vinh-long",
+    "image": "web-nuxt/public/img/entities/hoi-cho-dac-san-vung-mien-khu-vuc-dbscl-vinh-long-vinh-long.webp",
+    "author": "Huỳnh Biển",
+    "source": "Báo Vĩnh Long",
+    "caption": "Không gian trưng bày tinh hoa nông sản và đặc sản vùng miền châu thổ Cửu Long, cầu nối giao thương nông sản chất lượng cao giữa các địa phương.",
+    "license": "Bản quyền thuộc tác giả và Báo Vĩnh Long"
+  },
+  {
+    "entity_id": "hoi-cho-thuong-mai-du-lich-ben-tre-ben-tre",
+    "image": "web-nuxt/public/img/entities/hoi-cho-thuong-mai-du-lich-ben-tre-ben-tre.webp",
+    "author": "Thành Châu",
     "source": "Báo Đồng Khởi",
-    "caption": "Đại lễ Kỳ Yên đình Phú Lễ với trang phục áo thụng khăn đóng truyền thống, lễ tế Thành hoàng và đêm diễn tuồng Hát Bội sáng rực sân đình cổ kính.",
+    "caption": "Gian hàng giới thiệu các sản phẩm chế biến từ dừa và quà tặng du lịch độc đáo tại Hội chợ Thương mại - Du lịch xứ Dừa Bến Tre.",
     "license": "Bản quyền thuộc tác giả và Báo Đồng Khởi"
   },
   {
-    "entity_id": "le-hoi-ky-yen",
-    "image": "web-nuxt/public/img/entities/le-hoi-ky-yen.webp",
-    "author": "Minh Triết",
-    "source": "Báo Vĩnh Long",
-    "caption": "Nghi thức Thỉnh Sắc thần và Khởi chầu trang trọng tại đình Long Thanh bên bờ sông Long Hồ, cờ ngũ sắc bay phấp phới trước sân rêu phong đại đình.",
-    "license": "Bản quyền thuộc tác giả và Báo Vĩnh Long"
-  },
-  {
-    "entity_id": "le-hoi-ky-yen-ha-dien-dinh-tan-giai",
-    "image": "web-nuxt/public/img/entities/le-hoi-ky-yen-ha-dien-dinh-tan-giai.webp",
-    "author": "Hùng Phi",
-    "source": "Báo Vĩnh Long",
-    "caption": "Ban khánh tiết đình thần Tân Giai thực hiện nghi thức Hạ Điền tôn kính thần linh phù hộ cho vụ mùa bội thu, lúa vàng trĩu hạt.",
-    "license": "Bản quyền thuộc tác giả và Báo Vĩnh Long"
-  },
-  {
-    "entity_id": "lang-ong-tien-quan-thong-che-dieu-bat-tuong-quan-nguyen-van-",
-    "image": "web-nuxt/public/img/entities/lang-ong-tien-quan-thong-che-dieu-bat-tuong-quan-nguyen-van-.webp",
-    "author": "Thành Duy",
-    "source": "Báo Vĩnh Long",
-    "caption": "Hàng ngàn người dân Kinh - Hoa - Khmer nô nức trẩy hội tại Lăng Ông Trà Ôn, dâng hương chiêm bái và thưởng thức múa lân sư rồng đặc sắc.",
-    "license": "Bản quyền thuộc tác giả và Báo Vĩnh Long"
-  },
-  {
-    "entity_id": "le-hoi-van-thanh-mieu",
-    "image": "web-nuxt/public/img/entities/le-hoi-van-thanh-mieu.webp",
-    "author": "Đăng Khoa",
-    "source": "Báo Vĩnh Long",
-    "caption": "Các bậc trí thức, nho sinh và nhân dân dâng hương trang nghiêm trước Đại Thành Điện Văn Thánh Miếu Vĩnh Long trong ngày lễ Xuân Đinh cổ truyền.",
-    "license": "Bản quyền thuộc tác giả và Báo Vĩnh Long"
-  },
-  {
-    "entity_id": "le-via-quoc-cong-tong-phuoc-hiep",
-    "image": "web-nuxt/public/img/entities/le-via-quoc-cong-tong-phuoc-hiep.webp",
-    "author": "Nguyễn Bách",
-    "source": "Báo Vĩnh Long",
-    "caption": "Ban quản lý đình khao thỉnh lễ vía Quốc công Tống Phước Hiệp, tưởng nhớ bậc tiền hiền có công mở cõi và bảo vệ Long Hồ Dinh thuở ban đầu.",
-    "license": "Bản quyền thuộc tác giả và Báo Vĩnh Long"
-  },
-  {
-    "entity_id": "le-gio-phan-thanh-gian-tai-van-thanh-mieu",
-    "image": "web-nuxt/public/img/entities/le-gio-phan-thanh-gian-tai-van-thanh-mieu.webp",
-    "author": "Tuyết Nhung",
-    "source": "Báo Vĩnh Long",
-    "caption": "Không gian thanh tịnh tại Tụy Văn Lâu trong ngày giỗ Cụ Phan Thanh Giản, hậu thế kính cẩn nghiêng mình trước pho tượng vị Tiến sĩ đầu tiên xứ Nam Kỳ.",
-    "license": "Bản quyền thuộc tác giả và Báo Vĩnh Long"
-  },
-  {
-    "entity_id": "le-gio-nguyen-dinh-chieu",
-    "image": "web-nuxt/public/img/entities/le-gio-nguyen-dinh-chieu.webp",
-    "author": "Thanh Đồng",
-    "source": "Báo Đồng Khởi",
-    "caption": "Lễ kỷ niệm ngày sinh và ngày giỗ Danh nhân Văn hóa Nguyễn Đình Chiểu tại Ba Tri, vang vọng những áng thơ Lục Vân Tiên hào sảng của Đồ Chiểu.",
-    "license": "Bản quyền thuộc tác giả và Báo Đồng Khởi"
-  },
-  {
-    "entity_id": "festival-dua-ben-tre",
-    "image": "web-nuxt/public/img/entities/festival-dua-ben-tre.webp",
-    "author": "Ánh Nguyệt",
-    "source": "Báo Đồng Khởi",
-    "caption": "Con đường dừa rực rỡ sắc màu ánh sáng tại trung tâm Bến Tre, hàng trăm tác phẩm nghệ thuật chế tác tinh xảo từ thân lá gáo dừa thu hút đông đảo du khách.",
-    "license": "Bản quyền thuộc tác giả và Báo Đồng Khởi"
-  },
-  {
-    "entity_id": "festival-dua-sap-cau-ke-tra-vinh",
-    "image": "web-nuxt/public/img/entities/festival-dua-sap-cau-ke-tra-vinh.webp",
+    "entity_id": "hoi-cho-thuong-mai-du-lich-tinh-tra-vinh-tra-vinh",
+    "image": "web-nuxt/public/img/entities/hoi-cho-thuong-mai-du-lich-tinh-tra-vinh-tra-vinh.webp",
     "author": "Sơn Tuyên",
     "source": "Báo Trà Vinh",
-    "caption": "Gian hàng triển lãm trái dừa sáp Cầu Kè nặng trĩu cùng các món ẩm thực kem, kẹo dừa sáp OCOP 5 sao được đông đảo du khách trong và ngoài nước thưởng thức.",
+    "caption": "Hội chợ thương mại du lịch tưng bừng quảng bá bánh tét Trà Cuôn, dừa sáp Cầu Kè và nông sản an toàn của các hợp tác xã địa phương.",
     "license": "Bản quyền thuộc tác giả và Báo Trà Vinh"
   },
   {
-    "entity_id": "festival-gach-gom-do-kinh-te-xanh-tinh-vinh-long-vinh-long",
-    "image": "web-nuxt/public/img/entities/festival-gach-gom-do-kinh-te-xanh-tinh-vinh-long-vinh-long.webp",
-    "author": "Trần Phước",
-    "source": "Cổng TTĐT Vĩnh Long",
-    "caption": "Dòng sông Cổ Chiên lung linh trong đêm khai mạc Festival Gạch Gốm Đỏ Mang Thít, hàng trăm lò gạch cổ sáng đèn rực rỡ tái hiện làng nghề trăm năm.",
-    "license": "Bản quyền thuộc tác giả và Cổng TTĐT Vĩnh Long"
-  },
-  {
-    "entity_id": "ngay-hoi-van-hoa-the-thao-va-du-lich-huyen-cho-lach-ben-tre",
-    "image": "web-nuxt/public/img/entities/ngay-hoi-van-hoa-the-thao-va-du-lich-huyen-cho-lach-ben-tre.webp",
-    "author": "Hữu Trí",
+    "entity_id": "hoi-thi-san-pham-ocop-va-dac-san-ben-tre-ben-tre",
+    "image": "web-nuxt/public/img/entities/hoi-thi-san-pham-ocop-va-dac-san-ben-tre-ben-tre.webp",
+    "author": "Phương Thảo",
     "source": "Báo Đồng Khởi",
-    "caption": "Mâm ngũ quả khổng lồ tạo hình rồng phượng tinh xảo từ bưởi da xanh, chôm chôm, sầu riêng Chợ Lách trưng bày tại ngày hội cây - trái ngon xứ dừa.",
+    "caption": "Hội đồng đánh giá và vinh danh các sản phẩm OCOP đạt chuẩn sao chất lượng cao, khẳng định giá trị bản sắc thổ nhưỡng của các chủ thể khởi nghiệp.",
     "license": "Bản quyền thuộc tác giả và Báo Đồng Khởi"
   },
   {
-    "entity_id": "ngay-hoi-banh-dan-gian-nam-bo-ket-hop-hoi-cho-ocop-vinh-long-vinh-long",
-    "image": "web-nuxt/public/img/entities/ngay-hoi-banh-dan-gian-nam-bo-ket-hop-hoi-cho-ocop-vinh-long-vinh-long.webp",
-    "author": "Minh Triết",
+    "entity_id": "tuan-le-du-lich-tra-vinh-kham-pha-xu-dua-tra-vinh",
+    "image": "web-nuxt/public/img/entities/tuan-le-du-lich-tra-vinh-kham-pha-xu-dua-tra-vinh.webp",
+    "author": "Bá Thi",
+    "source": "Báo Trà Vinh",
+    "caption": "Du khách trải nghiệm chèo thuyền len lỏi dưới bóng dừa nước xanh mát trong chuỗi sự kiện kích cầu Tuần lễ Du lịch khám phá miền quê trù phú.",
+    "license": "Bản quyền thuộc tác giả và Báo Trà Vinh"
+  },
+  {
+    "entity_id": "giai-ban-marathon-vinh-long-mo-rong-hanh-trinh-trai-tim-mekong-vinh-long",
+    "image": "web-nuxt/public/img/entities/giai-ban-marathon-vinh-long-mo-rong-hanh-trinh-trai-tim-mekong-vinh-long.webp",
+    "author": "Quang Vinh",
     "source": "Báo Vĩnh Long",
-    "caption": "Các nghệ nhân tài hoa đổ bánh xèo khổng lồ và gói bánh tét tam sắc tại ngày hội bánh dân gian, khói thơm hương nếp ngào ngạt cả quảng trường Vĩnh Long.",
+    "caption": "Hàng ngàn vận động viên xuất phát rạng sáng trên cung đường ven sông Cổ Chiên tại Giải Bán Marathon Vĩnh Long Mở rộng – Hành trình Trái tim Mekong.",
     "license": "Bản quyền thuộc tác giả và Báo Vĩnh Long"
+  },
+  {
+    "entity_id": "giai-vo-dich-xe-dap-tinh-vinh-long-mo-rong-vinh-long",
+    "image": "web-nuxt/public/img/entities/giai-vo-dich-xe-dap-tinh-vinh-long-mo-rong-vinh-long.webp",
+    "author": "Trần Phước",
+    "source": "Báo Vĩnh Long",
+    "caption": "Những màn bứt tốc ngoạn mục của các tay đua xe đạp trên những cung đường rợp bóng mát ven dòng sông Tiền trong giải vô địch mở rộng.",
+    "license": "Bản quyền thuộc tác giả và Báo Vĩnh Long"
+  },
+  {
+    "entity_id": "giai-marathon-ben-tre-xu-dua-ben-tre",
+    "image": "web-nuxt/public/img/entities/giai-marathon-ben-tre-xu-dua-ben-tre.webp",
+    "author": "Hữu Hiệp",
+    "source": "Báo Đồng Khởi",
+    "caption": "Cung đường chạy rợp bóng dừa xanh mát đón chào các chân chạy trên khắp mọi miền Tổ quốc tham gia Giải Marathon Bến Tre - Xứ Dừa sôi động.",
+    "license": "Bản quyền thuộc tác giả và Báo Đồng Khởi"
+  },
+  {
+    "entity_id": "giai-marathon-tra-vinh-tra-vinh-marathon-tra-vinh",
+    "image": "web-nuxt/public/img/entities/giai-marathon-tra-vinh-tra-vinh-marathon-tra-vinh.webp",
+    "author": "Thanh Điền",
+    "source": "Báo Trà Vinh",
+    "caption": "Những bước chạy khỏe khoắn dưới bóng hàng cây cổ thụ trăm năm tuổi của thành phố cây xanh trong ngày hội thể thao Tra Vinh Marathon.",
+    "license": "Bản quyền thuộc tác giả và Báo Trà Vinh"
+  },
+  {
+    "entity_id": "trien-lam-hoi-cho-nong-nghiep-cong-nghe-cao-ben-tre-ben-tre",
+    "image": "web-nuxt/public/img/entities/trien-lam-hoi-cho-nong-nghiep-cong-nghe-cao-ben-tre-ben-tre.webp",
+    "author": "Minh Mừng",
+    "source": "Báo Đồng Khởi",
+    "caption": "Mô hình ứng dụng công nghệ tưới tự động và canh tác dừa hữu cơ thông minh được trưng bày ấn tượng tại Triển lãm Nông nghiệp Công nghệ cao.",
+    "license": "Bản quyền thuộc tác giả và Báo Đồng Khởi"
+  },
+  {
+    "entity_id": "giai-dua-ghe-ngo-truyen-thong-tinh-ben-tre-ben-tre",
+    "image": "web-nuxt/public/img/entities/giai-dua-ghe-ngo-truyen-thong-tinh-ben-tre-ben-tre.webp",
+    "author": "Quốc Hùng",
+    "source": "Báo Đồng Khởi",
+    "caption": "Tiếng reo hò vang dậy khúc sông khi những chiếc ghe ngo vươn mình rẽ sóng nước trong giải đua ghe ngo truyền thống hào hứng ngày hội.",
+    "license": "Bản quyền thuộc tác giả và Báo Đồng Khởi"
+  },
+  {
+    "entity_id": "hoi-cho-lua-gao-va-xuc-tien-thuong-mai-du-lich",
+    "image": "web-nuxt/public/img/entities/hoi-cho-lua-gao-va-xuc-tien-thuong-mai-du-lich.webp",
+    "author": "Bá Thi",
+    "source": "Báo Trà Vinh",
+    "caption": "Không gian trưng bày các giống lúa thơm đặc sản và hạt gạo ngọc thực châu thổ trong khuôn khổ Hội chợ Lúa gạo gắn liền với lễ hội Ok Om Bok.",
+    "license": "Bản quyền thuộc tác giả và Báo Trà Vinh"
+  },
+  {
+    "entity_id": "le-cung-lau-ba-ram-thang-gieng",
+    "image": "web-nuxt/public/img/entities/le-cung-lau-ba-ram-thang-gieng.webp",
+    "author": "Trần Phước",
+    "source": "Báo Vĩnh Long",
+    "caption": "Người dân dâng lễ vật trang trọng cúng Lầu Bà Cố Hỷ vào ngày rằm tháng Giêng cầu một năm mới mưa thuận gió hòa và gia đạo an khang thịnh vượng.",
+    "license": "Bản quyền thuộc tác giả và Báo Vĩnh Long"
+  },
+  {
+    "entity_id": "le-hoi-van-hoa-the-thao-du-lich-dong-bao-khmer-nam-bo-tinh-tra-vinh-tra-vinh",
+    "image": "web-nuxt/public/img/entities/le-hoi-van-hoa-the-thao-du-lich-dong-bao-khmer-nam-bo-tinh-tra-vinh-tra-vinh.webp",
+    "author": "Sơn Tuyên",
+    "source": "Báo Trà Vinh",
+    "caption": "Những điệu múa Rô-băm uyển chuyển và thanh âm dàn nhạc ngũ âm rộn rã bên thắng cảnh Ao Bà Om trong ngày hội văn hóa Khmer Nam Bộ thiêng liêng.",
+    "license": "Bản quyền thuộc tác giả và Báo Trà Vinh"
+  },
+  {
+    "entity_id": "giai-the-thao-dan-toc-quoc-phong-tinh-tra-vinh-tra-vinh",
+    "image": "web-nuxt/public/img/entities/giai-the-thao-dan-toc-quoc-phong-tinh-tra-vinh-tra-vinh.webp",
+    "author": "Thanh Điền",
+    "source": "Báo Trà Vinh",
+    "caption": "Những trận tranh tài đẩy gậy và kéo co kịch tính giữa các vận động viên tại Giải Thể thao Dân tộc - Quốc phòng rộn rã tiếng hò reo cổ vũ.",
+    "license": "Bản quyền thuộc tác giả và Báo Trà Vinh"
+  },
+  {
+    "entity_id": "lien-hoan-don-ca-tai-tu-nam-bo-tinh-ben-tre-ben-tre",
+    "image": "web-nuxt/public/img/entities/lien-hoan-don-ca-tai-tu-nam-bo-tinh-ben-tre-ben-tre.webp",
+    "author": "Hữu Hiệp",
+    "source": "Báo Đồng Khởi",
+    "caption": "Các nghệ nhân tài tử hội ngộ so dây nắn phím trao truyền ngón đờn tài hoa trong không gian ấm cúng của Liên hoan Đờn ca Tài tử Nam Bộ.",
+    "license": "Bản quyền thuộc tác giả và Báo Đồng Khởi"
+  },
+  {
+    "entity_id": "lien-hoan-van-nghe-quan-chung-tinh-tra-vinh-tra-vinh",
+    "image": "web-nuxt/public/img/entities/lien-hoan-van-nghe-quan-chung-tinh-tra-vinh-tra-vinh.webp",
+    "author": "Bá Thi",
+    "source": "Báo Trà Vinh",
+    "caption": "Tiết mục múa hòa hợp bản sắc văn hóa ba dân tộc Kinh - Khmer - Hoa bừng sáng sân khấu Liên hoan Văn nghệ Quần chúng thắm đượm tình đoàn kết.",
+    "license": "Bản quyền thuộc tác giả và Báo Trà Vinh"
+  },
+  {
+    "entity_id": "tuan-le-van-hoa-am-thuc-an-hoi-2026",
+    "image": "web-nuxt/public/img/entities/tuan-le-van-hoa-am-thuc-an-hoi-2026.webp",
+    "author": "Thành Châu",
+    "source": "Báo Đồng Khởi",
+    "caption": "Không gian ẩm thực ven sông lung linh ánh đèn tại Công viên An Hội chào đón du khách thưởng thức những món ngon dân dã đậm chất sông nước miền Tây.",
+    "license": "Bản quyền thuộc tác giả và Báo Đồng Khởi"
+  },
+  {
+    "entity_id": "le-cung-mieu",
+    "image": "web-nuxt/public/img/entities/le-cung-mieu.webp",
+    "author": "Quang Vinh",
+    "source": "Báo Vĩnh Long",
+    "caption": "Khói hương nghi ngút và mâm cỗ dâng thần linh trong ngày cúng miễu truyền thống đầu năm, nét đẹp sinh hoạt tâm linh gìn giữ qua nhiều thế hệ dân làng.",
+    "license": "Bản quyền thuộc tác giả và Báo Vĩnh Long"
+  },
+  {
+    "entity_id": "le-hoi-nguyen-tieu",
+    "image": "web-nuxt/public/img/entities/le-hoi-nguyen-tieu.webp",
+    "author": "Huỳnh Biển",
+    "source": "Báo Vĩnh Long",
+    "caption": "Đoàn lân sư rồng rực rỡ múa lượn rộn rã tiếng thanh la não bạt trên các tuyến phố trong đêm hội Nguyên Tiêu rằm tháng Giêng ấm áp.",
+    "license": "Bản quyền thuộc tác giả và Báo Vĩnh Long"
+  },
+  {
+    "entity_id": "le-chol-chhnam-thmay",
+    "image": "web-nuxt/public/img/entities/le-chol-chhnam-thmay.webp",
+    "author": "Bá Thi",
+    "source": "Báo Trà Vinh",
+    "caption": "Đồng bào Khmer tề tựu trang nghiêm trong trang phục truyền thống rực rỡ thực hiện nghi thức đắp núi cát và tắm Phật mừng Tết Chôl Chnăm Thmây an lành.",
+    "license": "Bản quyền thuộc tác giả và Báo Trà Vinh"
   }
 ]

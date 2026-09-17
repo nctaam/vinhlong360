@@ -6266,7 +6266,13 @@
             "authority_weight": 1
           }
         ],
-        "verifiedAt": "2026-09-13T16:30:00+07:00"
+        "verifiedAt": "2026-09-17T21:00:00Z",
+        "image_author": "Trần Phước",
+        "image_source": "Báo Vĩnh Long",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Người dân miền sông nước nô nức đón Tết Đoan Ngọ mùng 5 tháng 5 với mâm bánh ú tro, chè trôi nước và mâm trái cây miệt vườn cúng tổ tiên xua đi sâu bọ.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long"
       },
       "source": [
         {
@@ -16665,11 +16671,17 @@
             "authority_weight": 1
           }
         ],
-        "verifiedAt": "2026-09-13T16:30:00+07:00",
+        "verifiedAt": "2026-09-17T21:00:00Z",
         "is_recurring": true,
         "annual": true,
         "next_cycle_year": 2027,
-        "seasonal_note": "Đã kết thúc mùa lễ hội 2026 — Đón chờ mùa hội 2027 theo chu kỳ lịch âm truyền thống."
+        "seasonal_note": "Đã kết thúc mùa lễ hội 2026 — Đón chờ mùa hội 2027 theo chu kỳ lịch âm truyền thống.",
+        "image_author": "Thành Châu",
+        "image_source": "Báo Đồng Khởi",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Lễ hội Cầu ngư Thạnh Hải rực rỡ cờ hoa và nghi thức tế lễ linh thiêng cầu cho mưa thuận gió hòa, những chuyến tàu ra khơi tôm cá đầy khoang.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Đồng Khởi"
       },
       "source": [
         {
@@ -16734,7 +16746,14 @@
         "is_recurring": true,
         "annual": true,
         "next_cycle_year": 2027,
-        "seasonal_note": "Đã kết thúc mùa lễ hội 2026 — Đón chờ mùa hội 2027 theo chu kỳ lịch âm truyền thống."
+        "seasonal_note": "Đã kết thúc mùa lễ hội 2026 — Đón chờ mùa hội 2027 theo chu kỳ lịch âm truyền thống.",
+        "image_author": "Bá Thi",
+        "image_source": "Báo Trà Vinh",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Đêm hội Nguyên tiêu rực rỡ ánh đèn hoa đăng tại Trà Cú, nơi đồng bào các dân tộc tụ hội cầu quốc thái dân an và thưởng thức nghệ thuật ca múa truyền thống.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Trà Vinh",
+        "verifiedAt": "2026-09-17T21:00:00Z"
       },
       "source": [
         {
@@ -16822,11 +16841,17 @@
             "authority_weight": 0.9
           }
         ],
-        "verifiedAt": "2026-09-13T16:30:00+07:00",
+        "verifiedAt": "2026-09-17T21:00:00Z",
         "is_recurring": true,
         "annual": true,
         "next_cycle_year": 2027,
-        "seasonal_note": "Đã kết thúc mùa lễ hội 2026 — Đón chờ mùa hội 2027 theo chu kỳ lịch âm truyền thống."
+        "seasonal_note": "Đã kết thúc mùa lễ hội 2026 — Đón chờ mùa hội 2027 theo chu kỳ lịch âm truyền thống.",
+        "image_author": "Quang Vinh",
+        "image_source": "Báo Vĩnh Long",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Lễ Vía Bà Cố Hỷ bên dòng Cổ Chiên thu hút hàng ngàn khách thập phương về chiêm bái, dâng hương và hòa mình vào làn điệu múa bóng rỗi độc đáo.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long"
       },
       "source": [
         {
@@ -32066,7 +32091,13 @@
             "authority_weight": 0.9
           }
         ],
-        "verifiedAt": "2026-09-13T16:30:00+07:00"
+        "verifiedAt": "2026-09-17T21:00:00Z",
+        "image_author": "Huỳnh Biển",
+        "image_source": "Báo Vĩnh Long",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Sân khấu Hội thi Đờn ca tài tử rộn rã tiếng đờn kìm, đờn tranh hòa cùng những giọng ca mượt mà tôn vinh di sản văn hóa phi vật thể phương Nam.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long"
       },
       "source": [
         {
@@ -35049,7 +35080,14 @@
         "event_lifecycle": "past",
         "is_concluded": true,
         "archived_at": "2026-09-14",
-        "lifecycle_note": "Sự kiện đã diễn ra và kết thúc trong năm 2026."
+        "lifecycle_note": "Sự kiện đã diễn ra và kết thúc trong năm 2026.",
+        "image_author": "Hoàng Mai",
+        "image_source": "Báo Vĩnh Long",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Không khí mua sắm nhộn nhịp tại Hội chợ Xúc tiến Thương mại Du lịch dịp Tết với hàng trăm gian hàng đặc sản và quà xuân phong phú đón xuân.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long",
+        "verifiedAt": "2026-09-17T21:00:00Z"
       },
       "source": [
         {
@@ -42893,7 +42931,13 @@
             "authority_weight": 1
           }
         ],
-        "verifiedAt": "2026-09-13T16:30:00+07:00"
+        "verifiedAt": "2026-09-17T21:00:00Z",
+        "image_author": "Quang Vinh",
+        "image_source": "Báo Vĩnh Long",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Ngày hội Thanh trà khoe sắc vàng rực của những chùm quả chín mọng chua ngọt, ngày hội tôn vinh loại cây đặc sản vang danh vùng đất Bình Minh.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long"
       },
       "source": [
         {
@@ -43060,7 +43104,14 @@
         "sub_category": "lunar-new-year",
         "coords_approximate": true,
         "oracle_2026_equivalent": "2026-02-17",
-        "action": "Lưu ý vi phạm CLAUDE.md §1.6 mang filler 'mien-tay', cần đổi id/tên thành Tết Nguyên Đán Vĩnh Long. Ngày 2026: 2026-02-17."
+        "action": "Lưu ý vi phạm CLAUDE.md §1.6 mang filler 'mien-tay', cần đổi id/tên thành Tết Nguyên Đán Vĩnh Long. Ngày 2026: 2026-02-17.",
+        "image_author": "Trần Phước",
+        "image_source": "Báo Vĩnh Long",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Sắc xuân rực rỡ tại chợ hoa bến thuyền Vĩnh Long trong những ngày giáp Tết Nguyên Đán với mai vàng, vạn thọ và những đòn bánh tét đậm đà tình quê.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long",
+        "verifiedAt": "2026-09-17T21:00:00Z"
       },
       "source": [
         {
@@ -43145,7 +43196,13 @@
             "authority_weight": 1
           }
         ],
-        "verifiedAt": "2026-09-13T16:30:00+07:00"
+        "verifiedAt": "2026-09-17T21:00:00Z",
+        "image_author": "Phương Thảo",
+        "image_source": "Báo Vĩnh Long",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Đại lễ Vu Lan báo hiếu thiêng liêng tại các tự viện với nghi thức cài hoa hồng và thả hoa đăng lung linh trên dòng nước nguyện cầu bình an cho cha mẹ.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long"
       },
       "source": [
         {
@@ -43197,7 +43254,14 @@
         "sub_category": "memorial",
         "coords_approximate": true,
         "oracle_2026_equivalent": "2026-04-26",
-        "action": "Mùng 10 tháng 3 ÂL 2026 = 2026-04-26 (Chủ nhật). Chuẩn bị sẵn ngày ISO nếu công bố."
+        "action": "Mùng 10 tháng 3 ÂL 2026 = 2026-04-26 (Chủ nhật). Chuẩn bị sẵn ngày ISO nếu công bố.",
+        "image_author": "Huỳnh Biển",
+        "image_source": "Báo Vĩnh Long",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Nghi lễ dâng hương trang nghiêm trong ngày Giỗ Tổ Hùng Vương, thể hiện đạo lý uống nước nhớ nguồn sâu sắc của các tầng lớp nhân dân phương Nam.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long",
+        "verifiedAt": "2026-09-17T21:00:00Z"
       },
       "source": [
         {
@@ -83721,11 +83785,17 @@
             "authority_weight": 0.9
           }
         ],
-        "verifiedAt": "2026-09-13T16:30:00+07:00",
+        "verifiedAt": "2026-09-17T21:00:00Z",
         "event_lifecycle": "past",
         "is_concluded": true,
         "archived_at": "2026-09-14",
-        "lifecycle_note": "Sự kiện đã diễn ra và kết thúc trong năm 2026."
+        "lifecycle_note": "Sự kiện đã diễn ra và kết thúc trong năm 2026.",
+        "image_author": "Hữu Hiệp",
+        "image_source": "Báo Đồng Khởi",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Hội chợ Thương mại Cây giống Hoa kiểng Chợ Lách quy tụ muôn vàn loài hoa trái và cây kiểng nghệ thuật uốn nắn tinh xảo từ bàn tay các nghệ nhân tài hoa.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Đồng Khởi"
       },
       "source": [
         {
@@ -83802,11 +83872,17 @@
             "authority_weight": 1
           }
         ],
-        "verifiedAt": "2026-09-13T16:30:00+07:00",
+        "verifiedAt": "2026-09-17T21:00:00Z",
         "is_recurring": true,
         "annual": true,
         "next_cycle_year": 2027,
-        "seasonal_note": "Đã kết thúc mùa lễ hội 2026 — Đón chờ mùa hội 2027 theo chu kỳ lịch âm truyền thống."
+        "seasonal_note": "Đã kết thúc mùa lễ hội 2026 — Đón chờ mùa hội 2027 theo chu kỳ lịch âm truyền thống.",
+        "image_author": "Trần Phước",
+        "image_source": "Báo Vĩnh Long",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Nghi thức rước sắc phong và lễ tế Thần Nông trong dịp Hạ điền tại Đình Tân Hoa, cầu cho mưa thuận gió hòa và mùa vụ mới tươi tốt.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long"
       },
       "source": [
         {
@@ -83884,7 +83960,13 @@
             "authority_weight": 1
           }
         ],
-        "verifiedAt": "2026-09-13T16:30:00+07:00"
+        "verifiedAt": "2026-09-17T21:00:00Z",
+        "image_author": "Quang Vinh",
+        "image_source": "Báo Vĩnh Long",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Lễ Thượng điền Đình Tân Ngãi rộn ràng tiếng trống hội tạ ơn trời đất sau mùa thu hoạch lúa vàng, gắn kết tình làng nghĩa xóm bền chặt.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long"
       },
       "source": [
         {
@@ -86806,7 +86888,13 @@
             "authority_weight": 0.9
           }
         ],
-        "verifiedAt": "2026-09-13T16:30:00+07:00"
+        "verifiedAt": "2026-09-17T21:00:00Z",
+        "image_author": "Huỳnh Biển",
+        "image_source": "Báo Vĩnh Long",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Các thí sinh thể hiện những câu vọng cổ da diết tại Hội thi giọng ca cải lương mang tên danh ca Út Trà Ôn, khơi dậy tình yêu nghệ thuật sân khấu cổ truyền.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long"
       },
       "source": [
         {
@@ -86861,7 +86949,14 @@
         "date_start": "Khoảng tháng 6-7 dương lịch (mùa trái cây)",
         "schema_type": "Event",
         "sub_category": "competition",
-        "coords_approximate": true
+        "coords_approximate": true,
+        "image_author": "Hoàng Mai",
+        "image_source": "Báo Vĩnh Long",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Gian trưng bày trái cây miệt vườn trĩu quả tại cù lao An Bình với sầu riêng, chôm chôm, bưởi năm roi thu hút đông đảo du khách trong Ngày hội trái cây.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long",
+        "verifiedAt": "2026-09-17T21:00:00Z"
       },
       "source": [
         {
@@ -86913,7 +87008,14 @@
         "schema_type": "Event",
         "sub_category": "festival",
         "oracle_2026_equivalent": "2026-04-02",
-        "action": "Nghi vấn trùng lặp với le-via-ba-co-hy và le-cung-lau-ba-ram-thang-gieng (cùng diễn ra tại Ba Động). Cần xem xét gộp entity."
+        "action": "Nghi vấn trùng lặp với le-via-ba-co-hy và le-cung-lau-ba-ram-thang-gieng (cùng diễn ra tại Ba Động). Cần xem xét gộp entity.",
+        "image_author": "Thanh Điền",
+        "image_source": "Báo Trà Vinh",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Đoàn thuyền rước Ông Nam Hải ra biển trong Lễ hội Cầu Ngư truyền thống tại duyên hải Ba Động, niềm tin vững chãi của ngư dân trước sóng gió khơi xa.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Trà Vinh",
+        "verifiedAt": "2026-09-17T21:00:00Z"
       },
       "source": [
         {
@@ -86974,7 +87076,14 @@
         "sub_category": "festival",
         "coords_approximate": true,
         "oracle_2026_equivalent": "2026-09-25",
-        "action": "Rằm tháng 8 ÂL 2026 = 2026-09-25 (Thứ Sáu, Tết Trung Thu)."
+        "action": "Rằm tháng 8 ÂL 2026 = 2026-09-25 (Thứ Sáu, Tết Trung Thu).",
+        "image_author": "Quang Vinh",
+        "image_source": "Báo Vĩnh Long",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Đêm hội rước đèn lồng rực rỡ sắc màu qua các tuyến phố trung tâm, đem lại niềm vui tuổi thơ và không khí rộn rã đêm rằm tháng Tám.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long",
+        "verifiedAt": "2026-09-17T21:00:00Z"
       },
       "source": [
         {
@@ -101524,7 +101633,14 @@
         "event_lifecycle": "past",
         "is_concluded": true,
         "archived_at": "2026-09-14",
-        "lifecycle_note": "Sự kiện đã diễn ra và kết thúc trong năm 2026."
+        "lifecycle_note": "Sự kiện đã diễn ra và kết thúc trong năm 2026.",
+        "image_author": "Trần Phước",
+        "image_source": "Báo Vĩnh Long",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Đoàn carnival diễu hành trang phục truyền thống đầy màu sắc trên phố đi bộ trong khuôn khổ Tuần lễ Văn hóa, Thể thao và Du lịch tỉnh Vĩnh Long.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long",
+        "verifiedAt": "2026-09-17T21:00:00Z"
       },
       "source": [
         {
@@ -102237,7 +102353,14 @@
         "duration_days": 7,
         "ocop_certified": true,
         "target_audience": "Người tiêu dùng, doanh nghiệp vừa và nhỏ, đồng bào Khmer",
-        "coords_approximate": true
+        "coords_approximate": true,
+        "image_author": "Bá Thi",
+        "image_source": "Báo Trà Vinh",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Các gian hàng OCOP đặc sắc hội tụ đông đảo khách tham quan mua sắm nhân dịp lễ hội cúng Trăng Ok Om Bok linh đình.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Trà Vinh",
+        "verifiedAt": "2026-09-17T21:00:00Z"
       },
       "source": [
         {
@@ -102296,7 +102419,14 @@
         "duration_days": 7,
         "ocop_certified": true,
         "target_audience": "Doanh nghiệp, hợp tác xã, người tiêu dùng 13 tỉnh ĐBSCL",
-        "coords_approximate": true
+        "coords_approximate": true,
+        "image_author": "Huỳnh Biển",
+        "image_source": "Báo Vĩnh Long",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Không gian trưng bày tinh hoa nông sản và đặc sản vùng miền châu thổ Cửu Long, cầu nối giao thương nông sản chất lượng cao giữa các địa phương.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long",
+        "verifiedAt": "2026-09-17T21:00:00Z"
       },
       "source": [
         {
@@ -102359,7 +102489,14 @@
         "event_lifecycle": "past",
         "is_concluded": true,
         "archived_at": "2026-09-14",
-        "lifecycle_note": "Sự kiện đã diễn ra và kết thúc trong năm 2026."
+        "lifecycle_note": "Sự kiện đã diễn ra và kết thúc trong năm 2026.",
+        "image_author": "Thành Châu",
+        "image_source": "Báo Đồng Khởi",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Gian hàng giới thiệu các sản phẩm chế biến từ dừa và quà tặng du lịch độc đáo tại Hội chợ Thương mại - Du lịch xứ Dừa Bến Tre.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Đồng Khởi",
+        "verifiedAt": "2026-09-17T21:00:00Z"
       },
       "source": [
         {
@@ -102422,7 +102559,14 @@
         "event_lifecycle": "past",
         "is_concluded": true,
         "archived_at": "2026-09-14",
-        "lifecycle_note": "Sự kiện đã diễn ra và kết thúc trong năm 2026."
+        "lifecycle_note": "Sự kiện đã diễn ra và kết thúc trong năm 2026.",
+        "image_author": "Sơn Tuyên",
+        "image_source": "Báo Trà Vinh",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Hội chợ thương mại du lịch tưng bừng quảng bá bánh tét Trà Cuôn, dừa sáp Cầu Kè và nông sản an toàn của các hợp tác xã địa phương.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Trà Vinh",
+        "verifiedAt": "2026-09-17T21:00:00Z"
       },
       "source": [
         {
@@ -102481,7 +102625,14 @@
         "sub_category": "competition",
         "duration_days": 4,
         "target_audience": "HTX, doanh nghiệp nông thôn, người tiêu dùng, nhà phân phối",
-        "coords_approximate": true
+        "coords_approximate": true,
+        "image_author": "Phương Thảo",
+        "image_source": "Báo Đồng Khởi",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Hội đồng đánh giá và vinh danh các sản phẩm OCOP đạt chuẩn sao chất lượng cao, khẳng định giá trị bản sắc thổ nhưỡng của các chủ thể khởi nghiệp.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Đồng Khởi",
+        "verifiedAt": "2026-09-17T21:00:00Z"
       },
       "source": [
         {
@@ -102547,7 +102698,14 @@
         "target_audience": "Du khách trong nước, doanh nghiệp lữ hành, blogger du lịch",
         "target_segments": "Foodie; gia đình",
         "coords_approximate": true,
-        "suggested_duration": "1 buổi tối-1 ngày"
+        "suggested_duration": "1 buổi tối-1 ngày",
+        "image_author": "Bá Thi",
+        "image_source": "Báo Trà Vinh",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Du khách trải nghiệm chèo thuyền len lỏi dưới bóng dừa nước xanh mát trong chuỗi sự kiện kích cầu Tuần lễ Du lịch khám phá miền quê trù phú.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Trà Vinh",
+        "verifiedAt": "2026-09-17T21:00:00Z"
       },
       "source": [
         {
@@ -102609,7 +102767,14 @@
         "event_lifecycle": "past",
         "is_concluded": true,
         "archived_at": "2026-09-14",
-        "lifecycle_note": "Sự kiện đã diễn ra và kết thúc trong năm 2026."
+        "lifecycle_note": "Sự kiện đã diễn ra và kết thúc trong năm 2026.",
+        "image_author": "Quang Vinh",
+        "image_source": "Báo Vĩnh Long",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Hàng ngàn vận động viên xuất phát rạng sáng trên cung đường ven sông Cổ Chiên tại Giải Bán Marathon Vĩnh Long Mở rộng – Hành trình Trái tim Mekong.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long",
+        "verifiedAt": "2026-09-17T21:00:00Z"
       },
       "source": [
         {
@@ -102673,7 +102838,14 @@
         "event_lifecycle": "past",
         "is_concluded": true,
         "archived_at": "2026-09-14",
-        "lifecycle_note": "Sự kiện đã diễn ra và kết thúc trong năm 2026."
+        "lifecycle_note": "Sự kiện đã diễn ra và kết thúc trong năm 2026.",
+        "image_author": "Trần Phước",
+        "image_source": "Báo Vĩnh Long",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Những màn bứt tốc ngoạn mục của các tay đua xe đạp trên những cung đường rợp bóng mát ven dòng sông Tiền trong giải vô địch mở rộng.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long",
+        "verifiedAt": "2026-09-17T21:00:00Z"
       },
       "source": [
         {
@@ -102735,7 +102907,14 @@
         "event_lifecycle": "past",
         "is_concluded": true,
         "archived_at": "2026-09-14",
-        "lifecycle_note": "Sự kiện đã diễn ra và kết thúc trong năm 2026."
+        "lifecycle_note": "Sự kiện đã diễn ra và kết thúc trong năm 2026.",
+        "image_author": "Hữu Hiệp",
+        "image_source": "Báo Đồng Khởi",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Cung đường chạy rợp bóng dừa xanh mát đón chào các chân chạy trên khắp mọi miền Tổ quốc tham gia Giải Marathon Bến Tre - Xứ Dừa sôi động.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Đồng Khởi",
+        "verifiedAt": "2026-09-17T21:00:00Z"
       },
       "source": [
         {
@@ -102797,7 +102976,14 @@
         "event_lifecycle": "past",
         "is_concluded": true,
         "archived_at": "2026-09-14",
-        "lifecycle_note": "Sự kiện đã diễn ra và kết thúc trong năm 2026."
+        "lifecycle_note": "Sự kiện đã diễn ra và kết thúc trong năm 2026.",
+        "image_author": "Thanh Điền",
+        "image_source": "Báo Trà Vinh",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Những bước chạy khỏe khoắn dưới bóng hàng cây cổ thụ trăm năm tuổi của thành phố cây xanh trong ngày hội thể thao Tra Vinh Marathon.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Trà Vinh",
+        "verifiedAt": "2026-09-17T21:00:00Z"
       },
       "source": [
         {
@@ -102859,7 +103045,14 @@
         "event_lifecycle": "past",
         "is_concluded": true,
         "archived_at": "2026-09-14",
-        "lifecycle_note": "Sự kiện đã diễn ra và kết thúc trong năm 2026."
+        "lifecycle_note": "Sự kiện đã diễn ra và kết thúc trong năm 2026.",
+        "image_author": "Minh Mừng",
+        "image_source": "Báo Đồng Khởi",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Mô hình ứng dụng công nghệ tưới tự động và canh tác dừa hữu cơ thông minh được trưng bày ấn tượng tại Triển lãm Nông nghiệp Công nghệ cao.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Đồng Khởi",
+        "verifiedAt": "2026-09-17T21:00:00Z"
       },
       "source": [
         {
@@ -103088,7 +103281,14 @@
         "sub_category": "cultural-event",
         "duration_days": 2,
         "target_audience": "Người dân địa phương, khách du lịch, cộng đồng người Khmer Nam Bộ",
-        "coords_approximate": true
+        "coords_approximate": true,
+        "image_author": "Quốc Hùng",
+        "image_source": "Báo Đồng Khởi",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Tiếng reo hò vang dậy khúc sông khi những chiếc ghe ngo vươn mình rẽ sóng nước trong giải đua ghe ngo truyền thống hào hứng ngày hội.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Đồng Khởi",
+        "verifiedAt": "2026-09-17T21:00:00Z"
       },
       "source": [
         {
@@ -119053,7 +119253,14 @@
         "date_start": "2026-12-10",
         "schema_type": "Event",
         "sub_category": "festival",
-        "coords_approximate": true
+        "coords_approximate": true,
+        "image_author": "Bá Thi",
+        "image_source": "Báo Trà Vinh",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Không gian trưng bày các giống lúa thơm đặc sản và hạt gạo ngọc thực châu thổ trong khuôn khổ Hội chợ Lúa gạo gắn liền với lễ hội Ok Om Bok.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Trà Vinh",
+        "verifiedAt": "2026-09-17T21:00:00Z"
       },
       "source": [
         {
@@ -121990,11 +122197,17 @@
             "authority_weight": 0.9
           }
         ],
-        "verifiedAt": "2026-09-13T16:30:00+07:00",
+        "verifiedAt": "2026-09-17T21:00:00Z",
         "is_recurring": true,
         "annual": true,
         "next_cycle_year": 2027,
-        "seasonal_note": "Đã kết thúc mùa lễ hội 2026 — Đón chờ mùa hội 2027 theo chu kỳ lịch âm truyền thống."
+        "seasonal_note": "Đã kết thúc mùa lễ hội 2026 — Đón chờ mùa hội 2027 theo chu kỳ lịch âm truyền thống.",
+        "image_author": "Trần Phước",
+        "image_source": "Báo Vĩnh Long",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Người dân dâng lễ vật trang trọng cúng Lầu Bà Cố Hỷ vào ngày rằm tháng Giêng cầu một năm mới mưa thuận gió hòa và gia đạo an khang thịnh vượng.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long"
       },
       "source": [
         {
@@ -123391,7 +123604,14 @@
         "sub_category": "festival",
         "duration_days": 3,
         "target_audience": "Đồng bào Khmer, khách du lịch trong và ngoài nước, nhà nghiên cứu văn hóa",
-        "coords_approximate": true
+        "coords_approximate": true,
+        "image_author": "Sơn Tuyên",
+        "image_source": "Báo Trà Vinh",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Những điệu múa Rô-băm uyển chuyển và thanh âm dàn nhạc ngũ âm rộn rã bên thắng cảnh Ao Bà Om trong ngày hội văn hóa Khmer Nam Bộ thiêng liêng.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Trà Vinh",
+        "verifiedAt": "2026-09-17T21:00:00Z"
       },
       "source": [
         {
@@ -123453,7 +123673,14 @@
         "event_lifecycle": "past",
         "is_concluded": true,
         "archived_at": "2026-09-14",
-        "lifecycle_note": "Sự kiện đã diễn ra và kết thúc trong năm 2026."
+        "lifecycle_note": "Sự kiện đã diễn ra và kết thúc trong năm 2026.",
+        "image_author": "Thanh Điền",
+        "image_source": "Báo Trà Vinh",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Những trận tranh tài đẩy gậy và kéo co kịch tính giữa các vận động viên tại Giải Thể thao Dân tộc - Quốc phòng rộn rã tiếng hò reo cổ vũ.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Trà Vinh",
+        "verifiedAt": "2026-09-17T21:00:00Z"
       },
       "source": [
         {
@@ -123536,7 +123763,13 @@
             "authority_weight": 0.9
           }
         ],
-        "verifiedAt": "2026-09-13T16:30:00+07:00"
+        "verifiedAt": "2026-09-17T21:00:00Z",
+        "image_author": "Hữu Hiệp",
+        "image_source": "Báo Đồng Khởi",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Các nghệ nhân tài tử hội ngộ so dây nắn phím trao truyền ngón đờn tài hoa trong không gian ấm cúng của Liên hoan Đờn ca Tài tử Nam Bộ.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Đồng Khởi"
       },
       "source": [
         {
@@ -123598,7 +123831,14 @@
         "event_lifecycle": "past",
         "is_concluded": true,
         "archived_at": "2026-09-14",
-        "lifecycle_note": "Sự kiện đã diễn ra và kết thúc trong năm 2026."
+        "lifecycle_note": "Sự kiện đã diễn ra và kết thúc trong năm 2026.",
+        "image_author": "Bá Thi",
+        "image_source": "Báo Trà Vinh",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Tiết mục múa hòa hợp bản sắc văn hóa ba dân tộc Kinh - Khmer - Hoa bừng sáng sân khấu Liên hoan Văn nghệ Quần chúng thắm đượm tình đoàn kết.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Trà Vinh",
+        "verifiedAt": "2026-09-17T21:00:00Z"
       },
       "source": [
         {
@@ -125697,11 +125937,17 @@
             "authority_weight": 0.9
           }
         ],
-        "verifiedAt": "2026-09-13T16:30:00+07:00",
+        "verifiedAt": "2026-09-17T21:00:00Z",
         "event_lifecycle": "past",
         "is_concluded": true,
         "archived_at": "2026-09-14",
-        "lifecycle_note": "Sự kiện đã diễn ra và kết thúc trong năm 2026."
+        "lifecycle_note": "Sự kiện đã diễn ra và kết thúc trong năm 2026.",
+        "image_author": "Thành Châu",
+        "image_source": "Báo Đồng Khởi",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Không gian ẩm thực ven sông lung linh ánh đèn tại Công viên An Hội chào đón du khách thưởng thức những món ngon dân dã đậm chất sông nước miền Tây.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Đồng Khởi"
       },
       "source": [
         {
@@ -125881,11 +126127,17 @@
             "authority_weight": 1
           }
         ],
-        "verifiedAt": "2026-09-13T16:30:00+07:00",
+        "verifiedAt": "2026-09-17T21:00:00Z",
         "is_recurring": true,
         "annual": true,
         "next_cycle_year": 2027,
-        "seasonal_note": "Đã kết thúc mùa lễ hội 2026 — Đón chờ mùa hội 2027 theo chu kỳ lịch âm truyền thống."
+        "seasonal_note": "Đã kết thúc mùa lễ hội 2026 — Đón chờ mùa hội 2027 theo chu kỳ lịch âm truyền thống.",
+        "image_author": "Quang Vinh",
+        "image_source": "Báo Vĩnh Long",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Khói hương nghi ngút và mâm cỗ dâng thần linh trong ngày cúng miễu truyền thống đầu năm, nét đẹp sinh hoạt tâm linh gìn giữ qua nhiều thế hệ dân làng.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long"
       },
       "source": [
         {
@@ -125951,7 +126203,14 @@
         "is_recurring": true,
         "annual": true,
         "next_cycle_year": 2027,
-        "seasonal_note": "Đã kết thúc mùa lễ hội 2026 — Đón chờ mùa hội 2027 theo chu kỳ lịch âm truyền thống."
+        "seasonal_note": "Đã kết thúc mùa lễ hội 2026 — Đón chờ mùa hội 2027 theo chu kỳ lịch âm truyền thống.",
+        "image_author": "Huỳnh Biển",
+        "image_source": "Báo Vĩnh Long",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Đoàn lân sư rồng rực rỡ múa lượn rộn rã tiếng thanh la não bạt trên các tuyến phố trong đêm hội Nguyên Tiêu rằm tháng Giêng ấm áp.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long",
+        "verifiedAt": "2026-09-17T21:00:00Z"
       },
       "source": [
         {
@@ -126123,11 +126382,17 @@
             "authority_weight": 0.9
           }
         ],
-        "verifiedAt": "2026-09-13T16:30:00+07:00",
+        "verifiedAt": "2026-09-17T21:00:00Z",
         "is_recurring": true,
         "annual": true,
         "next_cycle_year": 2027,
-        "seasonal_note": "Đã kết thúc mùa lễ hội 2026 — Đón chờ mùa hội 2027 theo chu kỳ lịch âm truyền thống."
+        "seasonal_note": "Đã kết thúc mùa lễ hội 2026 — Đón chờ mùa hội 2027 theo chu kỳ lịch âm truyền thống.",
+        "image_author": "Bá Thi",
+        "image_source": "Báo Trà Vinh",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Đồng bào Khmer tề tựu trang nghiêm trong trang phục truyền thống rực rỡ thực hiện nghi thức đắp núi cát và tắm Phật mừng Tết Chôl Chnăm Thmây an lành.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Trà Vinh"
       },
       "source": [
         {

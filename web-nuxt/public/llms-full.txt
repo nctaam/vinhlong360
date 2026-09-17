@@ -7,7 +7,7 @@
 - 124 đơn vị hành chính trực thuộc gồm 35 phường và 89 xã.
 - Cấp huyện đã bãi bỏ; các địa danh huyện cũ (Long Hồ, Mang Thít, Ba Tri, Châu Thành, Càng Long, Cầu Kè, Trà Cú...) chỉ mang giá trị lịch sử và chỉ dẫn vị trí địa lý dân gian.
 
-## 2. Danh Mục 464 Thực Thể Xác Minh Ảnh Tư Liệu Báo Chí & Giấy Phép Google Images
+## 2. Danh Mục 504 Thực Thể Xác Minh Ảnh Tư Liệu Báo Chí & Giấy Phép Google Images
 
 Mỗi thực thể dưới đây đều có ảnh tư liệu báo chí chính thống được lưu trữ nội bộ chuẩn WebP, tích hợp siêu dữ liệu Schema.org `ImageObject` với đầy đủ bản quyền (`creator`, `creditText`, `copyrightNotice`, `license`, `acquireLicensePage`).
 
@@ -332,6 +332,13 @@ Mỗi thực thể dưới đây đều có ảnh tư liệu báo chí chính th
 - **Tác giả ảnh**: Hữu Huệ · **Cơ quan**: Cổng TTĐT Trà Vinh
 - **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
 - **Tóm lược**: Cồn sinh thái trên sông Hậu thuộc tỉnh Vĩnh Long, nơi hệ sinh thái rừng ngập mặn và sông nước còn giữ nét hoang sơ.
+
+#### [Tết Đoan Ngọ](https://vinhlong360.vn/dia-diem/tet-doan-ngo)
+- **Mã ID**: `tet-doan-ngo` | **Phân loại**: `event` | **Địa bàn**: p-long-chau | **Tọa độ**: [10.2542, 105.9628]
+- **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/tet-doan-ngo.webp`
+- **Tác giả ảnh**: Trần Phước · **Cơ quan**: Báo Vĩnh Long
+- **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
+- **Tóm lược**: (mùng 5 tháng 5 Âm lịch) ở Vĩnh Long, ăn cơm rượu, trái cây giết sâu bọ trong người. Chợ bán cơm rượu, trái mận, vải — phong tục dân gian đặc trưng.
 
 #### [Di tích lịch sử Đồng Khởi Mỹ Long](https://vinhlong360.vn/dia-diem/di-tich-lich-su-dong-khoi-my-long)
 - **Mã ID**: `di-tich-lich-su-dong-khoi-my-long` | **Phân loại**: `history` | **Địa bàn**: xa-my-long | **Tọa độ**: [9.7523, 106.5284]
@@ -935,6 +942,27 @@ Mỗi thực thể dưới đây đều có ảnh tư liệu báo chí chính th
 - **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
 - **Tóm lược**: Hai lễ hội truyền thống lớn nhất trong năm của đồng bào Khmer tại huyện Trà Cú.
 
+#### [Lễ hội Ngư dân Thạnh Hải (Lễ hội cầu ngư)](https://vinhlong360.vn/dia-diem/le-hoi-ngu-dan-thanh-hai-le-hoi-cau-ngu)
+- **Mã ID**: `le-hoi-ngu-dan-thanh-hai-le-hoi-cau-ngu` | **Phân loại**: `event` | **Địa bàn**: xa-thanh-hai | **Tọa độ**: [10.2433, 106.3753]
+- **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/le-hoi-ngu-dan-thanh-hai-le-hoi-cau-ngu.webp`
+- **Tác giả ảnh**: Thành Châu · **Cơ quan**: Báo Đồng Khởi
+- **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
+- **Tóm lược**: Lễ hội của ngư dân vùng biển Thạnh Phú tổ chức vào ngày 15–16 tháng âm lịch hàng năm tại khu vực Cồn Bửng – Thạnh Hải.
+
+#### [Lễ hội Nguyên tiêu ở Trà Cú](https://vinhlong360.vn/dia-diem/le-hoi-nguyen-tieu-o-tra-cu)
+- **Mã ID**: `le-hoi-nguyen-tieu-o-tra-cu` | **Phân loại**: `event` | **Địa bàn**: xa-dai-an | **Tọa độ**: [9.9220, 106.3273]
+- **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/le-hoi-nguyen-tieu-o-tra-cu.webp`
+- **Tác giả ảnh**: Bá Thi · **Cơ quan**: Báo Trà Vinh
+- **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
+- **Tóm lược**: Lễ hội truyền thống hơn 120 năm tuổi, được công nhận Di sản văn hóa phi vật thể quốc gia ngày 3/3/2026.
+
+#### [Lễ Vía Bà Cố Hỷ](https://vinhlong360.vn/dia-diem/le-via-ba-co-hy)
+- **Mã ID**: `le-via-ba-co-hy` | **Phân loại**: `event` | **Địa bàn**: p-truong-long-hoa | **Tọa độ**: [9.6427, 106.5489]
+- **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/le-via-ba-co-hy.webp`
+- **Tác giả ảnh**: Quang Vinh · **Cơ quan**: Báo Vĩnh Long
+- **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
+- **Tóm lược**: Lễ hội dân gian tổ chức hằng năm vào ngày rằm tháng Giêng âm lịch tại Lầu Bà Cố Hỷ (Thượng Động Nương Nương), ấp Ba Động.
+
 #### [Maison du Pays de Bến Tre](https://vinhlong360.vn/dia-diem/maison-du-pays-de-ben-tre)
 - **Mã ID**: `maison-du-pays-de-ben-tre` | **Phân loại**: `accommodation` | **Địa bàn**: xa-tan-hao | **Tọa độ**: [10.1041, 106.4451]
 - **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/maison-du-pays-de-ben-tre.webp`
@@ -1327,6 +1355,13 @@ Mỗi thực thể dưới đây đều có ảnh tư liệu báo chí chính th
 - **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
 - **Tóm lược**: Xửng dimsum nóng giữa Trà Vinh có địa chỉ ở số 296A Phạm Ngũ Lão, Phường 1 — quán Dimsum Quận Nhất - Ẩm Thực Trung Hoa.
 
+#### [Hội thi Đờn ca tài tử - cải lương Long Hồ](https://vinhlong360.vn/dia-diem/hoi-thi-don-ca-tai-tu-cai-luong-huyen-long-ho)
+- **Mã ID**: `hoi-thi-don-ca-tai-tu-cai-luong-huyen-long-ho` | **Phân loại**: `event` | **Địa bàn**: p-long-ho | **Tọa độ**: [10.2327, 106.0083]
+- **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/hoi-thi-don-ca-tai-tu-cai-luong-huyen-long-ho.webp`
+- **Tác giả ảnh**: Huỳnh Biển · **Cơ quan**: Báo Vĩnh Long
+- **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
+- **Tóm lược**: Hội thi biểu diễn đờn ca tài tử và cải lương tổ chức tại Long Hồ, tỉnh Vĩnh Long.
+
 #### [Chùa Kompong (Ông Mẹt)](https://vinhlong360.vn/dia-diem/chua-kompong-ong-met)
 - **Mã ID**: `chua-kompong-ong-met` | **Phân loại**: `attraction` | **Địa bàn**: p-tra-vinh | **Tọa độ**: [9.9240, 106.0122]
 - **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/chua-kompong-ong-met.webp`
@@ -1382,6 +1417,13 @@ Mỗi thực thể dưới đây đều có ảnh tư liệu báo chí chính th
 - **Tác giả ảnh**: Quang Vinh · **Cơ quan**: Báo Vĩnh Long
 - **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
 - **Tóm lược**: Quán cà phê sân vườn có hồ cá koi tại hẻm 68/19 Phạm Thái Bường, phường 4, thành phố Vĩnh Long — chỗ ngồi yên tĩnh giữa lòng phố.
+
+#### [Hội chợ Xúc tiến Thương mại Du lịch Vĩnh Long (dịp Tết Nguyên Đán)](https://vinhlong360.vn/dia-diem/hoi-cho-xuc-tien-thuong-mai-du-lich-vinh-long-dip-tet-nguyen-dan-vinh-long)
+- **Mã ID**: `hoi-cho-xuc-tien-thuong-mai-du-lich-vinh-long-dip-tet-nguyen-dan-vinh-long` | **Phân loại**: `event` | **Địa bàn**: xa-nhon-phu | **Tọa độ**: [10.2548, 105.9715]
+- **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/hoi-cho-xuc-tien-thuong-mai-du-lich-vinh-long-dip-tet-nguyen-dan-vinh-long.webp`
+- **Tác giả ảnh**: Hoàng Mai · **Cơ quan**: Báo Vĩnh Long
+- **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
+- **Tóm lược**: Hội chợ đầu năm quảng bá sản phẩm OCOP và đặc sản Vĩnh Long phục vụ nhu cầu Tết.
 
 #### [Phan Thanh Giản](https://vinhlong360.vn/dia-diem/phan-thanh-gian)
 - **Mã ID**: `phan-thanh-gian` | **Phân loại**: `person` | **Địa bàn**: p-long-chau | **Tọa độ**: [10.0639, 106.6711]
@@ -1607,12 +1649,40 @@ Mỗi thực thể dưới đây đều có ảnh tư liệu báo chí chính th
 - **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
 - **Tóm lược**: Làng nghề truyền thống được ghi danh di sản văn hóa phi vật thể quốc gia tại xã Mỹ Hòa, Bình Minh, tỉnh Vĩnh Long.
 
+#### [Ngày hội Thanh trà](https://vinhlong360.vn/dia-diem/ngay-hoi-thanh-tra)
+- **Mã ID**: `ngay-hoi-thanh-tra` | **Phân loại**: `event` | **Địa bàn**: p-binh-minh | **Tọa độ**: [10.2542, 105.9628]
+- **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/ngay-hoi-thanh-tra.webp`
+- **Tác giả ảnh**: Quang Vinh · **Cơ quan**: Báo Vĩnh Long
+- **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
+- **Tóm lược**: Sự kiện quảng bá đặc sản thanh trà được tổ chức trước thềm Tuần lễ Văn hóa, thể thao và du lịch tỉnh Vĩnh Long.
+
 #### [Tuần lễ Văn hóa, du lịch gắn với lễ hội Ok Om Bok](https://vinhlong360.vn/dia-diem/tuan-le-van-hoa-du-lich-gan-voi-le-hoi-ok-om-bok)
 - **Mã ID**: `tuan-le-van-hoa-du-lich-gan-voi-le-hoi-ok-om-bok` | **Phân loại**: `event` | **Địa bàn**: p-tra-vinh | **Tọa độ**: [9.9516, 106.3322]
 - **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/tuan-le-van-hoa-du-lich-gan-voi-le-hoi-ok-om-bok.webp`
 - **Tác giả ảnh**: Minh Trí · **Cơ quan**: Báo Trà Vinh
 - **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
 - **Tóm lược**: Chuỗi hoạt động hàng năm quanh rằm tháng 10 âm lịch tại Trà Vinh — gắn với lễ hội Ok Om Bok (di sản văn hóa phi vật thể quốc gia). Đua ghe ngo, thả đèn nước, liên hoan ẩm thực.
+
+#### [Tết Nguyên Đán Vĩnh Long](https://vinhlong360.vn/dia-diem/tet-nguyen-dan-mien-tay)
+- **Mã ID**: `tet-nguyen-dan-mien-tay` | **Phân loại**: `event` | **Địa bàn**: p-long-chau | **Tọa độ**: [10.2320, 105.9597]
+- **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/tet-nguyen-dan-mien-tay.webp`
+- **Tác giả ảnh**: Trần Phước · **Cơ quan**: Báo Vĩnh Long
+- **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
+- **Tóm lược**: Tết cổ truyền Vĩnh Long — gói bánh tét lá chuối, nấu nồi thịt kho nước dừa, đi chợ hoa trên sông và thắp hương nơi bến nước.
+
+#### [Lễ Vu Lan](https://vinhlong360.vn/dia-diem/le-vu-lan)
+- **Mã ID**: `le-vu-lan` | **Phân loại**: `event` | **Địa bàn**: p-long-chau | **Tọa độ**: [10.2559, 105.9736]
+- **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/le-vu-lan.webp`
+- **Tác giả ảnh**: Phương Thảo · **Cơ quan**: Báo Vĩnh Long
+- **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
+- **Tóm lược**: Đại lễ Vu Lan (Rằm tháng 7 Âm lịch) tại các chùa Vĩnh Long, cúng chay, phóng sinh, thả đèn hoa đăng trên sông.
+
+#### [Lễ Giỗ Tổ Hùng Vương](https://vinhlong360.vn/dia-diem/le-gio-to-hung-vuong)
+- **Mã ID**: `le-gio-to-hung-vuong` | **Phân loại**: `event` | **Địa bàn**: p-long-chau | **Tọa độ**: [10.2543, 105.9747]
+- **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/le-gio-to-hung-vuong.webp`
+- **Tác giả ảnh**: Huỳnh Biển · **Cơ quan**: Báo Vĩnh Long
+- **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
+- **Tóm lược**: Ngày Giỗ Tổ Hùng Vương (10/3 Âm lịch) được tổ chức trang trọng tại đền thờ và các cơ quan.
 
 #### [Dừa xiêm xanh](https://vinhlong360.vn/dia-diem/dua-xiem-xanh)
 - **Mã ID**: `dua-xiem-xanh` | **Phân loại**: `product` | **Địa bàn**: p-mo-cay | **Tọa độ**: [9.9224, 106.3474]
@@ -2244,6 +2314,27 @@ Mỗi thực thể dưới đây đều có ảnh tư liệu báo chí chính th
 - **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
 - **Tóm lược**: Sản phẩm tôm khô kèm nước chấm mắm chua ngọt đặc trưng của vùng biển Duyên Hải, đạt chứng nhận OCOP 3 sao năm 2024. Do hộ kinh doanh Lâm Thị Kim Quyên sản xuất tại Phường 2. Là một trong 9 sản phẩm OCOP được công nhận trong đợt 1 năm 2024 của Duyên Hải.
 
+#### [Hội Chợ Thương Mại Cây Giống Hoa Kiểng Chợ Lách](https://vinhlong360.vn/dia-diem/hoi-cho-thuong-mai-cay-giong-hoa-kieng-cho-lach)
+- **Mã ID**: `hoi-cho-thuong-mai-cay-giong-hoa-kieng-cho-lach` | **Phân loại**: `event` | **Địa bàn**: xa-cho-lach | **Tọa độ**: [10.2238, 106.1914]
+- **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/hoi-cho-thuong-mai-cay-giong-hoa-kieng-cho-lach.webp`
+- **Tác giả ảnh**: Hữu Hiệp · **Cơ quan**: Báo Đồng Khởi
+- **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
+- **Tóm lược**: Hội chợ thương mại thường niên chuyên về cây giống và hoa kiểng của Chợ Lách, quy tụ các nhà vườn trong và ngoài vùng trưng bày, mua bán cây giống, hoa kiểng, sản phẩm nông nghiệp đặc trưng của vùng 'Vương quốc cây giống và hoa kiểng'.
+
+#### [Lễ Hạ điền Đình Tân Hoa](https://vinhlong360.vn/dia-diem/le-ha-dien-dinh-tan-hoa)
+- **Mã ID**: `le-ha-dien-dinh-tan-hoa` | **Phân loại**: `event` | **Địa bàn**: p-tan-ngai | **Tọa độ**: [10.2539, 105.9722]
+- **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/le-ha-dien-dinh-tan-hoa.webp`
+- **Tác giả ảnh**: Trần Phước · **Cơ quan**: Báo Vĩnh Long
+- **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
+- **Tóm lược**: Lễ hội truyền thống tổ chức hàng năm tại Đình Tân Hoa, xã Tân Hòa, TP Vĩnh Long vào ngày 14-15 tháng 3 âm lịch.
+
+#### [Lễ Thượng điền Đình Tân Ngãi](https://vinhlong360.vn/dia-diem/le-thuong-dien-dinh-tan-ngai)
+- **Mã ID**: `le-thuong-dien-dinh-tan-ngai` | **Phân loại**: `event` | **Địa bàn**: p-tan-ngai | **Tọa độ**: [10.2542, 105.9628]
+- **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/le-thuong-dien-dinh-tan-ngai.webp`
+- **Tác giả ảnh**: Quang Vinh · **Cơ quan**: Báo Vĩnh Long
+- **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
+- **Tóm lược**: Lễ hội truyền thống tổ chức hàng năm tại Đình Tân Ngãi vào ngày 16-17 tháng 10 âm lịch, tạ ơn sau vụ mùa thu hoạch.
+
 #### [Lễ giỗ Phan Thanh Giản tại Văn Thánh Miếu](https://vinhlong360.vn/dia-diem/le-gio-phan-thanh-gian-tai-van-thanh-mieu)
 - **Mã ID**: `le-gio-phan-thanh-gian-tai-van-thanh-mieu` | **Phân loại**: `event` | **Địa bàn**: p-phuoc-hau | **Tọa độ**: [10.2542, 105.9628]
 - **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/le-gio-phan-thanh-gian-tai-van-thanh-mieu.webp`
@@ -2376,6 +2467,34 @@ Mỗi thực thể dưới đây đều có ảnh tư liệu báo chí chính th
 - **Tác giả ảnh**: Quang Huy · **Cơ quan**: Báo Trà Vinh
 - **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
 - **Tóm lược**: Tên thật Hồ Trường Xuân, sinh năm 1929 tại huyện Trà Ôn (xưa thuộc tỉnh Cần Thơ, nay thuộc Vĩnh Long). NSƯT, "kép đầu trọc" — biệt danh gắn với phong cách diễn xuất cá tính. Kép chính các đoàn Kim Chưởng, Thái Dương, Kim Chung (1959-1975).
+
+#### [Hội thi giọng ca cải lương Út Trà Ôn](https://vinhlong360.vn/dia-diem/hoi-thi-giong-ca-cai-luong-ut-tra-on)
+- **Mã ID**: `hoi-thi-giong-ca-cai-luong-ut-tra-on` | **Phân loại**: `event` | **Địa bàn**: p-tra-on | **Tọa độ**: [9.9879, 106.0068]
+- **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/hoi-thi-giong-ca-cai-luong-ut-tra-on.webp`
+- **Tác giả ảnh**: Huỳnh Biển · **Cơ quan**: Báo Vĩnh Long
+- **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
+- **Tóm lược**: Hội thi giọng ca cải lương mang tên NSND Út Trà Ôn — Đài THVL tổ chức định kỳ, tìm kiếm tài năng vọng cổ khắp Đồng bằng sông Cửu Long.
+
+#### [Ngày hội trái cây](https://vinhlong360.vn/dia-diem/ngay-hoi-trai-cay)
+- **Mã ID**: `ngay-hoi-trai-cay` | **Phân loại**: `event` | **Địa bàn**: xa-an-binh | **Tọa độ**: [10.2516, 106.1433]
+- **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/ngay-hoi-trai-cay.webp`
+- **Tác giả ảnh**: Hoàng Mai · **Cơ quan**: Báo Vĩnh Long
+- **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
+- **Tóm lược**: Tổ chức hàng năm tại cù lao An Bình, trưng bày và bán đặc sản trái cây vùng: chôm chôm, sầu riêng, măng cụt, nhãn. Có các cuộc thi gọt trái cây, trình diễn ẩm thực.
+
+#### [Lễ hội Cầu Ngư](https://vinhlong360.vn/dia-diem/le-hoi-cau-ngu)
+- **Mã ID**: `le-hoi-cau-ngu` | **Phân loại**: `event` | **Địa bàn**: p-duyen-hai | **Tọa độ**: [9.6427, 106.4324]
+- **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/le-hoi-cau-ngu.webp`
+- **Tác giả ảnh**: Thanh Điền · **Cơ quan**: Báo Trà Vinh
+- **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
+- **Tóm lược**: Lễ Cúng biển truyền thống của ngư dân ven biển Ba Động, Duyên Hải — tế lễ Cá Ông tại miếu Bà Chúa Xứ, rước thuyền, múa lân, hát bội, cầu biển lặng gió hiền.
+
+#### [Lễ hội Lồng Đèn (Trung Thu)](https://vinhlong360.vn/dia-diem/le-hoi-long-den)
+- **Mã ID**: `le-hoi-long-den` | **Phân loại**: `event` | **Địa bàn**: p-long-chau | **Tọa độ**: [10.2471, 106.0010]
+- **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/le-hoi-long-den.webp`
+- **Tác giả ảnh**: Quang Vinh · **Cơ quan**: Báo Vĩnh Long
+- **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
+- **Tóm lược**: Đêm Trung Thu rằm tháng 8 âm lịch — đoàn rước đèn lồng diễu hành qua các tuyến phố trung tâm Vĩnh Long, kèm múa lân, phá cỗ trông trăng và phát quà cho trẻ em.
 
 #### [Sen Dolta](https://vinhlong360.vn/dia-diem/sen-dolta)
 - **Mã ID**: `sen-dolta` | **Phân loại**: `event` | **Địa bàn**: p-tra-vinh | **Tọa độ**: [9.9516, 106.3322]
@@ -2615,6 +2734,13 @@ Mỗi thực thể dưới đây đều có ảnh tư liệu báo chí chính th
 - **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
 - **Tóm lược**: Ngôi cổ tự gần 275 năm tuổi trên Cù Lao An Bình, khai sơn khoảng năm 1750 bởi Hòa thượng Giác Nguyên; xây dựng lại quy mô năm 1807 với 96 cột gỗ quý. Di tích Lịch sử - Văn hóa cấp Quốc gia (1994).
 
+#### [Tuần lễ Văn hóa, Thể thao và Du lịch tỉnh Vĩnh Long](https://vinhlong360.vn/dia-diem/tuan-le-van-hoa-the-thao-va-du-lich-tinh-vinh-long-vinh-long)
+- **Mã ID**: `tuan-le-van-hoa-the-thao-va-du-lich-tinh-vinh-long-vinh-long` | **Phân loại**: `event` | **Địa bàn**: xa-nhon-phu | **Tọa độ**: [10.2542, 105.9628]
+- **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/tuan-le-van-hoa-the-thao-va-du-lich-tinh-vinh-long-vinh-long.webp`
+- **Tác giả ảnh**: Trần Phước · **Cơ quan**: Báo Vĩnh Long
+- **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
+- **Tóm lược**: Lễ hội đường phố (carnival diễu hành) quy mô lớn tại trung tâm TP Vĩnh Long. Đua ghe tam bản trên sông, biểu diễn dù lượn và múa rối nước.
+
 #### [Khu di tích lịch sử Căn cứ Tỉnh ủy Bến Tre (Rừng lá Thạnh Phú)](https://vinhlong360.vn/dia-diem/can-cu-tinh-uy-ben-tre-rung-la-thanh-phu)
 - **Mã ID**: `can-cu-tinh-uy-ben-tre-rung-la-thanh-phu` | **Phân loại**: `history` | **Địa bàn**: xa-thanh-phu | **Tọa độ**: [10.2373, 106.3813]
 - **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/can-cu-tinh-uy-ben-tre-rung-la-thanh-phu.webp`
@@ -2636,6 +2762,83 @@ Mỗi thực thể dưới đây đều có ảnh tư liệu báo chí chính th
 - **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
 - **Tóm lược**: Danh tướng người Khmer (1763–1820), tên Khmer là Thạch Duồng, quê làng Nguyệt Lãng.
 
+#### [Hội chợ Xúc tiến Thương mại – Sản phẩm Công nghiệp Nông thôn và OCOP Vĩnh Long (gắn với Ok Om Bok)](https://vinhlong360.vn/dia-diem/hoi-cho-xuc-tien-thuong-mai-san-pham-cong-nghiep-nong-thon-va-ocop-vinh-long-gan-voi-ok-om-bok-vinh-long)
+- **Mã ID**: `hoi-cho-xuc-tien-thuong-mai-san-pham-cong-nghiep-nong-thon-va-ocop-vinh-long-gan-voi-ok-om-bok-vinh-long` | **Phân loại**: `event` | **Địa bàn**: xa-nhon-phu | **Tọa độ**: [10.2542, 105.9628]
+- **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/hoi-cho-xuc-tien-thuong-mai-san-pham-cong-nghiep-nong-thon-va-ocop-vinh-long-gan-voi-ok-om-bok-vinh-long.webp`
+- **Tác giả ảnh**: Bá Thi · **Cơ quan**: Báo Trà Vinh
+- **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
+- **Tóm lược**: 300 gian hàng gồm sản phẩm OCOP, công nghiệp nông thôn, khởi nghiệp sáng tạo và đặc sản 3 miền.
+
+#### [Hội chợ Đặc sản Vùng miền khu vực ĐBSCL – Vĩnh Long](https://vinhlong360.vn/dia-diem/hoi-cho-dac-san-vung-mien-khu-vuc-dbscl-vinh-long-vinh-long)
+- **Mã ID**: `hoi-cho-dac-san-vung-mien-khu-vuc-dbscl-vinh-long-vinh-long` | **Phân loại**: `event` | **Địa bàn**: p-long-chau | **Tọa độ**: [10.2542, 105.9628]
+- **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/hoi-cho-dac-san-vung-mien-khu-vuc-dbscl-vinh-long-vinh-long.webp`
+- **Tác giả ảnh**: Huỳnh Biển · **Cơ quan**: Báo Vĩnh Long
+- **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
+- **Tóm lược**: Quy mô 250 gian hàng từ hơn 100 đơn vị doanh nghiệp và HTX 13 tỉnh ĐBSCL. Trưng bày và mua bán nông sản, thủy sản, sản phẩm OCOP đặc trưng vùng sông nước.
+
+#### [Hội chợ Thương mại - Du lịch Bến Tre](https://vinhlong360.vn/dia-diem/hoi-cho-thuong-mai-du-lich-ben-tre-ben-tre)
+- **Mã ID**: `hoi-cho-thuong-mai-du-lich-ben-tre-ben-tre` | **Phân loại**: `event` | **Địa bàn**: p-phu-khuong | **Tọa độ**: [10.2272, 106.4072]
+- **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/hoi-cho-thuong-mai-du-lich-ben-tre-ben-tre.webp`
+- **Tác giả ảnh**: Thành Châu · **Cơ quan**: Báo Đồng Khởi
+- **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
+- **Tóm lược**: Gian hàng OCOP và đặc sản các tỉnh ĐBSCL quy tụ hàng trăm doanh nghiệp. Kết nối giao thương, ký kết hợp đồng phân phối sản phẩm dừa và nông sản.
+
+#### [Hội chợ Thương mại - Du lịch tỉnh Trà Vinh cũ](https://vinhlong360.vn/dia-diem/hoi-cho-thuong-mai-du-lich-tinh-tra-vinh-tra-vinh)
+- **Mã ID**: `hoi-cho-thuong-mai-du-lich-tinh-tra-vinh-tra-vinh` | **Phân loại**: `event` | **Địa bàn**: xa-nhi-long | **Tọa độ**: [10.0260, 106.2930]
+- **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/hoi-cho-thuong-mai-du-lich-tinh-tra-vinh-tra-vinh.webp`
+- **Tác giả ảnh**: Sơn Tuyên · **Cơ quan**: Báo Trà Vinh
+- **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
+- **Tóm lược**: Trưng bày và xúc tiến sản phẩm OCOP, đặc sản địa phương như bưởi da xanh, dừa sáp Cầu Kè.
+
+#### [Hội thi Sản phẩm OCOP và Đặc sản Bến Tre](https://vinhlong360.vn/dia-diem/hoi-thi-san-pham-ocop-va-dac-san-ben-tre-ben-tre)
+- **Mã ID**: `hoi-thi-san-pham-ocop-va-dac-san-ben-tre-ben-tre` | **Phân loại**: `event` | **Địa bàn**: p-phu-khuong | **Tọa độ**: [10.2272, 106.4072]
+- **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/hoi-thi-san-pham-ocop-va-dac-san-ben-tre-ben-tre.webp`
+- **Tác giả ảnh**: Phương Thảo · **Cơ quan**: Báo Đồng Khởi
+- **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
+- **Tóm lược**: Đánh giá, công nhận và trao chứng nhận OCOP 3-4 sao hàng năm cho sản phẩm mới. Gian hàng trưng bày, giới thiệu hàng trăm sản phẩm OCOP tiêu biểu toàn tỉnh.
+
+#### [Tuần lễ Du lịch Trà Vinh - Khám phá Xứ Dừa](https://vinhlong360.vn/dia-diem/tuan-le-du-lich-tra-vinh-kham-pha-xu-dua-tra-vinh)
+- **Mã ID**: `tuan-le-du-lich-tra-vinh-kham-pha-xu-dua-tra-vinh` | **Phân loại**: `event` | **Địa bàn**: xa-nhi-long | **Tọa độ**: [10.0260, 106.2930]
+- **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/tuan-le-du-lich-tra-vinh-kham-pha-xu-dua-tra-vinh.webp`
+- **Tác giả ảnh**: Bá Thi · **Cơ quan**: Báo Trà Vinh
+- **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
+- **Tóm lược**: Kích cầu du lịch hè với tour khám phá chùa Khmer, vườn dừa, biển Ba Động. Giảm giá dịch vụ tham quan, lưu trú và ẩm thực đặc sản từ các đơn vị tham gia.
+
+#### [Giải Bán Marathon Vĩnh Long Mở rộng – Hành trình Trái tim Mekong](https://vinhlong360.vn/dia-diem/giai-ban-marathon-vinh-long-mo-rong-hanh-trinh-trai-tim-mekong-vinh-long)
+- **Mã ID**: `giai-ban-marathon-vinh-long-mo-rong-hanh-trinh-trai-tim-mekong-vinh-long` | **Phân loại**: `event` | **Địa bàn**: xa-nhon-phu | **Tọa độ**: [10.2542, 105.9628]
+- **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/giai-ban-marathon-vinh-long-mo-rong-hanh-trinh-trai-tim-mekong-vinh-long.webp`
+- **Tác giả ảnh**: Quang Vinh · **Cơ quan**: Báo Vĩnh Long
+- **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
+- **Tóm lược**: Cung đường chạy ven sông nước Vĩnh Long đặc trưng, qua các địa danh du lịch TP Vĩnh Long.
+
+#### [Giải Vô địch Xe đạp Tỉnh Vĩnh Long Mở rộng](https://vinhlong360.vn/dia-diem/giai-vo-dich-xe-dap-tinh-vinh-long-mo-rong-vinh-long)
+- **Mã ID**: `giai-vo-dich-xe-dap-tinh-vinh-long-mo-rong-vinh-long` | **Phân loại**: `event` | **Địa bàn**: xa-nhon-phu | **Tọa độ**: [10.2542, 105.9628]
+- **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/giai-vo-dich-xe-dap-tinh-vinh-long-mo-rong-vinh-long.webp`
+- **Tác giả ảnh**: Trần Phước · **Cơ quan**: Báo Vĩnh Long
+- **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
+- **Tóm lược**: Tổ chức thường niên, năm 2025 gắn với kỷ niệm 50 năm Giải phóng miền Nam quy tụ 138 vận động viên.
+
+#### [Giải Marathon Bến Tre - Xứ Dừa](https://vinhlong360.vn/dia-diem/giai-marathon-ben-tre-xu-dua-ben-tre)
+- **Mã ID**: `giai-marathon-ben-tre-xu-dua-ben-tre` | **Phân loại**: `event` | **Địa bàn**: p-phu-khuong | **Tọa độ**: [10.2272, 106.4072]
+- **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/giai-marathon-ben-tre-xu-dua-ben-tre.webp`
+- **Tác giả ảnh**: Hữu Hiệp · **Cơ quan**: Báo Đồng Khởi
+- **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
+- **Tóm lược**: Cung đường chạy ven sông Bến Tre qua vườn dừa, cảnh quan đặc trưng Vĩnh Long. Các cự ly 5km, 10km, 21km (half marathon) và 42km (full marathon).
+
+#### [Giải Marathon Trà Vinh (Tra Vinh Marathon)](https://vinhlong360.vn/dia-diem/giai-marathon-tra-vinh-tra-vinh-marathon-tra-vinh)
+- **Mã ID**: `giai-marathon-tra-vinh-tra-vinh-marathon-tra-vinh` | **Phân loại**: `event` | **Địa bàn**: xa-nhi-long | **Tọa độ**: [10.0260, 106.2930]
+- **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/giai-marathon-tra-vinh-tra-vinh-marathon-tra-vinh.webp`
+- **Tác giả ảnh**: Thanh Điền · **Cơ quan**: Báo Trà Vinh
+- **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
+- **Tóm lược**: Cung đường chạy qua các con đường xanh mát đặc trưng của Thành phố Cây xanh Trà Vinh.
+
+#### [Triển lãm - Hội chợ Nông nghiệp Công nghệ cao Bến Tre](https://vinhlong360.vn/dia-diem/trien-lam-hoi-cho-nong-nghiep-cong-nghe-cao-ben-tre-ben-tre)
+- **Mã ID**: `trien-lam-hoi-cho-nong-nghiep-cong-nghe-cao-ben-tre-ben-tre` | **Phân loại**: `event` | **Địa bàn**: p-phu-khuong | **Tọa độ**: [10.2272, 106.4072]
+- **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/trien-lam-hoi-cho-nong-nghiep-cong-nghe-cao-ben-tre-ben-tre.webp`
+- **Tác giả ảnh**: Minh Mừng · **Cơ quan**: Báo Đồng Khởi
+- **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
+- **Tóm lược**: Trình diễn công nghệ tưới nhỏ giọт, nhà màng, canh tác dừa hữu cơ công nghệ cao.
+
 #### [Tướng quân Nguyễn Văn Tồn](https://vinhlong360.vn/dia-diem/tuong-quan-nguyen-van-ton)
 - **Mã ID**: `tuong-quan-nguyen-van-ton` | **Phân loại**: `person` | **Địa bàn**: p-tra-on | **Tọa độ**: [10.1060, 105.7575]
 - **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/tuong-quan-nguyen-van-ton.webp`
@@ -2649,6 +2852,13 @@ Mỗi thực thể dưới đây đều có ảnh tư liệu báo chí chính th
 - **Tác giả ảnh**: Thanh Điền · **Cơ quan**: Báo Trà Vinh
 - **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
 - **Tóm lược**: Mỗi rằm tháng 10, sông Long Bình TP Trà Vinh dậy tiếng trống khai mạc Hội thi Ghe Ngo mở rộng — ngày hội đua ghe lớn nhất của đồng bào Khmer.
+
+#### [Giải Đua Ghe Ngo truyền thống tỉnh Bến Tre cũ](https://vinhlong360.vn/dia-diem/giai-dua-ghe-ngo-truyen-thong-tinh-ben-tre-ben-tre)
+- **Mã ID**: `giai-dua-ghe-ngo-truyen-thong-tinh-ben-tre-ben-tre` | **Phân loại**: `event` | **Địa bàn**: p-phu-khuong | **Tọa độ**: [10.2272, 106.4072]
+- **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/giai-dua-ghe-ngo-truyen-thong-tinh-ben-tre-ben-tre.webp`
+- **Tác giả ảnh**: Quốc Hùng · **Cơ quan**: Báo Đồng Khởi
+- **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
+- **Tóm lược**: Hàng chục chiếc ghe ngo với 40-60 tay chèo/chiếc tranh tài trên sông Bến Tre. Gắn liền với dịp lễ Ok Om Bok của cộng đồng Khmer Nam Bộ, mang đậm bản sắc văn hóa.
 
 #### [Nguyễn Thông](https://vinhlong360.vn/dia-diem/nguyen-thong)
 - **Mã ID**: `nguyen-thong` | **Phân loại**: `person` | **Địa bàn**: p-phuoc-hau | **Tọa độ**: [10.2403, 105.9312]
@@ -3063,6 +3273,13 @@ Mỗi thực thể dưới đây đều có ảnh tư liệu báo chí chính th
 - **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
 - **Tóm lược**: Homestay giữa thủ phủ dừa Mỏ Cày, sở hữu các bungalow xây dựng hoàn toàn từ thân dừa già hàng chục năm tuổi độc đáo và sáng tạo.
 
+#### [Hội chợ Lúa gạo và xúc tiến Thương mại - Du lịch](https://vinhlong360.vn/dia-diem/hoi-cho-lua-gao-va-xuc-tien-thuong-mai-du-lich)
+- **Mã ID**: `hoi-cho-lua-gao-va-xuc-tien-thuong-mai-du-lich` | **Phân loại**: `event` | **Địa bàn**: p-tra-vinh | **Tọa độ**: [9.9516, 106.3322]
+- **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/hoi-cho-lua-gao-va-xuc-tien-thuong-mai-du-lich.webp`
+- **Tác giả ảnh**: Bá Thi · **Cơ quan**: Báo Trà Vinh
+- **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
+- **Tóm lược**: Sự kiện được tổ chức gắn với lễ hội Ok-om-bok ở Trà Vinh, quy tụ nhiều doanh nghiệp và gian hàng trưng bày sản phẩm.
+
 #### [Đình Rắn Định Thủy](https://vinhlong360.vn/dia-diem/dinh-ran-dinh-thuy)
 - **Mã ID**: `dinh-ran-dinh-thuy` | **Phân loại**: `history` | **Địa bàn**: xa-dong-khoi | **Tọa độ**: [10.1424, 106.3425]
 - **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/dinh-ran-dinh-thuy.webp`
@@ -3105,6 +3322,13 @@ Mỗi thực thể dưới đây đều có ảnh tư liệu báo chí chính th
 - **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
 - **Tóm lược**: Năm Tân Mùi 1871, ông Dương Quang Sơn — người Hoa gốc Triều Châu — dựng miếu nhỏ Linh Sơn Điện trên giồng cát cao ở Cầu Ngang, cách thành phố Trà Vinh hơn 30 km về phía đông nam — dân gọi Chùa Dơi vì hàng ngàn con dơi treo mình trên cây sao quanh sân chùa.
 
+#### [Lễ cúng Lầu Bà rằm tháng Giêng](https://vinhlong360.vn/dia-diem/le-cung-lau-ba-ram-thang-gieng)
+- **Mã ID**: `le-cung-lau-ba-ram-thang-gieng` | **Phân loại**: `event` | **Địa bàn**: p-truong-long-hoa | **Tọa độ**: [9.6427, 106.5489]
+- **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/le-cung-lau-ba-ram-thang-gieng.webp`
+- **Tác giả ảnh**: Trần Phước · **Cơ quan**: Báo Vĩnh Long
+- **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
+- **Tóm lược**: Lễ hội tín ngưỡng dân gian diễn ra vào ngày rằm âm lịch hàng năm tại Lầu Bà (Lầu Bà Cố Hỷ), Phường Trường Long Hòa.
+
 #### [Nhà thờ Cái Mơn](https://vinhlong360.vn/dia-diem/nha-tho-cai-mon)
 - **Mã ID**: `nha-tho-cai-mon` | **Phân loại**: `history` | **Địa bàn**: xa-vinh-thanh | **Tọa độ**: [10.2089, 106.2186]
 - **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/nha-tho-cai-mon.webp`
@@ -3133,12 +3357,47 @@ Mỗi thực thể dưới đây đều có ảnh tư liệu báo chí chính th
 - **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
 - **Tóm lược**: Đình thần Bình Hòa tại Giồng Trôm — di tích lịch sử văn hóa cấp quốc gia (1993). Dựng khoảng năm 1812, xây lại 1903-1913 bằng gỗ tứ thiết ghép mộng-chốt không đinh — 300 cột gỗ, 66m × 22,5m.
 
+#### [Lễ hội Văn hóa - Thể thao - Du lịch đồng bào Khmer Nam Bộ tỉnh Trà Vinh cũ](https://vinhlong360.vn/dia-diem/le-hoi-van-hoa-the-thao-du-lich-dong-bao-khmer-nam-bo-tinh-tra-vinh-tra-vinh)
+- **Mã ID**: `le-hoi-van-hoa-the-thao-du-lich-dong-bao-khmer-nam-bo-tinh-tra-vinh-tra-vinh` | **Phân loại**: `event` | **Địa bàn**: xa-nhi-long | **Tọa độ**: [10.0260, 106.2930]
+- **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/le-hoi-van-hoa-the-thao-du-lich-dong-bao-khmer-nam-bo-tinh-tra-vinh-tra-vinh.webp`
+- **Tác giả ảnh**: Sơn Tuyên · **Cơ quan**: Báo Trà Vinh
+- **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
+- **Tóm lược**: Mỗi tháng 11, khoảng hai mươi nghìn người đổ về Ao Bà Om — di tích quốc gia tại Trà Vinh — xem múa Rô Băm, nghe trống Sadăm và đua ghe ngo.
+
+#### [Giải Thể thao Dân tộc - Quốc phòng tỉnh Trà Vinh cũ](https://vinhlong360.vn/dia-diem/giai-the-thao-dan-toc-quoc-phong-tinh-tra-vinh-tra-vinh)
+- **Mã ID**: `giai-the-thao-dan-toc-quoc-phong-tinh-tra-vinh-tra-vinh` | **Phân loại**: `event` | **Địa bàn**: xa-nhi-long | **Tọa độ**: [10.0260, 106.2930]
+- **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/giai-the-thao-dan-toc-quoc-phong-tinh-tra-vinh-tra-vinh.webp`
+- **Tác giả ảnh**: Thanh Điền · **Cơ quan**: Báo Trà Vinh
+- **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
+- **Tóm lược**: Các môn thể thao dân tộc: đẩy gậy, kéo co, bóng chuyền, cờ tướng. Thi đấu điền kinh và thể thao thành tích cao cấp tỉnh.
+
+#### [Liên hoan Đờn ca Tài tử Nam Bộ tỉnh Bến Tre cũ](https://vinhlong360.vn/dia-diem/lien-hoan-don-ca-tai-tu-nam-bo-tinh-ben-tre-ben-tre)
+- **Mã ID**: `lien-hoan-don-ca-tai-tu-nam-bo-tinh-ben-tre-ben-tre` | **Phân loại**: `event` | **Địa bàn**: p-phu-khuong | **Tọa độ**: [10.2272, 106.4072]
+- **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/lien-hoan-don-ca-tai-tu-nam-bo-tinh-ben-tre-ben-tre.webp`
+- **Tác giả ảnh**: Hữu Hiệp · **Cơ quan**: Báo Đồng Khởi
+- **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
+- **Tóm lược**: Mỗi mùa hè, Liên hoan Đờn ca Tài tử Nam Bộ tỉnh Bến Tre cũ quy tụ hàng trăm nghệ nhân và câu lạc bộ về tranh tài suốt ba ngày.
+
+#### [Liên hoan Văn nghệ Quần chúng tỉnh Trà Vinh cũ](https://vinhlong360.vn/dia-diem/lien-hoan-van-nghe-quan-chung-tinh-tra-vinh-tra-vinh)
+- **Mã ID**: `lien-hoan-van-nghe-quan-chung-tinh-tra-vinh-tra-vinh` | **Phân loại**: `event` | **Địa bàn**: xa-nhi-long | **Tọa độ**: [10.0260, 106.2930]
+- **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/lien-hoan-van-nghe-quan-chung-tinh-tra-vinh-tra-vinh.webp`
+- **Tác giả ảnh**: Bá Thi · **Cơ quan**: Báo Trà Vinh
+- **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
+- **Tóm lược**: Các tiết mục nghệ thuật truyền thống ba dân tộc Kinh, Khmer, Hoa tranh tài. Hát đờn ca tài tử Nam Bộ - Di sản văn hóa phi vật thể UNESCO.
+
 #### [Hợp tác xã Bưởi Năm Roi Mỹ Hòa](https://vinhlong360.vn/dia-diem/hop-tac-xa-buoi-nam-roi-my-hoa)
 - **Mã ID**: `hop-tac-xa-buoi-nam-roi-my-hoa` | **Phân loại**: `craft_village` | **Địa bàn**: p-binh-minh | **Tọa độ**: [10.2539, 105.9722]
 - **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/hop-tac-xa-buoi-nam-roi-my-hoa.webp`
 - **Tác giả ảnh**: Ngọc Liễu · **Cơ quan**: Báo Vĩnh Long
 - **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
 - **Tóm lược**: Cầm trên tay trái bưởi Năm Roi Mỹ Hòa — múi vàng ươm, căng mọng, tép bưởi tách rời từng sợi mịn — bạn hiểu ngay tại sao đặc sản này vang danh khắp cả nước. Hợp tác xã Mỹ Hòa canh tác theo tiêu chuẩn VietGAP trên vùng đất phù sa màu mỡ, quản lý chặt từ lúc ra hoa đến khi thu hoạch để giữ vị ngọt thanh pha chút chua nhẹ đặc trưng. Trực tiếp ra vườn chọn trái, hít thở không khí xanh mát giữa tán bưởi trùm bóng — đó là trải nghiệm hơn hẳn mua ngoài chợ.
+
+#### [Tuần lễ Văn hoá - Ẩm thực phường An Hội](https://vinhlong360.vn/dia-diem/tuan-le-van-hoa-am-thuc-an-hoi-2026)
+- **Mã ID**: `tuan-le-van-hoa-am-thuc-an-hoi-2026` | **Phân loại**: `event` | **Địa bàn**: p-an-hoi | **Tọa độ**: [10.2260, 106.3697]
+- **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/tuan-le-van-hoa-am-thuc-an-hoi-2026.webp`
+- **Tác giả ảnh**: Thành Châu · **Cơ quan**: Báo Đồng Khởi
+- **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
+- **Tóm lược**: Từ 13 đến 19 tháng 6 năm 2026, Công viên An Hội bên dòng sông Cổ Chiên trở thành đại tiệc văn hóa và ẩm thực lớn nhất Vĩnh Long năm nay.
 
 #### [Lễ hội Kỳ Yên](https://vinhlong360.vn/dia-diem/le-hoi-ky-yen)
 - **Mã ID**: `le-hoi-ky-yen` | **Phân loại**: `event` | **Địa bàn**: p-long-chau | **Tọa độ**: [10.2542, 105.9628]
@@ -3147,12 +3406,33 @@ Mỗi thực thể dưới đây đều có ảnh tư liệu báo chí chính th
 - **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
 - **Tóm lược**: Kỳ Yên là lễ tế Thần Thành Hoàng lớn nhất trong năm ở các đình làng Nam Bộ — kéo dài hai ngày một đêm với nghi thức cầu quốc thái dân an, mưa thuận gió hòa. Nhạc lễ cổ truyền vang lên, đoàn múa bóng rỗi rực rỡ sắc màu, bàn thờ chưng đầy lễ vật công phu. Ban đêm, sân đình chiếu hát bội hoặc cải lương phục vụ dân làng tới tận khuya.
 
+#### [Lễ cúng miễu](https://vinhlong360.vn/dia-diem/le-cung-mieu)
+- **Mã ID**: `le-cung-mieu` | **Phân loại**: `event` | **Địa bàn**: p-long-chau | **Tọa độ**: [10.2429, 105.9846]
+- **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/le-cung-mieu.webp`
+- **Tác giả ảnh**: Quang Vinh · **Cơ quan**: Báo Vĩnh Long
+- **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
+- **Tóm lược**: Miễu Ông, miễu Bà, miễu Cô Hồn ở làng quê Nam Bộ nhận lễ dâng của người dân theo từng ngày vía linh thiêng trong năm — một nhịp thờ cúng dân gian gắn liền với đời sống tâm linh xóm làng.
+
+#### [Lễ hội Nguyên Tiêu](https://vinhlong360.vn/dia-diem/le-hoi-nguyen-tieu)
+- **Mã ID**: `le-hoi-nguyen-tieu` | **Phân loại**: `event` | **Địa bàn**: p-long-chau | **Tọa độ**: [10.2542, 105.9628]
+- **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/le-hoi-nguyen-tieu.webp`
+- **Tác giả ảnh**: Huỳnh Biển · **Cơ quan**: Báo Vĩnh Long
+- **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
+- **Tóm lược**: Đêm Rằm tháng Giêng, các khu phố người Hoa ở Vĩnh Long bừng sáng trong Lễ hội Nguyên Tiêu — còn gọi là lễ Cúng Ông Bảo.
+
 #### [Lễ hội cúng biển Mỹ Long](https://vinhlong360.vn/dia-diem/le-hoi-cung-bien-my-long)
 - **Mã ID**: `le-hoi-cung-bien-my-long` | **Phân loại**: `event` | **Địa bàn**: xa-my-long | **Tọa độ**: [9.7523, 106.5284]
 - **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/le-hoi-cung-bien-my-long.webp`
 - **Tác giả ảnh**: Huỳnh Biển · **Cơ quan**: Báo Trà Vinh
 - **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
 - **Tóm lược**: Cứ đến ngày 11 và 12 tháng Năm âm lịch, vùng biển Mỹ Long lại rộn ràng với Lễ hội Nghinh Ông — lễ tế cửa biển Nam Hải lớn nhất Trà Vinh.
+
+#### [Lễ Chôl Chhnam Thmây](https://vinhlong360.vn/dia-diem/le-chol-chhnam-thmay)
+- **Mã ID**: `le-chol-chhnam-thmay` | **Phân loại**: `event` | **Địa bàn**: p-long-chau | **Tọa độ**: [10.2539, 105.9722]
+- **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/le-chol-chhnam-thmay.webp`
+- **Tác giả ảnh**: Bá Thi · **Cơ quan**: Báo Trà Vinh
+- **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
+- **Tóm lược**: Chôl Chhnam Thmây — Tết năm mới của người Khmer Nam Bộ — là ba ngày hội lớn nhất năm diễn ra từ 13 đến 15 tháng 4.
 
 #### [Lễ hội Đom Lơng Néak Tà](https://vinhlong360.vn/dia-diem/le-hoi-dom-long-neak-ta)
 - **Mã ID**: `le-hoi-dom-long-neak-ta` | **Phân loại**: `event` | **Địa bàn**: p-vung-liem | **Tọa độ**: [10.2539, 105.9722]
