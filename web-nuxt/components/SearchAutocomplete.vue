@@ -20,6 +20,7 @@
         @keydown.up.prevent="moveUp"
         @keydown.escape="close"
       />
+      <span v-if="!query" class="search-kbd-hint" aria-hidden="true">/</span>
       <button type="button" v-if="query" class="ac-clear" aria-label="Xóa tìm kiếm" @click="clearQuery">
         <IconLine name="x" aria-hidden="true" />
       </button>
