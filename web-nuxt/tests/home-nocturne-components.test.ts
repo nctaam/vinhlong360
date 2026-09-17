@@ -1,5 +1,7 @@
 import { mountSuspended } from '@nuxt/test-utils/runtime'
 import { defineComponent, h } from 'vue'
+import { readFileSync } from 'node:fs'
+import { resolve } from 'node:path'
 import { afterEach, describe, expect, it } from 'vitest'
 import HomeCategoryIndex from '../components/home/HomeCategoryIndex.vue'
 import HomeDecisionLedger from '../components/home/HomeDecisionLedger.vue'
@@ -183,4 +185,12 @@ describe('homepage Nocturne presentation components', () => {
       'river',
     ])
   })
+
+  it('styles for-you personalization chips with liquid glass border, focus-visible, and touch ergonomics', () => {
+    const homeCss = readFileSync(resolve(__dirname, '../assets/css/home-nocturne.css'), 'utf8')
+    expect(homeCss).toMatch(/\.fy-chip:focus-visible/)
+    expect(homeCss).toMatch(/\.fy-chip:active/)
+    expect(homeCss).toMatch(/\.fy-chip[\s\S]*?--border-liquid-glass/)
+  })
 })
+
