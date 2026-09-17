@@ -279,6 +279,14 @@ describe('Challenger 1: Empirical Adversarial Stress & Edge Case Harness', () =>
     })
   })
 
+  describe('Adversarial Test 7: HomeTravelPlanner Stop Active Feedback & Marker Micro-motion', () => {
+    it('enforces active tactile scale and marker hover micro-motion on HomeTravelPlanner stops', () => {
+      const plannerContent = readFileSync(resolve(webNuxt, 'components/home/HomeTravelPlanner.vue'), 'utf8')
+      expect(plannerContent).toMatch(/\.home-planner-stop:active/)
+      expect(plannerContent).toMatch(/\.home-planner-stop:hover\s+\.home-planner-stop__marker\s*\{[\s\S]*?transform:\s*scale\(1\.08\)/)
+    })
+  })
+
   // ───────────────────────────────────────────────────────────────────────────
   // OBJECTIVE 2: Bit-for-bit SHA-256 Invariance
   // ───────────────────────────────────────────────────────────────────────────

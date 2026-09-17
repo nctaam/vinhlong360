@@ -443,6 +443,10 @@ const activeItinerary = computed(() => {
   box-shadow: 0 8px 20px rgba(var(--black-rgb), 0.08);
 }
 
+.home-planner-stop:active {
+  transform: scale(0.98);
+}
+
 .home-planner-stop__marker {
   display: flex;
   align-items: center;
@@ -455,6 +459,11 @@ const activeItinerary = computed(() => {
   border-radius: var(--radius-pill, 9999px);
   font-size: var(--text-xs);
   font-weight: var(--weight-bold);
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), background-color 0.2s ease;
+}
+
+.home-planner-stop:hover .home-planner-stop__marker {
+  transform: scale(1.08);
 }
 
 .home-planner-stop__info {
