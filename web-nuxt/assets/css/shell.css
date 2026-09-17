@@ -782,7 +782,7 @@
 .public-shell-inline-nav {
   display: flex;
   align-items: center;
-  gap: var(--space-1);
+  gap: var(--space-3);
   margin-inline-start: var(--space-3);
   flex: 0 0 auto;
 }
@@ -840,20 +840,20 @@
 }
 
 .public-shell-inline-nav .public-shell-catalog-button {
-  margin-inline-start: var(--space-1);
+  margin-inline-start: 0;
 }
 
 .public-shell-catalog-button {
   position: relative;
-  gap: var(--space-2);
-  padding: 0 10px;
-  height: 30px;
-  min-height: 30px;
+  gap: 5px;
+  padding: 5px 10px;
+  height: 32px;
+  min-height: 32px;
   display: inline-flex;
   align-items: center;
   border-radius: var(--radius-control-refined, var(--radius-control));
-  background: color-mix(in srgb, var(--color-surface-subtle) 60%, transparent);
-  border: 1px solid color-mix(in srgb, var(--color-border) 60%, transparent);
+  background: transparent;
+  border: 1px solid transparent;
   color: var(--color-text-muted);
   font-family: var(--font-sans);
   font-size: var(--text-xs);
@@ -866,8 +866,8 @@
 
 .public-shell-catalog-button:hover,
 .public-shell-catalog-button.active {
-  background: color-mix(in srgb, var(--color-surface-subtle) 90%, transparent);
-  border-color: var(--color-border);
+  background: color-mix(in srgb, var(--color-surface-subtle) 70%, transparent);
+  border-color: transparent;
   color: var(--color-text);
 }
 
