@@ -2767,7 +2767,18 @@ html.js .home .hero-enter h1::after { animation: hero-underline-draw .8s var(--e
   border-color: rgba(var(--white-rgb), 0.6);
 }
 
+[data-home-pilot="nocturne-b1"] .home-category-index__primary-link:active {
+  transform: scale(0.98);
+}
+
+[data-home-pilot="nocturne-b1"] .home-category-index__primary-link:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 2px;
+  border-radius: var(--radius-surface);
+}
+
 /* ═══════════════════════════════════════════════════
+
    BALANCED 4-COLUMN DESKTOP CATEGORY ROW
    Ensures zero awkward dangling cards on Row 2
    ═══════════════════════════════════════════════════ */
@@ -2833,6 +2844,13 @@ html.js .home .hero-enter h1::after { animation: hero-underline-draw .8s var(--e
 [data-home-pilot="nocturne-b1"] .home-category-index__utility-link:active {
   transform: scale(0.98) !important;
 }
+
+[data-home-pilot="nocturne-b1"] .home-category-index__utility-link:focus-visible {
+  outline: 2px solid var(--color-focus) !important;
+  outline-offset: 2px !important;
+  border-radius: var(--radius-control) !important;
+}
+
 
 [data-home-pilot="nocturne-b1"] .home-category-index__utility-link strong {
   font-size: var(--text-sm) !important;

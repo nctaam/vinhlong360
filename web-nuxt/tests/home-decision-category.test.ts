@@ -22,4 +22,11 @@ describe('Home Decision Ledger and Category Index', () => {
     expect(categoryVue).not.toContain('Trải nghiệm phong phú')
     expect(categoryVue).toContain('Không gian bản địa')
   })
+
+  it('enforces focus-visible ring and tactile ergonomics on category cards and utility links', () => {
+    expect(homeCss).toMatch(/\.home-category-index__primary-link:focus-visible/)
+    expect(homeCss).toMatch(/\.home-category-index__utility-link:focus-visible/)
+    expect(homeCss).toMatch(/\.home-decision-ledger__link:focus-visible/)
+  })
 })
+
