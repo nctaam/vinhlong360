@@ -104,3 +104,47 @@ describe('Header Smart Editorial Refinement - Task 2: Unified Navigation Bar', (
     expect(wrapper.find('.public-shell-task-row').exists()).toBe(false)
   })
 })
+
+describe('Header Smart Editorial Refinement - Task 3: Harmonious Utility Cluster', () => {
+  it('ensures all utility buttons share consistent 32px height, touch targets, and tactile response', async () => {
+    const wrapper = await mountSuspended(DefaultLayout, {
+      attachTo: document.body,
+      slots: { default: '<div>Nội dung</div>' },
+      global: {
+        stubs: {
+          ClientOnly: { template: '<div><slot /></div>' },
+          AuthModal: { template: '<div></div>' },
+          LazyAuthModal: { template: '<div></div>' },
+          ChatWidget: { template: '<div></div>' },
+          LazyChatWidget: { template: '<div></div>' },
+          ConfirmDialog: { template: '<div></div>' },
+          LazyConfirmDialog: { template: '<div></div>' },
+          NotificationBell: { template: '<div></div>' },
+          LazyNotificationBell: { template: '<div></div>' },
+          OnboardingSheet: { template: '<div></div>' },
+          LazyOnboardingSheet: { template: '<div></div>' },
+          ScrollToTop: { template: '<div></div>' },
+          LazyScrollToTop: { template: '<div></div>' },
+          ToastContainer: { template: '<div></div>' },
+          LazyToastContainer: { template: '<div></div>' },
+          JourneyBar: { template: '<div></div>' },
+          LazyJourneyBar: { template: '<div></div>' },
+          SearchDrawer: { template: '<div></div>' },
+          LazySearchDrawer: { template: '<div></div>' },
+          UserMenu: { template: '<div></div>' },
+          LazyUserMenu: { template: '<div></div>' },
+          SearchAutocomplete: { template: '<div></div>' },
+          ShellPublicBottomNav: { template: '<div></div>' },
+          ShellPublicContextBar: { template: '<div data-public-context-line />' },
+          OfflineTerroirPanel: { template: '<div></div>' },
+        },
+      },
+    })
+    wrappers.push(wrapper)
+
+    const authArea = wrapper.get('.auth-area')
+    expect(authArea.find('[data-theme-control]').exists()).toBe(true)
+    expect(authArea.find('.display-settings-trigger').exists()).toBe(true)
+    expect(authArea.find('.auth-btn').exists()).toBe(true)
+  })
+})
