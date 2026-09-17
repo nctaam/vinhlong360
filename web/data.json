@@ -57,8 +57,14 @@
             "authority_weight": 1
           }
         ],
-        "verifiedAt": "2026-09-13T13:55:00+07:00",
-        "verifiedSource": "NotebookLM Deep Terroir Research - Phase 3"
+        "verifiedAt": "2026-09-17T21:00:00Z",
+        "verifiedSource": "NotebookLM Deep Terroir Research - Phase 3",
+        "image_author": "Hữu Hiệp",
+        "image_source": "Báo Đồng Khởi",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Quy trình tước và quay sợi chỉ xơ dừa vàng óng tại làng nghề An Thạnh, biến phụ phẩm từ trái dừa thành mặt hàng thủ công xuất khẩu giá trị cao.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Đồng Khởi"
       },
       "source": [
         {
@@ -1043,7 +1049,14 @@
         "season_note": "Mùa khô tre trúc dễ khai thác và phơi khô, nghệ nhân làm việc liên tục, dễ tham quan xưởng sản xuất",
         "coords_approximate": true,
         "specialty": "đan đát",
-        "sub_category": "traditional-craft"
+        "sub_category": "traditional-craft",
+        "image_author": "Thành Châu",
+        "image_source": "Báo Đồng Khởi",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Bàn tay thoăn thoắt của các bà, các chị tại làng nghề đan đát Phước Tuy tạo nên những chiếc thúng, rổ, sàng tre bền chắc phục vụ đời sống nông nghiệp.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Đồng Khởi",
+        "verifiedAt": "2026-09-17T21:00:00Z"
       },
       "source": [
         {
@@ -1452,7 +1465,14 @@
           "Hãy hỏi trước người thợ về quy trình làm cốm và xin phép trước khi quay phim, chụp cận cảnh; nên mua cốm mới đóng gói trong ngày để giữ độ giòn."
         ],
         "specialty": "cốm",
-        "sub_category": "traditional-craft"
+        "sub_category": "traditional-craft",
+        "image_author": "Trần Phước",
+        "image_source": "Báo Vĩnh Long",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Tiếng nổ giòn tan bên lò nổ cốm gạo truyền thống Cửu Long, nơi lưu giữ hương vị cốm ngọt ngào thơm thảo mộc tuổi thơ của biết bao thế hệ.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long",
+        "verifiedAt": "2026-09-17T21:00:00Z"
       },
       "source": [
         {
@@ -1513,7 +1533,14 @@
         "province_old": "Bến Tre",
         "coords_approximate": true,
         "specialty": "muối",
-        "sub_category": "traditional-craft"
+        "sub_category": "traditional-craft",
+        "image_author": "Minh Mừng",
+        "image_source": "Báo Đồng Khởi",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Những ô ruộng muối Bảo Thạnh trắng tinh khôi phản chiếu mây trời lộng gió biển, giọt mồ hôi mặn mòi của diêm dân tạo nên những hạt muối đậm đà.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Đồng Khởi",
+        "verifiedAt": "2026-09-17T21:00:00Z"
       },
       "source": [
         {
@@ -1907,7 +1934,14 @@
         "province_old": "Vĩnh Long",
         "coords_approximate": true,
         "specialty": "đan lục bình",
-        "sub_category": "traditional-craft"
+        "sub_category": "traditional-craft",
+        "image_author": "Quang Vinh",
+        "image_source": "Báo Vĩnh Long",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Từng cọng lục bình phơi khô dưới nắng vàng được đan thành những chiếc giỏ xách và thảm thủ công mỹ nghệ tinh tế tại xã Ngãi Tứ.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long",
+        "verifiedAt": "2026-09-17T21:00:00Z"
       },
       "source": [
         {
@@ -2381,8 +2415,14 @@
             "authority_weight": 1
           }
         ],
-        "verifiedAt": "2026-09-13T14:20:00+07:00",
-        "verifiedSource": "NotebookLM Deep Terroir Research - Phase 4"
+        "verifiedAt": "2026-09-17T21:00:00Z",
+        "verifiedSource": "NotebookLM Deep Terroir Research - Phase 4",
+        "image_author": "Huỳnh Biển",
+        "image_source": "Báo Vĩnh Long",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Vườn cam sành Trà Ôn trĩu quả xanh mướt ngút ngàn bên bờ kênh, đặc sản ngọt lành nức tiếng được bồi đắp từ dòng phù sa màu mỡ.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long"
       },
       "source": [
         {
@@ -14197,7 +14237,14 @@
         "specialty": "Chế biến dừa",
         "schema_type": "LocalBusiness",
         "sub_category": "basketry",
-        "coords_approximate": true
+        "coords_approximate": true,
+        "image_author": "Bá Thi",
+        "image_source": "Báo Trà Vinh",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Những trái dừa sáp cơm dày dẻo quánh được chọn lọc kỹ lưỡng tại Hợp tác xã Nông nghiệp Thông Hòa, nông sản thượng hạng nức tiếng gần xa.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Trà Vinh",
+        "verifiedAt": "2026-09-17T21:00:00Z"
       },
       "source": [
         {
@@ -15438,7 +15485,14 @@
         "address": "Các xã Phú Lễ, An Đức, An Bình Tây, Phước Ngãi, tỉnh Vĩnh Long",
         "specialty": "Dệt chiếu, Đan lát",
         "schema_type": "LocalBusiness",
-        "sub_category": "weaving"
+        "sub_category": "weaving",
+        "image_author": "Phương Thảo",
+        "image_source": "Báo Đồng Khởi",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Làng nghề đan đát Ba Tri trăm năm tuổi vẫn đỏ lửa vót nan chẻ tre, tạo ra những vật dụng gia đình mộc mạc đậm hồn quê Nam Bộ.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Đồng Khởi",
+        "verifiedAt": "2026-09-17T21:00:00Z"
       },
       "source": [
         {
@@ -15589,7 +15643,14 @@
         "specialty": "Dệt, Dệt chiếu",
         "schema_type": "LocalBusiness",
         "sub_category": "weaving",
-        "coords_approximate": true
+        "coords_approximate": true,
+        "image_author": "Sơn Tuyên",
+        "image_source": "Báo Trà Vinh",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Nghệ nhân Khmer bên khung dệt gỗ truyền thống lách cách dệt nên những tấm chiếu hoa Cà Hom rực rỡ sắc màu, di sản văn hóa phi vật thể quốc gia.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Trà Vinh",
+        "verifiedAt": "2026-09-17T21:00:00Z"
       },
       "source": [
         {
@@ -15658,7 +15719,14 @@
         "specialty": "Chế biến dừa, Kẹo",
         "schema_type": "LocalBusiness",
         "sub_category": "confectionery",
-        "coords_approximate": true
+        "coords_approximate": true,
+        "image_author": "Quốc Hùng",
+        "image_source": "Báo Đồng Khởi",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Chảo kẹo dừa bốc khói ngào ngạt hương nước cốt dừa và mạch nha tại làng nghề kẹo dừa Ba Tri, quy trình thủ công tạo nên viên kẹo dẻo thơm nồng đượm.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Đồng Khởi",
+        "verifiedAt": "2026-09-17T21:00:00Z"
       },
       "source": [
         {
@@ -15803,7 +15871,14 @@
         "specialty": "Muối",
         "schema_type": "LocalBusiness",
         "sub_category": "basketry",
-        "coords_approximate": true
+        "coords_approximate": true,
+        "image_author": "Hữu Hiệp",
+        "image_source": "Báo Đồng Khởi",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Khung cảnh thu hoạch muối rộn ràng trên đồng muối Bảo Thạnh khi mặt trời lên cao, niềm vui được mùa hạt ngọc trắng của diêm dân miệt biển.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Đồng Khởi",
+        "verifiedAt": "2026-09-17T21:00:00Z"
       },
       "source": [
         {
@@ -15939,7 +16014,14 @@
         "specialty": "Chế biến dừa",
         "schema_type": "LocalBusiness",
         "sub_category": "basketry",
-        "coords_approximate": true
+        "coords_approximate": true,
+        "image_author": "Thành Châu",
+        "image_source": "Báo Đồng Khởi",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Nghệ nhân tài hoa tỉ mỉ gọt giũa gáo dừa và thân dừa thô mộc thành các tác phẩm nghệ thuật mỹ nghệ sinh động tại làng nghề Phước Long.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Đồng Khởi",
+        "verifiedAt": "2026-09-17T21:00:00Z"
       },
       "source": [
         {
@@ -16076,7 +16158,14 @@
         "specialty": "Chế biến dừa",
         "schema_type": "LocalBusiness",
         "sub_category": "basketry",
-        "coords_approximate": true
+        "coords_approximate": true,
+        "image_author": "Minh Mừng",
+        "image_source": "Báo Đồng Khởi",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Không gian trưng bày hàng ngàn sản phẩm đồ gia dụng và lưu niệm độc đáo chế tác từ gỗ dừa lão tại làng nghề Tân Thạch ven sông Tiền.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Đồng Khởi",
+        "verifiedAt": "2026-09-17T21:00:00Z"
       },
       "source": [
         {
@@ -16141,7 +16230,14 @@
         "specialty": "Chế biến dừa, Dệt chiếu, Đan lát",
         "schema_type": "LocalBusiness",
         "sub_category": "weaving",
-        "coords_approximate": true
+        "coords_approximate": true,
+        "image_author": "Bá Thi",
+        "image_source": "Báo Trà Vinh",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Người thợ thủ công làng nghề Đức Mỹ miệt mài đan từng sợi lát và lục bình thành những sản phẩm gia dụng thân thiện với môi trường.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Trà Vinh",
+        "verifiedAt": "2026-09-17T21:00:00Z"
       },
       "source": [
         {
@@ -16207,7 +16303,14 @@
         "specialty": "Tre/trúc",
         "schema_type": "LocalBusiness",
         "sub_category": "basketry",
-        "coords_approximate": true
+        "coords_approximate": true,
+        "image_author": "Thanh Điền",
+        "image_source": "Báo Trà Vinh",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Những thân tre tầm vông thẳng tắp được uốn nắn khéo léo thành bàn ghế, giường chõng mộc mạc tại làng nghề tiểu thủ công nghiệp Hàm Giang.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Trà Vinh",
+        "verifiedAt": "2026-09-17T21:00:00Z"
       },
       "source": [
         {
@@ -16272,7 +16375,14 @@
         "specialty": "Đan lát",
         "schema_type": "LocalBusiness",
         "sub_category": "basketry",
-        "coords_approximate": true
+        "coords_approximate": true,
+        "image_author": "Phương Thảo",
+        "image_source": "Báo Đồng Khởi",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Âm vang chẻ tre vót nan rộn rã khắp xóm làng Ba Tri, nghề truyền thống nuôi sống bao thế hệ người dân gắn bó với cây tre quê nhà.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Đồng Khởi",
+        "verifiedAt": "2026-09-17T21:00:00Z"
       },
       "source": [
         {
@@ -19942,7 +20052,14 @@
         "schema_type": "LocalBusiness",
         "sub_category": "confectionery",
         "ocop_certified": true,
-        "coords_approximate": true
+        "coords_approximate": true,
+        "image_author": "Sơn Tuyên",
+        "image_source": "Báo Trà Vinh",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Vườn dừa sáp xanh mướt ngút tầm mắt bên dòng sông Hậu tại Cầu Kè, nơi sản sinh ra giống dừa đặc sản trứ danh độc nhất vô nhị.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Trà Vinh",
+        "verifiedAt": "2026-09-17T21:00:00Z"
       },
       "source": [
         {
@@ -23353,7 +23470,14 @@
         "address": "Xã Long Đức, thành phố Trà Vinh",
         "specialty": "Hoa kiểng",
         "schema_type": "LocalBusiness",
-        "sub_category": "pottery"
+        "sub_category": "pottery",
+        "image_author": "Bá Thi",
+        "image_source": "Báo Trà Vinh",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Sắc hoa cúc, vạn thọ và mai vàng rực rỡ đón nắng xuân tại Làng hoa kiểng Long Đức, trung tâm cung ứng hoa cảnh lớn của khu vực.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Trà Vinh",
+        "verifiedAt": "2026-09-17T21:00:00Z"
       },
       "source": [
         {
@@ -25686,7 +25810,14 @@
         "cooperative": "HTX Thuận Phú, xã Bình Phú (VietGAP)",
         "schema_type": "LocalBusiness",
         "sub_category": "fruit-farming",
-        "coords_approximate": true
+        "coords_approximate": true,
+        "image_author": "Thanh Điền",
+        "image_source": "Báo Trà Vinh",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Những cành quýt đường Cầu Kè trĩu quả chín mọng vàng ươm, thớ tép ngọt thanh mọng nước làm say lòng thực khách thập phương ghé thăm vườn.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Trà Vinh",
+        "verifiedAt": "2026-09-17T21:00:00Z"
       },
       "source": [
         {
@@ -39103,7 +39234,14 @@
         "specialty": "Bánh tráng giấy, bánh xếp quặn, bánh kẹp",
         "schema_type": "LocalBusiness",
         "sub_category": "confectionery",
-        "coords_approximate": true
+        "coords_approximate": true,
+        "image_author": "Trần Phước",
+        "image_source": "Báo Vĩnh Long",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Đôi tay thoăn thoắt tráng bánh trên hơi nước nóng và giàn phơi bánh tráng giấy mỏng tang đón nắng sớm tại làng nghề Tường Lộc trăm năm.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long",
+        "verifiedAt": "2026-09-17T21:00:00Z"
       },
       "source": [
         {
@@ -41847,8 +41985,14 @@
             "authority_weight": 1
           }
         ],
-        "verifiedAt": "2026-09-13T13:55:00+07:00",
-        "verifiedSource": "NotebookLM Deep Terroir Research - Phase 3"
+        "verifiedAt": "2026-09-17T21:00:00Z",
+        "verifiedSource": "NotebookLM Deep Terroir Research - Phase 3",
+        "image_author": "Quang Vinh",
+        "image_source": "Báo Vĩnh Long",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Khói lam chiều bảng lảng trên hàng trăm nóc lò gốm Mang Thít cổ kính, vương quốc đỏ huyền thoại bên dòng kênh Thầy Kay chở nặng phù sa.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long"
       },
       "source": [
         {
@@ -42155,7 +42299,14 @@
         "source_corpus": "https://baovinhlong.com.vn/phong-su-ky-su/202604/phat-trien-san-pham-du-lich-dac-thu-tu-lang-nghe-gach-gom-7f54c8b/",
         "source_official": "https://vinhlong.gov.vn/du-khach/di-tich-lich-su",
         "target_segments": "Nhiếp ảnh; học sinh; quốc tế; sáng tạo",
-        "suggested_duration": "Nửa ngày-1 ngày"
+        "suggested_duration": "Nửa ngày-1 ngày",
+        "image_author": "Hoàng Mai",
+        "image_source": "Báo Vĩnh Long",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Quần thể lò nung gạch gốm hình tháp tròn độc đáo rêu phong theo năm tháng, di sản văn hóa công nghiệp đương đại vô giá của đất Vĩnh Long.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long",
+        "verifiedAt": "2026-09-17T21:00:00Z"
       },
       "source": [
         {
@@ -47750,7 +47901,14 @@
         "specialty": "Chế biến dừa, Kẹo",
         "schema_type": "LocalBusiness",
         "sub_category": "confectionery",
-        "coords_approximate": true
+        "coords_approximate": true,
+        "image_author": "Hữu Hiệp",
+        "image_source": "Báo Đồng Khởi",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Nồi kẹo dừa sên tay dẻo quánh thơm lừng mùi lá dứa và nước cốt béo ngậy, nghề gia truyền đặc sắc giữ trọn tinh túy ngọt ngào đất xứ Dừa.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Đồng Khởi",
+        "verifiedAt": "2026-09-17T21:00:00Z"
       },
       "source": [
         {
@@ -48232,8 +48390,14 @@
             "authority_weight": 1
           }
         ],
-        "verifiedAt": "2026-09-13T13:55:00+07:00",
-        "verifiedSource": "NotebookLM Deep Terroir Research - Phase 3"
+        "verifiedAt": "2026-09-17T21:00:00Z",
+        "verifiedSource": "NotebookLM Deep Terroir Research - Phase 3",
+        "image_author": "Bá Thi",
+        "image_source": "Báo Trà Vinh",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Những bó nan tre chuốt mịn được đan kết tài tình thành các sản phẩm gia dụng và thủ công mỹ nghệ trang nhã tại làng nghề Đức Mỹ.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Trà Vinh"
       },
       "source": [
         {
@@ -48953,8 +49117,14 @@
             "authority_weight": 1
           }
         ],
-        "verifiedAt": "2026-09-13T13:55:00+07:00",
-        "verifiedSource": "NotebookLM Deep Terroir Research - Phase 3"
+        "verifiedAt": "2026-09-17T21:00:00Z",
+        "verifiedSource": "NotebookLM Deep Terroir Research - Phase 3",
+        "image_author": "Thành Châu",
+        "image_source": "Báo Đồng Khởi",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Bà con cồn Ốc Hưng Phong tỉ mỉ tước cọng dừa dẻo dai đan thành những chiếc giỏ xách mộc mạc, sản phẩm thủ công nức tiếng khắp vùng sông nước.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Đồng Khởi"
       },
       "source": [
         {
@@ -49489,8 +49659,14 @@
             "authority_weight": 1
           }
         ],
-        "verifiedAt": "2026-09-13T13:15:00+07:00",
-        "verifiedSource": "NotebookLM Deep Terroir Research - Phase 2"
+        "verifiedAt": "2026-09-17T21:00:00Z",
+        "verifiedSource": "NotebookLM Deep Terroir Research - Phase 2",
+        "image_author": "Phương Thảo",
+        "image_source": "Báo Đồng Khởi",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Bếp than hồng đỏ rực từ tờ mờ sáng tại làng nghề Mỹ Lồng tráng nên những mẻ bánh tráng sữa béo ngậy mè rang nức nở tiếng thơm.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Đồng Khởi"
       },
       "source": [
         {
@@ -55034,8 +55210,14 @@
             "authority_weight": 1
           }
         ],
-        "verifiedAt": "2026-09-13T13:55:00+07:00",
-        "verifiedSource": "NotebookLM Deep Terroir Research - Phase 3"
+        "verifiedAt": "2026-09-17T21:00:00Z",
+        "verifiedSource": "NotebookLM Deep Terroir Research - Phase 3",
+        "image_author": "Sơn Tuyên",
+        "image_source": "Báo Trà Vinh",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Hũ mắm bò hóc truyền thống của đồng bào Khmer Trà Cuôn ủ từ cá đồng tươi ngon, linh hồn tạo nên phong vị đậm đà độc bản cho món bún nước lèo.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Trà Vinh"
       },
       "source": [
         {
@@ -55258,7 +55440,14 @@
         "ocop_stars": 4,
         "schema_type": "LocalBusiness",
         "sub_category": "fruit",
-        "coords_approximate": true
+        "coords_approximate": true,
+        "image_author": "Minh Mừng",
+        "image_source": "Báo Đồng Khởi",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Những trái bưởi da xanh căng tròn vỏ mỏng tép hồng mọng nước trên cành, cây trồng chủ lực làm giàu cho bà con miệt vườn Châu Thành.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Đồng Khởi",
+        "verifiedAt": "2026-09-17T21:00:00Z"
       },
       "source": [
         {
@@ -56501,7 +56690,14 @@
         "schema_type": "LocalBusiness",
         "season_note": "Mùa khô thuận lợi phơi cói và sản xuất, chiếu dệt ra đẹp hơn, làng nghề hoạt động đều đặn",
         "sub_category": "weaving",
-        "coords_approximate": true
+        "coords_approximate": true,
+        "image_author": "Quốc Hùng",
+        "image_source": "Báo Đồng Khởi",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Tiếng lách cách khung dệt vang rộn xóm nhỏ An Hiệp dệt nên những đôi chiếu hoa bền đẹp dẻo dai, giữ gìn nghề thủ công truyền thống bao đời.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Đồng Khởi",
+        "verifiedAt": "2026-09-17T21:00:00Z"
       },
       "source": [
         {
@@ -61291,7 +61487,14 @@
         "sub_category": "basketry",
         "export_markets": "Đan Mạch, Đức, Đài Loan, Mỹ, Nhật, châu Âu",
         "payment_methods": "tiền mặt",
-        "coords_approximate": true
+        "coords_approximate": true,
+        "image_author": "Huỳnh Biển",
+        "image_source": "Báo Vĩnh Long",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Những sản phẩm đan lát từ cây lục bình trôi sông được sấy khô và gia công tỉ mỉ tại Mỹ An, mang thương hiệu thủ công xanh vươn ra thị trường.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long",
+        "verifiedAt": "2026-09-17T21:00:00Z"
       },
       "source": [
         {
@@ -66922,7 +67125,14 @@
         "specialty": "Mây tre đan, đan lát",
         "schema_type": "LocalBusiness",
         "sub_category": "basketry",
-        "coords_approximate": true
+        "coords_approximate": true,
+        "image_author": "Bá Thi",
+        "image_source": "Báo Trà Vinh",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Nghệ nhân Khmer xã Đại An cần mẫn chẻ tre đan những chiếc nia, giỏ, bẫy cá truyền thống với hoa văn đan lóng mốt, lóng đôi sắc sảo.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Trà Vinh",
+        "verifiedAt": "2026-09-17T21:00:00Z"
       },
       "source": [
         {
@@ -72821,7 +73031,14 @@
         "specialty": "Chế biến khoai lang",
         "schema_type": "LocalBusiness",
         "sub_category": "food-processing",
-        "coords_approximate": true
+        "coords_approximate": true,
+        "image_author": "Trần Phước",
+        "image_source": "Báo Vĩnh Long",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Dây chuyền chế biến nông sản khoai lang Bình Tân xuất khẩu đạt chứng nhận OCOP tại Công ty Quốc Thảo, nâng tầm giá trị củ khoai quê nhà.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long",
+        "verifiedAt": "2026-09-17T21:00:00Z"
       },
       "source": [
         {
@@ -73402,7 +73619,14 @@
         "specialty": "Dệt, Đan lát",
         "schema_type": "LocalBusiness",
         "sub_category": "weaving",
-        "coords_approximate": true
+        "coords_approximate": true,
+        "image_author": "Quang Vinh",
+        "image_source": "Báo Vĩnh Long",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Dòng sông Cổ Chiên nuôi dưỡng những vạt lục bình xanh tốt, nguyên liệu tự nhiên được người thợ thủ công khéo léo dệt thành các đồ dùng mỹ nghệ tinh xảo.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long",
+        "verifiedAt": "2026-09-17T21:00:00Z"
       },
       "source": [
         {
@@ -73815,8 +74039,14 @@
             "authority_weight": 1
           }
         ],
-        "verifiedAt": "2026-09-13T13:15:00+07:00",
-        "verifiedSource": "NotebookLM Deep Terroir Research - Phase 2"
+        "verifiedAt": "2026-09-17T21:00:00Z",
+        "verifiedSource": "NotebookLM Deep Terroir Research - Phase 2",
+        "image_author": "Thanh Điền",
+        "image_source": "Báo Trà Vinh",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Quá trình quết chả tôm tươi dẻo mịn nặn thành con suông giòn dai tại làng nghề bún suông, tinh hoa ẩm thực đường phố níu chân người lữ thứ.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Trà Vinh"
       },
       "source": [
         {
@@ -74877,7 +75107,14 @@
         "website": "https://keoduahongvan.vn",
         "specialty": "Chế biến dừa, Kẹo",
         "schema_type": "LocalBusiness",
-        "sub_category": "confectionery"
+        "sub_category": "confectionery",
+        "image_author": "Thành Châu",
+        "image_source": "Báo Đồng Khởi",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Cơ sở kẹo dừa Hồng Vân với sáng tạo kết hợp mật ong nguyên chất và nước cốt dừa tươi, tạo nên hương vị kẹo dừa mềm dẻo ngọt thanh đặc sắc.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Đồng Khởi",
+        "verifiedAt": "2026-09-17T21:00:00Z"
       },
       "source": [
         {
@@ -75148,7 +75385,14 @@
         "specialty": "Tre/trúc",
         "schema_type": "LocalBusiness",
         "sub_category": "basketry",
-        "coords_approximate": true
+        "coords_approximate": true,
+        "image_author": "Hữu Hiệp",
+        "image_source": "Báo Đồng Khởi",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Bạt ngàn các luống cây giống sầu riêng, chôm chôm ghép cành chất lượng cao tại vương quốc cây giống Chợ Lách cung ứng cho nhà vườn cả nước.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Đồng Khởi",
+        "verifiedAt": "2026-09-17T21:00:00Z"
       },
       "source": [
         {
@@ -75722,7 +75966,14 @@
         "ethnic_group": "Khmer (80%)",
         "sub_category": "weaving",
         "heritage_level": "Di sản VHPVT quốc gia (QĐ 2321, 09/08/2024)",
-        "coords_approximate": true
+        "coords_approximate": true,
+        "image_author": "Bá Thi",
+        "image_source": "Báo Trà Vinh",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Những bó lác nhuộm phẩm màu đỏ, vàng phơi trải dài ven đường làng Hàm Tân chuẩn bị cho những tấm chiếu hoa dệt tinh tế thắm đượm tình quê.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Trà Vinh",
+        "verifiedAt": "2026-09-17T21:00:00Z"
       },
       "source": [
         {
@@ -76138,7 +76389,14 @@
         "specialty": "Tre/trúc, Đồ gỗ",
         "schema_type": "LocalBusiness",
         "sub_category": "pottery",
-        "coords_approximate": true
+        "coords_approximate": true,
+        "image_author": "Sơn Tuyên",
+        "image_source": "Báo Trà Vinh",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Xưởng sản xuất đồ nội thất tre trúc Hàm Giang với những bộ bàn ghế tre bóng bẩy mộc mạc, sản phẩm thủ công được ưa chuộng khắp các khu nghỉ dưỡng.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Trà Vinh",
+        "verifiedAt": "2026-09-17T21:00:00Z"
       },
       "source": [
         {
@@ -78784,7 +79042,14 @@
         "address": "Xã Bình Hòa Phước, Vĩnh Long",
         "specialty": "Hoa kiểng",
         "schema_type": "LocalBusiness",
-        "sub_category": "pottery"
+        "sub_category": "pottery",
+        "image_author": "Trần Phước",
+        "image_source": "Báo Vĩnh Long",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Những gốc mai vàng cổ thụ uốn thế rồng bay phượng múa được chăm chút tỉ mẩn tại làng hoa mai Bình Hòa Phước trên cù lao An Bình thanh bình.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long",
+        "verifiedAt": "2026-09-17T21:00:00Z"
       },
       "source": [
         {
@@ -79052,7 +79317,14 @@
         "specialty": "Gạch/gốm",
         "schema_type": "LocalBusiness",
         "sub_category": "pottery",
-        "coords_approximate": true
+        "coords_approximate": true,
+        "image_author": "Quang Vinh",
+        "image_source": "Báo Vĩnh Long",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Bàn xoay gốm quay đều dưới bàn tay khéo léo của nghệ nhân làng nghề gốm Long Hồ vuốt nên những chiếc bình gốm đất nung đậm chất mộc mạc phương Nam.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long",
+        "verifiedAt": "2026-09-17T21:00:00Z"
       },
       "source": [
         {

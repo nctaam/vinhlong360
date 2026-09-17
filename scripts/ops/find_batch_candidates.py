@@ -32,12 +32,19 @@ print(f"Unverified nature with valid image: {len(nature)}")
 attractions = [x for x in unverified if x['type'] == 'attraction' and x['has_img']]
 print(f"Unverified attractions with valid image: {len(attractions)}")
 
+crafts = [x for x in unverified if x['type'] == 'craft_village' and x['has_img']]
+print(f"Unverified craft villages with valid image: {len(crafts)}")
+
+products = [x for x in unverified if x['type'] == 'product' and x['has_img']]
+print(f"Unverified products with valid image: {len(products)}")
+
 import sys
 sys.stdout.reconfigure(encoding='utf-8')
 
-# Pick 40 candidates: 40 events / festivals
-batch_15_candidates = events[:40]
-print(f"\nSelected {len(batch_15_candidates)} candidates for Batch 15:")
-for idx, c in enumerate(batch_15_candidates, 1):
-    print(f"{idx}. {c['id']} | {c['name']}")
+# Pick 40 candidates: crafts first, then artisanal terroir products
+batch_16_candidates = (crafts + products)[:40]
+print(f"\nSelected {len(batch_16_candidates)} candidates for Batch 16:")
+for idx, c in enumerate(batch_16_candidates, 1):
+    print(f"{idx}. {c['id']} | {c['name']} | {c['type']}")
     print(f"   Summary: {c['summary'][:100]}...")
+
