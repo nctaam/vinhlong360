@@ -156,6 +156,19 @@
 }
 .badge.ocop-3 { background: var(--badge-ocop-bg); color: var(--secondary-dark); }
 .badge.year { background: var(--badge-year-bg); color: var(--muted); }
+.badge.heritage {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  background: color-mix(in srgb, var(--color-material-clay) 12%, var(--bg-alt));
+  color: var(--color-material-clay);
+  border: .5px solid color-mix(in srgb, var(--color-material-clay) 30%, transparent);
+}
+.dark .badge.heritage {
+  background: color-mix(in srgb, var(--color-material-clay) 20%, transparent);
+  color: var(--night-clay, var(--color-material-clay));
+  border-color: color-mix(in srgb, var(--color-material-clay) 40%, transparent);
+}
 
 /* category cover colors */
 .cover.cat-experience { background: var(--cat-experience); }

@@ -67,6 +67,7 @@
         <span v-else-if="isYearRoundSeason" class="badge year">Quanh năm</span>
         <span v-else-if="seasonLabel" class="badge season">{{ seasonLabel }}</span>
         <span v-if="ocopBadge" :class="['badge', 'ocop', { 'ocop-5': ocopTier === 5, 'ocop-4': ocopTier === 4, 'ocop-3': ocopTier === 3 }]"><IconLine name="star" /> {{ ocopBadge }}</span>
+        <span v-if="heritageBadge" class="badge heritage"><IconLine name="shield-check" /> {{ heritageBadge }}</span>
       </div>
     </NuxtLink>
   </article>
@@ -150,7 +151,7 @@ const dateline = computed(() => entityDateline(props.entity, typeMeta.value.labe
 const cardMeta = computed(() => {
   const a = props.entity.attributes
   if (!a) return null
-  const price = a.price || a.fee || a.ticket_price || null
+  const price = a.price || a.admission || a.fee || a.price_range || a.ticket_price || null
   const hours = a.hours || a.opening_hours || null
   const access = a.vehicle_access || a.road_access || null
   return (price || hours || access) ? { price, hours, access } : null
@@ -172,6 +173,10 @@ const amenityExtra = computed(() => Math.max(0, allAmenities.value.length - 3))
 // rộng nhất của lỗi.
 const ocopTier = computed(() => ocopStars(props.entity as any))
 const ocopBadge = computed(() => ocopBadgeLabel(props.entity as any))
+const heritageBadge = computed(() => {
+  const h = props.entity.attributes?.heritage_level
+  return typeof h === 'string' && h.trim() ? h.trim() : null
+})
 const isNew = computed(() => {
   const u = props.entity.updatedAt
   if (!u) return false

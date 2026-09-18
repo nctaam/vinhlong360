@@ -51,6 +51,9 @@
           <span v-if="ocopBadge" class="dc-ocop-chip" :aria-label="`Sản phẩm ${ocopBadge}`">
             <IconLine name="star" /> {{ ocopBadge }}
           </span>
+          <span v-if="entity.attributes?.heritage_level" class="dc-heritage-chip" :aria-label="`Xếp hạng: ${entity.attributes.heritage_level}`">
+            <IconLine name="shield-check" /> {{ entity.attributes.heritage_level }}
+          </span>
         </span>
         <span v-if="heroDateline" class="dc-eyebrow">{{ heroDateline }}</span>
         <h1>{{ entity.name }}</h1>
@@ -235,13 +238,17 @@
                   <dt class="k"><IconLine class="fact-ic" name="clock" aria-hidden="true" /><span>{{ ss('labels.detail.fact_hours', 'Giờ mở cửa') }}</span></dt>
                   <dd class="v">{{ entity.attributes.hours }}</dd>
                 </div>
-                <div v-if="entity.attributes?.price" class="fact">
-                  <dt class="k"><IconLine class="fact-ic" name="tag" aria-hidden="true" /><span>{{ ss('labels.detail.fact_price', 'Giá tham khảo') }}</span></dt>
-                  <dd class="v">{{ entity.attributes.price }}</dd>
+                <div v-if="entity.attributes?.admission" class="fact">
+                  <dt class="k"><IconLine class="fact-ic" name="tag" aria-hidden="true" /><span>Vé vào cửa</span></dt>
+                  <dd class="v">{{ entity.attributes.admission }}</dd>
                 </div>
-                <div v-if="entity.attributes?.fee" class="fact">
+                <div v-if="entity.attributes?.fee && entity.attributes?.fee !== entity.attributes?.admission" class="fact">
                   <dt class="k"><IconLine class="fact-ic" name="tag" aria-hidden="true" /><span>{{ ss('labels.detail.fact_fee', 'Phí vào cửa') }}</span></dt>
                   <dd class="v">{{ entity.attributes.fee }}</dd>
+                </div>
+                <div v-if="entity.attributes?.price && entity.attributes?.price !== entity.attributes?.admission" class="fact">
+                  <dt class="k"><IconLine class="fact-ic" name="tag" aria-hidden="true" /><span>{{ ss('labels.detail.fact_price', 'Giá tham khảo') }}</span></dt>
+                  <dd class="v">{{ entity.attributes.price }}</dd>
                 </div>
                 <div v-if="entity.attributes?.suggested_duration" class="fact">
                   <dt class="k"><IconLine class="fact-ic" name="clock" aria-hidden="true" /><span>Thời gian tham quan</span></dt>
@@ -396,6 +403,21 @@
             <p>{{ sec.text }}</p>
           </div>
         </div>
+
+        <!-- Key historical and archival facts -->
+        <section v-if="entity.attributes?.key_facts?.length" class="detail-key-facts reveal" aria-labelledby="key-facts-heading">
+          <h2 id="key-facts-heading" class="section-subtitle sediment-head">
+            <IconLine name="landmark" aria-hidden="true" /> Tư liệu & Dấu mốc lịch sử
+          </h2>
+          <ul class="key-facts-list">
+            <li v-for="(fact, fi) in entity.attributes.key_facts" :key="fi" class="key-fact-item">
+              <span class="key-fact-marker" aria-hidden="true">
+                <IconLine name="shield-check" />
+              </span>
+              <span class="key-fact-text">{{ fact }}</span>
+            </li>
+          </ul>
+        </section>
 
         <!-- Know Before You Go -->
         <KnowBeforeYouGo
@@ -906,7 +928,7 @@ const buyContactUrl = computed(() => {
 })
 
 // Highlights (quét nhanh đầu trang)
-const priceText = computed(() => entity.value?.attributes?.price || entity.value?.attributes?.fee || '')
+const priceText = computed(() => entity.value?.attributes?.price || entity.value?.attributes?.admission || entity.value?.attributes?.fee || '')
 const addressText = computed(() => entity.value?.attributes?.address || entity.value?.place_name || '')
 const hasCoords = computed(() => !!normalizeCoords(entity.value?.coordinates))
 // Link bản đồ FOCUS đúng điểm này (truyền id + toạ độ) — không ra bản đồ chung
@@ -927,7 +949,7 @@ function trackContact(action: ContactAction) {
   trackContactView(id.value, action)
 }
 const hasHighlights = computed(() => !!(entity.value?.attributes?.phone || zaloLink.value || entity.value?.attributes?.hours || priceText.value || addressText.value || hasCoords.value))
-const hasVisitFacts = computed(() => { const a = entity.value?.attributes; return !!(a?.hours || a?.price || a?.fee || a?.suggested_duration || a?.transport || a?.vehicle_access || a?.parking) })
+const hasVisitFacts = computed(() => { const a = entity.value?.attributes; return !!(a?.hours || a?.price || a?.fee || a?.admission || a?.suggested_duration || a?.transport || a?.vehicle_access || a?.parking) })
 const hasContactFacts = computed(() => { const a = entity.value?.attributes; return !!(a?.phone || a?.address || (a?.coords_approximate && hasCoords.value) || a?.website) })
 const hasFeatureFacts = computed(() => { const a = entity.value?.attributes; return !!(a?.amenities || a?.price_range || a?.atmosphere || a?.famous_for || a?.significance) })
 

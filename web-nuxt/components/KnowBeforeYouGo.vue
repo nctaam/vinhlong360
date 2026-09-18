@@ -142,8 +142,11 @@ const practicalItems = computed(() => {
   const a = attrs.value
   const items: { icon: string; label: string; value: string }[] = []
   if (a.highlight) items.push({ icon: 'star', label: 'Điểm nhấn', value: String(a.highlight) })
+  if (a.heritage_level) items.push({ icon: 'shield-check', label: 'Xếp hạng di sản', value: String(a.heritage_level) })
   if (a.booking_note) items.push({ icon: 'clipboard-list', label: 'Đặt trước', value: String(a.booking_note) })
-  if (a.fee) items.push({ icon: 'tag', label: 'Phí vào cửa', value: String(a.fee) })
+  if (a.admission || a.fee) items.push({ icon: 'tag', label: 'Vé / Phí vào cửa', value: String(a.admission || a.fee) })
+  if (a.raw_material) items.push({ icon: 'leaf', label: 'Nguyên liệu', value: String(a.raw_material) })
+  if (a.households) items.push({ icon: 'home', label: 'Quy mô làng nghề', value: String(a.households) })
   if (a.transport) items.push({ icon: 'car', label: 'Di chuyển', value: String(a.transport) })
   if (a.parking) items.push({ icon: 'pin', label: 'Đậu xe', value: String(a.parking) })
   if (a.vehicle_access) items.push({ icon: 'car', label: 'Tiếp cận xe', value: String(a.vehicle_access) })
@@ -168,6 +171,10 @@ const tips = computed(() => {
     for (const s of tt) {
       if (typeof s === 'string' && s.trim() && !result.includes(s.trim())) result.push(s.trim())
     }
+  }
+  if (typeof attrs.value.travel_tip === 'string' && attrs.value.travel_tip.trim()) {
+    const s = attrs.value.travel_tip.trim()
+    if (!result.includes(s)) result.push(s)
   }
   return result
 })
