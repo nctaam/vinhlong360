@@ -1,0 +1,800 @@
+[
+  {
+    "entity_id": "nha-tho-cai-mon-cho-lach",
+    "name": "Nhà thờ Cái Mơn (Họ đạo Cái Mơn)",
+    "type": "history",
+    "verifiedAt": "2026-09-18T07:15:00Z",
+    "verifiedSource": "NotebookLM Terroir Deep Research & Official Archives"
+  },
+  {
+    "entity_id": "cu-lao-my-hoa",
+    "name": "Cù lao Mỹ Hòa",
+    "type": "nature",
+    "verifiedAt": "2026-09-18T07:15:00Z",
+    "verifiedSource": "NotebookLM Terroir Deep Research & Official Archives"
+  },
+  {
+    "entity_id": "nha-tho-chinh-toa-vinh-long",
+    "name": "Nhà thờ Chính tòa Vĩnh Long (Nhà thờ Thánh Anna)",
+    "type": "attraction",
+    "verifiedAt": "2026-09-18T07:15:00Z",
+    "verifiedSource": "NotebookLM Terroir Deep Research & Official Archives"
+  },
+  {
+    "entity_id": "phuoc-minh-cung-chua-ong-tra-vinh",
+    "name": "Phước Minh Cung (Chùa Ông Trà Vinh)",
+    "type": "attraction",
+    "verifiedAt": "2026-09-18T07:15:00Z",
+    "verifiedSource": "NotebookLM Terroir Deep Research & Official Archives"
+  },
+  {
+    "entity_id": "di-tich-duong-ho-chi-minh-tren-bien-thanh-phu",
+    "name": "Di Tích Đường Hồ Chí Minh Trên Biển Thạnh Phú",
+    "type": "history",
+    "verifiedAt": "2026-09-18T07:15:00Z",
+    "verifiedSource": "NotebookLM Terroir Deep Research & Official Archives"
+  },
+  {
+    "entity_id": "dong-van-cong",
+    "name": "Đồng Văn Cống",
+    "type": "person",
+    "verifiedAt": "2026-09-18T07:15:00Z",
+    "verifiedSource": "NotebookLM Terroir Deep Research & Official Archives"
+  },
+  {
+    "entity_id": "dinh-tan-thach",
+    "name": "Đình Tân Thạch",
+    "type": "history",
+    "verifiedAt": "2026-09-18T07:15:00Z",
+    "verifiedSource": "NotebookLM Terroir Deep Research & Official Archives"
+  },
+  {
+    "entity_id": "mo-va-khu-luu-niem-nha-giao-vo-truong-toan",
+    "name": "Mộ và Khu lưu niệm nhà giáo Võ Trường Toản",
+    "type": "history",
+    "verifiedAt": "2026-09-18T07:15:00Z",
+    "verifiedSource": "NotebookLM Terroir Deep Research & Official Archives"
+  },
+  {
+    "entity_id": "rung-duoc-long-khanh",
+    "name": "Rừng đước Long Khánh",
+    "type": "nature",
+    "verifiedAt": "2026-09-18T07:15:00Z",
+    "verifiedSource": "NotebookLM Terroir Deep Research & Official Archives"
+  },
+  {
+    "entity_id": "rung-ngap-man-phong-ho-binh-dai-ben-tre",
+    "name": "Rừng Ngập Mặn Phòng Hộ Bình Đại",
+    "type": "nature",
+    "verifiedAt": "2026-09-18T07:15:00Z",
+    "verifiedSource": "NotebookLM Terroir Deep Research & Official Archives"
+  },
+  {
+    "entity_id": "thach-boi",
+    "name": "Thạch Bồi",
+    "type": "person",
+    "verifiedAt": "2026-09-18T07:15:00Z",
+    "verifiedSource": "NotebookLM Terroir Deep Research & Official Archives"
+  },
+  {
+    "entity_id": "thach-oai",
+    "name": "Thạch Oai",
+    "type": "person",
+    "verifiedAt": "2026-09-18T07:15:00Z",
+    "verifiedSource": "NotebookLM Terroir Deep Research & Official Archives"
+  },
+  {
+    "entity_id": "vien-chau-huynh-tri-ba",
+    "name": "Viễn Châu (Huỳnh Trí Bá)",
+    "type": "person",
+    "verifiedAt": "2026-09-18T07:15:00Z",
+    "verifiedSource": "NotebookLM Terroir Deep Research & Official Archives"
+  },
+  {
+    "entity_id": "bai-bien-con-bung-thanh-hai",
+    "name": "Bãi biển Cồn Bửng (Thạnh Hải)",
+    "type": "nature",
+    "verifiedAt": "2026-09-18T07:15:00Z",
+    "verifiedSource": "NotebookLM Terroir Deep Research & Official Archives"
+  },
+  {
+    "entity_id": "bai-bien-mo-o-truong-long-hoa-tra-vinh",
+    "name": "Bãi biển Mỏ Ó - Trường Long Hòa",
+    "type": "nature",
+    "verifiedAt": "2026-09-18T07:15:00Z",
+    "verifiedSource": "NotebookLM Terroir Deep Research & Official Archives"
+  },
+  {
+    "entity_id": "buoi-da-xanh-ben-tre",
+    "name": "Bưởi Da Xanh Bến Tre",
+    "type": "product",
+    "verifiedAt": "2026-09-18T07:15:00Z",
+    "verifiedSource": "NotebookLM Terroir Deep Research & Official Archives"
+  },
+  {
+    "entity_id": "canh-dong-muoi-bao-thanh",
+    "name": "Cánh đồng muối Bảo Thạnh",
+    "type": "nature",
+    "verifiedAt": "2026-09-18T07:15:00Z",
+    "verifiedSource": "NotebookLM Terroir Deep Research & Official Archives"
+  },
+  {
+    "entity_id": "con-oc-hung-phong",
+    "name": "Cồn Ốc (Hưng Phong)",
+    "type": "nature",
+    "verifiedAt": "2026-09-18T07:15:00Z",
+    "verifiedSource": "NotebookLM Terroir Deep Research & Official Archives"
+  },
+  {
+    "entity_id": "con-quy-song-tien-chau-thanh-ben-tre",
+    "name": "Cồn Quy (Sông Tiền - Châu Thành)",
+    "type": "nature",
+    "verifiedAt": "2026-09-18T07:15:00Z",
+    "verifiedSource": "NotebookLM Terroir Deep Research & Official Archives"
+  },
+  {
+    "entity_id": "con-tam-hiep-dao-tam-hiep",
+    "name": "Cồn Tam Hiệp (đảo Tam Hiệp)",
+    "type": "nature",
+    "verifiedAt": "2026-09-18T07:15:00Z",
+    "verifiedSource": "NotebookLM Terroir Deep Research & Official Archives"
+  },
+  {
+    "entity_id": "con-tan-qui",
+    "name": "Cồn Tân Qui",
+    "type": "nature",
+    "verifiedAt": "2026-09-18T07:15:00Z",
+    "verifiedSource": "NotebookLM Terroir Deep Research & Official Archives"
+  },
+  {
+    "entity_id": "huynh-ngoc-khiem-huong-liem",
+    "name": "Huỳnh Ngọc Khiêm (Hương Liêm)",
+    "type": "person",
+    "verifiedAt": "2026-09-18T07:15:00Z",
+    "verifiedSource": "NotebookLM Terroir Deep Research & Official Archives"
+  },
+  {
+    "entity_id": "ngay-hoi-van-hoa-the-thao-va-du-lich-huyen-cho-lach-ben-tre",
+    "name": "Ngày hội Văn hóa - Thể thao và Du lịch Chợ Lách",
+    "type": "event",
+    "verifiedAt": "2026-09-18T07:15:00Z",
+    "verifiedSource": "NotebookLM Terroir Deep Research & Official Archives"
+  },
+  {
+    "entity_id": "ngheu-thanh-hai",
+    "name": "Nghêu Thạnh Hải",
+    "type": "product",
+    "verifiedAt": "2026-09-18T07:15:00Z",
+    "verifiedSource": "NotebookLM Terroir Deep Research & Official Archives"
+  },
+  {
+    "entity_id": "nguyen-ngoc-thang",
+    "name": "Nguyễn Ngọc Thăng",
+    "type": "person",
+    "verifiedAt": "2026-09-18T07:15:00Z",
+    "verifiedSource": "NotebookLM Terroir Deep Research & Official Archives"
+  },
+  {
+    "entity_id": "suong-nguyet-anh",
+    "name": "Sương Nguyệt Anh",
+    "type": "person",
+    "verifiedAt": "2026-09-18T07:15:00Z",
+    "verifiedSource": "NotebookLM Terroir Deep Research & Official Archives"
+  },
+  {
+    "entity_id": "vo-van-kiet",
+    "name": "Võ Văn Kiệt",
+    "type": "person",
+    "verifiedAt": "2026-09-18T07:15:00Z",
+    "verifiedSource": "NotebookLM Terroir Deep Research & Official Archives"
+  },
+  {
+    "entity_id": "mam-bo-hoc-tra-vinh",
+    "name": "Mắm Bò Hóc Trà Vinh",
+    "type": "product",
+    "verifiedAt": "2026-09-18T07:15:00Z",
+    "verifiedSource": "NotebookLM Terroir Deep Research & Official Archives"
+  },
+  {
+    "entity_id": "lang-det-chieu-ca-hom-ham-tan",
+    "name": "Làng Dệt Chiếu Cà Hom Hàm Tân",
+    "type": "craft_village",
+    "verifiedAt": "2026-09-18T07:15:00Z",
+    "verifiedSource": "NotebookLM Terroir Deep Research & Official Archives"
+  },
+  {
+    "entity_id": "nguyen-thi-ut",
+    "name": "Nguyễn Thị Út",
+    "type": "person",
+    "verifiedAt": "2026-09-18T07:15:00Z",
+    "verifiedSource": "NotebookLM Terroir Deep Research & Official Archives"
+  },
+  {
+    "entity_id": "truong-duy-toan",
+    "name": "Trương Duy Toản",
+    "type": "person",
+    "verifiedAt": "2026-09-18T07:15:00Z",
+    "verifiedSource": "NotebookLM Terroir Deep Research & Official Archives"
+  },
+  {
+    "entity_id": "chua-kompong-ong-met",
+    "name": "Chùa Kompong (Ông Mẹt)",
+    "type": "attraction",
+    "verifiedAt": "2026-09-18T07:15:00Z",
+    "verifiedSource": "NotebookLM Terroir Deep Research & Official Archives"
+  },
+  {
+    "entity_id": "tong-phuoc-hiep",
+    "name": "Tống Phước Hiệp",
+    "type": "person",
+    "verifiedAt": "2026-09-18T07:15:00Z",
+    "verifiedSource": "NotebookLM Terroir Deep Research & Official Archives"
+  },
+  {
+    "entity_id": "thoai-ngoc-hau",
+    "name": "Thoại Ngọc Hầu",
+    "type": "person",
+    "verifiedAt": "2026-09-18T07:15:00Z",
+    "verifiedSource": "NotebookLM Terroir Deep Research & Official Archives"
+  },
+  {
+    "entity_id": "chua-van-phuoc-binh-dai",
+    "name": "Chùa Vạn Phước Bình Đại",
+    "type": "attraction",
+    "verifiedAt": "2026-09-18T07:15:00Z",
+    "verifiedSource": "NotebookLM Terroir Deep Research & Official Archives"
+  },
+  {
+    "entity_id": "bao-tang-vinh-long",
+    "name": "Bảo tàng Vĩnh Long",
+    "type": "attraction",
+    "verifiedAt": "2026-09-18T07:15:00Z",
+    "verifiedSource": "Cổng Thông tin Điện tử Bảo tàng tỉnh Vĩnh Long (baotangvinhlong.vn) & NotebookLM"
+  },
+  {
+    "entity_id": "tran-dai-nghia",
+    "name": "Trần Đại Nghĩa",
+    "type": "person",
+    "verifiedAt": "2026-09-18T07:15:00Z",
+    "verifiedSource": "NotebookLM Terroir Deep Research & Official Archives"
+  },
+  {
+    "entity_id": "pham-hung",
+    "name": "Phạm Hùng",
+    "type": "person",
+    "verifiedAt": "2026-09-18T07:15:00Z",
+    "verifiedSource": "NotebookLM Terroir Deep Research & Official Archives"
+  },
+  {
+    "entity_id": "khu-luu-niem-thu-tuong-chinh-phu-vo-van-kiet",
+    "name": "Khu lưu niệm Thủ tướng Chính phủ Võ Văn Kiệt",
+    "type": "attraction",
+    "verifiedAt": "2026-09-18T07:15:00Z",
+    "verifiedSource": "NotebookLM Terroir Deep Research & Official Archives"
+  },
+  {
+    "entity_id": "nguyen-dinh-chieu",
+    "name": "Nguyễn Đình Chiểu",
+    "type": "person",
+    "verifiedAt": "2026-09-18T07:15:00Z",
+    "verifiedSource": "NotebookLM Terroir Deep Research & Official Archives"
+  },
+  {
+    "entity_id": "nguyen-thi-dinh",
+    "name": "Nguyễn Thị Định",
+    "type": "person",
+    "verifiedAt": "2026-09-18T07:15:00Z",
+    "verifiedSource": "NotebookLM Terroir Deep Research & Official Archives"
+  },
+  {
+    "entity_id": "khu-luu-niem-nu-tuong-nguyen-thi-dinh",
+    "name": "Khu lưu niệm Nữ tướng Nguyễn Thị Định",
+    "type": "attraction",
+    "verifiedAt": "2026-09-18T07:15:00Z",
+    "verifiedSource": "NotebookLM Terroir Deep Research & Official Archives"
+  },
+  {
+    "entity_id": "nguyen-thien-thanh",
+    "name": "Nguyễn Thiện Thành",
+    "type": "person",
+    "verifiedAt": "2026-09-18T07:15:00Z",
+    "verifiedSource": "NotebookLM Terroir Deep Research & Official Archives"
+  },
+  {
+    "entity_id": "thach-sok-xane",
+    "name": "Thạch Sok Xane",
+    "type": "person",
+    "verifiedAt": "2026-09-18T07:15:00Z",
+    "verifiedSource": "NotebookLM Terroir Deep Research & Official Archives"
+  },
+  {
+    "entity_id": "tran-quang-quon",
+    "name": "Trần Quang Quờn",
+    "type": "person",
+    "verifiedAt": "2026-09-18T07:15:00Z",
+    "verifiedSource": "NotebookLM Terroir Deep Research & Official Archives"
+  },
+  {
+    "entity_id": "dua-xiem-xanh",
+    "name": "Dừa xiêm xanh",
+    "type": "product",
+    "verifiedAt": "2026-09-18T07:15:00Z",
+    "verifiedSource": "NotebookLM Terroir Deep Research & Official Archives"
+  },
+  {
+    "entity_id": "chua-shanghamangala-khmer-vung-liem",
+    "name": "Chùa Hạnh Phúc Tăng (Sanghamangala)",
+    "type": "attraction",
+    "verifiedAt": "2026-09-18T07:15:00Z",
+    "verifiedSource": "NotebookLM Terroir Deep Research & Official Archives"
+  },
+  {
+    "entity_id": "dinh-tan-hoa",
+    "name": "Đình Tân Hòa",
+    "type": "attraction",
+    "verifiedAt": "2026-09-18T07:15:00Z",
+    "verifiedSource": "NotebookLM Terroir Deep Research & Official Archives"
+  },
+  {
+    "entity_id": "bao-tang-van-hoa-dan-toc-khmer-tra-vinh",
+    "name": "Bảo tàng Văn hóa Dân tộc Khmer Trà Vinh",
+    "type": "history",
+    "verifiedAt": "2026-09-18T07:15:00Z",
+    "verifiedSource": "NotebookLM Terroir Deep Research & Official Archives"
+  },
+  {
+    "entity_id": "keo-dua-ben-tre",
+    "name": "Kẹo dừa Bến Tre",
+    "type": "product",
+    "verifiedAt": "2026-09-18T07:15:00Z",
+    "verifiedSource": "NotebookLM Terroir Deep Research & Official Archives"
+  },
+  {
+    "entity_id": "buoi-nam-roi-binh-minh",
+    "name": "Bưởi Năm Roi Bình Minh",
+    "type": "product",
+    "verifiedAt": "2026-09-18T07:15:00Z",
+    "verifiedSource": "NotebookLM Terroir Deep Research & Official Archives"
+  },
+  {
+    "entity_id": "ao-ba-om-ao-vuong",
+    "name": "Ao Bà Om (Ao Vuông) - di tích văn hóa Khmer",
+    "type": "history",
+    "verifiedAt": "2026-09-18T07:15:00Z",
+    "verifiedSource": "NotebookLM Terroir Deep Research & Official Archives"
+  },
+  {
+    "entity_id": "dinh-long-ho",
+    "name": "Đình Long Hồ",
+    "type": "history",
+    "verifiedAt": "2026-09-18T07:15:00Z",
+    "verifiedSource": "NotebookLM Terroir Deep Research & Official Archives"
+  },
+  {
+    "entity_id": "khoai-lang-mam-song-cuon-la-cach",
+    "name": "Khoai lang mắm sống cuốn lá cách",
+    "type": "dish",
+    "verifiedAt": "2026-09-18T07:15:00Z",
+    "verifiedSource": "NotebookLM Terroir Deep Research & Official Archives"
+  },
+  {
+    "entity_id": "chao-dua-thuan-duyen-tam-binh",
+    "name": "Chao dừa Thuận Duyên Tam Bình",
+    "type": "product",
+    "verifiedAt": "2026-09-18T07:15:00Z",
+    "verifiedSource": "NotebookLM Terroir Deep Research & Official Archives"
+  },
+  {
+    "entity_id": "mut-dua-non",
+    "name": "Mứt Dừa Non",
+    "type": "product",
+    "verifiedAt": "2026-09-18T07:15:00Z",
+    "verifiedSource": "NotebookLM Terroir Deep Research & Official Archives"
+  },
+  {
+    "entity_id": "cha-hoa-nam-thuy",
+    "name": "Chả hoa Năm Thụy",
+    "type": "product",
+    "verifiedAt": "2026-09-18T07:15:00Z",
+    "verifiedSource": "NotebookLM Terroir Deep Research & Official Archives"
+  },
+  {
+    "entity_id": "chua-giac-thien-vinh-long",
+    "name": "Chùa Giác Thiên (Chùa Gò Công Vĩnh Long)",
+    "type": "attraction",
+    "verifiedAt": "2026-09-18T07:15:00Z",
+    "verifiedSource": "NotebookLM Terroir Deep Research & Official Archives"
+  },
+  {
+    "entity_id": "dinh-tan-giai-vinh-long",
+    "name": "Đình Tân Giai (Đình thần Tân Giai)",
+    "type": "attraction",
+    "verifiedAt": "2026-09-18T07:15:00Z",
+    "verifiedSource": "NotebookLM Terroir Deep Research & Official Archives"
+  },
+  {
+    "entity_id": "chua-ba-thien-hau-vinh-long",
+    "name": "Chùa Bà Thiên Hậu (Hội quán Phước Kiến Vĩnh Long)",
+    "type": "attraction",
+    "verifiedAt": "2026-09-18T07:15:00Z",
+    "verifiedSource": "NotebookLM Terroir Deep Research & Official Archives"
+  },
+  {
+    "entity_id": "chua-tuyen-linh-ben-tre",
+    "name": "Chùa Tuyên Linh (Bến Tre)",
+    "type": "attraction",
+    "verifiedAt": "2026-09-18T07:15:00Z",
+    "verifiedSource": "NotebookLM Terroir Deep Research & Official Archives"
+  },
+  {
+    "entity_id": "dinh-phu-le-ben-tre",
+    "name": "Đình Phú Lễ (Ba Tri)",
+    "type": "attraction",
+    "verifiedAt": "2026-09-18T07:15:00Z",
+    "verifiedSource": "NotebookLM Terroir Deep Research & Official Archives"
+  },
+  {
+    "entity_id": "dinh-binh-hoa-ben-tre",
+    "name": "Đình Bình Hòa (Giồng Trôm)",
+    "type": "attraction",
+    "verifiedAt": "2026-09-18T07:15:00Z",
+    "verifiedSource": "NotebookLM Terroir Deep Research & Official Archives"
+  },
+  {
+    "entity_id": "bun-suong-tra-vinh",
+    "name": "Bún Suông Trà Vinh",
+    "type": "dish",
+    "verifiedAt": "2026-09-18T07:15:00Z",
+    "verifiedSource": "NotebookLM Terroir Deep Research & Official Archives"
+  },
+  {
+    "entity_id": "com-hap-trai-dua",
+    "name": "Cơm hấp trái dừa",
+    "type": "dish",
+    "verifiedAt": "2026-09-18T07:15:00Z",
+    "verifiedSource": "NotebookLM Terroir Deep Research & Official Archives"
+  },
+  {
+    "entity_id": "tranh-dua-cocohand",
+    "name": "Tranh dừa Cocohand",
+    "type": "product",
+    "verifiedAt": "2026-09-18T07:15:00Z",
+    "verifiedSource": "NotebookLM Terroir Deep Research & Official Archives"
+  },
+  {
+    "entity_id": "banh-trang-cu-lao-may-lang-nghe-banh-trang",
+    "name": "Bánh Tráng Cù Lao Mây (Làng nghề bánh tráng)",
+    "type": "craft_village",
+    "verifiedAt": "2026-09-18T07:15:00Z",
+    "verifiedSource": "NotebookLM Terroir Deep Research & Official Archives"
+  },
+  {
+    "entity_id": "chua-ong-that-phu-mieu",
+    "name": "Chùa Ông (Thất Phủ Miếu)",
+    "type": "attraction",
+    "verifiedAt": "2026-09-18T07:15:00Z",
+    "verifiedSource": "NotebookLM Terroir Deep Research & Official Archives"
+  },
+  {
+    "entity_id": "cuu-long-my-tuu-ruou-ocop-mang-thit",
+    "name": "Cửu Long Mỹ Tửu (rượu OCOP Mang Thít)",
+    "type": "product",
+    "verifiedAt": "2026-09-18T07:15:00Z",
+    "verifiedSource": "NotebookLM Terroir Deep Research & Official Archives"
+  },
+  {
+    "entity_id": "tom-kho-cham-mam-chua-ngot-duyen-hai",
+    "name": "Tôm khô chấm mắm chua ngọt Duyên Hải",
+    "type": "product",
+    "verifiedAt": "2026-09-18T07:15:00Z",
+    "verifiedSource": "NotebookLM Terroir Deep Research & Official Archives"
+  },
+  {
+    "entity_id": "chua-phat-ngoc-xa-loi",
+    "name": "Chùa Phật Ngọc Xá Lợi",
+    "type": "attraction",
+    "verifiedAt": "2026-09-18T07:15:00Z",
+    "verifiedSource": "NotebookLM Terroir Deep Research & Official Archives"
+  },
+  {
+    "entity_id": "ba-du",
+    "name": "Ba Du",
+    "type": "person",
+    "verifiedAt": "2026-09-18T07:15:00Z",
+    "verifiedSource": "NotebookLM Terroir Deep Research & Official Archives"
+  },
+  {
+    "entity_id": "ut-tra-on",
+    "name": "Út Trà Ôn",
+    "type": "person",
+    "verifiedAt": "2026-09-18T07:15:00Z",
+    "verifiedSource": "NotebookLM Terroir Deep Research & Official Archives"
+  },
+  {
+    "entity_id": "thanh-ton",
+    "name": "Thành Tôn",
+    "type": "person",
+    "verifiedAt": "2026-09-18T07:15:00Z",
+    "verifiedSource": "NotebookLM Terroir Deep Research & Official Archives"
+  },
+  {
+    "entity_id": "le-thuy",
+    "name": "Lệ Thủy",
+    "type": "person",
+    "verifiedAt": "2026-09-18T07:15:00Z",
+    "verifiedSource": "NotebookLM Terroir Deep Research & Official Archives"
+  },
+  {
+    "entity_id": "thanh-loan",
+    "name": "Thanh Loan",
+    "type": "person",
+    "verifiedAt": "2026-09-18T07:15:00Z",
+    "verifiedSource": "NotebookLM Terroir Deep Research & Official Archives"
+  },
+  {
+    "entity_id": "thanh-huong",
+    "name": "Thanh Hương",
+    "type": "person",
+    "verifiedAt": "2026-09-18T07:15:00Z",
+    "verifiedSource": "NotebookLM Terroir Deep Research & Official Archives"
+  },
+  {
+    "entity_id": "truong-xuan",
+    "name": "Trường Xuân",
+    "type": "person",
+    "verifiedAt": "2026-09-18T07:15:00Z",
+    "verifiedSource": "NotebookLM Terroir Deep Research & Official Archives"
+  },
+  {
+    "entity_id": "sau-rieng-ri6",
+    "name": "Sầu riêng Ri6",
+    "type": "product",
+    "verifiedAt": "2026-09-18T07:15:00Z",
+    "verifiedSource": "NotebookLM Terroir Deep Research & Official Archives"
+  },
+  {
+    "entity_id": "ruou-phu-le-ba-tri",
+    "name": "Rượu Phú Lễ Ba Tri",
+    "type": "product",
+    "verifiedAt": "2026-09-18T07:15:00Z",
+    "verifiedSource": "NotebookLM Terroir Deep Research & Official Archives"
+  },
+  {
+    "entity_id": "chu-u-ba-dong",
+    "name": "Chù ụ Ba Động",
+    "type": "product",
+    "verifiedAt": "2026-09-18T07:15:00Z",
+    "verifiedSource": "NotebookLM Terroir Deep Research & Official Archives"
+  },
+  {
+    "entity_id": "chom-chom-cho-lach",
+    "name": "Chôm chôm Chợ Lách",
+    "type": "product",
+    "verifiedAt": "2026-09-18T07:15:00Z",
+    "verifiedSource": "NotebookLM Terroir Deep Research & Official Archives"
+  },
+  {
+    "entity_id": "nhan-xuong-com-vang",
+    "name": "Nhãn xuồng cơm vàng",
+    "type": "product",
+    "verifiedAt": "2026-09-18T07:15:00Z",
+    "verifiedSource": "NotebookLM Terroir Deep Research & Official Archives"
+  },
+  {
+    "entity_id": "tom-kho-vinh-kim",
+    "name": "Tôm khô Vinh Kim",
+    "type": "product",
+    "verifiedAt": "2026-09-18T07:15:00Z",
+    "verifiedSource": "NotebookLM Terroir Deep Research & Official Archives"
+  },
+  {
+    "entity_id": "xoai-cat-num-vung-liem",
+    "name": "Xoài Cát Núm Vũng Liêm",
+    "type": "product",
+    "verifiedAt": "2026-09-18T07:15:00Z",
+    "verifiedSource": "NotebookLM Terroir Deep Research & Official Archives"
+  },
+  {
+    "entity_id": "banh-trang-nem-cu-lao-may",
+    "name": "Bánh tráng nem Cù Lao Mây",
+    "type": "product",
+    "verifiedAt": "2026-09-18T07:15:00Z",
+    "verifiedSource": "NotebookLM Terroir Deep Research & Official Archives"
+  },
+  {
+    "entity_id": "khoai-lang-binh-tan",
+    "name": "Khoai lang tím Nhật Bình Tân",
+    "type": "product",
+    "verifiedAt": "2026-09-18T07:15:00Z",
+    "verifiedSource": "NotebookLM Terroir Deep Research & Official Archives"
+  },
+  {
+    "entity_id": "khu-di-tich-can-cu-tinh-uy-tra-vinh",
+    "name": "Khu di tích Căn cứ Tỉnh ủy Trà Vinh",
+    "type": "history",
+    "verifiedAt": "2026-09-18T07:15:00Z",
+    "verifiedSource": "NotebookLM Terroir Deep Research & Official Archives"
+  },
+  {
+    "entity_id": "dinh-cai-von",
+    "name": "Đình Thần Mỹ Thuận",
+    "type": "history",
+    "verifiedAt": "2026-09-18T07:15:00Z",
+    "verifiedSource": "NotebookLM Terroir Deep Research & Official Archives"
+  },
+  {
+    "entity_id": "chua-khmer-phu-ly",
+    "name": "Chùa Khmer Phù Ly",
+    "type": "history",
+    "verifiedAt": "2026-09-18T07:15:00Z",
+    "verifiedSource": "NotebookLM Terroir Deep Research & Official Archives"
+  },
+  {
+    "entity_id": "dinh-long-thanh-long-thanh-vo-mieu",
+    "name": "Đình Long Thanh (Long Thanh Võ Miếu)",
+    "type": "history",
+    "verifiedAt": "2026-09-18T07:15:00Z",
+    "verifiedSource": "NotebookLM Terroir Deep Research & Official Archives"
+  },
+  {
+    "entity_id": "nguyen-van-ton-thach-duong",
+    "name": "Nguyễn Văn Tồn (Thạch Duồng)",
+    "type": "person",
+    "verifiedAt": "2026-09-18T07:15:00Z",
+    "verifiedSource": "NotebookLM Terroir Deep Research & Official Archives"
+  },
+  {
+    "entity_id": "tuong-quan-nguyen-van-ton",
+    "name": "Tướng quân Nguyễn Văn Tồn",
+    "type": "person",
+    "verifiedAt": "2026-09-18T07:15:00Z",
+    "verifiedSource": "NotebookLM Terroir Deep Research & Official Archives"
+  },
+  {
+    "entity_id": "nguyen-thong",
+    "name": "Nguyễn Thông",
+    "type": "person",
+    "verifiedAt": "2026-09-18T07:15:00Z",
+    "verifiedSource": "NotebookLM Terroir Deep Research & Official Archives"
+  },
+  {
+    "entity_id": "pham-hung-pham-van-thien",
+    "name": "Phạm Hùng (Phạm Văn Thiện)",
+    "type": "person",
+    "verifiedAt": "2026-09-18T07:15:00Z",
+    "verifiedSource": "NotebookLM Terroir Deep Research & Official Archives"
+  },
+  {
+    "entity_id": "chau-van-sanh-cong-tu-loi",
+    "name": "Châu Văn Sanh (Công tử Lời)",
+    "type": "person",
+    "verifiedAt": "2026-09-18T07:15:00Z",
+    "verifiedSource": "NotebookLM Terroir Deep Research & Official Archives"
+  },
+  {
+    "entity_id": "tran-dai-nghia-pham-quang-le",
+    "name": "Trần Đại Nghĩa (Phạm Quang Lễ)",
+    "type": "person",
+    "verifiedAt": "2026-09-18T07:15:00Z",
+    "verifiedSource": "NotebookLM Terroir Deep Research & Official Archives"
+  },
+  {
+    "entity_id": "farmstay-sinh-thai-nguyen-gia",
+    "name": "Farmstay Sinh Thái Nguyễn Gia",
+    "type": "accommodation",
+    "verifiedAt": "2026-09-18T07:15:00Z",
+    "verifiedSource": "NotebookLM Terroir Deep Research & Official Archives"
+  },
+  {
+    "entity_id": "khach-san-ham-luong",
+    "name": "Khách sạn Hàm Luông",
+    "type": "accommodation",
+    "verifiedAt": "2026-09-18T07:15:00Z",
+    "verifiedSource": "NotebookLM Terroir Deep Research & Official Archives"
+  },
+  {
+    "entity_id": "khu-du-lich-bien-ba-dong",
+    "name": "Khu du lịch Biển Ba Động",
+    "type": "accommodation",
+    "verifiedAt": "2026-09-18T07:15:00Z",
+    "verifiedSource": "NotebookLM Terroir Deep Research & Official Archives"
+  },
+  {
+    "entity_id": "khach-san-hai-duong-i",
+    "name": "Khách sạn Hải Dương I",
+    "type": "accommodation",
+    "verifiedAt": "2026-09-18T07:15:00Z",
+    "verifiedSource": "NotebookLM Terroir Deep Research & Official Archives"
+  },
+  {
+    "entity_id": "sau-rieng-say-thang-hoa-sau-ri",
+    "name": "Sầu riêng sấy thăng hoa Sáu Ri",
+    "type": "product",
+    "verifiedAt": "2026-09-18T07:15:00Z",
+    "verifiedSource": "NotebookLM Terroir Deep Research & Official Archives"
+  },
+  {
+    "entity_id": "chom-chom-binh-hoa-phuoc-rambutan",
+    "name": "Chôm chôm Bình Hòa Phước (Rambutan)",
+    "type": "product",
+    "verifiedAt": "2026-09-18T07:15:00Z",
+    "verifiedSource": "NotebookLM Terroir Deep Research & Official Archives"
+  },
+  {
+    "entity_id": "dinh-long-duc-tra-vinh",
+    "name": "Đình Long Đức Trà Vinh",
+    "type": "history",
+    "verifiedAt": "2026-09-18T07:15:00Z",
+    "verifiedSource": "NotebookLM Terroir Deep Research & Official Archives"
+  },
+  {
+    "entity_id": "gom-do-mang-thit",
+    "name": "Gốm Đỏ Mang Thít",
+    "type": "product",
+    "verifiedAt": "2026-09-18T07:15:00Z",
+    "verifiedSource": "NotebookLM Terroir Deep Research & Official Archives"
+  },
+  {
+    "entity_id": "cua-bien-thanh-phu",
+    "name": "Cua biển Thạnh Phú",
+    "type": "product",
+    "verifiedAt": "2026-09-18T07:15:00Z",
+    "verifiedSource": "NotebookLM Terroir Deep Research & Official Archives"
+  },
+  {
+    "entity_id": "ruou-dua-ben-tre",
+    "name": "Rượu dừa Bến Tre",
+    "type": "product",
+    "verifiedAt": "2026-09-18T07:15:00Z",
+    "verifiedSource": "NotebookLM Terroir Deep Research & Official Archives"
+  },
+  {
+    "entity_id": "tinh-dau-dua",
+    "name": "Tinh dầu dừa Bến Tre",
+    "type": "product",
+    "verifiedAt": "2026-09-18T07:15:00Z",
+    "verifiedSource": "NotebookLM Terroir Deep Research & Official Archives"
+  },
+  {
+    "entity_id": "chua-hoi-ton-co-tu",
+    "name": "Chùa Hội Tôn Cổ Tự",
+    "type": "history",
+    "verifiedAt": "2026-09-18T07:15:00Z",
+    "verifiedSource": "NotebookLM Terroir Deep Research & Official Archives"
+  },
+  {
+    "entity_id": "can-cu-cach-mang-cai-ngang-vinh-long",
+    "name": "Khu Di tích Lịch sử Căn cứ Cách mạng Cái Ngang",
+    "type": "history",
+    "verifiedAt": "2026-09-18T07:15:00Z",
+    "verifiedSource": "NotebookLM Terroir Deep Research & Official Archives"
+  },
+  {
+    "entity_id": "di-tich-can-cu-khu-uy-sai-gon-gia-dinh",
+    "name": "Di tích Căn cứ Khu ủy Sài Gòn - Gia Định",
+    "type": "history",
+    "verifiedAt": "2026-09-18T07:15:00Z",
+    "verifiedSource": "NotebookLM Terroir Deep Research & Official Archives"
+  },
+  {
+    "entity_id": "chua-giac-linh-tra-vinh",
+    "name": "Chùa Giác Linh (chùa Phật Lớn)",
+    "type": "attraction",
+    "verifiedAt": "2026-09-18T07:15:00Z",
+    "verifiedSource": "NotebookLM Terroir Deep Research & Official Archives"
+  },
+  {
+    "entity_id": "nha-tho-cai-mon",
+    "name": "Nhà thờ Cái Mơn",
+    "type": "history",
+    "verifiedAt": "2026-09-18T07:15:00Z",
+    "verifiedSource": "NotebookLM Terroir Deep Research & Official Archives"
+  },
+  {
+    "entity_id": "dinh-dai-dien",
+    "name": "Đình Đại Điền",
+    "type": "history",
+    "verifiedAt": "2026-09-18T07:15:00Z",
+    "verifiedSource": "NotebookLM Terroir Deep Research & Official Archives"
+  }
+]

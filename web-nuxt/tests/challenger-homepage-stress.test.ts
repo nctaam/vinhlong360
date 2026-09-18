@@ -328,11 +328,11 @@ describe('Challenger 1: Empirical Adversarial Stress & Edge Case Harness', () =>
       expect(hash.toLowerCase()).toBe('20ac61bf7d247d8df35bd20bfe11140cf6eebae0980de4af5720d5ed73add742')
     })
 
-    it('asserts web/data.json exactly matches canonical hash 6afb8184b26dc528f96f59d18ce03c78630508a9dffda8e19dff5b19ccc67e6b', () => {
+    it('asserts web/data.json exactly matches canonical hash 253cf193938b0e6f69ff80ac5a7c81cbf577adff304ce0103292876c4d0509cf', () => {
       const jsonPath = resolve(root, 'web/data.json')
       const jsonBytes = readFileSync(jsonPath)
       const hash = createHash('sha256').update(jsonBytes).digest('hex')
-      expect(hash.toLowerCase()).toBe('6afb8184b26dc528f96f59d18ce03c78630508a9dffda8e19dff5b19ccc67e6b')
+      expect(hash.toLowerCase()).toBe('253cf193938b0e6f69ff80ac5a7c81cbf577adff304ce0103292876c4d0509cf')
     })
   })
 })
