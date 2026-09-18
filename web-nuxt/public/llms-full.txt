@@ -7,7 +7,7 @@
 - 124 đơn vị hành chính trực thuộc gồm 35 phường và 89 xã.
 - Cấp huyện đã bãi bỏ; các địa danh huyện cũ (Long Hồ, Mang Thít, Ba Tri, Châu Thành, Càng Long, Cầu Kè, Trà Cú...) chỉ mang giá trị lịch sử và chỉ dẫn vị trí địa lý dân gian.
 
-## 2. Danh Mục 1379 Thực Thể Xác Minh Ảnh Tư Liệu Báo Chí & Giấy Phép Google Images
+## 2. Danh Mục 1419 Thực Thể Xác Minh Ảnh Tư Liệu Báo Chí & Giấy Phép Google Images
 
 Mỗi thực thể dưới đây đều có ảnh tư liệu báo chí chính thống được lưu trữ nội bộ chuẩn WebP, tích hợp siêu dữ liệu Schema.org `ImageObject` với đầy đủ bản quyền (`creator`, `creditText`, `copyrightNotice`, `license`, `acquireLicensePage`).
 
@@ -7326,12 +7326,61 @@ Mỗi thực thể dưới đây đều có ảnh tư liệu báo chí chính th
 - **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
 - **Tóm lược**: Bia đá xanh cao 2,5 m tại Cái Mơn, Chợ Lách — khắc ba ngôn ngữ (Pháp, Hán, Việt) tưởng niệm Petrus Trương Vĩnh Ký (1837-1898). Di tích văn hóa cấp tỉnh (2019).
 
+#### [Công viên Tượng đài Chiến thắng Mậu Thân](https://vinhlong360.vn/dia-diem/cong-vien-tuong-dai-chien-thang-mau-than)
+- **Mã ID**: `cong-vien-tuong-dai-chien-thang-mau-than` | **Phân loại**: `history` | **Địa bàn**: p-phuoc-hau | **Tọa độ**: [10.2340, 105.9645]
+- **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/cong-vien-tuong-dai-chien-thang-mau-than.webp`
+- **Tác giả ảnh**: Ngọc Trảng · **Cơ quan**: Báo Vĩnh Long
+- **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
+- **Tóm lược**: Công trình kiến trúc lịch sử - văn hóa tưởng niệm các chiến sĩ và đồng bào hy sinh trong cuộc Tổng tiến công và nổi dậy Tết Mậu Thân 1968.
+
+#### [Khu Di tích Quốc gia Đặc biệt Đồng Khởi](https://vinhlong360.vn/dia-diem/khu-di-tich-quoc-gia-dac-biet-dong-khoi)
+- **Mã ID**: `khu-di-tich-quoc-gia-dac-biet-dong-khoi` | **Phân loại**: `history` | **Địa bàn**: xa-dong-khoi | **Tọa độ**: [10.1307, 106.3674]
+- **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/khu-di-tich-quoc-gia-dac-biet-dong-khoi.webp`
+- **Tác giả ảnh**: Hữu Hiệp · **Cơ quan**: Báo Đồng Khởi
+- **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
+- **Tóm lược**: Nơi nổ phát súng đầu tiên của phong trào Đồng Khởi ngày 17-1-1960, do nữ tướng Nguyễn Thị Định lãnh đạo.
+
 #### [Chùa Khải Tường](https://vinhlong360.vn/dia-diem/chua-khai-tuong)
 - **Mã ID**: `chua-khai-tuong` | **Phân loại**: `history` | **Địa bàn**: p-ba-tri | **Tọa độ**: [10.0729, 106.5977]
 - **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/chua-khai-tuong.webp`
 - **Tác giả ảnh**: Minh Mừng · **Cơ quan**: Báo Đồng Khởi
 - **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
 - **Tóm lược**: Chùa Phật giáo tại xã Phú Lễ, huyện Ba Tri — khuôn viên rộng với hồ sen, cổng tam quan và chánh điện. Không liên quan đến Quốc Ân Khải Tường Tự ở Sài Gòn (nơi sinh vua Minh Mạng).
+
+#### [Chùa Âng (Wat Angkor Raig Borei)](https://vinhlong360.vn/dia-diem/chua-ang-wat-angkor-raig-borei)
+- **Mã ID**: `chua-ang-wat-angkor-raig-borei` | **Phân loại**: `history` | **Địa bàn**: p-nguyet-hoa | **Tọa độ**: [9.9334, 106.3122]
+- **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/chua-ang-wat-angkor-raig-borei.webp`
+- **Tác giả ảnh**: Bá Thi · **Cơ quan**: Báo Trà Vinh
+- **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
+- **Tóm lược**: Một trong những ngôi chùa Khmer cổ nhất Trà Vinh, có lịch sử hình thành từ năm 990.
+
+#### [Di tích lịch sử cách mạng Cái Ngang](https://vinhlong360.vn/dia-diem/di-tich-lich-su-cach-mang-cai-ngang)
+- **Mã ID**: `di-tich-lich-su-cach-mang-cai-ngang` | **Phân loại**: `history` | **Địa bàn**: p-phuoc-hau | **Tọa độ**: [10.2542, 105.9628]
+- **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/di-tich-lich-su-cach-mang-cai-ngang.webp`
+- **Tác giả ảnh**: Thanh Đức · **Cơ quan**: Báo Vĩnh Long
+- **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
+- **Tóm lược**: Di tích lịch sử cách mạng được khánh thành ngày 9/8/2003, là căn cứ của Tỉnh ủy Vĩnh Long giai đoạn 1966-1975 trong cuộc kháng chiến chống Mỹ.
+
+#### [Khu Tưởng niệm Nguyễn Thị Út (Út Tịch)](https://vinhlong360.vn/dia-diem/khu-tuong-niem-nguyen-thi-ut-ut-tich)
+- **Mã ID**: `khu-tuong-niem-nguyen-thi-ut-ut-tich` | **Phân loại**: `history` | **Địa bàn**: xa-cau-ke | **Tọa độ**: [9.8689, 106.0540]
+- **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/khu-tuong-niem-nguyen-thi-ut-ut-tich.webp`
+- **Tác giả ảnh**: Bá Thi · **Cơ quan**: Báo Trà Vinh
+- **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
+- **Tóm lược**: Sinh năm 1931 tại Tam Ngãi, Cầu Kè, Nguyễn Thị Út ghép tên chồng Lâm Văn Tịch thành biệt danh Út Tịch — nữ Anh hùng lực lượng vũ trang tham gia 23 trận, hy sinh năm 1968.
+
+#### [Thiên Hậu Cung Quảng Đông](https://vinhlong360.vn/dia-diem/thien-hau-cung-quang-dong)
+- **Mã ID**: `thien-hau-cung-quang-dong` | **Phân loại**: `history` | **Địa bàn**: p-tieu-can | **Tọa độ**: [9.8403, 106.1729]
+- **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/thien-hau-cung-quang-dong.webp`
+- **Tác giả ảnh**: Bá Thi · **Cơ quan**: Báo Trà Vinh
+- **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
+- **Tóm lược**: Cơ sở thờ tự của người Hoa, được xếp hạng di tích cấp huyện năm 2020, lưu giữ nhiều tác phẩm điêu khắc và hội họa truyền thống của cộng đồng người Hoa.
+
+#### [Nhà Cổ Đại An](https://vinhlong360.vn/dia-diem/nha-co-dai-an)
+- **Mã ID**: `nha-co-dai-an` | **Phân loại**: `history` | **Địa bàn**: xa-dai-an | **Tọa độ**: [9.6285, 106.2840]
+- **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/nha-co-dai-an.webp`
+- **Tác giả ảnh**: Bá Thi · **Cơ quan**: Báo Trà Vinh
+- **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
+- **Tóm lược**: Ngôi nhà cổ xây theo kiến trúc ba gian truyền thống Nam Bộ, vật liệu chính là gỗ quý và ngói âm dương.
 
 #### [Đình Vĩnh Xuân](https://vinhlong360.vn/dia-diem/dinh-vinh-xuan)
 - **Mã ID**: `dinh-vinh-xuan` | **Phân loại**: `history` | **Địa bàn**: xa-vinh-xuan | **Tọa độ**: [10.2539, 105.9722]
@@ -7347,6 +7396,34 @@ Mỗi thực thể dưới đây đều có ảnh tư liệu báo chí chính th
 - **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
 - **Tóm lược**: Chùa Phật giáo gần 200 tuổi tại ấp Tân Thuận, xã Tân Quới, huyện Bình Tân — trụ sở Ban Trị sự Phật giáo huyện Bình Tân. Chánh điện kiến trúc mái ngói âm dương, thượng hạ lầu.
 
+#### [Chùa Ông](https://vinhlong360.vn/dia-diem/chua-ong)
+- **Mã ID**: `chua-ong` | **Phân loại**: `history` | **Địa bàn**: xa-tan-luoc | **Tọa độ**: [10.1768, 105.7571]
+- **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/chua-ong.webp`
+- **Tác giả ảnh**: Ngọc Trảng · **Cơ quan**: Báo Vĩnh Long
+- **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
+- **Tóm lược**: Thờ Thiên Hậu Thánh Mẫu theo lối kiến trúc chùa Hoa, Chùa Ông ở xã Tân Lược (Vĩnh Long) cất theo bố cục chữ Tam.
+
+#### [Di tích Cửa Hữu Thành Long Hồ (Cây Da Cửa Hữu)](https://vinhlong360.vn/dia-diem/di-tich-cua-huu-thanh-long-ho-cay-da-cua-huu)
+- **Mã ID**: `di-tich-cua-huu-thanh-long-ho-cay-da-cua-huu` | **Phân loại**: `history` | **Địa bàn**: p-long-chau | **Tọa độ**: [10.2496, 105.9653]
+- **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/di-tich-cua-huu-thanh-long-ho-cay-da-cua-huu.webp`
+- **Tác giả ảnh**: Quang Thuần · **Cơ quan**: Báo Vĩnh Long
+- **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
+- **Tóm lược**: Di tích lịch sử văn hóa cấp quốc gia, là tàn tích còn lại của Thành Vĩnh Thanh (Long Hồ) xây năm 1813 theo kiểu kiến trúc Vauban.
+
+#### [Nhà thờ Chính Tòa Vĩnh Long (Nhà thờ Chánh Tòa)](https://vinhlong360.vn/dia-diem/nha-tho-chinh-toa-vinh-long-nha-tho-chanh-toa)
+- **Mã ID**: `nha-tho-chinh-toa-vinh-long-nha-tho-chanh-toa` | **Phân loại**: `history` | **Địa bàn**: p-long-chau | **Tọa độ**: [10.2530, 105.9640]
+- **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/nha-tho-chinh-toa-vinh-long-nha-tho-chanh-toa.webp`
+- **Tác giả ảnh**: Quang Thuần · **Cơ quan**: Báo Vĩnh Long
+- **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
+- **Tóm lược**: Dài 100 m, rộng 36 m, cao 27 m — nhà thờ chính tòa Thánh Anna hoàn thành năm 1967 từng là thánh đường có sức chứa lớn nhất Việt Nam, thay thế nhà thờ Roman hai tháp chuông xây 1889–1894.
+
+#### [Tòa Giám mục Giáo phận Vĩnh Long](https://vinhlong360.vn/dia-diem/toa-giam-muc-giao-phan-vinh-long)
+- **Mã ID**: `toa-giam-muc-giao-phan-vinh-long` | **Phân loại**: `history` | **Địa bàn**: p-long-chau | **Tọa độ**: [10.2530, 105.9640]
+- **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/toa-giam-muc-giao-phan-vinh-long.webp`
+- **Tác giả ảnh**: Quang Thuần · **Cơ quan**: Báo Vĩnh Long
+- **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
+- **Tóm lược**: Trụ sở của Giáo phận Vĩnh Long, nằm tại trung tâm Phường 1 TP Vĩnh Long. Giáo phận Vĩnh Long được thành lập năm 1938, là một trong những giáo phận lâu đời ở vùng đồng bằng sông Cửu Long.
+
 #### [Đình Long Thanh (Long Thanh Võ Miếu)](https://vinhlong360.vn/dia-diem/dinh-long-thanh-long-thanh-vo-mieu)
 - **Mã ID**: `dinh-long-thanh-long-thanh-vo-mieu` | **Phân loại**: `history` | **Địa bàn**: p-thanh-duc | **Tọa độ**: [10.2429, 105.9846]
 - **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/dinh-long-thanh-long-thanh-vo-mieu.webp`
@@ -7361,6 +7438,13 @@ Mỗi thực thể dưới đây đều có ảnh tư liệu báo chí chính th
 - **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
 - **Tóm lược**: Ngôi đình làng được xây dựng vào khoảng đầu thế kỷ 19, tọa lạc trên khu đất rộng 11.000m² do ông Trịnh Đạo Thiện hiến cúng.
 
+#### [Khu lưu niệm Phạm Hùng](https://vinhlong360.vn/dia-diem/khu-luu-niem-pham-hung)
+- **Mã ID**: `khu-luu-niem-pham-hung` | **Phân loại**: `history` | **Địa bàn**: p-long-chau | **Tọa độ**: [10.2704, 105.9537]
+- **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/khu-luu-niem-pham-hung.webp`
+- **Tác giả ảnh**: Ngọc Trảng · **Cơ quan**: Báo Vĩnh Long
+- **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
+- **Tóm lược**: Khu lưu niệm tưởng nhớ đồng chí Phạm Hùng, nguyên Chủ tịch Hội đồng Bộ trưởng nước Cộng hòa XHCN Việt Nam, người con ưu tú của Long Hồ, Vĩnh Long.
+
 #### [Chùa Tiên Châu (Tiên Châu Tự)](https://vinhlong360.vn/dia-diem/chua-tien-chau-tien-chau-tu)
 - **Mã ID**: `chua-tien-chau-tien-chau-tu` | **Phân loại**: `history` | **Địa bàn**: xa-an-binh | **Tọa độ**: [10.2605, 105.9818]
 - **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/chua-tien-chau-tien-chau-tu.webp`
@@ -7368,12 +7452,131 @@ Mỗi thực thể dưới đây đều có ảnh tư liệu báo chí chính th
 - **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
 - **Tóm lược**: Ngôi cổ tự gần 275 năm tuổi trên Cù Lao An Bình, khai sơn khoảng năm 1750 bởi Hòa thượng Giác Nguyên; xây dựng lại quy mô năm 1807 với 96 cột gỗ quý. Di tích Lịch sử - Văn hóa cấp Quốc gia (1994).
 
+#### [Khu lưu niệm Chủ tịch Hội đồng Bộ trưởng Phạm Hùng](https://vinhlong360.vn/dia-diem/khu-luu-niem-chu-tich-hoi-dong-bo-truong-pham-hung)
+- **Mã ID**: `khu-luu-niem-chu-tich-hoi-dong-bo-truong-pham-hung` | **Phân loại**: `history` | **Địa bàn**: p-long-ho | **Tọa độ**: [10.2542, 105.9628]
+- **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/khu-luu-niem-chu-tich-hoi-dong-bo-truong-pham-hung.webp`
+- **Tác giả ảnh**: Thanh Đức · **Cơ quan**: Báo Vĩnh Long
+- **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
+- **Tóm lược**: Khu di tích lịch sử - văn hóa cấp quốc gia (công nhận năm 2012), tưởng niệm đồng chí Phạm Hùng (tên thật Phạm Văn Thiện, sinh 11/6/1912).
+
+#### [Vùng Di sản đương đại Mang Thít (Vương quốc lò gạch)](https://vinhlong360.vn/dia-diem/vung-di-san-duong-dai-mang-thit-vuong-quoc-lo-gach)
+- **Mã ID**: `vung-di-san-duong-dai-mang-thit-vuong-quoc-lo-gach` | **Phân loại**: `history` | **Địa bàn**: xa-nhon-phu | **Tọa độ**: [10.2542, 105.9628]
+- **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/vung-di-san-duong-dai-mang-thit-vuong-quoc-lo-gach.webp`
+- **Tác giả ảnh**: Trần Phước · **Cơ quan**: Báo Vĩnh Long
+- **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
+- **Tóm lược**: Khu di sản đương đại rộng 3.060 ha trải dài qua 4 xã Mỹ An, Mỹ Phước, Nhơn Phú, Hòa Tịnh với hàng trăm lò gạch gốm cổ kính hơn 200 năm tuổi dọc sông Cổ Chiên và sông Mang Thít, được UBND tỉnh Vĩnh Long phê duyệt đề án bảo tồn phát triển thành điểm du lịch trọng điểm quốc tế.
+
+#### [Đình Hòa Tịnh](https://vinhlong360.vn/dia-diem/dinh-hoa-tinh)
+- **Mã ID**: `dinh-hoa-tinh` | **Phân loại**: `history` | **Địa bàn**: xa-binh-phuoc | **Tọa độ**: [10.0845, 106.0138]
+- **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/dinh-hoa-tinh.webp`
+- **Tác giả ảnh**: Quang Thuần · **Cơ quan**: Báo Vĩnh Long
+- **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
+- **Tóm lược**: Đình làng xây dựng năm 1918 thời ông Tế Hiên Hên, diện tích 1.200 m², kiến trúc nhà 3 gian 2 chái truyền thống với 4 hàng cột gỗ căm xe đường kính hơn 40 cm.
+
+#### [Chùa Shanghamangala (Hạnh Phúc Tăng)](https://vinhlong360.vn/dia-diem/chua-shanghamangala-hanh-phuc-tang)
+- **Mã ID**: `chua-shanghamangala-hanh-phuc-tang` | **Phân loại**: `history` | **Địa bàn**: p-phuoc-hau | **Tọa độ**: [10.2575, 105.9585]
+- **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/chua-shanghamangala-hanh-phuc-tang.webp`
+- **Tác giả ảnh**: Ngọc Trảng · **Cơ quan**: Báo Vĩnh Long
+- **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
+- **Tóm lược**: Chùa Khmer cổ xưa nhất tỉnh Vĩnh Long, được xây dựng từ năm 632, mang đậm kiến trúc Khmer.
+
+#### [Khu mộ thân nhân Thoại Ngọc Hầu (Cù Lao Dài)](https://vinhlong360.vn/dia-diem/khu-mo-than-nhan-thoai-ngoc-hau-cu-lao-dai)
+- **Mã ID**: `khu-mo-than-nhan-thoai-ngoc-hau-cu-lao-dai` | **Phân loại**: `history` | **Địa bàn**: p-phuoc-hau | **Tọa độ**: [10.2542, 105.9628]
+- **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/khu-mo-than-nhan-thoai-ngoc-hau-cu-lao-dai.webp`
+- **Tác giả ảnh**: Thanh Đức · **Cơ quan**: Báo Vĩnh Long
+- **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
+- **Tóm lược**: Khu mộ cổ trên Cù Lao Dài, Vũng Liêm do chính danh thần Thoại Ngọc Hầu xây dựng năm 1828 cho thân mẫu Nguyễn Thị Tuyết, em gái Nguyễn Thị Định và cha mẹ vợ (Châu Vĩnh Huy, Đỗ Thị Toán). Được UBND tỉnh Vĩnh Long xếp hạng Di tích lịch sử - văn hóa cấp tỉnh năm 2017.
+
+#### [Tượng đài Đốc binh Lê Cẩn - Nguyễn Giao](https://vinhlong360.vn/dia-diem/tuong-dai-doc-binh-le-can-nguyen-giao)
+- **Mã ID**: `tuong-dai-doc-binh-le-can-nguyen-giao` | **Phân loại**: `history` | **Địa bàn**: p-phuoc-hau | **Tọa độ**: [10.2542, 105.9628]
+- **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/tuong-dai-doc-binh-le-can-nguyen-giao.webp`
+- **Tác giả ảnh**: Ngọc Trảng · **Cơ quan**: Báo Vĩnh Long
+- **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
+- **Tóm lược**: Tượng đài tại ngã ba An Nhơn, TT Vũng Liêm — tưởng niệm Đốc binh Lê Cẩn và Nguyễn Giao, hai thủ lĩnh chống Pháp đánh đồn Vũng Liêm năm 1872.
+
+#### [Tượng đài Đốc binh Lê Cẩn - Nguyễn Giao và Di tích Hồ Vũng Linh](https://vinhlong360.vn/dia-diem/tuong-dai-doc-binh-le-can-nguyen-giao-va-di-tich-ho-vung-linh)
+- **Mã ID**: `tuong-dai-doc-binh-le-can-nguyen-giao-va-di-tich-ho-vung-linh` | **Phân loại**: `history` | **Địa bàn**: p-vung-liem | **Tọa độ**: [10.0965, 106.1855]
+- **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/tuong-dai-doc-binh-le-can-nguyen-giao-va-di-tich-ho-vung-linh.webp`
+- **Tác giả ảnh**: Quang Thuần · **Cơ quan**: Báo Vĩnh Long
+- **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
+- **Tóm lược**: Quần thể tượng đài tưởng niệm hai anh hùng chống Pháp Đốc binh Lê Cẩn và Nguyễn Giao, kết hợp với di tích hồ Vũng Linh bi tráng nơi tưởng niệm hơn 500 người bị thảm sát.
+
+#### [Khu di tích mộ thân mẫu và cha mẹ vợ Thoại Ngọc Hầu (hoặc Quần thể mộ thân nhân Thoại Ngọc Hầu)](https://vinhlong360.vn/dia-diem/khu-di-tich-mo-than-mau-va-duong-mau-thoai-ngoc-hau)
+- **Mã ID**: `khu-di-tich-mo-than-mau-va-duong-mau-thoai-ngoc-hau` | **Phân loại**: `history` | **Địa bàn**: xa-quoi-thien | **Tọa độ**: [10.0055, 106.2845]
+- **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/khu-di-tich-mo-than-mau-va-duong-mau-thoai-ngoc-hau.webp`
+- **Tác giả ảnh**: Thanh Đức · **Cơ quan**: Báo Vĩnh Long
+- **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
+- **Tóm lược**: Năm 1828, danh thần Thoại Ngọc Hầu đứng ra xây hai khu mộ cho thân mẫu Nguyễn Thị Tuyết và cha mẹ vợ (Châu Vĩnh Huy, Đỗ Thị Toán) tại ấp Thái Bình trên Cù Lao Dài — mộ xây bằng vôi ô dước cẩn gốm sứ, thuộc những công trình đầu triều Nguyễn hiếm hoi còn lại ở Nam Bộ.
+
+#### [Đài tưởng niệm liệt sĩ Lê Cẩn – Nguyễn Giao](https://vinhlong360.vn/dia-diem/dai-tuong-niem-liet-si-le-can-nguyen-giao)
+- **Mã ID**: `dai-tuong-niem-liet-si-le-can-nguyen-giao` | **Phân loại**: `history` | **Địa bàn**: p-phuoc-hau | **Tọa độ**: [10.2542, 105.9628]
+- **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/dai-tuong-niem-liet-si-le-can-nguyen-giao.webp`
+- **Tác giả ảnh**: Ngọc Trảng · **Cơ quan**: Báo Vĩnh Long
+- **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
+- **Tóm lược**: Tượng đài đồng cao 7,5 m, nặng 21,5 tấn tại Vũng Liêm — tưởng niệm Đề đốc Lê Cẩn và nghĩa sĩ Nguyễn Giao, lãnh đạo khởi nghĩa chống Pháp năm 1872.
+
 #### [Chùa Kỳ Son (Kỳ Sơn)](https://vinhlong360.vn/dia-diem/chua-ky-son-ky-son)
 - **Mã ID**: `chua-ky-son-ky-son` | **Phân loại**: `history` | **Địa bàn**: xa-ngai-tu | **Tọa độ**: [10.0286, 105.9690]
 - **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/chua-ky-son-ky-son.webp`
 - **Tác giả ảnh**: Trần Phước · **Cơ quan**: Báo Vĩnh Long
 - **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
 - **Tóm lược**: Ngôi chùa Khmer có tuổi đời khoảng 200 năm, xây dựng lại bằng gỗ năm 1884. Kiến trúc mái chồng tầng đặc trưng Khmer Nam Bộ, tháp giữa cao 2m với tượng nữ thần Kayno đỡ tháp.
+
+#### [Lăng Ông Tiền quân Thống chế Điều bát](https://vinhlong360.vn/dia-diem/lang-ong-tien-quan-thong-che-dieu-bat)
+- **Mã ID**: `lang-ong-tien-quan-thong-che-dieu-bat` | **Phân loại**: `history` | **Địa bàn**: p-tra-on | **Tọa độ**: [9.9650, 105.9220]
+- **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/lang-ong-tien-quan-thong-che-dieu-bat.webp`
+- **Tác giả ảnh**: Thanh Đức · **Cơ quan**: Báo Vĩnh Long
+- **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
+- **Tóm lược**: Di tích lịch sử văn hóa cấp quốc gia thờ Nguyễn Văn Tồn (1763–1820), danh tướng người Khmer tên thật Thạch Duồng, có công khai phá vùng đất Trà Ôn, gắn kết ba dân tộc Kinh–Hoa–Khmer và chống quân Xiêm.
+
+#### [Đền thờ Tướng quân Nguyễn Ngọc Thăng](https://vinhlong360.vn/dia-diem/den-tho-tuong-quan-nguyen-ngoc-thang)
+- **Mã ID**: `den-tho-tuong-quan-nguyen-ngoc-thang` | **Phân loại**: `history` | **Địa bàn**: xa-giong-trom | **Tọa độ**: [10.1517, 106.5097]
+- **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/den-tho-tuong-quan-nguyen-ngoc-thang.webp`
+- **Tác giả ảnh**: Hữu Hiệp · **Cơ quan**: Báo Đồng Khởi
+- **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
+- **Tóm lược**: Đền thờ Lãnh binh Nguyễn Ngọc Thăng (1798-1866) tại Giồng Trôm — vị tướng đầu tiên của xứ dừa chống Pháp xâm lược. Di tích lịch sử cấp quốc gia (7/5/1997).
+
+#### [Linga và Yoni Lưu Cừ II](https://vinhlong360.vn/dia-diem/linga-va-yoni-luu-cu-ii)
+- **Mã ID**: `linga-va-yoni-luu-cu-ii` | **Phân loại**: `history` | **Địa bàn**: xa-luu-nghiep-anh | **Tọa độ**: [9.7163, 106.1961]
+- **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/linga-va-yoni-luu-cu-ii.webp`
+- **Tác giả ảnh**: Bá Thi · **Cơ quan**: Báo Trà Vinh
+- **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
+- **Tóm lược**: Cặp hiện vật thờ tự Bà La Môn khai quật tại di tích Lưu Cừ II, được Thủ tướng Chính phủ ký quyết định công nhận là Bảo vật quốc gia.
+
+#### [Di tích lịch sử Bến tiếp nhận vũ khí Cồn Tàu](https://vinhlong360.vn/dia-diem/di-tich-lich-su-ben-tiep-nhan-vu-khi-con-tau)
+- **Mã ID**: `di-tich-lich-su-ben-tiep-nhan-vu-khi-con-tau` | **Phân loại**: `history` | **Địa bàn**: p-truong-long-hoa | **Tọa độ**: [9.6427, 106.5489]
+- **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/di-tich-lich-su-ben-tiep-nhan-vu-khi-con-tau.webp`
+- **Tác giả ảnh**: Bá Thi · **Cơ quan**: Báo Trà Vinh
+- **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
+- **Tóm lược**: Di tích lịch sử cấp quốc gia ghi dấu điểm tiếp nhận vũ khí từ tuyến đường Hồ Chí Minh trên biển trong kháng chiến.
+
+#### [Lầu Bà (Lầu Bà Cố Hỷ)](https://vinhlong360.vn/dia-diem/lau-ba-lau-ba-co-hy)
+- **Mã ID**: `lau-ba-lau-ba-co-hy` | **Phân loại**: `history` | **Địa bàn**: p-truong-long-hoa | **Tọa độ**: [9.6427, 106.5489]
+- **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/lau-ba-lau-ba-co-hy.webp`
+- **Tác giả ảnh**: Bá Thi · **Cơ quan**: Báo Trà Vinh
+- **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
+- **Tóm lược**: Di tích Lịch sử và Văn hóa cấp tỉnh, công trình tâm linh hai tầng được trùng tu năm 2008, khuôn viên rộng 3.000 m².
+
+#### [Mộ Quận Chúa](https://vinhlong360.vn/dia-diem/mo-quan-chua)
+- **Mã ID**: `mo-quan-chua` | **Phân loại**: `history` | **Địa bàn**: p-truong-long-hoa | **Tọa độ**: [9.6338, 106.4941]
+- **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/mo-quan-chua.webp`
+- **Tác giả ảnh**: Bá Thi · **Cơ quan**: Báo Trà Vinh
+- **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
+- **Tóm lược**: Ngôi mộ cổ rộng khoảng 500 m² tại Ấp Ba Động, tương truyền là nơi an táng một người thân của vua Gia Long (Nguyễn Ánh).
+
+#### [Khu lưu niệm Trương Vĩnh Ký](https://vinhlong360.vn/dia-diem/khu-luu-niem-truong-vinh-ky)
+- **Mã ID**: `khu-luu-niem-truong-vinh-ky` | **Phân loại**: `history` | **Địa bàn**: xa-vinh-thanh | **Tọa độ**: [10.2376, 106.3767]
+- **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/khu-luu-niem-truong-vinh-ky.webp`
+- **Tác giả ảnh**: Hữu Hiệp · **Cơ quan**: Báo Đồng Khởi
+- **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
+- **Tóm lược**: Khu lưu niệm Petrus Trương Vĩnh Ký tại xã Vĩnh Thành, Chợ Lách — quê hương của nhà bác học thông thạo 26 ngôn ngữ. Thuộc Làng Văn hóa du lịch Chợ Lách.
+
+#### [Chùa Kim Long (Chùa Ước)](https://vinhlong360.vn/dia-diem/chua-kim-long-chua-uoc)
+- **Mã ID**: `chua-kim-long-chua-uoc` | **Phân loại**: `history` | **Địa bàn**: xa-vinh-thanh | **Tọa độ**: [10.2368, 106.3774]
+- **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/chua-kim-long-chua-uoc.webp`
+- **Tác giả ảnh**: Hữu Hiệp · **Cơ quan**: Báo Đồng Khởi
+- **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
+- **Tóm lược**: Ngôi chùa Phật giáo linh thiêng với hơn 50 năm lịch sử, được gọi là 'chùa Ước' vì tín đồ tin cầu nguyện sẽ được linh ứng.
 
 #### [Chùa Kompongrang (Wat Kompongrô)](https://vinhlong360.vn/dia-diem/chua-kompongrang-wat-kompongro)
 - **Mã ID**: `chua-kompongrang-wat-kompongro` | **Phân loại**: `history` | **Địa bàn**: p-tieu-can | **Tọa độ**: [9.8403, 106.1729]
@@ -7410,6 +7613,13 @@ Mỗi thực thể dưới đây đều có ảnh tư liệu báo chí chính th
 - **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
 - **Tóm lược**: Làng nghề kẹo dừa gốc tại Mỏ Cày — nơi bà Nguyễn Thị Ngọc sáng tạo viên kẹo dừa đầu tiên từ thập niên 1930. Hơn 180 cơ sở sản xuất toàn tỉnh.
 
+#### [Nhà Mát](https://vinhlong360.vn/dia-diem/nha-mat)
+- **Mã ID**: `nha-mat` | **Phân loại**: `history` | **Địa bàn**: p-truong-long-hoa | **Tọa độ**: [9.6450, 106.5720]
+- **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/nha-mat.webp`
+- **Tác giả ảnh**: Bá Thi · **Cơ quan**: Báo Trà Vinh
+- **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
+- **Tóm lược**: Địa danh ven biển gắn với vùng biển Ba Động, là khu nghỉ mát do người Pháp xây dựng trước đây.
+
 #### [KS-NH Hùng Vương](https://vinhlong360.vn/dia-diem/ks-nh-hung-vuong)
 - **Mã ID**: `ks-nh-hung-vuong` | **Phân loại**: `accommodation` | **Địa bàn**: p-an-hoi | **Tọa độ**: [10.2346, 106.3755]
 - **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/ks-nh-hung-vuong.webp`
@@ -7430,6 +7640,13 @@ Mỗi thực thể dưới đây đều có ảnh tư liệu báo chí chính th
 - **Tác giả ảnh**: Trọng Ân · **Cơ quan**: Báo Đồng Khởi
 - **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
 - **Tóm lược**: Vùng rừng lá dừa nước ven biển Thạnh Phú — nơi Tỉnh ủy Bến Tre đặt căn cứ kháng chiến chống Pháp và chống Mỹ. Năm 1947, trường đào tạo cán bộ Việt Minh đặt tại rừng Bần Mít, xã Thạnh Phong.
+
+#### [Tượng đài Chiến thắng Mậu Thân (Công viên Mậu Thân)](https://vinhlong360.vn/dia-diem/tuong-dai-chien-thang-mau-than-vinh-long)
+- **Mã ID**: `tuong-dai-chien-thang-mau-than-vinh-long` | **Phân loại**: `history` | **Địa bàn**: p-phuoc-hau | **Tọa độ**: [10.2408, 105.9606]
+- **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/tuong-dai-chien-thang-mau-than-vinh-long.webp`
+- **Tác giả ảnh**: Quang Thuần · **Cơ quan**: Báo Vĩnh Long
+- **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
+- **Tóm lược**: Tượng đài khánh thành năm 1982 tại ngã ba Chiều Tím, TP Vĩnh Long — tưởng niệm 43 chiến sĩ đặc công tỉnh và Đại đội 203 hy sinh trong Tổng tiến công Mậu Thân 1968.
 
 #### [Nhà hàng Làng Chài Bến Tre](https://vinhlong360.vn/dia-diem/nha-hang-lang-chai-ben-tre-ben-tre)
 - **Mã ID**: `nha-hang-lang-chai-ben-tre-ben-tre` | **Phân loại**: `restaurant` | **Địa bàn**: p-ben-tre | **Tọa độ**: [10.2410, 106.3564]
@@ -8516,6 +8733,27 @@ Mỗi thực thể dưới đây đều có ảnh tư liệu báo chí chính th
 - **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
 - **Tóm lược**: Vào vườn trái cây cù lao An Bình, nghe chủ vườn giới thiệu kỹ thuật trồng và tự tay hái trái ăn tại chỗ.
 
+#### [Di chỉ khảo cổ học Thành Mới](https://vinhlong360.vn/dia-diem/di-chi-khao-co-hoc-thanh-moi)
+- **Mã ID**: `di-chi-khao-co-hoc-thanh-moi` | **Phân loại**: `history` | **Địa bàn**: xa-trung-hiep | **Tọa độ**: [10.2542, 105.9628]
+- **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/di-chi-khao-co-hoc-thanh-moi.webp`
+- **Tác giả ảnh**: Thanh Đức · **Cơ quan**: Báo Vĩnh Long
+- **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
+- **Tóm lược**: Mảnh gốm, công cụ đá và cấu trúc nền móng niên đại thế kỷ I đến VI sau Công nguyên — di chỉ Thành Mới ở xã Trung Hiệp, Vũng Liêm là một trong những dấu vết văn hóa Óc Eo hiếm hoi trên đất Vĩnh Long.
+
+#### [Nghĩa Trủng miếu](https://vinhlong360.vn/dia-diem/nghia-trung-mieu)
+- **Mã ID**: `nghia-trung-mieu` | **Phân loại**: `history` | **Địa bàn**: p-phuoc-hau | **Tọa độ**: [10.2542, 105.9628]
+- **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/nghia-trung-mieu.webp`
+- **Tác giả ảnh**: Ngọc Trảng · **Cơ quan**: Báo Vĩnh Long
+- **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
+- **Tóm lược**: Ngày 20/5/1862, quân Pháp đánh chiếm thành Vĩnh Long — binh lính thủ thành tử trận được đưa về ấp Phước Hanh chôn cất, lập miếu thờ gọi là Nghĩa Trủng miếu, còn có tên Miếu Âm Nhơn.
+
+#### [Khu di sản lò gạch Mang Thít](https://vinhlong360.vn/dia-diem/khu-di-san-lo-gach-mang-thit)
+- **Mã ID**: `khu-di-san-lo-gach-mang-thit` | **Phân loại**: `history` | **Địa bàn**: xa-nhon-phu | **Tọa độ**: [10.2542, 105.9628]
+- **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/khu-di-san-lo-gach-mang-thit.webp`
+- **Tác giả ảnh**: Trần Phước · **Cơ quan**: Báo Vĩnh Long
+- **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
+- **Tóm lược**: Quần thể hàng trăm lò gạch cổ có tuổi đời trăm năm nằm dọc bờ sông Cổ Chiên và sông Mang Thít, được quy hoạch thành Khu du lịch Quốc gia trên diện tích 3.060 hecta tập trung tại các xã Mỹ An, Mỹ Phước, Nhơn Phú.
+
 #### [The Grand Hotel Vĩnh Long](https://vinhlong360.vn/dia-diem/the-grand-hotel-vinh-long)
 - **Mã ID**: `the-grand-hotel-vinh-long` | **Phân loại**: `accommodation` | **Địa bàn**: p-long-chau | **Tọa độ**: [10.2542, 105.9628]
 - **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/the-grand-hotel-vinh-long.webp`
@@ -8551,12 +8789,26 @@ Mỗi thực thể dưới đây đều có ảnh tư liệu báo chí chính th
 - **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
 - **Tóm lược**: Muốn lai rai nồi lẩu bò khi về xã Long Phước, Vĩnh Long, khách tìm tới quán Lẩu Bò Bảy Mập ở ấp Long Thuận A.
 
+#### [Khu tưởng niệm Cố Chủ tịch HĐBT Phạm Hùng](https://vinhlong360.vn/dia-diem/khu-tuong-niem-co-chu-tich-hdbt-pham-hung)
+- **Mã ID**: `khu-tuong-niem-co-chu-tich-hdbt-pham-hung` | **Phân loại**: `history` | **Địa bàn**: p-long-ho | **Tọa độ**: [10.1834, 105.9985]
+- **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/khu-tuong-niem-co-chu-tich-hdbt-pham-hung.webp`
+- **Tác giả ảnh**: Thanh Đức · **Cơ quan**: Báo Vĩnh Long
+- **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
+- **Tóm lược**: Trải rộng trên 3,2 ha xanh mát tại Long Hồ, Khu tưởng niệm Cố Chủ tịch HĐBT Phạm Hùng là nơi tri ân người con ưu tú của đất Vĩnh Long — vị lãnh đạo tài ba đã hiến dâng cả cuộc đời cho độc lập dân tộc.
+
 #### [Bún bò Cô Tám chợ Bến Tre](https://vinhlong360.vn/dia-diem/bun-bo-co-tam-cho-ben-tre-ben-tre)
 - **Mã ID**: `bun-bo-co-tam-cho-ben-tre-ben-tre` | **Phân loại**: `dish` | **Địa bàn**: xa-thanh-thoi | **Tọa độ**: [10.0528, 106.3146]
 - **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/bun-bo-co-tam-cho-ben-tre-ben-tre.webp`
 - **Tác giả ảnh**: Minh Mừng · **Cơ quan**: Báo Đồng Khởi
 - **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
 - **Tóm lược**: Quán bún. Chuyên Bún bò giò heo + chả cây. Nước dùng: Sả ớt, mắm ruốc Huế, nước dùng đỏ cay thơm. Bến Tre.
+
+#### [Đình Kỳ Hà](https://vinhlong360.vn/dia-diem/dinh-ky-ha)
+- **Mã ID**: `dinh-ky-ha` | **Phân loại**: `history` | **Địa bàn**: p-long-ho | **Tọa độ**: [10.1834, 105.9985]
+- **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/dinh-ky-ha.webp`
+- **Tác giả ảnh**: Ngọc Trảng · **Cơ quan**: Báo Vĩnh Long
+- **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
+- **Tóm lược**: Đứng vững từ đầu thế kỷ XIX như một cột mốc lịch sử sống động của vùng đất Vĩnh Long — nơi sắc phong năm 1852 còn được trân trọng gìn giữ đến ngày nay. Từ năm 1927, mái đình từng che chở những người yêu nước đầu tiên gieo mầm cách mạng trên mảnh đất này. Cột gỗ quý, kèo chạm trổ tinh xảo và bức tường vôi trắng phủ bóng thời gian tạo nên không gian vừa cổ kính vừa đầy sức gợi.
 
 #### [Khách sạn Tân Xuân](https://vinhlong360.vn/dia-diem/khach-san-tan-xuan)
 - **Mã ID**: `khach-san-tan-xuan` | **Phân loại**: `accommodation` | **Địa bàn**: p-long-ho | **Tọa độ**: [10.1834, 105.9985]
@@ -8635,6 +8887,13 @@ Mỗi thực thể dưới đây đều có ảnh tư liệu báo chí chính th
 - **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
 - **Tóm lược**: Phở bò và phở gà là hai món trụ ở Phở Tiên, số 109 Huyện Lộ 22, khu Mỏ Cày, Bến Tre. Quán bán quanh năm theo dữ liệu tự khai.
 
+#### [Phước Minh Cung (Chùa Ông)](https://vinhlong360.vn/dia-diem/phuoc-minh-cung-chua-ong)
+- **Mã ID**: `phuoc-minh-cung-chua-ong` | **Phân loại**: `history` | **Địa bàn**: p-tra-vinh | **Tọa độ**: [9.9516, 106.3322]
+- **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/phuoc-minh-cung-chua-ong.webp`
+- **Tác giả ảnh**: Bá Thi · **Cơ quan**: Báo Trà Vinh
+- **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
+- **Tóm lược**: Cơ sở tín ngưỡng của người Hoa tại Trà Vinh, còn gọi là Chùa Quan Thánh Đế hay Chùa Ông.
+
 #### [Đình Long Đức Trà Vinh](https://vinhlong360.vn/dia-diem/dinh-long-duc-tra-vinh)
 - **Mã ID**: `dinh-long-duc-tra-vinh` | **Phân loại**: `history` | **Địa bàn**: p-long-duc | **Tọa độ**: [9.9763, 106.3446]
 - **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/dinh-long-duc-tra-vinh.webp`
@@ -8655,6 +8914,13 @@ Mỗi thực thể dưới đây đều có ảnh tư liệu báo chí chính th
 - **Tác giả ảnh**: Thanh Hòa · **Cơ quan**: Báo Trà Vinh
 - **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
 - **Tóm lược**: Mang trong mình vẻ đẹp trầm lắng của Phật giáo người Việt vùng ven biển Nam Bộ — mái ngói rêu phong, cột gỗ bóng loáng theo năm tháng và những bức hoành phi câu đối khắc bằng chữ Hán chứa đựng triết lý sâu xa. Hương trầm nhẹ thoảng trong không khí buổi sớm, tiếng mõ chuông đều đặn hòa cùng tiếng gió từ phía biển gần. Ngôi chùa còn lưu giữ nhiều pháp khí quý giá và tranh thờ cổ.
+
+#### [Khu di tích Lăng Ông Cồn Tàu](https://vinhlong360.vn/dia-diem/khu-di-tich-lang-ong-con-tau)
+- **Mã ID**: `khu-di-tich-lang-ong-con-tau` | **Phân loại**: `history` | **Địa bàn**: p-truong-long-hoa | **Tọa độ**: [9.6427, 106.5489]
+- **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/khu-di-tich-lang-ong-con-tau.webp`
+- **Tác giả ảnh**: Bá Thi · **Cơ quan**: Báo Trà Vinh
+- **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
+- **Tóm lược**: Di tích lịch sử cấp quốc gia, được công nhận ngày 23/12/2015. Xây dựng năm 1870 thờ Ông Nam Hải (cá Ông), thần hộ mệnh của ngư dân ven biển.
 
 #### [Vườn bưởi xanh VietGAP Từ Ô](https://vinhlong360.vn/dia-diem/vuon-buoi-xanh-vietgap-tu-o)
 - **Mã ID**: `vuon-buoi-xanh-vietgap-tu-o` | **Phân loại**: `nature` | **Địa bàn**: p-tieu-can | **Tọa độ**: [9.8403, 106.1729]
@@ -8817,6 +9083,13 @@ Mỗi thực thể dưới đây đều có ảnh tư liệu báo chí chính th
 - **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
 - **Tóm lược**: Tầm 150–280 nghìn đồng một đêm là mức phòng ở Khách sạn Tân An Lộc — nhà nghỉ 1 sao trong hẻm Phó Cơ Điều, thành phố Vĩnh Long.
 
+#### [Di tích lịch sử Chi bộ đầu tiên xã Nhị Long](https://vinhlong360.vn/dia-diem/di-tich-lich-su-chi-bo-dau-tien-xa-nhi-long)
+- **Mã ID**: `di-tich-lich-su-chi-bo-dau-tien-xa-nhi-long` | **Phân loại**: `history` | **Địa bàn**: xa-nhi-long | **Tọa độ**: [9.9713, 106.2198]
+- **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/di-tich-lich-su-chi-bo-dau-tien-xa-nhi-long.webp`
+- **Tác giả ảnh**: Bá Thi · **Cơ quan**: Báo Trà Vinh
+- **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
+- **Tóm lược**: Địa điểm về nguồn ghi dấu nơi thành lập chi bộ Đảng đầu tiên của xã Nhị Long. Xã Nhị Long được phong tặng danh hiệu Anh hùng lực lượng vũ trang nhân dân 2 lần; từ 1937–1975 có 119 đảng viên hy sinh.
+
 #### [Làng nghề thủ công mỹ nghệ từ dừa Quới Sơn](https://vinhlong360.vn/dia-diem/lang-nghe-thu-cong-my-nghe-tu-dua-quoi-son)
 - **Mã ID**: `lang-nghe-thu-cong-my-nghe-tu-dua-quoi-son` | **Phân loại**: `craft_village` | **Địa bàn**: xa-giao-long | **Tọa độ**: [10.2899, 106.3029]
 - **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/lang-nghe-thu-cong-my-nghe-tu-dua-quoi-son.webp`
@@ -8830,6 +9103,13 @@ Mỗi thực thể dưới đây đều có ảnh tư liệu báo chí chính th
 - **Tác giả ảnh**: Bùi Dương · **Cơ quan**: Cổng TTĐT Bến Tre
 - **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
 - **Tóm lược**: Ngôi chùa cổ nhất Bến Tre, được thành lập từ thời chúa Nguyễn Phúc Khoát (giữa thế kỷ XVIII), trùng tu các năm 1884, 1947 và 1992.
+
+#### [Chùa Âng (Angkor Borei)](https://vinhlong360.vn/dia-diem/chua-ang-angkor-borei)
+- **Mã ID**: `chua-ang-angkor-borei` | **Phân loại**: `history` | **Địa bàn**: p-nguyet-hoa | **Tọa độ**: [9.9513, 106.3346]
+- **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/chua-ang-angkor-borei.webp`
+- **Tác giả ảnh**: Bá Thi · **Cơ quan**: Báo Trà Vinh
+- **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
+- **Tóm lược**: Ngôi chùa Khmer cổ nằm trong cụm di tích - thắng cảnh quốc gia Ao Bà Om tại xã Nguyệt Hóa, huyện Châu Thành, Trà Vinh.
 
 #### [Chùa Khánh Thạnh](https://vinhlong360.vn/dia-diem/chua-khanh-thanh)
 - **Mã ID**: `chua-khanh-thanh` | **Phân loại**: `attraction` | **Địa bàn**: p-cang-long | **Tọa độ**: [9.9713, 106.2198]

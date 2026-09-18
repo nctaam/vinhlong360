@@ -102999,7 +102999,14 @@
         "address": "Ngã ba Chiều Tím (giao Mậu Thân - Phó Cơ Điều), Phường 3, TP Vĩnh Long, tỉnh Vĩnh Long",
         "schema_type": "LandmarksOrHistoricalBuildings",
         "sub_category": "historic-site",
-        "architectural_style": "Tượng đài/bia tưởng niệm"
+        "architectural_style": "Tượng đài/bia tưởng niệm",
+        "image_author": "Ngọc Trảng",
+        "image_source": "Báo Vĩnh Long",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Tượng đài Chiến thắng Mậu Thân sừng sững giữa công viên cây xanh ngã ba Chiều Tím, công trình ghi dấu chiến công oanh liệt của quân dân Vĩnh Long trong mùa xuân 1968.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long",
+        "verifiedAt": "2026-09-18T10:00:00Z"
       },
       "source": [
         {
@@ -103053,8 +103060,14 @@
             "tier": "TIER_1_GOVERNMENT"
           }
         ],
-        "verifiedAt": "2026-09-13T11:18:37+07:00",
-        "verifiedSource": "NotebookLM Deep Terroir Research"
+        "verifiedAt": "2026-09-18T10:00:00Z",
+        "verifiedSource": "NotebookLM Deep Terroir Research",
+        "image_author": "Hữu Hiệp",
+        "image_source": "Báo Đồng Khởi",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Khu Di tích Quốc gia Đặc biệt Đồng Khởi tại xã Định Thủy với bia chiến thắng và nhà truyền thống lưu giữ ký ức quật khởi của Đội quân tóc dài năm 1960.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Đồng Khởi"
       },
       "source": [
         {
@@ -103155,7 +103168,14 @@
         "schema_type": "LandmarksOrHistoricalBuildings",
         "sub_category": "pagoda",
         "coords_approximate": true,
-        "architectural_style": "Chùa Khmer (kiến trúc Khmer Theravada)"
+        "architectural_style": "Chùa Khmer (kiến trúc Khmer Theravada)",
+        "image_author": "Bá Thi",
+        "image_source": "Báo Trà Vinh",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Mái chánh điện ba tầng uốn lượn hình rồng Naga và hàng cột chạm trổ tinh vi của chùa Âng, ngôi cổ tự Khmer nghìn năm tuổi soi bóng bên thắng cảnh Ao Bà Om.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Trà Vinh",
+        "verifiedAt": "2026-09-18T10:00:00Z"
       },
       "source": [
         {
@@ -103197,7 +103217,14 @@
         "address": "Huyện Mang Thít, Vĩnh Long",
         "schema_type": "LandmarksOrHistoricalBuildings",
         "sub_category": "historic-site",
-        "coords_approximate": true
+        "coords_approximate": true,
+        "image_author": "Thanh Đức",
+        "image_source": "Báo Vĩnh Long",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Hệ thống công sự hầm hào và hội trường phục dựng tại Khu căn cứ Cách mạng Cái Ngang, căn cứ địa vững chắc của Tỉnh ủy Vĩnh Long trong kháng chiến chống Mỹ.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long",
+        "verifiedAt": "2026-09-18T10:00:00Z"
       },
       "source": [
         {
@@ -103246,7 +103273,14 @@
         "heritage_decision": "QĐ 1235/QĐ-UBND ngày 15/8/2023",
         "coords_approximate": true,
         "distance_from_city": "45 km từ TP Trà Vinh, 7 km từ TT Cầu Kè",
-        "architectural_style": "Tượng đài/bia tưởng niệm"
+        "architectural_style": "Tượng đài/bia tưởng niệm",
+        "image_author": "Bá Thi",
+        "image_source": "Báo Trà Vinh",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Tượng đồng Anh hùng Lực lượng vũ trang nhân dân Nguyễn Thị Út (chị Út Tịch) trang nghiêm giữa khuôn viên khu tưởng niệm rợp bóng cây xanh tại ấp Ngọc Hồ.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Trà Vinh",
+        "verifiedAt": "2026-09-18T10:00:00Z"
       },
       "source": [
         {
@@ -103296,7 +103330,14 @@
         "address": "Khóm 5, thị trấn Tiểu Cần, Trà Vinh",
         "schema_type": "LandmarksOrHistoricalBuildings",
         "sub_category": "historic-site",
-        "coords_approximate": true
+        "coords_approximate": true,
+        "image_author": "Bá Thi",
+        "image_source": "Báo Trà Vinh",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Mặt tiền Thiên Hậu Cung Quảng Đông với phù điêu gốm men màu và hoành phi câu đối sơn son thếp vàng, di tích kiến trúc nghệ thuật của cộng đồng người Hoa tại Tiểu Cần.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Trà Vinh",
+        "verifiedAt": "2026-09-18T10:00:00Z"
       },
       "source": [
         {
@@ -103339,7 +103380,14 @@
         "schema_type": "LandmarksOrHistoricalBuildings",
         "sub_category": "pagoda",
         "coords_approximate": true,
-        "architectural_style": "Nhà cổ Nam bộ"
+        "architectural_style": "Nhà cổ Nam bộ",
+        "image_author": "Bá Thi",
+        "image_source": "Báo Trà Vinh",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Ngôi nhà cổ ba gian hai chái tại xã Đại An bằng các cột căm xe đen bóng và bao lam chạm trổ hoa điểu, kiến trúc nhà ở truyền thống Nam Bộ đầu thế kỷ 20.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Trà Vinh",
+        "verifiedAt": "2026-09-18T10:00:00Z"
       },
       "source": [
         {
@@ -103495,7 +103543,14 @@
         "address": "Xã Tân Lược, Vĩnh Long",
         "schema_type": "LandmarksOrHistoricalBuildings",
         "sub_category": "pagoda",
-        "architectural_style": "Chùa Hoa (kiến trúc Hoa)"
+        "architectural_style": "Chùa Hoa (kiến trúc Hoa)",
+        "image_author": "Ngọc Trảng",
+        "image_source": "Báo Vĩnh Long",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Kiến trúc chữ Tam uy nghiêm với các hàng cột gỗ tròn và hoành phi cổ kính tại Chùa Ông xã Tân Lược, trung tâm sinh hoạt tín ngưỡng lâu đời của vùng đất Bình Tân.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long",
+        "verifiedAt": "2026-09-18T10:00:00Z"
       },
       "source": [
         {
@@ -103537,7 +103592,14 @@
         "address": "Giao lộ đường 19 Tháng 8 và đường Hoàng Thái Hiếu (khu vực đường Lê Văn Tám), Phường 1, TP Vĩnh Long",
         "schema_type": "LandmarksOrHistoricalBuildings",
         "sub_category": "cao-dai",
-        "coords_approximate": true
+        "coords_approximate": true,
+        "image_author": "Quang Thuần",
+        "image_source": "Báo Vĩnh Long",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Cây da cổ thụ cành lá xum xuê tỏa bóng mát bên cổng phục dựng Di tích Cửa Hữu Thành Long Hồ, dấu tích lịch sử phòng thủ quân sự thời vua Gia Long tại Phường 1.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long",
+        "verifiedAt": "2026-09-18T10:00:00Z"
       },
       "source": [
         {
@@ -103587,7 +103649,14 @@
         "official_name": "Nhà thờ chính tòa Thánh Anna",
         "old_dimensions": "38 m × 19 m, cao 16,7 m",
         "coords_approximate": true,
-        "architectural_style": "Nhà thờ Công giáo"
+        "architectural_style": "Nhà thờ Công giáo",
+        "image_author": "Quang Thuần",
+        "image_source": "Báo Vĩnh Long",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Kiến trúc con thuyền Noe vươn cao với tháp chuông thanh thoát của Nhà thờ Chính Tòa Vĩnh Long trên đường Lê Thái Tổ, công trình tôn giáo biểu tượng giữa trung tâm thành phố.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long",
+        "verifiedAt": "2026-09-18T10:00:00Z"
       },
       "source": [
         {
@@ -103633,7 +103702,14 @@
         "address": "103 Đường 3 Tháng 2, Phường 1, TP Vĩnh Long",
         "schema_type": "LandmarksOrHistoricalBuildings",
         "sub_category": "cultural-heritage",
-        "coords_approximate": true
+        "coords_approximate": true,
+        "image_author": "Quang Thuần",
+        "image_source": "Báo Vĩnh Long",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Dãy hành lang mái vòm cổ kính rợp bóng mát trong khuôn viên Tòa Giám mục Giáo phận Vĩnh Long trên đường Ba Tháng Hai, trung tâm điều hành mục vụ của giáo phận.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long",
+        "verifiedAt": "2026-09-18T10:00:00Z"
       },
       "source": [
         {
@@ -103784,7 +103860,14 @@
         "address": "Huyện Long Hồ, tỉnh Vĩnh Long",
         "schema_type": "LandmarksOrHistoricalBuildings",
         "sub_category": "cultural-heritage",
-        "coords_approximate": true
+        "coords_approximate": true,
+        "image_author": "Ngọc Trảng",
+        "image_source": "Báo Vĩnh Long",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Nhà tưởng niệm đồng chí Phạm Hùng mái ngói đỏ ba tầng thanh thoát giữa hồ sen ngát hương, nơi ghi dấu cuộc đời hoạt động cách mạng vẻ vang của người con ưu tú Long Hồ.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long",
+        "verifiedAt": "2026-09-18T10:00:00Z"
       },
       "source": [
         {
@@ -103894,7 +103977,14 @@
         "address": "Ấp Long Thuận A, xã Long Phước, tỉnh Vĩnh Long",
         "schema_type": "LandmarksOrHistoricalBuildings",
         "sub_category": "historic-site",
-        "coords_approximate": true
+        "coords_approximate": true,
+        "image_author": "Thanh Đức",
+        "image_source": "Báo Vĩnh Long",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Gian trưng bày kỷ vật và hiện vật gắn bó với cuộc đời Chủ tịch Hội đồng Bộ trưởng Phạm Hùng tại ấp Long Thuận A xã Long Phước, điểm về nguồn cách mạng tiêu biểu.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long",
+        "verifiedAt": "2026-09-18T10:00:00Z"
       },
       "source": [
         {
@@ -103950,8 +104040,14 @@
             "authority_weight": 1
           }
         ],
-        "verifiedAt": "2026-09-13T13:55:00+07:00",
-        "verifiedSource": "NotebookLM Deep Terroir Research - Phase 3"
+        "verifiedAt": "2026-09-18T10:00:00Z",
+        "verifiedSource": "NotebookLM Deep Terroir Research - Phase 3",
+        "image_author": "Trần Phước",
+        "image_source": "Báo Vĩnh Long",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Cụm lò gạch hình bát úp trăm năm tuổi đỏ rực phản chiếu mặt nước kênh Thầy Kay, vùng lõi di sản đương đại Mang Thít đang được bảo tồn phát triển du lịch.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long"
       },
       "source": [
         {
@@ -103994,7 +104090,14 @@
         "schema_type": "LandmarksOrHistoricalBuildings",
         "sub_category": "shrine",
         "coords_approximate": true,
-        "architectural_style": "Đình làng (kiến trúc truyền thống Nam bộ)"
+        "architectural_style": "Đình làng (kiến trúc truyền thống Nam bộ)",
+        "image_author": "Quang Thuần",
+        "image_source": "Báo Vĩnh Long",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Kiến trúc ba gian hai chái cổ kính với bốn hàng cột gỗ căm xe nguyên khối tại Đình Hòa Tịnh, nơi gìn giữ nếp cúng Thành hoàng làng và lễ hội Hạ điền qua nhiều thế hệ.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long",
+        "verifiedAt": "2026-09-18T10:00:00Z"
       },
       "source": [
         {
@@ -104038,7 +104141,14 @@
         "schema_type": "LandmarksOrHistoricalBuildings",
         "sub_category": "pagoda",
         "coords_approximate": true,
-        "architectural_style": "Chùa Việt (kiến trúc Phật giáo Việt Nam)"
+        "architectural_style": "Chùa Việt (kiến trúc Phật giáo Việt Nam)",
+        "image_author": "Ngọc Trảng",
+        "image_source": "Báo Vĩnh Long",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Chánh điện rực rỡ và quần thể tháp cổ kính nép mình dưới bóng những cây sao dầu hàng trăm năm tuổi tại chùa Hạnh Phúc Tăng, cổ tự Khmer khởi dựng từ năm 632.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long",
+        "verifiedAt": "2026-09-18T10:00:00Z"
       },
       "source": [
         {
@@ -104086,7 +104196,14 @@
         "heritage_year": 2017,
         "heritage_level": "Di tích cấp tỉnh",
         "coords_approximate": true,
-        "architectural_style": "Lăng mộ (kiến trúc truyền thống)"
+        "architectural_style": "Lăng mộ (kiến trúc truyền thống)",
+        "image_author": "Thanh Đức",
+        "image_source": "Báo Vĩnh Long",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Khu mộ cổ thân nhân danh thần Thoại Ngọc Hầu xây năm 1828 trên Cù Lao Dài bằng kỹ thuật hợp chất vôi ô dước cẩn gốm men màu, di tích lịch sử văn hóa cấp tỉnh.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long",
+        "verifiedAt": "2026-09-18T10:00:00Z"
       },
       "source": [
         {
@@ -104139,7 +104256,14 @@
         "sub_category": "cultural-heritage",
         "historical_period": "1872 — kháng Pháp",
         "coords_approximate": true,
-        "architectural_style": "Tượng đài/bia tưởng niệm"
+        "architectural_style": "Tượng đài/bia tưởng niệm",
+        "image_author": "Ngọc Trảng",
+        "image_source": "Báo Vĩnh Long",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Tượng đài Đốc binh Lê Cẩn và võ tướng Nguyễn Giao vung gươm dũng mãnh tại ngã ba An Nhơn, biểu tượng lòng quả cảm chống giặc ngoại xâm của vùng đất Vũng Liêm.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long",
+        "verifiedAt": "2026-09-18T10:00:00Z"
       },
       "source": [
         {
@@ -104190,7 +104314,14 @@
         "schema_type": "LandmarksOrHistoricalBuildings",
         "sub_category": "historic-site",
         "coords_approximate": true,
-        "architectural_style": "Tượng đài/bia tưởng niệm"
+        "architectural_style": "Tượng đài/bia tưởng niệm",
+        "image_author": "Quang Thuần",
+        "image_source": "Báo Vĩnh Long",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Quần thể tượng đài uy nghi bên bờ hồ Vũng Linh trong xanh ngát bóng cây bồ đề, không gian tưởng niệm trầm mặc ghi nhớ sự hy sinh oanh liệt của đồng bào và nghĩa quân.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long",
+        "verifiedAt": "2026-09-18T10:00:00Z"
       },
       "source": [
         {
@@ -104242,7 +104373,14 @@
         "heritage_date": "15/6/2017",
         "heritage_level": "Di tích lịch sử–văn hóa cấp tỉnh",
         "coords_approximate": true,
-        "architectural_style": "Lăng mộ (kiến trúc truyền thống)"
+        "architectural_style": "Lăng mộ (kiến trúc truyền thống)",
+        "image_author": "Thanh Đức",
+        "image_source": "Báo Vĩnh Long",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Bình phong tiền và tường uynh thành rêu phong bao bọc lăng mộ thân mẫu danh thần Thoại Ngọc Hầu tại ấp Thái Bình xã Quới Thiện, kiến trúc lăng tước triều Nguyễn thế kỷ 19.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long",
+        "verifiedAt": "2026-09-18T10:00:00Z"
       },
       "source": [
         {
@@ -104300,7 +104438,14 @@
         "historical_event": "Khởi nghĩa Lê Cẩn — Nguyễn Giao (1872)",
         "monument_height_m": 7.5,
         "coords_approximate": true,
-        "monument_weight_tons": 21.5
+        "monument_weight_tons": 21.5,
+        "image_author": "Ngọc Trảng",
+        "image_source": "Báo Vĩnh Long",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Tượng đồng cụm nhân vật Đề đốc Lê Cẩn và nghĩa sĩ Nguyễn Giao vươn cao trên bệ đá hoa cương gần bờ hồ Vũng Linh, công trình tri ân các anh hùng vị quốc vong thân.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long",
+        "verifiedAt": "2026-09-18T10:00:00Z"
       },
       "source": [
         {
@@ -104400,7 +104545,14 @@
         "schema_type": "LandmarksOrHistoricalBuildings",
         "sub_category": "historic-site",
         "coords_approximate": true,
-        "architectural_style": "Lăng mộ (kiến trúc truyền thống)"
+        "architectural_style": "Lăng mộ (kiến trúc truyền thống)",
+        "image_author": "Thanh Đức",
+        "image_source": "Báo Vĩnh Long",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Cổng tam quan rực rỡ và đền thờ Tiền quân Thống chế Điều bát Nguyễn Văn Tồn tại giồng Thanh Bạch, di tích quốc gia gắn với lễ hội nghinh Ông đầu xuân của ba dân tộc.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long",
+        "verifiedAt": "2026-09-18T10:00:00Z"
       },
       "source": [
         {
@@ -104462,7 +104614,14 @@
         "annual_ceremony": "Rằm tháng 5 âm lịch",
         "historical_figure": "Lãnh binh Nguyễn Ngọc Thăng (1798-1866)",
         "coords_approximate": true,
-        "architectural_style": "Đền thờ (kiến trúc truyền thống)"
+        "architectural_style": "Đền thờ (kiến trúc truyền thống)",
+        "image_author": "Hữu Hiệp",
+        "image_source": "Báo Đồng Khởi",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Đền thờ Lãnh binh Nguyễn Ngọc Thăng trang nghiêm tại xã Mỹ Thạnh, di tích lịch sử cấp quốc gia thờ phụng vị anh hùng tiên phong chống quân xâm lược phương Tây.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Đồng Khởi",
+        "verifiedAt": "2026-09-18T10:00:00Z"
       },
       "source": [
         {
@@ -104516,7 +104675,14 @@
         "address": "Bảo tàng tỉnh Vĩnh Long (khai quật tại ấp Lưu Cừ II, xã Lưu Nghiệp Anh",
         "schema_type": "LandmarksOrHistoricalBuildings",
         "sub_category": "historic-site",
-        "coords_approximate": true
+        "coords_approximate": true,
+        "image_author": "Bá Thi",
+        "image_source": "Báo Trà Vinh",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Cặp hiện vật thờ tự bằng sa thạch Linga và Yoni khai quật từ di chỉ văn hóa Óc Eo Lưu Cừ II, Bảo vật quốc gia minh chứng cho nền văn minh cổ rực rỡ bên hạ lưu sông Hậu.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Trà Vinh",
+        "verifiedAt": "2026-09-18T10:00:00Z"
       },
       "source": [
         {
@@ -104559,7 +104725,14 @@
         "address": "Ấp Cồn Tàu, xã Trường Long Hòa, thị xã Duyên Hải, Trà Vinh",
         "schema_type": "LandmarksOrHistoricalBuildings",
         "sub_category": "historic-site",
-        "coords_approximate": true
+        "coords_approximate": true,
+        "image_author": "Bá Thi",
+        "image_source": "Báo Trà Vinh",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Tượng đài hình cánh buồm lộng gió tại Di tích lịch sử quốc gia Bến tiếp nhận vũ khí Cồn Tàu, điểm cập bến huyền thoại của những con tàu không số vượt biển chi viện miền Nam.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Trà Vinh",
+        "verifiedAt": "2026-09-18T10:00:00Z"
       },
       "source": [
         {
@@ -104602,7 +104775,14 @@
         "address": "Phường Trường Long Hòa, Thị xã Duyên Hải, Tỉnh Trà Vinh",
         "schema_type": "LandmarksOrHistoricalBuildings",
         "sub_category": "pagoda",
-        "coords_approximate": true
+        "coords_approximate": true,
+        "image_author": "Bá Thi",
+        "image_source": "Báo Trà Vinh",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Kiến trúc lầu hai tầng sơn vàng trang nghiêm của Lầu Bà Cố Hỷ hướng mặt ra biển Ba Động, chốn linh thiêng cầu sóng yên biển lặng của ngư dân miền duyên hải.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Trà Vinh",
+        "verifiedAt": "2026-09-18T10:00:00Z"
       },
       "source": [
         {
@@ -104644,7 +104824,14 @@
         "address": "Ấp Ba Động, Phường Trường Long Hòa, Thị xã Duyên Hải, Tỉnh Trà Vinh",
         "schema_type": "LandmarksOrHistoricalBuildings",
         "sub_category": "pagoda",
-        "architectural_style": "Lăng mộ (kiến trúc truyền thống)"
+        "architectural_style": "Lăng mộ (kiến trúc truyền thống)",
+        "image_author": "Bá Thi",
+        "image_source": "Báo Trà Vinh",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Khu mộ cổ bằng đá ong phủ rêu phong giữa rặng phi lao ven biển Ba Động, di tích tương truyền an táng tôn thất hoàng gia thời phong kiến bôn tẩu phương Nam.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Trà Vinh",
+        "verifiedAt": "2026-09-18T10:00:00Z"
       },
       "source": [
         {
@@ -104685,7 +104872,14 @@
       "attributes": {
         "address": "Xã Vĩnh Thành, huyện Chợ Lách, Bến Tre",
         "schema_type": "LandmarksOrHistoricalBuildings",
-        "sub_category": "shrine"
+        "sub_category": "shrine",
+        "image_author": "Hữu Hiệp",
+        "image_source": "Báo Đồng Khởi",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Khu lưu niệm nhà bác học Petrus Trương Vĩnh Ký rợp bóng hoa kiểng tại xã Vĩnh Thành, nơi lưu giữ nhiều tư liệu quý về cuộc đời nhà ngôn ngữ học lỗi lạc thế kỷ 19.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Đồng Khởi",
+        "verifiedAt": "2026-09-18T10:00:00Z"
       },
       "source": [
         {
@@ -104732,7 +104926,14 @@
         "schema_type": "LandmarksOrHistoricalBuildings",
         "sub_category": "pagoda",
         "coords_approximate": true,
-        "architectural_style": "Chùa Việt (kiến trúc Phật giáo Việt Nam)"
+        "architectural_style": "Chùa Việt (kiến trúc Phật giáo Việt Nam)",
+        "image_author": "Hữu Hiệp",
+        "image_source": "Báo Đồng Khởi",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Mái ngói âm dương rêu phong và hoa văn đắp nổi thanh tịnh tại Chùa Kim Long (Chùa Ước) xã Vĩnh Thành, điểm chiêm bái linh thiêng giữa vùng đất hoa kiểng Cái Mơn.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Đồng Khởi",
+        "verifiedAt": "2026-09-18T10:00:00Z"
       },
       "source": [
         {
@@ -105056,7 +105257,14 @@
         "address": "Phường Trường Long Hòa, Trà Vinh",
         "admission": "Miễn phí",
         "schema_type": "LandmarksOrHistoricalBuildings",
-        "sub_category": "cultural-heritage"
+        "sub_category": "cultural-heritage",
+        "image_author": "Bá Thi",
+        "image_source": "Báo Trà Vinh",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Dấu tích kiến trúc Nhà Mát cổ kính nép mình dưới hàng phi lao reo ven biển Ba Động, chứng tích thời kỳ hình thành điểm nghỉ mát ven biển đầu thế kỷ 20.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Trà Vinh",
+        "verifiedAt": "2026-09-18T10:00:00Z"
       },
       "source": [
         {
@@ -106543,7 +106751,14 @@
         "sub_category": "historic-site",
         "heritage_level": "Di tích lịch sử",
         "coords_approximate": true,
-        "architectural_style": "Tượng đài/bia tưởng niệm"
+        "architectural_style": "Tượng đài/bia tưởng niệm",
+        "image_author": "Quang Thuần",
+        "image_source": "Báo Vĩnh Long",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Cụm tượng đài ba chiến sĩ giải phóng quân tay chắc tay súng hiên ngang giữa Công viên Mậu Thân, tượng đài chiến thắng lịch sử ngã ba Chiều Tím thành phố Vĩnh Long.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long",
+        "verifiedAt": "2026-09-18T10:00:00Z"
       },
       "source": [
         {
@@ -118930,7 +119145,14 @@
         "travel_tip": "Liên hệ Bảo tàng Vĩnh Long trước để có hướng dẫn viên chuyên ngành đi cùng — không có người dẫn giải thì rất khó hiểu ý nghĩa của di chỉ.",
         "schema_type": "LandmarksOrHistoricalBuildings",
         "sub_category": "archaeological-site",
-        "coords_approximate": true
+        "coords_approximate": true,
+        "image_author": "Thanh Đức",
+        "image_source": "Báo Vĩnh Long",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Khu vực khai quật di chỉ khảo cổ Thành Mới tại xã Trung Hiệp, nơi phát lộ các lớp gạch cổ, mảnh gốm thô và dấu vết cư trú thuộc văn hóa Óc Eo từ đầu Công nguyên.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long",
+        "verifiedAt": "2026-09-18T10:00:00Z"
       },
       "source": [
         {
@@ -118979,7 +119201,14 @@
         "heritage_level": "Di tích lịch sử–văn hóa cấp tỉnh",
         "historical_event": "Trận Pháp đánh thành Vĩnh Long ngày 20/5/1862",
         "heritage_decision": "QĐ 3439/QĐ.UBT ngày 20/12/2000",
-        "coords_approximate": true
+        "coords_approximate": true,
+        "image_author": "Ngọc Trảng",
+        "image_source": "Báo Vĩnh Long",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Gian thờ chính của Nghĩa Trủng miếu tại ấp Phước Hanh B, nơi phụng thờ hương linh hàng ngàn nghĩa sĩ và đồng bào tử trận trong các đợt chống Pháp giữ thành Vĩnh Long.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long",
+        "verifiedAt": "2026-09-18T10:00:00Z"
       },
       "source": [
         {
@@ -119025,7 +119254,14 @@
         "address": "Xã Mỹ An, Mỹ Phước, Nhơn Phú, Vĩnh Long",
         "schema_type": "LandmarksOrHistoricalBuildings",
         "sub_category": "heritage-house",
-        "coords_approximate": true
+        "coords_approximate": true,
+        "image_author": "Trần Phước",
+        "image_source": "Báo Vĩnh Long",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Hàng trăm vòm lò nung gạch gốm san sát soi bóng xuống dòng kinh Thầy Kay, di sản làng nghề gạch gốm thủ công trứ danh trăm năm của huyện Mang Thít.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long",
+        "verifiedAt": "2026-09-18T10:00:00Z"
       },
       "source": [
         {
@@ -119703,7 +119939,14 @@
         "schema_type": "LandmarksOrHistoricalBuildings",
         "sub_category": "cultural-heritage",
         "coords_approximate": true,
-        "architectural_style": "Tượng đài/bia tưởng niệm"
+        "architectural_style": "Tượng đài/bia tưởng niệm",
+        "image_author": "Thanh Đức",
+        "image_source": "Báo Vĩnh Long",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Đường dạo rợp bóng cây xanh và hàng cau kiểng dẫn lối vào nhà tiếp đón Khu tưởng niệm Cố Chủ tịch Hội đồng Bộ trưởng Phạm Hùng, di tích lịch sử trang nghiêm tại Long Hồ.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long",
+        "verifiedAt": "2026-09-18T10:00:00Z"
       },
       "source": [
         {
@@ -119806,7 +120049,14 @@
         "schema_type": "LandmarksOrHistoricalBuildings",
         "sub_category": "communal-house",
         "coords_approximate": true,
-        "architectural_style": "Đình làng (kiến trúc truyền thống Nam bộ)"
+        "architectural_style": "Đình làng (kiến trúc truyền thống Nam bộ)",
+        "image_author": "Ngọc Trảng",
+        "image_source": "Báo Vĩnh Long",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Mái đình cổ ngói vảy rêu phong và bộ vì kèo gỗ chạm hoa sen tại Đình Kỳ Hà, ngôi đình làng được vua Tự Đức ban sắc phong năm 1852 và là cơ sở cách mạng thời tiền khởi nghĩa.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long",
+        "verifiedAt": "2026-09-18T10:00:00Z"
       },
       "source": [
         {
@@ -120841,7 +121091,14 @@
         "schema_type": "LandmarksOrHistoricalBuildings",
         "sub_category": "pagoda",
         "coords_approximate": true,
-        "architectural_style": "Chùa Hoa (kiến trúc Hoa)"
+        "architectural_style": "Chùa Hoa (kiến trúc Hoa)",
+        "image_author": "Bá Thi",
+        "image_source": "Báo Trà Vinh",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Nghệ thuật chạm khắc gỗ và phù điêu gốm trang trí tinh xảo trên mái ngói âm dương của Phước Minh Cung, di tích kiến trúc nghệ thuật quốc gia tại đường Điện Biên Phủ.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Trà Vinh",
+        "verifiedAt": "2026-09-18T10:00:00Z"
       },
       "source": [
         {
@@ -121095,7 +121352,14 @@
         "target_segments": "Tâm linh; lễ hội; diaspora",
         "coords_approximate": true,
         "suggested_duration": "Nửa ngày",
-        "architectural_style": "Lăng mộ (kiến trúc truyền thống)"
+        "architectural_style": "Lăng mộ (kiến trúc truyền thống)",
+        "image_author": "Bá Thi",
+        "image_source": "Báo Trà Vinh",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Lăng Ông Nam Hải tại ấp Cồn Tàu xã Trường Long Hòa, nơi lưu giữ bộ xương cá Ông khổng lồ và tổ chức lễ hội nghinh Ông truyền thống gắn liền vùng biển duyên hải.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Trà Vinh",
+        "verifiedAt": "2026-09-18T10:00:00Z"
       },
       "source": [
         {
@@ -123168,7 +123432,14 @@
         "address": "Xã Nhị Long",
         "schema_type": "LandmarksOrHistoricalBuildings",
         "sub_category": "historic-site",
-        "coords_approximate": true
+        "coords_approximate": true,
+        "image_author": "Bá Thi",
+        "image_source": "Báo Trà Vinh",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Nhà truyền thống và bia kỷ niệm Di tích lịch sử Chi bộ đầu tiên xã Nhị Long, địa chỉ đỏ giáo dục truyền thống cách mạng kiên trung của quê hương Càng Long hai lần anh hùng.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Trà Vinh",
+        "verifiedAt": "2026-09-18T10:00:00Z"
       },
       "source": [
         {
@@ -123332,7 +123603,14 @@
         "schema_type": "LandmarksOrHistoricalBuildings",
         "sub_category": "pagoda",
         "coords_approximate": true,
-        "architectural_style": "Chùa Khmer (kiến trúc Khmer Theravada)"
+        "architectural_style": "Chùa Khmer (kiến trúc Khmer Theravada)",
+        "image_author": "Bá Thi",
+        "image_source": "Báo Trà Vinh",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Tượng chồn Krud nâng đỡ diềm mái chánh điện chùa Âng giữa bóng mát hàng cổ thụ quanh bờ Ao Bà Om, biểu tượng nghệ thuật điêu khắc kiến trúc Phật giáo Khmer độc đáo.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Trà Vinh",
+        "verifiedAt": "2026-09-18T10:00:00Z"
       },
       "source": [
         {
