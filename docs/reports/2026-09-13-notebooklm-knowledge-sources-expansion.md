@@ -1,7 +1,7 @@
-# Báo Cáo Mở Rộng Kho Tri Thức Thẩm Quyền Cao Cho NotebookLM (70 Nguồn Tier 1 & Tier 2)
+# Báo Cáo Mở Rộng Kho Tri Thức Thẩm Quyền Cao Cho NotebookLM (72 Nguồn Tier 1 & Tier 2)
 
-> STATUS: active (2026-09-15) — Danh mục mở rộng nguồn tri thức thẩm quyền cao cho NotebookLM.
-> **Ngày lập:** 13/09/2026  
+> STATUS: active (2026-09-18) — Danh mục mở rộng nguồn tri thức thẩm quyền cao cho NotebookLM.
+> **Ngày lập:** 13/09/2026 (Cập nhật 18/09/2026)  
 > **Mục tiêu:** Mở rộng và làm sâu sắc kho tri thức số cho hệ thống 3 Sổ tay Google NotebookLM của dự án Vĩnh Long 360, phục vụ công tác đối chứng thực địa, làm giàu E-E-A-T, tối ưu hóa AEO/GEO Semantic Graph và chống ảo giác thông tin (anti-hallucination).  
 > **Bộ lọc thẩm quyền:** Tuân thủ tuyệt đối **Bộ lọc 3 Lớp (3-Tier Authority Filter)** — 100% nguồn thuộc Tier 1 (Cơ quan Nhà nước, Cổng TTĐT cấp Bộ/Tỉnh) và Tier 2 (Viện nghiên cứu, Trường đại học, Cơ quan Báo chí chính thống). Tuyệt đối **0%** blog tự do, mạng xã hội, tổng hợp thương mại.
 
@@ -14,15 +14,16 @@ Hệ thống NotebookLM của dự án hiện vận hành trên 3 Sổ tay chuy�
 2. **Sổ tay 2: `mekong-360-t-p-2`** ("Mekong 360 - Tập 2") — Tập trung vào Làng nghề truyền thống, Ẩm thực Nam Bộ & Khmer, Lễ hội dân gian & Duyên hải, Du lịch sinh thái miệt vườn & Mô hình cộng đồng thuận thiên.
 3. **Sổ tay 3: `ch-nh-s-ch-ph-p-lu-t-v-n-b-n-q`** ("Chính sách & Pháp luật (Văn bản, Quy định & Đề án)") — Tập trung vào Quy hoạch phát triển tỉnh thời kỳ 2021–2030, Đề án Di sản Đương đại Mang Thít, Bộ Tiêu chí Du lịch Xanh và các Nghị quyết hành chính.
 
-### Thống Kê Phân Bố 70 Nguồn Tri Thức Đã Chuẩn Hóa:
-- **Tổng số nguồn thẩm quyền:** **70 nguồn** (lưu trữ đầy đủ tại `outputs/notebooklm_curated_knowledge_sources.json` và đồng bộ `outputs/newly_added_sources.json`).
+### Thống Kê Phân Bố 72 Nguồn Tri Thức Đã Chuẩn Hóa:
+- **Tổng số nguồn thẩm quyền:** **72 nguồn** (lưu trữ đầy đủ tại `outputs/notebooklm_curated_knowledge_sources.json` và đồng bộ `outputs/newly_added_sources.json`).
 - **Phân bổ theo Cấp thẩm quyền (Authority Tier):**
-  * **Tier 1 (Thẩm quyền Nhà nước - Highest Authority, Weight 1.0):** **43 nguồn (61.4%)**
+  * **Tier 1 (Thẩm quyền Nhà nước - Highest Authority, Weight 1.0):** **45 nguồn (62.5%)**
     - Cổng TTĐT Chính phủ (`chinhphu.vn`, `vanban.chinhphu.vn`)
     - Cục Di sản Văn hóa - Bộ VHTTDL (`dsvh.gov.vn`)
     - Cục Du lịch Quốc gia Việt Nam (`vietnamtourism.gov.vn`, `nongthon.vietnamtourism.gov.vn`, `dantoc.vietnamtourism.gov.vn`)
     - Cổng TTĐT và các Sở ngành tỉnh Vĩnh Long, Bến Tre, Trà Vinh (`vinhlong.gov.vn`, `bentre.gov.vn`, `travinh.gov.vn`, `svhttdl.vinhlong.gov.vn`, `dulichbentre.gov.vn`, `skhcn.travinh.gov.vn`, `socongthuong.bentre.gov.vn`...)
-  * **Tier 2 (Học thuật & Báo chí Chính thống, Weight 0.9–0.95):** **27 nguồn (38.6%)**
+    - Bảo tàng tỉnh Vĩnh Long (`baotangvinhlong.vn`) & Cổng Du lịch Thông minh Vĩnh Long (`vinhlongtourist.vn`)
+  * **Tier 2 (Học thuật & Báo chí Chính thống, Weight 0.9–0.95):** **27 nguồn (37.5%)**
     - Viện Hàn lâm KHXH Việt Nam (`vass.gov.vn`)
     - Trường Đại học Cần Thơ (`ctu.edu.vn`)
     - Báo Nhân Dân (`nhandan.vn`)
@@ -31,15 +32,15 @@ Hệ thống NotebookLM của dự án hiện vận hành trên 3 Sổ tay chuy�
     - Báo Đồng Khởi (`baodongkhoi.vn`)
   * **Nguồn vi phạm / Banned:** **0 nguồn (0.0%)**
 - **Phân bổ theo Sổ tay NotebookLM:**
-  * **Sổ tay 1 (`v-nh-long-v-nh-long-b-n-tre-tr`):** **17 nguồn**
+  * **Sổ tay 1 (`v-nh-long-v-nh-long-b-n-tre-tr`):** **19 nguồn**
   * **Sổ tay 2 (`mekong-360-t-p-2`):** **50 nguồn**
   * **Sổ tay 3 (`ch-nh-s-ch-ph-p-lu-t-v-n-b-n-q`):** **3 nguồn**
 - **Phân bổ theo Chủ đề Văn hóa & Thổ nhưỡng:**
   * Làng nghề truyền thống & Kỹ nghệ thủ công (`TRADITIONAL_CRAFT`): **16 nguồn**
-  * Sinh thái sông nước, Cù lao & OCOP (`MEKONG_ECOLOGY_OCOP`): **13 nguồn**
+  * Sinh thái sông nước, Cù lao & OCOP (`MEKONG_ECOLOGY_OCOP`): **14 nguồn**
   * Văn hóa & Tín ngưỡng Khmer Nam Bộ (`KHMER_CULTURE`): **11 nguồn**
   * Lễ hội dân gian, Nghi lễ biển & Kỳ Yên (`FESTIVALS_RITUALS`): **9 nguồn**
-  * Khảo cổ, Di tích & Kiến trúc (`ARCHAEOLOGY_HERITAGE`): **8 nguồn**
+  * Khảo cổ, Di tích & Kiến trúc (`ARCHAEOLOGY_HERITAGE`): **9 nguồn**
   * Nhân vật lịch sử & Danh nhân văn hóa (`HISTORICAL_FIGURE`): **5 nguồn**
   * Ẩm thực bản địa chuyên sâu (`TERROIR_CUISINE_OCOP`): **4 nguồn**
   * Quy hoạch, Chính sách & Du lịch xanh (`ADMIN_PLANNING`): **4 nguồn**
@@ -101,6 +102,8 @@ Trước đợt mở rộng này, cơ sở dữ liệu và sổ tay tri thức c
 15. **SRC-TIER2-VL-046** [Tier 2]: *Lễ Xuân Đinh - Nét đẹp văn hóa khuyến học tại Văn Thánh Miếu* — Báo Vĩnh Long (`baovinhlong.com.vn`).
 16. **SRC-TIER2-VL-047** [Tier 2]: *Tổ chức Lễ hội Lăng Ông Thống chế Điều bát Nguyễn Văn Tồn tại Trà Ôn* — Báo Vĩnh Long (`baovinhlong.com.vn`).
 17. **SRC-TIER2-VL-062** [Tier 2]: *Đôi điều suy nghĩ về bảo tồn và phát huy nghệ thuật Đờn ca tài tử ở Vĩnh Long* — Báo Vĩnh Long (`baovinhlong.com.vn`).
+18. **SRC-TIER1-VL-071** [Tier 1]: *Cổng Thông tin Điện tử Bảo tàng tỉnh Vĩnh Long - Cơ sở dữ liệu hiện vật & Di sản văn hóa* — Bảo tàng tỉnh Vĩnh Long (`baotangvinhlong.vn`).
+19. **SRC-TIER1-VL-072** [Tier 1]: *Cổng Thông tin Du lịch Thông minh Vĩnh Long - Trung tâm Thông tin Xúc tiến Du lịch* — Sở VHTTDL tỉnh Vĩnh Long (`vinhlongtourist.vn`).
 
 ---
 

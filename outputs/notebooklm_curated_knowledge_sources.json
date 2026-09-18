@@ -1152,5 +1152,43 @@
     ],
     "summary_digest": "Phóng sự khánh thành Bảo tàng Dừa sáp tại huyện Cầu Kè; không gian trưng bày nguồn gốc giống dừa Makapuno do Hòa thượng Thạch Sô đưa từ Campuchia về chùa Chợ năm 1942; khu trải nghiệm chế biến sinh tố dừa sáp, dừa sáp sấy dẻo OCOP 5 sao và tinh dầu dừa sáp dưỡng da.",
     "relevance_notes": "Tư liệu cập nhật năm 2024-2026 về thiết chế văn hóa bảo tàng dừa sáp duy nhất tại Việt Nam."
+  },
+  {
+    "source_id": "SRC-TIER1-VL-071",
+    "title": "Cổng Thông tin Điện tử Bảo tàng tỉnh Vĩnh Long - Cơ sở dữ liệu hiện vật & Di sản văn hóa",
+    "author_or_institution": "Bảo tàng tỉnh Vĩnh Long - Sở Văn hóa, Thể thao và Du lịch tỉnh Vĩnh Long",
+    "url": "https://baotangvinhlong.vn/",
+    "publication_year": 2026,
+    "target_notebook": "v-nh-long-v-nh-long-b-n-tre-tr",
+    "tier": "TIER_1_GOVERNMENT",
+    "category": "ARCHAEOLOGY_HERITAGE",
+    "authority_weight": 1,
+    "extraction_scope": [
+      "bao-tang-vinh-long",
+      "van-thanh-mieu",
+      "khao-co-oc-eo-vinh-long",
+      "di-tich-lich-su-van-hoa"
+    ],
+    "summary_digest": "Cơ sở dữ liệu số chính thức của Bảo tàng Vĩnh Long lưu giữ và trưng bày hơn 27.000 hiện vật khảo cổ học, gốm Óc Eo, vũ khí kháng chiến, tư liệu về vùng đất địa linh nhân kiệt Vĩnh Long và thân thế danh nhân Nam Bộ.",
+    "relevance_notes": "Nguồn thẩm quyền cấp 1 trực tiếp của Bảo tàng tỉnh Vĩnh Long phục vụ đối chiếu hiện vật, di tích và nhân vật lịch sử."
+  },
+  {
+    "source_id": "SRC-TIER1-VL-072",
+    "title": "Cổng Thông tin Du lịch Thông minh Vĩnh Long - Trung tâm Thông tin Xúc tiến Du lịch",
+    "author_or_institution": "Trung tâm Thông tin Xúc tiến Du lịch Vĩnh Long - Sở Văn hóa, Thể thao và Du lịch tỉnh Vĩnh Long",
+    "url": "https://vinhlongtourist.vn/",
+    "publication_year": 2026,
+    "target_notebook": "v-nh-long-v-nh-long-b-n-tre-tr",
+    "tier": "TIER_1_GOVERNMENT",
+    "category": "MEKONG_ECOLOGY_OCOP",
+    "authority_weight": 1,
+    "extraction_scope": [
+      "du-lich-sinh-thai-vinh-long",
+      "homestay-cu-lao-an-binh",
+      "lang-nghe-vinh-long",
+      "am-thuc-vinh-long"
+    ],
+    "summary_digest": "Cổng thông tin xúc tiến và du lịch thông minh chính thức của tỉnh Vĩnh Long cung cấp danh bạ cơ sở lưu trú đạt chuẩn, lịch trình tour miệt vườn, điểm tham quan sinh thái cù lao An Bình và cẩm nang ẩm thực, làng nghề truyền thống.",
+    "relevance_notes": "Cổng thông tin xúc tiến du lịch chính thống cung cấp dữ liệu kiểm chứng tiện ích du lịch, homestay, điểm đến miệt vườn và lịch trình."
   }
 ]
