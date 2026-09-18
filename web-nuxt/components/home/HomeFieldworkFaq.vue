@@ -3,7 +3,6 @@
     <div class="fieldwork-faq__inner">
       <header class="fieldwork-faq__header">
         <div class="fieldwork-faq__tagline">
-          <span class="editorial-folio-tag" aria-hidden="true">FOLIO VII</span>
           <span class="fieldwork-faq__badge">
             <IconLine name="info" aria-hidden="true" />
             CHỈ DẪN THỰC ĐỊA
