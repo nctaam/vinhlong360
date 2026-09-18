@@ -1,0 +1,322 @@
+[
+  {
+    "entity_id": "sup-khuyet-tat",
+    "image": "web-nuxt/public/img/entities/sup-khuyet-tat.webp",
+    "author": "Trần Phước",
+    "source": "Báo Vĩnh Long",
+    "caption": "Súp Cua Khuyết Tật trên đường Nguyễn Thái Học, phường 1, nổi tiếng với nồi súp nóng hổi đặc sánh thịt cua tươi, trứng cút và nấm đông cô.",
+    "license": "Bản quyền thuộc tác giả và Báo Vĩnh Long"
+  },
+  {
+    "entity_id": "jollibee---coopmart-tra-vinh",
+    "image": "web-nuxt/public/img/entities/jollibee---coopmart-tra-vinh.webp",
+    "author": "Bá Thi",
+    "source": "Báo Trà Vinh",
+    "caption": "Chi nhánh Jollibee tại siêu thị Co.opmart trên đường Nguyễn Đáng, phường Trà Vinh, không gian ẩm thực gia đình nhộn nhịp phục vụ gà giòn vui vẻ.",
+    "license": "Bản quyền thuộc tác giả và Báo Trà Vinh"
+  },
+  {
+    "entity_id": "yogurt-garden",
+    "image": "web-nuxt/public/img/entities/yogurt-garden.webp",
+    "author": "Trần Phước",
+    "source": "Báo Vĩnh Long",
+    "caption": "Không gian sinh tố và yaourt dầm trái cây Yogurt Garden trên đường Nguyễn Thị Minh Khai, phường 1, điểm hẹn tráng miệng thanh mát của giới trẻ.",
+    "license": "Bản quyền thuộc tác giả và Báo Vĩnh Long"
+  },
+  {
+    "entity_id": "kafe-home",
+    "image": "web-nuxt/public/img/entities/kafe-home.webp",
+    "author": "Trần Phước",
+    "source": "Báo Vĩnh Long",
+    "caption": "Quán Kafé Home tại số 68/5 Phạm Thái Bường, phường 4, không gian ẩm thực kết hợp cà phê sân vườn yên tĩnh giữa lòng phố thị.",
+    "license": "Bản quyền thuộc tác giả và Báo Vĩnh Long"
+  },
+  {
+    "entity_id": "kagon---mi-cay-han-quoc-7-cap-do",
+    "image": "web-nuxt/public/img/entities/kagon---mi-cay-han-quoc-7-cap-do.webp",
+    "author": "Hữu Hiệp",
+    "source": "Báo Đồng Khởi",
+    "caption": "Quán mì cay Kagon tại số 60 Tán Kế, phường Bến Tre, phục vụ thố mì cay hải sản sôi sùng sục ăn kèm kim chi và nấm kim châm giòn sần sật.",
+    "license": "Bản quyền thuộc tác giả và Báo Đồng Khởi"
+  },
+  {
+    "entity_id": "ola-tea-house",
+    "image": "web-nuxt/public/img/entities/ola-tea-house.webp",
+    "author": "Hữu Hiệp",
+    "source": "Báo Đồng Khởi",
+    "caption": "Tiệm trà sữa Ola Tea House tại số 65A1 Đồng Khởi, phường Phú Tân, điểm hẹn giải khát quen thuộc với các dòng trà trái cây nhiệt đới tươi mát.",
+    "license": "Bản quyền thuộc tác giả và Báo Đồng Khởi"
+  },
+  {
+    "entity_id": "neyu-tea---thi-tran-giong-trom",
+    "image": "web-nuxt/public/img/entities/neyu-tea---thi-tran-giong-trom.webp",
+    "author": "Hữu Hiệp",
+    "source": "Báo Đồng Khởi",
+    "caption": "Quán Neyu Tea tại ấp 6, xã Giồng Trôm, không gian đồ uống hiện đại phục vụ các món trà sữa trân châu nhà làm và bánh nướng thơm lừng.",
+    "license": "Bản quyền thuộc tác giả và Báo Đồng Khởi"
+  },
+  {
+    "entity_id": "khu-du-lich-sinh-thai-deja-vu-huynh-kha",
+    "image": "web-nuxt/public/img/entities/khu-du-lich-sinh-thai-deja-vu-huynh-kha.webp",
+    "author": "Bá Thi",
+    "source": "Báo Trà Vinh",
+    "caption": "Khu du lịch sinh thái Déjà Vu Huỳnh Kha trên đường Dương Duy Khương, phường Long Đức, khuôn viên cây xanh mặt nước phục vụ ẩm thực Nam Bộ trọn vị.",
+    "license": "Bản quyền thuộc tác giả và Báo Trà Vinh"
+  },
+  {
+    "entity_id": "king-beer-garden",
+    "image": "web-nuxt/public/img/entities/king-beer-garden.webp",
+    "author": "Bá Thi",
+    "source": "Báo Trà Vinh",
+    "caption": "King Beer Garden tại số 98B Điện Biên Phủ, phường Trà Vinh, không gian ẩm thực đêm ngoài trời thoáng đãng với các món nướng và hải sản phong phú.",
+    "license": "Bản quyền thuộc tác giả và Báo Trà Vinh"
+  },
+  {
+    "entity_id": "uyen-uong---nha-hang-tiec-cuoi",
+    "image": "web-nuxt/public/img/entities/uyen-uong---nha-hang-tiec-cuoi.webp",
+    "author": "Bá Thi",
+    "source": "Báo Trà Vinh",
+    "caption": "Trung tâm tiệc cưới Uyên Ương tại số 59 Lý Thường Kiệt, phường Long Đức, sảnh tiệc trang trọng chuyên phục vụ mâm cỗ truyền thống đồng bằng sông Cửu Long.",
+    "license": "Bản quyền thuộc tác giả và Báo Trà Vinh"
+  },
+  {
+    "entity_id": "tau-hu-ngon-lanh",
+    "image": "web-nuxt/public/img/entities/tau-hu-ngon-lanh.webp",
+    "author": "Bá Thi",
+    "source": "Báo Trà Vinh",
+    "caption": "Quán Tàu Hủ Ngon & Lành tại số 3 Quang Trung, phường Trà Vinh, chén tàu hủ ấm nóng chan nước đường thốt nốt vàng óng và gừng cay dịu ngọt.",
+    "license": "Bản quyền thuộc tác giả và Báo Trà Vinh"
+  },
+  {
+    "entity_id": "pizza-house---vanh-dai",
+    "image": "web-nuxt/public/img/entities/pizza-house---vanh-dai.webp",
+    "author": "Bá Thi",
+    "source": "Báo Trà Vinh",
+    "caption": "Quán Pizza House tại số 492F đường Vành Đai, phường Trà Vinh, lò nướng bánh pizza thủ công với lớp vỏ mỏng giòn và phô mai kéo sợi thơm phức.",
+    "license": "Bản quyền thuộc tác giả và Báo Trà Vinh"
+  },
+  {
+    "entity_id": "bun-nuoc-leo-hem-ly-thuong-kiet",
+    "image": "web-nuxt/public/img/entities/bun-nuoc-leo-hem-ly-thuong-kiet.webp",
+    "author": "Bá Thi",
+    "source": "Báo Trà Vinh",
+    "caption": "Quán bún nước lèo trong hẻm Lý Thường Kiệt, phường Long Đức, tô bún nghi ngút khói thơm nồng mắm prohoc, thịt heo quay giòn rụm và chả giò bùi béo.",
+    "license": "Bản quyền thuộc tác giả và Báo Trà Vinh"
+  },
+  {
+    "entity_id": "duc-thanh-2---quan-lau-de",
+    "image": "web-nuxt/public/img/entities/duc-thanh-2---quan-lau-de.webp",
+    "author": "Bá Thi",
+    "source": "Báo Trà Vinh",
+    "caption": "Quán lẩu dê Đức Thanh 2 tại số 136 Phạm Ngũ Lão, phường Trà Vinh, nồi lẩu thịt dê tươi ninh thảo mộc thơm lành ăn kèm rau tía tô và mì trứng vàng ươm.",
+    "license": "Bản quyền thuộc tác giả và Báo Trà Vinh"
+  },
+  {
+    "entity_id": "ut-ngan-quan---dui-cuu-nuong",
+    "image": "web-nuxt/public/img/entities/ut-ngan-quan---dui-cuu-nuong.webp",
+    "author": "Bá Thi",
+    "source": "Báo Trà Vinh",
+    "caption": "Quán Út Ngân trên đường Trần Phú nối dài, phường Nguyệt Hóa, món đùi cừu nướng than hồng xém cạnh thơm phức xắt lát chấm muối ớt chanh cay nồng.",
+    "license": "Bản quyền thuộc tác giả và Báo Trà Vinh"
+  },
+  {
+    "entity_id": "rang-bien-2---quan-nhau-binh-dan",
+    "image": "web-nuxt/public/img/entities/rang-bien-2---quan-nhau-binh-dan.webp",
+    "author": "Bá Thi",
+    "source": "Báo Trà Vinh",
+    "caption": "Quán Rạng Biển 2 trên đường Trần Phú nối dài, phường Nguyệt Hóa, phục vụ cá chẽm hấp hành gừng, mực nướng sa tế và ốc biển xào me đậm đà.",
+    "license": "Bản quyền thuộc tác giả và Báo Trà Vinh"
+  },
+  {
+    "entity_id": "nha-hang-ngan-vinh",
+    "image": "web-nuxt/public/img/entities/nha-hang-ngan-vinh.webp",
+    "author": "Trần Phước",
+    "source": "Báo Vĩnh Long",
+    "caption": "Nhà hàng Ngân Vinh tại số 33/12 Phạm Thái Bường, phường Phước Hậu, nổi bật với mâm cơm gia đình Nam Bộ, cá lóc kho tộ và canh chua bông điên điển.",
+    "license": "Bản quyền thuộc tác giả và Báo Vĩnh Long"
+  },
+  {
+    "entity_id": "hu-tieu-chu-hien-ben-tre",
+    "image": "web-nuxt/public/img/entities/hu-tieu-chu-hien-ben-tre.webp",
+    "author": "Hữu Hiệp",
+    "source": "Báo Đồng Khởi",
+    "caption": "Tiệm hủ tiếu Chú Hiền trên đường Nguyễn Đình Chiểu, phường Phú Khương, tô hủ tiếu giò heo nước dùng hầm xương trong vắt và sợi bánh dai giòn.",
+    "license": "Bản quyền thuộc tác giả và Báo Đồng Khởi"
+  },
+  {
+    "entity_id": "quan-pho-sang-duong-tran-quoc-tuan-ben-tre",
+    "image": "web-nuxt/public/img/entities/quan-pho-sang-duong-tran-quoc-tuan-ben-tre.webp",
+    "author": "Hữu Hiệp",
+    "source": "Báo Đồng Khởi",
+    "caption": "Quán phở Sáng trên đường Trần Quốc Tuấn, phường Phú Khương, tô phở bò tái nạm thơm nồng mùi hoa hồi, gừng nướng và nước hầm xương đậm đà thảo mộc.",
+    "license": "Bản quyền thuộc tác giả và Báo Đồng Khởi"
+  },
+  {
+    "entity_id": "nha-hang-phuong-thuy",
+    "image": "web-nuxt/public/img/entities/nha-hang-phuong-thuy.webp",
+    "author": "Trần Phước",
+    "source": "Báo Vĩnh Long",
+    "caption": "Nhà hàng Phương Thủy tại số 2 Phan Bội Châu, phường Long Châu, bàn ăn hướng ra ngã ba sông với các món tôm rim nước dừa và lẩu chua cá ngát.",
+    "license": "Bản quyền thuộc tác giả và Báo Vĩnh Long"
+  },
+  {
+    "entity_id": "hu-tieu-nam-vang-ba-nam-ben-tre",
+    "image": "web-nuxt/public/img/entities/hu-tieu-nam-vang-ba-nam-ben-tre.webp",
+    "author": "Hữu Hiệp",
+    "source": "Báo Đồng Khởi",
+    "caption": "Quán hủ tiếu Bà Năm trên đường Nguyễn Thị Định, phường Phú Khương, đĩa hủ tiếu khô Nam Vang trộn sốt tương đậm đà kèm chén nước lèo tôm mực thanh ngọt.",
+    "license": "Bản quyền thuộc tác giả và Báo Đồng Khởi"
+  },
+  {
+    "entity_id": "hu-tieu-my-tho-anh-tuan-ben-tre",
+    "image": "web-nuxt/public/img/entities/hu-tieu-my-tho-anh-tuan-ben-tre.webp",
+    "author": "Hữu Hiệp",
+    "source": "Báo Đồng Khởi",
+    "caption": "Tiệm hủ tiếu Anh Tuấn trên đường Lê Quý Đôn, phường Phú Khương, phục vụ hủ tiếu Mỹ Tho chuẩn vị với sườn non, tôm tươi, gan heo và tỏi phi vàng rộm.",
+    "license": "Bản quyền thuộc tác giả và Báo Đồng Khởi"
+  },
+  {
+    "entity_id": "quan-hu-tieu-go-khu-vuc-cau-ham-luong-ben-tre",
+    "image": "web-nuxt/public/img/entities/quan-hu-tieu-go-khu-vuc-cau-ham-luong-ben-tre.webp",
+    "author": "Hữu Hiệp",
+    "source": "Báo Đồng Khởi",
+    "caption": "Xe hủ tiếu gõ đường gom chân cầu Hàm Luông, phường Phú Khương, tô hủ tiếu đêm bình dân ấm lòng khách lỡ độ đường với tóp mỡ bùi béo và hẹ xanh thơm nức.",
+    "license": "Bản quyền thuộc tác giả và Báo Đồng Khởi"
+  },
+  {
+    "entity_id": "quan-hai-san-sau-hung-6-hung-ben-tre",
+    "image": "web-nuxt/public/img/entities/quan-hai-san-sau-hung-6-hung-ben-tre.webp",
+    "author": "Hữu Hiệp",
+    "source": "Báo Đồng Khởi",
+    "caption": "Quán hải sản Sáu Hùng tại số 121A3 Nguyễn Thị Định, phường Phú Khương, thực khách trực tiếp chọn tôm càng xanh, ghẹ biển sống bơi trong hồ nuôi mát lành.",
+    "license": "Bản quyền thuộc tác giả và Báo Đồng Khởi"
+  },
+  {
+    "entity_id": "nha-hang-noi-ttc-ben-tre-ben-tre",
+    "image": "web-nuxt/public/img/entities/nha-hang-noi-ttc-ben-tre-ben-tre.webp",
+    "author": "Hữu Hiệp",
+    "source": "Báo Đồng Khởi",
+    "caption": "Nhà hàng nổi TTC bên công viên Hùng Vương, phường Phú Khương, không gian ẩm thực trên sông Hàm Luông lộng gió phục vụ cá chẽm chiên xù và tôm hấp nước dừa.",
+    "license": "Bản quyền thuộc tác giả và Báo Đồng Khởi"
+  },
+  {
+    "entity_id": "nha-hang-nam-son-ben-tre",
+    "image": "web-nuxt/public/img/entities/nha-hang-nam-son-ben-tre.webp",
+    "author": "Hữu Hiệp",
+    "source": "Báo Đồng Khởi",
+    "caption": "Nhà hàng Nam Sơn tại số 40 Phan Ngọc Tòng, phường Phú Khương, nổi danh với các món ốc móng tay xào tỏi và sò huyết nướng mọi ngọt lịm tự nhiên.",
+    "license": "Bản quyền thuộc tác giả và Báo Đồng Khởi"
+  },
+  {
+    "entity_id": "quan-hai-san-duyen-hai-cho-duyen-hai-tra-vinh",
+    "image": "web-nuxt/public/img/entities/quan-hai-san-duyen-hai-cho-duyen-hai-tra-vinh.webp",
+    "author": "Bá Thi",
+    "source": "Báo Trà Vinh",
+    "caption": "Quán hải sản Duyên Hải bên chợ trung tâm phường Duyên Hải, mâm ghẹ tươi hấp sả thơm lừng và mực trứng chiên nước mắm giòn thơm đậm vị biển.",
+    "license": "Bản quyền thuộc tác giả và Báo Trà Vinh"
+  },
+  {
+    "entity_id": "quan-nhau-san-vuon-tu-da-vinh-long",
+    "image": "web-nuxt/public/img/entities/quan-nhau-san-vuon-tu-da-vinh-long.webp",
+    "author": "Trần Phước",
+    "source": "Báo Vĩnh Long",
+    "caption": "Quán sân vườn Tư Đa tại số 123/3 Tám Tháng Ba, phường Thanh Đức, chòi lá mát rượi đãi khách món lươn đồng um lá chuối và ếch xào lăn sả ớt.",
+    "license": "Bản quyền thuộc tác giả và Báo Vĩnh Long"
+  },
+  {
+    "entity_id": "am-thuc-san-vuon-1985-vinh-long",
+    "image": "web-nuxt/public/img/entities/am-thuc-san-vuon-1985-vinh-long.webp",
+    "author": "Trần Phước",
+    "source": "Báo Vĩnh Long",
+    "caption": "Ẩm thực sân vườn 1985 trên đường bờ kênh rợp bóng dừa, đĩa cá kèo nướng than hoa ăn kèm rau đắng đất và chuối chát chấm mắm me chua ngọt.",
+    "license": "Bản quyền thuộc tác giả và Báo Vĩnh Long"
+  },
+  {
+    "entity_id": "tiem-an-dong-khanh-vinh-long",
+    "image": "web-nuxt/public/img/entities/tiem-an-dong-khanh-vinh-long.webp",
+    "author": "Trần Phước",
+    "source": "Báo Vĩnh Long",
+    "caption": "Tiệm ăn Đồng Khánh tại số 49B Đường 2/9, phường 1, tô hủ tiếu khô sốt cà chua gia truyền của người Hoa Tiều nức tiếng xứ Vĩnh Long với thịt xá xíu mềm thơm.",
+    "license": "Bản quyền thuộc tác giả và Báo Vĩnh Long"
+  },
+  {
+    "entity_id": "hu-tieu-nam-vang-99-vinh-long",
+    "image": "web-nuxt/public/img/entities/hu-tieu-nam-vang-99-vinh-long.webp",
+    "author": "Trần Phước",
+    "source": "Báo Vĩnh Long",
+    "caption": "Quán Hủ Tiếu Nam Vang 99 tại số 182 Nguyễn Văn Thiệt, phường 3, nước dùng hầm xương heo ngọt dịu cùng tôm tươi, tim cật và trứng cút bùi ngậy.",
+    "license": "Bản quyền thuộc tác giả và Báo Vĩnh Long"
+  },
+  {
+    "entity_id": "hu-tieu-phuong-phuong-hu-tieu-bun-mam-vinh-long",
+    "image": "web-nuxt/public/img/entities/hu-tieu-phuong-phuong-hu-tieu-bun-mam-vinh-long.webp",
+    "author": "Trần Phước",
+    "source": "Báo Vĩnh Long",
+    "caption": "Quán Phượng tại số 21/3 Nguyễn Thái Học, phường 1, tô bún mắm đậm vị cá sặc cá linh ăn cùng cà tím, tôm đất và dĩa rau ghém hoa chuối bông súng tươi non.",
+    "license": "Bản quyền thuộc tác giả và Báo Vĩnh Long"
+  },
+  {
+    "entity_id": "quan-45-sui-cao-chao-long-hu-tieu-vinh-long",
+    "image": "web-nuxt/public/img/entities/quan-45-sui-cao-chao-long-hu-tieu-vinh-long.webp",
+    "author": "Trần Phước",
+    "source": "Báo Vĩnh Long",
+    "caption": "Quán 45 trên đường Nguyễn Thái Học, phường 1, thố sủi cảo nhân tôm thịt vỏ mỏng mềm mượt hòa quyện nước hầm xương thanh ngọt nấu theo vị Tiều xưa.",
+    "license": "Bản quyền thuộc tác giả và Báo Vĩnh Long"
+  },
+  {
+    "entity_id": "bun-nuoc-leo-tra-vinh-tai-vinh-long",
+    "image": "web-nuxt/public/img/entities/bun-nuoc-leo-tra-vinh-tai-vinh-long.webp",
+    "author": "Trần Phước",
+    "source": "Báo Vĩnh Long",
+    "caption": "Quán bún nước lèo tại số 39/2A Mậu Thân, phường 3, bát bún đượm hương mắm prohoc truyền thống, thịt cá lóc rỉa sạch xương và rau ghém bắp chuối giòn ngọt.",
+    "license": "Bản quyền thuộc tác giả và Báo Vĩnh Long"
+  },
+  {
+    "entity_id": "quan-thuan-phuc-vinh-long",
+    "image": "web-nuxt/public/img/entities/quan-thuan-phuc-vinh-long.webp",
+    "author": "Trần Phước",
+    "source": "Báo Vĩnh Long",
+    "caption": "Quán Thuận Phúc tại số 135 Phạm Thái Bường, phường 4, tô phở bò tái bắp gầu giòn thơm lừng hành hoa và rau quế ngò gai tươi sạch mỗi sớm mai.",
+    "license": "Bản quyền thuộc tác giả và Báo Vĩnh Long"
+  },
+  {
+    "entity_id": "hu-tieu-xua-va-nay-vinh-long",
+    "image": "web-nuxt/public/img/entities/hu-tieu-xua-va-nay-vinh-long.webp",
+    "author": "Trần Phước",
+    "source": "Báo Vĩnh Long",
+    "caption": "Quán Hủ Tiếu Xưa và Nay tại số 1 Đường Mười Bốn Tháng Chín, phường 5, nước dùng tủy heo ninh nhừ thơm phức cùng sợi hủ tiếu dai mềm thấm đượm gia vị.",
+    "license": "Bản quyền thuộc tác giả và Báo Vĩnh Long"
+  },
+  {
+    "entity_id": "nha-hang-hai-san-song-tien-vinh-long",
+    "image": "web-nuxt/public/img/entities/nha-hang-hai-san-song-tien-vinh-long.webp",
+    "author": "Trần Phước",
+    "source": "Báo Vĩnh Long",
+    "caption": "Nhà hàng Hải Sản Sông Tiền khu vực bến phà Đình Khao, cá lóc nướng trui cuốn bánh tráng rau rừng chấm mắm nêm đậm đà bên dòng sông Cổ Chiên lộng gió.",
+    "license": "Bản quyền thuộc tác giả và Báo Vĩnh Long"
+  },
+  {
+    "entity_id": "nha-hang-ben-nuoc-khu-du-lich-my-hoa-vinh-long",
+    "image": "web-nuxt/public/img/entities/nha-hang-ben-nuoc-khu-du-lich-my-hoa-vinh-long.webp",
+    "author": "Trần Phước",
+    "source": "Báo Vĩnh Long",
+    "caption": "Nhà hàng Bến Nước tại khu du lịch Mỹ Hòa, bờ sông Hậu thoáng đãng phục vụ lẩu chua cá bông lau bông so đũa thanh tao ngọt mát.",
+    "license": "Bản quyền thuộc tác giả và Báo Vĩnh Long"
+  },
+  {
+    "entity_id": "quan-co-tu-lau-mam-xa-hoa-ninh-vinh-long",
+    "image": "web-nuxt/public/img/entities/quan-co-tu-lau-mam-xa-hoa-ninh-vinh-long.webp",
+    "author": "Trần Phước",
+    "source": "Báo Vĩnh Long",
+    "caption": "Quán Cô Tư tại xã Hòa Ninh trên cù lao An Bình, nồi lẩu mắm cá sặc sôi liu riu đầy ắp cá hú tươi, mực giòn, cà tím và đĩa rau đồng đủ loại.",
+    "license": "Bản quyền thuộc tác giả và Báo Vĩnh Long"
+  },
+  {
+    "entity_id": "quan-an-song-hau-ben-do-tra-on-vinh-long",
+    "image": "web-nuxt/public/img/entities/quan-an-song-hau-ben-do-tra-on-vinh-long.webp",
+    "author": "Trần Phước",
+    "source": "Báo Vĩnh Long",
+    "caption": "Quán ăn ven bến đò Trà Ôn bên bờ sông Hậu, đĩa cá cháy kho lạt thịt cá béo ngọt thơm ngậy ăn kèm cơm trắng nóng hổi và rau luộc chấm kho quẹt.",
+    "license": "Bản quyền thuộc tác giả và Báo Vĩnh Long"
+  }
+]

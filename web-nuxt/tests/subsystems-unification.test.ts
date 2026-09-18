@@ -389,8 +389,8 @@ describe('Milestone M3: Unified Organic Heritage Entity Subsystems', () => {
       const dbHash = createHash('sha256').update(readFileSync(dbPath)).digest('hex')
       const dataHash = createHash('sha256').update(readFileSync(dataPath)).digest('hex')
 
-      expect(dbHash).toBe('2b352b429623bc3f16cf18fc4e79865dc3234196d50bdb172eee21a477c84f3c')
-      expect(dataHash).toBe('6ef1935cbe8b1de04cb18215db7955bdcf0252ea7bfa8924a27baf41bf9f9687')
+      expect(dbHash).toBe('3c0e5229ad3ead2ab6439e0a49c2c26ea53153308354b18953cb2fdde31a5f24')
+      expect(dataHash).toBe('c60502d1007caedafd19be94b09c88123bced50425f015c4dcdb85d5743a946c')
     })
   })
 })

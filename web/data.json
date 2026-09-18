@@ -23650,7 +23650,14 @@
         "schema_type": "Restaurant",
         "review_count": 6,
         "sub_category": "restaurant",
-        "coords_approximate": true
+        "coords_approximate": true,
+        "image_author": "Trần Phước",
+        "image_source": "Báo Vĩnh Long",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Súp Cua Khuyết Tật trên đường Nguyễn Thái Học, phường 1, nổi tiếng với nồi súp nóng hổi đặc sánh thịt cua tươi, trứng cút và nấm đông cô.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long",
+        "verifiedAt": "2026-09-18T08:30:00Z"
       },
       "source": [
         {
@@ -30850,7 +30857,14 @@
         "schema_type": "Restaurant",
         "review_count": 11,
         "sub_category": "restaurant",
-        "coords_approximate": true
+        "coords_approximate": true,
+        "image_author": "Bá Thi",
+        "image_source": "Báo Trà Vinh",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Chi nhánh Jollibee tại siêu thị Co.opmart trên đường Nguyễn Đáng, phường Trà Vinh, không gian ẩm thực gia đình nhộn nhịp phục vụ gà giòn vui vẻ.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Trà Vinh",
+        "verifiedAt": "2026-09-18T08:30:00Z"
       },
       "source": [
         {
@@ -51570,7 +51584,14 @@
         "schema_type": "Restaurant",
         "review_count": 5,
         "sub_category": "restaurant",
-        "coords_approximate": true
+        "coords_approximate": true,
+        "image_author": "Trần Phước",
+        "image_source": "Báo Vĩnh Long",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Không gian sinh tố và yaourt dầm trái cây Yogurt Garden trên đường Nguyễn Thị Minh Khai, phường 1, điểm hẹn tráng miệng thanh mát của giới trẻ.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long",
+        "verifiedAt": "2026-09-18T08:30:00Z"
       },
       "source": [
         {
@@ -52920,7 +52941,14 @@
         "schema_type": "Restaurant",
         "review_count": 5,
         "sub_category": "restaurant",
-        "coords_approximate": true
+        "coords_approximate": true,
+        "image_author": "Trần Phước",
+        "image_source": "Báo Vĩnh Long",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Quán Kafé Home tại số 68/5 Phạm Thái Bường, phường 4, không gian ẩm thực kết hợp cà phê sân vườn yên tĩnh giữa lòng phố thị.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long",
+        "verifiedAt": "2026-09-18T08:30:00Z"
       },
       "source": [
         {
@@ -53058,7 +53086,14 @@
         "schema_type": "Restaurant",
         "review_count": 18,
         "sub_category": "seafood_river",
-        "coords_approximate": true
+        "coords_approximate": true,
+        "image_author": "Hữu Hiệp",
+        "image_source": "Báo Đồng Khởi",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Quán mì cay Kagon tại số 60 Tán Kế, phường Bến Tre, phục vụ thố mì cay hải sản sôi sùng sục ăn kèm kim chi và nấm kim châm giòn sần sật.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Đồng Khởi",
+        "verifiedAt": "2026-09-18T08:30:00Z"
       },
       "source": [
         {
@@ -53918,7 +53953,14 @@
         "schema_type": "Restaurant",
         "review_count": 5,
         "sub_category": "restaurant",
-        "coords_approximate": true
+        "coords_approximate": true,
+        "image_author": "Hữu Hiệp",
+        "image_source": "Báo Đồng Khởi",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Tiệm trà sữa Ola Tea House tại số 65A1 Đồng Khởi, phường Phú Tân, điểm hẹn giải khát quen thuộc với các dòng trà trái cây nhiệt đới tươi mát.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Đồng Khởi",
+        "verifiedAt": "2026-09-18T08:30:00Z"
       },
       "source": [
         {
@@ -53976,7 +54018,14 @@
         "schema_type": "Restaurant",
         "review_count": 4,
         "sub_category": "restaurant",
-        "coords_approximate": true
+        "coords_approximate": true,
+        "image_author": "Hữu Hiệp",
+        "image_source": "Báo Đồng Khởi",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Quán Neyu Tea tại ấp 6, xã Giồng Trôm, không gian đồ uống hiện đại phục vụ các món trà sữa trân châu nhà làm và bánh nướng thơm lừng.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Đồng Khởi",
+        "verifiedAt": "2026-09-18T08:30:00Z"
       },
       "source": [
         {
@@ -54042,7 +54091,14 @@
         "schema_type": "Restaurant",
         "review_count": 14,
         "sub_category": "restaurant",
-        "coords_approximate": true
+        "coords_approximate": true,
+        "image_author": "Bá Thi",
+        "image_source": "Báo Trà Vinh",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Khu du lịch sinh thái Déjà Vu Huỳnh Kha trên đường Dương Duy Khương, phường Long Đức, khuôn viên cây xanh mặt nước phục vụ ẩm thực Nam Bộ trọn vị.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Trà Vinh",
+        "verifiedAt": "2026-09-18T08:30:00Z"
       },
       "source": [
         {
@@ -54500,7 +54556,14 @@
         "schema_type": "Restaurant",
         "review_count": 4,
         "sub_category": "nhau",
-        "coords_approximate": true
+        "coords_approximate": true,
+        "image_author": "Bá Thi",
+        "image_source": "Báo Trà Vinh",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "King Beer Garden tại số 98B Điện Biên Phủ, phường Trà Vinh, không gian ẩm thực đêm ngoài trời thoáng đãng với các món nướng và hải sản phong phú.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Trà Vinh",
+        "verifiedAt": "2026-09-18T08:30:00Z"
       },
       "source": [
         {
@@ -54695,7 +54758,14 @@
         "schema_type": "Restaurant",
         "review_count": 4,
         "sub_category": "restaurant",
-        "coords_approximate": true
+        "coords_approximate": true,
+        "image_author": "Bá Thi",
+        "image_source": "Báo Trà Vinh",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Trung tâm tiệc cưới Uyên Ương tại số 59 Lý Thường Kiệt, phường Long Đức, sảnh tiệc trang trọng chuyên phục vụ mâm cỗ truyền thống đồng bằng sông Cửu Long.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Trà Vinh",
+        "verifiedAt": "2026-09-18T08:30:00Z"
       },
       "source": [
         {
@@ -54753,7 +54823,14 @@
         "schema_type": "Restaurant",
         "review_count": 3,
         "sub_category": "restaurant",
-        "coords_approximate": true
+        "coords_approximate": true,
+        "image_author": "Bá Thi",
+        "image_source": "Báo Trà Vinh",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Quán Tàu Hủ Ngon & Lành tại số 3 Quang Trung, phường Trà Vinh, chén tàu hủ ấm nóng chan nước đường thốt nốt vàng óng và gừng cay dịu ngọt.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Trà Vinh",
+        "verifiedAt": "2026-09-18T08:30:00Z"
       },
       "source": [
         {
@@ -54811,7 +54888,14 @@
         "schema_type": "Restaurant",
         "review_count": 4,
         "sub_category": "restaurant",
-        "coords_approximate": true
+        "coords_approximate": true,
+        "image_author": "Bá Thi",
+        "image_source": "Báo Trà Vinh",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Quán Pizza House tại số 492F đường Vành Đai, phường Trà Vinh, lò nướng bánh pizza thủ công với lớp vỏ mỏng giòn và phô mai kéo sợi thơm phức.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Trà Vinh",
+        "verifiedAt": "2026-09-18T08:30:00Z"
       },
       "source": [
         {
@@ -55863,11 +55947,17 @@
             "authority_weight": 0.95
           }
         ],
-        "verifiedAt": "2026-09-13T21:30:00+07:00",
+        "verifiedAt": "2026-09-18T08:30:00Z",
         "verifiedSource": "NotebookLM Deep Terroir Research - Phase 9",
         "hours": "14:00 - 20:30 hàng ngày (chuyên phục vụ khung giờ chiều và tối)",
         "price_range": "25.000 - 35.000 đ/tô",
-        "best_time": "Buổi chiều muộn 16:30 - 18:00 khi tiết trời dịu mát, thưởng thức tô bún nóng hổi cay the"
+        "best_time": "Buổi chiều muộn 16:30 - 18:00 khi tiết trời dịu mát, thưởng thức tô bún nóng hổi cay the",
+        "image_author": "Bá Thi",
+        "image_source": "Báo Trà Vinh",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Quán bún nước lèo trong hẻm Lý Thường Kiệt, phường Long Đức, tô bún nghi ngút khói thơm nồng mắm prohoc, thịt heo quay giòn rụm và chả giò bùi béo.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Trà Vinh"
       },
       "source": [
         {
@@ -55933,7 +56023,14 @@
         "schema_type": "Restaurant",
         "review_count": 2,
         "sub_category": "nhau",
-        "coords_approximate": true
+        "coords_approximate": true,
+        "image_author": "Bá Thi",
+        "image_source": "Báo Trà Vinh",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Quán lẩu dê Đức Thanh 2 tại số 136 Phạm Ngũ Lão, phường Trà Vinh, nồi lẩu thịt dê tươi ninh thảo mộc thơm lành ăn kèm rau tía tô và mì trứng vàng ươm.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Trà Vinh",
+        "verifiedAt": "2026-09-18T08:30:00Z"
       },
       "source": [
         {
@@ -55999,7 +56096,14 @@
         "schema_type": "Restaurant",
         "review_count": 2,
         "sub_category": "restaurant",
-        "coords_approximate": true
+        "coords_approximate": true,
+        "image_author": "Bá Thi",
+        "image_source": "Báo Trà Vinh",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Quán Út Ngân trên đường Trần Phú nối dài, phường Nguyệt Hóa, món đùi cừu nướng than hồng xém cạnh thơm phức xắt lát chấm muối ớt chanh cay nồng.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Trà Vinh",
+        "verifiedAt": "2026-09-18T08:30:00Z"
       },
       "source": [
         {
@@ -56065,7 +56169,14 @@
         "schema_type": "Restaurant",
         "review_count": 2,
         "sub_category": "nhau",
-        "coords_approximate": true
+        "coords_approximate": true,
+        "image_author": "Bá Thi",
+        "image_source": "Báo Trà Vinh",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Quán Rạng Biển 2 trên đường Trần Phú nối dài, phường Nguyệt Hóa, phục vụ cá chẽm hấp hành gừng, mực nướng sa tế và ốc biển xào me đậm đà.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Trà Vinh",
+        "verifiedAt": "2026-09-18T08:30:00Z"
       },
       "source": [
         {
@@ -57635,7 +57746,14 @@
         "specialty": "Ẩm thực Việt",
         "schema_type": "Restaurant",
         "sub_category": "restaurant",
-        "coords_approximate": true
+        "coords_approximate": true,
+        "image_author": "Trần Phước",
+        "image_source": "Báo Vĩnh Long",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Nhà hàng Ngân Vinh tại số 33/12 Phạm Thái Bường, phường Phước Hậu, nổi bật với mâm cơm gia đình Nam Bộ, cá lóc kho tộ và canh chua bông điên điển.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long",
+        "verifiedAt": "2026-09-18T08:30:00Z"
       },
       "source": [
         {
@@ -64191,7 +64309,14 @@
         "schema_type": "TouristAttraction",
         "sub_category": "pho_bun",
         "daily_capacity": "150-200 tô",
-        "coords_approximate": true
+        "coords_approximate": true,
+        "image_author": "Hữu Hiệp",
+        "image_source": "Báo Đồng Khởi",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Tiệm hủ tiếu Chú Hiền trên đường Nguyễn Đình Chiểu, phường Phú Khương, tô hủ tiếu giò heo nước dùng hầm xương trong vắt và sợi bánh dai giòn.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Đồng Khởi",
+        "verifiedAt": "2026-09-18T08:30:00Z"
       },
       "source": [
         {
@@ -64263,7 +64388,14 @@
         "schema_type": "TouristAttraction",
         "sub_category": "pho_bun",
         "daily_capacity": "100-130 tô",
-        "coords_approximate": true
+        "coords_approximate": true,
+        "image_author": "Hữu Hiệp",
+        "image_source": "Báo Đồng Khởi",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Quán phở Sáng trên đường Trần Quốc Tuấn, phường Phú Khương, tô phở bò tái nạm thơm nồng mùi hoa hồi, gừng nướng và nước hầm xương đậm đà thảo mộc.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Đồng Khởi",
+        "verifiedAt": "2026-09-18T08:30:00Z"
       },
       "source": [
         {
@@ -64319,7 +64451,14 @@
         "specialty": "Ẩm thực Vĩnh Long",
         "schema_type": "Restaurant",
         "sub_category": "restaurant",
-        "coords_approximate": false
+        "coords_approximate": false,
+        "image_author": "Trần Phước",
+        "image_source": "Báo Vĩnh Long",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Nhà hàng Phương Thủy tại số 2 Phan Bội Châu, phường Long Châu, bàn ăn hướng ra ngã ba sông với các món tôm rim nước dừa và lẩu chua cá ngát.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long",
+        "verifiedAt": "2026-09-18T08:30:00Z"
       },
       "source": [
         {
@@ -64392,7 +64531,14 @@
         "schema_type": "TouristAttraction",
         "sub_category": "pho_bun",
         "daily_capacity": "150-180 tô",
-        "coords_approximate": true
+        "coords_approximate": true,
+        "image_author": "Hữu Hiệp",
+        "image_source": "Báo Đồng Khởi",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Quán hủ tiếu Bà Năm trên đường Nguyễn Thị Định, phường Phú Khương, đĩa hủ tiếu khô Nam Vang trộn sốt tương đậm đà kèm chén nước lèo tôm mực thanh ngọt.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Đồng Khởi",
+        "verifiedAt": "2026-09-18T08:30:00Z"
       },
       "source": [
         {
@@ -64623,7 +64769,14 @@
         "schema_type": "TouristAttraction",
         "sub_category": "pho_bun",
         "daily_capacity": "120-150 tô",
-        "coords_approximate": true
+        "coords_approximate": true,
+        "image_author": "Hữu Hiệp",
+        "image_source": "Báo Đồng Khởi",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Tiệm hủ tiếu Anh Tuấn trên đường Lê Quý Đôn, phường Phú Khương, phục vụ hủ tiếu Mỹ Tho chuẩn vị với sườn non, tôm tươi, gan heo và tỏi phi vàng rộm.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Đồng Khởi",
+        "verifiedAt": "2026-09-18T08:30:00Z"
       },
       "source": [
         {
@@ -64778,8 +64931,14 @@
           }
         ],
         "best_time": "06:00 - 07:30 sáng điểm tâm trước khi khởi hành đi Mỏ Cày hoặc 18:30 - 20:30 ăn khuya mát mẻ",
-        "verifiedAt": "2026-09-13T19:00:00+07:00",
-        "verifiedSource": "NotebookLM Deep Terroir Research - Phase 8"
+        "verifiedAt": "2026-09-18T08:30:00Z",
+        "verifiedSource": "NotebookLM Deep Terroir Research - Phase 8",
+        "image_author": "Hữu Hiệp",
+        "image_source": "Báo Đồng Khởi",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Xe hủ tiếu gõ đường gom chân cầu Hàm Luông, phường Phú Khương, tô hủ tiếu đêm bình dân ấm lòng khách lỡ độ đường với tóp mỡ bùi béo và hẹ xanh thơm nức.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Đồng Khởi"
       },
       "source": [
         {
@@ -64850,7 +65009,14 @@
         "live_seafood": "yes",
         "sub_category": "seafood_river",
         "location_type": "trung tâm",
-        "coords_approximate": true
+        "coords_approximate": true,
+        "image_author": "Hữu Hiệp",
+        "image_source": "Báo Đồng Khởi",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Quán hải sản Sáu Hùng tại số 121A3 Nguyễn Thị Định, phường Phú Khương, thực khách trực tiếp chọn tôm càng xanh, ghẹ biển sống bơi trong hồ nuôi mát lành.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Đồng Khởi",
+        "verifiedAt": "2026-09-18T08:30:00Z"
       },
       "source": [
         {
@@ -64922,7 +65088,14 @@
         "live_seafood": "yes",
         "sub_category": "seafood_river",
         "location_type": "bờ sông",
-        "coords_approximate": true
+        "coords_approximate": true,
+        "image_author": "Hữu Hiệp",
+        "image_source": "Báo Đồng Khởi",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Nhà hàng nổi TTC bên công viên Hùng Vương, phường Phú Khương, không gian ẩm thực trên sông Hàm Luông lộng gió phục vụ cá chẽm chiên xù và tôm hấp nước dừa.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Đồng Khởi",
+        "verifiedAt": "2026-09-18T08:30:00Z"
       },
       "source": [
         {
@@ -64993,7 +65166,14 @@
         "live_seafood": "yes",
         "sub_category": "seafood_river",
         "location_type": "trung tâm",
-        "coords_approximate": true
+        "coords_approximate": true,
+        "image_author": "Hữu Hiệp",
+        "image_source": "Báo Đồng Khởi",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Nhà hàng Nam Sơn tại số 40 Phan Ngọc Tòng, phường Phú Khương, nổi danh với các món ốc móng tay xào tỏi và sò huyết nướng mọi ngọt lịm tự nhiên.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Đồng Khởi",
+        "verifiedAt": "2026-09-18T08:30:00Z"
       },
       "source": [
         {
@@ -65065,7 +65245,14 @@
         "live_seafood": "yes",
         "sub_category": "seafood_river",
         "location_type": "trung tâm",
-        "coords_approximate": true
+        "coords_approximate": true,
+        "image_author": "Bá Thi",
+        "image_source": "Báo Trà Vinh",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Quán hải sản Duyên Hải bên chợ trung tâm phường Duyên Hải, mâm ghẹ tươi hấp sả thơm lừng và mực trứng chiên nước mắm giòn thơm đậm vị biển.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Trà Vinh",
+        "verifiedAt": "2026-09-18T08:30:00Z"
       },
       "source": [
         {
@@ -65137,7 +65324,14 @@
         "sub_category": "com_binh_dan",
         "local_favorite": "yes",
         "seating_capacity": "60-80 chỗ (chòi riêng biệt, bãi đậu xe rộng)",
-        "coords_approximate": true
+        "coords_approximate": true,
+        "image_author": "Trần Phước",
+        "image_source": "Báo Vĩnh Long",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Quán sân vườn Tư Đa tại số 123/3 Tám Tháng Ba, phường Thanh Đức, chòi lá mát rượi đãi khách món lươn đồng um lá chuối và ếch xào lăn sả ớt.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long",
+        "verifiedAt": "2026-09-18T08:30:00Z"
       },
       "source": [
         {
@@ -65209,7 +65403,14 @@
         "sub_category": "com_binh_dan",
         "local_favorite": "yes",
         "seating_capacity": "50-70 chỗ, bàn lớn nhóm đông",
-        "coords_approximate": true
+        "coords_approximate": true,
+        "image_author": "Trần Phước",
+        "image_source": "Báo Vĩnh Long",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Ẩm thực sân vườn 1985 trên đường bờ kênh rợp bóng dừa, đĩa cá kèo nướng than hoa ăn kèm rau đắng đất và chuối chát chấm mắm me chua ngọt.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long",
+        "verifiedAt": "2026-09-18T08:30:00Z"
       },
       "source": [
         {
@@ -65281,7 +65482,14 @@
         "price_range": "50.000 đ/tô",
         "schema_type": "TouristAttraction",
         "sub_category": "pho_bun",
-        "coords_approximate": true
+        "coords_approximate": true,
+        "image_author": "Trần Phước",
+        "image_source": "Báo Vĩnh Long",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Tiệm ăn Đồng Khánh tại số 49B Đường 2/9, phường 1, tô hủ tiếu khô sốt cà chua gia truyền của người Hoa Tiều nức tiếng xứ Vĩnh Long với thịt xá xíu mềm thơm.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long",
+        "verifiedAt": "2026-09-18T08:30:00Z"
       },
       "source": [
         {
@@ -65352,7 +65560,14 @@
         "price_range": "30.000–45.000 đ/tô",
         "schema_type": "TouristAttraction",
         "sub_category": "pho_bun",
-        "coords_approximate": true
+        "coords_approximate": true,
+        "image_author": "Trần Phước",
+        "image_source": "Báo Vĩnh Long",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Quán Hủ Tiếu Nam Vang 99 tại số 182 Nguyễn Văn Thiệt, phường 3, nước dùng hầm xương heo ngọt dịu cùng tôm tươi, tim cật và trứng cút bùi ngậy.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long",
+        "verifiedAt": "2026-09-18T08:30:00Z"
       },
       "source": [
         {
@@ -65423,7 +65638,14 @@
         "price_range": "25.000–30.000 đ/tô",
         "schema_type": "TouristAttraction",
         "sub_category": "pho_bun",
-        "coords_approximate": true
+        "coords_approximate": true,
+        "image_author": "Trần Phước",
+        "image_source": "Báo Vĩnh Long",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Quán Phượng tại số 21/3 Nguyễn Thái Học, phường 1, tô bún mắm đậm vị cá sặc cá linh ăn cùng cà tím, tôm đất và dĩa rau ghém hoa chuối bông súng tươi non.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long",
+        "verifiedAt": "2026-09-18T08:30:00Z"
       },
       "source": [
         {
@@ -65494,7 +65716,14 @@
         "price_range": "25.000–35.000 đ/tô",
         "schema_type": "TouristAttraction",
         "sub_category": "pho_bun",
-        "coords_approximate": true
+        "coords_approximate": true,
+        "image_author": "Trần Phước",
+        "image_source": "Báo Vĩnh Long",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Quán 45 trên đường Nguyễn Thái Học, phường 1, thố sủi cảo nhân tôm thịt vỏ mỏng mềm mượt hòa quyện nước hầm xương thanh ngọt nấu theo vị Tiều xưa.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long",
+        "verifiedAt": "2026-09-18T08:30:00Z"
       },
       "source": [
         {
@@ -65587,9 +65816,15 @@
             "authority_weight": 0.95
           }
         ],
-        "verifiedAt": "2026-09-13T21:30:00+07:00",
+        "verifiedAt": "2026-09-18T08:30:00Z",
         "verifiedSource": "NotebookLM Deep Terroir Research - Phase 9",
-        "best_time": "Khung giờ 07:00 - 08:30 sáng hoặc 17:00 - 18:30 chiều"
+        "best_time": "Khung giờ 07:00 - 08:30 sáng hoặc 17:00 - 18:30 chiều",
+        "image_author": "Trần Phước",
+        "image_source": "Báo Vĩnh Long",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Quán bún nước lèo tại số 39/2A Mậu Thân, phường 3, bát bún đượm hương mắm prohoc truyền thống, thịt cá lóc rỉa sạch xương và rau ghém bắp chuối giòn ngọt.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long"
       },
       "source": [
         {
@@ -65660,7 +65895,14 @@
         "price_range": "40.000–60.000 đ/phần",
         "schema_type": "TouristAttraction",
         "sub_category": "pho_bun",
-        "coords_approximate": true
+        "coords_approximate": true,
+        "image_author": "Trần Phước",
+        "image_source": "Báo Vĩnh Long",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Quán Thuận Phúc tại số 135 Phạm Thái Bường, phường 4, tô phở bò tái bắp gầu giòn thơm lừng hành hoa và rau quế ngò gai tươi sạch mỗi sớm mai.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long",
+        "verifiedAt": "2026-09-18T08:30:00Z"
       },
       "source": [
         {
@@ -65736,7 +65978,14 @@
         "price_range": "30.000–45.000 đ/tô",
         "schema_type": "TouristAttraction",
         "sub_category": "pho_bun",
-        "coords_approximate": true
+        "coords_approximate": true,
+        "image_author": "Trần Phước",
+        "image_source": "Báo Vĩnh Long",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Quán Hủ Tiếu Xưa và Nay tại số 1 Đường Mười Bốn Tháng Chín, phường 5, nước dùng tủy heo ninh nhừ thơm phức cùng sợi hủ tiếu dai mềm thấm đượm gia vị.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long",
+        "verifiedAt": "2026-09-18T08:30:00Z"
       },
       "source": [
         {
@@ -65813,7 +66062,14 @@
         "target_segments": "Tour ngày; gia đình",
         "specialty_seafood": "Cá lóc, cá trê, tôm càng xanh sông Tiền",
         "coords_approximate": true,
-        "suggested_duration": "1-2 giờ"
+        "suggested_duration": "1-2 giờ",
+        "image_author": "Trần Phước",
+        "image_source": "Báo Vĩnh Long",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Nhà hàng Hải Sản Sông Tiền khu vực bến phà Đình Khao, cá lóc nướng trui cuốn bánh tráng rau rừng chấm mắm nêm đậm đà bên dòng sông Cổ Chiên lộng gió.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long",
+        "verifiedAt": "2026-09-18T08:30:00Z"
       },
       "source": [
         {
@@ -65887,7 +66143,14 @@
         "location_type": "bờ sông",
         "signature_dish": "Cá bông lau hấp gừng sả, cá điêu hồng chiên xù",
         "specialty_seafood": "Cá sông Tiền tươi sống: cá điêu hồng, cá bông lau, tôm sú",
-        "coords_approximate": true
+        "coords_approximate": true,
+        "image_author": "Trần Phước",
+        "image_source": "Báo Vĩnh Long",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Nhà hàng Bến Nước tại khu du lịch Mỹ Hòa, bờ sông Hậu thoáng đãng phục vụ lẩu chua cá bông lau bông so đũa thanh tao ngọt mát.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long",
+        "verifiedAt": "2026-09-18T08:30:00Z"
       },
       "source": [
         {
@@ -65974,8 +66237,14 @@
             "authority_weight": 1
           }
         ],
-        "verifiedAt": "2026-09-13T13:55:00+07:00",
-        "verifiedSource": "NotebookLM Deep Terroir Research - Phase 3"
+        "verifiedAt": "2026-09-18T08:30:00Z",
+        "verifiedSource": "NotebookLM Deep Terroir Research - Phase 3",
+        "image_author": "Trần Phước",
+        "image_source": "Báo Vĩnh Long",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Quán Cô Tư tại xã Hòa Ninh trên cù lao An Bình, nồi lẩu mắm cá sặc sôi liu riu đầy ắp cá hú tươi, mực giòn, cà tím và đĩa rau đồng đủ loại.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long"
       },
       "source": [
         {
@@ -66076,8 +66345,14 @@
           }
         ],
         "best_time": "11:30 - 13:00 trưa đón gió sông Hậu lộng mát hoặc 17:30 ngắm hoàng hôn ngã ba sông Mang Thít - sông Hậu",
-        "verifiedAt": "2026-09-13T19:00:00+07:00",
-        "verifiedSource": "NotebookLM Deep Terroir Research - Phase 8"
+        "verifiedAt": "2026-09-18T08:30:00Z",
+        "verifiedSource": "NotebookLM Deep Terroir Research - Phase 8",
+        "image_author": "Trần Phước",
+        "image_source": "Báo Vĩnh Long",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Quán ăn ven bến đò Trà Ôn bên bờ sông Hậu, đĩa cá cháy kho lạt thịt cá béo ngọt thơm ngậy ăn kèm cơm trắng nóng hổi và rau luộc chấm kho quẹt.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long"
       },
       "source": [
         {
