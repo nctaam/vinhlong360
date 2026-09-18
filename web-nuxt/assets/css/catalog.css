@@ -1832,3 +1832,41 @@
   box-shadow: var(--shadow-card-ambient), 0 0 0 1px var(--border-liquid-glass);
 }
 
+/* ── Cinematic & Quiet Luxury Hub Polish ── */
+.atlas-hero,
+.wake-hero,
+.catalog-hero {
+  border: 1px solid color-mix(in srgb, var(--harvest-600) 22%, var(--line));
+  box-shadow: 0 12px 36px -8px rgba(var(--black-rgb), 0.07);
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.dark .atlas-hero,
+.dark .wake-hero,
+.dark .catalog-hero {
+  border: 1px solid color-mix(in srgb, var(--harvest-600) 28%, var(--line));
+  box-shadow: 0 16px 44px -10px rgba(var(--black-rgb), 0.4);
+}
+
+/* Tactile haptic feedback on catalog controls */
+.mode-pill:active,
+.region-window:active,
+.stay-tile:active {
+  transform: scale(0.98);
+  transition: transform 0.15s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.mode-pill:focus-visible,
+.region-window:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mode-pill:active,
+  .region-window:active,
+  .stay-tile:active {
+    transform: none !important;
+  }
+}
+
