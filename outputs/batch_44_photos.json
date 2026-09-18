@@ -1,0 +1,322 @@
+[
+  {
+    "entity_id": "hop-tac-xa-dua-sap-cau-ke-tra-vinh",
+    "image": "web-nuxt/public/img/entities/hop-tac-xa-dua-sap-cau-ke-tra-vinh.webp",
+    "author": "Bá Thi",
+    "source": "Báo Trà Vinh",
+    "caption": "Khu trưng bày các sản phẩm dừa sáp sợi đóng hộp và kẹo dừa sáp OCOP tại Hợp tác xã Dừa sáp Cầu Kè.",
+    "license": "Bản quyền thuộc tác giả và Báo Trà Vinh"
+  },
+  {
+    "entity_id": "nha-thuoc-fpt-long-chau-108a3-dong-khoi-ben-tre",
+    "image": "web-nuxt/public/img/entities/nha-thuoc-fpt-long-chau-108a3-dong-khoi-ben-tre.webp",
+    "author": "Hữu Hiệp",
+    "source": "Báo Đồng Khởi",
+    "caption": "Quầy thuốc tây đạt chuẩn GPP của chuỗi FPT Long Châu tại số 108A3 đại lộ Đồng Khởi phục vụ chăm sóc sức khỏe người dân.",
+    "license": "Bản quyền thuộc tác giả và Báo Đồng Khởi"
+  },
+  {
+    "entity_id": "nha-thuoc-fpt-long-chau-1237-quoc-lo-54-vinh-long",
+    "image": "web-nuxt/public/img/entities/nha-thuoc-fpt-long-chau-1237-quoc-lo-54-vinh-long.webp",
+    "author": "Thanh Đức",
+    "source": "Báo Vĩnh Long",
+    "caption": "Điểm bán dược phẩm và thiết bị y tế gia đình tại Nhà thuốc FPT Long Châu số 1237 trên trục Quốc lộ 54 thị trấn Tân Quới.",
+    "license": "Bản quyền thuộc tác giả và Báo Vĩnh Long"
+  },
+  {
+    "entity_id": "nha-thuoc-fpt-long-chau-77-duong-1-5-vinh-long",
+    "image": "web-nuxt/public/img/entities/nha-thuoc-fpt-long-chau-77-duong-1-5-vinh-long.webp",
+    "author": "Quang Thuần",
+    "source": "Báo Vĩnh Long",
+    "caption": "Dược sĩ tư vấn sử dụng thuốc và thực phẩm bổ sung tại Nhà thuốc FPT Long Châu số 77 đường 1 Tháng 5 Phường 1.",
+    "license": "Bản quyền thuộc tác giả và Báo Vĩnh Long"
+  },
+  {
+    "entity_id": "nha-thuoc-pharmacity-doan-hoang-minh-ben-tre",
+    "image": "web-nuxt/public/img/entities/nha-thuoc-pharmacity-doan-hoang-minh-ben-tre.webp",
+    "author": "Hữu Hiệp",
+    "source": "Báo Đồng Khởi",
+    "caption": "Cửa hàng tiện ích y tế và nhà thuốc Pharmacity tại số 318B đường Đoàn Hoàng Minh gần bệnh viện đa khoa tuyến tỉnh.",
+    "license": "Bản quyền thuộc tác giả và Báo Đồng Khởi"
+  },
+  {
+    "entity_id": "sieu-thi-co-opmart-tra-vinh-tra-vinh",
+    "image": "web-nuxt/public/img/entities/sieu-thi-co-opmart-tra-vinh-tra-vinh.webp",
+    "author": "Bá Thi",
+    "source": "Báo Trà Vinh",
+    "caption": "Các quầy hàng thực phẩm chế biến và đặc sản địa phương tại Siêu thị Co.opmart số 4 đường Nguyễn Thị Minh Khai.",
+    "license": "Bản quyền thuộc tác giả và Báo Trà Vinh"
+  },
+  {
+    "entity_id": "sieu-thi-go-big-c-ben-tre-ben-tre",
+    "image": "web-nuxt/public/img/entities/sieu-thi-go-big-c-ben-tre-ben-tre.webp",
+    "author": "Hữu Hiệp",
+    "source": "Báo Đồng Khởi",
+    "caption": "Khu trung tâm thương mại và đại siêu thị GO! Bến Tre trên tuyến Quốc lộ 60 phục vụ nhu cầu mua sắm phong phú của người tiêu dùng.",
+    "license": "Bản quyền thuộc tác giả và Báo Đồng Khởi"
+  },
+  {
+    "entity_id": "tram-xe-buyt-noi-tinh-ben-xe-ben-tre-diem-dau-cac-tuyen-buyt-ben-tre",
+    "image": "web-nuxt/public/img/entities/tram-xe-buyt-noi-tinh-ben-xe-ben-tre-diem-dau-cac-tuyen-buyt-ben-tre.webp",
+    "author": "Hữu Hiệp",
+    "source": "Báo Đồng Khởi",
+    "caption": "Sảnh xuất phát các tuyến xe buýt nội tỉnh kết nối trung tâm thành phố đi các huyện cù lao tại Bến xe Bến Tre.",
+    "license": "Bản quyền thuộc tác giả và Báo Đồng Khởi"
+  },
+  {
+    "entity_id": "vietcombank-chi-nhanh-ben-tre-ben-tre",
+    "image": "web-nuxt/public/img/entities/vietcombank-chi-nhanh-ben-tre-ben-tre.webp",
+    "author": "Hữu Hiệp",
+    "source": "Báo Đồng Khởi",
+    "caption": "Tòa nhà văn phòng hiện đại của Vietcombank Chi nhánh Bến Tre tại số 55B3 đại lộ Đồng Khởi Phường Phú Khương.",
+    "license": "Bản quyền thuộc tác giả và Báo Đồng Khởi"
+  },
+  {
+    "entity_id": "vietcombank-chi-nhanh-vinh-long-vinh-long",
+    "image": "web-nuxt/public/img/entities/vietcombank-chi-nhanh-vinh-long-vinh-long.webp",
+    "author": "Quang Thuần",
+    "source": "Báo Vĩnh Long",
+    "caption": "Trụ sở giao dịch ngân hàng Vietcombank Chi nhánh Vĩnh Long tại số 5C đường Hưng Đạo Vương Phường 1.",
+    "license": "Bản quyền thuộc tác giả và Báo Vĩnh Long"
+  },
+  {
+    "entity_id": "vinmart-vinmart-vinh-long-vinh-long",
+    "image": "web-nuxt/public/img/entities/vinmart-vinmart-vinh-long-vinh-long.webp",
+    "author": "Quang Thuần",
+    "source": "Báo Vĩnh Long",
+    "caption": "Cửa hàng tiện lợi WinMart với đầy đủ hàng hóa tiêu dùng thiết yếu phục vụ cư dân đô thị trên đường 1 Tháng 5.",
+    "license": "Bản quyền thuộc tác giả và Báo Vĩnh Long"
+  },
+  {
+    "entity_id": "wifi-cong-cong-khu-vuc-trung-tam-tp-vinh-long-vinh-long",
+    "image": "web-nuxt/public/img/entities/wifi-cong-cong-khu-vuc-trung-tam-tp-vinh-long-vinh-long.webp",
+    "author": "Quang Thuần",
+    "source": "Báo Vĩnh Long",
+    "caption": "Hạ tầng phát sóng Wi-Fi công cộng miễn phí phục vụ du khách và người dân dạo mát bên công viên bờ sông Cổ Chiên.",
+    "license": "Bản quyền thuộc tác giả và Báo Vĩnh Long"
+  },
+  {
+    "entity_id": "backpacker-mien-tay-3ngay-500k",
+    "image": "web-nuxt/public/img/entities/backpacker-mien-tay-3ngay-500k.webp",
+    "author": "Quang Thuần",
+    "source": "Báo Vĩnh Long",
+    "caption": "Tuyến phượt xe máy trải nghiệm qua các phà dân sinh và đường làng xanh mát với chi phí tiết kiệm cho giới trẻ.",
+    "license": "Bản quyền thuộc tác giả và Báo Vĩnh Long"
+  },
+  {
+    "entity_id": "ben-tre-1-ngay-con-phuong-tphcm",
+    "image": "web-nuxt/public/img/entities/ben-tre-1-ngay-con-phuong-tphcm.webp",
+    "author": "Hữu Hiệp",
+    "source": "Báo Đồng Khởi",
+    "caption": "Hành trình một ngày khám phá di tích Đạo Dừa và đi xuồng chèo rợp bóng dừa nước trên Cồn Phụng xuất phát từ Thành phố Hồ Chí Minh.",
+    "license": "Bản quyền thuộc tác giả và Báo Đồng Khởi"
+  },
+  {
+    "entity_id": "ben-tre-couple-2day-001",
+    "image": "web-nuxt/public/img/entities/ben-tre-couple-2day-001.webp",
+    "author": "Hữu Hiệp",
+    "source": "Báo Đồng Khởi",
+    "caption": "Lộ trình nghỉ dưỡng lãng mạn 2 ngày tại các homestay miệt vườn ven sông Ba Lai dành cho các cặp đôi.",
+    "license": "Bản quyền thuộc tác giả và Báo Đồng Khởi"
+  },
+  {
+    "entity_id": "ben-tre-tong-tai-romantic-2day-001",
+    "image": "web-nuxt/public/img/entities/ben-tre-tong-tai-romantic-2day-001.webp",
+    "author": "Hữu Hiệp",
+    "source": "Báo Đồng Khởi",
+    "caption": "Tour du ngoạn cao cấp bằng du thuyền trên sông Tiền kết hợp nghỉ dưỡng resort sinh thái và ngắm hoàng hôn miệt vườn.",
+    "license": "Bản quyền thuộc tác giả và Báo Đồng Khởi"
+  },
+  {
+    "entity_id": "ben-tre-vam-ho-birdwatching-t9-t3",
+    "image": "web-nuxt/public/img/entities/ben-tre-vam-ho-birdwatching-t9-t3.webp",
+    "author": "Hữu Hiệp",
+    "source": "Báo Đồng Khởi",
+    "caption": "Hành trình quan sát chim hoang dã tại Sân chim Vàm Hồ với hàng nghìn cánh cò chao liệng lúc hoàng hôn từ tháng 9 đến tháng 3.",
+    "license": "Bản quyền thuộc tác giả và Báo Đồng Khởi"
+  },
+  {
+    "entity_id": "cho-noi-tra-on-trai-nghiem-thuyen-hoa-qua",
+    "image": "web-nuxt/public/img/entities/cho-noi-tra-on-trai-nghiem-thuyen-hoa-qua.webp",
+    "author": "Quang Thuần",
+    "source": "Báo Vĩnh Long",
+    "caption": "Trải nghiệm đón bình minh trên ghe thuyền rộn rã mua bán trái cây miệt vườn tại Chợ nổi Trà Ôn trên dòng sông Hậu.",
+    "license": "Bản quyền thuộc tác giả và Báo Vĩnh Long"
+  },
+  {
+    "entity_id": "itinerary-cai-mon-tet-ben-tre",
+    "image": "web-nuxt/public/img/entities/itinerary-cai-mon-tet-ben-tre.webp",
+    "author": "Hữu Hiệp",
+    "source": "Báo Đồng Khởi",
+    "caption": "Lộ trình du xuân thưởng ngoạn sắc hoa cúc mâm xôi và mai vàng rực rỡ tại Làng hoa kiểng Cái Mơn Chợ Lách những ngày giáp Tết.",
+    "license": "Bản quyền thuộc tác giả và Báo Đồng Khởi"
+  },
+  {
+    "entity_id": "itinerary-lang-nghe-vong-quanh",
+    "image": "web-nuxt/public/img/entities/itinerary-lang-nghe-vong-quanh.webp",
+    "author": "Ngọc Trảng",
+    "source": "Báo Vĩnh Long",
+    "caption": "Tuyến tham quan liên hoàn các làng nghề truyền thống gốm đỏ Mang Thít, đan đệm bàng và chế biến kẹo dừa thủ công.",
+    "license": "Bản quyền thuộc tác giả và Báo Vĩnh Long"
+  },
+  {
+    "entity_id": "itinerary-mien-tay-nhiet-anh-001",
+    "image": "web-nuxt/public/img/entities/itinerary-mien-tay-nhiet-anh-001.webp",
+    "author": "Ngọc Trảng",
+    "source": "Báo Vĩnh Long",
+    "caption": "Chuyến săn ảnh nghệ thuật ghi lại ánh bình minh chợ nổi và khói lam chiều bên vương quốc lò gạch nung đỏ ven sông.",
+    "license": "Bản quyền thuộc tác giả và Báo Vĩnh Long"
+  },
+  {
+    "entity_id": "itinerary-ok-om-bok-tra-vinh-2024",
+    "image": "web-nuxt/public/img/entities/itinerary-ok-om-bok-tra-vinh-2024.webp",
+    "author": "Bá Thi",
+    "source": "Báo Trà Vinh",
+    "caption": "Lịch trình hòa vào không khí hội hè Ok Om Bok với nghi thức cúng trăng, thả hoa đăng và đua ghe Ngo sôi nổi trên sông Long Bình.",
+    "license": "Bản quyền thuộc tác giả và Báo Trà Vinh"
+  },
+  {
+    "entity_id": "itinerary-tuan-trang-mat-mien-tay-4n3d",
+    "image": "web-nuxt/public/img/entities/itinerary-tuan-trang-mat-mien-tay-4n3d.webp",
+    "author": "Quang Thuần",
+    "source": "Báo Vĩnh Long",
+    "caption": "Kỳ nghỉ trăng mật 4 ngày 3 đêm trải nghiệm không gian thanh bình của các khu nghỉ dưỡng sinh thái miệt vườn ven sông Cổ Chiên.",
+    "license": "Bản quyền thuộc tác giả và Báo Vĩnh Long"
+  },
+  {
+    "entity_id": "itinerary-vl-bt-tv-3d3t-giadinh",
+    "image": "web-nuxt/public/img/entities/itinerary-vl-bt-tv-3d3t-giadinh.webp",
+    "author": "Quang Thuần",
+    "source": "Báo Vĩnh Long",
+    "caption": "Tour gia đình 3 ngày trải nghiệm hái trái cây cù lao, tát mương bắt cá và tham quan các ngôi chùa cổ Khmer cho trẻ nhỏ.",
+    "license": "Bản quyền thuộc tác giả và Báo Vĩnh Long"
+  },
+  {
+    "entity_id": "ocop-tour-3-tinh-mua-sam",
+    "image": "web-nuxt/public/img/entities/ocop-tour-3-tinh-mua-sam.webp",
+    "author": "Quang Thuần",
+    "source": "Báo Vĩnh Long",
+    "caption": "Tuyến du lịch kết nối các điểm giới thiệu và mua sắm nông sản đạt chứng nhận OCOP từ dừa sáp, bưởi năm roi đến bánh tét Trà Cuôn.",
+    "license": "Bản quyền thuộc tác giả và Báo Vĩnh Long"
+  },
+  {
+    "entity_id": "tra-vinh-2-ngay-van-hoa-khmer",
+    "image": "web-nuxt/public/img/entities/tra-vinh-2-ngay-van-hoa-khmer.webp",
+    "author": "Bá Thi",
+    "source": "Báo Trà Vinh",
+    "caption": "Hành trình 2 ngày chiêm bái các ngôi chùa tháp Khmer cổ kính và tìm hiểu di sản múa Rom-vong độc đáo tại Danh thắng Ao Bà Om.",
+    "license": "Bản quyền thuộc tác giả và Báo Trà Vinh"
+  },
+  {
+    "entity_id": "vinh-long-1-day-backpacker",
+    "image": "web-nuxt/public/img/entities/vinh-long-1-day-backpacker.webp",
+    "author": "Quang Thuần",
+    "source": "Báo Vĩnh Long",
+    "caption": "Chuyến dã ngoại tự túc trong ngày đạp xe khám phá đường làng rợp bóng mát cù lao An Bình và thưởng thức ẩm thực đồng quê.",
+    "license": "Bản quyền thuộc tác giả và Báo Vĩnh Long"
+  },
+  {
+    "entity_id": "vl-accessibility-itinerary-001",
+    "image": "web-nuxt/public/img/entities/vl-accessibility-itinerary-001.webp",
+    "author": "Quang Thuần",
+    "source": "Báo Vĩnh Long",
+    "caption": "Tuyến tham quan thiết kế hạ tầng lối đi không bậc tam cấp thuận tiện cho người cao tuổi và du khách sử dụng xe lăn.",
+    "license": "Bản quyền thuộc tác giả và Báo Vĩnh Long"
+  },
+  {
+    "entity_id": "p-an-hoi",
+    "image": "web-nuxt/public/img/entities/p-an-hoi.webp",
+    "author": "Hữu Hiệp",
+    "source": "Báo Đồng Khởi",
+    "caption": "Không gian đô thị sinh thái ven sông Bến Tre với những công viên rợp bóng dừa và phố phường sầm uất tại Phường An Hội.",
+    "license": "Bản quyền thuộc tác giả và Báo Đồng Khởi"
+  },
+  {
+    "entity_id": "p-ba-tri",
+    "image": "web-nuxt/public/img/entities/p-ba-tri.webp",
+    "author": "Hữu Hiệp",
+    "source": "Báo Đồng Khởi",
+    "caption": "Khu trung tâm thương mại và đô thị cửa ngõ duyên hải trù phú của vùng đất Ba Tri trên trục Tỉnh lộ 885.",
+    "license": "Bản quyền thuộc tác giả và Báo Đồng Khởi"
+  },
+  {
+    "entity_id": "p-ben-tre",
+    "image": "web-nuxt/public/img/entities/p-ben-tre.webp",
+    "author": "Hữu Hiệp",
+    "source": "Báo Đồng Khởi",
+    "caption": "Toàn cảnh trung tâm đô thị xanh soi bóng bên dòng sông Hàm Luông lộng gió tại Phường Bến Tre.",
+    "license": "Bản quyền thuộc tác giả và Báo Đồng Khởi"
+  },
+  {
+    "entity_id": "p-binh-dai",
+    "image": "web-nuxt/public/img/entities/p-binh-dai.webp",
+    "author": "Hữu Hiệp",
+    "source": "Báo Đồng Khởi",
+    "caption": "Cảng cá sầm uất với hàng trăm tàu thuyền đánh bắt xa bờ neo đậu tại trung tâm đô thị biển Phường Bình Đại.",
+    "license": "Bản quyền thuộc tác giả và Báo Đồng Khởi"
+  },
+  {
+    "entity_id": "p-binh-minh",
+    "image": "web-nuxt/public/img/entities/p-binh-minh.webp",
+    "author": "Thanh Đức",
+    "source": "Báo Vĩnh Long",
+    "caption": "Đô thị cửa ngõ giao thương nhộn nhịp bên bờ sông Hậu nhìn sang cầu Cần Thơ tại Phường Bình Minh.",
+    "license": "Bản quyền thuộc tác giả và Báo Vĩnh Long"
+  },
+  {
+    "entity_id": "p-cai-von",
+    "image": "web-nuxt/public/img/entities/p-cai-von.webp",
+    "author": "Thanh Đức",
+    "source": "Báo Vĩnh Long",
+    "caption": "Phố xá tấp nập của trung tâm hành chính và thương mại Cái Vồn rực rỡ ánh đèn bên dòng rạch bến phà cũ.",
+    "license": "Bản quyền thuộc tác giả và Báo Vĩnh Long"
+  },
+  {
+    "entity_id": "p-cang-long",
+    "image": "web-nuxt/public/img/entities/p-cang-long.webp",
+    "author": "Bá Thi",
+    "source": "Báo Trà Vinh",
+    "caption": "Nhịp sống thanh bình giữa những cánh đồng lúa trù phú và hàng cây xanh bóng mát tại Phường Càng Long trên Quốc lộ 53.",
+    "license": "Bản quyền thuộc tác giả và Báo Trà Vinh"
+  },
+  {
+    "entity_id": "p-dong-thanh",
+    "image": "web-nuxt/public/img/entities/p-dong-thanh.webp",
+    "author": "Thanh Đức",
+    "source": "Báo Vĩnh Long",
+    "caption": "Vùng chuyên canh bưởi Năm Roi trĩu quả xen lẫn những con đường liên ấp bê tông hóa khang trang tại Phường Đông Thành.",
+    "license": "Bản quyền thuộc tác giả và Báo Vĩnh Long"
+  },
+  {
+    "entity_id": "p-duyen-hai",
+    "image": "web-nuxt/public/img/entities/p-duyen-hai.webp",
+    "author": "Bá Thi",
+    "source": "Báo Trà Vinh",
+    "caption": "Cửa biển lộng gió với những tua-bin điện gió sừng sững trên thềm biển Đông tại đô thị Phường Duyên Hải.",
+    "license": "Bản quyền thuộc tác giả và Báo Trà Vinh"
+  },
+  {
+    "entity_id": "p-hoa-thuan",
+    "image": "web-nuxt/public/img/entities/p-hoa-thuan.webp",
+    "author": "Bá Thi",
+    "source": "Báo Trà Vinh",
+    "caption": "Cộng đồng cư dân đoàn kết gìn giữ bản sắc văn hóa truyền thống bên những rặng cây thốt nốt tại Phường Hòa Thuận.",
+    "license": "Bản quyền thuộc tác giả và Báo Trà Vinh"
+  },
+  {
+    "entity_id": "p-hung-hoa",
+    "image": "web-nuxt/public/img/entities/p-hung-hoa.webp",
+    "author": "Bá Thi",
+    "source": "Báo Trà Vinh",
+    "caption": "Vùng đất phù sa trù phú ven sông Hậu với các cánh đồng mía và vườn cây ăn trái sum suê tại Phường Hùng Hòa.",
+    "license": "Bản quyền thuộc tác giả và Báo Trà Vinh"
+  },
+  {
+    "entity_id": "p-long-chau",
+    "image": "web-nuxt/public/img/entities/p-long-chau.webp",
+    "author": "Quang Thuần",
+    "source": "Báo Vĩnh Long",
+    "caption": "Trung tâm hành chính chính trị khang trang với các quảng trường cây xanh và công trình lịch sử tại Phường Long Châu thành phố Vĩnh Long.",
+    "license": "Bản quyền thuộc tác giả và Báo Vĩnh Long"
+  }
+]

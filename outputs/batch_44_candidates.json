@@ -1,0 +1,402 @@
+[
+  {
+    "id": "hop-tac-xa-dua-sap-cau-ke-tra-vinh",
+    "type": "facility",
+    "name": "Hợp tác xã Dừa Sáp Cầu Kè",
+    "summary": "Cửa hàng OCOP tại Thị trấn Cầu Kè, huyện Cầu Kè, Trà Vinh (cách TP khoảng 45 km).",
+    "placeId": "xa-thanh-thoi",
+    "address": "Hợp tác xã Dừa Sáp Cầu Kè, Xã Thành Thới, tỉnh Vĩnh Long",
+    "webp_exists": true,
+    "webp_size": 9440
+  },
+  {
+    "id": "nha-thuoc-fpt-long-chau-108a3-dong-khoi-ben-tre",
+    "type": "facility",
+    "name": "Nhà thuốc FPT Long Châu – 108A3 Đồng Khởi",
+    "summary": "Mở 07:00–22:00 hàng ngày, nhà thuốc FPT Long Châu 108A3 Đại lộ Đồng Khởi, phường Phú Tân, TP Bến Tre bán thuốc chính hãng theo chuỗi toàn quốc. Tổng đài 1800 6928 gọi miễn phí.",
+    "placeId": "p-phu-tan",
+    "address": "108A3 Đại lộ Đồng Khởi, Phường Phú Tân, tỉnh Vĩnh Long",
+    "webp_exists": true,
+    "webp_size": 9470
+  },
+  {
+    "id": "nha-thuoc-fpt-long-chau-1237-quoc-lo-54-vinh-long",
+    "type": "facility",
+    "name": "Nhà thuốc FPT Long Châu – 1237 Quốc Lộ 54",
+    "summary": "Chạy trục Quốc Lộ 54 từ hướng Bình Minh hay Trà Ôn, khách ghé được nhà thuốc FPT Long Châu số 1237, xã Tân Quới, Vĩnh Long. Cửa mở 7:00–22:00 hàng ngày.",
+    "placeId": "p-tan-quoi",
+    "address": "1237 Quốc Lộ 54, Xã Tân Quới, Vĩnh Long",
+    "webp_exists": true,
+    "webp_size": 9316
+  },
+  {
+    "id": "nha-thuoc-fpt-long-chau-77-duong-1-5-vinh-long",
+    "type": "facility",
+    "name": "Nhà thuốc FPT Long Châu – 77 Đường 1/5",
+    "summary": "Chuỗi nhà thuốc FPT Long Châu tại 77 Đường 1/5, Phường 1, TP. Vĩnh Long. Tra cứu thuốc online qua app Long Châu.",
+    "placeId": "p-long-chau",
+    "address": "77 Đường 1/5, Phường 1, Thành phố Vĩnh Long",
+    "webp_exists": true,
+    "webp_size": 9152
+  },
+  {
+    "id": "nha-thuoc-pharmacity-doan-hoang-minh-ben-tre",
+    "type": "facility",
+    "name": "Nhà thuốc Pharmacity – Đoàn Hoàng Minh",
+    "summary": "Chuỗi nhà thuốc Pharmacity tại 318B Đoàn Hoàng Minh, Phường 5, TP. Bến Tre, gần Bệnh viện Nguyễn Đình Chiểu. Bán thuốc không kê đơn (OTC), thực phẩm chức năng, đồ y tế.",
+    "placeId": "p-phu-khuong",
+    "address": "318B Đoàn Hoàng Minh, Phường Phú Khương, tỉnh Vĩnh Long",
+    "webp_exists": true,
+    "webp_size": 9232
+  },
+  {
+    "id": "sieu-thi-co-opmart-tra-vinh-tra-vinh",
+    "type": "facility",
+    "name": "Siêu thị Co.opmart Trà Vinh",
+    "summary": "Siêu thị thuộc hệ thống Co.opmart tại trung tâm TP. Trà Vinh, trên đường Nguyễn Thị Minh Khai.",
+    "placeId": "p-tra-vinh",
+    "address": "Số 4 Nguyễn Thị Minh Khai, Phường Trà Vinh, tỉnh Vĩnh Long",
+    "webp_exists": true,
+    "webp_size": 9920
+  },
+  {
+    "id": "sieu-thi-go-big-c-ben-tre-ben-tre",
+    "type": "facility",
+    "name": "Siêu thị GO! (Big C) Bến Tre",
+    "summary": "Siêu thị thuộc chuỗi GO! (trước đây là Big C) tại TP. Bến Tre, nằm trên Quốc lộ 60.",
+    "placeId": "p-ben-tre",
+    "address": "Quốc lộ 60, Phường Bến Tre, tỉnh Vĩnh Long",
+    "webp_exists": true,
+    "webp_size": 9162
+  },
+  {
+    "id": "tram-xe-buyt-noi-tinh-ben-xe-ben-tre-diem-dau-cac-tuyen-buyt-ben-tre",
+    "type": "facility",
+    "name": "Trạm xe buýt nội tỉnh – Bến xe Bến Tre (điểm đầu các tuyến buýt)",
+    "summary": "Trạm điều hành xe buýt tại sảnh bến xe Bến Tre, điểm đầu của 8 tuyến xe buýt tỏa khắp các huyện cù lao.",
+    "placeId": "p-phu-khuong",
+    "address": "303 Đoàn Hoàng Minh, Phường Phú Khương, tỉnh Vĩnh Long",
+    "webp_exists": true,
+    "webp_size": 9292
+  },
+  {
+    "id": "vietcombank-chi-nhanh-ben-tre-ben-tre",
+    "type": "facility",
+    "name": "Vietcombank Chi nhánh Bến Tre",
+    "summary": "Mở cửa 7:30–11:30 và 13:00–17:00 từ thứ Hai tới thứ Sáu, Vietcombank Chi nhánh Bến Tre giao dịch tại 55B3 Đại lộ Đồng Khởi, phường Phú Khương. Sáng thứ Bảy làm việc 7:30–11:30.",
+    "placeId": "p-phu-khuong",
+    "address": "55B3 Đại lộ Đồng Khởi, Phường Phú Khương, tỉnh Vĩnh Long",
+    "webp_exists": true,
+    "webp_size": 9108
+  },
+  {
+    "id": "vietcombank-chi-nhanh-vinh-long-vinh-long",
+    "type": "facility",
+    "name": "Vietcombank Chi nhánh Vĩnh Long",
+    "summary": "Chi nhánh ngân hàng Vietcombank tại 5C Hưng Đạo Vương, Phường 1, TP Vĩnh Long.",
+    "placeId": "p-long-chau",
+    "address": "5C Hưng Đạo Vương, Phường 1, Thành phố Vĩnh Long",
+    "webp_exists": true,
+    "webp_size": 9382
+  },
+  {
+    "id": "vinmart-vinmart-vinh-long-vinh-long",
+    "type": "facility",
+    "name": "Vinmart+ (VinMart) Vĩnh Long",
+    "summary": "Cửa hàng tiện lợi thuộc chuỗi VinMart+ tại trung tâm TP. Vĩnh Long, phục vụ nhu cầu mua sắm hàng ngày.",
+    "placeId": "p-long-chau",
+    "address": "Đường 1 Tháng 5, Phường 1, TP. Vĩnh Long",
+    "webp_exists": true,
+    "webp_size": 9614
+  },
+  {
+    "id": "wifi-cong-cong-khu-vuc-trung-tam-tp-vinh-long-vinh-long",
+    "type": "facility",
+    "name": "Wifi công cộng – Khu vực trung tâm TP Vĩnh Long",
+    "summary": "Wifi miễn phí tại quảng trường trung tâm, bờ sông Cổ Chiên và công viên TP. Vĩnh Long.",
+    "placeId": "xa-nhon-phu",
+    "address": "Quảng trường trung tâm, bờ sông Cổ Chiên, công viên Thành phố Vĩnh Long",
+    "webp_exists": true,
+    "webp_size": 9512
+  },
+  {
+    "id": "backpacker-mien-tay-3ngay-500k",
+    "type": "itinerary",
+    "name": "Backpacker tiết kiệm 3 ngày dưới 500k/ngày - Miền Tây",
+    "summary": "Lịch trình backpacker 3 ngày khám phá Vĩnh Long - Bến Tre - Trà Vinh với ngân sách dưới 500k/ngày.",
+    "placeId": "p-an-hoi",
+    "address": null,
+    "webp_exists": true,
+    "webp_size": 8484
+  },
+  {
+    "id": "ben-tre-1-ngay-con-phuong-tphcm",
+    "type": "itinerary",
+    "name": "Bến Tre 1 ngày – Cồn Phụng từ TP.HCM",
+    "summary": "Hành trình 1 ngày xuất phát từ TP.HCM lúc 6h sáng, khám phá Cồn Phụng. Bến Tre với vườn dừa xanh mát, xưởng kẹo dừa truyền thống, đi xuồng ba lá trên kênh rạch.",
+    "placeId": "p-phu-khuong",
+    "address": null,
+    "webp_exists": true,
+    "webp_size": 8744
+  },
+  {
+    "id": "ben-tre-couple-2day-001",
+    "type": "itinerary",
+    "name": "Bến Tre 2 ngày – Cặp đôi lãng mạn",
+    "summary": "Hành trình 2 ngày lãng mạn giữa xứ dừa Bến Tre dành riêng cho các cặp đôi.",
+    "placeId": "p-phu-khuong",
+    "address": null,
+    "webp_exists": true,
+    "webp_size": 9724
+  },
+  {
+    "id": "ben-tre-tong-tai-romantic-2day-001",
+    "type": "itinerary",
+    "name": "Bến Tre 2N1Đ – Tổng tài đưa nữ chính về Vĩnh Long",
+    "summary": "Kỳ nghỉ 2 ngày 1 đêm đậm chất lãng mạn: nghỉ dưỡng resort Forever Green sang trọng giữa rặng dừa, du thuyền riêng lướt sóng sông Tiền, thưởng thức kẹo dừa Mỏ Cày, dạo chợ Bến Tre và vượt sông Cổ Chiên về xứ miệt vườn An Bình.",
+    "placeId": "p-ben-tre",
+    "address": null,
+    "webp_exists": true,
+    "webp_size": 8676
+  },
+  {
+    "id": "ben-tre-vam-ho-birdwatching-t9-t3",
+    "type": "itinerary",
+    "name": "Bến Tre – Ngắm chim Vàm Hồ tháng 9–3",
+    "summary": "Hành trình 2 ngày khám phá thiên nhiên Bến Tre dành cho người yêu birdwatching: thức dậy lúc 4h30 để đến sân chim Vàm Hồ ngắm hàng ngàn cò, vạc, diệc bay về tổ lúc bình minh; xuyên rừng đước Long Khánh nghe chim hót; chiều thả hồn ở Cồn Phụng; tối thưởng thức kẹo dừa thủ công. Mùa cao điểm tháng 9 đến tháng 3, chi phí khoảng 600.000–900.000 đồng/người.",
+    "placeId": "p-phu-khuong",
+    "address": null,
+    "webp_exists": true,
+    "webp_size": 8864
+  },
+  {
+    "id": "cho-noi-tra-on-trai-nghiem-thuyen-hoa-qua",
+    "type": "itinerary",
+    "name": "Chợ Nổi Trà Ôn – Trải nghiệm thuyền hoa quả",
+    "summary": "Khám phá Chợ Nổi Trà Ôn trên sông Hậu – một trong những chợ nổi còn giữ nét văn hóa mua bán sầm uất của đồng bằng sông Cửu Long.",
+    "placeId": "xa-nhon-phu",
+    "address": null,
+    "webp_exists": true,
+    "webp_size": 9452
+  },
+  {
+    "id": "itinerary-cai-mon-tet-ben-tre",
+    "type": "itinerary",
+    "name": "Làng hoa Cái Mơn dịp Tết – Bến Tre",
+    "summary": "Hành trình 1 ngày khám phá làng hoa Cái Mơn và Chợ Lách (Bến Tre) dịp tháng 12. Tháng 1, thời điểm vườn ươm rực rỡ hoa cúc, hoa hồng, hoa lan chuẩn bị cho Tết Nguyên Đán.",
+    "placeId": "p-phu-khuong",
+    "address": null,
+    "webp_exists": true,
+    "webp_size": 9250
+  },
+  {
+    "id": "itinerary-lang-nghe-vong-quanh",
+    "type": "itinerary",
+    "name": "Làng nghề vòng quanh – Gốm, Kẹo dừa, Đan lát",
+    "summary": "Hành trình 3 ngày khám phá tinh hoa làng nghề Vĩnh Long: gốm đỏ Mang Thít (Vĩnh Long), kẹo dừa Mỏ Cày (Bến Tre), đan lát Cầu Kè (Trà Vinh). Du khách tận mắt xem thợ lành nghề thao tác, mua sản phẩm thủ công trực tiếp tại xưởng, hiểu sâu văn hóa bản địa và con người sông nước Cửu Long.",
+    "placeId": "p-an-hoi",
+    "address": null,
+    "webp_exists": true,
+    "webp_size": 8712
+  },
+  {
+    "id": "itinerary-mien-tay-nhiet-anh-001",
+    "type": "itinerary",
+    "name": "Miền Tây Nhiếp ảnh – Chợ nổi, làng gốm, hoàng hôn",
+    "summary": "Hành trình 2 ngày dành cho nhiếp ảnh gia khám phá sông nước: bình minh tại Chợ Nổi Trà Ôn (Vĩnh Long) lúc 5h sáng, \"giờ vàng\" gốm đỏ Mang Thít rực lửa, và hoàng hôn cháy đỏ trên sông Tiền Giang. Tổng chi phí ước tính 1.200.000–1.600.000 VNĐ/người, phù hợp nhiếp ảnh gia độc lập hoặc nhóm nhỏ.",
+    "placeId": "xa-nhon-phu",
+    "address": null,
+    "webp_exists": true,
+    "webp_size": 8534
+  },
+  {
+    "id": "itinerary-ok-om-bok-tra-vinh-2024",
+    "type": "itinerary",
+    "name": "Lễ hội Ok Om Bok – Trà Vinh tháng 10 âm lịch",
+    "summary": "Lịch trình 2 ngày 1 đêm khám phá Lễ hội Ok Om Bok tại Trà Vinh – nét văn hóa riêng của người Khmer Nam Bộ.",
+    "placeId": "xa-nhi-long",
+    "address": null,
+    "webp_exists": true,
+    "webp_size": 8698
+  },
+  {
+    "id": "itinerary-tuan-trang-mat-mien-tay-4n3d",
+    "type": "itinerary",
+    "name": "Tuần trăng mật Miền Tây – 4 ngày 3 đêm",
+    "summary": "Hành trình tuần trăng mật 4 ngày 3 đêm qua Vĩnh Long, Bến Tre và Trà Vinh – nơi sông nước gặp gỡ văn hóa Khmer.",
+    "placeId": "p-an-hoi",
+    "address": null,
+    "webp_exists": true,
+    "webp_size": 9270
+  },
+  {
+    "id": "itinerary-vl-bt-tv-3d3t-giadinh",
+    "type": "itinerary",
+    "name": "3 tỉnh 3 ngày – Gia đình ghép tour VL+BT+TV",
+    "summary": "Hành trình 3 ngày khám phá sông nước dành cho gia đình có trẻ em, kết hợp 3 tỉnh Vĩnh Long – Bến Tre – Trà Vinh.",
+    "placeId": "p-an-hoi",
+    "address": null,
+    "webp_exists": true,
+    "webp_size": 9286
+  },
+  {
+    "id": "ocop-tour-3-tinh-mua-sam",
+    "type": "itinerary",
+    "name": "OCOP Tour – Mua sắm đặc sản 3 tỉnh",
+    "summary": "Hành trình 2 ngày khám phá và mua sắm đặc sản OCOP tại 3 tỉnh: Vĩnh Long – Bến Tre – Trà Vinh.",
+    "placeId": "p-an-hoi",
+    "address": null,
+    "webp_exists": true,
+    "webp_size": 8718
+  },
+  {
+    "id": "tra-vinh-2-ngay-van-hoa-khmer",
+    "type": "itinerary",
+    "name": "Trà Vinh 2 ngày – Văn hóa Khmer",
+    "summary": "Hành trình 2 ngày khám phá văn hóa Khmer tại Trà Vinh – vùng đất có mật độ chùa Khmer cao nhất Nam Bộ.",
+    "placeId": "xa-nhi-long",
+    "address": null,
+    "webp_exists": true,
+    "webp_size": 9132
+  },
+  {
+    "id": "vinh-long-1-day-backpacker",
+    "type": "itinerary",
+    "name": "Vĩnh Long 1 ngày – Cù lao + Làng gốm",
+    "summary": "Hành trình 1 ngày backpacker từ TP.HCM đến Vĩnh Long: xuất phát 5h sáng, qua phà Đình Khao, khám phá cù lao Bình Hòa Phước, vườn trái cây, đò chèo kênh rạch và gốm Mang Thít. Tổng chi phí khoảng 250.000–330.000 VNĐ/người, về lại TP.HCM trước 21h. Phù hợp khách ưa trải nghiệm thực tế, không cần đặt tour.",
+    "placeId": "xa-nhon-phu",
+    "address": null,
+    "webp_exists": true,
+    "webp_size": 8542
+  },
+  {
+    "id": "vl-accessibility-itinerary-001",
+    "type": "itinerary",
+    "name": "Vĩnh Long – Thân thiện người khuyết tật và người cao tuổi",
+    "summary": "Lịch trình 1 ngày tại Vĩnh Long dành riêng cho người khuyết tật và người cao tuổi.",
+    "placeId": "xa-nhon-phu",
+    "address": null,
+    "webp_exists": true,
+    "webp_size": 8654
+  },
+  {
+    "id": "p-an-hoi",
+    "type": "place",
+    "name": "Phường An Hội",
+    "summary": "Phường An Hội, tỉnh Vĩnh Long, hợp nhất từ phường An Hội, xã Mỹ Thạnh An, xã Phú Nhuận và xã Sơn Phú thuộc TP Bến Tre.",
+    "placeId": "p-an-hoi",
+    "address": null,
+    "webp_exists": true,
+    "webp_size": 9378
+  },
+  {
+    "id": "p-ba-tri",
+    "type": "place",
+    "name": "Phường Ba Tri",
+    "summary": "Phường Ba Tri thuộc huyện Ba Tri, tỉnh Vĩnh Long, ra đời khi TT Ba Tri, xã Vĩnh Hòa, xã An Đức, xã Vĩnh An và xã An Bình Tây nhập lại.",
+    "placeId": "p-ba-tri",
+    "address": null,
+    "webp_exists": true,
+    "webp_size": 9388
+  },
+  {
+    "id": "p-ben-tre",
+    "type": "place",
+    "name": "Phường Bến Tre",
+    "summary": "Ba đơn vị cũ của TP Bến Tre — Phường 7, xã Bình Phú và xã Thạnh Tân — hợp nhất thành phường Bến Tre, nay thuộc tỉnh Vĩnh Long.",
+    "placeId": "p-ben-tre",
+    "address": null,
+    "webp_exists": true,
+    "webp_size": 9492
+  },
+  {
+    "id": "p-binh-dai",
+    "type": "place",
+    "name": "Phường Bình Đại",
+    "summary": "Phường Bình Đại thuộc huyện Bình Đại, tỉnh Vĩnh Long, ra đời khi TT Bình Đại, xã Bình Thới và xã Bình Thắng nhập lại.",
+    "placeId": "p-binh-dai",
+    "address": null,
+    "webp_exists": true,
+    "webp_size": 9334
+  },
+  {
+    "id": "p-binh-minh",
+    "type": "place",
+    "name": "Phường Bình Minh",
+    "summary": "Phường Bình Minh thuộc tỉnh Vĩnh Long, sáp nhập từ xã Thuận An, một phần phường Thành Phước, một phần phường Cái Vồn của thị xã Bình Minh.",
+    "placeId": "p-long-chau",
+    "address": null,
+    "webp_exists": true,
+    "webp_size": 9652
+  },
+  {
+    "id": "p-cai-von",
+    "type": "place",
+    "name": "Phường Cái Vồn",
+    "summary": "Phường Cái Vồn thuộc tỉnh Vĩnh Long, sáp nhập từ xã Mỹ Hòa, phần còn lại phường Cái Vồn, phần còn lại phường Thành Phước của thị xã Bình Minh.",
+    "placeId": "p-long-chau",
+    "address": null,
+    "webp_exists": true,
+    "webp_size": 9610
+  },
+  {
+    "id": "p-cang-long",
+    "type": "place",
+    "name": "Phường Càng Long",
+    "summary": "Phường Càng Long, tỉnh Vĩnh Long, hình thành từ sáp nhập TT Càng Long, xã Mỹ Cẩm và xã Nhị Long Phú thuộc huyện Càng Long.",
+    "placeId": "p-cang-long",
+    "address": null,
+    "webp_exists": true,
+    "webp_size": 9398
+  },
+  {
+    "id": "p-dong-thanh",
+    "type": "place",
+    "name": "Phường Đông Thành",
+    "summary": "Phường Đông Thành, tỉnh Vĩnh Long, hợp nhất từ phường Đông Thuận, xã Đông Bình, xã Đông Thạnh và xã Đông Thành thuộc thị xã Bình Minh.",
+    "placeId": "p-long-chau",
+    "address": null,
+    "webp_exists": true,
+    "webp_size": 8884
+  },
+  {
+    "id": "p-duyen-hai",
+    "type": "place",
+    "name": "Phường Duyên Hải",
+    "summary": "Phường Duyên Hải thuộc thị xã Duyên Hải, tỉnh Vĩnh Long, ra đời khi Phường 1, xã Long Toàn và xã Dân Thành nhập lại.",
+    "placeId": "p-duyen-hai",
+    "address": null,
+    "webp_exists": true,
+    "webp_size": 9466
+  },
+  {
+    "id": "p-hoa-thuan",
+    "type": "place",
+    "name": "Phường Hòa Thuận",
+    "summary": "Phường Hòa Thuận thuộc tỉnh Vĩnh Long, sáp nhập từ Phường 5 (TP Trà Vinh) và xã Hòa Thuận (H.",
+    "placeId": "p-hoa-thuan",
+    "address": null,
+    "webp_exists": true,
+    "webp_size": 8844
+  },
+  {
+    "id": "p-hung-hoa",
+    "type": "place",
+    "name": "Phường Hùng Hoà",
+    "summary": "Phường Hùng Hoà, tỉnh Vĩnh Long, hình thành từ sáp nhập xã Ngãi Hùng, xã Tân Hùng và xã Hùng Hòa thuộc huyện Tiểu Cần.",
+    "placeId": "p-hung-hoa",
+    "address": null,
+    "webp_exists": true,
+    "webp_size": 9142
+  },
+  {
+    "id": "p-long-chau",
+    "type": "place",
+    "name": "Phường Long Châu",
+    "summary": "Phường Long Châu thuộc tỉnh Vĩnh Long, sáp nhập từ Phường 1 (gồm Phường 2 cũ), Phường 9 và phường Trường An của TP Vĩnh Long.",
+    "placeId": "p-long-chau",
+    "address": null,
+    "webp_exists": true,
+    "webp_size": 9766
+  }
+]

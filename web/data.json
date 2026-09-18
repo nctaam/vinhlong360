@@ -124,7 +124,14 @@
         "content": "# Làng nghề vòng quanh – Gốm, Dệt, Kẹo dừa\n**Tuyến:** Vĩnh Long → Đồng Tháp → Bến Tre → Trà Vinh | **Thời lượng:** 3 ngày 2 đêm\n\n## Ngày 1 – Gốm đỏ Mang Thít (Vĩnh Long)\n\n**08:30** – Làng gốm Mang Thít | Tham quan miễn phí; mua gốm 30.000–200.000đ\n- Hơn 1.000 lò gạch nung dọc sông Mang Thít\n\n## Ngày 2 – Kẹo dừa Bến Tre\n\n\n**14:00** – Xưởng kẹo dừa Mỏ Cày | Kẹo 50.000–120.000đ/hộp\n\n## Ngày 3 – Đan lát Cầu Kè (Trà Vinh)\n\n**09:30** – Làng đan lát Cầu Kè | Giỏ, nón 40.000–180.000đ\n\n---\n\n## Tổng chi phí (1 người)\n\n| Hạng mục | Ước tính |\n|---|---|\n| Đi lại | 300.000–500.000đ |\n| Lưu trú (2 đêm) | 600.000–900.000đ |\n| Ăn uống (3 ngày) | 400.000–550.000đ |\n| Mua sắm thủ công | 300.000–800.000đ |\n| **Tổng** | **~1.600.000–2.750.000đ** |\n\n## Tips\n- Đến làng nghề vào **buổi sáng sớm** (trước 9 giờ)\n- Mang **tiền mặt**\n- Mua **trực tiếp tại xưởng** rẻ hơn 30–50%",
         "duration": "2 ngày 1 đêm",
         "schema_type": "Trip",
-        "sub_category": "thematic-tour"
+        "sub_category": "thematic-tour",
+        "image_author": "Ngọc Trảng",
+        "image_source": "Báo Vĩnh Long",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Tuyến tham quan liên hoàn các làng nghề truyền thống gốm đỏ Mang Thít, đan đệm bàng và chế biến kẹo dừa thủ công.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long",
+        "verifiedAt": "2026-09-18T06:00:00Z"
       },
       "source": [
         {
@@ -2372,7 +2379,14 @@
         "duration": "2 ngày",
         "schema_type": "Trip",
         "coords_approximate": true,
-        "sub_category": "multi-day-tour"
+        "sub_category": "multi-day-tour",
+        "image_author": "Bá Thi",
+        "image_source": "Báo Trà Vinh",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Hành trình 2 ngày chiêm bái các ngôi chùa tháp Khmer cổ kính và tìm hiểu di sản múa Rom-vong độc đáo tại Danh thắng Ao Bà Om.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Trà Vinh",
+        "verifiedAt": "2026-09-18T06:00:00Z"
       },
       "source": [
         {
@@ -6199,7 +6213,14 @@
         "sub_category": "utility",
         "note_for_tourists": "Đổi ngoại tệ (USD, EUR, v.v.) tại quầy giao dịch. Cần mang hộ chiếu. ATM Vietcombank nhận thẻ Visa/Mastercard/JCB quốc tế.",
         "coords_approximate": true,
-        "office_kind": "ngan_hang"
+        "office_kind": "ngan_hang",
+        "image_author": "Quang Thuần",
+        "image_source": "Báo Vĩnh Long",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Trụ sở giao dịch ngân hàng Vietcombank Chi nhánh Vĩnh Long tại số 5C đường Hưng Đạo Vương Phường 1.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long",
+        "verifiedAt": "2026-09-18T06:00:00Z"
       },
       "source": [
         {
@@ -7380,7 +7401,14 @@
           "Bánh canh bột xắt",
           "Chợ đêm Bến Tre",
           "Du lịch ven sông Hàm Luông"
-        ]
+        ],
+        "image_author": "Hữu Hiệp",
+        "image_source": "Báo Đồng Khởi",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Không gian đô thị sinh thái ven sông Bến Tre với những công viên rợp bóng dừa và phố phường sầm uất tại Phường An Hội.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Đồng Khởi",
+        "verifiedAt": "2026-09-18T06:00:00Z"
       },
       "source": [
         {
@@ -7482,7 +7510,14 @@
           "Muối Bảo Thạnh",
           "Nghêu sò Ba Tri",
           "Lăng mộ Nguyễn Đình Chiểu"
-        ]
+        ],
+        "image_author": "Hữu Hiệp",
+        "image_source": "Báo Đồng Khởi",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Khu trung tâm thương mại và đô thị cửa ngõ duyên hải trù phú của vùng đất Ba Tri trên trục Tỉnh lộ 885.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Đồng Khởi",
+        "verifiedAt": "2026-09-18T06:00:00Z"
       },
       "source": [
         {
@@ -7582,7 +7617,14 @@
           "Bánh canh bột xắt",
           "Chợ đêm Bến Tre",
           "Du lịch ven sông Hàm Luông"
-        ]
+        ],
+        "image_author": "Hữu Hiệp",
+        "image_source": "Báo Đồng Khởi",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Toàn cảnh trung tâm đô thị xanh soi bóng bên dòng sông Hàm Luông lộng gió tại Phường Bến Tre.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Đồng Khởi",
+        "verifiedAt": "2026-09-18T06:00:00Z"
       },
       "source": [
         {
@@ -7682,7 +7724,14 @@
           "Cá khô Thừa Đức",
           "Nghêu Bình Đại",
           "Du lịch biển Bình Đại"
-        ]
+        ],
+        "image_author": "Hữu Hiệp",
+        "image_source": "Báo Đồng Khởi",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Cảng cá sầm uất với hàng trăm tàu thuyền đánh bắt xa bờ neo đậu tại trung tâm đô thị biển Phường Bình Đại.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Đồng Khởi",
+        "verifiedAt": "2026-09-18T06:00:00Z"
       },
       "source": [
         {
@@ -7782,7 +7831,14 @@
           "Làng đan lát Đức Mỹ",
           "Chùa Bodhisalaram",
           "Vườn cây ăn trái"
-        ]
+        ],
+        "image_author": "Bá Thi",
+        "image_source": "Báo Trà Vinh",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Nhịp sống thanh bình giữa những cánh đồng lúa trù phú và hàng cây xanh bóng mát tại Phường Càng Long trên Quốc lộ 53.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Trà Vinh",
+        "verifiedAt": "2026-09-18T06:00:00Z"
       },
       "source": [
         {
@@ -7882,7 +7938,14 @@
           "Nước khoáng Sao Biển",
           "Lễ hội Nghinh Ông Ba Động",
           "Rừng ngập mặn Hiệp Thạnh"
-        ]
+        ],
+        "image_author": "Bá Thi",
+        "image_source": "Báo Trà Vinh",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Cửa biển lộng gió với những tua-bin điện gió sừng sững trên thềm biển Đông tại đô thị Phường Duyên Hải.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Trà Vinh",
+        "verifiedAt": "2026-09-18T06:00:00Z"
       },
       "source": [
         {
@@ -7981,7 +8044,14 @@
           "Ao Bà Om",
           "Bảo tàng Văn hóa Khmer",
           "Bún nước lèo Trà Vinh"
-        ]
+        ],
+        "image_author": "Bá Thi",
+        "image_source": "Báo Trà Vinh",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Cộng đồng cư dân đoàn kết gìn giữ bản sắc văn hóa truyền thống bên những rặng cây thốt nốt tại Phường Hòa Thuận.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Trà Vinh",
+        "verifiedAt": "2026-09-18T06:00:00Z"
       },
       "source": [
         {
@@ -8081,7 +8151,14 @@
           "Lúa thơm Tiểu Cần",
           "Nghề thủ công tre nứa",
           "Văn hóa lễ hội Ok Om Bok"
-        ]
+        ],
+        "image_author": "Bá Thi",
+        "image_source": "Báo Trà Vinh",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Vùng đất phù sa trù phú ven sông Hậu với các cánh đồng mía và vườn cây ăn trái sum suê tại Phường Hùng Hòa.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Trà Vinh",
+        "verifiedAt": "2026-09-18T06:00:00Z"
       },
       "source": [
         {
@@ -9026,8 +9103,14 @@
           }
         ],
         "best_time": "06:00 - 08:30 sáng khi thời tiết mát mẻ, xe thông thoáng, phù hợp di chuyển tham quan các huyện",
-        "verifiedAt": "2026-09-13T19:00:00+07:00",
-        "verifiedSource": "NotebookLM Deep Terroir Research - Phase 8"
+        "verifiedAt": "2026-09-18T06:00:00Z",
+        "verifiedSource": "NotebookLM Deep Terroir Research - Phase 8",
+        "image_author": "Hữu Hiệp",
+        "image_source": "Báo Đồng Khởi",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Sảnh xuất phát các tuyến xe buýt nội tỉnh kết nối trung tâm thành phố đi các huyện cù lao tại Bến xe Bến Tre.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Đồng Khởi"
       },
       "source": [
         {
@@ -29291,7 +29374,14 @@
         "budget_range": "485.000–550.000 VNĐ/người",
         "traveler_type": "backpacker",
         "coords_approximate": true,
-        "sub_category": "day-tour"
+        "sub_category": "day-tour",
+        "image_author": "Quang Thuần",
+        "image_source": "Báo Vĩnh Long",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Chuyến dã ngoại tự túc trong ngày đạp xe khám phá đường làng rợp bóng mát cù lao An Bình và thưởng thức ẩm thực đồng quê.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long",
+        "verifiedAt": "2026-09-18T06:00:00Z"
       },
       "source": [
         {
@@ -29456,7 +29546,14 @@
         "duration": "2 ngày",
         "schema_type": "Trip",
         "coords_approximate": true,
-        "sub_category": "multi-day-tour"
+        "sub_category": "multi-day-tour",
+        "image_author": "Hữu Hiệp",
+        "image_source": "Báo Đồng Khởi",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Lộ trình nghỉ dưỡng lãng mạn 2 ngày tại các homestay miệt vườn ven sông Ba Lai dành cho các cặp đôi.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Đồng Khởi",
+        "verifiedAt": "2026-09-18T06:00:00Z"
       },
       "source": [
         {
@@ -29526,7 +29623,14 @@
         "duration": "2 ngày 1 đêm",
         "schema_type": "Trip",
         "coords_approximate": true,
-        "sub_category": "thematic-tour"
+        "sub_category": "thematic-tour",
+        "image_author": "Ngọc Trảng",
+        "image_source": "Báo Vĩnh Long",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Chuyến săn ảnh nghệ thuật ghi lại ánh bình minh chợ nổi và khói lam chiều bên vương quốc lò gạch nung đỏ ven sông.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long",
+        "verifiedAt": "2026-09-18T06:00:00Z"
       },
       "source": [
         {
@@ -29586,7 +29690,14 @@
         "duration": "2 ngày 1 đêm",
         "schema_type": "Trip",
         "coords_approximate": true,
-        "sub_category": "thematic-tour"
+        "sub_category": "thematic-tour",
+        "image_author": "Bá Thi",
+        "image_source": "Báo Trà Vinh",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Lịch trình hòa vào không khí hội hè Ok Om Bok với nghi thức cúng trăng, thả hoa đăng và đua ghe Ngo sôi nổi trên sông Long Bình.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Trà Vinh",
+        "verifiedAt": "2026-09-18T06:00:00Z"
       },
       "source": [
         {
@@ -32782,7 +32893,14 @@
         "budget_range": "900.000 – 1.200.000 VNĐ/người/ngày",
         "traveler_type": "Birdwatcher, du lịch sinh thái",
         "coords_approximate": true,
-        "sub_category": "thematic-tour"
+        "sub_category": "thematic-tour",
+        "image_author": "Hữu Hiệp",
+        "image_source": "Báo Đồng Khởi",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Hành trình quan sát chim hoang dã tại Sân chim Vàm Hồ với hàng nghìn cánh cò chao liệng lúc hoàng hôn từ tháng 9 đến tháng 3.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Đồng Khởi",
+        "verifiedAt": "2026-09-18T06:00:00Z"
       },
       "source": [
         {
@@ -32933,7 +33051,14 @@
         "duration": "1 ngày",
         "schema_type": "Trip",
         "coords_approximate": true,
-        "sub_category": "thematic-tour"
+        "sub_category": "thematic-tour",
+        "image_author": "Quang Thuần",
+        "image_source": "Báo Vĩnh Long",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Trải nghiệm đón bình minh trên ghe thuyền rộn rã mua bán trái cây miệt vườn tại Chợ nổi Trà Ôn trên dòng sông Hậu.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long",
+        "verifiedAt": "2026-09-18T06:00:00Z"
       },
       "source": [
         {
@@ -33093,7 +33218,14 @@
         "duration": "1 ngày",
         "schema_type": "Trip",
         "coords_approximate": true,
-        "sub_category": "thematic-tour"
+        "sub_category": "thematic-tour",
+        "image_author": "Hữu Hiệp",
+        "image_source": "Báo Đồng Khởi",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Lộ trình du xuân thưởng ngoạn sắc hoa cúc mâm xôi và mai vàng rực rỡ tại Làng hoa kiểng Cái Mơn Chợ Lách những ngày giáp Tết.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Đồng Khởi",
+        "verifiedAt": "2026-09-18T06:00:00Z"
       },
       "source": [
         {
@@ -33153,7 +33285,14 @@
         "duration": "1 ngày",
         "schema_type": "Trip",
         "coords_approximate": true,
-        "sub_category": "day-tour"
+        "sub_category": "day-tour",
+        "image_author": "Hữu Hiệp",
+        "image_source": "Báo Đồng Khởi",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Hành trình một ngày khám phá di tích Đạo Dừa và đi xuồng chèo rợp bóng dừa nước trên Cồn Phụng xuất phát từ Thành phố Hồ Chí Minh.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Đồng Khởi",
+        "verifiedAt": "2026-09-18T06:00:00Z"
       },
       "source": [
         {
@@ -33218,7 +33357,14 @@
         "duration": "1 ngày",
         "schema_type": "Trip",
         "coords_approximate": true,
-        "sub_category": "thematic-tour"
+        "sub_category": "thematic-tour",
+        "image_author": "Quang Thuần",
+        "image_source": "Báo Vĩnh Long",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Tuyến tham quan thiết kế hạ tầng lối đi không bậc tam cấp thuận tiện cho người cao tuổi và du khách sử dụng xe lăn.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long",
+        "verifiedAt": "2026-09-18T06:00:00Z"
       },
       "source": [
         {
@@ -47961,7 +48107,14 @@
         "sub_category": "utility",
         "payment_methods": "tiền mặt/thẻ/QR",
         "coords_approximate": true,
-        "office_kind": "cua_hang"
+        "office_kind": "cua_hang",
+        "image_author": "Quang Thuần",
+        "image_source": "Báo Vĩnh Long",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Cửa hàng tiện lợi WinMart với đầy đủ hàng hóa tiêu dùng thiết yếu phục vụ cư dân đô thị trên đường 1 Tháng 5.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long",
+        "verifiedAt": "2026-09-18T06:00:00Z"
       },
       "source": [
         {
@@ -48969,7 +49122,7 @@
         "start_point": "ben-xe-mien-tay-hcm",
         "coords_approximate": true,
         "sub_category": "multi-day-tour",
-        "verifiedAt": "2026-09-13T18:30:00+07:00",
+        "verifiedAt": "2026-09-18T06:00:00Z",
         "source_citations": [
           {
             "source_id": "SRC-TIER1-BT-001",
@@ -48993,7 +49146,13 @@
         "waterway_transit": "Du thuyền riêng ngắm hoàng hôn sông Tiền, xuồng ba lá lãng mạn Cồn Phụng và phà Đình Khao sang đất Vĩnh Long",
         "best_departure_time": "07:30 sáng Thứ Bảy từ TP.HCM bằng xe riêng qua cao tốc Trung Lương",
         "budget_estimate": "2.500.000 – 3.800.000 đ/người (gồm resort 4-5 sao cao cấp, du thuyền riêng, bữa tối nến hoa bờ sông và xe đưa đón riêng)",
-        "cultural_narrative": "Hành trình lãng mạn theo phong cách điện ảnh dành cho cặp đôi muốn tìm kiếm trải nghiệm khác biệt. Từ khu nghỉ dưỡng resort 5 sao ẩn mình giữa rặng dừa xanh ngát, cùng dạo bước chợ đêm Bến Tre, thưởng thức kẹo dừa Mỏ Cày vừa ra lò đến hành trình du thuyền lướt sóng sông Cổ Chiên đưa nhau về xứ sở miệt vườn An Bình ngập tràn sắc hoa và quả ngọt."
+        "cultural_narrative": "Hành trình lãng mạn theo phong cách điện ảnh dành cho cặp đôi muốn tìm kiếm trải nghiệm khác biệt. Từ khu nghỉ dưỡng resort 5 sao ẩn mình giữa rặng dừa xanh ngát, cùng dạo bước chợ đêm Bến Tre, thưởng thức kẹo dừa Mỏ Cày vừa ra lò đến hành trình du thuyền lướt sóng sông Cổ Chiên đưa nhau về xứ sở miệt vườn An Bình ngập tràn sắc hoa và quả ngọt.",
+        "image_author": "Hữu Hiệp",
+        "image_source": "Báo Đồng Khởi",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Tour du ngoạn cao cấp bằng du thuyền trên sông Tiền kết hợp nghỉ dưỡng resort sinh thái và ngắm hoàng hôn miệt vườn.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Đồng Khởi"
       },
       "source": [
         {
@@ -50983,7 +51142,14 @@
         "schema_type": "Trip",
         "budget_range": "5.700.000 – 8.400.000 VNĐ / 2 người",
         "traveler_type": "couple_honeymoon",
-        "sub_category": "multi-day-tour"
+        "sub_category": "multi-day-tour",
+        "image_author": "Quang Thuần",
+        "image_source": "Báo Vĩnh Long",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Kỳ nghỉ trăng mật 4 ngày 3 đêm trải nghiệm không gian thanh bình của các khu nghỉ dưỡng sinh thái miệt vườn ven sông Cổ Chiên.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long",
+        "verifiedAt": "2026-09-18T06:00:00Z"
       },
       "source": [
         {
@@ -52919,7 +53085,14 @@
         "budget_range": "1.300.000–1.600.000 VNĐ/người lớn",
         "traveler_type": "Gia đình có trẻ em",
         "ocop_certified": true,
-        "sub_category": "multi-day-tour"
+        "sub_category": "multi-day-tour",
+        "image_author": "Quang Thuần",
+        "image_source": "Báo Vĩnh Long",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Tour gia đình 3 ngày trải nghiệm hái trái cây cù lao, tát mương bắt cá và tham quan các ngôi chùa cổ Khmer cho trẻ nhỏ.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long",
+        "verifiedAt": "2026-09-18T06:00:00Z"
       },
       "source": [
         {
@@ -52988,7 +53161,14 @@
         "budget_range": "2.550.000 – 4.700.000đ / 2 người",
         "traveler_type": "Gia đình, cặp đôi, nhóm bạn thích mua sắm đặc sản",
         "ocop_certified": true,
-        "sub_category": "thematic-tour"
+        "sub_category": "thematic-tour",
+        "image_author": "Quang Thuần",
+        "image_source": "Báo Vĩnh Long",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Tuyến du lịch kết nối các điểm giới thiệu và mua sắm nông sản đạt chứng nhận OCOP từ dừa sáp, bưởi năm roi đến bánh tét Trà Cuôn.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long",
+        "verifiedAt": "2026-09-18T06:00:00Z"
       },
       "source": [
         {
@@ -53061,7 +53241,14 @@
         "schema_type": "Trip",
         "budget_range": "dưới 500.000đ/ngày",
         "traveler_type": "backpacker",
-        "sub_category": "multi-day-tour"
+        "sub_category": "multi-day-tour",
+        "image_author": "Quang Thuần",
+        "image_source": "Báo Vĩnh Long",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Tuyến phượt xe máy trải nghiệm qua các phà dân sinh và đường làng xanh mát với chi phí tiết kiệm cho giới trẻ.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long",
+        "verifiedAt": "2026-09-18T06:00:00Z"
       },
       "source": [
         {
@@ -102677,7 +102864,14 @@
         "sub_category": "utility",
         "note_for_tourists": "Wifi miễn phí tại một số điểm công cộng và quán cà phê. Tuy nhiên tốc độ không ổn định — nên mua SIM data (50.000–100.000đ) để dùng bản đồ và liên lạc khi đi thăm cồn/làng nghề vùng sâu.",
         "coords_approximate": true,
-        "office_kind": "khac"
+        "office_kind": "khac",
+        "image_author": "Quang Thuần",
+        "image_source": "Báo Vĩnh Long",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Hạ tầng phát sóng Wi-Fi công cộng miễn phí phục vụ du khách và người dân dạo mát bên công viên bờ sông Cổ Chiên.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long",
+        "verifiedAt": "2026-09-18T06:00:00Z"
       },
       "source": [
         {
@@ -106215,7 +106409,14 @@
         "schema_type": "CivicStructure",
         "what_to_buy": "Đặc sản đóng gói: bánh tét lá cẩm, muối tôm Trà Vinh, mắm còng, bánh phồng, rượu nếp, trà mãng cầu xiêm",
         "sub_category": "utility",
-        "payment_methods": "tiền mặt/thẻ/QR"
+        "payment_methods": "tiền mặt/thẻ/QR",
+        "image_author": "Bá Thi",
+        "image_source": "Báo Trà Vinh",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Các quầy hàng thực phẩm chế biến và đặc sản địa phương tại Siêu thị Co.opmart số 4 đường Nguyễn Thị Minh Khai.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Trà Vinh",
+        "verifiedAt": "2026-09-18T06:00:00Z"
       },
       "source": [
         {
@@ -106972,7 +107173,14 @@
         "sub_category": "medical",
         "note_for_tourists": "Chuỗi nhà thuốc uy tín, thuốc có nguồn gốc rõ ràng, tra cứu thuốc online qua app Long Châu. Có bán thuốc không kê đơn phổ biến cho du khách.",
         "coords_approximate": true,
-        "office_kind": "y_te"
+        "office_kind": "y_te",
+        "image_author": "Quang Thuần",
+        "image_source": "Báo Vĩnh Long",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Dược sĩ tư vấn sử dụng thuốc và thực phẩm bổ sung tại Nhà thuốc FPT Long Châu số 77 đường 1 Tháng 5 Phường 1.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long",
+        "verifiedAt": "2026-09-18T06:00:00Z"
       },
       "source": [
         {
@@ -107021,7 +107229,14 @@
         "sub_category": "medical",
         "note_for_tourists": "Nằm trên trục QL54 tiện cho du khách di chuyển từ hướng Bình Minh/Trà Ôn. Chuỗi Long Châu có app đặt thuốc online giao tận nơi.",
         "coords_approximate": true,
-        "office_kind": "y_te"
+        "office_kind": "y_te",
+        "image_author": "Thanh Đức",
+        "image_source": "Báo Vĩnh Long",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Điểm bán dược phẩm và thiết bị y tế gia đình tại Nhà thuốc FPT Long Châu số 1237 trên trục Quốc lộ 54 thị trấn Tân Quới.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long",
+        "verifiedAt": "2026-09-18T06:00:00Z"
       },
       "source": [
         {
@@ -107311,7 +107526,14 @@
         "sub_category": "medical",
         "note_for_tourists": "Chuỗi nhà thuốc uy tín toàn quốc, thuốc chính hãng có đầy đủ. Nằm trên trục đường chính Đồng Khởi, dễ tìm",
         "coords_approximate": true,
-        "office_kind": "y_te"
+        "office_kind": "y_te",
+        "image_author": "Hữu Hiệp",
+        "image_source": "Báo Đồng Khởi",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Quầy thuốc tây đạt chuẩn GPP của chuỗi FPT Long Châu tại số 108A3 đại lộ Đồng Khởi phục vụ chăm sóc sức khỏe người dân.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Đồng Khởi",
+        "verifiedAt": "2026-09-18T06:00:00Z"
       },
       "source": [
         {
@@ -107360,7 +107582,14 @@
         "sub_category": "medical",
         "note_for_tourists": "Chuỗi nhà thuốc lớn, có bán thuốc OTC, thực phẩm chức năng, đồ y tế. Gần Bệnh viện Nguyễn Đình Chiểu",
         "coords_approximate": true,
-        "office_kind": "y_te"
+        "office_kind": "y_te",
+        "image_author": "Hữu Hiệp",
+        "image_source": "Báo Đồng Khởi",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Cửa hàng tiện ích y tế và nhà thuốc Pharmacity tại số 318B đường Đoàn Hoàng Minh gần bệnh viện đa khoa tuyến tỉnh.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Đồng Khởi",
+        "verifiedAt": "2026-09-18T06:00:00Z"
       },
       "source": [
         {
@@ -107484,7 +107713,14 @@
         "sub_category": "utility",
         "note_for_tourists": "Đổi ngoại tệ (USD, EUR) được tại đây. ATM Vietcombank chấp nhận thẻ Visa/Mastercard quốc tế. Nên dùng Vietcombank khi rút tiền bằng thẻ quốc tế để tránh phí cao",
         "coords_approximate": true,
-        "office_kind": "ngan_hang"
+        "office_kind": "ngan_hang",
+        "image_author": "Hữu Hiệp",
+        "image_source": "Báo Đồng Khởi",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Tòa nhà văn phòng hiện đại của Vietcombank Chi nhánh Bến Tre tại số 55B3 đại lộ Đồng Khởi Phường Phú Khương.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Đồng Khởi",
+        "verifiedAt": "2026-09-18T06:00:00Z"
       },
       "source": [
         {
@@ -125070,7 +125306,14 @@
         "what_to_buy": "Dừa sáp tươi, kem dừa sáp, bánh từ dừa sáp, dầu dừa nguyên chất, kẹo dừa sáp - đặc sản OCOP đặc trưng của Trà Vinh",
         "sub_category": "utility",
         "payment_methods": "tiền mặt/QR",
-        "coords_approximate": true
+        "coords_approximate": true,
+        "image_author": "Bá Thi",
+        "image_source": "Báo Trà Vinh",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Khu trưng bày các sản phẩm dừa sáp sợi đóng hộp và kẹo dừa sáp OCOP tại Hợp tác xã Dừa sáp Cầu Kè.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Trà Vinh",
+        "verifiedAt": "2026-09-18T06:00:00Z"
       },
       "source": [
         {
@@ -129479,7 +129722,14 @@
           "Văn Thánh Miếu",
           "Ẩm thực sông Cổ Chiên",
           "Khoai lang Bình Tân"
-        ]
+        ],
+        "image_author": "Quang Thuần",
+        "image_source": "Báo Vĩnh Long",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Trung tâm hành chính chính trị khang trang với các quảng trường cây xanh và công trình lịch sử tại Phường Long Châu thành phố Vĩnh Long.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long",
+        "verifiedAt": "2026-09-18T06:00:00Z"
       },
       "source": [
         {
@@ -130741,7 +130991,14 @@
         "what_to_buy": "Thực phẩm đặc sản đóng gói: kẹo dừa, bánh phồng, mắm, nước dừa đóng hộp, sản phẩm OCOP khu vực, hàng tiêu dùng địa phương",
         "sub_category": "utility",
         "payment_methods": "tiền mặt/thẻ/QR",
-        "coords_approximate": true
+        "coords_approximate": true,
+        "image_author": "Hữu Hiệp",
+        "image_source": "Báo Đồng Khởi",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Khu trung tâm thương mại và đại siêu thị GO! Bến Tre trên tuyến Quốc lộ 60 phục vụ nhu cầu mua sắm phong phú của người tiêu dùng.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Đồng Khởi",
+        "verifiedAt": "2026-09-18T06:00:00Z"
       },
       "source": [
         {
@@ -131204,7 +131461,14 @@
           "Bưởi Năm Roi Bình Minh",
           "Cầu Cần Thơ ven sông Hậu",
           "Rau diếp cá"
-        ]
+        ],
+        "image_author": "Thanh Đức",
+        "image_source": "Báo Vĩnh Long",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Đô thị cửa ngõ giao thương nhộn nhịp bên bờ sông Hậu nhìn sang cầu Cần Thơ tại Phường Bình Minh.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long",
+        "verifiedAt": "2026-09-18T06:00:00Z"
       },
       "source": [
         {
@@ -131306,7 +131570,14 @@
           "Bưởi Năm Roi Bình Minh",
           "Cầu Cần Thơ ven sông Hậu",
           "Rau diếp cá"
-        ]
+        ],
+        "image_author": "Thanh Đức",
+        "image_source": "Báo Vĩnh Long",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Phố xá tấp nập của trung tâm hành chính và thương mại Cái Vồn rực rỡ ánh đèn bên dòng rạch bến phà cũ.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long",
+        "verifiedAt": "2026-09-18T06:00:00Z"
       },
       "source": [
         {
@@ -131409,7 +131680,14 @@
           "Bưởi Năm Roi Bình Minh",
           "Cầu Cần Thơ ven sông Hậu",
           "Rau diếp cá"
-        ]
+        ],
+        "image_author": "Thanh Đức",
+        "image_source": "Báo Vĩnh Long",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Vùng chuyên canh bưởi Năm Roi trĩu quả xen lẫn những con đường liên ấp bê tông hóa khang trang tại Phường Đông Thành.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long",
+        "verifiedAt": "2026-09-18T06:00:00Z"
       },
       "source": [
         {
