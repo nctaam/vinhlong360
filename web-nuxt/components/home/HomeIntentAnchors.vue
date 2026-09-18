@@ -6,7 +6,7 @@
           <IconLine name="compass" aria-hidden="true" />
           <span>Lối rẽ lữ hành</span>
         </span>
-        <h2 class="home-intent-anchors__title" aria-label="Nhu Cầu Khám Phá Nhanh">Nhu Cầu <em class="editorial-italic-accent" aria-hidden="true">Khám Phá Nhanh</em></h2>
+        <h2 class="home-intent-anchors__title" aria-label="Lối rẽ khám phá nhanh">Lối rẽ <em class="editorial-italic-accent" aria-hidden="true">khám phá nhanh</em></h2>
       </div>
 
       <div class="home-intent-anchors__grid" role="list">
@@ -61,7 +61,7 @@ interface IntentAnchor {
 const INTENT_ANCHORS: readonly IntentAnchor[] = [
   {
     key: 'eco-orchard',
-    label: 'Du lịch Sinh thái Miệt vườn',
+    label: 'Miệt vườn Cù lao & Trái ngọt',
     hint: 'Vườn chôm chôm, sầu riêng Ri6 cù lao An Bình',
     to: '/tim-kiem?q=sinh+th%C3%A1i+mi%E1%BB%87t+v%C6%B0%E1%BB%9Dn',
     icon: 'sprout',
@@ -70,7 +70,7 @@ const INTENT_ANCHORS: readonly IntentAnchor[] = [
   },
   {
     key: 'heritage-craft',
-    label: 'Ký sự Làng nghề Truyền thống',
+    label: 'Làng gốm đỏ & Nghề thủ công',
     hint: 'Lò gạch gốm đỏ Mang Thít & làng đan lát',
     to: '/tim-kiem?q=l%C3%A0ng+ngh%E1%BB%81+g%E1%BB%91m',
     icon: 'vase',
@@ -79,7 +79,7 @@ const INTENT_ANCHORS: readonly IntentAnchor[] = [
   },
   {
     key: 'spiritual-culture',
-    label: 'Hành trình Tâm linh Di sản',
+    label: 'Chốn cổ tự & Nếp xưa xứ sở',
     hint: 'Chùa Khmer Hạnh Phúc Tăng, Văn Thánh Miếu',
     to: '/tim-kiem?q=t%C3%A2m+linh+di+s%E1%BA%A3n',
     icon: 'landmark',
@@ -88,7 +88,7 @@ const INTENT_ANCHORS: readonly IntentAnchor[] = [
   },
   {
     key: 'culinary-market',
-    label: 'Ẩm thực & Chợ nổi',
+    label: 'Thức ngon chợ nổi & Quán quê',
     hint: 'Cá tai tượng chiên xù, bánh xèo & Chợ nổi Trà Ôn',
     to: '/am-thuc',
     icon: 'bowl',
@@ -97,7 +97,7 @@ const INTENT_ANCHORS: readonly IntentAnchor[] = [
   },
   {
     key: 'riverside-homestay',
-    label: 'Nghỉ dưỡng Homestay Ven sông',
+    label: 'Nhà vườn ven sông & Đờn ca',
     hint: 'Homestay Út Trinh, Mekong Riverside & đờn ca',
     to: '/luu-tru',
     icon: 'home',

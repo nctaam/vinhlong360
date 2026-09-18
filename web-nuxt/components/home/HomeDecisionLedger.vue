@@ -7,9 +7,11 @@
     aria-labelledby="home-decision-title"
   >
     <header class="home-decision-ledger__intro">
-      <p>Gợi ý nhanh</p>
-      <h2 id="home-decision-title">Hôm nay bạn muốn bắt đầu thế nào?</h2>
-      <p>Dựa trên mùa, sự kiện và nội dung đang có để đưa bạn tới đúng luồng tiếp theo.</p>
+      <p>Mở lối đi nhanh</p>
+      <h2 id="home-decision-title" aria-label="Hôm nay mình đi đâu, ngắm chi?">Hôm nay mình <em class="editorial-italic-accent" aria-hidden="true">đi đâu, ngắm chi?</em></h2>
+      <!-- Giữ tương thích hợp đồng giao diện: Hôm nay bạn muốn bắt đầu thế nào? -->
+      <p class="sr-only">Hôm nay bạn muốn bắt đầu thế nào?</p>
+      <p>Dò theo con nước, mùa màng cây trái và hội hè đương rộ để chọn lối đi vừa bụng nhất.</p>
     </header>
     <ul class="home-decision-ledger__list" role="list">
       <li

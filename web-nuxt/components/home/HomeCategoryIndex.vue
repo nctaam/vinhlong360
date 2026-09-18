@@ -2,7 +2,7 @@
   <section class="home-category-index" data-home-category-index aria-labelledby="home-category-title">
     <header class="home-category-index__header">
       <p>Không gian bản địa</p>
-      <h2 id="home-category-title">Mạng lưới khám phá không gian bản địa</h2>
+      <h2 id="home-category-title" aria-label="Chỉ mục không gian miệt vườn">Chỉ mục không gian <em class="editorial-italic-accent" aria-hidden="true">miệt vườn</em></h2>
     </header>
     <nav class="home-category-index__primary" data-home-category-primary aria-label="Khám phá chính">
       <NuxtLink
@@ -39,7 +39,7 @@
       </NuxtLink>
     </nav>
     <div class="home-category-index__utility" data-home-category-utility>
-      <p>Tiện ích cho hành trình</p>
+      <p>Hành trang bỏ túi</p>
       <nav aria-label="Tiện ích hành trình">
         <NuxtLink
           v-for="link in groups.utility"

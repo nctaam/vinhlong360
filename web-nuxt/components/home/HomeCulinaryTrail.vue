@@ -1,16 +1,16 @@
 <template>
-  <section class="home-culinary-trail block reveal" aria-label="Thiên Đường Ẩm Thực Miệt Vườn Vĩnh Long" data-home-culinary-trail>
+  <section class="home-culinary-trail block reveal" aria-label="Thức ngon miệt vườn Vĩnh Long" data-home-culinary-trail>
     <div class="home-culinary-trail__head section-head">
       <div class="sh-text">
         <span class="home-culinary-trail__eyebrow" data-color-role="brand">
           <IconLine name="bowl" aria-hidden="true" />
           <span>Ký sự Ẩm thực Cửu Long · Vị ngon đất phù sa</span>
         </span>
-        <h2>Thiên Đường Ẩm Thực <em class="editorial-italic-accent" aria-hidden="true">Miệt Vườn</em></h2>
-        <p class="sh-sub">5 món ăn trứ danh đã làm say lòng bao thế hệ lữ khách, kết tinh từ cá tôm sông Cổ Chiên và rau vườn phù sa màu mỡ.</p>
+        <h2 aria-label="Thức ngon miệt vườn">Thức ngon <em class="editorial-italic-accent" aria-hidden="true">miệt vườn</em></h2>
+        <p class="sh-sub">Năm thức ngon nức tiếng miệt Cửu Long, đượm vị tôm cá sông Cổ Chiên cùng mớ rau vườn tươi rói bến phù sa.</p>
       </div>
       <NuxtLink to="/am-thuc" class="see-all">
-        <span>Xem trọn bộ 120 món ngon di sản</span>
+        <span>Xem trọn 120 món ngon di sản</span>
         <IconLine name="arrow-right" class="inline-arrow" aria-hidden="true" />
       </NuxtLink>
     </div>

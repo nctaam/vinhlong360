@@ -24,15 +24,15 @@
       </div>
       <div class="hero-inner">
         <div class="hero-main hero-enter">
-          <span class="hero-kicker" data-color-role="brand"><span class="hero-kicker-dot" aria-hidden="true"></span>{{ ss('homepage.hero_kicker', 'Du lịch & Đặc sản Vĩnh Long') }}</span>
+          <span class="hero-kicker" data-color-role="brand"><span class="hero-kicker-dot" aria-hidden="true"></span>{{ ss('homepage.hero_kicker', 'Xứ sở Cù lao · Đất lành phù sa Vĩnh Long') }}</span>
           <h1>{{ seasonalTagline }}</h1>
-          <p class="hero-sub">{{ ss('homepage.hero_subtitle', 'Tìm điểm đến, món ngon, lễ hội và lịch trình phù hợp cho chuyến đi Vĩnh Long hôm nay.') }}</p>
+          <p class="hero-sub">{{ ss('homepage.hero_subtitle', 'Tìm điểm đến, món ngon, lễ hội và lịch trình phù hợp cho chuyến về xứ cù lao Vĩnh Long hôm nay.') }}</p>
           <div class="hero-cognitive-banner" role="region" aria-label="Khuyến nghị thời vụ lữ hành">
             <div class="hero-cognitive-chip hero-cognitive-chip--weather">
               <IconLine name="sun" class="hero-cognitive-chip__icon" aria-hidden="true" />
-              <strong class="hero-cognitive-chip__title">Thời tiết lý tưởng</strong>
+              <strong class="hero-cognitive-chip__title">Trời êm gió mát</strong>
               <span class="hero-cognitive-chip__sep" aria-hidden="true">·</span>
-              <span class="hero-cognitive-chip__desc">28°C Nắng dịu, gió mát lành</span>
+              <span class="hero-cognitive-chip__desc">28°C Nắng dịu, thuận đường sông nước</span>
             </div>
             <div class="hero-cognitive-chip hero-cognitive-chip--fruit">
               <IconLine name="leaf" class="hero-cognitive-chip__icon" aria-hidden="true" />
@@ -49,12 +49,12 @@
               <NuxtLink to="/ban-do?near=1" class="hero-nearby"><IconLine name="pin" aria-hidden="true" /> Tìm quanh tôi</NuxtLink>
               <span class="hero-search-island__hint">
                 <IconLine name="compass" class="hero-search-island__hint-icon" aria-hidden="true" />
-                <span>Nhập tên điểm đến, di sản hoặc món đặc sản</span>
+                <span>Tìm cù lao, lò gạch cổ, quán ăn hay thức quà miệt vườn</span>
               </span>
             </div>
           </div>
           <div class="hero-terroir-chips" role="region" aria-label="Gợi ý thực địa Vĩnh Long">
-            <span class="hero-terroir-chips__label">Khám phá nhanh:</span>
+            <span class="hero-terroir-chips__label">Rẽ lối lẹ:</span>
             <NuxtLink
               v-for="chip in HERO_TERROIR_CHIPS"
               :key="chip.label"
@@ -153,9 +153,9 @@
         <div class="section-head">
           <div class="sh-text">
             <h2>Tín hiệu địa phương <em class="editorial-italic-accent" aria-hidden="true">theo mùa</em></h2>
-            <p class="sh-sub">Lịch đang tới và mùa vụ đang có dữ liệu.</p>
+            <p class="sh-sub">Lịch hội hè sắp tới và mùa vụ cây trái đương rộ trên bến dưới thuyền.</p>
           </div>
-          <NuxtLink class="see-all" to="/su-kien">Xem lịch</NuxtLink>
+          <NuxtLink class="see-all" to="/su-kien">Xem trọn lịch hội</NuxtLink>
         </div>
 
         <div class="home-signals__grid">
@@ -262,7 +262,7 @@
                     class="signal-lead-disclosure"
                   />
                 </span>
-                <span class="home-season-row__action">Xem theo mùa</span>
+                <span class="home-season-row__action">Xem mùa vụ</span>
               </NuxtLink>
               </li>
             </ul>

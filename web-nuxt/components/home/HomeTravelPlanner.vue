@@ -1,16 +1,16 @@
 <template>
-  <section class="home-travel-planner block reveal" aria-label="Gợi Ý Lịch Trình Tinh Tuyển Vĩnh Long" data-home-travel-planner>
+  <section class="home-travel-planner block reveal" aria-label="Lịch trình thong dong Vĩnh Long" data-home-travel-planner>
     <div class="home-travel-planner__head section-head">
       <div class="sh-text">
         <span class="home-travel-planner__eyebrow" data-color-role="brand">
           <IconLine name="route" aria-hidden="true" />
-          <span>Kế hoạch Lữ hành · Tinh tuyển thời gian</span>
+          <span>Đường đi nước bước · Tinh tuyển thời gian</span>
         </span>
-        <h2>Gợi Ý Lịch Trình <em class="editorial-italic-accent" aria-hidden="true">Tinh Tuyển</em></h2>
-        <p class="sh-sub">3 phương án lộ trình được thiết kế chuẩn xác từ kinh nghiệm thực địa, giúp bạn khám phá trọn vẹn tinh hoa Vĩnh Long theo quỹ thời gian cá nhân.</p>
+        <h2 aria-label="Lịch trình thong dong">Lịch trình <em class="editorial-italic-accent" aria-hidden="true">thong dong</em></h2>
+        <p class="sh-sub">Ba chặng đường thong dong đúc kết từ lối đi của người địa phương, vừa vặn cho chuyến đi ngắn ngày hay kỳ nghỉ thảnh thơi.</p>
       </div>
       <NuxtLink to="/lich-trinh" class="see-all">
-        <span>Xem toàn bộ 16 lịch trình</span>
+        <span>Xem trọn 16 lịch trình</span>
         <IconLine name="arrow-right" class="inline-arrow" aria-hidden="true" />
       </NuxtLink>
     </div>

@@ -1,16 +1,16 @@
 <template>
-  <section class="home-curated-showcase block reveal" aria-label="Top Điểm Đến Phải Đến Vĩnh Long" data-home-curated-showcase>
+  <section class="home-curated-showcase block reveal" aria-label="Chốn dừng chân đáng ghé Vĩnh Long" data-home-curated-showcase>
     <div class="home-curated-showcase__head section-head">
       <div class="sh-text">
         <span class="home-curated-showcase__eyebrow" data-color-role="brand">
           <IconLine name="landmark" aria-hidden="true" />
           <span>Kỳ quan sông nước · Di sản sống</span>
         </span>
-        <h2>Top Điểm Đến <em class="editorial-italic-accent" aria-hidden="true">Phải Đến</em></h2>
-        <p class="sh-sub">Tuyển tập những điểm chạm văn hóa, sinh thái và di sản độc bản tạo nên hồn cốt đất Vĩnh Long.</p>
+        <h2 aria-label="Chốn dừng chân đáng ghé">Chốn dừng chân <em class="editorial-italic-accent" aria-hidden="true">đáng ghé</em></h2>
+        <p class="sh-sub">Những bến bờ sông nước, lò gạch nung đỏ rực và vựa cây trái rợp bóng phù sa đất Vĩnh Long.</p>
       </div>
       <NuxtLink to="/du-lich" class="see-all">
-        <span>Xem toàn bộ 220 điểm đến</span>
+        <span>Xem trọn 220 điểm đến</span>
         <IconLine name="arrow-right" class="inline-arrow" aria-hidden="true" />
       </NuxtLink>
     </div>
