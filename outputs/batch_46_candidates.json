@@ -1,0 +1,362 @@
+[
+  {
+    "id": "xa-cho-lach",
+    "name": "Xã Chợ Lách",
+    "summary": "Xã Chợ Lách thuộc huyện Chợ Lách, tỉnh Bến Tre, ra đời khi TT Chợ Lách, xã Hòa Nghĩa và xã Long Thới nhập lại.",
+    "placeId": "xa-cho-lach",
+    "address": null,
+    "webp_exists": true,
+    "webp_size": 9784
+  },
+  {
+    "id": "xa-dai-an",
+    "name": "Xã Đại An",
+    "summary": "Ba đơn vị thuộc huyện Trà Cú cũ — thị trấn Định An, xã Định An và xã Đại An — nay hợp thành xã Đại An, tỉnh Vĩnh Long. Mã hành chính: 29491.",
+    "placeId": "xa-dai-an",
+    "address": null,
+    "webp_exists": true,
+    "webp_size": 8826
+  },
+  {
+    "id": "xa-dai-dien",
+    "name": "Xã Đại Điền",
+    "summary": "Xã Đại Điền thuộc tỉnh Vĩnh Long, sáp nhập từ xã Phú Khánh, xã Tân Phong, xã Thới Thạnh và xã Đại Điền của huyện Thạnh Phú.",
+    "placeId": "xa-dai-dien",
+    "address": null,
+    "webp_exists": true,
+    "webp_size": 9820
+  },
+  {
+    "id": "xa-don-chau",
+    "name": "Xã Đôn Châu",
+    "summary": "Xã Đôn Châu, tỉnh Vĩnh Long, hình thành từ sáp nhập xã Đôn Xuân và xã Đôn Châu thuộc huyện Duyên Hải.",
+    "placeId": "xa-don-chau",
+    "address": null,
+    "webp_exists": true,
+    "webp_size": 9086
+  },
+  {
+    "id": "xa-dong-hai",
+    "name": "Xã Đông Hải",
+    "summary": "Giữ nguyên ranh giới qua đợt sắp xếp theo Nghị quyết 1687/NQ-UBTVQH15, xã Đông Hải nay thuộc tỉnh Vĩnh Long, khu vực Trà Vinh. Trước đó xã thuộc huyện Duyên Hải cũ.",
+    "placeId": "xa-dong-hai",
+    "address": null,
+    "webp_exists": true,
+    "webp_size": 9618
+  },
+  {
+    "id": "xa-dong-khoi",
+    "name": "Xã Đồng Khởi",
+    "summary": "Xã Đồng Khởi, tỉnh Vĩnh Long, hợp nhất từ xã Định Thủy, xã Phước Hiệp và xã Bình Khánh thuộc huyện Mỏ Cày Nam.",
+    "placeId": "xa-dong-khoi",
+    "address": null,
+    "webp_exists": true,
+    "webp_size": 9972
+  },
+  {
+    "id": "xa-giao-long",
+    "name": "Xã Giao Long",
+    "summary": "Xã Giao Long thuộc tỉnh Vĩnh Long, sáp nhập từ xã An Phước, xã Quới Sơn và xã Giao Long của huyện Châu Thành (BT).",
+    "placeId": "xa-giao-long",
+    "address": null,
+    "webp_exists": true,
+    "webp_size": 9382
+  },
+  {
+    "id": "xa-giong-trom",
+    "name": "Xã Giồng Trôm",
+    "summary": "Xã Giồng Trôm thuộc tỉnh Vĩnh Long, sáp nhập từ TT Giồng Trôm, xã Bình Hòa và xã Bình Thành của huyện Giồng Trôm.",
+    "placeId": "xa-giong-trom",
+    "address": null,
+    "webp_exists": true,
+    "webp_size": 10020
+  },
+  {
+    "id": "xa-ham-giang",
+    "name": "Xã Hàm Giang",
+    "summary": "Xã Hàm Giang, tỉnh Vĩnh Long, hình thành từ sáp nhập xã Hàm Tân, xã Kim Sơn và xã Hàm Giang thuộc huyện Trà Cú.",
+    "placeId": "xa-ham-giang",
+    "address": null,
+    "webp_exists": true,
+    "webp_size": 9752
+  },
+  {
+    "id": "xa-hau-loc",
+    "name": "Xã Hậu Lộc",
+    "summary": "Xã Hậu Lộc thuộc huyện Tam Bình, tỉnh Vĩnh Long, ra đời khi xã Mỹ Lộc, xã Tân Lộc, xã Hậu Lộc và xã Phú Lộc nhập lại.",
+    "placeId": "xa-hau-loc",
+    "address": null,
+    "webp_exists": true,
+    "webp_size": 9130
+  },
+  {
+    "id": "xa-hiep-my",
+    "name": "Xã Hiệp Mỹ",
+    "summary": "Xã Hiệp Mỹ thuộc tỉnh Vĩnh Long, sáp nhập từ xã Long Sơn, xã Hiệp Mỹ Đông và xã Hiệp Mỹ Tây của huyện Cầu Ngang.",
+    "placeId": "xa-hiep-my",
+    "address": null,
+    "webp_exists": true,
+    "webp_size": 9038
+  },
+  {
+    "id": "xa-hieu-phung",
+    "name": "Xã Hiếu Phụng",
+    "summary": "Xã Hiếu Phụng, tỉnh Vĩnh Long, hợp nhất từ xã Hiếu Thuận, xã Trung An và xã Hiếu Phụng thuộc huyện Vũng Liêm.",
+    "placeId": "p-long-chau",
+    "address": null,
+    "webp_exists": true,
+    "webp_size": 8186
+  },
+  {
+    "id": "xa-hieu-thanh",
+    "name": "Xã Hiếu Thành",
+    "summary": "Xã Hiếu Thành thuộc tỉnh Vĩnh Long, sáp nhập từ xã Hiếu Nhơn, xã Hiếu Nghĩa và xã Hiếu Thành của huyện Vũng Liêm.",
+    "placeId": "p-long-chau",
+    "address": null,
+    "webp_exists": true,
+    "webp_size": 9118
+  },
+  {
+    "id": "xa-hoa-binh",
+    "name": "Xã Hòa Bình",
+    "summary": "Xã Hòa Bình, tỉnh Vĩnh Long, hình thành từ sáp nhập xã Xuân Hiệp, xã Thới Hòa và xã Hòa Bình thuộc huyện Trà Ôn.",
+    "placeId": "p-long-chau",
+    "address": null,
+    "webp_exists": true,
+    "webp_size": 9444
+  },
+  {
+    "id": "xa-hoa-hiep",
+    "name": "Xã Hòa Hiệp",
+    "summary": "Xã Hòa Hiệp thuộc tỉnh Vĩnh Long, gộp từ xã Hòa Thạnh, xã Hòa Lộc và xã Hòa Hiệp của huyện Tam Bình.",
+    "placeId": "p-long-chau",
+    "address": null,
+    "webp_exists": true,
+    "webp_size": 9762
+  },
+  {
+    "id": "xa-hoa-minh",
+    "name": "Xã Hòa Minh",
+    "summary": "Qua đợt sắp xếp theo Nghị quyết 1687/NQ-UBTVQH15, xã Hòa Minh thuộc khu vực Trà Vinh của tỉnh Vĩnh Long giữ nguyên địa giới.",
+    "placeId": "xa-hoa-minh",
+    "address": null,
+    "webp_exists": true,
+    "webp_size": 9346
+  },
+  {
+    "id": "xa-hung-khanh-trung",
+    "name": "Xã Hưng Khánh Trung",
+    "summary": "Xã Hưng Khánh Trung thuộc huyện Chợ Lách + H, tỉnh Bến Tre, ra đời khi xã Vĩnh Hòa, xã Hưng Khánh Trung B (H.",
+    "placeId": "xa-hung-khanh-trung",
+    "address": null,
+    "webp_exists": true,
+    "webp_size": 9776
+  },
+  {
+    "id": "xa-hung-my",
+    "name": "Xã Hưng Mỹ",
+    "summary": "Xã Hưng Mỹ thuộc tỉnh Vĩnh Long, gộp từ xã Hòa Lợi, xã Phước Hảo và xã Hưng Mỹ của huyện Châu Thành (TV).",
+    "placeId": "xa-hung-my",
+    "address": null,
+    "webp_exists": true,
+    "webp_size": 8982
+  },
+  {
+    "id": "xa-hung-nhuong",
+    "name": "Xã Hưng Nhượng",
+    "summary": "Xã Hưng Nhượng, tỉnh Vĩnh Long, hình thành từ sáp nhập xã Tân Thành, xã Hưng Lễ và xã Hưng Nhượng thuộc huyện Giồng Trôm.",
+    "placeId": "xa-hung-nhuong",
+    "address": null,
+    "webp_exists": true,
+    "webp_size": 10022
+  },
+  {
+    "id": "xa-huong-my",
+    "name": "Xã Hương Mỹ",
+    "summary": "Xã Hương Mỹ thuộc tỉnh Vĩnh Long, sáp nhập từ xã Ngãi Đăng, xã Cẩm Sơn và xã Hương Mỹ của huyện Mỏ Cày Nam.",
+    "placeId": "xa-huong-my",
+    "address": null,
+    "webp_exists": true,
+    "webp_size": 9226
+  },
+  {
+    "id": "xa-loc-thuan",
+    "name": "Xã Lộc Thuận",
+    "summary": "Xã Lộc Thuận thuộc tỉnh Vĩnh Long, gộp từ xã Vang Quới Đông, xã Vang Quới Tây và xã Lộc Thuận của huyện Bình Đại.",
+    "placeId": "xa-loc-thuan",
+    "address": null,
+    "webp_exists": true,
+    "webp_size": 9394
+  },
+  {
+    "id": "xa-long-hiep",
+    "name": "Xã Long Hiệp",
+    "summary": "Xã Long Hiệp, tỉnh Vĩnh Long, hình thành từ sáp nhập xã Ngọc Biên, xã Tân Hiệp và xã Long Hiệp thuộc huyện Trà Cú.",
+    "placeId": "xa-long-hiep",
+    "address": null,
+    "webp_exists": true,
+    "webp_size": 9274
+  },
+  {
+    "id": "xa-long-hoa",
+    "name": "Xã Long Hòa",
+    "summary": "Giữ nguyên địa giới qua đợt sắp xếp đơn vị hành chính, xã Long Hòa nay thuộc khu vực Trà Vinh của tỉnh Vĩnh Long.",
+    "placeId": "xa-long-hoa",
+    "address": null,
+    "webp_exists": true,
+    "webp_size": 9226
+  },
+  {
+    "id": "xa-long-huu",
+    "name": "Xã Long Hữu",
+    "summary": "Hai xã cũ của thị xã Duyên Hải trước sắp xếp — Long Hữu và Hiệp Thạnh — nhập làm một thành xã Long Hữu, nay thuộc tỉnh Vĩnh Long.",
+    "placeId": "xa-long-huu",
+    "address": null,
+    "webp_exists": true,
+    "webp_size": 9514
+  },
+  {
+    "id": "xa-long-thanh",
+    "name": "Xã Long Thành",
+    "summary": "Xã Long Thành thuộc huyện Duyên Hải, tỉnh Vĩnh Long, ra đời khi TT Long Thành và xã Long Khánh nhập lại.",
+    "placeId": "xa-long-thanh",
+    "address": null,
+    "webp_exists": true,
+    "webp_size": 9326
+  },
+  {
+    "id": "xa-long-vinh",
+    "name": "Xã Long Vĩnh",
+    "summary": "Thuộc khu vực Trà Vinh của tỉnh Vĩnh Long, xã Long Vĩnh giữ nguyên địa giới sau đợt sắp xếp, không nhập thêm đơn vị nào.",
+    "placeId": "xa-long-vinh",
+    "address": null,
+    "webp_exists": true,
+    "webp_size": 9778
+  },
+  {
+    "id": "xa-luc-si-thanh",
+    "name": "Xã Lục Sĩ Thành",
+    "summary": "Thuộc huyện Trà Ôn trước sắp xếp, hai xã Phú Thành và Lục Sĩ Thành nay về chung một tên: xã Lục Sĩ Thành, tỉnh Vĩnh Long.",
+    "placeId": "p-long-chau",
+    "address": null,
+    "webp_exists": true,
+    "webp_size": 9516
+  },
+  {
+    "id": "xa-luong-hoa",
+    "name": "Xã Lương Hòa",
+    "summary": "Xã Lương Hòa, tỉnh Vĩnh Long, hình thành từ sáp nhập xã Lương Hòa và xã Phong Nẫm thuộc huyện Giồng Trôm.",
+    "placeId": "xa-luong-hoa",
+    "address": null,
+    "webp_exists": true,
+    "webp_size": 9144
+  },
+  {
+    "id": "xa-luong-phu",
+    "name": "Xã Lương Phú",
+    "summary": "Xã Lương Phú thuộc huyện Giồng Trôm, tỉnh Vĩnh Long, ra đời khi xã Mỹ Thạnh, xã Thuận Điền và xã Lương Phú nhập lại.",
+    "placeId": "xa-luong-phu",
+    "address": null,
+    "webp_exists": true,
+    "webp_size": 8726
+  },
+  {
+    "id": "xa-luu-nghiep-anh",
+    "name": "Xã Lưu Nghiệp Anh",
+    "summary": "Xã Lưu Nghiệp Anh, tỉnh Vĩnh Long, hình thành từ sáp nhập xã An Quảng Hữu và xã Lưu Nghiệp Anh thuộc huyện Trà Cú.",
+    "placeId": "xa-luu-nghiep-anh",
+    "address": null,
+    "webp_exists": true,
+    "webp_size": 8870
+  },
+  {
+    "id": "xa-my-chanh-hoa",
+    "name": "Xã Mỹ Chánh Hòa",
+    "summary": "Xã Mỹ Chánh Hòa thuộc huyện Ba Tri, tỉnh Vĩnh Long, ra đời khi xã Mỹ Hòa, xã Mỹ Chánh và xã Mỹ Nhơn nhập lại.",
+    "placeId": "xa-my-chanh-hoa",
+    "address": null,
+    "webp_exists": true,
+    "webp_size": 9424
+  },
+  {
+    "id": "xa-my-long",
+    "name": "Xã Mỹ Long",
+    "summary": "Xã Mỹ Long thuộc tỉnh Vĩnh Long, sáp nhập từ TT Mỹ Long, xã Mỹ Long Bắc và xã Mỹ Long Nam của huyện Cầu Ngang.",
+    "placeId": "xa-my-long",
+    "address": null,
+    "webp_exists": true,
+    "webp_size": 9650
+  },
+  {
+    "id": "xa-my-thuan",
+    "name": "Xã Mỹ Thuận",
+    "summary": "Xã Mỹ Thuận, tỉnh Vĩnh Long, hợp nhất từ xã Thành Trung, xã Nguyễn Văn Thảnh và xã Mỹ Thuận thuộc huyện Bình Tân.",
+    "placeId": "p-long-chau",
+    "address": null,
+    "webp_exists": true,
+    "webp_size": 9386
+  },
+  {
+    "id": "xa-ngai-tu",
+    "name": "Xã Ngãi Tứ",
+    "summary": "Xã Ngãi Tứ thuộc tỉnh Vĩnh Long, sáp nhập từ xã Loan Mỹ và xã Bình Ninh, một phần xã Ngãi Tứ, một phần TT Trà Ôn của huyện Tam Bình + H.",
+    "placeId": "p-long-chau",
+    "address": null,
+    "webp_exists": true,
+    "webp_size": 8980
+  },
+  {
+    "id": "xa-ngu-lac",
+    "name": "Xã Ngũ Lạc",
+    "summary": "Xã Ngũ Lạc thuộc tỉnh Vĩnh Long, sáp nhập từ xã Ngũ Lạc (H. Duyên Hải) và xã Thạnh Hòa Sơn (H.",
+    "placeId": "xa-ngu-lac",
+    "address": null,
+    "webp_exists": true,
+    "webp_size": 8912
+  },
+  {
+    "id": "xa-nhi-long",
+    "name": "Xã Nhị Long",
+    "summary": "Xã Nhị Long, tỉnh Vĩnh Long, hình thành từ sáp nhập xã Đại Phước, xã Đức Mỹ và xã Nhị Long thuộc huyện Càng Long.",
+    "placeId": "xa-nhi-long",
+    "address": null,
+    "webp_exists": true,
+    "webp_size": 8936
+  },
+  {
+    "id": "xa-nhi-truong",
+    "name": "Xã Nhị Trường",
+    "summary": "Xã Nhị Trường, tỉnh Vĩnh Long, hợp nhất từ xã Hiệp Hòa, xã Trường Thọ và xã Nhị Trường thuộc huyện Cầu Ngang.",
+    "placeId": "xa-nhi-truong",
+    "address": null,
+    "webp_exists": true,
+    "webp_size": 9216
+  },
+  {
+    "id": "xa-nhon-phu",
+    "name": "Xã Nhơn Phú",
+    "summary": "Ba xã Mỹ An, Mỹ Phước và Nhơn Phú của huyện Mang Thít cũ gộp thành xã Nhơn Phú thuộc tỉnh Vĩnh Long ngày nay.",
+    "placeId": "p-long-chau",
+    "address": null,
+    "webp_exists": true,
+    "webp_size": 9326
+  },
+  {
+    "id": "xa-nhuan-phu-tan",
+    "name": "Xã Nhuận Phú Tân",
+    "summary": "Xã Nhuận Phú Tân thuộc tỉnh Vĩnh Long, sáp nhập từ xã Khánh Thạnh Tân, xã Tân Thành Tây và xã Nhuận Phú Tân của huyện Mỏ Cày Bắc.",
+    "placeId": "xa-tan-phu",
+    "address": null,
+    "webp_exists": true,
+    "webp_size": 9638
+  },
+  {
+    "id": "xa-phong-thanh",
+    "name": "Xã Phong Thạnh",
+    "summary": "Xã Phong Thạnh thuộc tỉnh Vĩnh Long, gộp từ xã Ninh Thới, xã Phong Phú và xã Phong Thạnh của huyện Cầu Kè.",
+    "placeId": "xa-phong-thanh",
+    "address": null,
+    "webp_exists": true,
+    "webp_size": 9484
+  }
+]

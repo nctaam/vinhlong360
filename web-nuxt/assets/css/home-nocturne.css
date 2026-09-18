@@ -2021,7 +2021,7 @@
   .home .hero-inner { display: grid; grid-template-columns: minmax(0, 1.32fr) minmax(280px, 0.8fr); gap: var(--space-10); align-items: center; }
   .home .hero-feature { align-self: end; padding-bottom: var(--space-2); }
 }
-html.js .home .hero-feature { opacity: 0; transform: translateY(16px); animation: hero-rise .7s var(--ease-out-expo) .5s forwards; }
+html.js .home .hero-feature { opacity: 0; animation: hero-rise .7s var(--ease-out-expo) .5s forwards; }
 
 .home .hero::before {
   content: ""; position: absolute; inset: 0; z-index: 0; pointer-events: none;
