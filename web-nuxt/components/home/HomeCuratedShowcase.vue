@@ -64,7 +64,7 @@
                 <IconLine name="pin" aria-hidden="true" />
                 <span>{{ leadItem.location }}</span>
               </span>
-              <span class="home-curated-lead__coords">{{ leadItem.coordinates }}</span>
+              <span class="home-curated-lead__coords sr-only">{{ leadItem.coordinates }}</span>
             </div>
 
             <h3 class="home-curated-lead__title">
@@ -153,7 +153,7 @@
                 <IconLine name="pin" aria-hidden="true" />
                 <span>{{ item.area }}</span>
               </span>
-              <span v-if="item.coordinates" class="home-curated-satellite__coords">{{ item.coordinates }}</span>
+              <span v-if="item.coordinates" class="home-curated-satellite__coords sr-only">{{ item.coordinates }}</span>
             </div>
             <h4 class="home-curated-satellite__title">
               <NuxtLink :to="item.to">{{ item.title }}</NuxtLink>
