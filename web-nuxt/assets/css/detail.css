@@ -742,3 +742,9 @@
   .dc-motif { width: 56%; opacity: .3; }
 }
 
+@media (max-width: 840px) {
+  .scroll-top {
+    bottom: calc(var(--shell-public-bottom-nav-reserved-height) + 72px);
+  }
+}
+

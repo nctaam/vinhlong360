@@ -887,19 +887,19 @@
 /* Parchment header contrast remediation [DEFECT-07] */
 [data-theme="parchment"] .public-shell-header .public-shell-inline-nav a,
 html[data-theme="parchment"] .public-shell-command-row .public-shell-inline-nav a {
-  color: rgba(255, 255, 255, 0.9) !important;
+  color: rgba(var(--white-rgb), 0.9) !important;
 }
 
 [data-theme="parchment"] .public-shell-header .public-shell-inline-nav a:hover,
 html[data-theme="parchment"] .public-shell-command-row .public-shell-inline-nav a:hover {
-  color: #ffffff !important;
-  background: rgba(255, 255, 255, 0.16);
+  color: rgb(var(--white-rgb)) !important;
+  background: rgba(var(--white-rgb), 0.16);
 }
 
 [data-theme="parchment"] .public-shell-header .public-shell-inline-nav a.active,
 html[data-theme="parchment"] .public-shell-command-row .public-shell-inline-nav a.active {
-  color: #ffffff !important;
-  background: rgba(255, 255, 255, 0.22);
+  color: rgb(var(--white-rgb)) !important;
+  background: rgba(var(--white-rgb), 0.22);
 }
 
 .public-shell-inline-nav a:focus-visible {

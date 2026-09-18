@@ -71,10 +71,21 @@ async function mountBriefing() {
   return wrapper
 }
 
-beforeEach(() => {
+beforeEach(async () => {
   apiFetchMock.mockReset()
   clientErrorMock.mockReset()
   resetWeatherCacheClock()
+  await clearNuxtData()
+  const nuxtApp = useNuxtApp()
+  if (nuxtApp?._asyncData?.['weather-vinh-long']) {
+    if (nuxtApp._asyncData['weather-vinh-long'].error) {
+      nuxtApp._asyncData['weather-vinh-long'].error.value = undefined as any
+    }
+    delete nuxtApp._asyncData['weather-vinh-long']
+  }
+  if (nuxtApp?.payload?.error) {
+    delete (nuxtApp.payload.error as any)['weather-vinh-long']
+  }
 })
 
 afterEach(async () => {

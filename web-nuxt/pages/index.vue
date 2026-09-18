@@ -5,6 +5,7 @@
     data-color-system="tri-region-v1"
     data-page-recipe="homepage"
     data-material-accent="clay"
+    :data-atmosphere="atmosphereMode"
   >
     <!-- One editorial thesis: useful action first, one disclosed media dossier second. -->
     <div class="sr-only" data-home-section="context" aria-label="Ngữ cảnh khám phá">Khu vực khám phá: Vĩnh Long</div>
@@ -38,12 +39,7 @@
               <IconLine name="leaf" class="hero-cognitive-chip__icon" aria-hidden="true" />
               <span class="hero-cognitive-chip__fruit-text">{{ seasonalFruitHighlight }}</span>
             </div>
-            <div class="hero-cognitive-chip hero-cognitive-chip--tide">
-              <IconLine name="droplet" class="hero-cognitive-chip__icon" aria-hidden="true" />
-              <strong class="hero-cognitive-chip__title">Nhịp sông Cổ Chiên</strong>
-              <span class="hero-cognitive-chip__sep" aria-hidden="true">·</span>
-              <span class="hero-cognitive-chip__desc">Nước ròng phẳng lặng, đò êm sóng</span>
-            </div>
+            <HomeAtmosphereControl v-model="atmosphereMode" />
           </div>
           <div class="hero-search-island" role="search" aria-label="Tìm kiếm lữ hành">
             <SearchAutocomplete
@@ -96,10 +92,29 @@
 
     <div class="home-river-divider" aria-hidden="true" />
 
+    <div class="home-folio-header" aria-hidden="true">
+      <span class="editorial-folio-tag">FOLIO II · CHỐN DỪNG CHÂN ĐÁNG GHÉ</span>
+    </div>
     <HomeCuratedShowcase v-if="!homeFailed" />
+
+    <div class="home-folio-header" aria-hidden="true">
+      <span class="editorial-folio-tag">FOLIO III · ẨM THỰC KHẨN HOANG MIỆT VƯỜN</span>
+    </div>
     <HomeCulinaryTrail v-if="!homeFailed" />
+
+    <div class="home-folio-header" aria-hidden="true">
+      <span class="editorial-folio-tag">FOLIO IV · NGHỈ DƯỠNG SÔNG NƯỚC</span>
+    </div>
     <HomeRiversideStays v-if="!homeFailed" />
+
+    <div class="home-folio-header" aria-hidden="true">
+      <span class="editorial-folio-tag">FOLIO V · KẾ HOẠCH LỮ HÀNH</span>
+    </div>
     <HomeTravelPlanner v-if="!homeFailed" />
+
+    <div class="home-folio-header" aria-hidden="true">
+      <span class="editorial-folio-tag">FOLIO VI · CÂU CHUYỆN BẢN ĐỊA</span>
+    </div>
     <HomeNativeStories v-if="!homeFailed" />
 
     <div class="home-quick-decisions" data-home-section="quick-decisions">
@@ -393,6 +408,8 @@ import HomeCuratedShowcase from '~/components/home/HomeCuratedShowcase.vue'
 import HomeCulinaryTrail from '~/components/home/HomeCulinaryTrail.vue'
 import HomeRiversideStays from '~/components/home/HomeRiversideStays.vue'
 import HomeTravelPlanner from '~/components/home/HomeTravelPlanner.vue'
+import HomeAtmosphereControl from '~/components/home/HomeAtmosphereControl.vue'
+import type { AtmosphereMode } from '~/components/home/HomeAtmosphereControl.vue'
 import HomeTravelCompanion from '~/components/home/HomeTravelCompanion.vue'
 import ImageDisclosure from '~/components/ImageDisclosure.vue'
 import { describeEntityImages, describeEntityPlaceholder } from '~/utils/imageDescriptors'
@@ -430,10 +447,11 @@ import {
 } from '~/utils/homeSignalFormatters'
 import { aiDisclosure } from '~/utils/aiDisclosure'
 import type { ImageDescriptor } from '~/types/image'
-import { useId } from 'vue'
+import { useId, ref, computed } from 'vue'
 
 useReveal()
 const { get: ss } = useSiteSettings()
+const atmosphereMode = ref<AtmosphereMode>('noon')
 
 // Contextual Seasonal Highlight
 
