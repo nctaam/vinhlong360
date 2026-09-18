@@ -19,6 +19,11 @@
       </template>
     </ClientOnly>
     <nav class="home-continuation__links" aria-label="Bước tiếp theo">
+      <NuxtLink to="/du-lich" class="home-continuation__link home-continuation__link--featured">
+        <IconLine name="compass" aria-hidden="true" />
+        <span>Khám phá 1.772 điểm đến</span>
+        <IconLine name="arrow-right" class="home-continuation__arrow" aria-hidden="true" />
+      </NuxtLink>
       <NuxtLink to="/ban-do" class="home-continuation__link">
         <IconLine name="map" aria-hidden="true" />
         <span>Mở bản đồ</span>

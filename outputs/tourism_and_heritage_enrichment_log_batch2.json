@@ -1,0 +1,294 @@
+[
+  {
+    "entity_id": "van-thanh-mieu",
+    "name": "Văn Thánh Miếu Vĩnh Long",
+    "enriched_fields": [
+      "phone",
+      "hours",
+      "admission",
+      "heritage_level",
+      "address",
+      "highlight"
+    ]
+  },
+  {
+    "entity_id": "khu-di-tich-luu-niem-chu-tich-pham-hung",
+    "name": "Khu di tích lưu niệm Chủ tịch Phạm Hùng",
+    "enriched_fields": [
+      "phone",
+      "hours",
+      "admission",
+      "heritage_level",
+      "address"
+    ]
+  },
+  {
+    "entity_id": "khu-luu-niem-chu-tich-hoi-dong-bo-truong-pham-hung",
+    "name": "Khu lưu niệm Chủ tịch Hội đồng Bộ trưởng Phạm Hùng",
+    "enriched_fields": [
+      "phone",
+      "hours",
+      "admission",
+      "heritage_level",
+      "address"
+    ]
+  },
+  {
+    "entity_id": "khu-luu-niem-pham-hung",
+    "name": "Khu lưu niệm Phạm Hùng",
+    "enriched_fields": [
+      "phone",
+      "hours",
+      "admission",
+      "heritage_level",
+      "address"
+    ]
+  },
+  {
+    "entity_id": "khu-tuong-niem-co-chu-tich-hdbt-pham-hung",
+    "name": "Khu tưởng niệm Cố Chủ tịch HĐBT Phạm Hùng",
+    "enriched_fields": [
+      "phone",
+      "hours",
+      "admission",
+      "heritage_level",
+      "address"
+    ]
+  },
+  {
+    "entity_id": "khu-luu-niem-tran-dai-nghia",
+    "name": "khu lưu niệm Trần Đại Nghĩa",
+    "enriched_fields": [
+      "phone",
+      "hours",
+      "admission",
+      "address",
+      "highlight"
+    ]
+  },
+  {
+    "entity_id": "khu-luu-niem-tran-dai-nghia-vinh-long",
+    "name": "Khu Lưu niệm Giáo sư Viện sĩ Trần Đại Nghĩa",
+    "enriched_fields": [
+      "phone",
+      "hours",
+      "admission",
+      "address",
+      "highlight"
+    ]
+  },
+  {
+    "entity_id": "khu-luu-niem-thu-tuong-vo-van-kiet",
+    "name": "Khu Lưu Niệm Thủ tướng Võ Văn Kiệt",
+    "enriched_fields": [
+      "phone",
+      "hours",
+      "admission",
+      "heritage_level",
+      "address"
+    ]
+  },
+  {
+    "entity_id": "khu-di-tich-cach-mang-cai-ngang",
+    "name": "Khu di tích Cách mạng Cái Ngang",
+    "enriched_fields": [
+      "phone",
+      "hours",
+      "admission",
+      "heritage_level",
+      "address"
+    ]
+  },
+  {
+    "entity_id": "di-tich-lich-su-cach-mang-cai-ngang",
+    "name": "Di tích lịch sử cách mạng Cái Ngang",
+    "enriched_fields": [
+      "phone",
+      "hours",
+      "admission",
+      "heritage_level",
+      "address"
+    ]
+  },
+  {
+    "entity_id": "chua-phuoc-hau-ngai-tu",
+    "name": "Chùa Phước Hậu Ngãi Tứ",
+    "enriched_fields": [
+      "phone",
+      "hours",
+      "admission",
+      "heritage_level",
+      "address",
+      "highlight"
+    ]
+  },
+  {
+    "entity_id": "mieu-cong-than",
+    "name": "Miếu Công thần",
+    "enriched_fields": [
+      "phone",
+      "hours",
+      "admission",
+      "heritage_level",
+      "address",
+      "highlight"
+    ]
+  },
+  {
+    "entity_id": "that-phu-mieu-chua-ong-vinh-long",
+    "name": "Thất Phủ Miếu (Chùa Ông) Vĩnh Long",
+    "enriched_fields": [
+      "phone",
+      "hours",
+      "admission",
+      "heritage_level",
+      "address"
+    ]
+  },
+  {
+    "entity_id": "chua-ong-vinh-long",
+    "name": "Chùa Ông (Miếu Quan Đế - Vĩnh Long)",
+    "enriched_fields": [
+      "phone",
+      "hours",
+      "admission",
+      "heritage_level",
+      "address"
+    ]
+  },
+  {
+    "entity_id": "that-phu-mieu-chua-ong",
+    "name": "Thất Phủ Miếu (Chùa Ông)",
+    "enriched_fields": [
+      "phone",
+      "hours",
+      "admission",
+      "heritage_level",
+      "address"
+    ]
+  },
+  {
+    "entity_id": "den-that-phu-vo-mieu",
+    "name": "Đền Thất Phủ Võ Miếu",
+    "enriched_fields": [
+      "phone",
+      "hours",
+      "admission",
+      "heritage_level",
+      "address"
+    ]
+  },
+  {
+    "entity_id": "nha-gom-tu-buoi",
+    "name": "Nhà gốm Tư Buôi",
+    "enriched_fields": [
+      "phone",
+      "hours",
+      "admission",
+      "address",
+      "highlight"
+    ]
+  },
+  {
+    "entity_id": "nha-gom-do-tu-buoi",
+    "name": "Nhà gốm đỏ Tư Buôi (Kỷ lục Ngôi nhà gốm đỏ lớn nhất Việt Nam)",
+    "enriched_fields": [
+      "phone",
+      "hours",
+      "admission",
+      "address",
+      "highlight"
+    ]
+  },
+  {
+    "entity_id": "nha-gom-tu-buoi-w3",
+    "name": "Nhà Gốm Tư Buôi",
+    "enriched_fields": [
+      "phone",
+      "hours",
+      "admission",
+      "address",
+      "highlight"
+    ]
+  },
+  {
+    "entity_id": "nha-dua-cocohome",
+    "name": "Nhà dừa CocoHome",
+    "enriched_fields": [
+      "phone",
+      "hours",
+      "admission",
+      "address",
+      "highlight"
+    ]
+  },
+  {
+    "entity_id": "diem-du-lich-nha-dua-cocohome",
+    "name": "Điểm du lịch nhà dừa CocoHome",
+    "enriched_fields": [
+      "phone",
+      "hours",
+      "admission",
+      "address",
+      "highlight"
+    ]
+  },
+  {
+    "entity_id": "dinh-lang-hieu-phung",
+    "name": "Đình làng Hiếu Phụng",
+    "enriched_fields": [
+      "phone",
+      "hours",
+      "admission",
+      "heritage_level",
+      "address",
+      "highlight"
+    ]
+  },
+  {
+    "entity_id": "khu-mo-than-nhan-thoai-ngoc-hau",
+    "name": "Khu mộ thân nhân Thoại Ngọc Hầu",
+    "enriched_fields": [
+      "phone",
+      "hours",
+      "admission",
+      "heritage_level",
+      "address",
+      "highlight"
+    ]
+  },
+  {
+    "entity_id": "khu-mo-than-nhan-danh-than-thoai-ngoc-hau",
+    "name": "Khu mộ thân nhân danh thần Thoại Ngọc Hầu",
+    "enriched_fields": [
+      "phone",
+      "hours",
+      "admission",
+      "heritage_level",
+      "address",
+      "highlight"
+    ]
+  },
+  {
+    "entity_id": "cho-noi-tra-on",
+    "name": "Đi chợ nổi Trà Ôn lúc rạng sáng",
+    "enriched_fields": [
+      "phone",
+      "hours",
+      "admission",
+      "address",
+      "highlight"
+    ]
+  },
+  {
+    "entity_id": "khu-du-lich-cho-noi-tra-on",
+    "name": "Khu du lịch Chợ nổi Trà Ôn",
+    "enriched_fields": [
+      "phone",
+      "hours",
+      "admission",
+      "address",
+      "highlight"
+    ]
+  }
+]

@@ -1,0 +1,149 @@
+[
+  {
+    "entity_id": "chua-tien-chau-tien-chau-tu",
+    "name": "Chùa Tiên Châu (Tiên Châu Tự)",
+    "enriched_fields": [
+      "phone",
+      "hours",
+      "admission",
+      "heritage_level"
+    ]
+  },
+  {
+    "entity_id": "khu-luu-niem-thu-tuong-chinh-phu-vo-van-kiet",
+    "name": "Khu lưu niệm Thủ tướng Chính phủ Võ Văn Kiệt",
+    "enriched_fields": [
+      "phone",
+      "hours",
+      "admission",
+      "heritage_level"
+    ]
+  },
+  {
+    "entity_id": "can-cu-cach-mang-cai-ngang-vinh-long",
+    "name": "Khu Di tích Lịch sử Căn cứ Cách mạng Cái Ngang",
+    "enriched_fields": [
+      "phone",
+      "hours",
+      "admission",
+      "heritage_level"
+    ]
+  },
+  {
+    "entity_id": "chua-ong-that-phu-mieu",
+    "name": "Chùa Ông (Thất Phủ Miếu)",
+    "enriched_fields": [
+      "phone",
+      "hours",
+      "admission",
+      "heritage_level"
+    ]
+  },
+  {
+    "entity_id": "dinh-long-thanh-long-thanh-vo-mieu",
+    "name": "Đình Long Thanh (Long Thanh Võ Miếu)",
+    "enriched_fields": [
+      "phone",
+      "hours",
+      "admission",
+      "heritage_level"
+    ]
+  },
+  {
+    "entity_id": "dinh-long-ho",
+    "name": "Đình Long Hồ",
+    "enriched_fields": [
+      "phone",
+      "hours",
+      "admission",
+      "heritage_level"
+    ]
+  },
+  {
+    "entity_id": "homestay-ut-trinh",
+    "name": "Homestay Út Trinh",
+    "enriched_fields": [
+      "phone",
+      "hours",
+      "price",
+      "admission",
+      "address",
+      "email",
+      "website"
+    ]
+  },
+  {
+    "entity_id": "ba-linh-homestay",
+    "name": "Ba Linh Homestay",
+    "enriched_fields": [
+      "phone",
+      "hours",
+      "price",
+      "admission",
+      "address"
+    ]
+  },
+  {
+    "entity_id": "khu-du-lich-sinh-thai-vinh-sang-cu-lao-an-binh",
+    "name": "Khu Du Lịch Sinh Thái Vinh Sang",
+    "enriched_fields": [
+      "phone",
+      "hours",
+      "admission",
+      "price",
+      "address",
+      "email",
+      "website"
+    ]
+  },
+  {
+    "entity_id": "homestay-co-chin-an-binh",
+    "name": "Homestay Cô Chín",
+    "enriched_fields": [
+      "phone",
+      "hours",
+      "price",
+      "admission",
+      "address"
+    ]
+  },
+  {
+    "entity_id": "cu-lao-an-binh",
+    "name": "Cù lao An Bình",
+    "enriched_fields": [
+      "phone",
+      "best_time",
+      "address"
+    ]
+  },
+  {
+    "entity_id": "chua-phat-ngoc-xa-loi",
+    "name": "Chùa Phật Ngọc Xá Lợi",
+    "enriched_fields": [
+      "phone",
+      "hours",
+      "admission",
+      "address"
+    ]
+  },
+  {
+    "entity_id": "lang-nghe-gom-do-mang-thit",
+    "name": "Làng nghề gốm đỏ Mang Thít",
+    "enriched_fields": [
+      "phone",
+      "hours",
+      "admission",
+      "address"
+    ]
+  },
+  {
+    "entity_id": "banh-trang-cu-lao-may-lang-nghe-banh-trang",
+    "name": "Bánh Tráng Cù Lao Mây (Làng nghề bánh tráng)",
+    "enriched_fields": [
+      "phone",
+      "hours",
+      "admission",
+      "address"
+    ]
+  }
+]

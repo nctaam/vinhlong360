@@ -386,6 +386,9 @@
       </section>
     </ClientOnly>
 
+    <!-- 7. Lữ khách cần biết — Fieldwork Logistics & FAQ -->
+    <HomeFieldworkFaq />
+
     <!-- Continuation with JourneyActionRail -->
     <HomeContinuation :actions="homeJourneyActions" :pending="homePending" />
 
@@ -403,6 +406,7 @@ import HomeLocalBriefing from '~/components/home/HomeLocalBriefing.vue'
 import HomeProductLead from '~/components/home/HomeProductLead.vue'
 import HomeCommunityFeed from '~/components/home/HomeCommunityFeed.vue'
 import HomeContinuation from '~/components/home/HomeContinuation.vue'
+import HomeFieldworkFaq from '~/components/home/HomeFieldworkFaq.vue'
 import HomeIntentAnchors from '~/components/home/HomeIntentAnchors.vue'
 import HomeCuratedShowcase from '~/components/home/HomeCuratedShowcase.vue'
 import HomeCulinaryTrail from '~/components/home/HomeCulinaryTrail.vue'
