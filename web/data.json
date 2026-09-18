@@ -17414,8 +17414,14 @@
             "authority_weight": 1
           }
         ],
-        "verifiedAt": "2026-09-13T13:55:00+07:00",
-        "verifiedSource": "NotebookLM Deep Terroir Research - Phase 3"
+        "verifiedAt": "2026-09-18T08:40:00Z",
+        "verifiedSource": "NotebookLM Deep Terroir Research - Phase 3",
+        "image_author": "Bá Thi",
+        "image_source": "Báo Trà Vinh",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Mắm bò hóc (prohok) ủ chum sành truyền thống của đồng bào Khmer, gia vị cốt lõi làm nên linh hồn tô bún nước lèo trứ danh.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Trà Vinh"
       },
       "source": [
         {
@@ -17567,7 +17573,14 @@
         "ocop_star": 3,
         "schema_type": "Product",
         "sub_category": "dried-seafood",
-        "coords_approximate": true
+        "coords_approximate": true,
+        "image_author": "Bá Thi",
+        "image_source": "Báo Trà Vinh",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Mật ong rừng bần nguyên chất Nguyễn Văn Bao tại xã Mỹ Long Nam, sản phẩm OCOP thu hoạch từ cánh rừng ngập mặn ven biển Cổ Chiên.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Trà Vinh",
+        "verifiedAt": "2026-09-18T08:40:00Z"
       },
       "source": [
         {
@@ -17730,7 +17743,14 @@
         "address": "Xã Bảo Thạnh, tỉnh Vĩnh Long",
         "schema_type": "Product",
         "sub_category": "specialty",
-        "coords_approximate": true
+        "coords_approximate": true,
+        "image_author": "Hữu Hiệp",
+        "image_source": "Báo Đồng Khởi",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Hạt muối biển Bảo Thạnh trắng tinh khiết kết tinh trên ruộng muối ven biển, đậm đà vị mặn mòi phù sa cửa sông Hàm Luông.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Đồng Khởi",
+        "verifiedAt": "2026-09-18T08:40:00Z"
       },
       "source": [
         {
@@ -17798,7 +17818,14 @@
         "target_segments": [
           "SEG05: Khách nhiếp ảnh/content creator"
         ],
-        "coords_approximate": true
+        "coords_approximate": true,
+        "image_author": "Hữu Hiệp",
+        "image_source": "Báo Đồng Khởi",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Nghề làm muối truyền thống Ba Tri với những ô ruộng phơi nước biển dưới nắng gắt cho ra những mẻ muối hạt thô chắc mẩy.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Đồng Khởi",
+        "verifiedAt": "2026-09-18T08:40:00Z"
       },
       "source": [
         {
@@ -17895,8 +17922,14 @@
             "authority_weight": 0.95
           }
         ],
-        "verifiedAt": "2026-09-13T17:30:00+07:00",
-        "verifiedSource": "NotebookLM Deep Terroir Research - Phase 6"
+        "verifiedAt": "2026-09-18T08:40:00Z",
+        "verifiedSource": "NotebookLM Deep Terroir Research - Phase 6",
+        "image_author": "Bá Thi",
+        "image_source": "Báo Trà Vinh",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Mứt dừa sáp Cẩm Hằng tại Cầu Kè, từng sợi dừa sáp dẻo quánh áo lớp đường non thanh nhẹ, giữ trọn vị béo bùi đặc trưng xứ sở.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Trà Vinh"
       },
       "source": [
         {
@@ -18110,7 +18143,14 @@
         "ocop_star": 4,
         "schema_type": "Product",
         "sub_category": "ocop-product",
-        "coords_approximate": true
+        "coords_approximate": true,
+        "image_author": "Hữu Hiệp",
+        "image_source": "Báo Đồng Khởi",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Hải sản tươi sống Thạnh Phú gồm nghêu thịt dày ngọt, sò huyết mọng nước và cua biển chắc thịt nuôi tự nhiên dưới tán rừng ngập mặn.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Đồng Khởi",
+        "verifiedAt": "2026-09-18T08:40:00Z"
       },
       "source": [
         {
@@ -18966,8 +19006,14 @@
             "authority_weight": 0.9
           }
         ],
-        "verifiedAt": "2026-09-13T17:30:00+07:00",
-        "verifiedSource": "NotebookLM Deep Terroir Research - Phase 6"
+        "verifiedAt": "2026-09-18T08:40:00Z",
+        "verifiedSource": "NotebookLM Deep Terroir Research - Phase 6",
+        "image_author": "Hữu Hiệp",
+        "image_source": "Báo Đồng Khởi",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Rượu nếp truyền thống Gia Bảo tại xã Tân Thành Bình chưng cất thủ công bằng men trấu cổ truyền, hương thơm nồng đượm vị men cay.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Đồng Khởi"
       },
       "source": [
         {
@@ -19269,7 +19315,14 @@
           "status": "EXPIRED",
           "validity_period_months": 36,
           "remediation": "Mark as expired or require recertification decree reference"
-        }
+        },
+        "image_author": "Bá Thi",
+        "image_source": "Báo Trà Vinh",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Gian hàng giới thiệu các sản phẩm OCOP tiêu biểu của vùng đất Cầu Ngang, từ đậu phộng rang cát, tôm khô đến gạo hữu cơ hạt ngọc.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Trà Vinh",
+        "verifiedAt": "2026-09-18T08:40:00Z"
       },
       "source": [
         {
@@ -19326,7 +19379,14 @@
         "ocop_star": 3,
         "schema_type": "Product",
         "sub_category": "coconut-product",
-        "coords_approximate": true
+        "coords_approximate": true,
+        "image_author": "Hữu Hiệp",
+        "image_source": "Báo Đồng Khởi",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Xà bông dừa thủ công kết hợp tranh dừa nghệ thuật OCOP Khánh Thạnh Tân, sản phẩm sáng tạo nâng tầm giá trị cây dừa bản địa.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Đồng Khởi",
+        "verifiedAt": "2026-09-18T08:40:00Z"
       },
       "source": [
         {
@@ -19515,7 +19575,14 @@
         "schema_type": "Product",
         "sub_category": "fruit",
         "ocop_certified": true,
-        "coords_approximate": true
+        "coords_approximate": true,
+        "image_author": "Hữu Hiệp",
+        "image_source": "Báo Đồng Khởi",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Múi sầu riêng Chánh Thu cấp đông bằng công nghệ Nitơ lỏng hiện đại tại Chợ Lách, giữ nguyên độ béo ngậy và hương thơm quyến rũ xuất khẩu.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Đồng Khởi",
+        "verifiedAt": "2026-09-18T08:40:00Z"
       },
       "source": [
         {
@@ -19572,7 +19639,14 @@
         "address": "Huyện Bình Đại, tỉnh Vĩnh Long",
         "schema_type": "Product",
         "sub_category": "specialty",
-        "coords_approximate": true
+        "coords_approximate": true,
+        "image_author": "Hữu Hiệp",
+        "image_source": "Báo Đồng Khởi",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Sò điệp tươi sống đánh bắt tại vùng biển Bình Đại, cồi sò trắng phau giòn ngọt nướng mỡ hành đậu phộng thơm phức nức mũi.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Đồng Khởi",
+        "verifiedAt": "2026-09-18T08:40:00Z"
       },
       "source": [
         {
@@ -19806,8 +19880,14 @@
             "authority_weight": 0.9
           }
         ],
-        "verifiedAt": "2026-09-13T17:30:00+07:00",
-        "verifiedSource": "NotebookLM Deep Terroir Research - Phase 6"
+        "verifiedAt": "2026-09-18T08:40:00Z",
+        "verifiedSource": "NotebookLM Deep Terroir Research - Phase 6",
+        "image_author": "Trần Phước",
+        "image_source": "Báo Vĩnh Long",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Lò bún tươi và hủ tiếu Sáu Thạnh tại phường Phước Hậu, sợi bún làm từ bột gạo lọc truyền thống trắng muốt, dai ngon tự nhiên không phụ gia.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long"
       },
       "source": [
         {
@@ -19893,8 +19973,14 @@
             "authority_weight": 0.9
           }
         ],
-        "verifiedAt": "2026-09-13T17:30:00+07:00",
-        "verifiedSource": "NotebookLM Deep Terroir Research - Phase 6"
+        "verifiedAt": "2026-09-18T08:40:00Z",
+        "verifiedSource": "NotebookLM Deep Terroir Research - Phase 6",
+        "image_author": "Bá Thi",
+        "image_source": "Báo Trà Vinh",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Tôm khô Hai Khâm nổi tiếng tại Cầu Ngang, tôm đất tươi sống luộc lạt phơi đủ ba con nắng cho màu đỏ son tự nhiên và vị ngọt đậm đà.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Trà Vinh"
       },
       "source": [
         {
@@ -19958,7 +20044,14 @@
         "address": "Huyện Bình Đại, tỉnh Vĩnh Long",
         "schema_type": "Product",
         "sub_category": "specialty",
-        "coords_approximate": true
+        "coords_approximate": true,
+        "image_author": "Hữu Hiệp",
+        "image_source": "Báo Đồng Khởi",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Tôm sú sinh thái Bình Đại nuôi tự nhiên dưới tán rừng đước, vỏ tôm bóng bẩy, thịt giòn ngọt săn chắc nức lòng thực khách gần xa.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Đồng Khởi",
+        "verifiedAt": "2026-09-18T08:40:00Z"
       },
       "source": [
         {
@@ -20021,7 +20114,14 @@
         "ocop_star": 3,
         "schema_type": "Product",
         "sub_category": "seafood",
-        "coords_approximate": true
+        "coords_approximate": true,
+        "image_author": "Bá Thi",
+        "image_source": "Báo Trà Vinh",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Đặc sản tôm xẻ phơi một nắng ấp Khúc Ngay, xã Hiệp Mỹ Đông, tôm sú xẻ lưng ướp gia vị phơi khô giòn rim mặn ngọt đậm đà đưa cơm.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Trà Vinh",
+        "verifiedAt": "2026-09-18T08:40:00Z"
       },
       "source": [
         {
@@ -20086,7 +20186,14 @@
         "ocop_star": 3,
         "schema_type": "Product",
         "sub_category": "coconut-product",
-        "coords_approximate": true
+        "coords_approximate": true,
+        "image_author": "Hữu Hiệp",
+        "image_source": "Báo Đồng Khởi",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Tranh dừa hộp kiếng Cocohand tại ấp Bình Đông 1, xã Hương Mỹ, nghệ nhân ghép từng mảnh gáo dừa mộc mạc thành tác phẩm phong cảnh tinh xảo.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Đồng Khởi",
+        "verifiedAt": "2026-09-18T08:40:00Z"
       },
       "source": [
         {
@@ -20151,7 +20258,14 @@
         "ocop_star": 3,
         "schema_type": "Product",
         "sub_category": "coconut-product",
-        "coords_approximate": true
+        "coords_approximate": true,
+        "image_author": "Hữu Hiệp",
+        "image_source": "Báo Đồng Khởi",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Tác phẩm tranh gáo dừa ốp trên nia tre đan thủ công Cocohand, mang đậm hồn cốt miệt vườn Cửu Long và thân thiện với môi trường.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Đồng Khởi",
+        "verifiedAt": "2026-09-18T08:40:00Z"
       },
       "source": [
         {
@@ -20777,7 +20891,14 @@
         "schema_type": "Product",
         "sub_category": "fruit",
         "ocop_certified": true,
-        "coords_approximate": true
+        "coords_approximate": true,
+        "image_author": "Hữu Hiệp",
+        "image_source": "Báo Đồng Khởi",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Cặp đôi đặc sản OCOP Thạnh Phong gồm xoài tứ quý trái to giòn ngọt và cua biển yếm vuông đầy gạch nuôi tại bãi bồi ven biển.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Đồng Khởi",
+        "verifiedAt": "2026-09-18T08:40:00Z"
       },
       "source": [
         {
@@ -21545,7 +21666,14 @@
         "gi_number": "00102",
         "ocop_stars": 3,
         "schema_type": "Product",
-        "sub_category": "specialty"
+        "sub_category": "specialty",
+        "image_author": "Hữu Hiệp",
+        "image_source": "Báo Đồng Khởi",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Cua biển Bình Đại nức tiếng với vỏ cứng chắc nịch, gạch son béo bùi và thớ thịt trắng ngần ngọt thanh hấp sả thơm lừng.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Đồng Khởi",
+        "verifiedAt": "2026-09-18T08:40:00Z"
       },
       "source": [
         {
@@ -32153,7 +32281,14 @@
         "ocop_star": 4,
         "schema_type": "Product",
         "sub_category": "coconut-product",
-        "coords_approximate": true
+        "coords_approximate": true,
+        "image_author": "Hữu Hiệp",
+        "image_source": "Báo Đồng Khởi",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Mật hoa dừa tự nhiên thu hoạch bằng phương pháp mát-xa hoa dừa truyền thống, vị ngọt thanh chỉ số đường huyết thấp giàu khoáng chất.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Đồng Khởi",
+        "verifiedAt": "2026-09-18T08:40:00Z"
       },
       "source": [
         {
@@ -38365,7 +38500,14 @@
         "sub_category": "processed-meat",
         "certification": "SP CNNT tiêu biểu cấp tỉnh 2023",
         "ocop_certified": true,
-        "coords_approximate": true
+        "coords_approximate": true,
+        "image_author": "Trần Phước",
+        "image_source": "Báo Vĩnh Long",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Đòn chả lụa Thành Công tại ấp Tân Quang, phường Phước Hậu, thịt nạc heo tươi quết dẻo gói lá chuối xanh hấp chín giòn sần sật.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long",
+        "verifiedAt": "2026-09-18T08:40:00Z"
       },
       "source": [
         {
@@ -39164,7 +39306,14 @@
         "ingredients": "Còng (cua nhỏ), muối, rượu trắng",
         "schema_type": "Product",
         "sub_category": "traditional-food",
-        "coords_approximate": true
+        "coords_approximate": true,
+        "image_author": "Hữu Hiệp",
+        "image_source": "Báo Đồng Khởi",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Hũ mắm còng lột Thạnh Phú trứ danh tiến vua thuở trước, con còng lột béo ngậy ủ men chua ngọt cay nồng gừng ớt tỏi băm.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Đồng Khởi",
+        "verifiedAt": "2026-09-18T08:40:00Z"
       },
       "source": [
         {
@@ -40246,8 +40395,14 @@
             "authority_weight": 0.95
           }
         ],
-        "verifiedAt": "2026-09-13T17:30:00+07:00",
-        "verifiedSource": "NotebookLM Deep Terroir Research - Phase 6"
+        "verifiedAt": "2026-09-18T08:40:00Z",
+        "verifiedSource": "NotebookLM Deep Terroir Research - Phase 6",
+        "image_author": "Trần Phước",
+        "image_source": "Báo Vĩnh Long",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Trái bưởi Năm Roi Mỹ Hòa trĩu cành bên dải đất phù sa Bình Minh, tép bưởi mọng nước không hạt ráo tay róc múi ngọt thanh dịu mát.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long"
       },
       "source": [
         {
@@ -40338,8 +40493,14 @@
             "authority_weight": 0.9
           }
         ],
-        "verifiedAt": "2026-09-13T17:30:00+07:00",
-        "verifiedSource": "NotebookLM Deep Terroir Research - Phase 6"
+        "verifiedAt": "2026-09-18T08:40:00Z",
+        "verifiedSource": "NotebookLM Deep Terroir Research - Phase 6",
+        "image_author": "Trần Phước",
+        "image_source": "Báo Vĩnh Long",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Điểm trưng bày và giới thiệu sản phẩm OCOP Vĩnh Long tại số 12C Hoàng Thái Hiếu, phường 1, quy tụ hàng trăm nông đặc sản chất lượng cao.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long"
       },
       "source": [
         {
@@ -40401,7 +40562,14 @@
           "status": "EXPIRED",
           "validity_period_months": 36,
           "remediation": "Mark as expired or require recertification decree reference"
-        }
+        },
+        "image_author": "Trần Phước",
+        "image_source": "Báo Vĩnh Long",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Cơ sở nem chua Sáu Xệ tại khóm Tân Quới Đông, phường Trường An, viên nem đỏ hồng gói lá chuối điểm nhánh tiêu đen và tỏi ớt cay nồng giòn sần sật.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long",
+        "verifiedAt": "2026-09-18T08:40:00Z"
       },
       "source": [
         {
@@ -44199,7 +44367,14 @@
         "planted_area_ha": 750,
         "target_segments": "Foodie; gia đình",
         "coords_approximate": true,
-        "suggested_duration": "Nửa ngày"
+        "suggested_duration": "Nửa ngày",
+        "image_author": "Bá Thi",
+        "image_source": "Báo Trà Vinh",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Trái dừa sáp Cầu Kè đặc sản trứ danh với lớp cơm dừa xốp mềm dày cộm, nước dừa sệt quánh như mật ngọt béo ngậy đậm đà vị bùi tự nhiên.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Trà Vinh",
+        "verifiedAt": "2026-09-18T08:40:00Z"
       },
       "source": [
         {
@@ -44782,7 +44957,14 @@
         "address": "Trà Vinh (phổ biến ở huyện Châu Thành và Càng Long)",
         "schema_type": "Product",
         "sub_category": "fruit",
-        "coords_approximate": true
+        "coords_approximate": true,
+        "image_author": "Bá Thi",
+        "image_source": "Báo Trà Vinh",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Trái quách chín tỏa mùi hương nồng đậm đà, ruột quả đen nâu dầm đường đá nhâm nhi giải nhiệt trưa hè là nét ẩm thực dân dã độc đáo.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Trà Vinh",
+        "verifiedAt": "2026-09-18T08:40:00Z"
       },
       "source": [
         {
@@ -44872,8 +45054,14 @@
             "authority_weight": 0.9
           }
         ],
-        "verifiedAt": "2026-09-13T17:30:00+07:00",
-        "verifiedSource": "NotebookLM Deep Terroir Research - Phase 6"
+        "verifiedAt": "2026-09-18T08:40:00Z",
+        "verifiedSource": "NotebookLM Deep Terroir Research - Phase 6",
+        "image_author": "Hữu Hiệp",
+        "image_source": "Báo Đồng Khởi",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Tôm càng xanh lột An Thạnh béo ngậy được tuyển chọn kỹ lưỡng, giữ nguyên vỏ mềm dễ chế biến thành món nướng bơ tỏi hay chiên giòn.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Đồng Khởi"
       },
       "source": [
         {
@@ -49482,8 +49670,14 @@
             "authority_weight": 0.9
           }
         ],
-        "verifiedAt": "2026-09-13T17:30:00+07:00",
-        "verifiedSource": "NotebookLM Deep Terroir Research - Phase 6"
+        "verifiedAt": "2026-09-18T08:40:00Z",
+        "verifiedSource": "NotebookLM Deep Terroir Research - Phase 6",
+        "image_author": "Trần Phước",
+        "image_source": "Báo Vĩnh Long",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Chùm nhãn xuồng cơm vàng trĩu quả trên cù lao An Bình, cơm dày giòn ráo nước và vị ngọt thanh tao nức tiếng dải đất miệt vườn.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long"
       },
       "source": [
         {
@@ -50367,7 +50561,14 @@
         "schema_type": "Product",
         "sub_category": "coconut-product",
         "ocop_certified": true,
-        "coords_approximate": true
+        "coords_approximate": true,
+        "image_author": "Hữu Hiệp",
+        "image_source": "Báo Đồng Khởi",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Sản phẩm dừa sấy giòn OCOP Beinco tại xã Phước Mỹ Trung, chế biến từ cơm dừa tươi nguyên chất bằng công nghệ sấy chân không giòn tan.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Đồng Khởi",
+        "verifiedAt": "2026-09-18T08:40:00Z"
       },
       "source": [
         {
@@ -51186,7 +51387,14 @@
         "brand": "Đặc sản Vĩnh Long",
         "address": "19L/4 ấp Tân Hưng, xã Tân Hạnh",
         "schema_type": "Product",
-        "sub_category": "specialty"
+        "sub_category": "specialty",
+        "image_author": "Trần Phước",
+        "image_source": "Báo Vĩnh Long",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Bánh pía và bánh ngọt truyền thống Nhật Ngọc tại xã Tân Hạnh, lớp vỏ ngàn lớp vàng óng ôm trọn nhân đậu xanh sầu riêng trứng muối thơm ngậy.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long",
+        "verifiedAt": "2026-09-18T08:40:00Z"
       },
       "source": [
         {
@@ -59369,7 +59577,14 @@
         "sub_category": "traditional-food",
         "where_to_eat": "Làng cốm dẹp Ba So, chợ TP. Trà Vinh, cửa hàng OCOP",
         "craft_village_age": "Hơn 100 năm",
-        "coords_approximate": true
+        "coords_approximate": true,
+        "image_author": "Bá Thi",
+        "image_source": "Báo Trà Vinh",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Mẻ cốm dẹp Ba So giã cối chày đôi dịp lễ hội Ok Om Bok, hạt nếp vừa đỏ đuôi rang chín giòn giã dẹp trộn nước cốt dừa và dừa nạo thơm lừng.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Trà Vinh",
+        "verifiedAt": "2026-09-18T08:40:00Z"
       },
       "source": [
         {
@@ -60368,7 +60583,14 @@
         "schema_type": "Product",
         "sub_category": "rice-paper",
         "where_to_eat": "Làng nghề Lục Sĩ Thành; chợ Trà Ôn; siêu thị Vĩnh Long",
-        "coords_approximate": true
+        "coords_approximate": true,
+        "image_author": "Trần Phước",
+        "image_source": "Báo Vĩnh Long",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Giàn bánh tráng nem phơi nắng trên cù lao Mây (Lục Sĩ Thành), bánh tráng bột gạo mềm dẻo không cần nhúng nước cuốn chả giò giòn rụm.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long",
+        "verifiedAt": "2026-09-18T08:40:00Z"
       },
       "source": [
         {
@@ -60440,7 +60662,14 @@
         "schema_type": "Product",
         "sub_category": "dried-seafood",
         "where_to_eat": "Làng nghề Mỹ Hòa; chợ và siêu thị toàn tỉnh",
-        "coords_approximate": true
+        "coords_approximate": true,
+        "image_author": "Trần Phước",
+        "image_source": "Báo Vĩnh Long",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Tàu hủ ky Mỹ Hòa đóng gói thành phẩm, từng lá tàu hủ ky óng vàng nguyên chất từ hạt đậu nành không hàn the, cung ứng cho thị trường cả nước.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long",
+        "verifiedAt": "2026-09-18T08:40:00Z"
       },
       "source": [
         {
@@ -60822,7 +61051,14 @@
         "schema_type": "Product",
         "sub_category": "rice",
         "where_to_eat": "Bánh Tét Cô Tư Liêm (297 Đường 14/9, P.5, TP Vĩnh Long)",
-        "coords_approximate": true
+        "coords_approximate": true,
+        "image_author": "Trần Phước",
+        "image_source": "Báo Vĩnh Long",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Đòn bánh tét ba nhân lá cẩm tím biếc cắt khoanh tròn xoe, hòa quyện nhân đậu xanh bùi béo, thịt mỡ thơm ngậy và chuối chín đỏ au bắt mắt.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long",
+        "verifiedAt": "2026-09-18T08:40:00Z"
       },
       "source": [
         {
@@ -60958,7 +61194,14 @@
         "sub_category": "fruit",
         "where_to_eat": "Vườn sầu riêng xã Bình Hòa Phước; chợ huyện Long Hồ; TP Vĩnh Long",
         "year_created": "1990 (ghép cành từ 6 cây giống)",
-        "coords_approximate": true
+        "coords_approximate": true,
+        "image_author": "Trần Phước",
+        "image_source": "Báo Vĩnh Long",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Trái sầu riêng Ri 6 gốc Long Hồ cơm vàng hạt lép, thớ cơm khô ráo mịn màng béo ngậy nức tiếng làm nên thương hiệu trái cây xứ phù sa.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long",
+        "verifiedAt": "2026-09-18T08:40:00Z"
       },
       "source": [
         {
@@ -61920,7 +62163,14 @@
         "schema_type": "Product",
         "sub_category": "specialty",
         "where_to_eat": "Cửa hàng đặc sản Bến Tre, chợ địa phương",
-        "coords_approximate": true
+        "coords_approximate": true,
+        "image_author": "Hữu Hiệp",
+        "image_source": "Báo Đồng Khởi",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Kẹo me mãng cầu chua ngọt bọc đường cát trắng mịn, món quà vặt bình dị mang hương vị hoa quả nhiệt đới quen thuộc của miền quê.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Đồng Khởi",
+        "verifiedAt": "2026-09-18T08:40:00Z"
       },
       "source": [
         {
@@ -62446,9 +62696,15 @@
             "authority_weight": 0.95
           }
         ],
-        "verifiedAt": "2026-09-13T21:30:00+07:00",
+        "verifiedAt": "2026-09-18T08:40:00Z",
         "verifiedSource": "NotebookLM Deep Terroir Research - Phase 9",
-        "hours": "06:00 - 17:00 hàng ngày (cao điểm mùa tết Đoan Ngọ mùng 5 tháng 5 âm lịch)"
+        "hours": "06:00 - 17:00 hàng ngày (cao điểm mùa tết Đoan Ngọ mùng 5 tháng 5 âm lịch)",
+        "image_author": "Bá Thi",
+        "image_source": "Báo Trà Vinh",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Bánh ú Đa Lộc gói lá tre hình chóp nón tại ấp Hương Phụ, nếp dẻo thơm quyện cùng nhân thịt heo bùi béo và lòng đỏ trứng vịt muối đậm đà.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Trà Vinh"
       },
       "source": [
         {
@@ -64830,7 +65086,14 @@
         "schema_type": "Product",
         "sub_category": "ocop-product",
         "ocop_certified": true,
-        "coords_approximate": true
+        "coords_approximate": true,
+        "image_author": "Trần Phước",
+        "image_source": "Báo Vĩnh Long",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Hũ củ cải non muối chua Bùi Thị Thanh Thảo đạt chuẩn OCOP tại cù lao An Bình, cọng củ cải trắng giòn sần sật vị chua ngọt đưa cơm.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long",
+        "verifiedAt": "2026-09-18T08:40:00Z"
       },
       "source": [
         {
@@ -74222,7 +74485,14 @@
         "source_official": "https://vietnamtourism.gov.vn/post/45347",
         "target_segments": "Gia đình; học sinh; nhiếp ảnh",
         "suggested_duration": "Nửa ngày-1 ngày",
-        "collective_trademark": "Chôm chôm Chợ Lách (5/2017)"
+        "collective_trademark": "Chôm chôm Chợ Lách (5/2017)",
+        "image_author": "Hữu Hiệp",
+        "image_source": "Báo Đồng Khởi",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Chùm chôm chôm nhãn Cái Mơn rực rỡ sắc đỏ cành, cùi chôm chôm tróc múi giòn sần sật ngọt lịm hương phù sa sông Tiền.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Đồng Khởi",
+        "verifiedAt": "2026-09-18T08:40:00Z"
       },
       "source": [
         {

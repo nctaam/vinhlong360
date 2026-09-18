@@ -7,7 +7,7 @@
 - 124 đơn vị hành chính trực thuộc gồm 35 phường và 89 xã.
 - Cấp huyện đã bãi bỏ; các địa danh huyện cũ (Long Hồ, Mang Thít, Ba Tri, Châu Thành, Càng Long, Cầu Kè, Trà Cú...) chỉ mang giá trị lịch sử và chỉ dẫn vị trí địa lý dân gian.
 
-## 2. Danh Mục 1104 Thực Thể Xác Minh Ảnh Tư Liệu Báo Chí & Giấy Phép Google Images
+## 2. Danh Mục 1144 Thực Thể Xác Minh Ảnh Tư Liệu Báo Chí & Giấy Phép Google Images
 
 Mỗi thực thể dưới đây đều có ảnh tư liệu báo chí chính thống được lưu trữ nội bộ chuẩn WebP, tích hợp siêu dữ liệu Schema.org `ImageObject` với đầy đủ bản quyền (`creator`, `creditText`, `copyrightNotice`, `license`, `acquireLicensePage`).
 
@@ -1369,12 +1369,26 @@ Mỗi thực thể dưới đây đều có ảnh tư liệu báo chí chính th
 - **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
 - **Tóm lược**: Homestay Maison du Pays de Bến Tre, tại Xã Thạnh Phú Đông, tỉnh Vĩnh Long.
 
+#### [Mắm bò hóc (Prohok)](https://vinhlong360.vn/dia-diem/mam-bo-hoc-prohok)
+- **Mã ID**: `mam-bo-hoc-prohok` | **Phân loại**: `product` | **Địa bàn**: xa-nhi-long | **Tọa độ**: [10.0260, 106.2930]
+- **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/mam-bo-hoc-prohok.webp`
+- **Tác giả ảnh**: Bá Thi · **Cơ quan**: Báo Trà Vinh
+- **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
+- **Tóm lược**: Một phần cá, nửa phần cơm nguội, một phần muối — ướp kín trong hũ sành bốn đến sáu tháng cho đến khi cá tan thành thứ mắm sền sệt mùi nồng hậu ngọt, prohok là nền tảng của bún nước lèo và hầu hết món ăn Khmer ở Trà Vinh.
+
 #### [Mật ong rừng bần Mỹ Long Nam](https://vinhlong360.vn/dia-diem/mat-ong-rung-ban-my-long-nam)
 - **Mã ID**: `mat-ong-rung-ban-my-long-nam` | **Phân loại**: `product` | **Địa bàn**: xa-my-long | **Tọa độ**: [9.7523, 106.5284]
 - **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/mat-ong-rung-ban-my-long-nam.webp`
 - **Tác giả ảnh**: Văn Hùng · **Cơ quan**: Báo Trà Vinh
 - **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
 - **Tóm lược**: Sản phẩm OCOP 3 sao của Hộ sản xuất Nguyễn Văn Bao tại xã Mỹ Long Nam. Mật ong được thu hoạch từ đàn ong tự nhiên trong rừng bần ven biển, không tác động đến hệ sinh thái rừng. Là sản phẩm đặc trưng khai thác lợi thế vùng nguyên liệu tự nhiên ven biển Cầu Ngang.
+
+#### [Mật ong rừng bần Nguyễn Văn Bao](https://vinhlong360.vn/dia-diem/mat-ong-rung-ban-nguyen-van-bao)
+- **Mã ID**: `mat-ong-rung-ban-nguyen-van-bao` | **Phân loại**: `product` | **Địa bàn**: xa-my-long | **Tọa độ**: [9.7869, 106.4326]
+- **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/mat-ong-rung-ban-nguyen-van-bao.webp`
+- **Tác giả ảnh**: Bá Thi · **Cơ quan**: Báo Trà Vinh
+- **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
+- **Tóm lược**: Sản phẩm OCOP 3 sao của hộ sản xuất Nguyễn Văn Bao. Mật ong được khai thác từ rừng bần ven biển, hoàn toàn từ nguồn tự nhiên, không ảnh hưởng đến rừng, chi phí đầu tư thấp. Đặc trưng bởi hương vị thiên nhiên đặc trưng của hoa bần vùng ven biển Trà Vinh.
 
 #### [Miếu Bà Chúa Xứ Trà Vinh](https://vinhlong360.vn/dia-diem/mieu-ba-chua-xu-tra-vinh)
 - **Mã ID**: `mieu-ba-chua-xu-tra-vinh` | **Phân loại**: `history` | **Địa bàn**: p-tra-vinh | **Tọa độ**: [9.9513, 106.3346]
@@ -1390,6 +1404,27 @@ Mỗi thực thể dưới đây đều có ảnh tư liệu báo chí chính th
 - **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
 - **Tóm lược**: Di tích mộ Võ Trường Toản gồm lăng mộ và nhà thờ, nơi an nghỉ của nhà giáo và hai người thân.
 
+#### [Muối Bảo Thạnh](https://vinhlong360.vn/dia-diem/muoi-bao-thanh)
+- **Mã ID**: `muoi-bao-thanh` | **Phân loại**: `product` | **Địa bàn**: xa-bao-thanh | **Tọa độ**: [10.0639, 106.6711]
+- **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/muoi-bao-thanh.webp`
+- **Tác giả ảnh**: Hữu Hiệp · **Cơ quan**: Báo Đồng Khởi
+- **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
+- **Tóm lược**: Đặc sản muối của xã Bảo Thạnh, huyện Ba Tri, Bến Tre.
+
+#### [Muối Ba Tri](https://vinhlong360.vn/dia-diem/muoi-ba-tri)
+- **Mã ID**: `muoi-ba-tri` | **Phân loại**: `product` | **Địa bàn**: p-ben-tre | **Tọa độ**: [10.2409, 106.3758]
+- **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/muoi-ba-tri.webp`
+- **Tác giả ảnh**: Hữu Hiệp · **Cơ quan**: Báo Đồng Khởi
+- **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
+- **Tóm lược**: Muối biển Ba Tri — làng nghề truyền thống Bảo Thạnh hơn 140 năm — gần 800 ha ruộng muối, vị mặn dịu không chát, OCOP 3 sao.
+
+#### [Mứt dừa sáp Cẩm Hằng](https://vinhlong360.vn/dia-diem/mut-dua-sap-cam-hang)
+- **Mã ID**: `mut-dua-sap-cam-hang` | **Phân loại**: `product` | **Địa bàn**: xa-cau-ke | **Tọa độ**: [9.8721, 106.0904]
+- **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/mut-dua-sap-cam-hang.webp`
+- **Tác giả ảnh**: Bá Thi · **Cơ quan**: Báo Trà Vinh
+- **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
+- **Tóm lược**: Cơ sở sản xuất mứt dừa sáp truyền thống tại Cầu Kè, có sản phẩm kẹo chuối dừa sáp đạt OCOP 3 sao năm 2024. Nằm trong số trên 70% sản phẩm kẹo, mứt dừa sáp đạt OCOP từ 3 đến 5 sao trên địa bàn Cầu Kè.
+
 #### [Mứt dừa sáp Cầu Kè](https://vinhlong360.vn/dia-diem/mut-dua-sap-cau-ke)
 - **Mã ID**: `mut-dua-sap-cau-ke` | **Phân loại**: `dish` | **Địa bàn**: xa-cau-ke | **Tọa độ**: [9.8716, 106.0899]
 - **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/mut-dua-sap-cau-ke.webp`
@@ -1403,6 +1438,13 @@ Mỗi thực thể dưới đây đều có ảnh tư liệu báo chí chính th
 - **Tác giả ảnh**: Hữu Trí · **Cơ quan**: Báo Đồng Khởi
 - **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
 - **Tóm lược**: Triển lãm và thi hoa kiếng, cây cảnh nghệ thuật trước thềm Tết Nguyên Đán. Hội thi chế tác tiểu cảnh, bonsai, cây ghép hoa đặc sản của vùng Chợ Lách.
+
+#### [Nghêu, sò, cua biển Thạnh Phú](https://vinhlong360.vn/dia-diem/ngheu-so-cua-bien-thanh-phu)
+- **Mã ID**: `ngheu-so-cua-bien-thanh-phu` | **Phân loại**: `product` | **Địa bàn**: xa-thanh-phu | **Tọa độ**: [10.1671, 106.2917]
+- **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/ngheu-so-cua-bien-thanh-phu.webp`
+- **Tác giả ảnh**: Hữu Hiệp · **Cơ quan**: Báo Đồng Khởi
+- **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
+- **Tóm lược**: Các sản phẩm thủy sản đặc trưng vùng ven biển Thạnh Phú gồm nghêu, sò và cua biển, được khai thác và nuôi trồng theo phương thức truyền thống. Nhiều sản phẩm thủy sản chế biến từ nguyên liệu này đã đạt chứng nhận OCOP 3-4 sao.
 
 #### [Nghêu Thạnh Hải](https://vinhlong360.vn/dia-diem/ngheu-thanh-hai)
 - **Mã ID**: `ngheu-thanh-hai` | **Phân loại**: `product` | **Địa bàn**: xa-thanh-hai | **Tọa độ**: [9.8506, 106.6308]
@@ -1474,6 +1516,13 @@ Mỗi thực thể dưới đây đều có ảnh tư liệu báo chí chính th
 - **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
 - **Tóm lược**: Khu rừng tràm thuộc huyện Càng Long, tỉnh Vĩnh Long, mang hệ sinh thái đặc trưng của vùng đất ngập nước ĐBSCL.
 
+#### [Rượu Gia Bảo](https://vinhlong360.vn/dia-diem/ruou-gia-bao)
+- **Mã ID**: `ruou-gia-bao` | **Phân loại**: `product` | **Địa bàn**: xa-tan-thanh-binh | **Tọa độ**: [10.2076, 106.3237]
+- **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/ruou-gia-bao.webp`
+- **Tác giả ảnh**: Hữu Hiệp · **Cơ quan**: Báo Đồng Khởi
+- **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
+- **Tóm lược**: Sản phẩm rượu truyền thống đạt chứng nhận OCOP của huyện Mỏ Cày Nam, tỉnh Vĩnh Long. Là một trong các sản phẩm OCOP tiêu biểu đạt 3-4 sao của huyện, góp phần quảng bá đặc sản địa phương và phát triển kinh tế nông thôn theo chương trình OCOP quốc gia.
+
 #### [Rượu Quách Cầu Ngang](https://vinhlong360.vn/dia-diem/ruou-quach-cau-ngang)
 - **Mã ID**: `ruou-quach-cau-ngang` | **Phân loại**: `product` | **Địa bàn**: xa-cau-ngang | **Tọa độ**: [9.7904, 106.4524]
 - **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/ruou-quach-cau-ngang.webp`
@@ -1495,12 +1544,40 @@ Mỗi thực thể dưới đây đều có ảnh tư liệu báo chí chính th
 - **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
 - **Tóm lược**: Sân chim Vàm Hồ trải dọc ven sông Ba Lai, là điểm du lịch sinh thái được hình thành từ tháng 5-1986 do đàn chim trước ở Cù lao Đất, xã An Hiệp, huyện Ba Tri di cư tới.
 
+#### [Sản phẩm OCOP Cầu Ngang](https://vinhlong360.vn/dia-diem/san-pham-ocop-cau-ngang)
+- **Mã ID**: `san-pham-ocop-cau-ngang` | **Phân loại**: `product` | **Địa bàn**: xa-cau-ngang | **Tọa độ**: [9.7976, 106.4548]
+- **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/san-pham-ocop-cau-ngang.webp`
+- **Tác giả ảnh**: Bá Thi · **Cơ quan**: Báo Trà Vinh
+- **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
+- **Tóm lược**: Huyện Cầu Ngang có 47 sản phẩm đạt chuẩn OCOP 3 sao và 4 sao tính đến năm 2022, trong đó có 14 sản phẩm được công nhận trong năm 2022. Các sản phẩm tiêu biểu gồm bánh tét Tứ Quý (OCOP 4 sao), bánh tráng sữa nước cốt dừa, bún tươi An Đào, tôm khô, khô cá Lù Đù.
+
+#### [Sản phẩm xà bông dừa và tranh dừa OCOP Khánh Thạnh Tân](https://vinhlong360.vn/dia-diem/san-pham-xa-bong-dua-va-tranh-dua-ocop-khanh-thanh-tan)
+- **Mã ID**: `san-pham-xa-bong-dua-va-tranh-dua-ocop-khanh-thanh-tan` | **Phân loại**: `product` | **Địa bàn**: xa-nhuan-phu-tan | **Tọa độ**: [10.1246, 106.2556]
+- **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/san-pham-xa-bong-dua-va-tranh-dua-ocop-khanh-thanh-tan.webp`
+- **Tác giả ảnh**: Hữu Hiệp · **Cơ quan**: Báo Đồng Khởi
+- **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
+- **Tóm lược**: Sản phẩm thủ công mỹ nghệ từ dừa gồm xà bông dừa và tranh dừa, đạt chứng nhận OCOP hạng 3 sao, được sản xuất tại làng nghề chỉ xơ dừa xã Khánh Thạnh Tân, Mỏ Cày Bắc. Là sản phẩm đặc trưng kết hợp giá trị thủ công mỹ nghệ và kinh tế nông thôn.
+
 #### [Lễ hội Văn Thánh Miếu](https://vinhlong360.vn/dia-diem/le-hoi-van-thanh-mieu)
 - **Mã ID**: `le-hoi-van-thanh-mieu` | **Phân loại**: `event` | **Địa bàn**: p-phuoc-hau | **Tọa độ**: [10.2429, 105.9846]
 - **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/le-hoi-van-thanh-mieu.webp`
 - **Tác giả ảnh**: Đăng Khoa · **Cơ quan**: Báo Vĩnh Long
 - **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
 - **Tóm lược**: Lễ hội truyền thống diễn ra tại Văn Thánh Miếu, tỉnh Vĩnh Long, nhằm tôn vinh Khổng Tử và truyền thống hiếu học.
+
+#### [Sầu riêng cấp đông Chánh Thu](https://vinhlong360.vn/dia-diem/sau-rieng-cap-dong-chanh-thu)
+- **Mã ID**: `sau-rieng-cap-dong-chanh-thu` | **Phân loại**: `product` | **Địa bàn**: xa-cho-lach | **Tọa độ**: [10.2238, 106.1914]
+- **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/sau-rieng-cap-dong-chanh-thu.webp`
+- **Tác giả ảnh**: Hữu Hiệp · **Cơ quan**: Báo Đồng Khởi
+- **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
+- **Tóm lược**: Sản phẩm sầu riêng cấp đông của Công ty TNHH XNK Trái cây Chánh Thu — một trong những sản phẩm OCOP tiêu biểu của huyện Chợ Lách — đã được xuất khẩu ra thị trường quốc tế.
+
+#### [Sò điệp Bình Đại](https://vinhlong360.vn/dia-diem/so-diep-binh-dai)
+- **Mã ID**: `so-diep-binh-dai` | **Phân loại**: `product` | **Địa bàn**: p-binh-dai | **Tọa độ**: [10.1673, 106.6971]
+- **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/so-diep-binh-dai.webp`
+- **Tác giả ảnh**: Hữu Hiệp · **Cơ quan**: Báo Đồng Khởi
+- **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
+- **Tóm lược**: Sò điệp là hải sản đặc trưng vùng biển huyện Bình Đại, vỏ cứng, thịt ngọt và giòn.
 
 #### [Sông Thom - điểm tham quan làng nghề](https://vinhlong360.vn/dia-diem/song-thom-diem-tham-quan-lang-nghe)
 - **Mã ID**: `song-thom-diem-tham-quan-lang-nghe` | **Phân loại**: `nature` | **Địa bàn**: xa-nhuan-phu-tan | **Tọa độ**: [10.1246, 106.2556]
@@ -1515,6 +1592,48 @@ Mỗi thực thể dưới đây đều có ảnh tư liệu báo chí chính th
 - **Tác giả ảnh**: Tuyết Nhung · **Cơ quan**: Báo Đồng Khởi
 - **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
 - **Tóm lược**: Nữ sĩ tài danh cuối thế kỷ XIX đầu thế kỷ XX, con gái của nhà thơ Nguyễn Đình Chiểu, là nữ chủ bút đầu tiên trong lịch sử báo chí Việt Nam (báo Nữ Giới Chung, 1918).
+
+#### [Bún tươi và hủ tiếu Sáu Thạnh](https://vinhlong360.vn/dia-diem/bun-tuoi-va-hu-tieu-sau-thanh)
+- **Mã ID**: `bun-tuoi-va-hu-tieu-sau-thanh` | **Phân loại**: `product` | **Địa bàn**: p-phuoc-hau | **Tọa độ**: [10.2204, 105.9614]
+- **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/bun-tuoi-va-hu-tieu-sau-thanh.webp`
+- **Tác giả ảnh**: Trần Phước · **Cơ quan**: Báo Vĩnh Long
+- **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
+- **Tóm lược**: Sản phẩm OCOP 4 sao của Tam Bình, bao gồm bún tươi Sáu Thạnh, hủ tiếu tươi Sáu Thạnh và hủ tiếu khô Sáu Thạnh. Đây là nhóm sản phẩm đạt hạng cao nhất trong 28 sản phẩm OCOP được chứng nhận của Tam Bình tính đến năm 2024.
+
+#### [Tôm khô Hai Khâm](https://vinhlong360.vn/dia-diem/tom-kho-hai-kham)
+- **Mã ID**: `tom-kho-hai-kham` | **Phân loại**: `product` | **Địa bàn**: xa-cau-ngang | **Tọa độ**: [9.7869, 106.4326]
+- **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/tom-kho-hai-kham.webp`
+- **Tác giả ảnh**: Bá Thi · **Cơ quan**: Báo Trà Vinh
+- **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
+- **Tóm lược**: Sản phẩm OCOP 3 sao của huyện Cầu Ngang, được chế biến từ nguồn tôm nước lợ nuôi trồng trong vùng. Tôm khô là đặc sản truyền thống của vùng biển Trà Vinh, được sản xuất với diện tích nuôi tôm khoảng 5.000 ha trong toàn huyện.
+
+#### [Tôm sú Bình Đại](https://vinhlong360.vn/dia-diem/tom-su-binh-dai)
+- **Mã ID**: `tom-su-binh-dai` | **Phân loại**: `product` | **Địa bàn**: p-binh-dai | **Tọa độ**: [10.2006, 106.7081]
+- **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/tom-su-binh-dai.webp`
+- **Tác giả ảnh**: Hữu Hiệp · **Cơ quan**: Báo Đồng Khởi
+- **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
+- **Tóm lược**: Tôm sú là sản vật đặc trưng của vùng ven biển huyện Bình Đại, thịt chắc, ngọt tự nhiên, ít tanh.
+
+#### [Tôm xẻ Hiệp Mỹ Đông](https://vinhlong360.vn/dia-diem/tom-xe-hiep-my-dong)
+- **Mã ID**: `tom-xe-hiep-my-dong` | **Phân loại**: `product` | **Địa bàn**: xa-hiep-my | **Tọa độ**: [9.9513, 106.3346]
+- **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/tom-xe-hiep-my-dong.webp`
+- **Tác giả ảnh**: Bá Thi · **Cơ quan**: Báo Trà Vinh
+- **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
+- **Tóm lược**: Sản phẩm OCOP 3 sao do hộ sản xuất Nguyễn Thị Trúc Phương chế biến. Tôm tươi được ướp gia vị rồi phơi nắng một ngày, giữ nguyên hương vị tự nhiên của tôm biển. Khai thác lợi thế vùng nuôi tôm nước lợ rộng lớn của vùng Cầu Ngang.
+
+#### [Tranh dừa hộp kiếng Cocohand](https://vinhlong360.vn/dia-diem/tranh-dua-hop-kieng-cocohand)
+- **Mã ID**: `tranh-dua-hop-kieng-cocohand` | **Phân loại**: `product` | **Địa bàn**: xa-huong-my | **Tọa độ**: [10.0113, 106.3763]
+- **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/tranh-dua-hop-kieng-cocohand.webp`
+- **Tác giả ảnh**: Hữu Hiệp · **Cơ quan**: Báo Đồng Khởi
+- **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
+- **Tóm lược**: Tranh thủ công mỹ nghệ làm từ lá/xơ dừa đặt trong khung kính, sản phẩm OCOP 3 sao của hộ kinh doanh Cocohand tại ấp Bình Đông 1, xã Hương Mỹ. Phía sau xưởng là vườn dừa hữu cơ rộng hơn 11.000m².
+
+#### [Tranh dừa ốp nia tre Cocohand](https://vinhlong360.vn/dia-diem/tranh-dua-op-nia-tre-cocohand)
+- **Mã ID**: `tranh-dua-op-nia-tre-cocohand` | **Phân loại**: `product` | **Địa bàn**: xa-huong-my | **Tọa độ**: [10.0170, 106.3820]
+- **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/tranh-dua-op-nia-tre-cocohand.webp`
+- **Tác giả ảnh**: Hữu Hiệp · **Cơ quan**: Báo Đồng Khởi
+- **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
+- **Tóm lược**: Tranh thủ công mỹ nghệ làm từ lá/xơ dừa ốp trên nền nia tre, sản phẩm OCOP 3 sao của hộ kinh doanh Cocohand tại ấp Bình Đông 1, xã Hương Mỹ. Là sản phẩm đặc trưng của làng nghề dừa địa phương.
 
 #### [Vàm Tắc Thủ - Rừng bần ven sông Cổ Chiên](https://vinhlong360.vn/dia-diem/vam-tac-thu-rung-ban-song-co-chien-tra-vinh)
 - **Mã ID**: `vam-tac-thu-rung-ban-song-co-chien-tra-vinh` | **Phân loại**: `nature` | **Địa bàn**: xa-hoa-minh | **Tọa độ**: [9.9513, 106.3346]
@@ -1558,6 +1677,13 @@ Mỗi thực thể dưới đây đều có ảnh tư liệu báo chí chính th
 - **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
 - **Tóm lược**: Xã Kim Hòa nằm ở phía bắc vùng Cầu Ngang, cách trung tâm Cầu Ngang 13km.
 
+#### [Xoài tứ quý và cua biển Thạnh Phong (OCOP)](https://vinhlong360.vn/dia-diem/xoai-tu-quy-va-cua-bien-thanh-phong-ocop)
+- **Mã ID**: `xoai-tu-quy-va-cua-bien-thanh-phong-ocop` | **Phân loại**: `product` | **Địa bàn**: xa-an-qui | **Tọa độ**: [9.8506, 106.6308]
+- **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/xoai-tu-quy-va-cua-bien-thanh-phong-ocop.webp`
+- **Tác giả ảnh**: Hữu Hiệp · **Cơ quan**: Báo Đồng Khởi
+- **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
+- **Tóm lược**: Xoài tứ quý và cua biển do Hợp tác xã Dịch vụ Nông nghiệp Thạnh Phong cung cấp, đạt chứng nhận OCOP.
+
 #### [Xưởng thủ công Cocohand & vườn dừa hữu cơ](https://vinhlong360.vn/dia-diem/xuong-thu-cong-cocohand-vuon-dua-huu-co)
 - **Mã ID**: `xuong-thu-cong-cocohand-vuon-dua-huu-co` | **Phân loại**: `experience` | **Địa bàn**: xa-huong-my | **Tọa độ**: [10.0115, 106.3765]
 - **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/xuong-thu-cong-cocohand-vuon-dua-huu-co.webp`
@@ -1585,6 +1711,13 @@ Mỗi thực thể dưới đây đều có ảnh tư liệu báo chí chính th
 - **Tác giả ảnh**: Hữu Hiệp · **Cơ quan**: Báo Đồng Khởi
 - **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
 - **Tóm lược**: Ghé chợ Chợ Lách, Bến Tre, khách mua được cây giống và hoa tươi ngay giữa vùng cây giống, hoa kiểng lớn nhất ĐBSCL. Vào chợ miễn phí.
+
+#### [Cua Bình Đại](https://vinhlong360.vn/dia-diem/cua-binh-dai)
+- **Mã ID**: `cua-binh-dai` | **Phân loại**: `product` | **Địa bàn**: p-binh-dai | **Tọa độ**: [10.2241, 106.7082]
+- **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/cua-binh-dai.webp`
+- **Tác giả ảnh**: Hữu Hiệp · **Cơ quan**: Báo Đồng Khởi
+- **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
+- **Tóm lược**: Nuôi dưới tán rừng ngập mặn ven biển Bình Đại, cua biển Bến Tre (Scylla paramamosain) được cấp chỉ dẫn địa lý năm 2021 — mai xanh bóng, thịt chắc ngọt, mùi thơm không tanh, béo đặc trưng nhờ thức ăn tự nhiên từ phù sa và mùn bã hữu cơ rừng ngập mặn.
 
 #### [Sầu riêng Cái Mơn](https://vinhlong360.vn/dia-diem/sau-rieng-cai-mon)
 - **Mã ID**: `sau-rieng-cai-mon` | **Phân loại**: `product` | **Địa bàn**: xa-vinh-thanh | **Tọa độ**: [10.2081, 106.1749]
@@ -1950,6 +2083,13 @@ Mỗi thực thể dưới đây đều có ảnh tư liệu báo chí chính th
 - **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
 - **Tóm lược**: Nồi riêu cua là linh hồn của quán Bún Riêu Cua Thảo My ở 310 Phan Đình Phùng, Phường 7, Trà Vinh.
 
+#### [Mật hoa dừa](https://vinhlong360.vn/dia-diem/mat-hoa-dua)
+- **Mã ID**: `mat-hoa-dua` | **Phân loại**: `product` | **Địa bàn**: p-mo-cay | **Tọa độ**: [10.2396, 106.3791]
+- **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/mat-hoa-dua.webp`
+- **Tác giả ảnh**: Hữu Hiệp · **Cơ quan**: Báo Đồng Khởi
+- **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
+- **Tóm lược**: Đạt chuẩn OCOP 4 sao, mật hoa dừa vùng Mỏ Cày, Bến Tre được cô đặc từ nhụy hoa dừa, chỉ số đường huyết thấp.
+
 #### [Dimsum Quận Nhất - Ẩm Thực Trung Hoa](https://vinhlong360.vn/dia-diem/dimsum-quan-nhat---am-thuc-trung-hoa)
 - **Mã ID**: `dimsum-quan-nhat---am-thuc-trung-hoa` | **Phân loại**: `restaurant` | **Địa bàn**: p-tra-vinh | **Tọa độ**: [9.9552, 106.3408]
 - **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/dimsum-quan-nhat---am-thuc-trung-hoa.webp`
@@ -2139,6 +2279,13 @@ Mỗi thực thể dưới đây đều có ảnh tư liệu báo chí chính th
 - **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
 - **Tóm lược**: Tại miệt vườn cù lao An Bình và Chợ Lách: chôm chôm, sầu riêng, măng cụt, nhãn, xoài. Giá rẻ, trái ngon nhất trong năm — thời điểm lý tưởng đi miệt vườn.
 
+#### [Chả lụa Thành Công](https://vinhlong360.vn/dia-diem/cha-lua-thanh-cong)
+- **Mã ID**: `cha-lua-thanh-cong` | **Phân loại**: `product` | **Địa bàn**: p-phuoc-hau | **Tọa độ**: [10.2515, 105.9740]
+- **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/cha-lua-thanh-cong.webp`
+- **Tác giả ảnh**: Trần Phước · **Cơ quan**: Báo Vĩnh Long
+- **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
+- **Tóm lược**: Chả lụa heo truyền thống không hàn the — sản phẩm công nghiệp nông thôn tiêu biểu cấp tỉnh 2023 — từ xã Hiếu Phụng, Vũng Liêm.
+
 #### [Mùa nước nổi ĐBSCL](https://vinhlong360.vn/dia-diem/mua-nuoc-noi-dbscl)
 - **Mã ID**: `mua-nuoc-noi-dbscl` | **Phân loại**: `experience` | **Địa bàn**: xa-an-binh | **Tọa độ**: [10.2542, 105.9628]
 - **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/mua-nuoc-noi-dbscl.webp`
@@ -2201,6 +2348,13 @@ Mỗi thực thể dưới đây đều có ảnh tư liệu báo chí chính th
 - **Tác giả ảnh**: Đức Toàn · **Cơ quan**: Cổng TTĐT Trà Vinh
 - **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
 - **Tóm lược**: (Wath Vam Ray) là ngôi chùa Khmer lớn nhất Trà Vinh và cả ĐBSCL, nằm tại xã Hàm Tân, huyện Trà Cú. Kiến trúc Khmer nguy nga, chánh điện rộng 50m × 22m, trang trí nổi bật với rắn thần Naga, Kinnari và phù điêu kể chuyện đời Phật. Tốn 50 tỷ đồng xây dựng, khánh thành 2010.
+
+#### [Mắm Còng Bến Tre](https://vinhlong360.vn/dia-diem/mam-cong-ben-tre)
+- **Mã ID**: `mam-cong-ben-tre` | **Phân loại**: `product` | **Địa bàn**: xa-thanh-phu | **Tọa độ**: [10.2365, 106.3759]
+- **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/mam-cong-ben-tre.webp`
+- **Tác giả ảnh**: Hữu Hiệp · **Cơ quan**: Báo Đồng Khởi
+- **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
+- **Tóm lược**: Cứ mười con còng — loài cua nhỏ sống trong bùn ven sông — giã nhuyễn với một chén muối, thêm rượu trắng, phơi nắng hai ba ngày rồi vắt lọc lấy nước — câu "mắm còng Châu Bình" đã thành ngạn ngữ Nam Bộ.
 
 #### [Bánh Canh Bột Xắt Bến Tre](https://vinhlong360.vn/dia-diem/banh-canh-bot-xat-ben-tre)
 - **Mã ID**: `banh-canh-bot-xat-ben-tre` | **Phân loại**: `dish` | **Địa bàn**: p-ben-tre | **Tọa độ**: [10.2594, 106.4048]
@@ -2278,6 +2432,27 @@ Mỗi thực thể dưới đây đều có ảnh tư liệu báo chí chính th
 - **Tác giả ảnh**: Hữu Toàn · **Cơ quan**: Báo Vĩnh Long
 - **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
 - **Tóm lược**: Khu sinh thái rộng hơn 70ha trên quốc lộ 57, cách phà Đình Khao 2km, với cảnh quan ruộng lúa, ao sen, nhiều tiểu cảnh.
+
+#### [Bưởi năm roi Mỹ Hòa](https://vinhlong360.vn/dia-diem/buoi-nam-roi-my-hoa)
+- **Mã ID**: `buoi-nam-roi-my-hoa` | **Phân loại**: `product` | **Địa bàn**: p-cai-von | **Tọa độ**: [10.0718, 105.8262]
+- **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/buoi-nam-roi-my-hoa.webp`
+- **Tác giả ảnh**: Trần Phước · **Cơ quan**: Báo Vĩnh Long
+- **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
+- **Tóm lược**: Sản phẩm bưởi năm roi đặc trưng của xã Mỹ Hòa, Bình Minh, đạt chứng nhận OCOP 4 sao. Là một trong 36 sản phẩm OCOP 4 sao được tỉnh Vĩnh Long công nhận.
+
+#### [Điểm trưng bày và giới thiệu sản phẩm OCOP Vĩnh Long](https://vinhlong360.vn/dia-diem/diem-trung-bay-va-gioi-thieu-san-pham-ocop-vinh-long)
+- **Mã ID**: `diem-trung-bay-va-gioi-thieu-san-pham-ocop-vinh-long` | **Phân loại**: `product` | **Địa bàn**: p-long-chau | **Tọa độ**: [10.2546, 105.9725]
+- **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/diem-trung-bay-va-gioi-thieu-san-pham-ocop-vinh-long.webp`
+- **Tác giả ảnh**: Trần Phước · **Cơ quan**: Báo Vĩnh Long
+- **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
+- **Tóm lược**: Cửa hàng trưng bày và giới thiệu các sản phẩm nông nghiệp và sản phẩm OCOP (One Commune One Product) của tỉnh Vĩnh Long. Nơi đây tập hợp các đặc sản địa phương đạt chứng nhận OCOP 3–4 sao từ khắp các xã, phường trong tỉnh. Mở cửa từ 8:00 đến 22:00 hàng ngày.
+
+#### [Nem chua Sáu Xệ](https://vinhlong360.vn/dia-diem/nem-chua-sau-xe)
+- **Mã ID**: `nem-chua-sau-xe` | **Phân loại**: `product` | **Địa bàn**: p-long-chau | **Tọa độ**: [10.2554, 105.9728]
+- **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/nem-chua-sau-xe.webp`
+- **Tác giả ảnh**: Trần Phước · **Cơ quan**: Báo Vĩnh Long
+- **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
+- **Tóm lược**: Sản phẩm nem chua truyền thống đạt chứng nhận OCOP 4 sao năm 2020, làm từ thịt heo, da heo và gia vị, không dùng phẩm màu, sản xuất theo quy trình sạch. Sản phẩm được gói bằng lá ruột và lá chuối, ăn ngon nhất sau 3 ngày kể từ ngày sản xuất.
 
 #### [YOLO Coffee](https://vinhlong360.vn/dia-diem/yolo-coffee)
 - **Mã ID**: `yolo-coffee` | **Phân loại**: `cafe` | **Địa bàn**: p-phuoc-hau | **Tọa độ**: [10.2542, 105.9628]
@@ -2524,6 +2699,13 @@ Mỗi thực thể dưới đây đều có ảnh tư liệu báo chí chính th
 - **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
 - **Tóm lược**: Trái nhỏ hơn dừa ta nhưng nước thơm mùi lá dứa tự nhiên, vị ngọt thanh — dừa xiêm xanh chiếm gần 8.000 ha trong tổng 70.000 ha dừa Bến Tre, tập trung nhiều nhất ở Châu Thành và Giồng Trôm. Mỗi cây cho 250–300 trái/năm, uống tươi ngay tại vườn là ngon nhất.
 
+#### [Dừa sáp](https://vinhlong360.vn/dia-diem/dua-sap)
+- **Mã ID**: `dua-sap` | **Phân loại**: `product` | **Địa bàn**: p-tra-vinh | **Tọa độ**: [9.9516, 106.3322]
+- **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/dua-sap.webp`
+- **Tác giả ảnh**: Bá Thi · **Cơ quan**: Báo Trà Vinh
+- **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
+- **Tóm lược**: Cơm dày dẻo quánh, béo ngậy, nước trong đặc như keo — giống dừa HT Thạch Sô mang từ Campuchia về trồng tại chùa Botumsakor (Cầu Kè) năm 1924.
+
 #### [Lễ hội Ok Om Bok](https://vinhlong360.vn/dia-diem/le-hoi-ok-om-bok)
 - **Mã ID**: `le-hoi-ok-om-bok` | **Phân loại**: `event` | **Địa bàn**: p-nguyet-hoa | **Tọa độ**: [9.9334, 106.3122]
 - **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/le-hoi-ok-om-bok.webp`
@@ -2544,6 +2726,20 @@ Mỗi thực thể dưới đây đều có ảnh tư liệu báo chí chính th
 - **Tác giả ảnh**: Hồng Hạnh · **Cơ quan**: Báo Vĩnh Long
 - **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
 - **Tóm lược**: Trên tường chánh điện còn ghi năm 632 dương lịch — nếu đúng, chùa Hạnh Phúc Tăng ở ấp Trung Trạch, Vũng Liêm là ngôi chùa Khmer lâu đời nhất tỉnh Vĩnh Long, trải qua gần mười bốn thế kỷ.
+
+#### [Trái Quách Trà Vinh](https://vinhlong360.vn/dia-diem/trai-quach-tra-vinh)
+- **Mã ID**: `trai-quach-tra-vinh` | **Phân loại**: `product` | **Địa bàn**: p-tra-vinh | **Tọa độ**: [9.9347, 106.3456]
+- **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/trai-quach-tra-vinh.webp`
+- **Tác giả ảnh**: Bá Thi · **Cơ quan**: Báo Trà Vinh
+- **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
+- **Tóm lược**: Loại trái cây đặc hữu của Trà Vinh, hình cầu cứng, ruột vàng có vị chua thanh ngọt mát và mùi thơm đặc trưng.
+
+#### [Tôm càng xanh lột An Thạnh](https://vinhlong360.vn/dia-diem/tom-cang-xanh-lot-an-thanh)
+- **Mã ID**: `tom-cang-xanh-lot-an-thanh` | **Phân loại**: `product` | **Địa bàn**: p-ben-tre | **Tọa độ**: [10.2415, 106.3759]
+- **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/tom-cang-xanh-lot-an-thanh.webp`
+- **Tác giả ảnh**: Hữu Hiệp · **Cơ quan**: Báo Đồng Khởi
+- **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
+- **Tóm lược**: Tôm càng xanh nuôi trong ruộng lúa, lột vỏ tươi nguyên con — OCOP 3 sao của HTX An Thạnh, huyện Thạnh Phú, Bến Tre.
 
 #### [Đình Tân Hòa](https://vinhlong360.vn/dia-diem/dinh-tan-hoa)
 - **Mã ID**: `dinh-tan-hoa` | **Phân loại**: `attraction` | **Địa bàn**: p-tan-hanh | **Tọa độ**: [10.2693, 105.9077]
@@ -2874,6 +3070,13 @@ Mỗi thực thể dưới đây đều có ảnh tư liệu báo chí chính th
 - **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
 - **Tóm lược**: Món bánh xèo đặc sản dùng ốc gạo tự nhiên của cồn Phú Đa làm nhân thay vì tôm thịt.
 
+#### [Nhãn An Bình Tam Bình](https://vinhlong360.vn/dia-diem/nhan-an-binh-tam-binh)
+- **Mã ID**: `nhan-an-binh-tam-binh` | **Phân loại**: `product` | **Địa bàn**: p-phuoc-hau | **Tọa độ**: [10.0635, 105.9376]
+- **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/nhan-an-binh-tam-binh.webp`
+- **Tác giả ảnh**: Trần Phước · **Cơ quan**: Báo Vĩnh Long
+- **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
+- **Tóm lược**: Nhiều giống nhãn từ cù lao An Bình — nhãn long, nhãn Ido, nhãn xuồng cơm vàng, nhãn tiêu — cơm dày, ngọt thanh, thu hoạch chính vụ tháng 5 đến tháng 8.
+
 #### [Bún nước lèo Trà Vinh](https://vinhlong360.vn/dia-diem/bun-nuoc-leo-tra-vinh)
 - **Mã ID**: `bun-nuoc-leo-tra-vinh` | **Phân loại**: `dish` | **Địa bàn**: p-tra-vinh | **Tọa độ**: [9.9288, 106.3427]
 - **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/bun-nuoc-leo-tra-vinh.webp`
@@ -2908,6 +3111,13 @@ Mỗi thực thể dưới đây đều có ảnh tư liệu báo chí chính th
 - **Tác giả ảnh**: Thanh Đồng · **Cơ quan**: Báo Đồng Khởi
 - **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
 - **Tóm lược**: Nước cốt dừa nấu keo với mạch nha, cắt miếng vuông gói lá dừa — nghề do bà Nguyễn Thị Ngọc (1914) ở Mỏ Cày khởi xướng, ban đầu gọi "kẹo Mỏ Cày".
+
+#### [Sản phẩm dừa OCOP BEINCO](https://vinhlong360.vn/dia-diem/san-pham-dua-ocop-beinco)
+- **Mã ID**: `san-pham-dua-ocop-beinco` | **Phân loại**: `product` | **Địa bàn**: xa-phuoc-my-trung | **Tọa độ**: [10.1764, 106.2559]
+- **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/san-pham-dua-ocop-beinco.webp`
+- **Tác giả ảnh**: Hữu Hiệp · **Cơ quan**: Báo Đồng Khởi
+- **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
+- **Tóm lược**: Công ty cổ phần Đầu tư dừa Bến Tre (BEINCO) tại huyện Mỏ Cày Bắc có 3 sản phẩm đạt chuẩn OCOP gồm nước dừa cô đặc, chiết xuất dừa và kem dừa béo, thuộc 7 dòng sản phẩm dừa của doanh nghiệp.
 
 #### [Làng nghề bánh tráng Mỹ Lồng - nghề truyền thống](https://vinhlong360.vn/dia-diem/lang-banh-trang-my-long)
 - **Mã ID**: `lang-banh-trang-my-long` | **Phân loại**: `craft_village` | **Địa bàn**: xa-luong-hoa | **Tọa độ**: [10.2135, 106.4457]
@@ -2950,6 +3160,13 @@ Mỗi thực thể dưới đây đều có ảnh tư liệu báo chí chính th
 - **Tác giả ảnh**: Minh Triết · **Cơ quan**: Báo Vĩnh Long
 - **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
 - **Tóm lược**: Năm 1864, giữa lúc quân Pháp vừa chiếm thành Vĩnh Long, Đốc học Nguyễn Thông cùng Phan Thanh Giản vẫn quyết khởi công Văn Thánh Miếu thờ Khổng Tử — công trình Nho học duy nhất ở Nam Bộ còn đứng vững sau hơn trăm sáu mươi năm và tám lần trùng tu.
+
+#### [Bánh Nhật Ngọc](https://vinhlong360.vn/dia-diem/banh-nhat-ngoc)
+- **Mã ID**: `banh-nhat-ngoc` | **Phân loại**: `product` | **Địa bàn**: p-tan-hanh | **Tọa độ**: [10.2308, 105.9336]
+- **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/banh-nhat-ngoc.webp`
+- **Tác giả ảnh**: Trần Phước · **Cơ quan**: Báo Vĩnh Long
+- **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
+- **Tóm lược**: Cơ sở sản xuất bánh đặc sản Vĩnh Long, chuyên các loại bánh truyền thống Vĩnh Long phục vụ du khách và người dân địa phương.
 
 #### [Chùa Phước Hậu Ngãi Tứ](https://vinhlong360.vn/dia-diem/chua-phuoc-hau-ngai-tu)
 - **Mã ID**: `chua-phuoc-hau-ngai-tu` | **Phân loại**: `attraction` | **Địa bàn**: xa-ngai-tu | **Tọa độ**: [10.2539, 105.9722]
@@ -3539,6 +3756,13 @@ Mỗi thực thể dưới đây đều có ảnh tư liệu báo chí chính th
 - **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
 - **Tóm lược**: Ngôi đình thần Long Hồ bước ra từ nửa đầu thế kỷ XIX với dáng vẻ của một chứng nhân lịch sử: mái ngói cổ rêu phong, sân gạch rộng dưới bóng cây đa già và tấm sắc phong năm 1852 còn vẹn nguyên trong hòm gỗ quý.
 
+#### [Cốm dẹp Trà Vinh](https://vinhlong360.vn/dia-diem/com-dep-tra-vinh)
+- **Mã ID**: `com-dep-tra-vinh` | **Phân loại**: `product` | **Địa bàn**: xa-nhi-long | **Tọa độ**: [10.0260, 106.2930]
+- **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/com-dep-tra-vinh.webp`
+- **Tác giả ảnh**: Bá Thi · **Cơ quan**: Báo Trà Vinh
+- **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
+- **Tóm lược**: Nếp non gặt lúc hạt chưa chín hẳn, rang trong nồi đất rồi giã tách trấu thành hạt dẹt xanh — trộn dừa nạo, đường thốt nốt, nước cốt dừa ủ hai tiếng — làng nghề ấp Ba So ở Cầu Ngang giữ nghề này hơn trăm năm.
+
 #### [Cá cháy Trà Ôn rim/kho](https://vinhlong360.vn/dia-diem/ca-chay-tra-on-rim-kho)
 - **Mã ID**: `ca-chay-tra-on-rim-kho` | **Phân loại**: `dish` | **Địa bàn**: xa-nhon-phu | **Tọa độ**: [10.2542, 105.9628]
 - **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/ca-chay-tra-on-rim-kho.webp`
@@ -3574,6 +3798,20 @@ Mỗi thực thể dưới đây đều có ảnh tư liệu báo chí chính th
 - **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
 - **Tóm lược**: Năm 1912, ông Châu Xường từ Quảng Đông mang nghề làm tàu hủ ky sang xã Mỹ Hòa ven sông Cái Vồn — trăm năm sau, năm mươi hộ vẫn giữ nghề vớt váng đậu nành phơi khô, bảy tấn mỗi ngày, được công nhận Di sản Văn hóa Phi vật thể Quốc gia.
 
+#### [Bánh tráng nem cù lao Lục Sĩ](https://vinhlong360.vn/dia-diem/banh-trang-nem-cu-lao-luc-si)
+- **Mã ID**: `banh-trang-nem-cu-lao-luc-si` | **Phân loại**: `product` | **Địa bàn**: xa-luc-si-thanh | **Tọa độ**: [10.2539, 105.9722]
+- **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/banh-trang-nem-cu-lao-luc-si.webp`
+- **Tác giả ảnh**: Trần Phước · **Cơ quan**: Báo Vĩnh Long
+- **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
+- **Tóm lược**: Trăm năm nay, dân cù lao Mây ở xã Lục Sĩ Thành mỗi sáng tráng bột gạo trên vải căng miệng nồi — mười lăm giây một cái, phơi hai nắng là xong — bánh tráng nem mỏng đều dẻo dai, không hóa chất bảo quản.
+
+#### [Tàu hủ ky Mỹ Hòa - sản phẩm đóng gói](https://vinhlong360.vn/dia-diem/tau-hu-ky-my-hoa-dong-goi)
+- **Mã ID**: `tau-hu-ky-my-hoa-dong-goi` | **Phân loại**: `product` | **Địa bàn**: xa-nhon-phu | **Tọa độ**: [10.2542, 105.9628]
+- **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/tau-hu-ky-my-hoa-dong-goi.webp`
+- **Tác giả ảnh**: Trần Phước · **Cơ quan**: Báo Vĩnh Long
+- **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
+- **Tóm lược**: Tinh hoa làng nghề trăm tuổi Mỹ Hòa được Bộ Văn hóa Thể thao Du lịch công nhận Di sản Văn hóa Phi vật thể Quốc gia.
+
 #### [Chao dừa Thuận Duyên Tam Bình](https://vinhlong360.vn/dia-diem/chao-dua-thuan-duyen-tam-binh)
 - **Mã ID**: `chao-dua-thuan-duyen-tam-binh` | **Phân loại**: `product` | **Địa bàn**: xa-nhon-phu | **Tọa độ**: [10.2542, 105.9628]
 - **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/chao-dua-thuan-duyen-tam-binh.webp`
@@ -3602,12 +3840,26 @@ Mỗi thực thể dưới đây đều có ảnh tư liệu báo chí chính th
 - **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
 - **Tóm lược**: Cá kèo còn sống ướp rượu mùi rồi nhét vào ống sậy non đầy nước, nướng trên than hồng xoay đều — sậy từ xanh chuyển vàng thì cá vừa chín, nước sậy tươm ra thấm vào thịt ngọt mềm thoảng hương khói.
 
+#### [Bánh tét ba nhân](https://vinhlong360.vn/dia-diem/banh-tet-ba-nhan)
+- **Mã ID**: `banh-tet-ba-nhan` | **Phân loại**: `product` | **Địa bàn**: xa-nhon-phu | **Tọa độ**: [10.2542, 105.9628]
+- **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/banh-tet-ba-nhan.webp`
+- **Tác giả ảnh**: Trần Phước · **Cơ quan**: Báo Vĩnh Long
+- **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
+- **Tóm lược**: Trải nếp trộn đậu đen lên lá chuối, đặt nửa trái chuối xiêm chín, phủ đậu xanh cà rồi sợi mỡ heo — ba nhân gói chung một đòn là cách người Vũng Liêm làm bánh tét khác hẳn mọi nơi.
+
 #### [Ve sầu chiên giòn](https://vinhlong360.vn/dia-diem/ve-sau-chien-gion)
 - **Mã ID**: `ve-sau-chien-gion` | **Phân loại**: `dish` | **Địa bàn**: xa-nhon-phu | **Tọa độ**: [10.2542, 105.9628]
 - **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/ve-sau-chien-gion.webp`
 - **Tác giả ảnh**: Bá Thi · **Cơ quan**: Báo Vĩnh Long
 - **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
 - **Tóm lược**: Món ăn đặc biệt theo mùa hè của Vĩnh Long, được dân nhậu ưa chuộng vì lạ miệng.
+
+#### [Sầu riêng Ri 6 Long Hồ](https://vinhlong360.vn/dia-diem/sau-rieng-ri-6-long-ho)
+- **Mã ID**: `sau-rieng-ri-6-long-ho` | **Phân loại**: `product` | **Địa bàn**: p-thanh-duc | **Tọa độ**: [10.2327, 106.0083]
+- **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/sau-rieng-ri-6-long-ho.webp`
+- **Tác giả ảnh**: Trần Phước · **Cơ quan**: Báo Vĩnh Long
+- **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
+- **Tóm lược**: Năm 1990, ông Nguyễn Minh Châu ở ấp Phước Định, xã Bình Hòa Phước mua sáu cây giống sầu riêng với giá 30 giạ lúa rồi ghép cành — giống Ri 6 ra đời từ đó, đoạt giải nhất Hội thi trái cây ngon Đồng bằng sông Cửu Long năm 1999.
 
 #### [Bánh Canh Bột Xắt](https://vinhlong360.vn/dia-diem/banh-canh-bot-xat)
 - **Mã ID**: `banh-canh-bot-xat` | **Phân loại**: `dish` | **Địa bàn**: p-phu-khuong | **Tọa độ**: [10.2272, 106.4072]
@@ -3679,6 +3931,13 @@ Mỗi thực thể dưới đây đều có ảnh tư liệu báo chí chính th
 - **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
 - **Tóm lược**: Cuốn bì heo Bến Tre mang nét riêng: thay vì tôm, nhân cuốn là bì heo — da heo và thịt ba rọi xắt sợi trộn thính.
 
+#### [Kẹo Me Mãng Cầu](https://vinhlong360.vn/dia-diem/keo-me-mang-cau)
+- **Mã ID**: `keo-me-mang-cau` | **Phân loại**: `product` | **Địa bàn**: p-phu-khuong | **Tọa độ**: [10.2272, 106.4072]
+- **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/keo-me-mang-cau.webp`
+- **Tác giả ảnh**: Hữu Hiệp · **Cơ quan**: Báo Đồng Khởi
+- **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
+- **Tóm lược**: Me chua rim đường trộn cùng mãng cầu chín — viên kẹo nâu vàng bóng, cắn vào chua ngọt quyện thơm mãng cầu, sản phẩm đặc trưng của Công ty Tuyết Phụng ở Mỏ Cày Nam, Bến Tre.
+
 #### [Mứt Dừa Non](https://vinhlong360.vn/dia-diem/mut-dua-non)
 - **Mã ID**: `mut-dua-non` | **Phân loại**: `product` | **Địa bàn**: p-phu-khuong | **Tọa độ**: [10.2272, 106.4072]
 - **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/mut-dua-non.webp`
@@ -3713,6 +3972,13 @@ Mỗi thực thể dưới đây đều có ảnh tư liệu báo chí chính th
 - **Tác giả ảnh**: Thanh Điền · **Cơ quan**: Báo Trà Vinh
 - **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
 - **Tóm lược**: Cắt ngang khoanh chả hoa thấy lòng đỏ trứng vịt muối vàng ươm giữa, bao quanh là chả lụa hồng, nấm mèo, viền ngoài lớp trứng gà chiên — cơ sở Năm Thụy ở chợ Trà Vinh làm món này từ 1999, đạt OCOP 4 sao năm 2019.
+
+#### [Bánh ú Đa Lộc](https://vinhlong360.vn/dia-diem/banh-u-da-loc)
+- **Mã ID**: `banh-u-da-loc` | **Phân loại**: `product` | **Địa bàn**: xa-nhi-long | **Tọa độ**: [10.0260, 106.2930]
+- **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/banh-u-da-loc.webp`
+- **Tác giả ảnh**: Bá Thi · **Cơ quan**: Báo Trà Vinh
+- **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
+- **Tóm lược**: Đặc sản bánh ú nước tro lá ngót lâu đời tại xã Đa Lộc, huyện Châu Thành, nếp ngọc trong veo nhân đậu xanh thanh ngọt gói lá chuối hình chóp nón.
 
 #### [Loi choi sả ớt](https://vinhlong360.vn/dia-diem/loi-choi-sa-ot)
 - **Mã ID**: `loi-choi-sa-ot` | **Phân loại**: `dish` | **Địa bàn**: xa-nhi-long | **Tọa độ**: [10.0260, 106.2930]
@@ -3853,6 +4119,13 @@ Mỗi thực thể dưới đây đều có ảnh tư liệu báo chí chính th
 - **Tác giả ảnh**: Hữu Hiệp · **Cơ quan**: Báo Đồng Khởi
 - **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
 - **Tóm lược**: Quán hủ tiếu. Chuyên Hủ tiếu Mỹ Tho tôm thịt. Nước dùng: Xương heo + mực khô hầm, kiểu Mỹ Tho trong và ngọt. Bến Tre.
+
+#### [Củ cải non muối chua Bùi Thị Thanh Thảo (OCOP)](https://vinhlong360.vn/dia-diem/cu-cai-non-muoi-chua-bui-thi-thanh-thao-ocop)
+- **Mã ID**: `cu-cai-non-muoi-chua-bui-thi-thanh-thao-ocop` | **Phân loại**: `product` | **Địa bàn**: xa-an-binh | **Tọa độ**: [10.2542, 105.9628]
+- **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/cu-cai-non-muoi-chua-bui-thi-thanh-thao-ocop.webp`
+- **Tác giả ảnh**: Trần Phước · **Cơ quan**: Báo Vĩnh Long
+- **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
+- **Tóm lược**: Sản phẩm củ cải non muối chua đạt chứng nhận OCOP của hộ kinh doanh Bùi Thị Thanh Thảo, Bình Tân.
 
 #### [Quán hủ tiếu gõ khu vực cầu Hàm Luông](https://vinhlong360.vn/dia-diem/quan-hu-tieu-go-khu-vuc-cau-ham-luong-ben-tre)
 - **Mã ID**: `quan-hu-tieu-go-khu-vuc-cau-ham-luong-ben-tre` | **Phân loại**: `restaurant` | **Địa bàn**: p-phu-khuong | **Tọa độ**: [10.2272, 106.4072]
@@ -4252,6 +4525,13 @@ Mỗi thực thể dưới đây đều có ảnh tư liệu báo chí chính th
 - **Tác giả ảnh**: Bá Thi · **Cơ quan**: Báo Trà Vinh
 - **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
 - **Tóm lược**: Quán cà phê sân vườn ven Hồ Trung Tâm (Hồ Thủy Triều), đường Lý Thường Kiệt — trà sen ướp tươi và cà phê muối nhìn ra mặt hồ.
+
+#### [Chôm chôm Cái Mơn](https://vinhlong360.vn/dia-diem/chom-chom-cai-mon)
+- **Mã ID**: `chom-chom-cai-mon` | **Phân loại**: `product` | **Địa bàn**: xa-cho-lach | **Tọa độ**: [10.2183, 106.2380]
+- **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/chom-chom-cai-mon.webp`
+- **Tác giả ảnh**: Hữu Hiệp · **Cơ quan**: Báo Đồng Khởi
+- **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
+- **Tóm lược**: Bóc lớp vỏ đỏ gai mềm ra cơm trắng ngần bám sát hạt, ngọt thanh giòn nước — chôm chôm Chợ Lách chiếm 3.400 ha vườn cây, thu hoạch khoảng 67.200 tấn mỗi năm. Chín rộ từ tháng 5 đến tháng 8, đúng mùa vào vườn Cái Mơn hái tươi là ngon nhất.
 
 #### [Công ty TNHH MTV Quốc Thảo](https://vinhlong360.vn/dia-diem/cong-ty-tnhh-mtv-quoc-thao)
 - **Mã ID**: `cong-ty-tnhh-mtv-quoc-thao` | **Phân loại**: `craft_village` | **Địa bàn**: p-thanh-duc | **Tọa độ**: [10.2438, 106.0044]

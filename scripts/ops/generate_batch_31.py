@@ -1,0 +1,338 @@
+import json
+
+batch_31_data = [
+    # 40 Products (Chuẩn hóa Khối Sản phẩm Làng nghề & Nông đặc sản OCOP: 40/149)
+    {
+        "entity_id": "mam-bo-hoc-prohok",
+        "image": "web-nuxt/public/img/entities/mam-bo-hoc-prohok.webp",
+        "author": "Bá Thi",
+        "source": "Báo Trà Vinh",
+        "caption": "Mắm bò hóc (prohok) ủ chum sành truyền thống của đồng bào Khmer, gia vị cốt lõi làm nên linh hồn tô bún nước lèo trứ danh.",
+        "license": "Bản quyền thuộc tác giả và Báo Trà Vinh"
+    },
+    {
+        "entity_id": "mat-ong-rung-ban-nguyen-van-bao",
+        "image": "web-nuxt/public/img/entities/mat-ong-rung-ban-nguyen-van-bao.webp",
+        "author": "Bá Thi",
+        "source": "Báo Trà Vinh",
+        "caption": "Mật ong rừng bần nguyên chất Nguyễn Văn Bao tại xã Mỹ Long Nam, sản phẩm OCOP thu hoạch từ cánh rừng ngập mặn ven biển Cổ Chiên.",
+        "license": "Bản quyền thuộc tác giả và Báo Trà Vinh"
+    },
+    {
+        "entity_id": "muoi-bao-thanh",
+        "image": "web-nuxt/public/img/entities/muoi-bao-thanh.webp",
+        "author": "Hữu Hiệp",
+        "source": "Báo Đồng Khởi",
+        "caption": "Hạt muối biển Bảo Thạnh trắng tinh khiết kết tinh trên ruộng muối ven biển, đậm đà vị mặn mòi phù sa cửa sông Hàm Luông.",
+        "license": "Bản quyền thuộc tác giả và Báo Đồng Khởi"
+    },
+    {
+        "entity_id": "muoi-ba-tri",
+        "image": "web-nuxt/public/img/entities/muoi-ba-tri.webp",
+        "author": "Hữu Hiệp",
+        "source": "Báo Đồng Khởi",
+        "caption": "Nghề làm muối truyền thống Ba Tri với những ô ruộng phơi nước biển dưới nắng gắt cho ra những mẻ muối hạt thô chắc mẩy.",
+        "license": "Bản quyền thuộc tác giả và Báo Đồng Khởi"
+    },
+    {
+        "entity_id": "mut-dua-sap-cam-hang",
+        "image": "web-nuxt/public/img/entities/mut-dua-sap-cam-hang.webp",
+        "author": "Bá Thi",
+        "source": "Báo Trà Vinh",
+        "caption": "Mứt dừa sáp Cẩm Hằng tại Cầu Kè, từng sợi dừa sáp dẻo quánh áo lớp đường non thanh nhẹ, giữ trọn vị béo bùi đặc trưng xứ sở.",
+        "license": "Bản quyền thuộc tác giả và Báo Trà Vinh"
+    },
+    {
+        "entity_id": "ngheu-so-cua-bien-thanh-phu",
+        "image": "web-nuxt/public/img/entities/ngheu-so-cua-bien-thanh-phu.webp",
+        "author": "Hữu Hiệp",
+        "source": "Báo Đồng Khởi",
+        "caption": "Hải sản tươi sống Thạnh Phú gồm nghêu thịt dày ngọt, sò huyết mọng nước và cua biển chắc thịt nuôi tự nhiên dưới tán rừng ngập mặn.",
+        "license": "Bản quyền thuộc tác giả và Báo Đồng Khởi"
+    },
+    {
+        "entity_id": "ruou-gia-bao",
+        "image": "web-nuxt/public/img/entities/ruou-gia-bao.webp",
+        "author": "Hữu Hiệp",
+        "source": "Báo Đồng Khởi",
+        "caption": "Rượu nếp truyền thống Gia Bảo tại xã Tân Thành Bình chưng cất thủ công bằng men trấu cổ truyền, hương thơm nồng đượm vị men cay.",
+        "license": "Bản quyền thuộc tác giả và Báo Đồng Khởi"
+    },
+    {
+        "entity_id": "san-pham-ocop-cau-ngang",
+        "image": "web-nuxt/public/img/entities/san-pham-ocop-cau-ngang",
+        "author": "Bá Thi",
+        "source": "Báo Trà Vinh",
+        "caption": "Gian hàng giới thiệu các sản phẩm OCOP tiêu biểu của vùng đất Cầu Ngang, từ đậu phộng rang cát, tôm khô đến gạo hữu cơ hạt ngọc.",
+        "license": "Bản quyền thuộc tác giả và Báo Trà Vinh"
+    },
+    {
+        "entity_id": "san-pham-xa-bong-dua-va-tranh-dua-ocop-khanh-thanh-tan",
+        "image": "web-nuxt/public/img/entities/san-pham-xa-bong-dua-va-tranh-dua-ocop-khanh-thanh-tan.webp",
+        "author": "Hữu Hiệp",
+        "source": "Báo Đồng Khởi",
+        "caption": "Xà bông dừa thủ công kết hợp tranh dừa nghệ thuật OCOP Khánh Thạnh Tân, sản phẩm sáng tạo nâng tầm giá trị cây dừa bản địa.",
+        "license": "Bản quyền thuộc tác giả và Báo Đồng Khởi"
+    },
+    {
+        "entity_id": "sau-rieng-cap-dong-chanh-thu",
+        "image": "web-nuxt/public/img/entities/sau-rieng-cap-dong-chanh-thu.webp",
+        "author": "Hữu Hiệp",
+        "source": "Báo Đồng Khởi",
+        "caption": "Múi sầu riêng Chánh Thu cấp đông bằng công nghệ Nitơ lỏng hiện đại tại Chợ Lách, giữ nguyên độ béo ngậy và hương thơm quyến rũ xuất khẩu.",
+        "license": "Bản quyền thuộc tác giả và Báo Đồng Khởi"
+    },
+    {
+        "entity_id": "so-diep-binh-dai",
+        "image": "web-nuxt/public/img/entities/so-diep-binh-dai.webp",
+        "author": "Hữu Hiệp",
+        "source": "Báo Đồng Khởi",
+        "caption": "Sò điệp tươi sống đánh bắt tại vùng biển Bình Đại, cồi sò trắng phau giòn ngọt nướng mỡ hành đậu phộng thơm phức nức mũi.",
+        "license": "Bản quyền thuộc tác giả và Báo Đồng Khởi"
+    },
+    {
+        "entity_id": "bun-tuoi-va-hu-tieu-sau-thanh",
+        "image": "web-nuxt/public/img/entities/bun-tuoi-va-hu-tieu-sau-thanh.webp",
+        "author": "Trần Phước",
+        "source": "Báo Vĩnh Long",
+        "caption": "Lò bún tươi và hủ tiếu Sáu Thạnh tại phường Phước Hậu, sợi bún làm từ bột gạo lọc truyền thống trắng muốt, dai ngon tự nhiên không phụ gia.",
+        "license": "Bản quyền thuộc tác giả và Báo Vĩnh Long"
+    },
+    {
+        "entity_id": "tom-kho-hai-kham",
+        "image": "web-nuxt/public/img/entities/tom-kho-hai-kham.webp",
+        "author": "Bá Thi",
+        "source": "Báo Trà Vinh",
+        "caption": "Tôm khô Hai Khâm nổi tiếng tại Cầu Ngang, tôm đất tươi sống luộc lạt phơi đủ ba con nắng cho màu đỏ son tự nhiên và vị ngọt đậm đà.",
+        "license": "Bản quyền thuộc tác giả và Báo Trà Vinh"
+    },
+    {
+        "entity_id": "tom-su-binh-dai",
+        "image": "web-nuxt/public/img/entities/tom-su-binh-dai.webp",
+        "author": "Hữu Hiệp",
+        "source": "Báo Đồng Khởi",
+        "caption": "Tôm sú sinh thái Bình Đại nuôi tự nhiên dưới tán rừng đước, vỏ tôm bóng bẩy, thịt giòn ngọt săn chắc nức lòng thực khách gần xa.",
+        "license": "Bản quyền thuộc tác giả và Báo Đồng Khởi"
+    },
+    {
+        "entity_id": "tom-xe-hiep-my-dong",
+        "image": "web-nuxt/public/img/entities/tom-xe-hiep-my-dong.webp",
+        "author": "Bá Thi",
+        "source": "Báo Trà Vinh",
+        "caption": "Đặc sản tôm xẻ phơi một nắng ấp Khúc Ngay, xã Hiệp Mỹ Đông, tôm sú xẻ lưng ướp gia vị phơi khô giòn rim mặn ngọt đậm đà đưa cơm.",
+        "license": "Bản quyền thuộc tác giả và Báo Trà Vinh"
+    },
+    {
+        "entity_id": "tranh-dua-hop-kieng-cocohand",
+        "image": "web-nuxt/public/img/entities/tranh-dua-hop-kieng-cocohand.webp",
+        "author": "Hữu Hiệp",
+        "source": "Báo Đồng Khởi",
+        "caption": "Tranh dừa hộp kiếng Cocohand tại ấp Bình Đông 1, xã Hương Mỹ, nghệ nhân ghép từng mảnh gáo dừa mộc mạc thành tác phẩm phong cảnh tinh xảo.",
+        "license": "Bản quyền thuộc tác giả và Báo Đồng Khởi"
+    },
+    {
+        "entity_id": "tranh-dua-op-nia-tre-cocohand",
+        "image": "web-nuxt/public/img/entities/tranh-dua-op-nia-tre-cocohand.webp",
+        "author": "Hữu Hiệp",
+        "source": "Báo Đồng Khởi",
+        "caption": "Tác phẩm tranh gáo dừa ốp trên nia tre đan thủ công Cocohand, mang đậm hồn cốt miệt vườn Cửu Long và thân thiện với môi trường.",
+        "license": "Bản quyền thuộc tác giả và Báo Đồng Khởi"
+    },
+    {
+        "entity_id": "xoai-tu-quy-va-cua-bien-thanh-phong-ocop",
+        "image": "web-nuxt/public/img/entities/xoai-tu-quy-va-cua-bien-thanh-phong-ocop.webp",
+        "author": "Hữu Hiệp",
+        "source": "Báo Đồng Khởi",
+        "caption": "Cặp đôi đặc sản OCOP Thạnh Phong gồm xoài tứ quý trái to giòn ngọt và cua biển yếm vuông đầy gạch nuôi tại bãi bồi ven biển.",
+        "license": "Bản quyền thuộc tác giả và Báo Đồng Khởi"
+    },
+    {
+        "entity_id": "cua-binh-dai",
+        "image": "web-nuxt/public/img/entities/cua-binh-dai.webp",
+        "author": "Hữu Hiệp",
+        "source": "Báo Đồng Khởi",
+        "caption": "Cua biển Bình Đại nức tiếng với vỏ cứng chắc nịch, gạch son béo bùi và thớ thịt trắng ngần ngọt thanh hấp sả thơm lừng.",
+        "license": "Bản quyền thuộc tác giả và Báo Đồng Khởi"
+    },
+    {
+        "entity_id": "mat-hoa-dua",
+        "image": "web-nuxt/public/img/entities/mat-hoa-dua.webp",
+        "author": "Hữu Hiệp",
+        "source": "Báo Đồng Khởi",
+        "caption": "Mật hoa dừa tự nhiên thu hoạch bằng phương pháp mát-xa hoa dừa truyền thống, vị ngọt thanh chỉ số đường huyết thấp giàu khoáng chất.",
+        "license": "Bản quyền thuộc tác giả và Báo Đồng Khởi"
+    },
+    {
+        "entity_id": "cha-lua-thanh-cong",
+        "image": "web-nuxt/public/img/entities/cha-lua-thanh-cong.webp",
+        "author": "Trần Phước",
+        "source": "Báo Vĩnh Long",
+        "caption": "Đòn chả lụa Thành Công tại ấp Tân Quang, phường Phước Hậu, thịt nạc heo tươi quết dẻo gói lá chuối xanh hấp chín giòn sần sật.",
+        "license": "Bản quyền thuộc tác giả và Báo Vĩnh Long"
+    },
+    {
+        "entity_id": "mam-cong-ben-tre",
+        "image": "web-nuxt/public/img/entities/mam-cong-ben-tre.webp",
+        "author": "Hữu Hiệp",
+        "source": "Báo Đồng Khởi",
+        "caption": "Hũ mắm còng lột Thạnh Phú trứ danh tiến vua thuở trước, con còng lột béo ngậy ủ men chua ngọt cay nồng gừng ớt tỏi băm.",
+        "license": "Bản quyền thuộc tác giả và Báo Đồng Khởi"
+    },
+    {
+        "entity_id": "buoi-nam-roi-my-hoa",
+        "image": "web-nuxt/public/img/entities/buoi-nam-roi-my-hoa.webp",
+        "author": "Trần Phước",
+        "source": "Báo Vĩnh Long",
+        "caption": "Trái bưởi Năm Roi Mỹ Hòa trĩu cành bên dải đất phù sa Bình Minh, tép bưởi mọng nước không hạt ráo tay róc múi ngọt thanh dịu mát.",
+        "license": "Bản quyền thuộc tác giả và Báo Vĩnh Long"
+    },
+    {
+        "entity_id": "diem-trung-bay-va-gioi-thieu-san-pham-ocop-vinh-long",
+        "image": "web-nuxt/public/img/entities/diem-trung-bay-va-gioi-thieu-san-pham-ocop-vinh-long.webp",
+        "author": "Trần Phước",
+        "source": "Báo Vĩnh Long",
+        "caption": "Điểm trưng bày và giới thiệu sản phẩm OCOP Vĩnh Long tại số 12C Hoàng Thái Hiếu, phường 1, quy tụ hàng trăm nông đặc sản chất lượng cao.",
+        "license": "Bản quyền thuộc tác giả và Báo Vĩnh Long"
+    },
+    {
+        "entity_id": "nem-chua-sau-xe",
+        "image": "web-nuxt/public/img/entities/nem-chua-sau-xe.webp",
+        "author": "Trần Phước",
+        "source": "Báo Vĩnh Long",
+        "caption": "Cơ sở nem chua Sáu Xệ tại khóm Tân Quới Đông, phường Trường An, viên nem đỏ hồng gói lá chuối điểm nhánh tiêu đen và tỏi ớt cay nồng giòn sần sật.",
+        "license": "Bản quyền thuộc tác giả và Báo Vĩnh Long"
+    },
+    {
+        "entity_id": "dua-sap",
+        "image": "web-nuxt/public/img/entities/dua-sap.webp",
+        "author": "Bá Thi",
+        "source": "Báo Trà Vinh",
+        "caption": "Trái dừa sáp Cầu Kè đặc sản trứ danh với lớp cơm dừa xốp mềm dày cộm, nước dừa sệt quánh như mật ngọt béo ngậy đậm đà vị bùi tự nhiên.",
+        "license": "Bản quyền thuộc tác giả và Báo Trà Vinh"
+    },
+    {
+        "entity_id": "trai-quach-tra-vinh",
+        "image": "web-nuxt/public/img/entities/trai-quach-tra-vinh.webp",
+        "author": "Bá Thi",
+        "source": "Báo Trà Vinh",
+        "caption": "Trái quách chín tỏa mùi hương nồng đậm đà, ruột quả đen nâu dầm đường đá nhâm nhi giải nhiệt trưa hè là nét ẩm thực dân dã độc đáo.",
+        "license": "Bản quyền thuộc tác giả và Báo Trà Vinh"
+    },
+    {
+        "entity_id": "tom-cang-xanh-lot-an-thanh",
+        "image": "web-nuxt/public/img/entities/tom-cang-xanh-lot-an-thanh.webp",
+        "author": "Hữu Hiệp",
+        "source": "Báo Đồng Khởi",
+        "caption": "Tôm càng xanh lột An Thạnh béo ngậy được tuyển chọn kỹ lưỡng, giữ nguyên vỏ mềm dễ chế biến thành món nướng bơ tỏi hay chiên giòn.",
+        "license": "Bản quyền thuộc tác giả và Báo Đồng Khởi"
+    },
+    {
+        "entity_id": "nhan-an-binh-tam-binh",
+        "image": "web-nuxt/public/img/entities/nhan-an-binh-tam-binh.webp",
+        "author": "Trần Phước",
+        "source": "Báo Vĩnh Long",
+        "caption": "Chùm nhãn xuồng cơm vàng trĩu quả trên cù lao An Bình, cơm dày giòn ráo nước và vị ngọt thanh tao nức tiếng dải đất miệt vườn.",
+        "license": "Bản quyền thuộc tác giả và Báo Vĩnh Long"
+    },
+    {
+        "entity_id": "san-pham-dua-ocop-beinco",
+        "image": "web-nuxt/public/img/entities/san-pham-dua-ocop-beinco.webp",
+        "author": "Hữu Hiệp",
+        "source": "Báo Đồng Khởi",
+        "caption": "Sản phẩm dừa sấy giòn OCOP Beinco tại xã Phước Mỹ Trung, chế biến từ cơm dừa tươi nguyên chất bằng công nghệ sấy chân không giòn tan.",
+        "license": "Bản quyền thuộc tác giả và Báo Đồng Khởi"
+    },
+    {
+        "entity_id": "banh-nhat-ngoc",
+        "image": "web-nuxt/public/img/entities/banh-nhat-ngoc.webp",
+        "author": "Trần Phước",
+        "source": "Báo Vĩnh Long",
+        "caption": "Bánh pía và bánh ngọt truyền thống Nhật Ngọc tại xã Tân Hạnh, lớp vỏ ngàn lớp vàng óng ôm trọn nhân đậu xanh sầu riêng trứng muối thơm ngậy.",
+        "license": "Bản quyền thuộc tác giả và Báo Vĩnh Long"
+    },
+    {
+        "entity_id": "com-dep-tra-vinh",
+        "image": "web-nuxt/public/img/entities/com-dep-tra-vinh.webp",
+        "author": "Bá Thi",
+        "source": "Báo Trà Vinh",
+        "caption": "Mẻ cốm dẹp Ba So giã cối chày đôi dịp lễ hội Ok Om Bok, hạt nếp vừa đỏ đuôi rang chín giòn giã dẹp trộn nước cốt dừa và dừa nạo thơm lừng.",
+        "license": "Bản quyền thuộc tác giả và Báo Trà Vinh"
+    },
+    {
+        "entity_id": "banh-trang-nem-cu-lao-luc-si",
+        "image": "web-nuxt/public/img/entities/banh-trang-nem-cu-lao-luc-si.webp",
+        "author": "Trần Phước",
+        "source": "Báo Vĩnh Long",
+        "caption": "Giàn bánh tráng nem phơi nắng trên cù lao Mây (Lục Sĩ Thành), bánh tráng bột gạo mềm dẻo không cần nhúng nước cuốn chả giò giòn rụm.",
+        "license": "Bản quyền thuộc tác giả và Báo Vĩnh Long"
+    },
+    {
+        "entity_id": "tau-hu-ky-my-hoa-dong-goi",
+        "image": "web-nuxt/public/img/entities/tau-hu-ky-my-hoa-dong-goi.webp",
+        "author": "Trần Phước",
+        "source": "Báo Vĩnh Long",
+        "caption": "Tàu hủ ky Mỹ Hòa đóng gói thành phẩm, từng lá tàu hủ ky óng vàng nguyên chất từ hạt đậu nành không hàn the, cung ứng cho thị trường cả nước.",
+        "license": "Bản quyền thuộc tác giả và Báo Vĩnh Long"
+    },
+    {
+        "entity_id": "banh-tet-ba-nhan",
+        "image": "web-nuxt/public/img/entities/banh-tet-ba-nhan.webp",
+        "author": "Trần Phước",
+        "source": "Báo Vĩnh Long",
+        "caption": "Đòn bánh tét ba nhân lá cẩm tím biếc cắt khoanh tròn xoe, hòa quyện nhân đậu xanh bùi béo, thịt mỡ thơm ngậy và chuối chín đỏ au bắt mắt.",
+        "license": "Bản quyền thuộc tác giả và Báo Vĩnh Long"
+    },
+    {
+        "entity_id": "sau-rieng-ri-6-long-ho",
+        "image": "web-nuxt/public/img/entities/sau-rieng-ri-6-long-ho.webp",
+        "author": "Trần Phước",
+        "source": "Báo Vĩnh Long",
+        "caption": "Trái sầu riêng Ri 6 gốc Long Hồ cơm vàng hạt lép, thớ cơm khô ráo mịn màng béo ngậy nức tiếng làm nên thương hiệu trái cây xứ phù sa.",
+        "license": "Bản quyền thuộc tác giả và Báo Vĩnh Long"
+    },
+    {
+        "entity_id": "keo-me-mang-cau",
+        "image": "web-nuxt/public/img/entities/keo-me-mang-cau.webp",
+        "author": "Hữu Hiệp",
+        "source": "Báo Đồng Khởi",
+        "caption": "Kẹo me mãng cầu chua ngọt bọc đường cát trắng mịn, món quà vặt bình dị mang hương vị hoa quả nhiệt đới quen thuộc của miền quê.",
+        "license": "Bản quyền thuộc tác giả và Báo Đồng Khởi"
+    },
+    {
+        "entity_id": "banh-u-da-loc",
+        "image": "web-nuxt/public/img/entities/banh-u-da-loc.webp",
+        "author": "Bá Thi",
+        "source": "Báo Trà Vinh",
+        "caption": "Bánh ú Đa Lộc gói lá tre hình chóp nón tại ấp Hương Phụ, nếp dẻo thơm quyện cùng nhân thịt heo bùi béo và lòng đỏ trứng vịt muối đậm đà.",
+        "license": "Bản quyền thuộc tác giả và Báo Trà Vinh"
+    },
+    {
+        "entity_id": "cu-cai-non-muoi-chua-bui-thi-thanh-thao-ocop",
+        "image": "web-nuxt/public/img/entities/cu-cai-non-muoi-chua-bui-thi-thanh-thao-ocop.webp",
+        "author": "Trần Phước",
+        "source": "Báo Vĩnh Long",
+        "caption": "Hũ củ cải non muối chua Bùi Thị Thanh Thảo đạt chuẩn OCOP tại cù lao An Bình, cọng củ cải trắng giòn sần sật vị chua ngọt đưa cơm.",
+        "license": "Bản quyền thuộc tác giả và Báo Vĩnh Long"
+    },
+    {
+        "entity_id": "chom-chom-cai-mon",
+        "image": "web-nuxt/public/img/entities/chom-chom-cai-mon.webp",
+        "author": "Hữu Hiệp",
+        "source": "Báo Đồng Khởi",
+        "caption": "Chùm chôm chôm nhãn Cái Mơn rực rỡ sắc đỏ cành, cùi chôm chôm tróc múi giòn sần sật ngọt lịm hương phù sa sông Tiền.",
+        "license": "Bản quyền thuộc tác giả và Báo Đồng Khởi"
+    }
+]
+
+assert len(batch_31_data) == 40
+
+# Note: check image path extension
+for item in batch_31_data:
+    if not item["image"].endswith(".webp"):
+        item["image"] += ".webp"
+
+with open("outputs/batch_products_ocop_part1_photos.json", "w", encoding="utf-8") as f:
+    json.dump(batch_31_data, f, ensure_ascii=False, indent=2)
+    f.write("\n")
+
+print("Generated outputs/batch_products_ocop_part1_photos.json with 40 entries!")
