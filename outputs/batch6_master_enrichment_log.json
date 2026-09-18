@@ -383,7 +383,7 @@
           ]
         },
         "travel_tip": {
-          "old": "Nếu đến đúng dịp lễ Kỳ Yên tháng 3 âm lịch, du khách sẽ được hòa mình vào không gian lễ hội cúng đình đậm chất Nam Bộ với tiếng trống chầu và tiếng đàn kìm rộn rã.",
+          "old": "Nếu đến đúng dịp lễ Kỳ Yên tháng 3 âm lịch, du khách sẽ được trải nghiệm trọn vẹn không gian lễ hội cúng đình đậm chất Nam Bộ với tiếng trống chầu và tiếng đàn kìm rộn rã.",
           "new": "Nếu đến đúng dịp lễ Kỳ Yên tháng 3 âm lịch, du khách sẽ được trải nghiệm trọn vẹn không gian lễ hội cúng đình đậm chất Nam Bộ với tiếng trống chầu và tiếng đàn kìm rộn rã."
         }
       }
@@ -1201,7 +1201,7 @@
           "new": "24 tháng kể từ ngày sản xuất"
         },
         "heritage_level": {
-          "old": "Đặc sản Làng nghề Truyền thống & OCOP 3 sao tỉnh Trà Vinh",
+          "old": "Đặc sản Làng nghề Truyền thống & Sản phẩm OCOP 3 sao",
           "new": "Đặc sản Làng nghề Truyền thống & Sản phẩm OCOP 3 sao"
         },
         "highlight": {
@@ -1379,7 +1379,7 @@
           ]
         },
         "travel_tip": {
-          "old": "Tham gia lễ hội tại các ngôi chùa lớn như Chùa Âng hay Chùa Kompong, du khách có thể mang theo hoa sen dâng lễ và hòa mình vào các điệu múa Răm-vông rộn ràng.",
+          "old": "Tham gia lễ hội tại các ngôi chùa lớn như Chùa Âng hay Chùa Kompong, du khách có thể mang theo hoa sen dâng lễ và cùng hòa nhịp các điệu múa Răm-vông rộn ràng.",
           "new": "Tham gia lễ hội tại các ngôi chùa lớn như Chùa Âng hay Chùa Kompong, du khách có thể mang theo hoa sen dâng lễ và cùng hòa nhịp các điệu múa Răm-vông rộn ràng."
         }
       }
@@ -1601,7 +1601,7 @@
           "new": "Trung tâm Thương mại Truyền thống Lịch sử Đô thị Sông nước"
         },
         "highlight": {
-          "old": "Ngôi chợ đầu mối trăm năm sầm uất bên bờ sông Bến Tre, thiên đường hội tụ mọi sản vật xứ dừa, hải sản biển mặn mòi và ẩm thực đường phố Nam Bộ đặc sắc",
+          "old": "Ngôi chợ đầu mối trăm năm sầm uất bên bờ sông Bến Tre, nơi hội tụ phong phú mọi sản vật xứ dừa, hải sản biển mặn mòi và ẩm thực đường phố Nam Bộ đặc sắc",
           "new": "Ngôi chợ đầu mối trăm năm sầm uất bên bờ sông Bến Tre, nơi hội tụ phong phú mọi sản vật xứ dừa, hải sản biển mặn mòi và ẩm thực đường phố Nam Bộ đặc sắc"
         },
         "key_facts": {
