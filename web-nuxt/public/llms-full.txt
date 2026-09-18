@@ -7,7 +7,7 @@
 - 124 đơn vị hành chính trực thuộc gồm 35 phường và 89 xã.
 - Cấp huyện đã bãi bỏ; các địa danh huyện cũ (Long Hồ, Mang Thít, Ba Tri, Châu Thành, Càng Long, Cầu Kè, Trà Cú...) chỉ mang giá trị lịch sử và chỉ dẫn vị trí địa lý dân gian.
 
-## 2. Danh Mục 984 Thực Thể Xác Minh Ảnh Tư Liệu Báo Chí & Giấy Phép Google Images
+## 2. Danh Mục 1024 Thực Thể Xác Minh Ảnh Tư Liệu Báo Chí & Giấy Phép Google Images
 
 Mỗi thực thể dưới đây đều có ảnh tư liệu báo chí chính thống được lưu trữ nội bộ chuẩn WebP, tích hợp siêu dữ liệu Schema.org `ImageObject` với đầy đủ bản quyền (`creator`, `creditText`, `copyrightNotice`, `license`, `acquireLicensePage`).
 
@@ -115,6 +115,13 @@ Mỗi thực thể dưới đây đều có ảnh tư liệu báo chí chính th
 - **Tác giả ảnh**: Trần Phước · **Cơ quan**: Báo Vĩnh Long
 - **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
 - **Tóm lược**: Tham quan vườn trái cây, ăn uống đồng quê: gà, cá lóc, lươn, ếch, cá tai tượng, óc bu. Giờ 7:00-18:00.
+
+#### [CT Quán - Món Nướng & Coffee](https://vinhlong360.vn/dia-diem/ct-quan---mon-nuong-coffee)
+- **Mã ID**: `ct-quan---mon-nuong-coffee` | **Phân loại**: `cafe` | **Địa bàn**: p-long-duc | **Tọa độ**: [9.9763, 106.3446]
+- **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/ct-quan---mon-nuong-coffee.webp`
+- **Tác giả ảnh**: Bá Thi · **Cơ quan**: Báo Trà Vinh
+- **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
+- **Tóm lược**: Cà phê một bên, bếp nướng một bên — CT Quán ở 110 Bạch Đằng, phường 4, TP Trà Vinh gộp hai thứ vào một địa chỉ. Thế mạnh tự khai: món nướng, BBQ.
 
 #### [Lò cốm Cửu Long](https://vinhlong360.vn/dia-diem/lo-com-cuu-long-vlt)
 - **Mã ID**: `lo-com-cuu-long-vlt` | **Phân loại**: `craft_village` | **Địa bàn**: xa-an-binh | **Tọa độ**: [10.1697, 105.9268]
@@ -1607,6 +1614,13 @@ Mỗi thực thể dưới đây đều có ảnh tư liệu báo chí chính th
 - **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
 - **Tóm lược**: Hải sản ghi ngay trong bảng tên của quán Sơn Hào ở 55/2A Phạm Thái Bường, phường 4, Vĩnh Long.
 
+#### [Ohana Milktea & Coffee](https://vinhlong360.vn/dia-diem/ohana-milktea-coffee)
+- **Mã ID**: `ohana-milktea-coffee` | **Phân loại**: `cafe` | **Địa bàn**: p-tra-vinh | **Tọa độ**: [9.9381, 106.3394]
+- **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/ohana-milktea-coffee.webp`
+- **Tác giả ảnh**: Bá Thi · **Cơ quan**: Báo Trà Vinh
+- **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
+- **Tóm lược**: Kiếm ly trà sữa hay cà phê quanh Phường 1 của Trà Vinh, có thể tạt qua Ohana Milktea & Coffee ở số 26 Nguyễn Thái Học.
+
 #### [Deja Vu Cafe](https://vinhlong360.vn/dia-diem/deja-vu-cafe)
 - **Mã ID**: `deja-vu-cafe` | **Phân loại**: `cafe` | **Địa bàn**: p-tra-vinh | **Tọa độ**: [9.9516, 106.3322]
 - **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/deja-vu-cafe.webp`
@@ -2090,6 +2104,13 @@ Mỗi thực thể dưới đây đều có ảnh tư liệu báo chí chính th
 - **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
 - **Tóm lược**: Cù lao xanh diện tích 929ha nằm giữa sông Hậu thuộc xã An Phú Tân, cách TP Trà Vinh 45km.
 
+#### [Green Coffee - Trần Đại Nghĩa](https://vinhlong360.vn/dia-diem/green-coffee---tran-dai-nghia)
+- **Mã ID**: `green-coffee---tran-dai-nghia` | **Phân loại**: `cafe` | **Địa bàn**: p-phuoc-hau | **Tọa độ**: [10.0524, 105.9884]
+- **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/green-coffee---tran-dai-nghia.webp`
+- **Tác giả ảnh**: Trần Phước · **Cơ quan**: Báo Vĩnh Long
+- **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
+- **Tóm lược**: Chạy dọc đường Trần Đại Nghĩa ở Phường 4, thành phố Vĩnh Long sẽ gặp Green Coffee, quán chuyên về cà phê.
+
 #### [Lẩu Tài Có](https://vinhlong360.vn/dia-diem/lau-tai-co)
 - **Mã ID**: `lau-tai-co` | **Phân loại**: `restaurant` | **Địa bàn**: p-long-chau | **Tọa độ**: [10.2533, 105.9738]
 - **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/lau-tai-co.webp`
@@ -2181,6 +2202,13 @@ Mỗi thực thể dưới đây đều có ảnh tư liệu báo chí chính th
 - **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
 - **Tóm lược**: Nồi lẩu mắm đậm đà với cá kèo, cá ba sa, tôm, mực, lươn, ba chỉ heo cùng rau đồng xanh mướt.
 
+#### [Panda Purple Cafe](https://vinhlong360.vn/dia-diem/panda-purple-cafe)
+- **Mã ID**: `panda-purple-cafe` | **Phân loại**: `cafe` | **Địa bàn**: p-thanh-duc | **Tọa độ**: [10.2548, 105.9692]
+- **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/panda-purple-cafe.webp`
+- **Tác giả ảnh**: Trần Phước · **Cơ quan**: Báo Vĩnh Long
+- **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
+- **Tóm lược**: Góc số 57 Lê Văn Tám trong nội ô Vĩnh Long có Panda Purple Cafe, quán cà phê với cái tên gấu tím khó lẫn.
+
 #### [Cháo Cua Đồng Bến Tre](https://vinhlong360.vn/dia-diem/chao-cua-dong-ben-tre)
 - **Mã ID**: `chao-cua-dong-ben-tre` | **Phân loại**: `dish` | **Địa bàn**: p-ben-tre | **Tọa độ**: [10.2597, 106.3976]
 - **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/chao-cua-dong-ben-tre.webp`
@@ -2236,6 +2264,13 @@ Mỗi thực thể dưới đây đều có ảnh tư liệu báo chí chính th
 - **Tác giả ảnh**: Hữu Toàn · **Cơ quan**: Báo Vĩnh Long
 - **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
 - **Tóm lược**: Khu sinh thái rộng hơn 70ha trên quốc lộ 57, cách phà Đình Khao 2km, với cảnh quan ruộng lúa, ao sen, nhiều tiểu cảnh.
+
+#### [YOLO Coffee](https://vinhlong360.vn/dia-diem/yolo-coffee)
+- **Mã ID**: `yolo-coffee` | **Phân loại**: `cafe` | **Địa bàn**: p-phuoc-hau | **Tọa độ**: [10.2542, 105.9628]
+- **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/yolo-coffee.webp`
+- **Tác giả ảnh**: Trần Phước · **Cơ quan**: Báo Vĩnh Long
+- **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
+- **Tóm lược**: Trong hẻm 33/3B Phạm Thái Bường, phường 4 (Vĩnh Long), YOLO Coffee chuyên đúng một món: cà phê.
 
 #### [Cây Gội Nước Di Sản Bến Tre](https://vinhlong360.vn/dia-diem/cay-goi-nuoc-di-san-ben-tre)
 - **Mã ID**: `cay-goi-nuoc-di-san-ben-tre` | **Phân loại**: `nature` | **Địa bàn**: p-ben-tre | **Tọa độ**: [10.2679, 106.3860]
@@ -2965,6 +3000,13 @@ Mỗi thực thể dưới đây đều có ảnh tư liệu báo chí chính th
 - **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
 - **Tóm lược**: Homestay xây hoàn toàn bằng dừa — tường dừa, mái dừa, nội thất dừa — trải nghiệm xứ dừa Bến Tre từ trong ra ngoài.
 
+#### [Catimo Coffee](https://vinhlong360.vn/dia-diem/catimo-coffee)
+- **Mã ID**: `catimo-coffee` | **Phân loại**: `cafe` | **Địa bàn**: p-phuoc-hau | **Tọa độ**: [10.2466, 105.9792]
+- **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/catimo-coffee.webp`
+- **Tác giả ảnh**: Trần Phước · **Cơ quan**: Báo Vĩnh Long
+- **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
+- **Tóm lược**: Ghé góc Trần Đại Nghĩa ở Phường 4, thành phố Vĩnh Long, Catimo Coffee đặt quán ngay vị trí góc đường dễ thấy.
+
 #### [Cô Đài - Sinh Tố Giải Khát](https://vinhlong360.vn/dia-diem/co-dai---sinh-to-giai-khat)
 - **Mã ID**: `co-dai---sinh-to-giai-khat` | **Phân loại**: `restaurant` | **Địa bàn**: p-tan-ngai | **Tọa độ**: [10.2460, 105.9301]
 - **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/co-dai---sinh-to-giai-khat.webp`
@@ -2978,6 +3020,13 @@ Mỗi thực thể dưới đây đều có ảnh tư liệu báo chí chính th
 - **Tác giả ảnh**: Minh Mừng · **Cơ quan**: Báo Đồng Khởi
 - **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
 - **Tóm lược**: Quán chuối nếp nướng than hồng gia truyền tại TP. Vĩnh Long từ năm 1990, nếp giòn vỏ dẻo lòng chan nước cốt dừa béo ngậy rắc mỡ hành thơm phức.
+
+#### [Cội Xưa Cafe - Phạm Thái Bường](https://vinhlong360.vn/dia-diem/coi-xua-cafe---pham-thai-buong)
+- **Mã ID**: `coi-xua-cafe---pham-thai-buong` | **Phân loại**: `cafe` | **Địa bàn**: p-phuoc-hau | **Tọa độ**: [10.2477, 105.9740]
+- **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/coi-xua-cafe---pham-thai-buong.webp`
+- **Tác giả ảnh**: Trần Phước · **Cơ quan**: Báo Vĩnh Long
+- **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
+- **Tóm lược**: Uống cà phê khúc Phạm Thái Bường, Vĩnh Long thì có Cội Xưa Cafe ở số 46, Phường 4 — cái tên gợi chất xưa cũ giữa phố.
 
 #### [Hot Pot 72 - Quán Lẩu](https://vinhlong360.vn/dia-diem/hot-pot-72---quan-lau)
 - **Mã ID**: `hot-pot-72---quan-lau` | **Phân loại**: `restaurant` | **Địa bàn**: p-phuoc-hau | **Tọa độ**: [10.2542, 105.9628]
@@ -2993,6 +3042,27 @@ Mỗi thực thể dưới đây đều có ảnh tư liệu báo chí chính th
 - **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
 - **Tóm lược**: Ghé số 14 Lê Quý Đôn, phường 1, Bến Tre sẽ gặp tiệm lấy luôn số nhà làm tên — Bánh Flan 14, chuyên bánh flan và các món bánh ngọt.
 
+#### [Làng Văn Coffee](https://vinhlong360.vn/dia-diem/lang-van-coffee)
+- **Mã ID**: `lang-van-coffee` | **Phân loại**: `cafe` | **Địa bàn**: p-son-dong | **Tọa độ**: [10.2670, 106.3598]
+- **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/lang-van-coffee.webp`
+- **Tác giả ảnh**: Hữu Hiệp · **Cơ quan**: Báo Đồng Khởi
+- **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
+- **Tóm lược**: Quán cà phê tại Quốc Lộ 60, TP Bến Tre. Không gian rộng rãi, phục vụ cà phê và đồ uống.
+
+#### [Ann's Coffee](https://vinhlong360.vn/dia-diem/anns-coffee)
+- **Mã ID**: `anns-coffee` | **Phân loại**: `cafe` | **Địa bàn**: p-ben-tre | **Tọa độ**: [10.2435, 106.3756]
+- **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/anns-coffee.webp`
+- **Tác giả ảnh**: Hữu Hiệp · **Cơ quan**: Báo Đồng Khởi
+- **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
+- **Tóm lược**: Một ly cà phê ngồi trong không gian ấm cúng là trọn vẹn những gì Ann's Coffee ở 142B2 Đồng Khởi, Bến Tre tập trung phục vụ.
+
+#### [Ixigo Coffee](https://vinhlong360.vn/dia-diem/ixigo-coffee)
+- **Mã ID**: `ixigo-coffee` | **Phân loại**: `cafe` | **Địa bàn**: p-ben-tre | **Tọa độ**: [10.2369, 106.3789]
+- **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/ixigo-coffee.webp`
+- **Tác giả ảnh**: Hữu Hiệp · **Cơ quan**: Báo Đồng Khởi
+- **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
+- **Tóm lược**: Ngay mặt tiền số 68 Đường 3 Tháng 2, Thành phố Bến Tre, Ixigo Coffee bán món chính là cà phê.
+
 #### [Cô Diễm - Bánh Canh Vịt Bột Xắt](https://vinhlong360.vn/dia-diem/co-diem---banh-canh-vit-bot-xat)
 - **Mã ID**: `co-diem---banh-canh-vit-bot-xat` | **Phân loại**: `dish` | **Địa bàn**: p-phu-khuong | **Tọa độ**: [10.2272, 106.4072]
 - **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/co-diem---banh-canh-vit-bot-xat.webp`
@@ -3007,12 +3077,47 @@ Mỗi thực thể dưới đây đều có ảnh tư liệu báo chí chính th
 - **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
 - **Tóm lược**: Bún đậu mắm tôm — đúng món ghi trên bảng hiệu — được 3 Miền Trà Vinh phục vụ tại số 2/14 Đường 19 Tháng 5, Phường 1, trung tâm Trà Vinh.
 
+#### [Cát Tường - The Coffee House](https://vinhlong360.vn/dia-diem/cat-tuong---the-coffee-house)
+- **Mã ID**: `cat-tuong---the-coffee-house` | **Phân loại**: `cafe` | **Địa bàn**: p-tra-vinh | **Tọa độ**: [9.9552, 106.3408]
+- **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/cat-tuong---the-coffee-house.webp`
+- **Tác giả ảnh**: Bá Thi · **Cơ quan**: Báo Trà Vinh
+- **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
+- **Tóm lược**: Số 275 Phạm Ngũ Lão, Phường 1, Trà Vinh là địa chỉ của Cát Tường - The Coffee House — quán cà phê mang cái tên ghép nửa Việt nửa Tây.
+
+#### [Cafe De Paris - Phạm Ngũ Lão](https://vinhlong360.vn/dia-diem/cafe-de-paris---pham-ngu-lao)
+- **Mã ID**: `cafe-de-paris---pham-ngu-lao` | **Phân loại**: `cafe` | **Địa bàn**: p-tra-vinh | **Tọa độ**: [9.9552, 106.3408]
+- **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/cafe-de-paris---pham-ngu-lao.webp`
+- **Tác giả ảnh**: Bá Thi · **Cơ quan**: Báo Trà Vinh
+- **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
+- **Tóm lược**: Số 200 Phạm Ngũ Lão, Phường 1 — địa chỉ của Cafe De Paris, quán chuyên cà phê mang cái tên rất Pháp giữa Trà Vinh.
+
+#### [1985 Cafe](https://vinhlong360.vn/dia-diem/1985-cafe)
+- **Mã ID**: `1985-cafe` | **Phân loại**: `cafe` | **Địa bàn**: p-tra-vinh | **Tọa độ**: [9.9450, 106.3398]
+- **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/1985-cafe.webp`
+- **Tác giả ảnh**: Bá Thi · **Cơ quan**: Báo Trà Vinh
+- **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
+- **Tóm lược**: Con số 1985 trên bảng hiệu nói trước chất hoài cổ của 1985 Cafe ở 97 Phạm Ngũ Lão, nội ô Trà Vinh.
+
 #### [Bún Bò Huế 19](https://vinhlong360.vn/dia-diem/bun-bo-hue-19)
 - **Mã ID**: `bun-bo-hue-19` | **Phân loại**: `dish` | **Địa bàn**: p-long-duc | **Tọa độ**: [9.9763, 106.3446]
 - **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/bun-bo-hue-19.webp`
 - **Tác giả ảnh**: Trần Phước · **Cơ quan**: Báo Vĩnh Long
 - **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
 - **Tóm lược**: Tô bún bò kiểu Huế giữa TP Trà Vinh — Bún Bò Huế 19 bán ở đúng số 19 Lê Lợi, phường 4, trùng con số trong tên quán. Món trụ: bún bò, kèm các món bò và bún.
+
+#### [Mandi Cafe](https://vinhlong360.vn/dia-diem/mandi-cafe)
+- **Mã ID**: `mandi-cafe` | **Phân loại**: `cafe` | **Địa bàn**: p-tra-vinh | **Tọa độ**: [9.9355, 106.3365]
+- **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/mandi-cafe.webp`
+- **Tác giả ảnh**: Bá Thi · **Cơ quan**: Báo Trà Vinh
+- **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
+- **Tóm lược**: Dừng chân trên đường Nguyễn Thị Minh Khai ở trung tâm Trà Vinh, khách có thể gọi ly cà phê — chuyên môn duy nhất được ghi nhận ở Mandi Cafe.
+
+#### [Choosa D'amour - Coffee & Flowers](https://vinhlong360.vn/dia-diem/choosa-damour---coffee-flowers)
+- **Mã ID**: `choosa-damour---coffee-flowers` | **Phân loại**: `cafe` | **Địa bàn**: p-tra-vinh | **Tọa độ**: [9.9339, 106.3421]
+- **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/choosa-damour---coffee-flowers.webp`
+- **Tác giả ảnh**: Bá Thi · **Cơ quan**: Báo Trà Vinh
+- **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
+- **Tóm lược**: Ngay 75 Võ Thị Sáu, TP Trà Vinh, Choosa D'amour ghép cà phê với hoa ngay trong tên gọi Coffee & Flowers. Món chính quán tự khai: cà phê.
 
 #### [Bánh Xèo Long Bình 2](https://vinhlong360.vn/dia-diem/banh-xeo-long-binh-2)
 - **Mã ID**: `banh-xeo-long-binh-2` | **Phân loại**: `dish` | **Địa bàn**: p-tra-vinh | **Tọa độ**: [9.9516, 106.3322]
@@ -3028,6 +3133,27 @@ Mỗi thực thể dưới đây đều có ảnh tư liệu báo chí chính th
 - **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
 - **Tóm lược**: Cơ sở bánh tét gia truyền đạt chứng nhận OCOP tại đường Trần Quốc Tuấn, Phường 2, TP. Trà Vinh, thương hiệu uy tín được du khách lựa chọn làm quà biếu.
 
+#### [Trà Sữa Baam Cha](https://vinhlong360.vn/dia-diem/tra-sua-baam-cha)
+- **Mã ID**: `tra-sua-baam-cha` | **Phân loại**: `cafe` | **Địa bàn**: p-tra-vinh | **Tọa độ**: [9.9450, 106.3398]
+- **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/tra-sua-baam-cha.webp`
+- **Tác giả ảnh**: Bá Thi · **Cơ quan**: Báo Trà Vinh
+- **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
+- **Tóm lược**: Ngay số 316 Phạm Ngũ Lão, Phường 1, Trà Vinh, Trà Sữa Baam Cha bán đúng món ghi trên bảng hiệu: trà sữa.
+
+#### [Trà Sữa Huy](https://vinhlong360.vn/dia-diem/tra-sua-huy)
+- **Mã ID**: `tra-sua-huy` | **Phân loại**: `cafe` | **Địa bàn**: p-tra-vinh | **Tọa độ**: [9.9450, 106.3398]
+- **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/tra-sua-huy.webp`
+- **Tác giả ảnh**: Bá Thi · **Cơ quan**: Báo Trà Vinh
+- **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
+- **Tóm lược**: Thèm ly trà sữa khi chạy ngang đường Phạm Ngũ Lão ở Trà Vinh, tấp vô số 319 là gặp quán Trà Sữa Huy.
+
+#### [Phố Xanh Garden Coffee](https://vinhlong360.vn/dia-diem/pho-xanh-garden-coffee)
+- **Mã ID**: `pho-xanh-garden-coffee` | **Phân loại**: `cafe` | **Địa bàn**: p-tra-vinh | **Tọa độ**: [9.9303, 106.3396]
+- **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/pho-xanh-garden-coffee.webp`
+- **Tác giả ảnh**: Bá Thi · **Cơ quan**: Báo Trà Vinh
+- **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
+- **Tóm lược**: Phía đường Phan Đình Phùng, Phường 6 (Trà Vinh), Phố Xanh Garden Coffee bán cà phê ở số nhà 135E.
+
 #### [Bánh Cuốn Nóng - Trần Quốc Tuấn](https://vinhlong360.vn/dia-diem/banh-cuon-nong---tran-quoc-tuan)
 - **Mã ID**: `banh-cuon-nong---tran-quoc-tuan` | **Phân loại**: `dish` | **Địa bàn**: p-tra-vinh | **Tọa độ**: [9.9342, 106.3404]
 - **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/banh-cuon-nong---tran-quoc-tuan.webp`
@@ -3035,12 +3161,26 @@ Mỗi thực thể dưới đây đều có ảnh tư liệu báo chí chính th
 - **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
 - **Tóm lược**: Ai thèm dĩa bánh cuốn nóng giữa Trà Vinh có thể dò về đường Trần Quốc Tuấn, nơi quán cùng tên bày bán món này.
 
+#### [Monkey Tea - Trà Sữa & Coffee](https://vinhlong360.vn/dia-diem/monkey-tea---tra-sua-coffee)
+- **Mã ID**: `monkey-tea---tra-sua-coffee` | **Phân loại**: `cafe` | **Địa bàn**: p-duyen-hai | **Tọa độ**: [9.6621, 106.5179]
+- **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/monkey-tea---tra-sua-coffee.webp`
+- **Tác giả ảnh**: Bá Thi · **Cơ quan**: Báo Trà Vinh
+- **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
+- **Tóm lược**: Muốn ly trà sữa ở khu Duyên Hải, Trà Vinh, cứ tìm số 6 Lý Tự Trọng — chỗ của Monkey Tea.
+
 #### [Cơm Gà Bông Việt](https://vinhlong360.vn/dia-diem/com-ga-bong-viet)
 - **Mã ID**: `com-ga-bong-viet` | **Phân loại**: `dish` | **Địa bàn**: p-tra-vinh | **Tọa độ**: [9.9516, 106.3322]
 - **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/com-ga-bong-viet.webp`
 - **Tác giả ảnh**: Bá Thi · **Cơ quan**: Báo Vĩnh Long
 - **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
 - **Tóm lược**: Dĩa cơm gà là món đứng tên quán Bông Việt ở 118 Trần Phú, phường 6, Trà Vinh.
+
+#### [Trà Sữa Rơm 149](https://vinhlong360.vn/dia-diem/tra-sua-rom-149)
+- **Mã ID**: `tra-sua-rom-149` | **Phân loại**: `cafe` | **Địa bàn**: p-tra-vinh | **Tọa độ**: [9.9516, 106.3322]
+- **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/tra-sua-rom-149.webp`
+- **Tác giả ảnh**: Bá Thi · **Cơ quan**: Báo Trà Vinh
+- **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
+- **Tóm lược**: Tấp vô Đường B ở Phường 1, thành phố Trà Vinh kiếm ly trà sữa — Trà Sữa Rơm 149 chuyên đúng món ghi trong tên quán.
 
 #### [Ao Bà Om (Ao Vuông) - di tích văn hóa Khmer](https://vinhlong360.vn/dia-diem/ao-ba-om-ao-vuong)
 - **Mã ID**: `ao-ba-om-ao-vuong` | **Phân loại**: `history` | **Địa bàn**: p-tra-vinh | **Tọa độ**: [9.9177, 106.3040]
@@ -4260,6 +4400,13 @@ Mỗi thực thể dưới đây đều có ảnh tư liệu báo chí chính th
 - **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
 - **Tóm lược**: Bảy trăm ngàn con chim chen nhau trên 67 hecta rừng ngập mặn — sân chim Vàm Hồ bên hữu ngạn sông Ba Lai, huyện Ba Tri, là khu bảo tồn đất ngập nước tiêu biểu của Bến Tre.
 
+#### [Biển An Thủy](https://vinhlong360.vn/dia-diem/bien-an-thuy)
+- **Mã ID**: `bien-an-thuy` | **Phân loại**: `nature` | **Địa bàn**: p-ba-tri | **Tọa độ**: [10.2433, 106.3753]
+- **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/bien-an-thuy.webp`
+- **Tác giả ảnh**: Hữu Hiệp · **Cơ quan**: Báo Đồng Khởi
+- **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
+- **Tóm lược**: Cách TP Bến Tre chừng 35 km về phía đông, biển An Thủy trải dài bãi cát thoai thoải xen rặng dừa — bãi biển hoang sơ vùng Ba Tri.
+
 #### [Bánh tét Trà Cuôn](https://vinhlong360.vn/dia-diem/banh-tet-tra-cuon)
 - **Mã ID**: `banh-tet-tra-cuon` | **Phân loại**: `product` | **Địa bàn**: p-tra-vinh | **Tọa độ**: [9.9516, 106.3322]
 - **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/banh-tet-tra-cuon.webp`
@@ -4385,6 +4532,13 @@ Mỗi thực thể dưới đây đều có ảnh tư liệu báo chí chính th
 - **Tác giả ảnh**: Trần Phước · **Cơ quan**: Báo Vĩnh Long
 - **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
 - **Tóm lược**: Quán ăn chuyên món Nhật tại Vĩnh Long, phục vụ sushi, ramen và các món Nhật cho thực khách thích ẩm thực mới lạ.
+
+#### [Bãi biển Ba Động](https://vinhlong360.vn/dia-diem/bai-bien-ba-dong)
+- **Mã ID**: `bai-bien-ba-dong` | **Phân loại**: `nature` | **Địa bàn**: p-truong-long-hoa | **Tọa độ**: [9.6861, 106.5761]
+- **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/bai-bien-ba-dong.webp`
+- **Tác giả ảnh**: Bá Thi · **Cơ quan**: Báo Trà Vinh
+- **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
+- **Tóm lược**: Bãi biển dài 10 km, cát mịn vàng, sóng êm — một trong số ít bãi biển Trà Vinh, thuộc thị xã Duyên Hải.
 
 #### [Hội thi giọng ca cải lương Út Trà Ôn](https://vinhlong360.vn/dia-diem/hoi-thi-giong-ca-cai-luong-ut-tra-on)
 - **Mã ID**: `hoi-thi-giong-ca-cai-luong-ut-tra-on` | **Phân loại**: `event` | **Địa bàn**: p-tra-on | **Tọa độ**: [9.9879, 106.0068]
@@ -4518,6 +4672,20 @@ Mỗi thực thể dưới đây đều có ảnh tư liệu báo chí chính th
 - **Tác giả ảnh**: Hữu Hiệp · **Cơ quan**: Báo Đồng Khởi
 - **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
 - **Tóm lược**: Khu sinh thái ven biển Thạnh Phú — đi cầu treo, cầu gỗ xuyên rừng đước ngập mặn, chèo thuyền, câu cá và nghỉ đêm giữa thiên nhiên hoang sơ.
+
+#### [Cồn Phú Đa (Sông Cổ Chiên - Chợ Lách)](https://vinhlong360.vn/dia-diem/con-phu-da-song-co-chien-cho-lach-ben-tre)
+- **Mã ID**: `con-phu-da-song-co-chien-cho-lach-ben-tre` | **Phân loại**: `nature` | **Địa bàn**: xa-phu-phung | **Tọa độ**: [10.2281, 106.1919]
+- **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/con-phu-da-song-co-chien-cho-lach-ben-tre.webp`
+- **Tác giả ảnh**: Hữu Hiệp · **Cơ quan**: Báo Đồng Khởi
+- **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
+- **Tóm lược**: Cồn bồi giữa sông Cổ Chiên thuộc xã Vĩnh Bình, Chợ Lách — nơi duy nhất ở Bến Tre có ốc gạo sinh sống tự nhiên, dân gọi "xứ sở ốc gạo".
+
+#### [Biển Thừa Đức](https://vinhlong360.vn/dia-diem/bien-thua-duc)
+- **Mã ID**: `bien-thua-duc` | **Phân loại**: `nature` | **Địa bàn**: p-binh-dai | **Tọa độ**: [10.1673, 106.6971]
+- **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/bien-thua-duc.webp`
+- **Tác giả ảnh**: Hữu Hiệp · **Cơ quan**: Báo Đồng Khởi
+- **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
+- **Tóm lược**: Ở cửa biển Bình Đại là nơi thiên nhiên còn giữ nguyên vẹn sự hoang dã của mình — không hàng quán ồn ào, không loa phát nhạc inh tai, chỉ có tiếng gió rít qua hàng phi lao dọc bờ và tiếng sóng vỗ đều đặn. Bãi bùn ven cửa sông nơi đàn chim di trú đậu mỗi mùa, trong khi hoàng hôn nhuộm màu cam vàng lên mặt sông biển là cảnh tượng khó gặp ở bất kỳ đâu.
 
 #### [Bò tơ Vĩnh Long](https://vinhlong360.vn/dia-diem/bo-to-vinh-long)
 - **Mã ID**: `bo-to-vinh-long` | **Phân loại**: `dish` | **Địa bàn**: p-long-chau | **Tọa độ**: [10.0382, 105.8148]
@@ -6171,6 +6339,13 @@ Mỗi thực thể dưới đây đều có ảnh tư liệu báo chí chính th
 - **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
 - **Tóm lược**: Mang trong mình vẻ đẹp trầm lắng của Phật giáo người Việt vùng ven biển Nam Bộ — mái ngói rêu phong, cột gỗ bóng loáng theo năm tháng và những bức hoành phi câu đối khắc bằng chữ Hán chứa đựng triết lý sâu xa. Hương trầm nhẹ thoảng trong không khí buổi sớm, tiếng mõ chuông đều đặn hòa cùng tiếng gió từ phía biển gần. Ngôi chùa còn lưu giữ nhiều pháp khí quý giá và tranh thờ cổ.
 
+#### [Vườn bưởi xanh VietGAP Từ Ô](https://vinhlong360.vn/dia-diem/vuon-buoi-xanh-vietgap-tu-o)
+- **Mã ID**: `vuon-buoi-xanh-vietgap-tu-o` | **Phân loại**: `nature` | **Địa bàn**: p-tieu-can | **Tọa độ**: [9.8403, 106.1729]
+- **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/vuon-buoi-xanh-vietgap-tu-o.webp`
+- **Tác giả ảnh**: Bá Thi · **Cơ quan**: Báo Trà Vinh
+- **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
+- **Tóm lược**: Vườn bưởi xanh đạt chứng nhận VietGAP tại ấp Từ Ô, xã Phú Cần, Tiểu Cần.
+
 #### [Gốm Đỏ Mang Thít](https://vinhlong360.vn/dia-diem/gom-do-mang-thit)
 - **Mã ID**: `gom-do-mang-thit` | **Phân loại**: `product` | **Địa bàn**: p-phuoc-hau | **Tọa độ**: [10.1830, 106.0963]
 - **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/gom-do-mang-thit.webp`
@@ -6205,6 +6380,13 @@ Mỗi thực thể dưới đây đều có ảnh tư liệu báo chí chính th
 - **Tác giả ảnh**: Bá Thi · **Cơ quan**: Báo Vĩnh Long
 - **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
 - **Tóm lược**: Tự tay chèo xuồng ba lá truyền thống len lỏi theo các kênh rạch nhỏ giữa vườn cây cù lao An Bình.
+
+#### [Biển Cồn Bửng (Biển Thạnh Phú)](https://vinhlong360.vn/dia-diem/bien-con-bung-thanh-phu-ben-tre)
+- **Mã ID**: `bien-con-bung-thanh-phu-ben-tre` | **Phân loại**: `nature` | **Địa bàn**: xa-thanh-hai | **Tọa độ**: [9.8506, 106.6308]
+- **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/bien-con-bung-thanh-phu-ben-tre.webp`
+- **Tác giả ảnh**: Hữu Hiệp · **Cơ quan**: Báo Đồng Khởi
+- **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
+- **Tóm lược**: Bãi biển bồi phù sa hoang sơ tại Thạnh Hải, Thạnh Phú — nằm giữa sông Hàm Luông và Cổ Chiên, liền kề rừng ngập mặn và chợ hải sản bày bán ngay trên bãi.
 
 #### [Du Lịch Sinh Thái Cộng Đồng Thạnh Phong](https://vinhlong360.vn/dia-diem/du-lich-sinh-thai-cong-dong-thanh-phong-ben-tre)
 - **Mã ID**: `du-lich-sinh-thai-cong-dong-thanh-phong-ben-tre` | **Phân loại**: `experience` | **Địa bàn**: xa-an-qui | **Tọa độ**: [9.8506, 106.6308]
@@ -6430,6 +6612,13 @@ Mỗi thực thể dưới đây đều có ảnh tư liệu báo chí chính th
 - **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
 - **Tóm lược**: Năm 1852, Tiền hiền Võ Văn Thi cùng Hậu hiền Phạm Văn Vang cưỡi ngựa từ Bến Tre ra kinh đô Huế dâng sớ — bốn ngày sau vua Tự Đức triệu kiến và sắc phong thần cho đình Vang Quới ở huyện Bình Đại.
 
+#### [Khu bảo tồn ốc gạo Phú Đa](https://vinhlong360.vn/dia-diem/khu-bao-ton-oc-gao-phu-da)
+- **Mã ID**: `khu-bao-ton-oc-gao-phu-da` | **Phân loại**: `nature` | **Địa bàn**: xa-phu-phung | **Tọa độ**: [10.2630, 106.0766]
+- **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/khu-bao-ton-oc-gao-phu-da.webp`
+- **Tác giả ảnh**: Hữu Hiệp · **Cơ quan**: Báo Đồng Khởi
+- **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
+- **Tóm lược**: Khu bảo tồn ốc gạo nằm trên cồn Phú Đa, thuộc vùng Sơn Định - Vĩnh Bình - Phú Phụng.
+
 #### [Homestay Hoà Thạnh](https://vinhlong360.vn/dia-diem/homestay-hoa-thanh)
 - **Mã ID**: `homestay-hoa-thanh` | **Phân loại**: `accommodation` | **Địa bàn**: p-phuoc-hau | **Tọa độ**: [10.2649, 105.9666]
 - **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/homestay-hoa-thanh.webp`
@@ -6514,6 +6703,20 @@ Mỗi thực thể dưới đây đều có ảnh tư liệu báo chí chính th
 - **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
 - **Tóm lược**: Số máy 0294 386 3399 là kênh đặt phòng trực tiếp của Khách sạn Hoàn Mỹ 2 tại 132B Nguyễn Đáng, phường Nguyệt Hóa, Trà Vinh.
 
+#### [Cồn Ốc (Giồng Trôm)](https://vinhlong360.vn/dia-diem/con-oc-giong-trom-ben-tre)
+- **Mã ID**: `con-oc-giong-trom-ben-tre` | **Phân loại**: `nature` | **Địa bàn**: xa-luong-hoa | **Tọa độ**: [10.2029, 106.4440]
+- **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/con-oc-giong-trom-ben-tre.webp`
+- **Tác giả ảnh**: Hữu Hiệp · **Cơ quan**: Báo Đồng Khởi
+- **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
+- **Tóm lược**: Cồn nổi lớn nhất trên sông Hàm Luông — rộng khoảng 647 ha tại xã Hưng Phong, Giồng Trôm. Vườn dừa núm, dừa dứa trù phú, du lịch sinh thái miệt vườn hoang sơ.
+
+#### [Sông Láng Thé](https://vinhlong360.vn/dia-diem/song-lang-the-tra-vinh)
+- **Mã ID**: `song-lang-the-tra-vinh` | **Phân loại**: `nature` | **Địa bàn**: xa-nhi-long | **Tọa độ**: [10.0056, 106.3042]
+- **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/song-lang-the-tra-vinh.webp`
+- **Tác giả ảnh**: Bá Thi · **Cơ quan**: Báo Trà Vinh
+- **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
+- **Tóm lược**: (sông, 30 km). Sông nội địa chảy qua trung tâm tỉnh, kết nối thành phố Trà Vinh với Châu Thành. Hai bờ có nhiều phum sóc Khmer và vườn dừa lâu đời. Từng là tuyến giao thông chính của người Khmer địa phương trước khi có đường bộ. Điểm ngắm cảnh đẹp: Đoạn chảy qua xã Song Lộc, Châu Thành — vườn dừa xanh phản chiếu mặt nước, thuyền gỗ truyền thống. Đánh giá cảnh quan: 4/5.
+
 #### [Chùa Giác Linh (chùa Phật Lớn)](https://vinhlong360.vn/dia-diem/chua-giac-linh-tra-vinh)
 - **Mã ID**: `chua-giac-linh-tra-vinh` | **Phân loại**: `attraction` | **Địa bàn**: xa-nhi-long | **Tọa độ**: [10.0260, 106.2930]
 - **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/chua-giac-linh-tra-vinh.webp`
@@ -6521,12 +6724,33 @@ Mỗi thực thể dưới đây đều có ảnh tư liệu báo chí chính th
 - **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
 - **Tóm lược**: Năm Tân Mùi 1871, ông Dương Quang Sơn — người Hoa gốc Triều Châu — dựng miếu nhỏ Linh Sơn Điện trên giồng cát cao ở Cầu Ngang, cách thành phố Trà Vinh hơn 30 km về phía đông nam — dân gọi Chùa Dơi vì hàng ngàn con dơi treo mình trên cây sao quanh sân chùa.
 
+#### [Bãi Bồi Và Rừng Ngập Mặn Ba Tri](https://vinhlong360.vn/dia-diem/bai-boi-rung-ngap-man-ba-tri-ben-tre)
+- **Mã ID**: `bai-boi-rung-ngap-man-ba-tri-ben-tre` | **Phân loại**: `nature` | **Địa bàn**: p-tan-thuy | **Tọa độ**: [10.0451, 106.5926]
+- **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/bai-boi-rung-ngap-man-ba-tri-ben-tre.webp`
+- **Tác giả ảnh**: Hữu Hiệp · **Cơ quan**: Báo Đồng Khởi
+- **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
+- **Tóm lược**: Hơn nữa vì tính chất địa lý được phù sa bồi đắp nhiều mà biển Ba Động không có màu sắc trong xanh như nhiều bãi biển miền Trung khác.
+
+#### [Rừng ngập mặn Thạnh Phong](https://vinhlong360.vn/dia-diem/rung-ngap-man-thanh-phong)
+- **Mã ID**: `rung-ngap-man-thanh-phong` | **Phân loại**: `nature` | **Địa bàn**: p-ben-tre | **Tọa độ**: [10.2357, 106.3761]
+- **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/rung-ngap-man-thanh-phong.webp`
+- **Tác giả ảnh**: Hữu Hiệp · **Cơ quan**: Báo Đồng Khởi
+- **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
+- **Tóm lược**: Khu rừng ngập mặn ven biển tại xã Thạnh Phong, Thạnh Phú — thuộc Khu bảo vệ cảnh quan Thạnh Phú (2.584 ha), nơi trú ngụ của 152 loài chim và 88 loài thực vật.
+
 #### [Lễ cúng Lầu Bà rằm tháng Giêng](https://vinhlong360.vn/dia-diem/le-cung-lau-ba-ram-thang-gieng)
 - **Mã ID**: `le-cung-lau-ba-ram-thang-gieng` | **Phân loại**: `event` | **Địa bàn**: p-truong-long-hoa | **Tọa độ**: [9.6427, 106.5489]
 - **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/le-cung-lau-ba-ram-thang-gieng.webp`
 - **Tác giả ảnh**: Trần Phước · **Cơ quan**: Báo Vĩnh Long
 - **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
 - **Tóm lược**: Lễ hội tín ngưỡng dân gian diễn ra vào ngày rằm âm lịch hàng năm tại Lầu Bà (Lầu Bà Cố Hỷ), Phường Trường Long Hòa.
+
+#### [Cồn Nhàn (Biển Ba Tri)](https://vinhlong360.vn/dia-diem/con-nhan-bien-ba-tri-ben-tre)
+- **Mã ID**: `con-nhan-bien-ba-tri-ben-tre` | **Phân loại**: `nature` | **Địa bàn**: xa-bao-thanh | **Tọa độ**: [10.0451, 106.5926]
+- **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/con-nhan-bien-ba-tri-ben-tre.webp`
+- **Tác giả ảnh**: Hữu Hiệp · **Cơ quan**: Báo Đồng Khởi
+- **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
+- **Tóm lược**: Bãi biển phù sa ven cửa sông tại xã Bảo Thuận, huyện Ba Tri — cách TP Bến Tre khoảng 50 km. Bãi cát rộng, ít công trình xây dựng, thích hợp cắm trại qua đêm.
 
 #### [Nhà thờ Cái Mơn](https://vinhlong360.vn/dia-diem/nha-tho-cai-mon)
 - **Mã ID**: `nha-tho-cai-mon` | **Phân loại**: `history` | **Địa bàn**: xa-vinh-thanh | **Tọa độ**: [10.2089, 106.2186]
@@ -6605,6 +6829,27 @@ Mỗi thực thể dưới đây đều có ảnh tư liệu báo chí chính th
 - **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
 - **Tóm lược**: Quán cơm chay Âu Lạc bình dân trên đường Trần Văn Ơn, phường 1 TP.
 
+#### [Sông Cổ Chiên](https://vinhlong360.vn/dia-diem/song-co-chien-vinh-long)
+- **Mã ID**: `song-co-chien-vinh-long` | **Phân loại**: `nature` | **Địa bàn**: p-long-chau | **Tọa độ**: [10.2539, 105.9722]
+- **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/song-co-chien-vinh-long.webp`
+- **Tác giả ảnh**: Trần Phước · **Cơ quan**: Báo Vĩnh Long
+- **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
+- **Tóm lược**: Tách ra từ sông Tiền ngay giữa TP Vĩnh Long rồi chảy 82 km về phía đông nam, sông Cổ Chiên vạch ranh giới tự nhiên giữa Vĩnh Long, Bến Tre và Trà Vinh trước khi đổ ra Biển Đông qua hai cửa Cổ Chiên và Cung Hầu. Cầu Cổ Chiên dài 1,6 km trên QL60 nối đôi bờ, nhưng dọc sông vẫn còn nhiều bến phà và cồn nổi giữa dòng.
+
+#### [Sông Mang Thít](https://vinhlong360.vn/dia-diem/song-mang-thit-vinh-long)
+- **Mã ID**: `song-mang-thit-vinh-long` | **Phân loại**: `nature` | **Địa bàn**: xa-cai-nhum | **Tọa độ**: [10.0845, 106.0138]
+- **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/song-mang-thit-vinh-long.webp`
+- **Tác giả ảnh**: Trần Phước · **Cơ quan**: Báo Vĩnh Long
+- **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
+- **Tóm lược**: Chảy 47 km nối sông Tiền với sông Cổ Chiên theo hướng đông — tây, sông Mang Thít mang theo phù sa bồi thành vỉa đất sét dẻo dọc hai bờ — chính lớp đất sét ấy nuôi hơn 3.000 lò gạch nung suốt thời hoàng kim thập niên 1960–1980. "Vương quốc lò gạch" lớn nhất Đồng bằng sông Cửu Long, nghề truyền thống hơn một thế kỷ nay đang chuyển mình thành điểm du lịch di sản.
+
+#### [Khu Di Sản Đương Đại Mang Thít – Tuyến Sinh Thái Kênh Thủy Lộ](https://vinhlong360.vn/dia-diem/di-san-duong-dai-mang-thit-tuyen-sinh-thai-kenh-thuy-lo)
+- **Mã ID**: `di-san-duong-dai-mang-thit-tuyen-sinh-thai-kenh-thuy-lo` | **Phân loại**: `nature` | **Địa bàn**: xa-cai-nhum | **Tọa độ**: [10.1830, 106.0963]
+- **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/di-san-duong-dai-mang-thit-tuyen-sinh-thai-kenh-thuy-lo.webp`
+- **Tác giả ảnh**: Trần Phước · **Cơ quan**: Báo Vĩnh Long
+- **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
+- **Tóm lược**: Khu Di sản đương đại Mang Thít, Vĩnh Long, gắn với tuyến sinh thái kênh thủy lộ và hệ thống lò gạch truyền thống.
+
 #### [Chùa Vạn Phước](https://vinhlong360.vn/dia-diem/chua-van-phuoc)
 - **Mã ID**: `chua-van-phuoc` | **Phân loại**: `attraction` | **Địa bàn**: p-an-hoi | **Tọa độ**: [10.2241, 106.6575]
 - **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/chua-van-phuoc.webp`
@@ -6632,6 +6877,13 @@ Mỗi thực thể dưới đây đều có ảnh tư liệu báo chí chính th
 - **Tác giả ảnh**: Cẩm Trúc · **Cơ quan**: Báo Đồng Khởi
 - **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
 - **Tóm lược**: Chuyên Nem nướng cuốn bánh tráng, nem lụi. Tại Khu vực gần bến phà Hàm Luông (cũ), TP. Bến Tre. Giá 30. Nem nướng than hồng thơm, cuốn bánh tráng mỏng với đồ chua và đậu phộng rang.
+
+#### [Biển Thới Thuận](https://vinhlong360.vn/dia-diem/bien-thoi-thuan)
+- **Mã ID**: `bien-thoi-thuan` | **Phân loại**: `nature` | **Địa bàn**: xa-thoi-thuan | **Tọa độ**: [10.1071, 106.7601]
+- **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/bien-thoi-thuan.webp`
+- **Tác giả ảnh**: Hữu Hiệp · **Cơ quan**: Báo Đồng Khởi
+- **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
+- **Tóm lược**: Mùa gió chướng, hàng triệu con ốc viết trôi dạt phủ trắng gần bảy cây số bãi cát đen phù sa biển Thới Thuận — bãi biển vùng cửa sông Bình Đại, Bến Tre, không resort, không vé cổng.
 
 #### [Hợp tác xã Bưởi Năm Roi Mỹ Hòa](https://vinhlong360.vn/dia-diem/hop-tac-xa-buoi-nam-roi-my-hoa)
 - **Mã ID**: `hop-tac-xa-buoi-nam-roi-my-hoa` | **Phân loại**: `craft_village` | **Địa bàn**: p-binh-minh | **Tọa độ**: [10.2539, 105.9722]
@@ -6723,6 +6975,13 @@ Mỗi thực thể dưới đây đều có ảnh tư liệu báo chí chính th
 - **Tác giả ảnh**: Nguyễn Bách · **Cơ quan**: Báo Vĩnh Long
 - **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
 - **Tóm lược**: Lễ giỗ danh thần Tống Phước Hiệp tổ chức hằng năm vào mùng 2–3 tháng 6 âm lịch tại Đình Tân Giai, Phường 3, TP Vĩnh Long.
+
+#### [Cồn Quy](https://vinhlong360.vn/dia-diem/con-quy)
+- **Mã ID**: `con-quy` | **Phân loại**: `nature` | **Địa bàn**: p-phu-tuc | **Tọa độ**: [10.3339, 106.3843]
+- **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/con-quy.webp`
+- **Tác giả ảnh**: Hữu Hiệp · **Cơ quan**: Báo Đồng Khởi
+- **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
+- **Tóm lược**: Cù lao xanh mướt giữa sông Tiền, nơi thời gian như chậm lại theo nhịp chèo đò và tiếng lá dừa xào xạc.
 
 #### [Chuối tá quạ](https://vinhlong360.vn/dia-diem/chuoi-ta-qua)
 - **Mã ID**: `chuoi-ta-qua` | **Phân loại**: `product` | **Địa bàn**: xa-cau-ke | **Tọa độ**: [9.8716, 106.0899]
@@ -6829,6 +7088,20 @@ Mỗi thực thể dưới đây đều có ảnh tư liệu báo chí chính th
 - **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
 - **Tóm lược**: Ngôi chùa Khmer hơn 160 năm tuổi nằm giữa vùng đất duyên hải cát giồng, đặc trưng với cổng chào ba ngọn tháp và ngôi sala lưu giữ kho tàng kinh lá buông cùng tượng Phật gỗ cổ xưa.
 
+#### [Vườn dừa sáp sinh thái Cầu Kè tại Phong Thạnh](https://vinhlong360.vn/dia-diem/vuon-dua-sap-cau-ke-phong-thanh)
+- **Mã ID**: `vuon-dua-sap-cau-ke-phong-thanh` | **Phân loại**: `nature` | **Địa bàn**: xa-phong-thanh | **Tọa độ**: [9.8149, 106.0920]
+- **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/vuon-dua-sap-cau-ke-phong-thanh.webp`
+- **Tác giả ảnh**: Bá Thi · **Cơ quan**: Báo Trà Vinh
+- **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
+- **Tóm lược**: Khu vườn dừa sáp chuyên canh lâu đời bên dòng sông Hậu tại xã Phong Thạnh, nơi du khách trực tiếp chiêm ngưỡng những buồng dừa sáp đặc ruột dẻo quánh tự nhiên và thưởng thức ly dừa sáp dầm đá béo ngậy tại vườn.
+
+#### [Vùng chuyên canh sầu riêng và chôm chôm cù lao Quới An](https://vinhlong360.vn/dia-diem/vung-chuyen-canh-sau-rieng-cu-lao-quoi-an)
+- **Mã ID**: `vung-chuyen-canh-sau-rieng-cu-lao-quoi-an` | **Phân loại**: `nature` | **Địa bàn**: xa-quoi-an | **Tọa độ**: [10.1369, 106.1640]
+- **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/vung-chuyen-canh-sau-rieng-cu-lao-quoi-an.webp`
+- **Tác giả ảnh**: Trần Phước · **Cơ quan**: Báo Vĩnh Long
+- **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
+- **Tóm lược**: Dải cù lao miệt vườn bốn bề sông nước Cổ Chiên bao bọc với những vườn sầu riêng Ri6 và chôm chôm chín đỏ trĩu quả quanh năm, điểm dừng chân sinh thái lý tưởng cho du khách trải nghiệm hái trái cây tại vườn.
+
 #### [Chùa Bâng Trau (Chùa Khmer Song Lộc)](https://vinhlong360.vn/dia-diem/chua-bang-trau-song-loc)
 - **Mã ID**: `chua-bang-trau-song-loc` | **Phân loại**: `attraction` | **Địa bàn**: xa-song-loc | **Tọa độ**: [9.8871, 106.2743]
 - **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/chua-bang-trau-song-loc.webp`
@@ -6842,6 +7115,13 @@ Mỗi thực thể dưới đây đều có ảnh tư liệu báo chí chính th
 - **Tác giả ảnh**: Trần Phước · **Cơ quan**: Báo Vĩnh Long
 - **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
 - **Tóm lược**: Khu chợ giao thương sầm uất trên tuyến Quốc lộ 1A thuộc xã Song Phú, đầu mối tập kết và phân phối hàng trăm tấn cam sành Tam Bình mọng nước cùng rau quả miệt vườn Tây Nam Bộ tỏa đi khắp cả nước mỗi ngày.
+
+#### [Vùng nuôi sò huyết và tôm sinh thái Thạnh Trị](https://vinhlong360.vn/dia-diem/vung-nuoi-so-huyet-tom-quang-canh-thanh-tri)
+- **Mã ID**: `vung-nuoi-so-huyet-tom-quang-canh-thanh-tri` | **Phân loại**: `nature` | **Địa bàn**: xa-thanh-tri | **Tọa độ**: [10.1938, 106.5972]
+- **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/vung-nuoi-so-huyet-tom-quang-canh-thanh-tri.webp`
+- **Tác giả ảnh**: Hữu Hiệp · **Cơ quan**: Báo Đồng Khởi
+- **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
+- **Tóm lược**: Vùng bãi triều rừng ngập mặn trù phú ven cửa sông Cửa Đại tại xã Thạnh Trị, chuyên canh sò huyết béo mập và tôm sinh thái tự nhiên, tạo nên cảnh quan sông nước rừng đước hoang sơ mê hoặc du khách khám phá.
 
 #### [Chùa Ô Mịch (Chùa Khmer Ô Mịch - Hùng Hòa)](https://vinhlong360.vn/dia-diem/chua-o-mich-hung-hoa)
 - **Mã ID**: `chua-o-mich-hung-hoa` | **Phân loại**: `attraction` | **Địa bàn**: p-hung-hoa | **Tọa độ**: [9.7765, 106.2287]

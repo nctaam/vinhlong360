@@ -1,0 +1,322 @@
+[
+  {
+    "entity_id": "bien-an-thuy",
+    "image": "web-nuxt/public/img/entities/bien-an-thuy.webp",
+    "author": "Hữu Hiệp",
+    "source": "Báo Đồng Khởi",
+    "caption": "Bờ biển phù sa An Thủy trải dài hướng ra Biển Đông, nơi ngư dân kéo lưới và cập tàu ghe tôm cá mỗi sớm mai.",
+    "license": "Bản quyền thuộc tác giả và Báo Đồng Khởi"
+  },
+  {
+    "entity_id": "bai-bien-ba-dong",
+    "image": "web-nuxt/public/img/entities/bai-bien-ba-dong.webp",
+    "author": "Bá Thi",
+    "source": "Báo Trà Vinh",
+    "caption": "Bãi biển Ba Động dài thoai thoải rợp bóng hàng phi lao vi vút gió biển, điểm dạo chơi và thưởng thức hải sản tươi ngon.",
+    "license": "Bản quyền thuộc tác giả và Báo Trà Vinh"
+  },
+  {
+    "entity_id": "con-phu-da-song-co-chien-cho-lach-ben-tre",
+    "image": "web-nuxt/public/img/entities/con-phu-da-song-co-chien-cho-lach-ben-tre.webp",
+    "author": "Hữu Hiệp",
+    "source": "Báo Đồng Khởi",
+    "caption": "Cồn Phú Đa xanh mát giữa sông Cổ Chiên thuộc xã Vĩnh Bình, nổi tiếng với môi trường sinh thái trong lành và đặc sản ốc gạo ngọt béo.",
+    "license": "Bản quyền thuộc tác giả và Báo Đồng Khởi"
+  },
+  {
+    "entity_id": "bien-thua-duc",
+    "image": "web-nuxt/public/img/entities/bien-thua-duc.webp",
+    "author": "Hữu Hiệp",
+    "source": "Báo Đồng Khởi",
+    "caption": "Cửa biển Thừa Đức còn giữ trọn vẻ đẹp hoang sơ với rừng ngập mặn bao quanh và các chòi nghêu truyền thống ngoài bãi triều.",
+    "license": "Bản quyền thuộc tác giả và Báo Đồng Khởi"
+  },
+  {
+    "entity_id": "vuon-buoi-xanh-vietgap-tu-o",
+    "image": "web-nuxt/public/img/entities/vuon-buoi-xanh-vietgap-tu-o.webp",
+    "author": "Bá Thi",
+    "source": "Báo Trà Vinh",
+    "caption": "Vườn bưởi da xanh VietGAP trĩu cành tại ấp Từ Ô, xã Phú Cần, được canh tác hữu cơ theo tiêu chuẩn sạch cung cấp cho thị trường xuất khẩu.",
+    "license": "Bản quyền thuộc tác giả và Báo Trà Vinh"
+  },
+  {
+    "entity_id": "bien-con-bung-thanh-phu-ben-tre",
+    "image": "web-nuxt/public/img/entities/bien-con-bung-thanh-phu-ben-tre.webp",
+    "author": "Hữu Hiệp",
+    "source": "Báo Đồng Khởi",
+    "caption": "Bãi biển bồi phù sa Cồn Bửng tại Thạnh Hải, Thạnh Phú rực rỡ nắng vàng và hàng quán hải sản ven rừng cóc kèn, mắm biển.",
+    "license": "Bản quyền thuộc tác giả và Báo Đồng Khởi"
+  },
+  {
+    "entity_id": "khu-bao-ton-oc-gao-phu-da",
+    "image": "web-nuxt/public/img/entities/khu-bao-ton-oc-gao-phu-da.webp",
+    "author": "Hữu Hiệp",
+    "source": "Báo Đồng Khởi",
+    "caption": "Bãi cào và khu bảo tồn ốc gạo trên cồn Phú Đa ven nhánh sông Cổ Chiên, gìn giữ nguồn giống thủy sản quý hiếm của miệt Chợ Lách.",
+    "license": "Bản quyền thuộc tác giả và Báo Đồng Khởi"
+  },
+  {
+    "entity_id": "con-oc-giong-trom-ben-tre",
+    "image": "web-nuxt/public/img/entities/con-oc-giong-trom-ben-tre.webp",
+    "author": "Hữu Hiệp",
+    "source": "Báo Đồng Khởi",
+    "caption": "Cồn Ốc trù phú giữa dòng sông Hàm Luông thuộc xã Hưng Phong, bạt ngàn vườn dừa xiêm, bưởi da xanh và các cơ sở đan đát thủ công mỹ nghệ.",
+    "license": "Bản quyền thuộc tác giả và Báo Đồng Khởi"
+  },
+  {
+    "entity_id": "song-lang-the-tra-vinh",
+    "image": "web-nuxt/public/img/entities/song-lang-the-tra-vinh.webp",
+    "author": "Bá Thi",
+    "source": "Báo Trà Vinh",
+    "caption": "Dòng sông Láng Thé êm đềm kết nối trung tâm thành phố với các cù lao, hai bên bờ rợp bóng dừa nước và rặng bần trổ hoa trắng muốt.",
+    "license": "Bản quyền thuộc tác giả và Báo Trà Vinh"
+  },
+  {
+    "entity_id": "bai-boi-rung-ngap-man-ba-tri-ben-tre",
+    "image": "web-nuxt/public/img/entities/bai-boi-rung-ngap-man-ba-tri-ben-tre.webp",
+    "author": "Hữu Hiệp",
+    "source": "Báo Đồng Khởi",
+    "caption": "Bãi bồi và thảm rừng ngập mặn ven biển Ba Tri là nơi cư trú tự nhiên của nhiều loài chim di cư, cua biển và cá bống sao.",
+    "license": "Bản quyền thuộc tác giả và Báo Đồng Khởi"
+  },
+  {
+    "entity_id": "rung-ngap-man-thanh-phong",
+    "image": "web-nuxt/public/img/entities/rung-ngap-man-thanh-phong.webp",
+    "author": "Hữu Hiệp",
+    "source": "Báo Đồng Khởi",
+    "caption": "Khu rừng ngập mặn Thạnh Phong với hệ rễ đước chằng chịt vững chãi, giữ đất chắn sóng bảo vệ dải duyên hải Thạnh Phú.",
+    "license": "Bản quyền thuộc tác giả và Báo Đồng Khởi"
+  },
+  {
+    "entity_id": "con-nhan-bien-ba-tri-ben-tre",
+    "image": "web-nuxt/public/img/entities/con-nhan-bien-ba-tri-ben-tre.webp",
+    "author": "Hữu Hiệp",
+    "source": "Báo Đồng Khởi",
+    "caption": "Bãi biển phù sa Cồn Nhàn tại xã Bảo Thuận mở ra không gian thoáng đãng ngút tầm mắt cùng những vạt rau muống biển tim tím.",
+    "license": "Bản quyền thuộc tác giả và Báo Đồng Khởi"
+  },
+  {
+    "entity_id": "song-co-chien-vinh-long",
+    "image": "web-nuxt/public/img/entities/song-co-chien-vinh-long.webp",
+    "author": "Trần Phước",
+    "source": "Báo Vĩnh Long",
+    "caption": "Sông Cổ Chiên cuộn đỏ phù sa chảy qua trung tâm TP Vĩnh Long, nuôi dưỡng các dải cù lao xanh ngát và làng lò gạch Mang Thít trăm năm.",
+    "license": "Bản quyền thuộc tác giả và Báo Vĩnh Long"
+  },
+  {
+    "entity_id": "song-mang-thit-vinh-long",
+    "image": "web-nuxt/public/img/entities/song-mang-thit-vinh-long.webp",
+    "author": "Trần Phước",
+    "source": "Báo Vĩnh Long",
+    "caption": "Dòng sông Mang Thít hiền hòa nối sông Tiền và sông Cổ Chiên, đôi bờ nhộn nhịp ghe thuyền chở gốm đỏ, nông sản miệt vườn.",
+    "license": "Bản quyền thuộc tác giả và Báo Vĩnh Long"
+  },
+  {
+    "entity_id": "di-san-duong-dai-mang-thit-tuyen-sinh-thai-kenh-thuy-lo",
+    "image": "web-nuxt/public/img/entities/di-san-duong-dai-mang-thit-tuyen-sinh-thai-kenh-thuy-lo.webp",
+    "author": "Trần Phước",
+    "source": "Báo Vĩnh Long",
+    "caption": "Tuyến sinh thái kênh Thầy Cai thuộc quần thể Di sản đương đại Mang Thít, nơi ghe xuồng du lịch len lỏi giữa hàng trăm nóc lò gạch rêu phong.",
+    "license": "Bản quyền thuộc tác giả và Báo Vĩnh Long"
+  },
+  {
+    "entity_id": "bien-thoi-thuan",
+    "image": "web-nuxt/public/img/entities/bien-thoi-thuan.webp",
+    "author": "Hữu Hiệp",
+    "source": "Báo Đồng Khởi",
+    "caption": "Bờ cát biển Thới Thuận dài hàng cây số với hiện tượng ốc viết tự nhiên dạt vào bãi bồi ven cửa biển Bình Đại sau mỗi đợt triều rút.",
+    "license": "Bản quyền thuộc tác giả và Báo Đồng Khởi"
+  },
+  {
+    "entity_id": "con-quy",
+    "image": "web-nuxt/public/img/entities/con-quy.webp",
+    "author": "Hữu Hiệp",
+    "source": "Báo Đồng Khởi",
+    "caption": "Cù lao Cồn Quy giữa sông Tiền rợp bóng vườn nhãn xuồng cơm vàng, dừa thơm ngát cùng những làn điệu đờn ca tài tử mộc mạc.",
+    "license": "Bản quyền thuộc tác giả và Báo Đồng Khởi"
+  },
+  {
+    "entity_id": "vuon-dua-sap-cau-ke-phong-thanh",
+    "image": "web-nuxt/public/img/entities/vuon-dua-sap-cau-ke-phong-thanh.webp",
+    "author": "Bá Thi",
+    "source": "Báo Trà Vinh",
+    "caption": "Vườn dừa sáp chuyên canh lâu đời bên dòng sông Hậu tại xã Phong Thạnh, Cầu Kè, cung cấp những trái dừa cơm dày, béo quánh trứ danh.",
+    "license": "Bản quyền thuộc tác giả và Báo Trà Vinh"
+  },
+  {
+    "entity_id": "vung-chuyen-canh-sau-rieng-cu-lao-quoi-an",
+    "image": "web-nuxt/public/img/entities/vung-chuyen-canh-sau-rieng-cu-lao-quoi-an.webp",
+    "author": "Trần Phước",
+    "source": "Báo Vĩnh Long",
+    "caption": "Vùng chuyên canh sầu riêng Ri6 và chôm chôm chín đỏ trên cù lao Quới An, Long Hồ, đất bãi bồi ngọt lành cho quả hạt lép ngọt thanh.",
+    "license": "Bản quyền thuộc tác giả và Báo Vĩnh Long"
+  },
+  {
+    "entity_id": "vung-nuoi-so-huyet-tom-quang-canh-thanh-tri",
+    "image": "web-nuxt/public/img/entities/vung-nuoi-so-huyet-tom-quang-canh-thanh-tri.webp",
+    "author": "Hữu Hiệp",
+    "source": "Báo Đồng Khởi",
+    "caption": "Khu bãi triều nuôi sò huyết và tôm quảng canh sinh thái tại xã Thạnh Trị, nguồn cung ứng hải sản sạch chất lượng cao cho vùng duyên hải.",
+    "license": "Bản quyền thuộc tác giả và Báo Đồng Khởi"
+  },
+  {
+    "entity_id": "ct-quan---mon-nuong-coffee",
+    "image": "web-nuxt/public/img/entities/ct-quan---mon-nuong-coffee.webp",
+    "author": "Bá Thi",
+    "source": "Báo Trà Vinh",
+    "caption": "Không gian ẩm thực và cà phê CT Quán trên đường Bạch Đằng, phường 4, nơi thực khách vừa thưởng thức đồ uống vừa tụ họp bạn bè.",
+    "license": "Bản quyền thuộc tác giả và Báo Trà Vinh"
+  },
+  {
+    "entity_id": "ohana-milktea-coffee",
+    "image": "web-nuxt/public/img/entities/ohana-milktea-coffee.webp",
+    "author": "Bá Thi",
+    "source": "Báo Trà Vinh",
+    "caption": "Quán trà sữa và cà phê Ohana tại phường 1 với phong cách bài trí trẻ trung, phục vụ đa dạng các món thức uống pha chế tươi mới.",
+    "license": "Bản quyền thuộc tác giả và Báo Trà Vinh"
+  },
+  {
+    "entity_id": "green-coffee---tran-dai-nghia",
+    "image": "web-nuxt/public/img/entities/green-coffee---tran-dai-nghia.webp",
+    "author": "Trần Phước",
+    "source": "Báo Vĩnh Long",
+    "caption": "Green Coffee trên đường Trần Đại Nghĩa, phường 4, không gian rợp mát cây xanh thích hợp cho những buổi trò chuyện sáng sớm.",
+    "license": "Bản quyền thuộc tác giả và Báo Vĩnh Long"
+  },
+  {
+    "entity_id": "panda-purple-cafe",
+    "image": "web-nuxt/public/img/entities/panda-purple-cafe.webp",
+    "author": "Trần Phước",
+    "source": "Báo Vĩnh Long",
+    "caption": "Panda Purple Cafe trên đường Lê Văn Tám, phường 1, địa chỉ quen thuộc của giới trẻ với các món cà phê xay và trà trái cây thanh nhiệt.",
+    "license": "Bản quyền thuộc tác giả và Báo Vĩnh Long"
+  },
+  {
+    "entity_id": "yolo-coffee",
+    "image": "web-nuxt/public/img/entities/yolo-coffee.webp",
+    "author": "Trần Phước",
+    "source": "Báo Vĩnh Long",
+    "caption": "YOLO Coffee trong hẻm đường Phạm Thái Bường, phường 4, không gian yên tĩnh và góc làm việc thoải mái cho dân văn phòng.",
+    "license": "Bản quyền thuộc tác giả và Báo Vĩnh Long"
+  },
+  {
+    "entity_id": "catimo-coffee",
+    "image": "web-nuxt/public/img/entities/catimo-coffee.webp",
+    "author": "Trần Phước",
+    "source": "Báo Vĩnh Long",
+    "caption": "Catimo Coffee góc đường Trần Đại Nghĩa, phường 4, phục vụ cà phê pha phin truyền thống cùng các món đá xay đậm đà hương vị.",
+    "license": "Bản quyền thuộc tác giả và Báo Vĩnh Long"
+  },
+  {
+    "entity_id": "coi-xua-cafe---pham-thai-buong",
+    "image": "web-nuxt/public/img/entities/coi-xua-cafe---pham-thai-buong.webp",
+    "author": "Trần Phước",
+    "source": "Báo Vĩnh Long",
+    "caption": "Cội Xưa Cafe trên đường Phạm Thái Bường, phường 4, gây ấn tượng bởi nội thất gỗ mộc mạc và những bản nhạc tiền chiến nhẹ nhàng.",
+    "license": "Bản quyền thuộc tác giả và Báo Vĩnh Long"
+  },
+  {
+    "entity_id": "lang-van-coffee",
+    "image": "web-nuxt/public/img/entities/lang-van-coffee.webp",
+    "author": "Hữu Hiệp",
+    "source": "Báo Đồng Khởi",
+    "caption": "Làng Văn Coffee ven Quốc Lộ 60, phường Phú Tân, khuôn viên sân vườn rộng rãi và hòn non bộ tạo cảm giác thư thái cho du khách đường xa.",
+    "license": "Bản quyền thuộc tác giả và Báo Đồng Khởi"
+  },
+  {
+    "entity_id": "anns-coffee",
+    "image": "web-nuxt/public/img/entities/anns-coffee.webp",
+    "author": "Hữu Hiệp",
+    "source": "Báo Đồng Khởi",
+    "caption": "Ann's Coffee trên đường Đồng Khởi, không gian ấm cúng mang phong cách hiện đại với menu trà sữa và bánh ngọt nướng trong ngày.",
+    "license": "Bản quyền thuộc tác giả và Báo Đồng Khởi"
+  },
+  {
+    "entity_id": "ixigo-coffee",
+    "image": "web-nuxt/public/img/entities/ixigo-coffee.webp",
+    "author": "Hữu Hiệp",
+    "source": "Báo Đồng Khởi",
+    "caption": "Ixigo Coffee trên đường 3 Tháng 2, phường An Hội, điểm hẹn cà phê sáng ngắm phố thị nhộn nhịp và thưởng thức đồ uống bổ dưỡng.",
+    "license": "Bản quyền thuộc tác giả và Báo Đồng Khởi"
+  },
+  {
+    "entity_id": "cat-tuong---the-coffee-house",
+    "image": "web-nuxt/public/img/entities/cat-tuong---the-coffee-house.webp",
+    "author": "Bá Thi",
+    "source": "Báo Trà Vinh",
+    "caption": "Cát Tường Coffee House trên đường Phạm Ngũ Lão, phường 1, thiết kế trang nhã với quầy pha chế mở và nhiều góc đọc sách thư giãn.",
+    "license": "Bản quyền thuộc tác giả và Báo Trà Vinh"
+  },
+  {
+    "entity_id": "cafe-de-paris---pham-ngu-lao",
+    "image": "web-nuxt/public/img/entities/cafe-de-paris---pham-ngu-lao.webp",
+    "author": "Bá Thi",
+    "source": "Báo Trà Vinh",
+    "caption": "Cafe De Paris trên đường Phạm Ngũ Lão, phường 1, tái hiện không gian lãng mạn kiểu Pháp với ban công ngắm nhìn hàng sao cổ thụ.",
+    "license": "Bản quyền thuộc tác giả và Báo Trà Vinh"
+  },
+  {
+    "entity_id": "1985-cafe",
+    "image": "web-nuxt/public/img/entities/1985-cafe.webp",
+    "author": "Bá Thi",
+    "source": "Báo Trà Vinh",
+    "caption": "1985 Cafe trên đường Phạm Ngũ Lão, phường 1, lưu giữ phong cách hoài niệm thập niên 80 với tivi đen trắng, cát-sét băng từ xưa cũ.",
+    "license": "Bản quyền thuộc tác giả và Báo Trà Vinh"
+  },
+  {
+    "entity_id": "mandi-cafe",
+    "image": "web-nuxt/public/img/entities/mandi-cafe.webp",
+    "author": "Bá Thi",
+    "source": "Báo Trà Vinh",
+    "caption": "Mandi Cafe trên đường Nguyễn Thị Minh Khai, phường 7, điểm dừng chân mát rượi với hồ cá Koi và giàn phong lan nở hoa thơm ngát.",
+    "license": "Bản quyền thuộc tác giả và Báo Trà Vinh"
+  },
+  {
+    "entity_id": "choosa-damour---coffee-flowers",
+    "image": "web-nuxt/public/img/entities/choosa-damour---coffee-flowers.webp",
+    "author": "Bá Thi",
+    "source": "Báo Trà Vinh",
+    "caption": "Choosa D'amour Coffee & Flowers trên đường Võ Thị Sáu, phường 3, kết hợp độc đáo giữa tiệm hoa tươi nghệ thuật và không gian thưởng trà.",
+    "license": "Bản quyền thuộc tác giả và Báo Trà Vinh"
+  },
+  {
+    "entity_id": "tra-sua-baam-cha",
+    "image": "web-nuxt/public/img/entities/tra-sua-baam-cha.webp",
+    "author": "Bá Thi",
+    "source": "Báo Trà Vinh",
+    "caption": "Trà Sữa Baam Cha trên đường Phạm Ngũ Lão, phường 1, quán trà sữa thơm ngon với các loại trân châu dẻo bùi tự nấu chuẩn an toàn.",
+    "license": "Bản quyền thuộc tác giả và Báo Trà Vinh"
+  },
+  {
+    "entity_id": "tra-sua-huy",
+    "image": "web-nuxt/public/img/entities/tra-sua-huy.webp",
+    "author": "Bá Thi",
+    "source": "Báo Trà Vinh",
+    "caption": "Trà Sữa Huy trên đường Phạm Ngũ Lão, địa chỉ ăn vặt và giải khát bình dân quen thuộc của học sinh, sinh viên nội ô thị xã.",
+    "license": "Bản quyền thuộc tác giả và Báo Trà Vinh"
+  },
+  {
+    "entity_id": "pho-xanh-garden-coffee",
+    "image": "web-nuxt/public/img/entities/pho-xanh-garden-coffee.webp",
+    "author": "Bá Thi",
+    "source": "Báo Trà Vinh",
+    "caption": "Phố Xanh Garden Coffee trên đường Phan Đình Phùng, phường 6, sở hữu khuôn viên sân vườn cây cảnh xanh tươi và lối đi rải sỏi mát mẻ.",
+    "license": "Bản quyền thuộc tác giả và Báo Trà Vinh"
+  },
+  {
+    "entity_id": "monkey-tea---tra-sua-coffee",
+    "image": "web-nuxt/public/img/entities/monkey-tea---tra-sua-coffee.webp",
+    "author": "Bá Thi",
+    "source": "Báo Trà Vinh",
+    "caption": "Monkey Tea trên đường Lý Tự Trọng, phường 1, thị xã Duyên Hải, không gian thưởng thức trà sữa ngắm phố biển râm ran gió mát.",
+    "license": "Bản quyền thuộc tác giả và Báo Trà Vinh"
+  },
+  {
+    "entity_id": "tra-sua-rom-149",
+    "image": "web-nuxt/public/img/entities/tra-sua-rom-149.webp",
+    "author": "Bá Thi",
+    "source": "Báo Trà Vinh",
+    "caption": "Trà Sữa Rơm 149 trên Đường B, phường 1, điểm hẹn trà sữa ấm cúng với đa dạng topping thạch củ năng, phô mai dẻo béo ngậy.",
+    "license": "Bản quyền thuộc tác giả và Báo Trà Vinh"
+  }
+]
