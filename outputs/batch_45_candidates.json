@@ -1,0 +1,362 @@
+[
+  {
+    "id": "p-long-duc",
+    "name": "Phường Long Đức",
+    "summary": "Thuộc TP Trà Vinh trước đợt sắp xếp, Phường 4 và xã Long Đức nay nhập lại thành Phường Long Đức của tỉnh Vĩnh Long.",
+    "placeId": "p-long-duc",
+    "address": null,
+    "webp_exists": true,
+    "webp_size": 9626
+  },
+  {
+    "id": "p-long-ho",
+    "name": "Phường Long Hồ",
+    "summary": "Phường Long Hồ thuộc huyện Long Hồ, tỉnh Vĩnh Long, ra đời khi TT Long Hồ (gồm xã Phú Đức cũ), xã Long An và xã Long Phước nhập lại.",
+    "placeId": "p-long-chau",
+    "address": null,
+    "webp_exists": true,
+    "webp_size": 9864
+  },
+  {
+    "id": "p-mo-cay",
+    "name": "Phường Mỏ Cày",
+    "summary": "Phường Mỏ Cày thuộc huyện Mỏ Cày Nam, tỉnh Vĩnh Long, ra đời khi TT Mỏ Cày, xã An Thạnh, xã Tân Hội và xã Đa Phước Hội nhập lại.",
+    "placeId": "p-mo-cay",
+    "address": null,
+    "webp_exists": true,
+    "webp_size": 9188
+  },
+  {
+    "id": "p-nguyet-hoa",
+    "name": "Phường Nguyệt Hóa",
+    "summary": "Phường Nguyệt Hóa, tỉnh Vĩnh Long, hợp nhất từ Phường 7, Phường 8 (TP Trà Vinh) và xã Nguyệt Hóa (H.",
+    "placeId": "p-nguyet-hoa",
+    "address": null,
+    "webp_exists": true,
+    "webp_size": 9700
+  },
+  {
+    "id": "p-phu-khuong",
+    "name": "Phường Phú Khương",
+    "summary": "Phường Phú Khương thuộc tỉnh Vĩnh Long, gộp từ Phường 8, phường Phú Khương, xã Phú Hưng và xã Nhơn Thạnh của TP Bến Tre.",
+    "placeId": "p-phu-khuong",
+    "address": null,
+    "webp_exists": true,
+    "webp_size": 9496
+  },
+  {
+    "id": "p-phu-tan",
+    "name": "Phường Phú Tân",
+    "summary": "Phường Phú Tân, tỉnh Vĩnh Long, hình thành từ sáp nhập phường Phú Tân, xã Hữu Định và xã Phước Thạnh thuộc TP Bến Tre.",
+    "placeId": "p-phu-tan",
+    "address": null,
+    "webp_exists": true,
+    "webp_size": 9650
+  },
+  {
+    "id": "p-phu-tuc",
+    "name": "Phường Phú Túc",
+    "summary": "Phường Phú Túc thuộc huyện Châu Thành (BT), tỉnh Vĩnh Long, ra đời khi TT Châu Thành, xã Tân Thạch, xã Tường Đa và xã Phú Túc nhập lại.",
+    "placeId": "p-phu-tuc",
+    "address": null,
+    "webp_exists": true,
+    "webp_size": 9386
+  },
+  {
+    "id": "p-phuoc-hau",
+    "name": "Phường Phước Hậu",
+    "summary": "Phường Phước Hậu, tỉnh Vĩnh Long, hợp nhất từ Phường 3, Phường 4 (TP Vĩnh Long) và xã Phước Hậu (H.",
+    "placeId": "p-long-chau",
+    "address": null,
+    "webp_exists": true,
+    "webp_size": 9272
+  },
+  {
+    "id": "p-son-dong",
+    "name": "Phường Sơn Đông",
+    "summary": "Phường Sơn Đông thuộc TP Bến Tre, tỉnh Vĩnh Long, ra đời khi Phường 6, xã Sơn Đông và xã Tam Phước nhập lại.",
+    "placeId": "p-son-dong",
+    "address": null,
+    "webp_exists": true,
+    "webp_size": 9636
+  },
+  {
+    "id": "p-tam-binh",
+    "name": "Phường Tam Bình",
+    "summary": "Phường Tam Bình, tỉnh Vĩnh Long, hình thành từ sáp nhập xã Mỹ Thạnh Trung, một phần TT Tam Bình thuộc huyện Tam Bình.",
+    "placeId": "p-phuoc-hau",
+    "address": null,
+    "webp_exists": true,
+    "webp_size": 9918
+  },
+  {
+    "id": "p-tan-hanh",
+    "name": "Phường Tân Hạnh",
+    "summary": "Phường Tân Hạnh thuộc tỉnh Vĩnh Long, gộp từ Phường 8 (TP Vĩnh Long) và xã Tân Hạnh (H.",
+    "placeId": "p-long-chau",
+    "address": null,
+    "webp_exists": true,
+    "webp_size": 9464
+  },
+  {
+    "id": "p-tan-hoa",
+    "name": "Phường Tân Hoà",
+    "summary": "Phường Tân Hoà thuộc tỉnh Vĩnh Long, gộp từ xã Long Thới, xã Tân Hòa và TT Cầu Quan của huyện Tiểu Cần.",
+    "placeId": "p-tan-hoa",
+    "address": null,
+    "webp_exists": true,
+    "webp_size": 9434
+  },
+  {
+    "id": "p-tan-ngai",
+    "name": "Phường Tân Ngãi",
+    "summary": "Phường Tân Ngãi thuộc tỉnh Vĩnh Long, gộp từ phường Tân Hòa, phường Tân Hội và phường Tân Ngãi của TP Vĩnh Long.",
+    "placeId": "p-long-chau",
+    "address": null,
+    "webp_exists": true,
+    "webp_size": 9488
+  },
+  {
+    "id": "p-tan-quoi",
+    "name": "Phường Tân Quới",
+    "summary": "Phường Tân Quới, tỉnh Vĩnh Long, hình thành từ sáp nhập xã Tân Bình, xã Thành Lợi và TT Tân Quới thuộc huyện Bình Tân.",
+    "placeId": "p-long-chau",
+    "address": null,
+    "webp_exists": true,
+    "webp_size": 9188
+  },
+  {
+    "id": "p-tan-thuy",
+    "name": "Phường Tân Thủy",
+    "summary": "Phường Tân Thủy, tỉnh Vĩnh Long, hợp nhất từ TT Tiệm Tôm, xã An Hòa Tây và xã Tân Thủy thuộc huyện Ba Tri.",
+    "placeId": "p-tan-thuy",
+    "address": null,
+    "webp_exists": true,
+    "webp_size": 9788
+  },
+  {
+    "id": "p-tap-ngai",
+    "name": "Phường Tập Ngãi",
+    "summary": "Hai xã cũ Hiếu Tử và Tập Ngãi của huyện Tiểu Cần trước đây nhập lại thành phường Tập Ngãi thuộc tỉnh Vĩnh Long, mã hành chính 29365.",
+    "placeId": "p-tap-ngai",
+    "address": null,
+    "webp_exists": true,
+    "webp_size": 8862
+  },
+  {
+    "id": "p-thanh-duc",
+    "name": "Phường Thanh Đức",
+    "summary": "Phường Thanh Đức thuộc TP Vĩnh Long + H, tỉnh Vĩnh Long, ra đời khi Phường 5 (TP Vĩnh Long) và xã Thanh Đức (H.",
+    "placeId": "p-long-chau",
+    "address": null,
+    "webp_exists": true,
+    "webp_size": 8964
+  },
+  {
+    "id": "p-tien-thuy",
+    "name": "Phường Tiên Thủy",
+    "summary": "Phường Tiên Thủy, tỉnh Vĩnh Long, hình thành từ sáp nhập TT Tiên Thủy, xã Thành Triệu và xã Quới Thành thuộc huyện Châu Thành (BT).",
+    "placeId": "p-tien-thuy",
+    "address": null,
+    "webp_exists": true,
+    "webp_size": 9920
+  },
+  {
+    "id": "p-tieu-can",
+    "name": "Phường Tiểu Cần",
+    "summary": "Phường Tiểu Cần, tỉnh Vĩnh Long, hình thành từ sáp nhập TT Tiểu Cần, xã Phú Cần và xã Hiếu Trung thuộc huyện Tiểu Cần.",
+    "placeId": "p-tieu-can",
+    "address": null,
+    "webp_exists": true,
+    "webp_size": 9482
+  },
+  {
+    "id": "p-tra-on",
+    "name": "Phường Trà Ôn",
+    "summary": "Phường Trà Ôn thuộc huyện Trà Ôn, tỉnh Vĩnh Long, ra đời khi xã Tích Thiện, một phần TT Trà Ôn nhập lại.",
+    "placeId": "p-long-chau",
+    "address": null,
+    "webp_exists": true,
+    "webp_size": 9658
+  },
+  {
+    "id": "p-tra-vinh",
+    "name": "Phường Trà Vinh",
+    "summary": "Phường Trà Vinh, tỉnh Vĩnh Long, hợp nhất từ Phường 1, Phường 3 (gồm Phường 2 + Phường 6 cũ) và Phường 9 thuộc TP Trà Vinh.",
+    "placeId": "p-tra-vinh",
+    "address": null,
+    "webp_exists": true,
+    "webp_size": 9484
+  },
+  {
+    "id": "p-truong-long-hoa",
+    "name": "Phường Trường Long Hòa",
+    "summary": "Phường Trường Long Hòa, tỉnh Vĩnh Long, hợp nhất từ Phường 2 và xã Trường Long Hòa thuộc thị xã Duyên Hải.",
+    "placeId": "p-truong-long-hoa",
+    "address": null,
+    "webp_exists": true,
+    "webp_size": 9536
+  },
+  {
+    "id": "p-vung-liem",
+    "name": "Phường Vũng Liêm",
+    "summary": "Phường Vũng Liêm thuộc tỉnh Vĩnh Long, gộp từ TT Vũng Liêm, xã Trung Hiếu và xã Trung Thành của huyện Vũng Liêm.",
+    "placeId": "p-vung-liem",
+    "address": null,
+    "webp_exists": true,
+    "webp_size": 9704
+  },
+  {
+    "id": "vinh-long",
+    "name": "Tỉnh Vĩnh Long",
+    "summary": "Tỉnh Vĩnh Long (mới) hợp nhất từ Vĩnh Long, Bến Tre và Trà Vinh theo Nghị quyết 202/2025/QH15, có hiệu lực từ 1/7/2025. Diện tích 6.296 km², dân số hơn 4,2 triệu người, 124 xã/phường theo mô hình 2 cấp.",
+    "placeId": "p-long-chau",
+    "address": null,
+    "webp_exists": true,
+    "webp_size": 9114
+  },
+  {
+    "id": "xa-an-binh",
+    "name": "Xã An Bình",
+    "summary": "Xã An Bình thuộc tỉnh Vĩnh Long, gộp từ xã Hòa Ninh, xã Bình Hòa Phước, xã Đồng Phú và xã An Bình của huyện Long Hồ.",
+    "placeId": "p-long-chau",
+    "address": null,
+    "webp_exists": true,
+    "webp_size": 9558
+  },
+  {
+    "id": "xa-an-dinh",
+    "name": "Xã An Định",
+    "summary": "Xã An Định, tỉnh Vĩnh Long, hợp nhất từ xã Tân Trung, xã Minh Đức và xã An Định thuộc huyện Mỏ Cày Nam.",
+    "placeId": "xa-an-dinh",
+    "address": null,
+    "webp_exists": true,
+    "webp_size": 9188
+  },
+  {
+    "id": "xa-an-hiep",
+    "name": "Xã An Hiệp",
+    "summary": "Xã An Hiệp, tỉnh Vĩnh Long, hợp nhất từ xã Tân Hưng, xã An Ngãi Tây và xã An Hiệp thuộc huyện Ba Tri.",
+    "placeId": "xa-an-hiep",
+    "address": null,
+    "webp_exists": true,
+    "webp_size": 9314
+  },
+  {
+    "id": "xa-an-ngai-trung",
+    "name": "Xã An Ngãi Trung",
+    "summary": "Xã An Ngãi Trung, tỉnh Vĩnh Long, hình thành từ sáp nhập xã Mỹ Thạnh, xã An Phú Trung và xã An Ngãi Trung thuộc huyện Ba Tri.",
+    "placeId": "xa-trung-ngai",
+    "address": null,
+    "webp_exists": true,
+    "webp_size": 9404
+  },
+  {
+    "id": "xa-an-phu-tan",
+    "name": "Xã An Phú Tân",
+    "summary": "Xã An Phú Tân thuộc huyện Cầu Kè, tỉnh Trà Vinh (cũ), ra đời khi xã Hòa Tân và xã An Phú Tân nhập lại.",
+    "placeId": "xa-tan-an",
+    "address": null,
+    "webp_exists": true,
+    "webp_size": 9360
+  },
+  {
+    "id": "xa-an-qui",
+    "name": "Xã An Qui",
+    "summary": "Xã An Qui thuộc tỉnh Vĩnh Long, sáp nhập từ xã An Thuận, xã An Nhơn và xã An Qui của huyện Thạnh Phú.",
+    "placeId": "xa-an-qui",
+    "address": null,
+    "webp_exists": true,
+    "webp_size": 9160
+  },
+  {
+    "id": "xa-an-truong",
+    "name": "Xã An Trường",
+    "summary": "Xã An Trường, tỉnh Vĩnh Long, hợp nhất từ xã Tân Bình, xã An Trường A và xã An Trường thuộc huyện Càng Long.",
+    "placeId": "xa-an-truong",
+    "address": null,
+    "webp_exists": true,
+    "webp_size": 9426
+  },
+  {
+    "id": "xa-bao-thanh",
+    "name": "Xã Bảo Thạnh",
+    "summary": "Hai xã Bảo Thuận và Bảo Thạnh của huyện Ba Tri cũ nhập lại thành xã Bảo Thạnh, nay thuộc tỉnh Vĩnh Long, mã hành chính 29125.",
+    "placeId": "xa-bao-thanh",
+    "address": null,
+    "webp_exists": true,
+    "webp_size": 9446
+  },
+  {
+    "id": "xa-binh-phu",
+    "name": "Xã Bình Phú",
+    "summary": "Xã Bình Phú, tỉnh Vĩnh Long, hình thành từ sáp nhập xã Bình Phú, xã Đại Phúc và xã Phương Thạnh thuộc huyện Càng Long.",
+    "placeId": "xa-binh-phu",
+    "address": null,
+    "webp_exists": true,
+    "webp_size": 9188
+  },
+  {
+    "id": "xa-binh-phuoc",
+    "name": "Xã Bình Phước",
+    "summary": "Xã Bình Phước, tỉnh Vĩnh Long, hình thành từ sáp nhập xã Long Mỹ, xã Hòa Tịnh và xã Bình Phước thuộc huyện Mang Thít.",
+    "placeId": "p-long-chau",
+    "address": null,
+    "webp_exists": true,
+    "webp_size": 9412
+  },
+  {
+    "id": "xa-cai-nhum",
+    "name": "Xã Cái Nhum",
+    "summary": "Xã Cái Nhum, tỉnh Vĩnh Long, hợp nhất từ xã An Phước, xã Chánh An và TT Cái Nhum thuộc huyện Mang Thít.",
+    "placeId": "p-long-chau",
+    "address": null,
+    "webp_exists": true,
+    "webp_size": 8818
+  },
+  {
+    "id": "xa-cau-ke",
+    "name": "Xã Cầu Kè",
+    "summary": "Ba đơn vị cũ gồm thị trấn Cầu Kè, xã Hòa Ân và xã Châu Điền hợp thành xã Cầu Kè thuộc tỉnh Vĩnh Long hôm nay.",
+    "placeId": "xa-cau-ke",
+    "address": null,
+    "webp_exists": true,
+    "webp_size": 9112
+  },
+  {
+    "id": "xa-cau-ngang",
+    "name": "Xã Cầu Ngang",
+    "summary": "Xã Cầu Ngang thuộc tỉnh Vĩnh Long, sáp nhập từ TT Cầu Ngang, xã Mỹ Hòa và xã Thuận Hòa của huyện Cầu Ngang.",
+    "placeId": "xa-cau-ngang",
+    "address": null,
+    "webp_exists": true,
+    "webp_size": 9448
+  },
+  {
+    "id": "xa-chau-hoa",
+    "name": "Xã Châu Hòa",
+    "summary": "Xã Châu Hòa, tỉnh Vĩnh Long, hình thành từ sáp nhập xã Châu Bình, xã Lương Quới và xã Châu Hòa thuộc huyện Giồng Trôm.",
+    "placeId": "xa-chau-hoa",
+    "address": null,
+    "webp_exists": true,
+    "webp_size": 9816
+  },
+  {
+    "id": "xa-chau-hung",
+    "name": "Xã Châu Hưng",
+    "summary": "Xã Châu Hưng thuộc tỉnh Vĩnh Long, sáp nhập từ xã Long Hòa, xã Thới Lai và xã Châu Hưng của huyện Bình Đại.",
+    "placeId": "xa-chau-hung",
+    "address": null,
+    "webp_exists": true,
+    "webp_size": 8930
+  },
+  {
+    "id": "xa-chau-thanh",
+    "name": "Xã Châu Thành",
+    "summary": "Xã Châu Thành thuộc tỉnh Vĩnh Long, sáp nhập từ TT Châu Thành, xã Mỹ Chánh, xã Thanh Mỹ và xã Đa Lộc của huyện Châu Thành (TV).",
+    "placeId": "xa-chau-thanh",
+    "address": null,
+    "webp_exists": true,
+    "webp_size": 8928
+  }
+]
