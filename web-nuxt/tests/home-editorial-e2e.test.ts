@@ -234,7 +234,7 @@ describe('Tier 1: Feature Coverage — R5: Strict Technical & Safety Standards',
 
     const jsonBuffer = readFileSync(dataJsonPath)
     const jsonHash = createHash('sha256').update(jsonBuffer).digest('hex')
-    expect(jsonHash.toLowerCase()).toBe('a787aff39a9b9fab00d119ae0579a4e12d6b34b00c30c2bf0769624986dfcd73')
+    expect(jsonHash.toLowerCase()).toBe('6a3a0458a1c6940af03fc5cd48233626248552921176c2b0f5878ebe18dca3d6')
   })
 
   it('F5.5: preserves 9 protected CSS variables under [data-home-pilot="nocturne-b1"]', () => {

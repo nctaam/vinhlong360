@@ -1,0 +1,279 @@
+[
+  {
+    "entity_id": "lang-nghe-gach-gom-mang-thit-vuong-quoc-do",
+    "name": "Làng Nghề Gạch Gốm Mang Thít (Vương Quốc Đỏ)",
+    "enriched_fields": [
+      "raw_material",
+      "households",
+      "recognition_date",
+      "specialty",
+      "hours",
+      "admission",
+      "phone"
+    ]
+  },
+  {
+    "entity_id": "lang-tau-hu-ky-my-hoa",
+    "name": "Làng tàu hủ ky Mỹ Hòa",
+    "enriched_fields": [
+      "raw_material",
+      "households",
+      "recognition_date",
+      "specialty",
+      "hours",
+      "admission",
+      "phone",
+      "cooperative"
+    ]
+  },
+  {
+    "entity_id": "lang-mai-vang-phuoc-dinh",
+    "name": "Làng mai vàng Phước Định",
+    "enriched_fields": [
+      "raw_material",
+      "households",
+      "recognition_date",
+      "specialty",
+      "hours",
+      "admission",
+      "phone",
+      "cooperative"
+    ]
+  },
+  {
+    "entity_id": "lang-nghe-dan-non-la-tt-long-ho",
+    "name": "Làng nghề đan nón lá TT Long Hồ",
+    "enriched_fields": [
+      "raw_material",
+      "households",
+      "recognition_date",
+      "specialty",
+      "hours",
+      "admission",
+      "phone"
+    ]
+  },
+  {
+    "entity_id": "lang-dan-luc-binh-ngai-tu",
+    "name": "Làng Đan Lục Bình Ngãi Tứ",
+    "enriched_fields": [
+      "raw_material",
+      "households",
+      "recognition_date",
+      "specialty",
+      "hours",
+      "admission",
+      "phone",
+      "cooperative"
+    ]
+  },
+  {
+    "entity_id": "lang-nghe-bo-choi-my-an",
+    "name": "Làng nghề bó chổi Mỹ An",
+    "enriched_fields": [
+      "raw_material",
+      "households",
+      "recognition_date",
+      "specialty",
+      "hours",
+      "admission",
+      "phone"
+    ]
+  },
+  {
+    "entity_id": "lang-hoa-kieng-cai-mon-cho-lach",
+    "name": "Làng Hoa Kiểng Cái Mơn (hay Làng nghề cây giống và hoa kiểng Cái Mơn – Chợ Lách)",
+    "enriched_fields": [
+      "raw_material",
+      "households",
+      "recognition_date",
+      "specialty",
+      "hours",
+      "admission",
+      "phone"
+    ]
+  },
+  {
+    "entity_id": "lang-nghe-det-chieu-ca-hom-ben-ba",
+    "name": "Làng nghề dệt chiếu Cà Hom - Bến Bạ",
+    "enriched_fields": [
+      "raw_material",
+      "households",
+      "recognition_date",
+      "specialty",
+      "hours",
+      "admission",
+      "phone"
+    ]
+  },
+  {
+    "entity_id": "lang-nghe-tom-kho-vinh-kim",
+    "name": "Làng nghề tôm khô Vinh Kim",
+    "enriched_fields": [
+      "raw_material",
+      "households",
+      "recognition_date",
+      "specialty",
+      "hours",
+      "admission",
+      "phone"
+    ]
+  },
+  {
+    "entity_id": "lang-ong-lang-ong-che-nguyen-van-ton",
+    "name": "Lăng Ông (Lăng Ông Chế - Nguyễn Văn Tồn)",
+    "enriched_fields": [
+      "phone",
+      "hours",
+      "admission",
+      "heritage_level",
+      "address",
+      "highlight"
+    ]
+  },
+  {
+    "entity_id": "bao-tang-van-hoa-dan-toc-khmer-tra-vinh",
+    "name": "Bảo tàng Văn hóa Dân tộc Khmer Trà Vinh",
+    "enriched_fields": [
+      "phone",
+      "hours",
+      "admission",
+      "address",
+      "highlight"
+    ]
+  },
+  {
+    "entity_id": "ca-tai-tuong-chien-xu",
+    "name": "Cá tai tượng chiên xù",
+    "enriched_fields": [
+      "ingredients",
+      "where_to_eat",
+      "cooking_method",
+      "main_ingredient",
+      "price_range",
+      "best_time"
+    ]
+  },
+  {
+    "entity_id": "banh-xeo-hen-cu-lao-dai",
+    "name": "Bánh Xèo Hến Cù Lao Dài",
+    "enriched_fields": [
+      "ingredients",
+      "where_to_eat",
+      "cooking_method",
+      "main_ingredient",
+      "price_range",
+      "best_time"
+    ]
+  },
+  {
+    "entity_id": "bun-nuoc-leo-vinh-long",
+    "name": "Bún nước lèo Vĩnh Long",
+    "enriched_fields": [
+      "ingredients",
+      "where_to_eat",
+      "cooking_method",
+      "main_ingredient",
+      "price_range",
+      "best_time"
+    ]
+  },
+  {
+    "entity_id": "mam-song-khoai-lang",
+    "name": "Mắm sống khoai lang",
+    "enriched_fields": [
+      "ingredients",
+      "where_to_eat",
+      "cooking_method",
+      "main_ingredient",
+      "price_range",
+      "best_time"
+    ]
+  },
+  {
+    "entity_id": "banh-xeo-mien-tay",
+    "name": "Bánh xèo Vĩnh Long",
+    "enriched_fields": [
+      "ingredients",
+      "where_to_eat",
+      "cooking_method",
+      "main_ingredient",
+      "price_range",
+      "best_time"
+    ]
+  },
+  {
+    "entity_id": "cha-gio-chay",
+    "name": "Chả giò chay",
+    "enriched_fields": [
+      "ingredients",
+      "where_to_eat",
+      "cooking_method",
+      "main_ingredient",
+      "price_range",
+      "best_time"
+    ]
+  },
+  {
+    "entity_id": "sau-rieng-ri6",
+    "name": "Sầu riêng Ri6",
+    "enriched_fields": [
+      "ocop_star",
+      "ocop_certified",
+      "gi_certification",
+      "price_range",
+      "producer",
+      "shelf_life",
+      "specialty"
+    ]
+  },
+  {
+    "entity_id": "buoi-nam-roi-binh-minh",
+    "name": "Bưởi Năm Roi Bình Minh",
+    "enriched_fields": [
+      "ocop_star",
+      "ocop_certified",
+      "gi_certification",
+      "price_range",
+      "producer",
+      "shelf_life",
+      "specialty"
+    ]
+  },
+  {
+    "entity_id": "cam-sanh-tam-binh",
+    "name": "Cam sành Tam Bình",
+    "enriched_fields": [
+      "ocop_star",
+      "ocop_certified",
+      "price_range",
+      "producer",
+      "shelf_life",
+      "specialty"
+    ]
+  },
+  {
+    "entity_id": "banh-trang-nem-cu-lao-may",
+    "name": "Bánh tráng nem Cù Lao Mây",
+    "enriched_fields": [
+      "ocop_star",
+      "ocop_certified",
+      "price_range",
+      "producer",
+      "shelf_life",
+      "specialty"
+    ]
+  },
+  {
+    "entity_id": "chao-dua-thuan-duyen-tam-binh",
+    "name": "Chao dừa Thuận Duyên Tam Bình",
+    "enriched_fields": [
+      "ocop_star",
+      "ocop_certified",
+      "price_range",
+      "producer",
+      "shelf_life",
+      "specialty"
+    ]
+  }
+]

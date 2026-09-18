@@ -10,7 +10,7 @@
         <p class="sh-sub">Những bến bờ sông nước, lò gạch nung đỏ rực và vựa cây trái rợp bóng phù sa đất Vĩnh Long.</p>
       </div>
       <NuxtLink to="/du-lich" class="see-all">
-        <span>Xem trọn 220 điểm đến</span>
+        <span>Khám phá 1.772 điểm đến</span>
         <IconLine name="arrow-right" class="inline-arrow" aria-hidden="true" />
       </NuxtLink>
     </div>

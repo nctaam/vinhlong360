@@ -8,9 +8,10 @@
             <IconLine name="info" aria-hidden="true" />
             CHỈ DẪN THỰC ĐỊA
           </span>
+          <span class="fieldwork-faq__count">4 chỉ dẫn then chốt</span>
         </div>
         <h2 id="fieldwork-faq-title" class="fieldwork-faq__title">
-          Lữ khách cần biết trước khi <em class="fieldwork-faq__title-em">khởi hành</em>
+          Lữ khách cần biết trước khi <em class="editorial-italic-accent" aria-hidden="true">khởi hành</em>
         </h2>
         <p class="fieldwork-faq__subtitle">
           Giải đáp những câu hỏi cốt lõi về mùa vụ con nước, lộ trình di chuyển và chi phí trải nghiệm tại xứ sở miệt vườn Vĩnh Long.
@@ -75,162 +76,28 @@ const faqItems: FaqEntry[] = [
 </script>
 
 <style scoped>
-.home-fieldwork-faq {
-  padding: var(--space-8) 0;
-  border-top: 1px dashed color-mix(in srgb, var(--color-border) 60%, transparent);
-}
-
-.fieldwork-faq__inner {
-  max-width: var(--container-max, 1120px);
-  margin: 0 auto;
-  padding: 0 var(--space-4);
-}
-
-.fieldwork-faq__header {
-  margin-bottom: var(--space-6);
-}
-
-.fieldwork-faq__tagline {
-  display: flex;
-  align-items: center;
-  gap: var(--space-3);
-  margin-bottom: var(--space-2);
-}
-
-.fieldwork-faq__badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  font-size: var(--text-xs);
-  font-weight: var(--weight-bold);
-  letter-spacing: 0.08em;
-  color: var(--mangthit-600);
-}
-
-.fieldwork-faq__title {
-  font-family: var(--font-serif, 'Lora', Georgia, serif);
-  font-size: clamp(1.5rem, 2.5vw, 2rem);
-  font-weight: var(--weight-normal, 400);
-  line-height: 1.25;
-  color: var(--color-text);
-  margin: 0 0 var(--space-2);
-}
-
-.fieldwork-faq__title-em {
-  font-style: italic;
-  color: var(--mangthit-600);
-}
-
-.fieldwork-faq__subtitle {
-  font-size: var(--text-sm);
-  color: var(--color-text-muted);
-  max-width: 640px;
-  margin: 0;
-  line-height: 1.6;
-}
-
-.fieldwork-faq__accordion {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-3);
-}
-
-.fieldwork-faq__item {
-  border-radius: var(--radius-surface, 20px);
-  background: color-mix(in srgb, var(--color-surface) 70%, transparent);
-  border: 1px solid color-mix(in srgb, var(--color-border) 60%, transparent);
-  overflow: hidden;
-  transition: border-color 0.2s ease, background-color 0.2s ease, box-shadow 0.2s ease;
-}
-
-.fieldwork-faq__item:hover {
-  border-color: color-mix(in srgb, var(--mangthit-600) 40%, transparent);
-  background: var(--color-surface);
-}
-
-.fieldwork-faq__item[open] {
-  border-color: color-mix(in srgb, var(--mangthit-600) 60%, transparent);
-  box-shadow: 0 8px 24px rgba(var(--black-rgb), 0.04);
-}
-
-.fieldwork-faq__summary {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--space-3);
-  padding: var(--space-4) var(--space-5);
-  font-size: var(--text-base);
-  font-weight: var(--weight-medium, 500);
-  color: var(--color-text);
-  cursor: pointer;
-  list-style: none;
-  min-height: 44px;
-  user-select: none;
-}
-
-.fieldwork-faq__summary::-webkit-details-marker {
-  display: none;
-}
-
-.fieldwork-faq__question-text {
-  flex: 1;
-  line-height: 1.4;
-}
-
-.fieldwork-faq__icon {
-  flex-shrink: 0;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 28px;
-  height: 28px;
-  border-radius: var(--radius-pill, 999px);
-  background: color-mix(in srgb, var(--color-border) 40%, transparent);
-  color: var(--color-text-muted);
-  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), background-color 0.2s ease, color 0.2s ease;
-}
-
-.fieldwork-faq__item[open] .fieldwork-faq__icon {
-  transform: rotate(180deg);
-  background: var(--mangthit-600);
-  color: rgb(var(--white-rgb));
-}
-
-.fieldwork-faq__answer {
-  padding: 0 var(--space-5) var(--space-5);
-  font-size: var(--text-sm);
-  color: var(--color-text-muted);
-  line-height: 1.65;
-  border-top: 1px dashed color-mix(in srgb, var(--color-border) 40%, transparent);
-  margin-top: var(--space-1);
-  padding-top: var(--space-3);
-}
-
-.fieldwork-faq__answer p {
-  margin: 0 0 var(--space-2);
-}
-
-.fieldwork-faq__tips {
-  display: flex;
-  align-items: flex-start;
-  gap: var(--space-2);
-  padding: var(--space-2) var(--space-3);
-  border-radius: var(--radius-control, 12px);
-  background: color-mix(in srgb, var(--mangthit-600) 8%, transparent);
-  color: var(--color-text);
-  font-size: var(--text-xs);
-  line-height: 1.5;
-}
-
-.fieldwork-faq__tips-label {
-  color: var(--mangthit-600);
-  white-space: nowrap;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .fieldwork-faq__item,
-  .fieldwork-faq__icon {
-    transition: none;
-  }
-}
+.home-fieldwork-faq{padding:var(--space-8) 0;border-top:1px dashed color-mix(in srgb,var(--color-border) 60%,transparent)}
+.fieldwork-faq__inner{max-width:var(--container-max,1120px);margin:0 auto;padding:0 var(--space-4)}
+.fieldwork-faq__header{margin-bottom:var(--space-6)}
+.fieldwork-faq__tagline{display:flex;align-items:center;gap:var(--space-3);margin-bottom:var(--space-2)}
+.fieldwork-faq__badge{display:inline-flex;align-items:center;gap:6px;font-size:var(--text-xs);font-weight:var(--weight-bold);letter-spacing:.08em;color:var(--mangthit-600)}
+.fieldwork-faq__count{font-size:11px;font-family:var(--font-mono,monospace);padding:2px 8px;border-radius:var(--radius-pill,999px);border:1px solid color-mix(in srgb,var(--color-border) 80%,transparent);color:var(--color-text-muted)}
+.fieldwork-faq__title{font-family:var(--font-serif,'Lora',Georgia,serif);font-size:clamp(1.5rem,2.5vw,2rem);font-weight:400;line-height:1.25;color:var(--color-text);margin:0 0 var(--space-2)}
+.fieldwork-faq__title-em{font-style:italic;color:var(--mangthit-600)}
+.fieldwork-faq__subtitle{font-size:var(--text-sm);color:var(--color-text-muted);max-width:640px;margin:0;line-height:1.6}
+.fieldwork-faq__accordion{display:flex;flex-direction:column;gap:var(--space-3)}
+.fieldwork-faq__item{border-radius:var(--radius-surface,20px);background:color-mix(in srgb,var(--color-surface) 70%,transparent);border:1px solid color-mix(in srgb,var(--color-border) 60%,transparent);overflow:hidden;transition:border-color .2s ease,background-color .2s ease,box-shadow .2s ease}
+.fieldwork-faq__item:hover{border-color:color-mix(in srgb,var(--mangthit-600) 40%,transparent);background:var(--color-surface)}
+.fieldwork-faq__item[open]{border-color:color-mix(in srgb,var(--mangthit-600) 60%,transparent);box-shadow:0 8px 24px rgba(var(--black-rgb),.04)}
+.fieldwork-faq__summary{display:flex;align-items:center;justify-content:space-between;gap:var(--space-3);padding:var(--space-4) var(--space-5);font-size:var(--text-base);font-weight:500;color:var(--color-text);cursor:pointer;list-style:none;min-height:44px;user-select:none;border-radius:var(--radius-surface,20px)}
+.fieldwork-faq__summary:focus-visible{outline:2px solid var(--color-focus);outline-offset:-2px}
+.fieldwork-faq__summary::-webkit-details-marker{display:none}
+.fieldwork-faq__question-text{flex:1;line-height:1.4}
+.fieldwork-faq__icon{flex-shrink:0;display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:var(--radius-pill,999px);background:color-mix(in srgb,var(--color-border) 40%,transparent);color:var(--color-text-muted);transition:transform .25s cubic-bezier(.16,1,.3,1),background-color .2s ease,color .2s ease}
+.fieldwork-faq__item[open] .fieldwork-faq__icon{transform:rotate(180deg);background:var(--mangthit-600);color:rgb(var(--white-rgb))}
+.fieldwork-faq__answer{padding:0 var(--space-5) var(--space-5);font-size:var(--text-sm);color:var(--color-text-muted);line-height:1.65;border-top:1px dashed color-mix(in srgb,var(--color-border) 40%,transparent);margin-top:var(--space-1);padding-top:var(--space-3)}
+.fieldwork-faq__answer p{margin:0 0 var(--space-2)}
+.fieldwork-faq__tips{display:flex;align-items:flex-start;gap:var(--space-2);padding:var(--space-2) var(--space-3);border-radius:var(--radius-control,12px);background:color-mix(in srgb,var(--mangthit-600) 8%,transparent);color:var(--color-text);font-size:var(--text-xs);line-height:1.5}
+.fieldwork-faq__tips-label{color:var(--mangthit-600);white-space:nowrap}
+@media (prefers-reduced-motion:reduce){.fieldwork-faq__item,.fieldwork-faq__icon{transition:none}}
 </style>

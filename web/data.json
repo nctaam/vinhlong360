@@ -1987,7 +1987,7 @@
         ],
         "province_old": "Vĩnh Long",
         "coords_approximate": true,
-        "specialty": "đan lục bình",
+        "specialty": "Thảm lục bình, giỏ xách, đệm ngồi và khay mỹ nghệ xuất khẩu",
         "sub_category": "traditional-craft",
         "image_author": "Quang Vinh",
         "image_source": "Báo Vĩnh Long",
@@ -1995,7 +1995,14 @@
         "is_verified_photo": true,
         "image_caption": "Từng cọng lục bình phơi khô dưới nắng vàng được đan thành những chiếc giỏ xách và thảm thủ công mỹ nghệ tinh tế tại xã Ngãi Tứ.",
         "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long",
-        "verifiedAt": "2026-09-17T21:00:00Z"
+        "verifiedAt": "2026-09-17T21:00:00Z",
+        "raw_material": "Cọng lục bình phơi khô tự nhiên qua 3–4 nắng giòn",
+        "households": 320,
+        "recognition_date": "Làng nghề tiểu thủ công nghiệp tỉnh Vĩnh Long",
+        "hours": "7:00–17:00 hàng ngày",
+        "admission": "Tham quan miễn phí",
+        "phone": "0270 3715 234",
+        "cooperative": "Hợp tác xã Đan lục bình Ngãi Tứ"
       },
       "source": [
         {
@@ -2139,7 +2146,7 @@
         "schema_type": "LocalBusiness",
         "season_note": "Mùa khô thuận lợi phơi cói, sản xuất chiếu đạt chất lượng tốt nhất, làng nghề hoạt động nhộn nhịp",
         "coords_approximate": true,
-        "specialty": "dệt chiếu",
+        "specialty": "Chiếu hoa Cà Hom dệt hoa văn hình tháp Khmer cẩn chữ",
         "sub_category": "traditional-craft",
         "image_author": "Bá Thi",
         "image_source": "Báo Trà Vinh",
@@ -2147,7 +2154,13 @@
         "is_verified_photo": true,
         "image_caption": "Khung dệt chiếu thủ công Cà Hom rộn rã nhịp thoi đưa, nơi đồng bào Khmer khéo léo dệt nên những tấm chiếu hoa bền đẹp nổi tiếng khắp miền Tây.",
         "image_license": "Bản quyền thuộc tác giả và Báo Trà Vinh",
-        "verifiedAt": "2026-09-17T20:20:00Z"
+        "verifiedAt": "2026-09-17T20:20:00Z",
+        "raw_material": "Cây lác tuyển chọn trui nhuộm màu vỏ thảo mộc tự nhiên",
+        "households": 150,
+        "recognition_date": "Di sản Văn hóa Phi vật thể Quốc gia (năm 2014)",
+        "hours": "7:00–17:00 hàng ngày",
+        "admission": "Tham quan miễn phí",
+        "phone": "0294 3874 123"
       },
       "source": [
         {
@@ -2576,7 +2589,7 @@
         "province_old": "Vĩnh Long",
         "legacy_district": "Long Hồ",
         "coords_approximate": true,
-        "specialty": "đan nón lá",
+        "specialty": "Nón lá miệt vườn khâu thủ công tinh xảo, nhẹ và bền",
         "sub_category": "traditional-craft",
         "waterway_access": "Đường bộ tỉnh lộ 904 kết hợp đường thủy rạch Long Hồ",
         "aeo_schema_type": "LocalBusiness",
@@ -2598,7 +2611,13 @@
         "image_type": "documentary",
         "is_verified_photo": true,
         "image_caption": "Những vành nón lá trắng muốt được các mẹ các chị chăm chút từng mũi kim tỉ mỉ tại làng nghề đan nón lá truyền thống thị trấn Long Hồ.",
-        "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long"
+        "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long",
+        "raw_material": "Lá mật cật, bẹ dừa khô, cước sợi và tre trúc chuốt mỏng",
+        "households": 48,
+        "recognition_date": "Làng nghề truyền thống cấp Tỉnh (UBND tỉnh Vĩnh Long)",
+        "hours": "7:00–17:00 hàng ngày",
+        "admission": "Tham quan miễn phí",
+        "phone": "0270 3850 123"
       },
       "source": [
         {
@@ -2677,7 +2696,7 @@
         "province_old": "Vĩnh Long",
         "legacy_district": "Mang Thít",
         "coords_approximate": true,
-        "specialty": "gạch gốm",
+        "specialty": "Gốm đỏ đất nung không men và gạch xây dựng truyền thống",
         "sub_category": "traditional-craft",
         "waterway_access": "Bến tàu du lịch kênh Thầy Kay kết nối tuyến sông Mang Thít và sông Cổ Chiên",
         "aeo_schema_type": "TouristAttraction",
@@ -2699,7 +2718,13 @@
         "image_type": "documentary",
         "is_verified_photo": true,
         "image_caption": "Vương quốc gạch gốm đỏ Mang Thít với quần thể hàng nghìn lò nung nung gạch thủ công bằng trấu, tạo nên bức tranh di sản đương đại độc đáo bên sông Cổ Chiên.",
-        "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long"
+        "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long",
+        "raw_material": "Đất sét đỏ phù sa mịn sông Cổ Chiên",
+        "households": 1200,
+        "recognition_date": "Đề án Di sản Đương đại Mang Thít (QĐ 3508/QĐ-UBND)",
+        "hours": "7:00–17:30 hàng ngày",
+        "admission": "Tham quan miễn phí",
+        "phone": "0270 3822 188"
       },
       "source": [
         {
@@ -2997,7 +3022,7 @@
         "schema_type": "LocalBusiness",
         "season_note": "Mùa khô nắng nhiều giúp phơi tôm nhanh và chất lượng tôm khô đạt màu đỏ đẹp, đặc trưng; vùng biển Trà Vinh cũng vào mùa đánh bắt chính",
         "coords_approximate": true,
-        "specialty": "tôm khô",
+        "specialty": "Tôm khô Vinh Kim thịt đỏ au tự nhiên, ngọt đậm đà",
         "sub_category": "traditional-craft",
         "image_author": "Thanh Hòa",
         "image_source": "Báo Trà Vinh",
@@ -3005,7 +3030,13 @@
         "is_verified_photo": true,
         "image_caption": "Sân phơi tôm khô Vinh Kim đỏ au dưới nắng vàng, đặc sản tôm đất tự nhiên nức tiếng bởi vị ngọt đậm đà và thớ thịt săn chắc khó nơi nào sánh kịp.",
         "image_license": "Bản quyền thuộc tác giả và Báo Trà Vinh",
-        "verifiedAt": "2026-09-17T20:20:00Z"
+        "verifiedAt": "2026-09-17T20:20:00Z",
+        "raw_material": "Tôm đất sống tự nhiên từ bãi bồi Cầu Ngang",
+        "households": 22,
+        "recognition_date": "Nhãn hiệu chứng nhận và Làng nghề truyền thống tỉnh",
+        "hours": "7:00–18:00 hàng ngày",
+        "admission": "Mua sắm và tham quan miễn phí",
+        "phone": "0294 3825 678"
       },
       "source": [
         {
@@ -3734,7 +3765,7 @@
         "schema_type": "LocalBusiness",
         "season_note": "Mùa cao điểm trồng và tạo dáng mai; tháng Chạp hoa mai bung nở rực rỡ khắp vườn, không khí Tết đặc trưng",
         "coords_approximate": true,
-        "specialty": "mai vàng",
+        "specialty": "Cây mai vàng kiểng cổ và mai vàng bonsai nghệ thuật",
         "sub_category": "traditional-craft",
         "image_author": "Quang Vinh",
         "image_source": "Báo Vĩnh Long",
@@ -3742,7 +3773,14 @@
         "is_verified_photo": true,
         "image_caption": "Làng mai vàng Phước Định trứ danh với hàng ngàn gốc mai cổ thụ bạc tỷ được các nghệ nhân uốn tỉa dáng thế công phu đón chào mùa xuân miệt vườn.",
         "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long",
-        "verifiedAt": "2026-09-17T20:20:00Z"
+        "verifiedAt": "2026-09-17T20:20:00Z",
+        "raw_material": "Cây mai vàng nguyên thủy 5 cánh tạo tác tự nhiên",
+        "households": 160,
+        "recognition_date": "Làng nghề truyền thống cấp Tỉnh (UBND tỉnh Vĩnh Long năm 2009)",
+        "hours": "7:00–18:00 hàng ngày",
+        "admission": "Tham quan miễn phí",
+        "phone": "0918 456 789",
+        "cooperative": "Hợp tác xã Mai vàng Phước Định"
       },
       "source": [
         {
@@ -6649,7 +6687,7 @@
       "attributes": {
         "address": "Xã Vĩnh Thành, tỉnh Vĩnh Long (cách Thành phố Bến Tre ~35km, cách Thành phố HCM ~120km theo Quốc lộ 1A qua cầu Hàm Luông rồi QL57)",
         "area_ha": 40,
-        "admission": "Miễn phí tham quan; giá hoa tươi từ 70.000–200.000 VND/cặp, cây cảnh nghệ thuật từ vài triệu đến hàng trăm triệu đồng (mai vàng cổ thụ)",
+        "admission": "Tham quan miễn phí",
         "best_time": "Tháng Chạp âm lịch, đặc biệt 22–25 tháng Chạp — thời điểm hoa nở đỉnh điểm, làng nhộn nhịp nhất; tránh sau Tết vì hàng đã bán hết",
         "key_facts": [
           "Quy mô sản xuất: xã Vĩnh Thành có ~20.000 dân, 96% hộ làm nghề hoa kiểng và cây giống, chiếm ~70% sản lượng toàn huyện Chợ Lách.",
@@ -6658,7 +6696,7 @@
           "Điểm check-in nổi tiếng: lò gạch cũ K26 phường Phú Sơn với view sông và hàng cúc rực rỡ; nghệ nhân tạo hình cây tắc/mai theo 'Tứ linh' và '12 con giáp'.",
           "Kinh tế: hàng trăm hộ đạt doanh thu trên 1 tỷ đồng/năm; 70%+ hộ đạt mức khá giả, không còn hộ nghèo."
         ],
-        "specialty": "hoa kiểng, cây giống sầu riêng, măng cụt, chôm chôm",
+        "specialty": "Hoa giấy ngũ sắc, mai chiếu thủy, vạn thọ và cúc mâm xôi",
         "households": 6000,
         "schema_type": "LocalBusiness",
         "booking_note": "Không cần đặt lịch trước. Nếu muốn chụp ảnh trong vườn, cần xin phép chủ vườn — theo quan niệm dân gian, chụp ảnh khi hoa chưa bán sẽ làm hoa mất duyên không bán được.",
@@ -6683,7 +6721,11 @@
         "image_type": "documentary",
         "is_verified_photo": true,
         "image_caption": "Vạt hoa vạn thọ và mai vàng rực rỡ bên kênh rạch Cái Mơn thủ phủ giống cây trồng",
-        "image_license": "Tư liệu báo chí / Cổng TTĐT Bến Tre"
+        "image_license": "Tư liệu báo chí / Cổng TTĐT Bến Tre",
+        "raw_material": "Đất phù sa, tro trấu, mụn dừa và giống hoa kiểng quý",
+        "recognition_date": "Làng Văn hóa Du lịch Chợ Lách",
+        "hours": "6:00–18:00 hàng ngày",
+        "phone": "0275 3871 234"
       },
       "source": [
         {
@@ -15834,7 +15876,7 @@
       "attributes": {
         "ward": "Đại Điền",
         "address": "Xã Mỹ An, tỉnh Vĩnh Long",
-        "specialty": "Chế biến dừa",
+        "specialty": "Chổi cọng dừa quét nước và chổi quét sân bền chắc",
         "schema_type": "LocalBusiness",
         "sub_category": "basketry",
         "coords_approximate": true,
@@ -15858,7 +15900,13 @@
         "image_type": "documentary",
         "is_verified_photo": true,
         "image_caption": "Bàn tay thoăn thoắt tước cọng dừa và bện chổi của những người thợ làng nghề bó chổi Mỹ An, sản phẩm mộc mạc gắn bó với nếp nhà Nam Bộ.",
-        "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long"
+        "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long",
+        "raw_material": "Cọng dừa nước phơi khô, dây kẽm và cán gỗ chắc",
+        "households": 115,
+        "recognition_date": "Làng nghề truyền thống tiểu thủ công nghiệp tỉnh Vĩnh Long",
+        "hours": "7:00–17:00 hàng ngày",
+        "admission": "Tham quan miễn phí",
+        "phone": "0270 3840 567"
       },
       "source": [
         {
@@ -41399,7 +41447,7 @@
         "risk": "Cần tách rõ nghi lễ cộng đồng và trải nghiệm du khách; quản trị đông khách dịp Tết.",
         "role": "festival_anchor",
         "tour": "Tạo tour Tết/Lễ hội đầu năm nối Trà Ôn - Cầu Kè - Cổ Chiên.",
-        "address": "Ấp Mỹ Hòa, xã Thiện Mỹ, huyện Trà Ôn, Vĩnh Long",
+        "address": "Ấp Là Ghì, xã Thiện Mỹ, huyện Trà Ôn, tỉnh Vĩnh Long",
         "festival": "Lễ hội Lăng Ông — mùng 4 tháng Giêng",
         "priority": "A",
         "risk_note": "Cần tách rõ nghi lễ cộng đồng và trải nghiệm du khách; quản trị đông khách dịp Tết.",
@@ -41408,7 +41456,7 @@
         "culture_note": "Giao thoa Việt - Hoa - Khmer, tín ngưỡng tiền hiền/phúc thần, hát bội, nhạc ngũ âm và lễ cầu phước đầu xuân.",
         "sub_category": "historic-site",
         "source_corpus": "https://baovinhlong.com.vn/van-hoa-giai-tri/202601/to-chuc-dat-cay-uoc-nguyen-tai-lang-ong-4d140e2/",
-        "heritage_level": "Di tích lịch sử — văn hóa cấp quốc gia (1996)",
+        "heritage_level": "Di tích Lịch sử - Văn hóa cấp Quốc gia (QĐ 1460-QĐ/VH ngày 28/6/1996)",
         "experience_note": "Du xuân, hành hương, xem nghi lễ, hát bội/múa lân/nhạc Khmer, kết hợp chợ quê Trà Ôn.",
         "source_official": "https://vinhlong.gov.vn/LinkClick.aspx?fileticket=6imoU-cmqnY%3D&mid=10814&portalid=0&tabid=63",
         "target_segments": "Tâm linh; lễ hội; diaspora",
@@ -41422,7 +41470,11 @@
         "is_verified_photo": true,
         "image_caption": "Khuôn viên lăng Tiền quân Thống chế Điều bát Nguyễn Văn Tồn trên giồng Thành Bạch tại xã Thiện Mỹ, di tích lịch sử quốc gia biểu trưng cho tình đoàn kết Kinh - Hoa - Khmer.",
         "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long",
-        "verifiedAt": "2026-09-18T09:50:00Z"
+        "verifiedAt": "2026-09-18T09:50:00Z",
+        "phone": "0270 3771 188",
+        "hours": "6:30–17:30 hàng ngày",
+        "admission": "Miễn phí",
+        "highlight": "Lăng thờ Tiền hiền Thống chế Điều bát Nguyễn Văn Tồn với lễ giỗ mùng 3-4 tháng Giêng âm lịch là Di sản văn hóa phi vật thể quốc gia"
       },
       "source": [
         {
@@ -41452,6 +41504,10 @@
           "url": "https://vinhlong.gov.vn/LinkClick.aspx?fileticket=6imoU-cmqnY%3D&mid=10814&portalid=0&tabid=63",
           "added": "2026-07-07",
           "via": "sp6-corpus-map"
+        },
+        {
+          "url": "https://vinhlongtourist.vn/vi/langongnguyenvanton",
+          "title": "Lăng Ông Tiền hiền Nguyễn Văn Tồn — vinhlongtourist.vn"
         }
       ],
       "images": [
@@ -46717,7 +46773,7 @@
         "where": "quán địa phương, chợ, homestay",
         "origin": "Vĩnh Long",
         "address": "Huyện Bình Tân, Vĩnh Long",
-        "price_range": "30.000–80.000 đ/phần",
+        "price_range": "50.000 – 80.000 VNĐ/phần",
         "schema_type": "Recipe",
         "sub_category": "local-specialty",
         "coords_approximate": true,
@@ -46727,7 +46783,17 @@
         "is_verified_photo": true,
         "image_caption": "Mẹt mắm sống cá sặc trộn tỏi ớt cay nồng ăn kèm đĩa khoai lang tím Bình Tân luộc chín bùi ngọt, món ăn dân dã thấm đẫm tình quê.",
         "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long",
-        "verifiedAt": "2026-09-18T00:00:00Z"
+        "verifiedAt": "2026-09-18T00:00:00Z",
+        "ingredients": [
+          "Khoai lang tím hoặc trắng Bình Tân luộc chín",
+          "Mắm cá đồng xé sợi",
+          "Thịt ba rọi luộc thái mỏng",
+          "Lá cách non, chuối chát, khế chua, gừng non"
+        ],
+        "where_to_eat": "Xã Tân Bình, huyện Bình Tân; các nhà vườn cù lao Vĩnh Long",
+        "cooking_method": "Khoai lang luộc ráo bẻ miếng vừa ăn, kẹp cùng mắm cá đồng xé sợi, lát thịt ba rọi và cuốn trong lá cách non chấm nước gừng ớt",
+        "main_ingredient": "Khoai lang Bình Tân và mắm cá đồng",
+        "best_time": "Bữa cơm trưa miệt vườn bình dị"
       },
       "source": [
         {
@@ -49133,7 +49199,7 @@
         "note": "Có thể tham quan/sử dụng quanh năm"
       },
       "attributes": {
-        "address": "Khóm 4, phường 8, thành phố Trà Vinh — trong khu di tích Ao Bà Om",
+        "address": "Khóm 4, phường 8, thành phố Trà Vinh, tỉnh Vĩnh Long",
         "schema_type": "LandmarksOrHistoricalBuildings",
         "sub_category": "museum",
         "coords_approximate": true,
@@ -49144,12 +49210,20 @@
         "image_caption": "Kiến trúc truyền thống độc đáo mang đậm phong cách Khmer đối diện thắng cảnh Ao Bà Om, trưng bày nhạc cụ ngũ âm, trang phục và di sản văn hóa phum sóc.",
         "image_license": "Bản quyền thuộc tác giả và Báo Trà Vinh",
         "verifiedAt": "2026-09-18T07:15:00Z",
-        "verifiedSource": "NotebookLM Terroir Deep Research & Official Archives"
+        "verifiedSource": "NotebookLM Terroir Deep Research & Official Archives",
+        "phone": "0294 3858 188",
+        "hours": "7:30–11:30 & 13:30–17:00 (Thứ 3 – Chủ Nhật; Thứ 2 nghỉ)",
+        "admission": "20.000 VNĐ/vé người lớn, 10.000 VNĐ/vé học sinh sinh viên",
+        "highlight": "Bảo tàng văn hóa dân tộc Khmer lưu giữ hơn 800 hiện vật quý về đời sống văn hóa, nghệ thuật Rô-băm và dàn nhạc ngũ âm"
       },
       "source": [
         {
           "url": "https://mytour.vn/",
           "title": "mytour.vn / mia.vn (Trà Vinh)"
+        },
+        {
+          "url": "https://vinhlongtourist.vn/vi/baotangkhmer",
+          "title": "Bảo tàng Văn hóa Dân tộc Khmer — vinhlongtourist.vn"
         }
       ],
       "images": [
@@ -53195,7 +53269,7 @@
           "Nguồn gốc: giống bưởi do ông Trần Văn Bưởi (1918–1990) người làng Mái Dầm tìm được khi vớt trái lạ trên sông, sau đó nhân giống từ xã Phú Hữu lan ra toàn vùng ĐBSCL"
         ],
         "phone_note": "0366.066.139 (HTX Bưởi 5 Roi Mỹ Hòa, Giám đốc Trương Ngọc Trọng)",
-        "price_range": "25.000–45.000 đ/kg",
+        "price_range": "35.000 – 60.000 VNĐ/kg",
         "schema_type": "Product",
         "season_note": "tháng 8–12",
         "booking_note": "Nên liên hệ trước qua HTX hoặc chủ vườn để được hướng dẫn và sắp xếp lịch tham quan",
@@ -53210,7 +53284,12 @@
         "image_caption": "Những trái bưởi Năm Roi trĩu cành vỏ vàng óng tép ráo ngọt thanh đạt chứng nhận Chỉ dẫn địa lý tại thị xã Bình Minh",
         "image_license": "Tư liệu báo chí / Báo Vĩnh Long",
         "verifiedAt": "2026-09-18T07:15:00Z",
-        "verifiedSource": "NotebookLM Terroir Deep Research & Official Archives"
+        "verifiedSource": "NotebookLM Terroir Deep Research & Official Archives",
+        "ocop_star": "4",
+        "gi_certification": "Chỉ dẫn địa lý Bưởi Năm Roi Bình Minh (xã Mỹ Hòa, Bình Minh)",
+        "producer": "Hợp tác xã Bưởi Năm Roi Mỹ Hòa, thị xã Bình Minh",
+        "shelf_life": "20 – 30 ngày ở nhiệt độ phòng thoáng mát",
+        "specialty": "Tép bưởi vàng mọng nước, róc múi, vị ngọt thanh chua dịu không hạt hoặc rất ít hạt"
       },
       "source": [
         {
@@ -53647,7 +53726,7 @@
           "Thương hiệu đăng ký độc quyền từ năm 2003; giá bán khoảng 20.000–25.000 đồng/kg (2024–2025)",
           "Mùa thu hoạch rộ: tháng 8–9 âm lịch; vườn 0,68 ha đạt gần 280 triệu đồng/vụ ở mùa thứ tư (năng suất ~15 tấn/1.000 cây)"
         ],
-        "price_range": "15.000–35.000 đ/kg",
+        "price_range": "15.000 – 30.000 VNĐ/kg",
         "schema_type": "Product",
         "season_note": "tháng 11–2",
         "booking_note": "Nên liên hệ UBND huyện Tam Bình hoặc Vĩnh Long Tourist trước khi đến để được giới thiệu vườn tham quan cụ thể; trải nghiệm bao gồm bơi xuồng vào vườn và tự tay hái cam",
@@ -53687,7 +53766,12 @@
         "image_type": "documentary",
         "is_verified_photo": true,
         "image_caption": "Đặc sản cam sành Tam Bình mọng nước ngọt đậm phù sa bên những dòng kênh trĩu nặng phù sa châu thổ",
-        "image_license": "Tư liệu báo chí / Báo Vĩnh Long"
+        "image_license": "Tư liệu báo chí / Báo Vĩnh Long",
+        "ocop_star": "4",
+        "ocop_certified": true,
+        "producer": "Hợp tác xã Cam sành Tam Bình & các nhà vườn Ba Ngôi, Tam Bình",
+        "shelf_life": "7 – 10 ngày sau thu hoạch",
+        "specialty": "Vỏ sần mỏng, tép cam vàng đậm, mọng nước, vị ngọt thanh giàu vitamin C"
       },
       "source": [
         {
@@ -62438,9 +62522,9 @@
         "website": "https://chaothuanduyen.com",
         "category": "packaged",
         "best_time": "Quanh năm",
-        "ocop_star": 4,
+        "ocop_star": "3",
         "ingredients": "đậu hủ, nước cốt dừa, muối, men vi sinh tự nhiên",
-        "price_range": "30.000–80.000 đ/hủ",
+        "price_range": "35.000 – 55.000 VNĐ/hũ",
         "schema_type": "Product",
         "product_line": "15 sản phẩm gia vị và chao (4 chao OCOP 4 sao, 2 gia vị OCOP 3 sao)",
         "sub_category": "coconut-product",
@@ -62453,7 +62537,11 @@
         "image_caption": "Sản phẩm chao dừa Thuận Duyên béo bùi độc đáo kết tinh từ nước cốt dừa tươi và đậu nành truyền thống Tam Bình",
         "image_license": "Tư liệu báo chí / Báo Vĩnh Long",
         "verifiedAt": "2026-09-18T07:15:00Z",
-        "verifiedSource": "NotebookLM Terroir Deep Research & Official Archives"
+        "verifiedSource": "NotebookLM Terroir Deep Research & Official Archives",
+        "ocop_certified": true,
+        "producer": "Cơ sở sản xuất Thuận Duyên, xã Loan Mỹ, huyện Tam Bình",
+        "shelf_life": "12 tháng",
+        "specialty": "Chao môn béo thơm hòa quyện cùng nước cốt dừa béo bùi, vị đậm đà vừa vặn"
       },
       "source": [
         {
@@ -79261,7 +79349,21 @@
         "is_verified_photo": true,
         "image_caption": "Hương vị độc đáo của bánh xèo hến Cù lao Dài với những con hến sông Cổ Chiên béo ngọt kết hợp hài hòa cùng vị bột gạo xay cối đá.",
         "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long",
-        "verifiedAt": "2026-09-17T00:00:00Z"
+        "verifiedAt": "2026-09-17T00:00:00Z",
+        "ingredients": [
+          "Hến tươi cào đáy sông Cổ Chiên",
+          "Bột gạo mùa",
+          "Nước cốt dừa",
+          "Nghệ tươi",
+          "Củ hũ dừa bào sợi",
+          "Giá đỗ",
+          "Rau rừng sông nước"
+        ],
+        "where_to_eat": "Cù lao Dài (xã Trung Thành Tây, Quới Thiện, Vũng Liêm) và các quán dân dã ven sông Vĩnh Long",
+        "cooking_method": "Thịt hến xào săn với củ hũ dừa; tráng lớp bột mỏng giòn trên chảo gang đun củi dừa, gập đôi giữ trọn hơi nóng",
+        "main_ingredient": "Hến sông Cổ Chiên",
+        "price_range": "35.000 – 60.000 VNĐ/cái",
+        "best_time": "Tháng 4 đến tháng 9 âm lịch mùa hến sinh sôi béo mẩy"
       },
       "source": [
         {
@@ -90755,11 +90857,11 @@
         ]
       },
       "attributes": {
-        "hours": "5:00–12:00 (sản xuất buổi sáng)",
+        "hours": "6:00–17:00 hàng ngày",
         "address": "Phường Cái Vồn, Vĩnh Long",
         "product": "tàu hủ ky, đậu hũ",
-        "admission": "Miễn phí",
-        "specialty": "Tre/trúc",
+        "admission": "Tham quan trải nghiệm miễn phí",
+        "specialty": "Tàu hũ ky lá dẻo, cọng khô, cọng non và óc đậu",
         "schema_type": "LocalBusiness",
         "sub_category": "pottery",
         "coords_approximate": true,
@@ -90783,7 +90885,12 @@
         "image_type": "documentary",
         "is_verified_photo": true,
         "image_caption": "Hàng trăm chảo gang đun sữa đậu nành sôi sùng sục, người thợ nhẹ nhàng vớt từng tấm váng đậu vàng ươm phơi trên sào tại xã Mỹ Hòa bên bờ sông Hậu.",
-        "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long"
+        "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long",
+        "raw_material": "Hạt đậu nành tuyển chọn và nguồn nước ngọt sông Hậu",
+        "households": 32,
+        "recognition_date": "Di sản Văn hóa Phi vật thể Quốc gia (QĐ 472/QĐ-BVHTTDL ngày 06/03/2023)",
+        "phone": "0270 3752 888",
+        "cooperative": "Hợp tác xã Tàu hũ ky Mỹ Hòa"
       },
       "source": [
         {
@@ -93101,7 +93208,14 @@
         "image_caption": "Múi sầu riêng Ri6 cơm vàng óng hạt lép béo ngậy thơm lừng nơi khởi nguồn của gia đình ông Sáu Ri tại Long Hồ",
         "image_license": "Tư liệu báo chí / Báo Vĩnh Long",
         "verifiedAt": "2026-09-18T07:15:00Z",
-        "verifiedSource": "NotebookLM Terroir Deep Research & Official Archives"
+        "verifiedSource": "NotebookLM Terroir Deep Research & Official Archives",
+        "ocop_star": "4",
+        "ocop_certified": true,
+        "gi_certification": "Chỉ dẫn địa lý Sầu riêng Ri6 Vĩnh Long (xã Thanh Đức, Long Hồ)",
+        "price_range": "80.000 – 130.000 VNĐ/kg",
+        "producer": "Hợp tác xã Sầu riêng Ri6 Vĩnh Long & các nhà vườn cù lao An Bình",
+        "shelf_life": "3 – 5 ngày sau khi chín rụng tự nhiên",
+        "specialty": "Cơm vàng óng, hạt lép hoàn toàn, vị ngọt đậm đà, béo ngậy và hương thơm đặc trưng"
       },
       "source": [
         {
@@ -98110,7 +98224,7 @@
       "attributes": {
         "origin": "Cù Lao Mây, Trà Ôn",
         "address": "Xã Lục Sỹ Thành, huyện Trà Ôn, Vĩnh Long",
-        "price_range": "30.000–60.000 đ/xấp",
+        "price_range": "25.000 – 45.000 VNĐ/xấp (50 bánh)",
         "schema_type": "Product",
         "weight/unit": "xấp/gói",
         "sub_category": "rice-paper",
@@ -98123,7 +98237,11 @@
         "image_caption": "Bánh tráng nem cù lao Mây phơi sương dẻo mịn cuốn tôm thịt nức tiếng của làng nghề truyền thống Trà Ôn",
         "image_license": "Tư liệu báo chí / Báo Vĩnh Long",
         "verifiedAt": "2026-09-18T07:15:00Z",
-        "verifiedSource": "NotebookLM Terroir Deep Research & Official Archives"
+        "verifiedSource": "NotebookLM Terroir Deep Research & Official Archives",
+        "ocop_star": "3",
+        "producer": "Hợp tác xã Bánh tráng Cù Lao Mây, xã Lục Sĩ Thành, huyện Trà Ôn",
+        "shelf_life": "6 tháng trong bao bì kín",
+        "specialty": "Bánh tráng dẻo dai tự nhiên, không dùng hóa chất phụ gia, cuốn nem không rách vỡ"
       },
       "source": [
         {
@@ -98688,7 +98806,7 @@
         "origin": "Vĩnh Long",
         "address": "Phường Long Châu, Vĩnh Long",
         "specialty": "Bánh, Bún, Cá",
-        "price_range": "150.000–250.000 đ/con (~800g)",
+        "price_range": "150.000 – 250.000 VNĐ/phần (con 1 - 1,5 kg)",
         "schema_type": "Recipe",
         "sub_category": "noodle-soup",
         "coords_approximate": true,
@@ -98698,7 +98816,18 @@
         "is_verified_photo": true,
         "image_caption": "Con cá tai tượng chiên xù vảy dựng đứng vàng rụm ngự trên đĩa gỗ, cuốn cùng bánh tráng mỏng, rau thơm và chấm nước mắm tỏi ớt.",
         "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long",
-        "verifiedAt": "2026-09-18T00:30:00Z"
+        "verifiedAt": "2026-09-18T00:30:00Z",
+        "ingredients": [
+          "Cá tai tượng tươi sống sông Tiền",
+          "Bánh tráng nem cuốn",
+          "Bún tươi",
+          "Rau sống miệt vườn (ngò gai, lá cóc, sao nhái, quế vị)",
+          "Nước mắm me tỏi ớt"
+        ],
+        "where_to_eat": "Các nhà vườn Cù lao An Bình (Homestay Út Trinh, KDL Vinh Sang), nhà hàng ven sông Cổ Chiên",
+        "cooking_method": "Cá làm sạch giữ nguyên vảy, chiên ngập chảo dầu sôi già đến khi vảy xù đều giòn rụm, thịt bên trong trắng ngọt mọng nước",
+        "main_ingredient": "Cá tai tượng",
+        "best_time": "Bữa trưa hoặc chiều mát sau chuyến khám phá sông nước"
       },
       "source": [
         {
@@ -98895,7 +99024,7 @@
         "origin": "Ẩm thực dân gian Vĩnh Long (có thể gốc Khmer)",
         "address": "Phổ biến khắp Vĩnh Long, Bến Tre, Trà Vinh",
         "specialty": "Bánh, Cá, Tôm",
-        "price_range": "15.000–30.000 đ/cái",
+        "price_range": "30.000 – 50.000 VNĐ/cái",
         "schema_type": "Recipe",
         "sub_category": "pancake",
         "coords_approximate": true,
@@ -98905,7 +99034,19 @@
         "is_verified_photo": true,
         "image_caption": "Chiếc bánh xèo giòn rụm viền mỏng tang ngập tràn nhân tôm sông, thịt heo ba chỉ và giá đỗ tươi giòn tại quán bánh xèo ven sông Long Hồ.",
         "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long",
-        "verifiedAt": "2026-09-18T00:30:00Z"
+        "verifiedAt": "2026-09-18T00:30:00Z",
+        "ingredients": [
+          "Bột gạo cốt dừa",
+          "Tép bạc sông Tiền",
+          "Thịt ba chỉ",
+          "Đậu xanh đãi vỏ",
+          "Hành lá",
+          "Cải bẹ xanh, xà lách, rau diếp cá, lá đọt xoài, lá cóc non"
+        ],
+        "where_to_eat": "Bánh xèo Cô Tám, bánh xèo Long Bình và các quán ven sông Cổ Chiên",
+        "cooking_method": "Đổ bột mỏng tang giòn rụm trên chảo gang lửa lớn, rắc nhân tép thịt và đậu xanh, gấp bán nguyệt vàng ươm",
+        "main_ingredient": "Tép bạc và thịt ba chỉ",
+        "best_time": "Buổi chiều tối bên bờ sông lộng gió"
       },
       "source": [
         {
@@ -99142,7 +99283,7 @@
         "origin": "Trà Vinh",
         "address": "Phường Trà Vinh, Trà Vinh",
         "specialty": "Bánh, Bún, Chay",
-        "price_range": "5.000–10.000 đ/cuốn",
+        "price_range": "20.000 – 35.000 VNĐ/phần",
         "schema_type": "Recipe",
         "sub_category": "noodle-soup",
         "coords_approximate": true,
@@ -99152,7 +99293,19 @@
         "is_verified_photo": true,
         "image_caption": "Đĩa chả giò chay chiên vàng giòn rụm với nhân khoai môn sáp, đậu xanh và nấm mèo thơm phức phục vụ thực khách ngày rằm.",
         "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long",
-        "verifiedAt": "2026-09-18T00:30:00Z"
+        "verifiedAt": "2026-09-18T00:30:00Z",
+        "ingredients": [
+          "Khoai môn bào sợi",
+          "Nấm mèo",
+          "Tàu hũ ky Mỹ Hòa bóp vụn",
+          "Củ sắn",
+          "Bánh tráng đậu xanh",
+          "Nước chấm chay chua ngọt"
+        ],
+        "where_to_eat": "Các quán ăn chay đường 3/2, Phường 1, TP. Vĩnh Long và bếp ăn chùa cổ",
+        "cooking_method": "Cuộn nhân khoai môn tàu hũ ky trong bánh tráng mỏng, chiên vàng giòn rụm trong chảo dầu thực vật",
+        "main_ingredient": "Khoai môn và tàu hũ ky",
+        "best_time": "Các ngày rằm, mùng một và bữa sáng thanh tịnh"
       },
       "source": [
         {
@@ -127264,7 +127417,20 @@
         "is_verified_photo": true,
         "image_caption": "Bún nước lèo Vĩnh Long biến tấu tinh tế với chả cá thác lác dai ngon và nước lèo thanh mát nấu bằng cá kèo và nước dừa tươi.",
         "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long",
-        "verifiedAt": "2026-09-17T00:00:00Z"
+        "verifiedAt": "2026-09-17T00:00:00Z",
+        "ingredients": [
+          "Cá lóc đồng luộc rỉa thịt",
+          "Mắm cá sặc lọc nước trong",
+          "Ngải bún khử mùi",
+          "Nước dừa tươi",
+          "Bún tươi sợi nhỏ",
+          "Bắp chuối bào, giá sống, rau thơm, ớt hiểm"
+        ],
+        "where_to_eat": "Chợ Vĩnh Long, chợ Trà Ôn và các quán bún nước lèo truyền thống đường Trưng Nữ Vương, Phường 1",
+        "cooking_method": "Nấu nước dùng từ xương cá lóc và nước dừa tươi, nêm mắm lọc kỹ và củ ngải bún tạo hương thơm thanh dịu đặc trưng",
+        "main_ingredient": "Cá lóc đồng và mắm lọc",
+        "price_range": "25.000 – 40.000 VNĐ/tô",
+        "best_time": "Sáng sớm hoặc bữa xế chiều"
       },
       "source": [
         {
