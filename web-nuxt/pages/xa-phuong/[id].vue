@@ -750,7 +750,7 @@ const placeJsonLd = computed(() => {
     faqNode,
   ])
 
-  return [{ type: 'application/ld+json', innerHTML: safeJsonLd(graph) }]
+  return [{ type: 'application/ld+json' as const, innerHTML: safeJsonLd(graph) }]
 })
 
 useHead({

@@ -18,7 +18,7 @@ function harness(open: ReturnType<typeof ref<boolean>>, options?: Parameters<typ
   return defineComponent({
     setup() {
       const el = ref<HTMLElement | null>(null)
-      useModalA11y(open as never, el, options)
+      useModalA11y(open as never, el as never, options)
       return () => h('div', { ref: el }, [h('button', 'x')])
     },
   })

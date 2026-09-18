@@ -1053,7 +1053,7 @@ const fallbackJsonLdScripts = computed(() => {
     typeBreadcrumbUrl: typeBreadcrumbUrl.value,
   })
 
-  return graph ? [{ type: 'application/ld+json', innerHTML: safeJsonLd(graph) }] : []
+  return graph ? [{ type: 'application/ld+json' as const, innerHTML: safeJsonLd(graph) }] : []
 })
 
 function normalizeJsonLdPayload(payload: JsonLdPayload | null | undefined) {
@@ -1065,12 +1065,12 @@ function normalizeJsonLdPayload(payload: JsonLdPayload | null | undefined) {
 // `area` cũ (/khu-vuc/...) và payload backend được ưu tiên hơn fallback dưới đây —
 // chuẩn hoá tại chỗ để structured-data không lệch breadcrumb hiển thị.
 const backendJsonLdScripts = computed(() => normalizeJsonLdPayload(backendJsonLd.value).map(item => ({
-  type: 'application/ld+json',
+  type: 'application/ld+json' as const,
   innerHTML: safeJsonLd(withAdminUnitBreadcrumb(item, adminUnitBreadcrumb.value)),
 })))
 
 // P1-3: nếu backend /seo/jsonld fail/rỗng → dùng fallback (BreadcrumbList + entity schema + FAQ)
-const jsonLdScripts = computed(() =>
+const jsonLdScripts = computed<Array<{ type: 'application/ld+json'; innerHTML: string }>>(() =>
   backendJsonLdScripts.value.length ? backendJsonLdScripts.value : fallbackJsonLdScripts.value)
 
 useHead({

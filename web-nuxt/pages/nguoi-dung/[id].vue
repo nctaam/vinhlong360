@@ -646,18 +646,6 @@ useSeoMeta({
   twitterCard: 'summary_large_image',
 })
 
-useHead(() => {
-  const profileKey = profile.value?.username || profile.value?.id || route.params.id
-  const pageUrl = canonicalUrl(userPath(profileKey))
-  return {
-    link: [{ rel: 'canonical', href: pageUrl }],
-    script: [
-      ...(profileSchema.value ? [{ type: 'application/ld+json', innerHTML: safeJsonLd(profileSchema.value) }] : []),
-      ...(userProfileSchema.value ? [{ type: 'application/ld+json', innerHTML: safeJsonLd(userProfileSchema.value) }] : []),
-    ],
-  }
-})
-
 const userProfileSchema = computed(() => {
   if (!profile.value) return null
   const p = profile.value
@@ -683,6 +671,26 @@ const userProfileSchema = computed(() => {
       speakable: buildSpeakableSpecification(['.profile-name', '.profile-bio', '.profile-eyebrow']),
     },
   ])
+})
+
+const userProfileScripts = computed(() => {
+  const list: Array<{ type: 'application/ld+json'; innerHTML: string }> = []
+  if (profileSchema.value) {
+    list.push({ type: 'application/ld+json', innerHTML: safeJsonLd(profileSchema.value) })
+  }
+  if (userProfileSchema.value) {
+    list.push({ type: 'application/ld+json', innerHTML: safeJsonLd(userProfileSchema.value) })
+  }
+  return list
+})
+
+useHead(() => {
+  const profileKey = profile.value?.username || profile.value?.id || route.params.id
+  const pageUrl = canonicalUrl(userPath(profileKey))
+  return {
+    link: [{ rel: 'canonical', href: pageUrl }],
+    script: userProfileScripts.value,
+  }
 })
 </script>
 

@@ -440,7 +440,7 @@ async function renderMap(result: RouteResult | null) {
   try {
 
   if (!mapInstance) {
-    const res = await createNDAMap(routeMapEl.value)
+    const res = await createNDAMap(routeMapEl.value as unknown as HTMLElement)
     mapInstance = res.map
     maplibre = res.maplibregl
     mapInstance.on('styleimagemissing', (e: any) => {
