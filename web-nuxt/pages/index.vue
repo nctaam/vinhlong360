@@ -88,43 +88,27 @@
       </div>
     </section>
 
-    <HomeIntentAnchors />
-
     <div class="home-river-divider" aria-hidden="true" />
 
     <div class="home-folio-header" aria-hidden="true">
-      <span class="editorial-folio-tag">FOLIO II · CHỐN DỪNG CHÂN ĐÁNG GHÉ</span>
+      <span class="editorial-folio-tag">FOLIO I · CHỐN DỪNG CHÂN ĐÁNG GHÉ</span>
     </div>
     <HomeCuratedShowcase v-if="!homeFailed" />
 
     <div class="home-folio-header" aria-hidden="true">
-      <span class="editorial-folio-tag">FOLIO III · ẨM THỰC KHẨN HOANG MIỆT VƯỜN</span>
+      <span class="editorial-folio-tag">FOLIO II · HƯƠNG VỊ KHẨN HOANG & THỔ SẢN MIỆT VƯỜN</span>
     </div>
     <HomeCulinaryTrail v-if="!homeFailed" />
 
     <div class="home-folio-header" aria-hidden="true">
-      <span class="editorial-folio-tag">FOLIO IV · NGHỈ DƯỠNG SÔNG NƯỚC</span>
+      <span class="editorial-folio-tag">FOLIO III · NGHỈ DƯỠNG SÔNG NƯỚC & LỊCH TRÌNH LỮ HÀNH</span>
     </div>
     <HomeRiversideStays v-if="!homeFailed" />
-
-    <div class="home-folio-header" aria-hidden="true">
-      <span class="editorial-folio-tag">FOLIO V · KẾ HOẠCH LỮ HÀNH</span>
-    </div>
     <HomeTravelPlanner v-if="!homeFailed" />
 
     <div class="home-folio-header" aria-hidden="true">
-      <span class="editorial-folio-tag">FOLIO VI · CÂU CHUYỆN BẢN ĐỊA</span>
+      <span class="editorial-folio-tag">FOLIO IV · CẨM NANG THỰC ĐỊA & GIẢI ĐÁP LỮ KHÁCH</span>
     </div>
-    <HomeNativeStories v-if="!homeFailed" />
-
-    <div class="home-quick-decisions" data-home-section="quick-decisions">
-      <HomeDecisionLedger :entries="homePresentation.decisionEntries" />
-      <HomeCategoryIndex
-        v-if="!homePending"
-        :groups="homePresentation.categoryGroups"
-      />
-    </div>
-
     <CatalogAeoPlaque
       data-home-section="aeo-plaque"
       data-home-aeo-plaque
@@ -136,19 +120,15 @@
       cta-to="/theo-mua"
       cta-label="Khám phá lịch trình theo mùa"
     />
+    <HomeFieldworkFaq />
 
-    <HomeProductLead
-      v-if="showProductLead"
-      :scale-line="productLeadScale"
-      scale-note="Con số lấy từ dữ liệu, cập nhật theo kho"
-      eyebrow="Đề cử của ban biên tập"
-      :title="productLead.name"
-      :summary="productLead.summary"
-      :region="productLeadRegion"
-      :descriptor="productLeadDescriptor"
-      :disclosure-id="productLeadDisclosureId"
-      :detail-to="`/dia-diem/${productLead.id}`"
-    />
+    <div class="home-quick-decisions" data-home-section="quick-decisions">
+      <HomeDecisionLedger :entries="homePresentation.decisionEntries" class="sr-only" />
+      <HomeCategoryIndex
+        v-if="!homePending"
+        :groups="homePresentation.categoryGroups"
+      />
+    </div>
 
     <!-- Degraded/empty fallback -->
     <section v-if="homeFailed" class="block reveal" data-home-section="recovery">
@@ -386,9 +366,6 @@
       </section>
     </ClientOnly>
 
-    <!-- 7. Lữ khách cần biết — Fieldwork Logistics & FAQ -->
-    <HomeFieldworkFaq />
-
     <!-- Continuation with JourneyActionRail -->
     <HomeContinuation :actions="homeJourneyActions" :pending="homePending" />
 
@@ -403,11 +380,9 @@ import HomeCategoryIndex from '~/components/home/HomeCategoryIndex.vue'
 import HomeDecisionLedger from '~/components/home/HomeDecisionLedger.vue'
 import HomeFeatureDossier from '~/components/home/HomeFeatureDossier.vue'
 import HomeLocalBriefing from '~/components/home/HomeLocalBriefing.vue'
-import HomeProductLead from '~/components/home/HomeProductLead.vue'
 import HomeCommunityFeed from '~/components/home/HomeCommunityFeed.vue'
 import HomeContinuation from '~/components/home/HomeContinuation.vue'
 import HomeFieldworkFaq from '~/components/home/HomeFieldworkFaq.vue'
-import HomeIntentAnchors from '~/components/home/HomeIntentAnchors.vue'
 import HomeCuratedShowcase from '~/components/home/HomeCuratedShowcase.vue'
 import HomeCulinaryTrail from '~/components/home/HomeCulinaryTrail.vue'
 import HomeRiversideStays from '~/components/home/HomeRiversideStays.vue'
@@ -689,39 +664,6 @@ const signalLeadDescriptor = computed<ImageDescriptor | null>(() => {
   return e ? (describeEntityImages(e)[0] || null) : null
 })
 const signalLeadDisclosureId = `home-signal-lead-${useId().replace(/[^A-Za-z0-9_-]+/g, '-')}`
-
-// ── Tin chính đặc sản (điểm dừng thị giác 2) ────────────────────────────
-// Cờ home_product_lead mặc định TẮT: mục mới phải bật tay từ AdminCP, và tắt
-// lại trong 10 giây nếu hỏng — máy chủ KHÔNG giữ bản N-1 nên đây là đường lùi
-// duy nhất không cần deploy.
-const productLead = computed<any>(() => homeData.value?.product_lead || null)
-const productsTotal = computed<number | null>(() => homeData.value?.products_total ?? null)
-
-// Descriptor tính Ở ĐÂY rồi truyền xuống component qua prop. Cổng R20.10 chỉ
-// đỏ khi mã tự đọc trường ảnh thô của entity; uỷ quyền cho describeEntityImages
-// thì sạch (đã kiểm bằng thực nghiệm: đọc thô = 2 finding, uỷ quyền = 0).
-// LƯU Ý cho người sửa sau: checker là bộ SO CHUỖI, nó bắt cả câu bình luận —
-// đừng viết tên trường đó ra đây, kể cả để giải thích cách tránh nó (§5c).
-const productLeadDescriptor = computed<ImageDescriptor>(() => {
-  const e = productLead.value
-  if (!e) return describeEntityPlaceholder({ name: 'Đặc sản' })
-  return describeEntityImages(e)[0] || describeEntityPlaceholder(e)
-})
-const productLeadDisclosureId = `home-product-lead-${useId().replace(/[^A-Za-z0-9_-]+/g, '-')}`
-const productLeadRegion = computed(() => {
-  const e = productLead.value
-  const a = e?.place?.name || e?.attributes?.ward || e?.attributes?.place_name
-  return a ? String(a) : ''
-})
-// Con số render TỪ PAYLOAD, không viết cứng — số xã/phường lấy từ chính
-// area_counts nếu có, không bịa hằng số.
-const productLeadScale = computed(() => {
-  const n = productsTotal.value
-  return n ? `${n} đặc sản Vĩnh Long` : 'Đặc sản Vĩnh Long'
-})
-// Mục chỉ hiện khi CÓ CỜ và CÓ DỮ LIỆU — thiếu một trong hai thì khuyết êm,
-// không để lại khung rỗng hay nhãn treo.
-const showProductLead = computed(() => ff('home_product_lead') && !!productLead.value)
 
 const areaCounts = computed<Record<string, number>>(() => homeData.value?.area_counts || {})
 

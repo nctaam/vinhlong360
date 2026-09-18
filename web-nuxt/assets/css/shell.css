@@ -884,22 +884,22 @@
   background: var(--color-action);
 }
 
-/* Parchment header contrast remediation [DEFECT-07] */
+/* Parchment header navigation contrast assurance */
 [data-theme="parchment"] .public-shell-header .public-shell-inline-nav a,
 html[data-theme="parchment"] .public-shell-command-row .public-shell-inline-nav a {
-  color: rgba(var(--white-rgb), 0.9) !important;
+  color: var(--color-text-muted);
 }
 
 [data-theme="parchment"] .public-shell-header .public-shell-inline-nav a:hover,
 html[data-theme="parchment"] .public-shell-command-row .public-shell-inline-nav a:hover {
-  color: rgb(var(--white-rgb)) !important;
-  background: rgba(var(--white-rgb), 0.16);
+  color: var(--color-text);
+  background: color-mix(in srgb, var(--color-surface-subtle) 70%, transparent);
 }
 
 [data-theme="parchment"] .public-shell-header .public-shell-inline-nav a.active,
 html[data-theme="parchment"] .public-shell-command-row .public-shell-inline-nav a.active {
-  color: rgb(var(--white-rgb)) !important;
-  background: rgba(var(--white-rgb), 0.22);
+  color: var(--color-text);
+  background: color-mix(in srgb, var(--color-surface-subtle) 95%, transparent);
 }
 
 .public-shell-inline-nav a:focus-visible {

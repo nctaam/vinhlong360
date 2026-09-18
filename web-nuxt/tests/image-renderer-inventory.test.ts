@@ -102,8 +102,6 @@ const requiredBoundaries = [
   // tiền lệ `pages/index.vue | home-feature-dossier` cũng uỷ quyền mà vẫn khai.
   // Không khai thì ai đó gỡ <ImageDisclosure> cho "gọn" sẽ không làm đỏ cổng nào,
   // và ảnh AI mất nhãn minh-hoạ (§1.5 "ảnh AI không được giả làm ảnh thật").
-  ['pages/index.vue', 'home-product-lead', 'ai-generated'],
-  ['pages/index.vue', 'home-product-lead', 'placeholder'],
   ['pages/index.vue', 'home-signal-lead', 'ai-generated'],
 ] as const
 

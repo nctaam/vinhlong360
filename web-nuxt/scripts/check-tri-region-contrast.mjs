@@ -1,10 +1,10 @@
-import { readdirSync, readFileSync } from 'node:fs'
+import { existsSync, readdirSync, readFileSync } from 'node:fs'
 import { createRequire } from 'node:module'
 import { relative, resolve } from 'node:path'
 import { parse as parseVueSfc } from 'vue/compiler-sfc'
 
-const auditProjectRoot = process.cwd()
 const auditScriptRoot = resolve(import.meta.dirname, '..')
+const auditProjectRoot = existsSync(resolve(process.cwd(), 'assets/css')) ? process.cwd() : auditScriptRoot
 const appRequire = createRequire(import.meta.url)
 const appPackage = readJsonFile(resolve(auditScriptRoot, 'package.json'), 'application package.json')
 validateDirectToolchainDependency(appPackage, 'nuxt')
@@ -174,9 +174,13 @@ function validatePackageMajor(name, version, expectedMajor) {
 function loadNuxtTool(name, expectedMajor) {
   const modulePath = resolveRequiredPackage(nuxtRequire, name, `Nuxt audit tool ${name}`)
   const packagePath = resolveRequiredPackage(nuxtRequire, `${name}/package.json`, `${name} package metadata`)
-  const nodeModulesRoot = resolve(nuxtPackagePath, '../..').replaceAll('\\', '/').toLowerCase()
+  const candidateRoots = [
+    resolve(nuxtPackagePath, '../..').replaceAll('\\', '/').toLowerCase(),
+    resolve(auditScriptRoot, 'node_modules').replaceAll('\\', '/').toLowerCase(),
+  ]
   const normalizedModulePath = resolve(modulePath).replaceAll('\\', '/').toLowerCase()
-  if (!normalizedModulePath.startsWith(`${nodeModulesRoot}/`) && normalizedModulePath !== nodeModulesRoot) {
+  const isInsideToolchain = candidateRoots.some(root => normalizedModulePath.startsWith(`${root}/`) || normalizedModulePath === root)
+  if (!isInsideToolchain) {
     throw new Error(`Resolved ${name} outside the direct Nuxt toolchain: ${modulePath}`)
   }
   const packageJson = readJsonFile(packagePath, `${name} package.json`)
@@ -564,6 +568,7 @@ const approvedConsumerTuples = new Set([
   ['pages/index.vue#style-0', 'top level', '.dark .ec-today', 'color', 'var(--color-error)'],
   ['pages/index.vue#style-0', '@media (prefers-reduced-transparency: reduce)', '.home .hero-search', 'background', 'rgba(var(--black-rgb),.35)'],
   ['assets/css/home-nocturne.css', 'top level', '[data-home-pilot="nocturne-b1"] .hero-sub', 'background', 'var(--home-color-on-media-plate)'],
+  ['assets/css/home-nocturne.css', 'top level', '[data-home-pilot="nocturne-b1"] .hero-sub', 'border-radius', 'var(--radius-surface, 12px)'],
   ['assets/css/home-nocturne.css', 'top level', '[data-home-pilot="nocturne-b1"] .hero-sub', 'color', 'var(--home-color-on-media-text)'],
   ['assets/css/home-nocturne.css', 'top level', '[data-home-pilot="nocturne-b1"] .hero-sub', 'opacity', '1'],
   ['assets/css/home-nocturne.css', 'top level', '[data-home-pilot="nocturne-b1"] .hero-sub', 'text-shadow', 'none'],

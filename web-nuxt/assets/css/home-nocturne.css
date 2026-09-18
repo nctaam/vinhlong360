@@ -179,6 +179,7 @@
   width: fit-content;
   max-width: 42rem;
   padding: var(--space-2) var(--space-4);
+  border-radius: var(--radius-surface, 12px);
   color: var(--home-color-on-media-text);
   background: var(--home-color-on-media-plate);
   backdrop-filter: blur(16px);

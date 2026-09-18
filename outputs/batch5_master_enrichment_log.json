@@ -1,0 +1,239 @@
+{
+  "timestamp": "2026-09-18T20:45:00+07:00",
+  "enriched_count": 31,
+  "new_sha256": "89ca0d432c1e45cc3ae3bcca7ce78282c9774b2c739763459389929c24b62a78",
+  "details": [
+    {
+      "id": "chua-ang",
+      "name": "Chùa Âng",
+      "type": "attraction",
+      "changes_count": 0,
+      "changes": {}
+    },
+    {
+      "id": "chua-phat-ngoc-xa-loi",
+      "name": "Chùa Phật Ngọc Xá Lợi",
+      "type": "attraction",
+      "changes_count": 0,
+      "changes": {}
+    },
+    {
+      "id": "khu-di-tich-quoc-gia-dac-biet-dong-khoi",
+      "name": "Khu Di tích Quốc gia Đặc biệt Đồng Khởi",
+      "type": "history",
+      "changes_count": 0,
+      "changes": {}
+    },
+    {
+      "id": "khu-luu-niem-nu-tuong-nguyen-thi-dinh",
+      "name": "Khu lưu niệm Nữ tướng Nguyễn Thị Định",
+      "type": "attraction",
+      "changes_count": 0,
+      "changes": {}
+    },
+    {
+      "id": "khu-di-tich-mo-va-den-tho-phan-thanh-gian",
+      "name": "Khu di tích mộ và đền thờ Phan Thanh Giản",
+      "type": "history",
+      "changes_count": 0,
+      "changes": {}
+    },
+    {
+      "id": "mo-va-khu-luu-niem-nha-giao-vo-truong-toan",
+      "name": "Mộ và Khu lưu niệm nhà giáo Võ Trường Toản",
+      "type": "history",
+      "changes_count": 0,
+      "changes": {}
+    },
+    {
+      "id": "di-tich-duong-ho-chi-minh-tren-bien-thanh-phu",
+      "name": "Di Tích Đường Hồ Chí Minh Trên Biển Thạnh Phú",
+      "type": "history",
+      "changes_count": 0,
+      "changes": {}
+    },
+    {
+      "id": "den-tho-chu-tich-ho-chi-minh-long-duc",
+      "name": "Đền thờ Chủ tịch Hồ Chí Minh (Long Đức)",
+      "type": "history",
+      "changes_count": 0,
+      "changes": {}
+    },
+    {
+      "id": "di-san-duong-dai-mang-thit",
+      "name": "Di sản đương đại Mang Thít",
+      "type": "history",
+      "changes_count": 0,
+      "changes": {}
+    },
+    {
+      "id": "chua-bo-de",
+      "name": "Chùa Bồ Đề",
+      "type": "history",
+      "changes_count": 0,
+      "changes": {}
+    },
+    {
+      "id": "lang-nghe-banh-phong-son-doc",
+      "name": "Làng nghề bánh phồng Sơn Đốc",
+      "type": "craft_village",
+      "changes_count": 0,
+      "changes": {}
+    },
+    {
+      "id": "lang-nghe-san-xuat-chi-xo-dua-an-thanh",
+      "name": "Làng nghề sản xuất chỉ xơ dừa An Thạnh",
+      "type": "craft_village",
+      "changes_count": 0,
+      "changes": {}
+    },
+    {
+      "id": "lang-nghe-dan-dat-phuoc-tuy",
+      "name": "Làng nghề đan đát Phước Tuy",
+      "type": "craft_village",
+      "changes_count": 0,
+      "changes": {}
+    },
+    {
+      "id": "banh-phong-son-doc",
+      "name": "Bánh phồng Sơn Đốc",
+      "type": "product",
+      "changes_count": 0,
+      "changes": {}
+    },
+    {
+      "id": "cua-hang-ocop-bien-ba-dong",
+      "name": "Cửa hàng OCOP biển Ba Động",
+      "type": "attraction",
+      "changes_count": 0,
+      "changes": {}
+    },
+    {
+      "id": "cua-hang-ocop-ao-ba-om",
+      "name": "Cửa hàng OCOP Ao Bà Om",
+      "type": "attraction",
+      "changes_count": 0,
+      "changes": {}
+    },
+    {
+      "id": "banh-canh-ben-co",
+      "name": "Bánh canh Bến Có",
+      "type": "dish",
+      "changes_count": 0,
+      "changes": {}
+    },
+    {
+      "id": "chao-am-tra-vinh",
+      "name": "Cháo Ám Trà Vinh",
+      "type": "dish",
+      "changes_count": 0,
+      "changes": {}
+    },
+    {
+      "id": "banh-xeo-bien-binh-dai",
+      "name": "Bánh xèo biển Bình Đại",
+      "type": "dish",
+      "changes_count": 0,
+      "changes": {}
+    },
+    {
+      "id": "chu-u-ba-dong",
+      "name": "Chù ụ Ba Động",
+      "type": "product",
+      "changes_count": 0,
+      "changes": {}
+    },
+    {
+      "id": "ca-bong-lau-mot-nang-binh-dai",
+      "name": "Cá bông lau một nắng Bình Đại",
+      "type": "product",
+      "changes_count": 0,
+      "changes": {}
+    },
+    {
+      "id": "bun-nuoc-leo-cho-ba-tri-ben-tre",
+      "name": "Bún nước lèo chợ Ba Tri",
+      "type": "attraction",
+      "changes_count": 0,
+      "changes": {}
+    },
+    {
+      "id": "phan-thanh-gian",
+      "name": "Phan Thanh Giản",
+      "type": "person",
+      "changes_count": 0,
+      "changes": {}
+    },
+    {
+      "id": "nguyen-thi-dinh",
+      "name": "Nguyễn Thị Định",
+      "type": "person",
+      "changes_count": 0,
+      "changes": {}
+    },
+    {
+      "id": "dong-van-cong",
+      "name": "Đồng Văn Cống",
+      "type": "person",
+      "changes_count": 0,
+      "changes": {}
+    },
+    {
+      "id": "vien-chau-huynh-tri-ba",
+      "name": "Viễn Châu (Huỳnh Trí Bá)",
+      "type": "person",
+      "changes_count": 0,
+      "changes": {}
+    },
+    {
+      "id": "bai-bien-ba-dong",
+      "name": "Bãi biển Ba Động",
+      "type": "nature",
+      "changes_count": 0,
+      "changes": {}
+    },
+    {
+      "id": "khu-du-lich-bien-con-bung",
+      "name": "Khu du lịch biển Cồn Bửng",
+      "type": "attraction",
+      "changes_count": 0,
+      "changes": {}
+    },
+    {
+      "id": "homestay-ut-trinh",
+      "name": "Homestay Út Trinh",
+      "type": "accommodation",
+      "changes_count": 0,
+      "changes": {}
+    },
+    {
+      "id": "resort-ben-tre-riverside",
+      "name": "Bến Tre Riverside Resort",
+      "type": "accommodation",
+      "changes_count": 0,
+      "changes": {}
+    },
+    {
+      "id": "nha-co-cau-ke",
+      "name": "Nhà cổ Cầu Kè",
+      "type": "history",
+      "changes_count": 1,
+      "changes": {
+        "key_facts": {
+          "old": [
+            "Xây dựng năm 1924 theo bản vẽ thiết kế của kiến trúc sư người Pháp, kết hợp hoàn hảo giữa phong cách biệt thự Pháp thế kỷ XIX và kiến trúc nhà truyền thống Nam Bộ.",
+            "Ngoại thất mang đường nét tân cổ điển phương Tây với mái vòm, hoa văn điêu khắc nổi tinh xảo; nội thất sử dụng gỗ quý chạm khắc long lân quy phụng và hoành phi câu đối sơn son thếp vàng.",
+            "Hệ thống gạch hoa lát nền nhập khẩu trực tiếp từ Pháp, các ô cửa sổ lá sách đón gió tự nhiên tạo không gian mát mẻ quanh năm.",
+            "Bối cảnh ghi hình cho nhiều bộ phim truyền hình nổi tiếng về đề tài Nam Bộ xưa."
+          ],
+          "new": [
+            "Xây dựng năm 1924 theo bản vẽ thiết kế của kiến trúc sư người Pháp, kết hợp hoàn hảo giữa phong cách biệt thự Pháp thế kỷ XIX và kiến trúc nhà truyền thống Nam Bộ.",
+            "Ngoại thất mang đường nét tân cổ điển phương Tây với mái vòm, hoa văn điêu khắc nổi tinh xảo; nội thất sử dụng gỗ quý chạm khắc long lân quy phụng và hoành phi câu đối sơn son thếp vàng.",
+            "Hệ thống gạch hoa lát nền nhập khẩu trực tiếp từ Pháp, các ô cửa sổ lá sách đón gió tự nhiên tạo không gian mát mẻ quanh năm.",
+            "Từng được chọn làm bối cảnh ghi hình cho hơn 10 bộ phim truyền hình và tư liệu về đề tài Nam Bộ xưa."
+          ]
+        }
+      }
+    }
+  ]
+}

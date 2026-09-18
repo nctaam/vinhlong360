@@ -648,7 +648,7 @@ describe('UserCP regressions', () => {
     expect(page).toContain('.home .hero .hero-ac::before')
     expect(page).toContain('createHomeNocturnePresentation')
     expect(page).toContain('HomeFeatureDossier')
-    expect(page).toContain('HomeDecisionLedger')
+    expect(page).toContain('HomeCuratedShowcase')
     expect(page).toContain('HomeCategoryIndex')
     expect(page).toContain('data-home-pilot="nocturne-b1"')
     expect(page).toContain('homeJourneyActions')

@@ -27,9 +27,10 @@ export function apiFetch<T = unknown>(url: string, opts: Record<string, unknown>
   // phát ngay lập tức chỉ làm nó tệ hơn. Bên gọi nào thật sự cần chống nhiễu
   // tạm thời thì tự truyền `retry`/`retryDelay`, để lựa chọn đó nhìn thấy được
   // tại chỗ gọi.
+  const fetcher = ((globalThis as any).$fetch as typeof $fetch | undefined) || $fetch
   const requestOptions = { retry: 0 as const, timeout: DEFAULT_API_TIMEOUT_MS, ...opts }
-  if (/^https?:\/\//i.test(url)) return $fetch<T, string>(url, requestOptions)
+  if (/^https?:\/\//i.test(url)) return fetcher<T, string>(url, requestOptions)
   const requestUrl = url.startsWith('/') ? url : `/${url}`
   const baseURL = import.meta.server ? getServerApiBase() : ''
-  return $fetch<T, string>(requestUrl, baseURL ? { baseURL, ...requestOptions } : requestOptions)
+  return fetcher<T, string>(requestUrl, baseURL ? { baseURL, ...requestOptions } : requestOptions)
 }
