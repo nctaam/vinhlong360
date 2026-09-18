@@ -1,0 +1,282 @@
+[
+  {
+    "id": "nha-co-tran-dai-nghia",
+    "name": "Nhà Cổ Trần Đại Nghĩa",
+    "type": "attraction",
+    "address": "Nhà Cổ Trần Đại Nghĩa, Phường Long Châu, tỉnh Vĩnh Long",
+    "description": "Nơi sinh của Phạm Quang Lễ — sau này là GS.VS Trần Đại Nghĩa, cha đẻ ngành quân giới Việt Nam — nhà lưu niệm tại xã Tường Lộc, huyện Tam Bình rộng khoảng 5.000 m², tham quan miễn phí. Ông sinh năm 1913, du học Pháp năm 1935, học kỹ sư tại nhiều trường ở Pháp và Đức. Năm 1946, ông theo Chủ tịch Hồ Chí Minh về nước, thiết kế và sản xuất vũ khí cho kháng chiến chống Pháp. Khu lưu niệm gồm ngôi nhà cổ nơi ông chào đời, nhà tưởng niệm, vườn cây xanh và bia tưởng niệm. Mở cửa hàng ngày 7:00–17:00, kể cả cuối tuần."
+  },
+  {
+    "id": "diem-du-lich-sinh-thai-tu-do",
+    "name": "Điểm du lịch sinh thái Tư Dô",
+    "type": "attraction",
+    "address": "Phường Long Châu, Vĩnh Long",
+    "description": "Điểm du lịch sinh thái miệt vườn tại cồn Công, Vĩnh Long, nổi bật với vườn chôm chôm chất lượng cao và trải nghiệm tham quan, thưởng thức trái cây tại chỗ."
+  },
+  {
+    "id": "diem-du-lich-sinh-thai-tam-trong",
+    "name": "Điểm du lịch sinh thái Tám Trong",
+    "type": "attraction",
+    "address": "Phường Long Châu, Vĩnh Long",
+    "description": "Điểm du lịch sinh thái miệt vườn ở đầu cồn Công, Vĩnh Long nhờ cây trái quanh năm, ao nuôi cá và khu ẩm thực dân dã. Mô hình du lịch sinh thái này hoạt động từ năm 2016."
+  },
+  {
+    "id": "khu-du-lich-sinh-thai-miet-vuon-vinh-sang",
+    "name": "Khu du lịch sinh thái miệt vườn Vinh Sang",
+    "type": "attraction",
+    "address": "Ấp An Thuận, Phường Long Châu, tỉnh Vĩnh Long",
+    "description": "Khu sinh thái 2,2 ha tại ấp An Thuận, xã An Bình, huyện Long Hồ — ven sông Cổ Chiên, giữa vùng miệt vườn cù lao.\n\nChia thành nhiều khu riêng: khu nuôi cá sấu (hơn 200 m², du khách câu cá sấu cảm giác mạnh), khu cưỡi đà điểu, vườn chim 12 loài bản địa, trượt cỏ, bóng nước, đạp thiên nga trên hồ.\n\nChèo xuồng len lỏi kênh rạch, tham quan xưởng kẹo dừa, nấu rượu nếp truyền thống, nghe đờn ca tài tử và hái trái cây miệt vườn. Vé: 50.000 đ/người lớn, 35.000 đ/trẻ em dưới 1,3 m."
+  },
+  {
+    "id": "canh-dong-dien-gio-ngoai-khoi-ba-dong",
+    "name": "Cánh đồng điện gió ngoài khơi Ba Động",
+    "type": "attraction",
+    "address": "Cánh đồng điện gió ngoài khơi Ba Động, Phường Trường Long Hòa, tỉnh Vĩnh Long",
+    "description": "Khu điện gió ngoài khơi gắn với biển Ba Động ở khu vực Trà Vinh cũ (nay thuộc Vĩnh Long). Cánh đồng điện gió tạo nên cảnh quan đặc trưng và là điểm check-in của khu vực ven biển."
+  },
+  {
+    "id": "cau-lang-chim",
+    "name": "Cầu Láng Chim",
+    "type": "attraction",
+    "address": "Cầu Láng Chim, Xã Long Hữu, tỉnh Vĩnh Long",
+    "description": "Cầu Láng Chim bắc qua nhánh kênh sinh thái nối sông Cổ Chiên với vùng đầm tôm duyên hải. Đứng trên cầu lúc chiều tà, du khách được ngắm nhìn khung cảnh thanh bình của những cánh chim chao lượn trên rặng bần xanh rì."
+  },
+  {
+    "id": "cau-truong-long-hoa",
+    "name": "Cầu Trường Long Hòa",
+    "type": "attraction",
+    "address": "Cầu Trường Long Hòa, Phường Trường Long Hòa, tỉnh Vĩnh Long",
+    "description": "Cầu Trường Long Hòa nối liền các xóm ấp bãi ngang ven biển thuộc xã bán đảo Trường Long Hòa. Cây cầu tạo điều kiện đi lại êm thuận cho các đoàn xe du lịch ra ngắm biển Ba Động và các rặng phi lao chắn sóng."
+  },
+  {
+    "id": "nha-co-huynh-thuy-le",
+    "name": "Nhà cổ Huỳnh Thủy Lê",
+    "type": "attraction",
+    "address": "255A đường Nguyễn Huệ, Phường 4, thành phố Sa Đéc, tỉnh Đồng Tháp",
+    "description": "Ngôi nhà cổ kiến trúc Pháp – Hoa đầu thế kỷ XX, bối cảnh tiểu thuyết L'Amant của Marguerite Duras. Vé: Miễn phí. Giờ mở cửa: 7:00–17:00."
+  },
+  {
+    "id": "khu-van-hoa-du-lich-ao-ba-om",
+    "name": "Khu Văn hóa, du lịch ao Bà Om",
+    "type": "attraction",
+    "address": "Khóm 3, Phường Nguyệt Hóa, tỉnh Vĩnh Long",
+    "description": "Địa điểm tổ chức đêm hội Ok Om Bok năm 2024 và là nơi diễn ra nhiều hoạt động văn hóa, nghệ thuật của người Khmer ở Trà Vinh. Đây là điểm đến gắn với lễ hội của địa phương."
+  },
+  {
+    "id": "ao-ba-om",
+    "name": "Ao Bà Om",
+    "type": "attraction",
+    "address": "Khóm 4, Phường 8, TP Trà Vinh (giáp xã Nguyệt Hóa, huyện Châu Thành)",
+    "description": "Ao Bà Om (còn gọi là Ao Vuông) là danh thắng cấp quốc gia tiêu biểu của khu vực Trà Vinh. Mặt nước phẳng lặng hình chữ nhật rộng hơn 10 ha được bao bọc bởi gò cát cổ với hàng trăm cây sao, dầu cổ thụ tuổi thọ hàng trăm năm, rễ cây trồi lên mặt đất tạo hình thù kỳ thú. Nơi đây là trung tâm tổ chức các lễ hội truyền thống Chôl Chnăm Thmây và Ok Om Bok của đồng bào Khmer Nam Bộ."
+  },
+  {
+    "id": "bao-tang-dua-sap-tra-vinh",
+    "name": "Bảo tàng dừa sáp Trà Vinh",
+    "type": "attraction",
+    "address": "Bảo tàng dừa sáp, Xã Cầu Kè, tỉnh Vĩnh Long",
+    "description": "Ở thủ phủ dừa sáp Cầu Kè, bảo tàng dừa sáp Trà Vinh là bảo tàng đầu tiên của Việt Nam dành riêng cho một loại trái cây. Khuôn viên gần 1.500 m² trưng hơn 400 hình ảnh, hiện vật. Tâm điểm là nửa gốc cây dừa sáp đầu tiên do hòa thượng Thạch Sô mang về trồng ở Chùa Chợ năm 1924, cùng tượng sáp tri ân ông. Tranh vẽ tay và hiện vật dân gian tái hiện đời sống Kinh - Khmer - Hoa của đất Cầu Kè. Xem xong, khách nếm thử các món chế biến từ dừa sáp ngay tại chỗ."
+  },
+  {
+    "id": "con-thanh-long-mo-cay-nam",
+    "name": "Cồn Thành Long Mỏ Cày Nam",
+    "type": "attraction",
+    "address": "Ấp Thành Long, Xã Thành Thới, tỉnh Vĩnh Long",
+    "description": "Khu sinh thái miệt vườn rộng 111ha trên dòng sông Cổ Chiên, gồm nhiều cồn nhỏ hợp thành (Cồn Nẩy, Cồn Chen, Cồn Cát). Vườn dừa xanh mát, trái cây phong phú, mạng lưới kênh rạch dày đặc thích hợp chèo kayak và thưởng thức ẩm thực sông nước."
+  },
+  {
+    "id": "cho-dem-ben-tre",
+    "name": "Chợ đêm Bến Tre",
+    "type": "attraction",
+    "address": "Khu phố Chợ Phú Khương, Phường An Hội, tỉnh Vĩnh Long",
+    "description": "Phố ẩm thực đêm tại khu phố Chợ Phú Khương, phường Phú Khương, TP Bến Tre — nơi dân địa phương và du khách tụ về mỗi tối.\n\nHơn 10 gian hàng ẩm thực đa dạng: chè đậu trắng, chè bánh lọt, xôi đậu xanh, xôi gấc, hủ tiếu, đồ nướng — và nước giải khát xứ dừa: sương sâm, mủ gòn, dừa tươi. Giá bình dân, 15.000-40.000 đ/phần.\n\nCó quầy cà phê di động, khu bán quà lưu niệm và hàng thủ công từ dừa. Mở cửa 17:00-22:00 hàng ngày. Thích hợp dạo chơi buổi tối sau khi tham quan cồn Phụng, cồn Lân ban ngày."
+  },
+  {
+    "id": "lang-van-hoa-du-lich-khmer-tra-vinh",
+    "name": "Làng Văn hóa - Du lịch Khmer Trà Vinh",
+    "type": "attraction",
+    "address": "Làng Văn hóa - Du lịch Khmer, Phường Trà Vinh, tỉnh Vĩnh Long",
+    "description": "Bảy phân khu trải quanh Ao Bà Om — mặt hồ vuông 500 m nhân 300 m dưới tán sao cổ thụ — gộp chùa Âng gần nghìn tuổi, bảo tàng Khmer và làng bích họa 78 bức thành quần thể văn hóa lớn nhất Trà Vinh. Nằm tại xã Lương Hòa, huyện Châu Thành, chỉ 3 km từ trung tâm thành phố, khu phức hợp gồm: Ao Bà Om, chùa Âng (Angkorajaborey, dựng khoảng năm 990, Di tích Lịch sử–Văn hóa cấp quốc gia từ 1994), Bảo tàng Văn hóa Khmer, trường Pali, làng văn hóa Khmer, chùa Lò Gạch và di tích Óc Eo. Du khách tham gia workshop làm cốm dẹp, mặc trang phục Khmer, xem múa Rô-băm, dù kê và trống Chhay-dăm, rồi ăn bún nước lèo và bánh tráng phơi sương ở chợ đêm."
+  },
+  {
+    "id": "cho-thanh-phu",
+    "name": "Chợ Thạnh Phú",
+    "type": "attraction",
+    "address": "Đường Thuỷ Sản",
+    "description": "Chợ huyện ven biển Thạnh Phú, Bến Tre — chợ truyền thống với hải sản tươi và đặc sản vùng cửa sông Hàm Luông. Vé: Miễn phí."
+  },
+  {
+    "id": "lang-nghe-tau-hu-ky-my-hoa",
+    "name": "Làng nghề tàu hũ ky Mỹ Hòa",
+    "type": "attraction",
+    "address": "Xã Mỹ Hòa, thị xã Bình Minh, tỉnh Vĩnh Long (cách trung tâm thị xã Bình Minh ~1 km, qua cầu Từ Tải trên sông Cái Vồn)",
+    "description": "Làng nghề Tàu hủ ky Mỹ Hòa nằm tại xã Mỹ Hòa, thị xã Bình Minh, bên bờ sông Cái Vồn. Làng nghề hình thành từ năm 1912 do cụ Châu Xường — người Hoa gốc Quảng Đông — mang nghề đậu hũ ky gia truyền đến lập nghiệp. Sản phẩm làm hoàn toàn từ hạt đậu nành thuần khiết ninh sôi trên chảo gang đun trấu, vớt từng lớp váng mỏng phơi trên sào tre. Nghề đã được Bộ VHTTDL công nhận là Di sản Văn hóa Phi vật thể Quốc gia năm 2023."
+  },
+  {
+    "id": "bao-tang-van-hoa-dan-toc-khmer",
+    "name": "Bảo tàng văn hóa dân tộc Khmer",
+    "type": "attraction",
+    "address": "Khóm 4, Phường Nguyệt Hóa, tỉnh Vĩnh Long",
+    "description": "Bảo tàng văn hóa dân tộc Khmer thuộc quần thể Ao Bà Om – Chùa Âng ở Trà Vinh, lưu giữ hơn 800 hiện vật về đời sống và tín ngưỡng Khmer Nam Bộ. Công trình khánh thành năm 1997 trên khuôn viên gần 1 ha; tòa nhà 2 tầng pha giữa kiến trúc chùa chiền Khmer truyền thống và nét hiện đại, diện tích sàn hơn 1.700 m². Bốn chủ đề trưng bày dẫn khách đi qua thế giới tôn giáo Khmer, sinh hoạt đời thường và nghề thủ công — từ khung cửi, dụng cụ đánh bắt cho đến phục trang và mặt nạ Rô-băm."
+  },
+  {
+    "id": "cang-ca-binh-thang",
+    "name": "Cảng cá Bình Thắng",
+    "type": "attraction",
+    "address": "Cảng cá Bình Thắng, Phường Bình Đại, tỉnh Vĩnh Long",
+    "description": "Cảng cá Bình Thắng là đầu mối tiếp nhận hàng trăm tàu đánh bắt xa bờ cập bến mỗi rạng đông. Cầu cảng nhộn nhịp cảnh mua bán hải sản tươi sống và là nơi gìn giữ truyền thống lễ hội Nghinh Ông Thủy Tướng lâu đời của ngư dân miền biển."
+  },
+  {
+    "id": "cong-vien-giong-trom",
+    "name": "Công viên Giồng Trôm",
+    "type": "attraction",
+    "address": "Công viên Giồng Trôm, Xã Giồng Trôm, tỉnh Vĩnh Long",
+    "description": "Trái tim xanh của thị trấn — nơi người già sáng sớm tập thể dục dưới tán cây cổ thụ. Trẻ nhỏ chiều chiều cười đùa bên ghế đá và cặp đôi dạo bộ dưới ánh đèn vàng khi đêm xuống. Không gian xanh mát này là lát cắt chân thực nhất của nhịp sống Giồng Trôm."
+  },
+  {
+    "id": "rung-ngap-man-long-khanh",
+    "name": "Rừng ngập mặn Long Khánh",
+    "type": "attraction",
+    "address": "Rừng ngập mặn Long Khánh, Phường Duyên Hải, tỉnh Vĩnh Long",
+    "description": "Rừng ngập mặn Long Khánh trải rộng như tấm thảm xanh thẫm ôm lấy bờ biển Trà Vinh, nơi đước, mắm, bần đan xen tạo nên mái vòm tự nhiên kỳ diệu. Len lỏi trên những chiếc cano hay đi bộ theo lối ván gỗ xuyên rừng, bạn sẽ chứng kiến cua, còng, vọp bơi lội tự do dưới chân. Tiếng gió thổi qua tán lá rừng, mùi bùn phù sa quyện trong không khí tạo nên cảm giác hoàn toàn thoát tục."
+  },
+  {
+    "id": "cho-cai-von",
+    "name": "Chợ Cái Vồn",
+    "type": "attraction",
+    "address": "Phường Cái Vồn, TX Bình Minh, Vĩnh Long",
+    "description": "Từ thời chúa Nguyễn, chợ Cái Vồn đã là nơi giao thương nông sản ven sông Hậu — nay là chợ Bình Minh thuộc phường Cái Vồn, TX Bình Minh, Vĩnh Long. Thị tứ mọc quanh chợ từng sầm uất hàng chục xóm nghề: nấu tàu hủ ky, gói bánh nếp, đan rổ rá, se nhang. Riêng nghề tàu hủ ky do gia đình Châu Xường gốc Quảng Đông mang sang từ năm 1912 vẫn giữ lửa ở xã Mỹ Hòa cạnh chợ, khoảng 40 hộ sản xuất; tháng 8-2022, nghề được công nhận di sản văn hóa phi vật thể quốc gia. Chợ họp sớm, hàng hóa nông sản trái cây từ nhà vườn xứ Bình Minh chuyển thẳng ra sạp."
+  },
+  {
+    "id": "cau-can-tho",
+    "name": "Cầu Cần Thơ",
+    "type": "attraction",
+    "address": "Phường Bình Minh, Vĩnh Long",
+    "description": "Cầu Cần Thơ sừng sững vượt dòng sông Hậu mênh mông với tháp cầu cao 171 mét. Công trình kết nối liên hoàn mạng lưới giao thông đường bộ giữa đôi bờ sông Hậu, trở thành điểm chiêm ngưỡng bình minh và cảnh đêm rực rỡ sắc màu."
+  },
+  {
+    "id": "khu-du-lich-lan-vuong",
+    "name": "Khu du lịch Lan Vương",
+    "type": "attraction",
+    "address": "Khu du lịch Lan Vương, Phường Bến Tre, tỉnh Vĩnh Long",
+    "description": "Lan Vương mang đến trải nghiệm Vĩnh Long đích thực: ngồi xuồng ba lá len lỏi qua rừng dừa nước rì rào, tay tát từng gàu nước bắt cá tươi giãy đành đạch. Rồi nướng cá ngay tại chỗ thưởng thức cùng nước dừa mát lạnh. Không gian xanh ngát với vườn cây ăn trái bao quanh tạo nên bầu không khí thư thái khó tả."
+  },
+  {
+    "id": "khu-du-lich-lang-be",
+    "name": "Khu du lịch Làng Bè",
+    "type": "attraction",
+    "address": "81B/6B ấp An Thới, Phường Bến Tre, tỉnh Vĩnh Long",
+    "description": "Bè nổi giữa rừng dừa nước ở An Khánh, Châu Thành — du khách chèo kayak len lỏi kênh rạch rồi lên bè ăn cá tai tượng chiên xù, gỏi bần chua thanh và canh chua lá me đồng. Khu du lịch tại 81B/6B ấp An Thới gắn liền với nghề nuôi cá bè truyền thống của vùng sông Bến Tre. Ngoài ẩm thực, có trò chơi dân gian: đi cầu khỉ, leo dây, bắt cá, nặn đất sét, đua thuyền. Từ tháng 6 đến tháng 8, thêm hái trái cây tại vườn — măng cụt, chôm chôm, sầu riêng, nhãn. Cho thuê áo bà ba, áo dài chụp ảnh giữa khung cảnh miệt vườn."
+  },
+  {
+    "id": "don-ca-tai-tu-nam-bo-tai-vinh-long",
+    "name": "Đờn ca tài tử Nam bộ tại Vĩnh Long",
+    "type": "attraction",
+    "address": "Phường Long Châu, Vĩnh Long",
+    "description": "Đờn ca tài tử không diễn trên sân khấu lớn — nó sống trong tiếng đàn tranh réo rắt giữa một đám giỗ, trong giọng ca ngân dài dưới mái nhà lá ven sông Cổ Chiên. Ở Vĩnh Long, di sản phi vật thể được UNESCO ghi danh này vẫn được truyền đời qua các câu lạc bộ, qua những cụ ông cụ bà gảy đàn kìm từ thưở ấu thơ. Ngồi nghe một đêm tài tử, bạn cảm nhận rõ chất ngẫu hứng, phóng khoáng của lối ca này. Muốn xem biểu diễn đờn ca tài tử trực tiếp, hãy hỏi ban quản lý khu du lịch địa phương."
+  },
+  {
+    "id": "nhom-don-ca-tai-tu-bong-hong-vang",
+    "name": "Nhóm đờn ca tài tử Bông Hồng Vàng",
+    "type": "attraction",
+    "address": "Phường Long Châu, Vĩnh Long",
+    "description": "Một trong những nhóm đờn ca tài tử hoạt động lâu năm ở Vĩnh Long — biểu diễn phục vụ du khách tại các điểm homestay và nhà vườn trên cù lao, giữ nếp hát bội, hò điệu lý Nam Bộ đã được UNESCO công nhận di sản văn hóa phi vật thể năm 2013. Nhóm thường có buổi diễn vào cuối tuần và dịp lễ, nhạc cụ chính gồm đàn kìm, đàn tranh, đàn cò và guitar phím lõm. Mùa cao điểm du lịch tháng 11 đến tháng 4, nhóm biểu diễn thường xuyên hơn. Liên hệ trước để hỏi lịch diễn."
+  },
+  {
+    "id": "trang-trai-vinh-sang",
+    "name": "Trang trại Vinh Sang",
+    "type": "attraction",
+    "address": "Xã An Bình, Vĩnh Long",
+    "description": "Ai đã từng cưỡi đà điểu mới hiểu cảm giác vừa hồi hộp vừa vui đến không thể ngừng cười. Và Trang trại Vinh Sang chính là nơi mang lại khoảnh khắc đáng nhớ đó ngay giữa vùng quê Vĩnh Long. Hơn 30 chú đà điểu to lớn, chân dài nhanh nhẹn đang chờ bạn chinh phục. Ngoài cưỡi đà điểu, trang trại còn có khu vui chơi dành cho trẻ em, vườn cây ăn trái và cơ hội gần gũi với nhiều loài động vật lạ mắt."
+  },
+  {
+    "id": "chua-kompongnigrodha",
+    "name": "Chùa KompongNigrodha",
+    "type": "attraction",
+    "address": "Phường Trà Ôn, Vĩnh Long",
+    "description": "Năm 1637, chùa KompongNigrodha được dựng lên; đến nay khuôn viên vẫn bao bọc bởi những cây cổ thụ hàng trăm tuổi đã được công nhận là cây di sản quốc gia. Ngôi chùa mang kiến trúc tháp Phật giáo Nam tông với những đường cong duyên dáng, màu vàng rực rỡ nổi bật trên nền cây xanh. Bên trong, những bức bích họa kể câu chuyện Phật pháp bằng ngôn ngữ của người Khmer Nam Bộ còn giữ nguyên sắc màu qua thế kỷ."
+  },
+  {
+    "id": "sieu-thi-coop-mart-vinh-long",
+    "name": "Siêu thị Co.op Mart Vĩnh Long",
+    "type": "attraction",
+    "address": "Số 26 đường 3/2, phường Long Châu, TP Vĩnh Long",
+    "description": "Siêu thị lớn tại trung tâm TP Vĩnh Long. Mua đặc sản Vĩnh Long đóng gói (kẹo dừa, mắm, bánh phồng) tại quầy thực phẩm địa phương – giá rẻ hơn các cửa hàng lưu niệm 20-30%."
+  },
+  {
+    "id": "trung-tam-thuong-mai-vincom-vinh-long",
+    "name": "Trung tâm thương mại Vincom Vĩnh Long",
+    "type": "attraction",
+    "address": "Số 55 Phạm Thái Bường, phường Phước Hậu, TP Vĩnh Long",
+    "description": "Trung tâm thương mại hiện đại. Tránh đến cuối tuần vì rất đông; ngày thường (thứ 2-5) vừa mua sắm vừa nghỉ ngơi điều hòa mát mẻ giữa trưa. Vé: Miễn phí."
+  },
+  {
+    "id": "sieu-thi-dien-may-cho-lon-vinh-long",
+    "name": "Siêu thị Điện máy Chợ Lớn Vĩnh Long",
+    "type": "attraction",
+    "address": "Số 39 Trần Đại Nghĩa, phường Phước Hậu, TP Vĩnh Long",
+    "description": "Siêu thị điện máy. So sánh giá online trước khi vào mua – nhân viên thường hỗ trợ giảm thêm 5-10% nếu bạn cho thấy giá trên web. Vé: Miễn phí."
+  },
+  {
+    "id": "cua-hang-dac-san-que-hai-ung",
+    "name": "Cửa hàng Đặc sản quê Hai Ửng",
+    "type": "attraction",
+    "address": "Ấp Cồn Chim, xã Hòa Minh",
+    "description": "Cửa hàng đặc sản và sản phẩm OCOP. Thử xin nếm thử trước khi mua – chủ cửa hàng thường cho nếm mắm chua ngọt và bánh đặc sản tại chỗ. Vé: Miễn phí."
+  },
+  {
+    "id": "sieu-thi-go-tra-vinh",
+    "name": "Siêu thị GO Trà Vinh",
+    "type": "attraction",
+    "address": "414 Võ Nguyên Giáp, Phường Nguyệt Hóa, tỉnh Vĩnh Long",
+    "description": "Siêu thị lớn tại Trà Vinh. Khu vực thực phẩm tươi sống và rau củ tầng trệt có hải sản địa phương giá tốt – mua trước 9h sáng để chọn được hàng ngon nhất. Vé: Miễn phí."
+  },
+  {
+    "id": "cua-hang-ocop-bien-ba-dong",
+    "name": "Cửa hàng OCOP biển Ba Động",
+    "type": "attraction",
+    "address": "KDL biển Ba Động, Phường Trường Long Hòa, tỉnh Vĩnh Long",
+    "description": "Cửa hàng sản phẩm OCOP tại khu du lịch. Mua hải sản khô ngay tại cửa hàng này thay vì ngoài bãi biển – giá ổn định và hàng đã qua kiểm định chất lượng OCOP. Vé: Miễn phí."
+  },
+  {
+    "id": "cua-hang-ocop-ao-ba-om",
+    "name": "Cửa hàng OCOP Ao Bà Om",
+    "type": "attraction",
+    "address": "Khu di tích Ao Bà Om, Phường Nguyệt Hóa, tỉnh Vĩnh Long",
+    "description": "Cửa hàng sản phẩm OCOP và đặc sản. Kết hợp tham quan Ao Bà Om và mua sắm trong một chuyến – dành 30 phút cho cửa hàng sau khi thăm di tích để chọn quà lưu niệm. Vé: Miễn phí."
+  },
+  {
+    "id": "sieu-thi-go-ben-tre",
+    "name": "Siêu thị Go Bến Tre",
+    "type": "attraction",
+    "address": "Siêu thị Go, Phường Sơn Đông, tỉnh Vĩnh Long",
+    "description": "Siêu thị lớn ở phường Sơn Đông, thành phố Bến Tre. Mở cửa 8h–22h. Quầy bánh và kẹo dừa cuối siêu thị bán kẹo dừa Bến Tre chính gốc, rẻ hơn cửa hàng sân bay đến 40%."
+  },
+  {
+    "id": "tt-thuong-mai-sense-city-ben-tre",
+    "name": "TT thương mại Sense City Bến Tre",
+    "type": "attraction",
+    "address": "26A Trần Quốc Tuấn, Phường An Hội, tỉnh Vĩnh Long",
+    "description": "Trung tâm thương mại hiện đại. Tầng B1 có khu ẩm thực với các quán ăn địa phương phục vụ hủ tiếu, bánh mì thịt nướng – ăn trưa ở đây ngon và rẻ hơn nhà hàng ngoài phố. Vé: Miễn phí."
+  },
+  {
+    "id": "cua-hang-ocop-vinh-long-trung-tam-xuc-tien-thuong-mai-vinh-long",
+    "name": "Cửa hàng OCOP Vĩnh Long (Trung tâm Xúc tiến Thương mại)",
+    "type": "attraction",
+    "address": "Số 31 Phạm Thái Bường, Phường 4, TP. Vĩnh Long",
+    "description": "Điểm trưng bày và giới thiệu sản phẩm OCOP của tỉnh Vĩnh Long, đặt tại Trung tâm Xúc tiến Thương mại trên đường Phạm Thái Bường. Quy tụ các sản phẩm đạt chuẩn OCOP từ nem chả, khoai lang tím Bình Tân đến gạo đặc sản và bánh tráng — nơi đáng ghé để tìm hiểu và mua đặc sản vùng miền."
+  },
+  {
+    "id": "nha-thuc-pham-sach-khoai-lang-tim-binh-tan-vinh-long",
+    "name": "Nhà Thực Phẩm Sạch Khoai Lang Tím Bình Tân",
+    "type": "attraction",
+    "address": "Nhà Thực Phẩm Sạch Khoai Lang Tím Bình Tân, Xã Nhơn Phú, tỉnh Vĩnh Long",
+    "description": "Cửa hàng chuyên kinh doanh khoai lang tím Bình Tân và các nông sản sạch của huyện Bình Tân, Vĩnh Long, nằm trên Quốc lộ 53. Khoai lang tím Bình Tân là đặc sản của vùng, được đánh giá cao nhờ chất lượng và hương vị đặc trưng."
+  },
+  {
+    "id": "cua-hang-dac-san-mien-tay-ba-bay-nem-vinh-long",
+    "name": "Cửa Hàng Đặc Sản Miền Tây - Bà Bảy Nem",
+    "type": "attraction",
+    "address": "Đường Nguyễn Huệ, Phường 2, TP. Vĩnh Long",
+    "description": "Cửa hàng đặc sản tại TP. Vĩnh Long, với nem — một trong những đặc sản truyền thống tiêu biểu của vùng. Bên cạnh nem, cửa hàng còn bày bán các loại đặc sản Vĩnh Long khác như bánh tráng, bánh ít lá gai và các sản phẩm OCOP địa phương."
+  }
+]
