@@ -95518,7 +95518,14 @@
         "price_range": "tùy loại cây, khoảng 20.000–300.000 đ/cây phổ biến",
         "schema_type": "Product",
         "weight/unit": "cây/chậu",
-        "sub_category": "textile"
+        "sub_category": "textile",
+        "image_author": "Hữu Hiệp",
+        "image_source": "Báo Đồng Khởi",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Vườn ươm cây giống và hoa kiểng Chợ Lách với hàng triệu chậu mai vàng, bonsai và kiểng lá xanh tốt trên vùng đất cù lao trù phú ven sông Tiền.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Đồng Khởi",
+        "verifiedAt": "2026-09-18T09:45:00Z"
       },
       "source": [
         {
@@ -95583,7 +95590,14 @@
         "schema_type": "Product",
         "weight/unit": "cây/bó",
         "sub_category": "tea",
-        "coords_approximate": true
+        "coords_approximate": true,
+        "image_author": "Bá Thi",
+        "image_source": "Báo Trà Vinh",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Rẫy mía đường Cầu Kè thân cao mập mạp lóng dài mọng nước, thu hoạch cung ứng cho các nhà máy đường và xe ép nước mía giải khát truyền thống.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Trà Vinh",
+        "verifiedAt": "2026-09-18T09:45:00Z"
       },
       "source": [
         {
@@ -95641,7 +95655,14 @@
         "weight/unit": "kg",
         "sub_category": "legume",
         "harvest_season": "Vụ Đông Xuân, thu hoạch sau 80–85 ngày",
-        "coords_approximate": true
+        "coords_approximate": true,
+        "image_author": "Bá Thi",
+        "image_source": "Báo Trà Vinh",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Đậu phộng củ thu hoạch trên đất giồng cát Cầu Ngang vỏ mỏng hạt to tròn đều, nông sản OCOP chủ lực chế biến kẹo đậu phộng giòn thơm nức tiếng.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Trà Vinh",
+        "verifiedAt": "2026-09-18T09:45:00Z"
       },
       "source": [
         {
@@ -95799,10 +95820,16 @@
             "authority_weight": 0.95
           }
         ],
-        "verifiedAt": "2026-09-13T21:30:00+07:00",
+        "verifiedAt": "2026-09-18T09:45:00Z",
         "verifiedSource": "NotebookLM Deep Terroir Research - Phase 9",
         "hours": "06:00 - 18:00 hàng ngày tại các chợ quê và bến tàu cù lao",
-        "best_time": "Buổi sáng lúc nhâm nhi cùng tách trà xanh miệt vườn cù lao An Bình"
+        "best_time": "Buổi sáng lúc nhâm nhi cùng tách trà xanh miệt vườn cù lao An Bình",
+        "image_author": "Ngọc Trảng",
+        "image_source": "Báo Vĩnh Long",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Những chiếc bánh lá dừa cuộn tròn hình trụ tước từ lá dừa nước non, bên trong là nếp xào nước cốt dừa dẻo quánh cùng đậu đen bùi béo.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long"
       },
       "source": [
         {
@@ -96026,7 +96053,14 @@
         "sub_category": "seafood",
         "ocop_certified": true,
         "farming_area_ha": 5700,
-        "coords_approximate": true
+        "coords_approximate": true,
+        "image_author": "Bá Thi",
+        "image_source": "Báo Trà Vinh",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Tôm sú nuôi sinh thái tự nhiên dưới tán rừng ngập mặn ven biển Duyên Hải, con tôm lớn cơ thịt săn chắc ngọt đậm theo mô hình tôm ôm rừng bền vững.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Trà Vinh",
+        "verifiedAt": "2026-09-18T09:45:00Z"
       },
       "source": [
         {
@@ -96092,7 +96126,14 @@
         "schema_type": "Product",
         "weight/unit": "túi 2kg, 5kg hoặc kg",
         "sub_category": "rice",
-        "ocop_certified": true
+        "ocop_certified": true,
+        "image_author": "Bá Thi",
+        "image_source": "Báo Trà Vinh",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Túi gạo hữu cơ giống ST sản xuất theo quy trình nông nghiệp sạch an toàn sinh học, hạt cơm trắng ngần dẻo ngọt và thơm dịu tự nhiên.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Trà Vinh",
+        "verifiedAt": "2026-09-18T09:45:00Z"
       },
       "source": [
         {
@@ -96153,7 +96194,14 @@
         "weight/unit": "kg; thường bán theo gói 100g, 250g, 500g",
         "sub_category": "coconut-product",
         "export_markets": "90+ quốc gia",
-        "ocop_certified": true
+        "ocop_certified": true,
+        "image_author": "Hữu Hiệp",
+        "image_source": "Báo Đồng Khởi",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Cơm dừa sấy giòn đóng gói đạt chuẩn OCOP xuất khẩu của các cơ sở chế biến dừa, nguyên liệu dừa tươi nạo sợi giữ trọn vị thơm béo nguyên chất.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Đồng Khởi",
+        "verifiedAt": "2026-09-18T09:45:00Z"
       },
       "source": [
         {
@@ -96220,7 +96268,14 @@
         "weight/unit": "kg",
         "sub_category": "vegetable",
         "income_per_ha": "50-135 triệu đ/vụ",
-        "coords_approximate": true
+        "coords_approximate": true,
+        "image_author": "Bá Thi",
+        "image_source": "Báo Trà Vinh",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Liếp dưa hấu và hoa màu trĩu quả trên những triền đất giồng cát ven biển, mô hình chuyển đổi cây trồng thích ứng khô hạn mang lại hiệu quả kinh tế cao.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Trà Vinh",
+        "verifiedAt": "2026-09-18T09:45:00Z"
       },
       "source": [
         {
@@ -96281,7 +96336,14 @@
         "schema_type": "Product",
         "weight/unit": "kg",
         "sub_category": "fruit",
-        "coords_approximate": true
+        "coords_approximate": true,
+        "image_author": "Hữu Hiệp",
+        "image_source": "Báo Đồng Khởi",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Chùm bòn bon Cái Mơn mọc sát thân cây từng chuỗi trái tròn màu vàng nhạt, múi trong veo vị ngọt thanh mát đậm đà đặc sản miệt vườn.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Đồng Khởi",
+        "verifiedAt": "2026-09-18T09:45:00Z"
       },
       "source": [
         {
@@ -96346,7 +96408,14 @@
         "schema_type": "Product",
         "weight/unit": "kg",
         "sub_category": "fruit",
-        "coords_approximate": true
+        "coords_approximate": true,
+        "image_author": "Hữu Hiệp",
+        "image_source": "Báo Đồng Khởi",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Sa-pô-chê lồng mứt Chợ Lách vỏ mỏng ruột nâu mịn màng, khi chín mềm ngọt lịm như mật ong và phảng phất hương thơm hoa trái nhiệt đới.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Đồng Khởi",
+        "verifiedAt": "2026-09-18T09:45:00Z"
       },
       "source": [
         {
@@ -118326,7 +118395,14 @@
         "schema_type": "Product",
         "weight/unit": "kg",
         "sub_category": "fruit",
-        "coords_approximate": true
+        "coords_approximate": true,
+        "image_author": "Ngọc Trảng",
+        "image_source": "Báo Vĩnh Long",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Trái măng cụt cù lao An Bình vỏ tím thẫm mỏng đều, múi trắng muốt giòn ngọt thanh tao là loại trái cây mùa hè được du khách săn đón bậc nhất.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long",
+        "verifiedAt": "2026-09-18T09:45:00Z"
       },
       "source": [
         {
@@ -121247,7 +121323,14 @@
         "ocop_star": 3,
         "schema_type": "Product",
         "sub_category": "ocop-product",
-        "coords_approximate": true
+        "coords_approximate": true,
+        "image_author": "Hữu Hiệp",
+        "image_source": "Báo Đồng Khởi",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Lạp xưởng tươi cô Ba Loan tại Mỏ Cày đạt chứng nhận OCOP 3 sao, ướp rượu gia truyền phơi nắng tự nhiên với tỉ lệ thịt nạc cao đậm vị quê nhà.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Đồng Khởi",
+        "verifiedAt": "2026-09-18T09:45:00Z"
       },
       "source": [
         {
@@ -121938,7 +122021,14 @@
         "certification": "MSC (2009, tái đánh giá 2024-2029)",
         "target_segments": "Học sinh; diaspora",
         "coords_approximate": true,
-        "suggested_duration": "Nửa ngày"
+        "suggested_duration": "Nửa ngày",
+        "image_author": "Hữu Hiệp",
+        "image_source": "Báo Đồng Khởi",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Cào nghêu thương phẩm trên bãi nghêu ven biển Thạnh Phú đạt chứng nhận khai thác bền vững MSC quốc tế, con nghêu trắng tròn béo múp ngọt nước.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Đồng Khởi",
+        "verifiedAt": "2026-09-18T09:45:00Z"
       },
       "source": [
         {
@@ -123104,7 +123194,14 @@
         "schema_type": "Product",
         "sub_category": "coconut-product",
         "ocop_certified": true,
-        "coords_approximate": true
+        "coords_approximate": true,
+        "image_author": "Bá Thi",
+        "image_source": "Báo Trà Vinh",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Trái dừa sáp Càng Long bổ đôi khoe lớp cơm dừa dày đặc sánh dẻo quánh như sáp, béo ngậy thơm lừng dùng dầm đá sữa hoặc xay sinh tố bổ dưỡng.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Trà Vinh",
+        "verifiedAt": "2026-09-18T09:45:00Z"
       },
       "source": [
         {
@@ -123485,7 +123582,14 @@
         "ocop_star": 4,
         "schema_type": "Product",
         "sub_category": "rice",
-        "coords_approximate": true
+        "coords_approximate": true,
+        "image_author": "Thanh Đức",
+        "image_source": "Báo Vĩnh Long",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Sản phẩm gạo Tân Tiến đóng bao bì hút chân không đạt OCOP 4 sao tại Tam Bình, tinh hoa lúa gạo phù sa nước ngọt hạt cơm dẻo mềm giàu dinh dưỡng.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long",
+        "verifiedAt": "2026-09-18T09:45:00Z"
       },
       "source": [
         {
@@ -123839,7 +123943,14 @@
         "schema_type": "Product",
         "sub_category": "fruit",
         "ocop_certified": true,
-        "coords_approximate": true
+        "coords_approximate": true,
+        "image_author": "Hữu Hiệp",
+        "image_source": "Báo Đồng Khởi",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Múi sầu riêng cấp đông Chánh Thu đạt chuẩn OCOP xuất khẩu, công nghệ đông lạnh sâu giữ nguyên vẹn sắc vàng ươm và hương thơm béo ngậy chín cây.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Đồng Khởi",
+        "verifiedAt": "2026-09-18T09:45:00Z"
       },
       "source": [
         {
@@ -124378,7 +124489,14 @@
         "schema_type": "Product",
         "sub_category": "coconut-product",
         "ocop_certified": true,
-        "coords_approximate": true
+        "coords_approximate": true,
+        "image_author": "Hữu Hiệp",
+        "image_source": "Báo Đồng Khởi",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Bộ sản phẩm nước cốt dừa và sữa dừa béo đặc BEINCO đạt chứng nhận OCOP, chế biến sâu từ nguồn dừa chất lượng cao phục vụ thị trường toàn cầu.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Đồng Khởi",
+        "verifiedAt": "2026-09-18T09:45:00Z"
       },
       "source": [
         {
@@ -126810,7 +126928,14 @@
         "ingredients": "Nước cốt dừa, mạch nha, đường",
         "schema_type": "Product",
         "sub_category": "coconut-candy",
-        "notable_brands": "Thanh Long (~1970), Yến Phương, Tám Trung (Đất Dừa)"
+        "notable_brands": "Thanh Long (~1970), Yến Phương, Tám Trung (Đất Dừa)",
+        "image_author": "Hữu Hiệp",
+        "image_source": "Báo Đồng Khởi",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Những chảo kẹo dừa khuấy mạch nha sôi sùng sục trên Cồn Phụng xã Tân Thạch, du khách hào hứng xem nghệ nhân cắt kẹo và thưởng thức tại lò.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Đồng Khởi",
+        "verifiedAt": "2026-09-18T09:45:00Z"
       },
       "source": [
         {
@@ -126893,8 +127018,14 @@
             "authority_weight": 1
           }
         ],
-        "verifiedAt": "2026-09-13T14:20:00+07:00",
-        "verifiedSource": "NotebookLM Deep Terroir Research - Phase 4"
+        "verifiedAt": "2026-09-18T09:45:00Z",
+        "verifiedSource": "NotebookLM Deep Terroir Research - Phase 4",
+        "image_author": "Hữu Hiệp",
+        "image_source": "Báo Đồng Khởi",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Trái sầu riêng Chợ Lách gai nhọn đều vỏ mỏng múi to vàng óng, vị ngọt béo ngậy hạt lép ráo tay mang chỉ dẫn địa lý nức tiếng gần xa.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Đồng Khởi"
       },
       "source": [
         {
@@ -127049,7 +127180,14 @@
           "status": "EXPIRED",
           "validity_period_months": 36,
           "remediation": "Mark as expired or require recertification decree reference"
-        }
+        },
+        "image_author": "Bá Thi",
+        "image_source": "Báo Trà Vinh",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Hộp kẹo dừa sáp Vicosap ba vị đạt chuẩn OCOP 5 sao quốc gia tại Cầu Kè, chế biến từ đặc sản dừa sáp quý hiếm xuất khẩu đi nhiều nước trên thế giới.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Trà Vinh",
+        "verifiedAt": "2026-09-18T09:45:00Z"
       },
       "source": [
         {
@@ -127128,7 +127266,14 @@
           "status": "EXPIRED",
           "validity_period_months": 36,
           "remediation": "Mark as expired or require recertification decree reference"
-        }
+        },
+        "image_author": "Bá Thi",
+        "image_source": "Báo Trà Vinh",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Hũ mắm tép đu đủ Thúy Nguyễn đạt OCOP 3 sao tại Châu Thành, con tép đất đỏ au quyện đu đủ sợi giòn rụm và nước mắm ớt tỏi chua ngọt cay nồng.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Trà Vinh",
+        "verifiedAt": "2026-09-18T09:45:00Z"
       },
       "source": [
         {
@@ -127203,7 +127348,14 @@
           "status": "EXPIRED",
           "validity_period_months": 36,
           "remediation": "Mark as expired or require recertification decree reference"
-        }
+        },
+        "image_author": "Hữu Hiệp",
+        "image_source": "Báo Đồng Khởi",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Bánh phồng mì sữa Sơn Đốc làng nghề Hưng Nhượng phơi đều tăm tắp trên vỉ tre, nướng than hồng nở phồng to giòn rụm béo vị nước cốt dừa.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Đồng Khởi",
+        "verifiedAt": "2026-09-18T09:45:00Z"
       },
       "source": [
         {
@@ -127355,7 +127507,14 @@
       "attributes": {
         "schema_type": "Product",
         "coords_approximate": true,
-        "sub_category": "specialty-product"
+        "sub_category": "specialty-product",
+        "image_author": "Bá Thi",
+        "image_source": "Báo Trà Vinh",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Bộ bàn ghế salon bằng thân tre tự nhiên Trì Cảnh đạt OCOP 4 sao tại Hàm Giang, sản phẩm mỹ nghệ tinh xảo phục vụ trang trí nội thất homestay nghỉ dưỡng.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Trà Vinh",
+        "verifiedAt": "2026-09-18T09:45:00Z"
       },
       "source": [
         {
@@ -127419,7 +127578,14 @@
         "ocop_rating": "3 sao",
         "schema_type": "Product",
         "sub_category": "processed-food",
-        "coords_approximate": true
+        "coords_approximate": true,
+        "image_author": "Bá Thi",
+        "image_source": "Báo Trà Vinh",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Hộp bột nưa sấy khô nguyên chất Minh Hùng đạt OCOP 3 sao tại Trà Cú, tinh bột củ nưa trắng mịn thơm mát bồi bổ thể lực và thanh nhiệt cơ thể.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Trà Vinh",
+        "verifiedAt": "2026-09-18T09:45:00Z"
       },
       "source": [
         {
@@ -127671,7 +127837,14 @@
         "schema_type": "Product",
         "season_note": "tháng 5–8",
         "sub_category": "fish-sauce",
-        "coords_approximate": true
+        "coords_approximate": true,
+        "image_author": "Hữu Hiệp",
+        "image_source": "Báo Đồng Khởi",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Hũ mắm tép chua miền quê màu đỏ hồng tươi tắn, tép sông ủ chua với tỏi ớt hiểm và nước mắm cốt ăn kèm thịt ba rọi luộc và rau sống miệt vườn.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Đồng Khởi",
+        "verifiedAt": "2026-09-18T09:45:00Z"
       },
       "source": [
         {
@@ -130410,8 +130583,14 @@
             "tier": "TIER_2_SCHOLARLY"
           }
         ],
-        "verifiedAt": "2026-09-13T11:18:37+07:00",
-        "verifiedSource": "NotebookLM Deep Terroir Research"
+        "verifiedAt": "2026-09-18T09:45:00Z",
+        "verifiedSource": "NotebookLM Deep Terroir Research",
+        "image_author": "Hữu Hiệp",
+        "image_source": "Báo Đồng Khởi",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Rổ ốc gạo Cồn Phú Đa vỏ xanh ruột trắng nõn béo tròn mẩy, sản vật đãi khách ngày Tết Đoan Ngọ dùng đúc bánh xèo giòn thơm nức tiếng trên sông Cổ Chiên.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Đồng Khởi"
       },
       "source": [
         {
@@ -131180,7 +131359,14 @@
         "schema_type": "Product",
         "sub_category": "rice-paper",
         "where_to_eat": "Làng nghề ấp Trà Vi, Nguyệt Hóa; chợ Châu Thành",
-        "coords_approximate": true
+        "coords_approximate": true,
+        "image_author": "Bá Thi",
+        "image_source": "Báo Trà Vinh",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Xóm bánh tráng Trà Vi đỏ lửa từ hừng đông tráng những mẻ bánh dẻo dai phơi hai con nắng, đặc sản làng nghề truyền thống lâu đời của người dân bản xứ.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Trà Vinh",
+        "verifiedAt": "2026-09-18T09:45:00Z"
       },
       "source": [
         {
@@ -133197,7 +133383,14 @@
         "ocop_star": 4,
         "schema_type": "Product",
         "sub_category": "coconut-product",
-        "coords_approximate": true
+        "coords_approximate": true,
+        "image_author": "Ngọc Trảng",
+        "image_source": "Báo Vĩnh Long",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Gian hàng trưng bày các sản phẩm OCOP tiêu biểu của Vũng Liêm gồm chả lụa Thành Công, gạo hữu cơ Tấn Đạt và mứt dừa lá dứa Đức Đạt bao bì sang trọng.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long",
+        "verifiedAt": "2026-09-18T09:45:00Z"
       },
       "source": [
         {
@@ -134073,8 +134266,14 @@
             "tier": "TIER_1_GOVERNMENT"
           }
         ],
-        "verifiedAt": "2026-09-13T11:18:37+07:00",
-        "verifiedSource": "NotebookLM Deep Terroir Research"
+        "verifiedAt": "2026-09-18T09:45:00Z",
+        "verifiedSource": "NotebookLM Deep Terroir Research",
+        "image_author": "Ngọc Trảng",
+        "image_source": "Báo Vĩnh Long",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Cánh đồng khoai lang tím giống Nhật tại xã Mỹ Thuận bạt ngàn xanh tốt, nông sản xuất khẩu chủ lực mang lại nguồn thu lớn cho hàng ngàn hộ nông dân.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long"
       },
       "source": [
         {

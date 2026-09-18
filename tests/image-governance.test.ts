@@ -1460,9 +1460,39 @@ describe('Image Governance & Visual Asset Suite (100% Full Coverage)', () => {
       'so-huyet-tra-vinh',
       'nuoc-cot-dua-ben-tre',
       'xoai-tu-quy',
+      // 29 Products & OCOP Specialties (Batch 36 - 100% Product Complete: 219/219)
+      'cay-giong-hoa-kieng-cho-lach',
+      'mia-tra-vinh',
+      'dau-phong-tra-vinh',
+      'banh-la-dua-vinh-long',
+      'tom-su-sinh-thai-tra-vinh',
+      'gao-huu-co-quang-tri-tra-vinh-st',
+      'com-dua-say-ben-tre',
+      'rau-mau-dat-giong-tra-vinh',
+      'bon-bon-cho-lach',
+      'sa-po-che-cho-lach',
+      'mang-cut-binh-hoa-phuoc',
+      'lap-xuong-co-ba-loan',
+      'ngheu-ben-tre',
+      'dua-sap-cang-long',
+      'gao-tan-tien',
+      'sau-rieng-cap-dong-cho-lach',
+      'nuoc-cot-dua-va-san-pham-dua-ocop-beinco',
+      'keo-dua-tan-thach',
+      'sau-rieng-cho-lach',
+      'keo-dua-sap-vicosap',
+      'mam-tep-du-du-thuy-nguyen',
+      'banh-phong-mi-giong-trom',
+      'bo-salon-tre-ocop-tri-canh',
+      'bot-nua-tra-cu',
+      'mam-tep-chua',
+      'oc-gao-con-phu-da',
+      'banh-trang-tra-vi',
+      'san-pham-ocop-vung-liem-cha-lua-thanh-cong-gao-huu-co-tan-dat-mut-dua-la-dua-duc',
+      'vung-chuyen-canh-khoai-lang-tim-nhat-my-thuan',
     ]
 
-    expect(documentaryIds.length).toBe(1310)
+    expect(documentaryIds.length).toBe(1339)
 
     for (const id of documentaryIds) {
       const row = db.prepare(`SELECT id, images, attributes FROM entities WHERE id = ?`).get(id) as { id: string; images: string; attributes: string }
