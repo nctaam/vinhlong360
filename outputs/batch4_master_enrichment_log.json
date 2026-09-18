@@ -1,0 +1,471 @@
+{
+  "timestamp": "2026-09-18T19:45:00+07:00",
+  "enriched_count": 33,
+  "new_sha256": "c9cb7b415963335e70960c44bb1cd848e75975484e9812ae1892268ea8ed3c69",
+  "details": [
+    {
+      "id": "nha-tho-chinh-toa-vinh-long",
+      "name": "Nhà thờ Chính tòa Vĩnh Long (Nhà thờ Thánh Anna)",
+      "type": "attraction",
+      "changes_count": 1,
+      "changes": {
+        "key_facts": {
+          "old": [
+            "Khởi công năm 1964 và khánh thành năm 1967 dưới thời Đức Giám mục Antôn Nguyễn Văn Thiện.",
+            "Chiều dài 70m, chiều rộng 40m, tháp chuông cao 36m thanh thoát vươn cao giữa trung tâm thành phố Vĩnh Long.",
+            "Tòa giám mục quản hạt giáo phận Vĩnh Long trải rộng khắp ba tỉnh Vĩnh Long, Bến Tre và Trà Vinh.",
+            "Nội thất giáo đường rộng rãi với hàng cột bê tông vươn cao, hệ thống kính màu nghệ thuật lung linh huyền ảo."
+          ],
+          "new": [
+            "Khởi công năm 1964 và khánh thành năm 1967 dưới thời Đức Giám mục Antôn Nguyễn Văn Thiện.",
+            "Chiều dài 70m, chiều rộng 40m, tháp chuông cao 36m thanh thoát vươn cao giữa trung tâm thành phố Vĩnh Long.",
+            "Tòa giám mục quản hạt giáo phận Vĩnh Long trải rộng khắp ba phân vùng của tỉnh Vĩnh Long hợp nhất.",
+            "Nội thất giáo đường rộng rãi với hàng cột bê tông vươn cao, hệ thống kính màu nghệ thuật lung linh huyền ảo."
+          ]
+        }
+      }
+    },
+    {
+      "id": "dinh-tan-hoa-w3",
+      "name": "Đình Tân Hoa",
+      "type": "history",
+      "changes_count": 0,
+      "changes": {}
+    },
+    {
+      "id": "dinh-tan-giai",
+      "name": "Đình Tân Giai",
+      "type": "history",
+      "changes_count": 0,
+      "changes": {}
+    },
+    {
+      "id": "khu-di-tich-ao-ba-om",
+      "name": "Khu di tích Ao Bà Om",
+      "type": "history",
+      "changes_count": 2,
+      "changes": {
+        "address": {
+          "old": "Khóm 4, Phường 8, thành phố Trà Vinh, tỉnh Trà Vinh",
+          "new": "Khóm 4, Phường 8, thành phố Trà Vinh, tỉnh Vĩnh Long"
+        },
+        "key_facts": {
+          "old": [
+            "Diện tích mặt ao gần 10 ha (dài 500m, rộng 300m), gắn liền với truyền thuyết dân gian thi đào ao giữa nam và nữ của đồng bào Khmer.",
+            "Hơn 500 cây sao, dầu cổ thụ quanh bờ ao có bộ rễ trồi lên mặt đất uốn lượn thành những hình thù hang động, ghế ngồi tự nhiên độc đáo.",
+            "Trung tâm diễn ra Lễ hội Ok Om Bok (Lễ Cúng Trăng) quy mô lớn nhất Tây Nam Bộ vào rằm tháng 10 âm lịch hàng năm.",
+            "Nằm liền kề Bảo tàng Văn hóa Khmer Trà Vinh và Chùa Âng (Chùa Angkorajaborey) tạo thành quần thể di sản văn hóa tâm linh đặc sắc."
+          ],
+          "new": [
+            "Diện tích mặt ao gần 10 ha (dài 500m, rộng 300m), gắn liền với truyền thuyết dân gian thi đào ao giữa nam và nữ của đồng bào Khmer.",
+            "Hơn 500 cây sao, dầu cổ thụ quanh bờ ao có bộ rễ trồi lên mặt đất uốn lượn thành những hình thù hang động, ghế ngồi tự nhiên độc đáo.",
+            "Trung tâm diễn ra Lễ hội Ok Om Bok (Lễ Cúng Trăng) quy mô lớn nhất đồng bằng sông Cửu Long vào rằm tháng 10 âm lịch hàng năm.",
+            "Nằm liền kề Bảo tàng Văn hóa Khmer và Chùa Âng (Chùa Angkorajaborey) tạo thành quần thể di sản văn hóa tâm linh đặc sắc."
+          ]
+        }
+      }
+    },
+    {
+      "id": "chua-hang",
+      "name": "Chùa Hang",
+      "type": "attraction",
+      "changes_count": 3,
+      "changes": {
+        "address": {
+          "old": "Khóm 4, thị trấn Châu Thành, huyện Châu Thành, tỉnh Trà Vinh",
+          "new": "Khóm 4, thị trấn Châu Thành, huyện Châu Thành, tỉnh Vĩnh Long"
+        },
+        "highlight": {
+          "old": "Ngôi chùa Khmer cổ khởi lập năm 1637 với cổng phụ xuyên qua hang đá nhân tạo độc đáo và xưởng điêu khắc gỗ nghệ thuật",
+          "new": "Ngôi chùa Khmer cổ khởi lập năm 1637 với cổng phụ xuyên qua hang đá nhân tạo độc đáo và xưởng điêu khắc gỗ nghệ thuật thành lập năm 1980"
+        },
+        "key_facts": {
+          "old": [
+            "Tên chữ Khmer là Wat Kompong Chrey (Chùa Bến Cây Đa), người dân quen gọi Chùa Hang vì cổng phụ xây hình vòm tạc xuyên qua gò đất như hang động.",
+            "Khuôn viên rộng hơn 2 ha phủ kín cây cổ thụ, là nơi trú ngụ của hàng ngàn cá thể chim hoang dã, cò, vạc về làm tổ rợp trời.",
+            "Nổi tiếng với xưởng điêu khắc gỗ nghệ thuật do các vị sư trụ trì sáng lập, biến các gốc cây mục cổ thụ thành tác phẩm tượng Phật, chim thú tuyệt mỹ."
+          ],
+          "new": [
+            "Tên chữ Khmer là Wat Kompong Chrey (Chùa Bến Cây Đa), người dân quen gọi Chùa Hang vì cổng phụ xây hình vòm tạc xuyên qua gò đất như hang động.",
+            "Khuôn viên rộng hơn 2 ha phủ kín cây cổ thụ, là nơi trú ngụ của hơn 1.000 cá thể chim hoang dã, cò, vạc về làm tổ rợp trời.",
+            "Sở hữu xưởng điêu khắc gỗ nghệ thuật hoạt động từ năm 1980 do các vị sư trụ trì sáng lập, biến các gốc cây cổ thụ thành tác phẩm tượng Phật, chim thú tuyệt mỹ."
+          ]
+        }
+      }
+    },
+    {
+      "id": "phuoc-minh-cung-chua-ong-tra-vinh",
+      "name": "Phước Minh Cung (Chùa Ông Trà Vinh)",
+      "type": "attraction",
+      "changes_count": 1,
+      "changes": {
+        "address": {
+          "old": "Số 44 đường Điện Biên Phủ, Phường 2, thành phố Trà Vinh, tỉnh Trà Vinh",
+          "new": "Số 44 đường Điện Biên Phủ, Phường 2, thành phố Trà Vinh, tỉnh Vĩnh Long"
+        }
+      }
+    },
+    {
+      "id": "chua-ong-met-botum-vong-sa-som-rong",
+      "name": "Chùa Ông Mẹt (Wat Bodhisàlaraja / Kompong)",
+      "type": "history",
+      "changes_count": 3,
+      "changes": {
+        "address": {
+          "old": "Đường Lê Lợi, Phường 1, thành phố Trà Vinh, tỉnh Trà Vinh",
+          "new": "Đường Lê Lợi, Phường 1, thành phố Trà Vinh, tỉnh Vĩnh Long"
+        },
+        "highlight": {
+          "old": "Ngôi chùa Khmer cổ nhất tỉnh Trà Vinh khởi lập năm 642, cái nôi Phật giáo Nam tông và bảo tồn chữ viết Khmer cổ",
+          "new": "Ngôi chùa Khmer cổ kính khởi lập năm 642, cái nôi Phật giáo Nam tông và bảo tồn chữ viết Khmer cổ"
+        },
+        "key_facts": {
+          "old": [
+            "Tên đầy đủ là Wat Bodhisàlaraja, khởi lập từ thế kỷ VII (năm 642), trung tâm đào tạo sư sãi và Phật học lớn nhất vùng duyên hải Nam Bộ.",
+            "Chính điện lộng lẫy với hệ thống cột tròn nâng đỡ mái nhiều tầng, đầu cột chạm khắc chim thần Krud dang cánh uy nghi.",
+            "Lưu giữ thư viện cổ với hàng trăm bộ kinh lá buông (Satra) ghi chép giáo lý nhà Phật và y học dân gian bằng chữ Pali - Khmer cổ."
+          ],
+          "new": [
+            "Tên đầy đủ là Wat Bodhisàlaraja, khởi lập từ thế kỷ VII (năm 642), trung tâm đào tạo sư sãi và Phật học lớn vùng duyên hải Nam Bộ.",
+            "Chính điện lộng lẫy với hệ thống cột tròn nâng đỡ mái nhiều tầng, đầu cột chạm khắc chim thần Krud dang cánh uy nghi.",
+            "Lưu giữ thư viện cổ với hơn 100 bộ kinh lá buông (Satra) ghi chép giáo lý nhà Phật và y học dân gian bằng chữ Pali - Khmer cổ."
+          ]
+        }
+      }
+    },
+    {
+      "id": "lang-mo-va-khu-tuong-niem-nguyen-dinh-chieu",
+      "name": "Lăng mộ và Khu tưởng niệm Nguyễn Đình Chiểu",
+      "type": "history",
+      "changes_count": 1,
+      "changes": {
+        "address": {
+          "old": "Xã An Đức, huyện Ba Tri, tỉnh Bến Tre",
+          "new": "Xã An Đức, huyện Ba Tri, tỉnh Vĩnh Long"
+        }
+      }
+    },
+    {
+      "id": "chua-tuyen-linh-mo-cay-nam",
+      "name": "Chùa Tuyên Linh Mỏ Cày Nam",
+      "type": "history",
+      "changes_count": 2,
+      "changes": {
+        "address": {
+          "old": "Xã Minh Đức, huyện Mỏ Cày Nam, tỉnh Bến Tre",
+          "new": "Xã Minh Đức, huyện Mỏ Cày Nam, tỉnh Vĩnh Long"
+        },
+        "key_facts": {
+          "old": [
+            "Khởi lập năm 1861 dưới tên Tiên Linh Tự do Hòa thượng Khánh Hòa chủ trì canh tân phong trào chấn hưng Phật giáo.",
+            "Cụ Phó bảng Nguyễn Sinh Sắc (thân sinh Chủ tịch Hồ Chí Minh) đã chọn nơi đây để đàm đạo thế sự, gieo mầm cách mạng và dạy học.",
+            "Căn cứ cách mạng kiên cường trong hai thời kỳ kháng chiến, từng che chở nhiều cán bộ lãnh đạo xứ ủy Nam Kỳ."
+          ],
+          "new": [
+            "Khởi lập năm 1861 dưới tên Tiên Linh Tự do Hòa thượng Khánh Hòa chủ trì canh tân phong trào chấn hưng Phật giáo.",
+            "Cụ Phó bảng Nguyễn Sinh Sắc (thân sinh Chủ tịch Hồ Chí Minh) đã chọn nơi đây để đàm đạo thế sự, gieo mầm cách mạng và dạy học từ năm 1927 đến 1929.",
+            "Căn cứ cách mạng kiên cường trong hai thời kỳ kháng chiến, từng che chở nhiều cán bộ lãnh đạo xứ ủy Nam Kỳ."
+          ]
+        }
+      }
+    },
+    {
+      "id": "nha-tho-cai-mon-cho-lach",
+      "name": "Nhà thờ Cái Mơn (Họ đạo Cái Mơn)",
+      "type": "history",
+      "changes_count": 3,
+      "changes": {
+        "address": {
+          "old": "Xã Vĩnh Thành, huyện Chợ Lách, tỉnh Bến Tre",
+          "new": "Xã Vĩnh Thành, huyện Chợ Lách, tỉnh Vĩnh Long"
+        },
+        "highlight": {
+          "old": "Một trong những họ đạo Công giáo lâu đời nhất phương Nam và là quê hương của nhà bác học Trương Vĩnh Ký",
+          "new": "Một trong những họ đạo Công giáo lâu đời của đất phương Nam và là quê hương của nhà bác học Trương Vĩnh Ký"
+        },
+        "key_facts": {
+          "old": [
+            "Họ đạo Cái Mơn hình thành từ năm 1700, ngôi thánh đường cổ mang phong cách kiến trúc Roman với tháp chuông cao 9 tầng lầu.",
+            "Quê hương của Petrus Ký (nhà ngôn ngữ học thông thạo 27 ngôn ngữ thế giới, người đặt nền móng cho báo chí quốc ngữ Việt Nam).",
+            "Nằm giữa trung tâm vựa hoa kiểng, cây giống lớn nhất miền Tây Nam Bộ."
+          ],
+          "new": [
+            "Họ đạo Cái Mơn hình thành từ năm 1700, ngôi thánh đường cổ mang phong cách kiến trúc Roman với tháp chuông cao 9 tầng lầu.",
+            "Quê hương của Petrus Ký (nhà ngôn ngữ học thông thạo 27 ngôn ngữ thế giới, người đặt nền móng cho báo chí quốc ngữ Việt Nam).",
+            "Nằm giữa trung tâm vựa hoa kiểng, cây giống lớn của xứ sở cù lao Cửu Long."
+          ]
+        }
+      }
+    },
+    {
+      "id": "bun-suong",
+      "name": "Bún suông",
+      "type": "dish",
+      "changes_count": 1,
+      "changes": {
+        "specialty": {
+          "old": "Món bún tiến vua trứ danh Nam Bộ, con suông tôm ngọt dai tự nhiên chấm tương xay ớt cay nồng",
+          "new": "Món bún tiến vua dân dã Nam Bộ, con suông tôm ngọt dai tự nhiên chấm tương xay ớt cay nồng"
+        }
+      }
+    },
+    {
+      "id": "com-dep-ngoc-bien",
+      "name": "Cốm dẹp Ngọc Biên",
+      "type": "dish",
+      "changes_count": 0,
+      "changes": {}
+    },
+    {
+      "id": "banh-canh-bot-xat-ben-tre",
+      "name": "Bánh Canh Bột Xắt Bến Tre",
+      "type": "dish",
+      "changes_count": 0,
+      "changes": {}
+    },
+    {
+      "id": "banh-trang-my-long",
+      "name": "Bánh tráng Mỹ Lồng",
+      "type": "dish",
+      "changes_count": 2,
+      "changes": {
+        "where_to_eat": {
+          "old": "Làng nghề bánh tráng Mỹ Lồng (xã Mỹ Thạnh, huyện Giồng Trôm), Chợ Vĩnh Long, Siêu thị đặc sản OCOP Bến Tre - Vĩnh Long",
+          "new": "Làng nghề bánh tráng Mỹ Lồng (xã Mỹ Thạnh, huyện Giồng Trôm), Chợ Vĩnh Long, Siêu thị đặc sản OCOP Vĩnh Long"
+        },
+        "cooking_method": {
+          "old": "Gạo ngâm xay mịn hòa cùng nước cốt dừa béo đặc; tráng trên nồi hơi bằng vải căng phẳng rồi phơi trên phên tre dưới nắng giòn miền Tây; khi ăn đem nướng vàng đều trên bếp than hồng rực",
+          "new": "Gạo ngâm xay mịn hòa cùng nước cốt dừa béo đặc; tráng trên nồi hơi bằng vải căng phẳng rồi phơi trên phên tre dưới nắng giòn đất Cửu Long; khi ăn đem nướng vàng đều trên bếp than hồng rực"
+        }
+      }
+    },
+    {
+      "id": "banh-dua-giong-luong",
+      "name": "Bánh dừa Giồng Luông",
+      "type": "dish",
+      "changes_count": 0,
+      "changes": {}
+    },
+    {
+      "id": "mut-dua-sap-cau-ke",
+      "name": "Mứt dừa sáp Cầu Kè",
+      "type": "dish",
+      "changes_count": 2,
+      "changes": {
+        "where_to_eat": {
+          "old": "Trung tâm OCOP Cầu Kè, Cửa hàng đặc sản dừa sáp Trà Vinh - Vĩnh Long, HTX dừa sáp Thông Hòa",
+          "new": "Trung tâm OCOP Cầu Kè, Cửa hàng đặc sản dừa sáp Vĩnh Long, HTX dừa sáp Thông Hòa"
+        },
+        "specialty": {
+          "old": "Đặc sản OCOP 4 sao độc nhất vô nhị, sợi mứt mềm mại dẻo dẻo như kẹo dẻo tự nhiên béo thơm khó cưỡng",
+          "new": "Đặc sản OCOP 4 sao độc bản, sợi mứt mềm mại dẻo dẻo như kẹo dẻo tự nhiên béo thơm khó cưỡng"
+        }
+      }
+    },
+    {
+      "id": "chu-u-rang-me",
+      "name": "Chù ụ rang me",
+      "type": "dish",
+      "changes_count": 1,
+      "changes": {
+        "where_to_eat": {
+          "old": "Khu du lịch biển Ba Động (Duyên Hải, Trà Vinh), Nhà hàng Thủy sản Vĩnh Long, Quán ốc ven sông Cổ Chiên",
+          "new": "Khu du lịch biển Ba Động (Duyên Hải), Nhà hàng Thủy sản Vĩnh Long, Quán ốc ven sông Cổ Chiên"
+        }
+      }
+    },
+    {
+      "id": "chao-cua-dong-ben-tre",
+      "name": "Cháo Cua Đồng Bến Tre",
+      "type": "dish",
+      "changes_count": 0,
+      "changes": {}
+    },
+    {
+      "id": "lo-com-cuu-long-vlt",
+      "name": "Lò cốm Cửu Long",
+      "type": "craft_village",
+      "changes_count": 0,
+      "changes": {}
+    },
+    {
+      "id": "vung-cam-sanh-tra-on",
+      "name": "Vùng cam sành Trà Ôn",
+      "type": "craft_village",
+      "changes_count": 1,
+      "changes": {
+        "specialty": {
+          "old": "Vựa cam sành ruột đỏ mọng nước lớn nhất miền Tây với diện tích canh tác chuyên canh hơn 9.000 ha",
+          "new": "Vựa cam sành ruột đỏ mọng nước quy mô lớn với diện tích canh tác chuyên canh hơn 9.000 ha"
+        }
+      }
+    },
+    {
+      "id": "cong-ty-tnhh-tra-vinh-farm-sokfarm",
+      "name": "Công ty TNHH Trà Vinh FARM (Sokfarm)",
+      "type": "craft_village",
+      "changes_count": 1,
+      "changes": {
+        "address": {
+          "old": "Thị trấn Tiểu Cần, huyện Tiểu Cần, tỉnh Trà Vinh",
+          "new": "Thị trấn Tiểu Cần, huyện Tiểu Cần, tỉnh Vĩnh Long"
+        }
+      }
+    },
+    {
+      "id": "htx-nong-nghiep-thong-hoa-dua-sap",
+      "name": "HTX Nông nghiệp Thông Hòa - Dừa sáp",
+      "type": "craft_village",
+      "changes_count": 1,
+      "changes": {
+        "address": {
+          "old": "Xã Thông Hòa, huyện Cầu Kè, tỉnh Trà Vinh",
+          "new": "Xã Thông Hòa, huyện Cầu Kè, tỉnh Vĩnh Long"
+        }
+      }
+    },
+    {
+      "id": "lang-nghe-truyen-thong-phu-le",
+      "name": "Làng nghề truyền thống Phú Lễ",
+      "type": "craft_village",
+      "changes_count": 2,
+      "changes": {
+        "address": {
+          "old": "Xã Phú Lễ, huyện Ba Tri, tỉnh Bến Tre",
+          "new": "Xã Phú Lễ, huyện Ba Tri, tỉnh Vĩnh Long"
+        },
+        "specialty": {
+          "old": "Di sản văn hóa phi vật thể Quốc gia, danh tửu nức tiếng Nam Kỳ chưng cất bằng nồi đồng ống tre đậm đà êm dịu",
+          "new": "Di sản văn hóa phi vật thể Quốc gia, danh tửu truyền thống Nam Kỳ chưng cất bằng nồi đồng ống tre đậm đà êm dịu"
+        }
+      }
+    },
+    {
+      "id": "dong-muoi-bao-thanh",
+      "name": "Đồng muối Bảo Thạnh",
+      "type": "craft_village",
+      "changes_count": 2,
+      "changes": {
+        "address": {
+          "old": "Xã Bảo Thạnh, huyện Ba Tri, tỉnh Bến Tre",
+          "new": "Xã Bảo Thạnh, huyện Ba Tri, tỉnh Vĩnh Long"
+        },
+        "specialty": {
+          "old": "Di sản văn hóa phi vật thể Quốc gia nghề làm muối thủ công trên ruộng đất ven biển cổ truyền hơn một thế kỷ",
+          "new": "Di sản văn hóa phi vật thể Quốc gia nghề làm muối thủ công trên ruộng đất ven biển cổ truyền hơn 100 năm"
+        }
+      }
+    },
+    {
+      "id": "lang-nghe-thach-dua-hung-phong",
+      "name": "Làng nghề thạch dừa Hưng Phong",
+      "type": "craft_village",
+      "changes_count": 1,
+      "changes": {
+        "address": {
+          "old": "Cồn Ốc, xã Hưng Phong, huyện Giồng Trôm, tỉnh Bến Tre",
+          "new": "Cồn Ốc, xã Hưng Phong, huyện Giồng Trôm, tỉnh Vĩnh Long"
+        }
+      }
+    },
+    {
+      "id": "somo-farm-cuu-long",
+      "name": "Somo Farm Cửu Long - lưu trú sinh thái",
+      "type": "accommodation",
+      "changes_count": 0,
+      "changes": {}
+    },
+    {
+      "id": "nha-dua-cocohome",
+      "name": "Nhà dừa CocoHome",
+      "type": "accommodation",
+      "changes_count": 1,
+      "changes": {
+        "highlight": {
+          "old": "Khu lưu trú độc nhất vô nhị chế tác từ hơn 4.000 cây dừa già trên 50 năm tuổi",
+          "new": "Khu lưu trú chế tác từ hơn 4.000 cây dừa già trên 50 năm tuổi"
+        }
+      }
+    },
+    {
+      "id": "khach-san-anh-hong-mang-thit",
+      "name": "Khách sạn Ánh Hồng (Mang Thít)",
+      "type": "accommodation",
+      "changes_count": 1,
+      "changes": {
+        "highlight": {
+          "old": "Khách sạn tiện nghi trung tâm thị trấn Cái Nhum, điểm dừng chân lý tưởng cho nhiếp ảnh gia và du khách tham quan kênh Thầy Cai",
+          "new": "Khách sạn tiện nghi trung tâm thị trấn Cái Nhum, tọa độ lưu trú thuận tiện cho du khách tham quan kênh Thầy Cai"
+        }
+      }
+    },
+    {
+      "id": "homestay-bep-nam-bo-xua-con-chim",
+      "name": "Homestay Bếp Nam Bộ Xưa (Cồn Chim)",
+      "type": "accommodation",
+      "changes_count": 1,
+      "changes": {
+        "address": {
+          "old": "Ấp Cồn Chim, xã Hòa Minh, huyện Châu Thành, tỉnh Trà Vinh",
+          "new": "Ấp Cồn Chim, xã Hòa Minh, huyện Châu Thành, tỉnh Vĩnh Long"
+        }
+      }
+    },
+    {
+      "id": "homestay-tu-pha-con-chim",
+      "name": "Homestay Tư Pha (Cồn Chim)",
+      "type": "accommodation",
+      "changes_count": 2,
+      "changes": {
+        "address": {
+          "old": "Ấp Cồn Chim, xã Hòa Minh, huyện Châu Thành, tỉnh Trà Vinh",
+          "new": "Ấp Cồn Chim, xã Hòa Minh, huyện Châu Thành, tỉnh Vĩnh Long"
+        },
+        "highlight": {
+          "old": "Điểm lưu trú thân thiện ấm tình người dân cù lao với trò chơi đua cua độc lạ nức tiếng",
+          "new": "Điểm lưu trú thân thiện ấm tình người dân cù lao với trải nghiệm đua cua cù lao độc đáo"
+        }
+      }
+    },
+    {
+      "id": "rooster-mekong-resort",
+      "name": "Rooster Mekong Resort",
+      "type": "accommodation",
+      "changes_count": 2,
+      "changes": {
+        "address": {
+          "old": "Xã Long Thới, huyện Chợ Lách, tỉnh Bến Tre",
+          "new": "Xã Long Thới, huyện Chợ Lách, tỉnh Vĩnh Long"
+        },
+        "highlight": {
+          "old": "Resort miệt vườn đẳng cấp giữa thủ phủ cây giống và hoa kiểng Chợ Lách",
+          "new": "Resort miệt vườn tiện nghi giữa thủ phủ cây giống và hoa kiểng Chợ Lách"
+        }
+      }
+    },
+    {
+      "id": "maison-du-pays-de-ben-tre",
+      "name": "Maison du Pays de Bến Tre",
+      "type": "accommodation",
+      "changes_count": 1,
+      "changes": {
+        "address": {
+          "old": "Xã Thạnh Phú Đông, huyện Giồng Trôm, tỉnh Bến Tre",
+          "new": "Xã Thạnh Phú Đông, huyện Giồng Trôm, tỉnh Vĩnh Long"
+        }
+      }
+    },
+    {
+      "id": "tra-vinh-palace-hotel",
+      "name": "Trà Vinh Palace Hotel",
+      "type": "accommodation",
+      "changes_count": 1,
+      "changes": {
+        "address": {
+          "old": "Số 03 đường Lê Thánh Tôn, Phường 2, thành phố Trà Vinh, tỉnh Trà Vinh",
+          "new": "Số 03 đường Lê Thánh Tôn, Phường 2, thành phố Trà Vinh, tỉnh Vĩnh Long"
+        }
+      }
+    }
+  ]
+}

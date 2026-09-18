@@ -1,0 +1,6533 @@
+{
+  "heritage": [
+    {
+      "id": "nha-tho-cai-mon-cho-lach",
+      "name": "Nhà thờ Cái Mơn (Họ đạo Cái Mơn)",
+      "type": "history",
+      "missing": [
+        "hours",
+        "admission",
+        "phone",
+        "heritage_level"
+      ],
+      "address": "Xã Vĩnh Thành, tỉnh Vĩnh Long",
+      "hours": null,
+      "phone": null,
+      "heritage_level": null
+    },
+    {
+      "id": "khu-di-tich-ao-ba-om",
+      "name": "Khu di tích Ao Bà Om",
+      "type": "history",
+      "missing": [
+        "hours",
+        "admission",
+        "phone",
+        "heritage_level"
+      ],
+      "address": null,
+      "hours": null,
+      "phone": null,
+      "heritage_level": null
+    },
+    {
+      "id": "nha-tho-chinh-toa-vinh-long",
+      "name": "Nhà thờ Chính tòa Vĩnh Long (Nhà thờ Thánh Anna)",
+      "type": "attraction",
+      "missing": [
+        "hours",
+        "admission",
+        "phone",
+        "heritage_level"
+      ],
+      "address": "141 đường Lê Thái Tổ, Phường Long Châu, Thành phố Vĩnh Long, tỉnh Vĩnh Long",
+      "hours": null,
+      "phone": null,
+      "heritage_level": null
+    },
+    {
+      "id": "khu-luu-niem-nguyen-dinh-chieu",
+      "name": "Khu lưu niệm Nguyễn Đình Chiểu",
+      "type": "attraction",
+      "missing": [
+        "heritage_level"
+      ],
+      "address": "Ấp Giồng Cụt, xã An Đức, tỉnh Vĩnh Long",
+      "hours": "7:00–17:00",
+      "phone": "027 5389 4114",
+      "heritage_level": null
+    },
+    {
+      "id": "bao-tang-van-hoa-dan-toc-khmer-tinh-tra-vinh",
+      "name": "Bảo tàng Văn hóa dân tộc Khmer Trà Vinh",
+      "type": "attraction",
+      "missing": [
+        "heritage_level"
+      ],
+      "address": "Quốc lộ 53, Khóm 4, Phường 8, Thành phố Trà Vinh, tỉnh Vĩnh Long (cách trung tâm TP Trà Vinh ~5km hướng Tây Nam, trong khu di tích Ao Bà Om – Chùa Âng)",
+      "hours": "7:00–17:00",
+      "phone": "029 4385 8544",
+      "heritage_level": null
+    },
+    {
+      "id": "chua-hang",
+      "name": "Chùa Hang",
+      "type": "attraction",
+      "missing": [
+        "phone",
+        "heritage_level"
+      ],
+      "address": "Khóm 4, thị trấn Châu Thành, tỉnh Vĩnh Long (cách trung tâm TP. Trà Vinh ~5km về phía nam, theo quốc lộ 54)",
+      "hours": "7:00–17:00",
+      "phone": null,
+      "heritage_level": null
+    },
+    {
+      "id": "phuoc-minh-cung-chua-ong-tra-vinh",
+      "name": "Phước Minh Cung (Chùa Ông Trà Vinh)",
+      "type": "attraction",
+      "missing": [
+        "hours",
+        "admission",
+        "phone",
+        "heritage_level"
+      ],
+      "address": "44 Điện Biên Phủ, phường 3, thành phố Trà Vinh",
+      "hours": null,
+      "phone": null,
+      "heritage_level": null
+    },
+    {
+      "id": "dinh-an-hoi",
+      "name": "Đình An Hội",
+      "type": "history",
+      "missing": [
+        "hours",
+        "admission",
+        "phone",
+        "heritage_level"
+      ],
+      "address": null,
+      "hours": null,
+      "phone": null,
+      "heritage_level": null
+    },
+    {
+      "id": "chua-ong-met-botum-vong-sa-som-rong",
+      "name": "Chùa Ông Mẹt (Wat Bodhisàlaraja / Kompong)",
+      "type": "history",
+      "missing": [
+        "hours",
+        "admission",
+        "phone",
+        "heritage_level"
+      ],
+      "address": "1 Lê Lợi, phường 1, thành phố Trà Vinh",
+      "hours": null,
+      "phone": null,
+      "heritage_level": null
+    },
+    {
+      "id": "dinh-tan-hoa-w3",
+      "name": "Đình Tân Hoa",
+      "type": "history",
+      "missing": [
+        "hours",
+        "admission",
+        "phone",
+        "heritage_level"
+      ],
+      "address": "Ấp Tân Hưng, xã Tân Hòa, TP Vĩnh Long, tỉnh Vĩnh Long",
+      "hours": null,
+      "phone": null,
+      "heritage_level": null
+    },
+    {
+      "id": "lang-ong-nam-hai",
+      "name": "Lăng Ông Nam Hải",
+      "type": "attraction",
+      "missing": [
+        "hours",
+        "admission",
+        "phone",
+        "heritage_level"
+      ],
+      "address": "Huyện Thạnh Phú, Bến Tre",
+      "hours": null,
+      "phone": null,
+      "heritage_level": null
+    },
+    {
+      "id": "dinh-tan-giai",
+      "name": "Đình Tân Giai",
+      "type": "history",
+      "missing": [
+        "hours",
+        "admission",
+        "phone",
+        "heritage_level"
+      ],
+      "address": null,
+      "hours": null,
+      "phone": null,
+      "heritage_level": null
+    },
+    {
+      "id": "lang-ong-con-tau",
+      "name": "Lăng Ông Cồn Tàu",
+      "type": "history",
+      "missing": [
+        "hours",
+        "admission",
+        "phone",
+        "heritage_level"
+      ],
+      "address": "Cồn Tàu, xã Trường Long Hòa, thị xã Duyên Hải, Trà Vinh",
+      "hours": null,
+      "phone": null,
+      "heritage_level": null
+    },
+    {
+      "id": "lau-ba-mieu-ba-chua-xu-ba-co-hy",
+      "name": "Lầu Bà (Miếu Bà Chúa Xứ - Bà Cố Hỷ)",
+      "type": "history",
+      "missing": [
+        "hours",
+        "admission",
+        "phone",
+        "heritage_level"
+      ],
+      "address": "Xóm dưới, xã Trường Long Hòa, thị xã Duyên Hải, Trà Vinh",
+      "hours": null,
+      "phone": null,
+      "heritage_level": null
+    },
+    {
+      "id": "lang-mo-va-khu-tuong-niem-nguyen-dinh-chieu",
+      "name": "Lăng mộ và Khu tưởng niệm Nguyễn Đình Chiểu",
+      "type": "history",
+      "missing": [
+        "hours",
+        "admission",
+        "phone",
+        "heritage_level"
+      ],
+      "address": "Xã An Đức",
+      "hours": null,
+      "phone": null,
+      "heritage_level": null
+    },
+    {
+      "id": "dinh-tan-thach",
+      "name": "Đình Tân Thạch",
+      "type": "history",
+      "missing": [
+        "hours",
+        "admission",
+        "phone",
+        "heritage_level"
+      ],
+      "address": null,
+      "hours": null,
+      "phone": null,
+      "heritage_level": null
+    },
+    {
+      "id": "chua-hoi-tong-ben-tre",
+      "name": "Chùa Hội Tông (Hội Tông Cổ Tự)",
+      "type": "history",
+      "missing": [
+        "hours",
+        "admission",
+        "phone"
+      ],
+      "address": "Ấp 8, xã Quới Sơn, huyện Châu Thành, Bến Tre",
+      "hours": null,
+      "phone": null,
+      "heritage_level": "Tổ đình Phật giáo Bắc Tông đầu tiên vùng Bến Tre"
+    },
+    {
+      "id": "chua-tuyen-linh-mo-cay-nam",
+      "name": "Chùa Tuyên Linh Mỏ Cày Nam",
+      "type": "history",
+      "missing": [
+        "hours",
+        "admission",
+        "phone",
+        "heritage_level"
+      ],
+      "address": "Ấp Tân Thới Đông B, xã Minh Đức, Bến Tre",
+      "hours": null,
+      "phone": null,
+      "heritage_level": null
+    },
+    {
+      "id": "lang-ong-nam-hai-binh-thang",
+      "name": "Lăng Ông Nam Hải Bình Thắng",
+      "type": "history",
+      "missing": [
+        "hours",
+        "admission",
+        "phone",
+        "heritage_level"
+      ],
+      "address": "Xã Bình Thắng, tỉnh Vĩnh Long",
+      "hours": null,
+      "phone": null,
+      "heritage_level": null
+    },
+    {
+      "id": "mieu-ba-chua-xu-tan-quy",
+      "name": "Miếu Bà Chúa Xứ Tân Quy",
+      "type": "history",
+      "missing": [
+        "hours",
+        "admission",
+        "phone",
+        "heritage_level"
+      ],
+      "address": "Ấp Tân Quy 1, xã An Phú Tân",
+      "hours": null,
+      "phone": null,
+      "heritage_level": null
+    },
+    {
+      "id": "bao-tang-ben-tre",
+      "name": "Bảo tàng Bến Tre",
+      "type": "attraction",
+      "missing": [
+        "heritage_level"
+      ],
+      "address": "Số 146 đường Hùng Vương, phường An Hội, Thành phố Bến Tre, tỉnh Vĩnh Long",
+      "hours": "7:30–11:30 và 13:30–16:30, Thứ 2 - Thứ 6",
+      "phone": "027 5382 2735",
+      "heritage_level": null
+    },
+    {
+      "id": "bao-tang-tinh-vinh-long",
+      "name": "Bảo tàng tỉnh Vĩnh Long",
+      "type": "history",
+      "missing": [
+        "heritage_level"
+      ],
+      "address": "1 Phan Bội Châu, Phường 1, TP Vĩnh Long",
+      "hours": "7:30–11:00 & 13:30–17:00, thứ Ba đến thứ Bảy (nghỉ Chủ nhật và thứ Hai)",
+      "phone": "027 0382 3181",
+      "heritage_level": null
+    },
+    {
+      "id": "bao-tang-tinh-ben-tre",
+      "name": "Bảo tàng tỉnh Bến Tre",
+      "type": "attraction",
+      "missing": [
+        "phone",
+        "heritage_level"
+      ],
+      "address": "146 Hùng Vương, phường Phú Khương, thành phố Bến Tre, tỉnh Vĩnh Long",
+      "hours": "7:00–17:00",
+      "phone": null,
+      "heritage_level": null
+    },
+    {
+      "id": "chua-an-linh",
+      "name": "Chùa An Linh",
+      "type": "history",
+      "missing": [
+        "hours",
+        "admission",
+        "phone",
+        "heritage_level"
+      ],
+      "address": "Xã An Nhơn, tỉnh Vĩnh Long",
+      "hours": null,
+      "phone": null,
+      "heritage_level": null
+    },
+    {
+      "id": "chua-can-snom-can-nom",
+      "name": "Chùa Can Snom (Căn Nom)",
+      "type": "history",
+      "missing": [
+        "hours",
+        "admission",
+        "phone",
+        "heritage_level"
+      ],
+      "address": "Ấp Căn Nom, xã Trường Thọ, tỉnh Vĩnh Long",
+      "hours": null,
+      "phone": null,
+      "heritage_level": null
+    },
+    {
+      "id": "chua-co-chua-nodol-chua-phno-don",
+      "name": "Chùa Cò (Chùa Nodol / Chùa Phnô Đôn)",
+      "type": "attraction",
+      "missing": [
+        "phone",
+        "heritage_level"
+      ],
+      "address": "Xã Đại An, tỉnh Vĩnh Long",
+      "hours": "Mở cửa hàng ngày (chùa hoạt động thường xuyên, không có giờ đóng cửa cố định)",
+      "phone": null,
+      "heritage_level": null
+    },
+    {
+      "id": "chua-giac-linh-chua-doi",
+      "name": "Chùa Giác Linh (Chùa Dơi)",
+      "type": "history",
+      "missing": [
+        "hours",
+        "admission",
+        "phone",
+        "heritage_level"
+      ],
+      "address": "Huyện Cầu Ngang, tỉnh Vĩnh Long",
+      "hours": null,
+      "phone": null,
+      "heritage_level": null
+    },
+    {
+      "id": "chua-sa-leng-kompong-chray",
+      "name": "Chùa Sa Leng (Kompong Chrây)",
+      "type": "attraction",
+      "missing": [
+        "hours",
+        "phone",
+        "heritage_level"
+      ],
+      "address": "Ấp Chợ, xã Phước Hưng, tỉnh Vĩnh Long",
+      "hours": null,
+      "phone": null,
+      "heritage_level": null
+    },
+    {
+      "id": "chua-sam-pua",
+      "name": "Chùa Săm Pua",
+      "type": "history",
+      "missing": [
+        "hours",
+        "admission",
+        "phone",
+        "heritage_level"
+      ],
+      "address": "Thị trấn Cầu Kè, tỉnh Vĩnh Long",
+      "hours": null,
+      "phone": null,
+      "heritage_level": null
+    },
+    {
+      "id": "chua-troprasbat-chua-chong-bat",
+      "name": "Chùa Trôprasbat (Chùa Chông Bát)",
+      "type": "history",
+      "missing": [
+        "hours",
+        "admission",
+        "phone",
+        "heritage_level"
+      ],
+      "address": "Xã Tân Hiệp, tỉnh Vĩnh Long",
+      "hours": null,
+      "phone": null,
+      "heritage_level": null
+    },
+    {
+      "id": "chua-tuyen-linh-mo-cay-bac",
+      "name": "Chùa Tuyên Linh (Tuyên Linh Cổ Tự)",
+      "type": "history",
+      "missing": [
+        "hours",
+        "admission",
+        "phone",
+        "heritage_level"
+      ],
+      "address": "Xã Minh Đức, tỉnh Vĩnh Long",
+      "hours": null,
+      "phone": null,
+      "heritage_level": null
+    },
+    {
+      "id": "chua-vam-ray-chua-phat-nam",
+      "name": "Chùa Vàm Ray (Chùa Phật Nằm)",
+      "type": "attraction",
+      "missing": [
+        "hours",
+        "phone",
+        "heritage_level"
+      ],
+      "address": "Xã Hàm Giang, tỉnh Vĩnh Long",
+      "hours": null,
+      "phone": null,
+      "heritage_level": null
+    },
+    {
+      "id": "dinh-trung-my",
+      "name": "Đình Trung Mỹ",
+      "type": "history",
+      "missing": [
+        "hours",
+        "admission",
+        "phone",
+        "heritage_level"
+      ],
+      "address": "Ấp Phước Trung, thị trấn Phước Mỹ Trung, tỉnh Vĩnh Long",
+      "hours": null,
+      "phone": null,
+      "heritage_level": null
+    },
+    {
+      "id": "chua-krapoumchhouk-chral-chua-cha",
+      "name": "Chùa Krapoumchhouk Chral (Chùa Chà)",
+      "type": "history",
+      "missing": [
+        "hours",
+        "admission",
+        "phone",
+        "heritage_level"
+      ],
+      "address": "Xã Ngãi Xuyên, tỉnh Vĩnh Long",
+      "hours": null,
+      "phone": null,
+      "heritage_level": null
+    },
+    {
+      "id": "dinh-loc-thuan",
+      "name": "Đình Lộc Thuận",
+      "type": "history",
+      "missing": [
+        "hours",
+        "admission",
+        "phone",
+        "heritage_level"
+      ],
+      "address": "Xã Lộc Thuận, tỉnh Vĩnh Long",
+      "hours": null,
+      "phone": null,
+      "heritage_level": null
+    },
+    {
+      "id": "mieu-ba-chua-xu-tra-vinh",
+      "name": "Miếu Bà Chúa Xứ Trà Vinh",
+      "type": "history",
+      "missing": [
+        "hours",
+        "admission",
+        "phone",
+        "heritage_level"
+      ],
+      "address": "Phường Trà Vinh, tỉnh Vĩnh Long (miếu cụ thể chưa xác định)",
+      "hours": null,
+      "phone": null,
+      "heritage_level": null
+    },
+    {
+      "id": "nha-tho-la-ma-ba-giong",
+      "name": "Nhà thờ La Mã Ba Giồng",
+      "type": "attraction",
+      "missing": [
+        "phone",
+        "heritage_level"
+      ],
+      "address": "Ba Giồng, tỉnh Vĩnh Long",
+      "hours": "Thường mở cửa ban ngày; nên tránh giờ lễ nếu chỉ tham quan",
+      "phone": null,
+      "heritage_level": null
+    },
+    {
+      "id": "nha-tho-la-ma-den-duc-me-hang-cuu-giup-la-ma",
+      "name": "Nhà thờ La Mã (Đền Đức Mẹ Hằng Cứu Giúp La Mã)",
+      "type": "attraction",
+      "missing": [
+        "hours",
+        "phone",
+        "heritage_level"
+      ],
+      "address": "Xã Hưng Nhượng, tỉnh Vĩnh Long",
+      "hours": null,
+      "phone": null,
+      "heritage_level": null
+    },
+    {
+      "id": "nha-tho-mac-bac-tieu-can",
+      "name": "Nhà thờ Mặc Bắc Tiểu Cần",
+      "type": "attraction",
+      "missing": [
+        "hours",
+        "phone",
+        "heritage_level"
+      ],
+      "address": "Thị trấn Cầu Quan, Trà Vinh",
+      "hours": null,
+      "phone": null,
+      "heritage_level": null
+    },
+    {
+      "id": "chua-kompong-ong-met",
+      "name": "Chùa Kompong (Ông Mẹt)",
+      "type": "attraction",
+      "missing": [
+        "phone",
+        "heritage_level"
+      ],
+      "address": "50/1 Lê Lợi, phường 1, thành phố Trà Vinh, tỉnh Vĩnh Long",
+      "hours": "7:00–17:00",
+      "phone": null,
+      "heritage_level": null
+    },
+    {
+      "id": "chua-van-phuoc-binh-dai",
+      "name": "Chùa Vạn Phước Bình Đại",
+      "type": "attraction",
+      "missing": [
+        "hours",
+        "phone",
+        "heritage_level"
+      ],
+      "address": "Ấp Bình Chiến, thị trấn Bình Đại, huyện Bình Đại, Bến Tre",
+      "hours": null,
+      "phone": null,
+      "heritage_level": null
+    },
+    {
+      "id": "chua-vam-ray-wat-samrong",
+      "name": "Chùa Vàm Ray (Wat Samrong)",
+      "type": "attraction",
+      "missing": [
+        "hours",
+        "phone",
+        "heritage_level"
+      ],
+      "address": "Ấp Vàm Rây, xã Hàm Thuận, Trà Vinh",
+      "hours": null,
+      "phone": null,
+      "heritage_level": null
+    },
+    {
+      "id": "nha-tho-chanh-toa-tra-vinh-tra-vinh",
+      "name": "Nhà thờ Chánh tòa Trà Vinh (Nhà thờ Mẹ Vô Nhiễm)",
+      "type": "attraction",
+      "missing": [
+        "phone",
+        "heritage_level"
+      ],
+      "address": "20 Lê Lợi, phường 1, TP Trà Vinh",
+      "hours": "06:00–11:30 và 14:00–18:00; lễ sáng 05:30 và 17:30",
+      "phone": null,
+      "heritage_level": null
+    },
+    {
+      "id": "chua-vam-ray",
+      "name": "Chùa Vàm Ray",
+      "type": "attraction",
+      "missing": [
+        "phone",
+        "heritage_level"
+      ],
+      "address": "Xã Trà Cú, Trà Vinh",
+      "hours": "6:00–18:00",
+      "phone": null,
+      "heritage_level": null
+    },
+    {
+      "id": "bao-tang-vinh-long",
+      "name": "Bảo tàng Vĩnh Long",
+      "type": "attraction",
+      "missing": [
+        "heritage_level"
+      ],
+      "address": "Số 1 Phan Bội Châu, phường 1, TP Vĩnh Long",
+      "hours": "Thứ 3–Chủ Nhật: 7:30–11:30 & 13:30–17:00 (Thứ 2 nghỉ)",
+      "phone": "0270.3822.449",
+      "heritage_level": null
+    },
+    {
+      "id": "chua-khmer-vinh-long",
+      "name": "Chùa Khmer Vĩnh Long",
+      "type": "attraction",
+      "missing": [
+        "phone",
+        "heritage_level"
+      ],
+      "address": "Phường Trà Ôn, Vĩnh Long",
+      "hours": "7:00–17:00",
+      "phone": null,
+      "heritage_level": null
+    },
+    {
+      "id": "chua-shanghamangala-khmer-vung-liem",
+      "name": "Chùa Hạnh Phúc Tăng (Sanghamangala)",
+      "type": "attraction",
+      "missing": [
+        "heritage_level"
+      ],
+      "address": "Ấp Trung Trạch, xã Trung Thành, huyện Vũng Liêm, Vĩnh Long",
+      "hours": "Mở cửa cả ngày, quanh năm (không ghi giờ cụ thể)",
+      "phone": "027 0387 0123",
+      "heritage_level": null
+    },
+    {
+      "id": "dinh-tan-hoa",
+      "name": "Đình Tân Hòa",
+      "type": "attraction",
+      "missing": [
+        "phone",
+        "heritage_level"
+      ],
+      "address": "Ấp Tân Hưng, xã Tân Hòa, TP Vĩnh Long, tỉnh Vĩnh Long",
+      "hours": "7:00–17:00",
+      "phone": null,
+      "heritage_level": null
+    },
+    {
+      "id": "chua-co-nodol",
+      "name": "Chùa Cò (Nodol)",
+      "type": "history",
+      "missing": [
+        "hours",
+        "admission",
+        "phone",
+        "heritage_level"
+      ],
+      "address": "Ấp Cây Da, xã Đại An, huyện Trà Cú, Trà Vinh",
+      "hours": null,
+      "phone": null,
+      "heritage_level": null
+    },
+    {
+      "id": "chua-samrong-ek",
+      "name": "Chùa Samrông Ek",
+      "type": "history",
+      "missing": [
+        "hours",
+        "admission",
+        "phone",
+        "heritage_level"
+      ],
+      "address": "Phường 8, TP Trà Vinh, Trà Vinh",
+      "hours": null,
+      "phone": null,
+      "heritage_level": null
+    },
+    {
+      "id": "bao-tang-van-hoa-dan-toc-khmer-tra-vinh",
+      "name": "Bảo tàng Văn hóa Dân tộc Khmer Trà Vinh",
+      "type": "history",
+      "missing": [
+        "heritage_level"
+      ],
+      "address": "Khóm 4, phường 8, thành phố Trà Vinh, tỉnh Vĩnh Long",
+      "hours": "7:30–11:30 & 13:30–17:00 (Thứ 3 – Chủ Nhật; Thứ 2 nghỉ)",
+      "phone": "0294 3858 188",
+      "heritage_level": null
+    },
+    {
+      "id": "chua-ky-son-khmer-loan-my",
+      "name": "Chùa Kỳ Sơn Khmer Loan Mỹ",
+      "type": "history",
+      "missing": [
+        "hours",
+        "admission",
+        "phone",
+        "heritage_level"
+      ],
+      "address": "Ấp Sóc Rừng, xã Loan Mỹ, Vĩnh Long",
+      "hours": null,
+      "phone": null,
+      "heritage_level": null
+    },
+    {
+      "id": "khu-di-tich-nguyen-dinh-chieu",
+      "name": "Khu di tích Nguyễn Đình Chiểu",
+      "type": "history",
+      "missing": [
+        "heritage_level"
+      ],
+      "address": "Xã An Đức",
+      "hours": "7:00–17:00",
+      "phone": "027 5389 4114",
+      "heritage_level": null
+    },
+    {
+      "id": "bao-tang-dua-sap-tra-vinh",
+      "name": "Bảo tàng dừa sáp Trà Vinh",
+      "type": "attraction",
+      "missing": [
+        "phone",
+        "heritage_level"
+      ],
+      "address": "Xã Cầu Kè, Trà Vinh",
+      "hours": "7:00–17:00",
+      "phone": null,
+      "heritage_level": null
+    },
+    {
+      "id": "chua-ba-thien-hau-tra-vinh",
+      "name": "Thiên Hậu Cung (Chùa Bà Thiên Hậu Trà Vinh)",
+      "type": "attraction",
+      "missing": [
+        "phone"
+      ],
+      "address": "Khóm 5, thị trấn Tiểu Cần, huyện Tiểu Cần, Trà Vinh",
+      "hours": "7:00–17:00",
+      "phone": null,
+      "heritage_level": "Di tích kiến trúc nghệ thuật cấp tỉnh"
+    },
+    {
+      "id": "thanh-duong-giao-xu-mac-bac",
+      "name": "Thánh đường giáo xứ Mặc Bắc",
+      "type": "attraction",
+      "missing": [
+        "phone",
+        "heritage_level"
+      ],
+      "address": "Xã Long Hiệp, Trà Vinh",
+      "hours": "7:00–17:00",
+      "phone": null,
+      "heritage_level": null
+    },
+    {
+      "id": "dinh-trieu-quoc-dat-mieu-tho-trieu-minh-cong",
+      "name": "Đình Triệu Quốc Đạt (Miếu thờ Triệu Minh Công)",
+      "type": "history",
+      "missing": [
+        "hours",
+        "admission",
+        "phone",
+        "heritage_level"
+      ],
+      "address": "Phường Trường Long Hòa, Thị xã Duyên Hải, Tỉnh Trà Vinh",
+      "hours": null,
+      "phone": null,
+      "heritage_level": null
+    },
+    {
+      "id": "bao-tang-van-hoa-dan-toc-khmer",
+      "name": "Bảo tàng văn hóa dân tộc Khmer",
+      "type": "attraction",
+      "missing": [
+        "phone",
+        "heritage_level"
+      ],
+      "address": "Khóm 4, Phường 8, Thành phố Trà Vinh, tỉnh Vĩnh Long (trên Quốc lộ 53, cách trung tâm TP khoảng 5km hướng Tây Nam, trong quần thể Ao Bà Om – Chùa Âng)",
+      "hours": "7:00–17:00",
+      "phone": null,
+      "heritage_level": null
+    },
+    {
+      "id": "chua-tuyen-linh",
+      "name": "Chùa Tuyên Linh",
+      "type": "history",
+      "missing": [
+        "hours",
+        "admission",
+        "phone"
+      ],
+      "address": "Xã Minh Đức, huyện Mỏ Cày Nam, Bến Tre",
+      "hours": null,
+      "phone": null,
+      "heritage_level": "Di tích lịch sử-văn hóa cấp quốc gia (20/7/1994)"
+    },
+    {
+      "id": "chua-hang-kompong-chray",
+      "name": "Chùa Hang (Kompong Chrây)",
+      "type": "history",
+      "missing": [
+        "phone",
+        "heritage_level"
+      ],
+      "address": "Huyện Châu Thành, Trà Vinh (QL54, cách TP Trà Vinh ~5 km)",
+      "hours": "7:00–17:00",
+      "phone": null,
+      "heritage_level": null
+    },
+    {
+      "id": "nha-tho-chanh-toa-vinh-long",
+      "name": "Nhà thờ Chánh Tòa Vĩnh Long",
+      "type": "attraction",
+      "missing": [
+        "hours",
+        "phone",
+        "heritage_level"
+      ],
+      "address": "Phường Thanh Đức, Vĩnh Long",
+      "hours": null,
+      "phone": null,
+      "heritage_level": null
+    },
+    {
+      "id": "dinh-binh-phung",
+      "name": "Đình Bình Phụng",
+      "type": "history",
+      "missing": [
+        "hours",
+        "admission",
+        "phone",
+        "heritage_level"
+      ],
+      "address": "Xã Trung Hiệp, Vĩnh Long",
+      "hours": null,
+      "phone": null,
+      "heritage_level": null
+    },
+    {
+      "id": "chua-kompongnigrodha",
+      "name": "Chùa KompongNigrodha",
+      "type": "attraction",
+      "missing": [
+        "hours",
+        "phone",
+        "heritage_level"
+      ],
+      "address": "Phường Trà Ôn, Vĩnh Long",
+      "hours": null,
+      "phone": null,
+      "heritage_level": null
+    },
+    {
+      "id": "chua-giac-thien-vinh-long",
+      "name": "Chùa Giác Thiên (Chùa Gò Công Vĩnh Long)",
+      "type": "attraction",
+      "missing": [
+        "phone",
+        "heritage_level"
+      ],
+      "address": "Xã Nhơn Phú, Vĩnh Long",
+      "hours": "05:30–20:00 hàng ngày",
+      "phone": null,
+      "heritage_level": null
+    },
+    {
+      "id": "dinh-tan-giai-vinh-long",
+      "name": "Đình Tân Giai (Đình thần Tân Giai)",
+      "type": "attraction",
+      "missing": [
+        "phone"
+      ],
+      "address": "Phường 3, TP Vĩnh Long, Vĩnh Long",
+      "hours": "06:00–18:00 hàng ngày",
+      "phone": null,
+      "heritage_level": "Di tích lịch sử-văn hóa cấp tỉnh (2006)"
+    },
+    {
+      "id": "nha-tho-chanh-toa-vinh-long-vinh-long",
+      "name": "Nhà thờ Chánh tòa Vĩnh Long (Nhà thờ Thánh Giuse)",
+      "type": "attraction",
+      "missing": [
+        "phone",
+        "heritage_level"
+      ],
+      "address": "Phường Long Châu, Vĩnh Long",
+      "hours": "05:00–20:00 hàng ngày; Thánh lễ: 05:15 và 17:15 ngày thường",
+      "phone": null,
+      "heritage_level": null
+    },
+    {
+      "id": "mieu-ba-chua-xu-vinh-long-vinh-long",
+      "name": "Miếu Bà Chúa Xứ Vĩnh Long (Miếu Bà Thủ Thiện)",
+      "type": "attraction",
+      "missing": [
+        "phone",
+        "heritage_level"
+      ],
+      "address": "Xã Nhơn Phú, Vĩnh Long",
+      "hours": "05:00–22:00 hàng ngày (tấp nập nhất dịp lễ hội)",
+      "phone": null,
+      "heritage_level": null
+    },
+    {
+      "id": "chua-ba-thien-hau-vinh-long",
+      "name": "Chùa Bà Thiên Hậu (Hội quán Phước Kiến Vĩnh Long)",
+      "type": "attraction",
+      "missing": [
+        "phone",
+        "heritage_level"
+      ],
+      "address": "Xã Nhơn Phú, Vĩnh Long",
+      "hours": "06:00–18:00 hàng ngày",
+      "phone": null,
+      "heritage_level": null
+    },
+    {
+      "id": "chua-tuyen-linh-ben-tre",
+      "name": "Chùa Tuyên Linh (Bến Tre)",
+      "type": "attraction",
+      "missing": [
+        "phone"
+      ],
+      "address": "Ấp Tân Thới Đông B, xã Minh Đức, huyện Mỏ Cày Nam, Bến Tre",
+      "hours": "06:00–18:00 hàng ngày",
+      "phone": null,
+      "heritage_level": "Di tích lịch sử-văn hóa cấp quốc gia (20/7/1994)"
+    },
+    {
+      "id": "dinh-phu-le-ben-tre",
+      "name": "Đình Phú Lễ (Ba Tri)",
+      "type": "attraction",
+      "missing": [
+        "phone",
+        "heritage_level"
+      ],
+      "address": "Phường Phú Khương, Bến Tre",
+      "hours": "07:00–17:00 hàng ngày",
+      "phone": null,
+      "heritage_level": null
+    },
+    {
+      "id": "nha-tho-chanh-toa-ben-tre-ben-tre",
+      "name": "Nhà thờ Chánh Tòa Bến Tre",
+      "type": "attraction",
+      "missing": [
+        "phone",
+        "heritage_level"
+      ],
+      "address": "Phường An Hội, Bến Tre",
+      "hours": "06:00–18:00 hàng ngày (mở cửa tham quan ngoài giờ lễ)",
+      "phone": null,
+      "heritage_level": null
+    },
+    {
+      "id": "thanh-that-cao-dai-ben-tre-ben-tre",
+      "name": "Thánh Thất Cao Đài Bến Tre",
+      "type": "attraction",
+      "missing": [
+        "phone",
+        "heritage_level"
+      ],
+      "address": "Phường Phú Khương, Bến Tre",
+      "hours": "06:00–18:00, lễ 4 lần/ngày: 06:00, 12:00, 18:00, 00:00",
+      "phone": null,
+      "heritage_level": null
+    },
+    {
+      "id": "chua-long-thanh-ben-tre",
+      "name": "Chùa Long Thạnh (Giồng Trôm)",
+      "type": "attraction",
+      "missing": [
+        "phone",
+        "heritage_level"
+      ],
+      "address": "Phường Phú Khương, Bến Tre",
+      "hours": "06:00–18:00 hàng ngày",
+      "phone": null,
+      "heritage_level": null
+    },
+    {
+      "id": "mieu-ba-chua-xu-my-hoa-ben-tre",
+      "name": "Miếu Bà Chúa Xứ Mỹ Hóa (TP. Bến Tre)",
+      "type": "attraction",
+      "missing": [
+        "phone",
+        "heritage_level"
+      ],
+      "address": "Phường Phú Khương, Bến Tre",
+      "hours": "05:00–21:00 hàng ngày",
+      "phone": null,
+      "heritage_level": null
+    },
+    {
+      "id": "dinh-binh-hoa-ben-tre",
+      "name": "Đình Bình Hòa (Giồng Trôm)",
+      "type": "attraction",
+      "missing": [
+        "phone",
+        "heritage_level"
+      ],
+      "address": "Xã Giồng Trôm, Bến Tre",
+      "hours": "07:00–17:00 hàng ngày",
+      "phone": null,
+      "heritage_level": null
+    },
+    {
+      "id": "nha-tho-cai-mon-ben-tre",
+      "name": "Nhà thờ Cái Mơn (Chợ Lách)",
+      "type": "attraction",
+      "missing": [
+        "phone",
+        "heritage_level"
+      ],
+      "address": "Xã Vĩnh Thành, huyện Chợ Lách, Bến Tre",
+      "hours": "06:00–18:00 hàng ngày",
+      "phone": null,
+      "heritage_level": null
+    },
+    {
+      "id": "chua-nodol-tra-vinh",
+      "name": "Chùa Nodol (Wat Nô Đôl)",
+      "type": "attraction",
+      "missing": [
+        "phone",
+        "heritage_level"
+      ],
+      "address": "Xã Đại An, Trà Vinh",
+      "hours": "05:30–18:00 hàng ngày",
+      "phone": null,
+      "heritage_level": null
+    },
+    {
+      "id": "chua-vam-ray-tra-vinh",
+      "name": "Chùa Vàm Ray (Vàm Rây)",
+      "type": "attraction",
+      "missing": [
+        "phone",
+        "heritage_level"
+      ],
+      "address": "Ấp Vàm Ray, xã Hàm Tân, huyện Trà Cú, Trà Vinh",
+      "hours": "05:00–18:00 hàng ngày",
+      "phone": null,
+      "heritage_level": null
+    },
+    {
+      "id": "chua-hung-lam",
+      "name": "Chùa Hưng Lâm",
+      "type": "attraction",
+      "missing": [
+        "hours",
+        "phone",
+        "heritage_level"
+      ],
+      "address": "Ấp Long Hòa, xã Giao Long, Bến Tre",
+      "hours": null,
+      "phone": null,
+      "heritage_level": null
+    },
+    {
+      "id": "chua-phno-om-pung-chua-long-truong",
+      "name": "Chùa Phnô Om Pung (Chùa Long Trường)",
+      "type": "attraction",
+      "missing": [
+        "hours",
+        "phone"
+      ],
+      "address": "Ấp Long Trường, xã Tân Hiệp, huyện Trà Cú, Trà Vinh",
+      "hours": null,
+      "phone": null,
+      "heritage_level": "Di tích lịch sử cấp tỉnh"
+    },
+    {
+      "id": "chua-quan-am-phuong-8",
+      "name": "Chùa Quan Âm Phường 8",
+      "type": "attraction",
+      "missing": [
+        "hours",
+        "phone",
+        "heritage_level"
+      ],
+      "address": "168 Nguyễn Văn Lâu, Khóm 5, Phường 8, TP Vĩnh Long",
+      "hours": null,
+      "phone": null,
+      "heritage_level": null
+    },
+    {
+      "id": "chua-quan-am-tra-on-mai-am-quan-am",
+      "name": "Chùa Quan Âm Trà Ôn (Mái Ấm Quan Âm)",
+      "type": "attraction",
+      "missing": [
+        "hours",
+        "phone",
+        "heritage_level"
+      ],
+      "address": "Xã Tích Thiện, tỉnh Vĩnh Long",
+      "hours": null,
+      "phone": null,
+      "heritage_level": null
+    },
+    {
+      "id": "chua-phuoc-khanh-chua-phat",
+      "name": "Chùa Phước Khánh (Chùa Phật)",
+      "type": "attraction",
+      "missing": [
+        "hours",
+        "phone",
+        "heritage_level"
+      ],
+      "address": "Thị trấn Thạnh Phú, Bến Tre",
+      "hours": null,
+      "phone": null,
+      "heritage_level": null
+    },
+    {
+      "id": "chua-long-quang-chua-dua",
+      "name": "Chùa Long Quang (Chùa Dừa)",
+      "type": "attraction",
+      "missing": [
+        "hours",
+        "phone",
+        "heritage_level"
+      ],
+      "address": "Ấp Mỹ Sơn Đông, xã Phước Mỹ Trung, huyện Mỏ Cày Bắc, Bến Tre",
+      "hours": null,
+      "phone": null,
+      "heritage_level": null
+    },
+    {
+      "id": "chua-hang-wat-kompong-chray",
+      "name": "Chùa Hang (Wat Kompong Chray)",
+      "type": "attraction",
+      "missing": [
+        "hours",
+        "phone",
+        "heritage_level"
+      ],
+      "address": "Khóm 4, xã Châu Thành, thị xã Duyên Hải, cách trung tâm TP Trà Vinh khoảng 6km theo đường Điện Biên Phủ",
+      "hours": null,
+      "phone": null,
+      "heritage_level": null
+    },
+    {
+      "id": "chua-khmer-phuong-thanh-pisay",
+      "name": "Chùa Khmer Phương Thạnh Pisay",
+      "type": "attraction",
+      "missing": [
+        "hours",
+        "phone",
+        "heritage_level"
+      ],
+      "address": "Xã Phương Thạnh",
+      "hours": null,
+      "phone": null,
+      "heritage_level": null
+    },
+    {
+      "id": "chua-hao-tam",
+      "name": "Chùa Hảo Tâm",
+      "type": "attraction",
+      "missing": [
+        "phone",
+        "heritage_level"
+      ],
+      "address": "Quốc lộ 53, Thị trấn Càng Long",
+      "hours": "05:00–21:00",
+      "phone": null,
+      "heritage_level": null
+    },
+    {
+      "id": "chua-phat-ngoc-xa-loi",
+      "name": "Chùa Phật Ngọc Xá Lợi",
+      "type": "attraction",
+      "missing": [
+        "heritage_level"
+      ],
+      "address": "Khóm Vĩnh Hòa, phường Tân Ngãi, thành phố Vĩnh Long, tỉnh Vĩnh Long",
+      "hours": "5:00–21:00 hàng ngày",
+      "phone": "0270 3831 258",
+      "heritage_level": null
+    },
+    {
+      "id": "chua-ang",
+      "name": "Chùa Âng",
+      "type": "attraction",
+      "missing": [
+        "phone"
+      ],
+      "address": "Quốc lộ 53, khóm 4, Phường 8, TP Trà Vinh (cạnh danh thắng Ao Bà Om)",
+      "hours": "6:00–18:00",
+      "phone": null,
+      "heritage_level": "Di tích Lịch sử – Văn hóa cấp Quốc gia (Quyết định số 921-QĐ/BT ngày 20/07/1994 của Bộ Văn hóa – Thông tin)"
+    },
+    {
+      "id": "chua-long-buu",
+      "name": "Chùa Long Bửu",
+      "type": "attraction",
+      "missing": [
+        "phone",
+        "heritage_level"
+      ],
+      "address": "Phường Long Châu, Vĩnh Long",
+      "hours": "7:00–17:00",
+      "phone": null,
+      "heritage_level": null
+    },
+    {
+      "id": "dinh-mieu-con-trung",
+      "name": "Đình Miếu Cồn Trứng",
+      "type": "history",
+      "missing": [
+        "hours",
+        "admission",
+        "phone",
+        "heritage_level"
+      ],
+      "address": "Cồn Trứng, thị xã Duyên Hải, Trà Vinh",
+      "hours": null,
+      "phone": null,
+      "heritage_level": null
+    },
+    {
+      "id": "chua-vien-minh-ben-tre",
+      "name": "Chùa Viên Minh (Bến Tre)",
+      "type": "history",
+      "missing": [
+        "hours",
+        "admission",
+        "phone",
+        "heritage_level"
+      ],
+      "address": "Đường Nguyễn Đình Chiểu, phường An Hội, TP Bến Tre",
+      "hours": null,
+      "phone": null,
+      "heritage_level": null
+    },
+    {
+      "id": "chua-phap-tam",
+      "name": "Chùa Pháp Tam",
+      "type": "history",
+      "missing": [
+        "hours",
+        "admission",
+        "phone",
+        "heritage_level"
+      ],
+      "address": "Phường Phú Khương, Bến Tre",
+      "hours": null,
+      "phone": null,
+      "heritage_level": null
+    },
+    {
+      "id": "lang-ong-nam-hai-con-bung",
+      "name": "Lăng Ông Nam Hải (Cồn Bửng)",
+      "type": "history",
+      "missing": [
+        "hours",
+        "admission",
+        "phone",
+        "heritage_level"
+      ],
+      "address": "Cồn Bửng, xã Thạnh Hải, huyện Thạnh Phú, Bến Tre",
+      "hours": null,
+      "phone": null,
+      "heritage_level": null
+    },
+    {
+      "id": "khu-di-tich-can-cu-tinh-uy-tra-vinh",
+      "name": "Khu di tích Căn cứ Tỉnh ủy Trà Vinh",
+      "type": "history",
+      "missing": [
+        "hours",
+        "admission",
+        "phone"
+      ],
+      "address": "Ấp Giồng Giếng, xã Dân Thành, thị xã Duyên Hải, Trà Vinh",
+      "hours": null,
+      "phone": null,
+      "heritage_level": "Di tích lịch sử cấp tỉnh"
+    },
+    {
+      "id": "dinh-phu-le",
+      "name": "Đình Phú Lễ",
+      "type": "history",
+      "missing": [
+        "hours",
+        "admission",
+        "phone"
+      ],
+      "address": "Ấp Phú Khương, xã Phú Lễ, huyện Ba Tri, Bến Tre",
+      "hours": null,
+      "phone": null,
+      "heritage_level": "Di tích lịch sử–văn hóa cấp quốc gia"
+    },
+    {
+      "id": "khu-di-tich-mo-va-den-tho-phan-thanh-gian",
+      "name": "Khu di tích mộ và đền thờ Phan Thanh Giản",
+      "type": "history",
+      "missing": [
+        "hours",
+        "admission",
+        "phone"
+      ],
+      "address": "Xã Bảo Thạnh, huyện Ba Tri, Bến Tre",
+      "hours": null,
+      "phone": null,
+      "heritage_level": "Di tích lịch sử — văn hóa cấp quốc gia (24/01/1998)"
+    },
+    {
+      "id": "chua-ang-angkorajaborey",
+      "name": "Chùa Âng (Angkorajaborey)",
+      "type": "history",
+      "missing": [
+        "hours",
+        "admission",
+        "phone"
+      ],
+      "address": "Quốc lộ 53, TP Trà Vinh, Trà Vinh",
+      "hours": null,
+      "phone": null,
+      "heritage_level": "Di tích lịch sử-văn hóa cấp quốc gia (QĐ 921-QĐ/BT, 20/7/1994)"
+    },
+    {
+      "id": "chua-ong-met-bodonisaraj",
+      "name": "Chùa Ông Mẹt (Bodhisálaràja)",
+      "type": "history",
+      "missing": [
+        "hours",
+        "admission",
+        "phone"
+      ],
+      "address": "Đường Lê Lợi, TP Trà Vinh, Trà Vinh",
+      "hours": null,
+      "phone": null,
+      "heritage_level": "Di tích kiến trúc nghệ thuật cấp quốc gia (QĐ 834/QĐ-BVHTTDL, 3/3/2009)"
+    },
+    {
+      "id": "chua-ro-sro-lon",
+      "name": "Chùa Rô (Sro Lôn)",
+      "type": "history",
+      "missing": [
+        "hours",
+        "admission",
+        "phone",
+        "heritage_level"
+      ],
+      "address": "Xã Trà Cú, Trà Vinh",
+      "hours": null,
+      "phone": null,
+      "heritage_level": null
+    },
+    {
+      "id": "chua-lo-gach",
+      "name": "Chùa Lò Gạch",
+      "type": "history",
+      "missing": [
+        "hours",
+        "admission",
+        "phone"
+      ],
+      "address": "Ấp Ba Se A, xã Lương Hòa, huyện Châu Thành, Trà Vinh",
+      "hours": null,
+      "phone": null,
+      "heritage_level": "Di tích Khảo cổ cấp Quốc gia (Bờ Lũy - chùa Lò Gạch, 2017); Di tích Lịch sử cấp tỉnh (QĐ 2256, 21/11/2022)"
+    },
+    {
+      "id": "dinh-long-duc",
+      "name": "Đình Long Đức",
+      "type": "history",
+      "missing": [
+        "hours",
+        "admission",
+        "phone"
+      ],
+      "address": "08 Phạm Hồng Thái, khóm 3, phường 2, TP Trà Vinh",
+      "hours": null,
+      "phone": null,
+      "heritage_level": "Di tích kiến trúc nghệ thuật cấp quốc gia"
+    },
+    {
+      "id": "dinh-cai-von",
+      "name": "Đình Thần Mỹ Thuận",
+      "type": "history",
+      "missing": [
+        "hours",
+        "admission",
+        "phone",
+        "heritage_level"
+      ],
+      "address": "Khóm 1, phường Cái Vồn, TP Vĩnh Long (trước thuộc TX Bình Minh)",
+      "hours": null,
+      "phone": null,
+      "heritage_level": null
+    },
+    {
+      "id": "chua-phuoc-son",
+      "name": "Chùa Phước Sơn",
+      "type": "history",
+      "missing": [
+        "hours",
+        "admission",
+        "phone",
+        "heritage_level"
+      ],
+      "address": "Phường Bình Minh, thị xã Bình Minh, Vĩnh Long",
+      "hours": null,
+      "phone": null,
+      "heritage_level": null
+    },
+    {
+      "id": "dinh-binh-hoa",
+      "name": "Đình Bình Hòa",
+      "type": "history",
+      "missing": [
+        "hours",
+        "admission",
+        "phone"
+      ],
+      "address": "Ấp 5A, thị trấn Giồng Trôm, huyện Giồng Trôm, Bến Tre",
+      "hours": null,
+      "phone": null,
+      "heritage_level": "Di tích lịch sử văn hóa cấp quốc gia (7/1/1993)"
+    },
+    {
+      "id": "mieu-ba-chua-xu-ben-tre",
+      "name": "Miếu Bà Chúa Xứ Bến Tre",
+      "type": "history",
+      "missing": [
+        "hours",
+        "admission",
+        "phone",
+        "heritage_level"
+      ],
+      "address": "Ấp Thành Long, xã Thành Thới A, huyện Mỏ Cày Nam, Bến Tre",
+      "hours": null,
+      "phone": null,
+      "heritage_level": null
+    },
+    {
+      "id": "chua-kompong-ksan",
+      "name": "Chùa Kompong Ksan",
+      "type": "history",
+      "missing": [
+        "hours",
+        "admission",
+        "phone",
+        "heritage_level"
+      ],
+      "address": "Xã Trà Cú, Trà Vinh",
+      "hours": null,
+      "phone": null,
+      "heritage_level": null
+    },
+    {
+      "id": "chua-bo-de",
+      "name": "Chùa Bồ Đề",
+      "type": "history",
+      "missing": [
+        "hours",
+        "admission",
+        "phone",
+        "heritage_level"
+      ],
+      "address": "Phường Bình Minh, Vĩnh Long",
+      "hours": null,
+      "phone": null,
+      "heritage_level": null
+    },
+    {
+      "id": "chua-long-khanh",
+      "name": "Chùa Long Khánh",
+      "type": "history",
+      "missing": [
+        "hours",
+        "admission",
+        "phone",
+        "heritage_level"
+      ],
+      "address": "Phường Long Châu, Vĩnh Long",
+      "hours": null,
+      "phone": null,
+      "heritage_level": null
+    },
+    {
+      "id": "chua-toa-sen",
+      "name": "Chùa Toà Sen",
+      "type": "history",
+      "missing": [
+        "hours",
+        "admission",
+        "phone",
+        "heritage_level"
+      ],
+      "address": "Phường Bình Minh, Vĩnh Long",
+      "hours": null,
+      "phone": null,
+      "heritage_level": null
+    },
+    {
+      "id": "dinh-binh-phuoc",
+      "name": "Đình Bình Phước",
+      "type": "history",
+      "missing": [
+        "hours",
+        "admission",
+        "phone",
+        "heritage_level"
+      ],
+      "address": "Xã Bình Phước, Vĩnh Long",
+      "hours": null,
+      "phone": null,
+      "heritage_level": null
+    },
+    {
+      "id": "dinh-hau-thanh",
+      "name": "Đình Hậu Thạnh",
+      "type": "history",
+      "missing": [
+        "hours",
+        "admission",
+        "phone",
+        "heritage_level"
+      ],
+      "address": "Phường Trà Ôn, Vĩnh Long",
+      "hours": null,
+      "phone": null,
+      "heritage_level": null
+    },
+    {
+      "id": "dinh-hoa-ninh",
+      "name": "Đình Hoà Ninh",
+      "type": "history",
+      "missing": [
+        "hours",
+        "admission",
+        "phone",
+        "heritage_level"
+      ],
+      "address": "Phường Long Hồ, Vĩnh Long",
+      "hours": null,
+      "phone": null,
+      "heritage_level": null
+    },
+    {
+      "id": "dinh-tan-hoa-dinh-cai-doi",
+      "name": "Đình Tân Hoa (Đình Cái Đôi)",
+      "type": "history",
+      "missing": [
+        "hours",
+        "admission",
+        "phone",
+        "heritage_level"
+      ],
+      "address": "Phường Long Châu, Vĩnh Long",
+      "hours": null,
+      "phone": null,
+      "heritage_level": null
+    },
+    {
+      "id": "dinh-lang-thien-my",
+      "name": "Đình làng Thiện Mỹ",
+      "type": "history",
+      "missing": [
+        "hours",
+        "admission",
+        "phone",
+        "heritage_level"
+      ],
+      "address": "Phường Long Hồ, Vĩnh Long",
+      "hours": null,
+      "phone": null,
+      "heritage_level": null
+    },
+    {
+      "id": "mieu-quan-tien-hien-phan-cong-an",
+      "name": "Miếu quan tiền hiền Phan Công An",
+      "type": "history",
+      "missing": [
+        "hours",
+        "admission",
+        "phone",
+        "heritage_level"
+      ],
+      "address": "Phường Tam Bình, Vĩnh Long",
+      "hours": null,
+      "phone": null,
+      "heritage_level": null
+    },
+    {
+      "id": "thanh-tinh-ngoc-son-quang",
+      "name": "Thánh tịnh Ngọc Sơn Quang",
+      "type": "history",
+      "missing": [
+        "hours",
+        "admission",
+        "phone",
+        "heritage_level"
+      ],
+      "address": "Xã Tân Long Hội, Vĩnh Long",
+      "hours": null,
+      "phone": null,
+      "heritage_level": null
+    },
+    {
+      "id": "chua-quang-minh-phu-phung",
+      "name": "Chùa Quang Minh Phú Phụng",
+      "type": "history",
+      "missing": [
+        "hours",
+        "admission",
+        "phone",
+        "heritage_level"
+      ],
+      "address": "Ấp Chợ, Xã Phú Phụng",
+      "hours": null,
+      "phone": null,
+      "heritage_level": null
+    },
+    {
+      "id": "chua-khmer-phu-ly",
+      "name": "Chùa Khmer Phù Ly",
+      "type": "history",
+      "missing": [
+        "hours",
+        "admission",
+        "phone",
+        "heritage_level"
+      ],
+      "address": "TX Bình Minh, Vĩnh Long",
+      "hours": null,
+      "phone": null,
+      "heritage_level": null
+    },
+    {
+      "id": "chua-soc-tro",
+      "name": "Chùa Sóc Tro",
+      "type": "history",
+      "missing": [
+        "hours",
+        "admission",
+        "phone",
+        "heritage_level"
+      ],
+      "address": "Ấp Sóc Trò, xã An Quảng Hữu, huyện Trà Cú, Trà Vinh",
+      "hours": null,
+      "phone": null,
+      "heritage_level": null
+    },
+    {
+      "id": "chua-luong-xuyen",
+      "name": "Chùa Lưỡng Xuyên",
+      "type": "history",
+      "missing": [
+        "hours",
+        "admission",
+        "phone",
+        "heritage_level"
+      ],
+      "address": "Số 3 đường Lê Lợi, TP Trà Vinh, Trà Vinh",
+      "hours": null,
+      "phone": null,
+      "heritage_level": null
+    },
+    {
+      "id": "chua-khai-tuong",
+      "name": "Chùa Khải Tường",
+      "type": "history",
+      "missing": [
+        "hours",
+        "admission",
+        "phone",
+        "heritage_level"
+      ],
+      "address": "Xã Phú Lễ, huyện Ba Tri, Bến Tre",
+      "hours": null,
+      "phone": null,
+      "heritage_level": null
+    },
+    {
+      "id": "chua-ang-wat-angkor-raig-borei",
+      "name": "Chùa Âng (Wat Angkor Raig Borei)",
+      "type": "history",
+      "missing": [
+        "hours",
+        "admission",
+        "phone",
+        "heritage_level"
+      ],
+      "address": "Phường 8, TP Trà Vinh, Trà Vinh",
+      "hours": null,
+      "phone": null,
+      "heritage_level": null
+    },
+    {
+      "id": "dinh-vinh-xuan",
+      "name": "Đình Vĩnh Xuân",
+      "type": "history",
+      "missing": [
+        "hours",
+        "admission",
+        "phone",
+        "heritage_level"
+      ],
+      "address": "Ấp Vĩnh Trinh, xã Vĩnh Xuân",
+      "hours": null,
+      "phone": null,
+      "heritage_level": null
+    },
+    {
+      "id": "chua-hung-hue",
+      "name": "Chùa Hưng Huệ",
+      "type": "history",
+      "missing": [
+        "admission",
+        "heritage_level"
+      ],
+      "address": "Ấp Tân Thuận, xã Tân Quới, huyện Bình Tân, Vĩnh Long",
+      "hours": "9:00-17:00",
+      "phone": "027 0376 0613",
+      "heritage_level": null
+    },
+    {
+      "id": "chua-ong",
+      "name": "Chùa Ông",
+      "type": "history",
+      "missing": [
+        "hours",
+        "admission",
+        "phone",
+        "heritage_level"
+      ],
+      "address": "Xã Tân Lược, Vĩnh Long",
+      "hours": null,
+      "phone": null,
+      "heritage_level": null
+    },
+    {
+      "id": "nha-tho-chinh-toa-vinh-long-nha-tho-chanh-toa",
+      "name": "Nhà thờ Chính Tòa Vĩnh Long (Nhà thờ Chánh Tòa)",
+      "type": "history",
+      "missing": [
+        "hours",
+        "admission",
+        "phone",
+        "heritage_level"
+      ],
+      "address": "141 Lê Thái Tổ, phường Long Châu, TP Vĩnh Long",
+      "hours": null,
+      "phone": null,
+      "heritage_level": null
+    },
+    {
+      "id": "dinh-tan-ngai",
+      "name": "Đình Tân Ngãi",
+      "type": "history",
+      "missing": [
+        "hours",
+        "admission",
+        "phone",
+        "heritage_level"
+      ],
+      "address": "Xã Tân Ngãi, Thành phố Vĩnh Long, tỉnh Vĩnh Long",
+      "hours": null,
+      "phone": null,
+      "heritage_level": null
+    },
+    {
+      "id": "dinh-hoa-tinh",
+      "name": "Đình Hòa Tịnh",
+      "type": "history",
+      "missing": [
+        "hours",
+        "admission",
+        "phone",
+        "heritage_level"
+      ],
+      "address": "Xã Hòa Tịnh, tỉnh Vĩnh Long (bên vệ đường, quay mặt ra Hương lộ 20)",
+      "hours": null,
+      "phone": null,
+      "heritage_level": null
+    },
+    {
+      "id": "chua-shanghamangala-hanh-phuc-tang",
+      "name": "Chùa Shanghamangala (Hạnh Phúc Tăng)",
+      "type": "history",
+      "missing": [
+        "hours",
+        "admission",
+        "phone",
+        "heritage_level"
+      ],
+      "address": "Huyện Vũng Liêm, Vĩnh Long",
+      "hours": null,
+      "phone": null,
+      "heritage_level": null
+    },
+    {
+      "id": "khu-di-tich-mo-than-mau-va-duong-mau-thoai-ngoc-hau",
+      "name": "Khu di tích mộ thân mẫu và cha mẹ vợ Thoại Ngọc Hầu (hoặc Quần thể mộ thân nhân Thoại Ngọc Hầu)",
+      "type": "history",
+      "missing": [
+        "admission",
+        "phone"
+      ],
+      "address": "Ấp Thái Bình, xã Thanh Bình, huyện Vũng Liêm, Vĩnh Long",
+      "hours": "7:30–11:00, 13:30–17:00 (thứ 2–thứ 6)",
+      "phone": null,
+      "heritage_level": "Di tích lịch sử–văn hóa cấp tỉnh"
+    },
+    {
+      "id": "chua-ky-son-ky-son",
+      "name": "Chùa Kỳ Son (Kỳ Sơn)",
+      "type": "history",
+      "missing": [
+        "hours",
+        "admission",
+        "phone",
+        "heritage_level"
+      ],
+      "address": "Ấp Sóc Rừng, xã Loan Mỹ, tỉnh Vĩnh Long",
+      "hours": null,
+      "phone": null,
+      "heritage_level": null
+    },
+    {
+      "id": "lang-ong-tien-quan-thong-che-dieu-bat",
+      "name": "Lăng Ông Tiền quân Thống chế Điều bát",
+      "type": "history",
+      "missing": [
+        "hours",
+        "admission",
+        "phone",
+        "heritage_level"
+      ],
+      "address": "Ấp Giồng Thanh Bạch, xã Thiện Mỹ, tỉnh Vĩnh Long",
+      "hours": null,
+      "phone": null,
+      "heritage_level": null
+    },
+    {
+      "id": "chua-kim-long-chua-uoc",
+      "name": "Chùa Kim Long (Chùa Ước)",
+      "type": "history",
+      "missing": [
+        "hours",
+        "admission",
+        "phone",
+        "heritage_level"
+      ],
+      "address": "Xã Vĩnh Thành",
+      "hours": null,
+      "phone": null,
+      "heritage_level": null
+    },
+    {
+      "id": "chua-kompongrang-wat-kompongro",
+      "name": "Chùa Kompongrang (Wat Kompongrô)",
+      "type": "history",
+      "missing": [
+        "hours",
+        "admission",
+        "phone",
+        "heritage_level"
+      ],
+      "address": "QL60, Hiếu Tử, Tiểu Cần",
+      "hours": null,
+      "phone": null,
+      "heritage_level": null
+    },
+    {
+      "id": "chua-giong-tranh-wat-kosaleang",
+      "name": "Chùa Giồng Tranh (Wat Kosaleang)",
+      "type": "history",
+      "missing": [
+        "hours",
+        "admission",
+        "phone",
+        "heritage_level"
+      ],
+      "address": "Tập Ngãi, Tiểu Cần",
+      "hours": null,
+      "phone": null,
+      "heritage_level": null
+    },
+    {
+      "id": "chua-o-chhuc",
+      "name": "Chùa Ô Chhuc",
+      "type": "history",
+      "missing": [
+        "hours",
+        "admission",
+        "phone",
+        "heritage_level"
+      ],
+      "address": "Ấp Ngãi Hòa, xã Tập Ngãi, Tiểu Cần",
+      "hours": null,
+      "phone": null,
+      "heritage_level": null
+    },
+    {
+      "id": "can-cu-tinh-uy-ben-tre-rung-la-thanh-phu",
+      "name": "Khu di tích lịch sử Căn cứ Tỉnh ủy Bến Tre (Rừng lá Thạnh Phú)",
+      "type": "history",
+      "missing": [
+        "hours",
+        "admission",
+        "phone",
+        "heritage_level"
+      ],
+      "address": "Các xã Thạnh Phong, Thạnh Hải, Giao Thạnh, huyện Thạnh Phú, Bến Tre",
+      "hours": null,
+      "phone": null,
+      "heritage_level": null
+    },
+    {
+      "id": "chua-gia-kiet",
+      "name": "Chùa Gia Kiết",
+      "type": "attraction",
+      "missing": [
+        "hours",
+        "phone",
+        "heritage_level"
+      ],
+      "address": "Xã Trà Côn",
+      "hours": null,
+      "phone": null,
+      "heritage_level": null
+    },
+    {
+      "id": "dinh-ky-ha",
+      "name": "Đình Kỳ Hà",
+      "type": "history",
+      "missing": [
+        "hours",
+        "admission",
+        "phone",
+        "heritage_level"
+      ],
+      "address": "Phường Long Hồ, Vĩnh Long",
+      "hours": null,
+      "phone": null,
+      "heritage_level": null
+    },
+    {
+      "id": "phuoc-minh-cung-chua-ong",
+      "name": "Phước Minh Cung (Chùa Ông)",
+      "type": "history",
+      "missing": [
+        "hours",
+        "admission",
+        "phone",
+        "heritage_level"
+      ],
+      "address": "44 Điện Biên Phủ, Phường 3, TP Trà Vinh",
+      "hours": null,
+      "phone": null,
+      "heritage_level": null
+    },
+    {
+      "id": "dinh-long-duc-tra-vinh",
+      "name": "Đình Long Đức Trà Vinh",
+      "type": "history",
+      "missing": [
+        "hours",
+        "admission",
+        "phone",
+        "heritage_level"
+      ],
+      "address": "Xã Long Đức, thành phố Trà Vinh",
+      "hours": null,
+      "phone": null,
+      "heritage_level": null
+    },
+    {
+      "id": "chua-giac-linh",
+      "name": "Chùa Giác Linh",
+      "type": "history",
+      "missing": [
+        "hours",
+        "admission",
+        "phone",
+        "heritage_level"
+      ],
+      "address": "Xã Cầu Ngang, Trà Vinh",
+      "hours": null,
+      "phone": null,
+      "heritage_level": null
+    },
+    {
+      "id": "khu-di-tich-lang-ong-con-tau",
+      "name": "Khu di tích Lăng Ông Cồn Tàu",
+      "type": "history",
+      "missing": [
+        "hours",
+        "admission",
+        "phone",
+        "heritage_level"
+      ],
+      "address": "Ấp Cồn Tàu, xã Trường Long Hòa, thị xã Duyên Hải",
+      "hours": null,
+      "phone": null,
+      "heritage_level": null
+    },
+    {
+      "id": "chua-hoi-ton-co-tu",
+      "name": "Chùa Hội Tôn Cổ Tự",
+      "type": "history",
+      "missing": [
+        "hours",
+        "admission",
+        "phone",
+        "heritage_level"
+      ],
+      "address": "Ấp 8, xã Quới Sơn, Bến Tre",
+      "hours": null,
+      "phone": null,
+      "heritage_level": null
+    },
+    {
+      "id": "chua-ang-angkor-borei",
+      "name": "Chùa Âng (Angkor Borei)",
+      "type": "history",
+      "missing": [
+        "hours",
+        "admission",
+        "phone",
+        "heritage_level"
+      ],
+      "address": "Cụm di tích Ao Bà Om, xã Nguyệt Hóa, Trà Vinh",
+      "hours": null,
+      "phone": null,
+      "heritage_level": null
+    },
+    {
+      "id": "chua-khanh-thanh",
+      "name": "Chùa Khánh Thạnh",
+      "type": "attraction",
+      "missing": [
+        "hours",
+        "phone",
+        "heritage_level"
+      ],
+      "address": "Ấp Sơn Trắng, Thị trấn Càng Long",
+      "hours": null,
+      "phone": null,
+      "heritage_level": null
+    },
+    {
+      "id": "chua-phap-hoa",
+      "name": "Chùa Pháp Hoa",
+      "type": "attraction",
+      "missing": [
+        "hours",
+        "phone",
+        "heritage_level"
+      ],
+      "address": "Huyện Càng Long",
+      "hours": null,
+      "phone": null,
+      "heritage_level": null
+    },
+    {
+      "id": "khu-di-tich-dong-khoi-ben-tre",
+      "name": "Khu di tích Đồng Khởi Bến Tre (Khu di tích lịch sử Đồng Khởi)",
+      "type": "history",
+      "missing": [
+        "hours",
+        "admission",
+        "phone"
+      ],
+      "address": "Xã Đồng Khởi (xã Định Thủy cũ), huyện Mỏ Cày Nam, Bến Tre",
+      "hours": null,
+      "phone": null,
+      "heritage_level": "Di tích quốc gia đặc biệt"
+    },
+    {
+      "id": "dinh-ran-dinh-thuy",
+      "name": "Đình Rắn Định Thủy",
+      "type": "history",
+      "missing": [
+        "hours",
+        "admission",
+        "phone"
+      ],
+      "address": "Ấp Định Nhơn, xã Đồng Khởi (Định Thủy cũ), huyện Mỏ Cày Nam, Bến Tre",
+      "hours": null,
+      "phone": null,
+      "heritage_level": "Di tích lịch sử–văn hóa cấp quốc gia"
+    },
+    {
+      "id": "dinh-long-thanh-w3",
+      "name": "Đình Long Thạnh",
+      "type": "history",
+      "missing": [
+        "hours",
+        "admission",
+        "phone"
+      ],
+      "address": "Xã Long Định, huyện Bình Đại, Bến Tre",
+      "hours": null,
+      "phone": null,
+      "heritage_level": "Di tích kiến trúc nghệ thuật cấp quốc gia"
+    },
+    {
+      "id": "dinh-long-phung",
+      "name": "Đình Long Phụng",
+      "type": "history",
+      "missing": [
+        "hours",
+        "admission",
+        "phone"
+      ],
+      "address": "Ấp Long Hòa 2, xã Long Định, huyện Bình Đại, Bến Tre",
+      "hours": null,
+      "phone": null,
+      "heritage_level": "Di tích Kiến trúc Nghệ thuật cấp quốc gia"
+    },
+    {
+      "id": "dinh-vang-quoi",
+      "name": "Đình Vang Quới",
+      "type": "history",
+      "missing": [
+        "hours",
+        "admission",
+        "phone"
+      ],
+      "address": "Xã Vang Quới Tây, huyện Bình Đại, Bến Tre",
+      "hours": null,
+      "phone": null,
+      "heritage_level": "Di tích kiến trúc nghệ thuật cấp tỉnh"
+    },
+    {
+      "id": "chua-giac-linh-tra-vinh",
+      "name": "Chùa Giác Linh (chùa Phật Lớn)",
+      "type": "attraction",
+      "missing": [
+        "phone"
+      ],
+      "address": "Xã Nhị Long, huyện Cầu Ngang, Trà Vinh",
+      "hours": "06:00–17:00 hàng ngày",
+      "phone": null,
+      "heritage_level": "Di tích lịch sử cấp quốc gia"
+    },
+    {
+      "id": "lang-mo-va-dinh-phan-thanh-gian",
+      "name": "Lăng mộ và Đình Phan Thanh Giản",
+      "type": "history",
+      "missing": [
+        "hours",
+        "admission",
+        "phone"
+      ],
+      "address": "Xã Bảo Thạnh, huyện Ba Tri, Bến Tre",
+      "hours": null,
+      "phone": null,
+      "heritage_level": "Di tích lịch sử cấp quốc gia (1998)"
+    },
+    {
+      "id": "nha-tho-cai-mon",
+      "name": "Nhà thờ Cái Mơn",
+      "type": "history",
+      "missing": [
+        "hours",
+        "admission",
+        "phone",
+        "heritage_level"
+      ],
+      "address": "Xã Vĩnh Thành, huyện Chợ Lách, Bến Tre",
+      "hours": null,
+      "phone": null,
+      "heritage_level": null
+    },
+    {
+      "id": "bao-tang-tong-hop-tinh-tra-vinh",
+      "name": "Bảo tàng Tổng hợp tỉnh Trà Vinh",
+      "type": "history",
+      "missing": [
+        "hours",
+        "admission",
+        "phone",
+        "heritage_level"
+      ],
+      "address": "Phường Trà Vinh, Trà Vinh",
+      "hours": null,
+      "phone": null,
+      "heritage_level": null
+    },
+    {
+      "id": "nha-tho-giao-xu-cai-nhum",
+      "name": "Nhà thờ Giáo xứ Cái Nhum",
+      "type": "history",
+      "missing": [
+        "hours",
+        "admission",
+        "phone",
+        "heritage_level"
+      ],
+      "address": "Xã Long Thới, huyện Chợ Lách, Bến Tre",
+      "hours": null,
+      "phone": null,
+      "heritage_level": null
+    },
+    {
+      "id": "chua-o-mich-ratanadiparamkoskeo",
+      "name": "Chùa Ô Mịch (Ratanadipàràmkoskeo)",
+      "type": "history",
+      "missing": [
+        "hours",
+        "admission",
+        "phone",
+        "heritage_level"
+      ],
+      "address": "Ấp Ô Mịch, xã Châu Điền, tỉnh Vĩnh Long (cách trung tâm thị trấn Cầu Kè khoảng 2,5 km về phía đông nam)",
+      "hours": null,
+      "phone": null,
+      "heritage_level": null
+    },
+    {
+      "id": "chua-phi-rum-soc-bhiramyaraja",
+      "name": "Chùa Phi Rùm Sóc (Bhiramyaràja)",
+      "type": "history",
+      "missing": [
+        "hours",
+        "admission",
+        "phone",
+        "heritage_level"
+      ],
+      "address": "Ấp Rùm Sóc, xã Châu Điền, tỉnh Vĩnh Long (cách trung tâm thị trấn Cầu Kè khoảng 9 km về phía đông nam)",
+      "hours": null,
+      "phone": null,
+      "heritage_level": null
+    },
+    {
+      "id": "chua-hang-cha-lo",
+      "name": "Chùa Hang (Chà Lô)",
+      "type": "history",
+      "missing": [
+        "hours",
+        "admission",
+        "phone",
+        "heritage_level"
+      ],
+      "address": "Khóm 3, TT Châu Thành, huyện Châu Thành, Trà Vinh",
+      "hours": null,
+      "phone": null,
+      "heritage_level": null
+    },
+    {
+      "id": "dinh-dai-dien",
+      "name": "Đình Đại Điền",
+      "type": "history",
+      "missing": [
+        "hours",
+        "admission",
+        "phone"
+      ],
+      "address": "Xã Đại Điền, huyện Thạnh Phú, Bến Tre",
+      "hours": null,
+      "phone": null,
+      "heritage_level": "Di tích lịch sử–văn hóa cấp tỉnh"
+    },
+    {
+      "id": "dinh-an-qui",
+      "name": "Đình An Qui",
+      "type": "history",
+      "missing": [
+        "hours",
+        "admission",
+        "phone"
+      ],
+      "address": "Xã An Qui, huyện Thạnh Phú, Bến Tre",
+      "hours": null,
+      "phone": null,
+      "heritage_level": "Di tích lịch sử - văn hóa cấp tỉnh (11/2019)"
+    },
+    {
+      "id": "dinh-binh-hoa-giong-trom",
+      "name": "Đình Bình Hòa (Đình thần Bình Hòa)",
+      "type": "history",
+      "missing": [
+        "hours",
+        "admission",
+        "phone"
+      ],
+      "address": "5A, thị trấn Giồng Trôm, huyện Giồng Trôm, Bến Tre",
+      "hours": null,
+      "phone": null,
+      "heritage_level": "Di tích lịch sử văn hóa cấp quốc gia"
+    },
+    {
+      "id": "chua-van-phuoc",
+      "name": "Chùa Vạn Phước",
+      "type": "attraction",
+      "missing": [
+        "hours",
+        "phone",
+        "heritage_level"
+      ],
+      "address": "Bến Tre",
+      "hours": null,
+      "phone": null,
+      "heritage_level": null
+    },
+    {
+      "id": "chua-phno-don-chua-giong-lon",
+      "name": "Chùa Phnô Đôn (chùa Giồng Lớn)",
+      "type": "history",
+      "missing": [
+        "hours",
+        "admission",
+        "phone",
+        "heritage_level"
+      ],
+      "address": "Xã Trà Cú, Trà Vinh",
+      "hours": null,
+      "phone": null,
+      "heritage_level": null
+    },
+    {
+      "id": "dinh-tien-thuy",
+      "name": "Đình Tiên Thủy",
+      "type": "history",
+      "missing": [
+        "hours",
+        "admission",
+        "phone",
+        "heritage_level"
+      ],
+      "address": "Phường Tiên Thủy, Bến Tre",
+      "hours": null,
+      "phone": null,
+      "heritage_level": null
+    },
+    {
+      "id": "dinh-than-an-ngai-trung",
+      "name": "Đình thần An Ngãi Trung",
+      "type": "history",
+      "missing": [
+        "hours",
+        "phone"
+      ],
+      "address": "Ấp An Thạnh, xã An Ngãi Trung, tỉnh Vĩnh Long",
+      "hours": null,
+      "phone": null,
+      "heritage_level": "Di tích cấp tỉnh"
+    },
+    {
+      "id": "chua-ang-ka-nguol-an-truong",
+      "name": "Chùa Âng Kà Nguôl (Chùa Khmer An Trường)",
+      "type": "attraction",
+      "missing": [
+        "hours",
+        "phone",
+        "heritage_level"
+      ],
+      "address": "Ấp 6, xã An Trường, tỉnh Vĩnh Long",
+      "hours": null,
+      "phone": null,
+      "heritage_level": null
+    },
+    {
+      "id": "khu-can-cu-tinh-uy-ben-tre-chau-hoa",
+      "name": "Khu di tích Căn cứ Tỉnh ủy Bến Tre tại Châu Hòa",
+      "type": "history",
+      "missing": [
+        "hours",
+        "phone"
+      ],
+      "address": "Ấp Thới Hòa, xã Châu Hòa, tỉnh Vĩnh Long",
+      "hours": null,
+      "phone": null,
+      "heritage_level": "Di tích cấp tỉnh"
+    },
+    {
+      "id": "chua-kompong-tung-hung-my",
+      "name": "Chùa Kompong Tung (Chùa Lò Gạch Hưng Mỹ)",
+      "type": "attraction",
+      "missing": [
+        "hours",
+        "phone",
+        "heritage_level"
+      ],
+      "address": "Ấp Bãi Xào Giữa, xã Hưng Mỹ, tỉnh Vĩnh Long",
+      "hours": null,
+      "phone": null,
+      "heritage_level": null
+    },
+    {
+      "id": "chua-can-tho-ngu-lac",
+      "name": "Chùa Can Tho (Chùa Cần Chông Khmer Ngũ Lạc)",
+      "type": "attraction",
+      "missing": [
+        "hours",
+        "phone",
+        "heritage_level"
+      ],
+      "address": "Ấp Can Tho, xã Ngũ Lạc, tỉnh Vĩnh Long",
+      "hours": null,
+      "phone": null,
+      "heritage_level": null
+    },
+    {
+      "id": "chua-bang-trau-song-loc",
+      "name": "Chùa Bâng Trau (Chùa Khmer Song Lộc)",
+      "type": "attraction",
+      "missing": [
+        "hours",
+        "phone",
+        "heritage_level"
+      ],
+      "address": "Ấp Bâng Trau, xã Song Lộc, tỉnh Vĩnh Long",
+      "hours": null,
+      "phone": null,
+      "heritage_level": null
+    },
+    {
+      "id": "chua-o-mich-hung-hoa",
+      "name": "Chùa Ô Mịch (Chùa Khmer Ô Mịch - Hùng Hòa)",
+      "type": "attraction",
+      "missing": [
+        "hours",
+        "phone",
+        "heritage_level"
+      ],
+      "address": "Khóm Ô Mịch, phường Hùng Hoà, tỉnh Vĩnh Long",
+      "hours": null,
+      "phone": null,
+      "heritage_level": null
+    }
+  ],
+  "accommodation": [
+    {
+      "id": "homestay-bep-nam-bo-xua-con-chim",
+      "name": "Homestay Bếp Nam Bộ Xưa (Cồn Chim)",
+      "type": "accommodation",
+      "missing": [
+        "phone",
+        "amenities",
+        "hours"
+      ],
+      "address": "Số 11, Ấp Cồn Chim, xã Hòa Minh, tỉnh Vĩnh Long",
+      "phone": null,
+      "price_range": "Bình dân–trung bình"
+    },
+    {
+      "id": "homestay-nam-ham-luong",
+      "name": "Homestay Nam Hàm Luông",
+      "type": "accommodation",
+      "missing": [
+        "phone",
+        "amenities"
+      ],
+      "address": "Huyện Mỏ Cày Bắc, tỉnh Vĩnh Long",
+      "phone": null,
+      "price_range": "550.000đ - 1.100.000đ/phòng/đêm"
+    },
+    {
+      "id": "homestay-tu-pha-con-chim",
+      "name": "Homestay Tư Pha (Cồn Chim)",
+      "type": "accommodation",
+      "missing": [
+        "phone",
+        "amenities",
+        "hours"
+      ],
+      "address": "27 Ấp Cồn Chim, xã Hòa Minh, tỉnh Vĩnh Long",
+      "phone": null,
+      "price_range": "Bình dân–trung bình"
+    },
+    {
+      "id": "maison-du-pays-de-ben-tre",
+      "name": "Maison du Pays de Bến Tre",
+      "type": "accommodation",
+      "missing": [
+        "phone",
+        "amenities",
+        "hours"
+      ],
+      "address": "Xã Thạnh Phú Đông, tỉnh Vĩnh Long",
+      "phone": null,
+      "price_range": "Trung bình"
+    },
+    {
+      "id": "nha-nghi-nha-co-dai-an",
+      "name": "Nhà nghỉ Nhà Cổ Đại An",
+      "type": "accommodation",
+      "missing": [
+        "phone",
+        "amenities"
+      ],
+      "address": "Ấp Giồng Lớn B, xã Đại An, tỉnh Vĩnh Long",
+      "phone": null,
+      "price_range": "450.000đ - 900.000đ/phòng/đêm"
+    },
+    {
+      "id": "nhon-thanh-homestay",
+      "name": "Nhơn Thạnh Homestay",
+      "type": "accommodation",
+      "missing": [
+        "phone",
+        "amenities",
+        "hours"
+      ],
+      "address": "Xã Nhơn Thạnh, thành phố Bến Tre, tỉnh Vĩnh Long",
+      "phone": null,
+      "price_range": "Bình dân–trung bình"
+    },
+    {
+      "id": "rooster-mekong-resort",
+      "name": "Rooster Mekong Resort",
+      "type": "accommodation",
+      "missing": [
+        "phone",
+        "amenities",
+        "hours"
+      ],
+      "address": "Ấp An Hòa, xã Long Thới, tỉnh Vĩnh Long",
+      "phone": null,
+      "price_range": "Cao cấp"
+    },
+    {
+      "id": "tra-vinh-palace-hotel",
+      "name": "Trà Vinh Palace Hotel",
+      "type": "accommodation",
+      "missing": [
+        "phone",
+        "amenities",
+        "hours"
+      ],
+      "address": "Phường Trà Vinh, Trà Vinh",
+      "phone": null,
+      "price_range": "600.000–1.200.000 đ/đêm"
+    },
+    {
+      "id": "somo-farm-cuu-long",
+      "name": "Somo Farm Cửu Long - lưu trú sinh thái",
+      "type": "accommodation",
+      "missing": [
+        "phone",
+        "price_range",
+        "amenities",
+        "hours"
+      ],
+      "address": "Thị trấn Cái Nhum",
+      "phone": null,
+      "price_range": null
+    },
+    {
+      "id": "homestay-con-ba-tu",
+      "name": "Homestay Cồn Bà Tư",
+      "type": "accommodation",
+      "missing": [
+        "phone",
+        "amenities"
+      ],
+      "address": "Số 85, ấp Thới Hòa 2, xã Thới Thuận, Bến Tre",
+      "phone": null,
+      "price_range": "400.000đ - 700.000đ/phòng/đêm"
+    },
+    {
+      "id": "van-trang-hotel",
+      "name": "Vân Trang Hotel",
+      "type": "accommodation",
+      "missing": [
+        "phone",
+        "amenities",
+        "hours"
+      ],
+      "address": "Phường Long Châu, Vĩnh Long",
+      "phone": null,
+      "price_range": "300.000–600.000 đ/đêm"
+    },
+    {
+      "id": "khach-san-hoang-khiem",
+      "name": "Khách Sạn Hoàng Khiêm",
+      "type": "accommodation",
+      "missing": [
+        "phone",
+        "amenities",
+        "hours"
+      ],
+      "address": "Phường Long Châu, Vĩnh Long",
+      "phone": null,
+      "price_range": "300.000–600.000 đ/đêm"
+    },
+    {
+      "id": "lo-lem-homestay",
+      "name": "Lọ Lem Homestay",
+      "type": "accommodation",
+      "missing": [
+        "phone",
+        "amenities"
+      ],
+      "address": "Phường Long Châu, Vĩnh Long",
+      "phone": null,
+      "price_range": "400.000đ - 800.000đ/phòng/đêm"
+    },
+    {
+      "id": "hotel-phuoc-thinh",
+      "name": "Hotel Phước Thịnh",
+      "type": "accommodation",
+      "missing": [
+        "phone",
+        "amenities",
+        "hours"
+      ],
+      "address": "Phường Long Châu, Vĩnh Long",
+      "phone": null,
+      "price_range": "250.000–450.000 đ/đêm"
+    },
+    {
+      "id": "khach-san-diamond-stars",
+      "name": "Khách sạn Diamond Stars",
+      "type": "accommodation",
+      "missing": [
+        "price_range",
+        "amenities",
+        "hours"
+      ],
+      "address": "140 Hùng Vương, Phường An Hội, TP Bến Tre",
+      "phone": "027 5374 8888",
+      "price_range": null
+    },
+    {
+      "id": "nha-dua-cocohome",
+      "name": "Nhà dừa CocoHome",
+      "type": "accommodation",
+      "missing": [
+        "amenities"
+      ],
+      "address": "Ấp Hòa Quí, xã Hòa Ninh, huyện Long Hồ, tỉnh Vĩnh Long",
+      "phone": "0983 234 688",
+      "price_range": "350.000–600.000 đ/đêm"
+    },
+    {
+      "id": "ks-nh-hung-vuong",
+      "name": "KS-NH Hùng Vương",
+      "type": "accommodation",
+      "missing": [
+        "price_range",
+        "amenities",
+        "hours"
+      ],
+      "address": "148 Hùng Vương, Phường An Hội, TP Bến Tre",
+      "phone": "027 5382 2408",
+      "price_range": null
+    },
+    {
+      "id": "khach-san-anh-hong-mang-thit",
+      "name": "Khách sạn Ánh Hồng (Mang Thít)",
+      "type": "accommodation",
+      "missing": [
+        "price_range",
+        "amenities",
+        "hours"
+      ],
+      "address": "Khóm 1, xã Cái Nhum",
+      "phone": "027 0384 0238",
+      "price_range": null
+    },
+    {
+      "id": "khach-san-nghia-hiep",
+      "name": "Khách sạn Nghĩa Hiệp",
+      "type": "accommodation",
+      "missing": [
+        "price_range",
+        "amenities",
+        "hours"
+      ],
+      "address": "Ấp Mỹ An, xã Bình Ninh",
+      "phone": "027 0371 9777",
+      "price_range": null
+    },
+    {
+      "id": "khach-san-khoi-hoa",
+      "name": "Khách sạn Khôi Hoa",
+      "type": "accommodation",
+      "missing": [
+        "price_range",
+        "amenities",
+        "hours"
+      ],
+      "address": "Số 5115 ấp Đông Hậu, phường Bình Minh, TX Bình Minh",
+      "phone": "0916 244 442",
+      "price_range": null
+    },
+    {
+      "id": "khach-san-duc-dao",
+      "name": "Khách sạn Đức Đào",
+      "type": "accommodation",
+      "missing": [
+        "price_range",
+        "amenities",
+        "hours"
+      ],
+      "address": "Số 5938/1, Phường Bình Minh, TX Bình Minh",
+      "phone": "0703 741 646",
+      "price_range": null
+    },
+    {
+      "id": "khach-san-hoai-phu",
+      "name": "Khách sạn Hoài Phú",
+      "type": "accommodation",
+      "missing": [
+        "phone",
+        "amenities",
+        "hours"
+      ],
+      "address": "Tổ 1A, Khu phố 6, phường Phú Khương, TP Bến Tre",
+      "phone": null,
+      "price_range": "Trung bình"
+    },
+    {
+      "id": "nha-nghi-quynh-phuc",
+      "name": "Nhà nghỉ Quỳnh Phúc",
+      "type": "accommodation",
+      "missing": [
+        "phone",
+        "amenities",
+        "hours"
+      ],
+      "address": "409F Nguyễn Thị Định, phường Phú Khương, TP Bến Tre",
+      "phone": null,
+      "price_range": "Bình dân"
+    },
+    {
+      "id": "mekong-hotel-restaurant",
+      "name": "Mekong Hotel & Restaurant",
+      "type": "accommodation",
+      "missing": [
+        "phone",
+        "amenities",
+        "hours"
+      ],
+      "address": "232A Đại Lộ Đồng Khởi, phường Phú Khương, TP Bến Tre",
+      "phone": null,
+      "price_range": "Cao cấp"
+    },
+    {
+      "id": "binh-minh-ecolodge-riverside",
+      "name": "Bình Minh Ecolodge Riverside",
+      "type": "accommodation",
+      "missing": [
+        "phone",
+        "amenities"
+      ],
+      "address": "Phường Cái Vồn, TX Bình Minh, Vĩnh Long",
+      "phone": null,
+      "price_range": "750.000đ - 1.500.000đ/bungalow/đêm"
+    },
+    {
+      "id": "nha-hang-phuong-thuy-1",
+      "name": "Nhà hàng Phương Thủy 1",
+      "type": "accommodation",
+      "missing": [
+        "phone",
+        "amenities",
+        "hours"
+      ],
+      "address": "1 Phan Bội Châu, Phường 1, TP Vĩnh Long",
+      "phone": null,
+      "price_range": "Trung bình"
+    },
+    {
+      "id": "diem-du-lich-nha-dua-cocohome",
+      "name": "Điểm du lịch nhà dừa CocoHome",
+      "type": "accommodation",
+      "missing": [
+        "amenities"
+      ],
+      "address": "Ấp Hòa Quí, xã Hòa Ninh, huyện Long Hồ, tỉnh Vĩnh Long",
+      "phone": "0983 234 688",
+      "price_range": "Trung bình"
+    },
+    {
+      "id": "mekong-pottery-homestay",
+      "name": "Mekong Pottery Homestay",
+      "type": "accommodation",
+      "missing": [
+        "phone",
+        "amenities",
+        "hours"
+      ],
+      "address": "209A/15 Mười Bốn Tháng Chín, xã Thanh Đức, tỉnh Vĩnh Long",
+      "phone": null,
+      "price_range": "Bình dân–trung bình"
+    },
+    {
+      "id": "khu-du-lich-somo-farm-cuu-long",
+      "name": "Khu du lịch Somo Farm Cửu Long",
+      "type": "accommodation",
+      "missing": [
+        "phone",
+        "amenities",
+        "hours"
+      ],
+      "address": "Huyện Mang Thít, Vĩnh Long",
+      "phone": null,
+      "price_range": "Trung bình"
+    },
+    {
+      "id": "homestay-hai-cuong",
+      "name": "Homestay Hai Cường",
+      "type": "accommodation",
+      "missing": [
+        "phone",
+        "amenities"
+      ],
+      "address": "Huyện Vũng Liêm, Vĩnh Long",
+      "phone": null,
+      "price_range": "350.000đ - 650.000đ/phòng/đêm"
+    },
+    {
+      "id": "homestay-cu-lao-dai",
+      "name": "Homestay Cù Lao Dài",
+      "type": "accommodation",
+      "missing": [
+        "phone",
+        "amenities"
+      ],
+      "address": "Xã Thanh Bình và Quới Thiện",
+      "phone": null,
+      "price_range": "400.000đ - 750.000đ/phòng/đêm"
+    },
+    {
+      "id": "coco-riverside-lodge-trung-nghia",
+      "name": "Coco Riverside Lodge Trung Nghĩa",
+      "type": "accommodation",
+      "missing": [
+        "phone",
+        "amenities",
+        "hours"
+      ],
+      "address": "Ấp Trung Nghĩa, tỉnh Vĩnh Long",
+      "phone": null,
+      "price_range": "Trung bình"
+    },
+    {
+      "id": "mekong-homestay-viet-nam",
+      "name": "Mekong Homestay Việt Nam",
+      "type": "accommodation",
+      "missing": [
+        "phone",
+        "amenities"
+      ],
+      "address": "138 Phú Hữu Đông, tỉnh Vĩnh Long",
+      "phone": null,
+      "price_range": "350.000đ - 600.000đ/phòng/đêm"
+    },
+    {
+      "id": "du-lich-sinh-thai-cu-lao-may-nam-khanh",
+      "name": "Du lịch sinh thái Cù Lao Mây – Năm Khanh",
+      "type": "accommodation",
+      "missing": [
+        "phone",
+        "amenities",
+        "hours"
+      ],
+      "address": "Ấp Phú Xuân, xã Phú Thành, tỉnh Vĩnh Long",
+      "phone": null,
+      "price_range": "Trung bình"
+    },
+    {
+      "id": "homestay-cu-lao-may",
+      "name": "Homestay Cù Lao Mây",
+      "type": "accommodation",
+      "missing": [
+        "phone",
+        "amenities"
+      ],
+      "address": "Xã Lục Sĩ Thành, tỉnh Vĩnh Long",
+      "phone": null,
+      "price_range": "350.000đ - 650.000đ/phòng/đêm"
+    },
+    {
+      "id": "duyen-hai-homestay",
+      "name": "Duyên Hải Homestay",
+      "type": "accommodation",
+      "missing": [
+        "phone",
+        "amenities"
+      ],
+      "address": "Thị xã Duyên Hải, Trà Vinh",
+      "phone": null,
+      "price_range": "400.000đ - 750.000đ/phòng/đêm"
+    },
+    {
+      "id": "farmstay-sinh-thai-nguyen-gia",
+      "name": "Farmstay Sinh Thái Nguyễn Gia",
+      "type": "accommodation",
+      "missing": [
+        "phone",
+        "amenities",
+        "hours"
+      ],
+      "address": "9/16 Thanh Tân, xã Tân Thiềng",
+      "phone": null,
+      "price_range": "Trung bình"
+    },
+    {
+      "id": "khu-du-lich-sinh-thai-nam-son",
+      "name": "Khu Du Lịch Sinh Thái Nam Sơn",
+      "type": "accommodation",
+      "missing": [
+        "phone",
+        "amenities",
+        "hours"
+      ],
+      "address": "Ấp An Trại, xã An Phú Tân",
+      "phone": null,
+      "price_range": "Trung bình"
+    },
+    {
+      "id": "homestay-sokfram",
+      "name": "Homestay SokFram",
+      "type": "accommodation",
+      "missing": [
+        "phone",
+        "amenities"
+      ],
+      "address": "Ấp Cây Hẹ, xã Phú Cần, Tiểu Cần",
+      "phone": null,
+      "price_range": "450.000đ - 850.000đ/phòng/đêm"
+    },
+    {
+      "id": "nha-nghi-thanh-thao",
+      "name": "Nhà nghỉ Thanh Thảo",
+      "type": "accommodation",
+      "missing": [
+        "phone",
+        "amenities",
+        "hours"
+      ],
+      "address": "Phường Long Châu, Vĩnh Long",
+      "phone": null,
+      "price_range": "150.000–300.000 đ/đêm"
+    },
+    {
+      "id": "khach-san-ham-luong",
+      "name": "Khách sạn Hàm Luông",
+      "type": "accommodation",
+      "missing": [
+        "phone",
+        "amenities",
+        "hours"
+      ],
+      "address": "Phường Bến Tre, Bến Tre",
+      "phone": null,
+      "price_range": "350.000–600.000 đ/đêm"
+    },
+    {
+      "id": "nha-nghi-phuong-nam",
+      "name": "Nhà nghỉ Phương Nam",
+      "type": "accommodation",
+      "missing": [
+        "phone",
+        "amenities",
+        "hours"
+      ],
+      "address": "Phường Trà Vinh, Trà Vinh",
+      "phone": null,
+      "price_range": "150.000–250.000 đ/đêm"
+    },
+    {
+      "id": "resort-vinh-sang",
+      "name": "Khu nghỉ dưỡng Vĩnh Sang",
+      "type": "accommodation",
+      "missing": [
+        "phone",
+        "amenities",
+        "hours"
+      ],
+      "address": "Xã An Bình, Vĩnh Long",
+      "phone": null,
+      "price_range": "800.000–1.800.000 đ/đêm"
+    },
+    {
+      "id": "khach-san-binh-minh",
+      "name": "Khách sạn Bình Minh",
+      "type": "accommodation",
+      "missing": [
+        "phone",
+        "amenities",
+        "hours"
+      ],
+      "address": "Phường Bình Minh, Vĩnh Long",
+      "phone": null,
+      "price_range": "250.000–450.000 đ/đêm"
+    },
+    {
+      "id": "homestay-ut-trinh",
+      "name": "Homestay Út Trinh",
+      "type": "accommodation",
+      "missing": [
+        "amenities"
+      ],
+      "address": "Ấp Hòa Quí, xã Hòa Ninh, huyện Long Hồ, tỉnh Vĩnh Long",
+      "phone": "0914 243 252",
+      "price_range": "650.000đ - 1.200.000đ/phòng/đêm"
+    },
+    {
+      "id": "homestay-khmer-tra-vinh",
+      "name": "Homestay Khmer Trà Vinh",
+      "type": "accommodation",
+      "missing": [
+        "phone",
+        "amenities"
+      ],
+      "address": "Xã Châu Thành, Trà Vinh",
+      "phone": null,
+      "price_range": "400.000đ - 750.000đ/phòng/đêm"
+    },
+    {
+      "id": "homestay-co-chin-an-binh",
+      "name": "Homestay Cô Chín",
+      "type": "accommodation",
+      "missing": [
+        "amenities"
+      ],
+      "address": "Ấp An Thành, xã An Bình, huyện Long Hồ, tỉnh Vĩnh Long",
+      "phone": "0919 234 567",
+      "price_range": "350.000đ - 600.000đ/phòng/đêm"
+    },
+    {
+      "id": "ba-dong-beach-resort",
+      "name": "Ba Động Beach Resort",
+      "type": "accommodation",
+      "missing": [
+        "phone",
+        "amenities"
+      ],
+      "address": "Phường Duyên Hải, Trà Vinh",
+      "phone": null,
+      "price_range": "650.000đ - 1.500.000đ/phòng/đêm"
+    },
+    {
+      "id": "mekong-lodge-resort",
+      "name": "Mekong Lodge Resort",
+      "type": "accommodation",
+      "missing": [
+        "amenities"
+      ],
+      "address": "Xã An Bình, Vĩnh Long",
+      "phone": "027 0385 7888",
+      "price_range": "900.000đ - 1.900.000đ/bungalow/đêm"
+    },
+    {
+      "id": "khach-san-cuu-long",
+      "name": "Khách sạn Cửu Long",
+      "type": "accommodation",
+      "missing": [
+        "amenities",
+        "hours"
+      ],
+      "address": "Phường Long Châu, Vĩnh Long",
+      "phone": "027 0382 3456",
+      "price_range": "500.000–1.000.000 đ/đêm"
+    },
+    {
+      "id": "khach-san-chieu-hung",
+      "name": "Khách sạn Chiêu Hùng",
+      "type": "accommodation",
+      "missing": [
+        "price_range",
+        "amenities",
+        "hours"
+      ],
+      "address": "Số 20A Gia Long, Khu I, xã Trà Ôn",
+      "phone": "0703 770 246",
+      "price_range": null
+    },
+    {
+      "id": "khach-san-trung-tinh",
+      "name": "Khách sạn Trung Tính",
+      "type": "accommodation",
+      "missing": [
+        "price_range",
+        "amenities",
+        "hours"
+      ],
+      "address": "Số 100A1 Thống chế điều bát, khu 3, xã Trà Ôn",
+      "phone": "0703 770 566",
+      "price_range": null
+    },
+    {
+      "id": "khach-san-vin-vinh-long",
+      "name": "Khách Sạn Vin Vĩnh Long",
+      "type": "accommodation",
+      "missing": [
+        "price_range",
+        "amenities",
+        "hours"
+      ],
+      "address": "PG2-08A và PG2-18 Phạm Thái Bường, Phường Phước Hậu, TP Vĩnh Long",
+      "phone": "027 0388 3666",
+      "price_range": null
+    },
+    {
+      "id": "khach-san-binh-dai",
+      "name": "Khách sạn Bình Đại",
+      "type": "accommodation",
+      "missing": [
+        "price_range",
+        "amenities",
+        "hours"
+      ],
+      "address": "Nguyễn Thị Định, Ấp Bình Hòa",
+      "phone": "027 5223 9666",
+      "price_range": null
+    },
+    {
+      "id": "oasis-hotel",
+      "name": "Oasis Hotel",
+      "type": "accommodation",
+      "missing": [
+        "phone",
+        "amenities",
+        "hours"
+      ],
+      "address": "Khu vực thành phố Bến Tre",
+      "phone": null,
+      "price_range": "Khoảng 600.000–1.200.000 đ/phòng/đêm"
+    },
+    {
+      "id": "vilabasi-hotel",
+      "name": "Vilabasi Hotel",
+      "type": "accommodation",
+      "missing": [
+        "phone",
+        "amenities",
+        "hours"
+      ],
+      "address": "Thành phố Trà Vinh",
+      "phone": null,
+      "price_range": "Khoảng 500.000–1.200.000 đ/phòng/đêm"
+    },
+    {
+      "id": "ben-tre-farm-stay",
+      "name": "Ben Tre Farm Stay",
+      "type": "accommodation",
+      "missing": [
+        "phone",
+        "amenities",
+        "hours"
+      ],
+      "address": "Khu vực thành phố Bến Tre",
+      "phone": null,
+      "price_range": "Khoảng 500.000–1.000.000 đ/phòng/đêm"
+    },
+    {
+      "id": "malis-hotel-tra-vinh",
+      "name": "Malis Hotel Trà Vinh",
+      "type": "accommodation",
+      "missing": [
+        "phone",
+        "amenities",
+        "hours"
+      ],
+      "address": "Phường Trà Vinh, Trà Vinh",
+      "phone": null,
+      "price_range": "khoảng 500.000–900.000 đ/phòng/đêm"
+    },
+    {
+      "id": "vila-basi",
+      "name": "Vila Basi",
+      "type": "accommodation",
+      "missing": [
+        "phone",
+        "amenities",
+        "hours"
+      ],
+      "address": "Tỉnh Trà Vinh",
+      "phone": null,
+      "price_range": "500.000–1.200.000 đ/phòng/đêm"
+    },
+    {
+      "id": "vinh-sang-resort",
+      "name": "Vinh Sang Resort",
+      "type": "accommodation",
+      "missing": [
+        "phone",
+        "amenities"
+      ],
+      "address": "Cù lao An Bình, Vĩnh Long",
+      "phone": null,
+      "price_range": "650.000đ - 1.300.000đ/phòng/đêm"
+    },
+    {
+      "id": "happy-family-guesthouse",
+      "name": "Happy Family Guesthouse",
+      "type": "accommodation",
+      "missing": [
+        "phone",
+        "amenities",
+        "hours"
+      ],
+      "address": "Thành phố Vĩnh Long, Vĩnh Long",
+      "phone": null,
+      "price_range": "300.000–800.000 đ/phòng/đêm"
+    },
+    {
+      "id": "coco-happy-farm",
+      "name": "Coco Happy Farm",
+      "type": "accommodation",
+      "missing": [
+        "phone",
+        "amenities",
+        "hours"
+      ],
+      "address": "Bến Tre",
+      "phone": null,
+      "price_range": "500.000–1.200.000 đ/phòng/đêm"
+    },
+    {
+      "id": "mekong-home",
+      "name": "Mekong Home",
+      "type": "accommodation",
+      "missing": [
+        "phone",
+        "amenities",
+        "hours"
+      ],
+      "address": "Huyện Giồng Trôm, tỉnh Vĩnh Long",
+      "phone": null,
+      "price_range": "1.500.000–3.000.000 đ/phòng/đêm"
+    },
+    {
+      "id": "coco-farmstay",
+      "name": "Coco Farmstay",
+      "type": "accommodation",
+      "missing": [
+        "phone",
+        "amenities",
+        "hours"
+      ],
+      "address": "Tỉnh Bến Tre",
+      "phone": null,
+      "price_range": "500.000–1.200.000 đ/phòng/đêm"
+    },
+    {
+      "id": "my-cam-hotel",
+      "name": "Mỹ Cẩm Hotel",
+      "type": "accommodation",
+      "missing": [
+        "phone",
+        "amenities",
+        "hours"
+      ],
+      "address": "Thành phố Trà Vinh, tỉnh Vĩnh Long",
+      "phone": null,
+      "price_range": "400.000–900.000 đ/phòng/đêm"
+    },
+    {
+      "id": "phuong-thao-homestay",
+      "name": "Phương Thảo Homestay",
+      "type": "accommodation",
+      "missing": [
+        "phone",
+        "hours"
+      ],
+      "address": "Xã An Bình, Vĩnh Long",
+      "phone": null,
+      "price_range": "250.000–600.000 đ/phòng"
+    },
+    {
+      "id": "ngoc-phuong-homestay",
+      "name": "Ngọc Phương Homestay",
+      "type": "accommodation",
+      "missing": [
+        "phone",
+        "hours"
+      ],
+      "address": "Xã An Bình, Vĩnh Long",
+      "phone": null,
+      "price_range": "200.000–450.000 đ/phòng"
+    },
+    {
+      "id": "mekong-riverside-homestay",
+      "name": "Mekong Riverside Homestay",
+      "type": "accommodation",
+      "missing": [
+        "phone"
+      ],
+      "address": "Phường Bình Minh, Vĩnh Long",
+      "phone": null,
+      "price_range": "450.000đ - 850.000đ/phòng/đêm"
+    },
+    {
+      "id": "cuu-long-hotel",
+      "name": "Cửu Long Hotel",
+      "type": "accommodation",
+      "missing": [
+        "phone",
+        "hours"
+      ],
+      "address": "Phường Thanh Đức, Vĩnh Long",
+      "phone": null,
+      "price_range": "400.000–1.000.000 đ/phòng"
+    },
+    {
+      "id": "coco-homestay",
+      "name": "Coco HomeStay",
+      "type": "accommodation",
+      "missing": [
+        "phone"
+      ],
+      "address": "Xã An Bình, Vĩnh Long",
+      "phone": null,
+      "price_range": "400.000đ - 750.000đ/phòng/đêm"
+    },
+    {
+      "id": "khach-san-ngoc-quy",
+      "name": "Khách sạn Ngọc Quý",
+      "type": "accommodation",
+      "missing": [
+        "price_range",
+        "amenities",
+        "hours"
+      ],
+      "address": "105 Võ Nguyên Giáp, phường Nguyệt Hóa, TP Trà Vinh",
+      "phone": "029 4384 8181",
+      "price_range": null
+    },
+    {
+      "id": "green-river-homestay",
+      "name": "Green River Homestay",
+      "type": "accommodation",
+      "missing": [
+        "phone"
+      ],
+      "address": "Xã An Bình, Vĩnh Long",
+      "phone": null,
+      "price_range": "450.000đ - 850.000đ/phòng/đêm"
+    },
+    {
+      "id": "forever-green-resort",
+      "name": "Forever Green Resort",
+      "type": "accommodation",
+      "missing": [
+        "phone"
+      ],
+      "address": "Phường Phú Túc, Bến Tre",
+      "phone": null,
+      "price_range": "1.200.000đ - 3.500.000đ/phòng/đêm"
+    },
+    {
+      "id": "diamond-stars-ben-tre-hotel",
+      "name": "Diamond Stars Ben Tre Hotel",
+      "type": "accommodation",
+      "missing": [
+        "phone",
+        "hours"
+      ],
+      "address": "Phường An Hội, Bến Tre",
+      "phone": null,
+      "price_range": "800.000–2.000.000 đ/phòng"
+    },
+    {
+      "id": "khu-du-lich-bien-ba-dong",
+      "name": "Khu du lịch Biển Ba Động",
+      "type": "accommodation",
+      "missing": [
+        "phone",
+        "hours"
+      ],
+      "address": "Phường Duyên Hải, Trà Vinh",
+      "phone": null,
+      "price_range": "300.000–800.000 đ/phòng"
+    },
+    {
+      "id": "khach-san-thanh-binh-i",
+      "name": "Khách sạn Thanh Bình I",
+      "type": "accommodation",
+      "missing": [
+        "price_range",
+        "amenities",
+        "hours"
+      ],
+      "address": "Số 109 Võ Nguyên Giáp, phường Nguyệt Hóa, TP Trà Vinh",
+      "phone": "029 4626 6789",
+      "price_range": null
+    },
+    {
+      "id": "con-chim-homestay",
+      "name": "Cồn Chim Homestay",
+      "type": "accommodation",
+      "missing": [
+        "phone"
+      ],
+      "address": "Xã Châu Thành, Trà Vinh",
+      "phone": null,
+      "price_range": "400.000đ - 700.000đ/phòng/đêm"
+    },
+    {
+      "id": "khach-san-ngu-long",
+      "name": "Khách sạn Ngũ Long",
+      "type": "accommodation",
+      "missing": [
+        "hours"
+      ],
+      "address": "Số 34 Trưng Nữ Vương, Phường Long Châu, TP Vĩnh Long",
+      "phone": "027 0382 7147",
+      "price_range": "250.000–450.000 đ/phòng"
+    },
+    {
+      "id": "khach-san-minh-khue",
+      "name": "Khách sạn Minh Khuê",
+      "type": "accommodation",
+      "missing": [
+        "hours"
+      ],
+      "address": "Số 38 Trưng Nữ Vương, Phường Long Châu, TP Vĩnh Long",
+      "phone": "027 0382 6688",
+      "price_range": "250.000–450.000 đ/phòng"
+    },
+    {
+      "id": "khach-san-ngoc-hung",
+      "name": "Khách sạn Ngọc Hưng",
+      "type": "accommodation",
+      "missing": [
+        "hours"
+      ],
+      "address": "Số 62/9 Võ Văn Kiệt, Phường Long Châu, TP Vĩnh Long",
+      "phone": "027 0383 7989",
+      "price_range": "250.000–500.000 đ/phòng"
+    },
+    {
+      "id": "khach-san-thanh-binh-ii",
+      "name": "Khách sạn Thanh Bình II",
+      "type": "accommodation",
+      "missing": [
+        "price_range",
+        "amenities",
+        "hours"
+      ],
+      "address": "Số 199 Võ Nguyên Giáp, phường Nguyệt Hóa, TP Trà Vinh",
+      "phone": "029 4626 0999",
+      "price_range": null
+    },
+    {
+      "id": "khach-san-phuong-hoang",
+      "name": "Khách sạn Phượng Hoàng",
+      "type": "accommodation",
+      "missing": [
+        "hours"
+      ],
+      "address": "Số 2R Hùng Vương, Phường Long Châu, TP Vĩnh Long",
+      "phone": "027 0382 2156",
+      "price_range": "120.000–250.000 đ/phòng"
+    },
+    {
+      "id": "khach-san-phung-hoang",
+      "name": "Khách sạn Phụng Hoàng",
+      "type": "accommodation",
+      "missing": [
+        "hours"
+      ],
+      "address": "Số 2H Hùng Vương, Phường Long Châu, TP Vĩnh Long",
+      "phone": "027 0382 5185",
+      "price_range": "120.000–250.000 đ/phòng"
+    },
+    {
+      "id": "khach-san-lac-long",
+      "name": "Khách sạn Lạc Long",
+      "type": "accommodation",
+      "missing": [
+        "hours"
+      ],
+      "address": "Số 2G Hùng Vương, Phường Long Châu, TP Vĩnh Long",
+      "phone": "027 0383 6846",
+      "price_range": "120.000–250.000 đ/phòng"
+    },
+    {
+      "id": "khach-san-ngoc-trang",
+      "name": "Khách sạn Ngọc Trang",
+      "type": "accommodation",
+      "missing": [
+        "hours"
+      ],
+      "address": "Số 18 Hùng Vương, Phường Long Châu, TP Vĩnh Long",
+      "phone": "027 0383 2581",
+      "price_range": "150.000–300.000 đ/đêm"
+    },
+    {
+      "id": "khach-san-hoa-ngoc",
+      "name": "Khách sạn Hoa Ngọc",
+      "type": "accommodation",
+      "missing": [
+        "hours"
+      ],
+      "address": "Số 01/6 Hoàng Thái Hiếu, Phường Long Châu, TP Vĩnh Long",
+      "phone": "027 0383 7838",
+      "price_range": "150.000–280.000 đ/đêm"
+    },
+    {
+      "id": "khach-san-anh-hong",
+      "name": "Khách sạn Ánh Hồng",
+      "type": "accommodation",
+      "missing": [
+        "hours"
+      ],
+      "address": "Số 01/2 Hoàng Thái Hiếu, Phường Long Châu, TP Vĩnh Long",
+      "phone": "027 0391 2590",
+      "price_range": "150.000–280.000 đ/đêm"
+    },
+    {
+      "id": "khach-san-khanh-quynh",
+      "name": "Khách sạn Khánh Quỳnh",
+      "type": "accommodation",
+      "missing": [
+        "hours"
+      ],
+      "address": "Số 2A Hưng Đạo Vương, Phường Long Châu, TP Vĩnh Long",
+      "phone": "027 0383 7116",
+      "price_range": "150.000–300.000 đ/đêm"
+    },
+    {
+      "id": "khach-san-van-trang",
+      "name": "Khách sạn Vân Trang",
+      "type": "accommodation",
+      "missing": [
+        "hours"
+      ],
+      "address": "Số 3C Hưng Đạo Vương, Phường Long Châu, TP Vĩnh Long",
+      "phone": "027 0383 8181",
+      "price_range": "150.000–300.000 đ/đêm"
+    },
+    {
+      "id": "khach-san-tan-hung",
+      "name": "Khách sạn Tấn Hưng",
+      "type": "accommodation",
+      "missing": [
+        "hours"
+      ],
+      "address": "Số 5A Hưng Đạo Vương, Phường Long Châu, TP Vĩnh Long",
+      "phone": "027 0383 2021",
+      "price_range": "150.000–300.000 đ/đêm"
+    },
+    {
+      "id": "khach-san-hai-duong-i",
+      "name": "Khách sạn Hải Dương I",
+      "type": "accommodation",
+      "missing": [
+        "price_range",
+        "amenities",
+        "hours"
+      ],
+      "address": "Số 14 đường 2/9, phường Duyên Hải, TP Trà Vinh",
+      "phone": "0972 320 378",
+      "price_range": null
+    },
+    {
+      "id": "khach-san-dong-quan",
+      "name": "Khách sạn Đông Quân",
+      "type": "accommodation",
+      "missing": [
+        "hours"
+      ],
+      "address": "Số 07 Hưng Đạo Vương, Phường Long Châu, TP Vĩnh Long",
+      "phone": "0907 724 438",
+      "price_range": "150.000–300.000 đ/đêm"
+    },
+    {
+      "id": "khach-san-thien-thanh",
+      "name": "Khách sạn Thiên Thanh",
+      "type": "accommodation",
+      "missing": [
+        "hours"
+      ],
+      "address": "Số 2G-2H Hùng Vương, Phường Long Châu, TP Vĩnh Long",
+      "phone": "027 0382 2099",
+      "price_range": "150.000–300.000 đ/đêm"
+    },
+    {
+      "id": "khach-san-loc-phuc",
+      "name": "Khách sạn Lộc Phúc",
+      "type": "accommodation",
+      "missing": [
+        "hours"
+      ],
+      "address": "Số 50 Nguyễn Thị Út, Phường Long Châu, TP Vĩnh Long",
+      "phone": "027 0382 2546",
+      "price_range": "150.000–280.000 đ/đêm"
+    },
+    {
+      "id": "khach-san-ngoc-tram",
+      "name": "Khách sạn Ngọc Trâm",
+      "type": "accommodation",
+      "missing": [
+        "hours"
+      ],
+      "address": "Số 64T-64U khóm 5, Phường Long Châu, TP Vĩnh Long",
+      "phone": "027 0383 6867",
+      "price_range": "150.000–280.000 đ/đêm"
+    },
+    {
+      "id": "khach-san-anh-duc",
+      "name": "Khách sạn Anh Đức",
+      "type": "accommodation",
+      "missing": [
+        "hours"
+      ],
+      "address": "Số 7/5, xã Tân Hạnh",
+      "phone": "027 0381 1664",
+      "price_range": "150.000–280.000 đ/đêm"
+    },
+    {
+      "id": "khach-san-phuong-thao",
+      "name": "Khách sạn Phương Thảo",
+      "type": "accommodation",
+      "missing": [
+        "hours"
+      ],
+      "address": "Số 105 Nguyễn Huệ, Phường Long Châu, TP Vĩnh Long",
+      "phone": "027 0382 2848",
+      "price_range": "180.000–350.000 đ/đêm"
+    },
+    {
+      "id": "khach-san-truong-an",
+      "name": "Khách sạn Trường An",
+      "type": "accommodation",
+      "missing": [
+        "hours"
+      ],
+      "address": "Số 29 QL1A, Thuận An, phường Tân Ngãi, TP Vĩnh Long",
+      "phone": "027 0381 5241",
+      "price_range": "250.000–450.000 đ/phòng/đêm"
+    },
+    {
+      "id": "khach-san-hoang-hao",
+      "name": "Khách sạn Hoàng Hảo",
+      "type": "accommodation",
+      "missing": [
+        "hours"
+      ],
+      "address": "Số 234 Tân Vĩnh Thuận, phường Tân Ngãi, TP Vĩnh Long",
+      "phone": "027 0382 7414",
+      "price_range": "250.000–450.000 đ/phòng/đêm"
+    },
+    {
+      "id": "khach-san-hong-phuong",
+      "name": "Khách sạn Hồng Phượng",
+      "type": "accommodation",
+      "missing": [
+        "hours"
+      ],
+      "address": "Số 286 Tân Vĩnh Thuận, phường Tân Ngãi, TP Vĩnh Long",
+      "phone": "027 0391 0718",
+      "price_range": "150.000–280.000 đ/phòng/đêm"
+    },
+    {
+      "id": "khach-san-gia-hoa-ii",
+      "name": "Khách sạn Gia Hòa II",
+      "type": "accommodation",
+      "missing": [
+        "price_range",
+        "amenities",
+        "hours"
+      ],
+      "address": "50 Lê Lợi, phường 2, TP Trà Vinh",
+      "phone": "029 4385 8008",
+      "price_range": null
+    },
+    {
+      "id": "khach-san-kim-chi-hoang-gia",
+      "name": "Khách sạn Kim Chi Hoàng Gia",
+      "type": "accommodation",
+      "missing": [
+        "hours"
+      ],
+      "address": "Phạm Thái Bường, Phường Phước Hậu, TP Vĩnh Long",
+      "phone": "0388 799 049",
+      "price_range": "600.000–1.200.000 đ/phòng/đêm"
+    },
+    {
+      "id": "khach-san-tai-nguyen",
+      "name": "Khách sạn Tài Nguyên",
+      "type": "accommodation",
+      "missing": [
+        "hours"
+      ],
+      "address": "Số 60/12 Mậu Thân, phường Phước Hậu, TP Vĩnh Long",
+      "phone": "027 0382 7235",
+      "price_range": "250.000–450.000 đ/phòng/đêm"
+    },
+    {
+      "id": "khach-san-ban-me",
+      "name": "Khách sạn Ban Mê",
+      "type": "accommodation",
+      "missing": [
+        "hours"
+      ],
+      "address": "Số 73/16D Phó Cơ Điều, phường Phước Hậu, TP Vĩnh Long",
+      "phone": "027 0384 3248",
+      "price_range": "150.000–250.000 đ/phòng/đêm"
+    },
+    {
+      "id": "khach-san-phuoc-hung",
+      "name": "Khách sạn Phước Hưng",
+      "type": "accommodation",
+      "missing": [
+        "hours"
+      ],
+      "address": "Số 44/62B P3, phường Phước Hậu, TP Vĩnh Long",
+      "phone": "0979 449 549",
+      "price_range": "150.000–250.000 đ/phòng/đêm"
+    },
+    {
+      "id": "khach-san-an-khang",
+      "name": "Khách sạn An Khang",
+      "type": "accommodation",
+      "missing": [
+        "price_range",
+        "amenities",
+        "hours"
+      ],
+      "address": "Số 69 Võ Văn Kiệt, Phường Nguyệt Hóa, TP Trà Vinh",
+      "phone": "0972 676 499",
+      "price_range": null
+    },
+    {
+      "id": "khach-san-ba-duc",
+      "name": "Khách sạn Ba Đức",
+      "type": "accommodation",
+      "missing": [
+        "hours"
+      ],
+      "address": "Số 67/26B Phó Cơ Điều, Phường Phước Hậu, TP Vĩnh Long",
+      "phone": "027 0382 8555",
+      "price_range": "150.000–250.000 đ/phòng/đêm"
+    },
+    {
+      "id": "khach-san-ngoc-yen",
+      "name": "Khách sạn Ngọc Yến",
+      "type": "accommodation",
+      "missing": [
+        "hours"
+      ],
+      "address": "Số A15 Trần Phú, phường Phước Hậu, TP Vĩnh Long",
+      "phone": "027 0383 3979",
+      "price_range": "150.000–300.000 đ/đêm"
+    },
+    {
+      "id": "khach-san-vinh-sang",
+      "name": "Khách sạn Vinh Sang",
+      "type": "accommodation",
+      "missing": [
+        "hours"
+      ],
+      "address": "Ấp An Thuận, xã An Bình",
+      "phone": "027 0385 8350",
+      "price_range": "150.000–280.000 đ/đêm"
+    },
+    {
+      "id": "khach-san-nhat-phuong",
+      "name": "Khách sạn Nhật Phương",
+      "type": "accommodation",
+      "missing": [
+        "hours"
+      ],
+      "address": "Số 197/15, ấp Long Thuận, xã Long Hồ",
+      "phone": "027 0396 3290",
+      "price_range": "150.000–280.000 đ/đêm"
+    },
+    {
+      "id": "khach-san-thanh-xuan",
+      "name": "Khách sạn Thanh Xuân",
+      "type": "accommodation",
+      "missing": [
+        "hours"
+      ],
+      "address": "Số 140A ấp Thanh Hưng, xã Long Hồ",
+      "phone": "027 0382 9228",
+      "price_range": "150.000–280.000 đ/đêm"
+    },
+    {
+      "id": "khach-san-bich-ngoan",
+      "name": "Khách sạn Bích Ngoan",
+      "type": "accommodation",
+      "missing": [
+        "price_range",
+        "amenities",
+        "hours"
+      ],
+      "address": "Số 17/22 đường 19/5, phường Trà Vinh, TP Trà Vinh",
+      "phone": "0359 275 252",
+      "price_range": null
+    },
+    {
+      "id": "nha-khach-vinh-tra",
+      "name": "Nhà khách Vĩnh Trà",
+      "type": "accommodation",
+      "missing": [
+        "price_range",
+        "amenities",
+        "hours"
+      ],
+      "address": "Số 4A Nguyễn Thị Minh Khai, phường Trà Vinh, TP Trà Vinh",
+      "phone": "029 4386 8088",
+      "price_range": null
+    },
+    {
+      "id": "khach-san-sanh-phuc",
+      "name": "Khách sạn Sanh Phúc",
+      "type": "accommodation",
+      "missing": [
+        "price_range",
+        "amenities",
+        "hours"
+      ],
+      "address": "Số 419 Đồng Khởi, phường Trà Vinh, TP Trà Vinh",
+      "phone": "029 4373 7999",
+      "price_range": null
+    },
+    {
+      "id": "khach-san-hai-duong-2",
+      "name": "Khách sạn Hải Dương 2",
+      "type": "accommodation",
+      "missing": [
+        "price_range",
+        "amenities",
+        "hours"
+      ],
+      "address": "Số 140A QL53, Phường Duyên Hải, TP Trà Vinh",
+      "phone": "0916 093 059",
+      "price_range": null
+    },
+    {
+      "id": "khach-san-tuong-vy",
+      "name": "Khách sạn Tường Vy",
+      "type": "accommodation",
+      "missing": [
+        "price_range",
+        "amenities",
+        "hours"
+      ],
+      "address": "Số 135 đường 3/2, phường Duyên Hải, TP Trà Vinh",
+      "phone": "029 4359 0999",
+      "price_range": null
+    },
+    {
+      "id": "farmstay-dat-cu-lao",
+      "name": "Farmstay Đất Cù Lao",
+      "type": "accommodation",
+      "missing": [
+        "price_range",
+        "amenities",
+        "hours"
+      ],
+      "address": "Cảng Cá Láng Chim, phường Trường Long Hòa, TP Trà Vinh",
+      "phone": "0932 991 979",
+      "price_range": null
+    },
+    {
+      "id": "khach-san-huynh-thao",
+      "name": "Khách sạn Huỳnh Thảo",
+      "type": "accommodation",
+      "missing": [
+        "price_range",
+        "amenities",
+        "hours"
+      ],
+      "address": "69c Đồng Văn Cống, phường Bến Tre, TP Bến Tre",
+      "phone": "027 5361 7617",
+      "price_range": null
+    },
+    {
+      "id": "khach-san-dai-an",
+      "name": "Khách sạn Đại An",
+      "type": "accommodation",
+      "missing": [
+        "price_range",
+        "amenities",
+        "hours"
+      ],
+      "address": "234-D8 Hùng Vương, phường Bến Tre, TP Bến Tre",
+      "phone": "027 5351 2050",
+      "price_range": null
+    },
+    {
+      "id": "coco-riverside-lodge",
+      "name": "Coco Riverside Lodge",
+      "type": "accommodation",
+      "missing": [
+        "amenities"
+      ],
+      "address": "Ấp Phú Ân, xã Trung Nghĩa",
+      "phone": "0943 113 443",
+      "price_range": "950.000đ - 1.800.000đ/lodge/đêm"
+    },
+    {
+      "id": "cocohut-homestay",
+      "name": "Cocohut Homestay",
+      "type": "accommodation",
+      "missing": [
+        "amenities"
+      ],
+      "address": "Ấp Hòa Trung, xã Sơn Hòa",
+      "phone": "0902 566 516",
+      "price_range": "500.000đ - 950.000đ/phòng/đêm"
+    },
+    {
+      "id": "homestay-lang-be",
+      "name": "Homestay Làng Bè",
+      "type": "accommodation",
+      "missing": [
+        "amenities"
+      ],
+      "address": "81B/6B Ấp An Thới B, xã An Khánh",
+      "phone": "0985 522 288",
+      "price_range": "450.000đ - 850.000đ/phòng/đêm"
+    },
+    {
+      "id": "ks-nha-co-cau-ke",
+      "name": "KS nhà cổ Cầu Kè",
+      "type": "accommodation",
+      "missing": [
+        "amenities"
+      ],
+      "address": "Khóm 2, xã Cầu Kè",
+      "phone": "0913 006 405",
+      "price_range": "500.000đ - 1.200.000đ/phòng/đêm"
+    },
+    {
+      "id": "suonsia-homestay",
+      "name": "SuonSia Homestay",
+      "type": "accommodation",
+      "missing": [
+        "price_range",
+        "amenities",
+        "hours"
+      ],
+      "address": "22/2 ấp Bà My, xã Cầu Kè",
+      "phone": "0939 299 278",
+      "price_range": null
+    },
+    {
+      "id": "nh-ks-sy-dien",
+      "name": "NH-KS Sỹ Điền",
+      "type": "accommodation",
+      "missing": [
+        "price_range",
+        "amenities",
+        "hours"
+      ],
+      "address": "19A Hương Lộ 32, ấp Bà My, xã Cầu Kè",
+      "phone": "029 4371 4887",
+      "price_range": null
+    },
+    {
+      "id": "mekong-garden-homestay",
+      "name": "Mekong Garden Homestay",
+      "type": "accommodation",
+      "missing": [
+        "amenities"
+      ],
+      "address": "Ấp Đon, xã Nhị Long",
+      "phone": "0975 039 568",
+      "price_range": "600.000đ - 1.100.000đ/bungalow/đêm"
+    },
+    {
+      "id": "homestay-ut-trinh-con-tam-hiep",
+      "name": "Homestay Út Trinh (Cồn Tam Hiệp)",
+      "type": "accommodation",
+      "missing": [
+        "amenities"
+      ],
+      "address": "Tổ 9, ấp 1, xã Phú Thuận",
+      "phone": "09190020505",
+      "price_range": "600.000đ - 1.200.000đ/phòng/đêm"
+    },
+    {
+      "id": "homestay-nguoi-giu-rung",
+      "name": "Homestay Người Giữ Rừng",
+      "type": "accommodation",
+      "missing": [
+        "amenities"
+      ],
+      "address": "Ấp Tân An, xã Thạnh Phước",
+      "phone": "0911 322 767",
+      "price_range": "450.000đ - 850.000đ/phòng/đêm"
+    },
+    {
+      "id": "coconut-homestay",
+      "name": "Coconut Homestay",
+      "type": "accommodation",
+      "missing": [
+        "amenities"
+      ],
+      "address": "66 ấp Tân Phước",
+      "phone": "0903 962 257",
+      "price_range": "400.000đ - 800.000đ/phòng/đêm"
+    },
+    {
+      "id": "one-hotel",
+      "name": "ONE HOTEL",
+      "type": "accommodation",
+      "missing": [
+        "price_range",
+        "amenities",
+        "hours"
+      ],
+      "address": "34 Trưng Nữ Vương, Phường Long Châu, TP Vĩnh Long",
+      "phone": "0973 272 777",
+      "price_range": null
+    },
+    {
+      "id": "the-grand-hotel-vinh-long",
+      "name": "The Grand Hotel Vĩnh Long",
+      "type": "accommodation",
+      "missing": [
+        "price_range",
+        "amenities",
+        "hours"
+      ],
+      "address": "67F Võ Văn Kiệt, Phường Long Châu, TP Vĩnh Long",
+      "phone": "0786 796 339",
+      "price_range": null
+    },
+    {
+      "id": "nha-thuyen-nam-cao-homestay",
+      "name": "Nhà Thuyền Năm Cao (Homestay)",
+      "type": "accommodation",
+      "missing": [
+        "phone",
+        "amenities",
+        "hours"
+      ],
+      "address": "Ấp Bình Tịnh, xã Hòa Tịnh, tỉnh Vĩnh Long",
+      "phone": null,
+      "price_range": "Bình dân–trung bình"
+    },
+    {
+      "id": "khach-san-phu-gia",
+      "name": "Khách sạn Phú Gia",
+      "type": "accommodation",
+      "missing": [
+        "hours"
+      ],
+      "address": "Số 55A17 Phạm Thái Bường, phường Phước Hậu, TP Vĩnh Long",
+      "phone": "027 0388 6768",
+      "price_range": "150.000–280.000 đ/phòng/đêm"
+    },
+    {
+      "id": "coco-home",
+      "name": "Coco Home",
+      "type": "accommodation",
+      "missing": [
+        "hours"
+      ],
+      "address": "Ấp Hòa Quí, xã Long Hồ",
+      "phone": "027 0350 5356",
+      "price_range": "300.000–650.000 đ/phòng/đêm"
+    },
+    {
+      "id": "khach-san-tan-xuan",
+      "name": "Khách sạn Tân Xuân",
+      "type": "accommodation",
+      "missing": [
+        "hours"
+      ],
+      "address": "Số 25B ấp Hưng Quới, xã Long Hồ",
+      "phone": "027 0382 8241",
+      "price_range": "150.000–280.000 đ/đêm"
+    },
+    {
+      "id": "nha-nghi-dl-sinh-thai-hoang-hao",
+      "name": "Nhà nghỉ DL sinh thái Hoàng Hảo",
+      "type": "accommodation",
+      "missing": [
+        "hours"
+      ],
+      "address": "Khu nhà ở Hoàng Hảo, QL57, xã Long Hồ",
+      "phone": "027 0389 9699",
+      "price_range": "200.000–400.000 đ/đêm"
+    },
+    {
+      "id": "khach-san-xuan-huong",
+      "name": "Khách sạn Xuân Hương",
+      "type": "accommodation",
+      "missing": [
+        "hours"
+      ],
+      "address": "Số 245A Phạm Hùng, Phường Long Châu, TP Vĩnh Long",
+      "phone": "027 0382 3350",
+      "price_range": "250.000–450.000 đ/phòng"
+    },
+    {
+      "id": "khach-san-tan-sang",
+      "name": "Khách sạn Tấn Sang",
+      "type": "accommodation",
+      "missing": [
+        "hours"
+      ],
+      "address": "Số 2/15D Phạm Hùng, Phường Long Châu, TP Vĩnh Long",
+      "phone": "0917 147 167",
+      "price_range": "150.000–280.000 đ/đêm"
+    },
+    {
+      "id": "can-tho-hotel-transit",
+      "name": "Khách sạn Sài Gòn - Vĩnh Long",
+      "type": "accommodation",
+      "missing": [
+        "phone",
+        "amenities",
+        "hours"
+      ],
+      "address": "Phường Long Châu, Vĩnh Long",
+      "phone": null,
+      "price_range": "350.000–700.000 đ/đêm"
+    },
+    {
+      "id": "khach-san-paris-vinh-long",
+      "name": "Khách sạn Paris Vĩnh Long",
+      "type": "accommodation",
+      "missing": [
+        "price_range",
+        "amenities",
+        "hours"
+      ],
+      "address": "Trần Phú, Phường Phước Hậu, TP Vĩnh Long",
+      "phone": "0938 126 216",
+      "price_range": null
+    },
+    {
+      "id": "resort-ben-tre-riverside",
+      "name": "Bến Tre Riverside Resort",
+      "type": "accommodation",
+      "missing": [
+        "phone",
+        "amenities"
+      ],
+      "address": "Phường Bến Tre, Bến Tre",
+      "phone": null,
+      "price_range": "1.100.000đ - 2.800.000đ/phòng/đêm"
+    },
+    {
+      "id": "mango-home-ben-tre",
+      "name": "Mango Home Bến Tre",
+      "type": "accommodation",
+      "missing": [
+        "phone",
+        "amenities",
+        "hours"
+      ],
+      "address": "Xã Giao Long, Bến Tre",
+      "phone": null,
+      "price_range": "400.000–800.000 đ/đêm"
+    },
+    {
+      "id": "vin-hotel-vinh-long",
+      "name": "Vin Hotel Vĩnh Long",
+      "type": "accommodation",
+      "missing": [
+        "phone",
+        "hours"
+      ],
+      "address": "Phường Thanh Đức, Vĩnh Long",
+      "phone": null,
+      "price_range": "400.000–900.000 đ/phòng"
+    },
+    {
+      "id": "saigon-vinh-long-hotel",
+      "name": "Saigon Vinh Long Hotel",
+      "type": "accommodation",
+      "missing": [
+        "phone",
+        "hours"
+      ],
+      "address": "Phường Thanh Đức, Vĩnh Long",
+      "phone": null,
+      "price_range": "500.000–1.200.000 đ/phòng"
+    },
+    {
+      "id": "khach-san-ngoi-sao",
+      "name": "Khách sạn Ngôi Sao",
+      "type": "accommodation",
+      "missing": [
+        "hours"
+      ],
+      "address": "Số 81A Trưng Nữ Vương, Phường Long Châu, TP Vĩnh Long",
+      "phone": "027 0383 6151",
+      "price_range": "150.000–280.000 đ/phòng"
+    },
+    {
+      "id": "khach-san-tan-an-loc",
+      "name": "Khách sạn Tân An Lộc",
+      "type": "accommodation",
+      "missing": [
+        "hours"
+      ],
+      "address": "Số 64/22 Phó Cơ Điều, phường Phước Hậu, TP Vĩnh Long",
+      "phone": "027 0385 2699",
+      "price_range": "150.000–280.000 đ/phòng/đêm"
+    },
+    {
+      "id": "homestay-dua-ben-tre",
+      "name": "Homestay Xứ Dừa",
+      "type": "accommodation",
+      "missing": [
+        "phone",
+        "amenities"
+      ],
+      "address": "Phường Mỏ Cày, Bến Tre",
+      "phone": null,
+      "price_range": "450.000đ - 900.000đ/phòng/đêm"
+    },
+    {
+      "id": "muoi-quynh-homestay",
+      "name": "Mười Quỳnh Homestay",
+      "type": "accommodation",
+      "missing": [
+        "phone"
+      ],
+      "address": "Xã Châu Thành, Trà Vinh",
+      "phone": null,
+      "price_range": "350.000đ - 650.000đ/phòng/đêm"
+    },
+    {
+      "id": "homestay-hoa-thanh",
+      "name": "Homestay Hoà Thạnh",
+      "type": "accommodation",
+      "missing": [
+        "phone",
+        "amenities"
+      ],
+      "address": "Huyện Tam Bình, Vĩnh Long",
+      "phone": null,
+      "price_range": "350.000đ - 650.000đ/phòng/đêm"
+    },
+    {
+      "id": "homestay-bay-thoi",
+      "name": "Homestay Bảy Thới",
+      "type": "accommodation",
+      "missing": [
+        "phone",
+        "amenities"
+      ],
+      "address": "Xã An Bình, Vĩnh Long",
+      "phone": null,
+      "price_range": "350.000đ - 650.000đ/phòng/đêm"
+    },
+    {
+      "id": "nam-thanh-homestay",
+      "name": "Năm Thành Homestay",
+      "type": "accommodation",
+      "missing": [
+        "hours"
+      ],
+      "address": "Số 172/9 ấp Bình Lương, xã An Bình",
+      "phone": "027 0385 8883",
+      "price_range": "300.000–600.000 đ/phòng/đêm"
+    },
+    {
+      "id": "hoan-my-homestay",
+      "name": "Hoàn Mỹ Homestay",
+      "type": "accommodation",
+      "missing": [
+        "amenities"
+      ],
+      "address": "Ấp Phú Hòa, Phường Long Đức, TP Trà Vinh",
+      "phone": "0377 118 839",
+      "price_range": "350.000đ - 650.000đ/phòng/đêm"
+    },
+    {
+      "id": "le-ngan-homestay",
+      "name": "Lê Ngân Homestay",
+      "type": "accommodation",
+      "missing": [
+        "amenities"
+      ],
+      "address": "Ấp Lê Văn Quới, xã Tập Ngãi",
+      "phone": "09111177761",
+      "price_range": "300.000đ - 550.000đ/phòng/đêm"
+    },
+    {
+      "id": "khach-san-tan-thanh-2",
+      "name": "Khách sạn Tân Thành 2",
+      "type": "accommodation",
+      "missing": [
+        "price_range",
+        "amenities",
+        "hours"
+      ],
+      "address": "Số 5319, Phường Bình Minh, TX Bình Minh",
+      "phone": "0983 170 690",
+      "price_range": null
+    },
+    {
+      "id": "khach-san-tan-thanh-6",
+      "name": "Khách sạn Tân Thành 6",
+      "type": "accommodation",
+      "missing": [
+        "price_range",
+        "amenities",
+        "hours"
+      ],
+      "address": "Số 162 Nam Kỳ Khởi Nghĩa, Phường Vũng Liêm (nguồn hiện có ghi: xã Trung Thành)",
+      "phone": "0703 979 888",
+      "price_range": null
+    },
+    {
+      "id": "phuoc-thanh-iv-tourist-area",
+      "name": "Phước Thành IV Tourist Area",
+      "type": "accommodation",
+      "missing": [
+        "phone",
+        "hours"
+      ],
+      "address": "Xã An Bình, Vĩnh Long",
+      "phone": null,
+      "price_range": "300.000–700.000 đ/phòng"
+    },
+    {
+      "id": "khach-san-phuoc-thanh-iv",
+      "name": "Khách sạn Phước Thành IV",
+      "type": "accommodation",
+      "missing": [
+        "hours"
+      ],
+      "address": "Số 16-20 Nguyễn Huệ, Phường Long Châu, TP Vĩnh Long",
+      "phone": "027 0386 8779",
+      "price_range": "300.000–550.000 đ/phòng"
+    },
+    {
+      "id": "khach-san-nguyen-mai",
+      "name": "Khách sạn Nguyễn Mai",
+      "type": "accommodation",
+      "missing": [
+        "hours"
+      ],
+      "address": "Số 217B QL80, ấp Tân Thạnh, phường Tân Ngãi, TP Vĩnh Long",
+      "phone": "027 0381 5840",
+      "price_range": "150.000–280.000 đ/phòng/đêm"
+    },
+    {
+      "id": "khach-san-thanh-nguyen",
+      "name": "Khách sạn Thanh Nguyên",
+      "type": "accommodation",
+      "missing": [
+        "hours"
+      ],
+      "address": "Số 68/1C Phạm Thái Bường, Phường Phước Hậu, TP Vĩnh Long",
+      "phone": "0971 743 967",
+      "price_range": "150.000–280.000 đ/phòng/đêm"
+    },
+    {
+      "id": "khach-san-hoan-my-2",
+      "name": "Khách sạn Hoàn Mỹ 2",
+      "type": "accommodation",
+      "missing": [
+        "price_range",
+        "amenities",
+        "hours"
+      ],
+      "address": "132B Nguyễn Đáng, phường Nguyệt Hóa, TP Trà Vinh",
+      "phone": "029 4386 3399",
+      "price_range": null
+    }
+  ],
+  "dish": [
+    {
+      "id": "banh-dua-giong-luong",
+      "name": "Bánh dừa Giồng Luông",
+      "type": "dish",
+      "missing": [
+        "ingredients",
+        "where_to_eat"
+      ],
+      "ingredients": null,
+      "where_to_eat": null
+    },
+    {
+      "id": "banh-xeo-bien-binh-dai",
+      "name": "Bánh xèo biển Bình Đại",
+      "type": "dish",
+      "missing": [
+        "ingredients",
+        "where_to_eat",
+        "price_range",
+        "best_time"
+      ],
+      "ingredients": null,
+      "where_to_eat": null
+    },
+    {
+      "id": "chu-u-rang-me",
+      "name": "Chù ụ rang me",
+      "type": "dish",
+      "missing": [
+        "ingredients",
+        "where_to_eat",
+        "price_range",
+        "best_time"
+      ],
+      "ingredients": null,
+      "where_to_eat": null
+    },
+    {
+      "id": "com-dep-ngoc-bien",
+      "name": "Cốm dẹp Ngọc Biên",
+      "type": "dish",
+      "missing": [
+        "ingredients",
+        "where_to_eat",
+        "price_range",
+        "best_time"
+      ],
+      "ingredients": null,
+      "where_to_eat": null
+    },
+    {
+      "id": "hu-tieu-soi-no-cong",
+      "name": "Hủ tiếu sợi Nô Công",
+      "type": "dish",
+      "missing": [
+        "ingredients",
+        "where_to_eat"
+      ],
+      "ingredients": null,
+      "where_to_eat": null
+    },
+    {
+      "id": "mut-dua-sap-cau-ke",
+      "name": "Mứt dừa sáp Cầu Kè",
+      "type": "dish",
+      "missing": [
+        "ingredients",
+        "where_to_eat",
+        "price_range",
+        "best_time"
+      ],
+      "ingredients": null,
+      "where_to_eat": null
+    },
+    {
+      "id": "oc-viet-ben-tre",
+      "name": "Ốc viết Bến Tre",
+      "type": "dish",
+      "missing": [
+        "ingredients",
+        "where_to_eat",
+        "price_range",
+        "best_time"
+      ],
+      "ingredients": null,
+      "where_to_eat": null
+    },
+    {
+      "id": "bun-suong",
+      "name": "Bún suông",
+      "type": "dish",
+      "missing": [
+        "ingredients",
+        "where_to_eat",
+        "best_time"
+      ],
+      "ingredients": null,
+      "where_to_eat": null
+    },
+    {
+      "id": "kem-xoi-dua---khu-sao-mai",
+      "name": "Kem Xôi Dừa - Khu Sao Mai",
+      "type": "dish",
+      "missing": [
+        "ingredients",
+        "where_to_eat",
+        "price_range",
+        "best_time"
+      ],
+      "ingredients": null,
+      "where_to_eat": null
+    },
+    {
+      "id": "bun-mam-co-ba",
+      "name": "Bún Mắm Cô Ba",
+      "type": "dish",
+      "missing": [
+        "ingredients",
+        "where_to_eat",
+        "price_range"
+      ],
+      "ingredients": null,
+      "where_to_eat": null
+    },
+    {
+      "id": "ba-ba---banh-flan",
+      "name": "Bà Ba - Bánh Flan",
+      "type": "dish",
+      "missing": [
+        "ingredients",
+        "where_to_eat",
+        "price_range",
+        "best_time"
+      ],
+      "ingredients": null,
+      "where_to_eat": null
+    },
+    {
+      "id": "banh-bao-tai-co",
+      "name": "Bánh Bao Tài Có",
+      "type": "dish",
+      "missing": [
+        "ingredients",
+        "where_to_eat",
+        "price_range",
+        "best_time"
+      ],
+      "ingredients": null,
+      "where_to_eat": null
+    },
+    {
+      "id": "chao-ech-tran-nam",
+      "name": "Cháo Ếch Trần Nam",
+      "type": "dish",
+      "missing": [
+        "ingredients",
+        "where_to_eat",
+        "price_range",
+        "best_time"
+      ],
+      "ingredients": null,
+      "where_to_eat": null
+    },
+    {
+      "id": "yogurt-dua---ba-muoi-thang-tu",
+      "name": "Yogurt Dừa - Ba Mươi Tháng Tư",
+      "type": "dish",
+      "missing": [
+        "ingredients",
+        "where_to_eat",
+        "price_range",
+        "best_time"
+      ],
+      "ingredients": null,
+      "where_to_eat": null
+    },
+    {
+      "id": "dang-ga---cac-mon-ga-ta",
+      "name": "Đáng Gà - Các Món Gà Ta",
+      "type": "dish",
+      "missing": [
+        "ingredients",
+        "where_to_eat",
+        "price_range",
+        "best_time"
+      ],
+      "ingredients": null,
+      "where_to_eat": null
+    },
+    {
+      "id": "banh-canh-bot-xat-ben-tre",
+      "name": "Bánh Canh Bột Xắt Bến Tre",
+      "type": "dish",
+      "missing": [
+        "ingredients",
+        "where_to_eat"
+      ],
+      "ingredients": null,
+      "where_to_eat": null
+    },
+    {
+      "id": "chao-cua-dong-ben-tre",
+      "name": "Cháo Cua Đồng Bến Tre",
+      "type": "dish",
+      "missing": [
+        "ingredients",
+        "where_to_eat",
+        "price_range",
+        "best_time"
+      ],
+      "ingredients": null,
+      "where_to_eat": null
+    },
+    {
+      "id": "xoi-man-69---hung-dao-vuong",
+      "name": "Xôi Mặn 69 - Hưng Đạo Vương",
+      "type": "dish",
+      "missing": [
+        "ingredients",
+        "where_to_eat",
+        "price_range",
+        "best_time"
+      ],
+      "ingredients": null,
+      "where_to_eat": null
+    },
+    {
+      "id": "pho-91",
+      "name": "Phở 91",
+      "type": "dish",
+      "missing": [
+        "ingredients",
+        "where_to_eat",
+        "best_time"
+      ],
+      "ingredients": null,
+      "where_to_eat": null
+    },
+    {
+      "id": "banh-trang-my-long",
+      "name": "Bánh tráng Mỹ Lồng",
+      "type": "dish",
+      "missing": [
+        "where_to_eat",
+        "best_time"
+      ],
+      "ingredients": "Gạo nếp, nước cốt dừa, muối",
+      "where_to_eat": null
+    },
+    {
+      "id": "oc-gao-cu-lao-dai",
+      "name": "Ốc gạo Cù Lao Dài",
+      "type": "dish",
+      "missing": [
+        "ingredients",
+        "where_to_eat",
+        "best_time"
+      ],
+      "ingredients": null,
+      "where_to_eat": null
+    },
+    {
+      "id": "mam-tom-cha-vinh-long",
+      "name": "Mắm tôm chà Gò Công (Tiền Giang)",
+      "type": "dish",
+      "missing": [
+        "ingredients",
+        "where_to_eat",
+        "best_time"
+      ],
+      "ingredients": null,
+      "where_to_eat": null
+    },
+    {
+      "id": "ca-loc-nuong-trui",
+      "name": "Cá lóc nướng trui",
+      "type": "dish",
+      "missing": [
+        "ingredients",
+        "where_to_eat",
+        "best_time"
+      ],
+      "ingredients": null,
+      "where_to_eat": null
+    },
+    {
+      "id": "canh-chua-ca-linh",
+      "name": "Canh chua cá linh bông điên điển",
+      "type": "dish",
+      "missing": [
+        "ingredients",
+        "where_to_eat",
+        "best_time"
+      ],
+      "ingredients": null,
+      "where_to_eat": null
+    },
+    {
+      "id": "nuoc-dua-tuoi-ben-tre",
+      "name": "Nước dừa tươi Bến Tre",
+      "type": "dish",
+      "missing": [
+        "ingredients",
+        "where_to_eat",
+        "best_time"
+      ],
+      "ingredients": null,
+      "where_to_eat": null
+    },
+    {
+      "id": "lo-com-cuu-long",
+      "name": "Lò cơm Cửu Long",
+      "type": "dish",
+      "missing": [
+        "ingredients",
+        "where_to_eat",
+        "best_time"
+      ],
+      "ingredients": null,
+      "where_to_eat": null
+    },
+    {
+      "id": "banh-canh-ben-co-tra-vinh",
+      "name": "Bánh Canh Bến Có Trà Vinh",
+      "type": "dish",
+      "missing": [
+        "ingredients",
+        "where_to_eat"
+      ],
+      "ingredients": null,
+      "where_to_eat": null
+    },
+    {
+      "id": "banh-xeo-oc-gao-phu-da",
+      "name": "Bánh Xèo Ốc Gạo Phú Đa",
+      "type": "dish",
+      "missing": [
+        "ingredients",
+        "where_to_eat",
+        "price_range",
+        "best_time"
+      ],
+      "ingredients": null,
+      "where_to_eat": null
+    },
+    {
+      "id": "bun-nuoc-leo-tra-vinh",
+      "name": "Bún nước lèo Trà Vinh",
+      "type": "dish",
+      "missing": [
+        "ingredients",
+        "where_to_eat",
+        "best_time"
+      ],
+      "ingredients": null,
+      "where_to_eat": null
+    },
+    {
+      "id": "keo-dua-mo-cay-dish",
+      "name": "Kẹo dừa Mỏ Cày",
+      "type": "dish",
+      "missing": [
+        "where_to_eat"
+      ],
+      "ingredients": "Nước cốt dừa, đường cát, mạch nha",
+      "where_to_eat": null
+    },
+    {
+      "id": "banh-flan-14",
+      "name": "Bánh Flan 14",
+      "type": "dish",
+      "missing": [
+        "ingredients",
+        "where_to_eat",
+        "price_range",
+        "best_time"
+      ],
+      "ingredients": null,
+      "where_to_eat": null
+    },
+    {
+      "id": "co-diem---banh-canh-vit-bot-xat",
+      "name": "Cô Diễm - Bánh Canh Vịt Bột Xắt",
+      "type": "dish",
+      "missing": [
+        "ingredients",
+        "where_to_eat"
+      ],
+      "ingredients": null,
+      "where_to_eat": null
+    },
+    {
+      "id": "3-mien-tra-vinh---bun-dau-mam-tom",
+      "name": "3 Miền Trà Vinh - Bún Đậu Mắm Tôm",
+      "type": "dish",
+      "missing": [
+        "ingredients",
+        "where_to_eat",
+        "price_range",
+        "best_time"
+      ],
+      "ingredients": null,
+      "where_to_eat": null
+    },
+    {
+      "id": "bun-bo-hue-19",
+      "name": "Bún Bò Huế 19",
+      "type": "dish",
+      "missing": [
+        "ingredients",
+        "where_to_eat",
+        "price_range",
+        "best_time"
+      ],
+      "ingredients": null,
+      "where_to_eat": null
+    },
+    {
+      "id": "banh-xeo-long-binh-2",
+      "name": "Bánh Xèo Long Bình 2",
+      "type": "dish",
+      "missing": [
+        "ingredients",
+        "where_to_eat",
+        "price_range",
+        "best_time"
+      ],
+      "ingredients": null,
+      "where_to_eat": null
+    },
+    {
+      "id": "banh-tet-tra-cuon-co-huong",
+      "name": "Bánh Tét Trà Cuôn Cô Hường",
+      "type": "dish",
+      "missing": [
+        "ingredients",
+        "where_to_eat"
+      ],
+      "ingredients": null,
+      "where_to_eat": null
+    },
+    {
+      "id": "banh-cuon-nong---tran-quoc-tuan",
+      "name": "Bánh Cuốn Nóng - Trần Quốc Tuấn",
+      "type": "dish",
+      "missing": [
+        "ingredients",
+        "where_to_eat",
+        "price_range",
+        "best_time"
+      ],
+      "ingredients": null,
+      "where_to_eat": null
+    },
+    {
+      "id": "com-ga-bong-viet",
+      "name": "Cơm Gà Bông Việt",
+      "type": "dish",
+      "missing": [
+        "ingredients",
+        "where_to_eat",
+        "price_range",
+        "best_time"
+      ],
+      "ingredients": null,
+      "where_to_eat": null
+    },
+    {
+      "id": "bun-suong-tra-vinh",
+      "name": "Bún Suông Trà Vinh",
+      "type": "dish",
+      "missing": [
+        "ingredients",
+        "where_to_eat",
+        "price_range",
+        "best_time"
+      ],
+      "ingredients": null,
+      "where_to_eat": null
+    },
+    {
+      "id": "chao-am-tra-vinh",
+      "name": "Cháo Ám Trà Vinh",
+      "type": "dish",
+      "missing": [
+        "ingredients",
+        "where_to_eat"
+      ],
+      "ingredients": null,
+      "where_to_eat": null
+    },
+    {
+      "id": "loi-choi-sa-ot-tra-vinh",
+      "name": "Loi Choi Sả Ớt Trà Vinh",
+      "type": "dish",
+      "missing": [
+        "ingredients",
+        "where_to_eat",
+        "price_range",
+        "best_time"
+      ],
+      "ingredients": null,
+      "where_to_eat": null
+    },
+    {
+      "id": "hu-tieu-pate-ben-tre",
+      "name": "Hủ Tiếu Pate Bến Tre",
+      "type": "dish",
+      "missing": [
+        "ingredients",
+        "where_to_eat"
+      ],
+      "ingredients": null,
+      "where_to_eat": null
+    },
+    {
+      "id": "com-hap-trai-dua",
+      "name": "Cơm hấp trái dừa",
+      "type": "dish",
+      "missing": [
+        "ingredients",
+        "where_to_eat",
+        "price_range",
+        "best_time"
+      ],
+      "ingredients": null,
+      "where_to_eat": null
+    },
+    {
+      "id": "hu-tieu-vinh-long",
+      "name": "Hủ tiếu Vĩnh Long",
+      "type": "dish",
+      "missing": [
+        "ingredients",
+        "where_to_eat"
+      ],
+      "ingredients": null,
+      "where_to_eat": null
+    },
+    {
+      "id": "bun-mam-vinh-long",
+      "name": "Bún mắm Vĩnh Long",
+      "type": "dish",
+      "missing": [
+        "ingredients",
+        "where_to_eat"
+      ],
+      "ingredients": null,
+      "where_to_eat": null
+    },
+    {
+      "id": "ca-chay-song-hau",
+      "name": "Cá cháy sông Hậu",
+      "type": "dish",
+      "missing": [
+        "ingredients",
+        "where_to_eat"
+      ],
+      "ingredients": null,
+      "where_to_eat": null
+    },
+    {
+      "id": "oc-gao-phu-da",
+      "name": "Ốc gạo Phú Đa",
+      "type": "dish",
+      "missing": [
+        "ingredients",
+        "where_to_eat",
+        "price_range",
+        "best_time"
+      ],
+      "ingredients": null,
+      "where_to_eat": null
+    },
+    {
+      "id": "hu-tieu-ba-phu",
+      "name": "Hủ Tiếu Ba Phú",
+      "type": "dish",
+      "missing": [
+        "ingredients",
+        "where_to_eat",
+        "price_range",
+        "best_time"
+      ],
+      "ingredients": null,
+      "where_to_eat": null
+    },
+    {
+      "id": "oc-gao-vinh-binh",
+      "name": "Ốc gạo Vĩnh Bình",
+      "type": "dish",
+      "missing": [
+        "ingredients",
+        "where_to_eat",
+        "price_range",
+        "best_time"
+      ],
+      "ingredients": null,
+      "where_to_eat": null
+    },
+    {
+      "id": "mut-me-cai-von",
+      "name": "Mứt me Cái Vồn",
+      "type": "dish",
+      "missing": [
+        "ingredients",
+        "where_to_eat",
+        "best_time"
+      ],
+      "ingredients": null,
+      "where_to_eat": null
+    },
+    {
+      "id": "che-buoi-vinh-long",
+      "name": "Chè bưởi Vĩnh Long",
+      "type": "dish",
+      "missing": [
+        "ingredients",
+        "where_to_eat",
+        "best_time"
+      ],
+      "ingredients": null,
+      "where_to_eat": null
+    },
+    {
+      "id": "banh-tet-la-cam",
+      "name": "Bánh tét lá cẩm",
+      "type": "dish",
+      "missing": [
+        "ingredients",
+        "where_to_eat"
+      ],
+      "ingredients": null,
+      "where_to_eat": null
+    },
+    {
+      "id": "bo-to-vinh-long",
+      "name": "Bò tơ Vĩnh Long",
+      "type": "dish",
+      "missing": [
+        "ingredients",
+        "where_to_eat",
+        "best_time"
+      ],
+      "ingredients": null,
+      "where_to_eat": null
+    },
+    {
+      "id": "nem-nuong-vinh-long",
+      "name": "Nem nướng Vĩnh Long",
+      "type": "dish",
+      "missing": [
+        "ingredients",
+        "where_to_eat",
+        "best_time"
+      ],
+      "ingredients": null,
+      "where_to_eat": null
+    },
+    {
+      "id": "goi-cuon-tom-thit",
+      "name": "Gỏi cuốn tôm thịt",
+      "type": "dish",
+      "missing": [
+        "ingredients",
+        "where_to_eat",
+        "best_time"
+      ],
+      "ingredients": null,
+      "where_to_eat": null
+    },
+    {
+      "id": "chao-ca-loc-rau-dang",
+      "name": "Cháo cá lóc rau đắng",
+      "type": "dish",
+      "missing": [
+        "ingredients",
+        "where_to_eat",
+        "best_time"
+      ],
+      "ingredients": null,
+      "where_to_eat": null
+    },
+    {
+      "id": "ca-keo-kho-to",
+      "name": "Cá kèo kho tộ",
+      "type": "dish",
+      "missing": [
+        "ingredients",
+        "where_to_eat",
+        "best_time"
+      ],
+      "ingredients": null,
+      "where_to_eat": null
+    },
+    {
+      "id": "tom-cang-xanh-nuong",
+      "name": "Tôm càng xanh nướng",
+      "type": "dish",
+      "missing": [
+        "ingredients",
+        "where_to_eat",
+        "best_time"
+      ],
+      "ingredients": null,
+      "where_to_eat": null
+    },
+    {
+      "id": "banh-canh-ben-tre",
+      "name": "Bánh canh Bến Tre",
+      "type": "dish",
+      "missing": [
+        "ingredients",
+        "where_to_eat"
+      ],
+      "ingredients": null,
+      "where_to_eat": null
+    },
+    {
+      "id": "bo-nuong-la-lot",
+      "name": "Bò nướng lá lốt",
+      "type": "dish",
+      "missing": [
+        "ingredients",
+        "where_to_eat",
+        "best_time"
+      ],
+      "ingredients": null,
+      "where_to_eat": null
+    },
+    {
+      "id": "xoi-vi-mien-tay",
+      "name": "Xôi vị Vĩnh Long",
+      "type": "dish",
+      "missing": [
+        "ingredients",
+        "where_to_eat",
+        "best_time"
+      ],
+      "ingredients": null,
+      "where_to_eat": null
+    },
+    {
+      "id": "banh-xeo-cu-lao",
+      "name": "Bánh xèo cù lao",
+      "type": "dish",
+      "missing": [
+        "ingredients",
+        "where_to_eat"
+      ],
+      "ingredients": null,
+      "where_to_eat": null
+    },
+    {
+      "id": "banh-phu-the-vinh-long",
+      "name": "Bánh phu thê Vĩnh Long",
+      "type": "dish",
+      "missing": [
+        "ingredients",
+        "where_to_eat",
+        "best_time"
+      ],
+      "ingredients": null,
+      "where_to_eat": null
+    },
+    {
+      "id": "tom-rang-muoi-ot",
+      "name": "Tôm rang muối ớt",
+      "type": "dish",
+      "missing": [
+        "ingredients",
+        "where_to_eat",
+        "best_time"
+      ],
+      "ingredients": null,
+      "where_to_eat": null
+    },
+    {
+      "id": "che-chuoi-nuong",
+      "name": "Chè chuối nướng",
+      "type": "dish",
+      "missing": [
+        "ingredients",
+        "where_to_eat"
+      ],
+      "ingredients": null,
+      "where_to_eat": null
+    },
+    {
+      "id": "banh-bo-nuong-tra-vinh",
+      "name": "Bánh bò nướng Trà Vinh",
+      "type": "dish",
+      "missing": [
+        "ingredients",
+        "where_to_eat",
+        "best_time"
+      ],
+      "ingredients": null,
+      "where_to_eat": null
+    },
+    {
+      "id": "bun-mam-mien-tay",
+      "name": "Bún mắm",
+      "type": "dish",
+      "missing": [
+        "ingredients",
+        "where_to_eat",
+        "best_time"
+      ],
+      "ingredients": null,
+      "where_to_eat": null
+    },
+    {
+      "id": "bun-bo-co-tam-cho-ben-tre-ben-tre",
+      "name": "Bún bò Cô Tám chợ Bến Tre",
+      "type": "dish",
+      "missing": [
+        "ingredients",
+        "where_to_eat",
+        "best_time"
+      ],
+      "ingredients": null,
+      "where_to_eat": null
+    },
+    {
+      "id": "bo-to-ba-tri---cac-mon-bo",
+      "name": "Bò Tơ Ba Tri - Các Món Bò",
+      "type": "dish",
+      "missing": [
+        "ingredients",
+        "where_to_eat",
+        "price_range",
+        "best_time"
+      ],
+      "ingredients": null,
+      "where_to_eat": null
+    },
+    {
+      "id": "com-ga-xoi-mo-5-vi-ben-tre",
+      "name": "Cơm Gà Xối Mỡ 5 Vị",
+      "type": "dish",
+      "missing": [
+        "ingredients",
+        "where_to_eat",
+        "best_time"
+      ],
+      "ingredients": null,
+      "where_to_eat": null
+    },
+    {
+      "id": "bun-nuoc-leo-tieu-can",
+      "name": "Bún nước lèo Tiểu Cần",
+      "type": "dish",
+      "missing": [
+        "ingredients",
+        "where_to_eat",
+        "price_range",
+        "best_time"
+      ],
+      "ingredients": null,
+      "where_to_eat": null
+    },
+    {
+      "id": "bun-nuoc-leo-tra-cu",
+      "name": "Bún nước lèo Trà Cú",
+      "type": "dish",
+      "missing": [
+        "ingredients",
+        "where_to_eat"
+      ],
+      "ingredients": null,
+      "where_to_eat": null
+    },
+    {
+      "id": "bun-nuoc-leo-cang-long",
+      "name": "Bún nước lèo Càng Long",
+      "type": "dish",
+      "missing": [
+        "ingredients",
+        "where_to_eat",
+        "price_range",
+        "best_time"
+      ],
+      "ingredients": null,
+      "where_to_eat": null
+    },
+    {
+      "id": "tinh-binh-chay-vinh-long",
+      "name": "Tịnh Bình Chay",
+      "type": "dish",
+      "missing": [
+        "ingredients",
+        "where_to_eat",
+        "best_time"
+      ],
+      "ingredients": null,
+      "where_to_eat": null
+    },
+    {
+      "id": "com-chay-au-lac-vinh-long",
+      "name": "Cơm Chay Âu Lạc",
+      "type": "dish",
+      "missing": [
+        "ingredients",
+        "where_to_eat",
+        "best_time"
+      ],
+      "ingredients": null,
+      "where_to_eat": null
+    },
+    {
+      "id": "tep-rang-dua",
+      "name": "Tép rang dừa",
+      "type": "dish",
+      "missing": [
+        "ingredients",
+        "where_to_eat",
+        "price_range",
+        "best_time"
+      ],
+      "ingredients": null,
+      "where_to_eat": null
+    },
+    {
+      "id": "nem-nuong-thanh-binh-ben-tre",
+      "name": "Nem nướng Thanh Bình",
+      "type": "dish",
+      "missing": [
+        "ingredients",
+        "where_to_eat",
+        "best_time"
+      ],
+      "ingredients": null,
+      "where_to_eat": null
+    },
+    {
+      "id": "ba-nhi-bun-bo-hue-vinh-long",
+      "name": "Ba Nhì - Bún Bò Huế",
+      "type": "dish",
+      "missing": [
+        "ingredients",
+        "where_to_eat",
+        "best_time"
+      ],
+      "ingredients": null,
+      "where_to_eat": null
+    },
+    {
+      "id": "prov-1",
+      "name": "Quán mới X",
+      "type": "dish",
+      "missing": [
+        "ingredients",
+        "where_to_eat",
+        "price_range",
+        "best_time"
+      ],
+      "ingredients": null,
+      "where_to_eat": null
+    }
+  ],
+  "craft_village": [
+    {
+      "id": "lang-nghe-san-xuat-chi-xo-dua-an-thanh",
+      "name": "Làng nghề sản xuất chỉ xơ dừa An Thạnh",
+      "type": "craft_village",
+      "missing": [
+        "raw_material",
+        "households",
+        "recognition_date",
+        "hours",
+        "admission"
+      ],
+      "raw_material": null,
+      "recognition_date": null
+    },
+    {
+      "id": "lang-nghe-dan-dat-phuoc-tuy",
+      "name": "Làng nghề đan đát Phước Tuy",
+      "type": "craft_village",
+      "missing": [
+        "raw_material",
+        "households",
+        "recognition_date",
+        "hours",
+        "admission"
+      ],
+      "raw_material": null,
+      "recognition_date": null
+    },
+    {
+      "id": "lo-com-cuu-long-vlt",
+      "name": "Lò cốm Cửu Long",
+      "type": "craft_village",
+      "missing": [
+        "raw_material",
+        "households",
+        "recognition_date",
+        "hours",
+        "admission"
+      ],
+      "raw_material": null,
+      "recognition_date": null
+    },
+    {
+      "id": "dong-muoi-bao-thanh",
+      "name": "Đồng muối Bảo Thạnh",
+      "type": "craft_village",
+      "missing": [
+        "raw_material",
+        "households",
+        "recognition_date",
+        "hours",
+        "admission"
+      ],
+      "raw_material": null,
+      "recognition_date": null
+    },
+    {
+      "id": "vung-cam-sanh-tra-on",
+      "name": "Vùng cam sành Trà Ôn",
+      "type": "craft_village",
+      "missing": [
+        "raw_material",
+        "households",
+        "recognition_date",
+        "hours",
+        "admission"
+      ],
+      "raw_material": null,
+      "recognition_date": null
+    },
+    {
+      "id": "lang-nghe-tieu-thu-cong-nghiep-tre-ham-giang-co-so-tri-canh",
+      "name": "Làng nghề tiểu thủ công nghiệp tre Hàm Giang (cơ sở Trì Cảnh)",
+      "type": "craft_village",
+      "missing": [
+        "raw_material",
+        "households",
+        "recognition_date",
+        "hours",
+        "admission"
+      ],
+      "raw_material": null,
+      "recognition_date": null
+    },
+    {
+      "id": "cong-ty-tnhh-tra-vinh-farm-sokfarm",
+      "name": "Công ty TNHH Trà Vinh FARM (Sokfarm)",
+      "type": "craft_village",
+      "missing": [
+        "raw_material",
+        "households",
+        "recognition_date",
+        "hours",
+        "admission"
+      ],
+      "raw_material": null,
+      "recognition_date": null
+    },
+    {
+      "id": "lang-nghe-truyen-thong-phu-le",
+      "name": "Làng nghề truyền thống Phú Lễ",
+      "type": "craft_village",
+      "missing": [
+        "raw_material",
+        "households",
+        "recognition_date",
+        "hours",
+        "admission"
+      ],
+      "raw_material": null,
+      "recognition_date": null
+    },
+    {
+      "id": "lang-nghe-hoa-kieng-thanh-tan",
+      "name": "Làng nghề hoa kiểng Thanh Tân",
+      "type": "craft_village",
+      "missing": [
+        "raw_material",
+        "households",
+        "recognition_date",
+        "hours",
+        "admission"
+      ],
+      "raw_material": null,
+      "recognition_date": null
+    },
+    {
+      "id": "htx-nong-nghiep-thong-hoa-dua-sap",
+      "name": "HTX Nông nghiệp Thông Hòa - Dừa sáp",
+      "type": "craft_village",
+      "missing": [
+        "raw_material",
+        "households",
+        "recognition_date",
+        "hours",
+        "admission"
+      ],
+      "raw_material": null,
+      "recognition_date": null
+    },
+    {
+      "id": "lang-nghe-chi-xo-dua-khanh-thanh-tan",
+      "name": "Làng nghề chỉ xơ dừa Khánh Thạnh Tân",
+      "type": "craft_village",
+      "missing": [
+        "raw_material",
+        "households",
+        "recognition_date",
+        "hours",
+        "admission"
+      ],
+      "raw_material": null,
+      "recognition_date": null
+    },
+    {
+      "id": "lang-nghe-dan-dat-ba-tri",
+      "name": "Làng nghề đan đát Ba Tri",
+      "type": "craft_village",
+      "missing": [
+        "raw_material",
+        "households",
+        "recognition_date",
+        "hours",
+        "admission"
+      ],
+      "raw_material": null,
+      "recognition_date": null
+    },
+    {
+      "id": "lang-nghe-dan-dat-dai-an",
+      "name": "Làng nghề đan đát Đại An",
+      "type": "craft_village",
+      "missing": [
+        "raw_material",
+        "households",
+        "recognition_date",
+        "hours",
+        "admission"
+      ],
+      "raw_material": null,
+      "recognition_date": null
+    },
+    {
+      "id": "lang-nghe-det-chieu-ca-hom",
+      "name": "Làng nghề dệt chiếu Cà Hom",
+      "type": "craft_village",
+      "missing": [
+        "raw_material",
+        "households",
+        "recognition_date",
+        "hours",
+        "admission"
+      ],
+      "raw_material": null,
+      "recognition_date": null
+    },
+    {
+      "id": "lang-nghe-keo-dua-ba-tri",
+      "name": "Làng nghề kẹo dừa Ba Tri",
+      "type": "craft_village",
+      "missing": [
+        "raw_material",
+        "households",
+        "recognition_date",
+        "hours",
+        "admission"
+      ],
+      "raw_material": null,
+      "recognition_date": null
+    },
+    {
+      "id": "lang-nghe-san-xuat-muoi-bao-thanh",
+      "name": "Làng nghề sản xuất muối Bảo Thạnh",
+      "type": "craft_village",
+      "missing": [
+        "raw_material",
+        "households",
+        "recognition_date",
+        "hours",
+        "admission"
+      ],
+      "raw_material": null,
+      "recognition_date": null
+    },
+    {
+      "id": "lang-nghe-thach-dua-hung-phong",
+      "name": "Làng nghề thạch dừa Hưng Phong",
+      "type": "craft_village",
+      "missing": [
+        "raw_material",
+        "households",
+        "recognition_date",
+        "hours",
+        "admission"
+      ],
+      "raw_material": null,
+      "recognition_date": null
+    },
+    {
+      "id": "lang-nghe-thu-cong-dua-phuoc-long",
+      "name": "Làng Nghề Thủ Công Dừa Phước Long",
+      "type": "craft_village",
+      "missing": [
+        "raw_material",
+        "households",
+        "recognition_date",
+        "hours",
+        "admission"
+      ],
+      "raw_material": null,
+      "recognition_date": null
+    },
+    {
+      "id": "lang-nghe-thu-cong-my-nghe-dua-mo-cay-nam",
+      "name": "Làng nghề thủ công mỹ nghệ dừa Mỏ Cày Nam",
+      "type": "craft_village",
+      "missing": [
+        "raw_material",
+        "households",
+        "recognition_date",
+        "hours",
+        "admission"
+      ],
+      "raw_material": null,
+      "recognition_date": null
+    },
+    {
+      "id": "lang-nghe-thu-cong-my-nghe-tu-dua-tai-tan-thach",
+      "name": "Làng nghề thủ công mỹ nghệ từ dừa tại Tân Thạch",
+      "type": "craft_village",
+      "missing": [
+        "raw_material",
+        "households",
+        "recognition_date",
+        "hours",
+        "admission"
+      ],
+      "raw_material": null,
+      "recognition_date": null
+    },
+    {
+      "id": "lang-nghe-tieu-thu-cong-nghiep-duc-my",
+      "name": "Làng nghề tiểu thủ công nghiệp Đức Mỹ",
+      "type": "craft_village",
+      "missing": [
+        "raw_material",
+        "households",
+        "recognition_date",
+        "hours",
+        "admission"
+      ],
+      "raw_material": null,
+      "recognition_date": null
+    },
+    {
+      "id": "lang-nghe-tieu-thu-cong-nghiep-ham-giang-tre-truc",
+      "name": "Làng nghề tiểu thủ công nghiệp Hàm Giang (tre, trúc)",
+      "type": "craft_village",
+      "missing": [
+        "raw_material",
+        "households",
+        "recognition_date",
+        "hours",
+        "admission"
+      ],
+      "raw_material": null,
+      "recognition_date": null
+    },
+    {
+      "id": "lang-nghe-tre-truc-ba-tri",
+      "name": "Làng nghề tre trúc Ba Tri",
+      "type": "craft_village",
+      "missing": [
+        "raw_material",
+        "households",
+        "recognition_date",
+        "hours",
+        "admission"
+      ],
+      "raw_material": null,
+      "recognition_date": null
+    },
+    {
+      "id": "vung-trong-dua-sap-cau-ke",
+      "name": "Vùng trồng dừa sáp Cầu Kè",
+      "type": "craft_village",
+      "missing": [
+        "raw_material",
+        "households",
+        "recognition_date",
+        "hours",
+        "admission"
+      ],
+      "raw_material": null,
+      "recognition_date": null
+    },
+    {
+      "id": "lang-det-chieu-ca-hom-ham-tan",
+      "name": "Làng Dệt Chiếu Cà Hom Hàm Tân",
+      "type": "craft_village",
+      "missing": [
+        "raw_material",
+        "households",
+        "recognition_date",
+        "hours",
+        "admission"
+      ],
+      "raw_material": null,
+      "recognition_date": null
+    },
+    {
+      "id": "lang-hoa-kieng-long-duc-tra-vinh",
+      "name": "Làng Hoa Kiểng Long Đức Trà Vinh",
+      "type": "craft_village",
+      "missing": [
+        "raw_material",
+        "households",
+        "recognition_date",
+        "hours",
+        "admission"
+      ],
+      "raw_material": null,
+      "recognition_date": null
+    },
+    {
+      "id": "quyt-duong-cau-ke",
+      "name": "Quýt đường Cầu Kè",
+      "type": "craft_village",
+      "missing": [
+        "raw_material",
+        "households",
+        "recognition_date",
+        "hours",
+        "admission"
+      ],
+      "raw_material": null,
+      "recognition_date": null
+    },
+    {
+      "id": "lang-nghe-dong-ghe-xuong-an-dinh",
+      "name": "Làng Nghề Đóng Ghe Xuồng An Định",
+      "type": "craft_village",
+      "missing": [
+        "raw_material",
+        "households",
+        "recognition_date",
+        "hours",
+        "admission"
+      ],
+      "raw_material": null,
+      "recognition_date": null
+    },
+    {
+      "id": "lang-nghe-che-tac-mat-na-khmer-nguyet-hoa",
+      "name": "Làng nghề chế tác mặt nạ Khmer Nguyệt Hóa",
+      "type": "craft_village",
+      "missing": [
+        "raw_material",
+        "households",
+        "recognition_date",
+        "hours",
+        "admission"
+      ],
+      "raw_material": null,
+      "recognition_date": null
+    },
+    {
+      "id": "lang-banh-trang-tra-on",
+      "name": "Làng Bánh Tráng Trà Ôn",
+      "type": "craft_village",
+      "missing": [
+        "raw_material",
+        "households",
+        "recognition_date",
+        "hours",
+        "admission"
+      ],
+      "raw_material": null,
+      "recognition_date": null
+    },
+    {
+      "id": "lang-banh-trang-giay-tuong-loc",
+      "name": "Làng Bánh Tráng Giấy Tường Lộc",
+      "type": "craft_village",
+      "missing": [
+        "raw_material",
+        "households",
+        "recognition_date",
+        "hours",
+        "admission"
+      ],
+      "raw_material": null,
+      "recognition_date": null
+    },
+    {
+      "id": "lang-det-chieu-cu-lao-dai",
+      "name": "Làng Dệt Chiếu Cù Lao Dài",
+      "type": "craft_village",
+      "missing": [
+        "raw_material",
+        "households",
+        "recognition_date",
+        "hours",
+        "admission"
+      ],
+      "raw_material": null,
+      "recognition_date": null
+    },
+    {
+      "id": "lang-gach-gom-mang-thit",
+      "name": "Làng nghề gạch gốm Mang Thít",
+      "type": "craft_village",
+      "missing": [
+        "raw_material",
+        "households",
+        "recognition_date"
+      ],
+      "raw_material": null,
+      "recognition_date": null
+    },
+    {
+      "id": "nha-gom-tu-buoi",
+      "name": "Nhà gốm Tư Buôi",
+      "type": "craft_village",
+      "missing": [
+        "raw_material",
+        "households",
+        "recognition_date"
+      ],
+      "raw_material": null,
+      "recognition_date": null
+    },
+    {
+      "id": "lang-nghe-gom-do-mang-thit",
+      "name": "Làng nghề gốm đỏ Mang Thít",
+      "type": "craft_village",
+      "missing": [
+        "raw_material",
+        "households",
+        "recognition_date"
+      ],
+      "raw_material": null,
+      "recognition_date": null
+    },
+    {
+      "id": "lang-gach-gom-do-mang-thit",
+      "name": "Làng gạch gốm đỏ Mang Thít",
+      "type": "craft_village",
+      "missing": [
+        "raw_material",
+        "households",
+        "recognition_date"
+      ],
+      "raw_material": null,
+      "recognition_date": null
+    },
+    {
+      "id": "lang-nghe-lam-tau-hu-ky",
+      "name": "Làng nghề làm tàu hủ ky",
+      "type": "craft_village",
+      "missing": [
+        "raw_material",
+        "households",
+        "recognition_date"
+      ],
+      "raw_material": null,
+      "recognition_date": null
+    },
+    {
+      "id": "lang-keo-dua-phuong-7-ben-tre",
+      "name": "Làng Kẹo Dừa Phường 7 Bến Tre",
+      "type": "craft_village",
+      "missing": [
+        "raw_material",
+        "households",
+        "recognition_date",
+        "hours",
+        "admission"
+      ],
+      "raw_material": null,
+      "recognition_date": null
+    },
+    {
+      "id": "lang-dan-lat-duc-my-cang-long",
+      "name": "Làng Đan Lát Đức Mỹ Càng Long",
+      "type": "craft_village",
+      "missing": [
+        "raw_material",
+        "households",
+        "recognition_date",
+        "hours",
+        "admission"
+      ],
+      "raw_material": null,
+      "recognition_date": null
+    },
+    {
+      "id": "lang-nghe-dan-gio-cong-dua-hung-phong",
+      "name": "Làng nghề đan giỏ cọng dừa Hưng Phong",
+      "type": "craft_village",
+      "missing": [
+        "raw_material",
+        "hours",
+        "admission"
+      ],
+      "raw_material": null,
+      "recognition_date": "08/04/2009"
+    },
+    {
+      "id": "lang-banh-trang-my-long",
+      "name": "Làng nghề bánh tráng Mỹ Lồng - nghề truyền thống",
+      "type": "craft_village",
+      "missing": [
+        "raw_material",
+        "households",
+        "recognition_date",
+        "hours",
+        "admission"
+      ],
+      "raw_material": null,
+      "recognition_date": null
+    },
+    {
+      "id": "dac-san-mam-bo-hoc-tra-cuon",
+      "name": "Đặc sản mắm bò hóc Trà Cuôn",
+      "type": "craft_village",
+      "missing": [
+        "raw_material",
+        "households",
+        "recognition_date",
+        "hours",
+        "admission"
+      ],
+      "raw_material": null,
+      "recognition_date": null
+    },
+    {
+      "id": "vung-buoi-da-xanh-chau-thanh",
+      "name": "Vùng bưởi da xanh Châu Thành",
+      "type": "craft_village",
+      "missing": [
+        "raw_material",
+        "households",
+        "recognition_date",
+        "hours",
+        "admission"
+      ],
+      "raw_material": null,
+      "recognition_date": null
+    },
+    {
+      "id": "lang-nghe-banh-tet-tra-cuon",
+      "name": "Làng nghề bánh tét Trà Cuôn",
+      "type": "craft_village",
+      "missing": [
+        "raw_material",
+        "households",
+        "recognition_date",
+        "hours",
+        "admission"
+      ],
+      "raw_material": null,
+      "recognition_date": null
+    },
+    {
+      "id": "lang-nghe-banh-phong-son-doc",
+      "name": "Làng nghề bánh phồng Sơn Đốc",
+      "type": "craft_village",
+      "missing": [
+        "raw_material",
+        "households",
+        "recognition_date",
+        "hours",
+        "admission"
+      ],
+      "raw_material": null,
+      "recognition_date": null
+    },
+    {
+      "id": "lang-nghe-det-chieu-an-hiep",
+      "name": "Làng nghề dệt chiếu An Hiệp",
+      "type": "craft_village",
+      "missing": [
+        "raw_material",
+        "households",
+        "recognition_date",
+        "hours",
+        "admission"
+      ],
+      "raw_material": null,
+      "recognition_date": null
+    },
+    {
+      "id": "lang-nghe-thu-cong-my-nghe-luc-binh-my-an-vinh-long",
+      "name": "Làng nghề thủ công mỹ nghệ lục bình Mỹ An",
+      "type": "craft_village",
+      "missing": [
+        "households",
+        "recognition_date",
+        "admission"
+      ],
+      "raw_material": "Lục bình (bèo tây) mọc hoang trên sông rạch",
+      "recognition_date": null
+    },
+    {
+      "id": "lang-nghe-may-tre-dan-dai-an",
+      "name": "Làng nghề mây tre đan Đại An",
+      "type": "craft_village",
+      "missing": [
+        "raw_material",
+        "households",
+        "recognition_date",
+        "hours",
+        "admission"
+      ],
+      "raw_material": null,
+      "recognition_date": null
+    },
+    {
+      "id": "cong-ty-tnhh-mtv-quoc-thao",
+      "name": "Công ty TNHH MTV Quốc Thảo",
+      "type": "craft_village",
+      "missing": [
+        "raw_material",
+        "households",
+        "recognition_date",
+        "hours",
+        "admission"
+      ],
+      "raw_material": null,
+      "recognition_date": null
+    },
+    {
+      "id": "nghe-det-luc-binh-vinh-long",
+      "name": "Nghề dệt lục bình Vĩnh Long",
+      "type": "craft_village",
+      "missing": [
+        "raw_material",
+        "households",
+        "recognition_date",
+        "hours",
+        "admission"
+      ],
+      "raw_material": null,
+      "recognition_date": null
+    },
+    {
+      "id": "lang-nghe-bun-suong",
+      "name": "Làng nghề bún suông",
+      "type": "craft_village",
+      "missing": [
+        "raw_material",
+        "households",
+        "recognition_date",
+        "hours",
+        "admission"
+      ],
+      "raw_material": null,
+      "recognition_date": null
+    },
+    {
+      "id": "co-so-keo-dua-hong-van",
+      "name": "Cơ sở kẹo dừa Hồng Vân",
+      "type": "craft_village",
+      "missing": [
+        "raw_material",
+        "households",
+        "recognition_date",
+        "hours",
+        "admission"
+      ],
+      "raw_material": null,
+      "recognition_date": null
+    },
+    {
+      "id": "lang-nghe-cay-giong-cho-lach",
+      "name": "Làng nghề cây giống Chợ Lách",
+      "type": "craft_village",
+      "missing": [
+        "raw_material",
+        "households",
+        "recognition_date",
+        "hours",
+        "admission"
+      ],
+      "raw_material": null,
+      "recognition_date": null
+    },
+    {
+      "id": "lang-nghe-det-chieu-ham-tan",
+      "name": "Làng nghề dệt chiếu Hàm Tân",
+      "type": "craft_village",
+      "missing": [
+        "raw_material",
+        "households",
+        "recognition_date",
+        "hours",
+        "admission"
+      ],
+      "raw_material": null,
+      "recognition_date": null
+    },
+    {
+      "id": "lang-nghe-do-go-tre-ham-giang",
+      "name": "Làng nghề đồ gỗ tre Hàm Giang",
+      "type": "craft_village",
+      "missing": [
+        "raw_material",
+        "households",
+        "recognition_date",
+        "hours",
+        "admission"
+      ],
+      "raw_material": null,
+      "recognition_date": null
+    },
+    {
+      "id": "banh-trang-cu-lao-may-lang-nghe-banh-trang",
+      "name": "Bánh Tráng Cù Lao Mây (Làng nghề bánh tráng)",
+      "type": "craft_village",
+      "missing": [
+        "raw_material",
+        "households",
+        "recognition_date"
+      ],
+      "raw_material": null,
+      "recognition_date": null
+    },
+    {
+      "id": "lang-hoa-mai-binh-hoa-phuoc",
+      "name": "Làng hoa mai Bình Hòa Phước",
+      "type": "craft_village",
+      "missing": [
+        "raw_material",
+        "households",
+        "recognition_date",
+        "hours",
+        "admission"
+      ],
+      "raw_material": null,
+      "recognition_date": null
+    },
+    {
+      "id": "lang-nghe-gom-truyen-thong-long-ho",
+      "name": "Làng nghề gốm truyền thống Long Hồ",
+      "type": "craft_village",
+      "missing": [
+        "raw_material",
+        "households",
+        "recognition_date",
+        "hours",
+        "admission"
+      ],
+      "raw_material": null,
+      "recognition_date": null
+    },
+    {
+      "id": "lang-nghe-cham-non-la-long-ho",
+      "name": "Làng nghề chằm nón lá Long Hồ",
+      "type": "craft_village",
+      "missing": [
+        "raw_material",
+        "households",
+        "recognition_date",
+        "hours",
+        "admission"
+      ],
+      "raw_material": null,
+      "recognition_date": null
+    },
+    {
+      "id": "lang-nghe-det-chieu-vung-liem",
+      "name": "Làng nghề dệt chiếu Vũng Liêm",
+      "type": "craft_village",
+      "missing": [
+        "raw_material",
+        "households",
+        "recognition_date",
+        "hours",
+        "admission"
+      ],
+      "raw_material": null,
+      "recognition_date": null
+    },
+    {
+      "id": "lang-se-loi-lac-va-dan-lat-vung-liem",
+      "name": "Làng se lõi lác và đan lát Vũng Liêm",
+      "type": "craft_village",
+      "missing": [
+        "raw_material",
+        "households",
+        "recognition_date",
+        "hours",
+        "admission"
+      ],
+      "raw_material": null,
+      "recognition_date": null
+    },
+    {
+      "id": "lang-nghe-trong-lac-trung-thanh-dong",
+      "name": "Làng nghề trồng lác Trung Thành Đông",
+      "type": "craft_village",
+      "missing": [
+        "raw_material",
+        "households",
+        "recognition_date",
+        "hours",
+        "admission"
+      ],
+      "raw_material": null,
+      "recognition_date": null
+    },
+    {
+      "id": "lang-nghe-dan-chieu-va-lam-banh-xe-may-tre",
+      "name": "Làng nghề đan chiếu và làm bánh xe mây tre",
+      "type": "craft_village",
+      "missing": [
+        "raw_material",
+        "households",
+        "recognition_date",
+        "hours",
+        "admission"
+      ],
+      "raw_material": null,
+      "recognition_date": null
+    },
+    {
+      "id": "lang-nghe-banh-trang-tam-binh",
+      "name": "Làng nghề bánh tráng Tam Bình",
+      "type": "craft_village",
+      "missing": [
+        "raw_material",
+        "households",
+        "recognition_date",
+        "hours",
+        "admission"
+      ],
+      "raw_material": null,
+      "recognition_date": null
+    },
+    {
+      "id": "lang-nghe-dan-luc-binh-ngai-tu-binh-ninh",
+      "name": "Làng nghề đan lục bình Ngãi Tứ – Bình Ninh",
+      "type": "craft_village",
+      "missing": [
+        "raw_material",
+        "households",
+        "recognition_date",
+        "hours",
+        "admission"
+      ],
+      "raw_material": null,
+      "recognition_date": null
+    },
+    {
+      "id": "lang-nghe-dan-lat-may-tre-phu-le",
+      "name": "Làng nghề đan lát mây tre Phú Lễ",
+      "type": "craft_village",
+      "missing": [
+        "raw_material",
+        "households",
+        "recognition_date",
+        "hours",
+        "admission"
+      ],
+      "raw_material": null,
+      "recognition_date": null
+    },
+    {
+      "id": "lang-nghe-dan-lat-an-duc",
+      "name": "Làng nghề đan lát An Đức",
+      "type": "craft_village",
+      "missing": [
+        "raw_material",
+        "households",
+        "recognition_date",
+        "hours",
+        "admission"
+      ],
+      "raw_material": null,
+      "recognition_date": null
+    },
+    {
+      "id": "lang-nghe-dan-chapay-phu-can",
+      "name": "Làng nghề đàn ChaPây Phú Cần",
+      "type": "craft_village",
+      "missing": [
+        "raw_material",
+        "households",
+        "recognition_date",
+        "hours",
+        "admission"
+      ],
+      "raw_material": null,
+      "recognition_date": null
+    },
+    {
+      "id": "lang-keo-dua-mo-cay",
+      "name": "Làng nghề kẹo dừa Mỏ Cày",
+      "type": "craft_village",
+      "missing": [
+        "raw_material",
+        "households",
+        "recognition_date"
+      ],
+      "raw_material": null,
+      "recognition_date": null
+    },
+    {
+      "id": "htx-cam-sanh-tra-on",
+      "name": "HTX cam sành Trà Ôn",
+      "type": "craft_village",
+      "missing": [
+        "raw_material",
+        "households",
+        "recognition_date",
+        "admission"
+      ],
+      "raw_material": null,
+      "recognition_date": null
+    },
+    {
+      "id": "co-so-keo-dua-mo-cay",
+      "name": "Cơ sở kẹo dừa Mỏ Cày",
+      "type": "craft_village",
+      "missing": [
+        "raw_material",
+        "households",
+        "recognition_date",
+        "admission"
+      ],
+      "raw_material": null,
+      "recognition_date": null
+    },
+    {
+      "id": "lang-gach-gom-long-ho",
+      "name": "Làng gạch gốm Long Hồ",
+      "type": "craft_village",
+      "missing": [
+        "raw_material",
+        "households",
+        "recognition_date",
+        "hours",
+        "admission"
+      ],
+      "raw_material": null,
+      "recognition_date": null
+    },
+    {
+      "id": "lang-nghe-com-dep-ba-so",
+      "name": "Làng nghề cốm dẹp Ba So",
+      "type": "craft_village",
+      "missing": [
+        "raw_material",
+        "households",
+        "recognition_date",
+        "hours",
+        "admission"
+      ],
+      "raw_material": null,
+      "recognition_date": null
+    },
+    {
+      "id": "vung-khoai-lang-binh-tan",
+      "name": "Vùng khoai lang Bình Tân",
+      "type": "craft_village",
+      "missing": [
+        "raw_material",
+        "households",
+        "recognition_date",
+        "hours",
+        "admission"
+      ],
+      "raw_material": null,
+      "recognition_date": null
+    },
+    {
+      "id": "lang-nghe-che-bien-hai-san-kho-thanh-phong",
+      "name": "Làng nghề chế biến hải sản khô Thạnh Phong",
+      "type": "craft_village",
+      "missing": [
+        "raw_material",
+        "households",
+        "recognition_date",
+        "hours",
+        "admission"
+      ],
+      "raw_material": null,
+      "recognition_date": null
+    },
+    {
+      "id": "lang-nghe-thu-cong-my-nghe-tu-dua-quoi-son",
+      "name": "Làng nghề thủ công mỹ nghệ từ dừa Quới Sơn",
+      "type": "craft_village",
+      "missing": [
+        "raw_material",
+        "households",
+        "recognition_date",
+        "hours",
+        "admission"
+      ],
+      "raw_material": null,
+      "recognition_date": null
+    },
+    {
+      "id": "lang-hoa-kieng-va-cay-giong-cho-lach",
+      "name": "Làng hoa kiểng và cây giống Chợ Lách",
+      "type": "craft_village",
+      "missing": [
+        "raw_material",
+        "households",
+        "recognition_date",
+        "hours",
+        "admission"
+      ],
+      "raw_material": null,
+      "recognition_date": null
+    },
+    {
+      "id": "hop-tac-xa-buoi-nam-roi-my-hoa",
+      "name": "Hợp tác xã Bưởi Năm Roi Mỹ Hòa",
+      "type": "craft_village",
+      "missing": [
+        "raw_material",
+        "households",
+        "recognition_date",
+        "hours",
+        "admission"
+      ],
+      "raw_material": null,
+      "recognition_date": null
+    },
+    {
+      "id": "lang-nghe-nau-ruou-phu-le",
+      "name": "Làng nghề nấu rượu Phú Lễ",
+      "type": "craft_village",
+      "missing": [
+        "raw_material",
+        "households",
+        "recognition_date",
+        "hours",
+        "admission"
+      ],
+      "raw_material": null,
+      "recognition_date": null
+    },
+    {
+      "id": "cong-ty-co-phan-xuat-nhap-khau-ben-tre-betrimex",
+      "name": "Công ty Cổ phần Xuất nhập khẩu Bến Tre (Betrimex)",
+      "type": "craft_village",
+      "missing": [
+        "raw_material",
+        "households",
+        "recognition_date",
+        "hours",
+        "admission"
+      ],
+      "raw_material": null,
+      "recognition_date": null
+    },
+    {
+      "id": "cong-ty-tnhh-che-bien-dua-luong-quoi",
+      "name": "Công ty TNHH Chế biến dừa Lương Quới",
+      "type": "craft_village",
+      "missing": [
+        "raw_material",
+        "households",
+        "recognition_date",
+        "hours",
+        "admission"
+      ],
+      "raw_material": null,
+      "recognition_date": null
+    },
+    {
+      "id": "lang-nghe-dan-non-la-an-hiep",
+      "name": "Làng nghề đan nón lá An Hiệp",
+      "type": "craft_village",
+      "missing": [
+        "hours",
+        "admission"
+      ],
+      "raw_material": "Lá mật cật, nan tre, chỉ dù, chỉ cước",
+      "recognition_date": "2018"
+    },
+    {
+      "id": "lang-nghe-cay-giong-uon-kieng-hung-khanh-trung",
+      "name": "Làng nghề cây giống và uốn kiểng thú Hưng Khánh Trung",
+      "type": "craft_village",
+      "missing": [
+        "hours",
+        "admission"
+      ],
+      "raw_material": "Cây gừa lá nhỏ, cây bùm sụm, khung sắt uốn, phôi cây ăn trái",
+      "recognition_date": "2016"
+    },
+    {
+      "id": "lang-nghe-dan-trang-gio-cong-dua-luong-phu",
+      "name": "Làng nghề đan tràng và giỏ cọng dừa Lương Phú",
+      "type": "craft_village",
+      "missing": [
+        "hours",
+        "admission"
+      ],
+      "raw_material": "Cọng lá dừa khô tuyển chọn, dây dù buộc",
+      "recognition_date": "2019"
+    },
+    {
+      "id": "lang-nghe-det-chieu-ca-hon",
+      "name": "Làng nghề dệt chiếu Cà Hôn (Cà Hom)",
+      "type": "craft_village",
+      "missing": [
+        "hours",
+        "admission"
+      ],
+      "raw_material": "Cây lác nước lợ, dây gân, dây nhợ, phẩm màu nhuộm thảo mộc",
+      "recognition_date": "2014"
+    },
+    {
+      "id": "lang-nghe-banh-trang-nem-cu-lao-may",
+      "name": "Làng nghề bánh tráng nem Cù lao Mây",
+      "type": "craft_village",
+      "missing": [
+        "hours",
+        "admission"
+      ],
+      "raw_material": "Gạo tẻ nàng thơm, mè trắng, nước cốt dừa, muối hột",
+      "recognition_date": "2010"
+    }
+  ],
+  "summary": {
+    "heritage_count": 174,
+    "accommodation_count": 160,
+    "dish_count": 79,
+    "craft_village_count": 86,
+    "total_candidates": 499
+  }
+}
