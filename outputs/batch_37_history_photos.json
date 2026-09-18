@@ -1,0 +1,322 @@
+[
+  {
+    "entity_id": "chua-ong-met-botum-vong-sa-som-rong",
+    "image": "web-nuxt/public/img/entities/chua-ong-met-botum-vong-sa-som-rong.webp",
+    "author": "Bá Thi",
+    "source": "Báo Trà Vinh",
+    "caption": "Mái chánh điện chùa Ông Mẹt vươn cao với các tầng mái cong vút chạm khắc hình rồng Naga uy nghi, ngôi cổ tự Phật giáo Nam tông Khmer khởi dựng từ thế kỷ thứ 7.",
+    "license": "Bản quyền thuộc tác giả và Báo Trà Vinh"
+  },
+  {
+    "entity_id": "huyen-tam-binh",
+    "image": "web-nuxt/public/img/entities/huyen-tam-binh.webp",
+    "author": "Ngọc Trảng",
+    "source": "Báo Vĩnh Long",
+    "caption": "Con đường rợp bóng dừa và vườn cây ăn trái tại vùng quê Tam Bình, cái nôi cách mạng kiên cường và quê hương của Giáo sư, Viện sĩ Trần Đại Nghĩa.",
+    "license": "Bản quyền thuộc tác giả và Báo Vĩnh Long"
+  },
+  {
+    "entity_id": "lang-ong-lang-ong-che-nguyen-van-ton",
+    "image": "web-nuxt/public/img/entities/lang-ong-lang-ong-che-nguyen-van-ton.webp",
+    "author": "Thanh Đức",
+    "source": "Báo Vĩnh Long",
+    "caption": "Khuôn viên lăng Tiền quân Thống chế Điều bát Nguyễn Văn Tồn trên giồng Thành Bạch tại xã Thiện Mỹ, di tích lịch sử quốc gia biểu trưng cho tình đoàn kết Kinh - Hoa - Khmer.",
+    "license": "Bản quyền thuộc tác giả và Báo Vĩnh Long"
+  },
+  {
+    "entity_id": "den-tho-bac-ho",
+    "image": "web-nuxt/public/img/entities/den-tho-bac-ho.webp",
+    "author": "Ngọc Trảng",
+    "source": "Báo Vĩnh Long",
+    "caption": "Đền thờ Bác Hồ trang nghiêm giữa khuôn viên rợp bóng cây xanh tại phường Long Châu, công trình tưởng niệm thể hiện tấm lòng son sắt của đồng bào phương Nam với Bác.",
+    "license": "Bản quyền thuộc tác giả và Báo Vĩnh Long"
+  },
+  {
+    "entity_id": "chua-samrong-ek",
+    "image": "web-nuxt/public/img/entities/chua-samrong-ek.webp",
+    "author": "Bá Thi",
+    "source": "Báo Trà Vinh",
+    "caption": "Hàng tháp stupa cổ kính rêu phong và chánh điện rực rỡ sắc màu của chùa Samrông Ek, ngôi chùa Khmer cổ nơi lưu giữ pho tượng thần Vishnu bằng đá từ thế kỷ thứ 6.",
+    "license": "Bản quyền thuộc tác giả và Báo Trà Vinh"
+  },
+  {
+    "entity_id": "nha-co-huynh-phu-thanh-phu",
+    "image": "web-nuxt/public/img/entities/nha-co-huynh-phu-thanh-phu.webp",
+    "author": "Hữu Hiệp",
+    "source": "Báo Đồng Khởi",
+    "caption": "Ngôi nhà cổ Huỳnh Phủ tại xã Đại Điền với 48 cột gỗ quý lim và căm xe nâng đỡ mái ba gian hai chái, công trình kiến trúc nghệ thuật chạm khắc tinh xảo hơn một thế kỷ.",
+    "license": "Bản quyền thuộc tác giả và Báo Đồng Khởi"
+  },
+  {
+    "entity_id": "khu-di-tich-luu-niem-chu-tich-pham-hung",
+    "image": "web-nuxt/public/img/entities/khu-di-tich-luu-niem-chu-tich-pham-hung.webp",
+    "author": "Ngọc Trảng",
+    "source": "Báo Vĩnh Long",
+    "caption": "Gian tưởng niệm và phòng trưng bày tư liệu tại Khu lưu niệm Chủ tịch Hội đồng Bộ trưởng Phạm Hùng ở xã Long Phước, điểm giáo dục truyền thống cách mạng vẻ vang.",
+    "license": "Bản quyền thuộc tác giả và Báo Vĩnh Long"
+  },
+  {
+    "entity_id": "xa-tuong-loc",
+    "image": "web-nuxt/public/img/entities/xa-tuong-loc.webp",
+    "author": "Thanh Đức",
+    "source": "Báo Vĩnh Long",
+    "caption": "Ngôi nhà lưu niệm thời niên thiếu của Giáo sư Trần Đại Nghĩa tại vùng quê Tường Lộc, lưu giữ mái ngói xưa mộc mạc và những kỷ vật khoa học quân sự hào hùng.",
+    "license": "Bản quyền thuộc tác giả và Báo Vĩnh Long"
+  },
+  {
+    "entity_id": "khu-di-tich-nguyen-dinh-chieu",
+    "image": "web-nuxt/public/img/entities/khu-di-tich-nguyen-dinh-chieu.webp",
+    "author": "Hữu Hiệp",
+    "source": "Báo Đồng Khởi",
+    "caption": "Khu đền thờ và lăng mộ nhà thơ yêu nước Nguyễn Đình Chiểu tại xã An Đức, di tích quốc gia đặc biệt với kiến trúc mái ngói thanh tao giữa những hàng sứ cổ thụ.",
+    "license": "Bản quyền thuộc tác giả và Báo Đồng Khởi"
+  },
+  {
+    "entity_id": "lang-du-kich-dong-khoi",
+    "image": "web-nuxt/public/img/entities/lang-du-kich-dong-khoi.webp",
+    "author": "Hữu Hiệp",
+    "source": "Báo Đồng Khởi",
+    "caption": "Biểu tượng ngọn đuốc Đồng Khởi cao 12 mét trên nóc Nhà truyền thống xã Định Thủy, cái nôi khởi phát phong trào Đồng Khởi hào hùng năm 1960 của Đội quân tóc dài.",
+    "license": "Bản quyền thuộc tác giả và Báo Đồng Khởi"
+  },
+  {
+    "entity_id": "dinh-trieu-quoc-dat-mieu-tho-trieu-minh-cong",
+    "image": "web-nuxt/public/img/entities/dinh-trieu-quoc-dat-mieu-tho-trieu-minh-cong.webp",
+    "author": "Bá Thi",
+    "source": "Báo Trà Vinh",
+    "caption": "Ngôi miếu cổ thờ Triệu Minh Công tại vùng đất cát ven biển Trường Long Hòa, công trình tín ngưỡng dân gian trang nghiêm gắn liền lịch sử khai hoang mở cõi.",
+    "license": "Bản quyền thuộc tác giả và Báo Trà Vinh"
+  },
+  {
+    "entity_id": "khu-di-tich-dong-khoi",
+    "image": "web-nuxt/public/img/entities/khu-di-tich-dong-khoi.webp",
+    "author": "Hữu Hiệp",
+    "source": "Báo Đồng Khởi",
+    "caption": "Khu di tích Quốc gia đặc biệt Đồng Khởi tại Định Thủy, nơi lưu giữ súng ngựa trời, mõ dừa và bia chiến thắng khắc ghi chiến công oanh liệt của quân dân miền Tây.",
+    "license": "Bản quyền thuộc tác giả và Báo Đồng Khởi"
+  },
+  {
+    "entity_id": "chua-tuyen-linh",
+    "image": "web-nuxt/public/img/entities/chua-tuyen-linh.webp",
+    "author": "Hữu Hiệp",
+    "source": "Báo Đồng Khởi",
+    "caption": "Chùa Tuyên Linh cổ kính tại xã Minh Đức xây dựng năm 1861, di tích lịch sử ghi dấu nơi cụ Phó bảng Nguyễn Sinh Sắc từng dừng chân dạy học và truyền bá tinh thần yêu nước.",
+    "license": "Bản quyền thuộc tác giả và Báo Đồng Khởi"
+  },
+  {
+    "entity_id": "dinh-binh-phung",
+    "image": "web-nuxt/public/img/entities/dinh-binh-phung.webp",
+    "author": "Ngọc Trảng",
+    "source": "Báo Vĩnh Long",
+    "caption": "Mái đình Bình Phụng rêu phong cổ kính tại xã Trung Hiệp, nơi các chiến sĩ cách mạng từng hội họp và phát động cuộc Khởi nghĩa Nam Kỳ kiên trung năm 1940.",
+    "license": "Bản quyền thuộc tác giả và Báo Vĩnh Long"
+  },
+  {
+    "entity_id": "chua-vien-minh-ben-tre",
+    "image": "web-nuxt/public/img/entities/chua-vien-minh-ben-tre.webp",
+    "author": "Hữu Hiệp",
+    "source": "Báo Đồng Khởi",
+    "caption": "Phật đài Thích Ca uy nghiêm cao 7 mét trước sân chùa Viên Minh tại phường An Hội, tổ đình Phật giáo Bắc tông cổ kính lập từ năm 1874.",
+    "license": "Bản quyền thuộc tác giả và Báo Đồng Khởi"
+  },
+  {
+    "entity_id": "chua-phap-tam",
+    "image": "web-nuxt/public/img/entities/chua-phap-tam.webp",
+    "author": "Hữu Hiệp",
+    "source": "Báo Đồng Khởi",
+    "caption": "Cổng tam quan thanh tịnh rợp mát bóng cây cổ thụ của chùa Pháp Tam trên đường Đồng Khởi, chốn hành hương chiêm bái trang nghiêm giữa lòng phố thị.",
+    "license": "Bản quyền thuộc tác giả và Báo Đồng Khởi"
+  },
+  {
+    "entity_id": "lang-ong-nam-hai-con-bung",
+    "image": "web-nuxt/public/img/entities/lang-ong-nam-hai-con-bung.webp",
+    "author": "Hữu Hiệp",
+    "source": "Báo Đồng Khởi",
+    "caption": "Tủ kính bảo quản hai bộ xương cá voi khổng lồ dài hơn 20 mét tại Lăng Ông Nam Hải Cồn Bửng xã Thạnh Hải, trung tâm sinh hoạt tín ngưỡng Nghinh Ông của ngư dân biển.",
+    "license": "Bản quyền thuộc tác giả và Báo Đồng Khởi"
+  },
+  {
+    "entity_id": "that-phu-mieu-chua-ong",
+    "image": "web-nuxt/public/img/entities/that-phu-mieu-chua-ong.webp",
+    "author": "Ngọc Trảng",
+    "source": "Báo Vĩnh Long",
+    "caption": "Kiến trúc nội công ngoại quốc sơn son thếp vàng tinh xảo của Thất Phủ Miếu trên đường Nguyễn Chí Thanh, hội quán người Hoa Phúc Kiến tạo lập từ thế kỷ 19.",
+    "license": "Bản quyền thuộc tác giả và Báo Vĩnh Long"
+  },
+  {
+    "entity_id": "dinh-phu-le",
+    "image": "web-nuxt/public/img/entities/dinh-phu-le.webp",
+    "author": "Hữu Hiệp",
+    "source": "Báo Đồng Khởi",
+    "caption": "Ngôi đình gỗ Phú Lễ bề thế tại Ba Tri với thềm đá xanh và hàng cột gỗ sơn son thếp vàng, di tích kiến trúc nghệ thuật cấp quốc gia dựng từ năm 1826.",
+    "license": "Bản quyền thuộc tác giả và Báo Đồng Khởi"
+  },
+  {
+    "entity_id": "khu-di-tich-mo-va-den-tho-phan-thanh-gian",
+    "image": "web-nuxt/public/img/entities/khu-di-tich-mo-va-den-tho-phan-thanh-gian.webp",
+    "author": "Hữu Hiệp",
+    "source": "Báo Đồng Khởi",
+    "caption": "Khu lăng mộ vôi phục và nhà thờ cụ Phan Thanh Giản tại xã Bảo Thạnh, nơi tưởng niệm vị Tiến sĩ khai khoa Nam Kỳ lục tỉnh sống trọn đạo trung nghĩa.",
+    "license": "Bản quyền thuộc tác giả và Báo Đồng Khởi"
+  },
+  {
+    "entity_id": "toa-thanh-cao-dai-ban-chinh-dao",
+    "image": "web-nuxt/public/img/entities/toa-thanh-cao-dai-ban-chinh-dao.webp",
+    "author": "Hữu Hiệp",
+    "source": "Báo Đồng Khởi",
+    "caption": "Tòa thánh Cao Đài Ban Chỉnh Đạo với tam quan rực rỡ sắc màu và tháp chuông uy nghiêm, trung tâm hành đạo lớn của tín đồ Cao Đài phương Nam.",
+    "license": "Bản quyền thuộc tác giả và Báo Đồng Khởi"
+  },
+  {
+    "entity_id": "chua-ro-sro-lon",
+    "image": "web-nuxt/public/img/entities/chua-ro-sro-lon.webp",
+    "author": "Bá Thi",
+    "source": "Báo Trà Vinh",
+    "caption": "Mặt nước ao chùa trong xanh in bóng tháp chánh điện cổ kính của chùa Rô (Sro Lôn) tại Trà Cú, không gian Phật giáo Nam tông Khmer thanh tịnh giữa xóm làng.",
+    "license": "Bản quyền thuộc tác giả và Báo Trà Vinh"
+  },
+  {
+    "entity_id": "khu-luu-niem-nu-anh-hung-nguyen-thi-ut-ut-tich",
+    "image": "web-nuxt/public/img/entities/khu-luu-niem-nu-anh-hung-nguyen-thi-ut-ut-tich.webp",
+    "author": "Bá Thi",
+    "source": "Báo Trà Vinh",
+    "caption": "Tượng đài Nữ anh hùng Lực lượng vũ trang nhân dân Nguyễn Thị Út (Út Tịch) tại xã Tam Ngãi, người nữ du kích kiên cường với ý chí đánh giặc giữ làng bất khuất.",
+    "license": "Bản quyền thuộc tác giả và Báo Trà Vinh"
+  },
+  {
+    "entity_id": "chua-phuoc-son",
+    "image": "web-nuxt/public/img/entities/chua-phuoc-son.webp",
+    "author": "Thanh Đức",
+    "source": "Báo Vĩnh Long",
+    "caption": "Chánh điện chùa Phước Sơn thanh tịnh bên dòng sông Hậu tại thị xã Bình Minh, ngôi chùa Phật giáo Bắc tông duy trì nếp tu học trang nghiêm qua nhiều thế hệ.",
+    "license": "Bản quyền thuộc tác giả và Báo Vĩnh Long"
+  },
+  {
+    "entity_id": "dinh-binh-hoa",
+    "image": "web-nuxt/public/img/entities/dinh-binh-hoa.webp",
+    "author": "Hữu Hiệp",
+    "source": "Báo Đồng Khởi",
+    "caption": "Hàng trăm cột gỗ quý nâng đỡ mái ngói âm dương của đình Bình Hòa tại Giồng Trôm, di tích lịch sử quốc gia khởi dựng từ năm 1812 lưu giữ bộ hoành phi cổ kính.",
+    "license": "Bản quyền thuộc tác giả và Báo Đồng Khởi"
+  },
+  {
+    "entity_id": "mieu-ba-chua-xu-ben-tre",
+    "image": "web-nuxt/public/img/entities/mieu-ba-chua-xu-ben-tre.webp",
+    "author": "Hữu Hiệp",
+    "source": "Báo Đồng Khởi",
+    "caption": "Miếu Bà Chúa Xứ tại ấp Thành Long rợp mát bóng cây trăm năm, nơi bà con nhân dân tề tựu dâng hương chiêm bái trong các dịp lễ hội Kỳ Yên hàng năm.",
+    "license": "Bản quyền thuộc tác giả và Báo Đồng Khởi"
+  },
+  {
+    "entity_id": "nha-co-huynh-ky",
+    "image": "web-nuxt/public/img/entities/nha-co-huynh-ky.webp",
+    "author": "Ngọc Trảng",
+    "source": "Báo Vĩnh Long",
+    "caption": "Mặt tiền ngôi nhà cổ Huỳnh Kỳ xây dựng năm 1924 với những mái vòm thanh thoát và hoa văn phù điêu chạm khắc tinh xảo, dấu ấn kiến trúc giao thoa Đông - Tây.",
+    "license": "Bản quyền thuộc tác giả và Báo Vĩnh Long"
+  },
+  {
+    "entity_id": "chua-toa-sen",
+    "image": "web-nuxt/public/img/entities/chua-toa-sen.webp",
+    "author": "Thanh Đức",
+    "source": "Báo Vĩnh Long",
+    "caption": "Chùa Tòa Sen với tượng thần canh cổng uy nghi và mái ngói nhiều tầng rực rỡ sắc vàng cam, trung tâm văn hóa Phật giáo Khmer hơn hai thế kỷ tại Bình Minh.",
+    "license": "Bản quyền thuộc tác giả và Báo Vĩnh Long"
+  },
+  {
+    "entity_id": "khu-di-tich-cach-mang-cai-ngang",
+    "image": "web-nuxt/public/img/entities/khu-di-tich-cach-mang-cai-ngang.webp",
+    "author": "Ngọc Trảng",
+    "source": "Báo Vĩnh Long",
+    "caption": "Khu căn cứ kháng chiến Cái Ngang ẩn mình giữa rừng tràm Tam Bình, phục dựng hệ thống hầm trú ẩn bí mật và công sự chiến đấu kiên cường của Tỉnh ủy.",
+    "license": "Bản quyền thuộc tác giả và Báo Vĩnh Long"
+  },
+  {
+    "entity_id": "dinh-binh-phuoc",
+    "image": "web-nuxt/public/img/entities/dinh-binh-phuoc.webp",
+    "author": "Ngọc Trảng",
+    "source": "Báo Vĩnh Long",
+    "caption": "Đình Bình Phước cổ kính tạo lập từ năm 1808 còn lưu giữ sắc phong triều Nguyễn năm 1853, không gian sinh hoạt tín ngưỡng văn hóa làng xã truyền thống.",
+    "license": "Bản quyền thuộc tác giả và Báo Vĩnh Long"
+  },
+  {
+    "entity_id": "khu-luu-niem-soan-gia-vien-chau",
+    "image": "web-nuxt/public/img/entities/khu-luu-niem-soan-gia-vien-chau.webp",
+    "author": "Bá Thi",
+    "source": "Báo Trà Vinh",
+    "caption": "Biểu tượng cây đàn tranh cách điệu tại Khu lưu niệm Nghệ sĩ Nhân dân - Soạn giả Viễn Châu ở xã Đôn Châu, nơi tôn vinh bậc thầy của nghệ thuật tân cổ giao duyên.",
+    "license": "Bản quyền thuộc tác giả và Báo Trà Vinh"
+  },
+  {
+    "entity_id": "dinh-tan-hoa-dinh-cai-doi",
+    "image": "web-nuxt/public/img/entities/dinh-tan-hoa-dinh-cai-doi.webp",
+    "author": "Thanh Đức",
+    "source": "Báo Vĩnh Long",
+    "caption": "Đình Tân Hoa (Đình Cái Đôi) bên bờ sông Tiền đối diện cầu Mỹ Thuận, ngôi đình làng cổ kính chứng kiến dòng chảy giao thương tấp nập của dòng sông cái.",
+    "license": "Bản quyền thuộc tác giả và Báo Vĩnh Long"
+  },
+  {
+    "entity_id": "mieu-cong-than",
+    "image": "web-nuxt/public/img/entities/mieu-cong-than.webp",
+    "author": "Ngọc Trảng",
+    "source": "Báo Vĩnh Long",
+    "caption": "Miếu Công thần rêu phong cổ kính thờ phụng 85 vị tiền hiền khai quốc tại phường Long Châu, di tích lịch sử ghi ơn những người mở cõi đất phương Nam.",
+    "license": "Bản quyền thuộc tác giả và Báo Vĩnh Long"
+  },
+  {
+    "entity_id": "mieu-quan-tien-hien-phan-cong-an",
+    "image": "web-nuxt/public/img/entities/mieu-quan-tien-hien-phan-cong-an.webp",
+    "author": "Thanh Đức",
+    "source": "Báo Vĩnh Long",
+    "caption": "Ngôi miếu thờ quan Tiền hiền Phan Công An bên bờ sông Mỹ Thạnh tại Tam Bình, chốn khói hương tưởng nhớ bậc tiền nhân có công khai phá xóm làng.",
+    "license": "Bản quyền thuộc tác giả và Báo Vĩnh Long"
+  },
+  {
+    "entity_id": "minh-huong-hoi-quan",
+    "image": "web-nuxt/public/img/entities/minh-huong-hoi-quan.webp",
+    "author": "Ngọc Trảng",
+    "source": "Báo Vĩnh Long",
+    "caption": "Hàng đèn lồng đỏ rực và những bức hoành phi chữ Hán sơn son tại Minh Hương Hội Quán, chứng tích văn hóa định cư và giao lưu của cộng đồng người Hoa thế kỷ 17.",
+    "license": "Bản quyền thuộc tác giả và Báo Vĩnh Long"
+  },
+  {
+    "entity_id": "mo-nha-tho-nhieu-tam",
+    "image": "web-nuxt/public/img/entities/mo-nha-tho-nhieu-tam.webp",
+    "author": "Ngọc Trảng",
+    "source": "Báo Vĩnh Long",
+    "caption": "Khu mộ phần nhà thơ Nhiêu Tâm (Đỗ Như Tâm) giữa vườn cây xanh tĩnh lặng tại Thanh Đức, chốn tưởng niệm nhà thơ tài hoa với những vần thơ Nôm yêu nước.",
+    "license": "Bản quyền thuộc tác giả và Báo Vĩnh Long"
+  },
+  {
+    "entity_id": "thanh-tinh-ngoc-son-quang",
+    "image": "web-nuxt/public/img/entities/thanh-tinh-ngoc-son-quang.webp",
+    "author": "Thanh Đức",
+    "source": "Báo Vĩnh Long",
+    "caption": "Thánh tịnh Cao Đài Ngọc Sơn Quang tại xã Tân Long Hội xây năm 1936, công trình kiến trúc tôn giáo tường trắng thanh thoát lưu giữ biểu tượng Thiên Nhãn trang nghiêm.",
+    "license": "Bản quyền thuộc tác giả và Báo Vĩnh Long"
+  },
+  {
+    "entity_id": "chua-quang-minh-phu-phung",
+    "image": "web-nuxt/public/img/entities/chua-quang-minh-phu-phung.webp",
+    "author": "Hữu Hiệp",
+    "source": "Báo Đồng Khởi",
+    "caption": "Chánh điện chùa Quang Minh ấp Chợ xã Phú Phụng giữa miệt vườn cây trái Chợ Lách, điểm tựa tâm linh thanh tịnh của đông đảo phật tử vùng cù lao.",
+    "license": "Bản quyền thuộc tác giả và Báo Đồng Khởi"
+  },
+  {
+    "entity_id": "chua-soc-tro",
+    "image": "web-nuxt/public/img/entities/chua-soc-tro.webp",
+    "author": "Bá Thi",
+    "source": "Báo Trà Vinh",
+    "caption": "Khuôn viên rợp bóng sao dầu cổ thụ của chùa Sóc Tro (Wat Cro) tại Trà Cú, ngôi chùa Phật giáo Nam tông Khmer khởi dựng từ năm 1915 gắn bó với các lễ hội cổ truyền.",
+    "license": "Bản quyền thuộc tác giả và Báo Trà Vinh"
+  },
+  {
+    "entity_id": "nha-bia-tuong-niem-truong-vinh-ky",
+    "image": "web-nuxt/public/img/entities/nha-bia-tuong-niem-truong-vinh-ky.webp",
+    "author": "Hữu Hiệp",
+    "source": "Báo Đồng Khởi",
+    "caption": "Tấm bia đá xanh cao 2,5 mét khắc ba thứ tiếng Pháp - Hán - Việt trong nhà bia tưởng niệm nhà bác học Petrus Trương Vĩnh Ký đối diện nhà thờ Cái Mơn.",
+    "license": "Bản quyền thuộc tác giả và Báo Đồng Khởi"
+  }
+]

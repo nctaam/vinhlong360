@@ -25,9 +25,10 @@ def find_ruff() -> list[str] | None:
     exe = shutil.which("ruff")
     if exe:
         return [exe]
-    for cand in (r"C:/Python314/Scripts/ruff.exe", r"C:\Python314\Scripts\ruff.exe"):
+    user_ruff = Path.home() / "AppData" / "Roaming" / "Python" / f"Python{sys.version_info.major}{sys.version_info.minor}" / "Scripts" / "ruff.exe"
+    for cand in (user_ruff, r"C:/Python314/Scripts/ruff.exe", r"C:\Python314\Scripts\ruff.exe"):
         if Path(cand).exists():
-            return [cand]
+            return [str(cand)]
     # fallback: python -m ruff (chỉ dùng được nếu ruff cài trong env này)
     try:
         r = subprocess.run([sys.executable, "-m", "ruff", "--version"],
