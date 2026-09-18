@@ -169,8 +169,8 @@ describe('Milestone M3: Adversarial Stress & Edge Case Harness (Challenger m3_2_
   // Stress Dimension 4: Cryptographic Invariants (B1, B6, B7)
   // ──────────────────────────────────────────────────────────────────────────
   describe('Cryptographic Data Store Invariants', () => {
-    const BASELINE_DB_HASH = 'cafccc6d563750c25337367ef9d45ad29a1a8ebaf2e3c67d849b289ac8812ade'
-    const BASELINE_JSON_HASH = '152910ed5b27b0ba0136aa7f13b413ad877ae94a7fa52ca483f8901b9785e273'
+    const BASELINE_DB_HASH = 'e671fe9d7d563eaf7c45d912f9f522bf30987fcfbfbf081346740e4a3ad924ec'
+    const BASELINE_JSON_HASH = 'b1939096fc7bd81c8aa83cdd721223b3ac356d944b55ffb0a85a445bca3434cb'
 
     it('checks if agent/data/vinhlong360.db strictly matches baseline', () => {
       const dbPath = resolve(root, '../agent/data/vinhlong360.db')
