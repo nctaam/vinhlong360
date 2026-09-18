@@ -42,20 +42,6 @@
               <IconLine name="calendar" aria-hidden="true" />
               <span>{{ activeItinerary.durationLabel }}</span>
             </span>
-            <span class="home-planner-card__terroir-badge">
-              <IconLine name="map" aria-hidden="true" />
-              <span>{{ activeItinerary.terroir }}</span>
-            </span>
-            <!-- Fieldwork Certification Seal -->
-            <span class="home-planner-card__seal" title="Đã đối soát thực địa">
-              <IconLine name="shield-check" aria-hidden="true" />
-              <span>Bảo chứng thực địa</span>
-            </span>
-          </div>
-
-          <div class="home-planner-card__trust">
-            <SourceMark tier="official" source-title="Ban biên tập Vĩnh Long 360" compact />
-            <FreshnessLine status="fresh" updated-label="Thực địa 2026" />
           </div>
 
           <h3 class="home-planner-card__title">{{ activeItinerary.title }}</h3>
@@ -126,7 +112,7 @@ const ITINERARIES: readonly CuratedItinerary[] = [
     durationBadge: '1 Ngày',
     shortTitle: 'Nông Dân Cù Lao',
     terroir: 'Xanh Cù Lao',
-    durationLabel: '07:30 – 17:00 (1 Ngày)',
+    durationLabel: '1 Ngày (07:30 – 17:00)',
     title: 'Một Ngày Làm Nông Dân Cù Lao & Hái Trái Cây Sông Cổ Chiên',
     theme: 'Trải nghiệm sông nước miệt vườn thanh bình, thưởng ngoạn vườn chôm chôm chín cây và ẩm thực cá tai tượng chiên xù.',
     stops: [

@@ -4,7 +4,7 @@
       <div class="home-intent-anchors__header">
         <div class="home-intent-anchors__eyebrow-row">
           <span class="editorial-folio-tag" aria-hidden="true">FOLIO I · CHỌN GU TRẢI NGHIỆM</span>
-          <span class="archival-gps-badge" aria-label="Tọa độ địa lý Vĩnh Long">
+          <span class="archival-gps-badge sr-only" aria-label="Tọa độ địa lý Vĩnh Long">
             <IconLine name="pin" aria-hidden="true" />
             <span>10°15'07"N 105°58'34"E · CỔ CHIÊN BASIN</span>
           </span>
@@ -19,7 +19,7 @@
             <h2 class="home-intent-anchors__title" aria-label="Lối rẽ khám phá nhanh">Lối rẽ <em class="editorial-italic-accent" aria-hidden="true">khám phá nhanh</em></h2>
           </div>
 
-          <div class="artisanal-terroir-seal" aria-hidden="true">
+          <div class="artisanal-terroir-seal sr-only" aria-hidden="true">
             <span class="artisanal-terroir-seal__ring">
               <span class="artisanal-terroir-seal__inner">BẢN ĐỊA<br>CHỨNG THỰC</span>
             </span>

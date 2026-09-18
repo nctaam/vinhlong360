@@ -36,7 +36,7 @@
     </NuxtLink>
     <div v-else class="home-feature-dossier__media home-feature-dossier__media--empty" data-home-feature-media>
       <IconLine name="pin" aria-hidden="true" />
-      <ImageDisclosure :id="disclosureId" :descriptor="descriptor" presentation="short" />
+      <ImageDisclosure :id="disclosureId" :descriptor="descriptor" presentation="short" class="sr-only" />
     </div>
 
     <FramedDossier :eyebrow="eyebrow" :title="title" heading-tag="h2">
@@ -52,7 +52,7 @@
         <NuxtLink
           v-if="mapTo"
           :to="mapTo"
-          class="home-feature-dossier__coords home-feature-dossier__coords--link"
+          class="home-feature-dossier__coords home-feature-dossier__coords--link sr-only"
           :data-geo-coordinates="coordinates || '10.254° N, 105.972° E'"
           :title="`Xem vị trí trên bản đồ (${coordinates || '10.254° N, 105.972° E'})`"
         >
@@ -61,7 +61,7 @@
         </NuxtLink>
         <span
           v-else
-          class="home-feature-dossier__coords"
+          class="home-feature-dossier__coords sr-only"
           :data-geo-coordinates="coordinates || '10.254° N, 105.972° E'"
           :title="`Tọa độ thực địa: ${coordinates || '10.254° N, 105.972° E'}`"
         >
@@ -74,6 +74,7 @@
           :source-url="sourceUrl"
           :verified-at="verifiedAt"
           compact
+          :class="{ 'sr-only': !sourceTier || sourceTier === 'unknown' }"
         />
       </template>
       <template #action>

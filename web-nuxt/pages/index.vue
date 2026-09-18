@@ -39,7 +39,6 @@
               <IconLine name="leaf" class="hero-cognitive-chip__icon" aria-hidden="true" />
               <span class="hero-cognitive-chip__fruit-text">{{ seasonalFruitHighlight }}</span>
             </div>
-            <HomeAtmosphereControl v-model="atmosphereMode" />
           </div>
           <div class="hero-search-island" role="search" aria-label="Tìm kiếm lữ hành">
             <SearchAutocomplete
