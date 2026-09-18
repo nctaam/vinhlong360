@@ -1183,7 +1183,7 @@ async function clickByText(cdp, selector, text, expectedExpression, expectedLabe
 async function actionDockOverlap(cdp) {
   return evaluateValue(cdp, `(() => {
     const docks = [...document.querySelectorAll('[data-action-dock], [data-detail-action-safe-area], [data-planner-action-safe-area]')];
-    const fixed = [...document.querySelectorAll('.journey-bar, .bottom-nav, [data-fixed-action-rail]')]
+    const fixed = [...document.querySelectorAll('.journey-bar, .bottom-nav, .public-bottom-nav, .sticky-cta-bar, [data-fixed-action-rail]')]
       .filter(element => getComputedStyle(element).position === 'fixed');
     let pixels = 0;
     for (const dock of docks) {
