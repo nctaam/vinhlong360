@@ -1,0 +1,402 @@
+[
+  {
+    "id": "khu-du-lich-dai-loc",
+    "type": "attraction",
+    "name": "Khu du lịch Đại Lộc",
+    "summary": "Khu sinh thái dã ngoại 20.000 m² tại ấp Sơn Châu, xã Sơn Định, Chợ Lách — vườn sầu riêng, bưởi da xanh, chôm chôm, nhà sàn kiểu nhà rong, đờn ca tài tử.",
+    "placeId": "p-an-hoi",
+    "address": "Ấp Sơn Châu, Phường An Hội, tỉnh Vĩnh Long",
+    "webp_exists": true,
+    "webp_size": 9298
+  },
+  {
+    "id": "vuon-xoai-tu-quy-thanh-son",
+    "type": "attraction",
+    "name": "Vườn xoài tứ quý Thanh Sơn",
+    "summary": "Vườn xoài tứ quý (xoài cho trái quanh năm) nằm gần khu bảo tồn ốc gạo Phú Đa.",
+    "placeId": "xa-phu-phung",
+    "address": "Xã Phú Phụng",
+    "webp_exists": true,
+    "webp_size": 9344
+  },
+  {
+    "id": "diem-du-lich-ba-ngoi-con-phu-da",
+    "type": "attraction",
+    "name": "Điểm du lịch Ba Ngói - Cồn Phú Đa",
+    "summary": "Điểm du lịch sinh thái Ba Ngói nằm ở cồn Phú Đa, xã Vĩnh Bình, với vườn cây trái trĩu cành nhiều chủng loại.",
+    "placeId": "xa-phu-phung",
+    "address": "Cồn Phú Đa, xã Vĩnh Bình",
+    "webp_exists": true,
+    "webp_size": 9760
+  },
+  {
+    "id": "chua-khmer-phuong-thanh-pisay",
+    "type": "attraction",
+    "name": "Chùa Khmer Phương Thạnh Pisay",
+    "summary": "Ngôi chùa Khmer xây dựng từ cuối thế kỷ XVII, diện tích khoảng 6 hectare, kiến trúc truyền thống Khmer với sắc vàng chủ đạo và chạm khắc tinh tế, không khí thanh tịnh.",
+    "placeId": "xa-binh-phu",
+    "address": "Xã Phương Thạnh",
+    "webp_exists": true,
+    "webp_size": 8540
+  },
+  {
+    "id": "thien-vien-truc-lam-duyen-hai",
+    "type": "attraction",
+    "name": "Thiền viện Trúc Lâm Duyên Hải",
+    "summary": "Thiền viện Phật giáo thuộc Thiền phái Trúc Lâm Yên Tử, xây dựng năm 2016 trên diện tích khoảng 100ha, kiến trúc truyền thống Phật giáo Việt Nam.",
+    "placeId": "p-truong-long-hoa",
+    "address": "Ấp Khoán Tiều, xã Trường Long Hòa, thị xã Duyên Hải",
+    "webp_exists": true,
+    "webp_size": 9268
+  },
+  {
+    "id": "khu-luu-niem-tran-dai-nghia",
+    "type": "attraction",
+    "name": "khu lưu niệm Trần Đại Nghĩa",
+    "summary": "Khu lưu niệm GS-VS Trần Đại Nghĩa tại ấp Mỹ Phú 1, xã Tường Lộc, Tam Bình — rộng 16.080 m², khánh thành 18/5/2015, tổng vốn 51 tỷ đồng. Hơn 868 tài liệu, hiện vật về \"vua vũ khí\" Phạm Quang Lễ (1913-1997).",
+    "placeId": "p-long-chau",
+    "address": "Ấp Mỹ Phú 1, Phường Long Châu, tỉnh Vĩnh Long",
+    "webp_exists": true,
+    "webp_size": 9554
+  },
+  {
+    "id": "vuon-chom-chom-ong-chin-hoan",
+    "type": "attraction",
+    "name": "Vườn chôm chôm ông Chín Hoán",
+    "summary": "Vườn chôm chôm tại cù lao An Bình, tỉnh Vĩnh Long, nơi du khách hái và thưởng thức chôm chôm tại gốc cây.",
+    "placeId": "p-long-chau",
+    "address": "Phường Long Châu, Vĩnh Long",
+    "webp_exists": true,
+    "webp_size": 9186
+  },
+  {
+    "id": "nha-san-ong-muoi-day",
+    "type": "attraction",
+    "name": "Nhà sàn ông Mười Đầy",
+    "summary": "Nhà sàn gỗ giữa vườn trái cây cù lao An Bình — tham quan, hái trái, ăn cơm đồng quê, hoặc ngủ qua đêm bên kênh rạch.",
+    "placeId": "p-long-chau",
+    "address": "Cù lao An Bình, Phường Long Châu, tỉnh Vĩnh Long",
+    "webp_exists": true,
+    "webp_size": 9008
+  },
+  {
+    "id": "vuon-trai-cay-be-sau",
+    "type": "attraction",
+    "name": "Vườn trái cây Bé Sáu",
+    "summary": "Vườn trái cây trên cù lao An Bình, tỉnh Vĩnh Long, nơi du khách vào vườn hái và thưởng thức trái cây tại chỗ.",
+    "placeId": "p-long-chau",
+    "address": "Phường Long Châu, Vĩnh Long",
+    "webp_exists": true,
+    "webp_size": 8944
+  },
+  {
+    "id": "vuon-trai-cay-bi-bo",
+    "type": "attraction",
+    "name": "Vườn trái cây Bi Bo",
+    "summary": "Vườn trái cây tại cù lao An Bình, tỉnh Vĩnh Long, nơi du khách vào vườn hái và thưởng thức trái cây tại chỗ.",
+    "placeId": "p-long-chau",
+    "address": "Phường Long Châu, Vĩnh Long",
+    "webp_exists": true,
+    "webp_size": 9518
+  },
+  {
+    "id": "nam-khanh",
+    "type": "attraction",
+    "name": "Năm Khanh",
+    "summary": "Điểm du lịch sinh thái miệt vườn tại cồn Công, Vĩnh Long, cùng khu vực với Tư Dô và Tám Trong.",
+    "placeId": "p-long-chau",
+    "address": "Phường Long Châu, Vĩnh Long",
+    "webp_exists": true,
+    "webp_size": 9578
+  },
+  {
+    "id": "khu-du-lich-vinh-sang",
+    "type": "attraction",
+    "name": "Khu du lịch Vinh Sang",
+    "summary": "Khu du lịch sinh thái 60.000 m² trên cù lao An Bình, Long Hồ — đua ngựa, cưỡi đà điểu, trượt cỏ, tát mương bắt cá giữa vườn trái cây.",
+    "placeId": "xa-an-binh",
+    "address": "Ấp An Thuận, Xã An Bình, tỉnh Vĩnh Long",
+    "webp_exists": true,
+    "webp_size": 9314
+  },
+  {
+    "id": "khu-du-lich-vuon-sinh-thai-ba-ngoi",
+    "type": "attraction",
+    "name": "Khu Du Lịch Vườn Sinh Thái Ba Ngói",
+    "summary": "Khu du lịch sinh thái nằm bên sông Cổ Chiên, bao quanh bởi vườn cây trái như sầu riêng và chôm chôm.",
+    "placeId": "p-ben-tre",
+    "address": "Ấp Phú Hiệp",
+    "webp_exists": true,
+    "webp_size": 8882
+  },
+  {
+    "id": "vuon-trai-cay-6-tan",
+    "type": "attraction",
+    "name": "Vườn trái cây 6 Tấn",
+    "summary": "Vườn trái cây phục vụ tham quan, hái và thưởng thức trái cây miệt vườn ở cù lao An Bình, tỉnh Vĩnh Long.",
+    "placeId": "p-long-chau",
+    "address": "Phường Long Châu, Vĩnh Long",
+    "webp_exists": true,
+    "webp_size": 9514
+  },
+  {
+    "id": "vuon-trai-cay-tam-loc",
+    "type": "attraction",
+    "name": "Vườn trái cây Tám Lộc",
+    "summary": "Vườn trái cây trên cù lao An Bình, Vĩnh Long — tham quan vườn, hái và thưởng thức trái cây tại chỗ.",
+    "placeId": "p-long-chau",
+    "address": "Phường Long Châu, Vĩnh Long",
+    "webp_exists": true,
+    "webp_size": 9628
+  },
+  {
+    "id": "khu-du-lich-nha-xua-va-homestay-ut-trinh",
+    "type": "attraction",
+    "name": "Khu du lịch nhà xưa và homestay Út Trinh",
+    "summary": "Đến homestay Út Trinh trên cù lao An Bình là chọn cách du lịch chậm theo đúng nghĩa — ngủ trên chõng tre kẽo kẹt tiếng võng, thức dậy với tiếng chim hót và mùi khói bếp từ mâm cơm quê đơn giản mà ngon đến xúc động.",
+    "placeId": "p-long-ho",
+    "address": "Khu du lịch nhà xưa và homestay Út Trinh, Phường Long Hồ, tỉnh Vĩnh Long",
+    "webp_exists": true,
+    "webp_size": 9244
+  },
+  {
+    "id": "lang-du-lich-cong-dong-cai-ngang",
+    "type": "attraction",
+    "name": "Làng du lịch cộng đồng Cái Ngang",
+    "summary": "Cho bạn sống đúng một ngày của người Vĩnh Long — buổi sáng ra vườn hái rau, trưa xuống bếp học nấu canh chua cá kèo hay bánh xèo miệt vườn, chiều chèo xuồng trên kênh xanh ngắt rồi tối ngồi bên hiên nhà nghe chủ nhà kể chuyện đồng nội. Không có màn trình diễn, không có kịch bản du lịch — chỉ là cuộc sống thật của người dân ven sông Vĩnh Long.",
+    "placeId": "p-long-ho",
+    "address": "Làng du lịch cộng đồng Cái Ngang, Phường Long Hồ, tỉnh Vĩnh Long",
+    "webp_exists": true,
+    "webp_size": 137804
+  },
+  {
+    "id": "sieu-thi-thuy-tien",
+    "type": "attraction",
+    "name": "Siêu thị Thủy Tiên",
+    "summary": "Siêu thị điện máy và nội thất. Hỏi nhân viên về chương trình trả góp 0% lãi suất nếu mua hàng nội thất hoặc điện máy giá trị cao.",
+    "placeId": "p-long-ho",
+    "address": "Ấp Phước Long, Phường Long Hồ, tỉnh Vĩnh Long",
+    "webp_exists": true,
+    "webp_size": 9370
+  },
+  {
+    "id": "tt-xuc-tien-du-lich-tra-vinh",
+    "type": "attraction",
+    "name": "TT Xúc tiến du lịch Trà Vinh",
+    "summary": "Cửa hàng đặc sản, hàng lưu niệm và sản phẩm OCOP tại Trà Vinh.",
+    "placeId": "p-tra-vinh",
+    "address": "6A Nguyễn Thị Minh Khai, Phường Trà Vinh, tỉnh Vĩnh Long",
+    "webp_exists": true,
+    "webp_size": 8324
+  },
+  {
+    "id": "lo-gach-hung-loi",
+    "type": "attraction",
+    "name": "Lò gạch Hưng Lợi",
+    "summary": "Một trong những lò gạch cổ tiêu biểu tại vùng Mang Thít.",
+    "placeId": "p-phuoc-hau",
+    "address": "Lò gạch Hưng Lợi, Phường Phước Hậu, tỉnh Vĩnh Long",
+    "webp_exists": true,
+    "webp_size": 9640
+  },
+  {
+    "id": "xa-chanh-an",
+    "type": "attraction",
+    "name": "Xã Chánh An",
+    "summary": "Xã thuộc huyện Mang Thít có cộng đồng Công giáo tập trung (nhóm Mỹ Chánh) hình thành từ đầu thế kỷ 20, là một trong 12 đơn vị hành chính của huyện Mang Thít.",
+    "placeId": "xa-cai-nhum",
+    "address": "Xã Chánh An, Vĩnh Long",
+    "webp_exists": true,
+    "webp_size": 9292
+  },
+  {
+    "id": "vuon-sau-rieng-bay-thao",
+    "type": "attraction",
+    "name": "Vườn Sầu Riêng Bảy Thảo",
+    "summary": "Vườn sầu riêng 5 ha tại Vĩnh Thành, Chợ Lách — khoảng 500 cây lâu năm trồng theo VietGAP, du khách vào vườn hái trái tại chỗ và thưởng thức sầu riêng Cái Mơn.",
+    "placeId": "xa-vinh-thanh",
+    "address": "236/92 Ấp Nam Vĩnh, Xã Vĩnh Thành, tỉnh Vĩnh Long",
+    "webp_exists": true,
+    "webp_size": 9132
+  },
+  {
+    "id": "co-so-keo-dua-thanh-long-ben-tre",
+    "type": "attraction",
+    "name": "Cơ sở Kẹo Dừa Thanh Long",
+    "summary": "Cơ sở kẹo dừa đầu tiên tại Bến Tre — do bà Nguyễn Thị Vinh sáng lập năm 1970, tham quan xưởng sản xuất và mua kẹo dừa truyền thống các vị.",
+    "placeId": "p-phu-khuong",
+    "address": "73 Nguyễn Đình Chiểu, Phường Phú Khương, tỉnh Vĩnh Long",
+    "webp_exists": true,
+    "webp_size": 8678
+  },
+  {
+    "id": "cua-hang-dac-san-dua-ben-tre-cong-ty-tnhh-dong-a-ben-tre",
+    "type": "attraction",
+    "name": "Cửa hàng Đặc Sản Dừa Bến Tre - Công ty TNHH Đông Á",
+    "summary": "Cửa hàng chuyên các sản phẩm từ dừa tại TP. Bến Tre, thuộc Công ty TNHH Đông Á, quy tụ đa dạng sản phẩm chế biến từ dừa.",
+    "placeId": "p-phu-khuong",
+    "address": "61 Đồng Khởi, Phường Phú Khương, tỉnh Vĩnh Long",
+    "webp_exists": true,
+    "webp_size": 9204
+  },
+  {
+    "id": "cho-ben-tre-cho-trung-tam-ben-tre",
+    "type": "attraction",
+    "name": "Chợ Bến Tre (chợ trung tâm)",
+    "summary": "Chợ trung tâm TP. Bến Tre, nằm trên đường Trưng Trắc, là chợ lớn nhất và nhộn nhịp nhất thành phố.",
+    "placeId": "p-phu-khuong",
+    "address": "Đường Trưng Trắc, Phường Phú Khương, tỉnh Vĩnh Long",
+    "webp_exists": true,
+    "webp_size": 9548
+  },
+  {
+    "id": "vuon-dua-sap-ba-thuy",
+    "type": "attraction",
+    "name": "Vườn Dừa Sáp Ba Thúy",
+    "summary": "Chỉ khoảng 1 trong 5 trái trên buồng là dừa sáp — loại dừa cùi dày dẻo gần đặc, ít nước, thơm nồng. Vườn Ba Thúy ở Cầu Kè có khoảng 300 cây đang cho trái, tuổi 15–20 năm.",
+    "placeId": "xa-cau-ke",
+    "address": "Vườn Dừa Sáp Ba Thúy, Xã Cầu Kè, tỉnh Vĩnh Long",
+    "webp_exists": true,
+    "webp_size": 9164
+  },
+  {
+    "id": "ao-ba-om-ao-vuong-tra-vinh",
+    "type": "attraction",
+    "name": "Ao Bà Om (Ao Vuông) - thắng cảnh Trà Vinh",
+    "summary": "Mặt nước 4,2 ha giữa rừng dầu-sao cổ thụ hơn 500 cây, phường Nguyệt Hóa — di tích danh lam thắng cảnh cấp quốc gia từ năm 1994, nơi diễn ra lễ Ok Om Bok hằng năm.",
+    "placeId": "p-nguyet-hoa",
+    "address": "Phường Nguyệt Hóa, tỉnh Vĩnh Long",
+    "webp_exists": true,
+    "webp_size": 9186
+  },
+  {
+    "id": "di-san-lo-gach-mang-thit-kenh-thay-cai",
+    "type": "attraction",
+    "name": "Khu Di Sản Lò Gạch Mang Thít – Kênh Thầy Cai",
+    "summary": "17 thg 7, 2024 · Quy mô khu vực lập quy hoạch khoảng 3.060ha.",
+    "placeId": "xa-cai-nhum",
+    "address": "Dọc kênh Thầy Cai và sông Mang Thít –, Xã Cái Nhum, tỉnh Vĩnh Long",
+    "webp_exists": true,
+    "webp_size": 9608
+  },
+  {
+    "id": "vuon-chom-chom-thay-ha",
+    "type": "attraction",
+    "name": "Vườn chôm chôm thầy Hà",
+    "summary": "Vườn chôm chôm du lịch phổ biến trong cụm điểm tham quan Sơn Định - Vĩnh Bình - Phú Phụng.",
+    "placeId": "xa-phu-phung",
+    "address": "Cụm Sơn Định - Vĩnh Bình - Phú Phụng",
+    "webp_exists": true,
+    "webp_size": 9146
+  },
+  {
+    "id": "nhom-don-ca-tai-tu-truong-an",
+    "type": "attraction",
+    "name": "Nhóm đờn ca tài tử Trường An",
+    "summary": "Trong không gian sân đình hay nhà cộng đồng, tiếng đàn của nhóm Trường An vang lên đều đặn như một lời nhắc nhở rằng nghệ thuật đờn ca tài tử vẫn đang sống và thở trong từng xóm làng Vĩnh Long.",
+    "placeId": "p-long-chau",
+    "address": "Phường Long Châu, Vĩnh Long",
+    "webp_exists": true,
+    "webp_size": 8640
+  },
+  {
+    "id": "clb-don-ca-tai-tu-du-lich-cuu-long",
+    "type": "attraction",
+    "name": "CLB Đờn ca tài tử Du lịch Cửu Long",
+    "summary": "Trên thuyền sông Cổ Chiên ở Vĩnh Long, du khách nghe đờn ca tài tử Nam Bộ – di sản âm nhạc phi vật thể được UNESCO ghi danh.",
+    "placeId": "p-long-chau",
+    "address": "Phường Long Châu, Vĩnh Long",
+    "webp_exists": true,
+    "webp_size": 9586
+  },
+  {
+    "id": "clb-don-ca-tai-tu-tt-van-hoa-thong-tin-vinh-long",
+    "type": "attraction",
+    "name": "CLB đờn ca tài tử TT Văn hóa Thông tin Vĩnh Long",
+    "summary": "Đặt tại Trung tâm Văn hóa Thông tin tỉnh — ngôi nhà chung của văn hóa nghệ thuật Vĩnh Long — CLB đờn ca tài tử này là nơi lưu giữ và trao truyền những làn điệu Nam Bộ từ thế hệ này sang thế hệ khác.",
+    "placeId": "p-long-chau",
+    "address": "Phường Long Châu, Vĩnh Long",
+    "webp_exists": true,
+    "webp_size": 9544
+  },
+  {
+    "id": "bien-ba-dong",
+    "type": "attraction",
+    "name": "Biển Ba Động",
+    "summary": "Bãi biển Ba Động Trà Vinh mang cái tên từ ba cồn cát nhô lên mỗi khi thủy triều rút — dấu vết ngư dân Bình Thuận vào lập nghiệp gần ba thế kỷ trước.",
+    "placeId": "p-duyen-hai",
+    "address": "Biển Ba Động, Phường Duyên Hải, tỉnh Vĩnh Long",
+    "webp_exists": true,
+    "webp_size": 9190
+  },
+  {
+    "id": "con-cu",
+    "type": "attraction",
+    "name": "Cồn Cù",
+    "summary": "Điểm tham quan nằm trong khu vực biển Ba Động, từng được phát triển thành sân golf trong giai đoạn khai thác du lịch ven biển.",
+    "placeId": "xa-nhi-long",
+    "address": "Cồn Cù, Xã Nhị Long, tỉnh Vĩnh Long",
+    "webp_exists": true,
+    "webp_size": 9694
+  },
+  {
+    "id": "nha-gom-do-tu-buoi",
+    "type": "attraction",
+    "name": "Nhà gốm đỏ Tư Buôi (Kỷ lục Ngôi nhà gốm đỏ lớn nhất Việt Nam)",
+    "summary": "Ngôi nhà 3 gian 2 chái rộng 300m² được xây dựng hoàn toàn bằng gốm đỏ nung không men của Nghệ nhân Nguyễn Văn Buôi, công trình độc bản xác lập Kỷ lục Việt Nam tôn vinh tinh hoa làng nghề gốm Vĩnh Long.",
+    "placeId": "p-thanh-duc",
+    "address": "Đường số 2, phường Thanh Đức, tỉnh Vĩnh Long",
+    "webp_exists": true,
+    "webp_size": 9508
+  },
+  {
+    "id": "agribank-chi-nhanh-vinh-long-vinh-long",
+    "type": "facility",
+    "name": "Agribank Chi nhánh Vĩnh Long",
+    "summary": "Cơ sở tại 28 Hưng Đạo Vương, Phường 1, TP. Vĩnh Long.",
+    "placeId": "xa-hieu-thanh",
+    "address": "28 Hưng Đạo Vương, Phường 1, Thành phố Vĩnh Long",
+    "webp_exists": true,
+    "webp_size": 8696
+  },
+  {
+    "id": "atm-vietcombank-benh-vien-da-khoa-tinh-vinh-long",
+    "type": "facility",
+    "name": "ATM Vietcombank – Bệnh viện Đa khoa tỉnh",
+    "summary": "Atm. 301 Trần Phú, Phường 4, TP. Vĩnh Long (tại khuôn viên bệnh viện). Hỗ trợ thẻ 24/7).",
+    "placeId": "p-phuoc-hau",
+    "address": "301 Trần Phú, Phường 4, Thành phố Vĩnh Long (tại khuôn viên bệnh viện)",
+    "webp_exists": true,
+    "webp_size": 9274
+  },
+  {
+    "id": "ben-pha-an-binh-vinh-long",
+    "type": "facility",
+    "name": "Bến Phà An Bình",
+    "summary": "Bến phà dân sinh và du lịch bên bờ sông Cổ Chiên tại Phường 1, TP. Vĩnh Long, kết nối trực tiếp sang 4 xã cù lao An Bình.",
+    "placeId": "p-long-chau",
+    "address": "Phường 2, TP. Vĩnh Long (bến tạm từ 15/9/2024, cách bến cũ ~460m về phía thượng nguồn sông Cổ Chiên)",
+    "webp_exists": true,
+    "webp_size": 8980
+  },
+  {
+    "id": "ben-pha-dai-ngai-dau-cau-quan-tra-vinh-tra-vinh",
+    "type": "facility",
+    "name": "Bến phà Đại Ngãi (đầu Cầu Quan - Trà Vinh)",
+    "summary": "Bến phà vượt hai nhánh sông Hậu qua Cù lao Dung trên trục Quốc lộ 60 nối vùng Cầu Quan với Sóc Trăng.",
+    "placeId": "xa-hiep-my",
+    "address": "trên Quốc lộ 60 vượt sông Hậu, Xã Hiệp Mỹ, tỉnh Vĩnh Long",
+    "webp_exists": true,
+    "webp_size": 8978
+  },
+  {
+    "id": "ben-pha-dinh-khao-vinh-long",
+    "type": "facility",
+    "name": "Bến Phà Đình Khao",
+    "summary": "Bến phà huyết mạch trên Quốc lộ 57 vượt luồng sông Cổ Chiên nối khu vực Long Hồ sang vùng miệt vườn Chợ Lách.",
+    "placeId": "xa-nhon-phu",
+    "address": "Xã Thanh Đức (bờ nam) – Xã An Bình (bờ bắc), Vĩnh Long; nằm trên Quốc lộ 57",
+    "webp_exists": true,
+    "webp_size": 9580
+  }
+]
