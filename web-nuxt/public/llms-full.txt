@@ -7,7 +7,7 @@
 - 124 đơn vị hành chính trực thuộc gồm 35 phường và 89 xã.
 - Cấp huyện đã bãi bỏ; các địa danh huyện cũ (Long Hồ, Mang Thít, Ba Tri, Châu Thành, Càng Long, Cầu Kè, Trà Cú...) chỉ mang giá trị lịch sử và chỉ dẫn vị trí địa lý dân gian.
 
-## 2. Danh Mục 1579 Thực Thể Xác Minh Ảnh Tư Liệu Báo Chí & Giấy Phép Google Images
+## 2. Danh Mục 1619 Thực Thể Xác Minh Ảnh Tư Liệu Báo Chí & Giấy Phép Google Images
 
 Mỗi thực thể dưới đây đều có ảnh tư liệu báo chí chính thống được lưu trữ nội bộ chuẩn WebP, tích hợp siêu dữ liệu Schema.org `ImageObject` với đầy đủ bản quyền (`creator`, `creditText`, `copyrightNotice`, `license`, `acquireLicensePage`).
 
@@ -431,6 +431,13 @@ Mỗi thực thể dưới đây đều có ảnh tư liệu báo chí chính th
 - **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
 - **Tóm lược**: Sản phẩm OCOP 4 sao cấp tỉnh, được canh tác trong nhà màng với hệ thống tưới nhỏ giọt công nghệ cao theo tiêu chuẩn VietGAP. Mỗi quả nặng 1,2–1,8 kg, vỏ lưới đều đẹp, thịt giòn mát, ngọt thanh, thơm nhẹ và giàu dinh dưỡng. Đã có mặt tại các chuỗi siêu thị và đang tiếp cận thị trường xuất khẩu.
 
+#### [Bến xe Bến Tre (Trung tâm)](https://vinhlong360.vn/dia-diem/ben-xe-ben-tre-trung-tam-ben-tre)
+- **Mã ID**: `ben-xe-ben-tre-trung-tam-ben-tre` | **Phân loại**: `facility` | **Địa bàn**: p-ben-tre | **Tọa độ**: [10.2387, 106.3757]
+- **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/ben-xe-ben-tre-trung-tam-ben-tre.webp`
+- **Tác giả ảnh**: Hữu Hiệp · **Cơ quan**: Báo Đồng Khởi
+- **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
+- **Tóm lược**: Bến xe trung tâm tại Số 303 Đoàn Hoàng Minh, phường Phú Khương, đầu mối xe khách liên tỉnh và mạng lưới buýt xứ dừa.
+
 #### [Điểm trưng bày và bán sản phẩm OCOP Vĩnh Long tại Bến Cảng](https://vinhlong360.vn/dia-diem/diem-trung-bay-va-ban-san-pham-ocop-vinh-long-tai-ben-cang)
 - **Mã ID**: `diem-trung-bay-va-ban-san-pham-ocop-vinh-long-tai-ben-cang` | **Phân loại**: `product` | **Địa bàn**: p-long-chau | **Tọa độ**: [10.2581, 105.9586]
 - **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/diem-trung-bay-va-ban-san-pham-ocop-vinh-long-tai-ben-cang.webp`
@@ -438,12 +445,26 @@ Mỗi thực thể dưới đây đều có ảnh tư liệu báo chí chính th
 - **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
 - **Tóm lược**: Điểm trưng bày và bán sản phẩm OCOP được đặt trong không gian nhà chờ Bến Cảng Hành Khách, Phường 9, TP Vĩnh Long. Tập hợp các sản phẩm OCOP 3 sao và 4 sao của tỉnh Vĩnh Long, gồm nông sản, thực phẩm chế biến, thủ công mỹ nghệ mang đậm bản sắc địa phương vùng đồng bằng sông Cửu Long.
 
+#### [Bến xe Trà Vinh (Bến xe trung tâm)](https://vinhlong360.vn/dia-diem/ben-xe-tra-vinh-ben-xe-trung-tam-tra-vinh)
+- **Mã ID**: `ben-xe-tra-vinh-ben-xe-trung-tam-tra-vinh` | **Phân loại**: `facility` | **Địa bàn**: p-tra-vinh | **Tọa độ**: [9.9347, 106.3454]
+- **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/ben-xe-tra-vinh-ben-xe-trung-tam-tra-vinh.webp`
+- **Tác giả ảnh**: Bá Thi · **Cơ quan**: Báo Trà Vinh
+- **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
+- **Tóm lược**: Bến xe khách trung tâm tại Số 559 Quốc lộ 54, Phường 9, đầu mối xe khách chất lượng cao và xe buýt tỏa đi các huyện ven biển.
+
 #### [Biển Cồn Nhàn](https://vinhlong360.vn/dia-diem/bien-con-nhan)
 - **Mã ID**: `bien-con-nhan` | **Phân loại**: `nature` | **Địa bàn**: p-ba-tri | **Tọa độ**: [10.0729, 106.5977]
 - **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/bien-con-nhan.webp`
 - **Tác giả ảnh**: Hoàng Triều · **Cơ quan**: Báo Trà Vinh
 - **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
 - **Tóm lược**: Bãi biển Cồn Nhàn là điểm tham quan và nghỉ dưỡng ven biển thuộc huyện Ba Tri, tỉnh Vĩnh Long, nằm trên đường bờ biển dài gần 12 km của huyện.
+
+#### [Cấp cứu 115 Bến Tre](https://vinhlong360.vn/dia-diem/cap-cuu-115-ben-tre-ben-tre)
+- **Mã ID**: `cap-cuu-115-ben-tre-ben-tre` | **Phân loại**: `facility` | **Địa bàn**: xa-thanh-thoi | **Tọa độ**: [10.0528, 106.3146]
+- **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/cap-cuu-115-ben-tre-ben-tre.webp`
+- **Tác giả ảnh**: Hữu Hiệp · **Cơ quan**: Báo Đồng Khởi
+- **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
+- **Tóm lược**: Tổng đài cấp cứu y tế miễn phí toàn vùng Bến Tre — gọi 115 khi có tai nạn, đột quỵ, chấn thương nặng.
 
 #### [Chôm chôm Cầu Kè](https://vinhlong360.vn/dia-diem/chom-chom-cau-ke)
 - **Mã ID**: `chom-chom-cau-ke` | **Phân loại**: `product` | **Địa bàn**: p-tra-vinh | **Tọa độ**: [9.9056, 106.0125]
@@ -801,6 +822,13 @@ Mỗi thực thể dưới đây đều có ảnh tư liệu báo chí chính th
 - **Tác giả ảnh**: Phương Thảo · **Cơ quan**: Cổng TTĐT Bến Tre
 - **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
 - **Tóm lược**: Cánh đồng muối trắng xóa trải dài tại xã Bảo Thạnh, Ba Tri - cảnh tượng hiếm thấy ở vùng Tây Nam Bộ, nơi hàng trăm diêm dân gắn bó với nghề làm muối qua nhiều thế hệ.
+
+#### [Chợ Cầu Kè](https://vinhlong360.vn/dia-diem/cho-cau-ke)
+- **Mã ID**: `cho-cau-ke` | **Phân loại**: `facility` | **Địa bàn**: xa-tan-an | **Tọa độ**: [9.8723, 106.0560]
+- **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/cho-cau-ke.webp`
+- **Tác giả ảnh**: Bá Thi · **Cơ quan**: Báo Trà Vinh
+- **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
+- **Tóm lược**: Chợ trung tâm Cầu Kè, nơi mua sắm đặc sản địa phương phong phú và đa dạng, bao gồm dừa sáp, xá pấu, các loại thủ công mỹ nghệ và món ăn đặc trưng của vùng đất ba dân tộc Kinh - Khmer - Hoa.
 
 #### [Chùa An Linh](https://vinhlong360.vn/dia-diem/chua-an-linh)
 - **Mã ID**: `chua-an-linh` | **Phân loại**: `history` | **Địa bàn**: xa-an-qui | **Tọa độ**: [9.8983, 106.5582]
@@ -2230,6 +2258,13 @@ Mỗi thực thể dưới đây đều có ảnh tư liệu báo chí chính th
 - **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
 - **Tóm lược**: Quán cà phê sân vườn có hồ cá koi tại hẻm 68/19 Phạm Thái Bường, phường 4, thành phố Vĩnh Long — chỗ ngồi yên tĩnh giữa lòng phố.
 
+#### [Chợ Đại An](https://vinhlong360.vn/dia-diem/cho-dai-an)
+- **Mã ID**: `cho-dai-an` | **Phân loại**: `facility` | **Địa bàn**: xa-dai-an | **Tọa độ**: [9.6285, 106.2840]
+- **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/cho-dai-an.webp`
+- **Tác giả ảnh**: Bá Thi · **Cơ quan**: Báo Trà Vinh
+- **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
+- **Tóm lược**: Khu chợ truyền thống tại xã Đại An, huyện Trà Cú, là điểm đến văn hóa và ẩm thực đặc sắc của vùng.
+
 #### [Phố Ăn Vặt Bờ Kè](https://vinhlong360.vn/dia-diem/pho-an-vat-bo-ke)
 - **Mã ID**: `pho-an-vat-bo-ke` | **Phân loại**: `attraction` | **Địa bàn**: p-long-chau | **Tọa độ**: [10.2542, 105.9628]
 - **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/pho-an-vat-bo-ke.webp`
@@ -3161,6 +3196,13 @@ Mỗi thực thể dưới đây đều có ảnh tư liệu báo chí chính th
 - **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
 - **Tóm lược**: Câu lạc bộ cấp tỉnh được thành lập ở Vĩnh Long, quy tụ các thành viên yêu thích đờn ca tài tử trên địa bàn tỉnh.
 
+#### [Co.opmart Vĩnh Long](https://vinhlong360.vn/dia-diem/co-opmart-vinh-long-vinh-long)
+- **Mã ID**: `co-opmart-vinh-long-vinh-long` | **Phân loại**: `facility` | **Địa bàn**: p-long-chau | **Tọa độ**: [10.2549, 105.9707]
+- **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/co-opmart-vinh-long-vinh-long.webp`
+- **Tác giả ảnh**: Quang Thuần · **Cơ quan**: Báo Vĩnh Long
+- **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
+- **Tóm lược**: Siêu thị lớn thuộc hệ thống Co.opmart tại trung tâm TP. Vĩnh Long, trên đường Hùng Vương.
+
 #### [Múa chằn](https://vinhlong360.vn/dia-diem/mua-chan)
 - **Mã ID**: `mua-chan` | **Phân loại**: `experience` | **Địa bàn**: p-tra-vinh | **Tọa độ**: [9.9516, 106.3322]
 - **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/mua-chan.webp`
@@ -3280,6 +3322,20 @@ Mỗi thực thể dưới đây đều có ảnh tư liệu báo chí chính th
 - **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
 - **Tóm lược**: Ngay số 140 Hùng Vương, phường An Hội, trung tâm Bến Tre, Khách sạn Diamond Stars hoạt động theo dạng nhà nghỉ, phù hợp khách cần chỗ ngủ gọn gàng.
 
+#### [Bến xe Miền Tây](https://vinhlong360.vn/dia-diem/ben-xe-mien-tay-hcm)
+- **Mã ID**: `ben-xe-mien-tay-hcm` | **Phân loại**: `facility` | **Địa bàn**: gateway-hcm | **Tọa độ**: [10.7407, 106.6186]
+- **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/ben-xe-mien-tay-hcm.webp`
+- **Tác giả ảnh**: Quang Thuần · **Cơ quan**: Báo Vĩnh Long
+- **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
+- **Tóm lược**: Bến xe khách liên tỉnh phía Tây tại 395 Kinh Dương Vương, quận Bình Tân, đầu mối xuất phát chính về các tỉnh đồng bằng sông Cửu Long.
+
+#### [Cửa hàng Viettel Store Trưng Nữ Vương](https://vinhlong360.vn/dia-diem/cua-hang-viettel-store-trung-nu-vuong-vinh-long)
+- **Mã ID**: `cua-hang-viettel-store-trung-nu-vuong-vinh-long` | **Phân loại**: `facility` | **Địa bàn**: p-long-chau | **Tọa độ**: [10.2521, 105.9725]
+- **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/cua-hang-viettel-store-trung-nu-vuong-vinh-long.webp`
+- **Tác giả ảnh**: Quang Thuần · **Cơ quan**: Báo Vĩnh Long
+- **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
+- **Tóm lược**: Cửa hàng Viettel chính thức tại 01B Trưng Nữ Vương, Phường 1, TP. Vĩnh Long. Bán SIM du lịch Viettel cho người nước ngoài (cần hộ chiếu), gói data 5GB/7 ngày khoảng 50.000đ.
+
 #### [Làng Kẹo Dừa Phường 7 Bến Tre](https://vinhlong360.vn/dia-diem/lang-keo-dua-phuong-7-ben-tre)
 - **Mã ID**: `lang-keo-dua-phuong-7-ben-tre` | **Phân loại**: `craft_village` | **Địa bàn**: p-ben-tre | **Tọa độ**: [10.2361, 106.3764]
 - **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/lang-keo-dua-phuong-7-ben-tre.webp`
@@ -3363,6 +3419,13 @@ Mỗi thực thể dưới đây đều có ảnh tư liệu báo chí chính th
 - **Tác giả ảnh**: Thanh Nhã · **Cơ quan**: Báo Trà Vinh
 - **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
 - **Tóm lược**: Mắm bò hóc hòa nước dừa tươi, lọc qua rây rồi đổ vào nồi nước lèo — cách nấu riêng của người Khmer Trà Vinh cho tô bún vị ngọt đậm mà không tanh, ăn kèm cá lóc xé, huyết heo, thịt heo quay và rau ghém.
+
+#### [Co.opmart Bến Tre](https://vinhlong360.vn/dia-diem/co-opmart-ben-tre-ben-tre)
+- **Mã ID**: `co-opmart-ben-tre-ben-tre` | **Phân loại**: `facility` | **Địa bàn**: p-ben-tre | **Tọa độ**: [10.2422, 106.3767]
+- **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/co-opmart-ben-tre-ben-tre.webp`
+- **Tác giả ảnh**: Hữu Hiệp · **Cơ quan**: Báo Đồng Khởi
+- **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
+- **Tóm lược**: Siêu thị thuộc hệ thống Co.opmart tại TP. Bến Tre, trên đường Nguyễn Huệ, có khu đặc sản Bến Tre đóng gói.
 
 #### [Thiên Hậu Cung (Chùa Bà Thiên Hậu Trà Vinh)](https://vinhlong360.vn/dia-diem/chua-ba-thien-hau-tra-vinh)
 - **Mã ID**: `chua-ba-thien-hau-tra-vinh` | **Phân loại**: `attraction` | **Địa bàn**: p-tra-vinh | **Tọa độ**: [9.9513, 106.3346]
@@ -7067,6 +7130,13 @@ Mỗi thực thể dưới đây đều có ảnh tư liệu báo chí chính th
 - **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
 - **Tóm lược**: Đặc sản trái cây của Vĩnh Long, mang hương vị thanh mát và vị ngọt tự nhiên.
 
+#### [Bưu điện Trung tâm Vĩnh Long](https://vinhlong360.vn/dia-diem/buu-dien-trung-tam-vinh-long-vinh-long)
+- **Mã ID**: `buu-dien-trung-tam-vinh-long-vinh-long` | **Phân loại**: `facility` | **Địa bàn**: p-long-chau | **Tọa độ**: [10.2527, 105.9410]
+- **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/buu-dien-trung-tam-vinh-long-vinh-long.webp`
+- **Tác giả ảnh**: Quang Thuần · **Cơ quan**: Báo Vĩnh Long
+- **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
+- **Tóm lược**: Cần gửi bưu phẩm quốc tế, mua tem hay đổi ít tiền lẻ ở Vĩnh Long, cứ tới Bưu điện Trung tâm, 12C–14 Hoàng Thái Hiếu, phường Long Châu. Nơi này làm việc thứ 2–6 từ 7:00 tới 17:00, thứ 7 tới 12:00 trưa, chủ nhật nghỉ.
+
 #### [Lẩu 3 Con Tép](https://vinhlong360.vn/dia-diem/lau-3-con-tep)
 - **Mã ID**: `lau-3-con-tep` | **Phân loại**: `restaurant` | **Địa bàn**: p-ben-tre | **Tọa độ**: [10.2415, 106.3759]
 - **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/lau-3-con-tep.webp`
@@ -8068,6 +8138,13 @@ Mỗi thực thể dưới đây đều có ảnh tư liệu báo chí chính th
 - **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
 - **Tóm lược**: Nhà thơ Đỗ Như Tâm (1840-1911) — người được đời gọi trìu mến là Nhiêu Tâm — đã để lại những vần thơ chữ Nôm sâu sắc về tình yêu quê hương và nỗi đau thời cuộc.
 
+#### [Bến Phà Trần Phú (Cần Thơ – Vĩnh Long)](https://vinhlong360.vn/dia-diem/ben-pha-tran-phu-can-tho-vinh-long-vinh-long)
+- **Mã ID**: `ben-pha-tran-phu-can-tho-vinh-long-vinh-long` | **Phân loại**: `facility` | **Địa bàn**: xa-nhon-phu | **Tọa độ**: [10.0468, 105.7950]
+- **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/ben-pha-tran-phu-can-tho-vinh-long-vinh-long.webp`
+- **Tác giả ảnh**: Quang Thuần · **Cơ quan**: Báo Vĩnh Long
+- **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
+- **Tóm lược**: Bến phà dân sinh vượt sông Hậu kết nối khu vực Bình Minh sang bến Ninh Kiều và bờ Trần Phú của Cần Thơ.
+
 #### [Thánh tịnh Ngọc Sơn Quang](https://vinhlong360.vn/dia-diem/thanh-tinh-ngoc-son-quang)
 - **Mã ID**: `thanh-tinh-ngoc-son-quang` | **Phân loại**: `history` | **Địa bàn**: xa-tan-long-hoi | **Tọa độ**: [10.1394, 106.0716]
 - **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/thanh-tinh-ngoc-son-quang.webp`
@@ -8082,6 +8159,20 @@ Mỗi thực thể dưới đây đều có ảnh tư liệu báo chí chính th
 - **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
 - **Tóm lược**: Bến phà huyết mạch trên Quốc lộ 57 vượt luồng sông Cổ Chiên nối khu vực Long Hồ sang vùng miệt vườn Chợ Lách.
 
+#### [Bến Xe Trà Ôn / Tích Thiện](https://vinhlong360.vn/dia-diem/ben-xe-tra-on-tich-thien-vinh-long)
+- **Mã ID**: `ben-xe-tra-on-tich-thien-vinh-long` | **Phân loại**: `facility` | **Địa bàn**: xa-nhon-phu | **Tọa độ**: [10.2542, 105.9628]
+- **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/ben-xe-tra-on-tich-thien-vinh-long.webp`
+- **Tác giả ảnh**: Quang Thuần · **Cơ quan**: Báo Vĩnh Long
+- **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
+- **Tóm lược**: Bến xe khách trên trục Quốc lộ 54 ven sông Hậu, phục vụ tuyến buýt đi TP Vĩnh Long và các xe đò liên xã.
+
+#### [Điểm Xe Buýt Phương Trang Vĩnh Long – Cần Thơ (Tuyến liên tỉnh)](https://vinhlong360.vn/dia-diem/diem-xe-buyt-phuong-trang-vinh-long-can-tho-tuyen-lien-tinh-vinh-long)
+- **Mã ID**: `diem-xe-buyt-phuong-trang-vinh-long-can-tho-tuyen-lien-tinh-vinh-long` | **Phân loại**: `facility` | **Địa bàn**: xa-nhon-phu | **Tọa độ**: [10.2542, 105.9628]
+- **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/diem-xe-buyt-phuong-trang-vinh-long-can-tho-tuyen-lien-tinh-vinh-long.webp`
+- **Tác giả ảnh**: Quang Thuần · **Cơ quan**: Báo Vĩnh Long
+- **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
+- **Tóm lược**: Điểm đón trả khách xe buýt Phương Trang liên tỉnh Vĩnh Long – Cần Thơ trên trục Quốc lộ 1A.
+
 #### [Chùa Quang Minh Phú Phụng](https://vinhlong360.vn/dia-diem/chua-quang-minh-phu-phung)
 - **Mã ID**: `chua-quang-minh-phu-phung` | **Phân loại**: `history` | **Địa bàn**: xa-phu-phung | **Tọa độ**: [10.2630, 106.0766]
 - **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/chua-quang-minh-phu-phung.webp`
@@ -8089,12 +8180,68 @@ Mỗi thực thể dưới đây đều có ảnh tư liệu báo chí chính th
 - **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
 - **Tóm lược**: Chùa Quang Minh nằm tại ấp Chợ, xã Phú Phụng, điểm tham quan tâm linh.
 
+#### [Bến xe Chợ Lách](https://vinhlong360.vn/dia-diem/ben-xe-cho-lach-ben-tre)
+- **Mã ID**: `ben-xe-cho-lach-ben-tre` | **Phân loại**: `facility` | **Địa bàn**: xa-cho-lach | **Tọa độ**: [10.2238, 106.1914]
+- **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/ben-xe-cho-lach-ben-tre.webp`
+- **Tác giả ảnh**: Hữu Hiệp · **Cơ quan**: Báo Đồng Khởi
+- **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
+- **Tóm lược**: Bến xe trung tâm vùng hoa kiểng Cái Mơn Chợ Lách trên Quốc lộ 57, điểm đón tuyến xe buýt số 08 đi TP Bến Tre và Phà Đình Khao.
+
+#### [Bến tàu Du lịch TP. Bến Tre](https://vinhlong360.vn/dia-diem/ben-tau-du-lich-tp-ben-tre-ben-tre)
+- **Mã ID**: `ben-tau-du-lich-tp-ben-tre-ben-tre` | **Phân loại**: `facility` | **Địa bàn**: p-an-hoi | **Tọa độ**: [10.2009, 106.3728]
+- **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/ben-tau-du-lich-tp-ben-tre-ben-tre.webp`
+- **Tác giả ảnh**: Hữu Hiệp · **Cơ quan**: Báo Đồng Khởi
+- **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
+- **Tóm lược**: Bến tàu du lịch trung tâm ven đường Hùng Vương, phường An Hội, điểm khởi hành các tour du thuyền sông Chẹt Sậy và rạch Bến Tre.
+
+#### [Bến phà Hàm Luông](https://vinhlong360.vn/dia-diem/ben-pha-ham-luong-ben-tre)
+- **Mã ID**: `ben-pha-ham-luong-ben-tre` | **Phân loại**: `facility` | **Địa bàn**: p-phu-khuong | **Tọa độ**: [10.2272, 106.4072]
+- **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/ben-pha-ham-luong-ben-tre.webp`
+- **Tác giả ảnh**: Hữu Hiệp · **Cơ quan**: Báo Đồng Khởi
+- **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
+- **Tóm lược**: Bến phà dân sinh hoài niệm vượt sông Hàm Luông nối thành phố Bến Tre với vùng cù lao Mỏ Cày.
+
+#### [Bến phà Tân Phú (Châu Thành)](https://vinhlong360.vn/dia-diem/ben-pha-tan-phu-chau-thanh-ben-tre)
+- **Mã ID**: `ben-pha-tan-phu-chau-thanh-ben-tre` | **Phân loại**: `facility` | **Địa bàn**: xa-tan-phu | **Tọa độ**: [10.1246, 106.2556]
+- **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/ben-pha-tan-phu-chau-thanh-ben-tre.webp`
+- **Tác giả ảnh**: Hữu Hiệp · **Cơ quan**: Báo Đồng Khởi
+- **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
+- **Tóm lược**: Bến phà ngang sông Hàm Luông và sông Ba Lai kết nối khu vực Châu Thành sang vương quốc hoa quả Cái Mơn Chợ Lách.
+
 #### [Chùa Khmer Phù Ly](https://vinhlong360.vn/dia-diem/chua-khmer-phu-ly)
 - **Mã ID**: `chua-khmer-phu-ly` | **Phân loại**: `history` | **Địa bàn**: xa-an-binh | **Tọa độ**: [10.0452, 105.8502]
 - **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/chua-khmer-phu-ly.webp`
 - **Tác giả ảnh**: Thanh Dũng · **Cơ quan**: Báo Vĩnh Long
 - **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
 - **Tóm lược**: Ngôi chùa Khmer khoảng 400 năm tuổi, kiến trúc pha trộn văn hóa Ấn Độ, Campuchia và Thái Lan, thể hiện vẻ đẹp cổ kính và hiện đại.
+
+#### [Bến xe Duyên Hải (TX. Duyên Hải)](https://vinhlong360.vn/dia-diem/ben-xe-duyen-hai-tx-duyen-hai-tra-vinh)
+- **Mã ID**: `ben-xe-duyen-hai-tx-duyen-hai-tra-vinh` | **Phân loại**: `facility` | **Địa bàn**: p-duyen-hai | **Tọa độ**: [9.6621, 106.5179]
+- **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/ben-xe-duyen-hai-tx-duyen-hai-tra-vinh.webp`
+- **Tác giả ảnh**: Bá Thi · **Cơ quan**: Báo Trà Vinh
+- **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
+- **Tóm lược**: Bến xe khách trung tâm thị xã Duyên Hải ven Quốc lộ 53, điểm đón trả khách đi Khu du lịch Biển Ba Động và Rừng ngập mặn.
+
+#### [Bến xe Cầu Kè](https://vinhlong360.vn/dia-diem/ben-xe-cau-ke-tra-vinh)
+- **Mã ID**: `ben-xe-cau-ke-tra-vinh` | **Phân loại**: `facility` | **Địa bàn**: xa-cau-ke | **Tọa độ**: [9.8716, 106.0899]
+- **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/ben-xe-cau-ke-tra-vinh.webp`
+- **Tác giả ảnh**: Bá Thi · **Cơ quan**: Báo Trà Vinh
+- **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
+- **Tóm lược**: Bến xe khách tại trung tâm Cầu Kè ven Tỉnh lộ 911, cửa ngõ đón khách tham quan vùng chuyên canh dừa sáp và chùa Khmer.
+
+#### [Bến xe Cầu Ngang](https://vinhlong360.vn/dia-diem/ben-xe-cau-ngang-tra-vinh)
+- **Mã ID**: `ben-xe-cau-ngang-tra-vinh` | **Phân loại**: `facility` | **Địa bàn**: xa-cau-ngang | **Tọa độ**: [9.7976, 106.4548]
+- **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/ben-xe-cau-ngang-tra-vinh.webp`
+- **Tác giả ảnh**: Bá Thi · **Cơ quan**: Báo Trà Vinh
+- **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
+- **Tóm lược**: Bến xe khách trên trục Quốc lộ 53 tại khu vực Cầu Ngang, điểm dừng tuyến buýt số 04 đi thị xã Duyên Hải.
+
+#### [Bến xe Tiểu Cần](https://vinhlong360.vn/dia-diem/ben-xe-tieu-can-tra-vinh)
+- **Mã ID**: `ben-xe-tieu-can-tra-vinh` | **Phân loại**: `facility` | **Địa bàn**: p-tieu-can | **Tọa độ**: [9.8403, 106.1729]
+- **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/ben-xe-tieu-can-tra-vinh.webp`
+- **Tác giả ảnh**: Bá Thi · **Cơ quan**: Báo Trà Vinh
+- **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
+- **Tóm lược**: Bến xe khách ven Quốc lộ 60 tại khu vực Tiểu Cần, điểm dừng chân của tuyến buýt số 02 nối TP Trà Vinh với bến phà Đại Ngãi.
 
 #### [Chùa Sóc Tro](https://vinhlong360.vn/dia-diem/chua-soc-tro)
 - **Mã ID**: `chua-soc-tro` | **Phân loại**: `history` | **Địa bàn**: p-nguyet-hoa | **Tọa độ**: [9.9513, 106.3346]
@@ -8411,12 +8558,75 @@ Mỗi thực thể dưới đây đều có ảnh tư liệu báo chí chính th
 - **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
 - **Tóm lược**: Địa danh ven biển gắn với vùng biển Ba Động, là khu nghỉ mát do người Pháp xây dựng trước đây.
 
+#### [Bến xe Vĩnh Long (Trung tâm)](https://vinhlong360.vn/dia-diem/ben-xe-vinh-long-trung-tam-vinh-long)
+- **Mã ID**: `ben-xe-vinh-long-trung-tam-vinh-long` | **Phân loại**: `facility` | **Địa bàn**: p-long-chau | **Tọa độ**: [10.2530, 105.9642]
+- **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/ben-xe-vinh-long-trung-tam-vinh-long.webp`
+- **Tác giả ảnh**: Quang Thuần · **Cơ quan**: Báo Vĩnh Long
+- **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
+- **Tóm lược**: Bến xe khách trung tâm tại Số 01E Đinh Tiên Hoàng, Phường 8, đầu mối vận tải đường bộ liên tỉnh và xe buýt nội tỉnh.
+
 #### [Bến Phà An Bình](https://vinhlong360.vn/dia-diem/ben-pha-an-binh-vinh-long)
 - **Mã ID**: `ben-pha-an-binh-vinh-long` | **Phân loại**: `facility` | **Địa bàn**: p-long-chau | **Tọa độ**: [10.2483, 105.9713]
 - **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/ben-pha-an-binh-vinh-long.webp`
 - **Tác giả ảnh**: Quang Thuần · **Cơ quan**: Báo Vĩnh Long
 - **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
 - **Tóm lược**: Bến phà dân sinh và du lịch bên bờ sông Cổ Chiên tại Phường 1, TP. Vĩnh Long, kết nối trực tiếp sang 4 xã cù lao An Bình.
+
+#### [Bến Xe Vũng Liêm](https://vinhlong360.vn/dia-diem/ben-xe-vung-liem-vinh-long)
+- **Mã ID**: `ben-xe-vung-liem-vinh-long` | **Phân loại**: `facility` | **Địa bàn**: xa-hoa-hiep | **Tọa độ**: [10.1072, 106.0340]
+- **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/ben-xe-vung-liem-vinh-long.webp`
+- **Tác giả ảnh**: Quang Thuần · **Cơ quan**: Báo Vĩnh Long
+- **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
+- **Tóm lược**: Bến xe khách tại Tỉnh lộ 902, trung tâm Vũng Liêm, kết nối các tuyến xe buýt đi TP Vĩnh Long và xe khách liên tỉnh.
+
+#### [Bến xe Ba Tri](https://vinhlong360.vn/dia-diem/ben-xe-ba-tri-ben-tre)
+- **Mã ID**: `ben-xe-ba-tri-ben-tre` | **Phân loại**: `facility` | **Địa bàn**: p-ba-tri | **Tọa độ**: [10.0487, 106.5924]
+- **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/ben-xe-ba-tri-ben-tre.webp`
+- **Tác giả ảnh**: Hữu Hiệp · **Cơ quan**: Báo Đồng Khởi
+- **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
+- **Tóm lược**: Bến xe khách trung tâm vùng duyên hải Ba Tri ven Tỉnh lộ 885, điểm cuối của tuyến xe buýt số 02 từ TP Bến Tre.
+
+#### [Bến xe Mỏ Cày Nam](https://vinhlong360.vn/dia-diem/ben-xe-mo-cay-nam-ben-tre)
+- **Mã ID**: `ben-xe-mo-cay-nam-ben-tre` | **Phân loại**: `facility` | **Địa bàn**: xa-dong-khoi | **Tọa độ**: [10.1563, 106.3830]
+- **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/ben-xe-mo-cay-nam-ben-tre.webp`
+- **Tác giả ảnh**: Hữu Hiệp · **Cơ quan**: Báo Đồng Khởi
+- **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
+- **Tóm lược**: Bến xe khách trên trục Quốc lộ 60 tại trung tâm Mỏ Cày Nam, kết nối xe buýt đi TP Bến Tre và vùng Thạnh Phú.
+
+#### [Bệnh viện Đa khoa Nguyễn Đình Chiểu](https://vinhlong360.vn/dia-diem/benh-vien-da-khoa-nguyen-dinh-chieu-ben-tre)
+- **Mã ID**: `benh-vien-da-khoa-nguyen-dinh-chieu-ben-tre` | **Phân loại**: `facility` | **Địa bàn**: p-phu-khuong | **Tọa độ**: [10.2385, 106.3668]
+- **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/benh-vien-da-khoa-nguyen-dinh-chieu-ben-tre.webp`
+- **Tác giả ảnh**: Hữu Hiệp · **Cơ quan**: Báo Đồng Khởi
+- **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
+- **Tóm lược**: Bệnh viện hạng I tuyến tỉnh tại Bến Tre, phòng cấp cứu 24/24 cho người lớn, nhi và sản khoa.
+
+#### [Bệnh viện Đa khoa Minh Đức Bến Tre](https://vinhlong360.vn/dia-diem/benh-vien-da-khoa-minh-duc-ben-tre-ben-tre)
+- **Mã ID**: `benh-vien-da-khoa-minh-duc-ben-tre-ben-tre` | **Phân loại**: `facility` | **Địa bàn**: p-son-dong | **Tọa độ**: [10.2714, 106.3394]
+- **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/benh-vien-da-khoa-minh-duc-ben-tre-ben-tre.webp`
+- **Tác giả ảnh**: Hữu Hiệp · **Cơ quan**: Báo Đồng Khởi
+- **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
+- **Tóm lược**: Bệnh viện tư nhân tại 44 Đoàn Hoàng Minh, Phường 6, TP. Bến Tre. Khám nhanh hơn bệnh viện công, có dịch vụ đặt lịch trước. Phù hợp cho trường hợp không quá khẩn cấp. Hoạt động 24/7.
+
+#### [Bệnh viện Đa khoa Xuyên Á Vĩnh Long](https://vinhlong360.vn/dia-diem/benh-vien-da-khoa-xuyen-a-vinh-long-vinh-long)
+- **Mã ID**: `benh-vien-da-khoa-xuyen-a-vinh-long-vinh-long` | **Phân loại**: `facility` | **Địa bàn**: p-long-chau | **Tọa độ**: [10.2615, 105.9405]
+- **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/benh-vien-da-khoa-xuyen-a-vinh-long-vinh-long.webp`
+- **Tác giả ảnh**: Quang Thuần · **Cơ quan**: Báo Vĩnh Long
+- **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
+- **Tóm lược**: Bệnh viện. 68E Phạm Hùng, Phường Long Châu, TP. Vĩnh Long. Cấp cứu 24/7. Khám ngoại trú: 7:00–12:00 và 13:00–16:00.
+
+#### [Công an tỉnh Vĩnh Long](https://vinhlong360.vn/dia-diem/cong-an-tinh-vinh-long-vinh-long)
+- **Mã ID**: `cong-an-tinh-vinh-long-vinh-long` | **Phân loại**: `facility` | **Địa bàn**: p-tan-hanh | **Tọa độ**: [10.2584, 105.9346]
+- **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/cong-an-tinh-vinh-long-vinh-long.webp`
+- **Tác giả ảnh**: Quang Thuần · **Cơ quan**: Báo Vĩnh Long
+- **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
+- **Tóm lược**: Cần hỗ trợ khẩn cấp khi ở Vĩnh Long, gọi 113; trụ sở Công an tỉnh Vĩnh Long đặt tại 180 ấp Long Hưng, xã Thanh Đức, trực ban 24/7.
+
+#### [Công an TP. Bến Tre](https://vinhlong360.vn/dia-diem/cong-an-tp-ben-tre-ben-tre)
+- **Mã ID**: `cong-an-tp-ben-tre-ben-tre` | **Phân loại**: `facility` | **Địa bàn**: p-ben-tre | **Tọa độ**: [10.2365, 106.3759]
+- **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/cong-an-tp-ben-tre-ben-tre.webp`
+- **Tác giả ảnh**: Hữu Hiệp · **Cơ quan**: Báo Đồng Khởi
+- **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
+- **Tóm lược**: Công an. 25C Đại lộ Đồng Khởi, Khu phố 6, Phường Phú Khương, TP. Bến Tre. Trực ban 24/24. Tiếp công dân: giờ hành chính thứ 2–6. Khẩn cấp: 113.
 
 #### [KS-NH Hùng Vương](https://vinhlong360.vn/dia-diem/ks-nh-hung-vuong)
 - **Mã ID**: `ks-nh-hung-vuong` | **Phân loại**: `accommodation` | **Địa bàn**: p-an-hoi | **Tọa độ**: [10.2346, 106.3755]
@@ -8425,6 +8635,13 @@ Mỗi thực thể dưới đây đều có ảnh tư liệu báo chí chính th
 - **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
 - **Tóm lược**: Giữa phường An Hội, TP Bến Tre, nhà nghỉ KS-NH Hùng Vương đón khách tại số 148 đường Hùng Vương. Điện thoại liên hệ: 0275 382 2408.
 
+#### [BIDV Chi nhánh Vĩnh Long](https://vinhlong360.vn/dia-diem/bidv-chi-nhanh-vinh-long-vinh-long)
+- **Mã ID**: `bidv-chi-nhanh-vinh-long-vinh-long` | **Phân loại**: `facility` | **Địa bàn**: p-long-chau | **Tọa độ**: [10.2542, 105.9628]
+- **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/bidv-chi-nhanh-vinh-long-vinh-long.webp`
+- **Tác giả ảnh**: Quang Thuần · **Cơ quan**: Báo Vĩnh Long
+- **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
+- **Tóm lược**: Chi nhánh ngân hàng BIDV tại 15A Lê Lợi, Phường 1, TP Vĩnh Long.
+
 #### [ATM Vietcombank – Bệnh viện Đa khoa tỉnh](https://vinhlong360.vn/dia-diem/atm-vietcombank-benh-vien-da-khoa-tinh-vinh-long)
 - **Mã ID**: `atm-vietcombank-benh-vien-da-khoa-tinh-vinh-long` | **Phân loại**: `facility` | **Địa bàn**: p-phuoc-hau | **Tọa độ**: [10.2318, 105.9888]
 - **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/atm-vietcombank-benh-vien-da-khoa-tinh-vinh-long.webp`
@@ -8432,12 +8649,40 @@ Mỗi thực thể dưới đây đều có ảnh tư liệu báo chí chính th
 - **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
 - **Tóm lược**: Atm. 301 Trần Phú, Phường 4, TP. Vĩnh Long (tại khuôn viên bệnh viện). Hỗ trợ thẻ 24/7).
 
+#### [Cửa hàng Viettel Đinh Tiên Hoàng](https://vinhlong360.vn/dia-diem/cua-hang-viettel-dinh-tien-hoang-vinh-long)
+- **Mã ID**: `cua-hang-viettel-dinh-tien-hoang-vinh-long` | **Phân loại**: `facility` | **Địa bàn**: p-tan-hanh | **Tọa độ**: [10.2311, 105.9557]
+- **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/cua-hang-viettel-dinh-tien-hoang-vinh-long.webp`
+- **Tác giả ảnh**: Quang Thuần · **Cơ quan**: Báo Vĩnh Long
+- **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
+- **Tóm lược**: Mở 7:30–18:30 hàng ngày, Cửa hàng Viettel Đinh Tiên Hoàng ở số 87 Đinh Tiên Hoàng, Phường 8, Vĩnh Long bán SIM du lịch cho khách quốc tế.
+
 #### [Tuần lễ Văn hóa, Thể thao và Du lịch tỉnh Vĩnh Long](https://vinhlong360.vn/dia-diem/tuan-le-van-hoa-the-thao-va-du-lich-tinh-vinh-long-vinh-long)
 - **Mã ID**: `tuan-le-van-hoa-the-thao-va-du-lich-tinh-vinh-long-vinh-long` | **Phân loại**: `event` | **Địa bàn**: xa-nhon-phu | **Tọa độ**: [10.2542, 105.9628]
 - **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/tuan-le-van-hoa-the-thao-va-du-lich-tinh-vinh-long-vinh-long.webp`
 - **Tác giả ảnh**: Trần Phước · **Cơ quan**: Báo Vĩnh Long
 - **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
 - **Tóm lược**: Lễ hội đường phố (carnival diễu hành) quy mô lớn tại trung tâm TP Vĩnh Long. Đua ghe tam bản trên sông, biểu diễn dù lượn và múa rối nước.
+
+#### [BIDV Chi nhánh Bến Tre – ATM Đại lộ Đồng Khởi](https://vinhlong360.vn/dia-diem/bidv-chi-nhanh-ben-tre-atm-dai-lo-dong-khoi-ben-tre)
+- **Mã ID**: `bidv-chi-nhanh-ben-tre-atm-dai-lo-dong-khoi-ben-tre` | **Phân loại**: `facility` | **Địa bàn**: p-phu-khuong | **Tọa độ**: [10.2272, 106.4072]
+- **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/bidv-chi-nhanh-ben-tre-atm-dai-lo-dong-khoi-ben-tre.webp`
+- **Tác giả ảnh**: Hữu Hiệp · **Cơ quan**: Báo Đồng Khởi
+- **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
+- **Tóm lược**: Atm. 21 Đại lộ Đồng Khởi, TP. Bến Tre (cùng tuyến đường có nhiều điểm ATM BIDV khác: 59 Đồng Khởi, 5 Cách Mạng Tháng 8).
+
+#### [Điểm giao dịch Vinaphone (VNPT) – Cách Mạng Tháng 8](https://vinhlong360.vn/dia-diem/diem-giao-dich-vinaphone-vnpt-cach-mang-thang-8-ben-tre)
+- **Mã ID**: `diem-giao-dich-vinaphone-vnpt-cach-mang-thang-8-ben-tre` | **Phân loại**: `facility` | **Địa bàn**: p-phu-khuong | **Tọa độ**: [10.2272, 106.4072]
+- **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/diem-giao-dich-vinaphone-vnpt-cach-mang-thang-8-ben-tre.webp`
+- **Tác giả ảnh**: Hữu Hiệp · **Cơ quan**: Báo Đồng Khởi
+- **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
+- **Tóm lược**: Điểm giao dịch VNPT/Vinaphone tại 1 Cách Mạng Tháng 8, TP. Bến Tre. Mua SIM du lịch Vinaphone (data 4G).
+
+#### [Điểm giao dịch Vinaphone – Nguyễn Thị Định](https://vinhlong360.vn/dia-diem/diem-giao-dich-vinaphone-nguyen-thi-dinh-ben-tre)
+- **Mã ID**: `diem-giao-dich-vinaphone-nguyen-thi-dinh-ben-tre` | **Phân loại**: `facility` | **Địa bàn**: p-phu-khuong | **Tọa độ**: [10.2272, 106.4072]
+- **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/diem-giao-dich-vinaphone-nguyen-thi-dinh-ben-tre.webp`
+- **Tác giả ảnh**: Hữu Hiệp · **Cơ quan**: Báo Đồng Khởi
+- **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
+- **Tóm lược**: Cần mua SIM, nạp tiền hay nhờ hỗ trợ kỹ thuật ở Bến Tre, ghé điểm giao dịch Vinaphone trên đường Nguyễn Thị Định, mở 7:00–19:00 hàng ngày.
 
 #### [Khu di tích lịch sử Căn cứ Tỉnh ủy Bến Tre (Rừng lá Thạnh Phú)](https://vinhlong360.vn/dia-diem/can-cu-tinh-uy-ben-tre-rung-la-thanh-phu)
 - **Mã ID**: `can-cu-tinh-uy-ben-tre-rung-la-thanh-phu` | **Phân loại**: `history` | **Địa bàn**: xa-thanh-phu | **Tọa độ**: [10.2373, 106.3813]
@@ -9685,6 +9930,13 @@ Mỗi thực thể dưới đây đều có ảnh tư liệu báo chí chính th
 - **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
 - **Tóm lược**: Nhà hàng tại 3 Phạm Hùng, phường 2 TP. Vĩnh Long. Chuyên cơm chay phần kiểu Vĩnh Long: canh chua chay, cá kho chay.
 
+#### [Cửa hàng Viettel Phạm Hùng](https://vinhlong360.vn/dia-diem/cua-hang-viettel-pham-hung-vinh-long)
+- **Mã ID**: `cua-hang-viettel-pham-hung-vinh-long` | **Phân loại**: `facility` | **Địa bàn**: p-long-chau | **Tọa độ**: [10.2583, 105.9575]
+- **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/cua-hang-viettel-pham-hung-vinh-long.webp`
+- **Tác giả ảnh**: Quang Thuần · **Cơ quan**: Báo Vĩnh Long
+- **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
+- **Tóm lược**: Điểm giao dịch Viettel tại 37A Phạm Hùng, Phường 9, TP. Vĩnh Long. Đăng ký SIM mới, đổi eSIM.
+
 #### [Khách sạn Xuân Hương](https://vinhlong360.vn/dia-diem/khach-san-xuan-huong)
 - **Mã ID**: `khach-san-xuan-huong` | **Phân loại**: `accommodation` | **Địa bàn**: p-long-chau | **Tọa độ**: [10.2583, 105.9575]
 - **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/khach-san-xuan-huong.webp`
@@ -9705,6 +9957,13 @@ Mỗi thực thể dưới đây đều có ảnh tư liệu báo chí chính th
 - **Tác giả ảnh**: Hữu Hiệp · **Cơ quan**: Báo Đồng Khởi
 - **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
 - **Tóm lược**: Trái cây dĩa là món làm nên danh xưng của Quán Chị Yến trên Đường Tỉnh 884, xã Sơn Đông, Bến Tre.
+
+#### [Bưu điện Trung tâm TP. Bến Tre](https://vinhlong360.vn/dia-diem/buu-dien-trung-tam-tp-ben-tre-ben-tre)
+- **Mã ID**: `buu-dien-trung-tam-tp-ben-tre-ben-tre` | **Phân loại**: `facility` | **Địa bàn**: p-ben-tre | **Tọa độ**: [10.2361, 106.3764]
+- **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/buu-dien-trung-tam-tp-ben-tre-ben-tre.webp`
+- **Tác giả ảnh**: Hữu Hiệp · **Cơ quan**: Báo Đồng Khởi
+- **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
+- **Tóm lược**: Sáu ngày mỗi tuần, Bưu điện Trung tâm TP. Bến Tre ở số 3 Đại lộ Đồng Khởi nhận gửi bưu phẩm, quà lưu niệm về nước cho người xa xứ.
 
 #### [Trà Sữa Family - Đồng Khởi](https://vinhlong360.vn/dia-diem/tra-sua-family---dong-khoi)
 - **Mã ID**: `tra-sua-family---dong-khoi` | **Phân loại**: `cafe` | **Địa bàn**: p-phu-khuong | **Tọa độ**: [10.2272, 106.4072]
@@ -10448,6 +10707,13 @@ Mỗi thực thể dưới đây đều có ảnh tư liệu báo chí chính th
 - **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
 - **Tóm lược**: Trên đường Trần Hưng Đạo, thị trấn Ba Tri, ngôi miếu Việt-Hoa rộng hơn 2.600 m² thờ Quan Thánh Đế Quân, Tài Bạch Tinh Quân và Thiên Hậu Nguyên Quân — do cộng đồng người Hoa từ bảy phủ Ninh Ba, Phước Châu, Chương Châu, Tuyền Châu, Quảng Châu, Triều Châu, Quỳnh Châu lập nên.
 
+#### [Bến xe Trà Cú](https://vinhlong360.vn/dia-diem/ben-xe-tra-cu-tra-vinh)
+- **Mã ID**: `ben-xe-tra-cu-tra-vinh` | **Phân loại**: `facility` | **Địa bàn**: xa-tra-cu | **Tọa độ**: [9.7034, 106.2624]
+- **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/ben-xe-tra-cu-tra-vinh.webp`
+- **Tác giả ảnh**: Bá Thi · **Cơ quan**: Báo Trà Vinh
+- **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
+- **Tóm lược**: Bến xe khách tại trung tâm Trà Cú ven Tỉnh lộ 914, đầu mối xe buýt số 03 và xe khách liên tỉnh đi vùng duyên hải Định An.
+
 #### [Nhà thờ Giáo xứ Cái Nhum](https://vinhlong360.vn/dia-diem/nha-tho-giao-xu-cai-nhum)
 - **Mã ID**: `nha-tho-giao-xu-cai-nhum` | **Phân loại**: `history` | **Địa bàn**: xa-cho-lach | **Tọa độ**: [10.2469, 106.1691]
 - **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/nha-tho-giao-xu-cai-nhum.webp`
@@ -10559,6 +10825,13 @@ Mỗi thực thể dưới đây đều có ảnh tư liệu báo chí chính th
 - **Tác giả ảnh**: Bá Thi · **Cơ quan**: Báo Vĩnh Long
 - **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
 - **Tóm lược**: Quán cơm chay Âu Lạc bình dân trên đường Trần Văn Ơn, phường 1 TP.
+
+#### [Chợ Vĩnh Long (Chợ Trung Tâm)](https://vinhlong360.vn/dia-diem/cho-vinh-long-cho-trung-tam-vinh-long)
+- **Mã ID**: `cho-vinh-long-cho-trung-tam-vinh-long` | **Phân loại**: `facility` | **Địa bàn**: p-long-chau | **Tọa độ**: [10.2498, 106.1391]
+- **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/cho-vinh-long-cho-trung-tam-vinh-long.webp`
+- **Tác giả ảnh**: Quang Thuần · **Cơ quan**: Báo Vĩnh Long
+- **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
+- **Tóm lược**: Chợ trung tâm TP. Vĩnh Long, nằm trên đường Gia Long gần bờ sông Cổ Chiên, bày bán phong phú nông sản và đặc sản địa phương.
 
 #### [Sông Cổ Chiên](https://vinhlong360.vn/dia-diem/song-co-chien-vinh-long)
 - **Mã ID**: `song-co-chien-vinh-long` | **Phân loại**: `nature` | **Địa bàn**: p-long-chau | **Tọa độ**: [10.2539, 105.9722]
@@ -10860,6 +11133,13 @@ Mỗi thực thể dưới đây đều có ảnh tư liệu báo chí chính th
 - **Tác giả ảnh**: Bá Thi · **Cơ quan**: Báo Vĩnh Long
 - **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
 - **Tóm lược**: Năm ngày từ 23 đến 27 tháng 4 âm lịch, các miếu Bà trong vùng Vĩnh Long – Trà Vinh vào lễ vía Bà Chúa Xứ với cúng bái, hầu bóng và hội chợ.
+
+#### [Bệnh viện Đa khoa tỉnh Vĩnh Long](https://vinhlong360.vn/dia-diem/benh-vien-da-khoa-tinh-vinh-long-vinh-long)
+- **Mã ID**: `benh-vien-da-khoa-tinh-vinh-long-vinh-long` | **Phân loại**: `facility` | **Địa bàn**: xa-trung-ngai | **Tọa độ**: [10.2539, 105.9722]
+- **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/benh-vien-da-khoa-tinh-vinh-long-vinh-long.webp`
+- **Tác giả ảnh**: Quang Thuần · **Cơ quan**: Báo Vĩnh Long
+- **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
+- **Tóm lược**: Bệnh viện công lớn nhất tỉnh Vĩnh Long tại 301 Trần Phú, Phường 4, TP. Vĩnh Long.
 
 #### [Agribank Chi nhánh Vĩnh Long](https://vinhlong360.vn/dia-diem/agribank-chi-nhanh-vinh-long-vinh-long)
 - **Mã ID**: `agribank-chi-nhanh-vinh-long-vinh-long` | **Phân loại**: `facility` | **Địa bàn**: xa-hieu-thanh | **Tọa độ**: [10.2539, 105.9722]

@@ -1,0 +1,322 @@
+[
+  {
+    "id": "ben-pha-ham-luong-ben-tre",
+    "name": "Bến phà Hàm Luông",
+    "summary": "Bến phà dân sinh hoài niệm vượt sông Hàm Luông nối thành phố Bến Tre với vùng cù lao Mỏ Cày.",
+    "placeId": "p-phu-khuong",
+    "address": "Khu vực sông Hàm Luông, Phường Phú Khương, tỉnh Vĩnh Long",
+    "webp_size": 9124
+  },
+  {
+    "id": "ben-pha-tan-phu-chau-thanh-ben-tre",
+    "name": "Bến phà Tân Phú (Châu Thành)",
+    "summary": "Bến phà ngang sông Hàm Luông và sông Ba Lai kết nối khu vực Châu Thành sang vương quốc hoa quả Cái Mơn Chợ Lách.",
+    "placeId": "xa-tan-phu",
+    "address": "Bến phà Tân Phú (Châu Thành), Xã Tân Phú, tỉnh Vĩnh Long",
+    "webp_size": 9452
+  },
+  {
+    "id": "ben-pha-tran-phu-can-tho-vinh-long-vinh-long",
+    "name": "Bến Phà Trần Phú (Cần Thơ – Vĩnh Long)",
+    "summary": "Bến phà dân sinh vượt sông Hậu kết nối khu vực Bình Minh sang bến Ninh Kiều và bờ Trần Phú của Cần Thơ.",
+    "placeId": "xa-nhon-phu",
+    "address": "Khu vực bờ Vĩnh Long thuộc Cái Vồn, TX. Bình Minh, Vĩnh Long (đối diện bến Cần Thơ qua sông Hậu)",
+    "webp_size": 9374
+  },
+  {
+    "id": "ben-tau-du-lich-tp-ben-tre-ben-tre",
+    "name": "Bến tàu Du lịch TP. Bến Tre",
+    "summary": "Bến tàu du lịch trung tâm ven đường Hùng Vương, phường An Hội, điểm khởi hành các tour du thuyền sông Chẹt Sậy và rạch Bến Tre.",
+    "placeId": "p-an-hoi",
+    "address": "Bến tàu Du lịch ., Phường An Hội, tỉnh Vĩnh Long",
+    "webp_size": 9346
+  },
+  {
+    "id": "ben-xe-ba-tri-ben-tre",
+    "name": "Bến xe Ba Tri",
+    "summary": "Bến xe khách trung tâm vùng duyên hải Ba Tri ven Tỉnh lộ 885, điểm cuối của tuyến xe buýt số 02 từ TP Bến Tre.",
+    "placeId": "p-ba-tri",
+    "address": "Tỉnh Lộ 885, đường An Bình Tây, Phường Ba Tri, tỉnh Vĩnh Long",
+    "webp_size": 9126
+  },
+  {
+    "id": "ben-xe-ben-tre-trung-tam-ben-tre",
+    "name": "Bến xe Bến Tre (Trung tâm)",
+    "summary": "Bến xe trung tâm tại Số 303 Đoàn Hoàng Minh, phường Phú Khương, đầu mối xe khách liên tỉnh và mạng lưới buýt xứ dừa.",
+    "placeId": "p-ben-tre",
+    "address": "303 Đoàn Hoàng Minh, Phường Bến Tre, tỉnh Vĩnh Long",
+    "webp_size": 9332
+  },
+  {
+    "id": "ben-xe-cau-ke-tra-vinh",
+    "name": "Bến xe Cầu Kè",
+    "summary": "Bến xe khách tại trung tâm Cầu Kè ven Tỉnh lộ 911, cửa ngõ đón khách tham quan vùng chuyên canh dừa sáp và chùa Khmer.",
+    "placeId": "xa-cau-ke",
+    "address": "Khóm 8, Xã Cầu Kè, tỉnh Vĩnh Long",
+    "webp_size": 9466
+  },
+  {
+    "id": "ben-xe-cau-ngang-tra-vinh",
+    "name": "Bến xe Cầu Ngang",
+    "summary": "Bến xe khách trên trục Quốc lộ 53 tại khu vực Cầu Ngang, điểm dừng tuyến buýt số 04 đi thị xã Duyên Hải.",
+    "placeId": "xa-cau-ngang",
+    "address": "Đường 3 Tháng 2, Xã Cầu Ngang, tỉnh Vĩnh Long",
+    "webp_size": 9402
+  },
+  {
+    "id": "ben-xe-cho-lach-ben-tre",
+    "name": "Bến xe Chợ Lách",
+    "summary": "Bến xe trung tâm vùng hoa kiểng Cái Mơn Chợ Lách trên Quốc lộ 57, điểm đón tuyến xe buýt số 08 đi TP Bến Tre và Phà Đình Khao.",
+    "placeId": "xa-cho-lach",
+    "address": "Khu Phố 1, Xã Chợ Lách, tỉnh Vĩnh Long",
+    "webp_size": 9500
+  },
+  {
+    "id": "ben-xe-duyen-hai-tx-duyen-hai-tra-vinh",
+    "name": "Bến xe Duyên Hải (TX. Duyên Hải)",
+    "summary": "Bến xe khách trung tâm thị xã Duyên Hải ven Quốc lộ 53, điểm đón trả khách đi Khu du lịch Biển Ba Động và Rừng ngập mặn.",
+    "placeId": "p-duyen-hai",
+    "address": "Đường 19 tháng 5, Khóm 01, . Điện thoại: 0294 3833 727, Phường Duyên Hải, tỉnh Vĩnh Long",
+    "webp_size": 9284
+  },
+  {
+    "id": "ben-xe-mien-tay-hcm",
+    "name": "Bến xe Miền Tây",
+    "summary": "Bến xe khách liên tỉnh phía Tây tại 395 Kinh Dương Vương, quận Bình Tân, đầu mối xuất phát chính về các tỉnh đồng bằng sông Cửu Long.",
+    "placeId": "gateway-hcm",
+    "address": "395 Kinh Dương Vương, Phường An Lạc, Quận Bình Tân, TP. Hồ Chí Minh",
+    "webp_size": 9000
+  },
+  {
+    "id": "ben-xe-mo-cay-nam-ben-tre",
+    "name": "Bến xe Mỏ Cày Nam",
+    "summary": "Bến xe khách trên trục Quốc lộ 60 tại trung tâm Mỏ Cày Nam, kết nối xe buýt đi TP Bến Tre và vùng Thạnh Phú.",
+    "placeId": "xa-dong-khoi",
+    "address": "Quốc Lộ 60, Xã Đồng Khởi, tỉnh Vĩnh Long",
+    "webp_size": 9356
+  },
+  {
+    "id": "ben-xe-tieu-can-tra-vinh",
+    "name": "Bến xe Tiểu Cần",
+    "summary": "Bến xe khách ven Quốc lộ 60 tại khu vực Tiểu Cần, điểm dừng chân của tuyến buýt số 02 nối TP Trà Vinh với bến phà Đại Ngãi.",
+    "placeId": "p-tieu-can",
+    "address": "Quốc lộ 60, Phường Tiểu Cần, tỉnh Vĩnh Long",
+    "webp_size": 9344
+  },
+  {
+    "id": "ben-xe-tra-cu-tra-vinh",
+    "name": "Bến xe Trà Cú",
+    "summary": "Bến xe khách tại trung tâm Trà Cú ven Tỉnh lộ 914, đầu mối xe buýt số 03 và xe khách liên tỉnh đi vùng duyên hải Định An.",
+    "placeId": "xa-tra-cu",
+    "address": "Bến xe Trà Cú, Xã Trà Cú, tỉnh Vĩnh Long",
+    "webp_size": 9448
+  },
+  {
+    "id": "ben-xe-tra-on-tich-thien-vinh-long",
+    "name": "Bến Xe Trà Ôn / Tích Thiện",
+    "summary": "Bến xe khách trên trục Quốc lộ 54 ven sông Hậu, phục vụ tuyến buýt đi TP Vĩnh Long và các xe đò liên xã.",
+    "placeId": "xa-nhon-phu",
+    "address": "Thị trấn Tích Thiện (hoặc gần TT Trà Ôn), Vĩnh Long",
+    "webp_size": 9288
+  },
+  {
+    "id": "ben-xe-tra-vinh-ben-xe-trung-tam-tra-vinh",
+    "name": "Bến xe Trà Vinh (Bến xe trung tâm)",
+    "summary": "Bến xe khách trung tâm tại Số 559 Quốc lộ 54, Phường 9, đầu mối xe khách chất lượng cao và xe buýt tỏa đi các huyện ven biển.",
+    "placeId": "p-tra-vinh",
+    "address": "559 Quốc lộ 54, Phường Trà Vinh, tỉnh Vĩnh Long",
+    "webp_size": 8784
+  },
+  {
+    "id": "ben-xe-vinh-long-trung-tam-vinh-long",
+    "name": "Bến xe Vĩnh Long (Trung tâm)",
+    "summary": "Bến xe khách trung tâm tại Số 01E Đinh Tiên Hoàng, Phường 8, đầu mối vận tải đường bộ liên tỉnh và xe buýt nội tỉnh.",
+    "placeId": "p-long-chau",
+    "address": "Số 01E đường Đinh Tiên Hoàng, Phường 8, TP. Vĩnh Long",
+    "webp_size": 9316
+  },
+  {
+    "id": "ben-xe-vung-liem-vinh-long",
+    "name": "Bến Xe Vũng Liêm",
+    "summary": "Bến xe khách tại Tỉnh lộ 902, trung tâm Vũng Liêm, kết nối các tuyến xe buýt đi TP Vĩnh Long và xe khách liên tỉnh.",
+    "placeId": "xa-hoa-hiep",
+    "address": "Tỉnh lộ 902, Thị trấn Vũng Liêm, Vĩnh Long",
+    "webp_size": 9374
+  },
+  {
+    "id": "benh-vien-da-khoa-minh-duc-ben-tre-ben-tre",
+    "name": "Bệnh viện Đa khoa Minh Đức Bến Tre",
+    "summary": "Bệnh viện tư nhân tại 44 Đoàn Hoàng Minh, Phường 6, TP. Bến Tre. Khám nhanh hơn bệnh viện công, có dịch vụ đặt lịch trước. Phù hợp cho trường hợp không quá khẩn cấp. Hoạt động 24/7.",
+    "placeId": "p-son-dong",
+    "address": "44 Đoàn Hoàng Minh, Phường Sơn Đông, tỉnh Vĩnh Long",
+    "webp_size": 9944
+  },
+  {
+    "id": "benh-vien-da-khoa-nguyen-dinh-chieu-ben-tre",
+    "name": "Bệnh viện Đa khoa Nguyễn Đình Chiểu",
+    "summary": "Bệnh viện hạng I tuyến tỉnh tại Bến Tre, phòng cấp cứu 24/24 cho người lớn, nhi và sản khoa.",
+    "placeId": "p-phu-khuong",
+    "address": "109 Đoàn Hoàng Minh, Phường Phú Khương, tỉnh Vĩnh Long",
+    "webp_size": 9424
+  },
+  {
+    "id": "benh-vien-da-khoa-tinh-vinh-long-vinh-long",
+    "name": "Bệnh viện Đa khoa tỉnh Vĩnh Long",
+    "summary": "Bệnh viện công lớn nhất tỉnh Vĩnh Long tại 301 Trần Phú, Phường 4, TP. Vĩnh Long.",
+    "placeId": "xa-trung-ngai",
+    "address": "301 Trần Phú, Phường 4, Thành phố Vĩnh Long",
+    "webp_size": 9122
+  },
+  {
+    "id": "benh-vien-da-khoa-xuyen-a-vinh-long-vinh-long",
+    "name": "Bệnh viện Đa khoa Xuyên Á Vĩnh Long",
+    "summary": "Bệnh viện. 68E Phạm Hùng, Phường Long Châu, TP. Vĩnh Long. Cấp cứu 24/7. Khám ngoại trú: 7:00–12:00 và 13:00–16:00.",
+    "placeId": "p-long-chau",
+    "address": "68E Phạm Hùng, Phường Long Châu, Thành phố Vĩnh Long",
+    "webp_size": 8494
+  },
+  {
+    "id": "bidv-chi-nhanh-ben-tre-atm-dai-lo-dong-khoi-ben-tre",
+    "name": "BIDV Chi nhánh Bến Tre – ATM Đại lộ Đồng Khởi",
+    "summary": "Atm. 21 Đại lộ Đồng Khởi, TP. Bến Tre (cùng tuyến đường có nhiều điểm ATM BIDV khác: 59 Đồng Khởi, 5 Cách Mạng Tháng 8).",
+    "placeId": "p-phu-khuong",
+    "address": "21 Đại lộ Đồng Khởi, Phường Phú Khương, tỉnh Vĩnh Long",
+    "webp_size": 8878
+  },
+  {
+    "id": "bidv-chi-nhanh-vinh-long-vinh-long",
+    "name": "BIDV Chi nhánh Vĩnh Long",
+    "summary": "Chi nhánh ngân hàng BIDV tại 15A Lê Lợi, Phường 1, TP Vĩnh Long.",
+    "placeId": "p-long-chau",
+    "address": "15A Lê Lợi, Phường 1, Thành phố Vĩnh Long",
+    "webp_size": 9796
+  },
+  {
+    "id": "buu-dien-trung-tam-tp-ben-tre-ben-tre",
+    "name": "Bưu điện Trung tâm TP. Bến Tre",
+    "summary": "Sáu ngày mỗi tuần, Bưu điện Trung tâm TP. Bến Tre ở số 3 Đại lộ Đồng Khởi nhận gửi bưu phẩm, quà lưu niệm về nước cho người xa xứ.",
+    "placeId": "p-ben-tre",
+    "address": "3 Đại lộ Đồng Khởi, Phường Bến Tre, tỉnh Vĩnh Long",
+    "webp_size": 8982
+  },
+  {
+    "id": "buu-dien-trung-tam-vinh-long-vinh-long",
+    "name": "Bưu điện Trung tâm Vĩnh Long",
+    "summary": "Cần gửi bưu phẩm quốc tế, mua tem hay đổi ít tiền lẻ ở Vĩnh Long, cứ tới Bưu điện Trung tâm, 12C–14 Hoàng Thái Hiếu, phường Long Châu. Nơi này làm việc thứ 2–6 từ 7:00 tới 17:00, thứ 7 tới 12:00 trưa, chủ nhật nghỉ.",
+    "placeId": "p-long-chau",
+    "address": "12C–14 Hoàng Thái Hiếu, Phường 1, Thành phố Vĩnh Long",
+    "webp_size": 9520
+  },
+  {
+    "id": "cap-cuu-115-ben-tre-ben-tre",
+    "name": "Cấp cứu 115 Bến Tre",
+    "summary": "Tổng đài cấp cứu y tế miễn phí toàn vùng Bến Tre — gọi 115 khi có tai nạn, đột quỵ, chấn thương nặng.",
+    "placeId": "xa-thanh-thoi",
+    "address": "Cấp cứu 115, Xã Thành Thới, tỉnh Vĩnh Long",
+    "webp_size": 9256
+  },
+  {
+    "id": "cho-cau-ke",
+    "name": "Chợ Cầu Kè",
+    "summary": "Chợ trung tâm Cầu Kè, nơi mua sắm đặc sản địa phương phong phú và đa dạng, bao gồm dừa sáp, xá pấu, các loại thủ công mỹ nghệ và món ăn đặc trưng của vùng đất ba dân tộc Kinh - Khmer - Hoa.",
+    "placeId": "xa-tan-an",
+    "address": "171 đường 30 Tháng 4, Thị trấn Cầu Kè, tỉnh Vĩnh Long",
+    "webp_size": 9214
+  },
+  {
+    "id": "cho-dai-an",
+    "name": "Chợ Đại An",
+    "summary": "Khu chợ truyền thống tại xã Đại An, huyện Trà Cú, là điểm đến văn hóa và ẩm thực đặc sắc của vùng.",
+    "placeId": "xa-dai-an",
+    "address": "Xã Đại An, tỉnh Vĩnh Long",
+    "webp_size": 9196
+  },
+  {
+    "id": "cho-vinh-long-cho-trung-tam-vinh-long",
+    "name": "Chợ Vĩnh Long (Chợ Trung Tâm)",
+    "summary": "Chợ trung tâm TP. Vĩnh Long, nằm trên đường Gia Long gần bờ sông Cổ Chiên, bày bán phong phú nông sản và đặc sản địa phương.",
+    "placeId": "p-long-chau",
+    "address": "Đường Gia Long, Phường 1, TP. Vĩnh Long",
+    "webp_size": 9284
+  },
+  {
+    "id": "co-opmart-ben-tre-ben-tre",
+    "name": "Co.opmart Bến Tre",
+    "summary": "Siêu thị thuộc hệ thống Co.opmart tại TP. Bến Tre, trên đường Nguyễn Huệ, có khu đặc sản Bến Tre đóng gói.",
+    "placeId": "p-ben-tre",
+    "address": "02 Nguyễn Huệ, Phường Bến Tre, tỉnh Vĩnh Long",
+    "webp_size": 9366
+  },
+  {
+    "id": "co-opmart-vinh-long-vinh-long",
+    "name": "Co.opmart Vĩnh Long",
+    "summary": "Siêu thị lớn thuộc hệ thống Co.opmart tại trung tâm TP. Vĩnh Long, trên đường Hùng Vương.",
+    "placeId": "p-long-chau",
+    "address": "Số 1 Hùng Vương, Phường 1, TP. Vĩnh Long",
+    "webp_size": 8778
+  },
+  {
+    "id": "cong-an-tinh-vinh-long-vinh-long",
+    "name": "Công an tỉnh Vĩnh Long",
+    "summary": "Cần hỗ trợ khẩn cấp khi ở Vĩnh Long, gọi 113; trụ sở Công an tỉnh Vĩnh Long đặt tại 180 ấp Long Hưng, xã Thanh Đức, trực ban 24/7.",
+    "placeId": "p-tan-hanh",
+    "address": "180 ấp Long Hưng, Xã Thanh Đức, Vĩnh Long",
+    "webp_size": 9044
+  },
+  {
+    "id": "cong-an-tp-ben-tre-ben-tre",
+    "name": "Công an TP. Bến Tre",
+    "summary": "Công an. 25C Đại lộ Đồng Khởi, Khu phố 6, Phường Phú Khương, TP. Bến Tre. Trực ban 24/24. Tiếp công dân: giờ hành chính thứ 2–6. Khẩn cấp: 113.",
+    "placeId": "p-ben-tre",
+    "address": "25C Đại lộ Đồng Khởi, Khu phố 6, Phường Bến Tre, tỉnh Vĩnh Long",
+    "webp_size": 9140
+  },
+  {
+    "id": "cua-hang-viettel-dinh-tien-hoang-vinh-long",
+    "name": "Cửa hàng Viettel Đinh Tiên Hoàng",
+    "summary": "Mở 7:30–18:30 hàng ngày, Cửa hàng Viettel Đinh Tiên Hoàng ở số 87 Đinh Tiên Hoàng, Phường 8, Vĩnh Long bán SIM du lịch cho khách quốc tế.",
+    "placeId": "p-tan-hanh",
+    "address": "87 Đinh Tiên Hoàng, Phường 8, Thành phố Vĩnh Long",
+    "webp_size": 9496
+  },
+  {
+    "id": "cua-hang-viettel-pham-hung-vinh-long",
+    "name": "Cửa hàng Viettel Phạm Hùng",
+    "summary": "Điểm giao dịch Viettel tại 37A Phạm Hùng, Phường 9, TP. Vĩnh Long. Đăng ký SIM mới, đổi eSIM.",
+    "placeId": "p-long-chau",
+    "address": "37A Phạm Hùng, Phường 9, Thành phố Vĩnh Long",
+    "webp_size": 9366
+  },
+  {
+    "id": "cua-hang-viettel-store-trung-nu-vuong-vinh-long",
+    "name": "Cửa hàng Viettel Store Trưng Nữ Vương",
+    "summary": "Cửa hàng Viettel chính thức tại 01B Trưng Nữ Vương, Phường 1, TP. Vĩnh Long. Bán SIM du lịch Viettel cho người nước ngoài (cần hộ chiếu), gói data 5GB/7 ngày khoảng 50.000đ.",
+    "placeId": "p-long-chau",
+    "address": "01B Trưng Nữ Vương, Phường 1, Thành phố Vĩnh Long",
+    "webp_size": 9176
+  },
+  {
+    "id": "diem-giao-dich-vinaphone-nguyen-thi-dinh-ben-tre",
+    "name": "Điểm giao dịch Vinaphone – Nguyễn Thị Định",
+    "summary": "Cần mua SIM, nạp tiền hay nhờ hỗ trợ kỹ thuật ở Bến Tre, ghé điểm giao dịch Vinaphone trên đường Nguyễn Thị Định, mở 7:00–19:00 hàng ngày.",
+    "placeId": "p-phu-khuong",
+    "address": "Đường Nguyễn Thị Định, Phường Phú Khương, tỉnh Vĩnh Long",
+    "webp_size": 8840
+  },
+  {
+    "id": "diem-giao-dich-vinaphone-vnpt-cach-mang-thang-8-ben-tre",
+    "name": "Điểm giao dịch Vinaphone (VNPT) – Cách Mạng Tháng 8",
+    "summary": "Điểm giao dịch VNPT/Vinaphone tại 1 Cách Mạng Tháng 8, TP. Bến Tre. Mua SIM du lịch Vinaphone (data 4G).",
+    "placeId": "p-phu-khuong",
+    "address": "1 Cách Mạng Tháng 8, Phường Phú Khương, tỉnh Vĩnh Long",
+    "webp_size": 9370
+  },
+  {
+    "id": "diem-xe-buyt-phuong-trang-vinh-long-can-tho-tuyen-lien-tinh-vinh-long",
+    "name": "Điểm Xe Buýt Phương Trang Vĩnh Long – Cần Thơ (Tuyến liên tỉnh)",
+    "summary": "Điểm đón trả khách xe buýt Phương Trang liên tỉnh Vĩnh Long – Cần Thơ trên trục Quốc lộ 1A.",
+    "placeId": "xa-nhon-phu",
+    "address": "Xuất phát từ Bến xe Vĩnh Long (01E Đinh Tiên Hoàng, P.8) đến Bến xe Cần Thơ (TP. Cần Thơ)",
+    "webp_size": 9668
+  }
+]

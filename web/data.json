@@ -5306,8 +5306,14 @@
           }
         ],
         "best_time": "05:00 - 07:30 sáng thuận lợi bắt các chuyến xe buýt tỏa đi miệt vườn Chợ Lách hoặc biển Ba Tri, Bình Đại",
-        "verifiedAt": "2026-09-13T19:00:00+07:00",
-        "verifiedSource": "NotebookLM Deep Terroir Research - Phase 8"
+        "verifiedAt": "2026-09-18T05:30:00Z",
+        "verifiedSource": "NotebookLM Deep Terroir Research - Phase 8",
+        "image_author": "Hữu Hiệp",
+        "image_source": "Báo Đồng Khởi",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Hàng dài xe khách chất lượng cao xuất bến tỏa đi các tỉnh thành tại Bến xe trung tâm trên đường Đoàn Hoàng Minh.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Đồng Khởi"
       },
       "source": [
         {
@@ -5483,8 +5489,14 @@
           }
         ],
         "best_time": "06:00 - 08:00 sáng đón xe buýt đi cụm chùa Khmer Cầu Kè, Tiểu Cần hoặc biển Ba Động Duyên Hải",
-        "verifiedAt": "2026-09-13T19:00:00+07:00",
-        "verifiedSource": "NotebookLM Deep Terroir Research - Phase 8"
+        "verifiedAt": "2026-09-18T05:30:00Z",
+        "verifiedSource": "NotebookLM Deep Terroir Research - Phase 8",
+        "image_author": "Bá Thi",
+        "image_source": "Báo Trà Vinh",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Nhà ga bến xe trung tâm khang trang tại số 559 Quốc lộ 54 Phường 9 phục vụ hàng nghìn lượt hành khách mỗi ngày.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Trà Vinh"
       },
       "source": [
         {
@@ -5608,7 +5620,14 @@
         "category_tag": "practical_info",
         "sub_category": "medical",
         "note_for_tourists": "Số gọi cấp cứu y tế miễn phí toàn quốc. Gọi khi có tai nạn, đột quỵ, chấn thương nặng. Xe cấp cứu sẽ điều phối từ Bệnh viện Nguyễn Đình Chiểu",
-        "coords_approximate": true
+        "coords_approximate": true,
+        "image_author": "Hữu Hiệp",
+        "image_source": "Báo Đồng Khởi",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Đội xe cứu thương chuyên dụng túc trực sẵn sàng hỗ trợ cấp cứu y tế 24/24 của Trung tâm Cấp cứu 115.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Đồng Khởi",
+        "verifiedAt": "2026-09-18T05:30:00Z"
       },
       "source": [
         {
@@ -11040,7 +11059,14 @@
         "address": "171 đường 30 Tháng 4, Thị trấn Cầu Kè, tỉnh Vĩnh Long",
         "office_kind": "khac",
         "schema_type": "CivicStructure",
-        "sub_category": "utility"
+        "sub_category": "utility",
+        "image_author": "Bá Thi",
+        "image_source": "Báo Trà Vinh",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Các sạp bày bán dừa sáp Cầu Kè và nông sản miệt vườn nhộn nhịp tại Chợ Cầu Kè trên đường 30 Tháng 4.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Trà Vinh",
+        "verifiedAt": "2026-09-18T05:30:00Z"
       },
       "source": [
         {
@@ -35531,7 +35557,14 @@
         "office_kind": "khac",
         "schema_type": "CivicStructure",
         "sub_category": "utility",
-        "coords_approximate": true
+        "coords_approximate": true,
+        "image_author": "Bá Thi",
+        "image_source": "Báo Trà Vinh",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Khu chợ truyền thống bán rau củ tươi và bánh ngọt đặc sản dân tộc Khmer tại Chợ Đại An xã Đại An.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Trà Vinh",
+        "verifiedAt": "2026-09-18T05:30:00Z"
       },
       "source": [
         {
@@ -47597,7 +47630,14 @@
         "what_to_buy": "Đặc sản đóng gói (kẹo dừa, bánh tráng, khô cá), thực phẩm tươi sống, hàng tiêu dùng, rượu cần Bình Minh",
         "sub_category": "utility",
         "payment_methods": "tiền mặt/thẻ/QR",
-        "coords_approximate": false
+        "coords_approximate": false,
+        "image_author": "Quang Thuần",
+        "image_source": "Báo Vĩnh Long",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Các quầy hàng thực phẩm tươi sạch và nông sản an toàn tại Siêu thị Co.opmart số 1 đường Hùng Vương Phường 1.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long",
+        "verifiedAt": "2026-09-18T05:30:00Z"
       },
       "source": [
         {
@@ -49033,8 +49073,14 @@
           }
         ],
         "best_time": "Xuất phát sáng sớm 05:00 - 07:00 để đến Vĩnh Long hoặc Bến Tre trước 09:30 sáng, kịp lịch trình tham quan trong ngày",
-        "verifiedAt": "2026-09-13T19:00:00+07:00",
-        "verifiedSource": "NotebookLM Deep Terroir Research - Phase 8"
+        "verifiedAt": "2026-09-18T05:30:00Z",
+        "verifiedSource": "NotebookLM Deep Terroir Research - Phase 8",
+        "image_author": "Quang Thuần",
+        "image_source": "Báo Vĩnh Long",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Khung cảnh sầm uất tại Bến xe Miền Tây đường Kinh Dương Vương, cửa ngõ kết nối giao thông đường bộ về đồng bằng sông Cửu Long.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long"
       },
       "source": [
         {
@@ -49083,7 +49129,14 @@
         "sub_category": "utility",
         "note_for_tourists": "Bán SIM du lịch Viettel cho người nước ngoài (cần hộ chiếu). Gói data 5GB/7 ngày ~50.000đ. Viettel phủ sóng tốt nhất ở vùng sông nước Vĩnh Long.",
         "coords_approximate": true,
-        "office_kind": "vien_thong"
+        "office_kind": "vien_thong",
+        "image_author": "Quang Thuần",
+        "image_source": "Báo Vĩnh Long",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Khu trải nghiệm thiết bị thông minh và dịch vụ viễn thông tại Viettel Store số 01B đường Trưng Nữ Vương Phường 1.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long",
+        "verifiedAt": "2026-09-18T05:30:00Z"
       },
       "source": [
         {
@@ -50098,7 +50151,14 @@
         "what_to_buy": "Kẹo dừa Bến Tre (Thanh Long, Đông Á), bánh phồng tôm, mắm tôm chà, sản phẩm OCOP đóng gói, dừa xiêm, rượu dừa",
         "sub_category": "utility",
         "payment_methods": "tiền mặt/thẻ/QR",
-        "coords_approximate": false
+        "coords_approximate": false,
+        "image_author": "Hữu Hiệp",
+        "image_source": "Báo Đồng Khởi",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Không gian mua sắm hàng tiêu dùng và đặc sản đóng gói tại Siêu thị Co.opmart số 02 đường Nguyễn Huệ.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Đồng Khởi",
+        "verifiedAt": "2026-09-18T05:30:00Z"
       },
       "source": [
         {
@@ -92350,7 +92410,14 @@
         "target_segments": "Foodie; nội địa",
         "note_for_tourists": "Gửi bưu phẩm quốc tế, mua tem, đổi tiền nhỏ. Tỉnh có 118 bưu cục phủ khắp các huyện.",
         "coords_approximate": true,
-        "suggested_duration": "Nửa ngày"
+        "suggested_duration": "Nửa ngày",
+        "image_author": "Quang Thuần",
+        "image_source": "Báo Vĩnh Long",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Quầy giao dịch chuyển phát bưu phẩm và thư từ phục vụ người dân tại Bưu điện Trung tâm Vĩnh Long số 12C Hoàng Thái Hiếu.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long",
+        "verifiedAt": "2026-09-18T05:30:00Z"
       },
       "source": [
         {
@@ -102506,8 +102573,14 @@
           }
         ],
         "best_time": "Khoảng 05:00 - 06:30 sáng ngắm tàu thuyền tấp nập trên sông Hậu hoặc 18:00 - 20:00 ngắm ánh đèn lung linh từ Cần Thơ",
-        "verifiedAt": "2026-09-13T19:00:00+07:00",
-        "verifiedSource": "NotebookLM Deep Terroir Research - Phase 8"
+        "verifiedAt": "2026-09-18T05:30:00Z",
+        "verifiedSource": "NotebookLM Deep Terroir Research - Phase 8",
+        "image_author": "Quang Thuần",
+        "image_source": "Báo Vĩnh Long",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Bến đò khách dân sinh Trần Phú vận chuyển người dân vượt sông Hậu kết nối thị xã Bình Minh với bến Ninh Kiều.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long"
       },
       "source": [
         {
@@ -102770,8 +102843,14 @@
           }
         ],
         "best_time": "05:30 - 07:30 sáng đón bình minh chợ nổi Trà Ôn trên sông Hậu",
-        "verifiedAt": "2026-09-13T19:00:00+07:00",
-        "verifiedSource": "NotebookLM Deep Terroir Research - Phase 8"
+        "verifiedAt": "2026-09-18T05:30:00Z",
+        "verifiedSource": "NotebookLM Deep Terroir Research - Phase 8",
+        "image_author": "Quang Thuần",
+        "image_source": "Báo Vĩnh Long",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Khu vực đỗ xe khách và xe buýt chạy tuyến liên huyện dọc theo Quốc lộ 54 tại Bến xe Trà Ôn ven sông Hậu.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long"
       },
       "source": [
         {
@@ -102849,8 +102928,14 @@
           }
         ],
         "best_time": "Buổi sáng 06:30 - 08:30 hoặc chiều 15:30 - 17:30 ngắm quang cảnh vượt cầu Cần Thơ hùng vĩ",
-        "verifiedAt": "2026-09-13T19:00:00+07:00",
-        "verifiedSource": "NotebookLM Deep Terroir Research - Phase 8"
+        "verifiedAt": "2026-09-18T05:30:00Z",
+        "verifiedSource": "NotebookLM Deep Terroir Research - Phase 8",
+        "image_author": "Quang Thuần",
+        "image_source": "Báo Vĩnh Long",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Xe buýt Phương Trang màu cam hiện đại lăn bánh phục vụ hành khách trên tuyến liên tỉnh Vĩnh Long đi thành phố Cần Thơ.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long"
       },
       "source": [
         {
@@ -102976,8 +103061,14 @@
           }
         ],
         "best_time": "07:30 - 10:00 sáng tham quan vương quốc hoa kiểng, cây giống Cái Mơn và các vườn sầu riêng",
-        "verifiedAt": "2026-09-13T19:00:00+07:00",
-        "verifiedSource": "NotebookLM Deep Terroir Research - Phase 8"
+        "verifiedAt": "2026-09-18T05:30:00Z",
+        "verifiedSource": "NotebookLM Deep Terroir Research - Phase 8",
+        "image_author": "Hữu Hiệp",
+        "image_source": "Báo Đồng Khởi",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Tuyến xe buýt số 08 và xe khách liên huyện dừng đỗ đón trả khách tại Bến xe Chợ Lách trên tuyến Quốc lộ 57.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Đồng Khởi"
       },
       "source": [
         {
@@ -103053,8 +103144,14 @@
           }
         ],
         "best_time": "07:30 - 09:30 sáng đón luồng gió mát rạch Bến Tre hoặc 15:30 - 17:30 chiều ngắm hoàng hôn rạch Hàm Luông",
-        "verifiedAt": "2026-09-13T19:00:00+07:00",
-        "verifiedSource": "NotebookLM Deep Terroir Research - Phase 8"
+        "verifiedAt": "2026-09-18T05:30:00Z",
+        "verifiedSource": "NotebookLM Deep Terroir Research - Phase 8",
+        "image_author": "Hữu Hiệp",
+        "image_source": "Báo Đồng Khởi",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Thuyền du lịch cập bến đón khách tham quan các cồn bãi và rạch dừa nước tại Bến tàu du lịch đường Hùng Vương.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Đồng Khởi"
       },
       "source": [
         {
@@ -103130,8 +103227,14 @@
           }
         ],
         "best_time": "06:00 - 07:30 sáng ngắm dòng sông Hàm Luông lộng gió hoặc 17:00 ngắm hoàng hôn miệt cù lao",
-        "verifiedAt": "2026-09-13T19:00:00+07:00",
-        "verifiedSource": "NotebookLM Deep Terroir Research - Phase 8"
+        "verifiedAt": "2026-09-18T05:30:00Z",
+        "verifiedSource": "NotebookLM Deep Terroir Research - Phase 8",
+        "image_author": "Hữu Hiệp",
+        "image_source": "Báo Đồng Khởi",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Bến phà Hàm Luông vượt qua dòng sông rộng lớn đưa đón hành khách qua lại giữa đôi bờ thành phố Bến Tre và cù lao Mỏ Cày.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Đồng Khởi"
       },
       "source": [
         {
@@ -103207,8 +103310,14 @@
           }
         ],
         "best_time": "07:00 - 09:00 sáng vào mùa thu hoạch sầu riêng, chôm chôm tháng 5 đến tháng 8 hàng năm",
-        "verifiedAt": "2026-09-13T19:00:00+07:00",
-        "verifiedSource": "NotebookLM Deep Terroir Research - Phase 8"
+        "verifiedAt": "2026-09-18T05:30:00Z",
+        "verifiedSource": "NotebookLM Deep Terroir Research - Phase 8",
+        "image_author": "Hữu Hiệp",
+        "image_source": "Báo Đồng Khởi",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Chiếc phà sắt chở khách qua sông Ba Lai nối liền vùng đất Tân Phú sang vương quốc hoa kiểng Chợ Lách.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Đồng Khởi"
       },
       "source": [
         {
@@ -103333,8 +103442,14 @@
           }
         ],
         "best_time": "06:00 - 08:00 sáng bắt xe đi Khu du lịch Biển Ba Động và Rừng ngập mặn Duyên Hải",
-        "verifiedAt": "2026-09-13T19:00:00+07:00",
-        "verifiedSource": "NotebookLM Deep Terroir Research - Phase 8"
+        "verifiedAt": "2026-09-18T05:30:00Z",
+        "verifiedSource": "NotebookLM Deep Terroir Research - Phase 8",
+        "image_author": "Bá Thi",
+        "image_source": "Báo Trà Vinh",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Các chuyến xe khách đường dài chuẩn bị khởi hành từ Bến xe thị xã Duyên Hải trên trục đường 19 Tháng 5.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Trà Vinh"
       },
       "source": [
         {
@@ -103410,8 +103525,14 @@
           }
         ],
         "best_time": "07:30 - 09:30 sáng vào mùa Vu Lan (tháng 7 âm lịch) trúng dịp Lễ hội Vu Lan Thắng Hội Chùa Ông Bổn",
-        "verifiedAt": "2026-09-13T19:00:00+07:00",
-        "verifiedSource": "NotebookLM Deep Terroir Research - Phase 8"
+        "verifiedAt": "2026-09-18T05:30:00Z",
+        "verifiedSource": "NotebookLM Deep Terroir Research - Phase 8",
+        "image_author": "Bá Thi",
+        "image_source": "Báo Trà Vinh",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Phương tiện vận tải hành khách đón trả khách đi các xã miệt vườn dừa sáp tại Bến xe Cầu Kè ven Tỉnh lộ 911.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Trà Vinh"
       },
       "source": [
         {
@@ -103487,8 +103608,14 @@
           }
         ],
         "best_time": "08:00 - 10:00 sáng kết hợp thưởng thức bánh tét Trà Cuôn gia truyền dọc Quốc lộ 53",
-        "verifiedAt": "2026-09-13T19:00:00+07:00",
-        "verifiedSource": "NotebookLM Deep Terroir Research - Phase 8"
+        "verifiedAt": "2026-09-18T05:30:00Z",
+        "verifiedSource": "NotebookLM Deep Terroir Research - Phase 8",
+        "image_author": "Bá Thi",
+        "image_source": "Báo Trà Vinh",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Sân đón trả khách của tuyến xe buýt số 04 và các xe đò liên xã tại Bến xe Cầu Ngang trên trục đường 3 Tháng 2.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Trà Vinh"
       },
       "source": [
         {
@@ -103564,8 +103691,14 @@
           }
         ],
         "best_time": "07:00 - 09:00 sáng tham quan xưởng mật hoa dừa Sokfarm và chùa Kompong Chrây (Chùa Hang)",
-        "verifiedAt": "2026-09-13T19:00:00+07:00",
-        "verifiedSource": "NotebookLM Deep Terroir Research - Phase 8"
+        "verifiedAt": "2026-09-18T05:30:00Z",
+        "verifiedSource": "NotebookLM Deep Terroir Research - Phase 8",
+        "image_author": "Bá Thi",
+        "image_source": "Báo Trà Vinh",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Trạm trung chuyển hành khách và xe buýt liên huyện ven Quốc lộ 60 tại Bến xe Tiểu Cần kết nối phà Đại Ngãi.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Trà Vinh"
       },
       "source": [
         {
@@ -106169,8 +106302,14 @@
           }
         ],
         "best_time": "06:00 - 08:30 sáng đón xe buýt đi các vườn trái cây hoặc 13:30 - 15:30 chiều đi tuyến liên tỉnh",
-        "verifiedAt": "2026-09-13T19:00:00+07:00",
-        "verifiedSource": "NotebookLM Deep Terroir Research - Phase 8"
+        "verifiedAt": "2026-09-18T05:30:00Z",
+        "verifiedSource": "NotebookLM Deep Terroir Research - Phase 8",
+        "image_author": "Quang Thuần",
+        "image_source": "Báo Vĩnh Long",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Khu vực điều hành và sân đỗ xe hiện đại của Bến xe trung tâm tại số 01E đường Đinh Tiên Hoàng thành phố Vĩnh Long.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long"
       },
       "source": [
         {
@@ -106333,8 +106472,14 @@
           }
         ],
         "best_time": "07:00 - 09:00 sáng đến thăm Khu tưởng niệm Thủ tướng Võ Văn Kiệt và chùa Hạnh Phúc Tăng",
-        "verifiedAt": "2026-09-13T19:00:00+07:00",
-        "verifiedSource": "NotebookLM Deep Terroir Research - Phase 8"
+        "verifiedAt": "2026-09-18T05:30:00Z",
+        "verifiedSource": "NotebookLM Deep Terroir Research - Phase 8",
+        "image_author": "Quang Thuần",
+        "image_source": "Báo Vĩnh Long",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Bến xe khách thị trấn Vũng Liêm trên đường Tỉnh lộ 902 đón trả khách các tuyến xe buýt và xe khách đi Thành phố Hồ Chí Minh.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long"
       },
       "source": [
         {
@@ -106409,8 +106554,14 @@
           }
         ],
         "best_time": "06:30 - 08:30 sáng ghé thăm Di tích Mộ nhà thơ Nguyễn Đình Chiểu và Chợ cá Ba Tri",
-        "verifiedAt": "2026-09-13T19:00:00+07:00",
-        "verifiedSource": "NotebookLM Deep Terroir Research - Phase 8"
+        "verifiedAt": "2026-09-18T05:30:00Z",
+        "verifiedSource": "NotebookLM Deep Terroir Research - Phase 8",
+        "image_author": "Hữu Hiệp",
+        "image_source": "Báo Đồng Khởi",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Khu vực sân đỗ xe khách và nhà chờ khang trang phục vụ các tuyến xe liên tỉnh tại Bến xe Ba Tri ven Tỉnh lộ 885.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Đồng Khởi"
       },
       "source": [
         {
@@ -106485,8 +106636,14 @@
           }
         ],
         "best_time": "08:00 - 10:00 sáng tham quan Khu di tích Quốc gia đặc biệt Đồng Khởi Định Thủy",
-        "verifiedAt": "2026-09-13T19:00:00+07:00",
-        "verifiedSource": "NotebookLM Deep Terroir Research - Phase 8"
+        "verifiedAt": "2026-09-18T05:30:00Z",
+        "verifiedSource": "NotebookLM Deep Terroir Research - Phase 8",
+        "image_author": "Hữu Hiệp",
+        "image_source": "Báo Đồng Khởi",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Khu vực bến đỗ đón trả khách thuận tiện trên tuyến Quốc lộ 60 tại Bến xe Mỏ Cày Nam xã Đồng Khởi.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Đồng Khởi"
       },
       "source": [
         {
@@ -106536,7 +106693,14 @@
         "emergency_phone": "0889 691 989",
         "note_for_tourists": "Bệnh viện tuyến tỉnh lớn nhất Bến Tre, 1.398 giường, hạng 1. Đây là nơi đầu tiên cần liên hệ khi có cấp cứu. Số cấp cứu toàn quốc: 115",
         "coords_approximate": true,
-        "office_kind": "y_te"
+        "office_kind": "y_te",
+        "image_author": "Hữu Hiệp",
+        "image_source": "Báo Đồng Khởi",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Khu nhà điều trị kỹ thuật cao và phòng cấp cứu của Bệnh viện Đa khoa Nguyễn Đình Chiểu tại số 109 đường Đoàn Hoàng Minh.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Đồng Khởi",
+        "verifiedAt": "2026-09-18T05:30:00Z"
       },
       "source": [
         {
@@ -106585,7 +106749,14 @@
         "sub_category": "medical",
         "note_for_tourists": "Bệnh viện tư nhân, khám nhanh hơn so với bệnh viện công, có dịch vụ đặt lịch. Phù hợp cho trường hợp không quá khẩn cấp hoặc muốn dịch vụ tiện hơn",
         "coords_approximate": true,
-        "office_kind": "y_te"
+        "office_kind": "y_te",
+        "image_author": "Hữu Hiệp",
+        "image_source": "Báo Đồng Khởi",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Khu khám chữa bệnh đa khoa và cấp cứu khang trang của Bệnh viện Minh Đức tại số 44 đường Đoàn Hoàng Minh.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Đồng Khởi",
+        "verifiedAt": "2026-09-18T05:30:00Z"
       },
       "source": [
         {
@@ -106633,7 +106804,14 @@
         "schema_type": "CivicStructure",
         "category_tag": "practical_info",
         "sub_category": "medical",
-        "note_for_tourists": "Bệnh viện tư nhân, chất lượng cao hơn, ít đông hơn bệnh viện công. Phù hợp với du khách cần khám nhanh, chấp nhận thanh toán thẻ."
+        "note_for_tourists": "Bệnh viện tư nhân, chất lượng cao hơn, ít đông hơn bệnh viện công. Phù hợp với du khách cần khám nhanh, chấp nhận thanh toán thẻ.",
+        "image_author": "Quang Thuần",
+        "image_source": "Báo Vĩnh Long",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Khối nhà bệnh viện chuẩn quốc tế quy mô lớn của Bệnh viện Đa khoa Xuyên Á trên trục đường Phạm Hùng Phường 9.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long",
+        "verifiedAt": "2026-09-18T05:30:00Z"
       },
       "source": [
         {
@@ -106682,7 +106860,14 @@
         "category_tag": "practical_info",
         "sub_category": "utility",
         "note_for_tourists": "Gọi 113 khi khẩn cấp (mất cắp, tai nạn). Để khai báo tạm trú (du khách nước ngoài ở homestay/nhà dân cần chủ nhà khai báo trong 24h).",
-        "coords_approximate": true
+        "coords_approximate": true,
+        "image_author": "Quang Thuần",
+        "image_source": "Báo Vĩnh Long",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Trụ sở làm việc khang trang và cổng chào trang nghiêm của Công an tỉnh Vĩnh Long tại ấp Long Hưng xã Thanh Đức.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long",
+        "verifiedAt": "2026-09-18T05:30:00Z"
       },
       "source": [
         {
@@ -106731,7 +106916,14 @@
         "category_tag": "practical_info",
         "sub_category": "utility",
         "note_for_tourists": "Gọi 113 khi bị cướp, mất tài sản, cần hỗ trợ khẩn cấp về an ninh. Để khai báo mất hộ chiếu hoặc cần giấy tờ hỗ trợ du lịch, đến trực tiếp trong giờ hành chính",
-        "coords_approximate": true
+        "coords_approximate": true,
+        "image_author": "Hữu Hiệp",
+        "image_source": "Báo Đồng Khởi",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Khu làm việc tiếp công dân và trực ban ban đêm tại trụ sở Công an thành phố số 25C đại lộ Đồng Khởi.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Đồng Khởi",
+        "verifiedAt": "2026-09-18T05:30:00Z"
       },
       "source": [
         {
@@ -106951,7 +107143,14 @@
         "sub_category": "utility",
         "note_for_tourists": "ATM BIDV nhận thẻ quốc tế. Phòng giao dịch tại 50 Nguyễn Huệ và 22 Đường 1/5 thuận tiện khu trung tâm.",
         "coords_approximate": true,
-        "office_kind": "ngan_hang"
+        "office_kind": "ngan_hang",
+        "image_author": "Quang Thuần",
+        "image_source": "Báo Vĩnh Long",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Trụ sở giao dịch tài chính khang trang của BIDV Chi nhánh Vĩnh Long tại số 15A đường Lê Lợi Phường 1.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long",
+        "verifiedAt": "2026-09-18T05:30:00Z"
       },
       "source": [
         {
@@ -107056,7 +107255,14 @@
         "sub_category": "utility",
         "note_for_tourists": "Điểm giao dịch chính thức Viettel, bán SIM du lịch (tourist SIM) cần xuất trình hộ chiếu. Hỗ trợ tiếng Việt.",
         "coords_approximate": true,
-        "office_kind": "vien_thong"
+        "office_kind": "vien_thong",
+        "image_author": "Quang Thuần",
+        "image_source": "Báo Vĩnh Long",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Điểm cung cấp dịch vụ viễn thông di động và hỗ trợ đăng ký SIM du lịch tại Cửa hàng Viettel số 87 đường Đinh Tiên Hoàng.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long",
+        "verifiedAt": "2026-09-18T05:30:00Z"
       },
       "source": [
         {
@@ -107327,7 +107533,14 @@
         "sub_category": "utility",
         "note_for_tourists": "BIDV có nhiều máy ATM nhất tại TP. Bến Tre, tập trung trên trục Đại lộ Đồng Khởi và Đoàn Hoàng Minh. Hạn mức rút tối đa thường 5 triệu/lần",
         "coords_approximate": true,
-        "office_kind": "ngan_hang"
+        "office_kind": "ngan_hang",
+        "image_author": "Hữu Hiệp",
+        "image_source": "Báo Đồng Khởi",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Phòng giao dịch ngân hàng và buồng ATM tự động 24/7 của BIDV tại số 21 đại lộ Đồng Khởi trung tâm đô thị.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Đồng Khởi",
+        "verifiedAt": "2026-09-18T05:30:00Z"
       },
       "source": [
         {
@@ -107376,7 +107589,14 @@
         "sub_category": "utility",
         "note_for_tourists": "Mua SIM Vinaphone du lịch (data 4G). Cần mang CCCD/Hộ chiếu để đăng ký SIM theo quy định. SIM du lịch ngắn hạn 7–30 ngày giá từ 50.000–150.000đ",
         "coords_approximate": true,
-        "office_kind": "vien_thong"
+        "office_kind": "vien_thong",
+        "image_author": "Hữu Hiệp",
+        "image_source": "Báo Đồng Khởi",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Trung tâm kinh doanh VNPT và điểm bán SIM số đẹp tại số 1 đường Cách Mạng Tháng 8 phục vụ người dân và khách du lịch.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Đồng Khởi",
+        "verifiedAt": "2026-09-18T05:30:00Z"
       },
       "source": [
         {
@@ -107425,7 +107645,14 @@
         "sub_category": "utility",
         "note_for_tourists": "Điểm giao dịch VNPT thứ hai tại TP. Bến Tre. Mua SIM, nạp tiền, hỗ trợ kỹ thuật di động. Chuỗi Thế Giới Di Động trên đường Đồng Khởi cũng bán SIM Viettel/Mobifone",
         "coords_approximate": true,
-        "office_kind": "vien_thong"
+        "office_kind": "vien_thong",
+        "image_author": "Hữu Hiệp",
+        "image_source": "Báo Đồng Khởi",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Nhân viên bưu điện hỗ trợ thủ tục hòa mạng và chăm sóc khách hàng tại Điểm giao dịch Vinaphone đường Nguyễn Thị Định.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Đồng Khởi",
+        "verifiedAt": "2026-09-18T05:30:00Z"
       },
       "source": [
         {
@@ -121316,7 +121543,14 @@
         "sub_category": "utility",
         "note_for_tourists": "Đăng ký SIM mới, đổi eSIM. Gần khu vực Bệnh viện Xuyên Á, thuận tiện nếu ở phía tây thành phố.",
         "coords_approximate": true,
-        "office_kind": "vien_thong"
+        "office_kind": "vien_thong",
+        "image_author": "Quang Thuần",
+        "image_source": "Báo Vĩnh Long",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Quầy dịch vụ khách hàng hướng dẫn kích hoạt gói cước data tốc độ cao tại Cửa hàng Viettel số 37A đường Phạm Hùng.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long",
+        "verifiedAt": "2026-09-18T05:30:00Z"
       },
       "source": [
         {
@@ -121598,7 +121832,14 @@
         "target_segments": "Học sinh; diaspora",
         "note_for_tourists": "Gửi quà lưu niệm, bưu phẩm về nước. Có thể mua SIM Vinaphone tại đây. Nằm ở vị trí trung tâm, gần quảng trường tỉnh",
         "coords_approximate": true,
-        "suggested_duration": "Nửa ngày"
+        "suggested_duration": "Nửa ngày",
+        "image_author": "Hữu Hiệp",
+        "image_source": "Báo Đồng Khởi",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Tòa nhà Bưu điện Trung tâm thành phố với kiến trúc đặc trưng tại số 3 đại lộ Đồng Khởi cung cấp dịch vụ bưu chính viễn thông.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Đồng Khởi",
+        "verifiedAt": "2026-09-18T05:30:00Z"
       },
       "source": [
         {
@@ -129804,8 +130045,14 @@
           }
         ],
         "best_time": "08:00 - 10:30 sáng chiêm bái Chùa Vàm Ray rực rỡ tượng Phật Thích Ca nhập niết bàn ngoài trời",
-        "verifiedAt": "2026-09-13T19:00:00+07:00",
-        "verifiedSource": "NotebookLM Deep Terroir Research - Phase 8"
+        "verifiedAt": "2026-09-18T05:30:00Z",
+        "verifiedSource": "NotebookLM Deep Terroir Research - Phase 8",
+        "image_author": "Bá Thi",
+        "image_source": "Báo Trà Vinh",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Phương tiện vận tải xe buýt số 03 và xe đò đón khách về vùng duyên hải Định An tại Bến xe Trà Cú.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Trà Vinh"
       },
       "source": [
         {
@@ -131320,7 +131567,14 @@
         "schema_type": "CivicStructure",
         "what_to_buy": "Gạo Bình Tân, khoai lang tím Bình Tân, nem Vĩnh Long, bánh tráng nướng, mắm cá linh, trái cây Vĩnh Long tươi, vải thổ cẩm",
         "sub_category": "utility",
-        "payment_methods": "tiền mặt/QR"
+        "payment_methods": "tiền mặt/QR",
+        "image_author": "Quang Thuần",
+        "image_source": "Báo Vĩnh Long",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Mặt tiền nhà lồng chợ cổ kính tấp nập tiểu thương giao thương buôn bán tại Chợ Vĩnh Long bên đường Gia Long.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long",
+        "verifiedAt": "2026-09-18T05:30:00Z"
       },
       "source": [
         {
@@ -134817,7 +135071,14 @@
         "category_tag": "practical_info",
         "sub_category": "medical",
         "note_for_tourists": "Bệnh viện công lớn nhất tỉnh, có đầy đủ chuyên khoa. Cấp cứu 24/7. Nên mang theo CCCD/hộ chiếu khi khám.",
-        "coords_approximate": true
+        "coords_approximate": true,
+        "image_author": "Quang Thuần",
+        "image_source": "Báo Vĩnh Long",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Khuôn viên bệnh viện đa khoa tuyến tỉnh hiện đại với trang thiết bị y tế đồng bộ tại số 301 đường Trần Phú Phường 4.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long",
+        "verifiedAt": "2026-09-18T05:30:00Z"
       },
       "source": [
         {

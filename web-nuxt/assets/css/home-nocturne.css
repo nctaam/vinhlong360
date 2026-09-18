@@ -2052,15 +2052,22 @@ html.js .home .hero-feature { opacity: 0; transform: translateY(16px); animation
   100% { box-shadow: 0 0 0 0 rgba(var(--color-brand-rgb), 0); }
 }
 
-/* Cinematic entrance */
-html.js .home .hero-enter > * { opacity: 0; transform: translateY(16px); animation: hero-rise .7s var(--ease-out-expo) forwards; }
+/* Cinematic entrance — CLS resilient: translation strictly encapsulated in keyframe */
+html.js .home .hero-enter > * { opacity: 0; animation: hero-rise .7s var(--ease-out-expo) forwards; }
 html.js .home .hero-enter > .hero-kicker { animation-delay: .05s; }
 html.js .home .hero-enter > h1 { animation-delay: .14s; }
 html.js .home .hero-enter > .hero-sub { animation-delay: .24s; }
 html.js .home .hero-enter > .hero-search { animation-delay: .34s; }
 @keyframes hero-rise {
-  from { opacity: 0; transform: translateY(16px); }
+  from { opacity: 0; transform: translateY(12px); }
   to { opacity: 1; transform: translateY(0); }
+}
+@media (prefers-reduced-motion: reduce) {
+  html.js .home .hero-enter > * {
+    opacity: 1 !important;
+    transform: none !important;
+    animation: none !important;
+  }
 }
 html.js .home .hero-enter h1::after { animation: hero-underline-draw .8s var(--ease-out-expo) .5s both; }
 @keyframes hero-underline-draw {
