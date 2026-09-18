@@ -5953,7 +5953,14 @@
         "address": "Phường Phú Khương, Bến Tre",
         "schema_type": "Organization",
         "sub_category": "tourism-company",
-        "coords_approximate": true
+        "coords_approximate": true,
+        "image_author": "Hữu Hiệp",
+        "image_source": "Báo Đồng Khởi",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Đội thuyền du lịch sinh thái đón khách trải nghiệm ngắm cảnh miệt vườn cù lao của Công ty Du lịch Sinh thái Bảo Duyên tại bến thuyền trung tâm.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Đồng Khởi",
+        "verifiedAt": "2026-09-18T10:10:00Z"
       },
       "source": [
         {
@@ -29019,8 +29026,14 @@
             "authority_weight": 0.9
           }
         ],
-        "verifiedAt": "2026-09-13T17:30:00+07:00",
-        "verifiedSource": "NotebookLM Deep Terroir Research - Phase 6"
+        "verifiedAt": "2026-09-18T10:10:00Z",
+        "verifiedSource": "NotebookLM Deep Terroir Research - Phase 6",
+        "image_author": "Bá Thi",
+        "image_source": "Báo Trà Vinh",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Gian trưng bày các đặc sản OCOP địa phương như dừa sáp, bánh tét Trà Cuôn và mật hoa dừa tại Cửa hàng Đặc sản Miền Tây trên đường Nguyễn Đáng.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Trà Vinh"
       },
       "source": [
         {
@@ -33329,7 +33342,14 @@
         "schema_type": "TouristAttraction",
         "booking_note": "Không cần đặt trước, tham quan tự do; ăn mặc lịch sự khi vào thiền viện; Facebook: facebook.com/thienvientruclamtravinh",
         "sub_category": "tourist-spot",
-        "coords_approximate": true
+        "coords_approximate": true,
+        "image_author": "Bá Thi",
+        "image_source": "Báo Trà Vinh",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Chánh điện lợp ngói đỏ thanh tịnh giữa khuôn viên rợp bóng phi lao tại Thiền viện Trúc Lâm ấp Khoán Tiều xã Trường Long Hòa, điểm chiêm bái hướng mặt ra biển Đông.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Trà Vinh",
+        "verifiedAt": "2026-09-18T10:10:00Z"
       },
       "source": [
         {
@@ -33394,7 +33414,14 @@
         "admission": "Miễn phí",
         "schema_type": "TouristAttraction",
         "sub_category": "market",
-        "coords_approximate": true
+        "coords_approximate": true,
+        "image_author": "Hữu Hiệp",
+        "image_source": "Báo Đồng Khởi",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Khung cảnh nhộn nhịp sáng sớm tại Chợ đầu mối nông thủy sản phường Phú Khương với hàng trăm chủng loại tôm cá tươi sống và trái cây nhiệt đới.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Đồng Khởi",
+        "verifiedAt": "2026-09-18T10:10:00Z"
       },
       "source": [
         {
@@ -34741,7 +34768,14 @@
         "admission": "Miễn phí",
         "schema_type": "TouristAttraction",
         "sub_category": "lake",
-        "coords_approximate": true
+        "coords_approximate": true,
+        "image_author": "Quang Thuần",
+        "image_source": "Báo Vĩnh Long",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Kệ trưng bày rau củ hữu cơ và nông sản đạt tiêu chuẩn VietGAP tại Cửa hàng thực phẩm an toàn Hoa Sao số 72A đường Nguyễn Huệ thành phố Vĩnh Long.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long",
+        "verifiedAt": "2026-09-18T10:10:00Z"
       },
       "source": [
         {
@@ -35076,7 +35110,14 @@
         "admission": "Có phí (liên hệ)",
         "schema_type": "TouristAttraction",
         "sub_category": "eco-tourism",
-        "coords_approximate": true
+        "coords_approximate": true,
+        "image_author": "Hữu Hiệp",
+        "image_source": "Báo Đồng Khởi",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Khung cảnh sinh thái rừng ngập mặn với cầu khỉ và rặng đước xanh tươi tại Khu du lịch sinh thái Anh Ba Khía vùng ven biển Bình Đại.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Đồng Khởi",
+        "verifiedAt": "2026-09-18T10:10:00Z"
       },
       "source": [
         {
@@ -35757,7 +35798,14 @@
         "best_time": "sáng sớm hoặc chiều mát",
         "schema_type": "TouristAttraction",
         "sub_category": "street-food-area",
-        "coords_approximate": true
+        "coords_approximate": true,
+        "image_author": "Quang Thuần",
+        "image_source": "Báo Vĩnh Long",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Dãy hàng quán ẩm thực đường phố tấp nập khách dạo bộ vào buổi chiều tại Phố Ăn Vặt Bờ Kè dọc bờ kè sông Cổ Chiên phường Long Châu.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long",
+        "verifiedAt": "2026-09-18T10:10:00Z"
       },
       "source": [
         {
@@ -36301,8 +36349,14 @@
             "tier": "TIER_1_GOVERNMENT"
           }
         ],
-        "verifiedAt": "2026-09-13T11:18:37+07:00",
-        "verifiedSource": "NotebookLM Deep Terroir Research"
+        "verifiedAt": "2026-09-18T10:10:00Z",
+        "verifiedSource": "NotebookLM Deep Terroir Research",
+        "image_author": "Bá Thi",
+        "image_source": "Báo Trà Vinh",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Kỹ thuật thu mật hoa dừa truyền thống và vườn dừa sinh thái đạt chuẩn hữu cơ quốc tế tại Sokfarm ấp Cây Hẹ thị trấn Cầu Quan.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Trà Vinh"
       },
       "source": [
         {
@@ -37971,8 +38025,14 @@
             "authority_weight": 1
           }
         ],
-        "verifiedAt": "2026-09-13T13:15:00+07:00",
-        "verifiedSource": "NotebookLM Deep Terroir Research - Phase 2"
+        "verifiedAt": "2026-09-18T10:10:00Z",
+        "verifiedSource": "NotebookLM Deep Terroir Research - Phase 2",
+        "image_author": "Bá Thi",
+        "image_source": "Báo Trà Vinh",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Tượng Phật Thích Ca nhập niết bàn dài 54 mét mạ vàng uy nghiêm trong khuôn viên rực rỡ của Chùa Vàm Ray xã Hàm Giang.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Trà Vinh"
       },
       "source": [
         {
@@ -38181,7 +38241,14 @@
         "admission": "Miễn phí",
         "schema_type": "TouristAttraction",
         "sub_category": "bridge",
-        "coords_approximate": true
+        "coords_approximate": true,
+        "image_author": "Bá Thi",
+        "image_source": "Báo Trà Vinh",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Hàng trụ turbine gió khổng lồ màu trắng vươn cao trên nền trời xanh bên bờ biển Đông tại Cánh đồng Điện Gió Duyên Hải ấp Định An xã Đông Hải.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Trà Vinh",
+        "verifiedAt": "2026-09-18T10:10:00Z"
       },
       "source": [
         {
@@ -38385,7 +38452,14 @@
         "best_time": "sáng sớm hoặc chiều mát",
         "schema_type": "TouristAttraction",
         "sub_category": "island",
-        "coords_approximate": true
+        "coords_approximate": true,
+        "image_author": "Thanh Đức",
+        "image_source": "Báo Vĩnh Long",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Kiến trúc ba gian hai chái kết hợp phong cách phương Tây với bao lam chạm trổ tinh mỹ tại Nhà cổ Cai Cường trên cù lao An Bình.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long",
+        "verifiedAt": "2026-09-18T10:10:00Z"
       },
       "source": [
         {
@@ -39081,7 +39155,14 @@
         "sub_category": "market",
         "food_highlights": "Bún nước lèo, bánh xèo, chè bưởi, bánh dân gian Khmer",
         "payment_methods": "tiền mặt/QR",
-        "coords_approximate": true
+        "coords_approximate": true,
+        "image_author": "Bá Thi",
+        "image_source": "Báo Trà Vinh",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Đèn hoa rực rỡ và các gian hàng ẩm thực dân gian Khmer tấp nập người qua lại tại Chợ đêm và Phố đi bộ Hùng Vương trên đường Lý Tự Trọng.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Trà Vinh",
+        "verifiedAt": "2026-09-18T10:10:00Z"
       },
       "source": [
         {
@@ -40722,7 +40803,14 @@
         "address": "Khu phố 2, TT Giồng Trôm, huyện Giồng Trôm, Bến Tre",
         "admission": "Miễn phí",
         "schema_type": "TouristAttraction",
-        "sub_category": "market"
+        "sub_category": "market",
+        "image_author": "Hữu Hiệp",
+        "image_source": "Báo Đồng Khởi",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Khu chợ truyền thống sầm uất tại thị trấn Giồng Trôm với đầy ắp các loại bánh phồng Sơn Đốc, kẹo dừa và rau củ quả tươi miệt vườn.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Đồng Khởi",
+        "verifiedAt": "2026-09-18T10:10:00Z"
       },
       "source": [
         {
@@ -40794,7 +40882,14 @@
         "address": "250 Bùi Quang Chiêu",
         "admission": "Miễn phí",
         "schema_type": "TouristAttraction",
-        "sub_category": "market"
+        "sub_category": "market",
+        "image_author": "Hữu Hiệp",
+        "image_source": "Báo Đồng Khởi",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Nhịp mua bán rộn rã bên bờ rạch tại Chợ Mỏ Cày, trung tâm đầu mối giao thương nông sản và sản phẩm dừa truyền thống lâu đời.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Đồng Khởi",
+        "verifiedAt": "2026-09-18T10:10:00Z"
       },
       "source": [
         {
@@ -40858,7 +40953,14 @@
         "address": "882 Phước Mỹ Trung",
         "admission": "Miễn phí",
         "schema_type": "TouristAttraction",
-        "sub_category": "market"
+        "sub_category": "market",
+        "image_author": "Hữu Hiệp",
+        "image_source": "Báo Đồng Khởi",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Khung cảnh chợ quê Ba Vát xã Phước Mỹ Trung với những sạp hàng bày bán trái cây miệt vườn và các món bánh dân dã truyền thống.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Đồng Khởi",
+        "verifiedAt": "2026-09-18T10:10:00Z"
       },
       "source": [
         {
@@ -41019,7 +41121,14 @@
         "address": "Đường Hùng Vương, phường Bến Tre, TP Vĩnh Long",
         "admission": "Miễn phí",
         "schema_type": "TouristAttraction",
-        "sub_category": "park"
+        "sub_category": "park",
+        "image_author": "Hữu Hiệp",
+        "image_source": "Báo Đồng Khởi",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Hàng cây xanh mát và thảm cỏ rộng thoáng bên bờ sông tại Công viên Mỹ Hóa trên đường Hùng Vương, không gian sinh hoạt cộng đồng thư thái của người dân.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Đồng Khởi",
+        "verifiedAt": "2026-09-18T10:10:00Z"
       },
       "source": [
         {
@@ -41261,7 +41370,14 @@
         "best_time": "sáng sớm hoặc chiều mát",
         "schema_type": "TouristAttraction",
         "sub_category": "eco-tourism",
-        "coords_approximate": true
+        "coords_approximate": true,
+        "image_author": "Thanh Đức",
+        "image_source": "Báo Vĩnh Long",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Hồ nước trong lành rợp bóng dừa nước và các chòi lá nghỉ ngơi tại Khu du lịch sinh thái Sala rộng 20 hecta trên đất cù lao An Bình.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long",
+        "verifiedAt": "2026-09-18T10:10:00Z"
       },
       "source": [
         {
@@ -41327,7 +41443,14 @@
         "sub_category": "eco-tourism",
         "coords_approximate": true,
         "official_tourist_site": true,
-        "official_tourist_year": 2023
+        "official_tourist_year": 2023,
+        "image_author": "Trần Phước",
+        "image_source": "Báo Vĩnh Long",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Không gian kiến trúc đất nung lấy cảm hứng từ vòm lò gạch cổ Mang Thít giữa vườn cây trái tại Khu du lịch Somo Farm Cửu Long thị trấn Cái Nhum.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long",
+        "verifiedAt": "2026-09-18T10:10:00Z"
       },
       "source": [
         {
@@ -62113,7 +62236,14 @@
         "schema_type": "Product",
         "sub_category": "tropical-drink",
         "where_to_eat": "Cửa hàng đặc sản, quán sinh tố đặc sản Bến Tre",
-        "coords_approximate": true
+        "coords_approximate": true,
+        "image_author": "Bá Thi",
+        "image_source": "Báo Trà Vinh",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Ly sinh tố dừa sáp Cầu Kè béo ngậy xay cùng sữa đặc và đá nhuyễn rắc đậu phộng rang thơm lừng, thức uống giải khát trứ danh mang vị ngon đặc sản tự nhiên.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Trà Vinh",
+        "verifiedAt": "2026-09-18T10:10:00Z"
       },
       "source": [
         {
@@ -123864,7 +123994,14 @@
         "schema_type": "LandmarksOrHistoricalBuildings",
         "sub_category": "cultural-heritage",
         "coords_approximate": true,
-        "architectural_style": "Đền thờ (kiến trúc truyền thống)"
+        "architectural_style": "Đền thờ (kiến trúc truyền thống)",
+        "image_author": "Bá Thi",
+        "image_source": "Báo Trà Vinh",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Khuôn viên Đền thờ Chủ tịch Hồ Chí Minh tại ấp Vĩnh Hội xã Long Đức, di tích lịch sử quốc gia trang nghiêm được đồng bào kiên cường bảo vệ trong kháng chiến.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Trà Vinh",
+        "verifiedAt": "2026-09-18T10:10:00Z"
       },
       "source": [
         {
@@ -123914,7 +124051,14 @@
         "total_weapons": "1.400+ tấn",
         "heritage_level": "Di tích Lịch sử cấp Quốc gia (Quyết định số 3777-QĐ/BT ngày 23/12/1995 của Bộ Văn hóa – Thông tin)",
         "khu_di_tich_built": "2013",
-        "coords_approximate": true
+        "coords_approximate": true,
+        "image_author": "Hữu Hiệp",
+        "image_source": "Báo Đồng Khởi",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Bia tưởng niệm di tích lịch sử quốc gia Bến Thạnh Phong bên bờ biển Đông, nơi mở đầu tuyến đường Hồ Chí Minh trên biển tiếp nhận vũ khí chi viện miền Nam.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Đồng Khởi",
+        "verifiedAt": "2026-09-18T10:10:00Z"
       },
       "source": [
         {
@@ -124012,7 +124156,14 @@
         "address": "Xã An Nhơn, tỉnh Vĩnh Long",
         "schema_type": "LandmarksOrHistoricalBuildings",
         "sub_category": "historic-site",
-        "coords_approximate": true
+        "coords_approximate": true,
+        "image_author": "Hữu Hiệp",
+        "image_source": "Báo Đồng Khởi",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Bia chiến thắng Giá Thẻ tại xã An Nhơn, di tích lịch sử cấp tỉnh khắc ghi chiến công oanh liệt của quân và dân địa phương trong kháng chiến chống Mỹ.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Đồng Khởi",
+        "verifiedAt": "2026-09-18T10:10:00Z"
       },
       "source": [
         {
@@ -125157,7 +125308,14 @@
         "coords_approximate": true,
         "distance_from_city": "24 km từ TP Bến Tre",
         "area_nha_truyen_thong": "5.029,3 m²",
-        "built_nha_truyen_thong": "2001"
+        "built_nha_truyen_thong": "2001",
+        "image_author": "Hữu Hiệp",
+        "image_source": "Báo Đồng Khởi",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Tháp đuốc Đồng Khởi cao 24 mét vươn lên giữa bầu trời tại xã Định Thủy, biểu tượng bất diệt của phong trào Đồng Khởi năm 1960.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Đồng Khởi",
+        "verifiedAt": "2026-09-18T10:10:00Z"
       },
       "source": [
         {
@@ -125292,7 +125450,14 @@
         "heritage_level": "Di tích kiến trúc nghệ thuật cấp quốc gia",
         "heritage_decision": "QĐ 2329/QĐ-BVHTTDL ngày 20/6/2018",
         "coords_approximate": true,
-        "architectural_style": "Đình làng (kiến trúc truyền thống Nam bộ)"
+        "architectural_style": "Đình làng (kiến trúc truyền thống Nam bộ)",
+        "image_author": "Hữu Hiệp",
+        "image_source": "Báo Đồng Khởi",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Bộ vì kèo gỗ chạm trổ hoa văn tinh xảo và các cặp long trụ tại Đình Long Thạnh xã Long Định, di tích kiến trúc nghệ thuật quốc gia đầu thế kỷ 20.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Đồng Khởi",
+        "verifiedAt": "2026-09-18T10:10:00Z"
       },
       "source": [
         {
@@ -125449,7 +125614,14 @@
         "heritage_date": "20/6/2018",
         "heritage_level": "Di tích Kiến trúc Nghệ thuật cấp quốc gia",
         "coords_approximate": true,
-        "architectural_style": "Đình làng (kiến trúc truyền thống Nam bộ)"
+        "architectural_style": "Đình làng (kiến trúc truyền thống Nam bộ)",
+        "image_author": "Hữu Hiệp",
+        "image_source": "Báo Đồng Khởi",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Hệ thống rường cột căm xe vững chãi và mái ngói âm dương tại Đình Long Phụng ấp Long Hòa 2, ngôi đình cổ lưu giữ sắc phong vua Tự Đức ban năm 1852.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Đồng Khởi",
+        "verifiedAt": "2026-09-18T10:10:00Z"
       },
       "source": [
         {
@@ -128617,7 +128789,14 @@
         "heritage_level": "Di tích lịch sử cấp quốc gia (1998)",
         "historical_period": "Triều Nguyễn (thế kỷ XIX)",
         "coords_approximate": true,
-        "architectural_style": "Đình làng (kiến trúc truyền thống Nam bộ)"
+        "architectural_style": "Đình làng (kiến trúc truyền thống Nam bộ)",
+        "image_author": "Hữu Hiệp",
+        "image_source": "Báo Đồng Khởi",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Khu lăng mộ hình voi phục và đền thờ danh nhân Phan Thanh Giản tại xã Bảo Thạnh, di tích lịch sử quốc gia tôn vinh vị tiến sĩ đầu tiên của đất Nam Kỳ.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Đồng Khởi",
+        "verifiedAt": "2026-09-18T10:10:00Z"
       },
       "source": [
         {
@@ -128738,7 +128917,14 @@
         "travel_tip": "Ghé bảo tàng đầu tiên trong hành trình Trà Vinh để định hướng tham quan — mở cửa từ 7h30, đóng cửa nghỉ trưa 11h30-13h30.",
         "schema_type": "LandmarksOrHistoricalBuildings",
         "sub_category": "museum",
-        "coords_approximate": true
+        "coords_approximate": true,
+        "image_author": "Bá Thi",
+        "image_source": "Báo Trà Vinh",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Gian trưng bày cổ vật Óc Eo và hiện vật văn hóa Kinh - Khmer - Hoa tại Bảo tàng Tổng hợp, không gian lưu giữ chiều sâu lịch sử của vùng đất phương Nam.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Trà Vinh",
+        "verifiedAt": "2026-09-18T10:10:00Z"
       },
       "source": [
         {
@@ -128782,7 +128968,14 @@
         "schema_type": "LandmarksOrHistoricalBuildings",
         "sub_category": "historic-site",
         "heritage_level": "Di tích lịch sử - văn hóa cấp tỉnh (2019)",
-        "architectural_style": "Việt-Hoa (kiểu Phúc Kiến)"
+        "architectural_style": "Việt-Hoa (kiểu Phúc Kiến)",
+        "image_author": "Hữu Hiệp",
+        "image_source": "Báo Đồng Khởi",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Mái ngói cong vút đắp nổi lưỡng long chầu nguyệt tại Đền Thất Phủ Võ Miếu trên đường Trần Hưng Đạo, di tích kiến trúc nghệ thuật của cộng đồng người Hoa tại Ba Tri.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Đồng Khởi",
+        "verifiedAt": "2026-09-18T10:10:00Z"
       },
       "source": [
         {
@@ -128911,7 +129104,14 @@
         "schema_type": "LandmarksOrHistoricalBuildings",
         "sub_category": "church",
         "tower_height_m": 33,
-        "architectural_style": "Kiến trúc La Mã, gian cánh ngang"
+        "architectural_style": "Kiến trúc La Mã, gian cánh ngang",
+        "image_author": "Hữu Hiệp",
+        "image_source": "Báo Đồng Khởi",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Tháp chuông cao 33 mét mang phong cách kiến trúc La Mã cổ kính của Nhà thờ Giáo xứ Cái Nhum xã Long Thới, một trong những họ đạo lâu đời nhất miền Tây.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Đồng Khởi",
+        "verifiedAt": "2026-09-18T10:10:00Z"
       },
       "source": [
         {
@@ -128965,7 +129165,14 @@
         "heritage_year": 1998,
         "heritage_level": "Di tích lịch sử cấp quốc gia",
         "coords_approximate": true,
-        "architectural_style": "Lăng mộ (kiến trúc truyền thống)"
+        "architectural_style": "Lăng mộ (kiến trúc truyền thống)",
+        "image_author": "Hữu Hiệp",
+        "image_source": "Báo Đồng Khởi",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Bình phong và bia đá rêu phong tại khu mộ tiến sĩ Phan Thanh Giản ấp Thạnh Nghĩa xã Bảo Thạnh, công trình kiến trúc lăng mộ triều Nguyễn thế kỷ 19.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Đồng Khởi",
+        "verifiedAt": "2026-09-18T10:10:00Z"
       },
       "source": [
         {
@@ -129016,7 +129223,14 @@
         "schema_type": "LandmarksOrHistoricalBuildings",
         "sub_category": "cultural-heritage",
         "historical_period": "1930",
-        "coords_approximate": true
+        "coords_approximate": true,
+        "image_author": "Hữu Hiệp",
+        "image_source": "Báo Đồng Khởi",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Ngôi nhà gỗ ba gian của ông Nguyễn Văn Cung tại ấp Tân Hòa xã Tân Xuân, địa điểm lịch sử ghi dấu ngày thành lập chi bộ Đảng đầu tiên cuối tháng 4 năm 1930.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Đồng Khởi",
+        "verifiedAt": "2026-09-18T10:10:00Z"
       },
       "source": [
         {
@@ -129117,7 +129331,14 @@
         "schema_type": "LandmarksOrHistoricalBuildings",
         "sub_category": "pagoda",
         "coords_approximate": true,
-        "architectural_style": "Chùa Khmer (kiến trúc Khmer Theravada)"
+        "architectural_style": "Chùa Khmer (kiến trúc Khmer Theravada)",
+        "image_author": "Bá Thi",
+        "image_source": "Báo Trà Vinh",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Chánh điện uy nghi với hàng cột đắp nổi tượng nữ thần Kayno tại chùa Phi Rùm Sóc ấp Rùm Sóc xã Châu Điền, ngôi cổ tự Khmer khởi dựng thế kỷ 11.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Trà Vinh",
+        "verifiedAt": "2026-09-18T10:10:00Z"
       },
       "source": [
         {
@@ -129342,7 +129563,14 @@
         "schema_type": "LandmarksOrHistoricalBuildings",
         "sub_category": "archaeological-site",
         "heritage_level": "Di tích lịch sử - văn hóa cấp quốc gia (1990)",
-        "coords_approximate": true
+        "coords_approximate": true,
+        "image_author": "Bá Thi",
+        "image_source": "Báo Trà Vinh",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Nền móng gạch cổ và bệ thờ đền Bà La Môn thuộc văn hóa Óc Eo tại di tích Lưu Cừ II ấp Lưu Cừ II xã Lưu Nghiệp Anh, di tích quốc gia thế kỷ đầu Công nguyên.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Trà Vinh",
+        "verifiedAt": "2026-09-18T10:10:00Z"
       },
       "source": [
         {
@@ -129457,7 +129685,14 @@
         "heritage_type": "Lịch sử cách mạng gắn với tín ngưỡng dân gian",
         "heritage_level": "Di tích lịch sử - văn hóa cấp tỉnh (11/2019)",
         "coords_approximate": true,
-        "architectural_style": "Đình làng (kiến trúc truyền thống Nam bộ)"
+        "architectural_style": "Đình làng (kiến trúc truyền thống Nam bộ)",
+        "image_author": "Hữu Hiệp",
+        "image_source": "Báo Đồng Khởi",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Mặt tiền trang nghiêm của Đình thần An Qui tại vùng đất ven biển Thạnh Phú, di tích lịch sử cấp tỉnh từng là căn cứ nuôi giấu cán bộ cách mạng.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Đồng Khởi",
+        "verifiedAt": "2026-09-18T10:10:00Z"
       },
       "source": [
         {
@@ -131058,7 +131293,14 @@
         "heritage_year": 1997,
         "heritage_level": "Di tích lịch sử cấp quốc gia",
         "coords_approximate": true,
-        "architectural_style": "Đền thờ (kiến trúc truyền thống)"
+        "architectural_style": "Đền thờ (kiến trúc truyền thống)",
+        "image_author": "Hữu Hiệp",
+        "image_source": "Báo Đồng Khởi",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Gian thờ chính Lãnh binh Nguyễn Ngọc Thăng trên tỉnh lộ 885 xã Mỹ Thạnh, di tích lịch sử cấp quốc gia thờ phụng người anh hùng đánh giặc giữ nước.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Đồng Khởi",
+        "verifiedAt": "2026-09-18T10:10:00Z"
       },
       "source": [
         {
@@ -133152,7 +133394,14 @@
         "travel_tip": "Đến trước lễ vía Thiên Hậu (23 tháng 3 âm lịch) để xem trang trí lễ hội; mang tiền lẻ để dâng hương.",
         "schema_type": "LandmarksOrHistoricalBuildings",
         "sub_category": "cultural-heritage",
-        "coords_approximate": true
+        "coords_approximate": true,
+        "image_author": "Ngọc Trảng",
+        "image_source": "Báo Vĩnh Long",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Mái ngói âm dương tráng men xanh ngọc và bia đá lập năm 1898 tại Thiên Hậu Cung đường 30 Tháng 4, cơ sở tín ngưỡng người Hoa tiêu biểu tại thành phố Vĩnh Long.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long",
+        "verifiedAt": "2026-09-18T10:10:00Z"
       },
       "source": [
         {
@@ -134093,7 +134342,14 @@
         "historical_period": "Kháng chiến chống Mỹ",
         "specialty": "Điểm tập kết, giấu vũ khí và đón các đoàn tàu Không số",
         "admission": "Miễn phí",
-        "highlight": "Khu tưởng niệm uy nghiêm bên bãi biển Cồn Bửng lưu giữ ký ức những chuyến tàu Không số quả cảm."
+        "highlight": "Khu tưởng niệm uy nghiêm bên bãi biển Cồn Bửng lưu giữ ký ức những chuyến tàu Không số quả cảm.",
+        "image_author": "Hữu Hiệp",
+        "image_source": "Báo Đồng Khởi",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Bia chứng tích Đường Hồ Chí Minh trên biển tại bến Cồn Bửng xã Thạnh Phong, nơi những con tàu không số cập bến an toàn tiếp tế vũ khí cho chiến trường miền Nam.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Đồng Khởi",
+        "verifiedAt": "2026-09-18T10:10:00Z"
       },
       "source": [
         {
@@ -134253,7 +134509,14 @@
         "architectural_style": "Nhà rường gỗ tứ trụ Nam Bộ",
         "historical_period": "Triều Nguyễn (Thế kỷ 19)",
         "admission": "Miễn phí",
-        "highlight": "Bộ hoành phi câu đối thếp vàng và nghi lễ cúng đình Kỳ Yên đậm nét phong tục Nam Bộ."
+        "highlight": "Bộ hoành phi câu đối thếp vàng và nghi lễ cúng đình Kỳ Yên đậm nét phong tục Nam Bộ.",
+        "image_author": "Hữu Hiệp",
+        "image_source": "Báo Đồng Khởi",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Bộ khung gỗ căm xe nguyên khối và mái ngói vảy rêu phong tại Đình thần An Ngãi Trung ấp An Thạnh, ngôi đình làng lưu giữ sắc phong bổn cảnh Thành hoàng thời Nguyễn.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Đồng Khởi",
+        "verifiedAt": "2026-09-18T10:10:00Z"
       },
       "source": [
         {
@@ -134405,7 +134668,14 @@
         "heritage_type": "Di tích lịch sử cách mạng",
         "historical_period": "Kháng chiến chống Mỹ cứu nước",
         "admission": "Miễn phí",
-        "highlight": "Hệ thống hầm bí mật, công sự dã chiến dưới rặng dừa Giồng Trôm kiên cường."
+        "highlight": "Hệ thống hầm bí mật, công sự dã chiến dưới rặng dừa Giồng Trôm kiên cường.",
+        "image_author": "Hữu Hiệp",
+        "image_source": "Báo Đồng Khởi",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Hệ thống hầm bí mật và lán trại phục dựng tại Khu căn cứ Tỉnh ủy tại ấp Thới Hòa xã Châu Hòa, địa chỉ đỏ cách mạng giữa rặng dừa chở che cán bộ qua hai cuộc kháng chiến.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Đồng Khởi",
+        "verifiedAt": "2026-09-18T10:10:00Z"
       },
       "source": [
         {
@@ -134478,7 +134748,14 @@
         "architectural_style": "Đình làng Nam Bộ 3 gian 2 chái",
         "historical_period": "Thời Nguyễn",
         "admission": "Miễn phí",
-        "highlight": "Nghi thức cúng Thần Nông và hát bội truyền thống trong dịp đại lễ Kỳ Yên hàng năm."
+        "highlight": "Nghi thức cúng Thần Nông và hát bội truyền thống trong dịp đại lễ Kỳ Yên hàng năm.",
+        "image_author": "Thanh Đức",
+        "image_source": "Báo Vĩnh Long",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Kiến trúc gian võ ca và chính điện lợp ngói âm dương cổ kính của Đình làng Hiếu Phụng tại ấp Quang Trạch, trung tâm tín ngưỡng gắn kết cư dân nông nghiệp huyện Vũng Liêm.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long",
+        "verifiedAt": "2026-09-18T10:10:00Z"
       },
       "source": [
         {
