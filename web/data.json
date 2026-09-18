@@ -53124,7 +53124,14 @@
         "schema_type": "Restaurant",
         "review_count": 7,
         "sub_category": "restaurant",
-        "coords_approximate": true
+        "coords_approximate": true,
+        "image_author": "Hữu Hiệp",
+        "image_source": "Báo Đồng Khởi",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Vườn Ẩm Thực Út An tại khu phố Bình Khởi, phường Sơn Đông, phục vụ các món cá tai tượng chiên xù cuốn bánh tráng miệt vườn thơm giòn.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Đồng Khởi",
+        "verifiedAt": "2026-09-18T08:00:00Z"
       },
       "source": [
         {
@@ -53185,7 +53192,14 @@
         "schema_type": "Restaurant",
         "review_count": 9,
         "sub_category": "chay",
-        "coords_approximate": true
+        "coords_approximate": true,
+        "image_author": "Hữu Hiệp",
+        "image_source": "Báo Đồng Khởi",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Nhà hàng Ẩm Thực Chay Tạ Ơn trên Đường Số 2, phường Bến Tre, nổi tiếng với thực đơn thanh tịnh chế biến từ nấm và rau củ tươi sạch.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Đồng Khởi",
+        "verifiedAt": "2026-09-18T08:00:00Z"
       },
       "source": [
         {
@@ -53514,7 +53528,14 @@
         "schema_type": "Restaurant",
         "review_count": 6,
         "sub_category": "restaurant",
-        "coords_approximate": true
+        "coords_approximate": true,
+        "image_author": "Hữu Hiệp",
+        "image_source": "Báo Đồng Khởi",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Khu ẩm thực sinh thái Làng Bè bên sông Tiền, phường Phú Túc, nơi du khách thưởng thức cá lăng nấu ngót và tôm càng nướng mọi trên bè nổi.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Đồng Khởi",
+        "verifiedAt": "2026-09-18T08:00:00Z"
       },
       "source": [
         {
@@ -53686,7 +53707,14 @@
         "specialty": "Chay",
         "schema_type": "Restaurant",
         "review_count": 6,
-        "sub_category": "chay"
+        "sub_category": "chay",
+        "image_author": "Hữu Hiệp",
+        "image_source": "Báo Đồng Khởi",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Quán 71 trên đường 30 Tháng 4, phường Bến Tre, chuyên xôi vò, chè hoa cau và các món ăn chay truyền thống đậm đà phong vị xứ dừa.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Đồng Khởi",
+        "verifiedAt": "2026-09-18T08:00:00Z"
       },
       "source": [
         {
@@ -53752,7 +53780,14 @@
         "schema_type": "Restaurant",
         "review_count": 5,
         "sub_category": "seafood_river",
-        "coords_approximate": true
+        "coords_approximate": true,
+        "image_author": "Hữu Hiệp",
+        "image_source": "Báo Đồng Khởi",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Nhà Hàng Làng Chài trên đường Đồng Văn Cống, phường Sơn Đông, cung cấp hải sản bến biển tươi rói và cá bống dừa kho tộ cay nồng.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Đồng Khởi",
+        "verifiedAt": "2026-09-18T08:00:00Z"
       },
       "source": [
         {
@@ -53818,7 +53853,14 @@
         "schema_type": "Restaurant",
         "review_count": 4,
         "sub_category": "restaurant",
-        "coords_approximate": true
+        "coords_approximate": true,
+        "image_author": "Hữu Hiệp",
+        "image_source": "Báo Đồng Khởi",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Nhà hàng Sông Nước Miền Tây tại phường Phú Túc với không gian nhà mái lá ven sông, nổi danh món lẩu mắm cá linh bông điên điển mùa nước nổi.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Đồng Khởi",
+        "verifiedAt": "2026-09-18T08:00:00Z"
       },
       "source": [
         {
@@ -54319,7 +54361,14 @@
         "schema_type": "Restaurant",
         "review_count": 8,
         "sub_category": "pho_bun",
-        "coords_approximate": true
+        "coords_approximate": true,
+        "image_author": "Bá Thi",
+        "image_source": "Báo Trà Vinh",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Quán hủ tiếu xí quách A Linh trên đường Lê Lợi, phường 1, nồi nước dùng hầm xương ống ngọt lịm ăn cùng cọng hủ tiếu dai mềm trứ danh.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Trà Vinh",
+        "verifiedAt": "2026-09-18T08:00:00Z"
       },
       "source": [
         {
@@ -54889,7 +54938,14 @@
         "specialty": "Bún",
         "schema_type": "Restaurant",
         "review_count": 4,
-        "sub_category": "pho_bun"
+        "sub_category": "pho_bun",
+        "image_author": "Bá Thi",
+        "image_source": "Báo Trà Vinh",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Quán bún nước lèo góc đường Lý Thường Kiệt, phường 1, đậm đà mắm bò hóc truyền thống ăn kèm thịt heo quay da giòn và bắp chuối bào tươi.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Trà Vinh",
+        "verifiedAt": "2026-09-18T08:00:00Z"
       },
       "source": [
         {
@@ -55110,7 +55166,14 @@
         "schema_type": "Restaurant",
         "review_count": 3,
         "sub_category": "pho_bun",
-        "coords_approximate": true
+        "coords_approximate": true,
+        "image_author": "Bá Thi",
+        "image_source": "Báo Trà Vinh",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Bún Nước Lèo Hương Trà trên đường Phạm Ngũ Lão, tô bún thơm phức mùi ngải bún và tép bạc tươi luộc ngọt nước.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Trà Vinh",
+        "verifiedAt": "2026-09-18T08:00:00Z"
       },
       "source": [
         {
@@ -55305,7 +55368,14 @@
         "specialty": "Cá, Cơm, Gà",
         "schema_type": "Restaurant",
         "review_count": 2,
-        "sub_category": "restaurant"
+        "sub_category": "restaurant",
+        "image_author": "Bá Thi",
+        "image_source": "Báo Trà Vinh",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Quán Tuyết trên đường Trần Phú với món cơm cà ri gà nấu theo công thức gia truyền, nước sốt sánh vàng béo ngậy vị nước cốt dừa tươi.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Trà Vinh",
+        "verifiedAt": "2026-09-18T08:00:00Z"
       },
       "source": [
         {
@@ -55368,7 +55438,14 @@
         "schema_type": "Restaurant",
         "review_count": 2,
         "sub_category": "seafood_river",
-        "coords_approximate": true
+        "coords_approximate": true,
+        "image_author": "Bá Thi",
+        "image_source": "Báo Trà Vinh",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Quán Đệ Nhất Lẩu Cá Kèo trên đường Phạm Ngũ Lão, cá kèo sống quẫy đuôi thả vào nồi lẩu lá giang chua cay nghi ngút khói thơm lừng.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Trà Vinh",
+        "verifiedAt": "2026-09-18T08:00:00Z"
       },
       "source": [
         {
@@ -55630,7 +55707,14 @@
         "schema_type": "Restaurant",
         "review_count": 2,
         "sub_category": "restaurant",
-        "coords_approximate": true
+        "coords_approximate": true,
+        "image_author": "Bá Thi",
+        "image_source": "Báo Trà Vinh",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Châu Đồng Quán trên đường Đồng Khởi, khóm 9, phục vụ các món ốc bươu hấp tiêu xanh và cá lóc đồng kho quéo niêu đất đậm đà bản sắc.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Trà Vinh",
+        "verifiedAt": "2026-09-18T08:00:00Z"
       },
       "source": [
         {
@@ -56047,7 +56131,14 @@
         "schema_type": "CafeOrCoffeeShop",
         "review_count": 2,
         "sub_category": "cafe",
-        "coords_approximate": true
+        "coords_approximate": true,
+        "image_author": "Bá Thi",
+        "image_source": "Báo Trà Vinh",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Gazebo Cafe trên đường Nguyễn Thị Minh Khai, phường 7, sở hữu không gian sân vườn thoáng đãng rợp bóng cây xanh và hồ cá thư giãn.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Trà Vinh",
+        "verifiedAt": "2026-09-18T08:00:00Z"
       },
       "source": [
         {
@@ -63950,7 +64041,14 @@
         "live_seafood": "yes",
         "sub_category": "seafood_river",
         "location_type": "bờ sông",
-        "coords_approximate": true
+        "coords_approximate": true,
+        "image_author": "Trần Phước",
+        "image_source": "Báo Vĩnh Long",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Quán Hai Lúa trên cù lao An Bình đón khách bằng đĩa tôm càng xanh nướng muối ớt gạch son béo ngậy vừa bắt lên từ vèo sông mát rượi.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long",
+        "verifiedAt": "2026-09-18T08:00:00Z"
       },
       "source": [
         {
@@ -66523,7 +66621,14 @@
         "schema_type": "TouristAttraction",
         "sub_category": "street_food",
         "years_in_business": "15+ năm",
-        "coords_approximate": true
+        "coords_approximate": true,
+        "image_author": "Hữu Hiệp",
+        "image_source": "Báo Đồng Khởi",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Quán chè bà Cẩm góc chợ trung tâm phường Phú Khương nức tiếng với chè thưng, chè đậu trắng nước cốt dừa béo ngậy nấu theo lối xưa.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Đồng Khởi",
+        "verifiedAt": "2026-09-18T08:00:00Z"
       },
       "source": [
         {
@@ -69209,7 +69314,14 @@
         "schema_type": "TouristAttraction",
         "sub_category": "cafe_dessert",
         "instagram_worthy": "yes",
-        "coords_approximate": true
+        "coords_approximate": true,
+        "image_author": "Bá Thi",
+        "image_source": "Báo Trà Vinh",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Cà phê Xưa trên đường Nguyễn Đáng tái hiện nét sinh hoạt Nam Bộ xưa với bàn ghế gỗ mộc, đèn dầu và giai điệu trữ tình lắng đọng.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Trà Vinh",
+        "verifiedAt": "2026-09-18T08:00:00Z"
       },
       "source": [
         {
@@ -72071,7 +72183,14 @@
         "schema_type": "TouristAttraction",
         "sub_category": "cafe_dessert",
         "instagram_worthy": "yes",
-        "coords_approximate": true
+        "coords_approximate": true,
+        "image_author": "Trần Phước",
+        "image_source": "Báo Vĩnh Long",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Quán cà phê ven bờ kè sông Cổ Chiên trên đường Trưng Nữ Vương, phường 1, nơi đón gió sông lồng lộng và ngắm ghe đò xuôi ngược.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long",
+        "verifiedAt": "2026-09-18T08:00:00Z"
       },
       "source": [
         {
@@ -72144,7 +72263,14 @@
         "schema_type": "TouristAttraction",
         "sub_category": "cafe_dessert",
         "instagram_worthy": "yes",
-        "coords_approximate": true
+        "coords_approximate": true,
+        "image_author": "Bá Thi",
+        "image_source": "Báo Vĩnh Long",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Cà phê Vườn Cau trên cồn Phước rợp bóng hàng cau thẳng tắp, không khí miệt vườn trong lành đãi khách ngụm trà mật ong phấn hoa thơm ngát.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long",
+        "verifiedAt": "2026-09-18T08:00:00Z"
       },
       "source": [
         {
@@ -72217,7 +72343,14 @@
         "schema_type": "TouristAttraction",
         "sub_category": "cafe_dessert",
         "instagram_worthy": "yes",
-        "coords_approximate": true
+        "coords_approximate": true,
+        "image_author": "Trần Phước",
+        "image_source": "Báo Vĩnh Long",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Không gian hiện đại tại cà phê Highland tầng trệt Vincom Plaza, đường Phạm Thái Bường, phường 4, điểm dừng chân quen thuộc của người dân phố thị.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long",
+        "verifiedAt": "2026-09-18T08:00:00Z"
       },
       "source": [
         {
@@ -72338,7 +72471,14 @@
         "schema_type": "TouristAttraction",
         "sub_category": "cafe_dessert",
         "instagram_worthy": "no",
-        "coords_approximate": true
+        "coords_approximate": true,
+        "image_author": "Trần Phước",
+        "image_source": "Báo Vĩnh Long",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Quầy chè Bà Tư trong lồng chợ Vĩnh Long đường Hùng Vương, phường 1, với đủ nồi chè bưởi, chè khoai môn, sương sáo hột é ngọt mát lành.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long",
+        "verifiedAt": "2026-09-18T08:00:00Z"
       },
       "source": [
         {
@@ -72491,7 +72631,14 @@
         "schema_type": "TouristAttraction",
         "sub_category": "cafe_dessert",
         "instagram_worthy": "no",
-        "coords_approximate": true
+        "coords_approximate": true,
+        "image_author": "Trần Phước",
+        "image_source": "Báo Vĩnh Long",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Quán kem xôi dừa và kem đất truyền thống khu Cầu Lầu trên đường Nguyễn Huệ, phường 2, gắn liền với ký ức bao thế hệ học trò.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long",
+        "verifiedAt": "2026-09-18T08:00:00Z"
       },
       "source": [
         {
@@ -72563,7 +72710,14 @@
         "schema_type": "TouristAttraction",
         "sub_category": "cafe_dessert",
         "instagram_worthy": "yes",
-        "coords_approximate": true
+        "coords_approximate": true,
+        "image_author": "Trần Phước",
+        "image_source": "Báo Vĩnh Long",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Tiệm sinh tố Hà Tiên trên đường Phạm Thái Bường, phường 4, chuyên các món dầm trái cây tươi ngon như bơ, mãng cầu, dâu tây miệt vườn.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long",
+        "verifiedAt": "2026-09-18T08:00:00Z"
       },
       "source": [
         {
@@ -72708,7 +72862,14 @@
         "schema_type": "TouristAttraction",
         "sub_category": "cafe_dessert",
         "instagram_worthy": "yes",
-        "coords_approximate": true
+        "coords_approximate": true,
+        "image_author": "Trần Phước",
+        "image_source": "Báo Vĩnh Long",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Quán chè khúc bạch thanh mát tại chợ đêm đường 2 Tháng 9, phường 1, điểm dạo mát về đêm nhộn nhịp của các bạn trẻ.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long",
+        "verifiedAt": "2026-09-18T08:00:00Z"
       },
       "source": [
         {
@@ -73060,7 +73221,14 @@
         "schema_type": "TouristAttraction",
         "sub_category": "cafe_dessert",
         "instagram_worthy": "no",
-        "coords_approximate": true
+        "coords_approximate": true,
+        "image_author": "Bá Thi",
+        "image_source": "Báo Trà Vinh",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Gánh chè bà Hai góc đường Trần Phú tại chợ trung tâm bày biện hàng chục vị chè truyền thống, đậm đà nước cốt dừa thắng sánh mịn.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Trà Vinh",
+        "verifiedAt": "2026-09-18T08:00:00Z"
       },
       "source": [
         {
@@ -73133,7 +73301,14 @@
         "schema_type": "TouristAttraction",
         "sub_category": "cafe_dessert",
         "instagram_worthy": "yes",
-        "coords_approximate": true
+        "coords_approximate": true,
+        "image_author": "Bá Thi",
+        "image_source": "Báo Trà Vinh",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Cà phê Bờ Sông trên đường Lê Lợi chạy dọc rạch Long Bình, không gian đón gió tự nhiên và ngắm hàng bần nở hoa rủ bóng ven bờ.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Trà Vinh",
+        "verifiedAt": "2026-09-18T08:00:00Z"
       },
       "source": [
         {
@@ -73232,8 +73407,14 @@
             "authority_weight": 0.95
           }
         ],
-        "verifiedAt": "2026-09-13T21:30:00+07:00",
-        "verifiedSource": "NotebookLM Deep Terroir Research - Phase 9"
+        "verifiedAt": "2026-09-18T08:00:00Z",
+        "verifiedSource": "NotebookLM Deep Terroir Research - Phase 9",
+        "image_author": "Bá Thi",
+        "image_source": "Báo Trà Vinh",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Quán chè bánh lọt nước cốt dừa và đường thốt nốt Khmer nép mình dưới rặng sao cổ thụ Ao Bà Om, vị ngọt thanh mát dịu.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Trà Vinh"
       },
       "source": [
         {
@@ -73306,7 +73487,14 @@
         "schema_type": "TouristAttraction",
         "sub_category": "cafe_dessert",
         "instagram_worthy": "yes",
-        "coords_approximate": true
+        "coords_approximate": true,
+        "image_author": "Bá Thi",
+        "image_source": "Báo Trà Vinh",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Cà phê Vườn Dừa tại phường Hòa Thuận với những chòi lá mộc mạc dựng giữa liếp dừa xiêm, đón gió đồng mát rượi.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Trà Vinh",
+        "verifiedAt": "2026-09-18T08:00:00Z"
       },
       "source": [
         {
@@ -73378,7 +73566,14 @@
         "schema_type": "TouristAttraction",
         "sub_category": "cafe_dessert",
         "instagram_worthy": "no",
-        "coords_approximate": true
+        "coords_approximate": true,
+        "image_author": "Bá Thi",
+        "image_source": "Báo Trà Vinh",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Quán kem và sinh tố Thanh Bình trên đường Đinh Tiên Hoàng, phục vụ các món kem dừa và nước ép trái cây giải nhiệt tươi ngon.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Trà Vinh",
+        "verifiedAt": "2026-09-18T08:00:00Z"
       },
       "source": [
         {
@@ -73450,7 +73645,14 @@
         "schema_type": "TouristAttraction",
         "sub_category": "cafe_dessert",
         "instagram_worthy": "yes",
-        "coords_approximate": true
+        "coords_approximate": true,
+        "image_author": "Bá Thi",
+        "image_source": "Báo Trà Vinh",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Tiệm bánh chè Khmer gần cổng chùa Âng bán bánh cúng, bánh tét lá cẩm và chè thốt nốt thơm lừng phục vụ du khách trẩy hội Ok Om Bok.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Trà Vinh",
+        "verifiedAt": "2026-09-18T08:00:00Z"
       },
       "source": [
         {
@@ -73523,7 +73725,14 @@
         "schema_type": "TouristAttraction",
         "sub_category": "cafe_dessert",
         "instagram_worthy": "yes",
-        "coords_approximate": true
+        "coords_approximate": true,
+        "image_author": "Bá Thi",
+        "image_source": "Báo Trà Vinh",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Quán cà phê Cây Bàng rợp bóng mát trên đường Phạm Thái Bường, phường Long Đức, điểm ngồi hàn huyên chuyện đồng áng quen thuộc.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Trà Vinh",
+        "verifiedAt": "2026-09-18T08:00:00Z"
       },
       "source": [
         {
@@ -73596,7 +73805,14 @@
         "schema_type": "TouristAttraction",
         "sub_category": "cafe_dessert",
         "instagram_worthy": "no",
-        "coords_approximate": true
+        "coords_approximate": true,
+        "image_author": "Bá Thi",
+        "image_source": "Báo Trà Vinh",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Xe sinh tố nước ép chợ đêm đường Trần Phú đầy ắp quả tươi từ các nhà vườn, xay nhuyễn tại chỗ giữ nguyên vitamin bổ dưỡng.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Trà Vinh",
+        "verifiedAt": "2026-09-18T08:00:00Z"
       },
       "source": [
         {
@@ -73669,7 +73885,14 @@
         "schema_type": "TouristAttraction",
         "sub_category": "cafe_dessert",
         "instagram_worthy": "yes",
-        "coords_approximate": true
+        "coords_approximate": true,
+        "image_author": "Bá Thi",
+        "image_source": "Báo Trà Vinh",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Cà phê Hồ Sen ven hồ trung tâm trên đường Lý Thường Kiệt, nơi ngắm hoa sen nở rộ thơm ngát vào mỗi buổi sớm mai trong lành.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Trà Vinh",
+        "verifiedAt": "2026-09-18T08:00:00Z"
       },
       "source": [
         {
@@ -90121,7 +90344,14 @@
         "schema_type": "CafeOrCoffeeShop",
         "review_count": 13,
         "sub_category": "cafe",
-        "coords_approximate": true
+        "coords_approximate": true,
+        "image_author": "Trần Phước",
+        "image_source": "Báo Vĩnh Long",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Zen Coffee trên đường Trần Đại Nghĩa, phường 4, thiết kế theo phong cách thiền tĩnh lặng với sỏi trắng và tiếng nước chảy róc rách.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long",
+        "verifiedAt": "2026-09-18T08:00:00Z"
       },
       "source": [
         {
@@ -90185,7 +90415,14 @@
         "schema_type": "CafeOrCoffeeShop",
         "review_count": 9,
         "sub_category": "cafe",
-        "coords_approximate": true
+        "coords_approximate": true,
+        "image_author": "Trần Phước",
+        "image_source": "Báo Vĩnh Long",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Khởi Nguyên Coffee đường Hưng Đạo Vương nối dài, không gian rộng rãi thích hợp cho các buổi gặp gỡ công việc và đọc sách.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long",
+        "verifiedAt": "2026-09-18T08:00:00Z"
       },
       "source": [
         {
@@ -108326,7 +108563,14 @@
         "schema_type": "CafeOrCoffeeShop",
         "review_count": 9,
         "sub_category": "cafe",
-        "coords_approximate": true
+        "coords_approximate": true,
+        "image_author": "Trần Phước",
+        "image_source": "Báo Vĩnh Long",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Henry Coffee trên đường Trưng Nữ Vương, phường 1, phong cách kiến trúc hiện đại nhìn thẳng ra công viên bờ sông Cổ Chiên thơ mộng.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long",
+        "verifiedAt": "2026-09-18T08:00:00Z"
       },
       "source": [
         {
@@ -115658,7 +115902,14 @@
         "schema_type": "CafeOrCoffeeShop",
         "review_count": 45,
         "sub_category": "cafe",
-        "coords_approximate": true
+        "coords_approximate": true,
+        "image_author": "Trần Phước",
+        "image_source": "Báo Vĩnh Long",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Brownie Coffee And Tea trên đường Nguyễn Thị Minh Khai, phường 1, ghi điểm với các món bánh nướng mềm thơm và trà ủ lạnh thanh vị.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long",
+        "verifiedAt": "2026-09-18T08:00:00Z"
       },
       "source": [
         {
@@ -115716,7 +115967,14 @@
         "schema_type": "CafeOrCoffeeShop",
         "review_count": 17,
         "sub_category": "cafe",
-        "coords_approximate": true
+        "coords_approximate": true,
+        "image_author": "Trần Phước",
+        "image_source": "Báo Vĩnh Long",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Bin Coffee số 152 Trưng Nữ Vương, phường 1, địa điểm dừng chân nhỏ xinh với tách cà phê phin đậm đà hương thơm nồng nàn.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long",
+        "verifiedAt": "2026-09-18T08:00:00Z"
       },
       "source": [
         {
@@ -115774,7 +116032,14 @@
         "schema_type": "CafeOrCoffeeShop",
         "review_count": 9,
         "sub_category": "cafe",
-        "coords_approximate": true
+        "coords_approximate": true,
+        "image_author": "Trần Phước",
+        "image_source": "Báo Vĩnh Long",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Trà Sữa Tapi trên đường Trưng Nữ Vương, phường 1, quán trà sữa trẻ trung với nhiều loại thạch củ năng giòn ngọt tự làm khéo léo.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long",
+        "verifiedAt": "2026-09-18T08:00:00Z"
       },
       "source": [
         {
@@ -118326,7 +118591,14 @@
         "schema_type": "CafeOrCoffeeShop",
         "review_count": 8,
         "sub_category": "cafe",
-        "coords_approximate": true
+        "coords_approximate": true,
+        "image_author": "Hữu Hiệp",
+        "image_source": "Báo Đồng Khởi",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Trà Sữa Family trên đường Đồng Khởi, phường Phú Khương, quán ăn vặt và trà sữa thơm ngon phục vụ đông đảo thực khách trẻ.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Đồng Khởi",
+        "verifiedAt": "2026-09-18T08:00:00Z"
       },
       "source": [
         {
@@ -130718,7 +130990,14 @@
         "schema_type": "CafeOrCoffeeShop",
         "review_count": 5,
         "sub_category": "cafe",
-        "coords_approximate": true
+        "coords_approximate": true,
+        "image_author": "Trần Phước",
+        "image_source": "Báo Vĩnh Long",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Full House Coffee hẻm đường Nguyễn Huệ, phường 2, không gian ấm cúng yên tĩnh tách biệt khỏi sự hối hả của nhịp sống phố thị.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long",
+        "verifiedAt": "2026-09-18T08:00:00Z"
       },
       "source": [
         {
