@@ -288,7 +288,7 @@
       >
         <div class="section-head">
           <div class="sh-text">
-            <h2>Từ <em class="ac-neutral">cộng đồng</em></h2>
+            <h2 aria-label="Từ cộng đồng">Từ <em class="editorial-italic-accent" aria-hidden="true">cộng đồng</em></h2>
             <p class="sh-sub">Trải nghiệm thật, mẹo hay từ người đi trước</p>
           </div>
           <NuxtLink class="see-all" to="/cong-dong">Đọc thêm chuyện người đi trước <IconLine name="arrow-right" class="inline-arrow" aria-hidden="true" /></NuxtLink>

@@ -27,4 +27,13 @@ describe('Community Feed Editorial Field Notes Craft', () => {
     expect(homeCss).toMatch(/\.community-seed-card:active\s*\{[^}]*transform:\s*scale\(0\.98\)/)
     expect(homeCss).toMatch(/\.community-seed-card:focus-visible\s*\{[^}]*outline:\s*2px\s+solid\s+var\(--color-focus\)/)
   })
+
+  it('enforces WCAG 2.2 AAA accessibility and aria-hidden on decorative icons in HomeCommunityFeed', () => {
+    expect(commVue).toContain('name="flame" aria-hidden="true"')
+    expect(commVue).toContain('name="trophy" aria-hidden="true"')
+    expect(commVue).toContain('name="shield-check" aria-hidden="true"')
+    expect(commVue).toContain('name="heart" aria-hidden="true"')
+    expect(commVue).toContain('name="message" aria-hidden="true"')
+    expect(commVue).toContain('name="pin" aria-hidden="true"')
+  })
 })

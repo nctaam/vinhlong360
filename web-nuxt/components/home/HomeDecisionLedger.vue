@@ -40,7 +40,7 @@
           <span class="home-decision-ledger__eyebrow">{{ entry.eyebrow }}</span>
           <strong class="home-decision-ledger__title">{{ entry.title }}</strong>
           <span class="home-decision-ledger__text">{{ entry.text }}</span>
-          <span class="home-decision-ledger__arrow" aria-hidden="true"><IconLine name="arrow-right" /></span>
+          <span class="home-decision-ledger__arrow" aria-hidden="true"><IconLine name="arrow-right" aria-hidden="true" /></span>
         </NuxtLink>
       </li>
     </ul>

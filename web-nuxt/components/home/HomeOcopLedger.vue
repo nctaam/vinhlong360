@@ -23,11 +23,11 @@
       <div class="home-ocop__emblem-wrap" aria-hidden="true">
         <div class="wax-seal" :aria-label="'Chứng nhận OCOP Quốc gia'" role="img">
           <span class="wax-seal-notches" aria-hidden="true" />
-          <span class="wax-seal-star" aria-hidden="true"><IconLine name="star" />OCOP</span>
+          <span class="wax-seal-star" aria-hidden="true"><IconLine name="star" aria-hidden="true" />OCOP</span>
         </div>
       </div>
       <p class="home-ocop__dept">Chứng nhận quốc gia · Mỗi xã một sản phẩm</p>
-      <h2 id="home-ocop-title" class="home-ocop__title">Sổ vàng OCOP</h2>
+      <h2 id="home-ocop-title" class="home-ocop__title" aria-label="Sổ vàng OCOP">Sổ vàng <em class="editorial-italic-accent" aria-hidden="true">OCOP</em></h2>
 
       <ul class="home-ocop__tiers">
         <li v-for="tier in TIERS" :key="tier.stars" class="home-ocop__tier" :data-tier="tier.stars">
@@ -42,8 +42,8 @@
         Mỗi ngôi sao là một vòng thẩm định đã qua — không phải nhãn tự phong.
       </p>
 
-      <NuxtLink to="/ocop" class="home-ocop__cta" data-home-ocop-cta>
-        Xem sổ vàng <span class="home-ocop__arrow" aria-hidden="true"><IconLine name="arrow-right" /></span>
+      <NuxtLink to="/ocop" class="home-ocop__cta" data-home-ocop-cta aria-label="Xem sổ vàng OCOP tỉnh Vĩnh Long">
+        Xem sổ vàng <span class="home-ocop__arrow" aria-hidden="true"><IconLine name="arrow-right" aria-hidden="true" /></span>
       </NuxtLink>
     </div>
   </section>

@@ -6,7 +6,7 @@
           <IconLine name="compass" aria-hidden="true" />
           <span>Lối rẽ lữ hành</span>
         </span>
-        <h2 class="home-intent-anchors__title">Nhu Cầu Khám Phá Nhanh</h2>
+        <h2 class="home-intent-anchors__title" aria-label="Nhu Cầu Khám Phá Nhanh">Nhu Cầu <em class="editorial-italic-accent" aria-hidden="true">Khám Phá Nhanh</em></h2>
       </div>
 
       <div class="home-intent-anchors__grid" role="list">
@@ -31,7 +31,7 @@
               @error="onAvatarFallback"
             >
             <span class="home-intent-anchor__icon-badge" :class="`home-intent-anchor__icon-badge--${anchor.accent}`" aria-hidden="true">
-              <IconLine :name="anchor.icon" />
+              <IconLine :name="anchor.icon" aria-hidden="true" />
             </span>
           </span>
           <span class="home-intent-anchor__content">
@@ -271,5 +271,13 @@ function onAvatarFallback(e: Event) {
 .home-intent-anchor:hover .home-intent-anchor__arrow {
   transform: translateX(3px);
   color: var(--color-brand);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .home-intent-anchor:hover .home-intent-anchor__avatar,
+  .home-intent-anchor:hover .home-intent-anchor__arrow {
+    transform: none;
+    transition: none;
+  }
 }
 </style>
