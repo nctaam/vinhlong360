@@ -13,11 +13,14 @@ export function canonicalLaunchRequestTarget(target: string): string {
   return fragment < 0 ? target : target.slice(0, fragment)
 }
 
-export function buildLaunchHead(decision: Readonly<LaunchPageDecision>) {
+export function buildLaunchHead(decision: Readonly<LaunchPageDecision>): {
+  meta: Array<{ name: string; content: string }>
+  link: Array<{ rel: 'sitemap'; type: string; href: string }>
+} {
   return {
     meta: [{ name: 'robots', content: decision.robots }],
     link: decision.sitemapDiscovery
-      ? [{ rel: 'sitemap', type: 'application/xml', href: '/sitemap-index.xml' }]
+      ? [{ rel: 'sitemap' as const, type: 'application/xml', href: '/sitemap-index.xml' }]
       : [],
   }
 }

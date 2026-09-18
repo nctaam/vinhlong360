@@ -41,7 +41,7 @@ onMounted(() => {
     },
     { rootMargin: '120px' },
   )
-  io.observe(el)
+  io.observe(el as unknown as Element)
   onUnmounted(() => io.disconnect())
 })
 </script>

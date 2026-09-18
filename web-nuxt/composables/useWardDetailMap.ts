@@ -35,7 +35,7 @@ export function useWardDetailMap(options: UseWardDetailMapOptions) {
     const coords = center
     let map: any, maplibregl: any
     try {
-      const r = await createMap(el, { center: [coords[1], coords[0]], zoom: 14 })
+      const r = await createMap(el as unknown as HTMLElement, { center: [coords[1], coords[0]], zoom: 14 })
       map = r.map
       maplibregl = r.maplibregl
       mapInstance = map

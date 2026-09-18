@@ -158,7 +158,7 @@
             <input
               v-for="i in 6"
               :key="i"
-              :ref="el => { if (el) otpRefs[i - 1] = el as HTMLInputElement }"
+              :ref="el => { if (el) otpRefs[i - 1] = el as any }"
               v-model="otpDigits[i - 1]"
               type="text"
               maxlength="1"

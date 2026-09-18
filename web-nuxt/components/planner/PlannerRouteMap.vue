@@ -83,7 +83,7 @@ async function updateMap(result: RouteResult | null = props.routeResult) {
   mapState.value = 'loading'
   try {
     if (!mapInstance) {
-      const res = await createNDAMap(routeMapEl.value, { isActive: isLifecycleActive })
+      const res = await createNDAMap(routeMapEl.value as unknown as HTMLElement, { isActive: isLifecycleActive })
       if (!isLifecycleActive()) {
         if (res?.map && typeof (res.map as any).remove === 'function') (res.map as any).remove()
         return

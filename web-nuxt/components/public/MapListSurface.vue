@@ -345,7 +345,7 @@ async function startMap() {
   starting = true
   internalMapState.value = 'loading'
   try {
-    const created = await createMap(mapElement.value, {
+    const created = await createMap(mapElement.value as unknown as HTMLElement, {
       center: props.viewport?.center,
       zoom: props.viewport?.zoom,
       isActive: () => active,

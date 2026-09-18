@@ -55,8 +55,8 @@ export function useDetailHeroTransition(options: UseDetailHeroTransitionOptions)
       ? eventTarget
       : refTarget instanceof HTMLImageElement
         ? refTarget
-        : refTarget?.$el instanceof HTMLImageElement
-          ? refTarget.$el
+        : (refTarget as any)?.$el instanceof HTMLImageElement
+          ? (refTarget as any).$el
           : null
     if (!image?.complete || image.naturalWidth <= 0) return
     heroLoaded.value = true

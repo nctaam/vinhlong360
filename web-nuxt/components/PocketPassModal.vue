@@ -340,7 +340,7 @@ function onKeydown(event: KeyboardEvent) {
       containerRef.value.querySelectorAll<HTMLElement>(
         'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
       )
-    ).filter(element => element.offsetParent !== null || element === closeBtnRef.value)
+    ).filter(element => element.offsetParent !== null || element === (closeBtnRef.value as any))
 
     if (focusables.length === 0) return
 

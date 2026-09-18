@@ -25,7 +25,7 @@
  */
 export function useModalA11y(
   isOpen: Ref<boolean>,
-  modalRef: Ref<HTMLElement | null>,
+  modalRef: Ref<HTMLElement | any>,
   options: {
     onClose?: () => void
     // Dạng HÀM là bắt buộc cho bên gọi cần đổi theo viewport: options được
@@ -45,8 +45,9 @@ export function useModalA11y(
     'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
 
   function focusableEls(): HTMLElement[] {
-    if (!modalRef.value) return []
-    return Array.from(modalRef.value.querySelectorAll<HTMLElement>(FOCUSABLE))
+    const root = modalRef.value as HTMLElement | null
+    if (!root || typeof root.querySelectorAll !== 'function') return []
+    return (Array.from(root.querySelectorAll(FOCUSABLE)) as HTMLElement[])
       // visible only (offsetParent is null for display:none / detached els)
       .filter(el => el.offsetParent !== null || el === document.activeElement)
   }

@@ -607,7 +607,7 @@ useHead({
       commentsCount: p.comments_count ?? comments.value.length ?? 0,
     })
 
-    const scripts: Array<{ type: string; innerHTML: string }> = [
+    const scripts: Array<{ type: 'application/ld+json'; innerHTML: string }> = [
       { type: 'application/ld+json', innerHTML: safeJsonLd(articleLd) },
     ]
 

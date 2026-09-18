@@ -6,7 +6,7 @@ export interface MentionItem { type: 'user' | 'entity'; id: string; label: strin
 
 export function useMentionAutocomplete(
   text: Ref<string>,
-  inputEl: Ref<HTMLTextAreaElement | HTMLInputElement | null>,
+  inputEl: Ref<HTMLElement | any>,
 ) {
   const mentionResults = ref<MentionItem[]>([])
   const mentionOpen = ref(false)

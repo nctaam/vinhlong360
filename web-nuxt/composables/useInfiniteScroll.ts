@@ -20,7 +20,7 @@ export function useInfiniteScroll(
         },
         { rootMargin: options?.rootMargin ?? '0px 0px 300px 0px' },
       )
-      observer.observe(sentinel.value)
+      observer.observe(sentinel.value as unknown as Element)
     })
 
     onUnmounted(() => observer?.disconnect())

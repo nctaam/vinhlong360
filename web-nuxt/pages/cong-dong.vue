@@ -821,7 +821,7 @@ onMounted(() => {
     loadObserver = new IntersectionObserver((entries) => {
       if (entries[0]?.isIntersecting && canLoadMore.value) loadMore()
     }, { rootMargin: '500px' })
-    loadObserver.observe(loadSentinel.value)
+    loadObserver.observe(loadSentinel.value as unknown as Element)
   }
 })
 

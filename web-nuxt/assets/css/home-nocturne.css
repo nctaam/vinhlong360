@@ -3174,4 +3174,135 @@ html.js .home .hero-enter h1::after { animation: hero-underline-draw .8s var(--e
   color: var(--color-brand);
 }
 
+/* ═══════════════════════════════════════════════════
+   THE MEKONG ODYSSEY: CINEMATIC & QUIET HERITAGE LUXURY
+   ═══════════════════════════════════════════════════ */
+
+/* 1. Alluvial Gold & Smoked Crystal Glassplate surfaces */
+[data-home-pilot="nocturne-b1"] .cinema-glass-plate {
+  background: color-mix(in srgb, var(--surface-white) 88%, transparent);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid color-mix(in srgb, var(--harvest-600) 24%, var(--alluvial-line));
+  box-shadow: 0 16px 40px -8px rgba(var(--black-rgb), 0.08);
+}
+
+.dark [data-home-pilot="nocturne-b1"] .cinema-glass-plate {
+  background: color-mix(in srgb, var(--night-surface) 82%, transparent);
+  border: 1px solid color-mix(in srgb, var(--harvest-600) 30%, var(--night-line-strong));
+  box-shadow: 0 20px 48px -10px rgba(var(--black-rgb), 0.45);
+}
+
+/* 2. Compact Vertical Rhythm: Tightens section sprawl by ~50% */
+[data-home-pilot="nocturne-b1"] :is(
+  .home-curated-showcase,
+  .home-culinary-trail,
+  .home-riverside-stays,
+  .home-travel-planner,
+  .home-native-stories
+) {
+  padding-block: clamp(var(--space-6), 3.5vw, var(--space-10));
+}
+
+[data-home-pilot="nocturne-b1"] [data-home-aeo-plaque] {
+  margin-block: clamp(var(--space-4), 3vw, var(--space-8));
+}
+
+/* 3. Hero Atmospheric Scrim & Alluvial Lighting Grade */
+[data-home-pilot="nocturne-b1"] .hero-cinematic::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    ellipse 75% 55% at 75% 20%,
+    color-mix(in srgb, var(--harvest-600) 12%, transparent) 0%,
+    transparent 70%
+  );
+  pointer-events: none;
+  z-index: 1;
+}
+
+.dark [data-home-pilot="nocturne-b1"] .hero-cinematic::after {
+  background: radial-gradient(
+    ellipse 75% 55% at 75% 20%,
+    color-mix(in srgb, var(--harvest-600) 16%, transparent) 0%,
+    transparent 70%
+  );
+}
+
+/* 4. Cognitive Banner Mekong Pulse Badge */
+[data-home-pilot="nocturne-b1"] .hero-cognitive-chip--tide {
+  border-color: color-mix(in srgb, var(--harvest-600) 30%, var(--color-border));
+  background: color-mix(in srgb, var(--harvest-600) 8%, var(--color-surface));
+}
+
+.dark [data-home-pilot="nocturne-b1"] .hero-cognitive-chip--tide {
+  border-color: color-mix(in srgb, var(--harvest-600) 35%, var(--border-liquid-glass));
+  background: color-mix(in srgb, var(--harvest-600) 12%, var(--night-surface));
+}
+
+/* 5. Virtual Haptic & Lookbook Art Micro-Interactions */
+@keyframes alluvial-sheen {
+  0% {
+    transform: translateX(-100%) rotate(25deg);
+    opacity: 0;
+  }
+  25% {
+    opacity: 0.5;
+  }
+  100% {
+    transform: translateX(220%) rotate(25deg);
+    opacity: 0;
+  }
+}
+
+[data-home-pilot="nocturne-b1"] .home-feature-dossier {
+  transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1),
+              box-shadow 0.35s cubic-bezier(0.16, 1, 0.3, 1),
+              border-color 0.25s ease;
+  position: relative;
+}
+
+[data-home-pilot="nocturne-b1"] .home-feature-dossier:hover {
+  transform: translateY(-2px);
+  border-color: color-mix(in srgb, var(--harvest-600) 40%, var(--border-liquid-glass));
+  box-shadow: 0 16px 40px -10px rgba(var(--black-rgb), 0.14),
+              0 0 0 1px color-mix(in srgb, var(--harvest-600) 20%, transparent);
+}
+
+.dark [data-home-pilot="nocturne-b1"] .home-feature-dossier:hover {
+  box-shadow: 0 20px 48px -12px rgba(var(--black-rgb), 0.55),
+              0 0 0 1px color-mix(in srgb, var(--harvest-600) 30%, transparent);
+}
+
+[data-home-pilot="nocturne-b1"] .home-feature-dossier__stamp {
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1),
+              background-color 0.2s ease,
+              border-color 0.2s ease;
+}
+
+[data-home-pilot="nocturne-b1"] .home-feature-dossier:hover .home-feature-dossier__stamp {
+  border-color: color-mix(in srgb, var(--harvest-600) 45%, var(--border-liquid-glass));
+  background: color-mix(in srgb, var(--harvest-600) 10%, var(--color-surface));
+}
+
+/* Tactile haptic feedback on interactive links */
+[data-home-pilot="nocturne-b1"] .hero-nearby:active {
+  transform: scale(0.97);
+}
+
+[data-home-pilot="nocturne-b1"] .hero-cognitive-chip:active {
+  transform: scale(0.98);
+}
+
+/* Accessibility: Gracefully disable heavy transforms on reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  [data-home-pilot="nocturne-b1"] .home-feature-dossier,
+  [data-home-pilot="nocturne-b1"] .hero-nearby,
+  [data-home-pilot="nocturne-b1"] .hero-cognitive-chip {
+    transition: none !important;
+    transform: none !important;
+  }
+}
+
 

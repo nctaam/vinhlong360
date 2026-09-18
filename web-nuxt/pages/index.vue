@@ -38,6 +38,12 @@
               <IconLine name="leaf" class="hero-cognitive-chip__icon" aria-hidden="true" />
               <span class="hero-cognitive-chip__fruit-text">{{ seasonalFruitHighlight }}</span>
             </div>
+            <div class="hero-cognitive-chip hero-cognitive-chip--tide">
+              <IconLine name="droplet" class="hero-cognitive-chip__icon" aria-hidden="true" />
+              <strong class="hero-cognitive-chip__title">Nhịp sông Cổ Chiên</strong>
+              <span class="hero-cognitive-chip__sep" aria-hidden="true">·</span>
+              <span class="hero-cognitive-chip__desc">Nước ròng phẳng lặng, đò êm sóng</span>
+            </div>
           </div>
           <div class="hero-search-island" role="search" aria-label="Tìm kiếm lữ hành">
             <SearchAutocomplete
@@ -271,9 +277,6 @@
       </section>
     </div>
 
-    <!-- 4b. Sổ vàng OCOP — Điểm dừng thị giác 3, trạng thái E-lite -->
-    <HomeOcopLedger />
-
     <!-- 5. Từ cộng đồng — ClientOnly tránh hydration mismatch -->
     <ClientOnly>
       <section
@@ -383,7 +386,6 @@ import HomeDecisionLedger from '~/components/home/HomeDecisionLedger.vue'
 import HomeFeatureDossier from '~/components/home/HomeFeatureDossier.vue'
 import HomeLocalBriefing from '~/components/home/HomeLocalBriefing.vue'
 import HomeProductLead from '~/components/home/HomeProductLead.vue'
-import HomeOcopLedger from '~/components/home/HomeOcopLedger.vue'
 import HomeCommunityFeed from '~/components/home/HomeCommunityFeed.vue'
 import HomeContinuation from '~/components/home/HomeContinuation.vue'
 import HomeIntentAnchors from '~/components/home/HomeIntentAnchors.vue'

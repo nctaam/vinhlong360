@@ -34,7 +34,7 @@ onMounted(() => {
     }
     rafId = requestAnimationFrame(tick)
   }, { threshold: 0.4 })
-  io.observe(el.value)
+  io.observe(el.value as unknown as Element)
 })
 
 onUnmounted(() => {
