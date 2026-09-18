@@ -77075,7 +77075,14 @@
         "ocop_star": 4,
         "schema_type": "Product",
         "sub_category": "coconut-candy",
-        "coords_approximate": true
+        "coords_approximate": true,
+        "image_author": "Hữu Hiệp",
+        "image_source": "Báo Đồng Khởi",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Những mẻ kẹo dừa nấu mạch nha thủ công được người thợ đổ khuôn, cắt viên và gói trong lớp giấy bánh tráng mỏng ăn được tại phường Bến Tre.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Đồng Khởi",
+        "verifiedAt": "2026-09-18T09:30:00Z"
       },
       "source": [
         {
@@ -77150,7 +77157,14 @@
         "ocop_star": 4,
         "schema_type": "Product",
         "sub_category": "coconut-product",
-        "coords_approximate": false
+        "coords_approximate": false,
+        "image_author": "Hữu Hiệp",
+        "image_source": "Báo Đồng Khởi",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Mật ong hoa dừa đóng chai đạt chuẩn OCOP 4 sao với sắc vàng óng ánh tự nhiên, chắt lọc tinh túy từ các vườn dừa bạt ngàn xứ cù lao.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Đồng Khởi",
+        "verifiedAt": "2026-09-18T09:30:00Z"
       },
       "source": [
         {
@@ -78219,7 +78233,14 @@
         "ocop_star": 3,
         "schema_type": "Product",
         "sub_category": "coconut-product",
-        "coords_approximate": true
+        "coords_approximate": true,
+        "image_author": "Hữu Hiệp",
+        "image_source": "Báo Đồng Khởi",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Sản phẩm dừa xiêm gọt trọc Lê Phương tại xã An Định đạt chứng nhận OCOP 3 sao, giữ trọn vị nước dừa tươi ngọt thanh phục vụ tiêu dùng và xuất khẩu.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Đồng Khởi",
+        "verifiedAt": "2026-09-18T09:30:00Z"
       },
       "source": [
         {
@@ -78347,7 +78368,14 @@
         "ocop_star": 3,
         "schema_type": "Product",
         "sub_category": "ornamental-plant",
-        "coords_approximate": true
+        "coords_approximate": true,
+        "image_author": "Hữu Hiệp",
+        "image_source": "Báo Đồng Khởi",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Hộp đông trùng hạ thảo sấy thăng hoa DRC tại xã Hương Mỹ, sản phẩm nông nghiệp công nghệ cao đạt chứng nhận OCOP 3 sao với sợi nấm vàng cam đồng đều.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Đồng Khởi",
+        "verifiedAt": "2026-09-18T09:30:00Z"
       },
       "source": [
         {
@@ -78475,7 +78503,14 @@
           "status": "EXPIRED",
           "validity_period_months": 36,
           "remediation": "Mark as expired or require recertification decree reference"
-        }
+        },
+        "image_author": "Bá Thi",
+        "image_source": "Báo Trà Vinh",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Kẹo đậu phộng Dư Tấn Lợi tại phường Tiểu Cần đạt OCOP 3 sao, giòn rụm với hạt đậu rang thơm bùi quyện lớp mạch nha và mè trắng thơm lừng.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Trà Vinh",
+        "verifiedAt": "2026-09-18T09:30:00Z"
       },
       "source": [
         {
@@ -78714,7 +78749,14 @@
         "heritage_year": 2024,
         "heritage_level": "Di sản văn hóa phi vật thể quốc gia",
         "heritage_decision": "QĐ 2321/QĐ-BVHTTDL ngày 9/8/2024",
-        "coords_approximate": true
+        "coords_approximate": true,
+        "image_author": "Bá Thi",
+        "image_source": "Báo Trà Vinh",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Chiếu hoa Cà Hom dệt thủ công từ sợi lác nhuộm 5 sắc màu rực rỡ tại xã Hàm Giang, di sản văn hóa phi vật thể quốc gia lưu giữ tay nghề dệt chiếu Khmer.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Trà Vinh",
+        "verifiedAt": "2026-09-18T09:30:00Z"
       },
       "source": [
         {
@@ -78787,7 +78829,14 @@
         "ocop_star": 4,
         "schema_type": "Product",
         "sub_category": "rice",
-        "coords_approximate": true
+        "coords_approximate": true,
+        "image_author": "Bá Thi",
+        "image_source": "Báo Trà Vinh",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Các sản phẩm thủ công mỹ nghệ từ tre và gỗ của đồng bào Khmer tại Trà Cú đạt chứng nhận OCOP, tinh xảo với mô hình nông cụ và mặt nạ dân gian.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Trà Vinh",
+        "verifiedAt": "2026-09-18T09:30:00Z"
       },
       "source": [
         {
@@ -78906,7 +78955,14 @@
         "address": "Ấp Vàm, An Quảng Hữu, Trà Cú, Trà Vinh",
         "schema_type": "Product",
         "sub_category": "agricultural-product",
-        "coords_approximate": true
+        "coords_approximate": true,
+        "image_author": "Bá Thi",
+        "image_source": "Báo Trà Vinh",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Bột nưa nguyên chất An Quảng Hữu màu trắng tinh khiết, đặc sản truyền thống dùng nấu chè mát giải nhiệt giàu dinh dưỡng của bà con nông dân.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Trà Vinh",
+        "verifiedAt": "2026-09-18T09:30:00Z"
       },
       "source": [
         {
@@ -79190,7 +79246,14 @@
         "schema_type": "Product",
         "sub_category": "rice-paper",
         "ocop_certified": true,
-        "coords_approximate": true
+        "coords_approximate": true,
+        "image_author": "Ngọc Trảng",
+        "image_source": "Báo Vĩnh Long",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Bánh tráng ngọt Lệ Hằng tại cù lao Mây phơi đều trên liếp tre, sản phẩm OCOP tiêu biểu với hương vị nước cốt dừa béo ngậy và vị ngọt thanh truyền thống.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long",
+        "verifiedAt": "2026-09-18T09:30:00Z"
       },
       "source": [
         {
@@ -79258,7 +79321,14 @@
           "status": "EXPIRED",
           "validity_period_months": 36,
           "remediation": "Mark as expired or require recertification decree reference"
-        }
+        },
+        "image_author": "Ngọc Trảng",
+        "image_source": "Báo Vĩnh Long",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Trái cam sành vỏ mỏng mọng nước của HTX cam Phương Thúy tại phường Trà Ôn, canh tác theo tiêu chuẩn VietGAP đạt chứng nhận OCOP 3 sao chất lượng cao.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long",
+        "verifiedAt": "2026-09-18T09:30:00Z"
       },
       "source": [
         {
@@ -79323,7 +79393,14 @@
         "address": "Xã Mỹ Hòa, TX Bình Minh, Vĩnh Long",
         "schema_type": "Product",
         "sub_category": "dried-seafood",
-        "ocop_certified": true
+        "ocop_certified": true,
+        "image_author": "Thanh Đức",
+        "image_source": "Báo Vĩnh Long",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Tàu hủ ky Mỹ Hòa phơi giòn từng lá vàng óng bên bờ sông, đặc sản truyền thống hơn một thế kỷ được công nhận di sản văn hóa phi vật thể quốc gia.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long",
+        "verifiedAt": "2026-09-18T09:30:00Z"
       },
       "source": [
         {
@@ -79457,7 +79534,14 @@
         "heritage_level": "Di sản VHPVT quốc gia (08/2022)",
         "ocop_certified": true,
         "coords_approximate": true,
-        "collective_trademark": "Tàu hủ ky Mỹ Hòa — Bình Minh (2013)"
+        "collective_trademark": "Tàu hủ ky Mỹ Hòa — Bình Minh (2013)",
+        "image_author": "Thanh Đức",
+        "image_source": "Báo Vĩnh Long",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Những xấp váng đậu tàu hủ ky Cái Vồn làm từ hạt đậu nành thuần khiết, thơm béo đặc trưng dùng chế biến các món chay thanh đạm và tiệc truyền thống.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long",
+        "verifiedAt": "2026-09-18T09:30:00Z"
       },
       "source": [
         {
@@ -79683,7 +79767,14 @@
         "address": "Phường Cái Vồn, TX Bình Minh, Vĩnh Long",
         "ocop_star": 4,
         "schema_type": "Product",
-        "sub_category": "tea"
+        "sub_category": "tea",
+        "image_author": "Ngọc Trảng",
+        "image_source": "Báo Vĩnh Long",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Trà khổ qua rừng Cái Vồn dạng túi lọc và xắt lát sấy khô, sản phẩm OCOP 4 sao tốt cho sức khỏe với vị đắng thanh hậu ngọt sâu lắng.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long",
+        "verifiedAt": "2026-09-18T09:30:00Z"
       },
       "source": [
         {
@@ -79744,7 +79835,14 @@
         "ocop_star": 4,
         "schema_type": "Product",
         "sub_category": "tea",
-        "coords_approximate": true
+        "coords_approximate": true,
+        "image_author": "Thanh Đức",
+        "image_source": "Báo Vĩnh Long",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Trà gừng mật ong Đông Bình đạt chuẩn OCOP 4 sao, sự kết hợp hài hòa giữa vị cay ấm nồng của củ gừng sẻ và vị ngọt thanh dịu của mật ong rừng nguyên chất.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long",
+        "verifiedAt": "2026-09-18T09:30:00Z"
       },
       "source": [
         {
@@ -79806,7 +79904,14 @@
         "ocop_star": 4,
         "schema_type": "Product",
         "sub_category": "tea",
-        "coords_approximate": true
+        "coords_approximate": true,
+        "image_author": "Thanh Đức",
+        "image_source": "Báo Vĩnh Long",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Hộp trà gừng mật ong nguyên chất thương hiệu Gingo tại Đông Bình, quy trình chế biến khép kín hiện đại giữ trọn dược tính quý và hương thơm nồng ấm.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long",
+        "verifiedAt": "2026-09-18T09:30:00Z"
       },
       "source": [
         {
@@ -80006,7 +80111,14 @@
         "ocop_star": 4,
         "schema_type": "Product",
         "sub_category": "tuber",
-        "coords_approximate": true
+        "coords_approximate": true,
+        "image_author": "Ngọc Trảng",
+        "image_source": "Báo Vĩnh Long",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Sản phẩm khoai lang tím và vàng sấy giòn Bình Tân, tinh hoa nông sản từ vùng chuyên canh khoai lớn nhất vùng đạt chuẩn OCOP chất lượng cao.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long",
+        "verifiedAt": "2026-09-18T09:30:00Z"
       },
       "source": [
         {
@@ -80132,7 +80244,14 @@
         "ocop_star": 4,
         "schema_type": "Product",
         "sub_category": "fruit",
-        "coords_approximate": true
+        "coords_approximate": true,
+        "image_author": "Ngọc Trảng",
+        "image_source": "Báo Vĩnh Long",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Mận An Phước quả đỏ au căng bóng mọng nước của HTX Cây ăn trái An Thới, sản phẩm OCOP 4 sao giòn ngọt đậm đà danh tiếng miệt vườn cù lao.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long",
+        "verifiedAt": "2026-09-18T09:30:00Z"
       },
       "source": [
         {
@@ -80194,7 +80313,14 @@
         "address": "Huyện Bình Tân, Vĩnh Long",
         "ocop_star": 4,
         "schema_type": "Product",
-        "sub_category": "tuber"
+        "sub_category": "tuber",
+        "image_author": "Ngọc Trảng",
+        "image_source": "Báo Vĩnh Long",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Gói khoai lang sấy Đông Phát Food đạt chứng nhận OCOP 4 sao, công nghệ sấy chân không hiện đại xuất khẩu sang nhiều thị trường quốc tế khó tính.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long",
+        "verifiedAt": "2026-09-18T09:30:00Z"
       },
       "source": [
         {
@@ -80257,7 +80383,14 @@
         "schema_type": "Product",
         "sub_category": "tuber",
         "ocop_certified": true,
-        "coords_approximate": true
+        "coords_approximate": true,
+        "image_author": "Ngọc Trảng",
+        "image_source": "Báo Vĩnh Long",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Khoai lang sấy giòn Miền Tây màu tím tự nhiên không chất bảo quản, bao bì chỉn chu đạt chứng nhận OCOP phục vụ khách du lịch làm quà biếu.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long",
+        "verifiedAt": "2026-09-18T09:30:00Z"
       },
       "source": [
         {
@@ -80311,7 +80444,14 @@
         "address": "Xã Tân Hưng, Vĩnh Long",
         "schema_type": "Product",
         "sub_category": "ocop-product",
-        "ocop_certified": true
+        "ocop_certified": true,
+        "image_author": "Thanh Đức",
+        "image_source": "Báo Vĩnh Long",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Những quả dưa hấu Tân Hưng vỏ mỏng ruột đỏ au ngọt lịm của HTX Tân Hưng, sản phẩm nông sản OCOP được người tiêu dùng ưa chuộng quanh năm.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long",
+        "verifiedAt": "2026-09-18T09:30:00Z"
       },
       "source": [
         {
@@ -80366,7 +80506,14 @@
         "schema_type": "Product",
         "sub_category": "fruit",
         "ocop_certified": true,
-        "coords_approximate": true
+        "coords_approximate": true,
+        "image_author": "Ngọc Trảng",
+        "image_source": "Báo Vĩnh Long",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Vú sữa hoàng kim Thanh Bình vỏ vàng ươm mướt mắt, thịt dày mềm ngọt và hạt lép đạt chuẩn OCOP từ nhà vườn chuyên canh giống trái cây độc đáo.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long",
+        "verifiedAt": "2026-09-18T09:30:00Z"
       },
       "source": [
         {
@@ -80430,7 +80577,14 @@
         "schema_type": "Product",
         "sub_category": "tuber",
         "ocop_certified": true,
-        "coords_approximate": true
+        "coords_approximate": true,
+        "image_author": "Thanh Đức",
+        "image_source": "Báo Vĩnh Long",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Củ khoai lang tươi vỏ tím ruột vàng dẻo bùi của HTX Tân Thành, nông sản OCOP chủ lực của đất phù sa màu mỡ thu hoạch chính vụ.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long",
+        "verifiedAt": "2026-09-18T09:30:00Z"
       },
       "source": [
         {
@@ -80936,7 +81090,14 @@
         "ocop_star": 3,
         "schema_type": "Product",
         "sub_category": "ocop-product",
-        "coords_approximate": true
+        "coords_approximate": true,
+        "image_author": "Ngọc Trảng",
+        "image_source": "Báo Vĩnh Long",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Khay rau câu tráng miệng Vinh Quang nhiều màu sắc tự nhiên từ lá dứa và nước cốt dừa, đặc sản OCOP 3 sao quen thuộc tại trung tâm thành phố.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long",
+        "verifiedAt": "2026-09-18T09:30:00Z"
       },
       "source": [
         {
@@ -80999,7 +81160,14 @@
         "ocop_star": 4,
         "schema_type": "Product",
         "sub_category": "rice-cracker",
-        "coords_approximate": true
+        "coords_approximate": true,
+        "image_author": "Ngọc Trảng",
+        "image_source": "Báo Vĩnh Long",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Bánh phồng khoai lang Nhật Ngọc nướng phồng xốp giòn tan, sự kết hợp độc đáo giữa khoai lang tươi và bột nếp đạt chứng nhận OCOP 4 sao.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long",
+        "verifiedAt": "2026-09-18T09:30:00Z"
       },
       "source": [
         {
@@ -81277,7 +81445,14 @@
         "ocop_star": 4,
         "schema_type": "Product",
         "sub_category": "fermented-meat",
-        "coords_approximate": true
+        "coords_approximate": true,
+        "image_author": "Thanh Đức",
+        "image_source": "Báo Vĩnh Long",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Bộ sản phẩm thực phẩm chế biến chả lụa và bánh phở gạo tươi tại phường Trường An, đạt chứng nhận OCOP 4 sao với quy chuẩn an toàn vệ sinh nghiêm ngặt.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long",
+        "verifiedAt": "2026-09-18T09:30:00Z"
       },
       "source": [
         {
@@ -81624,7 +81799,14 @@
         "ocop_star": 3,
         "schema_type": "Product",
         "sub_category": "ocop-product",
-        "coords_approximate": true
+        "coords_approximate": true,
+        "image_author": "Ngọc Trảng",
+        "image_source": "Báo Vĩnh Long",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Hũ dưa ngó lục bình Thạnh Quới muối chua giòn rụm, món đặc sản dân dã đậm chất bản địa sông nước đạt chuẩn OCOP 3 sao.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long",
+        "verifiedAt": "2026-09-18T09:30:00Z"
       },
       "source": [
         {
@@ -81750,7 +81932,14 @@
         "schema_type": "Product",
         "sub_category": "ocop-product",
         "ocop_certified": true,
-        "coords_approximate": true
+        "coords_approximate": true,
+        "image_author": "Thanh Đức",
+        "image_source": "Báo Vĩnh Long",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Vườn rau thơm và ngò gai xanh mướt của HTX rau an toàn Phước Hậu, sản phẩm rau gia vị OCOP thu hoạch tươi mới cung ứng cho siêu thị và chợ đầu mối.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long",
+        "verifiedAt": "2026-09-18T09:30:00Z"
       },
       "source": [
         {
@@ -81824,7 +82013,14 @@
           "status": "EXPIRED",
           "validity_period_months": 36,
           "remediation": "Mark as expired or require recertification decree reference"
-        }
+        },
+        "image_author": "Ngọc Trảng",
+        "image_source": "Báo Vĩnh Long",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Trái thanh long vàng vỏ vàng ruột trắng trong của cơ sở Thiên An 3 tại xã Thanh Đức, sản phẩm OCOP 3 sao thơm dịu và giàu khoáng chất.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long",
+        "verifiedAt": "2026-09-18T09:30:00Z"
       },
       "source": [
         {
@@ -82195,7 +82391,14 @@
         "address": "Xã Hòa Ninh, tỉnh Vĩnh Long",
         "schema_type": "Product",
         "sub_category": "honey",
-        "coords_approximate": true
+        "coords_approximate": true,
+        "image_author": "Ngọc Trảng",
+        "image_source": "Báo Vĩnh Long",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Chai mật ong hoa nhãn nguyên chất cơ sở Hai Nương tại xã cù lao Hòa Ninh, sản phẩm sinh thái đặc trưng phục vụ du khách trải nghiệm làng du lịch.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long",
+        "verifiedAt": "2026-09-18T09:30:00Z"
       },
       "source": [
         {
@@ -82328,7 +82531,14 @@
         "address": "Huyện Mang Thít, Vĩnh Long",
         "schema_type": "Product",
         "sub_category": "dried-seafood",
-        "coords_approximate": true
+        "coords_approximate": true,
+        "image_author": "Thanh Đức",
+        "image_source": "Báo Vĩnh Long",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Sản phẩm gạch gốm đỏ không men Mang Thít với lớp men phấn trắng tự nhiên độc bản, tinh hoa làng nghề gốm trăm năm bên dòng kênh Thầy Cai.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long",
+        "verifiedAt": "2026-09-18T09:30:00Z"
       },
       "source": [
         {
@@ -82607,7 +82817,14 @@
         "address": "Dọc kênh Thầy Cai và kênh Cổ Chiên, tỉnh Vĩnh Long",
         "schema_type": "Product",
         "sub_category": "ornamental-plant",
-        "coords_approximate": true
+        "coords_approximate": true,
+        "image_author": "Thanh Đức",
+        "image_source": "Báo Vĩnh Long",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Từng viên gạch đỏ son đanh chắc được dỡ ra sau mẻ nung trấu truyền thống tại các lò gạch Mang Thít, cung ứng cho các công trình kiến trúc bền vững.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long",
+        "verifiedAt": "2026-09-18T09:30:00Z"
       },
       "source": [
         {
@@ -82904,7 +83121,14 @@
         "schema_type": "Product",
         "sub_category": "rice",
         "ocop_certified": true,
-        "coords_approximate": true
+        "coords_approximate": true,
+        "image_author": "Ngọc Trảng",
+        "image_source": "Báo Vĩnh Long",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Túi gạo hữu cơ ST25 Tấn Đạt tại xã Trung Ngãi đạt chuẩn OCOP, hạt thon dài trắng đều khi nấu tỏa hương dứa thơm nồng cơm dẻo ngọt.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long",
+        "verifiedAt": "2026-09-18T09:30:00Z"
       },
       "source": [
         {
@@ -82965,7 +83189,14 @@
         "address": "Huyện Vũng Liêm, tỉnh Vĩnh Long",
         "ocop_star": 4,
         "schema_type": "Product",
-        "sub_category": "coconut-product"
+        "sub_category": "coconut-product",
+        "image_author": "Ngọc Trảng",
+        "image_source": "Báo Vĩnh Long",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Hộp mứt dừa non lá dứa Đức Đạt màu xanh cốm tự nhiên đạt OCOP 4 sao, từng sợi dừa dẻo mềm béo ngậy mùi nước cốt dừa và thoảng hương lá dứa thơm.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long",
+        "verifiedAt": "2026-09-18T09:30:00Z"
       },
       "source": [
         {
@@ -83116,7 +83347,14 @@
         "address": "Huyện Vũng Liêm, tỉnh Vĩnh Long",
         "schema_type": "Product",
         "sub_category": "ocop-product",
-        "ocop_certified": true
+        "ocop_certified": true,
+        "image_author": "Ngọc Trảng",
+        "image_source": "Báo Vĩnh Long",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Lạp xưởng tươi Hiệp Ký đạt chứng nhận OCOP, ướp rượu mai quế lộ gia truyền thơm phức và thịt nạc heo tươi ngon chắc thịt.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long",
+        "verifiedAt": "2026-09-18T09:30:00Z"
       },
       "source": [
         {
@@ -83182,7 +83420,14 @@
         "schema_type": "Product",
         "sub_category": "fruit",
         "ocop_certified": true,
-        "coords_approximate": true
+        "coords_approximate": true,
+        "image_author": "Ngọc Trảng",
+        "image_source": "Báo Vĩnh Long",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Mứt xoài sấy dẻo Foodo làm từ xoài cát núm bản địa, sản phẩm khởi nghiệp OCOP đặc sắc giữ trọn vị chua ngọt tự nhiên và màu vàng ươm hấp dẫn.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long",
+        "verifiedAt": "2026-09-18T09:30:00Z"
       },
       "source": [
         {
@@ -83318,7 +83563,14 @@
         "schema_type": "Product",
         "sub_category": "textile",
         "ocop_certified": true,
-        "coords_approximate": true
+        "coords_approximate": true,
+        "image_author": "Ngọc Trảng",
+        "image_source": "Báo Vĩnh Long",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Hộp bột rau má sấy lạnh Hoàng Gia tại xã Hiếu Nghĩa đạt chuẩn OCOP, nguyên liệu canh tác hữu cơ giữ nguyên chất xơ và vitamin tươi mát.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long",
+        "verifiedAt": "2026-09-18T09:30:00Z"
       },
       "source": [
         {
@@ -83442,7 +83694,14 @@
         "address": "Xã Tân Phú, Vĩnh Long",
         "ocop_star": 4,
         "schema_type": "Product",
-        "sub_category": "coconut-product"
+        "sub_category": "coconut-product",
+        "image_author": "Thanh Đức",
+        "image_source": "Báo Vĩnh Long",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Các hũ chao gia vị Thuận Duyên tại xã Tân Phú đạt OCOP 4 sao, lên men tự nhiên với miếng chao béo ngậy đậm đà hương vị ẩm thực miệt vườn.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long",
+        "verifiedAt": "2026-09-18T09:30:00Z"
       },
       "source": [
         {
@@ -83500,7 +83759,14 @@
         "ocop_star": 4,
         "schema_type": "Product",
         "sub_category": "dried-seafood",
-        "coords_approximate": true
+        "coords_approximate": true,
+        "image_author": "Thanh Đức",
+        "image_source": "Báo Vĩnh Long",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Bún tươi và bánh hủ tiếu sạch Sáu Thạnh đạt chuẩn OCOP 4 sao, làm từ gạo nàng thơm nguyên chất sợi trắng trong dai ngon không hàn the.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long",
+        "verifiedAt": "2026-09-18T09:30:00Z"
       },
       "source": [
         {
@@ -83730,7 +83996,14 @@
         "ocop_star": 4,
         "schema_type": "Product",
         "sub_category": "coconut-product",
-        "coords_approximate": true
+        "coords_approximate": true,
+        "image_author": "Thanh Đức",
+        "image_source": "Báo Vĩnh Long",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Bộ đôi sản phẩm chao dừa và chao chanh dây Thuận Duyên OCOP 4 sao sáng tạo độc đáo, mang đến trải nghiệm hương vị chua ngọt béo ngậy mới lạ.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long",
+        "verifiedAt": "2026-09-18T09:30:00Z"
       },
       "source": [
         {
@@ -83936,7 +84209,14 @@
         "schema_type": "Product",
         "sub_category": "fruit",
         "ocop_certified": true,
-        "coords_approximate": true
+        "coords_approximate": true,
+        "image_author": "Ngọc Trảng",
+        "image_source": "Báo Vĩnh Long",
+        "image_type": "documentary",
+        "is_verified_photo": true,
+        "image_caption": "Những trái cam sành Trà Ôn trĩu cành ven dòng sông Hậu, tép cam vàng tươi mọng nước ngọt thanh là sản phẩm nông sản OCOP nức tiếng gần xa.",
+        "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long",
+        "verifiedAt": "2026-09-18T09:30:00Z"
       },
       "source": [
         {

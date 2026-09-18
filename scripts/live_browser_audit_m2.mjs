@@ -23,7 +23,7 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const REPO_ROOT = path.resolve(__dirname, '..')
 
 export const BASE_URL = process.env.AUDIT_BASE_URL || 'https://vinhlong360.vn'
-export const CDP_PORT = parseInt(process.env.AUDIT_CDP_PORT || '9225', 10)
+export const CDP_PORT = parseInt(process.env.AUDIT_CDP_PORT || '9226', 10)
 export const OUTPUT_DIR = path.resolve(REPO_ROOT, 'outputs')
 export const SCREENSHOT_DIR = path.resolve(OUTPUT_DIR, 'screenshots')
 
@@ -84,6 +84,25 @@ export class CdpClient {
   on(method, callback) {
     if (!this.listeners.has(method)) this.listeners.set(method, [])
     this.listeners.get(method).push(callback)
+    return () => {
+      const callbacks = this.listeners.get(method) || []
+      const idx = callbacks.indexOf(callback)
+      if (idx !== -1) callbacks.splice(idx, 1)
+    }
+  }
+
+  waitFor(method, timeoutMs = 20000) {
+    return new Promise((resolve, reject) => {
+      const timer = setTimeout(() => {
+        off()
+        reject(new Error(`Timed out waiting for ${method}`))
+      }, timeoutMs)
+      const off = this.on(method, params => {
+        clearTimeout(timer)
+        off()
+        resolve(params)
+      })
+    })
   }
 
   send(method, params = {}, timeoutMs = 30000) {
@@ -139,10 +158,46 @@ export async function setViewport(cdp, width, height, isMobile = false) {
   await cdp.send('Emulation.setVisibleSize', { width, height })
 }
 
-export async function navigateTo(cdp, url) {
+export async function navigateTo(cdp, url, timeoutMs = 25000) {
+  const loadPromise = cdp.waitFor('Page.loadEventFired', timeoutMs).catch(() => {})
   await cdp.send('Page.navigate', { url })
-  await cdp.send('Page.loadEventFired')
-  await sleep(500)
+  await loadPromise
+  await sleep(600)
+}
+
+export async function setTheme(cdp, theme) {
+  await evaluateValue(cdp, `(() => {
+    const t = ${JSON.stringify(theme)};
+    const m = t === 'parchment' ? 'light' : 'dark';
+    try {
+      localStorage.setItem('vl360-accessibility-profile', JSON.stringify({ theme: t, density: 'comfortable', textScale: 1 }));
+      localStorage.setItem('vl360-color-mode', m);
+      localStorage.setItem('theme', m);
+      const d = document.documentElement;
+      d.classList.remove('light', 'dark');
+      d.classList.add(m);
+      d.dataset.theme = t;
+      d.setAttribute('data-theme', t);
+    } catch (e) {}
+    return true;
+  })()`)
+  await sleep(400)
+}
+
+export async function waitForPageReady(cdp, readySelector = '#__nuxt', timeoutMs = 15000) {
+  await waitForCondition(
+    cdp,
+    `Boolean(document.querySelector("#__nuxt")?.__vue_app__) && document.readyState === 'complete'`,
+    timeoutMs
+  ).catch(() => {})
+  if (readySelector && readySelector !== '#__nuxt') {
+    await waitForCondition(
+      cdp,
+      `Boolean(document.querySelector(${JSON.stringify(readySelector)}))`,
+      timeoutMs
+    ).catch(() => {})
+  }
+  await sleep(600)
 }
 
 export async function measureTouchTargets(cdp, minSize = 43.5) {
@@ -360,16 +415,139 @@ export async function parseRgbOrOklch(cdp, selector) {
   })()`)
 }
 
+export async function connectToChrome(port = CDP_PORT, maxRetries = 40, retryIntervalMs = 250) {
+  for (let i = 0; i < maxRetries; i++) {
+    try {
+      const endpoint = `http://127.0.0.1:${port}/json/new?about:blank`
+      let res = await fetch(endpoint, { method: 'PUT' })
+      if (!res.ok) res = await fetch(endpoint)
+      if (res.ok) {
+        const pageTarget = await res.json()
+        if (pageTarget && pageTarget.webSocketDebuggerUrl) {
+          const cdp = new CdpClient(pageTarget.webSocketDebuggerUrl)
+          await cdp.connect()
+          return cdp
+        }
+      }
+      const listRes = await fetch(`http://127.0.0.1:${port}/json/list`)
+      if (listRes.ok) {
+        const targets = await listRes.json()
+        const pageTarget = targets.find(t => t.type === 'page' && t.webSocketDebuggerUrl)
+        if (pageTarget) {
+          const cdp = new CdpClient(pageTarget.webSocketDebuggerUrl)
+          await cdp.connect()
+          return cdp
+        }
+      }
+    } catch {}
+    await sleep(retryIntervalMs)
+  }
+  throw new Error(`Failed to create or connect to Chrome page target on port ${port}`)
+}
+
 export async function captureScreenshot(cdp, filePath) {
-  const result = await cdp.send('Page.captureScreenshot', { format: 'png' })
+  mkdirSync(path.dirname(filePath), { recursive: true })
+  const result = await cdp.send('Page.captureScreenshot', {
+    format: 'png',
+    fromSurface: true,
+  }, 30000)
   const buffer = Buffer.from(result.data, 'base64')
   writeFileSync(filePath, buffer)
+  const hash = sha256(buffer)
   return {
     path: filePath,
+    fileName: path.basename(filePath),
     size: buffer.length,
-    sha256: sha256(buffer),
+    sha256: hash,
   }
 }
+
+export const AUDIT_SCENARIOS = [
+  {
+    fileName: 'home__nocturne__1440px__ready.png',
+    route: '/',
+    theme: 'nocturne',
+    viewport: { width: 1440, height: 900, isMobile: false },
+    readySelector: '[data-home-section="editorial-lead"] h1, #__nuxt',
+  },
+  {
+    fileName: 'home__parchment__1440px__ready.png',
+    route: '/',
+    theme: 'parchment',
+    viewport: { width: 1440, height: 900, isMobile: false },
+    readySelector: '[data-home-section="editorial-lead"] h1, #__nuxt',
+  },
+  {
+    fileName: 'home__nocturne__390px__ready.png',
+    route: '/',
+    theme: 'nocturne',
+    viewport: { width: 390, height: 844, isMobile: true },
+    readySelector: '[data-home-section="editorial-lead"] h1, #__nuxt',
+  },
+  {
+    fileName: 'home__parchment__390px__ready.png',
+    route: '/',
+    theme: 'parchment',
+    viewport: { width: 390, height: 844, isMobile: true },
+    readySelector: '[data-home-section="editorial-lead"] h1, #__nuxt',
+  },
+  {
+    fileName: 'home__nocturne__375px__ready.png',
+    route: '/',
+    theme: 'nocturne',
+    viewport: { width: 375, height: 812, isMobile: true },
+    readySelector: '[data-home-section="editorial-lead"] h1, #__nuxt',
+  },
+  {
+    fileName: 'search__nocturne__1440px__ready.png',
+    route: '/tim-kiem?q=g%E1%BB%91m',
+    theme: 'nocturne',
+    viewport: { width: 1440, height: 900, isMobile: false },
+    readySelector: '[data-map-list-surface], [data-panel="map"], input[type="search"]',
+  },
+  {
+    fileName: 'search__nocturne__390px__ready.png',
+    route: '/tim-kiem?q=g%E1%BB%91m',
+    theme: 'nocturne',
+    viewport: { width: 390, height: 844, isMobile: true },
+    readySelector: '[data-map-list-surface], [data-panel="map"], input[type="search"]',
+  },
+  {
+    fileName: 'map__nocturne__1440px__ready.png',
+    route: '/ban-do?q=g%E1%BB%91m',
+    theme: 'nocturne',
+    viewport: { width: 1440, height: 900, isMobile: false },
+    readySelector: '[data-map-list-surface], .cat-map, #__nuxt',
+  },
+  {
+    fileName: 'map__parchment__390px__ready.png',
+    route: '/ban-do?q=g%E1%BB%91m',
+    theme: 'parchment',
+    viewport: { width: 390, height: 844, isMobile: true },
+    readySelector: '[data-map-list-surface], .cat-map, #__nuxt',
+  },
+  {
+    fileName: 'detail__nocturne__1440px__ready.png',
+    route: '/dia-diem/gom-do-mang-thit',
+    theme: 'nocturne',
+    viewport: { width: 1440, height: 900, isMobile: false },
+    readySelector: '[data-detail-action-safe-area], main',
+  },
+  {
+    fileName: 'detail__nocturne__390px__ready.png',
+    route: '/dia-diem/gom-do-mang-thit',
+    theme: 'nocturne',
+    viewport: { width: 390, height: 844, isMobile: true },
+    readySelector: '[data-detail-action-safe-area], main',
+  },
+  {
+    fileName: 'planner__nocturne__390px__ready.png',
+    route: '/tao-lich-trinh',
+    theme: 'nocturne',
+    viewport: { width: 390, height: 844, isMobile: true },
+    readySelector: '.planner-picker, .planner-builder, #__nuxt',
+  },
+]
 
 export async function runLiveAudit() {
   console.log(`[AUDIT] Starting Live Browser E2E Audit against ${BASE_URL}`)
@@ -389,19 +567,17 @@ export async function runLiveAudit() {
     'about:blank'
   ])
 
+  let cdp = null
+
   try {
-    await sleep(1500)
-    const versionRes = await fetch(`http://127.0.0.1:${CDP_PORT}/json/version`)
-    const { webSocketDebuggerUrl } = await versionRes.json()
-    const cdp = new CdpClient(webSocketDebuggerUrl)
-    await cdp.connect()
+    cdp = await connectToChrome(CDP_PORT)
 
     await cdp.send('Page.enable')
     await cdp.send('Runtime.enable')
     await cdp.send('Network.enable')
     await initClsObserver(cdp)
 
-    console.log('[AUDIT] Connected to CDP. Running traveler journeys...')
+    console.log('[AUDIT] Connected to CDP page target. Running traveler journeys...')
     const results = {
       timestamp: new Date().toISOString(),
       baseUrl: BASE_URL,
@@ -444,13 +620,63 @@ export async function runLiveAudit() {
     const historyUrl = await evaluateValue(cdp, 'location.pathname + location.search')
     results.phases.historyTraversal = { returnedUrl: historyUrl }
 
-    // Save report artifact
+    // Visual Evidence Capture: 12 Scenarios
+    console.log(`[AUDIT] Capturing ${AUDIT_SCENARIOS.length} visual evidence screenshots...`)
+    const screenshotArtifacts = []
+
+    for (const scenario of AUDIT_SCENARIOS) {
+      console.log(`[AUDIT] Capturing ${scenario.fileName} (${scenario.route}, ${scenario.theme}, ${scenario.viewport.width}x${scenario.viewport.height})...`)
+      await setViewport(cdp, scenario.viewport.width, scenario.viewport.height, scenario.viewport.isMobile)
+      await navigateTo(cdp, `${BASE_URL}${scenario.route}`)
+      await setTheme(cdp, scenario.theme)
+      await waitForPageReady(cdp, scenario.readySelector)
+
+      const filePath = path.join(SCREENSHOT_DIR, scenario.fileName)
+      const artifact = await captureScreenshot(cdp, filePath)
+
+      if (artifact.size < 50000) {
+        console.warn(`[WARN] Screenshot ${scenario.fileName} size is ${artifact.size} bytes (< 50KB).`)
+      }
+      console.log(`[AUDIT] Saved ${scenario.fileName} (${artifact.size} bytes, sha256: ${artifact.sha256.slice(0, 12)}...)`)
+
+      screenshotArtifacts.push({
+        fileName: scenario.fileName,
+        route: scenario.route,
+        theme: scenario.theme,
+        viewport: `${scenario.viewport.width}x${scenario.viewport.height}`,
+        isMobile: scenario.viewport.isMobile,
+        size: artifact.size,
+        sha256: artifact.sha256,
+        path: filePath,
+      })
+    }
+
+    // Write outputs/screenshots/manifest.json
+    const manifest = {
+      timestamp: new Date().toISOString(),
+      baseUrl: BASE_URL,
+      schemaRevision: 'adaptive-nocturne-public-v2',
+      totalScreenshots: screenshotArtifacts.length,
+      artifacts: screenshotArtifacts,
+      screenshots: screenshotArtifacts,
+      files: Object.fromEntries(screenshotArtifacts.map(s => [s.fileName, s])),
+    }
+    writeFileSync(path.join(SCREENSHOT_DIR, 'manifest.json'), JSON.stringify(manifest, null, 2))
+    console.log(`[AUDIT] Generated ${path.join(SCREENSHOT_DIR, 'manifest.json')}`)
+
+    // Write outputs/live-e2e-audit-results.json
+    results.screenshots = screenshotArtifacts
     writeFileSync(path.join(OUTPUT_DIR, 'live-e2e-audit-results.json'), JSON.stringify(results, null, 2))
+    console.log(`[AUDIT] Generated ${path.join(OUTPUT_DIR, 'live-e2e-audit-results.json')}`)
+
     console.log('[AUDIT] Live browser audit completed successfully.')
     return results
   } finally {
-    chromeProc.kill('SIGKILL')
-    try { await rm(userDataDir, { recursive: true, force: true }) } catch {}
+    try { await cdp?.send('Browser.close') } catch {}
+    cdp?.close()
+    try { chromeProc.kill() } catch {}
+    await sleep(500)
+    try { await rm(userDataDir, { recursive: true, force: true, maxRetries: 3, retryDelay: 200 }) } catch {}
   }
 }
 
