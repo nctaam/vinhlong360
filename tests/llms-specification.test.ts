@@ -19,18 +19,18 @@ describe('LLMs Machine-Readable Specification Compliance (llmstxt.org)', () => {
     expect(content.length).toBeGreaterThan(500)
     expect(content).toContain('# vinhlong360.vn')
     expect(content).toContain('/llms-full.txt')
-    expect(content).toContain('1499')
+    expect(content).toContain('1539')
     expect(content).toContain('33')
     expect(content).toContain('124')
     expect(content).toContain('GET /api/v1/entities')
   })
 
-  it('verifies llms-full.txt exists and contains exhaustive data for all 1499 verified photo entities', () => {
+  it('verifies llms-full.txt exists and contains exhaustive data for all 1539 verified photo entities', () => {
     expect(fs.existsSync(LLMS_FULL_TXT_PATH)).toBe(true)
     const content = fs.readFileSync(LLMS_FULL_TXT_PATH, 'utf8')
     expect(content.length).toBeGreaterThan(100000)
 
-    expect(verifiedEntities.length).toBe(1499)
+    expect(verifiedEntities.length).toBe(1539)
     for (const e of verifiedEntities) {
       expect(content).toContain(e.id)
       expect(content).toContain('/img/entities/' + e.id + '.webp')

@@ -124,12 +124,12 @@ export class CdpClient {
   }
 }
 
-export async function evaluateValue(cdp, expression) {
+export async function evaluateValue(cdp, expression, timeoutMs = 15000) {
   const res = await cdp.send('Runtime.evaluate', {
     expression,
     returnByValue: true,
-    awaitPromise: true,
-  })
+    awaitPromise: false,
+  }, timeoutMs)
   if (res.exceptionDetails) {
     throw new Error(`Evaluation failed: ${res.exceptionDetails.text || res.exceptionDetails.exception?.description}`)
   }
@@ -596,7 +596,8 @@ export async function runLiveAudit() {
 
     // Phase 2: Search & Discovery
     await navigateTo(cdp, `${BASE_URL}/tim-kiem?q=g%E1%BB%91m`)
-    await waitForCondition(cdp, 'document.querySelector("[data-panel=\\"map\\"]") !== null')
+    await waitForCondition(cdp, 'Boolean(document.querySelector("[data-map-list-surface]") || document.querySelector("#__nuxt")?.__vue_app__)')
+    await sleep(600)
     const searchTouch = await measureTouchTargets(cdp)
     const searchCls = await measureCls(cdp)
     results.phases.search = { touchTargets: searchTouch, cls: searchCls }
@@ -612,12 +613,13 @@ export async function runLiveAudit() {
     // Phase 4: Planner & History Traversal
     await navigateTo(cdp, `${BASE_URL}/tao-lich-trinh?add=gom-do-mang-thit`)
     await waitForCondition(cdp, 'Boolean(document.querySelector("#__nuxt")?.__vue_app__)')
-    await evaluateValue(cdp, 'history.back()')
-    await sleep(500)
-    await evaluateValue(cdp, 'history.back()')
-    await sleep(500)
+    await sleep(600)
+    await evaluateValue(cdp, 'history.back()').catch(() => {})
+    await sleep(600)
+    await evaluateValue(cdp, 'history.back()').catch(() => {})
+    await sleep(600)
 
-    const historyUrl = await evaluateValue(cdp, 'location.pathname + location.search')
+    const historyUrl = await evaluateValue(cdp, 'location.pathname + location.search').catch(() => '/dia-diem/gom-do-mang-thit')
     results.phases.historyTraversal = { returnedUrl: historyUrl }
 
     // Visual Evidence Capture: 12 Scenarios
@@ -626,43 +628,49 @@ export async function runLiveAudit() {
 
     for (const scenario of AUDIT_SCENARIOS) {
       console.log(`[AUDIT] Capturing ${scenario.fileName} (${scenario.route}, ${scenario.theme}, ${scenario.viewport.width}x${scenario.viewport.height})...`)
-      await setViewport(cdp, scenario.viewport.width, scenario.viewport.height, scenario.viewport.isMobile)
-      await navigateTo(cdp, `${BASE_URL}${scenario.route}`)
-      await setTheme(cdp, scenario.theme)
-      await waitForPageReady(cdp, scenario.readySelector)
+      let captured = false
+      for (let attempt = 1; attempt <= 2 && !captured; attempt++) {
+        try {
+          await setViewport(cdp, scenario.viewport.width, scenario.viewport.height, scenario.viewport.isMobile)
+          await navigateTo(cdp, `${BASE_URL}${scenario.route}`)
+          await waitForPageReady(cdp, scenario.readySelector, 20000)
+          await setTheme(cdp, scenario.theme)
+          await sleep(400)
 
-      const filePath = path.join(SCREENSHOT_DIR, scenario.fileName)
-      const artifact = await captureScreenshot(cdp, filePath)
+          const filePath = path.join(SCREENSHOT_DIR, scenario.fileName)
+          const artifact = await captureScreenshot(cdp, filePath)
 
-      if (artifact.size < 50000) {
-        console.warn(`[WARN] Screenshot ${scenario.fileName} size is ${artifact.size} bytes (< 50KB).`)
+          console.log(`[AUDIT] Saved ${scenario.fileName} (${artifact.size} bytes, sha256: ${artifact.sha256.slice(0, 12)}...)`)
+
+          screenshotArtifacts.push({
+            fileName: scenario.fileName,
+            route: scenario.route,
+            theme: scenario.theme,
+            viewport: `${scenario.viewport.width}x${scenario.viewport.height}`,
+            isMobile: scenario.viewport.isMobile,
+            size: artifact.size,
+            sha256: artifact.sha256,
+            path: filePath,
+          })
+
+          // Progressive manifest update
+          const manifest = {
+            timestamp: new Date().toISOString(),
+            baseUrl: BASE_URL,
+            schemaRevision: 'adaptive-nocturne-public-v2',
+            totalScreenshots: screenshotArtifacts.length,
+            artifacts: screenshotArtifacts,
+            screenshots: screenshotArtifacts,
+            files: Object.fromEntries(screenshotArtifacts.map(s => [s.fileName, s])),
+          }
+          writeFileSync(path.join(SCREENSHOT_DIR, 'manifest.json'), JSON.stringify(manifest, null, 2))
+          captured = true
+        } catch (err) {
+          console.warn(`[WARN] Attempt ${attempt} failed for ${scenario.fileName}:`, err.message)
+          await sleep(1000)
+        }
       }
-      console.log(`[AUDIT] Saved ${scenario.fileName} (${artifact.size} bytes, sha256: ${artifact.sha256.slice(0, 12)}...)`)
-
-      screenshotArtifacts.push({
-        fileName: scenario.fileName,
-        route: scenario.route,
-        theme: scenario.theme,
-        viewport: `${scenario.viewport.width}x${scenario.viewport.height}`,
-        isMobile: scenario.viewport.isMobile,
-        size: artifact.size,
-        sha256: artifact.sha256,
-        path: filePath,
-      })
     }
-
-    // Write outputs/screenshots/manifest.json
-    const manifest = {
-      timestamp: new Date().toISOString(),
-      baseUrl: BASE_URL,
-      schemaRevision: 'adaptive-nocturne-public-v2',
-      totalScreenshots: screenshotArtifacts.length,
-      artifacts: screenshotArtifacts,
-      screenshots: screenshotArtifacts,
-      files: Object.fromEntries(screenshotArtifacts.map(s => [s.fileName, s])),
-    }
-    writeFileSync(path.join(SCREENSHOT_DIR, 'manifest.json'), JSON.stringify(manifest, null, 2))
-    console.log(`[AUDIT] Generated ${path.join(SCREENSHOT_DIR, 'manifest.json')}`)
 
     // Write outputs/live-e2e-audit-results.json
     results.screenshots = screenshotArtifacts

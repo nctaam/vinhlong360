@@ -248,18 +248,18 @@ Toàn bộ 12 hình ảnh chụp màn hình chất lượng cao đã được th
 
 | # | Tên Tệp Ảnh Màn Hình | Tuyến Đường | Viewport | Chủ Đề | Kích Thước (Bytes) | Mã Băm Toàn Vẹn SHA-256 |
 |---|---|---|---|---|---|---|
-| 1 | `home__nocturne__1440px__ready.png` | `/` | 1440×900 | Nocturne | 1,237,694 B | `228ff3a3195ecb7a78b2772f906d9b5920a3c4ae79b8c59bfdffeffd442379a7` |
-| 2 | `home__parchment__1440px__ready.png` | `/` | 1440×900 | Parchment | 1,281,574 B | `ea44b73906116443b38bb8e5851bef83190943e7f599260504e3b4ddfe826c17` |
-| 3 | `home__nocturne__390px__ready.png` | `/` | 390×844 | Nocturne | 281,958 B | `ba7cffdd62430fda21536571fe6218df699cc81445d86dadd0cdf97cd203bf61` |
-| 4 | `home__parchment__390px__ready.png` | `/` | 390×844 | Parchment | 297,543 B | `6151e2024fd615663120ac3533a2b0b7c9e2f5c9cfa145a068757bc2a2133987` |
-| 5 | `home__nocturne__375px__ready.png` | `/` | 375×812 | Nocturne | 257,268 B | `db0c17e48cbfb5c833ace00bebd6d8cdaee18f8cf753dc3dafb3202d89dfcea6` |
+| 1 | `home__nocturne__1440px__ready.png` | `/` | 1440×900 | Nocturne | 1,237,208 B | `02311da27d31284d5ff4dfc69fce77a26ac352c5592e4cf3aeca6c7622261979` |
+| 2 | `home__parchment__1440px__ready.png` | `/` | 1440×900 | Parchment | 1,281,284 B | `c9d6e233cda42dd7029d975db84b1ca8f64d3e7ddfeda966293db7d07bf6da67` |
+| 3 | `home__nocturne__390px__ready.png` | `/` | 390×844 | Nocturne | 910,496 B | `5b3fef361c822ed2537fec970b329b5a7ee932704e6c63b9407144eedde03c25` |
+| 4 | `home__parchment__390px__ready.png` | `/` | 390×844 | Parchment | 964,616 B | `1e2c6a8b928c2bafe261fe01726c417038c41905f924752ce072ac6f20b671fb` |
+| 5 | `home__nocturne__375px__ready.png` | `/` | 375×812 | Nocturne | 840,735 B | `80445c425a7ccc17bb776162aeaf64803acac6ad8eb9e7ecfd6e28ac24d0af36` |
 | 6 | `search__nocturne__1440px__ready.png` | `/tim-kiem` | 1440×900 | Nocturne | 204,287 B | `65023c0c835cd112cea362771c42be4f8dcf6dc7cb4c4709323d4310e9a193c6` |
-| 7 | `search__nocturne__390px__ready.png` | `/tim-kiem` | 390×844 | Nocturne | 71,081 B | `0a0d3a62b231684b36fff425d0971ac0847c1e7c8185ec0ca40cee0602a86e7d` |
+| 7 | `search__nocturne__390px__ready.png` | `/tim-kiem` | 390×844 | Nocturne | 179,082 B | `f50901e5b684eadc6ba5a32f963e67cc8a982aa9b67b0afbf8b6f76694631ed5` |
 | 8 | `map__nocturne__1440px__ready.png` | `/ban-do` | 1440×900 | Nocturne | 140,644 B | `51c6e25092b67ee4e1a7536f1c1101f512ff4ef997ed48dbf744c047a06c7b12` |
-| 9 | `map__parchment__390px__ready.png` | `/ban-do` | 390×844 | Parchment | 110,933 B | `3159a94b1dd8b3f84ea4bb0f9e4993fcf2eeab54e07edd1a7f039873e516a58b` |
-| 10 | `detail__nocturne__1440px__ready.png` | `/dia-diem/...` | 1440×900 | Nocturne | 832,295 B | `55fb8cfc24db7a2858328ae703a71160ceeda9e2cce67d1a5db0f5aafb2dc75a` |
-| 11 | `detail__nocturne__390px__ready.png` | `/dia-diem/...` | 390×844 | Nocturne | 231,691 B | `1340f575117983fac3b7fcd6f0dc65ef44f801f2f75f63b3776aabc71107f961` |
-| 12 | `planner__nocturne__390px__ready.png` | `/tao-lich-trinh`| 390×844 | Nocturne | 87,218 B | `32753c03c4cd9b810d770574805d03641f12d7feceecf677a6457b780323d98a` |
+| 9 | `map__parchment__390px__ready.png` | `/ban-do` | 390×844 | Parchment | 287,508 B | `67bbe844efacd2c80dc867924c9991da88145a32f9bd437d2ed9426d898d6f89` |
+| 10 | `detail__nocturne__1440px__ready.png` | `/dia-diem/...` | 1440×900 | Nocturne | 832,273 B | `81bc2935e5c6d5fa1e1df87b87e9b95e7a9dfe3753bf9e0bb12d0aad0df69c46` |
+| 11 | `detail__nocturne__390px__ready.png` | `/dia-diem/...` | 390×844 | Nocturne | 704,009 B | `c66885f7cfe100f6b775e6439fedf60854c3a1461f01cd46b641cead9d245d48` |
+| 12 | `planner__nocturne__390px__ready.png` | `/tao-lich-trinh`| 390×844 | Nocturne | 214,055 B | `ff7b684925d9f7dbb7cd566f47b0d06fa008fc01705222fbbb1867b2ca46be6a` |
 
 - **Tệp kê khai chính thức**: `outputs/screenshots/manifest.json`.
 

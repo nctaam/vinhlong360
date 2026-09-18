@@ -20,20 +20,20 @@ for r in rows:
             "description": r[4]
         })
 
-print(f"Total unverified attraction: {len(unv)}")
-batch_40_candidates = unv[:40]
+print(f"Total unverified attraction remaining: {len(unv)}")
+batch_41_candidates = unv[:40]
 
 missing_webp = []
-for item in batch_40_candidates:
+for item in batch_41_candidates:
     p = os.path.join("web-nuxt/public/img/entities", item["id"] + ".webp")
     if not os.path.exists(p):
         missing_webp.append((item["id"], p))
 
-print(f"Missing webp in batch 40 candidates: {len(missing_webp)}")
+print(f"Missing webp in batch 41 candidates: {len(missing_webp)}")
 for m in missing_webp:
     print(" ", m)
 
-with open("outputs/batch_40_candidates.json", "w", encoding="utf-8") as f:
-    json.dump(batch_40_candidates, f, ensure_ascii=False, indent=2)
+with open("outputs/batch_41_candidates.json", "w", encoding="utf-8") as f:
+    json.dump(batch_41_candidates, f, ensure_ascii=False, indent=2)
 
-print("Dumped 40 candidates to outputs/batch_40_candidates.json")
+print("Dumped 40 candidates to outputs/batch_41_candidates.json")
