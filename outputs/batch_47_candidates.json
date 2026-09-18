@@ -1,0 +1,200 @@
+[
+  {
+    "id": "xa-thanh-phong",
+    "name": "Xã Thạnh Phong",
+    "summary": "Xã Thạnh Phong thuộc tỉnh Vĩnh Long, sáp nhập từ xã Giao Thạnh và xã Thạnh Phong của huyện Thạnh Phú.",
+    "placeId": "xa-thanh-phong"
+  },
+  {
+    "id": "xa-phu-phung",
+    "name": "Xã Phú Phụng",
+    "summary": "Xã Phú Phụng thuộc tỉnh Vĩnh Long, sáp nhập từ xã Sơn Định, xã Vĩnh Bình và xã Phú Phụng của huyện Chợ Lách.",
+    "placeId": "xa-phu-phung"
+  },
+  {
+    "id": "xa-phu-quoi",
+    "name": "Xã Phú Quới",
+    "summary": "Xã Phú Quới, tỉnh Vĩnh Long, hợp nhất từ xã Lộc Hòa, xã Hòa Phú, xã Thạnh Quới và xã Phú Quới thuộc huyện Long Hồ.",
+    "placeId": "p-long-chau"
+  },
+  {
+    "id": "xa-phu-thuan",
+    "name": "Xã Phú Thuận",
+    "summary": "Xã Phú Thuận thuộc tỉnh Vĩnh Long, sáp nhập từ xã Long Định, xã Tam Hiệp và xã Phú Thuận của huyện Bình Đại.",
+    "placeId": "xa-phu-thuan"
+  },
+  {
+    "id": "xa-phuoc-long",
+    "name": "Xã Phước Long",
+    "summary": "Xã Phước Long, tỉnh Vĩnh Long, hợp nhất từ xã Long Mỹ, xã Hưng Phong và xã Phước Long thuộc huyện Giồng Trôm.",
+    "placeId": "xa-phuoc-long"
+  },
+  {
+    "id": "xa-phuoc-my-trung",
+    "name": "Xã Phước Mỹ Trung",
+    "summary": "Xã Phước Mỹ Trung thuộc huyện Mỏ Cày Bắc, tỉnh Vĩnh Long, ra đời khi TT Phước Mỹ Trung, xã Phú Mỹ, xã Thạnh Ngãi và xã Tân Phú Tây nhập lại.",
+    "placeId": "xa-phuoc-my-trung"
+  },
+  {
+    "id": "xa-quoi-an",
+    "name": "Xã Quới An",
+    "summary": "Xã Quới An, tỉnh Vĩnh Long, hợp nhất từ xã Trung Thành Tây, xã Tân Quới Trung và xã Quới An thuộc huyện Vũng Liêm.",
+    "placeId": "p-long-chau"
+  },
+  {
+    "id": "xa-quoi-dien",
+    "name": "Xã Quới Điền",
+    "summary": "Xã Quới Điền thuộc tỉnh Vĩnh Long, sáp nhập từ xã Hòa Lợi, xã Mỹ Hưng và xã Quới Điền của huyện Thạnh Phú.",
+    "placeId": "xa-quoi-dien"
+  },
+  {
+    "id": "xa-quoi-thien",
+    "name": "Xã Quới Thiện",
+    "summary": "Phía huyện Vũng Liêm cũ, xã Quới Thiện của tỉnh Vĩnh Long ra đời từ việc nhập xã Thanh Bình với xã Quới Thiện sau sắp xếp 7-2025.",
+    "placeId": "p-long-chau"
+  },
+  {
+    "id": "xa-song-loc",
+    "name": "Xã Song Lộc",
+    "summary": "Xã Song Lộc, tỉnh Vĩnh Long, hình thành từ sáp nhập xã Lương Hòa, xã Lương Hòa A và xã Song Lộc thuộc huyện Châu Thành (TV).",
+    "placeId": "xa-song-loc"
+  },
+  {
+    "id": "xa-song-phu",
+    "name": "Xã Song Phú",
+    "summary": "Xã Song Phú, tỉnh Vĩnh Long, hình thành từ sáp nhập xã Tân Phú, xã Long Phú, xã Phú Thịnh và xã Song Phú thuộc huyện Tam Bình.",
+    "placeId": "p-long-chau"
+  },
+  {
+    "id": "xa-tam-ngai",
+    "name": "Xã Tam Ngãi",
+    "summary": "Xã Tam Ngãi thuộc tỉnh Vĩnh Long, sáp nhập từ xã Thông Hòa, xã Thạnh Phú và xã Tam Ngãi của huyện Cầu Kè.",
+    "placeId": "xa-tam-ngai"
+  },
+  {
+    "id": "xa-tan-an",
+    "name": "Xã Tân An",
+    "summary": "Mang mã hành chính 29278, xã Tân An của tỉnh Vĩnh Long gom hai xã cũ Huyền Hội và Tân An thuộc huyện Càng Long, Trà Vinh trước 7-2025.",
+    "placeId": "xa-tan-an"
+  },
+  {
+    "id": "xa-tan-hao",
+    "name": "Xã Tân Hào",
+    "summary": "Xã Tân Hào, tỉnh Vĩnh Long, hình thành từ sáp nhập xã Tân Lợi Thạnh, xã Thạnh Phú Đông và xã Tân Hào thuộc huyện Giồng Trôm.",
+    "placeId": "xa-tan-hao"
+  },
+  {
+    "id": "xa-tan-long-hoi",
+    "name": "Xã Tân Long Hội",
+    "summary": "Xã Tân Long Hội thuộc tỉnh Vĩnh Long, sáp nhập từ xã Tân An Hội, xã Tân Long và xã Tân Long Hội của huyện Mang Thít.",
+    "placeId": "p-long-chau"
+  },
+  {
+    "id": "xa-tan-luoc",
+    "name": "Xã Tân Lược",
+    "summary": "Xã Tân Lược thuộc huyện Bình Tân, tỉnh Vĩnh Long, ra đời khi xã Tân Thành, xã Tân An Thạnh và xã Tân Lược nhập lại.",
+    "placeId": "p-long-chau"
+  },
+  {
+    "id": "xa-tan-phu",
+    "name": "Xã Tân Phú",
+    "summary": "Xã Tân Phú thuộc tỉnh Vĩnh Long, gộp từ xã Tân Phú, xã Tiên Long và xã Phú Đức của huyện Châu Thành (BT).",
+    "placeId": "xa-tan-phu"
+  },
+  {
+    "id": "xa-tan-thanh-binh",
+    "name": "Xã Tân Thành Bình",
+    "summary": "Xã Tân Thành Bình, tỉnh Vĩnh Long, hình thành từ sáp nhập xã Tân Bình, xã Thành An, xã Hòa Lộc và xã Tân Thành Bình thuộc huyện Mỏ Cày Bắc.",
+    "placeId": "xa-tan-thanh-binh"
+  },
+  {
+    "id": "xa-tan-xuan",
+    "name": "Xã Tân Xuân",
+    "summary": "Xã Tân Xuân, tỉnh Vĩnh Long, hình thành từ sáp nhập xã Phú Lễ, xã Phước Ngãi và xã Tân Xuân thuộc huyện Ba Tri.",
+    "placeId": "xa-tan-xuan"
+  },
+  {
+    "id": "xa-tap-son",
+    "name": "Xã Tập Sơn",
+    "summary": "Từ ba xã cũ Tân Sơn, Phước Hưng và Tập Sơn của huyện Trà Cú trước đây, xã Tập Sơn mới ra đời, nay thuộc tỉnh Vĩnh Long.",
+    "placeId": "xa-tap-son"
+  },
+  {
+    "id": "xa-thanh-hai",
+    "name": "Xã Thạnh Hải",
+    "summary": "Về tỉnh Vĩnh Long sau sắp xếp 7-2025, xã Thạnh Hải hình thành từ xã An Điền nhập với xã Thạnh Hải của huyện Thạnh Phú, Bến Tre cũ.",
+    "placeId": "xa-thanh-hai"
+  },
+  {
+    "id": "xa-thanh-phu",
+    "name": "Xã Thạnh Phú",
+    "summary": "Xã Thạnh Phú thuộc tỉnh Vĩnh Long, gộp từ TT Thạnh Phú, xã An Thạnh, xã Bình Thạnh và xã Mỹ An của huyện Thạnh Phú.",
+    "placeId": "xa-thanh-phu"
+  },
+  {
+    "id": "xa-thanh-phuoc",
+    "name": "Xã Thạnh Phước",
+    "summary": "Xã Thạnh Phước thuộc huyện Bình Đại (cũ), tỉnh Vĩnh Long, ra đời khi xã Đại Hòa Lộc và xã Thạnh Phước nhập lại.",
+    "placeId": "xa-thanh-phuoc"
+  },
+  {
+    "id": "xa-thanh-thoi",
+    "name": "Xã Thành Thới",
+    "summary": "Xã Thành Thới thuộc huyện Mỏ Cày Nam (cũ), tỉnh Vĩnh Long, ra đời khi xã An Thới, xã Thành Thới A và xã Thành Thới B nhập lại.",
+    "placeId": "xa-thanh-thoi"
+  },
+  {
+    "id": "xa-thanh-tri",
+    "name": "Xã Thạnh Trị",
+    "summary": "Xã Thạnh Trị thuộc tỉnh Vĩnh Long, sáp nhập từ xã Định Trung, xã Phú Long và xã Thạnh Trị của huyện Bình Đại.",
+    "placeId": "xa-thanh-tri"
+  },
+  {
+    "id": "xa-thoi-thuan",
+    "name": "Xã Thới Thuận",
+    "summary": "Xã Thới Thuận thuộc huyện Bình Đại (cũ), tỉnh Vĩnh Long, ra đời khi xã Thừa Đức và xã Thới Thuận nhập lại.",
+    "placeId": "xa-thoi-thuan"
+  },
+  {
+    "id": "xa-tra-con",
+    "name": "Xã Trà Côn",
+    "summary": "Xã Trà Côn, tỉnh Vĩnh Long, hình thành từ sáp nhập xã Nhơn Bình, xã Trà Côn và xã Tân Mỹ, một phần TT Tam Bình thuộc huyện Trà Ôn + H.",
+    "placeId": "p-long-chau"
+  },
+  {
+    "id": "xa-tra-cu",
+    "name": "Xã Trà Cú",
+    "summary": "Trên địa bàn huyện Trà Cú cũ thuộc vùng Trà Vinh, thị trấn Trà Cú cùng hai xã Ngãi Xuyên và Thanh Sơn gộp thành xã Trà Cú, tỉnh Vĩnh Long.",
+    "placeId": "xa-tra-cu"
+  },
+  {
+    "id": "xa-trung-hiep",
+    "name": "Xã Trung Hiệp",
+    "summary": "Xã Trung Hiệp thuộc tỉnh Vĩnh Long, sáp nhập từ xã Tân An Luông, xã Trung Chánh và xã Trung Hiệp của huyện Vũng Liêm.",
+    "placeId": "p-long-chau"
+  },
+  {
+    "id": "xa-trung-ngai",
+    "name": "Xã Trung Ngãi",
+    "summary": "Xã Trung Ngãi thuộc tỉnh Vĩnh Long, gộp từ xã Trung Thành Đông, xã Trung Nghĩa và xã Trung Ngãi của huyện Vũng Liêm.",
+    "placeId": "p-long-chau"
+  },
+  {
+    "id": "xa-vinh-kim",
+    "name": "Xã Vinh Kim",
+    "summary": "Từ vùng Cầu Ngang cũ, xã Vinh Kim ngày nay thuộc tỉnh Vĩnh Long, hình thành khi xã Vinh Kim cũ nhập chung với xã Kim Hòa.",
+    "placeId": "xa-vinh-kim"
+  },
+  {
+    "id": "xa-vinh-thanh",
+    "name": "Xã Vĩnh Thành",
+    "summary": "Xã Vĩnh Thành, tỉnh Vĩnh Long, hình thành từ sáp nhập xã Phú Sơn, xã Tân Thiềng và xã Vĩnh Thành thuộc huyện Chợ Lách.",
+    "placeId": "xa-long-thanh"
+  },
+  {
+    "id": "xa-vinh-xuan",
+    "name": "Xã Vĩnh Xuân",
+    "summary": "Xã Vĩnh Xuân thuộc tỉnh Vĩnh Long, sáp nhập từ xã Hựu Thành, xã Thuận Thới và xã Vĩnh Xuân của huyện Trà Ôn.",
+    "placeId": "p-long-chau"
+  }
+]

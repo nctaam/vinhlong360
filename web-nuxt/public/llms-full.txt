@@ -7,7 +7,7 @@
 - 124 đơn vị hành chính trực thuộc gồm 35 phường và 89 xã.
 - Cấp huyện đã bãi bỏ; các địa danh huyện cũ (Long Hồ, Mang Thít, Ba Tri, Châu Thành, Càng Long, Cầu Kè, Trà Cú...) chỉ mang giá trị lịch sử và chỉ dẫn vị trí địa lý dân gian.
 
-## 2. Danh Mục 1739 Thực Thể Xác Minh Ảnh Tư Liệu Báo Chí & Giấy Phép Google Images
+## 2. Danh Mục 1772 Thực Thể Xác Minh Ảnh Tư Liệu Báo Chí & Giấy Phép Google Images
 
 Mỗi thực thể dưới đây đều có ảnh tư liệu báo chí chính thống được lưu trữ nội bộ chuẩn WebP, tích hợp siêu dữ liệu Schema.org `ImageObject` với đầy đủ bản quyền (`creator`, `creditText`, `copyrightNotice`, `license`, `acquireLicensePage`).
 
@@ -794,6 +794,13 @@ Mỗi thực thể dưới đây đều có ảnh tư liệu báo chí chính th
 - **Tác giả ảnh**: Phương Thảo · **Cơ quan**: Báo Trà Vinh
 - **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
 - **Tóm lược**: Vườn dừa sáp sinh thái tại Cầu Kè, tỉnh Vĩnh Long, nơi du khách trải nghiệm tham quan và tìm hiểu về cây dừa sáp.
+
+#### [Xã Thạnh Phong](https://vinhlong360.vn/dia-diem/xa-thanh-phong)
+- **Mã ID**: `xa-thanh-phong` | **Phân loại**: `place` | **Địa bàn**: xa-thanh-phong | **Tọa độ**: [9.9788, 106.6095]
+- **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/xa-thanh-phong.webp`
+- **Tác giả ảnh**: Hữu Hiệp · **Cơ quan**: Báo Đồng Khởi
+- **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
+- **Tóm lược**: Xã Thạnh Phong thuộc tỉnh Vĩnh Long, sáp nhập từ xã Giao Thạnh và xã Thạnh Phong của huyện Thạnh Phú.
 
 #### [Bãi biển Ba Tri](https://vinhlong360.vn/dia-diem/bai-bien-ba-tri)
 - **Mã ID**: `bai-bien-ba-tri` | **Phân loại**: `nature` | **Địa bàn**: p-ba-tri | **Tọa độ**: [10.0729, 106.5977]
@@ -2790,6 +2797,27 @@ Mỗi thực thể dưới đây đều có ảnh tư liệu báo chí chính th
 - **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
 - **Tóm lược**: Đạt chuẩn OCOP 4 sao, mật hoa dừa vùng Mỏ Cày, Bến Tre được cô đặc từ nhụy hoa dừa, chỉ số đường huyết thấp.
 
+#### [Xã Phú Phụng](https://vinhlong360.vn/dia-diem/xa-phu-phung)
+- **Mã ID**: `xa-phu-phung` | **Phân loại**: `place` | **Địa bàn**: xa-phu-phung | **Tọa độ**: [10.2630, 106.0766]
+- **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/xa-phu-phung.webp`
+- **Tác giả ảnh**: Hữu Hiệp · **Cơ quan**: Báo Đồng Khởi
+- **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
+- **Tóm lược**: Xã Phú Phụng thuộc tỉnh Vĩnh Long, sáp nhập từ xã Sơn Định, xã Vĩnh Bình và xã Phú Phụng của huyện Chợ Lách.
+
+#### [Xã Phú Quới](https://vinhlong360.vn/dia-diem/xa-phu-quoi)
+- **Mã ID**: `xa-phu-quoi` | **Phân loại**: `place` | **Địa bàn**: p-long-chau | **Tọa độ**: [10.1615, 105.9217]
+- **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/xa-phu-quoi.webp`
+- **Tác giả ảnh**: Bá Thi · **Cơ quan**: Báo Vĩnh Long
+- **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
+- **Tóm lược**: Xã Phú Quới, tỉnh Vĩnh Long, hợp nhất từ xã Lộc Hòa, xã Hòa Phú, xã Thạnh Quới và xã Phú Quới thuộc huyện Long Hồ.
+
+#### [Xã Phú Thuận](https://vinhlong360.vn/dia-diem/xa-phu-thuan)
+- **Mã ID**: `xa-phu-thuan` | **Phân loại**: `place` | **Địa bàn**: xa-phu-thuan | **Tọa độ**: [10.2797, 106.4853]
+- **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/xa-phu-thuan.webp`
+- **Tác giả ảnh**: Hữu Hiệp · **Cơ quan**: Báo Đồng Khởi
+- **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
+- **Tóm lược**: Xã Phú Thuận thuộc tỉnh Vĩnh Long, sáp nhập từ xã Long Định, xã Tam Hiệp và xã Phú Thuận của huyện Bình Đại.
+
 #### [Dimsum Quận Nhất - Ẩm Thực Trung Hoa](https://vinhlong360.vn/dia-diem/dimsum-quan-nhat---am-thuc-trung-hoa)
 - **Mã ID**: `dimsum-quan-nhat---am-thuc-trung-hoa` | **Phân loại**: `restaurant` | **Địa bàn**: p-tra-vinh | **Tọa độ**: [9.9552, 106.3408]
 - **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/dimsum-quan-nhat---am-thuc-trung-hoa.webp`
@@ -2817,6 +2845,13 @@ Mỗi thực thể dưới đây đều có ảnh tư liệu báo chí chính th
 - **Tác giả ảnh**: Quang Thuần · **Cơ quan**: Báo Vĩnh Long
 - **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
 - **Tóm lược**: Khám phá Chợ Nổi Trà Ôn trên sông Hậu – một trong những chợ nổi còn giữ nét văn hóa mua bán sầm uất của đồng bằng sông Cửu Long.
+
+#### [Xã Phước Long](https://vinhlong360.vn/dia-diem/xa-phuoc-long)
+- **Mã ID**: `xa-phuoc-long` | **Phân loại**: `place` | **Địa bàn**: xa-phuoc-long | **Tọa độ**: [10.1385, 106.4289]
+- **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/xa-phuoc-long.webp`
+- **Tác giả ảnh**: Hữu Hiệp · **Cơ quan**: Báo Đồng Khởi
+- **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
+- **Tóm lược**: Xã Phước Long, tỉnh Vĩnh Long, hợp nhất từ xã Long Mỹ, xã Hưng Phong và xã Phước Long thuộc huyện Giồng Trôm.
 
 #### [Làng hoa Cái Mơn dịp Tết – Bến Tre](https://vinhlong360.vn/dia-diem/itinerary-cai-mon-tet-ben-tre)
 - **Mã ID**: `itinerary-cai-mon-tet-ben-tre` | **Phân loại**: `itinerary` | **Địa bàn**: p-phu-khuong | **Tọa độ**: [10.2272, 106.4072]
@@ -2874,12 +2909,40 @@ Mỗi thực thể dưới đây đều có ảnh tư liệu báo chí chính th
 - **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
 - **Tóm lược**: Nhà hàng tại 52/1 Phạm Thái Bường, Phường Phước Hậu, TP Vĩnh Long.
 
+#### [Xã Phước Mỹ Trung](https://vinhlong360.vn/dia-diem/xa-phuoc-my-trung)
+- **Mã ID**: `xa-phuoc-my-trung` | **Phân loại**: `place` | **Địa bàn**: xa-phuoc-my-trung | **Tọa độ**: [10.1787, 106.2582]
+- **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/xa-phuoc-my-trung.webp`
+- **Tác giả ảnh**: Hữu Hiệp · **Cơ quan**: Báo Đồng Khởi
+- **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
+- **Tóm lược**: Xã Phước Mỹ Trung thuộc huyện Mỏ Cày Bắc, tỉnh Vĩnh Long, ra đời khi TT Phước Mỹ Trung, xã Phú Mỹ, xã Thạnh Ngãi và xã Tân Phú Tây nhập lại.
+
+#### [Xã Quới An](https://vinhlong360.vn/dia-diem/xa-quoi-an)
+- **Mã ID**: `xa-quoi-an` | **Phân loại**: `place` | **Địa bàn**: p-long-chau | **Tọa độ**: [10.1369, 106.1640]
+- **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/xa-quoi-an.webp`
+- **Tác giả ảnh**: Thanh Dũng · **Cơ quan**: Báo Vĩnh Long
+- **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
+- **Tóm lược**: Xã Quới An, tỉnh Vĩnh Long, hợp nhất từ xã Trung Thành Tây, xã Tân Quới Trung và xã Quới An thuộc huyện Vũng Liêm.
+
+#### [Xã Quới Điền](https://vinhlong360.vn/dia-diem/xa-quoi-dien)
+- **Mã ID**: `xa-quoi-dien` | **Phân loại**: `place` | **Địa bàn**: xa-quoi-dien | **Tọa độ**: [9.9120, 106.5210]
+- **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/xa-quoi-dien.webp`
+- **Tác giả ảnh**: Hữu Hiệp · **Cơ quan**: Báo Đồng Khởi
+- **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
+- **Tóm lược**: Xã Quới Điền thuộc tỉnh Vĩnh Long, sáp nhập từ xã Hòa Lợi, xã Mỹ Hưng và xã Quới Điền của huyện Thạnh Phú.
+
 #### [Nhà hàng Sáu Tú](https://vinhlong360.vn/dia-diem/nha-hang-sau-tu)
 - **Mã ID**: `nha-hang-sau-tu` | **Phân loại**: `restaurant` | **Địa bàn**: p-long-chau | **Tọa độ**: [10.0340, 105.7807]
 - **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/nha-hang-sau-tu.webp`
 - **Tác giả ảnh**: Huỳnh Biển · **Cơ quan**: Báo Vĩnh Long
 - **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
 - **Tóm lược**: Nhà hàng ẩm thực Vĩnh Long tại 284 Phạm Hùng, Phường Long Châu, TP Vĩnh Long.
+
+#### [Xã Quới Thiện](https://vinhlong360.vn/dia-diem/xa-quoi-thien)
+- **Mã ID**: `xa-quoi-thien` | **Phân loại**: `place` | **Địa bàn**: p-long-chau | **Tọa độ**: [10.1125, 106.2263]
+- **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/xa-quoi-thien.webp`
+- **Tác giả ảnh**: Huỳnh Biển · **Cơ quan**: Báo Vĩnh Long
+- **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
+- **Tóm lược**: Phía huyện Vũng Liêm cũ, xã Quới Thiện của tỉnh Vĩnh Long ra đời từ việc nhập xã Thanh Bình với xã Quới Thiện sau sắp xếp 7-2025.
 
 #### [Nhà hàng Song Thảo](https://vinhlong360.vn/dia-diem/nha-hang-song-thao)
 - **Mã ID**: `nha-hang-song-thao` | **Phân loại**: `restaurant` | **Địa bàn**: p-long-chau | **Tọa độ**: [10.0683, 105.8208]
@@ -2888,12 +2951,47 @@ Mỗi thực thể dưới đây đều có ảnh tư liệu báo chí chính th
 - **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
 - **Tóm lược**: Nhà hàng ẩm thực Vĩnh Long tại 252 Tân Quới Hưng, Phường Long Châu, TP Vĩnh Long.
 
+#### [Xã Song Lộc](https://vinhlong360.vn/dia-diem/xa-song-loc)
+- **Mã ID**: `xa-song-loc` | **Phân loại**: `place` | **Địa bàn**: xa-song-loc | **Tọa độ**: [9.8871, 106.2743]
+- **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/xa-song-loc.webp`
+- **Tác giả ảnh**: Bá Thi · **Cơ quan**: Báo Trà Vinh
+- **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
+- **Tóm lược**: Xã Song Lộc, tỉnh Vĩnh Long, hình thành từ sáp nhập xã Lương Hòa, xã Lương Hòa A và xã Song Lộc thuộc huyện Châu Thành (TV).
+
+#### [Xã Song Phú](https://vinhlong360.vn/dia-diem/xa-song-phu)
+- **Mã ID**: `xa-song-phu` | **Phân loại**: `place` | **Địa bàn**: p-long-chau | **Tọa độ**: [10.1026, 105.8912]
+- **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/xa-song-phu.webp`
+- **Tác giả ảnh**: Nguyễn Thắng · **Cơ quan**: Báo Vĩnh Long
+- **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
+- **Tóm lược**: Xã Song Phú, tỉnh Vĩnh Long, hình thành từ sáp nhập xã Tân Phú, xã Long Phú, xã Phú Thịnh và xã Song Phú thuộc huyện Tam Bình.
+
+#### [Xã Tam Ngãi](https://vinhlong360.vn/dia-diem/xa-tam-ngai)
+- **Mã ID**: `xa-tam-ngai` | **Phân loại**: `place` | **Địa bàn**: xa-tam-ngai | **Tọa độ**: [9.9181, 106.0461]
+- **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/xa-tam-ngai.webp`
+- **Tác giả ảnh**: Bá Thi · **Cơ quan**: Báo Trà Vinh
+- **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
+- **Tóm lược**: Xã Tam Ngãi thuộc tỉnh Vĩnh Long, sáp nhập từ xã Thông Hòa, xã Thạnh Phú và xã Tam Ngãi của huyện Cầu Kè.
+
 #### [Khúc Ban Chiều](https://vinhlong360.vn/dia-diem/khuc-ban-chieu)
 - **Mã ID**: `khuc-ban-chieu` | **Phân loại**: `restaurant` | **Địa bàn**: p-tra-vinh | **Tọa độ**: [9.9355, 106.3365]
 - **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/khuc-ban-chieu.webp`
 - **Tác giả ảnh**: Bá Thi · **Cơ quan**: Báo Trà Vinh
 - **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
 - **Tóm lược**: Số 398 Nguyễn Thị Minh Khai ở Trà Vinh là địa chỉ của Khúc Ban Chiều, nhà hàng gộp cả món ăn lẫn đồ uống trong một thực đơn.
+
+#### [Xã Tân An](https://vinhlong360.vn/dia-diem/xa-tan-an)
+- **Mã ID**: `xa-tan-an` | **Phân loại**: `place` | **Địa bàn**: xa-tan-an | **Tọa độ**: [9.9300, 106.1200]
+- **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/xa-tan-an.webp`
+- **Tác giả ảnh**: Bá Thi · **Cơ quan**: Báo Trà Vinh
+- **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
+- **Tóm lược**: Mang mã hành chính 29278, xã Tân An của tỉnh Vĩnh Long gom hai xã cũ Huyền Hội và Tân An thuộc huyện Càng Long, Trà Vinh trước 7-2025.
+
+#### [Xã Tân Hào](https://vinhlong360.vn/dia-diem/xa-tan-hao)
+- **Mã ID**: `xa-tan-hao` | **Phân loại**: `place` | **Địa bàn**: xa-tan-hao | **Tọa độ**: [10.1095, 106.4465]
+- **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/xa-tan-hao.webp`
+- **Tác giả ảnh**: Hữu Hiệp · **Cơ quan**: Báo Đồng Khởi
+- **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
+- **Tóm lược**: Xã Tân Hào, tỉnh Vĩnh Long, hình thành từ sáp nhập xã Tân Lợi Thạnh, xã Thạnh Phú Đông và xã Tân Hào thuộc huyện Giồng Trôm.
 
 #### [Nhà hàng Thiên Tân](https://vinhlong360.vn/dia-diem/nha-hang-thien-tan)
 - **Mã ID**: `nha-hang-thien-tan` | **Phân loại**: `restaurant` | **Địa bàn**: p-phuoc-hau | **Tọa độ**: [10.2539, 105.9722]
@@ -2908,6 +3006,13 @@ Mỗi thực thể dưới đây đều có ảnh tư liệu báo chí chính th
 - **Tác giả ảnh**: Quang Thuần · **Cơ quan**: Báo Vĩnh Long
 - **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
 - **Tóm lược**: Cửa hàng Hoa Sao chuyên phân phối thực phẩm an toàn, sản phẩm nông nghiệp sạch có chứng nhận tại Vĩnh Long.
+
+#### [Xã Tân Long Hội](https://vinhlong360.vn/dia-diem/xa-tan-long-hoi)
+- **Mã ID**: `xa-tan-long-hoi` | **Phân loại**: `place` | **Địa bàn**: p-long-chau | **Tọa độ**: [10.1394, 106.0716]
+- **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/xa-tan-long-hoi.webp`
+- **Tác giả ảnh**: Thanh Dũng · **Cơ quan**: Báo Vĩnh Long
+- **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
+- **Tóm lược**: Xã Tân Long Hội thuộc tỉnh Vĩnh Long, sáp nhập từ xã Tân An Hội, xã Tân Long và xã Tân Long Hội của huyện Mang Thít.
 
 #### [Làng nghề chế tác mặt nạ Khmer Nguyệt Hóa](https://vinhlong360.vn/dia-diem/lang-nghe-che-tac-mat-na-khmer-nguyet-hoa)
 - **Mã ID**: `lang-nghe-che-tac-mat-na-khmer-nguyet-hoa` | **Phân loại**: `craft_village` | **Địa bàn**: p-nguyet-hoa | **Tọa độ**: [9.9334, 106.3122]
@@ -2937,12 +3042,47 @@ Mỗi thực thể dưới đây đều có ảnh tư liệu báo chí chính th
 - **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
 - **Tóm lược**: Quán cà phê sân vườn có hồ cá koi tại hẻm 68/19 Phạm Thái Bường, phường 4, thành phố Vĩnh Long — chỗ ngồi yên tĩnh giữa lòng phố.
 
+#### [Xã Tân Lược](https://vinhlong360.vn/dia-diem/xa-tan-luoc)
+- **Mã ID**: `xa-tan-luoc` | **Phân loại**: `place` | **Địa bàn**: p-long-chau | **Tọa độ**: [10.1608, 105.7360]
+- **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/xa-tan-luoc.webp`
+- **Tác giả ảnh**: Huỳnh Biển · **Cơ quan**: Báo Vĩnh Long
+- **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
+- **Tóm lược**: Xã Tân Lược thuộc huyện Bình Tân, tỉnh Vĩnh Long, ra đời khi xã Tân Thành, xã Tân An Thạnh và xã Tân Lược nhập lại.
+
+#### [Xã Tân Phú](https://vinhlong360.vn/dia-diem/xa-tan-phu)
+- **Mã ID**: `xa-tan-phu` | **Phân loại**: `place` | **Địa bàn**: xa-tan-phu | **Tọa độ**: [10.3102, 106.3320]
+- **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/xa-tan-phu.webp`
+- **Tác giả ảnh**: Hữu Hiệp · **Cơ quan**: Báo Đồng Khởi
+- **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
+- **Tóm lược**: Xã Tân Phú thuộc tỉnh Vĩnh Long, gộp từ xã Tân Phú, xã Tiên Long và xã Phú Đức của huyện Châu Thành (BT).
+
+#### [Xã Tân Thành Bình](https://vinhlong360.vn/dia-diem/xa-tan-thanh-binh)
+- **Mã ID**: `xa-tan-thanh-binh` | **Phân loại**: `place` | **Địa bàn**: xa-tan-thanh-binh | **Tọa độ**: [10.1729, 106.3155]
+- **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/xa-tan-thanh-binh.webp`
+- **Tác giả ảnh**: Hữu Hiệp · **Cơ quan**: Báo Đồng Khởi
+- **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
+- **Tóm lược**: Xã Tân Thành Bình, tỉnh Vĩnh Long, hình thành từ sáp nhập xã Tân Bình, xã Thành An, xã Hòa Lộc và xã Tân Thành Bình thuộc huyện Mỏ Cày Bắc.
+
 #### [Chợ Đại An](https://vinhlong360.vn/dia-diem/cho-dai-an)
 - **Mã ID**: `cho-dai-an` | **Phân loại**: `facility` | **Địa bàn**: xa-dai-an | **Tọa độ**: [9.6285, 106.2840]
 - **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/cho-dai-an.webp`
 - **Tác giả ảnh**: Bá Thi · **Cơ quan**: Báo Trà Vinh
 - **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
 - **Tóm lược**: Khu chợ truyền thống tại xã Đại An, huyện Trà Cú, là điểm đến văn hóa và ẩm thực đặc sắc của vùng.
+
+#### [Xã Tân Xuân](https://vinhlong360.vn/dia-diem/xa-tan-xuan)
+- **Mã ID**: `xa-tan-xuan` | **Phân loại**: `place` | **Địa bàn**: xa-tan-xuan | **Tọa độ**: [10.0998, 106.6266]
+- **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/xa-tan-xuan.webp`
+- **Tác giả ảnh**: Hữu Hiệp · **Cơ quan**: Báo Đồng Khởi
+- **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
+- **Tóm lược**: Xã Tân Xuân, tỉnh Vĩnh Long, hình thành từ sáp nhập xã Phú Lễ, xã Phước Ngãi và xã Tân Xuân thuộc huyện Ba Tri.
+
+#### [Xã Tập Sơn](https://vinhlong360.vn/dia-diem/xa-tap-son)
+- **Mã ID**: `xa-tap-son` | **Phân loại**: `place` | **Địa bàn**: xa-tap-son | **Tọa độ**: [9.7571, 106.2842]
+- **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/xa-tap-son.webp`
+- **Tác giả ảnh**: Bá Thi · **Cơ quan**: Báo Trà Vinh
+- **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
+- **Tóm lược**: Từ ba xã cũ Tân Sơn, Phước Hưng và Tập Sơn của huyện Trà Cú trước đây, xã Tập Sơn mới ra đời, nay thuộc tỉnh Vĩnh Long.
 
 #### [Phố Ăn Vặt Bờ Kè](https://vinhlong360.vn/dia-diem/pho-an-vat-bo-ke)
 - **Mã ID**: `pho-an-vat-bo-ke` | **Phân loại**: `attraction` | **Địa bàn**: p-long-chau | **Tọa độ**: [10.2542, 105.9628]
@@ -2957,6 +3097,27 @@ Mỗi thực thể dưới đây đều có ảnh tư liệu báo chí chính th
 - **Tác giả ảnh**: Hoàng Mai · **Cơ quan**: Báo Vĩnh Long
 - **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
 - **Tóm lược**: Hội chợ đầu năm quảng bá sản phẩm OCOP và đặc sản Vĩnh Long phục vụ nhu cầu Tết.
+
+#### [Xã Thạnh Hải](https://vinhlong360.vn/dia-diem/xa-thanh-hai)
+- **Mã ID**: `xa-thanh-hai` | **Phân loại**: `place` | **Địa bàn**: xa-thanh-hai | **Tọa độ**: [9.8450, 106.6350]
+- **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/xa-thanh-hai.webp`
+- **Tác giả ảnh**: Hữu Hiệp · **Cơ quan**: Báo Đồng Khởi
+- **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
+- **Tóm lược**: Về tỉnh Vĩnh Long sau sắp xếp 7-2025, xã Thạnh Hải hình thành từ xã An Điền nhập với xã Thạnh Hải của huyện Thạnh Phú, Bến Tre cũ.
+
+#### [Xã Thạnh Phú](https://vinhlong360.vn/dia-diem/xa-thanh-phu)
+- **Mã ID**: `xa-thanh-phu` | **Phân loại**: `place` | **Địa bàn**: xa-thanh-phu | **Tọa độ**: [9.9577, 106.5266]
+- **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/xa-thanh-phu.webp`
+- **Tác giả ảnh**: Hữu Hiệp · **Cơ quan**: Báo Đồng Khởi
+- **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
+- **Tóm lược**: Xã Thạnh Phú thuộc tỉnh Vĩnh Long, gộp từ TT Thạnh Phú, xã An Thạnh, xã Bình Thạnh và xã Mỹ An của huyện Thạnh Phú.
+
+#### [Xã Thạnh Phước](https://vinhlong360.vn/dia-diem/xa-thanh-phuoc)
+- **Mã ID**: `xa-thanh-phuoc` | **Phân loại**: `place` | **Địa bàn**: xa-thanh-phuoc | **Tọa độ**: [10.1372, 106.6945]
+- **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/xa-thanh-phuoc.webp`
+- **Tác giả ảnh**: Hữu Hiệp · **Cơ quan**: Báo Đồng Khởi
+- **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
+- **Tóm lược**: Xã Thạnh Phước thuộc huyện Bình Đại (cũ), tỉnh Vĩnh Long, ra đời khi xã Đại Hòa Lộc và xã Thạnh Phước nhập lại.
 
 #### [Phan Thanh Giản](https://vinhlong360.vn/dia-diem/phan-thanh-gian)
 - **Mã ID**: `phan-thanh-gian` | **Phân loại**: `person` | **Địa bàn**: p-long-chau | **Tọa độ**: [10.0639, 106.6711]
@@ -2978,6 +3139,27 @@ Mỗi thực thể dưới đây đều có ảnh tư liệu báo chí chính th
 - **Tác giả ảnh**: Bá Thi · **Cơ quan**: Báo Vĩnh Long
 - **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
 - **Tóm lược**: Danh thần thế kỷ XVIII (? - 1776), người đầu tiên được cử làm Lưu thủ Long Hồ dinh (nay là Vĩnh Long) dưới thời chúa Nguyễn Phúc Thuần.
+
+#### [Xã Thành Thới](https://vinhlong360.vn/dia-diem/xa-thanh-thoi)
+- **Mã ID**: `xa-thanh-thoi` | **Phân loại**: `place` | **Địa bàn**: xa-thanh-thoi | **Tọa độ**: [10.0528, 106.3146]
+- **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/xa-thanh-thoi.webp`
+- **Tác giả ảnh**: Hữu Hiệp · **Cơ quan**: Báo Đồng Khởi
+- **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
+- **Tóm lược**: Xã Thành Thới thuộc huyện Mỏ Cày Nam (cũ), tỉnh Vĩnh Long, ra đời khi xã An Thới, xã Thành Thới A và xã Thành Thới B nhập lại.
+
+#### [Xã Thạnh Trị](https://vinhlong360.vn/dia-diem/xa-thanh-tri)
+- **Mã ID**: `xa-thanh-tri` | **Phân loại**: `place` | **Địa bàn**: xa-thanh-tri | **Tọa độ**: [10.1938, 106.5972]
+- **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/xa-thanh-tri.webp`
+- **Tác giả ảnh**: Hữu Hiệp · **Cơ quan**: Báo Đồng Khởi
+- **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
+- **Tóm lược**: Xã Thạnh Trị thuộc tỉnh Vĩnh Long, sáp nhập từ xã Định Trung, xã Phú Long và xã Thạnh Trị của huyện Bình Đại.
+
+#### [Xã Thới Thuận](https://vinhlong360.vn/dia-diem/xa-thoi-thuan)
+- **Mã ID**: `xa-thoi-thuan` | **Phân loại**: `place` | **Địa bàn**: xa-thoi-thuan | **Tọa độ**: [10.1071, 106.7601]
+- **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/xa-thoi-thuan.webp`
+- **Tác giả ảnh**: Hữu Hiệp · **Cơ quan**: Báo Đồng Khởi
+- **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
+- **Tóm lược**: Xã Thới Thuận thuộc huyện Bình Đại (cũ), tỉnh Vĩnh Long, ra đời khi xã Thừa Đức và xã Thới Thuận nhập lại.
 
 #### [Thoại Ngọc Hầu](https://vinhlong360.vn/dia-diem/thoai-ngoc-hau)
 - **Mã ID**: `thoai-ngoc-hau` | **Phân loại**: `person` | **Địa bàn**: xa-quoi-thien | **Tọa độ**: [10.2515, 105.9701]
@@ -3007,12 +3189,61 @@ Mỗi thực thể dưới đây đều có ảnh tư liệu báo chí chính th
 - **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
 - **Tóm lược**: Khúc Phạm Thái Bường thuộc Phường 4, thành phố Vĩnh Long có Mã Văn Tài Quán — nhà hàng chuyên các món kiểu Vĩnh Long.
 
+#### [Xã Trà Côn](https://vinhlong360.vn/dia-diem/xa-tra-con)
+- **Mã ID**: `xa-tra-con` | **Phân loại**: `place` | **Địa bàn**: p-long-chau | **Tọa độ**: [10.0159, 106.0063]
+- **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/xa-tra-con.webp`
+- **Tác giả ảnh**: Nguyễn Thắng · **Cơ quan**: Báo Vĩnh Long
+- **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
+- **Tóm lược**: Xã Trà Côn, tỉnh Vĩnh Long, hình thành từ sáp nhập xã Nhơn Bình, xã Trà Côn và xã Tân Mỹ, một phần TT Tam Bình thuộc huyện Trà Ôn + H.
+
+#### [Xã Trà Cú](https://vinhlong360.vn/dia-diem/xa-tra-cu)
+- **Mã ID**: `xa-tra-cu` | **Phân loại**: `place` | **Địa bàn**: xa-tra-cu | **Tọa độ**: [9.6997, 106.2732]
+- **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/xa-tra-cu.webp`
+- **Tác giả ảnh**: Bá Thi · **Cơ quan**: Báo Trà Vinh
+- **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
+- **Tóm lược**: Trên địa bàn huyện Trà Cú cũ thuộc vùng Trà Vinh, thị trấn Trà Cú cùng hai xã Ngãi Xuyên và Thanh Sơn gộp thành xã Trà Cú, tỉnh Vĩnh Long.
+
+#### [Xã Trung Hiệp](https://vinhlong360.vn/dia-diem/xa-trung-hiep)
+- **Mã ID**: `xa-trung-hiep` | **Phân loại**: `place` | **Địa bàn**: p-long-chau | **Tọa độ**: [10.1107, 106.1231]
+- **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/xa-trung-hiep.webp`
+- **Tác giả ảnh**: Thanh Dũng · **Cơ quan**: Báo Vĩnh Long
+- **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
+- **Tóm lược**: Xã Trung Hiệp thuộc tỉnh Vĩnh Long, sáp nhập từ xã Tân An Luông, xã Trung Chánh và xã Trung Hiệp của huyện Vũng Liêm.
+
 #### [Lu Lu - Cake & Drink](https://vinhlong360.vn/dia-diem/lu-lu---cake-drink)
 - **Mã ID**: `lu-lu---cake-drink` | **Phân loại**: `restaurant` | **Địa bàn**: p-long-chau | **Tọa độ**: [10.2520, 105.9734]
 - **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/lu-lu---cake-drink.webp`
 - **Tác giả ảnh**: Bá Thi · **Cơ quan**: Báo Vĩnh Long
 - **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
 - **Tóm lược**: Bánh và đồ uống là trọn chuyên môn của Lu Lu - Cake & Drink ở 47 Nguyễn Thị Minh Khai, Phường 1, Vĩnh Long — đúng như cái tên tiệm.
+
+#### [Xã Trung Ngãi](https://vinhlong360.vn/dia-diem/xa-trung-ngai)
+- **Mã ID**: `xa-trung-ngai` | **Phân loại**: `place` | **Địa bàn**: p-long-chau | **Tọa độ**: [10.0544, 106.2069]
+- **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/xa-trung-ngai.webp`
+- **Tác giả ảnh**: Thanh Dũng · **Cơ quan**: Báo Vĩnh Long
+- **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
+- **Tóm lược**: Xã Trung Ngãi thuộc tỉnh Vĩnh Long, gộp từ xã Trung Thành Đông, xã Trung Nghĩa và xã Trung Ngãi của huyện Vũng Liêm.
+
+#### [Xã Vinh Kim](https://vinhlong360.vn/dia-diem/xa-vinh-kim)
+- **Mã ID**: `xa-vinh-kim` | **Phân loại**: `place` | **Địa bàn**: xa-vinh-kim | **Tọa độ**: [9.8555, 106.4422]
+- **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/xa-vinh-kim.webp`
+- **Tác giả ảnh**: Bá Thi · **Cơ quan**: Báo Trà Vinh
+- **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
+- **Tóm lược**: Từ vùng Cầu Ngang cũ, xã Vinh Kim ngày nay thuộc tỉnh Vĩnh Long, hình thành khi xã Vinh Kim cũ nhập chung với xã Kim Hòa.
+
+#### [Xã Vĩnh Thành](https://vinhlong360.vn/dia-diem/xa-vinh-thanh)
+- **Mã ID**: `xa-vinh-thanh` | **Phân loại**: `place` | **Địa bàn**: xa-long-thanh | **Tọa độ**: [10.2200, 106.1700]
+- **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/xa-vinh-thanh.webp`
+- **Tác giả ảnh**: Hữu Hiệp · **Cơ quan**: Báo Đồng Khởi
+- **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
+- **Tóm lược**: Xã Vĩnh Thành, tỉnh Vĩnh Long, hình thành từ sáp nhập xã Phú Sơn, xã Tân Thiềng và xã Vĩnh Thành thuộc huyện Chợ Lách.
+
+#### [Xã Vĩnh Xuân](https://vinhlong360.vn/dia-diem/xa-vinh-xuan)
+- **Mã ID**: `xa-vinh-xuan` | **Phân loại**: `place` | **Địa bàn**: p-long-chau | **Tọa độ**: [9.9659, 106.0312]
+- **Ảnh tư liệu WebP**: `https://vinhlong360.vn/img/entities/xa-vinh-xuan.webp`
+- **Tác giả ảnh**: Huỳnh Biển · **Cơ quan**: Báo Vĩnh Long
+- **Bản quyền hình ảnh**: [Điều khoản sử dụng](https://vinhlong360.vn/dieu-khoan-su-dung) | [Cấp phép](https://vinhlong360.vn/lien-he)
+- **Tóm lược**: Xã Vĩnh Xuân thuộc tỉnh Vĩnh Long, sáp nhập từ xã Hựu Thành, xã Thuận Thới và xã Vĩnh Xuân của huyện Trà Ôn.
 
 #### [Bánh Bao Tài Có](https://vinhlong360.vn/dia-diem/banh-bao-tai-co)
 - **Mã ID**: `banh-bao-tai-co` | **Phân loại**: `dish` | **Địa bàn**: p-long-chau | **Tọa độ**: [10.1738, 106.1096]

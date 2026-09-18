@@ -1900,9 +1900,43 @@ describe('Image Governance & Visual Asset Suite (100% Full Coverage)', () => {
       'xa-nhon-phu',
       'xa-nhuan-phu-tan',
       'xa-phong-thanh',
+      // 33 Place Entities (Batch 47 - Completing 100% Full Coverage: 1772/1772)
+      'xa-thanh-phong',
+      'xa-phu-phung',
+      'xa-phu-quoi',
+      'xa-phu-thuan',
+      'xa-phuoc-long',
+      'xa-phuoc-my-trung',
+      'xa-quoi-an',
+      'xa-quoi-dien',
+      'xa-quoi-thien',
+      'xa-song-loc',
+      'xa-song-phu',
+      'xa-tam-ngai',
+      'xa-tan-an',
+      'xa-tan-hao',
+      'xa-tan-long-hoi',
+      'xa-tan-luoc',
+      'xa-tan-phu',
+      'xa-tan-thanh-binh',
+      'xa-tan-xuan',
+      'xa-tap-son',
+      'xa-thanh-hai',
+      'xa-thanh-phu',
+      'xa-thanh-phuoc',
+      'xa-thanh-thoi',
+      'xa-thanh-tri',
+      'xa-thoi-thuan',
+      'xa-tra-con',
+      'xa-tra-cu',
+      'xa-trung-hiep',
+      'xa-trung-ngai',
+      'xa-vinh-kim',
+      'xa-vinh-thanh',
+      'xa-vinh-xuan',
     ]
 
-    expect(documentaryIds.length).toBe(1739)
+    expect(documentaryIds.length).toBe(1772)
 
     for (const id of documentaryIds) {
       const row = db.prepare(`SELECT id, images, attributes FROM entities WHERE id = ?`).get(id) as { id: string; images: string; attributes: string }
