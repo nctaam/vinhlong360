@@ -221,7 +221,7 @@ const titleId = `catalog-aeo-title-${instanceId}`
   font-weight: var(--weight-bold);
   color: var(--color-action, var(--color-text));
   text-decoration: none;
-  border-radius: var(--radius-pill);
+  border-radius: var(--radius-control);
   transition: background 150ms var(--ease-out), transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
 

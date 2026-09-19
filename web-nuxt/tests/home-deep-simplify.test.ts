@@ -112,6 +112,11 @@ describe('Deep & Simple Homepage UI Refinements', () => {
     const freshNocturneCss = readFileSync(resolve(__dirname, '../assets/css/home-nocturne.css'), 'utf8')
     expect(freshNocturneCss).toMatch(/\.home-feature-dossier__action\s*\{[^}]*border-radius:\s*var\(--radius-control\);/)
   })
+
+  it('Task 16: Catalog AEO Plaque CTA button enforces unified border-radius control token', () => {
+    const aeoVue = readFileSync(resolve(__dirname, '../components/CatalogAeoPlaque.vue'), 'utf8')
+    expect(aeoVue).toMatch(/\.catalog-aeo-plaque__cta\s*\{[^}]*border-radius:\s*var\(--radius-control\);/)
+  })
 })
 
 
