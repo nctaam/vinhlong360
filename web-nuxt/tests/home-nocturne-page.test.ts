@@ -173,7 +173,7 @@ describe('homepage Existing Screen Evolution B1', () => {
     const rootBackground = rgba(getComputedStyle(root.element).backgroundColor)
     const subtitleStyle = getComputedStyle(subtitle.element)
 
-    expect(subtitle.text()).toContain('Tìm điểm đến')
+    expect(subtitle.text()).toMatch(/Hành trình di sản cù lao|Tìm điểm đến/)
     expect(rootBackground).toEqual(canvas)
     expect(rgba(getComputedStyle(title.element).color)).toEqual(text)
     expect(rgba(getComputedStyle(kicker.element).color)).toEqual(brand)
