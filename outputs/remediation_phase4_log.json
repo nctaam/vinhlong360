@@ -1,0 +1,2986 @@
+[
+  {
+    "entity_id": "bun-nuoc-leo-cho-ba-tri-ben-tre",
+    "field": "address",
+    "old": "Khu vực chợ Ba Tri, Bến Tre",
+    "new": "Khu vực chợ Ba Tri, Phường Ba Tri, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Khu vực chợ Ba Tri, Phường Ba Tri, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "chua-hang",
+    "field": "address",
+    "old": "Khóm 4, thị trấn Châu Thành, huyện Châu Thành, tỉnh Vĩnh Long",
+    "new": "Khóm 4, Xã Châu Thành, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Khóm 4, Xã Châu Thành, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "lang-nghe-dan-non-la-tt-long-ho",
+    "field": "address",
+    "old": "Khóm 5 và Khóm 6, thị trấn Long Hồ, tỉnh Vĩnh Long",
+    "new": "Làng nghề đan nón lá TT Long Hồ, Phường Long Hồ, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Làng nghề đan nón lá TT Long Hồ, Phường Long Hồ, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "lang-ong-nam-hai",
+    "field": "address",
+    "old": "Ấp Nhà Mát, xã Trường Long Hòa, tỉnh Vĩnh Long",
+    "new": "Lăng Ông Nam Hải, Xã Thạnh Hải, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Lăng Ông Nam Hải, Xã Thạnh Hải, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "bien-con-nhan",
+    "field": "address",
+    "old": "Huyện Ba Tri, Bến Tre",
+    "new": "Biển Cồn Nhàn, Phường Ba Tri, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Biển Cồn Nhàn, Phường Ba Tri, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "chom-chom-cau-ke",
+    "field": "address",
+    "old": "Cù lao Tân Quy, xã An Phú Tân, huyện Cầu Kè, Trà Vinh",
+    "new": "Cù lao Tân Quy, Phường Trà Vinh, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Cù lao Tân Quy, Phường Trà Vinh, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "chua-hoi-tong-ben-tre",
+    "field": "address",
+    "old": "Ấp 8, xã Quới Sơn, huyện Châu Thành, Bến Tre",
+    "new": "Ấp 8, Phường Bến Tre, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Ấp 8, Phường Bến Tre, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "nha-tho-duc-my-cho-cua",
+    "field": "address",
+    "old": "Xã Đức Mỹ, huyện Càng Long, Trà Vinh",
+    "new": "Nhà Thờ Đức Mỹ Chợ Cua, Xã Nhị Long, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Nhà Thờ Đức Mỹ Chợ Cua, Xã Nhị Long, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "rung-ngap-man-hiep-thanh-duyen-hai-tra-vinh",
+    "field": "address",
+    "old": "Xã Hiệp Thạnh, huyện Duyên Hải, Trà Vinh",
+    "new": "Rừng ngập mặn Hiệp Thạnh - Gò Công Biển, Xã Long Hữu, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Rừng ngập mặn Hiệp Thạnh - Gò Công Biển, Xã Long Hữu, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "rung-ngap-man-phong-ho-binh-dai-ben-tre",
+    "field": "address",
+    "old": "Ven biển huyện Bình Đại, tỉnh Vĩnh Long (các xã Thạnh Phước, Thừa Đức, Bình Thắng)",
+    "new": "Ven biển, Xã Thạnh Phước, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Ven biển, Xã Thạnh Phước, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "vien-chau-huynh-tri-ba",
+    "field": "address",
+    "old": "Huyện Duyên Hải, Trà Vinh",
+    "new": "Viễn Châu (Huỳnh Trí Bá), Phường Duyên Hải, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Viễn Châu (Huỳnh Trí Bá), Phường Duyên Hải, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "vuon-dua-sinh-thai-cau-ke-tra-vinh",
+    "field": "address",
+    "old": "Huyện Cầu Kè, tỉnh Vĩnh Long (dọc theo sông Hậu)",
+    "new": "Vườn dừa sinh thái Cầu Kè, Xã Cầu Kè, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Vườn dừa sinh thái Cầu Kè, Xã Cầu Kè, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "bai-bien-ba-tri",
+    "field": "address",
+    "old": "Huyện Ba Tri, tỉnh Vĩnh Long",
+    "new": "Bãi biển Ba Tri, Phường Ba Tri, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Bãi biển Ba Tri, Phường Ba Tri, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "bai-bien-thanh-phu",
+    "field": "address",
+    "old": "Huyện Thạnh Phú, tỉnh Vĩnh Long",
+    "new": "Bãi biển Thạnh Phú, Xã Thạnh Phú, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Bãi biển Thạnh Phú, Xã Thạnh Phú, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "banh-kep-thuy-kieu",
+    "field": "address",
+    "old": "Huyện Mỏ Cày Nam, tỉnh Vĩnh Long",
+    "new": "Bánh kẹp Thúy Kiều, Phường Mỏ Cày, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Bánh kẹp Thúy Kiều, Phường Mỏ Cày, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "banh-xeo-bien-binh-dai",
+    "field": "address",
+    "old": "Huyện Bình Đại, tỉnh Vĩnh Long",
+    "new": "Bánh xèo biển Bình Đại, Phường Bình Đại, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Bánh xèo biển Bình Đại, Phường Bình Đại, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "buoi-da-xanh-ben-tre",
+    "field": "address",
+    "old": "Huyện Mỏ Cày Bắc và các huyện trong tỉnh Vĩnh Long",
+    "new": "Bưởi Da Xanh, Phường Phú Tân, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Bưởi Da Xanh, Phường Phú Tân, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "buoi-da-xanh-giong-trom",
+    "field": "address",
+    "old": "Huyện Giồng Trôm, tỉnh Vĩnh Long",
+    "new": "Bưởi Da Xanh Giồng Trôm, Xã Giồng Trôm, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Bưởi Da Xanh Giồng Trôm, Xã Giồng Trôm, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "ca-bong-lau-mot-nang-binh-dai",
+    "field": "address",
+    "old": "Huyện Bình Đại, tỉnh Vĩnh Long",
+    "new": "Cá bông lau một nắng Bình Đại, Phường Bình Đại, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Cá bông lau một nắng Bình Đại, Phường Bình Đại, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "ca-doi-kho-mot-nang-binh-dai",
+    "field": "address",
+    "old": "Huyện Bình Đại, tỉnh Vĩnh Long",
+    "new": "Cá đối khô một nắng Bình Đại, Phường Bình Đại, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Cá đối khô một nắng Bình Đại, Phường Bình Đại, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "chua-giac-linh-chua-doi",
+    "field": "address",
+    "old": "Huyện Cầu Ngang, tỉnh Vĩnh Long",
+    "new": "Chùa Giác Linh (Chùa Dơi), Xã Cầu Ngang, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Chùa Giác Linh (Chùa Dơi), Xã Cầu Ngang, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "chu-u-rang-me",
+    "field": "address",
+    "old": "Huyện Trà Cú, tỉnh Vĩnh Long",
+    "new": "Chù ụ rang me, Xã Trà Cú, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Chù ụ rang me, Xã Trà Cú, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "con-ngheu-bai-vang-bien-tra-vinh",
+    "field": "address",
+    "old": "Vùng cửa biển huyện Châu Thành và Cầu Ngang, tỉnh Vĩnh Long",
+    "new": "Vùng cửa biển, Xã Châu Thành, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Vùng cửa biển, Xã Châu Thành, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "cua-bien-va-ngheu-thanh-phu",
+    "field": "address",
+    "old": "Huyện Thạnh Phú, tỉnh Vĩnh Long",
+    "new": "Cua biển và nghêu Thạnh Phú, Xã Thạnh Phú, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Cua biển và nghêu Thạnh Phú, Xã Thạnh Phú, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "dua-kho-tra-vinh",
+    "field": "address",
+    "old": "Toàn tỉnh Vĩnh Long (tập trung Tiểu Cần, Cầu Ngang, Càng Long)",
+    "new": "Toàn tỉnh Vĩnh Long, Xã Châu Thành, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Toàn tỉnh Vĩnh Long, Xã Châu Thành, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "dua-sap-cau-ke-dac-san-ben-tre",
+    "field": "address",
+    "old": "Huyện Ba Tri, tỉnh Vĩnh Long",
+    "new": "Dừa sáp Cầu Kè - đặc sản, Phường Ba Tri, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Dừa sáp Cầu Kè - đặc sản, Phường Ba Tri, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "dua-sap-tra-vinh",
+    "field": "address",
+    "old": "Huyện Trà Cú, tỉnh Vĩnh Long",
+    "new": "Dừa sáp, Xã Lưu Nghiệp Anh, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Dừa sáp, Xã Lưu Nghiệp Anh, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "du-lich-sinh-thai-bien-thanh-phu",
+    "field": "address",
+    "old": "Huyện Thạnh Phú, tỉnh Vĩnh Long",
+    "new": "Du lịch sinh thái biển Thạnh Phú, Xã Thạnh Phú, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Du lịch sinh thái biển Thạnh Phú, Xã Thạnh Phú, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "du-lich-sinh-thai-miet-vuon-mo-cay-bac",
+    "field": "address",
+    "old": "Huyện Mỏ Cày Bắc, tỉnh Vĩnh Long",
+    "new": "Du lịch sinh thái miệt vườn Mỏ Cày Bắc, Xã Tân Thành Bình, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Du lịch sinh thái miệt vườn Mỏ Cày Bắc, Xã Tân Thành Bình, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "gao-sach-lua-tom-thanh-phu",
+    "field": "address",
+    "old": "Huyện Thạnh Phú, tỉnh Vĩnh Long",
+    "new": "Gạo sạch lúa-tôm Thạnh Phú, Xã Thạnh Phú, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Gạo sạch lúa-tôm Thạnh Phú, Xã Thạnh Phú, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "gao-sach-tom-lua-thanh-phu-ocop",
+    "field": "address",
+    "old": "Huyện Thạnh Phú, tỉnh Vĩnh Long",
+    "new": "Gạo sạch Tôm-Lúa Thạnh Phú (OCOP), Xã Thạnh Phú, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Gạo sạch Tôm-Lúa Thạnh Phú (OCOP), Xã Thạnh Phú, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "homestay-nam-ham-luong",
+    "field": "address",
+    "old": "Huyện Mỏ Cày Bắc, tỉnh Vĩnh Long",
+    "new": "Homestay Nam Hàm Luông, Phường Bến Tre, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Homestay Nam Hàm Luông, Phường Bến Tre, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "keo-dua-mo-cay-co-so-tuyet-phung",
+    "field": "address",
+    "old": "Huyện Mỏ Cày Nam, tỉnh Vĩnh Long",
+    "new": "Kẹo dừa Mỏ Cày (cơ sở Tuyết Phụng), Phường Mỏ Cày, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Kẹo dừa Mỏ Cày (cơ sở Tuyết Phụng), Phường Mỏ Cày, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "keo-dua-tuyet-phung",
+    "field": "address",
+    "old": "Thị trấn Mỏ Cày, tỉnh Vĩnh Long",
+    "new": "Kẹo dừa Tuyết Phụng, Phường Mỏ Cày, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Kẹo dừa Tuyết Phụng, Phường Mỏ Cày, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "kho-ca-bien-thanh-phu",
+    "field": "address",
+    "old": "Huyện Thạnh Phú, tỉnh Vĩnh Long",
+    "new": "Khô cá biển Thạnh Phú, Xã Thạnh Phú, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Khô cá biển Thạnh Phú, Xã Thạnh Phú, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "khu-bao-ve-canh-quan-rung-ngap-man-thanh-phu",
+    "field": "address",
+    "old": "Huyện Thạnh Phú, tỉnh Vĩnh Long",
+    "new": "Khu bảo vệ cảnh quan rừng ngập mặn Thạnh Phú, Xã Thạnh Phú, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Khu bảo vệ cảnh quan rừng ngập mặn Thạnh Phú, Xã Thạnh Phú, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "lang-nghe-keo-dua-ba-tri",
+    "field": "address",
+    "old": "Huyện Ba Tri, tỉnh Vĩnh Long",
+    "new": "Làng nghề kẹo dừa Ba Tri, Phường Ba Tri, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Làng nghề kẹo dừa Ba Tri, Phường Ba Tri, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "lang-nghe-thu-cong-my-nghe-dua-mo-cay-nam",
+    "field": "address",
+    "old": "Huyện Mỏ Cày Nam, tỉnh Vĩnh Long",
+    "new": "Làng nghề thủ công mỹ nghệ dừa Mỏ Cày Nam, Phường Mỏ Cày, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Làng nghề thủ công mỹ nghệ dừa Mỏ Cày Nam, Phường Mỏ Cày, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "lang-nghe-tre-truc-ba-tri",
+    "field": "address",
+    "old": "Huyện Ba Tri, tỉnh Vĩnh Long",
+    "new": "Làng nghề tre trúc Ba Tri, Phường Ba Tri, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Làng nghề tre trúc Ba Tri, Phường Ba Tri, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "le-hoi-chol-chnam-thmay-va-sen-dolta",
+    "field": "address",
+    "old": "Huyện Trà Cú, tỉnh Vĩnh Long",
+    "new": "Lễ hội Chol Chnam Thmay và Sen Dolta, Xã Trà Cú, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Lễ hội Chol Chnam Thmay và Sen Dolta, Xã Trà Cú, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "ngay-hoi-van-hoa-the-thao-va-du-lich-huyen-cho-lach-ben-tre",
+    "field": "address",
+    "old": "Huyện Chợ Lách, tỉnh Vĩnh Long",
+    "new": "Ngày hội Văn hóa - Thể thao và Du lịch Chợ Lách, Phường Phú Khương, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Ngày hội Văn hóa - Thể thao và Du lịch Chợ Lách, Phường Phú Khương, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "ngheu-so-cua-bien-thanh-phu",
+    "field": "address",
+    "old": "Huyện Thạnh Phú, tỉnh Vĩnh Long",
+    "new": "Nghêu, sò, cua biển Thạnh Phú, Xã Thạnh Phú, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Nghêu, sò, cua biển Thạnh Phú, Xã Thạnh Phú, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "oc-viet-ben-tre",
+    "field": "address",
+    "old": "Vùng ven biển huyện Bình Đại, tỉnh Vĩnh Long",
+    "new": "Vùng ven biển, Phường Bình Đại, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Vùng ven biển, Phường Bình Đại, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "rung-ngap-man-binh-dai",
+    "field": "address",
+    "old": "Huyện Bình Đại, tỉnh Vĩnh Long",
+    "new": "Rừng ngập mặn Bình Đại, Phường Bình Đại, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Rừng ngập mặn Bình Đại, Phường Bình Đại, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "ruou-gia-bao",
+    "field": "address",
+    "old": "Huyện Mỏ Cày Nam, tỉnh Vĩnh Long",
+    "new": "Rượu Gia Bảo, Xã Tân Thành Bình, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Rượu Gia Bảo, Xã Tân Thành Bình, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "ruou-quach-cau-ngang",
+    "field": "address",
+    "old": "Huyện Cầu Ngang, tỉnh Vĩnh Long",
+    "new": "Rượu Quách Cầu Ngang, Xã Cầu Ngang, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Rượu Quách Cầu Ngang, Xã Cầu Ngang, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "san-pham-ocop-cau-ngang",
+    "field": "address",
+    "old": "Huyện Cầu Ngang, tỉnh Vĩnh Long",
+    "new": "Sản phẩm OCOP Cầu Ngang, Xã Cầu Ngang, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Sản phẩm OCOP Cầu Ngang, Xã Cầu Ngang, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "le-hoi-van-thanh-mieu",
+    "field": "address",
+    "old": "Làng Long Hồ, đường Trần Phú, phường 4, Thành phố Vĩnh Long, tỉnh Vĩnh Long",
+    "new": "Làng Long Hồ, đường Trần Phú, Phường Phước Hậu, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Làng Long Hồ, đường Trần Phú, Phường Phước Hậu, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "sau-rieng-cap-dong-chanh-thu",
+    "field": "address",
+    "old": "Huyện Chợ Lách, tỉnh Vĩnh Long",
+    "new": "Sầu riêng cấp đông Chánh Thu, Xã Chợ Lách, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Sầu riêng cấp đông Chánh Thu, Xã Chợ Lách, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "so-diep-binh-dai",
+    "field": "address",
+    "old": "Huyện Bình Đại, tỉnh Vĩnh Long",
+    "new": "Sò điệp Bình Đại, Phường Bình Đại, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Sò điệp Bình Đại, Phường Bình Đại, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "bun-tuoi-va-hu-tieu-sau-thanh",
+    "field": "address",
+    "old": "Huyện Tam Bình, tỉnh Vĩnh Long",
+    "new": "Bún tươi và hủ tiếu Sáu Thạnh, Phường Phước Hậu, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Bún tươi và hủ tiếu Sáu Thạnh, Phường Phước Hậu, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "tom-kho-hai-kham",
+    "field": "address",
+    "old": "Huyện Cầu Ngang, tỉnh Vĩnh Long",
+    "new": "Tôm khô Hai Khâm, Xã Cầu Ngang, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Tôm khô Hai Khâm, Xã Cầu Ngang, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "tom-su-binh-dai",
+    "field": "address",
+    "old": "Huyện Bình Đại, tỉnh Vĩnh Long",
+    "new": "Tôm sú Bình Đại, Phường Bình Đại, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Tôm sú Bình Đại, Phường Bình Đại, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "vung-trong-dua-sap-cau-ke",
+    "field": "address",
+    "old": "Huyện Cầu Kè, tỉnh Vĩnh Long",
+    "new": "Vùng trồng dừa sáp Cầu Kè, Xã Cầu Kè, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Vùng trồng dừa sáp Cầu Kè, Xã Cầu Kè, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "cu-lao-minh",
+    "field": "address",
+    "old": "Phường Mỏ Cày, Bến Tre",
+    "new": "Cù lao Minh, Phường Mỏ Cày, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Cù lao Minh, Phường Mỏ Cày, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "cho-cho-lach",
+    "field": "address",
+    "old": "Huyện Chợ Lách (BT)",
+    "new": "Chợ Chợ Lách, Xã Chợ Lách, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Chợ Chợ Lách, Xã Chợ Lách, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "cua-binh-dai",
+    "field": "address",
+    "old": "Huyện Bình Đại, Bến Tre",
+    "new": "Cua Bình Đại, Phường Bình Đại, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Cua Bình Đại, Phường Bình Đại, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "sau-rieng-cai-mon",
+    "field": "address",
+    "old": "Xã Vĩnh Thành, huyện Chợ Lách, Bến Tre",
+    "new": "Sầu riêng Cái Mơn, Xã Vĩnh Thành, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Sầu riêng Cái Mơn, Xã Vĩnh Thành, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "mam-bo-hoc-tra-vinh",
+    "field": "address",
+    "old": "Trà Vinh (phổ biến ở các huyện đông đồng bào Khmer: Trà Cú, Châu Thành, Cầu Kè)",
+    "new": "Mắm Bò Hóc, Xã Châu Thành, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Mắm Bò Hóc, Xã Châu Thành, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "quyt-duong-cau-ke",
+    "field": "address",
+    "old": "Huyện Cầu Kè, Trà Vinh",
+    "new": "Quýt đường Cầu Kè, Phường Trà Vinh, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Quýt đường Cầu Kè, Phường Trà Vinh, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "lang-nghe-banh-trang-my-long",
+    "field": "address",
+    "old": "Xã Mỹ Thạnh, huyện Giồng Trôm, Bến Tre",
+    "new": "Làng nghề bánh tráng Mỹ Lồng - điểm tham quan, Xã Giồng Trôm, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Làng nghề bánh tráng Mỹ Lồng - điểm tham quan, Xã Giồng Trôm, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "nguyen-thi-ut",
+    "field": "address",
+    "old": "Xã Tam Ngãi, huyện Cầu Kè, Trà Vinh",
+    "new": "Nguyễn Thị Út, Xã Cầu Kè, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Nguyễn Thị Út, Xã Cầu Kè, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "truong-duy-toan",
+    "field": "address",
+    "old": "Huyện Tam Bình (nay Mang Thít), Vĩnh Long",
+    "new": "Trương Duy Toản, Phường Long Châu, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Trương Duy Toản, Phường Long Châu, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "hu-tieu-chay",
+    "field": "address",
+    "old": "5 Quốc Lộ 60, Tt Mỏ Cày Nam, Bến Tre",
+    "new": "5 Quốc Lộ 60, Tt Mỏ Cày Nam, Phường An Hội, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: '5 Quốc Lộ 60, Tt Mỏ Cày Nam, Phường An Hội, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "mat-hoa-dua",
+    "field": "address",
+    "old": "Phường Mỏ Cày, Bến Tre",
+    "new": "Mật hoa dừa, Phường Mỏ Cày, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Mật hoa dừa, Phường Mỏ Cày, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "hoi-thi-don-ca-tai-tu-cai-luong-huyen-long-ho",
+    "field": "address",
+    "old": "Phường Long Hồ, Vĩnh Long",
+    "new": "Hội thi Đờn ca tài tử - cải lương Long Hồ, Phường Long Hồ, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Hội thi Đờn ca tài tử - cải lương Long Hồ, Phường Long Hồ, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "con-bung",
+    "field": "address",
+    "old": "Xã Thạnh Hải, huyện Thạnh Phú, Bến Tre",
+    "new": "Cồn Bửng, Xã Thạnh Hải, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Cồn Bửng, Xã Thạnh Hải, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "khu-du-lich-sinh-thai-anh-ba-khia",
+    "field": "address",
+    "old": "Huyện Bình Đại, Bến Tre",
+    "new": "Khu du lịch sinh thái Anh Ba Khía, Phường Bình Đại, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Khu du lịch sinh thái Anh Ba Khía, Phường Bình Đại, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "sokfarm-tieu-can",
+    "field": "address",
+    "old": "Ấp Cây Hẹ, xã Phú Cần, huyện Tiểu Cần, Trà Vinh",
+    "new": "Ấp Cây Hẹ, Phường Tiểu Cần, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Ấp Cây Hẹ, Phường Tiểu Cần, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "chua-van-phuoc-binh-dai",
+    "field": "address",
+    "old": "Ấp Bình Chiến, thị trấn Bình Đại, huyện Bình Đại, Bến Tre",
+    "new": "Ấp Bình Chiến, Xã Phú Thuận, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Ấp Bình Chiến, Xã Phú Thuận, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "cha-lua-thanh-cong",
+    "field": "address",
+    "old": "Ấp Tân Quang, xã Hiếu Phụng, huyện Vũng Liêm, Vĩnh Long",
+    "new": "Ấp Tân Quang, Phường Phước Hậu, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Ấp Tân Quang, Phường Phước Hậu, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "mam-cong-ben-tre",
+    "field": "address",
+    "old": "Xã Châu Bình, huyện Giồng Trôm, Bến Tre",
+    "new": "Mắm Còng, Xã Thạnh Phú, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Mắm Còng, Xã Thạnh Phú, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "cu-lao-may-tra-on",
+    "field": "address",
+    "old": "Xã Lục Sỹ Thành và Phú Thành, huyện Trà Ôn, Vĩnh Long",
+    "new": "Cù Lao Mây Trà Ôn, Xã Lục Sĩ Thành, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Cù Lao Mây Trà Ôn, Xã Lục Sĩ Thành, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "cho-noi-tra-on-dc",
+    "field": "address",
+    "old": "Ngã ba sông Hậu và sông Mang Thít, thị trấn Trà Ôn, huyện Trà Ôn, Vĩnh Long",
+    "new": "Ngã ba sông Hậu và sông Mang Thít, Phường Trà Ôn, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Ngã ba sông Hậu và sông Mang Thít, Phường Trà Ôn, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "lang-banh-trang-tra-on",
+    "field": "address",
+    "old": "Xã Lục Sỹ Thành, huyện Trà Ôn, Vĩnh Long",
+    "new": "Làng Bánh Tráng Trà Ôn, Phường Trà Ôn, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Làng Bánh Tráng Trà Ôn, Phường Trà Ôn, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "lang-banh-trang-giay-tuong-loc",
+    "field": "address",
+    "old": "Ấp Tường Lễ, xã Tường Lộc, huyện Tam Bình, Vĩnh Long",
+    "new": "Ấp Tường Lễ, Phường Phước Hậu, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Ấp Tường Lễ, Phường Phước Hậu, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "lang-det-chieu-cu-lao-dai",
+    "field": "address",
+    "old": "Ấp Bình Thủy, xã Quới Thiện, huyện Vũng Liêm, Vĩnh Long",
+    "new": "Ấp Bình Thủy, Xã Quới Thiện, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Ấp Bình Thủy, Xã Quới Thiện, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "lang-ong-lang-ong-che-nguyen-van-ton",
+    "field": "address",
+    "old": "Ấp Là Ghì, xã Thiện Mỹ, huyện Trà Ôn, tỉnh Vĩnh Long",
+    "new": "Ấp Mỹ Hòa, Phường Trà Ôn, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Ấp Mỹ Hòa, Phường Trà Ôn, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "cho-giong-trom",
+    "field": "address",
+    "old": "Khu phố 2, TT Giồng Trôm, huyện Giồng Trôm, Bến Tre",
+    "new": "Khu phố 2, Xã Lương Hòa, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Khu phố 2, Xã Lương Hòa, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "lang-gach-gom-mang-thit",
+    "field": "address",
+    "old": "Huyện Mang Thít, Vĩnh Long (dọc kênh Thầy Cai → sông Cổ Chiên)",
+    "new": "Làng nghề gạch gốm Mang Thít, Xã Nhơn Phú, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Làng nghề gạch gốm Mang Thít, Xã Nhơn Phú, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "khu-du-lich-s-mo-farm-cuu-long",
+    "field": "address",
+    "old": "Ấp 3, thị trấn Cái Nhum, huyện Mang Thít, Vĩnh Long",
+    "new": "Ấp 3, Xã An Bình, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Ấp 3, Xã An Bình, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "nha-co-tran-dai-nghia",
+    "field": "address",
+    "old": "Xã Tường Lộc, huyện Tam Bình, Vĩnh Long",
+    "new": "Nhà Cổ Trần Đại Nghĩa, Phường Long Châu, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Nhà Cổ Trần Đại Nghĩa, Phường Long Châu, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "khu-luu-niem-thu-tuong-chinh-phu-vo-van-kiet",
+    "field": "address",
+    "old": "Xã Trung Hiệp, huyện Vũng Liêm, tỉnh Vĩnh Long",
+    "new": "Khu lưu niệm Thủ tướng Chính phủ Võ Văn Kiệt, Phường Vũng Liêm, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Khu lưu niệm Thủ tướng Chính phủ Võ Văn Kiệt, Phường Vũng Liêm, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "nguyen-dinh-chieu",
+    "field": "address",
+    "old": "Xã An Đức, huyện Ba Tri, Bến Tre (mộ và khu lưu niệm)",
+    "new": "Nguyễn Đình Chiểu, Phường Bến Tre, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Nguyễn Đình Chiểu, Phường Bến Tre, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "nguyen-thi-dinh",
+    "field": "address",
+    "old": "Xã Lương Hòa, huyện Giồng Trôm, tỉnh Vĩnh Long",
+    "new": "Nguyễn Thị Định, Phường Bến Tre, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Nguyễn Thị Định, Phường Bến Tre, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "khu-luu-niem-nu-tuong-nguyen-thi-dinh",
+    "field": "address",
+    "old": "Xã Lương Hòa, huyện Giồng Trôm, tỉnh Vĩnh Long",
+    "new": "Khu lưu niệm Nữ tướng Nguyễn Thị Định, Xã Giồng Trôm, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Khu lưu niệm Nữ tướng Nguyễn Thị Định, Xã Giồng Trôm, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "nguyen-thien-thanh",
+    "field": "address",
+    "old": "Xã Phương Thạnh, huyện Càng Long, Trà Vinh",
+    "new": "Nguyễn Thiện Thành, Phường Càng Long, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Nguyễn Thiện Thành, Phường Càng Long, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "long-ho",
+    "field": "address",
+    "old": "Phường Long Hồ, Vĩnh Long",
+    "new": "Long Hồ, Phường Long Hồ, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Long Hồ, Phường Long Hồ, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "khu-du-lich-sinh-thai-miet-vuon-vinh-sang",
+    "field": "address",
+    "old": "Ấp An Thuận, xã An Bình, huyện Long Hồ, Vĩnh Long",
+    "new": "Ấp An Thuận, Phường Long Châu, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Ấp An Thuận, Phường Long Châu, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "dua-xiem-xanh",
+    "field": "address",
+    "old": "Châu Thành, Giồng Trôm, Bến Tre (và rải rác toàn tỉnh)",
+    "new": "Dừa xiêm xanh, Phường Mỏ Cày, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Dừa xiêm xanh, Phường Mỏ Cày, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "con-phung-con-ong-dao-dua",
+    "field": "address",
+    "old": "Huyện Châu Thành, Bến Tre",
+    "new": "Cồn Phụng (Cồn Ông Đạo Dừa), Phường Phú Túc, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Cồn Phụng (Cồn Ông Đạo Dừa), Phường Phú Túc, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "chua-shanghamangala-khmer-vung-liem",
+    "field": "address",
+    "old": "Ấp Trung Trạch, xã Trung Thành, huyện Vũng Liêm, Vĩnh Long",
+    "new": "Ấp Trung Trạch, Phường Vũng Liêm, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Ấp Trung Trạch, Phường Vũng Liêm, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "trai-quach-tra-vinh",
+    "field": "address",
+    "old": "Trà Vinh (phổ biến ở huyện Châu Thành và Càng Long)",
+    "new": "Trái Quách, Phường Trà Vinh, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Trái Quách, Phường Trà Vinh, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "tom-cang-xanh-lot-an-thanh",
+    "field": "address",
+    "old": "Xã An Thạnh, huyện Thạnh Phú, Bến Tre",
+    "new": "Tôm càng xanh lột An Thạnh, Phường Bến Tre, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Tôm càng xanh lột An Thạnh, Phường Bến Tre, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "dua-sap-cau-ke",
+    "field": "address",
+    "old": "Huyện Cầu Kè, Trà Vinh",
+    "new": "Dừa sáp Cầu Kè, Xã Cầu Kè, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Dừa sáp Cầu Kè, Xã Cầu Kè, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "mam-song-khoai-lang",
+    "field": "address",
+    "old": "Huyện Bình Tân, Vĩnh Long",
+    "new": "Mắm sống khoai lang, Phường Long Châu, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Mắm sống khoai lang, Phường Long Châu, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "banh-trang-my-long",
+    "field": "address",
+    "old": "Ấp Nghĩa Huấn, xã Mỹ Thạnh, huyện Giồng Trôm, Bến Tre",
+    "new": "Ấp Nghĩa Huấn, Xã Giao Long, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Ấp Nghĩa Huấn, Xã Giao Long, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "nuoc-dua-tuoi-ben-tre",
+    "field": "address",
+    "old": "Phường Mỏ Cày, Bến Tre",
+    "new": "Nước dừa tươi, Phường Mỏ Cày, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Nước dừa tươi, Phường Mỏ Cày, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "chua-co-nodol",
+    "field": "address",
+    "old": "Ấp Cây Da, xã Đại An, huyện Trà Cú, Trà Vinh",
+    "new": "Ấp Cây Da, Xã Đại An, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Ấp Cây Da, Xã Đại An, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "nha-co-huynh-phu-thanh-phu",
+    "field": "address",
+    "old": "Xã Đại Điền, huyện Thạnh Phú, Bến Tre",
+    "new": "Nhà Cổ Huỳnh Phủ Thạnh Phú, Xã Đại Điền, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Nhà Cổ Huỳnh Phủ Thạnh Phú, Xã Đại Điền, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "khu-di-tich-luu-niem-chu-tich-pham-hung",
+    "field": "address",
+    "old": "Ấp Long Thuận A, xã Long Phước, huyện Long Hồ, tỉnh Vĩnh Long",
+    "new": "Ấp Long Thuận A, Phường Long Châu, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Ấp Long Thuận A, Phường Long Châu, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "bung-lac-dia",
+    "field": "address",
+    "old": "Ấp Phú Khương, xã Phú Lễ, huyện Ba Tri, Bến Tre",
+    "new": "Ấp Phú Khương, Xã Tân Xuân, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Ấp Phú Khương, Xã Tân Xuân, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "chua-ba-thien-hau-tra-vinh",
+    "field": "address",
+    "old": "Khóm 5, thị trấn Tiểu Cần, huyện Tiểu Cần, Trà Vinh",
+    "new": "Khóm 5, Phường Trà Vinh, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Khóm 5, Phường Trà Vinh, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "lang-van-hoa-du-lich-khmer-tra-vinh",
+    "field": "address",
+    "old": "Xã Lương Hòa, huyện Châu Thành, Trà Vinh",
+    "new": "Làng Văn hóa - Du lịch Khmer, Phường Trà Vinh, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Làng Văn hóa - Du lịch Khmer, Phường Trà Vinh, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "lang-nghe-dan-gio-cong-dua-hung-phong",
+    "field": "address",
+    "old": "Xã Hưng Phong, huyện Giồng Trôm, Bến Tre",
+    "new": "Làng nghề đan giỏ cọng dừa Hưng Phong, Phường Bến Tre, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Làng nghề đan giỏ cọng dừa Hưng Phong, Phường Bến Tre, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "lang-du-kich-dong-khoi",
+    "field": "address",
+    "old": "Xã Định Thủy, huyện Mỏ Cày Nam, Bến Tre",
+    "new": "Làng du kích Đồng Khởi, Xã Đồng Khởi, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Làng du kích Đồng Khởi, Xã Đồng Khởi, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "san-pham-dua-ocop-beinco",
+    "field": "address",
+    "old": "Huyện Mỏ Cày Bắc, Bến Tre",
+    "new": "Sản phẩm dừa OCOP BEINCO, Xã Phước Mỹ Trung, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Sản phẩm dừa OCOP BEINCO, Xã Phước Mỹ Trung, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "cu-lao-an-binh",
+    "field": "address",
+    "old": "Gồm 4 xã: An Bình, Bình Hòa Phước, Hòa Ninh, Đồng Phú, tỉnh Vĩnh Long",
+    "new": "Cù lao An Bình, Xã An Bình, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Cù lao An Bình, Xã An Bình, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "don-ca-tai-tu-nam-bo",
+    "field": "address",
+    "old": "Phổ biến toàn tỉnh Vĩnh Long; trọng điểm tại huyện Vũng Liêm (189 CLB). Không có một địa chỉ điểm diễn cố định duy nhất — hoạt động qua mạng lưới câu lạc bộ phân tán.",
+    "new": "Phổ biến toàn tỉnh Vĩnh Long; trọng điểm tại (189 CLB). Không có một địa chỉ điểm diễn cố định duy nhất — hoạt động qua mạng lưới câu lạc bộ phân tán., Phường Long Châu, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Phổ biến toàn tỉnh Vĩnh Long; trọng điểm tại (189 CLB). Không có một địa chỉ điểm diễn cố định duy nhất — hoạt động qua mạng lưới câu lạc bộ phân tán., Phường Long Châu, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "khu-di-tich-dong-khoi",
+    "field": "address",
+    "old": "Xã Định Thủy, huyện Mỏ Cày Nam, Bến Tre",
+    "new": "Khu di tích Đồng Khởi, Xã Đồng Khởi, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Khu di tích Đồng Khởi, Xã Đồng Khởi, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "lo-gach-mang-thit",
+    "field": "address",
+    "old": "Huyện Mang Thít, tỉnh Vĩnh Long (trải dài qua các xã Mỹ Phước, Mỹ An, Nhơn Phú, Hòa Tịnh dọc sông Cổ Chiên)",
+    "new": "Lò gạch Mang Thít, Xã Nhơn Phú, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Lò gạch Mang Thít, Xã Nhơn Phú, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "cam-sanh-tam-binh",
+    "field": "address",
+    "old": "Vùng Gò Găng, xã Bình Ninh, tỉnh Vĩnh Long (và các xã Trà Côn, Tân Mỹ, Thuận Thới, Hựu Thành, Thới Hòa cùng huyện)",
+    "new": "Vùng Gò Găng, Phường Tam Bình, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Vùng Gò Găng, Phường Tam Bình, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "san-chim-vam-ho",
+    "field": "address",
+    "old": "Xã Tân Mỹ, huyện Ba Tri, Bến Tre",
+    "new": "Sân chim Vàm Hồ, Xã Mỹ Chánh Hòa, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Sân chim Vàm Hồ, Xã Mỹ Chánh Hòa, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "keo-dua-mo-cay-dish",
+    "field": "address",
+    "old": "56B Khu phố 7, Thị trấn Mỏ Cày, Tỉnh Bến Tre (địa chỉ cơ sở Tuyết Phụng — một trong các cơ sở tiêu biểu)",
+    "new": "56B Khu phố 7, Phường Mỏ Cày, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: '56B Khu phố 7, Phường Mỏ Cày, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "somo-farm-cuu-long-mang-thit",
+    "field": "address",
+    "old": "Khóm 3, thị trấn Cái Nhum – huyện Mang Thít",
+    "new": "Khóm 3, –, Xã Cái Nhum, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Khóm 3, –, Xã Cái Nhum, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "dac-san-mam-bo-hoc-tra-cuon",
+    "field": "address",
+    "old": "Cộng đồng Khmer các huyện Trà Vinh",
+    "new": "Cộng đồng Khmer các, Xã Cầu Ngang, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Cộng đồng Khmer các, Xã Cầu Ngang, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "vung-buoi-da-xanh-chau-thanh",
+    "field": "address",
+    "old": "Huyện Châu Thành, Bến Tre",
+    "new": "Vùng bưởi da xanh Châu Thành, Phường Bến Tre, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Vùng bưởi da xanh Châu Thành, Phường Bến Tre, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "cang-ca-binh-thang",
+    "field": "address",
+    "old": "Xã Bình Thắng, huyện Bình Đại, Bến Tre",
+    "new": "Cảng cá Bình Thắng, Phường Bình Đại, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Cảng cá Bình Thắng, Phường Bình Đại, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "bien-con-bung",
+    "field": "address",
+    "old": "Xã Thạnh Hải, huyện Thạnh Phú, Bến Tre",
+    "new": "Biển Cồn Bửng, Xã Thạnh Hải, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Biển Cồn Bửng, Xã Thạnh Hải, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "cu-lao-dai",
+    "field": "address",
+    "old": "Xã Thanh Bình và Quới Thiện – huyện Vũng Liêm",
+    "new": "–, Xã Quới Thiện, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: '–, Xã Quới Thiện, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "con-oc",
+    "field": "address",
+    "old": "Xã Hưng Phong, huyện Giồng Trôm, Bến Tre",
+    "new": "Cồn Ốc, Xã Giồng Trôm, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Cồn Ốc, Xã Giồng Trôm, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "con-tien",
+    "field": "address",
+    "old": "Xã Tiên Long, huyện Châu Thành, Bến Tre",
+    "new": "Cồn Tiên, Phường An Hội, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Cồn Tiên, Phường An Hội, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "chua-tuyen-linh",
+    "field": "address",
+    "old": "Xã Minh Đức, huyện Mỏ Cày Nam, Bến Tre",
+    "new": "Chùa Tuyên Linh, Phường Mỏ Cày, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Chùa Tuyên Linh, Phường Mỏ Cày, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "chua-hang-kompong-chray",
+    "field": "address",
+    "old": "Huyện Châu Thành, Trà Vinh (QL54, cách TP Trà Vinh ~5 km)",
+    "new": "Chùa Hang (Kompong Chrây), Xã Châu Thành, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Chùa Hang (Kompong Chrây), Xã Châu Thành, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "con-ho",
+    "field": "address",
+    "old": "Phường Càng Long, Trà Vinh",
+    "new": "Cồn Hô, Phường Càng Long, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Cồn Hô, Phường Càng Long, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "lang-nghe-banh-tet-tra-cuon",
+    "field": "address",
+    "old": "Ấp Trà Cuôn, xã Kim Hòa, huyện Cầu Ngang, Trà Vinh",
+    "new": "Ấp Trà Cuôn, Xã Cầu Ngang, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Ấp Trà Cuôn, Xã Cầu Ngang, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "lang-nghe-banh-phong-son-doc",
+    "field": "address",
+    "old": "Xã Hưng Nhượng, huyện Giồng Trôm, tỉnh Vĩnh Long",
+    "new": "Ấp Hưng Bình, Xã Hưng Nhượng, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Ấp Hưng Bình, Xã Hưng Nhượng, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "lang-nghe-det-chieu-an-hiep",
+    "field": "address",
+    "old": "Phường Ba Tri, Bến Tre",
+    "new": "Làng nghề dệt chiếu An Hiệp, Phường Ba Tri, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Làng nghề dệt chiếu An Hiệp, Phường Ba Tri, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "nha-xua-cai-cuong",
+    "field": "address",
+    "old": "Phường Long Hồ, Vĩnh Long",
+    "new": "Nhà xưa Cai Cường, Phường Long Hồ, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Nhà xưa Cai Cường, Phường Long Hồ, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "khu-du-lich-lang-be",
+    "field": "address",
+    "old": "81B/6B ấp An Thới, xã An Khánh, huyện Châu Thành, Bến Tre",
+    "new": "81B/6B ấp An Thới, Phường Bến Tre, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: '81B/6B ấp An Thới, Phường Bến Tre, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "con-ngheu",
+    "field": "address",
+    "old": "Biển Mỹ Long, huyện Cầu Ngang, Trà Vinh",
+    "new": "Biển Mỹ Long, Xã Cầu Ngang, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Biển Mỹ Long, Xã Cầu Ngang, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "com-dep-tra-vinh",
+    "field": "address",
+    "old": "Ấp Ba So, xã Nhị Trường, huyện Cầu Ngang, Trà Vinh",
+    "new": "Ấp Ba So, Xã Nhị Long, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Ấp Ba So, Xã Nhị Long, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "ca-chay-tra-on-rim-kho",
+    "field": "address",
+    "old": "Xã Tích Thiện, huyện Trà Ôn, Vĩnh Long",
+    "new": "Cá cháy Trà Ôn rim/kho, Xã Nhơn Phú, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Cá cháy Trà Ôn rim/kho, Xã Nhơn Phú, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "khoai-lang-mam-song-cuon-la-cach",
+    "field": "address",
+    "old": "Toàn tỉnh Vĩnh Long, đặc biệt huyện Bình Tân",
+    "new": "Toàn tỉnh Vĩnh Long, đặc biệt, Xã Nhơn Phú, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Toàn tỉnh Vĩnh Long, đặc biệt, Xã Nhơn Phú, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "banh-trang-nem-cu-lao-luc-si",
+    "field": "address",
+    "old": "Xã Lục Sĩ Thành (cù lao Mây), huyện Trà Ôn, Vĩnh Long",
+    "new": "(cù lao Mây), Xã Lục Sĩ Thành, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: '(cù lao Mây), Xã Lục Sĩ Thành, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "chao-dua-thuan-duyen-tam-binh",
+    "field": "address",
+    "old": "Ấp Phú Thành, xã Sông Phú, huyện Tam Bình, Vĩnh Long",
+    "new": "Ấp Phú Thành, Xã Nhơn Phú, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Ấp Phú Thành, Xã Nhơn Phú, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "banh-tet-ba-nhan",
+    "field": "address",
+    "old": "Huyện Vũng Liêm, Vĩnh Long (gốc); TP Vĩnh Long (nơi bán)",
+    "new": "Vĩnh Long (gốc);, Xã Nhơn Phú, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Vĩnh Long (gốc);, Xã Nhơn Phú, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "sau-rieng-ri-6-long-ho",
+    "field": "address",
+    "old": "Xã Bình Hòa Phước, huyện Long Hồ, Vĩnh Long",
+    "new": "Sầu riêng Ri 6 Long Hồ, Phường Thanh Đức, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Sầu riêng Ri 6 Long Hồ, Phường Thanh Đức, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "oc-gao-con-phu-da-hap-sa",
+    "field": "address",
+    "old": "Cồn Phú Đa, xã Vĩnh Bình, huyện Chợ Lách, Bến Tre",
+    "new": "Cồn Phú Đa, Xã Thành Thới, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Cồn Phú Đa, Xã Thành Thới, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "keo-me-mang-cau",
+    "field": "address",
+    "old": "TT Mỏ Cày, huyện Mỏ Cày Nam, Bến Tre",
+    "new": "Kẹo Me Mãng Cầu, Phường Phú Khương, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Kẹo Me Mãng Cầu, Phường Phú Khương, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "banh-u-da-loc",
+    "field": "address",
+    "old": "Ấp Hương Phụ, xã Đa Lộc, huyện Châu Thành, Trà Vinh",
+    "new": "Ấp Hương Phụ, Xã Nhị Long, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Ấp Hương Phụ, Xã Nhị Long, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "nha-thuc-pham-sach-khoai-lang-tim-binh-tan-vinh-long",
+    "field": "address",
+    "old": "Huyện Bình Tân, tỉnh Vĩnh Long (Quốc lộ 53)",
+    "new": "Nhà Thực Phẩm Sạch Khoai Lang Tím Bình Tân, Xã Nhơn Phú, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Nhà Thực Phẩm Sạch Khoai Lang Tím Bình Tân, Xã Nhơn Phú, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "lang-nghe-thu-cong-my-nghe-luc-binh-my-an-vinh-long",
+    "field": "address",
+    "old": "Xã Mỹ An, huyện Mang Thít, Vĩnh Long",
+    "new": "Làng nghề thủ công mỹ nghệ lục bình Mỹ An, Xã Nhơn Phú, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Làng nghề thủ công mỹ nghệ lục bình Mỹ An, Xã Nhơn Phú, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "vuon-oi-tu-sang-ben-tre",
+    "field": "address",
+    "old": "171C/1 Tân Thạch, Châu Thành, Bến Tre",
+    "new": "171C/1 Tân Thạch, Phường Phú Khương, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: '171C/1 Tân Thạch, Phường Phú Khương, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "bun-rieu-cua-cho-mo-cay-ben-tre",
+    "field": "address",
+    "old": "Khu vực chợ Mỏ Cày Nam, Bến Tre",
+    "new": "Khu vực chợ Mỏ Cày Nam, Phường Phú Khương, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Khu vực chợ Mỏ Cày Nam, Phường Phú Khương, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "cu-cai-non-muoi-chua-bui-thi-thanh-thao-ocop",
+    "field": "address",
+    "old": "Huyện Bình Tân, Vĩnh Long",
+    "new": "Củ cải non muối chua Bùi Thị Thanh Thảo (OCOP), Xã An Bình, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Củ cải non muối chua Bùi Thị Thanh Thảo (OCOP), Xã An Bình, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "nha-hang-phuong-nam-ven-song-long-ho-vinh-long",
+    "field": "address",
+    "old": "Bờ sông Long Hồ, Vĩnh Long",
+    "new": "Bờ sông Long Hồ, Xã Nhơn Phú, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Bờ sông Long Hồ, Xã Nhơn Phú, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "bun-nuoc-leo-co-tu-mo-cay-ben-tre",
+    "field": "address",
+    "old": "Thị trấn Mỏ Cày Nam, Bến Tre",
+    "new": "Bún nước lèo Cô Tư Mô Cày, Phường Phú Khương, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Bún nước lèo Cô Tư Mô Cày, Phường Phú Khương, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "goi-cuon-tom-thit-ba-hai-chau-thanh-ben-tre",
+    "field": "address",
+    "old": "Thị trấn Châu Thành, Bến Tre",
+    "new": "Gỏi cuốn tôm thịt Bà Hai Châu Thành, Phường Phú Khương, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Gỏi cuốn tôm thịt Bà Hai Châu Thành, Phường Phú Khương, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "hang-banh-uot-co-lan-cho-ba-tri-ben-tre",
+    "field": "address",
+    "old": "Bên trong chợ Ba Tri, Bến Tre",
+    "new": "Bên trong chợ Ba Tri, Phường Phú Khương, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Bên trong chợ Ba Tri, Phường Phú Khương, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "com-tam-co-muoi-ben-tre",
+    "field": "address",
+    "old": "136/1 Nguyễn Ngọc Nhựt, Phường 4, TP. Bến Tre (+ 2 chi nhánh: Sơn Đông và Mỏ Cày Bắc)",
+    "new": "136/1 Nguyễn Ngọc Nhựt, Phường Phú Khương, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: '136/1 Nguyễn Ngọc Nhựt, Phường Phú Khương, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "lang-nghe-may-tre-dan-dai-an",
+    "field": "address",
+    "old": "Ấp Giồng Đình, xã Đại An, huyện Trà Cú, Trà Vinh",
+    "new": "Ấp Giồng Đình, Xã Đại An, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Ấp Giồng Đình, Xã Đại An, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "chao-am-cho-chau-thanh-tra-vinh",
+    "field": "address",
+    "old": "Khu vực chợ Châu Thành, thị trấn Châu Thành, Trà Vinh",
+    "new": "Khu vực chợ Châu Thành, Xã Châu Thành, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Khu vực chợ Châu Thành, Xã Châu Thành, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "quan-nhau-vuon-dua-tieu-can-tra-vinh",
+    "field": "address",
+    "old": "Huyện Tiểu Cần, Trà Vinh (trên đường về huyện)",
+    "new": "Quán nhậu Vườn Dừa Tiểu Cần, Xã Nhị Long, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Quán nhậu Vườn Dừa Tiểu Cần, Xã Nhị Long, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "quan-com-ba-hai-cho-cang-long-tra-vinh",
+    "field": "address",
+    "old": "Chợ Càng Long, TT. Càng Long, Trà Vinh",
+    "new": "Chợ Càng Long, Xã Nhị Long, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Chợ Càng Long, Xã Nhị Long, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "chua-tuyen-linh-ben-tre",
+    "field": "address",
+    "old": "Ấp Tân Thới Đông B, xã Minh Đức, huyện Mỏ Cày Nam, Bến Tre",
+    "new": "Ấp Tân Thới Đông B, Phường Phú Khương, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Ấp Tân Thới Đông B, Phường Phú Khương, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "nha-tho-cai-mon-ben-tre",
+    "field": "address",
+    "old": "Xã Vĩnh Thành, huyện Chợ Lách, Bến Tre",
+    "new": "Nhà thờ Cái Mơn (Chợ Lách), Xã Vĩnh Thành, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Nhà thờ Cái Mơn (Chợ Lách), Xã Vĩnh Thành, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "chua-vam-ray-tra-vinh",
+    "field": "address",
+    "old": "Ấp Vàm Ray, xã Hàm Tân, huyện Trà Cú, Trà Vinh",
+    "new": "Ấp Vàm Ray, Xã Nhị Long, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Ấp Vàm Ray, Xã Nhị Long, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "khu-du-lich-sinh-thai-vinh-sang-cu-lao-an-binh",
+    "field": "address",
+    "old": "Tổ 4, ấp An Thuận, xã An Bình, huyện Long Hồ, tỉnh Vĩnh Long",
+    "new": "Ấp An Thuận, –, Xã An Bình, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Ấp An Thuận, –, Xã An Bình, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "chom-chom-cai-mon",
+    "field": "address",
+    "old": "Xã Vĩnh Thành, huyện Chợ Lách, Bến Tre",
+    "new": "Chôm chôm Cái Mơn, Xã Chợ Lách, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Chôm chôm Cái Mơn, Xã Chợ Lách, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "cong-ty-tnhh-mtv-quoc-thao",
+    "field": "address",
+    "old": "Huyện Bình Tân, tỉnh Vĩnh Long",
+    "new": "Công ty TNHH MTV Quốc Thảo, Phường Thanh Đức, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Công ty TNHH MTV Quốc Thảo, Phường Thanh Đức, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "vuon-chim-hai-chia-tan-my-tra-on",
+    "field": "address",
+    "old": "Ấp Gia Kiết, xã Tân Mỹ – huyện Trà Ôn",
+    "new": "Ấp Gia Kiết, –, Xã Trà Côn, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Ấp Gia Kiết, –, Xã Trà Côn, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "chao-am-tra-vinh",
+    "field": "address",
+    "old": "Thành phố Trà Vinh và các huyện thị",
+    "new": "Cháo Ám, Phường Trà Vinh, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Cháo Ám, Phường Trà Vinh, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "loi-choi-sa-ot-tra-vinh",
+    "field": "address",
+    "old": "Thành phố Trà Vinh và ven sông các huyện Châu Thành, Cầu Ngang",
+    "new": "Loi Choi Sả Ớt, Xã Châu Thành, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Loi Choi Sả Ớt, Xã Châu Thành, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "keo-dua-thu-cong-ben-tre",
+    "field": "address",
+    "old": "Phường 7, TP Bến Tre và huyện Châu Thành, Mỏ Cày Nam",
+    "new": "Kẹo Dừa Thủ Công, Phường Bến Tre, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Kẹo Dừa Thủ Công, Phường Bến Tre, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "mat-ong-hoa-dua-ben-tre",
+    "field": "address",
+    "old": "Bến Tre (sản xuất nhiều ở huyện Mỏ Cày Bắc, Mỏ Cày Nam, Thạnh Phú)",
+    "new": "Mật Ong Hoa Dừa, Phường Bến Tre, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Mật Ong Hoa Dừa, Phường Bến Tre, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "co-so-keo-dua-hong-van",
+    "field": "address",
+    "old": "122D Quốc lộ 60, xã An Khánh, huyện Châu Thành, Bến Tre",
+    "new": "122D Quốc lộ 60, Phường Phú Túc, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: '122D Quốc lộ 60, Phường Phú Túc, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "lang-nghe-cay-giong-cho-lach",
+    "field": "address",
+    "old": "Huyện Chợ Lách, Bến Tre",
+    "new": "Làng nghề cây giống Chợ Lách, Xã Chợ Lách, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Làng nghề cây giống Chợ Lách, Xã Chợ Lách, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "lang-van-hoa-du-lich-cho-lach",
+    "field": "address",
+    "old": "Huyện Chợ Lách, Bến Tre",
+    "new": "Làng Văn hóa Du lịch Chợ Lách, Xã Chợ Lách, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Làng Văn hóa Du lịch Chợ Lách, Xã Chợ Lách, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "lang-nghe-det-chieu-ham-tan",
+    "field": "address",
+    "old": "Xã Hàm Tân, huyện Trà Cú, Trà Vinh",
+    "new": "Làng nghề dệt chiếu Hàm Tân, Xã Hàm Giang, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Làng nghề dệt chiếu Hàm Tân, Xã Hàm Giang, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "chua-phno-om-pung-chua-long-truong",
+    "field": "address",
+    "old": "Ấp Long Trường, xã Tân Hiệp, huyện Trà Cú, Trà Vinh",
+    "new": "Ấp Long Trường, Xã Trà Cú, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Ấp Long Trường, Xã Trà Cú, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "chieu-ca-hom",
+    "field": "address",
+    "old": "Xã Hàm Tân, huyện Trà Cú, Trà Vinh",
+    "new": "Chiếu Cà Hom, Xã Hàm Giang, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Chiếu Cà Hom, Xã Hàm Giang, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "san-pham-ocop-thu-cong-my-nghe-tra-cu",
+    "field": "address",
+    "old": "Huyện Trà Cú, Trà Vinh",
+    "new": "Sản phẩm OCOP thủ công mỹ nghệ Trà Cú, Xã Trà Cú, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Sản phẩm OCOP thủ công mỹ nghệ Trà Cú, Xã Trà Cú, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "hop-tac-xa-cam-phuong-thuy",
+    "field": "address",
+    "old": "Huyện Trà Ôn",
+    "new": "Hợp tác xã cam Phương Thúy, Phường Trà Ôn, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Hợp tác xã cam Phương Thúy, Phường Trà Ôn, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "cho-tan-quoi",
+    "field": "address",
+    "old": "Thị trấn Tân Quới, huyện Bình Tân, Vĩnh Long",
+    "new": "Chợ Tân Quới, Phường Tân Quới, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Chợ Tân Quới, Phường Tân Quới, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "khoai-lang-say-binh-tan",
+    "field": "address",
+    "old": "Huyện Bình Tân, tỉnh Vĩnh Long",
+    "new": "Khoai lang sấy Bình Tân, Xã An Bình, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Khoai lang sấy Bình Tân, Xã An Bình, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "khoai-lang-say-dong-phat",
+    "field": "address",
+    "old": "Huyện Bình Tân, Vĩnh Long",
+    "new": "Khoai lang sấy Đông Phát, Xã An Bình, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Khoai lang sấy Đông Phát, Xã An Bình, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "khoai-lang-say-gion-mien-tay",
+    "field": "address",
+    "old": "Huyện Bình Tân, Vĩnh Long",
+    "new": "Khoai lang sấy giòn Miền Tây, Xã An Bình, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Khoai lang sấy giòn Miền Tây, Xã An Bình, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "vu-sua-hoang-kim-thanh-binh-ocop",
+    "field": "address",
+    "old": "Huyện Bình Tân, Vĩnh Long",
+    "new": "Vú sữa hoàng kim Thanh Bình (OCOP), Xã An Bình, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Vú sữa hoàng kim Thanh Bình (OCOP), Xã An Bình, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "vuon-trai-cay-dac-san-long-ho",
+    "field": "address",
+    "old": "Huyện Long Hồ, tỉnh Vĩnh Long",
+    "new": "Vườn trái cây đặc sản Long Hồ, Phường Long Châu, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Vườn trái cây đặc sản Long Hồ, Phường Long Châu, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "lang-nghe-cham-non-la-long-ho",
+    "field": "address",
+    "old": "Thị trấn Long Hồ, tỉnh Vĩnh Long",
+    "new": "Làng nghề chằm nón lá Long Hồ, Phường Long Hồ, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Làng nghề chằm nón lá Long Hồ, Phường Long Hồ, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "gach-nung-do-va-gom-khong-men-mang-thit",
+    "field": "address",
+    "old": "Huyện Mang Thít, Vĩnh Long",
+    "new": "Gạch nung đỏ và gốm không men Mang Thít, Phường Phước Hậu, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Gạch nung đỏ và gốm không men Mang Thít, Phường Phước Hậu, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "song-co-chien-doan-mang-thit",
+    "field": "address",
+    "old": "Dọc huyện Mang Thít, Vĩnh Long",
+    "new": "Dọc, Phường Phước Hậu, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Dọc, Phường Phước Hậu, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "tour-dap-xe-kham-pha-lo-gach-mang-thit",
+    "field": "address",
+    "old": "Xuất phát TP Vĩnh Long, đi qua huyện Mang Thít, Vĩnh Long",
+    "new": "Xuất phát, đi qua, Phường Long Châu, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Xuất phát, đi qua, Phường Long Châu, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "lang-nghe-det-chieu-vung-liem",
+    "field": "address",
+    "old": "Huyện Vũng Liêm, Vĩnh Long",
+    "new": "Làng nghề dệt chiếu Vũng Liêm, Phường Phước Hậu, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Làng nghề dệt chiếu Vũng Liêm, Phường Phước Hậu, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "mut-dua-la-dua-duc-dat",
+    "field": "address",
+    "old": "Huyện Vũng Liêm, tỉnh Vĩnh Long",
+    "new": "Mứt dừa lá dứa Đức Đạt, Phường Phước Hậu, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Mứt dừa lá dứa Đức Đạt, Phường Phước Hậu, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "lap-xuong-hiep-ky",
+    "field": "address",
+    "old": "Huyện Vũng Liêm, tỉnh Vĩnh Long",
+    "new": "Lạp xưởng Hiệp Ký, Phường Phước Hậu, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Lạp xưởng Hiệp Ký, Phường Phước Hậu, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "mut-xoai-cat-num-foodo-ocop",
+    "field": "address",
+    "old": "Huyện Vũng Liêm, tỉnh Vĩnh Long",
+    "new": "Mứt xoài cát núm Foodo (OCOP), Phường Phước Hậu, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Mứt xoài cát núm Foodo (OCOP), Phường Phước Hậu, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "bun-tuoi-sau-thanh",
+    "field": "address",
+    "old": "Huyện Tam Bình, Vĩnh Long",
+    "new": "Bún tươi Sáu Thạnh, Phường Phước Hậu, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Bún tươi Sáu Thạnh, Phường Phước Hậu, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "lang-nghe-banh-trang-tam-binh",
+    "field": "address",
+    "old": "Huyện Tam Bình, Vĩnh Long",
+    "new": "Làng nghề bánh tráng Tam Bình, Phường Phước Hậu, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Làng nghề bánh tráng Tam Bình, Phường Phước Hậu, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "san-pham-chao-dua-chao-chanh-day-thuan-duyen-ocop-4-sao",
+    "field": "address",
+    "old": "Huyện Tam Bình, tỉnh Vĩnh Long",
+    "new": "Sản phẩm chao dừa – chao chanh dây Thuận Duyên (OCOP 4 sao), Phường Phước Hậu, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Sản phẩm chao dừa – chao chanh dây Thuận Duyên (OCOP 4 sao), Phường Phước Hậu, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "cam-sanh-tra-on",
+    "field": "address",
+    "old": "Huyện Trà Ôn, tỉnh Vĩnh Long",
+    "new": "Cam sành Trà Ôn, Phường Trà Ôn, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Cam sành Trà Ôn, Phường Trà Ôn, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "ca-chay-song-hau",
+    "field": "address",
+    "old": "Huyện Trà Ôn, tỉnh Vĩnh Long",
+    "new": "Cá cháy sông Hậu, Phường Trà Ôn, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Cá cháy sông Hậu, Phường Trà Ôn, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "dua-xiem-xanh-giong-trom",
+    "field": "address",
+    "old": "Huyện Giồng Trôm, Bến Tre",
+    "new": "Dừa xiêm xanh Giồng Trôm, Xã Giồng Trôm, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Dừa xiêm xanh Giồng Trôm, Xã Giồng Trôm, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "ca-chuon-kho-binh-dai",
+    "field": "address",
+    "old": "Huyện Bình Đại, Bến Tre",
+    "new": "Cá chuồn khô Bình Đại, Phường Bình Đại, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Cá chuồn khô Bình Đại, Phường Bình Đại, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "tom-kho-binh-dai",
+    "field": "address",
+    "old": "Xã An Thủy, huyện Bình Đại, Bến Tre",
+    "new": "Tôm khô Bình Đại, Phường Bình Đại, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Tôm khô Bình Đại, Phường Bình Đại, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "mut-dua-huu-co-binh-dai",
+    "field": "address",
+    "old": "Huyện Bình Đại, Bến Tre",
+    "new": "Mứt dừa hữu cơ Bình Đại, Phường Bình Đại, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Mứt dừa hữu cơ Bình Đại, Phường Bình Đại, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "chua-long-quang-chua-dua",
+    "field": "address",
+    "old": "Ấp Mỹ Sơn Đông, xã Phước Mỹ Trung, huyện Mỏ Cày Bắc, Bến Tre",
+    "new": "Ấp Mỹ Sơn Đông, Xã Phước Mỹ Trung, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Ấp Mỹ Sơn Đông, Xã Phước Mỹ Trung, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "chua-hang-wat-kompong-chray",
+    "field": "address",
+    "old": "Khóm 4, xã Châu Thành, thị xã Duyên Hải, cách trung tâm TP Trà Vinh khoảng 6km theo đường Điện Biên Phủ",
+    "new": "Khóm 4, cách trung tâm 6km theo đường Điện Biên Phủ, Xã Châu Thành, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Khóm 4, cách trung tâm 6km theo đường Điện Biên Phủ, Xã Châu Thành, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "oc-gao-phu-da",
+    "field": "address",
+    "old": "Cồn Phú Đa, xã Vĩnh Bình, huyện Chợ Lách, Bến Tre",
+    "new": "Cồn Phú Đa, Xã Phú Phụng, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Cồn Phú Đa, Xã Phú Phụng, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "thu-hoach-dua-mo-cay",
+    "field": "address",
+    "old": "Phường Mỏ Cày, Bến Tre",
+    "new": "Thu hoạch dừa cùng nông dân Mỏ Cày, Phường Mỏ Cày, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Thu hoạch dừa cùng nông dân Mỏ Cày, Phường Mỏ Cày, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "khu-du-lich-dai-loc",
+    "field": "address",
+    "old": "Ấp Sơn Châu, xã Sơn Định, huyện Chợ Lách, Bến Tre",
+    "new": "Ấp Sơn Châu, Phường An Hội, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Ấp Sơn Châu, Phường An Hội, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "oc-gao-vinh-binh",
+    "field": "address",
+    "old": "Cồn Phú Đa, xã Vĩnh Bình, huyện Chợ Lách, Bến Tre",
+    "new": "Cồn Phú Đa, Xã Phú Phụng, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Cồn Phú Đa, Xã Phú Phụng, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "chua-hao-tam",
+    "field": "address",
+    "old": "Quốc lộ 53, Thị trấn Càng Long",
+    "new": "Quốc lộ 53, Phường Càng Long, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Quốc lộ 53, Phường Càng Long, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "khu-bao-ton-thien-nhien-dat-ngap-nuoc-vam-ho",
+    "field": "address",
+    "old": "Xã Tân Mỹ, huyện Ba Tri, Bến Tre",
+    "new": "Khu bảo tồn thiên nhiên đất ngập nước Vàm Hồ, Phường Ba Tri, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Khu bảo tồn thiên nhiên đất ngập nước Vàm Hồ, Phường Ba Tri, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "bien-an-thuy",
+    "field": "address",
+    "old": "Xã An Thủy, huyện Ba Tri, Bến Tre",
+    "new": "Biển An Thủy, Phường Ba Tri, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Biển An Thủy, Phường Ba Tri, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "banh-tet-tra-cuon",
+    "field": "address",
+    "old": "Ấp Trà Cuôn, xã Kim Hòa, huyện Cầu Ngang, Trà Vinh",
+    "new": "Ấp Trà Cuôn, Phường Trà Vinh, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Ấp Trà Cuôn, Phường Trà Vinh, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "lang-keo-dua-mo-cay",
+    "field": "address",
+    "old": "Phường Mỏ Cày, Bến Tre",
+    "new": "Làng nghề kẹo dừa Mỏ Cày, Phường Mỏ Cày, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Làng nghề kẹo dừa Mỏ Cày, Phường Mỏ Cày, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "khu-luu-niem-tran-dai-nghia",
+    "field": "address",
+    "old": "Xã Tường Lộc, huyện Tam Bình, tỉnh Vĩnh Long",
+    "new": "Ấp Mỹ Phú 1, Phường Long Châu, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Ấp Mỹ Phú 1, Phường Long Châu, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "ut-tra-on",
+    "field": "address",
+    "old": "Ấp Đông Phú, làng Đông Hậu, huyện Trà Ôn, Vĩnh Long",
+    "new": "Ấp Đông Phú, làng Đông Hậu, Phường Trà Ôn, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Ấp Đông Phú, làng Đông Hậu, Phường Trà Ôn, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "le-thuy",
+    "field": "address",
+    "old": "Làng Đông Thạnh, huyện Bình Minh, Vĩnh Long",
+    "new": "Làng Đông Thạnh, Phường Long Châu, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Làng Đông Thạnh, Phường Long Châu, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "thanh-loan",
+    "field": "address",
+    "old": "Làng Phong Thới, huyện Vũng Liêm, Vĩnh Long",
+    "new": "Làng Phong Thới, Phường Long Châu, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Làng Phong Thới, Phường Long Châu, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "thanh-huong",
+    "field": "address",
+    "old": "Làng Phong Thới, huyện Vũng Liêm, Vĩnh Long",
+    "new": "Làng Phong Thới, Phường Long Châu, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Làng Phong Thới, Phường Long Châu, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "truong-xuan",
+    "field": "address",
+    "old": "Huyện Trà Ôn, Vĩnh Long",
+    "new": "Trường Xuân, Phường Long Châu, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Trường Xuân, Phường Long Châu, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "nha-san-ong-muoi-day",
+    "field": "address",
+    "old": "Cù lao An Bình, huyện Long Hồ, Vĩnh Long",
+    "new": "Cù lao An Bình, Phường Long Châu, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Cù lao An Bình, Phường Long Châu, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "sau-rieng-ri6",
+    "field": "address",
+    "old": "Huyện Long Hồ, Vĩnh Long (gốc)",
+    "new": "Sầu riêng Ri6, Phường Tam Bình, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Sầu riêng Ri6, Phường Tam Bình, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "nem-vung-liem",
+    "field": "address",
+    "old": "Huyện Vũng Liêm, Vĩnh Long",
+    "new": "Nem Vũng Liêm, Phường Vũng Liêm, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Nem Vũng Liêm, Phường Vũng Liêm, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "lau-3-con-tep",
+    "field": "address",
+    "old": "Thị Trấn Mỏ Cày Nam, Bến Tre",
+    "new": "Lẩu 3 Con Tép, Phường Bến Tre, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Lẩu 3 Con Tép, Phường Bến Tre, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "khu-du-lich-vinh-sang",
+    "field": "address",
+    "old": "Ấp An Thuận, xã An Bình, huyện Long Hồ, Vĩnh Long",
+    "new": "Ấp An Thuận, Xã An Bình, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Ấp An Thuận, Xã An Bình, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "ga-hap-ruou",
+    "field": "address",
+    "old": "Toàn tỉnh Vĩnh Long, phổ biến huyện Long Hồ",
+    "new": "Toàn tỉnh Vĩnh Long, phổ biến, Phường Thanh Đức, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Toàn tỉnh Vĩnh Long, phổ biến, Phường Thanh Đức, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "banh-xeo-oc-gao-con-phu-da",
+    "field": "address",
+    "old": "Cồn Phú Đa, xã Vĩnh Bình, huyện Chợ Lách, Bến Tre",
+    "new": "Cồn Phú Đa, Phường Bến Tre, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Cồn Phú Đa, Phường Bến Tre, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "ruou-phu-le-ba-tri",
+    "field": "address",
+    "old": "Xã Phú Lễ, huyện Ba Tri, Bến Tre",
+    "new": "Rượu Phú Lễ Ba Tri, Phường Bến Tre, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Rượu Phú Lễ Ba Tri, Phường Bến Tre, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "tom-su-nuong-than-binh-dai",
+    "field": "address",
+    "old": "Huyện Bình Đại, Bến Tre",
+    "new": "Tôm Sú Nướng Than Bình Đại, Phường Bến Tre, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Tôm Sú Nướng Than Bình Đại, Phường Bến Tre, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "hau-sua-thanh-phu",
+    "field": "address",
+    "old": "Vùng cửa biển huyện Thạnh Phú, Bến Tre",
+    "new": "Vùng cửa biển, Phường Bến Tre, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Vùng cửa biển, Phường Bến Tre, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "cho-noi-dua-song-thom-mo-cay",
+    "field": "address",
+    "old": "Sông Thom, xã An Thạnh, huyện Mỏ Cày Nam, Bến Tre",
+    "new": "Sông Thom, Phường Bến Tre, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Sông Thom, Phường Bến Tre, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "vuon-trai-cay-6-tan-cu-lao-an-binh",
+    "field": "address",
+    "old": "Xã An Bình – huyện Long Hồ (gần bến phà An Bình)",
+    "new": "–, Xã An Bình, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: '–, Xã An Bình, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "khu-sinh-thai-gio-duoc-thanh-phu-ben-tre",
+    "field": "address",
+    "old": "Ấp Thạnh Thới B, xã Thạnh Hải, huyện Thạnh Phú, Bến Tre",
+    "new": "Ấp Thạnh Thới B, Xã Thạnh Phú, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Ấp Thạnh Thới B, Xã Thạnh Phú, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "con-phu-da-song-co-chien-cho-lach-ben-tre",
+    "field": "address",
+    "old": "Xã Vĩnh Bình, huyện Chợ Lách, Bến Tre",
+    "new": "Cồn Phú Đa (Sông Cổ Chiên - Chợ Lách), Xã Phú Phụng, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Cồn Phú Đa (Sông Cổ Chiên - Chợ Lách), Xã Phú Phụng, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "ca-da-tron-nuoi-nuoc-ngot",
+    "field": "address",
+    "old": "Phường Mỏ Cày, Bến Tre",
+    "new": "Cá da trơn nuôi nước ngọt, Phường Mỏ Cày, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Cá da trơn nuôi nước ngọt, Phường Mỏ Cày, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "ca-tra-tra-vinh",
+    "field": "address",
+    "old": "Phường Càng Long, Trà Vinh",
+    "new": "Cá tra, Phường Càng Long, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Cá tra, Phường Càng Long, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "ca-chay-tra-on",
+    "field": "address",
+    "old": "Huyện Trà Ôn, Vĩnh Long",
+    "new": "Cá cháy Trà Ôn, Phường Trà Ôn, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Cá cháy Trà Ôn, Phường Trà Ôn, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "bo-da-xanh-ba-tri",
+    "field": "address",
+    "old": "Phường Ba Tri, Bến Tre",
+    "new": "Bò da xanh Ba Tri, Phường Ba Tri, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Bò da xanh Ba Tri, Phường Ba Tri, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "nhan-tieu-da-bo",
+    "field": "address",
+    "old": "Huyện Châu Thành, Bến Tre (vùng trồng chính)",
+    "new": "Nhãn tiêu da bò, Phường Bình Đại, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Nhãn tiêu da bò, Phường Bình Đại, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "nhan-ido-an-binh",
+    "field": "address",
+    "old": "Cù lao An Bình, huyện Long Hồ, Vĩnh Long",
+    "new": "Cù lao An Bình, Xã An Bình, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Cù lao An Bình, Xã An Bình, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "cam-xoan-tra-on",
+    "field": "address",
+    "old": "Huyện Trà Ôn, Vĩnh Long",
+    "new": "Cam xoàn Trà Ôn, Phường Trà Ôn, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Cam xoàn Trà Ôn, Phường Trà Ôn, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "ca-tra-thuong-pham-vinh-long",
+    "field": "address",
+    "old": "Phường Long Hồ, Vĩnh Long",
+    "new": "Cá tra thương phẩm Vĩnh Long, Phường Long Hồ, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Cá tra thương phẩm Vĩnh Long, Phường Long Hồ, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "cua-bien-ben-tre",
+    "field": "address",
+    "old": "Bình Đại, Ba Tri, Thạnh Phú — Bến Tre",
+    "new": "Thạnh Phú —, Xã Thạnh Phú, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Thạnh Phú —, Xã Thạnh Phú, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "chom-chom-cho-lach",
+    "field": "address",
+    "old": "Huyện Chợ Lách, Bến Tre",
+    "new": "Chôm chôm Chợ Lách, Xã Chợ Lách, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Chôm chôm Chợ Lách, Xã Chợ Lách, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "tom-cang-xanh-ben-tre",
+    "field": "address",
+    "old": "Thạnh Phú, Giồng Trôm, Ba Tri — Bến Tre",
+    "new": "Ba Tri —, Xã Thạnh Phú, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Ba Tri —, Xã Thạnh Phú, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "tom-the-chan-trang-ben-tre",
+    "field": "address",
+    "old": "Thạnh Phú, Ba Tri, Bình Đại — Bến Tre",
+    "new": "Bình Đại —, Xã Thạnh Phú, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Bình Đại —, Xã Thạnh Phú, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "ruou-phu-le",
+    "field": "address",
+    "old": "Xã Phú Lễ, huyện Ba Tri, Bến Tre",
+    "new": "Rượu Phú Lễ, Phường Ba Tri, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Rượu Phú Lễ, Phường Ba Tri, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "banh-phong-son-doc",
+    "field": "address",
+    "old": "Xã Hưng Nhượng, huyện Giồng Trôm, Bến Tre",
+    "new": "Bánh phồng Sơn Đốc, Xã Hưng Nhượng, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Bánh phồng Sơn Đốc, Xã Hưng Nhượng, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "chom-chom-con-tan-quy",
+    "field": "address",
+    "old": "Xã An Phú Tân, huyện Cầu Kè, Trà Vinh",
+    "new": "Chôm chôm Cồn Tân Quy, Phường Trà Vinh, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Chôm chôm Cồn Tân Quy, Phường Trà Vinh, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "quyt-duong-long-tri",
+    "field": "address",
+    "old": "Ấp Long Trị, xã Bình Phú, huyện Càng Long, Trà Vinh",
+    "new": "Ấp Long Trị, Phường Trà Vinh, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Ấp Long Trị, Phường Trà Vinh, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "lua-gao-chat-luong-cao-tra-vinh",
+    "field": "address",
+    "old": "Phường Càng Long, Trà Vinh",
+    "new": "Lúa gạo chất lượng cao, Phường Càng Long, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Lúa gạo chất lượng cao, Phường Càng Long, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "tom-su-nuoc-lo-tra-vinh",
+    "field": "address",
+    "old": "Duyên Hải, Cầu Ngang, Trà Cú, Châu Thành — Trà Vinh",
+    "new": "Châu Thành —, Phường Duyên Hải, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Châu Thành —, Phường Duyên Hải, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "tom-kho-vinh-kim",
+    "field": "address",
+    "old": "Xã Vinh Kim, huyện Cầu Ngang, Trà Vinh",
+    "new": "Tôm khô Vinh Kim, Xã Cầu Ngang, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Tôm khô Vinh Kim, Xã Cầu Ngang, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "xoai-tu-quy",
+    "field": "address",
+    "old": "Các huyện Ba Tri, Bình Đại, Thạnh Phú, Bến Tre",
+    "new": "Các, Xã Thới Thuận, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Các, Xã Thới Thuận, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "cay-giong-hoa-kieng-cho-lach",
+    "field": "address",
+    "old": "Huyện Chợ Lách, Bến Tre",
+    "new": "Cây giống, hoa kiểng Chợ Lách, Xã Chợ Lách, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Cây giống, hoa kiểng Chợ Lách, Xã Chợ Lách, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "dau-phong-tra-vinh",
+    "field": "address",
+    "old": "Các huyện Cầu Ngang, Trà Cú, Duyên Hải, Trà Vinh",
+    "new": "Các, Xã Cầu Ngang, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Các, Xã Cầu Ngang, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "banh-trang-nem-cu-lao-may",
+    "field": "address",
+    "old": "Xã Lục Sỹ Thành, huyện Trà Ôn, Vĩnh Long",
+    "new": "Bánh tráng nem Cù Lao Mây, Xã Lục Sĩ Thành, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Bánh tráng nem Cù Lao Mây, Xã Lục Sĩ Thành, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "tom-su-sinh-thai-tra-vinh",
+    "field": "address",
+    "old": "Vùng ven biển Duyên Hải, Cầu Ngang, Châu Thành, Trà Cú — Trà Vinh",
+    "new": "Vùng ven biển Duyên Hải, Trà Cú —, Phường Trà Vinh, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Vùng ven biển Duyên Hải, Trà Cú —, Phường Trà Vinh, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "sa-po-che-cho-lach",
+    "field": "address",
+    "old": "Huyện Chợ Lách, Bến Tre",
+    "new": "Sa pô chê Chợ Lách, Xã Chợ Lách, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Sa pô chê Chợ Lách, Xã Chợ Lách, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "nau-ruou-dua",
+    "field": "address",
+    "old": "Phường Mỏ Cày, Bến Tre",
+    "new": "Nấu rượu dừa, Phường Mỏ Cày, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Nấu rượu dừa, Phường Mỏ Cày, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "lam-keo-dua-mo-cay",
+    "field": "address",
+    "old": "Phường Mỏ Cày, Bến Tre",
+    "new": "Trải nghiệm làm kẹo dừa Mỏ Cày, Phường Mỏ Cày, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Trải nghiệm làm kẹo dừa Mỏ Cày, Phường Mỏ Cày, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "lang-ong-nam-hai-con-bung",
+    "field": "address",
+    "old": "Cồn Bửng, xã Thạnh Hải, huyện Thạnh Phú, Bến Tre",
+    "new": "Cồn Bửng, Xã Thạnh Hải, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Cồn Bửng, Xã Thạnh Hải, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "dinh-phu-le",
+    "field": "address",
+    "old": "Ấp Phú Khương, xã Phú Lễ, huyện Ba Tri, Bến Tre",
+    "new": "Ấp Phú Khương, Phường Ba Tri, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Ấp Phú Khương, Phường Ba Tri, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "khu-di-tich-mo-va-den-tho-phan-thanh-gian",
+    "field": "address",
+    "old": "Xã Bảo Thạnh, huyện Ba Tri, tỉnh Vĩnh Long",
+    "new": "Khu di tích mộ và đền thờ Phan Thanh Giản, Xã Bảo Thạnh, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Khu di tích mộ và đền thờ Phan Thanh Giản, Xã Bảo Thạnh, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "chua-lo-gach",
+    "field": "address",
+    "old": "Ấp Ba Se A, xã Lương Hòa, huyện Châu Thành, Trà Vinh",
+    "new": "Ấp Ba Se A, Phường Tiểu Cần, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Ấp Ba Se A, Phường Tiểu Cần, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "khu-luu-niem-nu-anh-hung-nguyen-thi-ut-ut-tich",
+    "field": "address",
+    "old": "Ấp Ngọc Hồ, xã Tam Ngãi, huyện Cầu Kè, Trà Vinh",
+    "new": "Ấp Ngọc Hồ, Xã Cầu Kè, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Ấp Ngọc Hồ, Xã Cầu Kè, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "dinh-binh-hoa",
+    "field": "address",
+    "old": "Ấp 5A, thị trấn Giồng Trôm, huyện Giồng Trôm, Bến Tre",
+    "new": "Ấp 5A, Xã Giồng Trôm, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Ấp 5A, Xã Giồng Trôm, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "mieu-ba-chua-xu-ben-tre",
+    "field": "address",
+    "old": "Ấp Thành Long, xã Thành Thới A, huyện Mỏ Cày Nam, Bến Tre",
+    "new": "Ấp Thành Long, Phường Bến Tre, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Ấp Thành Long, Phường Bến Tre, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "dinh-hoa-ninh",
+    "field": "address",
+    "old": "Phường Long Hồ, Vĩnh Long",
+    "new": "Đình Hoà Ninh, Phường Long Hồ, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Đình Hoà Ninh, Phường Long Hồ, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "dinh-lang-thien-my",
+    "field": "address",
+    "old": "Phường Long Hồ, Vĩnh Long",
+    "new": "Đình làng Thiện Mỹ, Phường Long Hồ, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Đình làng Thiện Mỹ, Phường Long Hồ, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "chua-soc-tro",
+    "field": "address",
+    "old": "Ấp Sóc Trò, xã An Quảng Hữu, huyện Trà Cú, Trà Vinh",
+    "new": "Ấp Sóc Trò, Phường Nguyệt Hóa, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Ấp Sóc Trò, Phường Nguyệt Hóa, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "nha-bia-tuong-niem-truong-vinh-ky",
+    "field": "address",
+    "old": "Đối diện nhà thờ Cái Mơn, xã Vĩnh Thành, huyện Chợ Lách, Bến Tre",
+    "new": "Đối diện nhà thờ Cái Mơn, Xã Vĩnh Thành, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Đối diện nhà thờ Cái Mơn, Xã Vĩnh Thành, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "khu-di-tich-quoc-gia-dac-biet-dong-khoi",
+    "field": "address",
+    "old": "Xã Định Thủy, huyện Mỏ Cày Nam, tỉnh Vĩnh Long",
+    "new": "Khu Di tích Quốc gia Đặc biệt Đồng Khởi, Xã Đồng Khởi, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Khu Di tích Quốc gia Đặc biệt Đồng Khởi, Xã Đồng Khởi, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "chua-khai-tuong",
+    "field": "address",
+    "old": "Xã Phú Lễ, huyện Ba Tri, Bến Tre",
+    "new": "Chùa Khải Tường, Phường Ba Tri, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Chùa Khải Tường, Phường Ba Tri, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "di-tich-lich-su-cach-mang-cai-ngang",
+    "field": "address",
+    "old": "Ấp 4, xã Phú Lộc, huyện Tam Bình, tỉnh Vĩnh Long",
+    "new": "Di tích lịch sử cách mạng Cái Ngang, Phường Phước Hậu, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Di tích lịch sử cách mạng Cái Ngang, Phường Phước Hậu, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "khu-tuong-niem-nguyen-thi-ut-ut-tich",
+    "field": "address",
+    "old": "Ấp Ngọc Hồ, xã Tam Ngãi, huyện Cầu Kè, Trà Vinh",
+    "new": "Ấp Ngọc Hồ, Xã Cầu Kè, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Ấp Ngọc Hồ, Xã Cầu Kè, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "chua-hung-hue",
+    "field": "address",
+    "old": "Ấp Tân Thuận, xã Tân Quới, huyện Bình Tân, Vĩnh Long",
+    "new": "Ấp Tân Thuận, Phường Tân Quới, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Ấp Tân Thuận, Phường Tân Quới, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "khu-luu-niem-pham-hung",
+    "field": "address",
+    "old": "Ấp Long Thuận A, xã Long Phước, huyện Long Hồ, tỉnh Vĩnh Long",
+    "new": "Khu lưu niệm Phạm Hùng, Phường Long Châu, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Khu lưu niệm Phạm Hùng, Phường Long Châu, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "chua-shanghamangala-hanh-phuc-tang",
+    "field": "address",
+    "old": "Huyện Vũng Liêm, Vĩnh Long",
+    "new": "Chùa Shanghamangala (Hạnh Phúc Tăng), Phường Phước Hậu, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Chùa Shanghamangala (Hạnh Phúc Tăng), Phường Phước Hậu, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "tuong-dai-doc-binh-le-can-nguyen-giao",
+    "field": "address",
+    "old": "Ngã ba An Nhơn, TT Vũng Liêm, huyện Vũng Liêm, Vĩnh Long",
+    "new": "Ngã ba An Nhơn, Phường Phước Hậu, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Ngã ba An Nhơn, Phường Phước Hậu, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "khu-di-tich-mo-than-mau-va-duong-mau-thoai-ngoc-hau",
+    "field": "address",
+    "old": "Ấp Thái Bình, xã Thanh Bình, huyện Vũng Liêm, Vĩnh Long",
+    "new": "Ấp Thái Bình, Xã Quới Thiện, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Ấp Thái Bình, Xã Quới Thiện, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "dai-tuong-niem-liet-si-le-can-nguyen-giao",
+    "field": "address",
+    "old": "Gần hồ Vũng Linh, huyện Vũng Liêm, Vĩnh Long",
+    "new": "Gần hồ Vũng Linh, Phường Phước Hậu, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Gần hồ Vũng Linh, Phường Phước Hậu, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "den-tho-tuong-quan-nguyen-ngoc-thang",
+    "field": "address",
+    "old": "Xã Mỹ Thạnh, huyện Giồng Trôm, Bến Tre",
+    "new": "Đền thờ Tướng quân Nguyễn Ngọc Thăng, Xã Giồng Trôm, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Đền thờ Tướng quân Nguyễn Ngọc Thăng, Xã Giồng Trôm, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "khu-luu-niem-truong-vinh-ky",
+    "field": "address",
+    "old": "Xã Vĩnh Thành, huyện Chợ Lách, Bến Tre",
+    "new": "Khu lưu niệm Trương Vĩnh Ký, Xã Vĩnh Thành, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Khu lưu niệm Trương Vĩnh Ký, Xã Vĩnh Thành, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "htx-cam-sanh-tra-on",
+    "field": "address",
+    "old": "Xã Vĩnh Xuân, huyện Trà Ôn, Vĩnh Long",
+    "new": "HTX cam sành Trà Ôn, Phường Trà Ôn, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'HTX cam sành Trà Ôn, Phường Trà Ôn, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "co-so-keo-dua-mo-cay",
+    "field": "address",
+    "old": "Thị trấn Mỏ Cày, huyện Mỏ Cày Nam, Bến Tre",
+    "new": "Cơ sở kẹo dừa Mỏ Cày, Phường Mỏ Cày, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Cơ sở kẹo dừa Mỏ Cày, Phường Mỏ Cày, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "ben-xe-ba-tri-ben-tre",
+    "field": "address",
+    "old": "Tỉnh Lộ 885, đường An Bình Tây, Thị trấn Ba Tri, Bến Tre",
+    "new": "Tỉnh Lộ 885, đường An Bình Tây, Phường Ba Tri, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Tỉnh Lộ 885, đường An Bình Tây, Phường Ba Tri, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "ben-xe-mo-cay-nam-ben-tre",
+    "field": "address",
+    "old": "Quốc Lộ 60, Thị trấn Mỏ Cày, Bến Tre",
+    "new": "Quốc Lộ 60, Xã Đồng Khởi, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Quốc Lộ 60, Xã Đồng Khởi, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "can-cu-tinh-uy-ben-tre-rung-la-thanh-phu",
+    "field": "address",
+    "old": "Các xã Thạnh Phong, Thạnh Hải, Giao Thạnh, huyện Thạnh Phú, Bến Tre",
+    "new": "Các xã Thạnh Phong, Xã Thạnh Phú, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Các xã Thạnh Phong, Xã Thạnh Phú, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "tuong-quan-nguyen-van-ton",
+    "field": "address",
+    "old": "Huyện Trà Ôn, tỉnh Vĩnh Long",
+    "new": "Tướng quân Nguyễn Văn Tồn, Phường Trà Ôn, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Tướng quân Nguyễn Văn Tồn, Phường Trà Ôn, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "khu-du-lich-somo-farm-cuu-long",
+    "field": "address",
+    "old": "Huyện Mang Thít, Vĩnh Long",
+    "new": "Khu du lịch Somo Farm Cửu Long, Phường Phước Hậu, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Khu du lịch Somo Farm Cửu Long, Phường Phước Hậu, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "homestay-hai-cuong",
+    "field": "address",
+    "old": "Huyện Vũng Liêm, Vĩnh Long",
+    "new": "Homestay Hai Cường, Phường Phước Hậu, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Homestay Hai Cường, Phường Phước Hậu, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "homestay-khmer-tra-vinh",
+    "field": "address",
+    "old": "Xã Châu Thành, Trà Vinh",
+    "new": "Homestay Khmer, Xã Châu Thành, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Homestay Khmer, Xã Châu Thành, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "mekong-home",
+    "field": "address",
+    "old": "Huyện Giồng Trôm, tỉnh Vĩnh Long",
+    "new": "Mekong Home, Xã Giồng Trôm, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Mekong Home, Xã Giồng Trôm, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "con-chim-homestay",
+    "field": "address",
+    "old": "Xã Châu Thành, Trà Vinh",
+    "new": "Cồn Chim Homestay, Xã Châu Thành, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Cồn Chim Homestay, Xã Châu Thành, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "khach-san-nhat-phuong",
+    "field": "address",
+    "old": "Số 197/15, ấp Long Thuận, xã Long Hồ",
+    "new": "Số 197/15, ấp Long Thuận, Phường Long Hồ, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Số 197/15, ấp Long Thuận, Phường Long Hồ, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "khach-san-thanh-xuan",
+    "field": "address",
+    "old": "Số 140A ấp Thanh Hưng, xã Long Hồ",
+    "new": "Số 140A ấp Thanh Hưng, Phường Long Hồ, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Số 140A ấp Thanh Hưng, Phường Long Hồ, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "ut-thuy-homestay",
+    "field": "address",
+    "old": "Ấp An Thạnh, xã Long Hồ",
+    "new": "Ấp An Thạnh, Phường Long Hồ, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Ấp An Thạnh, Phường Long Hồ, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "le-thi-thuy-an-homestay",
+    "field": "address",
+    "old": "Số 53/4 ấp Phú Mỹ 1, xã Long Hồ",
+    "new": "Số 53/4 ấp Phú Mỹ 1, Phường Long Hồ, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Số 53/4 ấp Phú Mỹ 1, Phường Long Hồ, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "sau-rieng-say-thang-hoa-sau-ri",
+    "field": "address",
+    "old": "Huyện Long Hồ, tỉnh Vĩnh Long",
+    "new": "Sầu riêng sấy thăng hoa Sáu Ri, Phường Long Châu, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Sầu riêng sấy thăng hoa Sáu Ri, Phường Long Châu, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "mang-cut-binh-hoa-phuoc",
+    "field": "address",
+    "old": "Xã Bình Hòa Phước, huyện Long Hồ, Vĩnh Long",
+    "new": "Măng cụt Bình Hòa Phước, Phường Long Hồ, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Măng cụt Bình Hòa Phước, Phường Long Hồ, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "di-chi-khao-co-hoc-thanh-moi",
+    "field": "address",
+    "old": "Xã Trung Hiệp, huyện Vũng Liêm, Vĩnh Long",
+    "new": "Di chỉ khảo cổ học Thành Mới, Xã Trung Hiệp, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Di chỉ khảo cổ học Thành Mới, Xã Trung Hiệp, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "nghia-trung-mieu",
+    "field": "address",
+    "old": "Ấp Phước Hanh B, xã Phước Hậu, huyện Long Hồ, Vĩnh Long",
+    "new": "Ấp Phước Hanh B, Phường Phước Hậu, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Ấp Phước Hanh B, Phường Phước Hậu, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "coco-home",
+    "field": "address",
+    "old": "Ấp Hòa Quí, xã Long Hồ",
+    "new": "Ấp Hòa Quí, Phường Long Hồ, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Ấp Hòa Quí, Phường Long Hồ, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "khu-du-lich-nha-xua-va-homestay-ut-trinh",
+    "field": "address",
+    "old": "Phường Long Hồ, Vĩnh Long",
+    "new": "Khu du lịch nhà xưa và homestay Út Trinh, Phường Long Hồ, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Khu du lịch nhà xưa và homestay Út Trinh, Phường Long Hồ, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "lang-du-lich-cong-dong-cai-ngang",
+    "field": "address",
+    "old": "Phường Long Hồ, Vĩnh Long",
+    "new": "Làng du lịch cộng đồng Cái Ngang, Phường Long Hồ, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Làng du lịch cộng đồng Cái Ngang, Phường Long Hồ, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "sieu-thi-thuy-tien",
+    "field": "address",
+    "old": "Ấp Phước Long, xã Long Hồ",
+    "new": "Ấp Phước Long, Phường Long Hồ, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Ấp Phước Long, Phường Long Hồ, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "khu-tuong-niem-co-chu-tich-hdbt-pham-hung",
+    "field": "address",
+    "old": "Ấp Long Thuận A, xã Long Phước, huyện Long Hồ, tỉnh Vĩnh Long",
+    "new": "Khu tưởng niệm Cố Chủ tịch HĐBT Phạm Hùng, Phường Long Hồ, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Khu tưởng niệm Cố Chủ tịch HĐBT Phạm Hùng, Phường Long Hồ, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "dinh-ky-ha",
+    "field": "address",
+    "old": "Phường Long Hồ, Vĩnh Long",
+    "new": "Đình Kỳ Hà, Phường Long Hồ, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Đình Kỳ Hà, Phường Long Hồ, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "khach-san-tan-xuan",
+    "field": "address",
+    "old": "Số 25B ấp Hưng Quới, xã Long Hồ",
+    "new": "Số 25B ấp Hưng Quới, Phường Long Hồ, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Số 25B ấp Hưng Quới, Phường Long Hồ, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "nha-nghi-dl-sinh-thai-hoang-hao",
+    "field": "address",
+    "old": "Khu nhà ở Hoàng Hảo, QL57, xã Long Hồ",
+    "new": "Khu nhà ở Hoàng Hảo, QL57, Phường Long Hồ, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Khu nhà ở Hoàng Hảo, QL57, Phường Long Hồ, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "pho-tien",
+    "field": "address",
+    "old": "109 Huyện Lộ 22, Thị trấn Mỏ Cày, Bến Tre",
+    "new": "109 22, Phường Mỏ Cày, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: '109 22, Phường Mỏ Cày, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "lang-nghe-com-dep-ba-so",
+    "field": "address",
+    "old": "Ấp Ba So, xã Nhị Trường, huyện Cầu Ngang, Trà Vinh",
+    "new": "Ấp Ba So, Xã Cầu Ngang, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Ấp Ba So, Xã Cầu Ngang, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "gom-do-mang-thit",
+    "field": "address",
+    "old": "Huyện Mang Thít, tỉnh Vĩnh Long",
+    "new": "Gốm Đỏ Mang Thít, Phường Phước Hậu, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Gốm Đỏ Mang Thít, Phường Phước Hậu, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "lo-gach-hung-loi",
+    "field": "address",
+    "old": "Huyện Mang Thít, Vĩnh Long",
+    "new": "Lò gạch Hưng Lợi, Phường Phước Hậu, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Lò gạch Hưng Lợi, Phường Phước Hậu, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "lam-gom-mang-thit",
+    "field": "address",
+    "old": "Xã Nhơn Phú, huyện Mang Thít, Vĩnh Long",
+    "new": "Làm gốm Mang Thít, Xã Nhơn Phú, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Làm gốm Mang Thít, Xã Nhơn Phú, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "vung-khoai-lang-binh-tan",
+    "field": "address",
+    "old": "Huyện Bình Tân, tỉnh Vĩnh Long",
+    "new": "Vùng khoai lang Bình Tân, Phường Thanh Đức, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Vùng khoai lang Bình Tân, Phường Thanh Đức, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "vuon-sau-rieng-bay-thao",
+    "field": "address",
+    "old": "236/92 Ấp Nam Vĩnh, xã Vĩnh Thành, huyện Chợ Lách, Bến Tre",
+    "new": "236/92 Ấp Nam Vĩnh, Xã Vĩnh Thành, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: '236/92 Ấp Nam Vĩnh, Xã Vĩnh Thành, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "bien-con-bung-thanh-phu-ben-tre",
+    "field": "address",
+    "old": "Xã Thạnh Hải, huyện Thạnh Phú, Bến Tre",
+    "new": "Biển Cồn Bửng (Biển Thạnh Phú), Xã Thạnh Hải, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Biển Cồn Bửng (Biển Thạnh Phú), Xã Thạnh Hải, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "du-lich-sinh-thai-cong-dong-thanh-phong-ben-tre",
+    "field": "address",
+    "old": "Xã Thạnh Phong, huyện Thạnh Phú, Bến Tre",
+    "new": "Du Lịch Sinh Thái Cộng Đồng Thạnh Phong, Xã An Qui, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Du Lịch Sinh Thái Cộng Đồng Thạnh Phong, Xã An Qui, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "lang-nghe-che-bien-hai-san-kho-thanh-phong",
+    "field": "address",
+    "old": "Xã Thạnh Phong, huyện Thạnh Phú, Bến Tre",
+    "new": "Làng nghề chế biến hải sản khô Thạnh Phong, Xã An Qui, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Làng nghề chế biến hải sản khô Thạnh Phong, Xã An Qui, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "cua-bien-thanh-phu",
+    "field": "address",
+    "old": "Xã Thạnh Phong, huyện Thạnh Phú, Bến Tre",
+    "new": "Cua biển Thạnh Phú, Xã An Qui, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Cua biển Thạnh Phú, Xã An Qui, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "ngheu-ben-tre",
+    "field": "address",
+    "old": "Bình Đại, Ba Tri, Thạnh Phú, Bến Tre",
+    "new": "Nghêu, Xã Thạnh Phú, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Nghêu, Xã Thạnh Phú, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "ruou-dua-ben-tre",
+    "field": "address",
+    "old": "Phường Mỏ Cày, Bến Tre",
+    "new": "Rượu dừa, Phường Mỏ Cày, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Rượu dừa, Phường Mỏ Cày, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "tinh-dau-dua",
+    "field": "address",
+    "old": "Các cơ sở sản xuất tại TP Bến Tre, Mỏ Cày, Bến Tre",
+    "new": "Các cơ sở sản xuất tại, Phường Mỏ Cày, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Các cơ sở sản xuất tại, Phường Mỏ Cày, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "chua-khanh-thanh",
+    "field": "address",
+    "old": "Ấp Sơn Trắng, Thị trấn Càng Long",
+    "new": "Ấp Sơn Trắng, Phường Càng Long, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Ấp Sơn Trắng, Phường Càng Long, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "dua-sap-cang-long",
+    "field": "address",
+    "old": "Huyện Càng Long",
+    "new": "Dừa sáp Càng Long, Xã Bình Phú, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Dừa sáp Càng Long, Xã Bình Phú, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "chua-phap-hoa",
+    "field": "address",
+    "old": "Huyện Càng Long",
+    "new": "Chùa Pháp Hoa, Xã Bình Phú, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Chùa Pháp Hoa, Xã Bình Phú, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "di-tich-duong-ho-chi-minh-tren-bien-ben-thanh-phong",
+    "field": "address",
+    "old": "Xã Thạnh Phong, huyện Thạnh Phú, Bến Tre",
+    "new": "Di tích Đường Hồ Chí Minh trên Biển – Bến Thạnh Phong, Xã Thạnh Hải, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Di tích Đường Hồ Chí Minh trên Biển – Bến Thạnh Phong, Xã Thạnh Hải, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "gao-tan-tien",
+    "field": "address",
+    "old": "Huyện Tam Bình, Vĩnh Long",
+    "new": "Gạo Tân Tiến, Phường Phước Hậu, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Gạo Tân Tiến, Phường Phước Hậu, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "can-cu-cach-mang-cai-ngang-vinh-long",
+    "field": "address",
+    "old": "Ấp 4, xã Phú Lộc, huyện Tam Bình, Vĩnh Long",
+    "new": "Ấp 4, Xã Hậu Lộc, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Ấp 4, Xã Hậu Lộc, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "lang-hoa-kieng-va-cay-giong-cho-lach",
+    "field": "address",
+    "old": "Huyện Chợ Lách",
+    "new": "Làng hoa kiểng và cây giống Chợ Lách, Xã Chợ Lách, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Làng hoa kiểng và cây giống Chợ Lách, Xã Chợ Lách, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "sau-rieng-cap-dong-cho-lach",
+    "field": "address",
+    "old": "Huyện Chợ Lách",
+    "new": "Sầu riêng cấp đông Chợ Lách, Xã Chợ Lách, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Sầu riêng cấp đông Chợ Lách, Xã Chợ Lách, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "bun-nuoc-leo-tieu-can",
+    "field": "address",
+    "old": "Huyện Tiểu Cần, Trà Vinh",
+    "new": "Bún nước lèo Tiểu Cần, Phường Tiểu Cần, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Bún nước lèo Tiểu Cần, Phường Tiểu Cần, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "bun-nuoc-leo-vinh-long",
+    "field": "address",
+    "old": "Huyện Mang Thít, Vĩnh Long",
+    "new": "Bún nước lèo Vĩnh Long, Phường Phước Hậu, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Bún nước lèo Vĩnh Long, Phường Phước Hậu, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "bun-nuoc-leo-tra-cu",
+    "field": "address",
+    "old": "Huyện Trà Cú, Trà Vinh",
+    "new": "Bún nước lèo Trà Cú, Xã Trà Cú, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Bún nước lèo Trà Cú, Xã Trà Cú, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "bun-nuoc-leo-cang-long",
+    "field": "address",
+    "old": "Thị trấn Càng Long",
+    "new": "Bún nước lèo Càng Long, Phường Càng Long, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Bún nước lèo Càng Long, Phường Càng Long, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "homestay-dua-ben-tre",
+    "field": "address",
+    "old": "Phường Mỏ Cày, Bến Tre",
+    "new": "Homestay Xứ Dừa, Phường Mỏ Cày, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Homestay Xứ Dừa, Phường Mỏ Cày, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "nuoc-cot-dua-va-san-pham-dua-ocop-beinco",
+    "field": "address",
+    "old": "Huyện Mỏ Cày Bắc, Tỉnh Bến Tre",
+    "new": "Nước cốt dừa và sản phẩm dừa OCOP BEINCO, Xã Tân Thành Bình, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Nước cốt dừa và sản phẩm dừa OCOP BEINCO, Xã Tân Thành Bình, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "khu-di-tich-dong-khoi-ben-tre",
+    "field": "address",
+    "old": "Xã Đồng Khởi (xã Định Thủy cũ), huyện Mỏ Cày Nam, Bến Tre",
+    "new": "(xã Định Thủy cũ), Xã Đồng Khởi, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: '(xã Định Thủy cũ), Xã Đồng Khởi, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "dinh-ran-dinh-thuy",
+    "field": "address",
+    "old": "Ấp Định Nhơn, xã Đồng Khởi (Định Thủy cũ), huyện Mỏ Cày Nam, Bến Tre",
+    "new": "Ấp Định Nhơn, (Định Thủy cũ), Xã Đồng Khởi, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Ấp Định Nhơn, (Định Thủy cũ), Xã Đồng Khởi, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "dinh-long-thanh-w3",
+    "field": "address",
+    "old": "Xã Long Định, huyện Bình Đại, Bến Tre",
+    "new": "Đình Long Thạnh, Xã Phú Thuận, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Đình Long Thạnh, Xã Phú Thuận, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "muoi-quynh-homestay",
+    "field": "address",
+    "old": "Xã Châu Thành, Trà Vinh",
+    "new": "Mười Quỳnh Homestay, Xã Châu Thành, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Mười Quỳnh Homestay, Xã Châu Thành, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "dinh-long-phung",
+    "field": "address",
+    "old": "Ấp Long Hòa 2, xã Long Định, huyện Bình Đại, Bến Tre",
+    "new": "Ấp Long Hòa 2, Xã Phú Thuận, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Ấp Long Hòa 2, Xã Phú Thuận, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "dinh-vang-quoi",
+    "field": "address",
+    "old": "Xã Vang Quới Tây, huyện Bình Đại, Bến Tre",
+    "new": "Đình Vang Quới, Xã Lộc Thuận, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Đình Vang Quới, Xã Lộc Thuận, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "homestay-hoa-thanh",
+    "field": "address",
+    "old": "Huyện Tam Bình, Vĩnh Long",
+    "new": "Homestay Hoà Thạnh, Phường Phước Hậu, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Homestay Hoà Thạnh, Phường Phước Hậu, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "con-oc-giong-trom-ben-tre",
+    "field": "address",
+    "old": "Xã Hưng Phong, huyện Giồng Trôm, Bến Tre",
+    "new": "Cồn Ốc (Giồng Trôm), Xã Lương Hòa, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Cồn Ốc (Giồng Trôm), Xã Lương Hòa, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "chua-giac-linh-tra-vinh",
+    "field": "address",
+    "old": "Xã Nhị Long, huyện Cầu Ngang, Trà Vinh",
+    "new": "Chùa Giác Linh (chùa Phật Lớn), Xã Nhị Long, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Chùa Giác Linh (chùa Phật Lớn), Xã Nhị Long, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "bai-boi-rung-ngap-man-ba-tri-ben-tre",
+    "field": "address",
+    "old": "Ven biển huyện Ba Tri, tỉnh Vĩnh Long (các xã An Thủy, Bảo Thuận, Tân Thủy)",
+    "new": "Ven biển, Phường Tân Thủy, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Ven biển, Phường Tân Thủy, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "keo-dua-tan-thach",
+    "field": "address",
+    "old": "Xã Tân Thạch, huyện Châu Thành, Bến Tre",
+    "new": "Kẹo dừa Tân Thạch, Phường Phú Túc, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Kẹo dừa Tân Thạch, Phường Phú Túc, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "sau-rieng-cho-lach",
+    "field": "address",
+    "old": "Huyện Chợ Lách, Bến Tre",
+    "new": "Sầu riêng Chợ Lách, Xã Chợ Lách, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Sầu riêng Chợ Lách, Xã Chợ Lách, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "vuon-dua-sap-ba-thuy",
+    "field": "address",
+    "old": "Thị trấn Cầu Kè, huyện Cầu Kè, Trà Vinh",
+    "new": "Vườn Dừa Sáp Ba Thúy, Xã Cầu Kè, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Vườn Dừa Sáp Ba Thúy, Xã Cầu Kè, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "keo-dua-sap-vicosap",
+    "field": "address",
+    "old": "Xã Thạnh Phú, huyện Cầu Kè, Trà Vinh",
+    "new": "Kẹo dừa sáp Vicosap, Xã Tam Ngãi, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Kẹo dừa sáp Vicosap, Xã Tam Ngãi, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "mam-tep-du-du-thuy-nguyen",
+    "field": "address",
+    "old": "Khóm 2, Thị trấn Châu Thành, Tỉnh Trà Vinh",
+    "new": "Khóm 2, Xã Châu Thành, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Khóm 2, Xã Châu Thành, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "banh-phong-mi-giong-trom",
+    "field": "address",
+    "old": "Xã Hưng Nhượng, huyện Giồng Trôm, Bến Tre",
+    "new": "Bánh Phồng Mì Giồng Trôm, Xã Giồng Trôm, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Bánh Phồng Mì Giồng Trôm, Xã Giồng Trôm, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "rung-ngap-man-thanh-phong",
+    "field": "address",
+    "old": "Xã Thạnh Phong, huyện Thạnh Phú, Bến Tre",
+    "new": "Rừng ngập mặn Thạnh Phong, Phường Bến Tre, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Rừng ngập mặn Thạnh Phong, Phường Bến Tre, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "bot-nua-tra-cu",
+    "field": "address",
+    "old": "Ấp Vàm, xã An Quảng Hữu, huyện Trà Cú, Trà Vinh",
+    "new": "Ấp Vàm, Xã Lưu Nghiệp Anh, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Ấp Vàm, Xã Lưu Nghiệp Anh, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "con-nhan-bien-ba-tri-ben-tre",
+    "field": "address",
+    "old": "Xã Bảo Thuận, huyện Ba Tri, Bến Tre",
+    "new": "Cồn Nhàn (Biển Ba Tri), Xã Bảo Thạnh, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Cồn Nhàn (Biển Ba Tri), Xã Bảo Thạnh, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "lang-mo-va-dinh-phan-thanh-gian",
+    "field": "address",
+    "old": "Xã Bảo Thạnh, huyện Ba Tri, Bến Tre",
+    "new": "Lăng mộ và Đình Phan Thanh Giản, Xã Bảo Thạnh, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Lăng mộ và Đình Phan Thanh Giản, Xã Bảo Thạnh, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "nha-tho-cai-mon",
+    "field": "address",
+    "old": "Xã Vĩnh Thành, huyện Chợ Lách, Bến Tre",
+    "new": "Nhà thờ Cái Mơn, Xã Vĩnh Thành, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Nhà thờ Cái Mơn, Xã Vĩnh Thành, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "den-that-phu-vo-mieu",
+    "field": "address",
+    "old": "Số 22, đường Nguyễn Chí Thanh, phường 5, thành phố Vĩnh Long, tỉnh Vĩnh Long",
+    "new": "Đường Trần Hưng Đạo, Khu phố 5, Phường Ba Tri, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Đường Trần Hưng Đạo, Khu phố 5, Phường Ba Tri, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "nha-tho-giao-xu-cai-nhum",
+    "field": "address",
+    "old": "Xã Long Thới, huyện Chợ Lách, Bến Tre",
+    "new": "Nhà thờ Giáo xứ Cái Nhum, Xã Chợ Lách, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Nhà thờ Giáo xứ Cái Nhum, Xã Chợ Lách, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "khu-mo-phan-thanh-gian",
+    "field": "address",
+    "old": "Ấp Thạnh Nghĩa, xã Bảo Thạnh, huyện Ba Tri, Bến Tre",
+    "new": "Ấp Thạnh Nghĩa, Xã Bảo Thạnh, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Ấp Thạnh Nghĩa, Xã Bảo Thạnh, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "nha-ong-nguyen-van-cung-dia-diem-thanh-lap-chi-bo-dang-dau-tien-ben-tre",
+    "field": "address",
+    "old": "Ấp Tân Hòa, xã Tân Xuân, huyện Mỏ Cày Nam, Bến Tre",
+    "new": "Ấp Tân Hòa, Xã Tân Xuân, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Ấp Tân Hòa, Xã Tân Xuân, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "chua-hang-cha-lo",
+    "field": "address",
+    "old": "Khóm 3, TT Châu Thành, huyện Châu Thành, Trà Vinh",
+    "new": "Khóm 3, Phường Nguyệt Hóa, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Khóm 3, Phường Nguyệt Hóa, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "di-tich-lich-su-luu-cu",
+    "field": "address",
+    "old": "Ấp Lưu Cừ II, xã Lưu Nghiệp Anh, huyện Trà Cú, Trà Vinh",
+    "new": "Ấp Lưu Cừ II, Xã Trà Cú, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Ấp Lưu Cừ II, Xã Trà Cú, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "dinh-dai-dien",
+    "field": "address",
+    "old": "Xã Đại Điền, huyện Thạnh Phú, Bến Tre",
+    "new": "Đình Đại Điền, Xã Đại Điền, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Đình Đại Điền, Xã Đại Điền, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "dinh-an-qui",
+    "field": "address",
+    "old": "Xã An Qui, huyện Thạnh Phú, Bến Tre",
+    "new": "Đình An Qui, Xã An Qui, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Đình An Qui, Xã An Qui, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "dinh-binh-hoa-giong-trom",
+    "field": "address",
+    "old": "5A, thị trấn Giồng Trôm, huyện Giồng Trôm, Bến Tre",
+    "new": "5A, Xã Giồng Trôm, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: '5A, Xã Giồng Trôm, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "giai-the-thao-dan-toc-quoc-phong-tinh-tra-vinh-tra-vinh",
+    "field": "address",
+    "old": "Nhà thi đấu Đa năng tỉnh Vĩnh Long và các sân vận động huyện",
+    "new": "Nhà thi đấu Đa năng tỉnh Vĩnh Long, Xã Nhị Long, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Nhà thi đấu Đa năng tỉnh Vĩnh Long, Xã Nhị Long, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "lien-hoan-don-ca-tai-tu-nam-bo-tinh-ben-tre-ben-tre",
+    "field": "address",
+    "old": "Nhà hát Bến Tre, Trung tâm Văn hóa tỉnh và các huyện luân phiên",
+    "new": "Nhà hát, Trung tâm Văn hóa tỉnh và các, Phường Phú Khương, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Nhà hát, Trung tâm Văn hóa tỉnh và các, Phường Phú Khương, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "di-san-lo-gach-mang-thit-kenh-thay-cai",
+    "field": "address",
+    "old": "Dọc kênh Thầy Cai và sông Mang Thít – huyện Mang Thít",
+    "new": "Dọc kênh Thầy Cai và sông Mang Thít –, Xã Cái Nhum, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Dọc kênh Thầy Cai và sông Mang Thít –, Xã Cái Nhum, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "di-san-duong-dai-mang-thit-tuyen-sinh-thai-kenh-thuy-lo",
+    "field": "address",
+    "old": "Kênh Thầy Cai và sông Cái Nhum – huyện Mang Thít",
+    "new": "Kênh Thầy Cai và sông Cái Nhum –, Xã Cái Nhum, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Kênh Thầy Cai và sông Cái Nhum –, Xã Cái Nhum, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "tep-rang-dua",
+    "field": "address",
+    "old": "Huyện Châu Thành, Bến Tre",
+    "new": "Tép rang dừa, Phường Phú Túc, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Tép rang dừa, Phường Phú Túc, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "den-tho-lanh-binh-nguyen-ngoc-thang",
+    "field": "address",
+    "old": "Tỉnh lộ 885, xã Mỹ Thạnh, huyện Giồng Trôm, Bến Tre",
+    "new": "Tỉnh lộ 885, Phường Ba Tri, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Tỉnh lộ 885, Phường Ba Tri, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "bien-thoi-thuan",
+    "field": "address",
+    "old": "Xã Thới Thuận, huyện Bình Đại, Bến Tre",
+    "new": "Biển Thới Thuận, Xã Thới Thuận, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Biển Thới Thuận, Xã Thới Thuận, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "banh-trang-tra-vi",
+    "field": "address",
+    "old": "Ấp Trà Vi, xã Nguyệt Hóa, huyện Châu Thành, Trà Vinh",
+    "new": "Ấp Trà Vi, Phường Nguyệt Hóa, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Ấp Trà Vi, Phường Nguyệt Hóa, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "festival-gach-gom-do-kinh-te-xanh-tinh-vinh-long-vinh-long",
+    "field": "address",
+    "old": "Làng nghề kênh Thầy Cai huyện Mang Thít & đường Võ Văn Kiệt TP Vĩnh Long",
+    "new": "Làng nghề kênh Thầy Cai & đường Võ Văn Kiệt, Xã Nhơn Phú, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Làng nghề kênh Thầy Cai & đường Võ Văn Kiệt, Xã Nhơn Phú, tỉnh Vĩnh Long'."
+  },
+  {
+    "entity_id": "san-pham-ocop-vung-liem-cha-lua-thanh-cong-gao-huu-co-tan-dat-mut-dua-la-dua-duc",
+    "field": "address",
+    "old": "Huyện Vũng Liêm, Vĩnh Long",
+    "new": "Sản phẩm OCOP Vũng Liêm, Phường Phước Hậu, tỉnh Vĩnh Long",
+    "rule": "RULE_2TIER_CANONICAL_ADDRESS_SYNTAX",
+    "reason": "Remap from legacy district/province address to canonical 2-tier format: 'Sản phẩm OCOP Vũng Liêm, Phường Phước Hậu, tỉnh Vĩnh Long'."
+  }
+]

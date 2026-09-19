@@ -1,0 +1,2349 @@
+{
+  "old_phone_numbers": [
+    {
+      "id": "khach-san-duc-dao",
+      "name": "Khách sạn Đức Đào",
+      "phone": "0703 741 646",
+      "issue": "Đầu số cố định cũ 070 (chưa chuyển sang 0270/0294/0275 từ năm 2017)"
+    },
+    {
+      "id": "khach-san-chieu-hung",
+      "name": "Khách sạn Chiêu Hùng",
+      "phone": "0703 770 246",
+      "issue": "Đầu số cố định cũ 070 (chưa chuyển sang 0270/0294/0275 từ năm 2017)"
+    },
+    {
+      "id": "khach-san-trung-tinh",
+      "name": "Khách sạn Trung Tính",
+      "phone": "0703 770 566",
+      "issue": "Đầu số cố định cũ 070 (chưa chuyển sang 0270/0294/0275 từ năm 2017)"
+    },
+    {
+      "id": "khach-san-tan-thanh-6",
+      "name": "Khách sạn Tân Thành 6",
+      "phone": "0703 979 888",
+      "issue": "Đầu số cố định cũ 070 (chưa chuyển sang 0270/0294/0275 từ năm 2017)"
+    }
+  ],
+  "covid_or_temporary_closures": [],
+  "stale_temporal_projections": [],
+  "old_admin_addresses": [
+    {
+      "id": "lang-nghe-san-xuat-chi-xo-dua-an-thanh",
+      "name": "Làng nghề sản xuất chỉ xơ dừa An Thạnh",
+      "address": "Xã An Thạnh, huyện Mỏ Cày Nam, tỉnh Vĩnh Long",
+      "match": "huyện Mỏ Cày"
+    },
+    {
+      "id": "khu-du-lich-bien-con-bung",
+      "name": "Khu du lịch biển Cồn Bửng",
+      "address": "Xã Thạnh Hải, huyện Thạnh Phú, tỉnh Vĩnh Long",
+      "match": "huyện Thạnh Phú"
+    },
+    {
+      "id": "lang-nghe-dan-dat-phuoc-tuy",
+      "name": "Làng nghề đan đát Phước Tuy",
+      "address": "Xã Phước Tuy, huyện Ba Tri, tỉnh Vĩnh Long",
+      "match": "huyện Ba Tri"
+    },
+    {
+      "id": "chua-hang",
+      "name": "Chùa Hang",
+      "address": "Khóm 4, thị trấn Châu Thành, huyện Châu Thành, tỉnh Vĩnh Long",
+      "match": "huyện Châu Thành"
+    },
+    {
+      "id": "di-tich-duong-ho-chi-minh-tren-bien-thanh-phu",
+      "name": "Di Tích Đường Hồ Chí Minh Trên Biển Thạnh Phú",
+      "address": "Xã Thạnh Hải và Thạnh Phong, huyện Thạnh Phú, tỉnh Vĩnh Long",
+      "match": "huyện Thạnh Phú"
+    },
+    {
+      "id": "vung-cam-sanh-tra-on",
+      "name": "Vùng cam sành Trà Ôn",
+      "address": "Các xã Trà Côn, Thới Hòa, Xuân Hiệp, huyện Trà Ôn, tỉnh Vĩnh Long",
+      "match": "huyện Trà Ôn"
+    },
+    {
+      "id": "di-san-duong-dai-mang-thit",
+      "name": "Di sản đương đại Mang Thít",
+      "address": "Trải dọc kênh Thầy Cai qua các xã Mỹ Phước, Nhơn Phú, Mỹ An, huyện Mang Thít, tỉnh Vĩnh Long",
+      "match": "huyện Mang Thít"
+    },
+    {
+      "id": "lang-ong-con-tau",
+      "name": "Lăng Ông Cồn Tàu",
+      "address": "Cồn Tàu, xã Trường Long Hòa, thị xã Duyên Hải, Trà Vinh",
+      "match": "thị xã Duyên Hải"
+    },
+    {
+      "id": "lau-ba-mieu-ba-chua-xu-ba-co-hy",
+      "name": "Lầu Bà (Miếu Bà Chúa Xứ - Bà Cố Hỷ)",
+      "address": "Xóm dưới, xã Trường Long Hòa, thị xã Duyên Hải, Trà Vinh",
+      "match": "thị xã Duyên Hải"
+    },
+    {
+      "id": "lang-mo-va-khu-tuong-niem-nguyen-dinh-chieu",
+      "name": "Lăng mộ và Khu tưởng niệm Nguyễn Đình Chiểu",
+      "address": "Xã An Đức, huyện Ba Tri, tỉnh Vĩnh Long",
+      "match": "huyện Ba Tri"
+    },
+    {
+      "id": "khu-luu-niem-thu-tuong-vo-van-kiet",
+      "name": "Khu Lưu Niệm Thủ tướng Võ Văn Kiệt",
+      "address": "Số 102, đường Nam Kỳ Khởi Nghĩa, thị trấn Vũng Liêm, huyện Vũng Liêm, tỉnh Vĩnh Long",
+      "match": "huyện Vũng Liêm"
+    },
+    {
+      "id": "khu-du-lich-cho-noi-tra-on",
+      "name": "Khu du lịch Chợ nổi Trà Ôn",
+      "address": "Sông Hậu, thị trấn Trà Ôn, huyện Trà Ôn, tỉnh Vĩnh Long",
+      "match": "huyện Trà Ôn"
+    },
+    {
+      "id": "cong-ty-tnhh-tra-vinh-farm-sokfarm",
+      "name": "Công ty TNHH Trà Vinh FARM (Sokfarm)",
+      "address": "Thị trấn Tiểu Cần, huyện Tiểu Cần, tỉnh Vĩnh Long",
+      "match": "huyện Tiểu Cần"
+    },
+    {
+      "id": "mo-va-khu-luu-niem-nha-giao-vo-truong-toan",
+      "name": "Mộ và Khu lưu niệm nhà giáo Võ Trường Toản",
+      "address": "Xã Bảo Thạnh, huyện Ba Tri, tỉnh Vĩnh Long",
+      "match": "huyện Ba Tri"
+    },
+    {
+      "id": "lang-nghe-truyen-thong-phu-le",
+      "name": "Làng nghề truyền thống Phú Lễ",
+      "address": "Xã Phú Lễ, huyện Ba Tri, tỉnh Vĩnh Long",
+      "match": "huyện Ba Tri"
+    },
+    {
+      "id": "bien-con-nhan",
+      "name": "Biển Cồn Nhàn",
+      "address": "Huyện Ba Tri, Bến Tre",
+      "match": "Huyện Ba Tri"
+    },
+    {
+      "id": "chom-chom-cau-ke",
+      "name": "Chôm chôm Cầu Kè",
+      "address": "Cù lao Tân Quy, xã An Phú Tân, huyện Cầu Kè, Trà Vinh",
+      "match": "huyện Cầu Kè"
+    },
+    {
+      "id": "chua-hoi-tong-ben-tre",
+      "name": "Chùa Hội Tông (Hội Tông Cổ Tự)",
+      "address": "Ấp 8, xã Quới Sơn, huyện Châu Thành, Bến Tre",
+      "match": "huyện Châu Thành"
+    },
+    {
+      "id": "chua-tuyen-linh-mo-cay-nam",
+      "name": "Chùa Tuyên Linh Mỏ Cày Nam",
+      "address": "Xã Minh Đức, huyện Mỏ Cày Nam, tỉnh Vĩnh Long",
+      "match": "huyện Mỏ Cày"
+    },
+    {
+      "id": "le-hoi-nghinh-ong-duyen-hai",
+      "name": "Lễ hội Nghinh Ông Duyên Hải",
+      "address": "Thị xã Duyên Hải, Trà Vinh",
+      "match": "Thị xã Duyên Hải"
+    },
+    {
+      "id": "nha-co-cau-ke",
+      "name": "Nhà cổ Cầu Kè",
+      "address": "Khóm 2, thị trấn Cầu Kè, huyện Cầu Kè, tỉnh Vĩnh Long",
+      "match": "huyện Cầu Kè"
+    },
+    {
+      "id": "nha-tho-duc-my-cho-cua",
+      "name": "Nhà Thờ Đức Mỹ Chợ Cua",
+      "address": "Xã Đức Mỹ, huyện Càng Long, Trà Vinh",
+      "match": "huyện Càng Long"
+    },
+    {
+      "id": "nuoc-khoang-thien-nhien-sao-bien-starfiwa",
+      "name": "Nước khoáng thiên nhiên Sao Biển (Starfiwa)",
+      "address": "Phường 1, thị xã Duyên Hải, Trà Vinh",
+      "match": "thị xã Duyên Hải"
+    },
+    {
+      "id": "rung-ngap-man-hiep-thanh-duyen-hai-tra-vinh",
+      "name": "Rừng ngập mặn Hiệp Thạnh - Gò Công Biển",
+      "address": "Xã Hiệp Thạnh, huyện Duyên Hải, Trà Vinh",
+      "match": "huyện Duyên Hải"
+    },
+    {
+      "id": "rung-ngap-man-phong-ho-binh-dai-ben-tre",
+      "name": "Rừng Ngập Mặn Phòng Hộ Bình Đại",
+      "address": "Ven biển huyện Bình Đại, tỉnh Vĩnh Long (các xã Thạnh Phước, Thừa Đức, Bình Thắng)",
+      "match": "huyện Bình Đại"
+    },
+    {
+      "id": "vien-chau-huynh-tri-ba",
+      "name": "Viễn Châu (Huỳnh Trí Bá)",
+      "address": "Huyện Duyên Hải, Trà Vinh",
+      "match": "Huyện Duyên Hải"
+    },
+    {
+      "id": "vuon-dua-sinh-thai-cau-ke-tra-vinh",
+      "name": "Vườn dừa sinh thái Cầu Kè",
+      "address": "Huyện Cầu Kè, tỉnh Vĩnh Long (dọc theo sông Hậu)",
+      "match": "Huyện Cầu Kè"
+    },
+    {
+      "id": "bai-bien-ba-tri",
+      "name": "Bãi biển Ba Tri",
+      "address": "Huyện Ba Tri, tỉnh Vĩnh Long",
+      "match": "Huyện Ba Tri"
+    },
+    {
+      "id": "bai-bien-thanh-phu",
+      "name": "Bãi biển Thạnh Phú",
+      "address": "Huyện Thạnh Phú, tỉnh Vĩnh Long",
+      "match": "Huyện Thạnh Phú"
+    },
+    {
+      "id": "banh-kep-thuy-kieu",
+      "name": "Bánh kẹp Thúy Kiều",
+      "address": "Huyện Mỏ Cày Nam, tỉnh Vĩnh Long",
+      "match": "Huyện Mỏ Cày"
+    },
+    {
+      "id": "banh-xeo-bien-binh-dai",
+      "name": "Bánh xèo biển Bình Đại",
+      "address": "Huyện Bình Đại, tỉnh Vĩnh Long",
+      "match": "Huyện Bình Đại"
+    },
+    {
+      "id": "buoi-da-xanh-ben-tre",
+      "name": "Bưởi Da Xanh Bến Tre",
+      "address": "Huyện Mỏ Cày Bắc và các huyện trong tỉnh Vĩnh Long",
+      "match": "Huyện Mỏ Cày"
+    },
+    {
+      "id": "buoi-da-xanh-giong-trom",
+      "name": "Bưởi Da Xanh Giồng Trôm",
+      "address": "Huyện Giồng Trôm, tỉnh Vĩnh Long",
+      "match": "Huyện Giồng Trôm"
+    },
+    {
+      "id": "ca-bong-lau-mot-nang-binh-dai",
+      "name": "Cá bông lau một nắng Bình Đại",
+      "address": "Huyện Bình Đại, tỉnh Vĩnh Long",
+      "match": "Huyện Bình Đại"
+    },
+    {
+      "id": "ca-doi-kho-mot-nang-binh-dai",
+      "name": "Cá đối khô một nắng Bình Đại",
+      "address": "Huyện Bình Đại, tỉnh Vĩnh Long",
+      "match": "Huyện Bình Đại"
+    },
+    {
+      "id": "chua-giac-linh-chua-doi",
+      "name": "Chùa Giác Linh (Chùa Dơi)",
+      "address": "Huyện Cầu Ngang, tỉnh Vĩnh Long",
+      "match": "Huyện Cầu Ngang"
+    },
+    {
+      "id": "chu-u-rang-me",
+      "name": "Chù ụ rang me",
+      "address": "Huyện Trà Cú, tỉnh Vĩnh Long",
+      "match": "Huyện Trà Cú"
+    },
+    {
+      "id": "con-ngheu-bai-vang-bien-tra-vinh",
+      "name": "Cồn Nghêu - Bãi Vàng biển Trà Vinh",
+      "address": "Vùng cửa biển huyện Châu Thành và Cầu Ngang, tỉnh Vĩnh Long",
+      "match": "huyện Châu Thành"
+    },
+    {
+      "id": "cua-bien-va-ngheu-thanh-phu",
+      "name": "Cua biển và nghêu Thạnh Phú",
+      "address": "Huyện Thạnh Phú, tỉnh Vĩnh Long",
+      "match": "Huyện Thạnh Phú"
+    },
+    {
+      "id": "dua-sap-cau-ke-dac-san-ben-tre",
+      "name": "Sản phẩm dừa Ba Tri",
+      "address": "Huyện Ba Tri, tỉnh Vĩnh Long",
+      "match": "Huyện Ba Tri"
+    },
+    {
+      "id": "dua-sap-tra-vinh",
+      "name": "Dừa sáp Trà Vinh",
+      "address": "Huyện Trà Cú, tỉnh Vĩnh Long",
+      "match": "Huyện Trà Cú"
+    },
+    {
+      "id": "du-lich-sinh-thai-bien-thanh-phu",
+      "name": "Du lịch sinh thái biển Thạnh Phú",
+      "address": "Huyện Thạnh Phú, tỉnh Vĩnh Long",
+      "match": "Huyện Thạnh Phú"
+    },
+    {
+      "id": "du-lich-sinh-thai-miet-vuon-mo-cay-bac",
+      "name": "Du lịch sinh thái miệt vườn Mỏ Cày Bắc",
+      "address": "Huyện Mỏ Cày Bắc, tỉnh Vĩnh Long",
+      "match": "Huyện Mỏ Cày"
+    },
+    {
+      "id": "gao-sach-lua-tom-thanh-phu",
+      "name": "Gạo sạch lúa-tôm Thạnh Phú",
+      "address": "Huyện Thạnh Phú, tỉnh Vĩnh Long",
+      "match": "Huyện Thạnh Phú"
+    },
+    {
+      "id": "gao-sach-tom-lua-thanh-phu-ocop",
+      "name": "Gạo sạch Tôm-Lúa Thạnh Phú (OCOP)",
+      "address": "Huyện Thạnh Phú, tỉnh Vĩnh Long",
+      "match": "Huyện Thạnh Phú"
+    },
+    {
+      "id": "homestay-nam-ham-luong",
+      "name": "Homestay Nam Hàm Luông",
+      "address": "Huyện Mỏ Cày Bắc, tỉnh Vĩnh Long",
+      "match": "Huyện Mỏ Cày"
+    },
+    {
+      "id": "homestay-tu-pha-con-chim",
+      "name": "Homestay Tư Pha (Cồn Chim)",
+      "address": "Ấp Cồn Chim, xã Hòa Minh, huyện Châu Thành, tỉnh Vĩnh Long",
+      "match": "huyện Châu Thành"
+    },
+    {
+      "id": "htx-nong-nghiep-thong-hoa-dua-sap",
+      "name": "HTX Nông nghiệp Thông Hòa - Dừa sáp",
+      "address": "Xã Thông Hòa, huyện Cầu Kè, tỉnh Vĩnh Long",
+      "match": "huyện Cầu Kè"
+    },
+    {
+      "id": "keo-dua-mo-cay-co-so-tuyet-phung",
+      "name": "Kẹo dừa Mỏ Cày (cơ sở Tuyết Phụng)",
+      "address": "Huyện Mỏ Cày Nam, tỉnh Vĩnh Long",
+      "match": "Huyện Mỏ Cày"
+    },
+    {
+      "id": "kho-ca-bien-thanh-phu",
+      "name": "Khô cá biển Thạnh Phú",
+      "address": "Huyện Thạnh Phú, tỉnh Vĩnh Long",
+      "match": "Huyện Thạnh Phú"
+    },
+    {
+      "id": "khu-bao-ve-canh-quan-rung-ngap-man-thanh-phu",
+      "name": "Khu bảo vệ cảnh quan rừng ngập mặn Thạnh Phú",
+      "address": "Huyện Thạnh Phú, tỉnh Vĩnh Long",
+      "match": "Huyện Thạnh Phú"
+    },
+    {
+      "id": "khu-luu-niem-nguyen-thi-dinh",
+      "name": "Khu lưu niệm Nguyễn Thị Định",
+      "address": "Ấp Phong Điền, xã Lương Hòa, huyện Giồng Trôm, tỉnh Vĩnh Long",
+      "match": "huyện Giồng Trôm"
+    },
+    {
+      "id": "lang-nghe-keo-dua-ba-tri",
+      "name": "Làng nghề kẹo dừa Ba Tri",
+      "address": "Huyện Ba Tri, tỉnh Vĩnh Long",
+      "match": "Huyện Ba Tri"
+    },
+    {
+      "id": "lang-nghe-thach-dua-hung-phong",
+      "name": "Làng nghề thạch dừa Hưng Phong",
+      "address": "Cồn Ốc, xã Hưng Phong, huyện Giồng Trôm, tỉnh Vĩnh Long",
+      "match": "huyện Giồng Trôm"
+    },
+    {
+      "id": "lang-nghe-thu-cong-my-nghe-dua-mo-cay-nam",
+      "name": "Làng nghề thủ công mỹ nghệ dừa Mỏ Cày Nam",
+      "address": "Huyện Mỏ Cày Nam, tỉnh Vĩnh Long",
+      "match": "Huyện Mỏ Cày"
+    },
+    {
+      "id": "lang-nghe-tre-truc-ba-tri",
+      "name": "Làng nghề tre trúc Ba Tri",
+      "address": "Huyện Ba Tri, tỉnh Vĩnh Long",
+      "match": "Huyện Ba Tri"
+    },
+    {
+      "id": "lau-ba-co-hy-thuong-dong-nuong-nuong",
+      "name": "Lầu Bà Cố Hỷ (Thượng Động Nương Nương)",
+      "address": "Ấp Ba Động, xã Trường Long Hòa, thị xã Duyên Hải, tỉnh Vĩnh Long",
+      "match": "thị xã Duyên Hải"
+    },
+    {
+      "id": "le-hoi-chol-chnam-thmay-va-sen-dolta",
+      "name": "Lễ hội Chol Chnam Thmay và Sen Dolta",
+      "address": "Huyện Trà Cú, tỉnh Vĩnh Long",
+      "match": "Huyện Trà Cú"
+    },
+    {
+      "id": "le-via-ba-co-hy",
+      "name": "Lễ Vía Bà Cố Hỷ",
+      "address": "Ấp Ba Động, xã Trường Long Hòa, thị xã Duyên Hải, tỉnh Vĩnh Long",
+      "match": "thị xã Duyên Hải"
+    },
+    {
+      "id": "maison-du-pays-de-ben-tre",
+      "name": "Maison du Pays de Bến Tre",
+      "address": "Xã Thạnh Phú Đông, huyện Giồng Trôm, tỉnh Vĩnh Long",
+      "match": "huyện Giồng Trôm"
+    },
+    {
+      "id": "ngay-hoi-van-hoa-the-thao-va-du-lich-huyen-cho-lach-ben-tre",
+      "name": "Ngày hội Văn hóa - Thể thao và Du lịch Chợ Lách",
+      "address": "Huyện Chợ Lách, tỉnh Vĩnh Long",
+      "match": "Huyện Chợ Lách"
+    },
+    {
+      "id": "ngheu-so-cua-bien-thanh-phu",
+      "name": "Nghêu, sò, cua biển Thạnh Phú",
+      "address": "Huyện Thạnh Phú, tỉnh Vĩnh Long",
+      "match": "Huyện Thạnh Phú"
+    },
+    {
+      "id": "oc-viet-ben-tre",
+      "name": "Ốc viết Bến Tre",
+      "address": "Vùng ven biển huyện Bình Đại, tỉnh Vĩnh Long",
+      "match": "huyện Bình Đại"
+    },
+    {
+      "id": "rooster-mekong-resort",
+      "name": "Rooster Mekong Resort",
+      "address": "Xã Long Thới, huyện Chợ Lách, tỉnh Vĩnh Long",
+      "match": "huyện Chợ Lách"
+    },
+    {
+      "id": "rung-ngap-man-binh-dai",
+      "name": "Rừng ngập mặn Bình Đại",
+      "address": "Huyện Bình Đại, tỉnh Vĩnh Long",
+      "match": "Huyện Bình Đại"
+    },
+    {
+      "id": "ruou-gia-bao",
+      "name": "Rượu Gia Bảo",
+      "address": "Huyện Mỏ Cày Nam, tỉnh Vĩnh Long",
+      "match": "Huyện Mỏ Cày"
+    },
+    {
+      "id": "ruou-quach-cau-ngang",
+      "name": "Rượu Quách Cầu Ngang",
+      "address": "Huyện Cầu Ngang, tỉnh Vĩnh Long",
+      "match": "Huyện Cầu Ngang"
+    },
+    {
+      "id": "san-pham-ocop-cau-ngang",
+      "name": "Sản phẩm OCOP Cầu Ngang",
+      "address": "Huyện Cầu Ngang, tỉnh Vĩnh Long",
+      "match": "Huyện Cầu Ngang"
+    },
+    {
+      "id": "sau-rieng-cap-dong-chanh-thu",
+      "name": "Sầu riêng cấp đông Chánh Thu",
+      "address": "Huyện Chợ Lách, tỉnh Vĩnh Long",
+      "match": "Huyện Chợ Lách"
+    },
+    {
+      "id": "so-diep-binh-dai",
+      "name": "Sò điệp Bình Đại",
+      "address": "Huyện Bình Đại, tỉnh Vĩnh Long",
+      "match": "Huyện Bình Đại"
+    },
+    {
+      "id": "bun-tuoi-va-hu-tieu-sau-thanh",
+      "name": "Bún tươi và hủ tiếu Sáu Thạnh",
+      "address": "Huyện Tam Bình, tỉnh Vĩnh Long",
+      "match": "Huyện Tam Bình"
+    },
+    {
+      "id": "tom-kho-hai-kham",
+      "name": "Tôm khô Hai Khâm",
+      "address": "Huyện Cầu Ngang, tỉnh Vĩnh Long",
+      "match": "Huyện Cầu Ngang"
+    },
+    {
+      "id": "tom-su-binh-dai",
+      "name": "Tôm sú Bình Đại",
+      "address": "Huyện Bình Đại, tỉnh Vĩnh Long",
+      "match": "Huyện Bình Đại"
+    },
+    {
+      "id": "vung-trong-dua-sap-cau-ke",
+      "name": "Vùng trồng dừa sáp Cầu Kè",
+      "address": "Huyện Cầu Kè, tỉnh Vĩnh Long",
+      "match": "Huyện Cầu Kè"
+    },
+    {
+      "id": "cho-cho-lach",
+      "name": "Chợ Chợ Lách",
+      "address": "Huyện Chợ Lách (BT)",
+      "match": "Huyện Chợ Lách"
+    },
+    {
+      "id": "cua-binh-dai",
+      "name": "Cua Bình Đại",
+      "address": "Huyện Bình Đại, Bến Tre",
+      "match": "Huyện Bình Đại"
+    },
+    {
+      "id": "sau-rieng-cai-mon",
+      "name": "Sầu riêng Cái Mơn",
+      "address": "Xã Vĩnh Thành, huyện Chợ Lách, Bến Tre",
+      "match": "huyện Chợ Lách"
+    },
+    {
+      "id": "vo-van-kiet",
+      "name": "Võ Văn Kiệt",
+      "address": "Xã Trung Hiệp, huyện Vũng Liêm, tỉnh Vĩnh Long (quê hương); Khu lưu niệm tại số 10 Nam Kỳ Khởi Nghĩa, thị trấn Vũng Liêm",
+      "match": "huyện Vũng Liêm"
+    },
+    {
+      "id": "quyt-duong-cau-ke",
+      "name": "Quýt đường Cầu Kè",
+      "address": "Huyện Cầu Kè, Trà Vinh",
+      "match": "Huyện Cầu Kè"
+    },
+    {
+      "id": "lang-nghe-banh-trang-my-long",
+      "name": "Làng nghề bánh tráng Mỹ Lồng - điểm tham quan",
+      "address": "Xã Mỹ Thạnh, huyện Giồng Trôm, Bến Tre",
+      "match": "huyện Giồng Trôm"
+    },
+    {
+      "id": "nguyen-thi-ut",
+      "name": "Nguyễn Thị Út",
+      "address": "Xã Tam Ngãi, huyện Cầu Kè, Trà Vinh",
+      "match": "huyện Cầu Kè"
+    },
+    {
+      "id": "truong-duy-toan",
+      "name": "Trương Duy Toản",
+      "address": "Huyện Tam Bình (nay Mang Thít), Vĩnh Long",
+      "match": "Huyện Tam Bình"
+    },
+    {
+      "id": "thien-vien-truc-lam-tra-vinh",
+      "name": "Thiền viện Trúc Lâm Trà Vinh",
+      "address": "Ấp Khoán Tiều, xã Trường Long Hòa, Thị xã Duyên Hải, Trà Vinh (cách trung tâm TP Trà Vinh 50km về hướng đông nam, cách thị xã Duyên Hải 12km về hướng đông)",
+      "match": "Thị xã Duyên Hải"
+    },
+    {
+      "id": "con-bung",
+      "name": "Cồn Bửng",
+      "address": "Xã Thạnh Hải, huyện Thạnh Phú, Bến Tre",
+      "match": "huyện Thạnh Phú"
+    },
+    {
+      "id": "khu-du-lich-sinh-thai-anh-ba-khia",
+      "name": "Khu du lịch sinh thái Anh Ba Khía",
+      "address": "Huyện Bình Đại, Bến Tre",
+      "match": "Huyện Bình Đại"
+    },
+    {
+      "id": "phan-thanh-gian",
+      "name": "Phan Thanh Giản",
+      "address": "Làng Tân Thạnh, huyện Vĩnh Bình, phủ Định Viễn, trấn Vĩnh Thanh (nay là xã Bảo Thạnh, huyện Ba Tri, tỉnh Vĩnh Long) (quê hương); Văn Thánh Miếu, Phường 4, TP Vĩnh Long (nơi thờ tự và hoạt động)",
+      "match": "huyện Ba Tri"
+    },
+    {
+      "id": "sokfarm-tieu-can",
+      "name": "Sokfarm Tiểu Cần",
+      "address": "Ấp Cây Hẹ, xã Phú Cần, huyện Tiểu Cần, Trà Vinh",
+      "match": "huyện Tiểu Cần"
+    },
+    {
+      "id": "thoai-ngoc-hau",
+      "name": "Thoại Ngọc Hầu",
+      "address": "Làng An Hải, huyện Diên Phước, phủ Điện Bàn, tỉnh Quảng Nam (quê gốc); Sơn Lăng, chân núi Sam, Châu Đốc, An Giang (nơi an táng); Cù Lao Dài, xã Thanh Bình, huyện Vũng Liêm, Vĩnh Long (nơi phụng thờ thân mẫu và em gái)",
+      "match": "huyện Vũng Liêm"
+    },
+    {
+      "id": "chua-van-phuoc-binh-dai",
+      "name": "Chùa Vạn Phước Bình Đại",
+      "address": "Ấp Bình Chiến, thị trấn Bình Đại, huyện Bình Đại, Bến Tre",
+      "match": "huyện Bình Đại"
+    },
+    {
+      "id": "cha-lua-thanh-cong",
+      "name": "Chả lụa Thành Công",
+      "address": "Ấp Tân Quang, xã Hiếu Phụng, huyện Vũng Liêm, Vĩnh Long",
+      "match": "huyện Vũng Liêm"
+    },
+    {
+      "id": "dang-ga---cac-mon-ga-ta",
+      "name": "Đáng Gà - Các Món Gà Ta",
+      "address": "Quốc Lộ 1A, Xã Đông Bình , Thị Xã Bình Minh , Vĩnh Long",
+      "match": "Thị Xã Bình Minh"
+    },
+    {
+      "id": "mam-cong-ben-tre",
+      "name": "Mắm Còng Bến Tre",
+      "address": "Xã Châu Bình, huyện Giồng Trôm, Bến Tre",
+      "match": "huyện Giồng Trôm"
+    },
+    {
+      "id": "cu-lao-may-tra-on",
+      "name": "Cù Lao Mây Trà Ôn",
+      "address": "Xã Lục Sỹ Thành và Phú Thành, huyện Trà Ôn, Vĩnh Long",
+      "match": "huyện Trà Ôn"
+    },
+    {
+      "id": "cho-noi-tra-on-dc",
+      "name": "Chợ Nổi Trà Ôn",
+      "address": "Ngã ba sông Hậu và sông Mang Thít, thị trấn Trà Ôn, huyện Trà Ôn, Vĩnh Long",
+      "match": "huyện Trà Ôn"
+    },
+    {
+      "id": "lang-banh-trang-tra-on",
+      "name": "Làng Bánh Tráng Trà Ôn",
+      "address": "Xã Lục Sỹ Thành, huyện Trà Ôn, Vĩnh Long",
+      "match": "huyện Trà Ôn"
+    },
+    {
+      "id": "lang-banh-trang-giay-tuong-loc",
+      "name": "Làng Bánh Tráng Giấy Tường Lộc",
+      "address": "Ấp Tường Lễ, xã Tường Lộc, huyện Tam Bình, Vĩnh Long",
+      "match": "huyện Tam Bình"
+    },
+    {
+      "id": "lang-det-chieu-cu-lao-dai",
+      "name": "Làng Dệt Chiếu Cù Lao Dài",
+      "address": "Ấp Bình Thủy, xã Quới Thiện, huyện Vũng Liêm, Vĩnh Long",
+      "match": "huyện Vũng Liêm"
+    },
+    {
+      "id": "lang-ong-lang-ong-che-nguyen-van-ton",
+      "name": "Lăng Ông (Lăng Ông Chế - Nguyễn Văn Tồn)",
+      "address": "Ấp Là Ghì, xã Thiện Mỹ, huyện Trà Ôn, tỉnh Vĩnh Long",
+      "match": "huyện Trà Ôn"
+    },
+    {
+      "id": "cho-giong-trom",
+      "name": "Chợ Giồng Trôm",
+      "address": "Khu phố 2, TT Giồng Trôm, huyện Giồng Trôm, Bến Tre",
+      "match": "huyện Giồng Trôm"
+    },
+    {
+      "id": "lang-gach-gom-mang-thit",
+      "name": "Làng nghề gạch gốm Mang Thít",
+      "address": "Huyện Mang Thít, Vĩnh Long (dọc kênh Thầy Cai → sông Cổ Chiên)",
+      "match": "Huyện Mang Thít"
+    },
+    {
+      "id": "khu-du-lich-s-mo-farm-cuu-long",
+      "name": "Somo Farm Cửu Long",
+      "address": "Ấp 3, thị trấn Cái Nhum, huyện Mang Thít, Vĩnh Long",
+      "match": "huyện Mang Thít"
+    },
+    {
+      "id": "khu-mo-than-nhan-danh-than-thoai-ngoc-hau",
+      "name": "Khu mộ thân nhân danh thần Thoại Ngọc Hầu",
+      "address": "Cù lao Dài, xã Trung Thành Tây, huyện Vũng Liêm, tỉnh Vĩnh Long",
+      "match": "huyện Vũng Liêm"
+    },
+    {
+      "id": "nha-co-tran-dai-nghia",
+      "name": "Nhà Cổ Trần Đại Nghĩa",
+      "address": "Xã Tường Lộc, huyện Tam Bình, Vĩnh Long",
+      "match": "huyện Tam Bình"
+    },
+    {
+      "id": "khu-luu-niem-thu-tuong-chinh-phu-vo-van-kiet",
+      "name": "Khu lưu niệm Thủ tướng Chính phủ Võ Văn Kiệt",
+      "address": "Xã Trung Hiệp, huyện Vũng Liêm, tỉnh Vĩnh Long",
+      "match": "huyện Vũng Liêm"
+    },
+    {
+      "id": "nguyen-dinh-chieu",
+      "name": "Nguyễn Đình Chiểu",
+      "address": "Xã An Đức, huyện Ba Tri, Bến Tre (mộ và khu lưu niệm)",
+      "match": "huyện Ba Tri"
+    },
+    {
+      "id": "nguyen-thi-dinh",
+      "name": "Nguyễn Thị Định",
+      "address": "Xã Lương Hòa, huyện Giồng Trôm, tỉnh Vĩnh Long",
+      "match": "huyện Giồng Trôm"
+    },
+    {
+      "id": "khu-luu-niem-nu-tuong-nguyen-thi-dinh",
+      "name": "Khu lưu niệm Nữ tướng Nguyễn Thị Định",
+      "address": "Xã Lương Hòa, huyện Giồng Trôm, tỉnh Vĩnh Long",
+      "match": "huyện Giồng Trôm"
+    },
+    {
+      "id": "nguyen-thien-thanh",
+      "name": "Nguyễn Thiện Thành",
+      "address": "Xã Phương Thạnh, huyện Càng Long, Trà Vinh",
+      "match": "huyện Càng Long"
+    },
+    {
+      "id": "lang-nghe-gom-do-mang-thit",
+      "name": "Làng nghề gốm đỏ Mang Thít",
+      "address": "Dọc kênh Thầy Cai và sông Cổ Chiên, huyện Mang Thít, tỉnh Vĩnh Long",
+      "match": "huyện Mang Thít"
+    },
+    {
+      "id": "khu-du-lich-sinh-thai-miet-vuon-vinh-sang",
+      "name": "Khu du lịch sinh thái miệt vườn Vinh Sang",
+      "address": "Ấp An Thuận, xã An Bình, huyện Long Hồ, Vĩnh Long",
+      "match": "huyện Long Hồ"
+    },
+    {
+      "id": "con-phung-con-ong-dao-dua",
+      "name": "Cồn Phụng (Cồn Ông Đạo Dừa)",
+      "address": "Huyện Châu Thành, Bến Tre",
+      "match": "Huyện Châu Thành"
+    },
+    {
+      "id": "chua-shanghamangala-khmer-vung-liem",
+      "name": "Chùa Hạnh Phúc Tăng (Sanghamangala)",
+      "address": "Ấp Trung Trạch, xã Trung Thành, huyện Vũng Liêm, Vĩnh Long",
+      "match": "huyện Vũng Liêm"
+    },
+    {
+      "id": "trai-quach-tra-vinh",
+      "name": "Trái Quách Trà Vinh",
+      "address": "Trà Vinh (phổ biến ở huyện Châu Thành và Càng Long)",
+      "match": "huyện Châu Thành"
+    },
+    {
+      "id": "tom-cang-xanh-lot-an-thanh",
+      "name": "Tôm càng xanh lột An Thạnh",
+      "address": "Xã An Thạnh, huyện Thạnh Phú, Bến Tre",
+      "match": "huyện Thạnh Phú"
+    },
+    {
+      "id": "ao-ba-om",
+      "name": "Ao Bà Om",
+      "address": "Khóm 4, Phường 8, TP Trà Vinh (giáp xã Nguyệt Hóa, huyện Châu Thành)",
+      "match": "huyện Châu Thành"
+    },
+    {
+      "id": "dua-sap-cau-ke",
+      "name": "Dừa sáp Cầu Kè",
+      "address": "Huyện Cầu Kè, Trà Vinh",
+      "match": "Huyện Cầu Kè"
+    },
+    {
+      "id": "mam-song-khoai-lang",
+      "name": "Mắm sống khoai lang",
+      "address": "Huyện Bình Tân, Vĩnh Long",
+      "match": "Huyện Bình Tân"
+    },
+    {
+      "id": "banh-trang-my-long",
+      "name": "Bánh tráng Mỹ Lồng",
+      "address": "Ấp Nghĩa Huấn, xã Mỹ Thạnh, huyện Giồng Trôm, Bến Tre",
+      "match": "huyện Giồng Trôm"
+    },
+    {
+      "id": "chua-co-nodol",
+      "name": "Chùa Cò (Nodol)",
+      "address": "Ấp Cây Da, xã Đại An, huyện Trà Cú, Trà Vinh",
+      "match": "huyện Trà Cú"
+    },
+    {
+      "id": "nha-co-huynh-phu-thanh-phu",
+      "name": "Nhà Cổ Huỳnh Phủ Thạnh Phú",
+      "address": "Xã Đại Điền, huyện Thạnh Phú, Bến Tre",
+      "match": "huyện Thạnh Phú"
+    },
+    {
+      "id": "khu-di-tich-luu-niem-chu-tich-pham-hung",
+      "name": "Khu di tích lưu niệm Chủ tịch Phạm Hùng",
+      "address": "Ấp Long Thuận A, xã Long Phước, huyện Long Hồ, tỉnh Vĩnh Long",
+      "match": "huyện Long Hồ"
+    },
+    {
+      "id": "somo-farm-cuu-long",
+      "name": "Somo Farm Cửu Long - lưu trú sinh thái",
+      "address": "Xã TT Cái Nhum, huyện Mang Thít, tỉnh Vĩnh Long",
+      "match": "huyện Mang Thít"
+    },
+    {
+      "id": "bung-lac-dia",
+      "name": "Bưng Lạc Địa",
+      "address": "Ấp Phú Khương, xã Phú Lễ, huyện Ba Tri, Bến Tre",
+      "match": "huyện Ba Tri"
+    },
+    {
+      "id": "banh-xeo-oc-gao-phu-da",
+      "name": "Bánh Xèo Ốc Gạo Phú Đa",
+      "address": "Cồn Phú Đa, xã Vĩnh Bình, huyện Chợ Lách, tỉnh Vĩnh Long",
+      "match": "huyện Chợ Lách"
+    },
+    {
+      "id": "chua-ba-thien-hau-tra-vinh",
+      "name": "Thiên Hậu Cung (Chùa Bà Thiên Hậu Trà Vinh)",
+      "address": "Khóm 5, thị trấn Tiểu Cần, huyện Tiểu Cần, Trà Vinh",
+      "match": "huyện Tiểu Cần"
+    },
+    {
+      "id": "lang-van-hoa-du-lich-khmer-tra-vinh",
+      "name": "Làng Văn hóa - Du lịch Khmer Trà Vinh",
+      "address": "Xã Lương Hòa, huyện Châu Thành, Trà Vinh",
+      "match": "huyện Châu Thành"
+    },
+    {
+      "id": "lang-nghe-dan-gio-cong-dua-hung-phong",
+      "name": "Làng nghề đan giỏ cọng dừa Hưng Phong",
+      "address": "Xã Hưng Phong, huyện Giồng Trôm, Bến Tre",
+      "match": "huyện Giồng Trôm"
+    },
+    {
+      "id": "lang-du-kich-dong-khoi",
+      "name": "Làng du kích Đồng Khởi",
+      "address": "Xã Định Thủy, huyện Mỏ Cày Nam, Bến Tre",
+      "match": "huyện Mỏ Cày"
+    },
+    {
+      "id": "dinh-trieu-quoc-dat-mieu-tho-trieu-minh-cong",
+      "name": "Đình Triệu Quốc Đạt (Miếu thờ Triệu Minh Công)",
+      "address": "Phường Trường Long Hòa, Thị xã Duyên Hải, Tỉnh Trà Vinh",
+      "match": "Thị xã Duyên Hải"
+    },
+    {
+      "id": "san-pham-dua-ocop-beinco",
+      "name": "Sản phẩm dừa OCOP BEINCO",
+      "address": "Huyện Mỏ Cày Bắc, Bến Tre",
+      "match": "Huyện Mỏ Cày"
+    },
+    {
+      "id": "cho-noi-tra-on",
+      "name": "Đi chợ nổi Trà Ôn lúc rạng sáng",
+      "address": "Sông Hậu, thị trấn Trà Ôn, huyện Trà Ôn, tỉnh Vĩnh Long",
+      "match": "huyện Trà Ôn"
+    },
+    {
+      "id": "lang-nghe-tau-hu-ky-my-hoa",
+      "name": "Làng nghề tàu hũ ky Mỹ Hòa",
+      "address": "Xã Mỹ Hòa, thị xã Bình Minh, tỉnh Vĩnh Long (cách trung tâm thị xã Bình Minh ~1 km, qua cầu Từ Tải trên sông Cái Vồn)",
+      "match": "thị xã Bình Minh"
+    },
+    {
+      "id": "chua-phuoc-hau-ngai-tu",
+      "name": "Chùa Phước Hậu Ngãi Tứ",
+      "address": "Ấp Đông Hậu, xã Ngãi Tứ, huyện Tam Bình, tỉnh Vĩnh Long",
+      "match": "huyện Tam Bình"
+    },
+    {
+      "id": "don-ca-tai-tu-nam-bo",
+      "name": "Đờn ca tài tử Nam Bộ",
+      "address": "Phổ biến toàn tỉnh Vĩnh Long; trọng điểm tại huyện Vũng Liêm (189 CLB). Không có một địa chỉ điểm diễn cố định duy nhất — hoạt động qua mạng lưới câu lạc bộ phân tán.",
+      "match": "huyện Vũng Liêm"
+    },
+    {
+      "id": "buoi-nam-roi-binh-minh",
+      "name": "Bưởi Năm Roi Bình Minh",
+      "address": "Xã Mỹ Hòa (cù lao Mỹ Hòa), thị xã Bình Minh, tỉnh Vĩnh Long (điểm bán: Nhà lồng chợ Mỹ Hòa, xã Mỹ Hòa, TX Bình Minh)",
+      "match": "thị xã Bình Minh"
+    },
+    {
+      "id": "khu-di-tich-dong-khoi",
+      "name": "Khu di tích Đồng Khởi",
+      "address": "Xã Định Thủy, huyện Mỏ Cày Nam, Bến Tre",
+      "match": "huyện Mỏ Cày"
+    },
+    {
+      "id": "lo-gach-mang-thit",
+      "name": "Lò gạch Mang Thít",
+      "address": "Huyện Mang Thít, tỉnh Vĩnh Long (trải dài qua các xã Mỹ Phước, Mỹ An, Nhơn Phú, Hòa Tịnh dọc sông Cổ Chiên)",
+      "match": "Huyện Mang Thít"
+    },
+    {
+      "id": "san-chim-vam-ho",
+      "name": "Sân chim Vàm Hồ",
+      "address": "Xã Tân Mỹ, huyện Ba Tri, Bến Tre",
+      "match": "huyện Ba Tri"
+    },
+    {
+      "id": "nha-dua-cocohome",
+      "name": "Nhà dừa CocoHome",
+      "address": "Xã Hòa Ninh, huyện Long Hồ, tỉnh Vĩnh Long",
+      "match": "huyện Long Hồ"
+    },
+    {
+      "id": "monkey-tea---tra-sua-coffee",
+      "name": "Monkey Tea - Trà Sữa & Coffee",
+      "address": "6 Lý Tự Trọng , Thị Xã Duyên Hải , Trà Vinh",
+      "match": "Thị Xã Duyên Hải"
+    },
+    {
+      "id": "somo-farm-cuu-long-mang-thit",
+      "name": "Somo Farm Cửu Long - trải nghiệm nông nghiệp",
+      "address": "Khóm 3, thị trấn Cái Nhum – huyện Mang Thít",
+      "match": "huyện Mang Thít"
+    },
+    {
+      "id": "vung-buoi-da-xanh-chau-thanh",
+      "name": "Vùng bưởi da xanh Châu Thành",
+      "address": "Huyện Châu Thành, Bến Tre",
+      "match": "Huyện Châu Thành"
+    },
+    {
+      "id": "cang-ca-binh-thang",
+      "name": "Cảng cá Bình Thắng",
+      "address": "Xã Bình Thắng, huyện Bình Đại, Bến Tre",
+      "match": "huyện Bình Đại"
+    },
+    {
+      "id": "bien-con-bung",
+      "name": "Biển Cồn Bửng",
+      "address": "Xã Thạnh Hải, huyện Thạnh Phú, Bến Tre",
+      "match": "huyện Thạnh Phú"
+    },
+    {
+      "id": "cu-lao-dai",
+      "name": "Cù lao Dài",
+      "address": "Xã Thanh Bình và Quới Thiện – huyện Vũng Liêm",
+      "match": "huyện Vũng Liêm"
+    },
+    {
+      "id": "con-oc",
+      "name": "Cồn Ốc",
+      "address": "Xã Hưng Phong, huyện Giồng Trôm, Bến Tre",
+      "match": "huyện Giồng Trôm"
+    },
+    {
+      "id": "con-tien",
+      "name": "Cồn Tiên",
+      "address": "Xã Tiên Long, huyện Châu Thành, Bến Tre",
+      "match": "huyện Châu Thành"
+    },
+    {
+      "id": "chua-tuyen-linh",
+      "name": "Chùa Tuyên Linh",
+      "address": "Xã Minh Đức, huyện Mỏ Cày Nam, Bến Tre",
+      "match": "huyện Mỏ Cày"
+    },
+    {
+      "id": "chua-hang-kompong-chray",
+      "name": "Chùa Hang (Kompong Chrây)",
+      "address": "Huyện Châu Thành, Trà Vinh (QL54, cách TP Trà Vinh ~5 km)",
+      "match": "Huyện Châu Thành"
+    },
+    {
+      "id": "lang-nghe-banh-tet-tra-cuon",
+      "name": "Làng nghề bánh tét Trà Cuôn",
+      "address": "Ấp Trà Cuôn, xã Kim Hòa, huyện Cầu Ngang, Trà Vinh",
+      "match": "huyện Cầu Ngang"
+    },
+    {
+      "id": "lang-nghe-banh-phong-son-doc",
+      "name": "Làng nghề bánh phồng Sơn Đốc",
+      "address": "Xã Hưng Nhượng, huyện Giồng Trôm, tỉnh Vĩnh Long",
+      "match": "huyện Giồng Trôm"
+    },
+    {
+      "id": "khu-du-lich-lang-be",
+      "name": "Khu du lịch Làng Bè",
+      "address": "81B/6B ấp An Thới, xã An Khánh, huyện Châu Thành, Bến Tre",
+      "match": "huyện Châu Thành"
+    },
+    {
+      "id": "con-ngheu",
+      "name": "Cồn Nghêu",
+      "address": "Biển Mỹ Long, huyện Cầu Ngang, Trà Vinh",
+      "match": "huyện Cầu Ngang"
+    },
+    {
+      "id": "com-dep-tra-vinh",
+      "name": "Cốm dẹp Trà Vinh",
+      "address": "Ấp Ba So, xã Nhị Trường, huyện Cầu Ngang, Trà Vinh",
+      "match": "huyện Cầu Ngang"
+    },
+    {
+      "id": "cua-hang-ocop-bien-ba-dong",
+      "name": "Cửa hàng OCOP biển Ba Động",
+      "address": "Khu du lịch Biển Ba Động, xã Trường Long Hòa, thị xã Duyên Hải, tỉnh Vĩnh Long",
+      "match": "thị xã Duyên Hải"
+    },
+    {
+      "id": "ca-chay-tra-on-rim-kho",
+      "name": "Cá cháy Trà Ôn rim/kho",
+      "address": "Xã Tích Thiện, huyện Trà Ôn, Vĩnh Long",
+      "match": "huyện Trà Ôn"
+    },
+    {
+      "id": "khoai-lang-mam-song-cuon-la-cach",
+      "name": "Khoai lang mắm sống cuốn lá cách",
+      "address": "Toàn tỉnh Vĩnh Long, đặc biệt huyện Bình Tân",
+      "match": "huyện Bình Tân"
+    },
+    {
+      "id": "tau-hu-ky-my-hoa-chien-gion",
+      "name": "Tàu hủ ky Mỹ Hòa chiên giòn",
+      "address": "Xã Mỹ Hòa, thị xã Bình Minh, Vĩnh Long",
+      "match": "thị xã Bình Minh"
+    },
+    {
+      "id": "banh-trang-nem-cu-lao-luc-si",
+      "name": "Bánh tráng nem cù lao Lục Sĩ",
+      "address": "Xã Lục Sĩ Thành (cù lao Mây), huyện Trà Ôn, Vĩnh Long",
+      "match": "huyện Trà Ôn"
+    },
+    {
+      "id": "chao-dua-thuan-duyen-tam-binh",
+      "name": "Chao dừa Thuận Duyên Tam Bình",
+      "address": "Ấp Phú Thành, xã Sông Phú, huyện Tam Bình, Vĩnh Long",
+      "match": "huyện Tam Bình"
+    },
+    {
+      "id": "banh-tet-ba-nhan",
+      "name": "Bánh tét ba nhân",
+      "address": "Huyện Vũng Liêm, Vĩnh Long (gốc); TP Vĩnh Long (nơi bán)",
+      "match": "Huyện Vũng Liêm"
+    },
+    {
+      "id": "sau-rieng-ri-6-long-ho",
+      "name": "Sầu riêng Ri 6 Long Hồ",
+      "address": "Xã Bình Hòa Phước, huyện Long Hồ, Vĩnh Long",
+      "match": "huyện Long Hồ"
+    },
+    {
+      "id": "ca-khoai-tra-vinh",
+      "name": "Cá khoai Trà Vinh",
+      "address": "Biển Ba Động, thị xã Duyên Hải, Trà Vinh",
+      "match": "thị xã Duyên Hải"
+    },
+    {
+      "id": "oc-gao-con-phu-da-hap-sa",
+      "name": "Ốc Gạo Cồn Phú Đa Hấp Sả",
+      "address": "Cồn Phú Đa, xã Vĩnh Bình, huyện Chợ Lách, Bến Tre",
+      "match": "huyện Chợ Lách"
+    },
+    {
+      "id": "keo-me-mang-cau",
+      "name": "Kẹo Me Mãng Cầu",
+      "address": "TT Mỏ Cày, huyện Mỏ Cày Nam, Bến Tre",
+      "match": "huyện Mỏ Cày"
+    },
+    {
+      "id": "banh-u-da-loc",
+      "name": "Bánh ú Đa Lộc",
+      "address": "Ấp Hương Phụ, xã Đa Lộc, huyện Châu Thành, Trà Vinh",
+      "match": "huyện Châu Thành"
+    },
+    {
+      "id": "nha-thuc-pham-sach-khoai-lang-tim-binh-tan-vinh-long",
+      "name": "Nhà Thực Phẩm Sạch Khoai Lang Tím Bình Tân",
+      "address": "Huyện Bình Tân, tỉnh Vĩnh Long (Quốc lộ 53)",
+      "match": "Huyện Bình Tân"
+    },
+    {
+      "id": "lang-nghe-thu-cong-my-nghe-luc-binh-my-an-vinh-long",
+      "name": "Làng nghề thủ công mỹ nghệ lục bình Mỹ An",
+      "address": "Xã Mỹ An, huyện Mang Thít, Vĩnh Long",
+      "match": "huyện Mang Thít"
+    },
+    {
+      "id": "cu-cai-non-muoi-chua-bui-thi-thanh-thao-ocop",
+      "name": "Củ cải non muối chua Bùi Thị Thanh Thảo (OCOP)",
+      "address": "Huyện Bình Tân, Vĩnh Long",
+      "match": "Huyện Bình Tân"
+    },
+    {
+      "id": "lang-nghe-may-tre-dan-dai-an",
+      "name": "Làng nghề mây tre đan Đại An",
+      "address": "Ấp Giồng Đình, xã Đại An, huyện Trà Cú, Trà Vinh",
+      "match": "huyện Trà Cú"
+    },
+    {
+      "id": "quan-nhau-vuon-dua-tieu-can-tra-vinh",
+      "name": "Quán nhậu Vườn Dừa Tiểu Cần",
+      "address": "Huyện Tiểu Cần, Trà Vinh (trên đường về huyện)",
+      "match": "Huyện Tiểu Cần"
+    },
+    {
+      "id": "chua-tuyen-linh-ben-tre",
+      "name": "Chùa Tuyên Linh (Bến Tre)",
+      "address": "Ấp Tân Thới Đông B, xã Minh Đức, huyện Mỏ Cày Nam, Bến Tre",
+      "match": "huyện Mỏ Cày"
+    },
+    {
+      "id": "nha-tho-cai-mon-ben-tre",
+      "name": "Nhà thờ Cái Mơn (Chợ Lách)",
+      "address": "Xã Vĩnh Thành, huyện Chợ Lách, Bến Tre",
+      "match": "huyện Chợ Lách"
+    },
+    {
+      "id": "chua-vam-ray-tra-vinh",
+      "name": "Chùa Vàm Ray (Vàm Rây)",
+      "address": "Ấp Vàm Ray, xã Hàm Tân, huyện Trà Cú, Trà Vinh",
+      "match": "huyện Trà Cú"
+    },
+    {
+      "id": "khu-du-lich-sinh-thai-vinh-sang-cu-lao-an-binh",
+      "name": "Khu Du Lịch Sinh Thái Vinh Sang",
+      "address": "Tổ 4, ấp An Thuận, xã An Bình, huyện Long Hồ, tỉnh Vĩnh Long",
+      "match": "huyện Long Hồ"
+    },
+    {
+      "id": "chom-chom-cai-mon",
+      "name": "Chôm chôm Cái Mơn",
+      "address": "Xã Vĩnh Thành, huyện Chợ Lách, Bến Tre",
+      "match": "huyện Chợ Lách"
+    },
+    {
+      "id": "cong-ty-tnhh-mtv-quoc-thao",
+      "name": "Công ty TNHH MTV Quốc Thảo",
+      "address": "Huyện Bình Tân, tỉnh Vĩnh Long",
+      "match": "Huyện Bình Tân"
+    },
+    {
+      "id": "vuon-chim-hai-chia-tan-my-tra-on",
+      "name": "Vườn Chim Hai Chìa (Khu bảo tồn cò ốc Sách Đỏ)",
+      "address": "Ấp Gia Kiết, xã Tân Mỹ – huyện Trà Ôn",
+      "match": "huyện Trà Ôn"
+    },
+    {
+      "id": "loi-choi-sa-ot-tra-vinh",
+      "name": "Loi Choi Sả Ớt Trà Vinh",
+      "address": "Thành phố Trà Vinh và ven sông các huyện Châu Thành, Cầu Ngang",
+      "match": "huyện Châu Thành"
+    },
+    {
+      "id": "keo-dua-thu-cong-ben-tre",
+      "name": "Kẹo Dừa Thủ Công Bến Tre",
+      "address": "Phường 7, TP Bến Tre và huyện Châu Thành, Mỏ Cày Nam",
+      "match": "huyện Châu Thành"
+    },
+    {
+      "id": "mat-ong-hoa-dua-ben-tre",
+      "name": "Mật Ong Hoa Dừa Bến Tre",
+      "address": "Bến Tre (sản xuất nhiều ở huyện Mỏ Cày Bắc, Mỏ Cày Nam, Thạnh Phú)",
+      "match": "huyện Mỏ Cày"
+    },
+    {
+      "id": "co-so-keo-dua-hong-van",
+      "name": "Cơ sở kẹo dừa Hồng Vân",
+      "address": "122D Quốc lộ 60, xã An Khánh, huyện Châu Thành, Bến Tre",
+      "match": "huyện Châu Thành"
+    },
+    {
+      "id": "lang-nghe-cay-giong-cho-lach",
+      "name": "Làng nghề cây giống Chợ Lách",
+      "address": "Huyện Chợ Lách, Bến Tre",
+      "match": "Huyện Chợ Lách"
+    },
+    {
+      "id": "lang-van-hoa-du-lich-cho-lach",
+      "name": "Làng Văn hóa Du lịch Chợ Lách",
+      "address": "Huyện Chợ Lách, Bến Tre",
+      "match": "Huyện Chợ Lách"
+    },
+    {
+      "id": "lang-nghe-det-chieu-ham-tan",
+      "name": "Làng nghề dệt chiếu Hàm Tân",
+      "address": "Xã Hàm Tân, huyện Trà Cú, Trà Vinh",
+      "match": "huyện Trà Cú"
+    },
+    {
+      "id": "chua-phno-om-pung-chua-long-truong",
+      "name": "Chùa Phnô Om Pung (Chùa Long Trường)",
+      "address": "Ấp Long Trường, xã Tân Hiệp, huyện Trà Cú, Trà Vinh",
+      "match": "huyện Trà Cú"
+    },
+    {
+      "id": "chieu-ca-hom",
+      "name": "Chiếu Cà Hom",
+      "address": "Xã Hàm Tân, huyện Trà Cú, Trà Vinh",
+      "match": "huyện Trà Cú"
+    },
+    {
+      "id": "san-pham-ocop-thu-cong-my-nghe-tra-cu",
+      "name": "Sản phẩm OCOP thủ công mỹ nghệ Trà Cú",
+      "address": "Huyện Trà Cú, Trà Vinh",
+      "match": "Huyện Trà Cú"
+    },
+    {
+      "id": "banh-trang-cu-lao-may-lang-nghe-banh-trang",
+      "name": "Bánh Tráng Cù Lao Mây (Làng nghề bánh tráng)",
+      "address": "Xã Lục Sĩ Thành, huyện Trà Ôn, tỉnh Vĩnh Long",
+      "match": "huyện Trà Ôn"
+    },
+    {
+      "id": "hop-tac-xa-cam-phuong-thuy",
+      "name": "Hợp tác xã cam Phương Thúy",
+      "address": "Huyện Trà Ôn",
+      "match": "Huyện Trà Ôn"
+    },
+    {
+      "id": "cho-tan-quoi",
+      "name": "Chợ Tân Quới",
+      "address": "Thị trấn Tân Quới, huyện Bình Tân, Vĩnh Long",
+      "match": "huyện Bình Tân"
+    },
+    {
+      "id": "khoai-lang-say-binh-tan",
+      "name": "Khoai lang sấy Bình Tân",
+      "address": "Huyện Bình Tân, tỉnh Vĩnh Long",
+      "match": "Huyện Bình Tân"
+    },
+    {
+      "id": "khoai-lang-say-dong-phat",
+      "name": "Khoai lang sấy Đông Phát",
+      "address": "Huyện Bình Tân, Vĩnh Long",
+      "match": "Huyện Bình Tân"
+    },
+    {
+      "id": "khoai-lang-say-gion-mien-tay",
+      "name": "Khoai lang sấy giòn Miền Tây",
+      "address": "Huyện Bình Tân, Vĩnh Long",
+      "match": "Huyện Bình Tân"
+    },
+    {
+      "id": "vu-sua-hoang-kim-thanh-binh-ocop",
+      "name": "Vú sữa hoàng kim Thanh Bình (OCOP)",
+      "address": "Huyện Bình Tân, Vĩnh Long",
+      "match": "Huyện Bình Tân"
+    },
+    {
+      "id": "vuon-trai-cay-dac-san-long-ho",
+      "name": "Vườn trái cây đặc sản Long Hồ",
+      "address": "Huyện Long Hồ, tỉnh Vĩnh Long",
+      "match": "Huyện Long Hồ"
+    },
+    {
+      "id": "gach-nung-do-va-gom-khong-men-mang-thit",
+      "name": "Gạch nung đỏ và gốm không men Mang Thít",
+      "address": "Huyện Mang Thít, Vĩnh Long",
+      "match": "Huyện Mang Thít"
+    },
+    {
+      "id": "song-co-chien-doan-mang-thit",
+      "name": "Sông Cổ Chiên đoạn Mang Thít",
+      "address": "Dọc huyện Mang Thít, Vĩnh Long",
+      "match": "huyện Mang Thít"
+    },
+    {
+      "id": "tour-dap-xe-kham-pha-lo-gach-mang-thit",
+      "name": "Tour đạp xe khám phá lò gạch Mang Thít",
+      "address": "Xuất phát TP Vĩnh Long, đi qua huyện Mang Thít, Vĩnh Long",
+      "match": "huyện Mang Thít"
+    },
+    {
+      "id": "lang-nghe-det-chieu-vung-liem",
+      "name": "Làng nghề dệt chiếu Vũng Liêm",
+      "address": "Huyện Vũng Liêm, Vĩnh Long",
+      "match": "Huyện Vũng Liêm"
+    },
+    {
+      "id": "mut-dua-la-dua-duc-dat",
+      "name": "Mứt dừa lá dứa Đức Đạt",
+      "address": "Huyện Vũng Liêm, tỉnh Vĩnh Long",
+      "match": "Huyện Vũng Liêm"
+    },
+    {
+      "id": "lap-xuong-hiep-ky",
+      "name": "Lạp xưởng Hiệp Ký",
+      "address": "Huyện Vũng Liêm, tỉnh Vĩnh Long",
+      "match": "Huyện Vũng Liêm"
+    },
+    {
+      "id": "mut-xoai-cat-num-foodo-ocop",
+      "name": "Mứt xoài cát núm Foodo (OCOP)",
+      "address": "Huyện Vũng Liêm, tỉnh Vĩnh Long",
+      "match": "Huyện Vũng Liêm"
+    },
+    {
+      "id": "bun-tuoi-sau-thanh",
+      "name": "Bún tươi Sáu Thạnh",
+      "address": "Huyện Tam Bình, Vĩnh Long",
+      "match": "Huyện Tam Bình"
+    },
+    {
+      "id": "lang-nghe-banh-trang-tam-binh",
+      "name": "Làng nghề bánh tráng Tam Bình",
+      "address": "Huyện Tam Bình, Vĩnh Long",
+      "match": "Huyện Tam Bình"
+    },
+    {
+      "id": "san-pham-chao-dua-chao-chanh-day-thuan-duyen-ocop-4-sao",
+      "name": "Sản phẩm chao dừa – chao chanh dây Thuận Duyên (OCOP 4 sao)",
+      "address": "Huyện Tam Bình, tỉnh Vĩnh Long",
+      "match": "Huyện Tam Bình"
+    },
+    {
+      "id": "cam-sanh-tra-on",
+      "name": "Cam sành Trà Ôn",
+      "address": "Huyện Trà Ôn, tỉnh Vĩnh Long",
+      "match": "Huyện Trà Ôn"
+    },
+    {
+      "id": "ca-chay-song-hau",
+      "name": "Cá cháy sông Hậu",
+      "address": "Huyện Trà Ôn, tỉnh Vĩnh Long",
+      "match": "Huyện Trà Ôn"
+    },
+    {
+      "id": "dua-xiem-xanh-giong-trom",
+      "name": "Dừa xiêm xanh Giồng Trôm",
+      "address": "Huyện Giồng Trôm, Bến Tre",
+      "match": "Huyện Giồng Trôm"
+    },
+    {
+      "id": "ca-chuon-kho-binh-dai",
+      "name": "Cá chuồn khô Bình Đại",
+      "address": "Huyện Bình Đại, Bến Tre",
+      "match": "Huyện Bình Đại"
+    },
+    {
+      "id": "tom-kho-binh-dai",
+      "name": "Tôm khô Bình Đại",
+      "address": "Xã An Thủy, huyện Bình Đại, Bến Tre",
+      "match": "huyện Bình Đại"
+    },
+    {
+      "id": "mut-dua-huu-co-binh-dai",
+      "name": "Mứt dừa hữu cơ Bình Đại",
+      "address": "Huyện Bình Đại, Bến Tre",
+      "match": "Huyện Bình Đại"
+    },
+    {
+      "id": "chua-long-quang-chua-dua",
+      "name": "Chùa Long Quang (Chùa Dừa)",
+      "address": "Ấp Mỹ Sơn Đông, xã Phước Mỹ Trung, huyện Mỏ Cày Bắc, Bến Tre",
+      "match": "huyện Mỏ Cày"
+    },
+    {
+      "id": "kho-ca-keo-duyen-hai",
+      "name": "Khô cá kèo Duyên Hải",
+      "address": "Thị xã Duyên Hải, Trà Vinh",
+      "match": "Thị xã Duyên Hải"
+    },
+    {
+      "id": "hai-dang-ba-dong",
+      "name": "Hải đăng Ba Động",
+      "address": "Ấp Nhà Mát, Phường Trường Long Hòa, Thị xã Duyên Hải, Tỉnh Trà Vinh",
+      "match": "Thị xã Duyên Hải"
+    },
+    {
+      "id": "chua-hang-wat-kompong-chray",
+      "name": "Chùa Hang (Wat Kompong Chray)",
+      "address": "Khóm 4, xã Châu Thành, thị xã Duyên Hải, cách trung tâm TP Trà Vinh khoảng 6km theo đường Điện Biên Phủ",
+      "match": "thị xã Duyên Hải"
+    },
+    {
+      "id": "rung-ngap-man-long-vinh-duyen-hai",
+      "name": "Rừng ngập mặn Long Vĩnh - Duyên Hải",
+      "address": "Xã Long Vĩnh và các xã ven biển, thị xã Duyên Hải, Trà Vinh",
+      "match": "thị xã Duyên Hải"
+    },
+    {
+      "id": "cua-lot-vinacrab-long-toan",
+      "name": "Cua lột Vinacrab Long Toàn",
+      "address": "Ấp Giồng Trông, xã Long Toàn, thị xã Duyên Hải, tỉnh Vĩnh Long",
+      "match": "thị xã Duyên Hải"
+    },
+    {
+      "id": "vung-giong-cat-long-vinh",
+      "name": "Vùng giồng cát Long Vĩnh",
+      "address": "Xã Long Vĩnh, thị xã Duyên Hải, Trà Vinh",
+      "match": "thị xã Duyên Hải"
+    },
+    {
+      "id": "khu-du-lich-sinh-thai-vung-dao-duyen-hai",
+      "name": "Khu du lịch sinh thái vùng đảo Duyên Hải",
+      "address": "Các xã vùng đảo, thị xã Duyên Hải, Trà Vinh",
+      "match": "thị xã Duyên Hải"
+    },
+    {
+      "id": "oc-gao-phu-da",
+      "name": "Ốc gạo Phú Đa",
+      "address": "Cồn Phú Đa, xã Vĩnh Bình, huyện Chợ Lách, Bến Tre",
+      "match": "huyện Chợ Lách"
+    },
+    {
+      "id": "khu-du-lich-dai-loc",
+      "name": "Khu du lịch Đại Lộc",
+      "address": "Ấp Sơn Châu, xã Sơn Định, huyện Chợ Lách, Bến Tre",
+      "match": "huyện Chợ Lách"
+    },
+    {
+      "id": "oc-gao-vinh-binh",
+      "name": "Ốc gạo Vĩnh Bình",
+      "address": "Cồn Phú Đa, xã Vĩnh Bình, huyện Chợ Lách, Bến Tre",
+      "match": "huyện Chợ Lách"
+    },
+    {
+      "id": "thien-vien-truc-lam-duyen-hai",
+      "name": "Thiền viện Trúc Lâm Duyên Hải",
+      "address": "Ấp Khoán Tiều, xã Trường Long Hòa, thị xã Duyên Hải",
+      "match": "thị xã Duyên Hải"
+    },
+    {
+      "id": "tom-kho-cham-mam-chua-ngot-duyen-hai",
+      "name": "Tôm khô chấm mắm chua ngọt Duyên Hải",
+      "address": "Phường 2, thị xã Duyên Hải",
+      "match": "thị xã Duyên Hải"
+    },
+    {
+      "id": "le-cung-bien-dong-cao",
+      "name": "Lễ Cúng biển Động Cao",
+      "address": "Xã Đông Hải, thị xã Duyên Hải, Trà Vinh",
+      "match": "thị xã Duyên Hải"
+    },
+    {
+      "id": "le-hoi-nghinh-ong-lang-con-tau",
+      "name": "Lễ hội Nghinh Ông Lăng Cồn Tàu",
+      "address": "Ấp Cồn Tàu, xã Trường Long Hòa, thị xã Duyên Hải",
+      "match": "thị xã Duyên Hải"
+    },
+    {
+      "id": "khu-bao-ton-thien-nhien-dat-ngap-nuoc-vam-ho",
+      "name": "Khu bảo tồn thiên nhiên đất ngập nước Vàm Hồ",
+      "address": "Xã Tân Mỹ, huyện Ba Tri, Bến Tre",
+      "match": "huyện Ba Tri"
+    },
+    {
+      "id": "bien-an-thuy",
+      "name": "Biển An Thủy",
+      "address": "Xã An Thủy, huyện Ba Tri, Bến Tre",
+      "match": "huyện Ba Tri"
+    },
+    {
+      "id": "tau-hu-ky-my-hoa",
+      "name": "Tàu hủ ky Mỹ Hòa",
+      "address": "Phường Cái Vồn, thị xã Bình Minh, Vĩnh Long",
+      "match": "thị xã Bình Minh"
+    },
+    {
+      "id": "banh-tet-tra-cuon",
+      "name": "Bánh tét Trà Cuôn",
+      "address": "Ấp Trà Cuôn, xã Kim Hòa, huyện Cầu Ngang, Trà Vinh",
+      "match": "huyện Cầu Ngang"
+    },
+    {
+      "id": "khu-luu-niem-tran-dai-nghia",
+      "name": "khu lưu niệm Trần Đại Nghĩa",
+      "address": "Xã Tường Lộc, huyện Tam Bình, tỉnh Vĩnh Long",
+      "match": "huyện Tam Bình"
+    },
+    {
+      "id": "ut-tra-on",
+      "name": "Út Trà Ôn",
+      "address": "Ấp Đông Phú, làng Đông Hậu, huyện Trà Ôn, Vĩnh Long",
+      "match": "huyện Trà Ôn"
+    },
+    {
+      "id": "le-thuy",
+      "name": "Lệ Thủy",
+      "address": "Làng Đông Thạnh, huyện Bình Minh, Vĩnh Long",
+      "match": "huyện Bình Minh"
+    },
+    {
+      "id": "thanh-loan",
+      "name": "Thanh Loan",
+      "address": "Làng Phong Thới, huyện Vũng Liêm, Vĩnh Long",
+      "match": "huyện Vũng Liêm"
+    },
+    {
+      "id": "thanh-huong",
+      "name": "Thanh Hương",
+      "address": "Làng Phong Thới, huyện Vũng Liêm, Vĩnh Long",
+      "match": "huyện Vũng Liêm"
+    },
+    {
+      "id": "truong-xuan",
+      "name": "Trường Xuân",
+      "address": "Huyện Trà Ôn, Vĩnh Long",
+      "match": "Huyện Trà Ôn"
+    },
+    {
+      "id": "nha-san-ong-muoi-day",
+      "name": "Nhà sàn ông Mười Đầy",
+      "address": "Cù lao An Bình, huyện Long Hồ, Vĩnh Long",
+      "match": "huyện Long Hồ"
+    },
+    {
+      "id": "bai-bien-ba-dong",
+      "name": "Bãi biển Ba Động",
+      "address": "Xã Trường Long Hòa, thị xã Duyên Hải, tỉnh Vĩnh Long",
+      "match": "thị xã Duyên Hải"
+    },
+    {
+      "id": "le-hoi-cau-ngu",
+      "name": "Lễ hội Cầu Ngư",
+      "address": "Ấp Động Cao, xã Đông Hải, thị xã Duyên Hải, Trà Vinh",
+      "match": "thị xã Duyên Hải"
+    },
+    {
+      "id": "sau-rieng-ri6",
+      "name": "Sầu riêng Ri6",
+      "address": "Huyện Long Hồ, Vĩnh Long (gốc)",
+      "match": "Huyện Long Hồ"
+    },
+    {
+      "id": "nem-vung-liem",
+      "name": "Nem Vũng Liêm",
+      "address": "Huyện Vũng Liêm, Vĩnh Long",
+      "match": "Huyện Vũng Liêm"
+    },
+    {
+      "id": "tom-duyen-hai",
+      "name": "Tôm Duyên Hải",
+      "address": "Thị xã Duyên Hải, Trà Vinh",
+      "match": "Thị xã Duyên Hải"
+    },
+    {
+      "id": "khu-du-lich-vinh-sang",
+      "name": "Khu du lịch Vinh Sang",
+      "address": "Ấp An Thuận, xã An Bình, huyện Long Hồ, Vĩnh Long",
+      "match": "huyện Long Hồ"
+    },
+    {
+      "id": "ga-hap-ruou",
+      "name": "Gà hấp rượu",
+      "address": "Toàn tỉnh Vĩnh Long, phổ biến huyện Long Hồ",
+      "match": "huyện Long Hồ"
+    },
+    {
+      "id": "banh-xeo-oc-gao-con-phu-da",
+      "name": "Bánh Xèo Ốc Gạo Cồn Phú Đa",
+      "address": "Cồn Phú Đa, xã Vĩnh Bình, huyện Chợ Lách, Bến Tre",
+      "match": "huyện Chợ Lách"
+    },
+    {
+      "id": "ruou-phu-le-ba-tri",
+      "name": "Rượu Phú Lễ Ba Tri",
+      "address": "Xã Phú Lễ, huyện Ba Tri, Bến Tre",
+      "match": "huyện Ba Tri"
+    },
+    {
+      "id": "tom-su-nuong-than-binh-dai",
+      "name": "Tôm Sú Nướng Than Bình Đại",
+      "address": "Huyện Bình Đại, Bến Tre",
+      "match": "Huyện Bình Đại"
+    },
+    {
+      "id": "hau-sua-thanh-phu",
+      "name": "Hàu Sữa Thạnh Phú",
+      "address": "Vùng cửa biển huyện Thạnh Phú, Bến Tre",
+      "match": "huyện Thạnh Phú"
+    },
+    {
+      "id": "cho-noi-dua-song-thom-mo-cay",
+      "name": "Chợ Nổi Dừa Sông Thom Mỏ Cày",
+      "address": "Sông Thom, xã An Thạnh, huyện Mỏ Cày Nam, Bến Tre",
+      "match": "huyện Mỏ Cày"
+    },
+    {
+      "id": "vuon-trai-cay-6-tan-cu-lao-an-binh",
+      "name": "Vườn Trái Cây 6 Tấn – Cù Lao An Bình",
+      "address": "Xã An Bình – huyện Long Hồ (gần bến phà An Bình)",
+      "match": "huyện Long Hồ"
+    },
+    {
+      "id": "khu-sinh-thai-gio-duoc-thanh-phu-ben-tre",
+      "name": "Khu Sinh Thái Gió Đước",
+      "address": "Ấp Thạnh Thới B, xã Thạnh Hải, huyện Thạnh Phú, Bến Tre",
+      "match": "huyện Thạnh Phú"
+    },
+    {
+      "id": "con-phu-da-song-co-chien-cho-lach-ben-tre",
+      "name": "Cồn Phú Đa (Sông Cổ Chiên - Chợ Lách)",
+      "address": "Xã Vĩnh Bình, huyện Chợ Lách, Bến Tre",
+      "match": "huyện Chợ Lách"
+    },
+    {
+      "id": "ca-chay-tra-on",
+      "name": "Cá cháy Trà Ôn",
+      "address": "Huyện Trà Ôn, Vĩnh Long",
+      "match": "Huyện Trà Ôn"
+    },
+    {
+      "id": "nhan-tieu-da-bo",
+      "name": "Nhãn tiêu da bò",
+      "address": "Huyện Châu Thành, Bến Tre (vùng trồng chính)",
+      "match": "Huyện Châu Thành"
+    },
+    {
+      "id": "nhan-ido-an-binh",
+      "name": "Nhãn Ido An Bình",
+      "address": "Cù lao An Bình, huyện Long Hồ, Vĩnh Long",
+      "match": "huyện Long Hồ"
+    },
+    {
+      "id": "cam-xoan-tra-on",
+      "name": "Cam xoàn Trà Ôn",
+      "address": "Huyện Trà Ôn, Vĩnh Long",
+      "match": "Huyện Trà Ôn"
+    },
+    {
+      "id": "chom-chom-cho-lach",
+      "name": "Chôm chôm Chợ Lách",
+      "address": "Huyện Chợ Lách, Bến Tre",
+      "match": "Huyện Chợ Lách"
+    },
+    {
+      "id": "ruou-phu-le",
+      "name": "Rượu Phú Lễ",
+      "address": "Xã Phú Lễ, huyện Ba Tri, Bến Tre",
+      "match": "huyện Ba Tri"
+    },
+    {
+      "id": "banh-phong-son-doc",
+      "name": "Bánh phồng Sơn Đốc",
+      "address": "Xã Hưng Nhượng, huyện Giồng Trôm, Bến Tre",
+      "match": "huyện Giồng Trôm"
+    },
+    {
+      "id": "chom-chom-con-tan-quy",
+      "name": "Chôm chôm Cồn Tân Quy",
+      "address": "Xã An Phú Tân, huyện Cầu Kè, Trà Vinh",
+      "match": "huyện Cầu Kè"
+    },
+    {
+      "id": "quyt-duong-long-tri",
+      "name": "Quýt đường Long Trị",
+      "address": "Ấp Long Trị, xã Bình Phú, huyện Càng Long, Trà Vinh",
+      "match": "huyện Càng Long"
+    },
+    {
+      "id": "tom-kho-vinh-kim",
+      "name": "Tôm khô Vinh Kim",
+      "address": "Xã Vinh Kim, huyện Cầu Ngang, Trà Vinh",
+      "match": "huyện Cầu Ngang"
+    },
+    {
+      "id": "xoai-tu-quy",
+      "name": "Xoài tứ quý",
+      "address": "Các huyện Ba Tri, Bình Đại, Thạnh Phú, Bến Tre",
+      "match": "huyện Ba Tri"
+    },
+    {
+      "id": "cay-giong-hoa-kieng-cho-lach",
+      "name": "Cây giống, hoa kiểng Chợ Lách",
+      "address": "Huyện Chợ Lách, Bến Tre",
+      "match": "Huyện Chợ Lách"
+    },
+    {
+      "id": "dau-phong-tra-vinh",
+      "name": "Đậu phộng Trà Vinh",
+      "address": "Các huyện Cầu Ngang, Trà Cú, Duyên Hải, Trà Vinh",
+      "match": "huyện Cầu Ngang"
+    },
+    {
+      "id": "banh-trang-nem-cu-lao-may",
+      "name": "Bánh tráng nem Cù Lao Mây",
+      "address": "Xã Lục Sỹ Thành, huyện Trà Ôn, Vĩnh Long",
+      "match": "huyện Trà Ôn"
+    },
+    {
+      "id": "sa-po-che-cho-lach",
+      "name": "Sa pô chê Chợ Lách",
+      "address": "Huyện Chợ Lách, Bến Tre",
+      "match": "Huyện Chợ Lách"
+    },
+    {
+      "id": "dinh-mieu-con-trung",
+      "name": "Đình Miếu Cồn Trứng",
+      "address": "Cồn Trứng, thị xã Duyên Hải, Trà Vinh",
+      "match": "thị xã Duyên Hải"
+    },
+    {
+      "id": "lang-ong-nam-hai-con-bung",
+      "name": "Lăng Ông Nam Hải (Cồn Bửng)",
+      "address": "Cồn Bửng, xã Thạnh Hải, huyện Thạnh Phú, Bến Tre",
+      "match": "huyện Thạnh Phú"
+    },
+    {
+      "id": "khu-di-tich-can-cu-tinh-uy-tra-vinh",
+      "name": "Khu di tích Căn cứ Tỉnh ủy Trà Vinh",
+      "address": "Ấp Giồng Giếng, xã Dân Thành, thị xã Duyên Hải, Trà Vinh",
+      "match": "thị xã Duyên Hải"
+    },
+    {
+      "id": "dinh-phu-le",
+      "name": "Đình Phú Lễ",
+      "address": "Ấp Phú Khương, xã Phú Lễ, huyện Ba Tri, Bến Tre",
+      "match": "huyện Ba Tri"
+    },
+    {
+      "id": "khu-di-tich-mo-va-den-tho-phan-thanh-gian",
+      "name": "Khu di tích mộ và đền thờ Phan Thanh Giản",
+      "address": "Xã Bảo Thạnh, huyện Ba Tri, tỉnh Vĩnh Long",
+      "match": "huyện Ba Tri"
+    },
+    {
+      "id": "chua-lo-gach",
+      "name": "Chùa Lò Gạch",
+      "address": "Ấp Ba Se A, xã Lương Hòa, huyện Châu Thành, Trà Vinh",
+      "match": "huyện Châu Thành"
+    },
+    {
+      "id": "khu-luu-niem-nu-anh-hung-nguyen-thi-ut-ut-tich",
+      "name": "Khu lưu niệm Nữ anh hùng Nguyễn Thị Út (Út Tịch)",
+      "address": "Ấp Ngọc Hồ, xã Tam Ngãi, huyện Cầu Kè, Trà Vinh",
+      "match": "huyện Cầu Kè"
+    },
+    {
+      "id": "chua-phuoc-son",
+      "name": "Chùa Phước Sơn",
+      "address": "Phường Bình Minh, thị xã Bình Minh, Vĩnh Long",
+      "match": "thị xã Bình Minh"
+    },
+    {
+      "id": "dinh-binh-hoa",
+      "name": "Đình Bình Hòa",
+      "address": "Ấp 5A, thị trấn Giồng Trôm, huyện Giồng Trôm, Bến Tre",
+      "match": "huyện Giồng Trôm"
+    },
+    {
+      "id": "mieu-ba-chua-xu-ben-tre",
+      "name": "Miếu Bà Chúa Xứ Bến Tre",
+      "address": "Ấp Thành Long, xã Thành Thới A, huyện Mỏ Cày Nam, Bến Tre",
+      "match": "huyện Mỏ Cày"
+    },
+    {
+      "id": "chua-bo-de",
+      "name": "Chùa Bồ Đề",
+      "address": "Khóm 1, Phường Thành Phước, thị xã Bình Minh, tỉnh Vĩnh Long",
+      "match": "thị xã Bình Minh"
+    },
+    {
+      "id": "khu-di-tich-cach-mang-cai-ngang",
+      "name": "Khu di tích Cách mạng Cái Ngang",
+      "address": "Ấp 4, xã Phú Lộc, huyện Tam Bình, tỉnh Vĩnh Long",
+      "match": "huyện Tam Bình"
+    },
+    {
+      "id": "ben-xe-duyen-hai-tx-duyen-hai-tra-vinh",
+      "name": "Bến xe Duyên Hải (TX. Duyên Hải)",
+      "address": "Đường 19 tháng 5, Khóm 01, Phường 01, Thị xã Duyên Hải, Trà Vinh. Điện thoại: 0294 3833 727",
+      "match": "Thị xã Duyên Hải"
+    },
+    {
+      "id": "chua-soc-tro",
+      "name": "Chùa Sóc Tro",
+      "address": "Ấp Sóc Trò, xã An Quảng Hữu, huyện Trà Cú, Trà Vinh",
+      "match": "huyện Trà Cú"
+    },
+    {
+      "id": "nha-bia-tuong-niem-truong-vinh-ky",
+      "name": "Nhà bia tưởng niệm Trương Vĩnh Ký",
+      "address": "Đối diện nhà thờ Cái Mơn, xã Vĩnh Thành, huyện Chợ Lách, Bến Tre",
+      "match": "huyện Chợ Lách"
+    },
+    {
+      "id": "khu-di-tich-quoc-gia-dac-biet-dong-khoi",
+      "name": "Khu Di tích Quốc gia Đặc biệt Đồng Khởi",
+      "address": "Xã Định Thủy, huyện Mỏ Cày Nam, tỉnh Vĩnh Long",
+      "match": "huyện Mỏ Cày"
+    },
+    {
+      "id": "chua-khai-tuong",
+      "name": "Chùa Khải Tường",
+      "address": "Xã Phú Lễ, huyện Ba Tri, Bến Tre",
+      "match": "huyện Ba Tri"
+    },
+    {
+      "id": "di-tich-lich-su-cach-mang-cai-ngang",
+      "name": "Di tích lịch sử cách mạng Cái Ngang",
+      "address": "Ấp 4, xã Phú Lộc, huyện Tam Bình, tỉnh Vĩnh Long",
+      "match": "huyện Tam Bình"
+    },
+    {
+      "id": "khu-tuong-niem-nguyen-thi-ut-ut-tich",
+      "name": "Khu Tưởng niệm Nguyễn Thị Út (Út Tịch)",
+      "address": "Ấp Ngọc Hồ, xã Tam Ngãi, huyện Cầu Kè, Trà Vinh",
+      "match": "huyện Cầu Kè"
+    },
+    {
+      "id": "chua-hung-hue",
+      "name": "Chùa Hưng Huệ",
+      "address": "Ấp Tân Thuận, xã Tân Quới, huyện Bình Tân, Vĩnh Long",
+      "match": "huyện Bình Tân"
+    },
+    {
+      "id": "khu-luu-niem-pham-hung",
+      "name": "Khu lưu niệm Phạm Hùng",
+      "address": "Ấp Long Thuận A, xã Long Phước, huyện Long Hồ, tỉnh Vĩnh Long",
+      "match": "huyện Long Hồ"
+    },
+    {
+      "id": "khu-luu-niem-chu-tich-hoi-dong-bo-truong-pham-hung",
+      "name": "Khu lưu niệm Chủ tịch Hội đồng Bộ trưởng Phạm Hùng",
+      "address": "Ấp Long Thuận A, xã Long Phước, huyện Long Hồ, tỉnh Vĩnh Long",
+      "match": "huyện Long Hồ"
+    },
+    {
+      "id": "chua-shanghamangala-hanh-phuc-tang",
+      "name": "Chùa Shanghamangala (Hạnh Phúc Tăng)",
+      "address": "Huyện Vũng Liêm, Vĩnh Long",
+      "match": "Huyện Vũng Liêm"
+    },
+    {
+      "id": "tuong-dai-doc-binh-le-can-nguyen-giao",
+      "name": "Tượng đài Đốc binh Lê Cẩn - Nguyễn Giao",
+      "address": "Ngã ba An Nhơn, TT Vũng Liêm, huyện Vũng Liêm, Vĩnh Long",
+      "match": "huyện Vũng Liêm"
+    },
+    {
+      "id": "khu-di-tich-mo-than-mau-va-duong-mau-thoai-ngoc-hau",
+      "name": "Khu di tích mộ thân mẫu và cha mẹ vợ Thoại Ngọc Hầu (hoặc Quần thể mộ thân nhân Thoại Ngọc Hầu)",
+      "address": "Ấp Thái Bình, xã Thanh Bình, huyện Vũng Liêm, Vĩnh Long",
+      "match": "huyện Vũng Liêm"
+    },
+    {
+      "id": "dai-tuong-niem-liet-si-le-can-nguyen-giao",
+      "name": "Đài tưởng niệm liệt sĩ Lê Cẩn – Nguyễn Giao",
+      "address": "Gần hồ Vũng Linh, huyện Vũng Liêm, Vĩnh Long",
+      "match": "huyện Vũng Liêm"
+    },
+    {
+      "id": "den-tho-tuong-quan-nguyen-ngoc-thang",
+      "name": "Đền thờ Tướng quân Nguyễn Ngọc Thăng",
+      "address": "Xã Mỹ Thạnh, huyện Giồng Trôm, Bến Tre",
+      "match": "huyện Giồng Trôm"
+    },
+    {
+      "id": "di-tich-lich-su-ben-tiep-nhan-vu-khi-con-tau",
+      "name": "Di tích lịch sử Bến tiếp nhận vũ khí Cồn Tàu",
+      "address": "Ấp Cồn Tàu, xã Trường Long Hòa, thị xã Duyên Hải, Trà Vinh",
+      "match": "thị xã Duyên Hải"
+    },
+    {
+      "id": "lau-ba-lau-ba-co-hy",
+      "name": "Lầu Bà (Lầu Bà Cố Hỷ)",
+      "address": "Phường Trường Long Hòa, Thị xã Duyên Hải, Tỉnh Trà Vinh",
+      "match": "Thị xã Duyên Hải"
+    },
+    {
+      "id": "mo-quan-chua",
+      "name": "Mộ Quận Chúa",
+      "address": "Ấp Ba Động, Phường Trường Long Hòa, Thị xã Duyên Hải, Tỉnh Trà Vinh",
+      "match": "Thị xã Duyên Hải"
+    },
+    {
+      "id": "khu-luu-niem-truong-vinh-ky",
+      "name": "Khu lưu niệm Trương Vĩnh Ký",
+      "address": "Xã Vĩnh Thành, huyện Chợ Lách, Bến Tre",
+      "match": "huyện Chợ Lách"
+    },
+    {
+      "id": "htx-cam-sanh-tra-on",
+      "name": "HTX cam sành Trà Ôn",
+      "address": "Xã Vĩnh Xuân, huyện Trà Ôn, Vĩnh Long",
+      "match": "huyện Trà Ôn"
+    },
+    {
+      "id": "co-so-keo-dua-mo-cay",
+      "name": "Cơ sở kẹo dừa Mỏ Cày",
+      "address": "Thị trấn Mỏ Cày, huyện Mỏ Cày Nam, Bến Tre",
+      "match": "huyện Mỏ Cày"
+    },
+    {
+      "id": "can-cu-tinh-uy-ben-tre-rung-la-thanh-phu",
+      "name": "Khu di tích lịch sử Căn cứ Tỉnh ủy Bến Tre (Rừng lá Thạnh Phú)",
+      "address": "Các xã Thạnh Phong, Thạnh Hải, Giao Thạnh, huyện Thạnh Phú, Bến Tre",
+      "match": "huyện Thạnh Phú"
+    },
+    {
+      "id": "tuong-quan-nguyen-van-ton",
+      "name": "Tướng quân Nguyễn Văn Tồn",
+      "address": "Huyện Trà Ôn, tỉnh Vĩnh Long",
+      "match": "Huyện Trà Ôn"
+    },
+    {
+      "id": "khach-san-anh-hong-mang-thit",
+      "name": "Khách sạn Ánh Hồng (Mang Thít)",
+      "address": "Khóm 1, thị trấn Cái Nhum, huyện Mang Thít, tỉnh Vĩnh Long",
+      "match": "huyện Mang Thít"
+    },
+    {
+      "id": "diem-du-lich-nha-dua-cocohome",
+      "name": "Điểm du lịch nhà dừa CocoHome",
+      "address": "Ấp Hòa Quí, xã Hòa Ninh, huyện Long Hồ, tỉnh Vĩnh Long",
+      "match": "huyện Long Hồ"
+    },
+    {
+      "id": "khu-du-lich-somo-farm-cuu-long",
+      "name": "Khu du lịch Somo Farm Cửu Long",
+      "address": "Huyện Mang Thít, Vĩnh Long",
+      "match": "Huyện Mang Thít"
+    },
+    {
+      "id": "homestay-hai-cuong",
+      "name": "Homestay Hai Cường",
+      "address": "Huyện Vũng Liêm, Vĩnh Long",
+      "match": "Huyện Vũng Liêm"
+    },
+    {
+      "id": "duyen-hai-homestay",
+      "name": "Duyên Hải Homestay",
+      "address": "Thị xã Duyên Hải, Trà Vinh",
+      "match": "Thị xã Duyên Hải"
+    },
+    {
+      "id": "homestay-ut-trinh",
+      "name": "Homestay Út Trinh",
+      "address": "Khu vực Cù lao An Bình, xã Hòa Ninh, huyện Long Hồ, tỉnh Vĩnh Long",
+      "match": "huyện Long Hồ"
+    },
+    {
+      "id": "homestay-co-chin-an-binh",
+      "name": "Homestay Cô Chín",
+      "address": "Ấp An Thành, xã An Bình, huyện Long Hồ, tỉnh Vĩnh Long",
+      "match": "huyện Long Hồ"
+    },
+    {
+      "id": "mekong-home",
+      "name": "Mekong Home",
+      "address": "Huyện Giồng Trôm, tỉnh Vĩnh Long",
+      "match": "Huyện Giồng Trôm"
+    },
+    {
+      "id": "ba-linh-homestay",
+      "name": "Ba Linh Homestay",
+      "address": "Ấp An Thành, xã An Bình, huyện Long Hồ, tỉnh Vĩnh Long",
+      "match": "huyện Long Hồ"
+    },
+    {
+      "id": "sau-rieng-say-thang-hoa-sau-ri",
+      "name": "Sầu riêng sấy thăng hoa Sáu Ri",
+      "address": "Huyện Long Hồ, tỉnh Vĩnh Long",
+      "match": "Huyện Long Hồ"
+    },
+    {
+      "id": "mang-cut-binh-hoa-phuoc",
+      "name": "Măng cụt Bình Hòa Phước",
+      "address": "Xã Bình Hòa Phước, huyện Long Hồ, Vĩnh Long",
+      "match": "huyện Long Hồ"
+    },
+    {
+      "id": "di-chi-khao-co-hoc-thanh-moi",
+      "name": "Di chỉ khảo cổ học Thành Mới",
+      "address": "Xã Trung Hiệp, huyện Vũng Liêm, Vĩnh Long",
+      "match": "huyện Vũng Liêm"
+    },
+    {
+      "id": "nghia-trung-mieu",
+      "name": "Nghĩa Trủng miếu",
+      "address": "Ấp Phước Hanh B, xã Phước Hậu, huyện Long Hồ, Vĩnh Long",
+      "match": "huyện Long Hồ"
+    },
+    {
+      "id": "khu-tuong-niem-co-chu-tich-hdbt-pham-hung",
+      "name": "Khu tưởng niệm Cố Chủ tịch HĐBT Phạm Hùng",
+      "address": "Ấp Long Thuận A, xã Long Phước, huyện Long Hồ, tỉnh Vĩnh Long",
+      "match": "huyện Long Hồ"
+    },
+    {
+      "id": "lang-nghe-com-dep-ba-so",
+      "name": "Làng nghề cốm dẹp Ba So",
+      "address": "Ấp Ba So, xã Nhị Trường, huyện Cầu Ngang, Trà Vinh",
+      "match": "huyện Cầu Ngang"
+    },
+    {
+      "id": "khu-di-tich-lang-ong-con-tau",
+      "name": "Khu di tích Lăng Ông Cồn Tàu",
+      "address": "Ấp Cồn Tàu, xã Trường Long Hòa, thị xã Duyên Hải",
+      "match": "thị xã Duyên Hải"
+    },
+    {
+      "id": "gom-do-mang-thit",
+      "name": "Gốm Đỏ Mang Thít",
+      "address": "Huyện Mang Thít, tỉnh Vĩnh Long",
+      "match": "Huyện Mang Thít"
+    },
+    {
+      "id": "lo-gach-hung-loi",
+      "name": "Lò gạch Hưng Lợi",
+      "address": "Huyện Mang Thít, Vĩnh Long",
+      "match": "Huyện Mang Thít"
+    },
+    {
+      "id": "lam-gom-mang-thit",
+      "name": "Làm gốm Mang Thít",
+      "address": "Xã Nhơn Phú, huyện Mang Thít, Vĩnh Long",
+      "match": "huyện Mang Thít"
+    },
+    {
+      "id": "vung-khoai-lang-binh-tan",
+      "name": "Vùng khoai lang Bình Tân",
+      "address": "Huyện Bình Tân, tỉnh Vĩnh Long",
+      "match": "Huyện Bình Tân"
+    },
+    {
+      "id": "vuon-sau-rieng-bay-thao",
+      "name": "Vườn Sầu Riêng Bảy Thảo",
+      "address": "236/92 Ấp Nam Vĩnh, xã Vĩnh Thành, huyện Chợ Lách, Bến Tre",
+      "match": "huyện Chợ Lách"
+    },
+    {
+      "id": "bien-con-bung-thanh-phu-ben-tre",
+      "name": "Biển Cồn Bửng (Biển Thạnh Phú)",
+      "address": "Xã Thạnh Hải, huyện Thạnh Phú, Bến Tre",
+      "match": "huyện Thạnh Phú"
+    },
+    {
+      "id": "du-lich-sinh-thai-cong-dong-thanh-phong-ben-tre",
+      "name": "Du Lịch Sinh Thái Cộng Đồng Thạnh Phong",
+      "address": "Xã Thạnh Phong, huyện Thạnh Phú, Bến Tre",
+      "match": "huyện Thạnh Phú"
+    },
+    {
+      "id": "lang-nghe-che-bien-hai-san-kho-thanh-phong",
+      "name": "Làng nghề chế biến hải sản khô Thạnh Phong",
+      "address": "Xã Thạnh Phong, huyện Thạnh Phú, Bến Tre",
+      "match": "huyện Thạnh Phú"
+    },
+    {
+      "id": "cua-bien-thanh-phu",
+      "name": "Cua biển Thạnh Phú",
+      "address": "Xã Thạnh Phong, huyện Thạnh Phú, Bến Tre",
+      "match": "huyện Thạnh Phú"
+    },
+    {
+      "id": "dua-sap-cang-long",
+      "name": "Dừa sáp Càng Long",
+      "address": "Huyện Càng Long",
+      "match": "Huyện Càng Long"
+    },
+    {
+      "id": "chua-phap-hoa",
+      "name": "Chùa Pháp Hoa",
+      "address": "Huyện Càng Long",
+      "match": "Huyện Càng Long"
+    },
+    {
+      "id": "di-tich-duong-ho-chi-minh-tren-bien-ben-thanh-phong",
+      "name": "Di tích Đường Hồ Chí Minh trên Biển – Bến Thạnh Phong",
+      "address": "Xã Thạnh Phong, huyện Thạnh Phú, Bến Tre",
+      "match": "huyện Thạnh Phú"
+    },
+    {
+      "id": "gao-tan-tien",
+      "name": "Gạo Tân Tiến",
+      "address": "Huyện Tam Bình, Vĩnh Long",
+      "match": "Huyện Tam Bình"
+    },
+    {
+      "id": "can-cu-cach-mang-cai-ngang-vinh-long",
+      "name": "Khu Di tích Lịch sử Căn cứ Cách mạng Cái Ngang",
+      "address": "Ấp 4, xã Phú Lộc, huyện Tam Bình, Vĩnh Long",
+      "match": "huyện Tam Bình"
+    },
+    {
+      "id": "lang-hoa-kieng-va-cay-giong-cho-lach",
+      "name": "Làng hoa kiểng và cây giống Chợ Lách",
+      "address": "Huyện Chợ Lách",
+      "match": "Huyện Chợ Lách"
+    },
+    {
+      "id": "sau-rieng-cap-dong-cho-lach",
+      "name": "Sầu riêng cấp đông Chợ Lách",
+      "address": "Huyện Chợ Lách",
+      "match": "Huyện Chợ Lách"
+    },
+    {
+      "id": "bun-nuoc-leo-tieu-can",
+      "name": "Bún nước lèo Tiểu Cần",
+      "address": "Huyện Tiểu Cần, Trà Vinh",
+      "match": "Huyện Tiểu Cần"
+    },
+    {
+      "id": "bun-nuoc-leo-vinh-long",
+      "name": "Bún nước lèo Vĩnh Long",
+      "address": "Huyện Mang Thít, Vĩnh Long",
+      "match": "Huyện Mang Thít"
+    },
+    {
+      "id": "bun-nuoc-leo-tra-cu",
+      "name": "Bún nước lèo Trà Cú",
+      "address": "Huyện Trà Cú, Trà Vinh",
+      "match": "Huyện Trà Cú"
+    },
+    {
+      "id": "nuoc-cot-dua-va-san-pham-dua-ocop-beinco",
+      "name": "Nước cốt dừa và sản phẩm dừa OCOP BEINCO",
+      "address": "Huyện Mỏ Cày Bắc, Tỉnh Bến Tre",
+      "match": "Huyện Mỏ Cày"
+    },
+    {
+      "id": "khu-di-tich-dong-khoi-ben-tre",
+      "name": "Khu di tích Đồng Khởi Bến Tre (Khu di tích lịch sử Đồng Khởi)",
+      "address": "Xã Đồng Khởi (xã Định Thủy cũ), huyện Mỏ Cày Nam, Bến Tre",
+      "match": "huyện Mỏ Cày"
+    },
+    {
+      "id": "dinh-ran-dinh-thuy",
+      "name": "Đình Rắn Định Thủy",
+      "address": "Ấp Định Nhơn, xã Đồng Khởi (Định Thủy cũ), huyện Mỏ Cày Nam, Bến Tre",
+      "match": "huyện Mỏ Cày"
+    },
+    {
+      "id": "dinh-long-thanh-w3",
+      "name": "Đình Long Thạnh",
+      "address": "Xã Long Định, huyện Bình Đại, Bến Tre",
+      "match": "huyện Bình Đại"
+    },
+    {
+      "id": "dinh-long-phung",
+      "name": "Đình Long Phụng",
+      "address": "Ấp Long Hòa 2, xã Long Định, huyện Bình Đại, Bến Tre",
+      "match": "huyện Bình Đại"
+    },
+    {
+      "id": "dinh-vang-quoi",
+      "name": "Đình Vang Quới",
+      "address": "Xã Vang Quới Tây, huyện Bình Đại, Bến Tre",
+      "match": "huyện Bình Đại"
+    },
+    {
+      "id": "homestay-hoa-thanh",
+      "name": "Homestay Hoà Thạnh",
+      "address": "Huyện Tam Bình, Vĩnh Long",
+      "match": "Huyện Tam Bình"
+    },
+    {
+      "id": "con-oc-giong-trom-ben-tre",
+      "name": "Cồn Ốc (Giồng Trôm)",
+      "address": "Xã Hưng Phong, huyện Giồng Trôm, Bến Tre",
+      "match": "huyện Giồng Trôm"
+    },
+    {
+      "id": "chua-giac-linh-tra-vinh",
+      "name": "Chùa Giác Linh (chùa Phật Lớn)",
+      "address": "Xã Nhị Long, huyện Cầu Ngang, Trà Vinh",
+      "match": "huyện Cầu Ngang"
+    },
+    {
+      "id": "bai-boi-rung-ngap-man-ba-tri-ben-tre",
+      "name": "Bãi Bồi Và Rừng Ngập Mặn Ba Tri",
+      "address": "Ven biển huyện Ba Tri, tỉnh Vĩnh Long (các xã An Thủy, Bảo Thuận, Tân Thủy)",
+      "match": "huyện Ba Tri"
+    },
+    {
+      "id": "keo-dua-tan-thach",
+      "name": "Kẹo dừa Tân Thạch",
+      "address": "Xã Tân Thạch, huyện Châu Thành, Bến Tre",
+      "match": "huyện Châu Thành"
+    },
+    {
+      "id": "sau-rieng-cho-lach",
+      "name": "Sầu riêng Chợ Lách",
+      "address": "Huyện Chợ Lách, Bến Tre",
+      "match": "Huyện Chợ Lách"
+    },
+    {
+      "id": "vuon-dua-sap-ba-thuy",
+      "name": "Vườn Dừa Sáp Ba Thúy",
+      "address": "Thị trấn Cầu Kè, huyện Cầu Kè, Trà Vinh",
+      "match": "huyện Cầu Kè"
+    },
+    {
+      "id": "keo-dua-sap-vicosap",
+      "name": "Kẹo dừa sáp Vicosap",
+      "address": "Xã Thạnh Phú, huyện Cầu Kè, Trà Vinh",
+      "match": "huyện Cầu Kè"
+    },
+    {
+      "id": "banh-phong-mi-giong-trom",
+      "name": "Bánh Phồng Mì Giồng Trôm",
+      "address": "Xã Hưng Nhượng, huyện Giồng Trôm, Bến Tre",
+      "match": "huyện Giồng Trôm"
+    },
+    {
+      "id": "rung-ngap-man-thanh-phong",
+      "name": "Rừng ngập mặn Thạnh Phong",
+      "address": "Xã Thạnh Phong, huyện Thạnh Phú, Bến Tre",
+      "match": "huyện Thạnh Phú"
+    },
+    {
+      "id": "bot-nua-tra-cu",
+      "name": "Bột nưa Trà Cú",
+      "address": "Ấp Vàm, xã An Quảng Hữu, huyện Trà Cú, Trà Vinh",
+      "match": "huyện Trà Cú"
+    },
+    {
+      "id": "le-cung-lau-ba-ram-thang-gieng",
+      "name": "Lễ cúng Lầu Bà rằm tháng Giêng",
+      "address": "Lầu Bà, Phường Trường Long Hòa, Thị xã Duyên Hải, Tỉnh Trà Vinh",
+      "match": "Thị xã Duyên Hải"
+    },
+    {
+      "id": "con-nhan-bien-ba-tri-ben-tre",
+      "name": "Cồn Nhàn (Biển Ba Tri)",
+      "address": "Xã Bảo Thuận, huyện Ba Tri, Bến Tre",
+      "match": "huyện Ba Tri"
+    },
+    {
+      "id": "lang-mo-va-dinh-phan-thanh-gian",
+      "name": "Lăng mộ và Đình Phan Thanh Giản",
+      "address": "Xã Bảo Thạnh, huyện Ba Tri, Bến Tre",
+      "match": "huyện Ba Tri"
+    },
+    {
+      "id": "nha-tho-cai-mon",
+      "name": "Nhà thờ Cái Mơn",
+      "address": "Xã Vĩnh Thành, huyện Chợ Lách, Bến Tre",
+      "match": "huyện Chợ Lách"
+    },
+    {
+      "id": "nha-tho-giao-xu-cai-nhum",
+      "name": "Nhà thờ Giáo xứ Cái Nhum",
+      "address": "Xã Long Thới, huyện Chợ Lách, Bến Tre",
+      "match": "huyện Chợ Lách"
+    },
+    {
+      "id": "khu-mo-phan-thanh-gian",
+      "name": "Khu mộ Phan Thanh Giản",
+      "address": "Ấp Thạnh Nghĩa, xã Bảo Thạnh, huyện Ba Tri, Bến Tre",
+      "match": "huyện Ba Tri"
+    },
+    {
+      "id": "nha-ong-nguyen-van-cung-dia-diem-thanh-lap-chi-bo-dang-dau-tien-ben-tre",
+      "name": "Nhà ông Nguyễn Văn Cung - địa điểm thành lập Chi bộ Đảng đầu tiên Bến Tre",
+      "address": "Ấp Tân Hòa, xã Tân Xuân, huyện Mỏ Cày Nam, Bến Tre",
+      "match": "huyện Mỏ Cày"
+    },
+    {
+      "id": "chua-hang-cha-lo",
+      "name": "Chùa Hang (Chà Lô)",
+      "address": "Khóm 3, TT Châu Thành, huyện Châu Thành, Trà Vinh",
+      "match": "huyện Châu Thành"
+    },
+    {
+      "id": "di-tich-lich-su-luu-cu",
+      "name": "Di tích lịch sử Lưu Cừ",
+      "address": "Ấp Lưu Cừ II, xã Lưu Nghiệp Anh, huyện Trà Cú, Trà Vinh",
+      "match": "huyện Trà Cú"
+    },
+    {
+      "id": "dinh-dai-dien",
+      "name": "Đình Đại Điền",
+      "address": "Xã Đại Điền, huyện Thạnh Phú, Bến Tre",
+      "match": "huyện Thạnh Phú"
+    },
+    {
+      "id": "dinh-an-qui",
+      "name": "Đình An Qui",
+      "address": "Xã An Qui, huyện Thạnh Phú, Bến Tre",
+      "match": "huyện Thạnh Phú"
+    },
+    {
+      "id": "dinh-binh-hoa-giong-trom",
+      "name": "Đình Bình Hòa (Đình thần Bình Hòa)",
+      "address": "5A, thị trấn Giồng Trôm, huyện Giồng Trôm, Bến Tre",
+      "match": "huyện Giồng Trôm"
+    },
+    {
+      "id": "di-san-lo-gach-mang-thit-kenh-thay-cai",
+      "name": "Khu Di Sản Lò Gạch Mang Thít – Kênh Thầy Cai",
+      "address": "Dọc kênh Thầy Cai và sông Mang Thít – huyện Mang Thít",
+      "match": "huyện Mang Thít"
+    },
+    {
+      "id": "di-san-duong-dai-mang-thit-tuyen-sinh-thai-kenh-thuy-lo",
+      "name": "Khu Di Sản Đương Đại Mang Thít – Tuyến Sinh Thái Kênh Thủy Lộ",
+      "address": "Kênh Thầy Cai và sông Cái Nhum – huyện Mang Thít",
+      "match": "huyện Mang Thít"
+    },
+    {
+      "id": "tep-rang-dua",
+      "name": "Tép rang dừa",
+      "address": "Huyện Châu Thành, Bến Tre",
+      "match": "Huyện Châu Thành"
+    },
+    {
+      "id": "den-tho-lanh-binh-nguyen-ngoc-thang",
+      "name": "Đền thờ Lãnh binh Nguyễn Ngọc Thăng",
+      "address": "Tỉnh lộ 885, xã Mỹ Thạnh, huyện Giồng Trôm, Bến Tre",
+      "match": "huyện Giồng Trôm"
+    },
+    {
+      "id": "bien-thoi-thuan",
+      "name": "Biển Thới Thuận",
+      "address": "Xã Thới Thuận, huyện Bình Đại, Bến Tre",
+      "match": "huyện Bình Đại"
+    },
+    {
+      "id": "banh-trang-tra-vi",
+      "name": "Bánh tráng Trà Vi",
+      "address": "Ấp Trà Vi, xã Nguyệt Hóa, huyện Châu Thành, Trà Vinh",
+      "match": "huyện Châu Thành"
+    },
+    {
+      "id": "bien-ba-dong",
+      "name": "Biển Ba Động",
+      "address": "Xã Trường Long Hòa, Thị xã Duyên Hải, Tỉnh Trà Vinh (cách trung tâm Thành phố Trà Vinh ~55km về hướng Đông Nam)",
+      "match": "Thị xã Duyên Hải"
+    },
+    {
+      "id": "festival-gach-gom-do-kinh-te-xanh-tinh-vinh-long-vinh-long",
+      "name": "Festival Gạch Gốm Đỏ – Kinh tế Xanh tỉnh Vĩnh Long",
+      "address": "Làng nghề kênh Thầy Cai huyện Mang Thít & đường Võ Văn Kiệt TP Vĩnh Long",
+      "match": "huyện Mang Thít"
+    },
+    {
+      "id": "san-pham-ocop-vung-liem-cha-lua-thanh-cong-gao-huu-co-tan-dat-mut-dua-la-dua-duc",
+      "name": "Sản phẩm OCOP Vũng Liêm",
+      "address": "Huyện Vũng Liêm, Vĩnh Long",
+      "match": "Huyện Vũng Liêm"
+    },
+    {
+      "id": "dinh-lang-hieu-phung",
+      "name": "Đình làng Hiếu Phụng",
+      "address": "Ấp Tân Quang, xã Hiếu Phụng, huyện Vũng Liêm, tỉnh Vĩnh Long",
+      "match": "huyện Vũng Liêm"
+    }
+  ],
+  "expired_ocop": [
+    {
+      "id": "cong-ty-tnhh-tra-vinh-farm-sokfarm",
+      "name": "Công ty TNHH Trà Vinh FARM (Sokfarm)",
+      "ocop_star": null,
+      "recognition_date": "2020-09-10",
+      "issue": "Chứng nhận OCOP từ 2020 (đã quá hạn 36 tháng cần tái chứng nhận)"
+    }
+  ],
+  "outdated_prices_or_fees": [
+    {
+      "id": "ben-pha-tran-phu-can-tho-vinh-long-vinh-long",
+      "name": "Bến Phà Trần Phú (Cần Thơ – Vĩnh Long)",
+      "price": "3.000 đ/người đi bộ; 8.000 đ/xe máy; 30.000 - 50.000 đ/ô tô con",
+      "issue": "Mức giá quá thấp (1.000 - 3.000đ), dấu hiệu biểu giá cũ chưa cập nhật"
+    },
+    {
+      "id": "ben-pha-dinh-khao-vinh-long",
+      "name": "Bến Phà Đình Khao",
+      "price": "2.000 đ/người đi bộ; 6.000 đ/xe máy; 25.000 - 45.000 đ/ô tô con dưới 9 chỗ",
+      "issue": "Mức giá quá thấp (1.000 - 3.000đ), dấu hiệu biểu giá cũ chưa cập nhật"
+    },
+    {
+      "id": "ben-pha-ham-luong-ben-tre",
+      "name": "Bến phà Hàm Luông",
+      "price": "3.000 đ/người đi bộ; 7.000 đ/xe máy",
+      "issue": "Mức giá quá thấp (1.000 - 3.000đ), dấu hiệu biểu giá cũ chưa cập nhật"
+    },
+    {
+      "id": "ben-pha-tan-phu-chau-thanh-ben-tre",
+      "name": "Bến phà Tân Phú (Châu Thành)",
+      "price": "2.000 đ/người; 5.000 đ/xe đạp; 7.000 đ/xe máy; 25.000 - 40.000 đ/xe ba gác và ô tô nhỏ",
+      "issue": "Mức giá quá thấp (1.000 - 3.000đ), dấu hiệu biểu giá cũ chưa cập nhật"
+    },
+    {
+      "id": "ben-pha-an-binh-vinh-long",
+      "name": "Bến Phà An Bình",
+      "price": "2.000 đ/người đi bộ; 5.000 đ/xe đạp; 6.000 đ/xe máy; 15.000 đ/xe ba gác",
+      "issue": "Mức giá quá thấp (1.000 - 3.000đ), dấu hiệu biểu giá cũ chưa cập nhật"
+    },
+    {
+      "id": "ben-pha-dai-ngai-dau-cau-quan-tra-vinh-tra-vinh",
+      "name": "Bến phà Đại Ngãi (đầu Cầu Quan - Trà Vinh)",
+      "price": "3.000 đ/người; 8.000 đ/xe máy; 35.000 - 65.000 đ/ô tô con 4-7 chỗ",
+      "issue": "Mức giá quá thấp (1.000 - 3.000đ), dấu hiệu biểu giá cũ chưa cập nhật"
+    }
+  ],
+  "summary": {
+    "old_phone_numbers": 4,
+    "covid_or_temporary_closures": 0,
+    "stale_temporal_projections": 0,
+    "old_admin_addresses": 377,
+    "expired_ocop": 1,
+    "outdated_prices_or_fees": 6
+  }
+}

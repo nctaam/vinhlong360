@@ -1,0 +1,331 @@
+[
+  {
+    "entity_id": "phan-thanh-gian",
+    "field": "attributes.role",
+    "old": "Tiến sĩ khai khoa Nam Kỳ, Kinh lược sứ Nam Kỳ, Hiệp biện Đại học sĩ triều Nguyễn",
+    "new": "Tiến sĩ khai khoa Nam Kỳ, Kinh lược sứ Nam Kỳ, Hiệp biện Đại học sĩ triều Nguyễn",
+    "reason": "Standardize luminary official titles and historical status"
+  },
+  {
+    "entity_id": "phan-thanh-gian",
+    "field": "sub_category",
+    "old": null,
+    "new": "scholar-mandarin",
+    "reason": "Correct figure classification from artisan to proper historical category"
+  },
+  {
+    "entity_id": "phan-thanh-gian",
+    "field": "summary",
+    "old": "Danh nhân lịch sử người Vĩnh Long (1796–1867), Tiến sĩ đầu tiên của Nam Kỳ, từng giữ chức Kinh lược sứ Nam Kỳ.",
+    "new": "Tiến sĩ Nho học đầu tiên của Nam Kỳ lục tỉnh (khoa Bính Tuất 1826), Kinh lược sứ Nam Kỳ, người chủ xướng xây dựng Văn Thánh Miếu Vĩnh Long.",
+    "reason": "Enrich luminary editorial summary with concrete historical facts"
+  },
+  {
+    "entity_id": "tuong-quan-nguyen-van-ton",
+    "field": "attributes.role",
+    "old": "Nhân vật quân sự",
+    "new": "Tiền quân Thống chế Điều bát, Khai quốc Công thần triều Nguyễn",
+    "reason": "Standardize luminary official titles and historical status"
+  },
+  {
+    "entity_id": "tuong-quan-nguyen-van-ton",
+    "field": "sub_category",
+    "old": null,
+    "new": "military-leader",
+    "reason": "Correct figure classification from artisan to proper historical category"
+  },
+  {
+    "entity_id": "nguyen-ngoc-thang",
+    "field": "attributes.role",
+    "old": "Nhân vật quân sự",
+    "new": "Lãnh binh quân thứ Gia Định, thủ lĩnh phong trào kháng Pháp Bến Tre",
+    "reason": "Standardize luminary official titles and historical status"
+  },
+  {
+    "entity_id": "nguyen-ngoc-thang",
+    "field": "sub_category",
+    "old": null,
+    "new": "military-leader",
+    "reason": "Correct figure classification from artisan to proper historical category"
+  },
+  {
+    "entity_id": "tong-phuoc-hiep",
+    "field": "attributes.role",
+    "old": "Quan lại / Vua chúa",
+    "new": "Đốc chiến dinh Long Hồ, Tiết chế quân vụ, công thần mở cõi phương Nam",
+    "reason": "Standardize luminary official titles and historical status"
+  },
+  {
+    "entity_id": "tong-phuoc-hiep",
+    "field": "sub_category",
+    "old": null,
+    "new": "military-leader",
+    "reason": "Correct figure classification from artisan to proper historical category"
+  },
+  {
+    "entity_id": "that-phu-mieu-chua-ong-vinh-long",
+    "field": "sub_category",
+    "old": "temple",
+    "new": "temple",
+    "reason": "Differentiate temple architectural typology from generic pagoda"
+  },
+  {
+    "entity_id": "mieu-ba-chua-xu-tan-quy",
+    "field": "sub_category",
+    "old": "shrine",
+    "new": "shrine",
+    "reason": "Differentiate shrine architectural typology from generic pagoda"
+  },
+  {
+    "entity_id": "dinh-lang-thien-my",
+    "field": "sub_category",
+    "old": "communal-house",
+    "new": "communal-house",
+    "reason": "Differentiate communal-house architectural typology from generic pagoda"
+  },
+  {
+    "entity_id": "dinh-ky-ha",
+    "field": "sub_category",
+    "old": "communal-house",
+    "new": "communal-house",
+    "reason": "Differentiate communal-house architectural typology from generic pagoda"
+  },
+  {
+    "entity_id": "dinh-binh-hoa-giong-trom",
+    "field": "sub_category",
+    "old": "communal-house",
+    "new": "communal-house",
+    "reason": "Differentiate communal-house architectural typology from generic pagoda"
+  },
+  {
+    "entity_id": "dinh-long-ho",
+    "field": "sub_category",
+    "old": "communal-house",
+    "new": "communal-house",
+    "reason": "Differentiate communal-house architectural typology from generic pagoda"
+  },
+  {
+    "entity_id": "banh-tet-tra-cuon",
+    "field": "sub_category",
+    "old": "traditional-pastry",
+    "new": "traditional-pastry",
+    "reason": "Correct culinary taxonomy from erroneous category to traditional-pastry"
+  },
+  {
+    "entity_id": "banh-tet-tu-quy-hai-ly",
+    "field": "sub_category",
+    "old": "traditional-pastry",
+    "new": "traditional-pastry",
+    "reason": "Correct culinary taxonomy from erroneous category to traditional-pastry"
+  },
+  {
+    "entity_id": "chieu-ca-hom",
+    "field": "sub_category",
+    "old": "handicraft",
+    "new": "handicraft",
+    "reason": "Correct culinary taxonomy from erroneous category to handicraft"
+  },
+  {
+    "entity_id": "cu-cai-muoi-chit-sa",
+    "field": "sub_category",
+    "old": "fermented-food",
+    "new": "fermented-food",
+    "reason": "Correct culinary taxonomy from erroneous category to fermented-food"
+  },
+  {
+    "entity_id": "lap-xuong-ngoc-huong",
+    "field": "sub_category",
+    "old": "charcuterie",
+    "new": "charcuterie",
+    "reason": "Correct culinary taxonomy from erroneous category to charcuterie"
+  },
+  {
+    "entity_id": "cua-lot-vinacrab-long-toan",
+    "field": "sub_category",
+    "old": "seafood",
+    "new": "seafood",
+    "reason": "Correct culinary taxonomy from erroneous category to seafood"
+  },
+  {
+    "entity_id": "tom-xe-hiep-my-dong",
+    "field": "sub_category",
+    "old": "seafood",
+    "new": "seafood",
+    "reason": "Correct culinary taxonomy from erroneous category to seafood"
+  },
+  {
+    "entity_id": "bun-tuoi-an-dao",
+    "field": "sub_category",
+    "old": "noodle",
+    "new": "noodle",
+    "reason": "Correct culinary taxonomy from erroneous category to noodle"
+  },
+  {
+    "entity_id": "keo-dau-phong-du-tan-loi",
+    "field": "sub_category",
+    "old": "confectionery",
+    "new": "confectionery",
+    "reason": "Correct culinary taxonomy from erroneous category to confectionery"
+  },
+  {
+    "entity_id": "bot-nua-bot-khoai-mon-an-quang-huu",
+    "field": "sub_category",
+    "old": "agricultural-product",
+    "new": "agricultural-product",
+    "reason": "Correct culinary taxonomy from erroneous category to agricultural-product"
+  },
+  {
+    "entity_id": "tom-duyen-hai",
+    "field": "sub_category",
+    "old": "seafood",
+    "new": "seafood",
+    "reason": "Correct culinary taxonomy from erroneous category to seafood"
+  },
+  {
+    "entity_id": "nuoc-khoang-thien-nhien-sao-bien-starfiwa",
+    "field": "sub_category",
+    "old": "bottled-water",
+    "new": "bottled-water",
+    "reason": "Correct culinary taxonomy from erroneous category to bottled-water"
+  },
+  {
+    "entity_id": "banh-dua-giong-luong",
+    "field": "sub_category",
+    "old": "traditional-pastry",
+    "new": "traditional-pastry",
+    "reason": "Correct culinary taxonomy from erroneous category to traditional-pastry"
+  },
+  {
+    "entity_id": "banh-xeo-bien-binh-dai",
+    "field": "sub_category",
+    "old": "pancake",
+    "new": "pancake",
+    "reason": "Correct culinary taxonomy from erroneous category to pancake"
+  },
+  {
+    "entity_id": "mut-dua-sap-cau-ke",
+    "field": "sub_category",
+    "old": "confectionery",
+    "new": "confectionery",
+    "reason": "Correct culinary taxonomy from erroneous category to confectionery"
+  },
+  {
+    "entity_id": "com-dua-com-trai-dua",
+    "field": "sub_category",
+    "old": "rice-dish",
+    "new": "rice-dish",
+    "reason": "Correct culinary taxonomy from erroneous category to rice-dish"
+  },
+  {
+    "entity_id": "bo-to-vinh-long",
+    "field": "sub_category",
+    "old": "meat-dish",
+    "new": "meat-dish",
+    "reason": "Correct culinary taxonomy from erroneous category to meat-dish"
+  },
+  {
+    "entity_id": "duong-dua",
+    "field": "sub_category",
+    "old": "insect-specialty",
+    "new": "insect-specialty",
+    "reason": "Correct culinary taxonomy from erroneous category to insect-specialty"
+  },
+  {
+    "entity_id": "oc-gao-cu-lao-dai",
+    "field": "sub_category",
+    "old": "seafood",
+    "new": "seafood",
+    "reason": "Correct culinary taxonomy from erroneous category to seafood"
+  },
+  {
+    "entity_id": "goi-cu-hu-dua-tom-thit",
+    "field": "sub_category",
+    "old": "salad",
+    "new": "salad",
+    "reason": "Correct culinary taxonomy from erroneous category to salad"
+  },
+  {
+    "entity_id": "ve-sau-chien-gion",
+    "field": "sub_category",
+    "old": "insect-specialty",
+    "new": "insect-specialty",
+    "reason": "Correct culinary taxonomy from erroneous category to insect-specialty"
+  },
+  {
+    "entity_id": "nam-moi-xao",
+    "field": "sub_category",
+    "old": "mushroom-dish",
+    "new": "mushroom-dish",
+    "reason": "Correct culinary taxonomy from erroneous category to mushroom-dish"
+  },
+  {
+    "entity_id": "chao-cua-dong",
+    "field": "sub_category",
+    "old": "congee",
+    "new": "congee",
+    "reason": "Correct culinary taxonomy from erroneous category to congee"
+  },
+  {
+    "entity_id": "chao-am-tra-vinh",
+    "field": "sub_category",
+    "old": "congee",
+    "new": "congee",
+    "reason": "Correct culinary taxonomy from erroneous category to congee"
+  },
+  {
+    "entity_id": "chao-ca-loc-rau-dang",
+    "field": "sub_category",
+    "old": "congee",
+    "new": "congee",
+    "reason": "Correct culinary taxonomy from erroneous category to congee"
+  },
+  {
+    "entity_id": "chao-ech-tran-nam",
+    "field": "sub_category",
+    "old": "congee",
+    "new": "congee",
+    "reason": "Correct culinary taxonomy from erroneous category to congee"
+  },
+  {
+    "entity_id": "loi-choi-sa-ot-tra-vinh",
+    "field": "sub_category",
+    "old": "seafood",
+    "new": "seafood",
+    "reason": "Correct culinary taxonomy from erroneous category to seafood"
+  },
+  {
+    "entity_id": "chuoi-dap-nuoc-cot-dua",
+    "field": "sub_category",
+    "old": "traditional-snack",
+    "new": "traditional-snack",
+    "reason": "Correct culinary taxonomy from erroneous category to traditional-snack"
+  },
+  {
+    "entity_id": "nuoc-dua-tuoi-ben-tre",
+    "field": "sub_category",
+    "old": "beverage",
+    "new": "beverage",
+    "reason": "Correct culinary taxonomy from erroneous category to beverage"
+  },
+  {
+    "entity_id": "oc-viet-ben-tre",
+    "field": "sub_category",
+    "old": "seafood",
+    "new": "seafood",
+    "reason": "Correct culinary taxonomy from erroneous category to seafood"
+  },
+  {
+    "entity_id": "kem-xoi-dua---khu-sao-mai",
+    "field": "sub_category",
+    "old": "dessert",
+    "new": "dessert",
+    "reason": "Correct culinary taxonomy from erroneous category to dessert"
+  },
+  {
+    "entity_id": "yogurt-dua---ba-muoi-thang-tu",
+    "field": "sub_category",
+    "old": "dessert",
+    "new": "dessert",
+    "reason": "Correct culinary taxonomy from erroneous category to dessert"
+  }
+]

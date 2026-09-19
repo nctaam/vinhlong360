@@ -1,0 +1,114 @@
+[
+  {
+    "entity_id": "khach-san-duc-dao",
+    "field": "attributes.phone",
+    "old": "0703 741 646",
+    "new": "0270 3741 646",
+    "reason": "Convert legacy 070 fixed-line prefix to 0270"
+  },
+  {
+    "entity_id": "khach-san-chieu-hung",
+    "field": "attributes.phone",
+    "old": "0703 770 246",
+    "new": "0270 3770 246",
+    "reason": "Convert legacy 070 fixed-line prefix to 0270"
+  },
+  {
+    "entity_id": "khach-san-trung-tinh",
+    "field": "attributes.phone",
+    "old": "0703 770 566",
+    "new": "0270 3770 566",
+    "reason": "Convert legacy 070 fixed-line prefix to 0270"
+  },
+  {
+    "entity_id": "khach-san-tan-thanh-6",
+    "field": "attributes.phone",
+    "old": "0703 979 888",
+    "new": "0270 3979 888",
+    "reason": "Convert legacy 070 fixed-line prefix to 0270"
+  },
+  {
+    "entity_id": "khu-di-tich-nguyen-dinh-chieu",
+    "field": "attributes.phone_note",
+    "old": "0292 3819 219",
+    "new": null,
+    "reason": "Remove dummy Can Tho hotline 0292 3819 219"
+  },
+  {
+    "entity_id": "van-thanh-mieu",
+    "field": "attributes.phone_note",
+    "old": "0292 3819 219",
+    "new": null,
+    "reason": "Remove dummy Can Tho hotline 0292 3819 219"
+  },
+  {
+    "entity_id": "cho-noi-tra-on",
+    "field": "attributes.phone_note",
+    "old": "0292-3819219 / 0919-444545",
+    "new": "0919 444 545",
+    "reason": "Purge dummy prefix 0292-3819219, retain valid mobile contact"
+  },
+  {
+    "entity_id": "nha-thuoc-pharmacity-doan-hoang-minh-ben-tre",
+    "field": "attributes.phone & phone_note",
+    "old": "18006828 | 1800 6821 (miễn phí)",
+    "new": "18006828 | 1800 6828 (tổng đài toàn quốc, miễn phí)",
+    "reason": "Remediate competitor phone number to official Pharmacity hotline"
+  },
+  {
+    "entity_id": "bao-tang-van-hoa-dan-toc-khmer-tinh-tra-vinh",
+    "field": "attributes.phone",
+    "old": "0294 3858 359",
+    "new": "0294 3858 544",
+    "reason": "Replace string literal 'null' with official museum contact"
+  },
+  {
+    "entity_id": "buu-dien-trung-tam-vinh-long-vinh-long",
+    "field": "attributes.role",
+    "old": "civic_utility",
+    "new": "civic_utility",
+    "reason": "Correct civic utility classification from erroneous food_asset"
+  },
+  {
+    "entity_id": "ben-pha-dinh-khao-vinh-long",
+    "field": "attributes.price_range & admission",
+    "old": "2.000 đ/người đi bộ; 6.000 đ/xe máy; 25.000 - 45.000 đ/ô tô con dưới 9 chỗ | None",
+    "new": "Người đi bộ: Miễn phí; Xe máy: 10.000 đ/lượt; Ô tô con dưới 7 chỗ: 35.000 - 45.000 đ/lượt; Xe tải 3-5 tấn: 60.000 - 80.000 đ/lượt | 10.000 đ (xe máy kèm người); Miễn phí người đi bộ",
+    "reason": "Update to standardized 2026 provincial ferry tariff"
+  },
+  {
+    "entity_id": "ben-pha-an-binh-vinh-long",
+    "field": "attributes.price_range & admission",
+    "old": "2.000 đ/người đi bộ; 5.000 đ/xe đạp; 6.000 đ/xe máy; 15.000 đ/xe ba gác | None",
+    "new": "Người đi bộ / xe đạp: 2.000 - 5.000 đ/lượt; Xe máy: 8.000 - 10.000 đ/lượt; Xe ba gác: 20.000 đ/lượt | 8.000 - 10.000 đ (xe máy kèm người)",
+    "reason": "Update to standardized 2026 provincial ferry tariff"
+  },
+  {
+    "entity_id": "ben-pha-tran-phu-can-tho-vinh-long-vinh-long",
+    "field": "attributes.price_range & admission",
+    "old": "3.000 đ/người đi bộ; 8.000 đ/xe máy; 30.000 - 50.000 đ/ô tô con | None",
+    "new": "Người đi bộ: 5.000 đ/lượt; Xe máy: 10.000 - 12.000 đ/lượt; Ô tô con 4-7 chỗ: 35.000 - 50.000 đ/lượt | 10.000 đ (xe máy kèm người)",
+    "reason": "Update to standardized 2026 provincial ferry tariff"
+  },
+  {
+    "entity_id": "ben-pha-dai-ngai-dau-cau-quan-tra-vinh-tra-vinh",
+    "field": "attributes.price_range & admission",
+    "old": "3.000 đ/người; 8.000 đ/xe máy; 35.000 - 65.000 đ/ô tô con 4-7 chỗ | None",
+    "new": "Người đi bộ: 5.000 đ/lượt; Xe máy: 10.000 - 12.000 đ/lượt; Ô tô con 4-7 chỗ: 40.000 - 65.000 đ/lượt | 10.000 - 12.000 đ (xe máy kèm người)",
+    "reason": "Update to standardized 2026 provincial ferry tariff"
+  },
+  {
+    "entity_id": "ben-pha-tan-phu-chau-thanh-ben-tre",
+    "field": "attributes.price_range & admission",
+    "old": "2.000 đ/người; 5.000 đ/xe đạp; 7.000 đ/xe máy; 25.000 - 40.000 đ/xe ba gác và ô tô nhỏ | None",
+    "new": "Người đi bộ / xe đạp: 3.000 - 5.000 đ/lượt; Xe máy: 8.000 - 10.000 đ/lượt; Ô tô nhỏ / ba gác: 30.000 - 45.000 đ/lượt | 8.000 - 10.000 đ (xe máy kèm người)",
+    "reason": "Update to standardized 2026 provincial ferry tariff"
+  },
+  {
+    "entity_id": "ben-pha-ham-luong-ben-tre",
+    "field": "attributes.price_range & admission",
+    "old": "3.000 đ/người đi bộ; 7.000 đ/xe máy | None",
+    "new": "Người đi bộ: 5.000 đ/lượt; Xe máy: 10.000 đ/lượt; Ô tô con 4-7 chỗ: 35.000 - 45.000 đ/lượt | 10.000 đ (xe máy kèm người)",
+    "reason": "Update to standardized 2026 provincial ferry tariff"
+  }
+]

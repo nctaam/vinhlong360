@@ -589,7 +589,7 @@
       "attributes": {
         "area": "ben-tre",
         "hours": "6h00 - 13h00 hàng ngày",
-        "address": "Khu vực chợ Ba Tri, Bến Tre",
+        "address": "Khu vực chợ Ba Tri, Phường Ba Tri, tỉnh Vĩnh Long",
         "category": "restaurant",
         "toppings": "Cá lóc phi lê, tôm, huyết, rau muống, bông chuối, giá",
         "specialty": null,
@@ -1332,7 +1332,7 @@
       },
       "attributes": {
         "hours": "7h00 - 18h00 hàng ngày",
-        "address": "Khóm 4, thị trấn Châu Thành, huyện Châu Thành, tỉnh Vĩnh Long",
+        "address": "Khóm 4, Xã Châu Thành, tỉnh Vĩnh Long",
         "admission": "Miễn phí",
         "best_time": "sáng sớm hoặc chiều mát",
         "highlight": "Ngôi chùa Khmer cổ khởi lập năm 1637 với cổng phụ xuyên qua hang đá nhân tạo độc đáo và xưởng điêu khắc gỗ nghệ thuật thành lập năm 1980",
@@ -2797,7 +2797,7 @@
       },
       "attributes": {
         "ward": "TT Long Hồ",
-        "address": "Khóm 5 và Khóm 6, thị trấn Long Hồ, tỉnh Vĩnh Long",
+        "address": "Làng nghề đan nón lá TT Long Hồ, Phường Long Hồ, tỉnh Vĩnh Long",
         "best_time": "Tháng 12 đến tháng 4, vào mùa khô ở Vĩnh Long, đường sá thuận tiện, ít mưa bất chợt và dễ kết hợp tham quan miệt vườn, đình chùa, chợ quê quanh Long Hồ.",
         "highlight": "Nghề chằm nón lá truyền thống hơn 80 năm gắn liền với vẻ đẹp thuần hậu của người phụ nữ Nam Bộ qua những chiếc nón bài thơ thanh mảnh",
         "travel_tips": [
@@ -2875,7 +2875,7 @@
       "verified": 1,
       "revision": 1,
       "createdAt": "2026-08-18 15:03:58",
-      "address": "Khóm 5 và Khóm 6, thị trấn Long Hồ, tỉnh Vĩnh Long"
+      "address": "Làng nghề đan nón lá TT Long Hồ, Phường Long Hồ, tỉnh Vĩnh Long"
     },
     {
       "id": "lang-nghe-gach-gom-mang-thit-vuong-quoc-do",
@@ -3580,7 +3580,7 @@
       },
       "attributes": {
         "ward": "TT Thạnh Phú",
-        "address": "Ấp Nhà Mát, xã Trường Long Hòa, tỉnh Vĩnh Long",
+        "address": "Lăng Ông Nam Hải, Xã Thạnh Hải, tỉnh Vĩnh Long",
         "best_time": "Từ tháng 12 đến tháng 4 năm sau, khi thời tiết Bến Tre tương đối khô ráo, đường đi thuận tiện và gió biển dễ chịu; nếu muốn trải nghiệm văn hóa lễ hội, nên hỏi trước người dân địa phương về ngày cúng Ông hằng năm.",
         "highlight": "Điểm tựa tâm linh vững chãi của ngư dân miền duyên hải Ba Động, lưu giữ bộ xương Cá Ông dài gần 18m dạt vào bờ biển từ thế kỷ XIX",
         "travel_tips": [
@@ -3639,7 +3639,7 @@
       "verified": 1,
       "revision": 1,
       "createdAt": "2026-08-18 15:03:58",
-      "address": "Ấp Nhà Mát, xã Trường Long Hòa, tỉnh Vĩnh Long"
+      "address": "Lăng Ông Nam Hải, Xã Thạnh Hải, tỉnh Vĩnh Long"
     },
     {
       "id": "lang-nghe-tieu-thu-cong-nghiep-tre-ham-giang-co-so-tri-canh",
@@ -6030,7 +6030,7 @@
         ]
       },
       "attributes": {
-        "address": "Huyện Ba Tri, Bến Tre",
+        "address": "Biển Cồn Nhàn, Phường Ba Tri, tỉnh Vĩnh Long",
         "admission": "Miễn phí",
         "schema_type": "NaturalFeature",
         "sub_category": "island",
@@ -6145,7 +6145,7 @@
       },
       "attributes": {
         "ocop": "3 sao (2024)",
-        "address": "Cù lao Tân Quy, xã An Phú Tân, huyện Cầu Kè, Trà Vinh",
+        "address": "Cù lao Tân Quy, Phường Trà Vinh, tỉnh Vĩnh Long",
         "area_ha": 276,
         "variety": "Chôm chôm Java",
         "price_range": "Khoảng 20.000–45.000 đ/kg tùy mùa và loại",
@@ -6232,7 +6232,7 @@
       },
       "attributes": {
         "built": "1740",
-        "address": "Ấp 8, xã Quới Sơn, huyện Châu Thành, Bến Tre",
+        "address": "Ấp 8, Phường Bến Tre, tỉnh Vĩnh Long",
         "area_m2": 9955,
         "schema_type": "LandmarksOrHistoricalBuildings",
         "sub_category": "pagoda",
@@ -7584,7 +7584,7 @@
         ]
       },
       "attributes": {
-        "address": "Xã Đức Mỹ, huyện Càng Long, Trà Vinh",
+        "address": "Nhà Thờ Đức Mỹ Chợ Cua, Xã Nhị Long, tỉnh Vĩnh Long",
         "diocese": "Giáo phận Vĩnh Long",
         "rebuilt": 2002,
         "expanded": 2010,
@@ -9241,7 +9241,7 @@
         ]
       },
       "attributes": {
-        "address": "Xã Hiệp Thạnh, huyện Duyên Hải, Trà Vinh",
+        "address": "Rừng ngập mặn Hiệp Thạnh - Gò Công Biển, Xã Long Hữu, tỉnh Vĩnh Long",
         "admission": "Miễn phí",
         "schema_type": "NaturalFeature",
         "sub_category": "mangrove-forest",
@@ -9321,7 +9321,7 @@
         ]
       },
       "attributes": {
-        "address": "Ven biển huyện Bình Đại, tỉnh Vĩnh Long (các xã Thạnh Phước, Thừa Đức, Bình Thắng)",
+        "address": "Ven biển, Xã Thạnh Phước, tỉnh Vĩnh Long",
         "admission": "Miễn phí",
         "schema_type": "NaturalFeature",
         "sub_category": "mangrove-forest",
@@ -9730,7 +9730,7 @@
       "attributes": {
         "role": "Soạn giả Cải lương, Nghệ sĩ Nhân dân, 'Vua vọng cổ', người khai sinh thể loại Tân cổ giao duyên",
         "ward": "Long Vĩnh",
-        "address": "Huyện Duyên Hải, Trà Vinh",
+        "address": "Viễn Châu (Huỳnh Trí Bá), Phường Duyên Hải, tỉnh Vĩnh Long",
         "schema_type": "Person",
         "sub_category": "notable-person",
         "coords_approximate": true,
@@ -9803,7 +9803,7 @@
         "risk": "Cần nâng chất không gian hội chợ và câu chuyện văn hóa để không chỉ là mua bán.",
         "role": "festival_asset",
         "tour": "Có thể thành sản phẩm mùa thu, nối Cầu Kè - dừa sáp - Đông sông Hậu.",
-        "address": "Huyện Cầu Kè, tỉnh Vĩnh Long (dọc theo sông Hậu)",
+        "address": "Vườn dừa sinh thái Cầu Kè, Xã Cầu Kè, tỉnh Vĩnh Long",
         "priority": "A-",
         "admission": "Miễn phí",
         "risk_note": "Cần nâng chất không gian hội chợ và câu chuyện văn hóa để không chỉ là mua bán.",
@@ -9989,7 +9989,7 @@
         ]
       },
       "attributes": {
-        "address": "Huyện Ba Tri, tỉnh Vĩnh Long",
+        "address": "Bãi biển Ba Tri, Phường Ba Tri, tỉnh Vĩnh Long",
         "admission": "Miễn phí",
         "schema_type": "NaturalFeature",
         "sub_category": "mangrove-forest",
@@ -10206,7 +10206,7 @@
       },
       "attributes": {
         "ward": "Đại Điền",
-        "address": "Huyện Thạnh Phú, tỉnh Vĩnh Long",
+        "address": "Bãi biển Thạnh Phú, Xã Thạnh Phú, tỉnh Vĩnh Long",
         "admission": "Miễn phí",
         "schema_type": "NaturalFeature",
         "sub_category": "mangrove-forest",
@@ -10387,7 +10387,7 @@
         ]
       },
       "attributes": {
-        "address": "Huyện Mỏ Cày Nam, tỉnh Vĩnh Long",
+        "address": "Bánh kẹp Thúy Kiều, Phường Mỏ Cày, tỉnh Vĩnh Long",
         "ocop_star": 4,
         "schema_type": "Product",
         "sub_category": "handicraft",
@@ -10579,7 +10579,7 @@
       "attributes": {
         "ward": "Thạnh Phước",
         "origin": "Bến Tre",
-        "address": "Huyện Bình Đại, tỉnh Vĩnh Long",
+        "address": "Bánh xèo biển Bình Đại, Phường Bình Đại, tỉnh Vĩnh Long",
         "specialty": "Bánh, Cua, Hải sản",
         "schema_type": "Recipe",
         "sub_category": "pancake",
@@ -11189,7 +11189,7 @@
         "brix": "9,5–12%",
         "brand": "Đặc sản Bến Tre",
         "weight": "1,2–2,5 kg/trái",
-        "address": "Huyện Mỏ Cày Bắc và các huyện trong tỉnh Vĩnh Long",
+        "address": "Bưởi Da Xanh, Phường Phú Tân, tỉnh Vĩnh Long",
         "schema_type": "Product",
         "sub_category": "fruit",
         "export_markets": "Đức, Canada, Trung Quốc",
@@ -11273,7 +11273,7 @@
         ]
       },
       "attributes": {
-        "address": "Huyện Giồng Trôm, tỉnh Vĩnh Long",
+        "address": "Bưởi Da Xanh Giồng Trôm, Xã Giồng Trôm, tỉnh Vĩnh Long",
         "ocop_star": 4,
         "schema_type": "Product",
         "sub_category": "fruit",
@@ -11374,7 +11374,7 @@
         ]
       },
       "attributes": {
-        "address": "Huyện Bình Đại, tỉnh Vĩnh Long",
+        "address": "Cá bông lau một nắng Bình Đại, Phường Bình Đại, tỉnh Vĩnh Long",
         "schema_type": "Product",
         "sub_category": "ocop-product",
         "ocop_certified": true,
@@ -11476,7 +11476,7 @@
       },
       "attributes": {
         "ward": "Lộc Thuận",
-        "address": "Huyện Bình Đại, tỉnh Vĩnh Long",
+        "address": "Cá đối khô một nắng Bình Đại, Phường Bình Đại, tỉnh Vĩnh Long",
         "schema_type": "Product",
         "sub_category": "dried-seafood",
         "ocop_certified": true,
@@ -11984,7 +11984,7 @@
         "note": "Có thể tham quan/sử dụng quanh năm"
       },
       "attributes": {
-        "address": "Huyện Cầu Ngang, tỉnh Vĩnh Long",
+        "address": "Chùa Giác Linh (Chùa Dơi), Xã Cầu Ngang, tỉnh Vĩnh Long",
         "schema_type": "LandmarksOrHistoricalBuildings",
         "sub_category": "pagoda",
         "coords_approximate": true,
@@ -12344,7 +12344,7 @@
       "attributes": {
         "ward": "Hàm Giang",
         "origin": "Trà Vinh",
-        "address": "Huyện Trà Cú, tỉnh Vĩnh Long",
+        "address": "Chù ụ rang me, Xã Trà Cú, tỉnh Vĩnh Long",
         "specialty": "Mai mềm nhai được cả vỏ giòn tan, thịt ngọt thơm đậm đà hòa cùng vị chua cay đặc trưng của biển rừng ngập mặn",
         "schema_type": "Recipe",
         "sub_category": "seafood",
@@ -12556,7 +12556,7 @@
         ]
       },
       "attributes": {
-        "address": "Vùng cửa biển huyện Châu Thành và Cầu Ngang, tỉnh Vĩnh Long",
+        "address": "Vùng cửa biển, Xã Châu Thành, tỉnh Vĩnh Long",
         "admission": "Miễn phí",
         "schema_type": "NaturalFeature",
         "sub_category": "island",
@@ -13120,7 +13120,7 @@
       },
       "attributes": {
         "ward": "Đại Điền",
-        "address": "Huyện Thạnh Phú, tỉnh Vĩnh Long",
+        "address": "Cua biển và nghêu Thạnh Phú, Xã Thạnh Phú, tỉnh Vĩnh Long",
         "ocop_star": 4,
         "schema_type": "Product",
         "sub_category": "ocop-product",
@@ -13715,7 +13715,7 @@
         ]
       },
       "attributes": {
-        "address": "Toàn tỉnh Vĩnh Long (tập trung Tiểu Cần, Cầu Ngang, Càng Long)",
+        "address": "Toàn tỉnh Vĩnh Long, Xã Châu Thành, tỉnh Vĩnh Long",
         "price_range": "8.000–15.000 đ/trái",
         "schema_type": "Product",
         "weight/unit": "trái",
@@ -13793,7 +13793,7 @@
         ]
       },
       "attributes": {
-        "address": "Huyện Ba Tri, tỉnh Vĩnh Long",
+        "address": "Dừa sáp Cầu Kè - đặc sản, Phường Ba Tri, tỉnh Vĩnh Long",
         "ocop_star": 3,
         "schema_type": "Product",
         "sub_category": "coconut-candy",
@@ -13995,7 +13995,7 @@
         ]
       },
       "attributes": {
-        "address": "Huyện Trà Cú, tỉnh Vĩnh Long",
+        "address": "Dừa sáp, Xã Lưu Nghiệp Anh, tỉnh Vĩnh Long",
         "schema_type": "Product",
         "sub_category": "coconut-product",
         "ocop_certified": true,
@@ -14082,7 +14082,7 @@
       },
       "attributes": {
         "ward": "Thạnh Hải",
-        "address": "Huyện Thạnh Phú, tỉnh Vĩnh Long",
+        "address": "Du lịch sinh thái biển Thạnh Phú, Xã Thạnh Phú, tỉnh Vĩnh Long",
         "admission": "Có phí (liên hệ)",
         "schema_type": "TouristAttraction",
         "sub_category": "eco-tour",
@@ -14155,7 +14155,7 @@
       },
       "attributes": {
         "ward": "Phước Mỹ Trung",
-        "address": "Huyện Mỏ Cày Bắc, tỉnh Vĩnh Long",
+        "address": "Du lịch sinh thái miệt vườn Mỏ Cày Bắc, Xã Tân Thành Bình, tỉnh Vĩnh Long",
         "admission": "Miễn phí",
         "schema_type": "NaturalFeature",
         "sub_category": "island",
@@ -14622,7 +14622,7 @@
         ]
       },
       "attributes": {
-        "address": "Huyện Thạnh Phú, tỉnh Vĩnh Long",
+        "address": "Gạo sạch lúa-tôm Thạnh Phú, Xã Thạnh Phú, tỉnh Vĩnh Long",
         "schema_type": "Product",
         "sub_category": "rice",
         "ocop_certified": true,
@@ -14709,7 +14709,7 @@
       "attributes": {
         "ocop": "OCOP",
         "ward": "Thạnh Hải",
-        "address": "Huyện Thạnh Phú, tỉnh Vĩnh Long",
+        "address": "Gạo sạch Tôm-Lúa Thạnh Phú (OCOP), Xã Thạnh Phú, tỉnh Vĩnh Long",
         "schema_type": "Product",
         "sub_category": "rice",
         "ocop_certified": true,
@@ -14980,7 +14980,7 @@
         ]
       },
       "attributes": {
-        "address": "Huyện Mỏ Cày Bắc, tỉnh Vĩnh Long",
+        "address": "Homestay Nam Hàm Luông, Phường Bến Tre, tỉnh Vĩnh Long",
         "price_range": "550.000đ - 1.100.000đ/phòng/đêm",
         "schema_type": "LodgingBusiness",
         "sub_category": "homestay",
@@ -15565,7 +15565,7 @@
       },
       "attributes": {
         "brand": "dừa Bến Tre",
-        "address": "Huyện Mỏ Cày Nam, tỉnh Vĩnh Long",
+        "address": "Kẹo dừa Mỏ Cày (cơ sở Tuyết Phụng), Phường Mỏ Cày, tỉnh Vĩnh Long",
         "schema_type": "Product",
         "sub_category": "coconut-candy",
         "coords_approximate": true,
@@ -15632,7 +15632,7 @@
       },
       "attributes": {
         "brand": "Bến Tre",
-        "address": "Thị trấn Mỏ Cày, tỉnh Vĩnh Long",
+        "address": "Kẹo dừa Tuyết Phụng, Phường Mỏ Cày, tỉnh Vĩnh Long",
         "ocop_star": 4,
         "schema_type": "Product",
         "sub_category": "coconut-candy",
@@ -15706,7 +15706,7 @@
       "verified": 1,
       "revision": 1,
       "createdAt": "2026-08-18 15:03:59",
-      "address": "Thị trấn Mỏ Cày, tỉnh Vĩnh Long"
+      "address": "Kẹo dừa Tuyết Phụng, Phường Mỏ Cày, tỉnh Vĩnh Long"
     },
     {
       "id": "kho-ca-bien-thanh-phu",
@@ -15742,7 +15742,7 @@
       },
       "attributes": {
         "ward": "Đại Điền",
-        "address": "Huyện Thạnh Phú, tỉnh Vĩnh Long",
+        "address": "Khô cá biển Thạnh Phú, Xã Thạnh Phú, tỉnh Vĩnh Long",
         "ocop_star": 3,
         "schema_type": "Product",
         "sub_category": "dried-seafood",
@@ -15984,7 +15984,7 @@
         ]
       },
       "attributes": {
-        "address": "Huyện Thạnh Phú, tỉnh Vĩnh Long",
+        "address": "Khu bảo vệ cảnh quan rừng ngập mặn Thạnh Phú, Xã Thạnh Phú, tỉnh Vĩnh Long",
         "admission": "Miễn phí",
         "schema_type": "NaturalFeature",
         "sub_category": "island",
@@ -16814,7 +16814,7 @@
         ]
       },
       "attributes": {
-        "address": "Huyện Ba Tri, tỉnh Vĩnh Long",
+        "address": "Làng nghề kẹo dừa Ba Tri, Phường Ba Tri, tỉnh Vĩnh Long",
         "specialty": "Chế biến dừa, Kẹo",
         "schema_type": "LocalBusiness",
         "sub_category": "confectionery",
@@ -17195,7 +17195,7 @@
         ]
       },
       "attributes": {
-        "address": "Huyện Mỏ Cày Nam, tỉnh Vĩnh Long",
+        "address": "Làng nghề thủ công mỹ nghệ dừa Mỏ Cày Nam, Phường Mỏ Cày, tỉnh Vĩnh Long",
         "specialty": "Chế biến dừa",
         "schema_type": "LocalBusiness",
         "sub_category": "pottery",
@@ -17484,7 +17484,7 @@
         ]
       },
       "attributes": {
-        "address": "Huyện Ba Tri, tỉnh Vĩnh Long",
+        "address": "Làng nghề tre trúc Ba Tri, Phường Ba Tri, tỉnh Vĩnh Long",
         "specialty": "Đan lát",
         "schema_type": "LocalBusiness",
         "sub_category": "basketry",
@@ -17789,7 +17789,7 @@
       },
       "attributes": {
         "ward": "Hàm Giang",
-        "address": "Huyện Trà Cú, tỉnh Vĩnh Long",
+        "address": "Lễ hội Chol Chnam Thmay và Sen Dolta, Xã Trà Cú, tỉnh Vĩnh Long",
         "category": "le-hoi",
         "date_end": "2026-04-16",
         "date_start": "2026-04-13",
@@ -18918,7 +18918,7 @@
       "attributes": {
         "name": "Ngày hội Văn hóa - Thể thao và Du lịch huyện Chợ Lách",
         "month": 1,
-        "address": "Huyện Chợ Lách, tỉnh Vĩnh Long",
+        "address": "Ngày hội Văn hóa - Thể thao và Du lịch Chợ Lách, Phường Phú Khương, tỉnh Vĩnh Long",
         "category": "su-kien; festival",
         "date_end": "2026-07-12",
         "highlight": [
@@ -19004,7 +19004,7 @@
         ]
       },
       "attributes": {
-        "address": "Huyện Thạnh Phú, tỉnh Vĩnh Long",
+        "address": "Nghêu, sò, cua biển Thạnh Phú, Xã Thạnh Phú, tỉnh Vĩnh Long",
         "ocop_star": 4,
         "schema_type": "Product",
         "sub_category": "ocop-product",
@@ -19541,7 +19541,7 @@
       "attributes": {
         "ward": "Lộc Thuận",
         "origin": "Bến Tre",
-        "address": "Vùng ven biển huyện Bình Đại, tỉnh Vĩnh Long",
+        "address": "Vùng ven biển, Phường Bình Đại, tỉnh Vĩnh Long",
         "specialty": "Ốc",
         "schema_type": "Recipe",
         "sub_category": "seafood",
@@ -19711,7 +19711,7 @@
         ]
       },
       "attributes": {
-        "address": "Huyện Bình Đại, tỉnh Vĩnh Long",
+        "address": "Rừng ngập mặn Bình Đại, Phường Bình Đại, tỉnh Vĩnh Long",
         "admission": "Miễn phí",
         "schema_type": "NaturalFeature",
         "sub_category": "island",
@@ -19850,7 +19850,7 @@
         ]
       },
       "attributes": {
-        "address": "Huyện Mỏ Cày Nam, tỉnh Vĩnh Long",
+        "address": "Rượu Gia Bảo, Xã Tân Thành Bình, tỉnh Vĩnh Long",
         "ocop_star": 4,
         "schema_type": "Product",
         "sub_category": "liquor",
@@ -19938,7 +19938,7 @@
         ]
       },
       "attributes": {
-        "address": "Huyện Cầu Ngang, tỉnh Vĩnh Long",
+        "address": "Rượu Quách Cầu Ngang, Xã Cầu Ngang, tỉnh Vĩnh Long",
         "ocop_star": 3,
         "schema_type": "Product",
         "sub_category": "liquor",
@@ -20179,7 +20179,7 @@
         ]
       },
       "attributes": {
-        "address": "Huyện Cầu Ngang, tỉnh Vĩnh Long",
+        "address": "Sản phẩm OCOP Cầu Ngang, Xã Cầu Ngang, tỉnh Vĩnh Long",
         "ocop_star": 3,
         "schema_type": "Product",
         "sub_category": "coconut-product",
@@ -20306,7 +20306,7 @@
         "tour": "Ghép với trung tâm Vĩnh Long, bảo tàng, ẩm thực, đường gốm.",
         "hours": "Mở cửa hàng ngày",
         "phone": "0901 090 311",
-        "address": "Làng Long Hồ, đường Trần Phú, phường 4, Thành phố Vĩnh Long, tỉnh Vĩnh Long",
+        "address": "Làng Long Hồ, đường Trần Phú, Phường Phước Hậu, tỉnh Vĩnh Long",
         "category": "le-hoi",
         "date_end": "2026-03-12",
         "priority": "A-",
@@ -20444,7 +20444,7 @@
         ]
       },
       "attributes": {
-        "address": "Huyện Chợ Lách, tỉnh Vĩnh Long",
+        "address": "Sầu riêng cấp đông Chánh Thu, Xã Chợ Lách, tỉnh Vĩnh Long",
         "schema_type": "Product",
         "sub_category": "fruit",
         "ocop_certified": true,
@@ -20509,7 +20509,7 @@
       },
       "attributes": {
         "brand": "Đặc sản Bến Tre",
-        "address": "Huyện Bình Đại, tỉnh Vĩnh Long",
+        "address": "Sò điệp Bình Đại, Phường Bình Đại, tỉnh Vĩnh Long",
         "schema_type": "Product",
         "sub_category": "specialty",
         "coords_approximate": true,
@@ -20726,7 +20726,7 @@
         ]
       },
       "attributes": {
-        "address": "Huyện Tam Bình, tỉnh Vĩnh Long",
+        "address": "Bún tươi và hủ tiếu Sáu Thạnh, Phường Phước Hậu, tỉnh Vĩnh Long",
         "ocop_star": 4,
         "schema_type": "Product",
         "sub_category": "dried-seafood",
@@ -20819,7 +20819,7 @@
         ]
       },
       "attributes": {
-        "address": "Huyện Cầu Ngang, tỉnh Vĩnh Long",
+        "address": "Tôm khô Hai Khâm, Xã Cầu Ngang, tỉnh Vĩnh Long",
         "ocop_star": 3,
         "schema_type": "Product",
         "sub_category": "dried-seafood",
@@ -20916,7 +20916,7 @@
       },
       "attributes": {
         "brand": "Đặc sản Bến Tre",
-        "address": "Huyện Bình Đại, tỉnh Vĩnh Long",
+        "address": "Tôm sú Bình Đại, Phường Bình Đại, tỉnh Vĩnh Long",
         "schema_type": "Product",
         "sub_category": "specialty",
         "coords_approximate": true,
@@ -21363,7 +21363,7 @@
         ]
       },
       "attributes": {
-        "address": "Huyện Cầu Kè, tỉnh Vĩnh Long",
+        "address": "Vùng trồng dừa sáp Cầu Kè, Xã Cầu Kè, tỉnh Vĩnh Long",
         "area_ha": 780,
         "products": "Dừa sáp tươi, cơm dừa sáp, sản phẩm chế biến từ dừa sáp",
         "ocop_star": 5,
@@ -21916,7 +21916,7 @@
         "hours": "Không gian dân cư - miệt vườn, tham quan linh hoạt",
         "length": "Hơn 80 km từ Chợ Lách đến biển Thạnh Phú",
         "rivers": "Sông Hàm Luông (phía bắc) và sông Cổ Chiên (phía nam)",
-        "address": "Phường Mỏ Cày, Bến Tre",
+        "address": "Cù lao Minh, Phường Mỏ Cày, tỉnh Vĩnh Long",
         "area_km2": "~960",
         "heritage": "Khu di tích Đồng Khởi (Mỏ Cày Nam), chùa Tuyên Linh",
         "admission": "Miễn phí",
@@ -22393,7 +22393,7 @@
         ]
       },
       "attributes": {
-        "address": "Huyện Chợ Lách (BT)",
+        "address": "Chợ Chợ Lách, Xã Chợ Lách, tỉnh Vĩnh Long",
         "admission": "Miễn phí",
         "schema_type": "TouristAttraction",
         "sub_category": "market",
@@ -22570,7 +22570,7 @@
       },
       "attributes": {
         "brand": "Đặc sản Bến Tre",
-        "address": "Huyện Bình Đại, Bến Tre",
+        "address": "Cua Bình Đại, Phường Bình Đại, tỉnh Vĩnh Long",
         "gi_year": "2021",
         "category": "product",
         "gi_number": "00102",
@@ -22742,7 +22742,7 @@
       "attributes": {
         "brand": "Đặc sản Bến Tre",
         "season": "Tháng 5-7",
-        "address": "Xã Vĩnh Thành, huyện Chợ Lách, Bến Tre",
+        "address": "Sầu riêng Cái Mơn, Xã Vĩnh Thành, tỉnh Vĩnh Long",
         "gi_year": "2020",
         "gi_number": "00080",
         "schema_type": "Product",
@@ -24693,7 +24693,7 @@
       "attributes": {
         "brand": "Đặc sản Trà Vinh",
         "origin": "Trà Vinh (đồng bào Khmer)",
-        "address": "Trà Vinh (phổ biến ở các huyện đông đồng bào Khmer: Trà Cú, Châu Thành, Cầu Kè)",
+        "address": "Mắm Bò Hóc, Xã Châu Thành, tỉnh Vĩnh Long",
         "khmer_name": "prahok (pro hoc)",
         "schema_type": "Product",
         "ethnic_group": "Khmer",
@@ -27456,7 +27456,7 @@
         ]
       },
       "attributes": {
-        "address": "Huyện Cầu Kè, Trà Vinh",
+        "address": "Quýt đường Cầu Kè, Phường Trà Vinh, tỉnh Vĩnh Long",
         "seasons": "Vụ xuân T2-4, vụ thu T8-10",
         "products": "Quýt đường, trái cây vườn",
         "specialty": "Quýt/cam, Đường thốt nốt",
@@ -27598,7 +27598,7 @@
       },
       "attributes": {
         "hours": "Thường tham quan ban ngày",
-        "address": "Xã Mỹ Thạnh, huyện Giồng Trôm, Bến Tre",
+        "address": "Làng nghề bánh tráng Mỹ Lồng - điểm tham quan, Xã Giồng Trôm, tỉnh Vĩnh Long",
         "admission": "Thường miễn phí; chi phí mua đặc sản tính riêng",
         "highlight": "Làng nghề bánh tráng 100+ năm, di sản phi vật thể quốc gia 2018, 150+ lò tráng truyền thống",
         "schema_type": "TouristAttraction",
@@ -28015,7 +28015,7 @@
       },
       "attributes": {
         "role": "Nữ anh hùng LLVT, nguyên mẫu \"Người mẹ cầm súng\"",
-        "address": "Xã Tam Ngãi, huyện Cầu Kè, Trà Vinh",
+        "address": "Nguyễn Thị Út, Xã Cầu Kè, tỉnh Vĩnh Long",
         "birth_year": 1931,
         "death_year": 1968,
         "schema_type": "Person",
@@ -29002,7 +29002,7 @@
       },
       "attributes": {
         "role": "Soạn giả cải lương, nhà văn, nhà báo, nhà cách mạng",
-        "address": "Huyện Tam Bình (nay Mang Thít), Vĩnh Long",
+        "address": "Trương Duy Toản, Phường Long Châu, tỉnh Vĩnh Long",
         "birth_year": 1885,
         "death_year": 1957,
         "schema_type": "Person",
@@ -30958,7 +30958,7 @@
       },
       "attributes": {
         "rating": 4.2,
-        "address": "5 Quốc Lộ 60, Tt Mỏ Cày Nam, Bến Tre",
+        "address": "5 Quốc Lộ 60, Tt Mỏ Cày Nam, Phường An Hội, tỉnh Vĩnh Long",
         "specialty": "Chay, Hủ tiếu, Ốc",
         "schema_type": "Restaurant",
         "review_count": 3,
@@ -33693,7 +33693,7 @@
         ]
       },
       "attributes": {
-        "address": "Phường Mỏ Cày, Bến Tre",
+        "address": "Mật hoa dừa, Phường Mỏ Cày, tỉnh Vĩnh Long",
         "ocop_star": 4,
         "schema_type": "Product",
         "sub_category": "coconut-product",
@@ -34223,7 +34223,7 @@
         ]
       },
       "attributes": {
-        "address": "Phường Long Hồ, Vĩnh Long",
+        "address": "Hội thi Đờn ca tài tử - cải lương Long Hồ, Phường Long Hồ, tỉnh Vĩnh Long",
         "category": "su-kien",
         "date_end": "2026-09-22",
         "admission": "Miễn phí",
@@ -36552,7 +36552,7 @@
       },
       "attributes": {
         "event": "Lễ hội Nghinh Ông Nam Hải (rằm tháng Giêng)",
-        "address": "Xã Thạnh Hải, huyện Thạnh Phú, Bến Tre",
+        "address": "Cồn Bửng, Xã Thạnh Hải, tỉnh Vĩnh Long",
         "admission": "Miễn phí",
         "best_time": "Tháng 12 — tháng 4",
         "schema_type": "NaturalFeature",
@@ -36633,7 +36633,7 @@
         ]
       },
       "attributes": {
-        "address": "Huyện Bình Đại, Bến Tre",
+        "address": "Khu du lịch sinh thái Anh Ba Khía, Phường Bình Đại, tỉnh Vĩnh Long",
         "admission": "Có phí (liên hệ)",
         "schema_type": "TouristAttraction",
         "sub_category": "eco-tourism",
@@ -37927,7 +37927,7 @@
         ]
       },
       "attributes": {
-        "address": "Ấp Cây Hẹ, xã Phú Cần, huyện Tiểu Cần, Trà Vinh",
+        "address": "Ấp Cây Hẹ, Phường Tiểu Cần, tỉnh Vĩnh Long",
         "admission": "Có phí (liên hệ)",
         "ocop_star": 5,
         "schema_type": "TouristAttraction",
@@ -38504,7 +38504,7 @@
         ]
       },
       "attributes": {
-        "address": "Ấp Bình Chiến, thị trấn Bình Đại, huyện Bình Đại, Bến Tre",
+        "address": "Ấp Bình Chiến, Xã Phú Thuận, tỉnh Vĩnh Long",
         "founded": 2000,
         "admission": "Miễn phí",
         "schema_type": "TouristAttraction",
@@ -40259,7 +40259,7 @@
       "attributes": {
         "ward": "Quới Thiện",
         "phone": "0986 550 678",
-        "address": "Ấp Tân Quang, xã Hiếu Phụng, huyện Vũng Liêm, Vĩnh Long",
+        "address": "Ấp Tân Quang, Phường Phước Hậu, tỉnh Vĩnh Long",
         "schema_type": "Product",
         "sub_category": "processed-meat",
         "certification": "SP CNNT tiêu biểu cấp tỉnh 2023",
@@ -41071,7 +41071,7 @@
         "brand": "Đặc sản Bến Tre",
         "method": "Giã nhuyễn, ướp muối, phơi nắng 2-3 ngày, vắt lọc, phơi đặc",
         "origin": "Châu Bình, Giồng Trôm, Bến Tre",
-        "address": "Xã Châu Bình, huyện Giồng Trôm, Bến Tre",
+        "address": "Mắm Còng, Xã Thạnh Phú, tỉnh Vĩnh Long",
         "proverb": "Mắm còng Châu Bình (ngạn ngữ Nam Bộ)",
         "serving": "Chấm rau luộc, ăn với cơm, nấu lẩu mắm",
         "ingredients": "Còng (cua nhỏ), muối, rượu trắng",
@@ -41474,7 +41474,7 @@
         ]
       },
       "attributes": {
-        "address": "Xã Lục Sỹ Thành và Phú Thành, huyện Trà Ôn, Vĩnh Long",
+        "address": "Cù Lao Mây Trà Ôn, Xã Lục Sĩ Thành, tỉnh Vĩnh Long",
         "area_ha": "~4.000 ha",
         "admission": "Miễn phí",
         "schema_type": "NaturalFeature",
@@ -41558,7 +41558,7 @@
         "age": "Hơn 100 năm",
         "hours": "Cả ngày (đông nhất lúc nước lớn, sáng sớm 5:00–7:00)",
         "river": "Sông Hậu",
-        "address": "Ngã ba sông Hậu và sông Mang Thít, thị trấn Trà Ôn, huyện Trà Ôn, Vĩnh Long",
+        "address": "Ngã ba sông Hậu và sông Mang Thít, Phường Trà Ôn, tỉnh Vĩnh Long",
         "admission": "Miễn phí",
         "trade_type": "Bán sỉ trái cây, nông sản",
         "schema_type": "TouristAttraction",
@@ -41660,7 +41660,7 @@
         ]
       },
       "attributes": {
-        "address": "Xã Lục Sỹ Thành, huyện Trà Ôn, Vĩnh Long",
+        "address": "Làng Bánh Tráng Trà Ôn, Phường Trà Ôn, tỉnh Vĩnh Long",
         "specialty": "Bánh tráng, Chế biến dừa",
         "schema_type": "LocalBusiness",
         "sub_category": "confectionery",
@@ -41740,7 +41740,7 @@
         ]
       },
       "attributes": {
-        "address": "Ấp Tường Lễ, xã Tường Lộc, huyện Tam Bình, Vĩnh Long",
+        "address": "Ấp Tường Lễ, Phường Phước Hậu, tỉnh Vĩnh Long",
         "specialty": "Bánh tráng giấy, bánh xếp quặn, bánh kẹp",
         "schema_type": "LocalBusiness",
         "sub_category": "confectionery",
@@ -41820,7 +41820,7 @@
         ]
       },
       "attributes": {
-        "address": "Ấp Bình Thủy, xã Quới Thiện, huyện Vũng Liêm, Vĩnh Long",
+        "address": "Ấp Bình Thủy, Xã Quới Thiện, tỉnh Vĩnh Long",
         "specialty": "Dệt, Dệt chiếu",
         "schema_type": "LocalBusiness",
         "sub_category": "weaving",
@@ -42047,7 +42047,7 @@
         "risk": "Cần tách rõ nghi lễ cộng đồng và trải nghiệm du khách; quản trị đông khách dịp Tết.",
         "role": "festival_anchor",
         "tour": "Tạo tour Tết/Lễ hội đầu năm nối Trà Ôn - Cầu Kè - Cổ Chiên.",
-        "address": "Ấp Là Ghì, xã Thiện Mỹ, huyện Trà Ôn, tỉnh Vĩnh Long",
+        "address": "Ấp Mỹ Hòa, Phường Trà Ôn, tỉnh Vĩnh Long",
         "festival": "Lễ hội Lăng Ông — mùng 4 tháng Giêng",
         "priority": "A",
         "risk_note": "Cần tách rõ nghi lễ cộng đồng và trải nghiệm du khách; quản trị đông khách dịp Tết.",
@@ -42497,7 +42497,7 @@
         ]
       },
       "attributes": {
-        "address": "Khu phố 2, TT Giồng Trôm, huyện Giồng Trôm, Bến Tre",
+        "address": "Khu phố 2, Xã Lương Hòa, tỉnh Vĩnh Long",
         "admission": "Miễn phí",
         "schema_type": "TouristAttraction",
         "sub_category": "market",
@@ -42889,7 +42889,7 @@
         "peak": "1960–1980: 3.000+ lò, 30 km",
         "hours": "6:00–17:00",
         "origin": "Kỹ thuật từ người Khmer, truyền cho cộng đồng Kinh và Hoa",
-        "address": "Huyện Mang Thít, Vĩnh Long (dọc kênh Thầy Cai → sông Cổ Chiên)",
+        "address": "Làng nghề gạch gốm Mang Thít, Xã Nhơn Phú, tỉnh Vĩnh Long",
         "current": "~800 lò, 3.000 ha",
         "founded": "Cuối thế kỷ 19",
         "duration": "1–2 giờ",
@@ -43133,7 +43133,7 @@
       "attributes": {
         "hours": "7:00–17:00",
         "opened": "2022-09",
-        "address": "Ấp 3, thị trấn Cái Nhum, huyện Mang Thít, Vĩnh Long",
+        "address": "Ấp 3, Xã An Bình, tỉnh Vĩnh Long",
         "area_m2": 66801,
         "founder": "Nguyễn Lâm Vĩnh Huy",
         "decision": "QĐ 2011/QĐ-UBND (30/8/2023)",
@@ -43548,7 +43548,7 @@
       "attributes": {
         "area": "~5.000 m²",
         "hours": "7:00–17:00",
-        "address": "Xã Tường Lộc, huyện Tam Bình, Vĩnh Long",
+        "address": "Nhà Cổ Trần Đại Nghĩa, Phường Long Châu, tỉnh Vĩnh Long",
         "admission": "Miễn phí",
         "best_time": "sáng sớm hoặc chiều mát",
         "key_figure": "GS.VS Trần Đại Nghĩa (Phạm Quang Lễ, 1913–1997)",
@@ -43798,7 +43798,7 @@
       },
       "attributes": {
         "hours": "7:30–11:30 & 13:30–17:00 (Thứ 3 – Chủ Nhật; Thứ 2 nghỉ)",
-        "address": "Xã Trung Hiệp, huyện Vũng Liêm, tỉnh Vĩnh Long",
+        "address": "Khu lưu niệm Thủ tướng Chính phủ Võ Văn Kiệt, Phường Vũng Liêm, tỉnh Vĩnh Long",
         "admission": "Miễn phí",
         "best_time": "sáng sớm hoặc chiều mát",
         "schema_type": "TouristAttraction",
@@ -43884,7 +43884,7 @@
       },
       "attributes": {
         "role": "Nhà thơ yêu nước, Danh nhân văn hóa thế giới UNESCO",
-        "address": "Xã An Đức, huyện Ba Tri, Bến Tre (mộ và khu lưu niệm)",
+        "address": "Nguyễn Đình Chiểu, Phường Bến Tre, tỉnh Vĩnh Long",
         "birth_year": 1822,
         "death_year": 1888,
         "schema_type": "Person",
@@ -43980,7 +43980,7 @@
       },
       "attributes": {
         "role": "Nữ tướng, lãnh đạo Đồng Khởi Bến Tre",
-        "address": "Xã Lương Hòa, huyện Giồng Trôm, tỉnh Vĩnh Long",
+        "address": "Nguyễn Thị Định, Phường Bến Tre, tỉnh Vĩnh Long",
         "birth_year": 1920,
         "death_year": 1992,
         "schema_type": "Person",
@@ -44073,7 +44073,7 @@
       },
       "attributes": {
         "hours": "7h30 - 11h30 & 13h30 - 17h00 hàng ngày",
-        "address": "Xã Lương Hòa, huyện Giồng Trôm, tỉnh Vĩnh Long",
+        "address": "Khu lưu niệm Nữ tướng Nguyễn Thị Định, Xã Giồng Trôm, tỉnh Vĩnh Long",
         "area_m2": 15000,
         "admission": "Miễn phí",
         "best_time": "sáng sớm hoặc chiều mát",
@@ -44172,7 +44172,7 @@
       },
       "attributes": {
         "role": "GS-TS, Thầy thuốc Nhân dân, AHLĐ, Đại tá, tiên phong lão khoa VN",
-        "address": "Xã Phương Thạnh, huyện Càng Long, Trà Vinh",
+        "address": "Nguyễn Thiện Thành, Phường Càng Long, tỉnh Vĩnh Long",
         "birth_year": 1919,
         "death_year": 2013,
         "schema_type": "Person",
@@ -44341,7 +44341,7 @@
       },
       "attributes": {
         "type": "huyện",
-        "address": "Phường Long Hồ, Vĩnh Long",
+        "address": "Long Hồ, Phường Long Hồ, tỉnh Vĩnh Long",
         "admission": "Miễn phí",
         "highlight": "cù lao An Bình, vườn trái cây",
         "schema_type": "NaturalFeature",
@@ -45419,7 +45419,7 @@
       },
       "attributes": {
         "hours": "7:00–17:00",
-        "address": "Ấp An Thuận, xã An Bình, huyện Long Hồ, Vĩnh Long",
+        "address": "Ấp An Thuận, Phường Long Châu, tỉnh Vĩnh Long",
         "area_ha": 2.2,
         "website": "https://www.vinhsang.com/",
         "admission": "50.000 đ/người lớn, 35.000 đ/trẻ em",
@@ -46265,7 +46265,7 @@
       "attributes": {
         "brand": "Đặc sản Bến Tre",
         "where": "chợ địa phương, vườn trái cây",
-        "address": "Châu Thành, Giồng Trôm, Bến Tre (và rải rác toàn tỉnh)",
+        "address": "Dừa xiêm xanh, Phường Mỏ Cày, tỉnh Vĩnh Long",
         "schema_type": "Product",
         "season_note": "tháng 5–8",
         "sub_category": "coconut-product",
@@ -46732,7 +46732,7 @@
         "tour": "Điểm neo của tuyến Bến Tre, dễ ghép với Phú Túc - Lan Vương - An Hội.",
         "hours": "7:30–18:00 hàng ngày (kể cả lễ tết)",
         "phone": "0902 036 056",
-        "address": "Huyện Châu Thành, Bến Tre",
+        "address": "Cồn Phụng (Cồn Ông Đạo Dừa), Phường Phú Túc, tỉnh Vĩnh Long",
         "founder": "Nguyễn Thành Nam (Ông Đạo Dừa, 1910)",
         "priority": "A+",
         "admission": "Miễn phí vào cổng thông thường; 40.000đ/người lớn, 20.000đ/trẻ em (cao 0,8–1,2m) vào dịp lễ lớn hoặc tham quan khu di tích Đạo Dừa",
@@ -46859,7 +46859,7 @@
         "area": "~3 ha",
         "hours": "Mở cửa cả ngày, quanh năm (không ghi giờ cụ thể)",
         "phone": "027 0387 0123",
-        "address": "Ấp Trung Trạch, xã Trung Thành, huyện Vũng Liêm, Vĩnh Long",
+        "address": "Ấp Trung Trạch, Phường Vũng Liêm, tỉnh Vĩnh Long",
         "founded": "632 (theo bia trên tường chánh điện)",
         "admission": "Miễn phí (không có thông tin thu phí vào cửa; có thùng công đức)",
         "best_time": "Dịp lễ Tết Chôl Chnăm Thmây (14-16/4 dương lịch) hoặc lễ Ok-Om-Bôk (rằm tháng 10 âm lịch)",
@@ -46943,7 +46943,7 @@
       },
       "attributes": {
         "brand": "Đặc sản Trà Vinh",
-        "address": "Trà Vinh (phổ biến ở huyện Châu Thành và Càng Long)",
+        "address": "Trái Quách, Phường Trà Vinh, tỉnh Vĩnh Long",
         "schema_type": "Product",
         "sub_category": "fruit",
         "coords_approximate": true,
@@ -47013,7 +47013,7 @@
       },
       "attributes": {
         "brand": "Tôm càng lột xứ dừa",
-        "address": "Xã An Thạnh, huyện Thạnh Phú, Bến Tre",
+        "address": "Tôm càng xanh lột An Thạnh, Phường Bến Tre, tỉnh Vĩnh Long",
         "ocop_star": 3,
         "schema_type": "Product",
         "sub_category": "freshwater-seafood",
@@ -47320,7 +47320,7 @@
           "corporate_portfolio_separated": true
         },
         "origin": "Giống từ Campuchia, trồng tại chùa Botumsakor Cầu Kè",
-        "address": "Huyện Cầu Kè, Trà Vinh",
+        "address": "Dừa sáp Cầu Kè, Xã Cầu Kè, tỉnh Vĩnh Long",
         "area_ha": 750,
         "price_range": "60.000-120.000 đ/trái",
         "schema_type": "Product",
@@ -47412,7 +47412,7 @@
         "award": "HCV hội thi ẩm thực VL 2023; VietKings Top 100",
         "where": "quán địa phương, chợ, homestay",
         "origin": "Vĩnh Long",
-        "address": "Huyện Bình Tân, Vĩnh Long",
+        "address": "Mắm sống khoai lang, Phường Long Châu, tỉnh Vĩnh Long",
         "price_range": "50.000 – 80.000 VNĐ/phần",
         "schema_type": "Recipe",
         "sub_category": "local-specialty",
@@ -47571,7 +47571,7 @@
         "scale": "204 hộ, ~500 lao động",
         "where": "làng nghề Mỹ Lồng, chợ Bến Tre",
         "origin": "Xã Mỹ Thạnh (Mỹ Lồng cũ), huyện Giồng Trôm, Bến Tre",
-        "address": "Ấp Nghĩa Huấn, xã Mỹ Thạnh, huyện Giồng Trôm, Bến Tre",
+        "address": "Ấp Nghĩa Huấn, Xã Giao Long, tỉnh Vĩnh Long",
         "heritage": "DSVH Phi vật thể QG (QĐ 4069/QĐ-BVHTTDL, 30/10/2018)",
         "varieties": "Đặc biệt (dừa+sữa+trứng), dừa, sữa",
         "ingredients": "Gạo sỏi đặc sản giầu tinh bột, nước cốt dừa xiêm béo đặc nguyên chất, mè trắng rang thơm, đường mía, muối hầm, gừng giã nhuyễn",
@@ -48052,7 +48052,7 @@
       "attributes": {
         "where": "Vườn dừa, quán ven đường Bến Tre",
         "origin": "Bến Tre",
-        "address": "Phường Mỏ Cày, Bến Tre",
+        "address": "Nước dừa tươi, Phường Mỏ Cày, tỉnh Vĩnh Long",
         "price_range": "10.000–20.000 đ/trái",
         "schema_type": "Recipe",
         "sub_category": "beverage",
@@ -49590,7 +49590,7 @@
         "alias": "Chùa Cò, chùa Giồng, chùa Giồng Lớn",
         "birds": "Hàng nghìn con cò trắng, vạc, diệc trú ngụ quanh năm",
         "built": "1677 (hơn 300 năm)",
-        "address": "Ấp Cây Da, xã Đại An, huyện Trà Cú, Trà Vinh",
+        "address": "Ấp Cây Da, Xã Đại An, tỉnh Vĩnh Long",
         "distance": "Cách TP Trà Vinh ~40 km về phía nam",
         "khmer_name": "Wat Phnô Đôn (Wat=chùa, Phnô=giồng cát, Đôn=dừa)",
         "renovation": "Chánh điện trùng tu 1944, cổng 1968",
@@ -49781,7 +49781,7 @@
         "area": "500+ m²",
         "built": "1890–1904",
         "style": "Xuyên trính, nền tam cấp, gạch tàu",
-        "address": "Xã Đại Điền, huyện Thạnh Phú, Bến Tre",
+        "address": "Nhà Cổ Huỳnh Phủ Thạnh Phú, Xã Đại Điền, tỉnh Vĩnh Long",
         "builder": "Huỳnh Ngọc Khiêm (Hương Liêm), Tri huyện",
         "columns": "48 cột gỗ lim và gỗ căm xe",
         "restored": "2013–2015",
@@ -50019,7 +50019,7 @@
       "attributes": {
         "ward": "TT Long Hồ",
         "built": "2000-2004",
-        "address": "Ấp Long Thuận A, xã Long Phước, huyện Long Hồ, tỉnh Vĩnh Long",
+        "address": "Ấp Long Thuận A, Phường Long Châu, tỉnh Vĩnh Long",
         "area_ha": 3.2,
         "schema_type": "LandmarksOrHistoricalBuildings",
         "sub_category": "historic-site",
@@ -51646,7 +51646,7 @@
         "note": "Có thể tham quan/sử dụng quanh năm"
       },
       "attributes": {
-        "address": "Ấp Phú Khương, xã Phú Lễ, huyện Ba Tri, Bến Tre",
+        "address": "Ấp Phú Khương, Xã Tân Xuân, tỉnh Vĩnh Long",
         "area_ha": 153,
         "schema_type": "LandmarksOrHistoricalBuildings",
         "sub_category": "historic-site",
@@ -52027,7 +52027,7 @@
       "attributes": {
         "built": 1897,
         "hours": "7:00–17:00",
-        "address": "Khóm 5, thị trấn Tiểu Cần, huyện Tiểu Cần, Trà Vinh",
+        "address": "Khóm 5, Phường Trà Vinh, tỉnh Vĩnh Long",
         "admission": "Miễn phí",
         "best_time": "sáng sớm hoặc chiều mát",
         "schema_type": "TouristAttraction",
@@ -52116,7 +52116,7 @@
       "attributes": {
         "hours": "7:00–17:00",
         "zones": "7 phân khu",
-        "address": "Xã Lương Hòa, huyện Châu Thành, Trà Vinh",
+        "address": "Làng Văn hóa - Du lịch Khmer, Phường Trà Vinh, tỉnh Vĩnh Long",
         "admission": "Miễn phí",
         "best_time": "sáng sớm hoặc chiều mát",
         "key_sites": "Ao Bà Om, Chùa Âng, Bảo tàng VH Khmer, Trường Pali, Làng VH Khmer, Chùa Lò Gạch, Di tích Óc Eo",
@@ -52276,7 +52276,7 @@
         ]
       },
       "attributes": {
-        "address": "Xã Hưng Phong, huyện Giồng Trôm, Bến Tre",
+        "address": "Làng nghề đan giỏ cọng dừa Hưng Phong, Phường Bến Tre, tỉnh Vĩnh Long",
         "workers": ">1.500 lao động",
         "specialty": "Chế biến dừa, Đan lát",
         "households": ">500 hộ",
@@ -52352,7 +52352,7 @@
         "note": "Có thể tham quan/sử dụng quanh năm"
       },
       "attributes": {
-        "address": "Xã Định Thủy, huyện Mỏ Cày Nam, Bến Tre",
+        "address": "Làng du kích Đồng Khởi, Xã Đồng Khởi, tỉnh Vĩnh Long",
         "schema_type": "LandmarksOrHistoricalBuildings",
         "sub_category": "historic-site",
         "heritage_level": "Di tích quốc gia đặc biệt (QĐ 2499/QĐ-TTg, 22/12/2016)",
@@ -52731,7 +52731,7 @@
       "attributes": {
         "ocop": "OCOP",
         "ward": "Tân Thành Bình",
-        "address": "Huyện Mỏ Cày Bắc, Bến Tre",
+        "address": "Sản phẩm dừa OCOP BEINCO, Xã Phước Mỹ Trung, tỉnh Vĩnh Long",
         "schema_type": "Product",
         "sub_category": "coconut-product",
         "ocop_certified": true,
@@ -53145,7 +53145,7 @@
         "hours": "Hầu hết các điểm tham quan mở cửa 08:00–17:00; các vườn cây và homestay hoạt động linh hoạt theo giờ",
         "phone": "0918 664 499",
         "rivers": "Sông Tiền (phía bắc), sông Cổ Chiên (phía nam)",
-        "address": "Gồm 4 xã: An Bình, Bình Hòa Phước, Hòa Ninh, Đồng Phú, tỉnh Vĩnh Long",
+        "address": "Cù lao An Bình, Xã An Bình, tỉnh Vĩnh Long",
         "priority": "A+",
         "admission": "Miễn phí",
         "best_time": "tháng 5–8 (mùa rộ trái cây miệt vườn)",
@@ -53819,7 +53819,7 @@
       "attributes": {
         "role": "intangible_anchor",
         "hours": "Theo lịch diễn thỏa thuận / Theo sự kiện",
-        "address": "Phổ biến toàn tỉnh Vĩnh Long; trọng điểm tại huyện Vũng Liêm (189 CLB). Không có một địa chỉ điểm diễn cố định duy nhất — hoạt động qua mạng lưới câu lạc bộ phân tán.",
+        "address": "Phổ biến toàn tỉnh Vĩnh Long; trọng điểm tại (189 CLB). Không có một địa chỉ điểm diễn cố định duy nhất — hoạt động qua mạng lưới câu lạc bộ phân tán., Phường Long Châu, tỉnh Vĩnh Long",
         "duration": "2–3 giờ",
         "priority": "A",
         "admission": "Thường miễn phí tại các sinh hoạt CLB và lễ hội công cộng. Một số tour du lịch miệt vườn Vĩnh Long tích hợp buổi biểu diễn trong gói tour (không tính phí riêng).",
@@ -54064,7 +54064,7 @@
         "phone": "0913 816 762",
         "scope": "3 xã: Định Thủy, Phước Hiệp, Bình Khánh (huyện Mỏ Cày Nam)",
         "leader": "Nguyễn Thị Định (Phó Bí thư Tỉnh ủy Bến Tre)",
-        "address": "Xã Định Thủy, huyện Mỏ Cày Nam, Bến Tre",
+        "address": "Khu di tích Đồng Khởi, Xã Đồng Khởi, tỉnh Vĩnh Long",
         "dinh_ran": "Dựng 1878, trùng tu 2005, cách 500m đông bắc, 11m x 25m",
         "admission": "Không tìm được thông tin giá vé tham quan chính xác (nhiều nguồn không đề cập, có thể miễn phí hoặc phí thấp)",
         "artifacts": "46 hiện vật lịch sử",
@@ -54167,7 +54167,7 @@
         "role": "core_anchor",
         "tour": "Ghép với An Bình, Bảo tàng Nông nghiệp, đường sông Cổ Chiên.",
         "hours": "7:00–17:00 hằng ngày (làng nghề hoạt động tự do, không có giờ đóng cổng chính thức)",
-        "address": "Huyện Mang Thít, tỉnh Vĩnh Long (trải dài qua các xã Mỹ Phước, Mỹ An, Nhơn Phú, Hòa Tịnh dọc sông Cổ Chiên)",
+        "address": "Lò gạch Mang Thít, Xã Nhơn Phú, tỉnh Vĩnh Long",
         "priority": "A+",
         "waterway": "Dọc sông Cổ Chiên và kênh Thầy Cai",
         "admission": "Miễn phí vé vào cổng",
@@ -54367,7 +54367,7 @@
         "ocop": "Cam sành Khánh Nhân, Thuận Loan — OCOP 3 sao",
         "hours": "07:30-17:00 (Vụ mùa: Tháng 8-9 Âm lịch)",
         "where": "vườn Tam Bình, chợ Vĩnh Long",
-        "address": "Vùng Gò Găng, xã Bình Ninh, tỉnh Vĩnh Long (và các xã Trà Côn, Tân Mỹ, Thuận Thới, Hựu Thành, Thới Hòa cùng huyện)",
+        "address": "Vùng Gò Găng, Phường Tam Bình, tỉnh Vĩnh Long",
         "best_time": "Tháng 9–10 dương lịch (tháng 8–9 âm lịch) – mùa thu hoạch rộ, có thể trực tiếp trải nghiệm hái cam tại vườn",
         "key_facts": [
           "Trồng tập trung tại vùng Gò Găng, xã Bình Ninh, huyện Tam Bình và các xã Trà Côn, Tân Mỹ, Thuận Thới – không phải huyện Bình Minh",
@@ -54489,7 +54489,7 @@
         "role": "eco_asset",
         "hours": "Mở cửa hàng ngày (tham quan ban ngày; thời điểm tốt nhất sáng sớm hoặc chiều sau 17:00)",
         "phone": "0903 759 744",
-        "address": "Xã Tân Mỹ, huyện Ba Tri, Bến Tre",
+        "address": "Sân chim Vàm Hồ, Xã Mỹ Chánh Hòa, tỉnh Vĩnh Long",
         "priority": "B+",
         "admission": "Vé vào cổng khoảng 30.000–50.000đ/người; gói trọn gói (gồm bữa trưa + hoạt động) từ 350.000đ/người; thuê thuyền 100.000–150.000đ/giờ (tối đa 10 người)",
         "best_time": "Tháng 10 – tháng 4 năm sau (mùa chim về sinh sản); sáng sớm 5–7h hoặc chiều muộn sau 17:00",
@@ -54587,7 +54587,7 @@
         "phone": "027 5382 2365",
         "where": "Cơ sở sản xuất Mỏ Cày, chợ Bến Tre",
         "origin": "Mỏ Cày, Bến Tre (~1930, bà Nguyễn Thị Ngọc)",
-        "address": "56B Khu phố 7, Thị trấn Mỏ Cày, Tỉnh Bến Tre (địa chỉ cơ sở Tuyết Phụng — một trong các cơ sở tiêu biểu)",
+        "address": "56B Khu phố 7, Phường Mỏ Cày, tỉnh Vĩnh Long",
         "admission": "Miễn phí tham quan xưởng sản xuất (các cơ sở thường mở cửa đón khách tự do, không thu phí vào cửa)",
         "best_time": "Quanh năm; nên kết hợp khi du lịch Vĩnh Long mùa khô (tháng 11 đến tháng 4) để đường đi thuận tiện",
         "key_facts": [
@@ -58864,7 +58864,7 @@
         ]
       },
       "attributes": {
-        "address": "Khóm 3, thị trấn Cái Nhum – huyện Mang Thít",
+        "address": "Khóm 3, –, Xã Cái Nhum, tỉnh Vĩnh Long",
         "admission": "Có phí (liên hệ)",
         "schema_type": "TouristAttraction",
         "sub_category": "agri-tourism",
@@ -58937,7 +58937,7 @@
         ]
       },
       "attributes": {
-        "address": "Cộng đồng Khmer các huyện Trà Vinh",
+        "address": "Cộng đồng Khmer các, Xã Cầu Ngang, tỉnh Vĩnh Long",
         "products": "Mắm bò hóc, mắm cá kiểu Khmer, nguyên liệu nấu bún nước lèo",
         "specialty": "Mắm",
         "schema_type": "LocalBusiness",
@@ -59192,7 +59192,7 @@
       },
       "attributes": {
         "season": "Tháng 8-11 (chính vụ)",
-        "address": "Huyện Châu Thành, Bến Tre",
+        "address": "Vùng bưởi da xanh Châu Thành, Phường Bến Tre, tỉnh Vĩnh Long",
         "gi_year": "2018",
         "products": "Bưởi da xanh ruột hồng, sản phẩm từ bưởi",
         "gi_number": "00062",
@@ -59358,7 +59358,7 @@
       "attributes": {
         "area": "5,2 ha",
         "opened": "Cuối 2018",
-        "address": "Xã Bình Thắng, huyện Bình Đại, Bến Tre",
+        "address": "Cảng cá Bình Thắng, Phường Bình Đại, tỉnh Vĩnh Long",
         "capacity": "60.000 tấn/năm (thiết kế)",
         "admission": "Miễn phí",
         "best_time": "03:30 - 06:00 rạng sáng đón tàu cá cập bến và chứng kiến phiên chợ hải sản đầu ngày tấp nập",
@@ -59471,7 +59471,7 @@
       },
       "attributes": {
         "rivers": "Giữa cửa sông Hàm Luông và Cổ Chiên",
-        "address": "Xã Thạnh Hải, huyện Thạnh Phú, Bến Tre",
+        "address": "Biển Cồn Bửng, Xã Thạnh Hải, tỉnh Vĩnh Long",
         "admission": "Miễn phí",
         "best_time": "tháng 12–4",
         "coastline": "~25 km (toàn huyện Thạnh Phú)",
@@ -59642,7 +59642,7 @@
         "river": "Sông Cổ Chiên",
         "access": "Phà Quới An–Quới Thiện (~10 phút)",
         "length": "~20 km",
-        "address": "Xã Thanh Bình và Quới Thiện – huyện Vũng Liêm",
+        "address": "–, Xã Quới Thiện, tỉnh Vĩnh Long",
         "communes": "Xã Thanh Bình và Quới Thiện, huyện Vũng Liêm",
         "admission": "Miễn phí",
         "best_time": "tháng 11–4",
@@ -59734,7 +59734,7 @@
         "river": "Sông Hàm Luông",
         "width": "~1 km",
         "length": "8,3 km",
-        "address": "Xã Hưng Phong, huyện Giồng Trôm, Bến Tre",
+        "address": "Cồn Ốc, Xã Giồng Trôm, tỉnh Vĩnh Long",
         "area_ha": 647,
         "admission": "Miễn phí",
         "best_time": "tháng 11–4",
@@ -59823,7 +59823,7 @@
         ]
       },
       "attributes": {
-        "address": "Xã Tiên Long, huyện Châu Thành, Bến Tre",
+        "address": "Cồn Tiên, Phường An Hội, tỉnh Vĩnh Long",
         "admission": "Miễn phí",
         "best_time": "tháng 11–4",
         "highlight": "Bãi cát nổi 7 ha giữa sông Hàm Luông, hàng vạn người tắm trưa Tết Đoan Ngọ, đối diện xứ Cái Mơn.",
@@ -59888,7 +59888,7 @@
       "attributes": {
         "role": "support_asset",
         "built": "1861 (Tân Dậu, Tự Đức thứ 14)",
-        "address": "Xã Minh Đức, huyện Mỏ Cày Nam, Bến Tre",
+        "address": "Chùa Tuyên Linh, Phường Mỏ Cày, tỉnh Vĩnh Long",
         "priority": "B+",
         "highlight": "Chùa cổ 1861 gắn liền Nguyễn Sinh Sắc và phong trào chấn hưng Phật giáo Nam Kỳ, di tích quốc gia",
         "travel_tip": "Ăn mặc kín đáo khi tham quan; tránh đến vào buổi trưa vì chùa có giờ nghỉ từ 11h30 đến 13h30.",
@@ -59971,7 +59971,7 @@
         "role": "visual_anchor",
         "tour": "Ghép với Ao Bà Om - Bảo tàng Khmer thành tour nửa ngày văn hóa Khmer.",
         "hours": "7:00–17:00",
-        "address": "Huyện Châu Thành, Trà Vinh (QL54, cách TP Trà Vinh ~5 km)",
+        "address": "Chùa Hang (Kompong Chrây), Xã Châu Thành, tỉnh Vĩnh Long",
         "priority": "A",
         "admission": "Miễn phí",
         "best_time": "sáng sớm hoặc chiều mát",
@@ -60091,7 +60091,7 @@
         ]
       },
       "attributes": {
-        "address": "Phường Càng Long, Trà Vinh",
+        "address": "Cồn Hô, Phường Càng Long, tỉnh Vĩnh Long",
         "admission": "Miễn phí",
         "best_time": "tháng 11–4",
         "highlight": "Cù lao hoang sơ — không bảng hiệu quảng cáo, không đám đông, thiên nhiên nguyên vẹn, không khí trong lành",
@@ -60317,7 +60317,7 @@
         ]
       },
       "attributes": {
-        "address": "Ấp Trà Cuôn, xã Kim Hòa, huyện Cầu Ngang, Trà Vinh",
+        "address": "Ấp Trà Cuôn, Xã Cầu Ngang, tỉnh Vĩnh Long",
         "best_time": "tháng 12–2 (giáp Tết)",
         "highlight": "Làng nghề bánh tét lớn nhất Trà Vinh, 255K+ đòn/năm, OCOP 3–4 sao, 20 tiệm dọc QL53.",
         "specialty": "Bánh tét truyền thống — nếp, thịt ba rọi, trứng muối, lá cẩm",
@@ -60416,7 +60416,7 @@
         ]
       },
       "attributes": {
-        "address": "Xã Hưng Nhượng, huyện Giồng Trôm, tỉnh Vĩnh Long",
+        "address": "Ấp Hưng Bình, Xã Hưng Nhượng, tỉnh Vĩnh Long",
         "best_time": "tháng 11–2 (giáp Tết)",
         "highlight": "Làng nghề bánh phồng nếp nướng hơn 100 năm tuổi, nức tiếng với chiếc bánh phồng tròn xoe xốp giòn béo ngậy nước cốt dừa",
         "specialty": "Chế biến dừa",
@@ -60528,7 +60528,7 @@
         ]
       },
       "attributes": {
-        "address": "Phường Ba Tri, Bến Tre",
+        "address": "Làng nghề dệt chiếu An Hiệp, Phường Ba Tri, tỉnh Vĩnh Long",
         "best_time": "tháng 11–4",
         "highlight": "Chiếu lác dệt tay An Hiệp — bền, mát, dày dặn, người Vĩnh Long tin dùng qua nhiều thế hệ",
         "specialty": "Dệt, Dệt chiếu",
@@ -60993,7 +60993,7 @@
         ]
       },
       "attributes": {
-        "address": "Phường Long Hồ, Vĩnh Long",
+        "address": "Nhà xưa Cai Cường, Phường Long Hồ, tỉnh Vĩnh Long",
         "admission": "Miễn phí",
         "best_time": "tháng 11–4",
         "highlight": "Ngôi nhà cổ Nam Bộ hơn trăm tuổi còn nguyên vẹn giữa vườn cây xanh mát",
@@ -61164,7 +61164,7 @@
         ]
       },
       "attributes": {
-        "address": "81B/6B ấp An Thới, xã An Khánh, huyện Châu Thành, Bến Tre",
+        "address": "81B/6B ấp An Thới, Phường Bến Tre, tỉnh Vĩnh Long",
         "admission": "Có phí (liên hệ)",
         "best_time": "tháng 6–8 (mùa trái cây)",
         "highlight": "Bè nổi giữa rừng dừa nước, ẩm thực sông nước chuẩn vị và trò chơi dân gian nguyên bản Vĩnh Long.",
@@ -61247,7 +61247,7 @@
         ]
       },
       "attributes": {
-        "address": "Biển Mỹ Long, huyện Cầu Ngang, Trà Vinh",
+        "address": "Biển Mỹ Long, Xã Cầu Ngang, tỉnh Vĩnh Long",
         "admission": "Miễn phí",
         "best_time": "tháng 11–4",
         "highlight": "Cồn cát 700+ hecta chỉ lộ khi triều rút, tự tay bắt nghêu luộc tại chỗ — trải nghiệm biển đặc trưng Trà Vinh.",
@@ -61976,7 +61976,7 @@
       "attributes": {
         "ocop": "OCOP 3 sao",
         "origin": "Làng cốm dẹp Ba So, xã Nhị Trường, huyện Cầu Ngang, Trà Vinh",
-        "address": "Ấp Ba So, xã Nhị Trường, huyện Cầu Ngang, Trà Vinh",
+        "address": "Ấp Ba So, Xã Nhị Long, tỉnh Vĩnh Long",
         "category": "dessert",
         "festival": "Ok Om Bok (rằm tháng 10 ÂL) — lễ cúng trăng, đút cốm dẹp",
         "best_time": "Mùa thu hoạch lúa nếp (tháng 9-11 âm lịch), đặc biệt dịp lễ Ok Om Bok",
@@ -62559,7 +62559,7 @@
         "season": "Mùa gió chướng, sáng sớm, ~tháng 3 ÂL",
         "status": "Nguy cơ tuyệt chủng, rất khan hiếm",
         "weight": "~500g (nửa ký)",
-        "address": "Xã Tích Thiện, huyện Trà Ôn, Vĩnh Long",
+        "address": "Cá cháy Trà Ôn rim/kho, Xã Nhơn Phú, tỉnh Vĩnh Long",
         "category": "seafood",
         "best_time": "Bữa cơm trưa hoặc chiều ấm cúng bên mâm cơm gia đình miệt vườn",
         "ingredients": "cá cháy sông Hậu, nước mắm, đường, gia vị, trứng cá",
@@ -62840,7 +62840,7 @@
       },
       "attributes": {
         "origin": "Huyện Bình Tân (khoai lang) - toàn tỉnh Vĩnh Long",
-        "address": "Toàn tỉnh Vĩnh Long, đặc biệt huyện Bình Tân",
+        "address": "Toàn tỉnh Vĩnh Long, đặc biệt, Xã Nhơn Phú, tỉnh Vĩnh Long",
         "category": "street_food",
         "best_time": "Quanh năm, khoai ngon nhất mùa khô (tháng 12-4)",
         "components": "Khoai lang luộc, thịt ba rọi, dừa nạo, chuối chát, rau thơm, lá cách",
@@ -63033,7 +63033,7 @@
         },
         "export": "Nhật, Pháp, Mỹ, Đài Loan (thương hiệu Lệ Hằng)",
         "origin": "Xã Lục Sĩ Thành (cù lao Mây), huyện Trà Ôn",
-        "address": "Xã Lục Sĩ Thành (cù lao Mây), huyện Trà Ôn, Vĩnh Long",
+        "address": "(cù lao Mây), Xã Lục Sĩ Thành, tỉnh Vĩnh Long",
         "category": "packaged",
         "best_time": "Quanh năm",
         "ocop_star": 3,
@@ -63189,7 +63189,7 @@
       "attributes": {
         "ocop": "OCOP 4 sao",
         "origin": "Xã Sông Phú, huyện Tam Bình, Vĩnh Long",
-        "address": "Ấp Phú Thành, xã Sông Phú, huyện Tam Bình, Vĩnh Long",
+        "address": "Ấp Phú Thành, Xã Nhơn Phú, tỉnh Vĩnh Long",
         "company": "Công Ty TNHH Thuận Duyên Food",
         "website": "https://chaothuanduyen.com",
         "category": "packaged",
@@ -63508,7 +63508,7 @@
       "attributes": {
         "brand": "Cô Tư Liêm (297 Đường 14/9, P.5, TP Vĩnh Long)",
         "origin": "Huyện Vũng Liêm, Vĩnh Long",
-        "address": "Huyện Vũng Liêm, Vĩnh Long (gốc); TP Vĩnh Long (nơi bán)",
+        "address": "Vĩnh Long (gốc);, Xã Nhơn Phú, tỉnh Vĩnh Long",
         "category": "packaged",
         "best_time": "Dịp Tết Nguyên Đán (làm nhiều nhất), quanh năm vẫn có",
         "shelf_life": "5-7 ngày",
@@ -63649,7 +63649,7 @@
         "award": "Giải nhất Hội thi trái cây ngon ĐBSCL 1999",
         "origin": "Ấp Phước Định 1, xã Bình Hòa Phước, huyện Long Hồ",
         "weight": "3-5 kg/quả",
-        "address": "Xã Bình Hòa Phước, huyện Long Hồ, Vĩnh Long",
+        "address": "Sầu riêng Ri 6 Long Hồ, Phường Thanh Đức, tỉnh Vĩnh Long",
         "creator": "Ông Nguyễn Minh Châu (Sáu Ri)",
         "category": "packaged",
         "best_time": "Tháng 5-8 (chính vụ hè)",
@@ -64292,7 +64292,7 @@
       },
       "attributes": {
         "origin": "Cồn Phú Đa, huyện Chợ Lách",
-        "address": "Cồn Phú Đa, xã Vĩnh Bình, huyện Chợ Lách, Bến Tre",
+        "address": "Cồn Phú Đa, Xã Thành Thới, tỉnh Vĩnh Long",
         "category": "restaurant",
         "best_time": "Tháng 4-7 âm lịch, ngon nhất tháng 5 âm lịch (Tết Đoan Ngọ)",
         "specialty": "Bánh, Cháo, Cá",
@@ -64626,7 +64626,7 @@
       },
       "attributes": {
         "origin": "Mỏ Cày Nam, Bến Tre",
-        "address": "TT Mỏ Cày, huyện Mỏ Cày Nam, Bến Tre",
+        "address": "Kẹo Me Mãng Cầu, Phường Phú Khương, tỉnh Vĩnh Long",
         "process": "Chọn trái → rim/nấu → phơi nhiều lần → gói giấy bóng",
         "category": "packaged",
         "producer": "Công ty TNHH MTV Tuyết Phụng (56B Khu Phố 7, TT Mỏ Cày)",
@@ -65141,7 +65141,7 @@
         "alias": "Bánh bá trạng (tên gốc Hoa)",
         "origin": "Ấp Hương Phụ, xã Đa Lộc, huyện Châu Thành, Trà Vinh",
         "season": "Quanh năm; cao điểm Tết Đoan Ngọ (mùng 5/5 ÂL)",
-        "address": "Ấp Hương Phụ, xã Đa Lộc, huyện Châu Thành, Trà Vinh",
+        "address": "Ấp Hương Phụ, Xã Nhị Long, tỉnh Vĩnh Long",
         "category": "packaged",
         "best_time": "Dịp tết Đoan Ngọ (tháng 5 âm lịch) hoặc buổi sáng khi các mẻ bánh ú mới vớt ra treo ráo nước",
         "ingredients": "gạo nếp, đậu xanh, thịt mỡ, trứng vịt muối, lá ngót",
@@ -65406,7 +65406,7 @@
       },
       "attributes": {
         "hours": "07:00–18:00",
-        "address": "Huyện Bình Tân, tỉnh Vĩnh Long (Quốc lộ 53)",
+        "address": "Nhà Thực Phẩm Sạch Khoai Lang Tím Bình Tân, Xã Nhơn Phú, tỉnh Vĩnh Long",
         "category": "shopping",
         "shop_type": "cửa hàng OCOP",
         "price_range": "20.000–150.000 đ",
@@ -65635,7 +65635,7 @@
       },
       "attributes": {
         "hours": "08:00–17:00",
-        "address": "Xã Mỹ An, huyện Mang Thít, Vĩnh Long",
+        "address": "Làng nghề thủ công mỹ nghệ lục bình Mỹ An, Xã Nhơn Phú, tỉnh Vĩnh Long",
         "process": "Thu hoạch → phơi khô → tước sợi → đan theo khuôn",
         "category": "shopping",
         "shop_type": "shop lưu niệm",
@@ -67027,7 +67027,7 @@
       },
       "attributes": {
         "hours": "10:00 – 22:00 hàng ngày",
-        "address": "171C/1 Tân Thạch, Châu Thành, Bến Tre",
+        "address": "171C/1 Tân Thạch, Phường Phú Khương, tỉnh Vĩnh Long",
         "category": "restaurant",
         "admission": "Miễn phí",
         "specialty": "Cá tai tượng chiên xù, tôm nướng, cháo gỏi gà ta",
@@ -67406,7 +67406,7 @@
       },
       "attributes": {
         "hours": "05:00–10:30",
-        "address": "Khu vực chợ Mỏ Cày Nam, Bến Tre",
+        "address": "Khu vực chợ Mỏ Cày Nam, Phường Phú Khương, tỉnh Vĩnh Long",
         "category": "restaurant",
         "toppings": "Chả cua, đậu hũ chiên, huyết, rau muống, bông chuối",
         "admission": "Miễn phí",
@@ -67633,7 +67633,7 @@
       },
       "attributes": {
         "ocop": "OCOP",
-        "address": "Huyện Bình Tân, Vĩnh Long",
+        "address": "Củ cải non muối chua Bùi Thị Thanh Thảo (OCOP), Xã An Bình, tỉnh Vĩnh Long",
         "schema_type": "Product",
         "sub_category": "ocop-product",
         "ocop_certified": true,
@@ -69496,7 +69496,7 @@
       "attributes": {
         "view": "yes",
         "hours": "10:00–21:30",
-        "address": "Bờ sông Long Hồ, Vĩnh Long",
+        "address": "Bờ sông Long Hồ, Xã Nhơn Phú, tỉnh Vĩnh Long",
         "parking": "yes",
         "category": "restaurant",
         "admission": "Miễn phí",
@@ -69970,7 +69970,7 @@
       "attributes": {
         "tip": "Ăn kèm giá trụng và rau thơm, thêm ớt xanh mới đúng bài",
         "hours": "06:00 - 11:30 trưa hàng ngày",
-        "address": "Thị trấn Mỏ Cày Nam, Bến Tre",
+        "address": "Bún nước lèo Cô Tư Mô Cày, Phường Phú Khương, tỉnh Vĩnh Long",
         "category": "restaurant",
         "specialty": "Bún nước lèo (món gốc Khmer Nam Bộ)",
         "famous_for": "Nước dùng mắm ruốc sả đặc trưng, cá lóc đồng tươi, rau muống bông và bắp chuối thái",
@@ -70154,7 +70154,7 @@
       "attributes": {
         "tip": "Đặt trước nếu mua cả chục, thêm ớt băm vào nước chấm để dậy mùi",
         "hours": "8:00 – 17:00",
-        "address": "Thị trấn Châu Thành, Bến Tre",
+        "address": "Gỏi cuốn tôm thịt Bà Hai Châu Thành, Phường Phú Khương, tỉnh Vĩnh Long",
         "category": "restaurant",
         "specialty": "Gỏi cuốn tôm thịt, cuốn diếp cá",
         "famous_for": "Tôm luộc tươi ngọt, cuốn chắc tay, nước chấm tương đen đậu phộng giã thô đặc sản",
@@ -70232,7 +70232,7 @@
       "attributes": {
         "tip": "Đến sớm trước 7h, phần lòng gà ngon thường hết trước 9h",
         "hours": "5:30 – 11:00 sáng",
-        "address": "Bên trong chợ Ba Tri, Bến Tre",
+        "address": "Bên trong chợ Ba Tri, Phường Phú Khương, tỉnh Vĩnh Long",
         "category": "restaurant",
         "admission": "Miễn phí",
         "specialty": "Bánh ướt lòng gà, bánh ướt cuốn",
@@ -70310,7 +70310,7 @@
       },
       "attributes": {
         "hours": "06:00 – 21:00 hàng ngày",
-        "address": "136/1 Nguyễn Ngọc Nhựt, Phường 4, TP. Bến Tre (+ 2 chi nhánh: Sơn Đông và Mỏ Cày Bắc)",
+        "address": "136/1 Nguyễn Ngọc Nhựt, Phường Phú Khương, tỉnh Vĩnh Long",
         "category": "restaurant",
         "best_dish": "Cơm tấm sườn nướng than hoa kèm bì và chả trứng",
         "specialty": "Cơm tấm sườn bì chả, cơm tấm gà",
@@ -71770,7 +71770,7 @@
         ]
       },
       "attributes": {
-        "address": "Ấp Giồng Đình, xã Đại An, huyện Trà Cú, Trà Vinh",
+        "address": "Ấp Giồng Đình, Xã Đại An, tỉnh Vĩnh Long",
         "specialty": "Mây tre đan, đan lát",
         "schema_type": "LocalBusiness",
         "sub_category": "basketry",
@@ -73249,7 +73249,7 @@
       "attributes": {
         "tip": "Hàng bán rất sớm và hết nhanh; nên đến trước 7h; nhiều hàng cháo ám tập trung quanh chợ, chọn hàng nào đông người địa phương nhất",
         "hours": "05:30 - 10:30 sáng hàng ngày",
-        "address": "Khu vực chợ Châu Thành, thị trấn Châu Thành, Trà Vinh",
+        "address": "Khu vực chợ Châu Thành, Xã Châu Thành, tỉnh Vĩnh Long",
         "category": "restaurant",
         "admission": "Miễn phí",
         "specialty": "Cháo ám cá lóc truyền thống",
@@ -73976,7 +73976,7 @@
       },
       "attributes": {
         "hours": "11:00–22:00",
-        "address": "Huyện Tiểu Cần, Trà Vinh (trên đường về huyện)",
+        "address": "Quán nhậu Vườn Dừa Tiểu Cần, Xã Nhị Long, tỉnh Vĩnh Long",
         "category": "restaurant",
         "admission": "Miễn phí",
         "best_dish": "Tôm càng xanh nướng muối ớt",
@@ -74055,7 +74055,7 @@
       },
       "attributes": {
         "hours": "05:30–13:30",
-        "address": "Chợ Càng Long, TT. Càng Long, Trà Vinh",
+        "address": "Chợ Càng Long, Xã Nhị Long, tỉnh Vĩnh Long",
         "category": "restaurant",
         "admission": "Miễn phí",
         "best_dish": "Cá chốt kho tiêu ăn cơm trắng",
@@ -74651,7 +74651,7 @@
         "built": "1861 (khai sơn)",
         "hours": "06:00–18:00 hàng ngày",
         "stream": "religious",
-        "address": "Ấp Tân Thới Đông B, xã Minh Đức, huyện Mỏ Cày Nam, Bến Tre",
+        "address": "Ấp Tân Thới Đông B, Phường Phú Khương, tỉnh Vĩnh Long",
         "category": "religious",
         "religion": "Phật giáo",
         "admission": "Miễn phí",
@@ -75247,7 +75247,7 @@
         "built": "1702 (tiên khởi), 1872 (hoàn thành hiện tại)",
         "hours": "06:00–18:00 hàng ngày",
         "stream": "religious",
-        "address": "Xã Vĩnh Thành, huyện Chợ Lách, Bến Tre",
+        "address": "Nhà thờ Cái Mơn (Chợ Lách), Xã Vĩnh Thành, tỉnh Vĩnh Long",
         "category": "religious",
         "religion": "Thiên Chúa giáo (Công giáo)",
         "admission": "Miễn phí",
@@ -75494,7 +75494,7 @@
         "age": "Hơn 600 năm",
         "hours": "05:00–18:00 hàng ngày",
         "stream": "religious",
-        "address": "Ấp Vàm Ray, xã Hàm Tân, huyện Trà Cú, Trà Vinh",
+        "address": "Ấp Vàm Ray, Xã Nhị Long, tỉnh Vĩnh Long",
         "category": "religious",
         "religion": "Phật giáo Nam tông Khmer",
         "admission": "Miễn phí",
@@ -76279,7 +76279,7 @@
         ]
       },
       "attributes": {
-        "address": "Tổ 4, ấp An Thuận, xã An Bình, huyện Long Hồ, tỉnh Vĩnh Long",
+        "address": "Ấp An Thuận, –, Xã An Bình, tỉnh Vĩnh Long",
         "admission": "50.000 VNĐ/vé người lớn, 35.000 VNĐ/vé trẻ em",
         "schema_type": "TouristAttraction",
         "sub_category": "craft-workshop",
@@ -77468,7 +77468,7 @@
         "tour": "Sản phẩm mùa Tết và tour giáo dục nông nghiệp, ghép với Cồn Phụng/An Hội.",
         "brand": "Đặc sản Bến Tre",
         "season": "Tháng 5-8",
-        "address": "Xã Vĩnh Thành, huyện Chợ Lách, Bến Tre",
+        "address": "Chôm chôm Cái Mơn, Xã Chợ Lách, tỉnh Vĩnh Long",
         "gi_year": "2023",
         "priority": "A+",
         "gi_number": "00131",
@@ -78146,7 +78146,7 @@
         ]
       },
       "attributes": {
-        "address": "Huyện Bình Tân, tỉnh Vĩnh Long",
+        "address": "Công ty TNHH MTV Quốc Thảo, Phường Thanh Đức, tỉnh Vĩnh Long",
         "products": "Sản phẩm chế biến từ khoai lang",
         "specialty": "Chế biến khoai lang",
         "schema_type": "LocalBusiness",
@@ -78311,7 +78311,7 @@
         ]
       },
       "attributes": {
-        "address": "Ấp Gia Kiết, xã Tân Mỹ – huyện Trà Ôn",
+        "address": "Ấp Gia Kiết, –, Xã Trà Côn, tỉnh Vĩnh Long",
         "admission": "Miễn phí",
         "schema_type": "NaturalFeature",
         "sub_category": "island",
@@ -79450,7 +79450,7 @@
       },
       "attributes": {
         "origin": "Trà Vinh",
-        "address": "Thành phố Trà Vinh và các huyện thị",
+        "address": "Cháo Ám, Phường Trà Vinh, tỉnh Vĩnh Long",
         "specialty": "Cháo, Cá, Khô",
         "schema_type": "Recipe",
         "sub_category": "congee",
@@ -79555,7 +79555,7 @@
       },
       "attributes": {
         "origin": "Trà Vinh",
-        "address": "Thành phố Trà Vinh và ven sông các huyện Châu Thành, Cầu Ngang",
+        "address": "Loi Choi Sả Ớt, Xã Châu Thành, tỉnh Vĩnh Long",
         "schema_type": "Recipe",
         "sub_category": "seafood",
         "coords_approximate": true,
@@ -79765,7 +79765,7 @@
       },
       "attributes": {
         "origin": "Mỏ Cày, Bến Tre (từ thập niên 1930)",
-        "address": "Phường 7, TP Bến Tre và huyện Châu Thành, Mỏ Cày Nam",
+        "address": "Kẹo Dừa Thủ Công, Phường Bến Tre, tỉnh Vĩnh Long",
         "ocop_star": 4,
         "schema_type": "Product",
         "sub_category": "coconut-candy",
@@ -79847,7 +79847,7 @@
         ]
       },
       "attributes": {
-        "address": "Bến Tre (sản xuất nhiều ở huyện Mỏ Cày Bắc, Mỏ Cày Nam, Thạnh Phú)",
+        "address": "Mật Ong Hoa Dừa, Phường Bến Tre, tỉnh Vĩnh Long",
         "ocop_star": 4,
         "schema_type": "Product",
         "sub_category": "coconut-product",
@@ -80394,7 +80394,7 @@
       "attributes": {
         "awards": "HCV ATVSTP (2009), Cúp Vàng Thương hiệu (2014)",
         "owners": "Anh Nhựt và chị Thủy",
-        "address": "122D Quốc lộ 60, xã An Khánh, huyện Châu Thành, Bến Tre",
+        "address": "122D Quốc lộ 60, Phường Phú Túc, tỉnh Vĩnh Long",
         "flavors": "Nguyên bản, sầu riêng, đậu phộng sầu riêng, lá dứa",
         "website": "https://keoduahongvan.vn",
         "specialty": "Chế biến dừa, Kẹo",
@@ -80688,7 +80688,7 @@
         ]
       },
       "attributes": {
-        "address": "Huyện Chợ Lách, Bến Tre",
+        "address": "Làng nghề cây giống Chợ Lách, Xã Chợ Lách, tỉnh Vĩnh Long",
         "specialty": "Tre/trúc",
         "schema_type": "LocalBusiness",
         "sub_category": "basketry",
@@ -80769,7 +80769,7 @@
         ]
       },
       "attributes": {
-        "address": "Huyện Chợ Lách, Bến Tre",
+        "address": "Làng Văn hóa Du lịch Chợ Lách, Xã Chợ Lách, tỉnh Vĩnh Long",
         "admission": "Miễn phí",
         "schema_type": "TouristAttraction",
         "sub_category": "eco-tour",
@@ -81309,7 +81309,7 @@
         ]
       },
       "attributes": {
-        "address": "Xã Hàm Tân, huyện Trà Cú, Trà Vinh",
+        "address": "Làng nghề dệt chiếu Hàm Tân, Xã Hàm Giang, tỉnh Vĩnh Long",
         "specialty": "Dệt, Dệt chiếu",
         "schema_type": "LocalBusiness",
         "ethnic_group": "Khmer (80%)",
@@ -81396,7 +81396,7 @@
       },
       "attributes": {
         "built": 1928,
-        "address": "Ấp Long Trường, xã Tân Hiệp, huyện Trà Cú, Trà Vinh",
+        "address": "Ấp Long Trường, Xã Trà Cú, tỉnh Vĩnh Long",
         "area_m2": 19618,
         "admission": "Miễn phí",
         "pali_name": "Sirivansaràma",
@@ -81481,7 +81481,7 @@
       },
       "attributes": {
         "brand": "Đặc sản Trà Vinh",
-        "address": "Xã Hàm Tân, huyện Trà Cú, Trà Vinh",
+        "address": "Chiếu Cà Hom, Xã Hàm Giang, tỉnh Vĩnh Long",
         "schema_type": "Product",
         "sub_category": "handicraft",
         "heritage_year": 2024,
@@ -81563,7 +81563,7 @@
         ]
       },
       "attributes": {
-        "address": "Huyện Trà Cú, Trà Vinh",
+        "address": "Sản phẩm OCOP thủ công mỹ nghệ Trà Cú, Xã Trà Cú, tỉnh Vĩnh Long",
         "ocop_star": 4,
         "schema_type": "Product",
         "sub_category": "rice",
@@ -82059,7 +82059,7 @@
         ]
       },
       "attributes": {
-        "address": "Huyện Trà Ôn",
+        "address": "Hợp tác xã cam Phương Thúy, Phường Trà Ôn, tỉnh Vĩnh Long",
         "ocop_star": 3,
         "schema_type": "Product",
         "sub_category": "fruit",
@@ -82801,7 +82801,7 @@
       "attributes": {
         "ward": "Thị trấn Tân Quới",
         "built": 1994,
-        "address": "Thị trấn Tân Quới, huyện Bình Tân, Vĩnh Long",
+        "address": "Chợ Tân Quới, Phường Tân Quới, tỉnh Vĩnh Long",
         "admission": "Miễn phí",
         "schema_type": "TouristAttraction",
         "sub_category": "market",
@@ -82875,7 +82875,7 @@
         ]
       },
       "attributes": {
-        "address": "Huyện Bình Tân, tỉnh Vĩnh Long",
+        "address": "Khoai lang sấy Bình Tân, Xã An Bình, tỉnh Vĩnh Long",
         "ocop_star": 4,
         "schema_type": "Product",
         "sub_category": "tuber",
@@ -83085,7 +83085,7 @@
         ]
       },
       "attributes": {
-        "address": "Huyện Bình Tân, Vĩnh Long",
+        "address": "Khoai lang sấy Đông Phát, Xã An Bình, tỉnh Vĩnh Long",
         "ocop_star": 4,
         "schema_type": "Product",
         "sub_category": "tuber",
@@ -83154,7 +83154,7 @@
         ]
       },
       "attributes": {
-        "address": "Huyện Bình Tân, Vĩnh Long",
+        "address": "Khoai lang sấy giòn Miền Tây, Xã An Bình, tỉnh Vĩnh Long",
         "schema_type": "Product",
         "sub_category": "tuber",
         "ocop_certified": true,
@@ -83277,7 +83277,7 @@
       },
       "attributes": {
         "ocop": "OCOP",
-        "address": "Huyện Bình Tân, Vĩnh Long",
+        "address": "Vú sữa hoàng kim Thanh Bình (OCOP), Xã An Bình, tỉnh Vĩnh Long",
         "schema_type": "Product",
         "sub_category": "fruit",
         "ocop_certified": true,
@@ -84897,7 +84897,7 @@
       },
       "attributes": {
         "ward": "Thanh Đức",
-        "address": "Huyện Long Hồ, tỉnh Vĩnh Long",
+        "address": "Vườn trái cây đặc sản Long Hồ, Phường Long Châu, tỉnh Vĩnh Long",
         "admission": "Miễn phí",
         "schema_type": "NaturalFeature",
         "sub_category": "waterway",
@@ -85121,7 +85121,7 @@
       },
       "attributes": {
         "ward": "TT Long Hồ",
-        "address": "Thị trấn Long Hồ, tỉnh Vĩnh Long",
+        "address": "Làng nghề chằm nón lá Long Hồ, Phường Long Hồ, tỉnh Vĩnh Long",
         "specialty": "Nón",
         "schema_type": "LocalBusiness",
         "sub_category": "pottery",
@@ -85348,7 +85348,7 @@
       },
       "attributes": {
         "brand": "Đặc sản Vĩnh Long",
-        "address": "Huyện Mang Thít, Vĩnh Long",
+        "address": "Gạch nung đỏ và gốm không men Mang Thít, Phường Phước Hậu, tỉnh Vĩnh Long",
         "schema_type": "Product",
         "sub_category": "dried-seafood",
         "coords_approximate": true,
@@ -85419,7 +85419,7 @@
         ]
       },
       "attributes": {
-        "address": "Dọc huyện Mang Thít, Vĩnh Long",
+        "address": "Dọc, Phường Phước Hậu, tỉnh Vĩnh Long",
         "admission": "Miễn phí",
         "schema_type": "NaturalFeature",
         "sub_category": "waterway",
@@ -85489,7 +85489,7 @@
         ]
       },
       "attributes": {
-        "address": "Xuất phát TP Vĩnh Long, đi qua huyện Mang Thít, Vĩnh Long",
+        "address": "Xuất phát, đi qua, Phường Long Châu, tỉnh Vĩnh Long",
         "price_range": "950.000đ",
         "schema_type": "TouristAttraction",
         "sub_category": "craft-workshop",
@@ -85706,7 +85706,7 @@
       },
       "attributes": {
         "ward": "TT Vũng Liêm",
-        "address": "Huyện Vũng Liêm, Vĩnh Long",
+        "address": "Làng nghề dệt chiếu Vũng Liêm, Phường Phước Hậu, tỉnh Vĩnh Long",
         "specialty": "Dệt, Dệt chiếu",
         "schema_type": "LocalBusiness",
         "sub_category": "weaving",
@@ -86006,7 +86006,7 @@
       },
       "attributes": {
         "ward": "Quới Thiện",
-        "address": "Huyện Vũng Liêm, tỉnh Vĩnh Long",
+        "address": "Mứt dừa lá dứa Đức Đạt, Phường Phước Hậu, tỉnh Vĩnh Long",
         "ocop_star": 4,
         "schema_type": "Product",
         "sub_category": "coconut-product",
@@ -86164,7 +86164,7 @@
       },
       "attributes": {
         "ward": "Quới Thiện",
-        "address": "Huyện Vũng Liêm, tỉnh Vĩnh Long",
+        "address": "Lạp xưởng Hiệp Ký, Phường Phước Hậu, tỉnh Vĩnh Long",
         "schema_type": "Product",
         "sub_category": "ocop-product",
         "ocop_certified": true,
@@ -86236,7 +86236,7 @@
       "attributes": {
         "ocop": "OCOP",
         "brand": "Foodo của hộ kinh doanh Nguyễn Hoàng Khang tại Vũn",
-        "address": "Huyện Vũng Liêm, tỉnh Vĩnh Long",
+        "address": "Mứt xoài cát núm Foodo (OCOP), Phường Phước Hậu, tỉnh Vĩnh Long",
         "schema_type": "Product",
         "sub_category": "fruit",
         "ocop_certified": true,
@@ -86582,7 +86582,7 @@
       },
       "attributes": {
         "ward": "TT Tam Bình",
-        "address": "Huyện Tam Bình, Vĩnh Long",
+        "address": "Bún tươi Sáu Thạnh, Phường Phước Hậu, tỉnh Vĩnh Long",
         "ocop_star": 4,
         "schema_type": "Product",
         "sub_category": "dried-seafood",
@@ -86654,7 +86654,7 @@
       },
       "attributes": {
         "ward": "TT Tam Bình",
-        "address": "Huyện Tam Bình, Vĩnh Long",
+        "address": "Làng nghề bánh tráng Tam Bình, Phường Phước Hậu, tỉnh Vĩnh Long",
         "specialty": "Bánh tráng",
         "schema_type": "LocalBusiness",
         "sub_category": "confectionery",
@@ -86819,7 +86819,7 @@
         ]
       },
       "attributes": {
-        "address": "Huyện Tam Bình, tỉnh Vĩnh Long",
+        "address": "Sản phẩm chao dừa – chao chanh dây Thuận Duyên (OCOP 4 sao), Phường Phước Hậu, tỉnh Vĩnh Long",
         "ocop_star": 4,
         "schema_type": "Product",
         "sub_category": "coconut-product",
@@ -87032,7 +87032,7 @@
       },
       "attributes": {
         "brand": "Cam sành Thắm Tài xã Thiện Mỹ đạt chuẩn OCOP)",
-        "address": "Huyện Trà Ôn, tỉnh Vĩnh Long",
+        "address": "Cam sành Trà Ôn, Phường Trà Ôn, tỉnh Vĩnh Long",
         "schema_type": "Product",
         "sub_category": "fruit",
         "ocop_certified": true,
@@ -87090,7 +87090,7 @@
       },
       "attributes": {
         "origin": "Vĩnh Long",
-        "address": "Huyện Trà Ôn, tỉnh Vĩnh Long",
+        "address": "Cá cháy sông Hậu, Phường Trà Ôn, tỉnh Vĩnh Long",
         "specialty": "Bánh, Bò, Bún",
         "schema_type": "Recipe",
         "sub_category": "noodle-soup",
@@ -87492,7 +87492,7 @@
       },
       "attributes": {
         "ward": "TT Giồng Trôm",
-        "address": "Huyện Giồng Trôm, Bến Tre",
+        "address": "Dừa xiêm xanh Giồng Trôm, Xã Giồng Trôm, tỉnh Vĩnh Long",
         "schema_type": "Product",
         "sub_category": "coconut-product",
         "ocop_certified": true,
@@ -87705,7 +87705,7 @@
       },
       "attributes": {
         "ward": "TT Bình Đại",
-        "address": "Huyện Bình Đại, Bến Tre",
+        "address": "Cá chuồn khô Bình Đại, Phường Bình Đại, tỉnh Vĩnh Long",
         "schema_type": "Product",
         "sub_category": "dried-seafood",
         "ocop_certified": true,
@@ -87775,7 +87775,7 @@
         ]
       },
       "attributes": {
-        "address": "Xã An Thủy, huyện Bình Đại, Bến Tre",
+        "address": "Tôm khô Bình Đại, Phường Bình Đại, tỉnh Vĩnh Long",
         "trademark": "Nhãn hiệu tập thể \"Tôm khô An Thủy\" (26 thành viên)",
         "ocop_rating": "4 sao (Anfoods)",
         "schema_type": "Product",
@@ -87858,7 +87858,7 @@
       },
       "attributes": {
         "ward": "TT Bình Đại",
-        "address": "Huyện Bình Đại, Bến Tre",
+        "address": "Mứt dừa hữu cơ Bình Đại, Phường Bình Đại, tỉnh Vĩnh Long",
         "schema_type": "Product",
         "sub_category": "coconut-product",
         "ocop_certified": true,
@@ -88006,7 +88006,7 @@
         "abbot": "Thích Lệ Quang",
         "built": "1915",
         "river": "Sông Hàm Luông",
-        "address": "Ấp Mỹ Sơn Đông, xã Phước Mỹ Trung, huyện Mỏ Cày Bắc, Bến Tre",
+        "address": "Ấp Mỹ Sơn Đông, Xã Phước Mỹ Trung, tỉnh Vĩnh Long",
         "material": "Gỗ dừa lão (cột, kèo, cửa, lan can, lư hương, bàn ghế)",
         "admission": "Miễn phí",
         "renovated": "2018 (chuyển sang gỗ dừa)",
@@ -88312,7 +88312,7 @@
       },
       "attributes": {
         "ward": "Đông Hải",
-        "address": "Khóm 4, xã Châu Thành, thị xã Duyên Hải, cách trung tâm TP Trà Vinh khoảng 6km theo đường Điện Biên Phủ",
+        "address": "Khóm 4, cách trung tâm 6km theo đường Điện Biên Phủ, Xã Châu Thành, tỉnh Vĩnh Long",
         "admission": "Miễn phí",
         "schema_type": "TouristAttraction",
         "sub_category": "pagoda",
@@ -88744,7 +88744,7 @@
       },
       "attributes": {
         "origin": "Bến Tre",
-        "address": "Cồn Phú Đa, xã Vĩnh Bình, huyện Chợ Lách, Bến Tre",
+        "address": "Cồn Phú Đa, Xã Phú Phụng, tỉnh Vĩnh Long",
         "specialty": "Bánh, Cá, Ốc",
         "schema_type": "Recipe",
         "season_note": "Tháng 5-7 âm lịch (béo nhất)",
@@ -88817,7 +88817,7 @@
         ]
       },
       "attributes": {
-        "address": "Phường Mỏ Cày, Bến Tre",
+        "address": "Thu hoạch dừa cùng nông dân Mỏ Cày, Phường Mỏ Cày, tỉnh Vĩnh Long",
         "duration": "nửa ngày",
         "admission": "Miễn phí (trải nghiệm nhà vườn)",
         "schema_type": "TouristAttraction",
@@ -88889,7 +88889,7 @@
         ]
       },
       "attributes": {
-        "address": "Ấp Sơn Châu, xã Sơn Định, huyện Chợ Lách, Bến Tre",
+        "address": "Ấp Sơn Châu, Phường An Hội, tỉnh Vĩnh Long",
         "area_m2": 20000,
         "admission": "Có phí (liên hệ)",
         "schema_type": "TouristAttraction",
@@ -89313,7 +89313,7 @@
       },
       "attributes": {
         "origin": "Bến Tre",
-        "address": "Cồn Phú Đa, xã Vĩnh Bình, huyện Chợ Lách, Bến Tre",
+        "address": "Cồn Phú Đa, Xã Phú Phụng, tỉnh Vĩnh Long",
         "specialty": "Ốc",
         "schema_type": "Recipe",
         "sub_category": "seafood",
@@ -89761,7 +89761,7 @@
       "attributes": {
         "ward": "TT. Càng Long",
         "hours": "05:00–21:00",
-        "address": "Quốc lộ 53, Thị trấn Càng Long",
+        "address": "Quốc lộ 53, Phường Càng Long, tỉnh Vĩnh Long",
         "admission": "Miễn phí",
         "schema_type": "TouristAttraction",
         "sub_category": "pagoda",
@@ -90979,7 +90979,7 @@
       },
       "attributes": {
         "hours": "thường tham quan ban ngày",
-        "address": "Xã Tân Mỹ, huyện Ba Tri, Bến Tre",
+        "address": "Khu bảo tồn thiên nhiên đất ngập nước Vàm Hồ, Phường Ba Tri, tỉnh Vĩnh Long",
         "area_ha": 67,
         "admission": "có thể tính phí tham quan/dịch vụ tùy tuyến",
         "best_time": "Tháng 10–4 (mùa chim sinh sản, tổ trắng trĩu cành)",
@@ -91064,7 +91064,7 @@
       },
       "attributes": {
         "hours": "Tự do tham quan",
-        "address": "Xã An Thủy, huyện Ba Tri, Bến Tre",
+        "address": "Biển An Thủy, Phường Ba Tri, tỉnh Vĩnh Long",
         "admission": "Miễn phí",
         "best_time": "tháng 11–4",
         "highlight": "Bãi biển hoang sơ xứ dừa, lễ hội Nghinh Ông trung tuần tháng 6 âm lịch, hải sản tươi mua tại thuyền.",
@@ -91223,7 +91223,7 @@
       "attributes": {
         "role": "food_asset",
         "origin": "Khmer (~80 năm)",
-        "address": "Ấp Trà Cuôn, xã Kim Hòa, huyện Cầu Ngang, Trà Vinh",
+        "address": "Ấp Trà Cuôn, Phường Trà Vinh, tỉnh Vĩnh Long",
         "priority": "A-",
         "ocop_star": 4,
         "schema_type": "Product",
@@ -91630,7 +91630,7 @@
       },
       "attributes": {
         "hours": "7:00–17:00",
-        "address": "Phường Mỏ Cày, Bến Tre",
+        "address": "Làng nghề kẹo dừa Mỏ Cày, Phường Mỏ Cày, tỉnh Vĩnh Long",
         "admission": "Miễn phí, mua kẹo từ 20.000đ/gói",
         "highlight": "xem làm kẹo dừa thủ công",
         "specialty": "Chế biến dừa, Kẹo, Nón",
@@ -92097,7 +92097,7 @@
         "hours": "7:30–11:30 & 13:30–17:00 (Thứ 3 – Chủ Nhật; Thứ 2 nghỉ)",
         "phone": "0270 3711 123",
         "opened": "2015-05-18",
-        "address": "Xã Tường Lộc, huyện Tam Bình, tỉnh Vĩnh Long",
+        "address": "Ấp Mỹ Phú 1, Phường Long Châu, tỉnh Vĩnh Long",
         "area_m2": 16080,
         "website": "https://khuluuniemtdn.vinhlong.gov.vn",
         "admission": "Miễn phí",
@@ -92438,7 +92438,7 @@
       },
       "attributes": {
         "role": "NSND, \"Vua vọng cổ\", \"Đệ nhất danh ca miền Nam\"",
-        "address": "Ấp Đông Phú, làng Đông Hậu, huyện Trà Ôn, Vĩnh Long",
+        "address": "Ấp Đông Phú, làng Đông Hậu, Phường Trà Ôn, tỉnh Vĩnh Long",
         "birth_year": 1919,
         "death_year": 2001,
         "schema_type": "Person",
@@ -92622,7 +92622,7 @@
       },
       "attributes": {
         "role": "NSND, đào chính cải lương, giải Thanh Tâm 1964",
-        "address": "Làng Đông Thạnh, huyện Bình Minh, Vĩnh Long",
+        "address": "Làng Đông Thạnh, Phường Long Châu, tỉnh Vĩnh Long",
         "birth_year": 1948,
         "schema_type": "Person",
         "sub_category": "notable-person",
@@ -92709,7 +92709,7 @@
       },
       "attributes": {
         "role": "NSƯT, nghệ sĩ cải lương",
-        "address": "Làng Phong Thới, huyện Vũng Liêm, Vĩnh Long",
+        "address": "Làng Phong Thới, Phường Long Châu, tỉnh Vĩnh Long",
         "birth_year": 1917,
         "death_year": 1982,
         "schema_type": "Person",
@@ -92789,7 +92789,7 @@
       },
       "attributes": {
         "role": "NSƯT (truy tặng 1988), nghệ sĩ cải lương",
-        "address": "Làng Phong Thới, huyện Vũng Liêm, Vĩnh Long",
+        "address": "Làng Phong Thới, Phường Long Châu, tỉnh Vĩnh Long",
         "birth_year": 1923,
         "death_year": 1985,
         "schema_type": "Person",
@@ -92873,7 +92873,7 @@
       },
       "attributes": {
         "role": "NSƯT, \"kép đầu trọc\" cải lương",
-        "address": "Huyện Trà Ôn, Vĩnh Long",
+        "address": "Trường Xuân, Phường Long Châu, tỉnh Vĩnh Long",
         "birth_year": 1929,
         "death_year": 1998,
         "schema_type": "Person",
@@ -93018,7 +93018,7 @@
       },
       "attributes": {
         "hours": "7:00–17:00",
-        "address": "Cù lao An Bình, huyện Long Hồ, Vĩnh Long",
+        "address": "Cù lao An Bình, Phường Long Châu, tỉnh Vĩnh Long",
         "admission": "Miễn phí",
         "best_time": "sáng sớm hoặc chiều mát",
         "schema_type": "TouristAttraction",
@@ -93906,7 +93906,7 @@
         "where": "chợ địa phương, vườn trái cây",
         "origin": "Vĩnh Long — ông Sáu Ri (Nguyễn Minh Châu)",
         "season": "Tháng 5-8",
-        "address": "Huyện Long Hồ, Vĩnh Long (gốc)",
+        "address": "Sầu riêng Ri6, Phường Tam Bình, tỉnh Vĩnh Long",
         "weight_kg": "3-5",
         "schema_type": "Product",
         "season_note": "tháng 5–8",
@@ -94068,7 +94068,7 @@
         "brand": "Đặc sản Vĩnh Long",
         "where": "chợ địa phương, vườn trái cây",
         "origin": "Vũng Liêm, Vĩnh Long",
-        "address": "Huyện Vũng Liêm, Vĩnh Long",
+        "address": "Nem Vũng Liêm, Phường Vũng Liêm, tỉnh Vĩnh Long",
         "schema_type": "Product",
         "sub_category": "fermented-meat",
         "coords_approximate": true,
@@ -94576,7 +94576,7 @@
       },
       "attributes": {
         "rating": 3.8,
-        "address": "Thị Trấn Mỏ Cày Nam, Bến Tre",
+        "address": "Lẩu 3 Con Tép, Phường Bến Tre, tỉnh Vĩnh Long",
         "specialty": "Lẩu",
         "schema_type": "Restaurant",
         "review_count": 4,
@@ -94651,7 +94651,7 @@
         "area": "60.000 m²",
         "hours": "7:00–21:00",
         "phone": "027 0382 3456",
-        "address": "Ấp An Thuận, xã An Bình, huyện Long Hồ, Vĩnh Long",
+        "address": "Ấp An Thuận, Xã An Bình, tỉnh Vĩnh Long",
         "admission": "NL 50.000đ, TE 35.000đ",
         "phone_note": "0270 3823 456",
         "schema_type": "TouristAttraction",
@@ -95206,7 +95206,7 @@
       },
       "attributes": {
         "origin": "Toàn tỉnh Vĩnh Long, phổ biến huyện Long Hồ",
-        "address": "Toàn tỉnh Vĩnh Long, phổ biến huyện Long Hồ",
+        "address": "Toàn tỉnh Vĩnh Long, phổ biến, Phường Thanh Đức, tỉnh Vĩnh Long",
         "category": "restaurant",
         "best_time": "Quanh năm",
         "ingredients": "gà ta thả vườn, rượu đế, nước mắm, hành tỏi ớt, gừng",
@@ -95279,7 +95279,7 @@
       },
       "attributes": {
         "origin": "Cồn Phú Đa, xã Vĩnh Bình, huyện Chợ Lách, Bến Tre",
-        "address": "Cồn Phú Đa, xã Vĩnh Bình, huyện Chợ Lách, Bến Tre",
+        "address": "Cồn Phú Đa, Phường Bến Tre, tỉnh Vĩnh Long",
         "category": "street_food",
         "best_time": "Vào dịp tết Đoan Ngọ tháng 5 âm lịch khi ốc gạo cồn Phú Đa mập ú và ôm bọc trứng béo nhất",
         "distinction": "Nơi duy nhất ở Bến Tre có ốc gạo sinh sống",
@@ -95531,7 +95531,7 @@
         },
         "keeper": "Ông Ba Dân và con trai — duy nhất giữ bí quyết men",
         "origin": "Xã Phú Lễ, huyện Ba Tri, Bến Tre",
-        "address": "Xã Phú Lễ, huyện Ba Tri, Bến Tre",
+        "address": "Rượu Phú Lễ Ba Tri, Phường Bến Tre, tỉnh Vĩnh Long",
         "category": "drink",
         "best_time": "Cả năm (phù hợp dịp Tết làm quà biếu)",
         "ocop_star": 4,
@@ -95625,7 +95625,7 @@
       },
       "attributes": {
         "origin": "Vùng nước lợ huyện Bình Đại, Bến Tre",
-        "address": "Huyện Bình Đại, Bến Tre",
+        "address": "Tôm Sú Nướng Than Bình Đại, Phường Bến Tre, tỉnh Vĩnh Long",
         "category": "seafood",
         "best_time": "Cả năm, tươi nhất từ tháng 2-8 dương lịch",
         "ingredients": "tôm sú, sả, ớt, bia, muối tiêu chanh",
@@ -95706,7 +95706,7 @@
       },
       "attributes": {
         "origin": "Huyện Thạnh Phú (vùng cửa biển), Bến Tre",
-        "address": "Vùng cửa biển huyện Thạnh Phú, Bến Tre",
+        "address": "Vùng cửa biển, Phường Bến Tre, tỉnh Vĩnh Long",
         "category": "seafood",
         "best_time": "Cả năm, tươi nhất mùa khô (tháng 12 - tháng 4)",
         "ingredients": "hàu sữa, mỡ hành, gừng, tắc (quất), ớt",
@@ -95874,7 +95874,7 @@
         ]
       },
       "attributes": {
-        "address": "Sông Thom, xã An Thạnh, huyện Mỏ Cày Nam, Bến Tre",
+        "address": "Sông Thom, Phường Bến Tre, tỉnh Vĩnh Long",
         "admission": "Miễn phí",
         "established": "Cuối thập niên 1980",
         "schema_type": "TouristAttraction",
@@ -96041,7 +96041,7 @@
         ]
       },
       "attributes": {
-        "address": "Xã An Bình – huyện Long Hồ (gần bến phà An Bình)",
+        "address": "–, Xã An Bình, tỉnh Vĩnh Long",
         "admission": "Miễn phí",
         "schema_type": "TouristAttraction",
         "sub_category": "eco-tour",
@@ -96112,7 +96112,7 @@
         ]
       },
       "attributes": {
-        "address": "Ấp Thạnh Thới B, xã Thạnh Hải, huyện Thạnh Phú, Bến Tre",
+        "address": "Ấp Thạnh Thới B, Xã Thạnh Phú, tỉnh Vĩnh Long",
         "admission": "Có phí (liên hệ)",
         "activities": "Cầu treo, chèo thuyền, câu cá, trượt nước, leo dây",
         "schema_type": "TouristAttraction",
@@ -96191,7 +96191,7 @@
         ]
       },
       "attributes": {
-        "address": "Xã Vĩnh Bình, huyện Chợ Lách, Bến Tre",
+        "address": "Cồn Phú Đa (Sông Cổ Chiên - Chợ Lách), Xã Phú Phụng, tỉnh Vĩnh Long",
         "admission": "Miễn phí",
         "specialty": "Ốc gạo tự nhiên",
         "schema_type": "NaturalFeature",
@@ -96490,7 +96490,7 @@
         ]
       },
       "attributes": {
-        "address": "Phường Mỏ Cày, Bến Tre",
+        "address": "Cá da trơn nuôi nước ngọt, Phường Mỏ Cày, tỉnh Vĩnh Long",
         "price_range": "Khoảng 35.000–75.000 đ/kg tùy loại cá và thời điểm",
         "schema_type": "Product",
         "weight/unit": "Bán theo kg",
@@ -96555,7 +96555,7 @@
         ]
       },
       "attributes": {
-        "address": "Phường Càng Long, Trà Vinh",
+        "address": "Cá tra, Phường Càng Long, tỉnh Vĩnh Long",
         "price_range": "Khoảng 35.000–70.000 đ/kg tùy loại và thời điểm",
         "schema_type": "Product",
         "weight/unit": "Bán theo kg",
@@ -96695,7 +96695,7 @@
       },
       "attributes": {
         "season": "Tháng 2 âm lịch (mùa gió chướng)",
-        "address": "Huyện Trà Ôn, Vĩnh Long",
+        "address": "Cá cháy Trà Ôn, Phường Trà Ôn, tỉnh Vĩnh Long",
         "highlight": "\"Vua cá\" sông Hậu, chỉ xuất hiện mùa gió chướng tại lạch nước mặn-lợ xã Tích Thiện, kho rim với mía là cách nấu đặc trưng.",
         "price_range": "200.000 - 450.000 đ/kg cá cháy tươi sống tùy kích cỡ và trứng",
         "schema_type": "Product",
@@ -96879,7 +96879,7 @@
         ]
       },
       "attributes": {
-        "address": "Phường Ba Tri, Bến Tre",
+        "address": "Bò da xanh Ba Tri, Phường Ba Tri, tỉnh Vĩnh Long",
         "price_range": "Giá bò hơi thường biến động theo thị trường, khoảng 70.000–90.000 đ/kg hơi",
         "schema_type": "Product",
         "sub_category": "specialty",
@@ -97005,7 +97005,7 @@
       "attributes": {
         "yield": "10–15 tấn/hecta",
         "origin": "Gốc Huế (nhãn tiêu Huế / nhãn quế), phổ biến khắp ĐBSCL",
-        "address": "Huyện Châu Thành, Bến Tre (vùng trồng chính)",
+        "address": "Nhãn tiêu da bò, Phường Bình Đại, tỉnh Vĩnh Long",
         "highlight": "Nhãn gốc Huế vỏ sẫm da bò, cơm dày vị ngọt thơm, từng phủ kín Châu Thành trước khi bệnh chổi rồng tàn phá.",
         "price_range": "Khoảng 35.000–70.000 đ/kg tùy mùa",
         "schema_type": "Product",
@@ -97073,7 +97073,7 @@
       },
       "attributes": {
         "origin": "Giống Thái Lan, trồng tại cù lao An Bình",
-        "address": "Cù lao An Bình, huyện Long Hồ, Vĩnh Long",
+        "address": "Cù lao An Bình, Xã An Bình, tỉnh Vĩnh Long",
         "price_range": "30.000–60.000 đ/kg",
         "schema_type": "Product",
         "weight/unit": "kg",
@@ -97144,7 +97144,7 @@
         ]
       },
       "attributes": {
-        "address": "Huyện Trà Ôn, Vĩnh Long",
+        "address": "Cam xoàn Trà Ôn, Phường Trà Ôn, tỉnh Vĩnh Long",
         "price_range": "30.000–60.000 đ/kg",
         "schema_type": "Product",
         "weight/unit": "kg",
@@ -97282,7 +97282,7 @@
         ]
       },
       "attributes": {
-        "address": "Phường Long Hồ, Vĩnh Long",
+        "address": "Cá tra thương phẩm Vĩnh Long, Phường Long Hồ, tỉnh Vĩnh Long",
         "price_range": "25.000–40.000 đ/kg",
         "schema_type": "Product",
         "weight/unit": "kg",
@@ -97352,7 +97352,7 @@
         ]
       },
       "attributes": {
-        "address": "Bình Đại, Ba Tri, Thạnh Phú — Bến Tre",
+        "address": "Thạnh Phú —, Xã Thạnh Phú, tỉnh Vĩnh Long",
         "price_range": "200.000–450.000 đ/kg",
         "schema_type": "Product",
         "weight/unit": "kg",
@@ -97422,7 +97422,7 @@
       },
       "attributes": {
         "season": "Tháng 5-8",
-        "address": "Huyện Chợ Lách, Bến Tre",
+        "address": "Chôm chôm Chợ Lách, Xã Chợ Lách, tỉnh Vĩnh Long",
         "varieties": "Java, Thái, Tiến Cường",
         "price_range": "20.000–45.000 đ/kg",
         "schema_type": "Product",
@@ -97565,7 +97565,7 @@
       },
       "attributes": {
         "models": "Xen lúa, xen dừa, chuyên canh",
-        "address": "Thạnh Phú, Giồng Trôm, Ba Tri — Bến Tre",
+        "address": "Ba Tri —, Xã Thạnh Phú, tỉnh Vĩnh Long",
         "species": "Macrobrachium rosenbergii",
         "price_range": "180.000–350.000 đ/kg",
         "schema_type": "Product",
@@ -97640,7 +97640,7 @@
         ]
       },
       "attributes": {
-        "address": "Thạnh Phú, Ba Tri, Bình Đại — Bến Tre",
+        "address": "Bình Đại —, Xã Thạnh Phú, tỉnh Vĩnh Long",
         "species": "Litopenaeus vannamei",
         "price_range": "120.000–220.000 đ/kg",
         "schema_type": "Product",
@@ -97719,7 +97719,7 @@
         ]
       },
       "attributes": {
-        "address": "Xã Phú Lễ, huyện Ba Tri, Bến Tre",
+        "address": "Rượu Phú Lễ, Phường Ba Tri, tỉnh Vĩnh Long",
         "highlight": "Một trong tam đại danh tửu Nam Bộ (cùng Xuân Thạnh, Gò Đen), men 36 vị thảo mộc truyền đời hơn trăm năm.",
         "price_range": "60.000–85.000 đ/chai; hũ sành 2 lít ~750.000 đ",
         "schema_type": "Product",
@@ -97797,7 +97797,7 @@
         ]
       },
       "attributes": {
-        "address": "Xã Hưng Nhượng, huyện Giồng Trôm, Bến Tre",
+        "address": "Bánh phồng Sơn Đốc, Xã Hưng Nhượng, tỉnh Vĩnh Long",
         "price_range": "40.000–80.000 đ/bịch",
         "schema_type": "Product",
         "weight/unit": "bịch",
@@ -97879,7 +97879,7 @@
       },
       "attributes": {
         "season": "Tháng 5–8 (mùa trái chín)",
-        "address": "Xã An Phú Tân, huyện Cầu Kè, Trà Vinh",
+        "address": "Chôm chôm Cồn Tân Quy, Phường Trà Vinh, tỉnh Vĩnh Long",
         "highlight": "Cù lao 929 ha giữa sông Hậu, vườn trái phủ kín, du lịch sinh thái miệt vườn mùa chôm chôm tháng 5–8.",
         "price_range": "20.000–45.000 đ/kg",
         "schema_type": "Product",
@@ -97949,7 +97949,7 @@
         ]
       },
       "attributes": {
-        "address": "Ấp Long Trị, xã Bình Phú, huyện Càng Long, Trà Vinh",
+        "address": "Ấp Long Trị, Phường Trà Vinh, tỉnh Vĩnh Long",
         "highlight": "Quýt đường trồng hạt truyền thống hơn 50 năm, trái tròn vỏ vàng ươm, VietGAP, nhãn hiệu độc quyền 2009.",
         "price_range": "30.000–60.000 đ/kg",
         "schema_type": "Product",
@@ -98107,7 +98107,7 @@
         ]
       },
       "attributes": {
-        "address": "Phường Càng Long, Trà Vinh",
+        "address": "Lúa gạo chất lượng cao, Phường Càng Long, tỉnh Vĩnh Long",
         "price_range": "15.000–25.000 đ/kg",
         "schema_type": "Product",
         "weight/unit": "kg",
@@ -98173,7 +98173,7 @@
         ]
       },
       "attributes": {
-        "address": "Duyên Hải, Cầu Ngang, Trà Cú, Châu Thành — Trà Vinh",
+        "address": "Châu Thành —, Phường Duyên Hải, tỉnh Vĩnh Long",
         "species": "Penaeus monodon",
         "price_range": "180.000–350.000 đ/kg",
         "schema_type": "Product",
@@ -98409,7 +98409,7 @@
         ]
       },
       "attributes": {
-        "address": "Xã Vinh Kim, huyện Cầu Ngang, Trà Vinh",
+        "address": "Tôm khô Vinh Kim, Xã Cầu Ngang, tỉnh Vĩnh Long",
         "price_range": "800.000–1.300.000 đ/kg",
         "schema_type": "Product",
         "weight/unit": "kg; thường bán theo gói 100g, 250g, 500g",
@@ -98489,7 +98489,7 @@
       },
       "attributes": {
         "origin": "Lai tạo năm 1982 tại ấp Phú Đa, xã Vĩnh Bình, huyện Chợ Lách",
-        "address": "Các huyện Ba Tri, Bình Đại, Thạnh Phú, Bến Tre",
+        "address": "Các, Xã Thới Thuận, tỉnh Vĩnh Long",
         "highlight": "Giống xoài cho quả quanh năm, trái nặng tới 2 kg, vị ngọt pha mặn nhẹ từ đất giồng cát ven biển, chỉ dẫn địa lý 11-2022.",
         "schema_type": "Product",
         "weight/unit": "kg",
@@ -98559,7 +98559,7 @@
         ]
       },
       "attributes": {
-        "address": "Huyện Chợ Lách, Bến Tre",
+        "address": "Cây giống, hoa kiểng Chợ Lách, Xã Chợ Lách, tỉnh Vĩnh Long",
         "price_range": "tùy loại cây, khoảng 20.000–300.000 đ/cây phổ biến",
         "schema_type": "Product",
         "weight/unit": "cây/chậu",
@@ -98694,7 +98694,7 @@
       },
       "attributes": {
         "yield": "8,0 tấn tươi/ha (bình quân); giống LDH09/LDH12 đạt 9,1–9,2 tấn/ha",
-        "address": "Các huyện Cầu Ngang, Trà Cú, Duyên Hải, Trà Vinh",
+        "address": "Các, Xã Cầu Ngang, tỉnh Vĩnh Long",
         "highlight": "Vùng trồng đậu phộng lớn nhất Trà Vinh, gần 5.000 ha đất giồng cát ven biển, hạt lớn vỏ sáng.",
         "schema_type": "Product",
         "weight/unit": "kg",
@@ -98946,7 +98946,7 @@
       },
       "attributes": {
         "origin": "Cù Lao Mây, Trà Ôn",
-        "address": "Xã Lục Sỹ Thành, huyện Trà Ôn, Vĩnh Long",
+        "address": "Bánh tráng nem Cù Lao Mây, Xã Lục Sĩ Thành, tỉnh Vĩnh Long",
         "price_range": "25.000 – 45.000 VNĐ/xấp (50 bánh)",
         "schema_type": "Product",
         "weight/unit": "xấp/gói",
@@ -99099,7 +99099,7 @@
       },
       "attributes": {
         "model": "Tôm-rừng (nuôi dưới tán rừng ngập mặn)",
-        "address": "Vùng ven biển Duyên Hải, Cầu Ngang, Châu Thành, Trà Cú — Trà Vinh",
+        "address": "Vùng ven biển Duyên Hải, Trà Cú —, Phường Trà Vinh, tỉnh Vĩnh Long",
         "price_range": "180.000-350.000 đ/kg",
         "schema_type": "Product",
         "weight/unit": "kg",
@@ -99456,7 +99456,7 @@
       },
       "attributes": {
         "origin": "Bến Tre (giống sa pô chê dây)",
-        "address": "Huyện Chợ Lách, Bến Tre",
+        "address": "Sa pô chê Chợ Lách, Xã Chợ Lách, tỉnh Vĩnh Long",
         "price_range": "30.000–70.000 đ/kg",
         "schema_type": "Product",
         "weight/unit": "kg",
@@ -101494,7 +101494,7 @@
         ]
       },
       "attributes": {
-        "address": "Phường Mỏ Cày, Bến Tre",
+        "address": "Nấu rượu dừa, Phường Mỏ Cày, tỉnh Vĩnh Long",
         "duration": "1–2 giờ",
         "admission": "50.000–100.000 đ",
         "price_range": "50.000–100.000 đ/người",
@@ -102246,7 +102246,7 @@
         ]
       },
       "attributes": {
-        "address": "Phường Mỏ Cày, Bến Tre",
+        "address": "Trải nghiệm làm kẹo dừa Mỏ Cày, Phường Mỏ Cày, tỉnh Vĩnh Long",
         "duration": "1–2 giờ",
         "price_range": "từ 80.000 đ/khách",
         "schema_type": "TouristAttraction",
@@ -102810,7 +102810,7 @@
       },
       "attributes": {
         "ward": "TT Thạnh Phú",
-        "address": "Cồn Bửng, xã Thạnh Hải, huyện Thạnh Phú, Bến Tre",
+        "address": "Cồn Bửng, Xã Thạnh Hải, tỉnh Vĩnh Long",
         "whale_1": "57 tấn, phát hiện 14/1/2004 ÂL, xương dài 20m",
         "whale_2": "78 tấn, ~2 tháng sau, cách 300m, xương dài 25m",
         "distance": "~80 km phía đông TP Bến Tre",
@@ -103031,7 +103031,7 @@
         "note": "Có thể tham quan/sử dụng quanh năm"
       },
       "attributes": {
-        "address": "Ấp Phú Khương, xã Phú Lễ, huyện Ba Tri, Bến Tre",
+        "address": "Ấp Phú Khương, Phường Ba Tri, tỉnh Vĩnh Long",
         "founded": "1826 (vua Minh Mạng cho phép lập)",
         "festivals": "Kỳ Yên (18-19/3 ÂL); Cầu Bông (9-10/11 ÂL)",
         "sac_phong": "Tự Đức ngày 29/01/1852 (Thành hoàng Bổn cảnh)",
@@ -103099,7 +103099,7 @@
       },
       "attributes": {
         "era": "Phan Thanh Giản (1796–1867)",
-        "address": "Xã Bảo Thạnh, huyện Ba Tri, tỉnh Vĩnh Long",
+        "address": "Khu di tích mộ và đền thờ Phan Thanh Giản, Xã Bảo Thạnh, tỉnh Vĩnh Long",
         "highlight": "Khu lăng mộ và đền thờ vị Tiến sĩ đầu tiên của vùng đất Nam Kỳ Lục Tỉnh, danh sĩ tài đức mẫu mực triều Nguyễn",
         "travel_tip": "Đường đến khu mộ đi qua những hàng phi lao và đồng muối Bảo Thạnh; thích hợp cho các chuyến khảo cứu điền dã lịch sử văn hóa.",
         "schema_type": "LandmarksOrHistoricalBuildings",
@@ -103413,7 +103413,7 @@
         "note": "Có thể tham quan/sử dụng quanh năm"
       },
       "attributes": {
-        "address": "Ấp Ba Se A, xã Lương Hòa, huyện Châu Thành, Trà Vinh",
+        "address": "Ấp Ba Se A, Phường Tiểu Cần, tỉnh Vĩnh Long",
         "schema_type": "LandmarksOrHistoricalBuildings",
         "sub_category": "pagoda",
         "heritage_level": "Di tích Khảo cổ cấp Quốc gia (Bờ Lũy - chùa Lò Gạch, 2017); Di tích Lịch sử cấp tỉnh (QĐ 2256, 21/11/2022)",
@@ -103545,7 +103545,7 @@
         "built": "2014–2016",
         "title": "Anh hùng LLVTND (truy tặng 1978)",
         "person": "Nguyễn Thị Út (Út Tịch), 1931–1968",
-        "address": "Ấp Ngọc Hồ, xã Tam Ngãi, huyện Cầu Kè, Trà Vinh",
+        "address": "Ấp Ngọc Hồ, Xã Cầu Kè, tỉnh Vĩnh Long",
         "distance": "45 km từ TP Trà Vinh, 7 km TB thị trấn Cầu Kè",
         "schema_type": "LandmarksOrHistoricalBuildings",
         "sub_category": "cultural-heritage",
@@ -103719,7 +103719,7 @@
       },
       "attributes": {
         "roofs": "8 mái ngói âm dương",
-        "address": "Ấp 5A, thị trấn Giồng Trôm, huyện Giồng Trôm, Bến Tre",
+        "address": "Ấp 5A, Xã Giồng Trôm, tỉnh Vĩnh Long",
         "columns": "Ban đầu 300, nay 208",
         "founded": "1812 (hoàn thành 1825)",
         "rebuilt": "1902–1914",
@@ -103788,7 +103788,7 @@
       },
       "attributes": {
         "era": "Đầu thế kỷ 20 (do Bà Chánh Hiền và Bà Cả Mười dựng)",
-        "address": "Ấp Thành Long, xã Thành Thới A, huyện Mỏ Cày Nam, Bến Tre",
+        "address": "Ấp Thành Long, Phường Bến Tre, tỉnh Vĩnh Long",
         "highlight": "Miếu Bà Chúa Xứ gần trăm năm trên cồn Cát, sập rồi dựng lại năm 1967, lễ Hạ Điền (17/3 ÂL) và Thượng Điền (19/5 ÂL).",
         "peak_event": "Lễ Hạ Điền (17/3 ÂL) và lễ Thượng Điền (19/5 ÂL)",
         "schema_type": "LandmarksOrHistoricalBuildings",
@@ -104378,7 +104378,7 @@
         "note": "Có thể tham quan/sử dụng quanh năm"
       },
       "attributes": {
-        "address": "Phường Long Hồ, Vĩnh Long",
+        "address": "Đình Hoà Ninh, Phường Long Hồ, tỉnh Vĩnh Long",
         "highlight": "Đình thần gần 180 năm tuổi, lưu giữ bộ hoành phi câu đối Hán-Nôm độc đáo.",
         "travel_tip": "Hỏi ban quản lý đình về lịch lễ hội hàng năm để lên kế hoạch tham dự đúng dịp.",
         "schema_type": "LandmarksOrHistoricalBuildings",
@@ -104482,7 +104482,7 @@
         "note": "Có thể tham quan/sử dụng quanh năm"
       },
       "attributes": {
-        "address": "Phường Long Hồ, Vĩnh Long",
+        "address": "Đình làng Thiện Mỹ, Phường Long Hồ, tỉnh Vĩnh Long",
         "highlight": "Sắc phong năm 1852 — ngôi đình gỗ cổ giữ nguyên hồn làng Nam Bộ.",
         "travel_tip": "Ăn mặc lịch sự khi vào đình; tránh mặc quần shorts hoặc áo sát nách.",
         "schema_type": "LandmarksOrHistoricalBuildings",
@@ -105960,7 +105960,7 @@
       },
       "attributes": {
         "era": "Khởi dựng 1915",
-        "address": "Ấp Sóc Trò, xã An Quảng Hữu, huyện Trà Cú, Trà Vinh",
+        "address": "Ấp Sóc Trò, Phường Nguyệt Hóa, tỉnh Vĩnh Long",
         "area_m2": 16800,
         "schema_type": "LandmarksOrHistoricalBuildings",
         "sub_category": "pagoda",
@@ -106066,7 +106066,7 @@
         "note": "Có thể tham quan/sử dụng quanh năm"
       },
       "attributes": {
-        "address": "Đối diện nhà thờ Cái Mơn, xã Vĩnh Thành, huyện Chợ Lách, Bến Tre",
+        "address": "Đối diện nhà thờ Cái Mơn, Xã Vĩnh Thành, tỉnh Vĩnh Long",
         "schema_type": "LandmarksOrHistoricalBuildings",
         "sub_category": "monument",
         "heritage_date": "22/2/2019",
@@ -106171,7 +106171,7 @@
         "note": "Có thể tham quan/sử dụng quanh năm"
       },
       "attributes": {
-        "address": "Xã Định Thủy, huyện Mỏ Cày Nam, tỉnh Vĩnh Long",
+        "address": "Khu Di tích Quốc gia Đặc biệt Đồng Khởi, Xã Đồng Khởi, tỉnh Vĩnh Long",
         "schema_type": "LandmarksOrHistoricalBuildings",
         "sub_category": "historic-site",
         "coords_approximate": true,
@@ -106244,7 +106244,7 @@
         "note": "Có thể tham quan/sử dụng quanh năm"
       },
       "attributes": {
-        "address": "Xã Phú Lễ, huyện Ba Tri, Bến Tre",
+        "address": "Chùa Khải Tường, Phường Ba Tri, tỉnh Vĩnh Long",
         "schema_type": "LandmarksOrHistoricalBuildings",
         "sub_category": "pagoda",
         "coords_approximate": true,
@@ -106352,7 +106352,7 @@
         "note": "Có thể tham quan/sử dụng quanh năm"
       },
       "attributes": {
-        "address": "Ấp 4, xã Phú Lộc, huyện Tam Bình, tỉnh Vĩnh Long",
+        "address": "Di tích lịch sử cách mạng Cái Ngang, Phường Phước Hậu, tỉnh Vĩnh Long",
         "schema_type": "LandmarksOrHistoricalBuildings",
         "sub_category": "historic-site",
         "coords_approximate": true,
@@ -106410,7 +106410,7 @@
       },
       "attributes": {
         "built": "2014–2016",
-        "address": "Ấp Ngọc Hồ, xã Tam Ngãi, huyện Cầu Kè, Trà Vinh",
+        "address": "Ấp Ngọc Hồ, Xã Cầu Kè, tỉnh Vĩnh Long",
         "area_ha": 1.4,
         "key_figure": "Nguyễn Thị Út (Út Tịch, 1931–1968)",
         "schema_type": "LandmarksOrHistoricalBuildings",
@@ -106626,7 +106626,7 @@
         "ward": "Tân Quới",
         "phone": "027 0376 0613",
         "price": "Miễn phí",
-        "address": "Ấp Tân Thuận, xã Tân Quới, huyện Bình Tân, Vĩnh Long",
+        "address": "Ấp Tân Thuận, Phường Tân Quới, tỉnh Vĩnh Long",
         "schema_type": "LandmarksOrHistoricalBuildings",
         "sub_category": "pagoda",
         "hours": "9:00-17:00",
@@ -107011,7 +107011,7 @@
         "note": "Có thể tham quan/sử dụng quanh năm"
       },
       "attributes": {
-        "address": "Ấp Long Thuận A, xã Long Phước, huyện Long Hồ, tỉnh Vĩnh Long",
+        "address": "Khu lưu niệm Phạm Hùng, Phường Long Châu, tỉnh Vĩnh Long",
         "schema_type": "LandmarksOrHistoricalBuildings",
         "sub_category": "cultural-heritage",
         "coords_approximate": true,
@@ -107312,7 +107312,7 @@
       },
       "attributes": {
         "ward": "TT Vũng Liêm",
-        "address": "Huyện Vũng Liêm, Vĩnh Long",
+        "address": "Chùa Shanghamangala (Hạnh Phúc Tăng), Phường Phước Hậu, tỉnh Vĩnh Long",
         "schema_type": "LandmarksOrHistoricalBuildings",
         "sub_category": "pagoda",
         "coords_approximate": true,
@@ -107426,7 +107426,7 @@
       },
       "attributes": {
         "ward": "TT Vũng Liêm",
-        "address": "Ngã ba An Nhơn, TT Vũng Liêm, huyện Vũng Liêm, Vĩnh Long",
+        "address": "Ngã ba An Nhơn, Phường Phước Hậu, tỉnh Vĩnh Long",
         "schema_type": "LandmarksOrHistoricalBuildings",
         "sub_category": "cultural-heritage",
         "historical_period": "1872 — kháng Pháp",
@@ -107539,7 +107539,7 @@
         "hours": "7:30–11:00, 13:30–17:00 (thứ 2–thứ 6)",
         "tombs": "Bà Nguyễn Thị Tuyết (thân mẫu); Ông Châu Vĩnh Huy + bà Đỗ Thị Toán (cha mẹ vợ)",
         "opened": "Tháng 8/2022",
-        "address": "Ấp Thái Bình, xã Thanh Bình, huyện Vũng Liêm, Vĩnh Long",
+        "address": "Ấp Thái Bình, Xã Quới Thiện, tỉnh Vĩnh Long",
         "builder": "Thoại Ngọc Hầu (Nguyễn Văn Thoại)",
         "restored": "2018",
         "materials": "Vôi, cát, đá, ô dước, cẩn gốm sứ",
@@ -107606,7 +107606,7 @@
         "note": "Có thể tham quan/sử dụng quanh năm"
       },
       "attributes": {
-        "address": "Gần hồ Vũng Linh, huyện Vũng Liêm, Vĩnh Long",
+        "address": "Gần hồ Vũng Linh, Phường Phước Hậu, tỉnh Vĩnh Long",
         "sculptor": "Trần Văn Trầm (Tiền Giang)",
         "schema_type": "LandmarksOrHistoricalBuildings",
         "sub_category": "historic-site",
@@ -107779,7 +107779,7 @@
       },
       "attributes": {
         "ward": "TT Giồng Trôm",
-        "address": "Xã Mỹ Thạnh, huyện Giồng Trôm, Bến Tre",
+        "address": "Đền thờ Tướng quân Nguyễn Ngọc Thăng, Xã Giồng Trôm, tỉnh Vĩnh Long",
         "area_m2": 362,
         "schema_type": "LandmarksOrHistoricalBuildings",
         "sub_category": "historic-site",
@@ -108045,7 +108045,7 @@
         "note": "Có thể tham quan/sử dụng quanh năm"
       },
       "attributes": {
-        "address": "Xã Vĩnh Thành, huyện Chợ Lách, Bến Tre",
+        "address": "Khu lưu niệm Trương Vĩnh Ký, Xã Vĩnh Thành, tỉnh Vĩnh Long",
         "schema_type": "LandmarksOrHistoricalBuildings",
         "sub_category": "shrine",
         "image_author": "Hữu Hiệp",
@@ -108303,7 +108303,7 @@
           "remediation": "Mark as expired or require recertification decree reference"
         },
         "hours": "8:00–17:00",
-        "address": "Xã Vĩnh Xuân, huyện Trà Ôn, Vĩnh Long",
+        "address": "HTX cam sành Trà Ôn, Phường Trà Ôn, tỉnh Vĩnh Long",
         "area_ha": 7000,
         "specialty": "Cam sành",
         "schema_type": "LocalBusiness",
@@ -108364,7 +108364,7 @@
       },
       "attributes": {
         "hours": "8:00–17:00",
-        "address": "Thị trấn Mỏ Cày, huyện Mỏ Cày Nam, Bến Tre",
+        "address": "Cơ sở kẹo dừa Mỏ Cày, Phường Mỏ Cày, tỉnh Vĩnh Long",
         "founded": "~1930",
         "founder": "Nguyễn Thị Ngọc (sinh 1914)",
         "specialty": "Kẹo dừa",
@@ -108799,7 +108799,7 @@
         "tip": "Bến nhỏ, ít chuyến trực tiếp ra TP.HCM; nên bắt xe về Bến Tre rồi đổi tuyến lớn. Xe buýt nội tỉnh tuyến 02 cũng phục vụ hành lang Ba Tri.",
         "hours": "04:30 - 18:00 hàng ngày (các chuyến xe buýt số 02 chạy từ 05:00 - 17:30; xe khách đi TP.HCM xuất bến liên tục)",
         "routes": "Ba Tri – Bến Tre (trung tâm), Ba Tri – TP.HCM (Bến xe Miền Tây)",
-        "address": "Tỉnh Lộ 885, đường An Bình Tây, Thị trấn Ba Tri, Bến Tre",
+        "address": "Tỉnh Lộ 885, đường An Bình Tây, Phường Ba Tri, tỉnh Vĩnh Long",
         "category": "transport",
         "frequency": "Vài chuyến mỗi buổi sáng và chiều",
         "office_kind": "khac",
@@ -108881,7 +108881,7 @@
         "tip": "Nằm trên Quốc lộ 60, xe từ TP.HCM về Bến Tre đều đi qua đây; có thể xuống đây nếu đến huyện Mỏ Cày, không cần vào trung tâm tỉnh.",
         "hours": "05:00 - 17:30 hàng ngày (các tuyến xe buýt đi TP Bến Tre và Thạnh Phú hoạt động 20 phút/chuyến)",
         "routes": "Mỏ Cày – Bến Tre (trung tâm), kết nối tuyến TP.HCM",
-        "address": "Quốc Lộ 60, Thị trấn Mỏ Cày, Bến Tre",
+        "address": "Quốc Lộ 60, Xã Đồng Khởi, tỉnh Vĩnh Long",
         "category": "transport",
         "frequency": "Xe buýt và xe khách liên tỉnh qua đây theo hành lang QL60",
         "office_kind": "khac",
@@ -110004,7 +110004,7 @@
         "note": "Có thể tham quan/sử dụng quanh năm"
       },
       "attributes": {
-        "address": "Các xã Thạnh Phong, Thạnh Hải, Giao Thạnh, huyện Thạnh Phú, Bến Tre",
+        "address": "Các xã Thạnh Phong, Xã Thạnh Phú, tỉnh Vĩnh Long",
         "schema_type": "LandmarksOrHistoricalBuildings",
         "sub_category": "historic-site",
         "coords_approximate": true,
@@ -111273,7 +111273,7 @@
       "attributes": {
         "role": "Nhân vật quân sự",
         "ward": "Lục Sĩ Thành",
-        "address": "Huyện Trà Ôn, tỉnh Vĩnh Long",
+        "address": "Tướng quân Nguyễn Văn Tồn, Phường Trà Ôn, tỉnh Vĩnh Long",
         "schema_type": "Person",
         "sub_category": "military-leader",
         "image_author": "Hữu Huệ",
@@ -112696,7 +112696,7 @@
         ]
       },
       "attributes": {
-        "address": "Huyện Mang Thít, Vĩnh Long",
+        "address": "Khu du lịch Somo Farm Cửu Long, Phường Phước Hậu, tỉnh Vĩnh Long",
         "price_range": "Trung bình",
         "schema_type": "LodgingBusiness",
         "sub_category": "resort",
@@ -112770,7 +112770,7 @@
       },
       "attributes": {
         "ward": "TT Vũng Liêm",
-        "address": "Huyện Vũng Liêm, Vĩnh Long",
+        "address": "Homestay Hai Cường, Phường Phước Hậu, tỉnh Vĩnh Long",
         "price_range": "350.000đ - 650.000đ/phòng/đêm",
         "schema_type": "LodgingBusiness",
         "sub_category": "homestay",
@@ -114158,7 +114158,7 @@
       },
       "attributes": {
         "rooms": 3,
-        "address": "Xã Châu Thành, Trà Vinh",
+        "address": "Homestay Khmer, Xã Châu Thành, tỉnh Vĩnh Long",
         "facilities": "Sân vườn, bếp chung, xe đạp",
         "phone_note": "0294 xxx xxx",
         "price_range": "400.000đ - 750.000đ/phòng/đêm",
@@ -115503,7 +115503,7 @@
         ]
       },
       "attributes": {
-        "address": "Huyện Giồng Trôm, tỉnh Vĩnh Long",
+        "address": "Mekong Home, Xã Giồng Trôm, tỉnh Vĩnh Long",
         "price_range": "1.500.000–3.000.000 đ/phòng/đêm",
         "schema_type": "LodgingBusiness",
         "sub_category": "bungalow",
@@ -116819,7 +116819,7 @@
         ]
       },
       "attributes": {
-        "address": "Xã Châu Thành, Trà Vinh",
+        "address": "Cồn Chim Homestay, Xã Châu Thành, tỉnh Vĩnh Long",
         "check_in": "14:00",
         "amenities": "Nhà sàn truyền thống, sông nước cồn, trải nghiệm chèo xuồng, bữa ăn dân dã, vườn cây ăn trái",
         "check_out": "11:00",
@@ -119466,7 +119466,7 @@
       },
       "attributes": {
         "phone": "027 0396 3290",
-        "address": "Số 197/15, ấp Long Thuận, xã Long Hồ",
+        "address": "Số 197/15, ấp Long Thuận, Phường Long Hồ, tỉnh Vĩnh Long",
         "check_in": "14:00",
         "amenities": "Điều hòa, TV, WiFi cơ bản",
         "check_out": "12:00",
@@ -119545,7 +119545,7 @@
       },
       "attributes": {
         "phone": "027 0382 9228",
-        "address": "Số 140A ấp Thanh Hưng, xã Long Hồ",
+        "address": "Số 140A ấp Thanh Hưng, Phường Long Hồ, tỉnh Vĩnh Long",
         "check_in": "14:00",
         "amenities": "Điều hòa, TV, WiFi cơ bản",
         "check_out": "12:00",
@@ -119624,7 +119624,7 @@
       },
       "attributes": {
         "phone": "0913 711 657",
-        "address": "Ấp An Thạnh, xã Long Hồ",
+        "address": "Ấp An Thạnh, Phường Long Hồ, tỉnh Vĩnh Long",
         "check_in": "14:00",
         "amenities": "Vườn cây, không khí làng quê, ăn uống tại chỗ theo yêu cầu",
         "check_out": "11:00",
@@ -119719,7 +119719,7 @@
       },
       "attributes": {
         "phone": "0919 220 282",
-        "address": "Số 53/4 ấp Phú Mỹ 1, xã Long Hồ",
+        "address": "Số 53/4 ấp Phú Mỹ 1, Phường Long Hồ, tỉnh Vĩnh Long",
         "check_in": "14:00",
         "amenities": "Vườn cây, không gian yên tĩnh, bữa ăn theo yêu cầu",
         "check_out": "11:00",
@@ -121957,7 +121957,7 @@
       },
       "attributes": {
         "ward": "TT Long Hồ",
-        "address": "Huyện Long Hồ, tỉnh Vĩnh Long",
+        "address": "Sầu riêng sấy thăng hoa Sáu Ri, Phường Long Châu, tỉnh Vĩnh Long",
         "ocop_star": 5,
         "schema_type": "Product",
         "sub_category": "fruit",
@@ -122292,7 +122292,7 @@
       },
       "attributes": {
         "season": "Tháng 6-8 dương lịch",
-        "address": "Xã Bình Hòa Phước, huyện Long Hồ, Vĩnh Long",
+        "address": "Măng cụt Bình Hòa Phước, Phường Long Hồ, tỉnh Vĩnh Long",
         "price_range": "50.000-90.000 đ/kg tại vườn",
         "schema_type": "Product",
         "weight/unit": "kg",
@@ -122551,7 +122551,7 @@
       },
       "attributes": {
         "period": "Thế kỷ I–VI sau Công nguyên",
-        "address": "Xã Trung Hiệp, huyện Vũng Liêm, Vĩnh Long",
+        "address": "Di chỉ khảo cổ học Thành Mới, Xã Trung Hiệp, tỉnh Vĩnh Long",
         "culture": "Văn hóa Óc Eo (Phù Nam)",
         "artifacts": "Mảnh gốm, công cụ đá, cấu trúc nền móng",
         "highlight": "Di chỉ văn minh Óc Eo hơn 1.500 năm tuổi — cửa sổ nhìn vào nền văn hóa tiền sử bí ẩn của vùng châu thổ Cửu Long.",
@@ -122604,7 +122604,7 @@
         "note": "Có thể tham quan/sử dụng quanh năm"
       },
       "attributes": {
-        "address": "Ấp Phước Hanh B, xã Phước Hậu, huyện Long Hồ, Vĩnh Long",
+        "address": "Ấp Phước Hanh B, Phường Phước Hậu, tỉnh Vĩnh Long",
         "burials": "Hơn 2.000 mộ nghĩa sĩ kháng Pháp",
         "other_name": "Miếu Âm Nhơn",
         "travel_tip": "Vào ngày 27/7 có lễ tưởng niệm lớn; muốn không gian yên tĩnh, nên đi buổi sáng ngày thường.",
@@ -122990,7 +122990,7 @@
       },
       "attributes": {
         "phone": "027 0350 5356",
-        "address": "Ấp Hòa Quí, xã Long Hồ",
+        "address": "Ấp Hòa Quí, Phường Long Hồ, tỉnh Vĩnh Long",
         "check_in": "14:00",
         "amenities": "Vườn dừa, trang trí đẹp, WiFi, phù hợp chụp ảnh",
         "check_out": "11:00",
@@ -123145,7 +123145,7 @@
         ]
       },
       "attributes": {
-        "address": "Phường Long Hồ, Vĩnh Long",
+        "address": "Khu du lịch nhà xưa và homestay Út Trinh, Phường Long Hồ, tỉnh Vĩnh Long",
         "admission": "Miễn phí",
         "best_time": "tháng 11–4",
         "highlight": "Nhà cổ nguyên bản, đêm đờn ca tài tử và mâm cơm quê khiến bạn không muốn về",
@@ -123234,7 +123234,7 @@
       },
       "attributes": {
         "role": "emerging_asset",
-        "address": "Phường Long Hồ, Vĩnh Long",
+        "address": "Làng du lịch cộng đồng Cái Ngang, Phường Long Hồ, tỉnh Vĩnh Long",
         "priority": "B+",
         "admission": "Miễn phí",
         "best_time": "tháng 11–4",
@@ -123314,7 +123314,7 @@
         ]
       },
       "attributes": {
-        "address": "Ấp Phước Long, xã Long Hồ",
+        "address": "Ấp Phước Long, Phường Long Hồ, tỉnh Vĩnh Long",
         "admission": "Miễn phí",
         "key_facts": "Điện máy + nội thất | Phục vụ cả khách mua lẻ và doanh nghiệp | Có bãi đậu xe rộng",
         "travel_tip": "Hỏi nhân viên về chương trình trả góp 0% lãi suất nếu mua hàng nội thất hoặc điện máy giá trị cao.",
@@ -123366,7 +123366,7 @@
         "note": "Có thể tham quan/sử dụng quanh năm"
       },
       "attributes": {
-        "address": "Ấp Long Thuận A, xã Long Phước, huyện Long Hồ, tỉnh Vĩnh Long",
+        "address": "Khu tưởng niệm Cố Chủ tịch HĐBT Phạm Hùng, Phường Long Hồ, tỉnh Vĩnh Long",
         "highlight": "Quần thể 3,2 ha tưởng nhớ người con kiệt xuất của đất Vĩnh Long.",
         "travel_tip": "Kết hợp tham quan buổi sáng để có không khí mát mẻ và ánh sáng chụp ảnh đẹp nhất.",
         "schema_type": "LandmarksOrHistoricalBuildings",
@@ -123484,7 +123484,7 @@
         "note": "Có thể tham quan/sử dụng quanh năm"
       },
       "attributes": {
-        "address": "Phường Long Hồ, Vĩnh Long",
+        "address": "Đình Kỳ Hà, Phường Long Hồ, tỉnh Vĩnh Long",
         "highlight": "Đình cổ đầu thế kỷ XIX, có sắc phong 1852 và là cơ sở cách mạng từ năm 1927.",
         "travel_tip": "Xin phép ban quản lý để xem sắc phong triều Nguyễn năm 1852 — tài liệu gốc rất quý hiếm.",
         "schema_type": "LandmarksOrHistoricalBuildings",
@@ -123559,7 +123559,7 @@
       },
       "attributes": {
         "phone": "027 0382 8241",
-        "address": "Số 25B ấp Hưng Quới, xã Long Hồ",
+        "address": "Số 25B ấp Hưng Quới, Phường Long Hồ, tỉnh Vĩnh Long",
         "check_in": "14:00",
         "amenities": "Điều hòa, TV, WiFi cơ bản",
         "check_out": "12:00",
@@ -123733,7 +123733,7 @@
       },
       "attributes": {
         "phone": "027 0389 9699",
-        "address": "Khu nhà ở Hoàng Hảo, QL57, xã Long Hồ",
+        "address": "Khu nhà ở Hoàng Hảo, QL57, Phường Long Hồ, tỉnh Vĩnh Long",
         "check_in": "13:00",
         "amenities": "Khuôn viên xanh, điều hòa, WiFi, bãi đỗ xe",
         "check_out": "11:00",
@@ -124425,7 +124425,7 @@
       },
       "attributes": {
         "rating": 4.7,
-        "address": "109 Huyện Lộ 22, Thị trấn Mỏ Cày, Bến Tre",
+        "address": "109 22, Phường Mỏ Cày, tỉnh Vĩnh Long",
         "specialty": "Phở",
         "schema_type": "Restaurant",
         "review_count": 3,
@@ -124663,7 +124663,7 @@
         ]
       },
       "attributes": {
-        "address": "Ấp Ba So, xã Nhị Trường, huyện Cầu Ngang, Trà Vinh",
+        "address": "Ấp Ba So, Xã Cầu Ngang, tỉnh Vĩnh Long",
         "best_time": "tháng 9–11 (âm lịch)",
         "highlight": "Cốm dẹp giã tay truyền thống — linh hồn ẩm thực của người Khmer mùa lễ hội",
         "specialty": "Chế biến dừa",
@@ -124957,7 +124957,7 @@
       },
       "attributes": {
         "brand": "Đặc sản Vĩnh Long",
-        "address": "Huyện Mang Thít, tỉnh Vĩnh Long",
+        "address": "Gốm Đỏ Mang Thít, Phường Phước Hậu, tỉnh Vĩnh Long",
         "schema_type": "Product",
         "sub_category": "dried-seafood",
         "coords_approximate": true,
@@ -125029,7 +125029,7 @@
         ]
       },
       "attributes": {
-        "address": "Huyện Mang Thít, Vĩnh Long",
+        "address": "Lò gạch Hưng Lợi, Phường Phước Hậu, tỉnh Vĩnh Long",
         "admission": "Miễn phí",
         "schema_type": "TouristAttraction",
         "sub_category": "tourist-spot",
@@ -125174,7 +125174,7 @@
       },
       "attributes": {
         "kilns": "800+",
-        "address": "Xã Nhơn Phú, huyện Mang Thít, Vĩnh Long",
+        "address": "Làm gốm Mang Thít, Xã Nhơn Phú, tỉnh Vĩnh Long",
         "area_ha": 3000,
         "duration": "2–3 giờ",
         "admission": "100.000–200.000 đ",
@@ -125259,7 +125259,7 @@
         ]
       },
       "attributes": {
-        "address": "Huyện Bình Tân, tỉnh Vĩnh Long",
+        "address": "Vùng khoai lang Bình Tân, Phường Thanh Đức, tỉnh Vĩnh Long",
         "products": "Khoai lang tím Nhật, trắng sữa, bí đường, bí nghệ, sản phẩm chế biến",
         "specialty": "Khoai lang",
         "trademark": "Khoai lang Bình Tân (SHTT)",
@@ -125472,7 +125472,7 @@
       },
       "attributes": {
         "trees": "~500 cây sầu riêng",
-        "address": "236/92 Ấp Nam Vĩnh, xã Vĩnh Thành, huyện Chợ Lách, Bến Tre",
+        "address": "236/92 Ấp Nam Vĩnh, Xã Vĩnh Thành, tỉnh Vĩnh Long",
         "area_ha": 5,
         "admission": "Miễn phí",
         "schema_type": "TouristAttraction",
@@ -125643,7 +125643,7 @@
         ]
       },
       "attributes": {
-        "address": "Xã Thạnh Hải, huyện Thạnh Phú, Bến Tre",
+        "address": "Biển Cồn Bửng (Biển Thạnh Phú), Xã Thạnh Hải, tỉnh Vĩnh Long",
         "admission": "Miễn phí",
         "schema_type": "NaturalFeature",
         "coastline_km": 25,
@@ -125740,7 +125740,7 @@
       },
       "attributes": {
         "nearby": "Biển Cồn Bửng (Thạnh Hải), di tích đường HCM trên biển (Thạnh Phong)",
-        "address": "Xã Thạnh Phong, huyện Thạnh Phú, Bến Tre",
+        "address": "Du Lịch Sinh Thái Cộng Đồng Thạnh Phong, Xã An Qui, tỉnh Vĩnh Long",
         "operator": "Hợp tác xã du lịch sinh thái cộng đồng Thạnh Phong",
         "admission": "Miễn phí",
         "activities": "Chèo xuồng rừng ngập mặn, bắt cua, bắt ốc, hái rau rừng, thăm vườn, ở homestay",
@@ -125895,7 +125895,7 @@
         ]
       },
       "attributes": {
-        "address": "Xã Thạnh Phong, huyện Thạnh Phú, Bến Tre",
+        "address": "Làng nghề chế biến hải sản khô Thạnh Phong, Xã An Qui, tỉnh Vĩnh Long",
         "specialty": "Cá khô, Muối, Tôm khô",
         "schema_type": "LocalBusiness",
         "sub_category": "food-processing",
@@ -125984,7 +125984,7 @@
       },
       "attributes": {
         "ward": "TT Thạnh Phú",
-        "address": "Xã Thạnh Phong, huyện Thạnh Phú, Bến Tre",
+        "address": "Cua biển Thạnh Phú, Xã An Qui, tỉnh Vĩnh Long",
         "schema_type": "Product",
         "sub_category": "ocop-product",
         "ocop_certified": true,
@@ -126038,7 +126038,7 @@
       "attributes": {
         "role": "heritage_theme",
         "brand": "Đặc sản Bến Tre",
-        "address": "Bình Đại, Ba Tri, Thạnh Phú, Bến Tre",
+        "address": "Nghêu, Xã Thạnh Phú, tỉnh Vĩnh Long",
         "gi_year": "2024",
         "priority": "A-",
         "gi_number": "00139",
@@ -126224,7 +126224,7 @@
       "attributes": {
         "method": "Lên men tự nhiên trong trái dừa nguyên quả",
         "origin": "Bến Tre",
-        "address": "Phường Mỏ Cày, Bến Tre",
+        "address": "Rượu dừa, Phường Mỏ Cày, tỉnh Vĩnh Long",
         "price_range": "60.000–120.000 đ/chai",
         "schema_type": "Product",
         "sub_category": "coconut-product",
@@ -126299,7 +126299,7 @@
       },
       "attributes": {
         "ocop": "4 sao",
-        "address": "Các cơ sở sản xuất tại TP Bến Tre, Mỏ Cày, Bến Tre",
+        "address": "Các cơ sở sản xuất tại, Phường Mỏ Cày, tỉnh Vĩnh Long",
         "process": "Ép lạnh dưới 60°C, lên men tự nhiên",
         "mct_content": ">60%",
         "price_range": "80.000–150.000 đ/chai",
@@ -127182,7 +127182,7 @@
       },
       "attributes": {
         "ward": "TT. Càng Long",
-        "address": "Ấp Sơn Trắng, Thị trấn Càng Long",
+        "address": "Ấp Sơn Trắng, Phường Càng Long, tỉnh Vĩnh Long",
         "admission": "Miễn phí",
         "schema_type": "TouristAttraction",
         "sub_category": "pagoda",
@@ -127252,7 +127252,7 @@
         ]
       },
       "attributes": {
-        "address": "Huyện Càng Long",
+        "address": "Dừa sáp Càng Long, Xã Bình Phú, tỉnh Vĩnh Long",
         "schema_type": "Product",
         "sub_category": "coconut-product",
         "ocop_certified": true,
@@ -127320,7 +127320,7 @@
         ]
       },
       "attributes": {
-        "address": "Huyện Càng Long",
+        "address": "Chùa Pháp Hoa, Xã Bình Phú, tỉnh Vĩnh Long",
         "admission": "Miễn phí",
         "schema_type": "TouristAttraction",
         "sub_category": "pagoda",
@@ -127433,7 +127433,7 @@
         "note": "Có thể tham quan/sử dụng quanh năm"
       },
       "attributes": {
-        "address": "Xã Thạnh Phong, huyện Thạnh Phú, Bến Tre",
+        "address": "Di tích Đường Hồ Chí Minh trên Biển – Bến Thạnh Phong, Xã Thạnh Hải, tỉnh Vĩnh Long",
         "artifacts": "120+ hiện vật, tài liệu, ảnh",
         "schema_type": "LandmarksOrHistoricalBuildings",
         "first_return": "Tháng 11/1962 (75 tấn vũ khí)",
@@ -127681,7 +127681,7 @@
       },
       "attributes": {
         "ward": "TT Tam Bình",
-        "address": "Huyện Tam Bình, Vĩnh Long",
+        "address": "Gạo Tân Tiến, Phường Phước Hậu, tỉnh Vĩnh Long",
         "ocop_star": 4,
         "schema_type": "Product",
         "sub_category": "rice",
@@ -127906,7 +127906,7 @@
         "note": "Có thể tham quan/sử dụng quanh năm"
       },
       "attributes": {
-        "address": "Ấp 4, xã Phú Lộc, huyện Tam Bình, Vĩnh Long",
+        "address": "Ấp 4, Xã Hậu Lộc, tỉnh Vĩnh Long",
         "area_ha": "10,3 ha",
         "visitors": ">200.000 lượt, bình quân 18.000/năm",
         "schema_type": "LandmarksOrHistoricalBuildings",
@@ -127997,7 +127997,7 @@
         ]
       },
       "attributes": {
-        "address": "Huyện Chợ Lách",
+        "address": "Làng hoa kiểng và cây giống Chợ Lách, Xã Chợ Lách, tỉnh Vĩnh Long",
         "specialty": "Tre/trúc",
         "schema_type": "LocalBusiness",
         "sub_category": "basketry",
@@ -128066,7 +128066,7 @@
         ]
       },
       "attributes": {
-        "address": "Huyện Chợ Lách",
+        "address": "Sầu riêng cấp đông Chợ Lách, Xã Chợ Lách, tỉnh Vĩnh Long",
         "schema_type": "Product",
         "sub_category": "fruit",
         "ocop_certified": true,
@@ -128137,7 +128137,7 @@
       },
       "attributes": {
         "origin": "Trà Vinh (ẩm thực Khmer)",
-        "address": "Huyện Tiểu Cần, Trà Vinh",
+        "address": "Bún nước lèo Tiểu Cần, Phường Tiểu Cần, tỉnh Vĩnh Long",
         "garnish": "Bắp chuối, hẹ, giá sống, rau răm",
         "specialty": "Bún, Cá",
         "schema_type": "Recipe",
@@ -128219,7 +128219,7 @@
       },
       "attributes": {
         "origin": "Vĩnh Long",
-        "address": "Huyện Mang Thít, Vĩnh Long",
+        "address": "Bún nước lèo Vĩnh Long, Phường Phước Hậu, tỉnh Vĩnh Long",
         "specialty": "Bò, Bún, Cá",
         "schema_type": "Recipe",
         "sub_category": "noodle-soup",
@@ -128335,7 +128335,7 @@
       "attributes": {
         "role": "food_asset",
         "origin": "Người Khmer — Trà Vinh",
-        "address": "Huyện Trà Cú, Trà Vinh",
+        "address": "Bún nước lèo Trà Cú, Xã Trà Cú, tỉnh Vĩnh Long",
         "priority": "A-",
         "specialty": "Bò, Bún",
         "vegetables": "Bắp chuối bào, bông súng, giá, hẹ, rau muống, rau thơm",
@@ -128445,7 +128445,7 @@
       "attributes": {
         "ward": "TT. Càng Long",
         "origin": "Khmer — Trà Vinh",
-        "address": "Thị trấn Càng Long",
+        "address": "Bún nước lèo Càng Long, Phường Càng Long, tỉnh Vĩnh Long",
         "specialty": "Bún, Cá",
         "schema_type": "Recipe",
         "sub_category": "noodle-soup",
@@ -128540,7 +128540,7 @@
       },
       "attributes": {
         "rooms": 4,
-        "address": "Phường Mỏ Cày, Bến Tre",
+        "address": "Homestay Xứ Dừa, Phường Mỏ Cày, tỉnh Vĩnh Long",
         "facilities": "Vườn dừa, bếp chung, xe đạp",
         "phone_note": "0275 3xxx xxx",
         "price_range": "450.000đ - 900.000đ/phòng/đêm",
@@ -128627,7 +128627,7 @@
       },
       "attributes": {
         "ocop": "OCOP",
-        "address": "Huyện Mỏ Cày Bắc, Tỉnh Bến Tre",
+        "address": "Nước cốt dừa và sản phẩm dừa OCOP BEINCO, Xã Tân Thành Bình, tỉnh Vĩnh Long",
         "schema_type": "Product",
         "sub_category": "coconut-product",
         "ocop_certified": true,
@@ -128735,7 +128735,7 @@
         "note": "Có thể tham quan/sử dụng quanh năm"
       },
       "attributes": {
-        "address": "Xã Đồng Khởi (xã Định Thủy cũ), huyện Mỏ Cày Nam, Bến Tre",
+        "address": "(xã Định Thủy cũ), Xã Đồng Khởi, tỉnh Vĩnh Long",
         "artifacts": "46 hiện vật",
         "event_date": "17/1/1960",
         "key_figure": "Nguyễn Thị Định",
@@ -128802,7 +128802,7 @@
       },
       "attributes": {
         "built": "1878",
-        "address": "Ấp Định Nhơn, xã Đồng Khởi (Định Thủy cũ), huyện Mỏ Cày Nam, Bến Tre",
+        "address": "Ấp Định Nhơn, (Định Thủy cũ), Xã Đồng Khởi, tỉnh Vĩnh Long",
         "restored": "2003",
         "event_date": "17/1/1960 (Đồng Khởi)",
         "key_figure": "Nguyễn Thị Định",
@@ -128880,7 +128880,7 @@
       "attributes": {
         "area": "2.580 m²",
         "nearby": "Đình Long Phụng (cùng xã, cùng cấp quốc gia)",
-        "address": "Xã Long Định, huyện Bình Đại, Bến Tre",
+        "address": "Đình Long Thạnh, Xã Phú Thuận, tỉnh Vĩnh Long",
         "artifacts": "4 cuốn thư, 2 cặp long trụ, 1 long đình, 10 hoành phi, 6 hương án, 5 khánh thờ, 3 bao lam",
         "sac_phong": "6 sắc phong (Đại Càn quốc gia Nam Hải, Bổn cảnh thành hoàng)",
         "schema_type": "LandmarksOrHistoricalBuildings",
@@ -128969,7 +128969,7 @@
         ]
       },
       "attributes": {
-        "address": "Xã Châu Thành, Trà Vinh",
+        "address": "Mười Quỳnh Homestay, Xã Châu Thành, tỉnh Vĩnh Long",
         "check_in": "14:00",
         "amenities": "Nhà vườn, bữa ăn gia đình, không khí yên tĩnh sông nước",
         "check_out": "11:00",
@@ -129042,7 +129042,7 @@
       },
       "attributes": {
         "built": "1833",
-        "address": "Ấp Long Hòa 2, xã Long Định, huyện Bình Đại, Bến Tre",
+        "address": "Ấp Long Hòa 2, Xã Phú Thuận, tỉnh Vĩnh Long",
         "rebuilt": "1913–1916",
         "materials": "Gạch, ngói âm dương, gỗ giáng hương, gạch tàu",
         "area_total": "2.580 m²",
@@ -129107,7 +129107,7 @@
         "note": "Có thể tham quan/sử dụng quanh năm"
       },
       "attributes": {
-        "address": "Xã Vang Quới Tây, huyện Bình Đại, Bến Tre",
+        "address": "Đình Vang Quới, Xã Lộc Thuận, tỉnh Vĩnh Long",
         "founded": "Hơn 160 năm (trước 1852)",
         "hau_hien": "Phạm Văn Vang",
         "completed": "1935",
@@ -129264,7 +129264,7 @@
       },
       "attributes": {
         "ward": "TT Tam Bình",
-        "address": "Huyện Tam Bình, Vĩnh Long",
+        "address": "Homestay Hoà Thạnh, Phường Phước Hậu, tỉnh Vĩnh Long",
         "price_range": "350.000đ - 650.000đ/phòng/đêm",
         "schema_type": "LodgingBusiness",
         "sub_category": "homestay",
@@ -130524,7 +130524,7 @@
       },
       "attributes": {
         "river": "Sông Hàm Luông",
-        "address": "Xã Hưng Phong, huyện Giồng Trôm, Bến Tre",
+        "address": "Cồn Ốc (Giồng Trôm), Xã Lương Hòa, tỉnh Vĩnh Long",
         "area_ha": 647,
         "admission": "Miễn phí",
         "schema_type": "NaturalFeature",
@@ -130927,7 +130927,7 @@
         "alias": "Chùa Dơi",
         "hours": "06:00–17:00 hàng ngày",
         "stream": "religious",
-        "address": "Xã Nhị Long, huyện Cầu Ngang, Trà Vinh",
+        "address": "Chùa Giác Linh (chùa Phật Lớn), Xã Nhị Long, tỉnh Vĩnh Long",
         "builder": "Dương Quang Sơn (người Hoa gốc Triều Châu)",
         "rebuilt": "1937",
         "category": "religious",
@@ -131020,7 +131020,7 @@
         ]
       },
       "attributes": {
-        "address": "Ven biển huyện Ba Tri, tỉnh Vĩnh Long (các xã An Thủy, Bảo Thuận, Tân Thủy)",
+        "address": "Ven biển, Phường Tân Thủy, tỉnh Vĩnh Long",
         "admission": "Miễn phí",
         "schema_type": "NaturalFeature",
         "sub_category": "mangrove-forest",
@@ -131108,7 +131108,7 @@
       "attributes": {
         "brand": "Đặc sản Bến Tre",
         "origin": "Khoảng 1930, bà Nguyễn Thị Ngọc, Mỏ Cày",
-        "address": "Xã Tân Thạch, huyện Châu Thành, Bến Tre",
+        "address": "Kẹo dừa Tân Thạch, Phường Phú Túc, tỉnh Vĩnh Long",
         "tourism": "Du khách tham quan lò, tự tay gói kẹo",
         "ingredients": "Nước cốt dừa, mạch nha, đường",
         "schema_type": "Product",
@@ -131176,7 +131176,7 @@
       },
       "attributes": {
         "season": "Tháng 5-8",
-        "address": "Huyện Chợ Lách, Bến Tre",
+        "address": "Sầu riêng Chợ Lách, Xã Chợ Lách, tỉnh Vĩnh Long",
         "gi_year": "2021",
         "gi_number": "00080",
         "schema_type": "Product",
@@ -131281,7 +131281,7 @@
       },
       "attributes": {
         "trees": "~300 cây đang cho trái",
-        "address": "Thị trấn Cầu Kè, huyện Cầu Kè, Trà Vinh",
+        "address": "Vườn Dừa Sáp Ba Thúy, Xã Cầu Kè, tỉnh Vĩnh Long",
         "tree_age": "15–20 năm",
         "admission": "Miễn phí",
         "schema_type": "TouristAttraction",
@@ -131358,7 +131358,7 @@
       },
       "attributes": {
         "export": "Mỹ, Nhật Bản, Đài Loan, Trung Quốc",
-        "address": "Xã Thạnh Phú, huyện Cầu Kè, Trà Vinh",
+        "address": "Kẹo dừa sáp Vicosap, Xã Tam Ngãi, tỉnh Vĩnh Long",
         "company": "Công ty TNHH Chế biến Dừa sáp Cầu Kè (VICOSAP)",
         "ocop_star": 5,
         "varieties": "Nguyên chất, lá dứa, ca cao",
@@ -131449,7 +131449,7 @@
         ]
       },
       "attributes": {
-        "address": "Khóm 2, Thị trấn Châu Thành, Tỉnh Trà Vinh",
+        "address": "Khóm 2, Xã Châu Thành, tỉnh Vĩnh Long",
         "ocop_star": 3,
         "schema_type": "Product",
         "sub_category": "fish-sauce",
@@ -131525,7 +131525,7 @@
       },
       "attributes": {
         "age": "Hơn 100 năm",
-        "address": "Xã Hưng Nhượng, huyện Giồng Trôm, Bến Tre",
+        "address": "Bánh Phồng Mì Giồng Trôm, Xã Giồng Trôm, tỉnh Vĩnh Long",
         "heritage": "DSVHPVT quốc gia (Bộ VH-TT&DL, 2018)",
         "ocop_star": 3,
         "producers": "~50 cơ sở",
@@ -131620,7 +131620,7 @@
         ]
       },
       "attributes": {
-        "address": "Xã Thạnh Phong, huyện Thạnh Phú, Bến Tre",
+        "address": "Rừng ngập mặn Thạnh Phong, Phường Bến Tre, tỉnh Vĩnh Long",
         "area_ha": 2584,
         "admission": "Miễn phí",
         "schema_type": "NaturalFeature",
@@ -131765,7 +131765,7 @@
       "attributes": {
         "uses": "Ăn chín (khuấy bột), uống sống (pha nước dừa xiêm)",
         "brand": "Minh Hùng (HKD Hứa Minh Hùng)",
-        "address": "Ấp Vàm, xã An Quảng Hữu, huyện Trà Cú, Trà Vinh",
+        "address": "Ấp Vàm, Xã Lưu Nghiệp Anh, tỉnh Vĩnh Long",
         "process": "Phân loại → rửa → dập vỏ → xay → lọc → lắng 1h → sấy 4h",
         "ocop_rating": "3 sao",
         "schema_type": "Product",
@@ -132205,7 +132205,7 @@
         ]
       },
       "attributes": {
-        "address": "Xã Bảo Thuận, huyện Ba Tri, Bến Tre",
+        "address": "Cồn Nhàn (Biển Ba Tri), Xã Bảo Thạnh, tỉnh Vĩnh Long",
         "admission": "Miễn phí",
         "best_time": "Tháng 12 — tháng 4",
         "schema_type": "NaturalFeature",
@@ -132264,7 +132264,7 @@
         "note": "Có thể tham quan/sử dụng quanh năm"
       },
       "attributes": {
-        "address": "Xã Bảo Thạnh, huyện Ba Tri, Bến Tre",
+        "address": "Lăng mộ và Đình Phan Thanh Giản, Xã Bảo Thạnh, tỉnh Vĩnh Long",
         "schema_type": "LandmarksOrHistoricalBuildings",
         "sub_category": "memorial",
         "heritage_level": "Di tích lịch sử cấp quốc gia (1998)",
@@ -132325,7 +132325,7 @@
       },
       "attributes": {
         "bells": "6 chuông đồng Pháp (cuối TK 19), tổng 4 tấn",
-        "address": "Xã Vĩnh Thành, huyện Chợ Lách, Bến Tre",
+        "address": "Nhà thờ Cái Mơn, Xã Vĩnh Thành, tỉnh Vĩnh Long",
         "founded": "1702 (bia đá tiên khởi)",
         "renovation": "1872 (cha Gernot), thánh đường hiện tại 1960",
         "schema_type": "LandmarksOrHistoricalBuildings",
@@ -132446,7 +132446,7 @@
         "note": "Có thể tham quan/sử dụng quanh năm"
       },
       "attributes": {
-        "address": "Số 22, đường Nguyễn Chí Thanh, phường 5, thành phố Vĩnh Long, tỉnh Vĩnh Long",
+        "address": "Đường Trần Hưng Đạo, Khu phố 5, Phường Ba Tri, tỉnh Vĩnh Long",
         "area_m2": 2600,
         "schema_type": "LandmarksOrHistoricalBuildings",
         "sub_category": "historic-site",
@@ -132592,7 +132592,7 @@
         "note": "Có thể tham quan/sử dụng quanh năm"
       },
       "attributes": {
-        "address": "Xã Long Thới, huyện Chợ Lách, Bến Tre",
+        "address": "Nhà thờ Giáo xứ Cái Nhum, Xã Chợ Lách, tỉnh Vĩnh Long",
         "diocese": "Giáo phận Vĩnh Long, hạt Cái Mơn",
         "rebuilt": 1951,
         "capacity": 1050,
@@ -132654,7 +132654,7 @@
         "note": "Có thể tham quan/sử dụng quanh năm"
       },
       "attributes": {
-        "address": "Ấp Thạnh Nghĩa, xã Bảo Thạnh, huyện Ba Tri, Bến Tre",
+        "address": "Ấp Thạnh Nghĩa, Xã Bảo Thạnh, tỉnh Vĩnh Long",
         "schema_type": "LandmarksOrHistoricalBuildings",
         "sub_category": "historic-site",
         "heritage_date": "24/1/1998",
@@ -132715,7 +132715,7 @@
         "note": "Có thể tham quan/sử dụng quanh năm"
       },
       "attributes": {
-        "address": "Ấp Tân Hòa, xã Tân Xuân, huyện Mỏ Cày Nam, Bến Tre",
+        "address": "Ấp Tân Hòa, Xã Tân Xuân, tỉnh Vĩnh Long",
         "schema_type": "LandmarksOrHistoricalBuildings",
         "sub_category": "cultural-heritage",
         "historical_period": "1930",
@@ -132873,7 +132873,7 @@
         "note": "Có thể tham quan/sử dụng quanh năm"
       },
       "attributes": {
-        "address": "Khóm 3, TT Châu Thành, huyện Châu Thành, Trà Vinh",
+        "address": "Khóm 3, Phường Nguyệt Hóa, tỉnh Vĩnh Long",
         "khmer_name": "Wat Kompong Ch'rây",
         "schema_type": "LandmarksOrHistoricalBuildings",
         "sub_category": "pagoda",
@@ -133062,7 +133062,7 @@
       },
       "attributes": {
         "era": "Văn hóa Óc Eo, những thế kỷ đầu Công nguyên",
-        "address": "Ấp Lưu Cừ II, xã Lưu Nghiệp Anh, huyện Trà Cú, Trà Vinh",
+        "address": "Ấp Lưu Cừ II, Xã Trà Cú, tỉnh Vĩnh Long",
         "schema_type": "LandmarksOrHistoricalBuildings",
         "sub_category": "archaeological-site",
         "heritage_level": "Di tích lịch sử - văn hóa cấp quốc gia (1990)",
@@ -133125,7 +133125,7 @@
       },
       "attributes": {
         "nearby": "Nhà cổ Huỳnh Phủ (Di tích Kiến trúc Nghệ thuật cấp quốc gia)",
-        "address": "Xã Đại Điền, huyện Thạnh Phú, Bến Tre",
+        "address": "Đình Đại Điền, Xã Đại Điền, tỉnh Vĩnh Long",
         "festivals": "Kỳ yên; Hạ điền (12-13/4 ÂL); Thượng điền (12-13/10 ÂL)",
         "sac_phong": "Tự Đức ngũ niên (1852)",
         "schema_type": "LandmarksOrHistoricalBuildings",
@@ -133184,7 +133184,7 @@
       },
       "attributes": {
         "era": "Dựng 1840 (truyền tụng)",
-        "address": "Xã An Qui, huyện Thạnh Phú, Bến Tre",
+        "address": "Đình An Qui, Xã An Qui, tỉnh Vĩnh Long",
         "schema_type": "LandmarksOrHistoricalBuildings",
         "sub_category": "cultural-heritage",
         "heritage_type": "Lịch sử cách mạng gắn với tín ngưỡng dân gian",
@@ -133298,7 +133298,7 @@
       },
       "attributes": {
         "built": "~1812 (xây lại 1903-1913)",
-        "address": "5A, thị trấn Giồng Trôm, huyện Giồng Trôm, Bến Tre",
+        "address": "5A, Xã Giồng Trôm, tỉnh Vĩnh Long",
         "area_m2": 9000,
         "columns": "300 (còn 208)",
         "sac_phong": "Vua Tự Đức, 1852",
@@ -133437,7 +133437,7 @@
       "attributes": {
         "name": "Giải Thể thao Dân tộc - Quốc phòng tỉnh Trà Vinh",
         "month": 7,
-        "address": "Nhà thi đấu Đa năng tỉnh Vĩnh Long và các sân vận động huyện",
+        "address": "Nhà thi đấu Đa năng tỉnh Vĩnh Long, Xã Nhị Long, tỉnh Vĩnh Long",
         "category": "su-kien; cuộc thi thể thao",
         "date_end": "2026-09-03",
         "highlight": [
@@ -133506,7 +133506,7 @@
       "attributes": {
         "name": "Liên hoan Đờn ca Tài tử Nam Bộ tỉnh Bến Tre",
         "month": 6,
-        "address": "Nhà hát Bến Tre, Trung tâm Văn hóa tỉnh và các huyện luân phiên",
+        "address": "Nhà hát, Trung tâm Văn hóa tỉnh và các, Phường Phú Khương, tỉnh Vĩnh Long",
         "category": "su-kien; festival",
         "date_end": "2026-10-07",
         "highlight": [
@@ -134366,7 +134366,7 @@
         ]
       },
       "attributes": {
-        "address": "Dọc kênh Thầy Cai và sông Mang Thít – huyện Mang Thít",
+        "address": "Dọc kênh Thầy Cai và sông Mang Thít –, Xã Cái Nhum, tỉnh Vĩnh Long",
         "admission": "Miễn phí",
         "schema_type": "TouristAttraction",
         "sub_category": "eco-tourism",
@@ -134456,7 +134456,7 @@
         ]
       },
       "attributes": {
-        "address": "Kênh Thầy Cai và sông Cái Nhum – huyện Mang Thít",
+        "address": "Kênh Thầy Cai và sông Cái Nhum –, Xã Cái Nhum, tỉnh Vĩnh Long",
         "admission": "Miễn phí",
         "schema_type": "NaturalFeature",
         "sub_category": "waterway",
@@ -134731,7 +134731,7 @@
       },
       "attributes": {
         "origin": "Bến Tre",
-        "address": "Huyện Châu Thành, Bến Tre",
+        "address": "Tép rang dừa, Phường Phú Túc, tỉnh Vĩnh Long",
         "specialty": "Cá, Cơm",
         "schema_type": "Recipe",
         "sub_category": "rice-dish",
@@ -134839,7 +134839,7 @@
       },
       "attributes": {
         "built": 1984,
-        "address": "Tỉnh lộ 885, xã Mỹ Thạnh, huyện Giồng Trôm, Bến Tre",
+        "address": "Tỉnh lộ 885, Phường Ba Tri, tỉnh Vĩnh Long",
         "schema_type": "LandmarksOrHistoricalBuildings",
         "sub_category": "historic-site",
         "heritage_year": 1997,
@@ -135053,7 +135053,7 @@
       },
       "attributes": {
         "hours": "Không gian biển mở, thường tham quan ban ngày",
-        "address": "Xã Thới Thuận, huyện Bình Đại, Bến Tre",
+        "address": "Biển Thới Thuận, Xã Thới Thuận, tỉnh Vĩnh Long",
         "admission": "Thường miễn phí",
         "best_time": "Tháng 9–3 âm lịch (mùa ốc viết); mùa khô tháng 11–4 biển lặng.",
         "highlight": "Bãi cát đen phù sa 7 km, hàng triệu ốc viết trôi dạt mùa gió chướng, hướng đông ngắm bình minh.",
@@ -135717,7 +135717,7 @@
         "ocop": "OCOP 3 sao",
         "method": "Ngâm gạo → xay bột → tráng khuôn hơi → phơi nắng",
         "origin": "Ấp Trà Vi (Bến Có), xã Nguyệt Hóa, huyện Châu Thành, Trà Vinh",
-        "address": "Ấp Trà Vi, xã Nguyệt Hóa, huyện Châu Thành, Trà Vinh",
+        "address": "Ấp Trà Vi, Phường Nguyệt Hóa, tỉnh Vĩnh Long",
         "category": "packaged",
         "best_time": "Quanh năm; nhu cầu tăng vọt dịp Tết",
         "producers": "70+ hộ dân",
@@ -137144,7 +137144,7 @@
       "attributes": {
         "name": "Festival Gạch Gốm Đỏ – Kinh tế Xanh tỉnh Vĩnh Long",
         "month": 11,
-        "address": "Làng nghề kênh Thầy Cai huyện Mang Thít & đường Võ Văn Kiệt TP Vĩnh Long",
+        "address": "Làng nghề kênh Thầy Cai & đường Võ Văn Kiệt, Xã Nhơn Phú, tỉnh Vĩnh Long",
         "category": "su-kien; festival",
         "date_end": "2026-10-30",
         "highlight": [
@@ -137808,7 +137808,7 @@
         ]
       },
       "attributes": {
-        "address": "Huyện Vũng Liêm, Vĩnh Long",
+        "address": "Sản phẩm OCOP Vũng Liêm, Phường Phước Hậu, tỉnh Vĩnh Long",
         "full_name": "Sản phẩm OCOP Vũng Liêm (chả lụa Thành Công, gạo hữu cơ Tấn Đạt, mứt dừa lá dứa Đức Đạt, cốm gạo Hoàng Trang, lạp xưởng Hiệp Ký)",
         "ocop_star": 4,
         "schema_type": "Product",
