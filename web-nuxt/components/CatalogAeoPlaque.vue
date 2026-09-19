@@ -72,7 +72,7 @@ const titleId = `catalog-aeo-title-${instanceId}`
 }
 
 .catalog-aeo-plaque__frame {
-  max-inline-size: 56rem;
+  max-inline-size: var(--maxw);
   margin-inline: auto;
   padding: var(--space-6) var(--space-6);
   border: 1px solid var(--border-liquid-glass, var(--color-border));
@@ -105,7 +105,7 @@ const titleId = `catalog-aeo-title-${instanceId}`
   justify-content: center;
   width: 2.25rem;
   height: 2.25rem;
-  border-radius: var(--radius-pill, 999px);
+  border-radius: var(--radius-pill);
   background: rgba(var(--black-rgb), 0.04);
   color: var(--tri-region-material-accent, var(--color-material-amber));
   font-size: 1.25rem;
@@ -145,7 +145,7 @@ const titleId = `catalog-aeo-title-${instanceId}`
   color: var(--color-source-verified, var(--color-action));
   background: color-mix(in srgb, var(--tri-region-material-accent, var(--color-material-amber)) 12%, transparent);
   padding: 0.125rem var(--space-2);
-  border-radius: var(--radius-pill, 999px);
+  border-radius: var(--radius-pill);
   letter-spacing: normal;
 }
 
@@ -221,7 +221,7 @@ const titleId = `catalog-aeo-title-${instanceId}`
   font-weight: var(--weight-bold);
   color: var(--color-action, var(--color-text));
   text-decoration: none;
-  border-radius: var(--radius-pill, 999px);
+  border-radius: var(--radius-pill);
   transition: background 150ms var(--ease-out), transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
 

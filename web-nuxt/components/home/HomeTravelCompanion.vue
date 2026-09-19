@@ -493,11 +493,9 @@ const HOTLINES: readonly EmergencyContact[] = [
 /* Compact Frosted Glass Quick Utility Banner */
 .home-companion-quick-utility {
   display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: space-between;
+  flex-direction: column;
   gap: var(--space-3);
-  padding: var(--space-3) var(--space-4);
+  padding: var(--space-3) var(--space-5);
   background: var(--color-surface);
   border: 1px solid var(--border-liquid-glass, var(--color-border));
   backdrop-filter: blur(16px);
@@ -505,7 +503,15 @@ const HOTLINES: readonly EmergencyContact[] = [
   border-radius: var(--radius-surface);
   box-shadow: var(--shadow-card-ambient);
   margin-block-start: 0;
-  margin-block-end: var(--space-6);
+  margin-block-end: 0;
+}
+
+@media (min-width: 768px) {
+  .home-companion-quick-utility {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+  }
 }
 
 .home-companion-utility-pill {
@@ -555,21 +561,24 @@ const HOTLINES: readonly EmergencyContact[] = [
 
 .home-hotline-btn--quick {
   min-height: 48px;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
   padding: var(--space-2) var(--space-4);
-  background: rgba(var(--black-rgb), 0.75);
-  border: 1px solid var(--border-liquid-glass);
-  border-radius: var(--radius-pill, 9999px);
+  background: color-mix(in srgb, var(--mangthit-600) 8%, var(--color-surface));
+  border: 1px solid color-mix(in srgb, var(--mangthit-600) 22%, var(--color-border));
+  border-radius: var(--radius-pill);
   text-decoration: none;
-  backdrop-filter: blur(20px) saturate(180%);
-  -webkit-backdrop-filter: blur(20px) saturate(180%);
-  color: var(--surface-white);
-  transition: transform 0.2s ease, background-color 0.2s ease;
+  backdrop-filter: blur(16px);
+  color: var(--color-text);
+  transition: transform .2s, background .2s, border-color .2s, box-shadow .2s;
 }
 
 .home-hotline-btn--quick:hover {
   transform: translateY(-1px);
-  background: rgba(var(--black-rgb), 0.85);
-  border-color: var(--alluvial-gold);
+  background: color-mix(in srgb, var(--mangthit-600) 14%, var(--color-surface));
+  border-color: var(--color-brand);
+  box-shadow: var(--shadow-sm);
 }
 
 .home-hotline-btn--quick:active {
@@ -583,11 +592,38 @@ const HOTLINES: readonly EmergencyContact[] = [
 
 .home-hotline-btn--quick .home-hotline-btn__call {
   background: transparent;
-  color: var(--alluvial-gold);
+  color: var(--color-brand);
   padding: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
 }
 
 .home-hotline-btn--quick .line-icon {
+  color: var(--color-brand);
+}
+
+.home-hotline-btn--quick .home-hotline-btn__num {
+  color: inherit;
+  font-weight: var(--weight-bold);
+  font-family: var(--font-mono, monospace);
+  font-size: var(--text-sm);
+  letter-spacing: 0.02em;
+}
+
+.dark .home-hotline-btn--quick {
+  background: rgba(var(--black-rgb), 0.75);
+  border-color: var(--border-liquid-glass);
+  color: var(--surface-white);
+}
+
+.dark .home-hotline-btn--quick:hover {
+  background: rgba(var(--black-rgb), 0.85);
+  border-color: var(--alluvial-gold);
+}
+
+.dark .home-hotline-btn--quick .home-hotline-btn__call,
+.dark .home-hotline-btn--quick .line-icon {
   color: var(--alluvial-gold);
 }
 </style>

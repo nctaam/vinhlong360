@@ -360,6 +360,8 @@
       </section>
     </ClientOnly>
 
+    <div class="home-river-divider" aria-hidden="true" />
+
     <!-- Continuation with JourneyActionRail -->
     <HomeContinuation :actions="homeJourneyActions" :pending="homePending" />
 

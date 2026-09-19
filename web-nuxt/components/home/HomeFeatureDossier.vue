@@ -52,7 +52,7 @@
         <NuxtLink
           v-if="mapTo"
           :to="mapTo"
-          class="home-feature-dossier__coords home-feature-dossier__coords--link sr-only"
+          class="home-feature-dossier__coords home-feature-dossier__coords--link"
           :data-geo-coordinates="coordinates || '10.254° N, 105.972° E'"
           :title="`Xem vị trí trên bản đồ (${coordinates || '10.254° N, 105.972° E'})`"
         >
@@ -61,7 +61,7 @@
         </NuxtLink>
         <span
           v-else
-          class="home-feature-dossier__coords sr-only"
+          class="home-feature-dossier__coords"
           :data-geo-coordinates="coordinates || '10.254° N, 105.972° E'"
           :title="`Tọa độ thực địa: ${coordinates || '10.254° N, 105.972° E'}`"
         >
