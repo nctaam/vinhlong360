@@ -27,7 +27,7 @@
         <div class="hero-main hero-enter">
           <span class="hero-kicker" data-color-role="brand"><span class="hero-kicker-dot" aria-hidden="true"></span>{{ ss('homepage.hero_kicker', 'Xứ sở Cù lao · Đất lành phù sa Vĩnh Long') }}</span>
           <h1>{{ seasonalTagline }}</h1>
-          <p class="hero-sub">{{ ss('homepage.hero_subtitle', 'Tìm điểm đến, món ngon, lễ hội và lịch trình phù hợp cho chuyến về xứ cù lao Vĩnh Long hôm nay.') }}</p>
+          <p class="hero-sub">{{ ss('homepage.hero_subtitle', 'Hành trình di sản cù lao, làng gốm trăm năm và vị ngọt cây trái giữa đôi bờ Cổ Chiên.') }}</p>
           <div class="hero-cognitive-banner" role="region" aria-label="Khuyến nghị thời vụ lữ hành">
             <div class="hero-cognitive-chip hero-cognitive-chip--weather">
               <IconLine name="sun" class="hero-cognitive-chip__icon" aria-hidden="true" />
