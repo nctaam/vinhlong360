@@ -74,7 +74,7 @@
           <div class="home-culinary-card__action home-culinary-card__footer">
             <NuxtLink :to="dish.mapTo" class="home-culinary-card__btn">
               <IconLine name="map" aria-hidden="true" />
-              <span>Xem vị trí & Chỉ đường</span>
+              <span>Vị trí & Chỉ đường</span>
               <IconLine name="arrow-right" class="home-culinary-card__arrow" aria-hidden="true" />
             </NuxtLink>
           </div>

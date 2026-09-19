@@ -76,17 +76,6 @@
             
             <p class="home-curated-lead__desc">{{ leadItem.desc }}</p>
 
-            <div class="home-curated-lead__tips">
-              <span class="home-curated-lead__tip">
-                <IconLine name="sun" aria-hidden="true" />
-                <span><strong>Đẹp nhất:</strong> {{ leadItem.bestTime }}</span>
-              </span>
-              <span class="home-curated-lead__tip">
-                <IconLine name="camera" aria-hidden="true" />
-                <span><strong>Điểm nhấn:</strong> {{ leadItem.highlight }}</span>
-              </span>
-            </div>
-
             <div class="home-curated-lead__actions">
               <NuxtLink :to="leadItem.to" class="btn btn-primary" data-color-role="action-primary">
                 <span>Khám phá di sản</span>
@@ -538,25 +527,6 @@ function onImgFallback(e: Event) {
   font-size: var(--text-sm);
   line-height: 1.55;
   color: rgba(var(--white-rgb), 0.92);
-}
-
-.home-curated-lead__tips {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--space-2) var(--space-4);
-  font-size: var(--text-xs);
-  color: rgba(var(--white-rgb), 0.8);
-}
-
-.home-curated-lead__tip {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--space-1h);
-}
-
-.home-curated-lead__tip .line-icon {
-  color: var(--surface-white);
-  flex-shrink: 0;
 }
 
 .home-curated-lead__actions {

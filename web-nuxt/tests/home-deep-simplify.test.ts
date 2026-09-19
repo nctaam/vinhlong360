@@ -187,6 +187,24 @@ describe('Deep & Simple Homepage UI Refinements', () => {
     // 4. Dossier summary has line-clamp for breathing room
     expect(freshNocturneCss).toMatch(/\.home-feature-dossier\s+\.framed-dossier__summary\s+p\s*\{[^}]*-webkit-line-clamp:\s*2/)
   })
+
+  it('Task 25: Folios I, II, III decluttered: removed redundant tips on lead heritage card, streamlined action button labels', () => {
+    const showcaseVue = readFileSync(resolve(__dirname, '../components/home/HomeCuratedShowcase.vue'), 'utf8')
+    const culinaryVue = readFileSync(resolve(__dirname, '../components/home/HomeCulinaryTrail.vue'), 'utf8')
+    const staysVue = readFileSync(resolve(__dirname, '../components/home/HomeRiversideStays.vue'), 'utf8')
+
+    // 1. Folio I: redundant .home-curated-lead__tips removed
+    expect(showcaseVue).not.toContain('home-curated-lead__tips')
+    expect(showcaseVue).not.toContain('home-curated-lead__tip')
+
+    // 2. Folio II: action button concise and modern
+    expect(culinaryVue).toContain('Vị trí & Chỉ đường')
+    expect(culinaryVue).not.toContain('Xem vị trí & Chỉ đường')
+
+    // 3. Folio III: action button concise and modern
+    expect(staysVue).toContain('Liên hệ & Đặt phòng')
+    expect(staysVue).not.toContain('Liên hệ lưu trú & Trải nghiệm')
+  })
 })
 
 
