@@ -36,7 +36,7 @@
 - Consumes: `pages/index.vue`, `assets/css/home-nocturne.css`
 - Produces: Lời đề từ di sản đọng vị, chips "Rẽ lối lẹ" tinh tế, chuẩn hóa tabular-nums cho toàn bộ nhãn số liệu Hero.
 
-- [ ] **Step 1: Viết bài kiểm thử cho Task 1 trong test suite mới**
+- [x] **Step 1: Viết bài kiểm thử cho Task 1 trong test suite mới**
 
 ```typescript
 // web-nuxt/tests/home-deep-simplify.test.ts
@@ -61,12 +61,12 @@ describe('Deep & Simple Homepage UI Refinements', () => {
 })
 ```
 
-- [ ] **Step 2: Chạy kiểm thử để xác nhận thất bại**
+- [x] **Step 2: Chạy kiểm thử để xác nhận thất bại**
 
 Run: `npx --prefix web-nuxt vitest run tests/home-deep-simplify.test.ts`
 Expected: FAIL với assertion lỗi vì subtitle cũ vẫn đang tồn tại.
 
-- [ ] **Step 3: Cập nhật `pages/index.vue` và `assets/css/home-nocturne.css`**
+- [x] **Step 3: Cập nhật `pages/index.vue` và `assets/css/home-nocturne.css`**
 
 Trong `web-nuxt/pages/index.vue`, cập nhật dòng 30:
 ```html
@@ -80,12 +80,12 @@ Trong `web-nuxt/assets/css/home-nocturne.css`, mở rộng nhóm selector `tabul
 }
 ```
 
-- [ ] **Step 4: Chạy kiểm thử để xác nhận thành công**
+- [x] **Step 4: Chạy kiểm thử để xác nhận thành công**
 
 Run: `npx --prefix web-nuxt vitest run tests/home-deep-simplify.test.ts`
 Expected: PASS
 
-- [ ] **Step 5: Commit Task 1**
+- [x] **Step 5: Commit Task 1**
 
 ```bash
 git add web-nuxt/pages/index.vue web-nuxt/assets/css/home-nocturne.css web-nuxt/tests/home-deep-simplify.test.ts
@@ -105,7 +105,7 @@ git commit -m "feat(home): refine hero editorial tagline and enforce tabular num
 - Consumes: `CulinaryDish` interface trong `HomeCulinaryTrail.vue`
 - Produces: Thẻ món ăn có tọa độ thực địa cù lao/bến sông kèm icon `compass`, tabular-nums cho giá tiền và số thứ tự, giảm chiều cao text overlay $\le 25\%$ để ảnh chiếm vị trí chủ đạo.
 
-- [ ] **Step 1: Viết test cho tọa độ thực địa và tabular-nums ẩm thực**
+- [x] **Step 1: Viết test cho tọa độ thực địa và tabular-nums ẩm thực**
 
 Bổ sung vào `web-nuxt/tests/home-deep-simplify.test.ts`:
 ```typescript
@@ -120,12 +120,12 @@ Bổ sung vào `web-nuxt/tests/home-deep-simplify.test.ts`:
   })
 ```
 
-- [ ] **Step 2: Chạy kiểm thử để xác nhận thất bại**
+- [x] **Step 2: Chạy kiểm thử để xác nhận thất bại**
 
 Run: `npx --prefix web-nuxt vitest run tests/home-deep-simplify.test.ts`
 Expected: FAIL vì `HomeCulinaryTrail.vue` chưa có `home-culinary-card__coords`.
 
-- [ ] **Step 3: Cập nhật `HomeCulinaryTrail.vue` và `home-nocturne.css`**
+- [x] **Step 3: Cập nhật `HomeCulinaryTrail.vue` và `home-nocturne.css`**
 
 Trong `web-nuxt/components/home/HomeCulinaryTrail.vue`:
 1. Mở rộng interface:
@@ -183,12 +183,12 @@ Trong `web-nuxt/assets/css/home-nocturne.css`:
 }
 ```
 
-- [ ] **Step 4: Chạy kiểm thử để xác nhận thành công**
+- [x] **Step 4: Chạy kiểm thử để xác nhận thành công**
 
 Run: `npx --prefix web-nuxt vitest run tests/home-deep-simplify.test.ts`
 Expected: PASS
 
-- [ ] **Step 5: Commit Task 2**
+- [x] **Step 5: Commit Task 2**
 
 ```bash
 git add web-nuxt/components/home/HomeCulinaryTrail.vue web-nuxt/assets/css/home-nocturne.css web-nuxt/tests/home-deep-simplify.test.ts
@@ -208,7 +208,7 @@ git commit -m "feat(home): add authentic fieldwork coordinates and tabular prici
 - Consumes: `CuratedHomestay` interface trong `HomeRiversideStays.vue`
 - Produces: Thẻ homestay hiển thị tọa độ ven sông cù lao, tiện ích (perks) sắp xếp inline thanh thoát, giá phòng định dạng tabular-nums.
 
-- [ ] **Step 1: Viết test cho tọa độ homestay và tối ưu layout**
+- [x] **Step 1: Viết test cho tọa độ homestay và tối ưu layout**
 
 Bổ sung vào `web-nuxt/tests/home-deep-simplify.test.ts`:
 ```typescript
@@ -223,12 +223,12 @@ Bổ sung vào `web-nuxt/tests/home-deep-simplify.test.ts`:
   })
 ```
 
-- [ ] **Step 2: Chạy kiểm thử để xác nhận thất bại**
+- [x] **Step 2: Chạy kiểm thử để xác nhận thất bại**
 
 Run: `npx --prefix web-nuxt vitest run tests/home-deep-simplify.test.ts`
 Expected: FAIL vì `HomeRiversideStays.vue` chưa có `home-stay-card__coords`.
 
-- [ ] **Step 3: Cập nhật `HomeRiversideStays.vue` và `home-nocturne.css`**
+- [x] **Step 3: Cập nhật `HomeRiversideStays.vue` và `home-nocturne.css`**
 
 Trong `web-nuxt/components/home/HomeRiversideStays.vue`:
 1. Mở rộng interface `CuratedHomestay` bổ sung `readonly coordinates: string`.
@@ -265,12 +265,12 @@ Trong `web-nuxt/assets/css/home-nocturne.css`:
 }
 ```
 
-- [ ] **Step 4: Chạy kiểm thử để xác nhận thành công**
+- [x] **Step 4: Chạy kiểm thử để xác nhận thành công**
 
 Run: `npx --prefix web-nuxt vitest run tests/home-deep-simplify.test.ts`
 Expected: PASS
 
-- [ ] **Step 5: Commit Task 3**
+- [x] **Step 5: Commit Task 3**
 
 ```bash
 git add web-nuxt/components/home/HomeRiversideStays.vue web-nuxt/assets/css/home-nocturne.css web-nuxt/tests/home-deep-simplify.test.ts
@@ -291,26 +291,26 @@ git commit -m "feat(home): integrate riverside field coordinates and tabular pri
 - Consumes: CSS assets
 - Produces: CSS gzipped $\le 194.560$ bytes với biên độ an toàn $\ge 100$ bytes; 100% tests liên quan đến trang chủ pass.
 
-- [ ] **Step 1: Rà soát và dọn dẹp CSS dư thừa trong `home-nocturne.css`**
+- [x] **Step 1: Rà soát và dọn dẹp CSS dư thừa trong `home-nocturne.css`**
 
 Tối ưu hóa các nhóm selector trùng lặp, loại bỏ các thuộc tính lặp lại `-webkit-backdrop-filter:` vì Autoprefixer/PostCSS đã tự động xử lý.
 
-- [ ] **Step 2: Chạy kiểm tra kích thước bundle CSS**
+- [x] **Step 2: Chạy kiểm tra kích thước bundle CSS**
 
 Run: `$env:PYTHONIOENCODING="utf-8"; python -m scripts.checks.check_bundle`
 Expected: `✓ R30.7 bundle budget: đạt` với `total_css_gz_kb <= 190` ($\le 194.560$ bytes).
 
-- [ ] **Step 3: Chạy toàn bộ test suite trang chủ**
+- [x] **Step 3: Chạy toàn bộ test suite trang chủ**
 
 Run: `npx --prefix web-nuxt vitest run tests/home-deep-simplify.test.ts tests/home-hero-dossier-polish.test.ts tests/home-curated-showcase.test.ts`
 Expected: 100% PASS
 
-- [ ] **Step 4: Chạy kiểm tra giọng điệu biên tập (R50.2)**
+- [x] **Step 4: Chạy kiểm tra giọng điệu biên tập (R50.2)**
 
 Run: `python scripts/checks/check_content_voice.py`
 Expected: 0 vi phạm từ ngữ cấm.
 
-- [ ] **Step 5: Commit Task 4**
+- [x] **Step 5: Commit Task 4**
 
 ```bash
 git add web-nuxt/assets/css/home-nocturne.css web-nuxt/tests/home-deep-simplify.test.ts
