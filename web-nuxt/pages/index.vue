@@ -759,7 +759,7 @@ useHead({
 .home .hero-search {
   padding: var(--space-1);
   background: rgba(var(--white-rgb),.14);
-  backdrop-filter: saturate(180%) blur(10px); -webkit-backdrop-filter: saturate(180%) blur(10px);
+  backdrop-filter: saturate(180%) blur(10px);
   border: .5px solid rgba(var(--white-rgb),.30);
   border-radius: calc(var(--radius-surface) + var(--space-1));
   box-shadow: 0 8px 30px rgba(var(--black-rgb),.18), 0 2px 8px rgba(var(--black-rgb),.12);
@@ -825,7 +825,7 @@ useHead({
 .dark .ec-today { color: var(--color-error); }
 
 @media (prefers-reduced-transparency: reduce) {
-  .home .hero-search { backdrop-filter: none; -webkit-backdrop-filter: none; background: rgba(var(--black-rgb),.35); }
+  .home .hero-search { backdrop-filter: none; background: rgba(var(--black-rgb),.35); }
 }
 
 /* ═══════════════════════════════════════════════════
@@ -848,7 +848,6 @@ useHead({
   background: rgba(var(--white-rgb), 0.08);
   border: 1px solid var(--border-liquid-glass);
   backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
   margin-bottom: var(--space-4);
   width: fit-content;
 }

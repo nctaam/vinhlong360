@@ -412,7 +412,6 @@ function onImgFallback(e: Event) {
   background: rgba(var(--black-rgb), 0.75);
   color: var(--surface-white);
   backdrop-filter: blur(20px) saturate(180%);
-  -webkit-backdrop-filter: blur(20px) saturate(180%);
   border: 1px solid var(--border-liquid-glass);
   border-radius: var(--radius-pill, 9999px);
   box-shadow: var(--shadow-card-ambient);
@@ -436,7 +435,6 @@ function onImgFallback(e: Event) {
   color: var(--surface-white);
   border: 1px solid var(--border-liquid-glass);
   backdrop-filter: blur(20px) saturate(180%);
-  -webkit-backdrop-filter: blur(20px) saturate(180%);
   box-shadow: var(--shadow-card-ambient);
   cursor: pointer;
   font-size: 1.1rem;
@@ -691,7 +689,6 @@ function onImgFallback(e: Event) {
   font-size: 11px;
   font-weight: var(--weight-semibold);
   backdrop-filter: blur(20px) saturate(180%);
-  -webkit-backdrop-filter: blur(20px) saturate(180%);
   box-shadow: var(--shadow-card-ambient);
   transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), background-color 0.2s ease;
 }
@@ -709,7 +706,6 @@ function onImgFallback(e: Event) {
   font-size: 11px;
   font-weight: var(--weight-bold);
   backdrop-filter: blur(20px) saturate(180%);
-  -webkit-backdrop-filter: blur(20px) saturate(180%);
   box-shadow: var(--shadow-card-ambient);
 }
 

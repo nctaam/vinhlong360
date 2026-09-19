@@ -359,7 +359,6 @@ function onImgFallback(e: Event) {
   background: rgba(var(--black-rgb), 0.78);
   color: var(--alluvial-gold);
   backdrop-filter: blur(20px) saturate(180%);
-  -webkit-backdrop-filter: blur(20px) saturate(180%);
   border: 1px solid var(--border-liquid-glass);
   border-radius: var(--radius-pill, 9999px);
   box-shadow: var(--shadow-card-ambient);
@@ -382,7 +381,6 @@ function onImgFallback(e: Event) {
   background: rgba(var(--black-rgb), 0.78);
   color: var(--surface-white); /* WCAG 2.2 AAA >= 11:1 compliant */
   backdrop-filter: blur(20px) saturate(180%);
-  -webkit-backdrop-filter: blur(20px) saturate(180%);
   border: 1px solid var(--border-liquid-glass);
   border-radius: var(--radius-pill, 9999px);
   box-shadow: var(--shadow-card-ambient);
@@ -398,7 +396,6 @@ function onImgFallback(e: Event) {
   background: rgba(var(--black-rgb), 0.78);
   color: var(--alluvial-gold);
   backdrop-filter: blur(20px) saturate(180%);
-  -webkit-backdrop-filter: blur(20px) saturate(180%);
   border: 1px solid var(--border-liquid-glass);
   border-radius: var(--radius-pill, 9999px);
   box-shadow: var(--shadow-card-ambient);
@@ -470,7 +467,6 @@ function onImgFallback(e: Event) {
   padding: 3px 10px;
   background: rgba(var(--black-rgb), 0.65);
   backdrop-filter: blur(20px) saturate(180%);
-  -webkit-backdrop-filter: blur(20px) saturate(180%);
   border: 1px solid var(--border-liquid-glass);
   border-radius: var(--radius-pill, 9999px);
   font-size: 11px;
@@ -527,7 +523,6 @@ function onImgFallback(e: Event) {
   padding: 2px 8px;
   background: rgba(var(--black-rgb), 0.65);
   backdrop-filter: blur(20px) saturate(180%);
-  -webkit-backdrop-filter: blur(20px) saturate(180%);
   border: 1px solid var(--border-liquid-glass);
   border-radius: var(--radius-pill, 9999px);
   box-shadow: var(--shadow-card-ambient);
