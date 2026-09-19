@@ -57,7 +57,7 @@
   line-height: var(--leading-snug, 1.35);
 }
 
-[data-home-pilot="nocturne-b1"] :is(.home-feature-dossier__coords, .home-context-line__time, [data-geo-coordinates], .hero-cognitive-chip, .cm-stat, .hero-terroir-chip, .home-culinary-card__price-badge, .home-culinary-card__rank) {
+[data-home-pilot="nocturne-b1"] :is(.home-feature-dossier__coords, .home-context-line__time, [data-geo-coordinates], .hero-cognitive-chip, .cm-stat, .hero-terroir-chip, .home-culinary-card__price-badge, .home-culinary-card__rank, .home-stay-card__price) {
   font-variant-numeric: tabular-nums;
 }
 

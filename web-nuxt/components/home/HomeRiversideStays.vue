@@ -63,6 +63,11 @@
               <IconLine name="pin" aria-hidden="true" />
               <span>{{ stay.area }}</span>
             </span>
+            <span v-if="stay.coordinates" class="home-stay-card__coords" :title="`Tọa độ thực địa: ${stay.coordinates}`">
+              <span class="home-stay-card__coords-sep" aria-hidden="true">·</span>
+              <IconLine name="compass" aria-hidden="true" />
+              <span>{{ stay.coordinates }}</span>
+            </span>
             <span class="home-stay-card__price"><strong>{{ stay.price }}</strong></span>
           </div>
 
@@ -141,6 +146,7 @@ interface CuratedHomestay {
   readonly perks: readonly string[]
   readonly coverSrc: string
   readonly to: string
+  readonly coordinates: string
 }
 
 interface FolkExperience {
@@ -164,6 +170,7 @@ const CURATED_HOMESTAYS: readonly CuratedHomestay[] = [
     perks: ['Cơm gia đình cù lao', 'Chèo xuồng mương rạch', 'Xe đạp làng quê'],
     coverSrc: '/img/entities/homestay-ut-trinh.webp',
     to: '/dia-diem/homestay-ut-trinh',
+    coordinates: "10°17'N · 105°59'E",
   },
   {
     id: 'mekong-riverside-homestay',
@@ -179,6 +186,7 @@ const CURATED_HOMESTAYS: readonly CuratedHomestay[] = [
     perks: ['Bến đón cano riêng', 'Câu cá bờ sông', 'Ngắm hoàng hôn sông Hậu'],
     coverSrc: '/img/entities/mekong-riverside-homestay.webp',
     to: '/dia-diem/mekong-riverside-homestay',
+    coordinates: "10°05'N · 105°49'E",
   },
   {
     id: 'ba-linh-homestay',
@@ -194,6 +202,7 @@ const CURATED_HOMESTAYS: readonly CuratedHomestay[] = [
     perks: ['Vườn trái cây tự hái', 'Võng ngắm mương liếp', 'Đờn ca tài tử'],
     coverSrc: '/img/entities/ba-linh-homestay.webp',
     to: '/dia-diem/ba-linh-homestay',
+    coordinates: "10°16'N · 105°59'E",
   },
 ]
 
@@ -430,6 +439,21 @@ function onImgFallback(e: Event) {
 
 .home-stay-card__area .line-icon {
   color: var(--surface-white);
+}
+
+.home-stay-card__coords {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 0.72rem;
+  opacity: 0.88;
+  color: var(--surface-white);
+  font-variant-numeric: tabular-nums;
+}
+
+.home-stay-card__coords-sep {
+  margin: 0 4px;
+  opacity: 0.45;
 }
 
 .home-stay-card__price {

@@ -26,4 +26,14 @@ describe('Deep & Simple Homepage UI Refinements', () => {
     expect(culinaryVue).toContain('home-culinary-card__price-badge')
     expect(nocturneCss).toMatch(/\.home-culinary-card__price-badge[^{]*\{[^}]*font-variant-numeric:\s*tabular-nums/)
   })
+
+  it('Task 3: Riverside homestays display field coordinates and streamlined metadata', () => {
+    const staysVue = readFileSync(resolve(__dirname, '../components/home/HomeRiversideStays.vue'), 'utf8')
+    expect(staysVue).toContain("10°17'N · 105°59'E") // Út Trinh
+    expect(staysVue).toContain("10°05'N · 105°49'E") // Bình Minh
+    expect(staysVue).toContain("10°16'N · 105°59'E") // Ba Linh
+    expect(staysVue).toContain('home-stay-card__coords')
+    expect(nocturneCss).toMatch(/\.home-stay-card__price[^{]*\{[^}]*font-variant-numeric:\s*tabular-nums/)
+  })
 })
+
