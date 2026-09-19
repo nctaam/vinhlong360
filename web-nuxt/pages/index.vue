@@ -27,7 +27,7 @@
         <div class="hero-main hero-enter">
           <span class="hero-kicker" data-color-role="brand"><span class="hero-kicker-dot" aria-hidden="true"></span>{{ ss('homepage.hero_kicker', 'Xứ sở Cù lao · Đất lành phù sa Vĩnh Long') }}</span>
           <h1>{{ seasonalTagline }}</h1>
-          <p class="hero-sub">{{ ss('homepage.hero_subtitle', 'Hành trình di sản cù lao, làng gốm trăm năm và vị ngọt cây trái giữa đôi bờ Cổ Chiên.') }}</p>
+          <p class="hero-sub">{{ heroSubtitle }}</p>
           <div class="hero-cognitive-banner" role="region" aria-label="Khuyến nghị thời vụ lữ hành">
             <div class="hero-cognitive-chip hero-cognitive-chip--weather">
               <IconLine name="sun" class="hero-cognitive-chip__icon" aria-hidden="true" />
@@ -48,10 +48,6 @@
             />
             <div class="hero-search-island__footer">
               <NuxtLink to="/ban-do?near=1" class="hero-nearby"><IconLine name="pin" aria-hidden="true" /> Tìm quanh tôi</NuxtLink>
-              <span class="hero-search-island__hint">
-                <IconLine name="compass" class="hero-search-island__hint-icon" aria-hidden="true" />
-                <span>Tìm cù lao, lò gạch cổ, quán ăn hay thức quà miệt vườn</span>
-              </span>
             </div>
           </div>
           <div class="hero-terroir-chips" role="region" aria-label="Gợi ý thực địa Vĩnh Long">
@@ -385,7 +381,7 @@ import HomeTravelPlanner from '~/components/home/HomeTravelPlanner.vue'
 import HomeAtmosphereControl from '~/components/home/HomeAtmosphereControl.vue'
 import type { AtmosphereMode } from '~/components/home/HomeAtmosphereControl.vue'
 import ImageDisclosure from '~/components/ImageDisclosure.vue'
-import { describeEntityImages, describeEntityPlaceholder } from '~/utils/imageDescriptors'
+import { describeEntityImages, describeEntityPlaceholder, isCanonicalLegacyEntityImageUrl } from '~/utils/imageDescriptors'
 import { createHomeNocturnePresentation } from '~/utils/homeNocturnePresentation'
 import type { HomePresentationEntity } from '~/utils/homeNocturnePresentation'
 import { resolveFreshnessStatus, resolveSourceTier } from '~/utils/regionalColor'
@@ -521,6 +517,13 @@ const topDishes = computed(() => homeData.value?.top_dishes || [])
 const itineraries = computed(() => homeData.value?.itineraries || [])
 const upcomingEvents = computed(() => homeData.value?.upcoming_events || [])
 const seasonalTagline = computed(() => homeData.value?.seasonal_tagline || 'Khám phá Vĩnh Long theo cách của người bản địa')
+const heroSubtitle = computed(() => {
+  const val = ss('homepage.hero_subtitle', '')
+  if (!val || val.includes('Tìm điểm đến, món ngon')) {
+    return 'Hành trình di sản cù lao, làng gốm trăm năm và vị ngọt cây trái giữa đôi bờ Cổ Chiên.'
+  }
+  return val
+})
 
 const HERO_ELIGIBLE_TYPES = new Set(['attraction', 'experience', 'nature', 'craft_village', 'history', 'place'])
 
@@ -612,8 +615,26 @@ const heroFeature = computed<any>(() => {
 })
 const hfMeta = computed(() => heroFeature.value ? (TYPE_META[heroFeature.value.type] || { icon: 'pin', label: heroFeature.value.type, cat: 'place' }) : null)
 const heroFeatureDescriptor = computed<ImageDescriptor>(() => {
-  const descriptor = heroFeature.value ? describeEntityImages(heroFeature.value)[0] : null
-  return descriptor || describeEntityPlaceholder(heroFeature.value || { name: 'Gợi ý nổi bật' })
+  const feature = heroFeature.value
+  if (!feature) return describeEntityPlaceholder({ name: 'Gợi ý nổi bật' })
+  const descriptors = describeEntityImages(feature)
+  if (descriptors[0]?.url) return descriptors[0]
+
+  // Fallback to local canonical image when API descriptor is empty
+  const iconicId = String(feature.id || '')
+  if (iconicId && HERO_ICONIC_IDS.has(iconicId)) {
+    const candidateUrl = `/img/entities/${iconicId}.webp`
+    if (isCanonicalLegacyEntityImageUrl(candidateUrl)) {
+      const fallbackDesc = describeEntityImages({
+        id: iconicId,
+        name: feature.name,
+        images: [candidateUrl],
+      })[0]
+      if (fallbackDesc?.url) return fallbackDesc
+    }
+  }
+
+  return describeEntityPlaceholder(feature)
 })
 const heroFeatureDisclosureId = `home-hero-feature-${useId().replace(/[^A-Za-z0-9_-]+/g, '-')}`
 const hfRegion = computed(() => {
@@ -841,12 +862,12 @@ useHead({
   flex-wrap: wrap;
   align-items: center;
   gap: var(--space-2);
-  padding: 6px 14px;
+  padding: 4px 12px;
   border-radius: var(--radius-pill, 9999px);
   background: rgba(var(--white-rgb), 0.08);
   border: 1px solid var(--border-liquid-glass);
   backdrop-filter: blur(16px);
-  margin-bottom: var(--space-4);
+  margin-bottom: var(--space-3);
   width: fit-content;
 }
 

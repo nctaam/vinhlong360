@@ -167,6 +167,26 @@ describe('Deep & Simple Homepage UI Refinements', () => {
     expect(culinaryVue).toMatch(/\.home-culinary-card:hover\s+\.home-culinary-card__arrow/)
     expect(staysVue).toMatch(/\.home-stay-card:hover\s+\.home-stay-card__action\s+\.btn\s+\.line-icon:last-child/)
   })
+
+  it('Task 24: Hero section decluttered with elegant subtitle, refined cognitive chips, no hint, and iconic dossier image fallback', () => {
+    const freshIndexVue = readFileSync(resolve(__dirname, '../pages/index.vue'), 'utf8')
+    const freshNocturneCss = readFileSync(resolve(__dirname, '../assets/css/home-nocturne.css'), 'utf8')
+
+    // 1. Redundant search hint removed
+    expect(freshIndexVue).not.toContain('hero-search-island__hint')
+    expect(freshIndexVue).not.toContain('Tìm cù lao, lò gạch cổ')
+    expect(freshNocturneCss).not.toContain('.hero-search-island__hint')
+
+    // 2. Hero subtitle has refined styling and dynamic computed fallback
+    expect(freshIndexVue).toMatch(/heroSubtitle\s*=\s*computed/)
+    expect(freshNocturneCss).toMatch(/\[data-home-pilot="nocturne-b1"\]\s+\.hero-sub\s*\{[^}]*border-radius:\s*var\(--radius-control/)
+
+    // 3. Iconic entity image fallback enabled in heroFeatureDescriptor
+    expect(freshIndexVue).toMatch(/describeEntityImages\(\{\s*id:\s*iconicId/)
+
+    // 4. Dossier summary has line-clamp for breathing room
+    expect(freshNocturneCss).toMatch(/\.home-feature-dossier\s+\.framed-dossier__summary\s+p\s*\{[^}]*-webkit-line-clamp:\s*2/)
+  })
 })
 
 
