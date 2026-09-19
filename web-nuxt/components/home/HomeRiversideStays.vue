@@ -45,7 +45,7 @@
             <span class="home-stay-card__terroir">{{ stay.terroir }}</span>
             <span class="home-stay-card__badge">{{ stay.badge }}</span>
           </div>
-          <span v-if="stay.ecoBadge" class="home-stay-card__eco-badge sr-only">
+          <span v-if="stay.ecoBadge" class="home-stay-card__eco-badge">
             <IconLine name="shield-check" aria-hidden="true" />
             <span>{{ stay.ecoBadge }}</span>
           </span>

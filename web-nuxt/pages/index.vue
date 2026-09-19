@@ -48,7 +48,7 @@
             />
             <div class="hero-search-island__footer">
               <NuxtLink to="/ban-do?near=1" class="hero-nearby"><IconLine name="pin" aria-hidden="true" /> Tìm quanh tôi</NuxtLink>
-              <span class="hero-search-island__hint sr-only">
+              <span class="hero-search-island__hint">
                 <IconLine name="compass" class="hero-search-island__hint-icon" aria-hidden="true" />
                 <span>Tìm cù lao, lò gạch cổ, quán ăn hay thức quà miệt vườn</span>
               </span>

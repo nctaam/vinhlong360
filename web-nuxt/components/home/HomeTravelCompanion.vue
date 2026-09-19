@@ -24,6 +24,7 @@
         <a
           href="tel:+842703822305"
           class="home-hotline-btn home-hotline-btn--quick"
+          title="Hotline cứu hộ đường thủy 24/7: (0270) 3822 305"
           aria-label="Gọi hotline Cứu hộ đường thủy 24/7: (0270) 3822 305"
         >
           <div class="home-hotline-btn__call">
@@ -34,6 +35,7 @@
         <a
           href="tel:+842703822994"
           class="home-hotline-btn home-hotline-btn--quick"
+          title="Đường dây nóng hỗ trợ du khách 24/7: 0270 3822 994"
           aria-label="Gọi hotline Hỗ trợ du khách 24/7: 0270 3822 994"
         >
           <div class="home-hotline-btn__call">

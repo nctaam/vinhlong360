@@ -162,7 +162,7 @@
               <NuxtLink :to="item.to">{{ item.title }}</NuxtLink>
             </h4>
             <p class="home-curated-satellite__summary">{{ item.summary }}</p>
-            <NuxtLink :to="item.to" class="home-curated-satellite__link">
+            <NuxtLink :to="item.to" class="home-curated-satellite__link" :aria-label="`Xem trải nghiệm ${item.title}`">
               <span>Xem trải nghiệm</span>
               <IconLine name="arrow-right" aria-hidden="true" />
             </NuxtLink>
