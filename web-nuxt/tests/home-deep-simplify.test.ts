@@ -73,7 +73,17 @@ describe('Deep & Simple Homepage UI Refinements', () => {
     // Verify orphaned product lead name is pruned from heading balance group
     expect(nocturneCss).not.toMatch(/:is\([^)]*\.home-product-lead__name[^)]*\)/)
   })
+
+  it('Task 10: Culinary trail and riverside stays employ calmed photographic scrims', () => {
+    const culinaryVue = readFileSync(resolve(__dirname, '../components/home/HomeCulinaryTrail.vue'), 'utf8')
+    const staysVue = readFileSync(resolve(__dirname, '../components/home/HomeRiversideStays.vue'), 'utf8')
+
+    // Both must use relaxed transparent mid-stop
+    expect(culinaryVue).toMatch(/home-culinary-card__scrim[\s\S]*?transparent 28%/)
+    expect(staysVue).toMatch(/home-stay-card__scrim[\s\S]*?transparent 28%/)
+  })
 })
+
 
 
 
