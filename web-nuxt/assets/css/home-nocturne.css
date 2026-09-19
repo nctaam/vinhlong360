@@ -428,6 +428,14 @@
   transform: scale(0.98);
 }
 
+[data-home-pilot="nocturne-b1"] .home-feature-dossier__action .home-feature-dossier__action-arrow {
+  transition: transform 0.2s ease;
+}
+
+[data-home-pilot="nocturne-b1"] .home-feature-dossier__action:hover .home-feature-dossier__action-arrow {
+  transform: translateX(3px);
+}
+
 [data-home-pilot="nocturne-b1"] .home-feature-dossier__action--secondary {
   border-color: var(--color-border);
   color: var(--color-text);
@@ -2124,7 +2132,8 @@ html.js .home .hero-enter h1::after { animation: hero-underline-draw .8s var(--e
   .fy-chip:hover, .fy-chip:active { transform: none; }
   [data-home-pilot="nocturne-b1"] .hero-nearby .line-icon { animation: none; }
   [data-home-pilot="nocturne-b1"] .hero-terroir-chip:hover,
-  [data-home-pilot="nocturne-b1"] .hero-terroir-chip:active { transform: none; }
+  [data-home-pilot="nocturne-b1"] .hero-terroir-chip:active,
+  [data-home-pilot="nocturne-b1"] .home-feature-dossier__action:hover .home-feature-dossier__action-arrow { transform: none; }
 }
 
 /* ═══════════════════════════════════════════════════

@@ -147,6 +147,11 @@ describe('Deep & Simple Homepage UI Refinements', () => {
     const aeoVue = readFileSync(resolve(__dirname, '../components/CatalogAeoPlaque.vue'), 'utf8')
     expect(aeoVue).toMatch(/\.catalog-aeo-plaque__cta:active\s*\{[^}]*transform:\s*scale\(0\.98\);/)
   })
+
+  it('Task 21: Hero feature dossier action button animates directional arrow on hover', () => {
+    const nocturneCss = readFileSync(resolve(__dirname, '../assets/css/home-nocturne.css'), 'utf8')
+    expect(nocturneCss).toMatch(/\[data-home-pilot="nocturne-b1"\]\s+\.home-feature-dossier__action:hover\s+\.home-feature-dossier__action-arrow\s*\{[^}]*transform:\s*translateX\(3px\);/)
+  })
 })
 
 
