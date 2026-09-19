@@ -89,6 +89,11 @@ describe('Deep & Simple Homepage UI Refinements', () => {
     expect(showcaseVue).toMatch(/home-curated-lead__scrim[\s\S]*?transparent 28%/)
     expect(showcaseVue).not.toMatch(/rgba\(var\(--black-rgb\),\s*0\.55\)\s*50%/)
   })
+
+  it('Task 12: Hero Feature Dossier action link consistently renders arrow-right icon', () => {
+    const dossierVue = readFileSync(resolve(__dirname, '../components/home/HomeFeatureDossier.vue'), 'utf8')
+    expect(dossierVue).toMatch(/home-feature-dossier__action[\s\S]*?Khám phá[\s\S]*?<IconLine\s+name="arrow-right"/)
+  })
 })
 
 

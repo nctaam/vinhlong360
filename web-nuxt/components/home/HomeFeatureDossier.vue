@@ -84,7 +84,8 @@
           data-home-feature-action
           data-color-role="action-secondary"
         >
-          Khám phá
+          <span>Khám phá</span>
+          <IconLine name="arrow-right" class="home-feature-dossier__action-arrow" aria-hidden="true" />
         </NuxtLink>
         <NuxtLink
           v-if="plannerTo"
