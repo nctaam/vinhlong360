@@ -655,11 +655,10 @@ function onImgFallback(e: Event) {
   inset: 0;
   background: linear-gradient(
     180deg,
-    rgba(var(--black-rgb), 0.25) 0%,
-    rgba(var(--black-rgb), 0.08) 30%,
-    rgba(var(--black-rgb), 0.55) 50%,
-    rgba(var(--black-rgb), 0.78) 65%,
-    rgba(var(--black-rgb), 0.92) 85%,
+    rgba(var(--black-rgb), 0.20) 0%,
+    transparent 28%,
+    rgba(var(--black-rgb), 0.35) 58%,
+    rgba(var(--black-rgb), 0.72) 78%,
     rgba(var(--black-rgb), 0.88) 100%
   );
   pointer-events: none;

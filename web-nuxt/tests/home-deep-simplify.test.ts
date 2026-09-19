@@ -53,5 +53,11 @@ describe('Deep & Simple Homepage UI Refinements', () => {
     expect(nocturneCss).toMatch(/\.catalog-aeo-plaque__entry-title/)
     expect(nocturneCss).toMatch(/\.home-continuation__link-title/)
   })
+
+  it('Task 7: Curated satellite cards maintain unobtrusive scrim allowing >= 75% photographic focus', () => {
+    const showcaseVue = readFileSync(resolve(__dirname, '../components/home/HomeCuratedShowcase.vue'), 'utf8')
+    expect(showcaseVue).toContain('home-curated-satellite__title')
+    expect(showcaseVue).toMatch(/home-curated-satellite__overlay[\s\S]*?padding:\s*var\(--space-4\)/)
+  })
 })
 
