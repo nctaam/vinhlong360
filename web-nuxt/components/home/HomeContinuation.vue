@@ -4,21 +4,18 @@
       <p class="home-continuation__eyebrow">Tiếp tục hành trình</p>
       <h2 id="home-continuation-title">Giữ mạch khám phá khi bạn đã có một điểm bắt đầu</h2>
       <p class="home-continuation__lead-desc">Tra cứu tọa độ thực địa, kết nối tuyến sông miệt vườn và lên kế hoạch tự túc thuận tiện nhất.</p>
+      <!-- Personalized continuation is client-only because it reads saved/recent local state. -->
+      <ClientOnly>
+        <JourneyActionRail
+          v-if="!pending && actions.length"
+          :actions="actions"
+          title="Tiếp tục hành trình của bạn"
+          subtitle="Từ những gì bạn đã lưu và vừa xem."
+          aria-label="Gợi ý hành trình trên trang chủ"
+          compact
+        />
+      </ClientOnly>
     </div>
-    <!-- Personalized continuation is client-only because it reads saved/recent local state. -->
-    <ClientOnly>
-      <JourneyActionRail
-        v-if="!pending && actions.length"
-        :actions="actions"
-        title="Tiếp tục hành trình của bạn"
-        subtitle="Từ những gì bạn đã lưu và vừa xem."
-        aria-label="Gợi ý hành trình trên trang chủ"
-        compact
-      />
-      <template #fallback>
-        <div class="home-continuation-rail-fallback" aria-hidden="true" style="min-height: 64px;"></div>
-      </template>
-    </ClientOnly>
     <nav class="home-continuation__links" aria-label="Bước tiếp theo">
       <NuxtLink to="/du-lich" class="home-continuation__link home-continuation__link--featured">
         <IconLine name="compass" aria-hidden="true" />

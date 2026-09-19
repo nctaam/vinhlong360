@@ -409,6 +409,10 @@ const homeAeoEntries = [
     heading: 'Mùa di sản gốm & Hoa xuân (Tháng 1 – 3)',
     text: 'Vương quốc gốm đỏ Mang Thít vào vụ nung đỏ lửa bên dòng Cổ Chiên. Khí hậu mát dịu lý tưởng cho các tour di sản kiến trúc tâm linh, làng nghề truyền thống và lễ hội đầu năm.',
   },
+  {
+    heading: 'Mùa trái cây rộ hè (Tháng 5 – 7)',
+    text: 'Mùa sầu riêng Ri6, chôm chôm Bình Hòa Phước và bưởi Năm Roi Bình Minh vào vụ thu hoạch rộ. Lữ khách tự tay hái trái chín tại vườn ven sông và thưởng thức bánh xèo hến cù lao.',
+  },
 ]
 import {
   formatFreshnessLabel,

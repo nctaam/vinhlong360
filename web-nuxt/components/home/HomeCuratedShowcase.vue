@@ -64,7 +64,10 @@
                 <IconLine name="pin" aria-hidden="true" />
                 <span>{{ leadItem.location }}</span>
               </span>
-              <span class="home-curated-lead__coords sr-only">{{ leadItem.coordinates }}</span>
+              <span class="home-curated-lead__coords" :title="`Tọa độ thực địa: ${leadItem.coordinates}`">
+                <IconLine name="compass" aria-hidden="true" />
+                <span>{{ leadItem.coordinates }}</span>
+              </span>
             </div>
 
             <h3 class="home-curated-lead__title">
@@ -153,7 +156,7 @@
                 <IconLine name="pin" aria-hidden="true" />
                 <span>{{ item.area }}</span>
               </span>
-              <span v-if="item.coordinates" class="home-curated-satellite__coords sr-only">{{ item.coordinates }}</span>
+              <span v-if="item.coordinates" class="home-curated-satellite__coords" :title="`Tọa độ thực địa: ${item.coordinates}`">{{ item.coordinates }}</span>
             </div>
             <h4 class="home-curated-satellite__title">
               <NuxtLink :to="item.to">{{ item.title }}</NuxtLink>
@@ -505,6 +508,9 @@ function onImgFallback(e: Event) {
 }
 
 .home-curated-lead__coords {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
   font-family: var(--font-mono, monospace);
   color: var(--alluvial-gold);
   font-weight: var(--weight-medium);
