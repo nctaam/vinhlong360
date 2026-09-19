@@ -472,8 +472,14 @@ const activeItinerary = computed(() => {
 
 .home-planner-stop__desc {
   font-size: var(--text-xs);
-  color: var(--color-text-muted);
-  line-height: 1.4;
   margin-top: 2px;
+}
+
+.home-travel-planner.sr-only {
+  display: none !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  border: none !important;
+  min-height: 0 !important;
 }
 </style>

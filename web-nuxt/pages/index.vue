@@ -98,7 +98,7 @@
     <div class="home-river-divider" aria-hidden="true" />
 
     <HomeRiversideStays v-if="!homeFailed" />
-    <HomeTravelPlanner v-if="!homeFailed" />
+    <HomeTravelPlanner v-if="!homeFailed" class="sr-only" />
 
     <div class="home-river-divider" aria-hidden="true" />
 
@@ -144,7 +144,7 @@
       <HomeTravelCompanion />
       <HomeLocalBriefing class="sr-only" />
 
-      <section v-if="upcomingEventList.length || seasonalList.length" class="block reveal" aria-label="Tín hiệu địa phương" data-material-accent="amber">
+      <section v-if="upcomingEventList.length || seasonalList.length" class="block reveal sr-only" aria-label="Tín hiệu địa phương" data-material-accent="amber">
         <div class="section-head">
           <div class="sh-text">
             <h2>Tín hiệu địa phương <em class="editorial-italic-accent" aria-hidden="true">theo mùa</em></h2>
@@ -270,7 +270,7 @@
     <ClientOnly>
       <section
         v-if="communityPosts.length"
-        class="block reveal"
+        class="block reveal sr-only"
         aria-label="Cộng đồng"
         data-image-surface="home-community"
         data-source-class="user-uploaded"
@@ -292,7 +292,7 @@
           :top-members="topMembers"
         />
       </section>
-      <section v-else class="block reveal" aria-label="Cộng đồng" data-home-section="community" data-material-accent="neutral">
+      <section v-else class="block reveal sr-only" aria-label="Cộng đồng" data-home-section="community" data-material-accent="neutral">
         <EmptyState tone="empty" title="Cộng đồng đang khởi động"
           message="Chưa có bài viết nổi bật tuần này — bạn là người kể chuyện đầu tiên nhé!">
           <template #actions>
@@ -318,7 +318,7 @@
         </EmptyState>
       </section>
       <template #fallback>
-        <section class="block reveal" aria-hidden="true" data-home-section="community" style="min-height: 240px;">
+        <section class="block reveal sr-only" aria-hidden="true" data-home-section="community" style="min-height: 240px;">
           <div class="section-head">
             <div class="sh-text">
               <h2>Từ <em class="ac-neutral">cộng đồng</em></h2>

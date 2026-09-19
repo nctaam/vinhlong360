@@ -1318,7 +1318,7 @@
 
 [data-home-pilot="nocturne-b1"] :is(.home-quick-decisions, .home-signals) {
   background: transparent;
-  padding-block: clamp(var(--space-8), 5vw, var(--space-12));
+  padding-block: clamp(var(--space-3), 2vw, var(--space-4));
   border-block-end: 1px solid var(--color-border);
 }
 
@@ -2136,6 +2136,26 @@ html.js .home .hero-enter h1::after { animation: hero-underline-draw .8s var(--e
 }
 .dark .home .block + .block::before { opacity: .62; }
 .home .block { padding-top: var(--space-10); padding-bottom: var(--space-10); content-visibility: auto; contain-intrinsic-size: auto 480px; }
+.home .block.sr-only,
+.home section.sr-only,
+.home div.sr-only {
+  position: absolute !important;
+  width: 1px !important;
+  height: 1px !important;
+  padding: 0 !important;
+  margin: -1px !important;
+  overflow: hidden !important;
+  clip: rect(0, 0, 0, 0) !important;
+  white-space: nowrap !important;
+  border: 0 !important;
+  min-height: 0 !important;
+  max-height: 0 !important;
+  contain-intrinsic-size: 0 0 !important;
+  content-visibility: visible !important;
+}
+.home .block.sr-only::before {
+  display: none !important;
+}
 .block-cta { text-align: center; margin-top: var(--space-4); }
 
 /* ═══════════════════════════════════════════════════
