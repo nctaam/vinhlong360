@@ -1,6 +1,6 @@
 <template>
   <section class="home-travel-companion block reveal" aria-label="Cẩm Nang Du Khách Thực Địa & Hotline 24/7" data-home-travel-companion>
-    <div class="home-travel-companion__head section-head">
+    <div class="home-travel-companion__head section-head sr-only">
       <div class="sh-text">
         <span class="home-travel-companion__eyebrow" data-color-role="brand">
           <IconLine name="phone" aria-hidden="true" />
@@ -44,7 +44,7 @@
       </div>
     </div>
 
-    <div class="home-travel-companion__grid">
+    <div class="home-travel-companion__grid sr-only">
       <!-- 1. Cẩm Nang Miệt Vườn Cù Lao An Bình -->
       <article class="home-companion-card" data-companion-guide="an-binh">
         <div class="home-companion-card__header">
@@ -240,7 +240,7 @@ const HOTLINES: readonly EmergencyContact[] = [
   max-width: var(--maxw);
   margin-inline: auto;
   padding-inline: var(--space-5);
-  padding-block: var(--space-8);
+  padding-block: var(--space-2) var(--space-4);
 }
 
 .home-travel-companion__eyebrow {
@@ -498,13 +498,13 @@ const HOTLINES: readonly EmergencyContact[] = [
   justify-content: space-between;
   gap: var(--space-3);
   padding: var(--space-3) var(--space-4);
-  background: rgba(var(--white-rgb), 0.05);
-  border: 1px solid var(--border-liquid-glass);
+  background: var(--color-surface);
+  border: 1px solid var(--border-liquid-glass, var(--color-border));
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
   border-radius: var(--radius-surface);
   box-shadow: var(--shadow-card-ambient);
-  margin-block-start: var(--space-4);
+  margin-block-start: 0;
 }
 
 .home-companion-utility-pill {
