@@ -17,4 +17,13 @@ describe('Deep & Simple Homepage UI Refinements', () => {
     expect(nocturneCss).toMatch(/font-variant-numeric:\s*tabular-nums/)
     expect(nocturneCss).toContain('.hero-terroir-chip')
   })
+
+  it('Task 2: Culinary trail dishes display field coordinates and tabular prices', () => {
+    const culinaryVue = readFileSync(resolve(__dirname, '../components/home/HomeCulinaryTrail.vue'), 'utf8')
+    expect(culinaryVue).toContain('10°17\'N · 105°59\'E') // Cù lao An Bình
+    expect(culinaryVue).toContain('10°07\'N · 106°11\'E') // Cù lao Dài
+    expect(culinaryVue).toContain('home-culinary-card__coords')
+    expect(culinaryVue).toContain('home-culinary-card__price-badge')
+    expect(nocturneCss).toMatch(/\.home-culinary-card__price-badge[^{]*\{[^}]*font-variant-numeric:\s*tabular-nums/)
+  })
 })

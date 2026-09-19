@@ -60,10 +60,15 @@
             <NuxtLink :to="dish.to">{{ dish.name }}</NuxtLink>
           </h3>
 
-          <!-- Reputable Venue Pill Badge -->
+          <!-- Reputable Venue Pill Badge with Field Coordinates -->
           <div class="home-culinary-card__venue-pill">
             <IconLine name="pin" aria-hidden="true" />
             <span>{{ dish.reputableVenue || dish.venues }}</span>
+            <span v-if="dish.coordinates" class="home-culinary-card__coords" :title="`Tọa độ thực địa: ${dish.coordinates}`">
+              <span class="home-culinary-card__coords-sep" aria-hidden="true">·</span>
+              <IconLine name="compass" aria-hidden="true" />
+              <span>{{ dish.coordinates }}</span>
+            </span>
           </div>
 
           <div class="home-culinary-card__action home-culinary-card__footer">
@@ -97,6 +102,7 @@ interface CulinaryDish {
   readonly coverSrc: string
   readonly to: string
   readonly mapTo: string
+  readonly coordinates: string
 }
 
 const SIGNATURE_DISHES: readonly CulinaryDish[] = [
@@ -113,6 +119,7 @@ const SIGNATURE_DISHES: readonly CulinaryDish[] = [
     coverSrc: '/img/entities/ca-tai-tuong-chien-xu.webp',
     to: '/dia-diem/ca-tai-tuong-chien-xu',
     mapTo: '/ban-do?selected=ca-tai-tuong-chien-xu',
+    coordinates: "10°17'N · 105°59'E",
   },
   {
     id: 'banh-xeo-hen-cu-lao-dai',
@@ -127,6 +134,7 @@ const SIGNATURE_DISHES: readonly CulinaryDish[] = [
     coverSrc: '/img/entities/banh-xeo-hen-cu-lao-dai.webp',
     to: '/dia-diem/banh-xeo-hen-cu-lao-dai',
     mapTo: '/ban-do?selected=banh-xeo-hen-cu-lao-dai',
+    coordinates: "10°07'N · 106°11'E",
   },
   {
     id: 'khoai-lang-mam-song-cuon-la-cach',
@@ -141,6 +149,7 @@ const SIGNATURE_DISHES: readonly CulinaryDish[] = [
     coverSrc: '/img/entities/khoai-lang-mam-song-cuon-la-cach.webp',
     to: '/dia-diem/khoai-lang-mam-song-cuon-la-cach',
     mapTo: '/ban-do?selected=khoai-lang-mam-song-cuon-la-cach',
+    coordinates: "10°05'N · 105°49'E",
   },
   {
     id: 'chao-cua-dong',
@@ -155,6 +164,7 @@ const SIGNATURE_DISHES: readonly CulinaryDish[] = [
     coverSrc: '/img/entities/chao-cua-dong.webp',
     to: '/dia-diem/chao-cua-dong',
     mapTo: '/ban-do?selected=chao-cua-dong',
+    coordinates: "10°16'N · 105°58'E",
   },
   {
     id: 'oc-lac-hap-la-gung',
@@ -169,6 +179,7 @@ const SIGNATURE_DISHES: readonly CulinaryDish[] = [
     coverSrc: '/img/entities/oc-lac-hap-la-gung.webp',
     to: '/dia-diem/oc-lac-hap-la-gung',
     mapTo: '/ban-do?selected=oc-lac-hap-la-gung',
+    coordinates: "10°15'N · 105°58'E",
   },
 ]
 
@@ -475,5 +486,18 @@ function onImgFallback(e: Event) {
 
 .home-culinary-card__btn:hover .home-culinary-card__arrow {
   transform: translateX(3px);
+}
+
+.home-culinary-card__coords {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 0.72rem;
+  opacity: 0.88;
+}
+
+.home-culinary-card__coords-sep {
+  margin: 0 4px;
+  opacity: 0.45;
 }
 </style>
