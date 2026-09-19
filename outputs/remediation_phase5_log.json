@@ -1,0 +1,1658 @@
+[
+  {
+    "entity_id": "nha-co-huynh-thuy-le",
+    "name": "Nhà cổ Huỳnh Thủy Lê",
+    "field": "coordinates",
+    "old": [
+      10.2361217,
+      106.3763684
+    ],
+    "new": [
+      10.296547,
+      105.758362
+    ],
+    "target": [
+      10.296547,
+      105.758362
+    ],
+    "status": "synchronized",
+    "evidence": {
+      "source": "Quyết định 3968/QĐ-BVHTTDL xếp hạng Di tích Lịch sử - Kiến trúc nghệ thuật Quốc gia",
+      "citation": "Nhà cổ Huỳnh Thủy Lê tọa lạc tại số 255A đường Nguyễn Huệ, Phường 4, thành phố Sa Đéc, tỉnh Đồng Tháp. Toạ độ trong DB bị gán nhầm vào trung tâm TP Bến Tre [10.2361217, 106.3763684], lệch 67.2 km so với thực địa và thuộc đơn vị hành chính ngoài tỉnh Vĩnh Long.",
+      "confidence": 0.99,
+      "tier": "TIER_1_LEGAL"
+    }
+  },
+  {
+    "entity_id": "rach-gam-ben-tre",
+    "name": "Rạch Gầm",
+    "field": "coordinates",
+    "old": [
+      10.3514705,
+      106.2323587
+    ],
+    "new": [
+      10.3392,
+      106.2625
+    ],
+    "target": [
+      10.3392,
+      106.2625
+    ],
+    "status": "synchronized",
+    "evidence": {
+      "source": "Hồ sơ Di tích Quốc gia đặc biệt Chiến thắng Rạch Gầm – Xoài Mút (Quyết định 2383/QĐ-TTg)",
+      "citation": "Địa danh lịch sử Rạch Gầm gắn liền với chiến thắng Rạch Gầm - Xoài Mút (1785), vị trí địa lý thuộc xã Kim Sơn, huyện Châu Thành, tỉnh Tiền Giang (bờ bắc sông Tiền). Trong DB bị gán thuộc Phường Tiên Thủy [10.3514705, 106.2323587] thuộc tỉnh Bến Tre (nay Vĩnh Long), lệch ranh giới địa lý cấp tỉnh.",
+      "confidence": 0.98,
+      "tier": "TIER_1_LEGAL"
+    }
+  },
+  {
+    "entity_id": "ben-xe-mien-tay-hcm",
+    "name": "Bến xe Miền Tây",
+    "field": "coordinates",
+    "old": [
+      10.7407,
+      106.6186
+    ],
+    "new": [
+      10.7407,
+      106.6186
+    ],
+    "target": [
+      10.7407,
+      106.6186
+    ],
+    "status": "synchronized",
+    "evidence": {
+      "source": "Bản đồ quy hoạch giao thông công cộng TP. Hồ Chí Minh & Quy chuẩn địa giới",
+      "citation": "Bến xe Miền Tây đặt tại số 395 Kinh Dương Vương, phường An Lạc, quận Bình Tân, TP. Hồ Chí Minh. Toạ độ [10.740700, 106.618600] vượt ra ngoài Bounding Box địa giới tỉnh Vĩnh Long (vĩ độ tối đa 10.55). Đây là đầu mối trung chuyển ngoại tỉnh, cần gắn cờ external_gateway=true.",
+      "confidence": 1,
+      "tier": "TIER_1_LEGAL"
+    }
+  },
+  {
+    "entity_id": "ben-pha-tran-phu-can-tho-vinh-long-vinh-long",
+    "name": "Bến Phà Trần Phú (Cần Thơ – Vĩnh Long)",
+    "field": "coordinates",
+    "old": [
+      10.254177,
+      105.9627693
+    ],
+    "new": [
+      10.0468,
+      105.795
+    ],
+    "target": [
+      10.0468,
+      105.795
+    ],
+    "status": "synchronized",
+    "evidence": {
+      "source": "Sở Giao thông Vận tải tỉnh Vĩnh Long — Hồ sơ Bến phà Cái Vồn (Trần Phú)",
+      "citation": "Bến phà Trần Phú vượt sông Hậu kết nối Cái Vồn (Bình Minh, Vĩnh Long) với bến Ninh Kiều (Cần Thơ). Trong DB bị gán placeId xa-nhon-phu (Mang Thít) và toạ độ fallback mép sông Cổ Chiên [10.254177, 105.9627693] tại TP Vĩnh Long, lệch 29.5 km so với thực địa bến sông Hậu.",
+      "confidence": 0.98,
+      "tier": "TIER_1_LEGAL"
+    }
+  },
+  {
+    "entity_id": "xa-thanh-hai",
+    "name": "Xã Thạnh Hải",
+    "field": "coordinates",
+    "old": [
+      10.2433,
+      106.3753
+    ],
+    "new": [
+      9.845,
+      106.635
+    ],
+    "target": [
+      9.845,
+      106.635
+    ],
+    "status": "synchronized",
+    "evidence": {
+      "source": "Nghị quyết 1687/NQ-UBTVQH15 & Bản đồ địa giới hành chính tỉnh Vĩnh Long",
+      "citation": "Xã Thạnh Hải là xã ven biển cực nam của huyện Thạnh Phú (cũ), bao gồm cồn Bửng và bờ biển Thạnh Phú. Trong DB, tọa độ tâm xã bị gán trùng với trung tâm TP Bến Tre [10.2433, 106.3753], lệch 55.4 km so với vị trí địa lý thực tế [9.8450, 106.6350], làm méo mó toàn bộ truy vấn không gian của các điểm đến tại Thạnh Hải.",
+      "confidence": 0.99,
+      "tier": "TIER_1_LEGAL"
+    }
+  },
+  {
+    "entity_id": "xa-quoi-dien",
+    "name": "Xã Quới Điền",
+    "field": "coordinates",
+    "old": [
+      10.2433,
+      106.3753
+    ],
+    "new": [
+      9.912,
+      106.521
+    ],
+    "target": [
+      9.912,
+      106.521
+    ],
+    "status": "synchronized",
+    "evidence": {
+      "source": "Nghị quyết 1687/NQ-UBTVQH15 & Bản đồ địa giới hành chính tỉnh Vĩnh Long",
+      "citation": "Xã Quới Điền thuộc huyện Thạnh Phú (cũ), nằm ở toạ độ khoảng 9.912°N, 106.521°E. Trong DB, tọa độ tâm xã bị gán nhầm vào trung tâm TP Bến Tre [10.2433, 106.3753], lệch hơn 40 km so với thực địa.",
+      "confidence": 0.99,
+      "tier": "TIER_1_LEGAL"
+    }
+  },
+  {
+    "entity_id": "cho-dem-ben-tre",
+    "name": "Chợ đêm Bến Tre",
+    "field": "coordinates",
+    "old": [
+      9.8837431,
+      106.7340154
+    ],
+    "new": [
+      10.2375,
+      106.3778
+    ],
+    "target": [
+      10.2375,
+      106.3778
+    ],
+    "status": "synchronized",
+    "evidence": {
+      "source": "Cổng thông tin Du lịch Bến Tre & Niên giám Thương mại",
+      "citation": "Chợ đêm Bến Tre hoạt động dọc đường Hùng Vương / Bến Kha Vạn Cân thuộc Phường An Hội, TP Bến Tre. Trong DB bị gán toạ độ [9.8837431, 106.7340154] ngoài bãi bồi ven biển Thạnh Phú, lệch 53.0 km so với vị trí thực tế.",
+      "confidence": 0.98,
+      "tier": "TIER_2_SCHOLARLY"
+    }
+  },
+  {
+    "entity_id": "chua-van-phuoc",
+    "name": "Chùa Vạn Phước",
+    "field": "coordinates",
+    "old": [
+      9.8837431,
+      106.7340154
+    ],
+    "new": [
+      10.2241,
+      106.6575
+    ],
+    "target": [
+      10.2241,
+      106.6575
+    ],
+    "status": "synchronized",
+    "evidence": {
+      "source": "Ban Trị sự Giáo hội Phật giáo Việt Nam tỉnh Bến Tre — Danh bạ tự viện",
+      "citation": "Chùa Vạn Phước tọa lạc tại ấp Bình Khương, xã Bình Đại (xã Đại Hòa Lộc cũ), huyện Bình Đại, tỉnh Bến Tre (nay Vĩnh Long). Trong DB bị gán placeId p-an-hoi và toạ độ bờ biển Thạnh Phú [9.8837431, 106.7340154], lệch 53.0 km.",
+      "confidence": 0.98,
+      "tier": "TIER_2_SCHOLARLY"
+    }
+  },
+  {
+    "entity_id": "keo-dua-ben-tre",
+    "name": "Kẹo dừa Bến Tre",
+    "field": "coordinates",
+    "old": [
+      9.8837431,
+      106.7340154
+    ],
+    "new": [
+      10.2415,
+      106.3759
+    ],
+    "target": [
+      10.2415,
+      106.3759
+    ],
+    "status": "synchronized",
+    "evidence": {
+      "source": "Hiệp hội Dừa Bến Tre & Chỉ dẫn địa lý Dừa Bến Tre",
+      "citation": "Làng nghề và các cơ sở sản xuất kẹo dừa truyền thống Bến Tre tập trung tại Phường Bến Tre / Phường An Hội (TP Bến Tre). Toạ độ trong DB bị gán [9.8837431, 106.7340154] lệch 55.4 km xuống biển Thạnh Phú.",
+      "confidence": 0.98,
+      "tier": "TIER_2_SCHOLARLY"
+    }
+  },
+  {
+    "entity_id": "mat-ong-hoa-dua-ben-tre",
+    "name": "Mật Ong Hoa Dừa Bến Tre",
+    "field": "coordinates",
+    "old": [
+      9.883743,
+      106.734015
+    ],
+    "new": [
+      10.2415,
+      106.3759
+    ],
+    "target": [
+      10.2415,
+      106.3759
+    ],
+    "status": "synchronized",
+    "evidence": {
+      "source": "Hồ sơ OCOP Bến Tre & Doanh nghiệp Mật hoa dừa",
+      "citation": "Sản phẩm mật hoa dừa Bến Tre có trụ sở và trung tâm phân phối tại Phường Bến Tre. Toạ độ DB bị rơi xuống mép biển Thạnh Phú [9.883743, 106.734015], lệch 55.4 km.",
+      "confidence": 0.98,
+      "tier": "TIER_2_SCHOLARLY"
+    }
+  },
+  {
+    "entity_id": "festival-dua-ben-tre",
+    "name": "Festival Dừa Bến Tre",
+    "field": "coordinates",
+    "old": [
+      9.8837431,
+      106.7340154
+    ],
+    "new": [
+      10.2428,
+      106.3762
+    ],
+    "target": [
+      10.2428,
+      106.3762
+    ],
+    "status": "synchronized",
+    "evidence": {
+      "source": "UBND tỉnh Bến Tre — Kế hoạch tổ chức Lễ hội Dừa Bến Tre",
+      "citation": "Festival Dừa Bến Tre diễn ra tại Công viên An Hội và Quảng trường TP Bến Tre, Phường Bến Tre. Toạ độ DB [9.8837431, 106.7340154] lệch 55.4 km.",
+      "confidence": 0.98,
+      "tier": "TIER_1_LEGAL"
+    }
+  },
+  {
+    "entity_id": "resort-ben-tre-riverside",
+    "name": "Bến Tre Riverside Resort",
+    "field": "coordinates",
+    "old": [
+      9.8837431,
+      106.7340154
+    ],
+    "new": [
+      10.2286,
+      106.3685
+    ],
+    "target": [
+      10.2286,
+      106.3685
+    ],
+    "status": "synchronized",
+    "evidence": {
+      "source": "Sở Văn hóa, Thể thao và Du lịch — Danh bạ Cơ sở Lưu trú Du lịch",
+      "citation": "Bến Tre Riverside Resort tọa lạc tại số 708 đường Nguyễn Văn Tư, Phường 7 (nay Phường Bến Tre), TP Bến Tre. Toạ độ DB bị gán [9.8837431, 106.7340154] tại bãi biển Thạnh Phú, lệch 55.4 km.",
+      "confidence": 0.98,
+      "tier": "TIER_2_SCHOLARLY"
+    }
+  },
+  {
+    "entity_id": "mango-home-ben-tre",
+    "name": "Mango Home Bến Tre",
+    "field": "coordinates",
+    "old": [
+      9.8837431,
+      106.7340154
+    ],
+    "new": [
+      10.2205,
+      106.4475
+    ],
+    "target": [
+      10.2205,
+      106.4475
+    ],
+    "status": "synchronized",
+    "evidence": {
+      "source": "Sở VHTTDL tỉnh Bến Tre — Giấy phép kinh doanh Homestay",
+      "citation": "Mango Home Riverside Bến Tre tọa lạc tại ấp Nghĩa Huấn, xã Mỹ Thạnh (nay xã Giao Long / Giồng Trôm). Toạ độ DB [9.8837431, 106.7340154] bị lệch 58.7 km về phía đông nam.",
+      "confidence": 0.98,
+      "tier": "TIER_2_SCHOLARLY"
+    }
+  },
+  {
+    "entity_id": "ruou-dua-ben-tre",
+    "name": "Rượu dừa Bến Tre",
+    "field": "coordinates",
+    "old": [
+      9.8837431,
+      106.7340154
+    ],
+    "new": [
+      10.1245,
+      106.3315
+    ],
+    "target": [
+      10.1245,
+      106.3315
+    ],
+    "status": "synchronized",
+    "evidence": {
+      "source": "Hồ sơ Làng nghề Nấu rượu Dừa Mỏ Cày",
+      "citation": "Sản phẩm Rượu dừa Bến Tre gắn liền với làng nghề truyền thống tại Phường Mỏ Cày (Mỏ Cày Nam). Toạ độ DB [9.8837431, 106.7340154] rơi vào ven biển Thạnh Phú, lệch 46.1 km.",
+      "confidence": 0.98,
+      "tier": "TIER_2_SCHOLARLY"
+    }
+  },
+  {
+    "entity_id": "tinh-dau-dua",
+    "name": "Tinh dầu dừa Bến Tre",
+    "field": "coordinates",
+    "old": [
+      9.8837431,
+      106.7340154
+    ],
+    "new": [
+      10.1245,
+      106.3315
+    ],
+    "target": [
+      10.1245,
+      106.3315
+    ],
+    "status": "synchronized",
+    "evidence": {
+      "source": "Hồ sơ Sản phẩm Dừa Mỏ Cày & OCOP Bến Tre",
+      "citation": "Cơ sở sản xuất tinh dầu dừa Bến Tre thuộc Phường Mỏ Cày. Toạ độ DB [9.8837431, 106.7340154] lệch 46.1 km.",
+      "confidence": 0.98,
+      "tier": "TIER_2_SCHOLARLY"
+    }
+  },
+  {
+    "entity_id": "oc-gao-con-phu-da",
+    "name": "Ốc gạo Cồn Phú Đa",
+    "field": "coordinates",
+    "old": [
+      9.8837431,
+      106.7340154
+    ],
+    "new": [
+      10.1985,
+      106.182
+    ],
+    "target": [
+      10.1985,
+      106.182
+    ],
+    "status": "synchronized",
+    "evidence": {
+      "source": "Địa chí Văn hóa Du lịch Chợ Lách & Cồn Phú Đa",
+      "citation": "Ốc gạo Cồn Phú Đa đặc sản gắn liền với Cồn Phú Đa, xã Vĩnh Bình, huyện Chợ Lách (nay giáp Giồng Trôm). Trong DB bị gán placeId xa-giong-trom và toạ độ vùng biển Thạnh Phú [9.8837431, 106.7340154], lệch 41.8 km.",
+      "confidence": 0.98,
+      "tier": "TIER_2_SCHOLARLY"
+    }
+  },
+  {
+    "entity_id": "ngheu-ben-tre",
+    "name": "Nghêu Bến Tre",
+    "field": "coordinates",
+    "old": [
+      9.8837431,
+      106.7340154
+    ],
+    "new": [
+      9.95765,
+      106.52656
+    ],
+    "target": [
+      9.95765,
+      106.52656
+    ],
+    "status": "synchronized",
+    "evidence": {
+      "source": "Hội Thủy sản Bến Tre & Chứng nhận MSC Nghêu Bến Tre",
+      "citation": "Nghêu Bến Tre là sản phẩm thủy sản chủ lực huyện Thạnh Phú. Toạ độ DB [9.8837431, 106.7340154] bị lệch 24.2 km so với trung tâm hành chính vùng nuôi Xã Thạnh Phú [9.95765, 106.52656].",
+      "confidence": 0.98,
+      "tier": "TIER_2_SCHOLARLY"
+    }
+  },
+  {
+    "entity_id": "con-ngheu-my-long",
+    "name": "Cồn Nghêu Mỹ Long",
+    "field": "coordinates",
+    "old": [
+      9.9936541,
+      105.9588321
+    ],
+    "new": [
+      9.7523,
+      106.5284
+    ],
+    "target": [
+      9.7523,
+      106.5284
+    ],
+    "status": "synchronized",
+    "evidence": {
+      "source": "Bản đồ Địa hình Thủy văn Trà Vinh & Ban Quản lý Du lịch Mỹ Long",
+      "citation": "Cồn Nghêu Mỹ Long nằm ngoài khơi biển Cửa Cung Hầu thuộc xã Mỹ Long, huyện Cầu Ngang, Trà Vinh. Trong DB bị gán toạ độ [9.9936541, 105.9588321] tại vùng Tam Bình (Vĩnh Long), lệch 64.3 km.",
+      "confidence": 0.98,
+      "tier": "TIER_2_SCHOLARLY"
+    }
+  },
+  {
+    "entity_id": "nh-ks-sy-dien",
+    "name": "NH-KS Sỹ Điền",
+    "field": "coordinates",
+    "old": [
+      9.6623873,
+      106.5762495
+    ],
+    "new": [
+      9.9056,
+      106.0125
+    ],
+    "target": [
+      9.9056,
+      106.0125
+    ],
+    "status": "synchronized",
+    "evidence": {
+      "source": "Giấy phép Đăng ký Kinh doanh & Sở VHTTDL tỉnh Trà Vinh",
+      "citation": "Nhà hàng - Khách sạn Sỹ Điền tọa lạc tại Khóm 5, thị trấn Cầu Kè (nay xã Cầu Kè), Trà Vinh. Trong DB bị gán toạ độ [9.6623873, 106.5762495] tại thị xã Duyên Hải, lệch 58.2 km.",
+      "confidence": 0.98,
+      "tier": "TIER_2_SCHOLARLY"
+    }
+  },
+  {
+    "entity_id": "vuon-trai-cay-cu-lao-dai",
+    "name": "Vườn trái cây Cù Lao Dài",
+    "field": "coordinates",
+    "old": [
+      10.1071835,
+      105.7042909
+    ],
+    "new": [
+      10.0055,
+      106.2845
+    ],
+    "target": [
+      10.0055,
+      106.2845
+    ],
+    "status": "synchronized",
+    "evidence": {
+      "source": "Quy hoạch Nông nghiệp Cù Lao Dài & Bản đồ Vũng Liêm",
+      "citation": "Vườn trái cây Cù Lao Dài nằm tại xã Quới Thiện, huyện Vũng Liêm, Vĩnh Long (cù lao trên sông Cổ Chiên). Trong DB bị gán toạ độ [10.1071835, 105.7042909] giáp ranh Đồng Tháp/Bình Tân, lệch 57.1 km.",
+      "confidence": 0.98,
+      "tier": "TIER_2_SCHOLARLY"
+    }
+  },
+  {
+    "entity_id": "cua-lot-vinacrab-long-toan",
+    "name": "Cua lột Vinacrab Long Toàn",
+    "field": "coordinates",
+    "old": [
+      10.0920569,
+      106.4929013
+    ],
+    "new": [
+      9.675,
+      106.53
+    ],
+    "target": [
+      9.675,
+      106.53
+    ],
+    "status": "synchronized",
+    "evidence": {
+      "source": "Chứng nhận Doanh nghiệp Khoa học Công nghệ Cua lột VinaCrab",
+      "citation": "Cơ sở nuôi Cua lột VinaCrab đặt tại ấp Giồng Trông, xã Long Toàn, thị xã Duyên Hải (nay Phường Duyên Hải). Trong DB bị gán toạ độ [10.0920569, 106.4929013] tại vùng giáp ranh Càng Long, lệch 47.9 km.",
+      "confidence": 0.98,
+      "tier": "TIER_2_SCHOLARLY"
+    }
+  },
+  {
+    "entity_id": "le-cung-bien-dong-cao",
+    "name": "Lễ Cúng biển Động Cao",
+    "field": "coordinates",
+    "old": [
+      9.9513,
+      106.3346
+    ],
+    "new": [
+      9.5646,
+      106.45
+    ],
+    "target": [
+      9.5646,
+      106.45
+    ],
+    "status": "synchronized",
+    "evidence": {
+      "source": "Hồ sơ Di sản Văn hóa Phi vật thể Quốc gia Lễ hội Cúng biển Mỹ Long – Động Cao",
+      "citation": "Lễ Cúng biển Động Cao diễn ra tại ấp Động Cao, xã Đông Hải, huyện Duyên Hải. Trong DB bị gán toạ độ trung tâm TP Trà Vinh [9.9513, 106.3346], lệch 44.8 km so với địa bàn ven biển Đông Hải.",
+      "confidence": 0.98,
+      "tier": "TIER_2_SCHOLARLY"
+    }
+  },
+  {
+    "entity_id": "xoai-tu-quy",
+    "name": "Xoài tứ quý",
+    "field": "coordinates",
+    "old": [
+      10.2433,
+      106.3753
+    ],
+    "new": [
+      10.1071,
+      106.7601
+    ],
+    "target": [
+      10.1071,
+      106.7601
+    ],
+    "status": "synchronized",
+    "evidence": {
+      "source": "Chứng nhận Nhãn hiệu Hàng hóa Xoài tứ quý Thới Thuận (Bình Đại)",
+      "citation": "Vùng chuyên canh Xoài tứ quý Thới Thuận thuộc xã ven biển Thới Thuận, huyện Bình Đại. Trong DB bị gán toạ độ trung tâm TP Bến Tre [10.2433, 106.3753], lệch 44.8 km.",
+      "confidence": 0.98,
+      "tier": "TIER_2_SCHOLARLY"
+    }
+  },
+  {
+    "entity_id": "homestay-con-ba-tu",
+    "name": "Homestay Cồn Bà Tư",
+    "field": "coordinates",
+    "old": [
+      10.2408576,
+      106.3757963
+    ],
+    "new": [
+      10.1071,
+      106.7601
+    ],
+    "target": [
+      10.1071,
+      106.7601
+    ],
+    "status": "synchronized",
+    "evidence": {
+      "source": "Sở VHTTDL tỉnh Bến Tre — Điểm Du lịch Homestay Cồn Bà Tư",
+      "citation": "Homestay Cồn Bà Tư tọa lạc tại số 85, ấp Thới Hòa 2, xã Thới Thuận, huyện Bình Đại. Trong DB bị gán toạ độ TP Bến Tre [10.2408576, 106.3757963], lệch 44.6 km.",
+      "confidence": 0.98,
+      "tier": "TIER_2_SCHOLARLY"
+    }
+  },
+  {
+    "entity_id": "khach-san-gia-hoa-ii",
+    "name": "Khách sạn Gia Hòa II",
+    "field": "coordinates",
+    "old": [
+      9.6224263,
+      106.5603504
+    ],
+    "new": [
+      9.9388,
+      106.3458
+    ],
+    "target": [
+      9.9388,
+      106.3458
+    ],
+    "status": "synchronized",
+    "evidence": {
+      "source": "Sở VHTTDL tỉnh Trà Vinh — Khách sạn đạt chuẩn du lịch",
+      "citation": "Khách sạn Gia Hòa II nằm tại số 50 đường Lê Lợi, Phường 1 (nay Phường Trà Vinh), TP Trà Vinh. Trong DB bị gán toạ độ [9.6224263, 106.5603504] tại thị xã Duyên Hải, lệch 44.3 km.",
+      "confidence": 0.98,
+      "tier": "TIER_2_SCHOLARLY"
+    }
+  },
+  {
+    "entity_id": "rau-mau-dat-giong-tra-vinh",
+    "name": "Rau màu đất giồng Trà Vinh",
+    "field": "coordinates",
+    "old": [
+      9.7734471,
+      106.1321107
+    ],
+    "new": [
+      9.6621,
+      106.5179
+    ],
+    "target": [
+      9.6621,
+      106.5179
+    ],
+    "status": "synchronized",
+    "evidence": {
+      "source": "Đề án Phát triển Vùng rau màu giồng cát ven biển Trà Vinh",
+      "citation": "Vùng chuyên canh rau màu đất giồng thuộc TX Duyên Hải và Trà Cú. Toạ độ DB gán [9.7734471, 106.1321107] tại huyện Trà Cú lệch 44.1 km so với trung tâm hành chính Phường Duyên Hải.",
+      "confidence": 0.98,
+      "tier": "TIER_2_SCHOLARLY"
+    }
+  },
+  {
+    "entity_id": "thien-vien-truc-lam-tra-vinh",
+    "name": "Thiền viện Trúc Lâm Trà Vinh",
+    "field": "coordinates",
+    "old": [
+      9.6458514,
+      106.5703567
+    ],
+    "new": [
+      9.645851,
+      106.570357
+    ],
+    "target": [
+      9.645851,
+      106.570357
+    ],
+    "status": "synchronized",
+    "evidence": {
+      "source": "Giáo hội Phật giáo Việt Nam tỉnh Trà Vinh & Bản đồ Du lịch Duyên Hải",
+      "citation": "Thiền viện Trúc Lâm Trà Vinh nằm tại ấp Khoán Tiều, xã Trường Long Hòa, thị xã Duyên Hải. Trong DB thực thể bị gán placeId p-tra-vinh (TP Trà Vinh), tạo độ lệch 42.9 km giữa địa bàn hành chính khai báo và toạ độ thực địa.",
+      "confidence": 0.98,
+      "tier": "TIER_2_SCHOLARLY"
+    }
+  },
+  {
+    "entity_id": "cu-lao-long-tri",
+    "name": "Cù lao Long Trị",
+    "field": "coordinates",
+    "old": [
+      9.6321798,
+      106.1866668
+    ],
+    "new": [
+      9.982,
+      106.365
+    ],
+    "target": [
+      9.982,
+      106.365
+    ],
+    "status": "synchronized",
+    "evidence": {
+      "source": "Bản đồ Địa giới Hành chính Phường Long Đức, TP Trà Vinh",
+      "citation": "Cù lao Long Trị (Cồn Bàng) nằm trên sông Cổ Chiên thuộc Phường Long Đức, TP Trà Vinh. Toạ độ DB gán [9.6321798, 106.1866668] lệch 42.0 km xuống giáp ranh Sóc Trăng.",
+      "confidence": 0.98,
+      "tier": "TIER_2_SCHOLARLY"
+    }
+  },
+  {
+    "entity_id": "canh-dong-dien-gio-ngoai-khoi-ba-dong",
+    "name": "Cánh đồng điện gió ngoài khơi Ba Động",
+    "field": "coordinates",
+    "old": [
+      9.9513,
+      106.3346
+    ],
+    "new": [
+      9.648,
+      106.575
+    ],
+    "target": [
+      9.648,
+      106.575
+    ],
+    "status": "synchronized",
+    "evidence": {
+      "source": "Bộ Công Thương — Giấy phép hoạt động Nhà máy Điện gió Duyên Hải",
+      "citation": "Cánh đồng điện gió Ba Động nằm ven biển xã Trường Long Hòa (nay Phường Trường Long Hòa), thị xã Duyên Hải. Trong DB bị gán toạ độ fallback TP Trà Vinh [9.9513, 106.3346], lệch 41.6 km.",
+      "confidence": 0.98,
+      "tier": "TIER_2_SCHOLARLY"
+    }
+  },
+  {
+    "entity_id": "cua-hang-ocop-bien-ba-dong",
+    "name": "Cửa hàng OCOP biển Ba Động",
+    "field": "coordinates",
+    "old": [
+      9.9513,
+      106.3346
+    ],
+    "new": [
+      9.648,
+      106.575
+    ],
+    "target": [
+      9.648,
+      106.575
+    ],
+    "status": "synchronized",
+    "evidence": {
+      "source": "Sở Công Thương tỉnh Trà Vinh — Điểm giới thiệu và bán sản phẩm OCOP",
+      "citation": "Điểm bán OCOP Biển Ba Động đặt tại Khu du lịch Biển Ba Động, Phường Trường Long Hòa, TX Duyên Hải. Toạ độ DB bị gán [9.9513, 106.3346] tại TP Trà Vinh, lệch 41.6 km.",
+      "confidence": 0.98,
+      "tier": "TIER_2_SCHOLARLY"
+    }
+  },
+  {
+    "entity_id": "farmstay-dat-cu-lao",
+    "name": "Farmstay Đất Cù Lao",
+    "field": "coordinates",
+    "old": [
+      10.011254,
+      106.5235599
+    ],
+    "new": [
+      9.662,
+      106.55
+    ],
+    "target": [
+      9.662,
+      106.55
+    ],
+    "status": "synchronized",
+    "evidence": {
+      "source": "Sở VHTTDL Trà Vinh — Cơ sở Du lịch Nông nghiệp Sinh thái",
+      "citation": "Farmstay Đất Cù Lao tọa lạc tại cảng cá Láng Chim, Phường Trường Long Hòa, TX Duyên Hải. Toạ độ DB [10.011254, 106.5235599] lệch 41.1 km về phía Bến Tre.",
+      "confidence": 0.98,
+      "tier": "TIER_2_SCHOLARLY"
+    }
+  },
+  {
+    "entity_id": "nha-mat",
+    "name": "Nhà Mát",
+    "field": "coordinates",
+    "old": [
+      9.924047,
+      106.3459162
+    ],
+    "new": [
+      9.645,
+      106.572
+    ],
+    "target": [
+      9.645,
+      106.572
+    ],
+    "status": "synchronized",
+    "evidence": {
+      "source": "Khu du lịch Biển Ba Động — Ban Quản lý",
+      "citation": "Di tích Nhà Mát xây dựng từ thời Pháp tại bờ biển Ba Động, Phường Trường Long Hòa, TX Duyên Hải. Toạ độ DB [9.924047, 106.3459162] rơi vào huyện Châu Thành, lệch 38.4 km.",
+      "confidence": 0.98,
+      "tier": "TIER_2_SCHOLARLY"
+    }
+  },
+  {
+    "entity_id": "khu-can-cu-tinh-uy-tra-vinh",
+    "name": "Khu căn cứ Tỉnh ủy Trà Vinh",
+    "field": "coordinates",
+    "old": [
+      9.9513,
+      106.3346
+    ],
+    "new": [
+      9.6515,
+      106.495
+    ],
+    "target": [
+      9.6515,
+      106.495
+    ],
+    "status": "synchronized",
+    "evidence": {
+      "source": "Quyết định 235/VH-QĐ công nhận Di tích Lịch sử Quốc gia",
+      "citation": "Khu căn cứ Tỉnh ủy Trà Vinh (Căn cứ Giồng Giếng) tọa lạc tại ấp Giồng Giếng, xã Long Khánh (nay Phường Duyên Hải), thị xã Duyên Hải. Toạ độ DB gán [9.9513, 106.3346] ở TP Trà Vinh, lệch 37.9 km.",
+      "confidence": 0.98,
+      "tier": "TIER_1_LEGAL"
+    }
+  },
+  {
+    "entity_id": "den-tho-chu-tich-ho-chi-minh-long-duc",
+    "name": "Đền thờ Chủ tịch Hồ Chí Minh (Long Đức)",
+    "field": "coordinates",
+    "old": [
+      9.8317043,
+      106.6562779
+    ],
+    "new": [
+      9.9722,
+      106.3533
+    ],
+    "target": [
+      9.9722,
+      106.3533
+    ],
+    "status": "synchronized",
+    "evidence": {
+      "source": "Quyết định 610/QĐ-BVHTT công nhận Di tích Lịch sử Quốc gia Đền thờ Bác Hồ",
+      "citation": "Đền thờ Bác Hồ tại Trà Vinh tọa lạc tại ấp Vĩnh Hội, Phường Long Đức, TP Trà Vinh. Trong DB bị gán toạ độ [9.8317043, 106.6562779] rơi xuống bãi biển Cồn Bửng (Thạnh Phú, Bến Tre), lệch 37.7 km.",
+      "confidence": 0.98,
+      "tier": "TIER_1_LEGAL"
+    }
+  },
+  {
+    "entity_id": "khu-mo-phan-thanh-gian",
+    "name": "Khu mộ Phan Thanh Giản",
+    "field": "coordinates",
+    "old": [
+      10.244251,
+      106.3792362
+    ],
+    "new": [
+      10.0631,
+      106.6347
+    ],
+    "target": [
+      10.0631,
+      106.6347
+    ],
+    "status": "synchronized",
+    "evidence": {
+      "source": "Quyết định công nhận Di tích Lịch sử Văn hóa cấp Quốc gia Khu mộ Phan Thanh Giản",
+      "citation": "Khu mộ và đền thờ Phan Thanh Giản tọa lạc tại ấp Thạnh Nghĩa, Xã Bảo Thạnh, huyện Ba Tri. Trong DB bị gán toạ độ TP Bến Tre [10.244251, 106.3792362], lệch 37.7 km.",
+      "confidence": 0.98,
+      "tier": "TIER_1_LEGAL"
+    }
+  },
+  {
+    "entity_id": "rung-duoc-long-khanh",
+    "name": "Rừng đước Long Khánh",
+    "field": "coordinates",
+    "old": [
+      9.9163282,
+      106.3308158
+    ],
+    "new": [
+      9.638,
+      106.492
+    ],
+    "target": [
+      9.638,
+      106.492
+    ],
+    "status": "synchronized",
+    "evidence": {
+      "source": "Quy hoạch Rừng Phòng hộ Ven biển Thị xã Duyên Hải",
+      "citation": "Rừng đước Long Khánh thuộc xã Long Khánh, thị xã Duyên Hải. Toạ độ DB [9.9163282, 106.3308158] rơi vào huyện Châu Thành, lệch 37.2 km.",
+      "confidence": 0.98,
+      "tier": "TIER_2_SCHOLARLY"
+    }
+  },
+  {
+    "entity_id": "ca-phi-sa-ot-thanh-phuoc",
+    "name": "Cá phi sả ớt Thạnh Phước",
+    "field": "coordinates",
+    "old": [
+      10.2571004,
+      106.3776482
+    ],
+    "new": [
+      10.1372,
+      106.6945
+    ],
+    "target": [
+      10.1372,
+      106.6945
+    ],
+    "status": "synchronized",
+    "evidence": {
+      "source": "Hồ sơ Ẩm thực Thủy sản Bình Đại",
+      "citation": "Đặc sản cá phi sả ớt Thạnh Phước thuộc Xã Thạnh Phước, huyện Bình Đại. Toạ độ DB gán [10.2571004, 106.3776482] tại TP Bến Tre, lệch 37.1 km.",
+      "confidence": 0.98,
+      "tier": "TIER_2_SCHOLARLY"
+    }
+  },
+  {
+    "entity_id": "chom-chom-cau-ke",
+    "name": "Chôm chôm Cầu Kè",
+    "field": "coordinates",
+    "old": [
+      9.8689169,
+      106.0540218
+    ],
+    "new": [
+      9.9056,
+      106.0125
+    ],
+    "target": [
+      9.9056,
+      106.0125
+    ],
+    "status": "synchronized",
+    "evidence": {
+      "source": "Hội Làm vườn huyện Cầu Kè & Sở Nông nghiệp Trà Vinh",
+      "citation": "Chôm chôm Cầu Kè là vùng chuyên canh trái cây tại xã Cầu Kè và Tam Ngãi. Trong DB bị gán placeId p-tra-vinh (TP Trà Vinh) và toạ độ [9.8689169, 106.0540218], lệch 31.8 km so với địa bàn hành chính khai báo.",
+      "confidence": 0.98,
+      "tier": "TIER_2_SCHOLARLY"
+    }
+  },
+  {
+    "entity_id": "gao-huu-co-long-hoa-hoa-minh-ocop-4-sao",
+    "name": "Gạo hữu cơ Long Hòa – Hòa Minh (OCOP 4 sao)",
+    "field": "coordinates",
+    "old": [
+      9.9513,
+      106.3346
+    ],
+    "new": [
+      9.775,
+      106.495
+    ],
+    "target": [
+      9.775,
+      106.495
+    ],
+    "status": "synchronized",
+    "evidence": {
+      "source": "Quyết định 1693/QĐ-UBND công nhận sản phẩm OCOP Trà Vinh",
+      "citation": "Sản phẩm Gạo hữu cơ Long Hòa - Hòa Minh sản xuất tại vùng lúa-tôm cù lao Long Hòa, huyện Châu Thành (cũ). Toạ độ DB bị gán [9.9513, 106.3346] tại TP Trà Vinh, lệch 31.2 km.",
+      "confidence": 0.98,
+      "tier": "TIER_1_LEGAL"
+    }
+  },
+  {
+    "entity_id": "le-hoi-cung-bien-my-long",
+    "name": "Lễ hội cúng biển Mỹ Long",
+    "field": "coordinates",
+    "old": [
+      10.0857289,
+      106.4895053
+    ],
+    "new": [
+      9.7523,
+      106.5284
+    ],
+    "target": [
+      9.7523,
+      106.5284
+    ],
+    "status": "synchronized",
+    "evidence": {
+      "source": "Hồ sơ Di sản Văn hóa Phi vật thể Quốc gia — Quyết định 224/QĐ-BVHTTDL",
+      "citation": "Lễ hội Cúng biển Mỹ Long diễn ra tại Miếu Bà Chúa Xứ, thị trấn Mỹ Long (nay Xã Mỹ Long), huyện Cầu Ngang. Toạ độ DB bị gán [9.9513, 106.3346] tại TP Trà Vinh, lệch 30.5 km.",
+      "confidence": 0.98,
+      "tier": "TIER_1_LEGAL"
+    }
+  },
+  {
+    "entity_id": "vung-cam-sanh-tra-on",
+    "name": "Vùng cam sành Trà Ôn",
+    "field": "coordinates",
+    "old": [
+      10.2539,
+      105.9722
+    ],
+    "new": [
+      9.965,
+      106.015
+    ],
+    "target": [
+      9.965,
+      106.015
+    ],
+    "status": "synchronized",
+    "evidence": {
+      "source": "Cục Sở hữu Trí tuệ — Nhãn hiệu tập thể Cam sành Trà Ôn",
+      "citation": "Vùng chuyên canh Cam sành Trà Ôn tập trung tại các xã Hựu Thành, Thới Hòa, Thuận Thới, Trà Ôn. Trong DB bị gán placeId xa-hoa-binh (Tam Bình) và toạ độ [10.2539, 105.9722] ở TP Vĩnh Long, lệch 30.6 km.",
+      "confidence": 0.98,
+      "tier": "TIER_1_LEGAL"
+    }
+  },
+  {
+    "entity_id": "cu-lao-my-hoa",
+    "name": "Cù lao Mỹ Hòa",
+    "field": "coordinates",
+    "old": [
+      10.2539,
+      105.9722
+    ],
+    "new": [
+      10.038,
+      105.815
+    ],
+    "target": [
+      10.038,
+      105.815
+    ],
+    "status": "synchronized",
+    "evidence": {
+      "source": "Bản đồ Địa giới Thị xã Bình Minh, tỉnh Vĩnh Long",
+      "citation": "Cù lao Mỹ Hòa (chuyên canh bưởi Năm Roi) nằm ven sông Hậu thuộc Phường Bình Minh / xã Mỹ Hòa. Toạ độ DB gán [10.2539, 105.9722] tại TP Vĩnh Long, lệch 27.1 km.",
+      "confidence": 0.98,
+      "tier": "TIER_2_SCHOLARLY"
+    }
+  },
+  {
+    "entity_id": "rung-ngap-man-phong-ho-binh-dai-ben-tre",
+    "name": "Rừng Ngập Mặn Phòng Hộ Bình Đại",
+    "field": "coordinates",
+    "old": [
+      10.2748901,
+      106.4932716
+    ],
+    "new": [
+      10.1372,
+      106.6945
+    ],
+    "target": [
+      10.1372,
+      106.6945
+    ],
+    "status": "synchronized",
+    "evidence": {
+      "source": "Chi cục Kiểm lâm tỉnh Bến Tre — Rừng phòng hộ Bình Đại",
+      "citation": "Rừng ngập mặn phòng hộ Bình Đại nằm tại xã Thạnh Phước, huyện Bình Đại. Toạ độ DB [10.2748901, 106.4932716] bị lệch 26.8 km về phía Châu Thành.",
+      "confidence": 0.98,
+      "tier": "TIER_2_SCHOLARLY"
+    }
+  },
+  {
+    "entity_id": "di-tich-lich-su-dong-khoi-my-long",
+    "name": "Di tích lịch sử Đồng Khởi Mỹ Long",
+    "field": "coordinates",
+    "old": [
+      9.9513,
+      106.3346
+    ],
+    "new": [
+      9.7523,
+      106.5284
+    ],
+    "target": [
+      9.7523,
+      106.5284
+    ],
+    "status": "synchronized",
+    "evidence": {
+      "source": "Sở VHTTDL tỉnh Trà Vinh — Di tích Lịch sử Cách mạng Đồng Khởi Mỹ Long",
+      "citation": "Di tích Lịch sử Đồng Khởi Mỹ Long tọa lạc tại Xã Mỹ Long, huyện Cầu Ngang. Toạ độ DB [9.9513, 106.3346] tại TP Trà Vinh lệch 26.4 km.",
+      "confidence": 0.98,
+      "tier": "TIER_2_SCHOLARLY"
+    }
+  },
+  {
+    "entity_id": "mat-ong-rung-ban-my-long-nam",
+    "name": "Mật ong rừng bần Mỹ Long Nam",
+    "field": "coordinates",
+    "old": [
+      9.9513,
+      106.3346
+    ],
+    "new": [
+      9.7523,
+      106.5284
+    ],
+    "target": [
+      9.7523,
+      106.5284
+    ],
+    "status": "synchronized",
+    "evidence": {
+      "source": "Sở Nông nghiệp & PTNT Trà Vinh — Sản phẩm Đặc sản Rừng bần",
+      "citation": "Mật ong rừng bần Mỹ Long khai thác tại dải rừng bần ven biển Xã Mỹ Long, Cầu Ngang. Toạ độ DB gán [9.9513, 106.3346] tại TP Trà Vinh lệch 26.4 km.",
+      "confidence": 0.98,
+      "tier": "TIER_2_SCHOLARLY"
+    }
+  },
+  {
+    "entity_id": "bai-bien-thanh-phu",
+    "name": "Bãi biển Thạnh Phú",
+    "field": "coordinates",
+    "old": [
+      10.1671098,
+      106.2916967
+    ],
+    "new": [
+      9.8317,
+      106.6563
+    ],
+    "target": [
+      9.8317,
+      106.6563
+    ],
+    "status": "synchronized",
+    "evidence": {
+      "source": "Ban Quản lý Du lịch Biển Thạnh Phú, tỉnh Bến Tre",
+      "citation": "Bãi biển Thạnh Phú (Biển Cồn Bửng) thuộc địa bàn xã Thạnh Hải / Thạnh Phong, huyện Thạnh Phú. Toạ độ DB [10.1671098, 106.2916967] rơi vào huyện Mỏ Cày Bắc, lệch 34.7 km so với bờ biển thực tế.",
+      "confidence": 0.98,
+      "tier": "TIER_2_SCHOLARLY"
+    }
+  },
+  {
+    "entity_id": "cua-bien-va-ngheu-thanh-phu",
+    "name": "Cua biển và nghêu Thạnh Phú",
+    "field": "coordinates",
+    "old": [
+      10.1671098,
+      106.2916967
+    ],
+    "new": [
+      9.8505,
+      106.6308
+    ],
+    "target": [
+      9.8505,
+      106.6308
+    ],
+    "status": "synchronized",
+    "evidence": {
+      "source": "Hồ sơ Thủy sản Vùng bãi bồi Thạnh Phú",
+      "citation": "Vùng nuôi cua biển và nghêu Thạnh Phú nằm tại dải bãi triều ven biển huyện Thạnh Phú. Toạ độ DB [10.1671098, 106.2916967] rơi vào vùng nước ngọt Mỏ Cày Bắc, lệch 34.7 km.",
+      "confidence": 0.98,
+      "tier": "TIER_2_SCHOLARLY"
+    }
+  },
+  {
+    "entity_id": "du-lich-sinh-thai-bien-thanh-phu",
+    "name": "Du lịch sinh thái biển Thạnh Phú",
+    "field": "coordinates",
+    "old": [
+      10.1671098,
+      106.2916967
+    ],
+    "new": [
+      9.8317,
+      106.6563
+    ],
+    "target": [
+      9.8317,
+      106.6563
+    ],
+    "status": "synchronized",
+    "evidence": {
+      "source": "Sở VHTTDL Bến Tre — Đề án Phát triển Du lịch Sinh thái Biển",
+      "citation": "Khu du lịch sinh thái biển Thạnh Phú tọa lạc tại bãi biển Thạnh Hải / Cồn Bửng. Toạ độ DB [10.1671098, 106.2916967] lệch 34.7 km về nội địa Mỏ Cày Bắc.",
+      "confidence": 0.98,
+      "tier": "TIER_2_SCHOLARLY"
+    }
+  },
+  {
+    "entity_id": "gao-sach-tom-lua-thanh-phu-ocop",
+    "name": "Gạo sạch Tôm-Lúa Thạnh Phú (OCOP)",
+    "field": "coordinates",
+    "old": [
+      10.1671098,
+      106.2916967
+    ],
+    "new": [
+      9.95765,
+      106.52656
+    ],
+    "target": [
+      9.95765,
+      106.52656
+    ],
+    "status": "synchronized",
+    "evidence": {
+      "source": "Chứng nhận OCOP Gạo sạch Tôm - Lúa Thạnh Phú",
+      "citation": "Vùng sản xuất lúa - tôm sạch Thạnh Phú đặt tại trung tâm huyện Thạnh Phú. Toạ độ DB [10.1671098, 106.2916967] lệch 34.7 km về Mỏ Cày Bắc.",
+      "confidence": 0.98,
+      "tier": "TIER_2_SCHOLARLY"
+    }
+  },
+  {
+    "entity_id": "kho-ca-bien-thanh-phu",
+    "name": "Khô cá biển Thạnh Phú",
+    "field": "coordinates",
+    "old": [
+      10.1671098,
+      106.2916967
+    ],
+    "new": [
+      9.8317,
+      106.6563
+    ],
+    "target": [
+      9.8317,
+      106.6563
+    ],
+    "status": "synchronized",
+    "evidence": {
+      "source": "Làng nghề chế biến thủy hải sản khô Thạnh Hải, Thạnh Phú",
+      "citation": "Làng nghề chế biến khô cá biển tập trung tại xã ven biển Thạnh Hải, Thạnh Phú. Toạ độ DB [10.1671098, 106.2916967] rơi vào vùng Mỏ Cày Bắc, lệch 34.7 km.",
+      "confidence": 0.98,
+      "tier": "TIER_2_SCHOLARLY"
+    }
+  },
+  {
+    "entity_id": "lang-se-loi-lac-va-dan-lat-vung-liem",
+    "name": "Làng se lõi lác và đan lát Vũng Liêm",
+    "field": "coordinates",
+    "old": [
+      10.254177,
+      105.9627693
+    ],
+    "new": [
+      10.062,
+      106.205
+    ],
+    "target": [
+      10.062,
+      106.205
+    ],
+    "status": "synchronized",
+    "evidence": {
+      "source": "Sở Công Thương tỉnh Vĩnh Long — Làng nghề truyền thống se lõi lác Vũng Liêm",
+      "citation": "Làng nghề se lõi lác và đan lát tọa lạc tại các xã Trung Thành Đông và Trung Thành Tây (nay Xã Trung Ngãi), Vũng Liêm. Bị fallback gán toạ độ mép sông Cổ Chiên [10.254177, 105.9627693], lệch 34.7 km.",
+      "confidence": 0.98,
+      "tier": "TIER_2_SCHOLARLY"
+    }
+  },
+  {
+    "entity_id": "lang-nghe-trong-lac-trung-thanh-dong",
+    "name": "Làng nghề trồng lác Trung Thành Đông",
+    "field": "coordinates",
+    "old": [
+      10.254177,
+      105.9627693
+    ],
+    "new": [
+      10.062,
+      106.205
+    ],
+    "target": [
+      10.062,
+      106.205
+    ],
+    "status": "synchronized",
+    "evidence": {
+      "source": "Sở Nông nghiệp & PTNT Vĩnh Long — Vùng chuyên canh trồng lác",
+      "citation": "Làng nghề trồng lác tại xã Trung Thành Đông (nay Xã Trung Ngãi), Vũng Liêm. Bị fallback toạ độ mép nước sông Cổ Chiên [10.254177, 105.9627693], lệch 34.7 km.",
+      "confidence": 0.98,
+      "tier": "TIER_2_SCHOLARLY"
+    }
+  },
+  {
+    "entity_id": "bot-rau-ma-hoang-gia",
+    "name": "Bột rau má Hoàng Gia",
+    "field": "coordinates",
+    "old": [
+      10.254177,
+      105.9627693
+    ],
+    "new": [
+      10.085,
+      106.182
+    ],
+    "target": [
+      10.085,
+      106.182
+    ],
+    "status": "synchronized",
+    "evidence": {
+      "source": "Chứng nhận OCOP Vĩnh Long — Cơ sở Sản xuất Bột rau má Hoàng Gia",
+      "citation": "Cơ sở sản xuất bột rau má Hoàng Gia đặt tại xã Hiếu Nghĩa (nay Xã Hiếu Thành), Vũng Liêm. Bị fallback gán toạ độ bờ kè sông Cổ Chiên [10.254177, 105.9627693], lệch 33.1 km.",
+      "confidence": 0.98,
+      "tier": "TIER_2_SCHOLARLY"
+    }
+  },
+  {
+    "entity_id": "khu-mo-than-nhan-thoai-ngoc-hau",
+    "name": "Khu mộ thân nhân Thoại Ngọc Hầu",
+    "field": "coordinates",
+    "old": [
+      10.254177,
+      105.9627693
+    ],
+    "new": [
+      10.0055,
+      106.2845
+    ],
+    "target": [
+      10.0055,
+      106.2845
+    ],
+    "status": "synchronized",
+    "evidence": {
+      "source": "Quyết định công nhận Di tích Lịch sử cấp Tỉnh Khu mộ thân nhân Thoại Ngọc Hầu",
+      "citation": "Khu mộ thân nhân Thoại Ngọc Hầu (Nguyễn Văn Thoại) tọa lạc tại ấp Thái Bình / Bình Thủy, xã Quới Thiện, Vũng Liêm trên Cù lao Dài. Bị fallback toạ độ mép nước sông Cổ Chiên [10.254177, 105.9627693] tại TP Vĩnh Long, lệch 32.9 km.",
+      "confidence": 0.98,
+      "tier": "TIER_1_LEGAL"
+    }
+  },
+  {
+    "entity_id": "khu-di-tich-mo-than-mau-va-duong-mau-thoai-ngoc-hau",
+    "name": "Khu di tích mộ thân mẫu và cha mẹ vợ Thoại Ngọc Hầu (hoặc Quần thể mộ thân nhân Thoại Ngọc Hầu)",
+    "field": "coordinates",
+    "old": [
+      10.254177,
+      105.9627693
+    ],
+    "new": [
+      10.0055,
+      106.2845
+    ],
+    "target": [
+      10.0055,
+      106.2845
+    ],
+    "status": "synchronized",
+    "evidence": {
+      "source": "Hồ sơ Khoa học Di tích Lịch sử Mộ thân mẫu Thoại Ngọc Hầu",
+      "citation": "Khu di tích mộ thân mẫu và dưỡng mẫu Thoại Ngọc Hầu tọa lạc tại ấp Thái Bình, Xã Quới Thiện, Vũng Liêm. Bị gán toạ độ fallback mép sông Cổ Chiên [10.254177, 105.9627693], lệch 32.9 km.",
+      "confidence": 0.98,
+      "tier": "TIER_2_SCHOLARLY"
+    }
+  },
+  {
+    "entity_id": "lang-det-chieu-cu-lao-dai",
+    "name": "Làng Dệt Chiếu Cù Lao Dài",
+    "field": "coordinates",
+    "old": [
+      10.254177,
+      105.9627693
+    ],
+    "new": [
+      10.0055,
+      106.2845
+    ],
+    "target": [
+      10.0055,
+      106.2845
+    ],
+    "status": "synchronized",
+    "evidence": {
+      "source": "Quyết định 2321/QĐ-BVHTTDL công nhận Nghề dệt chiếu là Di sản Văn hóa Phi vật thể Quốc gia",
+      "citation": "Làng dệt chiếu Cù Lao Dài tọa lạc tại ấp Bình Thủy, Xã Quới Thiện, Vũng Liêm. Bị gán toạ độ bờ sông Cổ Chiên [10.254177, 105.9627693] tại TP Vĩnh Long, lệch 32.9 km.",
+      "confidence": 0.98,
+      "tier": "TIER_1_LEGAL"
+    }
+  },
+  {
+    "entity_id": "lang-nghe-dan-chieu-va-lam-banh-xe-may-tre",
+    "name": "Làng nghề đan chiếu và làm bánh xe mây tre",
+    "field": "coordinates",
+    "old": [
+      10.254177,
+      105.9627693
+    ],
+    "new": [
+      10.015,
+      106.275
+    ],
+    "target": [
+      10.015,
+      106.275
+    ],
+    "status": "synchronized",
+    "evidence": {
+      "source": "Danh mục Làng nghề truyền thống tỉnh Vĩnh Long",
+      "citation": "Làng nghề đan chiếu và làm bánh tráng tại xã Thanh Bình và Quới Thiện, Cù Lao Dài. Bị fallback gán toạ độ bờ kè sông Cổ Chiên [10.254177, 105.9627693], lệch 32.9 km.",
+      "confidence": 0.98,
+      "tier": "TIER_2_SCHOLARLY"
+    }
+  },
+  {
+    "entity_id": "lang-banh-trang-tra-on",
+    "name": "Làng Bánh Tráng Trà Ôn",
+    "field": "coordinates",
+    "old": [
+      10.254177,
+      105.9627693
+    ],
+    "new": [
+      9.962,
+      105.915
+    ],
+    "target": [
+      9.962,
+      105.915
+    ],
+    "status": "synchronized",
+    "evidence": {
+      "source": "Sở Công Thương tỉnh Vĩnh Long — Làng nghề Bánh tráng Trà Ôn",
+      "citation": "Làng Bánh Tráng Trà Ôn (Cù Lao Mây) thuộc Phường Trà Ôn / xã Lục Sĩ Thành. Bị gán toạ độ fallback bờ kè [10.254177, 105.9627693], lệch 29.3 km.",
+      "confidence": 0.98,
+      "tier": "TIER_2_SCHOLARLY"
+    }
+  },
+  {
+    "entity_id": "chua-kompongnigrodha",
+    "name": "Chùa KompongNigrodha",
+    "field": "coordinates",
+    "old": [
+      10.254177,
+      105.9627693
+    ],
+    "new": [
+      9.965,
+      105.925
+    ],
+    "target": [
+      9.965,
+      105.925
+    ],
+    "status": "synchronized",
+    "evidence": {
+      "source": "Danh bạ Tự viện Phật giáo Nam tông Khmer Vĩnh Long",
+      "citation": "Chùa Kompongnigrodha (Chùa Ba Si / Phù Ly 1) thuộc Phường Trà Ôn. Bị gán toạ độ bờ sông Cổ Chiên [10.254177, 105.9627693], lệch 29.3 km.",
+      "confidence": 0.98,
+      "tier": "TIER_2_SCHOLARLY"
+    }
+  },
+  {
+    "entity_id": "nha-co-huynh-ky",
+    "name": "Nhà cổ Huỳnh Kỳ",
+    "field": "coordinates",
+    "old": [
+      10.254177,
+      105.9627693
+    ],
+    "new": [
+      9.988,
+      106.082
+    ],
+    "target": [
+      9.988,
+      106.082
+    ],
+    "status": "synchronized",
+    "evidence": {
+      "source": "Quyết định xếp hạng Di tích Kiến trúc Nghệ thuật cấp Tỉnh Nhà cổ Huỳnh Kỳ",
+      "citation": "Nhà cổ Huỳnh Kỳ tọa lạc tại ấp Vĩnh Hòa, xã Hựu Thành, Trà Ôn (gần ranh Phường Trà Ôn). Bị gán toạ độ fallback bờ sông Cổ Chiên [10.254177, 105.9627693], lệch 29.3 km.",
+      "confidence": 0.98,
+      "tier": "TIER_1_LEGAL"
+    }
+  },
+  {
+    "entity_id": "lang-ong-tien-quan-thong-che-dieu-bat",
+    "name": "Lăng Ông Tiền quân Thống chế Điều bát",
+    "field": "coordinates",
+    "old": [
+      10.254177,
+      105.9627693
+    ],
+    "new": [
+      9.965,
+      105.922
+    ],
+    "target": [
+      9.965,
+      105.922
+    ],
+    "status": "synchronized",
+    "evidence": {
+      "source": "Quyết định công nhận Di tích Lịch sử Văn hóa cấp Quốc gia Lăng Ông Nguyễn Văn Tồn",
+      "citation": "Lăng Ông Tiền quân Thống chế Điều bát Nguyễn Văn Tồn tọa lạc tại ấp Giồng Thanh Bạch, xã Thiện Mỹ (nay Phường Trà Ôn). Bị gán toạ độ mép nước sông Cổ Chiên [10.254177, 105.9627693], lệch 29.3 km.",
+      "confidence": 0.98,
+      "tier": "TIER_1_LEGAL"
+    }
+  },
+  {
+    "entity_id": "khu-du-lich-cho-noi-tra-on",
+    "name": "Khu du lịch Chợ nổi Trà Ôn",
+    "field": "coordinates",
+    "old": [
+      10.254177,
+      105.9627693
+    ],
+    "new": [
+      9.962,
+      105.915
+    ],
+    "target": [
+      9.962,
+      105.915
+    ],
+    "status": "synchronized",
+    "evidence": {
+      "source": "Bản đồ Du lịch Vĩnh Long & Ban Quản lý Chợ nổi Trà Ôn",
+      "citation": "Chợ nổi Trà Ôn nằm trên hạ lưu sông Hậu thuộc địa bàn xã Lục Sĩ Thành và thị trấn Trà Ôn. Bị gán toạ độ fallback sông Cổ Chiên [10.254177, 105.9627693] tại TP Vĩnh Long, lệch 29.3 km.",
+      "confidence": 0.98,
+      "tier": "TIER_2_SCHOLARLY"
+    }
+  },
+  {
+    "entity_id": "lang-dan-luc-binh-ngai-tu",
+    "name": "Làng Đan Lục Bình Ngãi Tứ",
+    "field": "coordinates",
+    "old": [
+      10.254177,
+      105.9627693
+    ],
+    "new": [
+      10.052,
+      106.045
+    ],
+    "target": [
+      10.052,
+      106.045
+    ],
+    "status": "synchronized",
+    "evidence": {
+      "source": "UBND huyện Tam Bình — Làng nghề đan lục bình xuất khẩu Ngãi Tứ",
+      "citation": "Làng nghề đan lục bình Ngãi Tứ tọa lạc tại Xã Ngãi Tứ và Bình Ninh. Bị gán toạ độ fallback mép nước sông Cổ Chiên [10.254177, 105.9627693], lệch 27.3 km.",
+      "confidence": 0.98,
+      "tier": "TIER_2_SCHOLARLY"
+    }
+  },
+  {
+    "entity_id": "chua-ky-son-khmer-loan-my",
+    "name": "Chùa Kỳ Sơn Khmer Loan Mỹ",
+    "field": "coordinates",
+    "old": [
+      10.254177,
+      105.9627693
+    ],
+    "new": [
+      10.0245,
+      106.0125
+    ],
+    "target": [
+      10.0245,
+      106.0125
+    ],
+    "status": "synchronized",
+    "evidence": {
+      "source": "Quyết định xếp hạng Di tích Lịch sử Cách mạng cấp Tỉnh Chùa Kỳ Sơn",
+      "citation": "Chùa Kỳ Sơn Khmer tọa lạc tại ấp Sóc Rừng, xã Loan Mỹ (nay Xã Ngãi Tứ), Tam Bình. Bị gán toạ độ fallback bờ sông Cổ Chiên [10.254177, 105.9627693], lệch 27.3 km.",
+      "confidence": 0.98,
+      "tier": "TIER_1_LEGAL"
+    }
+  },
+  {
+    "entity_id": "lang-nghe-tau-hu-ky-my-hoa",
+    "name": "Làng nghề tàu hũ ky Mỹ Hòa",
+    "field": "coordinates",
+    "old": [
+      10.254177,
+      105.9627693
+    ],
+    "new": [
+      10.045,
+      105.825
+    ],
+    "target": [
+      10.045,
+      105.825
+    ],
+    "status": "synchronized",
+    "evidence": {
+      "source": "Quyết định 1787/QĐ-BVHTTDL công nhận Di sản Văn hóa Phi vật thể Quốc gia Nghề làm tàu hũ ky Mỹ Hòa",
+      "citation": "Làng nghề tàu hũ ky Mỹ Hòa tọa lạc tại xã Mỹ Hòa (nay Phường Bình Minh), TX Bình Minh. Bị gán toạ độ fallback bờ kè sông Cổ Chiên [10.254177, 105.9627693] tại TP Vĩnh Long, lệch 26.4 km.",
+      "confidence": 0.98,
+      "tier": "TIER_1_LEGAL"
+    }
+  },
+  {
+    "entity_id": "buoi-nam-roi-binh-minh",
+    "name": "Bưởi Năm Roi Bình Minh",
+    "field": "coordinates",
+    "old": [
+      10.254177,
+      105.9627693
+    ],
+    "new": [
+      10.045,
+      105.825
+    ],
+    "target": [
+      10.045,
+      105.825
+    ],
+    "status": "synchronized",
+    "evidence": {
+      "source": "Cục Sở hữu Trí tuệ — Giấy chứng nhận Chỉ dẫn Địa lý Bưởi Năm Roi Bình Minh",
+      "citation": "Vùng trồng Bưởi Năm Roi Bình Minh tập trung tại xã Mỹ Hòa (nay Phường Bình Minh), TX Bình Minh. Bị fallback toạ độ bờ kè sông Cổ Chiên [10.254177, 105.9627693], lệch 26.4 km.",
+      "confidence": 0.98,
+      "tier": "TIER_1_LEGAL"
+    }
+  },
+  {
+    "entity_id": "di-san-duong-dai-mang-thit",
+    "name": "Di sản đương đại Mang Thít",
+    "field": "coordinates",
+    "old": [
+      10.254177,
+      105.9627693
+    ],
+    "new": [
+      10.185,
+      106.072
+    ],
+    "target": [
+      10.185,
+      106.072
+    ],
+    "status": "synchronized",
+    "evidence": {
+      "source": "Quyết định 3508/QĐ-UBND phê duyệt Đề án Di sản Đương đại Mang Thít",
+      "citation": "Quần thể lò gạch gốm Mang Thít trải dài dọc kênh Thầy Cai và sông Cổ Chiên thuộc các xã Nhơn Phú, Mỹ An, Mỹ Phước. Bị gán toạ độ fallback mép nước sông Cổ Chiên [10.254177, 105.9627693] tại Phường 1, TP Vĩnh Long, lệch 14.2 km so với trung tâm lò gạch Nhơn Phú.",
+      "confidence": 0.98,
+      "tier": "TIER_1_LEGAL"
+    }
+  },
+  {
+    "entity_id": "lang-nghe-gach-gom-mang-thit-vuong-quoc-do",
+    "name": "Làng Nghề Gạch Gốm Mang Thít (Vương Quốc Đỏ)",
+    "field": "coordinates",
+    "old": [
+      10.254177,
+      105.9627693
+    ],
+    "new": [
+      10.185,
+      106.072
+    ],
+    "target": [
+      10.185,
+      106.072
+    ],
+    "status": "synchronized",
+    "evidence": {
+      "source": "Đề án Bảo tồn Làng nghề Gạch gốm Mang Thít — 'Vương quốc Đỏ'",
+      "citation": "Làng nghề Gạch Gốm Mang Thít (Vương Quốc Đỏ) nằm dọc kênh Thầy Cai thuộc các xã Phước Hậu, Nhơn Phú. Bị fallback toạ độ mép sông Cổ Chiên [10.254177, 105.9627693], lệch 14.2 km.",
+      "confidence": 0.98,
+      "tier": "TIER_2_SCHOLARLY"
+    }
+  },
+  {
+    "entity_id": "dinh-long-ho",
+    "name": "Đình Long Hồ",
+    "field": "coordinates",
+    "old": [
+      10.2318752,
+      105.9920066
+    ],
+    "new": [
+      10.205,
+      105.985
+    ],
+    "target": [
+      10.205,
+      105.985
+    ],
+    "status": "synchronized",
+    "evidence": {
+      "source": "Quyết định xếp hạng Di tích Lịch sử Văn hóa Đình Long Hồ",
+      "citation": "Đình Long Hồ tọa lạc tại khóm 1, Phường Long Hồ (TT Long Hồ cũ). Bị gán toạ độ bờ kè sông Cổ Chiên [10.254177, 105.9627693] khiến di tích kiến trúc trên cạn rơi sát mép nước, lệch 6.0 km.",
+      "confidence": 0.98,
+      "tier": "TIER_1_LEGAL"
+    }
+  }
+]

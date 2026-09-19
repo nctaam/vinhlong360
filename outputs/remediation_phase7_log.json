@@ -1,0 +1,4818 @@
+[
+  {
+    "from": "chua-ong-met-bodonisaraj",
+    "to": "chua-kompong-ong-met",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 35.19,
+    "reason": "Distance 35.19 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "nha-mat",
+    "to": "bun-nuoc-leo-cang-long",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 40.34,
+    "reason": "Distance 40.34 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "nh-ks-sy-dien",
+    "to": "thien-vien-truc-lam-duyen-hai",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 67.61,
+    "reason": "Distance 67.61 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "nh-ks-sy-dien",
+    "to": "bai-bien-ba-dong",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 66.4,
+    "reason": "Distance 66.40 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "nha-mat",
+    "to": "chua-khmer-phuong-thanh-pisay",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 45.53,
+    "reason": "Distance 45.53 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "chua-ong-met-bodonisaraj",
+    "to": "chom-chom-cau-ke",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 35.39,
+    "reason": "Distance 35.39 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "vung-cam-sanh-tra-on",
+    "to": "cho-noi-tra-on-dc",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 32.46,
+    "reason": "Distance 32.46 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "con-chim",
+    "to": "nha-mat",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 34.11,
+    "reason": "Distance 34.11 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "nha-hang-am-thuc-pho",
+    "to": "vuon-trai-cay-cu-lao-dai",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 57.1,
+    "reason": "Distance 57.10 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "le-hoi-cung-bien-my-long",
+    "to": "con-cu",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 45.87,
+    "reason": "Distance 45.87 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "canh-dong-dien-gio-ngoai-khoi-ba-dong",
+    "to": "le-hoi-ba-chua-xu",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 42.79,
+    "reason": "Distance 42.79 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "vuon-trai-cay-cu-lao-dai",
+    "to": "mekong-homestay-viet-nam",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 52.16,
+    "reason": "Distance 52.16 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "vuon-trai-cay-cu-lao-dai",
+    "to": "bun-tuoi-sau-thanh",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 50.65,
+    "reason": "Distance 50.65 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "tom-su-nuoc-lo-tra-vinh",
+    "to": "rau-mau-dat-giong-tra-vinh",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 29.53,
+    "reason": "Distance 29.53 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "bun-suong",
+    "to": "nha-mat",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 54.02,
+    "reason": "Distance 54.02 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "nha-mat",
+    "to": "dua-sap-cang-long",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 52.97,
+    "reason": "Distance 52.97 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "chua-ong-met-bodonisaraj",
+    "to": "chua-o-mich-ratanadiparamkoskeo",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 35.19,
+    "reason": "Distance 35.19 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "con-tam-hiep-dao-tam-hiep",
+    "to": "rung-ngap-man-phong-ho-binh-dai-ben-tre",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 26.82,
+    "reason": "Distance 26.82 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "cu-lao-tam-hiep",
+    "to": "rung-ngap-man-phong-ho-binh-dai-ben-tre",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 26.82,
+    "reason": "Distance 26.82 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "cua-bien-va-ngheu-thanh-phu",
+    "to": "ngheu-so-cua-bien-thanh-phu",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 51.17,
+    "reason": "Distance 51.17 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "ngheu-ben-tre",
+    "to": "cho-dem-ben-tre",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 35.12,
+    "reason": "Distance 35.12 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "ngheu-ben-tre",
+    "to": "festival-dua-ben-tre",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 35.73,
+    "reason": "Distance 35.73 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "ngheu-ben-tre",
+    "to": "keo-dua-ben-tre",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 35.61,
+    "reason": "Distance 35.61 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "ngheu-ben-tre",
+    "to": "mango-home-ben-tre",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 30.48,
+    "reason": "Distance 30.48 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "ngheu-ben-tre",
+    "to": "resort-ben-tre-riverside",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 34.74,
+    "reason": "Distance 34.74 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "ngheu-ben-tre",
+    "to": "ruou-dua-ben-tre",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 28.29,
+    "reason": "Distance 28.29 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "ngheu-ben-tre",
+    "to": "tinh-dau-dua",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 28.29,
+    "reason": "Distance 28.29 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "nha-tho-mac-bac-tieu-can",
+    "to": "rau-mau-dat-giong-tra-vinh",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 44.06,
+    "reason": "Distance 44.06 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "rung-ngap-man-long-khanh",
+    "to": "khach-san-gia-hoa-ii",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 42.31,
+    "reason": "Distance 42.31 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "mat-ong-rung-ban-my-long-nam",
+    "to": "tom-xe-hiep-my-dong",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 30.67,
+    "reason": "Distance 30.67 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "vung-cam-sanh-tra-on",
+    "to": "nha-hang-ngan-vinh",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 32.46,
+    "reason": "Distance 32.46 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "cong-vien-an-hoi",
+    "to": "homestay-con-ba-tu",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 44.2,
+    "reason": "Distance 44.20 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "con-tan-qui",
+    "to": "con-ngheu-my-long",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 67.83,
+    "reason": "Distance 67.83 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "con-phung-con-ong-dao-dua",
+    "to": "homestay-con-ba-tu",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 44.49,
+    "reason": "Distance 44.49 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "vung-cam-sanh-tra-on",
+    "to": "nha-gom-tu-buoi",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 32.46,
+    "reason": "Distance 32.46 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "mam-cong-ben-tre",
+    "to": "homestay-con-ba-tu",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 44.44,
+    "reason": "Distance 44.44 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "sieu-thi-go-tra-vinh",
+    "to": "cua-hang-ocop-bien-ba-dong",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 42.79,
+    "reason": "Distance 42.79 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "khach-san-dai-an",
+    "to": "homestay-con-ba-tu",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 44.46,
+    "reason": "Distance 44.46 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "chieu-ca-hom",
+    "to": "rung-duoc-long-khanh",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 36.37,
+    "reason": "Distance 36.37 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "rung-duoc-long-khanh",
+    "to": "le-hoi-nguyen-tieu-o-tra-cu",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 36.37,
+    "reason": "Distance 36.37 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "du-lich-sinh-thai-bien-thanh-phu",
+    "to": "ngheu-so-cua-bien-thanh-phu",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 54.64,
+    "reason": "Distance 54.64 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "khu-mo-phan-thanh-gian",
+    "to": "can-cu-tinh-uy-ben-tre-rung-la-thanh-phu",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 33.83,
+    "reason": "Distance 33.83 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "khu-mo-phan-thanh-gian",
+    "to": "khu-sinh-thai-gio-duoc-thanh-phu-ben-tre",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 33.83,
+    "reason": "Distance 33.83 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "chua-phap-tam",
+    "to": "ca-phi-sa-ot-thanh-phuoc",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 37.55,
+    "reason": "Distance 37.55 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "canh-dong-dien-gio-thanh-phu",
+    "to": "khu-mo-phan-thanh-gian",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 35.31,
+    "reason": "Distance 35.31 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "khu-mo-phan-thanh-gian",
+    "to": "lang-nghe-thach-dua-hung-phong",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 35.31,
+    "reason": "Distance 35.31 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "khu-mo-phan-thanh-gian",
+    "to": "lang-nghe-thu-cong-dua-phuoc-long",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 35.31,
+    "reason": "Distance 35.31 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "lang-du-kich-dong-khoi",
+    "to": "khu-mo-phan-thanh-gian",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 35.31,
+    "reason": "Distance 35.31 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "canh-dong-dien-gio-thanh-phu",
+    "to": "ca-phi-sa-ot-thanh-phuoc",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 37.28,
+    "reason": "Distance 37.28 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "lang-du-kich-dong-khoi",
+    "to": "ca-phi-sa-ot-thanh-phuoc",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 37.28,
+    "reason": "Distance 37.28 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "lang-nghe-thach-dua-hung-phong",
+    "to": "ca-phi-sa-ot-thanh-phuoc",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 37.28,
+    "reason": "Distance 37.28 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "lang-nghe-thu-cong-dua-phuoc-long",
+    "to": "ca-phi-sa-ot-thanh-phuoc",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 37.28,
+    "reason": "Distance 37.28 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "oc-viet-ben-tre",
+    "to": "rung-ngap-man-phong-ho-binh-dai-ben-tre",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 26.54,
+    "reason": "Distance 26.54 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "rung-ngap-man-binh-dai",
+    "to": "rung-ngap-man-phong-ho-binh-dai-ben-tre",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 26.54,
+    "reason": "Distance 26.54 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "chua-kompong-ksan",
+    "to": "rung-duoc-long-khanh",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 36.05,
+    "reason": "Distance 36.05 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "bun-nuoc-leo-tieu-can",
+    "to": "rung-duoc-long-khanh",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 36.24,
+    "reason": "Distance 36.24 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "rung-duoc-long-khanh",
+    "to": "bun-nuoc-leo-tra-cu",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 36.24,
+    "reason": "Distance 36.24 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "sieu-thi-go-ben-tre",
+    "to": "ca-phi-sa-ot-thanh-phuoc",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 38.82,
+    "reason": "Distance 38.82 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "mam-bo-hoc-tra-vinh",
+    "to": "rung-duoc-long-khanh",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 35.1,
+    "reason": "Distance 35.10 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "dua-luoi-truong-long-hoa",
+    "to": "rung-duoc-long-khanh",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 35.58,
+    "reason": "Distance 35.58 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "keo-dua-tan-thach",
+    "to": "ca-phi-sa-ot-thanh-phuoc",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 36.24,
+    "reason": "Distance 36.24 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "nha-khach-vinh-tra",
+    "to": "rung-duoc-long-khanh",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 35.16,
+    "reason": "Distance 35.16 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "cua-hang-ocop-bien-ba-dong",
+    "to": "vuon-dua-sap-ba-thuy",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 42.79,
+    "reason": "Distance 42.79 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "chao-cua-dong-ben-tre",
+    "to": "ca-phi-sa-ot-thanh-phuoc",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 35.23,
+    "reason": "Distance 35.23 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "cua-bien-ben-tre",
+    "to": "ca-phi-sa-ot-thanh-phuoc",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 35.23,
+    "reason": "Distance 35.23 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "cua-hang-ocop-bien-ba-dong",
+    "to": "keo-dua-sap-vicosap",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 42.79,
+    "reason": "Distance 42.79 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "ca-phi-sa-ot-thanh-phuoc",
+    "to": "khu-sinh-thai-gio-duoc-thanh-phu-ben-tre",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 36.04,
+    "reason": "Distance 36.04 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "cua-hang-ocop-bien-ba-dong",
+    "to": "chua-hang-wat-kompong-chray",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 42.79,
+    "reason": "Distance 42.79 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "den-that-phu-vo-mieu",
+    "to": "ca-phi-sa-ot-thanh-phuoc",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 35.33,
+    "reason": "Distance 35.33 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "khach-san-gia-hoa-ii",
+    "to": "thien-vien-truc-lam-tra-vinh",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 40.82,
+    "reason": "Distance 40.82 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "ao-ba-om",
+    "to": "rung-duoc-long-khanh",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 37.3,
+    "reason": "Distance 37.30 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "keo-dua-thu-cong-ben-tre",
+    "to": "ca-phi-sa-ot-thanh-phuoc",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 38.69,
+    "reason": "Distance 38.69 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "cua-hang-ocop-bien-ba-dong",
+    "to": "chua-phno-om-pung-chua-long-truong",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 42.79,
+    "reason": "Distance 42.79 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "chua-hang-kompong-chray",
+    "to": "rung-duoc-long-khanh",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 32.09,
+    "reason": "Distance 32.09 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "cua-hang-ocop-bien-ba-dong",
+    "to": "vam-tac-thu-rung-ban-song-co-chien-tra-vinh",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 42.79,
+    "reason": "Distance 42.79 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "nh-ks-sy-dien",
+    "to": "cau-lang-chim",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 62.74,
+    "reason": "Distance 62.74 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "nh-ks-sy-dien",
+    "to": "cau-truong-long-hoa",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 62.74,
+    "reason": "Distance 62.74 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "chua-van-phuoc-binh-dai",
+    "to": "rung-ngap-man-phong-ho-binh-dai-ben-tre",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 30.96,
+    "reason": "Distance 30.96 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "cua-hang-ocop-bien-ba-dong",
+    "to": "chua-hang-cha-lo",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 42.79,
+    "reason": "Distance 42.79 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "rau-mau-dat-giong-tra-vinh",
+    "to": "hu-tieu-soi-no-cong",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 40.0,
+    "reason": "Distance 40.00 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "sokfarm-tieu-can",
+    "to": "rau-mau-dat-giong-tra-vinh",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 40.0,
+    "reason": "Distance 40.00 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "khach-san-gia-hoa-ii",
+    "to": "duyen-hai-homestay",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 36.09,
+    "reason": "Distance 36.09 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "khach-san-gia-hoa-ii",
+    "to": "rung-ngap-man-hiep-thanh-duyen-hai-tra-vinh",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 33.2,
+    "reason": "Distance 33.20 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "khach-san-gia-hoa-ii",
+    "to": "kho-ca-keo-duyen-hai",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 36.87,
+    "reason": "Distance 36.87 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "rau-mau-dat-giong-tra-vinh",
+    "to": "chua-can-snom-can-nom",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 39.75,
+    "reason": "Distance 39.75 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "tham-chua-khmer",
+    "to": "khu-can-cu-tinh-uy-tra-vinh",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 37.69,
+    "reason": "Distance 37.69 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "khu-can-cu-tinh-uy-tra-vinh",
+    "to": "chua-soc-tro",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 37.69,
+    "reason": "Distance 37.69 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "chom-chom-con-tan-quy",
+    "to": "cua-hang-ocop-bien-ba-dong",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 42.79,
+    "reason": "Distance 42.79 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "cha-gio-chay",
+    "to": "khu-can-cu-tinh-uy-tra-vinh",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 37.69,
+    "reason": "Distance 37.69 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "du-lich-sinh-thai-bien-thanh-phu",
+    "to": "lang-nghe-hoa-kieng-thanh-tan",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 48.73,
+    "reason": "Distance 48.73 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "cua-hang-ocop-bien-ba-dong",
+    "to": "mieu-ba-chua-xu-tra-vinh",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 42.79,
+    "reason": "Distance 42.79 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "khu-di-tich-quoc-gia-dac-biet-dong-khoi",
+    "to": "du-lich-sinh-thai-bien-thanh-phu",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 45.9,
+    "reason": "Distance 45.90 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "cua-bien-va-ngheu-thanh-phu",
+    "to": "lang-nghe-hoa-kieng-thanh-tan",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 45.28,
+    "reason": "Distance 45.28 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "chua-o-mich-ratanadiparamkoskeo",
+    "to": "con-ngheu-my-long",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 59.7,
+    "reason": "Distance 59.70 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "khu-di-tich-quoc-gia-dac-biet-dong-khoi",
+    "to": "cua-bien-va-ngheu-thanh-phu",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 42.46,
+    "reason": "Distance 42.46 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "xoai-tu-quy",
+    "to": "sa-po-che-cho-lach",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 44.76,
+    "reason": "Distance 44.76 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "di-tich-lich-su-dong-khoi-my-long",
+    "to": "tom-xe-hiep-my-dong",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 30.67,
+    "reason": "Distance 30.67 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "xoai-tu-quy",
+    "to": "banh-trang-my-long",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 44.76,
+    "reason": "Distance 44.76 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "xoai-tu-quy",
+    "to": "dan-la-dua",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 44.76,
+    "reason": "Distance 44.76 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "cho-dem-ben-tre",
+    "to": "khu-bao-ve-canh-quan-thanh-phu-ben-tre",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 51.17,
+    "reason": "Distance 51.17 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "festival-dua-ben-tre",
+    "to": "khu-bao-ve-canh-quan-thanh-phu-ben-tre",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 51.76,
+    "reason": "Distance 51.76 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "keo-dua-ben-tre",
+    "to": "khu-bao-ve-canh-quan-thanh-phu-ben-tre",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 51.66,
+    "reason": "Distance 51.66 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "mango-home-ben-tre",
+    "to": "khu-bao-ve-canh-quan-thanh-phu-ben-tre",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 45.77,
+    "reason": "Distance 45.77 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "resort-ben-tre-riverside",
+    "to": "khu-bao-ve-canh-quan-thanh-phu-ben-tre",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 50.91,
+    "reason": "Distance 50.91 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "ruou-dua-ben-tre",
+    "to": "khu-bao-ve-canh-quan-thanh-phu-ben-tre",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 44.74,
+    "reason": "Distance 44.74 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "tinh-dau-dua",
+    "to": "khu-bao-ve-canh-quan-thanh-phu-ben-tre",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 44.74,
+    "reason": "Distance 44.74 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "xoai-tu-quy",
+    "to": "bien-an-thuy",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 44.76,
+    "reason": "Distance 44.76 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "lang-banh-trang-my-long",
+    "to": "du-lich-sinh-thai-bien-thanh-phu",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 48.32,
+    "reason": "Distance 48.32 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "con-quy",
+    "to": "rung-ngap-man-phong-ho-binh-dai-ben-tre",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 40.38,
+    "reason": "Distance 40.38 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "con-ngheu",
+    "to": "den-tho-chu-tich-ho-chi-minh-long-duc",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 28.18,
+    "reason": "Distance 28.18 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "rung-ngap-man-phong-ho-binh-dai-ben-tre",
+    "to": "dinh-binh-hoa-giong-trom",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 20.29,
+    "reason": "Distance 20.29 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "lang-banh-trang-my-long",
+    "to": "cua-bien-va-ngheu-thanh-phu",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 45.17,
+    "reason": "Distance 45.17 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "cau-can-tho",
+    "to": "vuon-trai-cay-cu-lao-dai",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 52.02,
+    "reason": "Distance 52.02 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "dinh-tan-thach",
+    "to": "rung-ngap-man-phong-ho-binh-dai-ben-tre",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 41.34,
+    "reason": "Distance 41.34 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "chua-van-phuoc",
+    "to": "ngheu-ben-tre",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 32.91,
+    "reason": "Distance 32.91 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "chua-van-phuoc",
+    "to": "cho-dem-ben-tre",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 30.64,
+    "reason": "Distance 30.64 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "chua-van-phuoc",
+    "to": "oc-gao-con-phu-da",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 52.11,
+    "reason": "Distance 52.11 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "xa-an-hiep",
+    "to": "farmstay-dat-cu-lao",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 41.81,
+    "reason": "Distance 41.81 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "p-tan-hoa",
+    "to": "rau-mau-dat-giong-tra-vinh",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 42.8,
+    "reason": "Distance 42.80 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "homestay-ut-trinh-con-tam-hiep",
+    "to": "rung-ngap-man-phong-ho-binh-dai-ben-tre",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 27.84,
+    "reason": "Distance 27.84 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "chua-kompongnigrodha",
+    "to": "vys-house-drinks-tea---2-thang-9",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 32.42,
+    "reason": "Distance 32.42 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "chua-kompongnigrodha",
+    "to": "robusta-koi-garden",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 32.42,
+    "reason": "Distance 32.42 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "chua-ong-met-bodonisaraj",
+    "to": "vicosap-keo-dua-sap-ocop-5-sao",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 31.56,
+    "reason": "Distance 31.56 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "chua-ong-met-bodonisaraj",
+    "to": "htx-nong-nghiep-thong-hoa-dua-sap",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 31.56,
+    "reason": "Distance 31.56 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "le-hoi-cung-bien-my-long",
+    "to": "nha-tho-la-ma-den-duc-me-hang-cuu-giup-la-ma",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 37.67,
+    "reason": "Distance 37.67 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "gao-sach-tom-lua-thanh-phu-ocop",
+    "to": "nuoc-cot-dua-va-san-pham-dua-ocop-beinco",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 34.69,
+    "reason": "Distance 34.69 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "du-lich-sinh-thai-bien-thanh-phu",
+    "to": "nuoc-cot-dua-va-san-pham-dua-ocop-beinco",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 54.64,
+    "reason": "Distance 54.64 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "kho-ca-bien-thanh-phu",
+    "to": "nuoc-cot-dua-va-san-pham-dua-ocop-beinco",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 54.64,
+    "reason": "Distance 54.64 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "gao-sach-tom-lua-thanh-phu-ocop",
+    "to": "vuon-dua-xiem-xanh-ap-thanh-hoa-1",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 33.27,
+    "reason": "Distance 33.27 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "du-lich-sinh-thai-bien-thanh-phu",
+    "to": "vuon-dua-xiem-xanh-ap-thanh-hoa-1",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 53.22,
+    "reason": "Distance 53.22 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "kho-ca-bien-thanh-phu",
+    "to": "vuon-dua-xiem-xanh-ap-thanh-hoa-1",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 53.22,
+    "reason": "Distance 53.22 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "du-lich-sinh-thai-miet-vuon-mo-cay-bac",
+    "to": "gao-sach-tom-lua-thanh-phu-ocop",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 34.69,
+    "reason": "Distance 34.69 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "du-lich-sinh-thai-bien-thanh-phu",
+    "to": "du-lich-sinh-thai-miet-vuon-mo-cay-bac",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 54.64,
+    "reason": "Distance 54.64 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "du-lich-sinh-thai-miet-vuon-mo-cay-bac",
+    "to": "kho-ca-bien-thanh-phu",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 54.64,
+    "reason": "Distance 54.64 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "banh-canh-ben-co-tra-vinh",
+    "to": "gao-huu-co-long-hoa-hoa-minh-ocop-4-sao",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 26.33,
+    "reason": "Distance 26.33 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "gao-huu-co-long-hoa-hoa-minh-ocop-4-sao",
+    "to": "homestay-bep-nam-bo-xua-con-chim",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 26.33,
+    "reason": "Distance 26.33 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "gao-huu-co-long-hoa-hoa-minh-ocop-4-sao",
+    "to": "homestay-tu-pha-con-chim",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 26.33,
+    "reason": "Distance 26.33 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "am-thuc-chay-ta-on---duong-so-2",
+    "to": "nha-co-huynh-thuy-le",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 67.95,
+    "reason": "Distance 67.95 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "kem-xoi-dua---khu-sao-mai",
+    "to": "nha-co-huynh-thuy-le",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 67.95,
+    "reason": "Distance 67.95 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "nha-co-huynh-thuy-le",
+    "to": "vung-buoi-da-xanh-chau-thanh",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 67.95,
+    "reason": "Distance 67.95 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "chua-ang-angkor-borei",
+    "to": "gao-huu-co-long-hoa-hoa-minh-ocop-4-sao",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 26.33,
+    "reason": "Distance 26.33 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "cau-lac-bo-don-ca-tai-tu-huyen-long-ho",
+    "to": "lang-det-chieu-cu-lao-dai",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 44.78,
+    "reason": "Distance 44.78 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "cau-lac-bo-don-ca-tai-tu-huyen-tam-binh",
+    "to": "lang-det-chieu-cu-lao-dai",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 44.78,
+    "reason": "Distance 44.78 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "cau-lac-bo-don-ca-tai-tu-huyen-tra-on",
+    "to": "lang-det-chieu-cu-lao-dai",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 44.78,
+    "reason": "Distance 44.78 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "cau-lac-bo-don-ca-tai-tu-huyen-mang-thit",
+    "to": "lang-det-chieu-cu-lao-dai",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 44.78,
+    "reason": "Distance 44.78 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "cau-lac-bo-don-ca-tai-tu-thi-xa-binh-minh",
+    "to": "lang-det-chieu-cu-lao-dai",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 44.78,
+    "reason": "Distance 44.78 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "cau-lac-bo-don-ca-tai-tu-tinh-vinh-long",
+    "to": "lang-det-chieu-cu-lao-dai",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 44.78,
+    "reason": "Distance 44.78 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "chua-ky-son-khmer-loan-my",
+    "to": "lang-banh-trang-giay-tuong-loc",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 26.11,
+    "reason": "Distance 26.11 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "chua-ky-son-khmer-loan-my",
+    "to": "lang-det-chieu-cu-lao-dai",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 29.86,
+    "reason": "Distance 29.86 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "khach-san-hoang-khiem",
+    "to": "lang-det-chieu-cu-lao-dai",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 44.78,
+    "reason": "Distance 44.78 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "hotel-phuoc-thinh",
+    "to": "lang-banh-trang-tra-on",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 32.91,
+    "reason": "Distance 32.91 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "hotel-phuoc-thinh",
+    "to": "lang-det-chieu-cu-lao-dai",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 44.78,
+    "reason": "Distance 44.78 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "lang-ong-tien-quan-thong-che-dieu-bat-tuong-quan-nguyen-van-",
+    "to": "lang-banh-trang-tra-on",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 32.91,
+    "reason": "Distance 32.91 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "lang-ong-tien-quan-thong-che-dieu-bat-tuong-quan-nguyen-van-",
+    "to": "lang-det-chieu-cu-lao-dai",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 44.78,
+    "reason": "Distance 44.78 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "cho-noi-tra-on",
+    "to": "lang-banh-trang-tra-on",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 32.91,
+    "reason": "Distance 32.91 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "cho-noi-tra-on",
+    "to": "lang-det-chieu-cu-lao-dai",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 44.78,
+    "reason": "Distance 44.78 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "lang-nghe-tau-hu-ky-my-hoa",
+    "to": "lang-banh-trang-giay-tuong-loc",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 27.72,
+    "reason": "Distance 27.72 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "lang-nghe-tau-hu-ky-my-hoa",
+    "to": "lang-det-chieu-cu-lao-dai",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 50.51,
+    "reason": "Distance 50.51 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "buoi-nam-roi-binh-minh",
+    "to": "lang-banh-trang-giay-tuong-loc",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 27.72,
+    "reason": "Distance 27.72 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "buoi-nam-roi-binh-minh",
+    "to": "lang-det-chieu-cu-lao-dai",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 50.51,
+    "reason": "Distance 50.51 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "mat-ong-hoa-dua-ben-tre",
+    "to": "ngheu-ben-tre",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 35.61,
+    "reason": "Distance 35.61 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "banh-trang-ngot-le-hang",
+    "to": "lang-banh-trang-tra-on",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 32.91,
+    "reason": "Distance 32.91 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "banh-trang-ngot-le-hang",
+    "to": "lang-det-chieu-cu-lao-dai",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 44.78,
+    "reason": "Distance 44.78 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "vuon-thanh-tra-dong-thanh",
+    "to": "lang-banh-trang-tra-on",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 32.91,
+    "reason": "Distance 32.91 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "vuon-thanh-tra-dong-thanh",
+    "to": "lang-det-chieu-cu-lao-dai",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 44.78,
+    "reason": "Distance 44.78 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "trai-nghiem-cau-ca-cau-tom-song-hau",
+    "to": "lang-banh-trang-tra-on",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 32.91,
+    "reason": "Distance 32.91 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "trai-nghiem-cau-ca-cau-tom-song-hau",
+    "to": "lang-det-chieu-cu-lao-dai",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 44.78,
+    "reason": "Distance 44.78 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "tra-gung-mat-ong-dong-binh",
+    "to": "lang-banh-trang-tra-on",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 32.91,
+    "reason": "Distance 32.91 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "tra-gung-mat-ong-dong-binh",
+    "to": "lang-det-chieu-cu-lao-dai",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 44.78,
+    "reason": "Distance 44.78 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "tra-gung-mat-ong-nguyen-chat-gingo",
+    "to": "lang-banh-trang-tra-on",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 32.91,
+    "reason": "Distance 32.91 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "tra-gung-mat-ong-nguyen-chat-gingo",
+    "to": "lang-det-chieu-cu-lao-dai",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 44.78,
+    "reason": "Distance 44.78 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "cho-tan-thanh",
+    "to": "lang-banh-trang-tra-on",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 32.91,
+    "reason": "Distance 32.91 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "cho-tan-thanh",
+    "to": "lang-det-chieu-cu-lao-dai",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 44.78,
+    "reason": "Distance 44.78 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "khoai-lang-say-gion-mien-tay",
+    "to": "lang-banh-trang-tra-on",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 32.91,
+    "reason": "Distance 32.91 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "khoai-lang-say-gion-mien-tay",
+    "to": "lang-det-chieu-cu-lao-dai",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 44.78,
+    "reason": "Distance 44.78 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "vu-sua-hoang-kim-thanh-binh-ocop",
+    "to": "lang-banh-trang-tra-on",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 32.91,
+    "reason": "Distance 32.91 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "vu-sua-hoang-kim-thanh-binh-ocop",
+    "to": "lang-det-chieu-cu-lao-dai",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 44.78,
+    "reason": "Distance 44.78 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "cu-cai-non-muoi-chua-bui-thi-thanh-thao-ocop",
+    "to": "lang-banh-trang-tra-on",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 32.91,
+    "reason": "Distance 32.91 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "cu-cai-non-muoi-chua-bui-thi-thanh-thao-ocop",
+    "to": "lang-det-chieu-cu-lao-dai",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 44.78,
+    "reason": "Distance 44.78 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "khu-du-lich-sinh-thai-nha-xua",
+    "to": "lang-banh-trang-tra-on",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 32.91,
+    "reason": "Distance 32.91 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "khu-du-lich-sinh-thai-nha-xua",
+    "to": "lang-det-chieu-cu-lao-dai",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 44.78,
+    "reason": "Distance 44.78 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "rau-thom-ocop-hop-tac-xa-phuoc-hau",
+    "to": "lang-banh-trang-tra-on",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 32.91,
+    "reason": "Distance 32.91 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "rau-thom-ocop-hop-tac-xa-phuoc-hau",
+    "to": "lang-det-chieu-cu-lao-dai",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 44.78,
+    "reason": "Distance 44.78 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "cu-lao-an-binh-bao-gom-xa-dong-phu",
+    "to": "lang-banh-trang-tra-on",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 32.91,
+    "reason": "Distance 32.91 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "cu-lao-an-binh-bao-gom-xa-dong-phu",
+    "to": "lang-det-chieu-cu-lao-dai",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 44.78,
+    "reason": "Distance 44.78 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "cuu-long-my-tuu-ruou-ocop-mang-thit",
+    "to": "lang-banh-trang-tra-on",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 32.91,
+    "reason": "Distance 32.91 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "cuu-long-my-tuu-ruou-ocop-mang-thit",
+    "to": "lang-det-chieu-cu-lao-dai",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 44.78,
+    "reason": "Distance 44.78 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "ruou-truyen-thong-cuu-long-cuu-long-my-tuu",
+    "to": "lang-banh-trang-tra-on",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 32.91,
+    "reason": "Distance 32.91 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "ruou-truyen-thong-cuu-long-cuu-long-my-tuu",
+    "to": "lang-det-chieu-cu-lao-dai",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 44.78,
+    "reason": "Distance 44.78 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "gach-nung-do-va-gom-khong-men-mang-thit",
+    "to": "lang-banh-trang-tra-on",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 32.91,
+    "reason": "Distance 32.91 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "gach-nung-do-va-gom-khong-men-mang-thit",
+    "to": "lang-det-chieu-cu-lao-dai",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 44.78,
+    "reason": "Distance 44.78 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "tour-dap-xe-kham-pha-lo-gach-mang-thit",
+    "to": "lang-banh-trang-tra-on",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 32.91,
+    "reason": "Distance 32.91 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "tour-dap-xe-kham-pha-lo-gach-mang-thit",
+    "to": "lang-det-chieu-cu-lao-dai",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 44.78,
+    "reason": "Distance 44.78 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "quan-ca-phe-nha-gach-gom-duong-dai",
+    "to": "lang-banh-trang-tra-on",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 32.91,
+    "reason": "Distance 32.91 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "quan-ca-phe-nha-gach-gom-duong-dai",
+    "to": "lang-det-chieu-cu-lao-dai",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 44.78,
+    "reason": "Distance 44.78 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "gach-do-truyen-thong-mang-thit",
+    "to": "lang-banh-trang-tra-on",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 32.91,
+    "reason": "Distance 32.91 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "gach-do-truyen-thong-mang-thit",
+    "to": "lang-det-chieu-cu-lao-dai",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 44.78,
+    "reason": "Distance 44.78 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "lang-nghe-det-chieu-vung-liem",
+    "to": "lang-banh-trang-tra-on",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 32.91,
+    "reason": "Distance 32.91 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "lang-nghe-det-chieu-vung-liem",
+    "to": "lang-det-chieu-cu-lao-dai",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 44.78,
+    "reason": "Distance 44.78 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "lang-se-loi-lac-va-dan-lat-vung-liem",
+    "to": "lang-banh-trang-tra-on",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 33.65,
+    "reason": "Distance 33.65 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "lang-se-loi-lac-va-dan-lat-vung-liem",
+    "to": "lang-banh-trang-giay-tuong-loc",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 34.05,
+    "reason": "Distance 34.05 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "lang-nghe-trong-lac-trung-thanh-dong",
+    "to": "lang-banh-trang-tra-on",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 33.65,
+    "reason": "Distance 33.65 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "lang-nghe-trong-lac-trung-thanh-dong",
+    "to": "lang-banh-trang-giay-tuong-loc",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 34.05,
+    "reason": "Distance 34.05 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "mut-xoai-cat-num-foodo-ocop",
+    "to": "lang-banh-trang-tra-on",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 32.91,
+    "reason": "Distance 32.91 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "mut-xoai-cat-num-foodo-ocop",
+    "to": "lang-det-chieu-cu-lao-dai",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 44.78,
+    "reason": "Distance 44.78 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "lang-nghe-dan-chieu-va-lam-banh-xe-may-tre",
+    "to": "lang-banh-trang-tra-on",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 39.86,
+    "reason": "Distance 39.86 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "lang-nghe-dan-chieu-va-lam-banh-xe-may-tre",
+    "to": "lang-banh-trang-giay-tuong-loc",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 43.31,
+    "reason": "Distance 43.31 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "bot-rau-ma-hoang-gia",
+    "to": "lang-banh-trang-tra-on",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 32.28,
+    "reason": "Distance 32.28 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "bot-rau-ma-hoang-gia",
+    "to": "lang-banh-trang-giay-tuong-loc",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 30.49,
+    "reason": "Distance 30.49 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "lang-nghe-banh-trang-tam-binh",
+    "to": "lang-banh-trang-tra-on",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 32.91,
+    "reason": "Distance 32.91 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "lang-nghe-banh-trang-tam-binh",
+    "to": "lang-det-chieu-cu-lao-dai",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 44.78,
+    "reason": "Distance 44.78 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "lang-nghe-dan-luc-binh-ngai-tu-binh-ninh",
+    "to": "lang-banh-trang-tra-on",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 32.91,
+    "reason": "Distance 32.91 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "lang-nghe-dan-luc-binh-ngai-tu-binh-ninh",
+    "to": "lang-det-chieu-cu-lao-dai",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 44.78,
+    "reason": "Distance 44.78 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "san-pham-chao-dua-chao-chanh-day-thuan-duyen-ocop-4-sao",
+    "to": "lang-banh-trang-tra-on",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 32.91,
+    "reason": "Distance 32.91 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "san-pham-chao-dua-chao-chanh-day-thuan-duyen-ocop-4-sao",
+    "to": "lang-det-chieu-cu-lao-dai",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 44.78,
+    "reason": "Distance 44.78 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "banh-trang-ngot-le-hang-htx-banh-trang-cu-lao-may",
+    "to": "lang-banh-trang-tra-on",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 32.91,
+    "reason": "Distance 32.91 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "banh-trang-ngot-le-hang-htx-banh-trang-cu-lao-may",
+    "to": "lang-det-chieu-cu-lao-dai",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 44.78,
+    "reason": "Distance 44.78 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "le-thuong-dien-dinh-tan-ngai",
+    "to": "lang-banh-trang-tra-on",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 32.91,
+    "reason": "Distance 32.91 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "le-thuong-dien-dinh-tan-ngai",
+    "to": "lang-det-chieu-cu-lao-dai",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 44.78,
+    "reason": "Distance 44.78 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "le-gio-phan-thanh-gian-tai-van-thanh-mieu",
+    "to": "lang-banh-trang-tra-on",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 32.91,
+    "reason": "Distance 32.91 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "le-gio-phan-thanh-gian-tai-van-thanh-mieu",
+    "to": "lang-det-chieu-cu-lao-dai",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 44.78,
+    "reason": "Distance 44.78 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "dap-xe-miet-vuon",
+    "to": "lang-banh-trang-tra-on",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 32.91,
+    "reason": "Distance 32.91 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "dap-xe-miet-vuon",
+    "to": "lang-det-chieu-cu-lao-dai",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 44.78,
+    "reason": "Distance 44.78 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "ngam-binh-minh-co-chien",
+    "to": "lang-banh-trang-tra-on",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 32.91,
+    "reason": "Distance 32.91 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "ngam-binh-minh-co-chien",
+    "to": "lang-det-chieu-cu-lao-dai",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 44.78,
+    "reason": "Distance 44.78 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "vuon-trai-cay-bi-bo",
+    "to": "lang-banh-trang-tra-on",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 32.91,
+    "reason": "Distance 32.91 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "vuon-trai-cay-bi-bo",
+    "to": "lang-det-chieu-cu-lao-dai",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 44.78,
+    "reason": "Distance 44.78 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "nam-khanh",
+    "to": "lang-banh-trang-tra-on",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 32.91,
+    "reason": "Distance 32.91 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "nam-khanh",
+    "to": "lang-det-chieu-cu-lao-dai",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 44.78,
+    "reason": "Distance 44.78 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "tet-doan-ngo",
+    "to": "lang-banh-trang-tra-on",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 32.91,
+    "reason": "Distance 32.91 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "tet-doan-ngo",
+    "to": "lang-det-chieu-cu-lao-dai",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 44.78,
+    "reason": "Distance 44.78 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "chom-chom-an-binh",
+    "to": "lang-banh-trang-tra-on",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 32.91,
+    "reason": "Distance 32.91 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "chom-chom-an-binh",
+    "to": "lang-det-chieu-cu-lao-dai",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 44.78,
+    "reason": "Distance 44.78 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "xa-lach-xoong-thuan-an",
+    "to": "lang-banh-trang-tra-on",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 32.91,
+    "reason": "Distance 32.91 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "xa-lach-xoong-thuan-an",
+    "to": "lang-det-chieu-cu-lao-dai",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 44.78,
+    "reason": "Distance 44.78 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "ca-chay-tra-on",
+    "to": "lang-banh-trang-tra-on",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 32.91,
+    "reason": "Distance 32.91 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "ca-chay-tra-on",
+    "to": "lang-det-chieu-cu-lao-dai",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 44.78,
+    "reason": "Distance 44.78 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "ca-dieu-hong-nuoi-be-long-ho",
+    "to": "lang-banh-trang-tra-on",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 32.91,
+    "reason": "Distance 32.91 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "ca-dieu-hong-nuoi-be-long-ho",
+    "to": "lang-det-chieu-cu-lao-dai",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 44.78,
+    "reason": "Distance 44.78 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "xoai-cat-num-vung-liem",
+    "to": "lang-banh-trang-tra-on",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 32.91,
+    "reason": "Distance 32.91 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "xoai-cat-num-vung-liem",
+    "to": "lang-det-chieu-cu-lao-dai",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 44.78,
+    "reason": "Distance 44.78 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "mot-ngay-lam-nong-dan",
+    "to": "lang-banh-trang-tra-on",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 32.91,
+    "reason": "Distance 32.91 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "mot-ngay-lam-nong-dan",
+    "to": "lang-det-chieu-cu-lao-dai",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 44.78,
+    "reason": "Distance 44.78 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "goi-cuon-tom-thit",
+    "to": "lang-banh-trang-tra-on",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 32.91,
+    "reason": "Distance 32.91 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "goi-cuon-tom-thit",
+    "to": "lang-det-chieu-cu-lao-dai",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 44.78,
+    "reason": "Distance 44.78 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "chao-ca-loc-rau-dang",
+    "to": "lang-banh-trang-tra-on",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 32.91,
+    "reason": "Distance 32.91 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "chao-ca-loc-rau-dang",
+    "to": "lang-det-chieu-cu-lao-dai",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 44.78,
+    "reason": "Distance 44.78 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "tom-cang-xanh-nuong",
+    "to": "lang-banh-trang-tra-on",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 32.91,
+    "reason": "Distance 32.91 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "tom-cang-xanh-nuong",
+    "to": "lang-det-chieu-cu-lao-dai",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 44.78,
+    "reason": "Distance 44.78 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "bo-nuong-la-lot",
+    "to": "lang-banh-trang-tra-on",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 32.91,
+    "reason": "Distance 32.91 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "bo-nuong-la-lot",
+    "to": "lang-det-chieu-cu-lao-dai",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 44.78,
+    "reason": "Distance 44.78 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "xem-hat-boi",
+    "to": "lang-banh-trang-tra-on",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 32.91,
+    "reason": "Distance 32.91 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "xem-hat-boi",
+    "to": "lang-det-chieu-cu-lao-dai",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 44.78,
+    "reason": "Distance 44.78 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "di-cho-dem-vinh-long",
+    "to": "lang-banh-trang-tra-on",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 32.91,
+    "reason": "Distance 32.91 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "di-cho-dem-vinh-long",
+    "to": "lang-det-chieu-cu-lao-dai",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 44.78,
+    "reason": "Distance 44.78 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "hoc-lam-banh-trang",
+    "to": "lang-banh-trang-tra-on",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 32.91,
+    "reason": "Distance 32.91 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "hoc-lam-banh-trang",
+    "to": "lang-det-chieu-cu-lao-dai",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 44.78,
+    "reason": "Distance 44.78 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "hai-chom-chom-an-binh",
+    "to": "lang-banh-trang-tra-on",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 32.91,
+    "reason": "Distance 32.91 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "hai-chom-chom-an-binh",
+    "to": "lang-det-chieu-cu-lao-dai",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 44.78,
+    "reason": "Distance 44.78 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "tham-quan-vuon-cam-tra-on",
+    "to": "lang-banh-trang-tra-on",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 32.91,
+    "reason": "Distance 32.91 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "tham-quan-vuon-cam-tra-on",
+    "to": "lang-det-chieu-cu-lao-dai",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 44.78,
+    "reason": "Distance 44.78 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "cau-lac-bo-don-ca-tai-tu-truong-xay-dung-mien-tay",
+    "to": "lang-banh-trang-tra-on",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 32.91,
+    "reason": "Distance 32.91 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "cau-lac-bo-don-ca-tai-tu-truong-xay-dung-mien-tay",
+    "to": "lang-det-chieu-cu-lao-dai",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 44.78,
+    "reason": "Distance 44.78 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "that-phu-mieu-chua-ong",
+    "to": "lang-banh-trang-tra-on",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 32.91,
+    "reason": "Distance 32.91 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "that-phu-mieu-chua-ong",
+    "to": "lang-det-chieu-cu-lao-dai",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 44.78,
+    "reason": "Distance 44.78 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "chua-phuoc-son",
+    "to": "lang-banh-trang-tra-on",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 32.91,
+    "reason": "Distance 32.91 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "chua-phuoc-son",
+    "to": "lang-det-chieu-cu-lao-dai",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 44.78,
+    "reason": "Distance 44.78 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "nha-co-huynh-ky",
+    "to": "lang-banh-trang-giay-tuong-loc",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 32.35,
+    "reason": "Distance 32.35 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "nha-co-huynh-ky",
+    "to": "lang-det-chieu-cu-lao-dai",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 22.26,
+    "reason": "Distance 22.26 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "wifi-cong-cong-khu-vuc-trung-tam-tp-vinh-long-vinh-long",
+    "to": "lang-det-chieu-cu-lao-dai",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 44.78,
+    "reason": "Distance 44.78 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "ben-pha-dinh-khao-vinh-long",
+    "to": "lang-det-chieu-cu-lao-dai",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 44.78,
+    "reason": "Distance 44.78 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "ben-xe-tra-on-tich-thien-vinh-long",
+    "to": "lang-det-chieu-cu-lao-dai",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 44.78,
+    "reason": "Distance 44.78 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "diem-xe-buyt-phuong-trang-vinh-long-can-tho-tuyen-lien-tinh-vinh-long",
+    "to": "lang-det-chieu-cu-lao-dai",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 44.78,
+    "reason": "Distance 44.78 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "ben-pha-tran-phu-can-tho-vinh-long-vinh-long",
+    "to": "lang-banh-trang-giay-tuong-loc",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 29.48,
+    "reason": "Distance 29.48 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "ben-pha-tran-phu-can-tho-vinh-long-vinh-long",
+    "to": "lang-det-chieu-cu-lao-dai",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 53.8,
+    "reason": "Distance 53.80 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "chua-tien-chau-tien-chau-tu",
+    "to": "lang-banh-trang-tra-on",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 33.99,
+    "reason": "Distance 33.99 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "chua-tien-chau-tien-chau-tu",
+    "to": "lang-det-chieu-cu-lao-dai",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 43.61,
+    "reason": "Distance 43.61 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "khu-luu-niem-chu-tich-hoi-dong-bo-truong-pham-hung",
+    "to": "lang-banh-trang-tra-on",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 32.91,
+    "reason": "Distance 32.91 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "khu-luu-niem-chu-tich-hoi-dong-bo-truong-pham-hung",
+    "to": "lang-det-chieu-cu-lao-dai",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 44.78,
+    "reason": "Distance 44.78 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "vung-di-san-duong-dai-mang-thit-vuong-quoc-lo-gach",
+    "to": "lang-banh-trang-tra-on",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 32.91,
+    "reason": "Distance 32.91 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "vung-di-san-duong-dai-mang-thit-vuong-quoc-lo-gach",
+    "to": "lang-det-chieu-cu-lao-dai",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 44.78,
+    "reason": "Distance 44.78 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "di-tich-lich-su-cach-mang-cai-ngang",
+    "to": "lang-banh-trang-tra-on",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 32.91,
+    "reason": "Distance 32.91 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "di-tich-lich-su-cach-mang-cai-ngang",
+    "to": "lang-det-chieu-cu-lao-dai",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 44.78,
+    "reason": "Distance 44.78 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "khu-mo-than-nhan-thoai-ngoc-hau-cu-lao-dai",
+    "to": "lang-banh-trang-tra-on",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 32.91,
+    "reason": "Distance 32.91 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "khu-mo-than-nhan-thoai-ngoc-hau-cu-lao-dai",
+    "to": "lang-det-chieu-cu-lao-dai",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 44.78,
+    "reason": "Distance 44.78 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "tuong-dai-doc-binh-le-can-nguyen-giao",
+    "to": "lang-banh-trang-tra-on",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 32.91,
+    "reason": "Distance 32.91 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "tuong-dai-doc-binh-le-can-nguyen-giao",
+    "to": "lang-det-chieu-cu-lao-dai",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 44.78,
+    "reason": "Distance 44.78 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "khu-di-tich-mo-than-mau-va-duong-mau-thoai-ngoc-hau",
+    "to": "lang-banh-trang-tra-on",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 40.75,
+    "reason": "Distance 40.75 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "khu-di-tich-mo-than-mau-va-duong-mau-thoai-ngoc-hau",
+    "to": "lang-banh-trang-giay-tuong-loc",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 44.78,
+    "reason": "Distance 44.78 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "dai-tuong-niem-liet-si-le-can-nguyen-giao",
+    "to": "lang-banh-trang-tra-on",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 32.91,
+    "reason": "Distance 32.91 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "dai-tuong-niem-liet-si-le-can-nguyen-giao",
+    "to": "lang-det-chieu-cu-lao-dai",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 44.78,
+    "reason": "Distance 44.78 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "lang-ong-tien-quan-thong-che-dieu-bat",
+    "to": "lang-banh-trang-giay-tuong-loc",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 32.46,
+    "reason": "Distance 32.46 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "lang-ong-tien-quan-thong-che-dieu-bat",
+    "to": "lang-det-chieu-cu-lao-dai",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 39.95,
+    "reason": "Distance 39.95 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "htx-cam-sanh-tra-on",
+    "to": "lang-banh-trang-tra-on",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 32.91,
+    "reason": "Distance 32.91 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "htx-cam-sanh-tra-on",
+    "to": "lang-det-chieu-cu-lao-dai",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 44.78,
+    "reason": "Distance 44.78 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "bidv-chi-nhanh-vinh-long-vinh-long",
+    "to": "lang-det-chieu-cu-lao-dai",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 44.78,
+    "reason": "Distance 44.78 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "cua-hang-viettel-dinh-tien-hoang-vinh-long",
+    "to": "lang-det-chieu-cu-lao-dai",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 43.88,
+    "reason": "Distance 43.88 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "ngay-hoi-banh-dan-gian-nam-bo-ket-hop-hoi-cho-ocop-vinh-long-vinh-long",
+    "to": "lang-banh-trang-tra-on",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 32.91,
+    "reason": "Distance 32.91 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "ngay-hoi-banh-dan-gian-nam-bo-ket-hop-hoi-cho-ocop-vinh-long-vinh-long",
+    "to": "lang-det-chieu-cu-lao-dai",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 44.78,
+    "reason": "Distance 44.78 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "tuan-le-van-hoa-the-thao-va-du-lich-tinh-vinh-long-vinh-long",
+    "to": "lang-banh-trang-tra-on",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 32.91,
+    "reason": "Distance 32.91 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "tuan-le-van-hoa-the-thao-va-du-lich-tinh-vinh-long-vinh-long",
+    "to": "lang-det-chieu-cu-lao-dai",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 44.78,
+    "reason": "Distance 44.78 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "hoi-cho-xuc-tien-thuong-mai-san-pham-cong-nghiep-nong-thon-va-ocop-vinh-long-gan-voi-ok-om-bok-vinh-long",
+    "to": "lang-banh-trang-tra-on",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 32.91,
+    "reason": "Distance 32.91 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "hoi-cho-xuc-tien-thuong-mai-san-pham-cong-nghiep-nong-thon-va-ocop-vinh-long-gan-voi-ok-om-bok-vinh-long",
+    "to": "lang-det-chieu-cu-lao-dai",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 44.78,
+    "reason": "Distance 44.78 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "hoi-cho-dac-san-vung-mien-khu-vuc-dbscl-vinh-long-vinh-long",
+    "to": "lang-banh-trang-tra-on",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 32.91,
+    "reason": "Distance 32.91 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "hoi-cho-dac-san-vung-mien-khu-vuc-dbscl-vinh-long-vinh-long",
+    "to": "lang-det-chieu-cu-lao-dai",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 44.78,
+    "reason": "Distance 44.78 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "giai-ban-marathon-vinh-long-mo-rong-hanh-trinh-trai-tim-mekong-vinh-long",
+    "to": "lang-banh-trang-tra-on",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 32.91,
+    "reason": "Distance 32.91 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "giai-ban-marathon-vinh-long-mo-rong-hanh-trinh-trai-tim-mekong-vinh-long",
+    "to": "lang-det-chieu-cu-lao-dai",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 44.78,
+    "reason": "Distance 44.78 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "giai-vo-dich-xe-dap-tinh-vinh-long-mo-rong-vinh-long",
+    "to": "lang-banh-trang-tra-on",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 32.91,
+    "reason": "Distance 32.91 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "giai-vo-dich-xe-dap-tinh-vinh-long-mo-rong-vinh-long",
+    "to": "lang-det-chieu-cu-lao-dai",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 44.78,
+    "reason": "Distance 44.78 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "khach-san-khoi-hoa",
+    "to": "lang-banh-trang-tra-on",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 32.91,
+    "reason": "Distance 32.91 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "khach-san-khoi-hoa",
+    "to": "lang-det-chieu-cu-lao-dai",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 44.78,
+    "reason": "Distance 44.78 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "khach-san-kim-chi-hoang-gia",
+    "to": "lang-banh-trang-tra-on",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 32.91,
+    "reason": "Distance 32.91 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "khach-san-kim-chi-hoang-gia",
+    "to": "lang-det-chieu-cu-lao-dai",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 44.78,
+    "reason": "Distance 44.78 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "lang-gach-gom-long-ho",
+    "to": "lang-banh-trang-tra-on",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 32.91,
+    "reason": "Distance 32.91 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "lang-gach-gom-long-ho",
+    "to": "lang-det-chieu-cu-lao-dai",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 44.78,
+    "reason": "Distance 44.78 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "lam-banh-dan-gian",
+    "to": "lang-banh-trang-tra-on",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 32.91,
+    "reason": "Distance 32.91 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "lam-banh-dan-gian",
+    "to": "lang-det-chieu-cu-lao-dai",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 44.78,
+    "reason": "Distance 44.78 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "vuon-trai-cay-6-tan",
+    "to": "lang-banh-trang-tra-on",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 32.91,
+    "reason": "Distance 32.91 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "vuon-trai-cay-6-tan",
+    "to": "lang-det-chieu-cu-lao-dai",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 44.78,
+    "reason": "Distance 44.78 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "vuon-trai-cay-tam-loc",
+    "to": "lang-banh-trang-tra-on",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 32.91,
+    "reason": "Distance 32.91 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "vuon-trai-cay-tam-loc",
+    "to": "lang-det-chieu-cu-lao-dai",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 44.78,
+    "reason": "Distance 44.78 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "lau-mam-mien-tay",
+    "to": "lang-banh-trang-tra-on",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 32.91,
+    "reason": "Distance 32.91 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "lau-mam-mien-tay",
+    "to": "lang-det-chieu-cu-lao-dai",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 44.78,
+    "reason": "Distance 44.78 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "tham-quan-vuon-trai-cay",
+    "to": "lang-banh-trang-tra-on",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 32.91,
+    "reason": "Distance 32.91 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "tham-quan-vuon-trai-cay",
+    "to": "lang-det-chieu-cu-lao-dai",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 44.78,
+    "reason": "Distance 44.78 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "khu-di-san-lo-gach-mang-thit",
+    "to": "lang-banh-trang-tra-on",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 32.91,
+    "reason": "Distance 32.91 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "khu-di-san-lo-gach-mang-thit",
+    "to": "lang-det-chieu-cu-lao-dai",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 44.78,
+    "reason": "Distance 44.78 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "festival-gach-gom-do-kinh-te-xanh-tinh-vinh-long-vinh-long",
+    "to": "lang-banh-trang-tra-on",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 32.91,
+    "reason": "Distance 32.91 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "festival-gach-gom-do-kinh-te-xanh-tinh-vinh-long-vinh-long",
+    "to": "lang-det-chieu-cu-lao-dai",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 44.78,
+    "reason": "Distance 44.78 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "san-pham-ocop-vung-liem-cha-lua-thanh-cong-gao-huu-co-tan-dat-mut-dua-la-dua-duc",
+    "to": "lang-banh-trang-tra-on",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 32.91,
+    "reason": "Distance 32.91 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "san-pham-ocop-vung-liem-cha-lua-thanh-cong-gao-huu-co-tan-dat-mut-dua-la-dua-duc",
+    "to": "lang-det-chieu-cu-lao-dai",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 44.78,
+    "reason": "Distance 44.78 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "lang-nghe-lam-tau-hu-ky",
+    "to": "lang-banh-trang-tra-on",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 32.91,
+    "reason": "Distance 32.91 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "khu-sinh-thai-nha-xua-long-ho",
+    "to": "lang-banh-trang-tra-on",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 32.91,
+    "reason": "Distance 32.91 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "cheo-xuong-rach-an-binh",
+    "to": "lang-banh-trang-tra-on",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 32.91,
+    "reason": "Distance 32.91 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "lang-gach-gom-mang-thit",
+    "to": "lang-banh-trang-tra-on",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 32.91,
+    "reason": "Distance 32.91 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "lang-nghe-gom-do-mang-thit",
+    "to": "lang-banh-trang-tra-on",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 32.91,
+    "reason": "Distance 32.91 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "quan-lau-ga-noi-nha-san",
+    "to": "lang-banh-trang-tra-on",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 32.91,
+    "reason": "Distance 32.91 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "quan-lau-tai-co",
+    "to": "lang-banh-trang-tra-on",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 32.91,
+    "reason": "Distance 32.91 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "quan-met-bun-dau-mam-tom",
+    "to": "lang-banh-trang-tra-on",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 32.91,
+    "reason": "Distance 32.91 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "quan-pho-91",
+    "to": "lang-banh-trang-tra-on",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 32.91,
+    "reason": "Distance 32.91 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "diem-du-lich-sinh-thai-tam-trong",
+    "to": "lang-banh-trang-tra-on",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 32.91,
+    "reason": "Distance 32.91 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "khu-du-lich-sinh-thai-miet-vuon-vinh-sang",
+    "to": "lang-banh-trang-tra-on",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 32.91,
+    "reason": "Distance 32.91 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "ngay-hoi-thanh-tra",
+    "to": "lang-banh-trang-tra-on",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 32.91,
+    "reason": "Distance 32.91 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "mua-nuoc-noi-dbscl",
+    "to": "lang-banh-trang-tra-on",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 32.91,
+    "reason": "Distance 32.91 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "canh-chua-ca-linh",
+    "to": "lang-banh-trang-tra-on",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 32.91,
+    "reason": "Distance 32.91 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "du-lich-vuon-chu-7-gat",
+    "to": "lang-banh-trang-tra-on",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 32.91,
+    "reason": "Distance 32.91 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "cau-lac-bo-du-lich-cuu-long",
+    "to": "lang-banh-trang-tra-on",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 32.91,
+    "reason": "Distance 32.91 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "cau-lac-bo-trung-tam-van-hoa-thong-tin-vinh-long",
+    "to": "lang-banh-trang-tra-on",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 32.91,
+    "reason": "Distance 32.91 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "xom-nuong-que-nha",
+    "to": "lang-banh-trang-tra-on",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 32.91,
+    "reason": "Distance 32.91 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "cu-lao-my-hoa",
+    "to": "nha-hang-thien-tan",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 29.54,
+    "reason": "Distance 29.54 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "cu-lao-my-hoa",
+    "to": "cu-lao-may-tra-on",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 29.54,
+    "reason": "Distance 29.54 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "cu-lao-my-hoa",
+    "to": "cho-noi-tra-on-dc",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 29.54,
+    "reason": "Distance 29.54 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "cu-lao-my-hoa",
+    "to": "khu-du-lich-s-mo-farm-cuu-long",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 29.54,
+    "reason": "Distance 29.54 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "cu-lao-my-hoa",
+    "to": "nha-gom-tu-buoi",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 29.54,
+    "reason": "Distance 29.54 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "ben-tiep-nhan-vu-khi-con-tau",
+    "to": "nh-ks-sy-dien",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 64.14,
+    "reason": "Distance 64.14 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "bun-nuoc-leo-cho-ba-tri-ben-tre",
+    "to": "farmstay-dat-cu-lao",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 42.28,
+    "reason": "Distance 42.28 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "chua-hang",
+    "to": "rung-duoc-long-khanh",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 32.09,
+    "reason": "Distance 32.09 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "di-tich-duong-ho-chi-minh-tren-bien-thanh-phu",
+    "to": "resort-ben-tre-riverside",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 54.23,
+    "reason": "Distance 54.23 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "du-lich-vuon-chu-7-gat-vlt",
+    "to": "lang-dan-luc-binh-ngai-tu",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 24.22,
+    "reason": "Distance 24.22 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "khu-du-lich-bien-con-bung",
+    "to": "resort-ben-tre-riverside",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 54.42,
+    "reason": "Distance 54.42 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "khu-du-lich-cho-noi-tra-on",
+    "to": "mai-la---quan-nuong-ngoi",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 32.91,
+    "reason": "Distance 32.91 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "khu-du-lich-cho-noi-tra-on",
+    "to": "quan-chao-luon-ba-nam-cho-vinh-long",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 32.91,
+    "reason": "Distance 32.91 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "khu-du-lich-cho-noi-tra-on",
+    "to": "khach-san-hoang-khiem",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 32.91,
+    "reason": "Distance 32.91 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "khu-du-lich-cho-noi-tra-on",
+    "to": "du-lich-vuon-chu-7-gat-vlt",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 32.91,
+    "reason": "Distance 32.91 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "khu-luu-niem-nguyen-dinh-chieu",
+    "to": "farmstay-dat-cu-lao",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 42.01,
+    "reason": "Distance 42.01 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "khu-mo-than-nhan-thoai-ngoc-hau",
+    "to": "mai-la---quan-nuong-ngoi",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 44.78,
+    "reason": "Distance 44.78 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "khu-mo-than-nhan-thoai-ngoc-hau",
+    "to": "quan-chao-luon-ba-nam-cho-vinh-long",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 44.78,
+    "reason": "Distance 44.78 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "khu-mo-than-nhan-thoai-ngoc-hau",
+    "to": "khach-san-hoang-khiem",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 44.78,
+    "reason": "Distance 44.78 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "khu-mo-than-nhan-thoai-ngoc-hau",
+    "to": "du-lich-vuon-chu-7-gat-vlt",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 44.78,
+    "reason": "Distance 44.78 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "khu-mo-than-nhan-thoai-ngoc-hau",
+    "to": "lang-dan-luc-binh-ngai-tu",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 26.73,
+    "reason": "Distance 26.73 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "lang-dan-luc-binh-ngai-tu",
+    "to": "mai-la---quan-nuong-ngoi",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 24.22,
+    "reason": "Distance 24.22 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "lang-dan-luc-binh-ngai-tu",
+    "to": "quan-chao-luon-ba-nam-cho-vinh-long",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 24.22,
+    "reason": "Distance 24.22 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "lang-dan-luc-binh-ngai-tu",
+    "to": "khach-san-hoang-khiem",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 24.22,
+    "reason": "Distance 24.22 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "lang-dan-luc-binh-ngai-tu",
+    "to": "lang-nghe-dan-non-la-tt-long-ho",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 24.22,
+    "reason": "Distance 24.22 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "lang-mo-va-khu-tuong-niem-nguyen-dinh-chieu",
+    "to": "farmstay-dat-cu-lao",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 45.99,
+    "reason": "Distance 45.99 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "lang-ong-con-tau",
+    "to": "nh-ks-sy-dien",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 64.22,
+    "reason": "Distance 64.22 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "lang-ong-nam-hai",
+    "to": "resort-ben-tre-riverside",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 53.96,
+    "reason": "Distance 53.96 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "lau-ba-mieu-ba-chua-xu-ba-co-hy",
+    "to": "nh-ks-sy-dien",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 65.19,
+    "reason": "Distance 65.19 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "di-tich-dau-cau-tiep-nhan-vu-khi-thanh-phong",
+    "to": "quan-hai-san-my-long-bai-bien-my-long-tra-vinh",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 24.39,
+    "reason": "Distance 24.39 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "quan-hai-san-my-long-bai-bien-my-long-tra-vinh",
+    "to": "di-tich-dau-cau-tiep-nhan-vu-khi-thanh-phong",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 24.39,
+    "reason": "Distance 24.39 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "di-tich-dau-cau-tiep-nhan-vu-khi-thanh-phong",
+    "to": "neyu-tea---thi-tran-giong-trom",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 24.73,
+    "reason": "Distance 24.73 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "neyu-tea---thi-tran-giong-trom",
+    "to": "di-tich-dau-cau-tiep-nhan-vu-khi-thanh-phong",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 24.73,
+    "reason": "Distance 24.73 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "di-tich-dau-cau-tiep-nhan-vu-khi-thanh-phong",
+    "to": "farmstay-dat-cu-lao",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 35.82,
+    "reason": "Distance 35.82 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "farmstay-dat-cu-lao",
+    "to": "di-tich-dau-cau-tiep-nhan-vu-khi-thanh-phong",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 35.82,
+    "reason": "Distance 35.82 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "di-tich-dau-cau-tiep-nhan-vu-khi-thanh-phong",
+    "to": "resort-ben-tre-riverside",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 38.31,
+    "reason": "Distance 38.31 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "resort-ben-tre-riverside",
+    "to": "di-tich-dau-cau-tiep-nhan-vu-khi-thanh-phong",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 38.31,
+    "reason": "Distance 38.31 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "chua-ky-son-khmer-loan-my",
+    "to": "mai-la---quan-nuong-ngoi",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 26.11,
+    "reason": "Distance 26.11 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "mai-la---quan-nuong-ngoi",
+    "to": "chua-ky-son-khmer-loan-my",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 26.11,
+    "reason": "Distance 26.11 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "chua-ky-son-khmer-loan-my",
+    "to": "quan-chao-luon-ba-nam-cho-vinh-long",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 26.11,
+    "reason": "Distance 26.11 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "quan-chao-luon-ba-nam-cho-vinh-long",
+    "to": "chua-ky-son-khmer-loan-my",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 26.11,
+    "reason": "Distance 26.11 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "chua-ky-son-khmer-loan-my",
+    "to": "khach-san-hoang-khiem",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 26.11,
+    "reason": "Distance 26.11 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "khach-san-hoang-khiem",
+    "to": "chua-ky-son-khmer-loan-my",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 26.11,
+    "reason": "Distance 26.11 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "chua-ky-son-khmer-loan-my",
+    "to": "hotel-phuoc-thinh",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 26.11,
+    "reason": "Distance 26.11 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "hotel-phuoc-thinh",
+    "to": "chua-ky-son-khmer-loan-my",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 26.11,
+    "reason": "Distance 26.11 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "khu-di-tich-mo-va-den-tho-phan-thanh-gian",
+    "to": "neyu-tea---thi-tran-giong-trom",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 24.74,
+    "reason": "Distance 24.74 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "neyu-tea---thi-tran-giong-trom",
+    "to": "khu-di-tich-mo-va-den-tho-phan-thanh-gian",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 24.74,
+    "reason": "Distance 24.74 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "khu-di-tich-mo-va-den-tho-phan-thanh-gian",
+    "to": "hu-tieu-chu-hien-ben-tre",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 34.12,
+    "reason": "Distance 34.12 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "hu-tieu-chu-hien-ben-tre",
+    "to": "khu-di-tich-mo-va-den-tho-phan-thanh-gian",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 34.12,
+    "reason": "Distance 34.12 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "khu-di-tich-mo-va-den-tho-phan-thanh-gian",
+    "to": "farmstay-dat-cu-lao",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 46.62,
+    "reason": "Distance 46.62 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "farmstay-dat-cu-lao",
+    "to": "khu-di-tich-mo-va-den-tho-phan-thanh-gian",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 46.62,
+    "reason": "Distance 46.62 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "nha-ong-nguyen-van-cung-dia-diem-thanh-lap-chi-bo-dang-dau-tien-ben-tre",
+    "to": "hu-tieu-chu-hien-ben-tre",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 27.88,
+    "reason": "Distance 27.88 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "hu-tieu-chu-hien-ben-tre",
+    "to": "nha-ong-nguyen-van-cung-dia-diem-thanh-lap-chi-bo-dang-dau-tien-ben-tre",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 27.88,
+    "reason": "Distance 27.88 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "nha-ong-nguyen-van-cung-dia-diem-thanh-lap-chi-bo-dang-dau-tien-ben-tre",
+    "to": "farmstay-dat-cu-lao",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 49.4,
+    "reason": "Distance 49.40 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "farmstay-dat-cu-lao",
+    "to": "nha-ong-nguyen-van-cung-dia-diem-thanh-lap-chi-bo-dang-dau-tien-ben-tre",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 49.4,
+    "reason": "Distance 49.40 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "duong-ho-chi-minh-tren-bien-ben-xuat-phat-thanh-phong",
+    "to": "monkey-tea---tra-sua-coffee",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 24.33,
+    "reason": "Distance 24.33 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "monkey-tea---tra-sua-coffee",
+    "to": "duong-ho-chi-minh-tren-bien-ben-xuat-phat-thanh-phong",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 24.33,
+    "reason": "Distance 24.33 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "duong-ho-chi-minh-tren-bien-ben-xuat-phat-thanh-phong",
+    "to": "resort-ben-tre-riverside",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 50.91,
+    "reason": "Distance 50.91 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "resort-ben-tre-riverside",
+    "to": "duong-ho-chi-minh-tren-bien-ben-xuat-phat-thanh-phong",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 50.91,
+    "reason": "Distance 50.91 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "duong-ho-chi-minh-tren-bien-ben-xuat-phat-thanh-phong",
+    "to": "mango-home-ben-tre",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 45.77,
+    "reason": "Distance 45.77 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "mango-home-ben-tre",
+    "to": "duong-ho-chi-minh-tren-bien-ben-xuat-phat-thanh-phong",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 45.77,
+    "reason": "Distance 45.77 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "dinh-an-qui",
+    "to": "banh-mi-co-sau-gan-truong-ai-hoc-tra-vinh-tra-vinh",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 21.45,
+    "reason": "Distance 21.45 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "banh-mi-co-sau-gan-truong-ai-hoc-tra-vinh-tra-vinh",
+    "to": "dinh-an-qui",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 21.45,
+    "reason": "Distance 21.45 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "dinh-an-qui",
+    "to": "farmstay-dat-cu-lao",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 26.2,
+    "reason": "Distance 26.20 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "farmstay-dat-cu-lao",
+    "to": "dinh-an-qui",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 26.2,
+    "reason": "Distance 26.20 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "chua-khai-tuong",
+    "to": "pho-tien",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 26.18,
+    "reason": "Distance 26.18 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "pho-tien",
+    "to": "chua-khai-tuong",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 26.18,
+    "reason": "Distance 26.18 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "chua-khai-tuong",
+    "to": "farmstay-dat-cu-lao",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 45.99,
+    "reason": "Distance 45.99 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "farmstay-dat-cu-lao",
+    "to": "chua-khai-tuong",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 45.99,
+    "reason": "Distance 45.99 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "mo-va-khu-luu-niem-vo-truong-toan",
+    "to": "pho-tien",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 25.93,
+    "reason": "Distance 25.93 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "pho-tien",
+    "to": "mo-va-khu-luu-niem-vo-truong-toan",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 25.93,
+    "reason": "Distance 25.93 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "mo-va-khu-luu-niem-vo-truong-toan",
+    "to": "farmstay-dat-cu-lao",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 42.48,
+    "reason": "Distance 42.48 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "farmstay-dat-cu-lao",
+    "to": "mo-va-khu-luu-niem-vo-truong-toan",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 42.48,
+    "reason": "Distance 42.48 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "den-tho-chu-tich-ho-chi-minh-long-duc",
+    "to": "quan-hai-san-my-long-bai-bien-my-long-tra-vinh",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 26.73,
+    "reason": "Distance 26.73 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "quan-hai-san-my-long-bai-bien-my-long-tra-vinh",
+    "to": "den-tho-chu-tich-ho-chi-minh-long-duc",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 26.73,
+    "reason": "Distance 26.73 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "den-tho-chu-tich-ho-chi-minh-long-duc",
+    "to": "nha-hang-bien-nho-ba-ong-tra-vinh",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 42.45,
+    "reason": "Distance 42.45 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "nha-hang-bien-nho-ba-ong-tra-vinh",
+    "to": "den-tho-chu-tich-ho-chi-minh-long-duc",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 42.45,
+    "reason": "Distance 42.45 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "den-tho-chu-tich-ho-chi-minh-long-duc",
+    "to": "resort-ben-tre-riverside",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 28.56,
+    "reason": "Distance 28.56 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "resort-ben-tre-riverside",
+    "to": "den-tho-chu-tich-ho-chi-minh-long-duc",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 28.56,
+    "reason": "Distance 28.56 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "den-tho-chu-tich-ho-chi-minh-long-duc",
+    "to": "mango-home-ben-tre",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 29.47,
+    "reason": "Distance 29.47 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "mango-home-ben-tre",
+    "to": "den-tho-chu-tich-ho-chi-minh-long-duc",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 29.47,
+    "reason": "Distance 29.47 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "chua-van-phuoc",
+    "to": "quan-hai-san-my-long-bai-bien-my-long-tra-vinh",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 51.61,
+    "reason": "Distance 51.61 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "quan-hai-san-my-long-bai-bien-my-long-tra-vinh",
+    "to": "chua-van-phuoc",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 51.61,
+    "reason": "Distance 51.61 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "chua-van-phuoc",
+    "to": "nha-hang-bien-nho-ba-ong-tra-vinh",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 65.73,
+    "reason": "Distance 65.73 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "nha-hang-bien-nho-ba-ong-tra-vinh",
+    "to": "chua-van-phuoc",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 65.73,
+    "reason": "Distance 65.73 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "chua-van-phuoc",
+    "to": "resort-ben-tre-riverside",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 31.63,
+    "reason": "Distance 31.63 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "resort-ben-tre-riverside",
+    "to": "chua-van-phuoc",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 31.63,
+    "reason": "Distance 31.63 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "chua-van-phuoc",
+    "to": "mango-home-ben-tre",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 22.98,
+    "reason": "Distance 22.98 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "mango-home-ben-tre",
+    "to": "chua-van-phuoc",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 22.98,
+    "reason": "Distance 22.98 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "bung-lac-dia",
+    "to": "nha-hang-bien-nho-ba-ong-tra-vinh",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 24.08,
+    "reason": "Distance 24.08 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "nha-hang-bien-nho-ba-ong-tra-vinh",
+    "to": "bung-lac-dia",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 24.08,
+    "reason": "Distance 24.08 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "bung-lac-dia",
+    "to": "resort-ben-tre-riverside",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 54.23,
+    "reason": "Distance 54.23 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "resort-ben-tre-riverside",
+    "to": "bung-lac-dia",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 54.23,
+    "reason": "Distance 54.23 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "bung-lac-dia",
+    "to": "mango-home-ben-tre",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 48.9,
+    "reason": "Distance 48.90 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "mango-home-ben-tre",
+    "to": "bung-lac-dia",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 48.9,
+    "reason": "Distance 48.90 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "cho-binh-dai",
+    "to": "neyu-tea---thi-tran-giong-trom",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 24.35,
+    "reason": "Distance 24.35 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "neyu-tea---thi-tran-giong-trom",
+    "to": "cho-binh-dai",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 24.35,
+    "reason": "Distance 24.35 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "cho-binh-dai",
+    "to": "lau-mam-ben-tre",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 29.97,
+    "reason": "Distance 29.97 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "lau-mam-ben-tre",
+    "to": "cho-binh-dai",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 29.97,
+    "reason": "Distance 29.97 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "cho-binh-dai",
+    "to": "homestay-ut-trinh-con-tam-hiep",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 23.33,
+    "reason": "Distance 23.33 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "homestay-ut-trinh-con-tam-hiep",
+    "to": "cho-binh-dai",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 23.33,
+    "reason": "Distance 23.33 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "lang-nghe-tau-hu-ky-my-hoa",
+    "to": "mai-la---quan-nuong-ngoi",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 27.72,
+    "reason": "Distance 27.72 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "mai-la---quan-nuong-ngoi",
+    "to": "lang-nghe-tau-hu-ky-my-hoa",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 27.72,
+    "reason": "Distance 27.72 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "lang-nghe-tau-hu-ky-my-hoa",
+    "to": "quan-chao-luon-ba-nam-cho-vinh-long",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 27.72,
+    "reason": "Distance 27.72 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "quan-chao-luon-ba-nam-cho-vinh-long",
+    "to": "lang-nghe-tau-hu-ky-my-hoa",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 27.72,
+    "reason": "Distance 27.72 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "lang-nghe-tau-hu-ky-my-hoa",
+    "to": "khach-san-hoang-khiem",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 27.72,
+    "reason": "Distance 27.72 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "khach-san-hoang-khiem",
+    "to": "lang-nghe-tau-hu-ky-my-hoa",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 27.72,
+    "reason": "Distance 27.72 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "lang-nghe-tau-hu-ky-my-hoa",
+    "to": "hotel-phuoc-thinh",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 27.72,
+    "reason": "Distance 27.72 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "hotel-phuoc-thinh",
+    "to": "lang-nghe-tau-hu-ky-my-hoa",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 27.72,
+    "reason": "Distance 27.72 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "lang-ong-nam-hai-con-bung",
+    "to": "nha-hang-bien-nho-ba-ong-tra-vinh",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 24.19,
+    "reason": "Distance 24.19 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "nha-hang-bien-nho-ba-ong-tra-vinh",
+    "to": "lang-ong-nam-hai-con-bung",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 24.19,
+    "reason": "Distance 24.19 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "lang-ong-nam-hai-con-bung",
+    "to": "resort-ben-tre-riverside",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 53.96,
+    "reason": "Distance 53.96 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "resort-ben-tre-riverside",
+    "to": "lang-ong-nam-hai-con-bung",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 53.96,
+    "reason": "Distance 53.96 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "lang-ong-nam-hai-con-bung",
+    "to": "mango-home-ben-tre",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 48.64,
+    "reason": "Distance 48.64 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "mango-home-ben-tre",
+    "to": "lang-ong-nam-hai-con-bung",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 48.64,
+    "reason": "Distance 48.64 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "khu-di-tich-mo-than-mau-va-duong-mau-thoai-ngoc-hau",
+    "to": "mai-la---quan-nuong-ngoi",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 44.78,
+    "reason": "Distance 44.78 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "mai-la---quan-nuong-ngoi",
+    "to": "khu-di-tich-mo-than-mau-va-duong-mau-thoai-ngoc-hau",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 44.78,
+    "reason": "Distance 44.78 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "khu-di-tich-mo-than-mau-va-duong-mau-thoai-ngoc-hau",
+    "to": "quan-chao-luon-ba-nam-cho-vinh-long",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 44.78,
+    "reason": "Distance 44.78 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "quan-chao-luon-ba-nam-cho-vinh-long",
+    "to": "khu-di-tich-mo-than-mau-va-duong-mau-thoai-ngoc-hau",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 44.78,
+    "reason": "Distance 44.78 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "khu-di-tich-mo-than-mau-va-duong-mau-thoai-ngoc-hau",
+    "to": "khach-san-hoang-khiem",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 44.78,
+    "reason": "Distance 44.78 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "khach-san-hoang-khiem",
+    "to": "khu-di-tich-mo-than-mau-va-duong-mau-thoai-ngoc-hau",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 44.78,
+    "reason": "Distance 44.78 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "khu-di-tich-mo-than-mau-va-duong-mau-thoai-ngoc-hau",
+    "to": "hotel-phuoc-thinh",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 44.78,
+    "reason": "Distance 44.78 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "hotel-phuoc-thinh",
+    "to": "khu-di-tich-mo-than-mau-va-duong-mau-thoai-ngoc-hau",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 44.78,
+    "reason": "Distance 44.78 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "di-tich-duong-ho-chi-minh-tren-bien-ben-thanh-phong",
+    "to": "nha-hang-bien-nho-ba-ong-tra-vinh",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 24.08,
+    "reason": "Distance 24.08 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "nha-hang-bien-nho-ba-ong-tra-vinh",
+    "to": "di-tich-duong-ho-chi-minh-tren-bien-ben-thanh-phong",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 24.08,
+    "reason": "Distance 24.08 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "di-tich-duong-ho-chi-minh-tren-bien-ben-thanh-phong",
+    "to": "resort-ben-tre-riverside",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 54.23,
+    "reason": "Distance 54.23 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "resort-ben-tre-riverside",
+    "to": "di-tich-duong-ho-chi-minh-tren-bien-ben-thanh-phong",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 54.23,
+    "reason": "Distance 54.23 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "di-tich-duong-ho-chi-minh-tren-bien-ben-thanh-phong",
+    "to": "mango-home-ben-tre",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 48.9,
+    "reason": "Distance 48.90 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "mango-home-ben-tre",
+    "to": "di-tich-duong-ho-chi-minh-tren-bien-ben-thanh-phong",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 48.9,
+    "reason": "Distance 48.90 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "dinh-than-an-ngai-trung",
+    "to": "pho-tien",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 20.53,
+    "reason": "Distance 20.53 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "pho-tien",
+    "to": "dinh-than-an-ngai-trung",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 20.53,
+    "reason": "Distance 20.53 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "dinh-than-an-ngai-trung",
+    "to": "farmstay-dat-cu-lao",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 47.78,
+    "reason": "Distance 47.78 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "farmstay-dat-cu-lao",
+    "to": "dinh-than-an-ngai-trung",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 47.78,
+    "reason": "Distance 47.78 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "nha-tho-la-ma-den-duc-me-hang-cuu-giup-la-ma",
+    "to": "farmstay-dat-cu-lao",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 47.94,
+    "reason": "Distance 47.94 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "farmstay-dat-cu-lao",
+    "to": "nha-tho-la-ma-den-duc-me-hang-cuu-giup-la-ma",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 47.94,
+    "reason": "Distance 47.94 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "nha-co-dai-an",
+    "to": "chao-am-cho-chau-thanh-tra-vinh",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 24.54,
+    "reason": "Distance 24.54 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "chao-am-cho-chau-thanh-tra-vinh",
+    "to": "nha-co-dai-an",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 24.54,
+    "reason": "Distance 24.54 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "nha-co-dai-an",
+    "to": "monkey-tea---tra-sua-coffee",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 25.92,
+    "reason": "Distance 25.92 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "monkey-tea---tra-sua-coffee",
+    "to": "nha-co-dai-an",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 25.92,
+    "reason": "Distance 25.92 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "nha-co-dai-an",
+    "to": "homestay-sokfram",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 22.19,
+    "reason": "Distance 22.19 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "homestay-sokfram",
+    "to": "nha-co-dai-an",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 22.19,
+    "reason": "Distance 22.19 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "dinh-phu-le",
+    "to": "pho-tien",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 27.7,
+    "reason": "Distance 27.70 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "pho-tien",
+    "to": "dinh-phu-le",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 27.7,
+    "reason": "Distance 27.70 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "dinh-phu-le",
+    "to": "farmstay-dat-cu-lao",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 45.46,
+    "reason": "Distance 45.46 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "farmstay-dat-cu-lao",
+    "to": "dinh-phu-le",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 45.46,
+    "reason": "Distance 45.46 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "chua-phuoc-khanh-chua-phat",
+    "to": "farmstay-dat-cu-lao",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 32.85,
+    "reason": "Distance 32.85 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "farmstay-dat-cu-lao",
+    "to": "chua-phuoc-khanh-chua-phat",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 32.85,
+    "reason": "Distance 32.85 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "chua-an-linh",
+    "to": "banh-mi-co-sau-gan-truong-ai-hoc-tra-vinh-tra-vinh",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 21.51,
+    "reason": "Distance 21.51 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "banh-mi-co-sau-gan-truong-ai-hoc-tra-vinh-tra-vinh",
+    "to": "chua-an-linh",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 21.51,
+    "reason": "Distance 21.51 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "chua-an-linh",
+    "to": "farmstay-dat-cu-lao",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 26.29,
+    "reason": "Distance 26.29 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "farmstay-dat-cu-lao",
+    "to": "chua-an-linh",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 26.29,
+    "reason": "Distance 26.29 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "khu-mo-nha-giao-vo-truong-toan",
+    "to": "neyu-tea---thi-tran-giong-trom",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 24.74,
+    "reason": "Distance 24.74 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "neyu-tea---thi-tran-giong-trom",
+    "to": "khu-mo-nha-giao-vo-truong-toan",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 24.74,
+    "reason": "Distance 24.74 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "khu-mo-nha-giao-vo-truong-toan",
+    "to": "hu-tieu-chu-hien-ben-tre",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 34.12,
+    "reason": "Distance 34.12 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "hu-tieu-chu-hien-ben-tre",
+    "to": "khu-mo-nha-giao-vo-truong-toan",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 34.12,
+    "reason": "Distance 34.12 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "khu-mo-nha-giao-vo-truong-toan",
+    "to": "farmstay-dat-cu-lao",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 46.62,
+    "reason": "Distance 46.62 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "farmstay-dat-cu-lao",
+    "to": "khu-mo-nha-giao-vo-truong-toan",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 46.62,
+    "reason": "Distance 46.62 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "lang-ong-nam-hai-binh-thang",
+    "to": "neyu-tea---thi-tran-giong-trom",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 25.9,
+    "reason": "Distance 25.90 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "neyu-tea---thi-tran-giong-trom",
+    "to": "lang-ong-nam-hai-binh-thang",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 25.9,
+    "reason": "Distance 25.90 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "lang-ong-nam-hai-binh-thang",
+    "to": "hu-tieu-chu-hien-ben-tre",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 32.42,
+    "reason": "Distance 32.42 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "hu-tieu-chu-hien-ben-tre",
+    "to": "lang-ong-nam-hai-binh-thang",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 32.42,
+    "reason": "Distance 32.42 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "lang-ong-nam-hai-binh-thang",
+    "to": "farmstay-dat-cu-lao",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 58.45,
+    "reason": "Distance 58.45 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "farmstay-dat-cu-lao",
+    "to": "lang-ong-nam-hai-binh-thang",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 58.45,
+    "reason": "Distance 58.45 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "chua-vam-ray-wat-samrong",
+    "to": "chao-am-cho-chau-thanh-tra-vinh",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 22.01,
+    "reason": "Distance 22.01 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "chao-am-cho-chau-thanh-tra-vinh",
+    "to": "chua-vam-ray-wat-samrong",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 22.01,
+    "reason": "Distance 22.01 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "chua-vam-ray-wat-samrong",
+    "to": "quan-hu-tieu-tieu-can-hu-tieu-muc-tra-vinh",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 22.67,
+    "reason": "Distance 22.67 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "quan-hu-tieu-tieu-can-hu-tieu-muc-tra-vinh",
+    "to": "chua-vam-ray-wat-samrong",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 22.67,
+    "reason": "Distance 22.67 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "mo-va-khu-luu-niem-nha-giao-vo-truong-toan",
+    "to": "neyu-tea---thi-tran-giong-trom",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 24.74,
+    "reason": "Distance 24.74 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "neyu-tea---thi-tran-giong-trom",
+    "to": "mo-va-khu-luu-niem-nha-giao-vo-truong-toan",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 24.74,
+    "reason": "Distance 24.74 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "mo-va-khu-luu-niem-nha-giao-vo-truong-toan",
+    "to": "hu-tieu-chu-hien-ben-tre",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 34.12,
+    "reason": "Distance 34.12 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "hu-tieu-chu-hien-ben-tre",
+    "to": "mo-va-khu-luu-niem-nha-giao-vo-truong-toan",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 34.12,
+    "reason": "Distance 34.12 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "mo-va-khu-luu-niem-nha-giao-vo-truong-toan",
+    "to": "farmstay-dat-cu-lao",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 46.62,
+    "reason": "Distance 46.62 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "farmstay-dat-cu-lao",
+    "to": "mo-va-khu-luu-niem-nha-giao-vo-truong-toan",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 46.62,
+    "reason": "Distance 46.62 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "lang-ong-tien-quan-thong-che-dieu-bat",
+    "to": "mai-la---quan-nuong-ngoi",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 32.46,
+    "reason": "Distance 32.46 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "mai-la---quan-nuong-ngoi",
+    "to": "lang-ong-tien-quan-thong-che-dieu-bat",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 32.46,
+    "reason": "Distance 32.46 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "lang-ong-tien-quan-thong-che-dieu-bat",
+    "to": "quan-chao-luon-ba-nam-cho-vinh-long",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 32.46,
+    "reason": "Distance 32.46 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "quan-chao-luon-ba-nam-cho-vinh-long",
+    "to": "lang-ong-tien-quan-thong-che-dieu-bat",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 32.46,
+    "reason": "Distance 32.46 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "lang-ong-tien-quan-thong-che-dieu-bat",
+    "to": "khach-san-hoang-khiem",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 32.46,
+    "reason": "Distance 32.46 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "khach-san-hoang-khiem",
+    "to": "lang-ong-tien-quan-thong-che-dieu-bat",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 32.46,
+    "reason": "Distance 32.46 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "lang-ong-tien-quan-thong-che-dieu-bat",
+    "to": "hotel-phuoc-thinh",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 32.46,
+    "reason": "Distance 32.46 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "hotel-phuoc-thinh",
+    "to": "lang-ong-tien-quan-thong-che-dieu-bat",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 32.46,
+    "reason": "Distance 32.46 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "di-tich-lich-su-dong-khoi-my-long",
+    "to": "deja-vu-cafe",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 30.87,
+    "reason": "Distance 30.87 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "deja-vu-cafe",
+    "to": "di-tich-lich-su-dong-khoi-my-long",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 30.87,
+    "reason": "Distance 30.87 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "di-tich-lich-su-dong-khoi-my-long",
+    "to": "jollibee---coopmart-tra-vinh",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 30.87,
+    "reason": "Distance 30.87 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "jollibee---coopmart-tra-vinh",
+    "to": "di-tich-lich-su-dong-khoi-my-long",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 30.87,
+    "reason": "Distance 30.87 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "di-tich-lich-su-dong-khoi-my-long",
+    "to": "homestay-bep-nam-bo-xua-con-chim",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 30.67,
+    "reason": "Distance 30.67 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "homestay-bep-nam-bo-xua-con-chim",
+    "to": "di-tich-lich-su-dong-khoi-my-long",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 30.67,
+    "reason": "Distance 30.67 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "di-tich-lich-su-dong-khoi-my-long",
+    "to": "homestay-tu-pha-con-chim",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 30.67,
+    "reason": "Distance 30.67 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "homestay-tu-pha-con-chim",
+    "to": "di-tich-lich-su-dong-khoi-my-long",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 30.67,
+    "reason": "Distance 30.67 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "chua-vam-ray-chua-phat-nam",
+    "to": "chao-am-cho-chau-thanh-tra-vinh",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 21.91,
+    "reason": "Distance 21.91 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "chao-am-cho-chau-thanh-tra-vinh",
+    "to": "chua-vam-ray-chua-phat-nam",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 21.91,
+    "reason": "Distance 21.91 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "chua-vam-ray-chua-phat-nam",
+    "to": "quan-hu-tieu-tieu-can-hu-tieu-muc-tra-vinh",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 23.37,
+    "reason": "Distance 23.37 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "quan-hu-tieu-tieu-can-hu-tieu-muc-tra-vinh",
+    "to": "chua-vam-ray-chua-phat-nam",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 23.37,
+    "reason": "Distance 23.37 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "chua-vam-ray",
+    "to": "chao-am-cho-chau-thanh-tra-vinh",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 21.91,
+    "reason": "Distance 21.91 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "chao-am-cho-chau-thanh-tra-vinh",
+    "to": "chua-vam-ray",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 21.91,
+    "reason": "Distance 21.91 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "chua-vam-ray",
+    "to": "quan-hu-tieu-tieu-can-hu-tieu-muc-tra-vinh",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 23.37,
+    "reason": "Distance 23.37 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "quan-hu-tieu-tieu-can-hu-tieu-muc-tra-vinh",
+    "to": "chua-vam-ray",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 23.37,
+    "reason": "Distance 23.37 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "khu-di-tich-nguyen-dinh-chieu",
+    "to": "pho-tien",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 26.18,
+    "reason": "Distance 26.18 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "pho-tien",
+    "to": "khu-di-tich-nguyen-dinh-chieu",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 26.18,
+    "reason": "Distance 26.18 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "khu-di-tich-nguyen-dinh-chieu",
+    "to": "farmstay-dat-cu-lao",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 45.99,
+    "reason": "Distance 45.99 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "farmstay-dat-cu-lao",
+    "to": "khu-di-tich-nguyen-dinh-chieu",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 45.99,
+    "reason": "Distance 45.99 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "cang-ca-binh-thang",
+    "to": "neyu-tea---thi-tran-giong-trom",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 27.66,
+    "reason": "Distance 27.66 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "neyu-tea---thi-tran-giong-trom",
+    "to": "cang-ca-binh-thang",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 27.66,
+    "reason": "Distance 27.66 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "cang-ca-binh-thang",
+    "to": "lau-mam-ben-tre",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 32.95,
+    "reason": "Distance 32.95 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "lau-mam-ben-tre",
+    "to": "cang-ca-binh-thang",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 32.95,
+    "reason": "Distance 32.95 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "cang-ca-binh-thang",
+    "to": "homestay-ut-trinh-con-tam-hiep",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 25.92,
+    "reason": "Distance 25.92 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "homestay-ut-trinh-con-tam-hiep",
+    "to": "cang-ca-binh-thang",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 25.92,
+    "reason": "Distance 25.92 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "lang-mo-va-dinh-phan-thanh-gian",
+    "to": "pho-tien",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 25.79,
+    "reason": "Distance 25.79 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "pho-tien",
+    "to": "lang-mo-va-dinh-phan-thanh-gian",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 25.79,
+    "reason": "Distance 25.79 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "lang-mo-va-dinh-phan-thanh-gian",
+    "to": "farmstay-dat-cu-lao",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 42.86,
+    "reason": "Distance 42.86 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "farmstay-dat-cu-lao",
+    "to": "lang-mo-va-dinh-phan-thanh-gian",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 42.86,
+    "reason": "Distance 42.86 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "nha-co-huynh-ky",
+    "to": "mai-la---quan-nuong-ngoi",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 32.35,
+    "reason": "Distance 32.35 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "mai-la---quan-nuong-ngoi",
+    "to": "nha-co-huynh-ky",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 32.35,
+    "reason": "Distance 32.35 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "nha-co-huynh-ky",
+    "to": "quan-chao-luon-ba-nam-cho-vinh-long",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 32.35,
+    "reason": "Distance 32.35 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "quan-chao-luon-ba-nam-cho-vinh-long",
+    "to": "nha-co-huynh-ky",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 32.35,
+    "reason": "Distance 32.35 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "nha-co-huynh-ky",
+    "to": "khach-san-hoang-khiem",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 32.35,
+    "reason": "Distance 32.35 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "khach-san-hoang-khiem",
+    "to": "nha-co-huynh-ky",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 32.35,
+    "reason": "Distance 32.35 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "nha-co-huynh-ky",
+    "to": "hotel-phuoc-thinh",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 32.35,
+    "reason": "Distance 32.35 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "hotel-phuoc-thinh",
+    "to": "nha-co-huynh-ky",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 32.35,
+    "reason": "Distance 32.35 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "di-tich-cay-da-doi",
+    "to": "hu-tieu-chu-hien-ben-tre",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 27.88,
+    "reason": "Distance 27.88 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "hu-tieu-chu-hien-ben-tre",
+    "to": "di-tich-cay-da-doi",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 27.88,
+    "reason": "Distance 27.88 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "di-tich-cay-da-doi",
+    "to": "farmstay-dat-cu-lao",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 49.4,
+    "reason": "Distance 49.40 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "farmstay-dat-cu-lao",
+    "to": "di-tich-cay-da-doi",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 49.4,
+    "reason": "Distance 49.40 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "canh-dong-dien-gio-ngoai-khoi-ba-dong",
+    "to": "deja-vu-cafe",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 42.98,
+    "reason": "Distance 42.98 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "deja-vu-cafe",
+    "to": "canh-dong-dien-gio-ngoai-khoi-ba-dong",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 42.98,
+    "reason": "Distance 42.98 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "canh-dong-dien-gio-ngoai-khoi-ba-dong",
+    "to": "jollibee---coopmart-tra-vinh",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 42.98,
+    "reason": "Distance 42.98 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "jollibee---coopmart-tra-vinh",
+    "to": "canh-dong-dien-gio-ngoai-khoi-ba-dong",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 42.98,
+    "reason": "Distance 42.98 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "canh-dong-dien-gio-ngoai-khoi-ba-dong",
+    "to": "homestay-bep-nam-bo-xua-con-chim",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 42.79,
+    "reason": "Distance 42.79 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "homestay-bep-nam-bo-xua-con-chim",
+    "to": "canh-dong-dien-gio-ngoai-khoi-ba-dong",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 42.79,
+    "reason": "Distance 42.79 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "canh-dong-dien-gio-ngoai-khoi-ba-dong",
+    "to": "homestay-tu-pha-con-chim",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 42.79,
+    "reason": "Distance 42.79 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "homestay-tu-pha-con-chim",
+    "to": "canh-dong-dien-gio-ngoai-khoi-ba-dong",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 42.79,
+    "reason": "Distance 42.79 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "khu-du-lich-sinh-thai-chin-song-thanh-phu",
+    "to": "farmstay-dat-cu-lao",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 32.98,
+    "reason": "Distance 32.98 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "farmstay-dat-cu-lao",
+    "to": "khu-du-lich-sinh-thai-chin-song-thanh-phu",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 32.98,
+    "reason": "Distance 32.98 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "chua-ong-met-bodonisaraj",
+    "to": "hu-tieu-ba-tam-cau-ke-tra-vinh",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 28.0,
+    "reason": "Distance 28.00 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "hu-tieu-ba-tam-cau-ke-tra-vinh",
+    "to": "chua-ong-met-bodonisaraj",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 28.0,
+    "reason": "Distance 28.00 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "chua-ong-met-bodonisaraj",
+    "to": "quan-chao-ca-ro-dong-cho-cau-ke-tra-vinh",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 28.0,
+    "reason": "Distance 28.00 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "quan-chao-ca-ro-dong-cho-cau-ke-tra-vinh",
+    "to": "chua-ong-met-bodonisaraj",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 28.0,
+    "reason": "Distance 28.00 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "chua-ong-met-bodonisaraj",
+    "to": "khu-du-lich-sinh-thai-nam-son",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 34.95,
+    "reason": "Distance 34.95 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "khu-du-lich-sinh-thai-nam-son",
+    "to": "chua-ong-met-bodonisaraj",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 34.95,
+    "reason": "Distance 34.95 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "chua-ong-met-bodonisaraj",
+    "to": "suonsia-homestay",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 28.0,
+    "reason": "Distance 28.00 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "suonsia-homestay",
+    "to": "chua-ong-met-bodonisaraj",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 28.0,
+    "reason": "Distance 28.00 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "khu-du-lich-sinh-thai-anh-ba-khia",
+    "to": "neyu-tea---thi-tran-giong-trom",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 25.9,
+    "reason": "Distance 25.90 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "neyu-tea---thi-tran-giong-trom",
+    "to": "khu-du-lich-sinh-thai-anh-ba-khia",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 25.9,
+    "reason": "Distance 25.90 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "khu-du-lich-sinh-thai-anh-ba-khia",
+    "to": "hu-tieu-chu-hien-ben-tre",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 32.42,
+    "reason": "Distance 32.42 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "hu-tieu-chu-hien-ben-tre",
+    "to": "khu-du-lich-sinh-thai-anh-ba-khia",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 32.42,
+    "reason": "Distance 32.42 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "khu-du-lich-sinh-thai-anh-ba-khia",
+    "to": "farmstay-dat-cu-lao",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 58.45,
+    "reason": "Distance 58.45 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "farmstay-dat-cu-lao",
+    "to": "khu-du-lich-sinh-thai-anh-ba-khia",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 58.45,
+    "reason": "Distance 58.45 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "di-tich-chien-thang-gia-the",
+    "to": "nha-hang-bien-nho-ba-ong-tra-vinh",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 24.08,
+    "reason": "Distance 24.08 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "nha-hang-bien-nho-ba-ong-tra-vinh",
+    "to": "di-tich-chien-thang-gia-the",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 24.08,
+    "reason": "Distance 24.08 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "di-tich-chien-thang-gia-the",
+    "to": "resort-ben-tre-riverside",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 54.23,
+    "reason": "Distance 54.23 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "resort-ben-tre-riverside",
+    "to": "di-tich-chien-thang-gia-the",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 54.23,
+    "reason": "Distance 54.23 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "di-tich-chien-thang-gia-the",
+    "to": "mango-home-ben-tre",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 48.9,
+    "reason": "Distance 48.90 km exceeds maximum proximity threshold (20.0 km)"
+  },
+  {
+    "from": "mango-home-ben-tre",
+    "to": "di-tich-chien-thang-gia-the",
+    "old_type": "near",
+    "new_type": "related_to",
+    "distance_km": 48.9,
+    "reason": "Distance 48.90 km exceeds maximum proximity threshold (20.0 km)"
+  }
+]

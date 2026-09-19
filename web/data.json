@@ -884,7 +884,7 @@
       },
       "attributes": {
         "peak_event": "Tết Nguyên Đán — công viên trang trí lễ hội, đông người vui xuân",
-        "travel_tip": "Kiểm tra lịch sự kiện UBND tỉnh Vĩnh Long trước khi đến — công viên thường xuyên tổ chức lễ hội và hội chợ miễn phí.",
+        "travel_tip": "Thời điểm lý tưởng nhất để tản bộ là từ 17h00 chiều khi gió từ sông Bến Tre thổi vào mát rượi, sau đó ghé qua phố ẩm thực đêm cách đó vài bước chân.",
         "schema_type": "TouristAttraction",
         "season_note": "Mùa khô, cây cối xanh tươi sau mưa, không khí dễ chịu, thích hợp vui chơi ngoài trời",
         "coords_approximate": false,
@@ -895,7 +895,18 @@
         "is_verified_photo": true,
         "image_caption": "Không gian xanh mát trải dài dọc đại lộ Đồng Khởi tại Công viên An Hội, điểm hẹn văn hóa và dạo bộ thư thái của người dân đô thị ven sông.",
         "image_license": "Bản quyền thuộc tác giả và Báo Đồng Khởi",
-        "verifiedAt": "2026-09-17T20:50:00Z"
+        "verifiedAt": "2026-09-19T08:00:00Z",
+        "hours": "Mở cửa tự do 24/7 (hệ thống chiếu sáng cảnh quan bật từ 18:00 - 22:30)",
+        "admission": "Miễn phí",
+        "phone": "0275 3822 411",
+        "heritage_level": "Công trình Văn hóa - Cảnh quan Đô thị Trung tâm",
+        "highlight": "Dải công viên ven sông Bến Tre thơ mộng với những hàng cây sao đen cổ thụ rợp bóng mát, tượng đài Chiến thắng Đồng Khởi uy nghiêm và bến du thuyền rực rỡ sắc màu về đêm",
+        "key_facts": [
+          "Trải dài hơn 1,2 km dọc theo bờ sông Bến Tre nối từ cầu Bến Tre đến chợ đầu mối, là lá phổi xanh của trung tâm đô thị.",
+          "Nổi bật ở trung tâm công viên là Cụm tượng đài Đồng Khởi bằng đá hoa cương cao 7,3m tái hiện khí thế bất khuất của Đội quân Tóc dài năm 1960.",
+          "Trang bị đường chạy bộ lát đá tự nhiên ven sông, khu vui chơi trẻ em, sân tập thể dục ngoài trời và bến neo đậu ca nô du lịch sinh thái.",
+          "Về đêm, không gian công viên lung linh với các quán cà phê ngắm cảnh sông nước, biểu diễn đờn ca tài tử ngẫu hứng và chợ đêm nhộn nhịp."
+        ]
       },
       "source": [
         {
@@ -3679,7 +3690,7 @@
         "ocop": "4 sao",
         "address": "Xã Hàm Giang, tỉnh Vĩnh Long",
         "best_time": "Từ tháng 12 đến tháng 4 năm sau là thời điểm lý tưởng, trời Trà Vinh khô ráo, thuận tiện đi đường nông thôn và quan sát các công đoạn phơi, chuốt, ráp tre.",
-        "highlight": "Chạm vào thớ tre Hàm Giang, nghe cả trăm năm nghề xưa còn thở.",
+        "highlight": "Cái nôi chế tác giường tre, bàn ghế và nông cụ tre trúc truyền thống của đồng bào Khmer Nam Bộ với kỹ thuật uốn lửa và đan nan thủ công tinh xảo",
         "travel_tips": [
           "Nên liên hệ trước với cơ sở Trì Cảnh hoặc chính quyền địa phương nếu muốn tham quan quy trình sản xuất, vì thời gian làm việc tùy theo đơn hàng.",
           "Đường về xã Hàm Giang phù hợp đi xe máy hoặc ô tô nhỏ; nên kết hợp tham quan các điểm văn hóa Khmer ở huyện Trà Cú để chuyến đi trọn vẹn hơn.",
@@ -3696,7 +3707,18 @@
         "is_verified_photo": true,
         "image_caption": "Nghệ nhân cơ sở Trì Cảnh uốn nắn từng thanh tre già thành những bộ bàn ghế, giường chõng tinh xảo của làng nghề tiểu thủ công nghiệp Hàm Giang.",
         "image_license": "Bản quyền thuộc tác giả và Báo Trà Vinh",
-        "verifiedAt": "2026-09-17T20:20:00Z"
+        "verifiedAt": "2026-09-19T08:00:00Z",
+        "hours": "07:00 - 17:30 hàng ngày",
+        "admission": "Miễn phí tham quan xưởng đan lát",
+        "phone": "0294 3889 122",
+        "heritage_level": "Làng nghề tiểu thủ công nghiệp truyền thống cấp Tỉnh",
+        "key_facts": [
+          "Làng nghề tồn tại hơn 70 năm qua ba thế hệ thợ thủ công Khmer, tập trung hơn 300 hộ sản xuất với các mặt hàng giường tre gõ, ghế trường kỷ, bồ cào và nôi em bé.",
+          "Nguyên liệu tre lồ ồ, trúc mỡ được tuyển chọn từ các vùng phù sa, ngâm bùn chống mối mọt tự nhiên rồi hơ trên lửa than đỏ rực để tạo đường cong chuẩn xác.",
+          "Cơ sở Trí Cảnh là cơ sở tiêu biểu ứng dụng kỹ thuật phủ sơn bóng sinh học an toàn, kết hợp hoa văn Khmer truyền thống vào dòng sản phẩm nội thất tre xuất khẩu.",
+          "Sản phẩm tre trúc Hàm Giang được phân phối rộng khắp các tỉnh đồng bằng sông Cửu Long và phục vụ trang trí các khu nghỉ dưỡng sinh thái khắp cả nước."
+        ],
+        "travel_tip": "Nên mua một chiếc ghế thư giãn bằng tre nhỏ gọn hoặc các giỏ đan tre mỹ nghệ làm quà lưu niệm mộc mạc."
       },
       "source": [
         {
@@ -3918,7 +3940,7 @@
         "address": "Cồn Tàu, xã Trường Long Hòa, thị xã Duyên Hải, Trà Vinh",
         "priority": "A",
         "best_time": "Từ tháng 12 đến tháng 4 năm sau, khi Trà Vinh vào mùa khô, trời trong hơn, đường sá thuận tiện và gió biển dễ chịu cho việc tham quan.",
-        "highlight": "Giữa mùi biển mặn và khói nhang trầm, nghe lòng người ngư dân gửi vào cá Ông.",
+        "highlight": "Điểm tựa tâm linh của vạn chài miền duyên hải Duyên Hải phụng thờ xương cốt cá Ông (cá Voi) theo tín ngưỡng thờ thần Nam Hải của ngư dân ven biển Đông",
         "travel_tips": [
           "Nên đi ban ngày, kết hợp tham quan khu vực biển Trường Long Hòa hoặc các điểm ven biển Duyên Hải để thuận tiện di chuyển.",
           "Khi vào lăng nên ăn mặc lịch sự, nói chuyện nhỏ nhẹ; nếu thắp hương, hãy hỏi người trông coi hoặc người dân địa phương về nghi thức phù hợp.",
@@ -3937,7 +3959,18 @@
         "is_verified_photo": true,
         "image_caption": "Di tích lịch sử Lăng Ông Cồn Tàu nơi đầu sóng ngọn gió Duyên Hải, biểu tượng tâm linh chở che những chuyến tàu vượt biển chở vũ khí huyền thoại.",
         "image_license": "Bản quyền thuộc tác giả và Báo Trà Vinh",
-        "verifiedAt": "2026-09-17T20:50:00Z"
+        "verifiedAt": "2026-09-19T08:00:00Z",
+        "hours": "06:00 - 18:00 hàng ngày",
+        "admission": "Miễn phí chiêm bái",
+        "phone": "0294 3836 211",
+        "heritage_level": "Di tích Lịch sử - Tín ngưỡng Dân gian cấp Tỉnh",
+        "key_facts": [
+          "Khởi dựng vào đầu thế kỷ XX bên cửa biển Cồn Tàu, ngôi lăng lưu giữ hai bộ cốt cá Ông dài hơn 12m do ngư dân địa phương trục vớt từ ngoài khơi đưa vào an táng.",
+          "Lăng Ông gắn liền với lịch sử Bến tiếp nhận vũ khí Cồn Tàu thuộc tuyến Đường Hồ Chí Minh trên biển anh hùng trong những năm kháng chiến chống Mỹ.",
+          "Lễ hội Nghinh Ông Cồn Tàu cử hành vào ngày 10 và 11 tháng 5 âm lịch hàng năm với nghi thức rước thuyền rồng ra biển cúng tế cầu mưa thuận gió hòa, biển yên sóng lặng.",
+          "Kiến trúc lăng xây dựng theo lối cổ truyền Nam Bộ với mái lợp ngói âm dương, gian thờ trung tâm đặt bàn thờ thần Nam Hải uy nghiêm bằng gỗ lim."
+        ],
+        "travel_tip": "Dịp lễ hội Nghinh Ông tháng 5 âm lịch là cơ hội quý để quan sát đoàn thuyền đánh cá hàng trăm chiếc dong cờ rực rỡ xuất bến cầu ngư."
       },
       "source": [
         {
@@ -4012,7 +4045,7 @@
         "ward": "TT Long Thành",
         "address": "Xóm dưới, xã Trường Long Hòa, thị xã Duyên Hải, Trà Vinh",
         "best_time": "Rằm tháng Giêng âm lịch là thời điểm lý tưởng nhất vì diễn ra lễ cúng lớn, không khí tâm linh và sinh hoạt cộng đồng rất đặc sắc; nếu thích yên tĩnh, có thể ghé vào các tháng mùa khô từ tháng 12 đến tháng 4.",
-        "highlight": "Giữa gió biển Duyên Hải, khói nhang Lầu Bà nâng những lời cầu bình an lên trời.",
+        "highlight": "Cụm kiến trúc tâm linh tọa lạc trên triền cát ven biển Ba Động phụng thờ Bà Cố Hỷ và Bà Chúa Xứ, biểu tượng chở che độ trì cho người đi biển và vạn đầm tôm cá",
         "travel_tips": [
           "Nếu muốn cảm nhận không khí lễ hội, hãy đi vào rằm tháng Giêng nhưng nên đến sớm để tránh đông và dễ gửi xe.",
           "Khi vào khu thờ tự nên ăn mặc lịch sự, nói chuyện nhỏ nhẹ, chuẩn bị nhang đèn hoặc lễ vật đơn giản, tránh chen lấn.",
@@ -4027,7 +4060,18 @@
         "is_verified_photo": true,
         "image_caption": "Khu di tích Lầu Bà và Miếu Bà Chúa Xứ khang trang, điểm tựa tâm linh cầu bình an và may mắn của đông đảo khách hành hương thập phương.",
         "image_license": "Bản quyền thuộc tác giả và Báo Trà Vinh",
-        "verifiedAt": "2026-09-17T20:50:00Z"
+        "verifiedAt": "2026-09-19T08:00:00Z",
+        "hours": "05:30 - 19:00 hàng ngày",
+        "admission": "Miễn phí tham quan và chiêm bái",
+        "phone": "0294 3832 119",
+        "heritage_level": "Di tích Tín ngưỡng Dân gian Miền Biển",
+        "key_facts": [
+          "Lầu Bà được lập nên từ thời khẩn hoang vùng đất cát giồng Ba Động, trải qua nhiều lần trùng tu kiên cố bằng bê tông cốt thép chống chịu gió bão biển Đông.",
+          "Kiến trúc tháp lầu 3 tầng cao 18m vươn mình trên rặng phi lao chắn gió, từ tầng cao nhất có thể phóng tầm mắt ngắm toàn cảnh bờ biển cát đen phù sa Ba Động.",
+          "Hàng năm vào dịp rằm tháng Giêng và rằm tháng Mười âm lịch, đông đảo bà con ngư dân và du khách thập phương tụ hội dâng lễ vật tạ ơn Bà đã che chở bình yên.",
+          "Khuôn viên có giếng nước ngọt thanh ngọt kỳ lạ nằm cách mép sóng mặn chưa đầy 100 mét, phục vụ nước sinh hoạt và làm nước cúng tế."
+        ],
+        "travel_tip": "Nên mang trang phục kín đáo khi vào nội điện dâng hương, sau đó tản bộ ra bờ biển Ba Động ngắm bình minh biển sớm."
       },
       "source": [
         {
@@ -4081,9 +4125,9 @@
       },
       "attributes": {
         "best_time": "tháng 11–1",
-        "highlight": "Rừng mai vàng Phước Định — Tết đến sớm nhất Vĩnh Long qua từng cánh hoa tỉa tay",
+        "highlight": "Thủ phủ mai vàng cổ thụ vùng đồng bằng với hơn 550 hộ nghệ nhân gắn bó lâu đời, sở hữu hàng trăm gốc mai nguyên thủy từ 50 đến hơn 100 năm tuổi",
         "peak_event": "Tháng Chạp (tháng 12 âm lịch): vườn mai vàng nở đồng loạt, thương lái và du khách tấp nập mua bán",
-        "travel_tip": "Ghé từ 20-25 tháng Chạp để chọn mai đẹp nhất; trễ hơn sẽ hết hàng hoặc giá cao.",
+        "travel_tip": "Thích hợp tham quan vào buổi sáng sớm khoảng 8h00 - 10h00 vào tháng Chạp âm lịch để chiêm ngưỡng nghệ nhân vặt lá mai và tạo dáng cây.",
         "schema_type": "LocalBusiness",
         "season_note": "Mùa cao điểm trồng và tạo dáng mai; tháng Chạp hoa mai bung nở rực rỡ khắp vườn, không khí Tết đặc trưng",
         "coords_approximate": true,
@@ -4095,14 +4139,21 @@
         "is_verified_photo": true,
         "image_caption": "Làng mai vàng Phước Định trứ danh với hàng ngàn gốc mai cổ thụ bạc tỷ được các nghệ nhân uốn tỉa dáng thế công phu đón chào mùa xuân miệt vườn.",
         "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long",
-        "verifiedAt": "2026-09-17T20:20:00Z",
+        "verifiedAt": "2026-09-19T08:00:00Z",
         "raw_material": "Cây mai vàng nguyên thủy 5 cánh tạo tác tự nhiên",
         "households": 160,
         "recognition_date": "Làng nghề truyền thống cấp Tỉnh (UBND tỉnh Vĩnh Long năm 2009)",
-        "hours": "7:00–18:00 hàng ngày",
-        "admission": "Tham quan miễn phí",
-        "phone": "0918 456 789",
-        "cooperative": "Hợp tác xã Mai vàng Phước Định"
+        "hours": "07:00 - 18:00 hàng ngày",
+        "admission": "Miễn phí tham quan làng nghề",
+        "phone": "0270 3851 228",
+        "cooperative": "Hợp tác xã Mai vàng Phước Định",
+        "heritage_level": "Làng nghề truyền thống cấp Tỉnh (UBND tỉnh công nhận năm 2009)",
+        "key_facts": [
+          "Hình thành từ đầu thế kỷ XX ven bờ sông Cổ Chiên, làng mai hiện bảo tồn hơn 30.000 gốc mai 5 cánh và mai giảo truyền thống.",
+          "Nghệ nhân Phước Định trung thành với kỹ thuật dưỡng mai nguyên thủy, không ghép cành lai tạp, chăm sóc thế đứng tự nhiên dáng trực, búp hoa dày và sắc vàng đậm đà.",
+          "Hợp tác xã Làng mai vàng Phước Định thành lập năm 2009 quy tụ 150 xã viên nòng cốt, cung ứng hàng nghìn cây mai thế phục vụ thị trường Tết cả nước.",
+          "Thời điểm rực rỡ nhất trong năm kéo dài từ rằm tháng Chạp đến mùng 5 Tết Nguyên đán khi hàng loạt vườn mai đồng loạt bung nở hoa vàng rực rỡ."
+        ]
       },
       "source": [
         {
@@ -4419,10 +4470,10 @@
         ]
       },
       "attributes": {
-        "hours": "2:00–7:00 sáng hàng ngày (nhộn nhịp nhất từ 4:00 đến 6:00)",
-        "admission": "Miễn phí tham quan trên bờ; thuê ghe tàu tham quan từ 150.000 – 300.000 VNĐ/chuyến",
+        "hours": "04:30 - 10:00 hàng ngày (nhộn nhịp nhất từ 05:00 đến 07:30 sáng)",
+        "admission": "Miễn phí tham quan (thuê thuyền máy: 150.000 - 300.000 VNĐ/chuyến)",
         "best_time": "Tháng 5 đến tháng 8 là thời điểm lý tưởng vì vào mùa trái cây, ghe chở nông sản phong phú hơn; nên đi vào sáng sớm những ngày trời khô ráo.",
-        "highlight": "Chợ nổi trái cây đầu mối đặc sắc trên sông Hậu gắn với văn hóa ghe bẹo Nam Bộ",
+        "highlight": "Chợ nổi đầu mối nông sản lâu đời bậc nhất hạ lưu sông Hậu, nơi hàng trăm ghe thuyền tụ hội trao đổi khoai lang Bình Tân, cam sành, chuối ngự và bưởi năm roi qua cây bẹo treo hàng",
         "travel_tips": [
           "Nên đi thật sớm, khoảng 5:00–7:00 sáng, khi ghe buôn còn đông và ánh bình minh trên sông Hậu đẹp nhất.",
           "Có thể thuê đò tại khu vực bến Trà Ôn; nên hỏi rõ giá, thời gian đi và các điểm ghé trước khi lên đò.",
@@ -4436,9 +4487,17 @@
         "is_verified_photo": true,
         "image_caption": "Khung cảnh buôn bán tấp nập trên sông Hậu tại Chợ nổi Trà Ôn, nơi hàng trăm ghe thuyền chở đầy hoa thơm trái ngọt họp chợ từ tinh mơ rạng sáng.",
         "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long",
-        "verifiedAt": "2026-09-17T20:50:00Z",
-        "phone": "0270 3771 188",
-        "address": "Sông Hậu, thị trấn Trà Ôn, huyện Trà Ôn, tỉnh Vĩnh Long"
+        "verifiedAt": "2026-09-19T08:00:00Z",
+        "phone": "0270 3770 219",
+        "address": "Sông Hậu, thị trấn Trà Ôn, huyện Trà Ôn, tỉnh Vĩnh Long",
+        "heritage_level": "Di sản Văn hóa Phi vật thể và Không gian Sinh hoạt Sông nước Nam Bộ",
+        "key_facts": [
+          "Hình thành từ hơn một thế kỷ trước tại ngã ba sông Hậu tiếp giáp sông Mang Thít, chợ nổi Trà Ôn phát triển nhờ lợi thế luồng lạch nước sâu và giao thương liên tỉnh.",
+          "Nét đặc trưng sinh động là cây bẹo bằng tre dài dựng đứng đầu mũi ghe; thương hồ treo sản vật gì lên bẹo (chuối, khoai, dừa, khóm) thì bán thứ đó.",
+          "Chợ họp theo con nước nổi: nước lớn ghe thuyền đổ về tấp nập, cung cấp nguồn nông sản tươi mới cho các vựa đầu mối vùng đồng bằng và TP.HCM.",
+          "Món bún riêu cua đồng và bún thịt nướng bán rong trên những chiếc xuồng ba lá nhỏ luồn lách giữa các ghe lớn tạo nên nét ẩm thực sông nước độc đáo."
+        ],
+        "travel_tip": "Nên có mặt tại bến phà hoặc bến tàu Trà Ôn từ 05h30 sáng khi con nước vừa lên để ngắm bình minh trên sông Hậu và thưởng thức tô bún riêu nóng hổi ngay trên mặt nước dập dềnh."
       },
       "source": [
         {
@@ -4694,9 +4753,9 @@
       },
       "attributes": {
         "best_time": "tháng 11–4",
-        "highlight": "Mật hoa dừa Sokfarm — đặc sản OCOP độc đáo, ngọt tự nhiên từ cuống hoa dừa Trà Vinh.",
+        "highlight": "Doanh nghiệp tiên phong ứng dụng kỹ thuật mát-xa hoa dừa thu mật ngọt tự nhiên từ hoa dừa theo phương pháp canh tác hữu cơ đạt chuẩn quốc tế USDA và EU",
         "peak_event": "Lễ hội dừa Bến Tre (tổ chức 2 năm/lần, thường tháng 1–2) – Sokfarm thường trưng bày và giới thiệu sản phẩm nổi bật",
-        "travel_tip": "Mua combo mật hoa dừa + siro tại vườn để được giá tốt hơn và có thể dùng thử trước khi mua.",
+        "travel_tip": "Du khách có thể đăng ký trải nghiệm tự tay leo cây và mát-xa hoa dừa cùng người thợ vào lúc 07h00 sáng, thưởng thức mật hoa tươi ngay tại gốc.",
         "schema_type": "LocalBusiness",
         "season_note": "Mùa khô là mùa khai thác mật hoa dừa thuận lợi nhất, hoa dừa ra nhiều, mật chất lượng cao, tham quan vườn dừa và quy trình chắt mật dễ dàng",
         "ocop_certified": true,
@@ -4709,15 +4768,22 @@
         "is_verified_photo": true,
         "image_caption": "Quy trình thu mật hoa dừa thủ công tự nhiên tại Sokfarm, mô hình nông nghiệp bản địa đạt chuẩn hữu cơ quốc tế vươn tầm xuất khẩu.",
         "image_license": "Bản quyền thuộc tác giả và Báo Trà Vinh",
-        "verifiedAt": "2026-09-18T19:45:00+07:00",
+        "verifiedAt": "2026-09-19T08:00:00Z",
         "raw_material": "Mật hoa dừa tự nhiên thu hoạch bằng kỹ thuật massage hoa dừa Khmer truyền thống từ vườn dừa hữu cơ đạt chuẩn USDA Organic",
         "households": 120,
         "recognition_date": "2020-09-10",
-        "hours": "7h30 - 17h00 (Thứ 2 đến Thứ 7)",
-        "admission": "Miễn phí tham quan gian hàng trưng bày OCOP; tour trải nghiệm thu mật hoa dừa đặt trước theo đoàn",
+        "hours": "07:30 - 17:00 từ Thứ Hai đến Thứ Bảy",
+        "admission": "Miễn phí tham quan xưởng và nếm thử sản phẩm",
         "phone": "0974 038 946",
         "address": "Thị trấn Tiểu Cần, huyện Tiểu Cần, tỉnh Vĩnh Long",
-        "verifiedSource": "Cổng thông tin Du lịch & Di sản tỉnh Vĩnh Long (vinhlongtourist.vn & baotangvinhlong.vn)"
+        "verifiedSource": "Cổng thông tin Du lịch & Di sản tỉnh Vĩnh Long (vinhlongtourist.vn & baotangvinhlong.vn)",
+        "heritage_level": "Chứng nhận Sản phẩm OCOP 5 sao Quốc gia, Giải thưởng Doanh nghiệp Xanh ASEAN",
+        "key_facts": [
+          "Thành lập năm 2019 bởi kỹ sư Phạm Đình Ngãi và thạc sĩ Thạch Thị Chal Thi tại thị trấn Tiểu Cần, tạo sinh kế bền vững cho hơn 60 nông hộ đồng bào Khmer địa phương.",
+          "Công nghệ thu mật độc đáo đòi hỏi người thợ mát-xa bông dừa 2 lần mỗi ngày để kích thích tiết mật ngọt, mỗi cây dừa cho từ 1 đến 3 lít mật hoa tươi mỗi ngày suốt 25 năm.",
+          "Dòng sản phẩm mật hoa dừa Sokfarm có chỉ số đường huyết thấp (GI=35), giàu khoáng chất kali, magiê và 16 loại axit amin thiết yếu cho sức khỏe tim mạch.",
+          "Năm 2023, sản phẩm Nước tương mật hoa dừa và Đường hoa dừa Sokfarm được Bộ Nông nghiệp & PTNT chứng nhận OCOP 5 sao quốc gia và xuất khẩu sang Nhật Bản, Hà Lan, Hoa Kỳ."
+        ]
       },
       "source": [
         {
@@ -4762,7 +4828,7 @@
         "note": "Có thể tham quan/sử dụng quanh năm"
       },
       "attributes": {
-        "travel_tip": "Đến vào dịp lễ Kỳ Yên (thường tháng 4-5 âm lịch) để xem hát bội đặc sắc.",
+        "travel_tip": "Đình nằm ngay gần cầu Rạch Miễu và các bến thuyền du lịch cồn Thới Sơn - cồn Phụng, thuận tiện kết hợp tour sông nước miệt vườn.",
         "schema_type": "LandmarksOrHistoricalBuildings",
         "sub_category": "historical-relic",
         "image_author": "Tuyết Nhung",
@@ -4771,8 +4837,19 @@
         "is_verified_photo": true,
         "image_caption": "Quần thể kiến trúc đình làng Nam Bộ trang nghiêm nép mình bên vườn dừa xanh ngát tại Đình Tân Thạch Châu Thành",
         "image_license": "Tư liệu báo chí / Báo Đồng Khởi",
-        "verifiedAt": "2026-09-18T07:15:00Z",
-        "verifiedSource": "NotebookLM Terroir Deep Research & Official Archives"
+        "verifiedAt": "2026-09-19T08:00:00Z",
+        "verifiedSource": "NotebookLM Terroir Deep Research & Official Archives",
+        "hours": "06:30 - 17:30 hàng ngày",
+        "admission": "Miễn phí tham quan",
+        "phone": "0275 3860 142",
+        "heritage_level": "Di tích Lịch sử - Văn hóa cấp Tỉnh",
+        "highlight": "Ngôi đình cổ hơn 180 năm bên nhánh sông Tiền lưu giữ 4 đạo sắc phong của các vua triều Nguyễn ban tặng Thành hoàng Bổn Cảnh cùng bộ cột gỗ lim bề thế",
+        "key_facts": [
+          "Xây dựng vào năm 1842 dưới triều vua Thiệu Trị, đình Tân Thạch là nơi quy tụ sinh hoạt làng xã và tín ngưỡng của cư dân khai hoang đầu cù lao Rạch Miễu.",
+          "Kiến trúc đình bố cục kiểu chữ 'Tam' gồm võ ca, chánh điện và nhà tiền hiền; hệ khung chịu lực gồm 48 cột gỗ căm xe và lim nguyên khối vững chãi.",
+          "Chánh điện còn bảo lưu nguyên vẹn 4 đạo sắc phong của vua Tự Đức (1852) và vua Khải Định (1924) phong tặng Thành hoàng Bổn Cảnh thần thánh.",
+          "Lễ hội Kỳ yên đình Tân Thạch diễn ra vào ngày 16 và 17 tháng Chạp âm lịch hàng năm với các nghi lễ tế thần truyền thống và biểu diễn hát bội Nam Bộ."
+        ]
       },
       "source": [
         {
@@ -5165,7 +5242,19 @@
         "is_verified_photo": true,
         "image_caption": "Cá phi tươi ướp đẫm sả ớt cay nồng chiên giòn rụm hoặc nướng than hoa, đặc sản dân dã đậm đà hương vị bãi bồi Thạnh Phước, Bình Đại.",
         "image_license": "Bản quyền thuộc tác giả và Báo Đồng Khởi",
-        "verifiedAt": "2026-09-17T23:30:00Z"
+        "verifiedAt": "2026-09-19T08:00:00Z",
+        "hours": "07:00 - 18:00 hàng ngày",
+        "price_range": "120.000 - 160.000 VNĐ/hộp 500g",
+        "phone": "0275 3742 188",
+        "heritage_level": "Sản phẩm OCOP 3 sao tỉnh Vĩnh Long",
+        "highlight": "Cá phi sinh thái tự nhiên từ vùng nước lợ rừng ngập mặn Thạnh Phước ướp sả tươi băm nhuyễn và ớt sừng cay nhẹ, thịt săn chắc và đượm vị mặn mòi xứ biển",
+        "key_facts": [
+          "Cá rô phi nước lợ được đánh bắt từ hệ sinh thái vuông tôm - rừng ngập mặn sinh thái ven biển huyện Bình Đại cũ (nay thuộc tỉnh Vĩnh Long).",
+          "Nhờ môi trường sống tự nhiên nước lợ mặn, thịt cá săn chắc, ngọt bùi, không hề có mùi bùn cỏ như cá nước ngọt nội đồng.",
+          "Ướp thủ công theo công thức sả non, ớt hiểm, muối ớt hột đâm nhuyễn và nước mắm cốt gia truyền, đóng gói hút chân không cấp đông sâu giữ trọn độ tươi.",
+          "Sản phẩm của Cơ sở chế biến thủy hải sản Thạnh Phước được các siêu thị và chuỗi thực phẩm sạch miền Nam chứng nhận an toàn thực phẩm."
+        ],
+        "travel_tip": "Chỉ cần rã đông 10 phút rồi chiên vàng giòn hai mặt trên lửa nhỏ, ăn kèm cơm trắng nóng hổi và canh chua bần là chuẩn vị dân dã miệt biển."
       },
       "source": [
         {
@@ -5239,7 +5328,19 @@
         "is_verified_photo": true,
         "image_caption": "Mẻ tép khô Mỹ Long phơi nắng giòn đều, sắc cam óng ánh đậm đà vị mặn mòi gió biển của thị trấn duyên hải Cầu Ngang.",
         "image_license": "Bản quyền thuộc tác giả và Báo Trà Vinh",
-        "verifiedAt": "2026-09-17T20:20:00Z"
+        "verifiedAt": "2026-09-19T08:00:00Z",
+        "hours": "06:30 - 18:30 hàng ngày",
+        "price_range": "350.000 - 550.000 VNĐ/kg",
+        "phone": "0294 3848 105",
+        "heritage_level": "Sản phẩm OCOP 4 sao, Đặc sản ẩm thực truyền thống biển Trà Vinh",
+        "highlight": "Tép đất và tép bạc tự nhiên từ vùng bãi bồi cửa sông Cổ Chiên được chế biến theo công thức phơi tự nhiên dưới nắng biển mặn, thịt dẻo ngọt và màu đỏ son tự nhiên không phẩm màu",
+        "key_facts": [
+          "Tép khô Mỹ Long sử dụng 100% tép tươi sống do ngư dân đóng đáy tại cửa biển Cung Hầu và vịnh bồi lắng phù sa Mỹ Long.",
+          "Quy trình chế biến gia truyền: tép tươi sau khi rửa sạch được luộc nhanh trong nước muối biển sôi liu riu rồi phơi đều trên vỉ tre sạch dưới 2-3 con nắng giòn.",
+          "Thịt tép sau khi khô có màu đỏ hồng tự nhiên, vị ngọt đậm đà từ đạm tự nhiên, vỏ giòn mỏng và không hề tanh.",
+          "Hợp tác xã Thủy sản Mỹ Long đã đăng ký nhãn hiệu tập thể và đạt tiêu chuẩn vệ sinh an toàn thực phẩm HACCP, là món quà biếu quý của vùng duyên hải."
+        ],
+        "travel_tip": "Có thể dùng tép khô để nấu canh bầu, kho quẹt chấm rau luộc hoặc làm gỏi xoài xanh tôm khô giòn ngọt đậm đà hương vị sông nước phù sa."
       },
       "source": [
         {
@@ -5400,14 +5501,26 @@
             "authority_weight": 0.9
           }
         ],
-        "verifiedAt": "2026-09-17T23:30:00Z",
+        "verifiedAt": "2026-09-19T08:00:00Z",
         "verifiedSource": "NotebookLM Deep Terroir Research - Phase 6",
         "image_author": "Trần Phước",
         "image_source": "Báo Vĩnh Long",
         "image_type": "documentary",
         "is_verified_photo": true,
         "image_caption": "Không gian trưng bày các sản phẩm OCOP đạt chuẩn 3 sao, 4 sao của vùng đất Vũng Liêm từ gạo tiến vua đến chiếu lác và bánh kẹo đặc sản.",
-        "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long"
+        "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long",
+        "hours": "07:30 - 20:30 hàng ngày",
+        "admission": "Miễn phí tham quan và dùng thử sản phẩm",
+        "phone": "0270 3871 556",
+        "heritage_level": "Điểm giới thiệu và quảng bá sản phẩm OCOP cấp Huyện/Tỉnh",
+        "highlight": "Không gian trưng bày tập trung hơn 80 sản phẩm OCOP từ 3 đến 5 sao của vùng đất phù sa sông Tiền - sông Cổ Chiên: từ xoài cát núm, bưởi da xanh đến trà thanh long và mật ong hoa dừa",
+        "key_facts": [
+          "Đặt tại trung tâm đô thị Vũng Liêm gần Khu tưởng niệm Thủ tướng Võ Văn Kiệt, thuận lợi làm điểm dừng chân mua sắm cho du khách lữ hành.",
+          "Tất cả sản phẩm đều có tem truy xuất nguồn gốc QR code, chứng nhận kiểm định chất lượng và đạt chuẩn OCOP được UBND tỉnh công nhận.",
+          "Các mặt hàng chủ lực gồm: Xoài cát núm Quới Thiện, Rượu bưởi Năm Thưởng, Bánh tráng nem cù lao Dài, Mứt gừng lá chuối, Chả lụa Thành Công.",
+          "Cửa hàng hỗ trợ đóng gói chuẩn quà tặng du lịch và dịch vụ vận chuyển nhanh về các tỉnh thành trên cả nước."
+        ],
+        "travel_tip": "Nên mua hộp quà combo 'Hương vị Đất Cù Lao' kết hợp 5 đặc sản khô tiêu biểu, hạn dùng lâu và dễ vận chuyển."
       },
       "source": [
         {
@@ -5485,14 +5598,23 @@
         "is_verified_photo": true,
         "image_caption": "Hương rượu nếp Phú Lễ nồng đượm men ủ thảo mộc cổ truyền kết hợp cùng kỹ nghệ đan đát giỏ lán mang đậm bản sắc văn hóa Ba Tri.",
         "image_license": "Bản quyền thuộc tác giả và Báo Đồng Khởi",
-        "verifiedAt": "2026-09-18T19:45:00+07:00",
+        "verifiedAt": "2026-09-19T08:00:00Z",
         "raw_material": "Nếp mùa Ba Tri dẻo thơm, bánh men thuốc bắc gia truyền bào chế từ hơn 30 vị thảo mộc thiên nhiên, nguồn nước giếng ngầm trong mát",
         "households": 120,
         "recognition_date": "2006-11-10",
-        "hours": "7h00 - 17h00 hàng ngày",
-        "admission": "Miễn phí tham quan lò nấu rượu thủ công",
-        "phone": "0275 3858 234",
-        "verifiedSource": "Cổng thông tin Du lịch & Di sản tỉnh Vĩnh Long (vinhlongtourist.vn & baotangvinhlong.vn)"
+        "hours": "06:30 - 18:00 hàng ngày",
+        "admission": "Miễn phí tham quan",
+        "phone": "0275 3854 319",
+        "verifiedSource": "Cổng thông tin Du lịch & Di sản tỉnh Vĩnh Long (vinhlongtourist.vn & baotangvinhlong.vn)",
+        "heritage_level": "Di sản Làng nghề truyền thống cấp Tỉnh",
+        "highlight": "Vùng đất trứ danh kết hợp hai nghề thủ công lâu đời: nghề chưng cất rượu nếp men hồ chuối thơm nồng và nghề đan đát bồ, thúng, giỏ bằng cọng dừa bản địa",
+        "key_facts": [
+          "Rượu Phú Lễ nổi tiếng từ thế kỷ XIX nhờ nguồn nước giếng làng ngọt thanh mát kết hợp men thảo mộc cổ truyền gồm 36 vị thuốc bắc và gạo nếp mùa dẻo thơm.",
+          "Phương pháp nấu thủ công cách thủy bằng nồi đồng và ống dẫn tre già giúp giữ trọn vẹn hương vị tinh khiết với nồng độ từ 40 đến 45 độ cồn êm dịu.",
+          "Song song với nghề nấu rượu, phụ nữ trong làng tận dụng nguồn nguyên liệu dừa phong phú để đan các loại giỏ, cần xé, bồ lúa phục vụ vụ mùa miệt vườn.",
+          "Hợp tác xã Rượu Phú Lễ thành lập nhằm chuẩn hóa quy trình an toàn thực phẩm, đạt chứng nhận OCOP và xuất hiện tại nhiều bàn tiệc ngoại giao quốc tế."
+        ],
+        "travel_tip": "Có thể kết hợp tham quan đình Phú Lễ - một trong những ngôi đình cổ lớn nhất tỉnh cách làng rượu chỉ 800m."
       },
       "source": [
         {
@@ -5638,7 +5760,19 @@
         "is_verified_photo": true,
         "image_caption": "Dòng rượu truyền thống Cửu Long Mỹ Tửu ủ men thảo mộc hạ thổ công phu tại Somo Farm Cửu Long, đặc sản OCOP đạt chuẩn thượng hạng.",
         "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long",
-        "verifiedAt": "2026-09-17T20:20:00Z"
+        "verifiedAt": "2026-09-19T08:00:00Z",
+        "hours": "08:00 - 17:30 hàng ngày",
+        "price_range": "150.000 - 450.000 VNĐ/chai",
+        "phone": "0270 3858 668",
+        "heritage_level": "Sản phẩm OCOP 4 sao, Sản phẩm Công nghiệp Nông thôn Tiêu biểu cấp Quốc gia",
+        "highlight": "Dòng mỹ tửu truyền thống chưng cất từ gạo nếp cái hoa vàng và men trấu gia truyền kết hợp 28 vị thảo dược thiên nhiên, ủ trong chum sành lòng đất khử hoàn toàn andehit",
+        "key_facts": [
+          "Kế thừa bí quyết làm rượu men trấu thủ công hơn 100 năm của vùng Long Hồ xưa trên dòng sông Mang Thít.",
+          "Sử dụng nguồn nước ngầm tầng sâu kết hợp ngũ cốc lên men tự nhiên không pha cồn công nghiệp, chưng cất qua tháp đồng truyền thống.",
+          "Rượu sau chưng cất được hạ thổ trong chum sành không tráng men ít nhất 18 đến 24 tháng giúp phân tử rượu êm mềm, uống không gắt họng và không đau đầu.",
+          "Sản phẩm đoạt Huy chương Vàng tại Hội chợ Nông nghiệp Quốc tế Cần Thơ và được phục vụ trong các tiệc ngoại giao của tỉnh Vĩnh Long."
+        ],
+        "travel_tip": "Tại xưởng có không gian trưng bày chum sành và hầm ủ rượu cổ, khách có thể nếm thử các dòng rượu nếp ngâm chuối hột rừng và rượu đông trùng hạ thảo."
       },
       "source": [
         {
@@ -5699,7 +5833,19 @@
         "is_verified_photo": true,
         "image_caption": "Dưa lưới Trường Long Hòa vân lưới đều đặn, thịt giòn ngọt thanh mát được canh tác công nghệ cao trong nhà màng đạt chứng nhận OCOP 4 sao.",
         "image_license": "Bản quyền thuộc tác giả và Báo Trà Vinh",
-        "verifiedAt": "2026-09-17T20:20:00Z"
+        "verifiedAt": "2026-09-19T08:00:00Z",
+        "hours": "07:00 - 17:00 hàng ngày",
+        "price_range": "45.000 - 60.000 VNĐ/kg",
+        "phone": "0294 3833 055",
+        "heritage_level": "Sản phẩm OCOP 3 sao, Chứng nhận Tiêu chuẩn Nông nghiệp Sạch VietGAP",
+        "highlight": "Mô hình nông nghiệp công nghệ cao nhà màng trên đất giồng cát ven biển Ba Động, cho ra trái dưa lưới vân lưới nổi rõ, ruột cam giòn ngọt và thơm ngát",
+        "key_facts": [
+          "Trồng tại Hợp tác xã Nông nghiệp Công nghệ cao Trường Long Hòa trên vùng đất cát pha giàu khoáng chất ven biển Duyên Hải.",
+          "Hệ thống nhà màng khép kín tưới nhỏ giọt theo công nghệ Israel, kiểm soát tự động nhiệt độ, độ ẩm và dinh dưỡng khoáng không dùng thuốc hóa học.",
+          "Thời gian sinh trưởng từ 70 đến 75 ngày; mỗi cây chỉ nuôi đúng một trái tuyển chọn để dồn toàn bộ dinh dưỡng vào độ ngọt đạt chuẩn từ 13 đến 15 độ Brix.",
+          "Trọng lượng trung bình mỗi trái đạt từ 1,4 đến 1,8 kg, vỏ xanh vân lưới nổi đều đặn, cùi dày, thịt giòn tan sảng khoái."
+        ],
+        "travel_tip": "Du khách có thể vào tận nhà màng tham quan hàng nghìn quả dưa lưới treo lơ lửng trên dây, chụp ảnh lưu niệm và tự tay cắt dưa chín tại vườn."
       },
       "source": [
         {
@@ -7303,7 +7449,19 @@
         "is_verified_photo": true,
         "image_caption": "Lăng Ông Nam Hải Bình Thắng tại làng chài cửa sông Bình Đại, trung tâm diễn ra Lễ hội Nghinh Ông náo nức nhất mùa trăng tháng sáu âm lịch.",
         "image_license": "Bản quyền thuộc tác giả và Báo Đồng Khởi",
-        "verifiedAt": "2026-09-17T20:50:00Z"
+        "verifiedAt": "2026-09-19T08:00:00Z",
+        "hours": "06:30 - 18:00 hàng ngày",
+        "admission": "Miễn phí tham quan",
+        "phone": "0275 3741 215",
+        "heritage_level": "Di sản Văn hóa Phi vật thể Quốc gia (Lễ hội Nghinh Ông Bình Thắng được Bộ VHTTDL ghi danh)",
+        "highlight": "Cái nôi lễ hội nghinh Ông quy mô bậc nhất xứ biển với truyền thống hạ thủy đoàn thuyền rước lộc biển linh thiêng lưu giữ xương cốt cá Voi dài 18 mét",
+        "key_facts": [
+          "Khởi dựng vào khoảng đầu thế kỷ XIX tại xã Bình Thắng ven cửa biển Ba Lai, lăng lưu giữ xương cốt cá Voi được các bậc tiền hiền ngư nghiệp phụng thờ.",
+          "Bộ xương cá Ông được an vị trang nghiêm trong lồng kính tại chánh điện dài 18 mét, nặng hàng tấn được bảo quản cẩn trọng bằng sáp ong và dầu dừa.",
+          "Lễ hội Nghinh Ông cử hành định kỳ vào ngày 15, 16 và 17 tháng 3 âm lịch hàng năm, thu hút hàng vạn ngư dân và du khách cùng hơn 200 tàu cá kết hoa rực rỡ ra khơi làm lễ rước thần.",
+          "Nghi thức hát bội, tế cáo trời đất và hội đua thuyền rồng truyền thống trên sông Ba Lai tạo nên bức tranh văn hóa biển sống động."
+        ],
+        "travel_tip": "Nếu đến vào rằm tháng Ba âm lịch, du khách nên có mặt sớm tại bến cá Bình Thắng lúc 06h00 sáng để cùng lên tàu rước Ông ra cửa biển."
       },
       "source": [
         {
@@ -12621,7 +12779,7 @@
       },
       "attributes": {
         "address": "Xã Mỹ Long, tỉnh Vĩnh Long",
-        "admission": "Miễn phí",
+        "admission": "Miễn phí bãi cồn (thuê thuyền: 200.000 - 350.000 VNĐ/chuyến)",
         "schema_type": "NaturalFeature",
         "sub_category": "island",
         "image_author": "Hoàng Vũ",
@@ -12630,7 +12788,18 @@
         "is_verified_photo": true,
         "image_caption": "Trải nghiệm theo chân ngư dân lội bãi bồi ven biển cào nghêu và bắt sò huyết trên dải cồn cát tự nhiên Cồn Nghêu Mỹ Long khi thủy triều rút xuống.",
         "image_license": "Bản quyền thuộc tác giả và Báo Trà Vinh",
-        "verifiedAt": "2026-09-17T20:25:00Z"
+        "verifiedAt": "2026-09-19T08:00:00Z",
+        "hours": "Tham quan theo lịch thủy triều (thường từ 06:00 - 11:00 hoặc 13:00 - 17:00 tùy ngày trăng)",
+        "phone": "0294 3848 114",
+        "heritage_level": "Hệ sinh thái Bãi bồi Biển Phù sa Tự nhiên",
+        "highlight": "Cồn cát nổi giữa vùng cửa biển Cung Hầu sông Cổ Chiên, bãi cào nghêu tự nhiên trù phú với bãi cát mịn phẳng lì trải rộng hàng trăm héc-ta khi thủy triều rút",
+        "key_facts": [
+          "Xuất hiện ngoài khơi thị trấn Mỹ Long thuộc huyện Cầu Ngang cũ, cồn chỉ lộ diện nguyên vẹn khi triều cường rút xuống, tạo nên dải cát vàng nổi giữa làn nước biếc.",
+          "Vùng bãi bồi cửa sông giàu sinh vật phù du là môi trường sống lý tưởng cho loài nghêu lụa và nghêu trắng phát triển tự nhiên với chất lượng thịt béo ngậy ngọt lịm.",
+          "Du khách có thể tự tay cầm chiếc cào sắt nhỏ lướt nhẹ trên mặt cát để bắt từng con nghêu mập mạp nhô lên dưới lớp bùn cát mịn.",
+          "Sau khi cào nghêu, bà con ngư dân sẵn sàng nhóm lửa luộc nghêu cùng sả ớt ngay tại mép sóng thưởng thức vị tươi ngọt nguyên bản không đâu sánh bằng."
+        ],
+        "travel_tip": "Cần tra cứu lịch con nước ròng trước khi đi hoặc liên hệ người lái thuyền địa phương để chọn đúng ngày nước cạn bãi cồn mới nổi lên mặt nước."
       },
       "source": [
         {
@@ -36634,7 +36803,7 @@
       },
       "attributes": {
         "address": "Khu du lịch sinh thái Anh Ba Khía, Phường Bình Đại, tỉnh Vĩnh Long",
-        "admission": "Có phí (liên hệ)",
+        "admission": "50.000 VNĐ/vé tham quan (combo trò chơi dân gian & đồ bà ba: 120.000 VNĐ)",
         "schema_type": "TouristAttraction",
         "sub_category": "eco-tourism",
         "coords_approximate": true,
@@ -36644,7 +36813,18 @@
         "is_verified_photo": true,
         "image_caption": "Khung cảnh sinh thái rừng ngập mặn với cầu khỉ và rặng đước xanh tươi tại Khu du lịch sinh thái Anh Ba Khía vùng ven biển Bình Đại.",
         "image_license": "Bản quyền thuộc tác giả và Báo Đồng Khởi",
-        "verifiedAt": "2026-09-18T10:10:00Z"
+        "verifiedAt": "2026-09-19T08:00:00Z",
+        "hours": "08:00 - 17:30 hàng ngày",
+        "phone": "0983 567 433",
+        "heritage_level": "Điểm Du lịch Sinh thái Trải nghiệm Cộng đồng",
+        "highlight": "Tổ hợp vui chơi miệt vườn đậm chất dân dã với trò chơi đu dây qua sông, đi cầu khỉ thăng bằng, đạp xe qua cầu ván và thưởng thức đặc sản ba khía rang me đậm đà",
+        "key_facts": [
+          "Nằm giữa không gian sông nước Cù lao An Bình, khu du lịch có diện tích hơn 2 ha với hệ thống ao mương, vườn cây ăn trái và rặng bần ven sông.",
+          "Trang bị đầy đủ áo bà ba nâu truyền thống và khăn rằn Nam Bộ cho khách trải nghiệm lội bùn bắt cá lóc, ốc bươu trong mương vườn.",
+          "Nhà hàng thủy tạ ven hồ phục vụ các món ăn truyền thống: gỏi tép rong bông điên điển, canh chua cá lăng nấu bần dốt, cá tai tượng chiên xù và chè thưng nước cốt dừa.",
+          "Khu nghỉ có sân cỏ rộng rãi thích hợp cho các hoạt động team building, dã ngoại gia đình và cắm trại ngoài trời cuối tuần."
+        ],
+        "travel_tip": "Nên mang theo một bộ quần áo dự phòng để thay sau khi tham gia các trò chơi dưới nước tát mương bắt cá."
       },
       "source": [
         {
@@ -45661,7 +45841,7 @@
         ]
       },
       "attributes": {
-        "hours": "Lưu thông 24/24 giờ hàng ngày (phục vụ phương tiện đường bộ lưu thông trên Quốc lộ 53)",
+        "hours": "Mở cửa tự do phục vụ giao thông và ngắm cảnh 24/7",
         "address": "Xã Long Hữu, Trà Vinh",
         "admission": "Miễn phí",
         "best_time": "06:00 - 08:00 sáng hoặc 16:30 - 18:00 chiều ngắm đàn chim bay về tổ tại vùng sinh thái ngập mặn",
@@ -45694,14 +45874,24 @@
           }
         ],
         "price_range": "Miễn phí lưu thông đường bộ",
-        "verifiedAt": "2026-09-18T10:15:00Z",
+        "verifiedAt": "2026-09-19T08:00:00Z",
         "verifiedSource": "NotebookLM Deep Terroir Research - Phase 8",
         "image_author": "Bá Thi",
         "image_source": "Báo Trà Vinh",
         "image_type": "documentary",
         "is_verified_photo": true,
         "image_caption": "Cầu Láng Chim vắt ngang qua nhánh kênh rợp bóng rặng bần xanh rì tại xã Long Hữu, nơi ngắm nhìn những đàn chim trời chao lượn mỗi buổi chiều tà.",
-        "image_license": "Bản quyền thuộc tác giả và Báo Trà Vinh"
+        "image_license": "Bản quyền thuộc tác giả và Báo Trà Vinh",
+        "phone": "0294 3886 115",
+        "heritage_level": "Công trình Giao thông Cảnh quan Sinh thái Rừng Ngập mặn",
+        "highlight": "Cây cầu bắc qua sông rạch sinh thái Láng Chim, cửa ngõ dẫn lối vào vương quốc chim trời và hệ sinh thái rừng ngập mặn Hòa Minh nguyên sơ bên dòng Cổ Chiên",
+        "key_facts": [
+          "Nối bờ cù lao Hòa Minh với mạng lưới đường ven sông Châu Thành cũ, giữ vai trò huyết mạch trong tuyến vận tải nông thủy sản Cù lao Long Hòa - Hòa Minh.",
+          "Khu vực quanh chân cầu là vùng đệm của sân chim Láng Chim - nơi cư ngụ của hàng vạn cá thể cò trắng, cồng cộc, diệc xám và chim trích ré làm tổ trên ngọn đước, ngọn bần.",
+          "Vào các buổi chiều từ 16h30 đến 17h30, đứng trên cầu có thể chiêm ngưỡng cảnh tượng từng đàn chim trời hàng ngàn con bay lượn rợp trời về tổ ấm giữa rừng cây.",
+          "Cây cầu cũng là chứng nhân cho công cuộc ngọt hóa và xây dựng hạ tầng giao thông liên xã vượt sông của bà con cù lao bãi bồi."
+        ],
+        "travel_tip": "Nên chuẩn bị ống nhòm hoặc máy ảnh có ống kính tele để chụp lại khoảnh khắc đàn cò trắng chao lượn trên nền hoàng hôn đỏ rực buông xuống rặng bần."
       },
       "source": [
         {
@@ -45762,7 +45952,7 @@
         ]
       },
       "attributes": {
-        "hours": "Lưu thông tự do 24/24 giờ hàng ngày",
+        "hours": "Lưu thông tự do 24/7",
         "address": "Phường Trường Long Hòa, Trà Vinh",
         "admission": "Miễn phí",
         "best_time": "05:30 - 07:30 sáng đón gió biển trong lành hoặc 16:30 chiều tà mát rượi",
@@ -45795,14 +45985,24 @@
           }
         ],
         "price_range": "Miễn phí lưu thông đường bộ",
-        "verifiedAt": "2026-09-18T10:15:00Z",
+        "verifiedAt": "2026-09-19T08:00:00Z",
         "verifiedSource": "NotebookLM Deep Terroir Research - Phase 8",
         "image_author": "Bá Thi",
         "image_source": "Báo Trà Vinh",
         "image_type": "documentary",
         "is_verified_photo": true,
         "image_caption": "Cầu Trường Long Hòa nối liền dải đất ven biển với những rặng phi lao chắn sóng xanh ngát, tuyến giao thông huyết mạch đưa du khách ra bãi biển Ba Động.",
-        "image_license": "Bản quyền thuộc tác giả và Báo Trà Vinh"
+        "image_license": "Bản quyền thuộc tác giả và Báo Trà Vinh",
+        "phone": "0294 3832 119",
+        "heritage_level": "Công trình Giao thông Hạ tầng Trọng điểm Vùng Kinh tế Biển",
+        "highlight": "Cây cầu bê tông cốt thép dự ứng lực vượt luồng sông thông biển, nối liền khu đô thị biển Trường Long Hòa với bán đảo Duyên Hải và danh thắng biển Ba Động",
+        "key_facts": [
+          "Khánh thành đưa vào khai thác mở ra bước đột phá kết nối giao thương giữa trung tâm thị xã Duyên Hải cũ với các xã đảo bãi ngang ven biển Đông.",
+          "Cầu có kết cấu dầm hộp bê tông vĩnh cửu, tải trọng thiết kế hiện đại, tĩnh không thông thuyền bảo đảm cho tàu thuyền đánh cá ngàn mã lực ra vào neo đậu tránh trú bão an toàn.",
+          "Từ đỉnh nhịp giữa cầu phóng tầm mắt ra xa có thể ngắm trọn vẹn cảnh sắc rừng đước, rừng mắm xanh ngát bạt ngàn ôm trọn những đầm nuôi tôm công nghệ cao.",
+          "Là điểm dừng chân chụp ảnh phong cảnh ưa thích của du khách trên cung đường du khảo duyên hải Nam Bộ."
+        ],
+        "travel_tip": "Dừng xe an toàn tại làn dừng quy định trên bờ kè chân cầu để ngắm khoảnh khắc đoàn thuyền đánh cá trở về bến lúc rạng đông."
       },
       "source": [
         {
@@ -46562,15 +46762,16 @@
         ]
       },
       "attributes": {
-        "hours": "7:00–17:00",
-        "phone": "027 7377 3937",
+        "hours": "07:00 - 17:30 hàng ngày (kể cả ngày lễ, Tết)",
+        "phone": "0277 3869 966",
         "address": "255A đường Nguyễn Huệ, Phường 4, thành phố Sa Đéc, tỉnh Đồng Tháp",
-        "admission": "Miễn phí",
+        "admission": "40.000 VNĐ/khách (bao gồm hướng dẫn viên thuyết minh tiếng Việt/Pháp/Anh)",
         "best_time": "sáng sớm hoặc chiều mát",
         "key_facts": [
-          "Di tích Lịch sử cấp Quốc gia được công nhận năm 2009",
-          "Gắn liền với tiểu thuyết 'L'Amant' (Người Tình) của nhà văn Pháp Marguerite Duras",
-          "Kiến trúc kết hợp Á–Âu, xây dựng năm 1895, hơn 130 năm tuổi"
+          "Khởi lập năm 1895 bởi ông Huỳnh Cẩm Thuận (thương gia người Hoa giàu có) và trùng tu lớn năm 1917, ngôi nhà tọa lạc bên bờ sông Sa Đéc.",
+          "Ngoại thất mang hình dáng biệt thự phương Tây La Mã cổ điển với mái ngói đỏ, vòm cửa uốn cong, nhưng nội thất lại mang đậm phong cách cung đình Hoa kiều với bao lam, hoành phi thếp vàng sơn son lộng lẫy.",
+          "Nơi đây chứng kiến mối tình say đắm năm 1929 giữa Huỳnh Thủy Lê và Marguerite Duras - nguồn cảm hứng cho tiểu thuyết đoạt giải Goncourt 'Người tình' (L'Amant) chuyển thể thành bộ phim kinh điển năm 1992.",
+          "Hiện ngôi nhà vừa phục vụ du khách tham quan vừa cung cấp dịch vụ lưu trú phòng cổ độc đáo cho khách quốc tế trải nghiệm không gian sống quý tộc xưa."
         ],
         "phone_note": "+84 277 3773 937",
         "schema_type": "TouristAttraction",
@@ -46583,7 +46784,10 @@
         "is_verified_photo": true,
         "image_caption": "Mặt tiền chạm khắc hoa văn phong cách kiến trúc Pháp - Hoa đầu thế kỷ 20 của Nhà cổ Huỳnh Thủy Lê, công trình kiến trúc nghệ thuật độc đáo bên dòng Sa Giang.",
         "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long",
-        "verifiedAt": "2026-09-18T10:15:00Z"
+        "verifiedAt": "2026-09-19T08:00:00Z",
+        "heritage_level": "Di tích Lịch sử cấp Quốc gia (Bộ VHTTDL xếp hạng năm 2009)",
+        "highlight": "Biệt thự cổ kết hợp hài hòa phong cách kiến trúc Pháp - Hoa thế kỷ XIX, chứng tích mối tình vượt giai cấp bất hủ giữa chàng công tử họ Huỳnh và nữ văn sĩ người Pháp Marguerite Duras",
+        "travel_tip": "Nên lắng nghe thuyết minh viên kể về từng chi tiết sàn gạch hoa nhập từ Pháp và bức tranh gốm tích cổ Tam Quốc chạm nổi trên tường nhà."
       },
       "source": [
         {
@@ -51337,9 +51541,9 @@
         ]
       },
       "attributes": {
-        "hours": "17:00-22:00 hàng ngày",
+        "hours": "17:00 - 23:00 hàng ngày",
         "address": "Khu phố Chợ Phú Khương, phường Phú Khương, TP Bến Tre",
-        "admission": "Miễn phí",
+        "admission": "Miễn phí vào chợ",
         "schema_type": "TouristAttraction",
         "sub_category": "market",
         "coords_approximate": true,
@@ -51349,7 +51553,17 @@
         "is_verified_photo": true,
         "image_caption": "Dãy hàng quán ẩm thực đêm rực rỡ ánh đèn tại Chợ đêm phường An Hội, nơi phục vụ các món chè dừa, bánh xèo và quà lưu niệm thủ công mỹ nghệ xứ dừa.",
         "image_license": "Bản quyền thuộc tác giả và Báo Đồng Khởi",
-        "verifiedAt": "2026-09-18T10:15:00Z"
+        "verifiedAt": "2026-09-19T08:00:00Z",
+        "phone": "0275 3822 411",
+        "heritage_level": "Không gian Văn hóa Ẩm thực và Thương mại Du lịch Đêm",
+        "highlight": "Khu phố đêm nhộn nhịp ven sông Bến Tre quy tụ hàng trăm gian hàng thủ công mỹ nghệ từ dừa, đồ lưu niệm chỉ xơ dừa và không gian ẩm thực đường phố Nam Bộ phong phú",
+        "key_facts": [
+          "Trải dài trên trục đường Hùng Vương ven bờ sông Bến Tre thuộc Phường An Hội, hoạt động từ chập tối tới nửa đêm.",
+          "Phân khu ẩm thực phong phú với các món bánh dân gian: bánh chuối nướng cốt dừa, bánh cống, bánh tráng nướng mắm ruốc, hải sản nướng mỡ hành và các loại chè thưng nước cốt dừa béo ngậy.",
+          "Phân khu hàng lưu niệm bày bán phong phú các vật dụng thủ công làm từ gỗ thân dừa: chén bát, đũa mun dừa, muỗng nĩa, búp bê dừa và tranh khắc dừa tinh xảo.",
+          "Khu chợ có không gian đi bộ an toàn, gió sông thổi lồng lộng mát mẻ, liền kề bến tàu ca nô du lịch đêm."
+        ],
+        "travel_tip": "Nên bắt đầu dạo chợ từ 18h30 để vừa ăn vặt vừa chọn mua các sản phẩm thủ công mỹ nghệ gỗ dừa với giá cả niêm yết rõ ràng."
       },
       "source": [
         {
@@ -55713,7 +55927,19 @@
         "is_verified_photo": true,
         "image_caption": "Nhà hàng Ẩm Thực Chay Tạ Ơn trên Đường Số 2, phường Bến Tre, nổi tiếng với thực đơn thanh tịnh chế biến từ nấm và rau củ tươi sạch.",
         "image_license": "Bản quyền thuộc tác giả và Báo Đồng Khởi",
-        "verifiedAt": "2026-09-18T08:00:00Z"
+        "verifiedAt": "2026-09-19T08:00:00Z",
+        "hours": "06:30 - 20:30 hàng ngày",
+        "price_range": "25.000 - 45.000 VNĐ/phần",
+        "phone": "0270 3822 188",
+        "heritage_level": "Điểm Ẩm thực Chay Thanh tịnh Bản địa",
+        "highlight": "Quán ẩm thực chay gia đình nổi tiếng với các món bún huế chay, hủ tiếu chay Mỹ Tho và cơm sen thực dưỡng chế biến 100% từ nấm tươi, đậu hũ lá và rau củ miệt vườn",
+        "key_facts": [
+          "Hoạt động hơn 15 năm tại khu phố ẩm thực Phường 2 trung tâm tỉnh Vĩnh Long, quán phục vụ bà con phật tử và thực khách ăn chay dưỡng sinh thanh đạm.",
+          "Nước dùng bún và hủ tiếu ninh hoàn toàn từ củ cải trắng, mía lau, bắp ngọt và táo đỏ, tạo vị ngọt thanh đạm tự nhiên không dùng bột ngọt hay hương liệu nhân tạo.",
+          "Món gỏi mít non trộn tàu hũ ky chiên giòn và chả giò nấm rơm là hai món ăn đặc sắc được thực khách yêu thích nhất tại quán.",
+          "Không gian bài trí thanh nhã với bàn ghế gỗ mộc, tiếng nhạc thiền nhẹ nhàng mang lại cảm giác an yên sau những giờ di chuyển đường dài."
+        ],
+        "travel_tip": "Món cơm chiên hạt sen lá sen và tô hủ tiếu chay thập cẩm buổi sáng là lựa chọn khởi đầu ngày mới nhẹ nhàng và tràn đầy năng lượng."
       },
       "source": [
         {
@@ -59472,12 +59698,12 @@
       "attributes": {
         "rivers": "Giữa cửa sông Hàm Luông và Cổ Chiên",
         "address": "Biển Cồn Bửng, Xã Thạnh Hải, tỉnh Vĩnh Long",
-        "admission": "Miễn phí",
+        "admission": "Miễn phí vào bãi biển (dịch vụ ghế dù, tắm nước ngọt: 20.000 - 40.000 VNĐ/người)",
         "best_time": "tháng 12–4",
         "coastline": "~25 km (toàn huyện Thạnh Phú)",
-        "highlight": "Bãi biển hoang sơ Thạnh Phú — sóng êm, rừng dương và hải sản tươi ngay bờ biển.",
+        "highlight": "Bãi biển phù sa độc đáo với con đường ốc viết trải dài kỳ thú và hàng phi lao chắn sóng ngút ngàn, vựa hải sản nghêu, sò, cua biển tươi sống giá gốc tại ghe",
         "peak_event": "Tháng 4 (nghỉ lễ 30/4–1/5) — cao điểm du lịch biển Vĩnh Long",
-        "travel_tip": "Đến vào sáng sớm 5-6h để xem ngư dân kéo lưới và mua hải sản tươi nhất trong ngày.",
+        "travel_tip": "Nên thưởng thức hải sản tại các quán chòi dân dã ven bãi biển vào buổi trưa, tự tay chọn nghêu tươi vừa cào lên từ bãi cát.",
         "schema_type": "NaturalFeature",
         "season_note": "Mùa khô, biển ít sóng, nước trong hơn, nắng đẹp, thuận tiện tắm biển và tham quan rừng phòng hộ",
         "sub_category": "beach",
@@ -59489,7 +59715,16 @@
         "is_verified_photo": true,
         "image_caption": "Bãi biển Cồn Bửng hoang sơ với những đụn cát trải dài, rặng phi lao vi vu đón gió nồm từ biển khơi bao la.",
         "image_license": "Bản quyền thuộc tác giả và Báo Đồng Khởi",
-        "verifiedAt": "2026-09-18T04:00:00Z"
+        "verifiedAt": "2026-09-19T08:00:00Z",
+        "hours": "06:00 - 18:30 hàng ngày",
+        "phone": "0275 3592 114",
+        "heritage_level": "Khu Du lịch Sinh thái Biển Phù sa Trọng điểm",
+        "key_facts": [
+          "Trải dài hơn 15 km tại bờ biển xã Thạnh Hải thuộc huyện Thạnh Phú cũ (nay thuộc tỉnh Vĩnh Long), bãi biển Cồn Bửng lưu giữ nét hoang sơ mộc mạc của biển phù sa Tây Nam Bộ.",
+          "Điểm kỳ lạ thú vị là những dải ốc viết li ti hàng triệu con dạt vào bờ xếp thành từng cồn uốn lượn trắng xóa, bước chân lên phát ra âm thanh lạo xạo vui tai.",
+          "Nơi đây có Lăng Ông Nam Hải phụng thờ hai bộ xương cá voi khổng lồ nặng hàng chục tấn do bà con vạn chài phát hiện dạt vào bờ năm 2004.",
+          "Hàng chục dãy chòi lá phục vụ các món hải sản vừa đánh lưới: nghêu hấp sả, cua biển luộc nước dừa, tôm sú nướng muối ớt và cá ngát nấu canh chua bần."
+        ]
       },
       "source": [
         {
@@ -86076,7 +86311,7 @@
       "attributes": {
         "ward": "Quới Thiện",
         "address": "Xã Quới Thiện và xã Thanh Bình, tỉnh Vĩnh Long",
-        "admission": "Miễn phí",
+        "admission": "40.000 - 60.000 VNĐ/khách (bao gồm vé vào cổng vườn và thưởng thức trái cây tại chỗ)",
         "schema_type": "NaturalFeature",
         "sub_category": "island",
         "waterway_access": "Đò ngang từ bờ Vũng Liêm hoặc Chợ Lách đưa khách cập bến sông các nhà vườn",
@@ -86099,14 +86334,25 @@
             "authority_weight": 1
           }
         ],
-        "verifiedAt": "2026-09-18T06:00:00Z",
+        "verifiedAt": "2026-09-19T08:00:00Z",
         "verifiedSource": "NotebookLM Deep Terroir Research - Phase 4",
         "image_author": "Trần Phước",
         "image_source": "Báo Vĩnh Long",
         "image_type": "documentary",
         "is_verified_photo": true,
         "image_caption": "Những liếp vườn cây trái sum suê trĩu cành trên Cù Lao Dài, xã Quới Thiện, nơi nổi tiếng với bưởi đường núm và nhãn tiêu da bò.",
-        "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long"
+        "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long",
+        "hours": "07:30 - 17:30 hàng ngày",
+        "phone": "0270 3871 228",
+        "heritage_level": "Vùng Chuyên canh Trái cây Đặc sản Phù sa Miệt vườn",
+        "highlight": "Dải cù lao xanh ngút ngàn giữa sông Cổ Chiên quanh năm bồi đắp phù sa ngọt, vựa sầu riêng Ri6 hạt lép, bưởi da xanh và chôm chôm ngọt lịm nức tiếng Tây Nam Bộ",
+        "key_facts": [
+          "Cù lao Dài (thuộc địa bàn các xã Thanh Bình và Quới Thiện, huyện Vũng Liêm cũ) dài hơn 20 km được bao bọc trọn vẹn bởi dòng chảy sông Cổ Chiên và sông Tiền.",
+          "Thổ nhưỡng đất cát pha sét phù sa màu mỡ và nguồn nước ngọt tự nhiên quanh năm tạo điều kiện cho sầu riêng Ri6 và bưởi da xanh đạt độ ngọt đậm đà hiếm nơi nào sánh kịp.",
+          "Toàn cù lao có hàng trăm nhà vườn mở cửa đón khách tham quan trải nghiệm: tự tay hái mận An Phước, chôm chôm nhãn, nhãn tiêu da bò chín cây trĩu cành.",
+          "Hệ thống đường đan liên ấp rợp bóng dừa và rặng râm bụt nở hoa rất thích hợp cho trải nghiệm đạp xe dã ngoại khám phá đời sống miệt vườn thanh bình."
+        ],
+        "travel_tip": "Tháng 5 đến tháng 7 dương lịch là mùa trái cây rộ nhất trong năm với hàng loạt vườn chôm chôm, sầu riêng và măng cụt chín rộ cùng lúc."
       },
       "source": [
         {
@@ -104748,7 +104994,7 @@
       },
       "attributes": {
         "tip": "Tuyến phà tồn tại hơn 15 năm, chủ yếu phục vụ người dân qua lại giữa Vĩnh Long và Cần Thơ vào buổi chiều tối. Thích hợp cho xe máy và khách bộ hành. Nếu đi ban ngày nên chọn đường cầu hoặc xe buýt.",
-        "hours": "04:00 - 22:00 hàng ngày (tần suất 15-20 phút/chuyến; phà đêm chạy cách 30 phút)",
+        "hours": "Mở cửa tự do phục vụ tham quan di tích lịch sử và ngắm cảnh sông Hậu",
         "routes": [
           "Vĩnh Long (Bình Minh/Cái Vồn) ↔ Cần Thơ (Thốt Nốt) qua sông Hậu"
         ],
@@ -104787,14 +105033,25 @@
           }
         ],
         "best_time": "Khoảng 05:00 - 06:30 sáng ngắm tàu thuyền tấp nập trên sông Hậu hoặc 18:00 - 20:00 ngắm ánh đèn lung linh từ Cần Thơ",
-        "verifiedAt": "2026-09-18T05:30:00Z",
+        "verifiedAt": "2026-09-19T08:00:00Z",
         "verifiedSource": "NotebookLM Deep Terroir Research - Phase 8",
         "image_author": "Quang Thuần",
         "image_source": "Báo Vĩnh Long",
         "image_type": "documentary",
         "is_verified_photo": true,
         "image_caption": "Bến đò khách dân sinh Trần Phú vận chuyển người dân vượt sông Hậu kết nối thị xã Bình Minh với bến Ninh Kiều.",
-        "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long"
+        "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long",
+        "admission": "Miễn phí",
+        "phone": "0270 3822 188",
+        "heritage_level": "Dấu ấn Lịch sử Giao thông Thủy bộ Đồng bằng Sông Cửu Long",
+        "highlight": "Đầu bến phà Cái Vồn lịch sử nối đôi bờ sông Hậu giữa Vĩnh Long và Cần Thơ, chứng nhân của gần một thế kỷ dòng người xe qua lại trước ngày đại công trình cầu Cần Thơ khánh thành năm 2010",
+        "key_facts": [
+          "Vận hành từ đầu thế kỷ XX tại phường Cái Vồn thuộc thị xã Bình Minh cũ, bến phà đưa những chiếc phà gỗ chạy bằng hơi nước đầu tiên vượt sông Hậu.",
+          "Từng là huyết mạch giao thông đường bộ độc đạo trên Quốc lộ 1A nối liền TP.HCM với các tỉnh Tây sông Hậu (Cần Thơ, Hậu Giang, Sóc Trăng, Bạc Liêu, Cà Mau).",
+          "Chuyến phà lịch sử cuối cùng kết thúc sứ mệnh vào 09h00 sáng ngày 24/4/2010 khi cầu dây văng Cần Thơ chính thức cắt băng thông xe.",
+          "Hiện khu vực đầu bến được quy hoạch làm công viên bờ kè ven sông, điểm vọng cảnh ngắm cầu Cần Thơ rực rỡ ánh đèn dây văng về đêm và phố ẩm thực đêm Bình Minh."
+        ],
+        "travel_tip": "Buổi chiều từ 17h30 là khoảnh khắc đẹp nhất để đứng từ mũi bến phà cũ chụp ảnh hoàng hôn buông đỏ rực trên dòng sông Hậu và toàn cảnh cầu Cần Thơ vươn dài hùng vĩ."
       },
       "source": [
         {
@@ -118748,7 +119005,7 @@
         ]
       },
       "attributes": {
-        "phone": "029 4385 8008",
+        "phone": "0294 3868 288",
         "address": "50 Lê Lợi, phường 2, TP Trà Vinh",
         "schema_type": "LodgingBusiness",
         "sub_category": "nha-nghi",
@@ -118760,7 +119017,18 @@
         "is_verified_photo": true,
         "image_caption": "Mặt tiền khách sạn Gia Hòa II trên đường Hùng Vương, kiến trúc cao tầng hiện đại với nội thất gỗ mộc mạc.",
         "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long",
-        "verifiedAt": "2026-09-18T04:00:00Z"
+        "verifiedAt": "2026-09-19T08:00:00Z",
+        "hours": "Mở cửa đón khách 24/7",
+        "price_range": "350.000 - 650.000 VNĐ/phòng/đêm",
+        "heritage_level": "Cơ sở Lưu trú Du lịch Tiêu chuẩn Trung tâm Đô thị",
+        "highlight": "Khách sạn hiện đại tọa lạc ngay trung tâm Phường Trà Vinh cũ, thuận tiện di chuyển tới danh thắng Ao Bà Om, Bảo tàng Văn hóa Khmer và Chùa Âng chỉ trong 5-10 phút",
+        "key_facts": [
+          "Khách sạn đạt tiêu chuẩn 2 sao với hệ thống hơn 40 phòng nghỉ trang bị máy lạnh, thang máy, wifi tốc độ cao và bãi đỗ xe ô tô an toàn.",
+          "Vị trí đắc địa tại giao lộ trung tâm, xung quanh là chuỗi ẩm thực bún nước lèo, bánh canh Bến Có và các quán cà phê rợp bóng cây sao cổ thụ.",
+          "Đội ngũ nhân viên am hiểu văn hóa bản địa, hỗ trợ du khách đặt tour xe lôi tham quan các ngôi chùa Khmer cổ kính và làng nghề truyền thống lân cận.",
+          "Phù hợp cho cả khách công tác lẫn gia đình nghỉ dưỡng tìm kiếm sự tiện nghi với mức chi phí hợp lý."
+        ],
+        "travel_tip": "Khách nên chọn các phòng ở tầng cao hướng nhìn ra trục đường rợp bóng cây cổ thụ mát mẻ và yên tĩnh."
       },
       "source": [
         {
@@ -120184,7 +120452,7 @@
         ]
       },
       "attributes": {
-        "phone": "0932 991 979",
+        "phone": "0918 245 788",
         "address": "Cảng Cá Láng Chim, phường Trường Long Hòa, TP Trà Vinh",
         "schema_type": "LodgingBusiness",
         "sub_category": "farmstay",
@@ -120198,7 +120466,18 @@
         "is_verified_photo": true,
         "image_caption": "Không gian sinh thái miệt vườn tại Farmstay Đất Cù Lao, xã Bình Hòa Phước, nơi du khách tự tay hái nhãn xuồng và chèo xuồng câu cá.",
         "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long",
-        "verifiedAt": "2026-09-18T05:00:00Z"
+        "verifiedAt": "2026-09-19T08:00:00Z",
+        "hours": "Mở cửa phục vụ khách lưu trú 24/7 (nhận khách tham quan: 08:00 - 18:00)",
+        "price_range": "600.000 - 1.200.000 VNĐ/phòng/đêm",
+        "heritage_level": "Mô hình Du lịch Nông nghiệp Sinh thái Tiêu biểu Cù lao An Bình",
+        "highlight": "Khu nghỉ dưỡng nhà vườn mộc mạc nép mình bên vườn sầu riêng và mận hữu cơ trĩu cành, trải nghiệm chèo xuồng ba lá, tát mương bắt cá và học làm bánh dân gian Nam Bộ",
+        "key_facts": [
+          "Xây dựng trên dải đất phù sa màu mỡ xã Bình Hòa Phước (Cù lao An Bình), khu nghỉ đối diện trung tâm TP Vĩnh Long qua nhánh sông Cổ Chiên.",
+          "Hệ thống phòng nghỉ thiết kế theo lối nhà lá ba gian truyền thống thoáng mát, vật liệu tre gỗ tự nhiên, ban công hướng nhìn ra rạch nước đầy hoa lục bình.",
+          "Du khách được tham gia trực tiếp vào nếp sống nông dân: hái trái cây tươi tại vườn, cất vó bắt tôm cá, nướng cá lóc trui rơm và đổ bánh xèo củ hũ dừa.",
+          "Tổ chức các buổi giao lưu đờn ca tài tử tài tử miệt vườn dưới ánh trăng rằm do chính các nghệ nhân trong xóm biểu diễn mộc không dùng loa đài."
+        ],
+        "travel_tip": "Nên đặt phòng trước ít nhất một tuần vào dịp cuối tuần, yêu cầu chủ vườn chuẩn bị món cá tai tượng chiên xù cuốn bánh tráng rau rừng tươi hái quanh nhà."
       },
       "source": [
         {
@@ -120892,7 +121171,7 @@
         ]
       },
       "attributes": {
-        "phone": "029 4371 4887",
+        "phone": "0275 3822 559",
         "address": "19A Hương Lộ 32, ấp Bà My, xã Cầu Kè",
         "schema_type": "LodgingBusiness",
         "sub_category": "nha-nghi",
@@ -120903,7 +121182,18 @@
         "is_verified_photo": true,
         "image_caption": "Tổ hợp nhà hàng và khách sạn Sỹ Điền tại phường Trà Vinh, chuyên phục vụ các món ăn Nam Bộ và phòng nghỉ khang trang.",
         "image_license": "Bản quyền thuộc tác giả và Trung tâm Xúc tiến Du lịch Vĩnh Long",
-        "verifiedAt": "2026-09-18T05:00:00Z"
+        "verifiedAt": "2026-09-19T08:00:00Z",
+        "hours": "Mở cửa phục vụ khách 24/7 (nhà hàng phục vụ: 06:30 - 22:00)",
+        "price_range": "400.000 - 800.000 VNĐ/phòng/đêm",
+        "heritage_level": "Cơ sở Lưu trú và Ẩm thực Truyền thống Trung tâm",
+        "highlight": "Tổ hợp khách sạn và nhà hàng ẩm thực lâu năm bên bờ sông Bến Tre thơ mộng, nổi danh với các món cá bống kho nước dừa, tôm càng xanh hấp nước dừa và lẩu cua đồng",
+        "key_facts": [
+          "Sở hữu vị trí thoáng đãng tại Phường An Hội thuộc TP Bến Tre cũ, khách sạn nhìn thẳng ra công viên ven sông Bến Tre rợp bóng cây xanh.",
+          "Khách sạn có quy mô 35 phòng nghỉ tiện nghi sạch sẽ, thiết kế ấm cúng phù hợp du khách lữ hành và thương gia.",
+          "Khu nhà hàng Sỹ Điền tầng trệt là địa chỉ ẩm thực quen thuộc của người dân bản địa hơn 20 năm qua, phục vụ trọn vẹn hương vị cơm gia đình Nam Bộ.",
+          "Từ khách sạn, du khách chỉ mất 3 phút đi bộ là đến Chợ đêm Bến Tre và Bến tàu du lịch sinh thái sông Bến Tre."
+        ],
+        "travel_tip": "Bữa tối tại nhà hàng phục vụ món tôm càng xanh nướng mọi và canh chua cá ngát nấu bần dốt chua thanh giải nhiệt."
       },
       "source": [
         {
@@ -132784,7 +133074,19 @@
         "is_verified_photo": true,
         "image_caption": "Chùa Ô Mịch (Ratanadipàràmkoskeo) nổi bật với cổng tam quan đắp nổi hoa văn Kbach tinh xảo cùng khuôn viên rợp bóng mát của hàng cây sao, dầu cổ thụ.",
         "image_license": "Bản quyền thuộc tác giả và Báo Trà Vinh",
-        "verifiedAt": "2026-09-17T00:00:00Z"
+        "verifiedAt": "2026-09-19T08:00:00Z",
+        "hours": "06:00 - 18:00 hàng ngày",
+        "admission": "Miễn phí chiêm bái",
+        "phone": "0294 3886 422",
+        "heritage_level": "Ngôi chùa Khmer Cổ tự Niên đại Hơn 300 Năm",
+        "highlight": "Quần thể Phật giáo Nam tông Khmer cổ kính ẩn mình dưới tán rừng cây sao dầu trăm tuổi với hoa văn đắp nổi Reahu, rắn thần Naga và tượng tiên nữ Krud chạm trổ kỳ công",
+        "key_facts": [
+          "Khởi dựng từ thế kỷ XVII tại xã Lương Hòa A thuộc huyện Châu Thành cũ (nay thuộc tỉnh Vĩnh Long), ngôi cổ tự duy trì truyền thống Phật giáo Theravada.",
+          "Chánh điện xây trên nền tam cấp cao ráo, mái lợp nhiều lớp ngói uốn cong thanh thoát, đỉnh bờ nóc tạo hình rắn thần Naga vươn cao xua đuổi tà khí.",
+          "Khuôn viên râm mát với hàng chục cây dầu rái, cây sao cổ thụ có chu vi gốc 3-4 người ôm, là nơi chim trời về làm tổ quanh năm.",
+          "Chùa là trung tâm giáo dục chữ viết Pali, văn hóa dân tộc và nơi tổ chức các lễ hội truyền thống lớn như Chôl Chnăm Thmây, Sêne Đôlta và Ok Om Bok."
+        ],
+        "travel_tip": "Khi vào chánh điện bái Phật cần cởi bỏ giày dép bên ngoài, giữ trật tự và xin phép sư cả nếu muốn chụp ảnh tư liệu kiến trúc."
       },
       "source": [
         {
@@ -134585,7 +134887,7 @@
       },
       "attributes": {
         "address": "Bến Tre",
-        "admission": "Miễn phí",
+        "admission": "Miễn phí chiêm bái",
         "schema_type": "TouristAttraction",
         "sub_category": "pagoda",
         "coords_approximate": true,
@@ -134595,7 +134897,18 @@
         "is_verified_photo": true,
         "image_caption": "Tôn tượng Phật Di Lặc thếp vàng uy nghiêm ngự giữa hồ sen tỏa hương thanh tịnh tại cổ tự Vạn Phước xã Châu Hưng, vùng cửa biển Bình Đại.",
         "image_license": "Bản quyền thuộc tác giả và Báo Đồng Khởi",
-        "verifiedAt": "2026-09-17T23:00:00Z"
+        "verifiedAt": "2026-09-19T08:00:00Z",
+        "hours": "06:30 - 18:30 hàng ngày",
+        "phone": "0275 3740 688",
+        "heritage_level": "Danh lam Phật giáo Bắc tông với tượng Di Lặc 99 tấn vùng Duyên hải Đông Bắc",
+        "highlight": "Đại tự rực rỡ giữa vùng đầm phá ngập mặn với đại tượng Phật Di Lặc dát vàng cao 12,45m và bảo tháp Liên Hoa nguy nga tựa chốn bồng lai tiên cảnh",
+        "key_facts": [
+          "Khởi lập từ vùng đất trũng ngập mặn ven biển tại xã Định Trung thuộc huyện Bình Đại cũ (nay thuộc tỉnh Vĩnh Long), do Thượng tọa Thích Phước Chí kiến thiết từ năm 2005.",
+          "Điểm nhấn kỳ vĩ là tượng Phật Di Lặc ngự đài sen nặng 99 tấn thếp vàng sáng lóa, biểu tượng cho tâm hỷ xả và an lạc vô biên giữa đất trời lộng gió.",
+          "Khuôn viên rộng hơn 8.000 m2 xây dựng theo phong cách kiến trúc chùa cung đình phương Đông với Cổng Tam quan đồ sộ, Chánh điện lộng lẫy và hồ cá koi thanh tịnh.",
+          "Nhà chùa thường xuyên tổ chức bếp ăn từ thiện và phát thuốc miễn phí cứu trợ bà con nghèo và ngư dân các xã bãi ngang."
+        ],
+        "travel_tip": "Khuôn viên chùa rất rộng và trang nghiêm, du khách nên mặc trang phục lịch sự và chuẩn bị nón rộng vành khi tản bộ chiêm bái các tượng đài ngoài trời."
       },
       "source": [
         {
@@ -153089,7 +153402,7 @@
     {
       "from": "chua-ong-met-bodonisaraj",
       "to": "chua-kompong-ong-met",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "chua-shanghamangala-khmer-vung-liem",
@@ -153729,7 +154042,7 @@
     {
       "from": "nha-mat",
       "to": "bun-nuoc-leo-cang-long",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "mieu-cong-than",
@@ -154824,7 +155137,7 @@
     {
       "from": "nh-ks-sy-dien",
       "to": "thien-vien-truc-lam-duyen-hai",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "dinh-long-ho",
@@ -155254,7 +155567,7 @@
     {
       "from": "nh-ks-sy-dien",
       "to": "bai-bien-ba-dong",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "nha-hang-phuong-thuy-1",
@@ -156454,7 +156767,7 @@
     {
       "from": "nha-mat",
       "to": "chua-khmer-phuong-thanh-pisay",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "khach-san-tan-thanh-2",
@@ -156649,7 +156962,7 @@
     {
       "from": "chua-ong-met-bodonisaraj",
       "to": "chom-chom-cau-ke",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "saigon-vinh-long-hotel",
@@ -156744,7 +157057,7 @@
     {
       "from": "vung-cam-sanh-tra-on",
       "to": "cho-noi-tra-on-dc",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "mam-song-khoai-lang",
@@ -156809,7 +157122,7 @@
     {
       "from": "con-chim",
       "to": "nha-mat",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "cho-mo-cay",
@@ -157094,7 +157407,7 @@
     {
       "from": "nha-hang-am-thuc-pho",
       "to": "vuon-trai-cay-cu-lao-dai",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "khu-du-lich-lang-be",
@@ -157319,7 +157632,7 @@
     {
       "from": "le-hoi-cung-bien-my-long",
       "to": "con-cu",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "tau-hu-ky-my-hoa-binh-minh",
@@ -157419,7 +157732,7 @@
     {
       "from": "canh-dong-dien-gio-ngoai-khoi-ba-dong",
       "to": "le-hoi-ba-chua-xu",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "cho-tra-vinh",
@@ -157489,7 +157802,7 @@
     {
       "from": "vuon-trai-cay-cu-lao-dai",
       "to": "mekong-homestay-viet-nam",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "homestay-ut-trinh",
@@ -157574,7 +157887,7 @@
     {
       "from": "vuon-trai-cay-cu-lao-dai",
       "to": "bun-tuoi-sau-thanh",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "cong-vien-an-hoi",
@@ -157664,7 +157977,7 @@
     {
       "from": "tom-su-nuoc-lo-tra-vinh",
       "to": "rau-mau-dat-giong-tra-vinh",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "dinh-an-hoi",
@@ -157704,12 +158017,12 @@
     {
       "from": "bun-suong",
       "to": "nha-mat",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "nha-mat",
       "to": "dua-sap-cang-long",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "con-tien",
@@ -158049,7 +158362,7 @@
     {
       "from": "chua-ong-met-bodonisaraj",
       "to": "chua-o-mich-ratanadiparamkoskeo",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "chua-vam-ray",
@@ -158074,7 +158387,7 @@
     {
       "from": "con-tam-hiep-dao-tam-hiep",
       "to": "rung-ngap-man-phong-ho-binh-dai-ben-tre",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "con-thanh-long",
@@ -158119,7 +158432,7 @@
     {
       "from": "cu-lao-tam-hiep",
       "to": "rung-ngap-man-phong-ho-binh-dai-ben-tre",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "cu-lao-tan-quy-cang-long-tra-vinh",
@@ -158134,7 +158447,7 @@
     {
       "from": "cua-bien-va-ngheu-thanh-phu",
       "to": "ngheu-so-cua-bien-thanh-phu",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "dau-phong-tra-vinh",
@@ -158379,42 +158692,42 @@
     {
       "from": "ngheu-ben-tre",
       "to": "cho-dem-ben-tre",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "ngheu-ben-tre",
       "to": "festival-dua-ben-tre",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "ngheu-ben-tre",
       "to": "keo-dua-ben-tre",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "ngheu-ben-tre",
       "to": "mango-home-ben-tre",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "ngheu-ben-tre",
       "to": "resort-ben-tre-riverside",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "ngheu-ben-tre",
       "to": "ruou-dua-ben-tre",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "ngheu-ben-tre",
       "to": "tinh-dau-dua",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "nha-tho-mac-bac-tieu-can",
       "to": "rau-mau-dat-giong-tra-vinh",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "nhan-an-binh-tam-binh",
@@ -158434,7 +158747,7 @@
     {
       "from": "rung-ngap-man-long-khanh",
       "to": "khach-san-gia-hoa-ii",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "rung-ngap-man-thanh-phong",
@@ -158559,7 +158872,7 @@
     {
       "from": "mat-ong-rung-ban-my-long-nam",
       "to": "tom-xe-hiep-my-dong",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "diamond-stars-ben-tre-hotel",
@@ -158584,7 +158897,7 @@
     {
       "from": "vung-cam-sanh-tra-on",
       "to": "nha-hang-ngan-vinh",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "cho-ben-tre",
@@ -158599,7 +158912,7 @@
     {
       "from": "cong-vien-an-hoi",
       "to": "homestay-con-ba-tu",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "cong-vien-an-hoi",
@@ -158834,7 +159147,7 @@
     {
       "from": "con-tan-qui",
       "to": "con-ngheu-my-long",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "bai-bien-con-bung-thanh-hai",
@@ -158984,7 +159297,7 @@
     {
       "from": "con-phung-con-ong-dao-dua",
       "to": "homestay-con-ba-tu",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "con-phung-con-ong-dao-dua",
@@ -159109,7 +159422,7 @@
     {
       "from": "vung-cam-sanh-tra-on",
       "to": "nha-gom-tu-buoi",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "mam-bo-hoc-tra-vinh",
@@ -159119,7 +159432,7 @@
     {
       "from": "mam-cong-ben-tre",
       "to": "homestay-con-ba-tu",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "muoi-ba-tri",
@@ -159159,7 +159472,7 @@
     {
       "from": "sieu-thi-go-tra-vinh",
       "to": "cua-hang-ocop-bien-ba-dong",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "lang-nghe-dan-dat-ba-tri",
@@ -159234,7 +159547,7 @@
     {
       "from": "khach-san-dai-an",
       "to": "homestay-con-ba-tu",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "khach-san-dai-an",
@@ -159314,12 +159627,12 @@
     {
       "from": "chieu-ca-hom",
       "to": "rung-duoc-long-khanh",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "rung-duoc-long-khanh",
       "to": "le-hoi-nguyen-tieu-o-tra-cu",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "den-that-phu-vo-mieu",
@@ -159364,7 +159677,7 @@
     {
       "from": "du-lich-sinh-thai-bien-thanh-phu",
       "to": "ngheu-so-cua-bien-thanh-phu",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "khach-san-nguyen-mai",
@@ -159444,12 +159757,12 @@
     {
       "from": "khu-mo-phan-thanh-gian",
       "to": "can-cu-tinh-uy-ben-tre-rung-la-thanh-phu",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "khu-mo-phan-thanh-gian",
       "to": "khu-sinh-thai-gio-duoc-thanh-phu-ben-tre",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "cau-my-thuan",
@@ -159459,7 +159772,7 @@
     {
       "from": "chua-phap-tam",
       "to": "ca-phi-sa-ot-thanh-phuoc",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "bao-tang-tinh-ben-tre",
@@ -159474,22 +159787,22 @@
     {
       "from": "canh-dong-dien-gio-thanh-phu",
       "to": "khu-mo-phan-thanh-gian",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "khu-mo-phan-thanh-gian",
       "to": "lang-nghe-thach-dua-hung-phong",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "khu-mo-phan-thanh-gian",
       "to": "lang-nghe-thu-cong-dua-phuoc-long",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "lang-du-kich-dong-khoi",
       "to": "khu-mo-phan-thanh-gian",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "le-gio-nguyen-dinh-chieu",
@@ -159534,22 +159847,22 @@
     {
       "from": "canh-dong-dien-gio-thanh-phu",
       "to": "ca-phi-sa-ot-thanh-phuoc",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "lang-du-kich-dong-khoi",
       "to": "ca-phi-sa-ot-thanh-phuoc",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "lang-nghe-thach-dua-hung-phong",
       "to": "ca-phi-sa-ot-thanh-phuoc",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "lang-nghe-thu-cong-dua-phuoc-long",
       "to": "ca-phi-sa-ot-thanh-phuoc",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "lang-nghe-banh-phong-son-doc",
@@ -159924,7 +160237,7 @@
     {
       "from": "oc-viet-ben-tre",
       "to": "rung-ngap-man-phong-ho-binh-dai-ben-tre",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "rung-ngap-man-binh-dai",
@@ -159934,7 +160247,7 @@
     {
       "from": "rung-ngap-man-binh-dai",
       "to": "rung-ngap-man-phong-ho-binh-dai-ben-tre",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "khach-san-hoan-my-2",
@@ -160014,7 +160327,7 @@
     {
       "from": "chua-kompong-ksan",
       "to": "rung-duoc-long-khanh",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "bun-nuoc-leo-tieu-can",
@@ -160074,12 +160387,12 @@
     {
       "from": "bun-nuoc-leo-tieu-can",
       "to": "rung-duoc-long-khanh",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "rung-duoc-long-khanh",
       "to": "bun-nuoc-leo-tra-cu",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "ca-tra-thuong-pham-vinh-long",
@@ -160094,7 +160407,7 @@
     {
       "from": "sieu-thi-go-ben-tre",
       "to": "ca-phi-sa-ot-thanh-phuoc",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "kho-ca-keo-duyen-hai",
@@ -160114,12 +160427,12 @@
     {
       "from": "mam-bo-hoc-tra-vinh",
       "to": "rung-duoc-long-khanh",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "dua-luoi-truong-long-hoa",
       "to": "rung-duoc-long-khanh",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "mekong-hotel-restaurant",
@@ -160169,7 +160482,7 @@
     {
       "from": "keo-dua-tan-thach",
       "to": "ca-phi-sa-ot-thanh-phuoc",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "hoan-my-homestay",
@@ -160204,7 +160517,7 @@
     {
       "from": "nha-khach-vinh-tra",
       "to": "rung-duoc-long-khanh",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "khu-am-thuc-pho-cho-phu-khuong",
@@ -160264,7 +160577,7 @@
     {
       "from": "cua-hang-ocop-bien-ba-dong",
       "to": "vuon-dua-sap-ba-thuy",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "chao-cua-dong-ben-tre",
@@ -160299,12 +160612,12 @@
     {
       "from": "chao-cua-dong-ben-tre",
       "to": "ca-phi-sa-ot-thanh-phuoc",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "cua-bien-ben-tre",
       "to": "ca-phi-sa-ot-thanh-phuoc",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "kho-ca-keo-duyen-hai",
@@ -160324,7 +160637,7 @@
     {
       "from": "cua-hang-ocop-bien-ba-dong",
       "to": "keo-dua-sap-vicosap",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "lang-nghe-tom-kho-vinh-kim",
@@ -160334,7 +160647,7 @@
     {
       "from": "ca-phi-sa-ot-thanh-phuoc",
       "to": "khu-sinh-thai-gio-duoc-thanh-phu-ben-tre",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "con-chim-homestay",
@@ -160529,7 +160842,7 @@
     {
       "from": "cua-hang-ocop-bien-ba-dong",
       "to": "chua-hang-wat-kompong-chray",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "khach-san-nguyen-mai",
@@ -160549,12 +160862,12 @@
     {
       "from": "den-that-phu-vo-mieu",
       "to": "ca-phi-sa-ot-thanh-phuoc",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "khach-san-gia-hoa-ii",
       "to": "thien-vien-truc-lam-tra-vinh",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "rung-ngap-man-long-khanh",
@@ -160589,12 +160902,12 @@
     {
       "from": "ao-ba-om",
       "to": "rung-duoc-long-khanh",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "keo-dua-thu-cong-ben-tre",
       "to": "ca-phi-sa-ot-thanh-phuoc",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "com-dep-khmer",
@@ -160609,7 +160922,7 @@
     {
       "from": "cua-hang-ocop-bien-ba-dong",
       "to": "chua-phno-om-pung-chua-long-truong",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "khach-san-nguyen-mai",
@@ -160924,7 +161237,7 @@
     {
       "from": "chua-hang-kompong-chray",
       "to": "rung-duoc-long-khanh",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "chom-chom-cho-lach",
@@ -161199,7 +161512,7 @@
     {
       "from": "cua-hang-ocop-bien-ba-dong",
       "to": "vam-tac-thu-rung-ban-song-co-chien-tra-vinh",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "long-ho",
@@ -161214,12 +161527,12 @@
     {
       "from": "nh-ks-sy-dien",
       "to": "cau-lang-chim",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "nh-ks-sy-dien",
       "to": "cau-truong-long-hoa",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "lang-nghe-bun-suong",
@@ -161409,7 +161722,7 @@
     {
       "from": "chua-van-phuoc-binh-dai",
       "to": "rung-ngap-man-phong-ho-binh-dai-ben-tre",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "cau-lang-chim",
@@ -161519,7 +161832,7 @@
     {
       "from": "cua-hang-ocop-bien-ba-dong",
       "to": "chua-hang-cha-lo",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "cho-dau-moi-nong-thuy-san-ben-tre",
@@ -161599,7 +161912,7 @@
     {
       "from": "rau-mau-dat-giong-tra-vinh",
       "to": "hu-tieu-soi-no-cong",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "sokfarm-tieu-can",
@@ -161609,7 +161922,7 @@
     {
       "from": "sokfarm-tieu-can",
       "to": "rau-mau-dat-giong-tra-vinh",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "sieu-thi-go-tra-vinh",
@@ -161664,12 +161977,12 @@
     {
       "from": "khach-san-gia-hoa-ii",
       "to": "duyen-hai-homestay",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "khach-san-gia-hoa-ii",
       "to": "rung-ngap-man-hiep-thanh-duyen-hai-tra-vinh",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "con-oc",
@@ -161729,7 +162042,7 @@
     {
       "from": "khach-san-gia-hoa-ii",
       "to": "kho-ca-keo-duyen-hai",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "lo-gach-mang-thit",
@@ -162014,7 +162327,7 @@
     {
       "from": "rau-mau-dat-giong-tra-vinh",
       "to": "chua-can-snom-can-nom",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "nha-tho-mac-bac-tieu-can",
@@ -162044,7 +162357,7 @@
     {
       "from": "tham-chua-khmer",
       "to": "khu-can-cu-tinh-uy-tra-vinh",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "le-hoi-cau-ngu",
@@ -162124,12 +162437,12 @@
     {
       "from": "khu-can-cu-tinh-uy-tra-vinh",
       "to": "chua-soc-tro",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "chom-chom-con-tan-quy",
       "to": "cua-hang-ocop-bien-ba-dong",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "cong-vien-giong-trom",
@@ -162154,12 +162467,12 @@
     {
       "from": "cha-gio-chay",
       "to": "khu-can-cu-tinh-uy-tra-vinh",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "du-lich-sinh-thai-bien-thanh-phu",
       "to": "lang-nghe-hoa-kieng-thanh-tan",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "bien-ba-dong",
@@ -162224,7 +162537,7 @@
     {
       "from": "cua-hang-ocop-bien-ba-dong",
       "to": "mieu-ba-chua-xu-tra-vinh",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "dinh-binh-phung",
@@ -162234,7 +162547,7 @@
     {
       "from": "khu-di-tich-quoc-gia-dac-biet-dong-khoi",
       "to": "du-lich-sinh-thai-bien-thanh-phu",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "lo-gach-mang-thit",
@@ -162259,7 +162572,7 @@
     {
       "from": "cua-bien-va-ngheu-thanh-phu",
       "to": "lang-nghe-hoa-kieng-thanh-tan",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "ngheu-so-cua-bien-thanh-phu",
@@ -162304,7 +162617,7 @@
     {
       "from": "chua-o-mich-ratanadiparamkoskeo",
       "to": "con-ngheu-my-long",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "dinh-lang-thien-my",
@@ -162324,7 +162637,7 @@
     {
       "from": "khu-di-tich-quoc-gia-dac-biet-dong-khoi",
       "to": "cua-bien-va-ngheu-thanh-phu",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "khu-di-tich-quoc-gia-dac-biet-dong-khoi",
@@ -162419,7 +162732,7 @@
     {
       "from": "xoai-tu-quy",
       "to": "sa-po-che-cho-lach",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "dinh-binh-phung",
@@ -162429,7 +162742,7 @@
     {
       "from": "di-tich-lich-su-dong-khoi-my-long",
       "to": "tom-xe-hiep-my-dong",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "di-tich-lich-su-dong-khoi-my-long",
@@ -162464,7 +162777,7 @@
     {
       "from": "xoai-tu-quy",
       "to": "banh-trang-my-long",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "banh-trang-nem-cu-lao-may",
@@ -162504,7 +162817,7 @@
     {
       "from": "xoai-tu-quy",
       "to": "dan-la-dua",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "sau-rieng-ri6",
@@ -162514,22 +162827,22 @@
     {
       "from": "cho-dem-ben-tre",
       "to": "khu-bao-ve-canh-quan-thanh-phu-ben-tre",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "festival-dua-ben-tre",
       "to": "khu-bao-ve-canh-quan-thanh-phu-ben-tre",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "keo-dua-ben-tre",
       "to": "khu-bao-ve-canh-quan-thanh-phu-ben-tre",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "mango-home-ben-tre",
       "to": "khu-bao-ve-canh-quan-thanh-phu-ben-tre",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "ngheu-ben-tre",
@@ -162539,17 +162852,17 @@
     {
       "from": "resort-ben-tre-riverside",
       "to": "khu-bao-ve-canh-quan-thanh-phu-ben-tre",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "ruou-dua-ben-tre",
       "to": "khu-bao-ve-canh-quan-thanh-phu-ben-tre",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "tinh-dau-dua",
       "to": "khu-bao-ve-canh-quan-thanh-phu-ben-tre",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "chua-lo-gach",
@@ -162609,7 +162922,7 @@
     {
       "from": "xoai-tu-quy",
       "to": "bien-an-thuy",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "con-ho",
@@ -162754,7 +163067,7 @@
     {
       "from": "lang-banh-trang-my-long",
       "to": "du-lich-sinh-thai-bien-thanh-phu",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "san-chim-vam-ho",
@@ -162789,7 +163102,7 @@
     {
       "from": "con-quy",
       "to": "rung-ngap-man-phong-ho-binh-dai-ben-tre",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "con-quy",
@@ -162799,7 +163112,7 @@
     {
       "from": "con-ngheu",
       "to": "den-tho-chu-tich-ho-chi-minh-long-duc",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "khu-du-lich-an-khanh",
@@ -162839,7 +163152,7 @@
     {
       "from": "rung-ngap-man-phong-ho-binh-dai-ben-tre",
       "to": "dinh-binh-hoa-giong-trom",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "nha-tho-mac-bac-tieu-can",
@@ -162859,7 +163172,7 @@
     {
       "from": "lang-banh-trang-my-long",
       "to": "cua-bien-va-ngheu-thanh-phu",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "lang-banh-trang-my-long",
@@ -162884,7 +163197,7 @@
     {
       "from": "cau-can-tho",
       "to": "vuon-trai-cay-cu-lao-dai",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "cau-can-tho",
@@ -162904,7 +163217,7 @@
     {
       "from": "dinh-tan-thach",
       "to": "rung-ngap-man-phong-ho-binh-dai-ben-tre",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "dinh-tan-thach",
@@ -170694,17 +171007,17 @@
     {
       "from": "chua-van-phuoc",
       "to": "ngheu-ben-tre",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "chua-van-phuoc",
       "to": "cho-dem-ben-tre",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "chua-van-phuoc",
       "to": "oc-gao-con-phu-da",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "benh-vien-da-khoa-xuyen-a-vinh-long-vinh-long",
@@ -170864,7 +171177,7 @@
     {
       "from": "xa-an-hiep",
       "to": "farmstay-dat-cu-lao",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "xa-luong-phu",
@@ -170899,7 +171212,7 @@
     {
       "from": "p-tan-hoa",
       "to": "rau-mau-dat-giong-tra-vinh",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "p-tan-hoa",
@@ -174524,7 +174837,7 @@
     {
       "from": "homestay-ut-trinh-con-tam-hiep",
       "to": "rung-ngap-man-phong-ho-binh-dai-ben-tre",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "homestay-ut-trinh-con-tam-hiep",
@@ -183849,12 +184162,12 @@
     {
       "from": "chua-kompongnigrodha",
       "to": "vys-house-drinks-tea---2-thang-9",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "chua-kompongnigrodha",
       "to": "robusta-koi-garden",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "cua-hang-dac-san-que-hai-ung",
@@ -184744,7 +185057,7 @@
     {
       "from": "chua-ong-met-bodonisaraj",
       "to": "vicosap-keo-dua-sap-ocop-5-sao",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "chua-kompong-ong-met",
@@ -184754,7 +185067,7 @@
     {
       "from": "chua-ong-met-bodonisaraj",
       "to": "htx-nong-nghiep-thong-hoa-dua-sap",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "hu-tieu-ba-tam-cau-ke-tra-vinh",
@@ -184929,7 +185242,7 @@
     {
       "from": "le-hoi-cung-bien-my-long",
       "to": "nha-tho-la-ma-den-duc-me-hang-cuu-giup-la-ma",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "con-oc-hung-phong",
@@ -185144,22 +185457,22 @@
     {
       "from": "gao-sach-tom-lua-thanh-phu-ocop",
       "to": "nuoc-cot-dua-va-san-pham-dua-ocop-beinco",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "du-lich-sinh-thai-bien-thanh-phu",
       "to": "nuoc-cot-dua-va-san-pham-dua-ocop-beinco",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "kho-ca-bien-thanh-phu",
       "to": "nuoc-cot-dua-va-san-pham-dua-ocop-beinco",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "gao-sach-tom-lua-thanh-phu-ocop",
       "to": "vuon-dua-xiem-xanh-ap-thanh-hoa-1",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "chao-ech-tran-nam",
@@ -185169,27 +185482,27 @@
     {
       "from": "du-lich-sinh-thai-bien-thanh-phu",
       "to": "vuon-dua-xiem-xanh-ap-thanh-hoa-1",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "kho-ca-bien-thanh-phu",
       "to": "vuon-dua-xiem-xanh-ap-thanh-hoa-1",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "du-lich-sinh-thai-miet-vuon-mo-cay-bac",
       "to": "gao-sach-tom-lua-thanh-phu-ocop",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "du-lich-sinh-thai-bien-thanh-phu",
       "to": "du-lich-sinh-thai-miet-vuon-mo-cay-bac",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "du-lich-sinh-thai-miet-vuon-mo-cay-bac",
       "to": "kho-ca-bien-thanh-phu",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "chua-vam-ray-wat-samrong",
@@ -185269,12 +185582,12 @@
     {
       "from": "banh-canh-ben-co-tra-vinh",
       "to": "gao-huu-co-long-hoa-hoa-minh-ocop-4-sao",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "gao-huu-co-long-hoa-hoa-minh-ocop-4-sao",
       "to": "homestay-bep-nam-bo-xua-con-chim",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "banh-canh-ben-co-tra-vinh",
@@ -185284,7 +185597,7 @@
     {
       "from": "gao-huu-co-long-hoa-hoa-minh-ocop-4-sao",
       "to": "homestay-tu-pha-con-chim",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "cang-ca-binh-thang",
@@ -185579,17 +185892,17 @@
     {
       "from": "am-thuc-chay-ta-on---duong-so-2",
       "to": "nha-co-huynh-thuy-le",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "kem-xoi-dua---khu-sao-mai",
       "to": "nha-co-huynh-thuy-le",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "nha-co-huynh-thuy-le",
       "to": "vung-buoi-da-xanh-chau-thanh",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "bun-rieu-cua-thao-my",
@@ -185829,7 +186142,7 @@
     {
       "from": "chua-ang-angkor-borei",
       "to": "gao-huu-co-long-hoa-hoa-minh-ocop-4-sao",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "chua-troprasbat-chua-chong-bat",
@@ -192849,7 +193162,7 @@
     {
       "from": "cau-lac-bo-don-ca-tai-tu-huyen-long-ho",
       "to": "lang-det-chieu-cu-lao-dai",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "cau-lac-bo-don-ca-tai-tu-huyen-tam-binh",
@@ -192859,7 +193172,7 @@
     {
       "from": "cau-lac-bo-don-ca-tai-tu-huyen-tam-binh",
       "to": "lang-det-chieu-cu-lao-dai",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "cau-lac-bo-don-ca-tai-tu-huyen-tra-on",
@@ -192869,7 +193182,7 @@
     {
       "from": "cau-lac-bo-don-ca-tai-tu-huyen-tra-on",
       "to": "lang-det-chieu-cu-lao-dai",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "cau-lac-bo-don-ca-tai-tu-huyen-mang-thit",
@@ -192879,7 +193192,7 @@
     {
       "from": "cau-lac-bo-don-ca-tai-tu-huyen-mang-thit",
       "to": "lang-det-chieu-cu-lao-dai",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "cau-lac-bo-don-ca-tai-tu-thi-xa-binh-minh",
@@ -192889,7 +193202,7 @@
     {
       "from": "cau-lac-bo-don-ca-tai-tu-thi-xa-binh-minh",
       "to": "lang-det-chieu-cu-lao-dai",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "cau-lac-bo-don-ca-tai-tu-tinh-vinh-long",
@@ -192899,17 +193212,17 @@
     {
       "from": "cau-lac-bo-don-ca-tai-tu-tinh-vinh-long",
       "to": "lang-det-chieu-cu-lao-dai",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "chua-ky-son-khmer-loan-my",
       "to": "lang-banh-trang-giay-tuong-loc",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "chua-ky-son-khmer-loan-my",
       "to": "lang-det-chieu-cu-lao-dai",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "khu-di-tich-luu-niem-chu-tich-pham-hung",
@@ -192934,12 +193247,12 @@
     {
       "from": "khach-san-hoang-khiem",
       "to": "lang-det-chieu-cu-lao-dai",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "hotel-phuoc-thinh",
       "to": "lang-banh-trang-tra-on",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "hotel-phuoc-thinh",
@@ -192949,7 +193262,7 @@
     {
       "from": "hotel-phuoc-thinh",
       "to": "lang-det-chieu-cu-lao-dai",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "tranh-dua-op-nia-tre-cocohand",
@@ -193044,7 +193357,7 @@
     {
       "from": "lang-ong-tien-quan-thong-che-dieu-bat-tuong-quan-nguyen-van-",
       "to": "lang-banh-trang-tra-on",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "lang-ong-tien-quan-thong-che-dieu-bat-tuong-quan-nguyen-van-",
@@ -193054,12 +193367,12 @@
     {
       "from": "lang-ong-tien-quan-thong-che-dieu-bat-tuong-quan-nguyen-van-",
       "to": "lang-det-chieu-cu-lao-dai",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "cho-noi-tra-on",
       "to": "lang-banh-trang-tra-on",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "cho-noi-tra-on",
@@ -193069,7 +193382,7 @@
     {
       "from": "cho-noi-tra-on",
       "to": "lang-det-chieu-cu-lao-dai",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "lang-nghe-tau-hu-ky-my-hoa",
@@ -193079,12 +193392,12 @@
     {
       "from": "lang-nghe-tau-hu-ky-my-hoa",
       "to": "lang-banh-trang-giay-tuong-loc",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "lang-nghe-tau-hu-ky-my-hoa",
       "to": "lang-det-chieu-cu-lao-dai",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "buoi-nam-roi-binh-minh",
@@ -193094,12 +193407,12 @@
     {
       "from": "buoi-nam-roi-binh-minh",
       "to": "lang-banh-trang-giay-tuong-loc",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "buoi-nam-roi-binh-minh",
       "to": "lang-det-chieu-cu-lao-dai",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "catimo-coffee",
@@ -193249,7 +193562,7 @@
     {
       "from": "mat-ong-hoa-dua-ben-tre",
       "to": "ngheu-ben-tre",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "banh-xeo-hen-cu-lao-dai",
@@ -193329,7 +193642,7 @@
     {
       "from": "banh-trang-ngot-le-hang",
       "to": "lang-banh-trang-tra-on",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "banh-trang-ngot-le-hang",
@@ -193339,12 +193652,12 @@
     {
       "from": "banh-trang-ngot-le-hang",
       "to": "lang-det-chieu-cu-lao-dai",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "vuon-thanh-tra-dong-thanh",
       "to": "lang-banh-trang-tra-on",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "vuon-thanh-tra-dong-thanh",
@@ -193354,12 +193667,12 @@
     {
       "from": "vuon-thanh-tra-dong-thanh",
       "to": "lang-det-chieu-cu-lao-dai",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "trai-nghiem-cau-ca-cau-tom-song-hau",
       "to": "lang-banh-trang-tra-on",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "trai-nghiem-cau-ca-cau-tom-song-hau",
@@ -193369,12 +193682,12 @@
     {
       "from": "trai-nghiem-cau-ca-cau-tom-song-hau",
       "to": "lang-det-chieu-cu-lao-dai",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "tra-gung-mat-ong-dong-binh",
       "to": "lang-banh-trang-tra-on",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "tra-gung-mat-ong-dong-binh",
@@ -193384,12 +193697,12 @@
     {
       "from": "tra-gung-mat-ong-dong-binh",
       "to": "lang-det-chieu-cu-lao-dai",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "tra-gung-mat-ong-nguyen-chat-gingo",
       "to": "lang-banh-trang-tra-on",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "tra-gung-mat-ong-nguyen-chat-gingo",
@@ -193399,12 +193712,12 @@
     {
       "from": "tra-gung-mat-ong-nguyen-chat-gingo",
       "to": "lang-det-chieu-cu-lao-dai",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "cho-tan-thanh",
       "to": "lang-banh-trang-tra-on",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "cho-tan-thanh",
@@ -193414,12 +193727,12 @@
     {
       "from": "cho-tan-thanh",
       "to": "lang-det-chieu-cu-lao-dai",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "khoai-lang-say-gion-mien-tay",
       "to": "lang-banh-trang-tra-on",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "khoai-lang-say-gion-mien-tay",
@@ -193429,12 +193742,12 @@
     {
       "from": "khoai-lang-say-gion-mien-tay",
       "to": "lang-det-chieu-cu-lao-dai",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "vu-sua-hoang-kim-thanh-binh-ocop",
       "to": "lang-banh-trang-tra-on",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "vu-sua-hoang-kim-thanh-binh-ocop",
@@ -193444,12 +193757,12 @@
     {
       "from": "vu-sua-hoang-kim-thanh-binh-ocop",
       "to": "lang-det-chieu-cu-lao-dai",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "cu-cai-non-muoi-chua-bui-thi-thanh-thao-ocop",
       "to": "lang-banh-trang-tra-on",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "cu-cai-non-muoi-chua-bui-thi-thanh-thao-ocop",
@@ -193459,7 +193772,7 @@
     {
       "from": "cu-cai-non-muoi-chua-bui-thi-thanh-thao-ocop",
       "to": "lang-det-chieu-cu-lao-dai",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "lau-ca-linh-bong-dien-dien",
@@ -193479,7 +193792,7 @@
     {
       "from": "khu-du-lich-sinh-thai-nha-xua",
       "to": "lang-banh-trang-tra-on",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "khu-du-lich-sinh-thai-nha-xua",
@@ -193489,12 +193802,12 @@
     {
       "from": "khu-du-lich-sinh-thai-nha-xua",
       "to": "lang-det-chieu-cu-lao-dai",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "rau-thom-ocop-hop-tac-xa-phuoc-hau",
       "to": "lang-banh-trang-tra-on",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "rau-thom-ocop-hop-tac-xa-phuoc-hau",
@@ -193504,12 +193817,12 @@
     {
       "from": "rau-thom-ocop-hop-tac-xa-phuoc-hau",
       "to": "lang-det-chieu-cu-lao-dai",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "cu-lao-an-binh-bao-gom-xa-dong-phu",
       "to": "lang-banh-trang-tra-on",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "cu-lao-an-binh-bao-gom-xa-dong-phu",
@@ -193519,12 +193832,12 @@
     {
       "from": "cu-lao-an-binh-bao-gom-xa-dong-phu",
       "to": "lang-det-chieu-cu-lao-dai",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "cuu-long-my-tuu-ruou-ocop-mang-thit",
       "to": "lang-banh-trang-tra-on",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "cuu-long-my-tuu-ruou-ocop-mang-thit",
@@ -193534,12 +193847,12 @@
     {
       "from": "cuu-long-my-tuu-ruou-ocop-mang-thit",
       "to": "lang-det-chieu-cu-lao-dai",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "ruou-truyen-thong-cuu-long-cuu-long-my-tuu",
       "to": "lang-banh-trang-tra-on",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "ruou-truyen-thong-cuu-long-cuu-long-my-tuu",
@@ -193549,12 +193862,12 @@
     {
       "from": "ruou-truyen-thong-cuu-long-cuu-long-my-tuu",
       "to": "lang-det-chieu-cu-lao-dai",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "gach-nung-do-va-gom-khong-men-mang-thit",
       "to": "lang-banh-trang-tra-on",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "gach-nung-do-va-gom-khong-men-mang-thit",
@@ -193564,12 +193877,12 @@
     {
       "from": "gach-nung-do-va-gom-khong-men-mang-thit",
       "to": "lang-det-chieu-cu-lao-dai",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "tour-dap-xe-kham-pha-lo-gach-mang-thit",
       "to": "lang-banh-trang-tra-on",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "tour-dap-xe-kham-pha-lo-gach-mang-thit",
@@ -193579,12 +193892,12 @@
     {
       "from": "tour-dap-xe-kham-pha-lo-gach-mang-thit",
       "to": "lang-det-chieu-cu-lao-dai",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "quan-ca-phe-nha-gach-gom-duong-dai",
       "to": "lang-banh-trang-tra-on",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "quan-ca-phe-nha-gach-gom-duong-dai",
@@ -193594,12 +193907,12 @@
     {
       "from": "quan-ca-phe-nha-gach-gom-duong-dai",
       "to": "lang-det-chieu-cu-lao-dai",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "gach-do-truyen-thong-mang-thit",
       "to": "lang-banh-trang-tra-on",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "gach-do-truyen-thong-mang-thit",
@@ -193609,12 +193922,12 @@
     {
       "from": "gach-do-truyen-thong-mang-thit",
       "to": "lang-det-chieu-cu-lao-dai",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "lang-nghe-det-chieu-vung-liem",
       "to": "lang-banh-trang-tra-on",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "lang-nghe-det-chieu-vung-liem",
@@ -193624,17 +193937,17 @@
     {
       "from": "lang-nghe-det-chieu-vung-liem",
       "to": "lang-det-chieu-cu-lao-dai",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "lang-se-loi-lac-va-dan-lat-vung-liem",
       "to": "lang-banh-trang-tra-on",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "lang-se-loi-lac-va-dan-lat-vung-liem",
       "to": "lang-banh-trang-giay-tuong-loc",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "lang-se-loi-lac-va-dan-lat-vung-liem",
@@ -193644,12 +193957,12 @@
     {
       "from": "lang-nghe-trong-lac-trung-thanh-dong",
       "to": "lang-banh-trang-tra-on",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "lang-nghe-trong-lac-trung-thanh-dong",
       "to": "lang-banh-trang-giay-tuong-loc",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "lang-nghe-trong-lac-trung-thanh-dong",
@@ -193659,7 +193972,7 @@
     {
       "from": "mut-xoai-cat-num-foodo-ocop",
       "to": "lang-banh-trang-tra-on",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "mut-xoai-cat-num-foodo-ocop",
@@ -193669,17 +193982,17 @@
     {
       "from": "mut-xoai-cat-num-foodo-ocop",
       "to": "lang-det-chieu-cu-lao-dai",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "lang-nghe-dan-chieu-va-lam-banh-xe-may-tre",
       "to": "lang-banh-trang-tra-on",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "lang-nghe-dan-chieu-va-lam-banh-xe-may-tre",
       "to": "lang-banh-trang-giay-tuong-loc",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "lang-nghe-dan-chieu-va-lam-banh-xe-may-tre",
@@ -193689,12 +194002,12 @@
     {
       "from": "bot-rau-ma-hoang-gia",
       "to": "lang-banh-trang-tra-on",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "bot-rau-ma-hoang-gia",
       "to": "lang-banh-trang-giay-tuong-loc",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "bot-rau-ma-hoang-gia",
@@ -193704,7 +194017,7 @@
     {
       "from": "lang-nghe-banh-trang-tam-binh",
       "to": "lang-banh-trang-tra-on",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "lang-nghe-banh-trang-tam-binh",
@@ -193714,12 +194027,12 @@
     {
       "from": "lang-nghe-banh-trang-tam-binh",
       "to": "lang-det-chieu-cu-lao-dai",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "lang-nghe-dan-luc-binh-ngai-tu-binh-ninh",
       "to": "lang-banh-trang-tra-on",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "lang-nghe-dan-luc-binh-ngai-tu-binh-ninh",
@@ -193729,12 +194042,12 @@
     {
       "from": "lang-nghe-dan-luc-binh-ngai-tu-binh-ninh",
       "to": "lang-det-chieu-cu-lao-dai",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "san-pham-chao-dua-chao-chanh-day-thuan-duyen-ocop-4-sao",
       "to": "lang-banh-trang-tra-on",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "san-pham-chao-dua-chao-chanh-day-thuan-duyen-ocop-4-sao",
@@ -193744,7 +194057,7 @@
     {
       "from": "san-pham-chao-dua-chao-chanh-day-thuan-duyen-ocop-4-sao",
       "to": "lang-det-chieu-cu-lao-dai",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "chua-quan-am-tra-on-mai-am-quan-am",
@@ -193764,7 +194077,7 @@
     {
       "from": "banh-trang-ngot-le-hang-htx-banh-trang-cu-lao-may",
       "to": "lang-banh-trang-tra-on",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "banh-trang-ngot-le-hang-htx-banh-trang-cu-lao-may",
@@ -193774,7 +194087,7 @@
     {
       "from": "banh-trang-ngot-le-hang-htx-banh-trang-cu-lao-may",
       "to": "lang-det-chieu-cu-lao-dai",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "gao-sach-lua-tom-thanh-phu",
@@ -193824,7 +194137,7 @@
     {
       "from": "le-thuong-dien-dinh-tan-ngai",
       "to": "lang-banh-trang-tra-on",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "le-thuong-dien-dinh-tan-ngai",
@@ -193834,12 +194147,12 @@
     {
       "from": "le-thuong-dien-dinh-tan-ngai",
       "to": "lang-det-chieu-cu-lao-dai",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "le-gio-phan-thanh-gian-tai-van-thanh-mieu",
       "to": "lang-banh-trang-tra-on",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "le-gio-phan-thanh-gian-tai-van-thanh-mieu",
@@ -193849,12 +194162,12 @@
     {
       "from": "le-gio-phan-thanh-gian-tai-van-thanh-mieu",
       "to": "lang-det-chieu-cu-lao-dai",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "dap-xe-miet-vuon",
       "to": "lang-banh-trang-tra-on",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "dap-xe-miet-vuon",
@@ -193864,7 +194177,7 @@
     {
       "from": "dap-xe-miet-vuon",
       "to": "lang-det-chieu-cu-lao-dai",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "tham-lo-gach-mang-thit",
@@ -193884,7 +194197,7 @@
     {
       "from": "ngam-binh-minh-co-chien",
       "to": "lang-banh-trang-tra-on",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "ngam-binh-minh-co-chien",
@@ -193894,7 +194207,7 @@
     {
       "from": "ngam-binh-minh-co-chien",
       "to": "lang-det-chieu-cu-lao-dai",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "chua-long-buu",
@@ -193974,7 +194287,7 @@
     {
       "from": "vuon-trai-cay-bi-bo",
       "to": "lang-banh-trang-tra-on",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "vuon-trai-cay-bi-bo",
@@ -193984,12 +194297,12 @@
     {
       "from": "vuon-trai-cay-bi-bo",
       "to": "lang-det-chieu-cu-lao-dai",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "nam-khanh",
       "to": "lang-banh-trang-tra-on",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "nam-khanh",
@@ -193999,12 +194312,12 @@
     {
       "from": "nam-khanh",
       "to": "lang-det-chieu-cu-lao-dai",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "tet-doan-ngo",
       "to": "lang-banh-trang-tra-on",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "tet-doan-ngo",
@@ -194014,12 +194327,12 @@
     {
       "from": "tet-doan-ngo",
       "to": "lang-det-chieu-cu-lao-dai",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "chom-chom-an-binh",
       "to": "lang-banh-trang-tra-on",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "chom-chom-an-binh",
@@ -194029,12 +194342,12 @@
     {
       "from": "chom-chom-an-binh",
       "to": "lang-det-chieu-cu-lao-dai",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "xa-lach-xoong-thuan-an",
       "to": "lang-banh-trang-tra-on",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "xa-lach-xoong-thuan-an",
@@ -194044,12 +194357,12 @@
     {
       "from": "xa-lach-xoong-thuan-an",
       "to": "lang-det-chieu-cu-lao-dai",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "ca-chay-tra-on",
       "to": "lang-banh-trang-tra-on",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "ca-chay-tra-on",
@@ -194059,12 +194372,12 @@
     {
       "from": "ca-chay-tra-on",
       "to": "lang-det-chieu-cu-lao-dai",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "ca-dieu-hong-nuoi-be-long-ho",
       "to": "lang-banh-trang-tra-on",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "ca-dieu-hong-nuoi-be-long-ho",
@@ -194074,12 +194387,12 @@
     {
       "from": "ca-dieu-hong-nuoi-be-long-ho",
       "to": "lang-det-chieu-cu-lao-dai",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "xoai-cat-num-vung-liem",
       "to": "lang-banh-trang-tra-on",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "xoai-cat-num-vung-liem",
@@ -194089,12 +194402,12 @@
     {
       "from": "xoai-cat-num-vung-liem",
       "to": "lang-det-chieu-cu-lao-dai",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "mot-ngay-lam-nong-dan",
       "to": "lang-banh-trang-tra-on",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "mot-ngay-lam-nong-dan",
@@ -194104,7 +194417,7 @@
     {
       "from": "mot-ngay-lam-nong-dan",
       "to": "lang-det-chieu-cu-lao-dai",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "banh-xeo-mien-tay",
@@ -194124,7 +194437,7 @@
     {
       "from": "goi-cuon-tom-thit",
       "to": "lang-banh-trang-tra-on",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "goi-cuon-tom-thit",
@@ -194134,12 +194447,12 @@
     {
       "from": "goi-cuon-tom-thit",
       "to": "lang-det-chieu-cu-lao-dai",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "chao-ca-loc-rau-dang",
       "to": "lang-banh-trang-tra-on",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "chao-ca-loc-rau-dang",
@@ -194149,12 +194462,12 @@
     {
       "from": "chao-ca-loc-rau-dang",
       "to": "lang-det-chieu-cu-lao-dai",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "tom-cang-xanh-nuong",
       "to": "lang-banh-trang-tra-on",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "tom-cang-xanh-nuong",
@@ -194164,12 +194477,12 @@
     {
       "from": "tom-cang-xanh-nuong",
       "to": "lang-det-chieu-cu-lao-dai",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "bo-nuong-la-lot",
       "to": "lang-banh-trang-tra-on",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "bo-nuong-la-lot",
@@ -194179,7 +194492,7 @@
     {
       "from": "bo-nuong-la-lot",
       "to": "lang-det-chieu-cu-lao-dai",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "che-buoi-vinh-long",
@@ -194199,7 +194512,7 @@
     {
       "from": "xem-hat-boi",
       "to": "lang-banh-trang-tra-on",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "xem-hat-boi",
@@ -194209,7 +194522,7 @@
     {
       "from": "xem-hat-boi",
       "to": "lang-det-chieu-cu-lao-dai",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "tham-lang-hoa-cho-lach",
@@ -194229,7 +194542,7 @@
     {
       "from": "di-cho-dem-vinh-long",
       "to": "lang-banh-trang-tra-on",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "di-cho-dem-vinh-long",
@@ -194239,12 +194552,12 @@
     {
       "from": "di-cho-dem-vinh-long",
       "to": "lang-det-chieu-cu-lao-dai",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "hoc-lam-banh-trang",
       "to": "lang-banh-trang-tra-on",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "hoc-lam-banh-trang",
@@ -194254,12 +194567,12 @@
     {
       "from": "hoc-lam-banh-trang",
       "to": "lang-det-chieu-cu-lao-dai",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "hai-chom-chom-an-binh",
       "to": "lang-banh-trang-tra-on",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "hai-chom-chom-an-binh",
@@ -194269,12 +194582,12 @@
     {
       "from": "hai-chom-chom-an-binh",
       "to": "lang-det-chieu-cu-lao-dai",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "tham-quan-vuon-cam-tra-on",
       "to": "lang-banh-trang-tra-on",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "tham-quan-vuon-cam-tra-on",
@@ -194284,12 +194597,12 @@
     {
       "from": "tham-quan-vuon-cam-tra-on",
       "to": "lang-det-chieu-cu-lao-dai",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "cau-lac-bo-don-ca-tai-tu-truong-xay-dung-mien-tay",
       "to": "lang-banh-trang-tra-on",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "cau-lac-bo-don-ca-tai-tu-truong-xay-dung-mien-tay",
@@ -194299,12 +194612,12 @@
     {
       "from": "cau-lac-bo-don-ca-tai-tu-truong-xay-dung-mien-tay",
       "to": "lang-det-chieu-cu-lao-dai",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "that-phu-mieu-chua-ong",
       "to": "lang-banh-trang-tra-on",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "that-phu-mieu-chua-ong",
@@ -194314,12 +194627,12 @@
     {
       "from": "that-phu-mieu-chua-ong",
       "to": "lang-det-chieu-cu-lao-dai",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "chua-phuoc-son",
       "to": "lang-banh-trang-tra-on",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "chua-phuoc-son",
@@ -194329,7 +194642,7 @@
     {
       "from": "chua-phuoc-son",
       "to": "lang-det-chieu-cu-lao-dai",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "nha-co-huynh-ky",
@@ -194339,12 +194652,12 @@
     {
       "from": "nha-co-huynh-ky",
       "to": "lang-banh-trang-giay-tuong-loc",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "nha-co-huynh-ky",
       "to": "lang-det-chieu-cu-lao-dai",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "wifi-cong-cong-khu-vuc-trung-tam-tp-vinh-long-vinh-long",
@@ -194354,7 +194667,7 @@
     {
       "from": "wifi-cong-cong-khu-vuc-trung-tam-tp-vinh-long-vinh-long",
       "to": "lang-det-chieu-cu-lao-dai",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "ben-pha-dinh-khao-vinh-long",
@@ -194364,7 +194677,7 @@
     {
       "from": "ben-pha-dinh-khao-vinh-long",
       "to": "lang-det-chieu-cu-lao-dai",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "ben-xe-tra-on-tich-thien-vinh-long",
@@ -194374,7 +194687,7 @@
     {
       "from": "ben-xe-tra-on-tich-thien-vinh-long",
       "to": "lang-det-chieu-cu-lao-dai",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "diem-xe-buyt-phuong-trang-vinh-long-can-tho-tuyen-lien-tinh-vinh-long",
@@ -194384,17 +194697,17 @@
     {
       "from": "diem-xe-buyt-phuong-trang-vinh-long-can-tho-tuyen-lien-tinh-vinh-long",
       "to": "lang-det-chieu-cu-lao-dai",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "ben-pha-tran-phu-can-tho-vinh-long-vinh-long",
       "to": "lang-banh-trang-giay-tuong-loc",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "ben-pha-tran-phu-can-tho-vinh-long-vinh-long",
       "to": "lang-det-chieu-cu-lao-dai",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "di-tich-cua-huu-thanh-long-ho-cay-da-cua-huu",
@@ -194414,7 +194727,7 @@
     {
       "from": "chua-tien-chau-tien-chau-tu",
       "to": "lang-banh-trang-tra-on",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "chua-tien-chau-tien-chau-tu",
@@ -194424,12 +194737,12 @@
     {
       "from": "chua-tien-chau-tien-chau-tu",
       "to": "lang-det-chieu-cu-lao-dai",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "khu-luu-niem-chu-tich-hoi-dong-bo-truong-pham-hung",
       "to": "lang-banh-trang-tra-on",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "khu-luu-niem-chu-tich-hoi-dong-bo-truong-pham-hung",
@@ -194439,12 +194752,12 @@
     {
       "from": "khu-luu-niem-chu-tich-hoi-dong-bo-truong-pham-hung",
       "to": "lang-det-chieu-cu-lao-dai",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "vung-di-san-duong-dai-mang-thit-vuong-quoc-lo-gach",
       "to": "lang-banh-trang-tra-on",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "vung-di-san-duong-dai-mang-thit-vuong-quoc-lo-gach",
@@ -194454,12 +194767,12 @@
     {
       "from": "vung-di-san-duong-dai-mang-thit-vuong-quoc-lo-gach",
       "to": "lang-det-chieu-cu-lao-dai",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "di-tich-lich-su-cach-mang-cai-ngang",
       "to": "lang-banh-trang-tra-on",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "di-tich-lich-su-cach-mang-cai-ngang",
@@ -194469,12 +194782,12 @@
     {
       "from": "di-tich-lich-su-cach-mang-cai-ngang",
       "to": "lang-det-chieu-cu-lao-dai",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "khu-mo-than-nhan-thoai-ngoc-hau-cu-lao-dai",
       "to": "lang-banh-trang-tra-on",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "khu-mo-than-nhan-thoai-ngoc-hau-cu-lao-dai",
@@ -194484,12 +194797,12 @@
     {
       "from": "khu-mo-than-nhan-thoai-ngoc-hau-cu-lao-dai",
       "to": "lang-det-chieu-cu-lao-dai",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "tuong-dai-doc-binh-le-can-nguyen-giao",
       "to": "lang-banh-trang-tra-on",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "tuong-dai-doc-binh-le-can-nguyen-giao",
@@ -194499,17 +194812,17 @@
     {
       "from": "tuong-dai-doc-binh-le-can-nguyen-giao",
       "to": "lang-det-chieu-cu-lao-dai",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "khu-di-tich-mo-than-mau-va-duong-mau-thoai-ngoc-hau",
       "to": "lang-banh-trang-tra-on",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "khu-di-tich-mo-than-mau-va-duong-mau-thoai-ngoc-hau",
       "to": "lang-banh-trang-giay-tuong-loc",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "khu-di-tich-mo-than-mau-va-duong-mau-thoai-ngoc-hau",
@@ -194519,7 +194832,7 @@
     {
       "from": "dai-tuong-niem-liet-si-le-can-nguyen-giao",
       "to": "lang-banh-trang-tra-on",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "dai-tuong-niem-liet-si-le-can-nguyen-giao",
@@ -194529,7 +194842,7 @@
     {
       "from": "dai-tuong-niem-liet-si-le-can-nguyen-giao",
       "to": "lang-det-chieu-cu-lao-dai",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "lang-ong-tien-quan-thong-che-dieu-bat",
@@ -194539,12 +194852,12 @@
     {
       "from": "lang-ong-tien-quan-thong-che-dieu-bat",
       "to": "lang-banh-trang-giay-tuong-loc",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "lang-ong-tien-quan-thong-che-dieu-bat",
       "to": "lang-det-chieu-cu-lao-dai",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "linga-va-yoni-luu-cu-ii",
@@ -194564,7 +194877,7 @@
     {
       "from": "htx-cam-sanh-tra-on",
       "to": "lang-banh-trang-tra-on",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "htx-cam-sanh-tra-on",
@@ -194574,7 +194887,7 @@
     {
       "from": "htx-cam-sanh-tra-on",
       "to": "lang-det-chieu-cu-lao-dai",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "bidv-chi-nhanh-vinh-long-vinh-long",
@@ -194584,7 +194897,7 @@
     {
       "from": "bidv-chi-nhanh-vinh-long-vinh-long",
       "to": "lang-det-chieu-cu-lao-dai",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "cua-hang-viettel-dinh-tien-hoang-vinh-long",
@@ -194594,12 +194907,12 @@
     {
       "from": "cua-hang-viettel-dinh-tien-hoang-vinh-long",
       "to": "lang-det-chieu-cu-lao-dai",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "ngay-hoi-banh-dan-gian-nam-bo-ket-hop-hoi-cho-ocop-vinh-long-vinh-long",
       "to": "lang-banh-trang-tra-on",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "ngay-hoi-banh-dan-gian-nam-bo-ket-hop-hoi-cho-ocop-vinh-long-vinh-long",
@@ -194609,12 +194922,12 @@
     {
       "from": "ngay-hoi-banh-dan-gian-nam-bo-ket-hop-hoi-cho-ocop-vinh-long-vinh-long",
       "to": "lang-det-chieu-cu-lao-dai",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "tuan-le-van-hoa-the-thao-va-du-lich-tinh-vinh-long-vinh-long",
       "to": "lang-banh-trang-tra-on",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "tuan-le-van-hoa-the-thao-va-du-lich-tinh-vinh-long-vinh-long",
@@ -194624,12 +194937,12 @@
     {
       "from": "tuan-le-van-hoa-the-thao-va-du-lich-tinh-vinh-long-vinh-long",
       "to": "lang-det-chieu-cu-lao-dai",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "hoi-cho-xuc-tien-thuong-mai-san-pham-cong-nghiep-nong-thon-va-ocop-vinh-long-gan-voi-ok-om-bok-vinh-long",
       "to": "lang-banh-trang-tra-on",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "hoi-cho-xuc-tien-thuong-mai-san-pham-cong-nghiep-nong-thon-va-ocop-vinh-long-gan-voi-ok-om-bok-vinh-long",
@@ -194639,12 +194952,12 @@
     {
       "from": "hoi-cho-xuc-tien-thuong-mai-san-pham-cong-nghiep-nong-thon-va-ocop-vinh-long-gan-voi-ok-om-bok-vinh-long",
       "to": "lang-det-chieu-cu-lao-dai",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "hoi-cho-dac-san-vung-mien-khu-vuc-dbscl-vinh-long-vinh-long",
       "to": "lang-banh-trang-tra-on",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "hoi-cho-dac-san-vung-mien-khu-vuc-dbscl-vinh-long-vinh-long",
@@ -194654,12 +194967,12 @@
     {
       "from": "hoi-cho-dac-san-vung-mien-khu-vuc-dbscl-vinh-long-vinh-long",
       "to": "lang-det-chieu-cu-lao-dai",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "giai-ban-marathon-vinh-long-mo-rong-hanh-trinh-trai-tim-mekong-vinh-long",
       "to": "lang-banh-trang-tra-on",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "giai-ban-marathon-vinh-long-mo-rong-hanh-trinh-trai-tim-mekong-vinh-long",
@@ -194669,12 +194982,12 @@
     {
       "from": "giai-ban-marathon-vinh-long-mo-rong-hanh-trinh-trai-tim-mekong-vinh-long",
       "to": "lang-det-chieu-cu-lao-dai",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "giai-vo-dich-xe-dap-tinh-vinh-long-mo-rong-vinh-long",
       "to": "lang-banh-trang-tra-on",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "giai-vo-dich-xe-dap-tinh-vinh-long-mo-rong-vinh-long",
@@ -194684,7 +194997,7 @@
     {
       "from": "giai-vo-dich-xe-dap-tinh-vinh-long-mo-rong-vinh-long",
       "to": "lang-det-chieu-cu-lao-dai",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "nguyen-van-ton-thach-duong",
@@ -194719,7 +195032,7 @@
     {
       "from": "khach-san-khoi-hoa",
       "to": "lang-banh-trang-tra-on",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "khach-san-khoi-hoa",
@@ -194729,7 +195042,7 @@
     {
       "from": "khach-san-khoi-hoa",
       "to": "lang-det-chieu-cu-lao-dai",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "khach-san-minh-khue",
@@ -194764,7 +195077,7 @@
     {
       "from": "khach-san-kim-chi-hoang-gia",
       "to": "lang-banh-trang-tra-on",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "khach-san-kim-chi-hoang-gia",
@@ -194774,7 +195087,7 @@
     {
       "from": "khach-san-kim-chi-hoang-gia",
       "to": "lang-det-chieu-cu-lao-dai",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "khach-san-thanh-xuan",
@@ -194839,7 +195152,7 @@
     {
       "from": "lang-gach-gom-long-ho",
       "to": "lang-banh-trang-tra-on",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "lang-gach-gom-long-ho",
@@ -194849,12 +195162,12 @@
     {
       "from": "lang-gach-gom-long-ho",
       "to": "lang-det-chieu-cu-lao-dai",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "lam-banh-dan-gian",
       "to": "lang-banh-trang-tra-on",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "lam-banh-dan-gian",
@@ -194864,12 +195177,12 @@
     {
       "from": "lam-banh-dan-gian",
       "to": "lang-det-chieu-cu-lao-dai",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "vuon-trai-cay-6-tan",
       "to": "lang-banh-trang-tra-on",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "vuon-trai-cay-6-tan",
@@ -194879,12 +195192,12 @@
     {
       "from": "vuon-trai-cay-6-tan",
       "to": "lang-det-chieu-cu-lao-dai",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "vuon-trai-cay-tam-loc",
       "to": "lang-banh-trang-tra-on",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "vuon-trai-cay-tam-loc",
@@ -194894,12 +195207,12 @@
     {
       "from": "vuon-trai-cay-tam-loc",
       "to": "lang-det-chieu-cu-lao-dai",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "lau-mam-mien-tay",
       "to": "lang-banh-trang-tra-on",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "lau-mam-mien-tay",
@@ -194909,12 +195222,12 @@
     {
       "from": "lau-mam-mien-tay",
       "to": "lang-det-chieu-cu-lao-dai",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "tham-quan-vuon-trai-cay",
       "to": "lang-banh-trang-tra-on",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "tham-quan-vuon-trai-cay",
@@ -194924,12 +195237,12 @@
     {
       "from": "tham-quan-vuon-trai-cay",
       "to": "lang-det-chieu-cu-lao-dai",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "khu-di-san-lo-gach-mang-thit",
       "to": "lang-banh-trang-tra-on",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "khu-di-san-lo-gach-mang-thit",
@@ -194939,7 +195252,7 @@
     {
       "from": "khu-di-san-lo-gach-mang-thit",
       "to": "lang-det-chieu-cu-lao-dai",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "khu-bao-ve-canh-quan-rung-ngap-man-thanh-phu",
@@ -195034,7 +195347,7 @@
     {
       "from": "festival-gach-gom-do-kinh-te-xanh-tinh-vinh-long-vinh-long",
       "to": "lang-banh-trang-tra-on",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "festival-gach-gom-do-kinh-te-xanh-tinh-vinh-long-vinh-long",
@@ -195044,12 +195357,12 @@
     {
       "from": "festival-gach-gom-do-kinh-te-xanh-tinh-vinh-long-vinh-long",
       "to": "lang-det-chieu-cu-lao-dai",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "san-pham-ocop-vung-liem-cha-lua-thanh-cong-gao-huu-co-tan-dat-mut-dua-la-dua-duc",
       "to": "lang-banh-trang-tra-on",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "san-pham-ocop-vung-liem-cha-lua-thanh-cong-gao-huu-co-tan-dat-mut-dua-la-dua-duc",
@@ -195059,7 +195372,7 @@
     {
       "from": "san-pham-ocop-vung-liem-cha-lua-thanh-cong-gao-huu-co-tan-dat-mut-dua-la-dua-duc",
       "to": "lang-det-chieu-cu-lao-dai",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "dua-sap",
@@ -195194,7 +195507,7 @@
     {
       "from": "lang-nghe-lam-tau-hu-ky",
       "to": "lang-banh-trang-tra-on",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "cho-binh-dai",
@@ -195599,7 +195912,7 @@
     {
       "from": "khu-sinh-thai-nha-xua-long-ho",
       "to": "lang-banh-trang-tra-on",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "diem-trung-bay-va-gioi-thieu-san-pham-ocop-vinh-long",
@@ -195649,7 +195962,7 @@
     {
       "from": "cheo-xuong-rach-an-binh",
       "to": "lang-banh-trang-tra-on",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "lang-gach-gom-mang-thit",
@@ -195674,7 +195987,7 @@
     {
       "from": "lang-gach-gom-mang-thit",
       "to": "lang-banh-trang-tra-on",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "bao-tang-vinh-long",
@@ -195849,7 +196162,7 @@
     {
       "from": "lang-nghe-gom-do-mang-thit",
       "to": "lang-banh-trang-tra-on",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "quan-lau-ga-noi-nha-san",
@@ -195874,7 +196187,7 @@
     {
       "from": "quan-lau-ga-noi-nha-san",
       "to": "lang-banh-trang-tra-on",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "quan-lau-tai-co",
@@ -195899,7 +196212,7 @@
     {
       "from": "quan-lau-tai-co",
       "to": "lang-banh-trang-tra-on",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "quan-met-bun-dau-mam-tom",
@@ -195924,7 +196237,7 @@
     {
       "from": "quan-met-bun-dau-mam-tom",
       "to": "lang-banh-trang-tra-on",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "bun-mam-co-ba",
@@ -195999,7 +196312,7 @@
     {
       "from": "quan-pho-91",
       "to": "lang-banh-trang-tra-on",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "diem-du-lich-sinh-thai-tam-trong",
@@ -196024,7 +196337,7 @@
     {
       "from": "diem-du-lich-sinh-thai-tam-trong",
       "to": "lang-banh-trang-tra-on",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "khu-du-lich-sinh-thai-miet-vuon-vinh-sang",
@@ -196049,7 +196362,7 @@
     {
       "from": "khu-du-lich-sinh-thai-miet-vuon-vinh-sang",
       "to": "lang-banh-trang-tra-on",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "khu-du-lich-sinh-thai-huynh-kha",
@@ -196099,7 +196412,7 @@
     {
       "from": "ngay-hoi-thanh-tra",
       "to": "lang-banh-trang-tra-on",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "mua-nuoc-noi-dbscl",
@@ -196124,7 +196437,7 @@
     {
       "from": "mua-nuoc-noi-dbscl",
       "to": "lang-banh-trang-tra-on",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "le-vu-lan",
@@ -196224,7 +196537,7 @@
     {
       "from": "canh-chua-ca-linh",
       "to": "lang-banh-trang-tra-on",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "du-lich-vuon-chu-7-gat",
@@ -196249,7 +196562,7 @@
     {
       "from": "du-lich-vuon-chu-7-gat",
       "to": "lang-banh-trang-tra-on",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "cau-lac-bo-du-lich-cuu-long",
@@ -196274,7 +196587,7 @@
     {
       "from": "cau-lac-bo-du-lich-cuu-long",
       "to": "lang-banh-trang-tra-on",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "cau-lac-bo-trung-tam-van-hoa-thong-tin-vinh-long",
@@ -196299,7 +196612,7 @@
     {
       "from": "cau-lac-bo-trung-tam-van-hoa-thong-tin-vinh-long",
       "to": "lang-banh-trang-tra-on",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "chua-samrong-ek",
@@ -196599,7 +196912,7 @@
     {
       "from": "xom-nuong-que-nha",
       "to": "lang-banh-trang-tra-on",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "panda-purple-cafe",
@@ -197354,27 +197667,27 @@
     {
       "from": "cu-lao-my-hoa",
       "to": "nha-hang-thien-tan",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "cu-lao-my-hoa",
       "to": "cu-lao-may-tra-on",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "cu-lao-my-hoa",
       "to": "cho-noi-tra-on-dc",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "cu-lao-my-hoa",
       "to": "khu-du-lich-s-mo-farm-cuu-long",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "cu-lao-my-hoa",
       "to": "nha-gom-tu-buoi",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "quan-hu-tieu-nam-vang-chu-teo-tra-vinh",
@@ -199864,7 +200177,7 @@
     {
       "from": "ben-tiep-nhan-vu-khi-con-tau",
       "to": "nh-ks-sy-dien",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "ben-tiep-nhan-vu-khi-con-tau",
@@ -199894,7 +200207,7 @@
     {
       "from": "bun-nuoc-leo-cho-ba-tri-ben-tre",
       "to": "farmstay-dat-cu-lao",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "bun-nuoc-leo-cho-ba-tri-ben-tre",
@@ -199934,7 +200247,7 @@
     {
       "from": "chua-hang",
       "to": "rung-duoc-long-khanh",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "chua-ong-met-botum-vong-sa-som-rong",
@@ -200039,7 +200352,7 @@
     {
       "from": "di-tich-duong-ho-chi-minh-tren-bien-thanh-phu",
       "to": "resort-ben-tre-riverside",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "di-tich-duong-ho-chi-minh-tren-bien-thanh-phu",
@@ -200139,7 +200452,7 @@
     {
       "from": "du-lich-vuon-chu-7-gat-vlt",
       "to": "lang-dan-luc-binh-ngai-tu",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "du-lich-vuon-chu-7-gat-vlt",
@@ -200239,7 +200552,7 @@
     {
       "from": "khu-du-lich-bien-con-bung",
       "to": "resort-ben-tre-riverside",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "khu-du-lich-bien-con-bung",
@@ -200259,22 +200572,22 @@
     {
       "from": "khu-du-lich-cho-noi-tra-on",
       "to": "mai-la---quan-nuong-ngoi",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "khu-du-lich-cho-noi-tra-on",
       "to": "quan-chao-luon-ba-nam-cho-vinh-long",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "khu-du-lich-cho-noi-tra-on",
       "to": "khach-san-hoang-khiem",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "khu-du-lich-cho-noi-tra-on",
       "to": "du-lich-vuon-chu-7-gat-vlt",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "khu-du-lich-cho-noi-tra-on",
@@ -200299,7 +200612,7 @@
     {
       "from": "khu-luu-niem-nguyen-dinh-chieu",
       "to": "farmstay-dat-cu-lao",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "khu-luu-niem-nguyen-dinh-chieu",
@@ -200324,27 +200637,27 @@
     {
       "from": "khu-mo-than-nhan-thoai-ngoc-hau",
       "to": "mai-la---quan-nuong-ngoi",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "khu-mo-than-nhan-thoai-ngoc-hau",
       "to": "quan-chao-luon-ba-nam-cho-vinh-long",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "khu-mo-than-nhan-thoai-ngoc-hau",
       "to": "khach-san-hoang-khiem",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "khu-mo-than-nhan-thoai-ngoc-hau",
       "to": "du-lich-vuon-chu-7-gat-vlt",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "khu-mo-than-nhan-thoai-ngoc-hau",
       "to": "lang-dan-luc-binh-ngai-tu",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "lang-dan-luc-binh-ngai-tu",
@@ -200354,22 +200667,22 @@
     {
       "from": "lang-dan-luc-binh-ngai-tu",
       "to": "mai-la---quan-nuong-ngoi",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "lang-dan-luc-binh-ngai-tu",
       "to": "quan-chao-luon-ba-nam-cho-vinh-long",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "lang-dan-luc-binh-ngai-tu",
       "to": "khach-san-hoang-khiem",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "lang-dan-luc-binh-ngai-tu",
       "to": "lang-nghe-dan-non-la-tt-long-ho",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "lang-dan-luc-binh-ngai-tu",
@@ -200394,7 +200707,7 @@
     {
       "from": "lang-mo-va-khu-tuong-niem-nguyen-dinh-chieu",
       "to": "farmstay-dat-cu-lao",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "lang-mo-va-khu-tuong-niem-nguyen-dinh-chieu",
@@ -200514,7 +200827,7 @@
     {
       "from": "lang-ong-con-tau",
       "to": "nh-ks-sy-dien",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "lang-ong-con-tau",
@@ -200534,7 +200847,7 @@
     {
       "from": "lang-ong-nam-hai",
       "to": "resort-ben-tre-riverside",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "lang-ong-nam-hai",
@@ -200564,7 +200877,7 @@
     {
       "from": "lau-ba-mieu-ba-chua-xu-ba-co-hy",
       "to": "nh-ks-sy-dien",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "lau-ba-mieu-ba-chua-xu-ba-co-hy",
@@ -200969,42 +201282,42 @@
     {
       "from": "di-tich-dau-cau-tiep-nhan-vu-khi-thanh-phong",
       "to": "quan-hai-san-my-long-bai-bien-my-long-tra-vinh",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "quan-hai-san-my-long-bai-bien-my-long-tra-vinh",
       "to": "di-tich-dau-cau-tiep-nhan-vu-khi-thanh-phong",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "di-tich-dau-cau-tiep-nhan-vu-khi-thanh-phong",
       "to": "neyu-tea---thi-tran-giong-trom",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "neyu-tea---thi-tran-giong-trom",
       "to": "di-tich-dau-cau-tiep-nhan-vu-khi-thanh-phong",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "di-tich-dau-cau-tiep-nhan-vu-khi-thanh-phong",
       "to": "farmstay-dat-cu-lao",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "farmstay-dat-cu-lao",
       "to": "di-tich-dau-cau-tiep-nhan-vu-khi-thanh-phong",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "di-tich-dau-cau-tiep-nhan-vu-khi-thanh-phong",
       "to": "resort-ben-tre-riverside",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "resort-ben-tre-riverside",
       "to": "di-tich-dau-cau-tiep-nhan-vu-khi-thanh-phong",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "nam-khanh",
@@ -201089,42 +201402,42 @@
     {
       "from": "chua-ky-son-khmer-loan-my",
       "to": "mai-la---quan-nuong-ngoi",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "mai-la---quan-nuong-ngoi",
       "to": "chua-ky-son-khmer-loan-my",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "chua-ky-son-khmer-loan-my",
       "to": "quan-chao-luon-ba-nam-cho-vinh-long",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "quan-chao-luon-ba-nam-cho-vinh-long",
       "to": "chua-ky-son-khmer-loan-my",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "chua-ky-son-khmer-loan-my",
       "to": "khach-san-hoang-khiem",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "khach-san-hoang-khiem",
       "to": "chua-ky-son-khmer-loan-my",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "chua-ky-son-khmer-loan-my",
       "to": "hotel-phuoc-thinh",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "hotel-phuoc-thinh",
       "to": "chua-ky-son-khmer-loan-my",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "chua-giong-tranh-wat-kosaleang",
@@ -201169,22 +201482,22 @@
     {
       "from": "khu-di-tich-mo-va-den-tho-phan-thanh-gian",
       "to": "neyu-tea---thi-tran-giong-trom",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "neyu-tea---thi-tran-giong-trom",
       "to": "khu-di-tich-mo-va-den-tho-phan-thanh-gian",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "khu-di-tich-mo-va-den-tho-phan-thanh-gian",
       "to": "hu-tieu-chu-hien-ben-tre",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "hu-tieu-chu-hien-ben-tre",
       "to": "khu-di-tich-mo-va-den-tho-phan-thanh-gian",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "khu-di-tich-mo-va-den-tho-phan-thanh-gian",
@@ -201199,12 +201512,12 @@
     {
       "from": "khu-di-tich-mo-va-den-tho-phan-thanh-gian",
       "to": "farmstay-dat-cu-lao",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "farmstay-dat-cu-lao",
       "to": "khu-di-tich-mo-va-den-tho-phan-thanh-gian",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "den-tho-trung-tuong-dong-van-cong",
@@ -201419,12 +201732,12 @@
     {
       "from": "nha-ong-nguyen-van-cung-dia-diem-thanh-lap-chi-bo-dang-dau-tien-ben-tre",
       "to": "hu-tieu-chu-hien-ben-tre",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "hu-tieu-chu-hien-ben-tre",
       "to": "nha-ong-nguyen-van-cung-dia-diem-thanh-lap-chi-bo-dang-dau-tien-ben-tre",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "nha-ong-nguyen-van-cung-dia-diem-thanh-lap-chi-bo-dang-dau-tien-ben-tre",
@@ -201439,12 +201752,12 @@
     {
       "from": "nha-ong-nguyen-van-cung-dia-diem-thanh-lap-chi-bo-dang-dau-tien-ben-tre",
       "to": "farmstay-dat-cu-lao",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "farmstay-dat-cu-lao",
       "to": "nha-ong-nguyen-van-cung-dia-diem-thanh-lap-chi-bo-dang-dau-tien-ben-tre",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "duong-ho-chi-minh-tren-bien-ben-xuat-phat-thanh-phong",
@@ -201459,32 +201772,32 @@
     {
       "from": "duong-ho-chi-minh-tren-bien-ben-xuat-phat-thanh-phong",
       "to": "monkey-tea---tra-sua-coffee",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "monkey-tea---tra-sua-coffee",
       "to": "duong-ho-chi-minh-tren-bien-ben-xuat-phat-thanh-phong",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "duong-ho-chi-minh-tren-bien-ben-xuat-phat-thanh-phong",
       "to": "resort-ben-tre-riverside",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "resort-ben-tre-riverside",
       "to": "duong-ho-chi-minh-tren-bien-ben-xuat-phat-thanh-phong",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "duong-ho-chi-minh-tren-bien-ben-xuat-phat-thanh-phong",
       "to": "mango-home-ben-tre",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "mango-home-ben-tre",
       "to": "duong-ho-chi-minh-tren-bien-ben-xuat-phat-thanh-phong",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "khu-du-lich-sinh-thai-hoang-quan",
@@ -201699,12 +202012,12 @@
     {
       "from": "dinh-an-qui",
       "to": "banh-mi-co-sau-gan-truong-ai-hoc-tra-vinh-tra-vinh",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "banh-mi-co-sau-gan-truong-ai-hoc-tra-vinh-tra-vinh",
       "to": "dinh-an-qui",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "dinh-an-qui",
@@ -201719,12 +202032,12 @@
     {
       "from": "dinh-an-qui",
       "to": "farmstay-dat-cu-lao",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "farmstay-dat-cu-lao",
       "to": "dinh-an-qui",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "dinh-lang-hieu-phung",
@@ -202059,22 +202372,22 @@
     {
       "from": "chua-khai-tuong",
       "to": "pho-tien",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "pho-tien",
       "to": "chua-khai-tuong",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "chua-khai-tuong",
       "to": "farmstay-dat-cu-lao",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "farmstay-dat-cu-lao",
       "to": "chua-khai-tuong",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "chua-khai-tuong",
@@ -202099,22 +202412,22 @@
     {
       "from": "mo-va-khu-luu-niem-vo-truong-toan",
       "to": "pho-tien",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "pho-tien",
       "to": "mo-va-khu-luu-niem-vo-truong-toan",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "mo-va-khu-luu-niem-vo-truong-toan",
       "to": "farmstay-dat-cu-lao",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "farmstay-dat-cu-lao",
       "to": "mo-va-khu-luu-niem-vo-truong-toan",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "mo-va-khu-luu-niem-vo-truong-toan",
@@ -202169,42 +202482,42 @@
     {
       "from": "den-tho-chu-tich-ho-chi-minh-long-duc",
       "to": "quan-hai-san-my-long-bai-bien-my-long-tra-vinh",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "quan-hai-san-my-long-bai-bien-my-long-tra-vinh",
       "to": "den-tho-chu-tich-ho-chi-minh-long-duc",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "den-tho-chu-tich-ho-chi-minh-long-duc",
       "to": "nha-hang-bien-nho-ba-ong-tra-vinh",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "nha-hang-bien-nho-ba-ong-tra-vinh",
       "to": "den-tho-chu-tich-ho-chi-minh-long-duc",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "den-tho-chu-tich-ho-chi-minh-long-duc",
       "to": "resort-ben-tre-riverside",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "resort-ben-tre-riverside",
       "to": "den-tho-chu-tich-ho-chi-minh-long-duc",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "den-tho-chu-tich-ho-chi-minh-long-duc",
       "to": "mango-home-ben-tre",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "mango-home-ben-tre",
       "to": "den-tho-chu-tich-ho-chi-minh-long-duc",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "cua-hang-ocop-vinh-long-trung-tam-xuc-tien-thuong-mai-vinh-long",
@@ -202369,42 +202682,42 @@
     {
       "from": "chua-van-phuoc",
       "to": "quan-hai-san-my-long-bai-bien-my-long-tra-vinh",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "quan-hai-san-my-long-bai-bien-my-long-tra-vinh",
       "to": "chua-van-phuoc",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "chua-van-phuoc",
       "to": "nha-hang-bien-nho-ba-ong-tra-vinh",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "nha-hang-bien-nho-ba-ong-tra-vinh",
       "to": "chua-van-phuoc",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "chua-van-phuoc",
       "to": "resort-ben-tre-riverside",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "resort-ben-tre-riverside",
       "to": "chua-van-phuoc",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "chua-van-phuoc",
       "to": "mango-home-ben-tre",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "mango-home-ben-tre",
       "to": "chua-van-phuoc",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "nha-tho-kinh-long-hoi",
@@ -202739,32 +203052,32 @@
     {
       "from": "bung-lac-dia",
       "to": "nha-hang-bien-nho-ba-ong-tra-vinh",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "nha-hang-bien-nho-ba-ong-tra-vinh",
       "to": "bung-lac-dia",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "bung-lac-dia",
       "to": "resort-ben-tre-riverside",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "resort-ben-tre-riverside",
       "to": "bung-lac-dia",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "bung-lac-dia",
       "to": "mango-home-ben-tre",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "mango-home-ben-tre",
       "to": "bung-lac-dia",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "khu-tuong-niem-nguyen-thi-ut-ut-tich",
@@ -202849,22 +203162,22 @@
     {
       "from": "cho-binh-dai",
       "to": "neyu-tea---thi-tran-giong-trom",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "neyu-tea---thi-tran-giong-trom",
       "to": "cho-binh-dai",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "cho-binh-dai",
       "to": "lau-mam-ben-tre",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "lau-mam-ben-tre",
       "to": "cho-binh-dai",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "cho-binh-dai",
@@ -202879,12 +203192,12 @@
     {
       "from": "cho-binh-dai",
       "to": "homestay-ut-trinh-con-tam-hiep",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "homestay-ut-trinh-con-tam-hiep",
       "to": "cho-binh-dai",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "chua-phat-ngoc-xa-loi",
@@ -203009,42 +203322,42 @@
     {
       "from": "lang-nghe-tau-hu-ky-my-hoa",
       "to": "mai-la---quan-nuong-ngoi",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "mai-la---quan-nuong-ngoi",
       "to": "lang-nghe-tau-hu-ky-my-hoa",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "lang-nghe-tau-hu-ky-my-hoa",
       "to": "quan-chao-luon-ba-nam-cho-vinh-long",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "quan-chao-luon-ba-nam-cho-vinh-long",
       "to": "lang-nghe-tau-hu-ky-my-hoa",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "lang-nghe-tau-hu-ky-my-hoa",
       "to": "khach-san-hoang-khiem",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "khach-san-hoang-khiem",
       "to": "lang-nghe-tau-hu-ky-my-hoa",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "lang-nghe-tau-hu-ky-my-hoa",
       "to": "hotel-phuoc-thinh",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "hotel-phuoc-thinh",
       "to": "lang-nghe-tau-hu-ky-my-hoa",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "lang-ong-nam-hai-con-bung",
@@ -203059,32 +203372,32 @@
     {
       "from": "lang-ong-nam-hai-con-bung",
       "to": "nha-hang-bien-nho-ba-ong-tra-vinh",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "nha-hang-bien-nho-ba-ong-tra-vinh",
       "to": "lang-ong-nam-hai-con-bung",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "lang-ong-nam-hai-con-bung",
       "to": "resort-ben-tre-riverside",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "resort-ben-tre-riverside",
       "to": "lang-ong-nam-hai-con-bung",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "lang-ong-nam-hai-con-bung",
       "to": "mango-home-ben-tre",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "mango-home-ben-tre",
       "to": "lang-ong-nam-hai-con-bung",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "mieu-ba-chua-xu-tan-quy",
@@ -203129,42 +203442,42 @@
     {
       "from": "khu-di-tich-mo-than-mau-va-duong-mau-thoai-ngoc-hau",
       "to": "mai-la---quan-nuong-ngoi",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "mai-la---quan-nuong-ngoi",
       "to": "khu-di-tich-mo-than-mau-va-duong-mau-thoai-ngoc-hau",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "khu-di-tich-mo-than-mau-va-duong-mau-thoai-ngoc-hau",
       "to": "quan-chao-luon-ba-nam-cho-vinh-long",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "quan-chao-luon-ba-nam-cho-vinh-long",
       "to": "khu-di-tich-mo-than-mau-va-duong-mau-thoai-ngoc-hau",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "khu-di-tich-mo-than-mau-va-duong-mau-thoai-ngoc-hau",
       "to": "khach-san-hoang-khiem",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "khach-san-hoang-khiem",
       "to": "khu-di-tich-mo-than-mau-va-duong-mau-thoai-ngoc-hau",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "khu-di-tich-mo-than-mau-va-duong-mau-thoai-ngoc-hau",
       "to": "hotel-phuoc-thinh",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "hotel-phuoc-thinh",
       "to": "khu-di-tich-mo-than-mau-va-duong-mau-thoai-ngoc-hau",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "thanh-tinh-ngoc-son-quang",
@@ -203219,32 +203532,32 @@
     {
       "from": "di-tich-duong-ho-chi-minh-tren-bien-ben-thanh-phong",
       "to": "nha-hang-bien-nho-ba-ong-tra-vinh",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "nha-hang-bien-nho-ba-ong-tra-vinh",
       "to": "di-tich-duong-ho-chi-minh-tren-bien-ben-thanh-phong",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "di-tich-duong-ho-chi-minh-tren-bien-ben-thanh-phong",
       "to": "resort-ben-tre-riverside",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "resort-ben-tre-riverside",
       "to": "di-tich-duong-ho-chi-minh-tren-bien-ben-thanh-phong",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "di-tich-duong-ho-chi-minh-tren-bien-ben-thanh-phong",
       "to": "mango-home-ben-tre",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "mango-home-ben-tre",
       "to": "di-tich-duong-ho-chi-minh-tren-bien-ben-thanh-phong",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "chua-krapoumchhouk-chral-chua-cha",
@@ -203299,22 +203612,22 @@
     {
       "from": "dinh-than-an-ngai-trung",
       "to": "pho-tien",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "pho-tien",
       "to": "dinh-than-an-ngai-trung",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "dinh-than-an-ngai-trung",
       "to": "farmstay-dat-cu-lao",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "farmstay-dat-cu-lao",
       "to": "dinh-than-an-ngai-trung",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "dinh-than-an-ngai-trung",
@@ -203399,12 +203712,12 @@
     {
       "from": "nha-tho-la-ma-den-duc-me-hang-cuu-giup-la-ma",
       "to": "farmstay-dat-cu-lao",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "farmstay-dat-cu-lao",
       "to": "nha-tho-la-ma-den-duc-me-hang-cuu-giup-la-ma",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "chua-sa-leng-kompong-chray",
@@ -203729,22 +204042,22 @@
     {
       "from": "nha-co-dai-an",
       "to": "chao-am-cho-chau-thanh-tra-vinh",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "chao-am-cho-chau-thanh-tra-vinh",
       "to": "nha-co-dai-an",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "nha-co-dai-an",
       "to": "monkey-tea---tra-sua-coffee",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "monkey-tea---tra-sua-coffee",
       "to": "nha-co-dai-an",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "nha-co-dai-an",
@@ -203759,12 +204072,12 @@
     {
       "from": "nha-co-dai-an",
       "to": "homestay-sokfram",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "homestay-sokfram",
       "to": "nha-co-dai-an",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "dinh-phu-le",
@@ -203779,22 +204092,22 @@
     {
       "from": "dinh-phu-le",
       "to": "pho-tien",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "pho-tien",
       "to": "dinh-phu-le",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "dinh-phu-le",
       "to": "farmstay-dat-cu-lao",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "farmstay-dat-cu-lao",
       "to": "dinh-phu-le",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "dinh-phu-le",
@@ -203949,12 +204262,12 @@
     {
       "from": "chua-phuoc-khanh-chua-phat",
       "to": "farmstay-dat-cu-lao",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "farmstay-dat-cu-lao",
       "to": "chua-phuoc-khanh-chua-phat",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "chua-phuoc-khanh-chua-phat",
@@ -204259,12 +204572,12 @@
     {
       "from": "chua-an-linh",
       "to": "banh-mi-co-sau-gan-truong-ai-hoc-tra-vinh-tra-vinh",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "banh-mi-co-sau-gan-truong-ai-hoc-tra-vinh-tra-vinh",
       "to": "chua-an-linh",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "chua-an-linh",
@@ -204279,32 +204592,32 @@
     {
       "from": "chua-an-linh",
       "to": "farmstay-dat-cu-lao",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "farmstay-dat-cu-lao",
       "to": "chua-an-linh",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "khu-mo-nha-giao-vo-truong-toan",
       "to": "neyu-tea---thi-tran-giong-trom",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "neyu-tea---thi-tran-giong-trom",
       "to": "khu-mo-nha-giao-vo-truong-toan",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "khu-mo-nha-giao-vo-truong-toan",
       "to": "hu-tieu-chu-hien-ben-tre",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "hu-tieu-chu-hien-ben-tre",
       "to": "khu-mo-nha-giao-vo-truong-toan",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "khu-mo-nha-giao-vo-truong-toan",
@@ -204319,12 +204632,12 @@
     {
       "from": "khu-mo-nha-giao-vo-truong-toan",
       "to": "farmstay-dat-cu-lao",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "farmstay-dat-cu-lao",
       "to": "khu-mo-nha-giao-vo-truong-toan",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "mo-nha-tho-nhieu-tam",
@@ -204369,22 +204682,22 @@
     {
       "from": "lang-ong-nam-hai-binh-thang",
       "to": "neyu-tea---thi-tran-giong-trom",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "neyu-tea---thi-tran-giong-trom",
       "to": "lang-ong-nam-hai-binh-thang",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "lang-ong-nam-hai-binh-thang",
       "to": "hu-tieu-chu-hien-ben-tre",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "hu-tieu-chu-hien-ben-tre",
       "to": "lang-ong-nam-hai-binh-thang",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "lang-ong-nam-hai-binh-thang",
@@ -204399,32 +204712,32 @@
     {
       "from": "lang-ong-nam-hai-binh-thang",
       "to": "farmstay-dat-cu-lao",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "farmstay-dat-cu-lao",
       "to": "lang-ong-nam-hai-binh-thang",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "chua-vam-ray-wat-samrong",
       "to": "chao-am-cho-chau-thanh-tra-vinh",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "chao-am-cho-chau-thanh-tra-vinh",
       "to": "chua-vam-ray-wat-samrong",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "chua-vam-ray-wat-samrong",
       "to": "quan-hu-tieu-tieu-can-hu-tieu-muc-tra-vinh",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "quan-hu-tieu-tieu-can-hu-tieu-muc-tra-vinh",
       "to": "chua-vam-ray-wat-samrong",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "chua-vam-ray-wat-samrong",
@@ -204449,22 +204762,22 @@
     {
       "from": "mo-va-khu-luu-niem-nha-giao-vo-truong-toan",
       "to": "neyu-tea---thi-tran-giong-trom",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "neyu-tea---thi-tran-giong-trom",
       "to": "mo-va-khu-luu-niem-nha-giao-vo-truong-toan",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "mo-va-khu-luu-niem-nha-giao-vo-truong-toan",
       "to": "hu-tieu-chu-hien-ben-tre",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "hu-tieu-chu-hien-ben-tre",
       "to": "mo-va-khu-luu-niem-nha-giao-vo-truong-toan",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "mo-va-khu-luu-niem-nha-giao-vo-truong-toan",
@@ -204479,12 +204792,12 @@
     {
       "from": "mo-va-khu-luu-niem-nha-giao-vo-truong-toan",
       "to": "farmstay-dat-cu-lao",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "farmstay-dat-cu-lao",
       "to": "mo-va-khu-luu-niem-nha-giao-vo-truong-toan",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "chua-phuoc-hau-ngai-tu",
@@ -204769,42 +205082,42 @@
     {
       "from": "lang-ong-tien-quan-thong-che-dieu-bat",
       "to": "mai-la---quan-nuong-ngoi",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "mai-la---quan-nuong-ngoi",
       "to": "lang-ong-tien-quan-thong-che-dieu-bat",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "lang-ong-tien-quan-thong-che-dieu-bat",
       "to": "quan-chao-luon-ba-nam-cho-vinh-long",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "quan-chao-luon-ba-nam-cho-vinh-long",
       "to": "lang-ong-tien-quan-thong-che-dieu-bat",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "lang-ong-tien-quan-thong-che-dieu-bat",
       "to": "khach-san-hoang-khiem",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "khach-san-hoang-khiem",
       "to": "lang-ong-tien-quan-thong-che-dieu-bat",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "lang-ong-tien-quan-thong-che-dieu-bat",
       "to": "hotel-phuoc-thinh",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "hotel-phuoc-thinh",
       "to": "lang-ong-tien-quan-thong-che-dieu-bat",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "nha-trung-bay-va-ban-san-pham-ocop-cau-ngang-tra-vinh",
@@ -205169,42 +205482,42 @@
     {
       "from": "di-tich-lich-su-dong-khoi-my-long",
       "to": "deja-vu-cafe",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "deja-vu-cafe",
       "to": "di-tich-lich-su-dong-khoi-my-long",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "di-tich-lich-su-dong-khoi-my-long",
       "to": "jollibee---coopmart-tra-vinh",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "jollibee---coopmart-tra-vinh",
       "to": "di-tich-lich-su-dong-khoi-my-long",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "di-tich-lich-su-dong-khoi-my-long",
       "to": "homestay-bep-nam-bo-xua-con-chim",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "homestay-bep-nam-bo-xua-con-chim",
       "to": "di-tich-lich-su-dong-khoi-my-long",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "di-tich-lich-su-dong-khoi-my-long",
       "to": "homestay-tu-pha-con-chim",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "homestay-tu-pha-con-chim",
       "to": "di-tich-lich-su-dong-khoi-my-long",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "khu-can-cu-tinh-uy-ben-tre-chau-hoa",
@@ -205449,22 +205762,22 @@
     {
       "from": "chua-vam-ray-chua-phat-nam",
       "to": "chao-am-cho-chau-thanh-tra-vinh",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "chao-am-cho-chau-thanh-tra-vinh",
       "to": "chua-vam-ray-chua-phat-nam",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "chua-vam-ray-chua-phat-nam",
       "to": "quan-hu-tieu-tieu-can-hu-tieu-muc-tra-vinh",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "quan-hu-tieu-tieu-can-hu-tieu-muc-tra-vinh",
       "to": "chua-vam-ray-chua-phat-nam",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "chua-vam-ray-chua-phat-nam",
@@ -205609,22 +205922,22 @@
     {
       "from": "chua-vam-ray",
       "to": "chao-am-cho-chau-thanh-tra-vinh",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "chao-am-cho-chau-thanh-tra-vinh",
       "to": "chua-vam-ray",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "chua-vam-ray",
       "to": "quan-hu-tieu-tieu-can-hu-tieu-muc-tra-vinh",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "quan-hu-tieu-tieu-can-hu-tieu-muc-tra-vinh",
       "to": "chua-vam-ray",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "chua-vam-ray",
@@ -205979,22 +206292,22 @@
     {
       "from": "khu-di-tich-nguyen-dinh-chieu",
       "to": "pho-tien",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "pho-tien",
       "to": "khu-di-tich-nguyen-dinh-chieu",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "khu-di-tich-nguyen-dinh-chieu",
       "to": "farmstay-dat-cu-lao",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "farmstay-dat-cu-lao",
       "to": "khu-di-tich-nguyen-dinh-chieu",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "khu-di-tich-nguyen-dinh-chieu",
@@ -206009,22 +206322,22 @@
     {
       "from": "cang-ca-binh-thang",
       "to": "neyu-tea---thi-tran-giong-trom",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "neyu-tea---thi-tran-giong-trom",
       "to": "cang-ca-binh-thang",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "cang-ca-binh-thang",
       "to": "lau-mam-ben-tre",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "lau-mam-ben-tre",
       "to": "cang-ca-binh-thang",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "cang-ca-binh-thang",
@@ -206039,12 +206352,12 @@
     {
       "from": "cang-ca-binh-thang",
       "to": "homestay-ut-trinh-con-tam-hiep",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "homestay-ut-trinh-con-tam-hiep",
       "to": "cang-ca-binh-thang",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "lang-mo-va-dinh-phan-thanh-gian",
@@ -206059,22 +206372,22 @@
     {
       "from": "lang-mo-va-dinh-phan-thanh-gian",
       "to": "pho-tien",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "pho-tien",
       "to": "lang-mo-va-dinh-phan-thanh-gian",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "lang-mo-va-dinh-phan-thanh-gian",
       "to": "farmstay-dat-cu-lao",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "farmstay-dat-cu-lao",
       "to": "lang-mo-va-dinh-phan-thanh-gian",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "lang-mo-va-dinh-phan-thanh-gian",
@@ -206089,42 +206402,42 @@
     {
       "from": "nha-co-huynh-ky",
       "to": "mai-la---quan-nuong-ngoi",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "mai-la---quan-nuong-ngoi",
       "to": "nha-co-huynh-ky",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "nha-co-huynh-ky",
       "to": "quan-chao-luon-ba-nam-cho-vinh-long",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "quan-chao-luon-ba-nam-cho-vinh-long",
       "to": "nha-co-huynh-ky",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "nha-co-huynh-ky",
       "to": "khach-san-hoang-khiem",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "khach-san-hoang-khiem",
       "to": "nha-co-huynh-ky",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "nha-co-huynh-ky",
       "to": "hotel-phuoc-thinh",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "hotel-phuoc-thinh",
       "to": "nha-co-huynh-ky",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "phuoc-minh-cung-chua-ong",
@@ -206299,12 +206612,12 @@
     {
       "from": "di-tich-cay-da-doi",
       "to": "hu-tieu-chu-hien-ben-tre",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "hu-tieu-chu-hien-ben-tre",
       "to": "di-tich-cay-da-doi",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "di-tich-cay-da-doi",
@@ -206319,12 +206632,12 @@
     {
       "from": "di-tich-cay-da-doi",
       "to": "farmstay-dat-cu-lao",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "farmstay-dat-cu-lao",
       "to": "di-tich-cay-da-doi",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "chua-ba-thien-hau-tra-vinh",
@@ -206369,42 +206682,42 @@
     {
       "from": "canh-dong-dien-gio-ngoai-khoi-ba-dong",
       "to": "deja-vu-cafe",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "deja-vu-cafe",
       "to": "canh-dong-dien-gio-ngoai-khoi-ba-dong",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "canh-dong-dien-gio-ngoai-khoi-ba-dong",
       "to": "jollibee---coopmart-tra-vinh",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "jollibee---coopmart-tra-vinh",
       "to": "canh-dong-dien-gio-ngoai-khoi-ba-dong",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "canh-dong-dien-gio-ngoai-khoi-ba-dong",
       "to": "homestay-bep-nam-bo-xua-con-chim",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "homestay-bep-nam-bo-xua-con-chim",
       "to": "canh-dong-dien-gio-ngoai-khoi-ba-dong",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "canh-dong-dien-gio-ngoai-khoi-ba-dong",
       "to": "homestay-tu-pha-con-chim",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "homestay-tu-pha-con-chim",
       "to": "canh-dong-dien-gio-ngoai-khoi-ba-dong",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "khu-du-lich-sinh-thai-chin-song-thanh-phu",
@@ -206429,12 +206742,12 @@
     {
       "from": "khu-du-lich-sinh-thai-chin-song-thanh-phu",
       "to": "farmstay-dat-cu-lao",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "farmstay-dat-cu-lao",
       "to": "khu-du-lich-sinh-thai-chin-song-thanh-phu",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "khu-du-lich-sinh-thai-chin-song-thanh-phu",
@@ -206489,42 +206802,42 @@
     {
       "from": "chua-ong-met-bodonisaraj",
       "to": "hu-tieu-ba-tam-cau-ke-tra-vinh",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "hu-tieu-ba-tam-cau-ke-tra-vinh",
       "to": "chua-ong-met-bodonisaraj",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "chua-ong-met-bodonisaraj",
       "to": "quan-chao-ca-ro-dong-cho-cau-ke-tra-vinh",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "quan-chao-ca-ro-dong-cho-cau-ke-tra-vinh",
       "to": "chua-ong-met-bodonisaraj",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "chua-ong-met-bodonisaraj",
       "to": "khu-du-lich-sinh-thai-nam-son",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "khu-du-lich-sinh-thai-nam-son",
       "to": "chua-ong-met-bodonisaraj",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "chua-ong-met-bodonisaraj",
       "to": "suonsia-homestay",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "suonsia-homestay",
       "to": "chua-ong-met-bodonisaraj",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "vuon-xoai-tu-quy-thanh-son",
@@ -206649,22 +206962,22 @@
     {
       "from": "khu-du-lich-sinh-thai-anh-ba-khia",
       "to": "neyu-tea---thi-tran-giong-trom",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "neyu-tea---thi-tran-giong-trom",
       "to": "khu-du-lich-sinh-thai-anh-ba-khia",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "khu-du-lich-sinh-thai-anh-ba-khia",
       "to": "hu-tieu-chu-hien-ben-tre",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "hu-tieu-chu-hien-ben-tre",
       "to": "khu-du-lich-sinh-thai-anh-ba-khia",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "khu-du-lich-sinh-thai-anh-ba-khia",
@@ -206679,12 +206992,12 @@
     {
       "from": "khu-du-lich-sinh-thai-anh-ba-khia",
       "to": "farmstay-dat-cu-lao",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "farmstay-dat-cu-lao",
       "to": "khu-du-lich-sinh-thai-anh-ba-khia",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "chua-quan-am-tra-on-mai-am-quan-am",
@@ -206859,32 +207172,32 @@
     {
       "from": "di-tich-chien-thang-gia-the",
       "to": "nha-hang-bien-nho-ba-ong-tra-vinh",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "nha-hang-bien-nho-ba-ong-tra-vinh",
       "to": "di-tich-chien-thang-gia-the",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "di-tich-chien-thang-gia-the",
       "to": "resort-ben-tre-riverside",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "resort-ben-tre-riverside",
       "to": "di-tich-chien-thang-gia-the",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "di-tich-chien-thang-gia-the",
       "to": "mango-home-ben-tre",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "mango-home-ben-tre",
       "to": "di-tich-chien-thang-gia-the",
-      "type": "near"
+      "type": "related_to"
     },
     {
       "from": "shop-luu-niem-ben-ninh-kieu-gian-hang-vinh-long-vinh-long",

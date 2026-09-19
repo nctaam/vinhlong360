@@ -1,0 +1,369 @@
+[
+  {
+    "id": "lang-mai-vang-phuoc-dinh",
+    "name": "Làng mai vàng Phước Định",
+    "changes": {}
+  },
+  {
+    "id": "cong-ty-tnhh-tra-vinh-farm-sokfarm",
+    "name": "Công ty TNHH Trà Vinh FARM (Sokfarm)",
+    "changes": {}
+  },
+  {
+    "id": "lang-nghe-tieu-thu-cong-nghiep-tre-ham-giang-co-so-tri-canh",
+    "name": "Làng nghề tiểu thủ công nghiệp tre Hàm Giang (cơ sở Trì Cảnh)",
+    "changes": {
+      "key_facts": {
+        "old": [
+          "Làng nghề tồn tại hơn 70 năm qua ba thế hệ thợ thủ công Khmer, tập trung hơn 300 hộ sản xuất với các mặt hàng giường tre gõ, ghế trường kỷ, bồ cào và nôi em bé.",
+          "Nguyên liệu tre lồ ồ, trúc mỡ được tuyển chọn từ các vùng phù sa, ngâm bùn chống mối mọt tự nhiên rồi hơ trên lửa than đỏ rực để tạo đường cong chuẩn xác.",
+          "Cơ sở Trí Cảnh là cơ sở tiêu biểu ứng dụng kỹ thuật phủ sơn bóng sinh học an toàn, kết hợp hoa văn Khmer truyền thống vào dòng sản phẩm nội thất tre xuất khẩu.",
+          "Sản phẩm tre trúc Hàm Giang được phân phối rộng khắp các tỉnh miền Tây và phục vụ trang trí các khu nghỉ dưỡng sinh thái khắp cả nước."
+        ],
+        "new": [
+          "Làng nghề tồn tại hơn 70 năm qua ba thế hệ thợ thủ công Khmer, tập trung hơn 300 hộ sản xuất với các mặt hàng giường tre gõ, ghế trường kỷ, bồ cào và nôi em bé.",
+          "Nguyên liệu tre lồ ồ, trúc mỡ được tuyển chọn từ các vùng phù sa, ngâm bùn chống mối mọt tự nhiên rồi hơ trên lửa than đỏ rực để tạo đường cong chuẩn xác.",
+          "Cơ sở Trí Cảnh là cơ sở tiêu biểu ứng dụng kỹ thuật phủ sơn bóng sinh học an toàn, kết hợp hoa văn Khmer truyền thống vào dòng sản phẩm nội thất tre xuất khẩu.",
+          "Sản phẩm tre trúc Hàm Giang được phân phối rộng khắp các tỉnh đồng bằng sông Cửu Long và phục vụ trang trí các khu nghỉ dưỡng sinh thái khắp cả nước."
+        ]
+      }
+    }
+  },
+  {
+    "id": "lang-nghe-truyen-thong-phu-le",
+    "name": "Làng nghề truyền thống Phú Lễ",
+    "changes": {}
+  },
+  {
+    "id": "lang-ong-con-tau",
+    "name": "Lăng Ông Cồn Tàu",
+    "changes": {}
+  },
+  {
+    "id": "lau-ba-mieu-ba-chua-xu-ba-co-hy",
+    "name": "Lầu Bà (Miếu Bà Chúa Xứ - Bà Cố Hỷ)",
+    "changes": {}
+  },
+  {
+    "id": "dinh-tan-thach",
+    "name": "Đình Tân Thạch",
+    "changes": {}
+  },
+  {
+    "id": "khu-du-lich-cho-noi-tra-on",
+    "name": "Khu du lịch Chợ nổi Trà Ôn",
+    "changes": {
+      "key_facts": {
+        "old": [
+          "Tọa lạc tại ngã ba sông Hậu tiếp giáp sông Mang Thít, chợ nổi Trà Ôn hình thành từ hơn một thế kỷ trước nhờ lợi thế luồng lạch nước sâu và giao thương liên tỉnh.",
+          "Nét đặc trưng sinh động là cây bẹo bằng tre dài dựng đứng đầu mũi ghe; thương hồ treo sản vật gì lên bẹo (chuối, khoai, dừa, khóm) thì bán thứ đó.",
+          "Chợ họp theo con nước nổi: nước lớn ghe thuyền đổ về tấp nập, cung cấp nguồn nông sản tươi mới cho các vựa đầu mối khắp miền Tây và TP.HCM.",
+          "Món bún riêu cua đồng và bún thịt nướng bán rong trên những chiếc xuồng ba lá nhỏ luồn lách giữa các ghe lớn tạo nên nét ẩm thực sông nước độc đáo."
+        ],
+        "new": [
+          "Hình thành từ hơn một thế kỷ trước tại ngã ba sông Hậu tiếp giáp sông Mang Thít, chợ nổi Trà Ôn phát triển nhờ lợi thế luồng lạch nước sâu và giao thương liên tỉnh.",
+          "Nét đặc trưng sinh động là cây bẹo bằng tre dài dựng đứng đầu mũi ghe; thương hồ treo sản vật gì lên bẹo (chuối, khoai, dừa, khóm) thì bán thứ đó.",
+          "Chợ họp theo con nước nổi: nước lớn ghe thuyền đổ về tấp nập, cung cấp nguồn nông sản tươi mới cho các vựa đầu mối vùng đồng bằng và TP.HCM.",
+          "Món bún riêu cua đồng và bún thịt nướng bán rong trên những chiếc xuồng ba lá nhỏ luồn lách giữa các ghe lớn tạo nên nét ẩm thực sông nước độc đáo."
+        ]
+      }
+    }
+  },
+  {
+    "id": "tep-kho-my-long",
+    "name": "Tép khô Mỹ Long",
+    "changes": {
+      "travel_tip": {
+        "old": "Có thể dùng tép khô để nấu canh bầu, kho quẹt chấm rau luộc hoặc làm gỏi xoài xanh tôm khô giòn ngọt đậm chất miền Tây.",
+        "new": "Có thể dùng tép khô để nấu canh bầu, kho quẹt chấm rau luộc hoặc làm gỏi xoài xanh tôm khô giòn ngọt đậm đà hương vị sông nước phù sa."
+      }
+    }
+  },
+  {
+    "id": "ca-phi-sa-ot-thanh-phuoc",
+    "name": "Cá phi sả ớt Thạnh Phước",
+    "changes": {}
+  },
+  {
+    "id": "ruou-truyen-thong-cuu-long-cuu-long-my-tuu",
+    "name": "Rượu truyền thống Cửu Long (Cửu Long Mỹ Tửu)",
+    "changes": {}
+  },
+  {
+    "id": "dua-luoi-truong-long-hoa",
+    "name": "Dưa lưới Trường Long Hòa",
+    "changes": {}
+  },
+  {
+    "id": "cua-hang-ocop-vung-liem",
+    "name": "Cửa hàng OCOP Vũng Liêm",
+    "changes": {
+      "key_facts": {
+        "old": [
+          "Tọa lạc tại trung tâm đô thị Vũng Liêm gần Khu tưởng niệm Thủ tướng Võ Văn Kiệt, thuận lợi làm điểm dừng chân mua sắm cho du khách lữ hành.",
+          "Tất cả sản phẩm đều có tem truy xuất nguồn gốc QR code, chứng nhận kiểm định chất lượng và đạt chuẩn OCOP được UBND tỉnh công nhận.",
+          "Các mặt hàng chủ lực gồm: Xoài cát núm Quới Thiện, Rượu bưởi Năm Thưởng, Bánh tráng nem cù lao Dài, Mứt gừng lá chuối, Chả lụa Thành Công.",
+          "Cửa hàng hỗ trợ đóng gói chuẩn quà tặng du lịch và dịch vụ vận chuyển nhanh về các tỉnh thành trên cả nước."
+        ],
+        "new": [
+          "Đặt tại trung tâm đô thị Vũng Liêm gần Khu tưởng niệm Thủ tướng Võ Văn Kiệt, thuận lợi làm điểm dừng chân mua sắm cho du khách lữ hành.",
+          "Tất cả sản phẩm đều có tem truy xuất nguồn gốc QR code, chứng nhận kiểm định chất lượng và đạt chuẩn OCOP được UBND tỉnh công nhận.",
+          "Các mặt hàng chủ lực gồm: Xoài cát núm Quới Thiện, Rượu bưởi Năm Thưởng, Bánh tráng nem cù lao Dài, Mứt gừng lá chuối, Chả lụa Thành Công.",
+          "Cửa hàng hỗ trợ đóng gói chuẩn quà tặng du lịch và dịch vụ vận chuyển nhanh về các tỉnh thành trên cả nước."
+        ]
+      }
+    }
+  },
+  {
+    "id": "cong-vien-an-hoi",
+    "name": "Công viên An Hội",
+    "changes": {}
+  },
+  {
+    "id": "chua-van-phuoc",
+    "name": "Chùa Vạn Phước",
+    "changes": {
+      "heritage_level": {
+        "old": "Danh lam Phật giáo Bắc tông nổi tiếng vùng Duyên hải Đông Bắc",
+        "new": "Danh lam Phật giáo Bắc tông với tượng Di Lặc 99 tấn vùng Duyên hải Đông Bắc"
+      },
+      "key_facts": {
+        "old": [
+          "Tọa lạc tại xã Định Trung thuộc huyện Bình Đại cũ (nay thuộc tỉnh Vĩnh Long), do Thượng tọa Thích Phước Chí khởi lập và kiến thiết từ vùng đất trũng ngập mặn ven biển.",
+          "Điểm nhấn kỳ vĩ là tượng Phật Di Lặc ngự đài sen nặng 99 tấn thếp vàng sáng lóa, biểu tượng cho tâm hỷ xả và an lạc vô biên giữa đất trời lộng gió.",
+          "Khuôn viên rộng hơn 8.000 m2 xây dựng theo phong cách kiến trúc chùa cung đình phương Đông với Cổng Tam quan đồ sộ, Chánh điện lộng lẫy và hồ cá koi thanh tịnh.",
+          "Nhà chùa thường xuyên tổ chức bếp ăn từ thiện và phát thuốc miễn phí cứu trợ bà con nghèo và ngư dân các xã bãi ngang."
+        ],
+        "new": [
+          "Khởi lập từ vùng đất trũng ngập mặn ven biển tại xã Định Trung thuộc huyện Bình Đại cũ (nay thuộc tỉnh Vĩnh Long), do Thượng tọa Thích Phước Chí kiến thiết từ năm 2005.",
+          "Điểm nhấn kỳ vĩ là tượng Phật Di Lặc ngự đài sen nặng 99 tấn thếp vàng sáng lóa, biểu tượng cho tâm hỷ xả và an lạc vô biên giữa đất trời lộng gió.",
+          "Khuôn viên rộng hơn 8.000 m2 xây dựng theo phong cách kiến trúc chùa cung đình phương Đông với Cổng Tam quan đồ sộ, Chánh điện lộng lẫy và hồ cá koi thanh tịnh.",
+          "Nhà chùa thường xuyên tổ chức bếp ăn từ thiện và phát thuốc miễn phí cứu trợ bà con nghèo và ngư dân các xã bãi ngang."
+        ]
+      }
+    }
+  },
+  {
+    "id": "bien-con-bung",
+    "name": "Biển Cồn Bửng",
+    "changes": {
+      "key_facts": {
+        "old": [
+          "Nằm tại xã Thạnh Hải thuộc huyện Thạnh Phú cũ (nay thuộc tỉnh Vĩnh Long), bãi biển Cồn Bửng dài hơn 15 km lưu giữ nét hoang sơ mộc mạc của biển phù sa Tây Nam Bộ.",
+          "Điểm kỳ lạ thú vị là những dải ốc viết li ti hàng triệu con dạt vào bờ xếp thành từng cồn uốn lượn trắng xóa, bước chân lên phát ra âm thanh lạo xạo vui tai.",
+          "Nơi đây có Lăng Ông Nam Hải phụng thờ hai bộ xương cá voi khổng lồ nặng hàng chục tấn do bà con vạn chài phát hiện dạt vào bờ năm 2004.",
+          "Hàng chục dãy chòi lá phục vụ các món hải sản vừa đánh lưới: nghêu hấp sả, cua biển luộc nước dừa, tôm sú nướng muối ớt và cá ngát nấu canh chua bần."
+        ],
+        "new": [
+          "Trải dài hơn 15 km tại bờ biển xã Thạnh Hải thuộc huyện Thạnh Phú cũ (nay thuộc tỉnh Vĩnh Long), bãi biển Cồn Bửng lưu giữ nét hoang sơ mộc mạc của biển phù sa Tây Nam Bộ.",
+          "Điểm kỳ lạ thú vị là những dải ốc viết li ti hàng triệu con dạt vào bờ xếp thành từng cồn uốn lượn trắng xóa, bước chân lên phát ra âm thanh lạo xạo vui tai.",
+          "Nơi đây có Lăng Ông Nam Hải phụng thờ hai bộ xương cá voi khổng lồ nặng hàng chục tấn do bà con vạn chài phát hiện dạt vào bờ năm 2004.",
+          "Hàng chục dãy chòi lá phục vụ các món hải sản vừa đánh lưới: nghêu hấp sả, cua biển luộc nước dừa, tôm sú nướng muối ớt và cá ngát nấu canh chua bần."
+        ]
+      }
+    }
+  },
+  {
+    "id": "chua-o-mich-ratanadiparamkoskeo",
+    "name": "Chùa Ô Mịch (Ratanadipàràmkoskeo)",
+    "changes": {
+      "key_facts": {
+        "old": [
+          "Tọa lạc tại xã Lương Hòa A thuộc huyện Châu Thành cũ (nay thuộc tỉnh Vĩnh Long), thành lập từ thế kỷ XVII theo truyền thống Phật giáo Theravada.",
+          "Chánh điện xây trên nền tam cấp cao ráo, mái lợp nhiều lớp ngói uốn cong thanh thoát, đỉnh bờ nóc tạo hình rắn thần Naga vươn cao xua đuổi tà khí.",
+          "Khuôn viên râm mát với hàng chục cây dầu rái, cây sao cổ thụ có chu vi gốc 3-4 người ôm, là nơi chim trời về làm tổ quanh năm.",
+          "Chùa là trung tâm giáo dục chữ viết Pali, văn hóa dân tộc và nơi tổ chức các lễ hội truyền thống lớn như Chôl Chnăm Thmây, Sêne Đôlta và Ok Om Bok."
+        ],
+        "new": [
+          "Khởi dựng từ thế kỷ XVII tại xã Lương Hòa A thuộc huyện Châu Thành cũ (nay thuộc tỉnh Vĩnh Long), ngôi cổ tự duy trì truyền thống Phật giáo Theravada.",
+          "Chánh điện xây trên nền tam cấp cao ráo, mái lợp nhiều lớp ngói uốn cong thanh thoát, đỉnh bờ nóc tạo hình rắn thần Naga vươn cao xua đuổi tà khí.",
+          "Khuôn viên râm mát với hàng chục cây dầu rái, cây sao cổ thụ có chu vi gốc 3-4 người ôm, là nơi chim trời về làm tổ quanh năm.",
+          "Chùa là trung tâm giáo dục chữ viết Pali, văn hóa dân tộc và nơi tổ chức các lễ hội truyền thống lớn như Chôl Chnăm Thmây, Sêne Đôlta và Ok Om Bok."
+        ]
+      }
+    }
+  },
+  {
+    "id": "lang-ong-nam-hai-binh-thang",
+    "name": "Lăng Ông Nam Hải Bình Thắng",
+    "changes": {
+      "key_facts": {
+        "old": [
+          "Tọa lạc tại xã Bình Thắng ven cửa biển Ba Lai, lăng khởi dựng vào khoảng đầu thế kỷ XIX bởi các bậc tiền hiền ngư nghiệp làng chài Bình Thắng.",
+          "Bộ xương cá Ông được an vị trang nghiêm trong lồng kính tại chánh điện dài 18 mét, nặng hàng tấn được bảo quản cẩn trọng bằng sáp ong và dầu dừa.",
+          "Lễ hội Nghinh Ông cử hành định kỳ vào ngày 15, 16 và 17 tháng 3 âm lịch hàng năm, thu hút hàng vạn ngư dân và du khách cùng hơn 200 tàu cá kết hoa rực rỡ ra khơi làm lễ rước thần.",
+          "Nghi thức hát bội, tế cáo trời đất và hội đua thuyền rồng truyền thống trên sông Ba Lai tạo nên bức tranh văn hóa biển sống động."
+        ],
+        "new": [
+          "Khởi dựng vào khoảng đầu thế kỷ XIX tại xã Bình Thắng ven cửa biển Ba Lai, lăng lưu giữ xương cốt cá Voi được các bậc tiền hiền ngư nghiệp phụng thờ.",
+          "Bộ xương cá Ông được an vị trang nghiêm trong lồng kính tại chánh điện dài 18 mét, nặng hàng tấn được bảo quản cẩn trọng bằng sáp ong và dầu dừa.",
+          "Lễ hội Nghinh Ông cử hành định kỳ vào ngày 15, 16 và 17 tháng 3 âm lịch hàng năm, thu hút hàng vạn ngư dân và du khách cùng hơn 200 tàu cá kết hoa rực rỡ ra khơi làm lễ rước thần.",
+          "Nghi thức hát bội, tế cáo trời đất và hội đua thuyền rồng truyền thống trên sông Ba Lai tạo nên bức tranh văn hóa biển sống động."
+        ]
+      }
+    }
+  },
+  {
+    "id": "farmstay-dat-cu-lao",
+    "name": "Farmstay Đất Cù Lao",
+    "changes": {
+      "key_facts": {
+        "old": [
+          "Tọa lạc tại xã Bình Hòa Phước trên dải đất phù sa màu mỡ Cù lao An Bình, đối diện trung tâm TP Vĩnh Long qua nhánh sông Cổ Chiên.",
+          "Hệ thống phòng nghỉ thiết kế theo lối nhà lá ba gian truyền thống thoáng mát, vật liệu tre gỗ tự nhiên, ban công hướng nhìn ra rạch nước đầy hoa lục bình.",
+          "Du khách được tham gia trực tiếp vào nếp sống nông dân: hái trái cây tươi tại vườn, cất vó bắt tôm cá, nướng cá lóc trui rơm và đổ bánh xèo củ hũ dừa.",
+          "Tổ chức các buổi giao lưu đờn ca tài tử tài tử miệt vườn dưới ánh trăng rằm do chính các nghệ nhân trong xóm biểu diễn mộc không dùng loa đài."
+        ],
+        "new": [
+          "Xây dựng trên dải đất phù sa màu mỡ xã Bình Hòa Phước (Cù lao An Bình), khu nghỉ đối diện trung tâm TP Vĩnh Long qua nhánh sông Cổ Chiên.",
+          "Hệ thống phòng nghỉ thiết kế theo lối nhà lá ba gian truyền thống thoáng mát, vật liệu tre gỗ tự nhiên, ban công hướng nhìn ra rạch nước đầy hoa lục bình.",
+          "Du khách được tham gia trực tiếp vào nếp sống nông dân: hái trái cây tươi tại vườn, cất vó bắt tôm cá, nướng cá lóc trui rơm và đổ bánh xèo củ hũ dừa.",
+          "Tổ chức các buổi giao lưu đờn ca tài tử tài tử miệt vườn dưới ánh trăng rằm do chính các nghệ nhân trong xóm biểu diễn mộc không dùng loa đài."
+        ]
+      }
+    }
+  },
+  {
+    "id": "khu-du-lich-sinh-thai-anh-ba-khia",
+    "name": "Khu du lịch sinh thái Anh Ba Khía",
+    "changes": {}
+  },
+  {
+    "id": "nha-co-huynh-thuy-le",
+    "name": "Nhà cổ Huỳnh Thủy Lê",
+    "changes": {}
+  },
+  {
+    "id": "ben-pha-tran-phu-can-tho-vinh-long-vinh-long",
+    "name": "Bến Phà Trần Phú (Cần Thơ – Vĩnh Long)",
+    "changes": {
+      "key_facts": {
+        "old": [
+          "Tọa lạc tại phường Cái Vồn thuộc thị xã Bình Minh cũ, bến phà bắt đầu vận hành từ đầu thế kỷ XX với những chiếc phà gỗ chạy bằng hơi nước đầu tiên vượt sông Hậu.",
+          "Từng là huyết mạch giao thông đường bộ độc đạo trên Quốc lộ 1A nối liền TP.HCM với các tỉnh Tây sông Hậu (Cần Thơ, Hậu Giang, Sóc Trăng, Bạc Liêu, Cà Mau).",
+          "Chuyến phà lịch sử cuối cùng kết thúc sứ mệnh vào 09h00 sáng ngày 24/4/2010 khi cầu dây văng Cần Thơ chính thức cắt băng thông xe.",
+          "Hiện khu vực đầu bến được quy hoạch làm công viên bờ kè ven sông, điểm vọng cảnh ngắm cầu Cần Thơ rực rỡ ánh đèn dây văng về đêm và phố ẩm thực đêm Bình Minh."
+        ],
+        "new": [
+          "Vận hành từ đầu thế kỷ XX tại phường Cái Vồn thuộc thị xã Bình Minh cũ, bến phà đưa những chiếc phà gỗ chạy bằng hơi nước đầu tiên vượt sông Hậu.",
+          "Từng là huyết mạch giao thông đường bộ độc đạo trên Quốc lộ 1A nối liền TP.HCM với các tỉnh Tây sông Hậu (Cần Thơ, Hậu Giang, Sóc Trăng, Bạc Liêu, Cà Mau).",
+          "Chuyến phà lịch sử cuối cùng kết thúc sứ mệnh vào 09h00 sáng ngày 24/4/2010 khi cầu dây văng Cần Thơ chính thức cắt băng thông xe.",
+          "Hiện khu vực đầu bến được quy hoạch làm công viên bờ kè ven sông, điểm vọng cảnh ngắm cầu Cần Thơ rực rỡ ánh đèn dây văng về đêm và phố ẩm thực đêm Bình Minh."
+        ]
+      }
+    }
+  },
+  {
+    "id": "khach-san-gia-hoa-ii",
+    "name": "Khách sạn Gia Hòa II",
+    "changes": {}
+  },
+  {
+    "id": "nh-ks-sy-dien",
+    "name": "NH-KS Sỹ Điền",
+    "changes": {
+      "key_facts": {
+        "old": [
+          "Tọa lạc tại Phường An Hội thuộc TP Bến Tre cũ, sở hữu vị trí thoáng đãng đối diện công viên ven sông Bến Tre rợp bóng cây xanh.",
+          "Khách sạn có quy mô 35 phòng nghỉ tiện nghi sạch sẽ, thiết kế ấm cúng phù hợp du khách lữ hành và thương gia.",
+          "Khu nhà hàng Sỹ Điền tầng trệt là địa chỉ ẩm thực quen thuộc của người dân bản địa hơn 20 năm qua, phục vụ trọn vẹn hương vị cơm gia đình Nam Bộ.",
+          "Từ khách sạn, du khách chỉ mất 3 phút đi bộ là đến Chợ đêm Bến Tre và Bến tàu du lịch sinh thái sông Bến Tre."
+        ],
+        "new": [
+          "Sở hữu vị trí thoáng đãng tại Phường An Hội thuộc TP Bến Tre cũ, khách sạn nhìn thẳng ra công viên ven sông Bến Tre rợp bóng cây xanh.",
+          "Khách sạn có quy mô 35 phòng nghỉ tiện nghi sạch sẽ, thiết kế ấm cúng phù hợp du khách lữ hành và thương gia.",
+          "Khu nhà hàng Sỹ Điền tầng trệt là địa chỉ ẩm thực quen thuộc của người dân bản địa hơn 20 năm qua, phục vụ trọn vẹn hương vị cơm gia đình Nam Bộ.",
+          "Từ khách sạn, du khách chỉ mất 3 phút đi bộ là đến Chợ đêm Bến Tre và Bến tàu du lịch sinh thái sông Bến Tre."
+        ]
+      },
+      "travel_tip": {
+        "old": "Đừng bỏ qua bữa tối tại nhà hàng với món tôm càng xanh nướng mọi và canh chua cá ngát nấu bần dốt chua thanh giải nhiệt.",
+        "new": "Bữa tối tại nhà hàng phục vụ món tôm càng xanh nướng mọi và canh chua cá ngát nấu bần dốt chua thanh giải nhiệt."
+      }
+    }
+  },
+  {
+    "id": "con-ngheu-my-long",
+    "name": "Cồn Nghêu Mỹ Long",
+    "changes": {
+      "highlight": {
+        "old": "Cồn cát nổi giữa vùng cửa biển Cung Hầu sông Cổ Chiên, thiên đường cào nghêu tự nhiên với bãi cát mịn phẳng lì trải rộng hàng trăm héc-ta khi thủy triều rút",
+        "new": "Cồn cát nổi giữa vùng cửa biển Cung Hầu sông Cổ Chiên, bãi cào nghêu tự nhiên trù phú với bãi cát mịn phẳng lì trải rộng hàng trăm héc-ta khi thủy triều rút"
+      },
+      "key_facts": {
+        "old": [
+          "Tọa lạc ngoài khơi thị trấn Mỹ Long thuộc huyện Cầu Ngang cũ, cồn chỉ lộ diện nguyên vẹn khi triều cường rút xuống, tạo nên dải cát vàng nổi giữa làn nước biếc.",
+          "Vùng bãi bồi cửa sông giàu sinh vật phù du là môi trường sống lý tưởng cho loài nghêu lụa và nghêu trắng phát triển tự nhiên với chất lượng thịt béo ngậy ngọt lịm.",
+          "Du khách có thể tự tay cầm chiếc cào sắt nhỏ lướt nhẹ trên mặt cát để bắt từng con nghêu mập mạp nhô lên dưới lớp bùn cát mịn.",
+          "Sau khi cào nghêu, bà con ngư dân sẵn sàng nhóm lửa luộc nghêu cùng sả ớt ngay tại mép sóng thưởng thức vị tươi ngọt nguyên bản không đâu sánh bằng."
+        ],
+        "new": [
+          "Xuất hiện ngoài khơi thị trấn Mỹ Long thuộc huyện Cầu Ngang cũ, cồn chỉ lộ diện nguyên vẹn khi triều cường rút xuống, tạo nên dải cát vàng nổi giữa làn nước biếc.",
+          "Vùng bãi bồi cửa sông giàu sinh vật phù du là môi trường sống lý tưởng cho loài nghêu lụa và nghêu trắng phát triển tự nhiên với chất lượng thịt béo ngậy ngọt lịm.",
+          "Du khách có thể tự tay cầm chiếc cào sắt nhỏ lướt nhẹ trên mặt cát để bắt từng con nghêu mập mạp nhô lên dưới lớp bùn cát mịn.",
+          "Sau khi cào nghêu, bà con ngư dân sẵn sàng nhóm lửa luộc nghêu cùng sả ớt ngay tại mép sóng thưởng thức vị tươi ngọt nguyên bản không đâu sánh bằng."
+        ]
+      }
+    }
+  },
+  {
+    "id": "vuon-trai-cay-cu-lao-dai",
+    "name": "Vườn trái cây Cù Lao Dài",
+    "changes": {}
+  },
+  {
+    "id": "cho-dem-ben-tre",
+    "name": "Chợ đêm Bến Tre",
+    "changes": {
+      "highlight": {
+        "old": "Khu phố đêm nhộn nhịp ven sông Bến Tre quy tụ hàng trăm gian hàng thủ công mỹ nghệ từ dừa, đồ lưu niệm chỉ xơ dừa và thiên đường ẩm thực đường phố Nam Bộ",
+        "new": "Khu phố đêm nhộn nhịp ven sông Bến Tre quy tụ hàng trăm gian hàng thủ công mỹ nghệ từ dừa, đồ lưu niệm chỉ xơ dừa và không gian ẩm thực đường phố Nam Bộ phong phú"
+      }
+    }
+  },
+  {
+    "id": "am-thuc-chay-ta-on---duong-so-2",
+    "name": "Ẩm Thực Chay Tạ Ơn - Đường Số 2",
+    "changes": {
+      "key_facts": {
+        "old": [
+          "Tọa lạc tại khu phố ẩm thực thanh bình thuộc Phường 2 trung tâm tỉnh Vĩnh Long, phục vụ bà con phật tử và thực khách ăn chay dưỡng sinh hơn 15 năm qua.",
+          "Nước dùng bún và hủ tiếu ninh hoàn toàn từ củ cải trắng, mía lau, bắp ngọt và táo đỏ, tạo vị ngọt thanh đạm tự nhiên không dùng bột ngọt hay hương liệu nhân tạo.",
+          "Món gỏi mít non trộn tàu hũ ky chiên giòn và chả giò nấm rơm là hai món ăn đặc sắc được thực khách yêu thích nhất tại quán.",
+          "Không gian bài trí thanh nhã với bàn ghế gỗ mộc, tiếng nhạc thiền nhẹ nhàng mang lại cảm giác an yên sau những giờ di chuyển đường dài."
+        ],
+        "new": [
+          "Hoạt động hơn 15 năm tại khu phố ẩm thực Phường 2 trung tâm tỉnh Vĩnh Long, quán phục vụ bà con phật tử và thực khách ăn chay dưỡng sinh thanh đạm.",
+          "Nước dùng bún và hủ tiếu ninh hoàn toàn từ củ cải trắng, mía lau, bắp ngọt và táo đỏ, tạo vị ngọt thanh đạm tự nhiên không dùng bột ngọt hay hương liệu nhân tạo.",
+          "Món gỏi mít non trộn tàu hũ ky chiên giòn và chả giò nấm rơm là hai món ăn đặc sắc được thực khách yêu thích nhất tại quán.",
+          "Không gian bài trí thanh nhã với bàn ghế gỗ mộc, tiếng nhạc thiền nhẹ nhàng mang lại cảm giác an yên sau những giờ di chuyển đường dài."
+        ]
+      }
+    }
+  },
+  {
+    "id": "cau-truong-long-hoa",
+    "name": "Cầu Trường Long Hòa",
+    "changes": {
+      "key_facts": {
+        "old": [
+          "Khánh thành đưa vào khai thác mở ra bước đột phá kết nối giao thương giữa trung tâm thị xã Duyên Hải cũ với các xã đảo bãi ngang ven biển Đông.",
+          "Cầu có kết cấu dầm hộp bê tông vĩnh cửu, tải trọng thiết kế hiện đại, tĩnh không thông thuyền bảo đảm cho tàu thuyền đánh cá ngàn mã lực ra vào neo đậu tránh trú bão an toàn.",
+          "Từ đỉnh nhịp giữa cầu phóng tầm mắt ra xa có thể ngắm trọn vẹn cảnh sắc rừng đước, rừng mắm xanh ngát bạt ngàn ôm trọn những đầm nuôi tôm công nghệ cao.",
+          "Là điểm dừng chân chụp ảnh phong cảnh ưa thích của dân phượt trên cung đường du khảo duyên hải miền Tây."
+        ],
+        "new": [
+          "Khánh thành đưa vào khai thác mở ra bước đột phá kết nối giao thương giữa trung tâm thị xã Duyên Hải cũ với các xã đảo bãi ngang ven biển Đông.",
+          "Cầu có kết cấu dầm hộp bê tông vĩnh cửu, tải trọng thiết kế hiện đại, tĩnh không thông thuyền bảo đảm cho tàu thuyền đánh cá ngàn mã lực ra vào neo đậu tránh trú bão an toàn.",
+          "Từ đỉnh nhịp giữa cầu phóng tầm mắt ra xa có thể ngắm trọn vẹn cảnh sắc rừng đước, rừng mắm xanh ngát bạt ngàn ôm trọn những đầm nuôi tôm công nghệ cao.",
+          "Là điểm dừng chân chụp ảnh phong cảnh ưa thích của du khách trên cung đường du khảo duyên hải Nam Bộ."
+        ]
+      }
+    }
+  },
+  {
+    "id": "cau-lang-chim",
+    "name": "Cầu Láng Chim",
+    "changes": {}
+  }
+]
