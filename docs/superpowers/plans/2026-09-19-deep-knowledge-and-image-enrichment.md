@@ -1,7 +1,7 @@
 # Hoàn thiện Dữ liệu Chuyên sâu & Chuẩn hóa Hình ảnh từ NotebookLM Implementation Plan
 
-> STATUS: active
-> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+> STATUS: complete
+> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [x]`) syntax for tracking.
 
 **Goal:** Tận dụng 988 nguồn tri thức trong Google NotebookLM và tài liệu lưu trữ chính thống để làm sạch chú thích ảnh, làm giàu dữ liệu thực địa E-E-A-T cho 25 điểm lưu trú sinh thái miệt vườn (Batch 12) và 25 thắng cảnh thiên nhiên - cù lao sinh thái (Batch 13), đồng thời thiết lập cổng kiểm định chất lượng hình ảnh toàn diện.
 
@@ -34,7 +34,7 @@
 - Consumes: `web/data.json` entities with `attributes.image_caption`
 - Produces: Normalized `attributes.image_caption` for 69 entities (54 old admin districts + 15 fillers stripped and enriched with verified E-E-A-T facts)
 
-- [ ] **Step 1: Write the failing test / check logic**
+- [x] **Step 1: Write the failing test / check logic**
 
 ```python
 # scripts/checks/check_image_hygiene.py (caption section)
@@ -59,12 +59,12 @@ def test_image_captions_hygiene():
     assert len(filler_violations) == 0, f"Found {len(filler_violations)} captions with fillers: {filler_violations[:3]}"
 ```
 
-- [ ] **Step 2: Run check to verify it fails**
+- [x] **Step 2: Run check to verify it fails**
 
 Run: `python -c "from scratch.cat_coverage import *"` or test script
 Expected: FAIL with 54 old admin violations and 15 filler violations in captions.
 
-- [ ] **Step 3: Implement `scripts/ops/remediate_phase21_image_captions.py`**
+- [x] **Step 3: Implement `scripts/ops/remediate_phase21_image_captions.py`**
 
 Tạo từ điển chuyển đổi chuẩn hóa chú thích ảnh cho 69 thực thể, thay thế:
 - "thị trấn Long Hồ" $\rightarrow$ "Phường Long Hồ"
@@ -74,12 +74,12 @@ Tạo từ điển chuyển đổi chuẩn hóa chú thích ảnh cho 69 thực 
 - "thiên đường hải sản" $\rightarrow$ "vựa hải sản tự nhiên bãi cào"
 - v.v.
 
-- [ ] **Step 4: Run script and verify test passes**
+- [x] **Step 4: Run script and verify test passes**
 
 Run: `python scripts/ops/remediate_phase21_image_captions.py`
 Expected: PASS, 69 captions updated.
 
-- [ ] **Step 5: Verify content gates**
+- [x] **Step 5: Verify content gates**
 
 Run: `python -m scripts.checks.check_content_gates`
 Expected: 0 errors.
@@ -97,7 +97,7 @@ Expected: 0 errors.
 - Consumes: 25 target accommodation IDs from `outputs/enrichment_candidates.json`
 - Produces: Rich E-E-A-T facts (`key_facts`, `hours`, `admission`, `travel_tip`, `source_citations`)
 
-- [ ] **Step 1: Define facts for 25 iconic homestays & lodges**
+- [x] **Step 1: Define facts for 25 iconic homestays & lodges**
 
 Target 25 accommodations:
 1. `homestay-ut-trinh` (Út Trinh Homestay, Cù lao An Bình)
@@ -133,11 +133,11 @@ Mỗi thực thể được bổ sung:
 - `travel_tip`: Cách tiếp cận bằng đường thủy/đường bộ, phương tiện xe đạp miễn phí, trải nghiệm làm bánh dân gian cùng gia chủ.
 - `citations`: Trích dẫn từ Sổ tay 2 (Mekong 360 - Tập 2) và Cổng Xúc tiến Du lịch địa phương.
 
-- [ ] **Step 2: Implement script with modular functions (complexity $\le 11$)**
+- [x] **Step 2: Implement script with modular functions (complexity $\le 11$)**
 
 Write `scripts/ops/enrich_batch12_accommodations.py` following the standard `_apply_*` pattern.
 
-- [ ] **Step 3: Execute enrichment and verify log**
+- [x] **Step 3: Execute enrichment and verify log**
 
 Run: `python scripts/ops/enrich_batch12_accommodations.py`
 Expected: 25/25 accommodations enriched.
@@ -155,7 +155,7 @@ Expected: 25/25 accommodations enriched.
 - Consumes: 25 target nature & island IDs from `web/data.json`
 - Produces: Rich E-E-A-T facts, hours, admission/ferry fees, travel tips, citations.
 
-- [ ] **Step 1: Define facts for 25 iconic nature spots & islands**
+- [x] **Step 1: Define facts for 25 iconic nature spots & islands**
 
 Target 25 natural entities:
 1. `cu-lao-an-binh` (Cù lao An Bình)
@@ -191,11 +191,11 @@ Mỗi thực thể được bổ sung:
 - `travel_tip`: Lịch con nước ròng/nước lớn, trang phục chống nắng và giày dép lội bùn sinh thái.
 - `citations`: Trích dẫn từ Sổ tay 1 & Sổ tay 2 NotebookLM.
 
-- [ ] **Step 2: Implement script with modular functions (complexity $\le 11$)**
+- [x] **Step 2: Implement script with modular functions (complexity $\le 11$)**
 
 Write `scripts/ops/enrich_batch13_nature_wonders.py`.
 
-- [ ] **Step 3: Execute enrichment and verify log**
+- [x] **Step 3: Execute enrichment and verify log**
 
 Run: `python scripts/ops/enrich_batch13_nature_wonders.py`
 Expected: 25/25 nature entities enriched.
@@ -212,7 +212,7 @@ Expected: 25/25 nature entities enriched.
 - Consumes: `web/data.json` and directory `web-nuxt/public/img/entities/`
 - Produces: Strict audit report confirming 100% WebP existence, 100% verified photo attributes, 0 filler captions, 0 old admin districts in captions.
 
-- [ ] **Step 1: Write `scripts/checks/check_image_hygiene.py`**
+- [x] **Step 1: Write `scripts/checks/check_image_hygiene.py`**
 
 ```python
 # Check image hygiene invariants
@@ -242,7 +242,7 @@ class ImageHygieneCheck:
         return {"check": self.name, "level": self.level, "rule": self.rule, "count": len(violations), "violations": violations}
 ```
 
-- [ ] **Step 2: Run check and verify clean output**
+- [x] **Step 2: Run check and verify clean output**
 
 Run: `python -c "from scripts.checks.check_image_hygiene import ImageHygieneCheck; print(ImageHygieneCheck().run())"`
 Expected: count = 0.
@@ -260,34 +260,34 @@ Expected: count = 0.
 - Modify: `web-nuxt/tests/home-editorial-e2e.test.ts`
 - Modify: `web-nuxt/tests/subsystems-unification.test.ts`
 
-- [ ] **Step 1: Regenerate machine learning text catalogs**
+- [x] **Step 1: Regenerate machine learning text catalogs**
 
 Run: `python scripts/generate_llms_txt.py`
 Expected: Output updated byte files for `llms.txt` and `llms-full.txt`.
 
-- [ ] **Step 2: Recompute new SHA-256 of `web/data.json`**
+- [x] **Step 2: Recompute new SHA-256 of `web/data.json`**
 
 Run: `python -c "import hashlib; print(hashlib.sha256(open('web/data.json', 'rb').read()).hexdigest())"`
 
-- [ ] **Step 3: Update SHA-256 in all 4 test files**
+- [x] **Step 3: Update SHA-256 in all 4 test files**
 
 Replace previous hash `fa3a2ac7d802f082401b6fdfb0841e4551ed27d625eb5dedfbdf7e75272a46f3` with new hash.
 
-- [ ] **Step 4: Run hard invariant verification suite**
+- [x] **Step 4: Run hard invariant verification suite**
 
 Run: `python -u scripts/checks/run_hard.py --all`
 Expected: 0 hard errors, 0 ratchet increase.
 
-- [ ] **Step 5: Run Vitest test suites**
+- [x] **Step 5: Run Vitest test suites**
 
 Run: `cd web-nuxt && npx vitest run tests/challenger-m3-subsystems-stress.test.ts tests/challenger-homepage-stress.test.ts tests/home-editorial-e2e.test.ts tests/subsystems-unification.test.ts`
 Expected: 121/121 tests PASS.
 
-- [ ] **Step 6: Run TypeScript typecheck**
+- [x] **Step 6: Run TypeScript typecheck**
 
 Run: `cd web-nuxt && npm run typecheck`
 Expected: exit code 0.
 
-- [ ] **Step 7: Commit changes**
+- [x] **Step 7: Commit changes**
 
 Commit with message: `feat(data): complete image caption hygiene, enrich batch 12 accommodations and batch 13 nature wonders from NotebookLM`

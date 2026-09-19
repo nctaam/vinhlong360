@@ -1,0 +1,130 @@
+{
+  "updated_count": 25,
+  "enriched": [
+    {
+      "id": "homestay-nam-ham-luong",
+      "name": "Homestay Nam Hàm Luông",
+      "status": "enriched"
+    },
+    {
+      "id": "homestay-tu-pha-con-chim",
+      "name": "Homestay Tư Pha (Cồn Chim)",
+      "status": "enriched"
+    },
+    {
+      "id": "nhon-thanh-homestay",
+      "name": "Nhơn Thạnh Homestay",
+      "status": "enriched"
+    },
+    {
+      "id": "rooster-mekong-resort",
+      "name": "Rooster Mekong Resort",
+      "status": "enriched"
+    },
+    {
+      "id": "homestay-con-ba-tu",
+      "name": "Homestay Cồn Bà Tư",
+      "status": "enriched"
+    },
+    {
+      "id": "binh-minh-ecolodge-riverside",
+      "name": "Bình Minh Ecolodge Riverside",
+      "status": "enriched"
+    },
+    {
+      "id": "mekong-pottery-homestay",
+      "name": "Mekong Pottery Homestay",
+      "status": "enriched"
+    },
+    {
+      "id": "homestay-hai-cuong",
+      "name": "Homestay Hai Cường",
+      "status": "enriched"
+    },
+    {
+      "id": "homestay-cu-lao-dai",
+      "name": "Homestay Cù Lao Dài",
+      "status": "enriched"
+    },
+    {
+      "id": "homestay-cu-lao-may",
+      "name": "Homestay Cù Lao Mây",
+      "status": "enriched"
+    },
+    {
+      "id": "homestay-co-chin-an-binh",
+      "name": "Homestay Cô Chín",
+      "status": "enriched"
+    },
+    {
+      "id": "ba-dong-beach-resort",
+      "name": "Ba Động Beach Resort",
+      "status": "enriched"
+    },
+    {
+      "id": "mekong-lodge-resort",
+      "name": "Mekong Lodge Resort",
+      "status": "enriched"
+    },
+    {
+      "id": "coco-farmstay",
+      "name": "Coco Farmstay",
+      "status": "enriched"
+    },
+    {
+      "id": "phuong-thao-homestay",
+      "name": "Phương Thảo Homestay",
+      "status": "enriched"
+    },
+    {
+      "id": "ba-linh-homestay",
+      "name": "Ba Linh Homestay",
+      "status": "enriched"
+    },
+    {
+      "id": "ngoc-phuong-homestay",
+      "name": "Ngọc Phương Homestay",
+      "status": "enriched"
+    },
+    {
+      "id": "mekong-riverside-homestay",
+      "name": "Mekong Riverside Homestay",
+      "status": "enriched"
+    },
+    {
+      "id": "forever-green-resort",
+      "name": "Forever Green Resort",
+      "status": "enriched"
+    },
+    {
+      "id": "coco-riverside-lodge",
+      "name": "Coco Riverside Lodge",
+      "status": "enriched"
+    },
+    {
+      "id": "cocohut-homestay",
+      "name": "Cocohut Homestay",
+      "status": "enriched"
+    },
+    {
+      "id": "homestay-lang-be",
+      "name": "Homestay Làng Bè",
+      "status": "enriched"
+    },
+    {
+      "id": "suonsia-homestay",
+      "name": "SuonSia Homestay",
+      "status": "enriched"
+    },
+    {
+      "id": "mekong-garden-homestay",
+      "name": "Mekong Garden Homestay",
+      "status": "enriched"
+    },
+    {
+      "id": "nam-thanh-homestay",
+      "name": "Năm Thành Homestay",
+      "status": "enriched"
+    }
+  ]
+}

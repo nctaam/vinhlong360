@@ -26,6 +26,7 @@ secrets/
 .nuxt/
 .output/
 dist/
+*.tar.gz
 .coverage
 *.coverage
 

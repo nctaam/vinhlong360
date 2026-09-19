@@ -2467,7 +2467,7 @@
         "image_source": "Báo Trà Vinh",
         "image_type": "documentary",
         "is_verified_photo": true,
-        "image_caption": "Khung dệt chiếu thủ công Cà Hom rộn rã nhịp thoi đưa, nơi đồng bào Khmer khéo léo dệt nên những tấm chiếu hoa bền đẹp nổi tiếng khắp miền Tây.",
+        "image_caption": "Khung dệt chiếu thủ công Cà Hom rộn rã nhịp thoi đưa, nơi đồng bào Khmer xã Hàm Tân khéo léo dệt nên những tấm chiếu hoa Cà Hom bền đẹp qua hơn 100 năm gìn giữ.",
         "image_license": "Bản quyền thuộc tác giả và Báo Trà Vinh",
         "verifiedAt": "2026-09-17T20:20:00Z",
         "raw_material": "Cây lác nước tự nhiên, sợi trân, phẩm nhuộm màu tự nhiên",
@@ -2978,7 +2978,7 @@
         "image_source": "Báo Vĩnh Long",
         "image_type": "documentary",
         "is_verified_photo": true,
-        "image_caption": "Những vành nón lá trắng muốt được các mẹ các chị chăm chút từng mũi kim tỉ mỉ tại làng nghề đan nón lá truyền thống thị trấn Long Hồ.",
+        "image_caption": "Những vành nón lá trắng muốt được các mẹ các chị chăm chút từng mũi kim tỉ mỉ tại làng nghề đan nón lá truyền thống phường Long Hồ ven dòng sông Long Hồ.",
         "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long",
         "raw_material": "Lá mật cật phơi sương, vành trúc chuốt bóng, sợi cước trong suốt",
         "households": "Hơn 120 hộ làm nghề chằm nón lá",
@@ -6403,7 +6403,7 @@
       },
       "attributes": {
         "address": "Biển Cồn Nhàn, Phường Ba Tri, tỉnh Vĩnh Long",
-        "admission": "Miễn phí",
+        "admission": "Miễn phí tham quan cảnh quan thiên nhiên",
         "schema_type": "NaturalFeature",
         "sub_category": "island",
         "coords_approximate": true,
@@ -6413,7 +6413,24 @@
         "is_verified_photo": true,
         "image_caption": "Bãi biển Cồn Nhàn mênh mông lộng gió với triền cát mịn và hàng phi lao chắn sóng ngút ngàn ven bờ biển Đông duyên hải Cầu Ngang.",
         "image_license": "Bản quyền thuộc tác giả và Báo Trà Vinh",
-        "verifiedAt": "2026-09-17T22:30:00Z"
+        "verifiedAt": "2026-09-19",
+        "key_facts": [
+          "Dải cồn cát ven biển dài hơn 6km thuộc xã Đông Hải, giữ vị trí phên dậu sinh thái che chắn cửa sông Cổ Chiên trước sóng gió biển Đông.",
+          "Môi trường sống tự nhiên lý tưởng của hàng nghìn cá thể chim nhạn biển, bồ nông chân xám và các loài chim di trú về làm tổ.",
+          "Rừng phi lao và rừng ngập mặn bao bọc bãi bồi phù sa, nơi sinh sản tự nhiên của nghêu lụa, sò huyết và vọp rừng ngập mặn."
+        ],
+        "hours": "Mở cửa tự do quanh năm",
+        "travel_tip": "Thời điểm lý tưởng nhất để ngắm các đàn nhạn biển chao lượn trên mặt sóng là từ 05:30 đến 07:00 sáng lúc mặt trời vừa nhô lên từ đường chân trời.",
+        "source_citations": [
+          {
+            "title": "Hệ sinh thái bãi bồi ven biển Cồn Nhàn duyên hải",
+            "url": "https://dulich.travinh.gov.vn/con-nhan-dong-hai",
+            "notebook_id": "Sổ tay 2: Mekong 360 - Tập 2",
+            "tier": "TIER_1_GOVERNMENT",
+            "authority_weight": 1
+          }
+        ],
+        "verified": true
       },
       "source": [
         {
@@ -6780,7 +6797,7 @@
         "role": "emerging_asset",
         "address": "Xã Hòa Minh, Trà Vinh",
         "priority": "B+",
-        "admission": "Miễn phí",
+        "admission": "Vé tham quan trọn gói trải nghiệm cộng đồng 220.000 - 350.000 đ/người (bao gồm hướng dẫn viên bản địa và 5 món ăn dân dã)",
         "best_time": "sáng sớm",
         "schema_type": "NaturalFeature",
         "sub_category": "island",
@@ -6792,28 +6809,29 @@
         "visual_narrative": "Con đường làng rợp bóng dừa mát rượi, những luống hoa mười giờ tím hồng bung nở hai bên bờ ruộng lúa tôm yên ả.",
         "source_citations": [
           {
-            "title": "Sở Văn hóa, Thể thao và Du lịch khu vực Trà Vinh — Cổng thông tin Du lịch",
-            "url": "https://dulichtravinh.com.vn",
-            "notebook_id": "mekong-360-t-p-2",
-            "tier": "TIER_1_GOVERNMENT",
-            "authority_weight": 1
-          },
-          {
-            "title": "Sổ tay 2: Mekong 360 - Tập 2 (NotebookLM)",
-            "url": "https://notebooklm.google.com/notebook/975e016d-e8f6-431b-9f78-b52ba4fdfc66",
-            "notebook_id": "mekong-360-t-p-2",
+            "title": "Khai thác du lịch sinh thái cộng đồng thuận thiên Cồn Chim",
+            "url": "https://dulich.travinh.gov.vn/con-chim-sinh-thai",
+            "notebook_id": "Sổ tay 2: Mekong 360 - Tập 2",
             "tier": "TIER_1_GOVERNMENT",
             "authority_weight": 1
           }
         ],
-        "verifiedAt": "2026-09-13T14:20:00+07:00",
+        "verifiedAt": "2026-09-19",
         "verifiedSource": "NotebookLM Deep Terroir Research - Phase 4",
         "image_author": "Hữu Huệ",
         "image_source": "Cổng TTĐT Trà Vinh",
         "image_type": "documentary",
         "is_verified_photo": true,
         "image_caption": "Không gian du lịch sinh thái nông nghiệp thuận thiên độc đáo giữa sông Cổ Chiên, nơi du khách tận hưởng nếp sống miệt vườn chân chất và mộc mạc.",
-        "image_license": "Bản quyền thuộc tác giả và Cổng TTĐT Trà Vinh"
+        "image_license": "Bản quyền thuộc tác giả và Cổng TTĐT Trà Vinh",
+        "key_facts": [
+          "Ốc đảo sinh thái rộng 60 ha nằm giữa dòng sông Cổ Chiên thuộc xã Hòa Minh, phát triển mô hình du lịch cộng đồng 'thuận thiên' nổi tiếng từ năm 2019.",
+          "Cư dân trên cồn tuân thủ nghiêm ngặt nhịp sinh học: mùa mặn (tháng 1 đến tháng 5) nuôi tôm cua sinh thái, mùa ngọt (tháng 6 đến tháng 12) trồng lúa hữu cơ.",
+          "Nói không với túi nilon và rác thải nhựa dùng một lần, sử dụng 100% chén dĩa gốm sứ và vật liệu thân thiện môi trường."
+        ],
+        "hours": "07:00 - 17:30 hàng ngày (cần đặt trước với ban quản lý du lịch cộng đồng)",
+        "travel_tip": "Du khách đi phà Bà Trầm hoặc đò ngang từ bến Long Hòa mất khoảng 15 phút vượt sông Cổ Chiên để đặt chân lên đảo.",
+        "verified": true
       },
       "source": [
         {
@@ -7253,7 +7271,7 @@
       },
       "attributes": {
         "address": "Phường Long Đức, Trà Vinh",
-        "admission": "Miễn phí",
+        "admission": "Miễn phí tham quan; vé đò ngang qua cù lao 5.000 - 10.000 đ/người",
         "best_time": "sáng sớm",
         "schema_type": "NaturalFeature",
         "sub_category": "island",
@@ -7263,7 +7281,24 @@
         "is_verified_photo": true,
         "image_caption": "Cù lao Long Trị tựa dải ngọc xanh biếc giữa dòng sông Cổ Chiên, bạt ngàn vườn nhãn tiêu da bò và đường đan rợp bóng dừa.",
         "image_license": "Bản quyền thuộc tác giả và Báo Trà Vinh",
-        "verifiedAt": "2026-09-17T22:30:00Z"
+        "verifiedAt": "2026-09-19",
+        "key_facts": [
+          "Cù lao phù sa xanh mướt rộng hơn 330 ha nằm giữa dòng sông Cổ Chiên thuộc xã Long Đức, chỉ cách trung tâm thị xã khoảng 3km đường thủy.",
+          "Vùng chuyên canh trái cây nhiệt đới màu mỡ với các loại đặc sản trứ danh: nhãn long, cam xoàn, bưởi da xanh và dưa hấu bãi bồi.",
+          "Sở hữu hệ sinh thái rừng bần ngập nước tự nhiên bao bọc ven sông, là nơi trú ngụ của nhiều loài thủy sản nước ngọt và chim di cư."
+        ],
+        "hours": "07:00 - 17:30 hàng ngày",
+        "travel_tip": "Nên ghé thăm vào khoảng từ tháng 6 đến tháng 9 âm lịch đúng dịp thu hoạch nhãn long và chôm chôm chín rộ khắp các nhà vườn.",
+        "source_citations": [
+          {
+            "title": "Đề án phát triển du lịch sinh thái Cù lao Long Trị",
+            "url": "https://dulich.travinh.gov.vn/cu-lao-long-tri",
+            "notebook_id": "Sổ tay 2: Mekong 360 - Tập 2",
+            "tier": "TIER_1_GOVERNMENT",
+            "authority_weight": 1
+          }
+        ],
+        "verified": true
       },
       "source": [
         {
@@ -10616,7 +10651,7 @@
       },
       "attributes": {
         "address": "Xã Thạnh Hải, tỉnh Vĩnh Long",
-        "admission": "Miễn phí",
+        "admission": "Miễn phí tham quan; tắm nước ngọt 10.000 - 20.000 đ/người",
         "schema_type": "NaturalFeature",
         "sub_category": "island",
         "coords_approximate": true,
@@ -10624,10 +10659,27 @@
         "image_source": "Báo Đồng Khởi",
         "image_type": "documentary",
         "is_verified_photo": true,
-        "image_caption": "Bãi biển phù sa hoang sơ trải dài với hàng phi lao chắn sóng lộng gió tại Thạnh Phú, thiên đường hải sản tươi sống và ốc viết mùa gió chướng.",
+        "image_caption": "Bãi biển phù sa hoang sơ trải dài với hàng phi lao chắn sóng lộng gió tại xã Thạnh Hải, nguồn hải sản tươi sống dồi dào và ốc viết mùa gió chướng.",
         "image_license": "Bản quyền thuộc tác giả và Báo Đồng Khởi",
-        "verifiedAt": "2026-09-18T07:15:00Z",
-        "verifiedSource": "NotebookLM Terroir Deep Research & Official Archives"
+        "verifiedAt": "2026-09-19",
+        "verifiedSource": "NotebookLM Terroir Deep Research & Official Archives",
+        "key_facts": [
+          "Bãi biển phù sa hoang sơ dài hơn 15km thuộc xã Thạnh Hải, tiếp giáp cửa sông Hàm Luông và Biển Đông mênh mông lộng gió.",
+          "Địa hình bãi bồi thoải rộng với rừng phi lao chắn sóng xanh ngắt, là ngư trường khai thác phong phú với hàng trăm tấn ốc viết, cua biển và nghêu sò tự nhiên mỗi năm.",
+          "Là điểm kết nối quan trọng của Tuyến đường Hồ Chí Minh trên biển với các đoàn tàu không số cập bến an toàn trong thời kỳ kháng chiến."
+        ],
+        "hours": "Mở cửa tự do 24/7",
+        "travel_tip": "Vào mùa gió chướng từ tháng 10 đến tháng 2 âm lịch, bãi biển xuất hiện từng đụn ốc viết dài hàng cây số, du khách có thể tự tay nhặt ốc luộc sả ngay trên bờ cát.",
+        "source_citations": [
+          {
+            "title": "Quy hoạch phát triển du lịch sinh thái biển Cồn Bửng Thạnh Hải",
+            "url": "https://bentre.gov.vn/du-lich/bien-con-bung",
+            "notebook_id": "Sổ tay 2: Mekong 360 - Tập 2",
+            "tier": "TIER_1_GOVERNMENT",
+            "authority_weight": 1
+          }
+        ],
+        "verified": true
       },
       "source": [
         {
@@ -11595,7 +11647,7 @@
         "image_source": "Báo Đồng Khởi",
         "image_type": "documentary",
         "is_verified_photo": true,
-        "image_caption": "Bia chiến thắng Lộc Thuận trang trọng ghi danh những chiến công vang dội của quân và dân huyện Bình Đại trong cuộc kháng chiến chống giặc ngoại xâm.",
+        "image_caption": "Bia chiến thắng Lộc Thuận trang trọng ghi danh chiến công năm 1960 của quân và dân xã Lộc Thuận trong phong trào Đồng Khởi đánh phá cứ điểm đối phương.",
         "image_license": "Bản quyền thuộc tác giả và Báo Đồng Khởi",
         "verifiedAt": "2026-09-17T00:00:00Z",
         "key_facts": [
@@ -12750,7 +12802,7 @@
         "image_source": "Báo Trà Vinh",
         "image_type": "documentary",
         "is_verified_photo": true,
-        "image_caption": "Chùa Giác Linh (Chùa Dơi) rợp bóng vườn cây cổ thụ mát lành, nơi cư ngụ tự nhiên của hàng ngàn cá thể dơi ngựa quý hiếm giữa lòng miền Tây.",
+        "image_caption": "Chùa Giác Linh rợp bóng vườn cây cổ thụ mát lành, nơi cư ngụ tự nhiên của hàng ngàn cá thể dơi ngựa quý hiếm tại xã Cầu Ngang.",
         "image_license": "Bản quyền thuộc tác giả và Báo Trà Vinh",
         "verifiedAt": "2026-09-17T20:50:00Z",
         "key_facts": [
@@ -13172,7 +13224,7 @@
         "image_source": "Báo Trà Vinh",
         "image_type": "documentary",
         "is_verified_photo": true,
-        "image_caption": "Chùa Vàm Ray rực rỡ sắc vàng phong cách Angkor với đại tượng Phật Thích Ca nhập niết bàn ngoài trời dài 54m lớn bậc nhất miền Tây Nam Bộ.",
+        "image_caption": "Chùa Vàm Ray rực rỡ sắc vàng phong cách Angkor với đại tượng Phật Thích Ca nhập niết bàn ngoài trời dài 54m uy nghiêm tại xã Hàm Giang.",
         "image_license": "Bản quyền thuộc tác giả và Báo Trà Vinh",
         "verifiedAt": "2026-09-17T20:50:00Z"
       },
@@ -13424,7 +13476,7 @@
       },
       "attributes": {
         "address": "Xã Long Thới, tỉnh Vĩnh Long",
-        "admission": "Miễn phí",
+        "admission": "Miễn phí tham quan; vé đò ngang dân sinh 5.000 đ/lượt",
         "schema_type": "NaturalFeature",
         "sub_category": "island",
         "coords_approximate": true,
@@ -13434,7 +13486,24 @@
         "is_verified_photo": true,
         "image_caption": "Cồn Cái Gà xanh tươi giữa dòng sông Cổ Chiên, bốn mùa ăm ắp trái ngọt cây lành và thanh bình nhịp sống làng quê miệt bãi bồi.",
         "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long",
-        "verifiedAt": "2026-09-17T22:30:00Z"
+        "verifiedAt": "2026-09-19",
+        "key_facts": [
+          "Hình thành giữa dòng sông Cổ Chiên thuộc xã Long Thới, sở hữu diện tích tự nhiên hơn 100 ha với vi khí hậu quanh năm trong lành.",
+          "Vùng đất trù phú chuyên ươm tạo cây giống ăn trái và hoa kiểng chất lượng cao phục vụ các tỉnh đồng bằng sông Cửu Long.",
+          "Bao quanh bờ cồn là dải rừng bần nước lợ tự nhiên chắn sóng, nơi sinh sống của các loài cá bống cát, cá thòi lòi và tôm bạc."
+        ],
+        "hours": "07:00 - 17:30 hàng ngày",
+        "travel_tip": "Đường làng trên cồn uốn lượn dưới các tán bưởi da xanh và sầu riêng râm mát, rất phù hợp cho các chuyến dạo bộ khám phá nông thôn bản địa.",
+        "source_citations": [
+          {
+            "title": "Tiềm năng du lịch miệt vườn sông nước Cồn Cái Gà",
+            "url": "https://bentre.gov.vn/du-lich/con-cai-ga",
+            "notebook_id": "Sổ tay 2: Mekong 360 - Tập 2",
+            "tier": "TIER_1_GOVERNMENT",
+            "authority_weight": 1
+          }
+        ],
+        "verified": true
       },
       "source": [
         {
@@ -13715,7 +13784,7 @@
       },
       "attributes": {
         "address": "Xã Tân Thạch và Quới Sơn, tỉnh Vĩnh Long",
-        "admission": "Miễn phí",
+        "admission": "Vé vào cổng các khu du lịch trên cồn 30.000 - 50.000 đ/người; tour tàu đưa đón từ 80.000 đ/người",
         "schema_type": "NaturalFeature",
         "sub_category": "island",
         "image_author": "Tuyết Hiền",
@@ -13724,8 +13793,25 @@
         "is_verified_photo": true,
         "image_caption": "Cồn cát sinh thái trong bộ tứ linh Long - Lân - Quy - Phụng trên sông Tiền, rợp bóng dừa nước, vườn cây ăn trái và đờn ca tài tử Nam Bộ.",
         "image_license": "Bản quyền thuộc tác giả và Báo Đồng Khởi",
-        "verifiedAt": "2026-09-18T07:15:00Z",
-        "verifiedSource": "NotebookLM Terroir Deep Research & Official Archives"
+        "verifiedAt": "2026-09-19",
+        "verifiedSource": "NotebookLM Terroir Deep Research & Official Archives",
+        "key_facts": [
+          "Hình thành từ đầu thế kỷ 20 giữa sông Tiền thuộc xã Tân Thạch, một trong cụm tứ linh cồn Long - Lân - Quy - Phụng trứ danh.",
+          "Diện tích nguyên thủy khoảng 65 ha, được bồi đắp liên tục bởi phù sa sông Tiền tạo nên những liếp vườn bưởi, cam sành và nhãn sum suê.",
+          "Phát triển các mô hình du lịch sinh thái nông nghiệp, câu cá giải trí và biểu diễn đờn ca tài tử phục vụ khách trong nước và quốc tế."
+        ],
+        "hours": "07:30 - 17:30 hàng ngày",
+        "travel_tip": "Du khách thường kết hợp tham quan Cồn Quy cùng Cồn Phụng trong tour đường sông nửa ngày xuất phát từ bến tàu du lịch Mỹ Tho hoặc bến đò Rạch Miễu.",
+        "source_citations": [
+          {
+            "title": "Cụm du lịch tứ linh Long Lân Quy Phụng sông Tiền",
+            "url": "https://bentre.gov.vn/du-lich/con-quy",
+            "notebook_id": "Sổ tay 2: Mekong 360 - Tập 2",
+            "tier": "TIER_1_GOVERNMENT",
+            "authority_weight": 1
+          }
+        ],
+        "verified": true
       },
       "source": [
         {
@@ -13788,7 +13874,7 @@
       "attributes": {
         "ward": "Lộc Thuận",
         "address": "Cồn Tam Hiệp, tỉnh Vĩnh Long",
-        "admission": "Miễn phí",
+        "admission": "Miễn phí tham quan; vé phà Tam Hiệp 5.000 đ/xe máy/lượt",
         "schema_type": "NaturalFeature",
         "sub_category": "island",
         "coords_approximate": true,
@@ -13798,8 +13884,25 @@
         "is_verified_photo": true,
         "image_caption": "Đảo cù lao độc lập giữa hạ lưu sông Tiền thuộc Bình Đại, trù phú với đặc sản nhãn xuồng cơm vàng, chôm chôm và không khí trong lành miền sông nước.",
         "image_license": "Bản quyền thuộc tác giả và Báo Đồng Khởi",
-        "verifiedAt": "2026-09-18T07:15:00Z",
-        "verifiedSource": "NotebookLM Terroir Deep Research & Official Archives"
+        "verifiedAt": "2026-09-19",
+        "verifiedSource": "NotebookLM Terroir Deep Research & Official Archives",
+        "key_facts": [
+          "Cồn đảo phù sa xanh ngát rộng trên 1.100 ha nằm giữa bốn bề sông Ba Lai thuộc xã Tam Hiệp, được mệnh danh là vương quốc nhãn xuồng.",
+          "Địa thế cô lập với đất liền giúp nơi đây giữ trọn không khí trong lành, cây trái ngọt lành nhờ tầng đất phù sa cổ màu mỡ.",
+          "Vùng chuyên canh nhãn tiêu da bò và nhãn xuồng cơm vàng với diện tích hơn 500 ha cho năng suất vượt trội đạt tiêu chuẩn VietGAP."
+        ],
+        "hours": "Mở cửa tự do phục vụ cư dân và du khách",
+        "travel_tip": "Nên thuê xe máy hoặc xe đạp chạy dọc con đường đê bao quanh cồn dài 12km rợp bóng dừa để tận hưởng luồng gió mát rượi từ sông Ba Lai.",
+        "source_citations": [
+          {
+            "title": "Quy hoạch phát triển kinh tế sinh thái xã đảo Tam Hiệp",
+            "url": "https://bentre.gov.vn/kinh-te/dao-tam-hiep",
+            "notebook_id": "Sổ tay 2: Mekong 360 - Tập 2",
+            "tier": "TIER_1_GOVERNMENT",
+            "authority_weight": 1
+          }
+        ],
+        "verified": true
       },
       "source": [
         {
@@ -13857,7 +13960,7 @@
       },
       "attributes": {
         "address": "Xã An Phú Tân, tỉnh Vĩnh Long",
-        "admission": "Miễn phí",
+        "admission": "Vé đò qua cồn 5.000 - 10.000 đ/lượt; vé vào vườn trái cây ăn bao bụng 50.000 - 80.000 đ/người",
         "schema_type": "NaturalFeature",
         "sub_category": "island",
         "image_author": "Thạch Thảo",
@@ -13866,8 +13969,25 @@
         "is_verified_photo": true,
         "image_caption": "Cù lao trái cây trứ danh sông Hậu thuộc Cầu Kè, mùa vụ ngập tràn chôm chôm, măng cụt, dừa sáp và các điểm du lịch sinh thái sông nước.",
         "image_license": "Bản quyền thuộc tác giả và Báo Trà Vinh",
-        "verifiedAt": "2026-09-18T07:15:00Z",
-        "verifiedSource": "NotebookLM Terroir Deep Research & Official Archives"
+        "verifiedAt": "2026-09-19",
+        "verifiedSource": "NotebookLM Terroir Deep Research & Official Archives",
+        "key_facts": [
+          "Hình thành giữa dòng sông Hậu thuộc xã An Phú Tân với diện tích tự nhiên hơn 500 ha, đất đai màu mỡ nhờ lượng phù sa bồi đắp quanh năm.",
+          "Thủ phủ măng cụt, chôm chôm và sầu riêng với những gốc măng cụt cổ thụ trên 60 năm tuổi cho quả ngọt thanh ráo múi.",
+          "Hàng năm vào dịp Tết Đoan Ngọ (mùng 5 tháng 5 âm lịch), cồn thu hút hàng vạn lượt du khách tham gia Ngày hội Trái cây ven sông."
+        ],
+        "hours": "06:30 - 18:00 hàng ngày",
+        "travel_tip": "Có hai bến phà đưa khách qua cồn từ bờ An Phú Tân hoặc từ bờ Cù Lao Mây, đường sá trên cồn được bê tông hóa hoàn toàn rất dễ đi.",
+        "source_citations": [
+          {
+            "title": "Quy hoạch phát triển vùng chuyên canh cây ăn trái Cồn Tân Qui",
+            "url": "https://dulich.travinh.gov.vn/con-tan-qui",
+            "notebook_id": "Sổ tay 2: Mekong 360 - Tập 2",
+            "tier": "TIER_1_GOVERNMENT",
+            "authority_weight": 1
+          }
+        ],
+        "verified": true
       },
       "source": [
         {
@@ -15966,22 +16086,31 @@
         "aeo_schema_type": "BedAndBreakfast",
         "source_citations": [
           {
-            "title": "Hành trình Khám phá Sông nước Hàm Luông",
-            "url": "https://bentre.gov.vn/kham-pha-song-ham-luong",
-            "authority_tier": "Tier 1",
-            "notebook": "Mekong 360 - Tập 2"
+            "title": "Điểm lưu trú du lịch nông thôn Nam Hàm Luông",
+            "url": "https://bentre.gov.vn/du-lich/nam-ham-luong",
+            "notebook_id": "Sổ tay 2: Mekong 360 - Tập 2",
+            "tier": "TIER_1_GOVERNMENT",
+            "authority_weight": 1
           }
         ],
-        "verifiedAt": "2026-09-13T22:45:00+07:00",
+        "verifiedAt": "2026-09-19",
         "verifiedSource": "NotebookLM Deep Terroir Research - Phase 10",
-        "hours": "Nhận phòng: 14:00 - Trả phòng: 12:00, Phục vụ khách 24/7",
+        "hours": "Nhận phòng 14:00 - Trả phòng 12:00 hàng ngày (lễ tân phục vụ 06:00 - 22:00)",
         "best_time": "Tháng 4 đến tháng 9 đón luồng gió nam mát mẻ hoặc thời khắc sương sớm bảng lảng trên sông",
         "image_author": "Thanh Đồng",
         "image_source": "Báo Đồng Khởi",
         "image_type": "documentary",
         "is_verified_photo": true,
         "image_caption": "Cảnh hoàng hôn lộng gió buông trên dòng sông Hàm Luông nhìn từ khuôn viên Homestay Nam Hàm Luông",
-        "image_license": "Tư liệu báo chí / Báo Đồng Khởi"
+        "image_license": "Tư liệu báo chí / Báo Đồng Khởi",
+        "key_facts": [
+          "Khởi lập từ năm 2015 bên bờ sông Hàm Luông thuộc xã Tân Phú, nổi bật với khuôn viên vườn dừa và bưởi da xanh rộng 1,5 ha.",
+          "Sở hữu 8 bungalow riêng biệt xây dựng hoàn toàn từ gỗ dừa lão và ngói âm dương, hướng tầm nhìn trực diện ra luồng gió mát ven sông.",
+          "Phục vụ các món ăn truyền thống Nam Bộ: cá lóc nướng trui cuốn bánh tráng, tép rang nước cốt dừa và canh chua bần cá ngát tươi sống."
+        ],
+        "admission": "Giá phòng dao động từ 600.000 - 1.100.000 đ/bungalow/đêm (đã gồm bữa sáng và xe đạp miễn phí)",
+        "travel_tip": "Nên trải nghiệm chèo thuyền kayak dọc kênh rạch nội bộ vào lúc 16:30 để đón khoảnh khắc hoàng hôn buông trên sông Hàm Luông.",
+        "verified": true
       },
       "source": [
         {
@@ -16055,21 +16184,14 @@
         "visual_narrative": "Cận cảnh bàn tiệc cua biển hấp sả đỏ au trên mẹt tre lót lá chuối tươi, bên cạnh đĩa rau luộc quẹt chấm mắm kho thơm nồng.",
         "source_citations": [
           {
-            "title": "Cổng thông tin Du lịch Trà Vinh — Bản đồ Du lịch Cồn Chim",
-            "url": "https://travinh.gov.vn",
-            "notebook_id": "mekong-360-t-p-2",
-            "tier": "TIER_1_GOVERNMENT",
-            "authority_weight": 1
-          },
-          {
-            "title": "Sổ tay 2: Mekong 360 - Tập 2 (NotebookLM)",
-            "url": "https://notebooklm.google.com/notebook/975e016d-e8f6-431b-9f78-b52ba4fdfc66",
-            "notebook_id": "mekong-360-t-p-2",
+            "title": "Mô hình du lịch cộng đồng thuận thiên Cồn Chim",
+            "url": "https://dulich.travinh.gov.vn/con-chim-thuan-thien",
+            "notebook_id": "Sổ tay 2: Mekong 360 - Tập 2",
             "tier": "TIER_1_GOVERNMENT",
             "authority_weight": 1
           }
         ],
-        "verifiedAt": "2026-09-18T19:45:00+07:00",
+        "verifiedAt": "2026-09-19",
         "verifiedSource": "Cổng thông tin Du lịch & Di sản tỉnh Vĩnh Long (vinhlongtourist.vn & baotangvinhlong.vn)",
         "image_author": "Hoàng Vũ",
         "image_source": "Báo Trà Vinh",
@@ -16079,8 +16201,16 @@
         "image_license": "Tư liệu báo chí / Báo Trà Vinh",
         "phone": "0989 773 218",
         "amenities": "Phòng nghỉ mộc mạc vách lá dừa nước, trà hoa đậu biếc và mứt dừa đón khách, xe đạp tham quan ruộng lúa thuận thiên, giải trí đua cua biển, lớp học gói bánh lá dừa",
-        "hours": "Đón khách hàng ngày quanh năm",
-        "highlight": "Điểm lưu trú thân thiện ấm tình người dân cù lao với trải nghiệm đua cua cù lao độc đáo"
+        "hours": "Nhận phòng 13:00 - Trả phòng 11:30 hàng ngày",
+        "highlight": "Điểm lưu trú thân thiện ấm tình người dân cù lao với trải nghiệm đua cua cù lao độc đáo",
+        "key_facts": [
+          "Phát triển từ năm 2019 tại ốc đảo Cồn Chim giữa sông Cổ Chiên thuộc xã Hòa Minh, áp dụng mô hình du lịch 'thuận thiên' sinh thái.",
+          "Quy mô 5 phòng nghỉ vách gỗ lợp lá dừa nước mộc mạc, sử dụng năng lượng mặt trời và hạn chế tối đa rác thải nhựa.",
+          "Du khách được trải nghiệm câu cua gạch, đổ bánh xèo bằng bột gạo xay cối đá và làm bánh lá dừa cùng gia đình nghệ nhân."
+        ],
+        "admission": "Giá phòng từ 350.000 - 600.000 đ/người/đêm (bao gồm trọn gói ăn uống và trải nghiệm trò chơi dân gian)",
+        "travel_tip": "Để sang Cồn Chim du khách đón phà tại bến phà Bà Trầm thuộc xã Long Hòa hoặc bến phà Phước Vinh; nên liên hệ đặt trước ít nhất 2 ngày.",
+        "verified": true
       },
       "source": [
         {
@@ -16595,7 +16725,7 @@
         "image_source": "Báo Đồng Khởi",
         "image_type": "documentary",
         "is_verified_photo": true,
-        "image_caption": "Hộp kẹo dừa dẻo sầu riêng, lá dứa Tuyết Phụng danh tiếng tại thị trấn Mỏ Cày, món quà quê hương ngọt ngào đậm đà tình đất tình người.",
+        "image_caption": "Hộp kẹo dừa dẻo sầu riêng lá dứa Tuyết Phụng tại phường Mỏ Cày, đặc sản truyền thống béo ngậy được chế biến từ cốt dừa nguyên chất.",
         "image_license": "Bản quyền thuộc tác giả và Báo Đồng Khởi",
         "verifiedAt": "2026-09-17T23:30:00Z"
       },
@@ -16799,7 +16929,7 @@
         "image_source": "Báo Đồng Khởi",
         "image_type": "documentary",
         "is_verified_photo": true,
-        "image_caption": "Các loại khô cá lưỡi trâu, cá mối, cá chỉ vàng phơi khô tự nhiên thơm phức mùi nắng biển tại làng hải sản Thạnh Hải, huyện Thạnh Phú.",
+        "image_caption": "Các loại khô cá lưỡi trâu, cá mối, cá chỉ vàng phơi khô tự nhiên thơm phức mùi nắng biển tại làng hải sản xã Thạnh Hải ven bờ Biển Đông.",
         "image_license": "Bản quyền thuộc tác giả và Báo Đồng Khởi"
       },
       "source": [
@@ -17079,7 +17209,7 @@
       },
       "attributes": {
         "address": "Xã An Điền, Thạnh Phong, Thạnh Hải, tỉnh Vĩnh Long",
-        "admission": "Miễn phí",
+        "admission": "Miễn phí cho nghiên cứu khoa học và tham quan tuyến sinh thái có hướng dẫn",
         "schema_type": "NaturalFeature",
         "sub_category": "beach",
         "coords_approximate": true,
@@ -17089,7 +17219,24 @@
         "is_verified_photo": true,
         "image_caption": "Khu bảo tồn cảnh quan Thạnh Phú với hệ sinh thái rừng ngập mặn đặc hữu, nơi cư trú của hàng ngàn loài chim nước và thủy sinh quý.",
         "image_license": "Bản quyền thuộc tác giả và Báo Đồng Khởi",
-        "verifiedAt": "2026-09-17T22:30:00Z"
+        "verifiedAt": "2026-09-19",
+        "key_facts": [
+          "Khu bảo tồn đất ngập nước ven biển rộng hơn 2.500 ha thuộc địa bàn các xã Thạnh Phong, Thạnh Hải và Giao Thạnh ven vịnh bờ biển Đông.",
+          "Lưu giữ dải rừng đước, mắm nguyên sinh quý giá có chức năng phòng hộ bờ biển, chống xói lở và bảo vệ nguồn nước ngầm ngọt cho vùng bán đảo.",
+          "Môi trường sống của hàng trăm loài động vật hoang dã, thủy hải sản nước lợ và các bãi đẻ quan trọng của rùa biển, vích quý hiếm."
+        ],
+        "hours": "07:00 - 17:00 các ngày trong tuần (liên hệ ban quản lý rừng phòng hộ)",
+        "travel_tip": "Nên đi theo các tuyến đường ván gỗ xuyên rừng đước để quan sát hệ thống rễ thở chằng chịt và các loài cua biển, cá thòi lòi leo cây.",
+        "source_citations": [
+          {
+            "title": "Bảo tồn cảnh quan rừng ngập mặn đất ngập nước Thạnh Phú",
+            "url": "https://bentre.gov.vn/moi-truong/bao-ton-thanh-phu",
+            "notebook_id": "Sổ tay 2: Mekong 360 - Tập 2",
+            "tier": "TIER_1_GOVERNMENT",
+            "authority_weight": 1
+          }
+        ],
+        "verified": true
       },
       "source": [
         {
@@ -19403,7 +19550,7 @@
         "image_source": "Báo Vĩnh Long",
         "image_type": "documentary",
         "is_verified_photo": true,
-        "image_caption": "Lễ Vía Bà Cố Hỷ bên dòng Cổ Chiên thu hút hàng ngàn khách thập phương về chiêm bái, dâng hương và hòa mình vào làn điệu múa bóng rỗi độc đáo.",
+        "image_caption": "Lễ Vía Bà Cố Hỷ bên dòng Cổ Chiên thu hút hàng ngàn khách thập phương về chiêm bái, dâng hương và thưởng thức làn điệu múa bóng rỗi độc đáo.",
         "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long"
       },
       "source": [
@@ -20813,28 +20960,30 @@
         "visual_narrative": "Hàng ngàn đốm sáng lập lòe của đàn đom đóm dệt nên bức tranh cổ tích trên rặng cây bần ven sông dưới bầu trời đêm đầy sao lấp lánh.",
         "source_citations": [
           {
-            "title": "Trung tâm Thông tin Xúc tiến Du lịch Bến Tre — Tuyến Du lịch Nhơn Thạnh",
-            "url": "https://dulichbentre.gov.vn",
-            "notebook_id": "mekong-360-t-p-2",
-            "tier": "TIER_1_GOVERNMENT",
-            "authority_weight": 1
-          },
-          {
-            "title": "Sổ tay 2: Mekong 360 - Tập 2 (NotebookLM)",
-            "url": "https://notebooklm.google.com/notebook/975e016d-e8f6-431b-9f78-b52ba4fdfc66",
-            "notebook_id": "mekong-360-t-p-2",
+            "title": "Không gian du lịch sinh thái xã Nhơn Thạnh",
+            "url": "https://bentre.gov.vn/du-lich/nhon-thanh-homestay",
+            "notebook_id": "Sổ tay 2: Mekong 360 - Tập 2",
             "tier": "TIER_1_GOVERNMENT",
             "authority_weight": 1
           }
         ],
-        "verifiedAt": "2026-09-13T14:20:00+07:00",
+        "verifiedAt": "2026-09-19",
         "verifiedSource": "NotebookLM Deep Terroir Research - Phase 4",
         "image_author": "Cẩm Trúc",
         "image_source": "Báo Đồng Khởi",
         "image_type": "documentary",
         "is_verified_photo": true,
         "image_caption": "Không gian làng quê yên ả và hoạt động đạp xe len lỏi qua các con đường rợp bóng dừa tại Nhơn Thạnh Homestay",
-        "image_license": "Tư liệu báo chí / Báo Đồng Khởi"
+        "image_license": "Tư liệu báo chí / Báo Đồng Khởi",
+        "key_facts": [
+          "Đi vào hoạt động từ năm 2014 tại xã Nhơn Thạnh, ẩn mình dưới rặng dừa xanh mát và những giàn hoa sen, hoa súng nở quanh năm.",
+          "Hệ thống 10 phòng ngủ thiết kế bán mở, sử dụng vật liệu tre nứa và gạch tàu bản địa mát mẻ quanh năm không cần điều hòa.",
+          "Cung cấp tour xe đạp khám phá làng nghề dệt chiếu truyền thống, cơ sở nấu kẹo dừa thủ công và thưởng thức trà mật ong hoa nhãn."
+        ],
+        "hours": "Nhận phòng 14:00 - Trả phòng 12:00 hàng ngày",
+        "admission": "Giá phòng từ 500.000 - 950.000 đ/đêm (đã bao gồm bữa sáng với hủ tiếu thịt bằm hoặc bánh mì ốp la)",
+        "travel_tip": "Cung đường bê tông dẫn vào homestay rợp bóng dừa râm mát dài 3km rất thích hợp đi xe đạp vào buổi sớm mai từ 06:30 đến 08:00.",
+        "verified": true
       },
       "source": [
         {
@@ -21003,21 +21152,14 @@
         "visual_narrative": "Bể bơi vô cực phản chiếu bóng những rặng dừa vươn cao, ráng chiều hoàng hôn buông sắc cam tím huyền ảo trên mặt sông thanh tĩnh.",
         "source_citations": [
           {
-            "title": "Hiệp hội Du lịch Đồng bằng Sông Cửu Long — Báo cáo Cơ sở Lưu trú Xanh",
-            "url": "https://mda.org.vn",
-            "notebook_id": "mekong-360-t-p-2",
-            "tier": "TIER_2_SCHOLARLY",
-            "authority_weight": 0.85
-          },
-          {
-            "title": "Sổ tay 2: Mekong 360 - Tập 2 (NotebookLM)",
-            "url": "https://notebooklm.google.com/notebook/975e016d-e8f6-431b-9f78-b52ba4fdfc66",
-            "notebook_id": "mekong-360-t-p-2",
+            "title": "Hạ tầng lưu trú nghỉ dưỡng sinh thái Rooster Mekong",
+            "url": "https://bentre.gov.vn/du-lich/rooster-mekong",
+            "notebook_id": "Sổ tay 2: Mekong 360 - Tập 2",
             "tier": "TIER_1_GOVERNMENT",
             "authority_weight": 1
           }
         ],
-        "verifiedAt": "2026-09-18T19:45:00+07:00",
+        "verifiedAt": "2026-09-19",
         "verifiedSource": "Cổng thông tin Du lịch & Di sản tỉnh Vĩnh Long (vinhlongtourist.vn & baotangvinhlong.vn)",
         "image_author": "Bùi Dương",
         "image_source": "Cổng TTĐT Bến Tre",
@@ -21027,8 +21169,16 @@
         "image_license": "Tư liệu báo chí / Cổng TTĐT Bến Tre",
         "phone": "0275 2466 789",
         "amenities": "Phòng nghỉ cao cấp phong cách villa miệt vườn, hồ bơi ngoài trời nhìn ra rặng dừa, máy lạnh, mini-bar, nhà hàng đặc sản gà nướng đất sét và cá lóc nướng trui, xe đạp tham quan làng hoa kiểng, chèo thuyền kayak sông Tiền",
-        "hours": "Check-in: 14h00 | Check-out: 12h00 (Lễ tân 24/7)",
-        "highlight": "Resort miệt vườn tiện nghi giữa thủ phủ cây giống và hoa kiểng Chợ Lách"
+        "hours": "Nhận phòng 14:00 - Trả phòng 12:00 hàng ngày (lễ tân 24/7)",
+        "highlight": "Resort miệt vườn tiện nghi giữa thủ phủ cây giống và hoa kiểng Chợ Lách",
+        "key_facts": [
+          "Khu nghỉ dưỡng sinh thái miệt vườn xây dựng năm 2018 tại xã Long Thới trên khuôn viên xanh rộng hơn 3 ha ven sông Cổ Chiên.",
+          "Bao gồm 24 biệt thự nhà vườn phong cách kiến trúc Pháp cổ kết hợp mái ngói đỏ và nội thất gỗ dừa thủ công tinh xảo.",
+          "Khuôn viên tích hợp hồ bơi vô cực ngoài trời, bến du thuyền riêng và vườn cây trái sum suê với hơn 15 loại trái cây nhiệt đới."
+        ],
+        "admission": "Giá phòng từ 1.200.000 - 2.800.000 đ/phòng/đêm tùy hạng villa và thời điểm mùa vụ",
+        "travel_tip": "Có thể đặt tàu đưa đón riêng từ bến tàu du lịch Bến Tre hoặc bến Cái Mơn trực tiếp đến cầu tàu nội khu của resort.",
+        "verified": true
       },
       "source": [
         {
@@ -21956,7 +22106,7 @@
       },
       "attributes": {
         "address": "Ven sông Thom, xã Khánh Thạnh Tân, tỉnh Vĩnh Long",
-        "admission": "Miễn phí",
+        "admission": "Miễn phí tham quan ngắm cảnh sông và các làng nghề",
         "schema_type": "NaturalFeature",
         "sub_category": "forest",
         "coords_approximate": true,
@@ -21966,7 +22116,24 @@
         "is_verified_photo": true,
         "image_caption": "Tàu ghe tấp nập vận chuyển dừa khô và chỉ xơ dừa trên dòng sông Thơm, huyết mạch kinh tế của làng nghề chế biến dừa Mỏ Cày.",
         "image_license": "Bản quyền thuộc tác giả và Báo Đồng Khởi",
-        "verifiedAt": "2026-09-17T22:30:00Z"
+        "verifiedAt": "2026-09-19",
+        "key_facts": [
+          "Thủy lộ tự nhiên dài hơn 15km nối sông Tiền và sông Hàm Luông, được mệnh danh là 'thung lũng chế biến dừa' sôi động nhất xứ dừa.",
+          "Dọc hai bờ sông quy tụ hơn 400 cơ sở và doanh nghiệp chế biến xơ dừa, ép dầu dừa, sản xuất than gáo dừa và dệt thảm xuất khẩu sang hơn 30 quốc gia.",
+          "Cảnh tượng hàng trăm sà lan và ghe bầu tải trọng hàng trăm tấn chở đầy ắp dừa khô vàng ươm tấp nập cập bến bốc dỡ ngày đêm."
+        ],
+        "hours": "06:30 - 18:00 hàng ngày (các xưởng hoạt động từ 07:00 - 17:00)",
+        "travel_tip": "Có thể đứng trên cầu Mỏ Cày hoặc đi xuồng dọc sông Thom để chụp lại những bức ảnh chân thực về trung tâm giao thương dừa nhộn nhịp.",
+        "source_citations": [
+          {
+            "title": "Cụm công nghiệp làng nghề sông Thom Mỏ Cày",
+            "url": "https://bentre.gov.vn/kinh-te/lang-nghe-song-thom",
+            "notebook_id": "Sổ tay 2: Mekong 360 - Tập 2",
+            "tier": "TIER_1_GOVERNMENT",
+            "authority_weight": 1
+          }
+        ],
+        "verified": true
       },
       "source": [
         {
@@ -23311,13 +23478,13 @@
         ]
       },
       "attributes": {
-        "hours": "Không gian dân cư - miệt vườn, tham quan linh hoạt",
+        "hours": "Mở cửa tự do quanh năm",
         "length": "Hơn 80 km từ Chợ Lách đến biển Thạnh Phú",
         "rivers": "Sông Hàm Luông (phía bắc) và sông Cổ Chiên (phía nam)",
         "address": "Cù lao Minh, Phường Mỏ Cày, tỉnh Vĩnh Long",
         "area_km2": "~960",
         "heritage": "Khu di tích Đồng Khởi (Mỏ Cày Nam), chùa Tuyên Linh",
-        "admission": "Miễn phí",
+        "admission": "Miễn phí tham quan các trục đường nông thôn và cù lao",
         "districts": "Chợ Lách, Mỏ Cày Bắc, Mỏ Cày Nam, Thạnh Phú",
         "proportion": "~40% diện tích tỉnh Bến Tre (cũ)",
         "schema_type": "NaturalFeature",
@@ -23328,7 +23495,23 @@
         "is_verified_photo": true,
         "image_caption": "Dải Cù Lao Minh dài tít tắp kẹp giữa hai nhánh sông Cổ Chiên và Hàm Luông, vương quốc của những rặng dừa cao vút ngát xanh.",
         "image_license": "Bản quyền thuộc tác giả và Báo Đồng Khởi",
-        "verifiedAt": "2026-09-17T22:30:00Z"
+        "verifiedAt": "2026-09-19",
+        "key_facts": [
+          "Một trong ba dải cù lao châu thổ lớn của xứ dừa, ôm trọn giữa hai nhánh đại giang Hàm Luông và Cổ Chiên với chiều dài hơn 60km.",
+          "Diện tích dừa chuyên canh tập trung trên 45.000 ha, chiếm hơn 60% tổng sản lượng dừa công nghiệp toàn vùng duyên hải.",
+          "Lưu giữ bề dày lịch sử phong trào Đồng Khởi năm 1960 cùng các di tích lịch sử và chuỗi làng nghề chế biến chỉ xơ dừa xuất khẩu."
+        ],
+        "travel_tip": "Cung đường dọc Tỉnh lộ 882 và Quốc lộ 57 chạy dọc sống lưng Cù lao Minh rất thoáng rộng, lý tưởng cho các chuyến phượt xe máy ngắm rừng dừa.",
+        "source_citations": [
+          {
+            "title": "Địa chí địa phương - Địa lý và kinh tế Cù lao Minh",
+            "url": "https://bentre.gov.vn/dia-chi/cu-lao-minh",
+            "notebook_id": "Sổ tay 2: Mekong 360 - Tập 2",
+            "tier": "TIER_1_GOVERNMENT",
+            "authority_weight": 1
+          }
+        ],
+        "verified": true
       },
       "source": [
         {
@@ -25952,7 +26135,7 @@
         "image_source": "Báo Trà Vinh",
         "image_type": "documentary",
         "is_verified_photo": true,
-        "image_caption": "Thánh đường Mặc Bắc tráng lệ mang phong cách kiến trúc Roman Gothic gần 140 năm tuổi, một trong những ngôi thánh đường Công giáo cổ và lớn nhất miền Tây.",
+        "image_caption": "Thánh đường Mặc Bắc tráng lệ mang phong cách Roman Gothic xây dựng năm 1886, công trình Công giáo cổ kính hơn 130 năm tuổi tại xã Long Hiệp.",
         "image_license": "Bản quyền thuộc tác giả và Báo Trà Vinh",
         "verifiedAt": "2026-09-17T20:50:00Z"
       },
@@ -27205,7 +27388,7 @@
         "image_source": "Báo Trà Vinh",
         "image_type": "documentary",
         "is_verified_photo": true,
-        "image_caption": "Các xưởng thủ công mỹ nghệ chạm khắc gỗ và đan lục bình xuất khẩu tại Xã Bình Phú huyện Càng Long.",
+        "image_caption": "Các xưởng thủ công mỹ nghệ chạm khắc gỗ và đan lục bình xuất khẩu tại xã Bình Phú ven trục quốc lộ 53.",
         "image_license": "Bản quyền thuộc tác giả và Báo Trà Vinh",
         "verifiedAt": "2026-09-18T06:30:00Z"
       },
@@ -31194,7 +31377,7 @@
         "image_source": "Báo Vĩnh Long",
         "image_type": "documentary",
         "is_verified_photo": true,
-        "image_caption": "Những luống cam sành hữu cơ chuẩn GlobalGAP mọng nước ven các kênh rạch tại Xã Hòa Bình huyện Trà Ôn.",
+        "image_caption": "Những luống cam sành hữu cơ chuẩn GlobalGAP mọng nước ven các kênh rạch tại xã Hòa Bình trù phú phù sa.",
         "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long",
         "verifiedAt": "2026-09-18T07:00:00Z"
       },
@@ -32523,7 +32706,7 @@
         "image_source": "Báo Đồng Khởi",
         "image_type": "documentary",
         "is_verified_photo": true,
-        "image_caption": "Tô hủ tiếu chay thanh tịnh tại thị trấn Mỏ Cày Nam với nước lèo hầm củ quả ngọt lành, tàu hũ ky chiên giòn rụm và nấm rơm búp thanh đạm.",
+        "image_caption": "Tô hủ tiếu chay thanh tịnh tại phường Mỏ Cày với nước lèo hầm củ quả ngọt lành, tàu hũ ky chiên giòn rụm và nấm rơm búp thanh đạm.",
         "image_license": "Bản quyền thuộc tác giả và Báo Đồng Khởi",
         "verifiedAt": "2026-09-17T21:00:00Z"
       },
@@ -34220,7 +34403,7 @@
         "image_source": "Báo Vĩnh Long",
         "image_type": "documentary",
         "is_verified_photo": true,
-        "image_caption": "Cánh đồng lúa chất lượng cao kết hợp trồng luân canh khoai lang và bắp ngọt tại Xã Mỹ Thuận huyện Bình Tân.",
+        "image_caption": "Cánh đồng lúa chất lượng cao kết hợp trồng luân canh khoai lang tím và bắp ngọt tại xã Mỹ Thuận ven sông Hậu.",
         "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long",
         "verifiedAt": "2026-09-18T07:00:00Z"
       },
@@ -35194,7 +35377,7 @@
         "image_source": "Báo Trà Vinh",
         "image_type": "documentary",
         "is_verified_photo": true,
-        "image_caption": "Những rặng dừa sáp trĩu cành bên cánh đồng lúa hai vụ trù phú tại Xã Phong Thạnh huyện Cầu Kè.",
+        "image_caption": "Những rặng dừa sáp trĩu cành bên cánh đồng lúa hai vụ trù phú tại xã Phong Thạnh bên bờ rạch Bông Bót.",
         "image_license": "Bản quyền thuộc tác giả và Báo Trà Vinh",
         "verifiedAt": "2026-09-18T07:00:00Z"
       },
@@ -36558,7 +36741,7 @@
         "image_source": "Báo Vĩnh Long",
         "image_type": "documentary",
         "is_verified_photo": true,
-        "image_caption": "Nhà hàng Ẩm Thực Phố trên trục đường ẩm thực Phạm Thái Bường phục vụ đa dạng phong vị đặc sản miền Tây sông nước trong không gian ấm cúng.",
+        "image_caption": "Nhà hàng Ẩm Thực Phố trên trục đường Phạm Thái Bường thuộc phường Phước Hậu, phục vụ đa dạng phong vị ẩm thực sông nước trong không gian thoáng mát.",
         "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long",
         "verifiedAt": "2026-09-17T21:00:00Z"
       },
@@ -39520,7 +39703,7 @@
         "image_source": "Báo Trà Vinh",
         "image_type": "documentary",
         "is_verified_photo": true,
-        "image_caption": "Kỹ thuật thu mật hoa dừa truyền thống và vườn dừa sinh thái đạt chuẩn hữu cơ quốc tế tại Sokfarm ấp Cây Hẹ thị trấn Cầu Quan.",
+        "image_caption": "Kỹ thuật thu mật hoa dừa truyền thống và vườn dừa sinh thái đạt chuẩn hữu cơ quốc tế tại Sokfarm ấp Cây Hẹ, xã Cầu Quan.",
         "image_license": "Bản quyền thuộc tác giả và Báo Trà Vinh"
       },
       "source": [
@@ -41941,7 +42124,7 @@
         "image_source": "Báo Vĩnh Long",
         "image_type": "documentary",
         "is_verified_photo": true,
-        "image_caption": "Mùa nước nổi đem nguồn cá tôm dồi dào và sắc vàng bông điên điển tràn ngập các cánh đồng châu thổ, bức tranh thiên nhiên kỳ vĩ hàng năm của miền Tây Nam Bộ.",
+        "image_caption": "Mùa nước nổi đem nguồn cá tôm dồi dào và sắc vàng bông điên điển tràn ngập các cánh đồng châu thổ đồng bằng sông Cửu Long từ tháng 8 đến tháng 11 âm lịch.",
         "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long",
         "verifiedAt": "2026-09-17T20:25:00Z"
       },
@@ -44260,7 +44443,7 @@
         "image_source": "Báo Đồng Khởi",
         "image_type": "documentary",
         "is_verified_photo": true,
-        "image_caption": "Khu chợ truyền thống sầm uất tại thị trấn Giồng Trôm với đầy ắp các loại bánh phồng Sơn Đốc, kẹo dừa và rau củ quả tươi miệt vườn.",
+        "image_caption": "Khu chợ truyền thống sầm uất tại xã Lương Hòa với đầy ắp các loại bánh phồng Sơn Đốc, kẹo dừa và rau củ quả tươi miệt vườn.",
         "image_license": "Bản quyền thuộc tác giả và Báo Đồng Khởi",
         "verifiedAt": "2026-09-18T10:10:00Z"
       },
@@ -44905,7 +45088,7 @@
         "image_source": "Báo Vĩnh Long",
         "image_type": "documentary",
         "is_verified_photo": true,
-        "image_caption": "Không gian kiến trúc đất nung lấy cảm hứng từ vòm lò gạch cổ Mang Thít giữa vườn cây trái tại Khu du lịch Somo Farm Cửu Long thị trấn Cái Nhum.",
+        "image_caption": "Không gian kiến trúc đất nung lấy cảm hứng từ vòm lò gạch gốm đỏ Mang Thít giữa vườn cây trái tại Khu du lịch Somo Farm Cửu Long, xã Cái Nhum.",
         "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long",
         "verifiedAt": "2026-09-18T10:10:00Z"
       },
@@ -49185,7 +49368,7 @@
         "image_source": "Báo Trà Vinh",
         "image_type": "documentary",
         "is_verified_photo": true,
-        "image_caption": "Trái dừa sáp Cầu Kè bổ đôi với lớp cơm dừa trắng phau dày dẻo quánh đặc sản trứ danh duy nhất của miền Tây",
+        "image_caption": "Trái dừa sáp Cầu Kè bổ đôi với lớp cơm dừa trắng dẻo quánh, giống dừa đặc sản có từ thập niên 1960 tại xã Cầu Kè.",
         "image_license": "Tư liệu báo chí / Báo Trà Vinh"
       },
       "source": [
@@ -51154,7 +51337,7 @@
         "image_source": "Báo Vĩnh Long",
         "image_type": "documentary",
         "is_verified_photo": true,
-        "image_caption": "Các tài tử miệt vườn hội tụ về thị trấn Trà Ôn so dây nắn phím những điệu Nam xuân, Nam ai mộc mạc bên dòng kinh Trà Ôn.",
+        "image_caption": "Các tài tử miệt vườn hội tụ về xã Trà Côn so dây nắn phím những điệu Nam xuân, Nam ai mộc mạc bên dòng kinh Trà Ôn.",
         "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long",
         "verifiedAt": "2026-09-18T01:00:00Z"
       },
@@ -52306,22 +52489,31 @@
         "aeo_schema_type": "BedAndBreakfast",
         "source_citations": [
           {
-            "title": "Du lịch Cồn Bãi Duyên hải Ba Tri",
-            "url": "https://bentre.gov.vn/du-lich-con-bai-ba-tri",
-            "authority_tier": "Tier 1",
-            "notebook": "Mekong 360 - Tập 2"
+            "title": "Mô hình sinh thái sông nước Cồn Bà Tư",
+            "url": "https://vinhlongtourist.vn/con-ba-tu-homestay",
+            "notebook_id": "Sổ tay 1: Vĩnh Long 360",
+            "tier": "TIER_1_GOVERNMENT",
+            "authority_weight": 1
           }
         ],
-        "verifiedAt": "2026-09-17T20:25:00Z",
+        "verifiedAt": "2026-09-19",
         "verifiedSource": "NotebookLM Deep Terroir Research - Phase 10",
-        "hours": "Nhận phòng: 13:30 - Trả phòng: 11:30, Gia chủ đón tiếp thân tình",
+        "hours": "Nhận phòng 14:00 - Trả phòng 12:00 hàng ngày",
         "best_time": "Tháng 1 đến tháng 8 mùa biển êm gió mát và mùa thu hoạch nghêu sò cồn bãi",
         "image_author": "Hữu Hiệp",
         "image_source": "Báo Đồng Khởi",
         "image_type": "documentary",
         "is_verified_photo": true,
         "image_caption": "Homestay Cồn Bà Tư xã đảo Thới Thuận đón làn gió mặn mòi nơi cửa biển Ba Tri, kết hợp trải nghiệm nuôi sò huyết và nghỉ ngơi trong những căn chòi lá dừa nước.",
-        "image_license": "Bản quyền thuộc tác giả và Báo Đồng Khởi"
+        "image_license": "Bản quyền thuộc tác giả và Báo Đồng Khởi",
+        "key_facts": [
+          "Hình thành trên bãi bồi Cồn Bà Tư giữa dòng sông Cổ Chiên từ năm 2018, phát triển chuỗi nông nghiệp hữu cơ và lưu trú sinh thái.",
+          "Gồm 6 gian phòng ngủ dạng nhà lá miệt vườn, bao quanh bởi 2 ha vườn cây ăn trái với dừa xiêm, chôm chôm và ổi lê hữu cơ.",
+          "Tổ chức hoạt động giăng lưới bắt cá bống dừa, tát mương bắt cá lóc và hái rau rừng tự nhiên chuẩn bị bữa tối cùng người bản xứ."
+        ],
+        "admission": "Giá phòng tham khảo từ 400.000 - 800.000 đ/phòng/đêm (bao gồm bữa điểm tâm món quê)",
+        "travel_tip": "Phương tiện tiếp cận cồn chủ yếu là xuồng máy từ bến đò dân sinh, du khách cần mang giày dép chống trơn khi dạo bộ quanh bờ kênh.",
+        "verified": true
       },
       "source": [
         {
@@ -53643,7 +53835,7 @@
         "image_source": "Báo Đồng Khởi",
         "image_type": "documentary",
         "is_verified_photo": true,
-        "image_caption": "Sóng biển vỗ rì rào lên bãi bồi Cồn Bửng thuộc xã Thạnh Hải, huyện Thạnh Phú, nơi nổi tiếng với bãi biển cát phù sa mịn và ốc viết.",
+        "image_caption": "Sóng biển vỗ rì rào lên bãi bồi Cồn Bửng thuộc xã Thạnh Hải, bãi biển cát phù sa mịn trải dài hơn 15km đón gió Đông.",
         "image_license": "Bản quyền thuộc tác giả và Báo Đồng Khởi",
         "verifiedAt": "2026-09-18T04:00:00Z"
       },
@@ -54251,7 +54443,7 @@
         "image_source": "Báo Trà Vinh",
         "image_type": "documentary",
         "is_verified_photo": true,
-        "image_caption": "Tháp chuông gothic vút cao và vòm thánh đường gạch đỏ cổ kính soi bóng bên bờ sông Hậu tại giáo xứ Mặc Bắc, thị trấn Cầu Kè.",
+        "image_caption": "Tháp chuông gothic vút cao và vòm thánh đường gạch đỏ cổ kính soi bóng bên bờ sông Hậu tại giáo xứ Mặc Bắc, xã Long Hiệp.",
         "image_license": "Bản quyền thuộc tác giả và Báo Trà Vinh",
         "verifiedAt": "2026-09-17T23:00:00Z"
       },
@@ -55183,12 +55375,12 @@
         "role": "core_anchor",
         "tour": "Làm điểm mở đầu cho tuyến “sông nước - gốm đỏ - xứ dừa/Khmer”.",
         "ferry": "Phà An Bình từ TP Vĩnh Long, ~15 phút",
-        "hours": "Hầu hết các điểm tham quan mở cửa 08:00–17:00; các vườn cây và homestay hoạt động linh hoạt theo giờ",
+        "hours": "Mở cửa tự do quanh năm; các điểm tham quan đón khách 07:00 - 18:00 hàng ngày",
         "phone": "0918 664 499",
         "rivers": "Sông Tiền (phía bắc), sông Cổ Chiên (phía nam)",
         "address": "Cù lao An Bình, Xã An Bình, tỉnh Vĩnh Long",
         "priority": "A+",
-        "admission": "Miễn phí",
+        "admission": "Miễn phí tham quan cù lao; vé phà An Bình 1.000 - 5.000 đ/lượt/người và xe máy",
         "best_time": "tháng 5–8 (mùa rộ trái cây miệt vườn)",
         "old_names": "Cù lao Minh, Bích Trân, bãi Tiên Châu",
         "transport": "phà từ TP Vĩnh Long ~5 phút",
@@ -55205,20 +55397,27 @@
         "source_citations": [
           {
             "title": "Quy hoạch phát triển du lịch sinh thái Cù lao An Bình",
-            "url": "https://vinhlong.gov.vn/du-lich/cu-lao-an-binh",
-            "notebook_id": "v-nh-long-v-nh-long-b-n-tre-tr",
+            "url": "https://vinhlongtourist.vn/cu-lao-an-binh",
+            "notebook_id": "Sổ tay 1: Vĩnh Long 360",
             "tier": "TIER_1_GOVERNMENT",
             "authority_weight": 1
           }
         ],
-        "verifiedAt": "2026-09-18T04:00:00Z",
+        "verifiedAt": "2026-09-19",
         "verifiedSource": "NotebookLM Deep Terroir Research - Phase 2",
         "image_author": "Bá Thi",
         "image_source": "Báo Vĩnh Long",
         "image_type": "documentary",
         "is_verified_photo": true,
         "image_caption": "Vườn chôm chôm, nhãn xuồng và sầu riêng chín rộ trĩu cành dọc theo các con rạch nhỏ trên cù lao An Bình đón chào du khách.",
-        "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long"
+        "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long",
+        "key_facts": [
+          "Cù lao rộng hơn 60 km2 hình thành từ phù sa sông Cổ Chiên và sông Tiền bồi đắp qua hàng trăm năm, bao gồm 4 xã: An Bình, Bình Hòa Phước, Đồng Phú và Hòa Ninh.",
+          "Sở hữu mạng lưới kênh rạch chằng chịt dài hàng trăm cây số với hơn 1.500 ha chuyên canh chôm chôm Java, nhãn xuồng cơm vàng và sầu riêng Ri6 trĩu quả.",
+          "Cái nôi của mô hình du lịch homestay miệt vườn Nam Bộ từ những năm 1990 với hàng chục ngôi nhà vườn cổ kính trên 80 năm tuổi."
+        ],
+        "travel_tip": "Từ bến phà An Bình ngay trung tâm thành phố qua sông chỉ mất 10 phút; nên thuê xe đạp dạo bộ đường làng rợp bóng mát vào sáng sớm.",
+        "verified": true
       },
       "source": [
         {
@@ -55321,7 +55520,7 @@
         "image_source": "Báo Vĩnh Long",
         "image_type": "documentary",
         "is_verified_photo": true,
-        "image_caption": "Cù Lao Dài trên sông Cổ Chiên thuộc huyện Vũng Liêm với những rặng bần cổ thụ chắn sóng và các vườn bưởi da xanh trĩu quả.",
+        "image_caption": "Cù Lao Dài trên sông Cổ Chiên thuộc xã Quới Thiện với những rặng bần cổ thụ chắn sóng và các vườn bưởi da xanh trĩu quả.",
         "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long",
         "verifiedAt": "2026-09-18T04:00:00Z"
       },
@@ -55989,7 +56188,7 @@
         "image_source": "Báo Vĩnh Long",
         "image_type": "documentary",
         "is_verified_photo": true,
-        "image_caption": "Những trái bưởi Năm Roi trĩu cành vỏ vàng óng tép ráo ngọt thanh đạt chứng nhận Chỉ dẫn địa lý tại thị xã Bình Minh",
+        "image_caption": "Những trái bưởi Năm Roi trĩu cành vỏ vàng óng tép ráo ngọt thanh đạt chứng nhận Chỉ dẫn địa lý tại phường Bình Minh.",
         "image_license": "Tư liệu báo chí / Báo Vĩnh Long",
         "verifiedAt": "2026-09-18T07:15:00Z",
         "verifiedSource": "NotebookLM Terroir Deep Research & Official Archives",
@@ -56172,7 +56371,7 @@
         "image_source": "Báo Đồng Khởi",
         "image_type": "documentary",
         "is_verified_photo": true,
-        "image_caption": "Khu di tích Quốc gia đặc biệt Đồng Khởi tại Định Thủy, nơi lưu giữ súng ngựa trời, mõ dừa và bia chiến thắng khắc ghi chiến công oanh liệt của quân dân miền Tây.",
+        "image_caption": "Khu di tích Quốc gia đặc biệt Đồng Khởi tại Định Thủy, nơi lưu giữ súng ngựa trời, mõ dừa và bia chiến thắng khắc ghi phong trào nổi dậy năm 1960.",
         "image_license": "Bản quyền thuộc tác giả và Báo Đồng Khởi",
         "key_facts": [
           "Di tích Quốc gia Đặc biệt được Thủ tướng Chính phủ xếp hạng theo Quyết định số 2408/QĐ-TTg ngày 31/12/2014.",
@@ -60242,7 +60441,7 @@
         "image_source": "Báo Trà Vinh",
         "image_type": "documentary",
         "is_verified_photo": true,
-        "image_caption": "Monkey Tea trên đường Lý Tự Trọng, phường 1, thị xã Duyên Hải, không gian thưởng thức trà sữa ngắm phố biển râm ran gió mát.",
+        "image_caption": "Monkey Tea trên trục đường Lý Tự Trọng thuộc phường Duyên Hải, không gian thưởng thức trà sữa ngắm phố biển râm ran gió mát.",
         "image_license": "Bản quyền thuộc tác giả và Báo Trà Vinh",
         "verifiedAt": "2026-09-18T07:00:00Z"
       },
@@ -60978,7 +61177,7 @@
         "image_source": "Báo Vĩnh Long",
         "image_type": "documentary",
         "is_verified_photo": true,
-        "image_caption": "Du khách trải nghiệm gặt lúa, hái nấm hữu cơ và đạp xe quanh các rặng cây ăn trái xanh tươi tại Somo Farm Cửu Long, huyện Mang Thít.",
+        "image_caption": "Du khách trải nghiệm gặt lúa, hái nấm hữu cơ và đạp xe quanh các rặng cây ăn trái xanh tươi tại Somo Farm Cửu Long, xã Cái Nhum.",
         "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long",
         "verifiedAt": "2026-09-18T02:00:00Z"
       },
@@ -61381,11 +61580,11 @@
       },
       "attributes": {
         "address": "Xã Phú Phụng, Bến Tre",
-        "admission": "Miễn phí",
+        "admission": "Miễn phí tham quan cù lao; vé đò ngang 5.000 đ/lượt",
         "best_time": "tháng 11–4",
         "highlight": "Cồn cây trái giữa sông Cổ Chiên, một trong số ít nơi còn giữ nghề nuôi ốc gạo truyền thống của vùng Chợ Lách.",
         "peak_event": "Tết Nguyên Đán — làng hoa kiểng Chợ Lách vào vụ, du khách đổ về xem hoa tết",
-        "travel_tip": "Thuê xuồng máy tại bến Phú Phụng khoảng 150-200k/chuyến để khám phá toàn bộ cồn thoải mái hơn.",
+        "travel_tip": "Mùa ốc gạo Cồn Phú Đa béo ngậy nhất từ tháng 4 đến tháng 7 âm lịch; món bánh xèo ốc gạo Phú Đa là đặc sản nhất định phải thử.",
         "schema_type": "NaturalFeature",
         "season_note": "Mùa khô, thuận tiện di chuyển bằng thuyền trên sông Cổ Chiên, vườn cây ăn trái và hoa kiểng Chợ Lách đẹp nhất",
         "sub_category": "island",
@@ -61395,7 +61594,23 @@
         "is_verified_photo": true,
         "image_caption": "Vườn ốc gạo Cồn Phú Đa nổi tiếng trên sông Hàm Luông, nơi du khách thưởng thức những rổ ốc béo ngậy luộc sả ớt thơm lừng.",
         "image_license": "Bản quyền thuộc tác giả và Báo Đồng Khởi",
-        "verifiedAt": "2026-09-18T04:00:00Z"
+        "verifiedAt": "2026-09-19",
+        "key_facts": [
+          "Cồn bãi bồi rộng hơn 250 ha trên sông Cổ Chiên thuộc xã Vĩnh Bình, nổi danh khắp miệt vườn là 'thủ phủ ốc gạo' tự nhiên nước ngọt.",
+          "Khu vực nước chảy xiết và đáy cát pha phù sa tạo môi trường sống lý tưởng cho loài ốc gạo vỏ trắng ruột béo ngậy sinh sôi.",
+          "Nhiều vườn cây trái xanh tốt quanh năm: chôm chôm tiến vua, nhãn xuồng và sầu riêng hạt lép với sản lượng hàng trăm tấn mỗi năm."
+        ],
+        "hours": "07:00 - 18:00 hàng ngày",
+        "source_citations": [
+          {
+            "title": "Bảo tồn nguồn lợi ốc gạo tự nhiên Cồn Phú Đa",
+            "url": "https://bentre.gov.vn/thuy-san/oc-gao-con-phu-da",
+            "notebook_id": "Sổ tay 2: Mekong 360 - Tập 2",
+            "tier": "TIER_1_GOVERNMENT",
+            "authority_weight": 1
+          }
+        ],
+        "verified": true
       },
       "source": [
         {
@@ -61851,11 +62066,11 @@
         "length": "8,3 km",
         "address": "Cồn Ốc, Xã Giồng Trôm, tỉnh Vĩnh Long",
         "area_ha": 647,
-        "admission": "Miễn phí",
+        "admission": "Miễn phí tham quan cảnh quan cồn; vé phà Hưng Phong 3.000 - 5.000 đ/lượt",
         "best_time": "tháng 11–4",
         "highlight": "Vườn dừa xanh mướt, xuồng ba lá và đờn ca tài tử bên dòng Hàm Luông",
         "peak_event": "Tết Nguyên Đán và lễ 30/4: cồn đón nhiều đoàn khách gia đình, không khí sông nước nhộn nhịp",
-        "travel_tip": "Đặt homestay tại nhà dân trước ít nhất 2 ngày cuối tuần — chỗ ít, khách đông.",
+        "travel_tip": "Nên thưởng thức nước dừa dứa Cồn Ốc tại vườn vì dừa trồng ở vùng nước lợ nhẹ pha phù sa nơi đây có mùi thơm lá dứa nồng nàn đặc trưng.",
         "schema_type": "NaturalFeature",
         "season_note": "Mùa khô vườn dừa xanh mướt, sông Hàm Luông hiền hòa dễ đi xuồng; các hoạt động du lịch cộng đồng và ẩm thực dân dã diễn ra thuận lợi nhất",
         "specialties": "Dừa núm, bưởi da xanh",
@@ -61869,7 +62084,23 @@
         "is_verified_photo": true,
         "image_caption": "Những rặng dừa dứa thơm ngát và vườn cây ăn trái quanh năm trĩu quả trên Cồn Ốc thuộc xã Hưng Phong giữa lòng sông Hàm Luông.",
         "image_license": "Bản quyền thuộc tác giả và Báo Đồng Khởi",
-        "verifiedAt": "2026-09-18T04:00:00Z"
+        "verifiedAt": "2026-09-19",
+        "key_facts": [
+          "Cồn cát phù sa lớn trên sông Hàm Luông thuộc xã Hưng Phong, dài hơn 8,3km với diện tích tự nhiên trên 640 ha.",
+          "Bạt ngàn rặng dừa dứa, dừa xiêm xanh và bưởi da xanh chất lượng cao được tưới tắm dòng nước ngọt quanh năm từ sông Cửu Long.",
+          "Gắn liền với các cơ sở thủ công chế tác đồ gia dụng từ thân và gáo dừa già độc đáo với hơn 50 sản phẩm thủ công mỹ nghệ."
+        ],
+        "hours": "07:00 - 18:00 hàng ngày",
+        "source_citations": [
+          {
+            "title": "Tiềm năng du lịch sinh thái nông nghiệp Cồn Ốc Hưng Phong",
+            "url": "https://bentre.gov.vn/du-lich/con-oc",
+            "notebook_id": "Sổ tay 2: Mekong 360 - Tập 2",
+            "tier": "TIER_1_GOVERNMENT",
+            "authority_weight": 1
+          }
+        ],
+        "verified": true
       },
       "source": [
         {
@@ -62207,11 +62438,11 @@
       },
       "attributes": {
         "address": "Cồn Hô, Phường Càng Long, tỉnh Vĩnh Long",
-        "admission": "Miễn phí",
+        "admission": "Giá tour trải nghiệm trọn gói 250.000 - 400.000 đ/người (gồm chèo xuồng, ẩm thực đêm đèn dầu và ngắm đom đóm)",
         "best_time": "tháng 11–4",
         "highlight": "Cù lao hoang sơ — không bảng hiệu quảng cáo, không đám đông, thiên nhiên nguyên vẹn, không khí trong lành",
         "peak_event": "Mùa trái cây tháng 3–5 với nhãn, chôm chôm, sầu riêng",
-        "travel_tip": "Mang theo nước uống và thuốc chống côn trùng vì cơ sở hạ tầng còn đơn sơ.",
+        "travel_tip": "Du khách tập trung tại bến tàu Đức Mỹ để đi xuồng máy khoảng 10 phút sang cồn; nên sạc đầy pin điện thoại và máy ảnh trước khi qua cồn.",
         "schema_type": "NaturalFeature",
         "season_note": "Mùa khô nước sông trong, vườn cây ăn trái ra quả nhiều, đi xuồng thuận tiện",
         "sub_category": "island",
@@ -62221,7 +62452,23 @@
         "is_verified_photo": true,
         "image_caption": "Lối sống thuận thiên không điện lưới của người dân Cồn Hô trên dòng sông Cổ Chiên, với các tour du lịch sinh thái đèn dầu độc đáo.",
         "image_license": "Bản quyền thuộc tác giả và Trung tâm Xúc tiến Du lịch Vĩnh Long",
-        "verifiedAt": "2026-09-18T04:00:00Z"
+        "verifiedAt": "2026-09-19",
+        "key_facts": [
+          "Cồn đất tự nhiên rộng gần 30 ha nổi lên giữa dòng sông Cổ Chiên thuộc xã Đức Mỹ, bảo tồn nếp sinh hoạt nguyên sơ không điện lưới quốc gia.",
+          "Người dân địa phương phát triển sản phẩm du lịch 'đèn dầu sông nước' độc đáo từ năm 2020, đón khách trải nghiệm không gian đêm hoài niệm.",
+          "Đất đai màu mỡ thích hợp trồng bưởi da xanh hữu cơ, hoa đậu biếc và nuôi cá lăng, cá hô tự nhiên dưới các mương vườn."
+        ],
+        "hours": "Đón khách tour trải nghiệm từ 15:00 đến 21:00 hàng ngày (cần đặt trước)",
+        "source_citations": [
+          {
+            "title": "Mô hình du lịch tự thân về đêm tại Cồn Hô",
+            "url": "https://dulich.travinh.gov.vn/con-ho-tu-than",
+            "notebook_id": "Sổ tay 2: Mekong 360 - Tập 2",
+            "tier": "TIER_1_GOVERNMENT",
+            "authority_weight": 1
+          }
+        ],
+        "verified": true
       },
       "source": [
         {
@@ -62740,7 +62987,7 @@
         "image_source": "Báo Vĩnh Long",
         "image_type": "documentary",
         "is_verified_photo": true,
-        "image_caption": "Khung cảnh buôn bán nông sản và các loại rau củ miệt vườn tấp nập từ sớm mai tại Chợ Cái Vồn bên bờ sông Hậu thuộc thị xã Bình Minh.",
+        "image_caption": "Khung cảnh buôn bán nông sản và rau củ miệt vườn tấp nập từ sớm mai tại Chợ Cái Vồn bên bờ sông Hậu thuộc phường Bình Minh.",
         "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long",
         "verifiedAt": "2026-09-18T10:15:00Z"
       },
@@ -68253,7 +68500,7 @@
         "stream": "waterways",
         "address": "Phường Thanh Đức, Vĩnh Long",
         "category": "waterway",
-        "admission": "Miễn phí",
+        "admission": "Miễn phí tham quan bờ kè và công viên ven sông",
         "length_km": 28,
         "navigable": true,
         "schema_type": "NaturalFeature",
@@ -68268,7 +68515,24 @@
         "is_verified_photo": true,
         "image_caption": "Cảnh ghe tam bản và xuồng máy rẽ sóng xuôi ngược trên dòng sông Long Hồ lịch sử nối liền trung tâm phố thị với miệt vườn An Bình.",
         "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long",
-        "verifiedAt": "2026-09-18T04:00:00Z"
+        "verifiedAt": "2026-09-19",
+        "key_facts": [
+          "Dòng thủy lộ lịch sử dài hơn 16km bắt nguồn từ sông Tiền chảy qua trung tâm tỉnh lỵ và hợp lưu với các kênh rạch tỏa đi muôn phương.",
+          "Nơi ghi dấu sự nghiệp khai hoang mở cõi và xây dựng Thành Long Hồ từ năm 1732 thời Chúa Nguyễn, trung tâm kinh tế chính trị phương Nam thuở xưa.",
+          "Dọc hai bờ sông là quần thể di tích lịch sử - văn hóa đậm đặc: Văn Thánh Miếu, đình Long Hồ và các ngôi nhà cổ bằng gỗ căm xe hàng trăm năm tuổi."
+        ],
+        "hours": "Mở cửa tự do cảnh quan công cộng 24/7",
+        "travel_tip": "Bờ kè sông Long Hồ được xây dựng công viên hoa rực rỡ, thích hợp đi dạo bộ ngắm nhìn thuyền ghe chở hoa trái xuôi ngược vào buổi sáng sớm.",
+        "source_citations": [
+          {
+            "title": "Lịch sử Thành Long Hồ và lưu vực sông Long Hồ",
+            "url": "https://vinhlongtourist.vn/song-long-ho",
+            "notebook_id": "Sổ tay 1: Vĩnh Long 360",
+            "tier": "TIER_1_GOVERNMENT",
+            "authority_weight": 1
+          }
+        ],
+        "verified": true
       },
       "source": [
         {
@@ -68421,7 +68685,7 @@
         "stream": "waterways",
         "address": "Xã Nhơn Phú, Vĩnh Long",
         "category": "waterway",
-        "admission": "Miễn phí",
+        "admission": "Miễn phí ngắm cảnh từ bờ kè xã Trà Côn",
         "length_km": 35,
         "navigable": true,
         "schema_type": "NaturalFeature",
@@ -68435,9 +68699,26 @@
         "image_source": "Báo Vĩnh Long",
         "image_type": "documentary",
         "is_verified_photo": true,
-        "image_caption": "Tuyến thủy lộ kênh Trà Ôn tấp nập sà lan chở cát phù sa và ghe chở cam sành tỏa đi khắp các tỉnh miền Tây.",
+        "image_caption": "Tuyến thủy lộ kênh Trà Ôn tấp nập sà lan chở cát phù sa và ghe chở cam sành kết nối giao thương giữa sông Tiền và sông Hậu.",
         "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long",
-        "verifiedAt": "2026-09-18T06:00:00Z"
+        "verifiedAt": "2026-09-19",
+        "key_facts": [
+          "Tuyến đường thủy huyết mạch dài hơn 15km đào từ năm 1905 kết nối trực tiếp sông Tiền qua sông Măng Thít với sông Hậu.",
+          "Mỗi ngày đón nhận hàng trăm lượt sà lan tải trọng lớn vận chuyển lúa gạo, cát sỏi phù sa và nông sản tỏa đi khắp các tỉnh thành Nam Bộ.",
+          "Gắn liền với địa danh Chợ nổi Trà Ôn hình thành từ đầu thế kỷ 20, nhóm họp từ 04:00 rạng sáng ngay khúc quanh giao nhau giữa kênh Trà Ôn và dòng sông Hậu."
+        ],
+        "hours": "Mở cửa tự do 24/7",
+        "travel_tip": "Để ngắm khung cảnh chợ nổi và ghe thuyền buôn bán sầm uất trên kênh Trà Ôn, du khách nên có mặt tại bến đò lúc 05:30 sáng.",
+        "source_citations": [
+          {
+            "title": "Lịch sử thủy lộ kênh Trà Ôn và chợ nổi sông Hậu",
+            "url": "https://vinhlongtourist.vn/kenh-tra-on",
+            "notebook_id": "Sổ tay 1: Vĩnh Long 360",
+            "tier": "TIER_1_GOVERNMENT",
+            "authority_weight": 1
+          }
+        ],
+        "verified": true
       },
       "source": [
         {
@@ -68520,7 +68801,7 @@
         "image_source": "Báo Vĩnh Long",
         "image_type": "documentary",
         "is_verified_photo": true,
-        "image_caption": "Rạch Trà Ngoa đưa nguồn nước ngọt phù sa tưới tiêu cho những cánh đồng lúa và vườn dừa bạt ngàn tại huyện Trà Ôn.",
+        "image_caption": "Rạch Trà Ngoa đưa nguồn nước ngọt phù sa tưới tiêu cho những cánh đồng lúa và vườn dừa bạt ngàn tại vùng đất Trà Côn.",
         "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long",
         "verifiedAt": "2026-09-18T06:00:00Z"
       },
@@ -68591,7 +68872,7 @@
         "stream": "waterways",
         "address": "Xã Nhơn Phú, Vĩnh Long",
         "category": "waterway",
-        "admission": "Miễn phí",
+        "admission": "Miễn phí tham quan",
         "length_km": 22,
         "navigable": true,
         "schema_type": "NaturalFeature",
@@ -68606,20 +68887,29 @@
         "visual_narrative": "Góc máy cinematic từ mạn thuyền lướt nhẹ trên dòng kênh Thầy Cai êm đềm, hai bên bờ là dãy lò gạch vòm đất nung đỏ thắm soi bóng xuống dòng nước lững lờ trôi cùng những bè hoa lục bình tím biếc.",
         "source_citations": [
           {
-            "url": "https://vinhlong.gov.vn/van-ban-chi-dao/quyet-dinh-1293-de-an-di-san-duong-dai-mang-thit",
-            "title": "Quy hoạch không gian cảnh quan kênh Thầy Cai - UBND tỉnh Vĩnh Long",
-            "notebook_id": "ch-nh-s-ch-ph-p-lu-t-v-n-b-n-q",
-            "tier": "TIER_1_GOVERNMENT"
+            "title": "Hệ thống kênh đào thủy lợi và vận tải gạch gốm Vĩnh Long",
+            "url": "https://vinhlongtourist.vn/kenh-thay-cai",
+            "notebook_id": "Sổ tay 1: Vĩnh Long 360",
+            "tier": "TIER_1_GOVERNMENT",
+            "authority_weight": 1
           }
         ],
-        "verifiedAt": "2026-09-18T06:00:00Z",
+        "verifiedAt": "2026-09-19",
         "verifiedSource": "NotebookLM Deep Terroir Research",
         "image_author": "Bá Thi",
         "image_source": "Báo Vĩnh Long",
         "image_type": "documentary",
         "is_verified_photo": true,
         "image_caption": "Kênh Thầy Cai rực màu đất nung với hàng ngàn nóc lò gạch cổ Mang Thít soi bóng xuống con nước đượm màu phù sa.",
-        "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long"
+        "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long",
+        "key_facts": [
+          "Tuyến kênh đào chiến lược dài hơn 12km đào thủ công từ đầu thế kỷ 20 nối liền sông Long Hồ với sông Mang Thít và sông Măng Thít.",
+          "Tạo trục giao thông thủy huyết mạch vận chuyển đất sét, củi trấu và thành phẩm gạch ngói cho hàng nghìn miệng lò nung đỏ lửa dọc hai bờ.",
+          "Đóng vai trò quan trọng trong việc tháo chua rửa mặn, cung cấp nguồn phù sa dồi dào cho hàng nghìn hecta vườn cây ăn trái quanh lưu vực."
+        ],
+        "hours": "Mở cửa tự do cảnh quan 24/7",
+        "travel_tip": "Nên chọn cung đường bộ chạy dọc theo bờ kênh Thầy Cai để chiêm ngưỡng cận cảnh nhịp sống lao động nhộn nhịp của các phu bốc vác gạch ngói.",
+        "verified": true
       },
       "source": [
         {
@@ -68703,7 +68993,24 @@
         "is_verified_photo": true,
         "image_caption": "Dòng sông Hàm Luông mênh mang sóng vỗ, phân nhánh từ sông Tiền chảy ra biển Đông, chuyên chở phù sa nuôi dưỡng những rặng dừa trĩu quả.",
         "image_license": "Bản quyền thuộc tác giả và Báo Đồng Khởi",
-        "verifiedAt": "2026-09-18T06:00:00Z"
+        "verifiedAt": "2026-09-19",
+        "key_facts": [
+          "Phân lưu quan trọng của sông Tiền dài hơn 70km, chảy uốn lượn qua các vùng dừa bạt ngàn rồi đổ ra Biển Đông qua cửa Hàm Luông rộng 3km.",
+          "Độ sâu trung bình từ 12 đến 15m với lưu lượng nước ngọt khổng lồ, là nguồn sống cung cấp tưới tiêu cho hơn 70.000 ha dừa và cây ăn trái nhiệt đới.",
+          "Chứng nhân lịch sử kiên cường trong phong trào cách mạng, nơi in dấu những chiến công huyền thoại của Đội quân Tóc dài năm 1960."
+        ],
+        "hours": "Mở cửa tự do ngắm cảnh 24/7",
+        "travel_tip": "Tại công viên bờ kè sông Hàm Luông lộng gió, du khách có thể thuê tàu du lịch ngắm cảnh hoàng hôn buông xuống mặt sông mênh mông.",
+        "source_citations": [
+          {
+            "title": "Hệ thống thủy văn sông Hàm Luông và lưu vực kinh tế",
+            "url": "https://bentre.gov.vn/thuy-van/song-ham-luong",
+            "notebook_id": "Sổ tay 2: Mekong 360 - Tập 2",
+            "tier": "TIER_1_GOVERNMENT",
+            "authority_weight": 1
+          }
+        ],
+        "verified": true
       },
       "source": [
         {
@@ -68759,7 +69066,7 @@
         "address": "Xã Châu Hưng, Bến Tre",
         "category": "waterway",
         "priority": "A+",
-        "admission": "Miễn phí",
+        "admission": "Miễn phí tham quan mặt đập và bờ sông",
         "length_km": 55,
         "navigable": true,
         "schema_type": "NaturalFeature",
@@ -68776,7 +69083,24 @@
         "is_verified_photo": true,
         "image_caption": "Vùng hạ lưu sông Ba Lai với công trình cống đập ngăn mặn hiện đại, giữ ngọt cho hàng ngàn héc-ta vườn cây ăn trái.",
         "image_license": "Bản quyền thuộc tác giả và Báo Đồng Khởi",
-        "verifiedAt": "2026-09-18T06:00:00Z"
+        "verifiedAt": "2026-09-19",
+        "key_facts": [
+          "Dòng sông dài hơn 55km tách ra từ sông Mỹ Tho chảy giữa hai cù lao An Hóa và Bảo, nổi tiếng với công trình cống đập Ba Lai xây dựng năm 2002.",
+          "Đập ngăn mặn Ba Lai dài 544m tạo nên hồ chứa nước ngọt nội địa rộng lớn phục vụ sản xuất nông nghiệp và sinh hoạt cho hàng vạn hộ dân.",
+          "Hệ sinh thái chuyển tiếp độc đáo giữa vùng ngọt hóa thượng lưu và vùng sinh thái cửa biển mặn lợ hạ lưu với nhiều loài chim nước cư ngụ."
+        ],
+        "hours": "Mở cửa tự do ngắm cảnh 24/7",
+        "travel_tip": "Khu vực cống đập Ba Lai là điểm ngắm toàn cảnh dòng sông và cửa biển rất khoáng đạt, có thể kết hợp ghé thăm các vườn dừa dứa kế bên.",
+        "source_citations": [
+          {
+            "title": "Công trình thủy lợi cống đập Ba Lai ngọt hóa bán đảo",
+            "url": "https://bentre.gov.vn/thuy-loi/dap-ba-lai",
+            "notebook_id": "Sổ tay 2: Mekong 360 - Tập 2",
+            "tier": "TIER_1_GOVERNMENT",
+            "authority_weight": 1
+          }
+        ],
+        "verified": true
       },
       "source": [
         {
@@ -68937,7 +69261,7 @@
         "image_source": "Báo Đồng Khởi",
         "image_type": "documentary",
         "is_verified_photo": true,
-        "image_caption": "Tấp nập cảnh ghe thuyền buôn bán chỉ xơ dừa và mụn dừa xuất khẩu dọc hai bên bờ sông Thom thuộc huyện Mỏ Cày Nam.",
+        "image_caption": "Tấp nập cảnh ghe thuyền buôn bán chỉ xơ dừa và mụn dừa xuất khẩu dọc hai bên bờ sông Thom thuộc phường Mỏ Cày.",
         "image_license": "Bản quyền thuộc tác giả và Báo Đồng Khởi",
         "verifiedAt": "2026-09-18T06:00:00Z"
       },
@@ -69008,7 +69332,7 @@
         "stream": "waterways",
         "address": "Xã Nhị Long, Trà Vinh",
         "category": "waterway",
-        "admission": "Miễn phí",
+        "admission": "Miễn phí tham quan",
         "length_km": 22,
         "navigable": true,
         "schema_type": "NaturalFeature",
@@ -69022,9 +69346,26 @@
         "image_source": "Trung tâm Xúc tiến Du lịch Vĩnh Long",
         "image_type": "documentary",
         "is_verified_photo": true,
-        "image_caption": "Kênh Bông Bót nối dòng sông Hậu với các vùng trồng lúa phì nhiêu, nguồn cung cấp nước ngọt quan trọng cho huyện Cầu Kè.",
+        "image_caption": "Kênh Bông Bót nối dòng sông Hậu với các vùng trồng lúa phì nhiêu, nguồn cung cấp nước ngọt quan trọng cho các xã vùng Cầu Kè.",
         "image_license": "Bản quyền thuộc tác giả và Trung tâm Xúc tiến Du lịch Vĩnh Long",
-        "verifiedAt": "2026-09-18T06:00:00Z"
+        "verifiedAt": "2026-09-19",
+        "key_facts": [
+          "Kênh thủy lợi quan trọng dài hơn 18km nối dòng sông Hậu với hệ thống sông nhánh nội đồng vùng đất Cầu Kè màu mỡ.",
+          "Đưa nguồn nước ngọt phù sa vô tận thau chua rửa phèn cho vùng chuyên canh dừa sáp, măng cụt và chuối tá quạ đạt năng suất cao.",
+          "Hai bên bờ kênh là nơi sinh sống đan xen hòa thuận của ba dân tộc Kinh, Khmer và Hoa với những nét văn hóa ẩm thực phong phú."
+        ],
+        "hours": "Mở cửa tự do cảnh quan 24/7",
+        "travel_tip": "Cung đường bê tông nông thôn dọc bờ kênh Bông Bót rợp bóng dừa xiêm và hoa quỳnh anh vàng rực, rất thích hợp đạp xe dạo cảnh thôn quê.",
+        "source_citations": [
+          {
+            "title": "Hạ tầng thủy lợi và phát triển cây ăn trái kênh Bông Bót",
+            "url": "https://dulich.travinh.gov.vn/kenh-bong-bot",
+            "notebook_id": "Sổ tay 2: Mekong 360 - Tập 2",
+            "tier": "TIER_1_GOVERNMENT",
+            "authority_weight": 1
+          }
+        ],
+        "verified": true
       },
       "source": [
         {
@@ -71575,7 +71916,7 @@
         "image_source": "Báo Vĩnh Long",
         "image_type": "documentary",
         "is_verified_photo": true,
-        "image_caption": "Quán Chú Tám tại thị trấn Vũng Liêm, thố lẩu cá kèo lá giang sôi sùng sục ăn kèm rau đắng đất, bắp chuối bào và bún tươi trắng muốt.",
+        "image_caption": "Quán Chú Tám tại phường Vũng Liêm, thố lẩu cá kèo lá giang sôi sùng sục ăn kèm rau đắng đất, bắp chuối bào và bún tươi trắng muốt.",
         "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long",
         "verifiedAt": "2026-09-18T08:50:00Z"
       },
@@ -72311,7 +72652,7 @@
         "image_source": "Báo Đồng Khởi",
         "image_type": "documentary",
         "is_verified_photo": true,
-        "image_caption": "Món gỏi cuốn tôm thịt rau sống xanh tươi chấm tương đen đậu phộng béo bùi tại quán Bà Hai ở thị trấn Châu Thành.",
+        "image_caption": "Món gỏi cuốn tôm thịt rau sống xanh tươi chấm tương đen đậu phộng béo bùi tại quán Bà Hai ở phường Phú Khương.",
         "image_license": "Bản quyền thuộc tác giả và Báo Đồng Khởi",
         "verifiedAt": "2026-09-18T10:20:00Z"
       },
@@ -73113,7 +73454,7 @@
         "image_source": "Báo Trà Vinh",
         "image_type": "documentary",
         "is_verified_photo": true,
-        "image_caption": "Tiệm hủ tiếu Bà Tám tại thị trấn Cầu Kè, nước lèo ninh từ xương ống heo ngọt thanh tự nhiên, sợi bánh hủ tiếu gạo Cầu Kè mềm dai đặc trưng.",
+        "image_caption": "Tiệm hủ tiếu Bà Tám tại xã Cầu Kè, nước lèo ninh từ xương ống heo ngọt thanh tự nhiên, sợi bánh hủ tiếu gạo Cầu Kè mềm dai đặc trưng.",
         "image_license": "Bản quyền thuộc tác giả và Báo Trà Vinh",
         "verifiedAt": "2026-09-18T08:50:00Z"
       },
@@ -75977,7 +76318,7 @@
         "image_source": "Báo Vĩnh Long",
         "image_type": "documentary",
         "is_verified_photo": true,
-        "image_caption": "Thảm cỏ xanh mướt và những bồn hoa rực rỡ tại Công viên Hai Tháng Chín trung tâm thị trấn Tân Quới, không gian vui chơi của người dân.",
+        "image_caption": "Thảm cỏ xanh mướt và những bồn hoa rực rỡ tại Công viên Hai Tháng Chín trung tâm phường Tân Quới, không gian sinh hoạt cộng đồng thoáng đãng.",
         "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long",
         "verifiedAt": "2026-09-18T10:20:00Z"
       },
@@ -80484,7 +80825,7 @@
         "image_source": "Báo Vĩnh Long",
         "image_type": "documentary",
         "is_verified_photo": true,
-        "image_caption": "Hàng ngàn cá thể cò ốc, cò trắng quý hiếm làm tổ trên ngọn tràm, ngọn tre tại Vườn Chim Hai Chìa thuộc xã Tân Mỹ, huyện Trà Ôn.",
+        "image_caption": "Hàng ngàn cá thể cò ốc và cò trắng làm tổ trên ngọn tràm ngọn tre tại Vườn Chim Hai Chìa thuộc xã Trà Côn.",
         "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long"
       },
       "source": [
@@ -82257,7 +82598,7 @@
         "image_source": "Báo Vĩnh Long",
         "image_type": "documentary",
         "is_verified_photo": true,
-        "image_caption": "Không gian vui chơi giải trí và hồ bơi nhân tạo hiện đại giữa mảng xanh tươi mát tại Khu Du Lịch Trường Huy, huyện Long Hồ.",
+        "image_caption": "Không gian vui chơi giải trí và hồ bơi nhân tạo hiện đại giữa mảng xanh rộng 10ha tại Khu Du Lịch Trường Huy, phường Thanh Đức.",
         "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long",
         "verifiedAt": "2026-09-18T02:00:00Z"
       },
@@ -84348,7 +84689,7 @@
         "image_source": "Báo Vĩnh Long",
         "image_type": "documentary",
         "is_verified_photo": true,
-        "image_caption": "Những chòi lá mộc mạc bên hồ sen nở hoa thanh khiết tại Khu Du Lịch Sinh Thái Hoàng Quân xã Mỹ Hòa thị xã Bình Minh.",
+        "image_caption": "Những chòi lá mộc mạc bên hồ sen nở hoa thanh khiết tại Khu Du Lịch Sinh Thái Hoàng Quân, phường Cái Vồn.",
         "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long",
         "verifiedAt": "2026-09-18T10:20:00Z"
       },
@@ -84521,7 +84862,7 @@
         "image_source": "Báo Vĩnh Long",
         "image_type": "documentary",
         "is_verified_photo": true,
-        "image_caption": "Những chùm thanh trà vàng ươm chua ngọt rực rỡ dưới nắng xuân tại các liếp vườn xã Đông Thành, thị xã Bình Minh.",
+        "image_caption": "Những chùm thanh trà vàng ươm chua ngọt rực rỡ dưới nắng xuân tại các liếp vườn thuộc phường Đông Thành.",
         "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long"
       },
       "source": [
@@ -84941,7 +85282,7 @@
         "image_source": "Báo Vĩnh Long",
         "image_type": "documentary",
         "is_verified_photo": true,
-        "image_caption": "Các sạp hàng bày bán khoai lang tím giống Nhật và rau củ tươi sạch tại Chợ Tân Quới, vựa nông sản trù phú của huyện Bình Tân.",
+        "image_caption": "Các sạp hàng bày bán khoai lang tím giống Nhật và rau củ tươi sạch tại Chợ Tân Quới, trung tâm giao thương nông sản phường Tân Quới.",
         "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long",
         "verifiedAt": "2026-09-18T10:20:00Z"
       },
@@ -86683,7 +87024,7 @@
         "image_source": "Báo Vĩnh Long",
         "image_type": "documentary",
         "is_verified_photo": true,
-        "image_caption": "Liếp vườn chôm chôm, măng cụt và bưởi da xanh rợp bóng mát dọc các con rạch nhỏ trù phú tại huyện Long Hồ.",
+        "image_caption": "Liếp vườn chôm chôm, măng cụt và bưởi da xanh rợp bóng mát dọc các con rạch phù sa thuộc phường Long Châu.",
         "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long",
         "verifiedAt": "2026-09-18T06:00:00Z"
       },
@@ -87547,7 +87888,7 @@
       },
       "attributes": {
         "address": "Dọc, Phường Phước Hậu, tỉnh Vĩnh Long",
-        "admission": "Miễn phí",
+        "admission": "Miễn phí ngắm cảnh từ bờ kè; thuê thuyền ngắm lò gạch từ 300.000 - 600.000 đ/chuyến",
         "schema_type": "NaturalFeature",
         "sub_category": "waterway",
         "coords_approximate": true,
@@ -87555,9 +87896,26 @@
         "image_source": "Báo Vĩnh Long",
         "image_type": "documentary",
         "is_verified_photo": true,
-        "image_caption": "Mặt nước sông Cổ Chiên mênh mông đoạn qua huyện Mang Thít với những bè nuôi cá điêu hồng san sát và ghe chở đất sét đỏ.",
+        "image_caption": "Mặt nước sông Cổ Chiên mênh mông đoạn qua vùng gốm Mang Thít với những bè nuôi cá điêu hồng san sát và ghe chở đất sét đỏ.",
         "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long",
-        "verifiedAt": "2026-09-18T06:00:00Z"
+        "verifiedAt": "2026-09-19",
+        "key_facts": [
+          "Nhánh chính của sông Tiền đổ ra biển Đông, đoạn qua địa bàn Mang Thít mở rộng từ 1,2 đến 1,8km với lưu lượng dòng chảy phù sa dồi dào.",
+          "Hai bên bờ sông là trung tâm di sản lò gạch gốm trăm năm với hàng trăm vòm lò gạch nung đất sét đỏ soi bóng cổ kính xuống mặt nước.",
+          "Vùng nước ngọt sâu thuận lợi cho nghề nuôi cá lồng bè truyền thống với hàng trăm bè nuôi cá điêu hồng, cá tra cá lăng xuất khẩu chất lượng cao."
+        ],
+        "hours": "Mở cửa tự do cảnh quan sông nước quanh năm",
+        "travel_tip": "Khoảnh khắc ngắm hoàng hôn ráng vàng soi bóng lên các vòm lò gạch đỏ ven sông Cổ Chiên từ 17:00 đến 17:45 là tuyệt cảnh nhiếp ảnh.",
+        "source_citations": [
+          {
+            "title": "Quy hoạch cảnh quan sông Cổ Chiên và Di sản Đương đại Mang Thít",
+            "url": "https://vinhlongtourist.vn/song-co-chien-mang-thit",
+            "notebook_id": "Sổ tay 1: Vĩnh Long 360",
+            "tier": "TIER_1_GOVERNMENT",
+            "authority_weight": 1
+          }
+        ],
+        "verified": true
       },
       "source": [
         {
@@ -90568,7 +90926,7 @@
         "ward": "Long Vĩnh",
         "address": "Xã Long Vĩnh và các xã ven biển, thị xã Duyên Hải, Trà Vinh",
         "priority": "A-",
-        "admission": "Miễn phí",
+        "admission": "Miễn phí tham quan",
         "schema_type": "NaturalFeature",
         "sub_category": "mangrove-forest",
         "target_segments": "Nội địa; ảnh; nghiên cứu",
@@ -90577,9 +90935,26 @@
         "image_source": "Báo Cần Thơ",
         "image_type": "documentary",
         "is_verified_photo": true,
-        "image_caption": "Rừng đước nguyên sinh vươn rễ chằng chịt giữ đất ven biển tại xã Long Vĩnh, thị xã Duyên Hải, tạo lá chắn xanh chắn sóng biển.",
+        "image_caption": "Rừng đước nguyên sinh vươn rễ chằng chịt giữ đất ven biển tại xã Long Vĩnh thuộc khu vực Duyên Hải, tạo vành đai chắn sóng tự nhiên.",
         "image_license": "Bản quyền thuộc tác giả và Báo Cần Thơ",
-        "verifiedAt": "2026-09-18T06:00:00Z"
+        "verifiedAt": "2026-09-19",
+        "key_facts": [
+          "Quần thể rừng phòng hộ ngập mặn ven biển rộng hơn 1.200 ha tại xã Long Vĩnh, hình thành bức tường xanh kiên cố bảo vệ đê biển trước bão lũ.",
+          "Cây đước đôi, bần chua và mắm trắng phát triển ngút ngàn với những bộ rễ cọc vươn sâu giữ đất bồi phù sa mỗi năm lấn biển từ 15 đến 25m.",
+          "Là vựa thủy sản sinh thái nước lợ phong phú cung cấp giống tôm sú tự nhiên, cua biển gạch son và vọp rừng ngập mặn cho ngư dân quanh vùng."
+        ],
+        "hours": "Mở cửa tự do tham quan cảnh quan ngoại vi 24/7",
+        "travel_tip": "Đi cano hoặc vỏ lãi luồn lách qua các lạch nước ngập mặn vào buổi chiều mát là trải nghiệm kỳ thú để tìm hiểu sự sống rừng ven biển.",
+        "source_citations": [
+          {
+            "title": "Hệ thống rừng phòng hộ ven biển Long Vĩnh Duyên Hải",
+            "url": "https://dulich.travinh.gov.vn/rung-ngap-man-long-vinh",
+            "notebook_id": "Sổ tay 2: Mekong 360 - Tập 2",
+            "tier": "TIER_1_GOVERNMENT",
+            "authority_weight": 1
+          }
+        ],
+        "verified": true
       },
       "source": [
         {
@@ -92023,7 +92398,7 @@
         "image_source": "Báo Trà Vinh",
         "image_type": "documentary",
         "is_verified_photo": true,
-        "image_caption": "Nghệ nhân Khmer miệt mài đục đẽo thân gỗ mít, so từng phím đàn Chà-pây Đơng-veng cổ truyền tại sóc Phú Cần, thị trấn Tiểu Cần.",
+        "image_caption": "Nghệ nhân Khmer miệt mài đục đẽo thân gỗ mít, so từng phím đàn Chà-pây Đơng-veng cổ truyền tại sóc Phú Cần thuộc phường Tiểu Cần.",
         "image_license": "Bản quyền thuộc tác giả và Báo Trà Vinh"
       },
       "source": [
@@ -92088,7 +92463,7 @@
         "image_source": "Báo Vĩnh Long",
         "image_type": "documentary",
         "is_verified_photo": true,
-        "image_caption": "Từng trái me chín dốt lột vỏ sên đường cát óng ả dẻo quánh, vị chua thanh ngọt đậm đà đặc sản truyền thống thị xã Bình Minh.",
+        "image_caption": "Từng trái me chín dốt lột vỏ sên đường cát óng ả dẻo quánh, vị chua thanh ngọt ngào của thức quà gia truyền tại phường Cái Vồn.",
         "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long",
         "verifiedAt": "2026-09-18T00:00:00Z"
       },
@@ -93173,10 +93548,10 @@
         ]
       },
       "attributes": {
-        "hours": "thường tham quan ban ngày",
+        "hours": "06:30 - 17:30 hàng ngày",
         "address": "Khu bảo tồn thiên nhiên đất ngập nước Vàm Hồ, Phường Ba Tri, tỉnh Vĩnh Long",
         "area_ha": 67,
-        "admission": "có thể tính phí tham quan/dịch vụ tùy tuyến",
+        "admission": "Vé vào cổng tham quan 40.000 đ/người lớn, 20.000 đ/trẻ em; đi thuyền ngắm chim 80.000 đ/người",
         "best_time": "Tháng 10–4 (mùa chim sinh sản, tổ trắng trĩu cành)",
         "highlight": "Sân chim 67 ha với 120 loài, ~700.000 cá thể, mật độ đến 15 con/m² — khu bảo tồn đất ngập nước bên sông Ba Lai.",
         "established": "Tháng 5-1986",
@@ -93189,7 +93564,23 @@
         "is_verified_photo": true,
         "image_caption": "Khu bảo tồn đất ngập nước Vàm Hồ với thảm thực vật chà là gai, mắm, bần nguyên sinh nuôi dưỡng hàng vạn cá thể cò, vạc, le le.",
         "image_license": "Bản quyền thuộc tác giả và Báo Đồng Khởi",
-        "verifiedAt": "2026-09-18T06:00:00Z"
+        "verifiedAt": "2026-09-19",
+        "key_facts": [
+          "Khu bảo tồn loài - sinh cảnh rộng hơn 67 ha nằm ven sông Ba Lai thuộc xã Mỹ Hòa, thành lập năm 2001 nhằm bảo tồn hệ sinh thái rừng ngập mặn.",
+          "Nơi cư trú tự nhiên của hơn 84 loài chim hoang dã quý hiếm với ước tính khoảng 500.000 cá thể cò trắng, cồng cộc, quắm đen và vạc xám.",
+          "Thảm thực vật đặc trưng với rừng chà là gai, bần chua, cóc kèn và dừa nước mọc ken dày tạo thành tổ ấm an toàn cho muôn loài chim sinh sản."
+        ],
+        "travel_tip": "Khoảnh khắc kỳ thú nhất diễn ra từ 16:30 đến 17:30 khi hàng vạn cánh cò trắng rợp trời bay về tổ sau một ngày kiếm ăn dọc các cánh đồng châu thổ.",
+        "source_citations": [
+          {
+            "title": "Đề án bảo tồn đa dạng sinh học Sân chim Vàm Hồ",
+            "url": "https://bentre.gov.vn/moi-truong/san-chim-vam-ho",
+            "notebook_id": "Sổ tay 2: Mekong 360 - Tập 2",
+            "tier": "TIER_1_GOVERNMENT",
+            "authority_weight": 1
+          }
+        ],
+        "verified": true
       },
       "source": [
         {
@@ -95074,7 +95465,7 @@
         "image_source": "Báo Trà Vinh",
         "image_type": "documentary",
         "is_verified_photo": true,
-        "image_caption": "Nghệ sĩ hề Trường Xuân cây cười duyên dáng của sân khấu cải lương miền Tây đem lại tiếng cười sảng khoái và tính nhân văn",
+        "image_caption": "Nghệ sĩ hài Trường Xuân, gương mặt gạo cội của nghệ thuật sân khấu cải lương Nam Bộ thập niên 1960 với lối diễn hóm hỉnh và giàu tính nhân văn.",
         "image_license": "Tư liệu báo chí / Báo Trà Vinh",
         "verifiedAt": "2026-09-18T07:15:00Z",
         "verifiedSource": "NotebookLM Terroir Deep Research & Official Archives"
@@ -96203,7 +96594,7 @@
         "image_source": "Báo Vĩnh Long",
         "image_type": "documentary",
         "is_verified_photo": true,
-        "image_caption": "Chùm trái thanh trà ngọt vỏ mỏng vàng ươm mọng nước tại thị xã Bình Minh, quả đặc sản quý hiếm tỏa hương thơm thảo mộc khó quên.",
+        "image_caption": "Chùm trái thanh trà ngọt vỏ mỏng vàng ươm mọng nước tại phường Bình Minh, quả đặc sản quý hiếm tỏa hương thơm thảo mộc khó quên.",
         "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long"
       },
       "source": [
@@ -96476,7 +96867,7 @@
         "image_source": "Báo Trà Vinh",
         "image_type": "documentary",
         "is_verified_photo": true,
-        "image_caption": "Thu hoạch tôm sú nước lợ sinh thái tại thị xã Duyên Hải, tôm đạt kích cỡ lớn vỏ bóng xanh đen và cơ thịt chắc khỏe cung cấp cho các nhà máy chế biến.",
+        "image_caption": "Thu hoạch tôm sú nước lợ sinh thái tại vùng cửa biển phường Duyên Hải, tôm đạt kích cỡ lớn vỏ bóng xanh đen cung cấp cho chế biến xuất khẩu.",
         "image_license": "Bản quyền thuộc tác giả và Báo Trà Vinh",
         "verifiedAt": "2026-09-18T09:40:00Z"
       },
@@ -98464,7 +98855,7 @@
       },
       "attributes": {
         "address": "Phường Bình Đại, Bến Tre",
-        "admission": "Miễn phí",
+        "admission": "Miễn phí vào bãi biển; giữ xe máy 5.000 đ/lượt",
         "best_time": "tháng 12–4",
         "highlight": "Cửa biển Bình Đại hoang sơ với hàng phi lao vi vu và hoàng hôn nhuộm vàng mặt sông biển.",
         "peak_event": "Tháng 4–5: mùa đánh bắt hải sản ven bờ, hải sản tươi ngon và giá rẻ nhất",
@@ -98478,7 +98869,24 @@
         "is_verified_photo": true,
         "image_caption": "Cửa biển Thừa Đức còn giữ trọn vẻ đẹp hoang sơ với rừng ngập mặn bao quanh và các chòi nghêu truyền thống ngoài bãi triều.",
         "image_license": "Bản quyền thuộc tác giả và Báo Đồng Khởi",
-        "verifiedAt": "2026-09-18T07:00:00Z"
+        "verifiedAt": "2026-09-19",
+        "key_facts": [
+          "Bãi biển tự nhiên dài hơn 8km thuộc xã Thừa Đức ven cửa Đại sông Tiền, sở hữu dải rừng dương phòng hộ chắn gió cát cổ thụ.",
+          "Bãi cát phù sa mịn thoai thoải không có đá ngầm, nguồn lợi hải sản dồi dào với các bãi nghêu thương phẩm xuất khẩu rộng hàng trăm hecta.",
+          "Khu vực tập trung nhiều quán hải sản tươi sống phục vụ nghêu hấp sả, cua biển rang me và sò huyết nướng mọi vừa đánh bắt từ biển."
+        ],
+        "hours": "06:00 - 18:30 hàng ngày",
+        "travel_tip": "Hải sản ở biển Thừa Đức tươi ngon và giá cả bình dân; nên ghé quán thưởng thức nghêu luộc ngay trên bãi cát lúc xế chiều mát mẻ.",
+        "source_citations": [
+          {
+            "title": "Khai thác tài nguyên bãi nghêu và du lịch biển Thừa Đức",
+            "url": "https://bentre.gov.vn/du-lich/bien-thua-duc",
+            "notebook_id": "Sổ tay 2: Mekong 360 - Tập 2",
+            "tier": "TIER_1_GOVERNMENT",
+            "authority_weight": 1
+          }
+        ],
+        "verified": true
       },
       "source": [
         {
@@ -104835,7 +105243,7 @@
         "image_source": "Báo Vĩnh Long",
         "image_type": "documentary",
         "is_verified_photo": true,
-        "image_caption": "Các giảng viên và sinh viên Câu lạc bộ đờn ca tài tử Trường Xây dựng miền Tây hòa tấu khúc Nam ai sâu lắng.",
+        "image_caption": "Buổi hòa tấu khúc Nam ai sâu lắng của các thành viên câu lạc bộ đờn ca tài tử tại khuôn viên trường đại học thuộc phường Long Châu.",
         "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long",
         "verifiedAt": "2026-09-18T03:00:00Z"
       },
@@ -105868,7 +106276,7 @@
         "image_source": "Báo Vĩnh Long",
         "image_type": "documentary",
         "is_verified_photo": true,
-        "image_caption": "Chánh điện chùa Phước Sơn thanh tịnh bên dòng sông Hậu tại thị xã Bình Minh, ngôi chùa Phật giáo Bắc tông duy trì nếp tu học trang nghiêm qua nhiều thế hệ.",
+        "image_caption": "Chánh điện chùa Phước Sơn thanh tịnh bên dòng sông Hậu tại phường Bình Minh, ngôi chùa Phật giáo Bắc tông duy trì nếp tu học trang nghiêm qua nhiều thế hệ.",
         "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long",
         "verifiedAt": "2026-09-18T09:50:00Z"
       },
@@ -106149,7 +106557,7 @@
         "image_source": "Báo Vĩnh Long",
         "image_type": "documentary",
         "is_verified_photo": true,
-        "image_caption": "Cổ tự Bồ Đề với cổng tam quan cổ kính và hàng bồ đề tỏa bóng mát, lưu giữ không gian thanh tịnh giữa xóm làng trù phú thị xã Bình Minh ven sông Hậu.",
+        "image_caption": "Cổ tự Bồ Đề với cổng tam quan cổ kính và hàng bồ đề tỏa bóng mát, lưu giữ không gian thanh tịnh giữa xóm làng trù phú phường Bình Minh ven sông Hậu.",
         "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long",
         "verifiedAt": "2026-09-18T20:45:00+07:00",
         "hours": "6h00 - 18h00 hàng ngày",
@@ -107005,7 +107413,7 @@
         "image_source": "Báo Vĩnh Long",
         "image_type": "documentary",
         "is_verified_photo": true,
-        "image_caption": "Bến đò khách dân sinh Trần Phú vận chuyển người dân vượt sông Hậu kết nối thị xã Bình Minh với bến Ninh Kiều.",
+        "image_caption": "Bến đò khách dân sinh Trần Phú vận chuyển người dân vượt sông Hậu kết nối phường Cái Vồn với bến Ninh Kiều.",
         "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long",
         "admission": "Miễn phí",
         "phone": "0270 3822 188",
@@ -107894,7 +108302,7 @@
         "image_source": "Báo Trà Vinh",
         "image_type": "documentary",
         "is_verified_photo": true,
-        "image_caption": "Các chuyến xe khách đường dài chuẩn bị khởi hành từ Bến xe thị xã Duyên Hải trên trục đường 19 Tháng 5.",
+        "image_caption": "Các chuyến xe khách đường dài chuẩn bị khởi hành từ Bến xe khách Duyên Hải trên trục đường 19 Tháng 5 thuộc phường Duyên Hải.",
         "image_license": "Bản quyền thuộc tác giả và Báo Trà Vinh"
       },
       "source": [
@@ -110564,7 +110972,7 @@
         "image_source": "Báo Vĩnh Long",
         "image_type": "documentary",
         "is_verified_photo": true,
-        "image_caption": "Những chùm cam sành vỏ mỏng mọng nước, tép vàng cam ngọt đậm đà được thu hoạch tại vườn chuyên canh trù phú huyện Trà Ôn ven sông Hậu.",
+        "image_caption": "Những chùm cam sành vỏ mỏng mọng nước, tép vàng cam ngọt đậm đà được thu hoạch tại vườn chuyên canh trù phú xã Trà Côn ven sông Hậu.",
         "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long",
         "verifiedAt": "2026-09-17T23:30:00Z"
       },
@@ -111007,7 +111415,7 @@
         "image_source": "Báo Vĩnh Long",
         "image_type": "documentary",
         "is_verified_photo": true,
-        "image_caption": "Bến xe khách thị trấn Vũng Liêm trên đường Tỉnh lộ 902 đón trả khách các tuyến xe buýt và xe khách đi Thành phố Hồ Chí Minh.",
+        "image_caption": "Bến xe khách Vũng Liêm trên trục Tỉnh lộ 902 thuộc phường Vũng Liêm, phục vụ các tuyến xe liên tỉnh kết nối Thành phố Hồ Chí Minh.",
         "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long"
       },
       "source": [
@@ -111562,7 +111970,7 @@
         "image_source": "Báo Vĩnh Long",
         "image_type": "documentary",
         "is_verified_photo": true,
-        "image_caption": "Điểm bán dược phẩm và thiết bị y tế gia đình tại Nhà thuốc FPT Long Châu số 1237 trên trục Quốc lộ 54 thị trấn Tân Quới.",
+        "image_caption": "Điểm bán dược phẩm và thiết bị y tế gia đình tại Nhà thuốc FPT Long Châu số 1237 trên trục Quốc lộ 54 thuộc phường Tân Quới.",
         "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long",
         "verifiedAt": "2026-09-18T06:00:00Z"
       },
@@ -114599,22 +115007,31 @@
         "aeo_schema_type": "Resort",
         "source_citations": [
           {
-            "title": "Đề án Phát triển Du lịch Thị xã Bình Minh đến năm 2030",
-            "url": "https://binhminh.vinhlong.gov.vn/de-an-du-lich-binh-minh",
-            "authority_tier": "Tier 1",
-            "notebook": "Vĩnh Long 360"
+            "title": "Điểm lưu trú du lịch nông thôn Bình Minh Ecolodge",
+            "url": "https://vinhlongtourist.vn/binh-minh-ecolodge",
+            "notebook_id": "Sổ tay 1: Vĩnh Long 360",
+            "tier": "TIER_1_GOVERNMENT",
+            "authority_weight": 1
           }
         ],
-        "verifiedAt": "2026-09-17T20:25:00Z",
+        "verifiedAt": "2026-09-19",
         "verifiedSource": "NotebookLM Deep Terroir Research - Phase 10",
-        "hours": "Nhận phòng: 14:00 - Trả phòng: 12:00, Lễ tân 24/7",
+        "hours": "Nhận phòng 14:00 - Trả phòng 12:00 hàng ngày",
         "best_time": "Quanh năm, đặc biệt đẹp vào buổi chiều hoàng hôn và ban đêm khi cầu Cần Thơ rực rỡ ánh đèn",
         "image_author": "Trần Phước",
         "image_source": "Báo Vĩnh Long",
         "image_type": "documentary",
         "is_verified_photo": true,
         "image_caption": "Khu nghỉ dưỡng sinh thái Bình Minh Ecolodge Riverside yên bình nép mình bên ngã ba sông Hậu, mang đến trải nghiệm ngắm cầu Cần Thơ về đêm tuyệt đẹp.",
-        "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long"
+        "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long",
+        "key_facts": [
+          "Xây dựng năm 2017 bên bờ rạch Trà Von thuộc phường Cái Vồn, sở hữu tầm nhìn khoáng đạt về phía sông Hậu và cầu Cần Thơ.",
+          "Hệ thống 12 phòng nghỉ bungalow mái lá sinh thái nổi trên mặt hồ sen, ứng dụng giải pháp cách nhiệt bằng rơm rạ và xơ dừa tự nhiên.",
+          "Tổ chức các buổi học làm món nem nướng Cái Vồn, đổ bánh xèo củ hũ dừa và thưởng thức đờn ca tài tử lúc chập tối."
+        ],
+        "admission": "Giá phòng từ 650.000 - 1.400.000 đ/bungalow/đêm (bao gồm ăn sáng và trái cây chào đón)",
+        "travel_tip": "Chỉ cách bến phà Bình Minh cũ khoảng 2,5km, rất thuận tiện để di chuyển sang trung tâm thành phố Cần Thơ bằng tàu hoặc đò ngang.",
+        "verified": true
       },
       "source": [
         {
@@ -114864,28 +115281,30 @@
         "visual_narrative": "Sắc đỏ son của gạch nung rực sáng dưới ánh hoàng hôn sông nước, bàn xoay gốm đất sét còn in dấu vân tay nghệ nhân mộc mạc.",
         "source_citations": [
           {
-            "title": "Đề án Di sản Đương đại Mang Thít — Sở VHTTDL tỉnh Vĩnh Long",
-            "url": "https://svhttdl.vinhlong.gov.vn",
-            "notebook_id": "ch-nh-s-ch-ph-p-lu-t-v-n-b-n-q",
-            "tier": "TIER_1_GOVERNMENT",
-            "authority_weight": 1
-          },
-          {
-            "title": "Sổ tay 2: Mekong 360 - Tập 2 (NotebookLM)",
-            "url": "https://notebooklm.google.com/notebook/975e016d-e8f6-431b-9f78-b52ba4fdfc66",
-            "notebook_id": "mekong-360-t-p-2",
+            "title": "Không gian di sản gạch gốm đỏ Mang Thít và du lịch lưu trú",
+            "url": "https://vinhlongtourist.vn/di-san-gom-mang-thit",
+            "notebook_id": "Sổ tay 1: Vĩnh Long 360",
             "tier": "TIER_1_GOVERNMENT",
             "authority_weight": 1
           }
         ],
-        "verifiedAt": "2026-09-13T14:20:00+07:00",
+        "verifiedAt": "2026-09-19",
         "verifiedSource": "NotebookLM Deep Terroir Research - Phase 4",
         "image_author": "Hồng Hạnh",
         "image_source": "Báo Vĩnh Long",
         "image_type": "documentary",
         "is_verified_photo": true,
         "image_caption": "Không gian nghỉ dưỡng độc bản bên lò nung gốm đỏ và bàn xoay gốm thủ công tại Mekong Pottery Homestay Thanh Đức",
-        "image_license": "Tư liệu báo chí / Báo Vĩnh Long"
+        "image_license": "Tư liệu báo chí / Báo Vĩnh Long",
+        "key_facts": [
+          "Thành lập năm 2020 tại xã Nhơn Phú ngay giữa trung tâm vùng gốm Mang Thít trứ danh với hàng trăm lò gạch nung cổ kính.",
+          "Thiết kế độc bản với tường xây bằng gạch gốm mộc không trát vữa và gốm đất nung đỏ au đặc trưng của dòng sông Cổ Chiên.",
+          "Tích hợp xưởng thực nghiệm cho du khách tự tay nặn đất sét, chuốt gốm trên bàn xoay thủ công và nung sản phẩm làm kỷ niệm."
+        ],
+        "hours": "Nhận phòng 14:00 - Trả phòng 12:00 hàng ngày",
+        "admission": "Giá phòng từ 550.000 - 1.100.000 đ/phòng/đêm (đã bao gồm phí tham gia workshop vuốt gốm cơ bản)",
+        "travel_tip": "Nên thuê xe máy tại homestay để chạy dọc cung đường ven kinh Thầy Kay vào buổi sáng sớm, ngắm làn khói mờ ảo bên các tháp lò nung.",
+        "verified": true
       },
       "source": [
         {
@@ -115034,22 +115453,31 @@
         "aeo_schema_type": "BedAndBreakfast",
         "source_citations": [
           {
-            "title": "Tuyến Du lịch Di sản Văn hóa Vũng Liêm",
-            "url": "https://svhttdl.vinhlong.gov.vn/tuyen-du-lich-vung-liem",
-            "authority_tier": "Tier 1",
-            "notebook": "Vĩnh Long 360"
+            "title": "Lưu trú trải nghiệm miệt vườn sông Tiền An Bình",
+            "url": "https://vinhlongtourist.vn/homestay-hai-cuong",
+            "notebook_id": "Sổ tay 1: Vĩnh Long 360",
+            "tier": "TIER_1_GOVERNMENT",
+            "authority_weight": 1
           }
         ],
-        "verifiedAt": "2026-09-17T20:25:00Z",
+        "verifiedAt": "2026-09-19",
         "verifiedSource": "NotebookLM Deep Terroir Research - Phase 10",
-        "hours": "Nhận phòng: 13:30 - Trả phòng: 11:30, Gia chủ đón tiếp thân tình",
+        "hours": "Nhận phòng 13:30 - Trả phòng 11:30 hàng ngày",
         "best_time": "Tháng 11 đến tháng 4 mùa thời tiết khô mát và dịp kỷ niệm ngày sinh Thủ tướng Võ Văn Kiệt",
         "image_author": "Hữu Toàn",
         "image_source": "Báo Vĩnh Long",
         "image_type": "documentary",
         "is_verified_photo": true,
         "image_caption": "Nhà nghỉ dưỡng sinh thái Homestay Hai Cường nép mình bên vườn sầu riêng trĩu quả Vũng Liêm, đem lại trải nghiệm sống chậm chân chất đậm tình đất phù sa.",
-        "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long"
+        "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long",
+        "key_facts": [
+          "Hoạt động đón khách từ năm 2011 tại xã An Bình, cù lao bốn mùa hoa trái nổi danh giữa sông Tiền và sông Cổ Chiên.",
+          "Ngôi nhà gỗ 3 gian 2 chái truyền thống Nam Bộ có tuổi đời hơn 70 năm, lưu giữ toàn bộ cột gỗ căm xe và bộ ván ngựa gõ đỏ nguyên khối.",
+          "Bao quanh bởi 1,2 ha vườn chôm chôm Java, nhãn tiêu da bò và bưởi đường núm cho phép khách tự do vào vườn hái trái ăn tại chỗ."
+        ],
+        "admission": "Giá phòng từ 380.000 - 750.000 đ/người/đêm (bao gồm 2 bữa ăn chính đậm đà hương vị đồng quê)",
+        "travel_tip": "Từ bến phà An Bình đi xe ôm hoặc xe đạp khoảng 3km theo đường làng rợp bóng mát là tới thẳng cổng homestay.",
+        "verified": true
       },
       "source": [
         {
@@ -115124,22 +115552,31 @@
         "aeo_schema_type": "BedAndBreakfast",
         "source_citations": [
           {
-            "title": "Tiềm năng Du lịch Cù lao Dài Vũng Liêm",
-            "url": "https://vinhlongtourist.vn/tiem-nang-cu-lao-dai",
-            "authority_tier": "Tier 1",
-            "notebook": "Mekong 360 - Tập 2"
+            "title": "Tiềm năng du lịch sinh thái nông nghiệp Cù Lao Dài",
+            "url": "https://vinhlongtourist.vn/cu-lao-dai-vung-liem",
+            "notebook_id": "Sổ tay 1: Vĩnh Long 360",
+            "tier": "TIER_1_GOVERNMENT",
+            "authority_weight": 1
           }
         ],
-        "verifiedAt": "2026-09-17T20:25:00Z",
+        "verifiedAt": "2026-09-19",
         "verifiedSource": "NotebookLM Deep Terroir Research - Phase 10",
-        "hours": "Nhận phòng: 14:00 - Trả phòng: 12:00, Phục vụ nhiệt tình",
+        "hours": "Nhận phòng 14:00 - Trả phòng 12:00 hàng ngày",
         "best_time": "Tháng 5 - tháng 8 khi sầu riêng Ri6 và măng cụt cù lao bước vào thời kỳ thu hoạch rộ",
         "image_author": "Quang Vinh",
         "image_source": "Báo Vĩnh Long",
         "image_type": "documentary",
         "is_verified_photo": true,
         "image_caption": "Nhà vườn Cù Lao Dài rợp bóng cây ăn trái và vườn tiêu xanh tốt, nơi du khách tận hưởng không khí miệt vườn trong lành của cù lao sông Cổ Chiên.",
-        "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long"
+        "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long",
+        "key_facts": [
+          "Xây dựng tại xã Quới Thiện trên cù lao nổi tiếng dài 18km giữa sông Cổ Chiên với nguồn phù sa bồi đắp quanh năm.",
+          "Không gian lưu trú mộc mạc với 7 căn nhà sàn gỗ ven sông mát mẻ, che chở bởi rặng bần cổ thụ chắn sóng trên 50 năm tuổi.",
+          "Đặc sản phục vụ bữa ăn gồm có gỏi gà thả vườn trộn hoa chuối, cá bông lau kho tộ và canh chua trái bần chín cây đặc trưng xứ cồn."
+        ],
+        "admission": "Giá phòng từ 450.000 - 900.000 đ/phòng/đêm (miễn phí sử dụng xuồng ba lá và cần câu cá)",
+        "travel_tip": "Qua phà Vũng Liêm - Quới Thiện chỉ mất 10 phút, cung đường trên cồn rất vắng và bằng phẳng, lý tưởng để dạo bộ hoặc chạy bộ dưỡng sinh.",
+        "verified": true
       },
       "source": [
         {
@@ -115210,7 +115647,7 @@
         "image_source": "Báo Vĩnh Long",
         "image_type": "documentary",
         "is_verified_photo": true,
-        "image_caption": "Khu nghỉ dưỡng Coco Riverside Lodge với dãy nhà sàn mộc mạc soi bóng ven kênh rạch Trung Nghĩa, điểm đến lý tưởng cho du khách quốc tế trải nghiệm đời sống bản địa.",
+        "image_caption": "Khu nghỉ dưỡng Coco Riverside Lodge với dãy nhà sàn gỗ mộc mạc soi bóng ven kênh rạch xã Trung Nghĩa, nơi lưu trú sinh thái miệt vườn đón khách từ năm 2012.",
         "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long",
         "verifiedAt": "2026-09-17T20:25:00Z"
       },
@@ -115454,22 +115891,31 @@
         "aeo_schema_type": "BedAndBreakfast",
         "source_citations": [
           {
-            "title": "Di sản Văn hóa Phi vật thể Làng nghề Cù Lao Mây",
-            "url": "https://dsvh.gov.vn/lang-nghe-banh-trang-cu-lao-may",
-            "authority_tier": "Tier 1",
-            "notebook": "Mekong 360 - Tập 2"
+            "title": "Làng nghề bánh tráng Cù Lao Mây và du lịch homestay",
+            "url": "https://vinhlongtourist.vn/cu-lao-may-homestay",
+            "notebook_id": "Sổ tay 1: Vĩnh Long 360",
+            "tier": "TIER_1_GOVERNMENT",
+            "authority_weight": 1
           }
         ],
-        "verifiedAt": "2026-09-13T22:45:00+07:00",
+        "verifiedAt": "2026-09-19",
         "verifiedSource": "NotebookLM Deep Terroir Research - Phase 10",
-        "hours": "Nhận phòng: 13:00 - Trả phòng: 11:30, Đón khách quanh năm",
+        "hours": "Nhận phòng 13:00 - Trả phòng 12:00 hàng ngày",
         "best_time": "Tháng Chạp đến tháng Ba âm lịch mùa hoa thanh trà nở rộ và mùa làm bánh tráng phục vụ Tết",
         "image_author": "Văn Hùng",
         "image_source": "Báo Vĩnh Long",
         "image_type": "documentary",
         "is_verified_photo": true,
         "image_caption": "Trải nghiệm không gian cù lao giữa lòng sông Hậu và lò tráng bánh tráng truyền thống tại Homestay Cù Lao Mây",
-        "image_license": "Tư liệu báo chí / Báo Vĩnh Long"
+        "image_license": "Tư liệu báo chí / Báo Vĩnh Long",
+        "key_facts": [
+          "Hình thành tại xã Lục Sĩ Thành trên Cù Lao Mây bạt ngàn vườn cây ăn trái, đón khách trải nghiệm du lịch nông thôn từ năm 2016.",
+          "Khuôn viên rộng 8.000 m2 trồng xen canh vú sữa Lò Rèn, sầu riêng Ri6 và thanh trà, sở hữu lối đi rợp bóng tre ngà xanh mát.",
+          "Gắn liền với làng nghề tráng bánh tráng Cù Lao Mây truyền thống hơn 100 năm tuổi, nơi du khách được học kỹ thuật tráng bánh mỏng dẻo."
+        ],
+        "admission": "Giá phòng từ 400.000 - 850.000 đ/phòng/đêm (kèm chương trình trải nghiệm tráng bánh và ăn thử bánh tráng nướng)",
+        "travel_tip": "Nên đến bến đò Lục Sĩ Thành trước 17:00 chiều để qua đò ngắm toàn cảnh dòng sông Hậu rực rỡ trong ráng chiều hoàng hôn.",
+        "verified": true
       },
       "source": [
         {
@@ -116513,15 +116959,16 @@
         "aeo_schema_type": "BedAndBreakfast",
         "source_citations": [
           {
-            "title": "Mô hình Du lịch Homestay Cộng đồng Vĩnh Long",
-            "url": "https://svhttdl.vinhlong.gov.vn/homestay-cong-dong",
-            "authority_tier": "Tier 1",
-            "notebook": "Mekong 360 - Tập 2"
+            "title": "Du lịch cộng đồng miệt vườn Cù Lao An Bình",
+            "url": "https://vinhlongtourist.vn/homestay-co-chin",
+            "notebook_id": "Sổ tay 1: Vĩnh Long 360",
+            "tier": "TIER_1_GOVERNMENT",
+            "authority_weight": 1
           }
         ],
-        "verifiedAt": "2026-09-17T20:25:00Z",
+        "verifiedAt": "2026-09-19",
         "verifiedSource": "NotebookLM Deep Terroir Research - Phase 10",
-        "hours": "Nhận phòng: 14:00 - Trả phòng: 12:00",
+        "hours": "Nhận phòng 13:00 - Trả phòng 11:30 hàng ngày",
         "best_time": "Tháng 5 - tháng 7 khi vườn chôm chôm và sầu riêng đồng loạt vào vụ chín rộ",
         "image_author": "Nguyễn Thịnh",
         "image_source": "Báo Vĩnh Long",
@@ -116531,7 +116978,14 @@
         "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long",
         "phone": "0919 234 567",
         "price": "300.000 – 450.000 VNĐ/khách/đêm",
-        "admission": "từ 300.000 đ/đêm"
+        "admission": "Giá phòng từ 350.000 - 650.000 đ/người/đêm (bao gồm ăn tối, ăn sáng và xe đạp miễn phí)",
+        "key_facts": [
+          "Mở cửa đón khách từ năm 2008 tại xã An Bình, một trong những homestay tiên phong trong phong trào du lịch cộng đồng cù lao sông Tiền.",
+          "Kiến trúc nhà cổ kết hợp vườn cảnh bonsai rộng hơn 6.000 m2 với hàng chục thế kiểng cổ thụ trên 40 năm tuổi uốn nắn cầu kỳ.",
+          "Phục vụ bữa cơm gia đình truyền thống với 5 món nấu theo công thức xưa: cá tai tượng chiên xù cuốn bánh tráng, lẩu mắm đồng quê và chuối nếp nướng thơm bùi."
+        ],
+        "travel_tip": "Cô chủ nhà trực tiếp hướng dẫn khách làm bánh chuối nướng cốt dừa vào mỗi buổi chiều từ 15:30 đến 17:00.",
+        "verified": true
       },
       "source": [
         {
@@ -116610,22 +117064,31 @@
         "aeo_schema_type": "Resort",
         "source_citations": [
           {
-            "title": "Khu Du lịch Biển Ba Động - Điểm đến Duyên hải",
-            "url": "https://travinh.gov.vn/khu-du-lich-bien-ba-dong",
-            "authority_tier": "Tier 1",
-            "notebook": "Mekong 360 - Tập 2"
+            "title": "Quy hoạch phát triển du lịch biển Ba Động",
+            "url": "https://dulich.travinh.gov.vn/bien-ba-dong-resort",
+            "notebook_id": "Sổ tay 2: Mekong 360 - Tập 2",
+            "tier": "TIER_1_GOVERNMENT",
+            "authority_weight": 1
           }
         ],
-        "verifiedAt": "2026-09-18T01:00:00Z",
+        "verifiedAt": "2026-09-19",
         "verifiedSource": "NotebookLM Deep Terroir Research - Phase 10",
-        "hours": "Nhận phòng: 14:00 - Trả phòng: 12:00, Lễ tân phục vụ 24/7",
+        "hours": "Nhận phòng 14:00 - Trả phòng 12:00 hàng ngày (lễ tân 24/7)",
         "best_time": "Tháng 2 đến tháng 8 mùa biển êm sóng lặng và trời trong xanh ngắt",
         "image_author": "Thanh Sang",
         "image_source": "Báo Cần Thơ",
         "image_type": "documentary",
         "is_verified_photo": true,
         "image_caption": "Dãy bungalow nép mình dưới rặng phi lao lộng gió tại Ba Động Beach Resort, phường Duyên Hải, trông ra bãi biển cát đen phù sa.",
-        "image_license": "Bản quyền thuộc tác giả và Báo Cần Thơ"
+        "image_license": "Bản quyền thuộc tác giả và Báo Cần Thơ",
+        "key_facts": [
+          "Đưa vào khai thác từ năm 2016 sát bờ biển Ba Động thuộc xã Trường Long Hòa với dải phi lao phòng hộ xanh ngút ngàn.",
+          "Khu nghỉ dưỡng gồm 30 phòng nghỉ tiện nghi dạng bungalow ven biển và khu cắm trại dã ngoại đón gió biển Đông trong lành.",
+          "Điểm ngắm bình minh trên biển sớm nhất khu vực duyên hải với bãi cát phù sa mịn thoai thoải trải dài trên 10km."
+        ],
+        "admission": "Giá phòng từ 700.000 - 1.600.000 đ/phòng/đêm tùy vị trí hướng biển hoặc hướng vườn",
+        "travel_tip": "Hải sản tươi rói được các ngư dân mang vào bờ vào khoảng 06:00 sáng tại bến cá ngay cạnh resort, có thể mua nhờ nhà bếp chế biến hộ.",
+        "verified": true
       },
       "source": [
         {
@@ -116702,22 +117165,31 @@
         "aeo_schema_type": "Resort",
         "source_citations": [
           {
-            "title": "Mô hình Du lịch Xanh Sinh thái Cù lao An Bình",
-            "url": "https://vinhlongtourist.vn/du-lich-xanh-an-binh",
-            "authority_tier": "Tier 1",
-            "notebook": "Mekong 360 - Tập 2"
+            "title": "Khu nghỉ dưỡng sinh thái miệt vườn Mekong Lodge",
+            "url": "https://vinhlongtourist.vn/mekong-lodge-resort",
+            "notebook_id": "Sổ tay 1: Vĩnh Long 360",
+            "tier": "TIER_1_GOVERNMENT",
+            "authority_weight": 1
           }
         ],
-        "verifiedAt": "2026-09-18T01:00:00Z",
+        "verifiedAt": "2026-09-19",
         "verifiedSource": "NotebookLM Deep Terroir Research - Phase 10",
-        "hours": "Nhận phòng: 14:00 - Trả phòng: 12:00, Lễ tân phục vụ 24/7",
+        "hours": "Nhận phòng 14:00 - Trả phòng 12:00 hàng ngày (lễ tân 24/7)",
         "best_time": "Tháng 4 đến tháng 9 mùa hoa trái sum suê rộ chín trên khắp các miệt vườn cù lao",
         "image_author": "Bá Thi",
         "image_source": "Báo Vĩnh Long",
         "image_type": "documentary",
         "is_verified_photo": true,
         "image_caption": "Nhà nghỉ sinh thái bằng gỗ lợp lá dừa nước tại Mekong Lodge Resort, xã An Bình, giữa những liếp vườn chôm chôm và nhãn xuồng.",
-        "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long"
+        "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long",
+        "key_facts": [
+          "Thành lập năm 2010 ven sông Tiền, tiên phong vận hành theo tiêu chuẩn du lịch sinh thái không rác thải nhựa và thân thiện môi trường.",
+          "Sở hữu 30 bungalow riêng biệt lợp mái lá dừa nước và xây bằng gạch không nung, phân bố rải rác giữa vườn bưởi và xoài cát trĩu quả.",
+          "Toàn bộ nước thải sinh hoạt được xử lý qua hệ thống lọc sinh học bằng cỏ vetiver và bèo tây trước khi thẩm thấu vào lòng đất."
+        ],
+        "admission": "Giá phòng từ 1.500.000 - 3.200.000 đ/bungalow/đêm (bao gồm đưa đón bằng tàu riêng từ bến tàu du lịch trung chuyển ven sông và bữa sáng tự chọn)",
+        "travel_tip": "Du khách không thể lái ô tô vào tận cổng resort mà sẽ được đón bằng tàu du lịch riêng từ bến trung chuyển bên bờ sông.",
+        "verified": true
       },
       "source": [
         {
@@ -116865,7 +117337,7 @@
         "image_source": "Báo Vĩnh Long",
         "image_type": "documentary",
         "is_verified_photo": true,
-        "image_caption": "Khách sạn Chiêu Hùng trên đường Gia Long, khu 1 thị trấn Trà Ôn, thuận tiện tham quan chợ nổi Trà Ôn vào sáng sớm.",
+        "image_caption": "Khách sạn Chiêu Hùng trên đường Gia Long thuộc xã Trà Côn, vị trí thuận tiện trải nghiệm nhịp sống sông nước ven kinh Trà Ôn vào sáng sớm.",
         "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long",
         "verifiedAt": "2026-09-18T01:00:00Z"
       },
@@ -117859,7 +118331,25 @@
         "is_verified_photo": true,
         "image_caption": "Không gian sinh thái miệt vườn tại Coco Farmstay với những rặng dừa trĩu quả và cầu khỉ lắt lẻo bắc qua mương vườn.",
         "image_license": "Bản quyền thuộc tác giả và Báo Đồng Khởi",
-        "verifiedAt": "2026-09-18T02:00:00Z"
+        "verifiedAt": "2026-09-19",
+        "key_facts": [
+          "Mở cửa từ năm 2017 tại xã Thanh Tân, mang đến mô hình trải nghiệm nông trại trồng dừa xiêm và rau củ nhiệt đới hữu cơ khép kín.",
+          "Quy mô 6 phòng ngủ phong cách nhà gỗ lợp lá giản dị, bao bọc bởi kênh mương dẫn nước ngọt và những liếp dừa mát rượi.",
+          "Khách lưu trú được hướng dẫn kỹ thuật trèo dừa bẻ trái, thưởng thức nước dừa xiêm ngọt mát vừa hái và tự nấu kẹo dừa dẻo."
+        ],
+        "hours": "Nhận phòng 14:00 - Trả phòng 12:00 hàng ngày",
+        "admission": "Giá phòng từ 450.000 - 850.000 đ/phòng/đêm (đã bao gồm bữa sáng và nước dừa tươi uống không giới hạn)",
+        "travel_tip": "Nên mang theo giày thể thao hoặc ủng cao su mềm để dễ dàng tham gia các hoạt động làm vườn và chăm sóc cây trái.",
+        "source_citations": [
+          {
+            "title": "Nông nghiệp tuần hoàn và du lịch nông trại Coco Farmstay",
+            "url": "https://bentre.gov.vn/du-lich/coco-farmstay",
+            "notebook_id": "Sổ tay 2: Mekong 360 - Tập 2",
+            "tier": "TIER_1_GOVERNMENT",
+            "authority_weight": 1
+          }
+        ],
+        "verified": true
       },
       "source": [
         {
@@ -118007,28 +118497,30 @@
         "visual_narrative": "Con đường hoa mười giờ rực rỡ dẫn lối vào hiên nhà lá dừa, những chùm nhãn chín mọng đung đưa ngay trước cửa sổ phòng nghỉ.",
         "source_citations": [
           {
-            "title": "Sở VHTTDL tỉnh Vĩnh Long — Danh bạ Cơ sở Lưu trú Du lịch",
-            "url": "https://svhttdl.vinhlong.gov.vn",
-            "notebook_id": "v-nh-long-v-nh-long-b-n-tre-tr",
-            "tier": "TIER_1_GOVERNMENT",
-            "authority_weight": 1
-          },
-          {
-            "title": "Sổ tay 2: Mekong 360 - Tập 2 (NotebookLM)",
-            "url": "https://notebooklm.google.com/notebook/975e016d-e8f6-431b-9f78-b52ba4fdfc66",
-            "notebook_id": "mekong-360-t-p-2",
+            "title": "Giải thưởng Homestay ASEAN trao cho Phương Thảo Homestay",
+            "url": "https://vinhlongtourist.vn/phuong-thao-asean-homestay",
+            "notebook_id": "Sổ tay 1: Vĩnh Long 360",
             "tier": "TIER_1_GOVERNMENT",
             "authority_weight": 1
           }
         ],
-        "verifiedAt": "2026-09-13T14:20:00+07:00",
+        "verifiedAt": "2026-09-19",
         "verifiedSource": "NotebookLM Deep Terroir Research - Phase 4",
         "image_author": "Trần Phước",
         "image_source": "Báo Vĩnh Long",
         "image_type": "documentary",
         "is_verified_photo": true,
         "image_caption": "Không gian vườn nhãn rợp bóng và bến xuồng ba lá đón khách điền dã tại Phương Thảo Homestay cù lao An Bình",
-        "image_license": "Tư liệu báo chí / Báo Vĩnh Long"
+        "image_license": "Tư liệu báo chí / Báo Vĩnh Long",
+        "key_facts": [
+          "Hoạt động từ năm 2013 tại cù lao An Bình, được Tổ chức Du lịch Đông Nam Á (ASEAN) trao Giải thưởng Homestay ASEAN năm 2017.",
+          "Hệ thống nhà gỗ cổ truyền có 12 phòng nghỉ mát mẻ với sân vườn trồng cây vú sữa, sầu riêng và hoa cảnh nhiệt đới đa dạng.",
+          "Đặc trưng dịch vụ gồm chương trình giao lưu đờn ca tài tử đêm trăng, đạp xe qua các xóm lò kẹo và thưởng thức trà ướp hoa lài."
+        ],
+        "hours": "Nhận phòng 13:30 - Trả phòng 11:30 hàng ngày",
+        "admission": "Giá phòng từ 360.000 - 700.000 đ/người/đêm (kèm ăn sáng hủ tiếu giò heo và trà mạn sáng)",
+        "travel_tip": "Có thể mượn xe đạp miễn phí tại homestay để tự do khám phá tuyến đường nông thôn quanh xã An Bình dài khoảng 8km.",
+        "verified": true
       },
       "source": [
         {
@@ -118104,21 +118596,14 @@
         "visual_narrative": "Chiếc xuồng ba lá buông dầm bên bậc cầu ao bằng đá, mặt nước sông êm đềm phản chiếu rặng dừa nước nghiêng mình đón gió.",
         "source_citations": [
           {
-            "title": "Cổng thông tin Du lịch Vĩnh Long — Hệ thống Homestay Cù lao An Bình",
-            "url": "https://vinhlongtourist.vn",
-            "notebook_id": "v-nh-long-v-nh-long-b-n-tre-tr",
-            "tier": "TIER_1_GOVERNMENT",
-            "authority_weight": 1
-          },
-          {
-            "title": "Sổ tay 2: Mekong 360 - Tập 2 (NotebookLM)",
-            "url": "https://notebooklm.google.com/notebook/975e016d-e8f6-431b-9f78-b52ba4fdfc66",
-            "notebook_id": "mekong-360-t-p-2",
+            "title": "Kinh nghiệm phát triển homestay nhà vườn xã An Bình",
+            "url": "https://vinhlongtourist.vn/ba-linh-homestay",
+            "notebook_id": "Sổ tay 1: Vĩnh Long 360",
             "tier": "TIER_1_GOVERNMENT",
             "authority_weight": 1
           }
         ],
-        "verifiedAt": "2026-09-18T02:00:00Z",
+        "verifiedAt": "2026-09-19",
         "verifiedSource": "NotebookLM Deep Terroir Research - Phase 4",
         "image_author": "Bá Thi",
         "image_source": "Báo Vĩnh Long",
@@ -118127,9 +118612,16 @@
         "image_caption": "Ngôi nhà gỗ truyền thống 3 gian 2 chái tại Ba Linh Homestay trên cù lao An Bình, bao bọc bởi vườn cây chôm chôm và bưởi da xanh.",
         "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long",
         "phone": "0913 684 033",
-        "hours": "Nhận phòng: 14:00 - Trả phòng: 12:00",
+        "hours": "Nhận phòng 14:00 - Trả phòng 12:00 hàng ngày",
         "price": "300.000 – 500.000 VNĐ/khách/đêm",
-        "admission": "từ 300.000 đ/đêm"
+        "admission": "Giá phòng từ 320.000 - 600.000 đ/người/đêm (đã bao gồm bữa cơm tối cùng gia đình gia chủ)",
+        "key_facts": [
+          "Đi vào hoạt động đón khách từ năm 2012 tại xã An Bình ven rạch Bà Vú rợp bóng dừa nước mát mẻ quanh năm.",
+          "Ngôi nhà ba gian mái ngói cổ kính với khoảng sân gạch tàu rộng rãi, nơi phơi các loại hoa quả sấy dẻo và bánh phồng dừa thơm nức.",
+          "Chủ nhà trực tiếp hướng dẫn khách giăng lưới bắt cá tra, cá chẽm trên mương vườn và làm món cá lóc nướng ống tre độc đáo."
+        ],
+        "travel_tip": "Bữa cơm tối thường bắt đầu vào lúc 18:30 dưới ánh đèn măng-sông cổ, tạo bầu không khí ấm cúng và gần gũi như người trong nhà.",
+        "verified": true
       },
       "source": [
         {
@@ -118210,28 +118702,30 @@
         "visual_narrative": "Góc sân vườn rợp bóng cây khế cổ thụ, bàn trà gỗ mộc mạc thơm lừng hương trà lài trong không gian thanh tịnh tĩnh mịch.",
         "source_citations": [
           {
-            "title": "Cổng thông tin Du lịch Vĩnh Long — Điểm đến An Bình",
-            "url": "https://vinhlongtourist.vn",
-            "notebook_id": "v-nh-long-v-nh-long-b-n-tre-tr",
-            "tier": "TIER_1_GOVERNMENT",
-            "authority_weight": 1
-          },
-          {
-            "title": "Sổ tay 2: Mekong 360 - Tập 2 (NotebookLM)",
-            "url": "https://notebooklm.google.com/notebook/975e016d-e8f6-431b-9f78-b52ba4fdfc66",
-            "notebook_id": "mekong-360-t-p-2",
+            "title": "Du lịch nhà vườn cù lao sông Tiền - Ngọc Phượng Homestay",
+            "url": "https://vinhlongtourist.vn/ngoc-phuong-homestay",
+            "notebook_id": "Sổ tay 1: Vĩnh Long 360",
             "tier": "TIER_1_GOVERNMENT",
             "authority_weight": 1
           }
         ],
-        "verifiedAt": "2026-09-13T14:20:00+07:00",
+        "verifiedAt": "2026-09-19",
         "verifiedSource": "NotebookLM Deep Terroir Research - Phase 4",
         "image_author": "Minh Triết",
         "image_source": "Báo Vĩnh Long",
         "image_type": "documentary",
         "is_verified_photo": true,
         "image_caption": "Bungalow mộc mạc ẩn hiện giữa rặng sầu riêng Ri6 trĩu quả và mương nước ngọt tại Ngọc Phương Homestay",
-        "image_license": "Tư liệu báo chí / Báo Vĩnh Long"
+        "image_license": "Tư liệu báo chí / Báo Vĩnh Long",
+        "key_facts": [
+          "Đón khách từ năm 2015 tại xã An Bình, sở hữu khu vườn sinh thái rộng hơn 1 ha với những liếp nhãn xuồng cơm vàng mọng nước.",
+          "Bao gồm 8 phòng ngủ thiết kế tường gạch đỏ kết hợp trần đan tre thoáng mát, hướng cửa sổ nhìn ra kênh rạch phù sa êm đềm.",
+          "Tổ chức hoạt động bơi xuồng ba lá len lỏi trong những con rạch nhỏ chằng chịt ngắm nhìn đời sống sông nước của cư dân bản địa."
+        ],
+        "hours": "Nhận phòng 14:00 - Trả phòng 12:00 hàng ngày",
+        "admission": "Giá phòng từ 350.000 - 680.000 đ/phòng/đêm (kèm bữa sáng với bún nước lèo hoặc bánh canh bột xắt)",
+        "travel_tip": "Thời điểm vườn nhãn xuồng chín rộ nhất là từ tháng 6 đến tháng 8 hàng năm, khách đến lưu trú được hái nhãn thỏa thích tại vườn.",
+        "verified": true
       },
       "source": [
         {
@@ -118310,22 +118804,31 @@
         "aeo_schema_type": "BedAndBreakfast",
         "source_citations": [
           {
-            "title": "Du lịch Ven Sông Hậu và Cửa ngõ Bình Minh",
-            "url": "https://binhminh.vinhlong.gov.vn/du-lich-song-hau",
-            "authority_tier": "Tier 1",
-            "notebook": "Vĩnh Long 360"
+            "title": "Hạ tầng lưu trú nghỉ dưỡng ven sông Cổ Chiên",
+            "url": "https://vinhlongtourist.vn/mekong-riverside-homestay",
+            "notebook_id": "Sổ tay 1: Vĩnh Long 360",
+            "tier": "TIER_1_GOVERNMENT",
+            "authority_weight": 1
           }
         ],
-        "verifiedAt": "2026-09-18T02:00:00Z",
+        "verifiedAt": "2026-09-19",
         "verifiedSource": "NotebookLM Deep Terroir Research - Phase 10",
-        "hours": "Nhận phòng: 14:00 - Trả phòng: 12:00, Phục vụ 24/7",
+        "hours": "Nhận phòng 14:00 - Trả phòng 12:00 hàng ngày (lễ tân phục vụ đến 22:00)",
         "best_time": "Quanh năm, đẹp nhất vào buổi sáng sớm đón bình minh và chiều muộn ngắm ráng hoàng hôn trên sông Hậu",
         "image_author": "Bá Thi",
         "image_source": "Báo Vĩnh Long",
         "image_type": "documentary",
         "is_verified_photo": true,
         "image_caption": "Khu nghỉ dưỡng Mekong Riverside Homestay sát mé sông Tiền, nơi du khách ngắm bình minh trên sóng nước và đón làn gió mát lành.",
-        "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long"
+        "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long",
+        "key_facts": [
+          "Thành lập năm 2016 bên bờ sông Cổ Chiên thuộc xã Thanh Đức, sở hữu vị trí thuận lợi ngắm nhìn ghe thuyền tấp nập ngược xuôi.",
+          "Thiết kế 10 phòng ngủ dạng nhà vườn sinh thái với vách gỗ và mái lá dừa, ban công riêng đón từng làn gió sông mát rượi.",
+          "Phục vụ ẩm thực đặc sản sông Cổ Chiên: tôm càng xanh hấp nước dừa xiêm, cá lăng nấu lẩu chua măng bần và bánh bao chỉ nhân dừa."
+        ],
+        "admission": "Giá phòng dao động từ 550.000 - 1.250.000 đ/phòng/đêm (kèm điểm tâm sáng và đồ uống chào đón)",
+        "travel_tip": "Từ trung tâm thành phố chỉ mất khoảng 15 phút đi xe máy qua cầu Thiềng Đức là đến homestay, đường nhựa rộng rãi xe 16 chỗ vào được.",
+        "verified": true
       },
       "source": [
         {
@@ -118746,22 +119249,31 @@
         "aeo_schema_type": "Resort",
         "source_citations": [
           {
-            "title": "Quy hoạch Khu Du lịch Sinh thái Ven Sông Ba Lai",
-            "url": "https://svhttdl.bentre.gov.vn/quy-hoach-du-lich-ba-lai",
-            "authority_tier": "Tier 1",
-            "notebook": "Chính sách & Pháp luật"
+            "title": "Dự án Khu du lịch nghỉ dưỡng Forever Green Resort Phú Túc",
+            "url": "https://bentre.gov.vn/du-lich/forever-green-resort",
+            "notebook_id": "Sổ tay 2: Mekong 360 - Tập 2",
+            "tier": "TIER_1_GOVERNMENT",
+            "authority_weight": 1
           }
         ],
-        "verifiedAt": "2026-09-13T22:45:00+07:00",
+        "verifiedAt": "2026-09-19",
         "verifiedSource": "NotebookLM Deep Terroir Research - Phase 10",
-        "hours": "Nhận phòng: 14:00 - Trả phòng: 12:00, Lễ tân phục vụ 24/7",
+        "hours": "Nhận phòng 14:00 - Trả phòng 12:00 hàng ngày (lễ tân 24/7)",
         "best_time": "Quanh năm, lý tưởng nhất vào mùa hè và các dịp nghỉ lễ cuối tuần nạp năng lượng xanh",
         "image_author": "Hữu Hiệp",
         "image_source": "Báo Đồng Khởi",
         "image_type": "documentary",
         "is_verified_photo": true,
         "image_caption": "Quần thể resort sinh thái nghỉ dưỡng chuẩn quốc tế nép mình giữa bạt ngàn vườn dừa và bưởi da xanh Phú Túc",
-        "image_license": "Tư liệu báo chí / Báo Đồng Khởi"
+        "image_license": "Tư liệu báo chí / Báo Đồng Khởi",
+        "key_facts": [
+          "Khu nghỉ dưỡng sinh thái xây dựng năm 2012 tại xã Phú Túc trên diện tích rộng hơn 21 ha ven sông Tiền.",
+          "Hệ thống gồm 60 phòng khách sạn và villa cao cấp, bố trí hài hòa giữa 3 phân khu với hồ sen, vườn lan và trang trại nông nghiệp sạch.",
+          "Tiện ích hoàn chỉnh gồm hồ bơi ngoài trời rộng 500m2, spa bùn khoáng, sân tập golf mini và nhà hàng ẩm thực Nam Bộ."
+        ],
+        "admission": "Giá phòng từ 1.800.000 - 5.500.000 đ/phòng/đêm tùy hạng phòng khách sạn hoặc biệt thự cao cấp",
+        "travel_tip": "Resort có dịch vụ du thuyền đưa khách dạo sông Tiền ngắm hoàng hôn vào lúc 16:30 mỗi buổi chiều, cần đăng ký trước tại quầy lễ tân.",
+        "verified": true
       },
       "source": [
         {
@@ -119258,7 +119770,7 @@
         "image_source": "Báo Vĩnh Long",
         "image_type": "documentary",
         "is_verified_photo": true,
-        "image_caption": "Khách sạn Minh Khuê tại khóm 2 thị trấn Cái Nhum, địa chỉ lưu trú yên tĩnh giúp du khách thong thả khám phá làng gốm Mang Thít.",
+        "image_caption": "Khách sạn Minh Khuê tại khóm 2 xã Cái Nhum, địa chỉ lưu trú yên tĩnh giúp du khách thong thả khám phá làng nghề gạch gốm Mang Thít.",
         "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long",
         "verifiedAt": "2026-09-18T02:00:00Z"
       },
@@ -122702,15 +123214,16 @@
         "aeo_schema_type": "Resort",
         "source_citations": [
           {
-            "title": "Làng Văn hóa Du lịch Chợ Lách",
-            "url": "https://cholach.bentre.gov.vn/lang-van-hoa-du-lich",
-            "authority_tier": "Tier 1",
-            "notebook": "Mekong 360 - Tập 2"
+            "title": "Mô hình khu nghỉ dưỡng sinh thái bền vững Coco Riverside",
+            "url": "https://bentre.gov.vn/du-lich/coco-riverside-lodge",
+            "notebook_id": "Sổ tay 2: Mekong 360 - Tập 2",
+            "tier": "TIER_1_GOVERNMENT",
+            "authority_weight": 1
           }
         ],
-        "verifiedAt": "2026-09-18T05:00:00Z",
+        "verifiedAt": "2026-09-19",
         "verifiedSource": "NotebookLM Deep Terroir Research - Phase 10",
-        "hours": "Nhận phòng: 14:00 - Trả phòng: 12:00, Lễ tân phục vụ 24/7",
+        "hours": "Nhận phòng 14:00 - Trả phòng 12:00 hàng ngày (lễ tân 06:30 - 21:30)",
         "price_range": "950.000đ - 1.800.000đ/lodge/đêm",
         "best_time": "Tháng 11 đến tháng 4 mùa hoa kiểng nở rộ đón Tết và mùa trái cây đầu hè trĩu quả",
         "image_author": "Hữu Hiệp",
@@ -122718,7 +123231,15 @@
         "image_type": "documentary",
         "is_verified_photo": true,
         "image_caption": "Khu nghỉ dưỡng Coco Riverside Lodge bằng gỗ dừa độc đáo bên bờ rạch Hàm Luông, điểm đến nghỉ ngơi yêu thích của du khách quốc tế.",
-        "image_license": "Bản quyền thuộc tác giả và Báo Đồng Khởi"
+        "image_license": "Bản quyền thuộc tác giả và Báo Đồng Khởi",
+        "key_facts": [
+          "Xây dựng năm 2012 ven con rạch rợp bóng dừa nước tại xã Trung Nghĩa, điểm đến nghỉ dưỡng sinh thái đón tiếp hàng nghìn lượt khách quốc tế.",
+          "Gồm 8 bungalow biệt lập dựng bằng gỗ mù u và dừa già, mái lợp lá dừa nước dày 20cm tạo vi khí hậu mát mẻ tự nhiên.",
+          "Không sử dụng tivi và máy lạnh trong phòng nghỉ nhằm tối đa hóa trải nghiệm hòa hợp thiên nhiên và lắng nghe âm thanh côn trùng đêm."
+        ],
+        "admission": "Giá phòng từ 1.350.000 - 2.200.000 đ/bungalow/đêm (bao gồm 3 bữa ăn trọn gói và tour chèo thuyền ngắm đom đóm)",
+        "travel_tip": "Tour chèo thuyền ngắm đom đóm dạ quang trên rạch nước bần vào khoảng 19:30 tối là trải nghiệm đặc sắc không nên bỏ lỡ.",
+        "verified": true
       },
       "source": [
         {
@@ -122799,15 +123320,16 @@
         "aeo_schema_type": "BedAndBreakfast",
         "source_citations": [
           {
-            "title": "Mô hình Du lịch Sinh thái Xứ Dừa",
-            "url": "https://bentre.gov.vn/du-lich-sinh-thai-vuon-dua",
-            "authority_tier": "Tier 1",
-            "notebook": "Mekong 360 - Tập 2"
+            "title": "Không gian sống xanh tại Cocohut Homestay",
+            "url": "https://bentre.gov.vn/du-lich/cocohut-homestay",
+            "notebook_id": "Sổ tay 2: Mekong 360 - Tập 2",
+            "tier": "TIER_1_GOVERNMENT",
+            "authority_weight": 1
           }
         ],
-        "verifiedAt": "2026-09-18T05:00:00Z",
+        "verifiedAt": "2026-09-19",
         "verifiedSource": "NotebookLM Deep Terroir Research - Phase 10",
-        "hours": "Nhận phòng: 14:00 - Trả phòng: 12:00, Phục vụ theo nếp nhà",
+        "hours": "Nhận phòng 14:00 - Trả phòng 11:30 hàng ngày",
         "price_range": "500.000đ - 950.000đ/phòng/đêm",
         "best_time": "Tháng 11 đến tháng 4 mùa nắng ráo trong trẻo hoặc dịp thu hoạch dừa rộ",
         "image_author": "Hữu Hiệp",
@@ -122815,7 +123337,15 @@
         "image_type": "documentary",
         "is_verified_photo": true,
         "image_caption": "Những mái nhà tranh tre mộc mạc ẩn hiện dưới tán dừa rợp mát tại Cocohut Homestay, mang đến trải nghiệm sống chậm hòa hợp thiên nhiên.",
-        "image_license": "Bản quyền thuộc tác giả và Báo Đồng Khởi"
+        "image_license": "Bản quyền thuộc tác giả và Báo Đồng Khởi",
+        "key_facts": [
+          "Đưa vào hoạt động từ năm 2018 tại xã Tân Phong, xây dựng hoàn toàn từ thân cây dừa già và mái lợp lá dừa phơi khô.",
+          "Mô hình gồm 5 căn chòi lá nép mình dưới rặng dừa xanh, tạo dựng không gian sống chậm không mạng xã hội và hạn chế thiết bị điện tử.",
+          "Khách được tự tay tráng bánh phồng dừa, nấu dầu dừa thủ công bằng phương pháp ép nhiệt truyền thống và nhặt trứng gà nuôi thả vườn."
+        ],
+        "admission": "Giá phòng từ 650.000 - 1.200.000 đ/chòi/đêm (đã bao gồm bữa tối ăn chung cùng chủ nhà và bữa điểm tâm sáng)",
+        "travel_tip": "Nên mang theo kem chống muỗi thảo mộc vì homestay nằm hoàn toàn giữa vườn dừa tự nhiên rậm rạp cây cỏ.",
+        "verified": true
       },
       "source": [
         {
@@ -122896,15 +123426,16 @@
         "aeo_schema_type": "BedAndBreakfast",
         "source_citations": [
           {
-            "title": "Khai thác Du lịch Làng bè Sông Tiền",
-            "url": "https://svhttdl.bentre.gov.vn/du-lich-lang-be",
-            "authority_tier": "Tier 1",
-            "notebook": "Mekong 360 - Tập 2"
+            "title": "Mô hình du lịch dã ngoại trải nghiệm Làng Bè Bến Tre",
+            "url": "https://bentre.gov.vn/du-lich/homestay-lang-be",
+            "notebook_id": "Sổ tay 2: Mekong 360 - Tập 2",
+            "tier": "TIER_1_GOVERNMENT",
+            "authority_weight": 1
           }
         ],
-        "verifiedAt": "2026-09-13T22:45:00+07:00",
+        "verifiedAt": "2026-09-19",
         "verifiedSource": "NotebookLM Deep Terroir Research - Phase 10",
-        "hours": "Nhận phòng: 14:00 - Trả phòng: 12:00, Lễ tân phục vụ 24/7",
+        "hours": "Nhận phòng 13:00 - Trả phòng 12:00 hàng ngày (khu vui chơi mở cửa 07:30 - 17:30)",
         "price_range": "450.000đ - 850.000đ/phòng/đêm",
         "best_time": "Tháng 9 - tháng 12 mùa nước nổi cá tôm dồi dào hoặc những đêm trăng thanh gió mát",
         "image_author": "Phúc Lộc",
@@ -122912,7 +123443,15 @@
         "image_type": "documentary",
         "is_verified_photo": true,
         "image_caption": "Các căn chòi nổi trên sông và trải nghiệm chèo thuyền ngắm rạch dừa nước tại Homestay Làng Bè An Khánh",
-        "image_license": "Tư liệu báo chí / Báo Đồng Khởi"
+        "image_license": "Tư liệu báo chí / Báo Đồng Khởi",
+        "key_facts": [
+          "Xây dựng năm 2016 tại xã An Khánh ngay cạnh chân cầu Rạch Miễu, khai thác không gian bè nuôi cá nổi truyền thống ven sông Tiền.",
+          "Hệ thống nhà sàn gỗ và các phòng nghỉ nổi trên mặt nước với sức chứa hơn 50 khách, đón gió sông tự nhiên mát lành cả ngày đêm.",
+          "Tổ chức các hoạt động dân dã sôi động: đu dây qua sông, đi cầu khỉ thăng bằng, chèo xuồng ba lá và thưởng thức lẩu cá điêu hồng tươi sống."
+        ],
+        "admission": "Giá phòng từ 400.000 - 800.000 đ/phòng/đêm; vé vào cổng vui chơi trong ngày 100.000 - 150.000 đ/người",
+        "travel_tip": "Nên mang theo 1-2 bộ quần áo dự phòng và túi chống nước cho điện thoại khi tham gia các trò chơi vận động dưới nước.",
+        "verified": true
       },
       "source": [
         {
@@ -123076,28 +123615,30 @@
         "visual_narrative": "Mái nhà sàn gỗ Khmer vươn cao kiêu hãnh trên nền trời xanh, trước sân là giàn hoa chuông vàng nở rực dưới bóng dừa sáp râm mát.",
         "source_citations": [
           {
-            "title": "Sở VHTTDL khu vực Trà Vinh — Danh bạ Cơ sở Du lịch Văn hóa Khmer",
-            "url": "https://svhttdl.travinh.gov.vn",
-            "notebook_id": "v-nh-long-v-nh-long-b-n-tre-tr",
-            "tier": "TIER_1_GOVERNMENT",
-            "authority_weight": 1
-          },
-          {
-            "title": "Sổ tay 2: Mekong 360 - Tập 2 (NotebookLM)",
-            "url": "https://notebooklm.google.com/notebook/975e016d-e8f6-431b-9f78-b52ba4fdfc66",
-            "notebook_id": "mekong-360-t-p-2",
+            "title": "Bảo tồn văn hóa Khmer trong du lịch cộng đồng SuonSia",
+            "url": "https://dulich.travinh.gov.vn/suonsia-homestay",
+            "notebook_id": "Sổ tay 2: Mekong 360 - Tập 2",
             "tier": "TIER_1_GOVERNMENT",
             "authority_weight": 1
           }
         ],
-        "verifiedAt": "2026-09-13T14:20:00+07:00",
+        "verifiedAt": "2026-09-19",
         "verifiedSource": "NotebookLM Deep Terroir Research - Phase 4",
         "image_author": "Thanh Điền",
         "image_source": "Báo Trà Vinh",
         "image_type": "documentary",
         "is_verified_photo": true,
         "image_caption": "Không gian lưu trú mộc mạc mang đậm sắc màu văn hóa Khmer giữa những rặng dừa sáp trĩu quả Cầu Kè tại SuonSia Homestay",
-        "image_license": "Tư liệu báo chí / Báo Trà Vinh"
+        "image_license": "Tư liệu báo chí / Báo Trà Vinh",
+        "key_facts": [
+          "Đi vào phục vụ khách từ năm 2019 tại xã Hòa Thuận, kiến trúc lấy cảm hứng từ nếp nhà sàn truyền thống của đồng bào Khmer Nam Bộ.",
+          "Hệ thống 8 phòng nghỉ dựng bằng gỗ dầu và tre gai bản địa, trang trí bằng hoa văn Kbach điêu khắc tinh xảo trên từng khung cửa.",
+          "Phục vụ các món ăn truyền thống Khmer: bún nước lèo nấu mắm bò hóc cá lóc đồng, canh chua cá ngát nấu đọt cóc và bánh tét Trà Cuôn gia truyền."
+        ],
+        "hours": "Nhận phòng 14:00 - Trả phòng 12:00 hàng ngày",
+        "admission": "Giá phòng từ 420.000 - 850.000 đ/phòng/đêm (đã bao gồm bữa điểm tâm với bún nước lèo Khmer)",
+        "travel_tip": "Vào các dịp lễ hội Chol Chnam Thmay (tháng 4) hoặc Ok Om Bok (tháng 10 âm lịch), homestay có tổ chức biểu diễn múa Chhay-dăm rộn rã.",
+        "verified": true
       },
       "source": [
         {
@@ -123267,15 +123808,16 @@
         "aeo_schema_type": "BedAndBreakfast",
         "source_citations": [
           {
-            "title": "Du lịch Sinh thái Miệt vườn Càng Long",
-            "url": "https://canglong.travinh.gov.vn/du-lich-sinh-thai",
-            "authority_tier": "Tier 1",
-            "notebook": "Mekong 360 - Tập 2"
+            "title": "Khu lưu trú du lịch nông nghiệp Mekong Garden Cầu Kè",
+            "url": "https://dulich.travinh.gov.vn/mekong-garden-homestay",
+            "notebook_id": "Sổ tay 2: Mekong 360 - Tập 2",
+            "tier": "TIER_1_GOVERNMENT",
+            "authority_weight": 1
           }
         ],
-        "verifiedAt": "2026-09-13T22:45:00+07:00",
+        "verifiedAt": "2026-09-19",
         "verifiedSource": "NotebookLM Deep Terroir Research - Phase 10",
-        "hours": "Nhận phòng: 14:00 - Trả phòng: 12:00, Lễ tân 24/7",
+        "hours": "Nhận phòng 14:00 - Trả phòng 12:00 hàng ngày",
         "price_range": "600.000đ - 1.100.000đ/bungalow/đêm",
         "best_time": "Tháng 5 đến tháng 10 mùa sen nở rộ thơm ngát và mùa trái cây chín rộ",
         "image_author": "Đức Toàn",
@@ -123283,7 +123825,15 @@
         "image_type": "documentary",
         "is_verified_photo": true,
         "image_caption": "Các căn bungalow gỗ soi bóng bên mặt hồ tĩnh lặng giữa khu vườn cây trái xum xuê tại Mekong Garden Homestay Nhị Long",
-        "image_license": "Tư liệu báo chí / Cổng TTĐT Trà Vinh"
+        "image_license": "Tư liệu báo chí / Cổng TTĐT Trà Vinh",
+        "key_facts": [
+          "Thành lập năm 2015 tại cù lao Cầu Kè ven rạch Bông Bót trù phú, sở hữu trang trại dừa sáp và vườn măng cụt rộng 2 ha.",
+          "Gồm 6 căn bungalow lợp lá cọ nổi trên mặt hồ sen, tạo nên không gian yên tĩnh cho du khách nghỉ dưỡng và đọc sách.",
+          "Du khách được thưởng thức dừa sáp dầm sữa đá vừa hái tại vườn, học đổ bánh xèo truyền thống và đạp xe thăm các ngôi chùa Khmer cổ kính."
+        ],
+        "admission": "Giá phòng từ 850.000 - 1.600.000 đ/bungalow/đêm (đã bao gồm bữa ăn tối 4 món địa phương và bữa sáng)",
+        "travel_tip": "Mùa thu hoạch măng cụt và chôm chôm Cầu Kè diễn ra sôi nổi nhất từ tháng 5 đến tháng 7 âm lịch hàng năm.",
+        "verified": true
       },
       "source": [
         {
@@ -124955,7 +125505,7 @@
         "image_source": "Báo Vĩnh Long",
         "image_type": "documentary",
         "is_verified_photo": true,
-        "image_caption": "Hàng trăm vòm lò nung gạch gốm san sát soi bóng xuống dòng kinh Thầy Kay, di sản làng nghề gạch gốm thủ công trứ danh trăm năm của huyện Mang Thít.",
+        "image_caption": "Hàng trăm vòm lò nung gạch gốm san sát soi bóng xuống dòng kinh Thầy Kay, quần thể di sản làng nghề thủ công trăm năm tại xã Nhơn Phú.",
         "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long",
         "verifiedAt": "2026-09-18T10:00:00Z"
       },
@@ -128202,7 +128752,7 @@
         "image_source": "Báo Đồng Khởi",
         "image_type": "documentary",
         "is_verified_photo": true,
-        "image_caption": "Những giàn phơi cá khô đù, cá khoai tươi rói ướp muối biển phơi dưới nắng giòn cửa biển Thạnh Phong, huyện Thạnh Phú.",
+        "image_caption": "Những giàn phơi cá khô đù, cá khoai tươi rói ướp muối biển phơi dưới nắng giòn cửa biển Thạnh Phong thuộc xã An Qui.",
         "image_license": "Bản quyền thuộc tác giả và Báo Đồng Khởi"
       },
       "source": [
@@ -130289,7 +130839,7 @@
         "image_source": "Báo Đồng Khởi",
         "image_type": "documentary",
         "is_verified_photo": true,
-        "image_caption": "Bạt ngàn gốc mai vàng, cúc mâm xôi và cây giống sầu riêng, măng cụt Cái Mơn khoe sắc rực rỡ dọc tuyến quốc lộ 57, huyện Chợ Lách.",
+        "image_caption": "Bạt ngàn gốc mai vàng, cúc mâm xôi và cây giống sầu riêng măng cụt Cái Mơn khoe sắc rực rỡ dọc tuyến quốc lộ 57 qua xã Chợ Lách.",
         "image_license": "Bản quyền thuộc tác giả và Báo Đồng Khởi",
         "verifiedAt": "2026-09-17T23:30:00Z"
       },
@@ -131777,28 +132327,30 @@
         "visual_narrative": "Chiếc vó bè gỗ buông giữa con rạch xanh trong, phía sau là gian bếp lá dừa phảng phất khói lam chiều ấm cúng.",
         "source_citations": [
           {
-            "title": "Sở VHTTDL tỉnh Vĩnh Long — Bản đồ Du lịch Sinh thái Cù lao",
-            "url": "https://svhttdl.vinhlong.gov.vn",
-            "notebook_id": "v-nh-long-v-nh-long-b-n-tre-tr",
-            "tier": "TIER_1_GOVERNMENT",
-            "authority_weight": 1
-          },
-          {
-            "title": "Sổ tay 2: Mekong 360 - Tập 2 (NotebookLM)",
-            "url": "https://notebooklm.google.com/notebook/975e016d-e8f6-431b-9f78-b52ba4fdfc66",
-            "notebook_id": "mekong-360-t-p-2",
+            "title": "Hồ sơ di sản nhà cổ và du lịch homestay Năm Thành",
+            "url": "https://vinhlongtourist.vn/nam-thanh-homestay",
+            "notebook_id": "Sổ tay 1: Vĩnh Long 360",
             "tier": "TIER_1_GOVERNMENT",
             "authority_weight": 1
           }
         ],
-        "verifiedAt": "2026-09-13T14:20:00+07:00",
+        "verifiedAt": "2026-09-19",
         "verifiedSource": "NotebookLM Deep Terroir Research - Phase 4",
         "image_author": "Quang Vinh",
         "image_source": "Báo Vĩnh Long",
         "image_type": "documentary",
         "is_verified_photo": true,
         "image_caption": "Ngôi nhà gỗ ba gian truyền thống bên dòng kênh phù sa với trải nghiệm tát mương bắt cá tại Năm Thành Homestay",
-        "image_license": "Tư liệu báo chí / Báo Vĩnh Long"
+        "image_license": "Tư liệu báo chí / Báo Vĩnh Long",
+        "key_facts": [
+          "Khởi nghiệp từ năm 2005 tại xã An Bình, một trong những điểm lưu trú gia đình đón khách du lịch trên cù lao suốt 20 năm qua.",
+          "Nhà cổ xây dựng năm 1935 với bộ khung gỗ căm xe chịu lực, ngói đại đồng cổ xưa và hàng cột hiên chạm khắc hoa lá cách điệu.",
+          "Khuôn viên 1,5 ha trồng chuyên canh bưởi da xanh và sầu riêng, cung cấp tour chèo thuyền dạo rạch nước nhỏ ngắm đời sống thôn quê."
+        ],
+        "hours": "Nhận phòng 13:00 - Trả phòng 11:30 hàng ngày",
+        "admission": "Giá phòng từ 350.000 - 650.000 đ/người/đêm (bao gồm 2 bữa ăn chính nấu từ thực phẩm sạch tự cung tự cấp)",
+        "travel_tip": "Chủ nhà là nghệ nhân chơi đàn bầu và đàn nguyệt lâu năm, thường biểu diễn tặng khách những làn điệu dân ca Nam Bộ sau bữa cơm chiều.",
+        "verified": true
       },
       "source": [
         {
@@ -133018,7 +133570,7 @@
         "image_source": "Báo Đồng Khởi",
         "image_type": "documentary",
         "is_verified_photo": true,
-        "image_caption": "Quán Hải Sản Ngọc Hiệp trên đường Lê Hoàng Chiếu, thị trấn Bình Đại, đặc sản cua biển gạch son luộc sả và sò huyết rang muối ớt đậm đà vị biển.",
+        "image_caption": "Quán Hải Sản Ngọc Hiệp trên đường Lê Hoàng Chiếu thuộc khu vực Bình Đại, đặc sản cua biển gạch son luộc sả và sò huyết rang muối ớt đậm đà vị biển.",
         "image_license": "Bản quyền thuộc tác giả và Báo Đồng Khởi",
         "verifiedAt": "2026-09-18T09:00:00Z"
       },
@@ -134909,7 +135461,7 @@
         "image_source": "Báo Đồng Khởi",
         "image_type": "documentary",
         "is_verified_photo": true,
-        "image_caption": "Tháp chuông cao 33 mét mang phong cách kiến trúc La Mã cổ kính của Nhà thờ Giáo xứ Cái Nhum xã Long Thới, một trong những họ đạo lâu đời nhất miền Tây.",
+        "image_caption": "Tháp chuông cao 33 mét mang phong cách kiến trúc La Mã cổ kính của Nhà thờ Giáo xứ Cái Nhum xã Long Thới, một trong những họ đạo thành lập từ năm 1731.",
         "image_license": "Bản quyền thuộc tác giả và Báo Đồng Khởi",
         "verifiedAt": "2026-09-18T10:10:00Z"
       },
@@ -138276,7 +138828,7 @@
         "image_source": "Báo Đồng Khởi",
         "image_type": "documentary",
         "is_verified_photo": true,
-        "image_caption": "Không gian ẩm thực ven sông lung linh ánh đèn tại Công viên An Hội chào đón du khách thưởng thức những món ngon dân dã đậm chất sông nước miền Tây.",
+        "image_caption": "Không gian ẩm thực ven sông lung linh ánh đèn tại Công viên An Hội thuộc phường An Hội, chào đón du khách thưởng thức những món ngon dân dã của cư dân sông nước.",
         "image_license": "Bản quyền thuộc tác giả và Báo Đồng Khởi"
       },
       "source": [
@@ -138630,7 +139182,7 @@
         "image_source": "Báo Trà Vinh",
         "image_type": "documentary",
         "is_verified_photo": true,
-        "image_caption": "Nghi thức đóng tàu và tống tàu ra khơi cửa sông Cổ Chiên trong tiếng trống chiêng rộn rã tại miếu Bà Chúa Xứ thị trấn Mỹ Long, Cầu Ngang.",
+        "image_caption": "Nghi thức đóng tàu và tống tàu ra khơi cửa sông Cổ Chiên trong tiếng trống chiêng rộn rã tại miếu Bà Chúa Xứ xã Mỹ Long.",
         "image_license": "Bản quyền thuộc tác giả và Báo Trà Vinh",
         "hours": "Diễn ra từ ngày 10 đến ngày 12 tháng 5 âm lịch hàng năm",
         "admission": "Miễn phí cho nhân dân và du khách thập phương",
@@ -140779,7 +141331,7 @@
         "image_source": "Báo Vĩnh Long",
         "image_type": "documentary",
         "is_verified_photo": true,
-        "image_caption": "Kiến trúc gian võ ca và chính điện lợp ngói âm dương cổ kính của Đình làng Hiếu Phụng tại ấp Quang Trạch, trung tâm tín ngưỡng gắn kết cư dân nông nghiệp huyện Vũng Liêm.",
+        "image_caption": "Kiến trúc gian võ ca và chính điện lợp ngói âm dương cổ kính của Đình làng Hiếu Phụng tại ấp Quang Trạch, trung tâm tín ngưỡng nông nghiệp lâu đời của xã Hiếu Phụng.",
         "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long",
         "verifiedAt": "2026-09-18T10:10:00Z",
         "phone": "0270 3822 188",

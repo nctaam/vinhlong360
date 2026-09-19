@@ -1,0 +1,419 @@
+{
+  "updated_count": 69,
+  "remediated": [
+    {
+      "id": "lang-nghe-det-chieu-ca-hom-ben-ba",
+      "name": "Làng nghề dệt chiếu Cà Hom - Bến Bạ",
+      "old_caption": "Khung dệt chiếu thủ công Cà Hom rộn rã nhịp thoi đưa, nơi đồng bào Khmer khéo léo dệt nên những tấm chiếu hoa bền đẹp nổi tiếng khắp miền Tây.",
+      "new_caption": "Khung dệt chiếu thủ công Cà Hom rộn rã nhịp thoi đưa, nơi đồng bào Khmer xã Hàm Tân khéo léo dệt nên những tấm chiếu hoa Cà Hom bền đẹp qua hơn 100 năm gìn giữ."
+    },
+    {
+      "id": "lang-nghe-dan-non-la-tt-long-ho",
+      "name": "Làng nghề đan nón lá TT Long Hồ",
+      "old_caption": "Những vành nón lá trắng muốt được các mẹ các chị chăm chút từng mũi kim tỉ mỉ tại làng nghề đan nón lá truyền thống thị trấn Long Hồ.",
+      "new_caption": "Những vành nón lá trắng muốt được các mẹ các chị chăm chút từng mũi kim tỉ mỉ tại làng nghề đan nón lá truyền thống phường Long Hồ ven dòng sông Long Hồ."
+    },
+    {
+      "id": "bai-bien-con-bung-thanh-hai",
+      "name": "Bãi biển Cồn Bửng (Thạnh Hải)",
+      "old_caption": "Bãi biển phù sa hoang sơ trải dài với hàng phi lao chắn sóng lộng gió tại Thạnh Phú, thiên đường hải sản tươi sống và ốc viết mùa gió chướng.",
+      "new_caption": "Bãi biển phù sa hoang sơ trải dài với hàng phi lao chắn sóng lộng gió tại xã Thạnh Hải, nguồn hải sản tươi sống dồi dào và ốc viết mùa gió chướng."
+    },
+    {
+      "id": "bia-chien-thang-loc-thuan",
+      "name": "Bia chiến thắng Lộc Thuận",
+      "old_caption": "Bia chiến thắng Lộc Thuận trang trọng ghi danh những chiến công vang dội của quân và dân huyện Bình Đại trong cuộc kháng chiến chống giặc ngoại xâm.",
+      "new_caption": "Bia chiến thắng Lộc Thuận trang trọng ghi danh chiến công năm 1960 của quân và dân xã Lộc Thuận trong phong trào Đồng Khởi đánh phá cứ điểm đối phương."
+    },
+    {
+      "id": "chua-giac-linh-chua-doi",
+      "name": "Chùa Giác Linh (Chùa Dơi)",
+      "old_caption": "Chùa Giác Linh (Chùa Dơi) rợp bóng vườn cây cổ thụ mát lành, nơi cư ngụ tự nhiên của hàng ngàn cá thể dơi ngựa quý hiếm giữa lòng miền Tây.",
+      "new_caption": "Chùa Giác Linh rợp bóng vườn cây cổ thụ mát lành, nơi cư ngụ tự nhiên của hàng ngàn cá thể dơi ngựa quý hiếm tại xã Cầu Ngang."
+    },
+    {
+      "id": "chua-vam-ray-chua-phat-nam",
+      "name": "Chùa Vàm Ray (Chùa Phật Nằm)",
+      "old_caption": "Chùa Vàm Ray rực rỡ sắc vàng phong cách Angkor với đại tượng Phật Thích Ca nhập niết bàn ngoài trời dài 54m lớn bậc nhất miền Tây Nam Bộ.",
+      "new_caption": "Chùa Vàm Ray rực rỡ sắc vàng phong cách Angkor với đại tượng Phật Thích Ca nhập niết bàn ngoài trời dài 54m uy nghiêm tại xã Hàm Giang."
+    },
+    {
+      "id": "keo-dua-mo-cay-co-so-tuyet-phung",
+      "name": "Kẹo dừa Mỏ Cày (cơ sở Tuyết Phụng)",
+      "old_caption": "Hộp kẹo dừa dẻo sầu riêng, lá dứa Tuyết Phụng danh tiếng tại thị trấn Mỏ Cày, món quà quê hương ngọt ngào đậm đà tình đất tình người.",
+      "new_caption": "Hộp kẹo dừa dẻo sầu riêng lá dứa Tuyết Phụng tại phường Mỏ Cày, đặc sản truyền thống béo ngậy được chế biến từ cốt dừa nguyên chất."
+    },
+    {
+      "id": "kho-ca-bien-thanh-phu",
+      "name": "Khô cá biển Thạnh Phú",
+      "old_caption": "Các loại khô cá lưỡi trâu, cá mối, cá chỉ vàng phơi khô tự nhiên thơm phức mùi nắng biển tại làng hải sản Thạnh Hải, huyện Thạnh Phú.",
+      "new_caption": "Các loại khô cá lưỡi trâu, cá mối, cá chỉ vàng phơi khô tự nhiên thơm phức mùi nắng biển tại làng hải sản xã Thạnh Hải ven bờ Biển Đông."
+    },
+    {
+      "id": "nha-tho-mac-bac-tieu-can",
+      "name": "Nhà thờ Mặc Bắc Tiểu Cần",
+      "old_caption": "Thánh đường Mặc Bắc tráng lệ mang phong cách kiến trúc Roman Gothic gần 140 năm tuổi, một trong những ngôi thánh đường Công giáo cổ và lớn nhất miền Tây.",
+      "new_caption": "Thánh đường Mặc Bắc tráng lệ mang phong cách Roman Gothic xây dựng năm 1886, công trình Công giáo cổ kính hơn 130 năm tuổi tại xã Long Hiệp."
+    },
+    {
+      "id": "xa-binh-phu",
+      "name": "Xã Bình Phú",
+      "old_caption": "Các xưởng thủ công mỹ nghệ chạm khắc gỗ và đan lục bình xuất khẩu tại Xã Bình Phú huyện Càng Long.",
+      "new_caption": "Các xưởng thủ công mỹ nghệ chạm khắc gỗ và đan lục bình xuất khẩu tại xã Bình Phú ven trục quốc lộ 53."
+    },
+    {
+      "id": "xa-hoa-binh",
+      "name": "Xã Hòa Bình",
+      "old_caption": "Những luống cam sành hữu cơ chuẩn GlobalGAP mọng nước ven các kênh rạch tại Xã Hòa Bình huyện Trà Ôn.",
+      "new_caption": "Những luống cam sành hữu cơ chuẩn GlobalGAP mọng nước ven các kênh rạch tại xã Hòa Bình trù phú phù sa."
+    },
+    {
+      "id": "hu-tieu-chay",
+      "name": "Hủ Tiếu Chay",
+      "old_caption": "Tô hủ tiếu chay thanh tịnh tại thị trấn Mỏ Cày Nam với nước lèo hầm củ quả ngọt lành, tàu hũ ky chiên giòn rụm và nấm rơm búp thanh đạm.",
+      "new_caption": "Tô hủ tiếu chay thanh tịnh tại phường Mỏ Cày với nước lèo hầm củ quả ngọt lành, tàu hũ ky chiên giòn rụm và nấm rơm búp thanh đạm."
+    },
+    {
+      "id": "xa-my-thuan",
+      "name": "Xã Mỹ Thuận",
+      "old_caption": "Cánh đồng lúa chất lượng cao kết hợp trồng luân canh khoai lang và bắp ngọt tại Xã Mỹ Thuận huyện Bình Tân.",
+      "new_caption": "Cánh đồng lúa chất lượng cao kết hợp trồng luân canh khoai lang tím và bắp ngọt tại xã Mỹ Thuận ven sông Hậu."
+    },
+    {
+      "id": "xa-phong-thanh",
+      "name": "Xã Phong Thạnh",
+      "old_caption": "Những rặng dừa sáp trĩu cành bên cánh đồng lúa hai vụ trù phú tại Xã Phong Thạnh huyện Cầu Kè.",
+      "new_caption": "Những rặng dừa sáp trĩu cành bên cánh đồng lúa hai vụ trù phú tại xã Phong Thạnh bên bờ rạch Bông Bót."
+    },
+    {
+      "id": "nha-hang-am-thuc-pho",
+      "name": "Nhà hàng Ẩm Thực Phố",
+      "old_caption": "Nhà hàng Ẩm Thực Phố trên trục đường ẩm thực Phạm Thái Bường phục vụ đa dạng phong vị đặc sản miền Tây sông nước trong không gian ấm cúng.",
+      "new_caption": "Nhà hàng Ẩm Thực Phố trên trục đường Phạm Thái Bường thuộc phường Phước Hậu, phục vụ đa dạng phong vị ẩm thực sông nước trong không gian thoáng mát."
+    },
+    {
+      "id": "sokfarm-tieu-can",
+      "name": "Sokfarm Tiểu Cần",
+      "old_caption": "Kỹ thuật thu mật hoa dừa truyền thống và vườn dừa sinh thái đạt chuẩn hữu cơ quốc tế tại Sokfarm ấp Cây Hẹ thị trấn Cầu Quan.",
+      "new_caption": "Kỹ thuật thu mật hoa dừa truyền thống và vườn dừa sinh thái đạt chuẩn hữu cơ quốc tế tại Sokfarm ấp Cây Hẹ, xã Cầu Quan."
+    },
+    {
+      "id": "mua-nuoc-noi-dbscl",
+      "name": "Mùa nước nổi ĐBSCL",
+      "old_caption": "Mùa nước nổi đem nguồn cá tôm dồi dào và sắc vàng bông điên điển tràn ngập các cánh đồng châu thổ, bức tranh thiên nhiên kỳ vĩ hàng năm của miền Tây Nam Bộ.",
+      "new_caption": "Mùa nước nổi đem nguồn cá tôm dồi dào và sắc vàng bông điên điển tràn ngập các cánh đồng châu thổ đồng bằng sông Cửu Long từ tháng 8 đến tháng 11 âm lịch."
+    },
+    {
+      "id": "cho-giong-trom",
+      "name": "Chợ Giồng Trôm",
+      "old_caption": "Khu chợ truyền thống sầm uất tại thị trấn Giồng Trôm với đầy ắp các loại bánh phồng Sơn Đốc, kẹo dừa và rau củ quả tươi miệt vườn.",
+      "new_caption": "Khu chợ truyền thống sầm uất tại xã Lương Hòa với đầy ắp các loại bánh phồng Sơn Đốc, kẹo dừa và rau củ quả tươi miệt vườn."
+    },
+    {
+      "id": "khu-du-lich-s-mo-farm-cuu-long",
+      "name": "Somo Farm Cửu Long",
+      "old_caption": "Không gian kiến trúc đất nung lấy cảm hứng từ vòm lò gạch cổ Mang Thít giữa vườn cây trái tại Khu du lịch Somo Farm Cửu Long thị trấn Cái Nhum.",
+      "new_caption": "Không gian kiến trúc đất nung lấy cảm hứng từ vòm lò gạch gốm đỏ Mang Thít giữa vườn cây trái tại Khu du lịch Somo Farm Cửu Long, xã Cái Nhum."
+    },
+    {
+      "id": "dua-sap-cau-ke",
+      "name": "Dừa sáp Cầu Kè",
+      "old_caption": "Trái dừa sáp Cầu Kè bổ đôi với lớp cơm dừa trắng phau dày dẻo quánh đặc sản trứ danh duy nhất của miền Tây",
+      "new_caption": "Trái dừa sáp Cầu Kè bổ đôi với lớp cơm dừa trắng dẻo quánh, giống dừa đặc sản có từ thập niên 1960 tại xã Cầu Kè."
+    },
+    {
+      "id": "cau-lac-bo-don-ca-tai-tu-huyen-tra-on",
+      "name": "Câu lạc bộ đờn ca tài tử Trà Ôn",
+      "old_caption": "Các tài tử miệt vườn hội tụ về thị trấn Trà Ôn so dây nắn phím những điệu Nam xuân, Nam ai mộc mạc bên dòng kinh Trà Ôn.",
+      "new_caption": "Các tài tử miệt vườn hội tụ về xã Trà Côn so dây nắn phím những điệu Nam xuân, Nam ai mộc mạc bên dòng kinh Trà Ôn."
+    },
+    {
+      "id": "bien-con-bung-thanh-phu",
+      "name": "Biển Cồn Bửng Thạnh Phú",
+      "old_caption": "Sóng biển vỗ rì rào lên bãi bồi Cồn Bửng thuộc xã Thạnh Hải, huyện Thạnh Phú, nơi nổi tiếng với bãi biển cát phù sa mịn và ốc viết.",
+      "new_caption": "Sóng biển vỗ rì rào lên bãi bồi Cồn Bửng thuộc xã Thạnh Hải, bãi biển cát phù sa mịn trải dài hơn 15km đón gió Đông."
+    },
+    {
+      "id": "thanh-duong-giao-xu-mac-bac",
+      "name": "Thánh đường giáo xứ Mặc Bắc",
+      "old_caption": "Tháp chuông gothic vút cao và vòm thánh đường gạch đỏ cổ kính soi bóng bên bờ sông Hậu tại giáo xứ Mặc Bắc, thị trấn Cầu Kè.",
+      "new_caption": "Tháp chuông gothic vút cao và vòm thánh đường gạch đỏ cổ kính soi bóng bên bờ sông Hậu tại giáo xứ Mặc Bắc, xã Long Hiệp."
+    },
+    {
+      "id": "cu-lao-dai-vung-liem",
+      "name": "Cù Lao Dài Vũng Liêm",
+      "old_caption": "Cù Lao Dài trên sông Cổ Chiên thuộc huyện Vũng Liêm với những rặng bần cổ thụ chắn sóng và các vườn bưởi da xanh trĩu quả.",
+      "new_caption": "Cù Lao Dài trên sông Cổ Chiên thuộc xã Quới Thiện với những rặng bần cổ thụ chắn sóng và các vườn bưởi da xanh trĩu quả."
+    },
+    {
+      "id": "buoi-nam-roi-binh-minh",
+      "name": "Bưởi Năm Roi Bình Minh",
+      "old_caption": "Những trái bưởi Năm Roi trĩu cành vỏ vàng óng tép ráo ngọt thanh đạt chứng nhận Chỉ dẫn địa lý tại thị xã Bình Minh",
+      "new_caption": "Những trái bưởi Năm Roi trĩu cành vỏ vàng óng tép ráo ngọt thanh đạt chứng nhận Chỉ dẫn địa lý tại phường Bình Minh."
+    },
+    {
+      "id": "khu-di-tich-dong-khoi",
+      "name": "Khu di tích Đồng Khởi",
+      "old_caption": "Khu di tích Quốc gia đặc biệt Đồng Khởi tại Định Thủy, nơi lưu giữ súng ngựa trời, mõ dừa và bia chiến thắng khắc ghi chiến công oanh liệt của quân dân miền Tây.",
+      "new_caption": "Khu di tích Quốc gia đặc biệt Đồng Khởi tại Định Thủy, nơi lưu giữ súng ngựa trời, mõ dừa và bia chiến thắng khắc ghi phong trào nổi dậy năm 1960."
+    },
+    {
+      "id": "monkey-tea---tra-sua-coffee",
+      "name": "Monkey Tea - Trà Sữa & Coffee",
+      "old_caption": "Monkey Tea trên đường Lý Tự Trọng, phường 1, thị xã Duyên Hải, không gian thưởng thức trà sữa ngắm phố biển râm ran gió mát.",
+      "new_caption": "Monkey Tea trên trục đường Lý Tự Trọng thuộc phường Duyên Hải, không gian thưởng thức trà sữa ngắm phố biển râm ran gió mát."
+    },
+    {
+      "id": "somo-farm-cuu-long-mang-thit",
+      "name": "Somo Farm Cửu Long - trải nghiệm nông nghiệp",
+      "old_caption": "Du khách trải nghiệm gặt lúa, hái nấm hữu cơ và đạp xe quanh các rặng cây ăn trái xanh tươi tại Somo Farm Cửu Long, huyện Mang Thít.",
+      "new_caption": "Du khách trải nghiệm gặt lúa, hái nấm hữu cơ và đạp xe quanh các rặng cây ăn trái xanh tươi tại Somo Farm Cửu Long, xã Cái Nhum."
+    },
+    {
+      "id": "cho-cai-von",
+      "name": "Chợ Cái Vồn",
+      "old_caption": "Khung cảnh buôn bán nông sản và các loại rau củ miệt vườn tấp nập từ sớm mai tại Chợ Cái Vồn bên bờ sông Hậu thuộc thị xã Bình Minh.",
+      "new_caption": "Khung cảnh buôn bán nông sản và rau củ miệt vườn tấp nập từ sớm mai tại Chợ Cái Vồn bên bờ sông Hậu thuộc phường Bình Minh."
+    },
+    {
+      "id": "kenh-tra-on-vinh-long",
+      "name": "Kênh Trà Ôn",
+      "old_caption": "Tuyến thủy lộ kênh Trà Ôn tấp nập sà lan chở cát phù sa và ghe chở cam sành tỏa đi khắp các tỉnh miền Tây.",
+      "new_caption": "Tuyến thủy lộ kênh Trà Ôn tấp nập sà lan chở cát phù sa và ghe chở cam sành kết nối giao thương giữa sông Tiền và sông Hậu."
+    },
+    {
+      "id": "rach-tra-ngoa-vinh-long",
+      "name": "Rạch Trà Ngoa",
+      "old_caption": "Rạch Trà Ngoa đưa nguồn nước ngọt phù sa tưới tiêu cho những cánh đồng lúa và vườn dừa bạt ngàn tại huyện Trà Ôn.",
+      "new_caption": "Rạch Trà Ngoa đưa nguồn nước ngọt phù sa tưới tiêu cho những cánh đồng lúa và vườn dừa bạt ngàn tại vùng đất Trà Côn."
+    },
+    {
+      "id": "song-thom-rach-thom-ben-tre",
+      "name": "Sông Thom (rạch Thom)",
+      "old_caption": "Tấp nập cảnh ghe thuyền buôn bán chỉ xơ dừa và mụn dừa xuất khẩu dọc hai bên bờ sông Thom thuộc huyện Mỏ Cày Nam.",
+      "new_caption": "Tấp nập cảnh ghe thuyền buôn bán chỉ xơ dừa và mụn dừa xuất khẩu dọc hai bên bờ sông Thom thuộc phường Mỏ Cày."
+    },
+    {
+      "id": "kenh-bong-bot-tra-vinh",
+      "name": "Kênh Bông Bót",
+      "old_caption": "Kênh Bông Bót nối dòng sông Hậu với các vùng trồng lúa phì nhiêu, nguồn cung cấp nước ngọt quan trọng cho huyện Cầu Kè.",
+      "new_caption": "Kênh Bông Bót nối dòng sông Hậu với các vùng trồng lúa phì nhiêu, nguồn cung cấp nước ngọt quan trọng cho các xã vùng Cầu Kè."
+    },
+    {
+      "id": "quan-lau-ca-keo-chu-tam-huyen-vung-liem-vinh-long",
+      "name": "Quán Lẩu Cá Kèo Chú Tám (Vũng Liêm)",
+      "old_caption": "Quán Chú Tám tại thị trấn Vũng Liêm, thố lẩu cá kèo lá giang sôi sùng sục ăn kèm rau đắng đất, bắp chuối bào và bún tươi trắng muốt.",
+      "new_caption": "Quán Chú Tám tại phường Vũng Liêm, thố lẩu cá kèo lá giang sôi sùng sục ăn kèm rau đắng đất, bắp chuối bào và bún tươi trắng muốt."
+    },
+    {
+      "id": "goi-cuon-tom-thit-ba-hai-chau-thanh-ben-tre",
+      "name": "Gỏi cuốn tôm thịt Bà Hai Châu Thành",
+      "old_caption": "Món gỏi cuốn tôm thịt rau sống xanh tươi chấm tương đen đậu phộng béo bùi tại quán Bà Hai ở thị trấn Châu Thành.",
+      "new_caption": "Món gỏi cuốn tôm thịt rau sống xanh tươi chấm tương đen đậu phộng béo bùi tại quán Bà Hai ở phường Phú Khương."
+    },
+    {
+      "id": "hu-tieu-ba-tam-cau-ke-tra-vinh",
+      "name": "Hủ tiếu Bà Tám Cầu Kè",
+      "old_caption": "Tiệm hủ tiếu Bà Tám tại thị trấn Cầu Kè, nước lèo ninh từ xương ống heo ngọt thanh tự nhiên, sợi bánh hủ tiếu gạo Cầu Kè mềm dai đặc trưng.",
+      "new_caption": "Tiệm hủ tiếu Bà Tám tại xã Cầu Kè, nước lèo ninh từ xương ống heo ngọt thanh tự nhiên, sợi bánh hủ tiếu gạo Cầu Kè mềm dai đặc trưng."
+    },
+    {
+      "id": "cong-vien-29",
+      "name": "Công viên 2/9",
+      "old_caption": "Thảm cỏ xanh mướt và những bồn hoa rực rỡ tại Công viên Hai Tháng Chín trung tâm thị trấn Tân Quới, không gian vui chơi của người dân.",
+      "new_caption": "Thảm cỏ xanh mướt và những bồn hoa rực rỡ tại Công viên Hai Tháng Chín trung tâm phường Tân Quới, không gian sinh hoạt cộng đồng thoáng đãng."
+    },
+    {
+      "id": "vuon-chim-hai-chia-tan-my-tra-on",
+      "name": "Vườn Chim Hai Chìa (Khu bảo tồn cò ốc Sách Đỏ)",
+      "old_caption": "Hàng ngàn cá thể cò ốc, cò trắng quý hiếm làm tổ trên ngọn tràm, ngọn tre tại Vườn Chim Hai Chìa thuộc xã Tân Mỹ, huyện Trà Ôn.",
+      "new_caption": "Hàng ngàn cá thể cò ốc và cò trắng làm tổ trên ngọn tràm ngọn tre tại Vườn Chim Hai Chìa thuộc xã Trà Côn."
+    },
+    {
+      "id": "khu-du-lich-truong-huy-long-ho",
+      "name": "Khu Du Lịch Trường Huy Long Hồ",
+      "old_caption": "Không gian vui chơi giải trí và hồ bơi nhân tạo hiện đại giữa mảng xanh tươi mát tại Khu Du Lịch Trường Huy, huyện Long Hồ.",
+      "new_caption": "Không gian vui chơi giải trí và hồ bơi nhân tạo hiện đại giữa mảng xanh rộng 10ha tại Khu Du Lịch Trường Huy, phường Thanh Đức."
+    },
+    {
+      "id": "khu-du-lich-sinh-thai-hoang-quan",
+      "name": "Khu Du Lịch Sinh Thái Hoàng Quân",
+      "old_caption": "Những chòi lá mộc mạc bên hồ sen nở hoa thanh khiết tại Khu Du Lịch Sinh Thái Hoàng Quân xã Mỹ Hòa thị xã Bình Minh.",
+      "new_caption": "Những chòi lá mộc mạc bên hồ sen nở hoa thanh khiết tại Khu Du Lịch Sinh Thái Hoàng Quân, phường Cái Vồn."
+    },
+    {
+      "id": "vuon-thanh-tra-dong-thanh",
+      "name": "Vườn thanh trà Đông Thành",
+      "old_caption": "Những chùm thanh trà vàng ươm chua ngọt rực rỡ dưới nắng xuân tại các liếp vườn xã Đông Thành, thị xã Bình Minh.",
+      "new_caption": "Những chùm thanh trà vàng ươm chua ngọt rực rỡ dưới nắng xuân tại các liếp vườn thuộc phường Đông Thành."
+    },
+    {
+      "id": "cho-tan-quoi",
+      "name": "Chợ Tân Quới",
+      "old_caption": "Các sạp hàng bày bán khoai lang tím giống Nhật và rau củ tươi sạch tại Chợ Tân Quới, vựa nông sản trù phú của huyện Bình Tân.",
+      "new_caption": "Các sạp hàng bày bán khoai lang tím giống Nhật và rau củ tươi sạch tại Chợ Tân Quới, trung tâm giao thương nông sản phường Tân Quới."
+    },
+    {
+      "id": "vuon-cay-an-trai-miet-vuon-long-ho",
+      "name": "Vườn cây ăn trái miệt vườn Long Hồ",
+      "old_caption": "Liếp vườn chôm chôm, măng cụt và bưởi da xanh rợp bóng mát dọc các con rạch nhỏ trù phú tại huyện Long Hồ.",
+      "new_caption": "Liếp vườn chôm chôm, măng cụt và bưởi da xanh rợp bóng mát dọc các con rạch phù sa thuộc phường Long Châu."
+    },
+    {
+      "id": "song-co-chien-doan-mang-thit",
+      "name": "Sông Cổ Chiên đoạn Mang Thít",
+      "old_caption": "Mặt nước sông Cổ Chiên mênh mông đoạn qua huyện Mang Thít với những bè nuôi cá điêu hồng san sát và ghe chở đất sét đỏ.",
+      "new_caption": "Mặt nước sông Cổ Chiên mênh mông đoạn qua vùng gốm Mang Thít với những bè nuôi cá điêu hồng san sát và ghe chở đất sét đỏ."
+    },
+    {
+      "id": "rung-ngap-man-long-vinh-duyen-hai",
+      "name": "Rừng ngập mặn Long Vĩnh - Duyên Hải",
+      "old_caption": "Rừng đước nguyên sinh vươn rễ chằng chịt giữ đất ven biển tại xã Long Vĩnh, thị xã Duyên Hải, tạo lá chắn xanh chắn sóng biển.",
+      "new_caption": "Rừng đước nguyên sinh vươn rễ chằng chịt giữ đất ven biển tại xã Long Vĩnh thuộc khu vực Duyên Hải, tạo vành đai chắn sóng tự nhiên."
+    },
+    {
+      "id": "lang-nghe-dan-chapay-phu-can",
+      "name": "Làng nghề đàn ChaPây Phú Cần",
+      "old_caption": "Nghệ nhân Khmer miệt mài đục đẽo thân gỗ mít, so từng phím đàn Chà-pây Đơng-veng cổ truyền tại sóc Phú Cần, thị trấn Tiểu Cần.",
+      "new_caption": "Nghệ nhân Khmer miệt mài đục đẽo thân gỗ mít, so từng phím đàn Chà-pây Đơng-veng cổ truyền tại sóc Phú Cần thuộc phường Tiểu Cần."
+    },
+    {
+      "id": "mut-me-cai-von",
+      "name": "Mứt me Cái Vồn",
+      "old_caption": "Từng trái me chín dốt lột vỏ sên đường cát óng ả dẻo quánh, vị chua thanh ngọt đậm đà đặc sản truyền thống thị xã Bình Minh.",
+      "new_caption": "Từng trái me chín dốt lột vỏ sên đường cát óng ả dẻo quánh, vị chua thanh ngọt ngào của thức quà gia truyền tại phường Cái Vồn."
+    },
+    {
+      "id": "truong-xuan",
+      "name": "Trường Xuân",
+      "old_caption": "Nghệ sĩ hề Trường Xuân cây cười duyên dáng của sân khấu cải lương miền Tây đem lại tiếng cười sảng khoái và tính nhân văn",
+      "new_caption": "Nghệ sĩ hài Trường Xuân, gương mặt gạo cội của nghệ thuật sân khấu cải lương Nam Bộ thập niên 1960 với lối diễn hóm hỉnh và giàu tính nhân văn."
+    },
+    {
+      "id": "thanh-tra-binh-minh",
+      "name": "Thanh trà Bình Minh",
+      "old_caption": "Chùm trái thanh trà ngọt vỏ mỏng vàng ươm mọng nước tại thị xã Bình Minh, quả đặc sản quý hiếm tỏa hương thơm thảo mộc khó quên.",
+      "new_caption": "Chùm trái thanh trà ngọt vỏ mỏng vàng ươm mọng nước tại phường Bình Minh, quả đặc sản quý hiếm tỏa hương thơm thảo mộc khó quên."
+    },
+    {
+      "id": "tom-duyen-hai",
+      "name": "Tôm Duyên Hải",
+      "old_caption": "Thu hoạch tôm sú nước lợ sinh thái tại thị xã Duyên Hải, tôm đạt kích cỡ lớn vỏ bóng xanh đen và cơ thịt chắc khỏe cung cấp cho các nhà máy chế biến.",
+      "new_caption": "Thu hoạch tôm sú nước lợ sinh thái tại vùng cửa biển phường Duyên Hải, tôm đạt kích cỡ lớn vỏ bóng xanh đen cung cấp cho chế biến xuất khẩu."
+    },
+    {
+      "id": "cau-lac-bo-don-ca-tai-tu-truong-xay-dung-mien-tay",
+      "name": "Câu lạc bộ đờn ca tài tử Trường Xây dựng miền Tây",
+      "old_caption": "Các giảng viên và sinh viên Câu lạc bộ đờn ca tài tử Trường Xây dựng miền Tây hòa tấu khúc Nam ai sâu lắng.",
+      "new_caption": "Buổi hòa tấu khúc Nam ai sâu lắng của các thành viên câu lạc bộ đờn ca tài tử tại khuôn viên trường đại học thuộc phường Long Châu."
+    },
+    {
+      "id": "chua-phuoc-son",
+      "name": "Chùa Phước Sơn",
+      "old_caption": "Chánh điện chùa Phước Sơn thanh tịnh bên dòng sông Hậu tại thị xã Bình Minh, ngôi chùa Phật giáo Bắc tông duy trì nếp tu học trang nghiêm qua nhiều thế hệ.",
+      "new_caption": "Chánh điện chùa Phước Sơn thanh tịnh bên dòng sông Hậu tại phường Bình Minh, ngôi chùa Phật giáo Bắc tông duy trì nếp tu học trang nghiêm qua nhiều thế hệ."
+    },
+    {
+      "id": "chua-bo-de",
+      "name": "Chùa Bồ Đề",
+      "old_caption": "Cổ tự Bồ Đề với cổng tam quan cổ kính và hàng bồ đề tỏa bóng mát, lưu giữ không gian thanh tịnh giữa xóm làng trù phú thị xã Bình Minh ven sông Hậu.",
+      "new_caption": "Cổ tự Bồ Đề với cổng tam quan cổ kính và hàng bồ đề tỏa bóng mát, lưu giữ không gian thanh tịnh giữa xóm làng trù phú phường Bình Minh ven sông Hậu."
+    },
+    {
+      "id": "ben-pha-tran-phu-can-tho-vinh-long-vinh-long",
+      "name": "Bến Phà Trần Phú (Cần Thơ – Vĩnh Long)",
+      "old_caption": "Bến đò khách dân sinh Trần Phú vận chuyển người dân vượt sông Hậu kết nối thị xã Bình Minh với bến Ninh Kiều.",
+      "new_caption": "Bến đò khách dân sinh Trần Phú vận chuyển người dân vượt sông Hậu kết nối phường Cái Vồn với bến Ninh Kiều."
+    },
+    {
+      "id": "ben-xe-duyen-hai-tx-duyen-hai-tra-vinh",
+      "name": "Bến xe Duyên Hải (TX. Duyên Hải)",
+      "old_caption": "Các chuyến xe khách đường dài chuẩn bị khởi hành từ Bến xe thị xã Duyên Hải trên trục đường 19 Tháng 5.",
+      "new_caption": "Các chuyến xe khách đường dài chuẩn bị khởi hành từ Bến xe khách Duyên Hải trên trục đường 19 Tháng 5 thuộc phường Duyên Hải."
+    },
+    {
+      "id": "htx-cam-sanh-tra-on",
+      "name": "HTX cam sành Trà Ôn",
+      "old_caption": "Những chùm cam sành vỏ mỏng mọng nước, tép vàng cam ngọt đậm đà được thu hoạch tại vườn chuyên canh trù phú huyện Trà Ôn ven sông Hậu.",
+      "new_caption": "Những chùm cam sành vỏ mỏng mọng nước, tép vàng cam ngọt đậm đà được thu hoạch tại vườn chuyên canh trù phú xã Trà Côn ven sông Hậu."
+    },
+    {
+      "id": "ben-xe-vung-liem-vinh-long",
+      "name": "Bến Xe Vũng Liêm",
+      "old_caption": "Bến xe khách thị trấn Vũng Liêm trên đường Tỉnh lộ 902 đón trả khách các tuyến xe buýt và xe khách đi Thành phố Hồ Chí Minh.",
+      "new_caption": "Bến xe khách Vũng Liêm trên trục Tỉnh lộ 902 thuộc phường Vũng Liêm, phục vụ các tuyến xe liên tỉnh kết nối Thành phố Hồ Chí Minh."
+    },
+    {
+      "id": "nha-thuoc-fpt-long-chau-1237-quoc-lo-54-vinh-long",
+      "name": "Nhà thuốc FPT Long Châu – 1237 Quốc Lộ 54",
+      "old_caption": "Điểm bán dược phẩm và thiết bị y tế gia đình tại Nhà thuốc FPT Long Châu số 1237 trên trục Quốc lộ 54 thị trấn Tân Quới.",
+      "new_caption": "Điểm bán dược phẩm và thiết bị y tế gia đình tại Nhà thuốc FPT Long Châu số 1237 trên trục Quốc lộ 54 thuộc phường Tân Quới."
+    },
+    {
+      "id": "coco-riverside-lodge-trung-nghia",
+      "name": "Coco Riverside Lodge Trung Nghĩa",
+      "old_caption": "Khu nghỉ dưỡng Coco Riverside Lodge với dãy nhà sàn mộc mạc soi bóng ven kênh rạch Trung Nghĩa, điểm đến lý tưởng cho du khách quốc tế trải nghiệm đời sống bản địa.",
+      "new_caption": "Khu nghỉ dưỡng Coco Riverside Lodge với dãy nhà sàn gỗ mộc mạc soi bóng ven kênh rạch xã Trung Nghĩa, nơi lưu trú sinh thái miệt vườn đón khách từ năm 2012."
+    },
+    {
+      "id": "khach-san-chieu-hung",
+      "name": "Khách sạn Chiêu Hùng",
+      "old_caption": "Khách sạn Chiêu Hùng trên đường Gia Long, khu 1 thị trấn Trà Ôn, thuận tiện tham quan chợ nổi Trà Ôn vào sáng sớm.",
+      "new_caption": "Khách sạn Chiêu Hùng trên đường Gia Long thuộc xã Trà Côn, vị trí thuận tiện trải nghiệm nhịp sống sông nước ven kinh Trà Ôn vào sáng sớm."
+    },
+    {
+      "id": "khach-san-minh-khue",
+      "name": "Khách sạn Minh Khuê",
+      "old_caption": "Khách sạn Minh Khuê tại khóm 2 thị trấn Cái Nhum, địa chỉ lưu trú yên tĩnh giúp du khách thong thả khám phá làng gốm Mang Thít.",
+      "new_caption": "Khách sạn Minh Khuê tại khóm 2 xã Cái Nhum, địa chỉ lưu trú yên tĩnh giúp du khách thong thả khám phá làng nghề gạch gốm Mang Thít."
+    },
+    {
+      "id": "khu-di-san-lo-gach-mang-thit",
+      "name": "Khu di sản lò gạch Mang Thít",
+      "old_caption": "Hàng trăm vòm lò nung gạch gốm san sát soi bóng xuống dòng kinh Thầy Kay, di sản làng nghề gạch gốm thủ công trứ danh trăm năm của huyện Mang Thít.",
+      "new_caption": "Hàng trăm vòm lò nung gạch gốm san sát soi bóng xuống dòng kinh Thầy Kay, quần thể di sản làng nghề thủ công trăm năm tại xã Nhơn Phú."
+    },
+    {
+      "id": "lang-nghe-che-bien-hai-san-kho-thanh-phong",
+      "name": "Làng nghề chế biến hải sản khô Thạnh Phong",
+      "old_caption": "Những giàn phơi cá khô đù, cá khoai tươi rói ướp muối biển phơi dưới nắng giòn cửa biển Thạnh Phong, huyện Thạnh Phú.",
+      "new_caption": "Những giàn phơi cá khô đù, cá khoai tươi rói ướp muối biển phơi dưới nắng giòn cửa biển Thạnh Phong thuộc xã An Qui."
+    },
+    {
+      "id": "lang-hoa-kieng-va-cay-giong-cho-lach",
+      "name": "Làng hoa kiểng và cây giống Chợ Lách",
+      "old_caption": "Bạt ngàn gốc mai vàng, cúc mâm xôi và cây giống sầu riêng, măng cụt Cái Mơn khoe sắc rực rỡ dọc tuyến quốc lộ 57, huyện Chợ Lách.",
+      "new_caption": "Bạt ngàn gốc mai vàng, cúc mâm xôi và cây giống sầu riêng măng cụt Cái Mơn khoe sắc rực rỡ dọc tuyến quốc lộ 57 qua xã Chợ Lách."
+    },
+    {
+      "id": "hai-san-ngoc-hiep-binh-dai-ben-tre",
+      "name": "Hải Sản Ngọc Hiệp Bình Đại",
+      "old_caption": "Quán Hải Sản Ngọc Hiệp trên đường Lê Hoàng Chiếu, thị trấn Bình Đại, đặc sản cua biển gạch son luộc sả và sò huyết rang muối ớt đậm đà vị biển.",
+      "new_caption": "Quán Hải Sản Ngọc Hiệp trên đường Lê Hoàng Chiếu thuộc khu vực Bình Đại, đặc sản cua biển gạch son luộc sả và sò huyết rang muối ớt đậm đà vị biển."
+    },
+    {
+      "id": "nha-tho-giao-xu-cai-nhum",
+      "name": "Nhà thờ Giáo xứ Cái Nhum",
+      "old_caption": "Tháp chuông cao 33 mét mang phong cách kiến trúc La Mã cổ kính của Nhà thờ Giáo xứ Cái Nhum xã Long Thới, một trong những họ đạo lâu đời nhất miền Tây.",
+      "new_caption": "Tháp chuông cao 33 mét mang phong cách kiến trúc La Mã cổ kính của Nhà thờ Giáo xứ Cái Nhum xã Long Thới, một trong những họ đạo thành lập từ năm 1731."
+    },
+    {
+      "id": "tuan-le-van-hoa-am-thuc-an-hoi-2026",
+      "name": "Tuần lễ Văn hoá - Ẩm thực phường An Hội",
+      "old_caption": "Không gian ẩm thực ven sông lung linh ánh đèn tại Công viên An Hội chào đón du khách thưởng thức những món ngon dân dã đậm chất sông nước miền Tây.",
+      "new_caption": "Không gian ẩm thực ven sông lung linh ánh đèn tại Công viên An Hội thuộc phường An Hội, chào đón du khách thưởng thức những món ngon dân dã của cư dân sông nước."
+    },
+    {
+      "id": "le-hoi-cung-bien-my-long",
+      "name": "Lễ hội cúng biển Mỹ Long",
+      "old_caption": "Nghi thức đóng tàu và tống tàu ra khơi cửa sông Cổ Chiên trong tiếng trống chiêng rộn rã tại miếu Bà Chúa Xứ thị trấn Mỹ Long, Cầu Ngang.",
+      "new_caption": "Nghi thức đóng tàu và tống tàu ra khơi cửa sông Cổ Chiên trong tiếng trống chiêng rộn rã tại miếu Bà Chúa Xứ xã Mỹ Long."
+    },
+    {
+      "id": "dinh-lang-hieu-phung",
+      "name": "Đình làng Hiếu Phụng",
+      "old_caption": "Kiến trúc gian võ ca và chính điện lợp ngói âm dương cổ kính của Đình làng Hiếu Phụng tại ấp Quang Trạch, trung tâm tín ngưỡng gắn kết cư dân nông nghiệp huyện Vũng Liêm.",
+      "new_caption": "Kiến trúc gian võ ca và chính điện lợp ngói âm dương cổ kính của Đình làng Hiếu Phụng tại ấp Quang Trạch, trung tâm tín ngưỡng nông nghiệp lâu đời của xã Hiếu Phụng."
+    }
+  ]
+}
