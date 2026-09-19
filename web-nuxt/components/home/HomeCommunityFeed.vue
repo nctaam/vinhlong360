@@ -10,7 +10,7 @@
             · <strong>{{ stats.members }}</strong> thành viên
           </p>
           <blockquote class="home-community-banner__quote">
-            “Vĩnh Long không vội được đâu — cứ thong thả xuôi đò Cù Lao An Bình, ghé làng gốm Mang Thít lúc ráng chiều rồi mới hiểu trọn cái tình sông nước miền Tây.”
+            “Vĩnh Long không vội được đâu — cứ thong thả xuôi đò Cù Lao An Bình, ghé làng gốm Mang Thít lúc ráng chiều rồi mới hiểu trọn cái tình sông nước nơi đây.”
           </blockquote>
           <div class="home-community-banner__author">
             <span class="home-community-banner__avatar" aria-hidden="true">Đ</span>
