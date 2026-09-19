@@ -121,11 +121,12 @@
     />
     <HomeFieldworkFaq />
 
-    <div class="home-quick-decisions" data-home-section="quick-decisions">
+    <div class="home-quick-decisions sr-only" data-home-section="quick-decisions">
       <HomeDecisionLedger :entries="homePresentation.decisionEntries" class="sr-only" />
       <HomeCategoryIndex
         v-if="!homePending"
         :groups="homePresentation.categoryGroups"
+        class="sr-only"
       />
     </div>
 
@@ -147,7 +148,7 @@
 
     <div class="home-signals" data-home-section="signals">
       <HomeTravelCompanion />
-      <HomeLocalBriefing />
+      <HomeLocalBriefing class="sr-only" />
 
       <section v-if="upcomingEventList.length || seasonalList.length" class="block reveal" aria-label="Tín hiệu địa phương" data-material-accent="amber">
         <div class="section-head">

@@ -505,6 +505,7 @@ const HOTLINES: readonly EmergencyContact[] = [
   border-radius: var(--radius-surface);
   box-shadow: var(--shadow-card-ambient);
   margin-block-start: 0;
+  margin-block-end: var(--space-6);
 }
 
 .home-companion-utility-pill {
