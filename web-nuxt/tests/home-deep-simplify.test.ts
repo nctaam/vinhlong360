@@ -82,6 +82,13 @@ describe('Deep & Simple Homepage UI Refinements', () => {
     expect(culinaryVue).toMatch(/home-culinary-card__scrim[\s\S]*?transparent 28%/)
     expect(staysVue).toMatch(/home-stay-card__scrim[\s\S]*?transparent 28%/)
   })
+
+  it('Task 11: Curated lead heritage card employs calmed optical photographic scrim', () => {
+    const showcaseVue = readFileSync(resolve(__dirname, '../components/home/HomeCuratedShowcase.vue'), 'utf8')
+    // Must use relaxed transparent mid-stop instead of heavy 0.55 opacity at 50%
+    expect(showcaseVue).toMatch(/home-curated-lead__scrim[\s\S]*?transparent 28%/)
+    expect(showcaseVue).not.toMatch(/rgba\(var\(--black-rgb\),\s*0\.55\)\s*50%/)
+  })
 })
 
 
