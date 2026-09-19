@@ -141,7 +141,6 @@
     </section>
 
     <div class="home-signals" data-home-section="signals">
-      <HomeTravelCompanion />
       <HomeLocalBriefing class="sr-only" />
 
       <section v-if="upcomingEventList.length || seasonalList.length" class="block reveal sr-only" aria-label="Tín hiệu địa phương" data-material-accent="amber">
@@ -385,7 +384,6 @@ import HomeRiversideStays from '~/components/home/HomeRiversideStays.vue'
 import HomeTravelPlanner from '~/components/home/HomeTravelPlanner.vue'
 import HomeAtmosphereControl from '~/components/home/HomeAtmosphereControl.vue'
 import type { AtmosphereMode } from '~/components/home/HomeAtmosphereControl.vue'
-import HomeTravelCompanion from '~/components/home/HomeTravelCompanion.vue'
 import ImageDisclosure from '~/components/ImageDisclosure.vue'
 import { describeEntityImages, describeEntityPlaceholder } from '~/utils/imageDescriptors'
 import { createHomeNocturnePresentation } from '~/utils/homeNocturnePresentation'

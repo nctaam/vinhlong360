@@ -101,6 +101,12 @@ describe('Deep & Simple Homepage UI Refinements', () => {
     // Orphaned matte and grid body rules should be pruned to maintain strict CSS headroom
     expect(nocturneCss).not.toMatch(/\[data-home-pilot="nocturne-b1"\]\s+\.home-product-lead__matte\s*\{/)
   })
+
+  it('Task 14: Emergency hotline companion banner removed from homepage template to preserve visual calm', () => {
+    const freshIndexVue = readFileSync(resolve(__dirname, '../pages/index.vue'), 'utf8')
+    expect(freshIndexVue).not.toContain('<HomeTravelCompanion')
+    expect(freshIndexVue).not.toContain('import HomeTravelCompanion')
+  })
 })
 
 
