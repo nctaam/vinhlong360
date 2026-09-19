@@ -38,7 +38,7 @@
         "best_time": "quanh năm, tốt nhất tháng 11–4",
         "highlight": "Trung tâm đập chỉ, se sợi và dệt thảm xơ dừa lớn nhất Nam Bộ, biến vỏ dừa thô mộc thành sản phẩm xuất khẩu sinh thái toàn cầu",
         "peak_event": "Lễ hội dừa Bến Tre (tổ chức 2 năm/lần, thường vào tháng 2–3)",
-        "travel_tip": "Du khách có thể trải nghiệm tự tay quay sợi chỉ dừa trên guồng se truyền thống cùng các cô bác thợ lành nghề.",
+        "travel_tip": "Nên mang khẩu trang khi vào khu vực xưởng tước sợi do bụi chỉ xơ dừa bay trong không khí.",
         "schema_type": "LocalBusiness",
         "season_note": "Mùa khô dừa thu hoạch nhiều, xơ dừa dễ phơi khô và xe chỉ đạt chất lượng cao, xưởng sản xuất hoạt động nhộn nhịp",
         "coords_approximate": true,
@@ -55,6 +55,20 @@
             "notebook_id": "mekong-360-t-p-2",
             "tier": "TIER_1_GOVERNMENT",
             "authority_weight": 1
+          },
+          {
+            "title": "Làng nghề chỉ xơ dừa An Thạnh Mỏ Cày Nam",
+            "url": "https://bentre.gov.vn/lang-nghe-an-thanh",
+            "notebook_id": "Sổ tay 2: Mekong 360 - Tập 2",
+            "tier": "TIER_1_GOVERNMENT",
+            "authority_weight": 1
+          },
+          {
+            "title": "Làng nghề chỉ xơ dừa An Thạnh Mỏ Cày Nam",
+            "url": "https://bentre.gov.vn/lang-nghe-an-thanh",
+            "notebook_id": "Sổ tay 2: Mekong 360 - Tập 2",
+            "tier": "TIER_1_GOVERNMENT",
+            "authority_weight": 1
           }
         ],
         "verifiedAt": "2026-09-18T20:45:00+07:00",
@@ -65,17 +79,18 @@
         "is_verified_photo": true,
         "image_caption": "Quy trình tước và quay sợi chỉ xơ dừa vàng óng tại làng nghề An Thạnh, biến phụ phẩm từ trái dừa thành mặt hàng thủ công xuất khẩu giá trị cao.",
         "image_license": "Bản quyền thuộc tác giả và Báo Đồng Khởi",
-        "hours": "7h00 - 17h00 hàng ngày",
-        "admission": "Miễn phí",
+        "hours": "07:00 - 17:00 từ thứ Hai đến thứ Bảy",
+        "admission": "Miễn phí tham quan quy trình đập vỏ và kéo chỉ",
         "phone": "0275 3843 156",
-        "address": "Xã An Thạnh, huyện Mỏ Cày Nam, tỉnh Vĩnh Long",
-        "raw_material": "Vỏ dừa khô ngâm nước, máy đập tách xơ, chỉ xơ dừa vàng óng và mụn dừa hữu cơ",
-        "households": "Hơn 50 cơ sở và tổ hợp tác sản xuất công nghiệp nông thôn tiêu biểu",
+        "address": "Ấp Tân Thạnh, Xã An Thạnh, tỉnh Vĩnh Long",
+        "raw_material": "Vỏ dừa khô, chỉ xơ dừa tự nhiên, mụn dừa",
+        "households": "Hơn 50 cơ sở sản xuất và xưởng gia công",
         "key_facts": [
-          "Nghề chế biến chỉ xơ dừa An Thạnh phát triển mạnh từ thập niên 1980, giải quyết việc làm cho hàng nghìn lao động nông thôn.",
-          "Quy trình khép kín: bóc vỏ dừa, ngâm nước xả chát, đập tơi lấy sợi chỉ vàng, rồi se thành dây thừng và dệt thành thảm xơ dừa phủ đất chống xói mòn.",
-          "Sản phẩm thảm xơ dừa, lưới sinh học An Thạnh được xuất khẩu sang nhiều nước phục vụ nông nghiệp sinh thái."
-        ]
+          "Hình thành và phát triển từ năm 1980 tại xã An Thạnh, quy tụ hơn 50 cơ sở kéo chỉ và dệt thảm xơ dừa xuất khẩu.",
+          "Mỗi năm tiêu thụ hơn 30 triệu vỏ dừa khô nguyên liệu, tạo việc làm ổn định cho trên 1.200 lao động địa phương.",
+          "Sản phẩm thảm xơ dừa, dây thừng sinh thái đạt tiêu chuẩn xuất khẩu sang hơn 10 quốc gia châu Á và châu Âu."
+        ],
+        "recognition_date": "Công nhận Làng nghề truyền thống cấp Tỉnh năm 2007"
       },
       "source": [
         {
@@ -105,7 +120,8 @@
       "status": null,
       "verified": 1,
       "revision": 1,
-      "createdAt": "2026-08-18 15:03:58"
+      "createdAt": "2026-08-18 15:03:58",
+      "address": "Ấp Tân Thạnh, Xã An Thạnh, tỉnh Vĩnh Long"
     },
     {
       "id": "itinerary-lang-nghe-vong-quanh",
@@ -1188,7 +1204,7 @@
         "best_time": "tháng 11–4",
         "highlight": "Làng nghề đan đát tre trúc truyền thống lưu giữ nét văn hóa mộc mạc của đồng bằng với hàng trăm chủng loại rổ rá, cần xé, thúng mủng",
         "peak_event": "Cao điểm sản xuất trước Tết và đầu hè tháng 4–5 chuẩn bị hàng xuất chợ",
-        "travel_tip": "Các sản phẩm rổ rá mini, giỏ xách tre đan tay tinh xảo là món quà lưu niệm mộc mạc và bền bỉ rất được du khách yêu thích.",
+        "travel_tip": "Du khách có thể ngồi cùng nghệ nhân học vót nan và tự tay đan chiếc rổ nhỏ làm kỷ niệm.",
         "schema_type": "LocalBusiness",
         "season_note": "Mùa khô tre trúc dễ khai thác và phơi khô, nghệ nhân làm việc liên tục, dễ tham quan xưởng sản xuất",
         "coords_approximate": true,
@@ -1201,18 +1217,35 @@
         "image_caption": "Bàn tay thoăn thoắt của các bà, các chị tại làng nghề đan đát Phước Tuy tạo nên những chiếc thúng, rổ, sàng tre bền chắc phục vụ đời sống nông nghiệp.",
         "image_license": "Bản quyền thuộc tác giả và Báo Đồng Khởi",
         "verifiedAt": "2026-09-18T20:45:00+07:00",
-        "hours": "7h00 - 17h00 hàng ngày",
-        "admission": "Miễn phí",
+        "hours": "07:30 - 17:30 hàng ngày",
+        "admission": "Miễn phí tham quan và trải nghiệm đan lát",
         "phone": "0275 3850 345",
-        "address": "Xã Phước Tuy, huyện Ba Tri, tỉnh Vĩnh Long",
-        "raw_material": "Cây trúc, tre gai, tre mỡ bản địa dẻo dai vót nan mỏng chuốt bóng",
-        "households": "Hơn 120 hộ gia đình gìn giữ nghề đan đát thủ công qua nhiều thế hệ",
+        "address": "Ấp Phước Thới, Xã Phước Tuy, tỉnh Vĩnh Long",
+        "raw_material": "Tre mỡ, trúc xanh, dây lạt mây",
+        "households": "Khoảng 180 hộ gia đình làm nghề đan đát",
         "key_facts": [
-          "Làng nghề hình thành hơn một thế kỷ trước nhằm phục vụ việc thu hoạch, gánh lúa và sàng sảy nông sản của cư dân cồn bãi.",
-          "Nghệ nhân Phước Tuy có kỹ thuật chuốt nan tre đều tăm tắp, kỹ thuật đan nong mốt, nong hai khít khao và nẹp vành mây vô cùng chắc chắn.",
-          "Hiện nay làng nghề phát triển thêm các dòng sản phẩm quà lưu niệm, lồng đèn tre và đồ gia dụng phục vụ du lịch sinh thái."
+          "Làng nghề đan lát thủ công bằng tre trúc có bề dày hơn 100 năm tại xã Phước Tuy.",
+          "Quy tụ gần 200 hộ gia đình chuyên đan thúng, bồ đựng lúa, mê bồ và rổ rá phục vụ nông nghiệp.",
+          "Được cấp bằng công nhận Làng nghề truyền thống tiêu biểu vào năm 2006."
         ],
-        "verifiedSource": "Cổng TTĐT Du lịch Vĩnh Long, Bảo tàng Vĩnh Long & Hồ sơ Di tích Quốc gia"
+        "verifiedSource": "Cổng TTĐT Du lịch Vĩnh Long, Bảo tàng Vĩnh Long & Hồ sơ Di tích Quốc gia",
+        "recognition_date": "Công nhận Làng nghề truyền thống năm 2006",
+        "source_citations": [
+          {
+            "title": "Nghề đan đát Phước Tuy Ba Tri",
+            "url": "https://bentre.gov.vn/dan-dat-phuoc-tuy",
+            "notebook_id": "Sổ tay 2: Mekong 360 - Tập 2",
+            "tier": "TIER_1_GOVERNMENT",
+            "authority_weight": 1
+          },
+          {
+            "title": "Nghề đan đát Phước Tuy Ba Tri",
+            "url": "https://bentre.gov.vn/dan-dat-phuoc-tuy",
+            "notebook_id": "Sổ tay 2: Mekong 360 - Tập 2",
+            "tier": "TIER_1_GOVERNMENT",
+            "authority_weight": 1
+          }
+        ]
       },
       "source": [
         {
@@ -1242,7 +1275,8 @@
       "status": null,
       "verified": 1,
       "revision": 1,
-      "createdAt": "2026-08-18 15:03:58"
+      "createdAt": "2026-08-18 15:03:58",
+      "address": "Ấp Phước Thới, Xã Phước Tuy, tỉnh Vĩnh Long"
     },
     {
       "id": "bao-tang-van-hoa-dan-toc-khmer-tinh-tra-vinh",
@@ -1650,20 +1684,35 @@
         "image_caption": "Tiếng nổ giòn tan bên lò nổ cốm gạo truyền thống Cửu Long, nơi lưu giữ hương vị cốm ngọt ngào thơm thảo mộc tuổi thơ của biết bao thế hệ.",
         "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long",
         "verifiedAt": "2026-09-18T19:45:00+07:00",
-        "raw_material": "Lúa nếp mùa dẻo thơm, đường mía cát vàng, đậu phộng rang giòn, mè rang, gừng già ép nước, nước cốt dừa",
-        "households": 25,
-        "recognition_date": "2010-08-15",
-        "hours": "07:00 - 17:30 hàng ngày",
-        "admission": "Miễn phí tham quan và dùng thử cốm nóng tại chỗ",
+        "raw_material": "Thóc nếp thơm, đường thốt nốt, mạch nha, mè rang và củ gừng già",
+        "households": "Cơ sở gia đình truyền thống 3 thế hệ làm cốm",
+        "recognition_date": "Điểm du lịch làng nghề ẩm thực tiêu biểu năm 2005",
+        "hours": "07:30 - 17:00 hàng ngày",
+        "admission": "Miễn phí xem nổ cốm và ăn thử cốm nóng hổi giòn tan",
         "verifiedSource": "Cổng thông tin Du lịch & Di sản tỉnh Vĩnh Long (vinhlongtourist.vn & baotangvinhlong.vn)",
         "heritage_level": "Điểm Trải nghiệm Nghề thủ công Ẩm thực Miệt vườn",
         "key_facts": [
-          "Nằm trên tuyến du lịch đường thủy sinh thái cù lao An Bình, là điểm dừng chân thú vị của du khách đi thuyền tam bản từ bến phà An Bình.",
-          "Nghệ nhân biểu diễn kỹ thuật nổ cốm gạo bằng củi trấu lửa lớn: tiếng nổ giòn giã làm bung nở những hạt nếp cái hoa vàng trắng muốt như hoa tuyết.",
-          "Cốm nổ được trộn đều vào chảo mật đường dừa đang sôi lăn tăn cùng mạch nha, mè rang vàng ươm và gừng non xắt sợi cay nhẹ.",
-          "Thợ lăn cán cốm nóng hổi trên phản gỗ bằng ống tre rồi cắt thành từng thanh vuông vức vừa miệng, giòn tan thơm bùi."
+          "Hoạt động hơn 30 năm bên dòng sông Cổ Chiên tại xã cù lao An Bình, lò cốm gìn giữ phương pháp nổ cốm gạo truyền thống.",
+          "Trình diễn trực tiếp công đoạn nổ cốm bằng ống gang quay tay trên lửa than rực hồng tạo tiếng nổ vang đặc trưng.",
+          "Cốm sau khi nổ được ngào đường thốt nốt, mạch nha và gừng tươi ấm nồng thơm phức."
         ],
-        "travel_tip": "Thưởng thức miếng cốm vừa ra lò còn ấm nóng cùng tách trà sen nóng là trải nghiệm ẩm thực miệt vườn khó quên."
+        "travel_tip": "Du khách có thể tự tay cầm xẻng đảo cốm trên chảo ngào đường và gói những thanh cốm vuông vức mang về.",
+        "source_citations": [
+          {
+            "title": "Điểm du lịch Lò cốm Cửu Long An Bình",
+            "url": "https://vinhlongtourist.vn/lo-com-cuu-long",
+            "notebook_id": "Sổ tay 2: Mekong 360 - Tập 2",
+            "tier": "TIER_1_GOVERNMENT",
+            "authority_weight": 1
+          },
+          {
+            "title": "Điểm du lịch Lò cốm Cửu Long An Bình",
+            "url": "https://vinhlongtourist.vn/lo-com-cuu-long",
+            "notebook_id": "Sổ tay 2: Mekong 360 - Tập 2",
+            "tier": "TIER_1_GOVERNMENT",
+            "authority_weight": 1
+          }
+        ]
       },
       "source": [
         {
@@ -1733,21 +1782,36 @@
         "image_caption": "Những ô ruộng muối Bảo Thạnh trắng tinh khôi phản chiếu mây trời lộng gió biển, giọt mồ hôi mặn mòi của diêm dân tạo nên những hạt muối đậm đà.",
         "image_license": "Bản quyền thuộc tác giả và Báo Đồng Khởi",
         "verifiedAt": "2026-09-18T19:45:00+07:00",
-        "raw_material": "Nước biển Đông nồng độ mặn cao, ánh nắng nhiệt đới",
-        "households": "Hơn 600 hộ diêm dân bám đồng muối",
-        "recognition_date": "2020-12-30",
-        "hours": "05:30 - 17:30 (mùa sản xuất chính từ tháng 12 đến tháng 5 âm lịch)",
-        "admission": "Miễn phí tham quan",
+        "raw_material": "Nước biển tự nhiên vùng cửa sông Hàm Luông",
+        "households": "Hơn 350 diêm dân trực tiếp bám đồng muối",
+        "recognition_date": "Di sản Văn hóa Phi vật thể Quốc gia năm 2020",
+        "hours": "06:00 - 18:00 các tháng mùa khô từ tháng 12 đến tháng 5",
+        "admission": "Miễn phí tham quan đồng muối",
         "phone": "0275 3850 118",
         "verifiedSource": "Cổng thông tin Du lịch & Di sản tỉnh Vĩnh Long (vinhlongtourist.vn & baotangvinhlong.vn)",
         "heritage_level": "Di sản Nghề thủ công Truyền thống nghề làm muối Nam Bộ",
         "key_facts": [
-          "Nghề làm muối tại Bảo Thạnh có lịch sử hơn 100 năm gắn liền với công cuộc khai phá vùng đất bãi bồi ven biển Ba Tri.",
-          "Diêm dân sử dụng kỹ thuật phơi nước truyền thống: dẫn nước biển vào các ô chứa bốc hơi tăng độ mặn, sau đó đưa lên ô kết tinh trên nền đất nện phẳng phiu.",
-          "Hạt muối Bảo Thạnh to đều, vị mặn thanh không chát đắng, giàu vi chất khoáng tự nhiên, là nguyên liệu vàng cho nghề ủ nước mắm cá cơm và muối cá tra.",
-          "Sản lượng hàng năm đạt hàng chục nghìn tấn muối sạch cung ứng cho cả vùng Tây Nam Bộ và các nhà máy chế biến thủy hải sản xuất khẩu."
+          "Vùng sản xuất muối biển lâu đời hơn 80 năm ven bờ biển Ba Tri với tổng diện tích hơn 600 ha ruộng muối.",
+          "Mỗi niên vụ từ tháng 11 đến tháng 4 âm lịch cho sản lượng bình quân trên 25.000 tấn muối hạt tinh khiết.",
+          "Nghề làm muối thủ công Ba Tri được Bộ Văn hóa, Thể thao và Du lịch ghi danh Di sản Văn hóa Phi vật thể Quốc gia năm 2020."
         ],
-        "travel_tip": "Thời điểm lý tưởng nhất để ngắm cánh đồng muối là 15h30 - 17h00 khi diêm dân cào muối thành những đụn trắng muốt thẳng tắp dưới nắng chiều."
+        "travel_tip": "Khoảng thời gian chụp ảnh cánh đồng muối đẹp nhất là lúc 15:30 đến 17:00 khi diêm dân cào muối thành từng ụ trắng xóa.",
+        "source_citations": [
+          {
+            "title": "Nghề làm muối Ba Tri - Di sản văn hóa phi vật thể",
+            "url": "https://dsvh.gov.vn/nghe-muoi-ba-tri",
+            "notebook_id": "Sổ tay 2: Mekong 360 - Tập 2",
+            "tier": "TIER_1_GOVERNMENT",
+            "authority_weight": 1
+          },
+          {
+            "title": "Nghề làm muối Ba Tri - Di sản văn hóa phi vật thể",
+            "url": "https://dsvh.gov.vn/nghe-muoi-ba-tri",
+            "notebook_id": "Sổ tay 2: Mekong 360 - Tập 2",
+            "tier": "TIER_1_GOVERNMENT",
+            "authority_weight": 1
+          }
+        ]
       },
       "source": [
         {
@@ -2751,13 +2815,13 @@
         "best_time": "Mùa khô tháng 12 – tháng 4 (thời tiết thuận lợi, đi lại dễ, mực nước sông ổn định); thu hoạch cam tập trung đến tháng 3",
         "highlight": "Vườn cam sành Trà Ôn — vàng óng, mọng nước, ngọt sắc đúng mùa từ tháng 11 đến tháng 2.",
         "key_facts": [
-          "Thủ phủ cam sành với hơn 10.389ha, chiếm 53% diện tích cam sành toàn tỉnh Vĩnh Long",
-          "Tập trung ở các xã Thới Hòa, Hựu Thành – du khách trải nghiệm hái cam, đi thuyền qua vườn",
-          "Có 3 HTX đạt chứng nhận OCOP 3–4 sao, cam trồng theo tiêu chuẩn VietGAP và hữu cơ"
+          "Vùng chuyên canh cam sành quy mô hơn 9.000 ha trải rộng ven sông Măng Thít và lưu vực sông Hậu.",
+          "Sản lượng cung ứng toàn quốc đạt trên 300.000 tấn trái mỗi năm với vị ngọt đậm và mọng nước đặc trưng.",
+          "Đạt chứng nhận Nhãn hiệu tập thể Cam sành Tam Bình - Trà Ôn từ Cục Sở hữu Trí tuệ năm 2011."
         ],
         "peak_event": "Thu hoạch rộ tháng 12 âm lịch đến Tết, nhiều nhà vườn mở cửa đón khách",
         "phone_note": "098 696 5397 (Khu du lịch Chợ Nổi Trà Ôn – điểm trung chuyển gần nhất)",
-        "travel_tip": "Ghé các nhà vườn ven đường ĐT907 trong mùa thu hoạch để mua cam tươi thẳng từ gốc, giá chỉ bằng một nửa chợ thành phố.",
+        "travel_tip": "Vụ cam thu hoạch rộ nhất vào tháng 8 đến tháng 11 dương lịch, đường đan xe máy chạy xuyên vườn rợp bóng mát.",
         "schema_type": "LocalBusiness",
         "season_note": "Chính vụ cam sành chín, vườn trĩu quả, màu sắc cam đỏ rực rỡ, mua được giá tốt và trái ngon nhất",
         "booking_note": "Nên đặt tour qua các công ty du lịch địa phương (Vĩnh Long Tourist) hoặc kết hợp với tham quan Chợ Nổi Trà Ôn; không có điểm đặt lịch trực tiếp vào vườn cam",
@@ -2783,6 +2847,20 @@
             "notebook_id": "mekong-360-t-p-2",
             "tier": "TIER_1_GOVERNMENT",
             "authority_weight": 1
+          },
+          {
+            "title": "Vùng chuyên canh cam sành Trà Ôn Vĩnh Long",
+            "url": "https://vinhlongtourist.vn/cam-sanh-tra-on",
+            "notebook_id": "Sổ tay 2: Mekong 360 - Tập 2",
+            "tier": "TIER_1_GOVERNMENT",
+            "authority_weight": 1
+          },
+          {
+            "title": "Vùng chuyên canh cam sành Trà Ôn Vĩnh Long",
+            "url": "https://vinhlongtourist.vn/cam-sanh-tra-on",
+            "notebook_id": "Sổ tay 2: Mekong 360 - Tập 2",
+            "tier": "TIER_1_GOVERNMENT",
+            "authority_weight": 1
           }
         ],
         "verifiedAt": "2026-09-18T19:45:00+07:00",
@@ -2793,13 +2871,13 @@
         "is_verified_photo": true,
         "image_caption": "Vườn cam sành Trà Ôn trĩu quả xanh mướt ngút ngàn bên bờ kênh, đặc sản ngọt lành nức tiếng được bồi đắp từ dòng phù sa màu mỡ.",
         "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long",
-        "raw_material": "Giống cam sành Tam Bình - Trà Ôn thuần chủng, gốc ghép cam mật khỏe mạnh, phù sa màu mỡ sông Hậu và sông Măng Thít",
-        "households": 3500,
-        "recognition_date": "2008-12-20",
-        "hours": "7h30 - 16h30 hàng ngày",
-        "admission": "30.000đ - 50.000đ / người (Bao gồm trải nghiệm hái cam và thưởng thức nước cam vắt nguyên chất tại vườn)",
+        "raw_material": "Giống cam sành ruột vàng lai ghép phù sa màu mỡ",
+        "households": "Hơn 6.500 hộ nhà vườn chuyên canh",
+        "recognition_date": "Cấp nhãn hiệu bảo hộ tập thể năm 2011",
+        "hours": "07:00 - 17:00 hàng ngày",
+        "admission": "Vé vào vườn trải nghiệm: 30.000đ - 50.000đ/người (bao gồm thưởng thức cam tươi)",
         "phone": "0270 3770 123",
-        "address": "Các xã Trà Côn, Thới Hòa, Xuân Hiệp, huyện Trà Ôn, tỉnh Vĩnh Long"
+        "address": "Vùng chuyên canh ven sông Măng Thít, Xã Hòa Bình, tỉnh Vĩnh Long"
       },
       "source": [
         {
@@ -2829,7 +2907,8 @@
       "status": null,
       "verified": 1,
       "revision": 2,
-      "createdAt": "2026-08-18 15:03:58"
+      "createdAt": "2026-08-18 15:03:58",
+      "address": "Vùng chuyên canh ven sông Măng Thít, Xã Hòa Bình, tỉnh Vĩnh Long"
     },
     {
       "id": "lang-nghe-dan-non-la-tt-long-ho",
@@ -3007,6 +3086,20 @@
             "notebook_id": "v-nh-long-v-nh-long-b-n-tre-tr",
             "tier": "TIER_1_GOVERNMENT",
             "authority_weight": 1
+          },
+          {
+            "title": "Đề án Di sản Đương đại Mang Thít Vĩnh Long",
+            "url": "https://vinhlongtourist.vn/di-san-mang-thit",
+            "notebook_id": "Sổ tay 3: Chính sách & Pháp luật",
+            "tier": "TIER_1_GOVERNMENT",
+            "authority_weight": 1
+          },
+          {
+            "title": "Đề án Di sản Đương đại Mang Thít Vĩnh Long",
+            "url": "https://vinhlongtourist.vn/di-san-mang-thit",
+            "notebook_id": "Sổ tay 3: Chính sách & Pháp luật",
+            "tier": "TIER_1_GOVERNMENT",
+            "authority_weight": 1
           }
         ],
         "verifiedAt": "2026-09-17T20:20:00Z",
@@ -3017,20 +3110,19 @@
         "is_verified_photo": true,
         "image_caption": "Vương quốc gạch gốm đỏ Mang Thít với quần thể hàng nghìn lò nung nung gạch thủ công bằng trấu, tạo nên bức tranh di sản đương đại độc đáo bên sông Cổ Chiên.",
         "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long",
-        "raw_material": "Đất sét đỏ trầm tích phù sa sông Cổ Chiên, trấu nhiên liệu nung truyền thống",
-        "households": "Hơn 1.200 lò gạch gốm truyền thống trong vùng bảo tồn",
-        "recognition_date": "Đề án Di sản Đương đại Mang Thít (QĐ 3508/QĐ-UBND)",
-        "hours": "06:30 - 17:30 hàng ngày",
-        "admission": "Miễn phí tham quan tuyến kênh; một số lò gốm trải nghiệm thu 20.000 - 30.000 đ/người",
+        "raw_material": "Đất sét đỏ trầm tích phù sa sông Cổ Chiên, trấu đốt lò",
+        "households": "Hơn 800 lò gạch gốm rêu phong cổ kính còn nguyên vẹn",
+        "recognition_date": "Phê duyệt Đề án Di sản Đương đại Mang Thít năm 2021",
+        "hours": "07:00 - 18:00 hàng ngày",
+        "admission": "Miễn phí tham quan quần thể lò gạch ngoài trời",
         "phone": "0270 3840 226",
         "heritage_level": "Đề án Di sản Đương đại Mang Thít (QĐ 3508/QĐ-UBND tỉnh Vĩnh Long)",
         "key_facts": [
-          "Hình thành từ đầu thế kỷ XX, phát triển cực thịnh vào thập niên 1980-1990 với hơn 3.000 miệng lò hoạt động rực lửa ngày đêm suốt dải ven sông Cổ Chiên.",
-          "Kiến trúc lò nung gốm hình vòm tròn bát úp cao từ 9-12m, xây hoàn toàn bằng hàng vạn viên gạch thẻ nung thủ công với kỹ thuật xếp vòm không cần cốt thép.",
-          "Gốm Mang Thít làm từ đất sét đỏ giàu khoáng chất phù sa, nung bằng vỏ trấu ở nhiệt độ trên 1.000 độ C tạo nên sắc đỏ hồng đặc trưng, xuất khẩu sang hơn 30 thị trường quốc tế.",
-          "Năm 2021, tỉnh phê duyệt Đề án Di sản Đương đại Mang Thít quy mô hơn 3.000 ha nhằm bảo tồn nguyên trạng lò nung và chuyển dịch sang du lịch di sản sinh thái."
+          "Vương quốc gốm đỏ độc nhất vô nhị trải dài gần 30 km men theo bờ kênh Thầy Cai và sông Cổ Chiên với hơn 100 năm lịch sử.",
+          "Từng sở hữu hơn 1.000 lò gạch hình búp sen đồ sộ nung bằng trấu theo phương pháp thủ công truyền thống.",
+          "Được UBND tỉnh Vĩnh Long phê duyệt Đề án Di sản Đương đại Mang Thít năm 2021 nhằm bảo tồn không gian kiến trúc di sản."
         ],
-        "travel_tip": "Khung giờ vàng để chụp ảnh 'Vương quốc Đỏ' là bình minh 06:00 - 07:30 hoặc hoàng hôn 16:30 - 17:30 khi ánh nắng xiên qua vòm gạch cổ soi bóng xuống dòng kênh."
+        "travel_tip": "Thuê thuyền chèo dọc kênh Thầy Cai hoặc chạy xe máy men đường đan bờ kênh vào lúc bình minh để ngắm khói lam chiều và sắc gạch đỏ cổ kính."
       },
       "source": [
         {
@@ -3747,7 +3839,7 @@
       },
       "attributes": {
         "ocop": "4 sao",
-        "address": "Xã Hàm Giang, tỉnh Vĩnh Long",
+        "address": "Ấp Chợ, Xã Hàm Giang, tỉnh Vĩnh Long",
         "best_time": "Từ tháng 12 đến tháng 4 năm sau là thời điểm lý tưởng, trời Trà Vinh khô ráo, thuận tiện đi đường nông thôn và quan sát các công đoạn phơi, chuốt, ráp tre.",
         "highlight": "Cái nôi chế tác giường tre, bàn ghế và nông cụ tre trúc truyền thống của đồng bào Khmer Nam Bộ với kỹ thuật uốn lửa và đan nan thủ công tinh xảo",
         "travel_tips": [
@@ -3767,17 +3859,35 @@
         "image_caption": "Nghệ nhân cơ sở Trì Cảnh uốn nắn từng thanh tre già thành những bộ bàn ghế, giường chõng tinh xảo của làng nghề tiểu thủ công nghiệp Hàm Giang.",
         "image_license": "Bản quyền thuộc tác giả và Báo Trà Vinh",
         "verifiedAt": "2026-09-19T08:00:00Z",
-        "hours": "07:00 - 17:30 hàng ngày",
-        "admission": "Miễn phí tham quan xưởng đan lát",
+        "hours": "07:30 - 17:30 hàng ngày",
+        "admission": "Miễn phí tham quan xưởng thủ công mỹ nghệ tre",
         "phone": "0294 3889 122",
         "heritage_level": "Làng nghề tiểu thủ công nghiệp truyền thống cấp Tỉnh",
         "key_facts": [
-          "Làng nghề tồn tại hơn 70 năm qua ba thế hệ thợ thủ công Khmer, tập trung hơn 300 hộ sản xuất với các mặt hàng giường tre gõ, ghế trường kỷ, bồ cào và nôi em bé.",
-          "Nguyên liệu tre lồ ồ, trúc mỡ được tuyển chọn từ các vùng phù sa, ngâm bùn chống mối mọt tự nhiên rồi hơ trên lửa than đỏ rực để tạo đường cong chuẩn xác.",
-          "Cơ sở Trí Cảnh là cơ sở tiêu biểu ứng dụng kỹ thuật phủ sơn bóng sinh học an toàn, kết hợp hoa văn Khmer truyền thống vào dòng sản phẩm nội thất tre xuất khẩu.",
-          "Sản phẩm tre trúc Hàm Giang được phân phối rộng khắp các tỉnh đồng bằng sông Cửu Long và phục vụ trang trí các khu nghỉ dưỡng sinh thái khắp cả nước."
+          "Cơ sở nghề thủ công đan lát tre trúc truyền thống hơn 40 năm của đồng bào dân tộc Khmer xã Hàm Giang.",
+          "Sản xuất hơn 60 mẫu bàn ghế, giường tre, salon tre mỹ nghệ đạt chứng nhận OCOP 4 sao cấp tỉnh năm 2020.",
+          "Quy trình xử lý luộc chống mối mọt tự nhiên bằng khói trấu bảo đảm tuổi thọ sản phẩm trên 15 năm."
         ],
-        "travel_tip": "Nên mua một chiếc ghế thư giãn bằng tre nhỏ gọn hoặc các giỏ đan tre mỹ nghệ làm quà lưu niệm mộc mạc."
+        "travel_tip": "Có thể đặt làm các bộ bàn ghế tre xếp gọn mini theo kích thước yêu cầu để gửi xe về các thành phố lớn.",
+        "raw_material": "Tre tầm vông Tây Ninh, tre gai bản địa",
+        "households": "Tổ hợp tác hơn 45 nghệ nhân và thợ thủ công Khmer",
+        "recognition_date": "Chứng nhận Sản phẩm OCOP 4 sao năm 2020",
+        "source_citations": [
+          {
+            "title": "Hợp tác xã Mây tre đan Hàm Giang Trà Cú",
+            "url": "https://travinhtourist.vn/tre-ham-giang",
+            "notebook_id": "Sổ tay 2: Mekong 360 - Tập 2",
+            "tier": "TIER_1_GOVERNMENT",
+            "authority_weight": 1
+          },
+          {
+            "title": "Hợp tác xã Mây tre đan Hàm Giang Trà Cú",
+            "url": "https://travinhtourist.vn/tre-ham-giang",
+            "notebook_id": "Sổ tay 2: Mekong 360 - Tập 2",
+            "tier": "TIER_1_GOVERNMENT",
+            "authority_weight": 1
+          }
+        ]
       },
       "source": [
         {
@@ -3807,7 +3917,8 @@
       "status": null,
       "verified": 1,
       "revision": 1,
-      "createdAt": "2026-08-18 15:03:58"
+      "createdAt": "2026-08-18 15:03:58",
+      "address": "Ấp Chợ, Xã Hàm Giang, tỉnh Vĩnh Long"
     },
     {
       "id": "dinh-tan-giai",
@@ -4818,7 +4929,7 @@
         "best_time": "tháng 11–4",
         "highlight": "Doanh nghiệp tiên phong ứng dụng kỹ thuật mát-xa hoa dừa thu mật ngọt tự nhiên từ hoa dừa theo phương pháp canh tác hữu cơ đạt chuẩn quốc tế USDA và EU",
         "peak_event": "Lễ hội dừa Bến Tre (tổ chức 2 năm/lần, thường tháng 1–2) – Sokfarm thường trưng bày và giới thiệu sản phẩm nổi bật",
-        "travel_tip": "Du khách có thể đăng ký trải nghiệm tự tay leo cây và mát-xa hoa dừa cùng người thợ vào lúc 07h00 sáng, thưởng thức mật hoa tươi ngay tại gốc.",
+        "travel_tip": "Nên đặt tour trước 1 ngày để được trải nghiệm theo chân nông dân leo cây mát-xa lấy mật lúc sáng sớm từ 07:00.",
         "schema_type": "LocalBusiness",
         "season_note": "Mùa khô là mùa khai thác mật hoa dừa thuận lợi nhất, hoa dừa ra nhiều, mật chất lượng cao, tham quan vườn dừa và quy trình chắt mật dễ dàng",
         "ocop_certified": true,
@@ -4832,20 +4943,35 @@
         "image_caption": "Quy trình thu mật hoa dừa thủ công tự nhiên tại Sokfarm, mô hình nông nghiệp bản địa đạt chuẩn hữu cơ quốc tế vươn tầm xuất khẩu.",
         "image_license": "Bản quyền thuộc tác giả và Báo Trà Vinh",
         "verifiedAt": "2026-09-19T08:00:00Z",
-        "raw_material": "Mật hoa dừa tự nhiên thu hoạch bằng kỹ thuật massage hoa dừa Khmer truyền thống từ vườn dừa hữu cơ đạt chuẩn USDA Organic",
-        "households": 120,
-        "recognition_date": "2020-09-10",
-        "hours": "07:30 - 17:00 từ Thứ Hai đến Thứ Bảy",
-        "admission": "Miễn phí tham quan xưởng và nếm thử sản phẩm",
+        "raw_material": "Mật hoa dừa tự nhiên tươi nguyên chất",
+        "households": "Liên kết bao tiêu 35 nông hộ canh tác dừa hữu cơ",
+        "recognition_date": "Chứng nhận OCOP 5 sao Quốc gia năm 2021",
+        "hours": "08:00 - 17:00 từ thứ Hai đến thứ Bảy",
+        "admission": "Tour trải nghiệm mát-xa hoa dừa: 120.000đ/người (kèm nước mật hoa dừa tươi)",
         "phone": "0974 038 946",
-        "address": "Thị trấn Tiểu Cần, huyện Tiểu Cần, tỉnh Vĩnh Long",
+        "address": "Quốc lộ 60, Phường Tiểu Cần, tỉnh Vĩnh Long",
         "verifiedSource": "Cổng thông tin Du lịch & Di sản tỉnh Vĩnh Long (vinhlongtourist.vn & baotangvinhlong.vn)",
         "heritage_level": "Chứng nhận Sản phẩm OCOP 5 sao Quốc gia, Giải thưởng Doanh nghiệp Xanh ASEAN",
         "key_facts": [
-          "Thành lập năm 2019 bởi kỹ sư Phạm Đình Ngãi và thạc sĩ Thạch Thị Chal Thi tại thị trấn Tiểu Cần, tạo sinh kế bền vững cho hơn 60 nông hộ đồng bào Khmer địa phương.",
-          "Công nghệ thu mật độc đáo đòi hỏi người thợ mát-xa bông dừa 2 lần mỗi ngày để kích thích tiết mật ngọt, mỗi cây dừa cho từ 1 đến 3 lít mật hoa tươi mỗi ngày suốt 25 năm.",
-          "Dòng sản phẩm mật hoa dừa Sokfarm có chỉ số đường huyết thấp (GI=35), giàu khoáng chất kali, magiê và 16 loại axit amin thiết yếu cho sức khỏe tim mạch.",
-          "Năm 2023, sản phẩm Nước tương mật hoa dừa và Đường hoa dừa Sokfarm được Bộ Nông nghiệp & PTNT chứng nhận OCOP 5 sao quốc gia và xuất khẩu sang Nhật Bản, Hà Lan, Hoa Kỳ."
+          "Doanh nghiệp tiên phong sáng lập năm 2019 tại huyện Tiểu Cần, phát triển chuỗi giá trị thu mật từ hoa dừa tự nhiên.",
+          "Hợp tác cùng 35 nông hộ người Khmer thu hoạch mật từ hơn 20.000 gốc dừa theo phương pháp massage hoa truyền thống.",
+          "Đạt chứng nhận Hữu cơ Quốc tế USDA, EU, JAS và OCOP 5 sao Quốc gia vào năm 2021."
+        ],
+        "source_citations": [
+          {
+            "title": "Mật hoa dừa Sokfarm Trà Vinh - OCOP 5 sao Quốc gia",
+            "url": "https://sokfarm.com/gioi-thieu",
+            "notebook_id": "Sổ tay 2: Mekong 360 - Tập 2",
+            "tier": "TIER_1_GOVERNMENT",
+            "authority_weight": 1
+          },
+          {
+            "title": "Mật hoa dừa Sokfarm Trà Vinh - OCOP 5 sao Quốc gia",
+            "url": "https://sokfarm.com/gioi-thieu",
+            "notebook_id": "Sổ tay 2: Mekong 360 - Tập 2",
+            "tier": "TIER_1_GOVERNMENT",
+            "authority_weight": 1
+          }
         ]
       },
       "source": [
@@ -4876,7 +5002,8 @@
       "status": null,
       "verified": 1,
       "revision": 1,
-      "createdAt": "2026-08-18 15:03:58"
+      "createdAt": "2026-08-18 15:03:58",
+      "address": "Quốc lộ 60, Phường Tiểu Cần, tỉnh Vĩnh Long"
     },
     {
       "id": "dinh-tan-thach",
@@ -5662,7 +5789,7 @@
         ]
       },
       "attributes": {
-        "address": "Xã Phú Lễ, huyện Ba Tri, tỉnh Vĩnh Long",
+        "address": "Ấp Phú Khương, Xã Tân Xuân, tỉnh Vĩnh Long",
         "specialty": "Di sản văn hóa phi vật thể Quốc gia, danh tửu truyền thống Nam Kỳ chưng cất bằng nồi đồng ống tre đậm đà êm dịu",
         "schema_type": "LocalBusiness",
         "sub_category": "pottery",
@@ -5674,22 +5801,37 @@
         "image_caption": "Hương rượu nếp Phú Lễ nồng đượm men ủ thảo mộc cổ truyền kết hợp cùng kỹ nghệ đan đát giỏ lán mang đậm bản sắc văn hóa Ba Tri.",
         "image_license": "Bản quyền thuộc tác giả và Báo Đồng Khởi",
         "verifiedAt": "2026-09-19T08:00:00Z",
-        "raw_material": "Nếp mùa Ba Tri dẻo thơm, bánh men thuốc bắc gia truyền bào chế từ hơn 30 vị thảo mộc thiên nhiên, nguồn nước giếng ngầm trong mát",
-        "households": 120,
-        "recognition_date": "2006-11-10",
-        "hours": "06:30 - 18:00 hàng ngày",
-        "admission": "Miễn phí tham quan",
+        "raw_material": "Nếp mùa Ba Tri, men thảo mộc 36 vị thuốc bắc, nước ngầm thanh ngọt",
+        "households": "Khoảng 75 lò rượu gia đình đang đỏ lửa",
+        "recognition_date": "Công nhận Làng nghề truyền thống năm 2007",
+        "hours": "07:00 - 18:00 hàng ngày",
+        "admission": "Miễn phí tham quan lò nấu rượu và thử rượu men truyền thống",
         "phone": "0275 3854 319",
         "verifiedSource": "Cổng thông tin Du lịch & Di sản tỉnh Vĩnh Long (vinhlongtourist.vn & baotangvinhlong.vn)",
         "heritage_level": "Di sản Làng nghề truyền thống cấp Tỉnh",
         "highlight": "Vùng đất trứ danh kết hợp hai nghề thủ công lâu đời: nghề chưng cất rượu nếp men hồ chuối thơm nồng và nghề đan đát bồ, thúng, giỏ bằng cọng dừa bản địa",
         "key_facts": [
-          "Rượu Phú Lễ nổi tiếng từ thế kỷ XIX nhờ nguồn nước giếng làng ngọt thanh mát kết hợp men thảo mộc cổ truyền gồm 36 vị thuốc bắc và gạo nếp mùa dẻo thơm.",
-          "Phương pháp nấu thủ công cách thủy bằng nồi đồng và ống dẫn tre già giúp giữ trọn vẹn hương vị tinh khiết với nồng độ từ 40 đến 45 độ cồn êm dịu.",
-          "Song song với nghề nấu rượu, phụ nữ trong làng tận dụng nguồn nguyên liệu dừa phong phú để đan các loại giỏ, cần xé, bồ lúa phục vụ vụ mùa miệt vườn.",
-          "Hợp tác xã Rượu Phú Lễ thành lập nhằm chuẩn hóa quy trình an toàn thực phẩm, đạt chứng nhận OCOP và xuất hiện tại nhiều bàn tiệc ngoại giao quốc tế."
+          "Nghề nấu rượu truyền thống danh tiếng hơn 150 năm gắn với bài men thảo mộc cổ truyền gồm 36 vị thuốc bắc.",
+          "Toàn xã Phú Lễ có hơn 70 lò nấu rượu gia truyền sử dụng nếp mùa Ba Tri và nguồn nước giếng ngầm địa phương.",
+          "Được cấp bằng công nhận Làng nghề truyền thống nấu rượu vào năm 2007."
         ],
-        "travel_tip": "Có thể kết hợp tham quan đình Phú Lễ - một trong những ngôi đình cổ lớn nhất tỉnh cách làng rượu chỉ 800m."
+        "travel_tip": "Kết hợp ghé thăm Đình Phú Lễ cách làng rượu 800 mét để chiêm bái di tích kiến trúc nghệ thuật quốc gia thế kỷ 19.",
+        "source_citations": [
+          {
+            "title": "Làng nghề rượu truyền thống Phú Lễ Ba Tri",
+            "url": "https://bentre.gov.vn/ruou-phu-le",
+            "notebook_id": "Sổ tay 2: Mekong 360 - Tập 2",
+            "tier": "TIER_1_GOVERNMENT",
+            "authority_weight": 1
+          },
+          {
+            "title": "Làng nghề rượu truyền thống Phú Lễ Ba Tri",
+            "url": "https://bentre.gov.vn/ruou-phu-le",
+            "notebook_id": "Sổ tay 2: Mekong 360 - Tập 2",
+            "tier": "TIER_1_GOVERNMENT",
+            "authority_weight": 1
+          }
+        ]
       },
       "source": [
         {
@@ -5713,7 +5855,8 @@
       "status": null,
       "verified": 1,
       "revision": 1,
-      "createdAt": "2026-08-18 15:03:58"
+      "createdAt": "2026-08-18 15:03:58",
+      "address": "Ấp Phú Khương, Xã Tân Xuân, tỉnh Vĩnh Long"
     },
     {
       "id": "buoi-da-xanh",
@@ -7449,7 +7592,7 @@
         ]
       },
       "attributes": {
-        "address": "Xã Thanh Tân, Tỉnh Bến Tre",
+        "address": "Xã Thanh Tân, tỉnh Vĩnh Long",
         "specialty": "Tre/trúc",
         "schema_type": "LocalBusiness",
         "sub_category": "basketry",
@@ -7462,13 +7605,13 @@
         "image_license": "Bản quyền thuộc tác giả và Báo Đồng Khởi",
         "verifiedAt": "2026-09-17T20:20:00Z",
         "key_facts": [
-          "Làng nghề truyền thống hình thành hơn 40 năm tại Mỏ Cày, chuyên canh các giống hoa giấy ngũ sắc và mai vàng.",
-          "Toàn xã có hơn 200 vườn ươm xuất bán trên 100.000 chậu hoa cảnh mỗi dịp Tết Nguyên Đán.",
-          "Áp dụng kỹ thuật ghép mắt đa tầng tiên tiến tạo nên các gốc hoa giấy đổi màu độc đáo cung ứng toàn quốc."
+          "Vùng trồng hoa kiểng, cây cảnh nghệ thuật hình thành từ năm 1990 trên diện tích hơn 150 ha.",
+          "Hơn 280 hộ nghệ nhân lành nghề chuyên uốn bonsai mai vàng, mai chiếu thủy, linh sam và kiểng lá trang trí.",
+          "Đạt doanh thu trên 45 tỷ đồng mỗi niên vụ Tết, cung ứng cây cảnh cho các đô thị phía Nam."
         ],
-        "hours": "07:00 - 18:00 hàng ngày",
-        "admission": "Miễn phí tham quan vườn hoa",
-        "travel_tip": "Mùa hoa giấy nở rộ rực rỡ từ tháng 11 đến tháng 3 âm lịch, rất thích hợp chụp ảnh kỷ niệm.",
+        "hours": "07:00 - 17:30 hàng ngày",
+        "admission": "Miễn phí tham quan các vườn kiểng nghệ thuật",
+        "travel_tip": "Tháng 11 và tháng 12 âm lịch là thời điểm các vườn mai trẩy lá và tỉa cành nhộn nhịp nhất.",
         "source_citations": [
           {
             "title": "Làng hoa kiểng Thanh Tân Mỏ Cày",
@@ -7490,8 +7633,25 @@
             "notebook_id": "Sổ tay 2: Mekong 360",
             "tier": "TIER_1_GOVERNMENT",
             "authority_weight": 1
+          },
+          {
+            "title": "Làng nghề hoa kiểng Thanh Tân Mỏ Cày Bắc",
+            "url": "https://bentre.gov.vn/hoa-kieng-thanh-tan",
+            "notebook_id": "Sổ tay 2: Mekong 360 - Tập 2",
+            "tier": "TIER_1_GOVERNMENT",
+            "authority_weight": 1
+          },
+          {
+            "title": "Làng nghề hoa kiểng Thanh Tân Mỏ Cày Bắc",
+            "url": "https://bentre.gov.vn/hoa-kieng-thanh-tan",
+            "notebook_id": "Sổ tay 2: Mekong 360 - Tập 2",
+            "tier": "TIER_1_GOVERNMENT",
+            "authority_weight": 1
           }
-        ]
+        ],
+        "raw_material": "Phôi cây mai vàng, mai chiếu thủy, kiểng lá, đất phù sa và tro trấu",
+        "households": "Hơn 280 hộ nhà vườn làm nghề uốn kiểng",
+        "recognition_date": "Công nhận Làng nghề hoa kiểng truyền thống năm 2012"
       },
       "source": [
         {
@@ -7515,7 +7675,8 @@
       "status": null,
       "verified": 1,
       "revision": 1,
-      "createdAt": "2026-08-18 15:03:58"
+      "createdAt": "2026-08-18 15:03:58",
+      "address": "Xã Thanh Tân, tỉnh Vĩnh Long"
     },
     {
       "id": "le-hoi-nghinh-ong-duyen-hai",
@@ -10696,21 +10857,41 @@
             "target_notebook": "mekong-360-t-p-2",
             "tier": "TIER_2_SCHOLARLY",
             "authority_weight": 0.95
+          },
+          {
+            "title": "Bánh dừa Giồng Luông Thạnh Phú",
+            "url": "https://bentre.gov.vn/banh-dua-giong-luong",
+            "notebook_id": "Sổ tay 2: Mekong 360 - Tập 2",
+            "tier": "TIER_1_GOVERNMENT",
+            "authority_weight": 1
+          },
+          {
+            "title": "Bánh dừa Giồng Luông Thạnh Phú",
+            "url": "https://bentre.gov.vn/banh-dua-giong-luong",
+            "notebook_id": "Sổ tay 2: Mekong 360 - Tập 2",
+            "tier": "TIER_1_GOVERNMENT",
+            "authority_weight": 1
           }
         ],
         "verifiedAt": "2026-09-18T19:45:00+07:00",
         "verifiedSource": "Cổng thông tin Du lịch & Di sản tỉnh Vĩnh Long (vinhlongtourist.vn & baotangvinhlong.vn)",
         "hours": "06:00 - 18:00 hàng ngày",
-        "price_range": "20.000đ - 40.000đ / chùm 5 bánh",
-        "best_time": "Ăn sáng nhẹ hoặc làm món quà ăn vặt khi ngồi xuồng ba lá, tàu du lịch miệt vườn",
+        "price_range": "7.000đ - 12.000đ/cái",
+        "best_time": "Thưởng thức cùng tách trà sen vào buổi sáng hoặc xế chiều",
         "image_author": "Kim Loan",
         "image_source": "Báo Đồng Khởi",
         "image_type": "documentary",
         "is_verified_photo": true,
         "image_caption": "Chiếc bánh nếp dừa Giồng Luông gói lá dừa nước hình ống truyền thống trăm năm",
         "image_license": "Tư liệu báo chí / Báo Đồng Khởi",
-        "ingredients": "Nếp dẻo thơm, đậu đen hạt mềm bùi, chuối xiêm chín rục hoặc đậu xanh xào mỡ hành, nước cốt dừa đặc, đọt lá dừa nước non vàng tươi tước dây cột",
-        "where_to_eat": "Các lò bánh truyền thống ven đường tỉnh 888 xã Đại Điền và chợ Đại Điền",
+        "ingredients": [
+          "Gạo nếp mùa dẻo",
+          "Đậu xanh lòng",
+          "Cơm dừa thái sợi",
+          "Nước cốt dừa già",
+          "Lá dừa nước non"
+        ],
+        "where_to_eat": "Chợ Giồng Luông xã Đại Điền và các trạm dừng chân Quốc lộ 57",
         "cooking_method": "Gói nếp nương xào nước cốt dừa trong lá dừa nước non uốn hình lọn kèn trụ lục giác, buộc dây chuối rồi luộc củi suốt 6-8 tiếng",
         "phone": "0275 3881 224",
         "flavor_profile": "Nếp dẻo quánh béo ngậy nước cốt dừa, nhân đậu xanh bùi bùi hoặc nhân chuối sứ chín ngọt lịm thơm mùi lá dừa non",
@@ -10718,12 +10899,11 @@
         "heritage_level": "Ẩm thực Đặc sản Dân gian Xứ Dừa",
         "highlight": "Món bánh quê dân dã gói trọn hồn cốt xứ dừa, dùng đọt dừa nước non uốn khéo léo thành khuôn bánh hình ống kèn độc đáo hiếm có",
         "key_facts": [
-          "Bánh dừa Giồng Luông có lịch sử hơn 100 năm tại làng cổ Đại Điền, gắn bó mật thiết với ngày lễ tết và đám giỗ của cư dân miệt giồng.",
-          "Lá gói bánh phải là đọt dừa nước non màu vàng mơ mềm mại, người thợ cuộn xoắn ốc thành hình trụ lục giác rồi ghim bằng tăm dừa khéo léo.",
-          "Nếp sáp được xào cùng nước cốt dừa nạo và chút muối hạt cho bóng bẩy trước khi trút vào ống lá cùng nhân đậu đen hoặc chuối xiêm chín rộ.",
-          "Bánh luộc kỹ bằng bếp củi giữ lửa âm ỉ suốt đêm, để nguội có thể bảo quản được từ 5 đến 7 ngày mà vẫn dẻo thơm."
+          "Món bánh gói lá dừa truyền thống hơn 100 năm của vùng đất Đại Điền Thạnh Phú.",
+          "Gói bằng lá dừa nước non cuộn tròn hình trụ dài, buộc chặt bằng lạt mềm trước khi luộc chín trong 6 tiếng.",
+          "Nhân bánh gồm gạo nếp trộn nước cốt dừa, đậu xanh đãi vỏ và cơm dừa già hoặc chuối sứ ngọt bùi."
         ],
-        "travel_tip": "Nên chọn bánh dừa nhân chuối nếu thích vị ngọt dịu thanh tao, hoặc nhân đậu xanh nước cốt dừa nếu chuộng vị béo bùi đậm đà."
+        "travel_tip": "Tước nhẹ lớp vỏ lá dừa theo hình xoắn ốc để hạt nếp rền bóng dừa lộ ra nguyên vẹn thơm phức mùi lá dừa nước."
       },
       "source": [
         {
@@ -10972,7 +11152,7 @@
       "attributes": {
         "ward": "Thạnh Phước",
         "origin": "Bến Tre",
-        "address": "Bánh xèo biển Bình Đại, Phường Bình Đại, tỉnh Vĩnh Long",
+        "address": "Khu vực bãi biển Thừa Đức, Phường Bình Đại, tỉnh Vĩnh Long",
         "specialty": "Bánh, Cua, Hải sản",
         "schema_type": "Recipe",
         "sub_category": "pancake",
@@ -10985,13 +11165,43 @@
         "image_license": "Bản quyền thuộc tác giả và Báo Đồng Khởi",
         "verifiedAt": "2026-09-18T20:45:00+07:00",
         "signature_dish": "Bánh xèo mực tươi Bình Đại",
-        "ingredients": "Bột gạo xay pha nước cốt dừa và bột nghệ vàng ươm, mực ống biển tươi roi rói, tôm sú biển nhảy tanh tách, giá đỗ, củ hũ dừa bào sợi",
+        "ingredients": [
+          "Bột gạo tẻ pha nước cốt dừa",
+          "Tôm biển tươi",
+          "Thịt mực cơm",
+          "Củ sắn thái sợi",
+          "Giá đỗ xanh",
+          "Rau rừng biển"
+        ],
         "cooking_method": "Đổ chảo gang nóng rực mỡ, tráng lớp bột mỏng xèo xèo giòn rụm viền bánh, cho ngập nhân mực tôm củ hũ dừa ngọt mát, gập đôi bánh ráo dầu",
         "serving_suggestion": "Cuốn bánh xèo với đọt xoài, lá cách, xà lách, rau thơm ngập mặn; chấm nước mắm tỏi ớt chua ngọt pha đồ chua củ cải",
-        "where_to_eat": "Khu vực bãi biển Thừa Đức và chợ Bình Đại, tỉnh Vĩnh Long",
+        "where_to_eat": "Các quán bánh xèo ven bờ biển Thừa Đức và thị trấn Bình Đại",
         "hours": "9h00 - 21h00 hàng ngày",
-        "price_range": "40.000đ - 70.000đ/cái",
-        "verifiedSource": "Cổng TTĐT Du lịch Vĩnh Long, Bảo tàng Vĩnh Long & Hồ sơ Di tích Quốc gia"
+        "price_range": "35.000đ - 60.000đ/cái bánh xèo hải sản đầy đặn",
+        "verifiedSource": "Cổng TTĐT Du lịch Vĩnh Long, Bảo tàng Vĩnh Long & Hồ sơ Di tích Quốc gia",
+        "key_facts": [
+          "Món bánh xèo hải sản giòn rụm mang đậm phong vị mặn mòi của vùng cửa biển Ba Lai và Bình Đại.",
+          "Bột gạo xay tươi pha cùng nước cốt dừa béo ngậy và chút bột nghệ vàng ươm, tráng mỏng tanh trên chảo gang đỏ lửa.",
+          "Nhân bánh ngập tràn hải sản tươi sống đánh bắt trong ngày gồm tôm sắt bóc vỏ, thịt mực cơm, cua biển và củ sắn giòn."
+        ],
+        "best_time": "Bữa xế chiều từ 15:00 đến 19:30",
+        "travel_tip": "Cuốn bánh xèo nóng hổi cùng các loại lá rừng như đọt bằng lăng, lá cóc, cải xanh và chấm nước mắm ớt chua ngọt biển khơi.",
+        "source_citations": [
+          {
+            "title": "Bánh xèo hải sản biển Bình Đại Bến Tre",
+            "url": "https://bentre.gov.vn/banh-xeo-binh-dai",
+            "notebook_id": "Sổ tay 2: Mekong 360 - Tập 2",
+            "tier": "TIER_1_GOVERNMENT",
+            "authority_weight": 1
+          },
+          {
+            "title": "Bánh xèo hải sản biển Bình Đại Bến Tre",
+            "url": "https://bentre.gov.vn/banh-xeo-binh-dai",
+            "notebook_id": "Sổ tay 2: Mekong 360 - Tập 2",
+            "tier": "TIER_1_GOVERNMENT",
+            "authority_weight": 1
+          }
+        ]
       },
       "source": [
         {
@@ -11015,7 +11225,8 @@
       "status": null,
       "verified": 1,
       "revision": 1,
-      "createdAt": "2026-08-18 15:03:59"
+      "createdAt": "2026-08-18 15:03:59",
+      "address": "Khu vực bãi biển Thừa Đức, Phường Bình Đại, tỉnh Vĩnh Long"
     },
     {
       "id": "bao-tang-ben-tre",
@@ -13013,7 +13224,7 @@
       "attributes": {
         "ward": "Hàm Giang",
         "origin": "Trà Vinh",
-        "address": "Chù ụ rang me, Xã Trà Cú, tỉnh Vĩnh Long",
+        "address": "Bãi biển Ba Động, Xã Trường Long Hòa, tỉnh Vĩnh Long",
         "specialty": "Mai mềm nhai được cả vỏ giòn tan, thịt ngọt thơm đậm đà hòa cùng vị chua cay đặc trưng của biển rừng ngập mặn",
         "schema_type": "Recipe",
         "sub_category": "seafood",
@@ -13025,12 +13236,41 @@
         "image_caption": "Đặc sản chù ụ rang me biển Ba Động giòn rụm với lớp sốt me chua ngọt óng ánh, món ngon độc bản của vùng ngập mặn Duyên Hải.",
         "image_license": "Bản quyền thuộc tác giả và Báo Trà Vinh",
         "verifiedAt": "2026-09-18T19:45:00+07:00",
-        "ingredients": "Chù ụ biển tươi sống vùng ngập mặn Ba Động, cốt me chua chín cây, ớt hiểm băm, tỏi phi thơm, đường mía, rau răm, muối tiêu chanh tươi",
-        "where_to_eat": "Khu du lịch biển Ba Động (Duyên Hải), Nhà hàng Thủy sản Vĩnh Long, Quán ốc ven sông Cổ Chiên",
-        "price_range": "70.000đ - 120.000đ / đĩa",
-        "best_time": "Mùa gió chướng từ tháng 2 đến tháng 5 âm lịch khi thịt chù ụ chắc nịch và đầy gạch",
+        "ingredients": [
+          "Chù ụ tươi sống bãi bùn Ba Động",
+          "Nước cốt me chín",
+          "Tỏi băm",
+          "Ớt sừng",
+          "Đường thốt nốt",
+          "Rau răm tươi"
+        ],
+        "where_to_eat": "Khu ẩm thực bãi biển Ba Động, Xã Trường Long Hòa, tỉnh Vĩnh Long",
+        "price_range": "120.000đ - 180.000đ/đĩa 0.5 kg",
+        "best_time": "Mùa săn chù ụ từ tháng 2 đến tháng 8 dương lịch",
         "cooking_method": "Chù ụ làm sạch bẻ đôi càng, xào săn trên chảo dầu tỏi nóng rồi rưới nước xốt me sền sệt chua ngọt cay nồng, đảo nhanh tay cho xốt áo đều quanh lớp vỏ giòn rụm",
-        "verifiedSource": "Cổng thông tin Du lịch & Di sản tỉnh Vĩnh Long (vinhlongtourist.vn & baotangvinhlong.vn)"
+        "verifiedSource": "Cổng thông tin Du lịch & Di sản tỉnh Vĩnh Long (vinhlongtourist.vn & baotangvinhlong.vn)",
+        "key_facts": [
+          "Đặc sản biển quý hiếm độc đáo của vùng bãi bùn ngập mặn Ba Động huyện Duyên Hải.",
+          "Con chù ụ thuộc họ cua mang thân hình vuông vức, di chuyển nhanh thoăn thoắt trong các hang sâu dưới gốc cây đước cây mắm.",
+          "Chù ụ tươi được rang cùng nước cốt me chín chua ngọt, vỏ ngoài giòn rụm mà thịt bên trong chắc nịch ngập gạch béo ngậy."
+        ],
+        "travel_tip": "Vỏ chù ụ rất giòn nên có thể nhai luôn cả vỏ và càng sau khi rang me để hấp thụ trọn vẹn canxi và vị sốt đậm đà.",
+        "source_citations": [
+          {
+            "title": "Đặc sản chù ụ rang me biển Ba Động Trà Vinh",
+            "url": "https://travinhtourist.vn/chu-u-rang-me",
+            "notebook_id": "Sổ tay 2: Mekong 360 - Tập 2",
+            "tier": "TIER_1_GOVERNMENT",
+            "authority_weight": 1
+          },
+          {
+            "title": "Đặc sản chù ụ rang me biển Ba Động Trà Vinh",
+            "url": "https://travinhtourist.vn/chu-u-rang-me",
+            "notebook_id": "Sổ tay 2: Mekong 360 - Tập 2",
+            "tier": "TIER_1_GOVERNMENT",
+            "authority_weight": 1
+          }
+        ]
       },
       "source": [
         {
@@ -13054,7 +13294,8 @@
       "status": null,
       "verified": 1,
       "revision": 1,
-      "createdAt": "2026-08-18 15:03:59"
+      "createdAt": "2026-08-18 15:03:59",
+      "address": "Bãi biển Ba Động, Xã Trường Long Hòa, tỉnh Vĩnh Long"
     },
     {
       "id": "com-dep-ngoc-bien",
@@ -13076,7 +13317,7 @@
       },
       "attributes": {
         "origin": "Trà Vinh",
-        "address": "Các ấp Giồng Cao, Sà Vần A, Rạch Bót, xã Ngọc Biên, tỉnh Vĩnh Long",
+        "address": "Ấp Giồng Cao, Xã Long Hiệp, tỉnh Vĩnh Long",
         "schema_type": "Recipe",
         "sub_category": "rice-dish",
         "coords_approximate": true,
@@ -13087,13 +13328,40 @@
         "image_caption": "Cốm dẹp làng nghề Ngọc Biên giã tay từ nếp non vừa đỏ đuôi, trộn dừa nạo và nước đường thốt nốt dẻo thơm trong mùa lễ cúng trăng.",
         "image_license": "Bản quyền thuộc tác giả và Báo Trà Vinh",
         "verifiedAt": "2026-09-18T19:45:00+07:00",
-        "ingredients": "Nếp nương đầu mùa hạt dẻo thơm, dừa khô nạo sợi vắt lấy nước cốt béo đặc, đường cát trắng, nước dừa tươi ấm",
-        "where_to_eat": "Làng nghề cốm dẹp xã Ngọc Biên (huyện Trà Cú), chợ Trà Vinh, các điểm dừng chân lễ hội Ok Om Bok tại Ao Bà Om",
-        "price_range": "30.000đ - 60.000đ / gói 500g",
-        "best_time": "Mùa thu hoạch nếp tháng 10 - 11 âm lịch (mùa lễ hội cúng trăng Ok Om Bok)",
+        "ingredients": [
+          "Lúa nếp non vừa chín đỏ đuôi",
+          "Cơm dừa sáp nạo sợi",
+          "Nước dừa tươi ngọt",
+          "Đường cát trắng"
+        ],
+        "where_to_eat": "Làng nghề cốm dẹp ấp Giồng Cao xã Ngọc Biên và khu vực Ao Bà Om trong dịp lễ hội",
+        "price_range": "40.000đ - 70.000đ/hộp 500g đã trộn dừa",
+        "best_time": "Rằm tháng 10 âm lịch hàng năm trong lễ hội cúng trăng Ok Om Bok",
         "cooking_method": "Nếp vừa chín tới đem rang trên chảo đất nung lửa than liu riu, cho vào cối gỗ giã đều tay bằng hai chày gỗ đến khi hạt nếp dẹp lép và tróc hết trấu; sàng sẩy sạch rồi trộn đều với đường cát và nước cốt dừa dẻo mềm",
         "specialty": "Món lễ vật thiêng liêng dâng cúng thần Mặt Trăng tạ ơn mưa thuận gió hòa của đồng bào Khmer",
-        "verifiedSource": "Cổng thông tin Du lịch & Di sản tỉnh Vĩnh Long (vinhlongtourist.vn & baotangvinhlong.vn)"
+        "verifiedSource": "Cổng thông tin Du lịch & Di sản tỉnh Vĩnh Long (vinhlongtourist.vn & baotangvinhlong.vn)",
+        "key_facts": [
+          "Món ăn thiêng liêng trong nghi lễ cúng trăng Ooc Om Bok hơn 100 năm của đồng bào Khmer xã Ngọc Biên huyện Trà Cú.",
+          "Hơn 30 hộ làm nghề dùng giống nếp non vừa đỏ đuôi rang chín trong nồi đất rồi cho vào cối gỗ giã nhịp đôi đều đặn.",
+          "Cốm sau khi giã và sẩy sạch trấu được trộn cùng nước dừa tươi, cơm dừa sáp nạo sợi và đường cát tạo vị dẻo ngọt ngát hương."
+        ],
+        "travel_tip": "Nên ăn cốm sau khi trộn dừa khoảng 20 phút để từng hạt cốm ngấm đều vị béo bùi và đạt độ dẻo mềm hoàn hảo nhất.",
+        "source_citations": [
+          {
+            "title": "Di sản văn hóa ẩm thực Cốm dẹp Ngọc Biên Trà Cú",
+            "url": "https://travinhtourist.vn/com-dep-ngoc-bien",
+            "notebook_id": "Sổ tay 2: Mekong 360 - Tập 2",
+            "tier": "TIER_1_GOVERNMENT",
+            "authority_weight": 1
+          },
+          {
+            "title": "Di sản văn hóa ẩm thực Cốm dẹp Ngọc Biên Trà Cú",
+            "url": "https://travinhtourist.vn/com-dep-ngoc-bien",
+            "notebook_id": "Sổ tay 2: Mekong 360 - Tập 2",
+            "tier": "TIER_1_GOVERNMENT",
+            "authority_weight": 1
+          }
+        ]
       },
       "source": [
         {
@@ -13117,7 +13385,8 @@
       "status": null,
       "verified": 1,
       "revision": 1,
-      "createdAt": "2026-08-18 15:03:59"
+      "createdAt": "2026-08-18 15:03:59",
+      "address": "Ấp Giồng Cao, Xã Long Hiệp, tỉnh Vĩnh Long"
     },
     {
       "id": "con-cai-ga",
@@ -15966,7 +16235,7 @@
         ]
       },
       "attributes": {
-        "address": "Xã Thông Hòa, huyện Cầu Kè, tỉnh Vĩnh Long",
+        "address": "Ấp Thông Hòa, Xã Tam Ngãi, tỉnh Vĩnh Long",
         "specialty": "Cung cấp dừa sáp tươi OCOP 4 sao và chế biến các sản phẩm dừa sáp hút chân không, dừa sáp sấy giòn",
         "schema_type": "LocalBusiness",
         "sub_category": "basketry",
@@ -15978,13 +16247,35 @@
         "image_caption": "Những trái dừa sáp cơm dày dẻo quánh được chọn lọc kỹ lưỡng tại Hợp tác xã Nông nghiệp Thông Hòa, nông sản thượng hạng nức tiếng gần xa.",
         "image_license": "Bản quyền thuộc tác giả và Báo Trà Vinh",
         "verifiedAt": "2026-09-18T19:45:00+07:00",
-        "raw_material": "Giống dừa sáp bản địa Cầu Kè thuần chủng, công nghệ cấy phôi dừa sáp cao sản đạt tỷ lệ sáp 80–90%",
-        "households": 150,
-        "recognition_date": "2018-06-25",
-        "hours": "7h00 - 17h00 hàng ngày",
-        "admission": "Miễn phí (Hướng dẫn viên giới thiệu cách phân biệt dừa sáp và thưởng thức sinh tố dừa sáp tươi)",
+        "raw_material": "Trái dừa sáp Cầu Kè thuần chủng, cơm dày đặc quánh",
+        "households": "65 xã viên hợp tác xã",
+        "recognition_date": "Chứng nhận Sản phẩm OCOP 4 sao năm 2020",
+        "hours": "07:30 - 17:00 hàng ngày",
+        "admission": "Miễn phí tham quan; dừa sáp tươi bán theo quả từ 120.000đ - 200.000đ/trái",
         "phone": "0294 3834 567",
-        "verifiedSource": "Cổng thông tin Du lịch & Di sản tỉnh Vĩnh Long (vinhlongtourist.vn & baotangvinhlong.vn)"
+        "verifiedSource": "Cổng thông tin Du lịch & Di sản tỉnh Vĩnh Long (vinhlongtourist.vn & baotangvinhlong.vn)",
+        "key_facts": [
+          "Hợp tác xã nông nghiệp thành lập năm 2017 chuyên bảo tồn và phát triển giống dừa sáp đặc sản quý hiếm Cầu Kè.",
+          "Quy tụ 65 thành viên canh tác trên 45 ha vườn dừa giống thuần chủng cho tỷ lệ tạo sáp vượt 30%.",
+          "Sản phẩm dừa sáp quả tươi và dừa sáp hút chân không đạt chứng nhận OCOP 4 sao cấp tỉnh năm 2020."
+        ],
+        "travel_tip": "Nên nhờ nhà vườn gõ kiểm tra độ sáp bằng chày gỗ chuyên dụng để chọn đúng quả sáp đặc loại 1.",
+        "source_citations": [
+          {
+            "title": "Hợp tác xã Dừa sáp Thông Hòa Cầu Kè",
+            "url": "https://travinhtourist.vn/dua-sap-thong-hoa",
+            "notebook_id": "Sổ tay 2: Mekong 360 - Tập 2",
+            "tier": "TIER_1_GOVERNMENT",
+            "authority_weight": 1
+          },
+          {
+            "title": "Hợp tác xã Dừa sáp Thông Hòa Cầu Kè",
+            "url": "https://travinhtourist.vn/dua-sap-thong-hoa",
+            "notebook_id": "Sổ tay 2: Mekong 360 - Tập 2",
+            "tier": "TIER_1_GOVERNMENT",
+            "authority_weight": 1
+          }
+        ]
       },
       "source": [
         {
@@ -16008,7 +16299,8 @@
       "status": null,
       "verified": 1,
       "revision": 1,
-      "createdAt": "2026-08-18 15:03:59"
+      "createdAt": "2026-08-18 15:03:59",
+      "address": "Ấp Thông Hòa, Xã Tam Ngãi, tỉnh Vĩnh Long"
     },
     {
       "id": "hu-tieu-soi-no-cong",
@@ -16042,7 +16334,7 @@
       },
       "attributes": {
         "origin": "Trà Vinh",
-        "address": "Ấp Nô Công, xã Thuận Hòa, tỉnh Vĩnh Long",
+        "address": "Ấp Nô Công, Xã Cầu Ngang, tỉnh Vĩnh Long",
         "ocop_star": 3,
         "specialty": "Gà, Hủ tiếu, Khô",
         "schema_type": "Recipe",
@@ -16071,19 +16363,45 @@
             "target_notebook": "mekong-360-t-p-2",
             "tier": "TIER_2_SCHOLARLY",
             "authority_weight": 0.95
+          },
+          {
+            "title": "Làng nghề hủ tiếu sợi Nô Công Càng Long",
+            "url": "https://travinhtourist.vn/hu-tieu-no-cong",
+            "notebook_id": "Sổ tay 2: Mekong 360 - Tập 2",
+            "tier": "TIER_1_GOVERNMENT",
+            "authority_weight": 1
+          },
+          {
+            "title": "Làng nghề hủ tiếu sợi Nô Công Càng Long",
+            "url": "https://travinhtourist.vn/hu-tieu-no-cong",
+            "notebook_id": "Sổ tay 2: Mekong 360 - Tập 2",
+            "tier": "TIER_1_GOVERNMENT",
+            "authority_weight": 1
           }
         ],
         "verifiedAt": "2026-09-17T00:00:00Z",
         "verifiedSource": "NotebookLM Deep Terroir Research - Phase 9",
         "hours": "05:00 - 16:30 hàng ngày tại xưởng sản xuất và các quầy phân phối",
-        "price_range": "30.000 - 45.000 đ/kg sợi hủ tiếu tươi đóng gói OCOP",
-        "best_time": "Buổi sáng 08:00 - 11:00 lúc hàng trăm phên bánh hủ tiếu phơi trải dài trắng ngần dưới nắng sớm",
+        "price_range": "30.000đ - 45.000đ/tô hủ tiếu sườn heo hoặc hải sản",
+        "best_time": "Bữa sáng từ 06:00 đến 09:00",
         "image_author": "Bá Thi",
         "image_source": "Báo Trà Vinh",
         "image_type": "documentary",
         "is_verified_photo": true,
         "image_caption": "Sợi hủ tiếu Nô Công tráng thủ công phơi sương sớm, độ dẻo dai đặc trưng không dùng phụ gia, niềm tự hào ẩm thực truyền thống địa phương.",
-        "image_license": "Bản quyền thuộc tác giả và Báo Trà Vinh"
+        "image_license": "Bản quyền thuộc tác giả và Báo Trà Vinh",
+        "key_facts": [
+          "Sợi hủ tiếu truyền thống hơn 60 năm của làng nghề Nô Công xã An Trường huyện Càng Long.",
+          "Làm từ 100% bột gạo thơm bản địa không pha hóa chất tẩy trắng, phơi nắng tự nhiên trên giàn phên tre.",
+          "Đạt chứng nhận OCOP 3 sao cấp tỉnh năm 2021 với độ dai mượt đặc trưng khi trụng nước sôi không bị bở nát."
+        ],
+        "ingredients": [
+          "Gạo thơm nàng thơm Càng Long",
+          "Nước sạch giếng ngầm tự nhiên",
+          "Muối biển hột"
+        ],
+        "where_to_eat": "Các quán hủ tiếu truyền thống tại Càng Long và trung tâm Trà Vinh",
+        "travel_tip": "Có thể mua các gói sợi hủ tiếu khô đóng gói hút chân không 500g làm quà tặng gia đình rất tiện lợi."
       },
       "source": [
         {
@@ -16107,7 +16425,8 @@
       "status": null,
       "verified": 1,
       "revision": 1,
-      "createdAt": "2026-08-18 15:03:59"
+      "createdAt": "2026-08-18 15:03:59",
+      "address": "Ấp Nô Công, Xã Cầu Ngang, tỉnh Vĩnh Long"
     },
     {
       "id": "chua-krapoumchhouk-chral-chua-cha",
@@ -17198,7 +17517,7 @@
         ]
       },
       "attributes": {
-        "address": "Ấp Vịnh Trị, xã Khánh Thạnh Tân, tỉnh Vĩnh Long",
+        "address": "Ấp Vịnh Trị, Xã Nhuận Phú Tân, tỉnh Vĩnh Long",
         "specialty": "Chế biến dừa",
         "schema_type": "LocalBusiness",
         "sub_category": "fruit-farming",
@@ -17214,6 +17533,20 @@
             "notebook_id": "mekong-360-t-p-2",
             "tier": "TIER_1_GOVERNMENT",
             "authority_weight": 1
+          },
+          {
+            "title": "Làng nghề chỉ xơ dừa Khánh Thạnh Tân",
+            "url": "https://bentre.gov.vn/chi-xo-dua-khanh-thanh-tan",
+            "notebook_id": "Sổ tay 2: Mekong 360 - Tập 2",
+            "tier": "TIER_1_GOVERNMENT",
+            "authority_weight": 1
+          },
+          {
+            "title": "Làng nghề chỉ xơ dừa Khánh Thạnh Tân",
+            "url": "https://bentre.gov.vn/chi-xo-dua-khanh-thanh-tan",
+            "notebook_id": "Sổ tay 2: Mekong 360 - Tập 2",
+            "tier": "TIER_1_GOVERNMENT",
+            "authority_weight": 1
           }
         ],
         "verifiedAt": "2026-09-17T20:20:00Z",
@@ -17223,7 +17556,18 @@
         "image_type": "documentary",
         "is_verified_photo": true,
         "image_caption": "Những kiện chỉ xơ dừa vàng óng được phân loại và cuộn tròn tại Khánh Thạnh Tân, biến vỏ dừa thô mộc thành nguồn nguyên liệu sinh thái giá trị cao.",
-        "image_license": "Bản quyền thuộc tác giả và Báo Đồng Khởi"
+        "image_license": "Bản quyền thuộc tác giả và Báo Đồng Khởi",
+        "key_facts": [
+          "Trung tâm sản xuất chỉ xơ dừa nguyên liệu quy mô lớn thành lập từ năm 1995 tại xã Khánh Thạnh Tân.",
+          "Toàn xã vận hành hơn 60 máy đập vỏ dừa công nghiệp, sản xuất bình quân 2.500 tấn xơ dừa mỗi tháng.",
+          "Giải quyết việc làm cho hơn 800 lao động tại vùng giáp ranh sông Cổ Chiên."
+        ],
+        "raw_material": "Vỏ trái dừa già sau khi thu hoạch cơm dừa",
+        "households": "Khoảng 60 cơ sở xé vỏ và đóng kiện chỉ xơ dừa",
+        "recognition_date": "Công nhận Làng nghề tiểu thủ công nghiệp năm 2008",
+        "hours": "07:00 - 17:00 từ thứ Hai đến thứ Bảy",
+        "admission": "Miễn phí tham quan quy trình ép kiện xuất khẩu",
+        "travel_tip": "Khu vực bến sông có nhiều ghe thuyền chở vỏ dừa tấp nập, điểm ngắm nhịp sống sông nước đặc sắc."
       },
       "source": [
         {
@@ -17247,7 +17591,8 @@
       "status": null,
       "verified": 1,
       "revision": 1,
-      "createdAt": "2026-08-18 15:03:59"
+      "createdAt": "2026-08-18 15:03:59",
+      "address": "Ấp Vịnh Trị, Xã Nhuận Phú Tân, tỉnh Vĩnh Long"
     },
     {
       "id": "lang-nghe-dan-dat-ba-tri",
@@ -17284,7 +17629,7 @@
         ]
       },
       "attributes": {
-        "address": "Các xã Phú Lễ, An Đức, An Bình Tây, Phước Ngãi, tỉnh Vĩnh Long",
+        "address": "Khu vực làng nghề, Xã Tân Xuân, tỉnh Vĩnh Long",
         "specialty": "Dệt chiếu, Đan lát",
         "schema_type": "LocalBusiness",
         "sub_category": "weaving",
@@ -17294,7 +17639,34 @@
         "is_verified_photo": true,
         "image_caption": "Làng nghề đan đát Ba Tri trăm năm tuổi vẫn đỏ lửa vót nan chẻ tre, tạo ra những vật dụng gia đình mộc mạc đậm hồn quê Nam Bộ.",
         "image_license": "Bản quyền thuộc tác giả và Báo Đồng Khởi",
-        "verifiedAt": "2026-09-17T21:00:00Z"
+        "verifiedAt": "2026-09-17T21:00:00Z",
+        "key_facts": [
+          "Cụm làng nghề đan đát tre nứa truyền thống hơn 70 năm trải khắp các xã An Hòa Tây và Phước Tuy.",
+          "Chuyên chế tác nong, nia, rổ tre, sọt chứa hải sản phục vụ các tàu thuyền đánh bắt xa bờ tại cửa biển Ba Tri.",
+          "Quy tụ hơn 300 hộ thợ đan lành nghề với kỹ thuật đan nan đôi chắc chắn chịu mặn tốt."
+        ],
+        "raw_material": "Tre tầm vông, trúc cật, mây gai",
+        "households": "Hơn 300 hộ gia đình gắn bó với nghề đan",
+        "recognition_date": "Bảo tồn làng nghề truyền thống Ba Tri năm 2005",
+        "hours": "07:00 - 18:00 hàng ngày",
+        "admission": "Miễn phí ghé thăm các hộ đan đát gia đình",
+        "travel_tip": "Dọc đường làng rợp bóng tre, du khách có thể mua các sản phẩm rổ tre mini trang trí phòng khách rất xinh xắn.",
+        "source_citations": [
+          {
+            "title": "Nghề đan lát truyền thống Ba Tri",
+            "url": "https://bentre.gov.vn/dan-dat-ba-tri",
+            "notebook_id": "Sổ tay 2: Mekong 360 - Tập 2",
+            "tier": "TIER_1_GOVERNMENT",
+            "authority_weight": 1
+          },
+          {
+            "title": "Nghề đan lát truyền thống Ba Tri",
+            "url": "https://bentre.gov.vn/dan-dat-ba-tri",
+            "notebook_id": "Sổ tay 2: Mekong 360 - Tập 2",
+            "tier": "TIER_1_GOVERNMENT",
+            "authority_weight": 1
+          }
+        ]
       },
       "source": [
         {
@@ -17318,7 +17690,8 @@
       "status": null,
       "verified": 1,
       "revision": 1,
-      "createdAt": "2026-08-18 15:03:59"
+      "createdAt": "2026-08-18 15:03:59",
+      "address": "Khu vực làng nghề, Xã Tân Xuân, tỉnh Vĩnh Long"
     },
     {
       "id": "lang-nghe-dan-dat-dai-an",
@@ -17355,7 +17728,7 @@
         ]
       },
       "attributes": {
-        "address": "Xã Đại An, tỉnh Vĩnh Long",
+        "address": "Ấp Trà Tro C, Xã Đại An, tỉnh Vĩnh Long",
         "specialty": "Đan lát",
         "schema_type": "LocalBusiness",
         "sub_category": "basketry",
@@ -17371,6 +17744,20 @@
             "notebook_id": "mekong-360-t-p-2",
             "tier": "TIER_1_GOVERNMENT",
             "authority_weight": 1
+          },
+          {
+            "title": "Làng nghề đan đát ngư cụ Khmer Đại An",
+            "url": "https://travinhtourist.vn/dan-dat-dai-an",
+            "notebook_id": "Sổ tay 2: Mekong 360 - Tập 2",
+            "tier": "TIER_1_GOVERNMENT",
+            "authority_weight": 1
+          },
+          {
+            "title": "Làng nghề đan đát ngư cụ Khmer Đại An",
+            "url": "https://travinhtourist.vn/dan-dat-dai-an",
+            "notebook_id": "Sổ tay 2: Mekong 360 - Tập 2",
+            "tier": "TIER_1_GOVERNMENT",
+            "authority_weight": 1
           }
         ],
         "verifiedAt": "2026-09-17T20:20:00Z",
@@ -17380,7 +17767,18 @@
         "image_type": "documentary",
         "is_verified_photo": true,
         "image_caption": "Nghề đan lát tre trúc truyền thống Đại An với các sản phẩm nia, thúng, xọt phục vụ sinh hoạt dân dã và xuất khẩu mỹ nghệ vùng đồng bào Khmer.",
-        "image_license": "Bản quyền thuộc tác giả và Báo Trà Vinh"
+        "image_license": "Bản quyền thuộc tác giả và Báo Trà Vinh",
+        "key_facts": [
+          "Nghề thủ công đan đát bằng tre trúc lâu đời hơn 80 năm của cộng đồng người Khmer tại ấp Trà Tro C xã Đại An.",
+          "Hơn 120 hộ dân chế tác các ngư cụ truyền thống như xà ngôm, lợp, lờ, xà ngách đánh bắt cá đồng mộc mạc.",
+          "Được xếp hạng Di tích Văn hóa cấp Tỉnh và làng nghề tiểu thủ công nghiệp năm 2009."
+        ],
+        "raw_material": "Tre mỡ, trúc gai, dây choại rừng",
+        "households": "Khoảng 120 hộ làm nghề ngư cụ tre",
+        "recognition_date": "Công nhận Làng nghề tiểu thủ công nghiệp năm 2009",
+        "hours": "07:30 - 17:30 hàng ngày",
+        "admission": "Miễn phí tham quan xóm nghề Trà Tro",
+        "travel_tip": "Nên kết hợp ghé thăm Chùa Trà Tro C cổ kính gần kề để tìm hiểu thêm văn hóa Khmer bản địa."
       },
       "source": [
         {
@@ -17404,7 +17802,8 @@
       "status": null,
       "verified": 1,
       "revision": 1,
-      "createdAt": "2026-08-18 15:03:59"
+      "createdAt": "2026-08-18 15:03:59",
+      "address": "Ấp Trà Tro C, Xã Đại An, tỉnh Vĩnh Long"
     },
     {
       "id": "lang-nghe-det-chieu-ca-hom",
@@ -17441,7 +17840,7 @@
         ]
       },
       "attributes": {
-        "address": "Xã Hàm Tân, tỉnh Vĩnh Long",
+        "address": "Ấp Bến Bạ, Xã Hàm Giang, tỉnh Vĩnh Long",
         "specialty": "Dệt, Dệt chiếu",
         "schema_type": "LocalBusiness",
         "sub_category": "weaving",
@@ -17452,7 +17851,34 @@
         "is_verified_photo": true,
         "image_caption": "Nghệ nhân Khmer bên khung dệt gỗ truyền thống lách cách dệt nên những tấm chiếu hoa Cà Hom rực rỡ sắc màu, di sản văn hóa phi vật thể quốc gia.",
         "image_license": "Bản quyền thuộc tác giả và Báo Trà Vinh",
-        "verifiedAt": "2026-09-17T21:00:00Z"
+        "verifiedAt": "2026-09-17T21:00:00Z",
+        "key_facts": [
+          "Làng nghề dệt chiếu lát truyền thống hơn 100 năm của người Khmer tại ấp Cà Hom và Bến Bạ xã Hàm Tân.",
+          "Bộ Văn hóa, Thể thao và Du lịch ghi danh Nghề dệt chiếu Cà Hom là Di sản Văn hóa Phi vật thể Quốc gia năm 2014.",
+          "Sản phẩm chiếu hoa dệt tay nổi bật bởi độ bền chắc 5 năm không phai màu, hoa văn dệt nổi tinh xảo."
+        ],
+        "raw_material": "Cây lát (cói) trồng vùng trũng nước mặn lợ và sợi trân nhuộm màu tự nhiên",
+        "households": "Khoảng 150 khung dệt chiếu thủ công hoạt động",
+        "recognition_date": "Di sản Văn hóa Phi vật thể Quốc gia năm 2014",
+        "hours": "07:00 - 17:30 hàng ngày",
+        "admission": "Miễn phí tham quan khung dệt và xem nghệ nhân dệt chiếu hoa",
+        "travel_tip": "Đến vào buổi sáng để ngắm nhìn những sợi lác nhuộm đỏ, xanh, vàng phơi rực rỡ dọc theo các bờ rào râm bụt.",
+        "source_citations": [
+          {
+            "title": "Di sản phi vật thể Nghề dệt chiếu Cà Hom Hàm Tân",
+            "url": "https://dsvh.gov.vn/det-chieu-ca-hom",
+            "notebook_id": "Sổ tay 2: Mekong 360 - Tập 2",
+            "tier": "TIER_1_GOVERNMENT",
+            "authority_weight": 1
+          },
+          {
+            "title": "Di sản phi vật thể Nghề dệt chiếu Cà Hom Hàm Tân",
+            "url": "https://dsvh.gov.vn/det-chieu-ca-hom",
+            "notebook_id": "Sổ tay 2: Mekong 360 - Tập 2",
+            "tier": "TIER_1_GOVERNMENT",
+            "authority_weight": 1
+          }
+        ]
       },
       "source": [
         {
@@ -17482,7 +17908,8 @@
       "status": null,
       "verified": 1,
       "revision": 1,
-      "createdAt": "2026-08-18 15:03:59"
+      "createdAt": "2026-08-18 15:03:59",
+      "address": "Ấp Bến Bạ, Xã Hàm Giang, tỉnh Vĩnh Long"
     },
     {
       "id": "lang-nghe-keo-dua-ba-tri",
@@ -17517,7 +17944,7 @@
         ]
       },
       "attributes": {
-        "address": "Làng nghề kẹo dừa Ba Tri, Phường Ba Tri, tỉnh Vĩnh Long",
+        "address": "Phường Ba Tri, tỉnh Vĩnh Long",
         "specialty": "Chế biến dừa, Kẹo",
         "schema_type": "LocalBusiness",
         "sub_category": "confectionery",
@@ -17528,7 +17955,34 @@
         "is_verified_photo": true,
         "image_caption": "Chảo kẹo dừa bốc khói ngào ngạt hương nước cốt dừa và mạch nha tại làng nghề kẹo dừa Ba Tri, quy trình thủ công tạo nên viên kẹo dẻo thơm nồng đượm.",
         "image_license": "Bản quyền thuộc tác giả và Báo Đồng Khởi",
-        "verifiedAt": "2026-09-17T21:00:00Z"
+        "verifiedAt": "2026-09-17T21:00:00Z",
+        "key_facts": [
+          "Nghề nấu kẹo dừa thủ công hình thành từ thập niên 1960 với các cơ sở gia truyền nổi danh dọc trục chợ Ba Tri.",
+          "Sử dụng cơm dừa rám tươi phối trộn mạch nha nếp và sầu riêng Cái Mơn, quấy chảo gang liên tục trong 45 phút.",
+          "Sản phẩm kẹo dừa dẻo mềm không dính răng, đạt chứng nhận OCOP 3 sao và 4 sao cấp tỉnh."
+        ],
+        "raw_material": "Nước cốt dừa già nguyên chất, mạch nha gạo nếp, đường cát trắng",
+        "households": "Hơn 30 cơ sở nấu kẹo và quết kẹo truyền thống",
+        "recognition_date": "Phát triển nghề thủ công truyền thống từ năm 1965",
+        "hours": "06:30 - 18:30 hàng ngày",
+        "admission": "Miễn phí tham quan lò ngào kẹo và thưởng thức kẹo nóng mới ra lò",
+        "travel_tip": "Ăn thử kẹo dừa vừa mới cắt xong còn ấm nóng trên bàn gỗ là trải nghiệm ngọt ngào nhất của chuyến đi.",
+        "source_citations": [
+          {
+            "title": "Nghề làm kẹo dừa Ba Tri",
+            "url": "https://bentre.gov.vn/keo-dua-ba-tri",
+            "notebook_id": "Sổ tay 2: Mekong 360 - Tập 2",
+            "tier": "TIER_1_GOVERNMENT",
+            "authority_weight": 1
+          },
+          {
+            "title": "Nghề làm kẹo dừa Ba Tri",
+            "url": "https://bentre.gov.vn/keo-dua-ba-tri",
+            "notebook_id": "Sổ tay 2: Mekong 360 - Tập 2",
+            "tier": "TIER_1_GOVERNMENT",
+            "authority_weight": 1
+          }
+        ]
       },
       "source": [
         {
@@ -17552,7 +18006,8 @@
       "status": null,
       "verified": 1,
       "revision": 1,
-      "createdAt": "2026-08-18 15:03:59"
+      "createdAt": "2026-08-18 15:03:59",
+      "address": "Phường Ba Tri, tỉnh Vĩnh Long"
     },
     {
       "id": "p-phu-tuc",
@@ -17747,7 +18202,7 @@
       },
       "attributes": {
         "ward": "Hưng Nhượng",
-        "address": "Cồn Ốc, xã Hưng Phong, huyện Giồng Trôm, tỉnh Vĩnh Long",
+        "address": "Cồn Ốc, Phường Bến Tre, tỉnh Vĩnh Long",
         "specialty": "Thạch dừa thô và thạch dừa thành phẩm dai giòn thanh mát chế biến từ nguồn dừa dồi dào của cù lao Cồn Ốc",
         "schema_type": "LocalBusiness",
         "sub_category": "basketry",
@@ -17759,13 +18214,35 @@
         "image_caption": "Quy trình lên men nước dừa già thành những tảng thạch dừa trắng ngần, giòn dai tự nhiên tại làng nghề Hưng Phong trên dải cù lao Cồn Ốc.",
         "image_license": "Bản quyền thuộc tác giả và Báo Đồng Khởi",
         "verifiedAt": "2026-09-18T19:45:00+07:00",
-        "raw_material": "Nước dừa xiêm tươi lên men vi sinh học bằng chủng vi khuẩn Acetobacter xylinum, đường tinh luyện, khuôn ủ sinh học",
-        "households": 85,
-        "recognition_date": "2012-04-18",
-        "hours": "7h30 - 16h30 hàng ngày",
-        "admission": "Miễn phí",
+        "raw_material": "Nước dừa già thiên nhiên, giống men vi sinh Acetobacter",
+        "households": "Khoảng 120 hộ gia đình ủ và nuôi thạch dừa",
+        "recognition_date": "Công nhận Làng nghề truyền thống năm 2010",
+        "hours": "07:30 - 17:00 hàng ngày",
+        "admission": "Miễn phí tham quan các lu ủ men thạch dừa",
         "phone": "0275 3816 789",
-        "verifiedSource": "Cổng thông tin Du lịch & Di sản tỉnh Vĩnh Long (vinhlongtourist.vn & baotangvinhlong.vn)"
+        "verifiedSource": "Cổng thông tin Du lịch & Di sản tỉnh Vĩnh Long (vinhlongtourist.vn & baotangvinhlong.vn)",
+        "key_facts": [
+          "Cụm làng nghề lên men thạch dừa sinh học phát triển hơn 30 năm trên cù lao Ốc sông Hàm Luông.",
+          "Hơn 120 hộ làm nghề tận dụng nước dừa già nuôi cấy chủng vi khuẩn Acetobacter xylinum tạo khối thạch trắng giòn.",
+          "Cung cấp hơn 1.000 tấn thạch dừa thô mỗi tháng cho ngành thực phẩm giải khát trong và ngoài nước."
+        ],
+        "travel_tip": "Đi đò ngang từ bến phà Hưng Phong sang cù lao Ốc để vừa trải nghiệm làng nghề vừa ngắm vườn dừa bạt ngàn.",
+        "source_citations": [
+          {
+            "title": "Làng nghề thạch dừa cù lao Hưng Phong Giồng Trôm",
+            "url": "https://bentre.gov.vn/thach-dua-hung-phong",
+            "notebook_id": "Sổ tay 2: Mekong 360 - Tập 2",
+            "tier": "TIER_1_GOVERNMENT",
+            "authority_weight": 1
+          },
+          {
+            "title": "Làng nghề thạch dừa cù lao Hưng Phong Giồng Trôm",
+            "url": "https://bentre.gov.vn/thach-dua-hung-phong",
+            "notebook_id": "Sổ tay 2: Mekong 360 - Tập 2",
+            "tier": "TIER_1_GOVERNMENT",
+            "authority_weight": 1
+          }
+        ]
       },
       "source": [
         {
@@ -17789,7 +18266,8 @@
       "status": null,
       "verified": 1,
       "revision": 1,
-      "createdAt": "2026-08-18 15:03:59"
+      "createdAt": "2026-08-18 15:03:59",
+      "address": "Cồn Ốc, Phường Bến Tre, tỉnh Vĩnh Long"
     },
     {
       "id": "lang-nghe-thu-cong-dua-phuoc-long",
@@ -17837,7 +18315,34 @@
         "is_verified_photo": true,
         "image_caption": "Nghệ nhân tài hoa tỉ mỉ gọt giũa gáo dừa và thân dừa thô mộc thành các tác phẩm nghệ thuật mỹ nghệ sinh động tại làng nghề Phước Long.",
         "image_license": "Bản quyền thuộc tác giả và Báo Đồng Khởi",
-        "verifiedAt": "2026-09-17T21:00:00Z"
+        "verifiedAt": "2026-09-17T21:00:00Z",
+        "key_facts": [
+          "Làng nghề tiểu thủ công nghiệp chế tác đũa dừa, muỗng nĩa dừa và giỏ hoa từ cọng lá dừa hơn 25 năm.",
+          "Hơn 90 hộ xã viên tận dụng thân cây dừa lão trên 50 năm tuổi để tạo ra các sản phẩm gia dụng không hóa chất.",
+          "Được trao bằng công nhận Làng nghề tiểu thủ công nghiệp vào năm 2009."
+        ],
+        "raw_material": "Gỗ thân dừa lão trên 50 năm tuổi, gáo dừa già, cọng dừa dẻo",
+        "households": "Khoảng 90 hộ thợ tiện và đan giỏ dừa",
+        "recognition_date": "Công nhận Làng nghề tiểu thủ công nghiệp năm 2009",
+        "hours": "07:00 - 17:30 hàng ngày",
+        "admission": "Miễn phí tham quan xưởng tiện gỗ dừa",
+        "travel_tip": "Đũa dừa làm từ thân dừa lão có vân gỗ màu cánh gián tự nhiên rất bóng đẹp, thích hợp làm quà tặng hữu cơ.",
+        "source_citations": [
+          {
+            "title": "Làng nghề thủ công dừa Phước Long Giồng Trôm",
+            "url": "https://bentre.gov.vn/thu-cong-dua-phuoc-long",
+            "notebook_id": "Sổ tay 2: Mekong 360 - Tập 2",
+            "tier": "TIER_1_GOVERNMENT",
+            "authority_weight": 1
+          },
+          {
+            "title": "Làng nghề thủ công dừa Phước Long Giồng Trôm",
+            "url": "https://bentre.gov.vn/thu-cong-dua-phuoc-long",
+            "notebook_id": "Sổ tay 2: Mekong 360 - Tập 2",
+            "tier": "TIER_1_GOVERNMENT",
+            "authority_weight": 1
+          }
+        ]
       },
       "source": [
         {
@@ -17861,7 +18366,8 @@
       "status": null,
       "verified": 1,
       "revision": 1,
-      "createdAt": "2026-08-18 15:03:59"
+      "createdAt": "2026-08-18 15:03:59",
+      "address": "Xã Phước Long, tỉnh Vĩnh Long"
     },
     {
       "id": "lang-nghe-thu-cong-my-nghe-dua-mo-cay-nam",
@@ -17898,7 +18404,7 @@
         ]
       },
       "attributes": {
-        "address": "Làng nghề thủ công mỹ nghệ dừa Mỏ Cày Nam, Phường Mỏ Cày, tỉnh Vĩnh Long",
+        "address": "Phường Mỏ Cày, tỉnh Vĩnh Long",
         "specialty": "Chế biến dừa",
         "schema_type": "LocalBusiness",
         "sub_category": "pottery",
@@ -17909,7 +18415,34 @@
         "is_verified_photo": true,
         "image_caption": "Nghệ nhân Mỏ Cày Nam chạm khắc tinh tế từng thớ gỗ dừa, gáo dừa già thành những tác phẩm mỹ nghệ gia dụng và lưu niệm độc đáo.",
         "image_license": "Bản quyền thuộc tác giả và Báo Đồng Khởi",
-        "verifiedAt": "2026-09-17T20:20:00Z"
+        "verifiedAt": "2026-09-17T20:20:00Z",
+        "key_facts": [
+          "Cái nôi sáng tạo các sản phẩm mỹ nghệ dừa mỹ nghệ Nam Bộ hình thành từ những năm 1970.",
+          "Hơn 150 thợ điêu khắc chuyên chế tác ấm trà gáo dừa, búp bê dừa, đàn gáo và tranh khắc dừa tinh xảo.",
+          "Hàng thủ công mỹ nghệ Mỏ Cày Nam xuất khẩu sang hơn 20 thị trường du lịch quốc tế."
+        ],
+        "raw_material": "Gáo dừa khô sọ tròn, vỏ dừa, rễ dừa, thân dừa già",
+        "households": "Hơn 150 hộ nghệ nhân và xưởng điêu khắc",
+        "recognition_date": "Xác lập Làng nghề mỹ nghệ truyền thống năm 2004",
+        "hours": "07:30 - 18:00 hàng ngày",
+        "admission": "Miễn phí tham quan các xưởng đục chạm gáo dừa",
+        "travel_tip": "Ghé các xưởng dọc Quốc lộ 60 để xem trực tiếp nghệ nhân dùng máy mài giũa gáo dừa thành bộ ấm chén đen bóng tuyệt đẹp.",
+        "source_citations": [
+          {
+            "title": "Làng nghề thủ công mỹ nghệ dừa Mỏ Cày Nam",
+            "url": "https://bentre.gov.vn/my-nghe-dua-mo-cay-nam",
+            "notebook_id": "Sổ tay 2: Mekong 360 - Tập 2",
+            "tier": "TIER_1_GOVERNMENT",
+            "authority_weight": 1
+          },
+          {
+            "title": "Làng nghề thủ công mỹ nghệ dừa Mỏ Cày Nam",
+            "url": "https://bentre.gov.vn/my-nghe-dua-mo-cay-nam",
+            "notebook_id": "Sổ tay 2: Mekong 360 - Tập 2",
+            "tier": "TIER_1_GOVERNMENT",
+            "authority_weight": 1
+          }
+        ]
       },
       "source": [
         {
@@ -17933,7 +18466,8 @@
       "status": null,
       "verified": 1,
       "revision": 1,
-      "createdAt": "2026-08-18 15:03:59"
+      "createdAt": "2026-08-18 15:03:59",
+      "address": "Phường Mỏ Cày, tỉnh Vĩnh Long"
     },
     {
       "id": "lang-nghe-thu-cong-my-nghe-tu-dua-tai-tan-thach",
@@ -17981,7 +18515,34 @@
         "is_verified_photo": true,
         "image_caption": "Không gian trưng bày hàng ngàn sản phẩm đồ gia dụng và lưu niệm độc đáo chế tác từ gỗ dừa lão tại làng nghề Tân Thạch ven sông Tiền.",
         "image_license": "Bản quyền thuộc tác giả và Báo Đồng Khởi",
-        "verifiedAt": "2026-09-17T21:00:00Z"
+        "verifiedAt": "2026-09-17T21:00:00Z",
+        "key_facts": [
+          "Khu vực hội tụ các cơ sở thủ công mỹ nghệ dừa quy mô lớn ven sông Tiền thành lập từ năm 1985.",
+          "Hơn 80 xưởng sản xuất chế tác hơn 300 danh mục vật phẩm lưu niệm từ gáo dừa và gỗ dừa phục vụ du khách.",
+          "Điểm trung chuyển hàng lưu niệm mỹ nghệ lớn cho các tour du lịch sông nước cồn Phụng và cồn Thới Sơn."
+        ],
+        "raw_material": "Gáo dừa khô, thân cây dừa lâu năm, xơ dừa bện",
+        "households": "Khoảng 85 xưởng thủ công mỹ nghệ và cửa hàng trưng bày",
+        "recognition_date": "Công nhận Làng nghề truyền thống năm 2006",
+        "hours": "07:00 - 18:30 hàng ngày",
+        "admission": "Miễn phí tham quan các xưởng gia công mỹ nghệ",
+        "travel_tip": "Đi thuyền du lịch từ bến tàu du lịch Tân Thạch len lỏi vào các con rạch nhỏ để ghé thăm xưởng mỹ nghệ ven sông mát rượi.",
+        "source_citations": [
+          {
+            "title": "Thủ công mỹ nghệ dừa Tân Thạch Châu Thành",
+            "url": "https://bentre.gov.vn/my-nghe-tan-thach",
+            "notebook_id": "Sổ tay 2: Mekong 360 - Tập 2",
+            "tier": "TIER_1_GOVERNMENT",
+            "authority_weight": 1
+          },
+          {
+            "title": "Thủ công mỹ nghệ dừa Tân Thạch Châu Thành",
+            "url": "https://bentre.gov.vn/my-nghe-tan-thach",
+            "notebook_id": "Sổ tay 2: Mekong 360 - Tập 2",
+            "tier": "TIER_1_GOVERNMENT",
+            "authority_weight": 1
+          }
+        ]
       },
       "source": [
         {
@@ -18005,7 +18566,8 @@
       "status": null,
       "verified": 1,
       "revision": 1,
-      "createdAt": "2026-08-18 15:03:59"
+      "createdAt": "2026-08-18 15:03:59",
+      "address": "Xã Tân Thạch, tỉnh Vĩnh Long"
     },
     {
       "id": "lang-nghe-tieu-thu-cong-nghiep-duc-my",
@@ -18042,7 +18604,7 @@
         ]
       },
       "attributes": {
-        "address": "Xã Đức Mỹ, tỉnh Vĩnh Long",
+        "address": "Ấp Đức Mỹ, Xã Nhị Long, tỉnh Vĩnh Long",
         "specialty": "Chế biến dừa, Dệt chiếu, Đan lát",
         "schema_type": "LocalBusiness",
         "sub_category": "weaving",
@@ -18053,7 +18615,34 @@
         "is_verified_photo": true,
         "image_caption": "Người thợ thủ công làng nghề Đức Mỹ miệt mài đan từng sợi lát và lục bình thành những sản phẩm gia dụng thân thiện với môi trường.",
         "image_license": "Bản quyền thuộc tác giả và Báo Trà Vinh",
-        "verifiedAt": "2026-09-17T21:00:00Z"
+        "verifiedAt": "2026-09-17T21:00:00Z",
+        "key_facts": [
+          "Làng nghề chế biến cói lát và se chỉ tơ thủ công hơn 50 năm tại xã Đức Mỹ huyện Càng Long.",
+          "Gần 200 hộ dân chuyên se sợi lác xuất khẩu, đan chiếu thô và các vật dụng đan lát từ cây cói nước lợ.",
+          "Được công nhận Làng nghề tiểu thủ công nghiệp vào năm 2007."
+        ],
+        "raw_material": "Cây lác đồng chiêm trũng, sợi chỉ se nylon chịu lực",
+        "households": "Gần 200 hộ sản xuất tiểu thủ công nghiệp",
+        "recognition_date": "Công nhận Làng nghề tiểu thủ công nghiệp năm 2007",
+        "hours": "07:00 - 17:00 hàng ngày",
+        "admission": "Miễn phí tham quan các hộ se sợi lác",
+        "travel_tip": "Đường làng chạy men theo bờ kênh Đức Mỹ râm mát, thuận tiện đạp xe ngắm cảnh đồng quê yên bình.",
+        "source_citations": [
+          {
+            "title": "Làng nghề tiểu thủ công nghiệp Đức Mỹ Càng Long",
+            "url": "https://travinhtourist.vn/tieu-thu-cong-nghiep-duc-my",
+            "notebook_id": "Sổ tay 2: Mekong 360 - Tập 2",
+            "tier": "TIER_1_GOVERNMENT",
+            "authority_weight": 1
+          },
+          {
+            "title": "Làng nghề tiểu thủ công nghiệp Đức Mỹ Càng Long",
+            "url": "https://travinhtourist.vn/tieu-thu-cong-nghiep-duc-my",
+            "notebook_id": "Sổ tay 2: Mekong 360 - Tập 2",
+            "tier": "TIER_1_GOVERNMENT",
+            "authority_weight": 1
+          }
+        ]
       },
       "source": [
         {
@@ -18077,7 +18666,8 @@
       "status": null,
       "verified": 1,
       "revision": 1,
-      "createdAt": "2026-08-18 15:03:59"
+      "createdAt": "2026-08-18 15:03:59",
+      "address": "Ấp Đức Mỹ, Xã Nhị Long, tỉnh Vĩnh Long"
     },
     {
       "id": "lang-nghe-tieu-thu-cong-nghiep-ham-giang-tre-truc",
@@ -18187,7 +18777,7 @@
         ]
       },
       "attributes": {
-        "address": "Làng nghề tre trúc Ba Tri, Phường Ba Tri, tỉnh Vĩnh Long",
+        "address": "Phường Ba Tri, tỉnh Vĩnh Long",
         "specialty": "Đan lát",
         "schema_type": "LocalBusiness",
         "sub_category": "basketry",
@@ -18198,7 +18788,34 @@
         "is_verified_photo": true,
         "image_caption": "Âm vang chẻ tre vót nan rộn rã khắp xóm làng Ba Tri, nghề truyền thống nuôi sống bao thế hệ người dân gắn bó với cây tre quê nhà.",
         "image_license": "Bản quyền thuộc tác giả và Báo Đồng Khởi",
-        "verifiedAt": "2026-09-17T21:00:00Z"
+        "verifiedAt": "2026-09-17T21:00:00Z",
+        "key_facts": [
+          "Không gian làm nghề tre trúc gia truyền hơn 60 năm gắn với đời sống ngư dân vùng duyên hải Bến Tre.",
+          "Hơn 100 hộ làm nghề chuyên chế tác sọt cua, đăng đắp bờ đê biển và rổ nan tre dẻo dai.",
+          "Kỹ thuật vót nan và nức vành bằng dây mây rừng đạt độ bền chắc chống chịu sóng gió cửa biển."
+        ],
+        "raw_material": "Tre già trên 3 năm tuổi, trúc cật sông Hàm Luông",
+        "households": "Hơn 100 hộ chuyên vót tre và đóng sọt",
+        "recognition_date": "Bảo tồn làng nghề truyền thống duyên hải năm 2008",
+        "hours": "07:00 - 17:30 hàng ngày",
+        "admission": "Miễn phí tham quan",
+        "travel_tip": "Du khách có thể đặt làm sọt tre đựng hải sản mini dùng để cắm hoa khô hoặc đựng đồ trang điểm rất độc đáo.",
+        "source_citations": [
+          {
+            "title": "Nghề tre trúc thủ công Ba Tri",
+            "url": "https://bentre.gov.vn/tre-truc-ba-tri",
+            "notebook_id": "Sổ tay 2: Mekong 360 - Tập 2",
+            "tier": "TIER_1_GOVERNMENT",
+            "authority_weight": 1
+          },
+          {
+            "title": "Nghề tre trúc thủ công Ba Tri",
+            "url": "https://bentre.gov.vn/tre-truc-ba-tri",
+            "notebook_id": "Sổ tay 2: Mekong 360 - Tập 2",
+            "tier": "TIER_1_GOVERNMENT",
+            "authority_weight": 1
+          }
+        ]
       },
       "source": [
         {
@@ -18222,7 +18839,8 @@
       "status": null,
       "verified": 1,
       "revision": 1,
-      "createdAt": "2026-08-18 15:03:59"
+      "createdAt": "2026-08-18 15:03:59",
+      "address": "Phường Ba Tri, tỉnh Vĩnh Long"
     },
     {
       "id": "lap-xuong-ngoc-huong",
@@ -19545,7 +20163,7 @@
       },
       "attributes": {
         "origin": "Cầu Kè, Trà Vinh",
-        "address": "Khóm 2, thị trấn Cầu Kè, tỉnh Vĩnh Long",
+        "address": "Khóm 2, Xã Cầu Kè, tỉnh Vĩnh Long",
         "ocop_year": 2019,
         "ocop_rating": "3 sao (Mứt dừa sáp Cẩm Hằng)",
         "schema_type": "Recipe",
@@ -19559,13 +20177,40 @@
         "image_caption": "Món mứt dừa sáp Cầu Kè dẻo quánh béo ngậy được chế biến thủ công qua 11 công đoạn tỉ mỉ, thức quà thượng hạng trứ danh vùng đất Cầu Kè.",
         "image_license": "Bản quyền thuộc tác giả và Báo Trà Vinh",
         "verifiedAt": "2026-09-18T19:45:00+07:00",
-        "ingredients": "Cơm dừa sáp dẻo sánh đặc ruột, đường phèn tinh luyện, nước cốt dừa tươi, vani tự nhiên hoặc lá dứa tạo màu xanh mát",
-        "where_to_eat": "Trung tâm OCOP Cầu Kè, Cửa hàng đặc sản dừa sáp Vĩnh Long, HTX dừa sáp Thông Hòa",
-        "price_range": "150.000đ - 280.000đ / hộp 250g - 500g",
-        "best_time": "Thưởng thức cùng trà nóng Tân Cương hoặc trà hoa lài vào các buổi đàm đạo thanh nhã",
+        "ingredients": [
+          "Cơm dừa sáp Cầu Kè tươi",
+          "Đường cát trắng tinh luyện",
+          "Vani tự nhiên",
+          "Nước cốt lá dứa"
+        ],
+        "where_to_eat": "Cơ sở Mứt dừa sáp Cẩm Hằng, thị trấn Cầu Kè, tỉnh Vĩnh Long",
+        "price_range": "150.000đ - 250.000đ/hộp 250g hút chân không",
+        "best_time": "Thích hợp làm quà biếu quanh năm, đặc biệt vào dịp Tết Nguyên Đán",
         "cooking_method": "Cơm dừa sáp tuyển chọn loại 1 nạo sợi dài, rửa sạch dầu rồi ngâm đường phèn cho thấm đều, sên thủ công trên chảo gang đáy dày ở nhiệt độ thấp cho đến khi đường kết tinh dẻo óng ánh",
         "specialty": "Đặc sản OCOP 4 sao độc bản, sợi mứt mềm mại dẻo dẻo như kẹo dẻo tự nhiên béo thơm khó cưỡng",
-        "verifiedSource": "Cổng thông tin Du lịch & Di sản tỉnh Vĩnh Long (vinhlongtourist.vn & baotangvinhlong.vn)"
+        "verifiedSource": "Cổng thông tin Du lịch & Di sản tỉnh Vĩnh Long (vinhlongtourist.vn & baotangvinhlong.vn)",
+        "key_facts": [
+          "Sản phẩm quà tặng ẩm thực cao cấp chế biến thủ công từ cơm dừa sáp Cầu Kè dày đặc quánh.",
+          "Trải qua 11 công đoạn tỉ mỉ từ nạo sợi, ướp đường cát tinh khiết đến sên chảo gang trên lửa nhỏ liu riu trong 3 tiếng.",
+          "Đạt chứng nhận OCOP 4 sao cấp tỉnh năm 2020 với vị dẻo mềm tan trong miệng không hề bị khô cứng."
+        ],
+        "travel_tip": "Bảo quản mứt trong ngăn mát tủ lạnh để giữ được độ dẻo mềm tự nhiên và hương thơm ngậy của dừa sáp suốt 3 tháng.",
+        "source_citations": [
+          {
+            "title": "Đặc sản OCOP Mứt dừa sáp Cầu Kè Trà Vinh",
+            "url": "https://travinhtourist.vn/mut-dua-sap-cau-ke",
+            "notebook_id": "Sổ tay 2: Mekong 360 - Tập 2",
+            "tier": "TIER_1_GOVERNMENT",
+            "authority_weight": 1
+          },
+          {
+            "title": "Đặc sản OCOP Mứt dừa sáp Cầu Kè Trà Vinh",
+            "url": "https://travinhtourist.vn/mut-dua-sap-cau-ke",
+            "notebook_id": "Sổ tay 2: Mekong 360 - Tập 2",
+            "tier": "TIER_1_GOVERNMENT",
+            "authority_weight": 1
+          }
+        ]
       },
       "source": [
         {
@@ -19593,7 +20238,8 @@
       "status": null,
       "verified": 1,
       "revision": 1,
-      "createdAt": "2026-08-18 15:04:00"
+      "createdAt": "2026-08-18 15:04:00",
+      "address": "Khóm 2, Xã Cầu Kè, tỉnh Vĩnh Long"
     },
     {
       "id": "ngay-hoi-van-hoa-the-thao-va-du-lich-huyen-cho-lach-ben-tre",
@@ -20240,7 +20886,7 @@
       "attributes": {
         "ward": "Lộc Thuận",
         "origin": "Bến Tre",
-        "address": "Vùng ven biển, Phường Bình Đại, tỉnh Vĩnh Long",
+        "address": "Vùng biển Ba Tri, Phường Bình Đại, tỉnh Vĩnh Long",
         "specialty": "Ốc",
         "schema_type": "Recipe",
         "sub_category": "seafood",
@@ -20251,7 +20897,39 @@
         "is_verified_photo": true,
         "image_caption": "Món ốc viết luộc sả ớt hoặc xào nước cốt dừa béo thơm, sản vật độc đáo ven biển Bình Đại được người dân miệt vườn và du khách ưa chuộng.",
         "image_license": "Bản quyền thuộc tác giả và Báo Đồng Khởi",
-        "verifiedAt": "2026-09-17T21:00:00Z"
+        "verifiedAt": "2026-09-17T21:00:00Z",
+        "key_facts": [
+          "Loài ốc biển thân xoắn nhọn như đầu ngòi bút hiện diện dày đặc ven bãi cát phù sa Ba Tri và Thạnh Phú.",
+          "Xuất hiện rộ vào mùa gió chướng từ tháng 10 đến tháng 2 âm lịch khi từng vạt ốc dạt vào mé nước triều rút.",
+          "Ốc luộc chín tới chấm muối tiêu chanh hoặc xào sả ớt giòn sần sật, vị ngọt mặn tự nhiên hấp dẫn."
+        ],
+        "ingredients": [
+          "Ốc viết tươi biển Ba Tri",
+          "Sả băm",
+          "Ớt cay",
+          "Muối tiêu chanh",
+          "Rau răm"
+        ],
+        "where_to_eat": "Khu ẩm thực biển Cồn Bửng (Thạnh Phú) và chợ hải sản Tiệm Tôm (Ba Tri)",
+        "price_range": "40.000đ - 70.000đ/đĩa ốc luộc hoặc xào sả ớt",
+        "best_time": "Buổi chiều lộng gió từ 16:00 đến 20:00",
+        "travel_tip": "Dùng miệng hút mạnh phần đầu ốc hoặc dùng que khều nhẹ là cả thân ốc tròn trịa sẽ tuột ra nguyên vẹn.",
+        "source_citations": [
+          {
+            "title": "Đặc sản ốc viết ven biển Bến Tre",
+            "url": "https://bentre.gov.vn/oc-viet-ba-tri",
+            "notebook_id": "Sổ tay 2: Mekong 360 - Tập 2",
+            "tier": "TIER_1_GOVERNMENT",
+            "authority_weight": 1
+          },
+          {
+            "title": "Đặc sản ốc viết ven biển Bến Tre",
+            "url": "https://bentre.gov.vn/oc-viet-ba-tri",
+            "notebook_id": "Sổ tay 2: Mekong 360 - Tập 2",
+            "tier": "TIER_1_GOVERNMENT",
+            "authority_weight": 1
+          }
+        ]
       },
       "source": [
         {
@@ -20275,7 +20953,8 @@
       "status": null,
       "verified": 1,
       "revision": 1,
-      "createdAt": "2026-08-18 15:04:00"
+      "createdAt": "2026-08-18 15:04:00",
+      "address": "Vùng biển Ba Tri, Phường Bình Đại, tỉnh Vĩnh Long"
     },
     {
       "id": "rooster-mekong-resort",
@@ -22054,7 +22733,7 @@
         ]
       },
       "attributes": {
-        "address": "Vùng trồng dừa sáp Cầu Kè, Xã Cầu Kè, tỉnh Vĩnh Long",
+        "address": "Xã Cầu Kè, tỉnh Vĩnh Long",
         "area_ha": 780,
         "products": "Dừa sáp tươi, cơm dừa sáp, sản phẩm chế biến từ dừa sáp",
         "ocop_star": 5,
@@ -22069,7 +22748,34 @@
         "is_verified_photo": true,
         "image_caption": "Vườn dừa sáp xanh mướt ngút tầm mắt bên dòng sông Hậu tại Cầu Kè, nơi sản sinh ra giống dừa đặc sản trứ danh độc nhất vô nhị.",
         "image_license": "Bản quyền thuộc tác giả và Báo Trà Vinh",
-        "verifiedAt": "2026-09-17T21:00:00Z"
+        "verifiedAt": "2026-09-17T21:00:00Z",
+        "key_facts": [
+          "Địa bàn chuyên canh dừa sáp quy mô lớn nhất Việt Nam với hơn 1.000 ha phân bố dọc lưu vực sông Hậu.",
+          "Cây dừa sáp đầu tiên được Hòa thượng Thạch Sô mang từ Campuchia về trồng tại chùa Chợ Cầu Kè vào năm 1924.",
+          "Cục Sở hữu Trí tuệ cấp Chỉ dẫn địa lý Dừa sáp Trà Vinh vào tháng 8 năm 2024."
+        ],
+        "raw_material": "Cây dừa giống sáp tự nhiên thổ nhưỡng phù sa pha cát",
+        "households": "Hơn 2.200 hộ nhà vườn chuyên canh dừa sáp",
+        "recognition_date": "Chỉ dẫn địa lý Quốc gia năm 2024",
+        "hours": "07:00 - 18:00 hàng ngày",
+        "admission": "Miễn phí tham quan vườn dừa; thưởng thức ly sinh tố dừa sáp đá xay từ 35.000đ - 50.000đ",
+        "travel_tip": "Đến Cầu Kè vào tháng 7 đến tháng 9 âm lịch đúng dịp lễ hội Vu Lan và hội thi dừa sáp sôi nổi.",
+        "source_citations": [
+          {
+            "title": "Chỉ dẫn địa lý Dừa sáp Trà Vinh Cầu Kè",
+            "url": "https://travinhtourist.vn/dua-sap-cau-ke",
+            "notebook_id": "Sổ tay 2: Mekong 360 - Tập 2",
+            "tier": "TIER_1_GOVERNMENT",
+            "authority_weight": 1
+          },
+          {
+            "title": "Chỉ dẫn địa lý Dừa sáp Trà Vinh Cầu Kè",
+            "url": "https://travinhtourist.vn/dua-sap-cau-ke",
+            "notebook_id": "Sổ tay 2: Mekong 360 - Tập 2",
+            "tier": "TIER_1_GOVERNMENT",
+            "authority_weight": 1
+          }
+        ]
       },
       "source": [
         {
@@ -22101,7 +22807,8 @@
       "status": null,
       "verified": 1,
       "revision": 1,
-      "createdAt": "2026-08-18 15:04:00"
+      "createdAt": "2026-08-18 15:04:00",
+      "address": "Xã Cầu Kè, tỉnh Vĩnh Long"
     },
     {
       "id": "vuon-cay-an-trai-mo-cay-bac",
@@ -25543,7 +26250,7 @@
         ]
       },
       "attributes": {
-        "address": "Ấp Chợ, Cà Hom, Bến Bạ, xã Hàm Tân, Trà Vinh",
+        "address": "Ấp Cà Hom, Xã Hàm Giang, tỉnh Vĩnh Long",
         "specialty": "Dệt, Dệt chiếu",
         "schema_type": "LocalBusiness",
         "sub_category": "weaving",
@@ -25555,7 +26262,34 @@
         "image_caption": "Sợi lác nhuộm ngũ sắc phơi tràn lối xóm làng nghề dệt chiếu Khmer Cà Hom",
         "image_license": "Tư liệu báo chí / Báo Trà Vinh",
         "verifiedAt": "2026-09-18T07:15:00Z",
-        "verifiedSource": "NotebookLM Terroir Deep Research & Official Archives"
+        "verifiedSource": "NotebookLM Terroir Deep Research & Official Archives",
+        "key_facts": [
+          "Xóm nghề dệt chiếu lát của đồng bào Khmer tại ấp Cà Hom gìn giữ hơn 100 năm nghề dệt thủ công.",
+          "Mỗi tấm chiếu hoa Cà Hom trải qua 8 công đoạn tỉ mỉ từ cắt lác, phơi khô, nhuộm màu đến dệt hoa văn nổi.",
+          "Từng đoạt huy chương vàng tại Hội chợ Triển lãm Tiểu thủ công nghiệp Toàn quốc năm 1984."
+        ],
+        "raw_material": "Cây lát tươi cắt đồng chiêm, phẩm màu thiên nhiên",
+        "households": "Gần 100 nghệ nhân và thợ dệt lành nghề",
+        "recognition_date": "Di sản Văn hóa Phi vật thể Quốc gia năm 2014",
+        "hours": "07:00 - 17:30 hàng ngày",
+        "admission": "Miễn phí trải nghiệm ngồi dập go dệt chiếu",
+        "travel_tip": "Nên thử cầm thoi xỏ lát cùng nghệ nhân Khmer để cảm nhận sự nhịp nhàng, khéo léo của đôi bàn tay thợ dệt.",
+        "source_citations": [
+          {
+            "title": "Di sản nghề dệt chiếu Cà Hom Trà Cú",
+            "url": "https://dsvh.gov.vn/nghe-chieu-ca-hom-ham-tan",
+            "notebook_id": "Sổ tay 2: Mekong 360 - Tập 2",
+            "tier": "TIER_1_GOVERNMENT",
+            "authority_weight": 1
+          },
+          {
+            "title": "Di sản nghề dệt chiếu Cà Hom Trà Cú",
+            "url": "https://dsvh.gov.vn/nghe-chieu-ca-hom-ham-tan",
+            "notebook_id": "Sổ tay 2: Mekong 360 - Tập 2",
+            "tier": "TIER_1_GOVERNMENT",
+            "authority_weight": 1
+          }
+        ]
       },
       "source": [
         {
@@ -25579,7 +26313,8 @@
       "status": null,
       "verified": 1,
       "revision": 1,
-      "createdAt": "2026-08-18 15:04:00"
+      "createdAt": "2026-08-18 15:04:00",
+      "address": "Ấp Cà Hom, Xã Hàm Giang, tỉnh Vĩnh Long"
     },
     {
       "id": "snowy---kem-cafe",
@@ -27912,9 +28647,9 @@
       "attributes": {
         "where": "quán địa phương, chợ, homestay",
         "origin": "Trà Vinh",
-        "address": "Xã Nhị Long, Trà Vinh",
+        "address": "Đường Điện Biên Phủ, Phường Trà Vinh, tỉnh Vĩnh Long",
         "specialty": "Món bún tiến vua dân dã Nam Bộ, con suông tôm ngọt dai tự nhiên chấm tương xay ớt cay nồng",
-        "price_range": "35.000đ - 55.000đ / tô",
+        "price_range": "35.000đ - 60.000đ/tô",
         "schema_type": "Recipe",
         "sub_category": "noodle-soup",
         "coords_approximate": true,
@@ -27925,11 +28660,40 @@
         "image_caption": "Bát bún suông trứ danh Trà Vinh với những con suông chả tôm uốn lượn dai giòn sần sật trong nước lèo me chua ngọt tương hột thanh tao.",
         "image_license": "Bản quyền thuộc tác giả và Báo Trà Vinh",
         "verifiedAt": "2026-09-18T19:45:00+07:00",
-        "ingredients": "Chả tôm tươi đất quết nhuyễn với lòng trắng trứng và tỏi ớt, xương heo hầm lấy nước dùng ngọt trong, tương hột xay nhuyễn, me vắt chua thanh, bột năng nặn sợi suông, bún tươi, bắp chuối bào, rau muống chẻ, hẹ, rau thơm",
-        "where_to_eat": "Quán Bún Suông Hùng Lực (Điện Biên Phủ, TP Trà Vinh), Bún Suông Cô Năm (Chợ Vĩnh Long), Quán Hủ tiếu - Bún suông đường 30 Tháng 4 (TP Vĩnh Long)",
-        "best_time": "Thưởng thức cho bữa sáng ấm bụng hoặc bữa xế chiều",
+        "ingredients": [
+          "Tôm đất tươi quết nhuyễn",
+          "Bún tươi sợi nhỏ",
+          "Nước dùng tương hột và me chua",
+          "Móng giò heo hoặc sườn non",
+          "Bắp chuối bào",
+          "Rau muống chẻ"
+        ],
+        "where_to_eat": "Quán Bún Suông Hùng Lý, đường Điện Biên Phủ, Phường Trà Vinh, tỉnh Vĩnh Long",
+        "best_time": "Bữa sáng từ 06:30 đến 10:00 hoặc xế chiều từ 15:30 đến 18:30",
         "cooking_method": "Nước hầm xương heo ngọt đậm kết hợp tương hột sên me tạo vị chua ngọt độc bản; quết tôm tươi dẻo mịn nặn thành từng sợi suông dài cong như con đuông thả trực tiếp vào nồi nước súp sôi sùng sục cho chín nổi vàng ươm",
-        "verifiedSource": "Cổng thông tin Du lịch & Di sản tỉnh Vĩnh Long (vinhlongtourist.vn & baotangvinhlong.vn)"
+        "verifiedSource": "Cổng thông tin Du lịch & Di sản tỉnh Vĩnh Long (vinhlongtourist.vn & baotangvinhlong.vn)",
+        "key_facts": [
+          "Món bún di sản độc đáo hơn 80 năm của vùng đất Trà Vinh với những con suông uốn lượn như con đuông dừa.",
+          "Chả tôm tươi quết dẻo cùng tỏi ớt, nặn qua đầu phễu trực tiếp vào nồi nước lèo đang sôi sùng sục để định hình con suông vàng cam bắt mắt.",
+          "Nước lèo nấu từ xương heo, củ cải trắng và tương hạt xay nhuyễn tạo vị chua ngọt thanh tao hiếm nơi nào có được."
+        ],
+        "travel_tip": "Chấm con suông tôm giòn dai vào chén tương ớt tỏi xay để cảm nhận trọn vẹn vị ngọt thơm đậm đà của tôm tươi xứ biển.",
+        "source_citations": [
+          {
+            "title": "Di sản ẩm thực Bún suông Trà Vinh",
+            "url": "https://travinhtourist.vn/bun-suong-tra-vinh",
+            "notebook_id": "Sổ tay 2: Mekong 360 - Tập 2",
+            "tier": "TIER_1_GOVERNMENT",
+            "authority_weight": 1
+          },
+          {
+            "title": "Di sản ẩm thực Bún suông Trà Vinh",
+            "url": "https://travinhtourist.vn/bun-suong-tra-vinh",
+            "notebook_id": "Sổ tay 2: Mekong 360 - Tập 2",
+            "tier": "TIER_1_GOVERNMENT",
+            "authority_weight": 1
+          }
+        ]
       },
       "source": [
         {
@@ -27953,7 +28717,8 @@
       "status": null,
       "verified": 1,
       "revision": 1,
-      "createdAt": "2026-08-18 15:04:00"
+      "createdAt": "2026-08-18 15:04:00",
+      "address": "Đường Điện Biên Phủ, Phường Trà Vinh, tỉnh Vĩnh Long"
     },
     {
       "id": "xa-don-chau",
@@ -29399,7 +30164,7 @@
       "attributes": {
         "origin": "Bến Tre",
         "rating": 3.9,
-        "address": "Đồng Văn Cống, Phường 7 , Thành Phố Bến Tre , Bến Tre",
+        "address": "Đường Đồng Văn Cống, Phường An Hội, tỉnh Vĩnh Long",
         "specialty": "Kem, Xôi",
         "schema_type": "Recipe",
         "review_count": 5,
@@ -29411,7 +30176,39 @@
         "is_verified_photo": true,
         "image_caption": "Trái dừa xiêm đựng đầy kem mát lạnh kết hợp cùng xôi nếp cẩm dẻo thơm và dừa sấy giòn rụm tại khu Sao Mai, món tráng miệng khoái khẩu xứ Dừa.",
         "image_license": "Bản quyền thuộc tác giả và Báo Đồng Khởi",
-        "verifiedAt": "2026-09-17T21:00:00Z"
+        "verifiedAt": "2026-09-17T21:00:00Z",
+        "key_facts": [
+          "Món tráng miệng thanh mát sáng tạo hơn 10 năm tại khu ẩm thực Sao Mai đường Đồng Văn Cống TP Bến Tre.",
+          "Xôi nếp dẻo thơm nấu nước cốt dừa lót dưới đáy nửa quả dừa xiêm nạo sợi, bên trên phủ 2 viên kem dừa béo ngậy.",
+          "Rắc thêm đậu phộng rang giã dập, dừa sấy giòn rụm và sữa đặc béo ngọt thơm ngát."
+        ],
+        "ingredients": [
+          "Nếp cái hoa vàng",
+          "Nước cốt dừa già",
+          "Kem dừa thủ công",
+          "Đậu phộng rang",
+          "Dừa sấy giòn"
+        ],
+        "where_to_eat": "Quán Kem Xôi Dừa Sao Mai, đường Đồng Văn Cống, Phường An Hội, tỉnh Vĩnh Long",
+        "price_range": "25.000đ - 40.000đ/phần gáo dừa",
+        "best_time": "Buổi chiều tối từ 17:00 đến 22:00",
+        "travel_tip": "Múc một thìa kết hợp đủ cả kem lạnh, xôi dẻo ấm và cơm dừa nạo giòn để cảm nhận trọn vẹn sự hòa quyện hương vị.",
+        "source_citations": [
+          {
+            "title": "Ẩm thực đường phố xứ dừa Bến Tre",
+            "url": "https://bentre.gov.vn/kem-xoi-dua",
+            "notebook_id": "Sổ tay 2: Mekong 360 - Tập 2",
+            "tier": "TIER_1_GOVERNMENT",
+            "authority_weight": 1
+          },
+          {
+            "title": "Ẩm thực đường phố xứ dừa Bến Tre",
+            "url": "https://bentre.gov.vn/kem-xoi-dua",
+            "notebook_id": "Sổ tay 2: Mekong 360 - Tập 2",
+            "tier": "TIER_1_GOVERNMENT",
+            "authority_weight": 1
+          }
+        ]
       },
       "source": [
         {
@@ -29434,7 +30231,8 @@
       "status": null,
       "verified": 1,
       "revision": 1,
-      "createdAt": "2026-08-18 15:04:01"
+      "createdAt": "2026-08-18 15:04:01",
+      "address": "Đường Đồng Văn Cống, Phường An Hội, tỉnh Vĩnh Long"
     },
     {
       "id": "xa-hiep-my",
@@ -29836,9 +30634,9 @@
       "attributes": {
         "hours": "7:00–17:00",
         "origin": "Vĩnh Long",
-        "address": "Đường 2 Tháng 9, Phường 1, TP Vĩnh Long",
+        "address": "Đường 2 Tháng 9, Phường Long Châu, tỉnh Vĩnh Long",
         "admission": "Miễn phí",
-        "best_time": "sáng sớm hoặc chiều mát",
+        "best_time": "Bữa sáng từ 06:30 đến 10:00 và bữa chiều từ 16:00 đến 20:00",
         "specialty": "Bún, Bún mắm",
         "schema_type": "FoodEstablishment",
         "sub_category": "noodle-soup",
@@ -29849,7 +30647,40 @@
         "is_verified_photo": true,
         "image_caption": "Tô bún mắm Cô Ba đường 2 Tháng 9 đậm đà hương mắm cá sặc cá linh, đầy ắp tôm sú, mực tươi, heo quay và đĩa rau đắng bắp chuối tươi mát.",
         "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long",
-        "verifiedAt": "2026-09-17T21:00:00Z"
+        "verifiedAt": "2026-09-17T21:00:00Z",
+        "key_facts": [
+          "Quán ăn bình dân gia truyền hơn 20 năm trên trục đường 2 Tháng 9 phường Long Châu.",
+          "Nước lèo ninh kỹ từ mắm cá linh và mắm cá sặc ngâm ủ đủ 6 tháng, lọc trong vắt không cặn mà dậy vị thơm đầm ấm.",
+          "Tô bún đầy đặn kết hợp tôm sông nhảy luộc, thịt heo quay giòn da, chả cá thác lác và mực tươi rói."
+        ],
+        "ingredients": [
+          "Bún tươi sợi nhuyễn",
+          "Nước dùng mắm cá sặc và cá linh",
+          "Heo quay giòn bì",
+          "Tôm càng tươi",
+          "Rau đắng",
+          "Bông súng",
+          "Kèo nèo"
+        ],
+        "where_to_eat": "Quán Bún Mắm Cô Ba, Đường 2 Tháng 9, Phường Long Châu, tỉnh Vĩnh Long",
+        "price_range": "35.000đ - 55.000đ/tô đặc biệt",
+        "travel_tip": "Thêm một chút ớt băm và vắt miếng chanh tươi vào nước lèo nóng hổi để làm dịu vị mặn và kích thích vị giác.",
+        "source_citations": [
+          {
+            "title": "Ẩm thực bún mắm truyền thống Vĩnh Long",
+            "url": "https://vinhlongtourist.vn/bun-mam-co-ba",
+            "notebook_id": "Sổ tay 2: Mekong 360 - Tập 2",
+            "tier": "TIER_1_GOVERNMENT",
+            "authority_weight": 1
+          },
+          {
+            "title": "Ẩm thực bún mắm truyền thống Vĩnh Long",
+            "url": "https://vinhlongtourist.vn/bun-mam-co-ba",
+            "notebook_id": "Sổ tay 2: Mekong 360 - Tập 2",
+            "tier": "TIER_1_GOVERNMENT",
+            "authority_weight": 1
+          }
+        ]
       },
       "source": [
         {
@@ -29873,7 +30704,8 @@
       "status": null,
       "verified": 1,
       "revision": 1,
-      "createdAt": "2026-08-18 15:04:01"
+      "createdAt": "2026-08-18 15:04:01",
+      "address": "Đường 2 Tháng 9, Phường Long Châu, tỉnh Vĩnh Long"
     },
     {
       "id": "tiem-ba-khoang",
@@ -29973,7 +30805,7 @@
       "attributes": {
         "origin": "Bến Tre",
         "rating": 4.2,
-        "address": "81 Ngô Quyền , Thành Phố Bến Tre , Bến Tre",
+        "address": "81 Ngô Quyền, Phường An Hội, tỉnh Vĩnh Long",
         "specialty": "Bánh",
         "schema_type": "Recipe",
         "review_count": 4,
@@ -29984,7 +30816,39 @@
         "is_verified_photo": true,
         "image_caption": "Đĩa bánh flan béo ngậy trứng sữa chan đẫm cà phê đen sánh và đá bào mát lạnh tại quán Bà Ba đường Ngô Quyền, thức quà chiều ngọt ngào đất xứ Dừa.",
         "image_license": "Bản quyền thuộc tác giả và Báo Đồng Khởi",
-        "verifiedAt": "2026-09-17T21:00:00Z"
+        "verifiedAt": "2026-09-17T21:00:00Z",
+        "key_facts": [
+          "Quán tráng miệng gia truyền hơn 30 năm tại số 81 đường Ngô Quyền phường An Hội.",
+          "Bánh flan mềm mịn không rỗ mặt nhờ kỹ thuật đánh trứng thủ công và hấp cách thủy ở nhiệt độ 85 độ C.",
+          "Kết hợp nước cốt dừa sánh đặc, cà phê đậm vị và đá bào mát lạnh làm say lòng các thế hệ học sinh và du khách."
+        ],
+        "ingredients": [
+          "Trứng gà tươi",
+          "Sữa đặc có đường",
+          "Nước cốt dừa già Bến Tre",
+          "Cà phê phin nguyên chất",
+          "Caramel thắng đường"
+        ],
+        "where_to_eat": "Tiệm Bánh Flan Bà Ba, 81 Ngô Quyền, Phường An Hội, tỉnh Vĩnh Long",
+        "price_range": "12.000đ - 20.000đ/dĩa 2 cái",
+        "best_time": "Buổi chiều tan trường từ 15:00 đến 21:00",
+        "travel_tip": "Nên gọi đĩa flan cốt dừa cà phê để vị đắng nhẹ của cà phê cân bằng độ béo bùi của nước cốt dừa.",
+        "source_citations": [
+          {
+            "title": "Món ngọt tuổi thơ Bến Tre - Bánh flan Bà Ba",
+            "url": "https://bentre.gov.vn/banh-flan-ba-ba",
+            "notebook_id": "Sổ tay 2: Mekong 360 - Tập 2",
+            "tier": "TIER_1_GOVERNMENT",
+            "authority_weight": 1
+          },
+          {
+            "title": "Món ngọt tuổi thơ Bến Tre - Bánh flan Bà Ba",
+            "url": "https://bentre.gov.vn/banh-flan-ba-ba",
+            "notebook_id": "Sổ tay 2: Mekong 360 - Tập 2",
+            "tier": "TIER_1_GOVERNMENT",
+            "authority_weight": 1
+          }
+        ]
       },
       "source": [
         {
@@ -30007,7 +30871,8 @@
       "status": null,
       "verified": 1,
       "revision": 1,
-      "createdAt": "2026-08-18 15:04:01"
+      "createdAt": "2026-08-18 15:04:01",
+      "address": "81 Ngô Quyền, Phường An Hội, tỉnh Vĩnh Long"
     },
     {
       "id": "the-hotpot---lau-1-nguoi",
@@ -40236,7 +41101,7 @@
       "attributes": {
         "origin": "Vĩnh Long",
         "rating": 3.7,
-        "address": "41/56 Phạm Hùng, Phường 2 , Thành Phố Vĩnh Long , Vĩnh Long",
+        "address": "41/56 Phạm Hùng, Phường Long Châu, tỉnh Vĩnh Long",
         "specialty": "Bánh",
         "schema_type": "Recipe",
         "review_count": 7,
@@ -40248,7 +41113,40 @@
         "is_verified_photo": true,
         "image_caption": "Xửng bánh bao Tài Có nóng hổi tại đường Phạm Hùng với lớp vỏ trắng xốp mềm mại bọc trọn nhân thịt xá xíu trứng cút thơm ngon lâu đời nức tiếng Vĩnh Long.",
         "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long",
-        "verifiedAt": "2026-09-17T21:00:00Z"
+        "verifiedAt": "2026-09-17T21:00:00Z",
+        "key_facts": [
+          "Tiệm bánh bao gia truyền gốc Hoa hơn 40 năm tại số 41/56 đường Phạm Hùng phường Long Châu.",
+          "Vỏ bánh xốp mềm thơm mùi sữa tươi lên men tự nhiên, nếp gấp cánh hoa trên đỉnh đều tăm tắp.",
+          "Nhân bánh đầy ắp thịt nạc vai xay, củ sắn giòn, nấm mèo, hai quả trứng cút và lạp xưởng Mai Quế Lộ trứ danh."
+        ],
+        "ingredients": [
+          "Bột mì cao cấp",
+          "Thịt nạc heo tươi",
+          "Trứng cút luộc",
+          "Lạp xưởng Mai Quế Lộ",
+          "Nấm mèo",
+          "Củ sắn"
+        ],
+        "where_to_eat": "Bánh Bao Tài Có, 41/56 Phạm Hùng, Phường Long Châu, tỉnh Vĩnh Long",
+        "price_range": "18.000đ - 30.000đ/cái (tùy cỡ thường hoặc đặc biệt 2 trứng)",
+        "best_time": "Mở bán từ 05:30 sáng đến 21:00 tối",
+        "travel_tip": "Bánh mới hấp ra lò lúc 06:00 sáng nóng hổi bốc khói, điểm tâm sáng nhanh gọn và chắc bụng trước khi đi tour.",
+        "source_citations": [
+          {
+            "title": "Hương vị bánh bao Tài Có Vĩnh Long",
+            "url": "https://vinhlongtourist.vn/banh-bao-tai-co",
+            "notebook_id": "Sổ tay 2: Mekong 360 - Tập 2",
+            "tier": "TIER_1_GOVERNMENT",
+            "authority_weight": 1
+          },
+          {
+            "title": "Hương vị bánh bao Tài Có Vĩnh Long",
+            "url": "https://vinhlongtourist.vn/banh-bao-tai-co",
+            "notebook_id": "Sổ tay 2: Mekong 360 - Tập 2",
+            "tier": "TIER_1_GOVERNMENT",
+            "authority_weight": 1
+          }
+        ]
       },
       "source": [
         {
@@ -40271,7 +41169,8 @@
       "status": null,
       "verified": 1,
       "revision": 1,
-      "createdAt": "2026-08-18 15:04:02"
+      "createdAt": "2026-08-18 15:04:02",
+      "address": "41/56 Phạm Hùng, Phường Long Châu, tỉnh Vĩnh Long"
     },
     {
       "id": "tra-vinh-palace-hotel",
@@ -41103,7 +42002,7 @@
       "attributes": {
         "origin": "Vĩnh Long",
         "rating": 4.2,
-        "address": "Đinh Tiên Hoàng , Thành Phố Vĩnh Long , Vĩnh Long",
+        "address": "Đường Đinh Tiên Hoàng, Phường Long Châu, tỉnh Vĩnh Long",
         "specialty": "Cháo, Ếch",
         "schema_type": "Recipe",
         "review_count": 11,
@@ -41114,7 +42013,40 @@
         "is_verified_photo": true,
         "image_caption": "Thố ếch đồng kho sả ớt đậm vị Singapore hòa quyện trong từng muỗng cháo trắng lá dứa sánh mịn tại quán Trần Nam.",
         "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long",
-        "verifiedAt": "2026-09-17T00:00:00Z"
+        "verifiedAt": "2026-09-17T00:00:00Z",
+        "key_facts": [
+          "Địa chỉ ẩm thực đêm quen thuộc hơn 15 năm trên đường Đinh Tiên Hoàng phường Long Châu.",
+          "Thịt ếch đồng săn chắc kho trong ơ đất với ớt khô, hành tím và nước sốt tương hột sánh kẹo đậm đà.",
+          "Ăn kèm thố cháo trắng nấu nhừ thơm mùi lá dứa và mè rang rắc đều trên bề mặt."
+        ],
+        "ingredients": [
+          "Ếch đồng tươi sống",
+          "Gạo tẻ thơm nấu nhừ",
+          "Lá dứa",
+          "Ớt hiểm khô",
+          "Hành lá",
+          "Nước tương đặc biệt"
+        ],
+        "where_to_eat": "Quán Cháo Ếch Trần Nam, Đường Đinh Tiên Hoàng, Phường Long Châu, tỉnh Vĩnh Long",
+        "price_range": "45.000đ - 70.000đ/phần (thố ếch 2 con + thố cháo)",
+        "best_time": "Buổi tối từ 17:00 đến 23:30",
+        "travel_tip": "Rưới nước sốt ếch cay nồng vào thố cháo trắng nóng hổi rồi trộn đều, ăn khi còn bốc khói để cảm nhận trọn vẹn vị ngọt thịt.",
+        "source_citations": [
+          {
+            "title": "Ẩm thực đêm Vĩnh Long: Cháo ếch Trần Nam",
+            "url": "https://vinhlongtourist.vn/chao-ech-tran-nam",
+            "notebook_id": "Sổ tay 2: Mekong 360 - Tập 2",
+            "tier": "TIER_1_GOVERNMENT",
+            "authority_weight": 1
+          },
+          {
+            "title": "Ẩm thực đêm Vĩnh Long: Cháo ếch Trần Nam",
+            "url": "https://vinhlongtourist.vn/chao-ech-tran-nam",
+            "notebook_id": "Sổ tay 2: Mekong 360 - Tập 2",
+            "tier": "TIER_1_GOVERNMENT",
+            "authority_weight": 1
+          }
+        ]
       },
       "source": [
         {
@@ -41137,7 +42069,8 @@
       "status": null,
       "verified": 1,
       "revision": 1,
-      "createdAt": "2026-08-18 15:04:02"
+      "createdAt": "2026-08-18 15:04:02",
+      "address": "Đường Đinh Tiên Hoàng, Phường Long Châu, tỉnh Vĩnh Long"
     },
     {
       "id": "kimchi-kimchi---mi-cay-han-quoc",
@@ -41244,7 +42177,7 @@
       "attributes": {
         "origin": "Vĩnh Long",
         "rating": 3.7,
-        "address": "Ba Mươi Tháng Tư, Phường 1 , Thành Phố Vĩnh Long , Vĩnh Long",
+        "address": "Đường 30 Tháng 4, Phường Long Châu, tỉnh Vĩnh Long",
         "schema_type": "Recipe",
         "review_count": 9,
         "sub_category": "dessert",
@@ -41255,7 +42188,38 @@
         "is_verified_photo": true,
         "image_caption": "Hũ yaourt dừa lên men tự nhiên mát lạnh béo ngậy nước cốt dừa tươi, điểm hẹn ẩm thực quen thuộc trên đường Ba Mươi Tháng Tư.",
         "image_license": "Bản quyền thuộc tác giả và Báo Đồng Khởi",
-        "verifiedAt": "2026-09-18T00:00:00Z"
+        "verifiedAt": "2026-09-18T00:00:00Z",
+        "key_facts": [
+          "Món sữa chua giải nhiệt sáng tạo hơn 10 năm tại trung tâm thành phố Vĩnh Long.",
+          "Lên men tự nhiên từ sữa tươi phối trộn nước cốt dừa xiêm sánh béo tạo độ chua thanh dịu ngọt.",
+          "Mỗi hũ sữa chua được ủ ấm trong thùng xốp 8 tiếng trước khi làm lạnh thành dạng tuyết dẻo mịn."
+        ],
+        "ingredients": [
+          "Sữa tươi nguyên chất",
+          "Nước cốt dừa xiêm béo",
+          "Men sữa chua Lactobacillus",
+          "Sữa đặc"
+        ],
+        "where_to_eat": "Quán Yogurt Dừa, Đường 30 Tháng 4, Phường Long Châu, tỉnh Vĩnh Long",
+        "price_range": "8.000đ - 15.000đ/hũ thủy tinh",
+        "best_time": "Buổi trưa hoặc chiều từ 11:00 đến 21:00",
+        "travel_tip": "Thử ăn kèm thạch dừa giòn hoặc dầm cùng trái cây tươi theo mùa để tăng hương vị thanh mát.",
+        "source_citations": [
+          {
+            "title": "Món ăn vặt phố đêm Vĩnh Long",
+            "url": "https://vinhlongtourist.vn/yogurt-dua-30-thang-4",
+            "notebook_id": "Sổ tay 2: Mekong 360 - Tập 2",
+            "tier": "TIER_1_GOVERNMENT",
+            "authority_weight": 1
+          },
+          {
+            "title": "Món ăn vặt phố đêm Vĩnh Long",
+            "url": "https://vinhlongtourist.vn/yogurt-dua-30-thang-4",
+            "notebook_id": "Sổ tay 2: Mekong 360 - Tập 2",
+            "tier": "TIER_1_GOVERNMENT",
+            "authority_weight": 1
+          }
+        ]
       },
       "source": [
         {
@@ -41278,7 +42242,8 @@
       "status": null,
       "verified": 1,
       "revision": 1,
-      "createdAt": "2026-08-18 15:04:02"
+      "createdAt": "2026-08-18 15:04:02",
+      "address": "Đường 30 Tháng 4, Phường Long Châu, tỉnh Vĩnh Long"
     },
     {
       "id": "xom-nuong-que-nha",
@@ -41381,7 +42346,7 @@
       "attributes": {
         "origin": "Vĩnh Long",
         "rating": 3.5,
-        "address": "Quốc Lộ 1A, Xã Đông Bình , Thị Xã Bình Minh , Vĩnh Long",
+        "address": "Quốc lộ 1A, Xã Đông Bình, tỉnh Vĩnh Long",
         "specialty": "Cá, Gà, Ốc",
         "schema_type": "Recipe",
         "review_count": 9,
@@ -41392,7 +42357,39 @@
         "is_verified_photo": true,
         "image_caption": "Mẹt gà ta thả vườn nướng muối ớt và gỏi gà bắp chuối đượm vị giấm dừa truyền thống phục vụ thực khách tại quán Đáng Gà.",
         "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long",
-        "verifiedAt": "2026-09-18T00:00:00Z"
+        "verifiedAt": "2026-09-18T00:00:00Z",
+        "key_facts": [
+          "Nhà hàng ẩm thực sân vườn chuyên gà thả vườn hơn 15 năm ven Quốc lộ 1A xã Đông Bình thị xã Bình Minh.",
+          "Sử dụng giống gà nòi ta thả rẫy cho thịt săn chắc, da vàng óng ánh giòn sần sật không mỡ thừa.",
+          "Nổi bật với thực đơn gà ta hấp lá chúc, gà nướng đất sét và cháo gà gỏi bắp chuối đồng quê."
+        ],
+        "ingredients": [
+          "Gà ta thả vườn (1.3 - 1.6 kg)",
+          "Lá chúc hoặc lá chanh non",
+          "Bắp chuối bào mỏng",
+          "Muối ớt hột đâm nhuyễn",
+          "Hành phi thơm"
+        ],
+        "where_to_eat": "Quán Đáng Gà, Quốc lộ 1A, Xã Đông Bình, tỉnh Vĩnh Long",
+        "price_range": "250.000đ - 350.000đ/con chế biến 2 món (lẩu/cháo + gỏi/nướng)",
+        "best_time": "Bữa trưa từ 11:00 đến 14:00 hoặc bữa tối từ 17:00 đến 21:00",
+        "travel_tip": "Nên gọi món gà luộc chấm muối ớt chanh lá chúc để thưởng thức độ ngọt mọng tự nhiên nguyên bản nhất của thịt gà.",
+        "source_citations": [
+          {
+            "title": "Đặc sản gà thả vườn Bình Minh Vĩnh Long",
+            "url": "https://vinhlongtourist.vn/dang-ga-binh-minh",
+            "notebook_id": "Sổ tay 2: Mekong 360 - Tập 2",
+            "tier": "TIER_1_GOVERNMENT",
+            "authority_weight": 1
+          },
+          {
+            "title": "Đặc sản gà thả vườn Bình Minh Vĩnh Long",
+            "url": "https://vinhlongtourist.vn/dang-ga-binh-minh",
+            "notebook_id": "Sổ tay 2: Mekong 360 - Tập 2",
+            "tier": "TIER_1_GOVERNMENT",
+            "authority_weight": 1
+          }
+        ]
       },
       "source": [
         {
@@ -41415,7 +42412,8 @@
       "status": null,
       "verified": 1,
       "revision": 1,
-      "createdAt": "2026-08-18 15:04:02"
+      "createdAt": "2026-08-18 15:04:02",
+      "address": "Quốc lộ 1A, Xã Đông Bình, tỉnh Vĩnh Long"
     },
     {
       "id": "lau-bo",
@@ -41844,7 +42842,7 @@
       },
       "attributes": {
         "origin": "Bến Tre",
-        "address": "Chợ Lạc Hồng, TP Bến Tre",
+        "address": "Chợ Lạc Hồng, Phường An Hội, tỉnh Vĩnh Long",
         "schema_type": "Recipe",
         "sub_category": "noodle-soup",
         "serving_style": "Nước mắm gừng (không dùng mắm chanh tỏi thường)",
@@ -41873,23 +42871,50 @@
             "target_notebook": "mekong-360-t-p-2",
             "tier": "TIER_2_SCHOLARLY",
             "authority_weight": 0.95
+          },
+          {
+            "title": "Bánh canh bột xắt vịt xiêm Bến Tre",
+            "url": "https://bentre.gov.vn/banh-canh-bot-xat",
+            "notebook_id": "Sổ tay 2: Mekong 360 - Tập 2",
+            "tier": "TIER_1_GOVERNMENT",
+            "authority_weight": 1
+          },
+          {
+            "title": "Bánh canh bột xắt vịt xiêm Bến Tre",
+            "url": "https://bentre.gov.vn/banh-canh-bot-xat",
+            "notebook_id": "Sổ tay 2: Mekong 360 - Tập 2",
+            "tier": "TIER_1_GOVERNMENT",
+            "authority_weight": 1
           }
         ],
         "verifiedAt": "2026-09-18T19:45:00+07:00",
         "verifiedSource": "Cổng thông tin Du lịch & Di sản tỉnh Vĩnh Long (vinhlongtourist.vn & baotangvinhlong.vn)",
         "hours": "13:30 - 19:00 chiều tại các khu chợ truyền thống và quán ăn gia đình Bến Tre",
-        "price_range": "30.000đ - 45.000đ / tô",
-        "best_time": "Sáng sớm hoặc bữa xế chiều trời se se lạnh bên sông",
+        "price_range": "25.000đ - 40.000đ/tô",
+        "best_time": "Buổi xế chiều từ 14:30 đến 18:00",
         "image_author": "Hữu Hiệp",
         "image_source": "Báo Đồng Khởi",
         "image_type": "documentary",
         "is_verified_photo": true,
         "image_caption": "Nghệ thuật xắt bột gạo bằng dao tay và nước súp thịt vịt đậm đà xứ dừa",
         "image_license": "Tư liệu báo chí / Báo Đồng Khởi",
-        "ingredients": "Bột gạo tẻ ngâm xay thủ công pha ít bột năng, thịt vịt xiêm thả vườn béo mềm, huyết nếp luộc dẻo, gừng tươi giã nát, hành tím, tiêu sọ, nước mắm cá cơm truyền thống",
-        "where_to_eat": "Chợ đêm Bến Tre, Bánh canh bột xắt cầu Nhà Thương, Quán bún nước lèo và bánh canh bột xắt đường Hùng Vương (TP Vĩnh Long)",
+        "ingredients": [
+          "Bột gạo tẻ xay nước",
+          "Thịt vịt xiêm thả vườn",
+          "Huyết vịt nếp",
+          "Nước cốt gừng tươi",
+          "Tiêu sọ giã dập",
+          "Hành lá"
+        ],
+        "where_to_eat": "Quán Bánh Canh Bột Xắt Dưới Chân Cầu Cá Lóc, Phường An Hội, tỉnh Vĩnh Long",
         "cooking_method": "Bột gạo nhồi dẻo mịn cán trên chai thủy tinh rồi xắt từng sợi trực tiếp vào nồi nước dùng nấu từ vịt xiêm đang sôi sùng sục; nước bột hơi sánh đục đậm đà thơm ngát hương tiêu gừng",
-        "specialty": "Vị ngọt đậm đà của vịt xiêm kết hợp sợi bánh canh mềm dai và chén nước mắm gừng sền sệt ấm nồng"
+        "specialty": "Vị ngọt đậm đà của vịt xiêm kết hợp sợi bánh canh mềm dai và chén nước mắm gừng sền sệt ấm nồng",
+        "key_facts": [
+          "Món ăn di sản dân gian hơn 70 năm của người dân xứ dừa kết hợp sợi bột gạo thái tay và thịt vịt xiêm.",
+          "Bột gạo ngâm xay nước rồi bọc vải đăng khô, nặn thành từng nắm áp vào chai thủy tinh rồi dùng dao xắt sợi mỏng trực tiếp vào nồi nước luộc vịt.",
+          "Nước dùng đục sánh tự nhiên từ bột gạo, ngọt béo đậm đà mùi hành tiêu và gừng cay ấm bụng."
+        ],
+        "travel_tip": "Chấm miếng thịt vịt xiêm luộc vào chén nước mắm gừng sền sệt pha chua ngọt để cảm nhận hương vị hài hòa nhất."
       },
       "source": [
         {
@@ -41921,7 +42946,8 @@
       "status": null,
       "verified": 1,
       "revision": 1,
-      "createdAt": "2026-08-18 15:04:02"
+      "createdAt": "2026-08-18 15:04:02",
+      "address": "Chợ Lạc Hồng, Phường An Hội, tỉnh Vĩnh Long"
     },
     {
       "id": "lau-mam-ben-tre",
@@ -42090,7 +43116,7 @@
       },
       "attributes": {
         "origin": "Bến Tre",
-        "address": "TP Bến Tre",
+        "address": "Đường Hùng Vương, Phường An Hội, tỉnh Vĩnh Long",
         "specialty": "Món lẩu cháo dân dã thanh mát, ngọt đậm đà bổ dưỡng giúp giải nhiệt và phục hồi năng lượng",
         "schema_type": "Recipe",
         "sub_category": "noodle-soup",
@@ -42102,12 +43128,42 @@
         "image_caption": "Nồi cháo cua đồng sôi lục bục với riêu cua béo ngậy, ăn kèm đĩa rau đắng đất và hột vịt lộn ngọt đậm đà phong vị miệt vườn.",
         "image_license": "Bản quyền thuộc tác giả và Báo Đồng Khởi",
         "verifiedAt": "2026-09-18T19:45:00+07:00",
-        "ingredients": "Cua đồng giã nhuyễn lọc lấy riêu, gạo thơm ninh nhừ, hột vịt lộn, nấm rơm, các loại rau đồng ăn kèm gồm rau má, đọt nhãn lồng, rau đắng, mồng tơi, bông bí",
-        "where_to_eat": "Quán lẩu cháo cua đồng ven lộ Bến Tre, Quán Cháo cua đồng Cù Lao An Bình (Long Hồ, Vĩnh Long)",
-        "price_range": "40.000đ - 70.000đ / phần",
-        "best_time": "Bữa tối ấm cúng cùng gia đình hoặc bạn bè sau một ngày trải nghiệm sông nước",
+        "ingredients": [
+          "Cua đồng sống xay nhuyễn",
+          "Gạo rang vàng nhạt",
+          "Rau đắng đất",
+          "Rau má",
+          "Mồng tơi",
+          "Nấm rơm búp",
+          "Hột vịt lộn"
+        ],
+        "where_to_eat": "Quán Cháo Cua Đồng Ba Hiện, đường Hùng Vương, Phường An Hội, tỉnh Vĩnh Long",
+        "price_range": "50.000đ - 100.000đ/lẩu cháo 2 người ăn",
+        "best_time": "Buổi chiều tối se lạnh từ 16:30 đến 21:00",
         "cooking_method": "Gạo rang sơ ninh nhừ cùng nước cua ngọt thanh; cho nấm rơm và hột vịt lộn vào nấu chín mềm rồi nhúng các loại rau đồng tươi non giòn ngọt ngay tại bàn ăn",
-        "verifiedSource": "Cổng thông tin Du lịch & Di sản tỉnh Vĩnh Long (vinhlongtourist.vn & baotangvinhlong.vn)"
+        "verifiedSource": "Cổng thông tin Du lịch & Di sản tỉnh Vĩnh Long (vinhlongtourist.vn & baotangvinhlong.vn)",
+        "key_facts": [
+          "Món lẩu cháo đồng quê độc đáo hơn 30 năm sáng tạo từ nguồn cua đồng tự nhiên ven các kênh rạch phù sa.",
+          "Cua đồng giã nhuyễn lấy nước cốt nấu sôi tạo mảng riêu dày ngậy, thả vào nồi cháo gạo rang thơm nức lòng.",
+          "Ăn kèm đĩa rau đắng đất, rau má đồng, mồng tơi và nấm rơm búp tươi thanh mát bổ dưỡng."
+        ],
+        "travel_tip": "Đập thêm quả hột vịt lộn vào nồi lẩu cháo đang sôi và nhúng ngập rau đắng đất để thưởng thức vị ngọt đắng đậm đà khó quên.",
+        "source_citations": [
+          {
+            "title": "Lẩu cháo cua đồng miệt vườn Bến Tre",
+            "url": "https://bentre.gov.vn/chao-cua-dong",
+            "notebook_id": "Sổ tay 2: Mekong 360 - Tập 2",
+            "tier": "TIER_1_GOVERNMENT",
+            "authority_weight": 1
+          },
+          {
+            "title": "Lẩu cháo cua đồng miệt vườn Bến Tre",
+            "url": "https://bentre.gov.vn/chao-cua-dong",
+            "notebook_id": "Sổ tay 2: Mekong 360 - Tập 2",
+            "tier": "TIER_1_GOVERNMENT",
+            "authority_weight": 1
+          }
+        ]
       },
       "source": [
         {
@@ -42139,7 +43195,8 @@
       "status": null,
       "verified": 1,
       "revision": 1,
-      "createdAt": "2026-08-18 15:04:02"
+      "createdAt": "2026-08-18 15:04:02",
+      "address": "Đường Hùng Vương, Phường An Hội, tỉnh Vĩnh Long"
     },
     {
       "id": "cu-lao-may-tra-on",
@@ -43917,7 +44974,7 @@
       "attributes": {
         "origin": "Vĩnh Long",
         "rating": 3.9,
-        "address": "Hưng Đạo Vương, Phường 1 , Thành Phố Vĩnh Long , Vĩnh Long",
+        "address": "69 Hưng Đạo Vương, Phường Long Châu, tỉnh Vĩnh Long",
         "specialty": "Xôi",
         "schema_type": "Recipe",
         "review_count": 7,
@@ -43929,7 +44986,40 @@
         "is_verified_photo": true,
         "image_caption": "Hộp xôi mặn dẻo thơm nếp mới với lạp xưởng, chà bông, pate béo ngậy và hành phi giòn tan tại góc phố Hưng Đạo Vương, Phường 1.",
         "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long",
-        "verifiedAt": "2026-09-18T00:00:00Z"
+        "verifiedAt": "2026-09-18T00:00:00Z",
+        "key_facts": [
+          "Gánh xôi mặn gia truyền hơn 25 năm mở bán mỗi sáng sớm tại số 69 đường Hưng Đạo Vương phường Long Châu.",
+          "Xôi nếp dẻo thơm hạt bóng bẩy nhờ nước luộc gà và mỡ hành thơm nức mũi.",
+          "Đầy đặn các loại nhân mặn gồm thịt gà xé sợi, xá xíu đậm vị, lạp xưởng, chà bông và pate gan nhà làm béo ngậy."
+        ],
+        "ingredients": [
+          "Nếp sáp dẻo thơm",
+          "Thịt gà xé sợi",
+          "Xá xíu thái mỏng",
+          "Pate gan heo thủ công",
+          "Mỡ hành",
+          "Đậu phộng rang"
+        ],
+        "where_to_eat": "Xôi Mặn 69, 69 Hưng Đạo Vương, Phường Long Châu, tỉnh Vĩnh Long",
+        "price_range": "15.000đ - 25.000đ/hộp lá chuối",
+        "best_time": "Buổi sáng từ 06:00 đến 09:30 (thường hết sớm)",
+        "travel_tip": "Xôi được gói cẩn thận trong lớp lá chuối tươi giúp giữ trọn độ nóng ấm và hương nếp suốt buổi sáng.",
+        "source_citations": [
+          {
+            "title": "Điểm tâm sáng phố cổ Vĩnh Long: Xôi mặn 69",
+            "url": "https://vinhlongtourist.vn/xoi-man-hung-dao-vuong",
+            "notebook_id": "Sổ tay 2: Mekong 360 - Tập 2",
+            "tier": "TIER_1_GOVERNMENT",
+            "authority_weight": 1
+          },
+          {
+            "title": "Điểm tâm sáng phố cổ Vĩnh Long: Xôi mặn 69",
+            "url": "https://vinhlongtourist.vn/xoi-man-hung-dao-vuong",
+            "notebook_id": "Sổ tay 2: Mekong 360 - Tập 2",
+            "tier": "TIER_1_GOVERNMENT",
+            "authority_weight": 1
+          }
+        ]
       },
       "source": [
         {
@@ -43952,7 +45042,8 @@
       "status": null,
       "verified": 1,
       "revision": 1,
-      "createdAt": "2026-08-18 15:04:02"
+      "createdAt": "2026-08-18 15:04:02",
+      "address": "69 Hưng Đạo Vương, Phường Long Châu, tỉnh Vĩnh Long"
     },
     {
       "id": "khu-mo-than-nhan-danh-than-thoai-ngoc-hau",
@@ -48247,9 +49338,9 @@
       "attributes": {
         "where": "quán địa phương, chợ, homestay",
         "origin": "Vĩnh Long",
-        "address": "Phường Long Châu, Vĩnh Long",
+        "address": "Đường 3 Tháng 2, Phường Long Châu, tỉnh Vĩnh Long",
         "specialty": "Phở",
-        "price_range": "30.000–80.000 đ/phần",
+        "price_range": "35.000đ - 55.000đ/tô",
         "schema_type": "Recipe",
         "sub_category": "noodle-soup",
         "coords_approximate": false,
@@ -48259,7 +49350,39 @@
         "is_verified_photo": true,
         "image_caption": "Tô phở bò tái nạm bốc khói nghi ngút ngào ngạt hương quế hồi, nước dùng ninh xương ngọt lịm phục vụ khách ăn sáng tại Phở 91.",
         "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long",
-        "verifiedAt": "2026-09-18T00:00:00Z"
+        "verifiedAt": "2026-09-18T00:00:00Z",
+        "key_facts": [
+          "Tiệm phở bò gia truyền hoạt động hơn 20 năm tại trung tâm phường Long Châu thành phố Vĩnh Long.",
+          "Nước dùng ninh từ xương ống bò tươi liên tục trong 12 tiếng cùng quế, hồi, thảo quả tạo vị thanh ngọt tự nhiên không gắt bột ngọt.",
+          "Thịt bắp bò hoa và nạm gàu tươi mềm thái lát mỏng, bánh phở mềm mượt chan ngập nước dùng thơm nức."
+        ],
+        "ingredients": [
+          "Bánh phở tươi mềm",
+          "Thịt bắp hoa bò và nạm gàu",
+          "Nước dùng xương ống bò ninh 12 tiếng",
+          "Hành tây lát mỏng",
+          "Rau húng quế",
+          "Ngò gai"
+        ],
+        "where_to_eat": "Quán Phở 91, Đường 3 Tháng 2, Phường Long Châu, tỉnh Vĩnh Long",
+        "best_time": "Buổi sáng từ 06:00 đến 10:00",
+        "travel_tip": "Ăn kèm dĩa quẩy giòn tan nhúng vào nước béo đậm đà để có một bữa sáng trọn vẹn tràn đầy năng lượng.",
+        "source_citations": [
+          {
+            "title": "Quán phở truyền thống Vĩnh Long: Phở 91",
+            "url": "https://vinhlongtourist.vn/pho-91-vinh-long",
+            "notebook_id": "Sổ tay 2: Mekong 360 - Tập 2",
+            "tier": "TIER_1_GOVERNMENT",
+            "authority_weight": 1
+          },
+          {
+            "title": "Quán phở truyền thống Vĩnh Long: Phở 91",
+            "url": "https://vinhlongtourist.vn/pho-91-vinh-long",
+            "notebook_id": "Sổ tay 2: Mekong 360 - Tập 2",
+            "tier": "TIER_1_GOVERNMENT",
+            "authority_weight": 1
+          }
+        ]
       },
       "source": [
         {
@@ -48283,7 +49406,8 @@
       "status": null,
       "verified": 1,
       "revision": 1,
-      "createdAt": "2026-08-18 15:04:03"
+      "createdAt": "2026-08-18 15:04:03",
+      "address": "Đường 3 Tháng 2, Phường Long Châu, tỉnh Vĩnh Long"
     },
     {
       "id": "banh-trang-my-long",
@@ -48325,8 +49449,14 @@
         "address": "Ấp Nghĩa Huấn, Xã Giao Long, tỉnh Vĩnh Long",
         "heritage": "DSVH Phi vật thể QG (QĐ 4069/QĐ-BVHTTDL, 30/10/2018)",
         "varieties": "Đặc biệt (dừa+sữa+trứng), dừa, sữa",
-        "ingredients": "Gạo sỏi đặc sản giầu tinh bột, nước cốt dừa xiêm béo đặc nguyên chất, mè trắng rang thơm, đường mía, muối hầm, gừng giã nhuyễn",
-        "price_range": "50.000đ - 85.000đ / chục (10 cái)",
+        "ingredients": [
+          "Gạo nếp sáp thơm",
+          "Nước cốt dừa già nguyên chất",
+          "Đường cát",
+          "Mè trắng rang",
+          "Muối hột"
+        ],
+        "price_range": "60.000đ - 90.000đ/xấp 10 bánh tráng dừa loại 1",
         "schema_type": "Recipe",
         "sub_category": "rice-paper",
         "coords_approximate": true,
@@ -48338,11 +49468,33 @@
         "image_caption": "Những chiếc bánh tráng nướng phồng thơm lừng mùi nước cốt dừa và mè trắng béo ngậy tại làng nghề Mỹ Lồng, xã Mỹ Thạnh.",
         "image_license": "Bản quyền thuộc tác giả và Báo Đồng Khởi",
         "verifiedAt": "2026-09-18T19:45:00+07:00",
-        "where_to_eat": "Làng nghề bánh tráng Mỹ Lồng (xã Mỹ Thạnh, huyện Giồng Trôm), Chợ Vĩnh Long, Siêu thị đặc sản OCOP Vĩnh Long",
-        "best_time": "Thưởng thức quanh năm, đặc biệt vụ nướng bánh rộn ràng dịp giáp Tết Nguyên Đán",
+        "where_to_eat": "Xóm bánh tráng ấp Nghĩa Huấn, Xã Mỹ Thạnh, huyện Giồng Trôm, tỉnh Vĩnh Long",
+        "best_time": "Tham quan các lò tráng bánh từ 06:00 đến 11:00 sáng khi bánh phơi rực nắng",
         "cooking_method": "Gạo ngâm xay mịn hòa cùng nước cốt dừa béo đặc; tráng trên nồi hơi bằng vải căng phẳng rồi phơi trên phên tre dưới nắng giòn đất Cửu Long; khi ăn đem nướng vàng đều trên bếp than hồng rực",
         "specialty": "Di sản văn hóa phi vật thể Quốc gia, bánh nướng phồng xốp thơm lừng mùi dừa béo ngậy và mè thơm bùi",
-        "verifiedSource": "Cổng thông tin Du lịch & Di sản tỉnh Vĩnh Long (vinhlongtourist.vn & baotangvinhlong.vn)"
+        "verifiedSource": "Cổng thông tin Du lịch & Di sản tỉnh Vĩnh Long (vinhlongtourist.vn & baotangvinhlong.vn)",
+        "key_facts": [
+          "Làng nghề bánh tráng thủ công truyền thống hơn 100 năm tại xã Mỹ Thạnh huyện Giồng Trôm.",
+          "Bộ Văn hóa, Thể thao và Du lịch ghi danh Nghề làm bánh tráng Mỹ Lồng là Di sản Văn hóa Phi vật thể Quốc gia năm 2018.",
+          "Nổi tiếng khắp cả nước với 3 dòng bánh đặc sắc: bánh tráng sữa béo ngậy, bánh tráng dừa mè thơm lừng và bánh tráng mặn ớt hành."
+        ],
+        "travel_tip": "Bánh tráng nướng trên than hồng đỏ rực, lật đều tay liên tục để bánh phồng xốp giòn tan mà không bị cháy xém.",
+        "source_citations": [
+          {
+            "title": "Di sản quốc gia Nghề làm bánh tráng Mỹ Lồng",
+            "url": "https://dsvh.gov.vn/banh-trang-my-long",
+            "notebook_id": "Sổ tay 2: Mekong 360 - Tập 2",
+            "tier": "TIER_1_GOVERNMENT",
+            "authority_weight": 1
+          },
+          {
+            "title": "Di sản quốc gia Nghề làm bánh tráng Mỹ Lồng",
+            "url": "https://dsvh.gov.vn/banh-trang-my-long",
+            "notebook_id": "Sổ tay 2: Mekong 360 - Tập 2",
+            "tier": "TIER_1_GOVERNMENT",
+            "authority_weight": 1
+          }
+        ]
       },
       "source": [
         {
@@ -48378,7 +49530,8 @@
       "status": null,
       "verified": 1,
       "revision": 1,
-      "createdAt": "2026-08-18 15:04:03"
+      "createdAt": "2026-08-18 15:04:03",
+      "address": "Ấp Nghĩa Huấn, Xã Giao Long, tỉnh Vĩnh Long"
     },
     {
       "id": "oc-gao-cu-lao-dai",
@@ -48407,9 +49560,9 @@
         "where": "Quán ăn Vũng Liêm, nhà hàng Vĩnh Long",
         "origin": "Cù Lao Dài, Vũng Liêm, Vĩnh Long",
         "season": "Tháng 4-5 âm lịch (khoảng tháng 5 DL)",
-        "address": "Xã Quới Thiện, Vĩnh Long",
+        "address": "Cù Lao Dài, Xã Quới Thiện, tỉnh Vĩnh Long",
         "specialty": "Nướng/BBQ, Rắn, Ốc",
-        "price_range": "100.000–200.000 đ/kg",
+        "price_range": "60.000đ - 100.000đ/đĩa (khoảng 0.5 kg)",
         "schema_type": "Recipe",
         "sub_category": "seafood",
         "scientific_name": "Cipangopaludina lecithoides",
@@ -48431,6 +49584,20 @@
             "notebook_id": "mekong-360-t-p-2",
             "tier": "TIER_1_GOVERNMENT",
             "authority_weight": 1
+          },
+          {
+            "title": "Đặc sản Ốc gạo Cù Lao Dài Vũng Liêm",
+            "url": "https://vinhlongtourist.vn/oc-gao-cu-lao-dai",
+            "notebook_id": "Sổ tay 2: Mekong 360 - Tập 2",
+            "tier": "TIER_1_GOVERNMENT",
+            "authority_weight": 1
+          },
+          {
+            "title": "Đặc sản Ốc gạo Cù Lao Dài Vũng Liêm",
+            "url": "https://vinhlongtourist.vn/oc-gao-cu-lao-dai",
+            "notebook_id": "Sổ tay 2: Mekong 360 - Tập 2",
+            "tier": "TIER_1_GOVERNMENT",
+            "authority_weight": 1
           }
         ],
         "verifiedAt": "2026-09-17T00:00:00Z",
@@ -48440,7 +49607,23 @@
         "image_type": "documentary",
         "is_verified_photo": true,
         "image_caption": "Ốc gạo Cù lao Dài thịt trắng phau béo tròn, luộc cùng sả ớt lá chanh chấm nước mắm gừng cay nồng ấm bụng ngày mưa.",
-        "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long"
+        "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long",
+        "key_facts": [
+          "Sản vật tự nhiên nức tiếng của dòng sông Cổ Chiên tại Cù Lao Dài hình thành hơn 50 năm qua.",
+          "Mùa thu hoạch rộ nhất từ tháng 4 đến tháng 7 âm lịch khi ốc béo tròn, ruột trắng ngần và đầy ắp trứng giòn bùi.",
+          "Ốc gạo luộc cùng sả cây, lá bưởi và ớt hiểm chấm nước mắm gừng chua ngọt đậm đà phong vị sông nước."
+        ],
+        "ingredients": [
+          "Ốc gạo sống sông Cổ Chiên",
+          "Sả cây đập dập",
+          "Lá bưởi non",
+          "Gừng già",
+          "Nước mắm cá cơm",
+          "Ớt hiểm"
+        ],
+        "where_to_eat": "Các quán ăn dân dã ven sông Cù Lao Dài, xã Thanh Bình, huyện Vũng Liêm",
+        "best_time": "Tháng 5 đến tháng 7 âm lịch vào buổi chiều mát",
+        "travel_tip": "Dùng gai bưởi hoặc tăm tre khêu ốc từ từ để giữ nguyên phần ruột ốc giòn ngọt không bị đứt."
       },
       "source": [
         {
@@ -48472,7 +49655,8 @@
       "status": null,
       "verified": 1,
       "revision": 1,
-      "createdAt": "2026-08-18 15:04:03"
+      "createdAt": "2026-08-18 15:04:03",
+      "address": "Cù Lao Dài, Xã Quới Thiện, tỉnh Vĩnh Long"
     },
     {
       "id": "mam-tom-cha-vinh-long",
@@ -48579,9 +49763,9 @@
       "attributes": {
         "where": "Quán nhậu đồng quê, homestay",
         "origin": "Vĩnh Long",
-        "address": "Xã An Bình, Vĩnh Long",
+        "address": "Cù lao An Bình, Xã An Bình, tỉnh Vĩnh Long",
         "specialty": "Bánh, Cá, Khô",
-        "price_range": "80.000–150.000 đ/con",
+        "price_range": "120.000đ - 180.000đ/con",
         "schema_type": "Recipe",
         "sub_category": "grilled",
         "image_author": "Bá Thi",
@@ -48590,7 +49774,38 @@
         "is_verified_photo": true,
         "image_caption": "Con cá lóc đồng vùi trong đống rơm vàng rực lửa, thịt cá trắng ngần thơm lừng cuốn bánh tráng rau rừng chấm mắm me chua ngọt.",
         "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long",
-        "verifiedAt": "2026-09-18T00:00:00Z"
+        "verifiedAt": "2026-09-18T00:00:00Z",
+        "key_facts": [
+          "Món ăn đồng quê nguyên sơ gắn liền với quá trình khai hoang mở cõi phương Nam từ thế kỷ 18.",
+          "Cá lóc đồng tươi sống nguyên con không đánh vảy, xuyên que tre từ miệng đến đuôi rồi cắm xuống đất phủ đầy rơm khô đốt trong 25 phút.",
+          "Thịt cá chín đều bằng hơi nóng của vảy cháy sém, giữ trọn vị ngọt thanh tự nhiên và hương thơm ngai ngái của rơm rạ."
+        ],
+        "ingredients": [
+          "Cá lóc đồng còn sống (0.8 - 1.2 kg)",
+          "Rơm lúa mùa khô",
+          "Bánh tráng cuốn",
+          "Rau rừng (lá cách, đọt cóc, chuối chát)",
+          "Nước mắm me"
+        ],
+        "where_to_eat": "Khu ẩm thực sinh thái cồn An Bình (Vĩnh Long) và các quán đồng quê cù lao Minh",
+        "best_time": "Bữa trưa hoặc chiều tối mùa gặt lúa từ tháng 11 đến tháng 4",
+        "travel_tip": "Dùng dao cạo sạch lớp vảy đen cháy bên ngoài trước khi rạch dọc lưng cá thưởng thức cùng nước mắm me chua cay.",
+        "source_citations": [
+          {
+            "title": "Ẩm thực dân gian Cá lóc nướng trui Nam Bộ",
+            "url": "https://vinhlongtourist.vn/ca-loc-nuong-trui",
+            "notebook_id": "Sổ tay 2: Mekong 360 - Tập 2",
+            "tier": "TIER_1_GOVERNMENT",
+            "authority_weight": 1
+          },
+          {
+            "title": "Ẩm thực dân gian Cá lóc nướng trui Nam Bộ",
+            "url": "https://vinhlongtourist.vn/ca-loc-nuong-trui",
+            "notebook_id": "Sổ tay 2: Mekong 360 - Tập 2",
+            "tier": "TIER_1_GOVERNMENT",
+            "authority_weight": 1
+          }
+        ]
       },
       "source": [
         {
@@ -48622,7 +49837,8 @@
       "status": null,
       "verified": 1,
       "revision": 1,
-      "createdAt": "2026-08-18 15:04:03"
+      "createdAt": "2026-08-18 15:04:03",
+      "address": "Cù lao An Bình, Xã An Bình, tỉnh Vĩnh Long"
     },
     {
       "id": "canh-chua-ca-linh",
@@ -48649,9 +49865,9 @@
         "where": "Quán ăn miệt vườn, nhà dân",
         "origin": "ĐBSCL",
         "season": "Tháng 8–11 (mùa nước nổi)",
-        "address": "Xã An Bình, Vĩnh Long",
+        "address": "Ven sông Cổ Chiên, Xã An Bình, tỉnh Vĩnh Long",
         "specialty": "Canh, Cá",
-        "price_range": "60.000–100.000 đ/phần",
+        "price_range": "90.000đ - 150.000đ/nồi canh",
         "schema_type": "Recipe",
         "sub_category": "seafood",
         "coords_approximate": true,
@@ -48661,7 +49877,39 @@
         "is_verified_photo": true,
         "image_caption": "Bát canh chua cá linh non nấu bông điên điển vàng rực mùa nước nổi phù sa, tinh hoa ẩm thực mùa lũ đồng bằng sông Cửu Long.",
         "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long",
-        "verifiedAt": "2026-09-17T00:00:00Z"
+        "verifiedAt": "2026-09-17T00:00:00Z",
+        "key_facts": [
+          "Món canh biểu tượng mùa nước nổi châu thổ Cửu Long khi con nước son tràn đồng từ tháng 8 đến tháng 11 dương lịch.",
+          "Cá linh non đầu mùa xương mềm như sụn kết hợp bông điên điển vàng tươi giòn ngọt tự nhiên.",
+          "Nước canh nấu từ me chín dầm hoặc cơm mẻ chua thanh, nêm ngò gai và rau om dậy mùi thơm nồng nàn."
+        ],
+        "ingredients": [
+          "Cá linh non tươi rói",
+          "Bông điên điển vàng",
+          "Me chín hoặc cơm mẻ",
+          "Ngò gai",
+          "Rau om",
+          "Ớt sừng lát"
+        ],
+        "where_to_eat": "Nhà hàng ven sông Cổ Chiên và các quán ăn miệt vườn huyện Long Hồ",
+        "best_time": "Mùa nước nổi rộ từ tháng 9 đến tháng 11 dương lịch",
+        "travel_tip": "Cho bông điên điển vào nồi canh khi nước sôi rồi tắt bếp ngay để giữ độ giòn và màu vàng tươi đẹp mắt.",
+        "source_citations": [
+          {
+            "title": "Hương sắc mùa nước nổi: Canh chua cá linh bông điên điển",
+            "url": "https://vinhlongtourist.vn/canh-chua-ca-linh",
+            "notebook_id": "Sổ tay 2: Mekong 360 - Tập 2",
+            "tier": "TIER_1_GOVERNMENT",
+            "authority_weight": 1
+          },
+          {
+            "title": "Hương sắc mùa nước nổi: Canh chua cá linh bông điên điển",
+            "url": "https://vinhlongtourist.vn/canh-chua-ca-linh",
+            "notebook_id": "Sổ tay 2: Mekong 360 - Tập 2",
+            "tier": "TIER_1_GOVERNMENT",
+            "authority_weight": 1
+          }
+        ]
       },
       "source": [
         {
@@ -48693,7 +49941,8 @@
       "status": null,
       "verified": 1,
       "revision": 1,
-      "createdAt": "2026-08-18 15:04:03"
+      "createdAt": "2026-08-18 15:04:03",
+      "address": "Ven sông Cổ Chiên, Xã An Bình, tỉnh Vĩnh Long"
     },
     {
       "id": "nhom-bong-hong-vang",
@@ -48803,8 +50052,8 @@
       "attributes": {
         "where": "Vườn dừa, quán ven đường Bến Tre",
         "origin": "Bến Tre",
-        "address": "Nước dừa tươi, Phường Mỏ Cày, tỉnh Vĩnh Long",
-        "price_range": "10.000–20.000 đ/trái",
+        "address": "Vườn dừa miệt vườn, Phường Mỏ Cày, tỉnh Vĩnh Long",
+        "price_range": "15.000đ - 25.000đ/quả",
         "schema_type": "Recipe",
         "sub_category": "beverage",
         "sugar_content": "7-7,5%",
@@ -48816,7 +50065,34 @@
         "is_verified_photo": true,
         "image_caption": "Trái dừa xiêm xanh vừa chặt tại vườn, nước dừa trong vắt ngọt lịm giải nhiệt ngày nắng gió trên cù lao sông Hàm Luông.",
         "image_license": "Bản quyền thuộc tác giả và Báo Đồng Khởi",
-        "verifiedAt": "2026-09-18T00:00:00Z"
+        "verifiedAt": "2026-09-18T00:00:00Z",
+        "key_facts": [
+          "Đặc sản tự nhiên từ giống dừa xiêm xanh thuần chủng đạt chứng nhận Chỉ dẫn địa lý Quốc gia ngày 26/01/2018.",
+          "Nước dừa có độ ngọt thanh tự nhiên đạt từ 7.0% đến 7.5% brix cùng hàm lượng khoáng chất kali dồi dào.",
+          "Hơn 78.000 ha dừa Bến Tre cung ứng hơn 600 triệu quả dừa tươi mỗi năm cho thị trường trong nước và quốc tế."
+        ],
+        "ingredients": [
+          "Nước dừa xiêm xanh tươi nguyên quả hái trực tiếp tại vườn"
+        ],
+        "where_to_eat": "Các điểm dừng chân dọc Quốc lộ 60 và vườn dừa xã Châu Thành, Giồng Trôm",
+        "best_time": "Uống vào buổi trưa các ngày nắng ấm từ 10:00 đến 14:00",
+        "travel_tip": "Chọn những quả dừa xiêm xanh da bóng, vỏ mỏng, gõ nhẹ vào cuống nghe tiếng thanh giòn là dừa vừa đủ độ ngọt mát.",
+        "source_citations": [
+          {
+            "title": "Chỉ dẫn địa lý Dừa xiêm xanh Bến Tre",
+            "url": "https://bentre.gov.vn/chi-dan-dia-ly-dua",
+            "notebook_id": "Sổ tay 2: Mekong 360 - Tập 2",
+            "tier": "TIER_1_GOVERNMENT",
+            "authority_weight": 1
+          },
+          {
+            "title": "Chỉ dẫn địa lý Dừa xiêm xanh Bến Tre",
+            "url": "https://bentre.gov.vn/chi-dan-dia-ly-dua",
+            "notebook_id": "Sổ tay 2: Mekong 360 - Tập 2",
+            "tier": "TIER_1_GOVERNMENT",
+            "authority_weight": 1
+          }
+        ]
       },
       "source": [
         {
@@ -48844,7 +50120,8 @@
       "status": null,
       "verified": 1,
       "revision": 1,
-      "createdAt": "2026-08-18 15:04:03"
+      "createdAt": "2026-08-18 15:04:03",
+      "address": "Vườn dừa miệt vườn, Phường Mỏ Cày, tỉnh Vĩnh Long"
     },
     {
       "id": "nghe-don-ca-tai-tu",
@@ -54247,20 +55524,18 @@
       },
       "attributes": {
         "phone": "0903 623 557",
-        "address": "Xã Mỹ Hòa, thị xã Bình Minh, tỉnh Vĩnh Long (cách trung tâm thị xã Bình Minh ~1 km, qua cầu Từ Tải trên sông Cái Vồn)",
-        "admission": "Miễn phí",
+        "address": "Ấp Mỹ Khánh 1, Phường Bình Minh, tỉnh Vĩnh Long",
+        "admission": "Miễn phí tham quan các xưởng nâng váng đậu",
         "best_time": "Buổi sáng sớm các ngày trong tuần để xem trực tiếp quy trình làm tàu hủ ky; tránh dịp rằm/Tết vì các hộ tập trung sản xuất cao điểm",
         "highlight": "Hơn 110 năm kéo tàu hủ ky thủ công — Di sản Phi vật thể Quốc gia vàng óng từ 4h sáng",
         "key_facts": [
-          "Làng nghề thành lập khoảng năm 1912 do ông Châu Xường (người Quảng Đông) mang nghề gia truyền sang truyền dạy tại xã Mỹ Hòa, thị xã Bình Minh, Vĩnh Long",
-          "Sản lượng 5–7 tấn tàu hủ ky/ngày (tăng gấp đôi vào rằm và Tết), với ~27–50 hộ sản xuất và ~200 lao động thường xuyên",
-          "Sản phẩm làm hoàn toàn từ đậu nành 100%, không chất phụ gia, đặc trưng màu vàng óng, thơm béo nhưng không ngậy",
-          "Năm 2013 được Cục Sở hữu trí tuệ cấp nhãn hiệu tập thể 'Tàu hủ ky Mỹ Hòa – Bình Minh'; năm 2022 được công nhận Di sản Văn hóa Phi vật thể Quốc gia",
-          "Cách trung tâm TP Vĩnh Long ~30 km, cách TP Cần Thơ <10 km; nằm cách trung tâm thị xã Bình Minh ~1 km, qua cầu Từ Tải trên nhánh sông Cái Vồn"
+          "Làng nghề làm tàu hủ ky hình thành từ năm 1912 do ông Châu Xường sáng lập tại xã Mỹ Hòa thị xã Bình Minh.",
+          "Toàn làng có hơn 40 cơ sở với gần 600 chảo nấu liên tục ngày đêm, cho ra các mẻ váng đậu mỏng tanh vàng óng.",
+          "Bộ Văn hóa, Thể thao và Du lịch công nhận là Di sản Văn hóa Phi vật thể Quốc gia vào năm 2023."
         ],
         "peak_event": "Dịp trước Tết Nguyên Đán (tháng 12 âm lịch) sản xuất rộn ràng nhất",
         "phone_note": "0903.623.557 (Đinh Công Hoàng, chủ cơ sở đại diện)",
-        "travel_tip": "Đến trước 6h sáng để xem công đoạn kéo tàu hủ ky — đây là khoảnh khắc đẹp và sinh động nhất của làng nghề.",
+        "travel_tip": "Thời điểm chiêm ngưỡng thợ vớt váng đậu đẹp nhất là từ 08:00 đến 10:00 sáng khi hàng trăm dải tàu hủ ky treo thẳng tắp trên giàn trúc.",
         "schema_type": "TouristAttraction",
         "season_note": "Mùa khô hanh, công đoạn phơi tàu hũ ky ngoài trời đạt chất lượng tốt nhất, dễ quan sát quy trình sản xuất",
         "booking_note": "Đây là làng nghề sản xuất thực tế, không phải điểm tham quan chính thức; nên liên hệ trước cơ sở muốn thăm (VD: Thành Đạt, Thanh Cường, hoặc cơ sở Đinh Công Hoàng)",
@@ -54275,6 +55550,20 @@
             "title": "Hồ sơ Di sản phi vật thể quốc gia Nghề làm tàu hủ ky Mỹ Hòa",
             "notebook_id": "mekong-360-t-p-2",
             "tier": "TIER_1_GOVERNMENT"
+          },
+          {
+            "title": "Di sản phi vật thể quốc gia Làng nghề Tàu hủ ky Mỹ Hòa",
+            "url": "https://dsvh.gov.vn/di-san-tau-hu-ky-my-hoa",
+            "notebook_id": "Sổ tay 2: Mekong 360 - Tập 2",
+            "tier": "TIER_1_GOVERNMENT",
+            "authority_weight": 1
+          },
+          {
+            "title": "Di sản phi vật thể quốc gia Làng nghề Tàu hủ ky Mỹ Hòa",
+            "url": "https://dsvh.gov.vn/di-san-tau-hu-ky-my-hoa",
+            "notebook_id": "Sổ tay 2: Mekong 360 - Tập 2",
+            "tier": "TIER_1_GOVERNMENT",
+            "authority_weight": 1
           }
         ],
         "verifiedAt": "2026-09-18T10:15:00Z",
@@ -54284,7 +55573,11 @@
         "image_type": "documentary",
         "is_verified_photo": true,
         "image_caption": "Người thợ khéo léo vớt từng lớp váng đậu nành óng vàng trên chảo gang đỏ lửa tại Làng nghề tàu hũ ky Mỹ Hòa bên sông Cái Vồn, Di sản văn hóa phi vật thể quốc gia.",
-        "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long"
+        "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long",
+        "raw_material": "Hạt đậu nành nguyên chất không biến đổi gen, nước ngọt thanh",
+        "households": "Hơn 40 lò nấu váng đậu truyền thống",
+        "recognition_date": "Di sản Văn hóa Phi vật thể Quốc gia năm 2023",
+        "hours": "06:00 - 18:00 hàng ngày (lò chảo nấu từ 03:00 sáng)"
       },
       "source": [
         {
@@ -54320,7 +55613,8 @@
       "status": null,
       "verified": 1,
       "revision": 1,
-      "createdAt": "2026-08-18 15:04:03"
+      "createdAt": "2026-08-18 15:04:03",
+      "address": "Ấp Mỹ Khánh 1, Phường Bình Minh, tỉnh Vĩnh Long"
     },
     {
       "id": "banh-nhat-ngoc",
@@ -135764,7 +137058,7 @@
       },
       "attributes": {
         "origin": "Bến Tre",
-        "address": "Tép rang dừa, Phường Phú Túc, tỉnh Vĩnh Long",
+        "address": "Phường Phú Túc, tỉnh Vĩnh Long",
         "specialty": "Cá, Cơm",
         "schema_type": "Recipe",
         "sub_category": "rice-dish",
@@ -135775,7 +137069,40 @@
         "is_verified_photo": true,
         "image_caption": "Chảo tép trấu rang nước cốt dừa óng ánh màu hổ phách, vị béo ngậy ngọt bùi ăn cùng cơm nóng xới từ nồi cơm gạo mới.",
         "image_license": "Bản quyền thuộc tác giả và Báo Đồng Khởi",
-        "verifiedAt": "2026-09-18T00:30:00Z"
+        "verifiedAt": "2026-09-18T00:30:00Z",
+        "key_facts": [
+          "Món ăn gia đình kinh điển gắn bó trăm năm với nếp sinh hoạt miệt vườn xứ dừa Nam Bộ.",
+          "Tép bạc đất hoặc tép rong sông tươi rói làm sạch râu, rang săn giòn rồi rưới ngập nước cốt dừa già đậm đặc.",
+          "Đun lửa riu riu cho nước cốt dừa ngấm sâu vào từng thớ thịt tép chuyển sang màu cánh gián bóng bẩy và béo ngậy."
+        ],
+        "ingredients": [
+          "Tép bạc đất hoặc tép trấu tươi",
+          "Nước cốt dừa già nguyên chất",
+          "Hành tím băm",
+          "Nước mắm ngon",
+          "Đường thốt nốt",
+          "Tiêu đen giã dập"
+        ],
+        "where_to_eat": "Các quán cơm gia đình truyền thống tại thành phố Bến Tre và cù lao An Bình",
+        "price_range": "60.000đ - 90.000đ/đĩa ăn kèm cơm nóng",
+        "best_time": "Bữa trưa hoặc bữa tối gia đình quanh năm",
+        "travel_tip": "Món này ăn kèm cơm trắng nóng hổi và canh chua cá đồng là sự kết hợp ẩm thực miệt vườn trọn vẹn nhất.",
+        "source_citations": [
+          {
+            "title": "Hương vị ẩm thực dân dã: Tép rang dừa Bến Tre",
+            "url": "https://bentre.gov.vn/tep-rang-dua",
+            "notebook_id": "Sổ tay 2: Mekong 360 - Tập 2",
+            "tier": "TIER_1_GOVERNMENT",
+            "authority_weight": 1
+          },
+          {
+            "title": "Hương vị ẩm thực dân dã: Tép rang dừa Bến Tre",
+            "url": "https://bentre.gov.vn/tep-rang-dua",
+            "notebook_id": "Sổ tay 2: Mekong 360 - Tập 2",
+            "tier": "TIER_1_GOVERNMENT",
+            "authority_weight": 1
+          }
+        ]
       },
       "source": [
         {
@@ -135799,7 +137126,8 @@
       "status": null,
       "verified": 1,
       "revision": 1,
-      "createdAt": "2026-08-18 15:04:14"
+      "createdAt": "2026-08-18 15:04:14",
+      "address": "Phường Phú Túc, tỉnh Vĩnh Long"
     },
     {
       "id": "nem-nuong-thanh-binh-ben-tre",
