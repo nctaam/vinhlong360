@@ -124,6 +124,12 @@ describe('Deep & Simple Homepage UI Refinements', () => {
     expect(freshNocturneCss).toMatch(/\.home-continuation__links\s+a\s*\{[^}]*background:\s*var\(--color-canvas\);/)
     expect(freshNocturneCss).toMatch(/\.home-continuation__link--featured\s*\{[^}]*border-left:\s*3px\s+solid\s+var\(--alluvial-gold/)
   })
+
+  it('Task 18: Tabular numerics applied to itinerary stop numbers and schedule timings', () => {
+    const freshNocturneCss = readFileSync(resolve(__dirname, '../assets/css/home-nocturne.css'), 'utf8')
+    expect(freshNocturneCss).toMatch(/\.home-planner-stop__number[\s\S]*?tabular-nums/)
+    expect(freshNocturneCss).toMatch(/\.home-planner-stop__time[\s\S]*?tabular-nums/)
+  })
 })
 
 
