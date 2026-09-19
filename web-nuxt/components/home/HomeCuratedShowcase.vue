@@ -584,6 +584,7 @@ function onImgFallback(e: Event) {
   transition: transform 0.2s ease;
 }
 
+.home-curated-lead:hover .home-curated-lead__actions .btn .line-icon:last-child,
 .home-curated-lead__actions .btn:hover .line-icon:last-child {
   transform: translateX(3px);
 }

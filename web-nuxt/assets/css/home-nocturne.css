@@ -57,7 +57,7 @@
   line-height: var(--leading-snug, 1.35);
 }
 
-[data-home-pilot="nocturne-b1"] :is(.home-feature-dossier__coords, [data-geo-coordinates], .hero-cognitive-chip, .cm-stat, .hero-terroir-chip, .home-culinary-card__price-badge, .home-culinary-card__rank, .home-culinary-card__coords, .home-stay-card__price, .home-stay-card__coords, .home-curated-lead__coords, .home-curated-satellite__coords, .home-curated-lead__badge, .catalog-aeo-plaque__entry-title, .home-continuation__link-title, .home-continuation__link-sub, .home-hotline-btn__num, .home-planner-stop__number, .home-planner-stop__time, .home-planner-tab-btn__badge) {
+[data-home-pilot="nocturne-b1"] :is(.home-feature-dossier__coords, [data-geo-coordinates], .hero-cognitive-chip, .cm-stat, .hero-terroir-chip, .home-culinary-card__price-badge, .home-culinary-card__rank, .home-culinary-card__coords, .home-stay-card__price, .home-stay-card__coords, .home-curated-lead__coords, .home-curated-satellite__coords, .home-curated-lead__badge, .catalog-aeo-plaque__entry-title, .home-continuation__link-title, .home-continuation__link-sub, .home-hotline-btn__num, .home-planner-stop__number, .home-planner-stop__time, .home-planner-tab-btn__badge, .see-all) {
   font-variant-numeric: tabular-nums;
 }
 

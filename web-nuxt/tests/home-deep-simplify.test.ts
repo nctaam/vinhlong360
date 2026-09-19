@@ -152,6 +152,21 @@ describe('Deep & Simple Homepage UI Refinements', () => {
     const nocturneCss = readFileSync(resolve(__dirname, '../assets/css/home-nocturne.css'), 'utf8')
     expect(nocturneCss).toMatch(/\[data-home-pilot="nocturne-b1"\]\s+\.home-feature-dossier__action:hover\s+\.home-feature-dossier__action-arrow\s*\{[^}]*transform:\s*translateX\(3px\);/)
   })
+
+  it('Task 23: Section header counts enforce tabular-nums and cards support card-level hover directional arrow animation', () => {
+    const nocturneCss = readFileSync(resolve(__dirname, '../assets/css/home-nocturne.css'), 'utf8')
+    const showcaseVue = readFileSync(resolve(__dirname, '../components/home/HomeCuratedShowcase.vue'), 'utf8')
+    const culinaryVue = readFileSync(resolve(__dirname, '../components/home/HomeCulinaryTrail.vue'), 'utf8')
+    const staysVue = readFileSync(resolve(__dirname, '../components/home/HomeRiversideStays.vue'), 'utf8')
+
+    // Tabular numbers for section header links
+    expect(nocturneCss).toMatch(/tabular-nums[\s\S]*?\.see-all|\.see-all[\s\S]*?tabular-nums/)
+
+    // Card-level hover directional arrows
+    expect(showcaseVue).toMatch(/\.home-curated-lead:hover\s+\.home-curated-lead__actions\s+\.btn\s+\.line-icon:last-child/)
+    expect(culinaryVue).toMatch(/\.home-culinary-card:hover\s+\.home-culinary-card__arrow/)
+    expect(staysVue).toMatch(/\.home-stay-card:hover\s+\.home-stay-card__action\s+\.btn\s+\.line-icon:last-child/)
+  })
 })
 
 

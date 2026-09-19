@@ -566,6 +566,7 @@ function onImgFallback(e: Event) {
   transition: transform 0.2s ease;
 }
 
+.home-stay-card:hover .home-stay-card__action .btn .line-icon:last-child,
 .home-stay-card__action .btn:hover .line-icon:last-child {
   transform: translateX(3px);
 }

@@ -480,6 +480,7 @@ function onImgFallback(e: Event) {
   transition: transform 0.2s ease;
 }
 
+.home-culinary-card:hover .home-culinary-card__arrow,
 .home-culinary-card__btn:hover .home-culinary-card__arrow {
   transform: translateX(3px);
 }
