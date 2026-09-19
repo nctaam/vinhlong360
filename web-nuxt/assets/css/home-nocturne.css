@@ -1317,7 +1317,7 @@
    không cho DẢI trượt. */
 
 [data-home-pilot="nocturne-b1"] :is(.home-quick-decisions, .home-signals) {
-  background: var(--bg-alt);
+  background: transparent;
   padding-block: clamp(var(--space-8), 5vw, var(--space-12));
   border-block-end: 1px solid var(--color-border);
 }

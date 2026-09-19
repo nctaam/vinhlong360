@@ -1,0 +1,152 @@
+[
+  {
+    "id": "di-tich-dau-cau-tiep-nhan-vu-khi-thanh-phong",
+    "name": "Di tích Đầu cầu tiếp nhận vũ khí Thạnh Phong (Đường Hồ Chí Minh trên biển)",
+    "key_facts_count": 3,
+    "hours": "07:30 - 17:00 hàng ngày"
+  },
+  {
+    "id": "lang-nghe-dan-non-la-an-hiep",
+    "name": "Làng nghề đan nón lá An Hiệp",
+    "key_facts_count": 3,
+    "hours": "07:00 - 17:30 hàng ngày"
+  },
+  {
+    "id": "dinh-than-an-ngai-trung",
+    "name": "Đình thần An Ngãi Trung",
+    "key_facts_count": 3,
+    "hours": "06:30 - 18:00 hàng ngày"
+  },
+  {
+    "id": "chua-ang-ka-nguol-an-truong",
+    "name": "Chùa Âng Kà Nguôl (Chùa Khmer An Trường)",
+    "key_facts_count": 3,
+    "hours": "06:00 - 18:00 hàng ngày"
+  },
+  {
+    "id": "khu-can-cu-tinh-uy-ben-tre-chau-hoa",
+    "name": "Khu di tích Căn cứ Tỉnh ủy Bến Tre tại Châu Hòa",
+    "key_facts_count": 3,
+    "hours": "07:30 - 16:30 từ thứ Hai đến Chủ Nhật"
+  },
+  {
+    "id": "dinh-lang-hieu-phung",
+    "name": "Đình làng Hiếu Phụng",
+    "key_facts_count": 3,
+    "hours": "07:00 - 17:00 hàng ngày"
+  },
+  {
+    "id": "lang-nghe-cay-giong-uon-kieng-hung-khanh-trung",
+    "name": "Làng nghề cây giống và uốn kiểng thú Hưng Khánh Trung",
+    "key_facts_count": 3,
+    "hours": "07:00 - 18:00 hàng ngày"
+  },
+  {
+    "id": "chua-kompong-tung-hung-my",
+    "name": "Chùa Kompong Tung (Chùa Lò Gạch Hưng Mỹ)",
+    "key_facts_count": 3,
+    "hours": "06:00 - 18:00 hàng ngày"
+  },
+  {
+    "id": "lang-nghe-dan-trang-gio-cong-dua-luong-phu",
+    "name": "Làng nghề đan tràng và giỏ cọng dừa Lương Phú",
+    "key_facts_count": 3,
+    "hours": "07:30 - 17:00 hàng ngày"
+  },
+  {
+    "id": "vung-chuyen-canh-khoai-lang-tim-nhat-my-thuan",
+    "name": "Vùng chuyên canh khoai lang tím Nhật Mỹ Thuận",
+    "key_facts_count": 3,
+    "hours": "06:30 - 17:30 hàng ngày"
+  },
+  {
+    "id": "chua-can-tho-ngu-lac",
+    "name": "Chùa Can Tho (Chùa Cần Chông Khmer Ngũ Lạc)",
+    "key_facts_count": 3,
+    "hours": "06:00 - 18:30 hàng ngày"
+  },
+  {
+    "id": "vuon-dua-sap-cau-ke-phong-thanh",
+    "name": "Vườn dừa sáp sinh thái Cầu Kè tại Phong Thạnh",
+    "key_facts_count": 3,
+    "hours": "07:00 - 18:00 hàng ngày"
+  },
+  {
+    "id": "vung-chuyen-canh-sau-rieng-cu-lao-quoi-an",
+    "name": "Vùng chuyên canh sầu riêng và chôm chôm cù lao Quới An",
+    "key_facts_count": 3,
+    "hours": "07:00 - 17:30 hàng ngày"
+  },
+  {
+    "id": "chua-bang-trau-song-loc",
+    "name": "Chùa Bâng Trau (Chùa Khmer Song Lộc)",
+    "key_facts_count": 3,
+    "hours": "06:00 - 18:00 hàng ngày"
+  },
+  {
+    "id": "cho-dau-moi-nong-san-ba-cang-song-phu",
+    "name": "Chợ đầu mối nông sản và cam sành Ba Càng - Song Phú",
+    "key_facts_count": 3,
+    "hours": "03:00 - 20:00 hàng ngày"
+  },
+  {
+    "id": "vung-nuoi-so-huyet-tom-quang-canh-thanh-tri",
+    "name": "Vùng nuôi sò huyết và tôm sinh thái Thạnh Trị",
+    "key_facts_count": 3,
+    "hours": "07:00 - 18:00 hàng ngày"
+  },
+  {
+    "id": "chua-o-mich-hung-hoa",
+    "name": "Chùa Ô Mịch (Chùa Khmer Ô Mịch - Hùng Hòa)",
+    "key_facts_count": 3,
+    "hours": "06:00 - 18:00 hàng ngày"
+  },
+  {
+    "id": "lang-nghe-det-chieu-ca-hon",
+    "name": "Làng nghề dệt chiếu Cà Hôn (Cà Hom)",
+    "key_facts_count": 3,
+    "hours": "07:00 - 17:30 hàng ngày"
+  },
+  {
+    "id": "banh-ray-khmer-la-dua",
+    "name": "Bánh rây Khmer (Bánh dứa Om-chơ-rơ-hây)",
+    "key_facts_count": 3,
+    "hours": "06:30 - 17:00 hàng ngày"
+  },
+  {
+    "id": "banh-xeo-oc-gao-cho-lach",
+    "name": "Bánh xèo ốc gạo Phú Đa",
+    "key_facts_count": 3,
+    "hours": "09:00 - 20:00 hàng ngày"
+  },
+  {
+    "id": "nghe-nhan-chau-xuong",
+    "name": "Nghệ nhân Châu Xường (Tiền hiền Tàu hủ ky Mỹ Hòa)",
+    "key_facts_count": 3,
+    "hours": "07:00 - 17:00 (theo giờ làng nghề)"
+  },
+  {
+    "id": "nghe-nhan-nguyen-thi-thoi",
+    "name": "Nghệ nhân Nguyễn Thị Thới",
+    "key_facts_count": 3,
+    "hours": "08:00 - 17:00 các ngày trong tuần"
+  },
+  {
+    "id": "de-an-di-san-duong-dai-mang-thit",
+    "name": "Đề án Di sản Đương đại Mang Thít (Bảo tồn 900 lò gạch)",
+    "key_facts_count": 3,
+    "hours": "06:00 - 18:00 hàng ngày (thời điểm chụp ảnh đẹp nhất)"
+  },
+  {
+    "id": "nha-gom-do-tu-buoi",
+    "name": "Nhà gốm đỏ Tư Buôi (Kỷ lục Ngôi nhà gốm đỏ lớn nhất Việt Nam)",
+    "key_facts_count": 3,
+    "hours": "07:30 - 18:00 hàng ngày"
+  },
+  {
+    "id": "lang-nghe-banh-trang-nem-cu-lao-may",
+    "name": "Làng nghề bánh tráng nem Cù lao Mây",
+    "key_facts_count": 3,
+    "hours": "06:00 - 17:00 hàng ngày"
+  }
+]

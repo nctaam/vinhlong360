@@ -95,7 +95,7 @@
     </div>
 
     <!-- Folk Art & Living Fieldwork Strip -->
-    <div class="home-riverside-stays__experiences">
+    <div class="home-riverside-stays__experiences sr-only">
       <div class="home-riverside-stays__exp-header">
         <h3 class="home-riverside-stays__exp-title">
           <IconLine name="route" />

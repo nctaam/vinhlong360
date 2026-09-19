@@ -76,6 +76,7 @@ const faqItems: FaqEntry[] = [
 
 <style scoped>
 .home-fieldwork-faq{padding:var(--space-8) 0;border-top:1px dashed color-mix(in srgb,var(--color-border) 60%,transparent)}
+.home-fieldwork-faq.sr-only{display:none !important;padding:0 !important;border:none !important;}
 .fieldwork-faq__inner{max-width:var(--container-max,1120px);margin:0 auto;padding:0 var(--space-4)}
 .fieldwork-faq__header{margin-bottom:var(--space-6)}
 .fieldwork-faq__tagline{display:flex;align-items:center;gap:var(--space-3);margin-bottom:var(--space-2)}

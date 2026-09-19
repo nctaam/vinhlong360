@@ -1,0 +1,23 @@
+{
+  "new_amenity_edges": 0,
+  "total_relationships": 13463,
+  "metadata_updates": [
+    "chua-ong-met-botum-vong-sa-som-rong:architecture_style",
+    "ben-xe-mien-tay-hcm:external_gateway",
+    "nuoc-mam-ruoi-long-vinh:recognition_status=EXPIRED",
+    "cu-cai-muoi-chit-sa:recognition_status=EXPIRED",
+    "gao-huu-co-long-hoa-hoa-minh-ocop-4-sao:recognition_status=EXPIRED",
+    "lap-xuong-ngoc-huong:recognition_status=EXPIRED",
+    "ruou-quach-cau-ngang:recognition_status=EXPIRED",
+    "san-pham-ocop-cau-ngang:recognition_status=EXPIRED",
+    "nem-chua-sau-xe:recognition_status=EXPIRED",
+    "keo-dau-phong-du-tan-loi:recognition_status=EXPIRED",
+    "vung-trong-cam-sapota-huu-thanh:recognition_status=EXPIRED",
+    "hop-tac-xa-cam-phuong-thuy:recognition_status=EXPIRED",
+    "thanh-long-vang-thanh-duc-ocop-3-sao:recognition_status=EXPIRED",
+    "buoi-da-xanh-cho-lach:recognition_status=EXPIRED",
+    "keo-dua-sap-vicosap:recognition_status=EXPIRED",
+    "mam-tep-du-du-thuy-nguyen:recognition_status=EXPIRED",
+    "banh-phong-mi-giong-trom:recognition_status=EXPIRED"
+  ]
+}

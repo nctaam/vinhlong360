@@ -1,0 +1,76 @@
+[
+  {
+    "itinerary": "food-tour-ben-tre-1-ngay",
+    "old_id": "banh-xeo-mien-tay",
+    "new_id": "banh-xeo-oc-gao-cho-lach"
+  },
+  {
+    "itinerary": "ben-tre-tong-tai-romantic-2day-001",
+    "old_id": "placeholder-ben-tre-tong-tai-romantic-2day-001-1",
+    "new_id": "ben-xe-ben-tre-trung-tam-ben-tre"
+  },
+  {
+    "itinerary": "ben-tre-tong-tai-romantic-2day-001",
+    "old_id": "placeholder-ben-tre-tong-tai-romantic-2day-001-6",
+    "new_id": "forever-green-resort"
+  },
+  {
+    "itinerary": "ben-tre-tong-tai-romantic-2day-001",
+    "old_id": "placeholder-ben-tre-tong-tai-romantic-2day-001-7",
+    "new_id": "nha-hang-noi-ben-tre"
+  },
+  {
+    "itinerary": "ben-tre-tong-tai-romantic-2day-001",
+    "old_id": "placeholder-ben-tre-tong-tai-romantic-2day-001-8",
+    "new_id": "forever-green-resort"
+  },
+  {
+    "itinerary": "ben-tre-tong-tai-romantic-2day-001",
+    "old_id": "placeholder-ben-tre-tong-tai-romantic-2day-001-9",
+    "new_id": "nh-ks-sy-dien"
+  },
+  {
+    "itinerary": "ben-tre-tong-tai-romantic-2day-001",
+    "old_id": "placeholder-ben-tre-tong-tai-romantic-2day-001-12",
+    "new_id": "ben-pha-dinh-khao-vinh-long"
+  },
+  {
+    "itinerary": "ben-tre-tong-tai-romantic-2day-001",
+    "old_id": "placeholder-ben-tre-tong-tai-romantic-2day-001-13",
+    "new_id": "tuyen-song-co-chien-hoang-hon-bo-ke-vinh-long"
+  },
+  {
+    "itinerary": "tour-p01",
+    "old_id": "chua-ang",
+    "new_id": "chua-van-phuoc"
+  },
+  {
+    "itinerary": "tour-p03",
+    "old_id": "bao-tang-ben-tre",
+    "new_id": "bao-tang-van-hoa-dan-toc-khmer-tinh-tra-vinh"
+  },
+  {
+    "itinerary": "tour-p05",
+    "action": "re-anchor_tra_vinh_ok_om_bok"
+  },
+  {
+    "itinerary": "tour-p06",
+    "old_id": "placeholder-tour-p06-1",
+    "new_id": "lang-hoa-kieng-cai-mon-cho-lach"
+  },
+  {
+    "itinerary": "tour-p09",
+    "old_id": "placeholder-tour-p09-1",
+    "new_id": "lang-gach-gom-mang-thit"
+  },
+  {
+    "itinerary": "tour-p10",
+    "old_id": "placeholder-tour-p10-2",
+    "new_id": "khu-du-lich-lan-vuong"
+  },
+  {
+    "itinerary": "tour-p10",
+    "old_id": "placeholder-tour-p10-3",
+    "new_id": "com-dua-com-trai-dua"
+  }
+]

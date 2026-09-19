@@ -12449,7 +12449,7 @@ Mỗi thực thể dưới đây đều có ảnh tư liệu báo chí chính th
 
 ### [Food tour Bến Tre 1 ngày](https://vinhlong360.vn/lich-trinh/food-tour-ben-tre-1-ngay)
 - **Mã lộ trình**: `food-tour-ben-tre-1-ngay` | **Thời lượng**: 1 ngày | **Số điểm dừng**: 5
-- **Mô tả hành trình**: 1 ngày food tour xứ dừa độc đáo: ăn sáng bánh canh bột xắt vịt xiêm ngậy béo nước cốt dừa, trưa ăn bánh xèo tôm nhảy giòn tan, chiều tự tay làm kẹo dừa Mỏ Cày, uống nước dừa xiêm ngọt lịm và tối thưởng thức chè chuối nướng thơm lừng.
+- **Mô tả hành trình**: 1 ngày food tour xứ dừa đặc sắc: ăn sáng bánh canh bột xắt vịt xiêm ngậy béo nước cốt dừa, trưa ăn bánh xèo ốc gạo Phú Đa giòn rụm, chiều tự tay làm kẹo dừa Mỏ Cày, uống nước dừa xiêm thanh ngọt và tối thưởng thức chè chuối nướng thơm lừng.
 - **Các điểm dừng tiêu biểu**:  →  →  →  → 
 
 ### [Vĩnh Long + Bến Tre 2 ngày](https://vinhlong360.vn/lich-trinh/vinh-long-ben-tre-2-ngay)
@@ -12524,7 +12524,7 @@ Mỗi thực thể dưới đây đều có ảnh tư liệu báo chí chính th
 
 ### [Tuyến 1 ngày: Xứ Dừa - Cồn Phụng](https://vinhlong360.vn/lich-trinh/tour-p01)
 - **Mã lộ trình**: `tour-p01` | **Thời lượng**: 1 ngày | **Số điểm dừng**: 5
-- **Mô tả hành trình**: 1 ngày khám phá trọn vẹn xứ Dừa Cồn Phụng: viếng đình cổ Bình Phụng, trải nghiệm ngào kẹo dừa Mỏ Cày, chiêm bái di tích tâm linh Chùa Âng, nghe đờn ca tài tử Nam Bộ và vui chơi sông nước tại khu du lịch Lan Vương.
+- **Mô tả hành trình**: 1 ngày khám phá trọn vẹn xứ Dừa Cồn Phụng: viếng đình cổ Bình Phụng, trải nghiệm ngào kẹo dừa Mỏ Cày, chiêm bái di tích tâm linh Chùa Vạn Phước, nghe đờn ca tài tử Nam Bộ và vui chơi sông nước tại khu du lịch Lan Vương.
 - **Các điểm dừng tiêu biểu**:  →  →  →  → 
 
 ### [Tuyến 2N1Đ: An Bình - Mang Thít - Chợ Lách](https://vinhlong360.vn/lich-trinh/tour-p02)
@@ -12534,7 +12534,7 @@ Mỗi thực thể dưới đây đều có ảnh tư liệu báo chí chính th
 
 ### [Tuyến 2N1Đ: Khmer Trà Vinh - Dừa sáp - Ba Động](https://vinhlong360.vn/lich-trinh/tour-p03)
 - **Mã lộ trình**: `tour-p03` | **Thời lượng**: 2 ngày 1 đêm | **Số điểm dừng**: 5
-- **Mô tả hành trình**: 2 ngày 1 đêm khám phá nét duyên Trà Vinh: dạo bước thắng cảnh Ao Bà Om, viếng Chùa Hang Kompong Chray, tìm hiểu hiện vật bảo tàng, thưởng thức đặc sản dừa sáp Cầu Kè và đón gió biển mặn mòi tại bãi tắm Ba Động.
+- **Mô tả hành trình**: 2 ngày 1 đêm khám phá nét duyên Trà Vinh: dạo bước thắng cảnh Ao Bà Om, viếng Chùa Hang Kompong Chray, tìm hiểu hiện vật tại Bảo tàng Văn hóa Dân tộc Khmer, thưởng thức đặc sản dừa sáp Cầu Kè và đón gió biển tại bãi tắm Ba Động.
 - **Các điểm dừng tiêu biểu**:  →  →  →  → 
 
 ### [Tuyến 3N2Đ: Tam giác từ sông ra biển](https://vinhlong360.vn/lich-trinh/tour-p04)
@@ -12544,7 +12544,7 @@ Mỗi thực thể dưới đây đều có ảnh tư liệu báo chí chính th
 
 ### [Mùa Ok Om Bok](https://vinhlong360.vn/lich-trinh/tour-p05)
 - **Mã lộ trình**: `tour-p05` | **Thời lượng**: 1 ngày | **Số điểm dừng**: 4
-- **Mô tả hành trình**: 1 ngày trọn vẹn sống trong không gian lễ hội Ok Om Bok: viếng thắng cảnh danh lam Ao Bà Om đêm trăng rằm, tìm hiểu di tích đình An Hội, thưởng thức bữa cơm chay Hoa Sen thanh tịnh và chiêm ngưỡng lễ hội thả hoa đăng rực rỡ sắc màu.
+- **Mô tả hành trình**: 1 ngày trọn vẹn trải nghiệm không khí lễ hội Ok Om Bok tại trung tâm Trà Vinh: viếng danh thắng Ao Bà Om, chiêm bái Chùa Âng cổ kính, thưởng thức bún nước lèo truyền thống và tìm hiểu văn hóa Khmer tại Bảo tàng Văn hóa Dân tộc.
 - **Các điểm dừng tiêu biểu**:  →  →  → 
 
 ### [Mùa Tết: Chợ Lách - Lăng Ông - An Bình](https://vinhlong360.vn/lich-trinh/tour-p06)

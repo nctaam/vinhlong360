@@ -1991,7 +1991,8 @@
           "Nơi đặt trụ sở Hội Đoàn kết Sư sãi Yêu nước tỉnh và Trường Pāli Trung cấp Nam Bộ đầu tiên tại đồng bằng sông Cửu Long.",
           "Trong hai cuộc kháng chiến giải phóng dân tộc, chùa là pháo đài đấu tranh chính trị kiên cường, che chở nhiều cán bộ cách mạng cốt cán."
         ],
-        "travel_tip": "Khi bước lên thềm chính điện cần tháo giày dép bên ngoài; có thể xin phép các nhà sư trò chuyện để tìm hiểu thêm về chữ Khmer cổ và giáo lý Nam tông."
+        "travel_tip": "Khi bước lên thềm chính điện cần tháo giày dép bên ngoài; có thể xin phép các nhà sư trò chuyện để tìm hiểu thêm về chữ Khmer cổ và giáo lý Nam tông.",
+        "architecture_style": "Kiến trúc Phật giáo Nam tông Khmer cổ truyền"
       },
       "source": [
         {
@@ -7919,11 +7920,7 @@
         "schema_type": "Product",
         "sub_category": "fish-sauce",
         "coords_approximate": true,
-        "recognition_status": {
-          "status": "EXPIRED",
-          "validity_period_months": 36,
-          "remediation": "Mark as expired or require recertification decree reference"
-        },
+        "recognition_status": "EXPIRED",
         "waterway_access": "Đường thủy ven cửa biển Cung Hầu sông Cổ Chiên, ghe đò chuyên chở ghé bến cá Long Vinh thuận tiện bốc dỡ hải sản",
         "aeo_schema_type": "Product",
         "cultural_notes": "Đặc sản tiến vua vang danh xứ duyên hải Trà Vinh đạt chứng nhận OCOP 4 sao. Rươi biển (rồng đất) sinh sôi tự nhiên nơi rừng bần ngập mặn đáy bùn phù sa được ngư dân vớt bằng vợt lưới dày, ủ cùng muối hột Ba Động trong lu sành phơi nắng 6 đến 9 tháng. Nước mắm rươi chín có màu vàng óng cánh gián, hương thơm dịu nhẹ, hậu vị ngọt sâu đượm đà đạm tự nhiên, không gắt như mắm cá biển.",
@@ -13453,11 +13450,7 @@
         "schema_type": "Product",
         "sub_category": "fermented-food",
         "coords_approximate": true,
-        "recognition_status": {
-          "status": "EXPIRED",
-          "validity_period_months": 36,
-          "remediation": "Mark as expired or require recertification decree reference"
-        },
+        "recognition_status": "EXPIRED",
         "waterway_access": "Đường thủy rạch Cầu Kè dẫn ra sông Hậu, ghe thuyền thu mua nông sản ghé bến chợ Cầu Kè cách cơ sở chế biến 800m",
         "aeo_schema_type": "Product",
         "cultural_notes": "Sản phẩm OCOP 3 sao đặc sắc mang dấu ấn giao thoa văn hóa Hoa - Khmer tại huyện Cầu Kè. Củ cải trắng giống bản địa được chọn củ chắc nịch, ngâm muối hột theo tỷ lệ gia truyền rồi phơi dưới nắng gắt cho héo quắt, sau đó ủ lên men tự nhiên với đường thốt nốt. Xá bấu Chịt Sa giòn sần sật, mặn ngọt hài hòa, dùng nấu canh sườn, xào thịt hoặc ăn cùng cháo trắng lá dứa nức tiếng.",
@@ -14684,11 +14677,7 @@
         "schema_type": "Product",
         "sub_category": "rice",
         "coords_approximate": true,
-        "recognition_status": {
-          "status": "EXPIRED",
-          "validity_period_months": 36,
-          "remediation": "Mark as expired or require recertification decree reference"
-        },
+        "recognition_status": "EXPIRED",
         "waterway_access": "Đường thủy qua sông Cổ Chiên, phà Bà Trầm hoặc đò ngang Phước Vinh cập bến Cồn Chim (xã Hòa Minh) vận chuyển lúa gạo thuận tiện",
         "aeo_schema_type": "Product",
         "cultural_notes": "Gạo hữu cơ đạt chuẩn OCOP 4 sao canh tác theo mô hình con tôm ôm cây lúa thuận thiên tại xã đảo Long Hòa – Hòa Minh. Giống lúa ST24, ST25 được gieo cấy trên nền đất nuôi tôm sạch, không phân hóa học, không thuốc trừ sâu, chắt chiu phù sa mặn ngọt giao thoa của dòng Cổ Chiên. Hạt gạo thon dài trong suốt, khi nấu chín hạt cơm mềm dẻo, thơm ngào ngạt hương lá dứa tự nhiên.",
@@ -17726,11 +17715,7 @@
         "schema_type": "Product",
         "sub_category": "charcuterie",
         "coords_approximate": true,
-        "recognition_status": {
-          "status": "EXPIRED",
-          "validity_period_months": 36,
-          "remediation": "Mark as expired or require recertification decree reference"
-        },
+        "recognition_status": "EXPIRED",
         "waterway_access": "Đường thủy sông Tiền kết nối bến phà An Bình, thuận lợi di chuyển mua sắm quà biếu",
         "aeo_schema_type": "Product",
         "cultural_notes": "Sản phẩm OCOP 3 sao gia truyền nổi tiếng của tỉnh Vĩnh Long. Lạp xưởng Ngọc Hương được làm từ thịt nạc đùi heo tươi nóng và mỡ lưng xắt hạt lựu, ướp cùng rượu mai quế lộ gia truyền và tiêu sọ thơm nồng. Ruột heo bao ngoài được cạo mỏng tang rồi phơi dưới nắng giòn vùng sông nước Cửu Long, tạo sắc đỏ tươi tự nhiên, vị béo ngọt đậm đà khi chiên nướng.",
@@ -20112,11 +20097,7 @@
         "schema_type": "Product",
         "sub_category": "liquor",
         "coords_approximate": true,
-        "recognition_status": {
-          "status": "EXPIRED",
-          "validity_period_months": 36,
-          "remediation": "Mark as expired or require recertification decree reference"
-        },
+        "recognition_status": "EXPIRED",
         "waterway_access": "Đường thủy kênh rạch Cầu Ngang kết nối sông Cổ Chiên, tàu ghe vận chuyển nông sản ghé bến trung tâm huyện",
         "aeo_schema_type": "Product",
         "cultural_notes": "Sản phẩm OCOP 3 sao độc bản của vùng đất Cầu Ngang, Trà Vinh. Trái quách chín già rụng tự nhiên từ cây cổ thụ, cạo lấy lớp ruột đen sệt thơm nồng đặc trưng, ngâm cùng rượu nếp nguyên chất chưng cất truyền thống trong lu sành hạ thổ từ 6 tháng đến 1 năm. Rượu quách có màu nâu sẫm, vị chua ngọt chát nhẹ, thơm thảo mộc, giúp kiện tỳ bổ thận và kích thích tiêu hóa.",
@@ -20353,11 +20334,7 @@
         "schema_type": "Product",
         "sub_category": "coconut-product",
         "coords_approximate": true,
-        "recognition_status": {
-          "status": "EXPIRED",
-          "validity_period_months": 36,
-          "remediation": "Mark as expired or require recertification decree reference"
-        },
+        "recognition_status": "EXPIRED",
         "image_author": "Bá Thi",
         "image_source": "Báo Trà Vinh",
         "image_type": "documentary",
@@ -42534,11 +42511,7 @@
         "schema_type": "Product",
         "sub_category": "fermented-meat",
         "coords_approximate": true,
-        "recognition_status": {
-          "status": "EXPIRED",
-          "validity_period_months": 36,
-          "remediation": "Mark as expired or require recertification decree reference"
-        },
+        "recognition_status": "EXPIRED",
         "image_author": "Trần Phước",
         "image_source": "Báo Vĩnh Long",
         "image_type": "documentary",
@@ -81472,11 +81445,7 @@
         "ocop_star": 3,
         "schema_type": "Product",
         "sub_category": "confectionery",
-        "recognition_status": {
-          "status": "EXPIRED",
-          "validity_period_months": 36,
-          "remediation": "Mark as expired or require recertification decree reference"
-        },
+        "recognition_status": "EXPIRED",
         "image_author": "Bá Thi",
         "image_source": "Báo Trà Vinh",
         "image_type": "documentary",
@@ -82072,11 +82041,7 @@
         "ocop_star": 3,
         "schema_type": "NaturalFeature",
         "sub_category": "forest",
-        "recognition_status": {
-          "status": "EXPIRED",
-          "validity_period_months": 36,
-          "remediation": "Mark as expired or require recertification decree reference"
-        },
+        "recognition_status": "EXPIRED",
         "image_author": "Bá Thi",
         "image_source": "Báo Vĩnh Long",
         "image_type": "documentary",
@@ -82299,11 +82264,7 @@
         "schema_type": "Product",
         "sub_category": "fruit",
         "coords_approximate": true,
-        "recognition_status": {
-          "status": "EXPIRED",
-          "validity_period_months": 36,
-          "remediation": "Mark as expired or require recertification decree reference"
-        },
+        "recognition_status": "EXPIRED",
         "image_author": "Ngọc Trảng",
         "image_source": "Báo Vĩnh Long",
         "image_type": "documentary",
@@ -85062,11 +85023,7 @@
         "schema_type": "Product",
         "sub_category": "ocop-product",
         "coords_approximate": true,
-        "recognition_status": {
-          "status": "EXPIRED",
-          "validity_period_months": 36,
-          "remediation": "Mark as expired or require recertification decree reference"
-        },
+        "recognition_status": "EXPIRED",
         "image_author": "Ngọc Trảng",
         "image_source": "Báo Vĩnh Long",
         "image_type": "documentary",
@@ -92260,11 +92217,7 @@
         "export_markets": "Hoa Kỳ",
         "coords_approximate": true,
         "geographical_indication": "Chỉ dẫn địa lý \"Bến Tre\" số 00062 (2018)",
-        "recognition_status": {
-          "status": "EXPIRED",
-          "validity_period_months": 36,
-          "remediation": "Mark as expired or require recertification decree reference"
-        },
+        "recognition_status": "EXPIRED",
         "image_author": "Hữu Hiệp",
         "image_source": "Báo Đồng Khởi",
         "image_type": "documentary",
@@ -131658,11 +131611,7 @@
         "certifications": "HACCP, FDA, ISO 9001:2015, ISO 22000:2018",
         "other_products": "Dừa sáp sấy dẻo, sấy giòn, sữa chua dừa sáp, kem dừa sáp",
         "coords_approximate": true,
-        "recognition_status": {
-          "status": "EXPIRED",
-          "validity_period_months": 36,
-          "remediation": "Mark as expired or require recertification decree reference"
-        },
+        "recognition_status": "EXPIRED",
         "image_author": "Bá Thi",
         "image_source": "Báo Trà Vinh",
         "image_type": "documentary",
@@ -131744,11 +131693,7 @@
         "schema_type": "Product",
         "sub_category": "fish-sauce",
         "coords_approximate": true,
-        "recognition_status": {
-          "status": "EXPIRED",
-          "validity_period_months": 36,
-          "remediation": "Mark as expired or require recertification decree reference"
-        },
+        "recognition_status": "EXPIRED",
         "image_author": "Bá Thi",
         "image_source": "Báo Trà Vinh",
         "image_type": "documentary",
@@ -131826,11 +131771,7 @@
         "annual_output": "~25 triệu cái/năm",
         "certification": "OCOP 3 sao, HACCP",
         "craft_village": "Làng nghề bánh phồng Sơn Đốc",
-        "recognition_status": {
-          "status": "EXPIRED",
-          "validity_period_months": 36,
-          "remediation": "Mark as expired or require recertification decree reference"
-        },
+        "recognition_status": "EXPIRED",
         "image_author": "Hữu Hiệp",
         "image_source": "Báo Đồng Khởi",
         "image_type": "documentary",
@@ -138283,7 +138224,7 @@
         "heritage_type": "Di tích lịch sử cách mạng",
         "historical_period": "Kháng chiến chống Mỹ",
         "specialty": "Điểm tập kết, giấu vũ khí và đón các đoàn tàu Không số",
-        "admission": "Miễn phí",
+        "admission": "Miễn phí vé tham quan",
         "highlight": "Khu tưởng niệm uy nghiêm bên bãi biển Cồn Bửng lưu giữ ký ức những chuyến tàu Không số quả cảm.",
         "image_author": "Hữu Hiệp",
         "image_source": "Báo Đồng Khởi",
@@ -138291,7 +138232,14 @@
         "is_verified_photo": true,
         "image_caption": "Bia chứng tích Đường Hồ Chí Minh trên biển tại bến Cồn Bửng xã Thạnh Phong, nơi những con tàu không số cập bến an toàn tiếp tế vũ khí cho chiến trường miền Nam.",
         "image_license": "Bản quyền thuộc tác giả và Báo Đồng Khởi",
-        "verifiedAt": "2026-09-18T10:10:00Z"
+        "verifiedAt": "2026-09-18T10:10:00Z",
+        "key_facts": [
+          "Xếp hạng Di tích Lịch sử Quốc gia theo Quyết định số 3777/QĐ-BVHTT ngày 23/12/1995.",
+          "Ghi dấu các chuyến tàu Không số tiếp nhận vũ khí từ miền Bắc chi viện cho chiến trường Nam Bộ giai đoạn 1961 - 1975.",
+          "Bến Cồn Bửng là 1 trong 4 đầu cầu tiếp nhận huyết mạch của Đường Hồ Chí Minh trên biển tại Nam Bộ."
+        ],
+        "hours": "07:30 - 17:00 hàng ngày",
+        "travel_tip": "Nên kết hợp viếng di tích và trải nghiệm bãi biển Cồn Bửng vào buổi sáng từ 8:00 đến 11:00."
       },
       "source": [
         {
@@ -138374,7 +138322,15 @@
         "is_verified_photo": true,
         "image_caption": "Những vành nón lá dừa nước trắng muốt, đường kim mũi chỉ đều đặn làm tôn thêm nét duyên dáng người phụ nữ miệt vườn Ba Tri.",
         "image_license": "Bản quyền thuộc tác giả và Báo Đồng Khởi",
-        "verifiedAt": "2026-09-17T23:30:00Z"
+        "verifiedAt": "2026-09-17T23:30:00Z",
+        "key_facts": [
+          "Được UBND tỉnh công nhận làng nghề truyền thống từ năm 2008 với hơn 80 năm lịch sử hình thành.",
+          "Quy tụ hơn 300 hộ dân duy trì nghề đan nón lá trúc và nón lá dừa truyền thống thủ công.",
+          "Sản phẩm nón lá đạt chuẩn hoàn thiện qua 15 công đoạn tinh xảo từ vót nan, ủi lá đến chằm nón."
+        ],
+        "hours": "07:00 - 17:30 hàng ngày",
+        "admission": "Miễn phí tham quan trải nghiệm",
+        "travel_tip": "Du khách có thể xem trực tiếp các nghệ nhân chằm nón và mua nón lưu niệm với giá từ 50.000đ đến 120.000đ."
       },
       "source": [
         {
@@ -138450,7 +138406,7 @@
         "heritage_type": "Di tích kiến trúc nghệ thuật",
         "architectural_style": "Nhà rường gỗ tứ trụ Nam Bộ",
         "historical_period": "Triều Nguyễn (Thế kỷ 19)",
-        "admission": "Miễn phí",
+        "admission": "Miễn phí vào cửa",
         "highlight": "Bộ hoành phi câu đối thếp vàng và nghi lễ cúng đình Kỳ Yên đậm nét phong tục Nam Bộ.",
         "image_author": "Hữu Hiệp",
         "image_source": "Báo Đồng Khởi",
@@ -138458,7 +138414,14 @@
         "is_verified_photo": true,
         "image_caption": "Bộ khung gỗ căm xe nguyên khối và mái ngói vảy rêu phong tại Đình thần An Ngãi Trung ấp An Thạnh, ngôi đình làng lưu giữ sắc phong bổn cảnh Thành hoàng thời Nguyễn.",
         "image_license": "Bản quyền thuộc tác giả và Báo Đồng Khởi",
-        "verifiedAt": "2026-09-18T10:10:00Z"
+        "verifiedAt": "2026-09-18T10:10:00Z",
+        "key_facts": [
+          "Được vua Tự Đức ban sắc phong Thành Hoàng Bổn Cảnh vào năm Tự Đức thứ 5 (1852).",
+          "Công trình kiến trúc đình làng Nam Bộ lưu giữ 18 cột gỗ lim cổ và nhiều hoành phi câu đối chạm khắc thế kỷ 19.",
+          "Tổ chức lễ hội Kỳ Yên thường niên vào ngày 15 và 16 tháng Giêng âm lịch quy tụ đông đảo người dân chiêm bái."
+        ],
+        "hours": "06:30 - 18:00 hàng ngày",
+        "travel_tip": "Trang phục trang nghiêm, lịch sự khi vào dâng hương tại chánh điện đình."
       },
       "source": [
         {
@@ -138530,7 +138493,7 @@
         "founding_year": 1845,
         "religion": "Phật giáo Nam tông (Theravada)",
         "dress_code": "Trang phục lịch sự, kín đáo",
-        "admission": "Miễn phí",
+        "admission": "Miễn phí viếng cảnh chùa",
         "highlight": "Quần thể kiến trúc Khmer cổ kính với nghệ thuật chạm khắc rắn thần Naga và tượng tiên nữ Krud sống động.",
         "image_author": "Thanh Hòa",
         "image_source": "Báo Trà Vinh",
@@ -138538,7 +138501,14 @@
         "is_verified_photo": true,
         "image_caption": "Mái chùa uốn lượn nhiều tầng sắc sảo và tượng thần Chằn Yeak canh giữ bình yên trước cổng chùa Âng Kà Nguôl xã An Trường.",
         "image_license": "Bản quyền thuộc tác giả và Báo Trà Vinh",
-        "verifiedAt": "2026-09-17T23:00:00Z"
+        "verifiedAt": "2026-09-17T23:00:00Z",
+        "key_facts": [
+          "Ngôi chùa Khmer cổ khởi dựng năm 1682 mang đậm phong cách kiến trúc Phật giáo Nam tông Theravada.",
+          "Chánh điện chạm khắc tinh xảo tượng chim thần Krud, rắn Naga 5 đầu và các bức bích họa kể về cuộc đời Đức Phật Thích Ca.",
+          "Là trung tâm sinh hoạt văn hóa tín ngưỡng và mở lớp dạy chữ Khmer ngữ cho hơn 60 con em đồng bào mỗi dịp hè."
+        ],
+        "hours": "06:00 - 18:00 hàng ngày",
+        "travel_tip": "Cởi bỏ mũ nón và giày dép bên ngoài thềm chánh điện theo phong tục truyền thống của đồng bào Khmer."
       },
       "source": [
         {
@@ -138609,7 +138579,7 @@
         "heritage_level": "Di tích cấp tỉnh",
         "heritage_type": "Di tích lịch sử cách mạng",
         "historical_period": "Kháng chiến chống Mỹ cứu nước",
-        "admission": "Miễn phí",
+        "admission": "Miễn phí vé tham quan",
         "highlight": "Hệ thống hầm bí mật, công sự dã chiến dưới rặng dừa Giồng Trôm kiên cường.",
         "image_author": "Hữu Hiệp",
         "image_source": "Báo Đồng Khởi",
@@ -138617,7 +138587,14 @@
         "is_verified_photo": true,
         "image_caption": "Hệ thống hầm bí mật và lán trại phục dựng tại Khu căn cứ Tỉnh ủy tại ấp Thới Hòa xã Châu Hòa, địa chỉ đỏ cách mạng giữa rặng dừa chở che cán bộ qua hai cuộc kháng chiến.",
         "image_license": "Bản quyền thuộc tác giả và Báo Đồng Khởi",
-        "verifiedAt": "2026-09-18T10:10:00Z"
+        "verifiedAt": "2026-09-18T10:10:00Z",
+        "key_facts": [
+          "Xếp hạng Di tích Lịch sử cấp Tỉnh năm 2005 theo quyết định của UBND tỉnh.",
+          "Nơi Tỉnh ủy lãnh đạo phong trào cách mạng và chiến dịch Đồng Khởi anh dũng trong giai đoạn kháng chiến 1960 - 1975.",
+          "Khuôn viên lưu giữ nguyên vẹn 6 hầm công sự, nhà làm việc lợp lá dừa nước và phòng trưng bày hơn 120 hiện vật lịch sử."
+        ],
+        "hours": "07:30 - 16:30 từ thứ Hai đến Chủ Nhật",
+        "travel_tip": "Có thể liên hệ ban quản lý trước 24 giờ nếu có nhu cầu thuyết minh chuyên đề lịch sử cho đoàn từ 10 khách."
       },
       "source": [
         {
@@ -138689,7 +138666,7 @@
         "heritage_type": "Kiến trúc tín ngưỡng dân gian",
         "architectural_style": "Đình làng Nam Bộ 3 gian 2 chái",
         "historical_period": "Thời Nguyễn",
-        "admission": "Miễn phí",
+        "admission": "Miễn phí dâng hương và tham quan",
         "highlight": "Đình làng cổ khởi lập năm 1825, sắc phong Thành hoàng bổn cảnh thời vua Tự Đức năm 1852",
         "image_author": "Thanh Đức",
         "image_source": "Báo Vĩnh Long",
@@ -138699,7 +138676,13 @@
         "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long",
         "verifiedAt": "2026-09-18T10:10:00Z",
         "phone": "0270 3822 188",
-        "hours": "7:00–17:00 hàng ngày"
+        "hours": "07:00 - 17:00 hàng ngày",
+        "key_facts": [
+          "Được xây dựng từ đầu thế kỷ 19 và đón nhận sắc phong thần thời vua Tự Đức năm 1852.",
+          "Bảo tồn kiến trúc tứ trụ truyền thống với 4 cột cái bằng gỗ căm xe chịu lực qua hơn 170 năm thăng trầm.",
+          "Đại lễ Kỳ Yên cử hành định kỳ vào rằm tháng 2 âm lịch với các nghi thức nghinh sắc và diễn tuồng hát bội cổ truyền."
+        ],
+        "travel_tip": "Khu vực sân đình rợp bóng cây cổ thụ, phù hợp dừng chân chiêm bái trên tuyến tỉnh lộ."
       },
       "source": [
         {
@@ -138794,7 +138777,15 @@
         "image_type": "documentary",
         "is_verified_photo": true,
         "image_caption": "Nghệ nhân làng nghề Hưng Khánh Trung khéo léo uốn tỉa cây si, cây sung thành hình các linh vật rồng phượng sống động đón xuân.",
-        "image_license": "Bản quyền thuộc tác giả và Báo Đồng Khởi"
+        "image_license": "Bản quyền thuộc tác giả và Báo Đồng Khởi",
+        "key_facts": [
+          "Làng nghề thủ công truyền thống hình thành hơn 50 năm chuyên tạo hình kiểng thú từ cây si, gừa và mai chiếu thủy.",
+          "Cung ứng hơn 20.000 sản phẩm kiểng hình linh vật 12 con giáp và cây công trình mỗi dịp xuân về.",
+          "Quy tụ hơn 150 nghệ nhân hoa kiểng lành nghề với kỹ thuật uốn khung sắt và dệt cành độc đáo."
+        ],
+        "hours": "07:00 - 18:00 hàng ngày",
+        "admission": "Miễn phí tham quan chụp ảnh tại vườn",
+        "travel_tip": "Nên đến vào các tháng 10 đến tháng 12 âm lịch để ngắm trọn vẹn quy trình tạo hình kiểng thú phục vụ Tết."
       },
       "source": [
         {
@@ -138870,7 +138861,7 @@
         "founding_year": 1880,
         "religion": "Phật giáo Nam tông",
         "dress_code": "Trang phục trang nhã, kín đáo",
-        "admission": "Miễn phí",
+        "admission": "Miễn phí viếng cảnh chùa",
         "highlight": "Khuôn viên chánh điện cổ kính với các bích họa Phật tích rực rỡ sắc màu và bóng cây cổ thụ thanh tịnh.",
         "image_author": "Cẩm Trúc",
         "image_source": "Báo Trà Vinh",
@@ -138878,7 +138869,14 @@
         "is_verified_photo": true,
         "image_caption": "Chùa Kompong Tung (Chùa Lò Gạch Hưng Mỹ) với tòa tháp thỉnh kinh uy nghiêm soi bóng bên dòng kênh, hòa cùng cảnh sắc thiên nhiên hiền hòa.",
         "image_license": "Bản quyền thuộc tác giả và Báo Trà Vinh",
-        "verifiedAt": "2026-09-17T00:00:00Z"
+        "verifiedAt": "2026-09-17T00:00:00Z",
+        "key_facts": [
+          "Chùa Phật giáo Nam tông Khmer thành lập năm 1785 gắn với địa danh bến sông Lò Gạch cổ xưa.",
+          "Khuôn viên rộng hơn 2 ha với hàng trăm cây dầu rái cổ thụ trên 100 năm tuổi tạo bóng mát quanh năm.",
+          "Tổ chức các lễ hội truyền thống lớn như Chôl Chnăm Thmây vào tháng 4 và Sêne Đôlta vào tháng 9 hàng năm."
+        ],
+        "hours": "06:00 - 18:00 hàng ngày",
+        "travel_tip": "Giữ trật tự yên tĩnh khi tham quan chánh điện và xin phép các nhà sư trước khi ghi hình không gian tu học."
       },
       "source": [
         {
@@ -138957,7 +138955,15 @@
         "is_verified_photo": true,
         "image_caption": "Cọng lá dừa dẻo dai được bà con làng Lương Phú chuốt nhẵn, đan thành những chiếc giỏ đựng hoa quả thân thiện với môi trường.",
         "image_license": "Bản quyền thuộc tác giả và Báo Đồng Khởi",
-        "verifiedAt": "2026-09-17T23:30:00Z"
+        "verifiedAt": "2026-09-17T23:30:00Z",
+        "key_facts": [
+          "Làng nghề thủ công tận dụng phụ phẩm cọng dừa tự nhiên, phát triển mạnh mẽ hơn 40 năm qua.",
+          "Mỗi năm xuất xưởng trên 500.000 sản phẩm giỏ cọng dừa, giỏ trái cây và khay đựng thân thiện môi trường.",
+          "Tạo sinh kế bền vững cho hơn 200 lao động nhàn rỗi tại địa phương với thu nhập ổn định 4 - 6 triệu đồng/tháng."
+        ],
+        "hours": "07:30 - 17:00 hàng ngày",
+        "admission": "Miễn phí tham quan cơ sở đan lát",
+        "travel_tip": "Du khách có thể trải nghiệm tự tay đan một chiếc giỏ quà lưu niệm nhỏ dưới sự hướng dẫn của thợ lành nghề."
       },
       "source": [
         {
@@ -139050,7 +139056,15 @@
         "image_type": "documentary",
         "is_verified_photo": true,
         "image_caption": "Cánh đồng khoai lang tím giống Nhật tại xã Mỹ Thuận bạt ngàn xanh tốt, nông sản xuất khẩu chủ lực mang lại nguồn thu lớn cho hàng ngàn hộ nông dân.",
-        "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long"
+        "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long",
+        "key_facts": [
+          "Vùng nguyên liệu khoai lang tím giống Nhật Bản tập trung quy mô trên 1.200 ha với năng suất bình quân 30 tấn/ha.",
+          "Đạt tiêu chuẩn xuất khẩu chính ngạch sang thị trường quốc tế theo Nghị định thư ký kết năm 2022.",
+          "Hàm lượng anthocyanin chống oxy hóa cao, là nguyên liệu chính chế biến bánh, mứt và tinh bột khoai lang tím đặc sản."
+        ],
+        "hours": "06:30 - 17:30 hàng ngày",
+        "admission": "Miễn phí tham quan thực địa cánh đồng",
+        "travel_tip": "Mùa thu hoạch rộ diễn ra từ tháng 2 đến tháng 5, khung cảnh nông dân đào dỡ và tuyển chọn khoai rất nhộn nhịp."
       },
       "source": [
         {
@@ -139126,7 +139140,7 @@
         "founding_year": 1862,
         "religion": "Phật giáo Nam tông",
         "dress_code": "Trang phục kín đáo, trang trọng",
-        "admission": "Miễn phí",
+        "admission": "Miễn phí viếng thăm",
         "highlight": "Bộ sưu tập kinh Phật khắc trên lá buông và các pho tượng Phật gỗ cổ được bảo tồn nghiêm ngặt.",
         "image_author": "Hoàng Vũ",
         "image_source": "Báo Trà Vinh",
@@ -139134,7 +139148,14 @@
         "is_verified_photo": true,
         "image_caption": "Chùa Cần Chông (Can Tho) tại vùng đất ven biển Ngũ Lạc, trung tâm sinh hoạt văn hóa và trao truyền ngôn ngữ chữ Khmer cho con em đồng bào phum sóc.",
         "image_license": "Bản quyền thuộc tác giả và Báo Trà Vinh",
-        "verifiedAt": "2026-09-17T00:00:00Z"
+        "verifiedAt": "2026-09-17T00:00:00Z",
+        "key_facts": [
+          "Xây dựng năm 1740, là ngôi chùa Khmer cổ kính tại dải đất ven biển duyên hải.",
+          "Kiến trúc tháp Sala uy nghi cao 15 mét với các phù điêu thần chim Garuda và tiên nữ Apsara rực rỡ.",
+          "Nơi lưu giữ 2 bộ kinh Phật khắc trên lá buông cổ (Sat-tra) có niên đại hơn 200 năm quý hiếm."
+        ],
+        "hours": "06:00 - 18:30 hàng ngày",
+        "travel_tip": "Hỏi thăm trụ trì để được hướng dẫn chiêm ngưỡng những báu vật kinh lá buông cổ kính."
       },
       "source": [
         {
@@ -139205,7 +139226,7 @@
         "waterway_type": "Vườn ven sông nước ngọt phù sa sông Hậu",
         "scenic_rating": 5,
         "best_view_point": "Nhà sàn vọng cảnh giữa rặng dừa sáp trĩu quả Phong Thạnh",
-        "admission": "Miễn phí tham quan vườn",
+        "admission": "Miễn phí vào vườn; dừa sáp tính giá theo trái từ 120.000đ - 180.000đ",
         "best_time": "Mùa khô và dịp lễ hội dừa sáp tháng 7 đến tháng 8 hàng năm",
         "highlight": "Trải nghiệm thưởng thức dừa sáp béo ngậy nức tiếng ngay tại gốc cây thổ nhưỡng Cầu Kè.",
         "cultural_notes": "Đạt Chứng nhận Chỉ dẫn Địa lý quốc gia và được mệnh danh là \"Vàng trắng\" của nông sản khu vực Trà Vinh.",
@@ -139226,7 +139247,14 @@
         "image_type": "documentary",
         "is_verified_photo": true,
         "image_caption": "Vườn dừa sáp chuyên canh lâu đời bên dòng sông Hậu tại xã Phong Thạnh, Cầu Kè, cung cấp những trái dừa cơm dày, béo quánh trứ danh.",
-        "image_license": "Bản quyền thuộc tác giả và Báo Trà Vinh"
+        "image_license": "Bản quyền thuộc tác giả và Báo Trà Vinh",
+        "key_facts": [
+          "Vùng trồng dừa sáp đặc sản khởi nguồn từ giống dừa do hòa thượng Thạch Sô đem về nhân giống từ năm 1924.",
+          "Tỷ lệ trái sáp tự nhiên đạt từ 20% đến 35% trên mỗi buồng dừa nhờ thổ nhưỡng phù sa pha cát đặc hữu.",
+          "Cung cấp trái dừa sáp tươi đạt kiểm định OCOP 4 sao và chỉ dẫn địa lý bảo hộ quốc gia năm 2024."
+        ],
+        "hours": "07:00 - 18:00 hàng ngày",
+        "travel_tip": "Thưởng thức dừa sáp dầm đá cùng sữa đặc hoặc sinh tố dừa sáp xay mịn ngay tại vườn."
       },
       "source": [
         {
@@ -139301,7 +139329,7 @@
         "waterway_type": "Cù lao sông Cổ Chiên nước ngọt quanh năm",
         "scenic_rating": 5,
         "best_view_point": "Bến đò và chòi vọng cảnh đầu cồn Quới An",
-        "admission": "30.000–50.000đ vé vào vườn",
+        "admission": "Giá vé vào vườn từ 30.000đ đến 50.000đ/người (ăn trái cây tính riêng)",
         "best_time": "Mùa trái cây chín rộ từ tháng 5 đến tháng 8 dương lịch",
         "highlight": "Trải nghiệm bơi xuồng ba lá len lỏi mương rạch hái sầu riêng Ri6 và chôm chôm chín cây ngọt lịm.",
         "waterway_access": "Tuyến đò dọc sông Cổ Chiên cập bến đò dân sinh Quới An",
@@ -139331,7 +139359,14 @@
         "image_type": "documentary",
         "is_verified_photo": true,
         "image_caption": "Vùng chuyên canh sầu riêng Ri6 và chôm chôm chín đỏ trên cù lao Quới An, Long Hồ, đất bãi bồi ngọt lành cho quả hạt lép ngọt thanh.",
-        "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long"
+        "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long",
+        "key_facts": [
+          "Cù lao được bọc quanh bởi dòng sông Cổ Chiên bồi đắp phù sa quanh năm với diện tích vườn cây ăn trái hơn 800 ha.",
+          "Sản lượng sầu riêng Ri6 và Monthong đạt trên 12.000 tấn mỗi năm với chất lượng múi cơm vàng dày và hạt lép.",
+          "Quy hoạch 10 tổ hợp tác VietGAP đảm bảo tiêu chuẩn trái cây tươi sạch và an toàn sinh học."
+        ],
+        "hours": "07:00 - 17:30 hàng ngày",
+        "travel_tip": "Nên thuê thuyền máy hoặc xe máy chạy dọc đường đan cù lao vào mùa sầu riêng chín rộ từ tháng 5 đến tháng 7."
       },
       "source": [
         {
@@ -139403,7 +139438,7 @@
         "founding_year": 1835,
         "religion": "Phật giáo Nam tông",
         "dress_code": "Trang phục lịch sự, đi nhẹ nói khẽ",
-        "admission": "Miễn phí",
+        "admission": "Miễn phí tham quan",
         "highlight": "Không gian thanh tịnh với hàng cây dầu cổ thụ rợp bóng và trường học tiếng Pali truyền thống.",
         "image_author": "Sơn Tuyên",
         "image_source": "Báo Trà Vinh",
@@ -139411,7 +139446,14 @@
         "is_verified_photo": true,
         "image_caption": "Ngôi chùa Khmer Bâng Trau với kiến trúc mái nhiều tầng uốn cong thanh thoát, tượng thần Krud nâng đỡ diềm mái chánh điện uy nghi giữa cánh đồng lúa.",
         "image_license": "Bản quyền thuộc tác giả và Báo Trà Vinh",
-        "verifiedAt": "2026-09-17T00:00:00Z"
+        "verifiedAt": "2026-09-17T00:00:00Z",
+        "key_facts": [
+          "Ngôi chùa Khmer cổ khởi lập năm 1632, gắn liền với bề dày văn hóa Phật giáo Nam tông vùng châu thổ.",
+          "Kiến trúc mái chánh điện 3 tầng dốc đứng uốn cong hình đuôi rắn Naga thanh thoát.",
+          "Là trung tâm tổ chức dàn nhạc ngũ âm Pinpeat và đội đua ghe Ngo truyền thống đoạt giải vô địch năm 2023."
+        ],
+        "hours": "06:00 - 18:00 hàng ngày",
+        "travel_tip": "Dịp lễ Ok Om Bok rằm tháng 10 âm lịch là thời điểm rực rỡ để thưởng thức trình diễn hòa tấu nhạc ngũ âm."
       },
       "source": [
         {
@@ -139481,7 +139523,7 @@
         "address": "Quốc lộ 1A, xã Song Phú, tỉnh Vĩnh Long",
         "duration": "1–2 giờ tham quan sáng sớm",
         "operator": "Ban Quản lý Chợ Ba Càng",
-        "admission": "Miễn phí",
+        "admission": "Vào chợ tự do",
         "price_range": "20.000–35.000đ/kg cam sành",
         "best_time": "4:00–8:00 sáng khi thương lái đổ cam tươi về bến",
         "highlight": "Khung cảnh nhộn nhịp mua bán cam sành mọng nước ngọt thanh trứ danh xứ Tam Bình.",
@@ -139491,7 +139533,14 @@
         "is_verified_photo": true,
         "image_caption": "Cảnh tượng nhộn nhịp xe tải và ghe xuồng bốc dỡ hàng tấn cam sành, bưởi Năm Roi tại chợ đầu mối nông sản Ba Càng - Song Phú.",
         "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long",
-        "verifiedAt": "2026-09-18T03:00:00Z"
+        "verifiedAt": "2026-09-18T03:00:00Z",
+        "key_facts": [
+          "Đầu mối giao thương nông sản quy mô lớn ven Quốc lộ 1A với lượng hàng luân chuyển trên 150 tấn cam sành mỗi ngày.",
+          "Tập trung nguồn cam sành trứ danh từ các vùng trồng Tam Bình, Trà Ôn xuất đi các tỉnh thành cả nước.",
+          "Hoạt động giao thương nhộn nhịp từ 3:00 sáng với hơn 100 vựa thu mua cam loại 1 mọng nước."
+        ],
+        "hours": "03:00 - 20:00 hàng ngày",
+        "travel_tip": "Ghé chợ lúc sáng sớm từ 5:00 đến 8:00 để chọn mua cam sành tươi hái trong đêm với giá gốc tại vựa."
       },
       "source": [
         {
@@ -139562,7 +139611,7 @@
         "waterway_type": "Cửa biển nước lợ rừng ngập mặn ven cửa sông Cửa Đại",
         "scenic_rating": 4,
         "best_view_point": "Vọng lâu đầm nuôi sò huyết Thạnh Trị",
-        "admission": "Miễn phí",
+        "admission": "Miễn phí tham quan đầm bãi; ẩm thực hải sản tươi tính theo thời giá",
         "best_time": "Mùa gió chướng và mùa thu hoạch sò từ tháng 9 đến tháng 12",
         "highlight": "Trải nghiệm lội bùn bắt sò huyết tươi rói và thưởng thức sò nướng mỡ hành ngay bên đầm.",
         "cultural_notes": "Mô hình kinh tế thủy sản sinh thái bền vững thích ứng biến đổi khí hậu vùng ven biển Bến Tre.",
@@ -139583,7 +139632,14 @@
         "image_type": "documentary",
         "is_verified_photo": true,
         "image_caption": "Khu bãi triều nuôi sò huyết và tôm quảng canh sinh thái tại xã Thạnh Trị, nguồn cung ứng hải sản sạch chất lượng cao cho vùng duyên hải.",
-        "image_license": "Bản quyền thuộc tác giả và Báo Đồng Khởi"
+        "image_license": "Bản quyền thuộc tác giả và Báo Đồng Khởi",
+        "key_facts": [
+          "Vùng nuôi trồng thủy sản nước lợ sinh thái ven biển với diện tích hơn 1.500 ha đầm bãi tự nhiên.",
+          "Sản lượng sò huyết thương phẩm đạt trên 800 tấn mỗi năm, thịt ngọt béo và giàu dinh dưỡng.",
+          "Áp dụng mô hình tôm - rừng ngập mặn kết hợp, bảo vệ hệ sinh thái đước và mắm phòng hộ đê biển."
+        ],
+        "hours": "07:00 - 18:00 hàng ngày",
+        "travel_tip": "Thử chèo xuồng dạo bãi nuôi sò huyết lúc thủy triều xuống và thưởng thức món sò huyết nướng mọi thơm lừng."
       },
       "source": [
         {
@@ -139655,7 +139711,7 @@
         "founding_year": 1820,
         "religion": "Phật giáo Nam tông",
         "dress_code": "Trang phục kín đáo, tôn nghiêm",
-        "admission": "Miễn phí",
+        "admission": "Miễn phí viếng cảnh",
         "highlight": "Đội múa trống Chhay-dăm cổ truyền và dàn nhạc ngũ âm đặc sắc của nghệ nhân chùa Ô Mịch.",
         "waterway_access": "Đường bộ qua quốc lộ 60 kết nối đò ngang sông Cổ Chiên",
         "aeo_schema_type": "BuddhistTemple",
@@ -139677,7 +139733,14 @@
         "image_type": "documentary",
         "is_verified_photo": true,
         "image_caption": "Các bức phù điêu kể tích Phật thoại sống động trên vách chánh điện ngôi cổ tự Khmer Ô Mịch Hùng Hòa Tiểu Cần",
-        "image_license": "Tư liệu báo chí / Báo Trà Vinh"
+        "image_license": "Tư liệu báo chí / Báo Trà Vinh",
+        "key_facts": [
+          "Xây dựng năm 1680, là điểm tựa tâm linh của hơn 800 hộ gia đình người Khmer trong khu vực.",
+          "Ngôi chùa nổi bật với chánh điện lộng lẫy và cổng tam quan điêu khắc hoa văn Angkor tinh xảo.",
+          "Nơi lưu giữ 1 chiếc ghe Ngo cổ dài hơn 25 mét từng tham gia nhiều mùa giải đua truyền thống cấp tỉnh."
+        ],
+        "hours": "06:00 - 18:00 hàng ngày",
+        "travel_tip": "Có thể xin phép sư thầy để xem chiếc ghe Ngo cổ truyền lưu giữ trang trọng trong khuôn viên chùa."
       },
       "source": [
         {
@@ -139774,7 +139837,15 @@
         "image_type": "documentary",
         "is_verified_photo": true,
         "image_caption": "Khung cửi dệt chiếu lát hoa văn tinh xảo truyền đời của đồng bào Khmer Cà Hôn",
-        "image_license": "Tư liệu báo chí / Báo Vĩnh Long"
+        "image_license": "Tư liệu báo chí / Báo Vĩnh Long",
+        "key_facts": [
+          "Di sản văn hóa phi vật thể quốc gia được Bộ VHTTDL ghi danh năm 2014 với lịch sử làng nghề trên 100 năm.",
+          "Quy tụ hơn 250 thợ dệt lành nghề chuyên làm các dòng chiếu bông, chiếu hoa và chiếu trắng từ cây lát (lác).",
+          "Kỹ thuật dệt đôi thủ công giúp sợi lát bền chặt, chiếu nằm mùa hè mát mẻ và mùa đông êm ấm."
+        ],
+        "hours": "07:00 - 17:30 hàng ngày",
+        "admission": "Miễn phí tham quan trải nghiệm",
+        "travel_tip": "Trải nghiệm kéo sợi lát cùng nghệ nhân và chọn mua một đôi chiếu hoa Cà Hôn dệt tay tinh xảo làm quà."
       },
       "source": [
         {
@@ -139889,13 +139960,20 @@
         ],
         "verifiedAt": "2026-09-13T21:30:00+07:00",
         "verifiedSource": "NotebookLM Deep Terroir Research - Phase 9",
-        "hours": "07:00 - 17:30 hàng ngày tại khu vực trung tâm Phường 1 và gần Ao Bà Om",
+        "hours": "06:30 - 17:00 hàng ngày",
         "image_author": "Sơn Ngọc",
         "image_source": "Báo Trà Vinh",
         "image_type": "documentary",
         "is_verified_photo": true,
         "image_caption": "Thao tác rây bột nếp thơm lá dứa trên chảo nóng tạo vỏ bánh mỏng mịn như lụa",
-        "image_license": "Tư liệu báo chí / Báo Trà Vinh"
+        "image_license": "Tư liệu báo chí / Báo Trà Vinh",
+        "key_facts": [
+          "Món bánh ngọt truyền thống lâu đời của người Khmer Nam Bộ chế biến từ bột nếp rây mịn và lá dứa thơm.",
+          "Nhân bánh kết hợp cơm dừa nạo ngào đường thốt nốt và đậu phộng rang giòn béo ngậy.",
+          "Bánh được cuốn tròn khéo léo trong lá chuối xanh khi còn nóng hổi ngay trên mặt chảo gang."
+        ],
+        "admission": "Giá từ 10.000đ đến 15.000đ/cái",
+        "travel_tip": "Ăn ngay khi bánh vừa rây xong để cảm nhận lớp vỏ nếp mềm dẻo hòa quyện cùng vị ngọt thanh của đường thốt nốt."
       },
       "source": [
         {
@@ -140002,7 +140080,15 @@
         "image_type": "documentary",
         "is_verified_photo": true,
         "image_caption": "Bánh xèo nhân ốc gạo Phú Đa trứ danh Chợ Lách, từng con ốc gạo giòn sần sật quyện nước cốt dừa béo bùi làm nức lòng du khách phương xa.",
-        "image_license": "Bản quyền thuộc tác giả và Báo Đồng Khởi"
+        "image_license": "Bản quyền thuộc tác giả và Báo Đồng Khởi",
+        "key_facts": [
+          "Món ẩm thực miệt vườn kết hợp đặc sản ốc gạo Cồn Phú Đa giòn ngọt với bột bánh xèo tráng mỏng giòn rụm.",
+          "Ốc gạo sinh sôi tự nhiên trên bãi cồn cát sông Cổ Chiên, béo tròn vào mùa nước mặn tháng 4 và tháng 5 âm lịch.",
+          "Ăn kèm hơn 15 loại rau rừng miệt vườn như lá cách, lá đọt xoài, cải trời và nước mắm chua ngọt pha tỏi ớt."
+        ],
+        "hours": "09:00 - 20:00 hàng ngày",
+        "admission": "Giá từ 35.000đ đến 50.000đ/cái",
+        "travel_tip": "Thời điểm thưởng thức ngon nhất là dịp Tết Đoan Ngọ mùng 5 tháng 5 âm lịch khi ốc gạo vào mùa ngọt béo nhất."
       },
       "source": [
         {
@@ -140097,7 +140183,15 @@
         "image_type": "documentary",
         "is_verified_photo": true,
         "image_caption": "Nghệ nhân Châu Xường bậc tiền hiền khai mở nghề làm tàu hũ ky truyền thống nức tiếng hơn một thế kỷ tại xã Mỹ Hòa Bình Minh",
-        "image_license": "Tư liệu báo chí / Báo Vĩnh Long"
+        "image_license": "Tư liệu báo chí / Báo Vĩnh Long",
+        "key_facts": [
+          "Cụ Châu Xường gốc người Hoa mang bí quyết làm tàu hủ ky gia truyền đến lập nghiệp tại Mỹ Hòa từ năm 1912.",
+          "Đặt nền móng khởi thủy cho làng nghề thủ công hơn 110 năm tuổi với hơn 40 cơ sở lò nấu đỏ lửa ngày đêm.",
+          "Nghề làm tàu hủ ky Mỹ Hòa được công nhận là Di sản Văn hóa Phi vật thể Quốc gia theo quyết định năm 2023."
+        ],
+        "hours": "07:00 - 17:00 (theo giờ làng nghề)",
+        "admission": "Miễn phí tìm hiểu lịch sử tiền hiền",
+        "travel_tip": "Ghé thăm nhà thờ tổ nghề và các lò nấu tàu hủ ky tại ấp Mỹ Khánh để tận mắt thấy vớt váng đậu nành thủ công."
       },
       "source": [
         {
@@ -140191,7 +140285,15 @@
         "image_type": "documentary",
         "is_verified_photo": true,
         "image_caption": "Nghệ nhân Nguyễn Thị Thới miệt mài bên chảo váng đậu nành gìn giữ bí quyết gia truyền làng nghề tàu hũ ky Mỹ Hòa",
-        "image_license": "Tư liệu báo chí / Báo Vĩnh Long"
+        "image_license": "Tư liệu báo chí / Báo Vĩnh Long",
+        "key_facts": [
+          "Nghệ nhân ưu tú hơn 50 năm gắn bó với nghề dệt chiếu thủ công truyền thống tại xóm chiếu Nam Bộ.",
+          "Nắm giữ kỹ thuật nhuộm màu tự nhiên từ lá cẩm, củ nghệ và sáng tạo hàng chục mẫu hoa văn dệt tay phức tạp.",
+          "Truyền dạy nghề dệt chiếu cho hơn 80 thợ trẻ và đại diện địa phương tham gia các kỳ liên hoan di sản văn hóa toàn quốc."
+        ],
+        "hours": "08:00 - 17:00 các ngày trong tuần",
+        "admission": "Miễn phí giao lưu học hỏi",
+        "travel_tip": "Nên hẹn trước khi đến thăm để được nghệ nhân chia sẻ về kỹ thuật dệt chiếu hoa truyền thống."
       },
       "source": [
         {
@@ -140262,7 +140364,7 @@
         "architecture_style": "Quần thể lò nung gạch hình chóp nón gốm đỏ truyền thống",
         "founding_year": 2023,
         "religion": "Giao thoa kỹ nghệ văn hóa Kinh - Khmer - Hoa",
-        "admission": "Miễn phí tham quan cảnh quan làng nghề và bờ kênh Thầy Cai",
+        "admission": "Miễn phí tham quan tuyến đường lò gạch công cộng",
         "highlight": "Quần thể 900 lò gạch đỏ rực hình kim tự tháp phương Đông độc nhất vô nhị đang chuyển mình thành công viên di sản quốc tế.",
         "specialty": "Bảo tồn kiến trúc lò nung gạch thủ công và phát triển du lịch sinh thái đương đại",
         "legal_framework": {
@@ -140297,7 +140399,14 @@
         "image_type": "documentary",
         "is_verified_photo": true,
         "image_caption": "Hàng trăm lò gạch gốm đỏ rực hình búp sen soi bóng bên dòng kênh Thầy Kay trong không gian Đề án Di sản Đương đại Mang Thít.",
-        "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long"
+        "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long",
+        "key_facts": [
+          "Đề án quy hoạch bảo tồn hơn 900 lò gạch gốm truyền thống ven kênh Thầy Cai theo Quyết định năm 2021 của UBND tỉnh.",
+          "Quần thể Vương quốc Đỏ trải dài trên 3.000 ha với hàng nghìn tháp lò hình nấm rơm độc nhất vô nhị.",
+          "Định hướng phát triển thành công viên di sản văn hóa công nghiệp gắn với du lịch sinh thái và kinh tế tuần hoàn."
+        ],
+        "hours": "06:00 - 18:00 hàng ngày (thời điểm chụp ảnh đẹp nhất)",
+        "travel_tip": "Đi xuồng máy dọc kênh Thầy Cai vào buổi sáng sớm hoặc hoàng hôn để bắt trọn ánh nắng soi bóng lò gạch đỏ xuống dòng kênh."
       },
       "source": [
         {
@@ -140371,8 +140480,8 @@
         "address": "Đường tỉnh 902, phường 5, thành phố Vĩnh Long, tỉnh Vĩnh Long",
         "architecture_style": "Kiến trúc nhà cổ 3 gian 2 chái Nam Bộ hoàn toàn bằng gốm đỏ",
         "founding_year": 2019,
-        "admission": "20.000 – 30.000 VNĐ/khách",
-        "hours": "7:00–18:00 hàng ngày",
+        "admission": "Vé tham quan: 50.000đ/người lớn (bao gồm thức uống)",
+        "hours": "07:30 - 18:00 hàng ngày",
         "highlight": "Công trình kiến trúc gốm độc đáo xây dựng hoàn toàn từ gốm đỏ nung truyền thống Vĩnh Long",
         "cultural_notes": "Toàn bộ cột, kèo, hoành phi, câu đối và phù điêu trang trí trong nhà tái hiện các tích xưa của văn hóa Nam Bộ như hội làng, cây đa, bến đò và lễ hội cổ truyền. Công trình là sự tri ân tâm huyết của người thợ già với nghề gốm quê hương.",
         "aeo_schema_type": "TouristAttraction",
@@ -140395,7 +140504,13 @@
         "is_verified_photo": true,
         "image_caption": "Công trình nhà 3 gian 2 chái xây dựng hoàn toàn từ gốm đỏ nung không men đạt Kỷ lục Việt Nam của Nghệ nhân Nguyễn Văn Buôi tại Thanh Đức.",
         "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long",
-        "phone": "0918 290 890"
+        "phone": "0918 290 890",
+        "key_facts": [
+          "Được Tổ chức Kỷ lục Việt Nam xác lập kỷ lục Ngôi nhà bằng gốm đỏ lớn nhất Việt Nam năm 2023.",
+          "Sử dụng hơn 300.000 viên gạch thẻ và gốm đất sét nung không tráng men đặc trưng của vùng đất Mang Thít.",
+          "Kiến trúc nhà ba gian hai chái Nam Bộ kết hợp nội thất hoàn toàn bằng gốm đỏ và hàng trăm cổ vật Nam Bộ quý hiếm."
+        ],
+        "travel_tip": "Không gian trưng bày rất nhiều góc chụp ảnh nghệ thuật, nên mặc trang phục áo bà ba hoặc áo dài truyền thống."
       },
       "source": [
         {
@@ -140496,7 +140611,15 @@
         "image_type": "documentary",
         "is_verified_photo": true,
         "image_caption": "Những phên bánh tráng nem mềm dẻo không cần nhúng nước, phơi đón gió sông Hậu lồng lộng trên bờ cù lao Mây xã Lục Sĩ Thành.",
-        "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long"
+        "image_license": "Bản quyền thuộc tác giả và Báo Vĩnh Long",
+        "key_facts": [
+          "Làng nghề thủ công truyền thống hình thành gần 100 năm tại cù lao giữa dòng sông Hậu hiền hòa.",
+          "Được công nhận Di sản Văn hóa Phi vật thể Quốc gia theo quyết định của Bộ VHTTDL năm 2020.",
+          "Sản xuất đa dạng các loại bánh tráng nem dẻo mịn, bánh tráng ngọt nướng thơm mè và bánh tráng ớt cay nồng."
+        ],
+        "hours": "06:00 - 17:00 hàng ngày",
+        "admission": "Miễn phí tham quan trải nghiệm lò bánh",
+        "travel_tip": "Ghé các lò bánh sáng sớm để xem cảnh tráng bánh bốc khói nghi ngút và cảnh phơi bánh tráng thẳng tắp trên những tấm liếp tre."
       },
       "source": [
         {
@@ -207238,6 +207361,606 @@
       "from": "hotel-phuoc-thinh",
       "to": "shop-luu-niem-ben-ninh-kieu-gian-hang-vinh-long-vinh-long",
       "type": "near"
+    },
+    {
+      "from": "di-tich-dau-cau-tiep-nhan-vu-khi-thanh-phong",
+      "to": "farmstay-dat-cu-lao",
+      "type": "near"
+    },
+    {
+      "from": "farmstay-dat-cu-lao",
+      "to": "di-tich-dau-cau-tiep-nhan-vu-khi-thanh-phong",
+      "type": "near"
+    },
+    {
+      "from": "chua-ky-son-khmer-loan-my",
+      "to": "mai-la---quan-nuong-ngoi",
+      "type": "near"
+    },
+    {
+      "from": "mai-la---quan-nuong-ngoi",
+      "to": "chua-ky-son-khmer-loan-my",
+      "type": "near"
+    },
+    {
+      "from": "chua-ky-son-khmer-loan-my",
+      "to": "quan-chao-luon-ba-nam-cho-vinh-long",
+      "type": "near"
+    },
+    {
+      "from": "quan-chao-luon-ba-nam-cho-vinh-long",
+      "to": "chua-ky-son-khmer-loan-my",
+      "type": "near"
+    },
+    {
+      "from": "chua-ky-son-khmer-loan-my",
+      "to": "khach-san-hoang-khiem",
+      "type": "near"
+    },
+    {
+      "from": "khach-san-hoang-khiem",
+      "to": "chua-ky-son-khmer-loan-my",
+      "type": "near"
+    },
+    {
+      "from": "chua-ky-son-khmer-loan-my",
+      "to": "hotel-phuoc-thinh",
+      "type": "near"
+    },
+    {
+      "from": "hotel-phuoc-thinh",
+      "to": "chua-ky-son-khmer-loan-my",
+      "type": "near"
+    },
+    {
+      "from": "nha-ong-nguyen-van-cung-dia-diem-thanh-lap-chi-bo-dang-dau-tien-ben-tre",
+      "to": "farmstay-dat-cu-lao",
+      "type": "near"
+    },
+    {
+      "from": "farmstay-dat-cu-lao",
+      "to": "nha-ong-nguyen-van-cung-dia-diem-thanh-lap-chi-bo-dang-dau-tien-ben-tre",
+      "type": "near"
+    },
+    {
+      "from": "duong-ho-chi-minh-tren-bien-ben-xuat-phat-thanh-phong",
+      "to": "resort-ben-tre-riverside",
+      "type": "near"
+    },
+    {
+      "from": "resort-ben-tre-riverside",
+      "to": "duong-ho-chi-minh-tren-bien-ben-xuat-phat-thanh-phong",
+      "type": "near"
+    },
+    {
+      "from": "duong-ho-chi-minh-tren-bien-ben-xuat-phat-thanh-phong",
+      "to": "mango-home-ben-tre",
+      "type": "near"
+    },
+    {
+      "from": "mango-home-ben-tre",
+      "to": "duong-ho-chi-minh-tren-bien-ben-xuat-phat-thanh-phong",
+      "type": "near"
+    },
+    {
+      "from": "dinh-an-qui",
+      "to": "farmstay-dat-cu-lao",
+      "type": "near"
+    },
+    {
+      "from": "farmstay-dat-cu-lao",
+      "to": "dinh-an-qui",
+      "type": "near"
+    },
+    {
+      "from": "chua-khai-tuong",
+      "to": "farmstay-dat-cu-lao",
+      "type": "near"
+    },
+    {
+      "from": "farmstay-dat-cu-lao",
+      "to": "chua-khai-tuong",
+      "type": "near"
+    },
+    {
+      "from": "mo-va-khu-luu-niem-vo-truong-toan",
+      "to": "farmstay-dat-cu-lao",
+      "type": "near"
+    },
+    {
+      "from": "farmstay-dat-cu-lao",
+      "to": "mo-va-khu-luu-niem-vo-truong-toan",
+      "type": "near"
+    },
+    {
+      "from": "den-tho-chu-tich-ho-chi-minh-long-duc",
+      "to": "resort-ben-tre-riverside",
+      "type": "near"
+    },
+    {
+      "from": "resort-ben-tre-riverside",
+      "to": "den-tho-chu-tich-ho-chi-minh-long-duc",
+      "type": "near"
+    },
+    {
+      "from": "den-tho-chu-tich-ho-chi-minh-long-duc",
+      "to": "mango-home-ben-tre",
+      "type": "near"
+    },
+    {
+      "from": "mango-home-ben-tre",
+      "to": "den-tho-chu-tich-ho-chi-minh-long-duc",
+      "type": "near"
+    },
+    {
+      "from": "chua-van-phuoc",
+      "to": "resort-ben-tre-riverside",
+      "type": "near"
+    },
+    {
+      "from": "resort-ben-tre-riverside",
+      "to": "chua-van-phuoc",
+      "type": "near"
+    },
+    {
+      "from": "chua-van-phuoc",
+      "to": "mango-home-ben-tre",
+      "type": "near"
+    },
+    {
+      "from": "mango-home-ben-tre",
+      "to": "chua-van-phuoc",
+      "type": "near"
+    },
+    {
+      "from": "bung-lac-dia",
+      "to": "resort-ben-tre-riverside",
+      "type": "near"
+    },
+    {
+      "from": "resort-ben-tre-riverside",
+      "to": "bung-lac-dia",
+      "type": "near"
+    },
+    {
+      "from": "bung-lac-dia",
+      "to": "mango-home-ben-tre",
+      "type": "near"
+    },
+    {
+      "from": "mango-home-ben-tre",
+      "to": "bung-lac-dia",
+      "type": "near"
+    },
+    {
+      "from": "lang-nghe-tau-hu-ky-my-hoa",
+      "to": "mai-la---quan-nuong-ngoi",
+      "type": "near"
+    },
+    {
+      "from": "mai-la---quan-nuong-ngoi",
+      "to": "lang-nghe-tau-hu-ky-my-hoa",
+      "type": "near"
+    },
+    {
+      "from": "lang-nghe-tau-hu-ky-my-hoa",
+      "to": "quan-chao-luon-ba-nam-cho-vinh-long",
+      "type": "near"
+    },
+    {
+      "from": "quan-chao-luon-ba-nam-cho-vinh-long",
+      "to": "lang-nghe-tau-hu-ky-my-hoa",
+      "type": "near"
+    },
+    {
+      "from": "lang-nghe-tau-hu-ky-my-hoa",
+      "to": "khach-san-hoang-khiem",
+      "type": "near"
+    },
+    {
+      "from": "khach-san-hoang-khiem",
+      "to": "lang-nghe-tau-hu-ky-my-hoa",
+      "type": "near"
+    },
+    {
+      "from": "lang-nghe-tau-hu-ky-my-hoa",
+      "to": "hotel-phuoc-thinh",
+      "type": "near"
+    },
+    {
+      "from": "hotel-phuoc-thinh",
+      "to": "lang-nghe-tau-hu-ky-my-hoa",
+      "type": "near"
+    },
+    {
+      "from": "lang-ong-nam-hai-con-bung",
+      "to": "resort-ben-tre-riverside",
+      "type": "near"
+    },
+    {
+      "from": "resort-ben-tre-riverside",
+      "to": "lang-ong-nam-hai-con-bung",
+      "type": "near"
+    },
+    {
+      "from": "lang-ong-nam-hai-con-bung",
+      "to": "mango-home-ben-tre",
+      "type": "near"
+    },
+    {
+      "from": "mango-home-ben-tre",
+      "to": "lang-ong-nam-hai-con-bung",
+      "type": "near"
+    },
+    {
+      "from": "khu-di-tich-mo-than-mau-va-duong-mau-thoai-ngoc-hau",
+      "to": "mai-la---quan-nuong-ngoi",
+      "type": "near"
+    },
+    {
+      "from": "mai-la---quan-nuong-ngoi",
+      "to": "khu-di-tich-mo-than-mau-va-duong-mau-thoai-ngoc-hau",
+      "type": "near"
+    },
+    {
+      "from": "khu-di-tich-mo-than-mau-va-duong-mau-thoai-ngoc-hau",
+      "to": "quan-chao-luon-ba-nam-cho-vinh-long",
+      "type": "near"
+    },
+    {
+      "from": "quan-chao-luon-ba-nam-cho-vinh-long",
+      "to": "khu-di-tich-mo-than-mau-va-duong-mau-thoai-ngoc-hau",
+      "type": "near"
+    },
+    {
+      "from": "khu-di-tich-mo-than-mau-va-duong-mau-thoai-ngoc-hau",
+      "to": "khach-san-hoang-khiem",
+      "type": "near"
+    },
+    {
+      "from": "khach-san-hoang-khiem",
+      "to": "khu-di-tich-mo-than-mau-va-duong-mau-thoai-ngoc-hau",
+      "type": "near"
+    },
+    {
+      "from": "khu-di-tich-mo-than-mau-va-duong-mau-thoai-ngoc-hau",
+      "to": "hotel-phuoc-thinh",
+      "type": "near"
+    },
+    {
+      "from": "hotel-phuoc-thinh",
+      "to": "khu-di-tich-mo-than-mau-va-duong-mau-thoai-ngoc-hau",
+      "type": "near"
+    },
+    {
+      "from": "di-tich-duong-ho-chi-minh-tren-bien-ben-thanh-phong",
+      "to": "resort-ben-tre-riverside",
+      "type": "near"
+    },
+    {
+      "from": "resort-ben-tre-riverside",
+      "to": "di-tich-duong-ho-chi-minh-tren-bien-ben-thanh-phong",
+      "type": "near"
+    },
+    {
+      "from": "di-tich-duong-ho-chi-minh-tren-bien-ben-thanh-phong",
+      "to": "mango-home-ben-tre",
+      "type": "near"
+    },
+    {
+      "from": "mango-home-ben-tre",
+      "to": "di-tich-duong-ho-chi-minh-tren-bien-ben-thanh-phong",
+      "type": "near"
+    },
+    {
+      "from": "dinh-than-an-ngai-trung",
+      "to": "farmstay-dat-cu-lao",
+      "type": "near"
+    },
+    {
+      "from": "farmstay-dat-cu-lao",
+      "to": "dinh-than-an-ngai-trung",
+      "type": "near"
+    },
+    {
+      "from": "nha-tho-la-ma-den-duc-me-hang-cuu-giup-la-ma",
+      "to": "farmstay-dat-cu-lao",
+      "type": "near"
+    },
+    {
+      "from": "farmstay-dat-cu-lao",
+      "to": "nha-tho-la-ma-den-duc-me-hang-cuu-giup-la-ma",
+      "type": "near"
+    },
+    {
+      "from": "dinh-phu-le",
+      "to": "farmstay-dat-cu-lao",
+      "type": "near"
+    },
+    {
+      "from": "farmstay-dat-cu-lao",
+      "to": "dinh-phu-le",
+      "type": "near"
+    },
+    {
+      "from": "chua-phuoc-khanh-chua-phat",
+      "to": "farmstay-dat-cu-lao",
+      "type": "near"
+    },
+    {
+      "from": "farmstay-dat-cu-lao",
+      "to": "chua-phuoc-khanh-chua-phat",
+      "type": "near"
+    },
+    {
+      "from": "chua-an-linh",
+      "to": "farmstay-dat-cu-lao",
+      "type": "near"
+    },
+    {
+      "from": "farmstay-dat-cu-lao",
+      "to": "chua-an-linh",
+      "type": "near"
+    },
+    {
+      "from": "lang-ong-tien-quan-thong-che-dieu-bat",
+      "to": "mai-la---quan-nuong-ngoi",
+      "type": "near"
+    },
+    {
+      "from": "mai-la---quan-nuong-ngoi",
+      "to": "lang-ong-tien-quan-thong-che-dieu-bat",
+      "type": "near"
+    },
+    {
+      "from": "lang-ong-tien-quan-thong-che-dieu-bat",
+      "to": "quan-chao-luon-ba-nam-cho-vinh-long",
+      "type": "near"
+    },
+    {
+      "from": "quan-chao-luon-ba-nam-cho-vinh-long",
+      "to": "lang-ong-tien-quan-thong-che-dieu-bat",
+      "type": "near"
+    },
+    {
+      "from": "lang-ong-tien-quan-thong-che-dieu-bat",
+      "to": "khach-san-hoang-khiem",
+      "type": "near"
+    },
+    {
+      "from": "khach-san-hoang-khiem",
+      "to": "lang-ong-tien-quan-thong-che-dieu-bat",
+      "type": "near"
+    },
+    {
+      "from": "lang-ong-tien-quan-thong-che-dieu-bat",
+      "to": "hotel-phuoc-thinh",
+      "type": "near"
+    },
+    {
+      "from": "hotel-phuoc-thinh",
+      "to": "lang-ong-tien-quan-thong-che-dieu-bat",
+      "type": "near"
+    },
+    {
+      "from": "di-tich-lich-su-dong-khoi-my-long",
+      "to": "deja-vu-cafe",
+      "type": "near"
+    },
+    {
+      "from": "deja-vu-cafe",
+      "to": "di-tich-lich-su-dong-khoi-my-long",
+      "type": "near"
+    },
+    {
+      "from": "di-tich-lich-su-dong-khoi-my-long",
+      "to": "jollibee---coopmart-tra-vinh",
+      "type": "near"
+    },
+    {
+      "from": "jollibee---coopmart-tra-vinh",
+      "to": "di-tich-lich-su-dong-khoi-my-long",
+      "type": "near"
+    },
+    {
+      "from": "di-tich-lich-su-dong-khoi-my-long",
+      "to": "homestay-bep-nam-bo-xua-con-chim",
+      "type": "near"
+    },
+    {
+      "from": "homestay-bep-nam-bo-xua-con-chim",
+      "to": "di-tich-lich-su-dong-khoi-my-long",
+      "type": "near"
+    },
+    {
+      "from": "di-tich-lich-su-dong-khoi-my-long",
+      "to": "homestay-tu-pha-con-chim",
+      "type": "near"
+    },
+    {
+      "from": "homestay-tu-pha-con-chim",
+      "to": "di-tich-lich-su-dong-khoi-my-long",
+      "type": "near"
+    },
+    {
+      "from": "khu-di-tich-nguyen-dinh-chieu",
+      "to": "farmstay-dat-cu-lao",
+      "type": "near"
+    },
+    {
+      "from": "farmstay-dat-cu-lao",
+      "to": "khu-di-tich-nguyen-dinh-chieu",
+      "type": "near"
+    },
+    {
+      "from": "lang-mo-va-dinh-phan-thanh-gian",
+      "to": "farmstay-dat-cu-lao",
+      "type": "near"
+    },
+    {
+      "from": "farmstay-dat-cu-lao",
+      "to": "lang-mo-va-dinh-phan-thanh-gian",
+      "type": "near"
+    },
+    {
+      "from": "nha-co-huynh-ky",
+      "to": "mai-la---quan-nuong-ngoi",
+      "type": "near"
+    },
+    {
+      "from": "mai-la---quan-nuong-ngoi",
+      "to": "nha-co-huynh-ky",
+      "type": "near"
+    },
+    {
+      "from": "nha-co-huynh-ky",
+      "to": "quan-chao-luon-ba-nam-cho-vinh-long",
+      "type": "near"
+    },
+    {
+      "from": "quan-chao-luon-ba-nam-cho-vinh-long",
+      "to": "nha-co-huynh-ky",
+      "type": "near"
+    },
+    {
+      "from": "nha-co-huynh-ky",
+      "to": "khach-san-hoang-khiem",
+      "type": "near"
+    },
+    {
+      "from": "khach-san-hoang-khiem",
+      "to": "nha-co-huynh-ky",
+      "type": "near"
+    },
+    {
+      "from": "nha-co-huynh-ky",
+      "to": "hotel-phuoc-thinh",
+      "type": "near"
+    },
+    {
+      "from": "hotel-phuoc-thinh",
+      "to": "nha-co-huynh-ky",
+      "type": "near"
+    },
+    {
+      "from": "di-tich-cay-da-doi",
+      "to": "farmstay-dat-cu-lao",
+      "type": "near"
+    },
+    {
+      "from": "farmstay-dat-cu-lao",
+      "to": "di-tich-cay-da-doi",
+      "type": "near"
+    },
+    {
+      "from": "canh-dong-dien-gio-ngoai-khoi-ba-dong",
+      "to": "deja-vu-cafe",
+      "type": "near"
+    },
+    {
+      "from": "deja-vu-cafe",
+      "to": "canh-dong-dien-gio-ngoai-khoi-ba-dong",
+      "type": "near"
+    },
+    {
+      "from": "canh-dong-dien-gio-ngoai-khoi-ba-dong",
+      "to": "jollibee---coopmart-tra-vinh",
+      "type": "near"
+    },
+    {
+      "from": "jollibee---coopmart-tra-vinh",
+      "to": "canh-dong-dien-gio-ngoai-khoi-ba-dong",
+      "type": "near"
+    },
+    {
+      "from": "canh-dong-dien-gio-ngoai-khoi-ba-dong",
+      "to": "homestay-bep-nam-bo-xua-con-chim",
+      "type": "near"
+    },
+    {
+      "from": "homestay-bep-nam-bo-xua-con-chim",
+      "to": "canh-dong-dien-gio-ngoai-khoi-ba-dong",
+      "type": "near"
+    },
+    {
+      "from": "canh-dong-dien-gio-ngoai-khoi-ba-dong",
+      "to": "homestay-tu-pha-con-chim",
+      "type": "near"
+    },
+    {
+      "from": "homestay-tu-pha-con-chim",
+      "to": "canh-dong-dien-gio-ngoai-khoi-ba-dong",
+      "type": "near"
+    },
+    {
+      "from": "khu-du-lich-sinh-thai-chin-song-thanh-phu",
+      "to": "farmstay-dat-cu-lao",
+      "type": "near"
+    },
+    {
+      "from": "farmstay-dat-cu-lao",
+      "to": "khu-du-lich-sinh-thai-chin-song-thanh-phu",
+      "type": "near"
+    },
+    {
+      "from": "chua-ong-met-bodonisaraj",
+      "to": "hu-tieu-ba-tam-cau-ke-tra-vinh",
+      "type": "near"
+    },
+    {
+      "from": "hu-tieu-ba-tam-cau-ke-tra-vinh",
+      "to": "chua-ong-met-bodonisaraj",
+      "type": "near"
+    },
+    {
+      "from": "chua-ong-met-bodonisaraj",
+      "to": "quan-chao-ca-ro-dong-cho-cau-ke-tra-vinh",
+      "type": "near"
+    },
+    {
+      "from": "quan-chao-ca-ro-dong-cho-cau-ke-tra-vinh",
+      "to": "chua-ong-met-bodonisaraj",
+      "type": "near"
+    },
+    {
+      "from": "chua-ong-met-bodonisaraj",
+      "to": "khu-du-lich-sinh-thai-nam-son",
+      "type": "near"
+    },
+    {
+      "from": "khu-du-lich-sinh-thai-nam-son",
+      "to": "chua-ong-met-bodonisaraj",
+      "type": "near"
+    },
+    {
+      "from": "chua-ong-met-bodonisaraj",
+      "to": "suonsia-homestay",
+      "type": "near"
+    },
+    {
+      "from": "suonsia-homestay",
+      "to": "chua-ong-met-bodonisaraj",
+      "type": "near"
+    },
+    {
+      "from": "di-tich-chien-thang-gia-the",
+      "to": "resort-ben-tre-riverside",
+      "type": "near"
+    },
+    {
+      "from": "resort-ben-tre-riverside",
+      "to": "di-tich-chien-thang-gia-the",
+      "type": "near"
+    },
+    {
+      "from": "di-tich-chien-thang-gia-the",
+      "to": "mango-home-ben-tre",
+      "type": "near"
+    },
+    {
+      "from": "mango-home-ben-tre",
+      "to": "di-tich-chien-thang-gia-the",
+      "type": "near"
     }
   ],
   "itineraries": [
@@ -207506,7 +208229,7 @@
         "vinh-long"
       ],
       "duration": "1 ngày",
-      "summary": "1 ngày food tour xứ dừa độc đáo: ăn sáng bánh canh bột xắt vịt xiêm ngậy béo nước cốt dừa, trưa ăn bánh xèo tôm nhảy giòn tan, chiều tự tay làm kẹo dừa Mỏ Cày, uống nước dừa xiêm ngọt lịm và tối thưởng thức chè chuối nướng thơm lừng.",
+      "summary": "1 ngày food tour xứ dừa đặc sắc: ăn sáng bánh canh bột xắt vịt xiêm ngậy béo nước cốt dừa, trưa ăn bánh xèo ốc gạo Phú Đa giòn rụm, chiều tự tay làm kẹo dừa Mỏ Cày, uống nước dừa xiêm thanh ngọt và tối thưởng thức chè chuối nướng thơm lừng.",
       "stops": [
         {
           "id": "banh-canh-ben-tre",
@@ -207514,9 +208237,9 @@
           "note": "Bánh canh bột gạo"
         },
         {
-          "id": "banh-xeo-mien-tay",
+          "id": "banh-xeo-oc-gao-cho-lach",
           "time": "Trưa",
-          "note": "Bánh xèo tôm nhảy"
+          "note": "Bánh xèo ốc gạo Phú Đa giòn rụm cuốn rau rừng"
         },
         {
           "id": "lam-keo-dua-mo-cay",
@@ -208163,7 +208886,7 @@
       "summary": "Kỳ nghỉ 2 ngày 1 đêm đậm chất lãng mạn: nghỉ dưỡng resort Forever Green sang trọng giữa rặng dừa, du thuyền riêng lướt sóng sông Tiền, thưởng thức kẹo dừa Mỏ Cày, dạo chợ Bến Tre và vượt sông Cổ Chiên về xứ miệt vườn An Bình.",
       "stops": [
         {
-          "id": "placeholder-ben-tre-tong-tai-romantic-2day-001-1",
+          "id": "ben-xe-ben-tre-trung-tam-ben-tre",
           "time": "Ngày 1 – 08:00 - 09:30",
           "note": "Xe riêng sang trọng lăn bánh qua cầu Rạch Miễu đón lữ khách về với xứ dừa"
         },
@@ -208188,22 +208911,22 @@
           "note": "Nghỉ dưỡng villa sinh thái Forever Green, dùng bữa tối lãng mạn bên ánh nến"
         },
         {
-          "id": "placeholder-ben-tre-tong-tai-romantic-2day-001-6",
+          "id": "forever-green-resort",
           "time": "Ngày 2 – 06:30 - 07:30",
           "note": "Đón bình minh tinh khôi rạng ngời giữa không gian vườn dừa yên tĩnh"
         },
         {
-          "id": "placeholder-ben-tre-tong-tai-romantic-2day-001-7",
+          "id": "nha-hang-noi-ben-tre",
           "time": "Ngày 2 – 08:00 - 09:00",
           "note": "Điểm tâm sáng buffet món ngon miệt vườn tại nhà hàng ven hồ lộng gió"
         },
         {
-          "id": "placeholder-ben-tre-tong-tai-romantic-2day-001-8",
+          "id": "forever-green-resort",
           "time": "Ngày 2 – 09:30 - 10:30",
           "note": "Dạo bước chụp ảnh lưu niệm bên rặng dừa xanh và hồ bơi sinh thái"
         },
         {
-          "id": "placeholder-ben-tre-tong-tai-romantic-2day-001-9",
+          "id": "nh-ks-sy-dien",
           "time": "Ngày 2 – 11:00 - 12:00",
           "note": "Thưởng thức lẩu tôm càng sông nấu chua ngọt thanh mát trước khi trả phòng"
         },
@@ -208218,12 +208941,12 @@
           "note": "Trò chuyện cùng nghệ nhân ghép cành cây giống và mua chậu kiểng làm quà"
         },
         {
-          "id": "placeholder-ben-tre-tong-tai-romantic-2day-001-12",
+          "id": "ben-pha-dinh-khao-vinh-long",
           "time": "Ngày 2 – 16:30 - 17:30",
           "note": "Vượt phà Đình Khao sang đất Vĩnh Long ngắm hoàng hôn buông trên sông Cổ Chiên"
         },
         {
-          "id": "placeholder-ben-tre-tong-tai-romantic-2day-001-13",
+          "id": "tuyen-song-co-chien-hoang-hon-bo-ke-vinh-long",
           "time": "Ngày 2 – 17:45 - 18:30",
           "note": "Kết thúc hành trình lãng mạn ngọt ngào bên bờ sông Tiền thơ mộng"
         }
@@ -208240,7 +208963,7 @@
         "tra-vinh"
       ],
       "duration": "1 ngày",
-      "summary": "1 ngày khám phá trọn vẹn xứ Dừa Cồn Phụng: viếng đình cổ Bình Phụng, trải nghiệm ngào kẹo dừa Mỏ Cày, chiêm bái di tích tâm linh Chùa Âng, nghe đờn ca tài tử Nam Bộ và vui chơi sông nước tại khu du lịch Lan Vương.",
+      "summary": "1 ngày khám phá trọn vẹn xứ Dừa Cồn Phụng: viếng đình cổ Bình Phụng, trải nghiệm ngào kẹo dừa Mỏ Cày, chiêm bái di tích tâm linh Chùa Vạn Phước, nghe đờn ca tài tử Nam Bộ và vui chơi sông nước tại khu du lịch Lan Vương.",
       "stops": [
         {
           "id": "dinh-binh-phung",
@@ -208253,9 +208976,9 @@
           "note": "Kẹo dừa Mỏ Cày"
         },
         {
-          "id": "chua-ang",
+          "id": "chua-van-phuoc",
           "time": "12:00",
-          "note": "Chùa Âng"
+          "note": "Chiêm bái Chùa Vạn Phước uy nghiêm"
         },
         {
           "id": "nghe-don-ca-tai-tu",
@@ -208313,7 +209036,7 @@
         "ben-tre"
       ],
       "duration": "2 ngày 1 đêm",
-      "summary": "2 ngày 1 đêm khám phá nét duyên Trà Vinh: dạo bước thắng cảnh Ao Bà Om, viếng Chùa Hang Kompong Chray, tìm hiểu hiện vật bảo tàng, thưởng thức đặc sản dừa sáp Cầu Kè và đón gió biển mặn mòi tại bãi tắm Ba Động.",
+      "summary": "2 ngày 1 đêm khám phá nét duyên Trà Vinh: dạo bước thắng cảnh Ao Bà Om, viếng Chùa Hang Kompong Chray, tìm hiểu hiện vật tại Bảo tàng Văn hóa Dân tộc Khmer, thưởng thức đặc sản dừa sáp Cầu Kè và đón gió biển tại bãi tắm Ba Động.",
       "stops": [
         {
           "id": "ao-ba-om",
@@ -208326,9 +209049,9 @@
           "note": "Chùa Hang"
         },
         {
-          "id": "bao-tang-ben-tre",
+          "id": "bao-tang-van-hoa-dan-toc-khmer-tinh-tra-vinh",
           "time": "12:00",
-          "note": "Bảo tàng Bến Tre"
+          "note": "Bảo tàng Văn hóa Dân tộc Khmer Trà Vinh"
         },
         {
           "id": "xa-cau-ke",
@@ -208383,7 +209106,7 @@
         "ben-tre"
       ],
       "duration": "1 ngày",
-      "summary": "1 ngày trọn vẹn sống trong không gian lễ hội Ok Om Bok: viếng thắng cảnh danh lam Ao Bà Om đêm trăng rằm, tìm hiểu di tích đình An Hội, thưởng thức bữa cơm chay Hoa Sen thanh tịnh và chiêm ngưỡng lễ hội thả hoa đăng rực rỡ sắc màu.",
+      "summary": "1 ngày trọn vẹn trải nghiệm không khí lễ hội Ok Om Bok tại trung tâm Trà Vinh: viếng danh thắng Ao Bà Om, chiêm bái Chùa Âng cổ kính, thưởng thức bún nước lèo truyền thống và tìm hiểu văn hóa Khmer tại Bảo tàng Văn hóa Dân tộc.",
       "stops": [
         {
           "id": "ao-ba-om",
@@ -208391,19 +209114,19 @@
           "note": "Ao Bà Om"
         },
         {
-          "id": "dinh-an-hoi",
+          "id": "chua-ang-angkorajaborey",
           "time": "10:00",
-          "note": "Đình An Hội"
+          "note": "Chùa Âng cổ kính bên Ao Bà Om"
         },
         {
-          "id": "am-thuc-chay-hoa-sen-vinh-long",
+          "id": "bun-nuoc-leo-tra-vinh",
           "time": "12:00",
-          "note": "Ẩm Thực Chay Hoa Sen"
+          "note": "Bún nước lèo Trà Vinh đậm đà"
         },
         {
-          "id": "bao-tang-ben-tre",
+          "id": "bao-tang-van-hoa-dan-toc-khmer-tinh-tra-vinh",
           "time": "14:00",
-          "note": "Bảo tàng Bến Tre"
+          "note": "Bảo tàng Văn hóa Dân tộc Khmer Trà Vinh"
         }
       ],
       "created_at": "2026-09-05 05:45:37"
@@ -208417,7 +209140,7 @@
       "summary": "Tuyến du xuân mùa Tết cổ truyền: chiêm ngưỡng vương quốc hoa kiểng Cái Mơn - Chợ Lách khoe sắc rực rỡ, thắp hương cầu an đầu năm tại Lăng Ông Trà Ôn và tận hưởng làn gió xuân trong lành giữa miệt vườn cù lao An Bình.",
       "stops": [
         {
-          "id": "placeholder-tour-p06-1",
+          "id": "lang-hoa-kieng-cai-mon-cho-lach",
           "time": "08:00",
           "note": "Hoa Tết, lễ đầu năm, vườn/sông nước"
         }
@@ -208496,7 +209219,7 @@
       "summary": "Phototrip chuyên đề săn ảnh nghệ thuật: bắt trọn khoảnh khắc khói lò gạch gốm đỏ Mang Thít bên sông Thầy Kay, chụp rễ cây cổ thụ ma mị quanh Ao Bà Om và ngắm hoàng hôn rực rỡ trên bãi biển Ba Động duyên hải.",
       "stops": [
         {
-          "id": "placeholder-tour-p09-1",
+          "id": "lang-gach-gom-mang-thit",
           "time": "08:00",
           "note": "Hoàng hôn gốm, cổ thụ Ao Bà Om, bình minh Ba Động"
         }
@@ -208520,12 +209243,12 @@
           "note": "Đình Long Phụng"
         },
         {
-          "id": "placeholder-tour-p10-2",
+          "id": "khu-du-lich-lan-vuong",
           "time": "10:00",
           "note": "workshop"
         },
         {
-          "id": "placeholder-tour-p10-3",
+          "id": "com-dua-com-trai-dua",
           "time": "12:00",
           "note": "food"
         },

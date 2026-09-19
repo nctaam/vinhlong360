@@ -113,7 +113,7 @@
       cta-to="/theo-mua"
       cta-label="Khám phá lịch trình theo mùa"
     />
-    <HomeFieldworkFaq />
+    <HomeFieldworkFaq class="sr-only" />
 
     <div class="home-quick-decisions sr-only" data-home-section="quick-decisions">
       <HomeDecisionLedger :entries="homePresentation.decisionEntries" class="sr-only" />
