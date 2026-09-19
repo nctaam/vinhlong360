@@ -15,4 +15,10 @@ describe('Public Shell Polish', () => {
     expect(shellCss).toMatch(/\.public-shell-command-row\s+\.auth-btn::before\s*\{[^}]*min-height:\s*44px;/)
     expect(shellCss).toMatch(/\.public-shell-command-row\s+\.auth-btn::before\s*\{[^}]*min-width:\s*44px;/)
   })
+
+  it('unifies .auth-btn to standard control radius (8px) across header and components', () => {
+    const componentsCss = readFileSync(resolve(__dirname, '../assets/css/components.css'), 'utf8')
+    expect(shellCss).toMatch(/\.public-shell-command-row\s+\.auth-btn\s*\{[^}]*border-radius:\s*var\(--radius-control[^)]*\);/)
+    expect(componentsCss).toMatch(/\.auth-btn\s*\{[^}]*border-radius:\s*var\(--radius-control\);/)
+  })
 })

@@ -305,7 +305,7 @@ a.tag:hover, button.tag:hover, .tag[role="button"]:hover { filter: brightness(.9
 /* ── Auth section (topbar) ── */
 .auth-area { display: flex; align-items: center; gap: var(--space-3); margin-inline-start: auto; }
 .auth-btn {
-  padding: var(--space-2) 18px; border-radius: var(--radius-full); font-weight: 700; font-size: var(--text-sm);
+  padding: var(--space-2) 18px; border-radius: var(--radius-control); font-weight: 700; font-size: var(--text-sm);
   cursor: pointer; border: 2px solid var(--color-action-border); background: var(--color-action-surface); color: var(--color-action);
   min-height: 44px; white-space: nowrap;
   transition: background .3s var(--ease-out), color .3s var(--ease-out), transform .35s var(--ease-out-expo);
