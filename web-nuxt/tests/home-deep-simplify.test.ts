@@ -107,6 +107,11 @@ describe('Deep & Simple Homepage UI Refinements', () => {
     expect(freshIndexVue).not.toContain('<HomeTravelCompanion')
     expect(freshIndexVue).not.toContain('import HomeTravelCompanion')
   })
+
+  it('Task 15: Hero Feature Dossier action buttons enforce unified border-radius control token', () => {
+    const freshNocturneCss = readFileSync(resolve(__dirname, '../assets/css/home-nocturne.css'), 'utf8')
+    expect(freshNocturneCss).toMatch(/\.home-feature-dossier__action\s*\{[^}]*border-radius:\s*var\(--radius-control\);/)
+  })
 })
 
 
