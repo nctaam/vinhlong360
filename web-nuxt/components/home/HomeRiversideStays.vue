@@ -45,7 +45,7 @@
             <span class="home-stay-card__terroir">{{ stay.terroir }}</span>
             <span class="home-stay-card__badge">{{ stay.badge }}</span>
           </div>
-          <span v-if="stay.ecoBadge" class="home-stay-card__eco-badge">
+          <span v-if="stay.ecoBadge" class="home-stay-card__eco-badge sr-only">
             <IconLine name="shield-check" aria-hidden="true" />
             <span>{{ stay.ecoBadge }}</span>
           </span>
@@ -53,7 +53,7 @@
 
         <!-- Overlaid Bottom Content (<= 25% card height) -->
         <div class="home-stay-card__overlay home-stay-card__body">
-          <div class="home-stay-card__trust">
+          <div class="home-stay-card__trust sr-only">
             <SourceMark tier="official" source-title="Chuẩn Homestay ASEAN" compact />
             <FreshnessLine status="fresh" updated-label="Thực địa 2026" />
           </div>

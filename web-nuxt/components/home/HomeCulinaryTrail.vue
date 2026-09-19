@@ -44,14 +44,14 @@
           <div class="home-culinary-card__top-left">
             <span class="home-culinary-card__rank">#0{{ index + 1 }}</span>
             <span class="home-culinary-card__terroir">{{ dish.terroir }}</span>
-            <span class="home-culinary-card__badge">{{ dish.badge }}</span>
+            <span class="home-culinary-card__badge sr-only">{{ dish.badge }}</span>
           </div>
           <span v-if="dish.priceRange" class="home-culinary-card__price-badge">{{ dish.priceRange }}</span>
         </div>
 
         <!-- Overlaid Bottom Content (<= 25% card height) -->
         <div class="home-culinary-card__overlay home-culinary-card__body">
-          <div class="home-culinary-card__trust">
+          <div class="home-culinary-card__trust sr-only">
             <SourceMark tier="verified" source-title="Mỹ vị bản địa uy tín" compact />
             <FreshnessLine status="fresh" updated-label="Thực địa 2026" />
           </div>

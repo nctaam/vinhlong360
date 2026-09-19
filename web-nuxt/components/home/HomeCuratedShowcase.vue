@@ -54,7 +54,7 @@
           </div>
 
           <div class="home-curated-lead__overlay">
-            <div class="home-curated-lead__trust">
+            <div class="home-curated-lead__trust sr-only">
               <SourceMark tier="official" source-title="Sở VHTTDL Vĩnh Long" verified-at="2026-09-01" compact />
               <FreshnessLine status="fresh" updated-label="Mùa vụ 2026" />
             </div>
@@ -124,7 +124,7 @@
           <!-- Floating Top Bar -->
           <div class="home-curated-satellite__top">
             <div class="home-curated-satellite__top-badges">
-              <span class="home-curated-satellite__tag">{{ item.tag }}</span>
+              <span class="home-curated-satellite__tag sr-only">{{ item.tag }}</span>
               <span class="home-curated-satellite__terroir-badge">{{ item.terroir }}</span>
             </div>
 
@@ -144,7 +144,7 @@
 
           <!-- Overlaid Bottom Content (<= 25% card height) -->
           <div class="home-curated-satellite__overlay home-curated-satellite__content">
-            <div class="home-curated-satellite__trust">
+            <div class="home-curated-satellite__trust sr-only">
               <SourceMark tier="official" compact />
               <FreshnessLine status="fresh" updated-label="2026" />
             </div>

@@ -48,7 +48,7 @@
             />
             <div class="hero-search-island__footer">
               <NuxtLink to="/ban-do?near=1" class="hero-nearby"><IconLine name="pin" aria-hidden="true" /> Tìm quanh tôi</NuxtLink>
-              <span class="hero-search-island__hint">
+              <span class="hero-search-island__hint sr-only">
                 <IconLine name="compass" class="hero-search-island__hint-icon" aria-hidden="true" />
                 <span>Tìm cù lao, lò gạch cổ, quán ăn hay thức quà miệt vườn</span>
               </span>
@@ -89,25 +89,19 @@
 
     <div class="home-river-divider" aria-hidden="true" />
 
-    <div class="home-folio-header" aria-hidden="true">
-      <span class="editorial-folio-tag">FOLIO I · CHỐN DỪNG CHÂN ĐÁNG GHÉ</span>
-    </div>
     <HomeCuratedShowcase v-if="!homeFailed" />
 
-    <div class="home-folio-header" aria-hidden="true">
-      <span class="editorial-folio-tag">FOLIO II · HƯƠNG VỊ KHẨN HOANG & THỔ SẢN MIỆT VƯỜN</span>
-    </div>
+    <div class="home-river-divider" aria-hidden="true" />
+
     <HomeCulinaryTrail v-if="!homeFailed" />
 
-    <div class="home-folio-header" aria-hidden="true">
-      <span class="editorial-folio-tag">FOLIO III · NGHỈ DƯỠNG SÔNG NƯỚC & LỊCH TRÌNH LỮ HÀNH</span>
-    </div>
+    <div class="home-river-divider" aria-hidden="true" />
+
     <HomeRiversideStays v-if="!homeFailed" />
     <HomeTravelPlanner v-if="!homeFailed" />
 
-    <div class="home-folio-header" aria-hidden="true">
-      <span class="editorial-folio-tag">FOLIO IV · CẨM NANG THỰC ĐỊA & GIẢI ĐÁP LỮ KHÁCH</span>
-    </div>
+    <div class="home-river-divider" aria-hidden="true" />
+
     <CatalogAeoPlaque
       data-home-section="aeo-plaque"
       data-home-aeo-plaque
