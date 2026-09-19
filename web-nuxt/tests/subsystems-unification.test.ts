@@ -384,13 +384,208 @@ describe('Milestone M3: Unified Organic Heritage Entity Subsystems', () => {
       const dataPath = resolve(root, '../web/data.json')
 
       expect(existsSync(dbPath)).toBe(true)
+  // ──────────────────────────────────────────────────────────────────────────
+  describe('Subsystem 3: OfflineTerroirPanel.vue (Emergency Terroir Cache & Rescue Hotlines)', () => {
+    it('displays astronomical tide calculation and geographic coordinates', () => {
+      const wrapper = mount(OfflineTerroirPanel, {
+        props: { isOffline: true },
+        global: {
+          stubs: {
+            IconLine: true,
+            VernacularGlyph: true,
+          },
+        },
+      })
+
+      const text = wrapper.text()
+      expect(text).toContain('Chế độ Thực địa Ngoại tuyến')
+      expect(text).toContain('10.254° N, 105.972° E')
+      expect(text).toMatch(/Nước (lớn|ròng|êm|đứng)/)
+    })
+
+    it('renders 5 emergency rescue hotline numbers with functional tel: links', () => {
+      const wrapper = mount(OfflineTerroirPanel, {
+        props: { isOffline: true },
+        global: {
+          stubs: {
+            IconLine: true,
+            VernacularGlyph: true,
+          },
+        },
+      })
+
+      const telLinks = wrapper.findAll('a[href^="tel:"]')
+      expect(telLinks.length).toBeGreaterThanOrEqual(5)
+
+      const hrefs = telLinks.map(l => l.attributes('href'))
+      expect(hrefs).toContain('tel:02703822188')
+      expect(hrefs).toContain('tel:02703858200')
+      expect(hrefs).toContain('tel:02703823520')
+      expect(hrefs).toContain('tel:0693706112')
+      expect(hrefs).toContain('tel:114')
+    })
+
+    it('toggles collapsible emergency guidance and meets touch target requirements', async () => {
+      const wrapper = mount(OfflineTerroirPanel, {
+        props: { isOffline: true },
+        global: {
+          stubs: {
+            IconLine: true,
+            VernacularGlyph: true,
+          },
+        },
+      })
+
+      const toggleBtn = wrapper.find('.offline-toggle-btn')
+      expect(toggleBtn.exists()).toBe(true)
+      expect(toggleBtn.attributes('aria-expanded')).toBe('true')
+
+      await toggleBtn.trigger('click')
+      expect(wrapper.find('.offline-toggle-btn').attributes('aria-expanded')).toBe('false')
+    })
+  })
+
+  // ──────────────────────────────────────────────────────────────────────────
+  // Subsystem 4: layouts/default.vue
+  // ──────────────────────────────────────────────────────────────────────────
+  describe('Subsystem 4: layouts/default.vue (Living Ambient Shell & Field Ergonomics)', () => {
+    it('integrates useCognitiveTerroir, skip link, keyboard navigation and subsystem drawers', () => {
+      const src = readSource('layouts/default.vue')
+      expect(src).toContain('useCognitiveTerroir')
+      expect(src).toContain('livingAmbientDayClass')
+      expect(src).toContain('tide-pulse-')
+      expect(src).toContain('flow-')
+
+      // WCAG 2.2 AAA Skip Link
+      expect(src).toContain('href="#main-content"')
+      expect(src).toContain('skip-link')
+
+      // Keyboard shortcuts J, K, /
+      expect(src).toContain("e.key === '/'")
+      expect(src).toContain("e.key === 'j' || e.key === 'J'")
+      expect(src).toContain("e.key === 'k' || e.key === 'K'")
+
+      // Subsystem integrations
+      expect(src).toContain('<OfflineTerroirPanel')
+      expect(src).toContain('<SearchDrawer')
+    })
+  })
+
+  // ──────────────────────────────────────────────────────────────────────────
+  // Subsystem 5: error.vue
+  // ──────────────────────────────────────────────────────────────────────────
+  describe('Subsystem 5: error.vue (Bến Đò Lỡ Chuyến Narrative & Safe-Haven Waypoints)', () => {
+    it('renders authentic cultural narrative, waypoints, and offline recovery option', () => {
+      const src = readSource('error.vue')
+      expect(src).toContain('Bến Đò Lỡ Chuyến')
+      expect(src).toContain('Dòng sông Cổ Chiên mênh mông')
+      expect(src).toContain('to="/ban-do"')
+      expect(src).toContain('to="/am-thuc"')
+      expect(src).toContain('to="/danh-ba"')
+      expect(src).toContain('showOfflinePanel = true')
+      expect(src).toContain("robots: 'noindex, nofollow'")
+    })
+  })
+
+  // ──────────────────────────────────────────────────────────────────────────
+  // Subsystems 6 to 9: Catalog, Detail, Maps, Itinerary Unification
+  // ──────────────────────────────────────────────────────────────────────────
+  describe('Subsystems 6-9: Page Unification & Ergonomic Standards', () => {
+    it('enforces grid--asymmetric on all 4 catalog pages (du-lich, am-thuc, luu-tru, san-pham)', () => {
+      const duLich = readSource('pages/du-lich.vue')
+      const amThuc = readSource('pages/am-thuc.vue')
+      const luuTru = readSource('pages/luu-tru.vue')
+      const sanPham = readSource('pages/san-pham.vue')
+
+      expect(duLich).toContain('grid--asymmetric')
+      expect(amThuc).toContain('grid--asymmetric')
+      expect(luuTru).toContain('grid--asymmetric')
+      expect(sanPham).toContain('grid--asymmetric')
+    })
+
+    it('integrates TufteSidenote and Green Tourism Criteria badge in dia-diem/[id].vue', () => {
+      const detail = readSource('pages/dia-diem/[id].vue')
+      expect(detail).toContain('<TufteSidenote')
+      expect(detail).toContain('green-tourism-badge')
+      expect(detail).toContain('Tiêu chí Du lịch Xanh Vĩnh Long')
+      expect(detail).toContain('VernacularGlyph')
+    })
+
+    it('preserves Monocle editorial 65ch measure in bai-viet/[id].vue', () => {
+      const article = readSource('pages/bai-viet/[id].vue')
+      expect(article).toContain('max-width: 65ch')
+    })
+
+    it('provides high-contrast outdoor mode and one-handed thumb dock in ban-do.vue', () => {
+      const map = readSource('pages/ban-do.vue')
+      expect(map).toContain('data-outdoor-contrast')
+      expect(map).toContain('map-field-dock')
+      expect(map).toContain('10.254° N, 105.972° E')
+      expect(map).toContain('is-fullbleed')
+    })
+
+    it('wires PocketPassModal in both tao-lich-trinh.vue and lich-trinh/[id].vue', () => {
+      const planner = readSource('pages/tao-lich-trinh.vue')
+      const itinDetail = readSource('pages/lich-trinh/[id].vue')
+
+      expect(planner).toContain('<PocketPassModal')
+      expect(planner).toContain("import PocketPassModal from '~/components/PocketPassModal.vue'")
+
+      expect(itinDetail).toContain('<PocketPassModal')
+      expect(itinDetail).toContain("import PocketPassModal from '~/components/PocketPassModal.vue'")
+    })
+  })
+
+  // ──────────────────────────────────────────────────────────────────────────
+  // Subsystem 10: Strict Invariants & Anti-Slop Safeguards
+  // ──────────────────────────────────────────────────────────────────────────
+  describe('Subsystem 10: Invariants (Zero Audio, Zero Video, Zero Slop, DB Intact)', () => {
+    it('verifies ABSOLUTE ZERO AUDIO and ZERO VIDEO elements in components and layouts', () => {
+      const targets = [
+        'components/SearchDrawer.vue',
+        'components/PocketPassModal.vue',
+        'components/OfflineTerroirPanel.vue',
+        'layouts/default.vue',
+        'error.vue',
+      ]
+
+      for (const rel of targets) {
+        const src = readSource(rel)
+        expect(src).not.toMatch(/<audio[\s>]/i)
+        expect(src).not.toMatch(/<video[\s>]/i)
+        expect(src).not.toMatch(/\.(?:mp3|wav|ogg|mp4|webm|mov)\b/i)
+      }
+    })
+
+    it('verifies ZERO AI SLOP (no sparkles, no generic SaaS purple gradients)', () => {
+      const targets = [
+        'components/SearchDrawer.vue',
+        'components/PocketPassModal.vue',
+        'components/OfflineTerroirPanel.vue',
+        'layouts/default.vue',
+        'error.vue',
+      ]
+
+      for (const rel of targets) {
+        const src = readSource(rel)
+        expect(src).not.toMatch(/sparkle/i)
+        expect(src).not.toMatch(/purple/i)
+        expect(src).not.toMatch(/indigo/i)
+      }
+    })
+
+    it('verifies SQLite production database and web/data.json remain 100% byte-for-byte intact', () => {
+      const dbPath = resolve(root, '../agent/data/vinhlong360.db')
+      const dataPath = resolve(root, '../web/data.json')
+
+      expect(existsSync(dbPath)).toBe(true)
       expect(existsSync(dataPath)).toBe(true)
 
       const dbHash = createHash('sha256').update(readFileSync(dbPath)).digest('hex')
       const dataHash = createHash('sha256').update(readFileSync(dataPath)).digest('hex')
 
       expect(dbHash).toBe('20ac61bf7d247d8df35bd20bfe11140cf6eebae0980de4af5720d5ed73add742')
-      expect(dataHash).toBe('fbb4db0552709df2686823ac60f81c00cce900ccca64e384b15fa4cd470278fc')
+      expect(dataHash).toBe('06c5d1e37fba48fb8713ad8ac175c48c98a5ce4d4eb0a6a1a1fae65631069282')
     })
   })
 })

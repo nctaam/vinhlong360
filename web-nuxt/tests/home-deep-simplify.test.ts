@@ -44,5 +44,14 @@ describe('Deep & Simple Homepage UI Refinements', () => {
     expect(nocturneCss).toMatch(/\.home-curated-satellite__coords/)
     expect(nocturneCss).toMatch(/\.home-curated-lead__coords/)
   })
+
+  it('Task 6: AEO plaque entry titles and continuation quantitative labels enforce tabular numerics', () => {
+    const aeoVue = readFileSync(resolve(__dirname, '../components/CatalogAeoPlaque.vue'), 'utf8')
+    const contVue = readFileSync(resolve(__dirname, '../components/home/HomeContinuation.vue'), 'utf8')
+    expect(aeoVue).toContain('catalog-aeo-plaque__entry-title')
+    expect(contVue).toContain('home-continuation__link-title')
+    expect(nocturneCss).toMatch(/\.catalog-aeo-plaque__entry-title/)
+    expect(nocturneCss).toMatch(/\.home-continuation__link-title/)
+  })
 })
 
