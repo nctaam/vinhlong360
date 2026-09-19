@@ -51,13 +51,13 @@
 /* ═══════════════════════════════════════════════════
    EDITORIAL TYPOGRAPHY: BALANCED HEADINGS & TABULAR NUMS
    ═══════════════════════════════════════════════════ */
-[data-home-pilot="nocturne-b1"] :is(h1, h2, h3, .section-head h2, .home-curated-lead__title, .home-culinary-card__title, .home-product-lead__name) {
+[data-home-pilot="nocturne-b1"] :is(h1, h2, h3, .section-head h2, .home-curated-lead__title, .home-culinary-card__title) {
   text-wrap: balance;
   text-wrap: pretty;
   line-height: var(--leading-snug, 1.35);
 }
 
-[data-home-pilot="nocturne-b1"] :is(.home-feature-dossier__coords, [data-geo-coordinates], .hero-cognitive-chip, .cm-stat, .hero-terroir-chip, .home-culinary-card__price-badge, .home-culinary-card__rank, .home-stay-card__price, .home-curated-lead__coords, .home-curated-satellite__coords, .home-curated-lead__badge, .catalog-aeo-plaque__entry-title, .home-continuation__link-title) {
+[data-home-pilot="nocturne-b1"] :is(.home-feature-dossier__coords, [data-geo-coordinates], .hero-cognitive-chip, .cm-stat, .hero-terroir-chip, .home-culinary-card__price-badge, .home-culinary-card__rank, .home-culinary-card__coords, .home-stay-card__price, .home-stay-card__coords, .home-curated-lead__coords, .home-curated-satellite__coords, .home-curated-lead__badge, .catalog-aeo-plaque__entry-title, .home-continuation__link-title, .home-continuation__link-sub, .home-hotline-btn__num) {
   font-variant-numeric: tabular-nums;
 }
 

@@ -64,6 +64,16 @@ describe('Deep & Simple Homepage UI Refinements', () => {
     const dossierVue = readFileSync(resolve(__dirname, '../components/home/HomeFeatureDossier.vue'), 'utf8')
     expect(dossierVue).toMatch(/home-feature-dossier__coords[\s\S]*?<IconLine\s+name="compass"/)
   })
+
+  it('Task 9: Hotline numbers, itinerary durations, and remaining coordinates enforce tabular numerics', () => {
+    expect(nocturneCss).toMatch(/\.home-hotline-btn__num/)
+    expect(nocturneCss).toMatch(/\.home-continuation__link-sub/)
+    expect(nocturneCss).toMatch(/\.home-culinary-card__coords/)
+    expect(nocturneCss).toMatch(/\.home-stay-card__coords/)
+    // Verify orphaned product lead name is pruned from heading balance group
+    expect(nocturneCss).not.toMatch(/:is\([^)]*\.home-product-lead__name[^)]*\)/)
+  })
 })
+
 
 
