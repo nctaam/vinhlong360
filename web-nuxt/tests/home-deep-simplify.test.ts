@@ -35,5 +35,14 @@ describe('Deep & Simple Homepage UI Refinements', () => {
     expect(staysVue).toContain('home-stay-card__coords')
     expect(nocturneCss).toMatch(/\.home-stay-card__price[^{]*\{[^}]*font-variant-numeric:\s*tabular-nums/)
   })
+
+  it('Task 5: Curated showcase satellites display compass icon with field coordinates and tabular numbers', () => {
+    const showcaseVue = readFileSync(resolve(__dirname, '../components/home/HomeCuratedShowcase.vue'), 'utf8')
+    // Satellite coordinates must render compass icon
+    expect(showcaseVue).toMatch(/home-curated-satellite__coords[\s\S]*?<IconLine\s+name="compass"/)
+    // Verify tabular numeric group in home-nocturne.css
+    expect(nocturneCss).toMatch(/\.home-curated-satellite__coords/)
+    expect(nocturneCss).toMatch(/\.home-curated-lead__coords/)
+  })
 })
 
