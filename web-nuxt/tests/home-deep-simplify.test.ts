@@ -94,6 +94,13 @@ describe('Deep & Simple Homepage UI Refinements', () => {
     const dossierVue = readFileSync(resolve(__dirname, '../components/home/HomeFeatureDossier.vue'), 'utf8')
     expect(dossierVue).toMatch(/home-feature-dossier__action[\s\S]*?Khám phá[\s\S]*?<IconLine\s+name="arrow-right"/)
   })
+
+  it('Task 13: Orphaned product lead layout rules pruned from home-nocturne.css while preserving required tactile scale', () => {
+    // Media active scale rule is required by home-layout-asymmetry.test.ts
+    expect(nocturneCss).toMatch(/\.home-product-lead__media:active\s*\{[\s\S]*?transform:\s*scale\(0\.99\)/)
+    // Orphaned matte and grid body rules should be pruned to maintain strict CSS headroom
+    expect(nocturneCss).not.toMatch(/\[data-home-pilot="nocturne-b1"\]\s+\.home-product-lead__matte\s*\{/)
+  })
 })
 
 
