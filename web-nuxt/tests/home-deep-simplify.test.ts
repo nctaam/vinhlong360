@@ -130,6 +130,18 @@ describe('Deep & Simple Homepage UI Refinements', () => {
     expect(freshNocturneCss).toMatch(/\.home-planner-stop__number[\s\S]*?tabular-nums/)
     expect(freshNocturneCss).toMatch(/\.home-planner-stop__time[\s\S]*?tabular-nums/)
   })
+
+  it('Task 19: Curated showcase and riverside stays action buttons consistently animate directional arrows on hover', () => {
+    const showcaseVue = readFileSync(resolve(__dirname, '../components/home/HomeCuratedShowcase.vue'), 'utf8')
+    const staysVue = readFileSync(resolve(__dirname, '../components/home/HomeRiversideStays.vue'), 'utf8')
+
+    // Folio I Lead button and Satellite link arrows
+    expect(showcaseVue).toMatch(/\.home-curated-lead__actions\s+\.btn:hover\s+\.line-icon:last-child\s*\{[^}]*transform:\s*translateX\(3px\)/)
+    expect(showcaseVue).toMatch(/\.home-curated-satellite__link:hover\s+\.line-icon\s*\{[^}]*transform:\s*translateX\(3px\)/)
+
+    // Folio III Stay card action button arrow
+    expect(staysVue).toMatch(/\.home-stay-card__action\s+\.btn:hover\s+\.line-icon:last-child\s*\{[^}]*transform:\s*translateX\(3px\)/)
+  })
 })
 
 

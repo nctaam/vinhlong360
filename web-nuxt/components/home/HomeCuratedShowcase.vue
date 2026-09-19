@@ -580,6 +580,14 @@ function onImgFallback(e: Event) {
   transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.2s ease;
 }
 
+.home-curated-lead__actions .btn .line-icon:last-child {
+  transition: transform 0.2s ease;
+}
+
+.home-curated-lead__actions .btn:hover .line-icon:last-child {
+  transform: translateX(3px);
+}
+
 .home-curated-lead__actions .btn:active {
   transform: scale(0.98);
 }
@@ -814,6 +822,15 @@ function onImgFallback(e: Event) {
 
 .home-curated-satellite__link:hover {
   opacity: 0.85;
+}
+
+.home-curated-satellite__link .line-icon {
+  transition: transform 0.2s ease;
+}
+
+.home-curated-satellite:hover .home-curated-satellite__link .line-icon,
+.home-curated-satellite__link:hover .line-icon {
+  transform: translateX(3px);
 }
 
 .home-curated-satellite__link:active {

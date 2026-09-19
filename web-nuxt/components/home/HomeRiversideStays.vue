@@ -562,6 +562,14 @@ function onImgFallback(e: Event) {
   opacity: 0.95;
 }
 
+.home-stay-card__action .btn .line-icon:last-child {
+  transition: transform 0.2s ease;
+}
+
+.home-stay-card__action .btn:hover .line-icon:last-child {
+  transform: translateX(3px);
+}
+
 .home-stay-card__action .btn:active {
   transform: scale(0.98);
 }
